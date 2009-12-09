@@ -1,0 +1,19 @@
+seg005 segment byte public 'CODE' use16
+    extrn sub_21B7A:proc
+    extrn sub_223FA:proc
+    extrn sub_22532:proc
+    extrn sub_2255A:proc
+    extrn sub_22576:proc
+    extrn sub_22698:proc
+    extrn sub_2298C:proc
+    extrn sub_22C92:proc
+    extrn sub_22CE8:proc
+    extrn sub_22D2E:proc
+    extrn sub_23702:proc
+    extrn sub_239B4:proc
+    extrn sub_23A50:proc
+    extrn sub_23A98:proc
+    extrn sub_23B4C:proc
+    extrn off_2481A:word
+    extrn off_24D20:word
+seg005 ends

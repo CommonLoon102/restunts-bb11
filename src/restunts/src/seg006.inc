@@ -1,0 +1,24 @@
+seg006 segment byte public 'CODE' use16
+    extrn sub_24D64:proc
+    extrn sub_24DC2:proc
+    extrn sub_24DE6:proc
+    extrn sub_24E06:proc
+    extrn sub_24E9E:proc
+    extrn sub_25E24:proc
+    extrn sub_25EE2:proc
+    extrn sub_25F2E:proc
+    extrn sub_25FF6:proc
+    extrn sub_261FA:proc
+    extrn off_26362:word
+    extrn sub_2637A:proc
+    extrn sub_263C6:proc
+    extrn sub_26500:proc
+    extrn sub_26572:proc
+    extrn sub_265EC:proc
+    extrn sub_26670:proc
+    extrn sub_2695E:proc
+    extrn sub_2699C:proc
+    extrn sub_269D0:proc
+    extrn sub_26A52:proc
+    extrn sub_26B4A:proc
+seg006 ends

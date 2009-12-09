@@ -1,0 +1,7 @@
+seg009 segment byte public 'CODE' use16
+    extrn sub_2A2BC:proc
+    extrn sub_2BEB6:proc
+    extrn sub_2C0A8:proc
+    extrn sub_2C81C:proc
+    extrn sub_2C9B4:proc
+seg009 ends

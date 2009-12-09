@@ -1,0 +1,30 @@
+seg001 segment byte public 'CODE' use16
+    extrn sub_14712:proc
+    extrn sub_14D6C:proc
+    extrn sub_14DA2:proc
+    extrn sub_16898:proc
+    extrn sub_16B02:proc
+    extrn sub_16F3A:proc
+    extrn sub_17008:proc
+    extrn sub_171E8:proc
+    extrn sub_17816:proc
+    extrn sub_17A78:proc
+    extrn sub_17FD6:proc
+    extrn sub_18466:proc
+    extrn sub_185F6:proc
+    extrn sub_187B2:proc
+    extrn sub_188A4:proc
+    extrn sub_18CD8:proc
+    extrn sub_18D06:proc
+    extrn sub_18D60:proc
+    extrn sub_19074:proc
+    extrn sub_193E0:proc
+    extrn sub_195E0:proc
+    extrn sub_195E6:proc
+    extrn sub_19794:proc
+    extrn sub_19926:proc
+    extrn sub_199B2:proc
+    extrn sub_19A2C:proc
+    extrn sub_19BA0:proc
+    extrn sub_19CA2:proc
+seg001 ends

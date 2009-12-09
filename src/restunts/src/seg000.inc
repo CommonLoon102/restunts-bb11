@@ -1,0 +1,20 @@
+seg000 segment byte public 'CODE' use16
+    extrn _main:proc
+    extrn sub_1059A:proc
+    extrn sub_1069C:proc
+    extrn sub_10786:proc
+    extrn sub_10F3C:proc
+    extrn sub_110D0:proc
+    extrn sub_11588:proc
+    extrn sub_1168E:proc
+    extrn sub_118D4:proc
+    extrn sub_11A1C:proc
+    extrn sub_11BB4:proc
+    extrn sub_11C42:proc
+    extrn sub_1293C:proc
+    extrn sub_12F4A:proc
+    extrn off_1314A:word
+    extrn sub_13178:proc
+    extrn sub_144CF:proc
+    extrn sub_146E4:proc
+seg000 ends
