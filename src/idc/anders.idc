@@ -17,17 +17,15 @@ version 2:
 		- an .inc file to be included from all the other segments
 		- an .asm file w/all code and data on that segment
 
-
-
 TODO:
 	- structs dont work: (workedaround manually for now)
 
 	- must declare arg_N (var_?) in function chunks from the original function! 
 	  gives one compile error only but many could be hidden
 
-	- doesnt create an entry point, manually change "end" to "end start" at the end of seg010.asm
-	
 	- datasegment is too big, must be split up in three parts manually
+	
+	- does not detect stack segments, must add .stack manually at start of stack segment
 
 */
 
@@ -215,7 +213,7 @@ static PrintPublics(f, segstart, segend) {
 }
 
 static PrintAsmHeader(f, codestart, codeend) {
-	auto segea, nextseg;
+	auto segea, nextseg, segtype;
 	fprintf(f, ".model large\n");
 	
 	for (segea = FirstSeg(); segea != BADADDR; segea = nextseg) {
@@ -226,7 +224,8 @@ static PrintAsmHeader(f, codestart, codeend) {
 		}
 	}
 
-	fprintf(f, "%s segment byte public 'CODE' use16\n", SegName(codestart));
+	PrintSegDecl(f, codestart);
+		
 	fprintf(f, "    assume cs:%s\n", SegName(codestart));
 	fprintf(f, "    assume es:nothing, ss:nothing, ds:dseg\n");
 	
@@ -247,27 +246,17 @@ static PrintFunction(f, funcstart, funcend) {
 	auto maxfuncs, funccount, filename, i;
 
 	funcname = GetFunctionName(funcstart);
-
-
 	funcflags = GetFunctionFlags(funcstart);
 
 	if (funcflags & FUNC_FAR)
 		funcspec = " far"; else
-		funcspec = "";
+		funcspec = " near";
 	
 	fprintf(f, "%s proc%s\n", funcname, funcspec);
-
 	PrintFrame(f, funcstart);
-
 	fprintf(f, "\n");
-
-	Message("WEHAT SIAIAUS");
 	PrintBody(f, funcstart, funcend, 1);
-
 	fprintf(f, "%s endp\n", funcname);
-
-	//fclose(f);
-
 }
 
 static PrintBody(f, funcstart, funcend, skipfirstlabel) {
@@ -298,8 +287,17 @@ static PrintBody(f, funcstart, funcend, skipfirstlabel) {
 
 }
 
-static PrintSegInc(segstart, segend) {
+static PrintSegDecl(f, ea) {
+	auto segtype;
+	segtype = GetSegmentAttr(ea, SEGATTR_TYPE);
+	if (segtype == SEG_CODE)
+		fprintf(f, "%s segment byte public 'CODE' use16\n", SegName(ea)); 
+	else 
+		fprintf(f, "%s segment byte public 'DATA' use16\n", SegName(ea)); 
 
+}
+
+static PrintSegInc(segstart, segend) {
 	auto funcea, flags, f, filename;
 	auto segname;
 
@@ -307,26 +305,22 @@ static PrintSegInc(segstart, segend) {
 	filename = form("src\\%s.inc", segname);
 	f = fopen(filename, "w");
 
-	fprintf(f, "%s segment byte public 'CODE' use16\n", segname);
-	//fprintf(f, "    assume cs:%s\n", segname);
-	//fprintf(f, "    assume es:nothing, ss:nothing, ds:%s, fs:nothing, gs:nothing\n", segname);
-
+	PrintSegDecl(f, segstart);
 	PrintExterns(f, segstart, segend, BADADDR, BADADDR);
-
 	fprintf(f, "%s ends\n", segname);
-	fclose(f);
 
+	fclose(f);
 }
 
 static main() {
-
-	auto segea, funcea, nextseg, endfunc, nextfunc;
-	auto maxfuncs, funccount;
+	auto segea, funcea, nextseg, endseg, endfunc, nextfunc, segss;
+	auto maxfuncs, funccount, startseg;
 	auto f, filename, flags;
 
-	
 	maxfuncs = 5;
 	funccount = 0;
+
+	startseg = 0;
 
 	Message("Generating segment includes...\n");
 	for (segea = FirstSeg(); segea != BADADDR; segea = nextseg) {
@@ -334,30 +328,36 @@ static main() {
 		PrintSegInc(segea, nextseg);
 	}
 
-// TODO: SISTE FUNKSJONEN I SEG37 FUCXER OP!         .. .MEN IKKE NÅ?
-
 	Message("Generating functions in segment...\n");
 	for (segea = FirstSeg(); segea != BADADDR; segea = nextseg) {
 		nextseg = NextSeg(segea);
 		
+		if (nextseg == BADADDR)
+			endseg = SegEnd(segea); else
+			endseg = nextseg;
+
 		//if (SegName(segea) != "seg037") continue;
 		//if (SegName(segea) != "seg002") continue;
-		if (SegName(segea) != "dseg") continue;
+		//if (SegName(segea) != "dseg") continue;
 		
 		Message("Segment %i, %s\n", segea, SegName(segea));
 
+		// TODO: should use names in alphabetical order to ensure correct linking order
+		// or generate a filelist for tlink @-syntax
 		filename = form("src\\%s.asm", SegName(segea));
 		
 		Message("%s\n", filename);
 	
 		f = fopen(filename, "w");
 		
-		PrintAsmHeader(f, segea, nextseg);
+		PrintAsmHeader(f, segea, endseg);
+
+		//Message("HEISEG: %i\n", GetSegmentAttr(funcea, SEGATTR_SS));
 
 		for (funcea = segea; funcea != BADADDR; funcea = nextfunc) {
 			nextfunc = NextFunction(funcea);
-			if (nextseg <= nextfunc || nextfunc == BADADDR) {
-				endfunc = nextseg; 
+			if (endseg <= nextfunc || nextfunc == BADADDR) {
+				endfunc = endseg; 
 				nextfunc = BADADDR;
 			} else
 				endfunc = nextfunc;
@@ -366,14 +366,19 @@ static main() {
 			if (isFunction(flags)) {
 				Message("function at %i-%i\n", funcea, endfunc);
 				PrintFunction(f, funcea, endfunc);
+				if (GetFunctionName(funcea) == "start") {
+					startseg = 1;
+				}
 			} else 
 			if (isCode(flags)) {
 				Message("unhandlet code at %i-%i\n", funcea, endfunc);
 			} else
-			if (isData(flags)) {
+			if (isData(flags) || hasValue(flags)) {
 				Message("data at %i-%i\n", funcea, endfunc);
 				PrintBody(f, funcea, endfunc, 0);
 				//Message("unhandled data - should be at the beginning of a segment that doesnt start with a function!\n");
+			} else {
+				Message("unhandled flags: %i\n", flags);
 			}
 
 			//funccount++;
@@ -382,7 +387,9 @@ static main() {
 		}
 		
 		fprintf(f, "%s ends\n", SegName(segea));
-		fprintf(f, "end\n");
+		if (startseg)
+			fprintf(f, "end start\n"); else
+			fprintf(f, "end\n");
 		fclose(f);
 		
 		//break;
