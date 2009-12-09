@@ -278,10 +278,33 @@ static PrintBody(f, funcstart, funcend, skipfirstlabel) {
 		if (isAlign(bodyflags)) {
 			fprintf(f, "    ; %s\n", GetDisasm(funcbody));
 			for (i = 0; i < ItemSize(funcbody); i++) {
-				fprintf(f, "    db %i\n", Byte(funcbody));
+				fprintf(f, "    db %i\n", Byte(funcbody + i));
+			}
+		} else 
+		if (isData(bodyflags) || isUnknown(bodyflags)) {
+			// GetDisasm() returns only a single line causing jump tables to end up incorrect. so we print out all data ourselves
+			// TODO: print prettier, e.g when values are "offset X". maybe use GetDisasm if ItemSize() matches isWord() etc
+			//GenerateFile(OFILE_ASM, f, funcbody, funcbody + ItemSize(funcbody), 0);
+
+			if (isDwrd(bodyflags)) {
+				for (i = 0; i < ItemSize(funcbody) / 4; i++) {
+					fprintf(f, "    dd %i\n", Dword(funcbody + i * 4));
+				}
+			} else
+			if (isWord(bodyflags)) {
+				for (i = 0; i < ItemSize(funcbody) / 2; i++) {
+					fprintf(f, "    dw %i\n", Word(funcbody + i * 2));
+				}
+			} else
+			if (isByte(bodyflags) || isUnknown(bodyflags) || isASCII(bodyflags)) {
+				for (i = 0; i < ItemSize(funcbody); i++) {
+					fprintf(f, "    db %i\n", Byte(funcbody + i));
+				}
+			} else {
+				Message("TODO: unhandled data size\n");
 			}
 		} else {
-			fprintf(f, "    %s\n", GetDisasm(funcbody));
+			fprintf(f, "    %s\n", GetDisasm(funcbody + i));
 		}
 	}
 
@@ -364,7 +387,7 @@ static main() {
 			
 			flags = GetFlags(funcea);
 			if (isFunction(flags)) {
-				Message("function at %i-%i\n", funcea, endfunc);
+				Message("function %s at %i-%i\n", GetFunctionName(funcea), funcea, endfunc);
 				PrintFunction(f, funcea, endfunc);
 				if (GetFunctionName(funcea) == "start") {
 					startseg = 1;
