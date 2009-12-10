@@ -281,9 +281,9 @@ static PrintBody(f, funcstart, funcend, skipfirstlabel) {
 				fprintf(f, "    db %i\n", Byte(funcbody + i));
 			}
 		} else 
-		if (isData(bodyflags) || isUnknown(bodyflags)) {
-			// GetDisasm() returns only a single line causing jump tables to end up incorrect. so we print out all data ourselves
-			// TODO: print prettier, e.g when values are "offset X". maybe use GetDisasm if ItemSize() matches isWord() etc
+		if (isData(bodyflags) || (!isCode(bodyflags) && isUnknown(bodyflags))) {
+			// jump tables arent written out correctly - what to do??
+			//fprintf(f, "    ; JUMP TABLE!");
 			//GenerateFile(OFILE_ASM, f, funcbody, funcbody + ItemSize(funcbody), 0);
 
 			if (isDwrd(bodyflags)) {
@@ -304,7 +304,7 @@ static PrintBody(f, funcstart, funcend, skipfirstlabel) {
 				Message("TODO: unhandled data size\n");
 			}
 		} else {
-			fprintf(f, "    %s\n", GetDisasm(funcbody + i));
+			fprintf(f, "    %s\n", GetDisasm(funcbody));
 		}
 	}
 
