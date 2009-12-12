@@ -17,16 +17,6 @@ version 2:
 		- an .inc file to be included from all the other segments
 		- an .asm file w/all code and data on that segment
 
-TODO:
-	- structs dont work: (workedaround manually for now)
-
-	- must declare arg_N (var_?) in function chunks from the original function! 
-	  gives one compile error only but many could be hidden
-
-	- datasegment is too big, must be split up in three parts manually
-	
-	- does not detect stack segments, must add .stack manually at start of stack segment
-
 */
 
 #include "idc.idc"
@@ -90,6 +80,73 @@ static PrintFrame(f, funcstart) {
 	}
 }
 
+static IsPublicLabel(labelname) {
+	if (
+		labelname == "loc_2CE06" || 
+		labelname == "loc_2EB62" || 
+		labelname == "loc_30011" || 
+		labelname == "loc_3002A" || 
+		labelname == "loc_301FD" || 
+		labelname == "loc_30329" || 
+		labelname == "loc_308C6" || 
+		labelname == "loc_309A5" || 
+		labelname == "loc_30AFB" || 
+		labelname == "loc_30DA1" || 
+		labelname == "loc_30E14" || 
+		labelname == "loc_30FB2" || 
+		labelname == "loc_310CD" || 
+		labelname == "loc_31498" || 
+		labelname == "loc_317CE" || 
+		labelname == "loc_317FB" || 
+		labelname == "loc_3180A" || 
+		labelname == "locret_31AA3" || 
+		labelname == "loc_32334" || 
+		labelname == "loc_32519" || 
+		labelname == "loc_326E4" || 
+		labelname == "loc_3284A" || 
+		labelname == "loc_32882" || 
+		labelname == "loc_32B78" || 
+		labelname == "loc_32B93" || 
+		labelname == "loc_32BDE" || 
+		labelname == "loc_3301F" || 
+		labelname == "loc_335CF" || 
+		labelname == "loc_335D7" || 
+		labelname == "loc_33622" || 
+		labelname == "loc_33697" || 
+		labelname == "loc_338C9" || 
+		labelname == "loc_33A57" || 
+		labelname == "loc_33B1D" || 
+		labelname == "loc_33BF5" || 
+		labelname == "loc_33D69" || 
+		labelname == "loc_33E1B" || 
+		labelname == "loc_33E27" || 
+		labelname == "loc_33EED" || 
+		labelname == "loc_340BD" || 
+		labelname == "loc_3424B" || 
+		labelname == "loc_34311" || 
+		labelname == "loc_343E9" || 
+		labelname == "loc_34541" || 
+		labelname == "loc_345E5" || 
+		labelname == "loc_346A8" || 
+		labelname == "loc_34799" || 
+		labelname == "loc_35ED9" || 
+		labelname == "loc_390C8" || 
+		labelname == "loc_3ACD8" || 
+		labelname == "loc_2E0BE" || 
+		labelname == "loc_2E18F" || 
+		labelname == "loc_2E61E" || 
+		labelname == "loc_2E626" || 
+		labelname == "loc_2E635" || 
+		labelname == "__dosretax" ||
+		labelname == "__cxtoa" ||
+		labelname == "__cltoasub" ||
+		labelname == "__amsg_exit"
+	) {
+		return 1;
+	}
+	return 0;
+}
+
 static PrintExterns(f, segstart, segend, exceptstart, exceptend) {
 
 	auto funcea, flags, labelname;
@@ -110,67 +167,7 @@ static PrintExterns(f, segstart, segend, exceptstart, exceptend) {
 				} else {
 					// only a fraction of the locs need be extrnalized, so use a hardcoded list of allowed labels
 					// allowing all labels gives out of memory error
-					if (
-						labelname == "loc_2CE06" || 
-						labelname == "loc_2EB62" || 
-						labelname == "loc_30011" || 
-						labelname == "loc_3002A" || 
-						labelname == "loc_301FD" || 
-						labelname == "loc_30329" || 
-						labelname == "loc_308C6" || 
-						labelname == "loc_309A5" || 
-						labelname == "loc_30AFB" || 
-						labelname == "loc_30DA1" || 
-						labelname == "loc_30E14" || 
-						labelname == "loc_30FB2" || 
-						labelname == "loc_310CD" || 
-						labelname == "loc_31498" || 
-						labelname == "loc_317CE" || 
-						labelname == "loc_317FB" || 
-						labelname == "loc_3180A" || 
-						labelname == "locret_31AA3" || 
-						labelname == "loc_32334" || 
-						labelname == "loc_32519" || 
-						labelname == "loc_326E4" || 
-						labelname == "loc_3284A" || 
-						labelname == "loc_32882" || 
-						labelname == "loc_32B78" || 
-						labelname == "loc_32B93" || 
-						labelname == "loc_32BDE" || 
-						labelname == "loc_3301F" || 
-						labelname == "loc_335CF" || 
-						labelname == "loc_335D7" || 
-						labelname == "loc_33622" || 
-						labelname == "loc_33697" || 
-						labelname == "loc_338C9" || 
-						labelname == "loc_33A57" || 
-						labelname == "loc_33B1D" || 
-						labelname == "loc_33BF5" || 
-						labelname == "loc_33D69" || 
-						labelname == "loc_33E1B" || 
-						labelname == "loc_33E27" || 
-						labelname == "loc_33EED" || 
-						labelname == "loc_340BD" || 
-						labelname == "loc_3424B" || 
-						labelname == "loc_34311" || 
-						labelname == "loc_343E9" || 
-						labelname == "loc_34541" || 
-						labelname == "loc_345E5" || 
-						labelname == "loc_346A8" || 
-						labelname == "loc_34799" || 
-						labelname == "loc_35ED9" || 
-						labelname == "loc_390C8" || 
-						labelname == "loc_3ACD8" || 
-						labelname == "loc_2E0BE" || 
-						labelname == "loc_2E18F" || 
-						labelname == "loc_2E61E" || 
-						labelname == "loc_2E626" || 
-						labelname == "loc_2E635" || 
-						labelname == "__dosretax" ||
-						labelname == "__cxtoa" ||
-						labelname == "__cltoasub" ||
-						labelname == "__amsg_exit"
-					) {
+					if (IsPublicLabel(labelname)) {
 						fprintf(f, "    extrn %s\n", labelname);
 					}
 				}
@@ -186,7 +183,7 @@ static PrintExterns(f, segstart, segend, exceptstart, exceptend) {
 
 static PrintPublics(f, segstart, segend) {
 
-	auto funcea, flags;
+	auto funcea, flags, labelname;
 
 	for (funcea = segstart; funcea != BADADDR; funcea = NextNotTail2(funcea, segend)) {
 	
@@ -196,16 +193,17 @@ static PrintPublics(f, segstart, segend) {
 		if (funcea < segstart || funcea > segend) continue;
 		
 		if (isAnyName(flags)) {
+			labelname = NameEx(BADADDR, funcea);
 			if (isCode(flags)) {
 			
-				if (isFunction(flags)) {
-					fprintf(f, "    public %s\n", NameEx(BADADDR, funcea));
+				if (isFunction(flags) || IsPublicLabel(labelname)) {
+					fprintf(f, "    public %s\n", labelname);
 				} else {
 					//fprintf(f, "LABEL: %s\n", NameEx(BADADDR, funcea));
 				}
 			} else 
 			if (isData(flags) || isUnknown(flags)) {
-				fprintf(f, "    public %s\n", NameEx(BADADDR, funcea));
+				fprintf(f, "    public %s\n", labelname);
 			}
 		}
 	
@@ -268,9 +266,18 @@ static PrintFunction(f, funcstart, funcend) {
 static PrintBody(f, funcstart, funcend, skipfirstlabel) {
 	auto funcbody, bodyflags, locname;
 	auto i;
+	auto fchunkstart, fchunklast;
 	
+	fchunklast = -1;
 	for (funcbody = funcstart; funcbody != BADADDR; funcbody = NextNotTail2(funcbody, funcend)) {
 		bodyflags = GetFlags(funcbody);
+		
+		fchunkstart = GetFchunkAttr(funcbody, FUNCATTR_START);
+		if (fchunkstart != -1 && fchunkstart != funcstart && fchunkstart != fchunklast) {
+			// its a function chunk, write out the frame for the original function
+			PrintFrame(f, fchunkstart);
+			fchunklast = fchunkstart;
+		}
 		
 		if (((skipfirstlabel && funcbody != funcstart) || !skipfirstlabel) && isAnyName(bodyflags)) {
 			locname = GetTrueNameEx(BADADDR, funcbody);
@@ -460,7 +467,7 @@ static main() {
 				endfunc = nextfunc;
 			
 			flags = GetFlags(funcea);
-			if (isFunction(flags)) {
+			if (isFunction(flags) && GetFunctionName(funcea) != "") {
 				//Message("function %s at %i-%i\n", GetFunctionName(funcea), funcea, endfunc);
 				PrintFunction(f, funcea, endfunc);
 				if (GetFunctionName(funcea) == "start") {
