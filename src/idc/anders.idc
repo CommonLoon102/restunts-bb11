@@ -216,6 +216,12 @@ static PrintAsmHeader(f, codestart, codeend) {
 	auto segea, nextseg, segtype;
 	fprintf(f, ".model large\n");
 	
+	segtype = GetSegmentAttr(codestart, SEGATTR_TYPE);
+	if (segtype == SEG_BSS)
+		fprintf(f, ".stack\n");
+	
+	fprintf(f, "    include structs.inc\n");
+	
 	for (segea = FirstSeg(); segea != BADADDR; segea = nextseg) {
 		nextseg = NextSeg(segea);
 		
@@ -304,10 +310,41 @@ static PrintBody(f, funcstart, funcend, skipfirstlabel) {
 				Message("TODO: unhandled data size\n");
 			}
 		} else {
-			fprintf(f, "    %s\n", GetDisasm(funcbody));
+			PrintFixedAsm(f, funcbody);
+			//fprintf(f, "    %s\n", GetDisasm(funcbody));
 		}
 	}
+}
 
+static PrintFixedAsm(f, ea) {
+	// issues:
+	// or si, <byte>, tasm compiles to 3 bytes, must be 4 bytes
+	// call <far method in same segment>, tasm compiles to "push cs, call near <method>"
+	// lea bx, unk_999, tasm compiles to mov bx, unk_999
+	auto mnem, op1, op2;
+	
+	mnem = GetMnem(ea);
+	
+	if (mnem == "or") {
+		fprintf(f, "    %s\n", GetDisasm(ea));
+		op1 = GetOpnd(ea, 0);
+		if (op1 == "si") {
+			op2 = GetOpType(ea, 1);
+			if (op2 == o_imm) {
+				op2 = GetOperandValue(ea, 1);
+				if (op2 >= 0 && op2 < 256) {
+					Message("Adding nop for: %s\n", GetDisasm(ea));
+					fprintf(f, "    %s\n", "nop");
+				}
+			}
+		}
+	} else 
+	if (mnem == "call") {
+		op1 = GetOpnd(ea, 0);
+		op2 = GetOpType(ea, 0);
+	} else {
+		fprintf(f, "    %s\n", GetDisasm(ea));
+	}
 }
 
 static PrintSegDecl(f, ea) {
@@ -315,6 +352,8 @@ static PrintSegDecl(f, ea) {
 	segtype = GetSegmentAttr(ea, SEGATTR_TYPE);
 	if (segtype == SEG_CODE)
 		fprintf(f, "%s segment byte public 'CODE' use16\n", SegName(ea)); 
+	else if (segtype == SEG_BSS)
+		fprintf(f, "%s segment byte public 'STACK' use16\n", SegName(ea)); 
 	else 
 		fprintf(f, "%s segment byte public 'DATA' use16\n", SegName(ea)); 
 
@@ -335,21 +374,56 @@ static PrintSegInc(segstart, segend) {
 	fclose(f);
 }
 
+static PrintStruct(f, id) {
+	auto memberofs, membername, memberflag, strucsize;
+	fprintf(f, "%s struc\n", GetStrucName(id));
+
+	strucsize = GetStrucSize(id);
+
+	for (memberofs = 0; memberofs < strucsize; memberofs = GetStrucNextOff(id, memberofs)) {
+		membername = GetMemberName(id, memberofs);
+		memberflag = GetMemberFlag(id, memberofs);
+	
+		if (isDwrd(memberflag)) {
+			fprintf(f, "%s dd ?\n", membername);
+		} else
+		if (isWord(memberflag)) {
+			fprintf(f, "%s dw ?\n", membername);
+		} else
+		if (isByte(memberflag) || isUnknown(memberflag) || isASCII(memberflag)) {
+			fprintf(f, "%s db ?\n", membername);
+		} else {
+			Message("TODO: unhandled data size\n");
+		}
+		//fprintf(f, "%s %s\n", membername, GetMemberTypeString(id, memberofs));
+	}
+
+	fprintf(f, "ends\n", id);
+}
+
 static main() {
 	auto segea, funcea, nextseg, endseg, endfunc, nextfunc, segss;
 	auto maxfuncs, funccount, startseg;
+	auto i;
 	auto f, filename, flags;
 
 	maxfuncs = 5;
 	funccount = 0;
-
-	startseg = 0;
 
 	Message("Generating segment includes...\n");
 	for (segea = FirstSeg(); segea != BADADDR; segea = nextseg) {
 		nextseg = NextSeg(segea);
 		PrintSegInc(segea, nextseg);
 	}
+
+	Message("Generating structs...\n");
+	f = fopen("src\\structs.inc", "w");
+
+	for (i = GetFirstStrucIdx(); i != -1; i = GetNextStrucIdx(i)) {
+		PrintStruct(f, GetStrucId(i));
+	}
+	
+	fclose(f);
 
 	Message("Generating functions in segment...\n");
 	for (segea = FirstSeg(); segea != BADADDR; segea = nextseg) {
@@ -359,23 +433,23 @@ static main() {
 			endseg = SegEnd(segea); else
 			endseg = nextseg;
 
+		startseg = 0;
+
 		//if (SegName(segea) != "seg037") continue;
 		//if (SegName(segea) != "seg002") continue;
 		//if (SegName(segea) != "dseg") continue;
 		
-		Message("Segment %i, %s\n", segea, SegName(segea));
-
 		// TODO: should use names in alphabetical order to ensure correct linking order
 		// or generate a filelist for tlink @-syntax
 		filename = form("src\\%s.asm", SegName(segea));
 		
-		Message("%s\n", filename);
+		Message("Segment %i, %s: %s\n", segea, SegName(segea), filename);
 	
 		f = fopen(filename, "w");
 		
 		PrintAsmHeader(f, segea, endseg);
 
-		//Message("HEISEG: %i\n", GetSegmentAttr(funcea, SEGATTR_SS));
+		//Message("HEISEG: %i\n", GetSegmentAttr(segea, SEGATTR_TYPE));
 
 		for (funcea = segea; funcea != BADADDR; funcea = nextfunc) {
 			nextfunc = NextFunction(funcea);
@@ -387,17 +461,18 @@ static main() {
 			
 			flags = GetFlags(funcea);
 			if (isFunction(flags)) {
-				Message("function %s at %i-%i\n", GetFunctionName(funcea), funcea, endfunc);
+				//Message("function %s at %i-%i\n", GetFunctionName(funcea), funcea, endfunc);
 				PrintFunction(f, funcea, endfunc);
 				if (GetFunctionName(funcea) == "start") {
 					startseg = 1;
 				}
 			} else 
 			if (isCode(flags)) {
-				Message("unhandlet code at %i-%i\n", funcea, endfunc);
+				PrintBody(f, funcea, endfunc, 0);
+				//Message("unhandlet code at %i-%i\n", funcea, endfunc);
 			} else
 			if (isData(flags) || hasValue(flags)) {
-				Message("data at %i-%i\n", funcea, endfunc);
+				//Message("data at %i-%i\n", funcea, endfunc);
 				PrintBody(f, funcea, endfunc, 0);
 				//Message("unhandled data - should be at the beginning of a segment that doesnt start with a function!\n");
 			} else {
