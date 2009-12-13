@@ -313,6 +313,12 @@ static PrintBody(f, funcstart, funcend, skipfirstlabel) {
 			//fprintf(f, "    ; JUMP TABLE!");
 			//GenerateFile(OFILE_ASM, f, funcbody, funcbody + ItemSize(funcbody), 0);
 
+			if (isOff0(bodyflags)) {
+				fprintf(f, "    %s\n", GetDisasm(funcbody));
+			} else
+			if (isSeg0(bodyflags)) {
+				fprintf(f, "    %s\n", GetDisasm(funcbody));
+			} else
 			if (isDwrd(bodyflags)) {
 				for (i = 0; i < ItemSize(funcbody) / 4; i++) {
 					fprintf(f, "    dd %i\n", Dword(funcbody + i * 4));
