@@ -64,7 +64,58 @@ seg012 segment byte public 'CODE' use16
     public word_2F35A
     public sub_2F377
     public sub_2F3DA
+    public sub_2F424
+    public sub_2F436
     public word_2F448
+    public off_2F4AC
+    public word_2F4AE
+    public word_2F4B2
+    public word_2F4B4
+    public word_2F4B8
+    public word_2F4C0
+    public word_2F4CA
+    public word_2F4D6
+    public word_2F4E4
+    public word_2F4F4
+    public word_2F506
+    public word_2F51A
+    public word_2F530
+    public word_2F548
+    public word_2F562
+    public word_2F57E
+    public word_2F59C
+    public word_2F5BC
+    public word_2F5DE
+    public word_2F602
+    public word_2F628
+    public unk_2F650
+    public unk_2F67A
+    public unk_2F6A6
+    public unk_2F6D4
+    public unk_2F704
+    public unk_2F736
+    public unk_2F76A
+    public unk_2F7A0
+    public unk_2F7D8
+    public unk_2F812
+    public unk_2F84E
+    public unk_2F88C
+    public unk_2F8CC
+    public unk_2F90E
+    public unk_2F952
+    public unk_2F998
+    public unk_2F9E0
+    public unk_2FA2A
+    public unk_2FA76
+    public unk_2FAC4
+    public unk_2FB14
+    public unk_2FB66
+    public unk_2FBBA
+    public unk_2FC10
+    public unk_2FC68
+    public unk_2FCC2
+    public unk_2FD1E
+    public unk_2FD7C
     public sub_2FDDE
     public sub_2FE1C
     public sub_2FE59
@@ -267,12 +318,14 @@ seg012 segment byte public 'CODE' use16
     public word_34958
     public word_3495A
     public word_3495C
+    public unk_3495E
     public word_34960
     public word_34968
     public sub_34B0C
     public sub_34B7C
     public sub_34C0C
-    public word_34CE4
+    public off_34CE4
+    public byte_34CE6
     public sub_35AF6
     public sub_35B14
     public sub_35B26
@@ -349,14 +402,14 @@ loc_2EA8F:
     jz      short loc_2EAB0
     mov     ax, 80h ; '€'
     jmp     cs:off_2EA9B[di]
-off_2EA9B     dw 144
-    dw 139
-    dw 152
-    dw 147
-    dw 159
-    dw 163
-    dw 175
-    dw 168
+off_2EA9B     dw offset loc_2EAB0
+    dw offset loc_2EAAB
+    dw offset loc_2EAB8
+    dw offset loc_2EAB3
+    dw offset loc_2EABF
+    dw offset loc_2EAC3
+    dw offset loc_2EACF
+    dw offset loc_2EAC8
 loc_2EAAB:
     neg     ax
     add     ah, 1
@@ -648,22 +701,22 @@ loc_2ECAD:
     shl     bx, 1
     jz      short loc_2ECD9
     jmp     cs:off_2ECB9[bx]
-off_2ECB9     dw 697
-    dw 1535
-    dw 1112
-    dw 1112
-    dw 705
-    dw 705
-    dw 705
-    dw 705
-    dw 901
-    dw 901
-    dw 901
-    dw 901
-    dw 705
-    dw 705
-    dw 705
-    dw 705
+off_2ECB9     dw offset loc_2ECD9
+    dw offset loc_2F01F
+    dw offset loc_2EE78
+    dw offset loc_2EE78
+    dw offset loc_2ECE1
+    dw offset loc_2ECE1
+    dw offset loc_2ECE1
+    dw offset loc_2ECE1
+    dw offset loc_2EDA5
+    dw offset loc_2EDA5
+    dw offset loc_2EDA5
+    dw offset loc_2EDA5
+    dw offset loc_2ECE1
+    dw offset loc_2ECE1
+    dw offset loc_2ECE1
+    dw offset loc_2ECE1
 loc_2ECD9:
     xor     ax, ax
     pop     di
@@ -681,13 +734,13 @@ loc_2ECE1:
     jmp     word ptr cs:[bx+2D8h]
     dw 0
     dw 0
-    dw 746
-    dw 752
-    dw 761
-    dw 770
-    dw 786
-    dw 802
-    dw 862
+    dw offset loc_2ED0A
+    dw offset loc_2ED10
+    dw offset loc_2ED19
+    dw offset loc_2ED22
+    dw offset loc_2ED32
+    dw offset loc_2ED42
+    dw offset loc_2ED7E
 loc_2ED0A:
     sub     [si+0Eh], cx
     jmp     loc_2F13E
@@ -763,13 +816,13 @@ loc_2EDA5:
     jmp     word ptr cs:[bx+39Dh]
     dw 0
     dw 0
-    dw 943
-    dw 949
-    dw 958
-    dw 967
-    dw 1003
-    dw 1034
-    dw 1075
+    dw offset loc_2EDCF
+    dw offset loc_2EDD5
+    dw offset loc_2EDDE
+    dw offset loc_2EDE7
+    dw offset loc_2EE0B
+    dw offset loc_2EE2A
+    dw offset loc_2EE53
 loc_2EDCF:
     sub     [si+0Eh], cx
     jmp     loc_2F148
@@ -851,13 +904,13 @@ loc_2EE78:
     jmp     word ptr cs:[bx+462h]
     dw 0
     dw 0
-    dw 1400
-    dw 1140
-    dw 1165
-    dw 1190
-    dw 1246
-    dw 1297
-    dw 1345
+    dw offset loc_2EF98
+    dw offset loc_2EE94
+    dw offset loc_2EEAD
+    dw offset loc_2EEC6
+    dw offset loc_2EEFE
+    dw offset loc_2EF31
+    dw offset loc_2EF61
 loc_2EE94:
     mov     cx, cs:word_3495A
     mov     ax, [si+8]
@@ -1029,13 +1082,13 @@ loc_2F01F:
     jmp     word ptr cs:[bx+60Bh]
     dw 0
     dw 0
-    dw 1565
-    dw 1571
-    dw 1596
-    dw 1622
-    dw 1667
-    dw 1719
-    dw 1776
+    dw offset loc_2F03D
+    dw offset loc_2F043
+    dw offset loc_2F05C
+    dw offset loc_2F076
+    dw offset loc_2F0A3
+    dw offset loc_2F0D7
+    dw offset loc_2F110
 loc_2F03D:
     mov     dx, 1
     jmp     loc_2EF9B
@@ -1397,33 +1450,27 @@ word_2F354     dw 0
 word_2F356     dw 0
 word_2F358     dw 0
 word_2F35A     dw 0
-    db 83
-    db 82
-    db 81
-    db 86
-    db 87
-    db 30
-    db 6
-    db 85
-    db 140
-    db 208
-    db 142
-    db 216
-    db 187
-    db 56
-    db 9
-    db 46
-    db 255
-    db 31
-    db 93
-    db 7
-    db 31
-    db 95
-    db 94
-    db 89
-    db 90
-    db 91
-    db 207
+    push    bx
+    push    dx
+    push    cx
+    push    si
+    push    di
+    push    ds
+    push    es
+    push    bp
+    mov     ax, ss
+    mov     ds, ax
+    mov     bx, offset word_2F358
+    call    dword ptr cs:[bx]
+    pop     bp
+    pop     es
+    pop     ds
+    pop     di
+    pop     si
+    pop     cx
+    pop     dx
+    pop     bx
+    iret
 sub_2F334 endp
 sub_2F377 proc far
      s = byte ptr 0
@@ -1459,36 +1506,18 @@ sub_2F377 proc far
     pop     ds
     pop     bp
     retf
-    db 30
-    db 46
-    db 161
-    db 54
-    db 9
-    db 46
-    db 43
-    db 6
-    db 52
-    db 9
-    db 116
-    db 16
-    db 46
-    db 139
-    db 22
-    db 52
-    db 9
-    db 46
-    db 142
-    db 30
-    db 54
-    db 9
-    db 176
-    db 36
-    db 180
-    db 37
-    db 205
-    db 33
-    db 31
-    db 203
+    push    ds
+    mov     ax, cs:word_2F356
+    sub     ax, cs:word_2F354
+    jz      short loc_2F3D8
+    mov     dx, cs:word_2F354
+    mov     ds, cs:word_2F356
+    mov     al, 24h ; '$'
+    mov     ah, 25h
+    int     21h             ; DOS - SET INTERRUPT VECTOR
+loc_2F3D8:
+    pop     ds
+    retf
 sub_2F377 endp
 sub_2F3DA proc far
     var_A = byte ptr -10
@@ -1524,526 +1553,291 @@ loc_2F3FD:
     mov     [bp+arg_2], ax
     mov     ax, [bp+arg_6]
     mov     [bp+arg_4], ax
-    mov     ax, 4924h
+    mov     ax, offset loc_33344
     mov     word ptr off_40322, ax
-    mov     ax, 13BEh
+    mov     ax, offset sub_2FDDE
     mov     word ptr off_40326, ax
     jmp     loc_3180A
+sub_2F3DA endp
+sub_2F424 proc far
+    var_A = byte ptr -10
+     s = byte ptr 0
+     r = byte ptr 2
+    arg_8 = byte ptr 14
+
     push    bp
     mov     bp, sp
     sub     sp, 7D0h
     push    si
     push    di
-    lea     si, [bp+0Eh]
-    mov     byte ptr [bp-0Ah], 0
+    lea     si, [bp+arg_8]
+    mov     [bp+var_A], 0
     jmp     short loc_2F3FD
+sub_2F424 endp
+sub_2F436 proc far
+    var_A = byte ptr -10
+     s = byte ptr 0
+     r = byte ptr 2
+    arg_8 = byte ptr 14
+
     push    bp
     mov     bp, sp
     sub     sp, 7D0h
     push    si
     push    di
-    lea     si, [bp+0Eh]
-    mov     byte ptr [bp-0Ah], 1
+    lea     si, [bp+arg_8]
+    mov     [bp+var_A], 1
     jmp     short loc_2F3FD
 word_2F448     dw 50
-    db 140
-    db 10
-    db 140
-    db 10
-    db 140
-    db 10
-    db 142
-    db 10
-    db 146
-    db 10
-    db 152
-    db 10
-    db 160
-    db 10
-    db 170
-    db 10
-    db 182
-    db 10
-    db 196
-    db 10
-    db 212
-    db 10
-    db 230
-    db 10
-    db 250
-    db 10
-    db 16
-    db 11
-    db 40
-    db 11
-    db 66
-    db 11
-    db 94
-    db 11
-    db 124
-    db 11
-    db 156
-    db 11
-    db 190
-    db 11
-    db 226
-    db 11
-    db 8
-    db 12
-    db 48
-    db 12
-    db 90
-    db 12
-    db 134
-    db 12
-    db 180
-    db 12
-    db 228
-    db 12
-    db 22
-    db 13
-    db 74
-    db 13
-    db 128
-    db 13
-    db 184
-    db 13
-    db 242
-    db 13
-    db 46
-    db 14
-    db 108
-    db 14
-    db 172
-    db 14
-    db 238
-    db 14
-    db 50
-    db 15
-    db 120
-    db 15
-    db 192
-    db 15
-    db 10
-    db 16
-    db 86
-    db 16
-    db 164
-    db 16
-    db 244
-    db 16
-    db 70
-    db 17
-    db 154
-    db 17
-    db 240
-    db 17
-    db 72
-    db 18
-    db 162
-    db 18
-    db 254
-    db 18
-    db 92
-    db 19
-    db 0
-    db 128
-    db 85
-    db 85
-    db 170
-    db 170
-    db 0
-    db 64
-    db 0
-    db 128
-    db 0
-    db 192
-    db 51
-    db 51
-    db 102
-    db 102
-    db 153
-    db 153
-    db 204
-    db 204
-    db 170
-    db 42
-    db 85
-    db 85
-    db 0
-    db 128
-    db 170
-    db 170
-    db 85
-    db 213
-    db 146
-    db 36
-    db 36
-    db 73
-    db 182
-    db 109
-    db 73
-    db 146
-    db 219
-    db 182
-    db 109
-    db 219
-    db 0
-    db 32
-    db 0
-    db 64
-    db 0
-    db 96
-    db 0
-    db 128
-    db 0
-    db 160
-    db 0
-    db 192
-    db 0
-    db 224
-    db 113
-    db 28
-    db 227
-    db 56
-    db 85
-    db 85
-    db 199
-    db 113
-    db 56
-    db 142
-    db 170
-    db 170
-    db 28
-    db 199
-    db 142
-    db 227
-    db 153
-    db 25
-    db 51
-    db 51
-    db 204
-    db 76
-    db 102
-    db 102
-    db 0
-    db 128
-    db 153
-    db 153
-    db 51
-    db 179
-    db 204
-    db 204
-    db 102
-    db 230
-    db 69
-    db 23
-    db 139
-    db 46
-    db 209
-    db 69
-    db 23
-    db 93
-    db 93
-    db 116
-    db 162
-    db 139
-    db 232
-    db 162
-    db 46
-    db 186
-    db 116
-    db 209
-    db 186
-    db 232
-    db 85
-    db 21
-    db 170
-    db 42
-    db 0
-    db 64
-    db 85
-    db 85
-    db 170
-    db 106
-    db 0
-    db 128
-    db 85
-    db 149
-    db 170
-    db 170
-    db 0
-    db 192
-    db 85
-    db 213
-    db 170
-    db 234
-    db 177
-    db 19
-    db 98
-    db 39
-    db 19
-    db 59
-    db 196
-    db 78
-    db 118
-    db 98
-    db 39
-    db 118
-    db 216
-    db 137
-    db 137
-    db 157
-    db 59
-    db 177
-    db 236
-    db 196
-    db 157
-    db 216
-    db 78
-    db 236
-    db 73
-    db 18
-    db 146
-    db 36
-    db 219
-    db 54
-    db 36
-    db 73
-    db 109
-    db 91
-    db 182
-    db 109
-    db 0
-    db 128
-    db 73
-    db 146
-    db 146
-    db 164
-    db 219
-    db 182
-    db 36
-    db 201
-    db 109
-    db 219
-    db 182
-    db 237
-    db 17
-    db 17
-    db 34
-    db 34
-    db 51
-    db 51
-    db 68
-    db 68
-    db 85
-    db 85
-    db 102
-    db 102
-    db 119
-    db 119
-    db 136
-    db 136
-    db 153
-    db 153
-    db 170
-    db 170
-    db 187
-    db 187
-    db 204
-    db 204
-    db 221
-    db 221
-    db 238
-    db 238
-    db 0
-    db 16
-    db 0
-    db 32
-    db 0
-    db 48
-    db 0
-    db 64
-    db 0
-    db 80
-    db 0
-    db 96
-    db 0
-    db 112
-    db 0
-    db 128
-    db 0
-    db 144
-    db 0
-    db 160
-    db 0
-    db 176
-    db 0
-    db 192
-    db 0
-    db 208
-    db 0
-    db 224
-    db 0
-    db 240
-    db 15
-    db 15
-    db 30
-    db 30
-    db 45
-    db 45
-    db 60
-    db 60
-    db 75
-    db 75
-    db 90
-    db 90
-    db 105
-    db 105
-    db 120
-    db 120
-    db 135
-    db 135
-    db 150
-    db 150
-    db 165
-    db 165
-    db 180
-    db 180
-    db 195
-    db 195
-    db 210
-    db 210
-    db 225
-    db 225
-    db 240
-    db 240
-    db 56
-    db 14
-    db 113
-    db 28
-    db 170
-    db 42
-    db 227
-    db 56
-    db 28
-    db 71
-    db 85
-    db 85
-    db 142
-    db 99
-    db 199
-    db 113
-    db 0
-    db 128
-    db 56
-    db 142
-    db 113
-    db 156
-    db 170
-    db 170
-    db 227
-    db 184
-    db 28
-    db 199
-    db 85
-    db 213
-    db 142
-    db 227
-    db 199
-    db 241
-    db 121
-    db 13
-    db 242
-    db 26
-    db 107
-    db 40
-    db 229
-    db 53
-    db 94
-    db 67
-    db 215
-    db 80
-    db 80
-    db 94
-    db 202
-    db 107
-    db 67
-    db 121
-    db 188
-    db 134
-    db 53
-    db 148
-    db 175
-    db 161
-    db 40
-    db 175
-    db 161
-    db 188
-    db 26
-    db 202
-    db 148
-    db 215
-    db 13
-    db 229
-    db 134
-    db 242
-    db 204
-    db 12
-    db 153
-    db 25
-    db 102
-    db 38
-    db 51
-    db 51
-    db 0
-    db 64
-    db 204
-    db 76
-    db 153
-    db 89
-    db 102
-    db 102
-    db 51
-    db 115
-    db 0
-    db 128
-    db 204
-    db 140
-    db 153
-    db 153
-    db 102
-    db 166
-    db 51
-    db 179
-    db 0
-    db 192
-    db 204
-    db 204
-    db 153
-    db 217
-    db 102
-    db 230
-    db 51
-    db 243
-    db 48
-    db 12
-    db 97
-    db 24
-    db 146
-    db 36
-    db 195
-    db 48
-    db 243
-    db 60
-    db 36
-    db 73
-    db 85
-    db 85
-    db 134
-    db 97
-    db 182
-    db 109
+    dw offset off_2F4AC
+    dw offset off_2F4AC
+    dw offset off_2F4AC
+    dw offset word_2F4AE
+    dw offset word_2F4B2
+    dw offset word_2F4B8
+    dw offset word_2F4C0
+    dw offset word_2F4CA
+    dw offset word_2F4D6
+    dw offset word_2F4E4
+    dw offset word_2F4F4
+    dw offset word_2F506
+    dw offset word_2F51A
+    dw offset word_2F530
+    dw offset word_2F548
+    dw offset word_2F562
+    dw offset word_2F57E
+    dw offset word_2F59C
+    dw offset word_2F5BC
+    dw offset word_2F5DE
+    dw offset word_2F602
+    dw offset word_2F628
+    dw offset unk_2F650
+    dw offset unk_2F67A
+    dw offset unk_2F6A6
+    dw offset unk_2F6D4
+    dw offset unk_2F704
+    dw offset unk_2F736
+    dw offset unk_2F76A
+    dw offset unk_2F7A0
+    dw offset unk_2F7D8
+    dw offset unk_2F812
+    dw offset unk_2F84E
+    dw offset unk_2F88C
+    dw offset unk_2F8CC
+    dw offset unk_2F90E
+    dw offset unk_2F952
+    dw offset unk_2F998
+    dw offset unk_2F9E0
+    dw offset unk_2FA2A
+    dw offset unk_2FA76
+    dw offset unk_2FAC4
+    dw offset unk_2FB14
+    dw offset unk_2FB66
+    dw offset unk_2FBBA
+    dw offset unk_2FC10
+    dw offset unk_2FC68
+    dw offset unk_2FCC2
+    dw offset unk_2FD1E
+off_2F4AC     dw offset unk_2FD7C
+word_2F4AE     dw 32768
+    dw 21845
+word_2F4B2     dw 43690
+word_2F4B4     dw 16384
+    dw 32768
+word_2F4B8     dw 49152
+    dw 13107
+    dw 26214
+    dw 39321
+word_2F4C0     dw 52428
+    dw 10922
+    dw 21845
+    dw 32768
+    dw 43690
+word_2F4CA     dw 54613
+    dw 9362
+    dw 18724
+    dw 28086
+    dw 37449
+    dw 46811
+word_2F4D6     dw 56173
+    dw 8192
+    dw 16384
+    dw 24576
+    dw 32768
+    dw 40960
+    dw 49152
+word_2F4E4     dw 57344
+    dw 7281
+    dw 14563
+    dw 21845
+    dw 29127
+    dw 36408
+    dw 43690
+    dw 50972
+word_2F4F4     dw 58254
+    dw 6553
+    dw 13107
+    dw 19660
+    dw 26214
+    dw 32768
+    dw 39321
+    dw 45875
+    dw 52428
+word_2F506     dw 58982
+    dw 5957
+    dw 11915
+    dw 17873
+    dw 23831
+    dw 29789
+    dw 35746
+    dw 41704
+    dw 47662
+    dw 53620
+word_2F51A     dw 59578
+    dw 5461
+    dw 10922
+    dw 16384
+    dw 21845
+    dw 27306
+    dw 32768
+    dw 38229
+    dw 43690
+    dw 49152
+    dw 54613
+word_2F530     dw 60074
+    dw 5041
+    dw 10082
+    dw 15123
+    dw 20164
+    dw 25206
+    dw 30247
+    dw 35288
+    dw 40329
+    dw 45371
+    dw 50412
+    dw 55453
+word_2F548     dw 60494
+    dw 4681
+    dw 9362
+    dw 14043
+    dw 18724
+    dw 23405
+    dw 28086
+    dw 32768
+    dw 37449
+    dw 42130
+    dw 46811
+    dw 51492
+    dw 56173
+word_2F562     dw 60854
+    dw 4369
+    dw 8738
+    dw 13107
+    dw 17476
+    dw 21845
+    dw 26214
+    dw 30583
+    dw 34952
+    dw 39321
+    dw 43690
+    dw 48059
+    dw 52428
+    dw 56797
+word_2F57E     dw 61166
+    dw 4096
+    dw 8192
+    dw 12288
+    dw 16384
+    dw 20480
+    dw 24576
+    dw 28672
+    dw 32768
+    dw 36864
+    dw 40960
+    dw 45056
+    dw 49152
+    dw 53248
+    dw 57344
+word_2F59C     dw 61440
+    dw 3855
+    dw 7710
+    dw 11565
+    dw 15420
+    dw 19275
+    dw 23130
+    dw 26985
+    dw 30840
+    dw 34695
+    dw 38550
+    dw 42405
+    dw 46260
+    dw 50115
+    dw 53970
+    dw 57825
+word_2F5BC     dw 61680
+    dw 3640
+    dw 7281
+    dw 10922
+    dw 14563
+    dw 18204
+    dw 21845
+    dw 25486
+    dw 29127
+    dw 32768
+    dw 36408
+    dw 40049
+    dw 43690
+    dw 47331
+    dw 50972
+    dw 54613
+    dw 58254
+word_2F5DE     dw 61895
+    dw 3449
+    dw 6898
+    dw 10347
+    dw 13797
+    dw 17246
+    dw 20695
+    dw 24144
+    dw 27594
+    dw 31043
+    dw 34492
+    dw 37941
+    dw 41391
+    dw 44840
+    dw 48289
+    dw 51738
+    dw 55188
+    dw 58637
+word_2F602     dw 62086
+    dw 3276
+    dw 6553
+    dw 9830
+    dw 13107
+    dw 16384
+    dw 19660
+    dw 22937
+    dw 26214
+    dw 29491
+    dw 32768
+    dw 36044
+    dw 39321
+    dw 42598
+    dw 45875
+    dw 49152
+    dw 52428
+    dw 55705
+    dw 58982
+word_2F628     dw 62259
+    dw 3120
+    dw 6241
+    dw 9362
+    dw 12483
+    dw 15603
+    dw 18724
+    dw 21845
+    dw 24966
+    dw 28086
     db 231
     db 121
     db 24
@@ -2064,7 +1858,7 @@ word_2F448     dw 50
     db 219
     db 158
     db 231
-    db 207
+unk_2F650     db 207
     db 243
     db 162
     db 11
@@ -2106,7 +1900,7 @@ word_2F448     dw 50
     db 221
     db 186
     db 232
-    db 93
+unk_2F67A     db 93
     db 244
     db 33
     db 11
@@ -2150,7 +1944,7 @@ word_2F448     dw 50
     db 222
     db 189
     db 233
-    db 222
+unk_2F6A6     db 222
     db 244
     db 170
     db 10
@@ -2196,7 +1990,7 @@ word_2F448     dw 50
     db 224
     db 170
     db 234
-    db 85
+unk_2F6D4     db 85
     db 245
     db 61
     db 10
@@ -2244,7 +2038,7 @@ word_2F448     dw 50
     db 225
     db 133
     db 235
-    db 194
+unk_2F704     db 194
     db 245
     db 216
     db 9
@@ -2294,7 +2088,7 @@ word_2F448     dw 50
     db 226
     db 78
     db 236
-    db 39
+unk_2F736     db 39
     db 246
     db 123
     db 9
@@ -2346,7 +2140,7 @@ word_2F448     dw 50
     db 227
     db 9
     db 237
-    db 132
+unk_2F76A     db 132
     db 246
     db 36
     db 9
@@ -2400,7 +2194,7 @@ word_2F448     dw 50
     db 228
     db 182
     db 237
-    db 219
+unk_2F7A0     db 219
     db 246
     db 211
     db 8
@@ -2456,7 +2250,7 @@ word_2F448     dw 50
     db 229
     db 88
     db 238
-    db 44
+unk_2F7D8     db 44
     db 247
     db 136
     db 8
@@ -2514,7 +2308,7 @@ word_2F448     dw 50
     db 230
     db 238
     db 238
-    db 119
+unk_2F812     db 119
     db 247
     db 66
     db 8
@@ -2574,7 +2368,7 @@ word_2F448     dw 50
     db 231
     db 123
     db 239
-    db 189
+unk_2F84E     db 189
     db 247
     db 0
     db 8
@@ -2636,7 +2430,7 @@ word_2F448     dw 50
     db 232
     db 0
     db 240
-    db 0
+unk_2F88C     db 0
     db 248
     db 193
     db 7
@@ -2700,7 +2494,7 @@ word_2F448     dw 50
     db 232
     db 124
     db 240
-    db 62
+unk_2F8CC     db 62
     db 248
     db 135
     db 7
@@ -2766,7 +2560,7 @@ word_2F448     dw 50
     db 233
     db 240
     db 240
-    db 120
+unk_2F90E     db 120
     db 248
     db 80
     db 7
@@ -2834,7 +2628,7 @@ word_2F448     dw 50
     db 234
     db 95
     db 241
-    db 175
+unk_2F952     db 175
     db 248
     db 28
     db 7
@@ -2904,7 +2698,7 @@ word_2F448     dw 50
     db 234
     db 199
     db 241
-    db 227
+unk_2F998     db 227
     db 248
     db 235
     db 6
@@ -2976,7 +2770,7 @@ word_2F448     dw 50
     db 235
     db 41
     db 242
-    db 20
+unk_2F9E0     db 20
     db 249
     db 188
     db 6
@@ -3050,7 +2844,7 @@ word_2F448     dw 50
     db 235
     db 134
     db 242
-    db 67
+unk_2FA2A     db 67
     db 249
     db 144
     db 6
@@ -3126,7 +2920,7 @@ word_2F448     dw 50
     db 236
     db 223
     db 242
-    db 111
+unk_2FA76     db 111
     db 249
     db 102
     db 6
@@ -3204,7 +2998,7 @@ word_2F448     dw 50
     db 236
     db 51
     db 243
-    db 153
+unk_2FAC4     db 153
     db 249
     db 62
     db 6
@@ -3284,7 +3078,7 @@ word_2F448     dw 50
     db 237
     db 131
     db 243
-    db 193
+unk_2FB14     db 193
     db 249
     db 24
     db 6
@@ -3366,7 +3160,7 @@ word_2F448     dw 50
     db 237
     db 207
     db 243
-    db 231
+unk_2FB66     db 231
     db 249
     db 244
     db 5
@@ -3450,7 +3244,7 @@ word_2F448     dw 50
     db 238
     db 23
     db 244
-    db 11
+unk_2FBBA     db 11
     db 250
     db 209
     db 5
@@ -3536,7 +3330,7 @@ word_2F448     dw 50
     db 238
     db 93
     db 244
-    db 46
+unk_2FC10     db 46
     db 250
     db 176
     db 5
@@ -3624,7 +3418,7 @@ word_2F448     dw 50
     db 238
     db 159
     db 244
-    db 79
+unk_2FC68     db 79
     db 250
     db 144
     db 5
@@ -3714,7 +3508,7 @@ word_2F448     dw 50
     db 239
     db 222
     db 244
-    db 111
+unk_2FCC2     db 111
     db 250
     db 114
     db 5
@@ -3806,7 +3600,7 @@ word_2F448     dw 50
     db 239
     db 27
     db 245
-    db 141
+unk_2FD1E     db 141
     db 250
     db 85
     db 5
@@ -3900,7 +3694,7 @@ word_2F448     dw 50
     db 240
     db 85
     db 245
-    db 170
+unk_2FD7C     db 170
     db 250
     db 57
     db 5
@@ -3998,7 +3792,7 @@ word_2F448     dw 50
     db 245
     db 198
     db 250
-sub_2F3DA endp
+sub_2F436 endp
 sub_2FDDE proc far
     var_1C = byte ptr -28
      s = byte ptr 0
@@ -4983,40 +4777,26 @@ loc_3049F:
     mov     bp, sp
     xor     ax, ax
     jmp     short loc_3048D
-    db 180
-    db 1
-    db 205
-    db 22
-    db 116
-    db 31
-    db 180
-    db 0
-    db 205
-    db 22
-    db 10
-    db 192
-    db 116
-    db 2
-    db 50
-    db 228
-    db 203
-    db 180
-    db 1
-    db 205
-    db 22
-    db 116
-    db 14
-    db 180
-    db 0
-    db 205
-    db 22
-    db 80
-    db 154
-    db 228
-    db 25
-    dw 11938
+    mov     ah, 1
+    int     16h             ; KEYBOARD - CHECK BUFFER, DO NOT CLEAR
+    jz      short loc_304DB
+    mov     ah, 0
+    int     16h             ; KEYBOARD - READ CHAR FROM BUFFER, WAIT IF EMPTY
+    or      al, al
+    jz      short locret_304C6
+    xor     ah, ah
+locret_304C6:
+    retf
+    mov     ah, 1
+    int     16h             ; KEYBOARD - CHECK BUFFER, DO NOT CLEAR
+    jz      short loc_304DB
+    mov     ah, 0
+    int     16h             ; KEYBOARD - READ CHAR FROM BUFFER, WAIT IF EMPTY
+    push    ax
+    call    sub_30404
     add     sp, 2
     retf
+loc_304DB:
     call    sub_305FC
     mov     bx, ax
     test    ax, 30h
@@ -5637,7 +5417,7 @@ sub_30A0D proc far
 sub_30A0D endp
 sub_30A1C proc far
 
-    call    dword ptr word_3FDFC
+    call    dword ptr off_3FDFC
     retf
 sub_30A1C endp
 sub_30A21 proc far
@@ -5671,12 +5451,12 @@ locret_30A43:
     push    bp
     mov     bp, sp
     mov     ax, [bp+6]
-    mov     word_3FDFC, ax
+    mov     off_3FDFC, ax
     mov     ax, [bp+8]
     mov     seg_3FDFE, ax
     pop     bp
     retf
-    mov     ax, word_3FDFC
+    mov     ax, off_3FDFC
     mov     dx, seg_3FDFE
     retf
 sub_30A35 endp
@@ -6325,8 +6105,8 @@ loc_30EE5:
     mov     ds, [bp+var_A]
     xor     si, si
     jmp     short loc_30E9E
-off_30F04     dd 782377282
-    dd 782386012
+off_30F04     dd sub_30B62
+    dd sub_32D7C
 loc_30F0C:
     add     sp, 8
 loc_30F0F:
@@ -7839,16 +7619,16 @@ sub_31A67 proc near
     xor     bh, bh
     shl     bx, 1
     jmp     cs:off_31A82[bx]
-off_31A82     dw 12419
-    dw 12419
-    dw 12406
-    dw 12420
-    dw 12435
-    dw 12450
-    dw 12481
-    dw 12512
-    dw 12556
-    dw 12419
+off_31A82     dw offset locret_31AA3
+    dw offset locret_31AA3
+    dw offset loc_31A96
+    dw offset loc_31AA4
+    dw offset loc_31AB3
+    dw offset loc_31AC2
+    dw offset loc_31AE1
+    dw offset loc_31B00
+    dw offset loc_31B2C
+    dw offset locret_31AA3
 loc_31A96:
     mov     cx, [si+0Eh]
     mov     ax, [si+2]
@@ -7970,16 +7750,16 @@ sub_31B5E proc near
     jmp     cs:off_31CF7[bx]
 loc_31B7F:
     jmp     cs:off_31B84[bx]
-off_31B84     dw 12419
-    dw 12419
-    dw 12664
-    dw 12695
-    dw 12731
-    dw 12767
-    dw 12823
-    dw 12879
-    dw 12945
-    dw 12419
+off_31B84     dw offset locret_31AA3
+    dw offset locret_31AA3
+    dw offset loc_31B98
+    dw offset loc_31BB7
+    dw offset loc_31BDB
+    dw offset loc_31BFF
+    dw offset loc_31C37
+    dw offset loc_31C6F
+    dw offset loc_31CB1
+    dw offset locret_31AA3
 loc_31B98:
     mov     ax, [si+2]
 loc_31B9B:
@@ -8150,16 +7930,16 @@ loc_31CE6:
     jge     short loc_31CAE
     mov     [di+3C0h], ax
     jmp     loc_31EB9
-off_31CF7     dw 12419
-    dw 12419
-    dw 13035
-    dw 13073
-    dw 13116
-    dw 13159
-    dw 13226
-    dw 13293
-    dw 13377
-    dw 12419
+off_31CF7     dw offset locret_31AA3
+    dw offset locret_31AA3
+    dw offset loc_31D0B
+    dw offset loc_31D31
+    dw offset loc_31D5C
+    dw offset loc_31D87
+    dw offset loc_31DCA
+    dw offset loc_31E0D
+    dw offset loc_31E61
+    dw offset locret_31AA3
 loc_31D0B:
     mov     cx, [si+0Eh]
     mov     ax, [si+2]
@@ -9142,11 +8922,11 @@ sub_324AA proc far
     shl     ax, 1
     mov     dx, ax
     add     dx, di
-    mov     bx, cs:word_34CE4
+    mov     bx, cs:off_34CE4
     cmp     bx, dx
     jnz     short loc_324EC
     sub     bx, ax
-    mov     cs:word_34CE4, bx
+    mov     cs:off_34CE4, bx
     push    ds
     push    si
     mov     ax, ss
@@ -9278,61 +9058,31 @@ sub_325AE proc far
     add     sp, 4
 locret_325D5:
     retf
-    db 184
-    db 64
-    db 0
-    db 142
-    db 192
-    db 160
-    db 131
-    db 76
-    db 38
-    db 162
-    db 16
-    db 0
-    db 180
-    db 0
-    db 160
-    db 130
-    db 76
-    db 205
-    db 16
-    db 184
-    db 64
-    db 0
-    db 142
-    db 192
-    db 160
-    db 131
-    db 76
-    db 38
-    db 162
-    db 16
-    db 0
-    db 36
-    db 48
-    db 60
-    db 48
-    db 117
-    db 11
-    db 51
-    db 192
-    db 80
-    db 154
-    db 136
-    db 72
-    dw 11938
-    db 131
-    db 196
-    db 2
-    db 180
-    db 11
-    db 187
-    db 0
-    db 0
-    db 205
-    db 16
-    db 203
+    mov     ax, 40h ; '@'
+    mov     es, ax
+    mov     al, byte_403F3
+    mov     es:10h, al
+    mov     ah, 0
+    mov     al, byte_403F2
+    int     10h             ; - VIDEO - SET VIDEO MODE
+    mov     ax, 40h ; '@'
+    mov     es, ax
+    mov     al, byte_403F3
+    mov     es:10h, al
+smart
+    and     al, 30h
+nosmart
+    cmp     al, 30h ; '0'
+    jnz     short loc_32606
+    xor     ax, ax
+    push    ax
+    call    sub_332A8
+    add     sp, 2
+loc_32606:
+    mov     ah, 0Bh
+    mov     bx, 0
+    int     10h             ; - VIDEO - 
+    retf
 sub_325AE endp
 sub_3260E proc far
      s = byte ptr 0
@@ -9484,10 +9234,10 @@ smart
 nosmart
     shl     bx, 1
     jmp     cs:off_326F2[bx]
-off_326F2     dw 15578
-    dw 15588
-    dw 15601
-    dw 15613
+off_326F2     dw offset loc_326FA
+    dw offset loc_32704
+    dw offset loc_32711
+    dw offset loc_3271D
 loc_326FA:
     mov     bx, ax
     shl     bx, 1
@@ -10058,9 +9808,9 @@ loc_32AA3:
     retf
     ; align 2
     db 0
-off_32ADC     dw 16728
-    dw 16755
-    dw 16830
+off_32ADC     dw offset loc_32B78
+    dw offset loc_32B93
+    dw offset loc_32BDE
 sub_32A72 endp
 sub_32AE2 proc far
     var_E = word ptr -14
@@ -11346,6 +11096,7 @@ loc_33325:
     jmp     short loc_33349
     ; align 2
     db 144
+loc_33344:
     push    bp
     mov     bp, sp
     push    si
@@ -11445,16 +11196,16 @@ sub_333C0 proc far
     mov     bx, [si+12h]
     shl     bx, 1
     jmp     cs:off_3340A[bx]
-off_3340A     dw 18942
-    dw 18942
-    dw 19000
-    dw 19036
-    dw 19073
-    dw 19110
-    dw 19155
-    dw 19200
-    dw 19244
-    dw 18972
+off_3340A     dw offset loc_3341E
+    dw offset loc_3341E
+    dw offset loc_33458
+    dw offset loc_3347C
+    dw offset loc_334A1
+    dw offset loc_334C6
+    dw offset loc_334F3
+    dw offset loc_33520
+    dw offset loc_3354C
+    dw offset loc_3343C
 loc_3341E:
     mov     cx, [si+0Eh]
     mov     al, [bp+var_E]
@@ -14450,8 +14201,7 @@ word_34954     dw 320
 word_34958     dw 320
 word_3495A     dw 0
 word_3495C     dw 320
-    ; align 4
-    db 0
+unk_3495E     db 0
     db 0
 word_34960     dw 40960
     ; align 8
@@ -15073,12 +14823,12 @@ sub_34C0C proc far
     mov     ax, 0Fh
     add     ax, [bp+arg_2]
     shl     ax, 1
-    mov     bx, cs:word_34CE4
+    mov     bx, cs:off_34CE4
     mov     [bp+var_4], bx
     add     ax, bx
     cmp     ax, 70D6h
     jnb     short loc_34CD6
-    mov     cs:word_34CE4, ax
+    mov     cs:off_34CE4, ax
     mov     word ptr cs:[bx], 0
     mov     ax, [bp+var_2]
     mov     cs:[bx+2], ax
@@ -15118,8 +14868,8 @@ loc_34CD6:
     call    far ptr sub_2EA2A
     ; align 2
     db 144
-word_34CE4     dw 25286
-    db 0
+off_34CE4     dw offset byte_34CE6
+byte_34CE6     db 0
     db 0
     db 0
     db 0
@@ -18749,7 +18499,7 @@ sub_35B14 proc far
 
     mov     ax, seg seg012
     push    ax
-    mov     ax, 5F3Eh
+    mov     ax, offset unk_3495E
     push    ax
     call    sub_35AF6
     add     sp, 4

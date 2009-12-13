@@ -4777,13 +4777,13 @@ loc_24812:
     jmp     short loc_24828
     ; align 2
     db 144
-off_2481A     dw 11224
-    dw 10406
-    dw 10460
-    dw 10650
-    dw 10944
-    dw 11270
-    dw 11248
+off_2481A     dw offset loc_24748
+    dw offset loc_24416
+    dw offset loc_2444C
+    dw offset loc_2450A
+    dw offset loc_24630
+    dw offset loc_24776
+    dw offset loc_24760
 loc_24828:
     call    sub_28EE4
     jmp     loc_24D5E
@@ -5311,13 +5311,13 @@ loc_24D04:
 loc_24D18:
     mov     byte_454B8, 0
     jmp     loc_242E7
-off_24D20     dw 11456
-    dw 11960
-    dw 12692
-    dw 12522
-    dw 12548
-    dw 12598
-    dw 10198
+off_24D20     dw offset loc_24830
+    dw offset loc_24A28
+    dw offset loc_24D04
+    dw offset loc_24C5A
+    dw offset loc_24C74
+    dw offset loc_24CA6
+    dw offset loc_24346
     jmp     loc_242E7
     ; align 2
     db 144

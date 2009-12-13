@@ -2342,81 +2342,81 @@ loc_1F746:
     jmp     loc_1F7E6
     ; align 2
     db 144
-off_1F750     dw 1048
-    dw 1089
-    dw 1200
-    dw 1156
-    dw 1128
-    dw 1120
-    dw 1194
-    dw 1240
-    dw 1264
-    dw 1284
-    dw 1318
-    dw 1594
-    dw 1108
-    dw 5702
-    dw 5702
-    dw 5702
-    dw 1634
-    dw 1662
-    dw 1860
-    dw 1860
-    dw 1834
-    dw 2008
-    dw 1814
-    dw 2198
-    dw 2182
-    dw 2470
-    dw 2508
-    dw 2640
-    dw 3230
-    dw 3460
-    dw 3720
-    dw 3712
-    dw 4416
-    dw 4442
-    dw 4754
-    dw 4112
-    dw 5702
-    dw 5702
-    dw 5702
-    dw 5702
-    dw 5702
-    dw 5702
-    dw 5702
-    dw 5702
-    dw 5702
-    dw 5702
-    dw 5702
-    dw 5702
-    dw 5702
-    dw 5702
-    dw 5702
-    dw 5702
-    dw 5702
-    dw 5702
-    dw 5702
-    dw 5702
-    dw 5702
-    dw 5702
-    dw 5702
-    dw 5702
-    dw 5702
-    dw 5702
-    dw 5702
-    dw 5702
-    dw 5702
-    dw 4974
-    dw 5068
-    dw 5170
-    dw 5262
-    dw 5356
-    dw 5446
-    dw 5702
-    dw 5702
-    dw 5702
-    dw 5702
+off_1F750     dw offset loc_1E5B8
+    dw offset loc_1E5E1
+    dw offset loc_1E650
+    dw offset loc_1E624
+    dw offset loc_1E608
+    dw offset loc_1E600
+    dw offset loc_1E64A
+    dw offset loc_1E678
+    dw offset loc_1E690
+    dw offset loc_1E6A4
+    dw offset loc_1E6C6
+    dw offset loc_1E7DA
+    dw offset loc_1E5F4
+    dw offset loc_1F7E6
+    dw offset loc_1F7E6
+    dw offset loc_1F7E6
+    dw offset loc_1E802
+    dw offset loc_1E81E
+    dw offset loc_1E8E4
+    dw offset loc_1E8E4
+    dw offset loc_1E8CA
+    dw offset loc_1E978
+    dw offset loc_1E8B6
+    dw offset loc_1EA36
+    dw offset loc_1EA26
+    dw offset loc_1EB46
+    dw offset loc_1EB6C
+    dw offset loc_1EBF0
+    dw offset loc_1EE3E
+    dw offset loc_1EF24
+    dw offset loc_1F028
+    dw offset loc_1F020
+    dw offset loc_1F2E0
+    dw offset loc_1F2FA
+    dw offset loc_1F432
+    dw offset loc_1F1B0
+    dw offset loc_1F7E6
+    dw offset loc_1F7E6
+    dw offset loc_1F7E6
+    dw offset loc_1F7E6
+    dw offset loc_1F7E6
+    dw offset loc_1F7E6
+    dw offset loc_1F7E6
+    dw offset loc_1F7E6
+    dw offset loc_1F7E6
+    dw offset loc_1F7E6
+    dw offset loc_1F7E6
+    dw offset loc_1F7E6
+    dw offset loc_1F7E6
+    dw offset loc_1F7E6
+    dw offset loc_1F7E6
+    dw offset loc_1F7E6
+    dw offset loc_1F7E6
+    dw offset loc_1F7E6
+    dw offset loc_1F7E6
+    dw offset loc_1F7E6
+    dw offset loc_1F7E6
+    dw offset loc_1F7E6
+    dw offset loc_1F7E6
+    dw offset loc_1F7E6
+    dw offset loc_1F7E6
+    dw offset loc_1F7E6
+    dw offset loc_1F7E6
+    dw offset loc_1F7E6
+    dw offset loc_1F7E6
+    dw offset loc_1F50E
+    dw offset loc_1F56C
+    dw offset loc_1F5D2
+    dw offset loc_1F62E
+    dw offset loc_1F68C
+    dw offset loc_1F6E6
+    dw offset loc_1F7E6
+    dw offset loc_1F7E6
+    dw offset loc_1F7E6
+    dw offset loc_1F7E6
 loc_1F7E6:
     cmp     [bp+var_34], 7
     jnb     short loc_1F7EF
@@ -2483,18 +2483,18 @@ loc_1F866:
     mov     [bp+var_2C], ax
     mov     ax, [bp+var_1E]
     jmp     short loc_1F848
-off_1F87E     dw 5770
-    dw 5778
-    dw 5806
-    dw 5830
-    dw 5770
-    dw 5778
-    dw 5806
-    dw 5830
-    dw 5770
-    dw 5778
-    dw 5806
-    dw 5830
+off_1F87E     dw offset loc_1F82A
+    dw offset loc_1F832
+    dw offset loc_1F84E
+    dw offset loc_1F866
+    dw offset loc_1F82A
+    dw offset loc_1F832
+    dw offset loc_1F84E
+    dw offset loc_1F866
+    dw offset loc_1F82A
+    dw offset loc_1F832
+    dw offset loc_1F84E
+    dw offset loc_1F866
 loc_1F896:
     mov     al, [bp+var_34]
     sub     ah, ah
@@ -5478,18 +5478,18 @@ loc_21474:
     jmp     short loc_21466
     ; align 2
     db 144
-off_2147C     dw 12916
-    dw 12958
-    dw 12982
-    dw 12942
-    dw 12928
-    dw 12938
-    dw 12994
-    dw 13004
-    dw 13012
-    dw 12954
-    dw 12974
-    dw 12970
+off_2147C     dw offset loc_21414
+    dw offset loc_2143E
+    dw offset loc_21456
+    dw offset loc_2142E
+    dw offset loc_21420
+    dw offset loc_2142A
+    dw offset loc_21462
+    dw offset loc_2146C
+    dw offset loc_21474
+    dw offset loc_2143A
+    dw offset loc_2144E
+    dw offset loc_2144A
     jmp     loc_209E9
     ; align 2
     db 144

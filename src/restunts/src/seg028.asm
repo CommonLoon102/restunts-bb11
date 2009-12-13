@@ -67,7 +67,7 @@ seg028 segment byte public 'CODE' use16
     public sub_3968A
     public sub_39700
     public sub_39966
-    dd 997701662
+    dd 3B77B81Eh
     mov     ds, ax
     mov     ax, word ptr dword_4060A
     or      ax, word ptr dword_4060A+2
@@ -539,24 +539,24 @@ loc_38A10:
     jmp     short loc_38A64
     ; align 2
     db 144
-off_38A1E     dw 348
-    dw 532
-    dw 598
-    dw 626
-    dw 774
-    dw 802
-    dw 818
-    dw 842
-    dw 854
-    dw 866
-    dw 912
-    dw 968
-    dw 992
-    dw 492
-    dw 1079
-    dw 442
-    dw 980
-    dw 478
+off_38A1E     dw offset loc_3878C
+    dw offset loc_38844
+    dw offset loc_38886
+    dw offset loc_388A2
+    dw offset loc_38936
+    dw offset loc_38952
+    dw offset loc_38962
+    dw offset loc_3897A
+    dw offset loc_38986
+    dw offset loc_38992
+    dw offset loc_389C0
+    dw offset loc_389F8
+    dw offset loc_38A10
+    dw offset loc_3881C
+    dw offset loc_38A67
+    dw offset loc_387EA
+    dw offset loc_38A04
+    dw offset loc_3880E
     jmp     short loc_38A67
 loc_38A44:
     cmp     byte_42A02, 80h ; '€'
@@ -1111,22 +1111,22 @@ loc_38E74:
     jmp     short loc_38E39
     ; align 2
     db 144
-off_38E7E     dw 2050
-    dw 2116
-    dw 2066
-    dw 2116
-    dw 2116
-    dw 2116
-    dw 2096
-    dw 2116
-    dw 2106
-    dw 2116
-    dw 2106
-    dw 2116
-    dw 2116
-    dw 2076
-    dw 2116
-    dw 2086
+off_38E7E     dw offset loc_38E32
+    dw offset loc_38E74
+    dw offset loc_38E42
+    dw offset loc_38E74
+    dw offset loc_38E74
+    dw offset loc_38E74
+    dw offset loc_38E60
+    dw offset loc_38E74
+    dw offset loc_38E6A
+    dw offset loc_38E74
+    dw offset loc_38E6A
+    dw offset loc_38E74
+    dw offset loc_38E74
+    dw offset loc_38E4C
+    dw offset loc_38E74
+    dw offset loc_38E56
 loc_38E9E:
     mov     ax, word ptr [bp+var_4]
     or      ax, word ptr [bp+var_4+2]
@@ -1903,24 +1903,24 @@ loc_3958A:
     jmp     short loc_395CC
     ; align 2
     db 144
-off_395A8     dw 3996
-    dw 3996
-    dw 3996
-    dw 3876
-    dw 3876
-    dw 3876
-    dw 3894
-    dw 3876
-    dw 3876
-    dw 3876
-    dw 3996
-    dw 3876
-    dw 3930
-    dw 3834
-    dw 3816
-    dw 3754
-    dw 3876
-    dw 3876
+off_395A8     dw offset loc_395CC
+    dw offset loc_395CC
+    dw offset loc_395CC
+    dw offset loc_39554
+    dw offset loc_39554
+    dw offset loc_39554
+    dw offset loc_39566
+    dw offset loc_39554
+    dw offset loc_39554
+    dw offset loc_39554
+    dw offset loc_395CC
+    dw offset loc_39554
+    dw offset loc_3958A
+    dw offset loc_3952A
+    dw offset loc_39518
+    dw offset loc_394DA
+    dw offset loc_39554
+    dw offset loc_39554
 loc_395CC:
     cmp     [bp+var_8], 0D9h ; 'Ù'
     jnb     short loc_39629

@@ -285,7 +285,7 @@ loc_3ABB7:
     call    sub_3B12A
     add     sp, 4
     mov     [bp+var_7E], ax
-    mov     ax, 54A4h
+    mov     ax, offset aMga ; "!MGA"
     push    ax
     push    [bp+var_2]
     push    [bp+var_4]

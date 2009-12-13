@@ -5078,14 +5078,14 @@ loc_1313C:
 loc_13144:
     mov     [bp+var_4], 0
     jmp     short loc_1315A
-off_1314A     dw 12612
-    dw 12366
-    dw 12498
-    dw 12506
-    dw 12514
-    dw 12596
-    dw 12604
-    dw 12612
+off_1314A     dw offset loc_13144
+    dw offset loc_1304E
+    dw offset loc_130D2
+    dw offset loc_130DA
+    dw offset loc_130E2
+    dw offset loc_13134
+    dw offset loc_1313C
+    dw offset loc_13144
 loc_1315A:
     cmp     [bp+var_4], 0
     jz      short loc_13163

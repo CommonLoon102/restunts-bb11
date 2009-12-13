@@ -462,7 +462,7 @@ dseg segment byte public 'DATA' use16
     extrn byte_3FC10:byte
     extrn byte_3FC12:byte
     extrn byte_3FC14:byte
-    extrn word_3FDFC:word
+    extrn off_3FDFC:word
     extrn seg_3FDFE:word
     extrn byte_3FE00:byte
     extrn aSFileError:byte
@@ -478,6 +478,7 @@ dseg segment byte public 'DATA' use16
     extrn word_3FF86:word
     extrn word_3FF88:word
     extrn word_3FF8A:word
+    extrn asc_40088:byte
     extrn word_40310:word
     extrn word_40312:word
     extrn word_40314:word
@@ -562,6 +563,8 @@ dseg segment byte public 'DATA' use16
     extrn byte_40B12:byte
     extrn byte_40B13:byte
     extrn byte_40B86:byte
+    extrn aUnflip:byte
+    extrn aMga:byte
     extrn dword_40C1E:dword
     extrn dword_40C22:dword
     extrn dword_40C26:dword

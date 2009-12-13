@@ -2350,24 +2350,24 @@ loc_3839A:
     jmp     short loc_3834E
     ; align 2
     db 144
-off_383A0     dw 4810
-    dw 4810
-    dw 4810
-    dw 4748
-    dw 4748
-    dw 4748
-    dw 4754
-    dw 4748
-    dw 4748
-    dw 4748
-    dw 4810
-    dw 4748
-    dw 4754
-    dw 4618
-    dw 4760
-    dw 4760
-    dw 4748
-    dw 4748
+off_383A0     dw offset loc_3839A
+    dw offset loc_3839A
+    dw offset loc_3839A
+    dw offset loc_3835C
+    dw offset loc_3835C
+    dw offset loc_3835C
+    dw offset loc_38362
+    dw offset loc_3835C
+    dw offset loc_3835C
+    dw offset loc_3835C
+    dw offset loc_3839A
+    dw offset loc_3835C
+    dw offset loc_38362
+    dw offset loc_382DA
+    dw offset loc_38368
+    dw offset loc_38368
+    dw offset loc_3835C
+    dw offset loc_3835C
     jmp     short loc_3834E
 loc_383C6:
     inc     [bp+var_2A]

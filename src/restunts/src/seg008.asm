@@ -4551,15 +4551,15 @@ loc_29A44:
     push    word ptr [bp+arg_2]
     call    sub_39E14
     jmp     short loc_299EC
-off_29A4E     dw 9524
-    dw 9544
-    dw 9570
-    dw 9580
-    dw 9590
-    dw 9600
-    dw 9610
-    dw 9560
-    dw 9620
+off_29A4E     dw offset loc_299E4
+    dw offset loc_299F8
+    dw offset loc_29A12
+    dw offset loc_29A1C
+    dw offset loc_29A26
+    dw offset loc_29A30
+    dw offset loc_29A3A
+    dw offset loc_29A08
+    dw offset loc_29A44
 loc_29A60:
     mov     ax, [bp+var_4]
     or      ax, [bp+var_2]

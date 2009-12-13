@@ -2486,14 +2486,14 @@ loc_26338:
 loc_2635D:
     mov     di, 81E2h
     jmp     short loc_26372
-off_26362     dw 5444
-    dw 5650
-    dw 5587
-    dw 5450
-    dw 5629
-    dw 5492
-    dw 5518
-    dw 5544
+off_26362     dw offset loc_262A4
+    dw offset loc_26372
+    dw offset loc_26333
+    dw offset loc_262AA
+    dw offset loc_2635D
+    dw offset loc_262D4
+    dw offset loc_262EE
+    dw offset loc_26308
 loc_26372:
     mov     ax, di
     pop     si

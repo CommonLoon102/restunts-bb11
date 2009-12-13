@@ -18,7 +18,58 @@ seg012 segment byte public 'CODE' use16
     extrn word_2F35A:word
     extrn sub_2F377:proc
     extrn sub_2F3DA:proc
+    extrn sub_2F424:proc
+    extrn sub_2F436:proc
     extrn word_2F448:word
+    extrn off_2F4AC:word
+    extrn word_2F4AE:word
+    extrn word_2F4B2:word
+    extrn word_2F4B4:word
+    extrn word_2F4B8:word
+    extrn word_2F4C0:word
+    extrn word_2F4CA:word
+    extrn word_2F4D6:word
+    extrn word_2F4E4:word
+    extrn word_2F4F4:word
+    extrn word_2F506:word
+    extrn word_2F51A:word
+    extrn word_2F530:word
+    extrn word_2F548:word
+    extrn word_2F562:word
+    extrn word_2F57E:word
+    extrn word_2F59C:word
+    extrn word_2F5BC:word
+    extrn word_2F5DE:word
+    extrn word_2F602:word
+    extrn word_2F628:word
+    extrn unk_2F650:byte
+    extrn unk_2F67A:byte
+    extrn unk_2F6A6:byte
+    extrn unk_2F6D4:byte
+    extrn unk_2F704:byte
+    extrn unk_2F736:byte
+    extrn unk_2F76A:byte
+    extrn unk_2F7A0:byte
+    extrn unk_2F7D8:byte
+    extrn unk_2F812:byte
+    extrn unk_2F84E:byte
+    extrn unk_2F88C:byte
+    extrn unk_2F8CC:byte
+    extrn unk_2F90E:byte
+    extrn unk_2F952:byte
+    extrn unk_2F998:byte
+    extrn unk_2F9E0:byte
+    extrn unk_2FA2A:byte
+    extrn unk_2FA76:byte
+    extrn unk_2FAC4:byte
+    extrn unk_2FB14:byte
+    extrn unk_2FB66:byte
+    extrn unk_2FBBA:byte
+    extrn unk_2FC10:byte
+    extrn unk_2FC68:byte
+    extrn unk_2FCC2:byte
+    extrn unk_2FD1E:byte
+    extrn unk_2FD7C:byte
     extrn sub_2FDDE:proc
     extrn sub_2FE1C:proc
     extrn sub_2FE59:proc
@@ -221,12 +272,14 @@ seg012 segment byte public 'CODE' use16
     extrn word_34958:word
     extrn word_3495A:word
     extrn word_3495C:word
+    extrn unk_3495E:byte
     extrn word_34960:word
     extrn word_34968:word
     extrn sub_34B0C:proc
     extrn sub_34B7C:proc
     extrn sub_34C0C:proc
-    extrn word_34CE4:word
+    extrn off_34CE4:word
+    extrn byte_34CE6:byte
     extrn sub_35AF6:proc
     extrn sub_35B14:proc
     extrn sub_35B26:proc

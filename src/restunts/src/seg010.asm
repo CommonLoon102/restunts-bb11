@@ -1801,28 +1801,28 @@ loc_2D890:
     jmp     short loc_2D8E3
     ; align 2
     db 144
-off_2D896     dw 3054
-    dw 2822
-    dw 3060
-    dw 3060
-    dw 3060
-    dw 3072
-    dw 2822
-    dw 3072
-    dw 3072
-    dw 3072
-    dw 3072
-    dw 2798
-    dw 2842
-    dw 2848
-    dw 3072
-    dw 3072
-    dw 3044
-    dw 3072
-    dw 2818
-    dw 3072
-    dw 3072
-    dw 3038
+off_2D896     dw offset loc_2D83E
+    dw offset loc_2D756
+    dw offset loc_2D844
+    dw offset loc_2D844
+    dw offset loc_2D844
+    dw offset loc_2D850
+    dw offset loc_2D756
+    dw offset loc_2D850
+    dw offset loc_2D850
+    dw offset loc_2D850
+    dw offset loc_2D850
+    dw offset loc_2D73E
+    dw offset loc_2D76A
+    dw offset loc_2D770
+    dw offset loc_2D850
+    dw offset loc_2D850
+    dw offset loc_2D834
+    dw offset loc_2D850
+    dw offset loc_2D752
+    dw offset loc_2D850
+    dw offset loc_2D850
+    dw offset loc_2D82E
 loc_2D8C2:
     cmp     word_428B0, 0
     jz      short loc_2D8DC
@@ -3724,12 +3724,12 @@ loc_2E59B:
     retf
     ; align 2
     db 144
-off_2E59E     dw 6629
-    dw 6614
-    dw 6606
-    dw 6614
-    dw 6614
-    dw 6614
+off_2E59E     dw offset loc_2E635
+    dw offset loc_2E626
+    dw offset loc_2E61E
+    dw offset loc_2E626
+    dw offset loc_2E626
+    dw offset loc_2E626
 _abs endp
 _raise proc far
     var_4 = dword ptr -4

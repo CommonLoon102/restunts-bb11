@@ -217,7 +217,7 @@ static PrintAsmHeader(f, codestart, codeend) {
 	
 	segtype = GetSegmentAttr(codestart, SEGATTR_TYPE);
 	if (segtype == SEG_BSS)
-		fprintf(f, ".stack\n");
+		fprintf(f, ".stack %i\n", SegEnd(codestart) - SegStart(codestart));
 	
 	fprintf(f, "    include structs.inc\n");
 	
@@ -321,17 +321,23 @@ static PrintBody(f, funcstart, funcend, skipfirstlabel) {
 			} else
 			if (isDwrd(bodyflags)) {
 				for (i = 0; i < ItemSize(funcbody) / 4; i++) {
-					fprintf(f, "    dd %i\n", Dword(funcbody + i * 4));
+					if (hasValue(bodyflags))
+						fprintf(f, "    dd %i\n", Dword(funcbody + i * 4)); else
+						fprintf(f, "    dd ?\n");
 				}
 			} else
 			if (isWord(bodyflags)) {
 				for (i = 0; i < ItemSize(funcbody) / 2; i++) {
-					fprintf(f, "    dw %i\n", Word(funcbody + i * 2));
+					if (hasValue(bodyflags))
+						fprintf(f, "    dw %i\n", Word(funcbody + i * 2)); else
+						fprintf(f, "    dw ?\n");
 				}
 			} else
 			if (isByte(bodyflags) || isUnknown(bodyflags) || isASCII(bodyflags)) {
 				for (i = 0; i < ItemSize(funcbody); i++) {
-					fprintf(f, "    db %i\n", Byte(funcbody + i));
+					if (hasValue(bodyflags))
+						fprintf(f, "    db %i\n", Byte(funcbody + i)); else
+						fprintf(f, "    db ?\n");
 				}
 			} else {
 				Message("TODO: unhandled data size\n");
