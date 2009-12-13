@@ -1,4 +1,6 @@
 .model large
+nosmart
+    include structs.inc
     include seg000.inc
     include seg001.inc
     include seg002.inc
@@ -56,6 +58,7 @@ seg028 segment byte public 'CODE' use16
     public off_38E7E
     public sub_39050
     public sub_39088
+    public loc_390C8
     public byte_3930E
     public byte_39310
     public sub_3945A
@@ -64,7 +67,7 @@ seg028 segment byte public 'CODE' use16
     public sub_3968A
     public sub_39700
     public sub_39966
-    dd 3B77B81Eh
+    dd 997701662
     mov     ds, ax
     mov     ax, word ptr dword_4060A
     or      ax, word ptr dword_4060A+2
@@ -242,7 +245,9 @@ loc_3878C:
     cmp     byte ptr [bx+4], 0
     jz      short loc_387B2
     mov     si, [bx+4]
+smart
     and     si, 0FFh
+nosmart
     shl     si, 1
     shl     si, 1
     mov     ax, [bx+si+5]
@@ -307,7 +312,9 @@ loc_3881C:
     mov     ax, [bx]
     mov     dx, [bx+2]
     mov     si, [bx+4]
+smart
     and     si, 0FFh
+nosmart
     shl     si, 1
     shl     si, 1
     mov     [bx+si+5], ax
@@ -382,7 +389,9 @@ loc_388C5:
 loc_388D8:
     mov     bx, [bp+var_4]
     mov     al, byte ptr [bp+arg_0]
+smart
     and     al, 0Fh
+nosmart
     inc     al
 loc_388E2:
     mov     [bx+47h], al
@@ -466,13 +475,17 @@ loc_38992:
     mov     ax, [bx]
     mov     dx, [bx+2]
     mov     si, [bx+32h]
+smart
     and     si, 0FFh
+nosmart
     shl     si, 1
     shl     si, 1
     mov     [bx+si+33h], ax
     mov     [bx+si+35h], dx
     mov     si, [bx+32h]
+smart
     and     si, 0FFh
+nosmart
     mov     al, [bp+var_2]
     dec     al
     mov     [bx+si+43h], al
@@ -526,24 +539,24 @@ loc_38A10:
     jmp     short loc_38A64
     ; align 2
     db 144
-off_38A1E     dw offset loc_3878C
-    dw offset loc_38844
-    dw offset loc_38886
-    dw offset loc_388A2
-    dw offset loc_38936
-    dw offset loc_38952
-    dw offset loc_38962
-    dw offset loc_3897A
-    dw offset loc_38986
-    dw offset loc_38992
-    dw offset loc_389C0
-    dw offset loc_389F8
-    dw offset loc_38A10
-    dw offset loc_3881C
-    dw offset loc_38A67
-    dw offset loc_387EA
-    dw offset loc_38A04
-    dw offset loc_3880E
+off_38A1E     dw 348
+    dw 532
+    dw 598
+    dw 626
+    dw 774
+    dw 802
+    dw 818
+    dw 842
+    dw 854
+    dw 866
+    dw 912
+    dw 968
+    dw 992
+    dw 492
+    dw 1079
+    dw 442
+    dw 980
+    dw 478
     jmp     short loc_38A67
 loc_38A44:
     cmp     byte_42A02, 80h ; '€'
@@ -552,7 +565,9 @@ loc_38A44:
     mov     al, [bx+22h]
     mov     byte_42A03, al
 loc_38A54:
+smart
     and     byte_42A02, 7Fh
+nosmart
     push    [bp+arg_0]
     mov     ax, 728Eh
     push    ax
@@ -623,7 +638,9 @@ sub_38AC4 proc far
     mov     ax, seg dseg
     mov     ds, ax
     mov     si, [bp+arg_0]
+smart
     and     si, 0FFh
+nosmart
     shl     si, 1
     shl     si, 1
     mov     bx, [bp+arg_2]
@@ -774,7 +791,9 @@ sub_38BEA proc far
     mov     [bp+var_2], ax
     test    [bp+arg_2], 100h
     jz      short loc_38C0D
+smart
     or      byte ptr [bp+arg_2], 80h
+nosmart
 loc_38C0D:
     mov     al, byte ptr [bp+arg_2]
     cbw
@@ -927,7 +946,9 @@ loc_38D30:
     imul    [bp+arg_0]
     mov     bx, ax
     mov     al, byte ptr [bp+arg_0]
+smart
     and     al, 0Fh
+nosmart
     inc     al
     mov     [bx-7DBDh], al
 loc_38D43:
@@ -1090,22 +1111,22 @@ loc_38E74:
     jmp     short loc_38E39
     ; align 2
     db 144
-off_38E7E     dw offset loc_38E32
-    dw offset loc_38E74
-    dw offset loc_38E42
-    dw offset loc_38E74
-    dw offset loc_38E74
-    dw offset loc_38E74
-    dw offset loc_38E60
-    dw offset loc_38E74
-    dw offset loc_38E6A
-    dw offset loc_38E74
-    dw offset loc_38E6A
-    dw offset loc_38E74
-    dw offset loc_38E74
-    dw offset loc_38E4C
-    dw offset loc_38E74
-    dw offset loc_38E56
+off_38E7E     dw 2050
+    dw 2116
+    dw 2066
+    dw 2116
+    dw 2116
+    dw 2116
+    dw 2096
+    dw 2116
+    dw 2106
+    dw 2116
+    dw 2106
+    dw 2116
+    dw 2116
+    dw 2076
+    dw 2116
+    dw 2086
 loc_38E9E:
     mov     ax, word ptr [bp+var_4]
     or      ax, word ptr [bp+var_4+2]
@@ -1579,8 +1600,9 @@ loc_392CB:
     call    dword ptr [bp-16h]
     add     sp, 4
     jmp     loc_3918D
-byte_3930E     db 83h, 7Eh
-byte_39310     db 0F0h
+byte_3930E     db 131
+    db 126
+byte_39310     db 240
     push    word ptr [di+3]
     jmp     loc_390F7
 loc_39317:
@@ -1625,7 +1647,8 @@ loc_39363:
     mov     bx, [bp+0Ah]
     inc     byte ptr [bx+15h]
     jmp     loc_39117
-    db 2 dup(90h)
+    db 144
+    db 144
 loc_39386:
     mov     bx, cx
     mov     al, [bx+2]
@@ -1757,7 +1780,9 @@ loc_39480:
     les     bx, [bp+arg_2]
     mov     al, es:[bx]
     sub     ah, ah
+smart
     and     ax, 7Fh
+nosmart
     sub     dx, dx
     mov     cx, [si]
     mov     bx, [si+2]
@@ -1878,24 +1903,24 @@ loc_3958A:
     jmp     short loc_395CC
     ; align 2
     db 144
-off_395A8     dw offset loc_395CC
-    dw offset loc_395CC
-    dw offset loc_395CC
-    dw offset loc_39554
-    dw offset loc_39554
-    dw offset loc_39554
-    dw offset loc_39566
-    dw offset loc_39554
-    dw offset loc_39554
-    dw offset loc_39554
-    dw offset loc_395CC
-    dw offset loc_39554
-    dw offset loc_3958A
-    dw offset loc_3952A
-    dw offset loc_39518
-    dw offset loc_394DA
-    dw offset loc_39554
-    dw offset loc_39554
+off_395A8     dw 3996
+    dw 3996
+    dw 3996
+    dw 3876
+    dw 3876
+    dw 3876
+    dw 3894
+    dw 3876
+    dw 3876
+    dw 3876
+    dw 3996
+    dw 3876
+    dw 3930
+    dw 3834
+    dw 3816
+    dw 3754
+    dw 3876
+    dw 3876
 loc_395CC:
     cmp     [bp+var_8], 0D9h ; 'Ù'
     jnb     short loc_39629
@@ -1916,7 +1941,9 @@ loc_395F4:
     les     bx, [bp+arg_2]
     mov     al, es:[bx]
     sub     ah, ah
+smart
     and     ax, 7Fh
+nosmart
     sub     dx, dx
     mov     cx, [si+6]
     mov     bx, [si+8]
@@ -2167,7 +2194,8 @@ loc_397DE:
     mov     bx, si
     mov     byte ptr [bx+26h], 1
     jmp     short loc_39853
-    db 2 dup(90h)
+    db 144
+    db 144
 loc_3981E:
     mov     bx, [bp+var_8]
     mov     word ptr [bx+1Ch], 0
@@ -2217,7 +2245,9 @@ loc_39880:
     inc     byte ptr [bx+29h]
     sub     ah, ah
     mov     si, ax
+smart
     and     si, 7
+nosmart
     mov     bx, word ptr [bp+var_6]
     mov     al, es:[bx+si+3Bh]
     mov     bx, [bp+var_8]

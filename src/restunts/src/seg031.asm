@@ -1,4 +1,6 @@
 .model large
+nosmart
+    include structs.inc
     include seg000.inc
     include seg001.inc
     include seg002.inc
@@ -589,7 +591,9 @@ loc_3A29A:
     dec     di
     or      ax, ax
     jnz     short loc_3A290
+smart
     and     di, 0FFh
+nosmart
     jmp     short loc_3A2B2
     ; align 2
     db 144

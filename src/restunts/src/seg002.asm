@@ -1,4 +1,6 @@
 .model large
+nosmart
+    include structs.inc
     include seg000.inc
     include seg001.inc
     include seg003.inc
@@ -229,7 +231,17 @@ sub_19EE8 proc far
     int     21h             ; DOS - SET INTERRUPT VECTOR
     pop     ds
     retf
-    db 1Eh, 0C5h, 16h, 0BCh, 6, 0B4h, 25h, 0B0h, 0, 0CDh, 21h
+    db 30
+    db 197
+    db 22
+    db 188
+    db 6
+    db 180
+    db 37
+    db 176
+    db 0
+    db 205
+    db 33
 sub_19EE8 endp
 seg002 ends
 end

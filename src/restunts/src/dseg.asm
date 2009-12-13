@@ -1,4 +1,6 @@
 .model large
+nosmart
+    include structs.inc
     include seg000.inc
     include seg001.inc
     include seg002.inc
@@ -317,7 +319,6 @@ dseg segment byte public 'DATA' use16
     public aExp1
     public aExp2
     public aExp3
-    public unk_3D19B
     public word_3E590
     public byte_3E70C
     public byte_3E70D
@@ -615,377 +616,1019 @@ dseg segment byte public 'DATA' use16
     public word_40D3A
     public word_40D3C
     public word_40D3E
+    public word_40D40
+    public word_40D42
+    public word_40D44
+    public byte_40D6A
+    public word_40D7C
+    public word_40D7E
+    public dword_40D80
+    public word_40D84
+    public word_40D86
+    public word_40DB0
+    public word_40DB2
+    public word_40DB4
+    public word_40DB6
+    public word_40DB8
+    public word_40DBA
+    public dword_40DBC
+    public dword_40DC0
+    public word_40DC4
+    public word_40DC6
+    public word_40DC8
+    public word_40DCA
+    public word_40DCC
+    public word_40DCE
+    public word_40DD0
+    public word_40DD2
+    public word_40DD4
+    public word_40DD6
+    public word_40DD8
+    public word_40DDA
+    public dword_40DDC
+    public word_40DE0
+    public word_40DE2
+    public dword_40DEC
+    public dword_40DFC
+    public word_40E0E
+    public word_40E10
+    public byte_40E6C
+    public byte_40E6D
+    public word_40EB0
+    public word_40EB2
+    public word_40EB4
+    public word_40EB6
+    public dword_40ECA
+    public word_40ECE
+    public word_40ED0
+    public word_40ED2
+    public word_40ED4
+    public word_411F6
+    public unk_41690
+    public word_41850
+    public word_41852
+    public word_41854
+    public word_41856
+    public word_41858
+    public word_4185A
+    public word_4185C
+    public word_4185E
+    public word_4186A
+    public word_4186C
+    public byte_4186E
+    public dword_41870
+    public word_41874
+    public word_41876
+    public word_41878
+    public byte_4187A
+    public word_4187C
+    public dword_4187E
+    public byte_41882
+    public word_41884
+    public word_41886
+    public word_41888
+    public word_4188A
+    public word_4188C
+    public word_4188E
+    public word_41890
+    public word_41892
+    public word_42240
+    public word_42242
+    public word_42244
+    public byte_42246
+    public word_42248
+    public word_4224A
+    public word_4224C
+    public word_4224E
+    public word_42250
+    public word_42252
+    public word_42254
+    public word_42256
+    public word_42540
+    public word_42542
+    public dword_4282C
+    public dword_42830
+    public dword_42834
+    public dword_42838
+    public word_4283C
+    public word_4283E
+    public word_42898
+    public off_4289A
+    public word_4289C
+    public word_4289E
+    public word_428A0
+    public word_428A2
+    public word_428A4
+    public word_428A6
+    public word_428A8
+    public word_428AA
+    public word_428AC
+    public word_428AE
+    public word_428B0
+    public word_428B2
+    public word_428B4
+    public off_428B6
+    public word_428B8
+    public word_428BA
+    public word_428BC
+    public word_429F2
+    public word_429F4
+    public byte_42A02
+    public byte_42A03
+    public word_42A04
+    public word_42A06
+    public byte_42A08
+    public word_42A0A
+    public word_42A0C
+    public byte_42A0E
+    public word_42A10
+    public word_42A12
+    public word_42A16
+    public word_42A18
+    public word_42A1A
+    public word_42A1C
+    public off_42A1E
+    public word_42A20
+    public word_42A22
+    public dword_42A30
+    public word_42A34
+    public word_42A36
+    public byte_42A38
+    public word_42A3A
+    public word_42A3C
+    public word_42A3E
+    public word_42A40
+    public word_42A42
+    public word_42A44
+    public word_42A46
+    public word_42A48
+    public word_42A4A
+    public byte_42A4C
+    public byte_42A4D
+    public word_42A54
+    public word_42A56
+    public word_42A58
+    public word_42A5A
+    public word_42A5C
+    public word_42A5E
+    public byte_42A60
+    public byte_42A61
+    public word_42CBA
+    public word_42CBE
+    public word_42CC0
+    public word_42CC4
+    public word_42D02
+    public word_42D04
+    public word_42D08
+    public word_42D0A
+    public word_42D0E
+    public word_42D20
+    public dword_42D22
+    public byte_42D26
+    public word_42D28
+    public byte_42D2A
+    public word_42D2C
+    public byte_42D2E
+    public byte_42DAE
+    public byte_42DAF
+    public byte_42DB0
+    public word_43748
+    public word_4374A
+    public byte_4386C
+    public word_43892
+    public word_43894
+    public word_438A8
+    public word_438AA
+    public dword_438E8
+    public word_43924
+    public word_43928
+    public word_4392A
+    public byte_4392C
+    public dword_4392E
+    public word_43932
+    public word_43934
+    public word_43936
+    public word_43938
+    public word_4393A
+    public byte_4393C
+    public byte_4393D
+    public word_4393E
+    public word_43940
+    public dword_43942
+    public word_4394A
+    public word_4394C
+    public word_4394E
+    public byte_43950
+    public word_43964
+    public byte_43966
+    public word_4408C
+    public word_4428E
+    public byte_44290
+    public byte_442E4
+    public word_442E6
+    public word_442E8
+    public byte_4432A
+    public word_4432C
+    public word_4432E
+    public byte_44346
+    public word_44348
+    public word_4434A
+    public word_4434C
+    public word_4434E
+    public word_44350
+    public word_44352
+    public word_44354
+    public word_44356
+    public word_44358
+    public word_4435A
+    public word_4435C
+    public word_4435E
+    public word_44360
+    public word_44362
+    public dword_44364
+    public word_44368
+    public word_4436A
+    public word_44382
+    public word_443F2
+    public word_443F4
+    public dword_443F6
+    public word_445B4
+    public word_445B6
+    public word_445B8
+    public word_445CC
+    public word_445CE
+    public word_445D0
+    public word_445D2
+    public word_445D4
+    public word_445D6
+    public word_445D8
+    public word_445DA
+    public word_445DC
+    public word_445DE
+    public word_445E0
+    public word_445E2
+    public word_445E4
+    public word_445E6
+    public word_445E8
+    public word_445EA
+    public word_445EC
+    public word_445EE
+    public word_445F0
+    public word_445F2
+    public word_445F4
+    public word_445F6
+    public word_445F8
+    public word_445FA
+    public word_445FC
+    public word_445FE
+    public word_44600
+    public word_44602
+    public word_44606
+    public word_44608
+    public word_44610
+    public word_44612
+    public word_4461A
+    public word_4461E
+    public word_4462E
+    public word_44630
+    public word_44632
+    public word_44634
+    public word_44636
+    public word_44638
+    public word_4468A
+    public word_4468C
+    public word_4468E
+    public word_4469C
+    public byte_446A2
+    public byte_446A8
+    public byte_446A9
+    public byte_446AA
+    public byte_446AB
+    public byte_446AF
+    public byte_446B0
+    public byte_446B1
+    public byte_446B2
+    public byte_446B3
+    public byte_446B4
+    public byte_446B5
+    public word_446B6
+    public word_446B8
+    public word_446BA
+    public word_446BC
+    public word_446BE
+    public word_446C0
+    public word_446C2
+    public word_446C4
+    public word_446C6
+    public word_446C8
+    public word_446CA
+    public word_446CC
+    public word_446CE
+    public word_446D0
+    public word_446D2
+    public word_446D6
+    public word_446D8
+    public word_446E0
+    public word_446E2
+    public word_446EC
+    public word_446FA
+    public word_446FC
+    public word_446FE
+    public word_44700
+    public word_4475A
+    public word_4475C
+    public word_4475E
+    public word_44760
+    public word_44762
+    public word_44764
+    public word_44766
+    public word_44768
+    public word_4476A
+    public byte_44772
+    public byte_44775
+    public byte_44776
+    public byte_44778
+    public byte_44779
+    public byte_4477A
+    public byte_4477B
+    public byte_4477D
+    public byte_4477F
+    public byte_44783
+    public byte_44784
+    public byte_44785
+    public word_44786
+    public word_44788
+    public word_4478A
+    public word_4478C
+    public word_4478E
+    public word_44790
+    public byte_44888
+    public byte_44889
+    public byte_4488A
+    public byte_4488B
+    public byte_4488C
+    public byte_4488D
+    public byte_448BE
+    public byte_448EF
+    public byte_448F0
+    public byte_448F1
+    public byte_448F2
+    public word_44984
+    public word_44986
+    public word_44988
+    public word_4498A
+    public word_4498C
+    public word_4498E
+    public word_44990
+    public word_44998
+    public byte_4499A
+    public byte_4499B
+    public word_4499C
+    public byte_4499E
+    public byte_4499F
+    public word_449A0
+    public word_449A2
+    public byte_449A4
+    public byte_449A5
+    public byte_449A6
+    public byte_449A7
+    public byte_449A8
+    public byte_449A9
+    public byte_449AA
+    public byte_449AB
+    public byte_449AC
+    public byte_449AD
+    public byte_449AE
+    public byte_449AF
+    public byte_449B0
+    public byte_449B1
+    public byte_449BA
+    public word_449BC
+    public word_449BE
+    public word_449C0
+    public dword_449C2
+    public word_449C6
+    public word_449C8
+    public word_449CA
+    public word_449CC
+    public byte_449CE
+    public word_449D0
+    public dword_449D4
+    public byte_449DA
+    public word_449DC
+    public word_449DE
+    public word_449E0
+    public byte_449E2
+    public word_449E4
+    public byte_449E6
+    public word_449E8
+    public word_449EA
+    public word_449EC
+    public dword_449EE
+    public word_449F2
+    public byte_449F4
+    public word_449F6
+    public word_449F8
+    public word_449FA
+    public word_449FE
+    public word_44A00
+    public word_44A02
+    public word_44A04
+    public word_44A06
+    public word_44A08
+    public word_44A0A
+    public word_44A2C
+    public word_44A2E
+    public word_44A30
+    public word_44A32
+    public word_44A7C
+    public word_44A7E
+    public word_44A88
+    public byte_44A8A
+    public word_44A8C
+    public byte_44AE2
+    public word_44AE4
+    public dword_44CE6
+    public word_44CEA
+    public word_44CEC
+    public word_44CEE
+    public word_44D1E
+    public word_44D20
+    public word_44D22
+    public word_44D24
+    public dword_44D26
+    public word_44D3C
+    public dword_44D3E
+    public dword_44D42
+    public byte_44D46
+    public byte_44D47
+    public word_44D48
+    public dword_44D4A
+    public word_44D4E
+    public byte_44D50
+    public word_44D60
+    public word_44D62
+    public word_44D64
+    public word_44D66
+    public word_44DC6
+    public word_44DC8
+    public word_44DCA
+    public word_44DCC
+    public word_44F36
+    public word_44F38
+    public word_44F3A
+    public word_44F3C
+    public word_44F3E
+    public word_44F40
+    public word_44F42
+    public word_44F44
+    public word_44F46
+    public word_44F48
+    public word_44F4A
+    public word_4549C
+    public word_4549E
+    public word_454A0
+    public word_454A2
+    public byte_454A4
+    public word_454A6
+    public word_454A8
+    public dword_454AA
+    public word_454AE
+    public dword_454B0
+    public word_454B4
+    public word_454B6
+    public byte_454B8
+    public word_454BA
+    public dword_454BC
+    public word_454C0
+    public word_454C2
+    public word_454C4
+    public word_454C6
+    public word_454C8
+    public word_454CA
+    public word_454CC
+    public word_454CE
+    public word_454D0
+    public word_454D2
+    public word_454D4
+    public dword_454D6
+    public byte_45514
+    public word_45516
+    public word_45518
+    public word_4551A
+    public word_4551C
+    public word_4551E
+    public byte_45525
+    public byte_4552F
+    public word_4554A
+    public word_45574
+    public word_45576
+    public word_45578
+    public word_4557A
+    public dword_455C8
+    public word_455CC
+    public word_455CE
+    public word_455D0
+    public byte_455D2
+    public dword_4562E
+    public word_45632
+    public byte_45634
+    public byte_45635
+    public dword_4563C
+    public word_45678
+    public word_45944
+    public word_45946
+    public byte_45948
+    public byte_4594A
+    public byte_4594B
+    public byte_4594C
+    public byte_4594D
+    public byte_4594E
+    public byte_4594F
+    public byte_45950
+    public word_45982
+    public word_45984
+    public word_45986
+    public word_45988
+    public byte_459D2
+    public word_459D4
+    public word_459D6
+    public byte_459D8
+    public dword_459DA
+    public byte_459F1
+    public word_459F2
+    public word_459F4
+    public word_459F6
+    public word_459FC
+    public word_459FE
+    public word_45A00
+    public word_45A20
+    public word_45A22
+    public word_45A24
+    public word_45D06
+    public word_45D08
+    public word_45D0A
+    public word_45D1C
+    public word_45D1E
+    public byte_45D3E
+    public word_45D7C
+    public byte_45D7E
+    public dword_45D80
+    public dword_45D84
+    public dword_45D88
+    public dword_45D8C
+    public byte_45D90
+    public word_45D92
+    public word_45D94
+    public word_45D96
+    public word_45D98
+    public byte_45DB2
+    public word_45DB4
+    public word_45DB6
+    public word_45DB8
+    public word_45DBA
+    public word_45DC8
+    public word_45DCA
+    public word_45DCC
+    public word_45DCE
+    public word_45DD0
+    public word_45E0E
+    public word_45E10
+    public word_45E12
+    public word_45E14
+    public byte_45E16
+    public byte_45E1A
+    public dword_45E56
+    public word_45E92
+    public word_45F2A
+    public byte_45F44
+    public word_45F82
+    public word_45F84
+    public word_45F86
+    public byte_45F88
+    public byte_45F89
+    public byte_45F8A
+    public byte_45F8B
+    public byte_45F8C
+    public byte_45F8D
+    public word_46058
+    public word_4605A
+    public word_4605C
+    public word_4615E
+    public word_46160
+    public dword_46162
+    public byte_46166
+    public byte_46167
+    public word_46168
+    public word_4616A
+    public word_4616C
+    public byte_4616E
+    public byte_4616F
+    public word_46170
+    public word_4617E
+    public word_46180
+    public word_46182
+    public word_46184
+    public word_461C2
+    public word_461C4
+    public word_461C6
+    public byte_461C8
+    public word_461CA
+    public word_461CC
+    public word_461CE
+    public word_461D0
+    public word_463D2
+    public word_463D4
+    public word_463D6
+    public word_463D8
+    public word_463DA
+    public word_463DC
+    public word_463DE
+    public byte_463E0
+    public word_463E2
+    public byte_463E4
+    public byte_463E5
+    public byte_463E6
+    public byte_463E7
+    public word_46434
+    public byte_46436
+    public byte_4644A
+    public byte_4645E
+    public dword_46460
+    public byte_46467
+    public word_46468
+    public byte_46484
 byte_3B770     db 0
-    db    0
+    db 0
 word_3B772     dw 0
 word_3B774     dw 0
-    db    0
-    db    0
-word_3B778     dw 534Dh
-word_3B77A     dw 5220h
-byte_3B77C     db 75h
-    db  6Eh ; n
-word_3B77E     dw 542Dh
-word_3B780     dw 6D69h
-word_3B782     dw 2065h
-byte_3B784     db 4Ch
-    db  69h ; i
-    db  62h ; b
-    db  72h ; r
-    db  61h ; a
-    db  72h ; r
-    db  79h ; y
-    db  20h
-    db  2Dh ; -
-    db  20h
-    db  43h ; C
-    db  6Fh ; o
-    db  70h ; p
-    db  79h ; y
-    db  72h ; r
-    db  69h ; i
-    db  67h ; g
-    db  68h ; h
-    db  74h ; t
-    db  20h
-    db  28h ; (
-    db  63h ; c
-    db  29h ; )
-    db  20h
-word_3B79C     dw 3931h
-    db  38h ; 8
-    db  38h ; 8
-    db  2Ch ; ,
-    db  20h
-    db  4Dh ; M
-    db  69h ; i
-    db  63h ; c
-    db  72h ; r
-    db  6Fh ; o
-    db  73h ; s
-    db  6Fh ; o
-    db  66h ; f
-    db  74h ; t
-    db  20h
-    db  43h ; C
-    db  6Fh ; o
-    db  72h ; r
-    db  70h ; p
-    db  11h
-    db    0
-    db  6Dh ; m
-    db  61h ; a
-    db  69h ; i
-    db  6Eh ; n
-    db    0
-    db  66h ; f
-    db  6Fh ; o
-    db  6Eh ; n
-    db  74h ; t
-    db  64h ; d
-    db  65h ; e
-    db  66h ; f
-    db  2Eh ; .
-    db  66h ; f
-    db  6Eh ; n
-    db  74h ; t
-    db    0
-    db  66h ; f
-    db  6Fh ; o
-    db  6Eh ; n
-    db  74h ; t
-    db  6Eh ; n
-    db  2Eh ; .
-    db  66h ; f
-    db  6Eh ; n
-    db  74h ; t
-    db    0
-    db  74h ; t
-    db  72h ; r
-    db  61h ; a
-    db  6Bh ; k
-    db  64h ; d
-    db  61h ; a
-    db  74h ; t
-    db  61h ; a
-    db    0
-    db  44h ; D
-    db  45h ; E
-    db  46h ; F
-    db  41h ; A
-    db  55h ; U
-    db  4Ch ; L
-    db  54h ; T
-    db    0
-    db  2Eh ; .
-    db  74h ; t
-    db  72h ; r
-    db  6Bh ; k
-    db    0
-    db  53h ; S
-    db  4Ch ; L
-    db  43h ; C
-    db  54h ; T
-    db    0
-    db  73h ; s
-    db  6Bh ; k
-    db  69h ; i
-    db  64h ; d
-    db  6Dh ; m
-    db  73h ; s
-    db    0
-    db  73h ; s
-    db  6Bh ; k
-    db  69h ; i
-    db  64h ; d
-    db  73h ; s
-    db  6Ch ; l
-    db  63h ; c
-    db  74h ; t
-    db    0
-    db  74h ; t
-    db  65h ; e
-    db  64h ; d
-    db  69h ; i
-    db  74h ; t
-    db  2Eh ; .
-    db  2Ah ; *
-    db    0
-    db  63h ; c
-    db  76h ; v
-    db  78h ; x
-    db    0
-    db  64h ; d
-    db  6Fh ; o
-    db  73h ; s
-    db    0
+    db 0
+    db 0
+word_3B778     dw 21325
+word_3B77A     dw 21024
+byte_3B77C     db 117
+    db 110
+word_3B77E     dw 21549
+word_3B780     dw 28009
+word_3B782     dw 8293
+byte_3B784     db 76
+    db 105
+    db 98
+    db 114
+    db 97
+    db 114
+    db 121
+    db 32
+    db 45
+    db 32
+    db 67
+    db 111
+    db 112
+    db 121
+    db 114
+    db 105
+    db 103
+    db 104
+    db 116
+    db 32
+    db 40
+    db 99
+    db 41
+    db 32
+word_3B79C     dw 14641
+    db 56
+    db 56
+    db 44
+    db 32
+    db 77
+    db 105
+    db 99
+    db 114
+    db 111
+    db 115
+    db 111
+    db 102
+    db 116
+    db 32
+    db 67
+    db 111
+    db 114
+    db 112
+    db 17
+    db 0
+    db 109
+    db 97
+    db 105
+    db 110
+    db 0
+    db 102
+    db 111
+    db 110
+    db 116
+    db 100
+    db 101
+    db 102
+    db 46
+    db 102
+    db 110
+    db 116
+    db 0
+    db 102
+    db 111
+    db 110
+    db 116
+    db 110
+    db 46
+    db 102
+    db 110
+    db 116
+    db 0
+    db 116
+    db 114
+    db 97
+    db 107
+    db 100
+    db 97
+    db 116
+    db 97
+    db 0
+    db 68
+    db 69
+    db 70
+    db 65
+    db 85
+    db 76
+    db 84
+    db 0
+    db 46
+    db 116
+    db 114
+    db 107
+    db 0
+    db 83
+    db 76
+    db 67
+    db 84
+    db 0
+    db 115
+    db 107
+    db 105
+    db 100
+    db 109
+    db 115
+    db 0
+    db 115
+    db 107
+    db 105
+    db 100
+    db 115
+    db 108
+    db 99
+    db 116
+    db 0
+    db 116
+    db 101
+    db 100
+    db 105
+    db 116
+    db 46
+    db 42
+    db 0
+    db 99
+    db 118
+    db 120
+    db 0
+    db 100
+    db 111
+    db 115
+    db 0
 word_3B808     dw 0
 word_3B80A     dw 0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
 word_3B870     dw 0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  44h ; D
-    db  45h ; E
-    db  46h ; F
-    db  41h ; A
-    db  55h ; U
-    db  4Ch ; L
-    db  54h ; T
-    db    0
-    db    0
-    db    0
-    db  64h ; d
-    db  65h ; e
-    db  73h ; s
-    db  65h ; e
-    db  72h ; r
-    db  74h ; t
-    db    0
-    db    0
-    db    0
-    db  74h ; t
-    db  72h ; r
-    db  6Fh ; o
-    db  70h ; p
-    db  69h ; i
-    db  63h ; c
-    db  61h ; a
-    db  6Ch ; l
-    db    0
-    db  61h ; a
-    db  6Ch ; l
-    db  70h ; p
-    db  69h ; i
-    db  6Eh ; n
-    db  65h ; e
-    db    0
-    db    0
-    db    0
-    db  63h ; c
-    db  69h ; i
-    db  74h ; t
-    db  79h ; y
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  63h ; c
-    db  6Fh ; o
-    db  75h ; u
-    db  6Eh ; n
-    db  74h ; t
-    db  72h ; r
-    db  79h ; y
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-word_3B8EA     dw 1C2h
-word_3B8EC     dw 0D2h
-word_3B8EE     dw 1D0h
-word_3B8F0     dw 50h
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 68
+    db 69
+    db 70
+    db 65
+    db 85
+    db 76
+    db 84
+    db 0
+    db 0
+    db 0
+    db 100
+    db 101
+    db 115
+    db 101
+    db 114
+    db 116
+    db 0
+    db 0
+    db 0
+    db 116
+    db 114
+    db 111
+    db 112
+    db 105
+    db 99
+    db 97
+    db 108
+    db 0
+    db 97
+    db 108
+    db 112
+    db 105
+    db 110
+    db 101
+    db 0
+    db 0
+    db 0
+    db 99
+    db 105
+    db 116
+    db 121
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 99
+    db 111
+    db 117
+    db 110
+    db 116
+    db 114
+    db 121
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+word_3B8EA     dw 450
+word_3B8EC     dw 210
+word_3B8EE     dw 464
+word_3B8F0     dw 80
 byte_3B8F2     db 0
 byte_3B8F3     db 0
 byte_3B8F4     db 0
@@ -997,11822 +1640,12878 @@ byte_3B8F9     db 0
 byte_3B8FA     db 0
 byte_3B8FB     db 0
 byte_3B8FC     db 0
-    db    0
-aKevin     db 'kevin',0
-    db  6Fh ; o
-    db  70h ; p
-    db  70h ; p
-byte_3B907     db 31h
-    db    0
-    db    0
-    db  63h ; c
-    db  61h ; a
-    db  72h ; r
-byte_3B90D     db 63h
-byte_3B90E     db 6Fh
-byte_3B90F     db 75h
-byte_3B910     db 6Eh
-    db    0
-aTitl     db 'TITL',0
-aSkidms     db 'skidms',0
-aSkidtitl     db 'skidtitl',0
-aSdtitl     db 'sdtitl',0
-aSdcred     db 'sdcred',0
-aProd     db 'prod',0
-aProd_0     db 'prod',0
-aTitl_0     db 'titl',0
-aCred     db 'cred',0
-aArowarrwarw1ar     db 'arowarrwarw1arw2arw3arw4arw5arw6arw7arw8type',0
-aCre     db 'cre',0
-aGds0     db 'gds0',0
-aGds1     db 'gds1',0
-aDes     db 'des',0
-aGdon     db 'gdon',0
-aGkev     db 'gkev',0
-aGbra     db 'gbra',0
-aGrob     db 'grob',0
-aGsta     db 'gsta',0
-aMus     db 'mus',0
-aGmsy     db 'gmsy',0
-aGkri     db 'gkri',0
-aGbri     db 'gbri',0
-aPro     db 'pro',0
-aGkev_0     db 'gkev',0
-aOpr     db 'opr',0
-aGbra_0     db 'gbra',0
-aGric     db 'gric',0
-aArt     db 'art',0
-aGmsm     db 'gmsm',0
-aGdav     db 'gdav',0
-aGnic     db 'gnic',0
-aGkev_1     db 'gkev',0
-aSdmsel     db 'sdmsel',0
-aScrn     db 'scrn',0
-    db    0
-    db    1
-    db    2
-    db    4
-    db    0
-    db    3
-    db    0
-    db    3
-    db    0
-    db    1
-    db    4
-    db    2
-    db    0
-    db  69h ; i
-    db    0
-    db  42h ; B
-    db    0
-    db    5
-    db    0
-    db 0BEh ; æ
-    db    0
-    db 0FFh
-    db    0
-    db 0D0h ; –
-    db    0
-    db  6Bh ; k
-    db    0
-    db  43h ; C
-    db    0
-    db 0FDh ; ˝
-    db    0
-    db  38h ; 8
-    db    1
-    db  77h ; w
-    db    0
-    db  4Dh ; M
-    db    0
-    db  72h ; r
-    db    0
-    db  4Ch ; L
-    db    0
-    db  74h ; t
-    db    0
-    db 0C5h ; ≈
-    db    0
-    db  78h ; x
-    db    0
-    db 0AAh ; ™
-    db    0
-    db  7Ah ; z
-    db    0
-    db 0A6h ; ¶
-    db    0
-    db  27h ; '
-    db    0
-    db  27h ; '
-    db    0
-    db  68h ; h
-    db  73h ; s
-    db  30h ; 0
-    db    0
-    db  74h ; t
-    db  65h ; e
-    db  64h ; d
-    db  69h ; i
-    db  74h ; t
-    db    0
-    db  62h ; b
-    db  6Dh ; m
-    db  74h ; t
-    db    0
-    db  62h ; b
-    db  65h ; e
-    db  74h ; t
-    db    0
-    db  62h ; b
-    db  6Dh ; m
-    db  6Dh ; m
-    db    0
-    db  74h ; t
-    db  72h ; r
-    db  6Bh ; k
-    db    0
-    db  2Eh ; .
-    db  74h ; t
-    db  72h ; r
-    db  6Bh ; k
-    db    0
-    db  2Eh ; .
-    db  74h ; t
-    db  72h ; r
-    db  6Bh ; k
-    db    0
-    db  10h
-    db    0
-    db  70h ; p
-    db    0
-    db 0D0h ; –
-    db    0
-    db  70h ; p
-    db    0
-    db 0D0h ; –
-    db    0
-    db  30h ; 0
-    db    1
-    db 0ABh ; ´
-    db    0
-    db 0ABh ; ´
-    db    0
-    db 0ABh ; ´
-    db    0
-    db 0C5h ; ≈
-    db    0
-    db 0C5h ; ≈
-    db    0
-    db 0C5h ; ≈
-    db    0
-    db  2Eh ; .
-    db  68h ; h
-    db  69h ; i
-    db  67h ; g
-    db    0
-a______________     db '....................',0
-    db  2Eh ; .
-    db  2Eh ; .
-    db  2Eh ; .
-    db  2Eh ; .
-a_____________0     db '...................',0
-a______     db '../....',0
-aHs1     db 'hs1',0
-    db ' ',27h,0
-    db 27h,0
-aHs2     db 'hs2',0
-aHs3     db 'hs3',0
-aHs5     db 'hs5',0
-aHs4     db 'hs4',0
-    db '(',0
-    db ')',0
-    db ' ',0
-a_hig     db '.hig',0
-a_res_0     db '.res',0
-aCar     db 'car*',0
-    db  73h ; s
-    db  64h ; d
-aCsel     db 'csel',0
-aMisc_0     db 'misc',0
-aGrap     db 'grap',0
-a150     db '150',0
-a100     db '100',0
-a50     db ' 50',0
-a0     db '  0',0
-a02040     db '0  20  40',0
-aBdo_0     db 'bdo',0
-aBnx_0     db 'bnx',0
-aBla_0     db 'bla',0
-aBau     db 'bau',0
-aBma     db 'bma',0
-aBco     db 'bco',0
-aDes_1     db 'des',0
-aStop_1     db 'stop',0
-aBau_0     db 'bau',0
-aBma_0     db 'bma',0
-    db    0
-    db    0
-    db  40h ; @
-    db    1
-    db    0
-    db    0
-    db  5Fh ; _
-    db    0
-word_3BB28     dw 0E5h
-    db 0E5h ; Â
-    db    0
-    db 0E5h ; Â
-    db    0
-    db 0E5h ; Â
-    db    0
-    db 0E5h ; Â
-    db    0
-word_3BB32     dw 13Ch
-    db  3Ch ; <
-    db    1
-    db  3Ch ; <
-    db    1
-    db  3Ch ; <
-    db    1
-    db  3Ch ; <
-    db    1
-word_3BB3C     dw 6Bh
-word_3BB3E     dw 7Dh
-word_3BB40     dw 8Fh
-word_3BB42     dw 0A1h
-word_3BB44     dw 0B3h
-    db  7Ch ; |
-    db    0
-    db  8Eh ; é
-    db    0
-    db 0A0h ; †
-    db    0
-    db 0B2h ; ≤
-    db    0
-word_3BB4E     dw 0C4h
-aLnam     db 'lnam',0
-    db    0
-    db    0
-    db    0
-word_3BB58     dw 140h
-    db    0
-    db    0
+    db 0
+aKevin     db 107
+    db 101
+    db 118
+    db 105
+    db 110
+    db 0
+    db 111
+    db 112
+    db 112
+byte_3B907     db 49
+    db 0
+    db 0
+    db 99
+    db 97
+    db 114
+byte_3B90D     db 99
+byte_3B90E     db 111
+byte_3B90F     db 117
+byte_3B910     db 110
+    db 0
+aTitl     db 84
+    db 73
+    db 84
+    db 76
+    db 0
+aSkidms     db 115
+    db 107
+    db 105
+    db 100
+    db 109
+    db 115
+    db 0
+aSkidtitl     db 115
+    db 107
+    db 105
+    db 100
+    db 116
+    db 105
+    db 116
+    db 108
+    db 0
+aSdtitl     db 115
+    db 100
+    db 116
+    db 105
+    db 116
+    db 108
+    db 0
+aSdcred     db 115
+    db 100
+    db 99
+    db 114
+    db 101
+    db 100
+    db 0
+aProd     db 112
+    db 114
+    db 111
+    db 100
+    db 0
+aProd_0     db 112
+    db 114
+    db 111
+    db 100
+    db 0
+aTitl_0     db 116
+    db 105
+    db 116
+    db 108
+    db 0
+aCred     db 99
+    db 114
+    db 101
+    db 100
+    db 0
+aArowarrwarw1ar     db 97
+    db 114
+    db 111
+    db 119
+    db 97
+    db 114
+    db 114
+    db 119
+    db 97
+    db 114
+    db 119
+    db 49
+    db 97
+    db 114
+    db 119
+    db 50
+    db 97
+    db 114
+    db 119
+    db 51
+    db 97
+    db 114
+    db 119
+    db 52
+    db 97
+    db 114
+    db 119
+    db 53
+    db 97
+    db 114
+    db 119
+    db 54
+    db 97
+    db 114
+    db 119
+    db 55
+    db 97
+    db 114
+    db 119
+    db 56
+    db 116
+    db 121
+    db 112
+    db 101
+    db 0
+aCre     db 99
+    db 114
+    db 101
+    db 0
+aGds0     db 103
+    db 100
+    db 115
+    db 48
+    db 0
+aGds1     db 103
+    db 100
+    db 115
+    db 49
+    db 0
+aDes     db 100
+    db 101
+    db 115
+    db 0
+aGdon     db 103
+    db 100
+    db 111
+    db 110
+    db 0
+aGkev     db 103
+    db 107
+    db 101
+    db 118
+    db 0
+aGbra     db 103
+    db 98
+    db 114
+    db 97
+    db 0
+aGrob     db 103
+    db 114
+    db 111
+    db 98
+    db 0
+aGsta     db 103
+    db 115
+    db 116
+    db 97
+    db 0
+aMus     db 109
+    db 117
+    db 115
+    db 0
+aGmsy     db 103
+    db 109
+    db 115
+    db 121
+    db 0
+aGkri     db 103
+    db 107
+    db 114
+    db 105
+    db 0
+aGbri     db 103
+    db 98
+    db 114
+    db 105
+    db 0
+aPro     db 112
+    db 114
+    db 111
+    db 0
+aGkev_0     db 103
+    db 107
+    db 101
+    db 118
+    db 0
+aOpr     db 111
+    db 112
+    db 114
+    db 0
+aGbra_0     db 103
+    db 98
+    db 114
+    db 97
+    db 0
+aGric     db 103
+    db 114
+    db 105
+    db 99
+    db 0
+aArt     db 97
+    db 114
+    db 116
+    db 0
+aGmsm     db 103
+    db 109
+    db 115
+    db 109
+    db 0
+aGdav     db 103
+    db 100
+    db 97
+    db 118
+    db 0
+aGnic     db 103
+    db 110
+    db 105
+    db 99
+    db 0
+aGkev_1     db 103
+    db 107
+    db 101
+    db 118
+    db 0
+aSdmsel     db 115
+    db 100
+    db 109
+    db 115
+    db 101
+    db 108
+    db 0
+aScrn     db 115
+    db 99
+    db 114
+    db 110
+    db 0
+    db 0
+    db 1
+    db 2
+    db 4
+    db 0
+    db 3
+    db 0
+    db 3
+    db 0
+    db 1
+    db 4
+    db 2
+    db 0
+    db 105
+    db 0
+    db 66
+    db 0
+    db 5
+    db 0
+    db 190
+    db 0
+    db 255
+    db 0
+    db 208
+    db 0
+    db 107
+    db 0
+    db 67
+    db 0
+    db 253
+    db 0
+    db 56
+    db 1
+    db 119
+    db 0
+    db 77
+    db 0
+    db 114
+    db 0
+    db 76
+    db 0
+    db 116
+    db 0
+    db 197
+    db 0
+    db 120
+    db 0
+    db 170
+    db 0
+    db 122
+    db 0
+    db 166
+    db 0
+    db 39
+    db 0
+    db 39
+    db 0
+    db 104
+    db 115
+    db 48
+    db 0
+    db 116
+    db 101
+    db 100
+    db 105
+    db 116
+    db 0
+    db 98
+    db 109
+    db 116
+    db 0
+    db 98
+    db 101
+    db 116
+    db 0
+    db 98
+    db 109
+    db 109
+    db 0
+    db 116
+    db 114
+    db 107
+    db 0
+    db 46
+    db 116
+    db 114
+    db 107
+    db 0
+    db 46
+    db 116
+    db 114
+    db 107
+    db 0
+    db 16
+    db 0
+    db 112
+    db 0
+    db 208
+    db 0
+    db 112
+    db 0
+    db 208
+    db 0
+    db 48
+    db 1
+    db 171
+    db 0
+    db 171
+    db 0
+    db 171
+    db 0
+    db 197
+    db 0
+    db 197
+    db 0
+    db 197
+    db 0
+    db 46
+    db 104
+    db 105
+    db 103
+    db 0
+a______________     db 46
+    db 46
+    db 46
+    db 46
+    db 46
+    db 46
+    db 46
+    db 46
+    db 46
+    db 46
+    db 46
+    db 46
+    db 46
+    db 46
+    db 46
+    db 46
+    db 46
+    db 46
+    db 46
+    db 46
+    db 0
+    db 46
+    db 46
+    db 46
+    db 46
+a_____________0     db 46
+    db 46
+    db 46
+    db 46
+    db 46
+    db 46
+    db 46
+    db 46
+    db 46
+    db 46
+    db 46
+    db 46
+    db 46
+    db 46
+    db 46
+    db 46
+    db 46
+    db 46
+    db 46
+    db 0
+a______     db 46
+    db 46
+    db 47
+    db 46
+    db 46
+    db 46
+    db 46
+    db 0
+aHs1     db 104
+    db 115
+    db 49
+    db 0
+    db 32
+    db 39
+    db 0
+    db 39
+    db 0
+aHs2     db 104
+    db 115
+    db 50
+    db 0
+aHs3     db 104
+    db 115
+    db 51
+    db 0
+aHs5     db 104
+    db 115
+    db 53
+    db 0
+aHs4     db 104
+    db 115
+    db 52
+    db 0
+    db 40
+    db 0
+    db 41
+    db 0
+    db 32
+    db 0
+a_hig     db 46
+    db 104
+    db 105
+    db 103
+    db 0
+a_res_0     db 46
+    db 114
+    db 101
+    db 115
+    db 0
+aCar     db 99
+    db 97
+    db 114
+    db 42
+    db 0
+    db 115
+    db 100
+aCsel     db 99
+    db 115
+    db 101
+    db 108
+    db 0
+aMisc_0     db 109
+    db 105
+    db 115
+    db 99
+    db 0
+aGrap     db 103
+    db 114
+    db 97
+    db 112
+    db 0
+a150     db 49
+    db 53
+    db 48
+    db 0
+a100     db 49
+    db 48
+    db 48
+    db 0
+a50     db 32
+    db 53
+    db 48
+    db 0
+a0     db 32
+    db 32
+    db 48
+    db 0
+a02040     db 48
+    db 32
+    db 32
+    db 50
+    db 48
+    db 32
+    db 32
+    db 52
+    db 48
+    db 0
+aBdo_0     db 98
+    db 100
+    db 111
+    db 0
+aBnx_0     db 98
+    db 110
+    db 120
+    db 0
+aBla_0     db 98
+    db 108
+    db 97
+    db 0
+aBau     db 98
+    db 97
+    db 117
+    db 0
+aBma     db 98
+    db 109
+    db 97
+    db 0
+aBco     db 98
+    db 99
+    db 111
+    db 0
+aDes_1     db 100
+    db 101
+    db 115
+    db 0
+aStop_1     db 115
+    db 116
+    db 111
+    db 112
+    db 0
+aBau_0     db 98
+    db 97
+    db 117
+    db 0
+aBma_0     db 98
+    db 109
+    db 97
+    db 0
+    db 0
+    db 0
+    db 64
+    db 1
+    db 0
+    db 0
+    db 95
+    db 0
+word_3BB28     dw 229
+    db 229
+    db 0
+    db 229
+    db 0
+    db 229
+    db 0
+    db 229
+    db 0
+word_3BB32     dw 316
+    db 60
+    db 1
+    db 60
+    db 1
+    db 60
+    db 1
+    db 60
+    db 1
+word_3BB3C     dw 107
+word_3BB3E     dw 125
+word_3BB40     dw 143
+word_3BB42     dw 161
+word_3BB44     dw 179
+    db 124
+    db 0
+    db 142
+    db 0
+    db 160
+    db 0
+    db 178
+    db 0
+word_3BB4E     dw 196
+aLnam     db 108
+    db 110
+    db 97
+    db 109
+    db 0
+    db 0
+    db 0
+    db 0
+word_3BB58     dw 320
+    db 0
+    db 0
 word_3BB5C     dw 0
-    db    0
-    db    0
-word_3BB60     dw 0FCB8h
-word_3BB62     dw 0B40h
-aMisc     db 'misc',0
-aSdosel     db 'sdosel',0
-aOpp0opp1opp2op     db 'opp0opp1opp2opp3opp4opp5opp6',0
-aScrn_0     db 'scrn',0
-aBla     db 'bla',0
-aBnx     db 'bnx',0
-aBcl     db 'bcl',0
-aBca     db 'bca',0
-aBdo     db 'bdo',0
-aClip     db 'clip',0
-aDes_0     db 'des',0
-aRac     db 'rac',0
-    db    0
-    db  14h
-    db    0
-    db  4Ch ; L
-    db    0
-    db  84h ; Ñ
-    db    0
-    db 0BCh ; º
-    db    0
-    db 0F4h ; Ù
-    db    0
-    db  4Ch ; L
-    db    0
-    db  84h ; Ñ
-    db    0
-    db 0BCh ; º
-    db    0
-    db 0F4h ; Ù
-    db    0
-    db  2Ch ; ,
-    db    1
-word_3BBC8     dw 0B1h
-    db 0B1h ; ±
-    db    0
-    db 0B1h ; ±
-    db    0
-    db 0B1h ; ±
-    db    0
-    db 0B1h ; ±
-    db    0
-    db 0C5h ; ≈
-    db    0
-    db 0C5h ; ≈
-    db    0
-    db 0C5h ; ≈
-    db    0
-    db 0C5h ; ≈
-    db    0
-    db 0C5h ; ≈
-    db    0
-    db  6Dh ; m
-    db  69h ; i
-    db  73h ; s
-    db  63h ; c
-    db    0
-    db  67h ; g
-    db  73h ; s
-    db  74h ; t
-    db  75h ; u
-    db    0
-    db  67h ; g
-    db  76h ; v
-    db  65h ; e
-    db  72h ; r
-    db    0
-    db  6Dh ; m
-    db  6Fh ; o
-    db  70h ; p
-    db    0
-    db  6Dh ; m
-    db  69h ; i
-    db  64h ; d
-    db    0
-    db  72h ; r
-    db  65h ; e
-    db  70h ; p
-    db    0
-    db  2Eh ; .
-    db  72h ; r
-    db  70h ; p
-    db  6Ch ; l
-    db    0
-    db  6Dh ; m
-    db  69h ; i
-    db  73h ; s
-    db  63h ; c
-    db    0
-    db  65h ; e
-    db  6Ch ; l
-    db  74h ; t
-    db    0
-    db  63h ; c
-    db  6Fh ; o
-    db  6Eh ; n
-    db    0
-    db  70h ; p
-    db  70h ; p
-    db  74h ; t
-    db    0
-    db  64h ; d
-    db  6Eh ; n
-    db  66h ; f
-    db    0
-    db  6Fh ; o
-    db  6Ch ; l
-    db  74h ; t
-    db    0
-    db  64h ; d
-    db  6Eh ; n
-    db  66h ; f
-    db    0
-    db  6Fh ; o
-    db  77h ; w
-    db  74h ; t
-    db    0
-    db  6Fh ; o
-    db  6Ch ; l
-    db  74h ; t
-    db    0
-    db  56h ; V
-    db  49h ; I
-    db  43h ; C
-    db  54h ; T
-    db    0
-    db  73h ; s
-    db  6Bh ; k
-    db  69h ; i
-    db  64h ; d
-    db  6Dh ; m
-    db  73h ; s
-    db    0
-    db  73h ; s
-    db  6Bh ; k
-    db  69h ; i
-    db  64h ; d
-    db  76h ; v
-    db  69h ; i
-    db  63h ; c
-    db  74h ; t
-    db    0
-    db  4Fh ; O
-    db  56h ; V
-    db  45h ; E
-    db  52h ; R
-    db    0
-    db  73h ; s
-    db  6Bh ; k
-    db  69h ; i
-    db  64h ; d
-    db  6Dh ; m
-    db  73h ; s
-    db    0
-    db  73h ; s
-    db  6Bh ; k
-    db  69h ; i
-    db  64h ; d
-    db  6Fh ; o
-    db  76h ; v
-    db  65h ; e
-    db  72h ; r
-    db    0
-    db  61h ; a
-    db  76h ; v
-    db  73h ; s
-    db    0
-    db  6Dh ; m
-    db  70h ; p
-    db  68h ; h
-    db    0
-    db  69h ; i
-    db  6Dh ; m
-    db  70h ; p
-    db    0
-    db  6Dh ; m
-    db  70h ; p
-    db  68h ; h
-    db    0
-    db  74h ; t
-    db  6Fh ; o
-    db  70h ; p
-    db    0
-    db  6Dh ; m
-    db  70h ; p
-    db  68h ; h
-    db    0
-    db  6Ah ; j
-    db  75h ; u
-    db  6Dh ; m
-    db    0
-    db  77h ; w
-    db  69h ; i
-    db  6Eh ; n
-    db  6Eh ; n
-    db    0
-    db  6Ch ; l
-    db  6Fh ; o
-    db  73h ; s
-    db  65h ; e
-    db    0
-    db  2Eh ; .
-    db  74h ; t
-    db  72h ; r
-    db  6Bh ; k
-    db    0
-    db  69h ; i
-    db  68h ; h
-    db  64h ; d
-    db    0
-    db  64h ; d
-    db  34h ; 4
-    db  61h ; a
-    db    0
-    db  62h ; b
-    db  63h ; c
-    db  74h ; t
-    db    0
-    db  69h ; i
-    db  6Eh ; n
-    db  68h ; h
-    db    0
-    db  69h ; i
-    db  6Eh ; n
-    db  68h ; h
-    db    0
-    db  68h ; h
-    db  6Eh ; n
-    db  61h ; a
-    db    0
-    db  62h ; b
-    db  65h ; e
-    db  76h ; v
-    db    0
-    db  62h ; b
-    db  68h ; h
-    db  69h ; i
-    db    0
-    db  62h ; b
-    db  72h ; r
-    db  70h ; p
-    db    0
-    db  62h ; b
-    db  72h ; r
-    db  61h ; a
-    db    0
-    db  62h ; b
-    db  64h ; d
-    db  72h ; r
-    db    0
-    db  62h ; b
-    db  6Dh ; m
-    db  6Dh ; m
-    db    0
-    db    2
-    db    0
-    db    1
-    db    0
-    db    2
-    db    0
-    db    3
-    db    0
-    db    4
-    db    0
-    db    1
-    db    0
-    db    4
-    db    0
-    db    0
-    db    0
-    db    5
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    6
-    db    0
-    db    5
-    db    0
-    db    6
-    db    0
-    db    5
-    db    0
-    db    1
-    db    0
-    db    1
-    db    0
-    db    2
-    db    0
-    db    3
-    db    0
-    db    5
-    db    0
-    db    0
-    db    0
-    db    6
-    db    0
-    db    2
-    db    0
-    db    3
-    db    0
-    db    4
-    db    0
-    db    4
-    db    0
-    db    0
-    db    0
-    db    6
-    db    0
-    db    2
-    db    0
-    db    0
-    db    0
-    db    1
-    db    0
-    db    1
-    db    0
-    db    0
-    db    0
-    db    3
-    db    0
-    db    2
-    db    0
+    db 0
+    db 0
+word_3BB60     dw 64696
+word_3BB62     dw 2880
+aMisc     db 109
+    db 105
+    db 115
+    db 99
+    db 0
+aSdosel     db 115
+    db 100
+    db 111
+    db 115
+    db 101
+    db 108
+    db 0
+aOpp0opp1opp2op     db 111
+    db 112
+    db 112
+    db 48
+    db 111
+    db 112
+    db 112
+    db 49
+    db 111
+    db 112
+    db 112
+    db 50
+    db 111
+    db 112
+    db 112
+    db 51
+    db 111
+    db 112
+    db 112
+    db 52
+    db 111
+    db 112
+    db 112
+    db 53
+    db 111
+    db 112
+    db 112
+    db 54
+    db 0
+aScrn_0     db 115
+    db 99
+    db 114
+    db 110
+    db 0
+aBla     db 98
+    db 108
+    db 97
+    db 0
+aBnx     db 98
+    db 110
+    db 120
+    db 0
+aBcl     db 98
+    db 99
+    db 108
+    db 0
+aBca     db 98
+    db 99
+    db 97
+    db 0
+aBdo     db 98
+    db 100
+    db 111
+    db 0
+aClip     db 99
+    db 108
+    db 105
+    db 112
+    db 0
+aDes_0     db 100
+    db 101
+    db 115
+    db 0
+aRac     db 114
+    db 97
+    db 99
+    db 0
+    db 0
+    db 20
+    db 0
+    db 76
+    db 0
+    db 132
+    db 0
+    db 188
+    db 0
+    db 244
+    db 0
+    db 76
+    db 0
+    db 132
+    db 0
+    db 188
+    db 0
+    db 244
+    db 0
+    db 44
+    db 1
+word_3BBC8     dw 177
+    db 177
+    db 0
+    db 177
+    db 0
+    db 177
+    db 0
+    db 177
+    db 0
+    db 197
+    db 0
+    db 197
+    db 0
+    db 197
+    db 0
+    db 197
+    db 0
+    db 197
+    db 0
+    db 109
+    db 105
+    db 115
+    db 99
+    db 0
+    db 103
+    db 115
+    db 116
+    db 117
+    db 0
+    db 103
+    db 118
+    db 101
+    db 114
+    db 0
+    db 109
+    db 111
+    db 112
+    db 0
+    db 109
+    db 105
+    db 100
+    db 0
+    db 114
+    db 101
+    db 112
+    db 0
+    db 46
+    db 114
+    db 112
+    db 108
+    db 0
+    db 109
+    db 105
+    db 115
+    db 99
+    db 0
+    db 101
+    db 108
+    db 116
+    db 0
+    db 99
+    db 111
+    db 110
+    db 0
+    db 112
+    db 112
+    db 116
+    db 0
+    db 100
+    db 110
+    db 102
+    db 0
+    db 111
+    db 108
+    db 116
+    db 0
+    db 100
+    db 110
+    db 102
+    db 0
+    db 111
+    db 119
+    db 116
+    db 0
+    db 111
+    db 108
+    db 116
+    db 0
+    db 86
+    db 73
+    db 67
+    db 84
+    db 0
+    db 115
+    db 107
+    db 105
+    db 100
+    db 109
+    db 115
+    db 0
+    db 115
+    db 107
+    db 105
+    db 100
+    db 118
+    db 105
+    db 99
+    db 116
+    db 0
+    db 79
+    db 86
+    db 69
+    db 82
+    db 0
+    db 115
+    db 107
+    db 105
+    db 100
+    db 109
+    db 115
+    db 0
+    db 115
+    db 107
+    db 105
+    db 100
+    db 111
+    db 118
+    db 101
+    db 114
+    db 0
+    db 97
+    db 118
+    db 115
+    db 0
+    db 109
+    db 112
+    db 104
+    db 0
+    db 105
+    db 109
+    db 112
+    db 0
+    db 109
+    db 112
+    db 104
+    db 0
+    db 116
+    db 111
+    db 112
+    db 0
+    db 109
+    db 112
+    db 104
+    db 0
+    db 106
+    db 117
+    db 109
+    db 0
+    db 119
+    db 105
+    db 110
+    db 110
+    db 0
+    db 108
+    db 111
+    db 115
+    db 101
+    db 0
+    db 46
+    db 116
+    db 114
+    db 107
+    db 0
+    db 105
+    db 104
+    db 100
+    db 0
+    db 100
+    db 52
+    db 97
+    db 0
+    db 98
+    db 99
+    db 116
+    db 0
+    db 105
+    db 110
+    db 104
+    db 0
+    db 105
+    db 110
+    db 104
+    db 0
+    db 104
+    db 110
+    db 97
+    db 0
+    db 98
+    db 101
+    db 118
+    db 0
+    db 98
+    db 104
+    db 105
+    db 0
+    db 98
+    db 114
+    db 112
+    db 0
+    db 98
+    db 114
+    db 97
+    db 0
+    db 98
+    db 100
+    db 114
+    db 0
+    db 98
+    db 109
+    db 109
+    db 0
+    db 2
+    db 0
+    db 1
+    db 0
+    db 2
+    db 0
+    db 3
+    db 0
+    db 4
+    db 0
+    db 1
+    db 0
+    db 4
+    db 0
+    db 0
+    db 0
+    db 5
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 6
+    db 0
+    db 5
+    db 0
+    db 6
+    db 0
+    db 5
+    db 0
+    db 1
+    db 0
+    db 1
+    db 0
+    db 2
+    db 0
+    db 3
+    db 0
+    db 5
+    db 0
+    db 0
+    db 0
+    db 6
+    db 0
+    db 2
+    db 0
+    db 3
+    db 0
+    db 4
+    db 0
+    db 4
+    db 0
+    db 0
+    db 0
+    db 6
+    db 0
+    db 2
+    db 0
+    db 0
+    db 0
+    db 1
+    db 0
+    db 1
+    db 0
+    db 0
+    db 0
+    db 3
+    db 0
+    db 2
+    db 0
 word_3BCEC     dw 4
-word_3BCEE     dw 54h
-word_3BCF0     dw 0A4h
-word_3BCF2     dw 0F4h
-    db  80h ; Ä
-    db    0
-    db  4Bh ; K
-    db    0
-    db  9Bh ; õ
-    db    0
-    db 0EBh ; Î
-    db    0
-    db  3Bh ; ;
-    db    1
-    db 0C7h ; «
-    db    0
-word_3BD00     dw 0AEh
-    db 0AEh ; Æ
-    db    0
-    db 0AEh ; Æ
-    db    0
-    db 0AEh ; Æ
-    db    0
-    db 0AEh ; Æ
-    db    0
-word_3BD0A     dw 0C5h
-    db 0C5h ; ≈
-    db    0
-    db 0C5h ; ≈
-    db    0
-    db 0C5h ; ≈
-    db    0
-    db 0C5h ; ≈
-    db    0
-    db  6Fh ; o
-    db  70h ; p
-    db  70h ; p
-byte_3BD17     db 32h
-    db  77h ; w
-    db  69h ; i
-    db  6Eh ; n
-    db    0
-    db  6Fh ; o
-    db  70h ; p
-    db  70h ; p
-byte_3BD1F     db 32h
-aLose     db 'lose',0
-    db    0
-    db  6Fh ; o
-    db  70h ; p
-    db  30h ; 0
-byte_3BD29     db 31h
-    db    0
-    db  6Dh ; m
-    db  69h ; i
-    db  73h ; s
-    db  63h ; c
-    db    0
-    db  63h ; c
-    db  6Fh ; o
-    db  70h ; p
-    db    0
-    db  30h ; 0
-    db  31h ; 1
-    db  32h ; 2
-    db  33h ; 3
-    db  34h ; 4
-    db  35h ; 5
-    db  36h ; 6
-    db  37h ; 7
-    db  38h ; 8
-    db  39h ; 9
-    db  61h ; a
-    db  62h ; b
-    db  63h ; c
-    db  64h ; d
-    db  65h ; e
-    db  66h ; f
-    db  67h ; g
-    db  68h ; h
-    db  69h ; i
-    db  6Ah ; j
-    db    0
-    db    0
-    db  71h ; q
-    db  30h ; 0
-byte_3BD4C     db 30h
-    db    0
-    db  61h ; a
-    db  30h ; 0
-byte_3BD50     db 30h
-    db    0
-    db  0Ah
-    db    0
-    db  32h ; 2
-    db    0
-    db  0Ah
-    db    0
-    db  14h
-    db    0
-    db    5
-    db    0
-    db  28h ; (
-    db    0
-    db    5
-    db    0
-    db  0Ah
-    db    0
-    db    6
-    db    0
-    db  79h ; y
-    db    0
-    db    6
-    db    0
-    db    9
-    db    0
-    db    1
-    db    0
-    db  0Ah
-    db    0
-    db    1
-    db    0
-    db  0Ah
-    db    0
-    db  15h
-    db    0
-    db  15h
-    db    0
-    db  0Fh
-    db    0
-    db  0Fh
-    db    0
-    db    0
-    db    8
-    db 0F8h ; ¯
-    db    0
-    db    0
-    db    7
-    db 0F9h ; ˘
-    db    0
-    db    0
-    db    6
-    db 0FAh ; ˙
-    db    0
-    db    0
-    db    5
-    db 0FBh ; ˚
-    db    0
-    db    0
-    db    4
-    db 0FCh ; ¸
-    db    0
-    db    0
-    db    4
-    db 0FCh ; ¸
-    db    0
-    db    0
-    db    3
-    db 0FDh ; ˝
-    db    0
-    db    0
-    db    3
-    db 0FDh ; ˝
-    db    0
-    db    0
-    db    2
-    db 0FEh ; ˛
-    db    0
-    db    0
-    db    2
-    db 0FEh ; ˛
-    db    0
-    db    0
-    db    2
-    db 0FEh ; ˛
-    db    0
-    db    0
-    db    1
-    db 0FFh
-    db    0
-    db    0
-    db    1
-    db 0FFh
-    db    0
-    db    0
-    db    1
-    db 0FFh
-    db    0
-    db    0
-    db    1
-    db 0FFh
-    db    0
-    db    0
-    db    1
-    db 0FFh
-    db    0
-    db    0
-    db  10h
-    db 0F0h ; 
-    db    0
-    db    0
-    db  0Eh
-    db 0F2h ; Ú
-    db    0
-    db    0
-    db  0Ch
-    db 0F4h ; Ù
-    db    0
-    db    0
-    db  0Ah
-    db 0F6h ; ˆ
-    db    0
-    db    0
-    db    8
-    db 0F8h ; ¯
-    db    0
-    db    0
-    db    8
-    db 0F8h ; ¯
-    db    0
-    db    0
-    db    6
-    db 0FAh ; ˙
-    db    0
-    db    0
-    db    6
-    db 0FAh ; ˙
-    db    0
-    db    0
-    db    4
-    db 0FCh ; ¸
-    db    0
-    db    0
-    db    4
-    db 0FCh ; ¸
-    db    0
-    db    0
-    db    4
-    db 0FCh ; ¸
-    db    0
-    db    0
-    db    2
-    db 0FEh ; ˛
-    db    0
-    db    0
-    db    2
-    db 0FEh ; ˛
-    db    0
-    db    0
-    db    1
-    db 0FFh
-    db    0
-    db    0
-    db    1
-    db 0FFh
-    db    0
-    db    0
-    db    1
-    db 0FFh
-    db    0
-    db    0
-    db    1
-    db 0C0h ; ¿
-    db    0
-    db  80h ; Ä
-    db    0
-    db  40h ; @
-    db    0
-byte_3BE02     db 0FFh
-    db    0
-    db    1
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    1
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    1
-    db    0
-    db    1
-    db    0
-word_3BE14     dw 270Fh
-word_3BE16     dw 270Fh
-aSimd     db 'simd',0
-aGnam     db 'gnam',0
-aSimd_0     db 'simd',0
-aGsna     db 'gsna',0
+word_3BCEE     dw 84
+word_3BCF0     dw 164
+word_3BCF2     dw 244
+    db 128
+    db 0
+    db 75
+    db 0
+    db 155
+    db 0
+    db 235
+    db 0
+    db 59
+    db 1
+    db 199
+    db 0
+word_3BD00     dw 174
+    db 174
+    db 0
+    db 174
+    db 0
+    db 174
+    db 0
+    db 174
+    db 0
+word_3BD0A     dw 197
+    db 197
+    db 0
+    db 197
+    db 0
+    db 197
+    db 0
+    db 197
+    db 0
+    db 111
+    db 112
+    db 112
+byte_3BD17     db 50
+    db 119
+    db 105
+    db 110
+    db 0
+    db 111
+    db 112
+    db 112
+byte_3BD1F     db 50
+aLose     db 108
+    db 111
+    db 115
+    db 101
+    db 0
+    db 0
+    db 111
+    db 112
+    db 48
+byte_3BD29     db 49
+    db 0
+    db 109
+    db 105
+    db 115
+    db 99
+    db 0
+    db 99
+    db 111
+    db 112
+    db 0
+    db 48
+    db 49
+    db 50
+    db 51
+    db 52
+    db 53
+    db 54
+    db 55
+    db 56
+    db 57
+    db 97
+    db 98
+    db 99
+    db 100
+    db 101
+    db 102
+    db 103
+    db 104
+    db 105
+    db 106
+    db 0
+    db 0
+    db 113
+    db 48
+byte_3BD4C     db 48
+    db 0
+    db 97
+    db 48
+byte_3BD50     db 48
+    db 0
+    db 10
+    db 0
+    db 50
+    db 0
+    db 10
+    db 0
+    db 20
+    db 0
+    db 5
+    db 0
+    db 40
+    db 0
+    db 5
+    db 0
+    db 10
+    db 0
+    db 6
+    db 0
+    db 121
+    db 0
+    db 6
+    db 0
+    db 9
+    db 0
+    db 1
+    db 0
+    db 10
+    db 0
+    db 1
+    db 0
+    db 10
+    db 0
+    db 21
+    db 0
+    db 21
+    db 0
+    db 15
+    db 0
+    db 15
+    db 0
+    db 0
+    db 8
+    db 248
+    db 0
+    db 0
+    db 7
+    db 249
+    db 0
+    db 0
+    db 6
+    db 250
+    db 0
+    db 0
+    db 5
+    db 251
+    db 0
+    db 0
+    db 4
+    db 252
+    db 0
+    db 0
+    db 4
+    db 252
+    db 0
+    db 0
+    db 3
+    db 253
+    db 0
+    db 0
+    db 3
+    db 253
+    db 0
+    db 0
+    db 2
+    db 254
+    db 0
+    db 0
+    db 2
+    db 254
+    db 0
+    db 0
+    db 2
+    db 254
+    db 0
+    db 0
+    db 1
+    db 255
+    db 0
+    db 0
+    db 1
+    db 255
+    db 0
+    db 0
+    db 1
+    db 255
+    db 0
+    db 0
+    db 1
+    db 255
+    db 0
+    db 0
+    db 1
+    db 255
+    db 0
+    db 0
+    db 16
+    db 240
+    db 0
+    db 0
+    db 14
+    db 242
+    db 0
+    db 0
+    db 12
+    db 244
+    db 0
+    db 0
+    db 10
+    db 246
+    db 0
+    db 0
+    db 8
+    db 248
+    db 0
+    db 0
+    db 8
+    db 248
+    db 0
+    db 0
+    db 6
+    db 250
+    db 0
+    db 0
+    db 6
+    db 250
+    db 0
+    db 0
+    db 4
+    db 252
+    db 0
+    db 0
+    db 4
+    db 252
+    db 0
+    db 0
+    db 4
+    db 252
+    db 0
+    db 0
+    db 2
+    db 254
+    db 0
+    db 0
+    db 2
+    db 254
+    db 0
+    db 0
+    db 1
+    db 255
+    db 0
+    db 0
+    db 1
+    db 255
+    db 0
+    db 0
+    db 1
+    db 255
+    db 0
+    db 0
+    db 1
+    db 192
+    db 0
+    db 128
+    db 0
+    db 64
+    db 0
+byte_3BE02     db 255
+    db 0
+    db 1
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 1
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 1
+    db 0
+    db 1
+    db 0
+word_3BE14     dw 9999
+word_3BE16     dw 9999
+aSimd     db 115
+    db 105
+    db 109
+    db 100
+    db 0
+aGnam     db 103
+    db 110
+    db 97
+    db 109
+    db 0
+aSimd_0     db 115
+    db 105
+    db 109
+    db 100
+    db 0
+aGsna     db 103
+    db 115
+    db 110
+    db 97
+    db 0
 dword_3BE2C     dd 0
 word_3BE30     dw 0
 word_3BE32     dw 0
-    db  1Eh
-    db    0
-    db 0C8h ; »
-    db    0
-    db  40h ; @
-    db    1
-    db  90h ; ê
-    db    1
-    db  12h
-    db    2
-    db 0BCh ; º
-    db    2
-    db  70h ; p
-    db    3
-    db 0C0h ; ¿
-    db    3
-    db  6Ch ; l
-    db  7Ah ; z
-    db  56h ; V
-    db  7Ah ; z
-    db  40h ; @
-    db  7Ah ; z
-    db  6Ch ; l
-    db  7Ah ; z
-    db  56h ; V
-    db  7Ah ; z
-    db  40h ; @
-    db  7Ah ; z
-    db  6Ch ; l
-    db  7Ah ; z
-    db  56h ; V
-    db  7Ah ; z
-    db 0FEh ; ˛
-    db 0FCh ; ¸
-    db    2
-    db 0FFh
-    db 0FCh ; ¸
-    db    2
-    db    0
-    db 0FCh ; ¸
-    db    2
-    db    1
-    db 0FCh ; ¸
-    db    2
-    db    2
-    db 0FCh ; ¸
-    db    2
-    db 0FEh ; ˛
-    db 0FDh ; ˝
-    db    1
-    db 0FFh
-    db 0FDh ; ˝
-    db    1
-    db    0
-    db 0FDh ; ˝
-    db    1
-    db    1
-    db 0FDh ; ˝
-    db    1
-    db    2
-    db 0FDh ; ˝
-    db    1
-    db 0FEh ; ˛
-    db 0FEh ; ˛
-    db    1
-    db 0FFh
-    db 0FEh ; ˛
-    db    0
-    db    0
-    db 0FEh ; ˛
-    db    0
-    db    1
-    db 0FEh ; ˛
-    db    0
-    db    2
-    db 0FEh ; ˛
-    db    1
-    db 0FEh ; ˛
-    db 0FFh
-    db    0
-    db 0FFh
-    db 0FFh
-    db    0
-    db    0
-    db 0FFh
-    db    0
-    db    1
-    db 0FFh
-    db    0
-    db    2
-    db 0FFh
-    db    0
-    db 0FFh
-    db    0
-    db    0
-    db    1
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    2
-    db 0FCh ; ¸
-    db    2
-    db    1
-    db 0FCh ; ¸
-    db    2
-    db    0
-    db 0FCh ; ¸
-    db    2
-    db 0FFh
-    db 0FCh ; ¸
-    db    2
-    db 0FEh ; ˛
-    db 0FCh ; ¸
-    db    2
-    db    2
-    db 0FDh ; ˝
-    db    1
-    db    1
-    db 0FDh ; ˝
-    db    1
-    db    0
-    db 0FDh ; ˝
-    db    1
-    db 0FFh
-    db 0FDh ; ˝
-    db    1
-    db 0FEh ; ˛
-    db 0FDh ; ˝
-    db    1
-    db    2
-    db 0FEh ; ˛
-    db    1
-    db    1
-    db 0FEh ; ˛
-    db    0
-    db    0
-    db 0FEh ; ˛
-    db    0
-    db 0FFh
-    db 0FEh ; ˛
-    db    0
-    db 0FEh ; ˛
-    db 0FEh ; ˛
-    db    1
-    db    2
-    db 0FFh
-    db    0
-    db    1
-    db 0FFh
-    db    0
-    db    0
-    db 0FFh
-    db    0
-    db 0FFh
-    db 0FFh
-    db    0
-    db 0FEh ; ˛
-    db 0FFh
-    db    0
-    db    1
-    db    0
-    db    0
-    db 0FFh
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    4
-    db 0FEh ; ˛
-    db    2
-    db    4
-    db 0FFh
-    db    2
-    db    4
-    db    0
-    db    2
-    db    4
-    db    1
-    db    2
-    db    4
-    db    2
-    db    2
-    db    3
-    db 0FEh ; ˛
-    db    1
-    db    3
-    db 0FFh
-    db    1
-    db    3
-    db    0
-    db    1
-    db    3
-    db    1
-    db    1
-    db    3
-    db    2
-    db    1
-    db    2
-    db 0FEh ; ˛
-    db    1
-    db    2
-    db 0FFh
-    db    0
-    db    2
-    db    0
-    db    0
-    db    2
-    db    1
-    db    0
-    db    2
-    db    2
-    db    1
-    db    1
-    db 0FEh ; ˛
-    db    0
-    db    1
-    db 0FFh
-    db    0
-    db    1
-    db    0
-    db    0
-    db    1
-    db    1
-    db    0
-    db    2
-    db    2
-    db    0
-    db    0
-    db 0FFh
-    db    0
-    db    0
-    db    1
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    4
-    db    2
-    db    2
-    db    4
-    db    1
-    db    2
-    db    4
-    db    0
-    db    2
-    db    4
-    db 0FFh
-    db    2
-    db    4
-    db 0FEh ; ˛
-    db    2
-    db    3
-    db    2
-    db    1
-    db    3
-    db    1
-    db    1
-    db    3
-    db    0
-    db    1
-    db    3
-    db 0FFh
-    db    1
-    db    3
-    db 0FEh ; ˛
-    db    1
-    db    2
-    db    2
-    db    1
-    db    2
-    db    1
-    db    0
-    db    2
-    db    0
-    db    0
-    db    2
-    db 0FFh
-    db    0
-    db    2
-    db 0FEh ; ˛
-    db    1
-    db    1
-    db    2
-    db    0
-    db    1
-    db    1
-    db    0
-    db    1
-    db    0
-    db    0
-    db    1
-    db 0FFh
-    db    0
-    db    1
-    db 0FEh ; ˛
-    db    0
-    db    0
-    db    1
-    db    0
-    db    0
-    db 0FFh
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    2
-    db    4
-    db    2
-    db    1
-    db    4
-    db    2
-    db    0
-    db    4
-    db    2
-    db 0FFh
-    db    4
-    db    2
-    db 0FEh ; ˛
-    db    4
-    db    2
-    db    2
-    db    3
-    db    1
-    db    1
-    db    3
-    db    1
-    db    0
-    db    3
-    db    1
-    db 0FFh
-    db    3
-    db    1
-    db 0FEh ; ˛
-    db    3
-    db    1
-    db    2
-    db    2
-    db    0
-    db    1
-    db    2
-    db    0
-    db    0
-    db    2
-    db    0
-    db 0FFh
-    db    2
-    db    0
-    db 0FEh ; ˛
-    db    2
-    db    1
-    db    2
-    db    1
-    db    0
-    db    1
-    db    1
-    db    0
-    db    0
-    db    1
-    db    0
-    db 0FFh
-    db    1
-    db    0
-    db 0FEh ; ˛
-    db    1
-    db    0
-    db    1
-    db    0
-    db    0
-    db 0FFh
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db 0FEh ; ˛
-    db    4
-    db    2
-    db 0FFh
-    db    4
-    db    2
-    db    0
-    db    4
-    db    2
-    db    1
-    db    4
-    db    2
-    db    2
-    db    4
-    db    2
-    db 0FEh ; ˛
-    db    3
-    db    1
-    db 0FFh
-    db    3
-    db    1
-    db    0
-    db    3
-    db    1
-    db    1
-    db    3
-    db    1
-    db    2
-    db    3
-    db    1
-    db 0FEh ; ˛
-    db    2
-    db    1
-    db 0FFh
-    db    2
-    db    0
-    db    0
-    db    2
-    db    0
-    db    1
-    db    2
-    db    0
-    db    2
-    db    2
-    db    1
-    db 0FEh ; ˛
-    db    1
-    db    0
-    db 0FFh
-    db    1
-    db    0
-    db    0
-    db    1
-    db    0
-    db    1
-    db    1
-    db    0
-    db    2
-    db    1
-    db    0
-    db 0FFh
-    db    0
-    db    0
-    db    1
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db 0FCh ; ¸
-    db    2
-    db    2
-    db 0FCh ; ¸
-    db    1
-    db    2
-    db 0FCh ; ¸
-    db    0
-    db    2
-    db 0FCh ; ¸
-    db 0FFh
-    db    2
-    db 0FCh ; ¸
-    db 0FEh ; ˛
-    db    2
-    db 0FDh ; ˝
-    db    2
-    db    1
-    db 0FDh ; ˝
-    db    1
-    db    1
-    db 0FDh ; ˝
-    db    0
-    db    1
-    db 0FDh ; ˝
-    db 0FFh
-    db    1
-    db 0FDh ; ˝
-    db 0FEh ; ˛
-    db    1
-    db 0FEh ; ˛
-    db    2
-    db    1
-    db 0FEh ; ˛
-    db    1
-    db    0
-    db 0FEh ; ˛
-    db    0
-    db    0
-    db 0FEh ; ˛
-    db 0FFh
-    db    0
-    db 0FEh ; ˛
-    db 0FEh ; ˛
-    db    1
-    db 0FFh
-    db    2
-    db    0
-    db 0FFh
-    db    1
-    db    0
-    db 0FFh
-    db    0
-    db    0
-    db 0FFh
-    db 0FFh
-    db    0
-    db 0FFh
-    db 0FEh ; ˛
-    db    0
-    db    0
-    db    1
-    db    0
-    db    0
-    db 0FFh
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db 0FCh ; ¸
-    db 0FEh ; ˛
-    db    2
-    db 0FCh ; ¸
-    db 0FFh
-    db    2
-    db 0FCh ; ¸
-    db    0
-    db    2
-    db 0FCh ; ¸
-    db    1
-    db    2
-    db 0FCh ; ¸
-    db    2
-    db    2
-    db 0FDh ; ˝
-    db 0FEh ; ˛
-    db    1
-    db 0FDh ; ˝
-    db 0FFh
-    db    1
-    db 0FDh ; ˝
-    db    0
-    db    1
-    db 0FDh ; ˝
-    db    1
-    db    1
-    db 0FDh ; ˝
-    db    2
-    db    1
-    db 0FEh ; ˛
-    db 0FEh ; ˛
-    db    1
-    db 0FEh ; ˛
-    db 0FFh
-    db    0
-    db 0FEh ; ˛
-    db    0
-    db    0
-    db 0FEh ; ˛
-    db    1
-    db    0
-    db 0FEh ; ˛
-    db    2
-    db    1
-    db 0FFh
-    db 0FEh ; ˛
-    db    0
-    db 0FFh
-    db 0FFh
-    db    0
-    db 0FFh
-    db    0
-    db    0
-    db 0FFh
-    db    1
-    db    0
-    db 0FFh
-    db    2
-    db    0
-    db    0
-    db 0FFh
-    db    0
-    db    0
-    db    1
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  2Ah ; *
-    db    7
-    db  70h ; p
-    db    7
-    db 0B6h ; ∂
-    db    7
-    db 0FCh ; ¸
-    db    7
-    db  42h ; B
-    db    8
-    db  88h ; à
-    db    8
-    db 0CEh ; Œ
-    db    8
-    db 0E4h ; ‰
-    db    6
-    db    0
-    db    0
-    db  40h ; @
-    db    1
-    db    0
-    db    0
-    db 0C8h ; »
-    db    0
-    db    2
-    db    2
-    db    1
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    2
-    db    0
-    db    0
-    db    0
-    db 0FEh ; ˛
-    db    0
-    db    2
-    db    0
-    db    0
-    db    0
-    db 0FEh ; ˛
-    db    0
-    db    0
-    db    0
-    db 0FEh ; ˛
-    db    0
-    db    2
-    db    0
-    db 0FEh ; ˛
-    db    0
-    db 0FEh ; ˛
-    db    0
-    db    2
-    db    0
-    db    2
-    db    0
-    db    2
-    db    0
-    db 0FEh ; ˛
-    db    0
-    db    0
-    db    0
-    db    0
-    db    1
-    db    1
-    db    1
-    db    1
-    db    2
-    db    2
-    db    2
-    db    2
-    db    3
-    db    3
-    db    3
-    db    3
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    1
-    db    0
-    db    1
-    db    0
-    db    2
-    db    0
-    db    2
-    db    0
-    db    3
-    db    0
-    db    3
-    db 0D6h ; ÷
-    db 0D7h ; ◊
-    db 0D6h ; ÷
-    db 0D7h ; ◊
-    db 0D6h ; ÷
-    db 0D7h ; ◊
-    db 0D6h ; ÷
-    db 0D7h ; ◊
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    1
-    db    0
-    db    0
-    db    1
-    db    0
-    db    0
-    db    0
-    db    1
-    db    0
-    db    0
-    db    1
-    db    1
-    db    1
-    db  80h ; Ä
-    db    0
-    db  80h ; Ä
-    db    1
-    db  80h ; Ä
-    db    2
-    db  80h ; Ä
-    db    3
-word_3C108     dw 3C00h
-word_3C10A     dw 4EE8h
-word_3C10C     dw 0F510h
-word_3C10E     dw 3C00h
-word_3C110     dw 0AF0h
-word_3C112     dw 2AD0h
-    db    0
-    db    0
-    db  8Ch ; å
-    db 0D8h ; ÿ
-    db  78h ; x
-    db  41h ; A
-    db    0
-    db    0
-    db  40h ; @
-    db    1
-    db    0
-    db    0
-    db 0C8h ; »
-    db    0
-    db  64h ; d
-    db  6Dh ; m
-    db  31h ; 1
-    db    0
-    db  64h ; d
-    db  6Dh ; m
-    db  32h ; 2
-    db    0
-    db  70h ; p
-    db  72h ; r
-    db  65h ; e
-    db    0
-    db  73h ; s
-    db  65h ; e
-    db  31h ; 1
-    db    0
-    db  73h ; s
-    db  65h ; e
-    db  32h ; 2
-    db    0
-    db  77h ; w
-    db  77h ; w
-    db  77h ; w
-    db    0
-    db  6Fh ; o
-    db  70h ; p
-    db  70h ; p
-    db    0
-    db  6Fh ; o
-    db  70h ; p
-    db  70h ; p
-    db    0
-    db  70h ; p
-    db  65h ; e
-    db  6Eh ; n
-    db    0
-    db  72h ; r
-    db  70h ; p
-    db  6Ch ; l
-    db    0
-    db  94h ; î
-    db    0
-    db 0ACh ; ¨
-    db    0
-    db  5Dh ; ]
-    db    0
-    db  6Ch ; l
-    db    0
-    db  44h ; D
-    db    0
-    db  5Ch ; \
-    db    0
-    db  71h ; q
-    db    0
-    db  80h ; Ä
-    db    0
-    db 0E4h ; ‰
-    db    0
-    db 0FCh ; ¸
-    db    0
-    db  71h ; q
-    db    0
-    db  80h ; Ä
-    db    0
-    db  63h ; c
-    db  72h ; r
-    db  61h ; a
-    db  6Bh ; k
-    db    0
-    db  63h ; c
-    db  69h ; i
-    db  6Eh ; n
-    db  66h ; f
-    db    0
-    db  73h ; s
-    db  63h ; c
-    db  65h ; e
-    db  6Eh ; n
-    db  73h ; s
-    db  63h ; c
-    db  65h ; e
-    db  32h ; 2
-    db  73h ; s
-    db  63h ; c
-    db  65h ; e
-    db  33h ; 3
-    db  73h ; s
-    db  63h ; c
-    db  65h ; e
-    db  34h ; 4
-    db    0
-    db  73h ; s
-    db  64h ; d
-    db  67h ; g
-    db  61h ; a
-    db  6Dh ; m
-    db  65h ; e
-    db  32h ; 2
-    db    0
-    db  65h ; e
-    db  78h ; x
-    db  30h ; 0
-    db  31h ; 1
-    db  65h ; e
-    db  78h ; x
-    db  30h ; 0
-    db  32h ; 2
-    db  65h ; e
-    db  78h ; x
-    db  30h ; 0
-    db  33h ; 3
-    db  6Ch ; l
-    db  65h ; e
-    db  66h ; f
-    db  74h ; t
-    db  72h ; r
-    db  69h ; i
-    db  67h ; g
-    db  68h ; h
-    db    0
-    db  74h ; t
-    db  69h ; i
-    db  74h ; t
-    db  6Ch ; l
-    db  65h ; e
-    db    0
-    db  6Ch ; l
-    db  6Fh ; o
-    db  67h ; g
-    db  6Fh ; o
-    db  6Ch ; l
-    db  6Fh ; o
-    db  67h ; g
-    db  32h ; 2
-    db  62h ; b
-    db  72h ; r
-    db  61h ; a
-    db  76h ; v
-    db    0
-    db    0
-    db  63h ; c
-    db  61h ; a
-    db  72h ; r
-    db  63h ; c
-    db  6Fh ; o
-    db  75h ; u
-    db  6Eh ; n
-    db    0
+    db 30
+    db 0
+    db 200
+    db 0
+    db 64
+    db 1
+    db 144
+    db 1
+    db 18
+    db 2
+    db 188
+    db 2
+    db 112
+    db 3
+    db 192
+    db 3
+    db 108
+    db 122
+    db 86
+    db 122
+    db 64
+    db 122
+    db 108
+    db 122
+    db 86
+    db 122
+    db 64
+    db 122
+    db 108
+    db 122
+    db 86
+    db 122
+    db 254
+    db 252
+    db 2
+    db 255
+    db 252
+    db 2
+    db 0
+    db 252
+    db 2
+    db 1
+    db 252
+    db 2
+    db 2
+    db 252
+    db 2
+    db 254
+    db 253
+    db 1
+    db 255
+    db 253
+    db 1
+    db 0
+    db 253
+    db 1
+    db 1
+    db 253
+    db 1
+    db 2
+    db 253
+    db 1
+    db 254
+    db 254
+    db 1
+    db 255
+    db 254
+    db 0
+    db 0
+    db 254
+    db 0
+    db 1
+    db 254
+    db 0
+    db 2
+    db 254
+    db 1
+    db 254
+    db 255
+    db 0
+    db 255
+    db 255
+    db 0
+    db 0
+    db 255
+    db 0
+    db 1
+    db 255
+    db 0
+    db 2
+    db 255
+    db 0
+    db 255
+    db 0
+    db 0
+    db 1
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 2
+    db 252
+    db 2
+    db 1
+    db 252
+    db 2
+    db 0
+    db 252
+    db 2
+    db 255
+    db 252
+    db 2
+    db 254
+    db 252
+    db 2
+    db 2
+    db 253
+    db 1
+    db 1
+    db 253
+    db 1
+    db 0
+    db 253
+    db 1
+    db 255
+    db 253
+    db 1
+    db 254
+    db 253
+    db 1
+    db 2
+    db 254
+    db 1
+    db 1
+    db 254
+    db 0
+    db 0
+    db 254
+    db 0
+    db 255
+    db 254
+    db 0
+    db 254
+    db 254
+    db 1
+    db 2
+    db 255
+    db 0
+    db 1
+    db 255
+    db 0
+    db 0
+    db 255
+    db 0
+    db 255
+    db 255
+    db 0
+    db 254
+    db 255
+    db 0
+    db 1
+    db 0
+    db 0
+    db 255
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 4
+    db 254
+    db 2
+    db 4
+    db 255
+    db 2
+    db 4
+    db 0
+    db 2
+    db 4
+    db 1
+    db 2
+    db 4
+    db 2
+    db 2
+    db 3
+    db 254
+    db 1
+    db 3
+    db 255
+    db 1
+    db 3
+    db 0
+    db 1
+    db 3
+    db 1
+    db 1
+    db 3
+    db 2
+    db 1
+    db 2
+    db 254
+    db 1
+    db 2
+    db 255
+    db 0
+    db 2
+    db 0
+    db 0
+    db 2
+    db 1
+    db 0
+    db 2
+    db 2
+    db 1
+    db 1
+    db 254
+    db 0
+    db 1
+    db 255
+    db 0
+    db 1
+    db 0
+    db 0
+    db 1
+    db 1
+    db 0
+    db 2
+    db 2
+    db 0
+    db 0
+    db 255
+    db 0
+    db 0
+    db 1
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 4
+    db 2
+    db 2
+    db 4
+    db 1
+    db 2
+    db 4
+    db 0
+    db 2
+    db 4
+    db 255
+    db 2
+    db 4
+    db 254
+    db 2
+    db 3
+    db 2
+    db 1
+    db 3
+    db 1
+    db 1
+    db 3
+    db 0
+    db 1
+    db 3
+    db 255
+    db 1
+    db 3
+    db 254
+    db 1
+    db 2
+    db 2
+    db 1
+    db 2
+    db 1
+    db 0
+    db 2
+    db 0
+    db 0
+    db 2
+    db 255
+    db 0
+    db 2
+    db 254
+    db 1
+    db 1
+    db 2
+    db 0
+    db 1
+    db 1
+    db 0
+    db 1
+    db 0
+    db 0
+    db 1
+    db 255
+    db 0
+    db 1
+    db 254
+    db 0
+    db 0
+    db 1
+    db 0
+    db 0
+    db 255
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 2
+    db 4
+    db 2
+    db 1
+    db 4
+    db 2
+    db 0
+    db 4
+    db 2
+    db 255
+    db 4
+    db 2
+    db 254
+    db 4
+    db 2
+    db 2
+    db 3
+    db 1
+    db 1
+    db 3
+    db 1
+    db 0
+    db 3
+    db 1
+    db 255
+    db 3
+    db 1
+    db 254
+    db 3
+    db 1
+    db 2
+    db 2
+    db 0
+    db 1
+    db 2
+    db 0
+    db 0
+    db 2
+    db 0
+    db 255
+    db 2
+    db 0
+    db 254
+    db 2
+    db 1
+    db 2
+    db 1
+    db 0
+    db 1
+    db 1
+    db 0
+    db 0
+    db 1
+    db 0
+    db 255
+    db 1
+    db 0
+    db 254
+    db 1
+    db 0
+    db 1
+    db 0
+    db 0
+    db 255
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 254
+    db 4
+    db 2
+    db 255
+    db 4
+    db 2
+    db 0
+    db 4
+    db 2
+    db 1
+    db 4
+    db 2
+    db 2
+    db 4
+    db 2
+    db 254
+    db 3
+    db 1
+    db 255
+    db 3
+    db 1
+    db 0
+    db 3
+    db 1
+    db 1
+    db 3
+    db 1
+    db 2
+    db 3
+    db 1
+    db 254
+    db 2
+    db 1
+    db 255
+    db 2
+    db 0
+    db 0
+    db 2
+    db 0
+    db 1
+    db 2
+    db 0
+    db 2
+    db 2
+    db 1
+    db 254
+    db 1
+    db 0
+    db 255
+    db 1
+    db 0
+    db 0
+    db 1
+    db 0
+    db 1
+    db 1
+    db 0
+    db 2
+    db 1
+    db 0
+    db 255
+    db 0
+    db 0
+    db 1
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 252
+    db 2
+    db 2
+    db 252
+    db 1
+    db 2
+    db 252
+    db 0
+    db 2
+    db 252
+    db 255
+    db 2
+    db 252
+    db 254
+    db 2
+    db 253
+    db 2
+    db 1
+    db 253
+    db 1
+    db 1
+    db 253
+    db 0
+    db 1
+    db 253
+    db 255
+    db 1
+    db 253
+    db 254
+    db 1
+    db 254
+    db 2
+    db 1
+    db 254
+    db 1
+    db 0
+    db 254
+    db 0
+    db 0
+    db 254
+    db 255
+    db 0
+    db 254
+    db 254
+    db 1
+    db 255
+    db 2
+    db 0
+    db 255
+    db 1
+    db 0
+    db 255
+    db 0
+    db 0
+    db 255
+    db 255
+    db 0
+    db 255
+    db 254
+    db 0
+    db 0
+    db 1
+    db 0
+    db 0
+    db 255
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 252
+    db 254
+    db 2
+    db 252
+    db 255
+    db 2
+    db 252
+    db 0
+    db 2
+    db 252
+    db 1
+    db 2
+    db 252
+    db 2
+    db 2
+    db 253
+    db 254
+    db 1
+    db 253
+    db 255
+    db 1
+    db 253
+    db 0
+    db 1
+    db 253
+    db 1
+    db 1
+    db 253
+    db 2
+    db 1
+    db 254
+    db 254
+    db 1
+    db 254
+    db 255
+    db 0
+    db 254
+    db 0
+    db 0
+    db 254
+    db 1
+    db 0
+    db 254
+    db 2
+    db 1
+    db 255
+    db 254
+    db 0
+    db 255
+    db 255
+    db 0
+    db 255
+    db 0
+    db 0
+    db 255
+    db 1
+    db 0
+    db 255
+    db 2
+    db 0
+    db 0
+    db 255
+    db 0
+    db 0
+    db 1
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 42
+    db 7
+    db 112
+    db 7
+    db 182
+    db 7
+    db 252
+    db 7
+    db 66
+    db 8
+    db 136
+    db 8
+    db 206
+    db 8
+    db 228
+    db 6
+    db 0
+    db 0
+    db 64
+    db 1
+    db 0
+    db 0
+    db 200
+    db 0
+    db 2
+    db 2
+    db 1
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 2
+    db 0
+    db 0
+    db 0
+    db 254
+    db 0
+    db 2
+    db 0
+    db 0
+    db 0
+    db 254
+    db 0
+    db 0
+    db 0
+    db 254
+    db 0
+    db 2
+    db 0
+    db 254
+    db 0
+    db 254
+    db 0
+    db 2
+    db 0
+    db 2
+    db 0
+    db 2
+    db 0
+    db 254
+    db 0
+    db 0
+    db 0
+    db 0
+    db 1
+    db 1
+    db 1
+    db 1
+    db 2
+    db 2
+    db 2
+    db 2
+    db 3
+    db 3
+    db 3
+    db 3
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 1
+    db 0
+    db 1
+    db 0
+    db 2
+    db 0
+    db 2
+    db 0
+    db 3
+    db 0
+    db 3
+    db 214
+    db 215
+    db 214
+    db 215
+    db 214
+    db 215
+    db 214
+    db 215
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 1
+    db 0
+    db 0
+    db 1
+    db 0
+    db 0
+    db 0
+    db 1
+    db 0
+    db 0
+    db 1
+    db 1
+    db 1
+    db 128
+    db 0
+    db 128
+    db 1
+    db 128
+    db 2
+    db 128
+    db 3
+word_3C108     dw 15360
+word_3C10A     dw 20200
+word_3C10C     dw 62736
+word_3C10E     dw 15360
+word_3C110     dw 2800
+word_3C112     dw 10960
+    db 0
+    db 0
+    db 140
+    db 216
+    db 120
+    db 65
+    db 0
+    db 0
+    db 64
+    db 1
+    db 0
+    db 0
+    db 200
+    db 0
+    db 100
+    db 109
+    db 49
+    db 0
+    db 100
+    db 109
+    db 50
+    db 0
+    db 112
+    db 114
+    db 101
+    db 0
+    db 115
+    db 101
+    db 49
+    db 0
+    db 115
+    db 101
+    db 50
+    db 0
+    db 119
+    db 119
+    db 119
+    db 0
+    db 111
+    db 112
+    db 112
+    db 0
+    db 111
+    db 112
+    db 112
+    db 0
+    db 112
+    db 101
+    db 110
+    db 0
+    db 114
+    db 112
+    db 108
+    db 0
+    db 148
+    db 0
+    db 172
+    db 0
+    db 93
+    db 0
+    db 108
+    db 0
+    db 68
+    db 0
+    db 92
+    db 0
+    db 113
+    db 0
+    db 128
+    db 0
+    db 228
+    db 0
+    db 252
+    db 0
+    db 113
+    db 0
+    db 128
+    db 0
+    db 99
+    db 114
+    db 97
+    db 107
+    db 0
+    db 99
+    db 105
+    db 110
+    db 102
+    db 0
+    db 115
+    db 99
+    db 101
+    db 110
+    db 115
+    db 99
+    db 101
+    db 50
+    db 115
+    db 99
+    db 101
+    db 51
+    db 115
+    db 99
+    db 101
+    db 52
+    db 0
+    db 115
+    db 100
+    db 103
+    db 97
+    db 109
+    db 101
+    db 50
+    db 0
+    db 101
+    db 120
+    db 48
+    db 49
+    db 101
+    db 120
+    db 48
+    db 50
+    db 101
+    db 120
+    db 48
+    db 51
+    db 108
+    db 101
+    db 102
+    db 116
+    db 114
+    db 105
+    db 103
+    db 104
+    db 0
+    db 116
+    db 105
+    db 116
+    db 108
+    db 101
+    db 0
+    db 108
+    db 111
+    db 103
+    db 111
+    db 108
+    db 111
+    db 103
+    db 50
+    db 98
+    db 114
+    db 97
+    db 118
+    db 0
+    db 0
+    db 99
+    db 97
+    db 114
+    db 99
+    db 111
+    db 117
+    db 110
+    db 0
 word_3C1B6     dw 0
-word_3C1B8     dw 140h
+word_3C1B8     dw 320
 word_3C1BA     dw 0
-word_3C1BC     dw 0C8h
+word_3C1BC     dw 200
 word_3C1BE     dw 1
-aBarn     db 'barn',0
-aZbrn     db 'zbrn',0
-aBrid     db 'brid',0
-aZbri     db 'zbri',0
-aBtur     db 'btur',0
-aZbtu     db 'zbtu',0
-aChi1     db 'chi1',0
-aZch1     db 'zch1',0
-aChi2     db 'chi2',0
-aZch2     db 'zch2',0
-aElrd     db 'elrd',0
-aZelr     db 'zelr',0
-aFini     db 'fini',0
-aZfin     db 'zfin',0
-aGass     db 'gass',0
-aZgas     db 'zgas',0
-aLban     db 'lban',0
-aZlba     db 'zlba',0
-aLoop     db 'loop',0
-aZloo     db 'zloo',0
-aOffi     db 'offi',0
-aZoff     db 'zoff',0
-aPipe     db 'pipe',0
-aZpip     db 'zpip',0
-aRamp     db 'ramp',0
-aZram     db 'zram',0
-aRban     db 'rban',0
-aZrba     db 'zrba',0
-aRdup     db 'rdup',0
-aZrdu     db 'zrdu',0
-aRoad     db 'road',0
-aZroa     db 'zroa',0
-aStur     db 'stur',0
-aZstu     db 'zstu',0
-aTenn     db 'tenn',0
-aZten     db 'zten',0
-aTunn     db 'tunn',0
-aZtun     db 'ztun',0
-aTurn     db 'turn',0
-aZtur     db 'ztur',0
-aGoui     db 'goui',0
-aGouo     db 'gouo',0
-aGoup     db 'goup',0
-aHigh     db 'high',0
-aLakc     db 'lakc',0
-aLake     db 'lake',0
-aCld1     db 'cld1',0
-aCld2     db 'cld2',0
-aCld3     db 'cld3',0
-aSigl     db 'sigl',0
-aSigr     db 'sigr',0
-aTree     db 'tree',0
-aInte     db 'inte',0
-aZint     db 'zint',0
-aOffl     db 'offl',0
-aZofl     db 'zofl',0
-aOffr     db 'offr',0
-aZofr     db 'zofr',0
-aPalm     db 'palm',0
-aZpal     db 'zpal',0
-aBank     db 'bank',0
-aZban     db 'zban',0
-aSofl     db 'sofl',0
-aZsol     db 'zsol',0
-aSofr     db 'sofr',0
-aZsor     db 'zsor',0
-aSram     db 'sram',0
-aZsra     db 'zsra',0
-aSelr     db 'selr',0
-aZser     db 'zser',0
-aElsp     db 'elsp',0
-aZesp     db 'zesp',0
-aCact     db 'cact',0
-aCact_0     db 'cact',0
-aSpip     db 'spip',0
-aZspi     db 'zspi',0
-aSest     db 'sest',0
-aZses     db 'zses',0
-aWroa     db 'wroa',0
-aZwro     db 'zwro',0
-aBarr     db 'barr',0
-aZbar     db 'zbar',0
-aLco0     db 'lco0',0
-aZlco     db 'zlco',0
-aRco0     db 'rco0',0
-aZrco     db 'zrco',0
-aGwro     db 'gwro',0
-aZgwr     db 'zgwr',0
-aLco1     db 'lco1',0
-aRco1     db 'rco1',0
-aLoo1     db 'loo1',0
-aHig1     db 'hig1',0
-aHig2     db 'hig2',0
-aHig3     db 'hig3',0
-aWind     db 'wind',0
-aZwin     db 'zwin',0
-aBoat     db 'boat',0
-aZboa     db 'zboa',0
-aRest     db 'rest',0
-aZres     db 'zres',0
-aHpip     db 'hpip',0
-aZhpi     db 'zhpi',0
-aVcor     db 'vcor',0
-aZvco     db 'zvco',0
-aTun2     db 'tun2',0
-aPip2     db 'pip2',0
-aFenc     db 'fenc',0
-aZfen     db 'zfen',0
-aCfen     db 'cfen',0
-aZcfe     db 'zcfe',0
-aFlag     db 'flag',0
-aTruk     db 'truk',0
-aExp0     db 'exp0',0
-aExp1     db 'exp1',0
-aExp2     db 'exp2',0
-aExp3     db 'exp3',0
-    db  88h ; à
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0B2h ; ≤
-    db 0FEh ; ˛
-    db  78h ; x
-    db    0
-    db 0FFh
-    db 0FFh
-    db 0B2h ; ≤
-    db 0FEh ; ˛
-    db  88h ; à
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db  4Eh ; N
-    db    1
-    db  78h ; x
-    db    0
-    db 0FFh
-    db 0FFh
-    db  4Eh ; N
-    db    1
-    db 0C8h ; »
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db 0C8h ; »
-    db    0
-    db    0
-    db    0
-    db 0B2h ; ≤
-    db 0FEh ; ˛
-    db  38h ; 8
-    db 0FFh
-    db    0
-    db    0
-    db  4Eh ; N
-    db    1
-    db  88h ; à
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db  80h ; Ä
-    db    0
-    db  78h ; x
-    db    0
-    db 0FFh
-    db 0FFh
-    db  80h ; Ä
-    db    0
-    db  88h ; à
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db  4Eh ; N
-    db    1
-    db  78h ; x
-    db    0
-    db 0FFh
-    db 0FFh
-    db  4Eh ; N
-    db    1
-    db 0C8h ; »
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db 0C8h ; »
-    db    0
-    db    0
-    db    0
-    db 0B2h ; ≤
-    db 0FEh ; ˛
-    db  38h ; 8
-    db 0FFh
-    db    0
-    db    0
-    db  4Eh ; N
-    db    1
-    db  88h ; à
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0B2h ; ≤
-    db 0FEh ; ˛
-    db  78h ; x
-    db    0
-    db 0FFh
-    db 0FFh
-    db 0B2h ; ≤
-    db 0FEh ; ˛
-    db  88h ; à
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db  4Eh ; N
-    db    1
-    db  78h ; x
-    db    0
-    db 0FFh
-    db 0FFh
-    db  4Eh ; N
-    db    1
-    db  78h ; x
-    db    0
-    db 0A5h ; •
-    db    0
-    db    0
-    db    0
-    db 0ACh ; ¨
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0B2h ; ≤
-    db 0FEh ; ˛
-    db  54h ; T
-    db    0
-    db 0FFh
-    db 0FFh
-    db 0B2h ; ≤
-    db 0FEh ; ˛
-    db 0ACh ; ¨
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db  4Eh ; N
-    db    1
-    db  54h ; T
-    db    0
-    db 0FFh
-    db 0FFh
-    db  4Eh ; N
-    db    1
-    db  73h ; s
-    db    0
-    db 0B4h ; ¥
-    db    0
-    db    0
-    db    0
-    db 0C8h ; »
-    db    0
-    db    0
-    db    0
-    db 0B2h ; ≤
-    db 0FEh ; ˛
-    db  38h ; 8
-    db 0FFh
-    db    0
-    db    0
-    db  4Eh ; N
-    db    1
-    db 0ACh ; ¨
-    db 0FFh
-    db  23h ; #
-    db    0
-    db 0B2h ; ≤
-    db 0FEh ; ˛
-    db  8Dh ; ç
-    db 0FFh
-    db  58h ; X
-    db    0
-    db 0B2h ; ≤
-    db 0FEh ; ˛
-    db 0ACh ; ¨
-    db 0FFh
-    db  23h ; #
-    db    0
-    db  4Eh ; N
-    db    1
-    db  8Dh ; ç
-    db 0FFh
-    db  58h ; X
-    db    0
-    db  4Eh ; N
-    db    1
-    db  73h ; s
-    db    0
-    db 0B4h ; ¥
-    db    0
-    db    0
-    db    0
-    db 0C8h ; »
-    db    0
-    db    0
-    db    0
-    db 0B2h ; ≤
-    db 0FEh ; ˛
-    db  38h ; 8
-    db 0FFh
-    db    0
-    db    0
-    db  4Eh ; N
-    db    1
-    db  88h ; à
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0B2h ; ≤
-    db 0FEh ; ˛
-    db  78h ; x
-    db    0
-    db 0FFh
-    db 0FFh
-    db 0B2h ; ≤
-    db 0FEh ; ˛
-    db  88h ; à
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db  4Eh ; N
-    db    1
-    db  78h ; x
-    db    0
-    db 0FFh
-    db 0FFh
-    db  4Eh ; N
-    db    1
-    db 0C8h ; »
-    db    0
-    db    0
-    db    0
-    db 0C8h ; »
-    db    0
-    db 0C8h ; »
-    db    0
-    db    0
-    db    0
-    db 0B2h ; ≤
-    db 0FEh ; ˛
-    db  38h ; 8
-    db 0FFh
-    db    0
-    db    0
-    db  4Eh ; N
-    db    1
-    db  88h ; à
-    db    1
-    db 0FFh
-    db 0FFh
-    db  64h ; d
-    db 0FDh ; ˝
-    db  78h ; x
-    db    2
-    db 0FFh
-    db 0FFh
-    db  64h ; d
-    db 0FDh ; ˝
-    db  88h ; à
-    db    1
-    db 0FFh
-    db 0FFh
-    db    0
-    db    0
-    db  78h ; x
-    db    2
-    db 0FFh
-    db 0FFh
-    db    0
-    db    0
-    db  88h ; à
-    db    1
-    db 0FFh
-    db 0FFh
-    db  9Ch ; ú
-    db    2
-    db  78h ; x
-    db    2
-    db 0FFh
-    db 0FFh
-    db  9Ch ; ú
-    db    2
-    db  2Ch ; ,
-    db    1
-    db    0
-    db    0
-    db 0C8h ; »
-    db    0
-    db 0C8h ; »
-    db    2
-    db    0
-    db    0
-    db  64h ; d
-    db 0FDh ; ˝
-    db 0C8h ; »
-    db 0FEh ; ˛
-    db    0
-    db    0
-    db  9Ch ; ú
-    db    2
-    db  88h ; à
-    db 0FDh ; ˝
-    db 0FFh
-    db 0FFh
-    db  64h ; d
-    db 0FDh ; ˝
-    db  78h ; x
-    db 0FEh ; ˛
-    db 0FFh
-    db 0FFh
-    db  64h ; d
-    db 0FDh ; ˝
-    db  88h ; à
-    db 0FDh ; ˝
-    db 0FFh
-    db 0FFh
-    db    0
-    db    0
-    db  78h ; x
-    db 0FEh ; ˛
-    db 0FFh
-    db 0FFh
-    db    0
-    db    0
-    db  88h ; à
-    db 0FDh ; ˝
-    db 0FFh
-    db 0FFh
-    db  9Ch ; ú
-    db    2
-    db  78h ; x
-    db 0FEh ; ˛
-    db 0FFh
-    db 0FFh
-    db  9Ch ; ú
-    db    2
-    db 0D4h ; ‘
-    db 0FEh ; ˛
-    db    0
-    db    0
-    db 0C8h ; »
-    db    0
-    db 0C8h ; »
-    db 0FEh ; ˛
-    db    0
-    db    0
-    db  64h ; d
-    db 0FDh ; ˝
-    db  38h ; 8
-    db 0FDh ; ˝
-    db    0
-    db    0
-    db  9Ch ; ú
-    db    2
-    db  7Bh ; {
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db  64h ; d
-    db 0FEh ; ˛
-    db  63h ; c
-    db    0
-    db 0FFh
-    db 0FFh
-    db 0A1h ; °
-    db 0FEh ; ˛
-    db  54h ; T
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0C3h ; √
-    db 0FEh ; ˛
-    db  24h ; $
-    db    0
-    db 0FFh
-    db 0FFh
-    db  3Bh ; ;
-    db 0FFh
-    db  15h
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db  15h
-    db 0FFh
-    db 0BFh ; ø
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0BFh ; ø
-    db 0FFh
-    db 0C5h ; ≈
-    db 0FEh ; ˛
-    db 0FFh
-    db 0FFh
-    db  53h ; S
-    db 0FFh
-    db  3Eh ; >
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db  22h ; "
-    db    0
-    db  66h ; f
-    db 0FEh ; ˛
-    db 0FFh
-    db 0FFh
-    db  7Ah ; z
-    db 0FFh
-    db 0A5h ; •
-    db 0FEh ; ˛
-    db 0FFh
-    db 0FFh
-    db  62h ; b
-    db    0
-    db  38h ; 8
-    db 0FFh
-    db    0
-    db    0
-    db 0C8h ; »
-    db    0
-    db  9Dh ; ù
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0A1h ; °
-    db 0FEh ; ˛
-    db  85h ; Ö
-    db    0
-    db 0FFh
-    db 0FFh
-    db  64h ; d
-    db 0FEh ; ˛
-    db 0DCh ; ‹
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db  3Bh ; ;
-    db 0FFh
-    db 0ACh ; ¨
-    db    0
-    db 0FFh
-    db 0FFh
-    db 0C3h ; √
-    db 0FEh ; ˛
-    db  41h ; A
-    db    0
-    db 0FFh
-    db 0FFh
-    db 0BFh ; ø
-    db 0FFh
-    db 0EBh ; Î
-    db    0
-    db 0FFh
-    db 0FFh
-    db  15h
-    db 0FFh
-    db 0C2h ; ¬
-    db    0
-    db 0FFh
-    db 0FFh
-    db  22h ; "
-    db    0
-    db  3Bh ; ;
-    db    1
-    db 0FFh
-    db 0FFh
-    db  53h ; S
-    db 0FFh
-    db  5Bh ; [
-    db    1
-    db 0FFh
-    db 0FFh
-    db  62h ; b
-    db    0
-    db  9Ah ; ö
-    db    1
-    db 0FFh
-    db 0FFh
-    db  7Ah ; z
-    db 0FFh
-    db 0C8h ; »
-    db    0
-    db    0
-    db    0
-    db 0C8h ; »
-    db    0
-    db  83h ; É
-    db    1
-    db 0FFh
-    db 0FFh
-    db  7Ah ; z
-    db 0FCh ; ¸
-    db  72h ; r
-    db    2
-    db 0FFh
-    db 0FFh
-    db  8Eh ; é
-    db 0FCh ; ¸
-    db  73h ; s
-    db    1
-    db 0FFh
-    db 0FFh
-    db 0F2h ; Ú
-    db 0FCh ; ¸
-    db  60h ; `
-    db    2
-    db 0FFh
-    db 0FFh
-    db  1Bh
-    db 0FDh ; ˝
-    db  59h ; Y
-    db    1
-    db 0FFh
-    db 0FFh
-    db  69h ; i
-    db 0FDh ; ˝
-    db  41h ; A
-    db    2
-    db 0FFh
-    db 0FFh
-    db 0A6h ; ¶
-    db 0FDh ; ˝
-    db  35h ; 5
-    db    1
-    db 0FFh
-    db 0FFh
-    db 0DDh ; ›
-    db 0FDh ; ˝
-    db  17h
-    db    2
-    db 0FFh
-    db 0FFh
-    db  2Eh ; .
-    db 0FEh ; ˛
-    db    4
-    db    1
-    db 0FFh
-    db 0FFh
-    db  56h ; V
-    db 0FEh ; ˛
-    db 0DDh ; ›
-    db    1
-    db 0FFh
-    db 0FFh
-    db 0BBh ; ª
-    db 0FEh ; ˛
-    db 0CCh ; Ã
-    db    0
-    db 0FFh
-    db 0FFh
-    db 0C1h ; ¡
-    db 0FEh ; ˛
-    db  9Ch ; ú
-    db    1
-    db 0FFh
-    db 0FFh
-    db  39h ; 9
-    db 0FFh
-    db  8Bh ; ã
-    db    0
-    db 0FFh
-    db 0FFh
-    db  28h ; (
-    db 0FFh
-    db  50h ; P
-    db    1
-    db 0FFh
-    db 0FFh
-    db 0B1h ; ±
-    db 0FFh
-    db  41h ; A
-    db    0
-    db 0FFh
-    db 0FFh
-    db  89h ; â
-    db 0FFh
-    db 0FAh ; ˙
-    db    0
-    db 0FFh
-    db 0FFh
-    db  22h ; "
-    db    0
-    db 0E9h ; È
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0E9h ; È
-    db 0FFh
-    db  93h ; ì
-    db    0
-    db 0FFh
-    db 0FFh
-    db  93h ; ì
-    db    0
-    db  90h ; ê
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db  3Ch ; <
-    db    0
-    db  2Ah ; *
-    db    0
-    db 0FFh
-    db 0FFh
-    db 0F3h ; Û
-    db    0
-    db  2Fh ; /
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db  86h ; Ü
-    db    0
-    db 0BAh ; ∫
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db  4Ah ; J
-    db    1
-    db 0C9h ; …
-    db 0FEh ; ˛
-    db 0FFh
-    db 0FFh
-    db 0C7h ; «
-    db    0
-    db  42h ; B
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db  97h ; ó
-    db    1
-    db  5Dh ; ]
-    db 0FEh ; ˛
-    db 0FFh
-    db 0FFh
-    db    0
-    db    1
-    db 0C4h ; ƒ
-    db 0FEh ; ˛
-    db 0FFh
-    db 0FFh
-    db 0D9h ; Ÿ
-    db    1
-    db 0E5h ; Â
-    db 0FDh ; ˝
-    db 0FFh
-    db 0FFh
-    db  32h ; 2
-    db    1
-    db  37h ; 7
-    db 0FEh ; ˛
-    db 0FFh
-    db 0FFh
-    db  14h
-    db    2
-    db  71h ; q
-    db 0FDh ; ˝
-    db 0FFh
-    db 0FFh
-    db  57h ; W
-    db    1
-    db 0B0h ; ∞
-    db 0FDh ; ˝
-    db 0FFh
-    db 0FFh
-    db  3Fh ; ?
-    db    2
-    db 0FBh ; ˚
-    db 0FCh ; ¸
-    db 0FFh
-    db 0FFh
-    db  72h ; r
-    db    1
-    db  25h ; %
-    db 0FDh ; ˝
-    db 0FFh
-    db 0FFh
-    db  5Eh ; ^
-    db    2
-    db  82h ; Ç
-    db 0FCh ; ¸
-    db 0FFh
-    db 0FFh
-    db  82h ; Ç
-    db    1
-    db  98h ; ò
-    db 0FCh ; ¸
-    db 0FFh
-    db 0FFh
-    db  71h ; q
-    db    2
-    db  2Ch ; ,
-    db    1
-    db    0
-    db    0
-    db 0C8h ; »
-    db    0
-    db  8Eh ; é
-    db 0FDh ; ˝
-    db 0FFh
-    db 0FFh
-    db  8Eh ; é
-    db 0FCh ; ¸
-    db  7Dh ; }
-    db 0FEh ; ˛
-    db 0FFh
-    db 0FFh
-    db  7Ah ; z
-    db 0FCh ; ¸
-    db 0A0h ; †
-    db 0FDh ; ˝
-    db 0FFh
-    db 0FFh
-    db  1Bh
-    db 0FDh ; ˝
-    db  8Dh ; ç
-    db 0FEh ; ˛
-    db 0FFh
-    db 0FFh
-    db 0F2h ; Ú
-    db 0FCh ; ¸
-    db 0BFh ; ø
-    db 0FDh ; ˝
-    db 0FFh
-    db 0FFh
-    db 0A6h ; ¶
-    db 0FDh ; ˝
-    db 0A7h ; ß
-    db 0FEh ; ˛
-    db 0FFh
-    db 0FFh
-    db  69h ; i
-    db 0FDh ; ˝
-    db 0E9h ; È
-    db 0FDh ; ˝
-    db 0FFh
-    db 0FFh
-    db  2Eh ; .
-    db 0FEh ; ˛
-    db 0CBh ; À
-    db 0FEh ; ˛
-    db 0FFh
-    db 0FFh
-    db 0DDh ; ›
-    db 0FDh ; ˝
-    db  23h ; #
-    db 0FEh ; ˛
-    db 0FFh
-    db 0FFh
-    db 0BBh ; ª
-    db 0FEh ; ˛
-    db 0FCh ; ¸
-    db 0FEh ; ˛
-    db 0FFh
-    db 0FFh
-    db  56h ; V
-    db 0FEh ; ˛
-    db  64h ; d
-    db 0FEh ; ˛
-    db 0FFh
-    db 0FFh
-    db  39h ; 9
-    db 0FFh
-    db  34h ; 4
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0C1h ; ¡
-    db 0FEh ; ˛
-    db 0B0h ; ∞
-    db 0FEh ; ˛
-    db 0FFh
-    db 0FFh
-    db 0B1h ; ±
-    db 0FFh
-    db  75h ; u
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db  28h ; (
-    db 0FFh
-    db    6
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db  22h ; "
-    db    0
-    db 0BFh ; ø
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db  89h ; â
-    db 0FFh
-    db  6Dh ; m
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db  93h ; ì
-    db    0
-    db  17h
-    db    0
-    db 0FFh
-    db 0FFh
-    db 0E9h ; È
-    db 0FFh
-    db 0D6h ; ÷
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0F3h ; Û
-    db    0
-    db  70h ; p
-    db    0
-    db 0FFh
-    db 0FFh
-    db  3Ch ; <
-    db    0
-    db  46h ; F
-    db    0
-    db 0FFh
-    db 0FFh
-    db  4Ah ; J
-    db    1
-    db 0D1h ; —
-    db    0
-    db 0FFh
-    db 0FFh
-    db  86h ; Ü
-    db    0
-    db 0BEh ; æ
-    db    0
-    db 0FFh
-    db 0FFh
-    db  97h ; ó
-    db    1
-    db  37h ; 7
-    db    1
-    db 0FFh
-    db 0FFh
-    db 0C7h ; «
-    db    0
-    db  3Ch ; <
-    db    1
-    db 0FFh
-    db 0FFh
-    db 0D9h ; Ÿ
-    db    1
-    db 0A3h ; £
-    db    1
-    db 0FFh
-    db 0FFh
-    db    0
-    db    1
-    db 0C9h ; …
-    db    1
-    db 0FFh
-    db 0FFh
-    db  14h
-    db    2
-    db  1Bh
-    db    2
-    db 0FFh
-    db 0FFh
-    db  32h ; 2
-    db    1
-    db  50h ; P
-    db    2
-    db 0FFh
-    db 0FFh
-    db  3Fh ; ?
-    db    2
-    db  8Fh ; è
-    db    2
-    db 0FFh
-    db 0FFh
-    db  57h ; W
-    db    1
-    db 0DBh ; €
-    db    2
-    db 0FFh
-    db 0FFh
-    db  5Eh ; ^
-    db    2
-    db    5
-    db    3
-    db 0FFh
-    db 0FFh
-    db  72h ; r
-    db    1
-    db  68h ; h
-    db    3
-    db 0FFh
-    db 0FFh
-    db  71h ; q
-    db    2
-    db  7Eh ; ~
-    db    3
-    db 0FFh
-    db 0FFh
-    db  82h ; Ç
-    db    1
-    db 0D4h ; ‘
-    db 0FEh ; ˛
-    db    0
-    db    0
-    db 0C8h ; »
-    db    0
-    db  88h ; à
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0B2h ; ≤
-    db 0FEh ; ˛
-    db  78h ; x
-    db    0
-    db 0FFh
-    db 0FFh
-    db 0B2h ; ≤
-    db 0FEh ; ˛
-    db  88h ; à
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db  4Eh ; N
-    db    1
-    db  78h ; x
-    db    0
-    db 0FFh
-    db 0FFh
-    db  4Eh ; N
-    db    1
-    db  78h ; x
-    db    0
-    db 0C2h ; ¬
-    db    1
-    db    0
-    db    0
-    db  8Ch ; å
-    db    0
-    db 0C2h ; ¬
-    db    1
-    db 0B2h ; ≤
-    db 0FEh ; ˛
-    db  74h ; t
-    db 0FFh
-    db 0C2h ; ¬
-    db    1
-    db  4Eh ; N
-    db    1
-    db  88h ; à
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0B2h ; ≤
-    db 0FEh ; ˛
-    db  78h ; x
-    db    0
-    db 0FFh
-    db 0FFh
-    db 0B2h ; ≤
-    db 0FEh ; ˛
-    db  88h ; à
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db  4Eh ; N
-    db    1
-    db  78h ; x
-    db    0
-    db 0FFh
-    db 0FFh
-    db  4Eh ; N
-    db    1
-    db  78h ; x
-    db    0
-    db 0C2h ; ¬
-    db    1
-    db 0C8h ; »
-    db    0
-    db  8Ch ; å
-    db    0
-    db 0C2h ; ¬
-    db    1
-    db 0B2h ; ≤
-    db 0FEh ; ˛
-    db  74h ; t
-    db 0FFh
-    db 0C2h ; ¬
-    db    1
-    db  4Eh ; N
-    db    1
-    db  83h ; É
-    db    1
-    db 0FFh
-    db 0FFh
-    db  7Ah ; z
-    db 0FCh ; ¸
-    db  72h ; r
-    db    2
-    db 0FFh
-    db 0FFh
-    db  8Eh ; é
-    db 0FCh ; ¸
-    db  73h ; s
-    db    1
-    db 0FFh
-    db 0FFh
-    db 0F2h ; Ú
-    db 0FCh ; ¸
-    db  60h ; `
-    db    2
-    db 0FFh
-    db 0FFh
-    db  1Bh
-    db 0FDh ; ˝
-    db  59h ; Y
-    db    1
-    db 0FFh
-    db 0FFh
-    db  69h ; i
-    db 0FDh ; ˝
-    db  41h ; A
-    db    2
-    db 0FFh
-    db 0FFh
-    db 0A6h ; ¶
-    db 0FDh ; ˝
-    db  35h ; 5
-    db    1
-    db 0FFh
-    db 0FFh
-    db 0DDh ; ›
-    db 0FDh ; ˝
-    db  17h
-    db    2
-    db 0FFh
-    db 0FFh
-    db  2Eh ; .
-    db 0FEh ; ˛
-    db    4
-    db    1
-    db 0FFh
-    db 0FFh
-    db  56h ; V
-    db 0FEh ; ˛
-    db 0DDh ; ›
-    db    1
-    db 0FFh
-    db 0FFh
-    db 0BBh ; ª
-    db 0FEh ; ˛
-    db 0CCh ; Ã
-    db    0
-    db 0FFh
-    db 0FFh
-    db 0C1h ; ¡
-    db 0FEh ; ˛
-    db  9Ch ; ú
-    db    1
-    db 0FFh
-    db 0FFh
-    db  39h ; 9
-    db 0FFh
-    db  8Bh ; ã
-    db    0
-    db 0FFh
-    db 0FFh
-    db  28h ; (
-    db 0FFh
-    db  50h ; P
-    db    1
-    db 0FFh
-    db 0FFh
-    db 0B1h ; ±
-    db 0FFh
-    db  41h ; A
-    db    0
-    db 0FFh
-    db 0FFh
-    db  89h ; â
-    db 0FFh
-    db 0FAh ; ˙
-    db    0
-    db 0FFh
-    db 0FFh
-    db  22h ; "
-    db    0
-    db 0E9h ; È
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0E9h ; È
-    db 0FFh
-    db  93h ; ì
-    db    0
-    db 0FFh
-    db 0FFh
-    db  93h ; ì
-    db    0
-    db  90h ; ê
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db  3Ch ; <
-    db    0
-    db  2Ah ; *
-    db    0
-    db 0FFh
-    db 0FFh
-    db 0F3h ; Û
-    db    0
-    db  2Fh ; /
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db  86h ; Ü
-    db    0
-    db 0BAh ; ∫
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db  4Ah ; J
-    db    1
-    db 0C9h ; …
-    db 0FEh ; ˛
-    db 0FFh
-    db 0FFh
-    db 0C7h ; «
-    db    0
-    db  42h ; B
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db  97h ; ó
-    db    1
-    db  5Dh ; ]
-    db 0FEh ; ˛
-    db 0FFh
-    db 0FFh
-    db    0
-    db    1
-    db 0C4h ; ƒ
-    db 0FEh ; ˛
-    db 0FFh
-    db 0FFh
-    db 0D9h ; Ÿ
-    db    1
-    db 0E5h ; Â
-    db 0FDh ; ˝
-    db 0FFh
-    db 0FFh
-    db  32h ; 2
-    db    1
-    db  37h ; 7
-    db 0FEh ; ˛
-    db 0FFh
-    db 0FFh
-    db  14h
-    db    2
-    db  71h ; q
-    db 0FDh ; ˝
-    db 0FFh
-    db 0FFh
-    db  57h ; W
-    db    1
-    db 0B0h ; ∞
-    db 0FDh ; ˝
-    db 0FFh
-    db 0FFh
-    db  3Fh ; ?
-    db    2
-    db 0FBh ; ˚
-    db 0FCh ; ¸
-    db 0FFh
-    db 0FFh
-    db  72h ; r
-    db    1
-    db  25h ; %
-    db 0FDh ; ˝
-    db 0FFh
-    db 0FFh
-    db  5Eh ; ^
-    db    2
-    db  82h ; Ç
-    db 0FCh ; ¸
-    db 0FFh
-    db 0FFh
-    db  82h ; Ç
-    db    1
-    db  98h ; ò
-    db 0FCh ; ¸
-    db 0FFh
-    db 0FFh
-    db  71h ; q
-    db    2
-    db 0A0h ; †
-    db    0
-    db 0C2h ; ¬
-    db    1
-    db 0A0h ; †
-    db    0
-    db  6Fh ; o
-    db    1
-    db 0FFh
-    db 0FFh
-    db  6Dh ; m
-    db 0FCh ; ¸
-    db  58h ; X
-    db    2
-    db 0FFh
-    db 0FFh
-    db  7Eh ; ~
-    db 0FCh ; ¸
-    db  55h ; U
-    db    1
-    db 0FFh
-    db 0FFh
-    db 0D8h ; ÿ
-    db 0FCh ; ¸
-    db  37h ; 7
-    db    2
-    db 0FFh
-    db 0FFh
-    db 0FAh ; ˙
-    db 0FCh ; ¸
-    db  37h ; 7
-    db    1
-    db 0FFh
-    db 0FFh
-    db  41h ; A
-    db 0FDh ; ˝
-    db  12h
-    db    2
-    db 0FFh
-    db 0FFh
-    db  74h ; t
-    db 0FDh ; ˝
-    db  13h
-    db    1
-    db 0FFh
-    db 0FFh
-    db 0A6h ; ¶
-    db 0FDh ; ˝
-    db 0E8h ; Ë
-    db    1
-    db 0FFh
-    db 0FFh
-    db 0EAh ; Í
-    db 0FDh ; ˝
-    db 0E8h ; Ë
-    db    0
-    db 0FFh
-    db 0FFh
-    db    6
-    db 0FEh ; ˛
-    db 0B6h ; ∂
-    db    1
-    db 0FFh
-    db 0FFh
-    db  5Bh ; [
-    db 0FEh ; ˛
-    db 0A5h ; •
-    db    0
-    db 0FFh
-    db 0FFh
-    db  78h ; x
-    db 0FEh ; ˛
-    db  6Ah ; j
-    db    1
-    db 0FFh
-    db 0FFh
-    db 0E2h ; ‚
-    db 0FEh ; ˛
-    db  58h ; X
-    db    0
-    db 0FFh
-    db 0FFh
-    db 0E2h ; ‚
-    db 0FEh ; ˛
-    db  14h
-    db    1
-    db 0FFh
-    db 0FFh
-    db  62h ; b
-    db 0FFh
-    db    3
-    db    0
-    db 0FFh
-    db 0FFh
-    db  48h ; H
-    db 0FFh
-    db 0B6h ; ∂
-    db    0
-    db 0FFh
-    db 0FFh
-    db 0DDh ; ›
-    db 0FFh
-    db 0ABh ; ´
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0ABh ; ´
-    db 0FFh
-    db  55h ; U
-    db    0
-    db 0FFh
-    db 0FFh
-    db  55h ; U
-    db    0
-    db  4Ah ; J
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db  23h ; #
-    db    0
-    db 0FDh ; ˝
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0B8h ; ∏
-    db    0
-    db 0ECh ; Ï
-    db 0FEh ; ˛
-    db 0FFh
-    db 0FFh
-    db  9Eh ; û
-    db    0
-    db 0A8h ; ®
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db  1Eh
-    db    1
-    db  96h ; ñ
-    db 0FEh ; ˛
-    db 0FFh
-    db 0FFh
-    db  1Eh
-    db    1
-    db  5Bh ; [
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db  88h ; à
-    db    1
-    db  4Ah ; J
-    db 0FEh ; ˛
-    db 0FFh
-    db 0FFh
-    db 0A5h ; •
-    db    1
-    db  18h
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FAh ; ˙
-    db    1
-    db  18h
-    db 0FEh ; ˛
-    db 0FFh
-    db 0FFh
-    db  16h
-    db    2
-    db 0EDh ; Ì
-    db 0FEh ; ˛
-    db 0FFh
-    db 0FFh
-    db  5Ah ; Z
-    db    2
-    db 0EEh ; Ó
-    db 0FDh ; ˝
-    db 0FFh
-    db 0FFh
-    db  8Ch ; å
-    db    2
-    db 0C9h ; …
-    db 0FEh ; ˛
-    db 0FFh
-    db 0FFh
-    db 0BFh ; ø
-    db    2
-    db 0C9h ; …
-    db 0FDh ; ˝
-    db 0FFh
-    db 0FFh
-    db    6
-    db    3
-    db 0ABh ; ´
-    db 0FEh ; ˛
-    db 0FFh
-    db 0FFh
-    db  28h ; (
-    db    3
-    db 0A8h ; ®
-    db 0FDh ; ˝
-    db 0FFh
-    db 0FFh
-    db  82h ; Ç
-    db    3
-    db  91h ; ë
-    db 0FEh ; ˛
-    db 0FFh
-    db 0FFh
-    db  93h ; ì
-    db    3
-    db  7Dh ; }
-    db    0
-    db    0
-    db    0
-    db  7Dh ; }
-    db    0
-    db 0A8h ; ®
-    db 0FDh ; ˝
-    db 0FFh
-    db 0FFh
-    db  7Eh ; ~
-    db 0FCh ; ¸
-    db  91h ; ë
-    db 0FEh ; ˛
-    db 0FFh
-    db 0FFh
-    db  6Dh ; m
-    db 0FCh ; ¸
-    db 0C9h ; …
-    db 0FDh ; ˝
-    db 0FFh
-    db 0FFh
-    db 0FAh ; ˙
-    db 0FCh ; ¸
-    db 0ABh ; ´
-    db 0FEh ; ˛
-    db 0FFh
-    db 0FFh
-    db 0D8h ; ÿ
-    db 0FCh ; ¸
-    db 0EEh ; Ó
-    db 0FDh ; ˝
-    db 0FFh
-    db 0FFh
-    db  74h ; t
-    db 0FDh ; ˝
-    db 0C9h ; …
-    db 0FEh ; ˛
-    db 0FFh
-    db 0FFh
-    db  41h ; A
-    db 0FDh ; ˝
-    db  18h
-    db 0FEh ; ˛
-    db 0FFh
-    db 0FFh
-    db 0EAh ; Í
-    db 0FDh ; ˝
-    db 0EDh ; Ì
-    db 0FEh ; ˛
-    db 0FFh
-    db 0FFh
-    db 0A6h ; ¶
-    db 0FDh ; ˝
-    db  4Ah ; J
-    db 0FEh ; ˛
-    db 0FFh
-    db 0FFh
-    db  5Bh ; [
-    db 0FEh ; ˛
-    db  18h
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db    6
-    db 0FEh ; ˛
-    db  96h ; ñ
-    db 0FEh ; ˛
-    db 0FFh
-    db 0FFh
-    db 0E2h ; ‚
-    db 0FEh ; ˛
-    db  5Bh ; [
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db  78h ; x
-    db 0FEh ; ˛
-    db 0ECh ; Ï
-    db 0FEh ; ˛
-    db 0FFh
-    db 0FFh
-    db  62h ; b
-    db 0FFh
-    db 0A8h ; ®
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0E2h ; ‚
-    db 0FEh ; ˛
-    db  4Ah ; J
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0DDh ; ›
-    db 0FFh
-    db 0FDh ; ˝
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db  48h ; H
-    db 0FFh
-    db 0ABh ; ´
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db  55h ; U
-    db    0
-    db  55h ; U
-    db    0
-    db 0FFh
-    db 0FFh
-    db 0ABh ; ´
-    db 0FFh
-    db    3
-    db    0
-    db 0FFh
-    db 0FFh
-    db 0B8h ; ∏
-    db    0
-    db 0B6h ; ∂
-    db    0
-    db 0FFh
-    db 0FFh
-    db  23h ; #
-    db    0
-    db  58h ; X
-    db    0
-    db 0FFh
-    db 0FFh
-    db  1Eh
-    db    1
-    db  14h
-    db    1
-    db 0FFh
-    db 0FFh
-    db  9Eh ; û
-    db    0
-    db 0A5h ; •
-    db    0
-    db 0FFh
-    db 0FFh
-    db  88h ; à
-    db    1
-    db  6Ah ; j
-    db    1
-    db 0FFh
-    db 0FFh
-    db  1Eh
-    db    1
-    db 0E8h ; Ë
-    db    0
-    db 0FFh
-    db 0FFh
-    db 0FAh ; ˙
-    db    1
-    db 0B6h ; ∂
-    db    1
-    db 0FFh
-    db 0FFh
-    db 0A5h ; •
-    db    1
-    db  13h
-    db    1
-    db 0FFh
-    db 0FFh
-    db  5Ah ; Z
-    db    2
-    db 0E8h ; Ë
-    db    1
-    db 0FFh
-    db 0FFh
-    db  16h
-    db    2
-    db  37h ; 7
-    db    1
-    db 0FFh
-    db 0FFh
-    db 0BFh ; ø
-    db    2
-    db  12h
-    db    2
-    db 0FFh
-    db 0FFh
-    db  8Ch ; å
-    db    2
-    db  55h ; U
-    db    1
-    db 0FFh
-    db 0FFh
-    db  28h ; (
-    db    3
-    db  37h ; 7
-    db    2
-    db 0FFh
-    db 0FFh
-    db    6
-    db    3
-    db  6Fh ; o
-    db    1
-    db 0FFh
-    db 0FFh
-    db  93h ; ì
-    db    3
-    db  58h ; X
-    db    2
-    db 0FFh
-    db 0FFh
-    db  82h ; Ç
-    db    3
-    db  7Dh ; }
-    db    0
-    db    0
-    db    0
-    db  83h ; É
-    db 0FFh
-    db  88h ; à
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0B2h ; ≤
-    db 0FEh ; ˛
-    db  78h ; x
-    db    0
-    db 0FFh
-    db 0FFh
-    db 0B2h ; ≤
-    db 0FEh ; ˛
-    db  88h ; à
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db  4Eh ; N
-    db    1
-    db  78h ; x
-    db    0
-    db 0FFh
-    db 0FFh
-    db  4Eh ; N
-    db    1
-    db  78h ; x
-    db    0
-    db 0C2h ; ¬
-    db    1
-    db 0F4h ; Ù
-    db    1
-    db  8Ch ; å
-    db    0
-    db  51h ; Q
-    db    0
-    db 0B2h ; ≤
-    db 0FEh ; ˛
-    db  74h ; t
-    db 0FFh
-    db  77h ; w
-    db    1
-    db  4Eh ; N
-    db    1
-    db  52h ; R
-    db 0FFh
-    db    0
-    db    0
-    db  9Ch ; ú
-    db 0FCh ; ¸
-    db  64h ; d
-    db    0
-    db    0
-    db    0
-    db  9Ch ; ú
-    db 0FCh ; ¸
-    db  1Eh
-    db 0FFh
-    db    0
-    db    0
-    db  40h ; @
-    db 0FDh ; ˝
-    db  50h ; P
-    db    0
-    db    0
-    db    0
-    db  40h ; @
-    db 0FDh ; ˝
-    db 0ECh ; Ï
-    db 0FEh ; ˛
-    db    0
-    db    0
-    db 0E8h ; Ë
-    db 0FDh ; ˝
-    db  3Ch ; <
-    db    0
-    db    0
-    db    0
-    db 0E8h ; Ë
-    db 0FDh ; ˝
-    db 0C0h ; ¿
-    db 0FEh ; ˛
-    db    0
-    db    0
-    db  98h ; ò
-    db 0FEh ; ˛
-    db  28h ; (
-    db    0
-    db    0
-    db    0
-    db  98h ; ò
-    db 0FEh ; ˛
-    db  97h ; ó
-    db 0FEh ; ˛
-    db    0
-    db    0
-    db  4Eh ; N
-    db 0FFh
-    db  14h
-    db    0
-    db    0
-    db    0
-    db  4Eh ; N
-    db 0FFh
-    db  70h ; p
-    db 0FEh ; ˛
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  70h ; p
-    db 0FEh ; ˛
-    db  87h ; á
-    db    0
-    db 0E0h ; ‡
-    db    0
-    db    0
-    db    0
-    db  87h ; á
-    db    0
-    db 0E0h ; ‡
-    db    0
-    db 0A0h ; †
-    db 0FEh ; ˛
-    db  2Bh ; +
-    db    1
-    db  85h ; Ö
-    db    1
-    db  2Eh ; .
-    db    0
-    db  2Bh ; +
-    db    1
-    db  85h ; Ö
-    db    1
-    db 0D0h ; –
-    db 0FEh ; ˛
-    db  0Ch
-    db    2
-    db 0C1h ; ¡
-    db    1
-    db  5Fh ; _
-    db    0
-    db  0Ch
-    db    2
-    db 0C1h ; ¡
-    db    1
-    db 0F2h ; Ú
-    db 0FEh ; ˛
-    db 0EDh ; Ì
-    db    2
-    db  85h ; Ö
-    db    1
-    db  81h ; Å
-    db    0
-    db 0EDh ; Ì
-    db    2
-    db  85h ; Ö
-    db    1
-    db  15h
-    db 0FFh
-    db  92h ; í
-    db    3
-    db 0E1h ; ·
-    db    0
-    db 0A4h ; §
-    db    0
-    db  92h ; í
-    db    3
-    db 0E1h ; ·
-    db    0
-    db  38h ; 8
-    db 0FFh
-    db 0CFh ; œ
-    db    3
-    db    0
-    db    0
-    db 0C8h ; »
-    db    0
-    db 0CFh ; œ
-    db    3
-    db    0
-    db    0
-    db  5Ch ; \
-    db 0FFh
-    db  92h ; í
-    db    3
-    db  1Fh
-    db 0FFh
-    db 0EBh ; Î
-    db    0
-    db  92h ; í
-    db    3
-    db  1Fh
-    db 0FFh
-    db  7Fh ; 
-    db 0FFh
-    db 0EDh ; Ì
-    db    2
-    db  7Bh ; {
-    db 0FEh ; ˛
-    db  0Eh
-    db    1
-    db 0EDh ; Ì
-    db    2
-    db  7Bh ; {
-    db 0FEh ; ˛
-    db 0A1h ; °
-    db 0FFh
-    db  0Ch
-    db    2
-    db  3Fh ; ?
-    db 0FEh ; ˛
-    db  30h ; 0
-    db    1
-    db  0Ch
-    db    2
-    db  3Fh ; ?
-    db 0FEh ; ˛
-    db 0D2h ; “
-    db 0FFh
-    db  2Bh ; +
-    db    1
-    db  7Bh ; {
-    db 0FEh ; ˛
-    db  60h ; `
-    db    1
-    db  2Bh ; +
-    db    1
-    db  7Bh ; {
-    db 0FEh ; ˛
-    db    0
-    db    0
-    db  87h ; á
-    db    0
-    db  20h
-    db 0FFh
-    db  90h ; ê
-    db    1
-    db  87h ; á
-    db    0
-    db  20h
-    db 0FFh
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  90h ; ê
-    db    1
-    db    0
-    db    0
-    db    0
-    db    0
-    db 0ECh ; Ï
-    db 0FFh
-    db    0
-    db    0
-    db 0B2h ; ≤
-    db    0
-    db  69h ; i
-    db    1
-    db    0
-    db    0
-    db 0B2h ; ≤
-    db    0
-    db 0D8h ; ÿ
-    db 0FFh
-    db    0
-    db    0
-    db  68h ; h
-    db    1
-    db  40h ; @
-    db    1
-    db    0
-    db    0
-    db  68h ; h
-    db    1
-    db 0C4h ; ƒ
-    db 0FFh
-    db    0
-    db    0
-    db  18h
-    db    2
-    db  14h
-    db    1
-    db    0
-    db    0
-    db  18h
-    db    2
-    db 0B0h ; ∞
-    db 0FFh
-    db    0
-    db    0
-    db 0C0h ; ¿
-    db    2
-    db 0E2h ; ‚
-    db    0
-    db    0
-    db    0
-    db 0C0h ; ¿
-    db    2
-    db  9Ch ; ú
-    db 0FFh
-    db    0
-    db    0
-    db  64h ; d
-    db    3
-    db 0AEh ; Æ
-    db    0
-    db    0
-    db    0
-    db  64h ; d
-    db    3
-    db 0E0h ; ‡
-    db    1
-    db    0
-    db    0
-    db    0
-    db    0
-    db 0C8h ; »
-    db    0
-    db    0
-    db    0
-    db  64h ; d
-    db 0FDh ; ˝
-    db  38h ; 8
-    db 0FFh
-    db    0
-    db    0
-    db  9Ch ; ú
-    db    2
-    db 0E1h ; ·
-    db 0FFh
-    db    0
-    db    0
-    db  7Eh ; ~
-    db 0FCh ; ¸
-    db  1Fh
-    db    0
-    db    0
-    db    0
-    db  7Eh ; ~
-    db 0FCh ; ¸
-    db  1Fh
-    db    0
-    db    0
-    db    0
-    db  13h
-    db 0FDh ; ˝
-    db  54h ; T
-    db    0
-    db  23h ; #
-    db    0
-    db  13h
-    db 0FDh ; ˝
-    db  54h ; T
-    db    0
-    db  23h ; #
-    db    0
-    db 0A8h ; ®
-    db 0FDh ; ˝
-    db  73h ; s
-    db    0
-    db  58h ; X
-    db    0
-    db 0A8h ; ®
-    db 0FDh ; ˝
-    db  73h ; s
-    db    0
-    db  58h ; X
-    db    0
-    db  3Dh ; =
-    db 0FEh ; ˛
-    db  73h ; s
-    db    0
-    db  97h ; ó
-    db    0
-    db  3Dh ; =
-    db 0FEh ; ˛
-    db  73h ; s
-    db    0
-    db  97h ; ó
-    db    0
-    db 0D4h ; ‘
-    db 0FEh ; ˛
-    db  54h ; T
-    db    0
-    db 0CCh ; Ã
-    db    0
-    db 0D4h ; ‘
-    db 0FEh ; ˛
-    db  54h ; T
-    db    0
-    db 0CCh ; Ã
-    db    0
-    db  67h ; g
-    db 0FFh
-    db  1Fh
-    db    0
-    db 0EBh ; Î
-    db    0
-    db  67h ; g
-    db 0FFh
-    db  1Fh
-    db    0
-    db 0EBh ; Î
-    db    0
-    db    0
-    db    0
-    db 0E1h ; ·
-    db 0FFh
-    db 0EBh ; Î
-    db    0
-    db    0
-    db    0
-    db 0E1h ; ·
-    db 0FFh
-    db 0EBh ; Î
-    db    0
-    db  99h ; ô
-    db    0
-    db 0ACh ; ¨
-    db 0FFh
-    db 0CCh ; Ã
-    db    0
-    db  99h ; ô
-    db    0
-    db 0ACh ; ¨
-    db 0FFh
-    db 0CCh ; Ã
-    db    0
-    db  2Ch ; ,
-    db    1
-    db  8Dh ; ç
-    db 0FFh
-    db  97h ; ó
-    db    0
-    db  2Ch ; ,
-    db    1
-    db  8Dh ; ç
-    db 0FFh
-    db  97h ; ó
-    db    0
-    db 0C3h ; √
-    db    1
-    db  8Dh ; ç
-    db 0FFh
-    db  58h ; X
-    db    0
-    db 0C3h ; √
-    db    1
-    db  8Dh ; ç
-    db 0FFh
-    db  58h ; X
-    db    0
-    db  58h ; X
-    db    2
-    db 0ACh ; ¨
-    db 0FFh
-    db  23h ; #
-    db    0
-    db  58h ; X
-    db    2
-    db 0ACh ; ¨
-    db 0FFh
-    db  23h ; #
-    db    0
-    db 0EDh ; Ì
-    db    2
-    db 0E1h ; ·
-    db 0FFh
-    db    0
-    db    0
-    db 0EDh ; Ì
-    db    2
-    db 0E1h ; ·
-    db 0FFh
-    db    0
-    db    0
-    db  82h ; Ç
-    db    3
-    db  1Fh
-    db    0
-    db    0
-    db    0
-    db  82h ; Ç
-    db    3
-    db 0E0h ; ‡
-    db    1
-    db    0
-    db    0
-    db    0
-    db    0
-    db 0C8h ; »
-    db    0
-    db    0
-    db    0
-    db  64h ; d
-    db 0FDh ; ˝
-    db  38h ; 8
-    db 0FFh
-    db    0
-    db    0
-    db  9Ch ; ú
-    db    2
-    db  88h ; à
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0B2h ; ≤
-    db 0FEh ; ˛
-    db  78h ; x
-    db    0
-    db 0FFh
-    db 0FFh
-    db 0B2h ; ≤
-    db 0FEh ; ˛
-    db  88h ; à
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db  4Eh ; N
-    db    1
-    db  78h ; x
-    db    0
-    db 0FFh
-    db 0FFh
-    db  4Eh ; N
-    db    1
-    db  38h ; 8
-    db 0FFh
-    db    0
-    db    0
-    db    0
-    db    0
-    db  78h ; x
-    db    0
-    db  82h ; Ç
-    db    0
-    db 0B2h ; ≤
-    db 0FEh ; ˛
-    db  74h ; t
-    db 0FFh
-    db    0
-    db    0
-    db  4Eh ; N
-    db    1
-    db  88h ; à
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0B2h ; ≤
-    db 0FEh ; ˛
-    db  78h ; x
-    db    0
-    db 0FFh
-    db 0FFh
-    db 0B2h ; ≤
-    db 0FEh ; ˛
-    db  88h ; à
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db  4Eh ; N
-    db    1
-    db  78h ; x
-    db    0
-    db 0FFh
-    db 0FFh
-    db  4Eh ; N
-    db    1
-    db  38h ; 8
-    db 0FFh
-    db    0
-    db    0
-    db    0
-    db    0
-    db  78h ; x
-    db    0
-    db  82h ; Ç
-    db    0
-    db 0B2h ; ≤
-    db 0FEh ; ˛
-    db  74h ; t
-    db 0FFh
-    db    0
-    db    0
-    db  4Eh ; N
-    db    1
-    db  88h ; à
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0B2h ; ≤
-    db 0FEh ; ˛
-    db  78h ; x
-    db    0
-    db 0FFh
-    db 0FFh
-    db 0B2h ; ≤
-    db 0FEh ; ˛
-    db  88h ; à
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db  4Eh ; N
-    db    1
-    db  78h ; x
-    db    0
-    db 0FFh
-    db 0FFh
-    db  4Eh ; N
-    db    1
-    db 0C8h ; »
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  8Ch ; å
-    db    0
-    db    0
-    db    0
-    db 0B2h ; ≤
-    db 0FEh ; ˛
-    db  88h ; à
-    db 0FFh
-    db  7Bh ; {
-    db    0
-    db  4Eh ; N
-    db    1
-    db  83h ; É
-    db    1
-    db 0FFh
-    db 0FFh
-    db  7Ah ; z
-    db 0FCh ; ¸
-    db  72h ; r
-    db    2
-    db 0FFh
-    db 0FFh
-    db  8Eh ; é
-    db 0FCh ; ¸
-    db  73h ; s
-    db    1
-    db 0FFh
-    db 0FFh
-    db 0F2h ; Ú
-    db 0FCh ; ¸
-    db  60h ; `
-    db    2
-    db 0FFh
-    db 0FFh
-    db  1Bh
-    db 0FDh ; ˝
-    db  59h ; Y
-    db    1
-    db 0FFh
-    db 0FFh
-    db  69h ; i
-    db 0FDh ; ˝
-    db  41h ; A
-    db    2
-    db 0FFh
-    db 0FFh
-    db 0A6h ; ¶
-    db 0FDh ; ˝
-    db  35h ; 5
-    db    1
-    db 0FFh
-    db 0FFh
-    db 0DDh ; ›
-    db 0FDh ; ˝
-    db  17h
-    db    2
-    db 0FFh
-    db 0FFh
-    db  2Eh ; .
-    db 0FEh ; ˛
-    db    4
-    db    1
-    db 0FFh
-    db 0FFh
-    db  56h ; V
-    db 0FEh ; ˛
-    db 0DDh ; ›
-    db    1
-    db 0FFh
-    db 0FFh
-    db 0BBh ; ª
-    db 0FEh ; ˛
-    db 0CCh ; Ã
-    db    0
-    db 0FFh
-    db 0FFh
-    db 0C1h ; ¡
-    db 0FEh ; ˛
-    db  9Ch ; ú
-    db    1
-    db 0FFh
-    db 0FFh
-    db  39h ; 9
-    db 0FFh
-    db  8Bh ; ã
-    db    0
-    db 0FFh
-    db 0FFh
-    db  28h ; (
-    db 0FFh
-    db  50h ; P
-    db    1
-    db 0FFh
-    db 0FFh
-    db 0B1h ; ±
-    db 0FFh
-    db  41h ; A
-    db    0
-    db 0FFh
-    db 0FFh
-    db  89h ; â
-    db 0FFh
-    db 0FAh ; ˙
-    db    0
-    db 0FFh
-    db 0FFh
-    db  22h ; "
-    db    0
-    db 0E9h ; È
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0E9h ; È
-    db 0FFh
-    db  93h ; ì
-    db    0
-    db 0FFh
-    db 0FFh
-    db  93h ; ì
-    db    0
-    db  90h ; ê
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db  3Ch ; <
-    db    0
-    db  2Ah ; *
-    db    0
-    db 0FFh
-    db 0FFh
-    db 0F3h ; Û
-    db    0
-    db  2Fh ; /
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db  86h ; Ü
-    db    0
-    db 0BAh ; ∫
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db  4Ah ; J
-    db    1
-    db 0C9h ; …
-    db 0FEh ; ˛
-    db 0FFh
-    db 0FFh
-    db 0C7h ; «
-    db    0
-    db  42h ; B
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db  97h ; ó
-    db    1
-    db  5Dh ; ]
-    db 0FEh ; ˛
-    db 0FFh
-    db 0FFh
-    db    0
-    db    1
-    db 0C4h ; ƒ
-    db 0FEh ; ˛
-    db 0FFh
-    db 0FFh
-    db 0D9h ; Ÿ
-    db    1
-    db 0E5h ; Â
-    db 0FDh ; ˝
-    db 0FFh
-    db 0FFh
-    db  32h ; 2
-    db    1
-    db  37h ; 7
-    db 0FEh ; ˛
-    db 0FFh
-    db 0FFh
-    db  14h
-    db    2
-    db  71h ; q
-    db 0FDh ; ˝
-    db 0FFh
-    db 0FFh
-    db  57h ; W
-    db    1
-    db 0B0h ; ∞
-    db 0FDh ; ˝
-    db 0FFh
-    db 0FFh
-    db  3Fh ; ?
-    db    2
-    db 0FBh ; ˚
-    db 0FCh ; ¸
-    db 0FFh
-    db 0FFh
-    db  72h ; r
-    db    1
-    db  25h ; %
-    db 0FDh ; ˝
-    db 0FFh
-    db 0FFh
-    db  5Eh ; ^
-    db    2
-    db  82h ; Ç
-    db 0FCh ; ¸
-    db 0FFh
-    db 0FFh
-    db  82h ; Ç
-    db    1
-    db  98h ; ò
-    db 0FCh ; ¸
-    db 0FFh
-    db 0FFh
-    db  71h ; q
-    db    2
-    db 0D4h ; ‘
-    db 0FEh ; ˛
-    db    0
-    db    0
-    db  38h ; 8
-    db 0FFh
-    db  88h ; à
-    db 0FDh ; ˝
-    db    0
-    db    0
-    db 0B2h ; ≤
-    db 0FCh ; ¸
-    db  78h ; x
-    db 0FEh ; ˛
-    db    0
-    db    0
-    db 0B2h ; ≤
-    db 0FCh ; ¸
-    db  88h ; à
-    db 0FDh ; ˝
-    db    0
-    db    0
-    db 0B2h ; ≤
-    db 0FEh ; ˛
-    db  78h ; x
-    db 0FEh ; ˛
-    db    0
-    db    0
-    db 0B2h ; ≤
-    db 0FEh ; ˛
-    db  88h ; à
-    db 0FDh ; ˝
-    db    0
-    db    0
-    db    0
-    db    0
-    db  78h ; x
-    db 0FEh ; ˛
-    db    0
-    db    0
-    db    0
-    db    0
-    db  9Dh ; ù
-    db 0FDh ; ˝
-    db  13h
-    db    0
-    db 0A1h ; °
-    db    0
-    db  85h ; Ö
-    db 0FEh ; ˛
-    db  13h
-    db    0
-    db  64h ; d
-    db    0
-    db 0DCh ; ‹
-    db 0FDh ; ˝
-    db  26h ; &
-    db    0
-    db  3Bh ; ;
-    db    1
-    db 0ACh ; ¨
-    db 0FEh ; ˛
-    db  26h ; &
-    db    0
-    db 0C3h ; √
-    db    0
-    db  41h ; A
-    db 0FEh ; ˛
-    db  39h ; 9
-    db    0
-    db 0BFh ; ø
-    db    1
-    db 0EBh ; Î
-    db 0FEh ; ˛
-    db  39h ; 9
-    db    0
-    db  15h
-    db    1
-    db 0C2h ; ¬
-    db 0FEh ; ˛
-    db  4Ch ; L
-    db    0
-    db  22h ; "
-    db    2
-    db  3Bh ; ;
-    db 0FFh
-    db  4Ch ; L
-    db    0
-    db  53h ; S
-    db    1
-    db  5Bh ; [
-    db 0FFh
-    db  5Fh ; _
-    db    0
-    db  62h ; b
-    db    2
-    db  9Ah ; ö
-    db 0FFh
-    db  5Fh ; _
-    db    0
-    db  7Ah ; z
-    db    1
-    db    0
-    db    0
-    db  72h ; r
-    db    0
-    db  78h ; x
-    db    2
-    db    0
-    db    0
-    db  72h ; r
-    db    0
-    db  88h ; à
-    db    1
-    db 0A1h ; °
-    db    0
-    db  85h ; Ö
-    db    0
-    db  63h ; c
-    db    2
-    db  64h ; d
-    db    0
-    db  85h ; Ö
-    db    0
-    db  7Bh ; {
-    db    1
-    db  3Bh ; ;
-    db    1
-    db  98h ; ò
-    db    0
-    db  24h ; $
-    db    2
-    db 0C3h ; √
-    db    0
-    db  98h ; ò
-    db    0
-    db  54h ; T
-    db    1
-    db 0BFh ; ø
-    db    1
-    db 0ABh ; ´
-    db    0
-    db 0BFh ; ø
-    db    1
-    db  15h
-    db    1
-    db 0ABh ; ´
-    db    0
-    db  15h
-    db    1
-    db  22h ; "
-    db    2
-    db 0BEh ; æ
-    db    0
-    db  3Eh ; >
-    db    1
-    db  53h ; S
-    db    1
-    db 0BEh ; æ
-    db    0
-    db 0C5h ; ≈
-    db    0
-    db  62h ; b
-    db    2
-    db 0D1h ; —
-    db    0
-    db 0A5h ; •
-    db    0
-    db  7Ah ; z
-    db    1
-    db 0D1h ; —
-    db    0
-    db  66h ; f
-    db    0
-    db  78h ; x
-    db    2
-    db 0E4h ; ‰
-    db    0
-    db    0
-    db    0
-    db  88h ; à
-    db    1
-    db 0E4h ; ‰
-    db    0
-    db    0
-    db    0
-    db  63h ; c
-    db    2
-    db 0F7h ; ˜
-    db    0
-    db  5Fh ; _
-    db 0FFh
-    db  7Bh ; {
-    db    1
-    db 0F7h ; ˜
-    db    0
-    db  9Ch ; ú
-    db 0FFh
-    db  24h ; $
-    db    2
-    db  0Ah
-    db    1
-    db 0C5h ; ≈
-    db 0FEh ; ˛
-    db  54h ; T
-    db    1
-    db  0Ah
-    db    1
-    db  3Dh ; =
-    db 0FFh
-    db 0BFh ; ø
-    db    1
-    db  1Dh
-    db    1
-    db  41h ; A
-    db 0FEh ; ˛
-    db  15h
-    db    1
-    db  1Dh
-    db    1
-    db 0EBh ; Î
-    db 0FEh ; ˛
-    db  3Eh ; >
-    db    1
-    db  30h ; 0
-    db    1
-    db 0DEh ; ﬁ
-    db 0FDh ; ˝
-    db 0C5h ; ≈
-    db    0
-    db  30h ; 0
-    db    1
-    db 0ADh ; ≠
-    db 0FEh ; ˛
-    db 0A5h ; •
-    db    0
-    db  43h ; C
-    db    1
-    db  9Eh ; û
-    db 0FDh ; ˝
-    db  66h ; f
-    db    0
-    db  43h ; C
-    db    1
-    db  86h ; Ü
-    db 0FEh ; ˛
-    db    0
-    db    0
-    db  56h ; V
-    db    1
-    db  88h ; à
-    db 0FDh ; ˝
-    db    0
-    db    0
-    db  56h ; V
-    db    1
-    db  78h ; x
-    db 0FEh ; ˛
-    db  5Fh ; _
-    db 0FFh
-    db  69h ; i
-    db    1
-    db  9Dh ; ù
-    db 0FDh ; ˝
-    db  9Ch ; ú
-    db 0FFh
-    db  69h ; i
-    db    1
-    db  85h ; Ö
-    db 0FEh ; ˛
-    db 0C5h ; ≈
-    db 0FEh ; ˛
-    db  7Ch ; |
-    db    1
-    db 0DCh ; ‹
-    db 0FDh ; ˝
-    db  3Dh ; =
-    db 0FFh
-    db  7Ch ; |
-    db    1
-    db 0ACh ; ¨
-    db 0FEh ; ˛
-    db  41h ; A
-    db 0FEh ; ˛
-    db  8Fh ; è
-    db    1
-    db  41h ; A
-    db 0FEh ; ˛
-    db 0EBh ; Î
-    db 0FEh ; ˛
-    db  8Fh ; è
-    db    1
-    db 0EBh ; Î
-    db 0FEh ; ˛
-    db 0DEh ; ﬁ
-    db 0FDh ; ˝
-    db 0A2h ; ¢
-    db    1
-    db 0C2h ; ¬
-    db 0FEh ; ˛
-    db 0ADh ; ≠
-    db 0FEh ; ˛
-    db 0A2h ; ¢
-    db    1
-    db  3Bh ; ;
-    db 0FFh
-    db  9Eh ; û
-    db 0FDh ; ˝
-    db 0B5h ; µ
-    db    1
-    db  5Bh ; [
-    db 0FFh
-    db  86h ; Ü
-    db 0FEh ; ˛
-    db 0B5h ; µ
-    db    1
-    db  9Ah ; ö
-    db 0FFh
-    db  88h ; à
-    db 0FDh ; ˝
-    db 0C2h ; ¬
-    db    1
-    db    0
-    db    0
-    db  78h ; x
-    db 0FEh ; ˛
-    db 0C2h ; ¬
-    db    1
-    db    0
-    db    0
-    db  88h ; à
-    db 0FDh ; ˝
-    db 0C2h ; ¬
-    db    1
-    db  4Eh ; N
-    db    1
-    db  78h ; x
-    db 0FEh ; ˛
-    db 0C2h ; ¬
-    db    1
-    db  4Eh ; N
-    db    1
-    db  88h ; à
-    db 0FDh ; ˝
-    db 0C2h ; ¬
-    db    1
-    db  4Eh ; N
-    db    3
-    db  78h ; x
-    db 0FEh ; ˛
-    db 0C2h ; ¬
-    db    1
-    db  4Eh ; N
-    db    3
-    db    0
-    db    0
-    db 0C2h ; ¬
-    db    1
-    db    0
-    db    0
-    db  88h ; à
-    db    1
-    db    0
-    db    0
-    db 0B2h ; ≤
-    db 0FCh ; ¸
-    db  78h ; x
-    db    2
-    db    0
-    db    0
-    db 0B2h ; ≤
-    db 0FCh ; ¸
-    db  88h ; à
-    db    1
-    db    0
-    db    0
-    db 0B2h ; ≤
-    db 0FEh ; ˛
-    db  78h ; x
-    db    2
-    db    0
-    db    0
-    db 0B2h ; ≤
-    db 0FEh ; ˛
-    db  88h ; à
-    db    1
-    db    0
-    db    0
-    db    0
-    db    0
-    db  78h ; x
-    db    2
-    db    0
-    db    0
-    db    0
-    db    0
-    db  7Bh ; {
-    db    1
-    db  13h
-    db    0
-    db  64h ; d
-    db    0
-    db  63h ; c
-    db    2
-    db  13h
-    db    0
-    db 0A1h ; °
-    db    0
-    db  54h ; T
-    db    1
-    db  26h ; &
-    db    0
-    db 0C3h ; √
-    db    0
-    db  24h ; $
-    db    2
-    db  26h ; &
-    db    0
-    db  3Bh ; ;
-    db    1
-    db  15h
-    db    1
-    db  39h ; 9
-    db    0
-    db  15h
-    db    1
-    db 0BFh ; ø
-    db    1
-    db  39h ; 9
-    db    0
-    db 0BFh ; ø
-    db    1
-    db 0C5h ; ≈
-    db    0
-    db  4Ch ; L
-    db    0
-    db  53h ; S
-    db    1
-    db  3Eh ; >
-    db    1
-    db  4Ch ; L
-    db    0
-    db  22h ; "
-    db    2
-    db  66h ; f
-    db    0
-    db  5Fh ; _
-    db    0
-    db  7Ah ; z
-    db    1
-    db 0A5h ; •
-    db    0
-    db  5Fh ; _
-    db    0
-    db  62h ; b
-    db    2
-    db    0
-    db    0
-    db  72h ; r
-    db    0
-    db  88h ; à
-    db    1
-    db    0
-    db    0
-    db  72h ; r
-    db    0
-    db  78h ; x
-    db    2
-    db  9Ch ; ú
-    db 0FFh
-    db  85h ; Ö
-    db    0
-    db  7Bh ; {
-    db    1
-    db  5Fh ; _
-    db 0FFh
-    db  85h ; Ö
-    db    0
-    db  63h ; c
-    db    2
-    db  3Dh ; =
-    db 0FFh
-    db  98h ; ò
-    db    0
-    db  54h ; T
-    db    1
-    db 0C5h ; ≈
-    db 0FEh ; ˛
-    db  98h ; ò
-    db    0
-    db  24h ; $
-    db    2
-    db 0EBh ; Î
-    db 0FEh ; ˛
-    db 0ABh ; ´
-    db    0
-    db  15h
-    db    1
-    db  41h ; A
-    db 0FEh ; ˛
-    db 0ABh ; ´
-    db    0
-    db 0BFh ; ø
-    db    1
-    db 0ADh ; ≠
-    db 0FEh ; ˛
-    db 0BEh ; æ
-    db    0
-    db 0C5h ; ≈
-    db    0
-    db 0DEh ; ﬁ
-    db 0FDh ; ˝
-    db 0BEh ; æ
-    db    0
-    db  3Eh ; >
-    db    1
-    db  86h ; Ü
-    db 0FEh ; ˛
-    db 0D1h ; —
-    db    0
-    db  66h ; f
-    db    0
-    db  9Eh ; û
-    db 0FDh ; ˝
-    db 0D1h ; —
-    db    0
-    db 0A5h ; •
-    db    0
-    db  78h ; x
-    db 0FEh ; ˛
-    db 0E4h ; ‰
-    db    0
-    db    0
-    db    0
-    db  88h ; à
-    db 0FDh ; ˝
-    db 0E4h ; ‰
-    db    0
-    db    0
-    db    0
-    db  85h ; Ö
-    db 0FEh ; ˛
-    db 0F7h ; ˜
-    db    0
-    db  9Ch ; ú
-    db 0FFh
-    db  9Dh ; ù
-    db 0FDh ; ˝
-    db 0F7h ; ˜
-    db    0
-    db  5Fh ; _
-    db 0FFh
-    db 0ACh ; ¨
-    db 0FEh ; ˛
-    db  0Ah
-    db    1
-    db  3Dh ; =
-    db 0FFh
-    db 0DCh ; ‹
-    db 0FDh ; ˝
-    db  0Ah
-    db    1
-    db 0C5h ; ≈
-    db 0FEh ; ˛
-    db 0EBh ; Î
-    db 0FEh ; ˛
-    db  1Dh
-    db    1
-    db 0EBh ; Î
-    db 0FEh ; ˛
-    db  41h ; A
-    db 0FEh ; ˛
-    db  1Dh
-    db    1
-    db  41h ; A
-    db 0FEh ; ˛
-    db  3Bh ; ;
-    db 0FFh
-    db  30h ; 0
-    db    1
-    db 0ADh ; ≠
-    db 0FEh ; ˛
-    db 0C2h ; ¬
-    db 0FEh ; ˛
-    db  30h ; 0
-    db    1
-    db 0DEh ; ﬁ
-    db 0FDh ; ˝
-    db  9Ah ; ö
-    db 0FFh
-    db  43h ; C
-    db    1
-    db  86h ; Ü
-    db 0FEh ; ˛
-    db  5Bh ; [
-    db 0FFh
-    db  43h ; C
-    db    1
-    db  9Eh ; û
-    db 0FDh ; ˝
-    db    0
-    db    0
-    db  56h ; V
-    db    1
-    db  78h ; x
-    db 0FEh ; ˛
-    db    0
-    db    0
-    db  56h ; V
-    db    1
-    db  88h ; à
-    db 0FDh ; ˝
-    db  64h ; d
-    db    0
-    db  69h ; i
-    db    1
-    db  85h ; Ö
-    db 0FEh ; ˛
-    db 0A1h ; °
-    db    0
-    db  69h ; i
-    db    1
-    db  9Dh ; ù
-    db 0FDh ; ˝
-    db 0C3h ; √
-    db    0
-    db  7Ch ; |
-    db    1
-    db 0ACh ; ¨
-    db 0FEh ; ˛
-    db  3Bh ; ;
-    db    1
-    db  7Ch ; |
-    db    1
-    db 0DCh ; ‹
-    db 0FDh ; ˝
-    db  15h
-    db    1
-    db  8Fh ; è
-    db    1
-    db 0EBh ; Î
-    db 0FEh ; ˛
-    db 0BFh ; ø
-    db    1
-    db  8Fh ; è
-    db    1
-    db  41h ; A
-    db 0FEh ; ˛
-    db  53h ; S
-    db    1
-    db 0A2h ; ¢
-    db    1
-    db  3Bh ; ;
-    db 0FFh
-    db  22h ; "
-    db    2
-    db 0A2h ; ¢
-    db    1
-    db 0C2h ; ¬
-    db 0FEh ; ˛
-    db  7Ah ; z
-    db    1
-    db 0B5h ; µ
-    db    1
-    db  9Ah ; ö
-    db 0FFh
-    db  62h ; b
-    db    2
-    db 0B5h ; µ
-    db    1
-    db  5Bh ; [
-    db 0FFh
-    db  88h ; à
-    db    1
-    db 0C2h ; ¬
-    db    1
-    db    0
-    db    0
-    db  78h ; x
-    db    2
-    db 0C2h ; ¬
-    db    1
-    db    0
-    db    0
-    db  88h ; à
-    db    1
-    db 0C2h ; ¬
-    db    1
-    db  4Eh ; N
-    db    1
-    db  78h ; x
-    db    2
-    db 0C2h ; ¬
-    db    1
-    db  4Eh ; N
-    db    1
-    db  88h ; à
-    db    1
-    db 0C2h ; ¬
-    db    1
-    db  4Eh ; N
-    db    3
-    db  78h ; x
-    db    2
-    db 0C2h ; ¬
-    db    1
-    db  4Eh ; N
-    db    3
-    db    0
-    db    0
-    db 0C2h ; ¬
-    db    1
-    db    0
-    db    0
-    db 0B8h ; ∏
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0B2h ; ≤
-    db 0FEh ; ˛
-    db 0A8h ; ®
-    db    0
-    db 0FFh
-    db 0FFh
-    db 0B2h ; ≤
-    db 0FEh ; ˛
-    db    0
-    db    0
-    db 0FFh
-    db 0FFh
-    db 0A8h ; ®
-    db    0
-    db  38h ; 8
-    db    1
-    db 0FFh
-    db 0FFh
-    db 0A8h ; ®
-    db    0
-    db  78h ; x
-    db    0
-    db 0FFh
-    db 0FFh
-    db  4Eh ; N
-    db    1
-    db  68h ; h
-    db    1
-    db 0FFh
-    db 0FFh
-    db  4Eh ; N
-    db    1
-    db    0
-    db    0
-    db    0
-    db    0
-    db 0B4h ; ¥
-    db    0
-    db  48h ; H
-    db    0
-    db 0FFh
-    db 0FFh
-    db 0B2h ; ≤
-    db 0FEh ; ˛
-    db  58h ; X
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0B2h ; ≤
-    db 0FEh ; ˛
-    db    0
-    db    0
-    db 0FFh
-    db 0FFh
-    db 0A8h ; ®
-    db    0
-    db 0C8h ; »
-    db 0FEh ; ˛
-    db 0FFh
-    db 0FFh
-    db 0A8h ; ®
-    db    0
-    db  98h ; ò
-    db 0FEh ; ˛
-    db 0FFh
-    db 0FFh
-    db  4Eh ; N
-    db    1
-    db  88h ; à
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db  4Eh ; N
-    db    1
-    db    0
-    db    0
-    db    0
-    db    0
-    db 0B4h ; ¥
-    db    0
-    db  78h ; x
-    db    0
-    db 0FFh
-    db 0FFh
-    db 0B2h ; ≤
-    db 0FEh ; ˛
-    db  68h ; h
-    db    1
-    db 0FFh
-    db 0FFh
-    db 0B2h ; ≤
-    db 0FEh ; ˛
-    db  78h ; x
-    db    0
-    db 0FFh
-    db 0FFh
-    db  4Eh ; N
-    db    1
-    db  68h ; h
-    db    1
-    db 0FFh
-    db 0FFh
-    db  4Eh ; N
-    db    1
-    db  90h ; ê
-    db    1
-    db    0
-    db    0
-    db    0
-    db    0
-    db  90h ; ê
-    db    1
-    db    0
-    db    0
-    db 0B2h ; ≤
-    db 0FEh ; ˛
-    db  90h ; ê
-    db    1
-    db    0
-    db    0
-    db 0B2h ; ≤
-    db 0FEh ; ˛
-    db  88h ; à
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0B2h ; ≤
-    db 0FEh ; ˛
-    db  98h ; ò
-    db 0FEh ; ˛
-    db 0FFh
-    db 0FFh
-    db 0B2h ; ≤
-    db 0FEh ; ˛
-    db  88h ; à
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db  4Eh ; N
-    db    1
-    db  98h ; ò
-    db 0FEh ; ˛
-    db 0FFh
-    db 0FFh
-    db  4Eh ; N
-    db    1
-    db  70h ; p
-    db 0FEh ; ˛
-    db    0
-    db    0
-    db    0
-    db    0
-    db  70h ; p
-    db 0FEh ; ˛
-    db    0
-    db    0
-    db 0B2h ; ≤
-    db 0FEh ; ˛
-    db  70h ; p
-    db 0FEh ; ˛
-    db    0
-    db    0
-    db 0B2h ; ≤
-    db 0FEh ; ˛
-    db  88h ; à
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FBh ; ˚
-    db 0FEh ; ˛
-    db  17h
-    db    0
-    db 0FFh
-    db 0FFh
-    db 0FBh ; ˚
-    db 0FEh ; ˛
-    db 0C4h ; ƒ
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db    0
-    db    0
-    db  3Ch ; <
-    db    0
-    db 0FFh
-    db 0FFh
-    db    0
-    db    0
-    db 0E9h ; È
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db    5
-    db    1
-    db  78h ; x
-    db    0
-    db 0FFh
-    db 0FFh
-    db    5
-    db    1
-    db 0C8h ; »
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db 0C8h ; »
-    db    0
-    db    0
-    db    0
-    db 0B2h ; ≤
-    db 0FEh ; ˛
-    db  38h ; 8
-    db 0FFh
-    db    0
-    db    0
-    db  4Eh ; N
-    db    1
-    db  8Dh ; ç
-    db 0FFh
-    db  58h ; X
-    db    0
-    db 0B2h ; ≤
-    db 0FEh ; ˛
-    db  8Dh ; ç
-    db 0FFh
-    db  97h ; ó
-    db    0
-    db 0B2h ; ≤
-    db 0FEh ; ˛
-    db  8Dh ; ç
-    db 0FFh
-    db  58h ; X
-    db    0
-    db    0
-    db    0
-    db  8Dh ; ç
-    db 0FFh
-    db  97h ; ó
-    db    0
-    db    0
-    db    0
-    db  8Dh ; ç
-    db 0FFh
-    db  58h ; X
-    db    0
-    db  4Eh ; N
-    db    1
-    db  8Dh ; ç
-    db 0FFh
-    db  97h ; ó
-    db    0
-    db  4Eh ; N
-    db    1
-    db  73h ; s
-    db    0
-    db 0B4h ; ¥
-    db    0
-    db    0
-    db    0
-    db 0C8h ; »
-    db    0
-    db    0
-    db    0
-    db 0B2h ; ≤
-    db 0FEh ; ˛
-    db  38h ; 8
-    db 0FFh
-    db    0
-    db    0
-    db  4Eh ; N
-    db    1
-    db    1
-    db  0Bh
-    db    1
-    db    0
-    db    0
-    db  0Dh
-    db    0
-    db    0
-    db  32h ; 2
-    db  14h
-    db    0
-    db    0
-    db    0
-    db  0Fh
-    db    1
-    db    4
-    db    8
-    db    0
-    db    0
-    db  0Dh
-    db    0
-    db    1
-    db  32h ; 2
-    db  14h
-    db    0
-    db    0
-    db    0
-    db  0Fh
-    db    1
-    db    2
-    db    1
-    db    0
-    db    0
-    db    2
-    db    0
-unk_3D19B     db    0
-    db 0BEh ; æ
-    db  0Ch
-    db    0
-    db    0
-    db    0
-    db    0
-    db    1
-    db    4
-    db    3
-    db    0
-    db    0
-    db    2
-    db    0
-    db    1
-    db 0BEh ; æ
-    db  0Ch
-    db    0
-    db    0
-    db    0
-    db    0
-    db    1
-    db    1
-    db    2
-    db    0
-    db    0
-    db    2
-    db    0
-    db    2
-    db 0BEh ; æ
-    db  0Ch
-    db    0
-    db    0
-    db    0
-    db    0
-    db    1
-    db    3
-    db    4
-    db    0
-    db    0
-    db    2
-    db    0
-    db    3
-    db 0BEh ; æ
-    db  0Ch
-    db    0
-    db    0
-    db    0
-    db    0
-    db    1
-    db    2
-    db    1
-    db    0
-    db    0
-    db    2
-    db    0
-    db    0
-    db  94h ; î
-    db  0Ch
-    db    0
-    db    0
-    db    0
-    db    0
-    db    1
-    db    3
-    db    4
-    db    0
-    db    0
-    db    2
-    db    0
-    db    3
-    db  94h ; î
-    db  0Ch
-    db    0
-    db    0
-    db    0
-    db    0
-    db    1
-    db    2
-    db    1
-    db    0
-    db    0
-    db    2
-    db    0
-    db    0
-    db 0E8h ; Ë
-    db  0Ch
-    db    0
-    db    0
-    db 0FFh
-    db    0
-    db    1
-    db    3
-    db    4
-    db    0
-    db    0
-    db    2
-    db    0
-    db    3
-    db 0E8h ; Ë
-    db  0Ch
-    db    0
-    db    0
-    db 0FFh
-    db    0
-    db    2
-    db    1
-    db    2
-    db    0
-    db    0
-    db    2
-    db    0
-    db    2
-    db  5Ah ; Z
-    db  0Dh
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    3
-    db    4
-    db    0
-    db    0
-    db    2
-    db    0
-    db    3
-    db  5Ah ; Z
-    db  0Dh
-    db    0
-    db    0
-    db    0
-    db    0
-    db    1
-    db    3
-    db    2
-    db    0
-    db    0
-    db    5
-    db    0
-    db    3
-    db 0F0h ; 
-    db  0Dh
-    db    0
-    db    0
-    db    1
-    db    3
-    db    1
-    db    2
-    db    4
-    db    0
-    db    0
-    db    5
-    db    0
-    db    0
-    db 0F0h ; 
-    db  0Dh
-    db    0
-    db    0
-    db    1
-    db    3
-    db    1
-    db    1
-    db    3
-    db    0
-    db    0
-    db    5
-    db    0
-    db    2
-    db 0F0h ; 
-    db  0Dh
-    db    0
-    db    0
-    db    1
-    db    3
-    db    1
-    db    4
-    db    1
-    db    0
-    db    0
-    db    5
-    db    0
-    db    1
-    db 0F0h ; 
-    db  0Dh
-    db    0
-    db    0
-    db    1
-    db    3
-    db    1
-    db    8
-    db  0Bh
-    db    0
-    db    0
-    db  11h
-    db    0
-    db    3
-    db  74h ; t
-    db  0Eh
-    db    0
-    db    0
-    db    1
-    db    6
-    db    1
-    db  0Ch
-    db    4
-    db    0
-    db    0
-    db  11h
-    db    0
-    db    0
-    db  74h ; t
-    db  0Eh
-    db    0
-    db    0
-    db    1
-    db    6
-    db    1
-    db    1
-    db    9
-    db    0
-    db    0
-    db  11h
-    db    0
-    db    2
-    db  74h ; t
-    db  0Eh
-    db    0
-    db    0
-    db    1
-    db    6
-    db    1
-    db    6
-    db    5
-    db    0
-    db    0
-    db  11h
-    db    0
-    db    1
-    db  74h ; t
-    db  0Eh
-    db    0
-    db    0
-    db    1
-    db    6
-    db    1
-    db    1
-    db    2
-    db    1
-    db    1
-    db    2
-    db    0
-    db    2
-    db  18h
-    db  10h
-    db    0
-    db    0
-    db    0
-    db    0
-    db    1
-    db    3
-    db    4
-    db    1
-    db    1
-    db    2
-    db    0
-    db    3
-    db  18h
-    db  10h
-    db    0
-    db    0
-    db    0
-    db    0
-    db    2
-    db    1
-    db    2
-    db    1
-    db    1
-    db    2
-    db    0
-    db    2
-    db  42h ; B
-    db  10h
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    3
-    db    4
-    db    0
-    db    0
-    db    2
-    db    0
-    db    3
-    db  5Ah ; Z
-    db  0Dh
-    db    0
-    db    0
-    db    0
-    db    0
-    db    2
-    db    3
-    db    4
-    db    1
-    db    1
-    db    2
-    db    0
-    db    3
-    db  42h ; B
-    db  10h
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    1
-    db    2
-    db    0
-    db    0
-    db    2
-    db    0
-    db    2
-    db  5Ah ; Z
-    db  0Dh
-    db    0
-    db    0
-    db    0
-    db    0
-    db    1
-    db    8
-    db  0Bh
-    db    1
-    db    1
-    db  11h
-    db    0
-    db    3
-    db  6Ch ; l
-    db  10h
-    db    0
-    db    0
-    db 0FFh
-    db    6
-    db    1
-    db  0Ch
-    db    4
-    db    1
-    db    1
-    db  11h
-    db    0
-    db    0
-    db  6Ch ; l
-    db  10h
-    db    0
-    db    0
-    db 0FFh
-    db    6
-    db    1
-    db    1
-    db    9
-    db    1
-    db    1
-    db  11h
-    db    0
-    db    2
-    db  6Ch ; l
-    db  10h
-    db    0
-    db    0
-    db 0FFh
-    db    6
-    db    1
-    db    6
-    db    5
-    db    1
-    db    1
-    db  11h
-    db    0
-    db    1
-    db  6Ch ; l
-    db  10h
-    db    0
-    db    0
-    db 0FFh
-    db    6
-    db    1
-    db    1
-    db    2
-    db    0
-    db    0
-    db    2
-    db    0
-    db    2
-    db 0E2h ; ‚
-    db  12h
-    db    0
-    db    0
-    db    0
-    db    0
-    db    1
-    db    3
-    db    4
-    db    0
-    db    0
-    db    2
-    db    0
-    db    3
-    db 0E2h ; ‚
-    db  12h
-    db    0
-    db    0
-    db    0
-    db    0
-    db    1
-    db    2
-    db    1
-    db    0
-    db    0
-    db    2
-    db    0
-    db    0
-    db 0E2h ; ‚
-    db  12h
-    db    0
-    db    0
-    db    0
-    db    0
-    db    1
-    db    4
-    db    3
-    db    0
-    db    0
-    db    2
-    db    0
-    db    1
-    db 0E2h ; ‚
-    db  12h
-    db    0
-    db    0
-    db    0
-    db    0
-    db    1
-    db    1
-    db    2
-    db    0
-    db    1
-    db    2
-    db    0
-    db    2
-    db 0E2h ; ‚
-    db  12h
-    db    0
-    db    0
-    db    0
-    db  0Ah
-    db    1
-    db    2
-    db    1
-    db    0
-    db    1
-    db    2
-    db    0
-    db    0
-    db 0E2h ; ‚
-    db  12h
-    db    0
-    db    0
-    db    0
-    db  0Ah
-    db    1
-    db    3
-    db    4
-    db    0
-    db    1
-    db    2
-    db    0
-    db    3
-    db 0E2h ; ‚
-    db  12h
-    db    0
-    db    0
-    db    0
-    db  0Ah
-    db    1
-    db    4
-    db    3
-    db    0
-    db    1
-    db    2
-    db    0
-    db    1
-    db 0E2h ; ‚
-    db  12h
-    db    0
-    db    0
-    db    0
-    db  0Ah
-    db    1
-    db    1
-    db    2
-    db    0
-    db    1
-    db    2
-    db    0
-    db    2
-    db  18h
-    db  10h
-    db    0
-    db    0
-    db    0
-    db  0Ah
-    db    1
-    db    2
-    db    1
-    db    0
-    db    1
-    db    2
-    db    0
-    db    0
-    db  18h
-    db  10h
-    db    0
-    db    0
-    db    0
-    db  0Ah
-    db    1
-    db    3
-    db    4
-    db    0
-    db    1
-    db    2
-    db    0
-    db    3
-    db  18h
-    db  10h
-    db    0
-    db    0
-    db    0
-    db  0Ah
-    db    1
-    db    4
-    db    3
-    db    0
-    db    1
-    db    2
-    db    0
-    db    1
-    db  18h
-    db  10h
-    db    0
-    db    0
-    db    0
-    db  0Ah
-    db    1
-    db    1
-    db    2
-    db    0
-    db    2
-    db    2
-    db    0
-    db    2
-    db  34h ; 4
-    db  15h
-    db    0
-    db    0
-    db    0
-    db    0
-    db    1
-    db    3
-    db    4
-    db    0
-    db    3
-    db    2
-    db    0
-    db    3
-    db  34h ; 4
-    db  15h
-    db    0
-    db    0
-    db    0
-    db    0
-    db    1
-    db    2
-    db    1
-    db    0
-    db    3
-    db    2
-    db    0
-    db    0
-    db  34h ; 4
-    db  15h
-    db    0
-    db    0
-    db    0
-    db    0
-    db    1
-    db    4
-    db    3
-    db    0
-    db    2
-    db    2
-    db    0
-    db    1
-    db  34h ; 4
-    db  15h
-    db    0
-    db    0
-    db    0
-    db    0
-    db    1
-    db    1
-    db    2
-    db    0
-    db    3
-    db    2
-    db    0
-    db    2
-    db  0Ah
-    db  15h
-    db    0
-    db    0
-    db    0
-    db    0
-    db    1
-    db    3
-    db    4
-    db    0
-    db    2
-    db    2
-    db    0
-    db    3
-    db  0Ah
-    db  15h
-    db    0
-    db    0
-    db    0
-    db    0
-    db    1
-    db    2
-    db    1
-    db    0
-    db    2
-    db    2
-    db    0
-    db    0
-    db  0Ah
-    db  15h
-    db    0
-    db    0
-    db    0
-    db    0
-    db    1
-    db    4
-    db    3
-    db    0
-    db    3
-    db    2
-    db    0
-    db    1
-    db  0Ah
-    db  15h
-    db    0
-    db    0
-    db    0
-    db    0
-    db    1
-    db    2
-    db    1
-    db    2
-    db    2
-    db    2
-    db    0
-    db    0
-    db 0E0h ; ‡
-    db  14h
-    db    0
-    db    0
-    db    0
-    db    0
-    db    1
-    db    4
-    db    3
-    db    3
-    db    3
-    db    2
-    db    0
-    db    1
-    db 0E0h ; ‡
-    db  14h
-    db    0
-    db    0
-    db    0
-    db    0
-    db    1
-    db    1
-    db    2
-    db    3
-    db    3
-    db    2
-    db    0
-    db    2
-    db 0E0h ; ‡
-    db  14h
-    db    0
-    db    0
-    db    0
-    db    0
-    db    1
-    db    3
-    db    4
-    db    2
-    db    2
-    db    2
-    db    0
-    db    3
-    db 0E0h ; ‡
-    db  14h
-    db    0
-    db    0
-    db    0
-    db    0
-    db    1
-    db    8
-    db  0Bh
-    db    2
-    db    3
-    db  11h
-    db    0
-    db    3
-    db  5Eh ; ^
-    db  15h
-    db    0
-    db    0
-    db 0FFh
-    db    9
-    db    1
-    db  0Ch
-    db    4
-    db    2
-    db    2
-    db  11h
-    db    0
-    db    0
-    db  5Eh ; ^
-    db  15h
-    db    0
-    db    0
-    db 0FFh
-    db    9
-    db    1
-    db    1
-    db    9
-    db    3
-    db    3
-    db  11h
-    db    0
-    db    2
-    db  5Eh ; ^
-    db  15h
-    db    0
-    db    0
-    db 0FFh
-    db    9
-    db    1
-    db    6
-    db    5
-    db    3
-    db    2
-    db  11h
-    db    0
-    db    1
-    db  5Eh ; ^
-    db  15h
-    db    0
-    db    0
-    db 0FFh
-    db    9
-    db    1
-    db  0Bh
-    db    1
-    db    0
-    db    0
-    db  17h
-    db    0
-    db    0
-    db  0Ch
-    db  13h
-    db    0
-    db    0
-    db    0
-    db  0Eh
-    db    1
-    db    4
-    db    8
-    db    0
-    db    0
-    db  17h
-    db    0
-    db    1
-    db  0Ch
-    db  13h
-    db    0
-    db    0
-    db    0
-    db  0Eh
-    db    1
-    db    2
-    db    1
-    db    4
-    db    4
-    db    2
-    db    0
-    db    0
-    db  30h ; 0
-    db  0Dh
-    db    0
-    db    0
-    db    0
-    db  0Fh
-    db    1
-    db    3
-    db    4
-    db    4
-    db    4
-    db    2
-    db    0
-    db    3
-    db  30h ; 0
-    db  0Dh
-    db    0
-    db    0
-    db    0
-    db  0Fh
-    db    1
-    db    2
-    db    1
-    db    4
-    db    4
-    db    3
-    db    0
-    db    0
-    db 0D2h ; “
-    db  19h
-    db    0
-    db    0
-    db    0
-    db  0Fh
-    db    1
-    db    3
-    db    4
-    db    4
-    db    4
-    db    3
-    db    0
-    db    3
-    db 0D2h ; “
-    db  19h
-    db    0
-    db    0
-    db    0
-    db  0Fh
-    db    1
-    db    1
-    db    2
-    db    0
-    db    4
-    db    2
-    db    0
-    db    2
-    db    6
-    db  0Dh
-    db    0
-    db    0
-    db    0
-    db  0Fh
-    db    1
-    db    2
-    db    1
-    db    0
-    db    4
-    db    2
-    db    0
-    db    0
-    db    6
-    db  0Dh
-    db    0
-    db    0
-    db    0
-    db  0Fh
-    db    1
-    db    3
-    db    4
-    db    0
-    db    4
-    db    2
-    db    0
-    db    3
-    db    6
-    db  0Dh
-    db    0
-    db    0
-    db    0
-    db  0Fh
-    db    1
-    db    4
-    db    3
-    db    0
-    db    4
-    db    2
-    db    0
-    db    1
-    db    6
-    db  0Dh
-    db    0
-    db    0
-    db    0
-    db  0Fh
-    db    1
-    db  0Bh
-    db    5
-    db    0
-    db    0
-    db  11h
-    db    0
-    db    0
-    db  10h
-    db  12h
-    db    0
-    db    0
-    db 0FFh
-    db  0Dh
-    db    1
-    db    6
-    db    8
-    db    0
-    db    0
-    db  11h
-    db    0
-    db    1
-    db  3Eh ; >
-    db  11h
-    db    0
-    db    0
-    db 0FFh
-    db  0Dh
-    db    1
-    db  0Ch
-    db    1
-    db    0
-    db    0
-    db  11h
-    db    0
-    db    0
-    db  3Eh ; >
-    db  11h
-    db    0
-    db    0
-    db 0FFh
-    db  0Dh
-    db    1
-    db    4
-    db    9
-    db    0
-    db    0
-    db  11h
-    db    0
-    db    1
-    db  10h
-    db  12h
-    db    0
-    db    0
-    db 0FFh
-    db  0Dh
-    db    2
-    db    2
-    db    1
-    db    0
-    db    0
-    db    2
-    db    0
-    db    0
-    db  94h ; î
-    db  0Ch
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    2
-    db    4
-    db    0
-    db    0
-    db    5
-    db    0
-    db    0
-    db 0F0h ; 
-    db  0Dh
-    db    0
-    db    0
-    db    1
-    db    3
-    db    2
-    db    3
-    db    4
-    db    0
-    db    0
-    db    2
-    db    0
-    db    3
-    db  94h ; î
-    db  0Ch
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    3
-    db    2
-    db    0
-    db    0
-    db    5
-    db    0
-    db    3
-    db 0F0h ; 
-    db  0Dh
-    db    0
-    db    0
-    db    1
-    db    3
-    db    2
-    db    1
-    db    2
-    db    0
-    db    0
-    db    2
-    db    0
-    db    2
-    db  94h ; î
-    db  0Ch
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    1
-    db    3
-    db    0
-    db    0
-    db    5
-    db    0
-    db    2
-    db 0F0h ; 
-    db  0Dh
-    db    0
-    db    0
-    db    1
-    db    3
-    db    2
-    db    4
-    db    3
-    db    0
-    db    0
-    db    2
-    db    0
-    db    1
-    db  94h ; î
-    db  0Ch
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    4
-    db    1
-    db    0
-    db    0
-    db    5
-    db    0
-    db    1
-    db 0F0h ; 
-    db  0Dh
-    db    0
-    db    0
-    db    1
-    db    3
-    db    2
-    db    2
-    db    1
-    db    0
-    db    0
-    db    2
-    db    0
-    db    0
-    db  94h ; î
-    db  0Ch
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    2
-    db    3
-    db    0
-    db    0
-    db    5
-    db    0
-    db    0
-    db  32h ; 2
-    db  0Eh
-    db    0
-    db    0
-    db    2
-    db    3
-    db    2
-    db    3
-    db    4
-    db    0
-    db    0
-    db    2
-    db    0
-    db    3
-    db  94h ; î
-    db  0Ch
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    3
-    db    1
-    db    0
-    db    0
-    db    5
-    db    0
-    db    3
-    db  32h ; 2
-    db  0Eh
-    db    0
-    db    0
-    db    2
-    db    3
-    db    2
-    db    1
-    db    2
-    db    0
-    db    0
-    db    2
-    db    0
-    db    2
-    db  94h ; î
-    db  0Ch
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    1
-    db    4
-    db    0
-    db    0
-    db    5
-    db    0
-    db    2
-    db  32h ; 2
-    db  0Eh
-    db    0
-    db    0
-    db    2
-    db    3
-    db    2
-    db    4
-    db    3
-    db    0
-    db    0
-    db    2
-    db    0
-    db    1
-    db  94h ; î
-    db  0Ch
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    4
-    db    2
-    db    0
-    db    0
-    db    5
-    db    0
-    db    1
-    db  32h ; 2
-    db  0Eh
-    db    0
-    db    0
-    db    2
-    db    3
-    db    2
-    db  0Ch
-    db    5
-    db    0
-    db    0
-    db    3
-    db    0
-    db    0
-    db  84h ; Ñ
-    db  0Dh
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  0Ch
-    db    4
-    db    0
-    db    0
-    db  11h
-    db    0
-    db    0
-    db  74h ; t
-    db  0Eh
-    db    0
-    db    0
-    db    1
-    db    6
-    db    2
-    db    8
-    db    4
-    db    0
-    db    0
-    db    3
-    db    0
-    db    3
-    db  84h ; Ñ
-    db  0Dh
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    8
-    db  0Bh
-    db    0
-    db    0
-    db  11h
-    db    0
-    db    3
-    db  74h ; t
-    db  0Eh
-    db    0
-    db    0
-    db    1
-    db    6
-    db    2
-    db    1
-    db  0Bh
-    db    0
-    db    0
-    db    3
-    db    0
-    db    2
-    db  84h ; Ñ
-    db  0Dh
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    1
-    db    9
-    db    0
-    db    0
-    db  11h
-    db    0
-    db    2
-    db  74h ; t
-    db  0Eh
-    db    0
-    db    0
-    db    1
-    db    6
-    db    2
-    db    6
-    db    9
-    db    0
-    db    0
-    db    3
-    db    0
-    db    1
-    db  84h ; Ñ
-    db  0Dh
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    6
-    db    5
-    db    0
-    db    0
-    db  11h
-    db    0
-    db    1
-    db  74h ; t
-    db  0Eh
-    db    0
-    db    0
-    db    1
-    db    6
-    db    2
-    db  0Bh
-    db    1
-    db    0
-    db    0
-    db    3
-    db    0
-    db    0
-    db 0BAh ; ∫
-    db  0Dh
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  0Bh
-    db    8
-    db    0
-    db    0
-    db  11h
-    db    0
-    db    0
-    db  46h ; F
-    db  0Fh
-    db    0
-    db    0
-    db    2
-    db    6
-    db    2
-    db    9
-    db    6
-    db    0
-    db    0
-    db    3
-    db    0
-    db    3
-    db 0BAh ; ∫
-    db  0Dh
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    9
-    db    1
-    db    0
-    db    0
-    db  11h
-    db    0
-    db    3
-    db  46h ; F
-    db  0Fh
-    db    0
-    db    0
-    db    2
-    db    6
-    db    2
-    db    5
-    db  0Ch
-    db    0
-    db    0
-    db    3
-    db    0
-    db    2
-    db 0BAh ; ∫
-    db  0Dh
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    5
-    db    6
-    db    0
-    db    0
-    db  11h
-    db    0
-    db    2
-    db  46h ; F
-    db  0Fh
-    db    0
-    db    0
-    db    2
-    db    6
-    db    2
-    db    4
-    db    8
-    db    0
-    db    0
-    db    3
-    db    0
-    db    1
-    db 0BAh ; ∫
-    db  0Dh
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    4
-    db  0Ch
-    db    0
-    db    0
-    db  11h
-    db    0
-    db    1
-    db  46h ; F
-    db  0Fh
-    db    0
-    db    0
-    db    2
-    db    6
-    db    1
-    db    2
-    db    1
-    db    5
-    db    5
-    db    2
-    db    0
-    db    0
-    db  48h ; H
-    db  19h
-    db  72h ; r
-    db  19h
-    db    0
-    db    0
-    db    1
-    db    3
-    db    4
-    db    5
-    db    5
-    db    2
-    db    0
-    db    3
-    db  48h ; H
-    db  19h
-    db  72h ; r
-    db  19h
-    db    0
-    db    0
-    db    1
-    db    1
-    db    2
-    db    0
-    db    5
-    db    3
-    db    0
-    db    2
-    db 0F4h ; Ù
-    db  18h
-    db  1Eh
-    db  19h
-    db    0
-    db  0Dh
-    db    1
-    db    2
-    db    1
-    db    0
-    db    5
-    db    3
-    db    0
-    db    0
-    db 0F4h ; Ù
-    db  18h
-    db  1Eh
-    db  19h
-    db    0
-    db  0Dh
-    db    1
-    db    3
-    db    4
-    db    0
-    db    5
-    db    3
-    db    0
-    db    3
-    db 0F4h ; Ù
-    db  18h
-    db  1Eh
-    db  19h
-    db    0
-    db  0Dh
-    db    1
-    db    4
-    db    3
-    db    0
-    db    5
-    db    3
-    db    0
-    db    1
-    db 0F4h ; Ù
-    db  18h
-    db  1Eh
-    db  19h
-    db    0
-    db  0Dh
-    db    1
-    db    2
-    db    1
-    db    0
-    db    0
-    db    3
-    db    0
-    db    0
-    db  9Ch ; ú
-    db  19h
-    db    0
-    db    0
-    db    0
-    db  0Bh
-    db    1
-    db    3
-    db    4
-    db    0
-    db    0
-    db    3
-    db    0
-    db    3
-    db  9Ch ; ú
-    db  19h
-    db    0
-    db    0
-    db    0
-    db  0Bh
-    db    1
-    db  0Bh
-    db    1
-    db    0
-    db    1
-    db  1Dh
-    db    0
-    db    0
-    db  30h ; 0
-    db  16h
-    db    0
-    db    0
-    db    0
-    db  0Ch
-    db    1
-    db    9
-    db    6
-    db    0
-    db    1
-    db  1Dh
-    db    0
-    db    3
-    db  30h ; 0
-    db  16h
-    db    0
-    db    0
-    db    0
-    db  0Ch
-    db    1
-    db    5
-    db  0Ch
-    db    0
-    db    1
-    db  1Dh
-    db    0
-    db    2
-    db  30h ; 0
-    db  16h
-    db    0
-    db    0
-    db    0
-    db  0Ch
-    db    1
-    db    4
-    db    8
-    db    0
-    db    1
-    db  1Dh
-    db    0
-    db    1
-    db  30h ; 0
-    db  16h
-    db    0
-    db    0
-    db    0
-    db  0Ch
-    db    1
-    db  0Ch
-    db    5
-    db    0
-    db    1
-    db  1Dh
-    db    0
-    db    0
-    db  92h ; í
-    db  17h
-    db    0
-    db    0
-    db    0
-    db  0Ch
-    db    1
-    db    8
-    db    4
-    db    0
-    db    1
-    db  1Dh
-    db    0
-    db    3
-    db  92h ; í
-    db  17h
-    db    0
-    db    0
-    db    0
-    db  0Ch
-    db    1
-    db    1
-    db  0Bh
-    db    0
-    db    1
-    db  1Dh
-    db    0
-    db    2
-    db  92h ; í
-    db  17h
-    db    0
-    db    0
-    db    0
-    db  0Ch
-    db    1
-    db    6
-    db    9
-    db    0
-    db    1
-    db  1Dh
-    db    0
-    db    1
-    db  92h ; í
-    db  17h
-    db    0
-    db    0
-    db    0
-    db  0Ch
-    db    0
-    db    0
-    db    0
-    db    0
-    db 0E0h ; ‡
-    db  78h ; x
-    db 0E0h ; ‡
-    db  78h ; x
-    db    0
-    db    0
-    db    0
-    db    0
-    db  40h ; @
-    db    0
-    db  24h ; $
-    db  1Ah
-    db    0
-    db    0
-    db  54h ; T
-    db  77h ; w
-    db  6Ah ; j
-    db  77h ; w
-    db    4
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  20h
-    db  81h ; Å
-    db  4Ch ; L
-    db  81h ; Å
-    db    0
-    db    0
-    db    0
-    db    0
-    db  40h ; @
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  36h ; 6
-    db  81h ; Å
-    db  62h ; b
-    db  81h ; Å
-    db    0
-    db    0
-    db    0
-    db    0
-    db  40h ; @
-    db    0
-    db  5Ch ; \
-    db  1Ah
-    db    0
-    db    0
-    db 0E0h ; ‡
-    db  78h ; x
-    db 0F6h ; ˆ
-    db  78h ; x
-    db    0
-    db    0
-    db    1
-    db    0
-    db    1
-    db    0
-    db  6Ah ; j
-    db  1Ah
-    db    0
-    db    1
-    db 0E0h ; ‡
-    db  78h ; x
-    db 0F6h ; ˆ
-    db  78h ; x
-    db    0
-    db    0
-    db    1
-    db    0
-    db    1
-    db    0
-    db 0B0h ; ∞
-    db  1Ah
-    db    0
-    db    3
-    db  90h ; ê
-    db  79h ; y
-    db 0A6h ; ¶
-    db  79h ; y
-    db    0
-    db    0
-    db    1
-    db    0
-    db    2
-    db    0
-    db 0BEh ; æ
-    db  1Ah
-    db    0
-    db    0
-    db  90h ; ê
-    db  79h ; y
-    db 0A6h ; ¶
-    db  79h ; y
-    db    0
-    db    0
-    db    1
-    db    0
-    db    2
-    db    0
-    db 0CCh ; Ã
-    db  1Ah
-    db    0
-    db    2
-    db  90h ; ê
-    db  79h ; y
-    db 0A6h ; ¶
-    db  79h ; y
-    db    0
-    db    0
-    db    1
-    db    0
-    db    2
-    db    0
-    db 0DAh ; ⁄
-    db  1Ah
-    db    0
-    db    1
-    db  90h ; ê
-    db  79h ; y
-    db 0A6h ; ¶
-    db  79h ; y
-    db    0
-    db    0
-    db    1
-    db    0
-    db    2
-    db    0
-    db 0E8h ; Ë
-    db  1Ah
-    db    0
-    db    3
-    db  0Ch
-    db  79h ; y
-    db  22h ; "
-    db  79h ; y
-    db    0
-    db    0
-    db    1
-    db    3
-    db    3
-    db    0
-    db 0F6h ; ˆ
-    db  1Ah
-    db    0
-    db    0
-    db  0Ch
-    db  79h ; y
-    db  22h ; "
-    db  79h ; y
-    db    0
-    db    0
-    db    1
-    db    3
-    db    3
-    db    0
-    db    4
-    db  1Bh
-    db    0
-    db    2
-    db  0Ch
-    db  79h ; y
-    db  22h ; "
-    db  79h ; y
-    db    0
-    db    0
-    db    1
-    db    3
-    db    3
-    db    0
-    db  12h
-    db  1Bh
-    db    0
-    db    1
-    db  0Ch
-    db  79h ; y
-    db  22h ; "
-    db  79h ; y
-    db    0
-    db    0
-    db    1
-    db    3
-    db    3
-    db    0
-    db  5Ch ; \
-    db  1Ah
-    db    0
-    db    0
-    db 0E0h ; ‡
-    db  78h ; x
-    db 0F6h ; ˆ
-    db  78h ; x
-    db    0
-    db    1
-    db    1
-    db    0
-    db    1
-    db    0
-    db  6Ah ; j
-    db  1Ah
-    db    0
-    db    1
-    db 0E0h ; ‡
-    db  78h ; x
-    db 0F6h ; ˆ
-    db  78h ; x
-    db    0
-    db    1
-    db    1
-    db    0
-    db    1
-    db    0
-    db 0B0h ; ∞
-    db  1Ah
-    db    0
-    db    3
-    db  90h ; ê
-    db  79h ; y
-    db 0A6h ; ¶
-    db  79h ; y
-    db    0
-    db    1
-    db    1
-    db    0
-    db    2
-    db    0
-    db 0BEh ; æ
-    db  1Ah
-    db    0
-    db    0
-    db  90h ; ê
-    db  79h ; y
-    db 0A6h ; ¶
-    db  79h ; y
-    db    0
-    db    1
-    db    1
-    db    0
-    db    2
-    db    0
-    db 0CCh ; Ã
-    db  1Ah
-    db    0
-    db    2
-    db  90h ; ê
-    db  79h ; y
-    db 0A6h ; ¶
-    db  79h ; y
-    db    0
-    db    1
-    db    1
-    db    0
-    db    2
-    db    0
-    db 0DAh ; ⁄
-    db  1Ah
-    db    0
-    db    1
-    db  90h ; ê
-    db  79h ; y
-    db 0A6h ; ¶
-    db  79h ; y
-    db    0
-    db    1
-    db    1
-    db    0
-    db    2
-    db    0
-    db 0E8h ; Ë
-    db  1Ah
-    db    0
-    db    3
-    db  0Ch
-    db  79h ; y
-    db  22h ; "
-    db  79h ; y
-    db    0
-    db    1
-    db    1
-    db    3
-    db    3
-    db    0
-    db 0F6h ; ˆ
-    db  1Ah
-    db    0
-    db    0
-    db  0Ch
-    db  79h ; y
-    db  22h ; "
-    db  79h ; y
-    db    0
-    db    1
-    db    1
-    db    3
-    db    3
-    db    0
-    db    4
-    db  1Bh
-    db    0
-    db    2
-    db  0Ch
-    db  79h ; y
-    db  22h ; "
-    db  79h ; y
-    db    0
-    db    1
-    db    1
-    db    3
-    db    3
-    db    0
-    db  12h
-    db  1Bh
-    db    0
-    db    1
-    db  0Ch
-    db  79h ; y
-    db  22h ; "
-    db  79h ; y
-    db    0
-    db    1
-    db    1
-    db    3
-    db    3
-    db    0
-    db  5Ch ; \
-    db  1Ah
-    db    0
-    db    0
-    db 0E0h ; ‡
-    db  78h ; x
-    db 0F6h ; ˆ
-    db  78h ; x
-    db    0
-    db    2
-    db    1
-    db    0
-    db    1
-    db    0
-    db  6Ah ; j
-    db  1Ah
-    db    0
-    db    1
-    db 0E0h ; ‡
-    db  78h ; x
-    db 0F6h ; ˆ
-    db  78h ; x
-    db    0
-    db    2
-    db    1
-    db    0
-    db    1
-    db    0
-    db 0B0h ; ∞
-    db  1Ah
-    db    0
-    db    3
-    db  90h ; ê
-    db  79h ; y
-    db 0A6h ; ¶
-    db  79h ; y
-    db    0
-    db    2
-    db    1
-    db    0
-    db    2
-    db    0
-    db 0BEh ; æ
-    db  1Ah
-    db    0
-    db    0
-    db  90h ; ê
-    db  79h ; y
-    db 0A6h ; ¶
-    db  79h ; y
-    db    0
-    db    2
-    db    1
-    db    0
-    db    2
-    db    0
-    db 0CCh ; Ã
-    db  1Ah
-    db    0
-    db    2
-    db  90h ; ê
-    db  79h ; y
-    db 0A6h ; ¶
-    db  79h ; y
-    db    0
-    db    2
-    db    1
-    db    0
-    db    2
-    db    0
-    db 0DAh ; ⁄
-    db  1Ah
-    db    0
-    db    1
-    db  90h ; ê
-    db  79h ; y
-    db 0A6h ; ¶
-    db  79h ; y
-    db    0
-    db    2
-    db    1
-    db    0
-    db    2
-    db    0
-    db 0E8h ; Ë
-    db  1Ah
-    db    0
-    db    3
-    db  0Ch
-    db  79h ; y
-    db  22h ; "
-    db  79h ; y
-    db    0
-    db    2
-    db    1
-    db    3
-    db    3
-    db    0
-    db 0F6h ; ˆ
-    db  1Ah
-    db    0
-    db    0
-    db  0Ch
-    db  79h ; y
-    db  22h ; "
-    db  79h ; y
-    db    0
-    db    2
-    db    1
-    db    3
-    db    3
-    db    0
-    db    4
-    db  1Bh
-    db    0
-    db    2
-    db  0Ch
-    db  79h ; y
-    db  22h ; "
-    db  79h ; y
-    db    0
-    db    2
-    db    1
-    db    3
-    db    3
-    db    0
-    db  12h
-    db  1Bh
-    db    0
-    db    1
-    db  0Ch
-    db  79h ; y
-    db  22h ; "
-    db  79h ; y
-    db    0
-    db    2
-    db    1
-    db    3
-    db    3
-    db    0
-    db  20h
-    db  1Bh
-    db    0
-    db    0
-    db  28h ; (
-    db  77h ; w
-    db  3Eh ; >
-    db  77h ; w
-    db    0
-    db    0
-    db    0
-    db    0
-    db  12h
-    db    0
-    db  2Eh ; .
-    db  1Bh
-    db    0
-    db    3
-    db  28h ; (
-    db  77h ; w
-    db  3Eh ; >
-    db  77h ; w
-    db    0
-    db    0
-    db    0
-    db    0
-    db  12h
-    db    0
-    db  0Eh
-    db  1Ch
-    db    0
-    db    1
-    db  5Ch ; \
-    db  78h ; x
-    db  72h ; r
-    db  78h ; x
-    db    0
-    db    0
-    db    0
-    db    0
-    db  10h
-    db    0
-    db    0
-    db  1Ch
-    db    0
-    db    3
-    db  5Ch ; \
-    db  78h ; x
-    db  72h ; r
-    db  78h ; x
-    db    0
-    db    0
-    db    0
-    db    0
-    db  10h
-    db    0
-    db 0F2h ; Ú
-    db  1Bh
-    db    0
-    db    0
-    db  5Ch ; \
-    db  78h ; x
-    db  72h ; r
-    db  78h ; x
-    db    0
-    db    0
-    db    0
-    db    0
-    db  10h
-    db    0
-    db 0E4h ; ‰
-    db  1Bh
-    db    0
-    db    2
-    db  5Ch ; \
-    db  78h ; x
-    db  72h ; r
-    db  78h ; x
-    db    0
-    db    0
-    db    0
-    db    0
-    db  10h
-    db    0
-    db  70h ; p
-    db  1Ch
-    db    0
-    db    0
-    db  88h ; à
-    db  78h ; x
-    db  9Eh ; û
-    db  78h ; x
-    db    0
-    db    0
-    db    0
-    db    0
-    db  18h
-    db    0
-    db  7Eh ; ~
-    db  1Ch
-    db    0
-    db    1
-    db  88h ; à
-    db  78h ; x
-    db  9Eh ; û
-    db  78h ; x
-    db    0
-    db    0
-    db    0
-    db    0
-    db  18h
-    db    0
-    db  54h ; T
-    db  1Ch
-    db    0
-    db    2
-    db  88h ; à
-    db  78h ; x
-    db  9Eh ; û
-    db  78h ; x
-    db    0
-    db    0
-    db    0
-    db    0
-    db  18h
-    db    0
-    db  62h ; b
-    db  1Ch
-    db    0
-    db    3
-    db  88h ; à
-    db  78h ; x
-    db  9Eh ; û
-    db  78h ; x
-    db    0
-    db    0
-    db    0
-    db    0
-    db  18h
-    db    0
-    db 0A8h ; ®
-    db  1Ch
-    db    0
-    db    0
-    db 0ACh ; ¨
-    db  77h ; w
-    db 0C2h ; ¬
-    db  77h ; w
-    db    0
-    db    0
-    db    0
-    db    0
-    db  17h
-    db    0
-    db 0B6h ; ∂
-    db  1Ch
-    db    0
-    db    1
-    db 0ACh ; ¨
-    db  77h ; w
-    db 0C2h ; ¬
-    db  77h ; w
-    db    0
-    db    0
-    db    0
-    db    0
-    db  17h
-    db    0
-    db  8Ch ; å
-    db  1Ch
-    db    0
-    db    2
-    db 0ACh ; ¨
-    db  77h ; w
-    db 0C2h ; ¬
-    db  77h ; w
-    db    0
-    db    0
-    db    0
-    db    0
-    db  17h
-    db    0
-    db  9Ah ; ö
-    db  1Ch
-    db    0
-    db    3
-    db 0ACh ; ¨
-    db  77h ; w
-    db 0C2h ; ¬
-    db  77h ; w
-    db    0
-    db    0
-    db    0
-    db    0
-    db  17h
-    db    0
-    db 0E0h ; ‡
-    db  1Ch
-    db    0
-    db    2
-    db  74h ; t
-    db  7Bh ; {
-    db  8Ah ; ä
-    db  7Bh ; {
-    db    0
-    db    0
-    db    0
-    db    0
-    db  19h
-    db    0
-    db 0C4h ; ƒ
-    db  1Ch
-    db    0
-    db    0
-    db  74h ; t
-    db  7Bh ; {
-    db  8Ah ; ä
-    db  7Bh ; {
-    db    0
-    db    0
-    db    0
-    db    0
-    db  19h
-    db    0
-    db 0EEh ; Ó
-    db  1Ch
-    db    0
-    db    3
-    db  74h ; t
-    db  7Bh ; {
-    db  8Ah ; ä
-    db  7Bh ; {
-    db    0
-    db    0
-    db    0
-    db    0
-    db  19h
-    db    0
-    db 0D2h ; “
-    db  1Ch
-    db    0
-    db    1
-    db  74h ; t
-    db  7Bh ; {
-    db  8Ah ; ä
-    db  7Bh ; {
-    db    0
-    db    0
-    db    0
-    db    0
-    db  19h
-    db    0
-    db 0FCh ; ¸
-    db  1Ch
-    db    0
-    db    3
-    db 0A4h ; §
-    db  76h ; v
-    db 0BAh ; ∫
-    db  76h ; v
-    db    0
-    db    0
-    db    0
-    db    3
-    db  1Ah
-    db    0
-    db  0Ah
-    db  1Dh
-    db    0
-    db    0
-    db 0A4h ; §
-    db  76h ; v
-    db 0BAh ; ∫
-    db  76h ; v
-    db    0
-    db    0
-    db    0
-    db    3
-    db  1Ah
-    db    0
-    db  18h
-    db  1Dh
-    db    0
-    db    2
-    db 0A4h ; §
-    db  76h ; v
-    db 0BAh ; ∫
-    db  76h ; v
-    db    0
-    db    0
-    db    0
-    db    3
-    db  1Ah
-    db    0
-    db  26h ; &
-    db  1Dh
-    db    0
-    db    1
-    db 0A4h ; §
-    db  76h ; v
-    db 0BAh ; ∫
-    db  76h ; v
-    db    0
-    db    0
-    db    0
-    db    3
-    db  1Ah
-    db    0
-    db  0Eh
-    db  1Ch
-    db    0
-    db    1
-    db  78h ; x
-    db  76h ; v
-    db  8Eh ; é
-    db  76h ; v
-    db    0
-    db    0
-    db    0
-    db    0
-    db  10h
-    db    0
-    db    0
-    db  1Ch
-    db    0
-    db    3
-    db  78h ; x
-    db  76h ; v
-    db  8Eh ; é
-    db  76h ; v
-    db    0
-    db    0
-    db    0
-    db    0
-    db  10h
-    db    0
-    db 0F2h ; Ú
-    db  1Bh
-    db    0
-    db    0
-    db  78h ; x
-    db  76h ; v
-    db  8Eh ; é
-    db  76h ; v
-    db    0
-    db    0
-    db    0
-    db    0
-    db  10h
-    db    0
-    db 0E4h ; ‰
-    db  1Bh
-    db    0
-    db    2
-    db  78h ; x
-    db  76h ; v
-    db  8Eh ; é
-    db  76h ; v
-    db    0
-    db    0
-    db    0
-    db    0
-    db  10h
-    db    0
-    db 0C0h ; ¿
-    db  1Dh
-    db    0
-    db    0
-    db 0FCh ; ¸
-    db  76h ; v
-    db  12h
-    db  77h ; w
-    db    0
-    db    0
-    db    1
-    db    3
-    db    5
-    db    0
-    db 0CEh ; Œ
-    db  1Dh
-    db    0
-    db    1
-    db 0D0h ; –
-    db  76h ; v
-    db 0E6h ; Ê
-    db  76h ; v
-    db    0
-    db    0
-    db    1
-    db    3
-    db    4
-    db    0
-    db 0DCh ; ‹
-    db  1Dh
-    db    0
-    db    0
-    db 0D0h ; –
-    db  76h ; v
-    db 0E6h ; Ê
-    db  76h ; v
-    db    0
-    db    0
-    db    1
-    db    3
-    db    4
-    db    0
-    db 0EAh ; Í
-    db  1Dh
-    db    0
-    db    1
-    db 0FCh ; ¸
-    db  76h ; v
-    db  12h
-    db  77h ; w
-    db    0
-    db    0
-    db    1
-    db    3
-    db    5
-    db    0
-    db  34h ; 4
-    db  1Dh
-    db    0
-    db    0
-    db 0D8h ; ÿ
-    db  77h ; w
-    db 0EEh ; Ó
-    db  77h ; w
-    db 0CEh ; Œ
-    db    0
-    db    0
-    db    1
-    db  1Bh
-    db    0
-    db  42h ; B
-    db  1Dh
-    db    0
-    db    1
-    db 0D8h ; ÿ
-    db  77h ; w
-    db 0EEh ; Ó
-    db  77h ; w
-    db 0CFh ; œ
-    db    0
-    db    0
-    db    2
-    db  1Bh
-    db    0
-    db  78h ; x
-    db  1Ah
-    db    0
-    db    0
-    db  64h ; d
-    db  79h ; y
-    db  7Ah ; z
-    db  79h ; y
-    db 0D0h ; –
-    db    0
-    db    0
-    db    0
-    db  1Ch
-    db    0
-    db  86h ; Ü
-    db  1Ah
-    db    0
-    db    3
-    db  64h ; d
-    db  79h ; y
-    db  7Ah ; z
-    db  79h ; y
-    db 0D1h ; —
-    db    0
-    db    0
-    db    0
-    db  1Ch
-    db    0
-    db  50h ; P
-    db  1Dh
-    db    0
-    db    0
-    db  30h ; 0
-    db  78h ; x
-    db  46h ; F
-    db  78h ; x
-    db 0D2h ; “
-    db    0
-    db    0
-    db    0
-    db  1Eh
-    db    0
-    db  5Eh ; ^
-    db  1Dh
-    db    0
-    db    1
-    db  30h ; 0
-    db  78h ; x
-    db  46h ; F
-    db  78h ; x
-    db 0D3h ; ”
-    db    0
-    db    0
-    db    0
-    db  1Eh
-    db    0
-    db  96h ; ñ
-    db  1Dh
-    db    0
-    db    0
-    db 0A8h ; ®
-    db  7Ch ; |
-    db 0BEh ; æ
-    db  7Ch ; |
-    db    0
-    db    0
-    db    0
-    db    0
-    db  1Dh
-    db    0
-    db  88h ; à
-    db  1Dh
-    db    0
-    db    2
-    db 0A8h ; ®
-    db  7Ch ; |
-    db 0BEh ; æ
-    db  7Ch ; |
-    db    0
-    db    0
-    db    0
-    db    0
-    db  1Dh
-    db    0
-    db 0A4h ; §
-    db  1Dh
-    db    0
-    db    3
-    db 0A8h ; ®
-    db  7Ch ; |
-    db 0BEh ; æ
-    db  7Ch ; |
-    db    0
-    db    0
-    db    0
-    db    0
-    db  1Dh
-    db    0
-    db 0B2h ; ≤
-    db  1Dh
-    db    0
-    db    1
-    db 0A8h ; ®
-    db  7Ch ; |
-    db 0BEh ; æ
-    db  7Ch ; |
-    db    0
-    db    0
-    db    0
-    db    0
-    db  1Dh
-    db    0
-    db  94h ; î
-    db  1Ah
-    db    0
-    db    0
-    db 0C4h ; ƒ
-    db  7Ah ; z
-    db 0DAh ; ⁄
-    db  7Ah ; z
-    db    0
-    db    0
-    db    0
-    db    0
-    db  0Ch
-    db    0
-    db 0F8h ; ¯
-    db  1Dh
-    db    0
-    db    0
-    db 0F0h ; 
-    db  7Ah ; z
-    db    6
-    db  7Bh ; {
-    db    0
-    db    0
-    db    0
-    db    0
-    db    6
-    db    0
-    db  14h
-    db  1Eh
-    db    0
-    db    3
-    db 0F0h ; 
-    db  7Ah ; z
-    db    6
-    db  7Bh ; {
-    db    0
-    db    0
-    db    0
-    db    0
-    db    6
-    db    0
-    db  30h ; 0
-    db  1Eh
-    db    0
-    db    2
-    db 0F0h ; 
-    db  7Ah ; z
-    db    6
-    db  7Bh ; {
-    db    0
-    db    0
-    db    0
-    db    0
-    db    6
-    db    0
-    db  4Ch ; L
-    db  1Eh
-    db    0
-    db    1
-    db 0F0h ; 
-    db  7Ah ; z
-    db    6
-    db  7Bh ; {
-    db    0
-    db    0
-    db    0
-    db    0
-    db    6
-    db    0
-    db  68h ; h
-    db  1Eh
-    db    0
-    db    0
-    db  1Ch
-    db  7Bh ; {
-    db  32h ; 2
-    db  7Bh ; {
-    db    0
-    db    0
-    db    0
-    db    0
-    db    7
-    db    0
-    db  84h ; Ñ
-    db  1Eh
-    db    0
-    db    3
-    db  1Ch
-    db  7Bh ; {
-    db  32h ; 2
-    db  7Bh ; {
-    db    0
-    db    0
-    db    0
-    db    0
-    db    7
-    db    0
-    db 0A0h ; †
-    db  1Eh
-    db    0
-    db    2
-    db  1Ch
-    db  7Bh ; {
-    db  32h ; 2
-    db  7Bh ; {
-    db    0
-    db    0
-    db    0
-    db    0
-    db    7
-    db    0
-    db 0BCh ; º
-    db  1Eh
-    db    0
-    db    1
-    db  1Ch
-    db  7Bh ; {
-    db  32h ; 2
-    db  7Bh ; {
-    db    0
-    db    0
-    db    0
-    db    0
-    db    7
-    db    0
-    db  6Ch ; l
-    db  1Dh
-    db    0
-    db    0
-    db 0E4h ; ‰
-    db  7Eh ; ~
-    db 0FAh ; ˙
-    db  7Eh ; ~
-    db 0D2h ; “
-    db    0
-    db    0
-    db    0
-    db  1Fh
-    db    0
-    db  7Ah ; z
-    db  1Dh
-    db    0
-    db    1
-    db 0E4h ; ‰
-    db  7Eh ; ~
-    db 0FAh ; ˙
-    db  7Eh ; ~
-    db 0D3h ; ”
-    db    0
-    db    0
-    db    0
-    db  1Fh
-    db    0
-    db    8
-    db  1Ah
-    db    0
-    db    0
-    db  10h
-    db  7Fh ; 
-    db  26h ; &
-    db  7Fh ; 
-    db    0
-    db    0
-    db    0
-    db    1
-    db  23h ; #
-    db    0
-    db  16h
-    db  1Ah
-    db    0
-    db    1
-    db  10h
-    db  7Fh ; 
-    db  26h ; &
-    db  7Fh ; 
-    db    0
-    db    0
-    db    0
-    db    2
-    db  23h ; #
-    db    0
-    db 0D8h ; ÿ
-    db  1Eh
-    db    0
-    db    0
-    db 0A0h ; †
-    db  7Bh ; {
-    db 0B6h ; ∂
-    db  7Bh ; {
-    db    0
-    db    0
-    db    1
-    db    3
-    db    8
-    db    0
-    db 0F4h ; Ù
-    db  1Eh
-    db    0
-    db    3
-    db 0A0h ; †
-    db  7Bh ; {
-    db 0B6h ; ∂
-    db  7Bh ; {
-    db    0
-    db    0
-    db    1
-    db    3
-    db    8
-    db    0
-    db  10h
-    db  1Fh
-    db    0
-    db    2
-    db 0A0h ; †
-    db  7Bh ; {
-    db 0B6h ; ∂
-    db  7Bh ; {
-    db    0
-    db    0
-    db    1
-    db    3
-    db    8
-    db    0
-    db  2Ch ; ,
-    db  1Fh
-    db    0
-    db    1
-    db 0A0h ; †
-    db  7Bh ; {
-    db 0B6h ; ∂
-    db  7Bh ; {
-    db    0
-    db    0
-    db    1
-    db    3
-    db    8
-    db    0
-    db  48h ; H
-    db  1Fh
-    db    0
-    db    0
-    db 0CCh ; Ã
-    db  7Bh ; {
-    db 0E2h ; ‚
-    db  7Bh ; {
-    db    0
-    db    0
-    db    1
-    db    3
-    db    9
-    db    0
-    db  64h ; d
-    db  1Fh
-    db    0
-    db    3
-    db 0CCh ; Ã
-    db  7Bh ; {
-    db 0E2h ; ‚
-    db  7Bh ; {
-    db    0
-    db    0
-    db    1
-    db    3
-    db    9
-    db    0
-    db  80h ; Ä
-    db  1Fh
-    db    0
-    db    2
-    db 0CCh ; Ã
-    db  7Bh ; {
-    db 0E2h ; ‚
-    db  7Bh ; {
-    db    0
-    db    0
-    db    1
-    db    3
-    db    9
-    db    0
-    db  9Ch ; ú
-    db  1Fh
-    db    0
-    db    1
-    db 0CCh ; Ã
-    db  7Bh ; {
-    db 0E2h ; ‚
-    db  7Bh ; {
-    db    0
-    db    0
-    db    1
-    db    3
-    db    9
-    db    0
-    db  0Eh
-    db  1Ch
-    db    0
-    db    1
-    db 0F8h ; ¯
-    db  7Bh ; {
-    db  0Eh
-    db  7Ch ; |
-    db    0
-    db    0
-    db    0
-    db    0
-    db  11h
-    db    0
-    db    0
-    db  1Ch
-    db    0
-    db    3
-    db 0F8h ; ¯
-    db  7Bh ; {
-    db  0Eh
-    db  7Ch ; |
-    db    0
-    db    0
-    db    0
-    db    0
-    db  11h
-    db    0
-    db 0F2h ; Ú
-    db  1Bh
-    db    0
-    db    0
-    db 0F8h ; ¯
-    db  7Bh ; {
-    db  0Eh
-    db  7Ch ; |
-    db    0
-    db    0
-    db    0
-    db    0
-    db  11h
-    db    0
-    db 0E4h ; ‰
-    db  1Bh
-    db    0
-    db    2
-    db 0F8h ; ¯
-    db  7Bh ; {
-    db  0Eh
-    db  7Ch ; |
-    db    0
-    db    0
-    db    0
-    db    0
-    db  11h
-    db    0
-    db  20h
-    db  1Bh
-    db    0
-    db    0
-    db  24h ; $
-    db  7Ch ; |
-    db  3Ah ; :
-    db  7Ch ; |
-    db    0
-    db    0
-    db    0
-    db    0
-    db  14h
-    db    0
-    db  2Eh ; .
-    db  1Bh
-    db    0
-    db    3
-    db  24h ; $
-    db  7Ch ; |
-    db  3Ah ; :
-    db  7Ch ; |
-    db    0
-    db    0
-    db    0
-    db    0
-    db  14h
-    db    0
-    db  3Ch ; <
-    db  1Bh
-    db    0
-    db    0
-    db  50h ; P
-    db  7Ch ; |
-    db  66h ; f
-    db  7Ch ; |
-    db    5
-    db    0
-    db    0
-    db    0
-    db  16h
-    db    0
-    db  58h ; X
-    db  1Bh
-    db    0
-    db    3
-    db  50h ; P
-    db  7Ch ; |
-    db  66h ; f
-    db  7Ch ; |
-    db    4
-    db    0
-    db    0
-    db    0
-    db  16h
-    db    0
-    db  20h
-    db  1Bh
-    db    0
-    db    0
-    db  50h ; P
-    db  7Ch ; |
-    db  66h ; f
-    db  7Ch ; |
-    db    0
-    db    0
-    db    0
-    db    0
-    db  13h
-    db    0
-    db  2Eh ; .
-    db  1Bh
-    db    0
-    db    3
-    db  50h ; P
-    db  7Ch ; |
-    db  66h ; f
-    db  7Ch ; |
-    db    0
-    db    0
-    db    0
-    db    0
-    db  13h
-    db    0
-    db  74h ; t
-    db  1Bh
-    db    0
-    db    3
-    db 0D4h ; ‘
-    db  7Ch ; |
-    db 0EAh ; Í
-    db  7Ch ; |
-    db    0
-    db    0
-    db    0
-    db    3
-    db  15h
-    db    0
-    db  82h ; Ç
-    db  1Bh
-    db    0
-    db    0
-    db 0D4h ; ‘
-    db  7Ch ; |
-    db 0EAh ; Í
-    db  7Ch ; |
-    db    0
-    db    0
-    db    0
-    db    3
-    db  15h
-    db    0
-    db  90h ; ê
-    db  1Bh
-    db    0
-    db    2
-    db 0D4h ; ‘
-    db  7Ch ; |
-    db 0EAh ; Í
-    db  7Ch ; |
-    db    0
-    db    0
-    db    0
-    db    3
-    db  15h
-    db    0
-    db  9Eh ; û
-    db  1Bh
-    db    0
-    db    1
-    db 0D4h ; ‘
-    db  7Ch ; |
-    db 0EAh ; Í
-    db  7Ch ; |
-    db    0
-    db    0
-    db    0
-    db    3
-    db  15h
-    db    0
-    db 0B8h ; ∏
-    db  1Fh
-    db    0
-    db    0
-    db    0
-    db  7Dh ; }
-    db  16h
-    db  7Dh ; }
-    db    0
-    db    0
-    db    0
-    db    0
-    db  0Bh
-    db    0
-    db 0C6h ; ∆
-    db  1Fh
-    db    0
-    db    3
-    db    0
-    db  7Dh ; }
-    db  16h
-    db  7Dh ; }
-    db    0
-    db    0
-    db    0
-    db    0
-    db  0Bh
-    db    0
-    db 0E2h ; ‚
-    db  1Fh
-    db    0
-    db    0
-    db 0B0h ; ∞
-    db  7Dh ; }
-    db 0C6h ; ∆
-    db  7Dh ; }
-    db    0
-    db 0FFh
-    db    0
-    db    0
-    db  0Ah
-    db    0
-    db 0FEh ; ˛
-    db  1Fh
-    db    0
-    db    1
-    db 0B0h ; ∞
-    db  7Dh ; }
-    db 0C6h ; ∆
-    db  7Dh ; }
-    db    0
-    db 0FFh
-    db    0
-    db    0
-    db  0Ah
-    db    0
-    db 0D4h ; ‘
-    db  1Fh
-    db    0
-    db    2
-    db 0B0h ; ∞
-    db  7Dh ; }
-    db 0C6h ; ∆
-    db  7Dh ; }
-    db    0
-    db 0FFh
-    db    0
-    db    0
-    db  0Ah
-    db    0
-    db 0F0h ; 
-    db  1Fh
-    db    0
-    db    3
-    db 0B0h ; ∞
-    db  7Dh ; }
-    db 0C6h ; ∆
-    db  7Dh ; }
-    db    0
-    db 0FFh
-    db    0
-    db    0
-    db  0Ah
-    db    0
-    db  0Ch
-    db  20h
-    db    0
-    db    0
-    db  2Ch ; ,
-    db  7Dh ; }
-    db  42h ; B
-    db  7Dh ; }
-    db    4
-    db    0
-    db    0
-    db    0
-    db  22h ; "
-    db    0
-    db  1Ah
-    db  20h
-    db    0
-    db    3
-    db  2Ch ; ,
-    db  7Dh ; }
-    db  42h ; B
-    db  7Dh ; }
-    db    5
-    db    0
-    db    0
-    db    0
-    db  22h ; "
-    db    0
-    db  28h ; (
-    db  20h
-    db    0
-    db    0
-    db  58h ; X
-    db  7Dh ; }
-    db  6Eh ; n
-    db  7Dh ; }
-    db 0C6h ; ∆
-    db    0
-    db    0
-    db    3
-    db  20h
-    db    0
-    db  36h ; 6
-    db  20h
-    db    0
-    db    3
-    db  58h ; X
-    db  7Dh ; }
-    db  6Eh ; n
-    db  7Dh ; }
-    db 0C7h ; «
-    db    0
-    db    0
-    db    3
-    db  20h
-    db    0
-    db  44h ; D
-    db  20h
-    db    0
-    db    2
-    db  58h ; X
-    db  7Dh ; }
-    db  6Eh ; n
-    db  7Dh ; }
-    db 0C8h ; »
-    db    0
-    db    0
-    db    3
-    db  20h
-    db    0
-    db  52h ; R
-    db  20h
-    db    0
-    db    1
-    db  58h ; X
-    db  7Dh ; }
-    db  6Eh ; n
-    db  7Dh ; }
-    db 0C9h ; …
-    db    0
-    db    0
-    db    3
-    db  20h
-    db    0
-    db  60h ; `
-    db  20h
-    db    0
-    db    0
-    db  84h ; Ñ
-    db  7Dh ; }
-    db  9Ah ; ö
-    db  7Dh ; }
-    db 0CAh ;  
-    db    0
-    db    0
-    db    3
-    db  21h ; !
-    db    0
-    db  6Eh ; n
-    db  20h
-    db    0
-    db    3
-    db  84h ; Ñ
-    db  7Dh ; }
-    db  9Ah ; ö
-    db  7Dh ; }
-    db 0CBh ; À
-    db    0
-    db    0
-    db    3
-    db  21h ; !
-    db    0
-    db  7Ch ; |
-    db  20h
-    db    0
-    db    2
-    db  84h ; Ñ
-    db  7Dh ; }
-    db  9Ah ; ö
-    db  7Dh ; }
-    db 0CCh ; Ã
-    db    0
-    db    0
-    db    3
-    db  21h ; !
-    db    0
-    db  8Ah ; ä
-    db  20h
-    db    0
-    db    1
-    db  84h ; Ñ
-    db  7Dh ; }
-    db  9Ah ; ö
-    db  7Dh ; }
-    db 0CDh ; Õ
-    db    0
-    db    0
-    db    3
-    db  21h ; !
-    db    0
-    db  94h ; î
-    db  1Ah
-    db    0
-    db    0
-    db 0C4h ; ƒ
-    db  7Ah ; z
-    db 0DAh ; ⁄
-    db  7Ah ; z
-    db    0
-    db    1
-    db    1
-    db    0
-    db  0Ch
-    db    0
-    db 0F8h ; ¯
-    db  1Dh
-    db    0
-    db    0
-    db 0F0h ; 
-    db  7Ah ; z
-    db    6
-    db  7Bh ; {
-    db    0
-    db    1
-    db    1
-    db    0
-    db    6
-    db    0
-    db  14h
-    db  1Eh
-    db    0
-    db    3
-    db 0F0h ; 
-    db  7Ah ; z
-    db    6
-    db  7Bh ; {
-    db    0
-    db    1
-    db    1
-    db    0
-    db    6
-    db    0
-    db  30h ; 0
-    db  1Eh
-    db    0
-    db    2
-    db 0F0h ; 
-    db  7Ah ; z
-    db    6
-    db  7Bh ; {
-    db    0
-    db    1
-    db    1
-    db    0
-    db    6
-    db    0
-    db  4Ch ; L
-    db  1Eh
-    db    0
-    db    1
-    db 0F0h ; 
-    db  7Ah ; z
-    db    6
-    db  7Bh ; {
-    db    0
-    db    1
-    db    1
-    db    0
-    db    6
-    db    0
-    db  68h ; h
-    db  1Eh
-    db    0
-    db    0
-    db  1Ch
-    db  7Bh ; {
-    db  32h ; 2
-    db  7Bh ; {
-    db    0
-    db    1
-    db    1
-    db    0
-    db    7
-    db    0
-    db  84h ; Ñ
-    db  1Eh
-    db    0
-    db    3
-    db  1Ch
-    db  7Bh ; {
-    db  32h ; 2
-    db  7Bh ; {
-    db    0
-    db    1
-    db    1
-    db    0
-    db    7
-    db    0
-    db 0A0h ; †
-    db  1Eh
-    db    0
-    db    2
-    db  1Ch
-    db  7Bh ; {
-    db  32h ; 2
-    db  7Bh ; {
-    db    0
-    db    1
-    db    1
-    db    0
-    db    7
-    db    0
-    db 0BCh ; º
-    db  1Eh
-    db    0
-    db    1
-    db  1Ch
-    db  7Bh ; {
-    db  32h ; 2
-    db  7Bh ; {
-    db    0
-    db    1
-    db    1
-    db    0
-    db    7
-    db    0
-    db  24h ; $
-    db  1Ah
-    db    0
-    db    0
-    db  54h ; T
-    db  77h ; w
-    db  6Ah ; j
-    db  77h ; w
-    db  0Eh
-    db    1
-    db    0
-    db    0
-    db    0
-    db    0
-    db  40h ; @
-    db  1Ah
-    db    0
-    db    2
-    db  54h ; T
-    db  77h ; w
-    db  6Ah ; j
-    db  77h ; w
-    db  0Eh
-    db    1
-    db    0
-    db    0
-    db    0
-    db    0
-    db  32h ; 2
-    db  1Ah
-    db    0
-    db    1
-    db  54h ; T
-    db  77h ; w
-    db  6Ah ; j
-    db  77h ; w
-    db  0Fh
-    db    1
-    db    0
-    db    0
-    db    0
-    db    0
-    db  4Eh ; N
-    db  1Ah
-    db    0
-    db    3
-    db  54h ; T
-    db  77h ; w
-    db  6Ah ; j
-    db  77h ; w
-    db  0Fh
-    db    1
-    db    0
-    db    0
-    db    0
-    db    0
-    db  94h ; î
-    db  1Ah
-    db    0
-    db    0
-    db 0C4h ; ƒ
-    db  7Ah ; z
-    db 0DAh ; ⁄
-    db  7Ah ; z
-    db    0
-    db    2
-    db    1
-    db    0
-    db  0Ch
-    db    0
-    db 0F8h ; ¯
-    db  1Dh
-    db    0
-    db    0
-    db 0F0h ; 
-    db  7Ah ; z
-    db    6
-    db  7Bh ; {
-    db    0
-    db    2
-    db    1
-    db    0
-    db    6
-    db    0
-    db  14h
-    db  1Eh
-    db    0
-    db    3
-    db 0F0h ; 
-    db  7Ah ; z
-    db    6
-    db  7Bh ; {
-    db    0
-    db    2
-    db    1
-    db    0
-    db    6
-    db    0
-    db  30h ; 0
-    db  1Eh
-    db    0
-    db    2
-    db 0F0h ; 
-    db  7Ah ; z
-    db    6
-    db  7Bh ; {
-    db    0
-    db    2
-    db    1
-    db    0
-    db    6
-    db    0
-    db  4Ch ; L
-    db  1Eh
-    db    0
-    db    1
-    db 0F0h ; 
-    db  7Ah ; z
-    db    6
-    db  7Bh ; {
-    db    0
-    db    2
-    db    1
-    db    0
-    db    6
-    db    0
-    db  68h ; h
-    db  1Eh
-    db    0
-    db    0
-    db  1Ch
-    db  7Bh ; {
-    db  32h ; 2
-    db  7Bh ; {
-    db    0
-    db    2
-    db    1
-    db    0
-    db    7
-    db    0
-    db  84h ; Ñ
-    db  1Eh
-    db    0
-    db    3
-    db  1Ch
-    db  7Bh ; {
-    db  32h ; 2
-    db  7Bh ; {
-    db    0
-    db    2
-    db    1
-    db    0
-    db    7
-    db    0
-    db 0A0h ; †
-    db  1Eh
-    db    0
-    db    2
-    db  1Ch
-    db  7Bh ; {
-    db  32h ; 2
-    db  7Bh ; {
-    db    0
-    db    2
-    db    1
-    db    0
-    db    7
-    db    0
-    db 0BCh ; º
-    db  1Eh
-    db    0
-    db    1
-    db  1Ch
-    db  7Bh ; {
-    db  32h ; 2
-    db  7Bh ; {
-    db    0
-    db    2
-    db    1
-    db    0
-    db    7
-    db    0
-    db  24h ; $
-    db  1Ah
-    db    0
-    db    0
-    db  54h ; T
-    db  77h ; w
-    db  6Ah ; j
-    db  77h ; w
-    db  18h
-    db    2
-    db    0
-    db    0
-    db    0
-    db    0
-    db  40h ; @
-    db  1Ah
-    db    0
-    db    2
-    db  54h ; T
-    db  77h ; w
-    db  6Ah ; j
-    db  77h ; w
-    db  18h
-    db    2
-    db    0
-    db    0
-    db    0
-    db    0
-    db  32h ; 2
-    db  1Ah
-    db    0
-    db    1
-    db  54h ; T
-    db  77h ; w
-    db  6Ah ; j
-    db  77h ; w
-    db  19h
-    db    2
-    db    0
-    db    0
-    db    0
-    db    0
-    db  4Eh ; N
-    db  1Ah
-    db    0
-    db    3
-    db  54h ; T
-    db  77h ; w
-    db  6Ah ; j
-    db  77h ; w
-    db  19h
-    db    2
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  48h ; H
-    db  7Bh ; {
-    db  5Eh ; ^
-    db  7Bh ; {
-    db    0
-    db    0
-    db    0
-    db    0
-    db  4Ah ; J
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  7Ch ; |
-    db  7Ch ; |
-    db  92h ; í
-    db  7Ch ; |
-    db    0
-    db    0
-    db    0
-    db    0
-    db  48h ; H
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db 0AEh ; Æ
-    db  7Ah ; z
-    db 0AEh ; Æ
-    db  7Ah ; z
-    db    0
-    db    0
-    db    0
-    db    0
-    db  47h ; G
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  38h ; 8
-    db  79h ; y
-    db  4Eh ; N
-    db  79h ; y
-    db    0
-    db    0
-    db    0
-    db    0
-    db  49h ; I
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  80h ; Ä
-    db  77h ; w
-    db  96h ; ñ
-    db  77h ; w
-    db    0
-    db    0
-    db    0
-    db    0
-    db  42h ; B
-    db    0
-    db    0
-    db    0
-    db    0
-    db    2
-    db  80h ; Ä
-    db  77h ; w
-    db  96h ; ñ
-    db  77h ; w
-    db    0
-    db    0
-    db    0
-    db    0
-    db  42h ; B
-    db    0
-    db    0
-    db    0
-    db    0
-    db    3
-    db  80h ; Ä
-    db  77h ; w
-    db  96h ; ñ
-    db  77h ; w
-    db    0
-    db    0
-    db    0
-    db    0
-    db  42h ; B
-    db    0
-    db    0
-    db    0
-    db    0
-    db    1
-    db  80h ; Ä
-    db  77h ; w
-    db  96h ; ñ
-    db  77h ; w
-    db    0
-    db    0
-    db    0
-    db    0
-    db  42h ; B
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  4Ch ; L
-    db  76h ; v
-    db  62h ; b
-    db  76h ; v
-    db    0
-    db    0
-    db    0
-    db    0
-    db  41h ; A
-    db    0
-    db    0
-    db    0
-    db    0
-    db    2
-    db  4Ch ; L
-    db  76h ; v
-    db  62h ; b
-    db  76h ; v
-    db    0
-    db    0
-    db    0
-    db    0
-    db  41h ; A
-    db    0
-    db    0
-    db    0
-    db    0
-    db    3
-    db  4Ch ; L
-    db  76h ; v
-    db  62h ; b
-    db  76h ; v
-    db    0
-    db    0
-    db    0
-    db    0
-    db  41h ; A
-    db    0
-    db    0
-    db    0
-    db    0
-    db    1
-    db  4Ch ; L
-    db  76h ; v
-    db  62h ; b
-    db  76h ; v
-    db    0
-    db    0
-    db    0
-    db    0
-    db  41h ; A
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    4
-    db  78h ; x
-    db  1Ah
-    db  78h ; x
-    db    0
-    db    0
-    db    0
-    db    0
-    db  44h ; D
-    db    0
-    db    0
-    db    0
-    db    0
-    db    2
-    db    4
-    db  78h ; x
-    db  1Ah
-    db  78h ; x
-    db    0
-    db    0
-    db    0
-    db    0
-    db  44h ; D
-    db    0
-    db    0
-    db    0
-    db    0
-    db    3
-    db    4
-    db  78h ; x
-    db  1Ah
-    db  78h ; x
-    db    0
-    db    0
-    db    0
-    db    0
-    db  44h ; D
-    db    0
-    db    0
-    db    0
-    db    0
-    db    1
-    db    4
-    db  78h ; x
-    db  1Ah
-    db  78h ; x
-    db    0
-    db    0
-    db    0
-    db    0
-    db  44h ; D
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  60h ; `
-    db  7Eh ; ~
-    db  76h ; v
-    db  7Eh ; ~
-    db    0
-    db 0FFh
-    db    0
-    db    0
-    db  45h ; E
-    db    0
-    db    0
-    db    0
-    db    0
-    db    2
-    db  60h ; `
-    db  7Eh ; ~
-    db  76h ; v
-    db  7Eh ; ~
-    db    0
-    db 0FFh
-    db    0
-    db    0
-    db  45h ; E
-    db    0
-    db    0
-    db    0
-    db    0
-    db    3
-    db  60h ; `
-    db  7Eh ; ~
-    db  76h ; v
-    db  7Eh ; ~
-    db    0
-    db 0FFh
-    db    0
-    db    0
-    db  45h ; E
-    db    0
-    db    0
-    db    0
-    db    0
-    db    1
-    db  60h ; `
-    db  7Eh ; ~
-    db  76h ; v
-    db  7Eh ; ~
-    db    0
-    db 0FFh
-    db    0
-    db    0
-    db  45h ; E
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  8Ch ; å
-    db  7Eh ; ~
-    db 0A2h ; ¢
-    db  7Eh ; ~
-    db    0
-    db    0
-    db    0
-    db    0
-    db  46h ; F
-    db    0
-    db    0
-    db    0
-    db    0
-    db    2
-    db  8Ch ; å
-    db  7Eh ; ~
-    db 0A2h ; ¢
-    db  7Eh ; ~
-    db    0
-    db    0
-    db    0
-    db    0
-    db  46h ; F
-    db    0
-    db    0
-    db    0
-    db    0
-    db    3
-    db  8Ch ; å
-    db  7Eh ; ~
-    db 0A2h ; ¢
-    db  7Eh ; ~
-    db    0
-    db    0
-    db    0
-    db    0
-    db  46h ; F
-    db    0
-    db    0
-    db    0
-    db    0
-    db    1
-    db  8Ch ; å
-    db  7Eh ; ~
-    db 0A2h ; ¢
-    db  7Eh ; ~
-    db    0
-    db    0
-    db    0
-    db    0
-    db  46h ; F
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db 0B8h ; ∏
-    db  7Eh ; ~
-    db 0CEh ; Œ
-    db  7Eh ; ~
-    db    0
-    db 0FFh
-    db    0
-    db    0
-    db  43h ; C
-    db    0
-    db    0
-    db    0
-    db    0
-    db    2
-    db 0B8h ; ∏
-    db  7Eh ; ~
-    db 0CEh ; Œ
-    db  7Eh ; ~
-    db    0
-    db 0FFh
-    db    0
-    db    0
-    db  43h ; C
-    db    0
-    db    0
-    db    0
-    db    0
-    db    3
-    db 0B8h ; ∏
-    db  7Eh ; ~
-    db 0CEh ; Œ
-    db  7Eh ; ~
-    db    0
-    db 0FFh
-    db    0
-    db    0
-    db  43h ; C
-    db    0
-    db    0
-    db    0
-    db    0
-    db    1
-    db 0B8h ; ∏
-    db  7Eh ; ~
-    db 0CEh ; Œ
-    db  7Eh ; ~
-    db    0
-    db 0FFh
-    db    0
-    db    0
-    db  43h ; C
-    db    0
-    db  40h ; @
-    db  1Ah
-    db    0
-    db    2
-    db  54h ; T
-    db  77h ; w
-    db  6Ah ; j
-    db  77h ; w
-    db    4
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  32h ; 2
-    db  1Ah
-    db    0
-    db    1
-    db  54h ; T
-    db  77h ; w
-    db  6Ah ; j
-    db  77h ; w
-    db    5
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  4Eh ; N
-    db  1Ah
-    db    0
-    db    3
-    db  54h ; T
-    db  77h ; w
-    db  6Ah ; j
-    db  77h ; w
-    db    5
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db 0C8h ; »
-    db  1Bh
-    db    0
-    db    0
-    db 0B4h ; ¥
-    db  78h ; x
-    db 0CAh ;  
-    db  78h ; x
-    db    0
-    db    0
-    db    1
-    db    0
-    db    1
-    db    0
-    db 0BAh ; ∫
-    db  1Bh
-    db    0
-    db    3
-    db 0B4h ; ¥
-    db  78h ; x
-    db 0CAh ;  
-    db  78h ; x
-    db    0
-    db    0
-    db    1
-    db    0
-    db    1
-    db    0
-    db 0ACh ; ¨
-    db  1Bh
-    db    0
-    db    2
-    db 0B4h ; ¥
-    db  78h ; x
-    db 0CAh ;  
-    db  78h ; x
-    db    0
-    db    0
-    db    1
-    db    0
-    db    1
-    db    0
-    db 0D6h ; ÷
-    db  1Bh
-    db    0
-    db    1
-    db 0B4h ; ¥
-    db  78h ; x
-    db 0CAh ;  
-    db  78h ; x
-    db    0
-    db    0
-    db    1
-    db    0
-    db    1
-    db    0
-    db 0C8h ; »
-    db  1Bh
-    db    0
-    db    0
-    db 0B4h ; ¥
-    db  78h ; x
-    db 0CAh ;  
-    db  78h ; x
-    db    0
-    db    1
-    db    1
-    db    0
-    db    1
-    db    0
-    db 0BAh ; ∫
-    db  1Bh
-    db    0
-    db    3
-    db 0B4h ; ¥
-    db  78h ; x
-    db 0CAh ;  
-    db  78h ; x
-    db    0
-    db    1
-    db    1
-    db    0
-    db    1
-    db    0
-    db 0ACh ; ¨
-    db  1Bh
-    db    0
-    db    2
-    db 0B4h ; ¥
-    db  78h ; x
-    db 0CAh ;  
-    db  78h ; x
-    db    0
-    db    1
-    db    1
-    db    0
-    db    1
-    db    0
-    db 0D6h ; ÷
-    db  1Bh
-    db    0
-    db    1
-    db 0B4h ; ¥
-    db  78h ; x
-    db 0CAh ;  
-    db  78h ; x
-    db    0
-    db    1
-    db    1
-    db    0
-    db    1
-    db    0
-    db 0C8h ; »
-    db  1Bh
-    db    0
-    db    0
-    db 0B4h ; ¥
-    db  78h ; x
-    db 0CAh ;  
-    db  78h ; x
-    db    0
-    db    2
-    db    1
-    db    0
-    db    1
-    db    0
-    db 0BAh ; ∫
-    db  1Bh
-    db    0
-    db    3
-    db 0B4h ; ¥
-    db  78h ; x
-    db 0CAh ;  
-    db  78h ; x
-    db    0
-    db    2
-    db    1
-    db    0
-    db    1
-    db    0
-    db 0ACh ; ¨
-    db  1Bh
-    db    0
-    db    2
-    db 0B4h ; ¥
-    db  78h ; x
-    db 0CAh ;  
-    db  78h ; x
-    db    0
-    db    2
-    db    1
-    db    0
-    db    1
-    db    0
-    db 0D6h ; ÷
-    db  1Bh
-    db    0
-    db    1
-    db 0B4h ; ¥
-    db  78h ; x
-    db 0CAh ;  
-    db  78h ; x
-    db    0
-    db    2
-    db    1
-    db    0
-    db    1
-    db    0
-    db  1Ch
-    db  1Ch
-    db    0
-    db    0
-    db  50h ; P
-    db  7Ch ; |
-    db  66h ; f
-    db  7Ch ; |
-    db 0DEh ; ﬁ
-    db    0
-    db    0
-    db    0
-    db  13h
-    db    0
-    db  46h ; F
-    db  1Ch
-    db    0
-    db    3
-    db  50h ; P
-    db  7Ch ; |
-    db  66h ; f
-    db  7Ch ; |
-    db 0DFh ; ﬂ
-    db    0
-    db    0
-    db    0
-    db  13h
-    db    0
-    db  2Ah ; *
-    db  1Ch
-    db    0
-    db    2
-    db  50h ; P
-    db  7Ch ; |
-    db  66h ; f
-    db  7Ch ; |
-    db 0E0h ; ‡
-    db    0
-    db    0
-    db    0
-    db  13h
-    db    0
-    db  38h ; 8
-    db  1Ch
-    db    0
-    db    1
-    db  50h ; P
-    db  7Ch ; |
-    db  66h ; f
-    db  7Ch ; |
-    db 0E1h ; ·
-    db    0
-    db    0
-    db    0
-    db  13h
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db 0DCh ; ‹
-    db  7Dh ; }
-    db    0
-    db    0
-    db    0
-    db    0
-    db    1
-    db    3
-    db  20h
-    db    0
-    db    0
-    db    0
-    db    0
-    db    3
-    db 0DCh ; ‹
-    db  7Dh ; }
-    db    0
-    db    0
-    db    0
-    db    0
-    db    1
-    db    3
-    db  20h
-    db    0
-    db    0
-    db    0
-    db    0
-    db    2
-    db 0DCh ; ‹
-    db  7Dh ; }
-    db    0
-    db    0
-    db    0
-    db    0
-    db    1
-    db    3
-    db  20h
-    db    0
-    db    0
-    db    0
-    db    0
-    db    1
-    db 0DCh ; ‹
-    db  7Dh ; }
-    db    0
-    db    0
-    db    0
-    db    0
-    db    1
-    db    3
-    db  20h
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db 0F2h ; Ú
-    db  7Dh ; }
-    db    0
-    db    0
-    db    0
-    db    0
-    db    1
-    db    3
-    db  21h ; !
-    db    0
-    db    0
-    db    0
-    db    0
-    db    3
-    db 0F2h ; Ú
-    db  7Dh ; }
-    db    0
-    db    0
-    db    0
-    db    0
-    db    1
-    db    3
-    db  21h ; !
-    db    0
-    db    0
-    db    0
-    db    0
-    db    2
-    db 0F2h ; Ú
-    db  7Dh ; }
-    db    0
-    db    0
-    db    0
-    db    0
-    db    1
-    db    3
-    db  21h ; !
-    db    0
-    db    0
-    db    0
-    db    0
-    db    1
-    db 0F2h ; Ú
-    db  7Dh ; }
-    db    0
-    db    0
-    db    0
-    db    0
-    db    1
-    db    3
-    db  21h ; !
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    8
-    db  7Eh ; ~
-    db    0
-    db    0
-    db    0
-    db    0
-    db    1
-    db    1
-    db  1Bh
-    db    0
-    db    0
-    db    0
-    db    0
-    db    1
-    db    8
-    db  7Eh ; ~
-    db    0
-    db    0
-    db    0
-    db    0
-    db    1
-    db    2
-    db  1Bh
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  3Ch ; <
-    db  7Fh ; 
-    db    0
-    db    0
-    db    0
-    db    0
-    db    1
-    db    0
-    db  1Ch
-    db    0
-    db    0
-    db    0
-    db    0
-    db    1
-    db  3Ch ; <
-    db  7Fh ; 
-    db    0
-    db    0
-    db    0
-    db    0
-    db    1
-    db    0
-    db  1Ch
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  52h ; R
-    db  7Fh ; 
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  1Eh
-    db    0
-    db    0
-    db    0
-    db    0
-    db    1
-    db  52h ; R
-    db  7Fh ; 
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  1Eh
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  82h ; Ç
-    db  7Ah ; z
-    db  82h ; Ç
-    db  7Ah ; z
-    db    0
-    db    0
-    db    0
-    db    0
-    db 0FFh
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  98h ; ò
-    db  7Ah ; z
-    db  98h ; ò
-    db  7Ah ; z
-    db    0
-    db    0
-    db    0
-    db    0
-    db 0FFh
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  68h ; h
-    db  7Fh ; 
-    db  7Eh ; ~
-    db  7Fh ; 
-    db    0
-    db    0
-    db    0
-    db    0
-    db 0FFh
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  94h ; î
-    db  7Fh ; 
-    db 0AAh ; ™
-    db  7Fh ; 
-    db    0
-    db    0
-    db    0
-    db    0
-    db 0FFh
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  2Ah ; *
-    db  7Ah ; z
-    db  2Ah ; *
-    db  7Ah ; z
-    db    0
-    db    0
-    db    1
-    db    0
-    db 0FFh
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  14h
-    db  7Ah ; z
-    db  14h
-    db  7Ah ; z
-    db    0
-    db    0
-    db    1
-    db    0
-    db 0FFh
-    db    0
-    db    0
-    db    0
-    db    0
-    db    3
-    db  14h
-    db  7Ah ; z
-    db  14h
-    db  7Ah ; z
-    db    0
-    db    0
-    db    1
-    db    0
-    db 0FFh
-    db    0
-    db    0
-    db    0
-    db    0
-    db    2
-    db  14h
-    db  7Ah ; z
-    db  14h
-    db  7Ah ; z
-    db    0
-    db    0
-    db    1
-    db    0
-    db 0FFh
-    db    0
-    db    0
-    db    0
-    db    0
-    db    1
-    db  14h
-    db  7Ah ; z
-    db  14h
-    db  7Ah ; z
-    db    0
-    db    0
-    db    1
-    db    0
-    db 0FFh
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db 0FEh ; ˛
-    db  79h ; y
-    db 0FEh ; ˛
-    db  79h ; y
-    db    0
-    db    0
-    db    1
-    db    0
-    db 0FFh
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db 0E8h ; Ë
-    db  79h ; y
-    db 0E8h ; Ë
-    db  79h ; y
-    db    0
-    db    0
-    db    1
-    db    0
-    db 0FFh
-    db    0
-    db    0
-    db    0
-    db    0
-    db    3
-    db 0E8h ; Ë
-    db  79h ; y
-    db 0E8h ; Ë
-    db  79h ; y
-    db    0
-    db    0
-    db    1
-    db    0
-    db 0FFh
-    db    0
-    db    0
-    db    0
-    db    0
-    db    2
-    db 0E8h ; Ë
-    db  79h ; y
-    db 0E8h ; Ë
-    db  79h ; y
-    db    0
-    db    0
-    db    1
-    db    0
-    db 0FFh
-    db    0
-    db    0
-    db    0
-    db    0
-    db    1
-    db 0E8h ; Ë
-    db  79h ; y
-    db 0E8h ; Ë
-    db  79h ; y
-    db    0
-    db    0
-    db    1
-    db    0
-    db 0FFh
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db 0D2h ; “
-    db  79h ; y
-    db 0D2h ; “
-    db  79h ; y
-    db    0
-    db    0
-    db    1
-    db    0
-    db 0FFh
-    db    0
-    db    0
-    db    0
-    db    0
-    db    3
-    db 0D2h ; “
-    db  79h ; y
-    db 0D2h ; “
-    db  79h ; y
-    db    0
-    db    0
-    db    1
-    db    0
-    db 0FFh
-    db    0
-    db    0
-    db    0
-    db    0
-    db    2
-    db 0D2h ; “
-    db  79h ; y
-    db 0D2h ; “
-    db  79h ; y
-    db    0
-    db    0
-    db    1
-    db    0
-    db 0FFh
-    db    0
-    db    0
-    db    0
-    db    0
-    db    1
-    db 0D2h ; “
-    db  79h ; y
-    db 0D2h ; “
-    db  79h ; y
-    db    0
-    db    0
-    db    1
-    db    0
-    db 0FFh
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db 0BCh ; º
-    db  79h ; y
-    db 0BCh ; º
-    db  79h ; y
-    db    0
-    db    0
-    db    1
-    db    0
-    db 0FFh
-    db    0
-    db    0
-    db    0
-    db    0
-    db    3
-    db 0BCh ; º
-    db  79h ; y
-    db 0BCh ; º
-    db  79h ; y
-    db    0
-    db    0
-    db    1
-    db    0
-    db 0FFh
-    db    0
-    db    0
-    db    0
-    db    0
-    db    2
-    db 0BCh ; º
-    db  79h ; y
-    db 0BCh ; º
-    db  79h ; y
-    db    0
-    db    0
-    db    1
-    db    0
-    db 0FFh
-    db    0
-    db    0
-    db    0
-    db    0
-    db    1
-    db 0BCh ; º
-    db  79h ; y
-    db 0BCh ; º
-    db  79h ; y
-    db    0
-    db    0
-    db    1
-    db    0
-    db 0FFh
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db 0ECh ; Ï
-    db  7Fh ; 
-    db 0ECh ; Ï
-    db  7Fh ; 
-    db    0
-    db    0
-    db    1
-    db    0
-    db 0FFh
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    2
-    db  80h ; Ä
-    db    2
-    db  80h ; Ä
-    db    0
-    db    0
-    db    1
-    db    0
-    db 0FFh
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  18h
-    db  80h ; Ä
-    db  18h
-    db  80h ; Ä
-    db    0
-    db    0
-    db    1
-    db    0
-    db 0FFh
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  2Eh ; .
-    db  80h ; Ä
-    db  2Eh ; .
-    db  80h ; Ä
-    db    0
-    db    0
-    db    1
-    db    0
-    db 0FFh
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  44h ; D
-    db  80h ; Ä
-    db  44h ; D
-    db  80h ; Ä
-    db    0
-    db    0
-    db    1
-    db    0
-    db 0FFh
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  5Ah ; Z
-    db  80h ; Ä
-    db  5Ah ; Z
-    db  80h ; Ä
-    db    0
-    db    0
-    db    1
-    db    0
-    db 0FFh
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  70h ; p
-    db  80h ; Ä
-    db  70h ; p
-    db  80h ; Ä
-    db    0
-    db    0
-    db    1
-    db    0
-    db 0FFh
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  86h ; Ü
-    db  80h ; Ä
-    db  86h ; Ü
-    db  80h ; Ä
-    db    0
-    db    0
-    db    1
-    db    0
-    db 0FFh
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  9Ch ; ú
-    db  80h ; Ä
-    db  9Ch ; ú
-    db  80h ; Ä
-    db    0
-    db    0
-    db    1
-    db    0
-    db 0FFh
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db 0B2h ; ≤
-    db  80h ; Ä
-    db 0B2h ; ≤
-    db  80h ; Ä
-    db    0
-    db    0
-    db    1
-    db    0
-    db 0FFh
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db 0C8h ; »
-    db  80h ; Ä
-    db 0C8h ; »
-    db  80h ; Ä
-    db    0
-    db    0
-    db    1
-    db    0
-    db 0FFh
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db 0DEh ; ﬁ
-    db  80h ; Ä
-    db 0DEh ; ﬁ
-    db  80h ; Ä
-    db    0
-    db    0
-    db    1
-    db    0
-    db 0FFh
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db 0C0h ; ¿
-    db  7Fh ; 
-    db 0C0h ; ¿
-    db  7Fh ; 
-    db    0
-    db    0
-    db    1
-    db    0
-    db 0FFh
-    db    0
-    db    0
-    db    0
-    db 0E0h ; ‡
-    db    0
-    db  85h ; Ö
-    db    1
-word_3E590     dw 1C1h
-    db  85h ; Ö
-    db    1
-    db 0E0h ; ‡
-    db    0
-    db    0
-    db    0
-    db  70h ; p
-    db 0FEh ; ˛
-    db  70h ; p
-    db 0FEh ; ˛
-    db 0A0h ; †
-    db 0FEh ; ˛
-    db 0D0h ; –
-    db 0FEh ; ˛
-    db 0F2h ; Ú
-    db 0FEh ; ˛
-    db  15h
-    db 0FFh
-    db  38h ; 8
-    db 0FFh
-    db    0
-    db    0
-    db  87h ; á
-    db    0
-    db  2Bh ; +
-    db    1
-    db  0Ch
-    db    2
-    db 0EDh ; Ì
-    db    2
-    db  92h ; í
-    db    3
-    db 0CFh ; œ
-    db    3
-    db    0
-    db    0
-    db 0B2h ; ≤
-    db    0
-    db  68h ; h
-    db    1
-    db  18h
-    db    2
-    db 0C0h ; ¿
-    db    2
-    db  64h ; d
-    db    3
-    db 0D0h ; –
-    db    7
-    db    0
-    db    0
-    db 0ECh ; Ï
-    db 0FFh
-    db 0D8h ; ÿ
-    db 0FFh
-    db 0C4h ; ƒ
-    db 0FFh
-    db 0B0h ; ∞
-    db 0FFh
-    db  9Ch ; ú
-    db 0FFh
-    db  88h ; à
-    db 0FFh
-    db  90h ; ê
-    db    1
-    db  69h ; i
-    db    1
-    db  40h ; @
-    db    1
-    db  14h
-    db    1
-    db 0E2h ; ‚
-    db    0
-    db 0AEh ; Æ
-    db    0
-    db  78h ; x
-    db    0
-    db    5
-    db 0FFh
-    db 0ACh ; ¨
-    db 0FFh
-    db  54h ; T
-    db    0
-    db 0FBh ; ˚
-    db    0
-    db    0
-    db    0
-    db 0A2h ; ¢
-    db 0FFh
-    db  45h ; E
-    db 0FFh
-    db 0E8h ; Ë
-    db 0FEh ; ˛
-    db  8Bh ; ã
-    db 0FEh ; ˛
-    db  2Eh ; .
-    db 0FEh ; ˛
-    db 0D1h ; —
-    db 0FDh ; ˝
-    db  74h ; t
-    db 0FDh ; ˝
-    db  17h
-    db 0FDh ; ˝
-    db 0BAh ; ∫
-    db 0FCh ; ¸
-    db  5Dh ; ]
-    db 0FCh ; ¸
-    db    0
-    db 0FCh ; ¸
-    db    0
-    db    0
-    db    0
-    db    4
-    db 0A3h ; £
-    db    3
-    db  46h ; F
-    db    3
-    db 0E9h ; È
-    db    2
-    db  8Ch ; å
-    db    2
-    db  2Fh ; /
-    db    2
-    db 0D2h ; “
-    db    1
-    db  75h ; u
-    db    1
-    db  18h
-    db    1
-    db 0BBh ; ª
-    db    0
-    db  5Eh ; ^
-    db    0
-    db    0
-    db 0FEh ; ˛
-    db 0B2h ; ≤
-    db 0FEh ; ˛
-    db  58h ; X
-    db 0FFh
-    db    0
-    db    0
-    db 0A8h ; ®
-    db    0
-    db  4Eh ; N
-    db    1
-    db 0E8h ; Ë
-    db    3
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  78h ; x
-    db    0
-    db  78h ; x
-    db    0
-    db  78h ; x
-    db    0
-    db 0A8h ; ®
-    db    0
-    db 0D8h ; ÿ
-    db    0
-    db    8
-    db    1
-    db  38h ; 8
-    db    1
-    db  68h ; h
-    db    1
-    db  68h ; h
-    db    1
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  88h ; à
-    db 0FFh
-    db    0
-    db    0
-    db 0E7h ; Á
-    db 0FEh ; ˛
-    db  88h ; à
-    db 0FFh
-    db    0
-    db    0
-    db  19h
-    db 0FFh
-    db  88h ; à
-    db 0FFh
-    db    0
-    db    0
-    db  19h
-    db    1
-    db  88h ; à
-    db 0FFh
-    db    0
-    db    0
-    db 0E7h ; Á
-    db    0
-    db  78h ; x
-    db    0
-    db    0
-    db    0
-    db 0E7h ; Á
-    db 0FEh ; ˛
-    db  78h ; x
-    db    0
-    db    0
-    db    0
-    db  19h
-    db 0FFh
-    db  78h ; x
-    db    0
-    db    0
-    db    0
-    db  19h
-    db    1
-    db  78h ; x
-    db    0
-    db    0
-    db    0
-    db 0E7h ; Á
-    db    0
-    db 0C4h ; ƒ
-    db 0FFh
-    db    0
-    db    0
-    db    0
-    db 0FEh ; ˛
-    db  3Ch ; <
-    db    0
-    db    0
-    db    0
-    db    0
-    db    2
-    db  78h ; x
-    db 0FEh ; ˛
-    db    0
-    db    0
-    db    0
-    db    0
-    db  88h ; à
-    db 0FDh ; ˝
-    db    0
-    db    0
-    db    0
-    db    0
-    db  88h ; à
-    db    1
-    db    0
-    db    0
-    db    0
-    db    0
-    db  78h ; x
-    db    2
-    db    0
-    db    0
-    db    0
-    db    0
-    db  17h
-    db    0
-    db    0
-    db    0
-    db    1
-    db 0FFh
-    db  61h ; a
-    db    0
-    db    0
-    db    0
-    db    1
-    db 0FFh
-    db  9Fh ; ü
-    db 0FFh
-    db    0
-    db    0
-    db 0FFh
-    db    0
-    db 0E9h ; È
-    db 0FFh
-    db    0
-    db    0
-    db 0FFh
-    db    0
-    db  67h ; g
-    db  61h ; a
-    db  6Dh ; m
-    db  65h ; e
-    db  31h ; 1
-    db    0
-    db  67h ; g
-    db  61h ; a
-    db  6Dh ; m
-    db  65h ; e
-    db  32h ; 2
-    db    0
-    db  63h ; c
-    db  61h ; a
-    db  72h ; r
-    db  30h ; 0
-    db    0
-    db  63h ; c
-    db  61h ; a
-    db  72h ; r
-    db  31h ; 1
-    db    0
-    db  63h ; c
-    db  61h ; a
-    db  72h ; r
-    db  32h ; 2
-    db    0
-    db  65h ; e
-    db  78h ; x
-    db  70h ; p
-    db  30h ; 0
-    db    0
-    db  65h ; e
-    db  78h ; x
-    db  70h ; p
-    db  31h ; 1
-    db    0
-    db  65h ; e
-    db  78h ; x
-    db  70h ; p
-    db  32h ; 2
-    db    0
-    db  65h ; e
-    db  78h ; x
-    db  70h ; p
-    db  33h ; 3
-    db    0
-    db  63h ; c
-    db  61h ; a
-    db  72h ; r
-    db  32h ; 2
-    db    0
-    db  63h ; c
-    db  61h ; a
-    db  72h ; r
-    db  30h ; 0
-    db    0
-    db  63h ; c
-    db  61h ; a
-    db  72h ; r
-    db  31h ; 1
-    db    0
-    db  63h ; c
-    db  61h ; a
-    db  72h ; r
-    db  32h ; 2
-    db    0
-    db  65h ; e
-    db  78h ; x
-    db  70h ; p
-    db  30h ; 0
-    db    0
-    db  65h ; e
-    db  78h ; x
-    db  70h ; p
-    db  31h ; 1
-    db    0
-    db  65h ; e
-    db  78h ; x
-    db  70h ; p
-    db  32h ; 2
-    db    0
-    db  65h ; e
-    db  78h ; x
-    db  70h ; p
-    db  33h ; 3
-    db    0
-    db    0
-    db  73h ; s
-    db  74h ; t
-byte_3E70C     db 78h
-byte_3E70D     db 78h
-byte_3E70E     db 78h
+aBarn     db 98
+    db 97
+    db 114
+    db 110
+    db 0
+aZbrn     db 122
+    db 98
+    db 114
+    db 110
+    db 0
+aBrid     db 98
+    db 114
+    db 105
+    db 100
+    db 0
+aZbri     db 122
+    db 98
+    db 114
+    db 105
+    db 0
+aBtur     db 98
+    db 116
+    db 117
+    db 114
+    db 0
+aZbtu     db 122
+    db 98
+    db 116
+    db 117
+    db 0
+aChi1     db 99
+    db 104
+    db 105
+    db 49
+    db 0
+aZch1     db 122
+    db 99
+    db 104
+    db 49
+    db 0
+aChi2     db 99
+    db 104
+    db 105
+    db 50
+    db 0
+aZch2     db 122
+    db 99
+    db 104
+    db 50
+    db 0
+aElrd     db 101
+    db 108
+    db 114
+    db 100
+    db 0
+aZelr     db 122
+    db 101
+    db 108
+    db 114
+    db 0
+aFini     db 102
+    db 105
+    db 110
+    db 105
+    db 0
+aZfin     db 122
+    db 102
+    db 105
+    db 110
+    db 0
+aGass     db 103
+    db 97
+    db 115
+    db 115
+    db 0
+aZgas     db 122
+    db 103
+    db 97
+    db 115
+    db 0
+aLban     db 108
+    db 98
+    db 97
+    db 110
+    db 0
+aZlba     db 122
+    db 108
+    db 98
+    db 97
+    db 0
+aLoop     db 108
+    db 111
+    db 111
+    db 112
+    db 0
+aZloo     db 122
+    db 108
+    db 111
+    db 111
+    db 0
+aOffi     db 111
+    db 102
+    db 102
+    db 105
+    db 0
+aZoff     db 122
+    db 111
+    db 102
+    db 102
+    db 0
+aPipe     db 112
+    db 105
+    db 112
+    db 101
+    db 0
+aZpip     db 122
+    db 112
+    db 105
+    db 112
+    db 0
+aRamp     db 114
+    db 97
+    db 109
+    db 112
+    db 0
+aZram     db 122
+    db 114
+    db 97
+    db 109
+    db 0
+aRban     db 114
+    db 98
+    db 97
+    db 110
+    db 0
+aZrba     db 122
+    db 114
+    db 98
+    db 97
+    db 0
+aRdup     db 114
+    db 100
+    db 117
+    db 112
+    db 0
+aZrdu     db 122
+    db 114
+    db 100
+    db 117
+    db 0
+aRoad     db 114
+    db 111
+    db 97
+    db 100
+    db 0
+aZroa     db 122
+    db 114
+    db 111
+    db 97
+    db 0
+aStur     db 115
+    db 116
+    db 117
+    db 114
+    db 0
+aZstu     db 122
+    db 115
+    db 116
+    db 117
+    db 0
+aTenn     db 116
+    db 101
+    db 110
+    db 110
+    db 0
+aZten     db 122
+    db 116
+    db 101
+    db 110
+    db 0
+aTunn     db 116
+    db 117
+    db 110
+    db 110
+    db 0
+aZtun     db 122
+    db 116
+    db 117
+    db 110
+    db 0
+aTurn     db 116
+    db 117
+    db 114
+    db 110
+    db 0
+aZtur     db 122
+    db 116
+    db 117
+    db 114
+    db 0
+aGoui     db 103
+    db 111
+    db 117
+    db 105
+    db 0
+aGouo     db 103
+    db 111
+    db 117
+    db 111
+    db 0
+aGoup     db 103
+    db 111
+    db 117
+    db 112
+    db 0
+aHigh     db 104
+    db 105
+    db 103
+    db 104
+    db 0
+aLakc     db 108
+    db 97
+    db 107
+    db 99
+    db 0
+aLake     db 108
+    db 97
+    db 107
+    db 101
+    db 0
+aCld1     db 99
+    db 108
+    db 100
+    db 49
+    db 0
+aCld2     db 99
+    db 108
+    db 100
+    db 50
+    db 0
+aCld3     db 99
+    db 108
+    db 100
+    db 51
+    db 0
+aSigl     db 115
+    db 105
+    db 103
+    db 108
+    db 0
+aSigr     db 115
+    db 105
+    db 103
+    db 114
+    db 0
+aTree     db 116
+    db 114
+    db 101
+    db 101
+    db 0
+aInte     db 105
+    db 110
+    db 116
+    db 101
+    db 0
+aZint     db 122
+    db 105
+    db 110
+    db 116
+    db 0
+aOffl     db 111
+    db 102
+    db 102
+    db 108
+    db 0
+aZofl     db 122
+    db 111
+    db 102
+    db 108
+    db 0
+aOffr     db 111
+    db 102
+    db 102
+    db 114
+    db 0
+aZofr     db 122
+    db 111
+    db 102
+    db 114
+    db 0
+aPalm     db 112
+    db 97
+    db 108
+    db 109
+    db 0
+aZpal     db 122
+    db 112
+    db 97
+    db 108
+    db 0
+aBank     db 98
+    db 97
+    db 110
+    db 107
+    db 0
+aZban     db 122
+    db 98
+    db 97
+    db 110
+    db 0
+aSofl     db 115
+    db 111
+    db 102
+    db 108
+    db 0
+aZsol     db 122
+    db 115
+    db 111
+    db 108
+    db 0
+aSofr     db 115
+    db 111
+    db 102
+    db 114
+    db 0
+aZsor     db 122
+    db 115
+    db 111
+    db 114
+    db 0
+aSram     db 115
+    db 114
+    db 97
+    db 109
+    db 0
+aZsra     db 122
+    db 115
+    db 114
+    db 97
+    db 0
+aSelr     db 115
+    db 101
+    db 108
+    db 114
+    db 0
+aZser     db 122
+    db 115
+    db 101
+    db 114
+    db 0
+aElsp     db 101
+    db 108
+    db 115
+    db 112
+    db 0
+aZesp     db 122
+    db 101
+    db 115
+    db 112
+    db 0
+aCact     db 99
+    db 97
+    db 99
+    db 116
+    db 0
+aCact_0     db 99
+    db 97
+    db 99
+    db 116
+    db 0
+aSpip     db 115
+    db 112
+    db 105
+    db 112
+    db 0
+aZspi     db 122
+    db 115
+    db 112
+    db 105
+    db 0
+aSest     db 115
+    db 101
+    db 115
+    db 116
+    db 0
+aZses     db 122
+    db 115
+    db 101
+    db 115
+    db 0
+aWroa     db 119
+    db 114
+    db 111
+    db 97
+    db 0
+aZwro     db 122
+    db 119
+    db 114
+    db 111
+    db 0
+aBarr     db 98
+    db 97
+    db 114
+    db 114
+    db 0
+aZbar     db 122
+    db 98
+    db 97
+    db 114
+    db 0
+aLco0     db 108
+    db 99
+    db 111
+    db 48
+    db 0
+aZlco     db 122
+    db 108
+    db 99
+    db 111
+    db 0
+aRco0     db 114
+    db 99
+    db 111
+    db 48
+    db 0
+aZrco     db 122
+    db 114
+    db 99
+    db 111
+    db 0
+aGwro     db 103
+    db 119
+    db 114
+    db 111
+    db 0
+aZgwr     db 122
+    db 103
+    db 119
+    db 114
+    db 0
+aLco1     db 108
+    db 99
+    db 111
+    db 49
+    db 0
+aRco1     db 114
+    db 99
+    db 111
+    db 49
+    db 0
+aLoo1     db 108
+    db 111
+    db 111
+    db 49
+    db 0
+aHig1     db 104
+    db 105
+    db 103
+    db 49
+    db 0
+aHig2     db 104
+    db 105
+    db 103
+    db 50
+    db 0
+aHig3     db 104
+    db 105
+    db 103
+    db 51
+    db 0
+aWind     db 119
+    db 105
+    db 110
+    db 100
+    db 0
+aZwin     db 122
+    db 119
+    db 105
+    db 110
+    db 0
+aBoat     db 98
+    db 111
+    db 97
+    db 116
+    db 0
+aZboa     db 122
+    db 98
+    db 111
+    db 97
+    db 0
+aRest     db 114
+    db 101
+    db 115
+    db 116
+    db 0
+aZres     db 122
+    db 114
+    db 101
+    db 115
+    db 0
+aHpip     db 104
+    db 112
+    db 105
+    db 112
+    db 0
+aZhpi     db 122
+    db 104
+    db 112
+    db 105
+    db 0
+aVcor     db 118
+    db 99
+    db 111
+    db 114
+    db 0
+aZvco     db 122
+    db 118
+    db 99
+    db 111
+    db 0
+aTun2     db 116
+    db 117
+    db 110
+    db 50
+    db 0
+aPip2     db 112
+    db 105
+    db 112
+    db 50
+    db 0
+aFenc     db 102
+    db 101
+    db 110
+    db 99
+    db 0
+aZfen     db 122
+    db 102
+    db 101
+    db 110
+    db 0
+aCfen     db 99
+    db 102
+    db 101
+    db 110
+    db 0
+aZcfe     db 122
+    db 99
+    db 102
+    db 101
+    db 0
+aFlag     db 102
+    db 108
+    db 97
+    db 103
+    db 0
+aTruk     db 116
+    db 114
+    db 117
+    db 107
+    db 0
+aExp0     db 101
+    db 120
+    db 112
+    db 48
+    db 0
+aExp1     db 101
+    db 120
+    db 112
+    db 49
+    db 0
+aExp2     db 101
+    db 120
+    db 112
+    db 50
+    db 0
+aExp3     db 101
+    db 120
+    db 112
+    db 51
+    db 0
+    db 136
+    db 255
+    db 255
+    db 255
+    db 178
+    db 254
+    db 120
+    db 0
+    db 255
+    db 255
+    db 178
+    db 254
+    db 136
+    db 255
+    db 255
+    db 255
+    db 78
+    db 1
+    db 120
+    db 0
+    db 255
+    db 255
+    db 78
+    db 1
+    db 200
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 200
+    db 0
+    db 0
+    db 0
+    db 178
+    db 254
+    db 56
+    db 255
+    db 0
+    db 0
+    db 78
+    db 1
+    db 136
+    db 255
+    db 255
+    db 255
+    db 128
+    db 0
+    db 120
+    db 0
+    db 255
+    db 255
+    db 128
+    db 0
+    db 136
+    db 255
+    db 255
+    db 255
+    db 78
+    db 1
+    db 120
+    db 0
+    db 255
+    db 255
+    db 78
+    db 1
+    db 200
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 200
+    db 0
+    db 0
+    db 0
+    db 178
+    db 254
+    db 56
+    db 255
+    db 0
+    db 0
+    db 78
+    db 1
+    db 136
+    db 255
+    db 255
+    db 255
+    db 178
+    db 254
+    db 120
+    db 0
+    db 255
+    db 255
+    db 178
+    db 254
+    db 136
+    db 255
+    db 255
+    db 255
+    db 78
+    db 1
+    db 120
+    db 0
+    db 255
+    db 255
+    db 78
+    db 1
+    db 120
+    db 0
+    db 165
+    db 0
+    db 0
+    db 0
+    db 172
+    db 255
+    db 255
+    db 255
+    db 178
+    db 254
+    db 84
+    db 0
+    db 255
+    db 255
+    db 178
+    db 254
+    db 172
+    db 255
+    db 255
+    db 255
+    db 78
+    db 1
+    db 84
+    db 0
+    db 255
+    db 255
+    db 78
+    db 1
+    db 115
+    db 0
+    db 180
+    db 0
+    db 0
+    db 0
+    db 200
+    db 0
+    db 0
+    db 0
+    db 178
+    db 254
+    db 56
+    db 255
+    db 0
+    db 0
+    db 78
+    db 1
+    db 172
+    db 255
+    db 35
+    db 0
+    db 178
+    db 254
+    db 141
+    db 255
+    db 88
+    db 0
+    db 178
+    db 254
+    db 172
+    db 255
+    db 35
+    db 0
+    db 78
+    db 1
+    db 141
+    db 255
+    db 88
+    db 0
+    db 78
+    db 1
+    db 115
+    db 0
+    db 180
+    db 0
+    db 0
+    db 0
+    db 200
+    db 0
+    db 0
+    db 0
+    db 178
+    db 254
+    db 56
+    db 255
+    db 0
+    db 0
+    db 78
+    db 1
+    db 136
+    db 255
+    db 255
+    db 255
+    db 178
+    db 254
+    db 120
+    db 0
+    db 255
+    db 255
+    db 178
+    db 254
+    db 136
+    db 255
+    db 255
+    db 255
+    db 78
+    db 1
+    db 120
+    db 0
+    db 255
+    db 255
+    db 78
+    db 1
+    db 200
+    db 0
+    db 0
+    db 0
+    db 200
+    db 0
+    db 200
+    db 0
+    db 0
+    db 0
+    db 178
+    db 254
+    db 56
+    db 255
+    db 0
+    db 0
+    db 78
+    db 1
+    db 136
+    db 1
+    db 255
+    db 255
+    db 100
+    db 253
+    db 120
+    db 2
+    db 255
+    db 255
+    db 100
+    db 253
+    db 136
+    db 1
+    db 255
+    db 255
+    db 0
+    db 0
+    db 120
+    db 2
+    db 255
+    db 255
+    db 0
+    db 0
+    db 136
+    db 1
+    db 255
+    db 255
+    db 156
+    db 2
+    db 120
+    db 2
+    db 255
+    db 255
+    db 156
+    db 2
+    db 44
+    db 1
+    db 0
+    db 0
+    db 200
+    db 0
+    db 200
+    db 2
+    db 0
+    db 0
+    db 100
+    db 253
+    db 200
+    db 254
+    db 0
+    db 0
+    db 156
+    db 2
+    db 136
+    db 253
+    db 255
+    db 255
+    db 100
+    db 253
+    db 120
+    db 254
+    db 255
+    db 255
+    db 100
+    db 253
+    db 136
+    db 253
+    db 255
+    db 255
+    db 0
+    db 0
+    db 120
+    db 254
+    db 255
+    db 255
+    db 0
+    db 0
+    db 136
+    db 253
+    db 255
+    db 255
+    db 156
+    db 2
+    db 120
+    db 254
+    db 255
+    db 255
+    db 156
+    db 2
+    db 212
+    db 254
+    db 0
+    db 0
+    db 200
+    db 0
+    db 200
+    db 254
+    db 0
+    db 0
+    db 100
+    db 253
+    db 56
+    db 253
+    db 0
+    db 0
+    db 156
+    db 2
+    db 123
+    db 255
+    db 255
+    db 255
+    db 100
+    db 254
+    db 99
+    db 0
+    db 255
+    db 255
+    db 161
+    db 254
+    db 84
+    db 255
+    db 255
+    db 255
+    db 195
+    db 254
+    db 36
+    db 0
+    db 255
+    db 255
+    db 59
+    db 255
+    db 21
+    db 255
+    db 255
+    db 255
+    db 21
+    db 255
+    db 191
+    db 255
+    db 255
+    db 255
+    db 191
+    db 255
+    db 197
+    db 254
+    db 255
+    db 255
+    db 83
+    db 255
+    db 62
+    db 255
+    db 255
+    db 255
+    db 34
+    db 0
+    db 102
+    db 254
+    db 255
+    db 255
+    db 122
+    db 255
+    db 165
+    db 254
+    db 255
+    db 255
+    db 98
+    db 0
+    db 56
+    db 255
+    db 0
+    db 0
+    db 200
+    db 0
+    db 157
+    db 255
+    db 255
+    db 255
+    db 161
+    db 254
+    db 133
+    db 0
+    db 255
+    db 255
+    db 100
+    db 254
+    db 220
+    db 255
+    db 255
+    db 255
+    db 59
+    db 255
+    db 172
+    db 0
+    db 255
+    db 255
+    db 195
+    db 254
+    db 65
+    db 0
+    db 255
+    db 255
+    db 191
+    db 255
+    db 235
+    db 0
+    db 255
+    db 255
+    db 21
+    db 255
+    db 194
+    db 0
+    db 255
+    db 255
+    db 34
+    db 0
+    db 59
+    db 1
+    db 255
+    db 255
+    db 83
+    db 255
+    db 91
+    db 1
+    db 255
+    db 255
+    db 98
+    db 0
+    db 154
+    db 1
+    db 255
+    db 255
+    db 122
+    db 255
+    db 200
+    db 0
+    db 0
+    db 0
+    db 200
+    db 0
+    db 131
+    db 1
+    db 255
+    db 255
+    db 122
+    db 252
+    db 114
+    db 2
+    db 255
+    db 255
+    db 142
+    db 252
+    db 115
+    db 1
+    db 255
+    db 255
+    db 242
+    db 252
+    db 96
+    db 2
+    db 255
+    db 255
+    db 27
+    db 253
+    db 89
+    db 1
+    db 255
+    db 255
+    db 105
+    db 253
+    db 65
+    db 2
+    db 255
+    db 255
+    db 166
+    db 253
+    db 53
+    db 1
+    db 255
+    db 255
+    db 221
+    db 253
+    db 23
+    db 2
+    db 255
+    db 255
+    db 46
+    db 254
+    db 4
+    db 1
+    db 255
+    db 255
+    db 86
+    db 254
+    db 221
+    db 1
+    db 255
+    db 255
+    db 187
+    db 254
+    db 204
+    db 0
+    db 255
+    db 255
+    db 193
+    db 254
+    db 156
+    db 1
+    db 255
+    db 255
+    db 57
+    db 255
+    db 139
+    db 0
+    db 255
+    db 255
+    db 40
+    db 255
+    db 80
+    db 1
+    db 255
+    db 255
+    db 177
+    db 255
+    db 65
+    db 0
+    db 255
+    db 255
+    db 137
+    db 255
+    db 250
+    db 0
+    db 255
+    db 255
+    db 34
+    db 0
+    db 233
+    db 255
+    db 255
+    db 255
+    db 233
+    db 255
+    db 147
+    db 0
+    db 255
+    db 255
+    db 147
+    db 0
+    db 144
+    db 255
+    db 255
+    db 255
+    db 60
+    db 0
+    db 42
+    db 0
+    db 255
+    db 255
+    db 243
+    db 0
+    db 47
+    db 255
+    db 255
+    db 255
+    db 134
+    db 0
+    db 186
+    db 255
+    db 255
+    db 255
+    db 74
+    db 1
+    db 201
+    db 254
+    db 255
+    db 255
+    db 199
+    db 0
+    db 66
+    db 255
+    db 255
+    db 255
+    db 151
+    db 1
+    db 93
+    db 254
+    db 255
+    db 255
+    db 0
+    db 1
+    db 196
+    db 254
+    db 255
+    db 255
+    db 217
+    db 1
+    db 229
+    db 253
+    db 255
+    db 255
+    db 50
+    db 1
+    db 55
+    db 254
+    db 255
+    db 255
+    db 20
+    db 2
+    db 113
+    db 253
+    db 255
+    db 255
+    db 87
+    db 1
+    db 176
+    db 253
+    db 255
+    db 255
+    db 63
+    db 2
+    db 251
+    db 252
+    db 255
+    db 255
+    db 114
+    db 1
+    db 37
+    db 253
+    db 255
+    db 255
+    db 94
+    db 2
+    db 130
+    db 252
+    db 255
+    db 255
+    db 130
+    db 1
+    db 152
+    db 252
+    db 255
+    db 255
+    db 113
+    db 2
+    db 44
+    db 1
+    db 0
+    db 0
+    db 200
+    db 0
+    db 142
+    db 253
+    db 255
+    db 255
+    db 142
+    db 252
+    db 125
+    db 254
+    db 255
+    db 255
+    db 122
+    db 252
+    db 160
+    db 253
+    db 255
+    db 255
+    db 27
+    db 253
+    db 141
+    db 254
+    db 255
+    db 255
+    db 242
+    db 252
+    db 191
+    db 253
+    db 255
+    db 255
+    db 166
+    db 253
+    db 167
+    db 254
+    db 255
+    db 255
+    db 105
+    db 253
+    db 233
+    db 253
+    db 255
+    db 255
+    db 46
+    db 254
+    db 203
+    db 254
+    db 255
+    db 255
+    db 221
+    db 253
+    db 35
+    db 254
+    db 255
+    db 255
+    db 187
+    db 254
+    db 252
+    db 254
+    db 255
+    db 255
+    db 86
+    db 254
+    db 100
+    db 254
+    db 255
+    db 255
+    db 57
+    db 255
+    db 52
+    db 255
+    db 255
+    db 255
+    db 193
+    db 254
+    db 176
+    db 254
+    db 255
+    db 255
+    db 177
+    db 255
+    db 117
+    db 255
+    db 255
+    db 255
+    db 40
+    db 255
+    db 6
+    db 255
+    db 255
+    db 255
+    db 34
+    db 0
+    db 191
+    db 255
+    db 255
+    db 255
+    db 137
+    db 255
+    db 109
+    db 255
+    db 255
+    db 255
+    db 147
+    db 0
+    db 23
+    db 0
+    db 255
+    db 255
+    db 233
+    db 255
+    db 214
+    db 255
+    db 255
+    db 255
+    db 243
+    db 0
+    db 112
+    db 0
+    db 255
+    db 255
+    db 60
+    db 0
+    db 70
+    db 0
+    db 255
+    db 255
+    db 74
+    db 1
+    db 209
+    db 0
+    db 255
+    db 255
+    db 134
+    db 0
+    db 190
+    db 0
+    db 255
+    db 255
+    db 151
+    db 1
+    db 55
+    db 1
+    db 255
+    db 255
+    db 199
+    db 0
+    db 60
+    db 1
+    db 255
+    db 255
+    db 217
+    db 1
+    db 163
+    db 1
+    db 255
+    db 255
+    db 0
+    db 1
+    db 201
+    db 1
+    db 255
+    db 255
+    db 20
+    db 2
+    db 27
+    db 2
+    db 255
+    db 255
+    db 50
+    db 1
+    db 80
+    db 2
+    db 255
+    db 255
+    db 63
+    db 2
+    db 143
+    db 2
+    db 255
+    db 255
+    db 87
+    db 1
+    db 219
+    db 2
+    db 255
+    db 255
+    db 94
+    db 2
+    db 5
+    db 3
+    db 255
+    db 255
+    db 114
+    db 1
+    db 104
+    db 3
+    db 255
+    db 255
+    db 113
+    db 2
+    db 126
+    db 3
+    db 255
+    db 255
+    db 130
+    db 1
+    db 212
+    db 254
+    db 0
+    db 0
+    db 200
+    db 0
+    db 136
+    db 255
+    db 255
+    db 255
+    db 178
+    db 254
+    db 120
+    db 0
+    db 255
+    db 255
+    db 178
+    db 254
+    db 136
+    db 255
+    db 255
+    db 255
+    db 78
+    db 1
+    db 120
+    db 0
+    db 255
+    db 255
+    db 78
+    db 1
+    db 120
+    db 0
+    db 194
+    db 1
+    db 0
+    db 0
+    db 140
+    db 0
+    db 194
+    db 1
+    db 178
+    db 254
+    db 116
+    db 255
+    db 194
+    db 1
+    db 78
+    db 1
+    db 136
+    db 255
+    db 255
+    db 255
+    db 178
+    db 254
+    db 120
+    db 0
+    db 255
+    db 255
+    db 178
+    db 254
+    db 136
+    db 255
+    db 255
+    db 255
+    db 78
+    db 1
+    db 120
+    db 0
+    db 255
+    db 255
+    db 78
+    db 1
+    db 120
+    db 0
+    db 194
+    db 1
+    db 200
+    db 0
+    db 140
+    db 0
+    db 194
+    db 1
+    db 178
+    db 254
+    db 116
+    db 255
+    db 194
+    db 1
+    db 78
+    db 1
+    db 131
+    db 1
+    db 255
+    db 255
+    db 122
+    db 252
+    db 114
+    db 2
+    db 255
+    db 255
+    db 142
+    db 252
+    db 115
+    db 1
+    db 255
+    db 255
+    db 242
+    db 252
+    db 96
+    db 2
+    db 255
+    db 255
+    db 27
+    db 253
+    db 89
+    db 1
+    db 255
+    db 255
+    db 105
+    db 253
+    db 65
+    db 2
+    db 255
+    db 255
+    db 166
+    db 253
+    db 53
+    db 1
+    db 255
+    db 255
+    db 221
+    db 253
+    db 23
+    db 2
+    db 255
+    db 255
+    db 46
+    db 254
+    db 4
+    db 1
+    db 255
+    db 255
+    db 86
+    db 254
+    db 221
+    db 1
+    db 255
+    db 255
+    db 187
+    db 254
+    db 204
+    db 0
+    db 255
+    db 255
+    db 193
+    db 254
+    db 156
+    db 1
+    db 255
+    db 255
+    db 57
+    db 255
+    db 139
+    db 0
+    db 255
+    db 255
+    db 40
+    db 255
+    db 80
+    db 1
+    db 255
+    db 255
+    db 177
+    db 255
+    db 65
+    db 0
+    db 255
+    db 255
+    db 137
+    db 255
+    db 250
+    db 0
+    db 255
+    db 255
+    db 34
+    db 0
+    db 233
+    db 255
+    db 255
+    db 255
+    db 233
+    db 255
+    db 147
+    db 0
+    db 255
+    db 255
+    db 147
+    db 0
+    db 144
+    db 255
+    db 255
+    db 255
+    db 60
+    db 0
+    db 42
+    db 0
+    db 255
+    db 255
+    db 243
+    db 0
+    db 47
+    db 255
+    db 255
+    db 255
+    db 134
+    db 0
+    db 186
+    db 255
+    db 255
+    db 255
+    db 74
+    db 1
+    db 201
+    db 254
+    db 255
+    db 255
+    db 199
+    db 0
+    db 66
+    db 255
+    db 255
+    db 255
+    db 151
+    db 1
+    db 93
+    db 254
+    db 255
+    db 255
+    db 0
+    db 1
+    db 196
+    db 254
+    db 255
+    db 255
+    db 217
+    db 1
+    db 229
+    db 253
+    db 255
+    db 255
+    db 50
+    db 1
+    db 55
+    db 254
+    db 255
+    db 255
+    db 20
+    db 2
+    db 113
+    db 253
+    db 255
+    db 255
+    db 87
+    db 1
+    db 176
+    db 253
+    db 255
+    db 255
+    db 63
+    db 2
+    db 251
+    db 252
+    db 255
+    db 255
+    db 114
+    db 1
+    db 37
+    db 253
+    db 255
+    db 255
+    db 94
+    db 2
+    db 130
+    db 252
+    db 255
+    db 255
+    db 130
+    db 1
+    db 152
+    db 252
+    db 255
+    db 255
+    db 113
+    db 2
+    db 160
+    db 0
+    db 194
+    db 1
+    db 160
+    db 0
+    db 111
+    db 1
+    db 255
+    db 255
+    db 109
+    db 252
+    db 88
+    db 2
+    db 255
+    db 255
+    db 126
+    db 252
+    db 85
+    db 1
+    db 255
+    db 255
+    db 216
+    db 252
+    db 55
+    db 2
+    db 255
+    db 255
+    db 250
+    db 252
+    db 55
+    db 1
+    db 255
+    db 255
+    db 65
+    db 253
+    db 18
+    db 2
+    db 255
+    db 255
+    db 116
+    db 253
+    db 19
+    db 1
+    db 255
+    db 255
+    db 166
+    db 253
+    db 232
+    db 1
+    db 255
+    db 255
+    db 234
+    db 253
+    db 232
+    db 0
+    db 255
+    db 255
+    db 6
+    db 254
+    db 182
+    db 1
+    db 255
+    db 255
+    db 91
+    db 254
+    db 165
+    db 0
+    db 255
+    db 255
+    db 120
+    db 254
+    db 106
+    db 1
+    db 255
+    db 255
+    db 226
+    db 254
+    db 88
+    db 0
+    db 255
+    db 255
+    db 226
+    db 254
+    db 20
+    db 1
+    db 255
+    db 255
+    db 98
+    db 255
+    db 3
+    db 0
+    db 255
+    db 255
+    db 72
+    db 255
+    db 182
+    db 0
+    db 255
+    db 255
+    db 221
+    db 255
+    db 171
+    db 255
+    db 255
+    db 255
+    db 171
+    db 255
+    db 85
+    db 0
+    db 255
+    db 255
+    db 85
+    db 0
+    db 74
+    db 255
+    db 255
+    db 255
+    db 35
+    db 0
+    db 253
+    db 255
+    db 255
+    db 255
+    db 184
+    db 0
+    db 236
+    db 254
+    db 255
+    db 255
+    db 158
+    db 0
+    db 168
+    db 255
+    db 255
+    db 255
+    db 30
+    db 1
+    db 150
+    db 254
+    db 255
+    db 255
+    db 30
+    db 1
+    db 91
+    db 255
+    db 255
+    db 255
+    db 136
+    db 1
+    db 74
+    db 254
+    db 255
+    db 255
+    db 165
+    db 1
+    db 24
+    db 255
+    db 255
+    db 255
+    db 250
+    db 1
+    db 24
+    db 254
+    db 255
+    db 255
+    db 22
+    db 2
+    db 237
+    db 254
+    db 255
+    db 255
+    db 90
+    db 2
+    db 238
+    db 253
+    db 255
+    db 255
+    db 140
+    db 2
+    db 201
+    db 254
+    db 255
+    db 255
+    db 191
+    db 2
+    db 201
+    db 253
+    db 255
+    db 255
+    db 6
+    db 3
+    db 171
+    db 254
+    db 255
+    db 255
+    db 40
+    db 3
+    db 168
+    db 253
+    db 255
+    db 255
+    db 130
+    db 3
+    db 145
+    db 254
+    db 255
+    db 255
+    db 147
+    db 3
+    db 125
+    db 0
+    db 0
+    db 0
+    db 125
+    db 0
+    db 168
+    db 253
+    db 255
+    db 255
+    db 126
+    db 252
+    db 145
+    db 254
+    db 255
+    db 255
+    db 109
+    db 252
+    db 201
+    db 253
+    db 255
+    db 255
+    db 250
+    db 252
+    db 171
+    db 254
+    db 255
+    db 255
+    db 216
+    db 252
+    db 238
+    db 253
+    db 255
+    db 255
+    db 116
+    db 253
+    db 201
+    db 254
+    db 255
+    db 255
+    db 65
+    db 253
+    db 24
+    db 254
+    db 255
+    db 255
+    db 234
+    db 253
+    db 237
+    db 254
+    db 255
+    db 255
+    db 166
+    db 253
+    db 74
+    db 254
+    db 255
+    db 255
+    db 91
+    db 254
+    db 24
+    db 255
+    db 255
+    db 255
+    db 6
+    db 254
+    db 150
+    db 254
+    db 255
+    db 255
+    db 226
+    db 254
+    db 91
+    db 255
+    db 255
+    db 255
+    db 120
+    db 254
+    db 236
+    db 254
+    db 255
+    db 255
+    db 98
+    db 255
+    db 168
+    db 255
+    db 255
+    db 255
+    db 226
+    db 254
+    db 74
+    db 255
+    db 255
+    db 255
+    db 221
+    db 255
+    db 253
+    db 255
+    db 255
+    db 255
+    db 72
+    db 255
+    db 171
+    db 255
+    db 255
+    db 255
+    db 85
+    db 0
+    db 85
+    db 0
+    db 255
+    db 255
+    db 171
+    db 255
+    db 3
+    db 0
+    db 255
+    db 255
+    db 184
+    db 0
+    db 182
+    db 0
+    db 255
+    db 255
+    db 35
+    db 0
+    db 88
+    db 0
+    db 255
+    db 255
+    db 30
+    db 1
+    db 20
+    db 1
+    db 255
+    db 255
+    db 158
+    db 0
+    db 165
+    db 0
+    db 255
+    db 255
+    db 136
+    db 1
+    db 106
+    db 1
+    db 255
+    db 255
+    db 30
+    db 1
+    db 232
+    db 0
+    db 255
+    db 255
+    db 250
+    db 1
+    db 182
+    db 1
+    db 255
+    db 255
+    db 165
+    db 1
+    db 19
+    db 1
+    db 255
+    db 255
+    db 90
+    db 2
+    db 232
+    db 1
+    db 255
+    db 255
+    db 22
+    db 2
+    db 55
+    db 1
+    db 255
+    db 255
+    db 191
+    db 2
+    db 18
+    db 2
+    db 255
+    db 255
+    db 140
+    db 2
+    db 85
+    db 1
+    db 255
+    db 255
+    db 40
+    db 3
+    db 55
+    db 2
+    db 255
+    db 255
+    db 6
+    db 3
+    db 111
+    db 1
+    db 255
+    db 255
+    db 147
+    db 3
+    db 88
+    db 2
+    db 255
+    db 255
+    db 130
+    db 3
+    db 125
+    db 0
+    db 0
+    db 0
+    db 131
+    db 255
+    db 136
+    db 255
+    db 255
+    db 255
+    db 178
+    db 254
+    db 120
+    db 0
+    db 255
+    db 255
+    db 178
+    db 254
+    db 136
+    db 255
+    db 255
+    db 255
+    db 78
+    db 1
+    db 120
+    db 0
+    db 255
+    db 255
+    db 78
+    db 1
+    db 120
+    db 0
+    db 194
+    db 1
+    db 244
+    db 1
+    db 140
+    db 0
+    db 81
+    db 0
+    db 178
+    db 254
+    db 116
+    db 255
+    db 119
+    db 1
+    db 78
+    db 1
+    db 82
+    db 255
+    db 0
+    db 0
+    db 156
+    db 252
+    db 100
+    db 0
+    db 0
+    db 0
+    db 156
+    db 252
+    db 30
+    db 255
+    db 0
+    db 0
+    db 64
+    db 253
+    db 80
+    db 0
+    db 0
+    db 0
+    db 64
+    db 253
+    db 236
+    db 254
+    db 0
+    db 0
+    db 232
+    db 253
+    db 60
+    db 0
+    db 0
+    db 0
+    db 232
+    db 253
+    db 192
+    db 254
+    db 0
+    db 0
+    db 152
+    db 254
+    db 40
+    db 0
+    db 0
+    db 0
+    db 152
+    db 254
+    db 151
+    db 254
+    db 0
+    db 0
+    db 78
+    db 255
+    db 20
+    db 0
+    db 0
+    db 0
+    db 78
+    db 255
+    db 112
+    db 254
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 112
+    db 254
+    db 135
+    db 0
+    db 224
+    db 0
+    db 0
+    db 0
+    db 135
+    db 0
+    db 224
+    db 0
+    db 160
+    db 254
+    db 43
+    db 1
+    db 133
+    db 1
+    db 46
+    db 0
+    db 43
+    db 1
+    db 133
+    db 1
+    db 208
+    db 254
+    db 12
+    db 2
+    db 193
+    db 1
+    db 95
+    db 0
+    db 12
+    db 2
+    db 193
+    db 1
+    db 242
+    db 254
+    db 237
+    db 2
+    db 133
+    db 1
+    db 129
+    db 0
+    db 237
+    db 2
+    db 133
+    db 1
+    db 21
+    db 255
+    db 146
+    db 3
+    db 225
+    db 0
+    db 164
+    db 0
+    db 146
+    db 3
+    db 225
+    db 0
+    db 56
+    db 255
+    db 207
+    db 3
+    db 0
+    db 0
+    db 200
+    db 0
+    db 207
+    db 3
+    db 0
+    db 0
+    db 92
+    db 255
+    db 146
+    db 3
+    db 31
+    db 255
+    db 235
+    db 0
+    db 146
+    db 3
+    db 31
+    db 255
+    db 127
+    db 255
+    db 237
+    db 2
+    db 123
+    db 254
+    db 14
+    db 1
+    db 237
+    db 2
+    db 123
+    db 254
+    db 161
+    db 255
+    db 12
+    db 2
+    db 63
+    db 254
+    db 48
+    db 1
+    db 12
+    db 2
+    db 63
+    db 254
+    db 210
+    db 255
+    db 43
+    db 1
+    db 123
+    db 254
+    db 96
+    db 1
+    db 43
+    db 1
+    db 123
+    db 254
+    db 0
+    db 0
+    db 135
+    db 0
+    db 32
+    db 255
+    db 144
+    db 1
+    db 135
+    db 0
+    db 32
+    db 255
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 144
+    db 1
+    db 0
+    db 0
+    db 0
+    db 0
+    db 236
+    db 255
+    db 0
+    db 0
+    db 178
+    db 0
+    db 105
+    db 1
+    db 0
+    db 0
+    db 178
+    db 0
+    db 216
+    db 255
+    db 0
+    db 0
+    db 104
+    db 1
+    db 64
+    db 1
+    db 0
+    db 0
+    db 104
+    db 1
+    db 196
+    db 255
+    db 0
+    db 0
+    db 24
+    db 2
+    db 20
+    db 1
+    db 0
+    db 0
+    db 24
+    db 2
+    db 176
+    db 255
+    db 0
+    db 0
+    db 192
+    db 2
+    db 226
+    db 0
+    db 0
+    db 0
+    db 192
+    db 2
+    db 156
+    db 255
+    db 0
+    db 0
+    db 100
+    db 3
+    db 174
+    db 0
+    db 0
+    db 0
+    db 100
+    db 3
+    db 224
+    db 1
+    db 0
+    db 0
+    db 0
+    db 0
+    db 200
+    db 0
+    db 0
+    db 0
+    db 100
+    db 253
+    db 56
+    db 255
+    db 0
+    db 0
+    db 156
+    db 2
+    db 225
+    db 255
+    db 0
+    db 0
+    db 126
+    db 252
+    db 31
+    db 0
+    db 0
+    db 0
+    db 126
+    db 252
+    db 31
+    db 0
+    db 0
+    db 0
+    db 19
+    db 253
+    db 84
+    db 0
+    db 35
+    db 0
+    db 19
+    db 253
+    db 84
+    db 0
+    db 35
+    db 0
+    db 168
+    db 253
+    db 115
+    db 0
+    db 88
+    db 0
+    db 168
+    db 253
+    db 115
+    db 0
+    db 88
+    db 0
+    db 61
+    db 254
+    db 115
+    db 0
+    db 151
+    db 0
+    db 61
+    db 254
+    db 115
+    db 0
+    db 151
+    db 0
+    db 212
+    db 254
+    db 84
+    db 0
+    db 204
+    db 0
+    db 212
+    db 254
+    db 84
+    db 0
+    db 204
+    db 0
+    db 103
+    db 255
+    db 31
+    db 0
+    db 235
+    db 0
+    db 103
+    db 255
+    db 31
+    db 0
+    db 235
+    db 0
+    db 0
+    db 0
+    db 225
+    db 255
+    db 235
+    db 0
+    db 0
+    db 0
+    db 225
+    db 255
+    db 235
+    db 0
+    db 153
+    db 0
+    db 172
+    db 255
+    db 204
+    db 0
+    db 153
+    db 0
+    db 172
+    db 255
+    db 204
+    db 0
+    db 44
+    db 1
+    db 141
+    db 255
+    db 151
+    db 0
+    db 44
+    db 1
+    db 141
+    db 255
+    db 151
+    db 0
+    db 195
+    db 1
+    db 141
+    db 255
+    db 88
+    db 0
+    db 195
+    db 1
+    db 141
+    db 255
+    db 88
+    db 0
+    db 88
+    db 2
+    db 172
+    db 255
+    db 35
+    db 0
+    db 88
+    db 2
+    db 172
+    db 255
+    db 35
+    db 0
+    db 237
+    db 2
+    db 225
+    db 255
+    db 0
+    db 0
+    db 237
+    db 2
+    db 225
+    db 255
+    db 0
+    db 0
+    db 130
+    db 3
+    db 31
+    db 0
+    db 0
+    db 0
+    db 130
+    db 3
+    db 224
+    db 1
+    db 0
+    db 0
+    db 0
+    db 0
+    db 200
+    db 0
+    db 0
+    db 0
+    db 100
+    db 253
+    db 56
+    db 255
+    db 0
+    db 0
+    db 156
+    db 2
+    db 136
+    db 255
+    db 255
+    db 255
+    db 178
+    db 254
+    db 120
+    db 0
+    db 255
+    db 255
+    db 178
+    db 254
+    db 136
+    db 255
+    db 255
+    db 255
+    db 78
+    db 1
+    db 120
+    db 0
+    db 255
+    db 255
+    db 78
+    db 1
+    db 56
+    db 255
+    db 0
+    db 0
+    db 0
+    db 0
+    db 120
+    db 0
+    db 130
+    db 0
+    db 178
+    db 254
+    db 116
+    db 255
+    db 0
+    db 0
+    db 78
+    db 1
+    db 136
+    db 255
+    db 255
+    db 255
+    db 178
+    db 254
+    db 120
+    db 0
+    db 255
+    db 255
+    db 178
+    db 254
+    db 136
+    db 255
+    db 255
+    db 255
+    db 78
+    db 1
+    db 120
+    db 0
+    db 255
+    db 255
+    db 78
+    db 1
+    db 56
+    db 255
+    db 0
+    db 0
+    db 0
+    db 0
+    db 120
+    db 0
+    db 130
+    db 0
+    db 178
+    db 254
+    db 116
+    db 255
+    db 0
+    db 0
+    db 78
+    db 1
+    db 136
+    db 255
+    db 255
+    db 255
+    db 178
+    db 254
+    db 120
+    db 0
+    db 255
+    db 255
+    db 178
+    db 254
+    db 136
+    db 255
+    db 255
+    db 255
+    db 78
+    db 1
+    db 120
+    db 0
+    db 255
+    db 255
+    db 78
+    db 1
+    db 200
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 140
+    db 0
+    db 0
+    db 0
+    db 178
+    db 254
+    db 136
+    db 255
+    db 123
+    db 0
+    db 78
+    db 1
+    db 131
+    db 1
+    db 255
+    db 255
+    db 122
+    db 252
+    db 114
+    db 2
+    db 255
+    db 255
+    db 142
+    db 252
+    db 115
+    db 1
+    db 255
+    db 255
+    db 242
+    db 252
+    db 96
+    db 2
+    db 255
+    db 255
+    db 27
+    db 253
+    db 89
+    db 1
+    db 255
+    db 255
+    db 105
+    db 253
+    db 65
+    db 2
+    db 255
+    db 255
+    db 166
+    db 253
+    db 53
+    db 1
+    db 255
+    db 255
+    db 221
+    db 253
+    db 23
+    db 2
+    db 255
+    db 255
+    db 46
+    db 254
+    db 4
+    db 1
+    db 255
+    db 255
+    db 86
+    db 254
+    db 221
+    db 1
+    db 255
+    db 255
+    db 187
+    db 254
+    db 204
+    db 0
+    db 255
+    db 255
+    db 193
+    db 254
+    db 156
+    db 1
+    db 255
+    db 255
+    db 57
+    db 255
+    db 139
+    db 0
+    db 255
+    db 255
+    db 40
+    db 255
+    db 80
+    db 1
+    db 255
+    db 255
+    db 177
+    db 255
+    db 65
+    db 0
+    db 255
+    db 255
+    db 137
+    db 255
+    db 250
+    db 0
+    db 255
+    db 255
+    db 34
+    db 0
+    db 233
+    db 255
+    db 255
+    db 255
+    db 233
+    db 255
+    db 147
+    db 0
+    db 255
+    db 255
+    db 147
+    db 0
+    db 144
+    db 255
+    db 255
+    db 255
+    db 60
+    db 0
+    db 42
+    db 0
+    db 255
+    db 255
+    db 243
+    db 0
+    db 47
+    db 255
+    db 255
+    db 255
+    db 134
+    db 0
+    db 186
+    db 255
+    db 255
+    db 255
+    db 74
+    db 1
+    db 201
+    db 254
+    db 255
+    db 255
+    db 199
+    db 0
+    db 66
+    db 255
+    db 255
+    db 255
+    db 151
+    db 1
+    db 93
+    db 254
+    db 255
+    db 255
+    db 0
+    db 1
+    db 196
+    db 254
+    db 255
+    db 255
+    db 217
+    db 1
+    db 229
+    db 253
+    db 255
+    db 255
+    db 50
+    db 1
+    db 55
+    db 254
+    db 255
+    db 255
+    db 20
+    db 2
+    db 113
+    db 253
+    db 255
+    db 255
+    db 87
+    db 1
+    db 176
+    db 253
+    db 255
+    db 255
+    db 63
+    db 2
+    db 251
+    db 252
+    db 255
+    db 255
+    db 114
+    db 1
+    db 37
+    db 253
+    db 255
+    db 255
+    db 94
+    db 2
+    db 130
+    db 252
+    db 255
+    db 255
+    db 130
+    db 1
+    db 152
+    db 252
+    db 255
+    db 255
+    db 113
+    db 2
+    db 212
+    db 254
+    db 0
+    db 0
+    db 56
+    db 255
+    db 136
+    db 253
+    db 0
+    db 0
+    db 178
+    db 252
+    db 120
+    db 254
+    db 0
+    db 0
+    db 178
+    db 252
+    db 136
+    db 253
+    db 0
+    db 0
+    db 178
+    db 254
+    db 120
+    db 254
+    db 0
+    db 0
+    db 178
+    db 254
+    db 136
+    db 253
+    db 0
+    db 0
+    db 0
+    db 0
+    db 120
+    db 254
+    db 0
+    db 0
+    db 0
+    db 0
+    db 157
+    db 253
+    db 19
+    db 0
+    db 161
+    db 0
+    db 133
+    db 254
+    db 19
+    db 0
+    db 100
+    db 0
+    db 220
+    db 253
+    db 38
+    db 0
+    db 59
+    db 1
+    db 172
+    db 254
+    db 38
+    db 0
+    db 195
+    db 0
+    db 65
+    db 254
+    db 57
+    db 0
+    db 191
+    db 1
+    db 235
+    db 254
+    db 57
+    db 0
+    db 21
+    db 1
+    db 194
+    db 254
+    db 76
+    db 0
+    db 34
+    db 2
+    db 59
+    db 255
+    db 76
+    db 0
+    db 83
+    db 1
+    db 91
+    db 255
+    db 95
+    db 0
+    db 98
+    db 2
+    db 154
+    db 255
+    db 95
+    db 0
+    db 122
+    db 1
+    db 0
+    db 0
+    db 114
+    db 0
+    db 120
+    db 2
+    db 0
+    db 0
+    db 114
+    db 0
+    db 136
+    db 1
+    db 161
+    db 0
+    db 133
+    db 0
+    db 99
+    db 2
+    db 100
+    db 0
+    db 133
+    db 0
+    db 123
+    db 1
+    db 59
+    db 1
+    db 152
+    db 0
+    db 36
+    db 2
+    db 195
+    db 0
+    db 152
+    db 0
+    db 84
+    db 1
+    db 191
+    db 1
+    db 171
+    db 0
+    db 191
+    db 1
+    db 21
+    db 1
+    db 171
+    db 0
+    db 21
+    db 1
+    db 34
+    db 2
+    db 190
+    db 0
+    db 62
+    db 1
+    db 83
+    db 1
+    db 190
+    db 0
+    db 197
+    db 0
+    db 98
+    db 2
+    db 209
+    db 0
+    db 165
+    db 0
+    db 122
+    db 1
+    db 209
+    db 0
+    db 102
+    db 0
+    db 120
+    db 2
+    db 228
+    db 0
+    db 0
+    db 0
+    db 136
+    db 1
+    db 228
+    db 0
+    db 0
+    db 0
+    db 99
+    db 2
+    db 247
+    db 0
+    db 95
+    db 255
+    db 123
+    db 1
+    db 247
+    db 0
+    db 156
+    db 255
+    db 36
+    db 2
+    db 10
+    db 1
+    db 197
+    db 254
+    db 84
+    db 1
+    db 10
+    db 1
+    db 61
+    db 255
+    db 191
+    db 1
+    db 29
+    db 1
+    db 65
+    db 254
+    db 21
+    db 1
+    db 29
+    db 1
+    db 235
+    db 254
+    db 62
+    db 1
+    db 48
+    db 1
+    db 222
+    db 253
+    db 197
+    db 0
+    db 48
+    db 1
+    db 173
+    db 254
+    db 165
+    db 0
+    db 67
+    db 1
+    db 158
+    db 253
+    db 102
+    db 0
+    db 67
+    db 1
+    db 134
+    db 254
+    db 0
+    db 0
+    db 86
+    db 1
+    db 136
+    db 253
+    db 0
+    db 0
+    db 86
+    db 1
+    db 120
+    db 254
+    db 95
+    db 255
+    db 105
+    db 1
+    db 157
+    db 253
+    db 156
+    db 255
+    db 105
+    db 1
+    db 133
+    db 254
+    db 197
+    db 254
+    db 124
+    db 1
+    db 220
+    db 253
+    db 61
+    db 255
+    db 124
+    db 1
+    db 172
+    db 254
+    db 65
+    db 254
+    db 143
+    db 1
+    db 65
+    db 254
+    db 235
+    db 254
+    db 143
+    db 1
+    db 235
+    db 254
+    db 222
+    db 253
+    db 162
+    db 1
+    db 194
+    db 254
+    db 173
+    db 254
+    db 162
+    db 1
+    db 59
+    db 255
+    db 158
+    db 253
+    db 181
+    db 1
+    db 91
+    db 255
+    db 134
+    db 254
+    db 181
+    db 1
+    db 154
+    db 255
+    db 136
+    db 253
+    db 194
+    db 1
+    db 0
+    db 0
+    db 120
+    db 254
+    db 194
+    db 1
+    db 0
+    db 0
+    db 136
+    db 253
+    db 194
+    db 1
+    db 78
+    db 1
+    db 120
+    db 254
+    db 194
+    db 1
+    db 78
+    db 1
+    db 136
+    db 253
+    db 194
+    db 1
+    db 78
+    db 3
+    db 120
+    db 254
+    db 194
+    db 1
+    db 78
+    db 3
+    db 0
+    db 0
+    db 194
+    db 1
+    db 0
+    db 0
+    db 136
+    db 1
+    db 0
+    db 0
+    db 178
+    db 252
+    db 120
+    db 2
+    db 0
+    db 0
+    db 178
+    db 252
+    db 136
+    db 1
+    db 0
+    db 0
+    db 178
+    db 254
+    db 120
+    db 2
+    db 0
+    db 0
+    db 178
+    db 254
+    db 136
+    db 1
+    db 0
+    db 0
+    db 0
+    db 0
+    db 120
+    db 2
+    db 0
+    db 0
+    db 0
+    db 0
+    db 123
+    db 1
+    db 19
+    db 0
+    db 100
+    db 0
+    db 99
+    db 2
+    db 19
+    db 0
+    db 161
+    db 0
+    db 84
+    db 1
+    db 38
+    db 0
+    db 195
+    db 0
+    db 36
+    db 2
+    db 38
+    db 0
+    db 59
+    db 1
+    db 21
+    db 1
+    db 57
+    db 0
+    db 21
+    db 1
+    db 191
+    db 1
+    db 57
+    db 0
+    db 191
+    db 1
+    db 197
+    db 0
+    db 76
+    db 0
+    db 83
+    db 1
+    db 62
+    db 1
+    db 76
+    db 0
+    db 34
+    db 2
+    db 102
+    db 0
+    db 95
+    db 0
+    db 122
+    db 1
+    db 165
+    db 0
+    db 95
+    db 0
+    db 98
+    db 2
+    db 0
+    db 0
+    db 114
+    db 0
+    db 136
+    db 1
+    db 0
+    db 0
+    db 114
+    db 0
+    db 120
+    db 2
+    db 156
+    db 255
+    db 133
+    db 0
+    db 123
+    db 1
+    db 95
+    db 255
+    db 133
+    db 0
+    db 99
+    db 2
+    db 61
+    db 255
+    db 152
+    db 0
+    db 84
+    db 1
+    db 197
+    db 254
+    db 152
+    db 0
+    db 36
+    db 2
+    db 235
+    db 254
+    db 171
+    db 0
+    db 21
+    db 1
+    db 65
+    db 254
+    db 171
+    db 0
+    db 191
+    db 1
+    db 173
+    db 254
+    db 190
+    db 0
+    db 197
+    db 0
+    db 222
+    db 253
+    db 190
+    db 0
+    db 62
+    db 1
+    db 134
+    db 254
+    db 209
+    db 0
+    db 102
+    db 0
+    db 158
+    db 253
+    db 209
+    db 0
+    db 165
+    db 0
+    db 120
+    db 254
+    db 228
+    db 0
+    db 0
+    db 0
+    db 136
+    db 253
+    db 228
+    db 0
+    db 0
+    db 0
+    db 133
+    db 254
+    db 247
+    db 0
+    db 156
+    db 255
+    db 157
+    db 253
+    db 247
+    db 0
+    db 95
+    db 255
+    db 172
+    db 254
+    db 10
+    db 1
+    db 61
+    db 255
+    db 220
+    db 253
+    db 10
+    db 1
+    db 197
+    db 254
+    db 235
+    db 254
+    db 29
+    db 1
+    db 235
+    db 254
+    db 65
+    db 254
+    db 29
+    db 1
+    db 65
+    db 254
+    db 59
+    db 255
+    db 48
+    db 1
+    db 173
+    db 254
+    db 194
+    db 254
+    db 48
+    db 1
+    db 222
+    db 253
+    db 154
+    db 255
+    db 67
+    db 1
+    db 134
+    db 254
+    db 91
+    db 255
+    db 67
+    db 1
+    db 158
+    db 253
+    db 0
+    db 0
+    db 86
+    db 1
+    db 120
+    db 254
+    db 0
+    db 0
+    db 86
+    db 1
+    db 136
+    db 253
+    db 100
+    db 0
+    db 105
+    db 1
+    db 133
+    db 254
+    db 161
+    db 0
+    db 105
+    db 1
+    db 157
+    db 253
+    db 195
+    db 0
+    db 124
+    db 1
+    db 172
+    db 254
+    db 59
+    db 1
+    db 124
+    db 1
+    db 220
+    db 253
+    db 21
+    db 1
+    db 143
+    db 1
+    db 235
+    db 254
+    db 191
+    db 1
+    db 143
+    db 1
+    db 65
+    db 254
+    db 83
+    db 1
+    db 162
+    db 1
+    db 59
+    db 255
+    db 34
+    db 2
+    db 162
+    db 1
+    db 194
+    db 254
+    db 122
+    db 1
+    db 181
+    db 1
+    db 154
+    db 255
+    db 98
+    db 2
+    db 181
+    db 1
+    db 91
+    db 255
+    db 136
+    db 1
+    db 194
+    db 1
+    db 0
+    db 0
+    db 120
+    db 2
+    db 194
+    db 1
+    db 0
+    db 0
+    db 136
+    db 1
+    db 194
+    db 1
+    db 78
+    db 1
+    db 120
+    db 2
+    db 194
+    db 1
+    db 78
+    db 1
+    db 136
+    db 1
+    db 194
+    db 1
+    db 78
+    db 3
+    db 120
+    db 2
+    db 194
+    db 1
+    db 78
+    db 3
+    db 0
+    db 0
+    db 194
+    db 1
+    db 0
+    db 0
+    db 184
+    db 255
+    db 255
+    db 255
+    db 178
+    db 254
+    db 168
+    db 0
+    db 255
+    db 255
+    db 178
+    db 254
+    db 0
+    db 0
+    db 255
+    db 255
+    db 168
+    db 0
+    db 56
+    db 1
+    db 255
+    db 255
+    db 168
+    db 0
+    db 120
+    db 0
+    db 255
+    db 255
+    db 78
+    db 1
+    db 104
+    db 1
+    db 255
+    db 255
+    db 78
+    db 1
+    db 0
+    db 0
+    db 0
+    db 0
+    db 180
+    db 0
+    db 72
+    db 0
+    db 255
+    db 255
+    db 178
+    db 254
+    db 88
+    db 255
+    db 255
+    db 255
+    db 178
+    db 254
+    db 0
+    db 0
+    db 255
+    db 255
+    db 168
+    db 0
+    db 200
+    db 254
+    db 255
+    db 255
+    db 168
+    db 0
+    db 152
+    db 254
+    db 255
+    db 255
+    db 78
+    db 1
+    db 136
+    db 255
+    db 255
+    db 255
+    db 78
+    db 1
+    db 0
+    db 0
+    db 0
+    db 0
+    db 180
+    db 0
+    db 120
+    db 0
+    db 255
+    db 255
+    db 178
+    db 254
+    db 104
+    db 1
+    db 255
+    db 255
+    db 178
+    db 254
+    db 120
+    db 0
+    db 255
+    db 255
+    db 78
+    db 1
+    db 104
+    db 1
+    db 255
+    db 255
+    db 78
+    db 1
+    db 144
+    db 1
+    db 0
+    db 0
+    db 0
+    db 0
+    db 144
+    db 1
+    db 0
+    db 0
+    db 178
+    db 254
+    db 144
+    db 1
+    db 0
+    db 0
+    db 178
+    db 254
+    db 136
+    db 255
+    db 255
+    db 255
+    db 178
+    db 254
+    db 152
+    db 254
+    db 255
+    db 255
+    db 178
+    db 254
+    db 136
+    db 255
+    db 255
+    db 255
+    db 78
+    db 1
+    db 152
+    db 254
+    db 255
+    db 255
+    db 78
+    db 1
+    db 112
+    db 254
+    db 0
+    db 0
+    db 0
+    db 0
+    db 112
+    db 254
+    db 0
+    db 0
+    db 178
+    db 254
+    db 112
+    db 254
+    db 0
+    db 0
+    db 178
+    db 254
+    db 136
+    db 255
+    db 255
+    db 255
+    db 251
+    db 254
+    db 23
+    db 0
+    db 255
+    db 255
+    db 251
+    db 254
+    db 196
+    db 255
+    db 255
+    db 255
+    db 0
+    db 0
+    db 60
+    db 0
+    db 255
+    db 255
+    db 0
+    db 0
+    db 233
+    db 255
+    db 255
+    db 255
+    db 5
+    db 1
+    db 120
+    db 0
+    db 255
+    db 255
+    db 5
+    db 1
+    db 200
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 200
+    db 0
+    db 0
+    db 0
+    db 178
+    db 254
+    db 56
+    db 255
+    db 0
+    db 0
+    db 78
+    db 1
+    db 141
+    db 255
+    db 88
+    db 0
+    db 178
+    db 254
+    db 141
+    db 255
+    db 151
+    db 0
+    db 178
+    db 254
+    db 141
+    db 255
+    db 88
+    db 0
+    db 0
+    db 0
+    db 141
+    db 255
+    db 151
+    db 0
+    db 0
+    db 0
+    db 141
+    db 255
+    db 88
+    db 0
+    db 78
+    db 1
+    db 141
+    db 255
+    db 151
+    db 0
+    db 78
+    db 1
+    db 115
+    db 0
+    db 180
+    db 0
+    db 0
+    db 0
+    db 200
+    db 0
+    db 0
+    db 0
+    db 178
+    db 254
+    db 56
+    db 255
+    db 0
+    db 0
+    db 78
+    db 1
+    db 1
+    db 11
+    db 1
+    db 0
+    db 0
+    db 13
+    db 0
+    db 0
+    db 50
+    db 20
+    db 0
+    db 0
+    db 0
+    db 15
+    db 1
+    db 4
+    db 8
+    db 0
+    db 0
+    db 13
+    db 0
+    db 1
+    db 50
+    db 20
+    db 0
+    db 0
+    db 0
+    db 15
+    db 1
+    db 2
+    db 1
+    db 0
+    db 0
+    db 2
+    db 0
+    db 0
+    db 190
+    db 12
+    db 0
+    db 0
+    db 0
+    db 0
+    db 1
+    db 4
+    db 3
+    db 0
+    db 0
+    db 2
+    db 0
+    db 1
+    db 190
+    db 12
+    db 0
+    db 0
+    db 0
+    db 0
+    db 1
+    db 1
+    db 2
+    db 0
+    db 0
+    db 2
+    db 0
+    db 2
+    db 190
+    db 12
+    db 0
+    db 0
+    db 0
+    db 0
+    db 1
+    db 3
+    db 4
+    db 0
+    db 0
+    db 2
+    db 0
+    db 3
+    db 190
+    db 12
+    db 0
+    db 0
+    db 0
+    db 0
+    db 1
+    db 2
+    db 1
+    db 0
+    db 0
+    db 2
+    db 0
+    db 0
+    db 148
+    db 12
+    db 0
+    db 0
+    db 0
+    db 0
+    db 1
+    db 3
+    db 4
+    db 0
+    db 0
+    db 2
+    db 0
+    db 3
+    db 148
+    db 12
+    db 0
+    db 0
+    db 0
+    db 0
+    db 1
+    db 2
+    db 1
+    db 0
+    db 0
+    db 2
+    db 0
+    db 0
+    db 232
+    db 12
+    db 0
+    db 0
+    db 255
+    db 0
+    db 1
+    db 3
+    db 4
+    db 0
+    db 0
+    db 2
+    db 0
+    db 3
+    db 232
+    db 12
+    db 0
+    db 0
+    db 255
+    db 0
+    db 2
+    db 1
+    db 2
+    db 0
+    db 0
+    db 2
+    db 0
+    db 2
+    db 90
+    db 13
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 3
+    db 4
+    db 0
+    db 0
+    db 2
+    db 0
+    db 3
+    db 90
+    db 13
+    db 0
+    db 0
+    db 0
+    db 0
+    db 1
+    db 3
+    db 2
+    db 0
+    db 0
+    db 5
+    db 0
+    db 3
+    db 240
+    db 13
+    db 0
+    db 0
+    db 1
+    db 3
+    db 1
+    db 2
+    db 4
+    db 0
+    db 0
+    db 5
+    db 0
+    db 0
+    db 240
+    db 13
+    db 0
+    db 0
+    db 1
+    db 3
+    db 1
+    db 1
+    db 3
+    db 0
+    db 0
+    db 5
+    db 0
+    db 2
+    db 240
+    db 13
+    db 0
+    db 0
+    db 1
+    db 3
+    db 1
+    db 4
+    db 1
+    db 0
+    db 0
+    db 5
+    db 0
+    db 1
+    db 240
+    db 13
+    db 0
+    db 0
+    db 1
+    db 3
+    db 1
+    db 8
+    db 11
+    db 0
+    db 0
+    db 17
+    db 0
+    db 3
+    db 116
+    db 14
+    db 0
+    db 0
+    db 1
+    db 6
+    db 1
+    db 12
+    db 4
+    db 0
+    db 0
+    db 17
+    db 0
+    db 0
+    db 116
+    db 14
+    db 0
+    db 0
+    db 1
+    db 6
+    db 1
+    db 1
+    db 9
+    db 0
+    db 0
+    db 17
+    db 0
+    db 2
+    db 116
+    db 14
+    db 0
+    db 0
+    db 1
+    db 6
+    db 1
+    db 6
+    db 5
+    db 0
+    db 0
+    db 17
+    db 0
+    db 1
+    db 116
+    db 14
+    db 0
+    db 0
+    db 1
+    db 6
+    db 1
+    db 1
+    db 2
+    db 1
+    db 1
+    db 2
+    db 0
+    db 2
+    db 24
+    db 16
+    db 0
+    db 0
+    db 0
+    db 0
+    db 1
+    db 3
+    db 4
+    db 1
+    db 1
+    db 2
+    db 0
+    db 3
+    db 24
+    db 16
+    db 0
+    db 0
+    db 0
+    db 0
+    db 2
+    db 1
+    db 2
+    db 1
+    db 1
+    db 2
+    db 0
+    db 2
+    db 66
+    db 16
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 3
+    db 4
+    db 0
+    db 0
+    db 2
+    db 0
+    db 3
+    db 90
+    db 13
+    db 0
+    db 0
+    db 0
+    db 0
+    db 2
+    db 3
+    db 4
+    db 1
+    db 1
+    db 2
+    db 0
+    db 3
+    db 66
+    db 16
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 1
+    db 2
+    db 0
+    db 0
+    db 2
+    db 0
+    db 2
+    db 90
+    db 13
+    db 0
+    db 0
+    db 0
+    db 0
+    db 1
+    db 8
+    db 11
+    db 1
+    db 1
+    db 17
+    db 0
+    db 3
+    db 108
+    db 16
+    db 0
+    db 0
+    db 255
+    db 6
+    db 1
+    db 12
+    db 4
+    db 1
+    db 1
+    db 17
+    db 0
+    db 0
+    db 108
+    db 16
+    db 0
+    db 0
+    db 255
+    db 6
+    db 1
+    db 1
+    db 9
+    db 1
+    db 1
+    db 17
+    db 0
+    db 2
+    db 108
+    db 16
+    db 0
+    db 0
+    db 255
+    db 6
+    db 1
+    db 6
+    db 5
+    db 1
+    db 1
+    db 17
+    db 0
+    db 1
+    db 108
+    db 16
+    db 0
+    db 0
+    db 255
+    db 6
+    db 1
+    db 1
+    db 2
+    db 0
+    db 0
+    db 2
+    db 0
+    db 2
+    db 226
+    db 18
+    db 0
+    db 0
+    db 0
+    db 0
+    db 1
+    db 3
+    db 4
+    db 0
+    db 0
+    db 2
+    db 0
+    db 3
+    db 226
+    db 18
+    db 0
+    db 0
+    db 0
+    db 0
+    db 1
+    db 2
+    db 1
+    db 0
+    db 0
+    db 2
+    db 0
+    db 0
+    db 226
+    db 18
+    db 0
+    db 0
+    db 0
+    db 0
+    db 1
+    db 4
+    db 3
+    db 0
+    db 0
+    db 2
+    db 0
+    db 1
+    db 226
+    db 18
+    db 0
+    db 0
+    db 0
+    db 0
+    db 1
+    db 1
+    db 2
+    db 0
+    db 1
+    db 2
+    db 0
+    db 2
+    db 226
+    db 18
+    db 0
+    db 0
+    db 0
+    db 10
+    db 1
+    db 2
+    db 1
+    db 0
+    db 1
+    db 2
+    db 0
+    db 0
+    db 226
+    db 18
+    db 0
+    db 0
+    db 0
+    db 10
+    db 1
+    db 3
+    db 4
+    db 0
+    db 1
+    db 2
+    db 0
+    db 3
+    db 226
+    db 18
+    db 0
+    db 0
+    db 0
+    db 10
+    db 1
+    db 4
+    db 3
+    db 0
+    db 1
+    db 2
+    db 0
+    db 1
+    db 226
+    db 18
+    db 0
+    db 0
+    db 0
+    db 10
+    db 1
+    db 1
+    db 2
+    db 0
+    db 1
+    db 2
+    db 0
+    db 2
+    db 24
+    db 16
+    db 0
+    db 0
+    db 0
+    db 10
+    db 1
+    db 2
+    db 1
+    db 0
+    db 1
+    db 2
+    db 0
+    db 0
+    db 24
+    db 16
+    db 0
+    db 0
+    db 0
+    db 10
+    db 1
+    db 3
+    db 4
+    db 0
+    db 1
+    db 2
+    db 0
+    db 3
+    db 24
+    db 16
+    db 0
+    db 0
+    db 0
+    db 10
+    db 1
+    db 4
+    db 3
+    db 0
+    db 1
+    db 2
+    db 0
+    db 1
+    db 24
+    db 16
+    db 0
+    db 0
+    db 0
+    db 10
+    db 1
+    db 1
+    db 2
+    db 0
+    db 2
+    db 2
+    db 0
+    db 2
+    db 52
+    db 21
+    db 0
+    db 0
+    db 0
+    db 0
+    db 1
+    db 3
+    db 4
+    db 0
+    db 3
+    db 2
+    db 0
+    db 3
+    db 52
+    db 21
+    db 0
+    db 0
+    db 0
+    db 0
+    db 1
+    db 2
+    db 1
+    db 0
+    db 3
+    db 2
+    db 0
+    db 0
+    db 52
+    db 21
+    db 0
+    db 0
+    db 0
+    db 0
+    db 1
+    db 4
+    db 3
+    db 0
+    db 2
+    db 2
+    db 0
+    db 1
+    db 52
+    db 21
+    db 0
+    db 0
+    db 0
+    db 0
+    db 1
+    db 1
+    db 2
+    db 0
+    db 3
+    db 2
+    db 0
+    db 2
+    db 10
+    db 21
+    db 0
+    db 0
+    db 0
+    db 0
+    db 1
+    db 3
+    db 4
+    db 0
+    db 2
+    db 2
+    db 0
+    db 3
+    db 10
+    db 21
+    db 0
+    db 0
+    db 0
+    db 0
+    db 1
+    db 2
+    db 1
+    db 0
+    db 2
+    db 2
+    db 0
+    db 0
+    db 10
+    db 21
+    db 0
+    db 0
+    db 0
+    db 0
+    db 1
+    db 4
+    db 3
+    db 0
+    db 3
+    db 2
+    db 0
+    db 1
+    db 10
+    db 21
+    db 0
+    db 0
+    db 0
+    db 0
+    db 1
+    db 2
+    db 1
+    db 2
+    db 2
+    db 2
+    db 0
+    db 0
+    db 224
+    db 20
+    db 0
+    db 0
+    db 0
+    db 0
+    db 1
+    db 4
+    db 3
+    db 3
+    db 3
+    db 2
+    db 0
+    db 1
+    db 224
+    db 20
+    db 0
+    db 0
+    db 0
+    db 0
+    db 1
+    db 1
+    db 2
+    db 3
+    db 3
+    db 2
+    db 0
+    db 2
+    db 224
+    db 20
+    db 0
+    db 0
+    db 0
+    db 0
+    db 1
+    db 3
+    db 4
+    db 2
+    db 2
+    db 2
+    db 0
+    db 3
+    db 224
+    db 20
+    db 0
+    db 0
+    db 0
+    db 0
+    db 1
+    db 8
+    db 11
+    db 2
+    db 3
+    db 17
+    db 0
+    db 3
+    db 94
+    db 21
+    db 0
+    db 0
+    db 255
+    db 9
+    db 1
+    db 12
+    db 4
+    db 2
+    db 2
+    db 17
+    db 0
+    db 0
+    db 94
+    db 21
+    db 0
+    db 0
+    db 255
+    db 9
+    db 1
+    db 1
+    db 9
+    db 3
+    db 3
+    db 17
+    db 0
+    db 2
+    db 94
+    db 21
+    db 0
+    db 0
+    db 255
+    db 9
+    db 1
+    db 6
+    db 5
+    db 3
+    db 2
+    db 17
+    db 0
+    db 1
+    db 94
+    db 21
+    db 0
+    db 0
+    db 255
+    db 9
+    db 1
+    db 11
+    db 1
+    db 0
+    db 0
+    db 23
+    db 0
+    db 0
+    db 12
+    db 19
+    db 0
+    db 0
+    db 0
+    db 14
+    db 1
+    db 4
+    db 8
+    db 0
+    db 0
+    db 23
+    db 0
+    db 1
+    db 12
+    db 19
+    db 0
+    db 0
+    db 0
+    db 14
+    db 1
+    db 2
+    db 1
+    db 4
+    db 4
+    db 2
+    db 0
+    db 0
+    db 48
+    db 13
+    db 0
+    db 0
+    db 0
+    db 15
+    db 1
+    db 3
+    db 4
+    db 4
+    db 4
+    db 2
+    db 0
+    db 3
+    db 48
+    db 13
+    db 0
+    db 0
+    db 0
+    db 15
+    db 1
+    db 2
+    db 1
+    db 4
+    db 4
+    db 3
+    db 0
+    db 0
+    db 210
+    db 25
+    db 0
+    db 0
+    db 0
+    db 15
+    db 1
+    db 3
+    db 4
+    db 4
+    db 4
+    db 3
+    db 0
+    db 3
+    db 210
+    db 25
+    db 0
+    db 0
+    db 0
+    db 15
+    db 1
+    db 1
+    db 2
+    db 0
+    db 4
+    db 2
+    db 0
+    db 2
+    db 6
+    db 13
+    db 0
+    db 0
+    db 0
+    db 15
+    db 1
+    db 2
+    db 1
+    db 0
+    db 4
+    db 2
+    db 0
+    db 0
+    db 6
+    db 13
+    db 0
+    db 0
+    db 0
+    db 15
+    db 1
+    db 3
+    db 4
+    db 0
+    db 4
+    db 2
+    db 0
+    db 3
+    db 6
+    db 13
+    db 0
+    db 0
+    db 0
+    db 15
+    db 1
+    db 4
+    db 3
+    db 0
+    db 4
+    db 2
+    db 0
+    db 1
+    db 6
+    db 13
+    db 0
+    db 0
+    db 0
+    db 15
+    db 1
+    db 11
+    db 5
+    db 0
+    db 0
+    db 17
+    db 0
+    db 0
+    db 16
+    db 18
+    db 0
+    db 0
+    db 255
+    db 13
+    db 1
+    db 6
+    db 8
+    db 0
+    db 0
+    db 17
+    db 0
+    db 1
+    db 62
+    db 17
+    db 0
+    db 0
+    db 255
+    db 13
+    db 1
+    db 12
+    db 1
+    db 0
+    db 0
+    db 17
+    db 0
+    db 0
+    db 62
+    db 17
+    db 0
+    db 0
+    db 255
+    db 13
+    db 1
+    db 4
+    db 9
+    db 0
+    db 0
+    db 17
+    db 0
+    db 1
+    db 16
+    db 18
+    db 0
+    db 0
+    db 255
+    db 13
+    db 2
+    db 2
+    db 1
+    db 0
+    db 0
+    db 2
+    db 0
+    db 0
+    db 148
+    db 12
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 2
+    db 4
+    db 0
+    db 0
+    db 5
+    db 0
+    db 0
+    db 240
+    db 13
+    db 0
+    db 0
+    db 1
+    db 3
+    db 2
+    db 3
+    db 4
+    db 0
+    db 0
+    db 2
+    db 0
+    db 3
+    db 148
+    db 12
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 3
+    db 2
+    db 0
+    db 0
+    db 5
+    db 0
+    db 3
+    db 240
+    db 13
+    db 0
+    db 0
+    db 1
+    db 3
+    db 2
+    db 1
+    db 2
+    db 0
+    db 0
+    db 2
+    db 0
+    db 2
+    db 148
+    db 12
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 1
+    db 3
+    db 0
+    db 0
+    db 5
+    db 0
+    db 2
+    db 240
+    db 13
+    db 0
+    db 0
+    db 1
+    db 3
+    db 2
+    db 4
+    db 3
+    db 0
+    db 0
+    db 2
+    db 0
+    db 1
+    db 148
+    db 12
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 4
+    db 1
+    db 0
+    db 0
+    db 5
+    db 0
+    db 1
+    db 240
+    db 13
+    db 0
+    db 0
+    db 1
+    db 3
+    db 2
+    db 2
+    db 1
+    db 0
+    db 0
+    db 2
+    db 0
+    db 0
+    db 148
+    db 12
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 2
+    db 3
+    db 0
+    db 0
+    db 5
+    db 0
+    db 0
+    db 50
+    db 14
+    db 0
+    db 0
+    db 2
+    db 3
+    db 2
+    db 3
+    db 4
+    db 0
+    db 0
+    db 2
+    db 0
+    db 3
+    db 148
+    db 12
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 3
+    db 1
+    db 0
+    db 0
+    db 5
+    db 0
+    db 3
+    db 50
+    db 14
+    db 0
+    db 0
+    db 2
+    db 3
+    db 2
+    db 1
+    db 2
+    db 0
+    db 0
+    db 2
+    db 0
+    db 2
+    db 148
+    db 12
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 1
+    db 4
+    db 0
+    db 0
+    db 5
+    db 0
+    db 2
+    db 50
+    db 14
+    db 0
+    db 0
+    db 2
+    db 3
+    db 2
+    db 4
+    db 3
+    db 0
+    db 0
+    db 2
+    db 0
+    db 1
+    db 148
+    db 12
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 4
+    db 2
+    db 0
+    db 0
+    db 5
+    db 0
+    db 1
+    db 50
+    db 14
+    db 0
+    db 0
+    db 2
+    db 3
+    db 2
+    db 12
+    db 5
+    db 0
+    db 0
+    db 3
+    db 0
+    db 0
+    db 132
+    db 13
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 12
+    db 4
+    db 0
+    db 0
+    db 17
+    db 0
+    db 0
+    db 116
+    db 14
+    db 0
+    db 0
+    db 1
+    db 6
+    db 2
+    db 8
+    db 4
+    db 0
+    db 0
+    db 3
+    db 0
+    db 3
+    db 132
+    db 13
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 8
+    db 11
+    db 0
+    db 0
+    db 17
+    db 0
+    db 3
+    db 116
+    db 14
+    db 0
+    db 0
+    db 1
+    db 6
+    db 2
+    db 1
+    db 11
+    db 0
+    db 0
+    db 3
+    db 0
+    db 2
+    db 132
+    db 13
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 1
+    db 9
+    db 0
+    db 0
+    db 17
+    db 0
+    db 2
+    db 116
+    db 14
+    db 0
+    db 0
+    db 1
+    db 6
+    db 2
+    db 6
+    db 9
+    db 0
+    db 0
+    db 3
+    db 0
+    db 1
+    db 132
+    db 13
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 6
+    db 5
+    db 0
+    db 0
+    db 17
+    db 0
+    db 1
+    db 116
+    db 14
+    db 0
+    db 0
+    db 1
+    db 6
+    db 2
+    db 11
+    db 1
+    db 0
+    db 0
+    db 3
+    db 0
+    db 0
+    db 186
+    db 13
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 11
+    db 8
+    db 0
+    db 0
+    db 17
+    db 0
+    db 0
+    db 70
+    db 15
+    db 0
+    db 0
+    db 2
+    db 6
+    db 2
+    db 9
+    db 6
+    db 0
+    db 0
+    db 3
+    db 0
+    db 3
+    db 186
+    db 13
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 9
+    db 1
+    db 0
+    db 0
+    db 17
+    db 0
+    db 3
+    db 70
+    db 15
+    db 0
+    db 0
+    db 2
+    db 6
+    db 2
+    db 5
+    db 12
+    db 0
+    db 0
+    db 3
+    db 0
+    db 2
+    db 186
+    db 13
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 5
+    db 6
+    db 0
+    db 0
+    db 17
+    db 0
+    db 2
+    db 70
+    db 15
+    db 0
+    db 0
+    db 2
+    db 6
+    db 2
+    db 4
+    db 8
+    db 0
+    db 0
+    db 3
+    db 0
+    db 1
+    db 186
+    db 13
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 4
+    db 12
+    db 0
+    db 0
+    db 17
+    db 0
+    db 1
+    db 70
+    db 15
+    db 0
+    db 0
+    db 2
+    db 6
+    db 1
+    db 2
+    db 1
+    db 5
+    db 5
+    db 2
+    db 0
+    db 0
+    db 72
+    db 25
+    db 114
+    db 25
+    db 0
+    db 0
+    db 1
+    db 3
+    db 4
+    db 5
+    db 5
+    db 2
+    db 0
+    db 3
+    db 72
+    db 25
+    db 114
+    db 25
+    db 0
+    db 0
+    db 1
+    db 1
+    db 2
+    db 0
+    db 5
+    db 3
+    db 0
+    db 2
+    db 244
+    db 24
+    db 30
+    db 25
+    db 0
+    db 13
+    db 1
+    db 2
+    db 1
+    db 0
+    db 5
+    db 3
+    db 0
+    db 0
+    db 244
+    db 24
+    db 30
+    db 25
+    db 0
+    db 13
+    db 1
+    db 3
+    db 4
+    db 0
+    db 5
+    db 3
+    db 0
+    db 3
+    db 244
+    db 24
+    db 30
+    db 25
+    db 0
+    db 13
+    db 1
+    db 4
+    db 3
+    db 0
+    db 5
+    db 3
+    db 0
+    db 1
+    db 244
+    db 24
+    db 30
+    db 25
+    db 0
+    db 13
+    db 1
+    db 2
+    db 1
+    db 0
+    db 0
+    db 3
+    db 0
+    db 0
+    db 156
+    db 25
+    db 0
+    db 0
+    db 0
+    db 11
+    db 1
+    db 3
+    db 4
+    db 0
+    db 0
+    db 3
+    db 0
+    db 3
+    db 156
+    db 25
+    db 0
+    db 0
+    db 0
+    db 11
+    db 1
+    db 11
+    db 1
+    db 0
+    db 1
+    db 29
+    db 0
+    db 0
+    db 48
+    db 22
+    db 0
+    db 0
+    db 0
+    db 12
+    db 1
+    db 9
+    db 6
+    db 0
+    db 1
+    db 29
+    db 0
+    db 3
+    db 48
+    db 22
+    db 0
+    db 0
+    db 0
+    db 12
+    db 1
+    db 5
+    db 12
+    db 0
+    db 1
+    db 29
+    db 0
+    db 2
+    db 48
+    db 22
+    db 0
+    db 0
+    db 0
+    db 12
+    db 1
+    db 4
+    db 8
+    db 0
+    db 1
+    db 29
+    db 0
+    db 1
+    db 48
+    db 22
+    db 0
+    db 0
+    db 0
+    db 12
+    db 1
+    db 12
+    db 5
+    db 0
+    db 1
+    db 29
+    db 0
+    db 0
+    db 146
+    db 23
+    db 0
+    db 0
+    db 0
+    db 12
+    db 1
+    db 8
+    db 4
+    db 0
+    db 1
+    db 29
+    db 0
+    db 3
+    db 146
+    db 23
+    db 0
+    db 0
+    db 0
+    db 12
+    db 1
+    db 1
+    db 11
+    db 0
+    db 1
+    db 29
+    db 0
+    db 2
+    db 146
+    db 23
+    db 0
+    db 0
+    db 0
+    db 12
+    db 1
+    db 6
+    db 9
+    db 0
+    db 1
+    db 29
+    db 0
+    db 1
+    db 146
+    db 23
+    db 0
+    db 0
+    db 0
+    db 12
+    db 0
+    db 0
+    db 0
+    db 0
+    db 224
+    db 120
+    db 224
+    db 120
+    db 0
+    db 0
+    db 0
+    db 0
+    db 64
+    db 0
+    db 36
+    db 26
+    db 0
+    db 0
+    db 84
+    db 119
+    db 106
+    db 119
+    db 4
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 32
+    db 129
+    db 76
+    db 129
+    db 0
+    db 0
+    db 0
+    db 0
+    db 64
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 54
+    db 129
+    db 98
+    db 129
+    db 0
+    db 0
+    db 0
+    db 0
+    db 64
+    db 0
+    db 92
+    db 26
+    db 0
+    db 0
+    db 224
+    db 120
+    db 246
+    db 120
+    db 0
+    db 0
+    db 1
+    db 0
+    db 1
+    db 0
+    db 106
+    db 26
+    db 0
+    db 1
+    db 224
+    db 120
+    db 246
+    db 120
+    db 0
+    db 0
+    db 1
+    db 0
+    db 1
+    db 0
+    db 176
+    db 26
+    db 0
+    db 3
+    db 144
+    db 121
+    db 166
+    db 121
+    db 0
+    db 0
+    db 1
+    db 0
+    db 2
+    db 0
+    db 190
+    db 26
+    db 0
+    db 0
+    db 144
+    db 121
+    db 166
+    db 121
+    db 0
+    db 0
+    db 1
+    db 0
+    db 2
+    db 0
+    db 204
+    db 26
+    db 0
+    db 2
+    db 144
+    db 121
+    db 166
+    db 121
+    db 0
+    db 0
+    db 1
+    db 0
+    db 2
+    db 0
+    db 218
+    db 26
+    db 0
+    db 1
+    db 144
+    db 121
+    db 166
+    db 121
+    db 0
+    db 0
+    db 1
+    db 0
+    db 2
+    db 0
+    db 232
+    db 26
+    db 0
+    db 3
+    db 12
+    db 121
+    db 34
+    db 121
+    db 0
+    db 0
+    db 1
+    db 3
+    db 3
+    db 0
+    db 246
+    db 26
+    db 0
+    db 0
+    db 12
+    db 121
+    db 34
+    db 121
+    db 0
+    db 0
+    db 1
+    db 3
+    db 3
+    db 0
+    db 4
+    db 27
+    db 0
+    db 2
+    db 12
+    db 121
+    db 34
+    db 121
+    db 0
+    db 0
+    db 1
+    db 3
+    db 3
+    db 0
+    db 18
+    db 27
+    db 0
+    db 1
+    db 12
+    db 121
+    db 34
+    db 121
+    db 0
+    db 0
+    db 1
+    db 3
+    db 3
+    db 0
+    db 92
+    db 26
+    db 0
+    db 0
+    db 224
+    db 120
+    db 246
+    db 120
+    db 0
+    db 1
+    db 1
+    db 0
+    db 1
+    db 0
+    db 106
+    db 26
+    db 0
+    db 1
+    db 224
+    db 120
+    db 246
+    db 120
+    db 0
+    db 1
+    db 1
+    db 0
+    db 1
+    db 0
+    db 176
+    db 26
+    db 0
+    db 3
+    db 144
+    db 121
+    db 166
+    db 121
+    db 0
+    db 1
+    db 1
+    db 0
+    db 2
+    db 0
+    db 190
+    db 26
+    db 0
+    db 0
+    db 144
+    db 121
+    db 166
+    db 121
+    db 0
+    db 1
+    db 1
+    db 0
+    db 2
+    db 0
+    db 204
+    db 26
+    db 0
+    db 2
+    db 144
+    db 121
+    db 166
+    db 121
+    db 0
+    db 1
+    db 1
+    db 0
+    db 2
+    db 0
+    db 218
+    db 26
+    db 0
+    db 1
+    db 144
+    db 121
+    db 166
+    db 121
+    db 0
+    db 1
+    db 1
+    db 0
+    db 2
+    db 0
+    db 232
+    db 26
+    db 0
+    db 3
+    db 12
+    db 121
+    db 34
+    db 121
+    db 0
+    db 1
+    db 1
+    db 3
+    db 3
+    db 0
+    db 246
+    db 26
+    db 0
+    db 0
+    db 12
+    db 121
+    db 34
+    db 121
+    db 0
+    db 1
+    db 1
+    db 3
+    db 3
+    db 0
+    db 4
+    db 27
+    db 0
+    db 2
+    db 12
+    db 121
+    db 34
+    db 121
+    db 0
+    db 1
+    db 1
+    db 3
+    db 3
+    db 0
+    db 18
+    db 27
+    db 0
+    db 1
+    db 12
+    db 121
+    db 34
+    db 121
+    db 0
+    db 1
+    db 1
+    db 3
+    db 3
+    db 0
+    db 92
+    db 26
+    db 0
+    db 0
+    db 224
+    db 120
+    db 246
+    db 120
+    db 0
+    db 2
+    db 1
+    db 0
+    db 1
+    db 0
+    db 106
+    db 26
+    db 0
+    db 1
+    db 224
+    db 120
+    db 246
+    db 120
+    db 0
+    db 2
+    db 1
+    db 0
+    db 1
+    db 0
+    db 176
+    db 26
+    db 0
+    db 3
+    db 144
+    db 121
+    db 166
+    db 121
+    db 0
+    db 2
+    db 1
+    db 0
+    db 2
+    db 0
+    db 190
+    db 26
+    db 0
+    db 0
+    db 144
+    db 121
+    db 166
+    db 121
+    db 0
+    db 2
+    db 1
+    db 0
+    db 2
+    db 0
+    db 204
+    db 26
+    db 0
+    db 2
+    db 144
+    db 121
+    db 166
+    db 121
+    db 0
+    db 2
+    db 1
+    db 0
+    db 2
+    db 0
+    db 218
+    db 26
+    db 0
+    db 1
+    db 144
+    db 121
+    db 166
+    db 121
+    db 0
+    db 2
+    db 1
+    db 0
+    db 2
+    db 0
+    db 232
+    db 26
+    db 0
+    db 3
+    db 12
+    db 121
+    db 34
+    db 121
+    db 0
+    db 2
+    db 1
+    db 3
+    db 3
+    db 0
+    db 246
+    db 26
+    db 0
+    db 0
+    db 12
+    db 121
+    db 34
+    db 121
+    db 0
+    db 2
+    db 1
+    db 3
+    db 3
+    db 0
+    db 4
+    db 27
+    db 0
+    db 2
+    db 12
+    db 121
+    db 34
+    db 121
+    db 0
+    db 2
+    db 1
+    db 3
+    db 3
+    db 0
+    db 18
+    db 27
+    db 0
+    db 1
+    db 12
+    db 121
+    db 34
+    db 121
+    db 0
+    db 2
+    db 1
+    db 3
+    db 3
+    db 0
+    db 32
+    db 27
+    db 0
+    db 0
+    db 40
+    db 119
+    db 62
+    db 119
+    db 0
+    db 0
+    db 0
+    db 0
+    db 18
+    db 0
+    db 46
+    db 27
+    db 0
+    db 3
+    db 40
+    db 119
+    db 62
+    db 119
+    db 0
+    db 0
+    db 0
+    db 0
+    db 18
+    db 0
+    db 14
+    db 28
+    db 0
+    db 1
+    db 92
+    db 120
+    db 114
+    db 120
+    db 0
+    db 0
+    db 0
+    db 0
+    db 16
+    db 0
+    db 0
+    db 28
+    db 0
+    db 3
+    db 92
+    db 120
+    db 114
+    db 120
+    db 0
+    db 0
+    db 0
+    db 0
+    db 16
+    db 0
+    db 242
+    db 27
+    db 0
+    db 0
+    db 92
+    db 120
+    db 114
+    db 120
+    db 0
+    db 0
+    db 0
+    db 0
+    db 16
+    db 0
+    db 228
+    db 27
+    db 0
+    db 2
+    db 92
+    db 120
+    db 114
+    db 120
+    db 0
+    db 0
+    db 0
+    db 0
+    db 16
+    db 0
+    db 112
+    db 28
+    db 0
+    db 0
+    db 136
+    db 120
+    db 158
+    db 120
+    db 0
+    db 0
+    db 0
+    db 0
+    db 24
+    db 0
+    db 126
+    db 28
+    db 0
+    db 1
+    db 136
+    db 120
+    db 158
+    db 120
+    db 0
+    db 0
+    db 0
+    db 0
+    db 24
+    db 0
+    db 84
+    db 28
+    db 0
+    db 2
+    db 136
+    db 120
+    db 158
+    db 120
+    db 0
+    db 0
+    db 0
+    db 0
+    db 24
+    db 0
+    db 98
+    db 28
+    db 0
+    db 3
+    db 136
+    db 120
+    db 158
+    db 120
+    db 0
+    db 0
+    db 0
+    db 0
+    db 24
+    db 0
+    db 168
+    db 28
+    db 0
+    db 0
+    db 172
+    db 119
+    db 194
+    db 119
+    db 0
+    db 0
+    db 0
+    db 0
+    db 23
+    db 0
+    db 182
+    db 28
+    db 0
+    db 1
+    db 172
+    db 119
+    db 194
+    db 119
+    db 0
+    db 0
+    db 0
+    db 0
+    db 23
+    db 0
+    db 140
+    db 28
+    db 0
+    db 2
+    db 172
+    db 119
+    db 194
+    db 119
+    db 0
+    db 0
+    db 0
+    db 0
+    db 23
+    db 0
+    db 154
+    db 28
+    db 0
+    db 3
+    db 172
+    db 119
+    db 194
+    db 119
+    db 0
+    db 0
+    db 0
+    db 0
+    db 23
+    db 0
+    db 224
+    db 28
+    db 0
+    db 2
+    db 116
+    db 123
+    db 138
+    db 123
+    db 0
+    db 0
+    db 0
+    db 0
+    db 25
+    db 0
+    db 196
+    db 28
+    db 0
+    db 0
+    db 116
+    db 123
+    db 138
+    db 123
+    db 0
+    db 0
+    db 0
+    db 0
+    db 25
+    db 0
+    db 238
+    db 28
+    db 0
+    db 3
+    db 116
+    db 123
+    db 138
+    db 123
+    db 0
+    db 0
+    db 0
+    db 0
+    db 25
+    db 0
+    db 210
+    db 28
+    db 0
+    db 1
+    db 116
+    db 123
+    db 138
+    db 123
+    db 0
+    db 0
+    db 0
+    db 0
+    db 25
+    db 0
+    db 252
+    db 28
+    db 0
+    db 3
+    db 164
+    db 118
+    db 186
+    db 118
+    db 0
+    db 0
+    db 0
+    db 3
+    db 26
+    db 0
+    db 10
+    db 29
+    db 0
+    db 0
+    db 164
+    db 118
+    db 186
+    db 118
+    db 0
+    db 0
+    db 0
+    db 3
+    db 26
+    db 0
+    db 24
+    db 29
+    db 0
+    db 2
+    db 164
+    db 118
+    db 186
+    db 118
+    db 0
+    db 0
+    db 0
+    db 3
+    db 26
+    db 0
+    db 38
+    db 29
+    db 0
+    db 1
+    db 164
+    db 118
+    db 186
+    db 118
+    db 0
+    db 0
+    db 0
+    db 3
+    db 26
+    db 0
+    db 14
+    db 28
+    db 0
+    db 1
+    db 120
+    db 118
+    db 142
+    db 118
+    db 0
+    db 0
+    db 0
+    db 0
+    db 16
+    db 0
+    db 0
+    db 28
+    db 0
+    db 3
+    db 120
+    db 118
+    db 142
+    db 118
+    db 0
+    db 0
+    db 0
+    db 0
+    db 16
+    db 0
+    db 242
+    db 27
+    db 0
+    db 0
+    db 120
+    db 118
+    db 142
+    db 118
+    db 0
+    db 0
+    db 0
+    db 0
+    db 16
+    db 0
+    db 228
+    db 27
+    db 0
+    db 2
+    db 120
+    db 118
+    db 142
+    db 118
+    db 0
+    db 0
+    db 0
+    db 0
+    db 16
+    db 0
+    db 192
+    db 29
+    db 0
+    db 0
+    db 252
+    db 118
+    db 18
+    db 119
+    db 0
+    db 0
+    db 1
+    db 3
+    db 5
+    db 0
+    db 206
+    db 29
+    db 0
+    db 1
+    db 208
+    db 118
+    db 230
+    db 118
+    db 0
+    db 0
+    db 1
+    db 3
+    db 4
+    db 0
+    db 220
+    db 29
+    db 0
+    db 0
+    db 208
+    db 118
+    db 230
+    db 118
+    db 0
+    db 0
+    db 1
+    db 3
+    db 4
+    db 0
+    db 234
+    db 29
+    db 0
+    db 1
+    db 252
+    db 118
+    db 18
+    db 119
+    db 0
+    db 0
+    db 1
+    db 3
+    db 5
+    db 0
+    db 52
+    db 29
+    db 0
+    db 0
+    db 216
+    db 119
+    db 238
+    db 119
+    db 206
+    db 0
+    db 0
+    db 1
+    db 27
+    db 0
+    db 66
+    db 29
+    db 0
+    db 1
+    db 216
+    db 119
+    db 238
+    db 119
+    db 207
+    db 0
+    db 0
+    db 2
+    db 27
+    db 0
+    db 120
+    db 26
+    db 0
+    db 0
+    db 100
+    db 121
+    db 122
+    db 121
+    db 208
+    db 0
+    db 0
+    db 0
+    db 28
+    db 0
+    db 134
+    db 26
+    db 0
+    db 3
+    db 100
+    db 121
+    db 122
+    db 121
+    db 209
+    db 0
+    db 0
+    db 0
+    db 28
+    db 0
+    db 80
+    db 29
+    db 0
+    db 0
+    db 48
+    db 120
+    db 70
+    db 120
+    db 210
+    db 0
+    db 0
+    db 0
+    db 30
+    db 0
+    db 94
+    db 29
+    db 0
+    db 1
+    db 48
+    db 120
+    db 70
+    db 120
+    db 211
+    db 0
+    db 0
+    db 0
+    db 30
+    db 0
+    db 150
+    db 29
+    db 0
+    db 0
+    db 168
+    db 124
+    db 190
+    db 124
+    db 0
+    db 0
+    db 0
+    db 0
+    db 29
+    db 0
+    db 136
+    db 29
+    db 0
+    db 2
+    db 168
+    db 124
+    db 190
+    db 124
+    db 0
+    db 0
+    db 0
+    db 0
+    db 29
+    db 0
+    db 164
+    db 29
+    db 0
+    db 3
+    db 168
+    db 124
+    db 190
+    db 124
+    db 0
+    db 0
+    db 0
+    db 0
+    db 29
+    db 0
+    db 178
+    db 29
+    db 0
+    db 1
+    db 168
+    db 124
+    db 190
+    db 124
+    db 0
+    db 0
+    db 0
+    db 0
+    db 29
+    db 0
+    db 148
+    db 26
+    db 0
+    db 0
+    db 196
+    db 122
+    db 218
+    db 122
+    db 0
+    db 0
+    db 0
+    db 0
+    db 12
+    db 0
+    db 248
+    db 29
+    db 0
+    db 0
+    db 240
+    db 122
+    db 6
+    db 123
+    db 0
+    db 0
+    db 0
+    db 0
+    db 6
+    db 0
+    db 20
+    db 30
+    db 0
+    db 3
+    db 240
+    db 122
+    db 6
+    db 123
+    db 0
+    db 0
+    db 0
+    db 0
+    db 6
+    db 0
+    db 48
+    db 30
+    db 0
+    db 2
+    db 240
+    db 122
+    db 6
+    db 123
+    db 0
+    db 0
+    db 0
+    db 0
+    db 6
+    db 0
+    db 76
+    db 30
+    db 0
+    db 1
+    db 240
+    db 122
+    db 6
+    db 123
+    db 0
+    db 0
+    db 0
+    db 0
+    db 6
+    db 0
+    db 104
+    db 30
+    db 0
+    db 0
+    db 28
+    db 123
+    db 50
+    db 123
+    db 0
+    db 0
+    db 0
+    db 0
+    db 7
+    db 0
+    db 132
+    db 30
+    db 0
+    db 3
+    db 28
+    db 123
+    db 50
+    db 123
+    db 0
+    db 0
+    db 0
+    db 0
+    db 7
+    db 0
+    db 160
+    db 30
+    db 0
+    db 2
+    db 28
+    db 123
+    db 50
+    db 123
+    db 0
+    db 0
+    db 0
+    db 0
+    db 7
+    db 0
+    db 188
+    db 30
+    db 0
+    db 1
+    db 28
+    db 123
+    db 50
+    db 123
+    db 0
+    db 0
+    db 0
+    db 0
+    db 7
+    db 0
+    db 108
+    db 29
+    db 0
+    db 0
+    db 228
+    db 126
+    db 250
+    db 126
+    db 210
+    db 0
+    db 0
+    db 0
+    db 31
+    db 0
+    db 122
+    db 29
+    db 0
+    db 1
+    db 228
+    db 126
+    db 250
+    db 126
+    db 211
+    db 0
+    db 0
+    db 0
+    db 31
+    db 0
+    db 8
+    db 26
+    db 0
+    db 0
+    db 16
+    db 127
+    db 38
+    db 127
+    db 0
+    db 0
+    db 0
+    db 1
+    db 35
+    db 0
+    db 22
+    db 26
+    db 0
+    db 1
+    db 16
+    db 127
+    db 38
+    db 127
+    db 0
+    db 0
+    db 0
+    db 2
+    db 35
+    db 0
+    db 216
+    db 30
+    db 0
+    db 0
+    db 160
+    db 123
+    db 182
+    db 123
+    db 0
+    db 0
+    db 1
+    db 3
+    db 8
+    db 0
+    db 244
+    db 30
+    db 0
+    db 3
+    db 160
+    db 123
+    db 182
+    db 123
+    db 0
+    db 0
+    db 1
+    db 3
+    db 8
+    db 0
+    db 16
+    db 31
+    db 0
+    db 2
+    db 160
+    db 123
+    db 182
+    db 123
+    db 0
+    db 0
+    db 1
+    db 3
+    db 8
+    db 0
+    db 44
+    db 31
+    db 0
+    db 1
+    db 160
+    db 123
+    db 182
+    db 123
+    db 0
+    db 0
+    db 1
+    db 3
+    db 8
+    db 0
+    db 72
+    db 31
+    db 0
+    db 0
+    db 204
+    db 123
+    db 226
+    db 123
+    db 0
+    db 0
+    db 1
+    db 3
+    db 9
+    db 0
+    db 100
+    db 31
+    db 0
+    db 3
+    db 204
+    db 123
+    db 226
+    db 123
+    db 0
+    db 0
+    db 1
+    db 3
+    db 9
+    db 0
+    db 128
+    db 31
+    db 0
+    db 2
+    db 204
+    db 123
+    db 226
+    db 123
+    db 0
+    db 0
+    db 1
+    db 3
+    db 9
+    db 0
+    db 156
+    db 31
+    db 0
+    db 1
+    db 204
+    db 123
+    db 226
+    db 123
+    db 0
+    db 0
+    db 1
+    db 3
+    db 9
+    db 0
+    db 14
+    db 28
+    db 0
+    db 1
+    db 248
+    db 123
+    db 14
+    db 124
+    db 0
+    db 0
+    db 0
+    db 0
+    db 17
+    db 0
+    db 0
+    db 28
+    db 0
+    db 3
+    db 248
+    db 123
+    db 14
+    db 124
+    db 0
+    db 0
+    db 0
+    db 0
+    db 17
+    db 0
+    db 242
+    db 27
+    db 0
+    db 0
+    db 248
+    db 123
+    db 14
+    db 124
+    db 0
+    db 0
+    db 0
+    db 0
+    db 17
+    db 0
+    db 228
+    db 27
+    db 0
+    db 2
+    db 248
+    db 123
+    db 14
+    db 124
+    db 0
+    db 0
+    db 0
+    db 0
+    db 17
+    db 0
+    db 32
+    db 27
+    db 0
+    db 0
+    db 36
+    db 124
+    db 58
+    db 124
+    db 0
+    db 0
+    db 0
+    db 0
+    db 20
+    db 0
+    db 46
+    db 27
+    db 0
+    db 3
+    db 36
+    db 124
+    db 58
+    db 124
+    db 0
+    db 0
+    db 0
+    db 0
+    db 20
+    db 0
+    db 60
+    db 27
+    db 0
+    db 0
+    db 80
+    db 124
+    db 102
+    db 124
+    db 5
+    db 0
+    db 0
+    db 0
+    db 22
+    db 0
+    db 88
+    db 27
+    db 0
+    db 3
+    db 80
+    db 124
+    db 102
+    db 124
+    db 4
+    db 0
+    db 0
+    db 0
+    db 22
+    db 0
+    db 32
+    db 27
+    db 0
+    db 0
+    db 80
+    db 124
+    db 102
+    db 124
+    db 0
+    db 0
+    db 0
+    db 0
+    db 19
+    db 0
+    db 46
+    db 27
+    db 0
+    db 3
+    db 80
+    db 124
+    db 102
+    db 124
+    db 0
+    db 0
+    db 0
+    db 0
+    db 19
+    db 0
+    db 116
+    db 27
+    db 0
+    db 3
+    db 212
+    db 124
+    db 234
+    db 124
+    db 0
+    db 0
+    db 0
+    db 3
+    db 21
+    db 0
+    db 130
+    db 27
+    db 0
+    db 0
+    db 212
+    db 124
+    db 234
+    db 124
+    db 0
+    db 0
+    db 0
+    db 3
+    db 21
+    db 0
+    db 144
+    db 27
+    db 0
+    db 2
+    db 212
+    db 124
+    db 234
+    db 124
+    db 0
+    db 0
+    db 0
+    db 3
+    db 21
+    db 0
+    db 158
+    db 27
+    db 0
+    db 1
+    db 212
+    db 124
+    db 234
+    db 124
+    db 0
+    db 0
+    db 0
+    db 3
+    db 21
+    db 0
+    db 184
+    db 31
+    db 0
+    db 0
+    db 0
+    db 125
+    db 22
+    db 125
+    db 0
+    db 0
+    db 0
+    db 0
+    db 11
+    db 0
+    db 198
+    db 31
+    db 0
+    db 3
+    db 0
+    db 125
+    db 22
+    db 125
+    db 0
+    db 0
+    db 0
+    db 0
+    db 11
+    db 0
+    db 226
+    db 31
+    db 0
+    db 0
+    db 176
+    db 125
+    db 198
+    db 125
+    db 0
+    db 255
+    db 0
+    db 0
+    db 10
+    db 0
+    db 254
+    db 31
+    db 0
+    db 1
+    db 176
+    db 125
+    db 198
+    db 125
+    db 0
+    db 255
+    db 0
+    db 0
+    db 10
+    db 0
+    db 212
+    db 31
+    db 0
+    db 2
+    db 176
+    db 125
+    db 198
+    db 125
+    db 0
+    db 255
+    db 0
+    db 0
+    db 10
+    db 0
+    db 240
+    db 31
+    db 0
+    db 3
+    db 176
+    db 125
+    db 198
+    db 125
+    db 0
+    db 255
+    db 0
+    db 0
+    db 10
+    db 0
+    db 12
+    db 32
+    db 0
+    db 0
+    db 44
+    db 125
+    db 66
+    db 125
+    db 4
+    db 0
+    db 0
+    db 0
+    db 34
+    db 0
+    db 26
+    db 32
+    db 0
+    db 3
+    db 44
+    db 125
+    db 66
+    db 125
+    db 5
+    db 0
+    db 0
+    db 0
+    db 34
+    db 0
+    db 40
+    db 32
+    db 0
+    db 0
+    db 88
+    db 125
+    db 110
+    db 125
+    db 198
+    db 0
+    db 0
+    db 3
+    db 32
+    db 0
+    db 54
+    db 32
+    db 0
+    db 3
+    db 88
+    db 125
+    db 110
+    db 125
+    db 199
+    db 0
+    db 0
+    db 3
+    db 32
+    db 0
+    db 68
+    db 32
+    db 0
+    db 2
+    db 88
+    db 125
+    db 110
+    db 125
+    db 200
+    db 0
+    db 0
+    db 3
+    db 32
+    db 0
+    db 82
+    db 32
+    db 0
+    db 1
+    db 88
+    db 125
+    db 110
+    db 125
+    db 201
+    db 0
+    db 0
+    db 3
+    db 32
+    db 0
+    db 96
+    db 32
+    db 0
+    db 0
+    db 132
+    db 125
+    db 154
+    db 125
+    db 202
+    db 0
+    db 0
+    db 3
+    db 33
+    db 0
+    db 110
+    db 32
+    db 0
+    db 3
+    db 132
+    db 125
+    db 154
+    db 125
+    db 203
+    db 0
+    db 0
+    db 3
+    db 33
+    db 0
+    db 124
+    db 32
+    db 0
+    db 2
+    db 132
+    db 125
+    db 154
+    db 125
+    db 204
+    db 0
+    db 0
+    db 3
+    db 33
+    db 0
+    db 138
+    db 32
+    db 0
+    db 1
+    db 132
+    db 125
+    db 154
+    db 125
+    db 205
+    db 0
+    db 0
+    db 3
+    db 33
+    db 0
+    db 148
+    db 26
+    db 0
+    db 0
+    db 196
+    db 122
+    db 218
+    db 122
+    db 0
+    db 1
+    db 1
+    db 0
+    db 12
+    db 0
+    db 248
+    db 29
+    db 0
+    db 0
+    db 240
+    db 122
+    db 6
+    db 123
+    db 0
+    db 1
+    db 1
+    db 0
+    db 6
+    db 0
+    db 20
+    db 30
+    db 0
+    db 3
+    db 240
+    db 122
+    db 6
+    db 123
+    db 0
+    db 1
+    db 1
+    db 0
+    db 6
+    db 0
+    db 48
+    db 30
+    db 0
+    db 2
+    db 240
+    db 122
+    db 6
+    db 123
+    db 0
+    db 1
+    db 1
+    db 0
+    db 6
+    db 0
+    db 76
+    db 30
+    db 0
+    db 1
+    db 240
+    db 122
+    db 6
+    db 123
+    db 0
+    db 1
+    db 1
+    db 0
+    db 6
+    db 0
+    db 104
+    db 30
+    db 0
+    db 0
+    db 28
+    db 123
+    db 50
+    db 123
+    db 0
+    db 1
+    db 1
+    db 0
+    db 7
+    db 0
+    db 132
+    db 30
+    db 0
+    db 3
+    db 28
+    db 123
+    db 50
+    db 123
+    db 0
+    db 1
+    db 1
+    db 0
+    db 7
+    db 0
+    db 160
+    db 30
+    db 0
+    db 2
+    db 28
+    db 123
+    db 50
+    db 123
+    db 0
+    db 1
+    db 1
+    db 0
+    db 7
+    db 0
+    db 188
+    db 30
+    db 0
+    db 1
+    db 28
+    db 123
+    db 50
+    db 123
+    db 0
+    db 1
+    db 1
+    db 0
+    db 7
+    db 0
+    db 36
+    db 26
+    db 0
+    db 0
+    db 84
+    db 119
+    db 106
+    db 119
+    db 14
+    db 1
+    db 0
+    db 0
+    db 0
+    db 0
+    db 64
+    db 26
+    db 0
+    db 2
+    db 84
+    db 119
+    db 106
+    db 119
+    db 14
+    db 1
+    db 0
+    db 0
+    db 0
+    db 0
+    db 50
+    db 26
+    db 0
+    db 1
+    db 84
+    db 119
+    db 106
+    db 119
+    db 15
+    db 1
+    db 0
+    db 0
+    db 0
+    db 0
+    db 78
+    db 26
+    db 0
+    db 3
+    db 84
+    db 119
+    db 106
+    db 119
+    db 15
+    db 1
+    db 0
+    db 0
+    db 0
+    db 0
+    db 148
+    db 26
+    db 0
+    db 0
+    db 196
+    db 122
+    db 218
+    db 122
+    db 0
+    db 2
+    db 1
+    db 0
+    db 12
+    db 0
+    db 248
+    db 29
+    db 0
+    db 0
+    db 240
+    db 122
+    db 6
+    db 123
+    db 0
+    db 2
+    db 1
+    db 0
+    db 6
+    db 0
+    db 20
+    db 30
+    db 0
+    db 3
+    db 240
+    db 122
+    db 6
+    db 123
+    db 0
+    db 2
+    db 1
+    db 0
+    db 6
+    db 0
+    db 48
+    db 30
+    db 0
+    db 2
+    db 240
+    db 122
+    db 6
+    db 123
+    db 0
+    db 2
+    db 1
+    db 0
+    db 6
+    db 0
+    db 76
+    db 30
+    db 0
+    db 1
+    db 240
+    db 122
+    db 6
+    db 123
+    db 0
+    db 2
+    db 1
+    db 0
+    db 6
+    db 0
+    db 104
+    db 30
+    db 0
+    db 0
+    db 28
+    db 123
+    db 50
+    db 123
+    db 0
+    db 2
+    db 1
+    db 0
+    db 7
+    db 0
+    db 132
+    db 30
+    db 0
+    db 3
+    db 28
+    db 123
+    db 50
+    db 123
+    db 0
+    db 2
+    db 1
+    db 0
+    db 7
+    db 0
+    db 160
+    db 30
+    db 0
+    db 2
+    db 28
+    db 123
+    db 50
+    db 123
+    db 0
+    db 2
+    db 1
+    db 0
+    db 7
+    db 0
+    db 188
+    db 30
+    db 0
+    db 1
+    db 28
+    db 123
+    db 50
+    db 123
+    db 0
+    db 2
+    db 1
+    db 0
+    db 7
+    db 0
+    db 36
+    db 26
+    db 0
+    db 0
+    db 84
+    db 119
+    db 106
+    db 119
+    db 24
+    db 2
+    db 0
+    db 0
+    db 0
+    db 0
+    db 64
+    db 26
+    db 0
+    db 2
+    db 84
+    db 119
+    db 106
+    db 119
+    db 24
+    db 2
+    db 0
+    db 0
+    db 0
+    db 0
+    db 50
+    db 26
+    db 0
+    db 1
+    db 84
+    db 119
+    db 106
+    db 119
+    db 25
+    db 2
+    db 0
+    db 0
+    db 0
+    db 0
+    db 78
+    db 26
+    db 0
+    db 3
+    db 84
+    db 119
+    db 106
+    db 119
+    db 25
+    db 2
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 72
+    db 123
+    db 94
+    db 123
+    db 0
+    db 0
+    db 0
+    db 0
+    db 74
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 124
+    db 124
+    db 146
+    db 124
+    db 0
+    db 0
+    db 0
+    db 0
+    db 72
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 174
+    db 122
+    db 174
+    db 122
+    db 0
+    db 0
+    db 0
+    db 0
+    db 71
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 56
+    db 121
+    db 78
+    db 121
+    db 0
+    db 0
+    db 0
+    db 0
+    db 73
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 128
+    db 119
+    db 150
+    db 119
+    db 0
+    db 0
+    db 0
+    db 0
+    db 66
+    db 0
+    db 0
+    db 0
+    db 0
+    db 2
+    db 128
+    db 119
+    db 150
+    db 119
+    db 0
+    db 0
+    db 0
+    db 0
+    db 66
+    db 0
+    db 0
+    db 0
+    db 0
+    db 3
+    db 128
+    db 119
+    db 150
+    db 119
+    db 0
+    db 0
+    db 0
+    db 0
+    db 66
+    db 0
+    db 0
+    db 0
+    db 0
+    db 1
+    db 128
+    db 119
+    db 150
+    db 119
+    db 0
+    db 0
+    db 0
+    db 0
+    db 66
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 76
+    db 118
+    db 98
+    db 118
+    db 0
+    db 0
+    db 0
+    db 0
+    db 65
+    db 0
+    db 0
+    db 0
+    db 0
+    db 2
+    db 76
+    db 118
+    db 98
+    db 118
+    db 0
+    db 0
+    db 0
+    db 0
+    db 65
+    db 0
+    db 0
+    db 0
+    db 0
+    db 3
+    db 76
+    db 118
+    db 98
+    db 118
+    db 0
+    db 0
+    db 0
+    db 0
+    db 65
+    db 0
+    db 0
+    db 0
+    db 0
+    db 1
+    db 76
+    db 118
+    db 98
+    db 118
+    db 0
+    db 0
+    db 0
+    db 0
+    db 65
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 4
+    db 120
+    db 26
+    db 120
+    db 0
+    db 0
+    db 0
+    db 0
+    db 68
+    db 0
+    db 0
+    db 0
+    db 0
+    db 2
+    db 4
+    db 120
+    db 26
+    db 120
+    db 0
+    db 0
+    db 0
+    db 0
+    db 68
+    db 0
+    db 0
+    db 0
+    db 0
+    db 3
+    db 4
+    db 120
+    db 26
+    db 120
+    db 0
+    db 0
+    db 0
+    db 0
+    db 68
+    db 0
+    db 0
+    db 0
+    db 0
+    db 1
+    db 4
+    db 120
+    db 26
+    db 120
+    db 0
+    db 0
+    db 0
+    db 0
+    db 68
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 96
+    db 126
+    db 118
+    db 126
+    db 0
+    db 255
+    db 0
+    db 0
+    db 69
+    db 0
+    db 0
+    db 0
+    db 0
+    db 2
+    db 96
+    db 126
+    db 118
+    db 126
+    db 0
+    db 255
+    db 0
+    db 0
+    db 69
+    db 0
+    db 0
+    db 0
+    db 0
+    db 3
+    db 96
+    db 126
+    db 118
+    db 126
+    db 0
+    db 255
+    db 0
+    db 0
+    db 69
+    db 0
+    db 0
+    db 0
+    db 0
+    db 1
+    db 96
+    db 126
+    db 118
+    db 126
+    db 0
+    db 255
+    db 0
+    db 0
+    db 69
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 140
+    db 126
+    db 162
+    db 126
+    db 0
+    db 0
+    db 0
+    db 0
+    db 70
+    db 0
+    db 0
+    db 0
+    db 0
+    db 2
+    db 140
+    db 126
+    db 162
+    db 126
+    db 0
+    db 0
+    db 0
+    db 0
+    db 70
+    db 0
+    db 0
+    db 0
+    db 0
+    db 3
+    db 140
+    db 126
+    db 162
+    db 126
+    db 0
+    db 0
+    db 0
+    db 0
+    db 70
+    db 0
+    db 0
+    db 0
+    db 0
+    db 1
+    db 140
+    db 126
+    db 162
+    db 126
+    db 0
+    db 0
+    db 0
+    db 0
+    db 70
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 184
+    db 126
+    db 206
+    db 126
+    db 0
+    db 255
+    db 0
+    db 0
+    db 67
+    db 0
+    db 0
+    db 0
+    db 0
+    db 2
+    db 184
+    db 126
+    db 206
+    db 126
+    db 0
+    db 255
+    db 0
+    db 0
+    db 67
+    db 0
+    db 0
+    db 0
+    db 0
+    db 3
+    db 184
+    db 126
+    db 206
+    db 126
+    db 0
+    db 255
+    db 0
+    db 0
+    db 67
+    db 0
+    db 0
+    db 0
+    db 0
+    db 1
+    db 184
+    db 126
+    db 206
+    db 126
+    db 0
+    db 255
+    db 0
+    db 0
+    db 67
+    db 0
+    db 64
+    db 26
+    db 0
+    db 2
+    db 84
+    db 119
+    db 106
+    db 119
+    db 4
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 50
+    db 26
+    db 0
+    db 1
+    db 84
+    db 119
+    db 106
+    db 119
+    db 5
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 78
+    db 26
+    db 0
+    db 3
+    db 84
+    db 119
+    db 106
+    db 119
+    db 5
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 200
+    db 27
+    db 0
+    db 0
+    db 180
+    db 120
+    db 202
+    db 120
+    db 0
+    db 0
+    db 1
+    db 0
+    db 1
+    db 0
+    db 186
+    db 27
+    db 0
+    db 3
+    db 180
+    db 120
+    db 202
+    db 120
+    db 0
+    db 0
+    db 1
+    db 0
+    db 1
+    db 0
+    db 172
+    db 27
+    db 0
+    db 2
+    db 180
+    db 120
+    db 202
+    db 120
+    db 0
+    db 0
+    db 1
+    db 0
+    db 1
+    db 0
+    db 214
+    db 27
+    db 0
+    db 1
+    db 180
+    db 120
+    db 202
+    db 120
+    db 0
+    db 0
+    db 1
+    db 0
+    db 1
+    db 0
+    db 200
+    db 27
+    db 0
+    db 0
+    db 180
+    db 120
+    db 202
+    db 120
+    db 0
+    db 1
+    db 1
+    db 0
+    db 1
+    db 0
+    db 186
+    db 27
+    db 0
+    db 3
+    db 180
+    db 120
+    db 202
+    db 120
+    db 0
+    db 1
+    db 1
+    db 0
+    db 1
+    db 0
+    db 172
+    db 27
+    db 0
+    db 2
+    db 180
+    db 120
+    db 202
+    db 120
+    db 0
+    db 1
+    db 1
+    db 0
+    db 1
+    db 0
+    db 214
+    db 27
+    db 0
+    db 1
+    db 180
+    db 120
+    db 202
+    db 120
+    db 0
+    db 1
+    db 1
+    db 0
+    db 1
+    db 0
+    db 200
+    db 27
+    db 0
+    db 0
+    db 180
+    db 120
+    db 202
+    db 120
+    db 0
+    db 2
+    db 1
+    db 0
+    db 1
+    db 0
+    db 186
+    db 27
+    db 0
+    db 3
+    db 180
+    db 120
+    db 202
+    db 120
+    db 0
+    db 2
+    db 1
+    db 0
+    db 1
+    db 0
+    db 172
+    db 27
+    db 0
+    db 2
+    db 180
+    db 120
+    db 202
+    db 120
+    db 0
+    db 2
+    db 1
+    db 0
+    db 1
+    db 0
+    db 214
+    db 27
+    db 0
+    db 1
+    db 180
+    db 120
+    db 202
+    db 120
+    db 0
+    db 2
+    db 1
+    db 0
+    db 1
+    db 0
+    db 28
+    db 28
+    db 0
+    db 0
+    db 80
+    db 124
+    db 102
+    db 124
+    db 222
+    db 0
+    db 0
+    db 0
+    db 19
+    db 0
+    db 70
+    db 28
+    db 0
+    db 3
+    db 80
+    db 124
+    db 102
+    db 124
+    db 223
+    db 0
+    db 0
+    db 0
+    db 19
+    db 0
+    db 42
+    db 28
+    db 0
+    db 2
+    db 80
+    db 124
+    db 102
+    db 124
+    db 224
+    db 0
+    db 0
+    db 0
+    db 19
+    db 0
+    db 56
+    db 28
+    db 0
+    db 1
+    db 80
+    db 124
+    db 102
+    db 124
+    db 225
+    db 0
+    db 0
+    db 0
+    db 19
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 220
+    db 125
+    db 0
+    db 0
+    db 0
+    db 0
+    db 1
+    db 3
+    db 32
+    db 0
+    db 0
+    db 0
+    db 0
+    db 3
+    db 220
+    db 125
+    db 0
+    db 0
+    db 0
+    db 0
+    db 1
+    db 3
+    db 32
+    db 0
+    db 0
+    db 0
+    db 0
+    db 2
+    db 220
+    db 125
+    db 0
+    db 0
+    db 0
+    db 0
+    db 1
+    db 3
+    db 32
+    db 0
+    db 0
+    db 0
+    db 0
+    db 1
+    db 220
+    db 125
+    db 0
+    db 0
+    db 0
+    db 0
+    db 1
+    db 3
+    db 32
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 242
+    db 125
+    db 0
+    db 0
+    db 0
+    db 0
+    db 1
+    db 3
+    db 33
+    db 0
+    db 0
+    db 0
+    db 0
+    db 3
+    db 242
+    db 125
+    db 0
+    db 0
+    db 0
+    db 0
+    db 1
+    db 3
+    db 33
+    db 0
+    db 0
+    db 0
+    db 0
+    db 2
+    db 242
+    db 125
+    db 0
+    db 0
+    db 0
+    db 0
+    db 1
+    db 3
+    db 33
+    db 0
+    db 0
+    db 0
+    db 0
+    db 1
+    db 242
+    db 125
+    db 0
+    db 0
+    db 0
+    db 0
+    db 1
+    db 3
+    db 33
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 8
+    db 126
+    db 0
+    db 0
+    db 0
+    db 0
+    db 1
+    db 1
+    db 27
+    db 0
+    db 0
+    db 0
+    db 0
+    db 1
+    db 8
+    db 126
+    db 0
+    db 0
+    db 0
+    db 0
+    db 1
+    db 2
+    db 27
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 60
+    db 127
+    db 0
+    db 0
+    db 0
+    db 0
+    db 1
+    db 0
+    db 28
+    db 0
+    db 0
+    db 0
+    db 0
+    db 1
+    db 60
+    db 127
+    db 0
+    db 0
+    db 0
+    db 0
+    db 1
+    db 0
+    db 28
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 82
+    db 127
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 30
+    db 0
+    db 0
+    db 0
+    db 0
+    db 1
+    db 82
+    db 127
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 30
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 130
+    db 122
+    db 130
+    db 122
+    db 0
+    db 0
+    db 0
+    db 0
+    db 255
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 152
+    db 122
+    db 152
+    db 122
+    db 0
+    db 0
+    db 0
+    db 0
+    db 255
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 104
+    db 127
+    db 126
+    db 127
+    db 0
+    db 0
+    db 0
+    db 0
+    db 255
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 148
+    db 127
+    db 170
+    db 127
+    db 0
+    db 0
+    db 0
+    db 0
+    db 255
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 42
+    db 122
+    db 42
+    db 122
+    db 0
+    db 0
+    db 1
+    db 0
+    db 255
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 20
+    db 122
+    db 20
+    db 122
+    db 0
+    db 0
+    db 1
+    db 0
+    db 255
+    db 0
+    db 0
+    db 0
+    db 0
+    db 3
+    db 20
+    db 122
+    db 20
+    db 122
+    db 0
+    db 0
+    db 1
+    db 0
+    db 255
+    db 0
+    db 0
+    db 0
+    db 0
+    db 2
+    db 20
+    db 122
+    db 20
+    db 122
+    db 0
+    db 0
+    db 1
+    db 0
+    db 255
+    db 0
+    db 0
+    db 0
+    db 0
+    db 1
+    db 20
+    db 122
+    db 20
+    db 122
+    db 0
+    db 0
+    db 1
+    db 0
+    db 255
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 254
+    db 121
+    db 254
+    db 121
+    db 0
+    db 0
+    db 1
+    db 0
+    db 255
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 232
+    db 121
+    db 232
+    db 121
+    db 0
+    db 0
+    db 1
+    db 0
+    db 255
+    db 0
+    db 0
+    db 0
+    db 0
+    db 3
+    db 232
+    db 121
+    db 232
+    db 121
+    db 0
+    db 0
+    db 1
+    db 0
+    db 255
+    db 0
+    db 0
+    db 0
+    db 0
+    db 2
+    db 232
+    db 121
+    db 232
+    db 121
+    db 0
+    db 0
+    db 1
+    db 0
+    db 255
+    db 0
+    db 0
+    db 0
+    db 0
+    db 1
+    db 232
+    db 121
+    db 232
+    db 121
+    db 0
+    db 0
+    db 1
+    db 0
+    db 255
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 210
+    db 121
+    db 210
+    db 121
+    db 0
+    db 0
+    db 1
+    db 0
+    db 255
+    db 0
+    db 0
+    db 0
+    db 0
+    db 3
+    db 210
+    db 121
+    db 210
+    db 121
+    db 0
+    db 0
+    db 1
+    db 0
+    db 255
+    db 0
+    db 0
+    db 0
+    db 0
+    db 2
+    db 210
+    db 121
+    db 210
+    db 121
+    db 0
+    db 0
+    db 1
+    db 0
+    db 255
+    db 0
+    db 0
+    db 0
+    db 0
+    db 1
+    db 210
+    db 121
+    db 210
+    db 121
+    db 0
+    db 0
+    db 1
+    db 0
+    db 255
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 188
+    db 121
+    db 188
+    db 121
+    db 0
+    db 0
+    db 1
+    db 0
+    db 255
+    db 0
+    db 0
+    db 0
+    db 0
+    db 3
+    db 188
+    db 121
+    db 188
+    db 121
+    db 0
+    db 0
+    db 1
+    db 0
+    db 255
+    db 0
+    db 0
+    db 0
+    db 0
+    db 2
+    db 188
+    db 121
+    db 188
+    db 121
+    db 0
+    db 0
+    db 1
+    db 0
+    db 255
+    db 0
+    db 0
+    db 0
+    db 0
+    db 1
+    db 188
+    db 121
+    db 188
+    db 121
+    db 0
+    db 0
+    db 1
+    db 0
+    db 255
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 236
+    db 127
+    db 236
+    db 127
+    db 0
+    db 0
+    db 1
+    db 0
+    db 255
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 2
+    db 128
+    db 2
+    db 128
+    db 0
+    db 0
+    db 1
+    db 0
+    db 255
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 24
+    db 128
+    db 24
+    db 128
+    db 0
+    db 0
+    db 1
+    db 0
+    db 255
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 46
+    db 128
+    db 46
+    db 128
+    db 0
+    db 0
+    db 1
+    db 0
+    db 255
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 68
+    db 128
+    db 68
+    db 128
+    db 0
+    db 0
+    db 1
+    db 0
+    db 255
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 90
+    db 128
+    db 90
+    db 128
+    db 0
+    db 0
+    db 1
+    db 0
+    db 255
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 112
+    db 128
+    db 112
+    db 128
+    db 0
+    db 0
+    db 1
+    db 0
+    db 255
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 134
+    db 128
+    db 134
+    db 128
+    db 0
+    db 0
+    db 1
+    db 0
+    db 255
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 156
+    db 128
+    db 156
+    db 128
+    db 0
+    db 0
+    db 1
+    db 0
+    db 255
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 178
+    db 128
+    db 178
+    db 128
+    db 0
+    db 0
+    db 1
+    db 0
+    db 255
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 200
+    db 128
+    db 200
+    db 128
+    db 0
+    db 0
+    db 1
+    db 0
+    db 255
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 222
+    db 128
+    db 222
+    db 128
+    db 0
+    db 0
+    db 1
+    db 0
+    db 255
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 192
+    db 127
+    db 192
+    db 127
+    db 0
+    db 0
+    db 1
+    db 0
+    db 255
+    db 0
+    db 0
+    db 0
+    db 224
+    db 0
+    db 133
+    db 1
+word_3E590     dw 449
+    db 133
+    db 1
+    db 224
+    db 0
+    db 0
+    db 0
+    db 112
+    db 254
+    db 112
+    db 254
+    db 160
+    db 254
+    db 208
+    db 254
+    db 242
+    db 254
+    db 21
+    db 255
+    db 56
+    db 255
+    db 0
+    db 0
+    db 135
+    db 0
+    db 43
+    db 1
+    db 12
+    db 2
+    db 237
+    db 2
+    db 146
+    db 3
+    db 207
+    db 3
+    db 0
+    db 0
+    db 178
+    db 0
+    db 104
+    db 1
+    db 24
+    db 2
+    db 192
+    db 2
+    db 100
+    db 3
+    db 208
+    db 7
+    db 0
+    db 0
+    db 236
+    db 255
+    db 216
+    db 255
+    db 196
+    db 255
+    db 176
+    db 255
+    db 156
+    db 255
+    db 136
+    db 255
+    db 144
+    db 1
+    db 105
+    db 1
+    db 64
+    db 1
+    db 20
+    db 1
+    db 226
+    db 0
+    db 174
+    db 0
+    db 120
+    db 0
+    db 5
+    db 255
+    db 172
+    db 255
+    db 84
+    db 0
+    db 251
+    db 0
+    db 0
+    db 0
+    db 162
+    db 255
+    db 69
+    db 255
+    db 232
+    db 254
+    db 139
+    db 254
+    db 46
+    db 254
+    db 209
+    db 253
+    db 116
+    db 253
+    db 23
+    db 253
+    db 186
+    db 252
+    db 93
+    db 252
+    db 0
+    db 252
+    db 0
+    db 0
+    db 0
+    db 4
+    db 163
+    db 3
+    db 70
+    db 3
+    db 233
+    db 2
+    db 140
+    db 2
+    db 47
+    db 2
+    db 210
+    db 1
+    db 117
+    db 1
+    db 24
+    db 1
+    db 187
+    db 0
+    db 94
+    db 0
+    db 0
+    db 254
+    db 178
+    db 254
+    db 88
+    db 255
+    db 0
+    db 0
+    db 168
+    db 0
+    db 78
+    db 1
+    db 232
+    db 3
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 120
+    db 0
+    db 120
+    db 0
+    db 120
+    db 0
+    db 168
+    db 0
+    db 216
+    db 0
+    db 8
+    db 1
+    db 56
+    db 1
+    db 104
+    db 1
+    db 104
+    db 1
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 136
+    db 255
+    db 0
+    db 0
+    db 231
+    db 254
+    db 136
+    db 255
+    db 0
+    db 0
+    db 25
+    db 255
+    db 136
+    db 255
+    db 0
+    db 0
+    db 25
+    db 1
+    db 136
+    db 255
+    db 0
+    db 0
+    db 231
+    db 0
+    db 120
+    db 0
+    db 0
+    db 0
+    db 231
+    db 254
+    db 120
+    db 0
+    db 0
+    db 0
+    db 25
+    db 255
+    db 120
+    db 0
+    db 0
+    db 0
+    db 25
+    db 1
+    db 120
+    db 0
+    db 0
+    db 0
+    db 231
+    db 0
+    db 196
+    db 255
+    db 0
+    db 0
+    db 0
+    db 254
+    db 60
+    db 0
+    db 0
+    db 0
+    db 0
+    db 2
+    db 120
+    db 254
+    db 0
+    db 0
+    db 0
+    db 0
+    db 136
+    db 253
+    db 0
+    db 0
+    db 0
+    db 0
+    db 136
+    db 1
+    db 0
+    db 0
+    db 0
+    db 0
+    db 120
+    db 2
+    db 0
+    db 0
+    db 0
+    db 0
+    db 23
+    db 0
+    db 0
+    db 0
+    db 1
+    db 255
+    db 97
+    db 0
+    db 0
+    db 0
+    db 1
+    db 255
+    db 159
+    db 255
+    db 0
+    db 0
+    db 255
+    db 0
+    db 233
+    db 255
+    db 0
+    db 0
+    db 255
+    db 0
+    db 103
+    db 97
+    db 109
+    db 101
+    db 49
+    db 0
+    db 103
+    db 97
+    db 109
+    db 101
+    db 50
+    db 0
+    db 99
+    db 97
+    db 114
+    db 48
+    db 0
+    db 99
+    db 97
+    db 114
+    db 49
+    db 0
+    db 99
+    db 97
+    db 114
+    db 50
+    db 0
+    db 101
+    db 120
+    db 112
+    db 48
+    db 0
+    db 101
+    db 120
+    db 112
+    db 49
+    db 0
+    db 101
+    db 120
+    db 112
+    db 50
+    db 0
+    db 101
+    db 120
+    db 112
+    db 51
+    db 0
+    db 99
+    db 97
+    db 114
+    db 50
+    db 0
+    db 99
+    db 97
+    db 114
+    db 48
+    db 0
+    db 99
+    db 97
+    db 114
+    db 49
+    db 0
+    db 99
+    db 97
+    db 114
+    db 50
+    db 0
+    db 101
+    db 120
+    db 112
+    db 48
+    db 0
+    db 101
+    db 120
+    db 112
+    db 49
+    db 0
+    db 101
+    db 120
+    db 112
+    db 50
+    db 0
+    db 101
+    db 120
+    db 112
+    db 51
+    db 0
+    db 0
+    db 115
+    db 116
+byte_3E70C     db 120
+byte_3E70D     db 120
+byte_3E70E     db 120
 byte_3E70F     db 0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  74h ; t
-    db  63h ; c
-    db  6Fh ; o
-    db  6Dh ; m
-    db  70h ; p
-    db    0
-    db    0
-    db    0
-    db    1
-    db    0
-    db    1
-    db    0
-    db    0
-    db    1
-    db    0
-    db    0
-    db    1
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    1
-    db    2
-    db    1
-    db    3
-    db    0
-    db    2
-    db    3
-    db    0
-    db    0
-    db    1
-    db    1
-    db    3
-    db    2
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    1
-    db    2
-    db    0
-    db    3
-    db    1
-    db    0
-    db    0
-    db    3
-    db    2
-    db    2
-    db    3
-    db    1
-    db    1
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    1
-    db    1
-    db    5
-    db    0
-    db    4
-    db    5
-    db    0
-    db    0
-    db    4
-    db    1
-    db    5
-    db    4
-    db    1
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    1
-    db    0
-    db    5
-    db    1
-    db    4
-    db    0
-    db    5
-    db    4
-    db    0
-    db    5
-    db    1
-    db    1
-    db    4
-    db  6Eh ; n
-    db  61h ; a
-    db  6Dh ; m
-    db    0
-    db  70h ; p
-    db  61h ; a
-    db  74h ; t
-    db  68h ; h
-    db    0
-    db  73h ; s
-    db  70h ; p
-    db  65h ; e
-    db  64h ; d
-    db    0
-    db    0
-aEngi     db 'ENGI',0
-aEngi_0     db 'ENGI',0
-aStar     db 'STAR',0
-aStop     db 'STOP',0
-aBlow     db 'BLOW',0
-aCras     db 'CRAS',0
-aSkid     db 'SKID',0
-aSki2     db 'SKI2',0
-aBump     db 'BUMP',0
-aScra     db 'SCRA',0
-aEngi_1     db 'ENGI',0
-aEngi_2     db 'ENGI',0
-aStar_0     db 'STAR',0
-aStop_0     db 'STOP',0
-aBlow_0     db 'BLOW',0
-aCras_0     db 'CRAS',0
-aSkid_0     db 'SKID',0
-aSki2_0     db 'SKI2',0
-aBump_0     db 'BUMP',0
-aScra_0     db 'SCRA',0
-aDefault     db 'default',0
-aRbf     db 'rbf',0
-aCop     db 'cop',0
-    db 0F4h ; Ù
-    db    1
-    db  10h
-    db  27h ; '
-    db  28h ; (
-    db  23h ; #
-    db    0
-    db    0
-    dd aEngi                ; "ENGI"
-    dd aEngi_0              ; "ENGI"
-    dd aStar                ; "STAR"
-    dd aStop                ; "STOP"
-    dd aBlow                ; "BLOW"
-    dd aCras                ; "CRAS"
-    dd aSkid                ; "SKID"
-    dd aSki2                ; "SKI2"
-    dd aBump                ; "BUMP"
-    dd aScra                ; "SCRA"
-    db 0F4h ; Ù
-    db    1
-    db  10h
-    db  27h ; '
-    db  28h ; (
-    db  23h ; #
-    db    0
-    db    0
-    dd aEngi_1              ; "ENGI"
-    dd aEngi_2              ; "ENGI"
-    dd aStar_0              ; "STAR"
-    dd aStop_0              ; "STOP"
-    dd aBlow_0              ; "BLOW"
-    dd aCras_0              ; "CRAS"
-    dd aSkid_0              ; "SKID"
-    dd aSki2_0              ; "SKI2"
-    dd aBump_0              ; "BUMP"
-    dd aScra_0              ; "SCRA"
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    4
-    db    8
-    db  0Ch
-    db  10h
-    db  14h
-    db  18h
-    db  1Ch
-    db  20h
-    db  24h ; $
-    db  28h ; (
-    db  2Ch ; ,
-    db  30h ; 0
-    db  34h ; 4
-    db  38h ; 8
-    db  3Ch ; <
-    db  40h ; @
-    db  44h ; D
-    db  48h ; H
-    db  4Ch ; L
-    db  54h ; T
-    db  5Ah ; Z
-    db  62h ; b
-    db  6Ah ; j
-    db  72h ; r
-    db  79h ; y
-    db  7Fh ; 
-    db  7Fh ; 
-    db  7Fh ; 
-    db  2Eh ; .
-    db  72h ; r
-    db  70h ; p
-    db  6Ch ; l
-    db    0
-    db  77h ; w
-    db  68h ; h
-    db  6Ch ; l
-    db  31h ; 1
-    db  77h ; w
-    db  68h ; h
-    db  6Ch ; l
-    db  32h ; 2
-    db  77h ; w
-    db  68h ; h
-    db  6Ch ; l
-    db  33h ; 3
-    db  69h ; i
-    db  6Eh ; n
-    db  73h ; s
-    db  32h ; 2
-    db  67h ; g
-    db  62h ; b
-    db  6Fh ; o
-    db  78h ; x
-    db  69h ; i
-    db  6Eh ; n
-    db  73h ; s
-    db  31h ; 1
-    db  69h ; i
-    db  6Eh ; n
-    db  73h ; s
-    db  33h ; 3
-    db  69h ; i
-    db  6Eh ; n
-    db  6Dh ; m
-    db  31h ; 1
-    db  69h ; i
-    db  6Eh ; n
-    db  6Dh ; m
-    db  33h ; 3
-    db    0
-    db  67h ; g
-    db  6Eh ; n
-    db  6Fh ; o
-    db  62h ; b
-    db  67h ; g
-    db  6Eh ; n
-    db  61h ; a
-    db  62h ; b
-    db  64h ; d
-    db  6Fh ; o
-    db  74h ; t
-    db  20h
-    db  64h ; d
-    db  6Fh ; o
-    db  74h ; t
-    db  61h ; a
-    db  64h ; d
-    db  6Fh ; o
-    db  74h ; t
-    db  31h ; 1
-    db  64h ; d
-    db  6Fh ; o
-    db  74h ; t
-    db  32h ; 2
-    db    0
-    db  64h ; d
-    db  69h ; i
-    db  67h ; g
-    db  30h ; 0
-    db  64h ; d
-    db  69h ; i
-    db  67h ; g
-    db  31h ; 1
-    db  64h ; d
-    db  69h ; i
-    db  67h ; g
-    db  32h ; 2
-    db  64h ; d
-    db  69h ; i
-    db  67h ; g
-    db  33h ; 3
-    db  64h ; d
-    db  69h ; i
-    db  67h ; g
-    db  34h ; 4
-    db  64h ; d
-    db  69h ; i
-    db  67h ; g
-    db  35h ; 5
-    db  64h ; d
-    db  69h ; i
-    db  67h ; g
-    db  36h ; 6
-    db  64h ; d
-    db  69h ; i
-    db  67h ; g
-    db  37h ; 7
-    db  64h ; d
-    db  69h ; i
-    db  67h ; g
-    db  38h ; 8
-    db  64h ; d
-    db  69h ; i
-    db  67h ; g
-    db  39h ; 9
-    db    0
-    db  64h ; d
-    db  61h ; a
-    db  73h ; s
-    db  68h ; h
-    db    0
-    db  72h ; r
-    db  6Fh ; o
-    db  6Fh ; o
-    db  66h ; f
-    db    0
-    db  72h ; r
-    db  6Fh ; o
-    db  6Fh ; o
-    db  66h ; f
-    db    0
-    db  64h ; d
-    db  61h ; a
-    db  73h ; s
-    db  74h ; t
-    db    0
-    db  64h ; d
-    db  61h ; a
-    db  73h ; s
-    db  6Dh ; m
-    db    0
-    db  72h ; r
-    db  6Fh ; o
-    db  6Fh ; o
-    db  66h ; f
-    db    0
-    db  72h ; r
-    db  6Fh ; o
-    db  6Fh ; o
-    db  66h ; f
-    db    0
-    db  64h ; d
-    db  61h ; a
-    db  73h ; s
-    db  68h ; h
-    db    0
-    db  73h ; s
-    db  74h ; t
-    db  64h ; d
-    db  61h ; a
-byte_3E916     db 78h
-byte_3E917     db 78h
-byte_3E918     db 78h
-byte_3E919     db 78h
-    db    0
-    db    0
-    db  73h ; s
-    db  74h ; t
-    db  64h ; d
-    db  62h ; b
-byte_3E920     db 78h
-byte_3E921     db 78h
-byte_3E922     db 78h
-byte_3E923     db 78h
-    db    0
-    db  65h ; e
-    db  6Eh ; n
-    db  67h ; g
-    db  31h ; 1
-    db    0
-    db  65h ; e
-    db  6Eh ; n
-    db  67h ; g
-    db    0
-    db  66h ; f
-    db  6Fh ; o
-    db  6Eh ; n
-    db  74h ; t
-    db  6Ch ; l
-    db  65h ; e
-    db  64h ; d
-    db  2Eh ; .
-    db  66h ; f
-    db  6Eh ; n
-    db  74h ; t
-    db    0
-    db  73h ; s
-    db  64h ; d
-    db  67h ; g
-    db  61h ; a
-    db  6Dh ; m
-    db  65h ; e
-    db    0
-    db  67h ; g
-    db  61h ; a
-    db  6Dh ; m
-    db  65h ; e
-    db    0
-    db  70h ; p
-    db  6Ch ; l
-    db  61h ; a
-    db  6Eh ; n
-    db    0
-    db  77h ; w
-    db  61h ; a
-    db  6Ch ; l
-    db  6Ch ; l
-    db    0
-    db  72h ; r
-    db  70h ; p
-    db  6Ch ; l
-    db  79h ; y
-    db  72h ; r
-    db  70h ; p
-    db  69h ; i
-    db  63h ; c
-    db  72h ; r
-    db  70h ; p
-    db  61h ; a
-    db  63h ; c
-    db  72h ; r
-    db  70h ; p
-    db  6Dh ; m
-    db  63h ; c
-    db  72h ; r
-    db  70h ; p
-    db  74h ; t
-    db  63h ; c
-    db  62h ; b
-    db  6Fh ; o
-    db  66h ; f
-    db  36h ; 6
-    db  62h ; b
-    db  6Fh ; o
-    db  66h ; f
-    db  35h ; 5
-    db  62h ; b
-    db  6Fh ; o
-    db  66h ; f
-    db  34h ; 4
-    db  62h ; b
-    db  6Fh ; o
-    db  66h ; f
-    db  33h ; 3
-    db  62h ; b
-    db  6Fh ; o
-    db  66h ; f
-    db  32h ; 2
-    db  62h ; b
-    db  6Fh ; o
-    db  66h ; f
-    db  31h ; 1
-    db  62h ; b
-    db  6Fh ; o
-    db  66h ; f
-    db  30h ; 0
-    db  7Ah ; z
-    db  6Fh ; o
-    db  6Fh ; o
-    db  6Dh ; m
-    db  70h ; p
-    db  61h ; a
-    db  6Eh ; n
-    db  6Eh ; n
-    db  62h ; b
-    db  6Fh ; o
-    db  6Eh ; n
-    db  36h ; 6
-    db  62h ; b
-    db  6Fh ; o
-    db  6Eh ; n
-    db  35h ; 5
-    db  62h ; b
-    db  6Fh ; o
-    db  6Eh ; n
-    db  34h ; 4
-    db  62h ; b
-    db  6Fh ; o
-    db  6Eh ; n
-    db  33h ; 3
-    db  62h ; b
-    db  6Fh ; o
-    db  6Eh ; n
-    db  32h ; 2
-    db  62h ; b
-    db  6Fh ; o
-    db  6Eh ; n
-    db  31h ; 1
-    db  62h ; b
-    db  6Fh ; o
-    db  66h ; f
-    db  30h ; 0
-    db  7Ah ; z
-    db  6Fh ; o
-    db  6Fh ; o
-    db  6Dh ; m
-    db  70h ; p
-    db  61h ; a
-    db  6Eh ; n
-    db  6Eh ; n
-    db    0
-    db  6Dh ; m
-    db  65h ; e
-    db  6Eh ; n
-    db    0
-    db  63h ; c
-    db  6Fh ; o
-    db  6Eh ; n
-    db    0
-    db  72h ; r
-    db  65h ; e
-    db  70h ; p
-    db    0
-    db  2Eh ; .
-    db  72h ; r
-    db  70h ; p
-    db  6Ch ; l
-    db    0
-    db  72h ; r
-    db  65h ; e
-    db  70h ; p
-    db    0
-    db  2Eh ; .
-    db  72h ; r
-    db  70h ; p
-    db  6Ch ; l
-    db    0
-    db  66h ; f
-    db  65h ; e
-    db  78h ; x
-    db    0
-    db  73h ; s
-    db  65h ; e
-    db  72h ; r
-    db    0
-    db  6Dh ; m
-    db  64h ; d
-    db  6Fh ; o
-    db    0
-    db  77h ; w
-    db  61h ; a
-    db  69h ; i
-    db    0
-    db  77h ; w
-    db  61h ; a
-    db  69h ; i
-    db    0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 116
+    db 99
+    db 111
+    db 109
+    db 112
+    db 0
+    db 0
+    db 0
+    db 1
+    db 0
+    db 1
+    db 0
+    db 0
+    db 1
+    db 0
+    db 0
+    db 1
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 1
+    db 2
+    db 1
+    db 3
+    db 0
+    db 2
+    db 3
+    db 0
+    db 0
+    db 1
+    db 1
+    db 3
+    db 2
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 1
+    db 2
+    db 0
+    db 3
+    db 1
+    db 0
+    db 0
+    db 3
+    db 2
+    db 2
+    db 3
+    db 1
+    db 1
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 1
+    db 1
+    db 5
+    db 0
+    db 4
+    db 5
+    db 0
+    db 0
+    db 4
+    db 1
+    db 5
+    db 4
+    db 1
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 1
+    db 0
+    db 5
+    db 1
+    db 4
+    db 0
+    db 5
+    db 4
+    db 0
+    db 5
+    db 1
+    db 1
+    db 4
+    db 110
+    db 97
+    db 109
+    db 0
+    db 112
+    db 97
+    db 116
+    db 104
+    db 0
+    db 115
+    db 112
+    db 101
+    db 100
+    db 0
+    db 0
+aEngi     db 69
+    db 78
+    db 71
+    db 73
+    db 0
+aEngi_0     db 69
+    db 78
+    db 71
+    db 73
+    db 0
+aStar     db 83
+    db 84
+    db 65
+    db 82
+    db 0
+aStop     db 83
+    db 84
+    db 79
+    db 80
+    db 0
+aBlow     db 66
+    db 76
+    db 79
+    db 87
+    db 0
+aCras     db 67
+    db 82
+    db 65
+    db 83
+    db 0
+aSkid     db 83
+    db 75
+    db 73
+    db 68
+    db 0
+aSki2     db 83
+    db 75
+    db 73
+    db 50
+    db 0
+aBump     db 66
+    db 85
+    db 77
+    db 80
+    db 0
+aScra     db 83
+    db 67
+    db 82
+    db 65
+    db 0
+aEngi_1     db 69
+    db 78
+    db 71
+    db 73
+    db 0
+aEngi_2     db 69
+    db 78
+    db 71
+    db 73
+    db 0
+aStar_0     db 83
+    db 84
+    db 65
+    db 82
+    db 0
+aStop_0     db 83
+    db 84
+    db 79
+    db 80
+    db 0
+aBlow_0     db 66
+    db 76
+    db 79
+    db 87
+    db 0
+aCras_0     db 67
+    db 82
+    db 65
+    db 83
+    db 0
+aSkid_0     db 83
+    db 75
+    db 73
+    db 68
+    db 0
+aSki2_0     db 83
+    db 75
+    db 73
+    db 50
+    db 0
+aBump_0     db 66
+    db 85
+    db 77
+    db 80
+    db 0
+aScra_0     db 83
+    db 67
+    db 82
+    db 65
+    db 0
+aDefault     db 100
+    db 101
+    db 102
+    db 97
+    db 117
+    db 108
+    db 116
+    db 0
+aRbf     db 114
+    db 98
+    db 102
+    db 0
+aCop     db 99
+    db 111
+    db 112
+    db 0
+    db 244
+    db 1
+    db 16
+    db 39
+    db 40
+    db 35
+    db 0
+    db 0
+    dd 997666840
+    dd 997666845
+    dd 997666850
+    dd 997666855
+    dd 997666860
+    dd 997666865
+    dd 997666870
+    dd 997666875
+    dd 997666880
+    dd 997666885
+    db 244
+    db 1
+    db 16
+    db 39
+    db 40
+    db 35
+    db 0
+    db 0
+    dd 997666890
+    dd 997666895
+    dd 997666900
+    dd 997666905
+    dd 997666910
+    dd 997666915
+    dd 997666920
+    dd 997666925
+    dd 997666930
+    dd 997666935
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 4
+    db 8
+    db 12
+    db 16
+    db 20
+    db 24
+    db 28
+    db 32
+    db 36
+    db 40
+    db 44
+    db 48
+    db 52
+    db 56
+    db 60
+    db 64
+    db 68
+    db 72
+    db 76
+    db 84
+    db 90
+    db 98
+    db 106
+    db 114
+    db 121
+    db 127
+    db 127
+    db 127
+    db 46
+    db 114
+    db 112
+    db 108
+    db 0
+    db 119
+    db 104
+    db 108
+    db 49
+    db 119
+    db 104
+    db 108
+    db 50
+    db 119
+    db 104
+    db 108
+    db 51
+    db 105
+    db 110
+    db 115
+    db 50
+    db 103
+    db 98
+    db 111
+    db 120
+    db 105
+    db 110
+    db 115
+    db 49
+    db 105
+    db 110
+    db 115
+    db 51
+    db 105
+    db 110
+    db 109
+    db 49
+    db 105
+    db 110
+    db 109
+    db 51
+    db 0
+    db 103
+    db 110
+    db 111
+    db 98
+    db 103
+    db 110
+    db 97
+    db 98
+    db 100
+    db 111
+    db 116
+    db 32
+    db 100
+    db 111
+    db 116
+    db 97
+    db 100
+    db 111
+    db 116
+    db 49
+    db 100
+    db 111
+    db 116
+    db 50
+    db 0
+    db 100
+    db 105
+    db 103
+    db 48
+    db 100
+    db 105
+    db 103
+    db 49
+    db 100
+    db 105
+    db 103
+    db 50
+    db 100
+    db 105
+    db 103
+    db 51
+    db 100
+    db 105
+    db 103
+    db 52
+    db 100
+    db 105
+    db 103
+    db 53
+    db 100
+    db 105
+    db 103
+    db 54
+    db 100
+    db 105
+    db 103
+    db 55
+    db 100
+    db 105
+    db 103
+    db 56
+    db 100
+    db 105
+    db 103
+    db 57
+    db 0
+    db 100
+    db 97
+    db 115
+    db 104
+    db 0
+    db 114
+    db 111
+    db 111
+    db 102
+    db 0
+    db 114
+    db 111
+    db 111
+    db 102
+    db 0
+    db 100
+    db 97
+    db 115
+    db 116
+    db 0
+    db 100
+    db 97
+    db 115
+    db 109
+    db 0
+    db 114
+    db 111
+    db 111
+    db 102
+    db 0
+    db 114
+    db 111
+    db 111
+    db 102
+    db 0
+    db 100
+    db 97
+    db 115
+    db 104
+    db 0
+    db 115
+    db 116
+    db 100
+    db 97
+byte_3E916     db 120
+byte_3E917     db 120
+byte_3E918     db 120
+byte_3E919     db 120
+    db 0
+    db 0
+    db 115
+    db 116
+    db 100
+    db 98
+byte_3E920     db 120
+byte_3E921     db 120
+byte_3E922     db 120
+byte_3E923     db 120
+    db 0
+    db 101
+    db 110
+    db 103
+    db 49
+    db 0
+    db 101
+    db 110
+    db 103
+    db 0
+    db 102
+    db 111
+    db 110
+    db 116
+    db 108
+    db 101
+    db 100
+    db 46
+    db 102
+    db 110
+    db 116
+    db 0
+    db 115
+    db 100
+    db 103
+    db 97
+    db 109
+    db 101
+    db 0
+    db 103
+    db 97
+    db 109
+    db 101
+    db 0
+    db 112
+    db 108
+    db 97
+    db 110
+    db 0
+    db 119
+    db 97
+    db 108
+    db 108
+    db 0
+    db 114
+    db 112
+    db 108
+    db 121
+    db 114
+    db 112
+    db 105
+    db 99
+    db 114
+    db 112
+    db 97
+    db 99
+    db 114
+    db 112
+    db 109
+    db 99
+    db 114
+    db 112
+    db 116
+    db 99
+    db 98
+    db 111
+    db 102
+    db 54
+    db 98
+    db 111
+    db 102
+    db 53
+    db 98
+    db 111
+    db 102
+    db 52
+    db 98
+    db 111
+    db 102
+    db 51
+    db 98
+    db 111
+    db 102
+    db 50
+    db 98
+    db 111
+    db 102
+    db 49
+    db 98
+    db 111
+    db 102
+    db 48
+    db 122
+    db 111
+    db 111
+    db 109
+    db 112
+    db 97
+    db 110
+    db 110
+    db 98
+    db 111
+    db 110
+    db 54
+    db 98
+    db 111
+    db 110
+    db 53
+    db 98
+    db 111
+    db 110
+    db 52
+    db 98
+    db 111
+    db 110
+    db 51
+    db 98
+    db 111
+    db 110
+    db 50
+    db 98
+    db 111
+    db 110
+    db 49
+    db 98
+    db 111
+    db 102
+    db 48
+    db 122
+    db 111
+    db 111
+    db 109
+    db 112
+    db 97
+    db 110
+    db 110
+    db 0
+    db 109
+    db 101
+    db 110
+    db 0
+    db 99
+    db 111
+    db 110
+    db 0
+    db 114
+    db 101
+    db 112
+    db 0
+    db 46
+    db 114
+    db 112
+    db 108
+    db 0
+    db 114
+    db 101
+    db 112
+    db 0
+    db 46
+    db 114
+    db 112
+    db 108
+    db 0
+    db 102
+    db 101
+    db 120
+    db 0
+    db 115
+    db 101
+    db 114
+    db 0
+    db 109
+    db 100
+    db 111
+    db 0
+    db 119
+    db 97
+    db 105
+    db 0
+    db 119
+    db 97
+    db 105
+    db 0
 byte_3E9DB     db 6
-    db    1
-    db    7
-    db    3
-    db    4
-    db    5
-    db    6
-    db    7
-    db    8
-    db    8
-    db    0
-    db    0
-    db    0
-    db    2
-    db    2
-    db    3
-    db    4
-    db    5
-    db    1
-    db    7
-    db    0
-    db    2
-    db    6
-    db    2
-    db    3
-    db    4
-    db    5
-    db    6
-    db    7
-    db    8
-    db    0
-    db    0
-    db    1
-    db    0
-    db    0
-    db    1
-    db    1
-    db    1
-    db    7
-    db    8
-    db    0
-    db    6
-    db    6
-    db    8
-    db    7
-    db  10h
-    db    1
-    db  6Dh ; m
-    db    0
-    db  12h
-    db    1
-    db 0E8h ; Ë
-    db    0
-    db 0BEh ; æ
-    db    0
-    db  97h ; ó
-    db    0
-    db  6Ch ; l
-    db    0
-    db  42h ; B
-    db    0
-word_3EA18     dw 0Ah
-    db  3Ah ; :
-    db    1
-    db  97h ; ó
-    db    0
-    db  3Ah ; :
-    db    1
-    db  12h
-    db    1
-    db 0E8h ; Ë
-    db    0
-    db 0BEh ; æ
-    db    0
-    db  97h ; ó
-    db    0
-    db  5Bh ; [
-    db    0
-word_3EA2A     dw 2Fh
-    db 0B0h ; ∞
-    db    0
-    db 0B0h ; ∞
-    db    0
-    db  9Ch ; ú
-    db    0
-    db  9Ch ; ú
-    db    0
-    db  9Ch ; ú
-    db    0
-    db  9Ch ; ú
-    db    0
-    db  9Ch ; ú
-    db    0
-word_3EA3A     dw 9Ch
-word_3EA3C     dw 9Ch
-    db 0C1h ; ¡
-    db    0
-    db 0C1h ; ¡
-    db    0
-    db 0ADh ; ≠
-    db    0
-    db 0ADh ; ≠
-    db    0
-    db 0ADh ; ≠
-    db    0
-    db 0ADh ; ≠
-    db    0
-    db 0ADh ; ≠
-    db    0
-word_3EA4C     dw 0C1h
-word_3EA4E     dw 0C1h
-    db    0
-    db    0
-    db  68h ; h
-    db    0
-    db  97h ; ó
-    db    0
-    db 0C8h ; »
-    db    0
-    db  70h ; p
-    db  6Fh ; o
-    db  6Ch ; l
-    db  79h ; y
-    db  69h ; i
-    db  6Eh ; n
-    db  66h ; f
-    db  6Fh ; o
-    db    0
-    db    0
-    db    0
-    db    1
-    db    2
-    db    3
-    db    4
-    db    5
-    db    6
-    db    7
-    db    8
-    db    9
-    db  0Ah
-    db    2
-    db    6
-    db    3
-    db    0
-    db    0
-    db    0
-    db    5
-    db    1
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    2
-    db    3
-    db    4
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  80h ; Ä
-    db    0
-    db    0
-    db    0
-    db  40h ; @
-    db    0
-    db    0
-    db    0
-    db  20h
-    db    0
-    db    0
-    db    0
-    db  10h
-    db    0
-    db    0
-    db    0
-    db    8
-    db    0
-    db    0
-    db    0
-    db    4
-    db    0
-    db    0
-    db    0
-    db    2
-    db    0
-    db    0
-    db    0
-    db    1
-    db    0
-    db    0
-    db  80h ; Ä
-    db    0
-    db    0
-    db    0
-    db  40h ; @
-    db    0
-    db    0
-    db    0
-    db  20h
-    db    0
-    db    0
-    db    0
-    db  10h
-    db    0
-    db    0
-    db    0
-    db    8
-    db    0
-    db    0
-    db    0
-    db    4
-    db    0
-    db    0
-    db    0
-    db    2
-    db    0
-    db    0
-    db    0
-    db    1
-    db    0
-    db    0
-    db  80h ; Ä
-    db    0
-    db    0
-    db    0
-    db  40h ; @
-    db    0
-    db    0
-    db    0
-    db  20h
-    db    0
-    db    0
-    db    0
-    db  10h
-    db    0
-    db    0
-    db    0
-    db    8
-    db    0
-    db    0
-    db    0
-    db    4
-    db    0
-    db    0
-    db    0
-    db    2
-    db    0
-    db    0
-    db    0
-    db    1
-    db    0
-    db    0
-    db  80h ; Ä
-    db    0
-    db    0
-    db    0
-    db  40h ; @
-    db    0
-    db    0
-    db    0
-    db  20h
-    db    0
-    db    0
-    db    0
-    db  10h
-    db    0
-    db    0
-    db    0
-    db    8
-    db    0
-    db    0
-    db    0
-    db    4
-    db    0
-    db    0
-    db    0
-    db    2
-    db    0
-    db    0
-    db    0
-    db    1
-    db    0
-    db    0
-    db    0
-word_3EB02     dw 0FFFFh
-    db  0Fh
-    db  27h ; '
-    db 0FFh
-    db 0FFh
-    db  0Fh
-    db  27h ; '
-    db 0FFh
-    db 0FFh
-    db  49h ; I
-    db  6Eh ; n
-    db  69h ; i
-    db  74h ; t
-    db  45h ; E
-    db  6Eh ; n
-    db  67h ; g
-    db  69h ; i
-    db  6Eh ; n
-    db  65h ; e
-    db  3Ah ; :
-    db  20h
-    db  41h ; A
-    db  6Ch ; l
-    db  6Ch ; l
-    db  20h
-    db  68h ; h
-    db  61h ; a
-    db  6Eh ; n
-    db  64h ; d
-    db  6Ch ; l
-    db  65h ; e
-    db  73h ; s
-    db  20h
-    db  75h ; u
-    db  73h ; s
-    db  65h ; e
-    db  64h ; d
-    db  2Eh ; .
-    db    0
+    db 1
+    db 7
+    db 3
+    db 4
+    db 5
+    db 6
+    db 7
+    db 8
+    db 8
+    db 0
+    db 0
+    db 0
+    db 2
+    db 2
+    db 3
+    db 4
+    db 5
+    db 1
+    db 7
+    db 0
+    db 2
+    db 6
+    db 2
+    db 3
+    db 4
+    db 5
+    db 6
+    db 7
+    db 8
+    db 0
+    db 0
+    db 1
+    db 0
+    db 0
+    db 1
+    db 1
+    db 1
+    db 7
+    db 8
+    db 0
+    db 6
+    db 6
+    db 8
+    db 7
+    db 16
+    db 1
+    db 109
+    db 0
+    db 18
+    db 1
+    db 232
+    db 0
+    db 190
+    db 0
+    db 151
+    db 0
+    db 108
+    db 0
+    db 66
+    db 0
+word_3EA18     dw 10
+    db 58
+    db 1
+    db 151
+    db 0
+    db 58
+    db 1
+    db 18
+    db 1
+    db 232
+    db 0
+    db 190
+    db 0
+    db 151
+    db 0
+    db 91
+    db 0
+word_3EA2A     dw 47
+    db 176
+    db 0
+    db 176
+    db 0
+    db 156
+    db 0
+    db 156
+    db 0
+    db 156
+    db 0
+    db 156
+    db 0
+    db 156
+    db 0
+word_3EA3A     dw 156
+word_3EA3C     dw 156
+    db 193
+    db 0
+    db 193
+    db 0
+    db 173
+    db 0
+    db 173
+    db 0
+    db 173
+    db 0
+    db 173
+    db 0
+    db 173
+    db 0
+word_3EA4C     dw 193
+word_3EA4E     dw 193
+    db 0
+    db 0
+    db 104
+    db 0
+    db 151
+    db 0
+    db 200
+    db 0
+    db 112
+    db 111
+    db 108
+    db 121
+    db 105
+    db 110
+    db 102
+    db 111
+    db 0
+    db 0
+    db 0
+    db 1
+    db 2
+    db 3
+    db 4
+    db 5
+    db 6
+    db 7
+    db 8
+    db 9
+    db 10
+    db 2
+    db 6
+    db 3
+    db 0
+    db 0
+    db 0
+    db 5
+    db 1
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 2
+    db 3
+    db 4
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 128
+    db 0
+    db 0
+    db 0
+    db 64
+    db 0
+    db 0
+    db 0
+    db 32
+    db 0
+    db 0
+    db 0
+    db 16
+    db 0
+    db 0
+    db 0
+    db 8
+    db 0
+    db 0
+    db 0
+    db 4
+    db 0
+    db 0
+    db 0
+    db 2
+    db 0
+    db 0
+    db 0
+    db 1
+    db 0
+    db 0
+    db 128
+    db 0
+    db 0
+    db 0
+    db 64
+    db 0
+    db 0
+    db 0
+    db 32
+    db 0
+    db 0
+    db 0
+    db 16
+    db 0
+    db 0
+    db 0
+    db 8
+    db 0
+    db 0
+    db 0
+    db 4
+    db 0
+    db 0
+    db 0
+    db 2
+    db 0
+    db 0
+    db 0
+    db 1
+    db 0
+    db 0
+    db 128
+    db 0
+    db 0
+    db 0
+    db 64
+    db 0
+    db 0
+    db 0
+    db 32
+    db 0
+    db 0
+    db 0
+    db 16
+    db 0
+    db 0
+    db 0
+    db 8
+    db 0
+    db 0
+    db 0
+    db 4
+    db 0
+    db 0
+    db 0
+    db 2
+    db 0
+    db 0
+    db 0
+    db 1
+    db 0
+    db 0
+    db 128
+    db 0
+    db 0
+    db 0
+    db 64
+    db 0
+    db 0
+    db 0
+    db 32
+    db 0
+    db 0
+    db 0
+    db 16
+    db 0
+    db 0
+    db 0
+    db 8
+    db 0
+    db 0
+    db 0
+    db 4
+    db 0
+    db 0
+    db 0
+    db 2
+    db 0
+    db 0
+    db 0
+    db 1
+    db 0
+    db 0
+    db 0
+word_3EB02     dw 65535
+    db 15
+    db 39
+    db 255
+    db 255
+    db 15
+    db 39
+    db 255
+    db 255
+    db 73
+    db 110
+    db 105
+    db 116
+    db 69
+    db 110
+    db 103
+    db 105
+    db 110
+    db 101
+    db 58
+    db 32
+    db 65
+    db 108
+    db 108
+    db 32
+    db 104
+    db 97
+    db 110
+    db 100
+    db 108
+    db 101
+    db 115
+    db 32
+    db 117
+    db 115
+    db 101
+    db 100
+    db 46
+    db 0
 word_3EB2A     dw 0
-aStartengineNew     db 'startengine() - new handle = %d',0Ah,0
-    db    0
-aId1     db 'id1',0
-aId2     db 'id2',0
-aId3     db 'id3',0
-aId4     db 'id4',0
-aSetup_exe     db 'setup.exe',0
-aSdtitl_     db 'sdtitl.*',0
-aTedit_     db 'tedit.*',0
-aOpp1_     db 'opp1.*',0
-    db 0DEh ; ﬁ
-    db  33h ; 3
-    db 0E2h ; ‚
-    db  33h ; 3
-    db 0E6h ; Ê
-    db  33h ; 3
-    db 0EAh ; Í
-    db  33h ; 3
-    db 0EEh ; Ó
-    db  33h ; 3
-    db 0F8h ; ¯
-    db  33h ; 3
-    db    1
-    db  34h ; 4
-    db    9
-    db  34h ; 4
+aStartengineNew     db 115
+    db 116
+    db 97
+    db 114
+    db 116
+    db 101
+    db 110
+    db 103
+    db 105
+    db 110
+    db 101
+    db 40
+    db 41
+    db 32
+    db 45
+    db 32
+    db 110
+    db 101
+    db 119
+    db 32
+    db 104
+    db 97
+    db 110
+    db 100
+    db 108
+    db 101
+    db 32
+    db 61
+    db 32
+    db 37
+    db 100
+    db 10
+    db 0
+    db 0
+aId1     db 105
+    db 100
+    db 49
+    db 0
+aId2     db 105
+    db 100
+    db 50
+    db 0
+aId3     db 105
+    db 100
+    db 51
+    db 0
+aId4     db 105
+    db 100
+    db 52
+    db 0
+aSetup_exe     db 115
+    db 101
+    db 116
+    db 117
+    db 112
+    db 46
+    db 101
+    db 120
+    db 101
+    db 0
+aSdtitl_     db 115
+    db 100
+    db 116
+    db 105
+    db 116
+    db 108
+    db 46
+    db 42
+    db 0
+aTedit_     db 116
+    db 101
+    db 100
+    db 105
+    db 116
+    db 46
+    db 42
+    db 0
+aOpp1_     db 111
+    db 112
+    db 112
+    db 49
+    db 46
+    db 42
+    db 0
+    db 222
+    db 51
+    db 226
+    db 51
+    db 230
+    db 51
+    db 234
+    db 51
+    db 238
+    db 51
+    db 248
+    db 51
+    db 1
+    db 52
+    db 9
+    db 52
 word_3EB90     dw 0
-    db  6Ch ; l
-    db  6Fh ; o
-    db  61h ; a
-    db    0
-    db  2Ah ; *
-    db    0
-    db  6Ch ; l
-    db  73h ; s
-    db  75h ; u
-    db    0
-    db  6Ch ; l
-    db  73h ; s
-    db  64h ; d
-    db    0
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db    0
-    db  5Ch ; \
-    db    0
-    db  73h ; s
-    db  61h ; a
-    db  76h ; v
-    db    0
-    db    0
+    db 108
+    db 111
+    db 97
+    db 0
+    db 42
+    db 0
+    db 108
+    db 115
+    db 117
+    db 0
+    db 108
+    db 115
+    db 100
+    db 0
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 0
+    db 92
+    db 0
+    db 115
+    db 97
+    db 118
+    db 0
+    db 0
 word_3EBB0     dw 0
 word_3EBB2     dw 0
 word_3EBB4     dw 0
@@ -12824,3147 +14523,3188 @@ word_3EBBE     dw 0
 word_3EBC0     dw 0
 word_3EBC2     dw 0
 word_3EBC4     dw 0
-a_res     db '.res',0
-a_pre     db '.pre',0
-aWai     db 'wai',0
-    db ':',0
-a_     db '.',0
+a_res     db 46
+    db 114
+    db 101
+    db 115
+    db 0
+a_pre     db 46
+    db 112
+    db 114
+    db 101
+    db 0
+aWai     db 119
+    db 97
+    db 105
+    db 0
+    db 58
+    db 0
+a_     db 46
+    db 0
 byte_3EBD8     db 0
-    db  6Ah ; j
-    db  6Fh ; o
-    db  79h ; y
-    db    0
-    db  6Ah ; j
-    db  6Fh ; o
-    db  78h ; x
-    db    0
-    db  6Bh ; k
-    db  65h ; e
-    db  79h ; y
-    db    0
-    db  6Dh ; m
-    db  6Fh ; o
-    db  75h ; u
-    db    0
-    db  70h ; p
-    db  61h ; a
-    db  75h ; u
-    db    0
-    db  6Dh ; m
-    db  6Fh ; o
-    db  6Eh ; n
-    db    0
-    db  6Dh ; m
-    db  6Fh ; o
-    db  66h ; f
-    db    0
-    db  73h ; s
-    db  6Fh ; o
-    db  6Eh ; n
-    db    0
-    db  73h ; s
-    db  6Fh ; o
-    db  66h ; f
-    db    0
-    db  64h ; d
-    db  6Fh ; o
-    db  73h ; s
-    db    0
-    db  6Dh ; m
-    db  72h ; r
-    db  6Ch ; l
-    db    0
-    db  6Dh ; m
-    db  72h ; r
-    db  73h ; s
-    db    0
-    db  64h ; d
-    db  65h ; e
-    db  61h ; a
-    db    0
-    db  64h ; d
-    db  65h ; e
-    db  72h ; r
-    db    0
-    db  6Dh ; m
-    db  65h ; e
-    db  72h ; r
-    db    0
-    db  2Eh ; .
-    db  70h ; p
-    db  33h ; 3
-    db  73h ; s
-    db    0
-    db  2Eh ; .
-    db  33h ; 3
-    db  73h ; s
-    db  68h ; h
-    db    0
-    db    0
-    db  73h ; s
-    db  64h ; d
-    db  74h ; t
-    db  65h ; e
-    db  64h ; d
-    db  69h ; i
-    db  74h ; t
-    db    0
-    db  74h ; t
-    db  65h ; e
-    db  64h ; d
-    db  69h ; i
-    db  74h ; t
-    db    0
-    db  70h ; p
-    db  62h ; b
-    db  6Fh ; o
-    db  78h ; x
-    db    0
-    db  73h ; s
-    db  6Eh ; n
-    db  61h ; a
-    db  6Dh ; m
-    db    0
-    db  6Dh ; m
-    db  6Eh ; n
-    db  61h ; a
-    db  6Dh ; m
-    db    0
-    db  74h ; t
-    db  6Eh ; n
-    db  61h ; a
-    db  6Dh ; m
-    db    0
-    db  62h ; b
-    db  74h ; t
-    db  69h ; i
-    db    0
-    db  62h ; b
-    db  73h ; s
-    db  63h ; c
-    db    0
-    db  62h ; b
-    db  6Ch ; l
-    db  6Fh ; o
-    db    0
-    db  62h ; b
-    db  73h ; s
-    db  61h ; a
-    db    0
-    db  62h ; b
-    db  63h ; c
-    db  6Ch ; l
-    db    0
-    db  62h ; b
-    db  65h ; e
-    db  78h ; x
-    db    0
-    db  6Dh ; m
-    db  73h ; s
-    db  73h ; s
-    db    0
-    db  6Dh ; m
-    db  65h ; e
-    db  6Eh ; n
-    db    0
-    db  63h ; c
-    db  68h ; h
-    db  6Ch ; l
-    db    0
-    db  74h ; t
-    db  72h ; r
-    db  6Bh ; k
-    db    0
-    db  2Eh ; .
-    db  74h ; t
-    db  72h ; r
-    db  6Bh ; k
-    db    0
-    db  2Eh ; .
-    db  74h ; t
-    db  72h ; r
-    db  6Bh ; k
-    db    0
-    db  74h ; t
-    db  72h ; r
-    db  6Bh ; k
-    db    0
-    db  2Eh ; .
-    db  74h ; t
-    db  72h ; r
-    db  6Bh ; k
-    db    0
-    db  66h ; f
-    db  65h ; e
-    db  78h ; x
-    db    0
-    db  73h ; s
-    db  65h ; e
-    db  72h ; r
-    db    0
-    db  63h ; c
-    db  68h ; h
-    db  78h ; x
-    db    0
-    db    0
-    db  65h ; e
-    db  6Fh ; o
-    db  6Bh ; k
-    db  65h ; e
-    db  6Eh ; n
-    db  73h ; s
-    db  65h ; e
-    db  69h ; i
-    db  65h ; e
-    db  65h ; e
-    db  6Dh ; m
-    db  73h ; s
-    db  65h ; e
-    db  65h ; e
-    db  64h ; d
-    db  65h ; e
-    db  77h ; w
-    db  77h ; w
-    db  65h ; e
-    db  66h ; f
-    db  75h ; u
-    db  65h ; e
-    db  6Eh ; n
-    db  70h ; p
-    db  65h ; e
-    db  73h ; s
-    db  74h ; t
-    db  65h ; e
-    db  6Ah ; j
-    db  73h ; s
-    db  65h ; e
-    db  6Ah ; j
-    db  64h ; d
-    db  65h ; e
-    db  74h ; t
-    db  65h ; e
-    db  65h ; e
-    db  77h ; w
-    db  61h ; a
-    db  65h ; e
-    db  66h ; f
-    db  74h ; t
-    db  65h ; e
-    db  61h ; a
-    db  74h ; t
-    db    0
-    db  74h ; t
-    db  65h ; e
-    db  72h ; r
-byte_3ECBB     db 30h
-    db    0
-    db    0
-    db    0
-    db  3Bh ; ;
-    db    0
-    db  3Ch ; <
-    db    0
-    db  3Dh ; =
-    db    0
-    db  3Eh ; >
-    db    0
-    db  3Fh ; ?
-    db    0
-    db  40h ; @
-    db    0
-    db  41h ; A
-    db    0
-    db  42h ; B
-    db    0
-    db  43h ; C
-    db    0
-    db  44h ; D
-    db    0
-    db    0
-    db    0
-    db    0
-    db    9
-    db    0
-    db 0CAh ;  
-    db    0
-    db 0DCh ; ‹
-    db    0
-    db    8
-    db    0
-    db 0DCh ; ‹
-    db    0
-    db 0C7h ; «
-    db    0
-    db 0CEh ; Œ
-    db    0
-    db  3Bh ; ;
-    db    1
-    db 0C7h ; «
-    db    0
-    db  3Bh ; ;
-    db    1
-    db 0B5h ; µ
-    db    0
-    db    4
-    db    0
-    db  84h ; Ñ
-    db    0
-    db    4
-    db    0
-    db  24h ; $
-    db    0
-    db 0BBh ; ª
-    db    0
-    db 0B3h ; ≥
-    db    0
-    db  8Bh ; ã
-    db    0
-    db 0B3h ; ≥
-    db    0
-    db 0BBh ; ª
-    db    0
-    db  1Eh
-    db    6
-    db  1Dh
-    db    9
-    db  66h ; f
-    db  6Ch ; l
-    db  61h ; a
-    db  74h ; t
-    db  6Ch ; l
-    db  61h ; a
-    db  6Bh ; k
-    db  65h ; e
-    db  6Ch ; l
-    db  61h ; a
-    db  6Bh ; k
-    db  31h ; 1
-    db  6Ch ; l
-    db  61h ; a
-    db  6Bh ; k
-    db  32h ; 2
-    db  6Ch ; l
-    db  61h ; a
-    db  6Bh ; k
-    db  33h ; 3
-    db  6Ch ; l
-    db  61h ; a
-    db  6Bh ; k
-    db  34h ; 4
-    db  68h ; h
-    db  69h ; i
-    db  67h ; g
-    db  68h ; h
-    db  67h ; g
-    db  6Fh ; o
-    db  75h ; u
-    db  6Eh ; n
-    db  67h ; g
-    db  6Fh ; o
-    db  75h ; u
-    db  77h ; w
-    db  67h ; g
-    db  6Fh ; o
-    db  75h ; u
-    db  73h ; s
-    db  67h ; g
-    db  6Fh ; o
-    db  75h ; u
-    db  65h ; e
-    db  67h ; g
-    db  6Fh ; o
-    db  75h ; u
-    db  31h ; 1
-    db  67h ; g
-    db  6Fh ; o
-    db  75h ; u
-    db  32h ; 2
-    db  67h ; g
-    db  6Fh ; o
-    db  75h ; u
-    db  33h ; 3
-    db  67h ; g
-    db  6Fh ; o
-    db  75h ; u
-    db  34h ; 4
-    db  67h ; g
-    db  6Fh ; o
-    db  75h ; u
-    db  35h ; 5
-    db  67h ; g
-    db  6Fh ; o
-    db  75h ; u
-    db  36h ; 6
-    db  67h ; g
-    db  6Fh ; o
-    db  75h ; u
-    db  37h ; 7
-    db  67h ; g
-    db  6Fh ; o
-    db  75h ; u
-    db  38h ; 8
-    db    0
-    db    0
-    db  63h ; c
-    db  72h ; r
-    db  73h ; s
-    db  30h ; 0
-    db  63h ; c
-    db  72h ; r
-    db  73h ; s
-    db  31h ; 1
-    db  63h ; c
-    db  72h ; r
-    db  73h ; s
-    db  32h ; 2
-    db  63h ; c
-    db  72h ; r
-    db  73h ; s
-    db  33h ; 3
-    db    0
-    db    0
-    db  75h ; u
-    db  63h ; c
-    db  72h ; r
-    db  30h ; 0
-    db  75h ; u
-    db  63h ; c
-    db  72h ; r
-    db  31h ; 1
-    db  75h ; u
-    db  63h ; c
-    db  72h ; r
-    db  32h ; 2
-    db  75h ; u
-    db  63h ; c
-    db  72h ; r
-    db  33h ; 3
-    db    0
-    db    0
+    db 106
+    db 111
+    db 121
+    db 0
+    db 106
+    db 111
+    db 120
+    db 0
+    db 107
+    db 101
+    db 121
+    db 0
+    db 109
+    db 111
+    db 117
+    db 0
+    db 112
+    db 97
+    db 117
+    db 0
+    db 109
+    db 111
+    db 110
+    db 0
+    db 109
+    db 111
+    db 102
+    db 0
+    db 115
+    db 111
+    db 110
+    db 0
+    db 115
+    db 111
+    db 102
+    db 0
+    db 100
+    db 111
+    db 115
+    db 0
+    db 109
+    db 114
+    db 108
+    db 0
+    db 109
+    db 114
+    db 115
+    db 0
+    db 100
+    db 101
+    db 97
+    db 0
+    db 100
+    db 101
+    db 114
+    db 0
+    db 109
+    db 101
+    db 114
+    db 0
+    db 46
+    db 112
+    db 51
+    db 115
+    db 0
+    db 46
+    db 51
+    db 115
+    db 104
+    db 0
+    db 0
+    db 115
+    db 100
+    db 116
+    db 101
+    db 100
+    db 105
+    db 116
+    db 0
+    db 116
+    db 101
+    db 100
+    db 105
+    db 116
+    db 0
+    db 112
+    db 98
+    db 111
+    db 120
+    db 0
+    db 115
+    db 110
+    db 97
+    db 109
+    db 0
+    db 109
+    db 110
+    db 97
+    db 109
+    db 0
+    db 116
+    db 110
+    db 97
+    db 109
+    db 0
+    db 98
+    db 116
+    db 105
+    db 0
+    db 98
+    db 115
+    db 99
+    db 0
+    db 98
+    db 108
+    db 111
+    db 0
+    db 98
+    db 115
+    db 97
+    db 0
+    db 98
+    db 99
+    db 108
+    db 0
+    db 98
+    db 101
+    db 120
+    db 0
+    db 109
+    db 115
+    db 115
+    db 0
+    db 109
+    db 101
+    db 110
+    db 0
+    db 99
+    db 104
+    db 108
+    db 0
+    db 116
+    db 114
+    db 107
+    db 0
+    db 46
+    db 116
+    db 114
+    db 107
+    db 0
+    db 46
+    db 116
+    db 114
+    db 107
+    db 0
+    db 116
+    db 114
+    db 107
+    db 0
+    db 46
+    db 116
+    db 114
+    db 107
+    db 0
+    db 102
+    db 101
+    db 120
+    db 0
+    db 115
+    db 101
+    db 114
+    db 0
+    db 99
+    db 104
+    db 120
+    db 0
+    db 0
+    db 101
+    db 111
+    db 107
+    db 101
+    db 110
+    db 115
+    db 101
+    db 105
+    db 101
+    db 101
+    db 109
+    db 115
+    db 101
+    db 101
+    db 100
+    db 101
+    db 119
+    db 119
+    db 101
+    db 102
+    db 117
+    db 101
+    db 110
+    db 112
+    db 101
+    db 115
+    db 116
+    db 101
+    db 106
+    db 115
+    db 101
+    db 106
+    db 100
+    db 101
+    db 116
+    db 101
+    db 101
+    db 119
+    db 97
+    db 101
+    db 102
+    db 116
+    db 101
+    db 97
+    db 116
+    db 0
+    db 116
+    db 101
+    db 114
+byte_3ECBB     db 48
+    db 0
+    db 0
+    db 0
+    db 59
+    db 0
+    db 60
+    db 0
+    db 61
+    db 0
+    db 62
+    db 0
+    db 63
+    db 0
+    db 64
+    db 0
+    db 65
+    db 0
+    db 66
+    db 0
+    db 67
+    db 0
+    db 68
+    db 0
+    db 0
+    db 0
+    db 0
+    db 9
+    db 0
+    db 202
+    db 0
+    db 220
+    db 0
+    db 8
+    db 0
+    db 220
+    db 0
+    db 199
+    db 0
+    db 206
+    db 0
+    db 59
+    db 1
+    db 199
+    db 0
+    db 59
+    db 1
+    db 181
+    db 0
+    db 4
+    db 0
+    db 132
+    db 0
+    db 4
+    db 0
+    db 36
+    db 0
+    db 187
+    db 0
+    db 179
+    db 0
+    db 139
+    db 0
+    db 179
+    db 0
+    db 187
+    db 0
+    db 30
+    db 6
+    db 29
+    db 9
+    db 102
+    db 108
+    db 97
+    db 116
+    db 108
+    db 97
+    db 107
+    db 101
+    db 108
+    db 97
+    db 107
+    db 49
+    db 108
+    db 97
+    db 107
+    db 50
+    db 108
+    db 97
+    db 107
+    db 51
+    db 108
+    db 97
+    db 107
+    db 52
+    db 104
+    db 105
+    db 103
+    db 104
+    db 103
+    db 111
+    db 117
+    db 110
+    db 103
+    db 111
+    db 117
+    db 119
+    db 103
+    db 111
+    db 117
+    db 115
+    db 103
+    db 111
+    db 117
+    db 101
+    db 103
+    db 111
+    db 117
+    db 49
+    db 103
+    db 111
+    db 117
+    db 50
+    db 103
+    db 111
+    db 117
+    db 51
+    db 103
+    db 111
+    db 117
+    db 52
+    db 103
+    db 111
+    db 117
+    db 53
+    db 103
+    db 111
+    db 117
+    db 54
+    db 103
+    db 111
+    db 117
+    db 55
+    db 103
+    db 111
+    db 117
+    db 56
+    db 0
+    db 0
+    db 99
+    db 114
+    db 115
+    db 48
+    db 99
+    db 114
+    db 115
+    db 49
+    db 99
+    db 114
+    db 115
+    db 50
+    db 99
+    db 114
+    db 115
+    db 51
+    db 0
+    db 0
+    db 117
+    db 99
+    db 114
+    db 48
+    db 117
+    db 99
+    db 114
+    db 49
+    db 117
+    db 99
+    db 114
+    db 50
+    db 117
+    db 99
+    db 114
+    db 51
+    db 0
+    db 0
 word_3ED74     dw 0
 word_3ED76     dw 0
-off_3ED78     dw offset sub_2CE03
+off_3ED78     dw 435
 word_3ED7A     dw 0
-    dw seg dseg
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-word_3EDCA     dw 360Ah
-aC_file_info     db ';C_FILE_INFO',0
+    dw 15223
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+word_3EDCA     dw 13834
+aC_file_info     db 59
+    db 67
+    db 95
+    db 70
+    db 73
+    db 76
+    db 69
+    db 95
+    db 73
+    db 78
+    db 70
+    db 79
+    db 0
 dword_3EDD9     dd 0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
 word_3EDE5     dw 0
-    db    0
-    db    0
-    db    0
-    db    0
+    db 0
+    db 0
+    db 0
+    db 0
 word_3EDEB     dw 0
 byte_3EDED     db 0
-    db    0
-    db    0
+    db 0
+    db 0
 byte_3EDF0     db 0
-    db    0
-word_3EDF2     dw 14h
-    db  81h ; Å
-    db  81h ; Å
-    db  81h ; Å
-    db    1
-    db    1
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
+    db 0
+word_3EDF2     dw 20
+    db 129
+    db 129
+    db 129
+    db 1
+    db 1
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
 argc     dw 0
 argv     dw 0
 word_3EE0C     dw 0
-word_3EE0E     dw 36A2h
-seg_3EE10     dw seg dseg
-    db  43h ; C
-    db    0
+word_3EE0E     dw 13986
+seg_3EE10     dw 15223
+    db 67
+    db 0
 word_3EE14     dw 0
 byte_3EE16     db 0
 byte_3EE17     db 0
 dword_3EE18     dd 0
-unk_3EE1C     db    0
-    db    0
+unk_3EE1C     db 0
+    db 0
 word_3EE1E     dw 0
-dword_3EE20     dd 0FFFFFFFFh
-word_3EE24     dw 0AE20h
+dword_3EE20     dd -1
+word_3EE24     dw 44576
 dword_3EE26     dd 0
-    db    0
-    db  16h
-    db    2
-    db    2
-    db  18h
-    db  0Dh
-    db    9
-    db  0Ch
-    db  0Ch
-    db  0Ch
-    db    7
-    db    8
-    db  16h
-    db  16h
-    db 0FFh
-    db  12h
-    db  0Dh
-    db  12h
-    db    2
-    db 0FFh
+    db 0
+    db 22
+    db 2
+    db 2
+    db 24
+    db 13
+    db 9
+    db 12
+    db 12
+    db 12
+    db 7
+    db 8
+    db 22
+    db 22
+    db 255
+    db 18
+    db 13
+    db 18
+    db 2
+    db 255
 word_3EE3E     dw 0
-    db  76h ; v
-    db  93h ; ì
-    db    0
-    db    0
-    db  76h ; v
-    db  93h ; ì
-    db    1
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    2
-    db    1
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    2
-    db    2
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  84h ; Ñ
-    db    3
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    2
-    db    4
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    1
-    db    0
-    db    0
-    db    2
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-word_3EF58     dw 3768h
-aNull     db '(null)',0
-aNull_0     db '(null)',0
-    db '+- #',0
-    db    0
+    db 118
+    db 147
+    db 0
+    db 0
+    db 118
+    db 147
+    db 1
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 2
+    db 1
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 2
+    db 2
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 132
+    db 3
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 2
+    db 4
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 1
+    db 0
+    db 0
+    db 2
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+word_3EF58     dw 14184
+aNull     db 40
+    db 110
+    db 117
+    db 108
+    db 108
+    db 41
+    db 0
+aNull_0     db 40
+    db 110
+    db 117
+    db 108
+    db 108
+    db 41
+    db 0
+    db 43
+    db 45
+    db 32
+    db 35
+    db 0
+    db 0
 word_3EF6E     dw 0
 word_3EF70     dw 0
-    db    0
-    db    0
+    db 0
+    db 0
 word_3EF74     dw 0
-    db    0
-    db    0
+    db 0
+    db 0
 word_3EF78     dw 0
-    db    0
-    db    0
+    db 0
+    db 0
 word_3EF7C     dw 0
-word_3EF7E     dw 2000h
-    db    0
-    db    0
+word_3EF7E     dw 8192
+    db 0
+    db 0
 byte_3EF82     db 0
-    db    0
-off_3EF84     dd __fptrap
-off_3EF88     dd __fptrap
-    dd __fptrap
-off_3EF90     dd __fptrap
-off_3EF94     dd __fptrap
+    db 0
+off_3EF84     dd 751108702
+off_3EF88     dd 751108702
+    dd 751108702
+off_3EF90     dd 751108702
+off_3EF94     dd 751108702
 word_3EF98     dw 0
 word_3EF9A     dw 0
-    db    1
-    db    0
-    db    0
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  28h ; (
-    db  28h ; (
-    db  28h ; (
-    db  28h ; (
-    db  28h ; (
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  48h ; H
-    db  10h
-    db  10h
-    db  10h
-    db  10h
-    db  10h
-    db  10h
-    db  10h
-    db  10h
-    db  10h
-    db  10h
-    db  10h
-    db  10h
-    db  10h
-    db  10h
-    db  10h
-    db  84h ; Ñ
-    db  84h ; Ñ
-    db  84h ; Ñ
-    db  84h ; Ñ
-    db  84h ; Ñ
-    db  84h ; Ñ
-    db  84h ; Ñ
-    db  84h ; Ñ
-    db  84h ; Ñ
-    db  84h ; Ñ
-    db  10h
-    db  10h
-    db  10h
-    db  10h
-    db  10h
-    db  10h
-    db  10h
-    db  81h ; Å
-    db  81h ; Å
-    db  81h ; Å
-    db  81h ; Å
-    db  81h ; Å
-    db  81h ; Å
-    db    1
-    db    1
-    db    1
-    db    1
-    db    1
-    db    1
-    db    1
-    db    1
-    db    1
-    db    1
-    db    1
-    db    1
-    db    1
-    db    1
-    db    1
-    db    1
-    db    1
-    db    1
-    db    1
-    db    1
-    db  10h
-    db  10h
-    db  10h
-    db  10h
-    db  10h
-    db  10h
-    db  82h ; Ç
-    db  82h ; Ç
-    db  82h ; Ç
-    db  82h ; Ç
-    db  82h ; Ç
-    db  82h ; Ç
-    db    2
-    db    2
-    db    2
-    db    2
-    db    2
-    db    2
-    db    2
-    db    2
-    db    2
-    db    2
-    db    2
-    db    2
-    db    2
-    db    2
-    db    2
-    db    2
-    db    2
-    db    2
-    db    2
-    db    2
-    db  10h
-    db  10h
-    db  10h
-    db  10h
-    db  20h
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
+    db 1
+    db 0
+    db 0
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 40
+    db 40
+    db 40
+    db 40
+    db 40
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 72
+    db 16
+    db 16
+    db 16
+    db 16
+    db 16
+    db 16
+    db 16
+    db 16
+    db 16
+    db 16
+    db 16
+    db 16
+    db 16
+    db 16
+    db 16
+    db 132
+    db 132
+    db 132
+    db 132
+    db 132
+    db 132
+    db 132
+    db 132
+    db 132
+    db 132
+    db 16
+    db 16
+    db 16
+    db 16
+    db 16
+    db 16
+    db 16
+    db 129
+    db 129
+    db 129
+    db 129
+    db 129
+    db 129
+    db 1
+    db 1
+    db 1
+    db 1
+    db 1
+    db 1
+    db 1
+    db 1
+    db 1
+    db 1
+    db 1
+    db 1
+    db 1
+    db 1
+    db 1
+    db 1
+    db 1
+    db 1
+    db 1
+    db 1
+    db 16
+    db 16
+    db 16
+    db 16
+    db 16
+    db 16
+    db 130
+    db 130
+    db 130
+    db 130
+    db 130
+    db 130
+    db 2
+    db 2
+    db 2
+    db 2
+    db 2
+    db 2
+    db 2
+    db 2
+    db 2
+    db 2
+    db 2
+    db 2
+    db 2
+    db 2
+    db 2
+    db 2
+    db 2
+    db 2
+    db 2
+    db 2
+    db 16
+    db 16
+    db 16
+    db 16
+    db 32
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
 word_3F0A0     dw 1
 word_3F0A2     dw 0
 word_3F0A4     dw 0
 word_3F0A6     dw 0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
 dword_3F0BC     dd 0
-    db    0
-    db    1
-    db    1
-    db    2
-    db    3
-    db    3
-    db    4
-    db    4
-    db    5
-    db    6
-    db    6
-    db    7
-    db    8
-    db    8
-    db    9
-    db  0Ah
-    db  0Ah
-    db  0Bh
-    db  0Bh
-    db  0Ch
-    db  0Dh
-    db  0Dh
-    db  0Eh
-    db  0Fh
-    db  0Fh
-    db  10h
-    db  10h
-    db  11h
-    db  12h
-    db  12h
-    db  13h
-    db  14h
-    db  14h
-    db  15h
-    db  16h
-    db  16h
-    db  17h
-    db  17h
-    db  18h
-    db  19h
-    db  19h
-    db  1Ah
-    db  1Bh
-    db  1Bh
-    db  1Ch
-    db  1Ch
-    db  1Dh
-    db  1Eh
-    db  1Eh
-    db  1Fh
-    db  1Fh
-    db  20h
-    db  21h ; !
-    db  21h ; !
-    db  22h ; "
-    db  22h ; "
-    db  23h ; #
-    db  24h ; $
-    db  24h ; $
-    db  25h ; %
-    db  26h ; &
-    db  26h ; &
-    db  27h ; '
-    db  27h ; '
-    db  28h ; (
-    db  29h ; )
-    db  29h ; )
-    db  2Ah ; *
-    db  2Ah ; *
-    db  2Bh ; +
-    db  2Ch ; ,
-    db  2Ch ; ,
-    db  2Dh ; -
-    db  2Dh ; -
-    db  2Eh ; .
-    db  2Eh ; .
-    db  2Fh ; /
-    db  30h ; 0
-    db  30h ; 0
-    db  31h ; 1
-    db  31h ; 1
-    db  32h ; 2
-    db  33h ; 3
-    db  33h ; 3
-    db  34h ; 4
-    db  34h ; 4
-    db  35h ; 5
-    db  35h ; 5
-    db  36h ; 6
-    db  37h ; 7
-    db  37h ; 7
-    db  38h ; 8
-    db  38h ; 8
-    db  39h ; 9
-    db  39h ; 9
-    db  3Ah ; :
-    db  3Ah ; :
-    db  3Bh ; ;
-    db  3Ch ; <
-    db  3Ch ; <
-    db  3Dh ; =
-    db  3Dh ; =
-    db  3Eh ; >
-    db  3Eh ; >
-    db  3Fh ; ?
-    db  3Fh ; ?
-    db  40h ; @
-    db  41h ; A
-    db  41h ; A
-    db  42h ; B
-    db  42h ; B
-    db  43h ; C
-    db  43h ; C
-    db  44h ; D
-    db  44h ; D
-    db  45h ; E
-    db  45h ; E
-    db  46h ; F
-    db  46h ; F
-    db  47h ; G
-    db  47h ; G
-    db  48h ; H
-    db  48h ; H
-    db  49h ; I
-    db  4Ah ; J
-    db  4Ah ; J
-    db  4Bh ; K
-    db  4Bh ; K
-    db  4Ch ; L
-    db  4Ch ; L
-    db  4Dh ; M
-    db  4Dh ; M
-    db  4Eh ; N
-    db  4Eh ; N
-    db  4Fh ; O
-    db  4Fh ; O
-    db  50h ; P
-    db  50h ; P
-    db  51h ; Q
-    db  51h ; Q
-    db  52h ; R
-    db  52h ; R
-    db  53h ; S
-    db  53h ; S
-    db  54h ; T
-    db  54h ; T
-    db  54h ; T
-    db  55h ; U
-    db  55h ; U
-    db  56h ; V
-    db  56h ; V
-    db  57h ; W
-    db  57h ; W
-    db  58h ; X
-    db  58h ; X
-    db  59h ; Y
-    db  59h ; Y
-    db  5Ah ; Z
-    db  5Ah ; Z
-    db  5Bh ; [
-    db  5Bh ; [
-    db  5Bh ; [
-    db  5Ch ; \
-    db  5Ch ; \
-    db  5Dh ; ]
-    db  5Dh ; ]
-    db  5Eh ; ^
-    db  5Eh ; ^
-    db  5Fh ; _
-    db  5Fh ; _
-    db  60h ; `
-    db  60h ; `
-    db  60h ; `
-    db  61h ; a
-    db  61h ; a
-    db  62h ; b
-    db  62h ; b
-    db  63h ; c
-    db  63h ; c
-    db  63h ; c
-    db  64h ; d
-    db  64h ; d
-    db  65h ; e
-    db  65h ; e
-    db  66h ; f
-    db  66h ; f
-    db  66h ; f
-    db  67h ; g
-    db  67h ; g
-    db  68h ; h
-    db  68h ; h
-    db  68h ; h
-    db  69h ; i
-    db  69h ; i
-    db  6Ah ; j
-    db  6Ah ; j
-    db  6Ah ; j
-    db  6Bh ; k
-    db  6Bh ; k
-    db  6Ch ; l
-    db  6Ch ; l
-    db  6Ch ; l
-    db  6Dh ; m
-    db  6Dh ; m
-    db  6Eh ; n
-    db  6Eh ; n
-    db  6Eh ; n
-    db  6Fh ; o
-    db  6Fh ; o
-    db  70h ; p
-    db  70h ; p
-    db  70h ; p
-    db  71h ; q
-    db  71h ; q
-    db  71h ; q
-    db  72h ; r
-    db  72h ; r
-    db  73h ; s
-    db  73h ; s
-    db  73h ; s
-    db  74h ; t
-    db  74h ; t
-    db  74h ; t
-    db  75h ; u
-    db  75h ; u
-    db  76h ; v
-    db  76h ; v
-    db  76h ; v
-    db  77h ; w
-    db  77h ; w
-    db  77h ; w
-    db  78h ; x
-    db  78h ; x
-    db  78h ; x
-    db  79h ; y
-    db  79h ; y
-    db  79h ; y
-    db  7Ah ; z
-    db  7Ah ; z
-    db  7Ah ; z
-    db  7Bh ; {
-    db  7Bh ; {
-    db  7Bh ; {
-    db  7Ch ; |
-    db  7Ch ; |
-    db  7Ch ; |
-    db  7Dh ; }
-    db  7Dh ; }
-    db  7Dh ; }
-    db  7Eh ; ~
-    db  7Eh ; ~
-    db  7Eh ; ~
-    db  7Fh ; 
-    db  7Fh ; 
-    db  7Fh ; 
-    db  80h ; Ä
-    db  80h ; Ä
-    db    0
+    db 0
+    db 1
+    db 1
+    db 2
+    db 3
+    db 3
+    db 4
+    db 4
+    db 5
+    db 6
+    db 6
+    db 7
+    db 8
+    db 8
+    db 9
+    db 10
+    db 10
+    db 11
+    db 11
+    db 12
+    db 13
+    db 13
+    db 14
+    db 15
+    db 15
+    db 16
+    db 16
+    db 17
+    db 18
+    db 18
+    db 19
+    db 20
+    db 20
+    db 21
+    db 22
+    db 22
+    db 23
+    db 23
+    db 24
+    db 25
+    db 25
+    db 26
+    db 27
+    db 27
+    db 28
+    db 28
+    db 29
+    db 30
+    db 30
+    db 31
+    db 31
+    db 32
+    db 33
+    db 33
+    db 34
+    db 34
+    db 35
+    db 36
+    db 36
+    db 37
+    db 38
+    db 38
+    db 39
+    db 39
+    db 40
+    db 41
+    db 41
+    db 42
+    db 42
+    db 43
+    db 44
+    db 44
+    db 45
+    db 45
+    db 46
+    db 46
+    db 47
+    db 48
+    db 48
+    db 49
+    db 49
+    db 50
+    db 51
+    db 51
+    db 52
+    db 52
+    db 53
+    db 53
+    db 54
+    db 55
+    db 55
+    db 56
+    db 56
+    db 57
+    db 57
+    db 58
+    db 58
+    db 59
+    db 60
+    db 60
+    db 61
+    db 61
+    db 62
+    db 62
+    db 63
+    db 63
+    db 64
+    db 65
+    db 65
+    db 66
+    db 66
+    db 67
+    db 67
+    db 68
+    db 68
+    db 69
+    db 69
+    db 70
+    db 70
+    db 71
+    db 71
+    db 72
+    db 72
+    db 73
+    db 74
+    db 74
+    db 75
+    db 75
+    db 76
+    db 76
+    db 77
+    db 77
+    db 78
+    db 78
+    db 79
+    db 79
+    db 80
+    db 80
+    db 81
+    db 81
+    db 82
+    db 82
+    db 83
+    db 83
+    db 84
+    db 84
+    db 84
+    db 85
+    db 85
+    db 86
+    db 86
+    db 87
+    db 87
+    db 88
+    db 88
+    db 89
+    db 89
+    db 90
+    db 90
+    db 91
+    db 91
+    db 91
+    db 92
+    db 92
+    db 93
+    db 93
+    db 94
+    db 94
+    db 95
+    db 95
+    db 96
+    db 96
+    db 96
+    db 97
+    db 97
+    db 98
+    db 98
+    db 99
+    db 99
+    db 99
+    db 100
+    db 100
+    db 101
+    db 101
+    db 102
+    db 102
+    db 102
+    db 103
+    db 103
+    db 104
+    db 104
+    db 104
+    db 105
+    db 105
+    db 106
+    db 106
+    db 106
+    db 107
+    db 107
+    db 108
+    db 108
+    db 108
+    db 109
+    db 109
+    db 110
+    db 110
+    db 110
+    db 111
+    db 111
+    db 112
+    db 112
+    db 112
+    db 113
+    db 113
+    db 113
+    db 114
+    db 114
+    db 115
+    db 115
+    db 115
+    db 116
+    db 116
+    db 116
+    db 117
+    db 117
+    db 118
+    db 118
+    db 118
+    db 119
+    db 119
+    db 119
+    db 120
+    db 120
+    db 120
+    db 121
+    db 121
+    db 121
+    db 122
+    db 122
+    db 122
+    db 123
+    db 123
+    db 123
+    db 124
+    db 124
+    db 124
+    db 125
+    db 125
+    db 125
+    db 126
+    db 126
+    db 126
+    db 127
+    db 127
+    db 127
+    db 128
+    db 128
+    db 0
 word_3F1C2     dw 0
 word_3F1C4     dw 0
-    db    0
-    db    0
-    db    3
-    db    0
-    db  0Ch
-    db    0
-    db  0Fh
-    db    0
-    db  30h ; 0
-    db    0
-    db  33h ; 3
-    db    0
-    db  3Ch ; <
-    db    0
-    db  3Fh ; ?
-    db    0
-    db 0C0h ; ¿
-    db    0
-    db 0C3h ; √
-    db    0
-    db 0CCh ; Ã
-    db    0
-    db 0CFh ; œ
-    db    0
-    db 0F0h ; 
-    db    0
-    db 0F3h ; Û
-    db    0
-    db 0FCh ; ¸
-    db    0
-    db 0FFh
-    db    0
-    db    0
-    db    3
-    db    3
-    db    3
-    db  0Ch
-    db    3
-    db  0Fh
-    db    3
-    db  30h ; 0
-    db    3
-    db  33h ; 3
-    db    3
-    db  3Ch ; <
-    db    3
-    db  3Fh ; ?
-    db    3
-    db 0C0h ; ¿
-    db    3
-    db 0C3h ; √
-    db    3
-    db 0CCh ; Ã
-    db    3
-    db 0CFh ; œ
-    db    3
-    db 0F0h ; 
-    db    3
-    db 0F3h ; Û
-    db    3
-    db 0FCh ; ¸
-    db    3
-    db 0FFh
-    db    3
-    db    0
-    db  0Ch
-    db    3
-    db  0Ch
-    db  0Ch
-    db  0Ch
-    db  0Fh
-    db  0Ch
-    db  30h ; 0
-    db  0Ch
-    db  33h ; 3
-    db  0Ch
-    db  3Ch ; <
-    db  0Ch
-    db  3Fh ; ?
-    db  0Ch
-    db 0C0h ; ¿
-    db  0Ch
-    db 0C3h ; √
-    db  0Ch
-    db 0CCh ; Ã
-    db  0Ch
-    db 0CFh ; œ
-    db  0Ch
-    db 0F0h ; 
-    db  0Ch
-    db 0F3h ; Û
-    db  0Ch
-    db 0FCh ; ¸
-    db  0Ch
-    db 0FFh
-    db  0Ch
-    db    0
-    db  0Fh
-    db    3
-    db  0Fh
-    db  0Ch
-    db  0Fh
-    db  0Fh
-    db  0Fh
-    db  30h ; 0
-    db  0Fh
-    db  33h ; 3
-    db  0Fh
-    db  3Ch ; <
-    db  0Fh
-    db  3Fh ; ?
-    db  0Fh
-    db 0C0h ; ¿
-    db  0Fh
-    db 0C3h ; √
-    db  0Fh
-    db 0CCh ; Ã
-    db  0Fh
-    db 0CFh ; œ
-    db  0Fh
-    db 0F0h ; 
-    db  0Fh
-    db 0F3h ; Û
-    db  0Fh
-    db 0FCh ; ¸
-    db  0Fh
-    db 0FFh
-    db  0Fh
-    db    0
-    db  30h ; 0
-    db    3
-    db  30h ; 0
-    db  0Ch
-    db  30h ; 0
-    db  0Fh
-    db  30h ; 0
-    db  30h ; 0
-    db  30h ; 0
-    db  33h ; 3
-    db  30h ; 0
-    db  3Ch ; <
-    db  30h ; 0
-    db  3Fh ; ?
-    db  30h ; 0
-    db 0C0h ; ¿
-    db  30h ; 0
-    db 0C3h ; √
-    db  30h ; 0
-    db 0CCh ; Ã
-    db  30h ; 0
-    db 0CFh ; œ
-    db  30h ; 0
-    db 0F0h ; 
-    db  30h ; 0
-    db 0F3h ; Û
-    db  30h ; 0
-    db 0FCh ; ¸
-    db  30h ; 0
-    db 0FFh
-    db  30h ; 0
-    db    0
-    db  33h ; 3
-    db    3
-    db  33h ; 3
-    db  0Ch
-    db  33h ; 3
-    db  0Fh
-    db  33h ; 3
-    db  30h ; 0
-    db  33h ; 3
-    db  33h ; 3
-    db  33h ; 3
-    db  3Ch ; <
-    db  33h ; 3
-    db  3Fh ; ?
-    db  33h ; 3
-    db 0C0h ; ¿
-    db  33h ; 3
-    db 0C3h ; √
-    db  33h ; 3
-    db 0CCh ; Ã
-    db  33h ; 3
-    db 0CFh ; œ
-    db  33h ; 3
-    db 0F0h ; 
-    db  33h ; 3
-    db 0F3h ; Û
-    db  33h ; 3
-    db 0FCh ; ¸
-    db  33h ; 3
-    db 0FFh
-    db  33h ; 3
-    db    0
-    db  3Ch ; <
-    db    3
-    db  3Ch ; <
-    db  0Ch
-    db  3Ch ; <
-    db  0Fh
-    db  3Ch ; <
-    db  30h ; 0
-    db  3Ch ; <
-    db  33h ; 3
-    db  3Ch ; <
-    db  3Ch ; <
-    db  3Ch ; <
-    db  3Fh ; ?
-    db  3Ch ; <
-    db 0C0h ; ¿
-    db  3Ch ; <
-    db 0C3h ; √
-    db  3Ch ; <
-    db 0CCh ; Ã
-    db  3Ch ; <
-    db 0CFh ; œ
-    db  3Ch ; <
-    db 0F0h ; 
-    db  3Ch ; <
-    db 0F3h ; Û
-    db  3Ch ; <
-    db 0FCh ; ¸
-    db  3Ch ; <
-    db 0FFh
-    db  3Ch ; <
-    db    0
-    db  3Fh ; ?
-    db    3
-    db  3Fh ; ?
-    db  0Ch
-    db  3Fh ; ?
-    db  0Fh
-    db  3Fh ; ?
-    db  30h ; 0
-    db  3Fh ; ?
-    db  33h ; 3
-    db  3Fh ; ?
-    db  3Ch ; <
-    db  3Fh ; ?
-    db  3Fh ; ?
-    db  3Fh ; ?
-    db 0C0h ; ¿
-    db  3Fh ; ?
-    db 0C3h ; √
-    db  3Fh ; ?
-    db 0CCh ; Ã
-    db  3Fh ; ?
-    db 0CFh ; œ
-    db  3Fh ; ?
-    db 0F0h ; 
-    db  3Fh ; ?
-    db 0F3h ; Û
-    db  3Fh ; ?
-    db 0FCh ; ¸
-    db  3Fh ; ?
-    db 0FFh
-    db  3Fh ; ?
-    db    0
-    db 0C0h ; ¿
-    db    3
-    db 0C0h ; ¿
-    db  0Ch
-    db 0C0h ; ¿
-    db  0Fh
-    db 0C0h ; ¿
-    db  30h ; 0
-    db 0C0h ; ¿
-    db  33h ; 3
-    db 0C0h ; ¿
-    db  3Ch ; <
-    db 0C0h ; ¿
-    db  3Fh ; ?
-    db 0C0h ; ¿
-    db 0C0h ; ¿
-    db 0C0h ; ¿
-    db 0C3h ; √
-    db 0C0h ; ¿
-    db 0CCh ; Ã
-    db 0C0h ; ¿
-    db 0CFh ; œ
-    db 0C0h ; ¿
-    db 0F0h ; 
-    db 0C0h ; ¿
-    db 0F3h ; Û
-    db 0C0h ; ¿
-    db 0FCh ; ¸
-    db 0C0h ; ¿
-    db 0FFh
-    db 0C0h ; ¿
-    db    0
-    db 0C3h ; √
-    db    3
-    db 0C3h ; √
-    db  0Ch
-    db 0C3h ; √
-    db  0Fh
-    db 0C3h ; √
-    db  30h ; 0
-    db 0C3h ; √
-    db  33h ; 3
-    db 0C3h ; √
-    db  3Ch ; <
-    db 0C3h ; √
-    db  3Fh ; ?
-    db 0C3h ; √
-    db 0C0h ; ¿
-    db 0C3h ; √
-    db 0C3h ; √
-    db 0C3h ; √
-    db 0CCh ; Ã
-    db 0C3h ; √
-    db 0CFh ; œ
-    db 0C3h ; √
-    db 0F0h ; 
-    db 0C3h ; √
-    db 0F3h ; Û
-    db 0C3h ; √
-    db 0FCh ; ¸
-    db 0C3h ; √
-    db 0FFh
-    db 0C3h ; √
-    db    0
-    db 0CCh ; Ã
-    db    3
-    db 0CCh ; Ã
-    db  0Ch
-    db 0CCh ; Ã
-    db  0Fh
-    db 0CCh ; Ã
-    db  30h ; 0
-    db 0CCh ; Ã
-    db  33h ; 3
-    db 0CCh ; Ã
-    db  3Ch ; <
-    db 0CCh ; Ã
-    db  3Fh ; ?
-    db 0CCh ; Ã
-    db 0C0h ; ¿
-    db 0CCh ; Ã
-    db 0C3h ; √
-    db 0CCh ; Ã
-    db 0CCh ; Ã
-    db 0CCh ; Ã
-    db 0CFh ; œ
-    db 0CCh ; Ã
-    db 0F0h ; 
-    db 0CCh ; Ã
-    db 0F3h ; Û
-    db 0CCh ; Ã
-    db 0FCh ; ¸
-    db 0CCh ; Ã
-    db 0FFh
-    db 0CCh ; Ã
-    db    0
-    db 0CFh ; œ
-    db    3
-    db 0CFh ; œ
-    db  0Ch
-    db 0CFh ; œ
-    db  0Fh
-    db 0CFh ; œ
-    db  30h ; 0
-    db 0CFh ; œ
-    db  33h ; 3
-    db 0CFh ; œ
-    db  3Ch ; <
-    db 0CFh ; œ
-    db  3Fh ; ?
-    db 0CFh ; œ
-    db 0C0h ; ¿
-    db 0CFh ; œ
-    db 0C3h ; √
-    db 0CFh ; œ
-    db 0CCh ; Ã
-    db 0CFh ; œ
-    db 0CFh ; œ
-    db 0CFh ; œ
-    db 0F0h ; 
-    db 0CFh ; œ
-    db 0F3h ; Û
-    db 0CFh ; œ
-    db 0FCh ; ¸
-    db 0CFh ; œ
-    db 0FFh
-    db 0CFh ; œ
-    db    0
-    db 0F0h ; 
-    db    3
-    db 0F0h ; 
-    db  0Ch
-    db 0F0h ; 
-    db  0Fh
-    db 0F0h ; 
-    db  30h ; 0
-    db 0F0h ; 
-    db  33h ; 3
-    db 0F0h ; 
-    db  3Ch ; <
-    db 0F0h ; 
-    db  3Fh ; ?
-    db 0F0h ; 
-    db 0C0h ; ¿
-    db 0F0h ; 
-    db 0C3h ; √
-    db 0F0h ; 
-    db 0CCh ; Ã
-    db 0F0h ; 
-    db 0CFh ; œ
-    db 0F0h ; 
-    db 0F0h ; 
-    db 0F0h ; 
-    db 0F3h ; Û
-    db 0F0h ; 
-    db 0FCh ; ¸
-    db 0F0h ; 
-    db 0FFh
-    db 0F0h ; 
-    db    0
-    db 0F3h ; Û
-    db    3
-    db 0F3h ; Û
-    db  0Ch
-    db 0F3h ; Û
-    db  0Fh
-    db 0F3h ; Û
-    db  30h ; 0
-    db 0F3h ; Û
-    db  33h ; 3
-    db 0F3h ; Û
-    db  3Ch ; <
-    db 0F3h ; Û
-    db  3Fh ; ?
-    db 0F3h ; Û
-    db 0C0h ; ¿
-    db 0F3h ; Û
-    db 0C3h ; √
-    db 0F3h ; Û
-    db 0CCh ; Ã
-    db 0F3h ; Û
-    db 0CFh ; œ
-    db 0F3h ; Û
-    db 0F0h ; 
-    db 0F3h ; Û
-    db 0F3h ; Û
-    db 0F3h ; Û
-    db 0FCh ; ¸
-    db 0F3h ; Û
-    db 0FFh
-    db 0F3h ; Û
-    db    0
-    db 0FCh ; ¸
-    db    3
-    db 0FCh ; ¸
-    db  0Ch
-    db 0FCh ; ¸
-    db  0Fh
-    db 0FCh ; ¸
-    db  30h ; 0
-    db 0FCh ; ¸
-    db  33h ; 3
-    db 0FCh ; ¸
-    db  3Ch ; <
-    db 0FCh ; ¸
-    db  3Fh ; ?
-    db 0FCh ; ¸
-    db 0C0h ; ¿
-    db 0FCh ; ¸
-    db 0C3h ; √
-    db 0FCh ; ¸
-    db 0CCh ; Ã
-    db 0FCh ; ¸
-    db 0CFh ; œ
-    db 0FCh ; ¸
-    db 0F0h ; 
-    db 0FCh ; ¸
-    db 0F3h ; Û
-    db 0FCh ; ¸
-    db 0FCh ; ¸
-    db 0FCh ; ¸
-    db 0FFh
-    db 0FCh ; ¸
-    db    0
-    db 0FFh
-    db    3
-    db 0FFh
-    db  0Ch
-    db 0FFh
-    db  0Fh
-    db 0FFh
-    db  30h ; 0
-    db 0FFh
-    db  33h ; 3
-    db 0FFh
-    db  3Ch ; <
-    db 0FFh
-    db  3Fh ; ?
-    db 0FFh
-    db 0C0h ; ¿
-    db 0FFh
-    db 0C3h ; √
-    db 0FFh
-    db 0CCh ; Ã
-    db 0FFh
-    db 0CFh ; œ
-    db 0FFh
-    db 0F0h ; 
-    db 0FFh
-    db 0F3h ; Û
-    db 0FFh
-    db 0FCh ; ¸
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db  28h ; (
-    db    0
-    db 0A8h ; ®
-    db  3Ch ; <
-    db 0A8h ; ®
-    db  3Ch ; <
-    db 0A9h ; ©
-    db  3Ch ; <
-    db 0ABh ; ´
-    db  3Ch ; <
-    db 0AEh ; Æ
-    db  3Ch ; <
-    db 0B2h ; ≤
-    db  3Ch ; <
-    db 0B7h ; ∑
-    db  3Ch ; <
-    db 0BDh ; Ω
-    db  3Ch ; <
-    db 0C4h ; ƒ
-    db  3Ch ; <
-    db 0CCh ; Ã
-    db  3Ch ; <
-    db 0D5h ; ’
-    db  3Ch ; <
-    db 0DFh ; ﬂ
-    db  3Ch ; <
-    db 0EAh ; Í
-    db  3Ch ; <
-    db 0F6h ; ˆ
-    db  3Ch ; <
-    db    3
-    db  3Dh ; =
-    db  11h
-    db  3Dh ; =
-    db  20h
-    db  3Dh ; =
-    db  30h ; 0
-    db  3Dh ; =
-    db  41h ; A
-    db  3Dh ; =
-    db  53h ; S
-    db  3Dh ; =
-    db  66h ; f
-    db  3Dh ; =
-    db  7Ah ; z
-    db  3Dh ; =
-    db  8Fh ; è
-    db  3Dh ; =
-    db 0A5h ; •
-    db  3Dh ; =
-    db 0BCh ; º
-    db  3Dh ; =
-    db 0D4h ; ‘
-    db  3Dh ; =
-    db 0EDh ; Ì
-    db  3Dh ; =
-    db    7
-    db  3Eh ; >
-    db  22h ; "
-    db  3Eh ; >
-    db  3Eh ; >
-    db  3Eh ; >
-    db  5Bh ; [
-    db  3Eh ; >
-    db  79h ; y
-    db  3Eh ; >
-    db  98h ; ò
-    db  3Eh ; >
-    db 0B8h ; ∏
-    db  3Eh ; >
-    db 0D9h ; Ÿ
-    db  3Eh ; >
-    db 0FBh ; ˚
-    db  3Eh ; >
-    db  1Eh
-    db  3Fh ; ?
-    db  42h ; B
-    db  3Fh ; ?
-    db  67h ; g
-    db  3Fh ; ?
-    db  8Dh ; ç
-    db  3Fh ; ?
-    db    1
-    db    2
-    db    3
-    db    3
-    db    4
-    db    4
-    db    3
-    db    4
-    db    5
-    db    5
-    db    4
-    db    5
-    db    6
-    db    6
-    db    6
-    db    4
-    db    6
-    db    6
-    db    7
-    db    7
-    db    8
-    db    5
-    db    6
-    db    7
-    db    8
-    db    8
-    db    9
-    db    9
-    db    5
-    db    7
-    db    8
-    db    9
-    db    9
-    db  0Ah
-    db  0Ah
-    db  0Ah
-    db    5
-    db    7
-    db    8
-    db    9
-    db  0Ah
-    db  0Bh
-    db  0Bh
-    db  0Bh
-    db  0Bh
-    db    5
-    db    8
-    db    9
-    db  0Ah
-    db  0Bh
-    db  0Bh
-    db  0Ch
-    db  0Ch
-    db  0Ch
-    db  0Dh
-    db    6
-    db    8
-    db    9
-    db  0Bh
-    db  0Ch
-    db  0Ch
-    db  0Dh
-    db  0Dh
-    db  0Eh
-    db  0Eh
-    db  0Eh
-    db    6
-    db    8
-    db  0Ah
-    db  0Bh
-    db  0Ch
-    db  0Dh
-    db  0Eh
-    db  0Eh
-    db  0Fh
-    db  0Fh
-    db  0Fh
-    db  0Fh
-    db    6
-    db    9
-    db  0Ah
-    db  0Ch
-    db  0Dh
-    db  0Eh
-    db  0Eh
-    db  0Fh
-    db  0Fh
-    db  10h
-    db  10h
-    db  10h
-    db  10h
-    db    6
-    db    9
-    db  0Bh
-    db  0Ch
-    db  0Dh
-    db  0Eh
-    db  0Fh
-    db  10h
-    db  10h
-    db  11h
-    db  11h
-    db  11h
-    db  11h
-    db  12h
-    db    7
-    db    9
-    db  0Bh
-    db  0Dh
-    db  0Eh
-    db  0Fh
-    db  10h
-    db  11h
-    db  11h
-    db  12h
-    db  12h
-    db  12h
-    db  13h
-    db  13h
-    db  13h
-    db    7
-    db  0Ah
-    db  0Ch
-    db  0Dh
-    db  0Fh
-    db  10h
-    db  11h
-    db  11h
-    db  12h
-    db  13h
-    db  13h
-    db  13h
-    db  14h
-    db  14h
-    db  14h
-    db  14h
-    db    7
-    db  0Ah
-    db  0Ch
-    db  0Eh
-    db  0Fh
-    db  10h
-    db  11h
-    db  12h
-    db  13h
-    db  13h
-    db  14h
-    db  14h
-    db  15h
-    db  15h
-    db  15h
-    db  15h
-    db  15h
-    db    7
-    db  0Ah
-    db  0Ch
-    db  0Eh
-    db  10h
-    db  11h
-    db  12h
-    db  13h
-    db  13h
-    db  14h
-    db  15h
-    db  15h
-    db  16h
-    db  16h
-    db  16h
-    db  16h
-    db  16h
-    db  17h
-    db    8
-    db  0Bh
-    db  0Dh
-    db  0Fh
-    db  10h
-    db  11h
-    db  12h
-    db  13h
-    db  14h
-    db  15h
-    db  16h
-    db  16h
-    db  17h
-    db  17h
-    db  17h
-    db  17h
-    db  18h
-    db  18h
-    db  18h
-    db    8
-    db  0Bh
-    db  0Dh
-    db  0Fh
-    db  11h
-    db  12h
-    db  13h
-    db  14h
-    db  15h
-    db  16h
-    db  16h
-    db  17h
-    db  17h
-    db  18h
-    db  18h
-    db  18h
-    db  19h
-    db  19h
-    db  19h
-    db  19h
-    db    8
-    db  0Bh
-    db  0Eh
-    db  0Fh
-    db  11h
-    db  12h
-    db  14h
-    db  15h
-    db  16h
-    db  16h
-    db  17h
-    db  18h
-    db  18h
-    db  19h
-    db  19h
-    db  19h
-    db  1Ah
-    db  1Ah
-    db  1Ah
-    db  1Ah
-    db  1Ah
-    db    8
-    db  0Bh
-    db  0Eh
-    db  10h
-    db  11h
-    db  13h
-    db  14h
-    db  15h
-    db  16h
-    db  17h
-    db  18h
-    db  18h
-    db  19h
-    db  1Ah
-    db  1Ah
-    db  1Ah
-    db  1Bh
-    db  1Bh
-    db  1Bh
-    db  1Bh
-    db  1Bh
-    db  1Ch
-    db    8
-    db  0Ch
-    db  0Eh
-    db  10h
-    db  12h
-    db  13h
-    db  15h
-    db  16h
-    db  17h
-    db  18h
-    db  19h
-    db  19h
-    db  1Ah
-    db  1Ah
-    db  1Bh
-    db  1Bh
-    db  1Ch
-    db  1Ch
-    db  1Ch
-    db  1Dh
-    db  1Dh
-    db  1Dh
-    db  1Dh
-    db    9
-    db  0Ch
-    db  0Fh
-    db  11h
-    db  12h
-    db  14h
-    db  15h
-    db  16h
-    db  17h
-    db  18h
-    db  19h
-    db  1Ah
-    db  1Bh
-    db  1Bh
-    db  1Ch
-    db  1Ch
-    db  1Dh
-    db  1Dh
-    db  1Dh
-    db  1Eh
-    db  1Eh
-    db  1Eh
-    db  1Eh
-    db  1Eh
-    db    9
-    db  0Ch
-    db  0Fh
-    db  11h
-    db  13h
-    db  14h
-    db  16h
-    db  17h
-    db  18h
-    db  19h
-    db  1Ah
-    db  1Bh
-    db  1Bh
-    db  1Ch
-    db  1Dh
-    db  1Dh
-    db  1Eh
-    db  1Eh
-    db  1Eh
-    db  1Fh
-    db  1Fh
-    db  1Fh
-    db  1Fh
-    db  1Fh
-    db  1Fh
-    db    9
-    db  0Dh
-    db  0Fh
-    db  11h
-    db  13h
-    db  15h
-    db  16h
-    db  17h
-    db  19h
-    db  1Ah
-    db  1Bh
-    db  1Bh
-    db  1Ch
-    db  1Dh
-    db  1Dh
-    db  1Eh
-    db  1Eh
-    db  1Fh
-    db  1Fh
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  21h ; !
-    db    9
-    db  0Dh
-    db  0Fh
-    db  12h
-    db  14h
-    db  15h
-    db  17h
-    db  18h
-    db  19h
-    db  1Ah
-    db  1Bh
-    db  1Ch
-    db  1Dh
-    db  1Eh
-    db  1Eh
-    db  1Fh
-    db  1Fh
-    db  20h
-    db  20h
-    db  21h ; !
-    db  21h ; !
-    db  21h ; !
-    db  21h ; !
-    db  22h ; "
-    db  22h ; "
-    db  22h ; "
-    db  22h ; "
-    db    9
-    db  0Dh
-    db  10h
-    db  12h
-    db  14h
-    db  16h
-    db  17h
-    db  18h
-    db  1Ah
-    db  1Bh
-    db  1Ch
-    db  1Dh
-    db  1Eh
-    db  1Eh
-    db  1Fh
-    db  20h
-    db  20h
-    db  21h ; !
-    db  21h ; !
-    db  22h ; "
-    db  22h ; "
-    db  22h ; "
-    db  22h ; "
-    db  23h ; #
-    db  23h ; #
-    db  23h ; #
-    db  23h ; #
-    db  23h ; #
-    db    9
-    db  0Dh
-    db  10h
-    db  12h
-    db  14h
-    db  16h
-    db  18h
-    db  19h
-    db  1Ah
-    db  1Bh
-    db  1Ch
-    db  1Dh
-    db  1Eh
-    db  1Fh
-    db  20h
-    db  20h
-    db  21h ; !
-    db  22h ; "
-    db  22h ; "
-    db  22h ; "
-    db  23h ; #
-    db  23h ; #
-    db  23h ; #
-    db  24h ; $
-    db  24h ; $
-    db  24h ; $
-    db  24h ; $
-    db  24h ; $
-    db  24h ; $
-    db  0Ah
-    db  0Dh
-    db  10h
-    db  13h
-    db  15h
-    db  17h
-    db  18h
-    db  19h
-    db  1Bh
-    db  1Ch
-    db  1Dh
-    db  1Eh
-    db  1Fh
-    db  20h
-    db  20h
-    db  21h ; !
-    db  22h ; "
-    db  22h ; "
-    db  23h ; #
-    db  23h ; #
-    db  24h ; $
-    db  24h ; $
-    db  24h ; $
-    db  25h ; %
-    db  25h ; %
-    db  25h ; %
-    db  25h ; %
-    db  25h ; %
-    db  25h ; %
-    db  26h ; &
-    db  0Ah
-    db  0Eh
-    db  11h
-    db  13h
-    db  15h
-    db  17h
-    db  19h
-    db  1Ah
-    db  1Bh
-    db  1Dh
-    db  1Eh
-    db  1Fh
-    db  20h
-    db  20h
-    db  21h ; !
-    db  22h ; "
-    db  23h ; #
-    db  23h ; #
-    db  24h ; $
-    db  24h ; $
-    db  25h ; %
-    db  25h ; %
-    db  25h ; %
-    db  26h ; &
-    db  26h ; &
-    db  26h ; &
-    db  26h ; &
-    db  27h ; '
-    db  27h ; '
-    db  27h ; '
-    db  27h ; '
-    db  0Ah
-    db  0Eh
-    db  11h
-    db  13h
-    db  15h
-    db  17h
-    db  19h
-    db  1Ah
-    db  1Ch
-    db  1Dh
-    db  1Eh
-    db  1Fh
-    db  20h
-    db  21h ; !
-    db  22h ; "
-    db  23h ; #
-    db  23h ; #
-    db  24h ; $
-    db  25h ; %
-    db  25h ; %
-    db  26h ; &
-    db  26h ; &
-    db  26h ; &
-    db  27h ; '
-    db  27h ; '
-    db  27h ; '
-    db  28h ; (
-    db  28h ; (
-    db  28h ; (
-    db  28h ; (
-    db  28h ; (
-    db  28h ; (
-    db  0Ah
-    db  0Eh
-    db  11h
-    db  14h
-    db  16h
-    db  18h
-    db  19h
-    db  1Bh
-    db  1Ch
-    db  1Eh
-    db  1Fh
-    db  20h
-    db  21h ; !
-    db  22h ; "
-    db  23h ; #
-    db  23h ; #
-    db  24h ; $
-    db  25h ; %
-    db  25h ; %
-    db  26h ; &
-    db  26h ; &
-    db  27h ; '
-    db  27h ; '
-    db  28h ; (
-    db  28h ; (
-    db  28h ; (
-    db  29h ; )
-    db  29h ; )
-    db  29h ; )
-    db  29h ; )
-    db  29h ; )
-    db  29h ; )
-    db  29h ; )
-    db  0Ah
-    db  0Eh
-    db  11h
-    db  14h
-    db  16h
-    db  18h
-    db  1Ah
-    db  1Bh
-    db  1Dh
-    db  1Eh
-    db  1Fh
-    db  20h
-    db  21h ; !
-    db  22h ; "
-    db  23h ; #
-    db  24h ; $
-    db  25h ; %
-    db  26h ; &
-    db  26h ; &
-    db  27h ; '
-    db  27h ; '
-    db  28h ; (
-    db  28h ; (
-    db  29h ; )
-    db  29h ; )
-    db  29h ; )
-    db  2Ah ; *
-    db  2Ah ; *
-    db  2Ah ; *
-    db  2Ah ; *
-    db  2Ah ; *
-    db  2Ah ; *
-    db  2Ah ; *
-    db  2Bh ; +
-    db  0Ah
-    db  0Fh
-    db  12h
-    db  14h
-    db  17h
-    db  18h
-    db  1Ah
-    db  1Ch
-    db  1Dh
-    db  1Fh
-    db  20h
-    db  21h ; !
-    db  22h ; "
-    db  23h ; #
-    db  24h ; $
-    db  25h ; %
-    db  26h ; &
-    db  26h ; &
-    db  27h ; '
-    db  28h ; (
-    db  28h ; (
-    db  29h ; )
-    db  29h ; )
-    db  2Ah ; *
-    db  2Ah ; *
-    db  2Ah ; *
-    db  2Bh ; +
-    db  2Bh ; +
-    db  2Bh ; +
-    db  2Bh ; +
-    db  2Bh ; +
-    db  2Ch ; ,
-    db  2Ch ; ,
-    db  2Ch ; ,
-    db  2Ch ; ,
-    db  0Bh
-    db  0Fh
-    db  12h
-    db  15h
-    db  17h
-    db  19h
-    db  1Bh
-    db  1Ch
-    db  1Eh
-    db  1Fh
-    db  20h
-    db  22h ; "
-    db  23h ; #
-    db  24h ; $
-    db  25h ; %
-    db  25h ; %
-    db  26h ; &
-    db  27h ; '
-    db  28h ; (
-    db  28h ; (
-    db  29h ; )
-    db  29h ; )
-    db  2Ah ; *
-    db  2Ah ; *
-    db  2Bh ; +
-    db  2Bh ; +
-    db  2Ch ; ,
-    db  2Ch ; ,
-    db  2Ch ; ,
-    db  2Ch ; ,
-    db  2Dh ; -
-    db  2Dh ; -
-    db  2Dh ; -
-    db  2Dh ; -
-    db  2Dh ; -
-    db  2Dh ; -
-    db  0Bh
-    db  0Fh
-    db  12h
-    db  15h
-    db  17h
-    db  19h
-    db  1Bh
-    db  1Dh
-    db  1Eh
-    db  20h
-    db  21h ; !
-    db  22h ; "
-    db  23h ; #
-    db  24h ; $
-    db  25h ; %
-    db  26h ; &
-    db  27h ; '
-    db  28h ; (
-    db  28h ; (
-    db  29h ; )
-    db  2Ah ; *
-    db  2Ah ; *
-    db  2Bh ; +
-    db  2Bh ; +
-    db  2Ch ; ,
-    db  2Ch ; ,
-    db  2Dh ; -
-    db  2Dh ; -
-    db  2Dh ; -
-    db  2Dh ; -
-    db  2Eh ; .
-    db  2Eh ; .
-    db  2Eh ; .
-    db  2Eh ; .
-    db  2Eh ; .
-    db  2Eh ; .
-    db  2Eh ; .
-    db  0Bh
-    db  0Fh
-    db  12h
-    db  15h
-    db  18h
-    db  1Ah
-    db  1Bh
-    db  1Dh
-    db  1Fh
-    db  20h
-    db  21h ; !
-    db  23h ; #
-    db  24h ; $
-    db  25h ; %
-    db  26h ; &
-    db  27h ; '
-    db  28h ; (
-    db  28h ; (
-    db  29h ; )
-    db  2Ah ; *
-    db  2Ah ; *
-    db  2Bh ; +
-    db  2Ch ; ,
-    db  2Ch ; ,
-    db  2Dh ; -
-    db  2Dh ; -
-    db  2Dh ; -
-    db  2Eh ; .
-    db  2Eh ; .
-    db  2Eh ; .
-    db  2Fh ; /
-    db  2Fh ; /
-    db  2Fh ; /
-    db  2Fh ; /
-    db  2Fh ; /
-    db  2Fh ; /
-    db  2Fh ; /
-    db  30h ; 0
-    db  0Bh
-    db  0Fh
-    db  13h
-    db  16h
-    db  18h
-    db  1Ah
-    db  1Ch
-    db  1Eh
-    db  1Fh
-    db  21h ; !
-    db  22h ; "
-    db  23h ; #
-    db  24h ; $
-    db  25h ; %
-    db  26h ; &
-    db  27h ; '
-    db  28h ; (
-    db  29h ; )
-    db  2Ah ; *
-    db  2Bh ; +
-    db  2Bh ; +
-    db  2Ch ; ,
-    db  2Ch ; ,
-    db  2Dh ; -
-    db  2Eh ; .
-    db  2Eh ; .
-    db  2Eh ; .
-    db  2Fh ; /
-    db  2Fh ; /
-    db  2Fh ; /
-    db  30h ; 0
-    db  30h ; 0
-    db  30h ; 0
-    db  30h ; 0
-    db  30h ; 0
-    db  31h ; 1
-    db  31h ; 1
-    db  31h ; 1
-    db  31h ; 1
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  45h ; E
-    db  58h ; X
-    db  49h ; I
-    db  54h ; T
-    db  20h
-    db  4Ch ; L
-    db  49h ; I
-    db  53h ; S
-    db  54h ; T
-    db  20h
-    db  4Fh ; O
-    db  56h ; V
-    db  45h ; E
-    db  52h ; R
-    db  46h ; F
-    db  4Ch ; L
-    db  4Fh ; O
-    db  57h ; W
-    db  0Dh
-    db  0Ah
-    db    0
-    db    0
-    db  25h ; %
-    db  73h ; s
-    db  20h
-    db  46h ; F
-    db  49h ; I
-    db  4Ch ; L
-    db  45h ; E
-    db  20h
-    db  45h ; E
-    db  52h ; R
-    db  52h ; R
-    db  4Fh ; O
-    db  52h ; R
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
+    db 0
+    db 0
+    db 3
+    db 0
+    db 12
+    db 0
+    db 15
+    db 0
+    db 48
+    db 0
+    db 51
+    db 0
+    db 60
+    db 0
+    db 63
+    db 0
+    db 192
+    db 0
+    db 195
+    db 0
+    db 204
+    db 0
+    db 207
+    db 0
+    db 240
+    db 0
+    db 243
+    db 0
+    db 252
+    db 0
+    db 255
+    db 0
+    db 0
+    db 3
+    db 3
+    db 3
+    db 12
+    db 3
+    db 15
+    db 3
+    db 48
+    db 3
+    db 51
+    db 3
+    db 60
+    db 3
+    db 63
+    db 3
+    db 192
+    db 3
+    db 195
+    db 3
+    db 204
+    db 3
+    db 207
+    db 3
+    db 240
+    db 3
+    db 243
+    db 3
+    db 252
+    db 3
+    db 255
+    db 3
+    db 0
+    db 12
+    db 3
+    db 12
+    db 12
+    db 12
+    db 15
+    db 12
+    db 48
+    db 12
+    db 51
+    db 12
+    db 60
+    db 12
+    db 63
+    db 12
+    db 192
+    db 12
+    db 195
+    db 12
+    db 204
+    db 12
+    db 207
+    db 12
+    db 240
+    db 12
+    db 243
+    db 12
+    db 252
+    db 12
+    db 255
+    db 12
+    db 0
+    db 15
+    db 3
+    db 15
+    db 12
+    db 15
+    db 15
+    db 15
+    db 48
+    db 15
+    db 51
+    db 15
+    db 60
+    db 15
+    db 63
+    db 15
+    db 192
+    db 15
+    db 195
+    db 15
+    db 204
+    db 15
+    db 207
+    db 15
+    db 240
+    db 15
+    db 243
+    db 15
+    db 252
+    db 15
+    db 255
+    db 15
+    db 0
+    db 48
+    db 3
+    db 48
+    db 12
+    db 48
+    db 15
+    db 48
+    db 48
+    db 48
+    db 51
+    db 48
+    db 60
+    db 48
+    db 63
+    db 48
+    db 192
+    db 48
+    db 195
+    db 48
+    db 204
+    db 48
+    db 207
+    db 48
+    db 240
+    db 48
+    db 243
+    db 48
+    db 252
+    db 48
+    db 255
+    db 48
+    db 0
+    db 51
+    db 3
+    db 51
+    db 12
+    db 51
+    db 15
+    db 51
+    db 48
+    db 51
+    db 51
+    db 51
+    db 60
+    db 51
+    db 63
+    db 51
+    db 192
+    db 51
+    db 195
+    db 51
+    db 204
+    db 51
+    db 207
+    db 51
+    db 240
+    db 51
+    db 243
+    db 51
+    db 252
+    db 51
+    db 255
+    db 51
+    db 0
+    db 60
+    db 3
+    db 60
+    db 12
+    db 60
+    db 15
+    db 60
+    db 48
+    db 60
+    db 51
+    db 60
+    db 60
+    db 60
+    db 63
+    db 60
+    db 192
+    db 60
+    db 195
+    db 60
+    db 204
+    db 60
+    db 207
+    db 60
+    db 240
+    db 60
+    db 243
+    db 60
+    db 252
+    db 60
+    db 255
+    db 60
+    db 0
+    db 63
+    db 3
+    db 63
+    db 12
+    db 63
+    db 15
+    db 63
+    db 48
+    db 63
+    db 51
+    db 63
+    db 60
+    db 63
+    db 63
+    db 63
+    db 192
+    db 63
+    db 195
+    db 63
+    db 204
+    db 63
+    db 207
+    db 63
+    db 240
+    db 63
+    db 243
+    db 63
+    db 252
+    db 63
+    db 255
+    db 63
+    db 0
+    db 192
+    db 3
+    db 192
+    db 12
+    db 192
+    db 15
+    db 192
+    db 48
+    db 192
+    db 51
+    db 192
+    db 60
+    db 192
+    db 63
+    db 192
+    db 192
+    db 192
+    db 195
+    db 192
+    db 204
+    db 192
+    db 207
+    db 192
+    db 240
+    db 192
+    db 243
+    db 192
+    db 252
+    db 192
+    db 255
+    db 192
+    db 0
+    db 195
+    db 3
+    db 195
+    db 12
+    db 195
+    db 15
+    db 195
+    db 48
+    db 195
+    db 51
+    db 195
+    db 60
+    db 195
+    db 63
+    db 195
+    db 192
+    db 195
+    db 195
+    db 195
+    db 204
+    db 195
+    db 207
+    db 195
+    db 240
+    db 195
+    db 243
+    db 195
+    db 252
+    db 195
+    db 255
+    db 195
+    db 0
+    db 204
+    db 3
+    db 204
+    db 12
+    db 204
+    db 15
+    db 204
+    db 48
+    db 204
+    db 51
+    db 204
+    db 60
+    db 204
+    db 63
+    db 204
+    db 192
+    db 204
+    db 195
+    db 204
+    db 204
+    db 204
+    db 207
+    db 204
+    db 240
+    db 204
+    db 243
+    db 204
+    db 252
+    db 204
+    db 255
+    db 204
+    db 0
+    db 207
+    db 3
+    db 207
+    db 12
+    db 207
+    db 15
+    db 207
+    db 48
+    db 207
+    db 51
+    db 207
+    db 60
+    db 207
+    db 63
+    db 207
+    db 192
+    db 207
+    db 195
+    db 207
+    db 204
+    db 207
+    db 207
+    db 207
+    db 240
+    db 207
+    db 243
+    db 207
+    db 252
+    db 207
+    db 255
+    db 207
+    db 0
+    db 240
+    db 3
+    db 240
+    db 12
+    db 240
+    db 15
+    db 240
+    db 48
+    db 240
+    db 51
+    db 240
+    db 60
+    db 240
+    db 63
+    db 240
+    db 192
+    db 240
+    db 195
+    db 240
+    db 204
+    db 240
+    db 207
+    db 240
+    db 240
+    db 240
+    db 243
+    db 240
+    db 252
+    db 240
+    db 255
+    db 240
+    db 0
+    db 243
+    db 3
+    db 243
+    db 12
+    db 243
+    db 15
+    db 243
+    db 48
+    db 243
+    db 51
+    db 243
+    db 60
+    db 243
+    db 63
+    db 243
+    db 192
+    db 243
+    db 195
+    db 243
+    db 204
+    db 243
+    db 207
+    db 243
+    db 240
+    db 243
+    db 243
+    db 243
+    db 252
+    db 243
+    db 255
+    db 243
+    db 0
+    db 252
+    db 3
+    db 252
+    db 12
+    db 252
+    db 15
+    db 252
+    db 48
+    db 252
+    db 51
+    db 252
+    db 60
+    db 252
+    db 63
+    db 252
+    db 192
+    db 252
+    db 195
+    db 252
+    db 204
+    db 252
+    db 207
+    db 252
+    db 240
+    db 252
+    db 243
+    db 252
+    db 252
+    db 252
+    db 255
+    db 252
+    db 0
+    db 255
+    db 3
+    db 255
+    db 12
+    db 255
+    db 15
+    db 255
+    db 48
+    db 255
+    db 51
+    db 255
+    db 60
+    db 255
+    db 63
+    db 255
+    db 192
+    db 255
+    db 195
+    db 255
+    db 204
+    db 255
+    db 207
+    db 255
+    db 240
+    db 255
+    db 243
+    db 255
+    db 252
+    db 255
+    db 255
+    db 255
+    db 40
+    db 0
+    db 168
+    db 60
+    db 168
+    db 60
+    db 169
+    db 60
+    db 171
+    db 60
+    db 174
+    db 60
+    db 178
+    db 60
+    db 183
+    db 60
+    db 189
+    db 60
+    db 196
+    db 60
+    db 204
+    db 60
+    db 213
+    db 60
+    db 223
+    db 60
+    db 234
+    db 60
+    db 246
+    db 60
+    db 3
+    db 61
+    db 17
+    db 61
+    db 32
+    db 61
+    db 48
+    db 61
+    db 65
+    db 61
+    db 83
+    db 61
+    db 102
+    db 61
+    db 122
+    db 61
+    db 143
+    db 61
+    db 165
+    db 61
+    db 188
+    db 61
+    db 212
+    db 61
+    db 237
+    db 61
+    db 7
+    db 62
+    db 34
+    db 62
+    db 62
+    db 62
+    db 91
+    db 62
+    db 121
+    db 62
+    db 152
+    db 62
+    db 184
+    db 62
+    db 217
+    db 62
+    db 251
+    db 62
+    db 30
+    db 63
+    db 66
+    db 63
+    db 103
+    db 63
+    db 141
+    db 63
+    db 1
+    db 2
+    db 3
+    db 3
+    db 4
+    db 4
+    db 3
+    db 4
+    db 5
+    db 5
+    db 4
+    db 5
+    db 6
+    db 6
+    db 6
+    db 4
+    db 6
+    db 6
+    db 7
+    db 7
+    db 8
+    db 5
+    db 6
+    db 7
+    db 8
+    db 8
+    db 9
+    db 9
+    db 5
+    db 7
+    db 8
+    db 9
+    db 9
+    db 10
+    db 10
+    db 10
+    db 5
+    db 7
+    db 8
+    db 9
+    db 10
+    db 11
+    db 11
+    db 11
+    db 11
+    db 5
+    db 8
+    db 9
+    db 10
+    db 11
+    db 11
+    db 12
+    db 12
+    db 12
+    db 13
+    db 6
+    db 8
+    db 9
+    db 11
+    db 12
+    db 12
+    db 13
+    db 13
+    db 14
+    db 14
+    db 14
+    db 6
+    db 8
+    db 10
+    db 11
+    db 12
+    db 13
+    db 14
+    db 14
+    db 15
+    db 15
+    db 15
+    db 15
+    db 6
+    db 9
+    db 10
+    db 12
+    db 13
+    db 14
+    db 14
+    db 15
+    db 15
+    db 16
+    db 16
+    db 16
+    db 16
+    db 6
+    db 9
+    db 11
+    db 12
+    db 13
+    db 14
+    db 15
+    db 16
+    db 16
+    db 17
+    db 17
+    db 17
+    db 17
+    db 18
+    db 7
+    db 9
+    db 11
+    db 13
+    db 14
+    db 15
+    db 16
+    db 17
+    db 17
+    db 18
+    db 18
+    db 18
+    db 19
+    db 19
+    db 19
+    db 7
+    db 10
+    db 12
+    db 13
+    db 15
+    db 16
+    db 17
+    db 17
+    db 18
+    db 19
+    db 19
+    db 19
+    db 20
+    db 20
+    db 20
+    db 20
+    db 7
+    db 10
+    db 12
+    db 14
+    db 15
+    db 16
+    db 17
+    db 18
+    db 19
+    db 19
+    db 20
+    db 20
+    db 21
+    db 21
+    db 21
+    db 21
+    db 21
+    db 7
+    db 10
+    db 12
+    db 14
+    db 16
+    db 17
+    db 18
+    db 19
+    db 19
+    db 20
+    db 21
+    db 21
+    db 22
+    db 22
+    db 22
+    db 22
+    db 22
+    db 23
+    db 8
+    db 11
+    db 13
+    db 15
+    db 16
+    db 17
+    db 18
+    db 19
+    db 20
+    db 21
+    db 22
+    db 22
+    db 23
+    db 23
+    db 23
+    db 23
+    db 24
+    db 24
+    db 24
+    db 8
+    db 11
+    db 13
+    db 15
+    db 17
+    db 18
+    db 19
+    db 20
+    db 21
+    db 22
+    db 22
+    db 23
+    db 23
+    db 24
+    db 24
+    db 24
+    db 25
+    db 25
+    db 25
+    db 25
+    db 8
+    db 11
+    db 14
+    db 15
+    db 17
+    db 18
+    db 20
+    db 21
+    db 22
+    db 22
+    db 23
+    db 24
+    db 24
+    db 25
+    db 25
+    db 25
+    db 26
+    db 26
+    db 26
+    db 26
+    db 26
+    db 8
+    db 11
+    db 14
+    db 16
+    db 17
+    db 19
+    db 20
+    db 21
+    db 22
+    db 23
+    db 24
+    db 24
+    db 25
+    db 26
+    db 26
+    db 26
+    db 27
+    db 27
+    db 27
+    db 27
+    db 27
+    db 28
+    db 8
+    db 12
+    db 14
+    db 16
+    db 18
+    db 19
+    db 21
+    db 22
+    db 23
+    db 24
+    db 25
+    db 25
+    db 26
+    db 26
+    db 27
+    db 27
+    db 28
+    db 28
+    db 28
+    db 29
+    db 29
+    db 29
+    db 29
+    db 9
+    db 12
+    db 15
+    db 17
+    db 18
+    db 20
+    db 21
+    db 22
+    db 23
+    db 24
+    db 25
+    db 26
+    db 27
+    db 27
+    db 28
+    db 28
+    db 29
+    db 29
+    db 29
+    db 30
+    db 30
+    db 30
+    db 30
+    db 30
+    db 9
+    db 12
+    db 15
+    db 17
+    db 19
+    db 20
+    db 22
+    db 23
+    db 24
+    db 25
+    db 26
+    db 27
+    db 27
+    db 28
+    db 29
+    db 29
+    db 30
+    db 30
+    db 30
+    db 31
+    db 31
+    db 31
+    db 31
+    db 31
+    db 31
+    db 9
+    db 13
+    db 15
+    db 17
+    db 19
+    db 21
+    db 22
+    db 23
+    db 25
+    db 26
+    db 27
+    db 27
+    db 28
+    db 29
+    db 29
+    db 30
+    db 30
+    db 31
+    db 31
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 33
+    db 9
+    db 13
+    db 15
+    db 18
+    db 20
+    db 21
+    db 23
+    db 24
+    db 25
+    db 26
+    db 27
+    db 28
+    db 29
+    db 30
+    db 30
+    db 31
+    db 31
+    db 32
+    db 32
+    db 33
+    db 33
+    db 33
+    db 33
+    db 34
+    db 34
+    db 34
+    db 34
+    db 9
+    db 13
+    db 16
+    db 18
+    db 20
+    db 22
+    db 23
+    db 24
+    db 26
+    db 27
+    db 28
+    db 29
+    db 30
+    db 30
+    db 31
+    db 32
+    db 32
+    db 33
+    db 33
+    db 34
+    db 34
+    db 34
+    db 34
+    db 35
+    db 35
+    db 35
+    db 35
+    db 35
+    db 9
+    db 13
+    db 16
+    db 18
+    db 20
+    db 22
+    db 24
+    db 25
+    db 26
+    db 27
+    db 28
+    db 29
+    db 30
+    db 31
+    db 32
+    db 32
+    db 33
+    db 34
+    db 34
+    db 34
+    db 35
+    db 35
+    db 35
+    db 36
+    db 36
+    db 36
+    db 36
+    db 36
+    db 36
+    db 10
+    db 13
+    db 16
+    db 19
+    db 21
+    db 23
+    db 24
+    db 25
+    db 27
+    db 28
+    db 29
+    db 30
+    db 31
+    db 32
+    db 32
+    db 33
+    db 34
+    db 34
+    db 35
+    db 35
+    db 36
+    db 36
+    db 36
+    db 37
+    db 37
+    db 37
+    db 37
+    db 37
+    db 37
+    db 38
+    db 10
+    db 14
+    db 17
+    db 19
+    db 21
+    db 23
+    db 25
+    db 26
+    db 27
+    db 29
+    db 30
+    db 31
+    db 32
+    db 32
+    db 33
+    db 34
+    db 35
+    db 35
+    db 36
+    db 36
+    db 37
+    db 37
+    db 37
+    db 38
+    db 38
+    db 38
+    db 38
+    db 39
+    db 39
+    db 39
+    db 39
+    db 10
+    db 14
+    db 17
+    db 19
+    db 21
+    db 23
+    db 25
+    db 26
+    db 28
+    db 29
+    db 30
+    db 31
+    db 32
+    db 33
+    db 34
+    db 35
+    db 35
+    db 36
+    db 37
+    db 37
+    db 38
+    db 38
+    db 38
+    db 39
+    db 39
+    db 39
+    db 40
+    db 40
+    db 40
+    db 40
+    db 40
+    db 40
+    db 10
+    db 14
+    db 17
+    db 20
+    db 22
+    db 24
+    db 25
+    db 27
+    db 28
+    db 30
+    db 31
+    db 32
+    db 33
+    db 34
+    db 35
+    db 35
+    db 36
+    db 37
+    db 37
+    db 38
+    db 38
+    db 39
+    db 39
+    db 40
+    db 40
+    db 40
+    db 41
+    db 41
+    db 41
+    db 41
+    db 41
+    db 41
+    db 41
+    db 10
+    db 14
+    db 17
+    db 20
+    db 22
+    db 24
+    db 26
+    db 27
+    db 29
+    db 30
+    db 31
+    db 32
+    db 33
+    db 34
+    db 35
+    db 36
+    db 37
+    db 38
+    db 38
+    db 39
+    db 39
+    db 40
+    db 40
+    db 41
+    db 41
+    db 41
+    db 42
+    db 42
+    db 42
+    db 42
+    db 42
+    db 42
+    db 42
+    db 43
+    db 10
+    db 15
+    db 18
+    db 20
+    db 23
+    db 24
+    db 26
+    db 28
+    db 29
+    db 31
+    db 32
+    db 33
+    db 34
+    db 35
+    db 36
+    db 37
+    db 38
+    db 38
+    db 39
+    db 40
+    db 40
+    db 41
+    db 41
+    db 42
+    db 42
+    db 42
+    db 43
+    db 43
+    db 43
+    db 43
+    db 43
+    db 44
+    db 44
+    db 44
+    db 44
+    db 11
+    db 15
+    db 18
+    db 21
+    db 23
+    db 25
+    db 27
+    db 28
+    db 30
+    db 31
+    db 32
+    db 34
+    db 35
+    db 36
+    db 37
+    db 37
+    db 38
+    db 39
+    db 40
+    db 40
+    db 41
+    db 41
+    db 42
+    db 42
+    db 43
+    db 43
+    db 44
+    db 44
+    db 44
+    db 44
+    db 45
+    db 45
+    db 45
+    db 45
+    db 45
+    db 45
+    db 11
+    db 15
+    db 18
+    db 21
+    db 23
+    db 25
+    db 27
+    db 29
+    db 30
+    db 32
+    db 33
+    db 34
+    db 35
+    db 36
+    db 37
+    db 38
+    db 39
+    db 40
+    db 40
+    db 41
+    db 42
+    db 42
+    db 43
+    db 43
+    db 44
+    db 44
+    db 45
+    db 45
+    db 45
+    db 45
+    db 46
+    db 46
+    db 46
+    db 46
+    db 46
+    db 46
+    db 46
+    db 11
+    db 15
+    db 18
+    db 21
+    db 24
+    db 26
+    db 27
+    db 29
+    db 31
+    db 32
+    db 33
+    db 35
+    db 36
+    db 37
+    db 38
+    db 39
+    db 40
+    db 40
+    db 41
+    db 42
+    db 42
+    db 43
+    db 44
+    db 44
+    db 45
+    db 45
+    db 45
+    db 46
+    db 46
+    db 46
+    db 47
+    db 47
+    db 47
+    db 47
+    db 47
+    db 47
+    db 47
+    db 48
+    db 11
+    db 15
+    db 19
+    db 22
+    db 24
+    db 26
+    db 28
+    db 30
+    db 31
+    db 33
+    db 34
+    db 35
+    db 36
+    db 37
+    db 38
+    db 39
+    db 40
+    db 41
+    db 42
+    db 43
+    db 43
+    db 44
+    db 44
+    db 45
+    db 46
+    db 46
+    db 46
+    db 47
+    db 47
+    db 47
+    db 48
+    db 48
+    db 48
+    db 48
+    db 48
+    db 49
+    db 49
+    db 49
+    db 49
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 69
+    db 88
+    db 73
+    db 84
+    db 32
+    db 76
+    db 73
+    db 83
+    db 84
+    db 32
+    db 79
+    db 86
+    db 69
+    db 82
+    db 70
+    db 76
+    db 79
+    db 87
+    db 13
+    db 10
+    db 0
+    db 0
+    db 37
+    db 115
+    db 32
+    db 70
+    db 73
+    db 76
+    db 69
+    db 32
+    db 69
+    db 82
+    db 82
+    db 79
+    db 82
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
 word_3F7D8     dw 0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
 byte_3F85A     db 0
-    db    0
-    db  35h ; 5
-    db  28h ; (
-    db  2Ch ; ,
-    db    7
-    db  79h ; y
-    db    2
-    db  64h ; d
-    db  6Eh ; n
-    db    2
-    db    2
-    db    0
-    db    0
-    db  61h ; a
-    db  50h ; P
-    db  52h ; R
-    db  0Fh
-    db  19h
-    db    6
-    db  19h
-    db  19h
-    db    2
-    db  0Dh
-    db  0Bh
-    db  0Ch
+    db 0
+    db 53
+    db 40
+    db 44
+    db 7
+    db 121
+    db 2
+    db 100
+    db 110
+    db 2
+    db 2
+    db 0
+    db 0
+    db 97
+    db 80
+    db 82
+    db 15
+    db 25
+    db 6
+    db 25
+    db 25
+    db 2
+    db 13
+    db 11
+    db 12
 dword_3F874     dd 0
 word_3F878     dw 0
 word_3F87A     dw 0
@@ -15978,3405 +17718,3847 @@ word_3F886     dw 0
 word_3F888     dw 0
 word_3F88A     dw 0
 byte_3F88C     db 0
-    db    3
+    db 3
 word_3F88E     dw 0
 word_3F890     dw 0
 word_3F892     dw 0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  4Eh ; N
-    db  4Fh ; O
-    db  20h
-    db  52h ; R
-    db  4Fh ; O
-    db  4Fh ; O
-    db  4Dh ; M
-    db  20h
-    db  4Ch ; L
-    db  45h ; E
-    db  46h ; F
-    db  54h ; T
-    db  20h
-    db  4Fh ; O
-    db  4Eh ; N
-    db  20h
-    db  54h ; T
-    db  49h ; I
-    db  4Dh ; M
-    db  45h ; E
-    db  52h ; R
-    db  20h
-    db  49h ; I
-    db  4Eh ; N
-    db  54h ; T
-    db  45h ; E
-    db  52h ; R
-    db  52h ; R
-    db  55h ; U
-    db  50h ; P
-    db  54h ; T
-    db  20h
-    db  52h ; R
-    db  4Fh ; O
-    db  55h ; U
-    db  54h ; T
-    db  49h ; I
-    db  4Eh ; N
-    db  45h ; E
-    db  20h
-    db  4Ch ; L
-    db  49h ; I
-    db  53h ; S
-    db  54h ; T
-    db  0Dh
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-unk_3F9CC     db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 78
+    db 79
+    db 32
+    db 82
+    db 79
+    db 79
+    db 77
+    db 32
+    db 76
+    db 69
+    db 70
+    db 84
+    db 32
+    db 79
+    db 78
+    db 32
+    db 84
+    db 73
+    db 77
+    db 69
+    db 82
+    db 32
+    db 73
+    db 78
+    db 84
+    db 69
+    db 82
+    db 82
+    db 85
+    db 80
+    db 84
+    db 32
+    db 82
+    db 79
+    db 85
+    db 84
+    db 73
+    db 78
+    db 69
+    db 32
+    db 76
+    db 73
+    db 83
+    db 84
+    db 13
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+unk_3F9CC     db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
 byte_3F9E0     db 0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  48h ; H
-    db    0
-    db  50h ; P
-    db    0
-    db    0
-    db    0
-    db  4Dh ; M
-    db    0
-    db  49h ; I
-    db    0
-    db  51h ; Q
-    db    0
-    db    0
-    db    0
-    db  4Bh ; K
-    db    0
-    db  47h ; G
-    db    0
-    db  4Fh ; O
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 72
+    db 0
+    db 80
+    db 0
+    db 0
+    db 0
+    db 77
+    db 0
+    db 73
+    db 0
+    db 81
+    db 0
+    db 0
+    db 0
+    db 75
+    db 0
+    db 71
+    db 0
+    db 79
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
 word_3FB02     dw 0
 word_3FB04     dw 0
 byte_3FB06     db 0
-    db    0
-byte_3FB08     db 39h
-byte_3FB09     db 1Ch
-byte_3FB0A     db 47h
-byte_3FB0B     db 48h
-byte_3FB0C     db 49h
-byte_3FB0D     db 4Dh
-byte_3FB0E     db 51h
-byte_3FB0F     db 50h
-byte_3FB10     db 4Fh
-byte_3FB11     db 4Bh
+    db 0
+byte_3FB08     db 57
+byte_3FB09     db 28
+byte_3FB0A     db 71
+byte_3FB0B     db 72
+byte_3FB0C     db 73
+byte_3FB0D     db 77
+byte_3FB0E     db 81
+byte_3FB0F     db 80
+byte_3FB10     db 79
+byte_3FB11     db 75
 word_3FB12     dw 0
 word_3FB14     dw 0
 byte_3FB16     db 0
 byte_3FB17     db 0
-word_3FB18     dw 50h
+word_3FB18     dw 80
 word_3FB1A     dw 0
 word_3FB1C     dw 0
 word_3FB1E     dw 0
-word_3FB20     dw 14h
+word_3FB20     dw 20
 word_3FB22     dw 0
 word_3FB24     dw 0
-word_3FB26     dw 50h
+word_3FB26     dw 80
 word_3FB28     dw 0
 word_3FB2A     dw 0
 word_3FB2C     dw 0
-word_3FB2E     dw 14h
+word_3FB2E     dw 20
 word_3FB30     dw 0
 word_3FB32     dw 0
 word_3FB34     dw 0
 word_3FB36     dw 0
-    db    0
-    db    1
-    db    5
-    db    0
-    db    3
-    db    2
-    db    4
-    db    3
-    db    7
-    db    8
-    db    6
-    db    7
-    db    0
-    db    1
-    db    5
-    db    0
+    db 0
+    db 1
+    db 5
+    db 0
+    db 3
+    db 2
+    db 4
+    db 3
+    db 7
+    db 8
+    db 6
+    db 7
+    db 0
+    db 1
+    db 5
+    db 0
 word_3FB48     dw 0
 word_3FB4A     dw 0
 word_3FB4C     dw 0
 word_3FB4E     dw 0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
 word_3FBD0     dw 0
 word_3FBD2     dw 0
 word_3FBD4     dw 2
 word_3FBD6     dw 0
 word_3FBD8     dw 0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
 byte_3FBF7     db 0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
 byte_3FC04     db 0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
 byte_3FC10     db 0
-    db    0
+    db 0
 byte_3FC12     db 0
-    db    0
+    db 0
 byte_3FC14     db 0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  1Bh
-    db  31h ; 1
-    db  32h ; 2
-    db  33h ; 3
-    db  34h ; 4
-    db  35h ; 5
-    db  36h ; 6
-    db  37h ; 7
-    db  38h ; 8
-    db  39h ; 9
-    db  30h ; 0
-    db  2Dh ; -
-    db  3Dh ; =
-    db    8
-    db    9
-    db  71h ; q
-    db  77h ; w
-    db  65h ; e
-    db  72h ; r
-    db  74h ; t
-    db  79h ; y
-    db  75h ; u
-    db  69h ; i
-    db  6Fh ; o
-    db  70h ; p
-    db  5Bh ; [
-    db  5Dh ; ]
-    db  0Dh
-    db    0
-    db  61h ; a
-    db  73h ; s
-    db  64h ; d
-    db  66h ; f
-    db  67h ; g
-    db  68h ; h
-    db  6Ah ; j
-    db  6Bh ; k
-    db  6Ch ; l
-    db  3Bh ; ;
-    db  27h ; '
-    db  60h ; `
-    db    0
-    db  5Ch ; \
-    db  7Ah ; z
-    db  78h ; x
-    db  63h ; c
-    db  76h ; v
-    db  62h ; b
-    db  6Eh ; n
-    db  6Dh ; m
-    db  2Ch ; ,
-    db  2Eh ; .
-    db  2Fh ; /
-    db    0
-    db  2Ah ; *
-    db    0
-    db  20h
-    db    0
-    db 0BBh ; ª
-    db 0BCh ; º
-    db 0BDh ; Ω
-    db 0BEh ; æ
-    db 0BFh ; ø
-    db 0C0h ; ¿
-    db 0C1h ; ¡
-    db 0C2h ; ¬
-    db 0C3h ; √
-    db 0C4h ; ƒ
-    db    0
-    db    0
-    db 0C7h ; «
-    db 0C8h ; »
-    db 0C9h ; …
-    db  2Dh ; -
-    db 0CBh ; À
-    db 0CCh ; Ã
-    db 0CDh ; Õ
-    db  2Bh ; +
-    db 0CFh ; œ
-    db 0D0h ; –
-    db 0D1h ; —
-    db 0D2h ; “
-    db 0D3h ; ”
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  1Bh
-    db  21h ; !
-    db  40h ; @
-    db  23h ; #
-    db  24h ; $
-    db  25h ; %
-    db  5Eh ; ^
-    db  26h ; &
-    db  2Ah ; *
-    db  28h ; (
-    db  29h ; )
-    db  5Fh ; _
-    db  2Bh ; +
-    db    8
-    db  8Fh ; è
-    db  51h ; Q
-    db  57h ; W
-    db  45h ; E
-    db  52h ; R
-    db  54h ; T
-    db  59h ; Y
-    db  55h ; U
-    db  49h ; I
-    db  4Fh ; O
-    db  50h ; P
-    db  7Bh ; {
-    db  7Dh ; }
-    db  0Dh
-    db    0
-    db  41h ; A
-    db  53h ; S
-    db  44h ; D
-    db  46h ; F
-    db  47h ; G
-    db  48h ; H
-    db  4Ah ; J
-    db  4Bh ; K
-    db  4Ch ; L
-    db  3Ah ; :
-    db  22h ; "
-    db  7Eh ; ~
-    db    0
-    db  7Ch ; |
-    db  5Ah ; Z
-    db  58h ; X
-    db  43h ; C
-    db  56h ; V
-    db  42h ; B
-    db  4Eh ; N
-    db  4Dh ; M
-    db  3Ch ; <
-    db  3Eh ; >
-    db  3Fh ; ?
-    db    0
-    db    0
-    db    0
-    db  20h
-    db    0
-    db 0D4h ; ‘
-    db 0D5h ; ’
-    db 0D6h ; ÷
-    db 0D7h ; ◊
-    db 0D8h ; ÿ
-    db 0D9h ; Ÿ
-    db 0DAh ; ⁄
-    db 0DBh ; €
-    db 0DCh ; ‹
-    db 0DDh ; ›
-    db    0
-    db    0
-    db 0C7h ; «
-    db 0C8h ; »
-    db 0C9h ; …
-    db  2Dh ; -
-    db 0CBh ; À
-    db 0CCh ; Ã
-    db 0CDh ; Õ
-    db  2Bh ; +
-    db 0CFh ; œ
-    db 0D0h ; –
-    db 0D1h ; —
-    db 0D2h ; “
-    db 0D3h ; ”
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  1Bh
-    db  31h ; 1
-    db  32h ; 2
-    db  33h ; 3
-    db  34h ; 4
-    db  35h ; 5
-    db  36h ; 6
-    db  37h ; 7
-    db  38h ; 8
-    db  39h ; 9
-    db  30h ; 0
-    db  2Dh ; -
-    db  3Dh ; =
-    db    8
-    db  8Fh ; è
-    db  51h ; Q
-    db  57h ; W
-    db  45h ; E
-    db  52h ; R
-    db  54h ; T
-    db  59h ; Y
-    db  55h ; U
-    db  49h ; I
-    db  4Fh ; O
-    db  50h ; P
-    db  5Bh ; [
-    db  5Dh ; ]
-    db  0Dh
-    db    0
-    db  41h ; A
-    db  53h ; S
-    db  44h ; D
-    db  46h ; F
-    db  47h ; G
-    db  48h ; H
-    db  4Ah ; J
-    db  4Bh ; K
-    db  4Ch ; L
-    db  3Bh ; ;
-    db  27h ; '
-    db  60h ; `
-    db    0
-    db  5Ch ; \
-    db  5Ah ; Z
-    db  58h ; X
-    db  43h ; C
-    db  56h ; V
-    db  42h ; B
-    db  4Eh ; N
-    db  4Dh ; M
-    db  2Ch ; ,
-    db  2Eh ; .
-    db  2Fh ; /
-    db    0
-    db    0
-    db    0
-    db  20h
-    db    0
-    db 0D4h ; ‘
-    db 0D5h ; ’
-    db 0D6h ; ÷
-    db 0D7h ; ◊
-    db 0D8h ; ÿ
-    db 0D9h ; Ÿ
-    db 0DAh ; ⁄
-    db 0DBh ; €
-    db 0DCh ; ‹
-    db 0DDh ; ›
-    db    0
-    db    0
-    db 0C7h ; «
-    db 0C8h ; »
-    db 0C9h ; …
-    db  2Dh ; -
-    db 0CBh ; À
-    db 0CCh ; Ã
-    db 0CDh ; Õ
-    db  2Bh ; +
-    db 0CFh ; œ
-    db 0D0h ; –
-    db 0D1h ; —
-    db 0D2h ; “
-    db 0D3h ; ”
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  1Bh
-    db  21h ; !
-    db    0
-    db  23h ; #
-    db  24h ; $
-    db  25h ; %
-    db  1Eh
-    db  26h ; &
-    db  2Ah ; *
-    db  28h ; (
-    db  29h ; )
-    db  1Fh
-    db  2Bh ; +
-    db  7Fh ; 
-    db    9
-    db  11h
-    db  17h
-    db    5
-    db  12h
-    db  14h
-    db  19h
-    db  15h
-    db    9
-    db  0Fh
-    db  10h
-    db  1Bh
-    db  1Dh
-    db  0Dh
-    db    0
-    db    1
-    db  13h
-    db    4
-    db    6
-    db    7
-    db    8
-    db  0Ah
-    db  0Bh
-    db  0Ch
-    db  3Bh ; ;
-    db  2Ch ; ,
-    db  60h ; `
-    db    0
-    db  1Ch
-    db  1Ah
-    db  18h
-    db    3
-    db  16h
-    db    2
-    db  0Eh
-    db 0B2h ; ≤
-    db  3Ch ; <
-    db  3Eh ; >
-    db  3Fh ; ?
-    db    0
-    db    0
-    db    0
-    db  20h
-    db    0
-    db 0DEh ; ﬁ
-    db 0DFh ; ﬂ
-    db 0E0h ; ‡
-    db 0E1h ; ·
-    db 0E2h ; ‚
-    db 0E3h ; „
-    db 0E4h ; ‰
-    db 0E5h ; Â
-    db 0E6h ; Ê
-    db 0E7h ; Á
-    db    0
-    db    0
-    db 0C7h ; «
-    db 0C8h ; »
-    db 0C9h ; …
-    db  2Dh ; -
-    db 0CBh ; À
-    db 0CCh ; Ã
-    db 0CDh ; Õ
-    db  2Bh ; +
-    db 0CFh ; œ
-    db 0D0h ; –
-    db 0D1h ; —
-    db 0D2h ; “
-    db 0D3h ; ”
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  1Bh
-    db  21h ; !
-    db  40h ; @
-    db  23h ; #
-    db  24h ; $
-    db  25h ; %
-    db  5Eh ; ^
-    db  26h ; &
-    db  2Ah ; *
-    db  28h ; (
-    db  29h ; )
-    db  5Fh ; _
-    db  2Bh ; +
-    db    8
-    db  8Fh ; è
-    db  90h ; ê
-    db  91h ; ë
-    db  92h ; í
-    db  93h ; ì
-    db  94h ; î
-    db  95h ; ï
-    db  96h ; ñ
-    db  97h ; ó
-    db  98h ; ò
-    db  99h ; ô
-    db  7Bh ; {
-    db  7Dh ; }
-    db  0Dh
-    db    0
-    db  9Eh ; û
-    db  9Fh ; ü
-    db 0A0h ; †
-    db 0A1h ; °
-    db 0A2h ; ¢
-    db 0A3h ; £
-    db 0A4h ; §
-    db 0A5h ; •
-    db 0A6h ; ¶
-    db  3Ah ; :
-    db  22h ; "
-    db  7Eh ; ~
-    db    0
-    db  7Ch ; |
-    db 0ACh ; ¨
-    db 0ADh ; ≠
-    db 0AEh ; Æ
-    db 0AFh ; Ø
-    db 0B0h ; ∞
-    db 0B1h ; ±
-    db 0B2h ; ≤
-    db  3Ch ; <
-    db  3Eh ; >
-    db  3Fh ; ?
-    db    0
-    db    0
-    db    0
-    db  20h
-    db    0
-    db 0F8h ; ¯
-    db 0F9h ; ˘
-    db 0FAh ; ˙
-    db 0FBh ; ˚
-    db 0FCh ; ¸
-    db 0FDh ; ˝
-    db 0FEh ; ˛
-    db 0FFh
-    db  80h ; Ä
-    db  81h ; Å
-    db    0
-    db    0
-    db 0C7h ; «
-    db 0C8h ; »
-    db 0C9h ; …
-    db  2Dh ; -
-    db 0CBh ; À
-    db 0CCh ; Ã
-    db 0CDh ; Õ
-    db  2Bh ; +
-    db 0CFh ; œ
-    db 0D0h ; –
-    db 0D1h ; —
-    db 0D2h ; “
-    db 0D3h ; ”
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-word_3FDFC     dw 2001h
-seg_3FDFE     dw seg seg012
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 27
+    db 49
+    db 50
+    db 51
+    db 52
+    db 53
+    db 54
+    db 55
+    db 56
+    db 57
+    db 48
+    db 45
+    db 61
+    db 8
+    db 9
+    db 113
+    db 119
+    db 101
+    db 114
+    db 116
+    db 121
+    db 117
+    db 105
+    db 111
+    db 112
+    db 91
+    db 93
+    db 13
+    db 0
+    db 97
+    db 115
+    db 100
+    db 102
+    db 103
+    db 104
+    db 106
+    db 107
+    db 108
+    db 59
+    db 39
+    db 96
+    db 0
+    db 92
+    db 122
+    db 120
+    db 99
+    db 118
+    db 98
+    db 110
+    db 109
+    db 44
+    db 46
+    db 47
+    db 0
+    db 42
+    db 0
+    db 32
+    db 0
+    db 187
+    db 188
+    db 189
+    db 190
+    db 191
+    db 192
+    db 193
+    db 194
+    db 195
+    db 196
+    db 0
+    db 0
+    db 199
+    db 200
+    db 201
+    db 45
+    db 203
+    db 204
+    db 205
+    db 43
+    db 207
+    db 208
+    db 209
+    db 210
+    db 211
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 27
+    db 33
+    db 64
+    db 35
+    db 36
+    db 37
+    db 94
+    db 38
+    db 42
+    db 40
+    db 41
+    db 95
+    db 43
+    db 8
+    db 143
+    db 81
+    db 87
+    db 69
+    db 82
+    db 84
+    db 89
+    db 85
+    db 73
+    db 79
+    db 80
+    db 123
+    db 125
+    db 13
+    db 0
+    db 65
+    db 83
+    db 68
+    db 70
+    db 71
+    db 72
+    db 74
+    db 75
+    db 76
+    db 58
+    db 34
+    db 126
+    db 0
+    db 124
+    db 90
+    db 88
+    db 67
+    db 86
+    db 66
+    db 78
+    db 77
+    db 60
+    db 62
+    db 63
+    db 0
+    db 0
+    db 0
+    db 32
+    db 0
+    db 212
+    db 213
+    db 214
+    db 215
+    db 216
+    db 217
+    db 218
+    db 219
+    db 220
+    db 221
+    db 0
+    db 0
+    db 199
+    db 200
+    db 201
+    db 45
+    db 203
+    db 204
+    db 205
+    db 43
+    db 207
+    db 208
+    db 209
+    db 210
+    db 211
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 27
+    db 49
+    db 50
+    db 51
+    db 52
+    db 53
+    db 54
+    db 55
+    db 56
+    db 57
+    db 48
+    db 45
+    db 61
+    db 8
+    db 143
+    db 81
+    db 87
+    db 69
+    db 82
+    db 84
+    db 89
+    db 85
+    db 73
+    db 79
+    db 80
+    db 91
+    db 93
+    db 13
+    db 0
+    db 65
+    db 83
+    db 68
+    db 70
+    db 71
+    db 72
+    db 74
+    db 75
+    db 76
+    db 59
+    db 39
+    db 96
+    db 0
+    db 92
+    db 90
+    db 88
+    db 67
+    db 86
+    db 66
+    db 78
+    db 77
+    db 44
+    db 46
+    db 47
+    db 0
+    db 0
+    db 0
+    db 32
+    db 0
+    db 212
+    db 213
+    db 214
+    db 215
+    db 216
+    db 217
+    db 218
+    db 219
+    db 220
+    db 221
+    db 0
+    db 0
+    db 199
+    db 200
+    db 201
+    db 45
+    db 203
+    db 204
+    db 205
+    db 43
+    db 207
+    db 208
+    db 209
+    db 210
+    db 211
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 27
+    db 33
+    db 0
+    db 35
+    db 36
+    db 37
+    db 30
+    db 38
+    db 42
+    db 40
+    db 41
+    db 31
+    db 43
+    db 127
+    db 9
+    db 17
+    db 23
+    db 5
+    db 18
+    db 20
+    db 25
+    db 21
+    db 9
+    db 15
+    db 16
+    db 27
+    db 29
+    db 13
+    db 0
+    db 1
+    db 19
+    db 4
+    db 6
+    db 7
+    db 8
+    db 10
+    db 11
+    db 12
+    db 59
+    db 44
+    db 96
+    db 0
+    db 28
+    db 26
+    db 24
+    db 3
+    db 22
+    db 2
+    db 14
+    db 178
+    db 60
+    db 62
+    db 63
+    db 0
+    db 0
+    db 0
+    db 32
+    db 0
+    db 222
+    db 223
+    db 224
+    db 225
+    db 226
+    db 227
+    db 228
+    db 229
+    db 230
+    db 231
+    db 0
+    db 0
+    db 199
+    db 200
+    db 201
+    db 45
+    db 203
+    db 204
+    db 205
+    db 43
+    db 207
+    db 208
+    db 209
+    db 210
+    db 211
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 27
+    db 33
+    db 64
+    db 35
+    db 36
+    db 37
+    db 94
+    db 38
+    db 42
+    db 40
+    db 41
+    db 95
+    db 43
+    db 8
+    db 143
+    db 144
+    db 145
+    db 146
+    db 147
+    db 148
+    db 149
+    db 150
+    db 151
+    db 152
+    db 153
+    db 123
+    db 125
+    db 13
+    db 0
+    db 158
+    db 159
+    db 160
+    db 161
+    db 162
+    db 163
+    db 164
+    db 165
+    db 166
+    db 58
+    db 34
+    db 126
+    db 0
+    db 124
+    db 172
+    db 173
+    db 174
+    db 175
+    db 176
+    db 177
+    db 178
+    db 60
+    db 62
+    db 63
+    db 0
+    db 0
+    db 0
+    db 32
+    db 0
+    db 248
+    db 249
+    db 250
+    db 251
+    db 252
+    db 253
+    db 254
+    db 255
+    db 128
+    db 129
+    db 0
+    db 0
+    db 199
+    db 200
+    db 201
+    db 45
+    db 203
+    db 204
+    db 205
+    db 43
+    db 207
+    db 208
+    db 209
+    db 210
+    db 211
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+word_3FDFC     dw 8193
+seg_3FDFE     dw 11938
 byte_3FE00     db 0
-    db    0
-aSFileError     db '%s FILE ERROR',0Dh,0
-aSNotPackedFile     db '%s NOT PACKED FILE',0Dh,0
-aSInvalidPackTy     db '%s INVALID PACK TYPE',0Dh,0
-    db    0
-aLocateshape4_4     db 'locateshape - %-4.4s SHAPE NOT FOUND',0Dh,0Ah
-aReservememoryO     db 'reservememory - OUT OF MEMORY SLOTS RESERVING %s',0Dh,0Ah,0
-aMemoryManagerB     db 'memory manager - BLOCK NOT FOUND at SEG= %x',0Dh,0Ah,0
-aResizememoryCa     db 'resizememory - CANNOT EXPAND BLOCK NOT AT TOP',0Dh,0Ah,0
-aResizememoryNo     db 'resizememory - NO MEMORY LEFT TO EXPAND HW=%x',0Dh,0Ah,0
-    db    0
+    db 0
+aSFileError     db 37
+    db 115
+    db 32
+    db 70
+    db 73
+    db 76
+    db 69
+    db 32
+    db 69
+    db 82
+    db 82
+    db 79
+    db 82
+    db 13
+    db 0
+aSNotPackedFile     db 37
+    db 115
+    db 32
+    db 78
+    db 79
+    db 84
+    db 32
+    db 80
+    db 65
+    db 67
+    db 75
+    db 69
+    db 68
+    db 32
+    db 70
+    db 73
+    db 76
+    db 69
+    db 13
+    db 0
+aSInvalidPackTy     db 37
+    db 115
+    db 32
+    db 73
+    db 78
+    db 86
+    db 65
+    db 76
+    db 73
+    db 68
+    db 32
+    db 80
+    db 65
+    db 67
+    db 75
+    db 32
+    db 84
+    db 89
+    db 80
+    db 69
+    db 13
+    db 0
+    db 0
+aLocateshape4_4     db 108
+    db 111
+    db 99
+    db 97
+    db 116
+    db 101
+    db 115
+    db 104
+    db 97
+    db 112
+    db 101
+    db 32
+    db 45
+    db 32
+    db 37
+    db 45
+    db 52
+    db 46
+    db 52
+    db 115
+    db 32
+    db 83
+    db 72
+    db 65
+    db 80
+    db 69
+    db 32
+    db 78
+    db 79
+    db 84
+    db 32
+    db 70
+    db 79
+    db 85
+    db 78
+    db 68
+    db 13
+    db 10
+    db 108
+    db 111
+    db 99
+    db 97
+    db 116
+    db 101
+    db 115
+    db 111
+    db 117
+    db 110
+    db 100
+    db 32
+    db 45
+    db 32
+    db 37
+    db 45
+    db 52
+    db 46
+    db 52
+    db 115
+    db 32
+    db 83
+    db 79
+    db 85
+    db 78
+    db 68
+    db 32
+    db 78
+    db 79
+    db 84
+    db 32
+    db 70
+    db 79
+    db 85
+    db 78
+    db 68
+    db 13
+    db 10
+    db 114
+    db 101
+    db 115
+    db 101
+    db 114
+    db 118
+    db 101
+    db 109
+    db 101
+    db 109
+    db 111
+    db 114
+    db 121
+    db 32
+    db 45
+    db 32
+    db 79
+    db 85
+    db 84
+    db 32
+    db 79
+    db 70
+    db 32
+    db 77
+    db 69
+    db 77
+    db 79
+    db 82
+    db 89
+    db 32
+    db 82
+    db 69
+    db 83
+    db 69
+    db 82
+    db 86
+    db 73
+    db 78
+    db 71
+    db 32
+    db 37
+    db 115
+    db 32
+    db 80
+    db 61
+    db 37
+    db 120
+    db 32
+    db 72
+    db 87
+    db 61
+    db 37
+    db 120
+    db 13
+    db 10
+    db 0
+aReservememoryO     db 114
+    db 101
+    db 115
+    db 101
+    db 114
+    db 118
+    db 101
+    db 109
+    db 101
+    db 109
+    db 111
+    db 114
+    db 121
+    db 32
+    db 45
+    db 32
+    db 79
+    db 85
+    db 84
+    db 32
+    db 79
+    db 70
+    db 32
+    db 77
+    db 69
+    db 77
+    db 79
+    db 82
+    db 89
+    db 32
+    db 83
+    db 76
+    db 79
+    db 84
+    db 83
+    db 32
+    db 82
+    db 69
+    db 83
+    db 69
+    db 82
+    db 86
+    db 73
+    db 78
+    db 71
+    db 32
+    db 37
+    db 115
+    db 13
+    db 10
+    db 0
+aMemoryManagerB     db 109
+    db 101
+    db 109
+    db 111
+    db 114
+    db 121
+    db 32
+    db 109
+    db 97
+    db 110
+    db 97
+    db 103
+    db 101
+    db 114
+    db 32
+    db 45
+    db 32
+    db 66
+    db 76
+    db 79
+    db 67
+    db 75
+    db 32
+    db 78
+    db 79
+    db 84
+    db 32
+    db 70
+    db 79
+    db 85
+    db 78
+    db 68
+    db 32
+    db 97
+    db 116
+    db 32
+    db 83
+    db 69
+    db 71
+    db 61
+    db 32
+    db 37
+    db 120
+    db 13
+    db 10
+    db 0
+aResizememoryCa     db 114
+    db 101
+    db 115
+    db 105
+    db 122
+    db 101
+    db 109
+    db 101
+    db 109
+    db 111
+    db 114
+    db 121
+    db 32
+    db 45
+    db 32
+    db 67
+    db 65
+    db 78
+    db 78
+    db 79
+    db 84
+    db 32
+    db 69
+    db 88
+    db 80
+    db 65
+    db 78
+    db 68
+    db 32
+    db 66
+    db 76
+    db 79
+    db 67
+    db 75
+    db 32
+    db 78
+    db 79
+    db 84
+    db 32
+    db 65
+    db 84
+    db 32
+    db 84
+    db 79
+    db 80
+    db 13
+    db 10
+    db 0
+aResizememoryNo     db 114
+    db 101
+    db 115
+    db 105
+    db 122
+    db 101
+    db 109
+    db 101
+    db 109
+    db 111
+    db 114
+    db 121
+    db 32
+    db 45
+    db 32
+    db 78
+    db 79
+    db 32
+    db 77
+    db 69
+    db 77
+    db 79
+    db 82
+    db 89
+    db 32
+    db 76
+    db 69
+    db 70
+    db 84
+    db 32
+    db 84
+    db 79
+    db 32
+    db 69
+    db 88
+    db 80
+    db 65
+    db 78
+    db 68
+    db 32
+    db 72
+    db 87
+    db 61
+    db 37
+    db 120
+    db 13
+    db 10
+    db 0
+    db 0
 word_3FF82     dw 0
 word_3FF84     dw 0
 word_3FF86     dw 0
 word_3FF88     dw 0
 word_3FF8A     dw 0
-    db '            ',0
-    db    0
-    db    0
-    db    0
-    db    2
-    db    0
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    dw 2020h
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db '            ',0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db  20h
-    db    0
-    db    0
-    db    0
-    db    0
-    db    1
-    db    0
-word_40310     dw 481Ch
-word_40312     dw 481Ch
-word_40314     dw 4B8Eh
-word_40316     dw 4B8Eh
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 0
+    db 0
+    db 0
+    db 0
+    db 2
+    db 0
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    dw 8224
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 32
+    db 0
+    db 0
+    db 0
+    db 0
+    db 1
+    db 0
+word_40310     dw 18460
+word_40312     dw 18460
+word_40314     dw 19342
+word_40316     dw 19342
 word_40318     dw 0
 word_4031A     dw 0
 word_4031C     dw 0
 word_4031E     dw 0
 word_40320     dw 0
-off_40322     dd 2EA20000h
-off_40326     dd 2EA20000h
+off_40322     dd 782368768
+off_40326     dd 782368768
 byte_4032A     db 0
 byte_4032B     db 0
 byte_4032C     db 7
-    db    0
-word_4032E     dw 0F00h
+    db 0
+word_4032E     dw 3840
 word_40330     dw 0
 word_40332     dw 0
 word_40334     dw 0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-word_403AE     dw 0A0h
-word_403B0     dw 64h
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+word_403AE     dw 160
+word_403B0     dw 100
 word_403B2     dw 0
 word_403B4     dw 0
-word_403B6     dw 0A0h
-word_403B8     dw 64h
+word_403B6     dw 160
+word_403B8     dw 100
 word_403BA     dw 0
 word_403BC     dw 0
 word_403BE     dw 0
 word_403C0     dw 0
-aWindowReleased     db 'Window Released Out of Order',0Dh,0Ah,0
-    db    0
-aSFileError_0     db '%s FILE ERROR',0Dh,0
-    db    0
+aWindowReleased     db 87
+    db 105
+    db 110
+    db 100
+    db 111
+    db 119
+    db 32
+    db 82
+    db 101
+    db 108
+    db 101
+    db 97
+    db 115
+    db 101
+    db 100
+    db 32
+    db 79
+    db 117
+    db 116
+    db 32
+    db 111
+    db 102
+    db 32
+    db 79
+    db 114
+    db 100
+    db 101
+    db 114
+    db 13
+    db 10
+    db 0
+    db 0
+aSFileError_0     db 37
+    db 115
+    db 32
+    db 70
+    db 73
+    db 76
+    db 69
+    db 32
+    db 69
+    db 82
+    db 82
+    db 79
+    db 82
+    db 13
+    db 0
+    db 0
 byte_403F2     db 0
 byte_403F3     db 0
-    db    0
-    db    0
-    db  65h ; e
-    db    0
-    db 0C9h ; …
-    db    0
-    db  2Eh ; .
-    db    1
-    db  92h ; í
-    db    1
-    db 0F7h ; ˜
-    db    1
-    db  5Bh ; [
-    db    2
-    db 0C0h ; ¿
-    db    2
-    db  24h ; $
-    db    3
-    db  88h ; à
-    db    3
-    db 0EDh ; Ì
-    db    3
-    db  51h ; Q
-    db    4
-    db 0B5h ; µ
-    db    4
-    db  1Ah
-    db    5
-    db  7Eh ; ~
-    db    5
-    db 0E2h ; ‚
-    db    5
-    db  46h ; F
-    db    6
-    db 0AAh ; ™
-    db    6
-    db  0Eh
-    db    7
-    db  72h ; r
-    db    7
-    db 0D6h ; ÷
-    db    7
-    db  39h ; 9
-    db    8
-    db  9Dh ; ù
-    db    8
-    db    1
-    db    9
-    db  64h ; d
-    db    9
-    db 0C7h ; «
-    db    9
-    db  2Bh ; +
-    db  0Ah
-    db  8Eh ; é
-    db  0Ah
-    db 0F1h ; Ò
-    db  0Ah
-    db  54h ; T
-    db  0Bh
-    db 0B7h ; ∑
-    db  0Bh
-    db  1Ah
-    db  0Ch
-    db  7Ch ; |
-    db  0Ch
-    db 0DFh ; ﬂ
-    db  0Ch
-    db  41h ; A
-    db  0Dh
-    db 0A4h ; §
-    db  0Dh
-    db    6
-    db  0Eh
-    db  68h ; h
-    db  0Eh
-    db 0CAh ;  
-    db  0Eh
-    db  2Bh ; +
-    db  0Fh
-    db  8Dh ; ç
-    db  0Fh
-    db 0EEh ; Ó
-    db  0Fh
-    db  50h ; P
-    db  10h
-    db 0B1h ; ±
-    db  10h
-    db  12h
-    db  11h
-    db  73h ; s
-    db  11h
-    db 0D3h ; ”
-    db  11h
-    db  34h ; 4
-    db  12h
-    db  94h ; î
-    db  12h
-    db 0F4h ; Ù
-    db  12h
-    db  54h ; T
-    db  13h
-    db 0B4h ; ¥
-    db  13h
-    db  13h
-    db  14h
-    db  73h ; s
-    db  14h
-    db 0D2h ; “
-    db  14h
-    db  31h ; 1
-    db  15h
-    db  90h ; ê
-    db  15h
-    db 0EEh ; Ó
-    db  15h
-    db  4Ch ; L
-    db  16h
-    db 0ABh ; ´
-    db  16h
-    db    9
-    db  17h
-    db  66h ; f
-    db  17h
-    db 0C4h ; ƒ
-    db  17h
-    db  21h ; !
-    db  18h
-    db  7Eh ; ~
-    db  18h
-    db 0DBh ; €
-    db  18h
-    db  37h ; 7
-    db  19h
-    db  93h ; ì
-    db  19h
-    db 0EFh ; Ô
-    db  19h
-    db  4Bh ; K
-    db  1Ah
-    db 0A7h ; ß
-    db  1Ah
-    db    2
-    db  1Bh
-    db  5Dh ; ]
-    db  1Bh
-    db 0B8h ; ∏
-    db  1Bh
-    db  12h
-    db  1Ch
-    db  6Ch ; l
-    db  1Ch
-    db 0C6h ; ∆
-    db  1Ch
-    db  20h
-    db  1Dh
-    db  79h ; y
-    db  1Dh
-    db 0D3h ; ”
-    db  1Dh
-    db  2Bh ; +
-    db  1Eh
-    db  84h ; Ñ
-    db  1Eh
-    db 0DCh ; ‹
-    db  1Eh
-    db  34h ; 4
-    db  1Fh
-    db  8Ch ; å
-    db  1Fh
-    db 0E3h ; „
-    db  1Fh
-    db  3Ah ; :
-    db  20h
-    db  91h ; ë
-    db  20h
-    db 0E7h ; Á
-    db  20h
-    db  3Dh ; =
-    db  21h ; !
-    db  93h ; ì
-    db  21h ; !
-    db 0E8h ; Ë
-    db  21h ; !
-    db  3Dh ; =
-    db  22h ; "
-    db  92h ; í
-    db  22h ; "
-    db 0E7h ; Á
-    db  22h ; "
-    db  3Bh ; ;
-    db  23h ; #
-    db  8Eh ; é
-    db  23h ; #
-    db 0E2h ; ‚
-    db  23h ; #
-    db  35h ; 5
-    db  24h ; $
-    db  88h ; à
-    db  24h ; $
-    db 0DAh ; ⁄
-    db  24h ; $
-    db  2Ch ; ,
-    db  25h ; %
-    db  7Eh ; ~
-    db  25h ; %
-    db 0CFh ; œ
-    db  25h ; %
-    db  20h
-    db  26h ; &
-    db  71h ; q
-    db  26h ; &
-    db 0C1h ; ¡
-    db  26h ; &
-    db  11h
-    db  27h ; '
-    db  60h ; `
-    db  27h ; '
-    db 0AFh ; Ø
-    db  27h ; '
-    db 0FEh ; ˛
-    db  27h ; '
-    db  4Ch ; L
-    db  28h ; (
-    db  9Ah ; ö
-    db  28h ; (
-    db 0E7h ; Á
-    db  28h ; (
-    db  35h ; 5
-    db  29h ; )
-    db  81h ; Å
-    db  29h ; )
-    db 0CEh ; Œ
-    db  29h ; )
-    db  1Ah
-    db  2Ah ; *
-    db  65h ; e
-    db  2Ah ; *
-    db 0B0h ; ∞
-    db  2Ah ; *
-    db 0FBh ; ˚
-    db  2Ah ; *
-    db  45h ; E
-    db  2Bh ; +
-    db  8Fh ; è
-    db  2Bh ; +
-    db 0D8h ; ÿ
-    db  2Bh ; +
-    db  21h ; !
-    db  2Ch ; ,
-    db  6Ah ; j
-    db  2Ch ; ,
-    db 0B2h ; ≤
-    db  2Ch ; ,
-    db 0FAh ; ˙
-    db  2Ch ; ,
-    db  41h ; A
-    db  2Dh ; -
-    db  88h ; à
-    db  2Dh ; -
-    db 0CFh ; œ
-    db  2Dh ; -
-    db  15h
-    db  2Eh ; .
-    db  5Ah ; Z
-    db  2Eh ; .
-    db  9Fh ; ü
-    db  2Eh ; .
-    db 0E4h ; ‰
-    db  2Eh ; .
-    db  28h ; (
-    db  2Fh ; /
-    db  6Ch ; l
-    db  2Fh ; /
-    db 0AFh ; Ø
-    db  2Fh ; /
-    db 0F2h ; Ú
-    db  2Fh ; /
-    db  34h ; 4
-    db  30h ; 0
-    db  76h ; v
-    db  30h ; 0
-    db 0B8h ; ∏
-    db  30h ; 0
-    db 0F9h ; ˘
-    db  30h ; 0
-    db  39h ; 9
-    db  31h ; 1
-    db  79h ; y
-    db  31h ; 1
-    db 0B9h ; π
-    db  31h ; 1
-    db 0F8h ; ¯
-    db  31h ; 1
-    db  36h ; 6
-    db  32h ; 2
-    db  74h ; t
-    db  32h ; 2
-    db 0B2h ; ≤
-    db  32h ; 2
-    db 0EFh ; Ô
-    db  32h ; 2
-    db  2Ch ; ,
-    db  33h ; 3
-    db  68h ; h
-    db  33h ; 3
-    db 0A3h ; £
-    db  33h ; 3
-    db 0DFh ; ﬂ
-    db  33h ; 3
-    db  19h
-    db  34h ; 4
-    db  53h ; S
-    db  34h ; 4
-    db  8Dh ; ç
-    db  34h ; 4
-    db 0C6h ; ∆
-    db  34h ; 4
-    db 0FFh
-    db  34h ; 4
-    db  37h ; 7
-    db  35h ; 5
-    db  6Eh ; n
-    db  35h ; 5
-    db 0A5h ; •
-    db  35h ; 5
-    db 0DCh ; ‹
-    db  35h ; 5
-    db  12h
-    db  36h ; 6
-    db  48h ; H
-    db  36h ; 6
-    db  7Dh ; }
-    db  36h ; 6
-    db 0B1h ; ±
-    db  36h ; 6
-    db 0E5h ; Â
-    db  36h ; 6
-    db  18h
-    db  37h ; 7
-    db  4Bh ; K
-    db  37h ; 7
-    db  7Eh ; ~
-    db  37h ; 7
-    db 0B0h ; ∞
-    db  37h ; 7
-    db 0E1h ; ·
-    db  37h ; 7
-    db  12h
-    db  38h ; 8
-    db  42h ; B
-    db  38h ; 8
-    db  71h ; q
-    db  38h ; 8
-    db 0A1h ; °
-    db  38h ; 8
-    db 0CFh ; œ
-    db  38h ; 8
-    db 0FDh ; ˝
-    db  38h ; 8
-    db  2Bh ; +
-    db  39h ; 9
-    db  58h ; X
-    db  39h ; 9
-    db  84h ; Ñ
-    db  39h ; 9
-    db 0B0h ; ∞
-    db  39h ; 9
-    db 0DBh ; €
-    db  39h ; 9
-    db    6
-    db  3Ah ; :
-    db  30h ; 0
-    db  3Ah ; :
-    db  59h ; Y
-    db  3Ah ; :
-    db  82h ; Ç
-    db  3Ah ; :
-    db 0ABh ; ´
-    db  3Ah ; :
-    db 0D3h ; ”
-    db  3Ah ; :
-    db 0FAh ; ˙
-    db  3Ah ; :
-    db  21h ; !
-    db  3Bh ; ;
-    db  47h ; G
-    db  3Bh ; ;
-    db  6Dh ; m
-    db  3Bh ; ;
-    db  92h ; í
-    db  3Bh ; ;
-    db 0B6h ; ∂
-    db  3Bh ; ;
-    db 0DAh ; ⁄
-    db  3Bh ; ;
-    db 0FDh ; ˝
-    db  3Bh ; ;
-    db  20h
-    db  3Ch ; <
-    db  42h ; B
-    db  3Ch ; <
-    db  64h ; d
-    db  3Ch ; <
-    db  85h ; Ö
-    db  3Ch ; <
-    db 0A5h ; •
-    db  3Ch ; <
-    db 0C5h ; ≈
-    db  3Ch ; <
-    db 0E4h ; ‰
-    db  3Ch ; <
-    db    3
-    db  3Dh ; =
-    db  21h ; !
-    db  3Dh ; =
-    db  3Fh ; ?
-    db  3Dh ; =
-    db  5Bh ; [
-    db  3Dh ; =
-    db  78h ; x
-    db  3Dh ; =
-    db  93h ; ì
-    db  3Dh ; =
-    db 0AFh ; Ø
-    db  3Dh ; =
-    db 0C9h ; …
-    db  3Dh ; =
-    db 0E3h ; „
-    db  3Dh ; =
-    db 0FCh ; ¸
-    db  3Dh ; =
-    db  15h
-    db  3Eh ; >
-    db  2Dh ; -
-    db  3Eh ; >
-    db  45h ; E
-    db  3Eh ; >
-    db  5Ch ; \
-    db  3Eh ; >
-    db  72h ; r
-    db  3Eh ; >
-    db  88h ; à
-    db  3Eh ; >
-    db  9Dh ; ù
-    db  3Eh ; >
-    db 0B1h ; ±
-    db  3Eh ; >
-    db 0C5h ; ≈
-    db  3Eh ; >
-    db 0D8h ; ÿ
-    db  3Eh ; >
-    db 0EBh ; Î
-    db  3Eh ; >
-    db 0FDh ; ˝
-    db  3Eh ; >
-    db  0Fh
-    db  3Fh ; ?
-    db  20h
-    db  3Fh ; ?
-    db  30h ; 0
-    db  3Fh ; ?
-    db  40h ; @
-    db  3Fh ; ?
-    db  4Fh ; O
-    db  3Fh ; ?
-    db  5Dh ; ]
-    db  3Fh ; ?
-    db  6Bh ; k
-    db  3Fh ; ?
-    db  78h ; x
-    db  3Fh ; ?
-    db  85h ; Ö
-    db  3Fh ; ?
-    db  91h ; ë
-    db  3Fh ; ?
-    db  9Ch ; ú
-    db  3Fh ; ?
-    db 0A7h ; ß
-    db  3Fh ; ?
-    db 0B1h ; ±
-    db  3Fh ; ?
-    db 0BBh ; ª
-    db  3Fh ; ?
-    db 0C4h ; ƒ
-    db  3Fh ; ?
-    db 0CCh ; Ã
-    db  3Fh ; ?
-    db 0D4h ; ‘
-    db  3Fh ; ?
-    db 0DBh ; €
-    db  3Fh ; ?
-    db 0E1h ; ·
-    db  3Fh ; ?
-    db 0E7h ; Á
-    db  3Fh ; ?
-    db 0ECh ; Ï
-    db  3Fh ; ?
-    db 0F1h ; Ò
-    db  3Fh ; ?
-    db 0F5h ; ı
-    db  3Fh ; ?
-    db 0F8h ; ¯
-    db  3Fh ; ?
-    db 0FBh ; ˚
-    db  3Fh ; ?
-    db 0FDh ; ˝
-    db  3Fh ; ?
-    db 0FFh
-    db  3Fh ; ?
-    db    0
-    db  40h ; @
-    db    0
-    db  40h ; @
+    db 0
+    db 0
+    db 101
+    db 0
+    db 201
+    db 0
+    db 46
+    db 1
+    db 146
+    db 1
+    db 247
+    db 1
+    db 91
+    db 2
+    db 192
+    db 2
+    db 36
+    db 3
+    db 136
+    db 3
+    db 237
+    db 3
+    db 81
+    db 4
+    db 181
+    db 4
+    db 26
+    db 5
+    db 126
+    db 5
+    db 226
+    db 5
+    db 70
+    db 6
+    db 170
+    db 6
+    db 14
+    db 7
+    db 114
+    db 7
+    db 214
+    db 7
+    db 57
+    db 8
+    db 157
+    db 8
+    db 1
+    db 9
+    db 100
+    db 9
+    db 199
+    db 9
+    db 43
+    db 10
+    db 142
+    db 10
+    db 241
+    db 10
+    db 84
+    db 11
+    db 183
+    db 11
+    db 26
+    db 12
+    db 124
+    db 12
+    db 223
+    db 12
+    db 65
+    db 13
+    db 164
+    db 13
+    db 6
+    db 14
+    db 104
+    db 14
+    db 202
+    db 14
+    db 43
+    db 15
+    db 141
+    db 15
+    db 238
+    db 15
+    db 80
+    db 16
+    db 177
+    db 16
+    db 18
+    db 17
+    db 115
+    db 17
+    db 211
+    db 17
+    db 52
+    db 18
+    db 148
+    db 18
+    db 244
+    db 18
+    db 84
+    db 19
+    db 180
+    db 19
+    db 19
+    db 20
+    db 115
+    db 20
+    db 210
+    db 20
+    db 49
+    db 21
+    db 144
+    db 21
+    db 238
+    db 21
+    db 76
+    db 22
+    db 171
+    db 22
+    db 9
+    db 23
+    db 102
+    db 23
+    db 196
+    db 23
+    db 33
+    db 24
+    db 126
+    db 24
+    db 219
+    db 24
+    db 55
+    db 25
+    db 147
+    db 25
+    db 239
+    db 25
+    db 75
+    db 26
+    db 167
+    db 26
+    db 2
+    db 27
+    db 93
+    db 27
+    db 184
+    db 27
+    db 18
+    db 28
+    db 108
+    db 28
+    db 198
+    db 28
+    db 32
+    db 29
+    db 121
+    db 29
+    db 211
+    db 29
+    db 43
+    db 30
+    db 132
+    db 30
+    db 220
+    db 30
+    db 52
+    db 31
+    db 140
+    db 31
+    db 227
+    db 31
+    db 58
+    db 32
+    db 145
+    db 32
+    db 231
+    db 32
+    db 61
+    db 33
+    db 147
+    db 33
+    db 232
+    db 33
+    db 61
+    db 34
+    db 146
+    db 34
+    db 231
+    db 34
+    db 59
+    db 35
+    db 142
+    db 35
+    db 226
+    db 35
+    db 53
+    db 36
+    db 136
+    db 36
+    db 218
+    db 36
+    db 44
+    db 37
+    db 126
+    db 37
+    db 207
+    db 37
+    db 32
+    db 38
+    db 113
+    db 38
+    db 193
+    db 38
+    db 17
+    db 39
+    db 96
+    db 39
+    db 175
+    db 39
+    db 254
+    db 39
+    db 76
+    db 40
+    db 154
+    db 40
+    db 231
+    db 40
+    db 53
+    db 41
+    db 129
+    db 41
+    db 206
+    db 41
+    db 26
+    db 42
+    db 101
+    db 42
+    db 176
+    db 42
+    db 251
+    db 42
+    db 69
+    db 43
+    db 143
+    db 43
+    db 216
+    db 43
+    db 33
+    db 44
+    db 106
+    db 44
+    db 178
+    db 44
+    db 250
+    db 44
+    db 65
+    db 45
+    db 136
+    db 45
+    db 207
+    db 45
+    db 21
+    db 46
+    db 90
+    db 46
+    db 159
+    db 46
+    db 228
+    db 46
+    db 40
+    db 47
+    db 108
+    db 47
+    db 175
+    db 47
+    db 242
+    db 47
+    db 52
+    db 48
+    db 118
+    db 48
+    db 184
+    db 48
+    db 249
+    db 48
+    db 57
+    db 49
+    db 121
+    db 49
+    db 185
+    db 49
+    db 248
+    db 49
+    db 54
+    db 50
+    db 116
+    db 50
+    db 178
+    db 50
+    db 239
+    db 50
+    db 44
+    db 51
+    db 104
+    db 51
+    db 163
+    db 51
+    db 223
+    db 51
+    db 25
+    db 52
+    db 83
+    db 52
+    db 141
+    db 52
+    db 198
+    db 52
+    db 255
+    db 52
+    db 55
+    db 53
+    db 110
+    db 53
+    db 165
+    db 53
+    db 220
+    db 53
+    db 18
+    db 54
+    db 72
+    db 54
+    db 125
+    db 54
+    db 177
+    db 54
+    db 229
+    db 54
+    db 24
+    db 55
+    db 75
+    db 55
+    db 126
+    db 55
+    db 176
+    db 55
+    db 225
+    db 55
+    db 18
+    db 56
+    db 66
+    db 56
+    db 113
+    db 56
+    db 161
+    db 56
+    db 207
+    db 56
+    db 253
+    db 56
+    db 43
+    db 57
+    db 88
+    db 57
+    db 132
+    db 57
+    db 176
+    db 57
+    db 219
+    db 57
+    db 6
+    db 58
+    db 48
+    db 58
+    db 89
+    db 58
+    db 130
+    db 58
+    db 171
+    db 58
+    db 211
+    db 58
+    db 250
+    db 58
+    db 33
+    db 59
+    db 71
+    db 59
+    db 109
+    db 59
+    db 146
+    db 59
+    db 182
+    db 59
+    db 218
+    db 59
+    db 253
+    db 59
+    db 32
+    db 60
+    db 66
+    db 60
+    db 100
+    db 60
+    db 133
+    db 60
+    db 165
+    db 60
+    db 197
+    db 60
+    db 228
+    db 60
+    db 3
+    db 61
+    db 33
+    db 61
+    db 63
+    db 61
+    db 91
+    db 61
+    db 120
+    db 61
+    db 147
+    db 61
+    db 175
+    db 61
+    db 201
+    db 61
+    db 227
+    db 61
+    db 252
+    db 61
+    db 21
+    db 62
+    db 45
+    db 62
+    db 69
+    db 62
+    db 92
+    db 62
+    db 114
+    db 62
+    db 136
+    db 62
+    db 157
+    db 62
+    db 177
+    db 62
+    db 197
+    db 62
+    db 216
+    db 62
+    db 235
+    db 62
+    db 253
+    db 62
+    db 15
+    db 63
+    db 32
+    db 63
+    db 48
+    db 63
+    db 64
+    db 63
+    db 79
+    db 63
+    db 93
+    db 63
+    db 107
+    db 63
+    db 120
+    db 63
+    db 133
+    db 63
+    db 145
+    db 63
+    db 156
+    db 63
+    db 167
+    db 63
+    db 177
+    db 63
+    db 187
+    db 63
+    db 196
+    db 63
+    db 204
+    db 63
+    db 212
+    db 63
+    db 219
+    db 63
+    db 225
+    db 63
+    db 231
+    db 63
+    db 236
+    db 63
+    db 241
+    db 63
+    db 245
+    db 63
+    db 248
+    db 63
+    db 251
+    db 63
+    db 253
+    db 63
+    db 255
+    db 63
+    db 0
+    db 64
+    db 0
+    db 64
 word_405F6     dw 0
 word_405F8     dw 0
 word_405FA     dw 0
 word_405FC     dw 0
-off_405FE     dd word_3B1F0
-    db  0Ah
-    db    0
-    db  68h ; h
-    db  64h ; d
-    db  72h ; r
-    db  31h ; 1
-    db    0
-    db    0
+off_405FE     dd 991887360
+    db 10
+    db 0
+    db 104
+    db 100
+    db 114
+    db 49
+    db 0
+    db 0
 dword_4060A     dd 0
-    db    1
-    db    0
-    db    2
-    db    0
-    db    4
-    db    0
-    db    8
-    db    0
-    db  10h
-    db    0
-    db  20h
-    db    0
-    db  40h ; @
-    db    0
-    db  80h ; Ä
-    db    0
-    db    0
-    db    1
-    db    0
-    db    2
-    db    0
-    db    4
-    db    0
-    db    8
-    db    0
-    db  10h
-    db    0
-    db  20h
-    db    0
-    db  40h ; @
-    db    0
-    db  80h ; Ä
-    db    0
-    db    0
+    db 1
+    db 0
+    db 2
+    db 0
+    db 4
+    db 0
+    db 8
+    db 0
+    db 16
+    db 0
+    db 32
+    db 0
+    db 64
+    db 0
+    db 128
+    db 0
+    db 0
+    db 1
+    db 0
+    db 2
+    db 0
+    db 4
+    db 0
+    db 8
+    db 0
+    db 16
+    db 0
+    db 32
+    db 0
+    db 64
+    db 0
+    db 128
+    db 0
+    db 0
 byte_40630     db 0
 byte_40631     db 1
 byte_40632     db 0
 byte_40633     db 1
 byte_40634     db 0
 byte_40635     db 0
-    db  10h
-    db    0
-    db  16h
+    db 16
+    db 0
+    db 22
 byte_40639     db 0
 word_4063A     dw 1
 word_4063C     dw 0
-    db    0
-    db  64h ; d
-    db  72h ; r
-    db  76h ; v
-    db    0
-    db  6Dh ; m
-    db  74h ; t
-    db  33h ; 3
-    db  32h ; 2
-    db  2Eh ; .
-    db  70h ; p
-    db  6Ch ; l
-    db  62h ; b
-    db    0
-    db  43h ; C
-    db  61h ; a
-    db  6Eh ; n
-    db  27h ; '
-    db  74h ; t
-    db  20h
-    db  66h ; f
-    db  69h ; i
-    db  6Eh ; n
-    db  64h ; d
-    db  20h
-    db  64h ; d
-    db  72h ; r
-    db  69h ; i
-    db  76h ; v
-    db  65h ; e
-    db  72h ; r
-    db  21h ; !
-    db  0Ah
-    db    0
-    db  67h ; g
-    db  65h ; e
-    db    0
-    db  67h ; g
-    db  65h ; e
-    db    0
-    db    0
-    db    0
-    db  64h ; d
-    db  73h ; s
-    db  66h ; f
-    db    0
-    db  73h ; s
-    db  66h ; f
-    db  78h ; x
-    db    0
-    db  63h ; c
-    db  61h ; a
-    db  6Eh ; n
-    db  6Eh ; n
-    db  6Fh ; o
-    db  74h ; t
-    db  20h
-    db  6Ch ; l
-    db  6Fh ; o
-    db  61h ; a
-    db  64h ; d
-    db  20h
-    db  73h ; s
-    db  66h ; f
-    db  78h ; x
-    db  20h
-    db  66h ; f
-    db  69h ; i
-    db  6Ch ; l
-    db  65h ; e
-    db  20h
-    db  25h ; %
-    db  73h ; s
-    db    0
-    db  6Bh ; k
-    db  6Dh ; m
-    db  73h ; s
-    db    0
-    db  63h ; c
-    db  61h ; a
-    db  6Eh ; n
-    db  6Eh ; n
-    db  6Fh ; o
-    db  74h ; t
-    db  20h
-    db  6Ch ; l
-    db  6Fh ; o
-    db  61h ; a
-    db  64h ; d
-    db  20h
-    db  73h ; s
-    db  6Fh ; o
-    db  6Eh ; n
-    db  67h ; g
-    db  20h
-    db  66h ; f
-    db  69h ; i
-    db  6Ch ; l
-    db  65h ; e
-    db  20h
-    db  25h ; %
-    db  73h ; s
-    db    0
-    db  64h ; d
-    db  76h ; v
-    db  63h ; c
-    db    0
-    db  76h ; v
-    db  63h ; c
-    db  65h ; e
-    db    0
-    db  63h ; c
-    db  61h ; a
-    db  6Eh ; n
-    db  6Eh ; n
-    db  6Fh ; o
-    db  74h ; t
-    db  20h
-    db  6Ch ; l
-    db  6Fh ; o
-    db  61h ; a
-    db  64h ; d
-    db  20h
-    db  76h ; v
-    db  6Fh ; o
-    db  69h ; i
-    db  63h ; c
-    db  65h ; e
-    db  20h
-    db  66h ; f
-    db  69h ; i
-    db  6Ch ; l
-    db  65h ; e
-    db  20h
-    db  25h ; %
-    db  73h ; s
-    db    0
-    db  73h ; s
-    db  6Ch ; l
-    db  62h ; b
-    db    0
-    db  63h ; c
-    db  61h ; a
-    db  6Eh ; n
-    db  6Eh ; n
-    db  6Fh ; o
-    db  74h ; t
-    db  20h
-    db  6Ch ; l
-    db  6Fh ; o
-    db  61h ; a
-    db  64h ; d
-    db  20h
-    db  73h ; s
-    db  61h ; a
-    db  6Dh ; m
-    db  70h ; p
-    db  6Ch ; l
-    db  65h ; e
-    db  20h
-    db  66h ; f
-    db  69h ; i
-    db  6Ch ; l
-    db  65h ; e
-    db  20h
-    db  25h ; %
-    db  73h ; s
-    db    0
-    db  68h ; h
-    db  64h ; d
-    db  72h ; r
-    db  31h ; 1
-    db    0
-    db  42h ; B
-    db  41h ; A
-    db  53h ; S
-    db  44h ; D
-    db    0
-    db  53h ; S
-    db  4Eh ; N
-    db  41h ; A
-    db  52h ; R
-    db    0
-    db  54h ; T
-    db  4Fh ; O
-    db  4Dh ; M
-    db  4Dh ; M
-    db    0
-    db  52h ; R
-    db  49h ; I
-    db  44h ; D
-    db  45h ; E
-    db    0
-    db  43h ; C
-    db  52h ; R
-    db  53h ; S
-    db  48h ; H
-    db    0
-    db  43h ; C
-    db  48h ; H
-    db  48h ; H
-    db  54h ; T
-    db    0
-    db  4Fh ; O
-    db  48h ; H
-    db  48h ; H
-    db  54h ; T
-    db    0
-    db  68h ; h
-    db  64h ; d
-    db  72h ; r
-    db  31h ; 1
-    db    0
-    db  73h ; s
-    db  77h ; w
-    db  50h ; P
-    db  61h ; a
-    db  75h ; u
-    db  73h ; s
-    db  65h ; e
-    db  20h
-    db  3Dh ; =
-    db  20h
-    db  25h ; %
-    db  64h ; d
-    db  2Ch ; ,
-    db  20h
-    db  73h ; s
-    db  77h ; w
-    db  53h ; S
-    db  6Fh ; o
-    db  6Eh ; n
-    db  67h ; g
-    db  20h
-    db  3Dh ; =
-    db  20h
-    db  25h ; %
-    db  64h ; d
-    db  2Ch ; ,
-    db  20h
-    db  62h ; b
-    db  53h ; S
-    db  6Fh ; o
-    db  6Eh ; n
-    db  67h ; g
-    db  20h
-    db  3Dh ; =
-    db  20h
-    db  25h ; %
-    db  64h ; d
-    db  2Ch ; ,
-    db  73h ; s
-    db  77h ; w
-    db  53h ; S
-    db  46h ; F
-    db  58h ; X
-    db  20h
-    db  3Dh ; =
-    db  20h
-    db  25h ; %
-    db  64h ; d
-    db  0Ah
-    db    0
-    db  75h ; u
-    db  62h ; b
-    db  4Dh ; M
-    db  75h ; u
-    db  73h ; s
-    db  69h ; i
-    db  63h ; c
-    db  56h ; V
-    db  6Fh ; o
-    db  6Ch ; l
-    db  75h ; u
-    db  6Dh ; m
-    db  65h ; e
-    db  20h
-    db  3Dh ; =
-    db  20h
-    db  25h ; %
-    db  64h ; d
-    db  2Ch ; ,
-    db  20h
-    db  75h ; u
-    db  62h ; b
-    db  53h ; S
-    db  66h ; f
-    db  78h ; x
-    db  56h ; V
-    db  6Fh ; o
-    db  6Ch ; l
-    db  75h ; u
-    db  6Dh ; m
-    db  65h ; e
-    db  20h
-    db  3Dh ; =
-    db  20h
-    db  25h ; %
-    db  64h ; d
-    db  0Ah
-    db    0
-    db  54h ; T
-    db  25h ; %
-    db  30h ; 0
-    db  32h ; 2
-    db  78h ; x
-    db  2Dh ; -
-    db  4Eh ; N
-    db  44h ; D
-    db  3Dh ; =
-    db  25h ; %
-    db  6Ch ; l
-    db  78h ; x
-    db  2Ch ; ,
-    db  44h ; D
-    db  4Ch ; L
-    db  3Dh ; =
-    db  25h ; %
-    db  6Ch ; l
-    db  64h ; d
-    db  0Ah
-    db    0
-    db  50h ; P
-    db  72h ; r
-    db  65h ; e
-    db  73h ; s
-    db  73h ; s
-    db  20h
-    db  61h ; a
-    db  20h
-    db  4Bh ; K
-    db  65h ; e
-    db  79h ; y
-    db  0Ah
-    db    0
-    db  48h ; H
-    db  25h ; %
-    db  30h ; 0
-    db  32h ; 2
-    db  78h ; x
-    db  20h
-    db  2Dh ; -
-    db  20h
-    db  53h ; S
-    db  54h ; T
-    db  3Dh ; =
-    db  25h ; %
-    db  64h ; d
-    db  2Ch ; ,
-    db  54h ; T
-    db  50h ; P
-    db  3Dh ; =
-    db  25h ; %
-    db  6Ch ; l
-    db  78h ; x
-    db  2Ch ; ,
-    db  54h ; T
-    db  4Ch ; L
-    db  3Dh ; =
-    db  25h ; %
-    db  6Ch ; l
-    db  78h ; x
-    db  0Ah
-    db    0
+    db 0
+    db 100
+    db 114
+    db 118
+    db 0
+    db 109
+    db 116
+    db 51
+    db 50
+    db 46
+    db 112
+    db 108
+    db 98
+    db 0
+    db 67
+    db 97
+    db 110
+    db 39
+    db 116
+    db 32
+    db 102
+    db 105
+    db 110
+    db 100
+    db 32
+    db 100
+    db 114
+    db 105
+    db 118
+    db 101
+    db 114
+    db 33
+    db 10
+    db 0
+    db 103
+    db 101
+    db 0
+    db 103
+    db 101
+    db 0
+    db 0
+    db 0
+    db 100
+    db 115
+    db 102
+    db 0
+    db 115
+    db 102
+    db 120
+    db 0
+    db 99
+    db 97
+    db 110
+    db 110
+    db 111
+    db 116
+    db 32
+    db 108
+    db 111
+    db 97
+    db 100
+    db 32
+    db 115
+    db 102
+    db 120
+    db 32
+    db 102
+    db 105
+    db 108
+    db 101
+    db 32
+    db 37
+    db 115
+    db 0
+    db 107
+    db 109
+    db 115
+    db 0
+    db 99
+    db 97
+    db 110
+    db 110
+    db 111
+    db 116
+    db 32
+    db 108
+    db 111
+    db 97
+    db 100
+    db 32
+    db 115
+    db 111
+    db 110
+    db 103
+    db 32
+    db 102
+    db 105
+    db 108
+    db 101
+    db 32
+    db 37
+    db 115
+    db 0
+    db 100
+    db 118
+    db 99
+    db 0
+    db 118
+    db 99
+    db 101
+    db 0
+    db 99
+    db 97
+    db 110
+    db 110
+    db 111
+    db 116
+    db 32
+    db 108
+    db 111
+    db 97
+    db 100
+    db 32
+    db 118
+    db 111
+    db 105
+    db 99
+    db 101
+    db 32
+    db 102
+    db 105
+    db 108
+    db 101
+    db 32
+    db 37
+    db 115
+    db 0
+    db 115
+    db 108
+    db 98
+    db 0
+    db 99
+    db 97
+    db 110
+    db 110
+    db 111
+    db 116
+    db 32
+    db 108
+    db 111
+    db 97
+    db 100
+    db 32
+    db 115
+    db 97
+    db 109
+    db 112
+    db 108
+    db 101
+    db 32
+    db 102
+    db 105
+    db 108
+    db 101
+    db 32
+    db 37
+    db 115
+    db 0
+    db 104
+    db 100
+    db 114
+    db 49
+    db 0
+    db 66
+    db 65
+    db 83
+    db 68
+    db 0
+    db 83
+    db 78
+    db 65
+    db 82
+    db 0
+    db 84
+    db 79
+    db 77
+    db 77
+    db 0
+    db 82
+    db 73
+    db 68
+    db 69
+    db 0
+    db 67
+    db 82
+    db 83
+    db 72
+    db 0
+    db 67
+    db 72
+    db 72
+    db 84
+    db 0
+    db 79
+    db 72
+    db 72
+    db 84
+    db 0
+    db 104
+    db 100
+    db 114
+    db 49
+    db 0
+    db 115
+    db 119
+    db 80
+    db 97
+    db 117
+    db 115
+    db 101
+    db 32
+    db 61
+    db 32
+    db 37
+    db 100
+    db 44
+    db 32
+    db 115
+    db 119
+    db 83
+    db 111
+    db 110
+    db 103
+    db 32
+    db 61
+    db 32
+    db 37
+    db 100
+    db 44
+    db 32
+    db 98
+    db 83
+    db 111
+    db 110
+    db 103
+    db 32
+    db 61
+    db 32
+    db 37
+    db 100
+    db 44
+    db 115
+    db 119
+    db 83
+    db 70
+    db 88
+    db 32
+    db 61
+    db 32
+    db 37
+    db 100
+    db 10
+    db 0
+    db 117
+    db 98
+    db 77
+    db 117
+    db 115
+    db 105
+    db 99
+    db 86
+    db 111
+    db 108
+    db 117
+    db 109
+    db 101
+    db 32
+    db 61
+    db 32
+    db 37
+    db 100
+    db 44
+    db 32
+    db 117
+    db 98
+    db 83
+    db 102
+    db 120
+    db 86
+    db 111
+    db 108
+    db 117
+    db 109
+    db 101
+    db 32
+    db 61
+    db 32
+    db 37
+    db 100
+    db 10
+    db 0
+    db 84
+    db 37
+    db 48
+    db 50
+    db 120
+    db 45
+    db 78
+    db 68
+    db 61
+    db 37
+    db 108
+    db 120
+    db 44
+    db 68
+    db 76
+    db 61
+    db 37
+    db 108
+    db 100
+    db 10
+    db 0
+    db 80
+    db 114
+    db 101
+    db 115
+    db 115
+    db 32
+    db 97
+    db 32
+    db 75
+    db 101
+    db 121
+    db 10
+    db 0
+    db 72
+    db 37
+    db 48
+    db 50
+    db 120
+    db 32
+    db 45
+    db 32
+    db 83
+    db 84
+    db 61
+    db 37
+    db 100
+    db 44
+    db 84
+    db 80
+    db 61
+    db 37
+    db 108
+    db 120
+    db 44
+    db 84
+    db 76
+    db 61
+    db 37
+    db 108
+    db 120
+    db 10
+    db 0
 word_407AA     dw 0
-    db  2Eh ; .
-    db    0
-    db    1
-    db    0
-    db    2
-    db    0
-    db    3
-    db    0
-    db    4
-    db    0
-    db    5
-    db    0
-    db    6
-    db    0
-    db    7
-    db    0
-    db    8
-    db    0
-    db    9
-    db    0
-    db  0Ah
-    db    0
-    db  0Bh
-    db    0
-    db  0Ch
-    db    0
-    db  0Dh
-    db    0
-    db  0Eh
-    db    0
-word_407CA     dw 0Fh
-word_407CC     dw 10h
+    db 46
+    db 0
+    db 1
+    db 0
+    db 2
+    db 0
+    db 3
+    db 0
+    db 4
+    db 0
+    db 5
+    db 0
+    db 6
+    db 0
+    db 7
+    db 0
+    db 8
+    db 0
+    db 9
+    db 0
+    db 10
+    db 0
+    db 11
+    db 0
+    db 12
+    db 0
+    db 13
+    db 0
+    db 14
+    db 0
+word_407CA     dw 15
+word_407CC     dw 16
 word_407CE     dw 5
-word_407D0     dw 0Eh
+word_407D0     dw 14
 word_407D2     dw 8
-word_407D4     dw 0Fh
+word_407D4     dw 15
 word_407D6     dw 8
-word_407D8     dw 0Bh
+word_407D8     dw 11
 word_407DA     dw 3
-word_407DC     dw 0Ch
+word_407DC     dw 12
 word_407DE     dw 4
 word_407E0     dw 9
 word_407E2     dw 1
-word_407E4     dw 0Ah
+word_407E4     dw 10
 word_407E6     dw 2
-word_407E8     dw 0Dh
+word_407E8     dw 13
 word_407EA     dw 5
-word_407EC     dw 0Bh
+word_407EC     dw 11
 word_407EE     dw 9
 word_407F0     dw 1
-word_407F2     dw 0Ch
-word_407F4     dw 0Fh
+word_407F2     dw 12
+word_407F4     dw 15
 word_407F6     dw 8
 word_407F8     dw 7
 word_407FA     dw 9
@@ -19384,1293 +21566,23094 @@ word_407FC     dw 1
 word_407FE     dw 4
 word_40800     dw 1
 word_40802     dw 4
-    db    0
-    db    0
-    db    1
-    db    0
-    db    2
-    db    0
-    db    3
-    db    0
-    db    4
-    db    0
-    db    5
-    db    0
-    db    6
-    db    0
-    db    7
-    db    0
-    db    8
-    db    0
-    db    9
-    db    0
-    db  0Ah
-    db    0
-    db  0Bh
-    db    0
-    db  0Ch
-    db    0
-    db  0Dh
-    db    0
-    db  0Eh
-    db    0
-    db  0Fh
-    db    0
-    db  6Ch ; l
-    db    0
-    db  74h ; t
-    db    0
-    db  0Fh
-    db    0
-    db  1Ch
-    db    0
-    db  1Dh
-    db    0
-    db  0Eh
-    db    0
-    db  1Ch
-    db    0
-    db  1Fh
-    db    0
-    db  0Eh
-    db    0
-    db 0C8h ; »
-    db    0
-    db 0C6h ; ∆
-    db    0
-    db 0C4h ; ƒ
-    db    0
-    db  70h ; p
-    db    0
-    db  72h ; r
-    db    0
-    db  74h ; t
-    db    0
-    db 0C2h ; ¬
-    db    0
-    db 0C5h ; ≈
-    db    0
-    db 0C8h ; »
-    db    0
-    db  92h ; í
-    db    0
-    db  25h ; %
-    db    0
-    db  23h ; #
-    db    0
-    db 0B5h ; µ
-    db    0
-    db  1Dh
-    db    0
-    db  1Fh
-    db    0
-    db  13h
-    db    0
-    db    3
-    db    0
-    db  0Bh
-    db    0
-    db  1Bh
-    db    0
-    db    0
-    db    0
-    db    4
-    db    0
-    db    4
-    db    0
-    db  0Ch
-    db    0
-    db  9Ch ; ú
-    db    0
-    db  9Ah ; ö
-    db    0
-    db  98h ; ò
-    db    0
-    db  96h ; ñ
-    db    0
-    db  2Ah ; *
-    db    0
-    db  28h ; (
-    db    0
-    db  26h ; &
-    db    0
-    db  25h ; %
-    db    0
-    db  1Bh
-    db    0
-    db  1Ah
-    db    0
-    db  19h
-    db    0
-    db  18h
-    db    0
-    db  48h ; H
-    db    0
-    db  46h ; F
-    db    0
-    db  44h ; D
-    db    0
-    db  42h ; B
-    db    0
-    db  7Bh ; {
-    db    0
-    db  79h ; y
-    db    0
-    db  78h ; x
-    db    0
-    db  75h ; u
-    db    0
-    db  5Ch ; \
-    db    0
-    db  5Ah ; Z
-    db    0
-    db  58h ; X
-    db    0
-    db  57h ; W
-    db    0
-    db 0ADh ; ≠
-    db    0
-    db 0ABh ; ´
-    db    0
-    db 0A9h ; ©
-    db    0
-    db 0A7h ; ß
-    db    0
-    db  14h
-    db    0
-    db  13h
-    db    0
-    db  12h
-    db    0
-    db  11h
-    db    0
-    db  4Dh ; M
-    db    0
-    db  4Ch ; L
-    db    0
-    db  4Ah ; J
-    db    0
-    db  49h ; I
-    db    0
-    db  2Dh ; -
-    db    0
-    db  2Ch ; ,
-    db    0
-    db  2Ah ; *
-    db    0
-    db  29h ; )
-    db    0
-    db  9Fh ; ü
-    db    0
-    db 0AFh ; Ø
-    db    0
-    db 0AEh ; Æ
-    db    0
-    db 0ACh ; ¨
-    db    0
-    db  1Dh
-    db    0
-    db  1Ch
-    db    0
-    db  12h
-    db    0
-    db  5Ah ; Z
-    db    0
-    db  0Fh
-    db    0
-    db    7
-    db    0
-    db 0C8h ; »
-    db    0
-    db 0DBh ; €
-    db    0
-    db  88h ; à
-    db    0
-    db  63h ; c
-    db    0
-    db  65h ; e
-    db    0
-    db  67h ; g
-    db    0
-    db  68h ; h
-    db    0
-    db  6Ah ; j
-    db    0
-    db  11h
-    db    0
-    db  14h
-    db    0
-    db  3Ch ; <
-    db    0
-    db  4Dh ; M
-    db    0
-    db  2Eh ; .
-    db    0
-    db  3Dh ; =
-    db    0
-    db  2Dh ; -
-    db    0
-    db 0CAh ;  
-    db    0
-    db 0BEh ; æ
-    db    0
-    db 0BAh ; ∫
-    db    0
-    db 0B7h ; ∑
-    db    0
-    db 0B4h ; ¥
-    db    0
-    db    0
-    db    0
-    db  1Ch
-    db    0
-    db  1Eh
-    db    0
-    db  10h
-    db    0
-    db  14h
-    db    0
-    db  44h ; D
-    db    0
-    db  36h ; 6
-    db    0
-    db  27h ; '
-    db    0
-    db  2Bh ; +
-    db    0
-    db  0Ch
-    db    0
-    db  11h
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    1
-    db    0
-    db    1
-    db    0
-    db    1
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    1
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    1
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    1
-    db    0
-    db    1
-    db    0
-    db    1
-    db    0
-    db    1
-    db    0
-    db    1
-    db    0
-    db    1
-    db    0
-    db    1
-    db    0
-    db    1
-    db    0
-    db    1
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db    0
-    db    0
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0DDh ; ›
-    db  77h ; w
-    db  77h ; w
-    db 0DDh ; ›
-    db 0DDh ; ›
-    db  77h ; w
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0DDh ; ›
-    db  77h ; w
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db 0DDh ; ›
-    db  77h ; w
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db 0FFh
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  33h ; 3
-    db 0CCh ; Ã
-    db 0CCh ; Ã
-    db  33h ; 3
-    db  6Dh ; m
-    db 0B6h ; ∂
-    db  92h ; í
-    db  49h ; I
-    db  6Dh ; m
-    db 0B6h ; ∂
-    db  92h ; í
-    db  49h ; I
-    db  6Dh ; m
-    db 0B6h ; ∂
-    db  92h ; í
-    db  49h ; I
-    db    0
-    db    0
-    db    0
-    db    0
-word_40B0A     dw 5094h
-word_40B0C     dw 5094h
-word_40B0E     dw 5196h
-word_40B10     dw 5298h
-byte_40B12     db 70h
-byte_40B13     db 63h
-    db  31h ; 1
-    db  35h ; 5
-    db    0
-    db  73h ; s
-    db  64h ; d
-    db  6Dh ; m
-    db  61h ; a
-    db  69h ; i
-    db  6Eh ; n
-    db    0
-    db  21h ; !
-    db  70h ; p
-    db  61h ; a
-    db  6Ch ; l
-    db    0
-    db  73h ; s
-    db  6Dh ; m
-    db  6Fh ; o
-    db  75h ; u
-    db    0
-    db  73h ; s
-    db  64h ; d
-    db  6Dh ; m
-    db  61h ; a
-    db  69h ; i
-    db  6Eh ; n
-    db    0
-    db  73h ; s
-    db  6Dh ; m
-    db  6Fh ; o
-    db  75h ; u
-    db    0
-    db  6Dh ; m
-    db  6Dh ; m
-    db  6Fh ; o
-    db  75h ; u
-    db    0
-    db    0
-    db  20h
-    db    0
-    db    3
-    db    0
-    db    0
-    db    0
-    db  43h ; C
-    db  6Fh ; o
-    db  70h ; p
-    db  79h ; y
-    db  72h ; r
-    db  69h ; i
-    db  67h ; g
-    db  68h ; h
-    db  74h ; t
-    db  20h
-    db  28h ; (
-    db  43h ; C
-    db  29h ; )
-    db  20h
-    db  55h ; U
-    db  6Eh ; n
-    db  6Ch ; l
-    db  69h ; i
-    db  6Dh ; m
-    db  69h ; i
-    db  74h ; t
-    db  65h ; e
-    db  64h ; d
-    db  20h
-    db  53h ; S
-    db  6Fh ; o
-    db  66h ; f
-    db  74h ; t
-    db  77h ; w
-    db  61h ; a
-    db  72h ; r
-    db  65h ; e
-    db  20h
-    db  49h ; I
-    db  6Eh ; n
-    db  63h ; c
-    db  2Eh ; .
-    db  20h
-    db  31h ; 1
-    db  39h ; 9
-    db  38h ; 8
-    db  39h ; 9
-    db  2Ch ; ,
-    db  31h ; 1
-    db  39h ; 9
-    db  39h ; 9
-    db  30h ; 0
-    db  2Eh ; .
-    db  20h
-    db  20h
-    db  41h ; A
-    db  6Ch ; l
-    db  6Ch ; l
-    db  20h
-    db  72h ; r
-    db  69h ; i
-    db  67h ; g
-    db  68h ; h
-    db  74h ; t
-    db  73h ; s
-    db  20h
-    db  72h ; r
-    db  65h ; e
-    db  73h ; s
-    db  65h ; e
-    db  72h ; r
-    db  76h ; v
-    db  65h ; e
-    db  64h ; d
-    db  2Eh ; .
+    db 0
+    db 0
+    db 1
+    db 0
+    db 2
+    db 0
+    db 3
+    db 0
+    db 4
+    db 0
+    db 5
+    db 0
+    db 6
+    db 0
+    db 7
+    db 0
+    db 8
+    db 0
+    db 9
+    db 0
+    db 10
+    db 0
+    db 11
+    db 0
+    db 12
+    db 0
+    db 13
+    db 0
+    db 14
+    db 0
+    db 15
+    db 0
+    db 108
+    db 0
+    db 116
+    db 0
+    db 15
+    db 0
+    db 28
+    db 0
+    db 29
+    db 0
+    db 14
+    db 0
+    db 28
+    db 0
+    db 31
+    db 0
+    db 14
+    db 0
+    db 200
+    db 0
+    db 198
+    db 0
+    db 196
+    db 0
+    db 112
+    db 0
+    db 114
+    db 0
+    db 116
+    db 0
+    db 194
+    db 0
+    db 197
+    db 0
+    db 200
+    db 0
+    db 146
+    db 0
+    db 37
+    db 0
+    db 35
+    db 0
+    db 181
+    db 0
+    db 29
+    db 0
+    db 31
+    db 0
+    db 19
+    db 0
+    db 3
+    db 0
+    db 11
+    db 0
+    db 27
+    db 0
+    db 0
+    db 0
+    db 4
+    db 0
+    db 4
+    db 0
+    db 12
+    db 0
+    db 156
+    db 0
+    db 154
+    db 0
+    db 152
+    db 0
+    db 150
+    db 0
+    db 42
+    db 0
+    db 40
+    db 0
+    db 38
+    db 0
+    db 37
+    db 0
+    db 27
+    db 0
+    db 26
+    db 0
+    db 25
+    db 0
+    db 24
+    db 0
+    db 72
+    db 0
+    db 70
+    db 0
+    db 68
+    db 0
+    db 66
+    db 0
+    db 123
+    db 0
+    db 121
+    db 0
+    db 120
+    db 0
+    db 117
+    db 0
+    db 92
+    db 0
+    db 90
+    db 0
+    db 88
+    db 0
+    db 87
+    db 0
+    db 173
+    db 0
+    db 171
+    db 0
+    db 169
+    db 0
+    db 167
+    db 0
+    db 20
+    db 0
+    db 19
+    db 0
+    db 18
+    db 0
+    db 17
+    db 0
+    db 77
+    db 0
+    db 76
+    db 0
+    db 74
+    db 0
+    db 73
+    db 0
+    db 45
+    db 0
+    db 44
+    db 0
+    db 42
+    db 0
+    db 41
+    db 0
+    db 159
+    db 0
+    db 175
+    db 0
+    db 174
+    db 0
+    db 172
+    db 0
+    db 29
+    db 0
+    db 28
+    db 0
+    db 18
+    db 0
+    db 90
+    db 0
+    db 15
+    db 0
+    db 7
+    db 0
+    db 200
+    db 0
+    db 219
+    db 0
+    db 136
+    db 0
+    db 99
+    db 0
+    db 101
+    db 0
+    db 103
+    db 0
+    db 104
+    db 0
+    db 106
+    db 0
+    db 17
+    db 0
+    db 20
+    db 0
+    db 60
+    db 0
+    db 77
+    db 0
+    db 46
+    db 0
+    db 61
+    db 0
+    db 45
+    db 0
+    db 202
+    db 0
+    db 190
+    db 0
+    db 186
+    db 0
+    db 183
+    db 0
+    db 180
+    db 0
+    db 0
+    db 0
+    db 28
+    db 0
+    db 30
+    db 0
+    db 16
+    db 0
+    db 20
+    db 0
+    db 68
+    db 0
+    db 54
+    db 0
+    db 39
+    db 0
+    db 43
+    db 0
+    db 12
+    db 0
+    db 17
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 1
+    db 0
+    db 1
+    db 0
+    db 1
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 1
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 1
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 1
+    db 0
+    db 1
+    db 0
+    db 1
+    db 0
+    db 1
+    db 0
+    db 1
+    db 0
+    db 1
+    db 0
+    db 1
+    db 0
+    db 1
+    db 0
+    db 1
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 0
+    db 0
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 221
+    db 119
+    db 119
+    db 221
+    db 221
+    db 119
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 221
+    db 119
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 221
+    db 119
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 51
+    db 204
+    db 204
+    db 51
+    db 109
+    db 182
+    db 146
+    db 73
+    db 109
+    db 182
+    db 146
+    db 73
+    db 109
+    db 182
+    db 146
+    db 73
+    db 0
+    db 0
+    db 0
+    db 0
+word_40B0A     dw 20628
+word_40B0C     dw 20628
+word_40B0E     dw 20886
+word_40B10     dw 21144
+byte_40B12     db 112
+byte_40B13     db 99
+    db 49
+    db 53
+    db 0
+    db 115
+    db 100
+    db 109
+    db 97
+    db 105
+    db 110
+    db 0
+    db 33
+    db 112
+    db 97
+    db 108
+    db 0
+    db 115
+    db 109
+    db 111
+    db 117
+    db 0
+    db 115
+    db 100
+    db 109
+    db 97
+    db 105
+    db 110
+    db 0
+    db 115
+    db 109
+    db 111
+    db 117
+    db 0
+    db 109
+    db 109
+    db 111
+    db 117
+    db 0
+    db 0
+    db 32
+    db 0
+    db 3
+    db 0
+    db 0
+    db 0
+    db 67
+    db 111
+    db 112
+    db 121
+    db 114
+    db 105
+    db 103
+    db 104
+    db 116
+    db 32
+    db 40
+    db 67
+    db 41
+    db 32
+    db 85
+    db 110
+    db 108
+    db 105
+    db 109
+    db 105
+    db 116
+    db 101
+    db 100
+    db 32
+    db 83
+    db 111
+    db 102
+    db 116
+    db 119
+    db 97
+    db 114
+    db 101
+    db 32
+    db 73
+    db 110
+    db 99
+    db 46
+    db 32
+    db 49
+    db 57
+    db 56
+    db 57
+    db 44
+    db 49
+    db 57
+    db 57
+    db 48
+    db 46
+    db 32
+    db 32
+    db 65
+    db 108
+    db 108
+    db 32
+    db 114
+    db 105
+    db 103
+    db 104
+    db 116
+    db 115
+    db 32
+    db 114
+    db 101
+    db 115
+    db 101
+    db 114
+    db 118
+    db 101
+    db 100
+    db 46
 byte_40B86     db 0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db  4Dh ; M
-    db  43h ; C
-    db  47h ; G
-    db  41h ; A
-    db  20h
-    db  57h ; W
-    db  49h ; I
-    db  4Eh ; N
-    db  44h ; D
-    db  4Fh ; O
-    db  57h ; W
-    db    0
-    db  77h ; w
-    db  69h ; i
-    db  6Eh ; n
-    db  64h ; d
-    db  6Fh ; o
-    db  77h ; w
-    db  64h ; d
-    db  65h ; e
-    db  66h ; f
-    db  20h
-    db  2Dh ; -
-    db  20h
-    db  4Fh ; O
-    db  55h ; U
-    db  54h ; T
-    db  20h
-    db  4Fh ; O
-    db  46h ; F
-    db  20h
-    db  52h ; R
-    db  4Fh ; O
-    db  57h ; W
-    db  20h
-    db  54h ; T
-    db  41h ; A
-    db  42h ; B
-    db  4Ch ; L
-    db  45h ; E
-    db  20h
-    db  53h ; S
-    db  50h ; P
-    db  41h ; A
-    db  43h ; C
-    db  45h ; E
-    db  0Dh
-    db    0
-    db  2Eh ; .
-    db  50h ; P
-    db  56h ; V
-    db  53h ; S
-    db    0
-    db  2Eh ; .
-    db  58h ; X
-    db  56h ; V
-    db  53h ; S
-    db    0
-    db  2Eh ; .
-    db  56h ; V
-    db  53h ; S
-    db  48h ; H
-    db    0
-    db  2Eh ; .
-    db  50h ; P
-    db  45h ; E
-    db  53h ; S
-    db    0
-    db  2Eh ; .
-    db  45h ; E
-    db  53h ; S
-    db  48h ; H
-    db    0
-    db    0
-    db  4Ch ; L
-    db  54h ; T
-    db  51h ; Q
-    db  54h ; T
-    db  56h ; V
-    db  54h ; T
-    db  5Bh ; [
-    db  54h ; T
-    db  60h ; `
-    db  54h ; T
-    db  65h ; e
-    db  54h ; T
-    db    0
-    db    1
-    db    2
-    db    3
-    db    4
-    db    5
-    db    6
-    db    7
-    db    8
-    db    9
-    db  0Ah
-    db  0Bh
-    db  0Ch
-    db  0Dh
-    db  0Eh
-    db  0Fh
-    db  2Eh ; .
-    db  50h ; P
-    db  56h ; V
-    db  53h ; S
-    db    0
-    db  55h ; U
-    db  4Eh ; N
-    db  46h ; F
-    db  4Ch ; L
-    db  49h ; I
-    db  50h ; P
-    db    0
-    db  2Eh ; .
-    db  58h ; X
-    db  56h ; V
-    db  53h ; S
-    db    0
-    db  2Eh ; .
-    db  50h ; P
-    db  45h ; E
-    db  53h ; S
-    db    0
-    db  55h ; U
-    db  4Eh ; N
-    db  46h ; F
-    db  4Ch ; L
-    db  49h ; I
-    db  50h ; P
-    db    0
-    db  2Eh ; .
-    db  45h ; E
-    db  53h ; S
-    db  48h ; H
-    db    0
-    db  21h ; !
-    db  4Dh ; M
-    db  47h ; G
-    db  41h ; A
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 77
+    db 67
+    db 71
+    db 65
+    db 32
+    db 87
+    db 73
+    db 78
+    db 68
+    db 79
+    db 87
+    db 0
+    db 119
+    db 105
+    db 110
+    db 100
+    db 111
+    db 119
+    db 100
+    db 101
+    db 102
+    db 32
+    db 45
+    db 32
+    db 79
+    db 85
+    db 84
+    db 32
+    db 79
+    db 70
+    db 32
+    db 82
+    db 79
+    db 87
+    db 32
+    db 84
+    db 65
+    db 66
+    db 76
+    db 69
+    db 32
+    db 83
+    db 80
+    db 65
+    db 67
+    db 69
+    db 13
+    db 0
+    db 46
+    db 80
+    db 86
+    db 83
+    db 0
+    db 46
+    db 88
+    db 86
+    db 83
+    db 0
+    db 46
+    db 86
+    db 83
+    db 72
+    db 0
+    db 46
+    db 80
+    db 69
+    db 83
+    db 0
+    db 46
+    db 69
+    db 83
+    db 72
+    db 0
+    db 0
+    db 76
+    db 84
+    db 81
+    db 84
+    db 86
+    db 84
+    db 91
+    db 84
+    db 96
+    db 84
+    db 101
+    db 84
+    db 0
+    db 1
+    db 2
+    db 3
+    db 4
+    db 5
+    db 6
+    db 7
+    db 8
+    db 9
+    db 10
+    db 11
+    db 12
+    db 13
+    db 14
+    db 15
+    db 46
+    db 80
+    db 86
+    db 83
+    db 0
+    db 85
+    db 78
+    db 70
+    db 76
+    db 73
+    db 80
+    db 0
+    db 46
+    db 88
+    db 86
+    db 83
+    db 0
+    db 46
+    db 80
+    db 69
+    db 83
+    db 0
+    db 85
+    db 78
+    db 70
+    db 76
+    db 73
+    db 80
+    db 0
+    db 46
+    db 69
+    db 83
+    db 72
+    db 0
+    db 33
+    db 77
+    db 71
+    db 65
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
 dword_40C1E     dd 0
 dword_40C22     dd 0
 dword_40C26     dd 0
-    dd _flushall
-aNmsg     db '<<NMSG>>',0
-    db    0
-aR6000StackOver     db 'R6000',0Dh,0Ah
-    db    3
-    db    0
-    db  52h ; R
-    db  36h ; 6
-    db  30h ; 0
-    db  30h ; 0
-    db  33h ; 3
-    db  0Dh
-    db  0Ah
-    db  2Dh ; -
-    db  20h
-    db  69h ; i
-    db  6Eh ; n
-    db  74h ; t
-    db  65h ; e
-    db  67h ; g
-    db  65h ; e
-    db  72h ; r
-    db  20h
-    db  64h ; d
-    db  69h ; i
-    db  76h ; v
-    db  69h ; i
-    db  64h ; d
-    db  65h ; e
-    db  20h
-    db  62h ; b
-    db  79h ; y
-    db  20h
-    db  30h ; 0
-    db  0Dh
-    db  0Ah
-    db    0
-    db    9
-    db    0
-    db  52h ; R
-    db  36h ; 6
-    db  30h ; 0
-    db  30h ; 0
-    db  39h ; 9
-    db  0Dh
-    db  0Ah
-    db  2Dh ; -
-    db  20h
-    db  6Eh ; n
-    db  6Fh ; o
-    db  74h ; t
-    db  20h
-    db  65h ; e
-    db  6Eh ; n
-    db  6Fh ; o
-    db  75h ; u
-    db  67h ; g
-    db  68h ; h
-    db  20h
-    db  73h ; s
-    db  70h ; p
-    db  61h ; a
-    db  63h ; c
-    db  65h ; e
-    db  20h
-    db  66h ; f
-    db  6Fh ; o
-    db  72h ; r
-    db  20h
-    db  65h ; e
-    db  6Eh ; n
-    db  76h ; v
-    db  69h ; i
-    db  72h ; r
-    db  6Fh ; o
-    db  6Eh ; n
-    db  6Dh ; m
-    db  65h ; e
-    db  6Eh ; n
-    db  74h ; t
-    db  0Dh
-    db  0Ah
-    db    0
-    db 0FCh ; ¸
-    db    0
-    db  0Dh
-    db  0Ah
-    db    0
-    db 0FFh
-    db    0
-    db  72h ; r
-    db  75h ; u
-    db  6Eh ; n
-    db  2Dh ; -
-    db  74h ; t
-    db  69h ; i
-    db  6Dh ; m
-    db  65h ; e
-    db  20h
-    db  65h ; e
-    db  72h ; r
-    db  72h ; r
-    db  6Fh ; o
-    db  72h ; r
-    db  20h
-    db    0
-    db    2
-    db    0
-    db  52h ; R
-    db  36h ; 6
-    db  30h ; 0
-    db  30h ; 0
-    db  32h ; 2
-    db  0Dh
-    db  0Ah
-    db  2Dh ; -
-    db  20h
-    db  66h ; f
-    db  6Ch ; l
-    db  6Fh ; o
-    db  61h ; a
-    db  74h ; t
-    db  69h ; i
-    db  6Eh ; n
-    db  67h ; g
-    db  20h
-    db  70h ; p
-    db  6Fh ; o
-    db  69h ; i
-    db  6Eh ; n
-    db  74h ; t
-    db  20h
-    db  6Eh ; n
-    db  6Fh ; o
-    db  74h ; t
-    db  20h
-    db  6Ch ; l
-    db  6Fh ; o
-    db  61h ; a
-    db  64h ; d
-    db  65h ; e
-    db  64h ; d
-    db  0Dh
-    db  0Ah
-    db    0
-    db    1
-    db    0
-    db  52h ; R
-    db  36h ; 6
-    db  30h ; 0
-    db  30h ; 0
-    db  31h ; 1
-    db  0Dh
-    db  0Ah
-    db  2Dh ; -
-    db  20h
-    db  6Eh ; n
-    db  75h ; u
-    db  6Ch ; l
-    db  6Ch ; l
-    db  20h
-    db  70h ; p
-    db  6Fh ; o
-    db  69h ; i
-    db  6Eh ; n
-    db  74h ; t
-    db  65h ; e
-    db  72h ; r
-    db  20h
-    db  61h ; a
-    db  73h ; s
-    db  73h ; s
-    db  69h ; i
-    db  67h ; g
-    db  6Eh ; n
-    db  6Dh ; m
-    db  65h ; e
-    db  6Eh ; n
-    db  74h ; t
-    db  0Dh
-    db  0Ah
-    db    0
-    db  0Ah
-    db    0
-    db  0Ah
-    db  41h ; A
-    db  62h ; b
-    db  6Eh ; n
-    db  6Fh ; o
-    db  72h ; r
-    db  6Dh ; m
-    db  61h ; a
-    db  6Ch ; l
-    db  20h
-    db  70h ; p
-    db  72h ; r
-    db  6Fh ; o
-    db  67h ; g
-    db  72h ; r
-    db  61h ; a
-    db  6Dh ; m
-    db  20h
-    db  74h ; t
-    db  65h ; e
-    db  72h ; r
-    db  6Dh ; m
-    db  69h ; i
-    db  6Eh ; n
-    db  61h ; a
-    db  74h ; t
-    db  69h ; i
-    db  6Fh ; o
-    db  6Eh ; n
-    db  0Ah
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db    0
-    db 0FFh
-    db    0
+    dd 751109530
+aNmsg     db 60
+    db 60
+    db 78
+    db 77
+    db 83
+    db 71
+    db 62
+    db 62
+    db 0
+    db 0
+aR6000StackOver     db 82
+    db 54
+    db 48
+    db 48
+    db 48
+    db 13
+    db 10
+    db 45
+    db 32
+    db 115
+    db 116
+    db 97
+    db 99
+    db 107
+    db 32
+    db 111
+    db 118
+    db 101
+    db 114
+    db 102
+    db 108
+    db 111
+    db 119
+    db 13
+    db 10
+    db 0
+    db 3
+    db 0
+    db 82
+    db 54
+    db 48
+    db 48
+    db 51
+    db 13
+    db 10
+    db 45
+    db 32
+    db 105
+    db 110
+    db 116
+    db 101
+    db 103
+    db 101
+    db 114
+    db 32
+    db 100
+    db 105
+    db 118
+    db 105
+    db 100
+    db 101
+    db 32
+    db 98
+    db 121
+    db 32
+    db 48
+    db 13
+    db 10
+    db 0
+    db 9
+    db 0
+    db 82
+    db 54
+    db 48
+    db 48
+    db 57
+    db 13
+    db 10
+    db 45
+    db 32
+    db 110
+    db 111
+    db 116
+    db 32
+    db 101
+    db 110
+    db 111
+    db 117
+    db 103
+    db 104
+    db 32
+    db 115
+    db 112
+    db 97
+    db 99
+    db 101
+    db 32
+    db 102
+    db 111
+    db 114
+    db 32
+    db 101
+    db 110
+    db 118
+    db 105
+    db 114
+    db 111
+    db 110
+    db 109
+    db 101
+    db 110
+    db 116
+    db 13
+    db 10
+    db 0
+    db 252
+    db 0
+    db 13
+    db 10
+    db 0
+    db 255
+    db 0
+    db 114
+    db 117
+    db 110
+    db 45
+    db 116
+    db 105
+    db 109
+    db 101
+    db 32
+    db 101
+    db 114
+    db 114
+    db 111
+    db 114
+    db 32
+    db 0
+    db 2
+    db 0
+    db 82
+    db 54
+    db 48
+    db 48
+    db 50
+    db 13
+    db 10
+    db 45
+    db 32
+    db 102
+    db 108
+    db 111
+    db 97
+    db 116
+    db 105
+    db 110
+    db 103
+    db 32
+    db 112
+    db 111
+    db 105
+    db 110
+    db 116
+    db 32
+    db 110
+    db 111
+    db 116
+    db 32
+    db 108
+    db 111
+    db 97
+    db 100
+    db 101
+    db 100
+    db 13
+    db 10
+    db 0
+    db 1
+    db 0
+    db 82
+    db 54
+    db 48
+    db 48
+    db 49
+    db 13
+    db 10
+    db 45
+    db 32
+    db 110
+    db 117
+    db 108
+    db 108
+    db 32
+    db 112
+    db 111
+    db 105
+    db 110
+    db 116
+    db 101
+    db 114
+    db 32
+    db 97
+    db 115
+    db 115
+    db 105
+    db 103
+    db 110
+    db 109
+    db 101
+    db 110
+    db 116
+    db 13
+    db 10
+    db 0
+    db 10
+    db 0
+    db 10
+    db 65
+    db 98
+    db 110
+    db 111
+    db 114
+    db 109
+    db 97
+    db 108
+    db 32
+    db 112
+    db 114
+    db 111
+    db 103
+    db 114
+    db 97
+    db 109
+    db 32
+    db 116
+    db 101
+    db 114
+    db 109
+    db 105
+    db 110
+    db 97
+    db 116
+    db 105
+    db 111
+    db 110
+    db 10
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 255
+    db 0
 word_40D3A     dw 0
 word_40D3C     dw 0
 word_40D3E     dw 0
+word_40D40     dw 65535
+word_40D42     dw 65535
+word_40D44     dw 65535
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+byte_40D6A     db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+word_40D7C     dw 65535
+word_40D7E     dw 65535
+dword_40D80     dd -1
+word_40D84     dw 65535
+word_40D86     dw 65535
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+word_40DB0     dw 65535
+word_40DB2     dw 65535
+word_40DB4     dw 65535
+word_40DB6     dw 65535
+word_40DB8     dw 65535
+word_40DBA     dw 65535
+dword_40DBC     dd -1
+dword_40DC0     dd -1
+word_40DC4     dw 65535
+word_40DC6     dw 65535
+word_40DC8     dw 65535
+word_40DCA     dw 65535
+word_40DCC     dw 65535
+word_40DCE     dw 65535
+word_40DD0     dw 65535
+word_40DD2     dw 65535
+word_40DD4     dw 65535
+word_40DD6     dw 65535
+word_40DD8     dw 65535
+word_40DDA     dw 65535
+dword_40DDC     dd -1
+word_40DE0     dw 65535
+word_40DE2     dw 65535
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+dword_40DEC     dd -1
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+dword_40DFC     dd -1
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+word_40E0E     dw 65535
+word_40E10     dw 65535
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+byte_40E6C     db 255
+byte_40E6D     db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+word_40EB0     dw 65535
+word_40EB2     dw 65535
+word_40EB4     dw 65535
+word_40EB6     dw 65535
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+dword_40ECA     dd -1
+word_40ECE     dw 65535
+word_40ED0     dw 65535
+word_40ED2     dw 65535
+word_40ED4     dw 65535
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+word_411F6     dw 65535
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+unk_41690     db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+word_41850     dw 65535
+word_41852     dw 65535
+word_41854     dw 65535
+word_41856     dw 65535
+word_41858     dw 65535
+word_4185A     dw 65535
+word_4185C     dw 65535
+word_4185E     dw 65535
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+word_4186A     dw 65535
+word_4186C     dw 65535
+byte_4186E     db 255
+    db 255
+dword_41870     dd -1
+word_41874     dw 65535
+word_41876     dw 65535
+word_41878     dw 65535
+byte_4187A     db 255
+    db 255
+word_4187C     dw 65535
+dword_4187E     dd -1
+byte_41882     db 255
+    db 255
+word_41884     dw 65535
+word_41886     dw 65535
+word_41888     dw 65535
+word_4188A     dw 65535
+word_4188C     dw 65535
+word_4188E     dw 65535
+word_41890     dw 65535
+word_41892     dw 65535
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+word_42240     dw 65535
+word_42242     dw 65535
+word_42244     dw 65535
+byte_42246     db 255
+    db 255
+word_42248     dw 65535
+word_4224A     dw 65535
+word_4224C     dw 65535
+word_4224E     dw 65535
+word_42250     dw 65535
+word_42252     dw 65535
+word_42254     dw 65535
+word_42256     dw 65535
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+word_42540     dw 65535
+word_42542     dw 65535
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+dword_4282C     dd -1
+dword_42830     dd -1
+dword_42834     dd -1
+dword_42838     dd -1
+word_4283C     dw 65535
+word_4283E     dw 65535
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+word_42898     dw 65535
+off_4289A     dw 65535
+word_4289C     dw 65535
+word_4289E     dw 65535
+word_428A0     dw 65535
+word_428A2     dw 65535
+word_428A4     dw 65535
+word_428A6     dw 65535
+word_428A8     dw 65535
+word_428AA     dw 65535
+word_428AC     dw 65535
+word_428AE     dw 65535
+word_428B0     dw 65535
+word_428B2     dw 65535
+word_428B4     dw 65535
+off_428B6     dw 65535
+word_428B8     dw 65535
+word_428BA     dw 65535
+word_428BC     dw 65535
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+word_429F2     dw 65535
+word_429F4     dw 65535
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+byte_42A02     db 255
+byte_42A03     db 255
+word_42A04     dw 65535
+word_42A06     dw 65535
+byte_42A08     db 255
+    db 255
+word_42A0A     dw 65535
+word_42A0C     dw 65535
+byte_42A0E     db 255
+    db 255
+word_42A10     dw 65535
+word_42A12     dw 65535
+    db 255
+    db 255
+word_42A16     dw 65535
+word_42A18     dw 65535
+word_42A1A     dw 65535
+word_42A1C     dw 65535
+off_42A1E     dw 65535
+word_42A20     dw 65535
+word_42A22     dw 65535
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+dword_42A30     dd -1
+word_42A34     dw 65535
+word_42A36     dw 65535
+byte_42A38     db 255
+    db 255
+word_42A3A     dw 65535
+word_42A3C     dw 65535
+word_42A3E     dw 65535
+word_42A40     dw 65535
+word_42A42     dw 65535
+word_42A44     dw 65535
+word_42A46     dw 65535
+word_42A48     dw 65535
+word_42A4A     dw 65535
+byte_42A4C     db 255
+byte_42A4D     db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+word_42A54     dw 65535
+word_42A56     dw 65535
+word_42A58     dw 65535
+word_42A5A     dw 65535
+word_42A5C     dw 65535
+word_42A5E     dw 65535
+byte_42A60     db 255
+byte_42A61     db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+word_42CBA     dw 65535
+    db 255
+    db 255
+word_42CBE     dw 65535
+word_42CC0     dw 65535
+    db 255
+    db 255
+word_42CC4     dw 65535
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+word_42D02     dw 65535
+word_42D04     dw 65535
+    db 255
+    db 255
+word_42D08     dw 65535
+word_42D0A     dw 65535
+    db 255
+    db 255
+word_42D0E     dw 65535
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+word_42D20     dw 65535
+dword_42D22     dd -1
+byte_42D26     db 255
+    db 255
+word_42D28     dw 65535
+byte_42D2A     db 255
+    db 255
+word_42D2C     dw 65535
+byte_42D2E     db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+byte_42DAE     db 255
+byte_42DAF     db 255
+byte_42DB0     db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+word_43748     dw 65535
+word_4374A     dw 65535
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+byte_4386C     db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+word_43892     dw 65535
+word_43894     dw 65535
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+word_438A8     dw 65535
+word_438AA     dw 65535
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+dword_438E8     dd -1
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+word_43924     dw 65535
+    db 255
+    db 255
+word_43928     dw 65535
+word_4392A     dw 65535
+byte_4392C     db 255
+    db 255
+dword_4392E     dd -1
+word_43932     dw 65535
+word_43934     dw 65535
+word_43936     dw 65535
+word_43938     dw 65535
+word_4393A     dw 65535
+byte_4393C     db 255
+byte_4393D     db 255
+word_4393E     dw 65535
+word_43940     dw 65535
+dword_43942     dd -1
+    db 255
+    db 255
+    db 255
+    db 255
+word_4394A     dw 65535
+word_4394C     dw 65535
+word_4394E     dw 65535
+byte_43950     db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+word_43964     dw 65535
+byte_43966     db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+word_4408C     dw 65535
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+word_4428E     dw 65535
+byte_44290     db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+byte_442E4     db 255
+    db 255
+word_442E6     dw 65535
+word_442E8     dw 65535
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+byte_4432A     db 255
+    db 255
+word_4432C     dw 65535
+word_4432E     dw 65535
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+byte_44346     db 255
+    db 255
+word_44348     dw 65535
+word_4434A     dw 65535
+word_4434C     dw 65535
+word_4434E     dw 65535
+word_44350     dw 65535
+word_44352     dw 65535
+word_44354     dw 65535
+word_44356     dw 65535
+word_44358     dw 65535
+word_4435A     dw 65535
+word_4435C     dw 65535
+word_4435E     dw 65535
+word_44360     dw 65535
+word_44362     dw 65535
+dword_44364     dd -1
+word_44368     dw 65535
+word_4436A     dw 65535
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+word_44382     dw 65535
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+word_443F2     dw 65535
+word_443F4     dw 65535
+dword_443F6     dd -1
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+word_445B4     dw 65535
+word_445B6     dw 65535
+word_445B8     dw 65535
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+word_445CC     dw 65535
+word_445CE     dw 65535
+word_445D0     dw 65535
+word_445D2     dw 65535
+word_445D4     dw 65535
+word_445D6     dw 65535
+word_445D8     dw 65535
+word_445DA     dw 65535
+word_445DC     dw 65535
+word_445DE     dw 65535
+word_445E0     dw 65535
+word_445E2     dw 65535
+word_445E4     dw 65535
+word_445E6     dw 65535
+word_445E8     dw 65535
+word_445EA     dw 65535
+word_445EC     dw 65535
+word_445EE     dw 65535
+word_445F0     dw 65535
+word_445F2     dw 65535
+word_445F4     dw 65535
+word_445F6     dw 65535
+word_445F8     dw 65535
+word_445FA     dw 65535
+word_445FC     dw 65535
+word_445FE     dw 65535
+word_44600     dw 65535
+word_44602     dw 65535
+    db 255
+    db 255
+word_44606     dw 65535
+word_44608     dw 65535
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+word_44610     dw 65535
+word_44612     dw 65535
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+word_4461A     dw 65535
+    db 255
+    db 255
+word_4461E     dw 65535
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+word_4462E     dw 65535
+word_44630     dw 65535
+word_44632     dw 65535
+word_44634     dw 65535
+word_44636     dw 65535
+word_44638     dw 65535
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+word_4468A     dw 65535
+word_4468C     dw 65535
+word_4468E     dw 65535
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+word_4469C     dw 65535
+    db 255
+    db 255
+    db 255
+    db 255
+byte_446A2     db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+byte_446A8     db 255
+byte_446A9     db 255
+byte_446AA     db 255
+byte_446AB     db 255
+    db 255
+    db 255
+    db 255
+byte_446AF     db 255
+byte_446B0     db 255
+byte_446B1     db 255
+byte_446B2     db 255
+byte_446B3     db 255
+byte_446B4     db 255
+byte_446B5     db 255
+word_446B6     dw 65535
+word_446B8     dw 65535
+word_446BA     dw 65535
+word_446BC     dw 65535
+word_446BE     dw 65535
+word_446C0     dw 65535
+word_446C2     dw 65535
+word_446C4     dw 65535
+word_446C6     dw 65535
+word_446C8     dw 65535
+word_446CA     dw 65535
+word_446CC     dw 65535
+word_446CE     dw 65535
+word_446D0     dw 65535
+word_446D2     dw 65535
+    db 255
+    db 255
+word_446D6     dw 65535
+word_446D8     dw 65535
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+word_446E0     dw 65535
+word_446E2     dw 65535
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+word_446EC     dw 65535
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+word_446FA     dw 65535
+word_446FC     dw 65535
+word_446FE     dw 65535
+word_44700     dw 65535
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+word_4475A     dw 65535
+word_4475C     dw 65535
+word_4475E     dw 65535
+word_44760     dw 65535
+word_44762     dw 65535
+word_44764     dw 65535
+word_44766     dw 65535
+word_44768     dw 65535
+word_4476A     dw 65535
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+byte_44772     db 255
+    db 255
+    db 255
+byte_44775     db 255
+byte_44776     db 255
+    db 255
+byte_44778     db 255
+byte_44779     db 255
+byte_4477A     db 255
+byte_4477B     db 255
+    db 255
+byte_4477D     db 255
+    db 255
+byte_4477F     db 255
+    db 255
+    db 255
+    db 255
+byte_44783     db 255
+byte_44784     db 255
+byte_44785     db 255
+word_44786     dw 65535
+word_44788     dw 65535
+word_4478A     dw 65535
+word_4478C     dw 65535
+word_4478E     dw 65535
+word_44790     dw 65535
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+byte_44888     db 255
+byte_44889     db 255
+byte_4488A     db 255
+byte_4488B     db 255
+byte_4488C     db 255
+byte_4488D     db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+byte_448BE     db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+byte_448EF     db 255
+byte_448F0     db 255
+byte_448F1     db 255
+byte_448F2     db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+word_44984     dw 65535
+word_44986     dw 65535
+word_44988     dw 65535
+word_4498A     dw 65535
+word_4498C     dw 65535
+word_4498E     dw 65535
+word_44990     dw 65535
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+word_44998     dw 65535
+byte_4499A     db 255
+byte_4499B     db 255
+word_4499C     dw 65535
+byte_4499E     db 255
+byte_4499F     db 255
+word_449A0     dw 65535
+word_449A2     dw 65535
+byte_449A4     db 255
+byte_449A5     db 255
+byte_449A6     db 255
+byte_449A7     db 255
+byte_449A8     db 255
+byte_449A9     db 255
+byte_449AA     db 255
+byte_449AB     db 255
+byte_449AC     db 255
+byte_449AD     db 255
+byte_449AE     db 255
+byte_449AF     db 255
+byte_449B0     db 255
+byte_449B1     db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+byte_449BA     db 255
+    db 255
+word_449BC     dw 65535
+word_449BE     dw 65535
+word_449C0     dw 65535
+dword_449C2     dd -1
+word_449C6     dw 65535
+word_449C8     dw 65535
+word_449CA     dw 65535
+word_449CC     dw 65535
+byte_449CE     db 255
+    db 255
+word_449D0     dw 65535
+    db 255
+    db 255
+dword_449D4     dd -1
+    db 255
+    db 255
+byte_449DA     db 255
+    db 255
+word_449DC     dw 65535
+word_449DE     dw 65535
+word_449E0     dw 65535
+byte_449E2     db 255
+    db 255
+word_449E4     dw 65535
+byte_449E6     db 255
+    db 255
+word_449E8     dw 65535
+word_449EA     dw 65535
+word_449EC     dw 65535
+dword_449EE     dd -1
+word_449F2     dw 65535
+byte_449F4     db 255
+    db 255
+word_449F6     dw 65535
+word_449F8     dw 65535
+word_449FA     dw 65535
+    db 255
+    db 255
+word_449FE     dw 65535
+word_44A00     dw 65535
+word_44A02     dw 65535
+word_44A04     dw 65535
+word_44A06     dw 65535
+word_44A08     dw 65535
+word_44A0A     dw 65535
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+word_44A2C     dw 65535
+word_44A2E     dw 65535
+word_44A30     dw 65535
+word_44A32     dw 65535
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+word_44A7C     dw 65535
+word_44A7E     dw 65535
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+word_44A88     dw 65535
+byte_44A8A     db 255
+    db 255
+word_44A8C     dw 65535
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+byte_44AE2     db 255
+    db 255
+word_44AE4     dw 65535
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+dword_44CE6     dd -1
+word_44CEA     dw 65535
+word_44CEC     dw 65535
+word_44CEE     dw 65535
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+word_44D1E     dw 65535
+word_44D20     dw 65535
+word_44D22     dw 65535
+word_44D24     dw 65535
+dword_44D26     dd -1
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+word_44D3C     dw 65535
+dword_44D3E     dd -1
+dword_44D42     dd -1
+byte_44D46     db 255
+byte_44D47     db 255
+word_44D48     dw 65535
+dword_44D4A     dd -1
+word_44D4E     dw 65535
+byte_44D50     db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+word_44D60     dw 65535
+word_44D62     dw 65535
+word_44D64     dw 65535
+word_44D66     dw 65535
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+word_44DC6     dw 65535
+word_44DC8     dw 65535
+word_44DCA     dw 65535
+word_44DCC     dw 65535
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+word_44F36     dw 65535
+word_44F38     dw 65535
+word_44F3A     dw 65535
+word_44F3C     dw 65535
+word_44F3E     dw 65535
+word_44F40     dw 65535
+word_44F42     dw 65535
+word_44F44     dw 65535
+word_44F46     dw 65535
+word_44F48     dw 65535
+word_44F4A     dw 65535
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+word_4549C     dw 65535
+word_4549E     dw 65535
+word_454A0     dw 65535
+word_454A2     dw 65535
+byte_454A4     db 255
+    db 255
+word_454A6     dw 65535
+word_454A8     dw 65535
+dword_454AA     dd -1
+word_454AE     dw 65535
+dword_454B0     dd -1
+word_454B4     dw 65535
+word_454B6     dw 65535
+byte_454B8     db 255
+    db 255
+word_454BA     dw 65535
+dword_454BC     dd -1
+word_454C0     dw 65535
+word_454C2     dw 65535
+word_454C4     dw 65535
+word_454C6     dw 65535
+word_454C8     dw 65535
+word_454CA     dw 65535
+word_454CC     dw 65535
+word_454CE     dw 65535
+word_454D0     dw 65535
+word_454D2     dw 65535
+word_454D4     dw 65535
+dword_454D6     dd -1
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+byte_45514     db 255
+    db 255
+word_45516     dw 65535
+word_45518     dw 65535
+word_4551A     dw 65535
+word_4551C     dw 65535
+word_4551E     dw 65535
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+byte_45525     db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+byte_4552F     db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+word_4554A     dw 65535
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+word_45574     dw 65535
+word_45576     dw 65535
+word_45578     dw 65535
+word_4557A     dw 65535
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+dword_455C8     dd -1
+word_455CC     dw 65535
+word_455CE     dw 65535
+word_455D0     dw 65535
+byte_455D2     db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+dword_4562E     dd -1
+word_45632     dw 65535
+byte_45634     db 255
+byte_45635     db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+dword_4563C     dd -1
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+word_45678     dw 65535
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+word_45944     dw 65535
+word_45946     dw 65535
+byte_45948     db 255
+    db 255
+byte_4594A     db 255
+byte_4594B     db 255
+byte_4594C     db 255
+byte_4594D     db 255
+byte_4594E     db 255
+byte_4594F     db 255
+byte_45950     db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+word_45982     dw 65535
+word_45984     dw 65535
+word_45986     dw 65535
+word_45988     dw 65535
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+byte_459D2     db 255
+    db 255
+word_459D4     dw 65535
+word_459D6     dw 65535
+byte_459D8     db 255
+    db 255
+dword_459DA     dd -1
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+byte_459F1     db 255
+word_459F2     dw 65535
+word_459F4     dw 65535
+word_459F6     dw 65535
+    db 255
+    db 255
+    db 255
+    db 255
+word_459FC     dw 65535
+word_459FE     dw 65535
+word_45A00     dw 65535
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+word_45A20     dw 65535
+word_45A22     dw 65535
+word_45A24     dw 65535
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+word_45D06     dw 65535
+word_45D08     dw 65535
+word_45D0A     dw 65535
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+word_45D1C     dw 65535
+word_45D1E     dw 65535
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+byte_45D3E     db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+word_45D7C     dw 65535
+byte_45D7E     db 255
+    db 255
+dword_45D80     dd -1
+dword_45D84     dd -1
+dword_45D88     dd -1
+dword_45D8C     dd -1
+byte_45D90     db 255
+    db 255
+word_45D92     dw 65535
+word_45D94     dw 65535
+word_45D96     dw 65535
+word_45D98     dw 65535
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+byte_45DB2     db 255
+    db 255
+word_45DB4     dw 65535
+word_45DB6     dw 65535
+word_45DB8     dw 65535
+word_45DBA     dw 65535
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+word_45DC8     dw 65535
+word_45DCA     dw 65535
+word_45DCC     dw 65535
+word_45DCE     dw 65535
+word_45DD0     dw 65535
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+word_45E0E     dw 65535
+word_45E10     dw 65535
+word_45E12     dw 65535
+word_45E14     dw 65535
+byte_45E16     db 255
+    db 255
+    db 255
+    db 255
+byte_45E1A     db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+dword_45E56     dd -1
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+word_45E92     dw 65535
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+word_45F2A     dw 65535
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+byte_45F44     db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+word_45F82     dw 65535
+word_45F84     dw 65535
+word_45F86     dw 65535
+byte_45F88     db 255
+byte_45F89     db 255
+byte_45F8A     db 255
+byte_45F8B     db 255
+byte_45F8C     db 255
+byte_45F8D     db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+word_46058     dw 65535
+word_4605A     dw 65535
+word_4605C     dw 65535
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+word_4615E     dw 65535
+word_46160     dw 65535
+dword_46162     dd -1
+byte_46166     db 255
+byte_46167     db 255
+word_46168     dw 65535
+word_4616A     dw 65535
+word_4616C     dw 65535
+byte_4616E     db 255
+byte_4616F     db 255
+word_46170     dw 65535
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+word_4617E     dw 65535
+word_46180     dw 65535
+word_46182     dw 65535
+word_46184     dw 65535
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+word_461C2     dw 65535
+word_461C4     dw 65535
+word_461C6     dw 65535
+byte_461C8     db 255
+    db 255
+word_461CA     dw 65535
+word_461CC     dw 65535
+word_461CE     dw 65535
+word_461D0     dw 65535
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+word_463D2     dw 65535
+word_463D4     dw 65535
+word_463D6     dw 65535
+word_463D8     dw 65535
+word_463DA     dw 65535
+word_463DC     dw 65535
+word_463DE     dw 65535
+byte_463E0     db 255
+    db 255
+word_463E2     dw 65535
+byte_463E4     db 255
+byte_463E5     db 255
+byte_463E6     db 255
+byte_463E7     db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+word_46434     dw 65535
+byte_46436     db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+byte_4644A     db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+byte_4645E     db 255
+    db 255
+dword_46460     dd -1
+    db 255
+    db 255
+    db 255
+byte_46467     db 255
+word_46468     dw 65535
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+byte_46484     db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
+    db 255
 dseg ends
 end

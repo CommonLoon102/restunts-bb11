@@ -1,4 +1,4 @@
-dseg segment byte public 'CODE' use16
+dseg segment byte public 'DATA' use16
     extrn byte_3B770:byte
     extrn word_3B772:word
     extrn word_3B774:word
@@ -273,7 +273,6 @@ dseg segment byte public 'CODE' use16
     extrn aExp1:byte
     extrn aExp2:byte
     extrn aExp3:byte
-    extrn unk_3D19B:byte
     extrn word_3E590:word
     extrn byte_3E70C:byte
     extrn byte_3E70D:byte

@@ -1,4 +1,6 @@
 .model large
+nosmart
+    include structs.inc
     include seg001.inc
     include seg002.inc
     include seg003.inc
@@ -4779,7 +4781,9 @@ loc_12E6A:
     mov     al, byte_449A7
     mov     byte_449AE, al
     mov     al, byte_449A8
+smart
     and     al, 1
+nosmart
     xor     al, 1
     mov     byte_449AF, al
     mov     byte_449B0, 0
@@ -5074,14 +5078,14 @@ loc_1313C:
 loc_13144:
     mov     [bp+var_4], 0
     jmp     short loc_1315A
-off_1314A     dw offset loc_13144
-    dw offset loc_1304E
-    dw offset loc_130D2
-    dw offset loc_130DA
-    dw offset loc_130E2
-    dw offset loc_13134
-    dw offset loc_1313C
-    dw offset loc_13144
+off_1314A     dw 12612
+    dw 12366
+    dw 12498
+    dw 12506
+    dw 12514
+    dw 12596
+    dw 12604
+    dw 12612
 loc_1315A:
     cmp     [bp+var_4], 0
     jz      short loc_13163
@@ -5855,7 +5859,9 @@ loc_1384B:
     jz      short loc_138A0
     call    sub_19E7B
     add     ax, word_4434C
+smart
     and     ax, 1
+nosmart
     add     ax, 2
     jmp     short loc_138AC
     ; align 2
@@ -5863,7 +5869,9 @@ loc_1384B:
 loc_138A0:
     call    sub_19E7B
     add     ax, word_4434C
+smart
     and     ax, 1
+nosmart
 loc_138AC:
     mov     word_40D42, ax
     mov     [bp+var_6A], 76h ; 'v'
@@ -5892,7 +5900,9 @@ loc_138B6:
     mov     [bp+var_58], dx
     call    sub_19E7B
     add     ax, word_4434C
+smart
     and     ax, 3
+nosmart
     mov     word_40D42, ax
     mov     [bp+var_6A], 64h ; 'd'
 loc_138FF:
@@ -7207,7 +7217,9 @@ loc_14664:
     cbw
     mov     bx, ax
     mov     al, [bx+382Fh]
+smart
     and     al, 1
+nosmart
     mov     [bp+var_440], al
     or      al, al
     jz      short loc_1468C

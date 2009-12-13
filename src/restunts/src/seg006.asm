@@ -1,4 +1,6 @@
 .model large
+nosmart
+    include structs.inc
     include seg000.inc
     include seg001.inc
     include seg002.inc
@@ -220,7 +222,9 @@ sub_24E06 proc far
     push    [bp+var_6]
     call    sub_2EA4E
     add     sp, 4
+smart
     and     ah, 3
+nosmart
     pop     si
     pop     di
     mov     sp, bp
@@ -1925,7 +1929,9 @@ loc_25F0C:
     mov     ax, word_40EB0
     cmp     [si], ax
     jge     short loc_25F1A
+smart
     or      [bp+var_4], 4
+nosmart
     jmp     short loc_25F25
     ; align 2
     db 144
@@ -1933,7 +1939,9 @@ loc_25F1A:
     mov     ax, word_40EB2
     cmp     [si], ax
     jle     short loc_25F25
+smart
     or      [bp+var_4], 8
+nosmart
 loc_25F25:
     mov     al, [bp+var_4]
     cbw
@@ -2306,7 +2314,10 @@ sub_261FA proc far
 loc_2621C:
     test    [bp+arg_2], 3FFh
     jz      short loc_26236
+smart
+    nop
     or      si, 2
+nosmart
     push    [bp+arg_2]
     mov     ax, 0AD02h
     push    ax
@@ -2315,9 +2326,14 @@ loc_2621C:
 loc_26236:
     test    [bp+arg_4], 3FFh
     jz      short loc_26285
+smart
+    nop
     or      si, 1
+nosmart
     mov     ax, [bp+arg_4]
+smart
     and     ah, 3
+nosmart
     cmp     ax, word_3EB02
     jnz     short loc_26252
 loc_2624D:
@@ -2325,7 +2341,9 @@ loc_2624D:
     jmp     short loc_26285
 loc_26252:
     mov     ax, [bp+arg_4]
+smart
     and     ah, 3
+nosmart
     cmp     ax, 100h
     jz      short loc_26282
     cmp     ax, 200h
@@ -2338,7 +2356,9 @@ loc_26252:
     call    sub_36F80
     add     sp, 4
     mov     ax, [bp+arg_4]
+smart
     and     ah, 3
+nosmart
     mov     word_3EB02, ax
     jmp     short loc_2624D
     ; align 2
@@ -2466,14 +2486,14 @@ loc_26338:
 loc_2635D:
     mov     di, 81E2h
     jmp     short loc_26372
-off_26362     dw offset loc_262A4
-    dw offset loc_26372
-    dw offset loc_26333
-    dw offset loc_262AA
-    dw offset loc_2635D
-    dw offset loc_262D4
-    dw offset loc_262EE
-    dw offset loc_26308
+off_26362     dw 5444
+    dw 5650
+    dw 5587
+    dw 5450
+    dw 5629
+    dw 5492
+    dw 5518
+    dw 5544
 loc_26372:
     mov     ax, di
     pop     si

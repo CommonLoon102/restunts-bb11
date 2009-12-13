@@ -1,11 +1,6 @@
 .model large
-FILE		 struc ;	(sizeof=0xC, standard type)
-_ptr		dd ?			; offset
-_cnt		dw ?
-_base		dd ?			; offset
-_flag		db ?
-_file		db ?
-ends
+nosmart
+    include structs.inc
     include seg000.inc
     include seg001.inc
     include seg002.inc
@@ -51,8 +46,10 @@ seg010 segment byte public 'CODE' use16
     assume cs:seg010
     assume es:nothing, ss:nothing, ds:dseg
     public start
+    public __amsg_exit
     public sub_2CDEC
     public sub_2CE03
+    public loc_2CE06
     public sub_2CE4A
     public sub_2CE77
     public __FF_MSGBANNER
@@ -64,6 +61,7 @@ seg010 segment byte public 'CODE' use16
     public __NMSG_TEXT
     public __NMSG_WRITE
     public __myalloc
+    public __dosretax
     public __maperror
     public sub_2D1BC
     public _flushall
@@ -91,7 +89,9 @@ seg010 segment byte public 'CODE' use16
     public _stackavail
     public unknown_libname_1
     public unknown_libname_2
+    public loc_2E0BE
     public __amalloc
+    public loc_2E18F
     public __amexpand
     public __amlink
     public __amallocbrk
@@ -108,9 +108,14 @@ seg010 segment byte public 'CODE' use16
     public _int86
     public _sprintf
     public _stricmp
+    public __cltoasub
+    public __cxtoa
     public _abs
     public off_2E59E
     public _raise
+    public loc_2E61E
+    public loc_2E626
+    public loc_2E635
     public _srand
     public _rand
     public _signal
@@ -124,8 +129,23 @@ seg010 segment byte public 'CODE' use16
     public unknown_libname_4
     public unknown_libname_5
     public __aFuldiv
-    db 10h dup(0)
-start proc
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+start proc near
 
     mov     ah, 30h
     int     21h             ; DOS - GET DOS VERSION
@@ -154,7 +174,9 @@ loc_2CC7E:
     mov     ax, 4CFFh
     int     21h             ; DOS - 2+ - QUIT WITH EXIT CODE (EXIT)
 loc_2CC9C:
+smart
     and     sp, 0FFFEh
+nosmart
     mov     ss:word_3ED7A, sp
     mov     ss:word_3ED76, sp
     mov     ax, si
@@ -279,13 +301,18 @@ loc_2CDB8:
 loc_2CDBD:
     mov     bx, 4
 loc_2CDC0:
+smart
+smart
     and     byte ptr [bx+3684h], 0BFh
+nosmart
     mov     ax, 4400h
     int     21h             ; DOS - 2+ - IOCTL - GET DEVICE INFORMATION
     jb      short loc_2CDD6
     test    dl, 80h
     jz      short loc_2CDD6
+smart
     or      byte ptr [bx+3684h], 40h
+nosmart
 loc_2CDD6:
     dec     bx
     jns     short loc_2CDC0
@@ -297,7 +324,7 @@ loc_2CDD6:
     call    sub_2CE77
     retf
 start endp
-sub_2CDEC proc
+sub_2CDEC proc near
      s = byte ptr 0
      r = byte ptr 2
 
@@ -311,7 +338,7 @@ sub_2CDEC proc
     call    sub_2CE77
     jmp     short loc_2CE06
 sub_2CDEC endp
-sub_2CE03 proc
+sub_2CE03 proc near
      s = byte ptr 0
      r = byte ptr 2
     arg_2 = word ptr 6
@@ -347,7 +374,7 @@ loc_2CE3D:
     mov     ah, 4Ch
     int     21h             ; DOS - 2+ - QUIT WITH EXIT CODE (EXIT)
 sub_2CE03 endp
-sub_2CE4A proc
+sub_2CE4A proc near
 
     mov     cx, word ptr dword_40C1E+2
     jcxz    short loc_2CE57
@@ -370,7 +397,7 @@ loc_2CE57:
 locret_2CE76:
     retn
 sub_2CE4A endp
-sub_2CE77 proc
+sub_2CE77 proc near
 
     cmp     si, di
     jnb     short locret_2CE89
@@ -403,7 +430,7 @@ loc_2CEA1:
     pop     bp
     retf
 __FF_MSGBANNER endp
-__fptrap proc
+__fptrap proc near
 
     mov     ax, 2
     jmp     __amsg_exit
@@ -455,7 +482,7 @@ loc_2CEFC:
     pop     si
     retf
 __nullcheck endp
-__setargv proc
+__setargv proc near
 
     pop     word ptr dword_3EE26
     pop     word ptr dword_3EE26+2
@@ -571,7 +598,9 @@ loc_2CFBE:
     inc     di
     shl     di, 1
     add     dx, di
+smart
     and     dl, 0FEh
+nosmart
     sub     sp, dx
     mov     ax, sp
     mov     argv, ax
@@ -722,7 +751,9 @@ loc_2D0B9:
     inc     bp
     xchg    ax, di
     inc     ax
+smart
     and     al, 0FEh
+nosmart
     mov     di, bp
     shl     bp, 1
     add     ax, bp
@@ -825,7 +856,7 @@ loc_2D14D:
     pop     bp
     retf    2
 __NMSG_WRITE endp
-__myalloc proc
+__myalloc proc near
 
     mov     dx, ax
     add     ax, word_3ED7A
@@ -847,7 +878,9 @@ __myalloc proc
     int     21h             ; DOS - 2+ - ADJUST MEMORY BLOCK SIZE (SETBLOCK)
     pop     ax
     jb      short loc_2D191
+smart
     and     al, 0F0h
+nosmart
     dec     ax
     mov     word_3ED74, ax
 loc_2D187:
@@ -873,6 +906,14 @@ __dosreturn:
     mov     sp, bp
     pop     bp
     retf
+    var_4 = word ptr -4
+    var_2 = word ptr -2
+     s = byte ptr 0
+     r = byte ptr 2
+    arg_0 = word ptr 6
+    arg_2 = word ptr 8
+    arg_6 = word ptr 10
+    arg_8 = word ptr 12
 __dosretax:
     jnb     short loc_2D1B2
 loc_2D1AB:
@@ -890,7 +931,7 @@ __maperror proc far
     call    sub_2D1BC
     retf
 __maperror endp
-sub_2D1BC proc
+sub_2D1BC proc near
 
     mov     byte_3EDF0, al
     or      ah, ah
@@ -903,7 +944,7 @@ sub_2D1BC proc
     jb      short loc_2D1D7
     mov     al, 5
     jmp     short loc_2D1DD
-    db 90h
+    db 144
 loc_2D1D7:
     cmp     al, 13h
     jbe     short loc_2D1DD
@@ -1026,7 +1067,9 @@ __flsbuf proc far
     test    byte ptr [si+6], 40h
     jz      short loc_2D2A0
 loc_2D295:
+smart
     or      byte ptr [si+6], 20h
+nosmart
     mov     ax, 0FFFFh
     jmp     loc_2D3B7
     ; align 2
@@ -1034,8 +1077,13 @@ loc_2D295:
 loc_2D2A0:
     test    byte ptr [si+6], 1
     jnz     short loc_2D295
+smart
     or      byte ptr [si+6], 2
+nosmart
+smart
+smart
     and     byte ptr [si+6], 0EFh
+nosmart
     sub     ax, ax
     mov     [si+2], ax
     mov     di, ax
@@ -1163,7 +1211,7 @@ loc_2D3B7:
     ; align 2
     db 144
 __flsbuf endp
-__getbuf proc
+__getbuf proc near
     var_2 = word ptr -2
      s = byte ptr 0
      r = byte ptr 2
@@ -1191,7 +1239,9 @@ __getbuf proc
     mov     [bx+4], ax
     or      ax, ax
     jz      short loc_2D402
+smart
     or      byte ptr [bx+6], 8
+nosmart
     mov     bx, [bp+var_2]
     mov     word ptr [bx+2], 200h
     jmp     short loc_2D418
@@ -1199,7 +1249,9 @@ __getbuf proc
     db 144
 loc_2D402:
     mov     bx, [bp+arg_0]
+smart
     or      byte ptr [bx+6], 4
+nosmart
     mov     ax, [bp+var_2]
     inc     ax
     mov     [bx+4], ax
@@ -1274,7 +1326,9 @@ loc_2D476:
     mov     [bx+2], ax
     mov     [si+2], ax
     mov     byte ptr [bx], 1
+smart
     or      byte ptr [si+6], 2
+nosmart
     mov     ax, 1
 loc_2D4AB:
     pop     si
@@ -1369,7 +1423,9 @@ _fflush proc far
     mov     si, [bp+arg_0]
     sub     di, di
     mov     al, [si+6]
+smart
     and     al, 3
+nosmart
     cmp     al, 2
     jnz     short loc_2D5AC
     test    byte ptr [si+6], 8
@@ -1399,7 +1455,9 @@ loc_2D583:
     add     sp, 6
     cmp     ax, [bp+var_4]
     jz      short loc_2D5AC
+smart
     or      byte ptr [si+6], 20h
+nosmart
     mov     di, 0FFFFh
 loc_2D5AC:
     mov     ax, [si+4]
@@ -1743,28 +1801,28 @@ loc_2D890:
     jmp     short loc_2D8E3
     ; align 2
     db 144
-off_2D896     dw offset loc_2D83E
-    dw offset loc_2D756
-    dw offset loc_2D844
-    dw offset loc_2D844
-    dw offset loc_2D844
-    dw offset loc_2D850
-    dw offset loc_2D756
-    dw offset loc_2D850
-    dw offset loc_2D850
-    dw offset loc_2D850
-    dw offset loc_2D850
-    dw offset loc_2D73E
-    dw offset loc_2D76A
-    dw offset loc_2D770
-    dw offset loc_2D850
-    dw offset loc_2D850
-    dw offset loc_2D834
-    dw offset loc_2D850
-    dw offset loc_2D752
-    dw offset loc_2D850
-    dw offset loc_2D850
-    dw offset loc_2D82E
+off_2D896     dw 3054
+    dw 2822
+    dw 3060
+    dw 3060
+    dw 3060
+    dw 3072
+    dw 2822
+    dw 3072
+    dw 3072
+    dw 3072
+    dw 3072
+    dw 2798
+    dw 2842
+    dw 2848
+    dw 3072
+    dw 3072
+    dw 3044
+    dw 3072
+    dw 2818
+    dw 3072
+    dw 3072
+    dw 3038
 loc_2D8C2:
     cmp     word_428B0, 0
     jz      short loc_2D8DC
@@ -2595,7 +2653,10 @@ loc_2DF11:
     mov     ah, 42h
     int     21h             ; DOS - 2+ - MOVE FILE READ/WRITE POINTER (LSEEK)
     jb      short loc_2DF25
+smart
+smart
     and     byte ptr [bx+3684h], 0FDh
+nosmart
 loc_2DF25:
     jmp     __dosretax
 _lseek endp
@@ -2712,6 +2773,14 @@ loc_2DFD0:
     add     [bp+var_2], ax
     or      ax, ax
     jz      short loc_2DFEF
+    var_8 = word ptr -8
+    var_4 = word ptr -4
+    var_2 = word ptr -2
+     s = byte ptr 0
+     r = byte ptr 2
+    arg_0 = word ptr 6
+    arg_2 = word ptr 8
+    arg_4 = word ptr 10
 loc_2DFE9:
     pop     cx
     pop     bx
@@ -2799,7 +2868,9 @@ unknown_libname_1 proc far
     mov     bx, [bp+arg_0]
     or      bx, bx
     jz      short loc_2E074
+smart
     or      byte ptr [bx-2], 1
+nosmart
 loc_2E074:
     mov     sp, bp
     pop     bp
@@ -2827,7 +2898,9 @@ unknown_libname_2 proc far
     jmp     short loc_2E0B8
 loc_2E094:
     inc     ax
+smart
     and     al, 0FEh
+nosmart
     mov     word_3EF6E, ax
     mov     word_3EF70, ax
     xchg    ax, si
@@ -2849,11 +2922,13 @@ loc_2E0B8:
 loc_2E0BE:
     jmp     loc_2E18F
 unknown_libname_2 endp
-__amalloc proc
+__amalloc proc near
 
     inc     cx
     jz      short loc_2E0BE
+smart
     and     cl, 0FEh
+nosmart
     cmp     cx, 0FFEEh
     jnb     short loc_2E0BE
     mov     si, [bx+2]
@@ -2947,7 +3022,9 @@ loc_2E16C:
     call    __amlink
     cmp     ax, si
     jz      short loc_2E185
+smart
     and     al, 1
+nosmart
     inc     ax
     inc     ax
     cbw
@@ -2974,7 +3051,7 @@ loc_2E19B:
     cwd
     retn
 __amalloc endp
-__amexpand proc
+__amexpand proc near
 
     push    cx
     mov     ax, [di-2]
@@ -3012,7 +3089,7 @@ loc_2E1DC:
     pop     cx
     retn
 __amexpand endp
-__amlink proc
+__amlink proc near
 
     push    dx
     push    cx
@@ -3034,7 +3111,7 @@ loc_2E1FD:
     pop     dx
     retn
 __amlink endp
-__amallocbrk proc
+__amallocbrk proc near
      r = byte ptr 0
 
     push    bx
@@ -3128,7 +3205,7 @@ loc_2E289:
     pop     bp
     retf
 _brkctl endp
-sub_2E290 proc
+sub_2E290 proc near
 
     mov     cx, [bp+0Eh]
     mov     si, di
@@ -3328,7 +3405,7 @@ loc_2E3B5:
     ; align 2
     db 0
 _itoa endp
-_ultoa proc
+_ultoa proc near
      s = byte ptr 0
      r = byte ptr 2
     arg_2 = word ptr 6
@@ -3532,14 +3609,18 @@ loc_2E4F3:
     sub     al, 41h ; 'A'
     cmp     al, 1Ah
     sbb     cl, cl
+smart
     and     cl, 20h
+nosmart
     add     al, cl
     add     al, 41h ; 'A'
     xchg    ah, al
     sub     al, 41h ; 'A'
     cmp     al, 1Ah
     sbb     cl, cl
+smart
     and     cl, 20h
+nosmart
     add     al, cl
     add     al, 41h ; 'A'
     cmp     al, ah
@@ -3551,15 +3632,22 @@ loc_2E523:
     mov     si, dx
     pop     bp
     retf
-__cltoasub:
+     s = byte ptr 0
+     r = byte ptr 2
     arg_2 = word ptr 6
     arg_4 = word ptr 8
     arg_6 = word ptr 10
     arg_8 = word ptr 12
+__cltoasub:
     mov     cx, [bp+arg_8]
     mov     ax, [bp+arg_2]
     mov     dx, [bp+arg_4]
     mov     di, [bp+arg_6]
+     s = byte ptr 0
+     r = byte ptr 2
+    arg_2 = word ptr 6
+    arg_4 = word ptr 8
+    arg_6 = word ptr 10
 __cxtoa:
     push    di
     push    ds
@@ -3636,12 +3724,12 @@ loc_2E59B:
     retf
     ; align 2
     db 144
-off_2E59E     dw offset loc_2E635
-    dw offset loc_2E626
-    dw offset loc_2E61E
-    dw offset loc_2E626
-    dw offset loc_2E626
-    dw offset loc_2E626
+off_2E59E     dw 6629
+    dw 6614
+    dw 6606
+    dw 6614
+    dw 6614
+    dw 6614
 _abs endp
 _raise proc far
     var_4 = dword ptr -4
@@ -3717,7 +3805,7 @@ loc_2E626:
 loc_2E62F:
     mov     ax, 0FFFFh
     jmp     short loc_2E637
-    db 90h
+    db 144
 loc_2E635:
     xor     ax, ax
 loc_2E637:
@@ -3756,9 +3844,16 @@ _rand proc far
     mov     word_3F0A0, ax
     mov     word_3F0A2, dx
     mov     ax, dx
+smart
     and     ah, 7Fh
+nosmart
     retf
-    db 2, 4, 8, 0Bh, 0Fh, 16h
+    db 2
+    db 4
+    db 8
+    db 11
+    db 15
+    db 22
 _rand endp
 _signal proc far
     var_4 = word ptr -4
@@ -3849,7 +3944,7 @@ __sigentry proc far
 
     push    bp
     mov     bp, sp
-    lea     bx, unk_3D19B
+    lea     bx, ds:1A2Bh
     mov     cx, 6
 loc_2E729:
     cmp     cs:[bx], al
@@ -3858,7 +3953,7 @@ loc_2E729:
     loop    loc_2E729
     stc
     jmp     short loc_2E743
-    db 90h
+    db 144
 loc_2E735:
     dec     cx
     mov     ax, cx

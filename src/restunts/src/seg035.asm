@@ -1,4 +1,6 @@
 .model large
+nosmart
+    include structs.inc
     include seg000.inc
     include seg001.inc
     include seg002.inc
@@ -43,11 +45,11 @@
 seg035 segment byte public 'CODE' use16
     assume cs:seg035
     assume es:nothing, ss:nothing, ds:dseg
+    public loc_3ACD8
     public sub_3ACEC
     public sub_3ACFE
     public sub_3AD9C
     public sub_3B08C
-    public loc_3ACD8
     ; align 2
     db 144
 loc_3ACD8:

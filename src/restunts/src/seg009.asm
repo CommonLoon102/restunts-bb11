@@ -1,4 +1,6 @@
 .model large
+nosmart
+    include structs.inc
     include seg000.inc
     include seg001.inc
     include seg002.inc
@@ -2766,7 +2768,8 @@ loc_2BD3E:
     jle     short loc_2BD9B
     mov     [bp+var_178], 3
     jmp     short loc_2BDC8
-    db 2 dup(90h)
+    db 144
+    db 144
 loc_2BD4E:
     mov     al, [bp+var_17F]
     cbw

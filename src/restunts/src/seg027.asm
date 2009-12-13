@@ -1,4 +1,6 @@
 .model large
+nosmart
+    include structs.inc
     include seg000.inc
     include seg001.inc
     include seg002.inc
@@ -226,7 +228,8 @@ loc_3720F:
     mov     sp, bp
     pop     bp
     retf
-    db 2 dup(90h)
+    db 144
+    db 144
 sub_3717C endp
 sub_37216 proc far
     var_C = word ptr -12
@@ -1210,7 +1213,8 @@ loc_37997:
     mov     sp, bp
     pop     bp
     retf
-    db 2 dup(90h)
+    db 144
+    db 144
 loc_379A2:
     cmp     byte_459D2, 7Fh ; ''
     jbe     short loc_379B8
@@ -2346,24 +2350,24 @@ loc_3839A:
     jmp     short loc_3834E
     ; align 2
     db 144
-off_383A0     dw offset loc_3839A
-    dw offset loc_3839A
-    dw offset loc_3839A
-    dw offset loc_3835C
-    dw offset loc_3835C
-    dw offset loc_3835C
-    dw offset loc_38362
-    dw offset loc_3835C
-    dw offset loc_3835C
-    dw offset loc_3835C
-    dw offset loc_3839A
-    dw offset loc_3835C
-    dw offset loc_38362
-    dw offset loc_382DA
-    dw offset loc_38368
-    dw offset loc_38368
-    dw offset loc_3835C
-    dw offset loc_3835C
+off_383A0     dw 4810
+    dw 4810
+    dw 4810
+    dw 4748
+    dw 4748
+    dw 4748
+    dw 4754
+    dw 4748
+    dw 4748
+    dw 4748
+    dw 4810
+    dw 4748
+    dw 4754
+    dw 4618
+    dw 4760
+    dw 4760
+    dw 4748
+    dw 4748
     jmp     short loc_3834E
 loc_383C6:
     inc     [bp+var_2A]

@@ -1,4 +1,6 @@
 .model large
+nosmart
+    include structs.inc
     include seg000.inc
     include seg001.inc
     include seg002.inc
@@ -45,6 +47,9 @@ seg018 segment byte public 'CODE' use16
     assume es:nothing, ss:nothing, ds:dseg
     public sub_36AF4
     public sub_36B05
+    retf
+    ; align 2
+    db 144
 sub_36AF4 proc far
 
     mov     ax, 40h ; '@'
@@ -57,7 +62,9 @@ sub_36B05 proc far
 
     mov     ax, 40h ; '@'
     mov     es, ax
+smart
     and     byte ptr es:17h, 0DFh
+nosmart
     call    sub_30A35
     retf
 sub_36B05 endp

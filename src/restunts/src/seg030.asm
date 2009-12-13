@@ -1,4 +1,6 @@
 .model large
+nosmart
+    include structs.inc
     include seg000.inc
     include seg001.inc
     include seg002.inc
@@ -44,8 +46,10 @@ seg030 segment byte public 'CODE' use16
     assume cs:seg030
     assume es:nothing, ss:nothing, ds:dseg
     public sub_39CCE
-    db 2 dup(90h)
-    db 2 dup(0)
+    db 144
+    db 144
+    db 0
+    db 0
 sub_39CCE proc far
     var_2 = word ptr -2
      s = byte ptr 0

@@ -1,4 +1,6 @@
 .model large
+nosmart
+    include structs.inc
     include seg000.inc
     include seg001.inc
     include seg002.inc
@@ -454,7 +456,9 @@ loc_2775A:
 loc_2776C:
     mov     ax, [bp+var_194]
     add     ax, 18h
+smart
     and     al, 0F8h
+nosmart
     mov     [bp+var_194], ax
     cmp     [bp+arg_8], 0FFFFh
     jnz     short loc_27790
@@ -463,7 +467,9 @@ loc_2776C:
     cwd
     sub     ax, dx
     sar     ax, 1
+smart
     and     al, 0F8h
+nosmart
     mov     [bp+arg_8], ax
 loc_27790:
     cmp     [bp+arg_A], 0FFFFh
@@ -897,7 +903,8 @@ loc_27BF5:
     jz      short loc_27C26
     add     ax, 20h ; ' '
     jmp     short loc_27C28
-    db 2 dup(90h)
+    db 144
+    db 144
 loc_27C26:
     mov     ax, bx
 loc_27C28:
@@ -1762,7 +1769,8 @@ loc_283EC:
     mov     al, [bp+var_716]
     mov     [bp+var_69A], al
     jmp     short loc_283C1
-    db 2 dup(90h)
+    db 144
+    db 144
 loc_28402:
     cmp     [bp+var_6EA], 9
     jnz     short loc_28428
@@ -4543,15 +4551,15 @@ loc_29A44:
     push    word ptr [bp+arg_2]
     call    sub_39E14
     jmp     short loc_299EC
-off_29A4E     dw offset loc_299E4
-    dw offset loc_299F8
-    dw offset loc_29A12
-    dw offset loc_29A1C
-    dw offset loc_29A26
-    dw offset loc_29A30
-    dw offset loc_29A3A
-    dw offset loc_29A08
-    dw offset loc_29A44
+off_29A4E     dw 9524
+    dw 9544
+    dw 9570
+    dw 9580
+    dw 9590
+    dw 9600
+    dw 9610
+    dw 9560
+    dw 9620
 loc_29A60:
     mov     ax, [bp+var_4]
     or      ax, [bp+var_2]

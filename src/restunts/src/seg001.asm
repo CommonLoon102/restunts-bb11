@@ -1,4 +1,6 @@
 .model large
+nosmart
+    include structs.inc
     include seg000.inc
     include seg002.inc
     include seg003.inc
@@ -734,7 +736,9 @@ loc_14C87:
     push    ax
     call    sub_2EA4E
     add     sp, 4
+smart
     and     ah, 3
+nosmart
     mov     word_446FE, ax
 loc_14CD7:
     cmp     byte_44783, 0
@@ -1578,7 +1582,9 @@ loc_1540C:
     mov     ax, word_4435E
     neg     ax
     sub     ax, word_45D96
+smart
     and     ah, 3
+nosmart
     mov     [bp+var_EE], ax
     mov     ax, [bp+var_F2]
     mov     [bp+var_F8], ax
@@ -1597,7 +1603,9 @@ loc_1543A:
 loc_1544A:
     mov     ax, word_45D96
     add     ah, 2
+smart
     and     ah, 3
+nosmart
     mov     [bp+var_EE], ax
     mov     [bp+var_FC], 0FD00h
 loc_1545D:
@@ -1630,7 +1638,9 @@ loc_1546E:
     neg     ax
     mov     si, ax
     sub     si, [bp+var_EE]
+smart
     and     si, 3FFh
+nosmart
     mov     [bp+var_138], 0
     cmp     si, 100h
     jle     short loc_154CA
@@ -1675,7 +1685,9 @@ loc_154FA:
     add     sp, 4
 loc_15513:
     mov     bx, [bp+arg_0]
+smart
     or      byte ptr [bx+0CFh], 10h
+nosmart
     lea     ax, [bp+var_1C0]
     mov     [bp+var_DE], ax
     lea     ax, [bp+var_176]
@@ -2441,7 +2453,9 @@ loc_15CE8:
     mov     bx, [bp+arg_0]
     cmp     word ptr [bx+di+4Ch], 0FAh ; 'ú'
     jle     short loc_15CF7
+smart
     or      byte ptr [bx+0CFh], 20h
+nosmart
 loc_15CF7:
     mov     al, [bp+var_E8]
     cbw
@@ -2773,7 +2787,9 @@ loc_16057:
     push    [bp+var_EE]
     call    sub_2EA4E
     add     sp, 4
+smart
     and     ah, 3
+nosmart
     mov     word_4435E, ax
     push    ax
     lea     ax, [bp+var_10E]
@@ -4419,7 +4435,9 @@ loc_16FB1:
     mov     sp, bp
     pop     bp
     retf
-    db 3 dup(90h)
+    db 144
+    db 144
+    db 144
 loc_16FFE:
     dec     si
     jmp     loc_16F73
@@ -4708,7 +4726,9 @@ loc_17242:
     cbw
     sar     ax, 1
     sar     ax, 1
+smart
     and     ax, 3
+nosmart
     push    ax
     push    cs
     call    near ptr sub_187B2
@@ -5116,10 +5136,14 @@ loc_175F0:
     call    sub_2EA4E
     add     sp, 4
     mov     si, ax
+smart
     and     si, 3FFh
+nosmart
     mov     ax, word_445FE
     sub     ax, si
+smart
     and     ah, 3
+nosmart
     mov     si, ax
     cmp     si, 380h
     jg      short loc_17631
@@ -5240,12 +5264,16 @@ loc_176F9:
     push    ax
     call    sub_2EA4E
     add     sp, 4
+smart
     and     ah, 3
+nosmart
     mov     word_4462E, ax
     cmp     byte_446AF, 0
     jnz     short loc_17771
     add     ax, 80h ; '€'
+smart
     and     ah, 3
+nosmart
     mov     cl, 8
     shr     ax, cl
     cmp     ax, 1
@@ -5887,7 +5915,9 @@ loc_17CE1:
     db 144
 loc_17CEA:
     mov     al, [bp+arg_0]
+smart
     and     ax, 3
+nosmart
     cmp     ax, 1
     jnz     short loc_17CF8
     jmp     loc_17D82
@@ -6686,13 +6716,17 @@ loc_18410:
     cmp     byte ptr [bx+0C5h], 1
     jnz     short loc_1843E
 loc_18436:
+smart
     or      byte ptr [bx+0CFh], 2
+nosmart
     jmp     short loc_18458
     ; align 2
     db 144
 loc_1843E:
     mov     bx, [bp+arg_0]
+smart
     or      byte ptr [bx+0CFh], 4
+nosmart
     jmp     short loc_18458
 loc_18448:
     mov     bx, [bp+arg_0]
@@ -6804,7 +6838,9 @@ sub_18466 proc far
 loc_1853D:
     mov     ax, [bp+var_2]
     sub     ax, [bp+var_4]
+smart
     and     ah, 3
+nosmart
     mov     [bp+var_8], ax
     mov     ah, byte ptr [bp+var_A]
     sub     al, al
@@ -7088,7 +7124,9 @@ sub_187B2 proc far
     mov     ax, word_44612
     mov     cl, 0Ah
     shr     ax, cl
+smart
     and     al, 0FCh
+nosmart
     mov     [bp+var_4], al
     cbw
     mov     bx, ax
@@ -7410,7 +7448,8 @@ loc_18A41:
     jmp     loc_18B6E
 loc_18A4E:
     jmp     short loc_18A82
-    db 2 dup(90h)
+    db 144
+    db 144
 loc_18A52:
     cmp     byte_463E0, 0
     jz      short loc_18A6E
@@ -7580,7 +7619,9 @@ loc_18BD2:
     jz      short loc_18BF4
     test    [bp+var_16], 1
     jnz     short loc_18C08
+smart
     or      [bp+var_16], 1
+nosmart
     push    [bp+var_2E]
     call    sub_26EF4
     jmp     short loc_18C05
@@ -7599,10 +7640,14 @@ loc_18C08:
     test    byte ptr [bx+0CFh], 6
     jz      short loc_18C56
     mov     al, [bp+var_16]
+smart
     and     al, 6
+nosmart
     mov     byte ptr [bp+var_34], al
     mov     al, [bx+0CFh]
+smart
     and     al, 6
+nosmart
     cmp     al, byte ptr [bp+var_34]
     jz      short loc_18C7B
     test    [bp+var_16], 6
@@ -7787,10 +7832,14 @@ sub_18D60 proc far
     mov     [bp+var_2], al
     les     si, dword_454D6
     mov     al, es:[bx+si]
+smart
     and     al, 0Fh
+nosmart
     mov     [bp+var_1C], al
     mov     al, es:[bx+si]
+smart
     and     al, 10h
+nosmart
     mov     [bp+var_28], al
     mov     al, [bp+var_2]
     sub     ah, ah
@@ -7842,7 +7891,9 @@ loc_18DEC:
     mov     al, [bx+9]
     mov     byte ptr [bp+var_1A], al
     mov     si, [bp+var_1A]
+smart
     and     si, 0FFh
+nosmart
     mov     bl, [bp+var_16]
     sub     bh, bh
     mov     al, [bx+si-6A20h]
@@ -9298,7 +9349,9 @@ loc_19AB9:
     mov     al, byte ptr [bp+arg_0]
     mov     [si-6E99h], al
     mov     al, byte ptr [bp+var_C]
+smart
     and     al, 3
+nosmart
     add     al, byte ptr [bp+var_10]
     mov     [si-6EB1h], al
     mov     ax, si
@@ -9343,7 +9396,9 @@ loc_19AB9:
     push    ax
     call    __aFldiv
     add     ax, [bp+var_6]
+smart
     and     ah, 3
+nosmart
     mov     bx, si
     shl     bx, 1
     mov     [bx-6F7Eh], ax

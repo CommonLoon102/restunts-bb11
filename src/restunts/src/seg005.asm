@@ -1,4 +1,6 @@
 .model large
+nosmart
+    include structs.inc
     include seg000.inc
     include seg001.inc
     include seg002.inc
@@ -1140,7 +1142,8 @@ loc_22620:
     mov     byte_454B8, 1
     call    sub_188A4
     jmp     short loc_22692
-    db 2 dup(90h)
+    db 144
+    db 144
 loc_2263E:
     dec     byte_44A8A
     jnz     short loc_22692
@@ -1336,10 +1339,14 @@ loc_227C5:
 loc_227C8:
     call    sub_30538
     mov     si, ax
+smart
     and     si, 33h
+nosmart
 loc_227D2:
     mov     di, word_42D02
+smart
     and     di, 3Fh
+nosmart
     mov     al, byte_40D6A
     mov     [di-74DEh], al
     mov     byte ptr [di-7486h], 1
@@ -1356,7 +1363,10 @@ loc_227EF:
     add     sp, 2
     or      ax, ax
     jz      short loc_22803
+smart
+    nop
     or      si, 10h
+nosmart
 loc_22803:
     mov     ax, 2Ch ; ','
     push    ax
@@ -1364,7 +1374,10 @@ loc_22803:
     add     sp, 2
     or      ax, ax
     jz      short loc_22817
+smart
+    nop
     or      si, 20h
+nosmart
 loc_22817:
     mov     ax, 5DCh
     imul    word_449D0
@@ -3289,7 +3302,9 @@ sub_23A98 proc far
     push    di
     push    si
     mov     si, word_445D4
+smart
     and     si, 3Fh
+nosmart
     cmp     byte ptr [si-7486h], 0
     jnz     short loc_23AB1
     jmp     loc_23B45
@@ -3300,7 +3315,9 @@ loc_23AB1:
     mov     ax, word_44612
     mov     cl, 0Ah
     shr     ax, cl
+smart
     and     al, 0FCh
+nosmart
     mov     [bp+var_8], al
     cbw
     mov     bx, ax
@@ -3938,7 +3955,9 @@ loc_24082:
     call    sub_2EA4E
     add     sp, 4
     add     ax, 80h ; '€'
+smart
     and     ah, 3
+nosmart
     mov     cl, 8
     shr     ax, cl
     or      ax, ax
@@ -4758,13 +4777,13 @@ loc_24812:
     jmp     short loc_24828
     ; align 2
     db 144
-off_2481A     dw offset loc_24748
-    dw offset loc_24416
-    dw offset loc_2444C
-    dw offset loc_2450A
-    dw offset loc_24630
-    dw offset loc_24776
-    dw offset loc_24760
+off_2481A     dw 11224
+    dw 10406
+    dw 10460
+    dw 10650
+    dw 10944
+    dw 11270
+    dw 11248
 loc_24828:
     call    sub_28EE4
     jmp     loc_24D5E
@@ -5292,13 +5311,13 @@ loc_24D04:
 loc_24D18:
     mov     byte_454B8, 0
     jmp     loc_242E7
-off_24D20     dw offset loc_24830
-    dw offset loc_24A28
-    dw offset loc_24D04
-    dw offset loc_24C5A
-    dw offset loc_24C74
-    dw offset loc_24CA6
-    dw offset loc_24346
+off_24D20     dw 11456
+    dw 11960
+    dw 12692
+    dw 12522
+    dw 12548
+    dw 12598
+    dw 10198
     jmp     loc_242E7
     ; align 2
     db 144

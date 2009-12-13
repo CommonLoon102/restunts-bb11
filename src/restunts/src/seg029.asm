@@ -1,4 +1,6 @@
 .model large
+nosmart
+    include structs.inc
     include seg000.inc
     include seg001.inc
     include seg002.inc
@@ -49,8 +51,8 @@ seg029 segment byte public 'CODE' use16
     public sub_39C84
     ; align 4
     db 144
-    db 144
-    db 144
+    db 0
+    db 0
 sub_39AD4 proc far
     var_2 = word ptr -2
      s = byte ptr 0
@@ -90,7 +92,8 @@ loc_39B09:
     mov     sp, bp
     pop     bp
     retf
-    db 2 dup(90h)
+    db 144
+    db 144
 loc_39B16:
     or      di, di
     jnz     short loc_39B44
