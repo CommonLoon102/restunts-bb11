@@ -67,7 +67,8 @@ seg028 segment byte public 'CODE' use16
     public sub_3968A
     public sub_39700
     public sub_39966
-    dd 3B77B81Eh
+    dw 47134
+    dw seg dseg
     mov     ds, ax
     mov     ax, word ptr dword_4060A
     or      ax, word ptr dword_4060A+2

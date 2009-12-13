@@ -6,3 +6,4 @@
 @rem /f omit far/near optimization
 c:\tasm\bin\tlink /m /n /A=0 /f @linkfile
 @rem s:\tools\dm\bin\link @linkfile
+@copy restunts.exe s:\stunts\ /y

@@ -1554,9 +1554,9 @@ loc_2F3FD:
     mov     ax, [bp+arg_6]
     mov     [bp+arg_4], ax
     mov     ax, offset loc_33344
-    mov     word ptr off_40322, ax
+    mov     word_40322, ax
     mov     ax, offset sub_2FDDE
-    mov     word ptr off_40326, ax
+    mov     word_40326, ax
     jmp     loc_3180A
 sub_2F3DA endp
 sub_2F424 proc far
@@ -7269,9 +7269,9 @@ sub_317C1 proc far
     mov     [bp+var_A], 0
 loc_317CE:
     mov     ax, 5C9Ch
-    mov     word ptr off_40322, ax
+    mov     word_40322, ax
     mov     ax, 13BEh
-    mov     word ptr off_40326, ax
+    mov     word_40326, ax
     mov     si, [bp+arg_6]
     jmp     short loc_3180A
 sub_317C1 endp
@@ -7318,9 +7318,9 @@ sub_317EE proc far
     mov     [bp+var_A], 0
 loc_317FB:
     mov     ax, 5C9Ch
-    mov     word ptr off_40322, ax
+    mov     word_40322, ax
     mov     ax, 13BEh
-    mov     word ptr off_40326, ax
+    mov     word_40326, ax
     lea     si, [bp+arg_4]
 loc_3180A:
     mov     [bp+var_6], si
@@ -7357,7 +7357,7 @@ loc_3180A:
     push    word ptr [si]
     push    word ptr [si+2]
     push    word ptr [si]
-    call    off_40326
+    call    dword ptr word_40326
     add     sp, 0Ah
     pop     di
     pop     si
@@ -7420,7 +7420,7 @@ loc_318DF:
     push    dx
     push    cx
     push    bx
-    call    off_40326
+    call    dword ptr word_40326
     add     sp, 0Ah
 loc_318F0:
     pop     di
@@ -7522,7 +7522,7 @@ loc_319A6:
     lea     ax, [bp+var_798]
     add     ax, bx
     push    ax
-    call    off_40322
+    call    dword ptr word_40322
     add     sp, 0Ah
 loc_319C7:
     pop     di
@@ -8237,9 +8237,9 @@ locret_31F38:
     push    di
     mov     byte ptr [bp-0Ah], 1
     mov     ax, 5C9Ch
-    mov     word ptr off_40322, ax
+    mov     word_40322, ax
     mov     ax, 49A0h
-    mov     word ptr off_40326, ax
+    mov     word_40326, ax
     jmp     short loc_31F6E
     db 144
     push    bp
@@ -8249,9 +8249,9 @@ locret_31F38:
     push    di
     mov     byte ptr [bp-0Ah], 0
     mov     ax, 5C9Ch
-    mov     word ptr off_40322, ax
+    mov     word_40322, ax
     mov     ax, 49A0h
-    mov     word ptr off_40326, ax
+    mov     word_40326, ax
 loc_31F6E:
     lea     si, [bp+0Ah]
     mov     [bp-6], si
@@ -8295,7 +8295,7 @@ loc_31FC8:
     mov     ax, [bp+6]
     mov     [bp+di+6], ax
     push    di
-    call    off_40326
+    call    dword ptr word_40326
     add     sp, 2
     pop     di
     pop     si
@@ -8399,7 +8399,7 @@ loc_320A9:
     mov     si, [bp-6]
     mov     di, [si]
     push    di
-    call    off_40326
+    call    dword ptr word_40326
     add     sp, 2
 loc_320B6:
     pop     di
@@ -8474,7 +8474,7 @@ loc_32132:
     lea     ax, [bp-798h]
     add     ax, bx
     push    ax
-    call    off_40322
+    call    dword ptr word_40322
     add     sp, 0Ah
 loc_32153:
     pop     di
@@ -9520,9 +9520,9 @@ loc_328A8:
     mov     ax, [bp+arg_4]
     mov     [bp+arg_2], ax
     mov     ax, 6176h
-    mov     word ptr off_40322, ax
+    mov     word_40322, ax
     mov     ax, 13BEh
-    mov     word ptr off_40326, ax
+    mov     word_40326, ax
     jmp     loc_3180A
     push    bp
     mov     bp, sp

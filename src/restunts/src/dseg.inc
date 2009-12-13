@@ -488,8 +488,8 @@ dseg segment byte public 'DATA' use16
     extrn word_4031C:word
     extrn word_4031E:word
     extrn word_40320:word
-    extrn off_40322:dword
-    extrn off_40326:dword
+    extrn word_40322:word
+    extrn word_40326:word
     extrn byte_4032A:byte
     extrn byte_4032B:byte
     extrn byte_4032C:byte
