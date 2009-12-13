@@ -213,6 +213,7 @@ static PrintPublics(f, segstart, segend) {
 static PrintAsmHeader(f, codestart, codeend) {
 	auto segea, nextseg, segtype;
 	fprintf(f, ".model large\n");
+	fprintf(f, "nosmart\n");
 	
 	segtype = GetSegmentAttr(codestart, SEGATTR_TYPE);
 	if (segtype == SEG_BSS)
@@ -263,12 +264,25 @@ static PrintFunction(f, funcstart, funcend) {
 	fprintf(f, "%s endp\n", funcname);
 }
 
+static IsPushCs(ea) {
+	auto mnem, op;
+	mnem = GetMnem(ea);
+	
+	if (mnem != "push") return 0;
+	
+	op = GetOpnd(ea, 0);
+	
+	return op == "cs";
+}
+
 static PrintBody(f, funcstart, funcend, skipfirstlabel) {
 	auto funcbody, bodyflags, locname;
 	auto i;
 	auto fchunkstart, fchunklast;
+	auto lastpushcs;
 	
 	fchunklast = -1;
+	lastpushcs = 0;
 	for (funcbody = funcstart; funcbody != BADADDR; funcbody = NextNotTail2(funcbody, funcend)) {
 		bodyflags = GetFlags(funcbody);
 		
@@ -317,21 +331,107 @@ static PrintBody(f, funcstart, funcend, skipfirstlabel) {
 				Message("TODO: unhandled data size\n");
 			}
 		} else {
-			PrintFixedAsm(f, funcbody);
+			 PrintFixedAsm(f, funcbody, lastpushcs);
 			//fprintf(f, "    %s\n", GetDisasm(funcbody));
+			
+			lastpushcs = IsPushCs(funcbody);
+			
+			//if (lastpushcs)
+			//Message("%s\n", GetDisasm(funcbody));
 		}
 	}
 }
 
-static PrintFixedAsm(f, ea) {
+static PrintFixedAsm(f, ea, lastpushcs) {
+
+	auto tempsmart, nooutput;
+
 	// issues:
 	// or si, <byte>, tasm compiles to 3 bytes, must be 4 bytes
 	// call <far method in same segment>, tasm compiles to "push cs, call near <method>"
 	// lea bx, unk_999, tasm compiles to mov bx, unk_999
-	auto mnem, op1, op2;
+
+	// with "nosmart", these are fixed, but other problems appear
+
+	auto mnem, op1, op2, optype1, optype2;
+	auto funcflags, funcofs, funclocal, funcstart;
 	
+	tempsmart = 0;
+	nooutput = 0;
+
 	mnem = GetMnem(ea);
+	op1 = GetOpnd(ea, 0);
+	optype1 = GetOpType(ea, 0);
 	
+	if (mnem == "and" /*&& optype1 == o_reg*/) {
+		//if (op1 == "si" || op1 == "di" || op1 == "bx" || op1 == "cx" || op1 == "dx" || op1 == "sp") {
+			op2 = GetOpType(ea, 1);
+			if (op2 == o_imm) {
+				//op2 = GetOperandValue(ea, 1);
+				//if (op2 >= 0 && op2 < 256) {
+					fprintf(f, "smart\n");
+					tempsmart = 1;
+				//}
+			}
+		//}
+	}
+	
+	if (mnem == "or" && optype1 == o_reg && op1 == "si") {
+		op2 = GetOpType(ea, 1);
+		if (op2 == o_imm) {
+			op2 = GetOperandValue(ea, 1);
+			if (op2 >= 0 && op2 < 256) {
+				fprintf(f, "smart\n");
+				fprintf(f, "    nop\n");
+				tempsmart = 1;
+			}
+		}
+	}
+	
+	if (mnem == "or" && optype1 == o_reg && op1 == "di") {
+		op2 = GetOpType(ea, 1);
+		if (op2 == o_imm) {
+			op2 = GetOperandValue(ea, 1);
+			if (op2 >= 0 && op2 < 256) {
+				fprintf(f, "smart\n");
+				tempsmart = 1;
+			}
+		}
+	}
+
+	if ((mnem == "or" || mnem == "and") && optype1 == o_displ) {
+		//Message("OR PHRASE: %s\n", GetDisasm(ea));
+		op2 = GetOpType(ea, 1);
+		if (op2 == o_imm) {
+			op2 = GetOperandValue(ea, 1);
+			if (op2 >= 0 && op2 < 256) {
+				fprintf(f, "smart\n");
+				tempsmart = 1;
+			}
+		}
+	}
+	
+	if (mnem == "jmp" && optype1 == o_far) {
+		funcofs = Rfirst0(ea);
+		funcstart =  GetFchunkAttr(funcofs, FUNCATTR_START);
+		if (funcstart != funcofs) {
+			Message("Translated %s into jmp far ptr %s\n", GetDisasm(ea), ExtractCallTarget(ea));
+			fprintf(f, "    jmp far ptr %s\n", ExtractCallTarget(ea));
+			nooutput = 1;
+		}
+	}
+	
+	if (nooutput == 0)
+		fprintf(f, "    %s\n", GetDisasm(ea));
+
+	if (tempsmart) {
+		fprintf(f, "nosmart\n");
+	}
+
+/*
+
+abandoned attempts not using nosmart/smart:
+
 	if (mnem == "or") {
 		fprintf(f, "    %s\n", GetDisasm(ea));
 		op1 = GetOpnd(ea, 0);
@@ -347,11 +447,147 @@ static PrintFixedAsm(f, ea) {
 		}
 	} else 
 	if (mnem == "call") {
+		fprintf(f, "    %s\n", GetDisasm(ea));
 		op1 = GetOpnd(ea, 0);
 		op2 = GetOpType(ea, 0);
+		if (op2 == o_near || op2 == o_far) {
+			funcofs = Rfirst0(ea);
+			
+			//if (funcofs == GetFchunkAttr(funcofs, FUNCATTR_START)) {
+			funclocal = (SegStart(ea) == SegStart(funcofs)) ? 1 : 0;
+			
+			if (funclocal == 1 && IsFixFunc(ExtractCallTarget(ea))) {
+				Message("call to '%s'\n", ExtractCallTarget(ea));
+				fprintf(f, "    %s\n", "nop");
+			} else {
+				if (SegName(ea) == "seg010") Message("Call to: %s\n", ExtractCallTarget(ea));
+				if (SegName(ea) == "seg012") {
+					Message("Call to: %s\n", ExtractCallTarget(ea));
+					
+				}
+			}
+		}
+	} else 
+	if (mnem == "lea") {
+		fprintf(f, "    %s\n", GetDisasm(ea));
+		op1 = GetOpnd(ea, 0);
+		if (op1 == "bx") {
+			op2 = GetOpType(ea, 1);
+			if (op2 == o_mem) {
+				Message("lea bx = %s %i\n", GetDisasm(ea), op2);
+				fprintf(f, "    %s\n", "nop");
+			}
+		}
+	} else 
+	if (mnem == "jmp") {
+		fprintf(f, "    %s\n", GetDisasm(ea));
+		op1 = GetOpnd(ea, 0);
+		if (op1 == "__aFldiv") {
+			fprintf(f, "    %s\n", "nop");
+			fprintf(f, "    %s\n", "nop");
+			fprintf(f, "    %s\n", "nop");
+		} else
+		if (op1 == "unknown_libname_3" ||
+		    op1 == "__aFlmul" ||
+		    op1 == "__aFFblmul" ||
+		    op1 == "unknown_libname_4" ||
+		    op1 == "__aFlshr" ||
+		    op1 == "__aFuldiv" ||
+		    op1 == "unknown_libname_5") 
+		{
+			fprintf(f, "    %s\n", "nop");
+			fprintf(f, "    %s\n", "nop");
+		}
 	} else {
 		fprintf(f, "    %s\n", GetDisasm(ea));
 	}
+	
+*/
+}
+
+static LastIndexOf(str, c) {
+	auto len, testch;
+	len = strlen(str);
+	while (len > 0) {
+		testch = substr(str, len - 1, len);
+		if (testch == c) return len - 1;
+		len--;
+	}
+	return -1;
+}
+
+static FirstIndexOf(str, c) {
+	auto i, len, testch;
+	len = strlen(str);
+	for (i = 0; i < len; i++) {
+		testch = substr(str, i, i + 1);
+		if (testch == c) return i;
+	}
+	return -1;
+}
+
+static ExtractCallTarget(ea) {
+	auto str, ls;
+	str = GetDisasm(ea);
+	ls = FirstIndexOf(str, ";");
+	if (ls != -1) {
+		str = substr(str, 0, ls);
+		while (strlen(str) > 0 && LastIndexOf(str, " ") == strlen(str) -1) {
+			str = substr(str, 0, strlen(str) - 1);
+		}
+	}
+	ls = LastIndexOf(str, " ");
+	return substr(str, ls + 1, -1);
+}
+
+static IsFixFunc(labelname) {
+	if (
+		labelname == "__FF_MSGBANNER" ||
+		labelname == "__NMSG_WRITE" ||
+		labelname == "loc_2CD27+1" ||
+		labelname == "__setenvp" ||
+		labelname == "__setargv" ||
+		labelname == "sub_2CDEC" ||
+		labelname == "__nullcheck" ||
+		labelname == "__chkstk" ||
+		labelname == "__NMSG_TEXT" ||
+		labelname == "__maperror" ||
+		labelname == "_fflush" ||
+		labelname == "__stbuf" ||
+		labelname == "__output" ||
+		labelname == "__ftbuf" ||
+		labelname == "__flsbuf" ||
+		labelname == "_isatty" ||
+		labelname == "_write" ||
+		labelname == "_lseek" ||
+		labelname == "unknown_libname_2" ||
+		labelname == "_ultoa" ||
+		labelname == "_strlen" ||
+		labelname == "_stackavail" ||
+		labelname == "_brkctl" ||
+		labelname == "_raise" ||
+		labelname == "sub_2CE03" ||
+		labelname == "__sigentry" ||
+		labelname == "__aFlmul" ||
+		labelname == "__sigentry" ||
+		labelname == "__aFldiv" ||
+		labelname == "__aFlshr" ||
+		labelname == "__aFuldiv"/* ||
+		
+		// seg012:
+		labelname == "sub_35B14" ||
+		labelname == "sub_30A5D" || 
+		labelname == "sub_2FE59" ||
+		labelname == "sub_2EAD4" ||
+		labelname == "sub_2FE1C" ||
+		labelname == "sub_2EB56" || 
+		labelname == "loc_3336C" || 
+		labelname == "sub_2EA2A"*/
+		
+		
+	) 
+		return 1;
+	return 0;
 }
 
 static PrintSegDecl(f, ea) {
@@ -442,6 +678,7 @@ static main() {
 
 		startseg = 0;
 
+		//if (SegName(segea) != "seg012") continue;
 		//if (SegName(segea) != "seg037") continue;
 		//if (SegName(segea) != "seg002") continue;
 		//if (SegName(segea) != "dseg") continue;
