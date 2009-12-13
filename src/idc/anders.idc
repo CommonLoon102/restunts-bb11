@@ -323,6 +323,8 @@ static PrintBody(f, funcstart, funcend, skipfirstlabel) {
 				for (i = 0; i < ItemSize(funcbody) / 4; i++) {
 					if (hasValue(bodyflags))
 						fprintf(f, "    dd %i\n", Dword(funcbody + i * 4)); else
+					if (SegName(funcbody) == "dseg")
+						fprintf(f, "    dd 0\n"); else
 						fprintf(f, "    dd ?\n");
 				}
 			} else
@@ -330,6 +332,8 @@ static PrintBody(f, funcstart, funcend, skipfirstlabel) {
 				for (i = 0; i < ItemSize(funcbody) / 2; i++) {
 					if (hasValue(bodyflags))
 						fprintf(f, "    dw %i\n", Word(funcbody + i * 2)); else
+					if (SegName(funcbody) == "dseg")
+						fprintf(f, "    dw 0\n"); else
 						fprintf(f, "    dw ?\n");
 				}
 			} else
@@ -337,6 +341,8 @@ static PrintBody(f, funcstart, funcend, skipfirstlabel) {
 				for (i = 0; i < ItemSize(funcbody); i++) {
 					if (hasValue(bodyflags))
 						fprintf(f, "    db %i\n", Byte(funcbody + i)); else
+					if (SegName(funcbody) == "dseg")
+						fprintf(f, "    db 0\n"); else
 						fprintf(f, "    db ?\n");
 				}
 			} else {
