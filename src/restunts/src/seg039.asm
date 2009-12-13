@@ -42,7 +42,7 @@ nosmart
     include seg038.inc
     include dseg.inc
     include seg041.inc
-seg039 segment byte public 'DATA' use16
+seg039 segment byte public 'CODE' use16
     assume cs:seg039
     assume es:nothing, ss:nothing, ds:dseg
     public word_3B1F0
