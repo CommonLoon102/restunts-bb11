@@ -1,6 +1,7 @@
 .model large
 nosmart
     include structs.inc
+    include custom.inc
     include seg000.inc
     include seg001.inc
     include seg002.inc
@@ -42,7 +43,7 @@ nosmart
     include seg039.inc
     include dseg.inc
     include seg041.inc
-seg024 segment byte public 'CODE' use16
+seg024 segment byte public 'STUNTSC' use16
     assume cs:seg024
     assume es:nothing, ss:nothing, ds:dseg
     public sub_36F2A
@@ -62,11 +63,11 @@ sub_36F2A proc far
     mov     bp, sp
     sub     sp, 4
     push    [bp+arg_2]
-    call    sub_3272C
+    call    cos_fast
     add     sp, 2
     mov     [bp+var_2], ax
     push    [bp+arg_2]
-    call    sub_326DE
+    call    sin_fast
     mov     [bp+var_4], ax
     mov     bx, [bp+arg_0]
     mov     word ptr [bx], 4000h
@@ -100,11 +101,11 @@ sub_36F80 proc far
     mov     bp, sp
     sub     sp, 4
     push    [bp+arg_2]
-    call    sub_3272C
+    call    cos_fast
     add     sp, 2
     mov     [bp+var_2], ax
     push    [bp+arg_2]
-    call    sub_326DE
+    call    sin_fast
     mov     [bp+var_4], ax
     mov     bx, [bp+arg_0]
     mov     ax, [bp+var_2]
@@ -137,11 +138,11 @@ sub_36FD8 proc far
     mov     bp, sp
     sub     sp, 4
     push    [bp+arg_2]
-    call    sub_3272C
+    call    cos_fast
     add     sp, 2
     mov     [bp+var_2], ax
     push    [bp+arg_2]
-    call    sub_326DE
+    call    sin_fast
     mov     [bp+var_4], ax
     mov     bx, [bp+arg_0]
     mov     ax, [bp+var_2]

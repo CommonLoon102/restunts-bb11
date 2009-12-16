@@ -1,4 +1,4 @@
-seg012 segment byte public 'CODE' use16
+seg012 segment byte public 'STUNTSC' use16
     extrn sub_2EA2A:proc
     extrn sub_2EA4E:proc
     extrn off_2EA9B:word
@@ -174,10 +174,10 @@ seg012 segment byte public 'CODE' use16
     extrn sub_3262E:proc
     extrn sub_3264A:proc
     extrn sub_3265B:proc
-    extrn sub_326DE:proc
+    extrn sin_fast:proc
     extrn loc_326E4
     extrn off_326F2:word
-    extrn sub_3272C:proc
+    extrn cos_fast:proc
     extrn sub_3275C:proc
     extrn sub_32778:proc
     extrn sub_3279A:proc

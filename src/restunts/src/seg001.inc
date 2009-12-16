@@ -1,4 +1,4 @@
-seg001 segment byte public 'CODE' use16
+seg001 segment byte public 'STUNTSC' use16
     extrn sub_14712:proc
     extrn sub_14D6C:proc
     extrn sub_14DA2:proc

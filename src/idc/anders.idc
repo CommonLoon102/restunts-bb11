@@ -55,6 +55,13 @@ static NextNotTail2(ea, maxea) {
 	return b;
 }
 
+static GetIdbDirectory() {
+	auto path, ls;
+	path = GetIdbPath();
+	ls = LastIndexOf(path, "\\");
+	return substr(path, 0, ls);
+}
+
 static PrintFrame(f, funcstart) {
 
 	auto funcframe, framesize, framelsize, framersize, frameasize;
@@ -163,7 +170,7 @@ static PrintExterns(f, segstart, segend, exceptstart, exceptend) {
 			
 				labelname = NameEx(BADADDR, funcea);
 				if (isFunction(flags)) {
-					fprintf(f, "    extrn %s:proc\n", labelname);
+					fprintf(f, "    extrn %s:proc\n", PortFuncName(labelname));
 				} else {
 					// only a fraction of the locs need be extrnalized, so use a hardcoded list of allowed labels
 					// allowing all labels gives out of memory error
@@ -197,7 +204,7 @@ static PrintPublics(f, segstart, segend) {
 			if (isCode(flags)) {
 			
 				if (isFunction(flags) || IsPublicLabel(labelname)) {
-					fprintf(f, "    public %s\n", labelname);
+					fprintf(f, "    public %s\n", PortFuncName(labelname));
 				} else {
 					//fprintf(f, "LABEL: %s\n", NameEx(BADADDR, funcea));
 				}
@@ -220,6 +227,7 @@ static PrintAsmHeader(f, codestart, codeend) {
 		fprintf(f, ".stack %i\n", SegEnd(codestart) - SegStart(codestart));
 	
 	fprintf(f, "    include structs.inc\n");
+	fprintf(f, "    include custom.inc\n");
 	
 	for (segea = FirstSeg(); segea != BADADDR; segea = nextseg) {
 		nextseg = NextSeg(segea);
@@ -257,11 +265,11 @@ static PrintFunction(f, funcstart, funcend) {
 		funcspec = " far"; else
 		funcspec = " near";
 	
-	fprintf(f, "%s proc%s\n", funcname, funcspec);
+	fprintf(f, "%s proc%s\n", PortFuncName(funcname), funcspec);
 	PrintFrame(f, funcstart);
 	fprintf(f, "\n");
 	PrintBody(f, funcstart, funcend, 1);
-	fprintf(f, "%s endp\n", funcname);
+	fprintf(f, "%s endp\n", PortFuncName(funcname));
 }
 
 static IsPushCs(ea) {
@@ -558,6 +566,21 @@ static ExtractCallTarget(ea) {
 	return substr(str, ls + 1, -1);
 }
 
+// add functions in PortFuncName as they are ported to c
+// PortFuncName returns an obscured version of the function name
+// to prevent name collisions.
+// functions must also be added as externals in custom.inc
+static PortFuncName(labelname) {
+	return labelname;
+/*
+	if (
+		labelname == "_strcpy" ||
+		labelname == "_strcmp"
+	)
+		return labelname + "2";
+	return labelname;*/
+}
+
 static IsFixFunc(labelname) {
 	if (
 		labelname == "__FF_MSGBANNER" ||
@@ -612,11 +635,11 @@ static PrintSegDecl(f, ea) {
 	auto segtype;
 	segtype = GetSegmentAttr(ea, SEGATTR_TYPE);
 	if (segtype == SEG_CODE)
-		fprintf(f, "%s segment byte public 'CODE' use16\n", SegName(ea)); 
+		fprintf(f, "%s segment byte public 'STUNTSC' use16\n", SegName(ea)); 
 	else if (segtype == SEG_BSS)
 		fprintf(f, "%s segment byte public 'STACK' use16\n", SegName(ea)); 
 	else 
-		fprintf(f, "%s segment byte public 'DATA' use16\n", SegName(ea)); 
+		fprintf(f, "%s segment byte public 'STUNTSD' use16\n", SegName(ea)); 
 
 }
 
@@ -625,7 +648,7 @@ static PrintSegInc(segstart, segend) {
 	auto segname;
 
 	segname = SegName(segstart);
-	filename = form("src\\%s.inc", segname);
+	filename = form("%s\\src\\%s.inc", GetIdbDirectory(), segname);
 	f = fopen(filename, "w");
 
 	PrintSegDecl(f, segstart);
@@ -678,7 +701,7 @@ static main() {
 	}
 
 	Message("Generating structs...\n");
-	f = fopen("src\\structs.inc", "w");
+	f = fopen(GetIdbDirectory() + "\\src\\structs.inc", "w");
 
 	for (i = GetFirstStrucIdx(); i != -1; i = GetNextStrucIdx(i)) {
 		PrintStruct(f, GetStrucId(i));
@@ -703,7 +726,7 @@ static main() {
 		
 		// TODO: should use names in alphabetical order to ensure correct linking order
 		// or generate a filelist for tlink @-syntax
-		filename = form("src\\%s.asm", SegName(segea));
+		filename = form("%s\\src\\%s.asm", GetIdbDirectory(), SegName(segea));
 		
 		Message("Segment %i, %s: %s\n", segea, SegName(segea), filename);
 	

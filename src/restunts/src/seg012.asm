@@ -1,6 +1,7 @@
 .model large
 nosmart
     include structs.inc
+    include custom.inc
     include seg000.inc
     include seg001.inc
     include seg002.inc
@@ -42,7 +43,7 @@ nosmart
     include seg039.inc
     include dseg.inc
     include seg041.inc
-seg012 segment byte public 'CODE' use16
+seg012 segment byte public 'STUNTSC' use16
     assume cs:seg012
     assume es:nothing, ss:nothing, ds:dseg
     public sub_2EA2A
@@ -220,10 +221,10 @@ seg012 segment byte public 'CODE' use16
     public sub_3262E
     public sub_3264A
     public sub_3265B
-    public sub_326DE
+    public sin_fast
     public loc_326E4
     public off_326F2
-    public sub_3272C
+    public cos_fast
     public sub_3275C
     public sub_32778
     public sub_3279A
@@ -4262,7 +4263,7 @@ loc_300D7:
     cmp     ax, 80h ; '€'
     jg      short loc_300FE
     push    ax
-    call    sub_3272C
+    call    cos_fast
     add     sp, 2
     mov     bx, ax
     mov     dx, [bp+arg_2]
@@ -4280,7 +4281,7 @@ loc_300F0:
     retf
 loc_300FE:
     push    ax
-    call    sub_326DE
+    call    sin_fast
     add     sp, 2
     mov     bx, ax
     mov     dx, [bp+arg_0]
@@ -8728,13 +8729,13 @@ loc_32334:
     add     ax, word_403B4
     mov     word_403B8, ax
     push    word_403BE
-    call    sub_3272C
+    call    cos_fast
     add     sp, 2
     mul     word_403AE
     mov     si, ax
     mov     di, dx
     push    word_403BE
-    call    sub_326DE
+    call    sin_fast
     add     sp, 2
     mov     cx, ax
     mov     dx, di
@@ -8745,13 +8746,13 @@ loc_32334:
     or      bx, bx
     jz      short loc_323B4
     push    word_403C0
-    call    sub_3272C
+    call    cos_fast
     add     sp, 2
     mul     word_403B0
     mov     si, ax
     mov     di, dx
     push    word_403C0
-    call    sub_326DE
+    call    sin_fast
     add     sp, 2
     mov     cx, ax
     mov     dx, di
@@ -9218,7 +9219,7 @@ nosmart
     pop     bp
     retf
 sub_3265B endp
-sub_326DE proc far
+sin_fast proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -9241,20 +9242,20 @@ off_326F2     dw offset loc_326FA
 loc_326FA:
     mov     bx, ax
     shl     bx, 1
-    mov     ax, [bx+4C84h]
+    mov     ax, sinetable[bx]
     pop     bp
     retf
 loc_32704:
     mov     bx, 100h
     sub     bx, ax
     shl     bx, 1
-    mov     ax, [bx+4C84h]
+    mov     ax, sinetable[bx]
     pop     bp
     retf
 loc_32711:
     mov     bx, ax
     shl     bx, 1
-    mov     ax, [bx+4C84h]
+    mov     ax, sinetable[bx]
     neg     ax
     pop     bp
     retf
@@ -9262,12 +9263,12 @@ loc_3271D:
     mov     bx, 100h
     sub     bx, ax
     shl     bx, 1
-    mov     ax, [bx+4C84h]
+    mov     ax, sinetable[bx]
     neg     ax
     pop     bp
     retf
-sub_326DE endp
-sub_3272C proc far
+sin_fast endp
+cos_fast proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -9298,7 +9299,7 @@ sub_3272C proc far
     mul     word ptr [bp+6]
     pop     bp
     retf
-sub_3272C endp
+cos_fast endp
 sub_3275C proc far
      s = byte ptr 0
      r = byte ptr 2

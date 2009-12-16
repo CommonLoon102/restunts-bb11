@@ -1,6 +1,7 @@
 .model large
 nosmart
     include structs.inc
+    include custom.inc
     include seg000.inc
     include seg001.inc
     include seg002.inc
@@ -42,7 +43,7 @@ nosmart
     include seg039.inc
     include dseg.inc
     include seg041.inc
-seg004 segment byte public 'CODE' use16
+seg004 segment byte public 'STUNTSC' use16
     assume cs:seg004
     assume es:nothing, ss:nothing, ds:dseg
     public sub_1E1A0
@@ -213,7 +214,7 @@ loc_1E2AF:
     mov     [bp+var_28], ax
     push    ax
     push    si
-    call    sub_326DE
+    call    sin_fast
     add     sp, 2
     push    ax
     call    sub_30044
@@ -221,7 +222,7 @@ loc_1E2AF:
     push    [bp+var_2C]
     push    si
     mov     di, ax
-    call    sub_3272C
+    call    cos_fast
     add     sp, 2
     push    ax
     call    sub_30044
@@ -1099,7 +1100,7 @@ loc_1EAFD:
     sub     ax, [bx+2E6Eh]
     push    ax
     push    si
-    call    sub_326DE
+    call    sin_fast
     add     sp, 2
     push    ax
     call    sub_30044
@@ -1107,7 +1108,7 @@ loc_1EAFD:
     push    [bp+var_2C]
     push    si
     mov     di, ax
-    call    sub_3272C
+    call    cos_fast
     add     sp, 2
     push    ax
     call    sub_30044
@@ -1596,7 +1597,7 @@ loc_1EFD2:
 loc_1EFE0:
     push    [bp+var_28]
     push    si
-    call    sub_326DE
+    call    sin_fast
     add     sp, 2
     push    ax
     call    sub_30044
@@ -1606,7 +1607,7 @@ loc_1EFE0:
     push    cx
     push    si
     mov     di, ax
-    call    sub_3272C
+    call    cos_fast
     add     sp, 2
     push    ax
     call    sub_30044
@@ -2547,7 +2548,7 @@ loc_1F8FC:
     push    [bp+var_28]
     mov     ax, 0FF80h
     push    ax
-    call    sub_326DE
+    call    sin_fast
     add     sp, 2
     push    ax
     call    sub_30044
@@ -2556,7 +2557,7 @@ loc_1F8FC:
     mov     cx, 0FF80h
     push    cx
     mov     di, ax
-    call    sub_3272C
+    call    cos_fast
     add     sp, 2
     push    ax
     call    sub_30044
@@ -2573,7 +2574,7 @@ loc_1F940:
     push    [bp+var_28]
     mov     ax, 0FF80h
     push    ax
-    call    sub_326DE
+    call    sin_fast
     add     sp, 2
     push    ax
     call    sub_30044
@@ -2582,7 +2583,7 @@ loc_1F940:
     mov     cx, 0FF80h
     push    cx
     mov     di, ax
-    call    sub_3272C
+    call    cos_fast
     add     sp, 2
     push    ax
     call    sub_30044
@@ -3851,13 +3852,13 @@ sub_204AE proc far
 loc_204C4:
     sar     ax, 1
     push    ax
-    call    sub_326DE
+    call    sin_fast
     add     sp, 2
     mov     [bp+var_C], ax
     mov     ax, [bp+arg_4]
     sar     ax, 1
     push    ax
-    call    sub_3272C
+    call    cos_fast
     add     sp, 2
     mov     [bp+var_2], ax
     sub     si, si

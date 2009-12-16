@@ -1,4 +1,4 @@
-dseg segment byte public 'DATA' use16
+dseg segment byte public 'STUNTSD' use16
     extrn byte_3B770:byte
     extrn word_3B772:word
     extrn word_3B774:word
@@ -511,6 +511,7 @@ dseg segment byte public 'DATA' use16
     extrn aSFileError_0:byte
     extrn byte_403F2:byte
     extrn byte_403F3:byte
+    extrn sinetable:word
     extrn word_405F6:word
     extrn word_405F8:word
     extrn word_405FA:word

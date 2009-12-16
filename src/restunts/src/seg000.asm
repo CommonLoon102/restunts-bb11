@@ -1,6 +1,7 @@
 .model large
 nosmart
     include structs.inc
+    include custom.inc
     include seg001.inc
     include seg002.inc
     include seg003.inc
@@ -42,7 +43,7 @@ nosmart
     include seg039.inc
     include dseg.inc
     include seg041.inc
-seg000 segment byte public 'CODE' use16
+seg000 segment byte public 'STUNTSC' use16
     assume cs:seg000
     assume es:nothing, ss:nothing, ds:dseg
     public _main

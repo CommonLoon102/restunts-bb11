@@ -1,6 +1,7 @@
 .model large
 nosmart
     include structs.inc
+    include custom.inc
     include seg000.inc
     include seg002.inc
     include seg003.inc
@@ -42,7 +43,7 @@ nosmart
     include seg039.inc
     include dseg.inc
     include seg041.inc
-seg001 segment byte public 'CODE' use16
+seg001 segment byte public 'STUNTSC' use16
     assume cs:seg001
     assume es:nothing, ss:nothing, ds:dseg
     public sub_14712
@@ -762,7 +763,7 @@ loc_14CF9:
     sub     ax, dx
     push    ax
     push    word_45516
-    call    sub_3272C
+    call    cos_fast
     add     sp, 2
     push    ax
     call    sub_30044
@@ -785,7 +786,7 @@ loc_14D33:
     sub     ax, dx
     push    ax
     push    word_45516
-    call    sub_326DE
+    call    sin_fast
     add     sp, 2
     push    ax
     call    sub_30044
@@ -3491,7 +3492,7 @@ loc_1672C:
     mov     ax, word_45516
     add     ah, 1
     push    ax
-    call    sub_326DE
+    call    sin_fast
     add     sp, 2
     push    ax
     call    sub_30044
@@ -3512,7 +3513,7 @@ loc_1672C:
     mov     ax, word_45516
     add     ah, 1
     push    ax
-    call    sub_3272C
+    call    cos_fast
     add     sp, 2
     push    ax
     call    sub_30044
@@ -3545,7 +3546,7 @@ loc_1672C:
     mov     ax, word_45516
     add     ah, 3
     push    ax
-    call    sub_326DE
+    call    sin_fast
     add     sp, 2
     push    ax
     call    sub_30044
@@ -3562,7 +3563,7 @@ loc_1672C:
     mov     ax, word_45516
     add     ah, 3
     push    ax
-    call    sub_3272C
+    call    cos_fast
     add     sp, 2
     push    ax
     call    sub_30044
@@ -3973,7 +3974,7 @@ loc_16BC5:
     mov     ax, word_45516
     add     ah, 3
     push    ax
-    call    sub_326DE
+    call    sin_fast
     add     sp, 2
     push    ax
     call    sub_30044
@@ -3984,7 +3985,7 @@ loc_16BC5:
     add     ch, 2
     push    cx
     mov     [bp+var_A], ax
-    call    sub_326DE
+    call    sin_fast
     add     sp, 2
     push    ax
     call    sub_30044
@@ -4010,7 +4011,7 @@ loc_16BC5:
     mov     ax, word_45516
     add     ah, 3
     push    ax
-    call    sub_3272C
+    call    cos_fast
     add     sp, 2
     push    ax
     call    sub_30044
@@ -4021,7 +4022,7 @@ loc_16BC5:
     add     ch, 2
     push    cx
     mov     [bp+var_A], ax
-    call    sub_3272C
+    call    cos_fast
     add     sp, 2
     push    ax
     call    sub_30044
@@ -4080,7 +4081,7 @@ loc_16BC5:
     mov     ax, word_45516
     add     ah, 2
     push    ax
-    call    sub_326DE
+    call    sin_fast
     add     sp, 2
     push    ax
     call    sub_30044
@@ -4091,7 +4092,7 @@ loc_16BC5:
     add     ch, 1
     push    cx
     mov     [bp+var_A], ax
-    call    sub_326DE
+    call    sin_fast
     add     sp, 2
     push    ax
     call    sub_30044
@@ -4103,7 +4104,7 @@ loc_16BC5:
     mov     ax, word_45516
     add     ah, 2
     push    ax
-    call    sub_3272C
+    call    cos_fast
     add     sp, 2
     push    ax
     call    sub_30044
@@ -4114,7 +4115,7 @@ loc_16BC5:
     add     ch, 1
     push    cx
     mov     [bp+var_A], ax
-    call    sub_3272C
+    call    cos_fast
     add     sp, 2
     push    ax
     call    sub_30044
@@ -4212,7 +4213,7 @@ loc_16E0A:
     mov     ax, word_45516
     add     ah, 2
     push    ax
-    call    sub_326DE
+    call    sin_fast
     add     sp, 2
     push    ax
     call    sub_30044
@@ -4223,7 +4224,7 @@ loc_16E0A:
     add     ch, 3
     push    cx
     mov     [bp+var_A], ax
-    call    sub_326DE
+    call    sin_fast
     add     sp, 2
     push    ax
     call    sub_30044
@@ -4235,7 +4236,7 @@ loc_16E0A:
     mov     ax, word_45516
     add     ah, 2
     push    ax
-    call    sub_3272C
+    call    cos_fast
     add     sp, 2
     push    ax
     call    sub_30044
@@ -4246,7 +4247,7 @@ loc_16E0A:
     add     ch, 3
     push    cx
     mov     [bp+var_A], ax
-    call    sub_3272C
+    call    cos_fast
     add     sp, 2
     push    ax
     call    sub_30044
@@ -4592,7 +4593,7 @@ loc_17150:
     sub     ax, dx
     push    ax
     push    word_45516
-    call    sub_3272C
+    call    cos_fast
     add     sp, 2
     push    ax
     call    sub_30044
@@ -4615,7 +4616,7 @@ loc_1718A:
     sub     ax, dx
     push    ax
     push    word_45516
-    call    sub_326DE
+    call    sin_fast
     add     sp, 2
     push    ax
     call    sub_30044
@@ -5318,7 +5319,7 @@ loc_177AC:
     sub     ax, dx
     push    ax
     push    word_45516
-    call    sub_3272C
+    call    cos_fast
     add     sp, 2
     push    ax
     call    sub_30044
@@ -5341,7 +5342,7 @@ loc_177DE:
     sub     ax, dx
     push    ax
     push    word_45516
-    call    sub_326DE
+    call    sin_fast
     add     sp, 2
     push    ax
     call    sub_30044
@@ -6608,7 +6609,7 @@ loc_182F6:
     jnz     short loc_1838E
     push    word ptr [bx+2Ch]
     push    word ptr [bx+36h]
-    call    sub_3272C
+    call    cos_fast
     add     sp, 2
     push    ax
     call    sub_30044
@@ -6617,7 +6618,7 @@ loc_182F6:
     mov     [bx+2Ch], ax
     mov     bx, [bp+arg_0]
     push    word ptr [bx+36h]
-    call    sub_3272C
+    call    cos_fast
     add     sp, 2
     or      ax, ax
     jge     short loc_18354
@@ -6781,7 +6782,7 @@ sub_18466 proc far
     mov     ax, [bx+18h]
     mov     [bp+var_4], ax
     push    [bp+var_2]
-    call    sub_326DE
+    call    sin_fast
     add     sp, 2
     push    ax
     mov     ax, [bp+var_6]
@@ -6792,7 +6793,7 @@ sub_18466 proc far
     add     sp, 4
     mov     [bp+var_10], ax
     push    [bp+var_4]
-    call    sub_326DE
+    call    sin_fast
     add     sp, 2
     push    ax
     mov     ax, [bp+var_C]
@@ -6803,7 +6804,7 @@ sub_18466 proc far
     add     sp, 4
     mov     [bp+var_14], ax
     push    [bp+var_2]
-    call    sub_3272C
+    call    cos_fast
     add     sp, 2
     push    ax
     mov     ax, [bp+var_6]
@@ -6814,7 +6815,7 @@ sub_18466 proc far
     add     sp, 4
     mov     [bp+var_12], ax
     push    [bp+var_4]
-    call    sub_3272C
+    call    cos_fast
     add     sp, 2
     push    ax
     mov     ax, [bp+var_C]

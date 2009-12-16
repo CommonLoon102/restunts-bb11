@@ -1,3 +1,3 @@
-seg013 segment byte public 'CODE' use16
+seg013 segment byte public 'STUNTSC' use16
     extrn sub_361BC:proc
 seg013 ends

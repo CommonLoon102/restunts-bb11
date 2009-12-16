@@ -1,4 +1,4 @@
-seg010 segment byte public 'CODE' use16
+seg010 segment byte public 'STUNTSC' use16
     extrn start:proc
     extrn __amsg_exit
     extrn sub_2CDEC:proc

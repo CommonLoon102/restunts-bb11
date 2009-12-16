@@ -2,6 +2,7 @@
 nosmart
 .stack 8000
     include structs.inc
+    include custom.inc
     include seg000.inc
     include seg001.inc
     include seg002.inc

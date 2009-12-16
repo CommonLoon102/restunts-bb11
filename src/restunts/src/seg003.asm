@@ -1,6 +1,7 @@
 .model large
 nosmart
     include structs.inc
+    include custom.inc
     include seg000.inc
     include seg001.inc
     include seg002.inc
@@ -42,7 +43,7 @@ nosmart
     include seg039.inc
     include dseg.inc
     include seg041.inc
-seg003 segment byte public 'CODE' use16
+seg003 segment byte public 'STUNTSC' use16
     assume cs:seg003
     assume es:nothing, ss:nothing, ds:dseg
     public sub_19F14
@@ -3141,7 +3142,7 @@ loc_1BCB7:
     mov     ax, 24h ; '$'
     push    ax
     push    word_44DCA
-    call    sub_3272C
+    call    cos_fast
     add     sp, 2
     push    ax
     call    sub_30044
@@ -3150,7 +3151,7 @@ loc_1BCB7:
     mov     ax, 24h ; '$'
     push    ax
     push    word_44DCA
-    call    sub_326DE
+    call    sin_fast
     add     sp, 2
     push    ax
     call    sub_30044
@@ -3195,7 +3196,7 @@ loc_1BCB7:
     mov     ax, word_45516
     add     ah, 1
     push    ax
-    call    sub_326DE
+    call    sin_fast
     add     sp, 2
     push    ax
     call    sub_30044
@@ -3206,7 +3207,7 @@ loc_1BCB7:
     add     ch, 2
     push    cx
     mov     word ptr [bp+var_154], ax
-    call    sub_326DE
+    call    sin_fast
     add     sp, 2
     push    ax
     call    sub_30044
@@ -3234,7 +3235,7 @@ loc_1BCB7:
     mov     ax, word_45516
     add     ah, 1
     push    ax
-    call    sub_3272C
+    call    cos_fast
     add     sp, 2
     push    ax
     call    sub_30044
@@ -3245,7 +3246,7 @@ loc_1BCB7:
     add     ch, 2
     push    cx
     mov     word ptr [bp+var_154], ax
-    call    sub_3272C
+    call    cos_fast
     add     sp, 2
     push    ax
     call    sub_30044
@@ -4417,7 +4418,7 @@ loc_1C879:
     mov     ax, [bx+98Ch]
     add     ax, si
     push    ax
-    call    sub_326DE
+    call    sin_fast
     add     sp, 2
     push    ax
     mov     ax, 3E80h
@@ -4440,7 +4441,7 @@ loc_1C879:
     mov     ax, [bx+98Ch]
     add     ax, si
     push    ax
-    call    sub_3272C
+    call    cos_fast
     add     sp, 2
     push    ax
     mov     ax, 3E80h
