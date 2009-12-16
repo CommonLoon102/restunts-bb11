@@ -219,7 +219,7 @@ static PrintPublics(f, segstart, segend) {
 
 static PrintAsmHeader(f, codestart, codeend) {
 	auto segea, nextseg, segtype;
-	fprintf(f, ".model large\n");
+	fprintf(f, ".model medium\n");
 	fprintf(f, "nosmart\n");
 	
 	segtype = GetSegmentAttr(codestart, SEGATTR_TYPE);
@@ -571,14 +571,14 @@ static ExtractCallTarget(ea) {
 // to prevent name collisions.
 // functions must also be added as externals in custom.inc
 static PortFuncName(labelname) {
-	return labelname;
-/*
+//	return labelname;
+
 	if (
 		labelname == "_strcpy" ||
 		labelname == "_strcmp"
 	)
 		return labelname + "2";
-	return labelname;*/
+	return labelname;
 }
 
 static IsFixFunc(labelname) {
@@ -648,7 +648,7 @@ static PrintSegInc(segstart, segend) {
 	auto segname;
 
 	segname = SegName(segstart);
-	filename = form("%s\\src\\%s.inc", GetIdbDirectory(), segname);
+	filename = form("%s\\asm\\%s.inc", GetIdbDirectory(), segname);
 	f = fopen(filename, "w");
 
 	PrintSegDecl(f, segstart);
@@ -701,7 +701,7 @@ static main() {
 	}
 
 	Message("Generating structs...\n");
-	f = fopen(GetIdbDirectory() + "\\src\\structs.inc", "w");
+	f = fopen(GetIdbDirectory() + "\\asm\\structs.inc", "w");
 
 	for (i = GetFirstStrucIdx(); i != -1; i = GetNextStrucIdx(i)) {
 		PrintStruct(f, GetStrucId(i));
@@ -726,7 +726,7 @@ static main() {
 		
 		// TODO: should use names in alphabetical order to ensure correct linking order
 		// or generate a filelist for tlink @-syntax
-		filename = form("%s\\src\\%s.asm", GetIdbDirectory(), SegName(segea));
+		filename = form("%s\\asm\\%s.asm", GetIdbDirectory(), SegName(segea));
 		
 		Message("Segment %i, %s: %s\n", segea, SegName(segea), filename);
 	
