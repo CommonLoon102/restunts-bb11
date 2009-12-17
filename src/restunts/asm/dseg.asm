@@ -659,10 +659,13 @@ dseg segment byte public 'STUNTSD' use16
     public word_40E10
     public byte_40E6C
     public byte_40E6D
+    public mat_y200
+    public mat_y100
     public word_40EB0
     public word_40EB2
     public word_40EB4
     public word_40EB6
+    public mat_y300
     public dword_40ECA
     public word_40ECE
     public word_40ED0
@@ -670,6 +673,7 @@ dseg segment byte public 'STUNTSD' use16
     public word_40ED4
     public word_411F6
     public unk_41690
+    public mat_y0
     public word_41850
     public word_41852
     public word_41854
@@ -824,6 +828,7 @@ dseg segment byte public 'STUNTSD' use16
     public word_4394C
     public word_4394E
     public byte_43950
+    public mat_unk_1
     public word_43964
     public byte_43966
     public word_4408C
@@ -1062,6 +1067,7 @@ dseg segment byte public 'STUNTSD' use16
     public word_44D22
     public word_44D24
     public dword_44D26
+    public mat_unk_3
     public word_44D3C
     public dword_44D3E
     public dword_44D42
@@ -1257,11 +1263,13 @@ dseg segment byte public 'STUNTSD' use16
     public byte_463E7
     public word_46434
     public byte_46436
+    public mat_rot_temp
     public byte_4644A
     public byte_4645E
     public dword_46460
     public byte_46467
     public word_46468
+    public mat_unk_2
     public byte_46484
 byte_3B770     db 0
     db 0
@@ -22919,6 +22927,7 @@ byte_40E6D     db 0
     db 0
     db 0
     db 0
+mat_y200     db 0
     db 0
     db 0
     db 0
@@ -22936,8 +22945,7 @@ byte_40E6D     db 0
     db 0
     db 0
     db 0
-    db 0
-    db 0
+mat_y100     db 0
     db 0
     db 0
     db 0
@@ -22959,7 +22967,7 @@ word_40EB0     dw 0
 word_40EB2     dw 0
 word_40EB4     dw 0
 word_40EB6     dw 0
-    db 0
+mat_y300     db 0
     db 0
     db 0
     db 0
@@ -25389,7 +25397,7 @@ unk_41690     db 0
     db 0
     db 0
     db 0
-    db 0
+mat_y0     db 0
     db 0
     db 0
     db 0
@@ -33705,7 +33713,7 @@ word_4394C     dw 0
 word_4394E     dw 0
 byte_43950     db 0
     db 0
-    db 0
+mat_unk_1     db 0
     db 0
     db 0
     db 0
@@ -38599,7 +38607,7 @@ word_44D20     dw 0
 word_44D22     dw 0
 word_44D24     dw 0
 dword_44D26     dd 0
-    db 0
+mat_unk_3     db 0
     db 0
     db 0
     db 0
@@ -44316,7 +44324,7 @@ byte_463E7     db 0
 word_46434     dw 0
 byte_46436     db 0
     db 0
-    db 0
+mat_rot_temp     db 0
     db 0
     db 0
     db 0
@@ -44370,7 +44378,7 @@ word_46468     dw 0
     db 0
     db 0
     db 0
-    db 0
+mat_unk_2     db 0
     db 0
     db 0
     db 0

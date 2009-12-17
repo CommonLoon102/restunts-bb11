@@ -55,7 +55,7 @@ seg006 segment byte public 'STUNTSC' use16
     public sub_25EE2
     public sub_25F2E
     public sub_25FF6
-    public sub_261FA
+    public mat_rot_zxy
     public off_26362
     public sub_2637A
     public sub_263C6
@@ -173,7 +173,7 @@ sub_24E06 proc far
     push    [bp+arg_2]
     push    [bp+arg_0]
     push    cs
-    call    near ptr sub_261FA
+    call    near ptr mat_rot_zxy
     add     sp, 8
     mov     di, 0ACDCh
     mov     si, ax
@@ -206,7 +206,7 @@ sub_24E06 proc far
     neg     ax
     push    ax
     push    cs
-    call    near ptr sub_261FA
+    call    near ptr mat_rot_zxy
     add     sp, 8
     mov     [bp+var_8], ax
     mov     [bp+var_A], 2710h
@@ -217,7 +217,7 @@ sub_24E06 proc far
     push    [bp+var_8]
     lea     ax, [bp+var_E]
     push    ax
-    call    sub_328EE
+    call    mat_mul_vector
     add     sp, 6
     push    [bp+var_2]
     push    [bp+var_6]
@@ -367,7 +367,7 @@ loc_24F50:
     push    word ptr [bx+0Ch]
     push    word ptr [bx+0Ah]
     push    cs
-    call    near ptr sub_261FA
+    call    near ptr mat_rot_zxy
     add     sp, 8
     mov     [bp+var_42C], ax
     lea     ax, [bp+var_42A]
@@ -375,7 +375,7 @@ loc_24F50:
     mov     ax, 0ACDCh
     push    ax
     push    [bp+var_42C]
-    call    sub_329F2
+    call    mat_multiply
     add     sp, 6
     mov     ax, [bp+arg_0]
     push    si
@@ -404,7 +404,7 @@ loc_24FB6:
     push    word ptr [bx+0Ch]
     push    word ptr [bx+0Ah]
     push    cs
-    call    near ptr sub_261FA
+    call    near ptr mat_rot_zxy
     add     sp, 8
     mov     [bp+var_42C], ax
     lea     ax, [bp+var_14]
@@ -412,20 +412,20 @@ loc_24FB6:
     mov     ax, 0ACDCh
     push    ax
     push    [bp+arg_0]
-    call    sub_328EE
+    call    mat_mul_vector
     add     sp, 6
     lea     ax, [bp+var_42A]
     push    ax
     mov     ax, 0ACDCh
     push    ax
     push    [bp+var_42C]
-    call    sub_329F2
+    call    mat_multiply
     add     sp, 6
     lea     ax, [bp+var_446]
     push    ax
     lea     ax, [bp+var_42A]
     push    ax
-    call    sub_32A72
+    call    mat_copy
     add     sp, 4
     mov     [bp+var_458], 0
     mov     [bp+var_456], 0
@@ -436,7 +436,7 @@ loc_24FB6:
     push    ax
     lea     ax, [bp+var_458]
     push    ax
-    call    sub_328EE
+    call    mat_mul_vector
     add     sp, 6
     cmp     [bp+var_568], 0
     jle     short loc_25046
@@ -579,7 +579,7 @@ loc_25196:
     push    ax
     lea     ax, [bp+var_458]
     push    ax
-    call    sub_328EE
+    call    mat_mul_vector
     add     sp, 6
     mov     ax, [bp+var_14]
     add     [bp+var_56A], ax
@@ -781,7 +781,7 @@ loc_253A8:
     push    ax
     lea     ax, [bp+var_458]
     push    ax
-    call    sub_328EE
+    call    mat_mul_vector
     add     sp, 6
     mov     ax, [bp+var_14]
     add     [bp+var_56A], ax
@@ -2290,7 +2290,7 @@ loc_261F0:
     pop     bp
     retf
 sub_25FF6 endp
-sub_261FA proc far
+mat_rot_zxy proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -2308,7 +2308,7 @@ sub_261FA proc far
     jz      short loc_2621C
     mov     si, 4
     push    [bp+arg_0]
-    mov     ax, 81E2h
+    mov     ax, offset mat_unk_1
     push    ax
     call    mat_rot_z
     add     sp, si
@@ -2320,7 +2320,7 @@ smart
     or      si, 2
 nosmart
     push    [bp+arg_2]
-    mov     ax, 0AD02h
+    mov     ax, offset mat_unk_2
     push    ax
     call    mat_rot_x
     add     sp, 4
@@ -2338,7 +2338,7 @@ nosmart
     cmp     ax, word_3EB02
     jnz     short loc_26252
 loc_2624D:
-    mov     di, 95BAh
+    mov     di, offset mat_unk_3
     jmp     short loc_26285
 loc_26252:
     mov     ax, [bp+arg_4]
@@ -2352,7 +2352,7 @@ nosmart
     cmp     ax, 300h
     jz      short loc_2629E
     push    [bp+arg_4]
-    mov     ax, 95BAh
+    mov     ax, offset mat_unk_3
     push    ax
     call    mat_rot_y
     add     sp, 4
@@ -2365,7 +2365,7 @@ nosmart
     ; align 2
     db 144
 loc_26282:
-    mov     di, 572Eh
+    mov     di, offset mat_y100
 loc_26285:
     mov     ax, si
     cmp     ax, 7
@@ -2378,24 +2378,24 @@ loc_2628F:
     ; align 2
     db 144
 loc_26298:
-    mov     di, 571Ch
+    mov     di, offset mat_y200
     jmp     short loc_26285
     ; align 2
     db 144
 loc_2629E:
-    mov     di, 5748h
+    mov     di, offset mat_y300
     jmp     short loc_26285
     ; align 2
     db 144
 loc_262A4:
-    mov     di, 60CEh
+    mov     di, offset mat_y0
     jmp     loc_26372
 loc_262AA:
     test    [bp+arg_6], 1
     jz      short loc_262BC
-    mov     ax, 0ACC8h
+    mov     ax, offset mat_rot_temp
     push    ax
-    mov     ax, 0AD02h
+    mov     ax, offset mat_unk_2
 loc_262B7:
     push    ax
     push    di
@@ -2403,89 +2403,89 @@ loc_262B7:
     ; align 2
     db 144
 loc_262BC:
-    mov     ax, 0ACC8h
+    mov     ax, offset mat_rot_temp
     push    ax
     push    di
 loc_262C1:
-    mov     ax, 0AD02h
+    mov     ax, offset mat_unk_2
 loc_262C4:
     push    ax
 loc_262C5:
-    call    sub_329F2
+    call    mat_multiply
     add     sp, 6
-    mov     di, 0ACC8h
+    mov     di, offset mat_rot_temp
     jmp     loc_26372
     ; align 2
     db 144
 loc_262D4:
     test    [bp+arg_6], 1
     jz      short loc_262E4
-    mov     ax, 0ACC8h
+    mov     ax, offset mat_rot_temp
     push    ax
-    mov     ax, 81E2h
+    mov     ax, offset mat_unk_1
     jmp     short loc_262B7
     ; align 2
     db 144
 loc_262E4:
-    mov     ax, 0ACC8h
+    mov     ax, offset mat_rot_temp
     push    ax
     push    di
 loc_262E9:
-    mov     ax, 81E2h
+    mov     ax, offset mat_unk_1
     jmp     short loc_262C4
 loc_262EE:
     test    [bp+arg_6], 1
     jz      short loc_262FE
-    mov     ax, 0ACC8h
+    mov     ax, offset mat_rot_temp
     push    ax
-    mov     ax, 81E2h
+    mov     ax, offset mat_unk_1
     push    ax
     jmp     short loc_262C1
 loc_262FE:
-    mov     ax, 0ACC8h
+    mov     ax, offset mat_rot_temp
     push    ax
-    mov     ax, 0AD02h
+    mov     ax, offset mat_unk_2
     push    ax
     jmp     short loc_262E9
 loc_26308:
     test    [bp+arg_6], 1
     jz      short loc_26338
-    mov     ax, 0ACC8h
+    mov     ax, offset mat_rot_temp
     push    ax
-    mov     ax, 0AD02h
+    mov     ax, offset mat_unk_2
     push    ax
     push    di
-    call    sub_329F2
+    call    mat_multiply
     add     sp, 6
-    mov     ax, 0AD02h
+    mov     ax, offset mat_unk_2
     push    ax
-    mov     ax, 81E2h
+    mov     ax, offset mat_unk_1
     push    ax
-    mov     ax, 0ACC8h
+    mov     ax, offset mat_rot_temp
     push    ax
-    call    sub_329F2
+    call    mat_multiply
     add     sp, 6
 loc_26333:
-    mov     di, 0AD02h
+    mov     di, offset mat_unk_2
     jmp     short loc_26372
 loc_26338:
-    mov     ax, 0ACC8h
+    mov     ax, offset mat_rot_temp
     push    ax
-    mov     ax, 0AD02h
+    mov     ax, offset mat_unk_2
     push    ax
-    mov     ax, 81E2h
+    mov     ax, offset mat_unk_1
     push    ax
-    call    sub_329F2
+    call    mat_multiply
     add     sp, 6
-    mov     ax, 81E2h
+    mov     ax, offset mat_unk_1
     push    ax
     push    di
-    mov     ax, 0ACC8h
+    mov     ax, offset mat_rot_temp
     push    ax
-    call    sub_329F2
+    call    mat_multiply
     add     sp, 6
 loc_2635D:
-    mov     di, 81E2h
+    mov     di, offset mat_unk_1
     jmp     short loc_26372
 off_26362     dw offset loc_262A4
     dw offset loc_26372
@@ -2502,7 +2502,7 @@ loc_26372:
     mov     sp, bp
     pop     bp
     retf
-sub_261FA endp
+mat_rot_zxy endp
 sub_2637A proc far
     var_6 = word ptr -6
      s = byte ptr 0

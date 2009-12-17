@@ -194,7 +194,7 @@ loc_147BD:
     push    word_446CE
     push    word_446D0
     push    word_446D2
-    call    sub_261FA
+    call    mat_rot_zxy
     add     sp, 8
     mov     [bp+var_16], ax
     mov     byte_44785, 1
@@ -323,7 +323,7 @@ loc_148EC:
     push    [bp+var_16]
     lea     ax, [bp+var_26]
     push    ax
-    call    sub_328EE
+    call    mat_mul_vector
     add     sp, 6
     cmp     [bp+var_1A], 5Ah ; 'Z'
     jg      short loc_148BA
@@ -367,7 +367,7 @@ loc_1496C:
     push    [bp+var_16]
     lea     ax, [bp+var_26]
     push    ax
-    call    sub_328EE
+    call    mat_mul_vector
     add     sp, 6
     cmp     [bp+var_6], 0
     jge     short loc_149FE
@@ -487,7 +487,7 @@ loc_14A74:
     push    [bp+var_16]
     lea     ax, [bp+var_26]
     push    ax
-    call    sub_328EE
+    call    mat_mul_vector
     add     sp, 6
     push    [bp+var_38]
     push    [bp+var_3C]
@@ -721,7 +721,7 @@ loc_14C87:
     push    word_446CE
     push    word_446D0
     push    word_446D2
-    call    sub_261FA
+    call    mat_rot_zxy
     add     sp, 8
     mov     [bp+var_16], ax
     lea     ax, [bp+var_3C]
@@ -729,7 +729,7 @@ loc_14C87:
     push    [bp+var_16]
     lea     ax, [bp+var_26]
     push    ax
-    call    sub_328EE
+    call    mat_mul_vector
     add     sp, 6
     push    [bp+var_38]
     mov     ax, [bp+var_3C]
@@ -836,7 +836,7 @@ sub_14D6C proc far
     lea     ax, [bp+var_12]
     push    ax
     push    [bp+arg_0]
-    call    sub_328EE
+    call    mat_mul_vector
     add     sp, 6
     pop     si
     pop     di
@@ -1033,7 +1033,7 @@ loc_14E33:
     mov     ax, word_44998
     neg     ax
     push    ax
-    call    sub_261FA
+    call    mat_rot_zxy
     add     sp, 8
     push    si
     mov     di, 8B62h
@@ -1057,7 +1057,7 @@ loc_14E8F:
     push    ax
     lea     ax, [bp+var_1C6]
     push    ax
-    call    sub_328EE
+    call    mat_mul_vector
     add     sp, 6
     mov     bx, [bp+arg_0]
     mov     ax, [bp+var_FA]
@@ -1082,7 +1082,7 @@ loc_14ECE:
     sub     ax, ax
     push    ax
     push    ax
-    call    sub_261FA
+    call    mat_rot_zxy
     add     sp, 8
     push    si
     lea     di, [bp+var_10E]
@@ -1107,7 +1107,7 @@ loc_14F09:
     push    ax
     lea     ax, [bp+var_1C6]
     push    ax
-    call    sub_328EE
+    call    mat_mul_vector
     add     sp, 6
     mov     bx, [bp+arg_0]
     cmp     byte ptr [bx+0C1h], 0
@@ -1124,7 +1124,7 @@ loc_14F09:
     push    ax
     lea     ax, [bp+var_1C6]
     push    ax
-    call    sub_328EE
+    call    mat_mul_vector
     add     sp, 6
     jmp     short loc_14F7C
     ; align 2
@@ -1221,7 +1221,7 @@ loc_1504A:
     push    ax
     lea     ax, [bp+var_1C6]
     push    ax
-    call    sub_328EE
+    call    mat_mul_vector
     add     sp, 6
     push    si
     lea     di, [bp+var_1C6]
@@ -1239,7 +1239,7 @@ loc_15077:
     push    ax
     lea     ax, [bp+var_1C6]
     push    ax
-    call    sub_328EE
+    call    mat_mul_vector
     add     sp, 6
     mov     ax, [bp+var_FC]
     cwd
@@ -1477,7 +1477,7 @@ loc_152D7:
     push    ax
     lea     ax, [bp+var_182]
     push    ax
-    call    sub_328EE
+    call    mat_mul_vector
     add     sp, 6
     lea     ax, [bp+var_1C]
     push    ax
@@ -1485,7 +1485,7 @@ loc_152D7:
     push    ax
     lea     ax, [bp+var_1E4]
     push    ax
-    call    sub_328EE
+    call    mat_mul_vector
     add     sp, 6
     cmp     [bp+var_18], 0
     jle     short loc_15338
@@ -1625,7 +1625,7 @@ loc_1546E:
     mov     ax, word_44998
     neg     ax
     push    ax
-    call    sub_261FA
+    call    mat_rot_zxy
     add     sp, 8
     mov     [bp+var_EA], ax
     lea     ax, [bp+var_1C]
@@ -1633,7 +1633,7 @@ loc_1546E:
     push    [bp+var_EA]
     lea     ax, [bp+var_FC]
     push    ax
-    call    sub_328EE
+    call    mat_mul_vector
     add     sp, 6
     mov     ax, word_4435E
     neg     ax
@@ -1984,7 +1984,7 @@ loc_157DC:
     push    ax
     lea     ax, [bp+var_134]
     push    ax
-    call    sub_32A72
+    call    mat_copy
     add     sp, 4
     lea     ax, [bp+var_C]
     push    ax
@@ -1992,7 +1992,7 @@ loc_157DC:
     push    ax
     lea     ax, [bp+var_182]
     push    ax
-    call    sub_328EE
+    call    mat_mul_vector
     add     sp, 6
     lea     ax, [bp+var_1C]
     push    ax
@@ -2000,7 +2000,7 @@ loc_157DC:
     push    ax
     lea     ax, [bp+var_1E4]
     push    ax
-    call    sub_328EE
+    call    mat_mul_vector
     add     sp, 6
     mov     [bp+var_136], 0
     cmp     byte_4392C, 0
@@ -2630,7 +2630,7 @@ loc_15E85:
     push    ax
     lea     ax, [bp+var_1C6]
     push    ax
-    call    sub_328EE
+    call    mat_mul_vector
     add     sp, 6
     mov     ax, [bp+var_182]
     cwd
@@ -2824,7 +2824,7 @@ loc_160A7:
     push    ax
     lea     ax, [bp+var_FC]
     push    ax
-    call    sub_328EE
+    call    mat_mul_vector
     add     sp, 6
     inc     [bp+var_E8]
     cmp     [bp+var_E8], 4
@@ -2900,7 +2900,7 @@ loc_16169:
     push    ax
     lea     ax, [bp+var_FC]
     push    ax
-    call    sub_328EE
+    call    mat_mul_vector
     add     sp, 6
     inc     [bp+var_E8]
     cmp     [bp+var_E8], 4
@@ -2983,7 +2983,7 @@ loc_1625F:
     mov     ax, word_44998
     neg     ax
     push    ax
-    call    sub_261FA
+    call    mat_rot_zxy
     add     sp, 8
     mov     [bp+var_EA], ax
     mov     [bp+var_E8], 0
@@ -3093,7 +3093,7 @@ loc_16336:
     push    [bp+var_EA]
     lea     ax, [bp+var_1C6]
     push    ax
-    call    sub_328EE
+    call    mat_mul_vector
     add     sp, 6
     mov     ax, [bp+var_FC]
     cwd
@@ -4879,7 +4879,7 @@ loc_173C2:
     push    word_445FE
     push    word_44600
     push    word_44602
-    call    sub_261FA
+    call    mat_rot_zxy
     add     sp, 8
     mov     [bp+var_20], ax
     cmp     byte_448EF, 2
@@ -4969,7 +4969,7 @@ loc_17490:
     push    [bp+var_20]
     lea     ax, [bp+var_32]
     push    ax
-    call    sub_328EE
+    call    mat_mul_vector
     add     sp, 6
     mov     si, [bp+var_34]
 loc_174B3:
@@ -5062,7 +5062,7 @@ loc_1755B:
     push    [bp+var_20]
     lea     ax, [bp+var_28]
     push    ax
-    call    sub_328EE
+    call    mat_mul_vector
     add     sp, 6
     cmp     [bp+var_2C], 0
     jz      short loc_1758D
@@ -5249,7 +5249,7 @@ loc_176F9:
     push    word_445FE
     push    word_44600
     push    word_44602
-    call    sub_261FA
+    call    mat_rot_zxy
     add     sp, 8
     mov     [bp+var_20], ax
     lea     ax, [bp+var_38]
@@ -5257,7 +5257,7 @@ loc_176F9:
     push    [bp+var_20]
     lea     ax, [bp+var_28]
     push    ax
-    call    sub_328EE
+    call    mat_mul_vector
     add     sp, 6
     push    [bp+var_34]
     mov     ax, [bp+var_38]
@@ -8275,7 +8275,7 @@ loc_190DA:
     mov     ax, [bx+6]
     neg     ax
     push    ax
-    call    sub_261FA
+    call    mat_rot_zxy
     add     sp, 8
     mov     [bp+var_4], ax
     mov     [bp+var_6], 0
@@ -8307,7 +8307,7 @@ loc_1916C:
     push    [bp+var_4]
     lea     ax, [bp+var_C]
     push    ax
-    call    sub_328EE
+    call    mat_mul_vector
     add     sp, 6
     mov     bx, [bp+arg_2]
     mov     ax, [bx]
@@ -8353,7 +8353,7 @@ loc_191D2:
     push    word ptr [bx+0Ah]
     push    word ptr [bx+8]
     push    word ptr [bx+6]
-    call    sub_261FA
+    call    mat_rot_zxy
     add     sp, 8
     mov     [bp+var_4], ax
     mov     [bp+var_6], 0
@@ -8388,7 +8388,7 @@ loc_191F7:
     push    [bp+var_4]
     lea     ax, [bp+var_C]
     push    ax
-    call    sub_328EE
+    call    mat_mul_vector
     add     sp, 6
     cmp     [bp+var_28], 0
     jl      short loc_191F4
@@ -8432,7 +8432,7 @@ loc_1927A:
     mov     ax, [bx+6]
     neg     ax
     push    ax
-    call    sub_261FA
+    call    mat_rot_zxy
     add     sp, 8
     mov     [bp+var_4], ax
     mov     [bp+var_6], 0
@@ -8466,7 +8466,7 @@ loc_192D2:
     push    [bp+var_4]
     lea     ax, [bp+var_C]
     push    ax
-    call    sub_328EE
+    call    mat_mul_vector
     add     sp, 6
     mov     bx, [bp+arg_6]
     mov     ax, [bx]
@@ -8512,7 +8512,7 @@ loc_19338:
     push    word ptr [bx+0Ah]
     push    word ptr [bx+8]
     push    word ptr [bx+6]
-    call    sub_261FA
+    call    mat_rot_zxy
     add     sp, 8
     mov     [bp+var_4], ax
     mov     [bp+var_6], 0
@@ -8549,7 +8549,7 @@ loc_19366:
     push    [bp+var_4]
     lea     ax, [bp+var_C]
     push    ax
-    call    sub_328EE
+    call    mat_mul_vector
     add     sp, 6
     cmp     [bp+var_28], 0
     jl      short loc_1935A
@@ -8978,7 +8978,7 @@ loc_197D6:
     push    ax
     mov     ax, 97C6h
     push    ax
-    call    sub_328EE
+    call    mat_mul_vector
     add     sp, 6
     mov     ax, 22h ; '"'
     imul    word_44F4A
@@ -9000,7 +9000,7 @@ loc_197D6:
     push    ax
     lea     ax, [bp+var_1A]
     push    ax
-    call    sub_32A72
+    call    mat_copy
     add     sp, 4
     lea     ax, [bp+var_32]
     push    ax
@@ -9008,7 +9008,7 @@ loc_197D6:
     push    ax
     lea     ax, [bp+var_8]
     push    ax
-    call    sub_328EE
+    call    mat_mul_vector
     add     sp, 6
     push    [bp+var_2E]
     mov     ax, [bp+var_32]
@@ -9037,7 +9037,7 @@ loc_19866:
     push    ax
     mov     ax, 97C6h
     push    ax
-    call    sub_328EE
+    call    mat_mul_vector
     add     sp, 6
     mov     ax, 97CCh
     push    ax
@@ -9097,7 +9097,7 @@ loc_198EA:
     push    ax
     mov     ax, 97C6h
     push    ax
-    call    sub_328EE
+    call    mat_mul_vector
     add     sp, 6
     mov     ax, 97CCh
     push    ax
@@ -9115,7 +9115,7 @@ loc_1990C:
     mov     ax, 97C6h
 loc_19917:
     push    ax
-    call    sub_328EE
+    call    mat_mul_vector
     add     sp, 6
     pop     si
     pop     di
@@ -9481,7 +9481,7 @@ loc_19BCB:
     sub     ax, ax
     push    ax
     push    ax
-    call    sub_261FA
+    call    mat_rot_zxy
     add     sp, 8
     mov     [bp+var_4], ax
     mov     [bp+var_C], 0
@@ -9495,7 +9495,7 @@ loc_19BCB:
     push    [bp+var_4]
     lea     ax, [bp+var_C]
     push    ax
-    call    sub_328EE
+    call    mat_mul_vector
     add     sp, 6
     mov     di, si
     mov     cl, 2

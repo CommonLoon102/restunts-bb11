@@ -190,9 +190,9 @@ seg012 segment byte public 'STUNTSC' use16
     extrn loc_3284A
     extrn loc_32882
     extrn sub_32886:proc
-    extrn sub_328EE:proc
-    extrn sub_329F2:proc
-    extrn sub_32A72:proc
+    extrn mat_mul_vector:proc
+    extrn mat_multiply:proc
+    extrn mat_copy:proc
     extrn off_32ADC:word
     extrn sub_32AE2:proc
     extrn loc_32B78

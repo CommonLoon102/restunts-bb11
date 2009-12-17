@@ -237,9 +237,9 @@ seg012 segment byte public 'STUNTSC' use16
     public loc_3284A
     public loc_32882
     public sub_32886
-    public sub_328EE
-    public sub_329F2
-    public sub_32A72
+    public mat_mul_vector
+    public mat_multiply
+    public mat_copy
     public off_32ADC
     public sub_32AE2
     public loc_32B78
@@ -9544,7 +9544,7 @@ loc_328A8:
     ; align 2
     db 0
 sub_32886 endp
-sub_328EE proc far
+mat_mul_vector proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -9559,10 +9559,10 @@ sub_328EE proc far
     mov     si, [bp+arg_0]
     mov     di, [bp+arg_4]
     xor     dx, dx
-    mov     ax, [bx]
+    mov     ax, [bx+MATRIX._11]
     or      ax, ax
     jz      short loc_32914
-    mov     cx, [si]
+    mov     cx, [si+VECTOR.x]
     or      cx, cx
     jz      short loc_32914
     imul    cx
@@ -9571,11 +9571,11 @@ sub_328EE proc far
     shl     ax, 1
     rcl     dx, 1
 loc_32914:
-    mov     [di], dx
-    mov     ax, [bx+6]
+    mov     [di+VECTOR.x], dx
+    mov     ax, [bx+MATRIX._12]
     or      ax, ax
     jz      short loc_32930
-    mov     cx, [si+2]
+    mov     cx, [si+VECTOR.y]
     or      cx, cx
     jz      short loc_32930
     imul    cx
@@ -9583,12 +9583,12 @@ loc_32914:
     rcl     dx, 1
     shl     ax, 1
     rcl     dx, 1
-    add     [di], dx
+    add     [di+VECTOR.x], dx
 loc_32930:
-    mov     ax, [bx+0Ch]
+    mov     ax, [bx+MATRIX._13]
     or      ax, ax
     jz      short loc_3294A
-    mov     cx, [si+4]
+    mov     cx, [si+VECTOR.z]
     or      cx, cx
     jz      short loc_3294A
     imul    cx
@@ -9596,13 +9596,13 @@ loc_32930:
     rcl     dx, 1
     shl     ax, 1
     rcl     dx, 1
-    add     [di], dx
+    add     [di+VECTOR.x], dx
 loc_3294A:
     xor     dx, dx
-    mov     ax, [bx+2]
+    mov     ax, [bx+MATRIX._21]
     or      ax, ax
     jz      short loc_32963
-    mov     cx, [si]
+    mov     cx, [si+VECTOR.x]
     or      cx, cx
     jz      short loc_32963
     imul    cx
@@ -9611,11 +9611,11 @@ loc_3294A:
     shl     ax, 1
     rcl     dx, 1
 loc_32963:
-    mov     [di+2], dx
-    mov     ax, [bx+8]
+    mov     [di+VECTOR.y], dx
+    mov     ax, [bx+MATRIX._22]
     or      ax, ax
     jz      short loc_32981
-    mov     cx, [si+2]
+    mov     cx, [si+VECTOR.y]
     or      cx, cx
     jz      short loc_32981
     imul    cx
@@ -9625,10 +9625,10 @@ loc_32963:
     rcl     dx, 1
     add     [di+2], dx
 loc_32981:
-    mov     ax, [bx+0Eh]
+    mov     ax, [bx+MATRIX._23]
     or      ax, ax
     jz      short loc_3299C
-    mov     cx, [si+4]
+    mov     cx, [si+VECTOR.z]
     or      cx, cx
     jz      short loc_3299C
     imul    cx
@@ -9636,13 +9636,13 @@ loc_32981:
     rcl     dx, 1
     shl     ax, 1
     rcl     dx, 1
-    add     [di+2], dx
+    add     [di+VECTOR.y], dx
 loc_3299C:
     xor     dx, dx
-    mov     ax, [bx+4]
+    mov     ax, [bx+MATRIX._31]
     or      ax, ax
     jz      short loc_329B5
-    mov     cx, [si]
+    mov     cx, [si+VECTOR.x]
     or      cx, cx
     jz      short loc_329B5
     imul    cx
@@ -9651,11 +9651,11 @@ loc_3299C:
     shl     ax, 1
     rcl     dx, 1
 loc_329B5:
-    mov     [di+4], dx
-    mov     ax, [bx+0Ah]
+    mov     [di+VECTOR.z], dx
+    mov     ax, [bx+MATRIX._32]
     or      ax, ax
     jz      short loc_329D3
-    mov     cx, [si+2]
+    mov     cx, [si+VECTOR.y]
     or      cx, cx
     jz      short loc_329D3
     imul    cx
@@ -9663,12 +9663,12 @@ loc_329B5:
     rcl     dx, 1
     shl     ax, 1
     rcl     dx, 1
-    add     [di+4], dx
+    add     [di+VECTOR.z], dx
 loc_329D3:
-    mov     ax, [bx+10h]
+    mov     ax, [bx+MATRIX._33]
     or      ax, ax
     jz      short loc_329EE
-    mov     cx, [si+4]
+    mov     cx, [si+VECTOR.z]
     or      cx, cx
     jz      short loc_329EE
     imul    cx
@@ -9676,14 +9676,14 @@ loc_329D3:
     rcl     dx, 1
     shl     ax, 1
     rcl     dx, 1
-    add     [di+4], dx
+    add     [di+VECTOR.z], dx
 loc_329EE:
     pop     di
     pop     si
     pop     bp
     retf
-sub_328EE endp
-sub_329F2 proc far
+mat_mul_vector endp
+mat_multiply proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -9700,41 +9700,41 @@ sub_329F2 proc far
     mov     cx, 9
 loc_32A03:
     xor     dx, dx
-    mov     ax, [si]
+    mov     ax, [si+MATRIX._11]
     or      ax, ax
     jz      short loc_32A1A
-    cmp     word ptr [bx], 0
+    cmp     [bx+MATRIX._11], 0
     jz      short loc_32A1A
-    imul    word ptr [bx]
+    imul    [bx+MATRIX._11]
     shl     ax, 1
     rcl     dx, 1
     shl     ax, 1
     rcl     dx, 1
 loc_32A1A:
-    mov     [di], dx
-    mov     ax, [si+2]
+    mov     [di+MATRIX._11], dx
+    mov     ax, [si+MATRIX._21]
     or      ax, ax
     jz      short loc_32A36
-    cmp     word ptr [bx+6], 0
+    cmp     [bx+MATRIX._12], 0
     jz      short loc_32A36
-    imul    word ptr [bx+6]
+    imul    [bx+MATRIX._12]
     shl     ax, 1
     rcl     dx, 1
     shl     ax, 1
     rcl     dx, 1
-    add     [di], dx
+    add     [di+MATRIX._11], dx
 loc_32A36:
-    mov     ax, [si+4]
+    mov     ax, [si+MATRIX._31]
     or      ax, ax
     jz      short loc_32A50
-    cmp     word ptr [bx+0Ch], 0
+    cmp     [bx+MATRIX._13], 0
     jz      short loc_32A50
-    imul    word ptr [bx+0Ch]
+    imul    [bx+MATRIX._13]
     shl     ax, 1
     rcl     dx, 1
     shl     ax, 1
     rcl     dx, 1
-    add     [di], dx
+    add     [di+MATRIX._11], dx
 loc_32A50:
     add     di, 2
     cmp     cx, 7
@@ -9755,8 +9755,8 @@ loc_32A66:
     pop     si
     pop     bp
     retf
-sub_329F2 endp
-sub_32A72 proc far
+mat_multiply endp
+mat_copy proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -9771,38 +9771,38 @@ sub_32A72 proc far
     mov     cx, 9
     cmp     si, di
     jnz     short loc_32AA3
-    mov     ax, [si+2]
-    xchg    ax, [si+6]
-    mov     [si+2], ax
-    mov     ax, [si+4]
-    xchg    ax, [si+0Ch]
-    mov     [si+4], ax
-    mov     ax, [si+0Ah]
-    xchg    ax, [si+0Eh]
-    mov     [si+0Ah], ax
+    mov     ax, [si+MATRIX._21]
+    xchg    ax, [si+MATRIX._12]
+    mov     [si+MATRIX._21], ax
+    mov     ax, [si+MATRIX._31]
+    xchg    ax, [si+MATRIX._13]
+    mov     [si+MATRIX._31], ax
+    mov     ax, [si+MATRIX._32]
+    xchg    ax, [si+MATRIX._23]
+    mov     [si+MATRIX._32], ax
     pop     di
     pop     si
     pop     bp
     retf
 loc_32AA3:
-    mov     ax, [si]
-    mov     [di], ax
-    mov     ax, [si+2]
-    mov     [di+6], ax
-    mov     ax, [si+4]
-    mov     [di+0Ch], ax
-    mov     ax, [si+6]
-    mov     [di+2], ax
-    mov     ax, [si+8]
-    mov     [di+8], ax
-    mov     ax, [si+0Ah]
-    mov     [di+0Eh], ax
-    mov     ax, [si+0Ch]
-    mov     [di+4], ax
-    mov     ax, [si+0Eh]
-    mov     [di+0Ah], ax
-    mov     ax, [si+10h]
-    mov     [di+10h], ax
+    mov     ax, [si+MATRIX._11]
+    mov     [di+MATRIX._11], ax
+    mov     ax, [si+MATRIX._21]
+    mov     [di+MATRIX._12], ax
+    mov     ax, [si+MATRIX._31]
+    mov     [di+MATRIX._13], ax
+    mov     ax, [si+MATRIX._12]
+    mov     [di+MATRIX._21], ax
+    mov     ax, [si+MATRIX._22]
+    mov     [di+MATRIX._22], ax
+    mov     ax, [si+MATRIX._32]
+    mov     [di+MATRIX._23], ax
+    mov     ax, [si+MATRIX._13]
+    mov     [di+MATRIX._31], ax
+    mov     ax, [si+MATRIX._23]
+    mov     [di+MATRIX._32], ax
+    mov     ax, [si+MATRIX._33]
+    mov     [di+MATRIX._33], ax
     pop     di
     pop     si
     pop     bp
@@ -9812,7 +9812,7 @@ loc_32AA3:
 off_32ADC     dw offset loc_32B78
     dw offset loc_32B93
     dw offset loc_32BDE
-sub_32A72 endp
+mat_copy endp
 sub_32AE2 proc far
     var_E = word ptr -14
     var_C = word ptr -12

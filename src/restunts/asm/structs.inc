@@ -16,3 +16,8 @@ _13 dw ?
 _23 dw ?
 _33 dw ?
 ends
+VECTOR struc
+x dw ?
+y dw ?
+z dw ?
+ends

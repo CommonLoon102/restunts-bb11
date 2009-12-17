@@ -612,10 +612,13 @@ dseg segment byte public 'STUNTSD' use16
     extrn word_40E10:word
     extrn byte_40E6C:byte
     extrn byte_40E6D:byte
+    extrn mat_y200:MATRIX
+    extrn mat_y100:MATRIX
     extrn word_40EB0:word
     extrn word_40EB2:word
     extrn word_40EB4:word
     extrn word_40EB6:word
+    extrn mat_y300:MATRIX
     extrn dword_40ECA:dword
     extrn word_40ECE:word
     extrn word_40ED0:word
@@ -623,6 +626,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn word_40ED4:word
     extrn word_411F6:word
     extrn unk_41690:byte
+    extrn mat_y0:MATRIX
     extrn word_41850:word
     extrn word_41852:word
     extrn word_41854:word
@@ -777,6 +781,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn word_4394C:word
     extrn word_4394E:word
     extrn byte_43950:byte
+    extrn mat_unk_1:MATRIX
     extrn word_43964:word
     extrn byte_43966:byte
     extrn word_4408C:word
@@ -1015,6 +1020,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn word_44D22:word
     extrn word_44D24:word
     extrn dword_44D26:dword
+    extrn mat_unk_3:MATRIX
     extrn word_44D3C:word
     extrn dword_44D3E:dword
     extrn dword_44D42:dword
@@ -1210,10 +1216,12 @@ dseg segment byte public 'STUNTSD' use16
     extrn byte_463E7:byte
     extrn word_46434:word
     extrn byte_46436:byte
+    extrn mat_rot_temp:MATRIX
     extrn byte_4644A:byte
     extrn byte_4645E:byte
     extrn dword_46460:dword
     extrn byte_46467:byte
     extrn word_46468:word
+    extrn mat_unk_2:MATRIX
     extrn byte_46484:byte
 dseg ends
