@@ -45,7 +45,7 @@ static GetTypeString(flags, ea) {
 	if (isASCII(flags)) return "byte";
 	if (isWord(flags)) return "word";
 	if (isDwrd(flags)) return "dword";
-	if (isStruct(flags)) return "struc";
+	if (isStruct(flags)) return GuessType(ea);	// would this work for all types?
 }
 
 static NextNotTail2(ea, maxea) {
@@ -321,6 +321,16 @@ static PrintBody(f, funcstart, funcend, skipfirstlabel) {
 			//fprintf(f, "    ; JUMP TABLE!");
 			//GenerateFile(OFILE_ASM, f, funcbody, funcbody + ItemSize(funcbody), 0);
 
+			if (isStruct(bodyflags)) {
+				// TODO: print properly sized data members rather than just bytes
+				for (i = 0; i < ItemSize(funcbody); i++) {
+					if (hasValue(bodyflags))
+						fprintf(f, "    db %i\n", Byte(funcbody + i)); else
+					if (SegName(funcbody) == "dseg")
+						fprintf(f, "    db 0\n"); else
+						fprintf(f, "    db ?\n");
+				}
+			} else
 			if (isOff0(bodyflags)) {
 				fprintf(f, "    %s\n", GetDisasm(funcbody));
 			} else
