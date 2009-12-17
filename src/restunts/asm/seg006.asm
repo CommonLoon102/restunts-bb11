@@ -84,25 +84,25 @@ sub_24D64 proc far
     push    ax
     mov     ax, 60CEh
     push    ax
-    call    sub_36F80
+    call    mat_rot_y
     add     sp, 4
     mov     ax, 100h
     push    ax
     mov     ax, 572Eh
     push    ax
-    call    sub_36F80
+    call    mat_rot_y
     add     sp, 4
     mov     ax, 200h
     push    ax
     mov     ax, 571Ch
     push    ax
-    call    sub_36F80
+    call    mat_rot_y
     add     sp, 4
     mov     ax, 300h
     push    ax
     mov     ax, 5748h
     push    ax
-    call    sub_36F80
+    call    mat_rot_y
     add     sp, 4
     push    cs
     call    near ptr sub_26500
@@ -2310,7 +2310,7 @@ sub_261FA proc far
     push    [bp+arg_0]
     mov     ax, 81E2h
     push    ax
-    call    sub_36FD8
+    call    mat_rot_z
     add     sp, si
 loc_2621C:
     test    [bp+arg_2], 3FFh
@@ -2322,7 +2322,7 @@ nosmart
     push    [bp+arg_2]
     mov     ax, 0AD02h
     push    ax
-    call    sub_36F2A
+    call    mat_rot_x
     add     sp, 4
 loc_26236:
     test    [bp+arg_4], 3FFh
@@ -2354,7 +2354,7 @@ nosmart
     push    [bp+arg_4]
     mov     ax, 95BAh
     push    ax
-    call    sub_36F80
+    call    mat_rot_y
     add     sp, 4
     mov     ax, [bp+arg_4]
 smart

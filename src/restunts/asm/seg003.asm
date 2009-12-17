@@ -860,7 +860,7 @@ loc_1A5DD:
     push    si
     lea     ax, [bp+var_A0]
     push    ax
-    call    sub_36F80
+    call    mat_rot_y
     add     sp, 4
     mov     [bp+var_F2], 0
     mov     ax, 0AE6h

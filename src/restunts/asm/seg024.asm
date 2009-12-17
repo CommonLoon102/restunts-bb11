@@ -46,12 +46,12 @@ nosmart
 seg024 segment byte public 'STUNTSC' use16
     assume cs:seg024
     assume es:nothing, ss:nothing, ds:dseg
-    public sub_36F2A
-    public sub_36F80
-    public sub_36FD8
+    public mat_rot_x
+    public mat_rot_y
+    public mat_rot_z
     ; align 2
     db 144
-sub_36F2A proc far
+mat_rot_x proc far
     var_4 = word ptr -4
     var_2 = word ptr -2
      s = byte ptr 0
@@ -70,26 +70,26 @@ sub_36F2A proc far
     call    sin_fast
     mov     [bp+var_4], ax
     mov     bx, [bp+arg_0]
-    mov     word ptr [bx], 4000h
-    mov     word ptr [bx+2], 0
-    mov     word ptr [bx+4], 0
-    mov     word ptr [bx+6], 0
+    mov     [bx+MATRIX._11], 4000h
+    mov     [bx+MATRIX._21], 0
+    mov     [bx+MATRIX._31], 0
+    mov     [bx+MATRIX._12], 0
     mov     ax, [bp+var_2]
-    mov     [bx+8], ax
+    mov     [bx+MATRIX._22], ax
     mov     ax, [bp+var_4]
-    mov     [bx+0Ah], ax
-    mov     word ptr [bx+0Ch], 0
+    mov     [bx+MATRIX._32], ax
+    mov     [bx+MATRIX._13], 0
     neg     ax
-    mov     [bx+0Eh], ax
+    mov     [bx+MATRIX._23], ax
     mov     ax, [bp+var_2]
-    mov     [bx+10h], ax
+    mov     [bx+MATRIX._33], ax
     mov     sp, bp
     pop     bp
     retf
     ; align 2
     db 144
-sub_36F2A endp
-sub_36F80 proc far
+mat_rot_x endp
+mat_rot_y proc far
     var_4 = word ptr -4
     var_2 = word ptr -2
      s = byte ptr 0
@@ -109,24 +109,24 @@ sub_36F80 proc far
     mov     [bp+var_4], ax
     mov     bx, [bp+arg_0]
     mov     ax, [bp+var_2]
-    mov     [bx], ax
-    mov     word ptr [bx+2], 0
+    mov     [bx+MATRIX._11], ax
+    mov     [bx+MATRIX._21], 0
     mov     ax, [bp+var_4]
     neg     ax
-    mov     [bx+4], ax
-    mov     word ptr [bx+6], 0
-    mov     word ptr [bx+8], 4000h
-    mov     word ptr [bx+0Ah], 0
+    mov     [bx+MATRIX._31], ax
+    mov     [bx+MATRIX._12], 0
+    mov     [bx+MATRIX._22], 4000h
+    mov     [bx+MATRIX._32], 0
     mov     ax, [bp+var_4]
-    mov     [bx+0Ch], ax
-    mov     word ptr [bx+0Eh], 0
+    mov     [bx+MATRIX._13], ax
+    mov     [bx+MATRIX._23], 0
     mov     ax, [bp+var_2]
-    mov     [bx+10h], ax
+    mov     [bx+MATRIX._33], ax
     mov     sp, bp
     pop     bp
     retf
-sub_36F80 endp
-sub_36FD8 proc far
+mat_rot_y endp
+mat_rot_z proc far
     var_4 = word ptr -4
     var_2 = word ptr -2
      s = byte ptr 0
@@ -146,21 +146,21 @@ sub_36FD8 proc far
     mov     [bp+var_4], ax
     mov     bx, [bp+arg_0]
     mov     ax, [bp+var_2]
-    mov     [bx], ax
+    mov     [bx+MATRIX._11], ax
     mov     ax, [bp+var_4]
-    mov     [bx+2], ax
-    mov     word ptr [bx+4], 0
+    mov     [bx+MATRIX._21], ax
+    mov     [bx+MATRIX._31], 0
     neg     ax
-    mov     [bx+6], ax
+    mov     [bx+MATRIX._12], ax
     mov     ax, [bp+var_2]
-    mov     [bx+8], ax
-    mov     word ptr [bx+0Ah], 0
-    mov     word ptr [bx+0Ch], 0
-    mov     word ptr [bx+0Eh], 0
-    mov     word ptr [bx+10h], 4000h
+    mov     [bx+MATRIX._22], ax
+    mov     [bx+MATRIX._32], 0
+    mov     [bx+MATRIX._13], 0
+    mov     [bx+MATRIX._23], 0
+    mov     [bx+MATRIX._33], 4000h
     mov     sp, bp
     pop     bp
     retf
-sub_36FD8 endp
+mat_rot_z endp
 seg024 ends
 end

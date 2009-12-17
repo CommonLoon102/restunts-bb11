@@ -1469,7 +1469,7 @@ loc_152D7:
     push    ax
     lea     ax, [bp+var_134]
     push    ax
-    call    sub_36F80
+    call    mat_rot_y
     add     sp, 4
     lea     ax, [bp+var_C]
     push    ax
@@ -2795,7 +2795,7 @@ nosmart
     push    ax
     lea     ax, [bp+var_10E]
     push    ax
-    call    sub_36F80
+    call    mat_rot_y
     add     sp, 4
     mov     [bp+var_E8], 0
 loc_160A7:
@@ -2871,7 +2871,7 @@ loc_1614C:
     push    word_44986
     lea     ax, [bp+var_10E]
     push    ax
-    call    sub_36F2A
+    call    mat_rot_x
     add     sp, 4
     mov     [bp+var_E8], 0
 loc_16169:
@@ -9027,7 +9027,7 @@ loc_19845:
     push    ax
     mov     ax, 55E8h
     push    ax
-    call    sub_36F80
+    call    mat_rot_y
     add     sp, 4
     mov     word_3BE16, si
 loc_19866:
@@ -9086,7 +9086,7 @@ loc_198C2:
     push    ax
     mov     ax, 55D6h
     push    ax
-    call    sub_36F80
+    call    mat_rot_y
     add     sp, 4
     mov     ax, word_44F48
     mov     word_3BE14, ax
