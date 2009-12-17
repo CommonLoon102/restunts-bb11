@@ -47,10 +47,10 @@ seg002 segment byte public 'STUNTSC' use16
     assume cs:seg002
     assume es:nothing, ss:nothing, ds:dseg
     public sub_19DC6
-    public sub_19E21
+    public init_kevinrandom
     public sub_19E4E
     public sub_19E7B
-    public sub_19EE8
+    public init_div0
     ; align 2
     db 144
 sub_19DC6 proc far
@@ -121,7 +121,7 @@ loc_19DFC:
     pop     bp
     retf
 sub_19DC6 endp
-sub_19E21 proc far
+init_kevinrandom proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -145,7 +145,7 @@ sub_19E21 proc far
     pop     bp
     pop     bp
     retf
-sub_19E21 endp
+init_kevinrandom endp
 sub_19E4E proc far
      s = byte ptr 0
      r = byte ptr 2
@@ -216,7 +216,7 @@ loc_19EC3:
     pop     bp
     iret
 sub_19E7B endp
-sub_19EE8 proc far
+init_div0 proc far
 
     push    ds
     mov     ah, 35h ; '5'
@@ -243,6 +243,6 @@ sub_19EE8 proc far
     db 0
     db 205
     db 33
-sub_19EE8 endp
+init_div0 endp
 seg002 ends
 end

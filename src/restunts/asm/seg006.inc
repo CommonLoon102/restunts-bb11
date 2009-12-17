@@ -1,5 +1,5 @@
 seg006 segment byte public 'STUNTSC' use16
-    extrn sub_24D64:proc
+    extrn init_polyinfo:proc
     extrn sub_24DC2:proc
     extrn sub_24DE6:proc
     extrn sub_24E06:proc

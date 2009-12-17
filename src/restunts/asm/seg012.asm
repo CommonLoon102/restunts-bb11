@@ -123,7 +123,7 @@ seg012 segment byte public 'STUNTSC' use16
     public sub_2FE74
     public sub_2FE82
     public sub_2FF26
-    public sub_2FFD4
+    public find_filename
     public loc_30011
     public loc_3002A
     public sub_3002E
@@ -160,7 +160,7 @@ seg012 segment byte public 'STUNTSC' use16
     public sub_30A68
     public sub_30AD0
     public sub_30AE0
-    public sub_30AEF
+    public load_binary_file
     public loc_30AFB
     public sub_30B62
     public sub_30BF8
@@ -4095,7 +4095,7 @@ loc_2FFC4:
     push    ax
     call    far ptr sub_2EA2A
 sub_2FF26 endp
-sub_2FFD4 proc far
+find_filename proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -4150,7 +4150,7 @@ loc_30025:
 loc_3002A:
     xor     ax, ax
     jmp     short loc_30025
-sub_2FFD4 endp
+find_filename endp
 sub_3002E proc far
      s = byte ptr 0
      r = byte ptr 2
@@ -5549,7 +5549,7 @@ sub_30AE0 proc far
     jmp     short loc_30AFB
     db 144
 sub_30AE0 endp
-sub_30AEF proc far
+load_binary_file proc far
     var_8 = word ptr -8
     var_6 = word ptr -6
     var_4 = word ptr -4
@@ -5612,7 +5612,7 @@ loc_30B52:
     push    [bp+arg_0]
     push    ax
     call    far ptr sub_2EA2A
-sub_30AEF endp
+load_binary_file endp
 sub_30B62 proc far
     var_1A = word ptr -26
     var_18 = word ptr -24
@@ -11642,9 +11642,9 @@ sub_33742 proc far
     push    di
     mov     ds, word ptr off_405FE+2
     mov     ax, [bp+arg_2]
-    mov     word_3B778, ax
+    mov     word ptr aMsRunTimeLibraryCop, ax; "MS Run-Time Library - Copyright (c) 198"...
     mov     ax, [bp+arg_4]
-    mov     word_3B77A, ax
+    mov     word ptr aMsRunTimeLibraryCop+2, ax
     jmp     short loc_3376B
     ; align 2
     db 144
@@ -11677,9 +11677,9 @@ loc_33771:
     jnz     short loc_33771
 loc_33797:
     mov     ax, word_3B774
-    mov     word_3B778, ax
-    mov     ax, word_3B782
-    add     word_3B77A, ax
+    mov     word ptr aMsRunTimeLibraryCop, ax; "MS Run-Time Library - Copyright (c) 198"...
+    mov     ax, word ptr aMsRunTimeLibraryCop+0Ah
+    add     word ptr aMsRunTimeLibraryCop+2, ax
     jmp     short loc_33771
 loc_337A6:
     pop     di
@@ -11689,31 +11689,31 @@ loc_337A6:
     pop     bp
     retf
 loc_337AD:
-    mov     ax, word_3B778
+    mov     ax, word ptr aMsRunTimeLibraryCop; "MS Run-Time Library - Copyright (c) 198"...
     mov     [bp+var_2], ax
-    cmp     byte_3B784, 0
+    cmp     byte ptr aMsRunTimeLibraryCop+0Ch, 0
     jz      short loc_337CE
     mov     al, [si]
     xor     ah, ah
     inc     si
-    mov     word_3B780, ax
+    mov     word ptr aMsRunTimeLibraryCop+8, ax
     add     ax, 7
     shr     ax, 1
     shr     ax, 1
     shr     ax, 1
-    mov     byte_3B77C, al
+    mov     byte ptr aMsRunTimeLibraryCop+4, al
 loc_337CE:
     mov     al, byte_3B770
     mov     ah, byte ptr word_3B772
-    mov     cx, word_3B77E
+    mov     cx, word ptr aMsRunTimeLibraryCop+6
     mov     [bp+var_4], cx
-    mov     bx, word_3B77A
+    mov     bx, word ptr aMsRunTimeLibraryCop+2
     shl     bx, 1
     add     bx, cs:word_3494A
 loc_337E7:
     mov     di, cs:[bx]
     add     di, [bp+var_2]
-    mov     dh, byte_3B77C
+    mov     dh, byte ptr aMsRunTimeLibraryCop+4
 loc_337F1:
     mov     cx, 8
     mov     dl, [si]
@@ -11731,8 +11731,8 @@ loc_337FD:
     inc     bx
     dec     [bp+var_4]
     jg      short loc_337E7
-    mov     ax, word_3B780
-    add     word_3B778, ax
+    mov     ax, word ptr aMsRunTimeLibraryCop+8
+    add     word ptr aMsRunTimeLibraryCop, ax; "MS Run-Time Library - Copyright (c) 198"...
     jmp     loc_33771
 sub_33742 endp
 sub_33816 proc far
@@ -13671,9 +13671,9 @@ loc_34586:
     mov     [bp+6], ax
     mov     ds, word ptr off_405FE+2
     mov     ax, [bp+8]
-    mov     word_3B778, ax
+    mov     word ptr aMsRunTimeLibraryCop, ax; "MS Run-Time Library - Copyright (c) 198"...
     mov     ax, [bp+0Ah]
-    mov     word_3B77A, ax
+    mov     word ptr aMsRunTimeLibraryCop+2, ax
     jmp     short loc_345E5
     ; align 2
     db 144
@@ -13695,9 +13695,9 @@ sub_345BC proc far
     push    di
     mov     ds, word ptr off_405FE+2
     mov     ax, [bp+arg_2]
-    mov     word_3B778, ax
+    mov     word ptr aMsRunTimeLibraryCop, ax; "MS Run-Time Library - Copyright (c) 198"...
     mov     ax, [bp+arg_4]
-    mov     word_3B77A, ax
+    mov     word ptr aMsRunTimeLibraryCop+2, ax
     jmp     short loc_345E5
     ; align 2
     db 144
@@ -13730,9 +13730,9 @@ loc_345EB:
     jnz     short loc_345EB
 loc_34610:
     mov     ax, word_3B774
-    mov     word_3B778, ax
-    mov     ax, word_3B782
-    add     word_3B77A, ax
+    mov     word ptr aMsRunTimeLibraryCop, ax; "MS Run-Time Library - Copyright (c) 198"...
+    mov     ax, word ptr aMsRunTimeLibraryCop+0Ah
+    add     word ptr aMsRunTimeLibraryCop+2, ax
     jmp     short loc_345EB
 loc_3461F:
     pop     di
@@ -13742,31 +13742,31 @@ loc_3461F:
     pop     bp
     retf
 loc_34626:
-    mov     ax, word_3B778
+    mov     ax, word ptr aMsRunTimeLibraryCop; "MS Run-Time Library - Copyright (c) 198"...
     mov     [bp+var_2], ax
-    cmp     byte_3B784, 0
+    cmp     byte ptr aMsRunTimeLibraryCop+0Ch, 0
     jz      short loc_34647
     mov     al, [si]
     xor     ah, ah
     inc     si
-    mov     word_3B780, ax
+    mov     word ptr aMsRunTimeLibraryCop+8, ax
     add     ax, 7
     shr     ax, 1
     shr     ax, 1
     shr     ax, 1
-    mov     byte_3B77C, al
+    mov     byte ptr aMsRunTimeLibraryCop+4, al
 loc_34647:
     mov     al, byte_3B770
     mov     ah, byte ptr word_3B772
-    mov     cx, word_3B77E
+    mov     cx, word ptr aMsRunTimeLibraryCop+6
     mov     [bp+var_4], cx
-    mov     bx, word_3B77A
+    mov     bx, word ptr aMsRunTimeLibraryCop+2
     shl     bx, 1
     add     bx, cs:word_3494A
 loc_34660:
     mov     di, cs:[bx]
     add     di, [bp+var_2]
-    mov     dh, byte_3B77C
+    mov     dh, byte ptr aMsRunTimeLibraryCop+4
 loc_3466A:
     mov     cx, 8
     mov     dl, [si]
@@ -13783,8 +13783,8 @@ loc_3467B:
     inc     bx
     dec     [bp+var_4]
     jg      short loc_34660
-    mov     ax, word_3B780
-    add     word_3B778, ax
+    mov     ax, word ptr aMsRunTimeLibraryCop+8
+    add     word ptr aMsRunTimeLibraryCop, ax; "MS Run-Time Library - Copyright (c) 198"...
     jmp     loc_345EB
 loc_3468C:
     mov     es:[di], ah

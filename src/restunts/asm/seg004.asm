@@ -55,7 +55,7 @@ seg004 segment byte public 'STUNTSC' use16
     public sub_1FF92
     public sub_20438
     public sub_204AE
-    public sub_206D4
+    public setup_track
     public off_2147C
     public sub_217CA
     public sub_21A5A
@@ -3526,7 +3526,7 @@ loc_201A9:
     push    ax
     mov     ax, 2F71h
     push    ax
-    call    sub_3A460
+    call    alloc_resbytes
     add     sp, 6
     mov     word ptr dword_454B0, ax
     mov     word ptr dword_454B0+2, dx
@@ -4067,7 +4067,7 @@ loc_206CE:
     pop     bp
     retf
 sub_204AE endp
-sub_206D4 proc far
+setup_track proc far
     var_AF0 = dword ptr -2800
     var_AEC = word ptr -2796
     var_AEA = word ptr -2794
@@ -4128,7 +4128,7 @@ sub_206D4 proc far
     push    ax
     mov     ax, 2FA8h
     push    ax
-    call    sub_3A460
+    call    alloc_resbytes
     add     sp, 6
     mov     [bp+var_AE2], ax
     mov     [bp+var_AE0], dx
@@ -5816,7 +5816,7 @@ loc_217AE:
     retf
     ; align 2
     db 144
-sub_206D4 endp
+setup_track endp
 sub_217CA proc far
     var_F30 = word ptr -3888
     var_B2E = word ptr -2862
@@ -5847,7 +5847,7 @@ sub_217CA proc far
     mov     byte_3B907, al
     mov     ax, 194h
     push    ax
-    call    sub_289F2
+    call    load_res_file
     add     sp, 2
     mov     [bp+var_B2E], ax
     mov     [bp+var_B2C], dx
@@ -5855,7 +5855,7 @@ sub_217CA proc far
     push    ax
     push    dx
     push    [bp+var_B2E]
-    call    sub_28AA2
+    call    locate_text_res
     add     sp, 6
     push    dx
     push    ax

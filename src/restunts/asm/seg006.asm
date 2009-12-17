@@ -46,7 +46,7 @@ nosmart
 seg006 segment byte public 'STUNTSC' use16
     assume cs:seg006
     assume es:nothing, ss:nothing, ds:dseg
-    public sub_24D64
+    public init_polyinfo
     public sub_24DC2
     public sub_24DE6
     public sub_24E06
@@ -68,7 +68,7 @@ seg006 segment byte public 'STUNTSC' use16
     public sub_269D0
     public sub_26A52
     public sub_26B4A
-sub_24D64 proc far
+init_polyinfo proc far
 
     mov     ax, 28A0h
     cwd
@@ -76,7 +76,7 @@ sub_24D64 proc far
     push    ax
     mov     ax, 32E8h
     push    ax
-    call    sub_3A460
+    call    alloc_resbytes
     add     sp, 6
     mov     word_40ED2, ax
     mov     word_40ED4, dx
@@ -109,7 +109,7 @@ sub_24D64 proc far
     retf
     ; align 2
     db 144
-sub_24D64 endp
+init_polyinfo endp
 sub_24DC2 proc far
      s = byte ptr 0
      r = byte ptr 2

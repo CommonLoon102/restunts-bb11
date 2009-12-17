@@ -3697,7 +3697,7 @@ loc_1C238:
     call    sub_28F98
     add     sp, 0Ah
 loc_1C256:
-    call    sub_298A8
+    call    set_fontdef
 loc_1C25B:
     cmp     word_44984, 0
     jnz     short loc_1C265
@@ -5406,7 +5406,7 @@ loc_1D14E:
     push    ax
     push    word_449A2
     push    word_449A0
-    call    sub_28AA2
+    call    locate_text_res
     add     sp, 6
     push    dx
     push    ax
@@ -5439,7 +5439,7 @@ loc_1D14E:
     push    ax
     push    word_449A2
     push    word_449A0
-    call    sub_28AA2
+    call    locate_text_res
     add     sp, 6
     push    dx
     push    ax
@@ -5473,7 +5473,7 @@ loc_1D1F0:
     push    ax
     push    word_449A2
     push    word_449A0
-    call    sub_28AA2
+    call    locate_text_res
     add     sp, 6
     push    dx
     push    ax
@@ -5499,7 +5499,7 @@ loc_1D234:
     push    ax
     push    word_449A2
     push    word_449A0
-    call    sub_28AA2
+    call    locate_text_res
     add     sp, 6
     push    dx
     push    ax
@@ -5532,7 +5532,7 @@ loc_1D234:
     push    ax
     push    word_449A2
     push    word_449A0
-    call    sub_28AA2
+    call    locate_text_res
     add     sp, 6
     push    dx
     push    ax
@@ -5616,7 +5616,7 @@ loc_1D34A:
     push    ax
     push    word_449A2
     push    word_449A0
-    call    sub_28AA2
+    call    locate_text_res
     add     sp, 6
     push    dx
     push    ax
@@ -5665,7 +5665,7 @@ loc_1D3C7:
     push    ax
     push    word_449A2
     push    word_449A0
-    call    sub_28AA2
+    call    locate_text_res
     add     sp, 6
     push    dx
     push    ax
@@ -5706,7 +5706,7 @@ loc_1D42C:
     push    ax
     push    word_449A2
     push    word_449A0
-    call    sub_28AA2
+    call    locate_text_res
     add     sp, 6
     push    dx
     push    ax
@@ -5766,7 +5766,7 @@ loc_1D4B0:
     push    ax
     push    word_449A2
     push    word_449A0
-    call    sub_28AA2
+    call    locate_text_res
     add     sp, 6
     push    dx
     push    ax
@@ -6243,7 +6243,7 @@ sub_1D8D2 proc far
     push    ax              ; char *
     mov     ax, 8
     push    ax              ; int
-    call    sub_299CA
+    call    load_resource
     add     sp, 4
     mov     word_463D8, ax
     mov     word_463DA, dx
@@ -6438,7 +6438,7 @@ loc_1D9CF:
     mov     [bp+var_5D4], 0
     mov     ax, 0A3Eh
     push    ax
-    call    sub_289F2
+    call    load_res_file
     add     sp, 2
     mov     [bp+var_A], ax
     mov     [bp+var_8], dx

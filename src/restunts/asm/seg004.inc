@@ -8,7 +8,7 @@ seg004 segment byte public 'STUNTSC' use16
     extrn sub_1FF92:proc
     extrn sub_20438:proc
     extrn sub_204AE:proc
-    extrn sub_206D4:proc
+    extrn setup_track:proc
     extrn off_2147C:word
     extrn sub_217CA:proc
     extrn sub_21A5A:proc

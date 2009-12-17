@@ -737,7 +737,7 @@ __setenvp proc far
     mov     bp, cx
     mov     di, cx
     dec     cx
-    mov     si, word_3B79C
+    mov     si, word ptr aMsRunTimeLibraryCop+24h
     or      si, si
     jz      short loc_2D0B9
     mov     es, si

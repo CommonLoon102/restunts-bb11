@@ -51,11 +51,11 @@ seg031 segment byte public 'STUNTSC' use16
     public sub_39E4C
     public nullsub_1
     public nullsub_2
-    public sub_39E56
-    public sub_3A25C
+    public init_video
+    public random_wait
     public sub_3A2C0
     public sub_3A45C
-    public sub_3A460
+    public alloc_resbytes
     public sub_3A484
     public sub_3A496
 sub_39E14 proc far
@@ -86,11 +86,11 @@ sub_39E24 proc far
     push    [bp+arg_4]      ; int
     push    word ptr [bp+arg_0+2]
     push    word ptr [bp+arg_0]; char *
-    call    sub_285C2
+    call    combine_file_path
     add     sp, 8
     lea     ax, [bp+var_50]
     push    ax
-    call    sub_2FFD4
+    call    find_filename
     mov     sp, bp
     pop     bp
     retf
@@ -112,7 +112,7 @@ nullsub_2 proc far
     ; align 2
     db 144
 nullsub_2 endp
-sub_39E56 proc far
+init_video proc far
     var_1E = word ptr -30
     var_1C = word ptr -28
     var_1A = word ptr -26
@@ -538,7 +538,7 @@ loc_3A22B:
     mov     ax, word_44CEA
     mov     word_44984, ax
     push    cs
-    call    near ptr sub_3A25C
+    call    near ptr random_wait
     sub     ax, ax
     push    ax
     push    word_40B10
@@ -552,8 +552,8 @@ loc_3A22B:
     mov     sp, bp
     pop     bp
     retf
-sub_39E56 endp
-sub_3A25C proc far
+init_video endp
+random_wait proc far
      s = byte ptr 0
      r = byte ptr 2
 
@@ -613,7 +613,7 @@ loc_3A2B2:
     retf
     ; align 2
     db 144
-sub_3A25C endp
+random_wait endp
 sub_3A2C0 proc far
     var_312 = word ptr -786
     var_310 = dword ptr -784
@@ -764,7 +764,7 @@ sub_3A45C proc far
     ; align 2
     db 144
 sub_3A45C endp
-sub_3A460 proc far
+alloc_resbytes proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -789,7 +789,7 @@ sub_3A460 proc far
     retf
     ; align 2
     db 144
-sub_3A460 endp
+alloc_resbytes endp
 sub_3A484 proc far
 
     call    sub_3117B

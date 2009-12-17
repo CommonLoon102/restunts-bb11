@@ -136,7 +136,7 @@ loc_3AA31:
 loc_3AA40:
     lea     ax, [bp+var_7C]
     push    ax
-    call    sub_2FFD4
+    call    find_filename
     add     sp, 2
     or      ax, ax
     jnz     short loc_3AAA8

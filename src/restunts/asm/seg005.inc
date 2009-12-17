@@ -1,5 +1,5 @@
 seg005 segment byte public 'STUNTSC' use16
-    extrn sub_21B7A:proc
+    extrn run_game:proc
     extrn sub_223FA:proc
     extrn sub_22532:proc
     extrn sub_2255A:proc

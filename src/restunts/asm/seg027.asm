@@ -66,7 +66,7 @@ seg027 segment byte public 'STUNTSC' use16
     public sub_3776C
     public sub_37868
     public sub_378CA
-    public sub_37A64
+    public audiodrv_atexit
     public sub_37B14
     public sub_37C44
     public sub_37CBA
@@ -1133,7 +1133,7 @@ loc_378DE:
     or      ax, word ptr dword_4060A+2
     jz      short loc_378EE
     push    cs
-    call    near ptr sub_37A64
+    call    near ptr audiodrv_atexit
     jmp     short loc_378FE
     ; align 2
     db 144
@@ -1291,7 +1291,7 @@ loc_37A52:
     pop     bp
     retf
 sub_378CA endp
-sub_37A64 proc far
+audiodrv_atexit proc far
     var_4 = dword ptr -4
      s = byte ptr 0
      r = byte ptr 2
@@ -1357,7 +1357,7 @@ loc_37B09:
     retf
     ; align 2
     db 144
-sub_37A64 endp
+audiodrv_atexit endp
 sub_37B14 proc far
     var_8 = byte ptr -8
     var_7 = byte ptr -7

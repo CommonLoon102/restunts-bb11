@@ -47,22 +47,22 @@ seg000 segment byte public 'STUNTSC' use16
     assume cs:seg000
     assume es:nothing, ss:nothing, ds:dseg
     public _main
-    public sub_1059A
+    public run_intro_looped
     public sub_1069C
     public sub_10786
-    public sub_10F3C
-    public sub_110D0
+    public run_menu
+    public run_tracks_menu
     public sub_11588
     public sub_1168E
     public sub_118D4
     public sub_11A1C
     public sub_11BB4
-    public sub_11C42
-    public sub_1293C
-    public sub_12F4A
+    public run_car_menu
+    public run_opponent_menu
+    public run_option_menu
     public off_1314A
-    public sub_13178
-    public sub_144CF
+    public end_hiscore
+    public security_check
     public sub_146E4
 _main proc far
     var_12 = word ptr -18
@@ -85,9 +85,9 @@ _main proc far
     push    si
     push    word ptr [bp+p_argv]
     push    [bp+p_argc]
-    call    sub_39E56
+    call    init_video
     add     sp, 4
-    call    sub_19EE8
+    call    init_div0
     sub     si, si
 loc_1001D:
     mov     ax, si
@@ -99,30 +99,30 @@ loc_1001D:
     mov     ax, 1Eh
     imul    [bp+var_E]
     mov     bx, [bp+var_C]
-    mov     [bx-5A30h], ax
+    mov     trackrows[bx], ax
     mov     ax, 1Eh
     imul    si
     mov     bx, [bp+var_C]
-    mov     [bx-73C4h], ax
+    mov     terrainrows[bx], ax
     mov     ax, [bp+var_E]
     mov     cl, 0Ah
     shl     ax, cl
     mov     [bp+var_10], ax
     mov     bx, [bp+var_C]
-    mov     [bx-7E84h], ax
+    mov     trackpos[bx], ax
     mov     bx, [bp+var_C]
     mov     ax, [bp+var_10]
     add     ah, 2
-    mov     [bx-55EAh], ax
+    mov     trackcenterpos[bx], ax
     mov     ax, si
     shl     ax, cl
     mov     [bp+var_12], ax
     mov     bx, [bp+var_C]
-    mov     [bx-6CE2h], ax
+    mov     terrainpos[bx], ax
     mov     bx, [bp+var_C]
     mov     ax, [bp+var_12]
     add     ah, 2
-    mov     [bx+750Eh], ax
+    mov     terraincenterpos[bx], ax
     inc     si
     cmp     si, 1Eh
     jl      short loc_1001D
@@ -135,47 +135,47 @@ loc_10086:
     mov     ax, si
     mov     cl, 0Ah
     shl     ax, cl
-    mov     [bx+7556h], ax
+    mov     trackpos2[bx], ax
     mov     bx, [bp+var_12]
     mov     ax, si
     shl     ax, cl
     add     ah, 2
-    mov     [bx-599Eh], ax
+    mov     trackcenterpos2[bx], ax
     inc     si
     cmp     si, 1Eh
     jl      short loc_10086
-    mov     ax, 42h ; 'B'
+    mov     ax, offset aMain; "main"
     push    ax
-    call    sub_289F2
+    call    load_res_file
     add     sp, 2
     mov     word_44CEC, ax
     mov     word_44CEE, dx
-    mov     ax, 47h ; 'G'
+    mov     ax, offset aFontdef_fnt; "fontdef.fnt"
     push    ax              ; char *
     sub     ax, ax
     push    ax              ; int
-    call    sub_299CA
+    call    load_resource   ; type 0 = binary file
     add     sp, 4
     mov     word_454C6, ax
     mov     word_454C8, dx
-    mov     ax, 53h ; 'S'
+    mov     ax, offset aFontn_fnt; "fontn.fnt"
     push    ax              ; char *
     sub     ax, ax
     push    ax              ; int
-    call    sub_299CA
+    call    load_resource
     add     sp, 4
     mov     word_44D22, ax
     mov     word_44D24, dx
-    call    sub_298A8
-    call    sub_24D64
-    mov     si, 6BF3h
+    call    set_fontdef
+    call    init_polyinfo
+    mov     si, 6BF3h       ; bytes to allocate
     mov     ax, si
     cwd
     push    dx
     push    ax
-    mov     ax, 5Dh ; ']'
+    mov     ax, offset aTrakdata; "trakdata"
     push    ax
-    call    sub_3A460
+    call    alloc_resbytes
     add     sp, 6
     mov     [bp+var_4], ax
     mov     [bp+var_2], dx
@@ -271,13 +271,13 @@ loc_10086:
     mov     word_463DE, dx
     add     [bp+var_4], 30h ; '0'
     call    sub_22532
-    mov     ax, 18Eh
+    mov     ax, offset aKevin; "kevin"
     push    ax
-    call    sub_19E21
+    call    init_kevinrandom
     add     sp, 2
-    mov     ax, 66h ; 'f'
+    mov     ax, offset aDefault_0; "DEFAULT"
     push    ax
-    mov     ax, 9241h
+    mov     ax, offset byte_449B1
     push    ax              ; char *
     call    _strcpy
     add     sp, 4
@@ -303,22 +303,22 @@ loc_102B8:
 loc_102BA:
     push    ax
     push    cs
-    call    near ptr sub_110D0
+    call    near ptr run_tracks_menu
     add     sp, 2
     jmp     loc_10440
     nop
 loc_102C6:
-    call    sub_28EE4
-    call    sub_296AA
+    call    check_input
+    call    show_waiting
     push    cs
-    call    near ptr sub_1293C
+    call    near ptr run_opponent_menu
     jmp     loc_10440
     nop
 loc_102D8:
-    call    sub_28EE4
-    call    sub_296AA
+    call    check_input
+    call    show_waiting
     push    cs
-    call    near ptr sub_12F4A
+    call    near ptr run_option_menu
     or      al, al
     jnz     short loc_102ED
     jmp     loc_10440
@@ -327,18 +327,18 @@ loc_102ED:
     jmp     short loc_1031C
     nop
 loc_102F4:
-    call    sub_28EE4
-    call    sub_296AA
+    call    check_input
+    call    show_waiting
     sub     ax, ax
     push    ax
-    mov     ax, 9239h
+    mov     ax, offset byte_449A9
     push    ax
-    mov     ax, 9238h
+    mov     ax, offset byte_449A8
     push    ax
-    mov     ax, 9234h
+    mov     ax, offset byte_449A4
     push    ax
     push    cs
-    call    near ptr sub_11C42
+    call    near ptr run_car_menu
     add     sp, 8
     jmp     loc_10440
     nop
@@ -347,8 +347,8 @@ loc_10318:
 loc_1031C:
     push    si
     push    di
-    mov     di, 9DC0h
-    mov     si, 9234h
+    mov     di, offset unk_45530
+    mov     si, offset byte_449A4
     push    ds
     pop     es
     mov     cx, 0Dh
@@ -367,26 +367,26 @@ loc_1032F:
     sub     si, si
 loc_10346:
     les     bx, dword_443F6
-    mov     al, [si+9Ch]
+    mov     al, byte_3B80C[si]
     mov     es:[bx+si+70Ah], al
     les     bx, dword_443F6
-    mov     al, [si+0EEh]
+    mov     al, byte_3B85E[si]
     mov     es:[bx+si+75Bh], al
     inc     si
     cmp     si, 51h ; 'Q'
     jl      short loc_10346
     cmp     byte_44AE2, 0
     jnz     short loc_103DA
-    call    sub_206D4
+    call    setup_track
     or      al, al
     jz      short loc_1037C
     mov     ax, 1
     jmp     loc_102BA
 loc_1037C:
-    call    sub_3A25C
+    call    random_wait
     cmp     byte_45E1A, 0
     jnz     short loc_1039E
-    call    sub_2998E
+    call    get_super_random
     cwd
     mov     cx, 14h
     idiv    cx
@@ -394,23 +394,23 @@ loc_1037C:
     cbw
     push    ax
     push    cs
-    call    near ptr sub_144CF
+    call    near ptr security_check
     add     sp, 2
 loc_1039E:
-    call    sub_29858
-    mov     ax, 5780h
+    call    unload_audio_res
+    mov     ax, 5780h       ; size to allocate, 20*1120
     cwd
     push    dx
     push    ax
-    mov     ax, 90h ; 'ê'
+    mov     ax, offset aCvx ; "cvx"
     push    ax
-    call    sub_3A460
+    call    alloc_resbytes
     add     sp, 6
     mov     word_45A20, ax
     mov     word_45A22, dx
     mov     ax, 0FFFFh
     push    ax
-    call    sub_16B02
+    call    init_game_state
     add     sp, 2
     cmp     [bp+var_A], 0
     jnz     short loc_103D1
@@ -420,43 +420,43 @@ loc_103D1:
     jmp     loc_104AC
     nop
 loc_103DA:
-    mov     ax, 88h ; 'à'
+    mov     ax, offset aTedit__0; "tedit.*"
     push    ax
-    call    sub_2FFD4
+    call    find_filename
     add     sp, 2
     or      ax, ax
     jnz     short loc_1039E
 loc_103EA:
-    call    sub_29858
+    call    unload_audio_res
 loc_103EF:
     sub     si, si
 loc_103F1:
     mov     ax, 2
     push    ax
-    call    sub_2A1A6
+    call    ensure_file_exists
     add     sp, 2
     or      si, si
     jz      short loc_1042D
-    mov     ax, 95F8h
+    mov     ax, offset unk_44D68
     push    ax              ; char *
-    mov     ax, 6Eh ; 'n'
+    mov     ax, offset a_trk; ".trk"
     push    ax              ; int
-    mov     ax, 9241h
+    mov     ax, offset byte_449B1
     push    ax
-    mov     ax, 9Ch ; 'ú'
+    mov     ax, offset byte_3B80C
     push    ax              ; char *
-    call    sub_285C2
+    call    combine_file_path
     add     sp, 8
     push    word ptr dword_44D42+2
     push    word ptr dword_44D42
-    mov     ax, 95F8h
+    mov     ax, offset unk_44D68
     push    ax
-    call    sub_30AEF
+    call    load_binary_file
     add     sp, 6
 loc_1042D:
     mov     byte_44AE2, 0
     push    cs
-    call    near ptr sub_1059A
+    call    near ptr run_intro_looped
     mov     di, ax
     cmp     di, 1Bh
     jnz     short loc_10440
@@ -464,21 +464,21 @@ loc_1042D:
 loc_10440:
     mov     ax, 2
     push    ax
-    call    sub_2A1A6
+    call    ensure_file_exists
     add     sp, 2
     cmp     byte_3B8F3, 0
     jnz     short loc_10467
-    mov     ax, 73h ; 's'
+    mov     ax, offset aSlct; "SLCT"
     push    ax
-    mov     ax, 78h ; 'x'
+    mov     ax, offset aSkidms_0; "skidms"
     push    ax
-    mov     ax, 7Fh ; ''
+    mov     ax, offset aSkidslct; "skidslct"
     push    ax              ; char *
-    call    sub_297FC
+    call    load_audio_res
     add     sp, 6
 loc_10467:
     push    cs
-    call    near ptr sub_10F3C
+    call    near ptr run_menu
     cbw
     cmp     ax, 0FFFFh
     jnz     short loc_10474
@@ -513,14 +513,14 @@ loc_1049E:
 loc_104A6:
     mov     word_449BC, 0
 loc_104AC:
-    call    sub_296AA
-    call    sub_21B7A
+    call    show_waiting
+    call    run_game
     cmp     byte_44AE2, 0
     jnz     short loc_104D2
     cmp     byte_43966, 0
     jz      short loc_104D2
     push    cs
-    call    near ptr sub_13178
+    call    near ptr end_hiscore
     cbw
     or      ax, ax
     jz      short loc_1049E
@@ -529,8 +529,8 @@ loc_104AC:
 loc_104D2:
     push    si
     push    di
-    mov     di, 9234h
-    mov     si, 9DC0h
+    mov     di, offset byte_449A4
+    mov     si, offset unk_45530
     push    ds
     pop     es
     mov     cx, 0Dh
@@ -550,10 +550,10 @@ loc_104E5:
 loc_104FC:
     les     bx, dword_443F6
     mov     al, es:[bx+si+70Ah]
-    mov     [si+9Ch], al
+    mov     byte_3B80C[si], al
     les     bx, dword_443F6
     mov     al, es:[bx+si+75Bh]
-    mov     [si+0EEh], al
+    mov     byte_3B85E[si], al
     inc     si
     cmp     si, 51h ; 'Q'
     jl      short loc_104FC
@@ -575,11 +575,11 @@ loc_1053A:
     mov     ax, 0FFFFh
     push    ax
     push    ax
-    mov     ax, 94h ; 'î'
+    mov     ax, offset aDos ; "dos"
     push    ax
     push    word_44CEE
     push    word_44CEC
-    call    sub_28AA2
+    call    locate_text_res
     add     sp, 6
     push    dx
     push    ax
@@ -587,7 +587,7 @@ loc_1053A:
     push    ax
     mov     ax, 2
     push    ax
-    call    sub_27686
+    call    show_dialog
     add     sp, 12h
     cmp     ax, 1
     jge     short loc_10575
@@ -595,7 +595,7 @@ loc_1053A:
 loc_10575:
     call    sub_28DB6
     call    sub_30268
-    call    sub_37A64
+    call    audiodrv_atexit
     call    sub_30883
     call    sub_36AF4
     call    sub_30120
@@ -606,7 +606,7 @@ loc_10575:
     retf
     nop
 _main endp
-sub_1059A proc far
+run_intro_looped proc far
      s = byte ptr 0
      r = byte ptr 2
 
@@ -620,13 +620,13 @@ sub_1059A proc far
     push    ax
     mov     ax, 1AEh
     push    ax              ; char *
-    call    sub_297FC
+    call    load_audio_res
     add     sp, 6
     mov     ax, 1B7h
     push    ax              ; char *
     mov     ax, 2
     push    ax              ; int
-    call    sub_299CA
+    call    load_resource
     add     sp, 4
     mov     word_45E12, ax
     mov     word_45E14, dx
@@ -662,7 +662,7 @@ sub_1059A proc far
     push    ax              ; char *
     mov     ax, 2
     push    ax              ; int
-    call    sub_299CA
+    call    load_resource
     add     sp, 4
     mov     word_45E12, ax
     mov     word_45E14, dx
@@ -696,7 +696,7 @@ sub_1059A proc far
     call    sub_3147C
     add     sp, 4
 loc_1068E:
-    call    sub_29858
+    call    unload_audio_res
     mov     ax, si
     pop     si
     mov     sp, bp
@@ -705,7 +705,7 @@ loc_1068E:
     ; align 4
     db 144
     db 144
-sub_1059A endp
+run_intro_looped endp
 sub_1069C proc far
      s = byte ptr 0
      r = byte ptr 2
@@ -816,7 +816,7 @@ sub_10786 proc far
     push    si
     mov     ax, 1D4h
     push    ax
-    call    sub_289F2
+    call    load_res_file
     add     sp, 2
     mov     [bp+var_3A], ax
     mov     [bp+var_38], dx
@@ -844,7 +844,7 @@ sub_10786 proc far
     push    ax
     push    [bp+var_38]
     push    [bp+var_3A]
-    call    sub_28AA2
+    call    locate_text_res
     add     sp, 6
     push    dx
     push    ax
@@ -910,7 +910,7 @@ sub_10786 proc far
     push    ax
     push    [bp+var_38]
     push    [bp+var_3A]
-    call    sub_28AA2
+    call    locate_text_res
     add     sp, 6
     push    dx
     push    ax
@@ -1042,7 +1042,7 @@ sub_10786 proc far
     push    ax
     push    [bp+var_38]
     push    [bp+var_3A]
-    call    sub_28AA2
+    call    locate_text_res
     add     sp, 6
     push    dx
     push    ax
@@ -1130,7 +1130,7 @@ sub_10786 proc far
     push    ax
     push    [bp+var_38]
     push    [bp+var_3A]
-    call    sub_28AA2
+    call    locate_text_res
     add     sp, 6
     push    dx
     push    ax
@@ -1174,7 +1174,7 @@ sub_10786 proc far
     push    ax
     push    [bp+var_38]
     push    [bp+var_3A]
-    call    sub_28AA2
+    call    locate_text_res
     add     sp, 6
     push    dx
     push    ax
@@ -1240,7 +1240,7 @@ sub_10786 proc far
     push    ax
     push    [bp+var_38]
     push    [bp+var_3A]
-    call    sub_28AA2
+    call    locate_text_res
     add     sp, 6
     push    dx
     push    ax
@@ -1534,7 +1534,7 @@ loc_10F34:
     pop     bp
     retf
 sub_10786 endp
-sub_10F3C proc far
+run_menu proc far
     var_10 = byte ptr -16
     var_E = byte ptr -14
     var_C = byte ptr -12
@@ -1552,7 +1552,7 @@ sub_10F3C proc far
     mov     [bp+var_6], 0FFh
     mov     [bp+var_10], 0
     mov     [bp+var_C], 0FFh
-    call    sub_296AA
+    call    show_waiting
     mov     word_44382, 0B4h ; '¥'
     mov     ax, 0Fh
     push    ax
@@ -1568,7 +1568,7 @@ sub_10F3C proc far
     push    ax              ; char *
     mov     ax, 2
     push    ax              ; int
-    call    sub_299CA
+    call    load_resource
     add     sp, 4
     mov     [bp+var_4], ax
     mov     [bp+var_2], dx
@@ -1697,8 +1697,8 @@ loc_110BA:
     retf
     ; align 2
     db 144
-sub_10F3C endp
-sub_110D0 proc far
+run_menu endp
+run_tracks_menu proc far
     var_16 = byte ptr -22
     var_14 = byte ptr -20
     var_12 = byte ptr -18
@@ -1722,7 +1722,7 @@ sub_110D0 proc far
     push    si
     mov     ax, 3
     push    ax
-    call    sub_2A1A6
+    call    ensure_file_exists
     add     sp, 2
     cmp     [bp+arg_0], 0
     jz      short loc_110ED
@@ -1731,7 +1731,7 @@ loc_110ED:
     mov     [bp+var_6], 0FFh
     mov     [bp+var_16], 0
     mov     [bp+var_12], 0FFh
-    call    sub_296AA
+    call    show_waiting
     mov     word_44382, 9Bh ; 'õ'
     mov     ax, 0Fh
     push    ax
@@ -1761,7 +1761,7 @@ loc_110ED:
     add     sp, 8
     mov     ax, 0FFFEh
     push    ax
-    call    sub_16B02
+    call    init_game_state
     add     sp, 2
     call    sub_28F6A
     push    word_44A88
@@ -1834,7 +1834,7 @@ loc_11210:
     push    ax
     push    word_44CEE
     push    word_44CEC
-    call    sub_28AA2
+    call    locate_text_res
     add     sp, 6
     push    dx
     push    ax
@@ -1912,11 +1912,11 @@ loc_11210:
     push    ax
     call    sub_33742
     add     sp, 6
-    call    sub_298A8
+    call    set_fontdef
 loc_112E5:
     mov     ax, 2BCh
     push    ax
-    call    sub_289F2
+    call    load_res_file
     add     sp, 2
     mov     [bp+var_4], ax
     mov     [bp+var_2], dx
@@ -1937,7 +1937,7 @@ loc_112E5:
     push    ax
     push    dx
     push    [bp+var_4]
-    call    sub_28AA2
+    call    locate_text_res
     add     sp, 6
     push    dx
     push    ax
@@ -1960,7 +1960,7 @@ loc_112E5:
     push    ax
     push    [bp+var_2]
     push    [bp+var_4]
-    call    sub_28AA2
+    call    locate_text_res
     add     sp, 6
     push    dx
     push    ax
@@ -1983,7 +1983,7 @@ loc_112E5:
     push    ax
     push    [bp+var_2]
     push    [bp+var_4]
-    call    sub_28AA2
+    call    locate_text_res
     add     sp, 6
     push    dx
     push    ax
@@ -2121,7 +2121,7 @@ loc_114E2:
     push    ax
     push    word_44CEE
     push    word_44CEC
-    call    sub_28AA2
+    call    locate_text_res
     add     sp, 6
     push    dx              ; int
     push    ax              ; int
@@ -2143,7 +2143,7 @@ loc_114E2:
     push    ax
     mov     ax, 9Ch ; 'ú'
     push    ax              ; char *
-    call    sub_285C2
+    call    combine_file_path
     add     sp, 8
     or      si, si
     jz      short loc_11552
@@ -2151,7 +2151,7 @@ loc_114E2:
     push    word ptr dword_44D42
     mov     ax, 95F8h
     push    ax
-    call    sub_30AEF
+    call    load_binary_file
     add     sp, 6
     push    word ptr dword_44D26+2
     push    word ptr dword_44D26
@@ -2169,15 +2169,15 @@ loc_1155A:
     call    sub_324AA
     add     sp, 4
 loc_1156A:
-    call    sub_28EE4
-    call    sub_296AA
+    call    check_input
+    call    show_waiting
     mov     word_44382, 82h ; 'Ç'
-    call    sub_206D4
+    call    setup_track
     call    sub_2A2BC
     jmp     loc_110ED
     ; align 2
     db 144
-sub_110D0 endp
+run_tracks_menu endp
 sub_11588 proc far
     var_3A = word ptr -58
     var_38 = byte ptr -56
@@ -2214,7 +2214,7 @@ loc_1159A:
     push    ax
     mov     ax, 9Ch ; 'ú'
     push    ax              ; char *
-    call    sub_285C2
+    call    combine_file_path
     add     sp, 8
     cmp     [bp+arg_0], 0
     jnz     short loc_1160A
@@ -2316,7 +2316,7 @@ sub_1168E proc far
     push    ax
     push    word_44CEE
     push    word_44CEC
-    call    sub_28AA2
+    call    locate_text_res
     add     sp, 6
     push    dx
     push    ax
@@ -2360,7 +2360,7 @@ sub_1168E proc far
     push    ax
     push    word_44CEE
     push    word_44CEC
-    call    sub_28AA2
+    call    locate_text_res
     add     sp, 6
     push    dx
     push    ax
@@ -2383,7 +2383,7 @@ sub_1168E proc far
     push    ax
     push    word_44CEE
     push    word_44CEC
-    call    sub_28AA2
+    call    locate_text_res
     add     sp, 6
     push    dx
     push    ax
@@ -2406,7 +2406,7 @@ sub_1168E proc far
     push    ax
     push    word_44CEE
     push    word_44CEC
-    call    sub_28AA2
+    call    locate_text_res
     add     sp, 6
     push    dx
     push    ax
@@ -2429,7 +2429,7 @@ sub_1168E proc far
     push    ax
     push    word_44CEE
     push    word_44CEC
-    call    sub_28AA2
+    call    locate_text_res
     add     sp, 6
     push    dx
     push    ax
@@ -2528,7 +2528,7 @@ loc_118C1:
     mov     [bp+var_2], ax
     jmp     loc_1181F
 loc_118CA:
-    call    sub_298A8
+    call    set_fontdef
     mov     sp, bp
     pop     bp
     retf
@@ -2825,9 +2825,9 @@ loc_11AED:
     push    ax
     mov     ax, 3
     push    ax
-    call    sub_27686
+    call    show_dialog
     add     sp, 12h
-    call    sub_28EE4
+    call    check_input
     mov     ax, 7530h
     cwd
     push    dx              ; int
@@ -2915,7 +2915,7 @@ loc_11BC3:
     push    ax
     mov     ax, 9Ch ; 'ú'
     push    ax              ; char *
-    call    sub_285C2
+    call    combine_file_path
     add     sp, 8
     mov     byte_3B8FB, 1
     mov     ax, 16Ch
@@ -2938,7 +2938,7 @@ loc_11BC3:
     ; align 2
     db 144
 sub_11BB4 endp
-sub_11C42 proc far
+run_car_menu proc far
     var_10C = dword ptr -268
     var_108 = byte ptr -264
     var_106 = byte ptr -262
@@ -3028,7 +3028,7 @@ loc_11C82:
 loc_11C86:
     mov     ax, 2
     push    ax
-    call    sub_2A1A6
+    call    ensure_file_exists
     add     sp, 2
     mov     ax, 352h
     push    ax              ; int
@@ -3229,7 +3229,7 @@ loc_11E68:
     jnz     short loc_11EA2
     mov     ax, 363h
     push    ax
-    call    sub_289F2
+    call    load_res_file
     add     sp, 2
     mov     word_455CC, ax
     mov     word_455CE, dx
@@ -3368,7 +3368,7 @@ loc_11FC8:
     mov     byte_3B910, al
     mov     ax, 19Ah
     push    ax
-    call    sub_289F2
+    call    load_res_file
     add     sp, 2
     mov     [bp+var_4], ax
     mov     [bp+var_2], dx
@@ -3491,7 +3491,7 @@ loc_11FC8:
     push    ax
     call    sub_33742
     add     sp, 6
-    call    sub_298A8
+    call    set_fontdef
     sub     ax, ax
     push    ax
     push    word_407F8
@@ -3511,7 +3511,7 @@ loc_11FC8:
     push    ax
     push    word_455CE
     push    word_455CC
-    call    sub_28AA2
+    call    locate_text_res
     add     sp, 6
     push    dx
     push    ax
@@ -3536,7 +3536,7 @@ loc_11FC8:
     push    ax
     push    word_455CE
     push    word_455CC
-    call    sub_28AA2
+    call    locate_text_res
     add     sp, 6
     push    dx
     push    ax
@@ -3561,7 +3561,7 @@ loc_11FC8:
     push    ax
     push    word_455CE
     push    word_455CC
-    call    sub_28AA2
+    call    locate_text_res
     add     sp, 6
     push    dx
     push    ax
@@ -3578,7 +3578,7 @@ loc_12229:
     push    ax
     push    word_455CE
     push    word_455CC
-    call    sub_28AA2
+    call    locate_text_res
     add     sp, 6
     mov     [bp+var_3C], ax
     mov     [bp+var_3A], dx
@@ -3620,7 +3620,7 @@ loc_12229:
     push    ax
     push    word_455CE
     push    word_455CC
-    call    sub_28AA2
+    call    locate_text_res
     add     sp, 6
     push    dx
     push    ax
@@ -3631,7 +3631,7 @@ loc_12229:
     mov     word_449D0, 14h
     mov     ax, 0FFFEh
     push    ax
-    call    sub_16B02
+    call    init_game_state
     add     sp, 2
     mov     byte_446B2, 1
     mov     [bp+var_4A], 0
@@ -3696,7 +3696,7 @@ loc_12344:
     push    ax
     push    [bp+var_2]
     push    [bp+var_4]
-    call    sub_28AA2
+    call    locate_text_res
     add     sp, 6
     mov     word ptr [bp+var_FC], ax
     mov     word ptr [bp+var_FC+2], dx
@@ -3734,7 +3734,7 @@ loc_123CB:
     les     bx, [bp+var_FC]
     cmp     byte ptr es:[bx], 0
     jnz     short loc_1237E
-    call    sub_298A8
+    call    set_fontdef
     call    sub_2A230
     mov     [bp+var_F2], 0FFh
     mov     [bp+var_104], 0
@@ -4188,7 +4188,7 @@ loc_1287F:
     push    ax
     push    word_455CE
     push    word_455CC
-    call    sub_28AA2
+    call    locate_text_res
     add     sp, 6
     mov     [bp+var_3C], ax
     mov     [bp+var_3A], dx
@@ -4255,8 +4255,8 @@ loc_12926:
 loc_12934:
     mov     [bp+var_106], 0
     jmp     loc_11FA5
-sub_11C42 endp
-sub_1293C proc far
+run_car_menu endp
+run_opponent_menu proc far
     var_1E = byte ptr -30
     var_1C = byte ptr -28
     var_1A = dword ptr -26
@@ -4279,11 +4279,11 @@ sub_1293C proc far
     push    si
     mov     ax, 4
     push    ax
-    call    sub_2A1A6
+    call    ensure_file_exists
     add     sp, 2
     mov     ax, 3F4h
     push    ax
-    call    sub_289F2
+    call    load_res_file
     add     sp, 2
     mov     word_455CC, ax
     mov     word_455CE, dx
@@ -4291,7 +4291,7 @@ sub_1293C proc far
     push    ax              ; char *
     mov     ax, 8
     push    ax              ; int
-    call    sub_299CA
+    call    load_resource
     add     sp, 4
     mov     word_44A00, ax
     mov     word_44A02, dx
@@ -4331,7 +4331,7 @@ loc_129B3:
 loc_129DD:
     mov     ax, 4
     push    ax
-    call    sub_2A1A6
+    call    ensure_file_exists
     add     sp, 2
     cmp     byte_449AA, 0
     jz      short loc_12A10
@@ -4340,7 +4340,7 @@ loc_129DD:
     mov     byte_3B907, al
     mov     ax, 194h
     push    ax
-    call    sub_289F2
+    call    load_res_file
     add     sp, 2
     mov     [bp+var_C], ax
     mov     [bp+var_A], dx
@@ -4409,7 +4409,7 @@ loc_12A4D:
     push    ax
     push    word_455CE
     push    word_455CC
-    call    sub_28AA2
+    call    locate_text_res
     add     sp, 6
     push    dx
     push    ax
@@ -4433,7 +4433,7 @@ loc_12A4D:
     push    ax
     push    word_455CE
     push    word_455CC
-    call    sub_28AA2
+    call    locate_text_res
     add     sp, 6
     push    dx
     push    ax
@@ -4457,7 +4457,7 @@ loc_12A4D:
     push    ax
     push    word_455CE
     push    word_455CC
-    call    sub_28AA2
+    call    locate_text_res
     add     sp, 6
     push    dx
     push    ax
@@ -4481,7 +4481,7 @@ loc_12A4D:
     push    ax
     push    word_455CE
     push    word_455CC
-    call    sub_28AA2
+    call    locate_text_res
     add     sp, 6
     push    dx
     push    ax
@@ -4505,7 +4505,7 @@ loc_12A4D:
     push    ax
     push    word_455CE
     push    word_455CC
-    call    sub_28AA2
+    call    locate_text_res
     add     sp, 6
     push    dx
     push    ax
@@ -4571,7 +4571,7 @@ loc_12C5A:
     push    word_455CE
     push    word_455CC
 loc_12C66:
-    call    sub_28AA2
+    call    locate_text_res
     add     sp, 6
     mov     word ptr [bp+var_1A], ax
     mov     word ptr [bp+var_1A+2], dx
@@ -4622,7 +4622,7 @@ loc_12CED:
     les     bx, [bp+var_1A]
     cmp     byte ptr es:[bx], 0
     jnz     short loc_12C9D
-    call    sub_298A8
+    call    set_fontdef
 loc_12CFB:
     mov     al, [bp+var_14]
     cmp     [bp+var_1C], al
@@ -4743,7 +4743,7 @@ loc_12E14:
     jnz     short loc_12E1E
     jmp     loc_129A8
 loc_12E1E:
-    call    sub_28EE4
+    call    check_input
     call    sub_28DB6
     push    word ptr dword_44D26+2
     push    word ptr dword_44D26
@@ -4753,7 +4753,7 @@ loc_12E1E:
     push    [bp+var_C]
     call    sub_28A78
     add     sp, 4
-    call    sub_296AA
+    call    show_waiting
     mov     al, byte_449AA
     cbw
     push    ax
@@ -4764,7 +4764,7 @@ loc_12E1E:
     mov     ax, 923Bh
     push    ax
     push    cs
-    call    near ptr sub_11C42
+    call    near ptr run_car_menu
     add     sp, 8
     mov     [bp+var_1E], 0FFh
     jmp     loc_129A3
@@ -4864,8 +4864,8 @@ loc_12F43:
     jmp     loc_129A8
     ; align 2
     db 144
-sub_1293C endp
-sub_12F4A proc far
+run_opponent_menu endp
+run_option_menu proc far
     var_6 = byte ptr -6
     var_4 = byte ptr -4
     var_2 = byte ptr -2
@@ -4877,7 +4877,7 @@ sub_12F4A proc far
     sub     sp, 6
     mov     ax, 46Ch
     push    ax
-    call    sub_289F2
+    call    load_res_file
     add     sp, 2
     mov     word_455CC, ax
     mov     word_455CE, dx
@@ -4950,7 +4950,7 @@ loc_13004:
     push    ax
     push    word_455CE
     push    word_455CC
-    call    sub_28AA2
+    call    locate_text_res
     add     sp, 6
     push    dx
     push    ax
@@ -4958,7 +4958,7 @@ loc_13004:
     push    ax
     mov     ax, 2
     push    ax
-    call    sub_27686
+    call    show_dialog
     add     sp, 12h
     mov     [bp+var_2], al
     cbw
@@ -5000,7 +5000,7 @@ loc_1306E:
     push    ax
     push    word_455CE
     push    word_455CC
-    call    sub_28AA2
+    call    locate_text_res
     add     sp, 6
     push    dx
     push    ax
@@ -5008,7 +5008,7 @@ loc_1306E:
     push    ax
     mov     ax, 2
     push    ax
-    call    sub_27686
+    call    show_dialog
     add     sp, 12h
     mov     [bp+var_2], al
     cbw
@@ -5041,7 +5041,7 @@ loc_130E2:
     push    ax
     push    word_44CEE
     push    word_44CEC
-    call    sub_28AA2
+    call    locate_text_res
     add     sp, 6
     push    dx              ; int
     push    ax              ; int
@@ -5057,7 +5057,7 @@ loc_130E2:
     or      al, al
     jz      short loc_1315A
     mov     word_44382, 96h ; 'ñ'
-    call    sub_296AA
+    call    show_waiting
     mov     ax, 140h
     push    ax
     mov     ax, 0EEh ; 'Ó'
@@ -5100,8 +5100,8 @@ loc_13163:
     mov     sp, bp
     pop     bp
     retf
-sub_12F4A endp
-sub_13178 proc far
+run_option_menu endp
+end_hiscore proc far
     var_9E = word ptr -158
     var_9C = word ptr -156
     var_9A = byte ptr -154
@@ -5160,11 +5160,11 @@ sub_13178 proc far
     push    si
     mov     ax, 4
     push    ax
-    call    sub_2A1A6
+    call    ensure_file_exists
     add     sp, 2
     mov     ax, 48Ch
     push    ax
-    call    sub_289F2
+    call    load_res_file
     add     sp, 2
     mov     [bp+var_4E], ax
     mov     [bp+var_4C], dx
@@ -5175,7 +5175,7 @@ sub_13178 proc far
     mov     byte_3B907, al
     mov     ax, 194h
     push    ax
-    call    sub_289F2
+    call    load_res_file
     add     sp, 2
     mov     [bp+var_68], ax
     mov     [bp+var_66], dx
@@ -5243,7 +5243,7 @@ loc_131FC:
     push    ax
     push    [bp+var_4C]
     push    [bp+var_4E]
-    call    sub_28AA2
+    call    locate_text_res
     add     sp, 6
     push    dx
     push    ax
@@ -5276,7 +5276,7 @@ loc_13281:
     push    ax
     push    [bp+var_4C]
     push    [bp+var_4E]
-    call    sub_28AA2
+    call    locate_text_res
     add     sp, 6
     push    dx
     push    ax
@@ -5311,7 +5311,7 @@ loc_1330D:
     push    ax
     push    [bp+var_4C]
     push    [bp+var_4E]
-    call    sub_28AA2
+    call    locate_text_res
     add     sp, 6
     push    dx
     push    ax
@@ -5340,7 +5340,7 @@ loc_13354:
     push    ax
     push    [bp+var_4C]
     push    [bp+var_4E]
-    call    sub_28AA2
+    call    locate_text_res
     add     sp, 6
     push    dx
     push    ax
@@ -5379,7 +5379,7 @@ loc_133B5:
     push    ax
     push    [bp+var_4C]
     push    [bp+var_4E]
-    call    sub_28AA2
+    call    locate_text_res
     add     sp, 6
     push    dx
     push    ax
@@ -5391,7 +5391,7 @@ loc_133B5:
     push    ax
     push    [bp+var_4C]
     push    [bp+var_4E]
-    call    sub_28AA2
+    call    locate_text_res
     add     sp, 6
     push    dx
     push    ax
@@ -5417,7 +5417,7 @@ loc_1341C:
     push    ax
     push    [bp+var_4C]
     push    [bp+var_4E]
-    call    sub_28AA2
+    call    locate_text_res
     add     sp, 6
     push    dx
     push    ax
@@ -5445,7 +5445,7 @@ loc_13466:
     push    ax
     push    [bp+var_4C]
     push    [bp+var_4E]
-    call    sub_28AA2
+    call    locate_text_res
     add     sp, 6
     push    dx
     push    ax
@@ -5504,7 +5504,7 @@ loc_134F0:
     mov     ax, 4D2h
 loc_134FB:
     push    ax              ; char *
-    call    sub_297FC
+    call    load_audio_res
     add     sp, 6
     mov     al, byte_449AA
     mov     [bp+var_16], al
@@ -5519,7 +5519,7 @@ loc_1351D:
     push    ax
     push    [bp+var_4C]
     push    [bp+var_4E]
-    call    sub_28AA2
+    call    locate_text_res
     add     sp, 6
     push    dx
     push    ax
@@ -5566,7 +5566,7 @@ loc_1356C:
     push    ax
     push    [bp+var_4C]
     push    [bp+var_4E]
-    call    sub_28AA2
+    call    locate_text_res
     add     sp, 6
     push    dx
     push    ax
@@ -5600,7 +5600,7 @@ loc_135ED:
     push    ax
     push    [bp+var_4C]
     push    [bp+var_4E]
-    call    sub_28AA2
+    call    locate_text_res
     add     sp, 6
     push    dx
     push    ax
@@ -5630,7 +5630,7 @@ loc_135ED:
     push    ax
     push    [bp+var_4C]
     push    [bp+var_4E]
-    call    sub_28AA2
+    call    locate_text_res
     add     sp, 6
     push    dx
     push    ax
@@ -5661,7 +5661,7 @@ loc_1368B:
     push    ax
     push    [bp+var_4C]
     push    [bp+var_4E]
-    call    sub_28AA2
+    call    locate_text_res
     add     sp, 6
     push    dx
     push    ax
@@ -5691,7 +5691,7 @@ loc_1368B:
     push    ax
     push    [bp+var_4C]
     push    [bp+var_4E]
-    call    sub_28AA2
+    call    locate_text_res
     add     sp, 6
     push    dx
     push    ax
@@ -5723,7 +5723,7 @@ loc_1368B:
     push    ax
     push    [bp+var_4C]
     push    [bp+var_4E]
-    call    sub_28AA2
+    call    locate_text_res
     add     sp, 6
     push    dx
     push    ax
@@ -5774,7 +5774,7 @@ loc_137AD:
     mov     word_40D3C, ax
     mov     ax, word_40D44
     mov     word_40D3E, ax
-    call    sub_2998E
+    call    get_super_random
     cwd
     mov     cx, 3
     idiv    cx
@@ -5787,7 +5787,7 @@ loc_137AD:
     mov     ax, [bx+56Eh]
     mov     word_40D40, ax
 loc_137E0:
-    call    sub_2998E
+    call    get_super_random
     cwd
     mov     cx, 3
     idiv    cx
@@ -5804,7 +5804,7 @@ loc_13801:
     jnz     short loc_1382A
     cmp     word_4434E, 0
     jz      short loc_1381E
-    call    sub_2998E
+    call    get_super_random
     cwd
     mov     cx, 2
     idiv    cx
@@ -5813,14 +5813,14 @@ loc_13801:
     ; align 2
     db 144
 loc_1381E:
-    call    sub_2998E
+    call    get_super_random
     cwd
     mov     cx, 2
     jmp     short loc_13833
     ; align 2
     db 144
 loc_1382A:
-    call    sub_2998E
+    call    get_super_random
     cwd
     mov     cx, 4
 loc_13833:
@@ -5844,7 +5844,7 @@ loc_1384B:
     push    ax              ; char *
     mov     ax, 3
     push    ax              ; int
-    call    sub_299CA
+    call    load_resource
     add     sp, 4
     mov     [bp+var_1C], ax
     mov     [bp+var_1A], dx
@@ -5887,7 +5887,7 @@ loc_138B6:
     push    ax              ; char *
     mov     ax, 3
     push    ax              ; int
-    call    sub_299CA
+    call    load_resource
     add     sp, 4
     mov     [bp+var_1C], ax
     mov     [bp+var_1A], dx
@@ -5916,13 +5916,13 @@ loc_138FF:
     push    ax
     mov     ax, 9Ch ; 'ú'
     push    ax              ; char *
-    call    sub_285C2
+    call    combine_file_path
     add     sp, 8
     mov     ax, 95F8h
     push    ax              ; char *
     mov     ax, 1
     push    ax              ; int
-    call    sub_299CA
+    call    load_resource
     add     sp, 4
     mov     word ptr [bp+var_4A], ax
     mov     word ptr [bp+var_4A+2], dx
@@ -5939,14 +5939,14 @@ loc_138FF:
     push    ax
     push    word_44CEE
     push    word_44CEC
-    call    sub_28AA2
+    call    locate_text_res
     add     sp, 6
     push    dx
     push    ax
     mov     ax, 1
     push    ax
     push    ax
-    call    sub_27686
+    call    show_dialog
     add     sp, 12h
     or      ax, ax
     jz      short loc_1397F
@@ -5954,7 +5954,7 @@ loc_138FF:
     push    ax              ; char *
     mov     ax, 1
     push    ax              ; int
-    call    sub_299CA
+    call    load_resource
     add     sp, 4
     mov     word ptr [bp+var_4A], ax
     mov     word ptr [bp+var_4A+2], dx
@@ -6139,7 +6139,7 @@ loc_13B57:
     push    ax
     push    [bp+var_66]
     push    [bp+var_68]
-    call    sub_28AA2
+    call    locate_text_res
     add     sp, 6
     mov     word ptr [bp+var_86], ax
     mov     word ptr [bp+var_86+2], dx
@@ -6267,7 +6267,7 @@ loc_13CA0:
     jz      short loc_13CA9
     jmp     loc_13B7E
 loc_13CA9:
-    call    sub_298A8
+    call    set_fontdef
     inc     di
 loc_13CAF:
     cmp     [bp+var_7A], di
@@ -6302,7 +6302,7 @@ loc_13CD0:
     push    ax
     call    sub_33742
     add     sp, 6
-    call    sub_298A8
+    call    set_fontdef
 loc_13D06:
     mov     [bp+var_14], 0
     cmp     [bp+var_6E], 0
@@ -6328,7 +6328,7 @@ loc_13D13:
     push    ax
     push    [bp+var_4C]
     push    [bp+var_4E]
-    call    sub_28AA2
+    call    locate_text_res
     add     sp, 6
     push    dx
     push    ax
@@ -6343,7 +6343,7 @@ loc_13D13:
     add     sp, 6
     mov     [bp+var_52], 0FEh ; '˛'
     call    sub_29772
-    call    sub_28EE4
+    call    check_input
     mov     [bp+var_70], 1
     call    sub_28F3C
 loc_13D83:
@@ -6501,7 +6501,7 @@ loc_13ECD:
     push    ax
     push    [bp+var_4C]
     push    [bp+var_4E]
-    call    sub_28AA2
+    call    locate_text_res
     add     sp, 6
     push    dx
     push    ax
@@ -6513,7 +6513,7 @@ loc_13ECD:
 loc_13F48:
     cmp     [bp+var_6E], 0
     jle     short loc_13F84
-    call    sub_28EE4
+    call    check_input
     call    sub_28DB6
     sub     ax, ax
     push    ax
@@ -6521,7 +6521,7 @@ loc_13F48:
     push    ax
     push    [bp+var_4C]
     push    [bp+var_4E]
-    call    sub_28AA2
+    call    locate_text_res
     add     sp, 6
     push    dx
     push    ax
@@ -6540,7 +6540,7 @@ loc_13F84:
     push    ax
     push    [bp+var_4C]
     push    [bp+var_4E]
-    call    sub_28AA2
+    call    locate_text_res
     add     sp, 6
     push    dx
     push    ax
@@ -6596,7 +6596,7 @@ loc_14017:
     push    ax
     push    [bp+var_4C]
     push    [bp+var_4E]
-    call    sub_28AA2
+    call    locate_text_res
     add     sp, 6
     mov     [bp+var_7E], ax
     mov     [bp+var_7C], dx
@@ -6638,7 +6638,7 @@ loc_14058:
     push    ax
     push    [bp+var_4C]
     push    [bp+var_4E]
-    call    sub_28AA2
+    call    locate_text_res
     add     sp, 6
     push    dx
     push    ax
@@ -6654,7 +6654,7 @@ loc_140A7:
     push    ax
     push    [bp+var_4C]
     push    [bp+var_4E]
-    call    sub_28AA2
+    call    locate_text_res
     add     sp, 6
     mov     [bp+var_7E], ax
     mov     [bp+var_7C], dx
@@ -6696,7 +6696,7 @@ loc_140A7:
     push    ax
     push    [bp+var_4C]
     push    [bp+var_4E]
-    call    sub_28AA2
+    call    locate_text_res
     add     sp, 6
     push    dx
     push    ax
@@ -6723,7 +6723,7 @@ loc_14130:
     inc     di
     cmp     di, 4
     jl      short loc_14130
-    call    sub_28EE4
+    call    check_input
     mov     al, [bp+var_52]
     cbw
     push    ax
@@ -6972,7 +6972,7 @@ loc_14404:
     ; align 2
     db 144
 loc_1440C:
-    call    sub_29858
+    call    unload_audio_res
     cmp     [bp+var_16], 0
     jz      short loc_14425
     push    [bp+var_1A]
@@ -7048,8 +7048,8 @@ loc_144C6:
     mov     [bp+var_92], 0
     jmp     loc_14188
     pop     si
-sub_13178 endp
-sub_144CF proc far
+end_hiscore endp
+security_check proc far
     var_440 = byte ptr -1088
     var_43E = byte ptr -1086
     var_428 = word ptr -1064
@@ -7086,7 +7086,7 @@ sub_144CF proc far
     mov     byte_3BD50, al
     mov     ax, 5BBh
     push    ax
-    call    sub_289F2
+    call    load_res_file
     add     sp, 2
     mov     [bp+var_40C], ax
     mov     [bp+var_40A], dx
@@ -7094,7 +7094,7 @@ sub_144CF proc far
     push    ax
     push    dx
     push    [bp+var_40C]
-    call    sub_28AA2
+    call    locate_text_res
     add     sp, 6
     push    dx
     push    ax
@@ -7106,7 +7106,7 @@ sub_144CF proc far
     push    ax
     push    [bp+var_40A]
     push    [bp+var_40C]
-    call    sub_28AA2
+    call    locate_text_res
     add     sp, 6
     push    dx
     push    ax
@@ -7143,7 +7143,7 @@ loc_14551:
     push    ax
     mov     ax, 3
     push    ax
-    call    sub_27686
+    call    show_dialog
     add     sp, 12h
     mov     byte_463E6, 0
     mov     al, [bp+var_406]
@@ -7180,7 +7180,7 @@ loc_14551:
     push    ax
     push    [bp+var_40A]
     push    [bp+var_40C]
-    call    sub_28AA2
+    call    locate_text_res
     add     sp, 6
     push    dx
     push    ax
@@ -7268,7 +7268,7 @@ loc_146C5:
     mov     sp, bp
     pop     bp
     retf
-sub_144CF endp
+security_check endp
 sub_146E4 proc far
 
     mov     byte_449A4, 43h ; 'C'

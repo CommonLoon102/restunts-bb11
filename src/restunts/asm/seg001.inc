@@ -3,7 +3,7 @@ seg001 segment byte public 'STUNTSC' use16
     extrn sub_14D6C:proc
     extrn sub_14DA2:proc
     extrn sub_16898:proc
-    extrn sub_16B02:proc
+    extrn init_game_state:proc
     extrn sub_16F3A:proc
     extrn sub_17008:proc
     extrn sub_171E8:proc

@@ -49,16 +49,23 @@ dseg segment byte public 'STUNTSD' use16
     public byte_3B770
     public word_3B772
     public word_3B774
-    public word_3B778
-    public word_3B77A
-    public byte_3B77C
-    public word_3B77E
-    public word_3B780
-    public word_3B782
-    public byte_3B784
-    public word_3B79C
+    public aMsRunTimeLibraryCop
+    public aMain
+    public aFontdef_fnt
+    public aFontn_fnt
+    public aTrakdata
+    public aDefault_0
+    public a_trk
+    public aSlct
+    public aSkidms_0
+    public aSkidslct
+    public aTedit__0
+    public aCvx
+    public aDos
     public word_3B808
     public word_3B80A
+    public byte_3B80C
+    public byte_3B85E
     public word_3B870
     public word_3B8EA
     public word_3B8EC
@@ -782,10 +789,12 @@ dseg segment byte public 'STUNTSD' use16
     public word_42A5E
     public byte_42A60
     public byte_42A61
+    public terraincenterpos
     public word_42CBA
     public word_42CBE
     public word_42CC0
     public word_42CC4
+    public trackpos2
     public word_42D02
     public word_42D04
     public word_42D08
@@ -809,6 +818,7 @@ dseg segment byte public 'STUNTSD' use16
     public word_438A8
     public word_438AA
     public dword_438E8
+    public trackpos
     public word_43924
     public word_43928
     public word_4392A
@@ -859,6 +869,7 @@ dseg segment byte public 'STUNTSD' use16
     public word_44368
     public word_4436A
     public word_44382
+    public terrainrows
     public word_443F2
     public word_443F4
     public dword_443F6
@@ -1056,6 +1067,7 @@ dseg segment byte public 'STUNTSD' use16
     public word_44A88
     public byte_44A8A
     public word_44A8C
+    public terrainpos
     public byte_44AE2
     public word_44AE4
     public dword_44CE6
@@ -1081,6 +1093,7 @@ dseg segment byte public 'STUNTSD' use16
     public word_44D62
     public word_44D64
     public word_44D66
+    public unk_44D68
     public word_44DC6
     public word_44DC8
     public word_44DCA
@@ -1131,6 +1144,7 @@ dseg segment byte public 'STUNTSD' use16
     public word_4551E
     public byte_45525
     public byte_4552F
+    public unk_45530
     public word_4554A
     public word_45574
     public word_45576
@@ -1182,6 +1196,7 @@ dseg segment byte public 'STUNTSD' use16
     public word_45D1C
     public word_45D1E
     public byte_45D3E
+    public trackrows
     public word_45D7C
     public byte_45D7E
     public dword_45D80
@@ -1203,6 +1218,7 @@ dseg segment byte public 'STUNTSD' use16
     public word_45DCC
     public word_45DCE
     public word_45DD0
+    public trackcenterpos2
     public word_45E0E
     public word_45E10
     public word_45E12
@@ -1240,6 +1256,7 @@ dseg segment byte public 'STUNTSD' use16
     public word_46180
     public word_46182
     public word_46184
+    public trackcenterpos
     public word_461C2
     public word_461C4
     public word_461C6
@@ -1276,14 +1293,19 @@ byte_3B770     db 0
 word_3B772     dw 0
 word_3B774     dw 0
     dw 0
-word_3B778     dw 21325
-word_3B77A     dw 21024
-byte_3B77C     db 117
+aMsRunTimeLibraryCop     db 77
+    db 83
+    db 32
+    db 82
+    db 117
     db 110
-word_3B77E     dw 21549
-word_3B780     dw 28009
-word_3B782     dw 8293
-byte_3B784     db 76
+    db 45
+    db 84
+    db 105
+    db 109
+    db 101
+    db 32
+    db 76
     db 105
     db 98
     db 114
@@ -1307,7 +1329,8 @@ byte_3B784     db 76
     db 99
     db 41
     db 32
-word_3B79C     dw 14641
+    db 49
+    db 57
     db 56
     db 56
     db 44
@@ -1328,12 +1351,12 @@ word_3B79C     dw 14641
     db 112
     db 17
     db 0
-    db 109
+aMain     db 109
     db 97
     db 105
     db 110
     db 0
-    db 102
+aFontdef_fnt     db 102
     db 111
     db 110
     db 116
@@ -1345,7 +1368,7 @@ word_3B79C     dw 14641
     db 110
     db 116
     db 0
-    db 102
+aFontn_fnt     db 102
     db 111
     db 110
     db 116
@@ -1355,7 +1378,7 @@ word_3B79C     dw 14641
     db 110
     db 116
     db 0
-    db 116
+aTrakdata     db 116
     db 114
     db 97
     db 107
@@ -1364,7 +1387,7 @@ word_3B79C     dw 14641
     db 116
     db 97
     db 0
-    db 68
+aDefault_0     db 68
     db 69
     db 70
     db 65
@@ -1372,24 +1395,24 @@ word_3B79C     dw 14641
     db 76
     db 84
     db 0
-    db 46
+a_trk     db 46
     db 116
     db 114
     db 107
     db 0
-    db 83
+aSlct     db 83
     db 76
     db 67
     db 84
     db 0
-    db 115
+aSkidms_0     db 115
     db 107
     db 105
     db 100
     db 109
     db 115
     db 0
-    db 115
+aSkidslct     db 115
     db 107
     db 105
     db 100
@@ -1398,7 +1421,7 @@ word_3B79C     dw 14641
     db 99
     db 116
     db 0
-    db 116
+aTedit__0     db 116
     db 101
     db 100
     db 105
@@ -1406,16 +1429,17 @@ word_3B79C     dw 14641
     db 46
     db 42
     db 0
-    db 99
+aCvx     db 99
     db 118
     db 120
     db 0
-    db 100
+aDos     db 100
     db 111
     db 115
     db 0
 word_3B808     dw 0
 word_3B80A     dw 0
+byte_3B80C     db 0
     db 0
     db 0
     db 0
@@ -1497,8 +1521,7 @@ word_3B80A     dw 0
     db 0
     db 0
     db 0
-    db 0
-    db 0
+byte_3B85E     db 0
     db 0
     db 0
     db 0
@@ -30472,8 +30495,7 @@ byte_42A61     db 0
     db 0
     db 0
     db 0
-    db 0
-    db 0
+terraincenterpos     dw 0
     db 0
     db 0
     db 0
@@ -30540,8 +30562,7 @@ word_42CC0     dw 0
     db 0
     db 0
 word_42CC4     dw 0
-    db 0
-    db 0
+trackpos2     dw 0
     db 0
     db 0
     db 0
@@ -33630,8 +33651,7 @@ word_438AA     dw 0
     db 0
     db 0
 dword_438E8     dd 0
-    db 0
-    db 0
+trackpos     dw 0
     db 0
     db 0
     db 0
@@ -36336,8 +36356,7 @@ word_44382     dw 0
     db 0
     db 0
     db 0
-    db 0
-    db 0
+terrainrows     dw 0
     db 0
     db 0
     db 0
@@ -37953,8 +37972,7 @@ word_44A88     dw 0
 byte_44A8A     db 0
     db 0
 word_44A8C     dw 0
-    db 0
-    db 0
+terrainpos     dw 0
     db 0
     db 0
     db 0
@@ -38653,7 +38671,7 @@ word_44D60     dw 0
 word_44D62     dw 0
 word_44D64     dw 0
 word_44D66     dw 0
-    db 0
+unk_44D68     db 0
     db 0
     db 0
     db 0
@@ -40592,7 +40610,7 @@ byte_45525     db 0
     db 0
     db 0
 byte_4552F     db 0
-    db 0
+unk_45530     db 0
     db 0
     db 0
     db 0
@@ -42612,8 +42630,7 @@ word_45D1E     dw 0
     db 0
 byte_45D3E     db 0
     db 0
-    db 0
-    db 0
+trackrows     dw 0
     db 0
     db 0
     db 0
@@ -42732,8 +42749,7 @@ word_45DCA     dw 0
 word_45DCC     dw 0
 word_45DCE     dw 0
 word_45DD0     dw 0
-    db 0
-    db 0
+trackcenterpos2     dw 0
     db 0
     db 0
     db 0
@@ -43650,8 +43666,7 @@ word_4617E     dw 0
 word_46180     dw 0
 word_46182     dw 0
 word_46184     dw 0
-    db 0
-    db 0
+trackcenterpos     dw 0
     db 0
     db 0
     db 0

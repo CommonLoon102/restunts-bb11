@@ -50,7 +50,7 @@ seg001 segment byte public 'STUNTSC' use16
     public sub_14D6C
     public sub_14DA2
     public sub_16898
-    public sub_16B02
+    public init_game_state
     public sub_16F3A
     public sub_17008
     public sub_171E8
@@ -3878,7 +3878,7 @@ loc_16A37:
     ; align 2
     db 144
 sub_16898 endp
-sub_16B02 proc far
+init_game_state proc far
     var_A = word ptr -10
     var_8 = word ptr -8
     var_2 = word ptr -2
@@ -4339,7 +4339,7 @@ loc_16F34:
     mov     sp, bp
     pop     bp
     retf
-sub_16B02 endp
+init_game_state endp
 sub_16F3A proc far
      s = byte ptr 0
      r = byte ptr 2
@@ -4357,7 +4357,7 @@ sub_16F3A proc far
     sub     ax, ax
     push    ax
     push    cs
-    call    near ptr sub_16B02
+    call    near ptr init_game_state
     add     sp, 2
 loc_16F59:
     mov     ax, [bp+arg_0]
@@ -4427,7 +4427,7 @@ loc_16FB1:
     pop     si
     mov     ax, 9112h
     push    ax
-    call    sub_19E21
+    call    init_kevinrandom
     add     sp, 2
     mov     ax, word_445D4
     mov     word_42D02, ax
@@ -8589,7 +8589,7 @@ sub_193E0 proc far
     mov     ax, 0FFFDh
     push    ax
     push    cs
-    call    near ptr sub_16B02
+    call    near ptr init_game_state
     add     sp, 2
     sub     si, si
     mov     byte_44889, 2

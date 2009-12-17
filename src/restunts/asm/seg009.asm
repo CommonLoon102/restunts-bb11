@@ -208,7 +208,7 @@ sub_2A2BC proc far
     mov     [bp+var_164], dx
     mov     ax, 34B8h
     push    ax
-    call    sub_289F2
+    call    load_res_file
     add     sp, 2
     mov     [bp+var_22], ax
     mov     [bp+var_20], dx
@@ -364,7 +364,7 @@ loc_2A50D:
     push    ax
     push    [bp+var_20]
     push    [bp+var_22]
-    call    sub_28AA2
+    call    locate_text_res
     add     sp, 6
     push    dx
     push    ax
@@ -413,7 +413,7 @@ loc_2A50D:
     push    ax
     push    [bp+var_20]
     push    [bp+var_22]
-    call    sub_28AA2
+    call    locate_text_res
     add     sp, 6
     push    dx
     push    ax
@@ -436,7 +436,7 @@ loc_2A50D:
     push    ax
     push    [bp+var_20]
     push    [bp+var_22]
-    call    sub_28AA2
+    call    locate_text_res
     add     sp, 6
     push    dx
     push    ax
@@ -459,7 +459,7 @@ loc_2A50D:
     push    ax
     push    [bp+var_20]
     push    [bp+var_22]
-    call    sub_28AA2
+    call    locate_text_res
     add     sp, 6
     push    dx
     push    ax
@@ -482,7 +482,7 @@ loc_2A50D:
     push    ax
     push    [bp+var_20]
     push    [bp+var_22]
-    call    sub_28AA2
+    call    locate_text_res
     add     sp, 6
     push    dx
     push    ax
@@ -505,7 +505,7 @@ loc_2A50D:
     push    ax
     push    [bp+var_20]
     push    [bp+var_22]
-    call    sub_28AA2
+    call    locate_text_res
     add     sp, 6
     push    dx
     push    ax
@@ -1171,7 +1171,7 @@ loc_2AD38:
     push    ax
     push    [bp+var_20]
     push    [bp+var_22]
-    call    sub_28AA2
+    call    locate_text_res
     add     sp, 6
     push    dx
     push    ax
@@ -1231,14 +1231,14 @@ loc_2ADF4:
     push    ax
     push    [bp+var_20]
     push    [bp+var_22]
-    call    sub_28AA2
+    call    locate_text_res
     add     sp, 6
     push    dx
     push    ax
     mov     ax, 1
     push    ax
     push    ax
-    call    sub_27686
+    call    show_dialog
     add     sp, 12h
     mov     [bp+var_12], 0
 loc_2AE36:
@@ -1823,7 +1823,7 @@ loc_2B3DC:
     ; align 2
     db 144
 loc_2B3EA:
-    call    sub_206D4
+    call    setup_track
     cbw
     mov     si, ax
     sub     ax, ax
@@ -1841,14 +1841,14 @@ loc_2B3EA:
     push    ax
     push    [bp+var_20]
     push    [bp+var_22]
-    call    sub_28AA2
+    call    locate_text_res
     add     sp, 6
     push    dx
     push    ax
     mov     ax, 1
     push    ax
     push    ax
-    call    sub_27686
+    call    show_dialog
     add     sp, 12h
     cmp     si, 1
     jle     short loc_2B491
@@ -1884,7 +1884,7 @@ loc_2B448:
     mov     [bp+var_18], 1
     mov     [bp+var_A], 1
 loc_2B491:
-    call    sub_28EE4
+    call    check_input
     jmp     loc_2BE3A
     ; align 2
     db 144
@@ -1987,7 +1987,7 @@ loc_2B566:
     push    ax
     push    [bp+var_20]
     push    [bp+var_22]
-    call    sub_28AA2
+    call    locate_text_res
     add     sp, 6
     push    dx
     push    ax
@@ -1995,7 +1995,7 @@ loc_2B566:
     push    ax
     mov     ax, 2
     push    ax
-    call    sub_27686
+    call    show_dialog
     add     sp, 12h
     mov     [bp+var_C], al
     cmp     al, 0FFh
@@ -2029,7 +2029,7 @@ loc_2B5DA:
     push    ax
     push    [bp+var_20]
     push    [bp+var_22]
-    call    sub_28AA2
+    call    locate_text_res
     add     sp, 6
     push    dx
     push    ax
@@ -2037,7 +2037,7 @@ loc_2B5DA:
     push    ax
     mov     ax, 2
     push    ax
-    call    sub_27686
+    call    show_dialog
     add     sp, 12h
     mov     [bp+var_C], al
     cmp     al, 0FFh
@@ -2105,7 +2105,7 @@ loc_2B688:
     push    ax
     push    [bp+var_20]
     push    [bp+var_22]
-    call    sub_28AA2
+    call    locate_text_res
     add     sp, 6
     push    dx
     push    ax
@@ -2113,7 +2113,7 @@ loc_2B688:
     push    ax
     mov     ax, 2
     push    ax
-    call    sub_27686
+    call    show_dialog
     add     sp, 12h
     mov     si, ax
     or      si, si
@@ -2127,7 +2127,7 @@ loc_2B6CE:
     push    ax
     push    word_44CEE
     push    word_44CEC
-    call    sub_28AA2
+    call    locate_text_res
     add     sp, 6
     push    dx              ; int
     push    ax              ; int
@@ -2149,7 +2149,7 @@ loc_2B6CE:
     push    ax
     mov     ax, 9Ch ; 'œ'
     push    ax              ; char *
-    call    sub_285C2
+    call    combine_file_path
     add     sp, 8
     or      si, si
     jg      short loc_2B725
@@ -2159,9 +2159,9 @@ loc_2B725:
     push    word ptr dword_44D42
     mov     ax, 95F8h
     push    ax
-    call    sub_30AEF
+    call    load_binary_file
     add     sp, 6
-    call    sub_206D4
+    call    setup_track
     mov     [bp+var_34], 0
     mov     al, byte_45E16
     mov     [bp+var_180], al
@@ -2189,7 +2189,7 @@ loc_2B774:
     push    ax
     push    word_44CEE
     push    word_44CEC
-    call    sub_28AA2
+    call    locate_text_res
     add     sp, 6
     push    dx              ; int
     push    ax              ; int
@@ -2209,12 +2209,12 @@ loc_2B774:
     push    ax
     mov     ax, 9Ch ; 'œ'
     push    ax              ; char *
-    call    sub_285C2
+    call    combine_file_path
     add     sp, 8
     mov     [bp+var_176], 1
     mov     ax, 95F8h
     push    ax
-    call    sub_2FFD4
+    call    find_filename
     add     sp, 2
     or      ax, ax
     jz      short loc_2B812
@@ -2229,7 +2229,7 @@ loc_2B774:
     push    ax
     push    word_44CEE
     push    word_44CEC
-    call    sub_28AA2
+    call    locate_text_res
     add     sp, 6
     push    dx
     push    ax
@@ -2237,7 +2237,7 @@ loc_2B774:
     push    ax
     mov     ax, 2
     push    ax
-    call    sub_27686
+    call    show_dialog
     add     sp, 12h
     mov     si, ax
     cmp     si, 0FFFFh
@@ -2278,14 +2278,14 @@ loc_2B845:
     push    ax
     push    word_44CEE
     push    word_44CEC
-    call    sub_28AA2
+    call    locate_text_res
     add     sp, 6
     push    dx
     push    ax
     mov     ax, 1
     push    ax
     push    ax
-    call    sub_27686
+    call    show_dialog
     add     sp, 12h
     mov     [bp+var_176], 0
     jmp     short loc_2B891
@@ -2321,7 +2321,7 @@ loc_2B8A4:
     push    ax
     push    [bp+var_20]
     push    [bp+var_22]
-    call    sub_28AA2
+    call    locate_text_res
     add     sp, 6
     push    dx
     push    ax
@@ -2329,7 +2329,7 @@ loc_2B8A4:
     push    ax
     mov     ax, 2
     push    ax
-    call    sub_27686
+    call    show_dialog
     add     sp, 12h
     mov     si, ax
     or      si, si

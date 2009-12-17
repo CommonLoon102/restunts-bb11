@@ -76,7 +76,7 @@ seg012 segment byte public 'STUNTSC' use16
     extrn sub_2FE74:proc
     extrn sub_2FE82:proc
     extrn sub_2FF26:proc
-    extrn sub_2FFD4:proc
+    extrn find_filename:proc
     extrn loc_30011
     extrn loc_3002A
     extrn sub_3002E:proc
@@ -113,7 +113,7 @@ seg012 segment byte public 'STUNTSC' use16
     extrn sub_30A68:proc
     extrn sub_30AD0:proc
     extrn sub_30AE0:proc
-    extrn sub_30AEF:proc
+    extrn load_binary_file:proc
     extrn loc_30AFB
     extrn sub_30B62:proc
     extrn sub_30BF8:proc

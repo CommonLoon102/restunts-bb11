@@ -19,7 +19,7 @@ seg027 segment byte public 'STUNTSC' use16
     extrn sub_3776C:proc
     extrn sub_37868:proc
     extrn sub_378CA:proc
-    extrn sub_37A64:proc
+    extrn audiodrv_atexit:proc
     extrn sub_37B14:proc
     extrn sub_37C44:proc
     extrn sub_37CBA:proc

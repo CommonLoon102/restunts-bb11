@@ -1,17 +1,17 @@
 seg008 segment byte public 'STUNTSC' use16
     extrn sub_274B0:proc
     extrn sub_275C6:proc
-    extrn sub_27686:proc
+    extrn show_dialog:proc
     extrn sub_27ED4:proc
-    extrn sub_285C2:proc
+    extrn combine_file_path:proc
     extrn sub_2863A:proc
     extrn sub_28762:proc
     extrn sub_287C4:proc
     extrn sub_289E2:proc
-    extrn sub_289F2:proc
+    extrn load_res_file:proc
     extrn sub_28A78:proc
     extrn sub_28A8C:proc
-    extrn sub_28AA2:proc
+    extrn locate_text_res:proc
     extrn sub_28AD6:proc
     extrn sub_28B0E:proc
     extrn sub_28D9E:proc
@@ -19,7 +19,7 @@ seg008 segment byte public 'STUNTSC' use16
     extrn sub_28DC8:proc
     extrn sub_28E04:proc
     extrn sub_28E90:proc
-    extrn sub_28EE4:proc
+    extrn check_input:proc
     extrn sub_28F3C:proc
     extrn sub_28F4E:proc
     extrn sub_28F6A:proc
@@ -33,17 +33,17 @@ seg008 segment byte public 'STUNTSC' use16
     extrn sub_2955A:proc
     extrn sub_29606:proc
     extrn sub_29620:proc
-    extrn sub_296AA:proc
+    extrn show_waiting:proc
     extrn sub_296E0:proc
     extrn sub_29772:proc
     extrn sub_29786:proc
-    extrn sub_297FC:proc
-    extrn sub_29858:proc
+    extrn load_audio_res:proc
+    extrn unload_audio_res:proc
     extrn sub_2988A:proc
-    extrn sub_298A8:proc
+    extrn set_fontdef:proc
     extrn sub_298B8:proc
-    extrn sub_2998E:proc
-    extrn sub_299CA:proc
+    extrn get_super_random:proc
+    extrn load_resource:proc
     extrn off_29A4E:word
     extrn sub_29A86:proc
     extrn sub_29AEC:proc
@@ -56,7 +56,7 @@ seg008 segment byte public 'STUNTSC' use16
     extrn sub_29F5C:proc
     extrn sub_29FB6:proc
     extrn sub_2A118:proc
-    extrn sub_2A1A6:proc
+    extrn ensure_file_exists:proc
     extrn sub_2A200:proc
     extrn sub_2A230:proc
     extrn sub_2A236:proc

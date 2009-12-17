@@ -48,17 +48,17 @@ seg008 segment byte public 'STUNTSC' use16
     assume es:nothing, ss:nothing, ds:dseg
     public sub_274B0
     public sub_275C6
-    public sub_27686
+    public show_dialog
     public sub_27ED4
-    public sub_285C2
+    public combine_file_path
     public sub_2863A
     public sub_28762
     public sub_287C4
     public sub_289E2
-    public sub_289F2
+    public load_res_file
     public sub_28A78
     public sub_28A8C
-    public sub_28AA2
+    public locate_text_res
     public sub_28AD6
     public sub_28B0E
     public sub_28D9E
@@ -66,7 +66,7 @@ seg008 segment byte public 'STUNTSC' use16
     public sub_28DC8
     public sub_28E04
     public sub_28E90
-    public sub_28EE4
+    public check_input
     public sub_28F3C
     public sub_28F4E
     public sub_28F6A
@@ -80,17 +80,17 @@ seg008 segment byte public 'STUNTSC' use16
     public sub_2955A
     public sub_29606
     public sub_29620
-    public sub_296AA
+    public show_waiting
     public sub_296E0
     public sub_29772
     public sub_29786
-    public sub_297FC
-    public sub_29858
+    public load_audio_res
+    public unload_audio_res
     public sub_2988A
-    public sub_298A8
+    public set_fontdef
     public sub_298B8
-    public sub_2998E
-    public sub_299CA
+    public get_super_random
+    public load_resource
     public off_29A4E
     public sub_29A86
     public sub_29AEC
@@ -103,7 +103,7 @@ seg008 segment byte public 'STUNTSC' use16
     public sub_29F5C
     public sub_29FB6
     public sub_2A118
-    public sub_2A1A6
+    public ensure_file_exists
     public sub_2A200
     public sub_2A230
     public sub_2A236
@@ -328,7 +328,7 @@ loc_27680:
     pop     bp
     retf
 sub_275C6 endp
-sub_27686 proc far
+show_dialog proc far
     var_1D8 = byte ptr -472
     var_1D6 = word ptr -470
     var_1D4 = byte ptr -468
@@ -856,7 +856,7 @@ loc_27B98:
     mov     [bp+var_1D4], 0
 loc_27BB6:
     push    cs
-    call    near ptr sub_28EE4
+    call    near ptr check_input
     jmp     short loc_27B88
 loc_27BBC:
     sub     ax, ax
@@ -1029,7 +1029,7 @@ loc_27D56:
     cmp     [bp+var_1C0], 0FFh
     jnz     short loc_27D65
     push    cs
-    call    near ptr sub_28EE4
+    call    near ptr check_input
 loc_27D65:
     mov     al, [bp+var_1D4]
     mov     [bp+var_1C0], al
@@ -1178,7 +1178,7 @@ loc_27EA4:
 loc_27EA9:
     mov     [bp+var_84], 0
     push    cs
-    call    near ptr sub_28EE4
+    call    near ptr check_input
     jmp     loc_27C6D
     ; align 2
     db 144
@@ -1198,7 +1198,7 @@ loc_27EC6:
     jmp     loc_27C6D
     ; align 2
     db 144
-sub_27686 endp
+show_dialog endp
 sub_27ED4 proc far
     var_71C = word ptr -1820
     var_71A = word ptr -1818
@@ -1252,7 +1252,7 @@ sub_27ED4 proc far
     push    word_44CEE
     push    word_44CEC
     push    cs
-    call    near ptr sub_28AA2
+    call    near ptr locate_text_res
     add     sp, 6
     push    dx
     push    ax
@@ -1261,7 +1261,7 @@ sub_27ED4 proc far
     mov     ax, 3
     push    ax
     push    cs
-    call    near ptr sub_27686
+    call    near ptr show_dialog
     add     sp, 12h
     or      ax, ax
     jge     short loc_27F1E
@@ -1550,7 +1550,7 @@ loc_281CC:
     push    word_44CEE
     push    word_44CEC
     push    cs
-    call    near ptr sub_28AA2
+    call    near ptr locate_text_res
     add     sp, 6
     push    dx
     push    ax
@@ -1575,7 +1575,7 @@ loc_281CC:
     push    word_44CEE
     push    word_44CEC
     push    cs
-    call    near ptr sub_28AA2
+    call    near ptr locate_text_res
     add     sp, 6
     push    dx
     push    ax
@@ -1976,7 +1976,7 @@ loc_285AC:
     ; align 2
     db 144
 sub_27ED4 endp
-sub_285C2 proc far
+combine_file_path proc far
     var_2 = byte ptr -2
      s = byte ptr 0
      r = byte ptr 2
@@ -2033,7 +2033,7 @@ loc_28618:
     retf
     ; align 2
     db 144
-sub_285C2 endp
+combine_file_path endp
 sub_2863A proc far
     var_12 = word ptr -18
     var_10 = word ptr -16
@@ -2066,7 +2066,7 @@ sub_2863A proc far
     push    word_44CEE
     push    word_44CEC
     push    cs
-    call    near ptr sub_28AA2
+    call    near ptr locate_text_res
     add     sp, 6
     push    dx
     push    ax
@@ -2075,7 +2075,7 @@ sub_2863A proc far
     mov     ax, 3
     push    ax
     push    cs
-    call    near ptr sub_27686
+    call    near ptr show_dialog
     add     sp, 12h
     or      ax, ax
     jge     short loc_28682
@@ -2464,7 +2464,7 @@ sub_289E2 proc far
     ; align 2
     db 144
 sub_289E2 endp
-sub_289F2 proc far
+load_res_file proc far
     var_54 = byte ptr -84
     var_4 = word ptr -4
     var_2 = word ptr -2
@@ -2492,7 +2492,7 @@ loc_289F8:
     mov     ax, 1
     push    ax              ; int
     push    cs
-    call    near ptr sub_299CA
+    call    near ptr load_resource
     add     sp, 4
     mov     [bp+var_4], ax
     mov     [bp+var_2], dx
@@ -2514,7 +2514,7 @@ loc_289F8:
     mov     ax, 7
     push    ax              ; int
     push    cs
-    call    near ptr sub_299CA
+    call    near ptr load_resource
     add     sp, 4
     mov     [bp+var_4], ax
     mov     [bp+var_2], dx
@@ -2529,7 +2529,7 @@ loc_28A6E:
     mov     sp, bp
     pop     bp
     retf
-sub_289F2 endp
+load_res_file endp
 sub_28A78 proc far
      s = byte ptr 0
      r = byte ptr 2
@@ -2564,7 +2564,7 @@ sub_28A8C proc far
     pop     bp
     retf
 sub_28A8C endp
-sub_28AA2 proc far
+locate_text_res proc far
     var_4 = byte ptr -4
     var_3 = byte ptr -3
     var_2 = byte ptr -2
@@ -2597,7 +2597,7 @@ sub_28AA2 proc far
     retf
     ; align 2
     db 144
-sub_28AA2 endp
+locate_text_res endp
 sub_28AD6 proc far
     var_4 = dword ptr -4
      s = byte ptr 0
@@ -3100,7 +3100,7 @@ loc_28EDA:
     ; align 2
     db 144
 sub_28E90 endp
-sub_28EE4 proc far
+check_input proc far
     var_2 = byte ptr -2
      s = byte ptr 0
      r = byte ptr 2
@@ -3148,11 +3148,11 @@ loc_28F26:
     or      ax, ax
     jz      short loc_28F26
     push    cs
-    call    near ptr sub_28EE4
+    call    near ptr check_input
     retf
     ; align 2
     db 144
-sub_28EE4 endp
+check_input endp
 sub_28F3C proc far
 
     mov     ax, 5F3Eh
@@ -4055,7 +4055,7 @@ loc_29670:
     ; align 2
     db 144
 sub_29620 endp
-sub_296AA proc far
+show_waiting proc far
 
     sub     ax, ax
     push    ax
@@ -4069,7 +4069,7 @@ sub_296AA proc far
     push    word_44CEE
     push    word_44CEC
     push    cs
-    call    near ptr sub_28AA2
+    call    near ptr locate_text_res
     add     sp, 6
     push    dx
     push    ax
@@ -4077,14 +4077,14 @@ sub_296AA proc far
     push    ax
     push    ax
     push    cs
-    call    near ptr sub_27686
+    call    near ptr show_dialog
     add     sp, 12h
     push    cs
     call    near ptr sub_28DB6
     retf
     ; align 2
     db 144
-sub_296AA endp
+show_waiting endp
 sub_296E0 proc far
      s = byte ptr 0
      r = byte ptr 2
@@ -4256,7 +4256,7 @@ loc_297F4:
     pop     bp
     retf
 sub_29786 endp
-sub_297FC proc far
+load_audio_res proc far
     var_4 = word ptr -4
     var_2 = word ptr -2
      s = byte ptr 0
@@ -4270,7 +4270,7 @@ sub_297FC proc far
     mov     ax, 5
     push    ax              ; int
     push    cs
-    call    near ptr sub_299CA
+    call    near ptr load_resource
     add     sp, 4
     mov     word_44A7C, ax
     mov     word_44A7E, dx
@@ -4278,7 +4278,7 @@ sub_297FC proc far
     mov     ax, 4
     push    ax              ; int
     push    cs
-    call    near ptr sub_299CA
+    call    near ptr load_resource
     add     sp, 4
     mov     word_44360, ax
     mov     word_44362, dx
@@ -4300,8 +4300,8 @@ sub_297FC proc far
     retf
     ; align 2
     db 144
-sub_297FC endp
-sub_29858 proc far
+load_audio_res endp
+unload_audio_res proc far
 
     mov     ax, 2
     push    ax
@@ -4317,7 +4317,7 @@ sub_29858 proc far
     add     sp, 4
     mov     byte_3B8F3, 0
     retf
-sub_29858 endp
+unload_audio_res endp
 sub_2988A proc far
      s = byte ptr 0
      r = byte ptr 2
@@ -4337,7 +4337,7 @@ sub_2988A proc far
     ; align 2
     db 144
 sub_2988A endp
-sub_298A8 proc far
+set_fontdef proc far
 
     push    word_454C8
     push    word_454C6
@@ -4345,7 +4345,7 @@ sub_298A8 proc far
     call    near ptr sub_2988A
     add     sp, 4
     retf
-sub_298A8 endp
+set_fontdef endp
 sub_298B8 proc far
     var_16 = word ptr -22
     var_12 = byte ptr -18
@@ -4445,7 +4445,7 @@ loc_29988:
     pop     bp
     retf
 sub_298B8 endp
-sub_2998E proc far
+get_super_random proc far
     var_4 = word ptr -4
      s = byte ptr 0
      r = byte ptr 2
@@ -4481,8 +4481,8 @@ loc_299C2:
     mov     sp, bp
     pop     bp
     retf
-sub_2998E endp
-sub_299CA proc far
+get_super_random endp
+load_resource proc far
     var_4 = word ptr -4
     var_2 = word ptr -2
      s = byte ptr 0
@@ -4584,7 +4584,7 @@ loc_29A7E:
     retf
     ; align 2
     db 144
-sub_299CA endp
+load_resource endp
 sub_29A86 proc far
     var_4 = word ptr -4
     var_2 = word ptr -2
@@ -4746,7 +4746,7 @@ sub_29B32 proc far
     push    word_44CEE
     push    word_44CEC
     push    cs
-    call    near ptr sub_28AA2
+    call    near ptr locate_text_res
     add     sp, 6
     push    dx
     push    ax
@@ -4755,7 +4755,7 @@ sub_29B32 proc far
     mov     ax, 3
     push    ax
     push    cs
-    call    near ptr sub_27686
+    call    near ptr show_dialog
     add     sp, 12h
     or      ax, ax
     jg      short loc_29B84
@@ -4938,7 +4938,7 @@ loc_29D3A:
     push    word_44CEE
     push    word_44CEC
     push    cs
-    call    near ptr sub_28AA2
+    call    near ptr locate_text_res
     add     sp, 6
     push    dx
     push    ax
@@ -4946,7 +4946,7 @@ loc_29D3A:
     push    ax
     push    ax
     push    cs
-    call    near ptr sub_27686
+    call    near ptr show_dialog
     add     sp, 12h
     jmp     short loc_29D7B
     ; align 2
@@ -4984,7 +4984,7 @@ sub_29D9A proc far
     push    word_44CEE
     push    word_44CEC
     push    cs
-    call    near ptr sub_28AA2
+    call    near ptr locate_text_res
     add     sp, 6
     push    dx
     push    ax
@@ -4993,7 +4993,7 @@ sub_29D9A proc far
     mov     ax, 4
     push    ax
     push    cs
-    call    near ptr sub_27686
+    call    near ptr show_dialog
     add     sp, 12h
     mov     byte_3FE00, 0
     mov     byte_3B8F2, 0
@@ -5022,7 +5022,7 @@ sub_29DF4 proc far
     push    word_44CEE
     push    word_44CEC
     push    cs
-    call    near ptr sub_28AA2
+    call    near ptr locate_text_res
     add     sp, 6
     push    dx
     push    ax
@@ -5031,7 +5031,7 @@ sub_29DF4 proc far
     mov     ax, 4
     push    ax
     push    cs
-    call    near ptr sub_27686
+    call    near ptr show_dialog
     add     sp, 12h
     mov     word_3F88E, 0
     call    sub_372F4
@@ -5056,7 +5056,7 @@ sub_29DF4 proc far
     push    word_44CEE
     push    word_44CEC
     push    cs
-    call    near ptr sub_28AA2
+    call    near ptr locate_text_res
     add     sp, 6
     push    dx
     push    ax
@@ -5064,7 +5064,7 @@ sub_29DF4 proc far
     push    ax
     push    ax
     push    cs
-    call    near ptr sub_27686
+    call    near ptr show_dialog
     add     sp, 12h
     mov     word_3F88E, 0
     call    sub_372F4
@@ -5107,7 +5107,7 @@ loc_29ECE:
     push    word_44CEE
     push    word_44CEC
     push    cs
-    call    near ptr sub_28AA2
+    call    near ptr locate_text_res
     add     sp, 6
     push    dx
     push    ax
@@ -5116,7 +5116,7 @@ loc_29ECE:
     mov     ax, 4
     push    ax
     push    cs
-    call    near ptr sub_27686
+    call    near ptr show_dialog
     add     sp, 12h
     mov     word_3F88E, 0
     push    cs
@@ -5156,7 +5156,7 @@ loc_29F30:
     push    word_44CEE
     push    word_44CEC
     push    cs
-    call    near ptr sub_28AA2
+    call    near ptr locate_text_res
     add     sp, 6
     push    dx
     push    ax
@@ -5165,7 +5165,7 @@ loc_29F30:
     mov     ax, 4
     push    ax
     push    cs
-    call    near ptr sub_27686
+    call    near ptr show_dialog
     add     sp, 12h
     mov     word_3F88E, 0
     push    cs
@@ -5190,7 +5190,7 @@ sub_29F5C proc far
     push    word_44CEE
     push    word_44CEC
     push    cs
-    call    near ptr sub_28AA2
+    call    near ptr locate_text_res
     add     sp, 6
     push    dx
     push    ax
@@ -5199,7 +5199,7 @@ sub_29F5C proc far
     mov     ax, 2
     push    ax
     push    cs
-    call    near ptr sub_27686
+    call    near ptr show_dialog
     add     sp, 12h
     cmp     ax, 1
     jnz     short loc_29FA6
@@ -5240,7 +5240,7 @@ loc_29FD9:
     push    word_44CEE
     push    word_44CEC
     push    cs
-    call    near ptr sub_28AA2
+    call    near ptr locate_text_res
     add     sp, 6
     push    dx
     push    ax
@@ -5307,7 +5307,7 @@ loc_2A050:
     mov     ax, 2
     push    ax
     push    cs
-    call    near ptr sub_27686
+    call    near ptr show_dialog
     add     sp, 12h
     mov     [bp+var_2], al
     cbw
@@ -5363,7 +5363,7 @@ loc_2A0CC:
     push    word_44CEE
     push    word_44CEC
     push    cs
-    call    near ptr sub_28AA2
+    call    near ptr locate_text_res
     add     sp, 6
     push    dx
     push    ax
@@ -5371,7 +5371,7 @@ loc_2A0CC:
     push    ax
     push    ax
     push    cs
-    call    near ptr sub_27686
+    call    near ptr show_dialog
     add     sp, 12h
 loc_2A103:
     mov     word_3F88E, 0
@@ -5408,7 +5408,7 @@ sub_2A118 proc far
     push    word_44CEE
     push    word_44CEC
     push    cs
-    call    near ptr sub_28AA2
+    call    near ptr locate_text_res
     add     sp, 6
     push    dx
     push    ax
@@ -5417,7 +5417,7 @@ sub_2A118 proc far
     mov     ax, 2
     push    ax
     push    cs
-    call    near ptr sub_27686
+    call    near ptr show_dialog
     add     sp, 12h
     mov     [bp+var_2], ax
     or      ax, ax
@@ -5437,7 +5437,7 @@ loc_2A168:
     push    word_44CEE
     push    word_44CEC
     push    cs
-    call    near ptr sub_28AA2
+    call    near ptr locate_text_res
     add     sp, 6
     push    dx
     push    ax
@@ -5445,7 +5445,7 @@ loc_2A168:
     push    ax
     push    ax
     push    cs
-    call    near ptr sub_27686
+    call    near ptr show_dialog
     add     sp, 12h
 loc_2A196:
     mov     [bp+var_2], 1
@@ -5457,7 +5457,7 @@ loc_2A19B:
     pop     bp
     retf
 sub_2A118 endp
-sub_2A1A6 proc far
+ensure_file_exists proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -5481,7 +5481,7 @@ loc_2A1AC:
     push    word_44CEE
     push    word_44CEC
     push    cs
-    call    near ptr sub_28AA2
+    call    near ptr locate_text_res
     add     sp, 6
     push    dx
     push    ax
@@ -5489,7 +5489,7 @@ loc_2A1AC:
     push    ax
     push    ax
     push    cs
-    call    near ptr sub_27686
+    call    near ptr show_dialog
     add     sp, 12h
     push    cs
     call    near ptr sub_28DB6
@@ -5498,7 +5498,7 @@ loc_2A1E8:
     mov     bx, [bp+arg_0]
     shl     bx, 1
     push    word ptr [bx+3416h]
-    call    sub_2FFD4
+    call    find_filename
     add     sp, 2
     or      ax, ax
     jz      short loc_2A1AC
@@ -5506,7 +5506,7 @@ loc_2A1E8:
     retf
     ; align 2
     db 144
-sub_2A1A6 endp
+ensure_file_exists endp
 sub_2A200 proc far
 
     sub     ax, ax
@@ -5521,7 +5521,7 @@ sub_2A200 proc far
     push    word_44CEE
     push    word_44CEC
     push    cs
-    call    near ptr sub_28AA2
+    call    near ptr locate_text_res
     add     sp, 6
     push    dx
     push    ax
@@ -5529,7 +5529,7 @@ sub_2A200 proc far
     push    ax
     push    ax
     push    cs
-    call    near ptr sub_27686
+    call    near ptr show_dialog
     add     sp, 12h
     retf
     ; align 2
@@ -5568,7 +5568,7 @@ loc_2A23C:
     mov     ax, 7
     push    ax              ; int
     push    cs
-    call    near ptr sub_299CA
+    call    near ptr load_resource
     add     sp, 4
     mov     [bp+var_4], ax
     mov     [bp+var_2], dx
@@ -5590,7 +5590,7 @@ loc_2A23C:
     mov     ax, 1
     push    ax              ; int
     push    cs
-    call    near ptr sub_299CA
+    call    near ptr load_resource
     add     sp, 4
     mov     [bp+var_4], ax
     mov     [bp+var_2], dx
