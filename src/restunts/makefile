@@ -17,7 +17,7 @@ option map
 option nodefaultlibs
 file { $(ASMTARGETS) $(CTARGETS) }
 libfile crt\strcpy.obj, crt\strcmp.obj
-order 
+order
 	clname STUNTSC
 	clname STUNTSD
 	clname STACK copy
@@ -41,3 +41,5 @@ clean:
 	cd c
 	if exist makefile make clean
 	cd ..
+	del restunts.exe
+	del restunts.map
