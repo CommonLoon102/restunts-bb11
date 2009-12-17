@@ -16,7 +16,7 @@ option packdata=0
 option map
 option nodefaultlibs
 file { $(ASMTARGETS) $(CTARGETS) }
-libfile crt\strcpy.obj, crt\strcmp.obj
+library cm.lib
 order
 	clname STUNTSC
 	clname STUNTSD
