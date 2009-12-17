@@ -1,5 +1,5 @@
 ASM = tasm
-CC = bcc -S
+CC = bcc /S
 LINK = wlink
 OBJDIR = build
 
@@ -16,7 +16,7 @@ option packdata=0
 option map
 option nodefaultlibs
 file { $(ASMTARGETS) $(CTARGETS) }
-libfile crt\m\strcpy.obj, crt\m\strcmp.obj
+libfile crt\strcpy.obj, crt\strcmp.obj
 order 
 	clname STUNTSC
 	clname STUNTSD

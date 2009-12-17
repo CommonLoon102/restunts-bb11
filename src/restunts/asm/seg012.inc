@@ -174,10 +174,10 @@ seg012 segment byte public 'STUNTSC' use16
     extrn sub_3262E:proc
     extrn sub_3264A:proc
     extrn sub_3265B:proc
-    extrn sin_fast:proc
+    extrn sin_fast2:proc
     extrn loc_326E4
     extrn off_326F2:word
-    extrn cos_fast:proc
+    extrn cos_fast2:proc
     extrn sub_3275C:proc
     extrn sub_32778:proc
     extrn sub_3279A:proc

@@ -221,10 +221,10 @@ seg012 segment byte public 'STUNTSC' use16
     public sub_3262E
     public sub_3264A
     public sub_3265B
-    public sin_fast
+    public sin_fast2
     public loc_326E4
     public off_326F2
-    public cos_fast
+    public cos_fast2
     public sub_3275C
     public sub_32778
     public sub_3279A
@@ -9219,7 +9219,7 @@ nosmart
     pop     bp
     retf
 sub_3265B endp
-sin_fast proc far
+sin_fast2 proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -9267,8 +9267,8 @@ loc_3271D:
     neg     ax
     pop     bp
     retf
-sin_fast endp
-cos_fast proc far
+sin_fast2 endp
+cos_fast2 proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -9299,7 +9299,7 @@ cos_fast proc far
     mul     word ptr [bp+6]
     pop     bp
     retf
-cos_fast endp
+cos_fast2 endp
 sub_3275C proc far
      s = byte ptr 0
      r = byte ptr 2

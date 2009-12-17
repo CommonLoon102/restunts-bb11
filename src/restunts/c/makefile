@@ -1,5 +1,5 @@
 ASM = tasm
-CC = bcc /c
+CC = bcc /c /u- /v /mm
 LINK = tlink
 SED = sed
 
@@ -9,4 +9,5 @@ $(OBJDIR)\math.obj: math.c
 	$(CC) -n$(OBJDIR) $? 
 
 clean:
-	del *.obj
+	del $(OBJDIR)\math.obj
+

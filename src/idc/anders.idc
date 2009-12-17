@@ -575,7 +575,9 @@ static PortFuncName(labelname) {
 
 	if (
 		labelname == "_strcpy" ||
-		labelname == "_strcmp"
+		labelname == "_strcmp" ||
+		labelname == "sin_fast" ||
+		labelname == "cos_fast"
 	)
 		return labelname + "2";
 	return labelname;

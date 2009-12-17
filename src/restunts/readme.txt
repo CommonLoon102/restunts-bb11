@@ -45,3 +45,19 @@ notes regarding the crt:
 
 wlink was not able to link with the supplied cm.lib from borland c++ 3.1, but was able to link
 with the separate obj files.
+
+
+porting a function from asm to c:
+
+1. anders.idc needs to be aware of all the functions that have been ported, so it generates asm that does not conflict with the ported code.
+add a line in PortFuncName().
+
+2. regenerate the asm files from within ida (or rename the function manually)
+
+3. add a function stub to one of the existing .c files in the c directory
+3.1 if you want to add a new .c-file to the project, you need to 
+	- add a target for it in c/makefile
+	- add a reference to the obj in  CTARGETS in makefile
+
+4. if you need something in the crt that isnt linked yet, add references to required crt .objs in the makefile after the libfile directive for wlink.
+
