@@ -73,7 +73,7 @@ seg001 segment byte public 'STUNTSC' use16
     public sub_199B2
     public sub_19A2C
     public sub_19BA0
-    public sub_19CA2
+    public setup_car_from_simd
 sub_14712 proc far
     var_40 = word ptr -64
     var_3E = word ptr -62
@@ -3215,7 +3215,7 @@ loc_16487:
     mov     [bp+var_112], ax
     mov     ax, word_4435E
     mov     [bp+var_110], ax
-    cmp     byte_449AA, 0
+    cmp     opponent_index, 0
     jnz     short loc_164B2
     jmp     loc_16578
 loc_164B2:
@@ -4310,7 +4310,7 @@ loc_16EDB:
     push    cs
     call    near ptr sub_16898
     add     sp, 14h
-    cmp     byte_449AA, 0
+    cmp     opponent_index, 0
     jz      short loc_16F2F
     cmp     [bp+arg_0], 0FFFEh
     jz      short loc_16F2F
@@ -4533,7 +4533,7 @@ loc_170BE:
     push    cs
     call    near ptr sub_171E8
     add     sp, 2
-    cmp     byte_449AA, 0
+    cmp     opponent_index, 0
     jz      short loc_170DC
     push    cs
     call    near ptr sub_14712
@@ -7295,7 +7295,7 @@ loc_188D6:
     call    sub_26F6D
     add     sp, 2
 loc_188E9:
-    cmp     byte_449AA, 0
+    cmp     opponent_index, 0
     jz      short loc_18916
     test    byte_42D2A, 6
     jz      short loc_18903
@@ -7377,7 +7377,7 @@ loc_189A7:
     dec     cl
     jnz     short loc_189A7
     mov     [bp+var_4], ax
-    cmp     byte_449AA, 0
+    cmp     opponent_index, 0
     jz      short loc_18A31
     mov     ax, word_446C2
     mov     dx, word_446C4
@@ -7513,7 +7513,7 @@ loc_18A82:
     mov     bx, [bp+var_2]
     mov     ax, word_44608
     mov     [bx+1Eh], ax
-    cmp     byte_449AA, 0
+    cmp     opponent_index, 0
     jnz     short loc_18AE9
     jmp     loc_18BB6
 loc_18AE9:
@@ -7773,7 +7773,7 @@ sub_18D06 proc far
     push    word_43964
     call    sub_2712E
     add     sp, 12h
-    cmp     byte_449AA, 0
+    cmp     opponent_index, 0
     jz      short loc_18D5E
     push    [bp+arg_2]
     mov     bx, [bp+arg_0]
@@ -9555,7 +9555,7 @@ loc_19C96:
     pop     bp
     retf
 sub_19BA0 endp
-sub_19CA2 proc far
+setup_car_from_simd proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -9575,7 +9575,7 @@ loc_19CB3:
     push    ax
     push    [bp+arg_2]
     push    [bp+arg_0]
-    call    sub_28A8C
+    call    locate_shape_alt
     add     sp, 6
     push    si
     mov     di, 0A6EAh
@@ -9626,7 +9626,7 @@ loc_19D03:
     push    ax
     push    [bp+arg_2]
     push    [bp+arg_0]
-    call    sub_28A8C
+    call    locate_shape_alt
     add     sp, 6
     push    dx
     push    ax
@@ -9637,7 +9637,7 @@ loc_19D36:
     push    ax
     push    [bp+arg_2]
     push    [bp+arg_0]
-    call    sub_28A8C
+    call    locate_shape_alt
     add     sp, 6
     push    si
     mov     di, 9ED0h
@@ -9688,7 +9688,7 @@ loc_19D86:
     push    ax
     push    [bp+arg_2]
     push    [bp+arg_0]
-    call    sub_28A8C
+    call    locate_shape_alt
     add     sp, 6
     push    dx
     push    ax
@@ -9702,6 +9702,6 @@ loc_19DB6:
     mov     sp, bp
     pop     bp
     retf
-sub_19CA2 endp
+setup_car_from_simd endp
 seg001 ends
 end

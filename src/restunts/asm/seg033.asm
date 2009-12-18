@@ -59,7 +59,7 @@ sub_3A958 proc far
     push    ax
     mov     ax, 140h
     push    ax
-    call    sub_34C0C
+    call    make_wnd_sprite
     add     sp, 6
     mov     word ptr dword_4392E, ax
     mov     word ptr dword_4392E+2, dx
@@ -88,7 +88,7 @@ sub_3A9A0 proc far
     push    ax
     mov     ax, 140h
     push    ax
-    call    sub_34C0C
+    call    make_wnd_sprite
     add     sp, 6
     mov     word ptr dword_4392E, ax
     mov     word ptr dword_4392E+2, dx

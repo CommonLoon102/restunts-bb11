@@ -55,8 +55,8 @@ seg005 segment byte public 'STUNTSC' use16
     public sub_2298C
     public sub_22C92
     public sub_22CE8
-    public sub_22D2E
-    public sub_23702
+    public setup_car_shapes
+    public setup_player_cars
     public sub_239B4
     public sub_23A50
     public sub_23A98
@@ -131,7 +131,7 @@ loc_21C00:
     mov     byte_454B8, 1
 loc_21C0F:
     push    cs
-    call    near ptr sub_23702
+    call    near ptr setup_player_cars
     or      ax, ax
     jz      short loc_21C24
     push    cs
@@ -464,7 +464,7 @@ loc_21F84:
     mov     ax, 1
     push    ax
     push    cs
-    call    near ptr sub_22D2E
+    call    near ptr setup_car_shapes
     add     sp, 2
 loc_21FB8:
     cmp     byte_46484, 0
@@ -589,7 +589,7 @@ loc_220DB:
     mov     ax, 2
     push    ax
     push    cs
-    call    near ptr sub_22D2E
+    call    near ptr setup_car_shapes
     add     sp, 2
     mov     ax, 0C8h ; 'È'
     push    ax
@@ -777,7 +777,7 @@ loc_222D3:
     jz      short loc_222F1
     jmp     loc_223CD
 loc_222F1:
-    cmp     byte_449AA, 0
+    cmp     opponent_index, 0
     jnz     short loc_222FB
     jmp     loc_223CD
 loc_222FB:
@@ -964,7 +964,7 @@ loc_22492:
     ; align 2
     db 144
 loc_2249A:
-    cmp     byte_449AA, 0
+    cmp     opponent_index, 0
     jz      short loc_224E9
     xor     byte_463E0, 1
     jmp     short loc_224E9
@@ -1574,7 +1574,7 @@ sub_2298C proc far
     push    di
     push    si
     mov     [bp+var_2A], 1
-    cmp     byte_449AA, 0
+    cmp     opponent_index, 0
     jz      short loc_229A5
     mov     [bp+var_2A], 2
 loc_229A5:
@@ -1999,7 +1999,7 @@ sub_22CE8 proc far
     ; align 2
     db 144
 sub_22CE8 endp
-sub_22D2E proc far
+setup_car_shapes proc far
     var_20 = word ptr -32
     var_1E = word ptr -30
     var_1C = byte ptr -28
@@ -2045,7 +2045,7 @@ loc_22D55:
     ; align 2
     db 144
 loc_22D5C:
-    mov     al, byte_449A4
+    mov     al, player_car_id
     mov     byte_3E916, al
     mov     al, byte_449A5
     mov     byte_3E917, al
@@ -2053,7 +2053,7 @@ loc_22D5C:
     mov     byte_3E918, al
     mov     al, byte_449A7
     mov     byte_3E919, al
-    mov     al, byte_449A4
+    mov     al, player_car_id
     mov     byte_3E920, al
     mov     al, byte_449A5
     mov     byte_3E921, al
@@ -2083,7 +2083,7 @@ loc_22D5C:
     push    ax
     push    word_40D7E
     push    word_40D7C
-    call    sub_367B2
+    call    locate_many_resources
     add     sp, 8
     mov     ax, 5664h
     push    ax
@@ -2091,7 +2091,7 @@ loc_22D5C:
     push    ax
     push    word_40D86
     push    word_40D84
-    call    sub_367B2
+    call    locate_many_resources
     add     sp, 8
     cmp     word_45F84, 0
     jnz     short loc_22E09
@@ -2101,7 +2101,7 @@ loc_22D5C:
     push    ax
     push    word_40D86
     push    word_40D84
-    call    sub_367B2
+    call    locate_many_resources
     add     sp, 8
 loc_22E09:
     mov     ax, 0Fh
@@ -2111,7 +2111,7 @@ loc_22E09:
     mov     ax, es:[bx]
     imul    word_44AE4
     push    ax
-    call    sub_34C0C
+    call    make_wnd_sprite
     add     sp, 6
     mov     word ptr dword_40D80, ax
     mov     word ptr dword_40D80+2, dx
@@ -2122,7 +2122,7 @@ loc_22E09:
     mov     ax, es:[bx]
     imul    word_44AE4
     push    ax
-    call    sub_34C0C
+    call    make_wnd_sprite
     add     sp, 6
     mov     word ptr dword_40DEC, ax
     mov     word ptr dword_40DEC+2, dx
@@ -2133,7 +2133,7 @@ loc_22E09:
     mov     ax, es:[bx]
     imul    word_44AE4
     push    ax
-    call    sub_34C0C
+    call    make_wnd_sprite
     add     sp, 6
     mov     word ptr dword_40DFC, ax
     mov     word ptr dword_40DFC+2, dx
@@ -2948,8 +2948,8 @@ loc_236AC:
     mov     sp, bp
     pop     bp
     retf
-sub_22D2E endp
-sub_23702 proc far
+setup_car_shapes endp
+setup_player_cars proc far
     var_8 = word ptr -8
     var_6 = word ptr -6
     var_4 = word ptr -4
@@ -2967,21 +2967,21 @@ sub_23702 proc far
     push    ax
     call    ensure_file_exists
     add     sp, 2
-    mov     ax, 923Bh
+    mov     ax, offset opponent_car_id
     push    ax
-    mov     ax, 9234h
+    mov     ax, offset player_car_id
     push    ax
     call    sub_1FF92
     add     sp, 4
-    mov     al, byte_449A4
-    mov     byte_3B90D, al
+    mov     al, player_car_id
+    mov     byte ptr aCarcoun+3, al
     mov     al, byte_449A5
-    mov     byte_3B90E, al
+    mov     byte ptr aCarcoun+4, al
     mov     al, byte_449A6
-    mov     byte_3B90F, al
+    mov     byte ptr aCarcoun+5, al
     mov     al, byte_449A7
-    mov     byte_3B910, al
-    mov     ax, 19Ah
+    mov     byte ptr aCarcoun+6, al
+    mov     ax, offset aCarcoun; "carcoun"
     push    ax
     call    load_res_file
     add     sp, 2
@@ -2991,23 +2991,23 @@ sub_23702 proc far
     push    ax
     push    dx
     push    [bp+var_4]
-    call    sub_19CA2
+    call    setup_car_from_simd
     add     sp, 6
     push    [bp+var_2]
     push    [bp+var_4]
-    call    sub_28A78
+    call    unload_resource
     add     sp, 4
-    cmp     byte_449AA, 0
+    cmp     opponent_index, 0
     jz      short loc_237D3
-    mov     al, byte_449AB
-    mov     byte_3B90D, al
-    mov     al, byte_449AC
-    mov     byte_3B90E, al
-    mov     al, byte_449AD
-    mov     byte_3B90F, al
-    mov     al, byte_449AE
-    mov     byte_3B910, al
-    mov     ax, 19Ah
+    mov     al, opponent_car_id
+    mov     byte ptr aCarcoun+3, al
+    mov     al, opponent_car_id+1
+    mov     byte ptr aCarcoun+4, al
+    mov     al, opponent_car_id+2
+    mov     byte ptr aCarcoun+5, al
+    mov     al, opponent_car_id+3
+    mov     byte ptr aCarcoun+6, al
+    mov     ax, offset aCarcoun; "carcoun"
     push    ax
     call    load_res_file
     add     sp, 2
@@ -3017,11 +3017,11 @@ sub_23702 proc far
     push    ax
     push    dx
     push    [bp+var_4]
-    call    sub_19CA2
+    call    setup_car_from_simd
     add     sp, 6
     push    [bp+var_2]
     push    [bp+var_4]
-    call    sub_28A78
+    call    unload_resource
     add     sp, 4
     mov     ax, 4
     push    ax
@@ -3033,7 +3033,7 @@ loc_237D3:
     push    ax
     call    ensure_file_exists
     add     sp, 2
-    mov     ax, 31B5h
+    mov     ax, offset aEng1; "eng1"
     push    ax              ; char *
     mov     ax, 5
     push    ax              ; int
@@ -3041,7 +3041,7 @@ loc_237D3:
     add     sp, 4
     mov     word_454A6, ax
     mov     word_454A8, dx
-    mov     ax, 31BAh
+    mov     ax, offset aEng ; "eng"
     push    ax              ; char *
     mov     ax, 6
     push    ax              ; int
@@ -3049,41 +3049,41 @@ loc_237D3:
     add     sp, 4
     mov     word_45E0E, ax
     mov     word_45E10, dx
-    call    sub_26BAE
+    call    add_audiodriver_timer
     push    word_45E10
     push    word_45E0E
     push    word_454A8
     push    word_454A6
-    mov     ax, 308Ch
+    mov     ax, offset unk_3E7FC
     push    ds
     push    ax
     mov     ax, 21h ; '!'
     push    ax
-    call    sub_26C3C
+    call    init_sfx_engine
     add     sp, 0Eh
     mov     word_43964, ax
     mov     byte_459D8, 0
     mov     byte_42D26, 0
     mov     byte_42D2A, 0
-    cmp     byte_449AA, 0
+    cmp     opponent_index, 0
     jz      short loc_23870
     push    word_45E10
     push    word_45E0E
     push    word_454A8
     push    word_454A6
-    mov     ax, 30BCh
+    mov     ax, offset unk_3E82C
     push    ds
     push    ax
     mov     ax, 20h ; ' '
     push    ax
-    call    sub_26C3C
+    call    init_sfx_engine
     add     sp, 0Eh
     mov     word_4408C, ax
 loc_23870:
     mov     word_44D1E, 0
     mov     word_449E4, 0
     mov     word_443F4, 0
-    mov     ax, 31BEh
+    mov     ax, offset aFontled_fnt; "fontled.fnt"
     push    ax              ; char *
     sub     ax, ax
     push    ax              ; int
@@ -3099,12 +3099,12 @@ loc_23870:
     sub     ax, ax
     push    ax
     push    cs
-    call    near ptr sub_22D2E
+    call    near ptr setup_car_shapes
     add     sp, 2
 loc_238B4:
     cmp     byte_44AE2, 0
     jnz     short loc_238DE
-    mov     ax, 31CAh
+    mov     ax, offset aSdgame; "sdgame"
     push    ax              ; char *
     mov     ax, 3
     push    ax              ; int
@@ -3120,36 +3120,36 @@ loc_238B4:
     call    near ptr sub_23B4C
     add     sp, 6
 loc_238DE:
-    mov     ax, 31D1h
+    mov     ax, offset aGame; "game"
     push    ax
     call    load_res_file
     add     sp, 2
     mov     word_449A0, ax
     mov     word_449A2, dx
-    mov     ax, 31D6h
+    mov     ax, offset aPlan; "plan"
     push    ax
     push    dx
     push    word_449A0
-    call    sub_28A8C
+    call    locate_shape_alt
     add     sp, 6
     mov     word_454C2, ax
     mov     word_454C4, dx
-    mov     ax, 31DBh
+    mov     ax, offset aWall; "wall"
     push    ax
     push    word_449A2
     push    word_449A0
-    call    sub_28A8C
+    call    locate_shape_alt
     add     sp, 6
     mov     word ptr dword_46460, ax
     mov     word ptr dword_46460+2, dx
-    call    sub_1D8D2
+    call    load_sdgame2_shapes
     les     bx, dword_44D42
-    mov     al, es:[bx+384h]
+    mov     al, es:[bx+384h]; 384h = sky box position in track data
     sub     ah, ah
     push    ax
-    call    sub_1D7A2
+    call    load_skybox
     add     sp, 2
-    call    sub_1FE94
+    call    load_game_3dshapes
     or      ax, ax
     jz      short loc_2394E
 loc_23946:
@@ -3189,7 +3189,7 @@ loc_23988:
     push    ax
     mov     ax, 140h
     push    ax
-    call    sub_34C0C
+    call    make_wnd_sprite
     add     sp, 6
     mov     word ptr dword_44D26, ax
     mov     word ptr dword_44D26+2, dx
@@ -3202,7 +3202,7 @@ loc_239A3:
     retf
     ; align 2
     db 144
-sub_23702 endp
+setup_player_cars endp
 sub_239B4 proc far
 
     cmp     byte_46436, 0
@@ -3216,11 +3216,11 @@ sub_239B4 proc far
     add     sp, 4
 loc_239D4:
     call    sub_1FF5E
-    call    sub_1D8B4
+    call    unload_skybox
     call    sub_1D92A
     push    word_449A2
     push    word_449A0
-    call    sub_28A78
+    call    unload_resource
     add     sp, 4
     cmp     byte_44AE2, 0
     jnz     short loc_23A15
@@ -3231,7 +3231,7 @@ loc_239D4:
     mov     ax, 3
     push    ax
     push    cs
-    call    near ptr sub_22D2E
+    call    near ptr setup_car_shapes
     add     sp, 2
 loc_23A15:
     push    word_459F6
@@ -3437,7 +3437,7 @@ loc_23B70:
     push    ax
     push    word_45D0A
     push    word_45D08
-    call    sub_367B2
+    call    locate_many_resources
     add     sp, 8
     mov     [bp+arg_2], 4
 loc_23B8D:
@@ -4501,7 +4501,7 @@ loc_2458B:
     jz      short loc_245AA
     mov     si, 1
 loc_245AA:
-    mov     al, byte_449A4
+    mov     al, player_car_id
     cmp     [bp+var_3E], al
     jnz     short loc_245CA
     mov     al, byte_449A5
@@ -4519,21 +4519,21 @@ loc_245CA:
     ; align 2
     db 144
 loc_245D0:
-    mov     al, byte_449AA
+    mov     al, opponent_index
     cmp     [bp+var_38], al
     jnz     short loc_245CA
     or      al, al
     jz      short loc_2460D
-    mov     al, byte_449AB
+    mov     al, opponent_car_id
     cmp     [bp+var_37], al
     jnz     short loc_245CA
-    mov     al, byte_449AC
+    mov     al, opponent_car_id+1
     cmp     [bp+var_36], al
     jnz     short loc_245CA
-    mov     al, byte_449AD
+    mov     al, opponent_car_id+2
     cmp     [bp+var_35], al
     jnz     short loc_245CA
-    mov     al, byte_449AE
+    mov     al, opponent_car_id+3
     cmp     [bp+var_34], al
     jnz     short loc_245CA
     mov     ax, 2
@@ -4547,7 +4547,7 @@ loc_2460D:
     push    cs
     call    near ptr sub_239B4
     push    cs
-    call    near ptr sub_23702
+    call    near ptr setup_player_cars
 loc_24619:
     mov     al, byte_449BA
     cbw
@@ -4713,7 +4713,7 @@ loc_24778:
     inc     si
     cmp     si, 5
     jl      short loc_24778
-    cmp     byte_449AA, 0
+    cmp     opponent_index, 0
     jnz     short loc_24795
     mov     [bp+var_C], 1
 loc_24795:

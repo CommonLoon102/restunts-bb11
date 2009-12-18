@@ -99,8 +99,8 @@ seg010 segment byte public 'STUNTSC' use16
     public _brkctl
     public sub_2E290
     public _strcat
-    public _strcpy2
-    public _strcmp2
+    public _strcpy
+    public _strcmp
     public _strlen
     public _itoa
     public _ultoa
@@ -3294,7 +3294,7 @@ loc_2E317:
     ; align 2
     db 0
 _strcat endp
-_strcpy2 proc far
+_strcpy proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -3327,8 +3327,8 @@ loc_2E34A:
     mov     di, dx
     pop     bp
     retf
-_strcpy2 endp
-_strcmp2 proc far
+_strcpy endp
+_strcmp proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -3358,7 +3358,7 @@ loc_2E37D:
     retf
     ; align 2
     db 0
-_strcmp2 endp
+_strcmp endp
 _strlen proc far
      s = byte ptr 0
      r = byte ptr 2

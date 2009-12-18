@@ -56,9 +56,9 @@ seg003 segment byte public 'STUNTSC' use16
     public sub_1D12E
     public sub_1D534
     public sub_1D5B4
-    public sub_1D7A2
-    public sub_1D8B4
-    public sub_1D8D2
+    public load_skybox
+    public unload_skybox
+    public load_sdgame2_shapes
     public sub_1D92A
     public sub_1D93C
     public sub_1DEA6
@@ -1425,7 +1425,7 @@ loc_1AB60:
 loc_1AB65:
     mov     [bp+var_4A], 0FFh
     mov     [bp+var_A4], 0
-    cmp     byte_449AA, 0
+    cmp     opponent_index, 0
     jnz     short loc_1AB79
     jmp     loc_1AD0E
 loc_1AB79:
@@ -3811,7 +3811,7 @@ sub_1C302 proc far
     mov     si, [bp+arg_4]
     mov     bx, [bp+arg_0]
     sub     si, [bx+4]
-    sub     si, word_43932
+    sub     si, skybox_current
     jmp     short loc_1C329
 loc_1C320:
     mov     si, [bp+arg_4]
@@ -3835,7 +3835,7 @@ loc_1C339:
     push    word ptr [bx]
     call    sub_3327F
     add     sp, 8
-    push    word_455D0
+    push    skybox_unk1
     call    sub_332C0
     add     sp, 2
 loc_1C35F:
@@ -3867,47 +3867,47 @@ loc_1C392:
     call    sub_3327F
     add     sp, 8
     mov     ax, [bp+arg_4]
-    sub     ax, word_45518
+    sub     ax, skybox_ptr1
     push    ax
     push    si
-    push    word ptr dword_45D80+2
-    push    word ptr dword_45D80
+    push    word ptr skyboxes+2
+    push    word ptr skyboxes
     call    sub_33BBC
     add     sp, 8
     mov     ax, [bp+arg_4]
-    sub     ax, word_4551A
+    sub     ax, skybox_ptr2
     push    ax
     lea     ax, [si+140h]
     push    ax
-    push    word ptr dword_45D84+2
-    push    word ptr dword_45D84
+    push    word ptr skyboxes+6
+    push    word ptr skyboxes+4
     call    sub_33BBC
     add     sp, 8
     mov     ax, [bp+arg_4]
-    sub     ax, word_4551C
+    sub     ax, skybox_ptr3
     push    ax
     lea     ax, [si+200h]
     push    ax
-    push    word ptr dword_45D88+2
-    push    word ptr dword_45D88
+    push    word ptr skyboxes+0Ah
+    push    word ptr skyboxes+8
     call    sub_33BBC
     add     sp, 8
     mov     ax, [bp+arg_4]
-    sub     ax, word_4551E
+    sub     ax, skybox_ptr4
     push    ax
     lea     ax, [si+340h]
     push    ax
-    push    word ptr dword_45D8C+2
-    push    word ptr dword_45D8C
+    push    word ptr skyboxes+0Eh
+    push    word ptr skyboxes+0Ch
     call    sub_33BBC
     add     sp, 8
     mov     ax, [bp+arg_4]
-    sub     ax, word_45518
+    sub     ax, skybox_ptr1
     push    ax
     lea     ax, [si+400h]
     push    ax
-    push    word ptr dword_45D80+2
-    push    word ptr dword_45D80
+    push    word ptr skyboxes+2
+    push    word ptr skyboxes
     call    sub_33BBC
     add     sp, 8
 loc_1C432:
@@ -3932,7 +3932,7 @@ loc_1C445:
     push    word ptr [bx]
     call    sub_3327F
     add     sp, 8
-    push    word_44A88
+    push    skybox_unk2
     call    sub_332C0
     add     sp, 2
 loc_1C46D:
@@ -4040,7 +4040,7 @@ loc_1C4A7:
     cmp     [bp+var_1A], 0
     jge     short loc_1C51C
 loc_1C4FC:
-    mov     di, word_455D0
+    mov     di, skybox_unk1
 loc_1C500:
     mov     bx, [bp+arg_2]
     push    word ptr [bx+6]
@@ -4074,7 +4074,7 @@ loc_1C51C:
     cmp     [bp+var_4C], ax
     jl      short loc_1C4FC
 loc_1C552:
-    mov     di, word_44A88
+    mov     di, skybox_unk2
     jmp     short loc_1C500
 loc_1C558:
     cmp     [bp+var_4E], 0
@@ -4254,7 +4254,7 @@ loc_1C6F2:
     push    word ptr [bx]
     call    sub_3327F
     add     sp, 8
-    push    word_455D0
+    push    skybox_unk1
     call    sub_332C0
     add     sp, 2
     inc     di
@@ -4307,7 +4307,7 @@ loc_1C774:
     push    word ptr [bx]
     call    sub_3327F
     add     sp, 8
-    push    word_44A88
+    push    skybox_unk2
     call    sub_332C0
     add     sp, 2
     inc     di
@@ -4480,7 +4480,7 @@ loc_1C904:
     push    [bp+var_4E]
     mov     ax, 4
     push    ax
-    push    word_455D0
+    push    skybox_unk1
     call    sub_317DF
     add     sp, 14h
     push    [bp+var_38]
@@ -4493,7 +4493,7 @@ loc_1C904:
     push    [bp+var_4E]
     mov     ax, 4
     push    ax
-    push    word_44A88
+    push    skybox_unk2
     call    sub_317DF
     add     sp, 14h
     jmp     loc_1CB72
@@ -4516,7 +4516,7 @@ loc_1C958:
     add     sp, 6
     cmp     [bp+var_20], 0
     jge     short loc_1C9C0
-    push    word_455D0
+    push    skybox_unk1
     call    sub_332C0
     add     sp, 2
     cmp     word_44984, 0
@@ -4686,7 +4686,7 @@ loc_1CB19:
     push    ax
     call    sub_3327F
     add     sp, 8
-    push    word_44A88
+    push    skybox_unk2
     call    sub_332C0
     add     sp, 2
 loc_1CB41:
@@ -4705,7 +4705,7 @@ loc_1CB41:
     push    ax
     call    sub_3327F
     add     sp, 8
-    push    word_455D0
+    push    skybox_unk1
 loc_1CB6A:
     call    sub_332C0
     add     sp, 2
@@ -4859,7 +4859,7 @@ sub_1CBDC proc far
     mov     [bp+var_30], 0
 loc_1CC5B:
     mov     ax, [bp+var_30]
-    sub     ax, word_43932
+    sub     ax, skybox_current
     push    ax
     sub     ax, ax
     push    ax
@@ -4869,7 +4869,7 @@ loc_1CC5B:
     push    ax
     call    sub_3327F
     add     sp, 8
-    push    word_455D0
+    push    skybox_unk1
     call    sub_332C0
     add     sp, 2
     mov     ax, 64h ; 'd'
@@ -4883,21 +4883,21 @@ loc_1CC5B:
     call    sub_3327F
     add     sp, 8
     mov     ax, [bp+var_30]
-    sub     ax, word_4551C
+    sub     ax, skybox_ptr3
     push    ax
     sub     ax, ax
     push    ax
-    push    word ptr dword_45D88+2
-    push    word ptr dword_45D88
+    push    word ptr skyboxes+0Ah
+    push    word ptr skyboxes+8
     call    sub_33BBC
     add     sp, 8
     mov     ax, [bp+var_30]
-    sub     ax, word_4551E
+    sub     ax, skybox_ptr4
     push    ax
     mov     ax, 140h
     push    ax
-    push    word ptr dword_45D8C+2
-    push    word ptr dword_45D8C
+    push    word ptr skyboxes+0Eh
+    push    word ptr skyboxes+0Ch
     call    sub_33BBC
     add     sp, 8
     mov     ax, 0C8h ; 'È'
@@ -4909,7 +4909,7 @@ loc_1CC5B:
     push    ax
     call    sub_3327F
     add     sp, 8
-    push    word_44A88
+    push    skybox_unk2
     call    sub_332C0
     add     sp, 2
     mov     ax, 0C8h ; 'È'
@@ -5900,7 +5900,7 @@ sub_1D5B4 proc far
     push    ax
     push    word_449A2
     push    word_449A0
-    call    sub_28A8C
+    call    locate_shape_alt
     add     sp, 6
     mov     word ptr [bp+var_8], ax
     mov     word ptr [bp+var_8+2], dx
@@ -5908,7 +5908,7 @@ sub_1D5B4 proc far
     push    ax
     push    word_449A2
     push    word_449A0
-    call    sub_28A8C
+    call    locate_shape_alt
     add     sp, 6
     mov     word ptr [bp+var_4], ax
     mov     word ptr [bp+var_4+2], dx
@@ -6102,7 +6102,7 @@ loc_1D798:
     ; align 2
     db 144
 sub_1D5B4 endp
-sub_1D7A2 proc far
+load_skybox proc far
     var_4 = word ptr -4
      s = byte ptr 0
      r = byte ptr 2
@@ -6128,7 +6128,7 @@ loc_1D7B6:
     jmp     loc_1D8AF
 loc_1D7C8:
     push    cs
-    call    near ptr sub_1D8B4
+    call    near ptr unload_skybox
     mov     al, [bp+arg_0]
     mov     byte_46167, al
     mov     byte_3B8F6, 1
@@ -6138,64 +6138,64 @@ loc_1D7C8:
     shl     ax, 1
     shl     ax, 1
     add     ax, cx
-    add     ax, 14Ah
+    add     ax, offset aDesert; "desert"
     push    ax
-    call    sub_3385C
+    call    load_2dshape1
     add     sp, 2
-    mov     word_46168, ax
-    mov     word_4616A, dx
-    mov     ax, 0A610h
+    mov     skybox_res_ofs, ax
+    mov     skybox_res_seg, dx
+    mov     ax, offset skyboxes
     push    ax
-    mov     ax, 9FCh
+    mov     ax, offset aScensce2sce3sce4; "scensce2sce3sce4"
     push    ax
     push    dx
-    push    word_46168
-    call    sub_367B2
+    push    skybox_res_ofs
+    call    locate_many_resources
     add     sp, 8
-    les     bx, dword_45D80
+    les     bx, skyboxes
     mov     ax, es:[bx+2]
-    mov     word_45518, ax
-    les     bx, dword_45D84
+    mov     skybox_ptr1, ax
+    les     bx, skyboxes+4
     mov     ax, es:[bx+2]
-    mov     word_4551A, ax
-    les     bx, dword_45D88
+    mov     skybox_ptr2, ax
+    les     bx, skyboxes+8
     mov     ax, es:[bx+2]
-    mov     word_4551C, ax
-    les     bx, dword_45D8C
+    mov     skybox_ptr3, ax
+    les     bx, skyboxes+0Ch
     mov     ax, es:[bx+2]
-    mov     word_4551E, ax
-    mov     si, word_45518
+    mov     skybox_ptr4, ax
+    mov     si, skybox_ptr1
     mov     ax, si
-    cmp     ax, word_4551A
+    cmp     ax, skybox_ptr2
     jbe     short loc_1D846
-    mov     si, word_4551A
+    mov     si, skybox_ptr2
 loc_1D846:
     mov     ax, si
-    cmp     ax, word_4551C
+    cmp     ax, skybox_ptr3
     jbe     short loc_1D852
-    mov     si, word_4551C
+    mov     si, skybox_ptr3
 loc_1D852:
     mov     ax, si
-    cmp     ax, word_4551E
+    cmp     ax, skybox_ptr4
     jbe     short loc_1D85E
-    mov     si, word_4551E
+    mov     si, skybox_ptr4
 loc_1D85E:
-    mov     word_43932, si
-    mov     si, word_45518
+    mov     skybox_current, si
+    mov     si, skybox_ptr1
     mov     ax, si
-    cmp     ax, word_4551A
+    cmp     ax, skybox_ptr2
     jnb     short loc_1D872
-    mov     si, word_4551A
+    mov     si, skybox_ptr2
 loc_1D872:
     mov     ax, si
-    cmp     ax, word_4551C
+    cmp     ax, skybox_ptr3
     jnb     short loc_1D87E
-    mov     si, word_4551C
+    mov     si, skybox_ptr3
 loc_1D87E:
     mov     ax, si
-    cmp     ax, word_4551E
+    cmp     ax, skybox_ptr4
     jnb     short loc_1D88A
-    mov     si, word_4551E
+    mov     si, skybox_ptr4
 loc_1D88A:
     mov     word_454CE, si
 loc_1D88E:
@@ -6203,9 +6203,9 @@ loc_1D88E:
     mov     [bp+var_4], ax
     mov     bx, ax
     mov     ax, [bx+22h]
-    mov     word_455D0, ax
+    mov     skybox_unk1, ax
     mov     ax, [bx+20h]
-    mov     word_44A88, ax
+    mov     skybox_unk2, ax
     mov     ax, [bx+0C8h]
     mov     word_463E2, ax
     mov     ax, word_407CA
@@ -6215,13 +6215,13 @@ loc_1D8AF:
     mov     sp, bp
     pop     bp
     retf
-sub_1D7A2 endp
-sub_1D8B4 proc far
+load_skybox endp
+unload_skybox proc far
 
     cmp     byte_3B8F6, 0
     jz      short loc_1D8CB
-    push    word_4616A
-    push    word_46168
+    push    skybox_res_seg
+    push    skybox_res_ofs
     call    sub_3147C
     add     sp, 4
 loc_1D8CB:
@@ -6229,8 +6229,8 @@ loc_1D8CB:
     retf
     ; align 2
     db 144
-sub_1D8B4 endp
-sub_1D8D2 proc far
+unload_skybox endp
+load_sdgame2_shapes proc far
      s = byte ptr 0
      r = byte ptr 2
 
@@ -6253,7 +6253,7 @@ sub_1D8D2 proc far
     push    ax
     push    dx
     push    word_463D8
-    call    sub_367B2
+    call    locate_many_resources
     add     sp, 8
     sub     si, si
 loc_1D908:
@@ -6275,7 +6275,7 @@ loc_1D908:
     retf
     ; align 2
     db 144
-sub_1D8D2 endp
+load_sdgame2_shapes endp
 sub_1D92A proc far
 
     push    word_463DA
@@ -6353,7 +6353,7 @@ sub_1D93C proc far
     push    ax
     push    dx
     push    [bp+var_2AE]
-    call    sub_367B2
+    call    locate_many_resources
     add     sp, 8
     mov     ax, 8BC0h
     push    ax
@@ -6381,7 +6381,7 @@ sub_1D93C proc far
     push    ax
     mov     ax, 140h
     push    ax
-    call    sub_34C0C
+    call    make_wnd_sprite
     add     sp, 6
     mov     word ptr dword_44D26, ax
     mov     word ptr dword_44D26+2, dx
@@ -6446,11 +6446,11 @@ loc_1D9CF:
     push    ax
     push    dx
     push    [bp+var_A]
-    call    sub_19CA2
+    call    setup_car_from_simd
     add     sp, 6
     push    [bp+var_8]
     push    [bp+var_A]
-    call    sub_28A78
+    call    unload_resource
     add     sp, 4
     call    sub_193E0
     call    sub_3279A

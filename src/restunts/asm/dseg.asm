@@ -43,7 +43,7 @@ nosmart
     include seg038.inc
     include seg039.inc
     include seg041.inc
-dseg segment byte public 'STUNTSD' use16
+dseg segment byte public 'DATA' use16
     assume cs:dseg
     assume es:nothing, ss:nothing, ds:dseg
     public byte_3B770
@@ -66,7 +66,10 @@ dseg segment byte public 'STUNTSD' use16
     public word_3B80A
     public byte_3B80C
     public byte_3B85E
-    public word_3B870
+    public aDesert
+    public aTropical
+    public aAlpine
+    public aCity
     public word_3B8EA
     public word_3B8EC
     public word_3B8EE
@@ -83,11 +86,8 @@ dseg segment byte public 'STUNTSD' use16
     public byte_3B8FB
     public byte_3B8FC
     public aKevin
-    public byte_3B907
-    public byte_3B90D
-    public byte_3B90E
-    public byte_3B90F
-    public byte_3B910
+    public aOpp1
+    public aCarcoun
     public aTitl
     public aSkidms
     public aSkidtitl
@@ -206,6 +206,7 @@ dseg segment byte public 'STUNTSD' use16
     public word_3C10E
     public word_3C110
     public word_3C112
+    public aScensce2sce3sce4
     public word_3C1B6
     public word_3C1B8
     public word_3C1BA
@@ -332,6 +333,9 @@ dseg segment byte public 'STUNTSD' use16
     public byte_3E70D
     public byte_3E70E
     public byte_3E70F
+    public aNam
+    public aPath
+    public aSped
     public aEngi
     public aEngi_0
     public aStar
@@ -355,6 +359,8 @@ dseg segment byte public 'STUNTSD' use16
     public aDefault
     public aRbf
     public aCop
+    public unk_3E7FC
+    public unk_3E82C
     public byte_3E916
     public byte_3E917
     public byte_3E918
@@ -363,6 +369,13 @@ dseg segment byte public 'STUNTSD' use16
     public byte_3E921
     public byte_3E922
     public byte_3E923
+    public aEng1
+    public aEng
+    public aFontled_fnt
+    public aSdgame
+    public aGame
+    public aPlan
+    public aWall
     public byte_3E9DB
     public word_3EA18
     public word_3EA2A
@@ -824,7 +837,7 @@ dseg segment byte public 'STUNTSD' use16
     public word_4392A
     public byte_4392C
     public dword_4392E
-    public word_43932
+    public skybox_current
     public word_43934
     public word_43936
     public word_43938
@@ -1009,17 +1022,14 @@ dseg segment byte public 'STUNTSD' use16
     public byte_4499F
     public word_449A0
     public word_449A2
-    public byte_449A4
+    public player_car_id
     public byte_449A5
     public byte_449A6
     public byte_449A7
     public byte_449A8
     public byte_449A9
-    public byte_449AA
-    public byte_449AB
-    public byte_449AC
-    public byte_449AD
-    public byte_449AE
+    public opponent_index
+    public opponent_car_id
     public byte_449AF
     public byte_449B0
     public byte_449B1
@@ -1064,7 +1074,7 @@ dseg segment byte public 'STUNTSD' use16
     public word_44A32
     public word_44A7C
     public word_44A7E
-    public word_44A88
+    public skybox_unk2
     public byte_44A8A
     public word_44A8C
     public terrainpos
@@ -1138,10 +1148,10 @@ dseg segment byte public 'STUNTSD' use16
     public dword_454D6
     public byte_45514
     public word_45516
-    public word_45518
-    public word_4551A
-    public word_4551C
-    public word_4551E
+    public skybox_ptr1
+    public skybox_ptr2
+    public skybox_ptr3
+    public skybox_ptr4
     public byte_45525
     public byte_4552F
     public unk_45530
@@ -1153,7 +1163,7 @@ dseg segment byte public 'STUNTSD' use16
     public dword_455C8
     public word_455CC
     public word_455CE
-    public word_455D0
+    public skybox_unk1
     public byte_455D2
     public dword_4562E
     public word_45632
@@ -1199,10 +1209,7 @@ dseg segment byte public 'STUNTSD' use16
     public trackrows
     public word_45D7C
     public byte_45D7E
-    public dword_45D80
-    public dword_45D84
-    public dword_45D88
-    public dword_45D8C
+    public skyboxes
     public byte_45D90
     public word_45D92
     public word_45D94
@@ -1246,8 +1253,8 @@ dseg segment byte public 'STUNTSD' use16
     public dword_46162
     public byte_46166
     public byte_46167
-    public word_46168
-    public word_4616A
+    public skybox_res_ofs
+    public skybox_res_seg
     public word_4616C
     public byte_4616E
     public byte_4616F
@@ -1284,6 +1291,7 @@ dseg segment byte public 'STUNTSD' use16
     public byte_4644A
     public byte_4645E
     public dword_46460
+    public unk_46464
     public byte_46467
     public word_46468
     public mat_unk_2
@@ -1539,7 +1547,8 @@ byte_3B85E     db 0
     db 0
     db 0
     db 0
-word_3B870     dw 0
+    db 0
+    db 0
     db 0
     db 0
     db 0
@@ -1612,7 +1621,7 @@ word_3B870     dw 0
     db 0
     db 0
     db 0
-    db 100
+aDesert     db 100
     db 101
     db 115
     db 101
@@ -1621,7 +1630,7 @@ word_3B870     dw 0
     db 0
     db 0
     db 0
-    db 116
+aTropical     db 116
     db 114
     db 111
     db 112
@@ -1630,7 +1639,7 @@ word_3B870     dw 0
     db 97
     db 108
     db 0
-    db 97
+aAlpine     db 97
     db 108
     db 112
     db 105
@@ -1639,7 +1648,7 @@ word_3B870     dw 0
     db 0
     db 0
     db 0
-    db 99
+aCity     db 99
     db 105
     db 116
     db 121
@@ -1682,19 +1691,19 @@ aKevin     db 107
     db 105
     db 110
     db 0
-    db 111
+aOpp1     db 111
     db 112
     db 112
-byte_3B907     db 49
+    db 49
     db 0
     db 0
-    db 99
+aCarcoun     db 99
     db 97
     db 114
-byte_3B90D     db 99
-byte_3B90E     db 111
-byte_3B90F     db 117
-byte_3B910     db 110
+    db 99
+    db 111
+    db 117
+    db 110
     db 0
 aTitl     db 84
     db 73
@@ -3802,7 +3811,7 @@ word_3C112     dw 10960
     db 110
     db 102
     db 0
-    db 115
+aScensce2sce3sce4     db 115
     db 99
     db 101
     db 110
@@ -13536,16 +13545,16 @@ byte_3E70F     db 0
     db 1
     db 1
     db 4
-    db 110
+aNam     db 110
     db 97
     db 109
     db 0
-    db 112
+aPath     db 112
     db 97
     db 116
     db 104
     db 0
-    db 115
+aSped     db 115
     db 112
     db 101
     db 100
@@ -13667,7 +13676,7 @@ aCop     db 99
     db 111
     db 112
     db 0
-    db 244
+unk_3E7FC     db 244
     db 1
     db 16
     db 39
@@ -13685,7 +13694,7 @@ aCop     db 99
     dd aSki2                ; "SKI2"
     dd aBump                ; "BUMP"
     dd aScra                ; "SCRA"
-    db 244
+unk_3E82C     db 244
     db 1
     db 16
     db 39
@@ -13904,16 +13913,16 @@ byte_3E921     db 120
 byte_3E922     db 120
 byte_3E923     db 120
     db 0
-    db 101
+aEng1     db 101
     db 110
     db 103
     db 49
     db 0
-    db 101
+aEng     db 101
     db 110
     db 103
     db 0
-    db 102
+aFontled_fnt     db 102
     db 111
     db 110
     db 116
@@ -13925,24 +13934,24 @@ byte_3E923     db 120
     db 110
     db 116
     db 0
-    db 115
+aSdgame     db 115
     db 100
     db 103
     db 97
     db 109
     db 101
     db 0
-    db 103
+aGame     db 103
     db 97
     db 109
     db 101
     db 0
-    db 112
+aPlan     db 112
     db 108
     db 97
     db 110
     db 0
-    db 119
+aWall     db 119
     db 97
     db 108
     db 108
@@ -33714,7 +33723,7 @@ word_4392A     dw 0
 byte_4392C     db 0
     db 0
 dword_4392E     dd 0
-word_43932     dw 0
+skybox_current     dw 0
 word_43934     dw 0
 word_43936     dw 0
 word_43938     dw 0
@@ -37781,17 +37790,17 @@ byte_4499E     db 0
 byte_4499F     db 0
 word_449A0     dw 0
 word_449A2     dw 0
-byte_449A4     db 0
+player_car_id     db 0
 byte_449A5     db 0
 byte_449A6     db 0
 byte_449A7     db 0
 byte_449A8     db 0
 byte_449A9     db 0
-byte_449AA     db 0
-byte_449AB     db 0
-byte_449AC     db 0
-byte_449AD     db 0
-byte_449AE     db 0
+opponent_index     db 0
+opponent_car_id     db 0
+    db 0
+    db 0
+    db 0
 byte_449AF     db 0
 byte_449B0     db 0
 byte_449B1     db 0
@@ -37968,7 +37977,7 @@ word_44A7E     dw 0
     db 0
     db 0
     db 0
-word_44A88     dw 0
+skybox_unk2     dw 0
 byte_44A8A     db 0
     db 0
 word_44A8C     dw 0
@@ -40590,10 +40599,10 @@ dword_454D6     dd 0
 byte_45514     db 0
     db 0
 word_45516     dw 0
-word_45518     dw 0
-word_4551A     dw 0
-word_4551C     dw 0
-word_4551E     dw 0
+skybox_ptr1     dw 0
+skybox_ptr2     dw 0
+skybox_ptr3     dw 0
+skybox_ptr4     dw 0
     db 0
     db 0
     db 0
@@ -40760,7 +40769,7 @@ word_4557A     dw 0
 dword_455C8     dd 0
 word_455CC     dw 0
 word_455CE     dw 0
-word_455D0     dw 0
+skybox_unk1     dw 0
 byte_455D2     db 0
     db 0
     db 0
@@ -42692,10 +42701,10 @@ trackrows     dw 0
 word_45D7C     dw 0
 byte_45D7E     db 0
     db 0
-dword_45D80     dd 0
-dword_45D84     dd 0
-dword_45D88     dd 0
-dword_45D8C     dd 0
+skyboxes     dd 0
+    dd 0
+    dd 0
+    dd 0
 byte_45D90     db 0
     db 0
 word_45D92     dw 0
@@ -43644,8 +43653,8 @@ word_46160     dw 0
 dword_46162     dd 0
 byte_46166     db 0
 byte_46167     db 0
-word_46168     dw 0
-word_4616A     dw 0
+skybox_res_ofs     dw 0
+skybox_res_seg     dw 0
 word_4616C     dw 0
 byte_4616E     db 0
 byte_4616F     db 0
@@ -44380,7 +44389,7 @@ byte_4644A     db 0
 byte_4645E     db 0
     db 0
 dword_46460     dd 0
-    db 0
+unk_46464     db 0
     db 0
     db 0
 byte_46467     db 0

@@ -52,8 +52,8 @@ seg010 segment byte public 'STUNTSC' use16
     extrn _brkctl:proc
     extrn sub_2E290:proc
     extrn _strcat:proc
-    extrn _strcpy2:proc
-    extrn _strcmp2:proc
+    extrn _strcpy:proc
+    extrn _strcmp:proc
     extrn _strlen:proc
     extrn _itoa:proc
     extrn _ultoa:proc

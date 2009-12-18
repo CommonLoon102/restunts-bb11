@@ -46,10 +46,10 @@ nosmart
 seg007 segment byte public 'STUNTSC' use16
     assume cs:seg007
     assume es:nothing, ss:nothing, ds:dseg
-    public sub_26BAE
+    public add_audiodriver_timer
     public sub_26BD5
     public sub_26C06
-    public sub_26C3C
+    public init_sfx_engine
     public sub_26EF4
     public sub_26F6D
     public sub_2712E
@@ -61,7 +61,7 @@ seg007 segment byte public 'STUNTSC' use16
     public sub_27466
     ; align 2
     db 144
-sub_26BAE proc far
+add_audiodriver_timer proc far
 
     mov     bx, 6364h
     jmp     short loc_26BB9
@@ -80,7 +80,7 @@ loc_26BB9:
     pop     bx
     pop     bx
     retf
-sub_26BAE endp
+add_audiodriver_timer endp
 sub_26BD5 proc far
      r = byte ptr 0
 
@@ -138,7 +138,7 @@ loc_26C2E:
     pop     bp
     retf
 sub_26C06 endp
-sub_26C3C proc far
+init_sfx_engine proc far
     var_18 = dword ptr -24
     var_14 = word ptr -20
     var_12 = word ptr -18
@@ -421,7 +421,7 @@ loc_26EEE:
     mov     sp, bp
     pop     bp
     retf
-sub_26C3C endp
+init_sfx_engine endp
 sub_26EF4 proc far
      s = byte ptr 0
      r = byte ptr 2

@@ -26,5 +26,5 @@ seg001 segment byte public 'STUNTSC' use16
     extrn sub_199B2:proc
     extrn sub_19A2C:proc
     extrn sub_19BA0:proc
-    extrn sub_19CA2:proc
+    extrn setup_car_from_simd:proc
 seg001 ends

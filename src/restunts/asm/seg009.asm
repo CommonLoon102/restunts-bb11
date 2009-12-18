@@ -134,7 +134,7 @@ sub_2A2BC proc far
     push    si
     mov     ax, 34B0h
     push    ax
-    call    sub_3385C
+    call    load_2dshape1
     add     sp, 2
     mov     [bp+var_2A], ax
     mov     [bp+var_28], dx
@@ -144,7 +144,7 @@ sub_2A2BC proc far
     push    ax
     push    dx
     push    [bp+var_2A]
-    call    sub_367B2
+    call    locate_many_resources
     add     sp, 8
     mov     ax, 70BCh
     push    ax
@@ -152,7 +152,7 @@ sub_2A2BC proc far
     push    ax
     push    [bp+var_28]
     push    [bp+var_2A]
-    call    sub_367B2
+    call    locate_many_resources
     add     sp, 8
     mov     ax, 7118h
     push    ax
@@ -160,7 +160,7 @@ sub_2A2BC proc far
     push    ax
     push    [bp+var_28]
     push    [bp+var_2A]
-    call    sub_367B2
+    call    locate_many_resources
     add     sp, 8
     mov     ax, 0Fh
     push    ax
@@ -169,7 +169,7 @@ sub_2A2BC proc far
     mov     ax, es:[bx]
     imul    word_44AE4
     push    ax
-    call    sub_34C0C
+    call    make_wnd_sprite
     add     sp, 6
     mov     [bp+var_172], ax
     mov     [bp+var_170], dx
@@ -180,7 +180,7 @@ sub_2A2BC proc far
     mov     ax, es:[bx]
     imul    word_44AE4
     push    ax
-    call    sub_34C0C
+    call    make_wnd_sprite
     add     sp, 6
     mov     [bp+var_16E], ax
     mov     [bp+var_16C], dx
@@ -191,7 +191,7 @@ sub_2A2BC proc far
     mov     ax, es:[bx]
     imul    word_44AE4
     push    ax
-    call    sub_34C0C
+    call    make_wnd_sprite
     add     sp, 6
     mov     [bp+var_16A], ax
     mov     [bp+var_168], dx
@@ -202,7 +202,7 @@ sub_2A2BC proc far
     mov     ax, es:[bx]
     imul    word_44AE4
     push    ax
-    call    sub_34C0C
+    call    make_wnd_sprite
     add     sp, 6
     mov     [bp+var_166], ax
     mov     [bp+var_164], dx
@@ -218,7 +218,7 @@ sub_2A2BC proc far
     push    ax
     mov     ax, 140h
     push    ax
-    call    sub_34C0C
+    call    make_wnd_sprite
     add     sp, 6
     mov     word ptr dword_44D26, ax
     mov     word ptr dword_44D26+2, dx
@@ -226,7 +226,7 @@ sub_2A2BC proc far
     push    ax
     push    [bp+var_20]
     push    [bp+var_22]
-    call    sub_28A8C
+    call    locate_shape_alt
     add     sp, 6
     mov     word_42540, ax
     mov     word_42542, dx
@@ -234,7 +234,7 @@ sub_2A2BC proc far
     push    ax
     push    [bp+var_20]
     push    [bp+var_22]
-    call    sub_28A8C
+    call    locate_shape_alt
     add     sp, 6
     mov     [bp+var_26], ax
     mov     [bp+var_24], dx
@@ -242,7 +242,7 @@ sub_2A2BC proc far
     push    ax
     push    [bp+var_20]
     push    [bp+var_22]
-    call    sub_28A8C
+    call    locate_shape_alt
     add     sp, 6
     mov     [bp+var_4], ax
     mov     [bp+var_2], dx
@@ -250,7 +250,7 @@ sub_2A2BC proc far
     push    ax
     push    [bp+var_20]
     push    [bp+var_22]
-    call    sub_28A8C
+    call    locate_shape_alt
     add     sp, 6
     mov     [bp+var_D2], ax
     mov     [bp+var_D0], dx
@@ -2062,7 +2062,7 @@ loc_2B61E:
     push    ax
     push    [bp+var_20]
     push    [bp+var_22]
-    call    sub_28A8C
+    call    locate_shape_alt
     add     sp, 6
     mov     word ptr [bp+var_10], ax
     mov     word ptr [bp+var_10+2], dx
@@ -2897,7 +2897,7 @@ loc_2BE44:
     add     sp, 4
     push    [bp+var_20]
     push    [bp+var_22]
-    call    sub_28A78
+    call    unload_resource
     add     sp, 4
     push    [bp+var_28]
     push    [bp+var_2A]

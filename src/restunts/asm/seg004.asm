@@ -50,7 +50,7 @@ seg004 segment byte public 'STUNTSC' use16
     public off_1F750
     public off_1F87E
     public sub_1FAE4
-    public sub_1FE94
+    public load_game_3dshapes
     public sub_1FF5E
     public sub_1FF92
     public sub_20438
@@ -3175,7 +3175,7 @@ loc_1FE8C:
     pop     bp
     retf
 sub_1FAE4 endp
-sub_1FE94 proc far
+load_game_3dshapes proc far
      s = byte ptr 0
      r = byte ptr 2
 
@@ -3262,7 +3262,7 @@ loc_1FF38:
     mov     sp, bp
     pop     bp
     retf
-sub_1FE94 endp
+load_game_3dshapes endp
 sub_1FF5E proc far
 
     mov     ax, word_461C4
@@ -5842,16 +5842,16 @@ sub_217CA proc far
     sub     sp, 0F30h
     push    di
     push    si
-    mov     al, byte_449AA
+    mov     al, opponent_index
     add     al, 30h ; '0'
-    mov     byte_3B907, al
-    mov     ax, 194h
+    mov     byte ptr aOpp1+3, al
+    mov     ax, offset aOpp1; "opp1"
     push    ax
     call    load_res_file
     add     sp, 2
     mov     [bp+var_B2E], ax
     mov     [bp+var_B2C], dx
-    mov     ax, 3009h
+    mov     ax, offset aNam ; "nam"
     push    ax
     push    dx
     push    [bp+var_B2E]
@@ -5859,23 +5859,23 @@ sub_217CA proc far
     add     sp, 6
     push    dx
     push    ax
-    mov     ax, 0ACF4h
+    mov     ax, offset unk_46464
     push    ax
     call    sub_28AD6
     add     sp, 6
-    mov     ax, 300Dh
+    mov     ax, offset aPath; "path"
     push    ax
     push    [bp+var_B2C]
     push    [bp+var_B2E]
-    call    sub_28A8C
+    call    locate_shape_alt
     add     sp, 6
     mov     [bp+var_414], ax
     mov     [bp+var_412], dx
-    mov     ax, 3012h
+    mov     ax, offset aSped; "sped"
     push    ax
     push    [bp+var_B2C]
     push    [bp+var_B2E]
-    call    sub_28A8C
+    call    locate_shape_alt
     add     sp, 6
     mov     word ptr [bp+var_A], ax
     mov     word ptr [bp+var_A+2], dx
@@ -6015,7 +6015,7 @@ loc_219A5:
     jnz     short loc_219C2
     push    [bp+var_B2C]
     push    [bp+var_B2E]
-    call    sub_28A78
+    call    unload_resource
     add     sp, 4
     pop     si
     pop     di

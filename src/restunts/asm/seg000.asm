@@ -335,7 +335,7 @@ loc_102F4:
     push    ax
     mov     ax, offset byte_449A8
     push    ax
-    mov     ax, offset byte_449A4
+    mov     ax, offset player_car_id
     push    ax
     push    cs
     call    near ptr run_car_menu
@@ -348,7 +348,7 @@ loc_1031C:
     push    si
     push    di
     mov     di, offset unk_45530
-    mov     si, offset byte_449A4
+    mov     si, offset player_car_id
     push    ds
     pop     es
     mov     cx, 0Dh
@@ -529,7 +529,7 @@ loc_104AC:
 loc_104D2:
     push    si
     push    di
-    mov     di, offset byte_449A4
+    mov     di, offset player_car_id
     mov     si, offset unk_45530
     push    ds
     pop     es
@@ -636,7 +636,7 @@ run_intro_looped proc far
     push    ax
     mov     ax, 140h
     push    ax
-    call    sub_34C0C
+    call    make_wnd_sprite
     add     sp, 6
     mov     word ptr dword_44D26, ax
     mov     word ptr dword_44D26+2, dx
@@ -672,7 +672,7 @@ run_intro_looped proc far
     push    ax
     mov     ax, 140h
     push    ax
-    call    sub_34C0C
+    call    make_wnd_sprite
     add     sp, 6
     mov     word ptr dword_44D26, ax
     mov     word ptr dword_44D26+2, dx
@@ -826,7 +826,7 @@ sub_10786 proc far
     push    ax
     push    word_45E14
     push    word_45E12
-    call    sub_367B2
+    call    locate_many_resources
     add     sp, 8
     mov     word_44382, 96h ; '–'
     call    sub_28F7C
@@ -866,7 +866,7 @@ sub_10786 proc far
     push    ax
     push    [bp+var_38]
     push    [bp+var_3A]
-    call    sub_28A8C
+    call    locate_shape_alt
     add     sp, 6
     push    dx
     push    ax
@@ -888,7 +888,7 @@ sub_10786 proc far
     push    ax
     push    [bp+var_38]
     push    [bp+var_3A]
-    call    sub_28A8C
+    call    locate_shape_alt
     add     sp, 6
     push    dx
     push    ax
@@ -932,7 +932,7 @@ sub_10786 proc far
     push    ax
     push    [bp+var_38]
     push    [bp+var_3A]
-    call    sub_28A8C
+    call    locate_shape_alt
     add     sp, 6
     push    dx
     push    ax
@@ -954,7 +954,7 @@ sub_10786 proc far
     push    ax
     push    [bp+var_38]
     push    [bp+var_3A]
-    call    sub_28A8C
+    call    locate_shape_alt
     add     sp, 6
     push    dx
     push    ax
@@ -976,7 +976,7 @@ sub_10786 proc far
     push    ax
     push    [bp+var_38]
     push    [bp+var_3A]
-    call    sub_28A8C
+    call    locate_shape_alt
     add     sp, 6
     push    dx
     push    ax
@@ -998,7 +998,7 @@ sub_10786 proc far
     push    ax
     push    [bp+var_38]
     push    [bp+var_3A]
-    call    sub_28A8C
+    call    locate_shape_alt
     add     sp, 6
     push    dx
     push    ax
@@ -1020,7 +1020,7 @@ sub_10786 proc far
     push    ax
     push    [bp+var_38]
     push    [bp+var_3A]
-    call    sub_28A8C
+    call    locate_shape_alt
     add     sp, 6
     push    dx
     push    ax
@@ -1064,7 +1064,7 @@ sub_10786 proc far
     push    ax
     push    [bp+var_38]
     push    [bp+var_3A]
-    call    sub_28A8C
+    call    locate_shape_alt
     add     sp, 6
     push    dx
     push    ax
@@ -1086,7 +1086,7 @@ sub_10786 proc far
     push    ax
     push    [bp+var_38]
     push    [bp+var_3A]
-    call    sub_28A8C
+    call    locate_shape_alt
     add     sp, 6
     push    dx
     push    ax
@@ -1108,7 +1108,7 @@ sub_10786 proc far
     push    ax
     push    [bp+var_38]
     push    [bp+var_3A]
-    call    sub_28A8C
+    call    locate_shape_alt
     add     sp, 6
     push    dx
     push    ax
@@ -1152,7 +1152,7 @@ sub_10786 proc far
     push    ax
     push    [bp+var_38]
     push    [bp+var_3A]
-    call    sub_28A8C
+    call    locate_shape_alt
     add     sp, 6
     push    dx
     push    ax
@@ -1196,7 +1196,7 @@ sub_10786 proc far
     push    ax
     push    [bp+var_38]
     push    [bp+var_3A]
-    call    sub_28A8C
+    call    locate_shape_alt
     add     sp, 6
     push    dx
     push    ax
@@ -1218,7 +1218,7 @@ sub_10786 proc far
     push    ax
     push    [bp+var_38]
     push    [bp+var_3A]
-    call    sub_28A8C
+    call    locate_shape_alt
     add     sp, 6
     push    dx
     push    ax
@@ -1262,7 +1262,7 @@ sub_10786 proc far
     push    ax
     push    [bp+var_38]
     push    [bp+var_3A]
-    call    sub_28A8C
+    call    locate_shape_alt
     add     sp, 6
     push    dx
     push    ax
@@ -1284,7 +1284,7 @@ sub_10786 proc far
     push    ax
     push    [bp+var_38]
     push    [bp+var_3A]
-    call    sub_28A8C
+    call    locate_shape_alt
     add     sp, 6
     push    dx
     push    ax
@@ -1306,7 +1306,7 @@ sub_10786 proc far
     push    ax
     push    [bp+var_38]
     push    [bp+var_3A]
-    call    sub_28A8C
+    call    locate_shape_alt
     add     sp, 6
     push    dx
     push    ax
@@ -1328,7 +1328,7 @@ sub_10786 proc far
     push    ax
     push    [bp+var_38]
     push    [bp+var_3A]
-    call    sub_28A8C
+    call    locate_shape_alt
     add     sp, 6
     push    dx
     push    ax
@@ -1348,7 +1348,7 @@ sub_10786 proc far
     add     sp, 0Ah
     push    [bp+var_38]
     push    [bp+var_3A]
-    call    sub_28A78
+    call    unload_resource
     add     sp, 4
     mov     ax, 0FFFFh
     push    ax
@@ -1560,7 +1560,7 @@ run_menu proc far
     push    ax
     mov     ax, 140h
     push    ax
-    call    sub_34C0C
+    call    make_wnd_sprite
     add     sp, 6
     mov     word ptr dword_44D26, ax
     mov     word ptr dword_44D26+2, dx
@@ -1739,7 +1739,7 @@ loc_110ED:
     push    ax
     mov     ax, 140h
     push    ax
-    call    sub_34C0C
+    call    make_wnd_sprite
     add     sp, 6
     mov     word ptr dword_44D26, ax
     mov     word ptr dword_44D26+2, dx
@@ -1747,9 +1747,9 @@ loc_110ED:
     mov     al, es:[bx+384h]
     sub     ah, ah
     push    ax
-    call    sub_1D7A2
+    call    load_skybox
     add     sp, 2
-    call    sub_1FE94
+    call    load_game_3dshapes
     mov     ax, 0C8h ; 'È'
     push    ax
     mov     ax, 140h
@@ -1764,7 +1764,7 @@ loc_110ED:
     call    init_game_state
     add     sp, 2
     call    sub_28F6A
-    push    word_44A88
+    push    skybox_unk2
     call    sub_332C0
     add     sp, 2
     mov     ax, 0C8h ; 'È'
@@ -1779,7 +1779,7 @@ loc_110ED:
     add     sp, 8
     call    sub_1CBDC
     call    sub_1FF5E
-    call    sub_1D8B4
+    call    unload_skybox
     call    sub_28F6A
     mov     ax, 2B4h
     push    ax
@@ -1991,7 +1991,7 @@ loc_112E5:
     add     sp, 14h
     push    [bp+var_2]
     push    [bp+var_4]
-    call    sub_28A78
+    call    unload_resource
     add     sp, 4
 loc_113B4:
     mov     al, [bp+var_12]
@@ -2774,7 +2774,7 @@ loc_11A8D:
     add     sp, 4
     mov     al, [bp+arg_6]
     mov     [bp+var_D], al
-    cmp     byte_449AA, 0
+    cmp     opponent_index, 0
     jz      short loc_11AE6
     mov     ax, 0ACF4h
     push    ax
@@ -3221,7 +3221,7 @@ loc_11E68:
     mov     byte_45514, 2Dh ; '-'
     mov     ax, 35Ch
     push    ax
-    call    sub_3385C
+    call    load_2dshape1
     add     sp, 2
     mov     [bp+var_36], ax
     mov     [bp+var_34], dx
@@ -3255,7 +3255,7 @@ loc_11EBB:
     les     bx, [bp+var_10C]
     push    word ptr es:[bx+2]
     push    word ptr es:[bx]
-    call    sub_34C0C
+    call    make_wnd_sprite
     add     sp, 6
     mov     word ptr [bp+var_42], ax
     mov     word ptr [bp+var_42+2], dx
@@ -3319,7 +3319,7 @@ loc_11F50:
     push    ax
     mov     ax, 140h
     push    ax
-    call    sub_34C0C
+    call    make_wnd_sprite
     add     sp, 6
     mov     word ptr dword_44D26, ax
     mov     word ptr dword_44D26+2, dx
@@ -3333,7 +3333,7 @@ loc_11FB1:
     jz      short loc_11FC8
     push    [bp+var_2]
     push    [bp+var_4]
-    call    sub_28A78
+    call    unload_resource
     add     sp, 4
     call    sub_20438
 loc_11FC8:
@@ -3359,13 +3359,13 @@ loc_11FC8:
     mov     di, ax
     add     di, bp
     mov     al, [di-0EEh]
-    mov     byte_3B90D, al
+    mov     byte ptr aCarcoun+3, al
     mov     al, [di-0EDh]
-    mov     byte_3B90E, al
+    mov     byte ptr aCarcoun+4, al
     mov     al, [di-0ECh]
-    mov     byte_3B90F, al
+    mov     byte ptr aCarcoun+5, al
     mov     al, [di-0EBh]
-    mov     byte_3B910, al
+    mov     byte ptr aCarcoun+6, al
     mov     ax, 19Ah
     push    ax
     call    load_res_file
@@ -3376,7 +3376,7 @@ loc_11FC8:
     push    ax
     push    dx
     push    [bp+var_4]
-    call    sub_19CA2
+    call    setup_car_from_simd
     add     sp, 6
     call    sub_28F7C
     sub     ax, ax
@@ -4085,7 +4085,7 @@ loc_12768:
     add     sp, 4
     push    [bp+var_2]
     push    [bp+var_4]
-    call    sub_28A78
+    call    unload_resource
     add     sp, 4
     call    sub_20438
     cmp     [bp+arg_6], 0
@@ -4101,7 +4101,7 @@ loc_127A6:
     jnz     short loc_127BC
     push    word_455CE
     push    word_455CC
-    call    sub_28A78
+    call    unload_resource
     add     sp, 4
 loc_127BC:
     push    [bp+var_34]
@@ -4301,7 +4301,7 @@ run_opponent_menu proc far
     push    ax
     push    dx
     push    word_44A00
-    call    sub_367B2
+    call    locate_many_resources
     add     sp, 8
     mov     [bp+var_1C], 0
     mov     [bp+var_6], 0
@@ -4311,7 +4311,7 @@ run_opponent_menu proc far
 loc_129A3:
     call    sub_28D9E
 loc_129A8:
-    mov     al, byte_449AA
+    mov     al, opponent_index
     cmp     [bp+var_1E], al
     jnz     short loc_129B3
     jmp     loc_12CFB
@@ -4326,19 +4326,19 @@ loc_129B3:
     jz      short loc_129DD
     push    [bp+var_A]
     push    [bp+var_C]
-    call    sub_28A78
+    call    unload_resource
     add     sp, 4
 loc_129DD:
     mov     ax, 4
     push    ax
     call    ensure_file_exists
     add     sp, 2
-    cmp     byte_449AA, 0
+    cmp     opponent_index, 0
     jz      short loc_12A10
-    mov     al, byte_449AA
+    mov     al, opponent_index
     add     al, 30h ; '0'
-    mov     byte_3B907, al
-    mov     ax, 194h
+    mov     byte ptr aOpp1+3, al
+    mov     ax, offset aOpp1; "opp1"
     push    ax
     call    load_res_file
     add     sp, 2
@@ -4355,11 +4355,11 @@ loc_12A14:
     push    ax
     mov     ax, 140h
     push    ax
-    call    sub_34C0C
+    call    make_wnd_sprite
     add     sp, 6
     mov     word ptr dword_44D26, ax
     mov     word ptr dword_44D26+2, dx
-    mov     al, byte_449AA
+    mov     al, opponent_index
     mov     [bp+var_1E], al
     mov     [bp+var_14], 0FFh
     cmp     byte_46436, 0
@@ -4511,7 +4511,7 @@ loc_12A4D:
     push    ax
     call    sub_292DC
     add     sp, 14h
-    mov     al, byte_449AA
+    mov     al, opponent_index
     add     al, 30h ; '0'
     cbw
     push    ax
@@ -4519,7 +4519,7 @@ loc_12A4D:
     push    word_44A00
     call    nullsub_2
     add     sp, 6
-    mov     al, byte_449AA
+    mov     al, opponent_index
     cbw
     mov     bx, ax
     shl     bx, 1
@@ -4556,7 +4556,7 @@ loc_12A4D:
     add     sp, 8
     call    sub_28F6A
 loc_12C46:
-    cmp     byte_449AA, 0
+    cmp     opponent_index, 0
     jz      short loc_12C5A
     mov     ax, 43Bh
     push    ax
@@ -4675,7 +4675,7 @@ loc_12D2C:
     mov     [bp+var_16], al
     cmp     al, 0FFh
     jz      short loc_12D93
-    cmp     byte_449AA, 0
+    cmp     opponent_index, 0
     jnz     short loc_12D8D
     cmp     al, 3
     jz      short loc_12D93
@@ -4720,26 +4720,26 @@ loc_12DBE:
 loc_12DDD:
     jmp     loc_129A8
 loc_12DE0:
-    dec     byte_449AA
-    cmp     byte_449AA, 1
+    dec     opponent_index
+    cmp     opponent_index, 1
     jl      short loc_12DEE
     jmp     loc_129A8
 loc_12DEE:
-    mov     byte_449AA, 6
+    mov     opponent_index, 6
     jmp     loc_129A8
 loc_12DF6:
-    inc     byte_449AA
-    cmp     byte_449AA, 7
+    inc     opponent_index
+    cmp     opponent_index, 7
     jz      short loc_12E04
     jmp     loc_129A8
 loc_12E04:
-    mov     byte_449AA, 1
+    mov     opponent_index, 1
     jmp     loc_129A8
 loc_12E0C:
-    mov     byte_449AA, 0
+    mov     opponent_index, 0
     jmp     loc_129A8
 loc_12E14:
-    cmp     byte_449AA, 0
+    cmp     opponent_index, 0
     jnz     short loc_12E1E
     jmp     loc_129A8
 loc_12E1E:
@@ -4751,10 +4751,10 @@ loc_12E1E:
     add     sp, 4
     push    [bp+var_A]
     push    [bp+var_C]
-    call    sub_28A78
+    call    unload_resource
     add     sp, 4
     call    show_waiting
-    mov     al, byte_449AA
+    mov     al, opponent_index
     cbw
     push    ax
     mov     ax, 9240h
@@ -4769,18 +4769,18 @@ loc_12E1E:
     mov     [bp+var_1E], 0FFh
     jmp     loc_129A3
 loc_12E6A:
-    cmp     byte_449AA, 0
+    cmp     opponent_index, 0
     jz      short loc_12EA2
-    cmp     byte_449AB, 0FFh
+    cmp     opponent_car_id, 0FFh
     jnz     short loc_12EA7
-    mov     al, byte_449A4
-    mov     byte_449AB, al
+    mov     al, player_car_id
+    mov     opponent_car_id, al
     mov     al, byte_449A5
-    mov     byte_449AC, al
+    mov     opponent_car_id+1, al
     mov     al, byte_449A6
-    mov     byte_449AD, al
+    mov     opponent_car_id+2, al
     mov     al, byte_449A7
-    mov     byte_449AE, al
+    mov     opponent_car_id+3, al
     mov     al, byte_449A8
 smart
     and     al, 1
@@ -4792,7 +4792,7 @@ nosmart
     ; align 2
     db 144
 loc_12EA2:
-    mov     byte_449AB, 0FFh
+    mov     opponent_car_id, 0FFh
 loc_12EA7:
     push    word ptr dword_44D26+2
     push    word ptr dword_44D26
@@ -4802,7 +4802,7 @@ loc_12EA7:
     jz      short loc_12ECB
     push    [bp+var_A]
     push    [bp+var_C]
-    call    sub_28A78
+    call    unload_resource
     add     sp, 4
 loc_12ECB:
     push    word_44A02
@@ -4811,7 +4811,7 @@ loc_12ECB:
     add     sp, 4
     push    word_455CE
     push    word_455CC
-    call    sub_28A78
+    call    unload_resource
     add     sp, 4
     call    sub_28DB6
     pop     si
@@ -4830,7 +4830,7 @@ loc_12EF6:
 loc_12F02:
     mov     [bp+var_1C], 4
 loc_12F06:
-    cmp     byte_449AA, 0
+    cmp     opponent_index, 0
     jz      short loc_12F10
     jmp     loc_129A8
 loc_12F10:
@@ -4852,7 +4852,7 @@ loc_12F20:
 loc_12F2C:
     mov     [bp+var_1C], 0
 loc_12F30:
-    cmp     byte_449AA, 0
+    cmp     opponent_index, 0
     jz      short loc_12F3A
     jmp     loc_129A8
 loc_12F3A:
@@ -4889,7 +4889,7 @@ run_option_menu proc far
     push    ax
     push    word_455CE
     push    word_455CC
-    call    sub_28A8C
+    call    locate_shape_alt
     add     sp, 6
     push    dx
     push    ax
@@ -4915,7 +4915,7 @@ run_option_menu proc far
     push    ax
     push    word_455CE
     push    word_455CC
-    call    sub_28A8C
+    call    locate_shape_alt
     add     sp, 6
     push    dx
     push    ax
@@ -5094,7 +5094,7 @@ loc_1315A:
 loc_13163:
     push    word_455CE
     push    word_455CC
-    call    sub_28A78
+    call    unload_resource
     mov     al, [bp+var_4]
     cbw
     mov     sp, bp
@@ -5168,12 +5168,12 @@ end_hiscore proc far
     add     sp, 2
     mov     [bp+var_4E], ax
     mov     [bp+var_4C], dx
-    cmp     byte_449AA, 0
+    cmp     opponent_index, 0
     jz      short loc_131C0
-    mov     al, byte_449AA
+    mov     al, opponent_index
     add     al, 30h ; '0'
-    mov     byte_3B907, al
-    mov     ax, 194h
+    mov     byte ptr aOpp1+3, al
+    mov     ax, offset aOpp1; "opp1"
     push    ax
     call    load_res_file
     add     sp, 2
@@ -5186,7 +5186,7 @@ loc_131C0:
     push    ax
     mov     ax, 140h
     push    ax
-    call    sub_34C0C
+    call    make_wnd_sprite
     add     sp, 6
     mov     word ptr dword_44D26, ax
     mov     word ptr dword_44D26+2, dx
@@ -5198,7 +5198,7 @@ loc_131C0:
     push    ax
     mov     ax, 0C8h ; 'È'
     push    ax
-    call    sub_34C0C
+    call    make_wnd_sprite
     add     sp, 6
     mov     word ptr [bp+var_46], ax
     mov     word ptr [bp+var_46+2], dx
@@ -5369,7 +5369,7 @@ loc_13380:
     add     [bp+var_70], 0Ah
 loc_133A7:
     mov     [bp+var_18], 2
-    cmp     byte_449AA, 0
+    cmp     opponent_index, 0
     jnz     short loc_133B5
     jmp     loc_134DC
 loc_133B5:
@@ -5506,7 +5506,7 @@ loc_134FB:
     push    ax              ; char *
     call    load_audio_res
     add     sp, 6
-    mov     al, byte_449AA
+    mov     al, opponent_index
     mov     [bp+var_16], al
     cmp     [bp+var_18], 2
     jnz     short loc_1351D
@@ -5837,7 +5837,7 @@ loc_13835:
 loc_1384B:
     cmp     [bp+var_18], 1
     jnz     short loc_138B6
-    mov     al, byte_449AA
+    mov     al, opponent_index
     add     al, 30h ; '0'
     mov     byte_3BD17, al
     mov     ax, 5A4h
@@ -5852,7 +5852,7 @@ loc_1384B:
     push    ax
     push    [bp+var_66]
     push    [bp+var_68]
-    call    sub_28A8C
+    call    locate_shape_alt
     add     sp, 6
     mov     [bp+var_5A], ax
     mov     [bp+var_58], dx
@@ -5880,7 +5880,7 @@ loc_138AC:
     ; align 2
     db 144
 loc_138B6:
-    mov     al, byte_449AA
+    mov     al, opponent_index
     add     al, 30h ; '0'
     mov     byte_3BD1F, al
     mov     ax, 5ACh
@@ -5895,7 +5895,7 @@ loc_138B6:
     push    ax
     push    [bp+var_66]
     push    [bp+var_68]
-    call    sub_28A8C
+    call    locate_shape_alt
     add     sp, 6
     mov     [bp+var_5A], ax
     mov     [bp+var_58], dx
@@ -6991,16 +6991,16 @@ loc_1443A:
     push    word ptr dword_44D26
     call    sub_324AA
     add     sp, 4
-    cmp     byte_449AA, 0
+    cmp     opponent_index, 0
     jz      short loc_1445F
     push    [bp+var_66]
     push    [bp+var_68]
-    call    sub_28A78
+    call    unload_resource
     add     sp, 4
 loc_1445F:
     push    [bp+var_4C]
     push    [bp+var_4E]
-    call    sub_28A78
+    call    unload_resource
     add     sp, 4
     mov     al, [bp+var_92]
     cbw
@@ -7262,7 +7262,7 @@ loc_146C5:
     call    sub_28D9E
     push    [bp+var_40A]
     push    [bp+var_40C]
-    call    sub_28A78
+    call    unload_resource
     add     sp, 4
     pop     si
     mov     sp, bp
@@ -7271,15 +7271,15 @@ loc_146C5:
 security_check endp
 sub_146E4 proc far
 
-    mov     byte_449A4, 43h ; 'C'
+    mov     player_car_id, 43h ; 'C'
     mov     byte_449A5, 4Fh ; 'O'
     mov     byte_449A6, 55h ; 'U'
     mov     byte_449A7, 4Eh ; 'N'
     mov     byte_449A8, 0
-    mov     byte_449AA, 0
+    mov     opponent_index, 0
     mov     byte_449AF, 0
     mov     byte_449A9, 1
-    mov     byte_449AB, 0FFh
+    mov     opponent_car_id, 0FFh
     retf
 sub_146E4 endp
 seg000 ends

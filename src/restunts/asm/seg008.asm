@@ -56,8 +56,8 @@ seg008 segment byte public 'STUNTSC' use16
     public sub_287C4
     public sub_289E2
     public load_res_file
-    public sub_28A78
-    public sub_28A8C
+    public unload_resource
+    public locate_shape_alt
     public locate_text_res
     public sub_28AD6
     public sub_28B0E
@@ -173,7 +173,7 @@ loc_27506:
     mov     ax, [bp+arg_2]
     sub     ax, [bp+arg_0]
     push    ax
-    call    sub_34C0C
+    call    make_wnd_sprite
     add     sp, 6
     mov     bl, byte_3B8FC
     sub     bh, bh
@@ -2530,7 +2530,7 @@ loc_28A6E:
     pop     bp
     retf
 load_res_file endp
-sub_28A78 proc far
+unload_resource proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -2546,8 +2546,8 @@ sub_28A78 proc far
     retf
     ; align 2
     db 144
-sub_28A78 endp
-sub_28A8C proc far
+unload_resource endp
+locate_shape_alt proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -2563,7 +2563,7 @@ sub_28A8C proc far
     add     sp, 6
     pop     bp
     retf
-sub_28A8C endp
+locate_shape_alt endp
 locate_text_res proc far
     var_4 = byte ptr -4
     var_3 = byte ptr -3

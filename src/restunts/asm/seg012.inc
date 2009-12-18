@@ -220,7 +220,7 @@ seg012 segment byte public 'STUNTSC' use16
     extrn sub_33742:proc
     extrn sub_33816:proc
     extrn sub_3384D:proc
-    extrn sub_3385C:proc
+    extrn load_2dshape1:proc
     extrn sub_33861:proc
     extrn sub_3386C:proc
     extrn sub_33890:proc
@@ -277,7 +277,7 @@ seg012 segment byte public 'STUNTSC' use16
     extrn word_34968:word
     extrn sub_34B0C:proc
     extrn sub_34B7C:proc
-    extrn sub_34C0C:proc
+    extrn make_wnd_sprite:proc
     extrn off_34CE4:word
     extrn byte_34CE6:byte
     extrn sub_35AF6:proc

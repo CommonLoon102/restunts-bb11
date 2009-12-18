@@ -9,9 +9,9 @@ seg003 segment byte public 'STUNTSC' use16
     extrn sub_1D12E:proc
     extrn sub_1D534:proc
     extrn sub_1D5B4:proc
-    extrn sub_1D7A2:proc
-    extrn sub_1D8B4:proc
-    extrn sub_1D8D2:proc
+    extrn load_skybox:proc
+    extrn unload_skybox:proc
+    extrn load_sdgame2_shapes:proc
     extrn sub_1D92A:proc
     extrn sub_1D93C:proc
     extrn sub_1DEA6:proc

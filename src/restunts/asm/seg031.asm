@@ -632,7 +632,7 @@ sub_3A2C0 proc far
     push    si
     mov     ax, 53A7h
     push    ax
-    call    sub_3385C
+    call    load_2dshape1
     add     sp, 2
     mov     [bp+var_30C], ax
     mov     [bp+var_30A], dx
@@ -685,7 +685,7 @@ loc_3A300:
     push    ax
     push    [bp+var_306]
     push    [bp+var_312]
-    call    sub_34C0C
+    call    make_wnd_sprite
     add     sp, 6
     mov     word ptr dword_449C2, ax
     mov     word ptr dword_449C2+2, dx
@@ -693,7 +693,7 @@ loc_3A300:
     push    ax
     push    [bp+var_306]
     push    [bp+var_312]
-    call    sub_34C0C
+    call    make_wnd_sprite
     add     sp, 6
     mov     word ptr dword_44364, ax
     mov     word ptr dword_44364+2, dx
@@ -703,13 +703,13 @@ loc_3A300:
     mov     ax, [bp+var_312]
     add     ax, word_44DC8
     push    ax
-    call    sub_34C0C
+    call    make_wnd_sprite
     add     sp, 6
     mov     word ptr dword_455C8, ax
     mov     word ptr dword_455C8+2, dx
     mov     ax, 53B8h
     push    ax
-    call    sub_3385C
+    call    load_2dshape1
     add     sp, 2
     mov     [bp+var_30C], ax
     mov     [bp+var_30A], dx

@@ -267,7 +267,7 @@ seg012 segment byte public 'STUNTSC' use16
     public sub_33742
     public sub_33816
     public sub_3384D
-    public sub_3385C
+    public load_2dshape1
     public sub_33861
     public sub_3386C
     public sub_33890
@@ -324,7 +324,7 @@ seg012 segment byte public 'STUNTSC' use16
     public word_34968
     public sub_34B0C
     public sub_34B7C
-    public sub_34C0C
+    public make_wnd_sprite
     public off_34CE4
     public byte_34CE6
     public sub_35AF6
@@ -11766,10 +11766,10 @@ sub_3384D proc far
     jmp     sub_3ACFE
     jmp     sub_3AD9C
 sub_3384D endp
-sub_3385C proc far
+load_2dshape1 proc far
 
     jmp     sub_3A9D6
-sub_3385C endp
+load_2dshape1 endp
 sub_33861 proc far
 
     jmp     sub_3A9EA
@@ -14778,7 +14778,7 @@ loc_34C06:
     ; align 2
     db 0
 sub_34B7C endp
-sub_34C0C proc far
+make_wnd_sprite proc far
     var_8 = word ptr -8
     var_6 = word ptr -6
     var_4 = word ptr -4
@@ -18470,7 +18470,7 @@ byte_34CE6     db 0
     db 0
     db 0
     db 0
-sub_34C0C endp
+make_wnd_sprite endp
 sub_35AF6 proc far
      s = byte ptr 0
      r = byte ptr 2
@@ -19009,7 +19009,7 @@ sub_35DC8 proc far
     push    ds
     push    si
     push    di
-    mov     cx, offset word_3B870
+    mov     cx, (offset byte_3B85E+12h)
     mov     ds, [bp+arg_2]
     mov     si, [bp+arg_0]
     mov     ax, cs

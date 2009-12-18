@@ -584,8 +584,19 @@ static PortFuncName(labelname) {
 //	return labelname;
 
 	if (
-		labelname == "_strcpy" ||
-		labelname == "_strcmp" ||
+//		labelname == "_strcpy" ||
+//		labelname == "_strcmp" ||
+//		labelname == "_strcat" ||
+//		labelname == "_strlen" ||
+//		labelname == "_strrchr" ||
+//		labelname == "_stricmp" ||
+//		labelname == "_rand" ||
+//		labelname == "_srand" ||
+//		labelname == "_printf" ||
+//		labelname == "_sprintf" ||
+//		labelname == "_abs" ||
+//		labelname == "_flushall" ||
+//		labelname == "_abort" ||
 		labelname == "sin_fast" ||
 		labelname == "cos_fast"
 	)
@@ -651,7 +662,7 @@ static PrintSegDecl(f, ea) {
 	else if (segtype == SEG_BSS)
 		fprintf(f, "%s segment byte public 'STACK' use16\n", SegName(ea)); 
 	else 
-		fprintf(f, "%s segment byte public 'STUNTSD' use16\n", SegName(ea)); 
+		fprintf(f, "%s segment byte public 'DATA' use16\n", SegName(ea)); 
 
 }
 

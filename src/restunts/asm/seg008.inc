@@ -9,8 +9,8 @@ seg008 segment byte public 'STUNTSC' use16
     extrn sub_287C4:proc
     extrn sub_289E2:proc
     extrn load_res_file:proc
-    extrn sub_28A78:proc
-    extrn sub_28A8C:proc
+    extrn unload_resource:proc
+    extrn locate_shape_alt:proc
     extrn locate_text_res:proc
     extrn sub_28AD6:proc
     extrn sub_28B0E:proc
