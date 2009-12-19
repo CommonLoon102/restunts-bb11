@@ -137,7 +137,7 @@ seg012 segment byte public 'STUNTSC' use16
     extrn sub_3118D:proc
     extrn sub_311D5:proc
     extrn check_pathdrive2:proc
-    extrn alloc_respages:proc
+    extrn alloc_respages2:proc
     extrn sub_312FD:proc
     extrn sub_3136A:proc
     extrn sub_3147C:proc

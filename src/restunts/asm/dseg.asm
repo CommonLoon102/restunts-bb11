@@ -43,6 +43,7 @@ nosmart
     include seg038.inc
     include seg039.inc
     include seg041.inc
+DGROUP group dseg
 dseg segment byte public 'STUNTSD' use16
     assume cs:dseg
     assume es:nothing, ss:nothing, ds:dseg

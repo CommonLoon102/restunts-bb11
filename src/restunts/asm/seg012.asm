@@ -184,7 +184,7 @@ seg012 segment byte public 'STUNTSC' use16
     public sub_3118D
     public sub_311D5
     public check_pathdrive2
-    public alloc_respages
+    public alloc_respages2
     public sub_312FD
     public sub_3136A
     public sub_3147C
@@ -6576,7 +6576,7 @@ loc_31243:
     pop     bp
     retf
 check_pathdrive2 endp
-alloc_respages proc far
+alloc_respages2 proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -6638,26 +6638,26 @@ loc_312B6:
 loc_312C2:
     mov     si, resendptr1
     mov     di, resptr2
-    mov     ax, [di+0Eh]
-    add     ax, [di+0Ch]
+    mov     ax, [di+RESOURCE.resofs]
+    add     ax, [di+RESOURCE.ressize]
 loc_312D0:
-    cmp     ax, [si+0Eh]
+    cmp     ax, [si+RESOURCE.resofs]
     jbe     short loc_312A1
     cmp     si, resendptr2
     jz      short loc_312E9
-    mov     word ptr [si+10h], 0
+    mov     [si+RESOURCE.resunk], 0
     add     si, 12h
     mov     resendptr1, si
     jmp     short loc_312D0
 loc_312E9:
     mov     bx, resmaxsize
     push    bx
-    push    word ptr [di+0Ch]
+    push    [di+RESOURCE.ressize]
     push    [bp+arg_0]
     mov     ax, offset aReservememoryOutOfMemory; "reservememory - OUT OF MEMORY RESERVING"...
     push    ax
     call    far ptr fatal_error
-alloc_respages endp
+alloc_respages2 endp
 sub_312FD proc far
      r = byte ptr 0
 

@@ -20,6 +20,7 @@ file { $(ASMTARGETS) $(CTARGETS) }
 order
 	clname STUNTSC
 	clname STUNTSD
+	clname DATA
 	clname STACK copy
 |
 	copy restunts.exe s:\stunts

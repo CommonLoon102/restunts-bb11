@@ -245,6 +245,10 @@ static PrintAsmHeader(f, codestart, codeend) {
 		}
 	}
 
+	if (segtype == SEG_DATA) {
+		fprintf(f, "DGROUP group %s\n", SegName(codestart));
+	}
+
 	PrintSegDecl(f, codestart);
 		
 	fprintf(f, "    assume cs:%s\n", SegName(codestart));
@@ -608,7 +612,8 @@ static PortFuncName(labelname) {
 		labelname == "sin_fast" ||
 		labelname == "cos_fast" ||
 		
-		labelname == "check_pathdrive"
+		labelname == "check_pathdrive" ||
+		labelname == "alloc_respages"
 	)
 		return labelname + "2";
 	return labelname;
