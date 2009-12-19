@@ -461,7 +461,7 @@ loc_3B074:
     push    [bp+var_34]
     push    [bp+arg_6]
     push    [bp+arg_4]
-    call    sub_316A2
+    call    resize_memory
     add     sp, 6
     pop     si
     pop     di

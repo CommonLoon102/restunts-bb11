@@ -459,7 +459,7 @@ loc_21F84:
     push    ax
     sub     ax, ax
     push    ax
-    call    sub_3327F
+    call    set_sprite1_size
     add     sp, 8
     mov     ax, 1
     push    ax
@@ -479,7 +479,7 @@ loc_21FC2:
     push    ax
     sub     ax, ax
     push    ax
-    call    sub_3327F
+    call    set_sprite1_size
     add     sp, 8
     push    word_445D4
     push    word_445D4
@@ -584,7 +584,7 @@ loc_220DB:
     push    ax
     sub     ax, ax
     push    ax
-    call    sub_3327F
+    call    set_sprite1_size
     add     sp, 8
     mov     ax, 2
     push    ax
@@ -599,7 +599,7 @@ loc_220DB:
     push    ax
     sub     ax, ax
     push    ax
-    call    sub_3327F
+    call    set_sprite1_size
     add     sp, 8
 loc_22126:
     cmp     byte_454A4, 0
@@ -2141,7 +2141,7 @@ loc_22E09:
     push    ax
     push    word_40D7E
     push    word_40D7C
-    call    sub_30F9D
+    call    locate_shape
     add     sp, 6
     mov     word ptr [bp+var_C], ax
     mov     word ptr [bp+var_C+2], dx
@@ -2179,7 +2179,7 @@ loc_22E09:
     push    ax
     push    word_40D7E
     push    word_40D7C
-    call    sub_30F9D
+    call    locate_shape
     add     sp, 6
     mov     bx, ax
     mov     es, dx
@@ -2209,7 +2209,7 @@ loc_22F18:
     push    ax
     push    word_40D7E
     push    word_40D7C
-    call    sub_30F9D
+    call    locate_shape
     add     sp, 6
     mov     word_454A0, ax
     mov     word_454A2, dx
@@ -2239,7 +2239,7 @@ loc_22F76:
     push    ax
     push    word_40D7E
     push    word_40D7C
-    call    sub_30F9D
+    call    locate_shape
     add     sp, 6
     push    dx
     push    ax
@@ -2250,7 +2250,7 @@ loc_22FB1:
     push    ax
     push    word_40D7E
     push    word_40D7C
-    call    sub_30F9D
+    call    locate_shape
     add     sp, 6
     push    dx
     push    ax
@@ -2316,7 +2316,7 @@ loc_23057:
     push    ax
     sub     ax, ax
     push    ax
-    call    sub_3327F
+    call    set_sprite1_size
     add     sp, 8
     les     bx, dword_40DC0
     push    word ptr es:[bx+0Ah]
@@ -2412,7 +2412,7 @@ loc_23168:
     push    ax
     sub     ax, ax
     push    ax
-    call    sub_3327F
+    call    set_sprite1_size
     add     sp, 8
     les     bx, dword_40DC0
     push    word ptr es:[bx+0Ah]
@@ -2773,7 +2773,7 @@ loc_2350B:
     push    ax
     sub     ax, ax
     push    ax
-    call    sub_3327F
+    call    set_sprite1_size
     add     sp, 8
     les     bx, dword_40DBC
     push    word ptr es:[bx+0Ah]
@@ -2808,7 +2808,7 @@ loc_2356D:
     push    ax
     sub     ax, ax
     push    ax
-    call    sub_3327F
+    call    set_sprite1_size
     add     sp, 8
     mov     al, byte_4432A
     cbw
@@ -3881,7 +3881,7 @@ loc_23FDA:
     xor     al, 1
     mov     byte_4432A, al
 loc_23FEE:
-    call    sub_2A230
+    call    get_timerdelta2
     push    ax
     call    sub_287C4
     add     sp, 2
@@ -4769,7 +4769,7 @@ loc_247F8:
     mov     byte_3B8F5, 0
     jmp     short loc_24828
 loc_2480A:
-    call    sub_29FB6
+    call    do_mrl_textres
     jmp     short loc_24828
     ; align 2
     db 144
@@ -4799,7 +4799,7 @@ loc_24830:
     push    cs
     call    near ptr sub_23B4C
     add     sp, 6
-    call    sub_2A230
+    call    get_timerdelta2
     mov     [bp+var_24], 14h
     mov     [bp+var_22], 0
     jmp     loc_248F4
@@ -4819,7 +4819,7 @@ loc_2485C:
     jle     short loc_2487A
     mov     di, 64h ; 'd'
 loc_2487A:
-    call    sub_2A230
+    call    get_timerdelta2
     mov     [bp+var_18], ax
     imul    di
     mov     si, ax
@@ -5002,7 +5002,7 @@ loc_24A28:
     push    cs
     call    near ptr sub_23B4C
     add     sp, 6
-    call    sub_2A230
+    call    get_timerdelta2
     mov     [bp+var_24], 14h
     mov     [bp+var_22], 0
     jmp     loc_24AEA
@@ -5023,7 +5023,7 @@ loc_24A58:
     jle     short loc_24A76
     mov     di, 64h ; 'd'
 loc_24A76:
-    call    sub_2A230
+    call    get_timerdelta2
     mov     [bp+var_18], ax
     imul    di
     mov     si, ax

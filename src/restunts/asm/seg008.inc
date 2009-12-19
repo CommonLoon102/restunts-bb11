@@ -48,16 +48,17 @@ seg008 segment byte public 'STUNTSC' use16
     extrn sub_29A86:proc
     extrn sub_29AEC:proc
     extrn sub_29B08:proc
-    extrn sub_29B32:proc
-    extrn sub_29D9A:proc
+    extrn do_joy_restext:proc
+    extrn do_key_restext:proc
     extrn sub_29DF4:proc
-    extrn sub_29E98:proc
-    extrn sub_29EFA:proc
-    extrn sub_29F5C:proc
-    extrn sub_29FB6:proc
-    extrn sub_2A118:proc
+    extrn do_pau_restext:proc
+    extrn do_mof_restext:proc
+    extrn do_sonsof_restext:proc
+    extrn do_dos_restext:proc
+    extrn do_mrl_textres:proc
+    extrn do_dea_textres:proc
     extrn ensure_file_exists:proc
     extrn sub_2A200:proc
-    extrn sub_2A230:proc
+    extrn get_timerdelta2:proc
     extrn sub_2A236:proc
 seg008 ends

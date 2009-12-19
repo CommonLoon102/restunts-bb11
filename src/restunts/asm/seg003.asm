@@ -159,7 +159,7 @@ loc_19FD8:
     push    word ptr [bx+4]
     push    word ptr [bx+2]
     push    word ptr [bx]
-    call    sub_3327F
+    call    set_sprite1_size
     add     sp, 8
     les     bx, dword_44D26
     push    word ptr es:[bx+2]
@@ -191,7 +191,7 @@ loc_1A030:
     push    word ptr [bx+2]
     push    word ptr [bx]
 loc_1A03E:
-    call    sub_3327F
+    call    set_sprite1_size
     add     sp, 8
 loc_1A046:
     call    sub_28DB6
@@ -1935,7 +1935,7 @@ loc_1B03C:
     push    ax
     sub     ax, ax
     push    ax
-    call    sub_3327F
+    call    set_sprite1_size
     add     sp, 8
     call    sub_25FF6
     sub     si, si
@@ -3465,7 +3465,7 @@ loc_1C01E:
     push    word ptr [bx+4]
     push    word ptr [bx+2]
     push    word ptr [bx]
-    call    sub_3327F
+    call    set_sprite1_size
     add     sp, 8
     mov     bx, [bp+var_3E]
     mov     ax, [bx+2]
@@ -3548,7 +3548,7 @@ loc_1C0E8:
     push    ax
     sub     ax, ax
     push    ax
-    call    sub_3327F
+    call    set_sprite1_size
     add     sp, 8
     cmp     byte_3B8F5, 0
     jz      short loc_1C10A
@@ -3833,10 +3833,10 @@ loc_1C339:
     push    word ptr [bx+4]
     push    word ptr [bx+2]
     push    word ptr [bx]
-    call    sub_3327F
+    call    set_sprite1_size
     add     sp, 8
     push    skybox_unk1
-    call    sub_332C0
+    call    clear_sprite1_color
     add     sp, 2
 loc_1C35F:
     cmp     byte_3B8FA, 4
@@ -3864,7 +3864,7 @@ loc_1C392:
     push    word ptr [bx+4]
     push    word ptr [bx+2]
     push    word ptr [bx]
-    call    sub_3327F
+    call    set_sprite1_size
     add     sp, 8
     mov     ax, [bp+arg_4]
     sub     ax, skybox_ptr1
@@ -3930,10 +3930,10 @@ loc_1C445:
     push    di
     push    word ptr [bx+2]
     push    word ptr [bx]
-    call    sub_3327F
+    call    set_sprite1_size
     add     sp, 8
     push    skybox_unk2
-    call    sub_332C0
+    call    clear_sprite1_color
     add     sp, 2
 loc_1C46D:
     pop     si
@@ -4003,7 +4003,7 @@ sub_1C474 proc far
     push    ax
     sub     ax, ax
     push    ax
-    call    sub_3327F
+    call    set_sprite1_size
     add     sp, 8
     cmp     [bp+arg_8], 0
     jnz     short loc_1C4A7
@@ -4049,7 +4049,7 @@ loc_1C500:
     push    ax
     sub     ax, ax
     push    ax
-    call    sub_3327F
+    call    set_sprite1_size
     add     sp, 8
     push    di
     jmp     loc_1CB6A
@@ -4252,10 +4252,10 @@ loc_1C6F2:
     push    word ptr [bx+4]
     push    word ptr [bx+2]
     push    word ptr [bx]
-    call    sub_3327F
+    call    set_sprite1_size
     add     sp, 8
     push    skybox_unk1
-    call    sub_332C0
+    call    clear_sprite1_color
     add     sp, 2
     inc     di
 loc_1C720:
@@ -4305,10 +4305,10 @@ loc_1C774:
     push    word ptr [bx+4]
     push    word ptr [bx+2]
     push    word ptr [bx]
-    call    sub_3327F
+    call    set_sprite1_size
     add     sp, 8
     push    skybox_unk2
-    call    sub_332C0
+    call    clear_sprite1_color
     add     sp, 2
     inc     di
 loc_1C7A2:
@@ -4517,7 +4517,7 @@ loc_1C958:
     cmp     [bp+var_20], 0
     jge     short loc_1C9C0
     push    skybox_unk1
-    call    sub_332C0
+    call    clear_sprite1_color
     add     sp, 2
     cmp     word_44984, 0
     jnz     short loc_1C99D
@@ -4684,10 +4684,10 @@ loc_1CB19:
     push    ax
     sub     ax, ax
     push    ax
-    call    sub_3327F
+    call    set_sprite1_size
     add     sp, 8
     push    skybox_unk2
-    call    sub_332C0
+    call    clear_sprite1_color
     add     sp, 2
 loc_1CB41:
     mov     bx, [bp+arg_2]
@@ -4703,11 +4703,11 @@ loc_1CB41:
     push    ax
     sub     ax, ax
     push    ax
-    call    sub_3327F
+    call    set_sprite1_size
     add     sp, 8
     push    skybox_unk1
 loc_1CB6A:
-    call    sub_332C0
+    call    clear_sprite1_color
     add     sp, 2
 loc_1CB72:
     mov     [bp+var_5C], 1
@@ -4867,10 +4867,10 @@ loc_1CC5B:
     push    ax
     sub     ax, ax
     push    ax
-    call    sub_3327F
+    call    set_sprite1_size
     add     sp, 8
     push    skybox_unk1
-    call    sub_332C0
+    call    clear_sprite1_color
     add     sp, 2
     mov     ax, 64h ; 'd'
     push    ax
@@ -4880,7 +4880,7 @@ loc_1CC5B:
     push    ax
     sub     ax, ax
     push    ax
-    call    sub_3327F
+    call    set_sprite1_size
     add     sp, 8
     mov     ax, [bp+var_30]
     sub     ax, skybox_ptr3
@@ -4907,10 +4907,10 @@ loc_1CC5B:
     push    ax
     sub     ax, ax
     push    ax
-    call    sub_3327F
+    call    set_sprite1_size
     add     sp, 8
     push    skybox_unk2
-    call    sub_332C0
+    call    clear_sprite1_color
     add     sp, 2
     mov     ax, 0C8h ; 'È'
     push    ax
@@ -4920,7 +4920,7 @@ loc_1CC5B:
     push    ax
     sub     ax, ax
     push    ax
-    call    sub_3327F
+    call    set_sprite1_size
     add     sp, 8
     mov     ax, 1
     push    ax
@@ -5860,10 +5860,10 @@ loc_1D54C:
     push    ax
     sub     ax, ax
     push    ax
-    call    sub_3327F
+    call    set_sprite1_size
     add     sp, 8
     push    word_463E2
-    call    sub_332C0
+    call    clear_sprite1_color
     add     sp, 2
     mov     ax, 0AA0Eh
     pop     si
@@ -6453,7 +6453,7 @@ loc_1D9CF:
     call    unload_resource
     add     sp, 4
     call    sub_193E0
-    call    sub_3279A
+    call    get_timerdelta
     mov     [bp+var_2AA], 0
     mov     [bp+var_440], 0
     mov     ax, word_44CEA
@@ -6479,7 +6479,7 @@ loc_1D9CF:
     mov     [bp+var_36], 0
     mov     [bp+var_2A2], 1
 loc_1DADE:
-    call    sub_3279A
+    call    get_timerdelta
     mov     [bp+var_40], ax
     add     word_44DCC, ax
     jmp     loc_1DB8A
@@ -6762,7 +6762,7 @@ loc_1DD7E:
     push    [bp+var_26]
     push    [bp+var_28]
     push    [bp+var_2A]
-    call    sub_3327F
+    call    set_sprite1_size
     add     sp, 8
     call    sub_28DB6
     les     bx, dword_44D26
@@ -7066,11 +7066,11 @@ loc_1E013:
     push    [bp+var_28]
     push    [bp+var_2A]
     push    [bp+var_2C]
-    call    sub_3327F
+    call    set_sprite1_size
     add     sp, 8
     sub     ax, ax
     push    ax
-    call    sub_332C0
+    call    clear_sprite1_color
     add     sp, 2
 loc_1E059:
     push    si
@@ -7093,18 +7093,18 @@ loc_1E06C:
     push    word_3C1BA
     push    word_3C1B8
     push    word_3C1B6
-    call    sub_3327F
+    call    set_sprite1_size
     add     sp, 8
     sub     ax, ax
     push    ax
-    call    sub_332C0
+    call    clear_sprite1_color
     add     sp, 2
 loc_1E08F:
     push    word_3C1BC
     push    word_3C1BA
     push    word_3C1B8
     push    word_3C1B6
-    call    sub_3327F
+    call    set_sprite1_size
     add     sp, 8
     sub     di, di
     sub     si, si

@@ -95,17 +95,18 @@ seg008 segment byte public 'STUNTSC' use16
     public sub_29A86
     public sub_29AEC
     public sub_29B08
-    public sub_29B32
-    public sub_29D9A
+    public do_joy_restext
+    public do_key_restext
     public sub_29DF4
-    public sub_29E98
-    public sub_29EFA
-    public sub_29F5C
-    public sub_29FB6
-    public sub_2A118
+    public do_pau_restext
+    public do_mof_restext
+    public do_sonsof_restext
+    public do_dos_restext
+    public do_mrl_textres
+    public do_dea_textres
     public ensure_file_exists
     public sub_2A200
-    public sub_2A230
+    public get_timerdelta2
     public sub_2A236
 sub_274B0 proc far
     var_40 = byte ptr -64
@@ -520,11 +521,11 @@ loc_277F6:
     push    [bp+var_2C]
     push    [bp+var_2E]
     push    [bp+var_30]
-    call    sub_3327F
+    call    set_sprite1_size
     add     sp, 8
     sub     ax, ax
     push    ax
-    call    sub_332C0
+    call    clear_sprite1_color
     add     sp, 2
     push    [bp+arg_C]
     mov     ax, [bp+arg_A]
@@ -843,7 +844,7 @@ loc_27B92:
     jmp     short loc_27BCD
 loc_27B98:
     push    cs
-    call    near ptr sub_2A230
+    call    near ptr get_timerdelta2
     push    ax
     push    cs
     call    near ptr sub_287C4
@@ -882,7 +883,7 @@ loc_27BD4:
     mov     [bp+var_1D4], al
     mov     [bp+var_1C0], 0FFh
     push    cs
-    call    near ptr sub_2A230
+    call    near ptr get_timerdelta2
     push    cs
     call    near ptr sub_28DB6
     cmp     [bp+var_140], 2
@@ -1035,7 +1036,7 @@ loc_27D65:
     mov     [bp+var_1C0], al
 loc_27D6D:
     push    cs
-    call    near ptr sub_2A230
+    call    near ptr get_timerdelta2
     push    ax
     push    cs
     call    near ptr sub_287C4
@@ -1603,7 +1604,7 @@ loc_2824D:
     mov     [bp+var_6E4], 0FFh
     mov     [bp+var_718], 0FFh
     push    cs
-    call    near ptr sub_2A230
+    call    near ptr get_timerdelta2
     mov     [bp+var_2], 0
 loc_28269:
     mov     al, [bp+var_6E4]
@@ -1715,7 +1716,7 @@ loc_2836C:
     call    near ptr sub_28D9E
 loc_28370:
     push    cs
-    call    near ptr sub_2A230
+    call    near ptr get_timerdelta2
     push    ax
     push    cs
     call    near ptr sub_287C4
@@ -2521,7 +2522,7 @@ loc_289F8:
     or      ax, dx
     jnz     short loc_28A6E
     push    cs
-    call    near ptr sub_2A118
+    call    near ptr do_dea_textres
     jmp     short loc_289F8
 loc_28A6E:
     mov     ax, [bp+var_4]
@@ -2559,7 +2560,7 @@ locate_shape_alt proc far
     push    [bp+arg_4]
     push    [bp+arg_2]
     push    [bp+arg_0]
-    call    sub_30F9D
+    call    locate_shape
     add     sp, 6
     pop     bp
     retf
@@ -2591,7 +2592,7 @@ locate_text_res proc far
     push    ax
     push    [bp+arg_2]
     push    [bp+arg_0]
-    call    sub_30F9D
+    call    locate_shape
     mov     sp, bp
     pop     bp
     retf
@@ -2752,7 +2753,7 @@ loc_28BE2:
     jle     short loc_28C26
 loc_28BED:
     push    cs
-    call    near ptr sub_2A230
+    call    near ptr get_timerdelta2
     push    ax
     push    cs
     call    near ptr sub_287C4
@@ -2781,7 +2782,7 @@ loc_28C26:
     mov     [bp+var_C], si
 loc_28C2E:
     push    cs
-    call    near ptr sub_2A230
+    call    near ptr get_timerdelta2
     push    ax
     push    cs
     call    near ptr sub_287C4
@@ -3119,7 +3120,7 @@ loc_28EF3:
     db 144
 loc_28EFA:
     push    cs
-    call    near ptr sub_2A230
+    call    near ptr get_timerdelta2
     push    ax
     push    cs
     call    near ptr sub_287C4
@@ -3140,7 +3141,7 @@ loc_28F1C:
     retf
 loc_28F26:
     push    cs
-    call    near ptr sub_2A230
+    call    near ptr get_timerdelta2
     push    ax
     push    cs
     call    near ptr sub_287C4
@@ -3175,7 +3176,7 @@ sub_28F4E proc far
     add     sp, 4
     sub     ax, ax
     push    ax
-    call    sub_332C0
+    call    clear_sprite1_color
     add     sp, 2
     retf
 sub_28F4E endp
@@ -3197,7 +3198,7 @@ sub_28F7C proc far
     add     sp, 4
     sub     ax, ax
     push    ax
-    call    sub_332C0
+    call    clear_sprite1_color
     add     sp, 2
     retf
 sub_28F7C endp
@@ -3417,11 +3418,11 @@ sub_2913A proc far
     push    si
     sub     di, di
     push    cs
-    call    near ptr sub_2A230
+    call    near ptr get_timerdelta2
     jmp     short loc_29161
 loc_2914A:
     push    cs
-    call    near ptr sub_2A230
+    call    near ptr get_timerdelta2
     mov     [bp+var_4], ax
     add     di, ax
     push    ax
@@ -4029,7 +4030,7 @@ loc_29670:
     cmp     si, 4
     jge     short loc_29648
     push    cs
-    call    near ptr sub_2A230
+    call    near ptr get_timerdelta2
     push    ax
     push    cs
     call    near ptr sub_289E2
@@ -4207,7 +4208,7 @@ sub_29786 proc far
     push    di
     push    si
     push    cs
-    call    near ptr sub_2A230
+    call    near ptr get_timerdelta2
     mov     si, ax
     add     word_45D1C, si
     jmp     short loc_2979F
@@ -4572,7 +4573,7 @@ loc_29A60:
     retf
 loc_29A72:
     push    cs
-    call    near ptr sub_2A118
+    call    near ptr do_dea_textres
     cmp     ax, 2
     jz      short loc_29A7E
     jmp     loc_299D0
@@ -4639,7 +4640,7 @@ loc_29AC6:
     db 144
 loc_29ADC:
     push    cs
-    call    near ptr sub_2A118
+    call    near ptr do_dea_textres
     cmp     ax, 2
     jnz     short loc_29A8C
     sub     ax, ax
@@ -4687,7 +4688,7 @@ loc_29B30:
     pop     si
     retf
 sub_29B08 endp
-sub_29B32 proc far
+do_joy_restext proc far
     var_56 = word ptr -86
     var_54 = word ptr -84
     var_52 = word ptr -82
@@ -4965,8 +4966,8 @@ loc_29D7B:
     mov     sp, bp
     pop     bp
     retf
-sub_29B32 endp
-sub_29D9A proc far
+do_joy_restext endp
+do_key_restext proc far
 
     push    cs
     call    near ptr sub_29AEC
@@ -5002,7 +5003,7 @@ sub_29D9A proc far
     push    cs
     call    near ptr sub_29B08
     retf
-sub_29D9A endp
+do_key_restext endp
 sub_29DF4 proc far
 
     push    cs
@@ -5040,6 +5041,9 @@ sub_29DF4 proc far
     retf
     ; align 2
     db 144
+sub_29DF4 endp
+do_pau_restext proc far
+
     push    cs
     call    near ptr sub_29AEC
     mov     word_3F88E, 1
@@ -5073,8 +5077,8 @@ sub_29DF4 proc far
     retf
     ; align 2
     db 144
-sub_29DF4 endp
-sub_29E98 proc far
+do_pau_restext endp
+do_mof_restext proc far
 
     push    cs
     call    near ptr sub_29AEC
@@ -5122,8 +5126,8 @@ loc_29ECE:
     push    cs
     call    near ptr sub_29B08
     retf
-sub_29E98 endp
-sub_29EFA proc far
+do_mof_restext endp
+do_sonsof_restext proc far
 
     push    cs
     call    near ptr sub_29AEC
@@ -5171,8 +5175,8 @@ loc_29F30:
     push    cs
     call    near ptr sub_29B08
     retf
-sub_29EFA endp
-sub_29F5C proc far
+do_sonsof_restext endp
+do_dos_restext proc far
 
     push    cs
     call    near ptr sub_29AEC
@@ -5210,8 +5214,8 @@ loc_29FA6:
     push    cs
     call    near ptr sub_29B08
     retf
-sub_29F5C endp
-sub_29FB6 proc far
+do_dos_restext endp
+do_mrl_textres proc far
     var_212 = word ptr -530
     var_20C = byte ptr -524
     var_205 = byte ptr -517
@@ -5383,8 +5387,8 @@ loc_2A103:
     mov     sp, bp
     pop     bp
     retf
-sub_29FB6 endp
-sub_2A118 proc far
+do_mrl_textres endp
+do_dea_textres proc far
     var_2 = word ptr -2
      s = byte ptr 0
      r = byte ptr 2
@@ -5456,7 +5460,7 @@ loc_2A19B:
     mov     sp, bp
     pop     bp
     retf
-sub_2A118 endp
+do_dea_textres endp
 ensure_file_exists proc far
      s = byte ptr 0
      r = byte ptr 2
@@ -5535,11 +5539,11 @@ sub_2A200 proc far
     ; align 2
     db 144
 sub_2A200 endp
-sub_2A230 proc far
+get_timerdelta2 proc far
 
-    call    sub_3279A
+    call    get_timerdelta
     retf
-sub_2A230 endp
+get_timerdelta2 endp
 sub_2A236 proc far
     var_54 = byte ptr -84
     var_4 = word ptr -4
@@ -5597,7 +5601,7 @@ loc_2A23C:
     or      ax, dx
     jnz     short loc_2A2B2
     push    cs
-    call    near ptr sub_2A118
+    call    near ptr do_dea_textres
     jmp     short loc_2A23C
 loc_2A2B2:
     mov     ax, [bp+var_4]

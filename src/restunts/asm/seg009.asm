@@ -286,7 +286,7 @@ loc_2A451:
     push    ax
     push    [bp+var_28]
     push    [bp+var_2A]
-    call    sub_30F9D
+    call    locate_shape
     add     sp, 6
     mov     bx, [bp+var_194]
     mov     [bx+6AE8h], ax
@@ -313,7 +313,7 @@ loc_2A451:
     push    ax
     push    [bp+var_28]
     push    [bp+var_2A]
-    call    sub_30F9D
+    call    locate_shape
     add     sp, 6
     mov     bx, [bp+var_196]
     mov     [bx+6DD4h], ax
@@ -788,7 +788,7 @@ loc_2A983:
     push    ax
     mov     ax, 8
     push    ax
-    call    sub_3327F
+    call    set_sprite1_size
     add     sp, 8
     lea     ax, [bp+var_BE]
     push    ax
@@ -811,7 +811,7 @@ loc_2A983:
     push    ax
     sub     ax, ax
     push    ax
-    call    sub_3327F
+    call    set_sprite1_size
     add     sp, 8
 loc_2A9CD:
     cmp     [bp+var_A], 0
@@ -1320,7 +1320,7 @@ loc_2AEFF:
     xor     byte ptr [bp+var_CC], 1
     mov     [bp+var_3A], 0
 loc_2AF0E:
-    call    sub_2A230
+    call    get_timerdelta2
     mov     di, ax
     add     [bp+var_3A], di
     push    di

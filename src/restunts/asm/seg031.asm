@@ -53,7 +53,7 @@ seg031 segment byte public 'STUNTSC' use16
     public nullsub_2
     public init_video
     public random_wait
-    public sub_3A2C0
+    public load_palandcursor
     public sub_3A45C
     public alloc_resbytes
     public sub_3A484
@@ -139,83 +139,83 @@ init_video proc far
     call    sub_30812
     call    sub_36B05
     call    sub_30A1C
-    mov     ax, 2B06h
+    mov     ax, offset do_mrl_textres
     mov     dx, seg seg008
     push    dx
     push    ax
     mov     ax, 7
     push    ax
-    call    sub_3045E
+    call    reg_callback
     add     sp, 6
-    mov     ax, 2682h
+    mov     ax, offset do_joy_restext
     mov     dx, seg seg008
     push    dx
     push    ax
     mov     ax, 0Ah
     push    ax
-    call    sub_3045E
+    call    reg_callback
     add     sp, 6
-    mov     ax, 28EAh
+    mov     ax, offset do_key_restext
     mov     dx, seg seg008
     push    dx
     push    ax
     mov     ax, 0Bh
     push    ax
-    call    sub_3045E
+    call    reg_callback
     add     sp, 6
-    mov     ax, 29E8h
+    mov     ax, offset do_mof_restext
     mov     dx, seg seg008
     push    dx
     push    ax
     mov     ax, 3200h
     push    ax
-    call    sub_3045E
+    call    reg_callback
     add     sp, 6
-    mov     ax, 299Ah
+    mov     ax, offset do_pau_restext
     mov     dx, seg seg008
     push    dx
     push    ax
     mov     ax, 10h
     push    ax
-    call    sub_3045E
+    call    reg_callback
     add     sp, 6
-    mov     ax, 299Ah
+    mov     ax, offset do_pau_restext
     mov     dx, seg seg008
     push    dx
     push    ax
     mov     ax, 70h ; 'p'
     push    ax
-    call    sub_3045E
+    call    reg_callback
     add     sp, 6
-    mov     ax, 2AACh
+    mov     ax, offset do_dos_restext
     mov     dx, seg seg008
     push    dx
     push    ax
     mov     ax, 11h
     push    ax
-    call    sub_3045E
+    call    reg_callback
     add     sp, 6
-    mov     ax, 2A4Ah
+    mov     ax, offset do_sonsof_restext
     mov     dx, seg seg008
     push    dx
     push    ax
     mov     ax, 13h
     push    ax
-    call    sub_3045E
+    call    reg_callback
     add     sp, 6
-    mov     ax, 2AACh
+    mov     ax, offset do_dos_restext
     mov     dx, seg seg008
     push    dx
     push    ax
     mov     ax, 18h
     push    ax
-    call    sub_3045E
+    call    reg_callback
     add     sp, 6
     mov     word_44AE4, 1
     mov     word_44DC8, 1
     mov     word_454D4, 0FFFFh
     mov     word_461D0, 1
-    call    sub_310F1
+    call    alloc_resmem_a000
     mov     byte_46436, 0
     mov     byte_459F1, 1
     mov     byte_4645E, 65h ; 'e'
@@ -312,8 +312,8 @@ loc_3A000:
 loc_3A00F:
     cmp     ax, 62h ; 'b'
     jnz     short loc_3A022
-    mov     byte_40B12, 61h ; 'a'
-    mov     byte_40B13, 64h ; 'd'
+    mov     audiodriverstring, 61h ; 'a'
+    mov     audiodriverstring+1, 64h ; 'd'
     jmp     loc_39F62
     ; align 2
     db 144
@@ -326,11 +326,11 @@ loc_3A022:
     mov     bx, ax
     mov     bx, [bx]
     mov     al, [bx+2]
-    mov     byte_40B12, al
+    mov     audiodriverstring, al
     mov     bx, [bp+var_1E]
     mov     bx, [bx]
     mov     al, [bx+3]
-    mov     byte_40B13, al
+    mov     audiodriverstring+1, al
     jmp     loc_39F62
 loc_3A046:
     mov     bx, [bp+arg_2]
@@ -390,14 +390,14 @@ loc_3A0C9:
     call    sub_373E8
     call    sub_37708
 loc_3A0D9:
-    mov     ax, 2C68h
+    mov     ax, offset do_dea_textres
     mov     dx, seg seg008
     push    dx
     push    ax
-    call    sub_2F377
+    call    set_criterr_handler
     add     sp, 4
     push    cs
-    call    near ptr sub_3A2C0
+    call    near ptr load_palandcursor
     call    set_sprite2_as_1
     mov     ax, 78h ; 'x'
     push    ax
@@ -407,19 +407,19 @@ loc_3A0D9:
     push    ax
     sub     ax, ax
     push    ax
-    call    sub_3327F
+    call    set_sprite1_size
     add     sp, 8
-    call    sub_2A230
+    call    get_timerdelta2
     sub     si, si
 loc_3A10F:
     sub     ax, ax
     push    ax
-    call    sub_332C0
+    call    clear_sprite1_color
     add     sp, 2
     inc     si
     cmp     si, 0Fh
     jl      short loc_3A10F
-    call    sub_2A230
+    call    get_timerdelta2
     mov     [bp+var_C], ax
     mov     ax, 3Ch ; '<'
     push    ax
@@ -429,7 +429,7 @@ loc_3A10F:
     push    ax
     sub     ax, ax
     push    ax
-    call    sub_3327F
+    call    set_sprite1_size
     add     sp, 8
     sub     si, si
 loc_3A140:
@@ -452,12 +452,12 @@ loc_3A156:
     jl      short loc_3A156
     sub     ax, ax
     push    ax
-    call    sub_332C0
+    call    clear_sprite1_color
     add     sp, 2
     inc     si
     cmp     si, 0Fh
     jl      short loc_3A140
-    call    sub_2A230
+    call    get_timerdelta2
     mov     [bp+var_10], ax
     sub     si, si
     jmp     short loc_3A1AB
@@ -485,7 +485,7 @@ loc_3A1AB:
     ; align 2
     db 144
 loc_3A1B6:
-    call    sub_2A230
+    call    get_timerdelta2
     mov     [bp+var_1C], ax
     mov     ax, [bp+var_C]
     cmp     [bp+var_10], ax
@@ -614,7 +614,7 @@ loc_3A2B2:
     ; align 2
     db 144
 random_wait endp
-sub_3A2C0 proc far
+load_palandcursor proc far
     var_312 = word ptr -786
     var_310 = dword ptr -784
     var_30C = word ptr -780
@@ -640,7 +640,7 @@ sub_3A2C0 proc far
     push    ax
     push    dx
     push    [bp+var_30C]
-    call    sub_30F9D
+    call    locate_shape
     add     sp, 6
     mov     word ptr [bp+var_304], ax
     mov     word ptr [bp+var_304+2], dx
@@ -667,7 +667,7 @@ loc_3A300:
     push    ax
     push    [bp+var_30A]
     push    [bp+var_30C]
-    call    sub_30F9D
+    call    locate_shape
     add     sp, 6
     mov     word ptr [bp+var_310], ax
     mov     word ptr [bp+var_310+2], dx
@@ -724,7 +724,7 @@ loc_3A300:
     push    ax
     push    [bp+var_30A]
     push    [bp+var_30C]
-    call    sub_30F9D
+    call    locate_shape
     add     sp, 6
     push    dx
     push    ax
@@ -741,7 +741,7 @@ loc_3A300:
     push    ax
     push    [bp+var_30A]
     push    [bp+var_30C]
-    call    sub_30F9D
+    call    locate_shape
     add     sp, 6
     push    dx
     push    ax
@@ -756,7 +756,7 @@ loc_3A300:
     mov     sp, bp
     pop     bp
     retf
-sub_3A2C0 endp
+load_palandcursor endp
 sub_3A45C proc far
 
     sub     ax, ax

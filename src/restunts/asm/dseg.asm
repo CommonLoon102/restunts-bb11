@@ -329,6 +329,7 @@ dseg segment byte public 'STUNTSD' use16
     public aExp1
     public aExp2
     public aExp3
+    public aXX
     public word_3E590
     public byte_3E70C
     public byte_3E70D
@@ -482,8 +483,10 @@ dseg segment byte public 'STUNTSD' use16
     public word_3F88E
     public word_3F890
     public word_3F892
-    public unk_3F9CC
+    public callbackflags
+    public callbackflags2
     public byte_3F9E0
+    public callbacks
     public word_3FB02
     public word_3FB04
     public byte_3FB06
@@ -547,8 +550,8 @@ dseg segment byte public 'STUNTSD' use16
     public word_3FF82
     public word_3FF84
     public resmaxsize
-    public word_3FF88
-    public word_3FF8A
+    public pspofs
+    public pspseg
     public resources
     public resptr1
     public resptr2
@@ -632,8 +635,7 @@ dseg segment byte public 'STUNTSD' use16
     public word_40B0C
     public word_40B0E
     public word_40B10
-    public byte_40B12
-    public byte_40B13
+    public audiodriverstring
     public byte_40B86
     public aUnflip
     public aMga
@@ -12177,7 +12179,7 @@ aExp3     db 101
     db 27
     db 0
     db 2
-    db 180
+aXX     db 180
     db 120
     db 202
     db 120
@@ -17817,6 +17819,7 @@ word_3F892     dw 0
     db 84
     db 13
     db 0
+callbackflags     db 0
     db 0
     db 0
     db 0
@@ -17944,6 +17947,7 @@ word_3F892     dw 0
     db 0
     db 0
     db 0
+callbackflags2     db 0
     db 0
     db 0
     db 0
@@ -18058,8 +18062,6 @@ word_3F892     dw 0
     db 0
     db 0
     db 0
-    db 0
-unk_3F9CC     db 0
     db 0
     db 0
     db 0
@@ -18081,7 +18083,7 @@ unk_3F9CC     db 0
     db 0
 byte_3F9E0     db 0
     db 0
-    db 0
+callbacks     db 0
     db 0
     db 0
     db 0
@@ -19492,8 +19494,8 @@ aResizememoryNo     db 114
 word_3FF82     dw 0
 word_3FF84     dw 0
 resmaxsize     dw 0
-word_3FF88     dw 0
-word_3FF8A     dw 0
+pspofs     dw 0
+pspseg     dw 0
 resources     db 32
     db 32
     db 32
@@ -22114,8 +22116,8 @@ word_40B0A     dw 20628
 word_40B0C     dw 20628
 word_40B0E     dw 20886
 word_40B10     dw 21144
-byte_40B12     db 112
-byte_40B13     db 99
+audiodriverstring     db 112
+    db 99
     db 49
     db 53
     db 0

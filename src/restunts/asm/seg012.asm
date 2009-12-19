@@ -63,7 +63,7 @@ seg012 segment byte public 'STUNTSC' use16
     public word_2F356
     public word_2F358
     public word_2F35A
-    public sub_2F377
+    public set_criterr_handler
     public sub_2F3DA
     public sub_2F424
     public sub_2F436
@@ -141,7 +141,7 @@ seg012 segment byte public 'STUNTSC' use16
     public sub_303BA
     public sub_303D8
     public sub_30404
-    public sub_3045E
+    public reg_callback
     public sub_30519
     public sub_30538
     public sub_305FC
@@ -170,16 +170,14 @@ seg012 segment byte public 'STUNTSC' use16
     public loc_30DA1
     public sub_30DE6
     public sub_30DF7
-    public sub_30E07
-    public loc_30E14
+    public decompress_fileres
     public off_30F04
     public sub_30F92
-    public sub_30F9D
-    public sub_30FA9
-    public loc_30FB2
-    public sub_3107A
+    public locate_shape
+    public locate_sound
+    public alloc_resmem
     public loc_310CD
-    public sub_310F1
+    public alloc_resmem_a000
     public sub_3117B
     public sub_3118D
     public sub_311D5
@@ -191,7 +189,7 @@ seg012 segment byte public 'STUNTSC' use16
     public loc_31498
     public sub_31641
     public sub_3167C
-    public sub_316A2
+    public resize_memory
     public sub_31732
     public sub_317B2
     public sub_317C1
@@ -227,7 +225,7 @@ seg012 segment byte public 'STUNTSC' use16
     public cos_fast2
     public sub_3275C
     public sub_32778
-    public sub_3279A
+    public get_timerdelta
     public sub_327C0
     public sub_327D7
     public sub_327EB
@@ -251,9 +249,9 @@ seg012 segment byte public 'STUNTSC' use16
     public sub_33014
     public loc_3301F
     public sub_33072
-    public sub_3327F
+    public set_sprite1_size
     public sub_332A8
-    public sub_332C0
+    public clear_sprite1_color
     public sub_333C0
     public off_3340A
     public sub_33578
@@ -1473,7 +1471,7 @@ word_2F35A     dw 0
     pop     bx
     iret
 sub_2F334 endp
-sub_2F377 proc far
+set_criterr_handler proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -1519,7 +1517,7 @@ sub_2F377 proc far
 loc_2F3D8:
     pop     ds
     retf
-sub_2F377 endp
+set_criterr_handler endp
 sub_2F3DA proc far
     var_A = byte ptr -10
      s = byte ptr 0
@@ -4725,7 +4723,7 @@ loc_30454:
     pop     bp
     retf
 sub_30404 endp
-sub_3045E proc far
+reg_callback proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -4736,7 +4734,7 @@ sub_3045E proc far
     mov     bp, sp
     mov     ax, [bp+arg_2]
     mov     cx, 40h ; '@'
-    mov     bx, 4272h
+    mov     bx, offset callbacks
     mov     dx, [bp+arg_4]
 loc_3046D:
     cmp     [bx], ax
@@ -4762,7 +4760,7 @@ loc_3048D:
     jz      short loc_3049F
     cmp     bx, 7Fh ; ''
     jg      short loc_3049D
-    mov     [bx+416Ah], al
+    mov     callbackflags[bx], al
 loc_3049D:
     pop     bp
     retf
@@ -4771,7 +4769,7 @@ loc_3049F:
     xor     bh, bh
     cmp     bx, 84h ; '„'
     jg      short loc_3049D
-    mov     [bx+41EAh], al
+    mov     callbackflags2[bx], al
     pop     bp
     retf
     push    bp
@@ -4828,7 +4826,7 @@ loc_3050F:
     mov     byte_3FB06, 3
     mov     word_3FB04, ax
     jmp     short loc_304FC
-sub_3045E endp
+reg_callback endp
 sub_30519 proc far
 
     mov     ah, 1
@@ -5971,7 +5969,7 @@ sub_30DE6 proc far
     push    di
     mov     ax, [bp+arg_4]
     mov     [bp+var_C], ax
-    jmp     short loc_30E14
+    jmp     short _alt_decompress
     db 144
 sub_30DE6 endp
 sub_30DF7 proc far
@@ -5985,10 +5983,10 @@ sub_30DF7 proc far
     push    si
     push    di
     mov     [bp+var_C], 0
-    jmp     short loc_30E14
+    jmp     short _alt_decompress
     db 144
 sub_30DF7 endp
-sub_30E07 proc far
+decompress_fileres proc far
     var_C = word ptr -12
     var_A = word ptr -10
     var_8 = word ptr -8
@@ -5998,6 +5996,7 @@ sub_30E07 proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
+    arg_6 = word ptr 12
 
     push    bp
     mov     bp, sp
@@ -6005,7 +6004,7 @@ sub_30E07 proc far
     push    si
     push    di
     mov     [bp+var_C], 1
-loc_30E14:
+_alt_decompress:
     push    [bp+arg_0]
     call    sub_3136A
     add     sp, 2
@@ -6124,7 +6123,7 @@ loc_30F1F:
     mov     bx, ss
     mov     ds, bx
     push    [bp+arg_0]
-    mov     ax, 46B5h
+    mov     ax, offset aSInvalidPackTy; "%s INVALID PACK TYPE\r"
     push    ax
     call    far ptr fatal_error
 loc_30F2F:
@@ -6133,7 +6132,7 @@ loc_30F2F:
     push    ax
     push    [bp+var_4]
     push    [bp+var_2]
-    call    sub_316A2
+    call    resize_memory
     add     sp, 6
     mov     ax, [bp+var_2]
     mov     dx, [bp+var_4]
@@ -6147,8 +6146,8 @@ loc_30F2F:
     sub     sp, 0Ch
     push    si
     push    di
-    mov     ax, [bp+0Ch]
-    mov     [bp-0Ch], ax
+    mov     ax, [bp+arg_6]
+    mov     [bp+var_C], ax
     jmp     short loc_30F7E
     db 144
     push    bp
@@ -6156,7 +6155,7 @@ loc_30F2F:
     sub     sp, 0Ch
     push    si
     push    di
-    mov     word ptr [bp-0Ch], 0
+    mov     [bp+var_C], 0
     jmp     short loc_30F7E
     db 144
     push    bp
@@ -6164,18 +6163,18 @@ loc_30F2F:
     sub     sp, 0Ch
     push    si
     push    di
-    mov     word ptr [bp-0Ch], 1
+    mov     [bp+var_C], 1
 loc_30F7E:
-    push    word ptr [bp-0Ch]
-    push    word ptr [bp+6]
-    call    sub_30E07
+    push    [bp+var_C]
+    push    [bp+arg_0]
+    call    decompress_fileres
     add     sp, 4
     pop     di
     pop     si
     mov     sp, bp
     pop     bp
     retf
-sub_30E07 endp
+decompress_fileres endp
 sub_30F92 proc far
      s = byte ptr 0
      r = byte ptr 2
@@ -6186,10 +6185,10 @@ sub_30F92 proc far
     push    si
     push    di
     xor     dx, dx
-    jmp     short loc_30FB2
+    jmp     short _alt_locate_resource
     db 144
 sub_30F92 endp
-sub_30F9D proc far
+locate_shape proc far
      s = byte ptr 0
      r = byte ptr 2
 
@@ -6199,10 +6198,10 @@ sub_30F9D proc far
     push    si
     push    di
     mov     dx, 1
-    jmp     short loc_30FB2
+    jmp     short _alt_locate_resource
     db 144
-sub_30F9D endp
-sub_30FA9 proc far
+locate_shape endp
+locate_sound proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -6215,7 +6214,7 @@ sub_30FA9 proc far
     push    si
     push    di
     mov     dx, 2
-loc_30FB2:
+_alt_locate_resource:
     cld
     mov     ds, [bp+arg_2]
     mov     si, [bp+arg_0]
@@ -6232,7 +6231,7 @@ loc_30FC7:
 loc_30FD0:
     mov     ax, [si+4]
     or      ax, ax
-    jz      short loc_30FFF
+    jz      short _end_of_locate
     add     si, 6
     mov     bx, si
 loc_30FDC:
@@ -6243,28 +6242,28 @@ loc_30FE4:
     cmpsb
     jnz     short loc_30FEC
     loop    loc_30FE4
-    jmp     short loc_3102D
+    jmp     short _found_resource
     ; align 2
     db 144
 loc_30FEC:
     cmp     byte ptr [si-1], 0
     jnz     short loc_30FF9
     cmp     byte ptr es:[di-1], 20h ; ' '
-    jz      short loc_3102D
+    jz      short _found_resource
 loc_30FF9:
     add     bx, 4
     dec     ax
     jge     short loc_30FDC
-loc_30FFF:
+_end_of_locate:
     cmp     dx, 1
     jl      short loc_3101F
     jg      short loc_3100C
-    mov     dx, 46CCh
+    mov     dx, offset aLocateshape4_4sShapeNotF; "locateshape - %-4.4s SHAPE NOT FOUND\r\n"
     jmp     short loc_3100F
     ; align 2
     db 144
 loc_3100C:
-    mov     dx, 46F2h
+    mov     dx, offset aLocatesound4_4sSoundNotF; "locatesound - %-4.4s SOUND NOT FOUND\r\n"
 loc_3100F:
     mov     ax, seg dseg
     mov     ds, ax
@@ -6283,7 +6282,7 @@ loc_31024:
     inc     bx
     loop    loc_31024
     jmp     short loc_30FD0
-loc_3102D:
+_found_resource:
     mov     si, [bp+arg_0]
     mov     ax, [si+4]
     shl     ax, 1
@@ -6325,8 +6324,8 @@ loc_31075:
     pop     ds
     pop     bp
     retf
-sub_30FA9 endp
-sub_3107A proc far
+locate_sound endp
+alloc_resmem proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -6343,19 +6342,19 @@ sub_3107A proc far
     mov     ah, 62h
     int     21h             ; DOS - 3+ - GET PSP ADDRESS
 loc_3108E:
-    mov     word_3FF88, bx
-    mov     word_3FF8A, ds
+    mov     pspofs, bx
+    mov     pspseg, ds
     cmp     word_3FF82, 0
     jnz     short loc_310CD
     mov     bx, 64h ; 'd'
     mov     ah, 48h
     int     21h             ; DOS - 2+ - ALLOCATE MEMORY
     mov     si, resptr1
-    mov     [si+0Eh], ax
+    mov     [si+RESOURCE.resofs], ax
     mov     word_3FF84, ax
     mov     es, ax
     mov     bx, [bp+arg_0]
-    sub     bx, [si+0Eh]
+    sub     bx, [si+RESOURCE.resofs]
     mov     ah, 4Ah
     int     21h             ; DOS - 2+ - ADJUST MEMORY BLOCK SIZE (SETBLOCK)
     mov     ah, 4Ah
@@ -6363,7 +6362,7 @@ loc_3108E:
     mov     ax, word_3FF84
     add     ax, bx
     mov     si, resendptr2
-    mov     [si+0Eh], ax
+    mov     [si+RESOURCE.resofs], ax
     mov     word_3FF82, ax
 loc_310CD:
     mov     si, resendptr2
@@ -6374,26 +6373,26 @@ loc_310DD:
     add     si, 12h
     cmp     si, resendptr2
     jz      short loc_310ED
-    mov     word ptr [si+10h], 0
+    mov     [si+RESOURCE.resunk], 0
     jmp     short loc_310DD
 loc_310ED:
     pop     di
     pop     si
     pop     bp
     retf
-sub_3107A endp
-sub_310F1 proc far
+alloc_resmem endp
+alloc_resmem_a000 proc far
 
     mov     ax, 0A000h
     push    ax
-    call    sub_3107A
+    call    alloc_resmem
     add     sp, 2
     retf
     push    bp
     mov     bp, sp
     mov     ax, 0A000h
     push    ax
-    call    sub_3107A
+    call    alloc_resmem
     add     sp, 2
     mov     ax, [bp+6]
     mov     bx, resendptr2
@@ -6405,8 +6404,8 @@ sub_310F1 proc far
     mov     bp, sp
     push    si
     push    di
-    mov     word_3FF88, cs
-    mov     word_3FF8A, ds
+    mov     pspofs, cs
+    mov     pspseg, ds
     cmp     word_3FF82, 0
     jnz     short loc_310CD
     mov     bx, [bp+6]
@@ -6436,7 +6435,7 @@ loc_3113E:
     mov     bx, resptr1
     sub     ax, [bx+0Eh]
     retf
-sub_310F1 endp
+alloc_resmem_a000 endp
 sub_3117B proc far
 
     mov     bx, resendptr2
@@ -6645,7 +6644,7 @@ loc_312D0:
     jbe     short loc_312A1
     cmp     si, resendptr2
     jz      short loc_312E9
-    mov     [si+RESOURCE.resunk], 0
+    mov     word ptr [si+10h], 0
     add     si, 12h
     mov     resendptr1, si
     jmp     short loc_312D0
@@ -7104,7 +7103,7 @@ loc_3169B:
     pop     bp
     retf
 sub_3167C endp
-sub_316A2 proc far
+resize_memory proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_2 = word ptr 8
@@ -7176,7 +7175,7 @@ loc_31724:
     mov     ax, 47E1h
     push    ax
     call    far ptr fatal_error
-sub_316A2 endp
+resize_memory endp
 sub_31732 proc far
      s = byte ptr 0
      r = byte ptr 2
@@ -9341,7 +9340,7 @@ sub_32778 proc far
     pop     bp
     retf
 sub_32778 endp
-sub_3279A proc far
+get_timerdelta proc far
 
     mov     bx, word_405FA
     mov     cx, word_405FC
@@ -9358,7 +9357,7 @@ sub_3279A proc far
     mov     word_3F878, ax
     mov     word_3F87A, ax
     retf
-sub_3279A endp
+get_timerdelta endp
 sub_327C0 proc far
      s = byte ptr 0
      r = byte ptr 2
@@ -10359,7 +10358,7 @@ smart
 nosmart
     add     si, 5
     mov     [bp+var_E], si
-    lea     cx, unk_3F9CC
+    lea     cx, callbackflags2+72h
     shl     ax, 1
     mov     di, ax
     xor     bx, bx
@@ -10982,7 +10981,7 @@ loc_3325D:
     pop     bp
     retf
 sub_33072 endp
-sub_3327F proc far
+set_sprite1_size proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -11004,7 +11003,7 @@ sub_3327F proc far
     mov     cs:word_34952, ax
     pop     bp
     retf
-sub_3327F endp
+set_sprite1_size endp
 sub_332A8 proc far
      s = byte ptr 0
      r = byte ptr 2
@@ -11025,7 +11024,7 @@ sub_332A8 proc far
     ; align 2
     db 0
 sub_332A8 endp
-sub_332C0 proc far
+clear_sprite1_color proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = byte ptr 6
@@ -11158,7 +11157,7 @@ loc_333B8:
     inc     di
     loop    loc_33393
     jmp     short loc_3339A
-sub_332C0 endp
+clear_sprite1_color endp
 sub_333C0 proc far
     var_E = byte ptr -14
     var_A = word ptr -10

@@ -16,7 +16,7 @@ seg012 segment byte public 'STUNTSC' use16
     extrn word_2F356:word
     extrn word_2F358:word
     extrn word_2F35A:word
-    extrn sub_2F377:proc
+    extrn set_criterr_handler:proc
     extrn sub_2F3DA:proc
     extrn sub_2F424:proc
     extrn sub_2F436:proc
@@ -94,7 +94,7 @@ seg012 segment byte public 'STUNTSC' use16
     extrn sub_303BA:proc
     extrn sub_303D8:proc
     extrn sub_30404:proc
-    extrn sub_3045E:proc
+    extrn reg_callback:proc
     extrn sub_30519:proc
     extrn sub_30538:proc
     extrn sub_305FC:proc
@@ -123,16 +123,14 @@ seg012 segment byte public 'STUNTSC' use16
     extrn loc_30DA1
     extrn sub_30DE6:proc
     extrn sub_30DF7:proc
-    extrn sub_30E07:proc
-    extrn loc_30E14
+    extrn decompress_fileres:proc
     extrn off_30F04:dword
     extrn sub_30F92:proc
-    extrn sub_30F9D:proc
-    extrn sub_30FA9:proc
-    extrn loc_30FB2
-    extrn sub_3107A:proc
+    extrn locate_shape:proc
+    extrn locate_sound:proc
+    extrn alloc_resmem:proc
     extrn loc_310CD
-    extrn sub_310F1:proc
+    extrn alloc_resmem_a000:proc
     extrn sub_3117B:proc
     extrn sub_3118D:proc
     extrn sub_311D5:proc
@@ -144,7 +142,7 @@ seg012 segment byte public 'STUNTSC' use16
     extrn loc_31498
     extrn sub_31641:proc
     extrn sub_3167C:proc
-    extrn sub_316A2:proc
+    extrn resize_memory:proc
     extrn sub_31732:proc
     extrn sub_317B2:proc
     extrn sub_317C1:proc
@@ -180,7 +178,7 @@ seg012 segment byte public 'STUNTSC' use16
     extrn cos_fast2:proc
     extrn sub_3275C:proc
     extrn sub_32778:proc
-    extrn sub_3279A:proc
+    extrn get_timerdelta:proc
     extrn sub_327C0:proc
     extrn sub_327D7:proc
     extrn sub_327EB:proc
@@ -204,9 +202,9 @@ seg012 segment byte public 'STUNTSC' use16
     extrn sub_33014:proc
     extrn loc_3301F
     extrn sub_33072:proc
-    extrn sub_3327F:proc
+    extrn set_sprite1_size:proc
     extrn sub_332A8:proc
-    extrn sub_332C0:proc
+    extrn clear_sprite1_color:proc
     extrn sub_333C0:proc
     extrn off_3340A:word
     extrn sub_33578:proc

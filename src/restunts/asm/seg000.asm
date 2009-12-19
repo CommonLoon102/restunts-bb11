@@ -722,7 +722,7 @@ sub_1069C proc far
     push    ax
     push    word_45E14
     push    word_45E12
-    call    sub_30F9D
+    call    locate_shape
     add     sp, 6
     mov     bx, ax
     mov     es, dx
@@ -737,7 +737,7 @@ loc_106E4:
     push    ax
     push    word_45E14
     push    word_45E12
-    call    sub_30F9D
+    call    locate_shape
     add     sp, 6
     push    dx
     push    ax
@@ -765,7 +765,7 @@ loc_106E4:
     push    ax
     push    word_45E14
     push    word_45E12
-    call    sub_30F9D
+    call    locate_shape
     add     sp, 6
     push    dx
     push    ax
@@ -1357,10 +1357,10 @@ sub_10786 proc far
     call    sub_29620
     add     sp, 6
     call    sub_28F3C
-    call    sub_2A230
+    call    get_timerdelta2
     mov     si, 14Ah
 loc_10D77:
-    call    sub_2A230
+    call    get_timerdelta2
     mov     [bp+var_40], ax
     shl     ax, 1
     sub     si, ax
@@ -1414,11 +1414,11 @@ loc_10DEC:
     push    ax
     sub     ax, ax
     push    ax
-    call    sub_3327F
+    call    set_sprite1_size
     add     sp, 8
     sub     ax, ax
     push    ax
-    call    sub_332C0
+    call    clear_sprite1_color
     add     sp, 2
     mov     bx, di
     shl     bx, 1
@@ -1436,7 +1436,7 @@ loc_10DEC:
     push    ax
     sub     ax, ax
     push    ax
-    call    sub_3327F
+    call    set_sprite1_size
     add     sp, 8
     call    sub_28DB6
     les     bx, dword_44D26
@@ -1448,7 +1448,7 @@ loc_10DEC:
     add     [bp+var_36], 5
     jmp     short loc_10E7D
 loc_10E66:
-    call    sub_2A230
+    call    get_timerdelta2
     mov     [bp+var_40], ax
     push    ax
     call    sub_289E2
@@ -1474,7 +1474,7 @@ loc_10E91:
     push    ax
     sub     ax, ax
     push    ax
-    call    sub_3327F
+    call    set_sprite1_size
     add     sp, 8
     call    sub_28DB6
     les     bx, dword_44D26
@@ -1490,11 +1490,11 @@ loc_10E91:
     push    ax
     sub     ax, ax
     push    ax
-    call    sub_3327F
+    call    set_sprite1_size
     add     sp, 8
     sub     ax, ax
     push    ax
-    call    sub_332C0
+    call    clear_sprite1_color
     add     sp, 2
     push    word ptr [bp+var_34+2]
     push    word ptr [bp+var_34]
@@ -1577,7 +1577,7 @@ run_menu proc far
     push    ax
     push    [bp+var_2]
     push    [bp+var_4]
-    call    sub_30F9D
+    call    locate_shape
     add     sp, 6
     push    dx
     push    ax
@@ -1765,7 +1765,7 @@ loc_110ED:
     add     sp, 2
     call    sub_28F6A
     push    skybox_unk2
-    call    sub_332C0
+    call    clear_sprite1_color
     add     sp, 2
     mov     ax, 0C8h ; 'È'
     push    ax
@@ -1775,7 +1775,7 @@ loc_110ED:
     push    ax
     sub     ax, ax
     push    ax
-    call    sub_3327F
+    call    set_sprite1_size
     add     sp, 8
     call    sub_1CBDC
     call    sub_1FF5E
@@ -3262,7 +3262,7 @@ loc_11EBB:
     call    sub_3A9A0
     sub     ax, ax
     push    ax
-    call    sub_332C0
+    call    clear_sprite1_color
     add     sp, 2
     mov     al, byte ptr [bp+arg_6]
     add     al, 30h ; '0'
@@ -3312,7 +3312,7 @@ loc_11F50:
     push    ax
     call    sub_322F3
     add     sp, 8
-    call    sub_2A230
+    call    get_timerdelta2
     mov     ax, 0Fh
     push    ax
     mov     ax, 0C8h ; 'È'
@@ -3436,7 +3436,7 @@ loc_11FC8:
     push    ax
     push    [bp+var_34]
     push    [bp+var_36]
-    call    sub_30F9D
+    call    locate_shape
     add     sp, 6
     push    dx
     push    ax
@@ -3735,7 +3735,7 @@ loc_123CB:
     cmp     byte ptr es:[bx], 0
     jnz     short loc_1237E
     call    set_fontdef
-    call    sub_2A230
+    call    get_timerdelta2
     mov     [bp+var_F2], 0FFh
     mov     [bp+var_104], 0
     mov     [bp+var_102], 140h
@@ -3853,7 +3853,7 @@ loc_124DE:
     and     ax, word_454D4
     push    ax
     push    word_3BB28
-    call    sub_3327F
+    call    set_sprite1_size
     add     sp, 8
     call    sub_28DB6
     les     bx, dword_44D26
@@ -3953,13 +3953,13 @@ loc_125FE:
     push    [bp+var_16]
     push    [bp+var_18]
     push    [bp+var_1A]
-    call    sub_3327F
+    call    set_sprite1_size
     add     sp, 8
     mov     ax, 3A3h
     push    ax
     push    [bp+var_34]
     push    [bp+var_36]
-    call    sub_30F9D
+    call    locate_shape
     add     sp, 6
     push    dx
     push    ax
@@ -3971,7 +3971,7 @@ loc_125FE:
     push    [bp+var_16]
     push    [bp+var_18]
     push    [bp+var_1A]
-    call    sub_3327F
+    call    set_sprite1_size
     add     sp, 8
     push    si
     lea     di, [bp+var_104]
@@ -4027,7 +4027,7 @@ loc_126D1:
     push    [bp+var_16]
     push    [bp+var_18]
     push    [bp+var_1A]
-    call    sub_3327F
+    call    set_sprite1_size
     add     sp, 8
     call    sub_28DB6
     cmp     [bp+var_3E], 0FEh ; 'þ'
@@ -4373,7 +4373,7 @@ loc_12A48:
 loc_12A4D:
     sub     ax, ax
     push    ax
-    call    sub_332C0
+    call    clear_sprite1_color
     add     sp, 2
     mov     ax, 37h ; '7'
     push    ax
@@ -4385,7 +4385,7 @@ loc_12A4D:
     push    ax
     push    word_44A02
     push    word_44A00
-    call    sub_30F9D
+    call    locate_shape
     add     sp, 6
     push    dx
     push    ax
@@ -4538,7 +4538,7 @@ loc_12A4D:
     push    ax
     push    word_44A02
     push    word_44A00
-    call    sub_30F9D
+    call    locate_shape
     add     sp, 6
     push    dx
     push    ax
@@ -4637,7 +4637,7 @@ loc_12CFB:
     call    sub_29620
     add     sp, 6
     mov     [bp+var_4], 0FEh ; 'þ'
-    call    sub_2A230
+    call    get_timerdelta2
     call    sub_29772
 loc_12D2C:
     push    word_407D0
@@ -4883,7 +4883,7 @@ run_option_menu proc far
     mov     word_455CE, dx
     call    sub_28F3C
     push    word_407FA
-    call    sub_332C0
+    call    clear_sprite1_color
     add     sp, 2
     mov     ax, 471h
     push    ax
@@ -5020,19 +5020,19 @@ loc_1306E:
     jz      short loc_130CA
     jmp     loc_1315A
 loc_130BA:
-    call    sub_29D9A
+    call    do_key_restext
     jmp     loc_1315A
 loc_130C2:
-    call    sub_29B32
+    call    do_joy_restext
     jmp     loc_1315A
 loc_130CA:
     call    sub_29DF4
     jmp     loc_1315A
 loc_130D2:
-    call    sub_29E98
+    call    do_mof_restext
     jmp     loc_1315A
 loc_130DA:
-    call    sub_29EFA
+    call    do_sonsof_restext
     jmp     short loc_1315A
     ; align 2
     db 144
@@ -5067,12 +5067,12 @@ loc_130E2:
     mov     [bp+var_4], 1
     jmp     short loc_13163
 loc_13134:
-    call    sub_29FB6
+    call    do_mrl_textres
     jmp     short loc_1315A
     ; align 2
     db 144
 loc_1313C:
-    call    sub_29F5C
+    call    do_dos_restext
     jmp     short loc_1315A
     ; align 2
     db 144
@@ -6044,7 +6044,7 @@ loc_13A4B:
     push    ax
     push    [bp+var_1A]
     push    [bp+var_1C]
-    call    sub_30F9D
+    call    locate_shape
     add     sp, 6
     mov     word ptr [bp+var_56], ax
     mov     word ptr [bp+var_56+2], dx
@@ -6091,7 +6091,7 @@ loc_13A4B:
     push    ax
     push    [bp+var_1A]
     push    [bp+var_1C]
-    call    sub_30F9D
+    call    locate_shape
     add     sp, 6
     push    dx
     push    ax
@@ -6395,7 +6395,7 @@ loc_13DDF:
     push    ax
     push    [bp+var_1A]
     push    [bp+var_1C]
-    call    sub_30F9D
+    call    locate_shape
     add     sp, 6
     mov     word ptr [bp+var_56], ax
     mov     word ptr [bp+var_56+2], dx
@@ -6423,7 +6423,7 @@ loc_13DDF:
     add     ax, [bp+var_8C]
     push    ax
     push    [bp+var_8C]
-    call    sub_3327F
+    call    set_sprite1_size
     add     sp, 8
     push    [bp+var_90]
     push    [bp+var_8C]
@@ -6488,10 +6488,10 @@ loc_13ECD:
     push    ax
     mov     ax, 8
     push    ax
-    call    sub_3327F
+    call    set_sprite1_size
     add     sp, 8
     push    word_407F8
-    call    sub_332C0
+    call    clear_sprite1_color
     add     sp, 2
     call    sub_28DB6
     mov     al, [bp+var_18]
@@ -6749,7 +6749,7 @@ loc_14188:
     push    ax
     sub     ax, ax
     push    ax
-    call    sub_3327F
+    call    set_sprite1_size
     add     sp, 8
     call    sub_28DB6
     les     bx, dword_44D26
@@ -6758,7 +6758,7 @@ loc_14188:
     call    sub_33BDA
     add     sp, 4
     call    sub_28D9E
-    call    sub_2A230
+    call    get_timerdelta2
     call    sub_29772
 loc_141DC:
     push    word_407D0
@@ -6818,7 +6818,7 @@ loc_1424D:
     push    ax
     push    [bp+var_1A]
     push    [bp+var_1C]
-    call    sub_30F9D
+    call    locate_shape
     add     sp, 6
     mov     word ptr [bp+var_56], ax
     mov     word ptr [bp+var_56+2], dx
@@ -6846,7 +6846,7 @@ loc_1424D:
     add     ax, [bp+var_8C]
     push    ax
     push    [bp+var_8C]
-    call    sub_3327F
+    call    set_sprite1_size
     add     sp, 8
     push    [bp+var_90]
     push    [bp+var_8C]
@@ -6873,7 +6873,7 @@ loc_1430E:
     push    ax
     push    [bp+var_1A]
     push    [bp+var_1C]
-    call    sub_30F9D
+    call    locate_shape
     add     sp, 6
     push    dx
     push    ax

@@ -66,7 +66,7 @@ loc_367B8:
     push    [bp+arg_4]
     push    [bp+arg_2]
     push    [bp+arg_0]
-    call    sub_30F9D
+    call    locate_shape
     add     sp, 6
     mov     bx, [bp+arg_6]
     add     [bp+arg_6], 4
@@ -119,7 +119,7 @@ loc_36834:
     push    word ptr [bp+0Ah]
     push    word ptr [bp+8]
     push    word ptr [bp+6]
-    call    sub_30FA9
+    call    locate_sound
     add     sp, 6
     mov     bx, [bp-2]
     inc     word ptr [bp-2]

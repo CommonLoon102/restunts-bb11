@@ -314,7 +314,7 @@ static PrintBody(f, funcstart, funcend, skipfirstlabel) {
 		}
 		
 		if (((skipfirstlabel && funcbody != funcstart) || !skipfirstlabel) && isAnyName(bodyflags)) {
-			locname = GetTrueNameEx(BADADDR, funcbody);
+			locname = NameEx(funcstart, funcbody);
 			if (isCode(bodyflags))
 				fprintf(f, "%s:\n", locname); else
 			if (isData(bodyflags) || isUnknown(bodyflags))

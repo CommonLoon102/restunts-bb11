@@ -281,6 +281,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn aExp1:byte
     extrn aExp2:byte
     extrn aExp3:byte
+    extrn aXX:byte
     extrn word_3E590:word
     extrn byte_3E70C:byte
     extrn byte_3E70D:byte
@@ -434,8 +435,10 @@ dseg segment byte public 'STUNTSD' use16
     extrn word_3F88E:word
     extrn word_3F890:word
     extrn word_3F892:word
-    extrn unk_3F9CC:byte
+    extrn callbackflags:byte
+    extrn callbackflags2:byte
     extrn byte_3F9E0:byte
+    extrn callbacks:byte
     extrn word_3FB02:word
     extrn word_3FB04:word
     extrn byte_3FB06:byte
@@ -499,8 +502,8 @@ dseg segment byte public 'STUNTSD' use16
     extrn word_3FF82:word
     extrn word_3FF84:word
     extrn resmaxsize:word
-    extrn word_3FF88:word
-    extrn word_3FF8A:word
+    extrn pspofs:word
+    extrn pspseg:word
     extrn resources:RESOURCE
     extrn resptr1:word
     extrn resptr2:word
@@ -584,8 +587,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn word_40B0C:word
     extrn word_40B0E:word
     extrn word_40B10:word
-    extrn byte_40B12:byte
-    extrn byte_40B13:byte
+    extrn audiodriverstring:byte
     extrn byte_40B86:byte
     extrn aUnflip:byte
     extrn aMga:byte

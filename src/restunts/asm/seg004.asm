@@ -3241,7 +3241,7 @@ loc_1FEEA:
     push    ax
     push    word_463D4
     push    word_463D2
-    call    sub_30F9D
+    call    locate_shape
     add     sp, 6
     mov     word_449F8, ax
     mov     word_449FA, dx
@@ -3323,7 +3323,7 @@ sub_1FF92 proc far
     push    ax
     push    dx
     push    word ptr dword_454AA
-    call    sub_30F9D
+    call    locate_shape
     add     sp, 6
     push    dx
     push    ax
@@ -3335,7 +3335,7 @@ sub_1FF92 proc far
     push    ax
     push    word ptr dword_454AA+2
     push    word ptr dword_454AA
-    call    sub_30F9D
+    call    locate_shape
     add     sp, 6
     push    dx
     push    ax
@@ -3440,7 +3440,7 @@ loc_200D6:
     push    ax
     push    word ptr dword_454AA+2
     push    word ptr dword_454AA
-    call    sub_30F9D
+    call    locate_shape
     add     sp, 6
     push    dx
     push    ax
@@ -3452,7 +3452,7 @@ loc_200D6:
     push    ax
     push    word ptr dword_454AA+2
     push    word ptr dword_454AA
-    call    sub_30F9D
+    call    locate_shape
     add     sp, 6
     push    dx
     push    ax
@@ -3464,7 +3464,7 @@ loc_200D6:
     push    ax
     push    word ptr dword_454AA+2
     push    word ptr dword_454AA
-    call    sub_30F9D
+    call    locate_shape
     add     sp, 6
     push    dx
     push    ax
@@ -3476,7 +3476,7 @@ loc_200D6:
     push    ax
     push    word ptr dword_454AA+2
     push    word ptr dword_454AA
-    call    sub_30F9D
+    call    locate_shape
     add     sp, 6
     push    dx
     push    ax
@@ -3488,7 +3488,7 @@ loc_200D6:
     push    ax
     push    word ptr dword_454AA+2
     push    word ptr dword_454AA
-    call    sub_30F9D
+    call    locate_shape
     add     sp, 6
     push    dx
     push    ax
@@ -3581,7 +3581,7 @@ loc_20257:
     push    ax
     push    word ptr dword_454B0+2
     push    word ptr dword_454B0
-    call    sub_30F9D
+    call    locate_shape
     add     sp, 6
     push    dx
     push    ax
@@ -3593,7 +3593,7 @@ loc_20257:
     push    ax
     push    word ptr dword_454B0+2
     push    word ptr dword_454B0
-    call    sub_30F9D
+    call    locate_shape
     add     sp, 6
     push    dx
     push    ax
@@ -3698,7 +3698,7 @@ loc_20369:
     push    ax
     push    word ptr dword_454B0+2
     push    word ptr dword_454B0
-    call    sub_30F9D
+    call    locate_shape
     add     sp, 6
     push    dx
     push    ax
@@ -3710,7 +3710,7 @@ loc_20369:
     push    ax
     push    word ptr dword_454B0+2
     push    word ptr dword_454B0
-    call    sub_30F9D
+    call    locate_shape
     add     sp, 6
     push    dx
     push    ax
@@ -3722,7 +3722,7 @@ loc_20369:
     push    ax
     push    word ptr dword_454B0+2
     push    word ptr dword_454B0
-    call    sub_30F9D
+    call    locate_shape
     add     sp, 6
     push    dx
     push    ax
@@ -3734,7 +3734,7 @@ loc_20369:
     push    ax
     push    word ptr dword_454B0+2
     push    word ptr dword_454B0
-    call    sub_30F9D
+    call    locate_shape
     add     sp, 6
     push    dx
     push    ax
@@ -3746,7 +3746,7 @@ loc_20369:
     push    ax
     push    word ptr dword_454B0+2
     push    word ptr dword_454B0
-    call    sub_30F9D
+    call    locate_shape
     add     sp, 6
     push    dx
     push    ax
