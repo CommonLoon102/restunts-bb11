@@ -100,7 +100,7 @@ sub_3ACFE proc far
     call    check_pathdrive
     add     sp, 2
     push    ax
-    call    sub_3136A
+    call    get_res_unk
     add     sp, 2
     mov     [bp+var_8], ax
     mov     [bp+var_6], dx

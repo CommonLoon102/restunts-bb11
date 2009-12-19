@@ -594,11 +594,11 @@ loc_1053A:
     jmp     loc_103EF
 loc_10575:
     call    sub_28DB6
-    call    sub_30268
+    call    audio_stop_unk
     call    audiodrv_atexit
     call    sub_30883
     call    sub_36AF4
-    call    sub_30120
+    call    set_bios_mode7
     pop     si
     pop     di
     mov     sp, bp

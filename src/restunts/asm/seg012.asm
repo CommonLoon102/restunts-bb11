@@ -121,26 +121,26 @@ seg012 segment byte public 'STUNTSC' use16
     public sub_2FE1C
     public call_exitlist
     public sub_2FE74
-    public sub_2FE82
-    public sub_2FF26
+    public get_file_size
+    public read_4_bytes_from_file
     public find_filename
     public loc_30011
     public loc_3002A
-    public sub_3002E
+    public find_next
     public sub_30044
-    public sub_3005E
+    public set_bios_mode4
     public sub_300B6
-    public sub_30120
-    public sub_301A0
+    public set_bios_mode7
+    public setup_timercallback
     public loc_301FD
-    public sub_30268
-    public sub_302AA
-    public sub_302DE
-    public sub_3031D
-    public loc_30329
+    public audio_stop_unk
+    public reg_timer_callback
+    public remove_timer_callback
+    public compare_ds_ss
+    public _timerintr_callback
     public sub_303BA
-    public sub_303D8
-    public sub_30404
+    public set_bios_mode3
+    public parse_kb_key
     public reg_callback
     public sub_30519
     public sub_30538
@@ -184,7 +184,7 @@ seg012 segment byte public 'STUNTSC' use16
     public check_pathdrive2
     public alloc_respages2
     public sub_312FD
-    public sub_3136A
+    public get_res_unk
     public sub_3147C
     public loc_31498
     public sub_31641
@@ -3891,7 +3891,7 @@ sub_2FE74 proc near
     ; align 2
     db 0
 sub_2FE74 endp
-sub_2FE82 proc far
+get_file_size proc far
     var_6 = word ptr -6
     var_4 = word ptr -4
     var_2 = word ptr -2
@@ -3988,8 +3988,8 @@ loc_2FF00:
     mov     sp, bp
     pop     bp
     retf
-sub_2FE82 endp
-sub_2FF26 proc far
+get_file_size endp
+read_4_bytes_from_file proc far
     var_8 = word ptr -8
     var_6 = byte ptr -6
     var_5 = word ptr -5
@@ -4092,7 +4092,7 @@ loc_2FFC4:
     push    [bp+arg_0]
     push    ax
     call    far ptr fatal_error
-sub_2FF26 endp
+read_4_bytes_from_file endp
 find_filename proc far
      s = byte ptr 0
      r = byte ptr 2
@@ -4149,7 +4149,7 @@ loc_3002A:
     xor     ax, ax
     jmp     short loc_30025
 find_filename endp
-sub_3002E proc far
+find_next proc far
      s = byte ptr 0
      r = byte ptr 2
 
@@ -4167,7 +4167,7 @@ sub_3002E proc far
     jmp     short loc_30011
     ; align 2
     db 0
-sub_3002E endp
+find_next endp
 sub_30044 proc far
      s = byte ptr 0
      r = byte ptr 2
@@ -4188,7 +4188,7 @@ sub_30044 proc far
     pop     bp
     retf
 sub_30044 endp
-sub_3005E proc far
+set_bios_mode4 proc far
      r = byte ptr 0
 
     push    di
@@ -4236,7 +4236,7 @@ loc_30091:
     retf
     ; align 2
     db 0
-sub_3005E endp
+set_bios_mode4 endp
 sub_300B6 proc far
      s = byte ptr 0
      r = byte ptr 2
@@ -4296,13 +4296,13 @@ loc_30112:
     pop     bp
     retf
 sub_300B6 endp
-sub_30120 proc far
+set_bios_mode7 proc far
      r = byte ptr 0
 
     push    di
     cmp     byte_3F85A, 0
     jnz     short loc_3012F
-    call    sub_303D8
+    call    set_bios_mode3
     pop     di
     retf
 loc_3012F:
@@ -4357,8 +4357,8 @@ loc_30156:
     jmp     short loc_301FD
     ; align 2
     db 144
-sub_30120 endp
-sub_301A0 proc far
+set_bios_mode7 endp
+setup_timercallback proc far
      r = byte ptr 0
 
     push    bp
@@ -4395,7 +4395,7 @@ sub_301A0 proc far
 loc_301FD:
     cli
     mov     byte_3F88C, 0
-    mov     word_3F890, 0
+    mov     timerintr, 0
     mov     word_3F892, 0
     sti
     in      al, 61h         ; PC/XT PPI port B bits:
@@ -4421,7 +4421,7 @@ loc_30231:
     cmp     ax, bx
     jz      short loc_3024A
     mov     word ptr dword_3F874+2, ax
-    mov     word ptr es:20h, offset loc_30329
+    mov     word ptr es:20h, offset _timerintr_callback
     mov     word ptr es:22h, cs
 loc_3024A:
     in      al, 21h         ; Interrupt controller, 8259A.
@@ -4441,8 +4441,8 @@ nosmart
     add     sp, 4
     pop     bp
     retf
-sub_301A0 endp
-sub_30268 proc far
+setup_timercallback endp
+audio_stop_unk proc far
 
     xor     ax, ax
     mov     es, ax
@@ -4480,8 +4480,8 @@ smart
 nosmart
     out     61h, al         ; PC/XT PPI port B bits:
     retf
-sub_30268 endp
-sub_302AA proc far
+audio_stop_unk endp
+reg_timer_callback proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -4490,13 +4490,13 @@ sub_302AA proc far
     push    bp
     mov     bp, sp
     mov     cx, 5
-    mov     bx, 4120h
+    mov     bx, offset timerintr
 loc_302B3:
     cmp     word ptr [bx+2], 0
     jz      short loc_302C7
     add     bx, 4
     loop    loc_302B3
-    mov     ax, 413Ch
+    mov     ax, offset aNoRoomLeftOnTimerInterru; "NO ROOM LEFT ON TIMER INTERRUPT ROUTINE"...
     push    ax
     call    far ptr fatal_error
 loc_302C7:
@@ -4508,8 +4508,8 @@ loc_302C7:
     mov     word ptr [bx+6], 0
     pop     bp
     retf
-sub_302AA endp
-sub_302DE proc far
+reg_timer_callback endp
+remove_timer_callback proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -4518,7 +4518,7 @@ sub_302DE proc far
     push    bp
     mov     bp, sp
     mov     cx, 5
-    mov     bx, 4120h
+    mov     bx, offset timerintr
     mov     ax, [bp+arg_0]
     mov     dx, [bp+arg_2]
 loc_302ED:
@@ -4548,8 +4548,8 @@ loc_30311:
     sti
     pop     bp
     retf
-sub_302DE endp
-sub_3031D proc far
+remove_timer_callback endp
+compare_ds_ss proc far
 
     xor     ax, ax
     mov     bx, ss
@@ -4559,7 +4559,7 @@ sub_3031D proc far
     inc     ax
 locret_30328:
     retf
-loc_30329:
+_timerintr_callback:
     cli
     push    ds
     push    es
@@ -4632,7 +4632,7 @@ loc_303B0:
     pop     es
     pop     ds
     iret
-sub_3031D endp
+compare_ds_ss endp
 sub_303BA proc near
 
     cmp     byte_3F880, 0
@@ -4648,7 +4648,7 @@ loc_303D1:
     ; align 2
     db 0
 sub_303BA endp
-sub_303D8 proc far
+set_bios_mode3 proc far
 
     xor     ax, ax
     push    ax
@@ -4669,8 +4669,8 @@ nosmart
     mov     bx, 0
     int     10h             ; - VIDEO - SET COLOR PALETTE
     retf
-sub_303D8 endp
-sub_30404 proc far
+set_bios_mode3 endp
+parse_kb_key proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -4722,7 +4722,7 @@ loc_30454:
     mov     byte_3F9E0, 0
     pop     bp
     retf
-sub_30404 endp
+parse_kb_key endp
 reg_callback proc far
      s = byte ptr 0
      r = byte ptr 2
@@ -4792,7 +4792,7 @@ locret_304C6:
     mov     ah, 0
     int     16h             ; KEYBOARD - READ CHAR FROM BUFFER, WAIT IF EMPTY
     push    ax
-    call    sub_30404
+    call    parse_kb_key
     add     sp, 2
     retf
 loc_304DB:
@@ -4842,7 +4842,7 @@ loc_30522:
     mov     ah, 0
     int     16h             ; KEYBOARD - READ CHAR FROM BUFFER, WAIT IF EMPTY
     push    ax
-    call    sub_30404
+    call    parse_kb_key
     add     sp, 2
 locret_30537:
     retf
@@ -5928,13 +5928,13 @@ sub_30D88 proc far
     mov     [bp+var_2], 1
 loc_30DA1:
     push    [bp+arg_0]
-    call    sub_3136A
+    call    get_res_unk
     add     sp, 2
     or      dx, dx
     jnz     short loc_30DDE
     push    [bp+var_2]
     push    [bp+arg_0]
-    call    sub_2FE82
+    call    get_file_size
     add     sp, 4
     or      ax, ax
     jz      short loc_30DE2
@@ -6006,7 +6006,7 @@ decompress_fileres proc far
     mov     [bp+var_C], 1
 _alt_decompress:
     push    [bp+arg_0]
-    call    sub_3136A
+    call    get_res_unk
     add     sp, 2
     or      dx, dx
     jz      short loc_30E2C
@@ -6020,7 +6020,7 @@ loc_30E29:
 loc_30E2C:
     push    [bp+var_C]
     push    [bp+arg_0]
-    call    sub_2FF26
+    call    read_4_bytes_from_file
     add     sp, 4
     or      ax, ax
     jz      short loc_30E29
@@ -6034,7 +6034,7 @@ loc_30E2C:
     mov     [bp+var_4], dx
     push    [bp+var_C]
     push    [bp+arg_0]
-    call    sub_2FE82
+    call    get_file_size
     add     sp, 4
     or      ax, ax
     jz      short loc_30E29
@@ -6712,7 +6712,7 @@ loc_31359:
     add     sp, 6
     jmp     short loc_31319
 sub_312FD endp
-sub_3136A proc far
+get_res_unk proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -6760,23 +6760,23 @@ loc_313B0:
     retf
 loc_313B6:
     mov     di, resptr2
-    mov     dx, [di+0Eh]
-    add     dx, [di+0Ch]
+    mov     dx, [di+RESOURCE.resofs]
+    add     dx, [di+RESOURCE.ressize]
     add     di, 12h
     mov     resptr2, di
-    mov     ax, [si+0Ch]
+    mov     ax, [si+RESOURCE.ressize]
     push    ax
     push    dx
-    push    word ptr [si+0Eh]
-    mov     word ptr [si+10h], 0
-    mov     [di+0Eh], dx
-    mov     [di+0Ch], ax
-    mov     word ptr [di+10h], 2
+    push    [si+RESOURCE.resofs]
+    mov     [si+RESOURCE.resunk], 0
+    mov     [di+RESOURCE.resofs], dx
+    mov     [di+RESOURCE.ressize], ax
+    mov     [di+RESOURCE.resunk], 2
     xor     bx, bx
     mov     cx, 0Ch
 loc_313E4:
-    mov     al, [bx+si]
-    mov     [bx+di], al
+    mov     al, byte ptr [bx+si+RESOURCE.resname]
+    mov     byte ptr [bx+di+RESOURCE.resname], al
     inc     bx
     loop    loc_313E4
     cmp     di, resendptr1
@@ -6787,18 +6787,18 @@ loc_313F6:
     add     sp, 6
     mov     si, resendptr1
     mov     di, resptr2
-    mov     ax, [di+0Eh]
-    add     ax, [di+0Ch]
+    mov     ax, [di+RESOURCE.resofs]
+    add     ax, [di+RESOURCE.ressize]
 loc_3140C:
-    cmp     ax, [si+0Eh]
+    cmp     ax, [si+RESOURCE.resofs]
     jbe     short loc_3141F
-    mov     word ptr [si+10h], 0
+    mov     [si+RESOURCE.resunk], 0
     add     si, 12h
     mov     resendptr1, si
     jmp     short loc_3140C
 loc_3141F:
     call    sub_312FD
-    mov     dx, [di+0Eh]
+    mov     dx, [di+RESOURCE.resofs]
     jmp     short loc_313B0
     push    bp
     mov     bp, sp
@@ -6847,7 +6847,7 @@ loc_31475:
     pop     si
     pop     bp
     retf
-sub_3136A endp
+get_res_unk endp
 sub_3147C proc far
      s = byte ptr 0
      r = byte ptr 2

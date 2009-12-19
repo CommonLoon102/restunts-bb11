@@ -76,7 +76,7 @@ loc_26BB9:
     mov     dx, seg seg007
     push    dx
     push    ax
-    call    sub_302AA
+    call    reg_timer_callback
     pop     bx
     pop     bx
     retf
@@ -103,7 +103,7 @@ loc_26BEF:
     mov     dx, seg seg007
     push    dx
     push    ax
-    call    sub_302DE
+    call    remove_timer_callback
     pop     bx
     pop     bx
     pop     si
@@ -512,7 +512,7 @@ loc_26F9E:
     sub     sp, 4
     push    di
     push    si
-    call    sub_3031D
+    call    compare_ds_ss
     or      ax, ax
     jnz     short loc_26FB7
     jmp     loc_27127

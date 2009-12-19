@@ -97,7 +97,7 @@ sub_39E24 proc far
 sub_39E24 endp
 sub_39E4C proc far
 
-    call    sub_3002E
+    call    find_next
     retf
 sub_39E4C endp
 nullsub_1 proc far
@@ -360,9 +360,9 @@ loc_3A07A:
     call    sub_33816
     cmp     [bp+var_12], 0
     jz      short loc_3A08A
-    call    sub_3005E
+    call    set_bios_mode4
 loc_3A08A:
-    call    sub_301A0
+    call    setup_timercallback
     call    sub_28F4E
     mov     ax, 0C8h ; 'È'
     push    ax
@@ -379,7 +379,7 @@ loc_3A08A:
     add     sp, 6
     or      ax, ax
     jz      short loc_3A0C9
-    call    sub_30268
+    call    audio_stop_unk
     mov     ax, 1
     push    ax
     call    far ptr sub_2CDEC

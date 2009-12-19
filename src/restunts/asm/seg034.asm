@@ -155,7 +155,7 @@ loc_3AA53:
     add     sp, 4
     lea     ax, [bp+var_7C]
     push    ax
-    call    sub_3136A
+    call    get_res_unk
     add     sp, 2
     mov     [bp+var_4], ax
     mov     [bp+var_2], dx
@@ -171,7 +171,7 @@ loc_3AA87:
 loc_3AA92:
     lea     ax, [bp+var_7C]
     push    ax
-    call    sub_3136A
+    call    get_res_unk
     add     sp, 2
     mov     [bp+var_4], ax
     mov     [bp+var_2], dx

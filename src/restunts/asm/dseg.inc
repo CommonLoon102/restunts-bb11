@@ -433,8 +433,9 @@ dseg segment byte public 'STUNTSD' use16
     extrn word_3F88A:word
     extrn byte_3F88C:byte
     extrn word_3F88E:word
-    extrn word_3F890:word
+    extrn timerintr:word
     extrn word_3F892:word
+    extrn aNoRoomLeftOnTimerInterru:byte
     extrn callbackflags:byte
     extrn callbackflags2:byte
     extrn byte_3F9E0:byte

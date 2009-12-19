@@ -1066,7 +1066,7 @@ sub_2255A proc far
     mov     dx, seg seg005
     push    dx
     push    ax
-    call    sub_302AA
+    call    reg_timer_callback
     add     sp, 4
     mov     byte_442E4, 0
     retf
@@ -1083,12 +1083,12 @@ sub_22576 proc far
     mov     dx, seg seg005
     push    dx
     push    ax
-    call    sub_302DE
+    call    remove_timer_callback
     add     sp, 4
     retf
     ; align 2
     db 144
-    call    sub_3031D
+    call    compare_ds_ss
     or      ax, ax
     jnz     short loc_225A2
     jmp     locret_22696

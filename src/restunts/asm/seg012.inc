@@ -74,26 +74,26 @@ seg012 segment byte public 'STUNTSC' use16
     extrn sub_2FE1C:proc
     extrn call_exitlist:proc
     extrn sub_2FE74:proc
-    extrn sub_2FE82:proc
-    extrn sub_2FF26:proc
+    extrn get_file_size:proc
+    extrn read_4_bytes_from_file:proc
     extrn find_filename:proc
     extrn loc_30011
     extrn loc_3002A
-    extrn sub_3002E:proc
+    extrn find_next:proc
     extrn sub_30044:proc
-    extrn sub_3005E:proc
+    extrn set_bios_mode4:proc
     extrn sub_300B6:proc
-    extrn sub_30120:proc
-    extrn sub_301A0:proc
+    extrn set_bios_mode7:proc
+    extrn setup_timercallback:proc
     extrn loc_301FD
-    extrn sub_30268:proc
-    extrn sub_302AA:proc
-    extrn sub_302DE:proc
-    extrn sub_3031D:proc
-    extrn loc_30329
+    extrn audio_stop_unk:proc
+    extrn reg_timer_callback:proc
+    extrn remove_timer_callback:proc
+    extrn compare_ds_ss:proc
+    extrn _timerintr_callback
     extrn sub_303BA:proc
-    extrn sub_303D8:proc
-    extrn sub_30404:proc
+    extrn set_bios_mode3:proc
+    extrn parse_kb_key:proc
     extrn reg_callback:proc
     extrn sub_30519:proc
     extrn sub_30538:proc
@@ -137,7 +137,7 @@ seg012 segment byte public 'STUNTSC' use16
     extrn check_pathdrive2:proc
     extrn alloc_respages2:proc
     extrn sub_312FD:proc
-    extrn sub_3136A:proc
+    extrn get_res_unk:proc
     extrn sub_3147C:proc
     extrn loc_31498
     extrn sub_31641:proc

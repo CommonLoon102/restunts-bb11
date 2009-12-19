@@ -102,7 +102,7 @@ static IsPublicLabel(labelname) {
 		labelname == "loc_30011" || 
 		labelname == "loc_3002A" || 
 		labelname == "loc_301FD" || 
-		labelname == "loc_30329" || 
+		labelname == "_timerintr_callback" || 
 		labelname == "loc_308C6" || 
 		labelname == "loc_309A5" || 
 		labelname == "loc_30AFB" || 

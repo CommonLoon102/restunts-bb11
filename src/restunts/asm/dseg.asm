@@ -481,8 +481,9 @@ dseg segment byte public 'STUNTSD' use16
     public word_3F88A
     public byte_3F88C
     public word_3F88E
-    public word_3F890
+    public timerintr
     public word_3F892
+    public aNoRoomLeftOnTimerInterru
     public callbackflags
     public callbackflags2
     public byte_3F9E0
@@ -17747,7 +17748,7 @@ word_3F88A     dw 0
 byte_3F88C     db 0
     db 3
 word_3F88E     dw 0
-word_3F890     dw 0
+timerintr     dw 0
 word_3F892     dw 0
     db 0
     db 0
@@ -17773,7 +17774,7 @@ word_3F892     dw 0
     db 0
     db 0
     db 0
-    db 78
+aNoRoomLeftOnTimerInterru     db 78
     db 79
     db 32
     db 82
