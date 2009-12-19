@@ -1,5 +1,5 @@
 seg012 segment byte public 'STUNTSC' use16
-    extrn sub_2EA2A:proc
+    extrn fatal_error:proc
     extrn sub_2EA4E:proc
     extrn off_2EA9B:word
     extrn sub_2EAD4:proc
@@ -72,7 +72,7 @@ seg012 segment byte public 'STUNTSC' use16
     extrn unk_2FD7C:byte
     extrn sub_2FDDE:proc
     extrn sub_2FE1C:proc
-    extrn sub_2FE59:proc
+    extrn call_exitlist:proc
     extrn sub_2FE74:proc
     extrn sub_2FE82:proc
     extrn sub_2FF26:proc
@@ -136,8 +136,8 @@ seg012 segment byte public 'STUNTSC' use16
     extrn sub_3117B:proc
     extrn sub_3118D:proc
     extrn sub_311D5:proc
-    extrn sub_31228:proc
-    extrn sub_31248:proc
+    extrn check_pathdrive2:proc
+    extrn alloc_respages:proc
     extrn sub_312FD:proc
     extrn sub_3136A:proc
     extrn sub_3147C:proc
@@ -281,7 +281,7 @@ seg012 segment byte public 'STUNTSC' use16
     extrn off_34CE4:word
     extrn byte_34CE6:byte
     extrn sub_35AF6:proc
-    extrn sub_35B14:proc
+    extrn set_sprite2_as_1:proc
     extrn sub_35B26:proc
     extrn sub_35B76:proc
     extrn sub_35C4E:proc

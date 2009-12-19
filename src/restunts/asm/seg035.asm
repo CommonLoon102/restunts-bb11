@@ -97,7 +97,7 @@ sub_3ACFE proc far
     mov     bp, sp
     sub     sp, 0Ah
     push    [bp+arg_0]
-    call    sub_31228
+    call    check_pathdrive
     add     sp, 2
     push    ax
     call    sub_3136A
@@ -135,7 +135,7 @@ loc_3AD4A:
     mov     [bp+var_A], ax
     push    ax
     push    [bp+arg_0]
-    call    sub_31248
+    call    alloc_respages
     add     sp, 4
     mov     [bp+var_8], ax
     mov     [bp+var_6], dx

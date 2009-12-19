@@ -46,7 +46,7 @@ nosmart
 seg012 segment byte public 'STUNTSC' use16
     assume cs:seg012
     assume es:nothing, ss:nothing, ds:dseg
-    public sub_2EA2A
+    public fatal_error
     public sub_2EA4E
     public off_2EA9B
     public sub_2EAD4
@@ -119,7 +119,7 @@ seg012 segment byte public 'STUNTSC' use16
     public unk_2FD7C
     public sub_2FDDE
     public sub_2FE1C
-    public sub_2FE59
+    public call_exitlist
     public sub_2FE74
     public sub_2FE82
     public sub_2FF26
@@ -183,8 +183,8 @@ seg012 segment byte public 'STUNTSC' use16
     public sub_3117B
     public sub_3118D
     public sub_311D5
-    public sub_31228
-    public sub_31248
+    public check_pathdrive2
+    public alloc_respages
     public sub_312FD
     public sub_3136A
     public sub_3147C
@@ -328,7 +328,7 @@ seg012 segment byte public 'STUNTSC' use16
     public off_34CE4
     public byte_34CE6
     public sub_35AF6
-    public sub_35B14
+    public set_sprite2_as_1
     public sub_35B26
     public sub_35B76
     public sub_35C4E
@@ -341,20 +341,20 @@ seg012 segment byte public 'STUNTSC' use16
     public sub_360F6
     ; align 2
     db 144
-sub_2EA2A proc near
+fatal_error proc near
 
     pop     ax
     pop     ax
-    call    sub_35B14
+    call    set_sprite2_as_1
     call    _printf
     call    sub_30A5D
-    call    sub_2FE59
+    call    call_exitlist
     call    _printf
     add     sp, 2
     call    _abort
     ; align 2
     db 0
-sub_2EA2A endp
+fatal_error endp
 sub_2EA4E proc far
      s = byte ptr 0
      r = byte ptr 2
@@ -1555,9 +1555,9 @@ loc_2F3FD:
     mov     ax, [bp+arg_6]
     mov     [bp+arg_4], ax
     mov     ax, offset loc_33344
-    mov     word_40322, ax
+    mov     spritefunc, ax
     mov     ax, offset sub_2FDDE
-    mov     word_40326, ax
+    mov     imagefunc, ax
     jmp     loc_3180A
 sub_2F3DA endp
 sub_2F424 proc far
@@ -3854,7 +3854,7 @@ loc_2FE34:
     loop    loc_2FE2B
     mov     ax, 3FE0h
     push    ax
-    call    far ptr sub_2EA2A
+    call    far ptr fatal_error
 loc_2FE48:
     mov     word ptr [bx+2], 0
     mov     [bx], ax
@@ -3864,17 +3864,17 @@ loc_2FE57:
     pop     bp
     retf
 sub_2FE1C endp
-sub_2FE59 proc far
+call_exitlist proc far
      r = byte ptr 0
 
     push    di
     mov     di, 28h ; '('
 loc_2FE5D:
-    mov     ax, [di+3FB6h]
+    mov     ax, (exitlistfuncs+2)[di]
     or      ax, ax
     jz      short loc_2FE6B
     push    di
-    call    dword ptr [di+3FB4h]
+    call    dword ptr exitlistfuncs[di]
     pop     di
 loc_2FE6B:
     sub     di, 4
@@ -3883,10 +3883,10 @@ loc_2FE6B:
 loc_2FE72:
     pop     di
     retf
-sub_2FE59 endp
+call_exitlist endp
 sub_2FE74 proc near
 
-    call    sub_2FE59
+    call    call_exitlist
     xor     ax, ax
     push    ax
     call    far ptr sub_2CDEC
@@ -3950,7 +3950,7 @@ loc_2FECD:
     mov     ds, bx
     push    [bp+arg_0]
     push    ax
-    call    far ptr sub_2EA2A
+    call    far ptr fatal_error
 loc_2FEDD:
     mov     [bp+var_2], ax
     mov     bx, ax
@@ -4093,7 +4093,7 @@ loc_2FFC4:
     mov     ds, bx
     push    [bp+arg_0]
     push    ax
-    call    far ptr sub_2EA2A
+    call    far ptr fatal_error
 sub_2FF26 endp
 find_filename proc far
      s = byte ptr 0
@@ -4500,7 +4500,7 @@ loc_302B3:
     loop    loc_302B3
     mov     ax, 413Ch
     push    ax
-    call    far ptr sub_2EA2A
+    call    far ptr fatal_error
 loc_302C7:
     mov     ax, [bp+arg_0]
     mov     [bx], ax
@@ -5611,7 +5611,7 @@ loc_30B52:
     mov     ds, bx
     push    [bp+arg_0]
     push    ax
-    call    far ptr sub_2EA2A
+    call    far ptr fatal_error
 load_binary_file endp
 sub_30B62 proc far
     var_1A = word ptr -26
@@ -5942,7 +5942,7 @@ loc_30DA1:
     jz      short loc_30DE2
     push    ax
     push    [bp+arg_0]
-    call    sub_31248
+    call    alloc_respages
     add     sp, 4
     push    [bp+var_2]
     push    dx
@@ -6029,7 +6029,7 @@ loc_30E2C:
     mov     [bp+var_6], ax
     push    ax
     push    [bp+arg_0]
-    call    sub_31248
+    call    alloc_respages
     add     sp, 4
     mov     [bp+var_2], ax
     mov     [bp+var_4], dx
@@ -6126,7 +6126,7 @@ loc_30F1F:
     push    [bp+arg_0]
     mov     ax, 46B5h
     push    ax
-    call    far ptr sub_2EA2A
+    call    far ptr fatal_error
 loc_30F2F:
     mov     ax, [bp+var_6]
     sub     ax, 4
@@ -6270,7 +6270,7 @@ loc_3100F:
     mov     ds, ax
     push    [bp+arg_4]
     push    dx
-    call    far ptr sub_2EA2A
+    call    far ptr fatal_error
     db 205
     db 32
 loc_3101F:
@@ -6350,7 +6350,7 @@ loc_3108E:
     mov     bx, 64h ; 'd'
     mov     ah, 48h
     int     21h             ; DOS - 2+ - ALLOCATE MEMORY
-    mov     si, word_40310
+    mov     si, resptr1
     mov     [si+0Eh], ax
     mov     word_3FF84, ax
     mov     es, ax
@@ -6362,17 +6362,17 @@ loc_3108E:
     int     21h             ; DOS - 2+ - ADJUST MEMORY BLOCK SIZE (SETBLOCK)
     mov     ax, word_3FF84
     add     ax, bx
-    mov     si, word_40316
+    mov     si, resendptr2
     mov     [si+0Eh], ax
     mov     word_3FF82, ax
 loc_310CD:
-    mov     si, word_40316
-    mov     word_40314, si
-    mov     si, word_40310
-    mov     word_40312, si
+    mov     si, resendptr2
+    mov     resendptr1, si
+    mov     si, resptr1
+    mov     resptr2, si
 loc_310DD:
     add     si, 12h
-    cmp     si, word_40316
+    cmp     si, resendptr2
     jz      short loc_310ED
     mov     word ptr [si+10h], 0
     jmp     short loc_310DD
@@ -6396,7 +6396,7 @@ sub_310F1 proc far
     call    sub_3107A
     add     sp, 2
     mov     ax, [bp+6]
-    mov     bx, word_40316
+    mov     bx, resendptr2
     sub     [bx+0Eh], ax
     sub     word_3FF82, ax
     pop     bp
@@ -6416,32 +6416,32 @@ sub_310F1 proc far
     mov     ah, 48h
     int     21h             ; DOS - 2+ - ALLOCATE MEMORY
 loc_3113E:
-    mov     si, word_40310
+    mov     si, resptr1
     mov     [si+0Eh], ax
     mov     word_3FF84, ax
     add     ax, bx
-    mov     si, word_40316
+    mov     si, resendptr2
     mov     [si+0Eh], ax
     mov     word_3FF82, ax
     jmp     loc_310CD
-    mov     bx, word_40314
+    mov     bx, resendptr1
     mov     ax, [bx+0Eh]
-    mov     bx, word_40312
+    mov     bx, resptr2
     sub     ax, [bx+0Eh]
     sub     ax, [bx+0Ch]
     retf
-    mov     bx, word_40312
+    mov     bx, resptr2
     mov     ax, [bx+0Eh]
     add     ax, [bx+0Ch]
-    mov     bx, word_40310
+    mov     bx, resptr1
     sub     ax, [bx+0Eh]
     retf
 sub_310F1 endp
 sub_3117B proc far
 
-    mov     bx, word_40316
+    mov     bx, resendptr2
     mov     ax, [bx+0Eh]
-    mov     bx, word_40312
+    mov     bx, resptr2
     sub     ax, [bx+0Eh]
     sub     ax, [bx+0Ch]
     retf
@@ -6548,7 +6548,7 @@ loc_31222:
     pop     bp
     retf
 sub_311D5 endp
-sub_31228 proc far
+check_pathdrive2 proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -6575,8 +6575,8 @@ loc_31243:
     pop     si
     pop     bp
     retf
-sub_31228 endp
-sub_31248 proc far
+check_pathdrive2 endp
+alloc_respages proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -6586,37 +6586,37 @@ sub_31248 proc far
     mov     bp, sp
     push    si
     push    di
-    mov     di, word_40312
-    mov     si, word_40314
-    mov     dx, [di+0Eh]
-    add     dx, [di+0Ch]
+    mov     di, resptr2
+    mov     si, resendptr1
+    mov     dx, [di+RESOURCE.resofs]
+    add     dx, [di+RESOURCE.ressize]
     add     di, 12h
     cmp     si, di
     jbe     short loc_312A7
 loc_31262:
-    mov     word_40312, di
+    mov     resptr2, di
     push    [bp+arg_0]
-    call    sub_31228
+    call    check_pathdrive
     add     sp, 2
     mov     si, ax
     xor     bx, bx
     mov     cx, 0Ch
 loc_31278:
-    mov     al, [bx+si]
-    mov     [bx+di], al
+    mov     al, byte ptr [bx+si+RESOURCE.resname]
+    mov     byte ptr [bx+di+RESOURCE.resname], al
     inc     bx
     loop    loc_31278
-    mov     si, word_40314
+    mov     si, resendptr1
     mov     ax, [bp+arg_2]
-    mov     [di+0Eh], dx
-    mov     [di+0Ch], ax
-    mov     word ptr [di+10h], 2
+    mov     [di+RESOURCE.resofs], dx
+    mov     [di+RESOURCE.ressize], ax
+    mov     [di+RESOURCE.resunk], 2
     add     ax, dx
-    cmp     ax, word_3FF86
+    cmp     ax, resmaxsize
     jb      short loc_3129C
-    mov     word_3FF86, ax
+    mov     resmaxsize, ax
 loc_3129C:
-    cmp     ax, [si+0Eh]
+    cmp     ax, [si+RESOURCE.resofs]
     ja      short loc_312C2
 loc_312A1:
     xor     ax, ax
@@ -6625,46 +6625,46 @@ loc_312A1:
     pop     bp
     retf
 loc_312A7:
-    cmp     si, word_40316
+    cmp     si, resendptr2
     jz      short loc_312B6
     add     si, 12h
-    mov     word_40314, si
+    mov     resendptr1, si
     jmp     short loc_31262
 loc_312B6:
     push    [bp+arg_0]
-    mov     ax, 4750h
+    mov     ax, offset aReservememoryO; "reservememory - OUT OF MEMORY SLOTS RES"...
     push    ax
-    call    far ptr sub_2EA2A
+    call    far ptr fatal_error
 loc_312C2:
-    mov     si, word_40314
-    mov     di, word_40312
+    mov     si, resendptr1
+    mov     di, resptr2
     mov     ax, [di+0Eh]
     add     ax, [di+0Ch]
 loc_312D0:
     cmp     ax, [si+0Eh]
     jbe     short loc_312A1
-    cmp     si, word_40316
+    cmp     si, resendptr2
     jz      short loc_312E9
     mov     word ptr [si+10h], 0
     add     si, 12h
-    mov     word_40314, si
+    mov     resendptr1, si
     jmp     short loc_312D0
 loc_312E9:
-    mov     bx, word_3FF86
+    mov     bx, resmaxsize
     push    bx
     push    word ptr [di+0Ch]
     push    [bp+arg_0]
-    mov     ax, 4718h
+    mov     ax, offset aReservememoryOutOfMemory; "reservememory - OUT OF MEMORY RESERVING"...
     push    ax
-    call    far ptr sub_2EA2A
-sub_31248 endp
+    call    far ptr fatal_error
+alloc_respages endp
 sub_312FD proc far
      r = byte ptr 0
 
     push    si
     push    di
     push    dx
-    mov     si, word_40316
+    mov     si, resendptr2
     mov     di, si
     xor     dx, dx
 loc_31308:
@@ -6680,10 +6680,10 @@ loc_31319:
     sub     di, 12h
 loc_3131C:
     sub     si, 12h
-    cmp     si, word_40314
+    cmp     si, resendptr1
     jnb     short loc_31308
     add     di, 12h
-    mov     word_40314, di
+    mov     resendptr1, di
     pop     dx
     pop     di
     pop     si
@@ -6722,9 +6722,9 @@ sub_3136A proc far
     mov     bp, sp
     push    si
     push    di
-    mov     si, word_40314
+    mov     si, resendptr1
     push    [bp+arg_0]
-    call    sub_31228
+    call    check_pathdrive
     add     sp, 2
     mov     di, ax
 loc_31380:
@@ -6749,7 +6749,7 @@ loc_3139B:
     jz      short loc_313B6
 loc_313A5:
     add     si, 12h
-    cmp     si, word_40316
+    cmp     si, resendptr2
     jb      short loc_31380
 loc_313AE:
     xor     dx, dx
@@ -6760,11 +6760,11 @@ loc_313B0:
     pop     bp
     retf
 loc_313B6:
-    mov     di, word_40312
+    mov     di, resptr2
     mov     dx, [di+0Eh]
     add     dx, [di+0Ch]
     add     di, 12h
-    mov     word_40312, di
+    mov     resptr2, di
     mov     ax, [si+0Ch]
     push    ax
     push    dx
@@ -6780,14 +6780,14 @@ loc_313E4:
     mov     [bx+di], al
     inc     bx
     loop    loc_313E4
-    cmp     di, word_40314
+    cmp     di, resendptr1
     jnz     short loc_313F6
-    add     word_40314, 12h
+    add     resendptr1, 12h
 loc_313F6:
     call    sub_3118D
     add     sp, 6
-    mov     si, word_40314
-    mov     di, word_40312
+    mov     si, resendptr1
+    mov     di, resptr2
     mov     ax, [di+0Eh]
     add     ax, [di+0Ch]
 loc_3140C:
@@ -6795,7 +6795,7 @@ loc_3140C:
     jbe     short loc_3141F
     mov     word ptr [si+10h], 0
     add     si, 12h
-    mov     word_40314, si
+    mov     resendptr1, si
     jmp     short loc_3140C
 loc_3141F:
     call    sub_312FD
@@ -6805,9 +6805,9 @@ loc_3141F:
     mov     bp, sp
     push    si
     push    di
-    mov     si, word_40314
+    mov     si, resendptr1
     push    word ptr [bp+6]
-    call    sub_31228
+    call    check_pathdrive
     add     sp, 2
     mov     di, ax
 loc_3143F:
@@ -6833,7 +6833,7 @@ loc_3145A:
     jz      short loc_31475
 loc_31464:
     add     si, 12h
-    cmp     si, word_40316
+    cmp     si, resendptr2
     jb      short loc_3143F
 loc_3146D:
     xor     dx, dx
@@ -6860,9 +6860,9 @@ sub_3147C proc far
     push    si
     push    di
     mov     ax, [bp+arg_2]
-    mov     si, word_40312
+    mov     si, resptr2
 loc_31488:
-    cmp     si, word_40310
+    cmp     si, resptr1
     jz      short loc_31498
     cmp     ax, [si+0Eh]
     jz      short loc_314A4
@@ -6872,14 +6872,14 @@ loc_31498:
     push    [bp+arg_2]
     mov     ax, 4783h
     push    ax
-    call    far ptr sub_2EA2A
+    call    far ptr fatal_error
 loc_314A4:
     mov     [bp+arg_2], 0
     mov     word ptr [si+10h], 0
-    cmp     si, word_40312
+    cmp     si, resptr2
     jz      short loc_314CE
-    mov     bx, word_40312
-    mov     di, word_40314
+    mov     bx, resptr2
+    mov     di, resendptr1
     cmp     si, di
     jz      short loc_31508
     mov     ax, [di+0Eh]
@@ -6890,14 +6890,14 @@ loc_314A4:
 loc_314CE:
     mov     bx, [si+0Ch]
     push    bx
-    mov     di, word_40314
+    mov     di, resendptr1
     mov     ax, [di+0Eh]
     sub     ax, bx
     push    ax
     mov     [bp+arg_2], ax
     push    word ptr [si+0Eh]
     sub     di, 12h
-    mov     word_40314, di
+    mov     resendptr1, di
     mov     [di+0Eh], ax
     mov     [di+0Ch], bx
     mov     word ptr [di+10h], 1
@@ -6911,13 +6911,13 @@ loc_314F9:
     call    sub_311D5
     add     sp, 6
 loc_31508:
-    cmp     si, word_40312
+    cmp     si, resptr2
     jnz     short loc_3151B
 loc_3150E:
     sub     si, 12h
     cmp     word ptr [si+10h], 0
     jz      short loc_3150E
-    mov     word_40312, si
+    mov     resptr2, si
 loc_3151B:
     mov     ax, [bp+arg_0]
     mov     dx, [bp+arg_2]
@@ -6931,9 +6931,9 @@ loc_3151B:
     push    si
     push    di
     mov     ax, [bp+8]
-    mov     si, word_40312
+    mov     si, resptr2
 loc_31534:
-    cmp     si, word_40310
+    cmp     si, resptr1
     jz      short loc_31544
     cmp     ax, [si+0Eh]
     jz      short loc_31547
@@ -6944,10 +6944,10 @@ loc_31544:
 loc_31547:
     mov     word ptr [bp+8], 0
     mov     word ptr [si+10h], 0
-    cmp     si, word_40312
+    cmp     si, resptr2
     jz      short loc_31570
-    mov     bx, word_40312
-    mov     di, word_40316
+    mov     bx, resptr2
+    mov     di, resendptr2
     mov     ax, [di+0Eh]
     sub     ax, [bx+0Eh]
     sub     ax, [bx+0Ch]
@@ -6955,14 +6955,14 @@ loc_31547:
     ja      short loc_31570
     jmp     loc_31622
 loc_31570:
-    mov     di, word_40312
+    mov     di, resptr2
     mov     ax, [di+0Eh]
     add     ax, [di+0Ch]
     mov     [bp-2], ax
     mov     word ptr [bp-4], 0
-    mov     di, word_40314
+    mov     di, resendptr1
 loc_31586:
-    cmp     di, word_40316
+    cmp     di, resendptr2
     jz      short loc_315E9
     mov     ax, [di+0Eh]
     sub     ax, [si+0Ch]
@@ -6970,11 +6970,11 @@ loc_31586:
     ja      short loc_315E4
     mov     bx, di
     sub     bx, 12h
-    cmp     bx, word_40312
+    cmp     bx, resptr2
     jz      short loc_315E4
     cmp     word ptr [bp-4], 0
     jnz     short loc_315B1
-    mov     word_40314, bx
+    mov     resendptr1, bx
     mov     word ptr [bp-4], 1
 loc_315B1:
     mov     ax, [di+10h]
@@ -7006,7 +7006,7 @@ loc_315E9:
     sub     di, 12h
     cmp     word ptr [bp-4], 0
     jnz     short loc_315F9
-    mov     word_40314, di
+    mov     resendptr1, di
 loc_315F9:
     mov     bx, [si+0Ch]
     mov     [di+0Ch], bx
@@ -7026,13 +7026,13 @@ loc_31613:
     call    sub_311D5
     add     sp, 6
 loc_31622:
-    cmp     si, word_40312
+    cmp     si, resptr2
     jnz     short loc_31635
 loc_31628:
     sub     si, 12h
     cmp     word ptr [si+10h], 0
     jz      short loc_31628
-    mov     word_40312, si
+    mov     resptr2, si
 loc_31635:
     mov     ax, [bp+6]
     mov     dx, [bp+8]
@@ -7052,9 +7052,9 @@ sub_31641 proc far
     push    si
     push    di
     mov     ax, [bp+arg_2]
-    mov     si, word_40312
+    mov     si, resptr2
 loc_3164D:
-    cmp     si, word_40310
+    cmp     si, resptr1
     jz      short loc_3165D
     cmp     ax, [si+0Eh]
     jz      short loc_31660
@@ -7064,13 +7064,13 @@ loc_3165D:
     jmp     loc_31498
 loc_31660:
     mov     word ptr [si+10h], 0
-    cmp     si, word_40312
+    cmp     si, resptr2
     jnz     short loc_31678
 loc_3166B:
     sub     si, 12h
     cmp     word ptr [si+10h], 0
     jz      short loc_3166B
-    mov     word_40312, si
+    mov     resptr2, si
 loc_31678:
     pop     di
     pop     si
@@ -7087,9 +7087,9 @@ sub_3167C proc far
     push    si
     push    di
     mov     ax, [bp+arg_2]
-    mov     si, word_40312
+    mov     si, resptr2
 loc_31688:
-    cmp     si, word_40310
+    cmp     si, resptr1
     jz      short loc_31698
     cmp     ax, [si+0Eh]
     jz      short loc_3169B
@@ -7115,9 +7115,9 @@ sub_316A2 proc far
     push    si
     push    di
     mov     ax, [bp+arg_2]
-    mov     si, word_40312
+    mov     si, resptr2
 loc_316AE:
-    cmp     si, word_40310
+    cmp     si, resptr1
     jz      short loc_316BE
     cmp     ax, [si+0Eh]
     jz      short loc_316C1
@@ -7135,14 +7135,14 @@ loc_316C1:
     pop     bp
     retf
 loc_316D0:
-    cmp     si, word_40312
+    cmp     si, resptr2
     jnz     short loc_316F4
     mov     [si+0Ch], ax
-    mov     di, word_40314
+    mov     di, resendptr1
     add     ax, [si+0Eh]
-    cmp     ax, word_3FF86
+    cmp     ax, resmaxsize
     jb      short loc_316E9
-    mov     word_3FF86, ax
+    mov     resmaxsize, ax
 loc_316E9:
     cmp     ax, [di+0Eh]
     ja      short loc_316FD
@@ -7155,27 +7155,27 @@ loc_316EE:
 loc_316F4:
     mov     ax, 47B1h
     push    ax
-    call    far ptr sub_2EA2A
+    call    far ptr fatal_error
 loc_316FD:
-    mov     si, word_40314
-    mov     di, word_40312
+    mov     si, resendptr1
+    mov     di, resptr2
     mov     ax, [di+0Eh]
     add     ax, [di+0Ch]
 loc_3170B:
     cmp     ax, [si+0Eh]
     jbe     short loc_316EE
-    cmp     si, word_40316
+    cmp     si, resendptr2
     jz      short loc_31724
     mov     word ptr [si+10h], 0
     add     si, 12h
-    mov     word_40314, si
+    mov     resendptr1, si
     jmp     short loc_3170B
 loc_31724:
-    mov     bx, word_3FF86
+    mov     bx, resmaxsize
     push    bx
     mov     ax, 47E1h
     push    ax
-    call    far ptr sub_2EA2A
+    call    far ptr fatal_error
 sub_316A2 endp
 sub_31732 proc far
      s = byte ptr 0
@@ -7187,9 +7187,9 @@ sub_31732 proc far
     push    si
     push    di
     mov     ax, [bp+arg_2]
-    mov     si, word_40312
+    mov     si, resptr2
 loc_3173E:
-    cmp     si, word_40310
+    cmp     si, resptr1
     jz      short loc_3174E
     cmp     ax, [si+0Eh]
     jz      short loc_31751
@@ -7214,9 +7214,9 @@ loc_3175C:
     push    ax
     push    word ptr [si+0Eh]
     add     di, 12h
-    cmp     si, word_40312
+    cmp     si, resptr2
     jnz     short loc_31785
-    mov     word_40312, di
+    mov     resptr2, di
 loc_31785:
     mov     [di+0Eh], ax
     mov     [di+0Ch], bx
@@ -7270,9 +7270,9 @@ sub_317C1 proc far
     mov     [bp+var_A], 0
 loc_317CE:
     mov     ax, 5C9Ch
-    mov     word_40322, ax
+    mov     spritefunc, ax
     mov     ax, 13BEh
-    mov     word_40326, ax
+    mov     imagefunc, ax
     mov     si, [bp+arg_6]
     jmp     short loc_3180A
 sub_317C1 endp
@@ -7319,9 +7319,9 @@ sub_317EE proc far
     mov     [bp+var_A], 0
 loc_317FB:
     mov     ax, 5C9Ch
-    mov     word_40322, ax
+    mov     spritefunc, ax
     mov     ax, 13BEh
-    mov     word_40326, ax
+    mov     imagefunc, ax
     lea     si, [bp+arg_4]
 loc_3180A:
     mov     [bp+var_6], si
@@ -7358,7 +7358,7 @@ loc_3180A:
     push    word ptr [si]
     push    word ptr [si+2]
     push    word ptr [si]
-    call    dword ptr word_40326
+    call    dword ptr imagefunc
     add     sp, 0Ah
     pop     di
     pop     si
@@ -7421,7 +7421,7 @@ loc_318DF:
     push    dx
     push    cx
     push    bx
-    call    dword ptr word_40326
+    call    dword ptr imagefunc
     add     sp, 0Ah
 loc_318F0:
     pop     di
@@ -7523,7 +7523,7 @@ loc_319A6:
     lea     ax, [bp+var_798]
     add     ax, bx
     push    ax
-    call    dword ptr word_40322
+    call    dword ptr spritefunc
     add     sp, 0Ah
 loc_319C7:
     pop     di
@@ -8238,9 +8238,9 @@ locret_31F38:
     push    di
     mov     byte ptr [bp-0Ah], 1
     mov     ax, 5C9Ch
-    mov     word_40322, ax
+    mov     spritefunc, ax
     mov     ax, 49A0h
-    mov     word_40326, ax
+    mov     imagefunc, ax
     jmp     short loc_31F6E
     db 144
     push    bp
@@ -8250,9 +8250,9 @@ locret_31F38:
     push    di
     mov     byte ptr [bp-0Ah], 0
     mov     ax, 5C9Ch
-    mov     word_40322, ax
+    mov     spritefunc, ax
     mov     ax, 49A0h
-    mov     word_40326, ax
+    mov     imagefunc, ax
 loc_31F6E:
     lea     si, [bp+0Ah]
     mov     [bp-6], si
@@ -8296,7 +8296,7 @@ loc_31FC8:
     mov     ax, [bp+6]
     mov     [bp+di+6], ax
     push    di
-    call    dword ptr word_40326
+    call    dword ptr imagefunc
     add     sp, 2
     pop     di
     pop     si
@@ -8400,7 +8400,7 @@ loc_320A9:
     mov     si, [bp-6]
     mov     di, [si]
     push    di
-    call    dword ptr word_40326
+    call    dword ptr imagefunc
     add     sp, 2
 loc_320B6:
     pop     di
@@ -8475,7 +8475,7 @@ loc_32132:
     lea     ax, [bp-798h]
     add     ax, bx
     push    ax
-    call    dword ptr word_40322
+    call    dword ptr spritefunc
     add     sp, 0Ah
 loc_32153:
     pop     di
@@ -8944,7 +8944,7 @@ loc_324EC:
     mov     ds, ax
     lea     ax, aWindowReleased; "Window Released Out of Order\r\n"
     push    ax
-    call    far ptr sub_2EA2A
+    call    far ptr fatal_error
     push    bp
     mov     bp, sp
     sub     sp, 6
@@ -9027,7 +9027,7 @@ loc_32570:
     mov     ax, 4C72h
     push    [bp+arg_0]
     push    ax
-    call    far ptr sub_2EA2A
+    call    far ptr fatal_error
 loc_3259E:
     mov     bx, [bp+var_2]
     mov     ah, 3Eh
@@ -9521,9 +9521,9 @@ loc_328A8:
     mov     ax, [bp+arg_4]
     mov     [bp+arg_2], ax
     mov     ax, 6176h
-    mov     word_40322, ax
+    mov     spritefunc, ax
     mov     ax, 13BEh
-    mov     word_40326, ax
+    mov     imagefunc, ax
     jmp     loc_3180A
     push    bp
     mov     bp, sp
@@ -14807,7 +14807,7 @@ make_wnd_sprite proc far
     push    ax
     mov     ax, 541Ch
     push    ax
-    call    sub_31248
+    call    alloc_respages
     add     sp, 4
     mov     [bp+var_2], dx
     mov     ds, dx
@@ -14866,7 +14866,7 @@ loc_34CD6:
     mov     ds, ax
     mov     ax, 5428h
     push    ax
-    call    far ptr sub_2EA2A
+    call    far ptr fatal_error
     ; align 2
     db 144
 off_34CE4     dw offset byte_34CE6
@@ -18496,7 +18496,7 @@ sub_35AF6 proc far
     pop     bp
     retf
 sub_35AF6 endp
-sub_35B14 proc far
+set_sprite2_as_1 proc far
 
     mov     ax, seg seg012
     push    ax
@@ -18507,7 +18507,7 @@ sub_35B14 proc far
     retf
     ; align 2
     db 0
-sub_35B14 endp
+set_sprite2_as_1 endp
 sub_35B26 proc far
      s = byte ptr 0
      r = byte ptr 2

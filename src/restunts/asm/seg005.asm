@@ -2163,7 +2163,7 @@ loc_22E09:
     push    word ptr [bp+var_C]
     call    sub_33EB4
     add     sp, 8
-    call    sub_35B14
+    call    set_sprite2_as_1
     les     bx, [bp+var_C]
     mov     ax, es:[bx+0Ah]
     mov     word_45DBA, ax
@@ -3874,7 +3874,7 @@ loc_23FB8:
     mov     al, byte ptr [bp+var_44]
     mov     byte_3E9DB, al
 loc_23FDA:
-    call    sub_35B14
+    call    set_sprite2_as_1
     cmp     byte_46436, 0
     jz      short loc_23FEE
     mov     al, byte_44346

@@ -207,7 +207,7 @@ loc_3AAA8:
     push    ax
     mov     ax, 5487h
     push    ax
-    call    sub_31248
+    call    alloc_respages
     add     sp, 4
     mov     word ptr [bp+var_10], ax
     mov     word ptr [bp+var_10+2], dx
@@ -266,7 +266,7 @@ loc_3AB83:
     push    ax
     mov     ax, 5498h
     push    ax
-    call    sub_31248
+    call    alloc_respages
     add     sp, 4
     mov     word ptr [bp+var_10], ax
     mov     word ptr [bp+var_10+2], dx
@@ -307,7 +307,7 @@ loc_3ABF3:
     push    [bp+var_7E]
     lea     ax, [bp+var_7C]
     push    ax
-    call    sub_31248
+    call    alloc_respages
     add     sp, 4
     mov     word ptr [bp+var_10], ax
     mov     word ptr [bp+var_10+2], dx

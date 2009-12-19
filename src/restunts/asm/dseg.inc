@@ -1,4 +1,4 @@
-dseg segment byte public 'DATA' use16
+dseg segment byte public 'STUNTSD' use16
     extrn byte_3B770:byte
     extrn word_3B772:word
     extrn word_3B774:word
@@ -415,6 +415,7 @@ dseg segment byte public 'DATA' use16
     extrn dword_3F0BC:dword
     extrn word_3F1C2:word
     extrn word_3F1C4:word
+    extrn exitlistfuncs:word
     extrn word_3F7D8:word
     extrn byte_3F85A:byte
     extrn dword_3F874:dword
@@ -488,28 +489,30 @@ dseg segment byte public 'DATA' use16
     extrn aSFileError:byte
     extrn aSNotPackedFile:byte
     extrn aSInvalidPackTy:byte
-    extrn aLocateshape4_4:byte
+    extrn aLocateshape4_4sShapeNotF:byte
+    extrn aLocatesound4_4sSoundNotF:byte
+    extrn aReservememoryOutOfMemory:byte
     extrn aReservememoryO:byte
     extrn aMemoryManagerB:byte
     extrn aResizememoryCa:byte
     extrn aResizememoryNo:byte
     extrn word_3FF82:word
     extrn word_3FF84:word
-    extrn word_3FF86:word
+    extrn resmaxsize:word
     extrn word_3FF88:word
     extrn word_3FF8A:word
-    extrn asc_40088:byte
-    extrn word_40310:word
-    extrn word_40312:word
-    extrn word_40314:word
-    extrn word_40316:word
+    extrn resources:RESOURCE
+    extrn resptr1:word
+    extrn resptr2:word
+    extrn resendptr1:word
+    extrn resendptr2:word
     extrn word_40318:word
-    extrn word_4031A:word
-    extrn word_4031C:word
+    extrn mousehorscale:word
+    extrn showmouse:word
     extrn word_4031E:word
     extrn word_40320:word
-    extrn word_40322:word
-    extrn word_40326:word
+    extrn spritefunc:word
+    extrn imagefunc:word
     extrn byte_4032A:byte
     extrn byte_4032B:byte
     extrn byte_4032C:byte

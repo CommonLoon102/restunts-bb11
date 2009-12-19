@@ -413,7 +413,7 @@ loc_26E61:
 loc_26EE4:
     mov     ax, 339Ch
     push    ax
-    call    far ptr sub_2EA2A
+    call    far ptr fatal_error
     pop     bx
 loc_26EEE:
     pop     si

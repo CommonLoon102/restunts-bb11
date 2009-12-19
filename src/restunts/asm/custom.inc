@@ -19,3 +19,8 @@ _TEXT ends
 
 extrn sin_fast:proc
 extrn cos_fast:proc
+
+extrn check_pathdrive:proc
+;extrn fatal_error:proc
+;extrn alloc_respages:proc
+

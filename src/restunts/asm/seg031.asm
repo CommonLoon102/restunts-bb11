@@ -398,7 +398,7 @@ loc_3A0D9:
     add     sp, 4
     push    cs
     call    near ptr sub_3A2C0
-    call    sub_35B14
+    call    set_sprite2_as_1
     mov     ax, 78h ; 'x'
     push    ax
     sub     ax, ax
@@ -783,7 +783,7 @@ alloc_resbytes proc far
     inc     ax
     push    ax
     push    [bp+arg_0]
-    call    sub_31248
+    call    alloc_respages
     add     sp, 4
     pop     bp
     retf

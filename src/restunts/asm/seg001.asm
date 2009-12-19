@@ -7006,6 +7006,7 @@ loc_186B7:
     mov     si, [bp+arg_4]
     shl     si, 1
     mov     bx, [bp+arg_0]
+loc_186C2:
     sub     ax, [bx+si+54h]
     jmp     loc_187A2
 loc_186C8:

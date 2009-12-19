@@ -73,7 +73,7 @@ sub_3A4B6 proc far
     mov     bp, sp
     sub     sp, 0Ah
     push    si
-    call    sub_35B14
+    call    set_sprite2_as_1
     mov     ax, [bp+arg_A]
     mov     word_42A18, ax
     mov     ax, [bp+arg_C]

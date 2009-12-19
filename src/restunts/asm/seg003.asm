@@ -6914,6 +6914,7 @@ sub_1DEA6 proc far
     sub     ax, ax
     push    ax
     mov     ax, 0A46h
+loc_1DEC4:
     push    ax
     push    [bp+arg_6]
     push    [bp+arg_8]

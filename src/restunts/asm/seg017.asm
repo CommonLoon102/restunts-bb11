@@ -108,12 +108,12 @@ sub_368D2 proc far
     jz      short loc_36955
     cmp     [bp+arg_0], 140h
     jnz     short loc_36928
-    mov     word_4031A, 1
+    mov     mousehorscale, 1
     jmp     short loc_3692E
     ; align 2
     db 144
 loc_36928:
-    mov     word_4031A, 0
+    mov     mousehorscale, 0
 loc_3692E:
     mov     ax, [bp+arg_2]
     dec     ax
@@ -152,7 +152,7 @@ sub_3695C proc far
     mov     bp, sp
     mov     word_4498A, 7
     mov     ax, [bp+arg_0]
-    mov     cl, byte ptr word_4031A
+    mov     cl, byte ptr mousehorscale
     shl     ax, cl
     mov     word_4498E, ax
     mov     ax, [bp+arg_4]
@@ -192,7 +192,7 @@ sub_3695C proc far
     mov     ax, word_4498C
     mov     word_45D7C, ax
     mov     ax, word_4498E
-    mov     cl, byte ptr word_4031A
+    mov     cl, byte ptr mousehorscale
     shr     ax, cl
     mov     word_44D3C, ax
     mov     ax, word_44990
@@ -201,10 +201,10 @@ sub_3695C proc far
     retf
     ; align 2
     db 144
-    inc     word_4031C
-    cmp     word_4031C, 1
+    inc     showmouse
+    cmp     showmouse, 1
     jl      short locret_36A0C
-    mov     word_4031C, 1
+    mov     showmouse, 1
     mov     word_4498A, 1
     mov     ax, 921Ah
     push    ax
@@ -217,7 +217,7 @@ locret_36A0C:
     retf
     ; align 2
     db 144
-    dec     word_4031C
+    dec     showmouse
     jnz     short locret_36A2B
     mov     word_4498A, 2
     mov     ax, 921Ah
@@ -241,7 +241,7 @@ sub_36A2C proc far
     mov     word_4498A, 4
     mov     ax, [bp+arg_0]
     mov     word_44D3C, ax
-    mov     cl, byte ptr word_4031A
+    mov     cl, byte ptr mousehorscale
     shl     ax, cl
     mov     word_4498E, ax
     mov     ax, [bp+arg_2]
@@ -279,7 +279,7 @@ sub_36A60 proc far
     mov     [bx], ax
     mov     bx, [bp+arg_2]
     mov     ax, word_4498E
-    mov     cl, byte ptr word_4031A
+    mov     cl, byte ptr mousehorscale
     shr     ax, cl
     mov     [bx], ax
     mov     bx, [bp+arg_4]
@@ -291,7 +291,7 @@ sub_36A60 proc far
     mov     bp, sp
     mov     word_4498A, 7
     mov     ax, [bp+6]
-    mov     cl, byte ptr word_4031A
+    mov     cl, byte ptr mousehorscale
     sar     ax, cl
     mov     word_4498E, ax
     mov     ax, [bp+8]

@@ -21,3 +21,9 @@ x dw ?
 y dw ?
 z dw ?
 ends
+RESOURCE struc
+resname db 12 dup (?)
+ressize dw ?
+resofs dw ?
+resunk dw ?
+ends

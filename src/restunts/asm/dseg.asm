@@ -43,7 +43,7 @@ nosmart
     include seg038.inc
     include seg039.inc
     include seg041.inc
-dseg segment byte public 'DATA' use16
+dseg segment byte public 'STUNTSD' use16
     assume cs:dseg
     assume es:nothing, ss:nothing, ds:dseg
     public byte_3B770
@@ -462,6 +462,7 @@ dseg segment byte public 'DATA' use16
     public dword_3F0BC
     public word_3F1C2
     public word_3F1C4
+    public exitlistfuncs
     public word_3F7D8
     public byte_3F85A
     public dword_3F874
@@ -535,28 +536,30 @@ dseg segment byte public 'DATA' use16
     public aSFileError
     public aSNotPackedFile
     public aSInvalidPackTy
-    public aLocateshape4_4
+    public aLocateshape4_4sShapeNotF
+    public aLocatesound4_4sSoundNotF
+    public aReservememoryOutOfMemory
     public aReservememoryO
     public aMemoryManagerB
     public aResizememoryCa
     public aResizememoryNo
     public word_3FF82
     public word_3FF84
-    public word_3FF86
+    public resmaxsize
     public word_3FF88
     public word_3FF8A
-    public asc_40088
-    public word_40310
-    public word_40312
-    public word_40314
-    public word_40316
+    public resources
+    public resptr1
+    public resptr2
+    public resendptr1
+    public resendptr2
     public word_40318
-    public word_4031A
-    public word_4031C
+    public mousehorscale
+    public showmouse
     public word_4031E
     public word_40320
-    public word_40322
-    public word_40326
+    public spritefunc
+    public imagefunc
     public byte_4032A
     public byte_4032B
     public byte_4032C
@@ -17413,50 +17416,28 @@ word_3F1C4     dw 0
     db 49
     db 49
     db 49
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
+exitlistfuncs     dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
     db 69
     db 88
     db 73
@@ -19181,7 +19162,7 @@ aSInvalidPackTy     db 37
     db 13
     db 0
     db 0
-aLocateshape4_4     db 108
+aLocateshape4_4sShapeNotF     db 108
     db 111
     db 99
     db 97
@@ -19219,7 +19200,7 @@ aLocateshape4_4     db 108
     db 68
     db 13
     db 10
-    db 108
+aLocatesound4_4sSoundNotF     db 108
     db 111
     db 99
     db 97
@@ -19257,7 +19238,7 @@ aLocateshape4_4     db 108
     db 68
     db 13
     db 10
-    db 114
+aReservememoryOutOfMemory     db 114
     db 101
     db 115
     db 101
@@ -19509,10 +19490,10 @@ aResizememoryNo     db 114
     db 0
 word_3FF82     dw 0
 word_3FF84     dw 0
-word_3FF86     dw 0
+resmaxsize     dw 0
 word_3FF88     dw 0
 word_3FF8A     dw 0
-    db 32
+resources     db 32
     db 32
     db 32
     db 32
@@ -19756,14 +19737,15 @@ word_3FF8A     dw 0
     db 32
     db 32
     db 32
-    dw 8224
+    db 32
+    db 32
     db 0
     db 0
     db 0
     db 0
     db 0
     db 0
-asc_40088     db 32
+    db 32
     db 32
     db 32
     db 32
@@ -20411,18 +20393,18 @@ asc_40088     db 32
     db 0
     db 1
     db 0
-word_40310     dw 18460
-word_40312     dw 18460
-word_40314     dw 19342
-word_40316     dw 19342
+resptr1     dw offset resources
+resptr2     dw offset resources
+resendptr1     dw offset resources.resname+372h
+resendptr2     dw offset resources.resname+372h
 word_40318     dw 0
-word_4031A     dw 0
-word_4031C     dw 0
+mousehorscale     dw 0
+showmouse     dw 0
 word_4031E     dw 0
 word_40320     dw 0
-word_40322     dw 0
+spritefunc     dw 0
     dw seg seg012
-word_40326     dw 0
+imagefunc     dw 0
     dw seg seg012
 byte_4032A     db 0
 byte_4032B     db 0

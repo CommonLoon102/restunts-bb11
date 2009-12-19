@@ -216,7 +216,7 @@ loc_27506:
     mov     cx, 0Fh
     repne movsw
     pop     si
-    call    sub_35B14
+    call    set_sprite2_as_1
     push    [bp+arg_4]
     push    [bp+arg_0]
     mov     bl, byte_3B8FC
@@ -515,7 +515,7 @@ loc_277A5:
     ; align 2
     db 144
 loc_277F6:
-    call    sub_35B14
+    call    set_sprite2_as_1
     push    [bp+var_2A]
     push    [bp+var_2C]
     push    [bp+var_2E]
@@ -2973,7 +2973,7 @@ sub_28DC8 proc far
     push    ax
     call    sub_3260E
     add     sp, 2
-    call    sub_35B14
+    call    set_sprite2_as_1
     les     bx, dword_455C8
     push    word ptr es:[bx+2]
     push    word ptr es:[bx]
@@ -3006,7 +3006,7 @@ sub_28E04 proc far
     push    ax
     call    sub_3260E
     add     sp, 2
-    call    sub_35B14
+    call    set_sprite2_as_1
     push    word_461CE
     push    si
     les     bx, dword_455C8

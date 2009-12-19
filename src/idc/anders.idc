@@ -39,13 +39,21 @@ static GetMemberTypeString(funcframe, memberofs) {
 	if (isStruct(flags)) return GetStrucName(GetMemberStrId(funcframe, memberofs));
 }
 
+// TODO: GetTypeString is only used by PrintExtrns(), it could/should be reorganized to support arrays, "extrn symbolname[50]:typename"
 static GetTypeString(flags, ea) {
 	if (isByte(flags)) return "byte";
 	if (isUnknown(flags)) return "byte";
 	if (isASCII(flags)) return "byte";
 	if (isWord(flags)) return "word";
 	if (isDwrd(flags)) return "dword";
-	if (isStruct(flags)) return GuessType(ea);	// would this work for all types?
+	if (isStruct(flags)) return CleanTypeName(GuessType(ea));	// would this work for all types?
+}
+
+static CleanTypeName(typename) {
+	auto ls;
+	ls = FirstIndexOf(typename, "[");
+	if (ls == -1) return typename;
+	return substr(typename, 0, ls);
 }
 
 static NextNotTail2(ea, maxea) {
@@ -598,7 +606,9 @@ static PortFuncName(labelname) {
 //		labelname == "_flushall" ||
 //		labelname == "_abort" ||
 		labelname == "sin_fast" ||
-		labelname == "cos_fast"
+		labelname == "cos_fast" ||
+		
+		labelname == "check_pathdrive"
 	)
 		return labelname + "2";
 	return labelname;
@@ -662,7 +672,7 @@ static PrintSegDecl(f, ea) {
 	else if (segtype == SEG_BSS)
 		fprintf(f, "%s segment byte public 'STACK' use16\n", SegName(ea)); 
 	else 
-		fprintf(f, "%s segment byte public 'DATA' use16\n", SegName(ea)); 
+		fprintf(f, "%s segment byte public 'STUNTSD' use16\n", SegName(ea)); 
 
 }
 
@@ -682,7 +692,7 @@ static PrintSegInc(segstart, segend) {
 }
 
 static PrintStruct(f, id) {
-	auto memberofs, membername, memberflag, strucsize;
+	auto memberofs, membername, memberflag, membersize, strucsize;
 	fprintf(f, "%s struc\n", GetStrucName(id));
 
 	strucsize = GetStrucSize(id);
@@ -698,7 +708,12 @@ static PrintStruct(f, id) {
 			fprintf(f, "%s dw ?\n", membername);
 		} else
 		if (isByte(memberflag) || isUnknown(memberflag) || isASCII(memberflag)) {
-			fprintf(f, "%s db ?\n", membername);
+			membersize = GetMemberSize(id, memberofs);
+			if (membersize == 1) {
+				fprintf(f, "%s db ?\n", membername);
+			} else {
+				fprintf(f, "%s db %i dup (?)\n", membername, membersize);
+			}
 		} else {
 			Message("TODO: unhandled data size\n");
 		}

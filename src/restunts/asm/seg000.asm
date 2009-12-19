@@ -6550,6 +6550,7 @@ loc_13F84:
     add     sp, 6
     sub     ax, ax
     push    ax
+loc_13FB2:
     push    word_407CA
     mov     ax, 32h ; '2'
     push    ax

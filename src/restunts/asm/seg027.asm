@@ -1283,7 +1283,7 @@ loc_37A35:
 loc_37A52:
     mov     ax, 4EDCh
     push    ax
-    call    far ptr sub_2EA2A
+    call    far ptr fatal_error
     add     sp, 2
     pop     si
     pop     di
@@ -1536,7 +1536,7 @@ loc_37C91:
     push    word ptr [bp+arg_0]
     mov     ax, 4F00h
     push    ax
-    call    far ptr sub_2EA2A
+    call    far ptr fatal_error
     add     sp, 4
 loc_37CAF:
     mov     ax, [bp+var_4]
@@ -1577,7 +1577,7 @@ sub_37CBA proc far
     push    word ptr [bp+arg_0]
     mov     ax, 4F1Ch
     push    ax
-    call    far ptr sub_2EA2A
+    call    far ptr fatal_error
     add     sp, 4
 loc_37CFA:
     mov     ax, [bp+var_4]
@@ -1634,7 +1634,7 @@ loc_37D51:
     push    word ptr [bp+arg_0]
     mov     ax, 4F3Dh
     push    ax
-    call    far ptr sub_2EA2A
+    call    far ptr fatal_error
     add     sp, 4
 loc_37D6F:
     mov     ax, [bp+var_4]
@@ -1664,7 +1664,7 @@ loc_37D6F:
     push    word ptr [bp+6]
     mov     ax, 4F5Bh
     push    ax
-    call    far ptr sub_2EA2A
+    call    far ptr fatal_error
     add     sp, 4
 loc_37DB2:
     mov     ax, [bp-4]
