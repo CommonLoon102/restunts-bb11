@@ -2,7 +2,7 @@ seg001 segment byte public 'STUNTSC' use16
     extrn sub_14712:proc
     extrn sub_14D6C:proc
     extrn sub_14DA2:proc
-    extrn sub_16898:proc
+    extrn init_carstate_from_simd:proc
     extrn init_game_state:proc
     extrn sub_16F3A:proc
     extrn sub_17008:proc

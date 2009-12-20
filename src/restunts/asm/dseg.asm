@@ -332,6 +332,7 @@ dseg segment byte public 'STUNTSD' use16
     public aExp1
     public aExp2
     public aExp3
+    public sceneshapes
     public aXX
     public word_3E590
     public byte_3E70C
@@ -845,7 +846,6 @@ dseg segment byte public 'STUNTSD' use16
     public word_438AA
     public dword_438E8
     public trackpos
-    public word_43924
     public word_43928
     public word_4392A
     public byte_4392C
@@ -859,7 +859,7 @@ dseg segment byte public 'STUNTSD' use16
     public byte_4393D
     public word_4393E
     public word_43940
-    public dword_43942
+    public trackdata3
     public word_4394A
     public word_4394C
     public word_4394E
@@ -911,10 +911,10 @@ dseg segment byte public 'STUNTSD' use16
     public word_4498E
     public word_44990
     public word_44998
-    public byte_4499A
+    public startcol2
     public byte_4499B
     public word_4499C
-    public byte_4499E
+    public startrow2
     public byte_4499F
     public word_449A0
     public word_449A2
@@ -940,7 +940,7 @@ dseg segment byte public 'STUNTSD' use16
     public word_449CC
     public byte_449CE
     public word_449D0
-    public dword_449D4
+    public trackdata17
     public byte_449DA
     public word_449DC
     public word_449DE
@@ -1039,7 +1039,7 @@ dseg segment byte public 'STUNTSD' use16
     public word_454D0
     public word_454D2
     public word_454D4
-    public dword_454D6
+    public trackdata18
     public byte_45514
     public track_angle
     public skybox_ptr1
@@ -1063,9 +1063,8 @@ dseg segment byte public 'STUNTSD' use16
     public word_45632
     public byte_45634
     public byte_45635
-    public dword_4563C
-    public word_45678
-    public word_45944
+    public trackdata21
+    public simd2
     public word_45946
     public byte_45948
     public byte_4594A
@@ -1084,7 +1083,7 @@ dseg segment byte public 'STUNTSD' use16
     public word_459D4
     public word_459D6
     public byte_459D8
-    public dword_459DA
+    public trackdata22
     public byte_459F1
     public word_459F2
     public word_459F4
@@ -9475,7 +9474,7 @@ aExp3     db 101
     db 0
     db 0
     db 12
-    db 0
+sceneshapes     db 0
     db 0
     db 0
     db 0
@@ -30433,64 +30432,35 @@ word_42CC0     dw 0
     db 0
 word_42CC4     dw 0
 trackpos2     dw 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
 word_42D02     dw 0
 word_42D04     dw 0
     db 0
@@ -33522,63 +33492,35 @@ word_438AA     dw 0
     db 0
 dword_438E8     dd 0
 trackpos     dw 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-word_43924     dw 0
-    db 0
-    db 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
 word_43928     dw 0
 word_4392A     dw 0
 byte_4392C     db 0
@@ -33593,7 +33535,7 @@ byte_4393C     db 0
 byte_4393D     db 0
 word_4393E     dw 0
 word_43940     dw 0
-dword_43942     dd 0
+trackdata3     dd 0
     db 0
     db 0
     db 0
@@ -37730,10 +37672,10 @@ word_44990     dw 0
     db 0
     db 0
 word_44998     dw 0
-byte_4499A     db 0
+startcol2     db 0
 byte_4499B     db 0
 word_4499C     dw 0
-byte_4499E     db 0
+startrow2     db 0
 byte_4499F     db 0
 word_449A0     dw 0
 word_449A2     dw 0
@@ -37774,7 +37716,7 @@ byte_449CE     db 0
 word_449D0     dw 0
     db 0
     db 0
-dword_449D4     dd 0
+trackdata17     dd 0
     db 0
     db 0
 byte_449DA     db 0
@@ -40480,7 +40422,7 @@ word_454CE     dw 0
 word_454D0     dw 0
 word_454D2     dw 0
 word_454D4     dw 0
-dword_454D6     dd 0
+trackdata18     dd 0
     db 0
     db 0
     db 0
@@ -40815,7 +40757,8 @@ byte_45635     db 0
     db 0
     db 0
     db 0
-dword_4563C     dd 0
+trackdata21     dd 0
+simd2     db 0
     db 0
     db 0
     db 0
@@ -40872,7 +40815,6 @@ dword_4563C     dd 0
     db 0
     db 0
     db 0
-word_45678     dw 0
     db 0
     db 0
     db 0
@@ -41587,7 +41529,9 @@ word_45678     dw 0
     db 0
     db 0
     db 0
-word_45944     dw 0
+    db 0
+    db 0
+    db 0
 word_45946     dw 0
 byte_45948     db 0
     db 0
@@ -41725,7 +41669,7 @@ word_459D4     dw 0
 word_459D6     dw 0
 byte_459D8     db 0
     db 0
-dword_459DA     dd 0
+trackdata22     dd 0
     db 0
     db 0
     db 0

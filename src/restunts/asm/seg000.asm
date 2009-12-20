@@ -187,8 +187,8 @@ loc_10086:
     mov     word ptr dword_438E8+2, dx
     add     [bp+var_4], 70Ah
     mov     ax, [bp+var_4]
-    mov     word ptr dword_43942, ax
-    mov     word ptr dword_43942+2, dx
+    mov     word ptr trackdata3, ax
+    mov     word ptr trackdata3+2, dx
     add     [bp+var_4], 70Ah
     mov     ax, [bp+var_4]
     mov     word ptr dword_44D3E, ax
@@ -243,12 +243,12 @@ loc_10086:
     mov     word ptr dword_4562E+2, dx
     add     [bp+var_4], 2EE0h
     mov     ax, [bp+var_4]
-    mov     word ptr dword_449D4, ax
-    mov     word ptr dword_449D4+2, dx
+    mov     word ptr trackdata17, ax
+    mov     word ptr trackdata17+2, dx
     add     [bp+var_4], 385h
     mov     ax, [bp+var_4]
-    mov     word ptr dword_454D6, ax
-    mov     word ptr dword_454D6+2, dx
+    mov     word ptr trackdata18, ax
+    mov     word ptr trackdata18+2, dx
     add     [bp+var_4], 385h
     mov     ax, [bp+var_4]
     mov     word ptr dword_45E56, ax
@@ -259,12 +259,12 @@ loc_10086:
     mov     word ptr dword_443F6+2, dx
     add     [bp+var_4], 7ACh
     mov     ax, [bp+var_4]
-    mov     word ptr dword_4563C, ax
-    mov     word ptr dword_4563C+2, dx
+    mov     word ptr trackdata21, ax
+    mov     word ptr trackdata21+2, dx
     add     [bp+var_4], 385h
     mov     ax, [bp+var_4]
-    mov     word ptr dword_459DA, ax
-    mov     word ptr dword_459DA+2, dx
+    mov     word ptr trackdata22, ax
+    mov     word ptr trackdata22+2, dx
     add     [bp+var_4], 385h
     mov     ax, [bp+var_4]
     mov     word_463DC, ax

@@ -284,6 +284,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn aExp1:byte
     extrn aExp2:byte
     extrn aExp3:byte
+    extrn sceneshapes:byte
     extrn aXX:byte
     extrn word_3E590:word
     extrn byte_3E70C:byte
@@ -797,7 +798,6 @@ dseg segment byte public 'STUNTSD' use16
     extrn word_438AA:word
     extrn dword_438E8:dword
     extrn trackpos:word
-    extrn word_43924:word
     extrn word_43928:word
     extrn word_4392A:word
     extrn byte_4392C:byte
@@ -811,7 +811,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn byte_4393D:byte
     extrn word_4393E:word
     extrn word_43940:word
-    extrn dword_43942:dword
+    extrn trackdata3:dword
     extrn word_4394A:word
     extrn word_4394C:word
     extrn word_4394E:word
@@ -863,10 +863,10 @@ dseg segment byte public 'STUNTSD' use16
     extrn word_4498E:word
     extrn word_44990:word
     extrn word_44998:word
-    extrn byte_4499A:byte
+    extrn startcol2:byte
     extrn byte_4499B:byte
     extrn word_4499C:word
-    extrn byte_4499E:byte
+    extrn startrow2:byte
     extrn byte_4499F:byte
     extrn word_449A0:word
     extrn word_449A2:word
@@ -892,7 +892,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn word_449CC:word
     extrn byte_449CE:byte
     extrn word_449D0:word
-    extrn dword_449D4:dword
+    extrn trackdata17:dword
     extrn byte_449DA:byte
     extrn word_449DC:word
     extrn word_449DE:word
@@ -991,7 +991,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn word_454D0:word
     extrn word_454D2:word
     extrn word_454D4:word
-    extrn dword_454D6:dword
+    extrn trackdata18:dword
     extrn byte_45514:byte
     extrn track_angle:word
     extrn skybox_ptr1:word
@@ -1015,9 +1015,8 @@ dseg segment byte public 'STUNTSD' use16
     extrn word_45632:word
     extrn byte_45634:byte
     extrn byte_45635:byte
-    extrn dword_4563C:dword
-    extrn word_45678:word
-    extrn word_45944:word
+    extrn trackdata21:dword
+    extrn simd2:SIMD
     extrn word_45946:word
     extrn byte_45948:byte
     extrn byte_4594A:byte
@@ -1036,7 +1035,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn word_459D4:word
     extrn word_459D6:word
     extrn byte_459D8:byte
-    extrn dword_459DA:dword
+    extrn trackdata22:dword
     extrn byte_459F1:byte
     extrn word_459F2:word
     extrn word_459F4:word

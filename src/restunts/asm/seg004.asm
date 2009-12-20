@@ -4288,9 +4288,9 @@ loc_20876:
     jmp     short loc_208BB
 loc_2087A:
     mov     al, [bp+var_3A4]
-    mov     byte_4499A, al
+    mov     startcol2, al
     mov     al, [bp+var_73A]
-    mov     byte_4499E, al
+    mov     startrow2, al
     cbw
     mov     bx, ax
     shl     bx, 1
@@ -4416,9 +4416,9 @@ loc_20997:
     inc     si
     cmp     si, 385h
     jl      short loc_20997
-    mov     al, byte_4499A
+    mov     al, startcol2
     mov     [bp+var_3A4], al
-    mov     al, byte_4499E
+    mov     al, startrow2
     mov     [bp+var_73A], al
     mov     ax, track_angle
     mov     [bp+var_8], ax
@@ -4750,11 +4750,11 @@ loc_20D0D:
 loc_20D0E:
     cmp     word_45DD0, di
     jle     short loc_20D48
-    les     bx, dword_4563C
+    les     bx, trackdata21
     mov     al, [bp+var_3A4]
     cmp     es:[bx+di], al
     jnz     short loc_20D0D
-    les     bx, dword_459DA
+    les     bx, trackdata22
     mov     al, [bp+var_73A]
     cmp     es:[bx+di], al
     jnz     short loc_20D0D
@@ -4950,9 +4950,9 @@ loc_20F20:
     ; align 2
     db 144
 loc_20F30:
-    mov     al, byte_4499A
+    mov     al, startcol2
     mov     byte_45D90, al
-    mov     al, byte_4499E
+    mov     al, startrow2
     mov     byte_45E16, al
     mov     ax, word_45DD0
     cwd
@@ -5018,26 +5018,26 @@ loc_20FE0:
     mov     ax, word_45DD0
     mov     [bp+var_3AC], ax
     mov     bx, ax
-    add     bx, word ptr dword_4563C
-    mov     es, word ptr dword_4563C+2
+    add     bx, word ptr trackdata21
+    mov     es, word ptr trackdata21+2
     mov     al, [bp+var_3A4]
     mov     es:[bx], al
     mov     bx, word_45DD0
-    add     bx, word ptr dword_459DA
-    mov     es, word ptr dword_459DA+2
+    add     bx, word ptr trackdata22
+    mov     es, word ptr trackdata22+2
     mov     al, [bp+var_73A]
     mov     es:[bx], al
     mov     bx, word_45DD0
-    add     bx, word ptr dword_454D6
-    mov     es, word ptr dword_454D6+2
+    add     bx, word ptr trackdata18
+    mov     es, word ptr trackdata18+2
     mov     al, [bp+var_73E]
     mov     cl, 4
     shl     al, cl
     add     al, [bp+var_742]
     mov     es:[bx], al
     mov     bx, word_45DD0
-    add     bx, word ptr dword_449D4
-    mov     es, word ptr dword_449D4+2
+    add     bx, word ptr trackdata17
+    mov     es, word ptr trackdata17+2
     mov     al, [bp+var_E]
     mov     es:[bx], al
     mov     al, [bp+var_E]
@@ -5705,13 +5705,13 @@ loc_21697:
     idiv    cx
     mov     [bp+var_A], ax
     mov     bx, ax
-    add     bx, word ptr dword_4563C
-    mov     es, word ptr dword_4563C+2
+    add     bx, word ptr trackdata21
+    mov     es, word ptr trackdata21+2
     mov     al, es:[bx]
     mov     [bp+var_3A4], al
     mov     bx, [bp+var_A]
-    add     bx, word ptr dword_459DA
-    mov     es, word ptr dword_459DA+2
+    add     bx, word ptr trackdata22
+    mov     es, word ptr trackdata22+2
     mov     al, es:[bx]
     mov     [bp+var_73A], al
     cbw
@@ -5730,21 +5730,21 @@ loc_21697:
     jnz     short loc_21687
     mov     byte ptr [bx], 1
     mov     bx, [bp+var_A]
-    add     bx, word ptr dword_449D4
-    mov     es, word ptr dword_449D4+2
+    add     bx, word ptr trackdata17
+    mov     es, word ptr trackdata17+2
     mov     al, es:[bx]
     sub     ah, ah
     mov     [bp+var_C], ax
     mov     bx, [bp+var_A]
-    add     bx, word ptr dword_454D6
-    mov     es, word ptr dword_454D6+2
+    add     bx, word ptr trackdata18
+    mov     es, word ptr trackdata18+2
     mov     al, es:[bx]
 smart
     and     al, 0Fh
 nosmart
     mov     [bp+var_742], al
     mov     bx, [bp+var_A]
-    add     bx, word ptr dword_454D6
+    add     bx, word ptr trackdata18
     mov     al, es:[bx]
 smart
     and     al, 10h
@@ -5944,7 +5944,7 @@ loc_218DA:
     shl     bx, 1
     add     bx, bp
     mov     [bx-0B20h], si
-    les     bx, dword_449D4
+    les     bx, trackdata17
     mov     bl, es:[bx+si]
     sub     bh, bh
     add     bx, word ptr [bp+var_A]
@@ -5993,8 +5993,8 @@ loc_21958:
     add     bx, bp
     mov     ax, [bx-0B20h]
     mov     bx, [bp+var_F30]
-    add     bx, word ptr dword_43942
-    mov     es, word ptr dword_43942+2
+    add     bx, word ptr trackdata3
+    mov     es, word ptr trackdata3+2
     mov     es:[bx], ax
     inc     di
 loc_21978:
@@ -6002,13 +6002,13 @@ loc_21978:
     jg      short loc_21958
     mov     bx, [bp+var_B28]
     shl     bx, 1
-    add     bx, word ptr dword_43942
-    mov     es, word ptr dword_43942+2
+    add     bx, word ptr trackdata3
+    mov     es, word ptr trackdata3+2
     mov     word ptr es:[bx], 0
     mov     bx, [bp+var_B28]
     shl     bx, 1
-    add     bx, word ptr dword_43942
-    mov     es, word ptr dword_43942+2
+    add     bx, word ptr trackdata3
+    mov     es, word ptr trackdata3+2
     mov     word ptr es:[bx+2], 1
 loc_219A5:
     cmp     [bp+var_B2A], 0

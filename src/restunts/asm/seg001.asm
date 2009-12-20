@@ -49,7 +49,7 @@ seg001 segment byte public 'STUNTSC' use16
     public sub_14712
     public sub_14D6C
     public sub_14DA2
-    public sub_16898
+    public init_carstate_from_simd
     public init_game_state
     public sub_16F3A
     public sub_17008
@@ -258,7 +258,7 @@ loc_14866:
     push    ax
     mov     bx, state.opponentstate.field_4A
     shl     bx, 1
-    les     di, dword_43942
+    les     di, trackdata3
     push    word ptr es:[bx+di]
     push    cs
     call    near ptr sub_18D60
@@ -268,7 +268,7 @@ loc_14866:
     inc     state.opponentstate.field_4A
     mov     bx, state.opponentstate.field_4A
     shl     bx, 1
-    les     di, dword_43942
+    les     di, trackdata3
     cmp     word ptr es:[bx+di], 0
     jnz     short loc_148AE
     inc     state.opponentstate.field_CD
@@ -517,7 +517,7 @@ loc_14AB1:
     push    ax
     mov     bx, state.opponentstate.field_4A
     shl     bx, 1
-    les     di, dword_43942
+    les     di, trackdata3
     push    word ptr es:[bx+di]
     push    cs
     call    near ptr sub_18D60
@@ -527,7 +527,7 @@ loc_14AB1:
     inc     state.opponentstate.field_4A
     mov     bx, state.opponentstate.field_4A
     shl     bx, 1
-    les     di, dword_43942
+    les     di, trackdata3
     cmp     word ptr es:[bx+di], 0
     jnz     short loc_14AFE
     inc     state.opponentstate.field_CD
@@ -746,7 +746,7 @@ loc_14CD7:
     jnz     short loc_14CE1
     jmp     loc_14D66
 loc_14CE1:
-    mov     al, byte_4499E
+    mov     al, startrow2
     cbw
     mov     bx, ax
     shl     bx, 1
@@ -769,7 +769,7 @@ loc_14CF9:
     call    scale_value
     add     sp, 4
     mov     si, ax
-    mov     al, byte_4499A
+    mov     al, startcol2
     cbw
     mov     bx, ax
     shl     bx, 1
@@ -3474,14 +3474,14 @@ loc_1667A:
     call    near ptr state_op_unk
     add     sp, 6
 loc_16710:
-    mov     al, byte_4499A
+    mov     al, startcol2
     cbw
     mov     di, ax
     cmp     [bp+var_FC], di
     jz      short loc_1671F
     jmp     loc_16840
 loc_1671F:
-    mov     al, byte_4499E
+    mov     al, startrow2
     cbw
     cmp     [bp+var_F8], ax
     jz      short loc_1672C
@@ -3519,7 +3519,7 @@ loc_1672C:
     call    scale_value
     add     sp, 4
     mov     cx, ax
-    mov     al, byte_4499E
+    mov     al, startrow2
     cbw
     mov     bx, ax
     shl     bx, 1
@@ -3552,7 +3552,7 @@ loc_1672C:
     call    scale_value
     add     sp, 4
     mov     cx, ax
-    mov     al, byte_4499A
+    mov     al, startcol2
     cbw
     mov     bx, ax
     shl     bx, 1
@@ -3569,7 +3569,7 @@ loc_1672C:
     call    scale_value
     add     sp, 4
     mov     cx, ax
-    mov     al, byte_4499E
+    mov     al, startrow2
     cbw
     mov     bx, ax
     shl     bx, 1
@@ -3627,7 +3627,7 @@ loc_16892:
     pop     bp
     retf
 sub_14DA2 endp
-sub_16898 proc far
+init_carstate_from_simd proc far
     var_E = word ptr -14
     var_C = word ptr -12
     var_A = word ptr -10
@@ -3877,7 +3877,7 @@ loc_16A37:
     retf
     ; align 2
     db 144
-sub_16898 endp
+init_carstate_from_simd endp
 init_game_state proc far
     var_A = word ptr -10
     var_8 = word ptr -8
@@ -3992,7 +3992,7 @@ loc_16BC5:
     add     sp, 4
     add     ax, [bp+var_A]
     mov     cx, ax
-    mov     al, byte_4499A
+    mov     al, startcol2
     cbw
     mov     dx, cx
     mov     cl, 0Ah
@@ -4028,7 +4028,7 @@ loc_16BC5:
     call    scale_value
     add     sp, 4
     mov     cx, ax
-    mov     al, byte_4499E
+    mov     al, startrow2
     cbw
     mov     bx, ax
     shl     bx, 1
@@ -4125,7 +4125,7 @@ loc_16BC5:
     mov     ax, track_angle
     neg     ax
     push    ax
-    mov     al, byte_4499E
+    mov     al, startrow2
     cbw
     mov     bx, ax
     shl     bx, 1
@@ -4154,7 +4154,7 @@ loc_16D88:
     jnz     short loc_16D88
     push    dx
     push    ax
-    mov     al, byte_4499A
+    mov     al, startcol2
     cbw
     mov     bx, ax
     shl     bx, 1
@@ -4177,7 +4177,7 @@ loc_16DA4:
     mov     ax, 8E76h
     push    ax
     push    cs
-    call    near ptr sub_16898
+    call    near ptr init_carstate_from_simd
     add     sp, 14h
     mov     state.field_2F2, si
     mov     ax, si
@@ -4185,11 +4185,11 @@ loc_16DA4:
     mov     state.field_45E, al
     mov     state.field_45B, al
     mov     state.field_45C, al
-    mov     al, byte_4499A
+    mov     al, startcol2
     cbw
     mov     state.field_2F6, ax
     mov     state.field_2F8, ax
-    mov     al, byte_4499E
+    mov     al, startrow2
     cbw
     mov     state.field_2FA, ax
     mov     state.field_2FC, ax
@@ -4257,7 +4257,7 @@ loc_16E0A:
     mov     ax, track_angle
     neg     ax
     push    ax
-    mov     al, byte_4499E
+    mov     al, startrow2
     cbw
     mov     bx, ax
     shl     bx, 1
@@ -4286,7 +4286,7 @@ loc_16EBF:
     jnz     short loc_16EBF
     push    dx
     push    ax
-    mov     al, byte_4499A
+    mov     al, startcol2
     cbw
     mov     bx, ax
     shl     bx, 1
@@ -4308,7 +4308,7 @@ loc_16EDB:
     mov     ax, 8F46h
     push    ax
     push    cs
-    call    near ptr sub_16898
+    call    near ptr init_carstate_from_simd
     add     sp, 14h
     cmp     opponent_index, 0
     jz      short loc_16F2F
@@ -4324,8 +4324,8 @@ loc_16EDB:
     push    ax
     mov     bx, state.opponentstate.field_4A
     shl     bx, 1
-    add     bx, word ptr dword_43942
-    mov     es, word ptr dword_43942+2
+    add     bx, word ptr trackdata3
+    mov     es, word ptr trackdata3+2
     push    word ptr es:[bx]
     push    cs
     call    near ptr sub_18D60
@@ -4576,7 +4576,7 @@ loc_1712E:
     jz      short loc_17138
     jmp     loc_171E1
 loc_17138:
-    mov     al, byte_4499E
+    mov     al, startrow2
     cbw
     mov     bx, ax
     shl     bx, 1
@@ -4599,7 +4599,7 @@ loc_17150:
     call    scale_value
     add     sp, 4
     mov     si, ax
-    mov     al, byte_4499A
+    mov     al, startcol2
     cbw
     mov     bx, ax
     shl     bx, 1
@@ -5293,7 +5293,7 @@ loc_17771:
     jnz     short loc_1777B
     jmp     loc_17810
 loc_1777B:
-    mov     al, byte_4499E
+    mov     al, startrow2
     cbw
     mov     bx, ax
     shl     bx, 1
@@ -5325,7 +5325,7 @@ loc_177AC:
     call    scale_value
     add     sp, 4
     mov     si, ax
-    mov     al, byte_4499A
+    mov     al, startcol2
     cbw
     mov     bx, ax
     shl     bx, 1
@@ -5515,13 +5515,13 @@ loc_17938:
     add     bx, bp
     mov     byte ptr [bx-5A2h], 1
     mov     bx, [bp+var_2]
-    add     bx, word ptr dword_459DA
-    mov     es, word ptr dword_459DA+2
+    add     bx, word ptr trackdata22
+    mov     es, word ptr trackdata22+2
     mov     al, es:[bx]
     mov     [bp+var_E], al
     mov     bx, [bp+var_2]
-    add     bx, word ptr dword_449D4
-    mov     es, word ptr dword_449D4+2
+    add     bx, word ptr trackdata17
+    mov     es, word ptr trackdata17+2
     mov     al, es:[bx]
     sub     ah, ah
     mov     bx, ax
@@ -5544,8 +5544,8 @@ loc_17986:
 loc_17989:
     mov     [bp+var_218], al
     mov     bx, [bp+var_2]
-    add     bx, word ptr dword_4563C
-    mov     es, word ptr dword_4563C+2
+    add     bx, word ptr trackdata21
+    mov     es, word ptr trackdata21+2
     mov     al, es:[bx]
     mov     [bp+var_C], al
     test    [bp+var_116], 2
@@ -7829,10 +7829,10 @@ sub_18D60 proc far
     push    di
     push    si
     mov     bx, [bp+arg_0]
-    les     si, dword_449D4
+    les     si, trackdata17
     mov     al, es:[bx+si]
     mov     [bp+var_2], al
-    les     si, dword_454D6
+    les     si, trackdata18
     mov     al, es:[bx+si]
 smart
     and     al, 0Fh
@@ -7851,7 +7851,7 @@ nosmart
     shl     ax, 1
     add     ax, cx
     shl     ax, 1
-    add     ax, 2098h
+    add     ax, offset sceneshapes
     mov     [bp+var_26], ax
     mov     bx, ax
     mov     ax, [bx]
@@ -7898,7 +7898,7 @@ smart
 nosmart
     mov     bl, [bp+var_16]
     sub     bh, bh
-    mov     al, [bx+si-6A20h]
+    mov     al, byte_44D50[bx+si]
     mov     bx, [bp+arg_6]
     mov     [bx], al
 loc_18E1A:
@@ -8008,10 +8008,10 @@ loc_18EF7:
     mov     [bp+var_1E], ax
 loc_18EFA:
     mov     bx, [bp+arg_0]
-    les     si, dword_4563C
+    les     si, trackdata21
     mov     al, es:[bx+si]
     mov     [bp+var_16], al
-    les     si, dword_459DA
+    les     si, trackdata22
     mov     al, es:[bx+si]
     mov     byte ptr [bp+var_1A], al
     cmp     [bp+var_A], 0FFFFh
@@ -8036,7 +8036,7 @@ loc_18F3B:
     mov     bl, byte ptr [bp+var_1A]
     sub     bh, bh
     shl     bx, 1
-    mov     si, [bx-7E84h]
+    mov     si, trackpos[bx]
     jmp     short loc_18FA7
     ; align 2
     db 144
@@ -8073,7 +8073,7 @@ loc_18F9C:
     mov     bl, byte ptr [bp+var_1A]
     sub     bh, bh
     shl     bx, 1
-    mov     si, [bx-55EAh]
+    mov     si, trackcenterpos[bx]
 loc_18FA7:
     add     [bp+var_8], si
     add     [bp+var_1E], si
@@ -8083,7 +8083,7 @@ loc_18FA7:
     mov     bl, [bp+var_16]
     sub     bh, bh
     shl     bx, 1
-    mov     si, [bx+7558h]
+    mov     si, (trackpos2+2)[bx]
     jmp     short loc_18FCF
     ; align 2
     db 144
@@ -8091,7 +8091,7 @@ loc_18FC4:
     mov     bl, [bp+var_16]
     sub     bh, bh
     shl     bx, 1
-    mov     si, [bx-599Eh]
+    mov     si, trackcenterpos2[bx]
 loc_18FCF:
     add     [bp+var_C], si
     add     [bp+var_22], si
@@ -8106,11 +8106,11 @@ loc_18FCF:
     sar     dx, 1
     rcr     ax, 1
     mov     bx, [bp+arg_2]
-    mov     [bx], ax
+    mov     [bx+VECTOR.x], ax
     cmp     [bp+var_A], 0FFFFh
     jnz     short loc_18FFE
     mov     bx, [bp+arg_2]
-    mov     word ptr [bx+2], 0FFFFh
+    mov     [bx+VECTOR.y], 0FFFFh
     jmp     short loc_19018
 loc_18FFE:
     mov     ax, [bp+var_20]
@@ -8124,7 +8124,7 @@ loc_18FFE:
     sar     dx, 1
     rcr     ax, 1
     mov     bx, [bp+arg_2]
-    mov     [bx+2], ax
+    mov     [bx+VECTOR.y], ax
 loc_19018:
     mov     ax, [bp+var_1E]
     cwd
@@ -8137,7 +8137,7 @@ loc_19018:
     sar     dx, 1
     rcr     ax, 1
     mov     bx, [bp+arg_2]
-    mov     [bx+4], ax
+    mov     [bx+VECTOR.z], ax
     mov     bx, [bp+arg_2]
     lea     di, [bx+6]
     lea     si, [bp+var_C]
@@ -8596,95 +8596,95 @@ init_plantrak proc far
     mov     state.field_3F5, 2
     mov     word_454C2, offset plan_memres
     mov     word_454C4, seg seg038
-    mov     byte_4499A, 1
-    mov     byte_4499E, 1Ch
-    les     bx, dword_449D4
+    mov     startcol2, 1
+    mov     startrow2, 1Ch
+    les     bx, trackdata17
     mov     byte ptr es:[bx], 7
-    les     bx, dword_4563C
+    les     bx, trackdata21
     mov     byte ptr es:[bx], 1
-    les     bx, dword_459DA
-    mov     al, byte_4499E
+    les     bx, trackdata22
+    mov     al, startrow2
     mov     es:[bx], al
-    les     bx, dword_454D6
+    les     bx, trackdata18
     mov     byte ptr es:[bx], 0
-    les     bx, dword_449D4
+    les     bx, trackdata17
     mov     byte ptr es:[bx+1], 6
-    les     bx, dword_4563C
+    les     bx, trackdata21
     mov     byte ptr es:[bx+1], 0
-    les     bx, dword_459DA
-    mov     al, byte_4499E
+    les     bx, trackdata22
+    mov     al, startrow2
     mov     es:[bx+1], al
-    les     bx, dword_454D6
+    les     bx, trackdata18
     mov     byte ptr es:[bx+1], 0
-    les     bx, dword_449D4
+    les     bx, trackdata17
     mov     byte ptr es:[bx+2], 8
-    les     bx, dword_4563C
+    les     bx, trackdata21
     mov     byte ptr es:[bx+2], 0
-    les     bx, dword_459DA
-    mov     al, byte_4499E
+    les     bx, trackdata22
+    mov     al, startrow2
     inc     al
     mov     es:[bx+2], al
-    les     bx, dword_454D6
+    les     bx, trackdata18
     mov     byte ptr es:[bx+2], 0
-    les     bx, dword_449D4
+    les     bx, trackdata17
     mov     byte ptr es:[bx+3], 9
-    les     bx, dword_4563C
+    les     bx, trackdata21
     mov     byte ptr es:[bx+3], 1
-    les     bx, dword_459DA
-    mov     al, byte_4499E
+    les     bx, trackdata22
+    mov     al, startrow2
     inc     al
     mov     es:[bx+3], al
-    les     bx, dword_454D6
+    les     bx, trackdata18
     mov     byte ptr es:[bx+3], 0
-    les     bx, dword_449D4
+    les     bx, trackdata17
     mov     byte ptr es:[bx+4], 7
-    les     bx, dword_4563C
+    les     bx, trackdata21
     mov     byte ptr es:[bx+4], 1
-    les     bx, dword_459DA
-    mov     al, byte_4499E
+    les     bx, trackdata22
+    mov     al, startrow2
     mov     es:[bx+4], al
-    les     bx, dword_454D6
+    les     bx, trackdata18
     mov     byte ptr es:[bx+4], 0
-    les     bx, dword_43942
+    les     bx, trackdata3
     mov     es:[bx], si
-    les     bx, dword_43942
+    les     bx, trackdata3
     mov     word ptr es:[bx+2], 1
-    les     bx, dword_43942
+    les     bx, trackdata3
     mov     word ptr es:[bx+4], 2
-    les     bx, dword_43942
+    les     bx, trackdata3
     mov     word ptr es:[bx+6], 3
-    les     bx, dword_43942
+    les     bx, trackdata3
     mov     word ptr es:[bx+8], 4
-    les     bx, dword_43942
+    les     bx, trackdata3
     mov     word ptr es:[bx+0Ah], 1
-    les     bx, dword_43942
+    les     bx, trackdata3
     mov     word ptr es:[bx+0Ch], 2
-    les     bx, dword_43942
+    les     bx, trackdata3
     mov     word ptr es:[bx+0Eh], 3
-    les     bx, dword_43942
+    les     bx, trackdata3
     mov     word ptr es:[bx+10h], 4
-    les     bx, dword_43942
+    les     bx, trackdata3
     mov     word ptr es:[bx+12h], 1
-    les     bx, dword_43942
+    les     bx, trackdata3
     mov     word ptr es:[bx+14h], 2
-    les     bx, dword_43942
+    les     bx, trackdata3
     mov     word ptr es:[bx+16h], 3
-    les     bx, dword_43942
+    les     bx, trackdata3
     mov     word ptr es:[bx+18h], 4
-    les     bx, dword_43942
+    les     bx, trackdata3
     mov     es:[bx+1Ah], si
-    les     bx, dword_43942
+    les     bx, trackdata3
     mov     word ptr es:[bx+1Ch], 1
-    les     bx, dword_43942
+    les     bx, trackdata3
     mov     word ptr es:[bx+1Eh], 2
-    les     bx, dword_43942
+    les     bx, trackdata3
     mov     word ptr es:[bx+20h], 3
-    les     bx, dword_43942
+    les     bx, trackdata3
     mov     es:[bx+22h], si
     mov     byte_44D50, 0C8h ; 'È'
     sub     ax, ax
     push    ax
-    mov     ax, word_43924
+    mov     ax, trackpos+38h
     add     ax, 12Eh
     cwd
     mov     cl, 6
@@ -8704,12 +8704,12 @@ loc_1958C:
     push    ax
     mov     ax, dx
     push    ax
-    mov     ax, 9ED0h
+    mov     ax, offset simd2
     push    ax
-    mov     ax, 8F46h
+    mov     ax, offset state.opponentstate
     push    ax
     push    cs
-    call    near ptr sub_16898
+    call    near ptr init_carstate_from_simd
     add     sp, 14h
     mov     ax, 911Dh
     push    ax
@@ -8721,7 +8721,7 @@ loc_1958C:
     push    ax
     mov     bx, state.opponentstate.field_4A
     shl     bx, 1
-    les     di, dword_43942
+    les     di, trackdata3
     push    word ptr es:[bx+di]
     push    cs
     call    near ptr sub_18D60
@@ -9653,7 +9653,7 @@ loc_19D36:
     pop     si
     mov     ax, word ptr dword_44D4A
     mov     dx, word ptr dword_44D4A+2
-    mov     word_45944, ax
+    mov     simd2.trackdata5_ptr, ax
     mov     word_45946, dx
     sub     si, si
 loc_19D6A:
@@ -9664,7 +9664,7 @@ loc_19D6A:
     cwd
     push    dx
     push    ax
-    mov     ax, word_45678
+    mov     ax, simd2.aero_resistance
     cwd
     push    dx
     push    ax

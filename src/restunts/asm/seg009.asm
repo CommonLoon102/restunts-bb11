@@ -1719,13 +1719,13 @@ loc_2B2E7:
     mov     [bp+var_18], ax
 loc_2B2EE:
     mov     bx, [bp+var_18]
-    add     bx, word ptr dword_4563C
-    mov     es, word ptr dword_4563C+2
+    add     bx, word ptr trackdata21
+    mov     es, word ptr trackdata21+2
     mov     al, es:[bx]
     mov     [bp+var_18E], al
     mov     bx, [bp+var_18]
-    add     bx, word ptr dword_459DA
-    mov     es, word ptr dword_459DA+2
+    add     bx, word ptr trackdata22
+    mov     es, word ptr trackdata22+2
     mov     al, es:[bx]
     mov     [bp+var_180], al
     cbw
@@ -1861,10 +1861,10 @@ loc_2B3EA:
     mov     [bp+var_180], al
     jmp     short loc_2B491
 loc_2B448:
-    les     bx, dword_4563C
+    les     bx, trackdata21
     mov     al, es:[bx]
     mov     [bp+var_18E], al
-    les     bx, dword_459DA
+    les     bx, trackdata22
     mov     al, es:[bx]
     mov     [bp+var_180], al
     mov     al, [bp+var_190]

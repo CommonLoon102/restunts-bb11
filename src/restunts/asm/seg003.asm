@@ -2326,10 +2326,10 @@ loc_1B43C:
     jz      short loc_1B449
     sub     [bp+var_A4], 400h
 loc_1B449:
-    mov     al, byte_4499A
+    mov     al, startcol2
     cmp     [bp+var_F6], al
     jnz     short loc_1B464
-    mov     al, byte_4499E
+    mov     al, startrow2
     cmp     [bp+var_102], al
     jnz     short loc_1B464
     mov     [bp+var_12A], 0
@@ -3125,14 +3125,14 @@ loc_1BC89:
     jz      short loc_1BC93
     jmp     loc_1BEAA
 loc_1BC93:
-    mov     al, byte_4499A
+    mov     al, startcol2
     cmp     [bp+var_F6], al
     jz      short loc_1BCA5
     cmp     [bp+var_100], al
     jz      short loc_1BCA5
     jmp     loc_1BEAA
 loc_1BCA5:
-    mov     al, byte_4499E
+    mov     al, startrow2
     cmp     [bp+var_102], al
     jz      short loc_1BCB7
     cmp     [bp+var_12C], al
@@ -3213,7 +3213,7 @@ loc_1BCB7:
     call    scale_value
     add     sp, 4
     mov     cx, ax
-    mov     al, byte_4499A
+    mov     al, startcol2
     cbw
     mov     bx, ax
     shl     bx, 1
@@ -3252,7 +3252,7 @@ loc_1BCB7:
     call    scale_value
     add     sp, 4
     mov     cx, ax
-    mov     al, byte_4499E
+    mov     al, startrow2
     cbw
     mov     bx, ax
     shl     bx, 1
