@@ -461,6 +461,7 @@ dseg segment byte public 'STUNTSD' use16
     public word_3EA3C
     public word_3EA4C
     public word_3EA4E
+    public unk_3EAA3
     public word_3EB02
     public rect_unk4
     public word_3EB2A
@@ -538,12 +539,18 @@ dseg segment byte public 'STUNTSD' use16
     public word_3F0A2
     public word_3F0A4
     public word_3F0A6
+    public unk_3F0AE
     public dword_3F0BC
     public word_3F1C2
     public word_3F1C4
+    public unk_3F587
     public exitlistfuncs
     public aExitListOverflow
-    public word_3F7D8
+    public aSFileError_1
+    public foundfile
+    public foundfileptr
+    public dtatransbuffer
+    public foundfilepath
     public byte_3F85A
     public dword_3F874
     public word_3F878
@@ -709,6 +716,8 @@ dseg segment byte public 'STUNTSD' use16
     public word_40B10
     public audiodriverstring
     public byte_40B86
+    public aMcgaWindow
+    public aWindowdefOutOfRowTableSpa
     public shapenums
     public a_pvs
     public aUnflip_0
@@ -829,6 +838,7 @@ dseg segment byte public 'STUNTSD' use16
     public dword_42838
     public word_4283C
     public word_4283E
+    public unk_42846
     public word_42898
     public off_4289A
     public word_4289C
@@ -994,10 +1004,7 @@ dseg segment byte public 'STUNTSD' use16
     public word_44984
     public word_44986
     public word_44988
-    public word_4498A
-    public word_4498C
-    public word_4498E
-    public word_44990
+    public regs_x86
     public word_44998
     public startcol2
     public byte_4499B
@@ -14229,7 +14236,7 @@ word_3EA4E     dw 193
     db 0
     db 1
     db 0
-    db 0
+unk_3EAA3     db 0
     db 128
     db 0
     db 0
@@ -15704,7 +15711,7 @@ word_3F0A6     dw 0
     db 0
     db 0
     db 0
-    db 0
+unk_3F0AE     db 0
     db 0
     db 0
     db 0
@@ -16940,7 +16947,7 @@ word_3F1C4     dw 0
     db 30
     db 30
     db 31
-    db 31
+unk_3F587     db 31
     db 32
     db 32
     db 33
@@ -17397,7 +17404,7 @@ aExitListOverflow     db 69
     db 10
     db 0
     db 0
-    db 37
+aSFileError_1     db 37
     db 115
     db 32
     db 70
@@ -17411,6 +17418,7 @@ aExitListOverflow     db 69
     db 79
     db 82
     db 0
+foundfile     db 0
     db 0
     db 0
     db 0
@@ -17510,8 +17518,9 @@ aExitListOverflow     db 69
     db 0
     db 0
     db 0
+foundfileptr     dw 0
+dtatransbuffer     db 0
     db 0
-word_3F7D8     dw 0
     db 0
     db 0
     db 0
@@ -17540,9 +17549,7 @@ word_3F7D8     dw 0
     db 0
     db 0
     db 0
-    db 0
-    db 0
-    db 0
+foundfilepath     db 0
     db 0
     db 0
     db 0
@@ -22172,7 +22179,7 @@ byte_40B86     db 0
     db 0
     db 0
     db 0
-    db 77
+aMcgaWindow     db 77
     db 67
     db 71
     db 65
@@ -22184,7 +22191,7 @@ byte_40B86     db 0
     db 79
     db 87
     db 0
-    db 119
+aWindowdefOutOfRowTableSpa     db 119
     db 105
     db 110
     db 100
@@ -29397,7 +29404,7 @@ word_4283E     dw 0
     db 0
     db 0
     db 0
-    db 0
+unk_42846     db 0
     db 0
     db 0
     db 0
@@ -37650,16 +37657,13 @@ word_44960     dw 0
 word_44984     dw 0
 word_44986     dw 0
 word_44988     dw 0
-word_4498A     dw 0
-word_4498C     dw 0
-word_4498E     dw 0
-word_44990     dw 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
+regs_x86     dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
 word_44998     dw 0
 startcol2     db 0
 byte_4499B     db 0

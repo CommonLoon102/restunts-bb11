@@ -184,7 +184,7 @@ ts_flags db ?
 ts_material db ?
 ends
 SHAPEINFO struc
-si_unk1 dw ?
+si_unk1 db 2 dup (?)
 si_unk2 dw ?
 si_unk3 dw ?
 si_unk4 dw ?

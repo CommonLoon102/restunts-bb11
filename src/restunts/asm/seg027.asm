@@ -1252,7 +1252,7 @@ loc_379B8:
     add     sp, 4
     push    [bp+var_2]
     push    [bp+var_4]
-    call    sub_31641
+    call    mmgr_op_unk2
     add     sp, 4
     mov     byte_40639, 64h ; 'd'
     mov     ax, offset unk_40636
@@ -1343,7 +1343,7 @@ loc_37AC1:
     call    [bp+var_4]
     push    word ptr audiodriverbinary+2
     push    word ptr audiodriverbinary
-    call    sub_31641
+    call    mmgr_op_unk2
     add     sp, 4
     sub     ax, ax
     mov     word ptr audiodriverbinary+2, ax
@@ -2031,7 +2031,7 @@ loc_380CE:
     push    ax
     push    word ptr [bp+0Ch]
     push    word ptr [bp+0Ah]
-    call    sub_30F92
+    call    locate_shape_0
     add     sp, 6
     mov     [bp-12h], ax
     mov     [bp-10h], dx

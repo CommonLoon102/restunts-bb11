@@ -47,6 +47,9 @@ seg016 segment byte public 'STUNTSC' use16
     assume cs:seg016
     assume es:nothing, ss:nothing, ds:dseg
     public locate_many_resources
+    public nopsub_367E4
+    public nopsub_36826
+    public nopsub_36868
     ; align 2
     db 144
 locate_many_resources proc far
@@ -66,7 +69,7 @@ loc_367B8:
     push    [bp+arg_4]
     push    [bp+arg_2]
     push    [bp+arg_0]
-    call    locate_shape
+    call    locate_shape_1
     add     sp, 6
     mov     bx, [bp+arg_6]
     add     [bp+arg_6], 4
@@ -81,90 +84,120 @@ loc_367D9:
     retf
     ; align 2
     db 144
+locate_many_resources endp
+nopsub_367E4 proc far
+    var_2 = word ptr -2
+     s = byte ptr 0
+     r = byte ptr 2
+    arg_0 = word ptr 6
+    arg_2 = word ptr 8
+    arg_4 = word ptr 10
+    arg_6 = word ptr 12
+
     push    bp
     mov     bp, sp
     sub     sp, 2
     push    si
-    mov     word ptr [bp-2], 0
+    mov     [bp+var_2], 0
     jmp     short loc_36819
 loc_367F2:
-    push    word ptr [bp+0Ah]
-    push    word ptr [bp+8]
-    push    word ptr [bp+6]
-    call    sub_30F92
+    push    [bp+arg_4]
+    push    [bp+arg_2]
+    push    [bp+arg_0]
+    call    locate_shape_0
     add     sp, 6
-    mov     bx, [bp-2]
-    inc     word ptr [bp-2]
+    mov     bx, [bp+var_2]
+    inc     [bp+var_2]
     shl     bx, 1
     shl     bx, 1
-    mov     si, [bp+0Ch]
+    mov     si, [bp+arg_6]
     mov     [bx+si], ax
     mov     [bx+si+2], dx
-    add     word ptr [bp+0Ah], 4
+    add     [bp+arg_4], 4
 loc_36819:
-    mov     bx, [bp+0Ah]
+    mov     bx, [bp+arg_4]
     cmp     byte ptr [bx], 0
     jnz     short loc_367F2
     pop     si
     mov     sp, bp
     pop     bp
     retf
+nopsub_367E4 endp
+nopsub_36826 proc far
+    var_2 = word ptr -2
+     s = byte ptr 0
+     r = byte ptr 2
+    arg_0 = word ptr 6
+    arg_2 = word ptr 8
+    arg_4 = word ptr 10
+    arg_6 = word ptr 12
+
     push    bp
     mov     bp, sp
     sub     sp, 2
     push    si
-    mov     word ptr [bp-2], 0
+    mov     [bp+var_2], 0
     jmp     short loc_3685B
 loc_36834:
-    push    word ptr [bp+0Ah]
-    push    word ptr [bp+8]
-    push    word ptr [bp+6]
+    push    [bp+arg_4]
+    push    [bp+arg_2]
+    push    [bp+arg_0]
     call    locate_sound
     add     sp, 6
-    mov     bx, [bp-2]
-    inc     word ptr [bp-2]
+    mov     bx, [bp+var_2]
+    inc     [bp+var_2]
     shl     bx, 1
     shl     bx, 1
-    mov     si, [bp+0Ch]
+    mov     si, [bp+arg_6]
     mov     [bx+si], ax
     mov     [bx+si+2], dx
-    add     word ptr [bp+0Ah], 4
+    add     [bp+arg_4], 4
 loc_3685B:
-    mov     bx, [bp+0Ah]
+    mov     bx, [bp+arg_4]
     cmp     byte ptr [bx], 0
     jnz     short loc_36834
     pop     si
     mov     sp, bp
     pop     bp
     retf
+nopsub_36826 endp
+nopsub_36868 proc far
+    var_2 = word ptr -2
+     s = byte ptr 0
+     r = byte ptr 2
+    arg_0 = word ptr 6
+    arg_2 = word ptr 8
+    arg_4 = word ptr 10
+    arg_6 = word ptr 12
+
     push    bp
     mov     bp, sp
     sub     sp, 2
     push    si
-    mov     word ptr [bp-2], 0
+    mov     [bp+var_2], 0
     jmp     short loc_3689D
 loc_36876:
-    push    word ptr [bp+0Ah]
-    push    word ptr [bp+8]
-    push    word ptr [bp+6]
-    call    sub_30F92
+    push    [bp+arg_4]
+    push    [bp+arg_2]
+    push    [bp+arg_0]
+    call    locate_shape_0
     add     sp, 6
-    mov     bx, [bp-2]
-    inc     word ptr [bp-2]
+    mov     bx, [bp+var_2]
+    inc     [bp+var_2]
     shl     bx, 1
     shl     bx, 1
-    mov     si, [bp+0Ch]
+    mov     si, [bp+arg_6]
     mov     [bx+si], ax
     mov     [bx+si+2], dx
-    add     word ptr [bp+0Ah], 4
+    add     [bp+arg_4], 4
 loc_3689D:
-    mov     bx, [bp+0Ah]
+    mov     bx, [bp+arg_4]
     cmp     byte ptr [bx], 0
     jnz     short loc_36876
     pop     si
     mov     sp, bp
     pop     bp
     retf
-locate_many_resources endp
+nopsub_36868 endp
 seg016 ends
 end

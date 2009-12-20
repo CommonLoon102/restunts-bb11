@@ -286,7 +286,7 @@ loc_2A451:
     push    ax
     push    [bp+var_28]
     push    [bp+var_2A]
-    call    locate_shape
+    call    locate_shape_1
     add     sp, 6
     mov     bx, [bp+var_194]
     mov     [bx+6AE8h], ax
@@ -313,7 +313,7 @@ loc_2A451:
     push    ax
     push    [bp+var_28]
     push    [bp+var_2A]
-    call    locate_shape
+    call    locate_shape_1
     add     sp, 6
     mov     bx, [bp+var_196]
     mov     [bx+6DD4h], ax
@@ -2901,7 +2901,7 @@ loc_2BE44:
     add     sp, 4
     push    [bp+var_28]
     push    [bp+var_2A]
-    call    unload_resource2
+    call    mmgr_free
     add     sp, 4
     pop     si
     pop     di

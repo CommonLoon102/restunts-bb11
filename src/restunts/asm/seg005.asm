@@ -729,7 +729,7 @@ loc_22257:
     push    ax
     mov     ax, 8B78h
     push    ax
-    call    sub_36A60
+    call    mouse_get_state
     add     sp, 6
     test    byte ptr word_442E8, 3
     jnz     short loc_2227E
@@ -1278,7 +1278,7 @@ loc_22736:
     push    ax
     mov     ax, 8B78h
     push    ax
-    call    sub_36A60
+    call    mouse_get_state
     add     sp, 6
     mov     di, word_4616C
     sub     di, 0A0h ; ' '
@@ -2141,7 +2141,7 @@ loc_22E09:
     push    ax
     push    word_40D7E
     push    word_40D7C
-    call    locate_shape
+    call    locate_shape_1
     add     sp, 6
     mov     word ptr [bp+var_C], ax
     mov     word ptr [bp+var_C+2], dx
@@ -2171,7 +2171,7 @@ loc_22E09:
     push    ax
     push    word_40D7E
     push    word_40D7C
-    call    sub_30F92
+    call    locate_shape_0
     add     sp, 6
     or      dx, ax
     jz      short loc_22F12
@@ -2179,7 +2179,7 @@ loc_22E09:
     push    ax
     push    word_40D7E
     push    word_40D7C
-    call    locate_shape
+    call    locate_shape_1
     add     sp, 6
     mov     bx, ax
     mov     es, dx
@@ -2193,7 +2193,7 @@ loc_22F18:
     push    ax
     push    word_40D7E
     push    word_40D7C
-    call    sub_30F92
+    call    locate_shape_0
     add     sp, 6
     mov     word ptr [bp+var_C], ax
     mov     word ptr [bp+var_C+2], dx
@@ -2209,7 +2209,7 @@ loc_22F18:
     push    ax
     push    word_40D7E
     push    word_40D7C
-    call    locate_shape
+    call    locate_shape_1
     add     sp, 6
     mov     word_454A0, ax
     mov     word_454A2, dx
@@ -2231,7 +2231,7 @@ loc_22F76:
     push    ax
     push    word_40D7E
     push    word_40D7C
-    call    sub_30F92
+    call    locate_shape_0
     add     sp, 6
     or      dx, ax
     jz      short loc_22FB1
@@ -2239,7 +2239,7 @@ loc_22F76:
     push    ax
     push    word_40D7E
     push    word_40D7C
-    call    locate_shape
+    call    locate_shape_1
     add     sp, 6
     push    dx
     push    ax
@@ -2250,7 +2250,7 @@ loc_22FB1:
     push    ax
     push    word_40D7E
     push    word_40D7C
-    call    locate_shape
+    call    locate_shape_1
     add     sp, 6
     push    dx
     push    ax
@@ -2937,11 +2937,11 @@ loc_236AC:
     add     sp, 4
     push    word_40D86
     push    word_40D84
-    call    unload_resource2
+    call    mmgr_free
     add     sp, 4
     push    word_40D7E
     push    word_40D7C
-    call    unload_resource2
+    call    mmgr_free
     add     sp, 4
     pop     si
     pop     di
@@ -3226,7 +3226,7 @@ loc_239D4:
     jnz     short loc_23A15
     push    word_45D0A
     push    word_45D08
-    call    unload_resource2
+    call    mmgr_free
     add     sp, 4
     mov     ax, 3
     push    ax
@@ -3236,16 +3236,16 @@ loc_239D4:
 loc_23A15:
     push    word_459F6
     push    word_459F4
-    call    unload_resource2
+    call    mmgr_free
     add     sp, 4
     call    remove_audiodriver_timer
     push    word_45E10
     push    word_45E0E
-    call    unload_resource2
+    call    mmgr_free
     add     sp, 4
     push    word_454A8
     push    word_454A6
-    call    unload_resource2
+    call    mmgr_free
     add     sp, 4
     call    sub_20438
     retf
@@ -3267,13 +3267,13 @@ sub_23A50 proc far
     push    ax
     mov     ax, 0Fh
     push    ax
-    call    sub_3695C
+    call    mouse_set_minmax
     add     sp, 8
     mov     ax, 64h ; 'd'
     push    ax
     mov     ax, 0A0h ; ' '
     push    ax
-    call    sub_36A2C
+    call    mouse_set_position
     add     sp, 4
     pop     bp
     retf
@@ -3285,7 +3285,7 @@ loc_23A82:
     sub     ax, ax
     push    ax
     push    ax
-    call    sub_3695C
+    call    mouse_set_minmax
     add     sp, 8
     pop     bp
     retf

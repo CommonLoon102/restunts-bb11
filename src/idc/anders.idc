@@ -620,8 +620,8 @@ static PortFuncName(labelname) {
 		labelname == "sin_fast" ||
 		labelname == "cos_fast" ||
 		
-		labelname == "check_pathdrive" ||
-		labelname == "alloc_respages"
+		labelname == "mmgr_path_to_name" ||
+		labelname == "mmgr_alloc_pages"
 	)
 		return labelname + "2";
 	return labelname;

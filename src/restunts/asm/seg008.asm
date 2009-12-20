@@ -2336,7 +2336,7 @@ loc_288A9:
     push    ax
     mov     ax, 8B78h
     push    ax
-    call    sub_36A60
+    call    mouse_get_state
     add     sp, 6
     mov     ax, word_4616C
     cmp     word_3EBB8, ax
@@ -2482,7 +2482,7 @@ loc_289F8:
     push    ax              ; char *
     call    _strcpy
     add     sp, 4
-    mov     ax, 3456h
+    mov     ax, offset a_res; ".res"
     push    ax
     lea     ax, [bp+var_54]
     push    ax              ; char *
@@ -2504,7 +2504,7 @@ loc_289F8:
     push    ax              ; char *
     call    _strcpy
     add     sp, 4
-    mov     ax, 345Bh
+    mov     ax, offset a_pre; ".pre"
     push    ax
     lea     ax, [bp+var_54]
     push    ax              ; char *
@@ -2541,7 +2541,7 @@ unload_resource proc far
     mov     bp, sp
     push    [bp+arg_2]
     push    [bp+arg_0]
-    call    unload_resource2
+    call    mmgr_free
     add     sp, 4
     pop     bp
     retf
@@ -2560,7 +2560,7 @@ locate_shape_alt proc far
     push    [bp+arg_4]
     push    [bp+arg_2]
     push    [bp+arg_0]
-    call    locate_shape
+    call    locate_shape_1
     add     sp, 6
     pop     bp
     retf
@@ -2592,7 +2592,7 @@ locate_text_res proc far
     push    ax
     push    [bp+arg_2]
     push    [bp+arg_0]
-    call    locate_shape
+    call    locate_shape_1
     mov     sp, bp
     pop     bp
     retf
@@ -4310,11 +4310,11 @@ unload_audio_res proc far
     add     sp, 2
     push    word_44362
     push    word_44360
-    call    unload_resource2
+    call    mmgr_free
     add     sp, 4
     push    word_44A7E
     push    word_44A7C
-    call    unload_resource2
+    call    mmgr_free
     add     sp, 4
     mov     byte_3B8F3, 0
     retf

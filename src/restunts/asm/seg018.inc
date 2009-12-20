@@ -1,4 +1,4 @@
 seg018 segment byte public 'STUNTSC' use16
-    extrn sub_36AF4:proc
-    extrn sub_36B05:proc
+    extrn kb_shift_checking1:proc
+    extrn kb_shift_checking2:proc
 seg018 ends

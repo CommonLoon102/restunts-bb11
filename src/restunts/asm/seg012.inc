@@ -10,6 +10,10 @@ seg012 segment byte public 'STUNTSC' use16
     extrn sub_2EB56:proc
     extrn loc_2EB62
     extrn off_2ECB9:word
+    extrn word_2ECF8:word
+    extrn word_2EDBD:word
+    extrn word_2EE82:word
+    extrn word_2F02B:word
     extrn sub_2F314:proc
     extrn sub_2F334:proc
     extrn word_2F354:word
@@ -21,6 +25,7 @@ seg012 segment byte public 'STUNTSC' use16
     extrn sub_2F424:proc
     extrn sub_2F436:proc
     extrn word_2F448:word
+    extrn off_2F44A:word
     extrn off_2F4AC:word
     extrn word_2F4AE:word
     extrn word_2F4B2:word
@@ -125,25 +130,25 @@ seg012 segment byte public 'STUNTSC' use16
     extrn load_pvs:proc
     extrn decompress_fileres:proc
     extrn _alt_decompress
-    extrn sub_30F92:proc
-    extrn locate_shape:proc
+    extrn locate_shape_0:proc
+    extrn locate_shape_1:proc
     extrn locate_sound:proc
-    extrn alloc_resmem:proc
+    extrn mmgr_alloc_resmem:proc
     extrn loc_310CD
-    extrn alloc_resmem_a000:proc
-    extrn get_res_ofs_diff:proc
-    extrn sub_3118D:proc
+    extrn mmgr_alloc_a000:proc
+    extrn mmgr_get_ofs_diff:proc
+    extrn mmgr_op_unk3:proc
     extrn sub_311D5:proc
-    extrn check_pathdrive2:proc
-    extrn alloc_respages2:proc
-    extrn sub_312FD:proc
-    extrn get_res_unk:proc
-    extrn unload_resource2:proc
+    extrn mmgr_path_to_name2:proc
+    extrn mmgr_alloc_pages2:proc
+    extrn mmgr_find_free:proc
+    extrn mmgr_get_unk:proc
+    extrn mmgr_free:proc
     extrn loc_31498
-    extrn sub_31641:proc
-    extrn get_res_size:proc
-    extrn resize_memory:proc
-    extrn sub_31732:proc
+    extrn mmgr_op_unk2:proc
+    extrn mmgr_get_chunk_size:proc
+    extrn mmgr_resize_memory:proc
+    extrn mmgr_op_unk:proc
     extrn sub_317B2:proc
     extrn sub_317C1:proc
     extrn loc_317CE
@@ -261,7 +266,7 @@ seg012 segment byte public 'STUNTSC' use16
     extrn loc_34799
     extrn sub_347DC:proc
     extrn word_34942:word
-    extrn word_3494A:word
+    extrn off_3494A:word
     extrn word_3494C:word
     extrn word_3494E:word
     extrn word_34950:word
@@ -272,17 +277,19 @@ seg012 segment byte public 'STUNTSC' use16
     extrn word_3495C:word
     extrn unk_3495E:byte
     extrn word_34960:word
-    extrn word_34968:word
+    extrn off_34968:word
+    extrn lineoffsets:word
     extrn sub_34B0C:proc
     extrn sub_34B7C:proc
     extrn make_wnd_sprite:proc
-    extrn off_34CE4:word
-    extrn byte_34CE6:byte
+    extrn next_wnd_def:word
+    extrn wnd_defs:byte
     extrn set_sprite1:proc
     extrn set_sprite2_as_1:proc
     extrn sub_35B26:proc
     extrn sub_35B76:proc
     extrn sub_35C4E:proc
+    extrn incnums:byte
     extrn sub_35DC8:proc
     extrn sub_35DE6:proc
     extrn sub_35E08:proc

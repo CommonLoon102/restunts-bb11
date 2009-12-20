@@ -20,7 +20,7 @@ _TEXT ends
 extrn sin_fast:proc
 extrn cos_fast:proc
 
-extrn check_pathdrive:proc
+extrn mmgr_path_to_name:proc
 ;extrn fatal_error:proc
-extrn alloc_respages:proc
+extrn mmgr_alloc_pages:proc
 

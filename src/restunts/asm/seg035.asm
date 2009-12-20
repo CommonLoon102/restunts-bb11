@@ -97,10 +97,10 @@ load_2dshape_res proc far
     mov     bp, sp
     sub     sp, 0Ah
     push    [bp+arg_0]
-    call    check_pathdrive
+    call    mmgr_path_to_name
     add     sp, 2
     push    ax
-    call    get_res_unk
+    call    mmgr_get_unk
     add     sp, 2
     mov     [bp+var_8], ax
     mov     [bp+var_6], dx
@@ -130,12 +130,12 @@ loc_3AD2A:
 loc_3AD4A:
     push    [bp+var_2]
     push    [bp+var_4]
-    call    get_res_size
+    call    mmgr_get_chunk_size
     add     sp, 4
     mov     [bp+var_A], ax
     push    ax
     push    [bp+arg_0]
-    call    alloc_respages
+    call    mmgr_alloc_pages
     add     sp, 4
     mov     [bp+var_8], ax
     mov     [bp+var_6], dx
@@ -148,11 +148,11 @@ loc_3AD4A:
     add     sp, 8
     push    [bp+var_2]
     push    [bp+var_4]
-    call    sub_31641
+    call    mmgr_op_unk2
     add     sp, 4
     push    [bp+var_6]
     push    [bp+var_8]
-    call    sub_31732
+    call    mmgr_op_unk
     add     sp, 4
     mov     sp, bp
     pop     bp
@@ -461,7 +461,7 @@ loc_3B074:
     push    [bp+var_34]
     push    [bp+arg_6]
     push    [bp+arg_4]
-    call    resize_memory
+    call    mmgr_resize_memory
     add     sp, 6
     pop     si
     pop     di

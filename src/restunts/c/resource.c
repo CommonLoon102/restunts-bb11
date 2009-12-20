@@ -25,7 +25,7 @@ extern void fatal_error();
 		pop dx\
 	}
 
-char* check_pathdrive(char* filename) {
+char* mmgr_path_to_name(char* filename) {
 	char* c;
 	char* result;
 
@@ -41,7 +41,7 @@ char* check_pathdrive(char* filename) {
 	return result;
 }
 
-void alloc_respages(unsigned short arg_0, unsigned short arg_2) {
+void mmgr_alloc_pages(unsigned short arg_0, unsigned short arg_2) {
 	__asm {
     push    si
     push    di
@@ -56,7 +56,7 @@ loc_31262:
     mov     resptr2, di
     push    [arg_0]
 //call    check_pathdrive
-call    far ptr check_pathdrive
+call    far ptr mmgr_path_to_name
     add     sp, 2
     mov     si, ax
     xor     bx, bx

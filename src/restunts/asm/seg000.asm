@@ -559,7 +559,7 @@ loc_104FC:
     jl      short loc_104FC
     push    word_45A22
     push    word_45A20
-    call    sub_31641
+    call    mmgr_op_unk2
     add     sp, 4
     cmp     byte_44AE2, 0
     jnz     short loc_10536
@@ -597,7 +597,7 @@ loc_10575:
     call    audio_stop_unk
     call    audiodrv_atexit
     call    sub_30883
-    call    sub_36AF4
+    call    kb_shift_checking1
     call    set_bios_mode7
     pop     si
     pop     di
@@ -649,7 +649,7 @@ run_intro_looped proc far
     add     sp, 4
     push    word_45E14
     push    word_45E12
-    call    unload_resource2
+    call    mmgr_free
     add     sp, 4
     or      si, si
     jnz     short loc_1068E
@@ -693,7 +693,7 @@ run_intro_looped proc far
     add     sp, 4
     push    word_45E14
     push    word_45E12
-    call    unload_resource2
+    call    mmgr_free
     add     sp, 4
 loc_1068E:
     call    unload_audio_res
@@ -722,7 +722,7 @@ sub_1069C proc far
     push    ax
     push    word_45E14
     push    word_45E12
-    call    locate_shape
+    call    locate_shape_1
     add     sp, 6
     mov     bx, ax
     mov     es, dx
@@ -737,7 +737,7 @@ loc_106E4:
     push    ax
     push    word_45E14
     push    word_45E12
-    call    locate_shape
+    call    locate_shape_1
     add     sp, 6
     push    dx
     push    ax
@@ -765,7 +765,7 @@ loc_106E4:
     push    ax
     push    word_45E14
     push    word_45E12
-    call    locate_shape
+    call    locate_shape_1
     add     sp, 6
     push    dx
     push    ax
@@ -1577,7 +1577,7 @@ run_menu proc far
     push    ax
     push    [bp+var_2]
     push    [bp+var_4]
-    call    locate_shape
+    call    locate_shape_1
     add     sp, 6
     push    dx
     push    ax
@@ -1585,7 +1585,7 @@ run_menu proc far
     add     sp, 4
     push    [bp+var_2]
     push    [bp+var_4]
-    call    unload_resource2
+    call    mmgr_free
     add     sp, 4
 loc_10FB9:
     mov     al, [bp+var_C]
@@ -3436,7 +3436,7 @@ loc_11FC8:
     push    ax
     push    [bp+var_34]
     push    [bp+var_36]
-    call    locate_shape
+    call    locate_shape_1
     add     sp, 6
     push    dx
     push    ax
@@ -3959,7 +3959,7 @@ loc_125FE:
     push    ax
     push    [bp+var_34]
     push    [bp+var_36]
-    call    locate_shape
+    call    locate_shape_1
     add     sp, 6
     push    dx
     push    ax
@@ -4106,7 +4106,7 @@ loc_127A6:
 loc_127BC:
     push    [bp+var_34]
     push    [bp+var_36]
-    call    unload_resource2
+    call    mmgr_free
     add     sp, 4
     call    sub_28DB6
     mov     al, [bp+var_F0]
@@ -4385,7 +4385,7 @@ loc_12A4D:
     push    ax
     push    word_44A02
     push    word_44A00
-    call    locate_shape
+    call    locate_shape_1
     add     sp, 6
     push    dx
     push    ax
@@ -4538,7 +4538,7 @@ loc_12A4D:
     push    ax
     push    word_44A02
     push    word_44A00
-    call    locate_shape
+    call    locate_shape_1
     add     sp, 6
     push    dx
     push    ax
@@ -4807,7 +4807,7 @@ loc_12EA7:
 loc_12ECB:
     push    word_44A02
     push    word_44A00
-    call    unload_resource2
+    call    mmgr_free
     add     sp, 4
     push    word_455CE
     push    word_455CC
@@ -5980,7 +5980,7 @@ loc_1398D:
 loc_139A6:
     push    word ptr [bp+var_4A+2]
     push    word ptr [bp+var_4A]
-    call    sub_31641
+    call    mmgr_op_unk2
     add     sp, 4
     jmp     short loc_139BA
 loc_139B6:
@@ -6044,7 +6044,7 @@ loc_13A4B:
     push    ax
     push    [bp+var_1A]
     push    [bp+var_1C]
-    call    locate_shape
+    call    locate_shape_1
     add     sp, 6
     mov     word ptr [bp+var_56], ax
     mov     word ptr [bp+var_56+2], dx
@@ -6091,7 +6091,7 @@ loc_13A4B:
     push    ax
     push    [bp+var_1A]
     push    [bp+var_1C]
-    call    locate_shape
+    call    locate_shape_1
     add     sp, 6
     push    dx
     push    ax
@@ -6395,7 +6395,7 @@ loc_13DDF:
     push    ax
     push    [bp+var_1A]
     push    [bp+var_1C]
-    call    locate_shape
+    call    locate_shape_1
     add     sp, 6
     mov     word ptr [bp+var_56], ax
     mov     word ptr [bp+var_56+2], dx
@@ -6818,7 +6818,7 @@ loc_1424D:
     push    ax
     push    [bp+var_1A]
     push    [bp+var_1C]
-    call    locate_shape
+    call    locate_shape_1
     add     sp, 6
     mov     word ptr [bp+var_56], ax
     mov     word ptr [bp+var_56+2], dx
@@ -6873,7 +6873,7 @@ loc_1430E:
     push    ax
     push    [bp+var_1A]
     push    [bp+var_1C]
-    call    locate_shape
+    call    locate_shape_1
     add     sp, 6
     push    dx
     push    ax
@@ -6978,7 +6978,7 @@ loc_1440C:
     jz      short loc_14425
     push    [bp+var_1A]
     push    [bp+var_1C]
-    call    sub_31641
+    call    mmgr_op_unk2
     add     sp, 4
 loc_14425:
     cmp     byte_46436, 0

@@ -57,6 +57,10 @@ seg012 segment byte public 'STUNTSC' use16
     public sub_2EB56
     public loc_2EB62
     public off_2ECB9
+    public word_2ECF8
+    public word_2EDBD
+    public word_2EE82
+    public word_2F02B
     public sub_2F314
     public sub_2F334
     public word_2F354
@@ -68,6 +72,7 @@ seg012 segment byte public 'STUNTSC' use16
     public sub_2F424
     public sub_2F436
     public word_2F448
+    public off_2F44A
     public off_2F4AC
     public word_2F4AE
     public word_2F4B2
@@ -172,25 +177,25 @@ seg012 segment byte public 'STUNTSC' use16
     public load_pvs
     public decompress_fileres
     public _alt_decompress
-    public sub_30F92
-    public locate_shape
+    public locate_shape_0
+    public locate_shape_1
     public locate_sound
-    public alloc_resmem
+    public mmgr_alloc_resmem
     public loc_310CD
-    public alloc_resmem_a000
-    public get_res_ofs_diff
-    public sub_3118D
+    public mmgr_alloc_a000
+    public mmgr_get_ofs_diff
+    public mmgr_op_unk3
     public sub_311D5
-    public check_pathdrive2
-    public alloc_respages2
-    public sub_312FD
-    public get_res_unk
-    public unload_resource2
+    public mmgr_path_to_name2
+    public mmgr_alloc_pages2
+    public mmgr_find_free
+    public mmgr_get_unk
+    public mmgr_free
     public loc_31498
-    public sub_31641
-    public get_res_size
-    public resize_memory
-    public sub_31732
+    public mmgr_op_unk2
+    public mmgr_get_chunk_size
+    public mmgr_resize_memory
+    public mmgr_op_unk
     public sub_317B2
     public sub_317C1
     public loc_317CE
@@ -308,7 +313,7 @@ seg012 segment byte public 'STUNTSC' use16
     public loc_34799
     public sub_347DC
     public word_34942
-    public word_3494A
+    public off_3494A
     public word_3494C
     public word_3494E
     public word_34950
@@ -319,17 +324,19 @@ seg012 segment byte public 'STUNTSC' use16
     public word_3495C
     public unk_3495E
     public word_34960
-    public word_34968
+    public off_34968
+    public lineoffsets
     public sub_34B0C
     public sub_34B7C
     public make_wnd_sprite
-    public off_34CE4
-    public byte_34CE6
+    public next_wnd_def
+    public wnd_defs
     public set_sprite1
     public set_sprite2_as_1
     public sub_35B26
     public sub_35B76
     public sub_35C4E
+    public incnums
     public sub_35DC8
     public sub_35DE6
     public sub_35E08
@@ -651,7 +658,7 @@ loc_2EC4F:
     jge     short loc_2EC69
     mov     bx, cx
     shl     bx, 1
-    mov     bx, cs:[bx+0A2Ah]
+    mov     bx, cs:off_2F44A[bx]
     add     bx, dx
     add     bx, dx
     mov     ax, cs:[bx]
@@ -730,8 +737,8 @@ loc_2ECE1:
     sub     cx, ax
     mov     bl, [si+12h]
     shl     bx, 1
-    jmp     word ptr cs:[bx+2D8h]
-    dw 0
+    jmp     cs:word_2ECF8[bx]
+word_2ECF8     dw 0
     dw 0
     dw offset loc_2ED0A
     dw offset loc_2ED10
@@ -812,8 +819,8 @@ loc_2EDA5:
     sub     cx, dx
     mov     bl, [si+12h]
     shl     bx, 1
-    jmp     word ptr cs:[bx+39Dh]
-    dw 0
+    jmp     cs:word_2EDBD[bx]
+word_2EDBD     dw 0
     dw 0
     dw offset loc_2EDCF
     dw offset loc_2EDD5
@@ -900,8 +907,8 @@ loc_2EE53:
 loc_2EE78:
     mov     bl, [si+12h]
     shl     bx, 1
-    jmp     word ptr cs:[bx+462h]
-    dw 0
+    jmp     cs:word_2EE82[bx]
+word_2EE82     dw 0
     dw 0
     dw offset loc_2EF98
     dw offset loc_2EE94
@@ -1078,8 +1085,8 @@ loc_2F01F:
     mov     bl, [si+12h]
     xor     bh, bh
     shl     bx, 1
-    jmp     word ptr cs:[bx+60Bh]
-    dw 0
+    jmp     cs:word_2F02B[bx]
+word_2F02B     dw 0
     dw 0
     dw offset loc_2F03D
     dw offset loc_2F043
@@ -1588,7 +1595,7 @@ sub_2F436 proc far
     mov     [bp+var_A], 1
     jmp     short loc_2F3FD
 word_2F448     dw 50
-    dw offset off_2F4AC
+off_2F44A     dw offset off_2F4AC
     dw offset off_2F4AC
     dw offset off_2F4AC
     dw offset word_2F4AE
@@ -3943,7 +3950,7 @@ loc_2FEB3:
     pop     bp
     retf
 loc_2FECD:
-    mov     ax, 3FF6h
+    mov     ax, offset aSFileError_1; "%s FILE ERROR"
     mov     bx, ss
     mov     ds, bx
     push    [bp+arg_0]
@@ -4086,7 +4093,7 @@ loc_2FFB5:
     pop     bp
     retf
 loc_2FFC4:
-    mov     ax, 3FF6h
+    mov     ax, offset aSFileError_1; "%s FILE ERROR"
     mov     bx, ss
     mov     ds, bx
     push    [bp+arg_0]
@@ -4103,7 +4110,7 @@ find_filename proc far
     push    ds
     push    si
     push    di
-    mov     dx, 406Ah
+    mov     dx, offset dtatransbuffer
     mov     ah, 1Ah
     int     21h             ; DOS - SET DISK TRANSFER AREA ADDRESS
     mov     dx, [bp+arg_0]
@@ -4111,8 +4118,8 @@ find_filename proc far
     mov     ah, 4Eh
     int     21h             ; DOS - 2+ - FIND FIRST ASCIZ (FINDFIRST)
     jb      short loc_3002A
-    mov     di, 4004h
-    mov     word_3F7D8, di
+    mov     di, offset foundfile
+    mov     foundfileptr, di
     mov     si, [bp+arg_0]
     mov     cx, 57h ; 'W'
     mov     ax, ds
@@ -4127,18 +4134,18 @@ loc_2FFFD:
     cmp     al, 5Ch ; '\'
     jnz     short loc_3000F
 loc_3000B:
-    mov     word_3F7D8, di
+    mov     foundfileptr, di
 loc_3000F:
     loop    loc_2FFFD
 loc_30011:
     mov     ax, ds
     mov     es, ax
-    mov     si, 4088h
-    mov     di, word_3F7D8
+    mov     si, offset foundfilepath
+    mov     di, foundfileptr
     mov     cx, 0Dh
     cld
     rep movsb
-    mov     ax, 4004h
+    mov     ax, offset foundfile
 loc_30025:
     pop     di
     pop     si
@@ -4158,7 +4165,7 @@ find_next proc far
     push    ds
     push    si
     push    di
-    mov     dx, 406Ah
+    mov     dx, offset dtatransbuffer
     mov     ah, 1Ah
     int     21h             ; DOS - SET DISK TRANSFER AREA ADDRESS
     mov     ah, 4Fh
@@ -5928,7 +5935,7 @@ load_res0_1_type proc far
     mov     [bp+var_2], 1
 loc_30DA1:
     push    [bp+arg_0]
-    call    get_res_unk
+    call    mmgr_get_unk
     add     sp, 2
     or      dx, dx
     jnz     short loc_30DDE
@@ -5940,7 +5947,7 @@ loc_30DA1:
     jz      short loc_30DE2
     push    ax
     push    [bp+arg_0]
-    call    alloc_respages
+    call    mmgr_alloc_pages
     add     sp, 4
     push    [bp+var_2]
     push    dx
@@ -6006,7 +6013,7 @@ decompress_fileres proc far
     mov     [bp+var_C], 1
 _alt_decompress:
     push    [bp+arg_0]
-    call    get_res_unk
+    call    mmgr_get_unk
     add     sp, 2
     or      dx, dx
     jz      short loc_30E2C
@@ -6028,7 +6035,7 @@ loc_30E2C:
     mov     [bp+var_6], ax
     push    ax
     push    [bp+arg_0]
-    call    alloc_respages
+    call    mmgr_alloc_pages
     add     sp, 4
     mov     [bp+var_2], ax
     mov     [bp+var_4], dx
@@ -6132,7 +6139,7 @@ loc_30F2F:
     push    ax
     push    [bp+var_4]
     push    [bp+var_2]
-    call    resize_memory
+    call    mmgr_resize_memory
     add     sp, 6
     mov     ax, [bp+var_2]
     mov     dx, [bp+var_4]
@@ -6175,7 +6182,7 @@ loc_30F7E:
     pop     bp
     retf
 decompress_fileres endp
-sub_30F92 proc far
+locate_shape_0 proc far
      s = byte ptr 0
      r = byte ptr 2
 
@@ -6187,8 +6194,8 @@ sub_30F92 proc far
     xor     dx, dx
     jmp     short _alt_locate_resource
     db 144
-sub_30F92 endp
-locate_shape proc far
+locate_shape_0 endp
+locate_shape_1 proc far
      s = byte ptr 0
      r = byte ptr 2
 
@@ -6200,7 +6207,7 @@ locate_shape proc far
     mov     dx, 1
     jmp     short _alt_locate_resource
     db 144
-locate_shape endp
+locate_shape_1 endp
 locate_sound proc far
      s = byte ptr 0
      r = byte ptr 2
@@ -6325,7 +6332,7 @@ loc_31075:
     pop     bp
     retf
 locate_sound endp
-alloc_resmem proc far
+mmgr_alloc_resmem proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -6380,19 +6387,19 @@ loc_310ED:
     pop     si
     pop     bp
     retf
-alloc_resmem endp
-alloc_resmem_a000 proc far
+mmgr_alloc_resmem endp
+mmgr_alloc_a000 proc far
 
     mov     ax, 0A000h
     push    ax
-    call    alloc_resmem
+    call    mmgr_alloc_resmem
     add     sp, 2
     retf
     push    bp
     mov     bp, sp
     mov     ax, 0A000h
     push    ax
-    call    alloc_resmem
+    call    mmgr_alloc_resmem
     add     sp, 2
     mov     ax, [bp+6]
     mov     bx, resendptr2
@@ -6435,8 +6442,8 @@ loc_3113E:
     mov     bx, resptr1
     sub     ax, [bx+0Eh]
     retf
-alloc_resmem_a000 endp
-get_res_ofs_diff proc far
+mmgr_alloc_a000 endp
+mmgr_get_ofs_diff proc far
 
     mov     bx, resendptr2
     mov     ax, [bx+RESOURCE.resofs]
@@ -6444,8 +6451,8 @@ get_res_ofs_diff proc far
     sub     ax, [bx+RESOURCE.resofs]
     sub     ax, [bx+RESOURCE.ressize]
     retf
-get_res_ofs_diff endp
-sub_3118D proc far
+mmgr_get_ofs_diff endp
+mmgr_op_unk3 proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -6491,7 +6498,7 @@ loc_311D0:
     pop     ds
     pop     bp
     retf
-sub_3118D endp
+mmgr_op_unk3 endp
 sub_311D5 proc far
      s = byte ptr 0
      r = byte ptr 2
@@ -6547,7 +6554,7 @@ loc_31222:
     pop     bp
     retf
 sub_311D5 endp
-check_pathdrive2 proc far
+mmgr_path_to_name2 proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -6574,8 +6581,8 @@ loc_31243:
     pop     si
     pop     bp
     retf
-check_pathdrive2 endp
-alloc_respages2 proc far
+mmgr_path_to_name2 endp
+mmgr_alloc_pages2 proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -6595,7 +6602,7 @@ alloc_respages2 proc far
 loc_31262:
     mov     resptr2, di
     push    [bp+arg_0]
-    call    check_pathdrive
+    call    mmgr_path_to_name
     add     sp, 2
     mov     si, ax
     xor     bx, bx
@@ -6656,8 +6663,8 @@ loc_312E9:
     mov     ax, offset aReservememoryOutOfMemory; "reservememory - OUT OF MEMORY RESERVING"...
     push    ax
     call    far ptr fatal_error
-alloc_respages2 endp
-sub_312FD proc far
+mmgr_alloc_pages2 endp
+mmgr_find_free proc far
      r = byte ptr 0
 
     push    si
@@ -6711,8 +6718,8 @@ loc_31359:
     call    sub_311D5
     add     sp, 6
     jmp     short loc_31319
-sub_312FD endp
-get_res_unk proc far
+mmgr_find_free endp
+mmgr_get_unk proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -6723,7 +6730,7 @@ get_res_unk proc far
     push    di
     mov     si, resendptr1
     push    [bp+arg_0]
-    call    check_pathdrive
+    call    mmgr_path_to_name
     add     sp, 2
     mov     di, ax
 loc_31380:
@@ -6783,7 +6790,7 @@ loc_313E4:
     jnz     short loc_313F6
     add     resendptr1, 12h
 loc_313F6:
-    call    sub_3118D
+    call    mmgr_op_unk3
     add     sp, 6
     mov     si, resendptr1
     mov     di, resptr2
@@ -6797,7 +6804,7 @@ loc_3140C:
     mov     resendptr1, si
     jmp     short loc_3140C
 loc_3141F:
-    call    sub_312FD
+    call    mmgr_find_free
     mov     dx, [di+RESOURCE.resofs]
     jmp     short loc_313B0
     push    bp
@@ -6806,7 +6813,7 @@ loc_3141F:
     push    di
     mov     si, resendptr1
     push    word ptr [bp+6]
-    call    check_pathdrive
+    call    mmgr_path_to_name
     add     sp, 2
     mov     di, ax
 loc_3143F:
@@ -6847,8 +6854,8 @@ loc_31475:
     pop     si
     pop     bp
     retf
-get_res_unk endp
-unload_resource2 proc far
+mmgr_get_unk endp
+mmgr_free proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -6995,7 +7002,7 @@ loc_315CE:
     loop    loc_315CE
     sub     di, 0Ch
     sub     bx, 0Ch
-    call    sub_3118D
+    call    mmgr_op_unk3
     add     sp, 6
 loc_315E4:
     add     di, 12h
@@ -7040,8 +7047,8 @@ loc_31635:
     mov     sp, bp
     pop     bp
     retf
-unload_resource2 endp
-sub_31641 proc far
+mmgr_free endp
+mmgr_op_unk2 proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_2 = word ptr 8
@@ -7075,8 +7082,8 @@ loc_31678:
     pop     si
     pop     bp
     retf
-sub_31641 endp
-get_res_size proc far
+mmgr_op_unk2 endp
+mmgr_get_chunk_size proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_2 = word ptr 8
@@ -7102,8 +7109,8 @@ loc_3169B:
     pop     si
     pop     bp
     retf
-get_res_size endp
-resize_memory proc far
+mmgr_get_chunk_size endp
+mmgr_resize_memory proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_2 = word ptr 8
@@ -7175,8 +7182,8 @@ loc_31724:
     mov     ax, 47E1h
     push    ax
     call    far ptr fatal_error
-resize_memory endp
-sub_31732 proc far
+mmgr_resize_memory endp
+mmgr_op_unk proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_2 = word ptr 8
@@ -7227,7 +7234,7 @@ loc_31795:
     mov     [bx+di], al
     inc     bx
     loop    loc_31795
-    call    sub_3118D
+    call    mmgr_op_unk3
     add     sp, 6
 loc_317A4:
     mov     dx, [di+0Eh]
@@ -7241,7 +7248,7 @@ loc_317AD:
     jmp     short loc_317A4
     ; align 2
     db 0
-sub_31732 endp
+mmgr_op_unk endp
 sub_317B2 proc far
     var_A = byte ptr -10
      s = byte ptr 0
@@ -7268,9 +7275,9 @@ sub_317C1 proc far
     push    di
     mov     [bp+var_A], 0
 loc_317CE:
-    mov     ax, 5C9Ch
+    mov     ax, offset sub_346BC
     mov     spritefunc, ax
-    mov     ax, 13BEh
+    mov     ax, offset sub_2FDDE
     mov     imagefunc, ax
     mov     si, [bp+arg_6]
     jmp     short loc_3180A
@@ -7317,9 +7324,9 @@ sub_317EE proc far
     push    di
     mov     [bp+var_A], 0
 loc_317FB:
-    mov     ax, 5C9Ch
+    mov     ax, offset sub_346BC
     mov     spritefunc, ax
-    mov     ax, 13BEh
+    mov     ax, offset sub_2FDDE
     mov     imagefunc, ax
     lea     si, [bp+arg_4]
 loc_3180A:
@@ -8922,16 +8929,16 @@ sub_324AA proc far
     shl     ax, 1
     mov     dx, ax
     add     dx, di
-    mov     bx, cs:off_34CE4
+    mov     bx, cs:next_wnd_def
     cmp     bx, dx
     jnz     short loc_324EC
     sub     bx, ax
-    mov     cs:off_34CE4, bx
+    mov     cs:next_wnd_def, bx
     push    ds
     push    si
     mov     ax, ss
     mov     ds, ax
-    call    sub_31641
+    call    mmgr_op_unk2
     add     sp, 4
     pop     di
     pop     si
@@ -11040,7 +11047,7 @@ clear_sprite1_color proc far
     sub     dx, bx
     jle     short loc_3330D
     shl     bx, 1
-    add     bx, cs:word_3494A
+    add     bx, cs:off_3494A
     mov     di, cs:[bx]
     add     di, cs:word_3494C
     mov     bx, cs:word_3494E
@@ -11112,7 +11119,7 @@ loc_33349:
 loc_3335B:
     mov     si, [bp+0Ah]
     shl     si, 1
-    add     si, cs:word_3494A
+    add     si, cs:off_3494A
     mov     ax, cs:word_34942
     mov     es, ax
     mov     al, [bp+0Eh]
@@ -11211,7 +11218,7 @@ loc_3341E:
     mov     al, [bp+var_E]
     mov     di, [bp+var_8]
     shl     di, 1
-    add     di, cs:word_3494A
+    add     di, cs:off_3494A
     mov     di, cs:[di]
     add     di, [bp+var_4]
     rep stosb
@@ -11224,7 +11231,7 @@ loc_3343C:
     mov     al, [bp+var_E]
     mov     di, [bp+var_8]
     shl     di, 1
-    add     di, cs:word_3494A
+    add     di, cs:off_3494A
     mov     di, cs:[di]
     add     di, [bp+var_4]
     mov     es:[di], al
@@ -11239,7 +11246,7 @@ loc_33458:
     mov     bx, [bp+var_4]
     mov     si, [si+6]
     shl     si, 1
-    add     si, cs:word_3494A
+    add     si, cs:off_3494A
 loc_3346B:
     mov     di, cs:[si]
     mov     es:[bx+di], al
@@ -11255,7 +11262,7 @@ loc_3347C:
     mov     al, [bp+var_E]
     mov     si, [si+6]
     shl     si, 1
-    add     si, cs:word_3494A
+    add     si, cs:off_3494A
     mov     bx, [bp+var_4]
 loc_3348F:
     mov     di, cs:[si]
@@ -11273,7 +11280,7 @@ loc_334A1:
     mov     al, [bp+var_E]
     mov     si, [si+6]
     shl     si, 1
-    add     si, cs:word_3494A
+    add     si, cs:off_3494A
     mov     bx, [bp+var_4]
 loc_334B4:
     mov     di, cs:[si]
@@ -11292,7 +11299,7 @@ loc_334C6:
     mov     al, [bp+var_E]
     mov     si, [si+6]
     shl     si, 1
-    add     si, cs:word_3494A
+    add     si, cs:off_3494A
     mov     bx, [bp+var_4]
 loc_334DC:
     mov     di, cs:[si]
@@ -11312,7 +11319,7 @@ loc_334F3:
     mov     al, [bp+var_E]
     mov     si, [si+6]
     shl     si, 1
-    add     si, cs:word_3494A
+    add     si, cs:off_3494A
     mov     bx, [bp+var_4]
 loc_33509:
     mov     di, cs:[si]
@@ -11334,7 +11341,7 @@ loc_33520:
 loc_3352C:
     mov     si, [bp+var_8]
     shl     si, 1
-    add     si, cs:word_3494A
+    add     si, cs:off_3494A
     mov     di, cs:[si]
     mov     es:[bx+di], al
     dec     bx
@@ -11354,7 +11361,7 @@ loc_3354C:
 loc_33558:
     mov     si, [bp+var_8]
     shl     si, 1
-    add     si, cs:word_3494A
+    add     si, cs:off_3494A
     mov     di, cs:[si]
     mov     es:[bx+di], al
     inc     bx
@@ -11442,7 +11449,7 @@ loc_335D7:
     mov     si, [bp+arg_6]
     mov     bx, [bp+arg_2]
     shl     bx, 1
-    add     bx, cs:word_3494A
+    add     bx, cs:off_3494A
     mov     di, cs:[bx]
     add     di, [bp+arg_0]
     mov     dx, cs:word_34954
@@ -11553,7 +11560,7 @@ sub_3367A proc far
     mov     ax, [si+0Ah]
 loc_33697:
     shl     ax, 1
-    add     ax, cs:word_3494A
+    add     ax, cs:off_3494A
     mov     [bp+var_4], ax
     add     ax, [si+2]
     add     ax, [si+2]
@@ -11708,7 +11715,7 @@ loc_337CE:
     mov     [bp+var_4], cx
     mov     bx, word ptr aMsRunTimeLibraryCop+2
     shl     bx, 1
-    add     bx, cs:word_3494A
+    add     bx, cs:off_3494A
 loc_337E7:
     mov     di, cs:[bx]
     add     di, [bp+var_2]
@@ -11928,7 +11935,7 @@ loc_33968:
     mov     es, cs:word_34942
     mov     bx, [bp+var_4]
     shl     bx, 1
-    add     bx, cs:word_3494A
+    add     bx, cs:off_3494A
     mov     di, cs:[bx]
     add     di, [bp+var_2]
     mov     si, [bp+var_C]
@@ -12054,7 +12061,7 @@ sub_33A1E proc far
 loc_33A57:
     mov     bx, [bp+var_4]
     shl     bx, 1
-    add     bx, cs:word_3494A
+    add     bx, cs:off_3494A
     mov     di, cs:[bx]
     add     di, [bp+var_2]
     mov     es, cs:word_34942
@@ -12176,7 +12183,7 @@ loc_33B1D:
     mov     [bp+var_6], ax
     mov     bx, [bp+var_4]
     shl     bx, 1
-    add     bx, cs:word_3494A
+    add     bx, cs:off_3494A
     mov     [bp+var_10], bx
     mov     di, cs:[bx]
     add     di, [bp+var_2]
@@ -12381,7 +12388,7 @@ loc_33C94:
     mov     es, cs:word_34942
     mov     bx, [bp+var_4]
     shl     bx, 1
-    add     bx, cs:word_3494A
+    add     bx, cs:off_3494A
     mov     di, cs:[bx]
     add     di, [bp+var_2]
     mov     si, [bp+var_C]
@@ -12495,7 +12502,7 @@ sub_33D4E proc far
 loc_33D69:
     mov     bx, [bp+var_4]
     shl     bx, 1
-    add     bx, cs:word_3494A
+    add     bx, cs:off_3494A
     mov     di, cs:[bx]
     add     di, [bp+var_2]
     mov     es, cs:word_34942
@@ -12614,7 +12621,7 @@ loc_33E1B:
 loc_33E27:
     mov     bx, [bp+var_4]
     shl     bx, 1
-    add     bx, cs:word_3494A
+    add     bx, cs:off_3494A
     mov     [bp+var_10], bx
     mov     di, cs:[bx]
     add     di, [bp+var_2]
@@ -12826,7 +12833,7 @@ loc_33F97:
 loc_33FA9:
     mov     bx, [bp+var_4]
     shl     bx, 1
-    add     bx, cs:word_3494A
+    add     bx, cs:off_3494A
     mov     [bp+var_10], bx
     mov     di, cs:[bx]
     add     di, [bp+var_2]
@@ -13082,7 +13089,7 @@ loc_3415C:
     mov     es, cs:word_34942
     mov     bx, [bp+var_4]
     shl     bx, 1
-    add     bx, cs:word_3494A
+    add     bx, cs:off_3494A
     mov     di, cs:[bx]
     add     di, [bp+var_2]
     mov     si, [bp+var_C]
@@ -13208,7 +13215,7 @@ sub_34212 proc far
 loc_3424B:
     mov     bx, [bp+var_4]
     shl     bx, 1
-    add     bx, cs:word_3494A
+    add     bx, cs:off_3494A
     mov     di, cs:[bx]
     add     di, [bp+var_2]
     mov     es, cs:word_34942
@@ -13330,7 +13337,7 @@ loc_34311:
     mov     [bp+var_6], ax
     mov     bx, [bp+var_4]
     shl     bx, 1
-    add     bx, cs:word_3494A
+    add     bx, cs:off_3494A
     mov     [bp+var_10], bx
     mov     di, cs:[bx]
     add     di, [bp+var_2]
@@ -13525,7 +13532,7 @@ loc_34488:
     mov     es, cs:word_34942
     mov     bx, [bp+var_4]
     shl     bx, 1
-    add     bx, cs:word_3494A
+    add     bx, cs:off_3494A
     mov     di, cs:[bx]
     add     di, [bp+var_2]
     mov     si, [bp+var_C]
@@ -13538,7 +13545,7 @@ loc_344BA:
 loc_344BD:
     lodsb
     mov     bl, al
-    mov     al, cs:[bx+72A8h]
+    mov     al, cs:incnums[bx]
     cmp     al, ah
     jz      short loc_344CF
     stosb
@@ -13620,7 +13627,7 @@ sub_34526 proc far
 loc_34541:
     mov     bx, [bp+var_4]
     shl     bx, 1
-    add     bx, cs:word_3494A
+    add     bx, cs:off_3494A
     mov     di, cs:[bx]
     add     di, [bp+var_2]
     mov     dx, cs:word_34954
@@ -13638,7 +13645,7 @@ loc_3456E:
 loc_34571:
     lodsb
     mov     bl, al
-    mov     al, cs:[bx+72A8h]
+    mov     al, cs:incnums[bx]
     cmp     al, 0FFh
     jz      short loc_34583
     stosb
@@ -13761,7 +13768,7 @@ loc_34647:
     mov     [bp+var_4], cx
     mov     bx, word ptr aMsRunTimeLibraryCop+2
     shl     bx, 1
-    add     bx, cs:word_3494A
+    add     bx, cs:off_3494A
 loc_34660:
     mov     di, cs:[bx]
     add     di, [bp+var_2]
@@ -13843,7 +13850,7 @@ sub_346BC proc far
     cld
     mov     si, [bp+arg_4]
     shl     si, 1
-    add     si, cs:word_3494A
+    add     si, cs:off_3494A
     mov     ax, cs:word_34942
     mov     es, ax
     mov     ax, [bp+arg_8]
@@ -13974,7 +13981,7 @@ loc_34799:
     mov     [bp+var_A], ax
     mov     bx, [bp+var_4]
     shl     bx, 1
-    add     bx, cs:word_3494A
+    add     bx, cs:off_3494A
     mov     [bp+var_6], bx
     mov     ds, cs:word_34942
     mov     es, [bp+arg_2]
@@ -14189,7 +14196,7 @@ word_34942     dw 40960
     db 0
     db 0
     db 0
-word_3494A     dw 24412
+off_3494A     dw offset lineoffsets
 word_3494C     dw 0
 word_3494E     dw 320
 word_34950     dw 0
@@ -14211,7 +14218,7 @@ word_34960     dw 40960
     db 0
     db 0
     db 0
-word_34968     dw 24412
+off_34968     dw offset lineoffsets
     ; align 4
     db 0
     db 0
@@ -14231,406 +14238,206 @@ word_34968     dw 24412
     db 0
     db 64
     db 1
-    db 0
-    db 0
-    db 64
-    db 1
-    db 128
-    db 2
-    db 192
-    db 3
-    db 0
-    db 5
-    db 64
-    db 6
-    db 128
-    db 7
-    db 192
-    db 8
-    db 0
-    db 10
-    db 64
-    db 11
-    db 128
-    db 12
-    db 192
-    db 13
-    db 0
-    db 15
-    db 64
-    db 16
-    db 128
-    db 17
-    db 192
-    db 18
-    db 0
-    db 20
-    db 64
-    db 21
-    db 128
-    db 22
-    db 192
-    db 23
-    db 0
-    db 25
-    db 64
-    db 26
-    db 128
-    db 27
-    db 192
-    db 28
-    db 0
-    db 30
-    db 64
-    db 31
-    db 128
-    db 32
-    db 192
-    db 33
-    db 0
-    db 35
-    db 64
-    db 36
-    db 128
-    db 37
-    db 192
-    db 38
-    db 0
-    db 40
-    db 64
-    db 41
-    db 128
-    db 42
-    db 192
-    db 43
-    db 0
-    db 45
-    db 64
-    db 46
-    db 128
-    db 47
-    db 192
-    db 48
-    db 0
-    db 50
-    db 64
-    db 51
-    db 128
-    db 52
-    db 192
-    db 53
-    db 0
-    db 55
-    db 64
-    db 56
-    db 128
-    db 57
-    db 192
-    db 58
-    db 0
-    db 60
-    db 64
-    db 61
-    db 128
-    db 62
-    db 192
-    db 63
-    db 0
-    db 65
-    db 64
-    db 66
-    db 128
-    db 67
-    db 192
-    db 68
-    db 0
-    db 70
-    db 64
-    db 71
-    db 128
-    db 72
-    db 192
-    db 73
-    db 0
-    db 75
-    db 64
-    db 76
-    db 128
-    db 77
-    db 192
-    db 78
-    db 0
-    db 80
-    db 64
-    db 81
-    db 128
-    db 82
-    db 192
-    db 83
-    db 0
-    db 85
-    db 64
-    db 86
-    db 128
-    db 87
-    db 192
-    db 88
-    db 0
-    db 90
-    db 64
-    db 91
-    db 128
-    db 92
-    db 192
-    db 93
-    db 0
-    db 95
-    db 64
-    db 96
-    db 128
-    db 97
-    db 192
-    db 98
-    db 0
-    db 100
-    db 64
-    db 101
-    db 128
-    db 102
-    db 192
-    db 103
-    db 0
-    db 105
-    db 64
-    db 106
-    db 128
-    db 107
-    db 192
-    db 108
-    db 0
-    db 110
-    db 64
-    db 111
-    db 128
-    db 112
-    db 192
-    db 113
-    db 0
-    db 115
-    db 64
-    db 116
-    db 128
-    db 117
-    db 192
-    db 118
-    db 0
-    db 120
-    db 64
-    db 121
-    db 128
-    db 122
-    db 192
-    db 123
-    db 0
-    db 125
-    db 64
-    db 126
-    db 128
-    db 127
-    db 192
-    db 128
-    db 0
-    db 130
-    db 64
-    db 131
-    db 128
-    db 132
-    db 192
-    db 133
-    db 0
-    db 135
-    db 64
-    db 136
-    db 128
-    db 137
-    db 192
-    db 138
-    db 0
-    db 140
-    db 64
-    db 141
-    db 128
-    db 142
-    db 192
-    db 143
-    db 0
-    db 145
-    db 64
-    db 146
-    db 128
-    db 147
-    db 192
-    db 148
-    db 0
-    db 150
-    db 64
-    db 151
-    db 128
-    db 152
-    db 192
-    db 153
-    db 0
-    db 155
-    db 64
-    db 156
-    db 128
-    db 157
-    db 192
-    db 158
-    db 0
-    db 160
-    db 64
-    db 161
-    db 128
-    db 162
-    db 192
-    db 163
-    db 0
-    db 165
-    db 64
-    db 166
-    db 128
-    db 167
-    db 192
-    db 168
-    db 0
-    db 170
-    db 64
-    db 171
-    db 128
-    db 172
-    db 192
-    db 173
-    db 0
-    db 175
-    db 64
-    db 176
-    db 128
-    db 177
-    db 192
-    db 178
-    db 0
-    db 180
-    db 64
-    db 181
-    db 128
-    db 182
-    db 192
-    db 183
-    db 0
-    db 185
-    db 64
-    db 186
-    db 128
-    db 187
-    db 192
-    db 188
-    db 0
-    db 190
-    db 64
-    db 191
-    db 128
-    db 192
-    db 192
-    db 193
-    db 0
-    db 195
-    db 64
-    db 196
-    db 128
-    db 197
-    db 192
-    db 198
-    db 0
-    db 200
-    db 64
-    db 201
-    db 128
-    db 202
-    db 192
-    db 203
-    db 0
-    db 205
-    db 64
-    db 206
-    db 128
-    db 207
-    db 192
-    db 208
-    db 0
-    db 210
-    db 64
-    db 211
-    db 128
-    db 212
-    db 192
-    db 213
-    db 0
-    db 215
-    db 64
-    db 216
-    db 128
-    db 217
-    db 192
-    db 218
-    db 0
-    db 220
-    db 64
-    db 221
-    db 128
-    db 222
-    db 192
-    db 223
-    db 0
-    db 225
-    db 64
-    db 226
-    db 128
-    db 227
-    db 192
-    db 228
-    db 0
-    db 230
-    db 64
-    db 231
-    db 128
-    db 232
-    db 192
-    db 233
-    db 0
-    db 235
-    db 64
-    db 236
-    db 128
-    db 237
-    db 192
-    db 238
-    db 0
-    db 240
-    db 64
-    db 241
-    db 128
-    db 242
-    db 192
-    db 243
-    db 0
-    db 245
-    db 64
-    db 246
-    db 128
-    db 247
-    db 192
-    db 248
+lineoffsets     dw 0
+    dw 320
+    dw 640
+    dw 960
+    dw 1280
+    dw 1600
+    dw 1920
+    dw 2240
+    dw 2560
+    dw 2880
+    dw 3200
+    dw 3520
+    dw 3840
+    dw 4160
+    dw 4480
+    dw 4800
+    dw 5120
+    dw 5440
+    dw 5760
+    dw 6080
+    dw 6400
+    dw 6720
+    dw 7040
+    dw 7360
+    dw 7680
+    dw 8000
+    dw 8320
+    dw 8640
+    dw 8960
+    dw 9280
+    dw 9600
+    dw 9920
+    dw 10240
+    dw 10560
+    dw 10880
+    dw 11200
+    dw 11520
+    dw 11840
+    dw 12160
+    dw 12480
+    dw 12800
+    dw 13120
+    dw 13440
+    dw 13760
+    dw 14080
+    dw 14400
+    dw 14720
+    dw 15040
+    dw 15360
+    dw 15680
+    dw 16000
+    dw 16320
+    dw 16640
+    dw 16960
+    dw 17280
+    dw 17600
+    dw 17920
+    dw 18240
+    dw 18560
+    dw 18880
+    dw 19200
+    dw 19520
+    dw 19840
+    dw 20160
+    dw 20480
+    dw 20800
+    dw 21120
+    dw 21440
+    dw 21760
+    dw 22080
+    dw 22400
+    dw 22720
+    dw 23040
+    dw 23360
+    dw 23680
+    dw 24000
+    dw 24320
+    dw 24640
+    dw 24960
+    dw 25280
+    dw 25600
+    dw 25920
+    dw 26240
+    dw 26560
+    dw 26880
+    dw 27200
+    dw 27520
+    dw 27840
+    dw 28160
+    dw 28480
+    dw 28800
+    dw 29120
+    dw 29440
+    dw 29760
+    dw 30080
+    dw 30400
+    dw 30720
+    dw 31040
+    dw 31360
+    dw 31680
+    dw 32000
+    dw 32320
+    dw 32640
+    dw 32960
+    dw 33280
+    dw 33600
+    dw 33920
+    dw 34240
+    dw 34560
+    dw 34880
+    dw 35200
+    dw 35520
+    dw 35840
+    dw 36160
+    dw 36480
+    dw 36800
+    dw 37120
+    dw 37440
+    dw 37760
+    dw 38080
+    dw 38400
+    dw 38720
+    dw 39040
+    dw 39360
+    dw 39680
+    dw 40000
+    dw 40320
+    dw 40640
+    dw 40960
+    dw 41280
+    dw 41600
+    dw 41920
+    dw 42240
+    dw 42560
+    dw 42880
+    dw 43200
+    dw 43520
+    dw 43840
+    dw 44160
+    dw 44480
+    dw 44800
+    dw 45120
+    dw 45440
+    dw 45760
+    dw 46080
+    dw 46400
+    dw 46720
+    dw 47040
+    dw 47360
+    dw 47680
+    dw 48000
+    dw 48320
+    dw 48640
+    dw 48960
+    dw 49280
+    dw 49600
+    dw 49920
+    dw 50240
+    dw 50560
+    dw 50880
+    dw 51200
+    dw 51520
+    dw 51840
+    dw 52160
+    dw 52480
+    dw 52800
+    dw 53120
+    dw 53440
+    dw 53760
+    dw 54080
+    dw 54400
+    dw 54720
+    dw 55040
+    dw 55360
+    dw 55680
+    dw 56000
+    dw 56320
+    dw 56640
+    dw 56960
+    dw 57280
+    dw 57600
+    dw 57920
+    dw 58240
+    dw 58560
+    dw 58880
+    dw 59200
+    dw 59520
+    dw 59840
+    dw 60160
+    dw 60480
+    dw 60800
+    dw 61120
+    dw 61440
+    dw 61760
+    dw 62080
+    dw 62400
+    dw 62720
+    dw 63040
+    dw 63360
+    dw 63680
 sub_347DC endp
 sub_34B0C proc far
      s = byte ptr 0
@@ -14731,7 +14538,7 @@ loc_34B9B:
 loc_34BAD:
     mov     si, [bp+0Ah]
     shl     si, 1
-    add     si, cs:word_3494A
+    add     si, cs:off_3494A
     mov     ax, cs:word_34942
     mov     es, ax
     mov     al, [bp+0Eh]
@@ -14804,9 +14611,9 @@ make_wnd_sprite proc far
     mov     bx, ax
     mov     [bp+var_6], ax
     push    ax
-    mov     ax, 541Ch
+    mov     ax, offset aMcgaWindow; "MCGA WINDOW"
     push    ax
-    call    alloc_respages
+    call    mmgr_alloc_pages
     add     sp, 4
     mov     [bp+var_2], dx
     mov     ds, dx
@@ -14823,12 +14630,12 @@ make_wnd_sprite proc far
     mov     ax, 0Fh
     add     ax, [bp+arg_2]
     shl     ax, 1
-    mov     bx, cs:off_34CE4
+    mov     bx, cs:next_wnd_def
     mov     [bp+var_4], bx
     add     ax, bx
-    cmp     ax, 70D6h
+    cmp     ax, offset unk_42846
     jnb     short loc_34CD6
-    mov     cs:off_34CE4, ax
+    mov     cs:next_wnd_def, ax
     mov     word ptr cs:[bx], 0
     mov     ax, [bp+var_2]
     mov     cs:[bx+2], ax
@@ -14863,13 +14670,13 @@ loc_34CBE:
 loc_34CD6:
     mov     ax, ss
     mov     ds, ax
-    mov     ax, 5428h
+    mov     ax, offset aWindowdefOutOfRowTableSpa; "windowdef - OUT OF ROW TABLE SPACE\r"
     push    ax
     call    far ptr fatal_error
     ; align 2
     db 144
-off_34CE4     dw offset byte_34CE6
-byte_34CE6     db 0
+next_wnd_def     dw offset wnd_defs
+wnd_defs     db 0
     db 0
     db 0
     db 0
@@ -18487,7 +18294,7 @@ set_sprite1 proc far
     mov     cx, 0Fh
     mov     ax, cs
     mov     es, ax
-    mov     di, 5F20h
+    mov     di, offset unk_41690
     rep movsw
     pop     di
     pop     si
@@ -18541,7 +18348,7 @@ loc_35B56:
     mov     di, [bp+arg_0]
     mov     si, [bp+arg_2]
     shl     si, 1
-    add     si, cs:word_3494A
+    add     si, cs:off_3494A
     add     di, cs:[si]
     mov     es, cs:word_34942
     mov     ax, [bp+arg_4]
@@ -18619,7 +18426,7 @@ loc_35BD5:
     mov     si, [bp+arg_6]
     mov     bx, [bp+arg_2]
     shl     bx, 1
-    add     bx, cs:word_3494A
+    add     bx, cs:off_3494A
     mov     di, cs:[bx]
     add     di, [bp+arg_0]
     mov     dx, cs:word_34954
@@ -18707,9 +18514,9 @@ sub_35C4E proc far
     mov     ax, [bp+arg_2]
     shl     ax, 1
     mov     cx, ax
-    add     ax, cs:word_34968
+    add     ax, cs:off_34968
     mov     [bp+var_4], ax
-    add     cx, cs:word_3494A
+    add     cx, cs:off_3494A
     mov     ax, [bp+arg_8]
     mov     bx, ax
     add     ax, [bp+arg_0]
@@ -18740,7 +18547,7 @@ loc_35C9F:
     mov     sp, bp
     pop     bp
     retf
-    db 0
+incnums     db 0
     db 1
     db 2
     db 3
@@ -19013,7 +18820,7 @@ sub_35DC8 proc far
     mov     si, [bp+arg_0]
     mov     ax, cs
     mov     es, ax
-    mov     di, 72A8h
+    mov     di, offset word_42A18
     cld
     rep movsb
     pop     di
@@ -19040,7 +18847,7 @@ sub_35DE6 proc far
     mov     si, [bp+arg_0]
     mov     ax, cs
     mov     es, ax
-    lea     di, [si+72A8h]
+    lea     di, incnums[si]
     mov     si, [bp+arg_4]
     cld
     rep movsb
@@ -19189,7 +18996,7 @@ loc_35ED9:
     mov     es, ax
     mov     bx, [bp+var_4]
     shl     bx, 1
-    add     bx, cs:word_3494A
+    add     bx, cs:off_3494A
     mov     di, cs:[bx]
     add     di, [bp+var_2]
     mov     dx, [bp+var_10]

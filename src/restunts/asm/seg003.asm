@@ -6222,7 +6222,7 @@ unload_skybox proc far
     jz      short loc_1D8CB
     push    skybox_res_seg
     push    skybox_res_ofs
-    call    unload_resource2
+    call    mmgr_free
     add     sp, 4
 loc_1D8CB:
     mov     byte_3B8F6, 0
@@ -6280,7 +6280,7 @@ sub_1D92A proc far
 
     push    word_463DA
     push    word_463D8
-    call    unload_resource2
+    call    mmgr_free
     add     sp, 4
     retf
     ; align 2
@@ -6842,7 +6842,7 @@ loc_1DE7C:
 loc_1DE8C:
     push    [bp+var_2AC]
     push    [bp+var_2AE]
-    call    unload_resource2
+    call    mmgr_free
     add     sp, 4
     mov     al, [bp+var_38]
     cbw

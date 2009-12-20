@@ -413,6 +413,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn word_3EA3C:word
     extrn word_3EA4C:word
     extrn word_3EA4E:word
+    extrn unk_3EAA3:byte
     extrn word_3EB02:word
     extrn rect_unk4:byte
     extrn word_3EB2A:word
@@ -490,12 +491,18 @@ dseg segment byte public 'STUNTSD' use16
     extrn word_3F0A2:word
     extrn word_3F0A4:word
     extrn word_3F0A6:word
+    extrn unk_3F0AE:byte
     extrn dword_3F0BC:dword
     extrn word_3F1C2:word
     extrn word_3F1C4:word
+    extrn unk_3F587:byte
     extrn exitlistfuncs:word
     extrn aExitListOverflow:byte
-    extrn word_3F7D8:word
+    extrn aSFileError_1:byte
+    extrn foundfile:byte
+    extrn foundfileptr:word
+    extrn dtatransbuffer:byte
+    extrn foundfilepath:byte
     extrn byte_3F85A:byte
     extrn dword_3F874:dword
     extrn word_3F878:word
@@ -661,6 +668,8 @@ dseg segment byte public 'STUNTSD' use16
     extrn word_40B10:word
     extrn audiodriverstring:byte
     extrn byte_40B86:byte
+    extrn aMcgaWindow:byte
+    extrn aWindowdefOutOfRowTableSpa:byte
     extrn shapenums:byte
     extrn a_pvs:byte
     extrn aUnflip_0:byte
@@ -781,6 +790,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn dword_42838:dword
     extrn word_4283C:word
     extrn word_4283E:word
+    extrn unk_42846:byte
     extrn word_42898:word
     extrn off_4289A:word
     extrn word_4289C:word
@@ -946,10 +956,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn word_44984:word
     extrn word_44986:word
     extrn word_44988:word
-    extrn word_4498A:word
-    extrn word_4498C:word
-    extrn word_4498E:word
-    extrn word_44990:word
+    extrn regs_x86:word
     extrn word_44998:word
     extrn startcol2:byte
     extrn byte_4499B:byte

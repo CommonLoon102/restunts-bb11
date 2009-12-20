@@ -155,7 +155,7 @@ loc_3AA53:
     add     sp, 4
     lea     ax, [bp+var_7C]
     push    ax
-    call    get_res_unk
+    call    mmgr_get_unk
     add     sp, 2
     mov     [bp+var_4], ax
     mov     [bp+var_2], dx
@@ -171,7 +171,7 @@ loc_3AA87:
 loc_3AA92:
     lea     ax, [bp+var_7C]
     push    ax
-    call    get_res_unk
+    call    mmgr_get_unk
     add     sp, 2
     mov     [bp+var_4], ax
     mov     [bp+var_2], dx
@@ -207,7 +207,7 @@ loc_3AAA8:
     push    ax
     mov     ax, offset aUnflip_0; "UNFLIP"
     push    ax
-    call    alloc_respages
+    call    mmgr_alloc_pages
     add     sp, 4
     mov     word ptr [bp+var_10], ax
     mov     word ptr [bp+var_10+2], dx
@@ -219,7 +219,7 @@ loc_3AAA8:
     add     sp, 8
     push    word ptr [bp+var_10+2]
     push    word ptr [bp+var_10]
-    call    sub_31641
+    call    mmgr_op_unk2
     add     sp, 4
     jmp     loc_3AA87
 loc_3AB24:
@@ -266,7 +266,7 @@ loc_3AB83:
     push    ax
     mov     ax, offset aUnflip; "UNFLIP"
     push    ax
-    call    alloc_respages
+    call    mmgr_alloc_pages
     add     sp, 4
     mov     word ptr [bp+var_10], ax
     mov     word ptr [bp+var_10+2], dx
@@ -278,7 +278,7 @@ loc_3AB83:
     add     sp, 8
     push    word ptr [bp+var_10+2]
     push    word ptr [bp+var_10]
-    call    sub_31641
+    call    mmgr_op_unk2
     add     sp, 4
 loc_3ABB7:
     push    [bp+var_2]
@@ -290,7 +290,7 @@ loc_3ABB7:
     push    ax
     push    [bp+var_2]
     push    [bp+var_4]
-    call    sub_30F92
+    call    locate_shape_0
     add     sp, 6
     mov     [bp+var_18], ax
     mov     [bp+var_16], dx
@@ -307,7 +307,7 @@ loc_3ABF3:
     push    [bp+var_7E]
     lea     ax, [bp+var_7C]
     push    ax
-    call    alloc_respages
+    call    mmgr_alloc_pages
     add     sp, 4
     mov     word ptr [bp+var_10], ax
     mov     word ptr [bp+var_10+2], dx
@@ -363,11 +363,11 @@ loc_3AC60:
     add     sp, 8
     push    [bp+var_2]
     push    [bp+var_4]
-    call    sub_31641
+    call    mmgr_op_unk2
     add     sp, 4
     push    word ptr [bp+var_10+2]
     push    word ptr [bp+var_10]
-    call    sub_31732
+    call    mmgr_op_unk
     add     sp, 4
     mov     [bp+var_4], ax
     mov     [bp+var_2], dx

@@ -86,7 +86,7 @@ sub_36246 proc far
     sub     ax, [bx+2]
     mov     bx, [bp+arg_2]
     mov     [bx+12h], ax
-    mov     ax, 2D41h
+    mov     ax, (offset sceneshapes2.scene_loshapeptr+0E1h)
     push    ax
     mov     ax, [bx+10h]
     add     ax, [bx]
@@ -95,7 +95,7 @@ sub_36246 proc far
     add     sp, 4
     mov     bx, [bp+arg_2]
     mov     [bx+8], ax
-    mov     ax, 2D41h
+    mov     ax, (offset sceneshapes2.scene_loshapeptr+0E1h)
     push    ax
     mov     ax, [bx+2]
     add     ax, [bx+12h]
@@ -106,7 +106,7 @@ sub_36246 proc far
     mov     [bx+0Ah], ax
     mov     si, [bx+10h]
     sar     si, 1
-    mov     ax, 393Eh
+    mov     ax, offset unk_3F0AE
     push    ax
     mov     ax, [bx]
     add     ax, si
@@ -117,7 +117,7 @@ sub_36246 proc far
     mov     [bx+4], ax
     mov     di, [bx+12h]
     sar     di, 1
-    mov     ax, 393Eh
+    mov     ax, offset unk_3F0AE
     push    ax
     mov     ax, [bx+2]
     add     ax, di
@@ -129,7 +129,7 @@ sub_36246 proc far
     mov     ax, [bx]
     sar     ax, 1
     mov     [bp+var_4], ax
-    mov     ax, 393Eh
+    mov     ax, offset unk_3F0AE
     push    ax
     mov     ax, [bx+10h]
     add     ax, [bp+var_4]
@@ -141,7 +141,7 @@ sub_36246 proc far
     mov     ax, [bx+2]
     sar     ax, 1
     mov     [bp+var_6], ax
-    mov     ax, 393Eh
+    mov     ax, offset unk_3F0AE
     push    ax
     mov     ax, [bx+12h]
     add     ax, [bp+var_6]
@@ -153,7 +153,7 @@ sub_36246 proc far
     mov     ax, [bx]
     neg     ax
     mov     [bp+var_8], ax
-    mov     ax, 2D41h
+    mov     ax, (offset sceneshapes2.scene_loshapeptr+0E1h)
     push    ax
     mov     ax, [bx+10h]
     add     ax, [bp+var_8]
@@ -165,7 +165,7 @@ sub_36246 proc far
     mov     ax, [bx+2]
     neg     ax
     mov     [bp+var_A], ax
-    mov     ax, 2D41h
+    mov     ax, (offset sceneshapes2.scene_loshapeptr+0E1h)
     push    ax
     mov     ax, [bx+12h]
     add     ax, [bp+var_A]
@@ -174,7 +174,7 @@ sub_36246 proc far
     add     sp, 4
     mov     bx, [bp+arg_2]
     mov     [bx+1Ah], ax
-    mov     ax, 393Eh
+    mov     ax, offset unk_3F0AE
     push    ax
     mov     ax, [bp+var_8]
     add     ax, si
@@ -183,7 +183,7 @@ sub_36246 proc far
     add     sp, 4
     mov     bx, [bp+arg_2]
     mov     [bx+1Ch], ax
-    mov     ax, 393Eh
+    mov     ax, offset unk_3F0AE
     push    ax
     mov     ax, [bp+var_A]
     add     ax, di
@@ -192,7 +192,7 @@ sub_36246 proc far
     add     sp, 4
     mov     bx, [bp+arg_2]
     mov     [bx+1Eh], ax
-    mov     ax, 393Eh
+    mov     ax, offset unk_3F0AE
     push    ax
     mov     ax, [bx+10h]
     sub     ax, [bp+var_4]
@@ -201,7 +201,7 @@ sub_36246 proc far
     add     sp, 4
     mov     bx, [bp+arg_2]
     mov     [bx+14h], ax
-    mov     ax, 393Eh
+    mov     ax, offset unk_3F0AE
     push    ax
     mov     ax, [bx+12h]
     sub     ax, [bp+var_6]

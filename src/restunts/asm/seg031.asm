@@ -137,7 +137,7 @@ init_video proc far
     push    di
     push    si
     call    sub_30812
-    call    sub_36B05
+    call    kb_shift_checking2
     call    call_readchar_callback
     mov     ax, offset do_mrl_textres
     mov     dx, seg seg008
@@ -215,7 +215,7 @@ init_video proc far
     mov     word_44DC8, 1
     mov     word_454D4, 0FFFFh
     mov     word_461D0, 1
-    call    alloc_resmem_a000
+    call    mmgr_alloc_a000
     mov     byte_46436, 0
     mov     byte_459F1, 1
     mov     byte_4645E, 65h ; 'e'
@@ -368,7 +368,7 @@ loc_3A08A:
     push    ax
     mov     ax, 140h
     push    ax
-    call    sub_368D2
+    call    mouse_init
     add     sp, 4
     sub     ax, ax
     push    ax              ; int
@@ -640,7 +640,7 @@ load_palandcursor proc far
     push    ax
     push    dx
     push    [bp+var_30C]
-    call    locate_shape
+    call    locate_shape_1
     add     sp, 6
     mov     word ptr [bp+var_304], ax
     mov     word ptr [bp+var_304+2], dx
@@ -667,7 +667,7 @@ loc_3A300:
     push    ax
     push    [bp+var_30A]
     push    [bp+var_30C]
-    call    locate_shape
+    call    locate_shape_1
     add     sp, 6
     mov     word ptr [bp+var_310], ax
     mov     word ptr [bp+var_310+2], dx
@@ -679,7 +679,7 @@ loc_3A300:
     mov     [bp+var_306], ax
     push    [bp+var_30A]
     push    [bp+var_30C]
-    call    unload_resource2
+    call    mmgr_free
     add     sp, 4
     mov     ax, 0Fh
     push    ax
@@ -724,7 +724,7 @@ loc_3A300:
     push    ax
     push    [bp+var_30A]
     push    [bp+var_30C]
-    call    locate_shape
+    call    locate_shape_1
     add     sp, 6
     push    dx
     push    ax
@@ -741,7 +741,7 @@ loc_3A300:
     push    ax
     push    [bp+var_30A]
     push    [bp+var_30C]
-    call    locate_shape
+    call    locate_shape_1
     add     sp, 6
     push    dx
     push    ax
@@ -749,7 +749,7 @@ loc_3A300:
     add     sp, 8
     push    [bp+var_30A]
     push    [bp+var_30C]
-    call    unload_resource2
+    call    mmgr_free
     add     sp, 4
     call    sub_28F3C
     pop     si
@@ -783,7 +783,7 @@ alloc_resbytes proc far
     inc     ax
     push    ax
     push    [bp+arg_0]
-    call    alloc_respages
+    call    mmgr_alloc_pages
     add     sp, 4
     pop     bp
     retf
@@ -792,7 +792,7 @@ alloc_resbytes proc far
 alloc_resbytes endp
 get_res_ofs_diff_scaled proc far
 
-    call    get_res_ofs_diff
+    call    mmgr_get_ofs_diff
     sub     dx, dx
     mov     cl, 4
 loc_3A48D:
@@ -812,7 +812,7 @@ get_res_size_scaled proc far
     mov     bp, sp
     push    [bp+arg_2]
     push    [bp+arg_0]
-    call    get_res_size
+    call    mmgr_get_chunk_size
     add     sp, 4
     sub     dx, dx
     mov     cl, 4
