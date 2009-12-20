@@ -60,7 +60,7 @@ seg003 segment byte public 'STUNTSC' use16
     public unload_skybox
     public load_sdgame2_shapes
     public sub_1D92A
-    public sub_1D93C
+    public setup_intro
     public sub_1DEA6
     pop     ds
     retf
@@ -161,7 +161,7 @@ loc_19FD8:
     push    word ptr [bx]
     call    set_sprite1_size
     add     sp, 8
-    les     bx, dword_44D26
+    les     bx, wndsprite
     push    word ptr es:[bx+2]
     push    word ptr es:[bx]
     call    sub_33BDA
@@ -195,7 +195,7 @@ loc_1A03E:
     add     sp, 8
 loc_1A046:
     call    sub_28DB6
-    les     bx, dword_44D26
+    les     bx, wndsprite
     push    word ptr es:[bx+2]
     push    word ptr es:[bx]
     call    sub_33BDA
@@ -3145,7 +3145,7 @@ loc_1BCB7:
     call    cos_fast
     add     sp, 2
     push    ax
-    call    sub_30044
+    call    scale_value
     add     sp, 4
     mov     [bp+var_DE], ax
     mov     ax, 24h ; '$'
@@ -3154,7 +3154,7 @@ loc_1BCB7:
     call    sin_fast
     add     sp, 2
     push    ax
-    call    sub_30044
+    call    scale_value
     add     sp, 4
     add     ax, 38h ; '8'
     mov     [bp+var_36], ax
@@ -3193,24 +3193,24 @@ loc_1BCB7:
     mov     es:[bx+16h], ax
     mov     ax, 24h ; '$'
     push    ax
-    mov     ax, word_45516
+    mov     ax, track_angle
     add     ah, 1
     push    ax
     call    sin_fast
     add     sp, 2
     push    ax
-    call    sub_30044
+    call    scale_value
     add     sp, 4
     mov     cx, 1B6h
     push    cx
-    mov     cx, word_45516
+    mov     cx, track_angle
     add     ch, 2
     push    cx
     mov     word ptr [bp+var_154], ax
     call    sin_fast
     add     sp, 2
     push    ax
-    call    sub_30044
+    call    scale_value
     add     sp, 4
     mov     cx, ax
     mov     al, byte_4499A
@@ -3232,24 +3232,24 @@ loc_1BCB7:
     mov     [bx+2], ax
     mov     ax, 24h ; '$'
     push    ax
-    mov     ax, word_45516
+    mov     ax, track_angle
     add     ah, 1
     push    ax
     call    cos_fast
     add     sp, 2
     push    ax
-    call    sub_30044
+    call    scale_value
     add     sp, 4
     mov     cx, 1B6h
     push    cx
-    mov     cx, word_45516
+    mov     cx, track_angle
     add     ch, 2
     push    cx
     mov     word ptr [bp+var_154], ax
     call    cos_fast
     add     sp, 2
     push    ax
-    call    sub_30044
+    call    scale_value
     add     sp, 4
     mov     cx, ax
     mov     al, byte_4499E
@@ -3274,7 +3274,7 @@ loc_1BCB7:
     mov     bx, word_46434
     mov     word ptr [bx+0Ch], 0
     mov     bx, word_46434
-    mov     ax, word_45516
+    mov     ax, track_angle
     mov     [bx+0Eh], ax
     mov     bx, word_46434
     mov     word ptr [bx+10h], 400h
@@ -4423,7 +4423,7 @@ loc_1C879:
     push    ax
     mov     ax, 3E80h
     push    ax
-    call    sub_30044
+    call    scale_value
     add     sp, 4
     mov     bx, di
     shl     bx, 1
@@ -4446,7 +4446,7 @@ loc_1C879:
     push    ax
     mov     ax, 3E80h
     push    ax
-    call    sub_30044
+    call    scale_value
     add     sp, 4
     mov     bx, di
     shl     bx, 1
@@ -6286,7 +6286,7 @@ sub_1D92A proc far
     ; align 2
     db 144
 sub_1D92A endp
-sub_1D93C proc far
+setup_intro proc far
     var_5D4 = word ptr -1492
     var_5D2 = word ptr -1490
     var_5D0 = byte ptr -1488
@@ -6341,15 +6341,15 @@ sub_1D93C proc far
     push    di
     push    si
     mov     [bp+var_38], 0
-    mov     ax, 0A2Ah
+    mov     ax, offset aTitle; "title"
     push    ax
-    call    sub_2A236
+    call    load_3dshape
     add     sp, 2
     mov     [bp+var_2AE], ax
     mov     [bp+var_2AC], dx
     lea     ax, [bp+var_22]
     push    ax
-    mov     ax, 0A30h
+    mov     ax, offset aLogolog2brav; "logolog2brav"
     push    ax
     push    dx
     push    [bp+var_2AE]
@@ -6359,32 +6359,32 @@ sub_1D93C proc far
     push    ax
     push    [bp+var_20]
     push    [bp+var_22]
-    call    sub_2955A
+    call    setup_3d_res
     add     sp, 6
     mov     ax, 8BFCh
     push    ax
     push    [bp+var_1C]
     push    [bp+var_1E]
-    call    sub_2955A
+    call    setup_3d_res
     add     sp, 6
     mov     ax, 9580h
     push    ax
     push    [bp+var_18]
     push    [bp+var_1A]
-    call    sub_2955A
+    call    setup_3d_res
     add     sp, 6
     cmp     byte_46436, 0
     jnz     short loc_1D9CA
     mov     ax, 0Fh
     push    ax
-    mov     ax, 0C8h ; 'È'
+    mov     ax, 0C8h
     push    ax
     mov     ax, 140h
     push    ax
     call    make_wnd_sprite
     add     sp, 6
-    mov     word ptr dword_44D26, ax
-    mov     word ptr dword_44D26+2, dx
+    mov     word ptr wndsprite, ax
+    mov     word ptr wndsprite+2, dx
 loc_1D9CA:
     mov     [bp+var_42], 0
 loc_1D9CF:
@@ -6436,7 +6436,7 @@ loc_1D9CF:
     mov     [bp+var_3C], 12Ch
     mov     [bp+var_E], 0
     mov     [bp+var_5D4], 0
-    mov     ax, 0A3Eh
+    mov     ax, offset aCarcoun_0; "carcoun"
     push    ax
     call    load_res_file
     add     sp, 2
@@ -6458,20 +6458,20 @@ loc_1D9CF:
     mov     [bp+var_440], 0
     mov     ax, word_44CEA
     mov     word_44984, ax
-    mov     word_44A04, 0
-    mov     word_44A06, 140h
-    mov     word_44A08, 0
-    mov     word_44A0A, 0C8h ; 'È'
-    mov     di, 929Ch
-    mov     si, 9294h
+    mov     rect_unk, 0
+    mov     rect_unk+2, 140h
+    mov     rect_unk+4, 0
+    mov     rect_unk+6, 0C8h ; 'È'
+    mov     di, offset rect_unk2
+    mov     si, offset rect_unk
     push    ds
     pop     es
     movsw
     movsw
     movsw
     movsw
-    mov     di, 0A1E2h
-    mov     si, 9294h
+    mov     di, offset rect_unk3
+    mov     si, offset rect_unk
     movsw
     movsw
     movsw
@@ -6765,7 +6765,7 @@ loc_1DD7E:
     call    set_sprite1_size
     add     sp, 8
     call    sub_28DB6
-    les     bx, dword_44D26
+    les     bx, wndsprite
     push    word ptr es:[bx+2]
     push    word ptr es:[bx]
     call    sub_33BDA
@@ -6790,7 +6790,7 @@ loc_1DD7E:
     db 144
 loc_1DDFC:
     call    sub_28DB6
-    les     bx, dword_44D26
+    les     bx, wndsprite
     push    word ptr es:[bx+2]
     push    word ptr es:[bx]
     call    sub_33BDA
@@ -6813,7 +6813,7 @@ loc_1DE2E:
 loc_1DE3E:
     cmp     byte_46436, 0
     jz      short loc_1DE7C
-    call    sub_3A45C
+    call    get_0
     or      ax, ax
     jz      short loc_1DE8C
     call    setup_mcgawnd2
@@ -6835,8 +6835,8 @@ loc_1DE3E:
     ; align 2
     db 144
 loc_1DE7C:
-    push    word ptr dword_44D26+2
-    push    word ptr dword_44D26
+    push    word ptr wndsprite+2
+    push    word ptr wndsprite
     call    sub_324AA
     add     sp, 4
 loc_1DE8C:
@@ -6851,7 +6851,7 @@ loc_1DE8C:
     mov     sp, bp
     pop     bp
     retf
-sub_1D93C endp
+setup_intro endp
 sub_1DEA6 proc far
     var_42 = word ptr -66
     var_40 = byte ptr -64

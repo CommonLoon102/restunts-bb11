@@ -71,7 +71,7 @@ seg012 segment byte public 'STUNTSC' use16
     extrn unk_2FD1E:byte
     extrn unk_2FD7C:byte
     extrn sub_2FDDE:proc
-    extrn sub_2FE1C:proc
+    extrn add_exit_handler:proc
     extrn call_exitlist:proc
     extrn sub_2FE74:proc
     extrn get_file_size:proc
@@ -80,7 +80,7 @@ seg012 segment byte public 'STUNTSC' use16
     extrn loc_30011
     extrn loc_3002A
     extrn find_next:proc
-    extrn sub_30044:proc
+    extrn scale_value:proc
     extrn set_bios_mode4:proc
     extrn sub_300B6:proc
     extrn set_bios_mode7:proc
@@ -131,7 +131,7 @@ seg012 segment byte public 'STUNTSC' use16
     extrn alloc_resmem:proc
     extrn loc_310CD
     extrn alloc_resmem_a000:proc
-    extrn sub_3117B:proc
+    extrn get_res_ofs_diff:proc
     extrn sub_3118D:proc
     extrn sub_311D5:proc
     extrn check_pathdrive2:proc

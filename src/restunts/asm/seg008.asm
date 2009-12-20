@@ -77,7 +77,7 @@ seg008 segment byte public 'STUNTSC' use16
     public sub_2913A
     public sub_2916E
     public sub_292DC
-    public sub_2955A
+    public setup_3d_res
     public sub_29606
     public sub_29620
     public show_waiting
@@ -107,7 +107,7 @@ seg008 segment byte public 'STUNTSC' use16
     public ensure_file_exists
     public sub_2A200
     public get_timerdelta2
-    public sub_2A236
+    public load_3dshape
 sub_274B0 proc far
     var_40 = byte ptr -64
     var_22 = byte ptr -34
@@ -148,7 +148,7 @@ sub_274B0 proc far
     adc     dx, 0
     mov     [bp+var_4], ax
     mov     [bp+var_2], dx
-    call    sub_3A484
+    call    get_res_ofs_diff_scaled
     cmp     dx, [bp+var_2]
     jg      short loc_27506
     jl      short loc_274FD
@@ -3182,8 +3182,8 @@ sub_28F4E proc far
 sub_28F4E endp
 sub_28F6A proc far
 
-    push    word ptr dword_44D26+2
-    push    word ptr dword_44D26
+    push    word ptr wndsprite+2
+    push    word ptr wndsprite
     call    set_sprite1
     add     sp, 4
     retf
@@ -3192,8 +3192,8 @@ sub_28F6A proc far
 sub_28F6A endp
 sub_28F7C proc far
 
-    push    word ptr dword_44D26+2
-    push    word ptr dword_44D26
+    push    word ptr wndsprite+2
+    push    word ptr wndsprite
     call    set_sprite1
     add     sp, 4
     sub     ax, ax
@@ -3887,7 +3887,7 @@ loc_29554:
     pop     bp
     retf
 sub_292DC endp
-sub_2955A proc far
+setup_3d_res proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = dword ptr 6
@@ -3962,7 +3962,7 @@ sub_2955A proc far
     pop     si
     pop     bp
     retf
-sub_2955A endp
+setup_3d_res endp
 sub_29606 proc far
      s = byte ptr 0
      r = byte ptr 2
@@ -4288,13 +4288,13 @@ load_audio_res proc far
     push    word_44A7C
     push    dx
     push    ax
-    call    sub_370D2
+    call    init_audio_resources
     add     sp, 0Ah
     mov     [bp+var_4], ax
     mov     [bp+var_2], dx
     push    dx
     push    ax
-    call    sub_3717C
+    call    load_audio_finalize
     mov     byte_3B8F3, 1
     mov     sp, bp
     pop     bp
@@ -4306,7 +4306,7 @@ unload_audio_res proc far
 
     mov     ax, 2
     push    ax
-    call    sub_3776C
+    call    audio_driver_func3F
     add     sp, 2
     push    word_44362
     push    word_44360
@@ -5544,7 +5544,7 @@ get_timerdelta2 proc far
     call    get_timerdelta
     retf
 get_timerdelta2 endp
-sub_2A236 proc far
+load_3dshape proc far
     var_54 = byte ptr -84
     var_4 = word ptr -4
     var_2 = word ptr -2
@@ -5609,6 +5609,6 @@ loc_2A2B2:
     mov     sp, bp
     pop     bp
     retf
-sub_2A236 endp
+load_3dshape endp
 seg008 ends
 end

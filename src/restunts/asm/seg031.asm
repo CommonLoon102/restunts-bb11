@@ -54,10 +54,10 @@ seg031 segment byte public 'STUNTSC' use16
     public init_video
     public random_wait
     public load_palandcursor
-    public sub_3A45C
+    public get_0
     public alloc_resbytes
-    public sub_3A484
-    public sub_3A496
+    public get_res_ofs_diff_scaled
+    public get_res_size_scaled
 sub_39E14 proc far
      s = byte ptr 0
      r = byte ptr 2
@@ -375,7 +375,7 @@ loc_3A08A:
     push    ax
     mov     ax, 53A2h
     push    ax              ; char *
-    call    sub_378CA
+    call    load_audio_driver
     add     sp, 6
     or      ax, ax
     jz      short loc_3A0C9
@@ -757,13 +757,13 @@ loc_3A300:
     pop     bp
     retf
 load_palandcursor endp
-sub_3A45C proc far
+get_0 proc far
 
     sub     ax, ax
     retf
     ; align 2
     db 144
-sub_3A45C endp
+get_0 endp
 alloc_resbytes proc far
      s = byte ptr 0
      r = byte ptr 2
@@ -790,9 +790,9 @@ alloc_resbytes proc far
     ; align 2
     db 144
 alloc_resbytes endp
-sub_3A484 proc far
+get_res_ofs_diff_scaled proc far
 
-    call    sub_3117B
+    call    get_res_ofs_diff
     sub     dx, dx
     mov     cl, 4
 loc_3A48D:
@@ -801,8 +801,8 @@ loc_3A48D:
     dec     cl
     jnz     short loc_3A48D
     retf
-sub_3A484 endp
-sub_3A496 proc far
+get_res_ofs_diff_scaled endp
+get_res_size_scaled proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -823,6 +823,6 @@ loc_3A4AB:
     jnz     short loc_3A4AB
     pop     bp
     retf
-sub_3A496 endp
+get_res_size_scaled endp
 seg031 ends
 end

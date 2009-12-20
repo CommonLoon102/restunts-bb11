@@ -48,7 +48,7 @@ seg029 segment byte public 'STUNTSC' use16
     assume es:nothing, ss:nothing, ds:dseg
     public sub_39AD4
     public sub_39B5A
-    public sub_39BDC
+    public init_audio_resource
     public sub_39C84
     ; align 4
     db 144
@@ -208,7 +208,7 @@ loc_39BD3:
     pop     bp
     retf
 sub_39B5A endp
-sub_39BDC proc far
+init_audio_resource proc far
     var_10 = word ptr -16
     var_E = word ptr -14
     var_C = word ptr -12
@@ -293,7 +293,7 @@ loc_39C7A:
     mov     sp, bp
     pop     bp
     retf
-sub_39BDC endp
+init_audio_resource endp
 sub_39C84 proc far
     var_6 = word ptr -6
     var_2 = word ptr -2

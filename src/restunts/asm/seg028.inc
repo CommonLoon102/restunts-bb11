@@ -1,4 +1,5 @@
 seg028 segment byte public 'STUNTSC' use16
+    extrn audiodriver_timer:proc
     extrn sub_3868A:proc
     extrn sub_386D6:proc
     extrn sub_38702:proc
@@ -20,5 +21,5 @@ seg028 segment byte public 'STUNTSC' use16
     extrn sub_3963C:proc
     extrn sub_3968A:proc
     extrn sub_39700:proc
-    extrn sub_39966:proc
+    extrn audio_driver_func1E:proc
 seg028 ends

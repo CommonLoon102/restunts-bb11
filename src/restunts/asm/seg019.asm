@@ -74,7 +74,7 @@ sub_36B16 proc far
     mov     ax, [bx+4]
     sub     ax, si
     push    ax
-    call    sub_30044
+    call    scale_value
     add     sp, 4
     add     ax, si
     mov     [bp+var_8], ax
@@ -83,7 +83,7 @@ sub_36B16 proc far
     mov     ax, [bx+6]
     sub     ax, [bx+2]
     push    ax
-    call    sub_30044
+    call    scale_value
     add     sp, 4
     mov     bx, [bp+arg_0]
     mov     cx, [bx+2]
@@ -93,7 +93,7 @@ sub_36B16 proc far
     mov     ax, [bx+8]
     sub     ax, si
     push    ax
-    call    sub_30044
+    call    scale_value
     add     sp, 4
     add     ax, si
     mov     [bp+var_4], ax
@@ -102,7 +102,7 @@ sub_36B16 proc far
     mov     ax, [bx+0Ah]
     sub     ax, [bx+2]
     push    ax
-    call    sub_30044
+    call    scale_value
     add     sp, 4
     mov     bx, [bp+arg_0]
     mov     cx, [bx+2]

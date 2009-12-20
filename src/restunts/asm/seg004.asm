@@ -217,7 +217,7 @@ loc_1E2AF:
     call    sin_fast
     add     sp, 2
     push    ax
-    call    sub_30044
+    call    scale_value
     add     sp, 4
     push    [bp+var_2C]
     push    si
@@ -225,7 +225,7 @@ loc_1E2AF:
     call    cos_fast
     add     sp, 2
     push    ax
-    call    sub_30044
+    call    scale_value
     add     sp, 4
     add     ax, di
     mov     [bp+var_22], ax
@@ -1103,7 +1103,7 @@ loc_1EAFD:
     call    sin_fast
     add     sp, 2
     push    ax
-    call    sub_30044
+    call    scale_value
     add     sp, 4
     push    [bp+var_2C]
     push    si
@@ -1111,7 +1111,7 @@ loc_1EAFD:
     call    cos_fast
     add     sp, 2
     push    ax
-    call    sub_30044
+    call    scale_value
     add     sp, 4
     add     ax, di
     mov     [bp+var_22], ax
@@ -1600,7 +1600,7 @@ loc_1EFE0:
     call    sin_fast
     add     sp, 2
     push    ax
-    call    sub_30044
+    call    scale_value
     add     sp, 4
     mov     cx, [bp+var_2C]
     sub     cx, [bp+var_1E]
@@ -1610,7 +1610,7 @@ loc_1EFE0:
     call    cos_fast
     add     sp, 2
     push    ax
-    call    sub_30044
+    call    scale_value
     add     sp, 4
     add     ax, di
     mov     [bp+var_22], ax
@@ -2551,7 +2551,7 @@ loc_1F8FC:
     call    sin_fast
     add     sp, 2
     push    ax
-    call    sub_30044
+    call    scale_value
     add     sp, 4
     push    [bp+var_2C]
     mov     cx, 0FF80h
@@ -2560,7 +2560,7 @@ loc_1F8FC:
     call    cos_fast
     add     sp, 2
     push    ax
-    call    sub_30044
+    call    scale_value
     add     sp, 4
     add     ax, di
     mov     [bp+var_22], ax
@@ -2577,7 +2577,7 @@ loc_1F940:
     call    sin_fast
     add     sp, 2
     push    ax
-    call    sub_30044
+    call    scale_value
     add     sp, 4
     push    [bp+var_2C]
     mov     cx, 0FF80h
@@ -2586,7 +2586,7 @@ loc_1F940:
     call    cos_fast
     add     sp, 2
     push    ax
-    call    sub_30044
+    call    scale_value
     add     sp, 4
     add     ax, di
     mov     [bp+var_22], ax
@@ -3188,7 +3188,7 @@ load_game_3dshapes proc far
     mov     word_461C4, ax
     mov     word_463D4, ax
     mov     word_463D2, ax
-    call    sub_3A484
+    call    get_res_ofs_diff_scaled
     or      dx, dx
     jg      short loc_1FEC2
     jl      short loc_1FEB9
@@ -3205,13 +3205,13 @@ loc_1FEB9:
 loc_1FEC2:
     mov     ax, 2F42h
     push    ax
-    call    sub_2A236
+    call    load_3dshape
     add     sp, 2
     mov     word_461C4, ax
     mov     word_461C6, dx
     mov     ax, 2F48h
     push    ax
-    call    sub_2A236
+    call    load_3dshape
     add     sp, 2
     mov     word_463D2, ax
     mov     word_463D4, dx
@@ -3252,7 +3252,7 @@ loc_1FF38:
     push    ax
     push    word_449FA
     push    word_449F8
-    call    sub_2955A
+    call    setup_3d_res
     add     sp, 6
     inc     si
     cmp     si, 74h ; 't'
@@ -3313,7 +3313,7 @@ sub_1FF92 proc far
     mov     byte_3E70F, al
     mov     ax, 2F9Ah
     push    ax
-    call    sub_2A236
+    call    load_3dshape
     add     sp, 2
     mov     word ptr dword_454AA, ax
     mov     word ptr dword_454AA+2, dx
@@ -3327,7 +3327,7 @@ sub_1FF92 proc far
     add     sp, 6
     push    dx
     push    ax
-    call    sub_2955A
+    call    setup_3d_res
     add     sp, 6
     mov     ax, 8120h
     push    ax
@@ -3339,7 +3339,7 @@ sub_1FF92 proc far
     add     sp, 6
     push    dx
     push    ax
-    call    sub_2955A
+    call    setup_3d_res
     add     sp, 6
     mov     ax, word_43892
     mov     dx, word_43894
@@ -3444,7 +3444,7 @@ loc_200D6:
     add     sp, 6
     push    dx
     push    ax
-    call    sub_2955A
+    call    setup_3d_res
     add     sp, 6
     mov     ax, 8044h
     push    ax
@@ -3456,7 +3456,7 @@ loc_200D6:
     add     sp, 6
     push    dx
     push    ax
-    call    sub_2955A
+    call    setup_3d_res
     add     sp, 6
     mov     ax, 805Ah
     push    ax
@@ -3468,7 +3468,7 @@ loc_200D6:
     add     sp, 6
     push    dx
     push    ax
-    call    sub_2955A
+    call    setup_3d_res
     add     sp, 6
     mov     ax, 8070h
     push    ax
@@ -3480,7 +3480,7 @@ loc_200D6:
     add     sp, 6
     push    dx
     push    ax
-    call    sub_2955A
+    call    setup_3d_res
     add     sp, 6
     mov     ax, 8086h
     push    ax
@@ -3492,7 +3492,7 @@ loc_200D6:
     add     sp, 6
     push    dx
     push    ax
-    call    sub_2955A
+    call    setup_3d_res
     add     sp, 6
     mov     bx, [bp+arg_2]
     mov     al, [bx]
@@ -3518,7 +3518,7 @@ loc_201A9:
     jnz     short loc_2022A
     push    word ptr dword_454AA+2
     push    word ptr dword_454AA
-    call    sub_3A496
+    call    get_res_size_scaled
     add     sp, 4
     mov     [bp+var_6], ax
     mov     [bp+var_4], dx
@@ -3570,7 +3570,7 @@ loc_2022A:
     mov     byte_3E70F, al
     mov     ax, 2F9Ah
     push    ax
-    call    sub_2A236
+    call    load_3dshape
     add     sp, 2
     mov     word ptr dword_454B0, ax
     mov     word ptr dword_454B0+2, dx
@@ -3585,7 +3585,7 @@ loc_20257:
     add     sp, 6
     push    dx
     push    ax
-    call    sub_2955A
+    call    setup_3d_res
     add     sp, 6
     mov     ax, 8136h
     push    ax
@@ -3597,7 +3597,7 @@ loc_20257:
     add     sp, 6
     push    dx
     push    ax
-    call    sub_2955A
+    call    setup_3d_res
     add     sp, 6
     mov     ax, word_438A8
     mov     dx, word_438AA
@@ -3702,7 +3702,7 @@ loc_20369:
     add     sp, 6
     push    dx
     push    ax
-    call    sub_2955A
+    call    setup_3d_res
     add     sp, 6
     mov     ax, 809Ch
     push    ax
@@ -3714,7 +3714,7 @@ loc_20369:
     add     sp, 6
     push    dx
     push    ax
-    call    sub_2955A
+    call    setup_3d_res
     add     sp, 6
     mov     ax, 80B2h
     push    ax
@@ -3726,7 +3726,7 @@ loc_20369:
     add     sp, 6
     push    dx
     push    ax
-    call    sub_2955A
+    call    setup_3d_res
     add     sp, 6
     mov     ax, 80C8h
     push    ax
@@ -3738,7 +3738,7 @@ loc_20369:
     add     sp, 6
     push    dx
     push    ax
-    call    sub_2955A
+    call    setup_3d_res
     add     sp, 6
     mov     ax, 80DEh
     push    ax
@@ -3750,7 +3750,7 @@ loc_20369:
     add     sp, 6
     push    dx
     push    ax
-    call    sub_2955A
+    call    setup_3d_res
     add     sp, 6
     pop     si
     pop     di
@@ -3877,14 +3877,14 @@ loc_204E5:
     shl     ax, 1
     add     bx, ax
     push    word ptr [bx]
-    call    sub_30044
+    call    scale_value
     add     sp, 4
     push    [bp+var_C]
     mov     bx, [bp+arg_A]
     add     bx, [bp+var_10]
     push    word ptr [bx+4]
     mov     [bp+var_14], ax
-    call    sub_30044
+    call    scale_value
     add     sp, 4
     mov     bx, [bp+arg_C]
     mov     cx, [bx]
@@ -3907,14 +3907,14 @@ loc_204E5:
     shl     ax, 1
     add     bx, ax
     push    word ptr [bx+4]
-    call    sub_30044
+    call    scale_value
     add     sp, 4
     push    [bp+var_C]
     mov     bx, [bp+arg_A]
     add     bx, [bp+var_12]
     push    word ptr [bx]
     mov     [bp+var_14], ax
-    call    sub_30044
+    call    scale_value
     add     sp, 4
     mov     bx, [bp+arg_C]
     mov     cx, [bx+4]
@@ -3944,14 +3944,14 @@ loc_20595:
     shl     ax, 1
     add     bx, ax
     push    word ptr [bx]
-    call    sub_30044
+    call    scale_value
     add     sp, 4
     push    [bp+var_C]
     mov     bx, [bp+arg_A]
     add     bx, [bp+var_14]
     push    word ptr [bx+4]
     mov     [bp+var_10], ax
-    call    sub_30044
+    call    scale_value
     add     sp, 4
     mov     bx, [bp+arg_C]
     mov     cx, [bx+6]
@@ -3974,14 +3974,14 @@ loc_20595:
     shl     ax, 1
     add     bx, ax
     push    word ptr [bx+4]
-    call    sub_30044
+    call    scale_value
     add     sp, 4
     push    [bp+var_C]
     mov     bx, [bp+arg_A]
     add     bx, [bp+var_12]
     push    word ptr [bx]
     mov     [bp+var_10], ax
-    call    sub_30044
+    call    scale_value
     add     sp, 4
     mov     bx, [bp+arg_C]
     mov     cx, [bx+0Ah]
@@ -4254,7 +4254,7 @@ loc_20824:
     mov     [bp+var_73A], 0
     jmp     loc_20956
 loc_2082C:
-    mov     word_45516, 0
+    mov     track_angle, 0
 loc_20832:
     cmp     [bp+var_3A6], 0
     jz      short loc_2087A
@@ -4263,13 +4263,13 @@ loc_20832:
     ; align 2
     db 144
 loc_20842:
-    mov     word_45516, 200h
+    mov     track_angle, 200h
     jmp     short loc_20832
 loc_2084A:
-    mov     word_45516, 100h
+    mov     track_angle, 100h
     jmp     short loc_20832
 loc_20852:
-    mov     word_45516, 300h
+    mov     track_angle, 300h
     jmp     short loc_20832
 loc_2085A:
     cmp     ax, 94h ; '”'
@@ -4420,7 +4420,7 @@ loc_20997:
     mov     [bp+var_3A4], al
     mov     al, byte_4499E
     mov     [bp+var_73A], al
-    mov     ax, word_45516
+    mov     ax, track_angle
     mov     [bp+var_8], ax
     mov     [bp+var_12], 0
     mov     [bp+var_3AC], 0FFFFh

@@ -46,8 +46,8 @@ nosmart
 seg027 segment byte public 'STUNTSC' use16
     assume cs:seg027
     assume es:nothing, ss:nothing, ds:dseg
-    public sub_370D2
-    public sub_3717C
+    public init_audio_resources
+    public load_audio_finalize
     public sub_37216
     public sub_372F4
     public sub_3736A
@@ -57,30 +57,30 @@ seg027 segment byte public 'STUNTSC' use16
     public sub_37470
     public sub_374DE
     public sub_374FA
-    public sub_3751A
-    public sub_3764A
+    public check_audio_flag
+    public init_audio_chunk2
     public sub_37696
     public sub_376CA
     public sub_37708
     public sub_3771E
-    public sub_3776C
+    public audio_driver_func3F
     public sub_37868
-    public sub_378CA
+    public load_audio_driver
     public audiodrv_atexit
     public sub_37B14
     public sub_37C44
     public sub_37CBA
     public sub_37D04
-    public sub_37DBC
-    public sub_37EC0
+    public init_audio_chunk
+    public load_vce
     public sub_38156
     public sub_38178
-    public sub_38254
+    public audio_hdr1_unk
     public off_383A0
     public sub_384FA
     public sub_38514
-    public sub_38528
-sub_370D2 proc far
+    public copy_4_bytes
+init_audio_resources proc far
     var_C = dword ptr -12
     var_8 = word ptr -8
     var_6 = word ptr -6
@@ -99,7 +99,7 @@ sub_370D2 proc far
     push    [bp+arg_8]
     push    [bp+arg_2]
     push    [bp+arg_0]
-    call    sub_39BDC
+    call    init_audio_resource
     add     sp, 6
     mov     word ptr [bp+var_C], ax
     mov     word ptr [bp+var_C+2], dx
@@ -112,11 +112,11 @@ loc_370F3:
     pop     bp
     retf
 loc_370FA:
-    mov     ax, 4E94h
+    mov     ax, offset aHdr1; "hdr1"
     push    ax
     push    word ptr [bp+var_C+2]
     push    word ptr [bp+var_C]
-    call    sub_39BDC
+    call    init_audio_resource
     add     sp, 6
     mov     word ptr [bp+var_4], ax
     mov     word ptr [bp+var_4+2], dx
@@ -130,12 +130,12 @@ loc_370FA:
     push    word ptr [bp+var_C+2]
     push    word ptr [bp+var_C]
     push    cs
-    call    near ptr sub_37EC0
+    call    near ptr load_vce
     add     sp, 8
     push    word ptr [bp+var_C+2]
     push    word ptr [bp+var_C]
     push    cs
-    call    near ptr sub_38254
+    call    near ptr audio_hdr1_unk
     add     sp, 4
     les     bx, [bp+var_4]
     mov     byte ptr es:[bx+5], 1
@@ -155,7 +155,7 @@ loc_370FA:
     push    word ptr [bp+var_4+2]
     push    word ptr [bp+var_4]
     push    cs
-    call    near ptr sub_38528
+    call    near ptr copy_4_bytes
     add     sp, 8
 loc_37172:
     mov     ax, word ptr [bp+var_4]
@@ -163,8 +163,8 @@ loc_37172:
     mov     sp, bp
     pop     bp
     retf
-sub_370D2 endp
-sub_3717C proc far
+init_audio_resources endp
+load_audio_finalize proc far
     var_6 = dword ptr -6
     var_2 = word ptr -2
      s = byte ptr 0
@@ -186,8 +186,8 @@ sub_3717C proc far
     jnz     short loc_3720F
     cmp     byte ptr es:[bx+5], 1
     jnz     short loc_3720F
-    mov     ax, word ptr dword_4060A
-    mov     dx, word ptr dword_4060A+2
+    mov     ax, word ptr audiodriverbinary
+    mov     dx, word ptr audiodriverbinary+2
     add     ax, 18h
     mov     word ptr [bp+var_6+2], dx
     mov     word ptr [bp+var_6], ax
@@ -220,7 +220,7 @@ sub_3717C proc far
     sub     ax, ax
     push    ax
     push    cs
-    call    near ptr sub_37DBC
+    call    near ptr init_audio_chunk
     add     sp, 0Eh
     mov     byte_40632, 1
     mov     word_4063A, 0
@@ -231,7 +231,7 @@ loc_3720F:
     retf
     db 144
     db 144
-sub_3717C endp
+load_audio_finalize endp
 sub_37216 proc far
     var_C = word ptr -12
     var_A = dword ptr -10
@@ -280,8 +280,8 @@ loc_37262:
     push    ax
     mov     ax, 4
     push    ax
-    mov     ax, word ptr dword_4060A
-    mov     dx, word ptr dword_4060A+2
+    mov     ax, word ptr audiodriverbinary
+    mov     dx, word ptr audiodriverbinary+2
     add     ax, 3Fh ; '?'
     mov     word ptr [bp+var_A+2], dx
     mov     word ptr [bp+var_A], ax
@@ -302,8 +302,8 @@ loc_3729A:
     mov     al, [si+2Ch]
     sub     ah, ah
     push    ax
-    mov     ax, word ptr dword_4060A
-    mov     dx, word ptr dword_4060A+2
+    mov     ax, word ptr audiodriverbinary
+    mov     dx, word ptr audiodriverbinary+2
     add     ax, 27h ; '''
     mov     word ptr [bp+var_A+2], dx
     mov     word ptr [bp+var_A], ax
@@ -315,8 +315,8 @@ loc_3729A:
     mov     [bp+var_4], si
     mov     ax, 0A2B6h
     push    ax
-    mov     ax, word ptr dword_4060A
-    mov     dx, word ptr dword_4060A+2
+    mov     ax, word ptr audiodriverbinary
+    mov     dx, word ptr audiodriverbinary+2
     add     ax, 30h ; '0'
     mov     word ptr [bp+var_A+2], dx
     mov     word ptr [bp+var_A], ax
@@ -372,8 +372,8 @@ loc_37336:
     push    ax
     mov     ax, 4
     push    ax
-    mov     ax, word ptr dword_4060A
-    mov     dx, word ptr dword_4060A+2
+    mov     ax, word ptr audiodriverbinary
+    mov     dx, word ptr audiodriverbinary+2
     add     ax, 3Fh ; '?'
     mov     word ptr [bp+var_6+2], dx
     mov     word ptr [bp+var_6], ax
@@ -395,7 +395,7 @@ sub_3736A proc far
     push    ax
     sub     ax, ax
     push    ax
-    call    sub_39966
+    call    audio_driver_func1E
     add     sp, 4
     sub     ax, ax
     push    ax
@@ -411,7 +411,7 @@ sub_3736A proc far
     sub     ax, ax
     push    ax
     push    cs
-    call    near ptr sub_37DBC
+    call    near ptr init_audio_chunk
     add     sp, 0Eh
     mov     byte_44290, 0
     call    sub_39700
@@ -437,7 +437,7 @@ sub_373B8 proc far
     push    ax
     sub     ax, ax
     push    ax
-    call    sub_39966
+    call    audio_driver_func1E
     add     sp, 4
 loc_373DC:
     call    sub_39700
@@ -592,7 +592,7 @@ sub_374DE proc far
     mov     byte ptr [bx-59D6h], 0
     push    bx
     push    cs
-    call    near ptr sub_3764A
+    call    near ptr init_audio_chunk2
     add     sp, 2
 loc_374F7:
     pop     bp
@@ -619,14 +619,14 @@ sub_374FA proc far
     push    [bp+arg_2]
     push    [bp+arg_0]
     push    cs
-    call    near ptr sub_3751A
+    call    near ptr check_audio_flag
     add     sp, 0Ah
     pop     bp
     retf
     ; align 2
     db 144
 sub_374FA endp
-sub_3751A proc far
+check_audio_flag proc far
     var_6 = word ptr -6
     var_4 = word ptr -4
     var_2 = word ptr -2
@@ -683,7 +683,7 @@ loc_3756D:
     jmp     loc_37609
 loc_37576:
     mov     si, 10h
-    mov     di, 86BCh
+    mov     di, offset audiochunks_unk2
     mov     cx, [bp+arg_4]
 loc_3757F:
     cmp     cx, 0FFFFh
@@ -691,7 +691,7 @@ loc_3757F:
     mov     ax, [di]
     or      ax, [di+2]
     jnz     short loc_37594
-    cmp     byte ptr [si-59D6h], 0
+    cmp     byte_45D9A[si], 0
     jnz     short loc_37594
     mov     cx, si
 loc_37594:
@@ -713,7 +713,7 @@ loc_375B4:
     sub     ah, ah
     cmp     ax, cx
     ja      short loc_375CB
-    mov     ax, 0A62Ah
+    mov     ax, offset byte_45D9A
     or      ax, ax
     jnz     short loc_375CB
     mov     al, [si]
@@ -734,16 +734,16 @@ loc_375CB:
     imul    dx
     mov     bx, ax
     mov     al, [bp+arg_6]
-    cmp     [bx-7DE0h], al
+    cmp     (audiochunks_unk+24h)[bx], al
     ja      short loc_37609
     mov     bx, [bp+arg_4]
-    cmp     byte ptr [bx-59D6h], 0
+    cmp     byte_45D9A[bx], 0
     jz      short loc_37601
-    mov     byte ptr [bx-59D6h], 0
+    mov     byte_45D9A[bx], 0
 loc_37601:
     push    bx
     push    cs
-    call    near ptr sub_3764A
+    call    near ptr init_audio_chunk2
     add     sp, 2
 loc_37609:
     cmp     [bp+arg_4], 0FFFFh
@@ -767,7 +767,7 @@ loc_37612:
     push    [bp+arg_4]
     push    [bp+arg_4]
     push    cs
-    call    near ptr sub_37DBC
+    call    near ptr init_audio_chunk
     add     sp, 0Eh
     mov     ax, [bp+arg_4]
     pop     si
@@ -777,8 +777,8 @@ loc_37612:
     retf
     ; align 2
     db 144
-sub_3751A endp
-sub_3764A proc far
+check_audio_flag endp
+init_audio_chunk2 proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -793,11 +793,11 @@ sub_3764A proc far
     imul    [bp+arg_0]
     mov     bx, ax
     sub     ax, ax
-    mov     [bx-7E02h], ax
-    mov     [bx-7E04h], ax
+    mov     word ptr (audiochunks_unk+2)[bx], ax
+    mov     word ptr audiochunks_unk[bx], ax
     push    [bp+arg_0]
     push    [bp+arg_0]
-    call    sub_39966
+    call    audio_driver_func1E
     add     sp, 4
     sub     ax, ax
     push    ax
@@ -811,12 +811,12 @@ sub_3764A proc far
     push    [bp+arg_0]
     push    [bp+arg_0]
     push    cs
-    call    near ptr sub_37DBC
+    call    near ptr init_audio_chunk
     add     sp, 0Eh
 loc_37694:
     pop     bp
     retf
-sub_3764A endp
+init_audio_chunk2 endp
 sub_37696 proc far
     var_2 = word ptr -2
      s = byte ptr 0
@@ -830,7 +830,7 @@ sub_37696 proc far
     jz      short loc_376C5
     mov     si, 10h
 loc_376A7:
-    mov     al, [si+7166h]
+    mov     al, byte_428D6[si]
     sub     ah, ah
     push    ax
     push    si
@@ -860,10 +860,10 @@ sub_376CA proc far
     cmp     byte_40633, 0
     jz      short loc_37702
     mov     si, 10h
-    mov     di, 86E4h
+    mov     di, (offset audiochunks_unk2+28h)
 loc_376DF:
     mov     al, [di]
-    mov     [si+7166h], al
+    mov     byte_428D6[si], al
     sub     ax, ax
     push    ax
     push    si
@@ -919,8 +919,8 @@ loc_3772E:
     mov     ax, 4Ch ; 'L'
     imul    [bp+arg_0]
     mov     bx, ax
-    mov     ax, [bx-7E04h]
-    or      ax, [bx-7E02h]
+    mov     ax, word ptr audiochunks_unk[bx]
+    or      ax, word ptr (audiochunks_unk+2)[bx]
     jz      short loc_37728
     sub     ax, ax
     pop     bp
@@ -932,14 +932,14 @@ loc_3772E:
     mov     bx, ax
     mov     ax, [bp+8]
     mov     dx, [bp+0Ah]
-    mov     [bx-7DBCh], ax
-    mov     [bx-7DBAh], dx
+    mov     word ptr (audiochunks_unk+48h)[bx], ax
+    mov     word ptr (audiochunks_unk+4Ah)[bx], dx
     pop     bp
     retf
     ; align 2
     db 144
 sub_3771E endp
-sub_3776C proc far
+audio_driver_func3F proc far
     var_A = dword ptr -10
     var_6 = word ptr -6
     var_4 = word ptr -4
@@ -992,13 +992,13 @@ loc_377D3:
     mov     word_4063A, 1
     mov     ax, si
     mov     byte_40639, al
-    mov     ax, 4EC6h
+    mov     ax, offset unk_40636
     push    ds
     push    ax
     mov     ax, 4
     push    ax
-    mov     ax, word ptr dword_4060A
-    mov     dx, word ptr dword_4060A+2
+    mov     ax, word ptr audiodriverbinary
+    mov     dx, word ptr audiodriverbinary+2
     add     ax, 3Fh ; '?'
     mov     word ptr [bp+var_A+2], dx
     mov     word ptr [bp+var_A], ax
@@ -1028,13 +1028,13 @@ loc_37820:
     add     sp, 4
     call    sub_327D7
     mov     byte_40639, 64h ; 'd'
-    mov     ax, 4EC6h
+    mov     ax, offset unk_40636
     push    ds
     push    ax
     mov     ax, 4
     push    ax
-    mov     ax, word ptr dword_4060A
-    mov     dx, word ptr dword_4060A+2
+    mov     ax, word ptr audiodriverbinary
+    mov     dx, word ptr audiodriverbinary+2
     add     ax, 3Fh ; '?'
     mov     word ptr [bp+var_A+2], dx
     mov     word ptr [bp+var_A], ax
@@ -1047,7 +1047,7 @@ loc_37862:
     retf
     ; align 2
     db 144
-sub_3776C endp
+audio_driver_func3F endp
 sub_37868 proc far
     var_2 = word ptr -2
      s = byte ptr 0
@@ -1109,7 +1109,7 @@ loc_37883:
     pop     bp
     retf
 sub_37868 endp
-sub_378CA proc far
+load_audio_driver proc far
     var_C = dword ptr -12
     var_8 = word ptr -8
     var_6 = word ptr -6
@@ -1129,8 +1129,8 @@ sub_378CA proc far
     jnz     short loc_378DE
     mov     byte_40635, 1
 loc_378DE:
-    mov     ax, word ptr dword_4060A
-    or      ax, word ptr dword_4060A+2
+    mov     ax, word ptr audiodriverbinary
+    or      ax, word ptr audiodriverbinary+2
     jz      short loc_378EE
     push    cs
     call    near ptr audiodrv_atexit
@@ -1138,16 +1138,16 @@ loc_378DE:
     ; align 2
     db 144
 loc_378EE:
-    mov     ax, 994h
+    mov     ax, offset audiodrv_atexit
     mov     dx, seg seg027
     push    dx
     push    ax
-    call    sub_2FE1C
+    call    add_exit_handler
     add     sp, 4
 loc_378FE:
     sub     ax, ax
-    mov     word ptr dword_4060A+2, ax
-    mov     word ptr dword_4060A, ax
+    mov     word ptr audiodriverbinary+2, ax
+    mov     word ptr audiodriverbinary, ax
     push    ds
     pop     es
     mov     di, word ptr [bp+arg_0]
@@ -1182,9 +1182,9 @@ loc_3793B:
     mov     al, [si+1]
     mov     byte_42DAF, al
     mov     byte_42DB0, 0
-    mov     ax, 4ECEh
+    mov     ax, offset unk_4063E
     push    ax              ; int
-    mov     ax, 4ECFh
+    mov     ax, offset aDrv ; "drv"
     push    ax
     push    word ptr [bp+arg_0]; char *
     call    sub_39CCE
@@ -1193,15 +1193,15 @@ loc_3793B:
     push    ax
     call    load_res0_1_type
     add     sp, 2
-    mov     word ptr dword_4060A, ax
-    mov     word ptr dword_4060A+2, dx
+    mov     word ptr audiodriverbinary, ax
+    mov     word ptr audiodriverbinary+2, dx
     mov     byte_45950, 7Fh ; ''
     mov     byte_45948, 7Fh ; ''
     or      ax, dx
     jnz     short loc_37988
     jmp     loc_37A52
 loc_37988:
-    call    dword_4060A
+    call    audiodriverbinary
     mov     byte_459D2, al
     or      al, al
     jz      short loc_37997
@@ -1225,7 +1225,7 @@ loc_379A2:
 loc_379B8:
     push    cs
     call    near ptr sub_38178
-    mov     ax, 0Ch
+    mov     ax, offset audiodriver_timer
     mov     dx, seg seg028
     push    dx
     push    ax
@@ -1233,7 +1233,7 @@ loc_379B8:
     add     sp, 4
     cmp     byte_40634, 0
     jz      short loc_37A35
-    mov     ax, 4ED3h
+    mov     ax, offset aMt32_plb; "mt32.plb"
     push    ax
     call    load_res0_1_type
     add     sp, 2
@@ -1243,8 +1243,8 @@ loc_379B8:
     jz      short loc_37A35
     push    dx
     push    [bp+var_4]
-    mov     ax, word ptr dword_4060A
-    mov     dx, word ptr dword_4060A+2
+    mov     ax, word ptr audiodriverbinary
+    mov     dx, word ptr audiodriverbinary+2
     add     ax, 42h ; 'B'
     mov     word ptr [bp+var_C+2], dx
     mov     word ptr [bp+var_C], ax
@@ -1255,13 +1255,13 @@ loc_379B8:
     call    sub_31641
     add     sp, 4
     mov     byte_40639, 64h ; 'd'
-    mov     ax, 4EC6h
+    mov     ax, offset unk_40636
     push    ds
     push    ax
     mov     ax, 4
     push    ax
-    mov     ax, word ptr dword_4060A
-    mov     dx, word ptr dword_4060A+2
+    mov     ax, word ptr audiodriverbinary
+    mov     dx, word ptr audiodriverbinary+2
     add     ax, 3Fh ; '?'
     mov     word ptr [bp+var_C+2], dx
     mov     word ptr [bp+var_C], ax
@@ -1281,7 +1281,7 @@ loc_37A35:
     ; align 2
     db 144
 loc_37A52:
-    mov     ax, 4EDCh
+    mov     ax, offset aCanTFindDriver; "Can't find driver!\n"
     push    ax
     call    far ptr fatal_error
     add     sp, 2
@@ -1290,7 +1290,7 @@ loc_37A52:
     mov     sp, bp
     pop     bp
     retf
-sub_378CA endp
+load_audio_driver endp
 audiodrv_atexit proc far
     var_4 = dword ptr -4
      s = byte ptr 0
@@ -1300,8 +1300,8 @@ audiodrv_atexit proc far
     mov     bp, sp
     sub     sp, 4
     mov     word_4063A, 1
-    mov     ax, word ptr dword_4060A
-    or      ax, word ptr dword_4060A+2
+    mov     ax, word ptr audiodriverbinary
+    or      ax, word ptr audiodriverbinary+2
     jnz     short loc_37A7C
     jmp     loc_37B09
 loc_37A7C:
@@ -1321,33 +1321,33 @@ loc_37A7C:
     push    ax
     mov     ax, 4
     push    ax
-    mov     ax, word ptr dword_4060A
-    mov     dx, word ptr dword_4060A+2
+    mov     ax, word ptr audiodriverbinary
+    mov     dx, word ptr audiodriverbinary+2
     add     ax, 3Fh ; '?'
     mov     word ptr [bp+var_4+2], dx
     mov     word ptr [bp+var_4], ax
     call    [bp+var_4]
     add     sp, 6
 loc_37AC1:
-    mov     ax, word ptr dword_4060A
-    mov     dx, word ptr dword_4060A+2
+    mov     ax, word ptr audiodriverbinary
+    mov     dx, word ptr audiodriverbinary+2
     add     ax, 6
     mov     word ptr [bp+var_4+2], dx
     mov     word ptr [bp+var_4], ax
     call    [bp+var_4]
-    mov     ax, word ptr dword_4060A
-    mov     dx, word ptr dword_4060A+2
+    mov     ax, word ptr audiodriverbinary
+    mov     dx, word ptr audiodriverbinary+2
     add     ax, 3
     mov     word ptr [bp+var_4+2], dx
     mov     word ptr [bp+var_4], ax
     call    [bp+var_4]
-    push    word ptr dword_4060A+2
-    push    word ptr dword_4060A
+    push    word ptr audiodriverbinary+2
+    push    word ptr audiodriverbinary
     call    sub_31641
     add     sp, 4
     sub     ax, ax
-    mov     word ptr dword_4060A+2, ax
-    mov     word ptr dword_4060A, ax
+    mov     word ptr audiodriverbinary+2, ax
+    mov     word ptr audiodriverbinary, ax
     mov     byte_40634, 0
     mov     byte_40635, 0
 loc_37B09:
@@ -1673,7 +1673,7 @@ loc_37DB2:
     pop     bp
     retf
 sub_37D04 endp
-sub_37DBC proc far
+init_audio_chunk proc far
     var_A = word ptr -10
     var_8 = word ptr -8
     var_6 = word ptr -6
@@ -1703,7 +1703,7 @@ sub_37DBC proc far
 loc_37DD5:
     mov     ax, 4Ch ; 'L'
     imul    [bp+arg_0]
-    add     ax, 81FCh
+    add     ax, offset audiochunks_unk
     mov     [bp+var_A], ax
     mov     di, [bp+var_6]
 loc_37DE4:
@@ -1787,8 +1787,8 @@ loc_37EBA:
     mov     sp, bp
     pop     bp
     retf
-sub_37DBC endp
-sub_37EC0 proc far
+init_audio_chunk endp
+load_vce proc far
     var_22 = word ptr -34
     var_20 = word ptr -32
     var_1E = word ptr -30
@@ -1820,7 +1820,7 @@ sub_37EC0 proc far
     push    ax
     push    [bp+arg_2]
     push    [bp+arg_0]
-    call    sub_39BDC
+    call    init_audio_resource
     add     sp, 6
     mov     word ptr [bp+var_16], ax
     mov     word ptr [bp+var_16+2], dx
@@ -1868,7 +1868,7 @@ loc_37F23:
     push    ax
     push    [bp+arg_6]
     push    [bp+arg_4]
-    call    sub_39BDC
+    call    init_audio_resource
     add     sp, 6
     mov     [bp+var_E], ax
     mov     [bp+var_C], dx
@@ -1878,7 +1878,7 @@ loc_37F23:
     push    [bp+var_2]
     push    [bp+var_4]
     push    cs
-    call    near ptr sub_38528
+    call    near ptr copy_4_bytes
     add     sp, 8
     add     [bp+var_1E], 4
     add     [bp+var_22], 4
@@ -1891,7 +1891,7 @@ loc_37F87:
     push    ax
     push    [bp+arg_6]
     push    [bp+arg_4]
-    call    sub_39BDC
+    call    init_audio_resource
     add     sp, 6
     mov     word_42A34, ax
     mov     word_42A36, dx
@@ -1899,7 +1899,7 @@ loc_37F87:
     push    ax
     push    [bp+arg_6]
     push    [bp+arg_4]
-    call    sub_39BDC
+    call    init_audio_resource
     add     sp, 6
     mov     word_4393E, ax
     mov     word_43940, dx
@@ -1907,7 +1907,7 @@ loc_37F87:
     push    ax
     push    [bp+arg_6]
     push    [bp+arg_4]
-    call    sub_39BDC
+    call    init_audio_resource
     add     sp, 6
     mov     word_4394A, ax
     mov     word_4394C, dx
@@ -1915,7 +1915,7 @@ loc_37F87:
     push    ax
     push    [bp+arg_6]
     push    [bp+arg_4]
-    call    sub_39BDC
+    call    init_audio_resource
     add     sp, 6
     mov     word_454CA, ax
     mov     word_454CC, dx
@@ -1923,7 +1923,7 @@ loc_37F87:
     push    ax
     push    [bp+arg_6]
     push    [bp+arg_4]
-    call    sub_39BDC
+    call    init_audio_resource
     add     sp, 6
     mov     word_4432C, ax
     mov     word_4432E, dx
@@ -1931,7 +1931,7 @@ loc_37F87:
     push    ax
     push    [bp+arg_6]
     push    [bp+arg_4]
-    call    sub_39BDC
+    call    init_audio_resource
     add     sp, 6
     mov     word_43928, ax
     mov     word_4392A, dx
@@ -1939,7 +1939,7 @@ loc_37F87:
     push    ax
     push    [bp+arg_6]
     push    [bp+arg_4]
-    call    sub_39BDC
+    call    init_audio_resource
     add     sp, 6
     mov     word_44368, ax
     mov     word_4436A, dx
@@ -1997,7 +1997,7 @@ loc_3808A:
     push    ax
     push    word ptr [bp+8]
     push    word ptr [bp+6]
-    call    sub_39BDC
+    call    init_audio_resource
     add     sp, 6
     mov     [bp-4], ax
     mov     [bp-2], dx
@@ -2043,7 +2043,7 @@ loc_380CE:
     push    word ptr [bp-0Ch]
     push    word ptr [bp-0Eh]
     push    cs
-    call    near ptr sub_38528
+    call    near ptr copy_4_bytes
     add     sp, 8
     les     bx, [bp-4]
     mov     byte ptr es:[bx+0Ah], 0FFh
@@ -2064,7 +2064,7 @@ loc_3814F:
     retf
     ; align 2
     db 144
-sub_37EC0 endp
+load_vce endp
 sub_38156 proc far
     var_2 = word ptr -2
      s = byte ptr 0
@@ -2076,7 +2076,7 @@ sub_38156 proc far
     sub     sp, 2
     mov     ax, 2Eh ; '.'
     imul    [bp+arg_0]
-    add     ax, 0A2B6h
+    add     ax, offset unk_45A26
     mov     [bp+var_2], ax
     mov     bx, ax
     mov     word ptr [bx+0Ch], 1
@@ -2114,7 +2114,7 @@ sub_38178 proc far
     sub     ax, ax
     push    ax
     push    cs
-    call    near ptr sub_37DBC
+    call    near ptr init_audio_chunk
     add     sp, 0Eh
     mov     [bp+var_2], 0
     mov     al, byte_459D2
@@ -2129,8 +2129,8 @@ sub_38178 proc far
     mov     si, [bp+var_2]
 loc_381C8:
     push    si
-    mov     ax, word ptr dword_4060A
-    mov     dx, word ptr dword_4060A+2
+    mov     ax, word ptr audiodriverbinary
+    mov     dx, word ptr audiodriverbinary+2
     add     ax, 1Eh
     mov     word ptr [bp+var_10+2], dx
     mov     word ptr [bp+var_10], ax
@@ -2160,14 +2160,14 @@ loc_381C8:
     jb      short loc_381C8
     mov     [bp+var_2], si
 loc_38221:
-    mov     ax, word ptr dword_4060A
-    mov     dx, word ptr dword_4060A+2
+    mov     ax, word ptr audiodriverbinary
+    mov     dx, word ptr audiodriverbinary+2
     add     ax, 18h
     mov     word ptr [bp+var_10+2], dx
     mov     word ptr [bp+var_10], ax
     call    [bp+var_10]
-    mov     ax, word ptr dword_4060A
-    mov     dx, word ptr dword_4060A+2
+    mov     ax, word ptr audiodriverbinary
+    mov     dx, word ptr audiodriverbinary+2
     add     ax, 6
     mov     word ptr [bp+var_10+2], dx
     mov     word ptr [bp+var_10], ax
@@ -2181,7 +2181,7 @@ loc_38221:
     ; align 2
     db 144
 sub_38178 endp
-sub_38254 proc far
+audio_hdr1_unk proc far
     var_32 = word ptr -50
     var_30 = word ptr -48
     var_2E = word ptr -46
@@ -2309,7 +2309,7 @@ loc_382DA:
     push    word ptr [bp+var_14+2]
     push    word ptr [bp+var_14]
     push    cs
-    call    near ptr sub_38528
+    call    near ptr copy_4_bytes
     add     sp, 8
 loc_3834A:
     add     word ptr [bp+var_14], 4
@@ -2486,7 +2486,7 @@ loc_38472:
     push    word ptr [bp+var_14+2]
     push    word ptr [bp+var_14]
     push    cs
-    call    near ptr sub_38528
+    call    near ptr copy_4_bytes
     add     sp, 8
 loc_384DF:
     add     word ptr [bp+var_14], 5
@@ -2503,7 +2503,7 @@ loc_384F4:
     mov     sp, bp
     pop     bp
     retf
-sub_38254 endp
+audio_hdr1_unk endp
 sub_384FA proc far
     var_4 = word ptr -4
     var_2 = word ptr -2
@@ -2541,7 +2541,7 @@ sub_38514 proc far
     ; align 2
     db 144
 sub_38514 endp
-sub_38528 proc far
+copy_4_bytes proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = dword ptr 6
@@ -2658,6 +2658,6 @@ loc_38600:
     mov     sp, bp
     pop     bp
     retf
-sub_38528 endp
+copy_4_bytes endp
 seg027 ends
 end

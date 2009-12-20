@@ -47,13 +47,14 @@ seg007 segment byte public 'STUNTSC' use16
     assume cs:seg007
     assume es:nothing, ss:nothing, ds:dseg
     public add_audiodriver_timer
-    public sub_26BD5
-    public sub_26C06
+    public remove_audiodriver_timer
+    public pad_id
     public init_sfx_engine
     public sub_26EF4
-    public sub_26F6D
+    public audio_function2
+    public audio_driver_timer
     public sub_2712E
-    public sub_272F4
+    public audio_function2_wrap
     public sub_27338
     public sub_27374
     public sub_273B0
@@ -72,7 +73,7 @@ loc_26BB9:
     cmp     bx, 6AD0h
     jb      short loc_26BB3
     mov     word_42240, 16h
-    mov     ax, 403h
+    mov     ax, offset audio_driver_timer
     mov     dx, seg seg007
     push    dx
     push    ax
@@ -81,7 +82,7 @@ loc_26BB9:
     pop     bx
     retf
 add_audiodriver_timer endp
-sub_26BD5 proc far
+remove_audiodriver_timer proc far
      r = byte ptr 0
 
     push    si
@@ -99,7 +100,7 @@ loc_26BE9:
 loc_26BEF:
     cmp     si, 6AD0h
     jb      short loc_26BDB
-    mov     ax, 403h
+    mov     ax, offset audio_driver_timer
     mov     dx, seg seg007
     push    dx
     push    ax
@@ -108,8 +109,8 @@ loc_26BEF:
     pop     bx
     pop     si
     retf
-sub_26BD5 endp
-sub_26C06 proc far
+remove_audiodriver_timer endp
+pad_id proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = dword ptr 6
@@ -137,7 +138,7 @@ loc_26C2E:
     mov     sp, bp
     pop     bp
     retf
-sub_26C06 endp
+pad_id endp
 init_sfx_engine proc far
     var_18 = dword ptr -24
     var_14 = word ptr -20
@@ -163,7 +164,7 @@ init_sfx_engine proc far
     push    si
     mov     di, 0FFFFh
     sub     dx, dx
-    mov     bx, 6364h
+    mov     bx, offset audiotimers
     jmp     short loc_26C5D
 loc_26C4E:
     or      di, di
@@ -175,7 +176,7 @@ loc_26C59:
     add     bx, 4Ch ; 'L'
     inc     dx
 loc_26C5D:
-    cmp     bx, 6AD0h
+    cmp     bx, offset word_42240; end of audiotimer
     jb      short loc_26C4E
 loc_26C63:
     or      di, di
@@ -185,7 +186,7 @@ loc_26C6A:
     mov     ax, di
     mov     cx, 4Ch ; 'L'
     imul    cx
-    add     ax, 6364h
+    add     ax, offset audiotimers
     mov     [bp+var_14], ax
     add     ax, 1Ch
     mov     [bp+var_12], ax
@@ -222,7 +223,7 @@ loc_26CCB:
     push    word ptr es:[di+8]
     mov     si, es
     push    cs
-    call    near ptr sub_26C06
+    call    near ptr pad_id
     pop     bx
     pop     bx
     push    ax
@@ -236,7 +237,7 @@ loc_26CCB:
     push    word ptr es:[di+12h]
     push    word ptr es:[di+10h]
     push    cs
-    call    near ptr sub_26C06
+    call    near ptr pad_id
     pop     bx
     pop     bx
     push    ax
@@ -244,7 +245,7 @@ loc_26CCB:
     push    [bp+arg_6]
     push    [bp+arg_C]
     push    [bp+arg_A]
-    call    sub_370D2
+    call    init_audio_resources
     add     sp, 0Ah
     mov     es, si
     mov     es:[di+10h], ax
@@ -252,7 +253,7 @@ loc_26CCB:
     push    word ptr es:[di+16h]
     push    word ptr es:[di+14h]
     push    cs
-    call    near ptr sub_26C06
+    call    near ptr pad_id
     pop     bx
     pop     bx
     push    ax
@@ -260,7 +261,7 @@ loc_26CCB:
     push    [bp+arg_6]
     push    [bp+arg_C]
     push    [bp+arg_A]
-    call    sub_370D2
+    call    init_audio_resources
     add     sp, 0Ah
     mov     es, si
     mov     es:[di+14h], ax
@@ -268,7 +269,7 @@ loc_26CCB:
     push    word ptr es:[di+1Ah]
     push    word ptr es:[di+18h]
     push    cs
-    call    near ptr sub_26C06
+    call    near ptr pad_id
     pop     bx
     pop     bx
     push    ax
@@ -276,7 +277,7 @@ loc_26CCB:
     push    [bp+arg_6]
     push    [bp+arg_C]
     push    [bp+arg_A]
-    call    sub_370D2
+    call    init_audio_resources
     add     sp, 0Ah
     mov     es, si
     mov     es:[di+18h], ax
@@ -284,7 +285,7 @@ loc_26CCB:
     push    word ptr es:[di+1Eh]
     push    word ptr es:[di+1Ch]
     push    cs
-    call    near ptr sub_26C06
+    call    near ptr pad_id
     pop     bx
     pop     bx
     push    ax
@@ -292,7 +293,7 @@ loc_26CCB:
     push    [bp+arg_6]
     push    [bp+arg_C]
     push    [bp+arg_A]
-    call    sub_370D2
+    call    init_audio_resources
     add     sp, 0Ah
     mov     es, si
     mov     es:[di+1Ch], ax
@@ -300,7 +301,7 @@ loc_26CCB:
     push    word ptr es:[di+22h]
     push    word ptr es:[di+20h]
     push    cs
-    call    near ptr sub_26C06
+    call    near ptr pad_id
     pop     bx
     pop     bx
     push    ax
@@ -308,7 +309,7 @@ loc_26CCB:
     push    [bp+arg_6]
     push    [bp+arg_C]
     push    [bp+arg_A]
-    call    sub_370D2
+    call    init_audio_resources
     add     sp, 0Ah
     mov     es, si
     mov     es:[di+20h], ax
@@ -316,7 +317,7 @@ loc_26CCB:
     push    word ptr es:[di+26h]
     push    word ptr es:[di+24h]
     push    cs
-    call    near ptr sub_26C06
+    call    near ptr pad_id
     pop     bx
     pop     bx
     push    ax
@@ -324,7 +325,7 @@ loc_26CCB:
     push    [bp+arg_6]
     push    [bp+arg_C]
     push    [bp+arg_A]
-    call    sub_370D2
+    call    init_audio_resources
     add     sp, 0Ah
     mov     es, si
     mov     es:[di+24h], ax
@@ -332,7 +333,7 @@ loc_26CCB:
     push    word ptr es:[di+2Ah]
     push    word ptr es:[di+28h]
     push    cs
-    call    near ptr sub_26C06
+    call    near ptr pad_id
     pop     bx
     pop     bx
     push    ax
@@ -340,7 +341,7 @@ loc_26CCB:
     push    [bp+arg_6]
     push    [bp+arg_C]
     push    [bp+arg_A]
-    call    sub_370D2
+    call    init_audio_resources
     add     sp, 0Ah
     mov     es, si
     mov     es:[di+28h], ax
@@ -348,7 +349,7 @@ loc_26CCB:
     push    word ptr es:[di+2Eh]
     push    word ptr es:[di+2Ch]
     push    cs
-    call    near ptr sub_26C06
+    call    near ptr pad_id
     pop     bx
     pop     bx
     push    ax
@@ -356,7 +357,7 @@ loc_26CCB:
     push    [bp+arg_6]
     push    [bp+arg_C]
     push    [bp+arg_A]
-    call    sub_370D2
+    call    init_audio_resources
     add     sp, 0Ah
     mov     es, si
     mov     es:[di+2Ch], ax
@@ -480,7 +481,7 @@ loc_26F67:
     pop     bp
     retf
 sub_26EF4 endp
-sub_26F6D proc far
+audio_function2 proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -491,7 +492,7 @@ sub_26F6D proc far
     mov     ax, 4Ch ; 'L'
     imul    [bp+arg_0]
     mov     si, ax
-    add     si, 6364h
+    add     si, offset audiotimers
     cmp     byte ptr [si], 1
     jnz     short loc_26F9E
     cmp     byte ptr [si+1], 1
@@ -507,6 +508,13 @@ loc_26F9E:
     mov     sp, bp
     pop     bp
     retf
+audio_function2 endp
+audio_driver_timer proc far
+    var_4 = word ptr -4
+    var_1 = byte ptr -1
+     s = byte ptr 0
+     r = byte ptr 2
+
     push    bp
     mov     bp, sp
     sub     sp, 4
@@ -524,7 +532,7 @@ loc_26FB7:
     jz      short loc_26FCC
     jmp     loc_27127
 loc_26FCC:
-    mov     word ptr [bp-4], 0
+    mov     [bp+var_4], 0
     mov     si, 6364h
 loc_26FD4:
     cmp     byte ptr [si], 0
@@ -551,13 +559,13 @@ loc_26FE6:
     mov     [si+4], ax
     mov     cl, 4
     shr     ax, cl
-    mov     [bp-1], al
+    mov     [bp+var_1], al
     cmp     al, [si+0Eh]
     jnz     short loc_27017
     cmp     byte ptr [si+1Ah], 0
     jz      short loc_2705D
 loc_27017:
-    mov     al, [bp-1]
+    mov     al, [bp+var_1]
     sub     ah, ah
     push    ax
     push    word ptr [si+2]
@@ -583,7 +591,7 @@ loc_27045:
     call    sub_38C4C
     add     sp, 4
 loc_27057:
-    mov     al, [bp-1]
+    mov     al, [bp+var_1]
     mov     [si+0Eh], al
 loc_2705D:
     mov     ax, [si+6]
@@ -646,7 +654,7 @@ loc_270D4:
     cmp     byte ptr [si+1], 0
     jz      short loc_270EE
     push    word ptr [si+14h]
-    call    sub_3764A
+    call    init_audio_chunk2
     jmp     short loc_27104
 loc_270EE:
     push    word ptr [si+14h]
@@ -654,7 +662,7 @@ loc_270EE:
     add     sp, 2
     or      ax, ax
     jz      short loc_2710B
-    push    word ptr [bp-4]
+    push    [bp+var_4]
     push    cs
     call    near ptr sub_26EF4
 loc_27104:
@@ -662,8 +670,8 @@ loc_27104:
     mov     byte ptr [si+1Bh], 0
 loc_2710B:
     add     si, 4Ch ; 'L'
-    inc     word ptr [bp-4]
-    cmp     word ptr [bp-4], 19h
+    inc     [bp+var_4]
+    cmp     [bp+var_4], 19h
     jge     short loc_2711A
     jmp     loc_26FD4
 loc_2711A:
@@ -678,7 +686,7 @@ loc_27127:
     retf
     ; align 2
     db 144
-sub_26F6D endp
+audio_driver_timer endp
 sub_2712E proc far
     var_16 = word ptr -22
     var_14 = word ptr -20
@@ -809,7 +817,7 @@ loc_27213:
     push    word ptr [bx+2Eh]
     push    word ptr [bx+2Ch]
     mov     si, bx
-    call    sub_3751A
+    call    check_audio_flag
     add     sp, 0Ah
     mov     [si+14h], ax
     push    ax
@@ -843,13 +851,13 @@ loc_27213:
     push    word ptr [bx+32h]
     push    word ptr [bx+30h]
     mov     si, bx
-    call    sub_3751A
+    call    check_audio_flag
     add     sp, 0Ah
     mov     [si+14h], ax
     mov     byte ptr [si+1Ah], 1
     push    word ptr [bp+6]
     push    cs
-    call    near ptr sub_26F6D
+    call    near ptr audio_function2
     pop     bx
     pop     si
     mov     sp, bp
@@ -873,20 +881,20 @@ loc_27213:
     push    word ptr [bx+36h]
     push    word ptr [bx+34h]
     mov     si, bx
-    call    sub_3751A
+    call    check_audio_flag
     add     sp, 0Ah
     mov     [si+14h], ax
     mov     byte ptr [si+1Ah], 1
     push    word ptr [bp+6]
     push    cs
-    call    near ptr sub_26F6D
+    call    near ptr audio_function2
     pop     bx
     pop     si
     mov     sp, bp
     pop     bp
     retf
 sub_2712E endp
-sub_272F4 proc far
+audio_function2_wrap proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -897,7 +905,7 @@ sub_272F4 proc far
     mov     ax, 4Ch ; 'L'
     imul    [bp+arg_0]
     mov     bx, ax
-    add     bx, 6364h
+    add     bx, offset audiotimers
     mov     ax, [bx+4]
     mov     cl, 4
     shr     ax, cl
@@ -909,19 +917,19 @@ sub_272F4 proc far
     push    word ptr [bx+3Ah]
     push    word ptr [bx+38h]
     mov     si, bx
-    call    sub_3751A
+    call    check_audio_flag
     add     sp, 0Ah
     mov     [si+14h], ax
     mov     byte ptr [si+1Ah], 1
     push    [bp+arg_0]
     push    cs
-    call    near ptr sub_26F6D
+    call    near ptr audio_function2
     pop     bx
     pop     si
     mov     sp, bp
     pop     bp
     retf
-sub_272F4 endp
+audio_function2_wrap endp
 sub_27338 proc far
      s = byte ptr 0
      r = byte ptr 2
@@ -945,7 +953,7 @@ sub_27338 proc far
     push    word ptr [bx+46h]
     push    word ptr [bx+44h]
     mov     si, bx
-    call    sub_3751A
+    call    check_audio_flag
     add     sp, 0Ah
     mov     [si+14h], ax
     mov     byte ptr [si+1Ah], 1
@@ -977,7 +985,7 @@ sub_27374 proc far
     push    word ptr [bx+4Ah]
     push    word ptr [bx+48h]
     mov     si, bx
-    call    sub_3751A
+    call    check_audio_flag
     add     sp, 0Ah
     mov     [si+14h], ax
     mov     byte ptr [si+1Ah], 1
@@ -1007,7 +1015,7 @@ sub_273B0 proc far
     cmp     word ptr [si+16h], 0FFFFh
     jz      short loc_273DB
     push    word ptr [si+16h]
-    call    sub_3764A
+    call    init_audio_chunk2
     pop     bx
 loc_273DB:
     mov     cl, 4
@@ -1021,7 +1029,7 @@ loc_273DB:
     mov     es, [bp+var_2]
     push    word ptr es:[di+22h]
     push    word ptr es:[di+20h]
-    call    sub_3751A
+    call    check_audio_flag
     add     sp, 0Ah
     mov     [si+16h], ax
     mov     byte ptr [si+1Ah], 1
@@ -1052,7 +1060,7 @@ sub_2740B proc far
     cmp     word ptr [si+16h], 0FFFFh
     jz      short loc_27436
     push    word ptr [si+16h]
-    call    sub_3764A
+    call    init_audio_chunk2
     pop     bx
 loc_27436:
     mov     cl, 4
@@ -1066,7 +1074,7 @@ loc_27436:
     mov     es, [bp+var_2]
     push    word ptr es:[di+26h]
     push    word ptr es:[di+24h]
-    call    sub_3751A
+    call    check_audio_flag
     add     sp, 0Ah
     mov     [si+16h], ax
     mov     byte ptr [si+1Ah], 1
@@ -1089,7 +1097,7 @@ sub_27466 proc far
     mov     bx, ax
     push    word ptr [bx+637Ah]
     mov     si, ax
-    call    sub_3764A
+    call    init_audio_chunk2
     pop     bx
     mov     word ptr [si+637Ah], 0FFFFh
     pop     si

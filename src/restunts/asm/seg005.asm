@@ -192,11 +192,11 @@ loc_21C78:
     mov     byte_45DB2, 1
     mov     ax, 0FF10h
     push    ax
-    push    word_45516
+    push    track_angle
     call    sin_fast
     add     sp, 2
     push    ax
-    call    sub_30044
+    call    scale_value
     add     sp, 4
     cwd
     mov     cl, 6
@@ -209,11 +209,11 @@ loc_21CDC:
     adc     state.playerstate.field_2, dx
     mov     ax, 0FF10h
     push    ax
-    push    word_45516
+    push    track_angle
     call    cos_fast
     add     sp, 2
     push    ax
-    call    sub_30044
+    call    scale_value
     add     sp, 4
     cwd
     mov     cl, 6
@@ -344,7 +344,7 @@ loc_21E49:
     push    ax
     mov     ax, 4
     push    ax
-    call    sub_195E6
+    call    audio_engine_unk
     add     sp, 4
     mov     byte_449DA, 1
 loc_21E71:
@@ -750,7 +750,7 @@ loc_2227E:
 loc_22298:
     cmp     byte_46436, 0
     jz      short loc_222D3
-    call    sub_3A45C
+    call    get_0
     or      ax, ax
     jz      short loc_222D3
     call    sub_28DB6
@@ -772,7 +772,7 @@ loc_222D3:
     call    sub_28F3C
     mov     byte_454B8, 1
     call    sub_188A4
-    call    sub_26BD5
+    call    remove_audiodriver_timer
     cmp     byte_45DB2, 0
     jz      short loc_222F1
     jmp     loc_223CD
@@ -914,7 +914,7 @@ loc_22420:
     push    ax
     mov     ax, 4
     push    ax
-    call    sub_195E6
+    call    audio_engine_unk
     add     sp, 4
 loc_22436:
     mov     byte_449DA, 1
@@ -1261,7 +1261,7 @@ loc_226E6:
     push    ax
     mov     ax, 1
     push    ax
-    call    sub_195E6
+    call    audio_engine_unk
     add     sp, 4
 loc_22725:
     cmp     byte_3B8F2, 0
@@ -1390,7 +1390,7 @@ loc_22817:
     push    ax
     mov     ax, 4
     push    ax
-    call    sub_195E6
+    call    audio_engine_unk
     add     sp, 4
     jmp     loc_226DA
 loc_2283C:
@@ -1740,7 +1740,7 @@ loc_22B0D:
     add     sp, 2
     push    ax
     push    di
-    call    sub_30044
+    call    scale_value
     add     sp, 4
     mov     bx, si
     mov     cx, bx
@@ -1753,7 +1753,7 @@ loc_22B0D:
     add     sp, 2
     push    ax
     push    di
-    call    sub_30044
+    call    scale_value
     add     sp, 4
     mov     bx, si
     mov     cx, bx
@@ -2961,8 +2961,8 @@ setup_player_cars proc far
     mov     bp, sp
     sub     sp, 8
     sub     ax, ax
-    mov     word ptr dword_44D26+2, ax
-    mov     word ptr dword_44D26, ax
+    mov     word ptr wndsprite+2, ax
+    mov     word ptr wndsprite, ax
     mov     ax, 2
     push    ax
     call    ensure_file_exists
@@ -3176,7 +3176,7 @@ loc_2394E:
     adc     dx, 0
     mov     [bp+var_8], ax
     mov     [bp+var_6], dx
-    call    sub_3A484
+    call    get_res_ofs_diff_scaled
     cmp     dx, [bp+var_6]
     jg      short loc_23988
     jl      short loc_23946
@@ -3191,8 +3191,8 @@ loc_23988:
     push    ax
     call    make_wnd_sprite
     add     sp, 6
-    mov     word ptr dword_44D26, ax
-    mov     word ptr dword_44D26+2, dx
+    mov     word ptr wndsprite, ax
+    mov     word ptr wndsprite+2, dx
 loc_239A3:
     mov     byte_463E0, 0
     mov     byte_45634, 0FFh
@@ -3207,11 +3207,11 @@ sub_239B4 proc far
 
     cmp     byte_46436, 0
     jnz     short loc_239D4
-    mov     ax, word ptr dword_44D26
-    or      ax, word ptr dword_44D26+2
+    mov     ax, word ptr wndsprite
+    or      ax, word ptr wndsprite+2
     jz      short loc_239D4
-    push    word ptr dword_44D26+2
-    push    word ptr dword_44D26
+    push    word ptr wndsprite+2
+    push    word ptr wndsprite
     call    sub_324AA
     add     sp, 4
 loc_239D4:
@@ -3238,7 +3238,7 @@ loc_23A15:
     push    word_459F4
     call    sub_3147C
     add     sp, 4
-    call    sub_26BD5
+    call    remove_audiodriver_timer
     push    word_45E10
     push    word_45E0E
     call    sub_3147C
@@ -4687,7 +4687,7 @@ loc_24748:
     push    ax
     mov     ax, 4
     push    ax
-    call    sub_195E6
+    call    audio_engine_unk
     add     sp, 4
 loc_24757:
     mov     byte_449DA, 2
@@ -4699,7 +4699,7 @@ loc_24760:
     push    ax
     mov     ax, 4
     push    ax
-    call    sub_195E6
+    call    audio_engine_unk
     add     sp, 4
     mov     byte_43966, 0
     jmp     short loc_24757

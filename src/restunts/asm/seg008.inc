@@ -30,7 +30,7 @@ seg008 segment byte public 'STUNTSC' use16
     extrn sub_2913A:proc
     extrn sub_2916E:proc
     extrn sub_292DC:proc
-    extrn sub_2955A:proc
+    extrn setup_3d_res:proc
     extrn sub_29606:proc
     extrn sub_29620:proc
     extrn show_waiting:proc
@@ -60,5 +60,5 @@ seg008 segment byte public 'STUNTSC' use16
     extrn ensure_file_exists:proc
     extrn sub_2A200:proc
     extrn get_timerdelta2:proc
-    extrn sub_2A236:proc
+    extrn load_3dshape:proc
 seg008 ends

@@ -1,6 +1,6 @@
 seg027 segment byte public 'STUNTSC' use16
-    extrn sub_370D2:proc
-    extrn sub_3717C:proc
+    extrn init_audio_resources:proc
+    extrn load_audio_finalize:proc
     extrn sub_37216:proc
     extrn sub_372F4:proc
     extrn sub_3736A:proc
@@ -10,27 +10,27 @@ seg027 segment byte public 'STUNTSC' use16
     extrn sub_37470:proc
     extrn sub_374DE:proc
     extrn sub_374FA:proc
-    extrn sub_3751A:proc
-    extrn sub_3764A:proc
+    extrn check_audio_flag:proc
+    extrn init_audio_chunk2:proc
     extrn sub_37696:proc
     extrn sub_376CA:proc
     extrn sub_37708:proc
     extrn sub_3771E:proc
-    extrn sub_3776C:proc
+    extrn audio_driver_func3F:proc
     extrn sub_37868:proc
-    extrn sub_378CA:proc
+    extrn load_audio_driver:proc
     extrn audiodrv_atexit:proc
     extrn sub_37B14:proc
     extrn sub_37C44:proc
     extrn sub_37CBA:proc
     extrn sub_37D04:proc
-    extrn sub_37DBC:proc
-    extrn sub_37EC0:proc
+    extrn init_audio_chunk:proc
+    extrn load_vce:proc
     extrn sub_38156:proc
     extrn sub_38178:proc
-    extrn sub_38254:proc
+    extrn audio_hdr1_unk:proc
     extrn off_383A0:word
     extrn sub_384FA:proc
     extrn sub_38514:proc
-    extrn sub_38528:proc
+    extrn copy_4_bytes:proc
 seg027 ends

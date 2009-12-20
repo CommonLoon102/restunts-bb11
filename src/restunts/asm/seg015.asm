@@ -129,7 +129,7 @@ sub_36412 proc far
     mov     ax, [bx+20h]
     add     ax, [bx]
     push    ax
-    call    sub_30044
+    call    scale_value
     add     sp, 4
     mov     bx, [bp+arg_2]
     mov     [bx+10h], ax
@@ -138,7 +138,7 @@ sub_36412 proc far
     mov     ax, [bx+2]
     add     ax, [bx+22h]
     push    ax
-    call    sub_30044
+    call    scale_value
     add     sp, 4
     mov     bx, [bp+arg_2]
     mov     [bx+12h], ax
@@ -147,7 +147,7 @@ sub_36412 proc far
     mov     ax, [bx]
     add     ax, [bp+var_10]
     push    ax
-    call    sub_30044
+    call    scale_value
     add     sp, 4
     mov     bx, [bp+arg_2]
     mov     [bx+8], ax
@@ -156,7 +156,7 @@ sub_36412 proc far
     mov     ax, [bx+2]
     add     ax, [bp+var_12]
     push    ax
-    call    sub_30044
+    call    scale_value
     add     sp, 4
     mov     bx, [bp+arg_2]
     mov     [bx+0Ah], ax
@@ -165,7 +165,7 @@ sub_36412 proc far
     mov     ax, [bx+20h]
     add     ax, [bp+var_2]
     push    ax
-    call    sub_30044
+    call    scale_value
     add     sp, 4
     mov     bx, [bp+arg_2]
     mov     [bx+18h], ax
@@ -174,7 +174,7 @@ sub_36412 proc far
     mov     ax, [bx+22h]
     add     ax, [bp+var_4]
     push    ax
-    call    sub_30044
+    call    scale_value
     add     sp, 4
     mov     bx, [bp+arg_2]
     mov     [bx+1Ah], ax
@@ -183,7 +183,7 @@ sub_36412 proc far
     mov     ax, [bx]
     add     ax, [bp+var_18]
     push    ax
-    call    sub_30044
+    call    scale_value
     add     sp, 4
     mov     bx, [bp+arg_2]
     mov     [bx+4], ax
@@ -192,7 +192,7 @@ sub_36412 proc far
     mov     ax, [bx+2]
     add     ax, [bp+var_1A]
     push    ax
-    call    sub_30044
+    call    scale_value
     add     sp, 4
     mov     bx, [bp+arg_2]
     mov     [bx+6], ax
@@ -201,7 +201,7 @@ sub_36412 proc far
     mov     ax, [bx+20h]
     add     ax, [bp+var_A]
     push    ax
-    call    sub_30044
+    call    scale_value
     add     sp, 4
     mov     bx, [bp+arg_2]
     mov     [bx+1Ch], ax
@@ -210,7 +210,7 @@ sub_36412 proc far
     mov     ax, [bx+22h]
     add     ax, [bp+var_C]
     push    ax
-    call    sub_30044
+    call    scale_value
     add     sp, 4
     mov     bx, [bp+arg_2]
     mov     [bx+1Eh], ax
@@ -219,7 +219,7 @@ sub_36412 proc far
     mov     ax, [bx]
     add     ax, [bp+var_14]
     push    ax
-    call    sub_30044
+    call    scale_value
     add     sp, 4
     mov     bx, [bp+arg_2]
     mov     [bx+0Ch], ax
@@ -228,7 +228,7 @@ sub_36412 proc far
     mov     ax, [bx+2]
     add     ax, [bp+var_16]
     push    ax
-    call    sub_30044
+    call    scale_value
     add     sp, 4
     mov     bx, [bp+arg_2]
     mov     [bx+0Eh], ax
@@ -237,7 +237,7 @@ sub_36412 proc far
     mov     ax, [bx+20h]
     add     ax, [bp+var_6]
     push    ax
-    call    sub_30044
+    call    scale_value
     add     sp, 4
     mov     bx, [bp+arg_2]
     mov     [bx+14h], ax
@@ -246,7 +246,7 @@ sub_36412 proc far
     mov     ax, [bx+22h]
     add     ax, [bp+var_8]
     push    ax
-    call    sub_30044
+    call    scale_value
     add     sp, 4
     mov     bx, [bp+arg_2]
     mov     [bx+16h], ax
@@ -258,7 +258,7 @@ sub_36412 proc far
     mov     ax, [bx+20h]
     add     ax, si
     push    ax
-    call    sub_30044
+    call    scale_value
     add     sp, 4
     mov     bx, [bp+arg_2]
     mov     [bx+30h], ax
@@ -270,7 +270,7 @@ sub_36412 proc far
     mov     ax, [bx+22h]
     add     ax, di
     push    ax
-    call    sub_30044
+    call    scale_value
     add     sp, 4
     mov     bx, [bp+arg_2]
     mov     [bx+32h], ax
@@ -279,7 +279,7 @@ sub_36412 proc far
     mov     ax, [bp+var_10]
     add     ax, si
     push    ax
-    call    sub_30044
+    call    scale_value
     add     sp, 4
     mov     bx, [bp+arg_2]
     mov     [bx+38h], ax
@@ -288,7 +288,7 @@ sub_36412 proc far
     mov     ax, [bp+var_12]
     add     ax, di
     push    ax
-    call    sub_30044
+    call    scale_value
     add     sp, 4
     mov     bx, [bp+arg_2]
     mov     [bx+3Ah], ax
@@ -297,7 +297,7 @@ sub_36412 proc far
     mov     ax, [bx+20h]
     sub     ax, [bp+var_2]
     push    ax
-    call    sub_30044
+    call    scale_value
     add     sp, 4
     mov     bx, [bp+arg_2]
     mov     [bx+28h], ax
@@ -306,7 +306,7 @@ sub_36412 proc far
     mov     ax, [bx+22h]
     sub     ax, [bp+var_4]
     push    ax
-    call    sub_30044
+    call    scale_value
     add     sp, 4
     mov     bx, [bp+arg_2]
     mov     [bx+2Ah], ax
@@ -318,7 +318,7 @@ sub_36412 proc far
     mov     ax, [bp+var_18]
     add     ax, si
     push    ax
-    call    sub_30044
+    call    scale_value
     add     sp, 4
     mov     bx, [bp+arg_2]
     mov     [bx+3Ch], ax
@@ -330,7 +330,7 @@ sub_36412 proc far
     mov     ax, [bp+var_1A]
     add     ax, di
     push    ax
-    call    sub_30044
+    call    scale_value
     add     sp, 4
     mov     bx, [bp+arg_2]
     mov     [bx+3Eh], ax
@@ -339,7 +339,7 @@ sub_36412 proc far
     mov     ax, [bx+20h]
     sub     ax, [bp+var_A]
     push    ax
-    call    sub_30044
+    call    scale_value
     add     sp, 4
     mov     bx, [bp+arg_2]
     mov     [bx+24h], ax
@@ -348,7 +348,7 @@ sub_36412 proc far
     mov     ax, [bx+22h]
     sub     ax, [bp+var_C]
     push    ax
-    call    sub_30044
+    call    scale_value
     add     sp, 4
     mov     bx, [bp+arg_2]
     mov     [bx+26h], ax
@@ -357,7 +357,7 @@ sub_36412 proc far
     mov     ax, [bp+var_14]
     add     ax, si
     push    ax
-    call    sub_30044
+    call    scale_value
     add     sp, 4
     mov     bx, [bp+arg_2]
     mov     [bx+34h], ax
@@ -366,7 +366,7 @@ sub_36412 proc far
     mov     ax, [bp+var_16]
     add     ax, di
     push    ax
-    call    sub_30044
+    call    scale_value
     add     sp, 4
     mov     bx, [bp+arg_2]
     mov     [bx+36h], ax
@@ -375,7 +375,7 @@ sub_36412 proc far
     mov     ax, [bx+20h]
     sub     ax, [bp+var_6]
     push    ax
-    call    sub_30044
+    call    scale_value
     add     sp, 4
     mov     bx, [bp+arg_2]
     mov     [bx+2Ch], ax
@@ -384,7 +384,7 @@ sub_36412 proc far
     mov     ax, [bx+22h]
     sub     ax, [bp+var_8]
     push    ax
-    call    sub_30044
+    call    scale_value
     add     sp, 4
     mov     bx, [bp+arg_2]
     mov     [bx+2Eh], ax

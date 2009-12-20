@@ -638,13 +638,13 @@ run_intro_looped proc far
     push    ax
     call    make_wnd_sprite
     add     sp, 6
-    mov     word ptr dword_44D26, ax
-    mov     word ptr dword_44D26+2, dx
+    mov     word ptr wndsprite, ax
+    mov     word ptr wndsprite+2, dx
     push    cs
     call    near ptr sub_1069C
     mov     si, ax
-    push    word ptr dword_44D26+2
-    push    word ptr dword_44D26
+    push    word ptr wndsprite+2
+    push    word ptr wndsprite
     call    sub_324AA
     add     sp, 4
     push    word_45E14
@@ -653,7 +653,7 @@ run_intro_looped proc far
     add     sp, 4
     or      si, si
     jnz     short loc_1068E
-    call    sub_1D93C
+    call    setup_intro
     cbw
     mov     si, ax
     or      si, si
@@ -674,21 +674,21 @@ run_intro_looped proc far
     push    ax
     call    make_wnd_sprite
     add     sp, 6
-    mov     word ptr dword_44D26, ax
-    mov     word ptr dword_44D26+2, dx
+    mov     word ptr wndsprite, ax
+    mov     word ptr wndsprite+2, dx
     call    sub_28F7C
     sub     ax, ax
     push    ax
-    push    word ptr dword_44D26+2
-    push    word ptr dword_44D26
+    push    word ptr wndsprite+2
+    push    word ptr wndsprite
     call    sub_29620
     add     sp, 6
     push    cs
     call    near ptr sub_10786
     cbw
     mov     si, ax
-    push    word ptr dword_44D26+2
-    push    word ptr dword_44D26
+    push    word ptr wndsprite+2
+    push    word ptr wndsprite
     call    sub_324AA
     add     sp, 4
     push    word_45E14
@@ -745,8 +745,8 @@ loc_106E4:
     add     sp, 4
     mov     ax, 0FFFFh
     push    ax
-    push    word ptr dword_44D26+2
-    push    word ptr dword_44D26
+    push    word ptr wndsprite+2
+    push    word ptr wndsprite
     call    sub_29620
     add     sp, 6
     mov     si, ax
@@ -773,8 +773,8 @@ loc_106E4:
     add     sp, 4
     mov     ax, 0FFFFh
     push    ax
-    push    word ptr dword_44D26+2
-    push    word ptr dword_44D26
+    push    word ptr wndsprite+2
+    push    word ptr wndsprite
     call    sub_29620
     add     sp, 6
     mov     si, ax
@@ -1352,8 +1352,8 @@ sub_10786 proc far
     add     sp, 4
     mov     ax, 0FFFFh
     push    ax
-    push    word ptr dword_44D26+2
-    push    word ptr dword_44D26
+    push    word ptr wndsprite+2
+    push    word ptr wndsprite
     call    sub_29620
     add     sp, 6
     call    sub_28F3C
@@ -1439,7 +1439,7 @@ loc_10DEC:
     call    set_sprite1_size
     add     sp, 8
     call    sub_28DB6
-    les     bx, dword_44D26
+    les     bx, wndsprite
     push    word ptr es:[bx+2]
     push    word ptr es:[bx]
     call    sub_33BDA
@@ -1477,7 +1477,7 @@ loc_10E91:
     call    set_sprite1_size
     add     sp, 8
     call    sub_28DB6
-    les     bx, dword_44D26
+    les     bx, wndsprite
     push    word ptr es:[bx+2]
     push    word ptr es:[bx]
     call    sub_3477E
@@ -1506,8 +1506,8 @@ loc_10E91:
     add     sp, 4
     sub     ax, ax
     push    ax
-    push    word ptr dword_44D26+2
-    push    word ptr dword_44D26
+    push    word ptr wndsprite+2
+    push    word ptr wndsprite
     call    sub_29620
     add     sp, 6
     mov     [bp+var_46], ax
@@ -1562,8 +1562,8 @@ run_menu proc far
     push    ax
     call    make_wnd_sprite
     add     sp, 6
-    mov     word ptr dword_44D26, ax
-    mov     word ptr dword_44D26+2, dx
+    mov     word ptr wndsprite, ax
+    mov     word ptr wndsprite+2, dx
     mov     ax, 273h
     push    ax              ; char *
     mov     ax, 2
@@ -1597,8 +1597,8 @@ loc_10FB9:
     mov     al, [bp+var_6]
     cbw
     push    ax
-    push    word ptr dword_44D26+2
-    push    word ptr dword_44D26
+    push    word ptr wndsprite+2
+    push    word ptr wndsprite
     call    sub_29620
     add     sp, 6
     mov     [bp+var_6], 0FEh ; 'þ'
@@ -1687,8 +1687,8 @@ loc_110AA:
 loc_110B6:
     mov     [bp+var_10], 0FFh
 loc_110BA:
-    push    word ptr dword_44D26+2
-    push    word ptr dword_44D26
+    push    word ptr wndsprite+2
+    push    word ptr wndsprite
     call    sub_324AA
     mov     al, [bp+var_10]
     cbw
@@ -1741,8 +1741,8 @@ loc_110ED:
     push    ax
     call    make_wnd_sprite
     add     sp, 6
-    mov     word ptr dword_44D26, ax
-    mov     word ptr dword_44D26+2, dx
+    mov     word ptr wndsprite, ax
+    mov     word ptr wndsprite+2, dx
     les     bx, dword_44D42
     mov     al, es:[bx+384h]
     sub     ah, ah
@@ -2002,8 +2002,8 @@ loc_113B4:
     mov     al, [bp+var_6]
     cbw
     push    ax
-    push    word ptr dword_44D26+2
-    push    word ptr dword_44D26
+    push    word ptr wndsprite+2
+    push    word ptr wndsprite
     call    sub_29620
     add     sp, 6
     mov     [bp+var_6], 0FEh ; 'þ'
@@ -2107,8 +2107,8 @@ loc_114BC:
     jnz     short loc_114CC
     jmp     loc_1155A
 loc_114CC:
-    push    word ptr dword_44D26+2
-    push    word ptr dword_44D26
+    push    word ptr wndsprite+2
+    push    word ptr wndsprite
     call    sub_324AA
     add     sp, 4
     pop     si
@@ -2153,8 +2153,8 @@ loc_114E2:
     push    ax
     call    load_binary_file
     add     sp, 6
-    push    word ptr dword_44D26+2
-    push    word ptr dword_44D26
+    push    word ptr wndsprite+2
+    push    word ptr wndsprite
     call    sub_324AA
     add     sp, 4
     jmp     loc_110ED
@@ -2164,8 +2164,8 @@ loc_11552:
     ; align 2
     db 144
 loc_1155A:
-    push    word ptr dword_44D26+2
-    push    word ptr dword_44D26
+    push    word ptr wndsprite+2
+    push    word ptr wndsprite
     call    sub_324AA
     add     sp, 4
 loc_1156A:
@@ -2807,8 +2807,8 @@ loc_11AED:
     call    near ptr sub_1168E
     mov     ax, 0FFFFh
     push    ax
-    push    word ptr dword_44D26+2
-    push    word ptr dword_44D26
+    push    word ptr wndsprite+2
+    push    word ptr wndsprite
     call    sub_29620
     add     sp, 6
     sub     ax, ax
@@ -2856,8 +2856,8 @@ loc_11AED:
     call    near ptr sub_1168E
     mov     ax, 0FFFFh
     push    ax
-    push    word ptr dword_44D26+2
-    push    word ptr dword_44D26
+    push    word ptr wndsprite+2
+    push    word ptr wndsprite
     call    sub_29620
     add     sp, 6
     push    cs
@@ -3321,8 +3321,8 @@ loc_11F50:
     push    ax
     call    make_wnd_sprite
     add     sp, 6
-    mov     word ptr dword_44D26, ax
-    mov     word ptr dword_44D26+2, dx
+    mov     word ptr wndsprite, ax
+    mov     word ptr wndsprite+2, dx
 loc_11FA5:
     mov     al, [bp+var_38]
     cmp     [bp+var_F0], al
@@ -3856,7 +3856,7 @@ loc_124DE:
     call    set_sprite1_size
     add     sp, 8
     call    sub_28DB6
-    les     bx, dword_44D26
+    les     bx, wndsprite
     push    word ptr es:[bx+2]
     push    word ptr es:[bx]
     call    sub_33BDA
@@ -4035,14 +4035,14 @@ loc_126D1:
     mov     al, [bp+var_3E]
     cbw
     push    ax
-    push    word ptr dword_44D26+2
-    push    word ptr dword_44D26
+    push    word ptr wndsprite+2
+    push    word ptr wndsprite
     call    sub_29620
     add     sp, 6
     mov     [bp+var_3E], 0FEh ; 'þ'
     jmp     short loc_12723
 loc_12710:
-    les     bx, dword_44D26
+    les     bx, wndsprite
     push    word ptr es:[bx+2]
     push    word ptr es:[bx]
     call    sub_33BDA
@@ -4079,8 +4079,8 @@ loc_1275E:
     jnz     short loc_12768
     jmp     loc_11FA5
 loc_12768:
-    push    word ptr dword_44D26+2
-    push    word ptr dword_44D26
+    push    word ptr wndsprite+2
+    push    word ptr wndsprite
     call    sub_324AA
     add     sp, 4
     push    [bp+var_2]
@@ -4318,8 +4318,8 @@ loc_129A8:
 loc_129B3:
     cmp     [bp+var_1E], 0FFh
     jz      short loc_129DD
-    push    word ptr dword_44D26+2
-    push    word ptr dword_44D26
+    push    word ptr wndsprite+2
+    push    word ptr wndsprite
     call    sub_324AA
     add     sp, 4
     cmp     [bp+var_6], 0
@@ -4357,8 +4357,8 @@ loc_12A14:
     push    ax
     call    make_wnd_sprite
     add     sp, 6
-    mov     word ptr dword_44D26, ax
-    mov     word ptr dword_44D26+2, dx
+    mov     word ptr wndsprite, ax
+    mov     word ptr wndsprite+2, dx
     mov     al, opponent_index
     mov     [bp+var_1E], al
     mov     [bp+var_14], 0FFh
@@ -4549,7 +4549,7 @@ loc_12A4D:
     sub     ax, ax
     push    ax
     push    ax
-    les     bx, dword_44D26
+    les     bx, wndsprite
     push    word ptr es:[bx+2]
     push    word ptr es:[bx]
     call    sub_3475A
@@ -4632,8 +4632,8 @@ loc_12CFB:
     mov     al, [bp+var_4]
     cbw
     push    ax
-    push    word ptr dword_44D26+2
-    push    word ptr dword_44D26
+    push    word ptr wndsprite+2
+    push    word ptr wndsprite
     call    sub_29620
     add     sp, 6
     mov     [bp+var_4], 0FEh ; 'þ'
@@ -4745,8 +4745,8 @@ loc_12E14:
 loc_12E1E:
     call    check_input
     call    sub_28DB6
-    push    word ptr dword_44D26+2
-    push    word ptr dword_44D26
+    push    word ptr wndsprite+2
+    push    word ptr wndsprite
     call    sub_324AA
     add     sp, 4
     push    [bp+var_A]
@@ -4794,8 +4794,8 @@ nosmart
 loc_12EA2:
     mov     opponent_car_id, 0FFh
 loc_12EA7:
-    push    word ptr dword_44D26+2
-    push    word ptr dword_44D26
+    push    word ptr wndsprite+2
+    push    word ptr wndsprite
     call    sub_324AA
     add     sp, 4
     cmp     [bp+var_6], 0
@@ -5188,8 +5188,8 @@ loc_131C0:
     push    ax
     call    make_wnd_sprite
     add     sp, 6
-    mov     word ptr dword_44D26, ax
-    mov     word ptr dword_44D26+2, dx
+    mov     word ptr wndsprite, ax
+    mov     word ptr wndsprite+2, dx
     cmp     byte_46436, 0
     jz      short loc_131FC
     mov     ax, 0Fh
@@ -6337,8 +6337,8 @@ loc_13D13:
     mov     al, [bp+var_52]
     cbw
     push    ax
-    push    word ptr dword_44D26+2
-    push    word ptr dword_44D26
+    push    word ptr wndsprite+2
+    push    word ptr wndsprite
     call    sub_29620
     add     sp, 6
     mov     [bp+var_52], 0FEh ; 'þ'
@@ -6728,8 +6728,8 @@ loc_14130:
     mov     al, [bp+var_52]
     cbw
     push    ax
-    push    word ptr dword_44D26+2
-    push    word ptr dword_44D26
+    push    word ptr wndsprite+2
+    push    word ptr wndsprite
     call    sub_29620
     add     sp, 6
     mov     [bp+var_52], 0FEh ; 'þ'
@@ -6752,7 +6752,7 @@ loc_14188:
     call    set_sprite1_size
     add     sp, 8
     call    sub_28DB6
-    les     bx, dword_44D26
+    les     bx, wndsprite
     push    word ptr es:[bx+2]
     push    word ptr es:[bx]
     call    sub_33BDA
@@ -6988,8 +6988,8 @@ loc_14425:
     call    sub_324AA
     add     sp, 4
 loc_1443A:
-    push    word ptr dword_44D26+2
-    push    word ptr dword_44D26
+    push    word ptr wndsprite+2
+    push    word ptr wndsprite
     call    sub_324AA
     add     sp, 4
     cmp     opponent_index, 0

@@ -20,11 +20,11 @@ seg001 segment byte public 'STUNTSC' use16
     extrn sub_19074:proc
     extrn init_plantrak:proc
     extrn sub_195E0:proc
-    extrn sub_195E6:proc
+    extrn audio_engine_unk:proc
     extrn sub_19794:proc
     extrn sub_19926:proc
     extrn sub_199B2:proc
-    extrn sub_19A2C:proc
+    extrn state_op_unk:proc
     extrn sub_19BA0:proc
     extrn setup_car_from_simd:proc
 seg001 ends

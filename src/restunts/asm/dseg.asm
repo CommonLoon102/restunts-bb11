@@ -208,6 +208,9 @@ dseg segment byte public 'STUNTSD' use16
     public word_3C110
     public word_3C112
     public aScensce2sce3sce4
+    public aTitle
+    public aLogolog2brav
+    public aCarcoun_0
     public word_3C1B6
     public word_3C1B8
     public word_3C1BA
@@ -465,6 +468,7 @@ dseg segment byte public 'STUNTSD' use16
     public word_3F1C2
     public word_3F1C4
     public exitlistfuncs
+    public aExitListOverflow
     public word_3F7D8
     public byte_3F85A
     public dword_3F874
@@ -579,16 +583,22 @@ dseg segment byte public 'STUNTSD' use16
     public word_405FA
     public word_405FC
     public off_405FE
-    public dword_4060A
+    public aHdr1
+    public audiodriverbinary
     public byte_40630
     public byte_40631
     public byte_40632
     public byte_40633
     public byte_40634
     public byte_40635
+    public unk_40636
     public byte_40639
     public word_4063A
     public word_4063C
+    public unk_4063E
+    public aDrv
+    public aMt32_plb
+    public aCanTFindDriver
     public word_407AA
     public word_407CA
     public word_407CC
@@ -722,6 +732,7 @@ dseg segment byte public 'STUNTSD' use16
     public word_4188E
     public word_41890
     public word_41892
+    public audiotimers
     public word_42240
     public word_42242
     public word_42244
@@ -761,6 +772,7 @@ dseg segment byte public 'STUNTSD' use16
     public word_428B8
     public word_428BA
     public word_428BC
+    public byte_428D6
     public word_429F2
     public word_429F4
     public byte_42A02
@@ -856,6 +868,8 @@ dseg segment byte public 'STUNTSD' use16
     public word_43964
     public byte_43966
     public carshortname
+    public audiochunks_unk
+    public audiochunks_unk2
     public word_4408C
     public word_4428E
     public byte_44290
@@ -946,10 +960,8 @@ dseg segment byte public 'STUNTSD' use16
     public word_449FE
     public word_44A00
     public word_44A02
-    public word_44A04
-    public word_44A06
-    public word_44A08
-    public word_44A0A
+    public rect_unk
+    public rect_unk2
     public word_44A2C
     public word_44A2E
     public word_44A30
@@ -970,7 +982,7 @@ dseg segment byte public 'STUNTSD' use16
     public word_44D20
     public word_44D22
     public word_44D24
-    public dword_44D26
+    public wndsprite
     public mat_unk_3
     public word_44D3C
     public dword_44D3E
@@ -1029,7 +1041,7 @@ dseg segment byte public 'STUNTSD' use16
     public word_454D4
     public dword_454D6
     public byte_45514
-    public word_45516
+    public track_angle
     public skybox_ptr1
     public skybox_ptr2
     public skybox_ptr3
@@ -1063,6 +1075,7 @@ dseg segment byte public 'STUNTSD' use16
     public byte_4594E
     public byte_4594F
     public byte_45950
+    public rect_unk3
     public word_45982
     public word_45984
     public word_45986
@@ -1082,6 +1095,7 @@ dseg segment byte public 'STUNTSD' use16
     public word_45A20
     public word_45A22
     public word_45A24
+    public unk_45A26
     public word_45D06
     public word_45D08
     public word_45D0A
@@ -1097,6 +1111,7 @@ dseg segment byte public 'STUNTSD' use16
     public word_45D94
     public word_45D96
     public word_45D98
+    public byte_45D9A
     public byte_45DB2
     public word_45DB4
     public word_45DB6
@@ -3724,13 +3739,13 @@ aScensce2sce3sce4     db 115
     db 103
     db 104
     db 0
-    db 116
+aTitle     db 116
     db 105
     db 116
     db 108
     db 101
     db 0
-    db 108
+aLogolog2brav     db 108
     db 111
     db 103
     db 111
@@ -3744,7 +3759,7 @@ aScensce2sce3sce4     db 115
     db 118
     db 0
     db 0
-    db 99
+aCarcoun_0     db 99
     db 97
     db 114
     db 99
@@ -17302,7 +17317,7 @@ exitlistfuncs     dw 0
     dw 0
     dw 0
     dw 0
-    db 69
+aExitListOverflow     db 69
     db 88
     db 73
     db 84
@@ -20722,13 +20737,13 @@ word_405FC     dw 0
 off_405FE     dd word_3B1F0
     db 10
     db 0
-    db 104
+aHdr1     db 104
     db 100
     db 114
     db 49
     db 0
     db 0
-dword_4060A     dd 0
+audiodriverbinary     dd 0
     db 1
     db 0
     db 2
@@ -20769,18 +20784,18 @@ byte_40632     db 0
 byte_40633     db 1
 byte_40634     db 0
 byte_40635     db 0
-    db 16
+unk_40636     db 16
     db 0
     db 22
 byte_40639     db 0
 word_4063A     dw 1
 word_4063C     dw 0
-    db 0
-    db 100
+unk_4063E     db 0
+aDrv     db 100
     db 114
     db 118
     db 0
-    db 109
+aMt32_plb     db 109
     db 116
     db 51
     db 50
@@ -20789,7 +20804,7 @@ word_4063C     dw 0
     db 108
     db 98
     db 0
-    db 67
+aCanTFindDriver     db 67
     db 97
     db 110
     db 39
@@ -25909,7 +25924,7 @@ word_41892     dw 0
     db 0
     db 0
     db 0
-    db 0
+audiotimers     db 0
     db 0
     db 0
     db 0
@@ -29449,7 +29464,7 @@ word_428BC     dw 0
     db 0
     db 0
     db 0
-    db 0
+byte_428D6     db 0
     db 0
     db 0
     db 0
@@ -33613,6 +33628,7 @@ carshortname     db 0
     db 0
     db 0
     db 0
+audiochunks_unk     db 0
     db 0
     db 0
     db 0
@@ -34828,8 +34844,7 @@ carshortname     db 0
     db 0
     db 0
     db 0
-    db 0
-    db 0
+audiochunks_unk2     db 0
     db 0
     db 0
     db 0
@@ -37787,18 +37802,14 @@ word_449FA     dw 0
 word_449FE     dw 0
 word_44A00     dw 0
 word_44A02     dw 0
-word_44A04     dw 0
-word_44A06     dw 0
-word_44A08     dw 0
-word_44A0A     dw 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
+rect_unk     dw 0
+    dw 0
+    dw 0
+    dw 0
+rect_unk2     dw 0
+    dw 0
+    dw 0
+    dw 0
     db 0
     db 0
     db 0
@@ -38565,7 +38576,7 @@ word_44D1E     dw 0
 word_44D20     dw 0
 word_44D22     dw 0
 word_44D24     dw 0
-dword_44D26     dd 0
+wndsprite     dd 0
 mat_unk_3     db 0
     db 0
     db 0
@@ -40530,7 +40541,7 @@ dword_454D6     dd 0
     db 0
 byte_45514     db 0
     db 0
-word_45516     dw 0
+track_angle     dw 0
 skybox_ptr1     dw 0
 skybox_ptr2     dw 0
 skybox_ptr3     dw 0
@@ -41588,14 +41599,10 @@ byte_4594E     db 0
 byte_4594F     db 0
 byte_45950     db 0
     db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
+rect_unk3     dw 0
+    dw 0
+    dw 0
+    dw 0
     db 0
     db 0
     db 0
@@ -41782,7 +41789,7 @@ word_45A00     dw 0
 word_45A20     dw 0
 word_45A22     dw 0
 word_45A24     dw 0
-    db 0
+unk_45A26     db 0
     db 0
     db 0
     db 0
@@ -42643,7 +42650,7 @@ word_45D92     dw 0
 word_45D94     dw 0
 word_45D96     dw 0
 word_45D98     dw 0
-    db 0
+byte_45D9A     db 0
     db 0
     db 0
     db 0

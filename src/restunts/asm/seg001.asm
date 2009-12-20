@@ -67,11 +67,11 @@ seg001 segment byte public 'STUNTSC' use16
     public sub_19074
     public init_plantrak
     public sub_195E0
-    public sub_195E6
+    public audio_engine_unk
     public sub_19794
     public sub_19926
     public sub_199B2
-    public sub_19A2C
+    public state_op_unk
     public sub_19BA0
     public setup_car_from_simd
 sub_14712 proc far
@@ -750,7 +750,7 @@ loc_14CE1:
     cbw
     mov     bx, ax
     shl     bx, 1
-    mov     ax, [bx-55EAh]
+    mov     ax, trackcenterpos[bx]
     mov     cx, state.opponentstate.field_8
     mov     bx, state.opponentstate.field_A
     mov     dx, cx
@@ -762,18 +762,18 @@ loc_14CF9:
     jnz     short loc_14CF9
     sub     ax, dx
     push    ax
-    push    word_45516
+    push    track_angle
     call    cos_fast
     add     sp, 2
     push    ax
-    call    sub_30044
+    call    scale_value
     add     sp, 4
     mov     si, ax
     mov     al, byte_4499A
     cbw
     mov     bx, ax
     shl     bx, 1
-    mov     ax, [bx-599Eh]
+    mov     ax, trackcenterpos2[bx]
     mov     cx, state.opponentstate.field_0
     mov     bx, state.opponentstate.field_2
     mov     dx, cx
@@ -785,11 +785,11 @@ loc_14D33:
     jnz     short loc_14D33
     sub     ax, dx
     push    ax
-    push    word_45516
+    push    track_angle
     call    sin_fast
     add     sp, 2
     push    ax
-    call    sub_30044
+    call    scale_value
     add     sp, 4
     add     si, ax
     jns     short loc_14D66
@@ -798,7 +798,7 @@ loc_14D33:
     mov     ax, 3
     push    ax
     push    cs
-    call    near ptr sub_195E6
+    call    near ptr audio_engine_unk
     add     sp, 4
 loc_14D66:
     pop     si
@@ -1314,7 +1314,7 @@ loc_15142:
     mov     ax, 1
     push    ax
     push    cs
-    call    near ptr sub_195E6
+    call    near ptr audio_engine_unk
     add     sp, 4
 loc_15163:
     mov     bx, [bp+arg_0]
@@ -1332,7 +1332,7 @@ loc_15163:
     mov     ax, 2
     push    ax
     push    cs
-    call    near ptr sub_195E6
+    call    near ptr audio_engine_unk
     add     sp, 4
 loc_15192:
     lea     ax, [bp+var_1C0]
@@ -1682,7 +1682,7 @@ loc_154FA:
     mov     ax, 1
     push    ax
     push    cs
-    call    near ptr sub_195E6
+    call    near ptr audio_engine_unk
     add     sp, 4
 loc_15513:
     mov     bx, [bp+arg_0]
@@ -2017,7 +2017,7 @@ loc_157DC:
     mov     ax, 5
     push    ax
     push    cs
-    call    near ptr sub_195E6
+    call    near ptr audio_engine_unk
     add     sp, 4
     mov     [bp+var_136], 1
 loc_15879:
@@ -2471,7 +2471,7 @@ loc_15CF7:
     mov     ax, 1
     push    ax
     push    cs
-    call    near ptr sub_195E6
+    call    near ptr audio_engine_unk
     add     sp, 4
 loc_15D1A:
     mov     al, [bp+var_E8]
@@ -3042,7 +3042,7 @@ loc_162F9:
     mov     ax, 5
     push    ax
     push    cs
-    call    near ptr sub_195E6
+    call    near ptr audio_engine_unk
     add     sp, 4
 loc_16309:
     mov     al, [bp+var_E8]
@@ -3291,7 +3291,7 @@ loc_16550:
     mov     ax, 1
     push    ax
     push    cs
-    call    near ptr sub_195E6
+    call    near ptr audio_engine_unk
     add     sp, 4
     mov     al, [bp+arg_8]
     cbw
@@ -3301,7 +3301,7 @@ loc_16566:
     mov     ax, 1
     push    ax
     push    cs
-    call    near ptr sub_195E6
+    call    near ptr audio_engine_unk
     add     sp, 4
     pop     si
     pop     di
@@ -3471,7 +3471,7 @@ loc_1667A:
     lea     ax, [si+2]
     push    ax
     push    cs
-    call    near ptr sub_19A2C
+    call    near ptr state_op_unk
     add     sp, 6
 loc_16710:
     mov     al, byte_4499A
@@ -3489,13 +3489,13 @@ loc_1671F:
 loc_1672C:
     mov     ax, 7Eh ; '~'
     push    ax
-    mov     ax, word_45516
+    mov     ax, track_angle
     add     ah, 1
     push    ax
     call    sin_fast
     add     sp, 2
     push    ax
-    call    sub_30044
+    call    scale_value
     add     sp, 4
     mov     bx, di
     shl     bx, 1
@@ -3510,13 +3510,13 @@ loc_1672C:
     mov     [bp+var_18C], ax
     mov     ax, 7Eh ; '~'
     push    ax
-    mov     ax, word_45516
+    mov     ax, track_angle
     add     ah, 1
     push    ax
     call    cos_fast
     add     sp, 2
     push    ax
-    call    sub_30044
+    call    scale_value
     add     sp, 4
     mov     cx, ax
     mov     al, byte_4499E
@@ -3543,13 +3543,13 @@ loc_1672C:
     jnz     short loc_16836
     mov     ax, 7Eh ; '~'
     push    ax
-    mov     ax, word_45516
+    mov     ax, track_angle
     add     ah, 3
     push    ax
     call    sin_fast
     add     sp, 2
     push    ax
-    call    sub_30044
+    call    scale_value
     add     sp, 4
     mov     cx, ax
     mov     al, byte_4499A
@@ -3560,13 +3560,13 @@ loc_1672C:
     mov     [bp+var_18E], cx
     mov     ax, 7Eh ; '~'
     push    ax
-    mov     ax, word_45516
+    mov     ax, track_angle
     add     ah, 3
     push    ax
     call    cos_fast
     add     sp, 2
     push    ax
-    call    sub_30044
+    call    scale_value
     add     sp, 4
     mov     cx, ax
     mov     al, byte_4499E
@@ -3971,24 +3971,24 @@ loc_16BC5:
     jl      short loc_16BBC
     mov     ax, 200h
     push    ax
-    mov     ax, word_45516
+    mov     ax, track_angle
     add     ah, 3
     push    ax
     call    sin_fast
     add     sp, 2
     push    ax
-    call    sub_30044
+    call    scale_value
     add     sp, 4
     mov     cx, 1000h
     push    cx
-    mov     cx, word_45516
+    mov     cx, track_angle
     add     ch, 2
     push    cx
     mov     [bp+var_A], ax
     call    sin_fast
     add     sp, 2
     push    ax
-    call    sub_30044
+    call    scale_value
     add     sp, 4
     add     ax, [bp+var_A]
     mov     cx, ax
@@ -4008,24 +4008,24 @@ loc_16BC5:
     mov     state.field_120.y, ax
     mov     ax, 200h
     push    ax
-    mov     ax, word_45516
+    mov     ax, track_angle
     add     ah, 3
     push    ax
     call    cos_fast
     add     sp, 2
     push    ax
-    call    sub_30044
+    call    scale_value
     add     sp, 4
     mov     cx, 1000h
     push    cx
-    mov     cx, word_45516
+    mov     cx, track_angle
     add     ch, 2
     push    cx
     mov     [bp+var_A], ax
     call    cos_fast
     add     sp, 2
     push    ax
-    call    sub_30044
+    call    scale_value
     add     sp, 4
     mov     cx, ax
     mov     al, byte_4499E
@@ -4078,51 +4078,51 @@ loc_16BC5:
     mov     state.field_150, si
     mov     ax, 0D2h ; 'Ò'
     push    ax
-    mov     ax, word_45516
+    mov     ax, track_angle
     add     ah, 2
     push    ax
     call    sin_fast
     add     sp, 2
     push    ax
-    call    sub_30044
+    call    scale_value
     add     sp, 4
     mov     cx, 24h ; '$'
     push    cx
-    mov     cx, word_45516
+    mov     cx, track_angle
     add     ch, 1
     push    cx
     mov     [bp+var_A], ax
     call    sin_fast
     add     sp, 2
     push    ax
-    call    sub_30044
+    call    scale_value
     add     sp, 4
     add     ax, [bp+var_A]
     mov     [bp+var_8], ax
     mov     ax, 0D2h ; 'Ò'
     push    ax
-    mov     ax, word_45516
+    mov     ax, track_angle
     add     ah, 2
     push    ax
     call    cos_fast
     add     sp, 2
     push    ax
-    call    sub_30044
+    call    scale_value
     add     sp, 4
     mov     cx, 24h ; '$'
     push    cx
-    mov     cx, word_45516
+    mov     cx, track_angle
     add     ch, 1
     push    cx
     mov     [bp+var_A], ax
     call    cos_fast
     add     sp, 2
     push    ax
-    call    sub_30044
+    call    scale_value
     add     sp, 4
     add     ax, [bp+var_A]
     mov     [bp+var_2], ax
-    mov     ax, word_45516
+    mov     ax, track_angle
     neg     ax
     push    ax
     mov     al, byte_4499E
@@ -4210,51 +4210,51 @@ loc_16DA4:
 loc_16E0A:
     mov     ax, 0D2h ; 'Ò'
     push    ax
-    mov     ax, word_45516
+    mov     ax, track_angle
     add     ah, 2
     push    ax
     call    sin_fast
     add     sp, 2
     push    ax
-    call    sub_30044
+    call    scale_value
     add     sp, 4
     mov     cx, 24h ; '$'
     push    cx
-    mov     cx, word_45516
+    mov     cx, track_angle
     add     ch, 3
     push    cx
     mov     [bp+var_A], ax
     call    sin_fast
     add     sp, 2
     push    ax
-    call    sub_30044
+    call    scale_value
     add     sp, 4
     add     ax, [bp+var_A]
     mov     [bp+var_8], ax
     mov     ax, 0D2h ; 'Ò'
     push    ax
-    mov     ax, word_45516
+    mov     ax, track_angle
     add     ah, 2
     push    ax
     call    cos_fast
     add     sp, 2
     push    ax
-    call    sub_30044
+    call    scale_value
     add     sp, 4
     mov     cx, 24h ; '$'
     push    cx
-    mov     cx, word_45516
+    mov     cx, track_angle
     add     ch, 3
     push    cx
     mov     [bp+var_A], ax
     call    cos_fast
     add     sp, 2
     push    ax
-    call    sub_30044
+    call    scale_value
     add     sp, 4
     add     ax, [bp+var_A]
     mov     [bp+var_2], ax
-    mov     ax, word_45516
+    mov     ax, track_angle
     neg     ax
     push    ax
     mov     al, byte_4499E
@@ -4592,11 +4592,11 @@ loc_17150:
     jnz     short loc_17150
     sub     ax, dx
     push    ax
-    push    word_45516
+    push    track_angle
     call    cos_fast
     add     sp, 2
     push    ax
-    call    sub_30044
+    call    scale_value
     add     sp, 4
     mov     si, ax
     mov     al, byte_4499A
@@ -4615,11 +4615,11 @@ loc_1718A:
     jnz     short loc_1718A
     sub     ax, dx
     push    ax
-    push    word_45516
+    push    track_angle
     call    sin_fast
     add     sp, 2
     push    ax
-    call    sub_30044
+    call    scale_value
     add     sp, 4
     add     si, ax
     cmp     si, 0E4h ; 'ä'
@@ -5318,11 +5318,11 @@ loc_1779E:
 loc_177AC:
     sub     ax, dx
     push    ax
-    push    word_45516
+    push    track_angle
     call    cos_fast
     add     sp, 2
     push    ax
-    call    sub_30044
+    call    scale_value
     add     sp, 4
     mov     si, ax
     mov     al, byte_4499A
@@ -5341,11 +5341,11 @@ loc_177DE:
     jnz     short loc_177DE
     sub     ax, dx
     push    ax
-    push    word_45516
+    push    track_angle
     call    sin_fast
     add     sp, 2
     push    ax
-    call    sub_30044
+    call    scale_value
     add     sp, 4
     add     si, ax
     jns     short loc_17810
@@ -5354,7 +5354,7 @@ loc_177DE:
     mov     ax, 3
     push    ax
     push    cs
-    call    near ptr sub_195E6
+    call    near ptr audio_engine_unk
     add     sp, 4
 loc_17810:
     pop     si
@@ -6612,7 +6612,7 @@ loc_182F6:
     call    cos_fast
     add     sp, 2
     push    ax
-    call    sub_30044
+    call    scale_value
     add     sp, 4
     mov     bx, [bp+arg_0]
     mov     [bx+2Ch], ax
@@ -6789,7 +6789,7 @@ sub_18466 proc far
     mov     cl, 8
     shr     ax, cl
     push    ax
-    call    sub_30044
+    call    scale_value
     add     sp, 4
     mov     [bp+var_10], ax
     push    [bp+var_4]
@@ -6800,7 +6800,7 @@ sub_18466 proc far
     mov     cl, 8
     shr     ax, cl
     push    ax
-    call    sub_30044
+    call    scale_value
     add     sp, 4
     mov     [bp+var_14], ax
     push    [bp+var_2]
@@ -6811,7 +6811,7 @@ sub_18466 proc far
     mov     cl, 8
     shr     ax, cl
     push    ax
-    call    sub_30044
+    call    scale_value
     add     sp, 4
     mov     [bp+var_12], ax
     push    [bp+var_4]
@@ -6822,7 +6822,7 @@ sub_18466 proc far
     mov     cl, 8
     shr     ax, cl
     push    ax
-    call    sub_30044
+    call    scale_value
     add     sp, 4
     mov     [bp+var_16], ax
     sub     ax, [bp+var_12]
@@ -7293,7 +7293,7 @@ loc_188D6:
     test    byte_42D26, 1
     jz      short loc_188E9
     push    word_43964
-    call    sub_26F6D
+    call    audio_function2
     add     sp, 2
 loc_188E9:
     cmp     opponent_index, 0
@@ -7307,7 +7307,7 @@ loc_18903:
     test    byte_42D2A, 1
     jz      short loc_18916
     push    word_4408C
-    call    sub_26F6D
+    call    audio_function2
     add     sp, 2
 loc_18916:
     mov     byte_459D8, 0
@@ -7634,7 +7634,7 @@ loc_18BF4:
     jz      short loc_18C08
     dec     [bp+var_16]
     push    [bp+var_2E]
-    call    sub_26F6D
+    call    audio_function2
 loc_18C05:
     add     sp, 2
 loc_18C08:
@@ -8740,7 +8740,7 @@ sub_195E0 proc far
     ; align 2
     db 144
 sub_195E0 endp
-sub_195E6 proc far
+audio_engine_unk proc far
     var_4 = word ptr -4
     var_2 = byte ptr -2
      s = byte ptr 0
@@ -8825,7 +8825,7 @@ loc_1967F:
     push    word ptr [bx+18h]
     push    [bp+arg_2]
     push    cs
-    call    near ptr sub_19A2C
+    call    near ptr state_op_unk
     add     sp, 6
     cmp     [bp+arg_2], 0
     jnz     short loc_196B3
@@ -8850,7 +8850,7 @@ loc_196B3:
 loc_196CE:
     push    word_4408C
 loc_196D2:
-    call    sub_272F4
+    call    audio_function2_wrap
     add     sp, 2
     jmp     loc_1964E
     ; align 2
@@ -8867,7 +8867,7 @@ loc_196DE:
 loc_196F8:
     push    word_4408C
 loc_196FC:
-    call    sub_272F4
+    call    audio_function2_wrap
     add     sp, 2
 loc_19704:
     mov     bx, [bp+var_4]
@@ -8935,7 +8935,7 @@ loc_1978D:
     retf
     ; align 2
     db 144
-sub_195E6 endp
+audio_engine_unk endp
 sub_19794 proc far
     var_36 = dword ptr -54
     var_32 = word ptr -50
@@ -9268,7 +9268,7 @@ sub_199B2 proc far
     ; align 2
     db 144
 sub_199B2 endp
-sub_19A2C proc far
+state_op_unk proc far
     var_18 = word ptr -24
     var_16 = word ptr -22
     var_14 = word ptr -20
@@ -9438,7 +9438,7 @@ loc_19B99:
     retf
     ; align 2
     db 144
-sub_19A2C endp
+state_op_unk endp
 sub_19BA0 proc far
     var_14 = word ptr -20
     var_12 = word ptr -18

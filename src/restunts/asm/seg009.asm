@@ -220,8 +220,8 @@ sub_2A2BC proc far
     push    ax
     call    make_wnd_sprite
     add     sp, 6
-    mov     word ptr dword_44D26, ax
-    mov     word ptr dword_44D26+2, dx
+    mov     word ptr wndsprite, ax
+    mov     word ptr wndsprite+2, dx
     mov     ax, 34BEh
     push    ax
     push    [bp+var_20]
@@ -932,8 +932,8 @@ loc_2AAF0:
     mov     al, [bp+var_36]
     cbw
     push    ax
-    push    word ptr dword_44D26+2
-    push    word ptr dword_44D26
+    push    word ptr wndsprite+2
+    push    word ptr wndsprite
     call    sub_29620
     add     sp, 6
     mov     [bp+var_36], 0FEh ; 'þ'
@@ -2875,8 +2875,8 @@ loc_2BE3A:
     jz      short loc_2BE44
     jmp     loc_2A720
 loc_2BE44:
-    push    word ptr dword_44D26+2
-    push    word ptr dword_44D26
+    push    word ptr wndsprite+2
+    push    word ptr wndsprite
     call    sub_324AA
     add     sp, 4
     push    [bp+var_164]

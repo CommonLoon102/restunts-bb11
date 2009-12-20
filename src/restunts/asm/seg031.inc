@@ -7,8 +7,8 @@ seg031 segment byte public 'STUNTSC' use16
     extrn init_video:proc
     extrn random_wait:proc
     extrn load_palandcursor:proc
-    extrn sub_3A45C:proc
+    extrn get_0:proc
     extrn alloc_resbytes:proc
-    extrn sub_3A484:proc
-    extrn sub_3A496:proc
+    extrn get_res_ofs_diff_scaled:proc
+    extrn get_res_size_scaled:proc
 seg031 ends

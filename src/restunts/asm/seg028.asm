@@ -46,6 +46,7 @@ nosmart
 seg028 segment byte public 'STUNTSC' use16
     assume cs:seg028
     assume es:nothing, ss:nothing, ds:dseg
+    public audiodriver_timer
     public sub_3868A
     public sub_386D6
     public sub_38702
@@ -67,12 +68,14 @@ seg028 segment byte public 'STUNTSC' use16
     public sub_3963C
     public sub_3968A
     public sub_39700
-    public sub_39966
-    dw 47134
-    dw seg dseg
+    public audio_driver_func1E
+audiodriver_timer proc far
+
+    push    ds
+    mov     ax, seg dseg
     mov     ds, ax
-    mov     ax, word ptr dword_4060A
-    or      ax, word ptr dword_4060A+2
+    mov     ax, word ptr audiodriverbinary
+    or      ax, word ptr audiodriverbinary+2
     jz      short loc_38688
     cmp     word_4063A, 0
     jnz     short loc_38688
@@ -100,6 +103,7 @@ loc_38680:
 loc_38688:
     pop     ds
     retf
+audiodriver_timer endp
 sub_3868A proc far
     var_2 = byte ptr -2
      s = byte ptr 0
@@ -271,7 +275,7 @@ loc_387B2:
     push    [bp+arg_0]
     push    [bp+arg_0]
     push    cs
-    call    near ptr sub_39966
+    call    near ptr audio_driver_func1E
     add     sp, 4
 loc_387D2:
     mov     ax, word ptr [bp+var_8]
@@ -292,8 +296,8 @@ loc_387EA:
     sub     ah, ah
     sub     ax, 4
     push    ax
-    mov     ax, word ptr dword_4060A
-    mov     dx, word ptr dword_4060A+2
+    mov     ax, word ptr audiodriverbinary
+    mov     dx, word ptr audiodriverbinary+2
     add     ax, 39h ; '9'
     mov     word ptr [bp+var_C+2], dx
     mov     word ptr [bp+var_C], ax
@@ -337,7 +341,7 @@ loc_38844:
     push    [bp+arg_0]
     push    [bp+arg_0]
     push    cs
-    call    near ptr sub_39966
+    call    near ptr audio_driver_func1E
     add     sp, 4
     sub     ax, ax
     push    ax
@@ -350,7 +354,7 @@ loc_38844:
     push    ax
     push    [bp+arg_0]
     push    [bp+arg_0]
-    call    sub_37DBC
+    call    init_audio_chunk
     add     sp, 0Eh
     jmp     loc_387D2
 loc_38886:
@@ -405,8 +409,8 @@ loc_388E2:
     mov     al, [bx+47h]
     sub     ah, ah
     push    ax
-    mov     ax, word ptr dword_4060A
-    mov     dx, word ptr dword_4060A+2
+    mov     ax, word ptr audiodriverbinary
+    mov     dx, word ptr audiodriverbinary+2
     add     ax, 12h
     mov     word ptr [bp+var_C+2], dx
     mov     word ptr [bp+var_C], ax
@@ -421,8 +425,8 @@ loc_388E2:
     mov     al, [bx+47h]
     sub     ah, ah
     push    ax
-    mov     ax, word ptr dword_4060A
-    mov     dx, word ptr dword_4060A+2
+    mov     ax, word ptr audiodriverbinary
+    mov     dx, word ptr audiodriverbinary+2
     add     ax, 21h ; '!'
     mov     word ptr [bp+var_C+2], dx
     mov     word ptr [bp+var_C], ax
@@ -698,8 +702,8 @@ loc_38B12:
     mov     al, [bx+47h]
     sub     ah, ah
     push    ax
-    mov     ax, word ptr dword_4060A
-    mov     dx, word ptr dword_4060A+2
+    mov     ax, word ptr audiodriverbinary
+    mov     dx, word ptr audiodriverbinary+2
     add     ax, 15h
     mov     word ptr [bp+var_8+2], dx
     mov     word ptr [bp+var_8], ax
@@ -731,8 +735,8 @@ loc_38B6E:
     push    [bp+var_A]
     push    si
     push    di
-    mov     ax, word ptr dword_4060A
-    mov     dx, word ptr dword_4060A+2
+    mov     ax, word ptr audiodriverbinary
+    mov     dx, word ptr audiodriverbinary+2
     add     ax, 15h
     mov     word ptr [bp+var_8+2], dx
     mov     word ptr [bp+var_8], ax
@@ -813,8 +817,8 @@ loc_38C0D:
     push    ax
     push    cx
     push    bx
-    mov     ax, word ptr dword_4060A
-    mov     dx, word ptr dword_4060A+2
+    mov     ax, word ptr audiodriverbinary
+    mov     dx, word ptr audiodriverbinary+2
     add     ax, 1Bh
     mov     word ptr [bp+var_6+2], dx
     mov     word ptr [bp+var_6], ax
@@ -869,8 +873,8 @@ loc_38C8F:
     push    [bp+var_6]
     push    si
     push    di
-    mov     ax, word ptr dword_4060A
-    mov     dx, word ptr dword_4060A+2
+    mov     ax, word ptr audiodriverbinary
+    mov     dx, word ptr audiodriverbinary+2
     add     ax, 12h
     mov     word ptr [bp+var_C+2], dx
     mov     word ptr [bp+var_C], ax
@@ -896,8 +900,8 @@ loc_38CC8:
     mov     al, [bx+47h]
     sub     ah, ah
     push    ax
-    mov     ax, word ptr dword_4060A
-    mov     dx, word ptr dword_4060A+2
+    mov     ax, word ptr audiodriverbinary
+    mov     dx, word ptr audiodriverbinary+2
     add     ax, 12h
     mov     word ptr [bp+var_C+2], dx
     mov     word ptr [bp+var_C], ax
@@ -979,8 +983,8 @@ loc_38D6D:
     push    [bp+var_4]
     push    si
     push    di
-    mov     ax, word ptr dword_4060A
-    mov     dx, word ptr dword_4060A+2
+    mov     ax, word ptr audiodriverbinary
+    mov     dx, word ptr audiodriverbinary+2
     add     ax, 21h ; '!'
     mov     word ptr [bp+var_A+2], dx
     mov     word ptr [bp+var_A], ax
@@ -1009,8 +1013,8 @@ loc_38DAC:
     mov     al, [si-7DBDh]
     sub     ah, ah
     push    ax
-    mov     ax, word ptr dword_4060A
-    mov     dx, word ptr dword_4060A+2
+    mov     ax, word ptr audiodriverbinary
+    mov     dx, word ptr audiodriverbinary+2
     add     ax, 21h ; '!'
     mov     word ptr [bp+var_A+2], dx
     mov     word ptr [bp+var_A], ax
@@ -1175,8 +1179,8 @@ loc_38EE6:
     push    [bp+var_8]
     push    bx
     push    [bp+var_6]
-    mov     ax, word ptr dword_4060A
-    mov     dx, word ptr dword_4060A+2
+    mov     ax, word ptr audiodriverbinary
+    mov     dx, word ptr audiodriverbinary+2
     add     ax, 21h ; '!'
     mov     word ptr [bp+var_E+2], dx
     mov     word ptr [bp+var_E], ax
@@ -1243,8 +1247,8 @@ loc_38FB4:
     mov     al, [bx+2Ch]
     sub     ah, ah
     push    ax
-    mov     ax, word ptr dword_4060A
-    mov     dx, word ptr dword_4060A+2
+    mov     ax, word ptr audiodriverbinary
+    mov     dx, word ptr audiodriverbinary+2
     add     ax, 24h ; '$'
     mov     word ptr [bp+var_E+2], dx
     mov     word ptr [bp+var_E], ax
@@ -1276,8 +1280,8 @@ loc_38FF2:
     mov     al, [bx+2Ch]
     sub     ah, ah
     push    ax
-    mov     ax, word ptr dword_4060A
-    mov     dx, word ptr dword_4060A+2
+    mov     ax, word ptr audiodriverbinary
+    mov     dx, word ptr audiodriverbinary+2
     add     ax, 9
     mov     word ptr [bp+var_12+2], dx
     mov     word ptr [bp+var_12], ax
@@ -1346,8 +1350,8 @@ sub_39088 proc far
     mov     al, [si-5D1Eh]
     sub     ah, ah
     push    ax
-    mov     ax, word ptr dword_4060A
-    mov     dx, word ptr dword_4060A+2
+    mov     ax, word ptr audiodriverbinary
+    mov     dx, word ptr audiodriverbinary+2
     add     ax, 24h ; '$'
     mov     word ptr [bp+var_4+2], dx
     mov     word ptr [bp+var_4], ax
@@ -1464,8 +1468,8 @@ loc_3919D:
     mov     al, [si-5D1Eh]
     sub     ah, ah
     push    ax
-    mov     ax, word ptr dword_4060A
-    mov     dx, word ptr dword_4060A+2
+    mov     ax, word ptr audiodriverbinary
+    mov     dx, word ptr audiodriverbinary+2
     add     ax, 0Ch
     mov     [bp-14h], dx
     mov     [bp-16h], ax
@@ -1478,8 +1482,8 @@ loc_3919D:
     sub     ah, ah
     push    ax
 loc_391D3:
-    mov     ax, word ptr dword_4060A
-    mov     dx, word ptr dword_4060A+2
+    mov     ax, word ptr audiodriverbinary
+    mov     dx, word ptr audiodriverbinary+2
     add     ax, 0Fh
     mov     [bp-14h], dx
     mov     [bp-16h], ax
@@ -1585,8 +1589,8 @@ loc_392CB:
     add     si, 0A2B6h
     push    si
     push    word ptr [bp-0Eh]
-    mov     ax, word ptr dword_4060A
-    mov     dx, word ptr dword_4060A+2
+    mov     ax, word ptr audiodriverbinary
+    mov     dx, word ptr audiodriverbinary+2
     add     ax, 0Ch
     mov     [bp-14h], dx
     mov     [bp-16h], ax
@@ -1594,8 +1598,8 @@ loc_392CB:
     add     sp, 4
     push    si
     push    word ptr [bp-0Eh]
-    mov     ax, word ptr dword_4060A
-    mov     dx, word ptr dword_4060A+2
+    mov     ax, word ptr audiodriverbinary
+    mov     dx, word ptr audiodriverbinary+2
     add     ax, 0Fh
     mov     [bp-14h], dx
     mov     [bp-16h], ax
@@ -1614,8 +1618,8 @@ loc_39317:
     add     si, 0A2B6h
     push    si
     push    word ptr [bp-10h]
-    mov     ax, word ptr dword_4060A
-    mov     dx, word ptr dword_4060A+2
+    mov     ax, word ptr audiodriverbinary
+    mov     dx, word ptr audiodriverbinary+2
     add     ax, 0Ch
     mov     [bp-14h], dx
     mov     [bp-16h], ax
@@ -2044,8 +2048,8 @@ sub_3968A proc far
     mov     al, [bx+2Ch]
     sub     ah, ah
     push    ax
-    mov     ax, word ptr dword_4060A
-    mov     dx, word ptr dword_4060A+2
+    mov     ax, word ptr audiodriverbinary
+    mov     dx, word ptr audiodriverbinary+2
     add     ax, 0Ch
     mov     word ptr [bp+var_4+2], dx
     mov     word ptr [bp+var_4], ax
@@ -2143,8 +2147,8 @@ loc_39754:
     mov     al, [bx+2Ch]
     sub     ah, ah
     push    ax
-    mov     ax, word ptr dword_4060A
-    mov     dx, word ptr dword_4060A+2
+    mov     ax, word ptr audiodriverbinary
+    mov     dx, word ptr audiodriverbinary+2
     add     ax, 0Fh
     mov     word ptr [bp+var_C+2], dx
     mov     word ptr [bp+var_C], ax
@@ -2263,8 +2267,8 @@ loc_398A4:
     mov     al, [bx+2Ch]
     sub     ah, ah
     push    ax
-    mov     ax, word ptr dword_4060A
-    mov     dx, word ptr dword_4060A+2
+    mov     ax, word ptr audiodriverbinary
+    mov     dx, word ptr audiodriverbinary+2
     add     ax, 27h ; '''
     mov     word ptr [bp+var_C+2], dx
     mov     word ptr [bp+var_C], ax
@@ -2323,8 +2327,8 @@ loc_3993B:
 loc_39946:
     mov     ax, 0A2B6h
     push    ax
-    mov     ax, word ptr dword_4060A
-    mov     dx, word ptr dword_4060A+2
+    mov     ax, word ptr audiodriverbinary
+    mov     dx, word ptr audiodriverbinary+2
     add     ax, 30h ; '0'
     mov     word ptr [bp+var_C+2], dx
     mov     word ptr [bp+var_C], ax
@@ -2336,7 +2340,7 @@ loc_39946:
     pop     bp
     retf
 sub_39700 endp
-sub_39966 proc far
+audio_driver_func1E proc far
     var_16 = dword ptr -22
     var_12 = word ptr -18
     var_10 = dword ptr -16
@@ -2383,8 +2387,8 @@ loc_399A4:
     cmp     ax, [bp+arg_0]
     jb      short loc_399E2
     push    di
-    mov     ax, word ptr dword_4060A
-    mov     dx, word ptr dword_4060A+2
+    mov     ax, word ptr audiodriverbinary
+    mov     dx, word ptr audiodriverbinary+2
     add     ax, 1Eh
     mov     word ptr [bp+var_10+2], dx
     mov     word ptr [bp+var_10], ax
@@ -2431,8 +2435,8 @@ loc_39A21:
     mov     al, [bx]
     sub     ah, ah
     push    ax
-    mov     ax, word ptr dword_4060A
-    mov     dx, word ptr dword_4060A+2
+    mov     ax, word ptr audiodriverbinary
+    mov     dx, word ptr audiodriverbinary+2
     add     ax, 1Eh
     mov     word ptr [bp+var_16+2], dx
     mov     word ptr [bp+var_16], ax
@@ -2495,6 +2499,6 @@ loc_39ACA:
     mov     sp, bp
     pop     bp
     retf
-sub_39966 endp
+audio_driver_func1E endp
 seg028 ends
 end

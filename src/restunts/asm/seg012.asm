@@ -118,7 +118,7 @@ seg012 segment byte public 'STUNTSC' use16
     public unk_2FD1E
     public unk_2FD7C
     public sub_2FDDE
-    public sub_2FE1C
+    public add_exit_handler
     public call_exitlist
     public sub_2FE74
     public get_file_size
@@ -127,7 +127,7 @@ seg012 segment byte public 'STUNTSC' use16
     public loc_30011
     public loc_3002A
     public find_next
-    public sub_30044
+    public scale_value
     public set_bios_mode4
     public sub_300B6
     public set_bios_mode7
@@ -178,7 +178,7 @@ seg012 segment byte public 'STUNTSC' use16
     public alloc_resmem
     public loc_310CD
     public alloc_resmem_a000
-    public sub_3117B
+    public get_res_ofs_diff
     public sub_3118D
     public sub_311D5
     public check_pathdrive2
@@ -1483,7 +1483,7 @@ set_criterr_handler proc far
     push    cs
     mov     ax, 99Ch
     push    ax
-    call    sub_2FE1C
+    call    add_exit_handler
     add     sp, 4
     mov     ax, [bp+arg_0]
     mov     cs:word_2F358, ax
@@ -3828,7 +3828,7 @@ loc_2FE18:
     pop     bp
     retf
 sub_2FDDE endp
-sub_2FE1C proc far
+add_exit_handler proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -3838,7 +3838,7 @@ sub_2FE1C proc far
     mov     bp, sp
     mov     ax, [bp+arg_0]
     mov     cx, 0Ah
-    mov     bx, 3FB4h
+    mov     bx, offset exitlistfuncs
     mov     dx, [bp+arg_2]
 loc_2FE2B:
     cmp     [bx], ax
@@ -3850,7 +3850,7 @@ loc_2FE34:
     jz      short loc_2FE48
     add     bx, 4
     loop    loc_2FE2B
-    mov     ax, 3FE0h
+    mov     ax, offset aExitListOverflow; "EXIT LIST OVERFLOW\r\n"
     push    ax
     call    far ptr fatal_error
 loc_2FE48:
@@ -3861,7 +3861,7 @@ loc_2FE48:
 loc_2FE57:
     pop     bp
     retf
-sub_2FE1C endp
+add_exit_handler endp
 call_exitlist proc far
      r = byte ptr 0
 
@@ -4168,7 +4168,7 @@ find_next proc far
     ; align 2
     db 0
 find_next endp
-sub_30044 proc far
+scale_value proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -4187,7 +4187,7 @@ sub_30044 proc far
     mov     ax, dx
     pop     bp
     retf
-sub_30044 endp
+scale_value endp
 set_bios_mode4 proc far
      r = byte ptr 0
 
@@ -4437,7 +4437,7 @@ nosmart
     push    cs
     mov     ax, 1848h
     push    ax
-    call    sub_2FE1C
+    call    add_exit_handler
     add     sp, 4
     pop     bp
     retf
@@ -5210,7 +5210,7 @@ loc_30861:
     push    cs
     mov     ax, 1E63h
     push    ax
-    call    sub_2FE1C
+    call    add_exit_handler
     add     sp, 4
     pop     di
     retf
@@ -6436,15 +6436,15 @@ loc_3113E:
     sub     ax, [bx+0Eh]
     retf
 alloc_resmem_a000 endp
-sub_3117B proc far
+get_res_ofs_diff proc far
 
     mov     bx, resendptr2
-    mov     ax, [bx+0Eh]
+    mov     ax, [bx+RESOURCE.resofs]
     mov     bx, resptr2
-    sub     ax, [bx+0Eh]
-    sub     ax, [bx+0Ch]
+    sub     ax, [bx+RESOURCE.resofs]
+    sub     ax, [bx+RESOURCE.ressize]
     retf
-sub_3117B endp
+get_res_ofs_diff endp
 sub_3118D proc far
      s = byte ptr 0
      r = byte ptr 2
@@ -9054,7 +9054,7 @@ sub_325AE proc far
     push    cs
     mov     ax, 3BB6h
     push    ax
-    call    sub_2FE1C
+    call    add_exit_handler
     add     sp, 4
 locret_325D5:
     retf
