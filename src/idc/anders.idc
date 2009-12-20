@@ -796,7 +796,7 @@ static GetFunctionInfo(ea, funcend) {
 static PrintReport() {
 
 	auto segea, nextseg, endseg;
-	auto funcea, nextfunc, endfunc, funcname;
+	auto funcea, nextfunc, endfunc, funcname, funccount, portfunccount;
 	auto f, filename;
 	auto ported;
 
@@ -806,6 +806,10 @@ static PrintReport() {
 	fprintf(f, "<table border=\"1\">\n");
 
 	Message("Generating report...\n");
+	
+	funccount = 0;
+	portfunccount = 0;
+	
 	for (segea = FirstSeg(); segea != BADADDR; segea = nextseg) {
 		nextseg = NextSeg(segea);
 		
@@ -829,6 +833,10 @@ static PrintReport() {
 
 			funcname = GetFunctionName(funcea);
 			ported = PortFuncName(funcname) != funcname;
+			
+			funccount ++;
+			if (ported)
+				portfunccount ++;
 				
 			fprintf(f, "<tr>\n");
 			fprintf(f, "    <td valign=\"top\"><a name=\"%s\"></a>%s</td><td valign=\"top\">%s</td><td valign=\"top\"><b>%s</b></td>\n", funcname, funcname, GetFunctionInfo(funcea, endfunc), ported ? "PORTED" : "");
@@ -836,6 +844,9 @@ static PrintReport() {
 		}
 
 	}
+	fprintf(f, "<tr>\n");
+	fprintf(f, "    <td valign=\"top\" colspan=\"3\"><b>Total functions: %i / Ported: %i</b></td>\n", funccount, portfunccount);
+	fprintf(f, "</tr>\n");
 	fprintf(f, "</table>\n");
 
 	fclose(f);
