@@ -621,7 +621,11 @@ static PortFuncName(labelname) {
 		labelname == "cos_fast" ||
 		
 		labelname == "mmgr_path_to_name" ||
-		labelname == "mmgr_alloc_pages"
+		labelname == "mmgr_alloc_pages" ||
+		labelname == "mmgr_alloc_resmem" ||
+		labelname == "mmgr_alloc_a000" ||
+		labelname == "mmgr_get_ofs_diff" ||
+		labelname == "mmgr_free" 
 	)
 		return labelname + "2";
 	return labelname;

@@ -179,6 +179,9 @@ dseg segment byte public 'STUNTSD' use16
     public aDes_0
     public aRac
     public word_3BBC8
+    public unk_3BC70
+    public unk_3BC71
+    public unk_3BC72
     public word_3BCEC
     public word_3BCEE
     public word_3BCF0
@@ -191,6 +194,9 @@ dseg segment byte public 'STUNTSD' use16
     public byte_3BD29
     public byte_3BD4C
     public byte_3BD50
+    public unk_3BD70
+    public unk_3BD71
+    public unk_3BD72
     public byte_3BE02
     public word_3BE14
     public word_3BE16
@@ -208,9 +214,15 @@ dseg segment byte public 'STUNTSD' use16
     public unk_3BEE0
     public unk_3BF26
     public unk_3BF6C
+    public unk_3BF70
+    public unk_3BF71
+    public unk_3BF72
     public unk_3BFB2
     public unk_3BFF8
     public unk_3C03E
+    public unk_3C070
+    public unk_3C071
+    public unk_3C072
     public off_3C084
     public rect_unk5
     public byte_3C09C
@@ -2528,9 +2540,9 @@ word_3BBC8     dw 177
     db 111
     db 115
     db 101
-    db 0
-    db 46
-    db 116
+unk_3BC70     db 0
+unk_3BC71     db 46
+unk_3BC72     db 116
     db 114
     db 107
     db 0
@@ -2778,9 +2790,9 @@ byte_3BD50     db 48
     db 0
     db 1
     db 0
-    db 10
-    db 0
-    db 21
+unk_3BD70     db 10
+unk_3BD71     db 0
+unk_3BD72     db 21
     db 0
     db 21
     db 0
@@ -3274,9 +3286,9 @@ unk_3BF6C     db 2
     db 4
     db 2
     db 1
-    db 4
-    db 2
-    db 0
+unk_3BF70     db 4
+unk_3BF71     db 2
+unk_3BF72     db 0
     db 4
     db 2
     db 255
@@ -3530,9 +3542,9 @@ unk_3C03E     db 252
     db 0
     db 255
     db 255
-    db 0
-    db 255
-    db 0
+unk_3C070     db 0
+unk_3C071     db 255
+unk_3C072     db 0
     db 0
     db 255
     db 1

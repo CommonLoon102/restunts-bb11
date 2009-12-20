@@ -67,7 +67,9 @@ seg012 segment byte public 'STUNTSC' use16
     public word_2F356
     public word_2F358
     public word_2F35A
+    public sub_2F35C
     public set_criterr_handler
+    public sub_2F3BC
     public sub_2F3DA
     public sub_2F424
     public sub_2F436
@@ -180,17 +182,17 @@ seg012 segment byte public 'STUNTSC' use16
     public locate_shape_0
     public locate_shape_1
     public locate_sound
-    public mmgr_alloc_resmem
+    public mmgr_alloc_resmem2
     public loc_310CD
-    public mmgr_alloc_a000
-    public mmgr_get_ofs_diff
+    public mmgr_alloc_a0002
+    public mmgr_get_ofs_diff2
     public mmgr_op_unk3
     public sub_311D5
     public mmgr_path_to_name2
     public mmgr_alloc_pages2
     public mmgr_find_free
     public mmgr_get_unk
-    public mmgr_free
+    public mmgr_free2
     public loc_31498
     public mmgr_op_unk2
     public mmgr_get_chunk_size
@@ -1456,6 +1458,10 @@ word_2F354     dw 0
 word_2F356     dw 0
 word_2F358     dw 0
 word_2F35A     dw 0
+sub_2F334 endp
+sub_2F35C proc far
+     r = byte ptr 0
+
     push    bx
     push    dx
     push    cx
@@ -1477,7 +1483,7 @@ word_2F35A     dw 0
     pop     dx
     pop     bx
     iret
-sub_2F334 endp
+sub_2F35C endp
 set_criterr_handler proc far
      s = byte ptr 0
      r = byte ptr 2
@@ -1488,7 +1494,7 @@ set_criterr_handler proc far
     mov     bp, sp
     push    ds
     push    cs
-    mov     ax, 99Ch
+    mov     ax, offset sub_2F3BC
     push    ax
     call    add_exit_handler
     add     sp, 4
@@ -1503,7 +1509,7 @@ set_criterr_handler proc far
     mov     cs:word_2F354, ax
     mov     ax, es:[bx+2]
     mov     cs:word_2F356, ax
-    mov     dx, 93Ch
+    mov     dx, offset sub_2F35C
     mov     ax, cs
     mov     ds, ax
     mov     al, 24h ; '$'
@@ -1512,6 +1518,9 @@ set_criterr_handler proc far
     pop     ds
     pop     bp
     retf
+set_criterr_handler endp
+sub_2F3BC proc far
+
     push    ds
     mov     ax, cs:word_2F356
     sub     ax, cs:word_2F354
@@ -1524,7 +1533,7 @@ set_criterr_handler proc far
 loc_2F3D8:
     pop     ds
     retf
-set_criterr_handler endp
+sub_2F3BC endp
 sub_2F3DA proc far
     var_A = byte ptr -10
      s = byte ptr 0
@@ -6332,7 +6341,7 @@ loc_31075:
     pop     bp
     retf
 locate_sound endp
-mmgr_alloc_resmem proc far
+mmgr_alloc_resmem2 proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -6387,8 +6396,8 @@ loc_310ED:
     pop     si
     pop     bp
     retf
-mmgr_alloc_resmem endp
-mmgr_alloc_a000 proc far
+mmgr_alloc_resmem2 endp
+mmgr_alloc_a0002 proc far
 
     mov     ax, 0A000h
     push    ax
@@ -6442,8 +6451,8 @@ loc_3113E:
     mov     bx, resptr1
     sub     ax, [bx+0Eh]
     retf
-mmgr_alloc_a000 endp
-mmgr_get_ofs_diff proc far
+mmgr_alloc_a0002 endp
+mmgr_get_ofs_diff2 proc far
 
     mov     bx, resendptr2
     mov     ax, [bx+RESOURCE.resofs]
@@ -6451,7 +6460,7 @@ mmgr_get_ofs_diff proc far
     sub     ax, [bx+RESOURCE.resofs]
     sub     ax, [bx+RESOURCE.ressize]
     retf
-mmgr_get_ofs_diff endp
+mmgr_get_ofs_diff2 endp
 mmgr_op_unk3 proc far
      s = byte ptr 0
      r = byte ptr 2
@@ -6855,7 +6864,7 @@ loc_31475:
     pop     bp
     retf
 mmgr_get_unk endp
-mmgr_free proc far
+mmgr_free2 proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -6870,7 +6879,7 @@ mmgr_free proc far
 loc_31488:
     cmp     si, resptr1
     jz      short loc_31498
-    cmp     ax, [si+0Eh]
+    cmp     ax, [si+RESOURCE.resofs]
     jz      short loc_314A4
     sub     si, 12h
     jmp     short loc_31488
@@ -6881,37 +6890,37 @@ loc_31498:
     call    far ptr fatal_error
 loc_314A4:
     mov     [bp+arg_2], 0
-    mov     word ptr [si+10h], 0
+    mov     [si+RESOURCE.resunk], 0
     cmp     si, resptr2
     jz      short loc_314CE
     mov     bx, resptr2
     mov     di, resendptr1
     cmp     si, di
     jz      short loc_31508
-    mov     ax, [di+0Eh]
-    sub     ax, [bx+0Eh]
-    sub     ax, [bx+0Ch]
-    cmp     ax, [si+0Ch]
+    mov     ax, [di+RESOURCE.resofs]
+    sub     ax, [bx+RESOURCE.resofs]
+    sub     ax, [bx+RESOURCE.ressize]
+    cmp     ax, [si+RESOURCE.ressize]
     jb      short loc_31508
 loc_314CE:
-    mov     bx, [si+0Ch]
+    mov     bx, [si+RESOURCE.ressize]
     push    bx
     mov     di, resendptr1
-    mov     ax, [di+0Eh]
+    mov     ax, [di+RESOURCE.resofs]
     sub     ax, bx
     push    ax
     mov     [bp+arg_2], ax
-    push    word ptr [si+0Eh]
+    push    [si+RESOURCE.resofs]
     sub     di, 12h
     mov     resendptr1, di
-    mov     [di+0Eh], ax
-    mov     [di+0Ch], bx
-    mov     word ptr [di+10h], 1
+    mov     [di+RESOURCE.resofs], ax
+    mov     [di+RESOURCE.ressize], bx
+    mov     [di+RESOURCE.resunk], 1
     mov     cx, 0Ch
     xor     bx, bx
 loc_314F9:
-    mov     al, [bx+si]
-    mov     [bx+di], al
+    mov     al, byte ptr [bx+si+RESOURCE.resname]
+    mov     byte ptr [bx+di+RESOURCE.resname], al
     inc     bx
     loop    loc_314F9
     call    sub_311D5
@@ -6921,7 +6930,7 @@ loc_31508:
     jnz     short loc_3151B
 loc_3150E:
     sub     si, 12h
-    cmp     word ptr [si+10h], 0
+    cmp     [si+RESOURCE.resunk], 0
     jz      short loc_3150E
     mov     resptr2, si
 loc_3151B:
@@ -7047,7 +7056,7 @@ loc_31635:
     mov     sp, bp
     pop     bp
     retf
-mmgr_free endp
+mmgr_free2 endp
 mmgr_op_unk2 proc far
      s = byte ptr 0
      r = byte ptr 2

@@ -20,7 +20,9 @@ seg012 segment byte public 'STUNTSC' use16
     extrn word_2F356:word
     extrn word_2F358:word
     extrn word_2F35A:word
+    extrn sub_2F35C:proc
     extrn set_criterr_handler:proc
+    extrn sub_2F3BC:proc
     extrn sub_2F3DA:proc
     extrn sub_2F424:proc
     extrn sub_2F436:proc
@@ -133,17 +135,17 @@ seg012 segment byte public 'STUNTSC' use16
     extrn locate_shape_0:proc
     extrn locate_shape_1:proc
     extrn locate_sound:proc
-    extrn mmgr_alloc_resmem:proc
+    extrn mmgr_alloc_resmem2:proc
     extrn loc_310CD
-    extrn mmgr_alloc_a000:proc
-    extrn mmgr_get_ofs_diff:proc
+    extrn mmgr_alloc_a0002:proc
+    extrn mmgr_get_ofs_diff2:proc
     extrn mmgr_op_unk3:proc
     extrn sub_311D5:proc
     extrn mmgr_path_to_name2:proc
     extrn mmgr_alloc_pages2:proc
     extrn mmgr_find_free:proc
     extrn mmgr_get_unk:proc
-    extrn mmgr_free:proc
+    extrn mmgr_free2:proc
     extrn loc_31498
     extrn mmgr_op_unk2:proc
     extrn mmgr_get_chunk_size:proc

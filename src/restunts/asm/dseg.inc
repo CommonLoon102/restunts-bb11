@@ -131,6 +131,9 @@ dseg segment byte public 'STUNTSD' use16
     extrn aDes_0:byte
     extrn aRac:byte
     extrn word_3BBC8:word
+    extrn unk_3BC70:byte
+    extrn unk_3BC71:byte
+    extrn unk_3BC72:byte
     extrn word_3BCEC:word
     extrn word_3BCEE:word
     extrn word_3BCF0:word
@@ -143,6 +146,9 @@ dseg segment byte public 'STUNTSD' use16
     extrn byte_3BD29:byte
     extrn byte_3BD4C:byte
     extrn byte_3BD50:byte
+    extrn unk_3BD70:byte
+    extrn unk_3BD71:byte
+    extrn unk_3BD72:byte
     extrn byte_3BE02:byte
     extrn word_3BE14:word
     extrn word_3BE16:word
@@ -160,9 +166,15 @@ dseg segment byte public 'STUNTSD' use16
     extrn unk_3BEE0:byte
     extrn unk_3BF26:byte
     extrn unk_3BF6C:byte
+    extrn unk_3BF70:byte
+    extrn unk_3BF71:byte
+    extrn unk_3BF72:byte
     extrn unk_3BFB2:byte
     extrn unk_3BFF8:byte
     extrn unk_3C03E:byte
+    extrn unk_3C070:byte
+    extrn unk_3C071:byte
+    extrn unk_3C072:byte
     extrn off_3C084:word
     extrn rect_unk5:byte
     extrn byte_3C09C:byte

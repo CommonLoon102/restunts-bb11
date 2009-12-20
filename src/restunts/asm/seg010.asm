@@ -147,6 +147,7 @@ seg010 segment byte public 'STUNTSC' use16
     db 0
     db 0
 start proc near
+     r = byte ptr 0
 
     mov     ah, 30h
     int     21h             ; DOS - GET DOS VERSION
