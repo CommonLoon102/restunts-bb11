@@ -747,6 +747,64 @@ static PrintStruct(f, id) {
 	fprintf(f, "ends\n", id);
 }
 
+static GetAnterior(ea) {
+	auto i, str, result;
+	
+	result = "";
+	for (i = 0; i < 10; i++) {
+		str = LineA(ea, i);
+		if (strlen(str) == 0) continue;
+		result = result + str + "<br />";
+	}
+	return result;
+}
+
+static PrintReport() {
+
+	auto segea, nextseg, endseg;
+	auto funcea, nextfunc, endfunc, funcname;
+	auto f, filename;
+	auto ported;
+
+	filename = form("%s\\%s", GetIdbDirectory(), "status.html");
+	f = fopen(filename, "w");
+
+	fprintf(f, "<table border=\"1\">\n");
+
+	Message("Generating report...\n");
+	for (segea = FirstSeg(); segea != BADADDR; segea = nextseg) {
+		nextseg = NextSeg(segea);
+		
+		if (nextseg == BADADDR)
+			endseg = SegEnd(segea); else
+			endseg = nextseg;
+
+		fprintf(f, "<tr>\n");
+		fprintf(f, "    <td valign=\"top\"><b>%s</b></td><td valign=\"top\">%s</td><td valign=\"top\"><b>%s</b></td>\n", SegName(segea), GetAnterior(funcea), "Status");
+		fprintf(f, "</tr>\n");
+
+		for (funcea = segea; funcea != BADADDR; funcea = nextfunc) {
+			nextfunc = NextFunction(funcea);
+			if (endseg <= nextfunc || nextfunc == BADADDR) {
+				endfunc = endseg; 
+				nextfunc = BADADDR;
+			} else
+				endfunc = nextfunc;
+			
+			funcname = GetFunctionName(funcea);
+			ported = PortFuncName(funcname) != funcname;
+				
+			fprintf(f, "<tr>\n");
+			fprintf(f, "    <td valign=\"top\">%s</td><td valign=\"top\">%s</td><td valign=\"top\">%s</td>\n", funcname, GetAnterior(funcea), ported ? "PORTED" : "");
+			fprintf(f, "</tr>\n");
+		}
+
+	}
+	fprintf(f, "</table>\n");
+
+	fclose(f);
+}
+
 static main() {
 	auto segea, funcea, nextseg, endseg, endfunc, nextfunc, segss;
 	auto maxfuncs, funccount, startseg;
@@ -755,6 +813,8 @@ static main() {
 
 	maxfuncs = 5;
 	funccount = 0;
+
+	PrintReport();
 
 	Message("Generating segment includes...\n");
 	for (segea = FirstSeg(); segea != BADADDR; segea = nextseg) {
