@@ -728,7 +728,7 @@ nosmart
     mov     [bp+var_D6], ax
     mov     [bp+var_F2], 0
     mov     [bp+var_EE], 0
-    mov     ax, word_45F2A
+    mov     ax, simd_copy.car_height
     sub     ax, 6
     mov     [bp+var_F0], ax
     jmp     loc_1A2CC
@@ -5412,7 +5412,7 @@ loc_1D14E:
     push    ax
     mov     ax, 0AC74h
     push    ax
-    call    sub_28AD6
+    call    copy_string
     add     sp, 6
     mov     ax, 0AA0Eh
     push    ax
@@ -5445,7 +5445,7 @@ loc_1D14E:
     push    ax
     mov     ax, 0AC74h
     push    ax
-    call    sub_28AD6
+    call    copy_string
     add     sp, 6
     mov     ax, 0AA0Eh
     push    ax
@@ -5479,7 +5479,7 @@ loc_1D1F0:
     push    ax
     mov     ax, 0AC74h
     push    ax
-    call    sub_28AD6
+    call    copy_string
     add     sp, 6
     mov     ax, 0AA0Eh
     push    ax
@@ -5505,7 +5505,7 @@ loc_1D234:
     push    ax
     mov     ax, 0AC74h
     push    ax
-    call    sub_28AD6
+    call    copy_string
     add     sp, 6
     mov     ax, 0AA0Eh
     push    ax
@@ -5538,7 +5538,7 @@ loc_1D234:
     push    ax
     mov     ax, 0AC74h
     push    ax
-    call    sub_28AD6
+    call    copy_string
     add     sp, 6
     mov     ax, 0AA0Eh
     push    ax
@@ -5622,7 +5622,7 @@ loc_1D34A:
     push    ax
     mov     ax, 0AC74h
     push    ax
-    call    sub_28AD6
+    call    copy_string
     add     sp, 6
     mov     ax, 0AA0Eh
     push    ax
@@ -5671,7 +5671,7 @@ loc_1D3C7:
     push    ax
     mov     ax, 0AC74h
     push    ax
-    call    sub_28AD6
+    call    copy_string
     add     sp, 6
 loc_1D3E6:
     cmp     byte_463E4, 0
@@ -5712,7 +5712,7 @@ loc_1D42C:
     push    ax
     mov     ax, 0AC74h
     push    ax
-    call    sub_28AD6
+    call    copy_string
     add     sp, 6
     sub     ax, ax
     push    ax              ; int
@@ -5772,7 +5772,7 @@ loc_1D4B0:
     push    ax
     mov     ax, 0AC74h
     push    ax
-    call    sub_28AD6
+    call    copy_string
     add     sp, 6
     mov     ax, 0AA0Eh
     push    ax
@@ -6452,7 +6452,7 @@ loc_1D9CF:
     push    [bp+var_A]
     call    unload_resource
     add     sp, 4
-    call    sub_193E0
+    call    init_plantrak
     call    get_timerdelta
     mov     [bp+var_2AA], 0
     mov     [bp+var_440], 0
@@ -6562,7 +6562,7 @@ loc_1DBA0:
     mov     [bp+var_2A2], 0
     cmp     byte_46436, 0
     jz      short loc_1DBB4
-    call    sub_3A9A0
+    call    setup_mcgawnd2
     jmp     short loc_1DBB9
     ; align 2
     db 144
@@ -6720,7 +6720,7 @@ loc_1DCFC:
     cmp     byte_46436, 0
     jz      short loc_1DD7E
     call    sub_28DB6
-    call    sub_3A958
+    call    setup_mcgawnd1
     call    sub_28D9E
     cmp     word_44984, 0
     jz      short loc_1DD77
@@ -6816,7 +6816,7 @@ loc_1DE3E:
     call    sub_3A45C
     or      ax, ax
     jz      short loc_1DE8C
-    call    sub_3A9A0
+    call    setup_mcgawnd2
     sub     ax, ax
     push    ax
     mov     ax, 0C8h ; 'È'
@@ -6829,7 +6829,7 @@ loc_1DE3E:
     call    sub_35C4E
     add     sp, 0Ah
     call    sub_28DB6
-    call    sub_3A958
+    call    setup_mcgawnd1
     call    sub_28D9E
     jmp     short loc_1DE8C
     ; align 2

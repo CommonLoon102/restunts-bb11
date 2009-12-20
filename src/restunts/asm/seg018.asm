@@ -56,7 +56,7 @@ sub_36AF4 proc far
     mov     ax, 40h ; '@'
     mov     es, ax
     or      byte ptr es:17h, 20h
-    call    sub_30A35
+    call    kb_checking
     retf
 sub_36AF4 endp
 sub_36B05 proc far
@@ -66,7 +66,7 @@ sub_36B05 proc far
 smart
     and     byte ptr es:17h, 0DFh
 nosmart
-    call    sub_30A35
+    call    kb_checking
     retf
 sub_36B05 endp
 seg018 ends

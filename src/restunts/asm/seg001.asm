@@ -65,7 +65,7 @@ seg001 segment byte public 'STUNTSC' use16
     public sub_18D06
     public sub_18D60
     public sub_19074
-    public sub_193E0
+    public init_plantrak
     public sub_195E0
     public sub_195E6
     public sub_19794
@@ -8578,7 +8578,7 @@ loc_193DC:
     ; align 2
     db 144
 sub_19074 endp
-sub_193E0 proc far
+init_plantrak proc far
      s = byte ptr 0
      r = byte ptr 2
 
@@ -8594,7 +8594,7 @@ sub_193E0 proc far
     add     sp, 2
     sub     si, si
     mov     byte_44889, 2
-    mov     word_454C2, offset unk_3B1C0
+    mov     word_454C2, offset plan_memres
     mov     word_454C4, seg seg038
     mov     byte_4499A, 1
     mov     byte_4499E, 1Ch
@@ -8731,7 +8731,7 @@ loc_1958C:
     mov     sp, bp
     pop     bp
     retf
-sub_193E0 endp
+init_plantrak endp
 sub_195E0 proc far
 
     push    cs
@@ -9572,14 +9572,14 @@ setup_car_from_simd proc far
     jz      short loc_19CB3
     jmp     loc_19D36
 loc_19CB3:
-    mov     ax, 6A8h
+    mov     ax, offset aSimd; "simd"
     push    ax
     push    [bp+arg_2]
     push    [bp+arg_0]
     call    locate_shape_alt
     add     sp, 6
     push    si
-    mov     di, 0A6EAh
+    mov     di, offset simd_copy
     mov     si, ax
     push    ds
     pop     es
@@ -9591,7 +9591,7 @@ loc_19CB3:
     pop     si
     mov     ax, word ptr dword_44D3E
     mov     dx, word ptr dword_44D3E+2
-    mov     word_4615E, ax
+    mov     simd_copy.trackdata5_ptr, ax
     mov     word_46160, dx
     sub     si, si
 loc_19CE7:
@@ -9602,7 +9602,7 @@ loc_19CE7:
     cwd
     push    dx
     push    ax
-    mov     ax, word_45E92
+    mov     ax, simd_copy.aero_resistance
     cwd
     push    dx
     push    ax
@@ -9623,7 +9623,7 @@ loc_19D03:
     inc     si
     cmp     si, 40h ; '@'
     jl      short loc_19CE7
-    mov     ax, 6ADh
+    mov     ax, offset aGnam; "gnam"
     push    ax
     push    [bp+arg_2]
     push    [bp+arg_0]
@@ -9634,7 +9634,7 @@ loc_19D03:
     mov     ax, 8C14h
     jmp     loc_19DB6
 loc_19D36:
-    mov     ax, 6B2h
+    mov     ax, offset aSimd_0; "simd"
     push    ax
     push    [bp+arg_2]
     push    [bp+arg_0]
@@ -9685,7 +9685,7 @@ loc_19D86:
     inc     si
     cmp     si, 40h ; '@'
     jl      short loc_19D6A
-    mov     ax, 6B7h
+    mov     ax, offset aGsna; "gsna"
     push    ax
     push    [bp+arg_2]
     push    [bp+arg_0]
@@ -9693,10 +9693,10 @@ loc_19D86:
     add     sp, 6
     push    dx
     push    ax
-    mov     ax, 81F7h
+    mov     ax, offset carshortname
 loc_19DB6:
     push    ax
-    call    sub_28AD6
+    call    copy_string
     add     sp, 6
     pop     si
     pop     di

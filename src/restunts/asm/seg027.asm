@@ -975,7 +975,7 @@ loc_37796:
     mov     word_4063A, 0
     push    [bp+var_4]
     push    [bp+var_6]
-    call    sub_327C0
+    call    copy_timer_counter
     add     sp, 4
     call    sub_327D7
     sub     si, 2
@@ -1007,7 +1007,7 @@ loc_377D3:
     mov     word_4063A, 0
     push    [bp+var_4]
     push    [bp+var_6]
-    call    sub_327C0
+    call    copy_timer_counter
     add     sp, 4
     call    sub_327D7
     sub     si, 2
@@ -1024,7 +1024,7 @@ loc_37820:
     cwd
     push    dx
     push    ax
-    call    sub_327C0
+    call    copy_timer_counter
     add     sp, 4
     call    sub_327D7
     mov     byte_40639, 64h ; 'd'
@@ -1191,7 +1191,7 @@ loc_3793B:
     add     sp, 6
     mov     [bp+var_6], ax
     push    ax
-    call    sub_30D88
+    call    load_res0_1_type
     add     sp, 2
     mov     word ptr dword_4060A, ax
     mov     word ptr dword_4060A+2, dx
@@ -1235,7 +1235,7 @@ loc_379B8:
     jz      short loc_37A35
     mov     ax, 4ED3h
     push    ax
-    call    sub_30D88
+    call    load_res0_1_type
     add     sp, 2
     mov     [bp+var_4], ax
     mov     [bp+var_2], dx
@@ -1379,7 +1379,7 @@ sub_37B14 proc far
     call    sub_39CCE
     add     sp, 6
     push    ax
-    call    sub_30D88
+    call    load_res0_1_type
     add     sp, 2
     mov     [bp+var_4], ax
     mov     [bp+var_2], dx
@@ -1406,7 +1406,7 @@ loc_37B48:
     call    sub_39CCE
     add     sp, 6
     push    ax
-    call    sub_30DF7
+    call    load_pvs
     add     sp, 2
     mov     [bp+var_4], ax
     mov     [bp+var_2], dx
@@ -1419,7 +1419,7 @@ loc_37B48:
     call    sub_39CCE
     add     sp, 6
     push    ax
-    call    sub_30D88
+    call    load_res0_1_type
     add     sp, 2
     mov     [bp+var_4], ax
     mov     [bp+var_2], dx
@@ -1433,7 +1433,7 @@ loc_37B48:
     call    sub_39CCE
     add     sp, 6
     push    ax
-    call    sub_30DF7
+    call    load_pvs
     add     sp, 2
     mov     [bp+var_4], ax
     mov     [bp+var_2], dx
@@ -1448,7 +1448,7 @@ loc_37BD1:
     call    sub_39CCE
     add     sp, 6
     push    ax
-    call    sub_30D88
+    call    load_res0_1_type
     add     sp, 2
     mov     [bp+var_4], ax
     mov     [bp+var_2], dx
@@ -1464,7 +1464,7 @@ loc_37BF9:
     call    sub_39CCE
     add     sp, 6
     push    ax
-    call    sub_30DF7
+    call    load_pvs
     add     sp, 2
     mov     [bp+var_4], ax
     mov     [bp+var_2], dx
@@ -1473,7 +1473,7 @@ loc_37BF9:
     jmp     loc_37B3E
 loc_37C22:
     push    word ptr [bp+arg_0]
-    call    sub_30D88
+    call    load_res0_1_type
     add     sp, 2
     mov     [bp+var_4], ax
     mov     [bp+var_2], dx

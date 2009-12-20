@@ -3,7 +3,7 @@ seg012 segment byte public 'STUNTSC' use16
     extrn sub_2EA4E:proc
     extrn off_2EA9B:word
     extrn sub_2EAD4:proc
-    extrn sub_2EADE:proc
+    extrn set_add_value:proc
     extrn sub_2EB07:proc
     extrn sub_2EB1E:proc
     extrn sub_2EB48:proc
@@ -95,9 +95,9 @@ seg012 segment byte public 'STUNTSC' use16
     extrn set_bios_mode3:proc
     extrn parse_kb_key:proc
     extrn reg_callback:proc
-    extrn sub_30519:proc
-    extrn sub_30538:proc
-    extrn sub_305FC:proc
+    extrn get_kb_char:proc
+    extrn get_kb_or_joy_flags:proc
+    extrn get_joy_flags:proc
     extrn sub_307B4:proc
     extrn sub_307D2:proc
     extrn sub_307E3:proc
@@ -105,24 +105,24 @@ seg012 segment byte public 'STUNTSC' use16
     extrn sub_30883:proc
     extrn loc_308C6
     extrn loc_309A5
-    extrn sub_30A0D:proc
-    extrn sub_30A1C:proc
-    extrn sub_30A21:proc
-    extrn sub_30A35:proc
+    extrn get_key_status:proc
+    extrn call_readchar_callback:proc
+    extrn read_kb_char:proc
+    extrn kb_checking:proc
     extrn sub_30A5D:proc
     extrn sub_30A68:proc
-    extrn sub_30AD0:proc
-    extrn sub_30AE0:proc
+    extrn load_binary_filew:proc
+    extrn load_binary_file2:proc
     extrn load_binary_file:proc
     extrn loc_30AFB
     extrn sub_30B62:proc
     extrn sub_30BF8:proc
     extrn sub_30CCF:proc
-    extrn sub_30D79:proc
-    extrn sub_30D88:proc
+    extrn load_res0_1_alt:proc
+    extrn load_res0_1_type:proc
     extrn loc_30DA1
     extrn sub_30DE6:proc
-    extrn sub_30DF7:proc
+    extrn load_pvs:proc
     extrn decompress_fileres:proc
     extrn off_30F04:dword
     extrn sub_30F92:proc
@@ -141,7 +141,7 @@ seg012 segment byte public 'STUNTSC' use16
     extrn sub_3147C:proc
     extrn loc_31498
     extrn sub_31641:proc
-    extrn sub_3167C:proc
+    extrn get_res_size:proc
     extrn resize_memory:proc
     extrn sub_31732:proc
     extrn sub_317B2:proc
@@ -177,9 +177,9 @@ seg012 segment byte public 'STUNTSC' use16
     extrn off_326F2:word
     extrn cos_fast2:proc
     extrn sub_3275C:proc
-    extrn sub_32778:proc
+    extrn get_timer_counter:proc
     extrn get_timerdelta:proc
-    extrn sub_327C0:proc
+    extrn copy_timer_counter:proc
     extrn sub_327D7:proc
     extrn sub_327EB:proc
     extrn sub_32805:proc
@@ -219,7 +219,7 @@ seg012 segment byte public 'STUNTSC' use16
     extrn sub_33816:proc
     extrn sub_3384D:proc
     extrn load_2dshape1:proc
-    extrn sub_33861:proc
+    extrn j_load_2dshape_0:proc
     extrn sub_3386C:proc
     extrn sub_33890:proc
     extrn loc_338C9
@@ -278,7 +278,7 @@ seg012 segment byte public 'STUNTSC' use16
     extrn make_wnd_sprite:proc
     extrn off_34CE4:word
     extrn byte_34CE6:byte
-    extrn sub_35AF6:proc
+    extrn set_sprite1:proc
     extrn set_sprite2_as_1:proc
     extrn sub_35B26:proc
     extrn sub_35B76:proc

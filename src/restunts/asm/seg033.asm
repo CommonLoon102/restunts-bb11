@@ -46,9 +46,9 @@ nosmart
 seg033 segment byte public 'STUNTSC' use16
     assume cs:seg033
     assume es:nothing, ss:nothing, ds:dseg
-    public sub_3A958
-    public sub_3A9A0
-sub_3A958 proc far
+    public setup_mcgawnd1
+    public setup_mcgawnd2
+setup_mcgawnd1 proc far
 
     mov     ax, word ptr dword_4392E
     or      ax, word ptr dword_4392E+2
@@ -64,11 +64,11 @@ sub_3A958 proc far
     mov     word ptr dword_4392E, ax
     mov     word ptr dword_4392E+2, dx
 loc_3A97C:
-    mov     ax, 5F3Eh
+    mov     ax, offset unk_416AE
     mov     dx, seg seg012
     push    dx
     push    ax
-    call    sub_35AF6
+    call    set_sprite1
     add     sp, 4
     les     bx, dword_4392E
     push    word ptr es:[bx+2]
@@ -76,8 +76,8 @@ loc_3A97C:
     call    sub_33BDA
     add     sp, 4
     retf
-sub_3A958 endp
-sub_3A9A0 proc far
+setup_mcgawnd1 endp
+setup_mcgawnd2 proc far
 
     mov     ax, word ptr dword_4392E
     or      ax, word ptr dword_4392E+2
@@ -95,9 +95,9 @@ sub_3A9A0 proc far
 loc_3A9C4:
     push    word ptr dword_4392E+2
     push    word ptr dword_4392E
-    call    sub_35AF6
+    call    set_sprite1
     add     sp, 4
     retf
-sub_3A9A0 endp
+setup_mcgawnd2 endp
 seg033 ends
 end

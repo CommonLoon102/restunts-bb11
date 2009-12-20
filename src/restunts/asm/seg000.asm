@@ -850,7 +850,7 @@ sub_10786 proc far
     push    ax
     mov     ax, 0AC74h
     push    ax
-    call    sub_28AD6
+    call    copy_string
     add     sp, 6
     push    word_407DA
     push    word_407D8
@@ -872,7 +872,7 @@ sub_10786 proc far
     push    ax
     mov     ax, 0AC74h
     push    ax
-    call    sub_28AD6
+    call    copy_string
     add     sp, 6
     push    word_407D6
     push    word_407D4
@@ -894,7 +894,7 @@ sub_10786 proc far
     push    ax
     mov     ax, 0AC74h
     push    ax
-    call    sub_28AD6
+    call    copy_string
     add     sp, 6
     push    word_407D6
     push    word_407D4
@@ -916,7 +916,7 @@ sub_10786 proc far
     push    ax
     mov     ax, 0AC74h
     push    ax
-    call    sub_28AD6
+    call    copy_string
     add     sp, 6
     push    word_407DE
     push    word_407DC
@@ -938,7 +938,7 @@ sub_10786 proc far
     push    ax
     mov     ax, 0AC74h
     push    ax
-    call    sub_28AD6
+    call    copy_string
     add     sp, 6
     push    word_407D6
     push    word_407D4
@@ -960,7 +960,7 @@ sub_10786 proc far
     push    ax
     mov     ax, 0AC74h
     push    ax
-    call    sub_28AD6
+    call    copy_string
     add     sp, 6
     push    word_407D6
     push    word_407D4
@@ -982,7 +982,7 @@ sub_10786 proc far
     push    ax
     mov     ax, 0AC74h
     push    ax
-    call    sub_28AD6
+    call    copy_string
     add     sp, 6
     push    word_407D6
     push    word_407D4
@@ -1004,7 +1004,7 @@ sub_10786 proc far
     push    ax
     mov     ax, 0AC74h
     push    ax
-    call    sub_28AD6
+    call    copy_string
     add     sp, 6
     push    word_407D6
     push    word_407D4
@@ -1026,7 +1026,7 @@ sub_10786 proc far
     push    ax
     mov     ax, 0AC74h
     push    ax
-    call    sub_28AD6
+    call    copy_string
     add     sp, 6
     push    word_407D6
     push    word_407D4
@@ -1048,7 +1048,7 @@ sub_10786 proc far
     push    ax
     mov     ax, 0AC74h
     push    ax
-    call    sub_28AD6
+    call    copy_string
     add     sp, 6
     push    word_407EA
     push    word_407E8
@@ -1070,7 +1070,7 @@ sub_10786 proc far
     push    ax
     mov     ax, 0AC74h
     push    ax
-    call    sub_28AD6
+    call    copy_string
     add     sp, 6
     push    word_407D6
     push    word_407D4
@@ -1092,7 +1092,7 @@ sub_10786 proc far
     push    ax
     mov     ax, 0AC74h
     push    ax
-    call    sub_28AD6
+    call    copy_string
     add     sp, 6
     push    word_407D6
     push    word_407D4
@@ -1114,7 +1114,7 @@ sub_10786 proc far
     push    ax
     mov     ax, 0AC74h
     push    ax
-    call    sub_28AD6
+    call    copy_string
     add     sp, 6
     push    word_407D6
     push    word_407D4
@@ -1136,7 +1136,7 @@ sub_10786 proc far
     push    ax
     mov     ax, 0AC74h
     push    ax
-    call    sub_28AD6
+    call    copy_string
     add     sp, 6
     push    word_407E2
     push    word_407E0
@@ -1158,7 +1158,7 @@ sub_10786 proc far
     push    ax
     mov     ax, 0AC74h
     push    ax
-    call    sub_28AD6
+    call    copy_string
     add     sp, 6
     push    word_407D6
     push    word_407D4
@@ -1180,7 +1180,7 @@ sub_10786 proc far
     push    ax
     mov     ax, 0AC74h
     push    ax
-    call    sub_28AD6
+    call    copy_string
     add     sp, 6
     push    word_407E2
     push    word_407E0
@@ -1202,7 +1202,7 @@ sub_10786 proc far
     push    ax
     mov     ax, 0AC74h
     push    ax
-    call    sub_28AD6
+    call    copy_string
     add     sp, 6
     push    word_407D6
     push    word_407D4
@@ -1224,7 +1224,7 @@ sub_10786 proc far
     push    ax
     mov     ax, 0AC74h
     push    ax
-    call    sub_28AD6
+    call    copy_string
     add     sp, 6
     push    word_407D6
     push    word_407D4
@@ -1246,7 +1246,7 @@ sub_10786 proc far
     push    ax
     mov     ax, 0AC74h
     push    ax
-    call    sub_28AD6
+    call    copy_string
     add     sp, 6
     push    word_407E6
     push    word_407E4
@@ -1268,7 +1268,7 @@ sub_10786 proc far
     push    ax
     mov     ax, 0AC74h
     push    ax
-    call    sub_28AD6
+    call    copy_string
     add     sp, 6
     push    word_407D6
     push    word_407D4
@@ -1290,7 +1290,7 @@ sub_10786 proc far
     push    ax
     mov     ax, 0AC74h
     push    ax
-    call    sub_28AD6
+    call    copy_string
     add     sp, 6
     push    word_407D6
     push    word_407D4
@@ -1312,7 +1312,7 @@ sub_10786 proc far
     push    ax
     mov     ax, 0AC74h
     push    ax
-    call    sub_28AD6
+    call    copy_string
     add     sp, 6
     push    word_407D6
     push    word_407D4
@@ -1334,7 +1334,7 @@ sub_10786 proc far
     push    ax
     mov     ax, 0AC74h
     push    ax
-    call    sub_28AD6
+    call    copy_string
     add     sp, 6
     push    word_407D6
     push    word_407D4
@@ -1840,7 +1840,7 @@ loc_11210:
     push    ax
     mov     ax, 0AC74h
     push    ax
-    call    sub_28AD6
+    call    copy_string
     add     sp, 6
     sub     ax, ax
     push    ax
@@ -2322,7 +2322,7 @@ sub_1168E proc far
     push    ax
     mov     ax, 0AC74h
     push    ax
-    call    sub_28AD6
+    call    copy_string
     add     sp, 6
     mov     ax, 332h
     push    ax
@@ -2366,7 +2366,7 @@ sub_1168E proc far
     push    ax
     mov     ax, 0AC74h
     push    ax
-    call    sub_28AD6
+    call    copy_string
     add     sp, 6
     sub     ax, ax
     push    ax
@@ -2389,7 +2389,7 @@ sub_1168E proc far
     push    ax
     mov     ax, 0AC74h
     push    ax
-    call    sub_28AD6
+    call    copy_string
     add     sp, 6
     sub     ax, ax
     push    ax
@@ -2412,7 +2412,7 @@ sub_1168E proc far
     push    ax
     mov     ax, 0AC74h
     push    ax
-    call    sub_28AD6
+    call    copy_string
     add     sp, 6
     sub     ax, ax
     push    ax
@@ -2435,7 +2435,7 @@ sub_1168E proc far
     push    ax
     mov     ax, 0AC74h
     push    ax
-    call    sub_28AD6
+    call    copy_string
     add     sp, 6
     sub     ax, ax
     push    ax
@@ -3259,7 +3259,7 @@ loc_11EBB:
     add     sp, 6
     mov     word ptr [bp+var_42], ax
     mov     word ptr [bp+var_42+2], dx
-    call    sub_3A9A0
+    call    setup_mcgawnd2
     sub     ax, ax
     push    ax
     call    clear_sprite1_color
@@ -4369,7 +4369,7 @@ loc_12A14:
     ; align 2
     db 144
 loc_12A48:
-    call    sub_3A9A0
+    call    setup_mcgawnd2
 loc_12A4D:
     sub     ax, ax
     push    ax
@@ -4895,7 +4895,7 @@ run_option_menu proc far
     push    ax
     mov     ax, 0AC74h
     push    ax
-    call    sub_28AD6
+    call    copy_string
     add     sp, 6
     sub     ax, ax
     push    ax
@@ -4921,7 +4921,7 @@ run_option_menu proc far
     push    ax
     mov     ax, 0AC74h
     push    ax
-    call    sub_28AD6
+    call    copy_string
     add     sp, 6
     sub     ax, ax
     push    ax
@@ -5249,7 +5249,7 @@ loc_131FC:
     push    ax
     mov     ax, 0AC74h
     push    ax
-    call    sub_28AD6
+    call    copy_string
     add     sp, 6
     cmp     word_4434E, 0
     jnz     short loc_13281
@@ -5286,7 +5286,7 @@ loc_13281:
     add     sp, 2
     add     ax, 0AC74h
     push    ax
-    call    sub_28AD6
+    call    copy_string
     add     sp, 6
 loc_132DC:
     sub     ax, ax
@@ -5317,7 +5317,7 @@ loc_1330D:
     push    ax
     mov     ax, 0AC74h
     push    ax
-    call    sub_28AD6
+    call    copy_string
     add     sp, 6
     mov     ax, 1
     push    ax              ; int
@@ -5350,7 +5350,7 @@ loc_13354:
     add     sp, 2
     add     ax, 0AC74h
     push    ax
-    call    sub_28AD6
+    call    copy_string
     add     sp, 6
 loc_13380:
     sub     ax, ax
@@ -5385,7 +5385,7 @@ loc_133B5:
     push    ax
     mov     ax, 0AC74h
     push    ax
-    call    sub_28AD6
+    call    copy_string
     add     sp, 6
     mov     ax, 4A5h
     push    ax
@@ -5401,7 +5401,7 @@ loc_133B5:
     add     sp, 2
     add     ax, 0AC74h
     push    ax
-    call    sub_28AD6
+    call    copy_string
     add     sp, 6
     jmp     loc_134AA
     ; align 2
@@ -5423,7 +5423,7 @@ loc_1341C:
     push    ax
     mov     ax, 0AC74h
     push    ax
-    call    sub_28AD6
+    call    copy_string
     add     sp, 6
     mov     ax, 1
     push    ax              ; int
@@ -5451,7 +5451,7 @@ loc_13466:
     push    ax
     mov     ax, 0AC74h
     push    ax
-    call    sub_28AD6
+    call    copy_string
     add     sp, 6
     mov     ax, 1
     push    ax              ; int
@@ -5525,7 +5525,7 @@ loc_1351D:
     push    ax
     mov     ax, 0AC74h
     push    ax
-    call    sub_28AD6
+    call    copy_string
     add     sp, 6
     mov     ax, word_44352
     add     ax, word_45A24
@@ -5576,7 +5576,7 @@ loc_1356C:
     add     sp, 2
     add     ax, 0AC74h
     push    ax
-    call    sub_28AD6
+    call    copy_string
     add     sp, 6
     sub     ax, ax
     push    ax
@@ -5606,7 +5606,7 @@ loc_135ED:
     push    ax
     mov     ax, 0AC74h
     push    ax
-    call    sub_28AD6
+    call    copy_string
     add     sp, 6
     mov     ax, 3
     push    ax              ; int
@@ -5640,7 +5640,7 @@ loc_135ED:
     add     sp, 2
     add     ax, 0AC74h
     push    ax
-    call    sub_28AD6
+    call    copy_string
     add     sp, 6
     sub     ax, ax
     push    ax
@@ -5667,7 +5667,7 @@ loc_1368B:
     push    ax
     mov     ax, 0AC74h
     push    ax
-    call    sub_28AD6
+    call    copy_string
     add     sp, 6
     mov     ax, 3
     push    ax              ; int
@@ -5701,7 +5701,7 @@ loc_1368B:
     add     sp, 2
     add     ax, 0AC74h
     push    ax
-    call    sub_28AD6
+    call    copy_string
     add     sp, 6
     sub     ax, ax
     push    ax
@@ -5729,7 +5729,7 @@ loc_1368B:
     push    ax
     mov     ax, 0AC74h
     push    ax
-    call    sub_28AD6
+    call    copy_string
     add     sp, 6
     mov     ax, 3
     push    ax              ; int
@@ -6403,7 +6403,7 @@ loc_13DDF:
     jz      short loc_13E8A
     push    word ptr [bp+var_46+2]
     push    word ptr [bp+var_46]
-    call    sub_35AF6
+    call    set_sprite1
     add     sp, 4
     sub     ax, ax
     push    ax
@@ -6546,7 +6546,7 @@ loc_13F84:
     push    ax
     mov     ax, 0AC74h
     push    ax
-    call    sub_28AD6
+    call    copy_string
     add     sp, 6
     sub     ax, ax
     push    ax
@@ -6826,7 +6826,7 @@ loc_1424D:
     jz      short loc_142F8
     push    word ptr [bp+var_46+2]
     push    word ptr [bp+var_46]
-    call    sub_35AF6
+    call    set_sprite1
     add     sp, 4
     sub     ax, ax
     push    ax
@@ -7101,7 +7101,7 @@ security_check proc far
     push    ax
     lea     ax, [bp+var_400]
     push    ax
-    call    sub_28AD6
+    call    copy_string
     add     sp, 6
     mov     ax, 5DAh
     push    ax
@@ -7113,7 +7113,7 @@ security_check proc far
     push    ax
     mov     ax, 0AC74h
     push    ax
-    call    sub_28AD6
+    call    copy_string
     add     sp, 6
     mov     ax, 0AC7Ah
     push    ax
@@ -7187,7 +7187,7 @@ loc_14551:
     push    ax
     mov     ax, 0AC74h
     push    ax
-    call    sub_28AD6
+    call    copy_string
     add     sp, 6
     mov     ax, [bp+var_41C]
     mov     dx, [bp+var_41A]

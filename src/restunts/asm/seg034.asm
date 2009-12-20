@@ -46,13 +46,13 @@ nosmart
 seg034 segment byte public 'STUNTSC' use16
     assume cs:seg034
     assume es:nothing, ss:nothing, ds:dseg
-    public sub_3A9D6
-    public sub_3A9EA
-    public sub_3A9FC
+    public load_2dshape_1
+    public load_2dshape_0
+    public load_2dshape
     public sub_3ACB0
     ; align 2
     db 144
-sub_3A9D6 proc far
+load_2dshape_1 proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -63,14 +63,14 @@ sub_3A9D6 proc far
     push    ax
     push    [bp+arg_0]
     push    cs
-    call    near ptr sub_3A9FC
+    call    near ptr load_2dshape
     add     sp, 4
     pop     bp
     retf
     ; align 2
     db 144
-sub_3A9D6 endp
-sub_3A9EA proc far
+load_2dshape_1 endp
+load_2dshape_0 proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -81,12 +81,12 @@ sub_3A9EA proc far
     push    ax
     push    [bp+arg_0]
     push    cs
-    call    near ptr sub_3A9FC
+    call    near ptr load_2dshape
     add     sp, 4
     pop     bp
     retf
-sub_3A9EA endp
-sub_3A9FC proc far
+load_2dshape_0 endp
+load_2dshape proc far
     var_80 = byte ptr -128
     var_7E = word ptr -126
     var_7C = byte ptr -124
@@ -183,7 +183,7 @@ loc_3AAA8:
     push    ax              ; char *
     call    _strcpy
     add     sp, 4
-    mov     ax, 5482h
+    mov     ax, offset a_pvs; ".PVS"
     push    ax
     lea     ax, [bp+var_C+2]
     push    ax              ; char *
@@ -202,10 +202,10 @@ loc_3AAA8:
     jz      short loc_3AA87
     push    dx
     push    [bp+var_4]
-    call    sub_3B0BA
+    call    get_unflip_size
     add     sp, 4
     push    ax
-    mov     ax, 5487h
+    mov     ax, offset aUnflip_0; "UNFLIP"
     push    ax
     call    alloc_respages
     add     sp, 4
@@ -223,7 +223,7 @@ loc_3AAA8:
     add     sp, 4
     jmp     loc_3AA87
 loc_3AB24:
-    mov     ax, 548Eh
+    mov     ax, offset a_xvs; ".XVS"
     push    ax
     lea     ax, [bp+var_C+2]
     push    ax              ; char *
@@ -241,7 +241,7 @@ loc_3AB44:
     mov     [bp+var_2], dx
     jmp     loc_3AA87
 loc_3AB50:
-    mov     ax, 5493h
+    mov     ax, offset a_pes; ".PES"
     push    ax
     lea     ax, [bp+var_C+2]
     push    ax              ; char *
@@ -264,7 +264,7 @@ loc_3AB67:
 loc_3AB83:
     mov     ax, 3E8h
     push    ax
-    mov     ax, 5498h
+    mov     ax, offset aUnflip; "UNFLIP"
     push    ax
     call    alloc_respages
     add     sp, 4
@@ -322,7 +322,7 @@ loc_3AC12:
     jz      short loc_3AC60
     jmp     short loc_3AC12
 loc_3AC1C:
-    mov     ax, 549Fh
+    mov     ax, offset a_esh; ".ESH"
     push    ax
     lea     ax, [bp+var_C+2]
     push    ax              ; char *
@@ -333,7 +333,7 @@ loc_3AC1C:
     push    [bp+arg_2]
     lea     ax, [bp+var_7C]
     push    ax
-    call    sub_30D79
+    call    load_res0_1_alt
     add     sp, 4
     mov     [bp+var_4], ax
     mov     [bp+var_2], dx
@@ -348,7 +348,7 @@ loc_3AC50:
     push    [bp+arg_2]
     lea     ax, [bp+var_7C]
     push    ax
-    call    sub_30D79
+    call    load_res0_1_alt
     jmp     loc_3AB44
     ; align 2
     db 144
@@ -371,14 +371,14 @@ loc_3AC60:
     add     sp, 4
     mov     [bp+var_4], ax
     mov     [bp+var_2], dx
-    mov     ax, 5472h
+    mov     ax, offset shapenums
     push    ax
     push    dx
     push    [bp+var_4]
     call    sub_35F48
     add     sp, 6
     jmp     loc_3AA87
-sub_3A9FC endp
+load_2dshape endp
 sub_3ACB0 proc far
     var_2 = word ptr -2
      s = byte ptr 0
@@ -394,7 +394,7 @@ loc_3ACBC:
     mov     bx, [bp+var_2]
     les     si, [bp+arg_0]
     mov     al, es:[bx+si]
-    mov     [bx+5472h], al
+    mov     shapenums[bx], al
     inc     [bp+var_2]
     cmp     [bp+var_2], 10h
     jl      short loc_3ACBC

@@ -59,7 +59,7 @@ seg008 segment byte public 'STUNTSC' use16
     public unload_resource
     public locate_shape_alt
     public locate_text_res
-    public sub_28AD6
+    public copy_string
     public sub_28B0E
     public sub_28D9E
     public sub_28DB6
@@ -1299,7 +1299,7 @@ loc_27F1E:
     mov     ax, 0AC74h
     push    ax
     push    cs
-    call    near ptr sub_28AD6
+    call    near ptr copy_string
     add     sp, 6
     push    [bp+var_710]
     push    [bp+var_712]
@@ -1558,7 +1558,7 @@ loc_281CC:
     mov     ax, 0AC74h
     push    ax
     push    cs
-    call    near ptr sub_28AD6
+    call    near ptr copy_string
     add     sp, 6
     push    [bp+var_6E0]
     mov     ax, 0AC74h
@@ -1583,7 +1583,7 @@ loc_281CC:
     mov     ax, 0AC74h
     push    ax
     push    cs
-    call    near ptr sub_28AD6
+    call    near ptr copy_string
     add     sp, 6
     mov     ax, [bp+var_6D0]
     dec     ax
@@ -2097,7 +2097,7 @@ loc_28682:
     mov     ax, 0AC74h
     push    ax
     push    cs
-    call    near ptr sub_28AD6
+    call    near ptr copy_string
     add     sp, 6
     push    [bp+var_10]
     push    [bp+var_12]
@@ -2253,15 +2253,15 @@ sub_287C4 proc far
     sub     word_3EBB0, 2710h
     sub     word_3EBB2, 2710h
 loc_287ED:
-    call    sub_30519
+    call    get_kb_char
     mov     si, ax
     or      si, si
     jz      short loc_287FD
     mov     byte_3B8F8, 0
 loc_287FD:
-    call    sub_305FC
+    call    get_joy_flags
     mov     di, ax
-    call    sub_30538
+    call    get_kb_or_joy_flags
     mov     word_454C0, ax
     cmp     word_3EBB4, di
     jnz     short loc_28815
@@ -2599,7 +2599,7 @@ locate_text_res proc far
     ; align 2
     db 144
 locate_text_res endp
-sub_28AD6 proc far
+copy_string proc far
     var_4 = dword ptr -4
      s = byte ptr 0
      r = byte ptr 2
@@ -2631,7 +2631,7 @@ loc_28AE9:
     mov     sp, bp
     pop     bp
     retf
-sub_28AD6 endp
+copy_string endp
 sub_28B0E proc far
     var_16 = word ptr -22
     var_14 = word ptr -20
@@ -3110,7 +3110,7 @@ check_input proc far
     mov     bp, sp
     sub     sp, 2
 loc_28EEA:
-    call    sub_30538
+    call    get_kb_or_joy_flags
     test    al, 30h
     jz      short loc_28EFA
 loc_28EF3:
@@ -3160,7 +3160,7 @@ sub_28F3C proc far
     mov     dx, seg seg012
     push    dx
     push    ax
-    call    sub_35AF6
+    call    set_sprite1
     add     sp, 4
     retf
     ; align 2
@@ -3172,7 +3172,7 @@ sub_28F4E proc far
     mov     dx, seg seg012
     push    dx
     push    ax
-    call    sub_35AF6
+    call    set_sprite1
     add     sp, 4
     sub     ax, ax
     push    ax
@@ -3184,7 +3184,7 @@ sub_28F6A proc far
 
     push    word ptr dword_44D26+2
     push    word ptr dword_44D26
-    call    sub_35AF6
+    call    set_sprite1
     add     sp, 4
     retf
     ; align 2
@@ -3194,7 +3194,7 @@ sub_28F7C proc far
 
     push    word ptr dword_44D26+2
     push    word ptr dword_44D26
-    call    sub_35AF6
+    call    set_sprite1
     add     sp, 4
     sub     ax, ax
     push    ax
@@ -3375,7 +3375,7 @@ sub_290BC proc far
     push    word ptr [bp+arg_0]; char *
     mov     ax, 2
     push    ax              ; char
-    call    sub_3A4B6
+    call    read_line
     add     sp, 16h
     mov     [bp+var_4], ax
     push    cs
@@ -3794,7 +3794,7 @@ loc_29466:
     mov     ax, 0AC74h
     push    ax
     push    cs
-    call    near ptr sub_28AD6
+    call    near ptr copy_string
     add     sp, 6
     mov     [bp+var_5C], 1
     mov     ax, 0AC74h
@@ -4460,7 +4460,7 @@ get_super_random proc far
     mov     di, ax
     call    sub_19E7B
     mov     [bp+var_4], ax
-    call    sub_32778
+    call    get_timer_counter
     add     ax, [bp+var_4]
     add     ax, di
     add     ax, word_4434C
@@ -4507,7 +4507,7 @@ loc_299DB:
     db 144
 loc_299E4:
     push    word ptr [bp+arg_2]
-    call    sub_30D88
+    call    load_res0_1_type
 loc_299EC:
     add     sp, 2
     mov     [bp+var_4], ax
@@ -4517,7 +4517,7 @@ loc_299EC:
     db 144
 loc_299F8:
     push    word ptr [bp+arg_2]
-    call    sub_30D88
+    call    load_res0_1_type
 loc_29A00:
     add     sp, 2
     mov     sp, bp
@@ -4527,11 +4527,11 @@ loc_29A00:
     db 144
 loc_29A08:
     push    word ptr [bp+arg_2]
-    call    sub_30DF7
+    call    load_pvs
     jmp     short loc_29A00
 loc_29A12:
     push    word ptr [bp+arg_2]
-    call    sub_33861
+    call    j_load_2dshape_0
     jmp     short loc_299EC
 loc_29A1C:
     push    word ptr [bp+arg_2]
@@ -4612,7 +4612,7 @@ loc_29A9C:
     push    [bp+arg_6]
     push    [bp+arg_4]
     push    [bp+arg_2]
-    call    sub_30AE0
+    call    load_binary_file2
     add     sp, 6
     mov     [bp+var_4], ax
     mov     [bp+var_2], dx
@@ -4631,7 +4631,7 @@ loc_29AC6:
     push    [bp+arg_6]
     push    [bp+arg_4]
     push    [bp+arg_2]
-    call    sub_30AE0
+    call    load_binary_file2
     add     sp, 6
     mov     sp, bp
     pop     bp
@@ -4858,7 +4858,7 @@ loc_29B89:
     mov     si, 0FFFFh
     call    sub_307B4
 loc_29C96:
-    call    sub_30A21
+    call    read_kb_char
     or      ax, ax
     jz      short loc_29CA8
 loc_29C9F:
@@ -4868,7 +4868,7 @@ loc_29C9F:
     db 144
     db 144
 loc_29CA8:
-    call    sub_305FC
+    call    get_joy_flags
     mov     di, ax
     test    di, 30h
     jnz     short loc_29C9F
@@ -5251,7 +5251,7 @@ loc_29FD9:
     lea     ax, [bp+var_202]
     push    ax
     push    cs
-    call    near ptr sub_28AD6
+    call    near ptr copy_string
     add     sp, 6
     sub     si, si
 loc_29FFC:

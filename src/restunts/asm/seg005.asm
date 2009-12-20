@@ -352,7 +352,7 @@ loc_21E71:
 loc_21E76:
     cmp     byte_46436, 0
     jz      short loc_21E8A
-    call    sub_3A9A0
+    call    setup_mcgawnd2
     mov     al, byte_44346
     mov     byte_4432A, al
     jmp     short loc_21E8F
@@ -609,7 +609,7 @@ loc_22131:
     cmp     byte_46436, 0
     jz      short loc_22152
     call    sub_28DB6
-    call    sub_3A958
+    call    setup_mcgawnd1
     xor     byte_44346, 1
     mov     al, byte_44346
     mov     byte_4432A, al
@@ -631,7 +631,7 @@ loc_22152:
 loc_2217D:
     cmp     byte_44AE2, 0
     jz      short loc_221AA
-    call    sub_30519
+    call    get_kb_char
     or      ax, ax
     jz      short loc_22190
     jmp     loc_22298
@@ -640,7 +640,7 @@ loc_22190:
     jz      short loc_2219A
     jmp     loc_22298
 loc_2219A:
-    call    sub_30538
+    call    get_kb_or_joy_flags
     or      ax, ax
     jnz     short loc_221A6
     jmp     loc_21DA2
@@ -701,7 +701,7 @@ loc_22208:
     ; align 2
     db 144
 loc_22222:
-    call    sub_30519
+    call    get_kb_char
     mov     [bp+var_12], ax
     or      ax, ax
     jz      short loc_22236
@@ -733,7 +733,7 @@ loc_22257:
     add     sp, 6
     test    byte ptr word_442E8, 3
     jnz     short loc_2227E
-    call    sub_30538
+    call    get_kb_or_joy_flags
     test    al, 30h
     jnz     short loc_2227E
     jmp     loc_21DA2
@@ -754,7 +754,7 @@ loc_22298:
     or      ax, ax
     jz      short loc_222D3
     call    sub_28DB6
-    call    sub_3A9A0
+    call    setup_mcgawnd2
     sub     ax, ax
     push    ax
     mov     ax, 0C8h ; 'È'
@@ -766,7 +766,7 @@ loc_22298:
     push    ax
     call    sub_35C4E
     add     sp, 0Ah
-    call    sub_3A958
+    call    setup_mcgawnd1
     call    sub_28D9E
 loc_222D3:
     call    sub_28F3C
@@ -1338,7 +1338,7 @@ loc_227B0:
 loc_227C5:
     mov     byte_40D6A, al
 loc_227C8:
-    call    sub_30538
+    call    get_kb_or_joy_flags
     mov     si, ax
 smart
     and     si, 33h
@@ -1355,12 +1355,12 @@ nosmart
     ; align 2
     db 144
 loc_227E8:
-    call    sub_30538
+    call    get_kb_or_joy_flags
     mov     si, ax
 loc_227EF:
     mov     ax, 1Eh
     push    ax
-    call    sub_30A0D
+    call    get_key_status
     add     sp, 2
     or      ax, ax
     jz      short loc_22803
@@ -1371,7 +1371,7 @@ nosmart
 loc_22803:
     mov     ax, 2Ch ; ','
     push    ax
-    call    sub_30A0D
+    call    get_key_status
     add     sp, 2
     or      ax, ax
     jz      short loc_22817
@@ -2093,7 +2093,7 @@ loc_22D5C:
     push    word_40D84
     call    locate_many_resources
     add     sp, 8
-    cmp     word_45F84, 0
+    cmp     word ptr simd_copy.simd_unk4+40h, 0
     jnz     short loc_22E09
     mov     ax, 5618h
     push    ax
@@ -2147,7 +2147,7 @@ loc_22E09:
     mov     word ptr [bp+var_C+2], dx
     push    word ptr dword_40DFC+2
     push    word ptr dword_40DFC
-    call    sub_35AF6
+    call    set_sprite1
     add     sp, 4
     les     bx, [bp+var_C]
     mov     ax, es:[bx+0Ah]
@@ -2360,7 +2360,7 @@ loc_230D1:
 loc_230DE:
     push    word ptr dword_40DEC+2
     push    word ptr dword_40DEC
-    call    sub_35AF6
+    call    set_sprite1
     add     sp, 4
     mov     al, byte_4432A
     cbw
@@ -2397,7 +2397,7 @@ loc_230DE:
     add     sp, 8
     cmp     byte_46436, 0
     jz      short loc_2315E
-    call    sub_3A9A0
+    call    setup_mcgawnd2
     jmp     short loc_23168
     ; align 2
     db 144
@@ -2520,7 +2520,7 @@ loc_2327C:
 loc_23286:
     mov     [bp+var_18], 0
 loc_2328A:
-    mov     ax, word_45F84
+    mov     ax, word ptr simd_copy.simd_unk4+40h
     cmp     ax, 0FFFFh
     jz      short loc_232B6
     or      ax, ax
@@ -2533,9 +2533,9 @@ loc_23299:
     mov     cx, 280h
     div     cx
     mov     si, ax
-    cmp     word_45F86, si
+    cmp     word ptr simd_copy.simd_unk4+42h, si
     jg      short loc_232BC
-    mov     si, word_45F86
+    mov     si, word ptr simd_copy.simd_unk4+42h
     dec     si
     jmp     short loc_232BC
 loc_232B6:
@@ -2546,9 +2546,9 @@ loc_232BC:
     mov     cl, 7
     shr     ax, cl
     mov     di, ax
-    cmp     word_4605C, di
+    cmp     word ptr simd_copy.simd_unk4+118h, di
     jg      short loc_232D0
-    mov     di, word_4605C
+    mov     di, word ptr simd_copy.simd_unk4+118h
     dec     di
 loc_232D0:
     cmp     [bp+var_18], 0
@@ -2597,7 +2597,7 @@ loc_23303:
 loc_23349:
     push    word ptr dword_40D80+2
     push    word ptr dword_40D80
-    call    sub_35AF6
+    call    set_sprite1
     add     sp, 4
     sub     ax, ax
     push    ax
@@ -2639,10 +2639,10 @@ loc_233B2:
 loc_233BF:
     cmp     [bp+var_8], 0
     jz      short loc_233EA
-    mov     al, byte_45F89
+    mov     al, simd_copy.simd_unk4+45h
     sub     ah, ah
     push    ax
-    mov     al, byte_45F88
+    mov     al, simd_copy.simd_unk4+44h
     push    ax
     mov     bx, [bp+var_8]
     shl     bx, 1
@@ -2663,10 +2663,10 @@ loc_233EA:
     cmp     [bp+var_1C], 0
     jz      short loc_23433
 loc_233FF:
-    mov     al, byte_45F8B
+    mov     al, simd_copy.simd_unk4+47h
     sub     ah, ah
     push    ax
-    mov     al, byte_45F8A
+    mov     al, simd_copy.simd_unk4+46h
     push    ax
     mov     bx, [bp+var_8]
     shl     bx, 1
@@ -2684,10 +2684,10 @@ loc_233FF:
     sub     si, ax
     mov     [bp+var_1C], 1
 loc_23433:
-    mov     al, byte_45F8D
+    mov     al, simd_copy.simd_unk4+49h
     sub     ah, ah
     push    ax
-    mov     al, byte_45F8C
+    mov     al, simd_copy.simd_unk4+48h
     push    ax
     mov     bx, si
     shl     bx, 1
@@ -2712,8 +2712,8 @@ loc_23456:
     push    ax
     mov     al, [bx-57E8h]
     push    ax
-    push    word_45F84
-    push    word_45F82
+    push    word ptr simd_copy.simd_unk4+40h
+    push    word ptr simd_copy.simd_unk4+3Eh
     call    sub_2FDDE
     add     sp, 0Ah
 loc_23485:
@@ -2727,8 +2727,8 @@ loc_23485:
     push    ax
     mov     al, [bx-5712h]
     push    ax
-    push    word_4605A
-    push    word_46058
+    push    word ptr simd_copy.simd_unk4+116h
+    push    word ptr simd_copy.simd_unk4+114h
     call    sub_2FDDE
     add     sp, 0Ah
     mov     al, [bp+var_2]
@@ -2753,7 +2753,7 @@ loc_234D6:
 loc_234DE:
     cmp     byte_46436, 0
     jz      short loc_23506
-    call    sub_3A9A0
+    call    setup_mcgawnd2
     jmp     short loc_2350B
 loc_234EC:
     push    word_40DD2
@@ -2852,7 +2852,7 @@ loc_235D5:
     mov     [bp+var_14], al
     cmp     [bp+var_4], 0
     jge     short loc_235F9
-    sub     al, byte_45F44
+    sub     al, simd_copy.simd_unk4
     shl     al, 1
     sub     [bp+var_14], al
 loc_235F9:
@@ -4072,7 +4072,7 @@ loc_24193:
     mov     [bp+var_40], 0
     mov     ax, 1Dh
     push    ax
-    call    sub_30A0D
+    call    get_key_status
     add     sp, 2
     or      ax, ax
     jnz     short loc_241C8
@@ -4931,7 +4931,7 @@ loc_24956:
     push    ax
     mov     ax, 0AC74h
     push    ax
-    call    sub_28AD6
+    call    copy_string
     add     sp, 6
     cmp     word_44984, 0
     jz      short loc_249D2
@@ -5125,7 +5125,7 @@ loc_24B4F:
     push    ax
     mov     ax, 0AC74h
     push    ax
-    call    sub_28AD6
+    call    copy_string
     add     sp, 6
     cmp     word_44984, 0
     jz      short loc_24BB0

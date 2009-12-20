@@ -443,20 +443,11 @@ dseg segment byte public 'STUNTSD' use16
     extrn word_3FB02:word
     extrn word_3FB04:word
     extrn byte_3FB06:byte
-    extrn byte_3FB08:byte
-    extrn byte_3FB09:byte
-    extrn byte_3FB0A:byte
-    extrn byte_3FB0B:byte
-    extrn byte_3FB0C:byte
-    extrn byte_3FB0D:byte
-    extrn byte_3FB0E:byte
-    extrn byte_3FB0F:byte
-    extrn byte_3FB10:byte
-    extrn byte_3FB11:byte
-    extrn word_3FB12:word
-    extrn word_3FB14:word
-    extrn byte_3FB16:byte
-    extrn byte_3FB17:byte
+    extrn kbscancodes:byte
+    extrn joyflag1:word
+    extrn joyflag2:word
+    extrn joybutton:byte
+    extrn joyinput:byte
     extrn word_3FB18:word
     extrn word_3FB1A:word
     extrn word_3FB1C:word
@@ -482,12 +473,8 @@ dseg segment byte public 'STUNTSD' use16
     extrn word_3FBD4:word
     extrn word_3FBD6:word
     extrn word_3FBD8:word
-    extrn byte_3FBF7:byte
-    extrn byte_3FC04:byte
-    extrn byte_3FC10:byte
-    extrn byte_3FC12:byte
-    extrn byte_3FC14:byte
-    extrn off_3FDFC:word
+    extrn kbinput:byte
+    extrn readchar_callback:word
     extrn seg_3FDFE:word
     extrn byte_3FE00:byte
     extrn aSFileError:byte
@@ -590,7 +577,13 @@ dseg segment byte public 'STUNTSD' use16
     extrn word_40B10:word
     extrn audiodriverstring:byte
     extrn byte_40B86:byte
+    extrn shapenums:byte
+    extrn a_pvs:byte
+    extrn aUnflip_0:byte
+    extrn a_xvs:byte
+    extrn a_pes:byte
     extrn aUnflip:byte
+    extrn a_esh:byte
     extrn aMga:byte
     extrn dword_40C1E:dword
     extrn dword_40C22:dword
@@ -652,6 +645,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn word_40ED4:word
     extrn word_411F6:word
     extrn unk_41690:byte
+    extrn unk_416AE:byte
     extrn mat_y0:MATRIX
     extrn word_41850:word
     extrn word_41852:word
@@ -813,6 +807,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn mat_unk_1:MATRIX
     extrn word_43964:word
     extrn byte_43966:byte
+    extrn carshortname:byte
     extrn word_4408C:word
     extrn word_4428E:word
     extrn byte_44290:byte
@@ -1192,22 +1187,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn byte_45E16:byte
     extrn byte_45E1A:byte
     extrn dword_45E56:dword
-    extrn word_45E92:word
-    extrn word_45F2A:word
-    extrn byte_45F44:byte
-    extrn word_45F82:word
-    extrn word_45F84:word
-    extrn word_45F86:word
-    extrn byte_45F88:byte
-    extrn byte_45F89:byte
-    extrn byte_45F8A:byte
-    extrn byte_45F8B:byte
-    extrn byte_45F8C:byte
-    extrn byte_45F8D:byte
-    extrn word_46058:word
-    extrn word_4605A:word
-    extrn word_4605C:word
-    extrn word_4615E:word
+    extrn simd_copy:SIMD
     extrn word_46160:word
     extrn dword_46162:dword
     extrn byte_46166:byte

@@ -66,7 +66,7 @@ sub_39E14 proc far
     push    bp
     mov     bp, sp
     push    [bp+arg_0]
-    call    sub_33861
+    call    j_load_2dshape_0
     add     sp, 2
     pop     bp
     retf
@@ -138,7 +138,7 @@ init_video proc far
     push    si
     call    sub_30812
     call    sub_36B05
-    call    sub_30A1C
+    call    call_readchar_callback
     mov     ax, offset do_mrl_textres
     mov     dx, seg seg008
     push    dx
@@ -715,7 +715,7 @@ loc_3A300:
     mov     [bp+var_30A], dx
     push    word ptr dword_449C2+2
     push    word ptr dword_449C2
-    call    sub_35AF6
+    call    set_sprite1
     add     sp, 4
     sub     ax, ax
     push    ax
@@ -732,7 +732,7 @@ loc_3A300:
     add     sp, 8
     push    word ptr dword_44364+2
     push    word ptr dword_44364
-    call    sub_35AF6
+    call    set_sprite1
     add     sp, 4
     sub     ax, ax
     push    ax
@@ -812,7 +812,7 @@ sub_3A496 proc far
     mov     bp, sp
     push    [bp+arg_2]
     push    [bp+arg_0]
-    call    sub_3167C
+    call    get_res_size
     add     sp, 4
     sub     dx, dx
     mov     cl, 4

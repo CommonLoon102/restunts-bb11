@@ -697,7 +697,7 @@ static PrintSegInc(segstart, segend) {
 }
 
 static PrintStruct(f, id) {
-	auto memberofs, membername, memberflag, membersize, strucsize;
+	auto memberofs, membername, memberflag, membersize, memberid, strucsize, i;
 	fprintf(f, "%s struc\n", GetStrucName(id));
 
 	strucsize = GetStrucSize(id);
@@ -706,11 +706,30 @@ static PrintStruct(f, id) {
 		membername = GetMemberName(id, memberofs);
 		memberflag = GetMemberFlag(id, memberofs);
 	
+		if (isStruct(memberflag)) {
+			memberid = GetMemberStrId(id, memberofs);
+			membersize = GetMemberSize(id, memberofs) / GetStrucSize(memberid);
+			if (membersize == 1) {
+				fprintf(f, "%s %s ?\n", membername, GetStrucName(memberid));
+			} else {
+				fprintf(f, "%s %s %i dup (?)\n", membername, GetStrucName(memberid), membersize);
+			}
+		} else
 		if (isDwrd(memberflag)) {
-			fprintf(f, "%s dd ?\n", membername);
+			membersize = GetMemberSize(id, memberofs) / 4;
+			if (membersize == 1) {
+				fprintf(f, "%s dd ?\n", membername);
+			} else {
+				fprintf(f, "%s dd %i dup (?)\n", membername, membersize);
+			}
 		} else
 		if (isWord(memberflag)) {
-			fprintf(f, "%s dw ?\n", membername);
+			membersize = GetMemberSize(id, memberofs) / 2;
+			if (membersize == 1) {
+				fprintf(f, "%s dw ?\n", membername);
+			} else {
+				fprintf(f, "%s dw %i dup (?)\n", membername, membersize);
+			}
 		} else
 		if (isByte(memberflag) || isUnknown(memberflag) || isASCII(memberflag)) {
 			membersize = GetMemberSize(id, memberofs);

@@ -491,20 +491,11 @@ dseg segment byte public 'STUNTSD' use16
     public word_3FB02
     public word_3FB04
     public byte_3FB06
-    public byte_3FB08
-    public byte_3FB09
-    public byte_3FB0A
-    public byte_3FB0B
-    public byte_3FB0C
-    public byte_3FB0D
-    public byte_3FB0E
-    public byte_3FB0F
-    public byte_3FB10
-    public byte_3FB11
-    public word_3FB12
-    public word_3FB14
-    public byte_3FB16
-    public byte_3FB17
+    public kbscancodes
+    public joyflag1
+    public joyflag2
+    public joybutton
+    public joyinput
     public word_3FB18
     public word_3FB1A
     public word_3FB1C
@@ -530,12 +521,8 @@ dseg segment byte public 'STUNTSD' use16
     public word_3FBD4
     public word_3FBD6
     public word_3FBD8
-    public byte_3FBF7
-    public byte_3FC04
-    public byte_3FC10
-    public byte_3FC12
-    public byte_3FC14
-    public off_3FDFC
+    public kbinput
+    public readchar_callback
     public seg_3FDFE
     public byte_3FE00
     public aSFileError
@@ -638,7 +625,13 @@ dseg segment byte public 'STUNTSD' use16
     public word_40B10
     public audiodriverstring
     public byte_40B86
+    public shapenums
+    public a_pvs
+    public aUnflip_0
+    public a_xvs
+    public a_pes
     public aUnflip
+    public a_esh
     public aMga
     public dword_40C1E
     public dword_40C22
@@ -700,6 +693,7 @@ dseg segment byte public 'STUNTSD' use16
     public word_40ED4
     public word_411F6
     public unk_41690
+    public unk_416AE
     public mat_y0
     public word_41850
     public word_41852
@@ -861,6 +855,7 @@ dseg segment byte public 'STUNTSD' use16
     public mat_unk_1
     public word_43964
     public byte_43966
+    public carshortname
     public word_4408C
     public word_4428E
     public byte_44290
@@ -1240,22 +1235,7 @@ dseg segment byte public 'STUNTSD' use16
     public byte_45E16
     public byte_45E1A
     public dword_45E56
-    public word_45E92
-    public word_45F2A
-    public byte_45F44
-    public word_45F82
-    public word_45F84
-    public word_45F86
-    public byte_45F88
-    public byte_45F89
-    public byte_45F8A
-    public byte_45F8B
-    public byte_45F8C
-    public byte_45F8D
-    public word_46058
-    public word_4605A
-    public word_4605C
-    public word_4615E
+    public simd_copy
     public word_46160
     public dword_46162
     public byte_46166
@@ -18376,20 +18356,20 @@ word_3FB02     dw 0
 word_3FB04     dw 0
 byte_3FB06     db 0
     db 0
-byte_3FB08     db 57
-byte_3FB09     db 28
-byte_3FB0A     db 71
-byte_3FB0B     db 72
-byte_3FB0C     db 73
-byte_3FB0D     db 77
-byte_3FB0E     db 81
-byte_3FB0F     db 80
-byte_3FB10     db 79
-byte_3FB11     db 75
-word_3FB12     dw 0
-word_3FB14     dw 0
-byte_3FB16     db 0
-byte_3FB17     db 0
+kbscancodes     db 57
+    db 28
+    db 71
+    db 72
+    db 73
+    db 77
+    db 81
+    db 80
+    db 79
+    db 75
+joyflag1     dw 0
+joyflag2     dw 0
+joybutton     db 0
+joyinput     db 0
 word_3FB18     dw 80
 word_3FB1A     dw 0
 word_3FB1C     dw 0
@@ -18559,6 +18539,7 @@ word_3FBD2     dw 0
 word_3FBD4     dw 2
 word_3FBD6     dw 0
 word_3FBD8     dw 0
+kbinput     db 0
     db 0
     db 0
     db 0
@@ -18588,7 +18569,6 @@ word_3FBD8     dw 0
     db 0
     db 0
     db 0
-byte_3FBF7     db 0
     db 0
     db 0
     db 0
@@ -18601,7 +18581,6 @@ byte_3FBF7     db 0
     db 0
     db 0
     db 0
-byte_3FC04     db 0
     db 0
     db 0
     db 0
@@ -18613,11 +18592,12 @@ byte_3FC04     db 0
     db 0
     db 0
     db 0
-byte_3FC10     db 0
     db 0
-byte_3FC12     db 0
     db 0
-byte_3FC14     db 0
+    db 0
+    db 0
+    db 0
+    db 0
     db 0
     db 0
     db 0
@@ -19104,7 +19084,7 @@ byte_3FC14     db 0
     db 0
     db 0
     db 0
-off_3FDFC     dw offset sub_30A21
+readchar_callback     dw offset read_kb_char
 seg_3FDFE     dw seg seg012
 byte_3FE00     db 0
     db 0
@@ -22325,7 +22305,7 @@ byte_40B86     db 0
     db 84
     db 101
     db 84
-    db 0
+shapenums     db 0
     db 1
     db 2
     db 3
@@ -22341,24 +22321,24 @@ byte_40B86     db 0
     db 13
     db 14
     db 15
-    db 46
+a_pvs     db 46
     db 80
     db 86
     db 83
     db 0
-    db 85
+aUnflip_0     db 85
     db 78
     db 70
     db 76
     db 73
     db 80
     db 0
-    db 46
+a_xvs     db 46
     db 88
     db 86
     db 83
     db 0
-    db 46
+a_pes     db 46
     db 80
     db 69
     db 83
@@ -22370,7 +22350,7 @@ aUnflip     db 85
     db 73
     db 80
     db 0
-    db 46
+a_esh     db 46
     db 69
     db 83
     db 72
@@ -25015,7 +24995,7 @@ unk_41690     db 0
     db 0
     db 0
     db 0
-    db 0
+unk_416AE     db 0
     db 0
     db 0
     db 0
@@ -33748,7 +33728,7 @@ mat_unk_1     db 0
     db 0
 word_43964     dw 0
 byte_43966     db 0
-    db 0
+carshortname     db 0
     db 0
     db 0
     db 0
@@ -42872,6 +42852,7 @@ byte_45E1A     db 0
     db 0
     db 0
 dword_45E56     dd 0
+simd_copy     db 0
     db 0
     db 0
     db 0
@@ -42928,7 +42909,6 @@ dword_45E56     dd 0
     db 0
     db 0
     db 0
-word_45E92     dw 0
     db 0
     db 0
     db 0
@@ -42940,7 +42920,6 @@ word_45E92     dw 0
     db 0
     db 0
     db 0
-    dw 0
     db 0
     db 0
     db 0
@@ -43078,7 +43057,6 @@ word_45E92     dw 0
     db 0
     db 0
     db 0
-word_45F2A     dw 0
     db 0
     db 0
     db 0
@@ -43103,7 +43081,6 @@ word_45F2A     dw 0
     db 0
     db 0
     db 0
-byte_45F44     db 0
     db 0
     db 0
     db 0
@@ -43165,15 +43142,6 @@ byte_45F44     db 0
     db 0
     db 0
     db 0
-word_45F82     dw 0
-word_45F84     dw 0
-word_45F86     dw 0
-byte_45F88     db 0
-byte_45F89     db 0
-byte_45F8A     db 0
-byte_45F8B     db 0
-byte_45F8C     db 0
-byte_45F8D     db 0
     db 0
     db 0
     db 0
@@ -43361,7 +43329,6 @@ byte_45F8D     db 0
     db 0
     db 0
     db 0
-    dw 0
     db 0
     db 0
     db 0
@@ -43375,9 +43342,6 @@ byte_45F8D     db 0
     db 0
     db 0
     db 0
-word_46058     dw 0
-word_4605A     dw 0
-word_4605C     dw 0
     db 0
     db 0
     db 0
@@ -43634,7 +43598,34 @@ word_4605C     dw 0
     db 0
     db 0
     db 0
-word_4615E     dw 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
 word_46160     dw 0
 dword_46162     dd 0
 byte_46166     db 0

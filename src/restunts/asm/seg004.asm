@@ -5861,7 +5861,7 @@ sub_217CA proc far
     push    ax
     mov     ax, offset unk_46464
     push    ax
-    call    sub_28AD6
+    call    copy_string
     add     sp, 6
     mov     ax, offset aPath; "path"
     push    ax

@@ -1,6 +1,6 @@
 seg034 segment byte public 'STUNTSC' use16
-    extrn sub_3A9D6:proc
-    extrn sub_3A9EA:proc
-    extrn sub_3A9FC:proc
+    extrn load_2dshape_1:proc
+    extrn load_2dshape_0:proc
+    extrn load_2dshape:proc
     extrn sub_3ACB0:proc
 seg034 ends

@@ -46,8 +46,8 @@ nosmart
 seg038 segment byte public 'STUNTSD' use16
     assume cs:seg038
     assume es:nothing, ss:nothing, ds:dseg
-    public unk_3B1C0
-unk_3B1C0     db 0
+    public plan_memres
+plan_memres     db 0
     db 0
     db 0
     db 0

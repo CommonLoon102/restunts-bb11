@@ -827,7 +827,7 @@ loc_2A9D6:
     add     bx, bp
     push    word ptr [bx-170h]
     push    word ptr [bx-172h]
-    call    sub_35AF6
+    call    set_sprite1
     add     sp, 4
     cmp     [bp+var_C6], 0
     jz      short loc_2AA01
@@ -1177,7 +1177,7 @@ loc_2AD38:
     push    ax
     mov     ax, 0AC74h
     push    ax
-    call    sub_28AD6
+    call    copy_string
     add     sp, 6
     mov     ax, 0AC74h
     push    ax

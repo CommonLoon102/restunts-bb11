@@ -18,7 +18,7 @@ seg001 segment byte public 'STUNTSC' use16
     extrn sub_18D06:proc
     extrn sub_18D60:proc
     extrn sub_19074:proc
-    extrn sub_193E0:proc
+    extrn init_plantrak:proc
     extrn sub_195E0:proc
     extrn sub_195E6:proc
     extrn sub_19794:proc

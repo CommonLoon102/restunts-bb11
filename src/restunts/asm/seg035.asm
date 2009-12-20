@@ -48,8 +48,8 @@ seg035 segment byte public 'STUNTSC' use16
     assume es:nothing, ss:nothing, ds:dseg
     public loc_3ACD8
     public sub_3ACEC
-    public sub_3ACFE
-    public sub_3AD9C
+    public load_2dshape_res
+    public parse_2d_shape
     public sub_3B08C
     ; align 2
     db 144
@@ -60,7 +60,7 @@ loc_3ACD8:
     push    ax
     push    word ptr [bp+6]
     push    cs
-    call    near ptr sub_3ACFE
+    call    near ptr load_2dshape_res
     add     sp, 4
     pop     bp
     retf
@@ -77,12 +77,12 @@ sub_3ACEC proc far
     push    ax
     push    [bp+arg_0]
     push    cs
-    call    near ptr sub_3ACFE
+    call    near ptr load_2dshape_res
     add     sp, 4
     pop     bp
     retf
 sub_3ACEC endp
-sub_3ACFE proc far
+load_2dshape_res proc far
     var_A = word ptr -10
     var_8 = word ptr -8
     var_6 = word ptr -6
@@ -115,7 +115,7 @@ sub_3ACFE proc far
 loc_3AD2A:
     push    [bp+arg_2]
     push    [bp+arg_0]
-    call    sub_3A9FC
+    call    load_2dshape
     add     sp, 4
     mov     [bp+var_4], ax
     mov     [bp+var_2], dx
@@ -130,7 +130,7 @@ loc_3AD2A:
 loc_3AD4A:
     push    [bp+var_2]
     push    [bp+var_4]
-    call    sub_3167C
+    call    get_res_size
     add     sp, 4
     mov     [bp+var_A], ax
     push    ax
@@ -144,7 +144,7 @@ loc_3AD4A:
     push    [bp+var_2]
     push    [bp+var_4]
     push    cs
-    call    near ptr sub_3AD9C
+    call    near ptr parse_2d_shape
     add     sp, 8
     push    [bp+var_2]
     push    [bp+var_4]
@@ -157,8 +157,8 @@ loc_3AD4A:
     mov     sp, bp
     pop     bp
     retf
-sub_3ACFE endp
-sub_3AD9C proc far
+load_2dshape_res endp
+parse_2d_shape proc far
     var_38 = dword ptr -56
     var_34 = word ptr -52
     var_32 = word ptr -50
@@ -470,7 +470,7 @@ loc_3B074:
     retf
     ; align 2
     db 144
-sub_3AD9C endp
+parse_2d_shape endp
 sub_3B08C proc far
     var_4 = byte ptr -4
     var_2 = word ptr -2

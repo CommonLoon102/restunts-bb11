@@ -46,8 +46,8 @@ nosmart
 seg036 segment byte public 'STUNTSC' use16
     assume cs:seg036
     assume es:nothing, ss:nothing, ds:dseg
-    public sub_3B0BA
-sub_3B0BA proc far
+    public get_unflip_size
+get_unflip_size proc far
     var_C = word ptr -12
     var_A = word ptr -10
     var_8 = word ptr -8
@@ -101,6 +101,6 @@ loc_3B11B:
     mov     sp, bp
     pop     bp
     retf
-sub_3B0BA endp
+get_unflip_size endp
 seg036 ends
 end
