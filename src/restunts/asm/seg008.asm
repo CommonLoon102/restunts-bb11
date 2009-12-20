@@ -54,7 +54,7 @@ seg008 segment byte public 'STUNTSC' use16
     public sub_2863A
     public sub_28762
     public input_checking
-    public do_input_checking
+    public input_do_checking
     public load_res_file
     public unload_resource
     public locate_shape_alt
@@ -74,7 +74,7 @@ seg008 segment byte public 'STUNTSC' use16
     public sub_28F98
     public sub_29008
     public sub_290BC
-    public sub_2913A
+    public input_repeat_check
     public sub_2916E
     public sub_292DC
     public setup_3d_res
@@ -2449,7 +2449,7 @@ loc_289D9:
     ; align 2
     db 144
 input_checking endp
-do_input_checking proc far
+input_do_checking proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -2464,7 +2464,7 @@ do_input_checking proc far
     retf
     ; align 2
     db 144
-do_input_checking endp
+input_do_checking endp
 load_res_file proc far
     var_54 = byte ptr -84
     var_4 = word ptr -4
@@ -2541,7 +2541,7 @@ unload_resource proc far
     mov     bp, sp
     push    [bp+arg_2]
     push    [bp+arg_0]
-    call    sub_3147C
+    call    unload_resource2
     add     sp, 4
     pop     bp
     retf
@@ -3405,7 +3405,7 @@ loc_2911D:
     ; align 2
     db 144
 sub_290BC endp
-sub_2913A proc far
+input_repeat_check proc far
     var_4 = word ptr -4
      s = byte ptr 0
      r = byte ptr 2
@@ -3427,7 +3427,7 @@ loc_2914A:
     add     di, ax
     push    ax
     push    cs
-    call    near ptr do_input_checking
+    call    near ptr input_do_checking
     add     sp, 2
     mov     si, ax
     or      si, si
@@ -3442,7 +3442,7 @@ loc_29168:
     mov     sp, bp
     pop     bp
     retf
-sub_2913A endp
+input_repeat_check endp
 sub_2916E proc far
     var_14 = word ptr -20
     var_12 = word ptr -18
@@ -3898,26 +3898,26 @@ setup_3d_res proc far
     push    si
     mov     bx, [bp+arg_4]
     les     si, [bp+arg_0]
-    mov     al, es:[si]
+    mov     al, es:[si+SHAPE3DHEADER.header_numverts]
     sub     ah, ah
-    mov     [bx], ax
+    mov     [bx+SHAPE3D.shape3d_numverts], ax
     mov     bx, [bp+arg_4]
     les     si, [bp+arg_0]
-    mov     al, es:[si+1]
-    mov     [bx+6], ax
+    mov     al, es:[si+SHAPE3DHEADER.header_numprimitives]
+    mov     [bx+SHAPE3D.shape3d_numprimitives], ax
     mov     bx, [bp+arg_4]
     les     si, [bp+arg_0]
-    mov     al, es:[si+2]
-    mov     [bx+8], al
+    mov     al, es:[si+SHAPE3DHEADER.header_numpaints]
+    mov     byte ptr [bx+SHAPE3D.shape3d_numpaints], al
     mov     bx, [bp+arg_4]
     mov     ax, word ptr [bp+arg_0]
     mov     dx, word ptr [bp+arg_0+2]
     add     ax, 4
-    mov     [bx+2], ax
-    mov     [bx+4], dx
+    mov     word ptr [bx+SHAPE3D.shape3d_verts], ax
+    mov     word ptr [bx+(SHAPE3D.shape3d_verts+2)], dx
     mov     bx, [bp+arg_4]
     mov     si, bx
-    mov     ax, [si]
+    mov     ax, word ptr [si+SHAPE3DHEADER.header_numverts]
     mov     cx, ax
     shl     ax, 1
     add     ax, cx
@@ -3925,14 +3925,14 @@ setup_3d_res proc far
     add     ax, word ptr [bp+arg_0]
     mov     dx, word ptr [bp+arg_0+2]
     add     ax, 4
-    mov     [bx+0Eh], ax
-    mov     [bx+10h], dx
+    mov     word ptr [bx+SHAPE3D.shape3d_cull1], ax
+    mov     word ptr [bx+(SHAPE3D.shape3d_cull1+2)], dx
     mov     bx, [bp+arg_4]
     mov     si, bx
-    mov     ax, [si+6]
+    mov     ax, [si+SHAPE3D.shape3d_numprimitives]
     shl     ax, 1
     shl     ax, 1
-    mov     cx, [si]
+    mov     cx, [si+SHAPE3D.shape3d_numverts]
     mov     dx, cx
     shl     cx, 1
     add     cx, dx
@@ -3941,14 +3941,14 @@ setup_3d_res proc far
     add     ax, word ptr [bp+arg_0]
     mov     dx, word ptr [bp+arg_0+2]
     add     ax, 4
-    mov     [bx+12h], ax
-    mov     [bx+14h], dx
+    mov     word ptr [bx+SHAPE3D.shape3d_cull2], ax
+    mov     word ptr [bx+(SHAPE3D.shape3d_cull2+2)], dx
     mov     bx, [bp+arg_4]
     mov     si, bx
-    mov     ax, [si+6]
+    mov     ax, [si+SHAPE3D.shape3d_numprimitives]
     mov     cl, 3
     shl     ax, cl
-    mov     cx, [si]
+    mov     cx, [si+SHAPE3D.shape3d_numverts]
     mov     dx, cx
     shl     cx, 1
     add     cx, dx
@@ -3957,8 +3957,8 @@ setup_3d_res proc far
     add     ax, word ptr [bp+arg_0]
     mov     dx, word ptr [bp+arg_0+2]
     add     ax, 4
-    mov     [bx+0Ah], ax
-    mov     [bx+0Ch], dx
+    mov     word ptr [bx+SHAPE3D.shape3d_primitives], ax
+    mov     word ptr [bx+(SHAPE3D.shape3d_primitives+2)], dx
     pop     si
     pop     bp
     retf
@@ -4033,7 +4033,7 @@ loc_29670:
     call    near ptr get_timerdelta2
     push    ax
     push    cs
-    call    near ptr do_input_checking
+    call    near ptr input_do_checking
     add     sp, 2
     mov     di, ax
     or      di, di
@@ -4310,11 +4310,11 @@ unload_audio_res proc far
     add     sp, 2
     push    word_44362
     push    word_44360
-    call    sub_3147C
+    call    unload_resource2
     add     sp, 4
     push    word_44A7E
     push    word_44A7C
-    call    sub_3147C
+    call    unload_resource2
     add     sp, 4
     mov     byte_3B8F3, 0
     retf

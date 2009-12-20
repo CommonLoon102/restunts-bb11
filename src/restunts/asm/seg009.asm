@@ -2901,7 +2901,7 @@ loc_2BE44:
     add     sp, 4
     push    [bp+var_28]
     push    [bp+var_2A]
-    call    sub_3147C
+    call    unload_resource2
     add     sp, 4
     pop     si
     pop     di

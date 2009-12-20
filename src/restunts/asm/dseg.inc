@@ -300,36 +300,36 @@ dseg segment byte public 'STUNTSD' use16
     extrn aExp1:byte
     extrn aExp2:byte
     extrn aExp3:byte
-    extrn unk_3C404:byte
-    extrn unk_3C42E:byte
-    extrn unk_3C458:byte
-    extrn unk_3C476:byte
-    extrn unk_3C4A0:byte
-    extrn unk_3C4CA:byte
-    extrn unk_3C4F4:byte
-    extrn unk_3C52A:byte
-    extrn unk_3C560:byte
-    extrn unk_3C5A2:byte
-    extrn unk_3C5E4:byte
-    extrn unk_3C6B6:byte
-    extrn unk_3C788:byte
-    extrn unk_3C7B2:byte
-    extrn unk_3C7DC:byte
-    extrn unk_3C8AE:byte
-    extrn unk_3C980:byte
-    extrn unk_3CA52:byte
-    extrn unk_3CA7C:byte
-    extrn unk_3CBA2:byte
-    extrn unk_3CC50:byte
-    extrn unk_3CC7A:byte
-    extrn unk_3CCA4:byte
-    extrn unk_3CCCE:byte
-    extrn unk_3CDA0:byte
-    extrn unk_3CF02:byte
-    extrn unk_3D064:byte
-    extrn unk_3D0B8:byte
-    extrn unk_3D10C:byte
-    extrn unk_3D142:byte
+    extrn shapedata42:byte
+    extrn shapedata42_2:byte
+    extrn shapedata30:byte
+    extrn shapedata42_3:byte
+    extrn shapedata42_11:byte
+    extrn shapedata42_4:byte
+    extrn shapedata54:byte
+    extrn shapedata54_2:byte
+    extrn shapedata66:byte
+    extrn shapedata66_2:byte
+    extrn shapedata210:byte
+    extrn shapedata210_2:byte
+    extrn shapedata42_5:byte
+    extrn shapedata42_6:byte
+    extrn shapedata210_3:byte
+    extrn shapedata210_4:byte
+    extrn shapedata210_5:byte
+    extrn shapedata42_7:byte
+    extrn shapedata294:byte
+    extrn shapedata174:byte
+    extrn shapedata42_8:byte
+    extrn shapedata42_9:byte
+    extrn shapedata42_10:byte
+    extrn shapedata210_6:byte
+    extrn shapedata354:byte
+    extrn shapedata354_2:byte
+    extrn shapedata84:byte
+    extrn shapedata84_2:byte
+    extrn shapedata54_4:byte
+    extrn shapedata54_3:byte
     extrn shapeinfos:SHAPEINFO
     extrn sceneshapes:SCENESHAPE
     extrn sceneshapes2:SCENESHAPE
@@ -345,10 +345,24 @@ dseg segment byte public 'STUNTSD' use16
     extrn word_3E5C4:word
     extrn word_3E5D0:word
     extrn word_3E5D2:word
-    extrn byte_3E70C:byte
-    extrn byte_3E70D:byte
-    extrn byte_3E70E:byte
-    extrn byte_3E70F:byte
+    extrn aGame1:byte
+    extrn aGame2:byte
+    extrn aCar0:byte
+    extrn aCar1:byte
+    extrn aCar2:byte
+    extrn aExp0_0:byte
+    extrn aExp1_0:byte
+    extrn aExp2_0:byte
+    extrn aExp3_0:byte
+    extrn aCar2_0:byte
+    extrn aCar0_0:byte
+    extrn aCar1_0:byte
+    extrn aCar2_1:byte
+    extrn aExp0_1:byte
+    extrn aExp1_1:byte
+    extrn aExp2_1:byte
+    extrn aExp3_1:byte
+    extrn aStxxx:byte
     extrn aNam:byte
     extrn aPath:byte
     extrn aSped:byte
@@ -841,7 +855,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn word_42D0A:word
     extrn word_42D0E:word
     extrn word_42D20:word
-    extrn dword_42D22:dword
+    extrn trackdata1:dword
     extrn byte_42D26:byte
     extrn word_42D28:word
     extrn byte_42D2A:byte
@@ -850,117 +864,8 @@ dseg segment byte public 'STUNTSD' use16
     extrn byte_42DAE:byte
     extrn byte_42DAF:byte
     extrn byte_42DB0:byte
-    extrn unk_42DBC:byte
-    extrn unk_42DD2:byte
-    extrn unk_42DE8:byte
-    extrn unk_42DFE:byte
-    extrn unk_42E14:byte
-    extrn unk_42E2A:byte
-    extrn unk_42E40:byte
-    extrn unk_42E56:byte
-    extrn unk_42E6C:byte
-    extrn unk_42E82:byte
-    extrn unk_42E98:byte
-    extrn unk_42EAE:byte
-    extrn unk_42EC4:byte
-    extrn unk_42EDA:byte
-    extrn unk_42EF0:byte
-    extrn unk_42F06:byte
-    extrn unk_42F1C:byte
-    extrn unk_42F32:byte
-    extrn unk_42F48:byte
-    extrn unk_42F5E:byte
-    extrn unk_42F74:byte
-    extrn unk_42F8A:byte
-    extrn unk_42FA0:byte
-    extrn unk_42FB6:byte
-    extrn unk_42FCC:byte
-    extrn unk_42FE2:byte
-    extrn unk_42FF8:byte
-    extrn unk_4300E:byte
-    extrn unk_43024:byte
-    extrn unk_4303A:byte
-    extrn unk_43050:byte
-    extrn unk_43066:byte
-    extrn unk_4307C:byte
-    extrn unk_43092:byte
-    extrn unk_430A8:byte
-    extrn unk_430BE:byte
-    extrn unk_430D4:byte
-    extrn unk_430EA:byte
-    extrn unk_43100:byte
-    extrn unk_43116:byte
-    extrn unk_431B0:byte
-    extrn unk_431C6:byte
-    extrn unk_431DC:byte
-    extrn unk_431F2:byte
-    extrn unk_43208:byte
-    extrn unk_4321E:byte
-    extrn unk_43234:byte
-    extrn unk_4324A:byte
-    extrn unk_43260:byte
-    extrn unk_43276:byte
-    extrn unk_4328C:byte
-    extrn unk_432A2:byte
-    extrn unk_432B8:byte
-    extrn unk_432CE:byte
-    extrn unk_432E4:byte
-    extrn unk_432FA:byte
-    extrn unk_43310:byte
-    extrn unk_43326:byte
-    extrn unk_4333C:byte
-    extrn unk_43352:byte
-    extrn unk_43368:byte
-    extrn unk_4337E:byte
-    extrn unk_43394:byte
-    extrn unk_433AA:byte
-    extrn unk_433C0:byte
-    extrn unk_433D6:byte
-    extrn unk_433EC:byte
-    extrn unk_43402:byte
-    extrn unk_43418:byte
-    extrn unk_4342E:byte
-    extrn unk_43444:byte
-    extrn unk_4345A:byte
-    extrn unk_43470:byte
-    extrn unk_43486:byte
-    extrn unk_4349C:byte
-    extrn unk_434B2:byte
-    extrn unk_434C8:byte
-    extrn unk_434DE:byte
-    extrn unk_434F4:byte
-    extrn unk_4350A:byte
-    extrn unk_43520:byte
-    extrn unk_43536:byte
-    extrn unk_4354C:byte
-    extrn unk_43562:byte
-    extrn unk_43578:byte
-    extrn unk_435D0:byte
-    extrn unk_435E6:byte
-    extrn unk_435FC:byte
-    extrn unk_43612:byte
-    extrn unk_43628:byte
-    extrn unk_4363E:byte
-    extrn unk_43654:byte
-    extrn unk_4366A:byte
-    extrn unk_43680:byte
-    extrn unk_43696:byte
-    extrn unk_436AC:byte
-    extrn unk_436C2:byte
-    extrn unk_436D8:byte
-    extrn unk_436EE:byte
-    extrn word_43748:word
-    extrn word_4374A:word
-    extrn byte_4386C:byte
-    extrn unk_43890:byte
-    extrn word_43892:word
-    extrn word_43894:word
-    extrn unk_438A6:byte
-    extrn word_438A8:word
-    extrn word_438AA:word
-    extrn unk_438BC:byte
-    extrn unk_438D2:byte
-    extrn dword_438E8:dword
+    extrn game3dshapes:SHAPE3D
+    extrn trackdata2:dword
     extrn trackpos:word
     extrn word_43928:word
     extrn word_4392A:word
@@ -1016,10 +921,28 @@ dseg segment byte public 'STUNTSD' use16
     extrn word_4436A:word
     extrn word_44382:word
     extrn terrainrows:word
+    extrn word_443E8:word
     extrn word_443F2:word
     extrn word_443F4:word
     extrn trackdata20:dword
+    extrn word_443FA:word
+    extrn word_443FC:word
+    extrn word_443FE:word
+    extrn word_4441E:word
+    extrn word_44420:word
+    extrn word_44422:word
+    extrn word_44442:word
+    extrn word_44466:word
+    extrn word_4448A:word
     extrn state:GAMESTATE
+    extrn word_448F4:word
+    extrn word_448F6:word
+    extrn word_448F8:word
+    extrn word_44918:word
+    extrn word_4491A:word
+    extrn word_4491C:word
+    extrn word_4493C:word
+    extrn word_44960:word
     extrn word_44984:word
     extrn word_44986:word
     extrn word_44988:word

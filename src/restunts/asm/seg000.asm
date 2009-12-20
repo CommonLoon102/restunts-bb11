@@ -179,12 +179,12 @@ loc_10086:
     add     sp, 6
     mov     [bp+var_4], ax
     mov     [bp+var_2], dx
-    mov     word ptr dword_42D22, ax
-    mov     word ptr dword_42D22+2, dx
+    mov     word ptr trackdata1, ax
+    mov     word ptr trackdata1+2, dx
     add     [bp+var_4], 70Ah
     mov     ax, [bp+var_4]
-    mov     word ptr dword_438E8, ax
-    mov     word ptr dword_438E8+2, dx
+    mov     word ptr trackdata2, ax
+    mov     word ptr trackdata2+2, dx
     add     [bp+var_4], 70Ah
     mov     ax, [bp+var_4]
     mov     word ptr trackdata3, ax
@@ -193,23 +193,23 @@ loc_10086:
     mov     ax, [bp+var_4]
     mov     word ptr trackdata4, ax
     mov     word ptr trackdata4+2, dx
-    add     [bp+var_4], 80h ; '€'
+    add     [bp+var_4], 80h
     mov     ax, [bp+var_4]
     mov     word ptr trackdata5, ax
     mov     word ptr trackdata5+2, dx
-    add     [bp+var_4], 80h ; '€'
+    add     [bp+var_4], 80h
     mov     ax, [bp+var_4]
     mov     word ptr trackdata6, ax
     mov     word ptr trackdata6+2, dx
-    add     [bp+var_4], 80h ; '€'
+    add     [bp+var_4], 80h
     mov     ax, [bp+var_4]
     mov     word ptr trackdata7, ax
     mov     word ptr trackdata7+2, dx
-    add     [bp+var_4], 80h ; '€'
+    add     [bp+var_4], 80h
     mov     ax, [bp+var_4]
     mov     word ptr trackdata8, ax
     mov     word ptr trackdata8+2, dx
-    add     [bp+var_4], 60h ; '`'
+    add     [bp+var_4], 60h
     mov     ax, [bp+var_4]
     mov     word ptr trackdata9, ax
     mov     word ptr trackdata9+2, dx
@@ -225,7 +225,7 @@ loc_10086:
     mov     ax, [bp+var_4]
     mov     word ptr trackdata12, ax
     mov     word ptr trackdata12+2, dx
-    add     [bp+var_4], 0F0h ; 'ð'
+    add     [bp+var_4], 0F0h
     mov     ax, [bp+var_4]
     mov     word ptr trackdata13, ax
     mov     word ptr trackdata13+2, dx
@@ -269,7 +269,7 @@ loc_10086:
     mov     ax, [bp+var_4]
     mov     word ptr trackdata23, ax
     mov     word ptr trackdata23+2, dx
-    add     [bp+var_4], 30h ; '0'
+    add     [bp+var_4], 30h
     call    sub_22532
     mov     ax, offset aKevin; "kevin"
     push    ax
@@ -284,11 +284,11 @@ loc_10086:
     sub     si, si
     mov     ax, 1
     push    ax
-    call    do_input_checking
+    call    input_do_checking
     add     sp, 2
     mov     ax, 1
     push    ax
-    call    do_input_checking
+    call    input_do_checking
     add     sp, 2
     call    sub_28DB6
     mov     byte_3B8F8, 0
@@ -649,7 +649,7 @@ run_intro_looped proc far
     add     sp, 4
     push    word_45E14
     push    word_45E12
-    call    sub_3147C
+    call    unload_resource2
     add     sp, 4
     or      si, si
     jnz     short loc_1068E
@@ -693,7 +693,7 @@ run_intro_looped proc far
     add     sp, 4
     push    word_45E14
     push    word_45E12
-    call    sub_3147C
+    call    unload_resource2
     add     sp, 4
 loc_1068E:
     call    unload_audio_res
@@ -754,7 +754,7 @@ loc_106E4:
     jnz     short loc_1077F
     mov     ax, 190h
     push    ax
-    call    sub_2913A
+    call    input_repeat_check
     add     sp, 2
     mov     si, ax
     or      si, si
@@ -782,7 +782,7 @@ loc_106E4:
     jnz     short loc_1077F
     mov     ax, 190h
     push    ax
-    call    sub_2913A
+    call    input_repeat_check
     add     sp, 2
     mov     si, ax
 loc_1077F:
@@ -1397,7 +1397,7 @@ loc_10DA0:
     add     sp, 0Ah
     call    sub_28D9E
     push    [bp+var_40]
-    call    do_input_checking
+    call    input_do_checking
     add     sp, 2
     mov     [bp+var_46], ax
     or      ax, ax
@@ -1451,7 +1451,7 @@ loc_10E66:
     call    get_timerdelta2
     mov     [bp+var_40], ax
     push    ax
-    call    do_input_checking
+    call    input_do_checking
     add     sp, 2
     mov     [bp+var_46], ax
     add     si, [bp+var_40]
@@ -1515,7 +1515,7 @@ loc_10E91:
     jnz     short loc_10F2B
     mov     ax, 1F4h
     push    ax
-    call    sub_2913A
+    call    input_repeat_check
     add     sp, 2
     or      ax, ax
     jz      short loc_10F34
@@ -1585,7 +1585,7 @@ run_menu proc far
     add     sp, 4
     push    [bp+var_2]
     push    [bp+var_4]
-    call    sub_3147C
+    call    unload_resource2
     add     sp, 4
 loc_10FB9:
     mov     al, [bp+var_C]
@@ -1778,7 +1778,7 @@ loc_110ED:
     call    set_sprite1_size
     add     sp, 8
     call    sub_1CBDC
-    call    sub_1FF5E
+    call    unload_game_resources
     call    unload_skybox
     call    sub_28F6A
     mov     ax, 2B4h
@@ -3794,7 +3794,7 @@ loc_1244F:
     call    select_rect_rotate
     add     sp, 0Ah
     mov     bx, [bp+arg_2]
-    mov     al, byte_4386C
+    mov     al, byte ptr game3dshapes.shape3d_numpaints+0AA8h
     cmp     [bx], al
     jl      short loc_1247A
     mov     byte ptr [bx], 0
@@ -4106,7 +4106,7 @@ loc_127A6:
 loc_127BC:
     push    [bp+var_34]
     push    [bp+var_36]
-    call    sub_3147C
+    call    unload_resource2
     add     sp, 4
     call    sub_28DB6
     mov     al, [bp+var_F0]
@@ -4807,7 +4807,7 @@ loc_12EA7:
 loc_12ECB:
     push    word_44A02
     push    word_44A00
-    call    sub_3147C
+    call    unload_resource2
     add     sp, 4
     push    word_455CE
     push    word_455CC

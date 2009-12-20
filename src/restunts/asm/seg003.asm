@@ -2795,8 +2795,8 @@ loc_1B914:
     mov     ax, 8ECAh
     push    ax
     push    state.playerstate.field_20
-    mov     ax, word_43892
-    mov     dx, word_43894
+    mov     ax, word ptr game3dshapes.shape3d_verts+0AD4h
+    mov     dx, word ptr game3dshapes.shape3d_verts+0AD6h
     add     ax, 30h ; '0'
     push    dx
     push    ax
@@ -3054,8 +3054,8 @@ loc_1BBC0:
     mov     ax, 8F9Ah
     push    ax
     push    state.opponentstate.field_20
-    mov     ax, word_438A8
-    mov     dx, word_438AA
+    mov     ax, word ptr game3dshapes.shape3d_verts+0AEAh
+    mov     dx, word ptr game3dshapes.shape3d_verts+0AECh
     add     ax, 30h ; '0'
     push    dx
     push    ax
@@ -3158,8 +3158,8 @@ loc_1BCB7:
     add     sp, 4
     add     ax, 38h ; '8'
     mov     [bp+var_36], ax
-    mov     ax, word_43748
-    mov     dx, word_4374A
+    mov     ax, word ptr game3dshapes.shape3d_verts+98Ah
+    mov     dx, word ptr game3dshapes.shape3d_verts+98Ch
     add     ax, 30h ; '0'
     mov     word ptr [bp+var_108], ax
     mov     word ptr [bp+var_108+2], dx
@@ -6222,7 +6222,7 @@ unload_skybox proc far
     jz      short loc_1D8CB
     push    skybox_res_seg
     push    skybox_res_ofs
-    call    sub_3147C
+    call    unload_resource2
     add     sp, 4
 loc_1D8CB:
     mov     byte_3B8F6, 0
@@ -6280,7 +6280,7 @@ sub_1D92A proc far
 
     push    word_463DA
     push    word_463D8
-    call    sub_3147C
+    call    unload_resource2
     add     sp, 4
     retf
     ; align 2
@@ -6798,7 +6798,7 @@ loc_1DDFC:
     call    sub_28D9E
 loc_1DE19:
     push    [bp+var_40]
-    call    do_input_checking
+    call    input_do_checking
     add     sp, 2
     or      ax, ax
     jz      short loc_1DE2E
@@ -6842,7 +6842,7 @@ loc_1DE7C:
 loc_1DE8C:
     push    [bp+var_2AC]
     push    [bp+var_2AE]
-    call    sub_3147C
+    call    unload_resource2
     add     sp, 4
     mov     al, [bp+var_38]
     cbw

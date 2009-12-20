@@ -249,7 +249,7 @@ loc_21D2C:
 loc_21D5C:
     mov     ax, 1
     push    ax
-    call    do_input_checking
+    call    input_do_checking
     add     sp, 2
     cmp     ax, 1Bh
     jz      short loc_21D7B
@@ -847,7 +847,7 @@ loc_22347:
 loc_2239F:
     mov     ax, 1
     push    ax
-    call    do_input_checking
+    call    input_do_checking
     add     sp, 2
     cmp     ax, 1Bh
     jz      short loc_223CD
@@ -2937,11 +2937,11 @@ loc_236AC:
     add     sp, 4
     push    word_40D86
     push    word_40D84
-    call    sub_3147C
+    call    unload_resource2
     add     sp, 4
     push    word_40D7E
     push    word_40D7C
-    call    sub_3147C
+    call    unload_resource2
     add     sp, 4
     pop     si
     pop     di
@@ -3215,7 +3215,7 @@ sub_239B4 proc far
     call    sub_324AA
     add     sp, 4
 loc_239D4:
-    call    sub_1FF5E
+    call    unload_game_resources
     call    unload_skybox
     call    sub_1D92A
     push    word_449A2
@@ -3226,7 +3226,7 @@ loc_239D4:
     jnz     short loc_23A15
     push    word_45D0A
     push    word_45D08
-    call    sub_3147C
+    call    unload_resource2
     add     sp, 4
     mov     ax, 3
     push    ax
@@ -3236,16 +3236,16 @@ loc_239D4:
 loc_23A15:
     push    word_459F6
     push    word_459F4
-    call    sub_3147C
+    call    unload_resource2
     add     sp, 4
     call    remove_audiodriver_timer
     push    word_45E10
     push    word_45E0E
-    call    sub_3147C
+    call    unload_resource2
     add     sp, 4
     push    word_454A8
     push    word_454A6
-    call    sub_3147C
+    call    unload_resource2
     add     sp, 4
     call    sub_20438
     retf
@@ -4865,7 +4865,7 @@ loc_248C4:
     call    near ptr sub_23B4C
     add     sp, 6
     push    [bp+var_18]
-    call    do_input_checking
+    call    input_do_checking
     add     sp, 2
 loc_248F4:
     test    byte ptr word_454C0, 30h
@@ -4987,7 +4987,7 @@ loc_24A10:
 loc_24A19:
     mov     ax, 3E8h
     push    ax
-    call    do_input_checking
+    call    input_do_checking
     add     sp, 2
     jmp     loc_24D5E
 loc_24A28:
@@ -5067,7 +5067,7 @@ loc_24AB8:
     call    near ptr sub_23B4C
     add     sp, 6
     push    [bp+var_18]
-    call    do_input_checking
+    call    input_do_checking
     add     sp, 2
 loc_24AEA:
     test    byte ptr word_454C0, 30h
@@ -5209,7 +5209,7 @@ loc_24BF8:
     add     sp, 6
     mov     ax, 1
     push    ax
-    call    do_input_checking
+    call    input_do_checking
     add     sp, 2
 loc_24C3A:
     mov     ax, word_42D02

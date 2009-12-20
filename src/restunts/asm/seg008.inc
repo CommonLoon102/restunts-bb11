@@ -7,7 +7,7 @@ seg008 segment byte public 'STUNTSC' use16
     extrn sub_2863A:proc
     extrn sub_28762:proc
     extrn input_checking:proc
-    extrn do_input_checking:proc
+    extrn input_do_checking:proc
     extrn load_res_file:proc
     extrn unload_resource:proc
     extrn locate_shape_alt:proc
@@ -27,7 +27,7 @@ seg008 segment byte public 'STUNTSC' use16
     extrn sub_28F98:proc
     extrn sub_29008:proc
     extrn sub_290BC:proc
-    extrn sub_2913A:proc
+    extrn input_repeat_check:proc
     extrn sub_2916E:proc
     extrn sub_292DC:proc
     extrn setup_3d_res:proc

@@ -107,7 +107,7 @@ static IsPublicLabel(labelname) {
 		labelname == "loc_309A5" || 
 		labelname == "loc_30AFB" || 
 		labelname == "loc_30DA1" || 
-		labelname == "loc_30E14" || 
+		labelname == "_alt_decompress" || 
 		labelname == "loc_30FB2" || 
 		labelname == "loc_310CD" || 
 		labelname == "loc_31498" || 
@@ -174,9 +174,9 @@ static PrintExterns(f, segstart, segend, exceptstart, exceptend) {
 		if (exceptstart != BADADDR && funcea >= exceptstart && funcea < exceptend) continue;
 		
 		if (isAnyName(flags)) {
+			labelname = NameEx(BADADDR, funcea);
 			if (isCode(flags)) {
 			
-				labelname = NameEx(BADADDR, funcea);
 				if (isFunction(flags)) {
 					fprintf(f, "    extrn %s:proc\n", PortFuncName(labelname));
 				} else {
@@ -188,7 +188,11 @@ static PrintExterns(f, segstart, segend, exceptstart, exceptend) {
 				}
 			} else 
 			if (isData(flags) || isUnknown(flags)) {
-				fprintf(f, "    extrn %s:%s\n", NameEx(BADADDR, funcea), GetTypeString(flags, funcea));
+				if (labelname != "") {
+					fprintf(f, "    extrn %s:%s\n", labelname, GetTypeString(flags, funcea));
+				} else {
+					Message("extrns: label is blank and isAnyName is true!\n");
+				}
 			}
 		}
 	
@@ -218,7 +222,11 @@ static PrintPublics(f, segstart, segend) {
 				}
 			} else 
 			if (isData(flags) || isUnknown(flags)) {
-				fprintf(f, "    public %s\n", labelname);
+				if (labelname != "") {
+					fprintf(f, "    public %s\n", labelname);
+				} else {
+					Message("publics: label is blank and isAnyName is true!\n");
+				}
 			}
 		}
 	

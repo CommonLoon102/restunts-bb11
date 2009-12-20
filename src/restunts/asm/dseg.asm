@@ -348,36 +348,36 @@ dseg segment byte public 'STUNTSD' use16
     public aExp1
     public aExp2
     public aExp3
-    public unk_3C404
-    public unk_3C42E
-    public unk_3C458
-    public unk_3C476
-    public unk_3C4A0
-    public unk_3C4CA
-    public unk_3C4F4
-    public unk_3C52A
-    public unk_3C560
-    public unk_3C5A2
-    public unk_3C5E4
-    public unk_3C6B6
-    public unk_3C788
-    public unk_3C7B2
-    public unk_3C7DC
-    public unk_3C8AE
-    public unk_3C980
-    public unk_3CA52
-    public unk_3CA7C
-    public unk_3CBA2
-    public unk_3CC50
-    public unk_3CC7A
-    public unk_3CCA4
-    public unk_3CCCE
-    public unk_3CDA0
-    public unk_3CF02
-    public unk_3D064
-    public unk_3D0B8
-    public unk_3D10C
-    public unk_3D142
+    public shapedata42
+    public shapedata42_2
+    public shapedata30
+    public shapedata42_3
+    public shapedata42_11
+    public shapedata42_4
+    public shapedata54
+    public shapedata54_2
+    public shapedata66
+    public shapedata66_2
+    public shapedata210
+    public shapedata210_2
+    public shapedata42_5
+    public shapedata42_6
+    public shapedata210_3
+    public shapedata210_4
+    public shapedata210_5
+    public shapedata42_7
+    public shapedata294
+    public shapedata174
+    public shapedata42_8
+    public shapedata42_9
+    public shapedata42_10
+    public shapedata210_6
+    public shapedata354
+    public shapedata354_2
+    public shapedata84
+    public shapedata84_2
+    public shapedata54_4
+    public shapedata54_3
     public shapeinfos
     public sceneshapes
     public sceneshapes2
@@ -393,10 +393,24 @@ dseg segment byte public 'STUNTSD' use16
     public word_3E5C4
     public word_3E5D0
     public word_3E5D2
-    public byte_3E70C
-    public byte_3E70D
-    public byte_3E70E
-    public byte_3E70F
+    public aGame1
+    public aGame2
+    public aCar0
+    public aCar1
+    public aCar2
+    public aExp0_0
+    public aExp1_0
+    public aExp2_0
+    public aExp3_0
+    public aCar2_0
+    public aCar0_0
+    public aCar1_0
+    public aCar2_1
+    public aExp0_1
+    public aExp1_1
+    public aExp2_1
+    public aExp3_1
+    public aStxxx
     public aNam
     public aPath
     public aSped
@@ -889,7 +903,7 @@ dseg segment byte public 'STUNTSD' use16
     public word_42D0A
     public word_42D0E
     public word_42D20
-    public dword_42D22
+    public trackdata1
     public byte_42D26
     public word_42D28
     public byte_42D2A
@@ -898,117 +912,8 @@ dseg segment byte public 'STUNTSD' use16
     public byte_42DAE
     public byte_42DAF
     public byte_42DB0
-    public unk_42DBC
-    public unk_42DD2
-    public unk_42DE8
-    public unk_42DFE
-    public unk_42E14
-    public unk_42E2A
-    public unk_42E40
-    public unk_42E56
-    public unk_42E6C
-    public unk_42E82
-    public unk_42E98
-    public unk_42EAE
-    public unk_42EC4
-    public unk_42EDA
-    public unk_42EF0
-    public unk_42F06
-    public unk_42F1C
-    public unk_42F32
-    public unk_42F48
-    public unk_42F5E
-    public unk_42F74
-    public unk_42F8A
-    public unk_42FA0
-    public unk_42FB6
-    public unk_42FCC
-    public unk_42FE2
-    public unk_42FF8
-    public unk_4300E
-    public unk_43024
-    public unk_4303A
-    public unk_43050
-    public unk_43066
-    public unk_4307C
-    public unk_43092
-    public unk_430A8
-    public unk_430BE
-    public unk_430D4
-    public unk_430EA
-    public unk_43100
-    public unk_43116
-    public unk_431B0
-    public unk_431C6
-    public unk_431DC
-    public unk_431F2
-    public unk_43208
-    public unk_4321E
-    public unk_43234
-    public unk_4324A
-    public unk_43260
-    public unk_43276
-    public unk_4328C
-    public unk_432A2
-    public unk_432B8
-    public unk_432CE
-    public unk_432E4
-    public unk_432FA
-    public unk_43310
-    public unk_43326
-    public unk_4333C
-    public unk_43352
-    public unk_43368
-    public unk_4337E
-    public unk_43394
-    public unk_433AA
-    public unk_433C0
-    public unk_433D6
-    public unk_433EC
-    public unk_43402
-    public unk_43418
-    public unk_4342E
-    public unk_43444
-    public unk_4345A
-    public unk_43470
-    public unk_43486
-    public unk_4349C
-    public unk_434B2
-    public unk_434C8
-    public unk_434DE
-    public unk_434F4
-    public unk_4350A
-    public unk_43520
-    public unk_43536
-    public unk_4354C
-    public unk_43562
-    public unk_43578
-    public unk_435D0
-    public unk_435E6
-    public unk_435FC
-    public unk_43612
-    public unk_43628
-    public unk_4363E
-    public unk_43654
-    public unk_4366A
-    public unk_43680
-    public unk_43696
-    public unk_436AC
-    public unk_436C2
-    public unk_436D8
-    public unk_436EE
-    public word_43748
-    public word_4374A
-    public byte_4386C
-    public unk_43890
-    public word_43892
-    public word_43894
-    public unk_438A6
-    public word_438A8
-    public word_438AA
-    public unk_438BC
-    public unk_438D2
-    public dword_438E8
+    public game3dshapes
+    public trackdata2
     public trackpos
     public word_43928
     public word_4392A
@@ -1064,10 +969,28 @@ dseg segment byte public 'STUNTSD' use16
     public word_4436A
     public word_44382
     public terrainrows
+    public word_443E8
     public word_443F2
     public word_443F4
     public trackdata20
+    public word_443FA
+    public word_443FC
+    public word_443FE
+    public word_4441E
+    public word_44420
+    public word_44422
+    public word_44442
+    public word_44466
+    public word_4448A
     public state
+    public word_448F4
+    public word_448F6
+    public word_448F8
+    public word_44918
+    public word_4491A
+    public word_4491C
+    public word_4493C
+    public word_44960
     public word_44984
     public word_44986
     public word_44988
@@ -3052,14 +2975,14 @@ word_3BE34     dw 30
     db 3
     db 192
     db 3
-off_3BE44     dw offset unk_431DC
-    dw offset unk_431C6
-    dw offset unk_431B0
-    dw offset unk_431DC
-    dw offset unk_431C6
-    dw offset unk_431B0
-    dw offset unk_431DC
-    dw offset unk_431C6
+off_3BE44     dw offset game3dshapes.shape3d_numverts+420h
+    dw offset game3dshapes.shape3d_numverts+40Ah
+    dw offset game3dshapes.shape3d_numverts+3F4h
+    dw offset game3dshapes.shape3d_numverts+420h
+    dw offset game3dshapes.shape3d_numverts+40Ah
+    dw offset game3dshapes.shape3d_numverts+3F4h
+    dw offset game3dshapes.shape3d_numverts+420h
+    dw offset game3dshapes.shape3d_numverts+40Ah
 unk_3BE54     db 254
     db 252
     db 2
@@ -4496,7 +4419,7 @@ aExp3     db 101
     db 112
     db 51
     db 0
-unk_3C404     db 136
+shapedata42     db 136
     db 255
     db 255
     db 255
@@ -4538,7 +4461,7 @@ unk_3C404     db 136
     db 0
     db 78
     db 1
-unk_3C42E     db 136
+shapedata42_2     db 136
     db 255
     db 255
     db 255
@@ -4580,7 +4503,7 @@ unk_3C42E     db 136
     db 0
     db 78
     db 1
-unk_3C458     db 136
+shapedata30     db 136
     db 255
     db 255
     db 255
@@ -4610,7 +4533,7 @@ unk_3C458     db 136
     db 0
     db 0
     db 0
-unk_3C476     db 172
+shapedata42_3     db 172
     db 255
     db 255
     db 255
@@ -4652,7 +4575,7 @@ unk_3C476     db 172
     db 0
     db 78
     db 1
-unk_3C4A0     db 172
+shapedata42_11     db 172
     db 255
     db 35
     db 0
@@ -4694,7 +4617,7 @@ unk_3C4A0     db 172
     db 0
     db 78
     db 1
-unk_3C4CA     db 136
+shapedata42_4     db 136
     db 255
     db 255
     db 255
@@ -4736,7 +4659,7 @@ unk_3C4CA     db 136
     db 0
     db 78
     db 1
-unk_3C4F4     db 136
+shapedata54     db 136
     db 1
     db 255
     db 255
@@ -4790,7 +4713,7 @@ unk_3C4F4     db 136
     db 0
     db 156
     db 2
-unk_3C52A     db 136
+shapedata54_2     db 136
     db 253
     db 255
     db 255
@@ -4844,7 +4767,7 @@ unk_3C52A     db 136
     db 0
     db 156
     db 2
-unk_3C560     db 123
+shapedata66     db 123
     db 255
     db 255
     db 255
@@ -4910,7 +4833,7 @@ unk_3C560     db 123
     db 0
     db 200
     db 0
-unk_3C5A2     db 157
+shapedata66_2     db 157
     db 255
     db 255
     db 255
@@ -4976,7 +4899,7 @@ unk_3C5A2     db 157
     db 0
     db 200
     db 0
-unk_3C5E4     db 131
+shapedata210     db 131
     db 1
     db 255
     db 255
@@ -5186,7 +5109,7 @@ unk_3C5E4     db 131
     db 0
     db 200
     db 0
-unk_3C6B6     db 142
+shapedata210_2     db 142
     db 253
     db 255
     db 255
@@ -5396,7 +5319,7 @@ unk_3C6B6     db 142
     db 0
     db 200
     db 0
-unk_3C788     db 136
+shapedata42_5     db 136
     db 255
     db 255
     db 255
@@ -5438,7 +5361,7 @@ unk_3C788     db 136
     db 1
     db 78
     db 1
-unk_3C7B2     db 136
+shapedata42_6     db 136
     db 255
     db 255
     db 255
@@ -5480,7 +5403,7 @@ unk_3C7B2     db 136
     db 1
     db 78
     db 1
-unk_3C7DC     db 131
+shapedata210_3     db 131
     db 1
     db 255
     db 255
@@ -5690,7 +5613,7 @@ unk_3C7DC     db 131
     db 1
     db 160
     db 0
-unk_3C8AE     db 111
+shapedata210_4     db 111
     db 1
     db 255
     db 255
@@ -5900,7 +5823,7 @@ unk_3C8AE     db 111
     db 0
     db 125
     db 0
-unk_3C980     db 168
+shapedata210_5     db 168
     db 253
     db 255
     db 255
@@ -6110,7 +6033,7 @@ unk_3C980     db 168
     db 0
     db 131
     db 255
-unk_3CA52     db 136
+shapedata42_7     db 136
     db 255
     db 255
     db 255
@@ -6152,7 +6075,7 @@ unk_3CA52     db 136
     db 1
     db 78
     db 1
-unk_3CA7C     db 82
+shapedata294     db 82
     db 255
     db 0
     db 0
@@ -6446,7 +6369,7 @@ unk_3CA7C     db 82
     db 0
     db 156
     db 2
-unk_3CBA2     db 225
+shapedata174     db 225
     db 255
     db 0
     db 0
@@ -6620,7 +6543,7 @@ unk_3CBA2     db 225
     db 0
     db 156
     db 2
-unk_3CC50     db 136
+shapedata42_8     db 136
     db 255
     db 255
     db 255
@@ -6662,7 +6585,7 @@ unk_3CC50     db 136
     db 0
     db 78
     db 1
-unk_3CC7A     db 136
+shapedata42_9     db 136
     db 255
     db 255
     db 255
@@ -6704,7 +6627,7 @@ unk_3CC7A     db 136
     db 0
     db 78
     db 1
-unk_3CCA4     db 136
+shapedata42_10     db 136
     db 255
     db 255
     db 255
@@ -6746,7 +6669,7 @@ unk_3CCA4     db 136
     db 0
     db 78
     db 1
-unk_3CCCE     db 131
+shapedata210_6     db 131
     db 1
     db 255
     db 255
@@ -6956,7 +6879,7 @@ unk_3CCCE     db 131
     db 0
     db 56
     db 255
-unk_3CDA0     db 136
+shapedata354     db 136
     db 253
     db 0
     db 0
@@ -7310,7 +7233,7 @@ unk_3CDA0     db 136
     db 1
     db 0
     db 0
-unk_3CF02     db 136
+shapedata354_2     db 136
     db 1
     db 0
     db 0
@@ -7664,7 +7587,7 @@ unk_3CF02     db 136
     db 1
     db 0
     db 0
-unk_3D064     db 184
+shapedata84     db 184
     db 255
     db 255
     db 255
@@ -7748,7 +7671,7 @@ unk_3D064     db 184
     db 0
     db 180
     db 0
-unk_3D0B8     db 120
+shapedata84_2     db 120
     db 0
     db 255
     db 255
@@ -7832,7 +7755,7 @@ unk_3D0B8     db 120
     db 0
     db 178
     db 254
-unk_3D10C     db 136
+shapedata54_4     db 136
     db 255
     db 255
     db 255
@@ -7886,7 +7809,7 @@ unk_3D10C     db 136
     db 0
     db 78
     db 1
-unk_3D142     db 141
+shapedata54_3     db 141
     db 255
     db 88
     db 0
@@ -13363,100 +13286,100 @@ word_3E5D2     dw 361
     db 0
     db 255
     db 0
-    db 103
+aGame1     db 103
     db 97
     db 109
     db 101
     db 49
     db 0
-    db 103
+aGame2     db 103
     db 97
     db 109
     db 101
     db 50
     db 0
-    db 99
+aCar0     db 99
     db 97
     db 114
     db 48
     db 0
-    db 99
+aCar1     db 99
     db 97
     db 114
     db 49
     db 0
-    db 99
+aCar2     db 99
     db 97
     db 114
     db 50
     db 0
-    db 101
+aExp0_0     db 101
     db 120
     db 112
     db 48
     db 0
-    db 101
+aExp1_0     db 101
     db 120
     db 112
     db 49
     db 0
-    db 101
+aExp2_0     db 101
     db 120
     db 112
     db 50
     db 0
-    db 101
+aExp3_0     db 101
     db 120
     db 112
     db 51
     db 0
-    db 99
+aCar2_0     db 99
     db 97
     db 114
     db 50
     db 0
-    db 99
+aCar0_0     db 99
     db 97
     db 114
     db 48
     db 0
-    db 99
+aCar1_0     db 99
     db 97
     db 114
     db 49
     db 0
-    db 99
+aCar2_1     db 99
     db 97
     db 114
     db 50
     db 0
-    db 101
+aExp0_1     db 101
     db 120
     db 112
     db 48
     db 0
-    db 101
+aExp1_1     db 101
     db 120
     db 112
     db 49
     db 0
-    db 101
+aExp2_1     db 101
     db 120
     db 112
     db 50
     db 0
-    db 101
+aExp3_1     db 101
     db 120
     db 112
     db 51
     db 0
     db 0
-    db 115
+aStxxx     db 115
     db 116
-byte_3E70C     db 120
-byte_3E70D     db 120
-byte_3E70E     db 120
-byte_3E70F     db 0
+    db 120
+    db 120
+    db 120
+    db 0
     db 0
     db 0
     db 0
@@ -30501,64 +30424,35 @@ byte_42A61     db 0
     db 0
     db 0
 terraincenterpos     dw 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
 word_42CBA     dw 0
     db 0
     db 0
@@ -30623,7 +30517,7 @@ word_42D0E     dw 0
     db 0
     db 0
 word_42D20     dw 0
-dword_42D22     dd 0
+trackdata1     dd 0
 byte_42D26     db 0
     db 0
 word_42D28     dw 0
@@ -30772,7 +30666,7 @@ byte_42DB0     db 0
     db 0
     db 0
     db 0
-unk_42DBC     db 0
+game3dshapes     db 0
     db 0
     db 0
     db 0
@@ -30794,7 +30688,6 @@ unk_42DBC     db 0
     db 0
     db 0
     db 0
-unk_42DD2     db 0
     db 0
     db 0
     db 0
@@ -30816,7 +30709,6 @@ unk_42DD2     db 0
     db 0
     db 0
     db 0
-unk_42DE8     db 0
     db 0
     db 0
     db 0
@@ -30838,7 +30730,6 @@ unk_42DE8     db 0
     db 0
     db 0
     db 0
-unk_42DFE     db 0
     db 0
     db 0
     db 0
@@ -30860,7 +30751,6 @@ unk_42DFE     db 0
     db 0
     db 0
     db 0
-unk_42E14     db 0
     db 0
     db 0
     db 0
@@ -30882,7 +30772,6 @@ unk_42E14     db 0
     db 0
     db 0
     db 0
-unk_42E2A     db 0
     db 0
     db 0
     db 0
@@ -30904,7 +30793,6 @@ unk_42E2A     db 0
     db 0
     db 0
     db 0
-unk_42E40     db 0
     db 0
     db 0
     db 0
@@ -30926,7 +30814,6 @@ unk_42E40     db 0
     db 0
     db 0
     db 0
-unk_42E56     db 0
     db 0
     db 0
     db 0
@@ -30948,7 +30835,6 @@ unk_42E56     db 0
     db 0
     db 0
     db 0
-unk_42E6C     db 0
     db 0
     db 0
     db 0
@@ -30970,7 +30856,6 @@ unk_42E6C     db 0
     db 0
     db 0
     db 0
-unk_42E82     db 0
     db 0
     db 0
     db 0
@@ -30992,7 +30877,6 @@ unk_42E82     db 0
     db 0
     db 0
     db 0
-unk_42E98     db 0
     db 0
     db 0
     db 0
@@ -31014,7 +30898,6 @@ unk_42E98     db 0
     db 0
     db 0
     db 0
-unk_42EAE     db 0
     db 0
     db 0
     db 0
@@ -31036,7 +30919,6 @@ unk_42EAE     db 0
     db 0
     db 0
     db 0
-unk_42EC4     db 0
     db 0
     db 0
     db 0
@@ -31058,7 +30940,6 @@ unk_42EC4     db 0
     db 0
     db 0
     db 0
-unk_42EDA     db 0
     db 0
     db 0
     db 0
@@ -31080,7 +30961,6 @@ unk_42EDA     db 0
     db 0
     db 0
     db 0
-unk_42EF0     db 0
     db 0
     db 0
     db 0
@@ -31102,7 +30982,6 @@ unk_42EF0     db 0
     db 0
     db 0
     db 0
-unk_42F06     db 0
     db 0
     db 0
     db 0
@@ -31124,7 +31003,6 @@ unk_42F06     db 0
     db 0
     db 0
     db 0
-unk_42F1C     db 0
     db 0
     db 0
     db 0
@@ -31146,7 +31024,6 @@ unk_42F1C     db 0
     db 0
     db 0
     db 0
-unk_42F32     db 0
     db 0
     db 0
     db 0
@@ -31168,7 +31045,6 @@ unk_42F32     db 0
     db 0
     db 0
     db 0
-unk_42F48     db 0
     db 0
     db 0
     db 0
@@ -31190,7 +31066,6 @@ unk_42F48     db 0
     db 0
     db 0
     db 0
-unk_42F5E     db 0
     db 0
     db 0
     db 0
@@ -31212,7 +31087,6 @@ unk_42F5E     db 0
     db 0
     db 0
     db 0
-unk_42F74     db 0
     db 0
     db 0
     db 0
@@ -31234,7 +31108,6 @@ unk_42F74     db 0
     db 0
     db 0
     db 0
-unk_42F8A     db 0
     db 0
     db 0
     db 0
@@ -31256,7 +31129,6 @@ unk_42F8A     db 0
     db 0
     db 0
     db 0
-unk_42FA0     db 0
     db 0
     db 0
     db 0
@@ -31278,7 +31150,6 @@ unk_42FA0     db 0
     db 0
     db 0
     db 0
-unk_42FB6     db 0
     db 0
     db 0
     db 0
@@ -31300,7 +31171,6 @@ unk_42FB6     db 0
     db 0
     db 0
     db 0
-unk_42FCC     db 0
     db 0
     db 0
     db 0
@@ -31322,7 +31192,6 @@ unk_42FCC     db 0
     db 0
     db 0
     db 0
-unk_42FE2     db 0
     db 0
     db 0
     db 0
@@ -31344,7 +31213,6 @@ unk_42FE2     db 0
     db 0
     db 0
     db 0
-unk_42FF8     db 0
     db 0
     db 0
     db 0
@@ -31366,7 +31234,6 @@ unk_42FF8     db 0
     db 0
     db 0
     db 0
-unk_4300E     db 0
     db 0
     db 0
     db 0
@@ -31388,7 +31255,6 @@ unk_4300E     db 0
     db 0
     db 0
     db 0
-unk_43024     db 0
     db 0
     db 0
     db 0
@@ -31410,7 +31276,6 @@ unk_43024     db 0
     db 0
     db 0
     db 0
-unk_4303A     db 0
     db 0
     db 0
     db 0
@@ -31432,7 +31297,6 @@ unk_4303A     db 0
     db 0
     db 0
     db 0
-unk_43050     db 0
     db 0
     db 0
     db 0
@@ -31454,7 +31318,6 @@ unk_43050     db 0
     db 0
     db 0
     db 0
-unk_43066     db 0
     db 0
     db 0
     db 0
@@ -31476,7 +31339,6 @@ unk_43066     db 0
     db 0
     db 0
     db 0
-unk_4307C     db 0
     db 0
     db 0
     db 0
@@ -31498,7 +31360,6 @@ unk_4307C     db 0
     db 0
     db 0
     db 0
-unk_43092     db 0
     db 0
     db 0
     db 0
@@ -31520,7 +31381,6 @@ unk_43092     db 0
     db 0
     db 0
     db 0
-unk_430A8     db 0
     db 0
     db 0
     db 0
@@ -31542,7 +31402,6 @@ unk_430A8     db 0
     db 0
     db 0
     db 0
-unk_430BE     db 0
     db 0
     db 0
     db 0
@@ -31564,7 +31423,6 @@ unk_430BE     db 0
     db 0
     db 0
     db 0
-unk_430D4     db 0
     db 0
     db 0
     db 0
@@ -31586,7 +31444,6 @@ unk_430D4     db 0
     db 0
     db 0
     db 0
-unk_430EA     db 0
     db 0
     db 0
     db 0
@@ -31608,7 +31465,6 @@ unk_430EA     db 0
     db 0
     db 0
     db 0
-unk_43100     db 0
     db 0
     db 0
     db 0
@@ -31630,7 +31486,6 @@ unk_43100     db 0
     db 0
     db 0
     db 0
-unk_43116     db 0
     db 0
     db 0
     db 0
@@ -31784,7 +31639,6 @@ unk_43116     db 0
     db 0
     db 0
     db 0
-unk_431B0     db 0
     db 0
     db 0
     db 0
@@ -31806,7 +31660,6 @@ unk_431B0     db 0
     db 0
     db 0
     db 0
-unk_431C6     db 0
     db 0
     db 0
     db 0
@@ -31828,7 +31681,6 @@ unk_431C6     db 0
     db 0
     db 0
     db 0
-unk_431DC     db 0
     db 0
     db 0
     db 0
@@ -31850,7 +31702,6 @@ unk_431DC     db 0
     db 0
     db 0
     db 0
-unk_431F2     db 0
     db 0
     db 0
     db 0
@@ -31872,7 +31723,6 @@ unk_431F2     db 0
     db 0
     db 0
     db 0
-unk_43208     db 0
     db 0
     db 0
     db 0
@@ -31894,7 +31744,6 @@ unk_43208     db 0
     db 0
     db 0
     db 0
-unk_4321E     db 0
     db 0
     db 0
     db 0
@@ -31916,7 +31765,6 @@ unk_4321E     db 0
     db 0
     db 0
     db 0
-unk_43234     db 0
     db 0
     db 0
     db 0
@@ -31938,7 +31786,6 @@ unk_43234     db 0
     db 0
     db 0
     db 0
-unk_4324A     db 0
     db 0
     db 0
     db 0
@@ -31960,7 +31807,6 @@ unk_4324A     db 0
     db 0
     db 0
     db 0
-unk_43260     db 0
     db 0
     db 0
     db 0
@@ -31982,7 +31828,6 @@ unk_43260     db 0
     db 0
     db 0
     db 0
-unk_43276     db 0
     db 0
     db 0
     db 0
@@ -32004,7 +31849,6 @@ unk_43276     db 0
     db 0
     db 0
     db 0
-unk_4328C     db 0
     db 0
     db 0
     db 0
@@ -32026,7 +31870,6 @@ unk_4328C     db 0
     db 0
     db 0
     db 0
-unk_432A2     db 0
     db 0
     db 0
     db 0
@@ -32048,7 +31891,6 @@ unk_432A2     db 0
     db 0
     db 0
     db 0
-unk_432B8     db 0
     db 0
     db 0
     db 0
@@ -32070,7 +31912,6 @@ unk_432B8     db 0
     db 0
     db 0
     db 0
-unk_432CE     db 0
     db 0
     db 0
     db 0
@@ -32092,7 +31933,6 @@ unk_432CE     db 0
     db 0
     db 0
     db 0
-unk_432E4     db 0
     db 0
     db 0
     db 0
@@ -32114,7 +31954,6 @@ unk_432E4     db 0
     db 0
     db 0
     db 0
-unk_432FA     db 0
     db 0
     db 0
     db 0
@@ -32136,7 +31975,6 @@ unk_432FA     db 0
     db 0
     db 0
     db 0
-unk_43310     db 0
     db 0
     db 0
     db 0
@@ -32158,7 +31996,6 @@ unk_43310     db 0
     db 0
     db 0
     db 0
-unk_43326     db 0
     db 0
     db 0
     db 0
@@ -32180,7 +32017,6 @@ unk_43326     db 0
     db 0
     db 0
     db 0
-unk_4333C     db 0
     db 0
     db 0
     db 0
@@ -32202,7 +32038,6 @@ unk_4333C     db 0
     db 0
     db 0
     db 0
-unk_43352     db 0
     db 0
     db 0
     db 0
@@ -32224,7 +32059,6 @@ unk_43352     db 0
     db 0
     db 0
     db 0
-unk_43368     db 0
     db 0
     db 0
     db 0
@@ -32246,7 +32080,6 @@ unk_43368     db 0
     db 0
     db 0
     db 0
-unk_4337E     db 0
     db 0
     db 0
     db 0
@@ -32268,7 +32101,6 @@ unk_4337E     db 0
     db 0
     db 0
     db 0
-unk_43394     db 0
     db 0
     db 0
     db 0
@@ -32290,7 +32122,6 @@ unk_43394     db 0
     db 0
     db 0
     db 0
-unk_433AA     db 0
     db 0
     db 0
     db 0
@@ -32312,7 +32143,6 @@ unk_433AA     db 0
     db 0
     db 0
     db 0
-unk_433C0     db 0
     db 0
     db 0
     db 0
@@ -32334,7 +32164,6 @@ unk_433C0     db 0
     db 0
     db 0
     db 0
-unk_433D6     db 0
     db 0
     db 0
     db 0
@@ -32356,7 +32185,6 @@ unk_433D6     db 0
     db 0
     db 0
     db 0
-unk_433EC     db 0
     db 0
     db 0
     db 0
@@ -32378,7 +32206,6 @@ unk_433EC     db 0
     db 0
     db 0
     db 0
-unk_43402     db 0
     db 0
     db 0
     db 0
@@ -32400,7 +32227,6 @@ unk_43402     db 0
     db 0
     db 0
     db 0
-unk_43418     db 0
     db 0
     db 0
     db 0
@@ -32422,7 +32248,6 @@ unk_43418     db 0
     db 0
     db 0
     db 0
-unk_4342E     db 0
     db 0
     db 0
     db 0
@@ -32444,7 +32269,6 @@ unk_4342E     db 0
     db 0
     db 0
     db 0
-unk_43444     db 0
     db 0
     db 0
     db 0
@@ -32466,7 +32290,6 @@ unk_43444     db 0
     db 0
     db 0
     db 0
-unk_4345A     db 0
     db 0
     db 0
     db 0
@@ -32488,7 +32311,6 @@ unk_4345A     db 0
     db 0
     db 0
     db 0
-unk_43470     db 0
     db 0
     db 0
     db 0
@@ -32510,7 +32332,6 @@ unk_43470     db 0
     db 0
     db 0
     db 0
-unk_43486     db 0
     db 0
     db 0
     db 0
@@ -32532,7 +32353,6 @@ unk_43486     db 0
     db 0
     db 0
     db 0
-unk_4349C     db 0
     db 0
     db 0
     db 0
@@ -32554,7 +32374,6 @@ unk_4349C     db 0
     db 0
     db 0
     db 0
-unk_434B2     db 0
     db 0
     db 0
     db 0
@@ -32576,7 +32395,6 @@ unk_434B2     db 0
     db 0
     db 0
     db 0
-unk_434C8     db 0
     db 0
     db 0
     db 0
@@ -32598,7 +32416,6 @@ unk_434C8     db 0
     db 0
     db 0
     db 0
-unk_434DE     db 0
     db 0
     db 0
     db 0
@@ -32620,7 +32437,6 @@ unk_434DE     db 0
     db 0
     db 0
     db 0
-unk_434F4     db 0
     db 0
     db 0
     db 0
@@ -32642,7 +32458,6 @@ unk_434F4     db 0
     db 0
     db 0
     db 0
-unk_4350A     db 0
     db 0
     db 0
     db 0
@@ -32664,7 +32479,6 @@ unk_4350A     db 0
     db 0
     db 0
     db 0
-unk_43520     db 0
     db 0
     db 0
     db 0
@@ -32686,7 +32500,6 @@ unk_43520     db 0
     db 0
     db 0
     db 0
-unk_43536     db 0
     db 0
     db 0
     db 0
@@ -32708,7 +32521,6 @@ unk_43536     db 0
     db 0
     db 0
     db 0
-unk_4354C     db 0
     db 0
     db 0
     db 0
@@ -32730,7 +32542,6 @@ unk_4354C     db 0
     db 0
     db 0
     db 0
-unk_43562     db 0
     db 0
     db 0
     db 0
@@ -32752,7 +32563,6 @@ unk_43562     db 0
     db 0
     db 0
     db 0
-unk_43578     db 0
     db 0
     db 0
     db 0
@@ -32840,7 +32650,6 @@ unk_43578     db 0
     db 0
     db 0
     db 0
-unk_435D0     db 0
     db 0
     db 0
     db 0
@@ -32862,7 +32671,6 @@ unk_435D0     db 0
     db 0
     db 0
     db 0
-unk_435E6     db 0
     db 0
     db 0
     db 0
@@ -32884,7 +32692,6 @@ unk_435E6     db 0
     db 0
     db 0
     db 0
-unk_435FC     db 0
     db 0
     db 0
     db 0
@@ -32906,7 +32713,6 @@ unk_435FC     db 0
     db 0
     db 0
     db 0
-unk_43612     db 0
     db 0
     db 0
     db 0
@@ -32928,7 +32734,6 @@ unk_43612     db 0
     db 0
     db 0
     db 0
-unk_43628     db 0
     db 0
     db 0
     db 0
@@ -32950,7 +32755,6 @@ unk_43628     db 0
     db 0
     db 0
     db 0
-unk_4363E     db 0
     db 0
     db 0
     db 0
@@ -32972,7 +32776,6 @@ unk_4363E     db 0
     db 0
     db 0
     db 0
-unk_43654     db 0
     db 0
     db 0
     db 0
@@ -32994,7 +32797,6 @@ unk_43654     db 0
     db 0
     db 0
     db 0
-unk_4366A     db 0
     db 0
     db 0
     db 0
@@ -33016,7 +32818,6 @@ unk_4366A     db 0
     db 0
     db 0
     db 0
-unk_43680     db 0
     db 0
     db 0
     db 0
@@ -33038,7 +32839,6 @@ unk_43680     db 0
     db 0
     db 0
     db 0
-unk_43696     db 0
     db 0
     db 0
     db 0
@@ -33060,7 +32860,6 @@ unk_43696     db 0
     db 0
     db 0
     db 0
-unk_436AC     db 0
     db 0
     db 0
     db 0
@@ -33082,7 +32881,6 @@ unk_436AC     db 0
     db 0
     db 0
     db 0
-unk_436C2     db 0
     db 0
     db 0
     db 0
@@ -33104,7 +32902,6 @@ unk_436C2     db 0
     db 0
     db 0
     db 0
-unk_436D8     db 0
     db 0
     db 0
     db 0
@@ -33126,7 +32923,6 @@ unk_436D8     db 0
     db 0
     db 0
     db 0
-unk_436EE     db 0
     db 0
     db 0
     db 0
@@ -33216,8 +33012,6 @@ unk_436EE     db 0
     db 0
     db 0
     db 0
-word_43748     dw 0
-word_4374A     dw 0
     db 0
     db 0
     db 0
@@ -33506,7 +33300,6 @@ word_4374A     dw 0
     db 0
     db 0
     db 0
-byte_4386C     db 0
     db 0
     db 0
     db 0
@@ -33542,10 +33335,7 @@ byte_4386C     db 0
     db 0
     db 0
     db 0
-unk_43890     db 0
     db 0
-word_43892     dw 0
-word_43894     dw 0
     db 0
     db 0
     db 0
@@ -33562,10 +33352,7 @@ word_43894     dw 0
     db 0
     db 0
     db 0
-unk_438A6     db 0
     db 0
-word_438A8     dw 0
-word_438AA     dw 0
     db 0
     db 0
     db 0
@@ -33582,7 +33369,6 @@ word_438AA     dw 0
     db 0
     db 0
     db 0
-unk_438BC     db 0
     db 0
     db 0
     db 0
@@ -33604,7 +33390,6 @@ unk_438BC     db 0
     db 0
     db 0
     db 0
-unk_438D2     db 0
     db 0
     db 0
     db 0
@@ -33626,7 +33411,122 @@ unk_438D2     db 0
     db 0
     db 0
     db 0
-dword_438E8     dd 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+trackdata2     dd 0
 trackpos     dw 0
     dw 0
     dw 0
@@ -36305,66 +36205,36 @@ word_44382     dw 0
     db 0
     db 0
 terrainrows     dw 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+word_443E8     dw 0
     db 0
     db 0
     db 0
@@ -36376,6 +36246,9 @@ terrainrows     dw 0
 word_443F2     dw 0
 word_443F4     dw 0
 trackdata20     dd 0
+word_443FA     dw 0
+word_443FC     dw 0
+word_443FE     dw 0
     db 0
     db 0
     db 0
@@ -36406,6 +36279,9 @@ trackdata20     dd 0
     db 0
     db 0
     db 0
+word_4441E     dw 0
+word_44420     dw 0
+word_44422     dw 0
     db 0
     db 0
     db 0
@@ -36436,6 +36312,7 @@ trackdata20     dd 0
     db 0
     db 0
     db 0
+word_44442     dw 0
     db 0
     db 0
     db 0
@@ -36470,6 +36347,7 @@ trackdata20     dd 0
     db 0
     db 0
     db 0
+word_44466     dw 0
     db 0
     db 0
     db 0
@@ -36504,24 +36382,7 @@ trackdata20     dd 0
     db 0
     db 0
     db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
+word_4448A     dw 0
     db 0
     db 0
     db 0
@@ -37650,6 +37511,9 @@ state     db 0
     db 0
     db 0
     db 0
+word_448F4     dw 0
+word_448F6     dw 0
+word_448F8     dw 0
     db 0
     db 0
     db 0
@@ -37680,6 +37544,9 @@ state     db 0
     db 0
     db 0
     db 0
+word_44918     dw 0
+word_4491A     dw 0
+word_4491C     dw 0
     db 0
     db 0
     db 0
@@ -37710,6 +37577,7 @@ state     db 0
     db 0
     db 0
     db 0
+word_4493C     dw 0
     db 0
     db 0
     db 0
@@ -37744,22 +37612,7 @@ state     db 0
     db 0
     db 0
     db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
+word_44960     dw 0
     db 0
     db 0
     db 0
@@ -42659,64 +42512,35 @@ word_45D1E     dw 0
 byte_45D3E     db 0
     db 0
 trackrows     dw 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
 word_45D7C     dw 0
 byte_45D7E     db 0
     db 0
@@ -42777,64 +42601,35 @@ word_45DCC     dw 0
 word_45DCE     dw 0
 word_45DD0     dw 0
 trackcenterpos2     dw 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
 word_45E0E     dw 0
 word_45E10     dw 0
 word_45E12     dw 0

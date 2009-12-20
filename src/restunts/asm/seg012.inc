@@ -115,7 +115,7 @@ seg012 segment byte public 'STUNTSC' use16
     extrn load_binary_file2:proc
     extrn load_binary_file:proc
     extrn loc_30AFB
-    extrn sub_30B62:proc
+    extrn decompress_rle:proc
     extrn sub_30BF8:proc
     extrn sub_30CCF:proc
     extrn load_res0_1_alt:proc
@@ -124,7 +124,7 @@ seg012 segment byte public 'STUNTSC' use16
     extrn sub_30DE6:proc
     extrn load_pvs:proc
     extrn decompress_fileres:proc
-    extrn off_30F04:dword
+    extrn _alt_decompress
     extrn sub_30F92:proc
     extrn locate_shape:proc
     extrn locate_sound:proc
@@ -138,7 +138,7 @@ seg012 segment byte public 'STUNTSC' use16
     extrn alloc_respages2:proc
     extrn sub_312FD:proc
     extrn get_res_unk:proc
-    extrn sub_3147C:proc
+    extrn unload_resource2:proc
     extrn loc_31498
     extrn sub_31641:proc
     extrn get_res_size:proc
@@ -197,7 +197,7 @@ seg012 segment byte public 'STUNTSC' use16
     extrn loc_32B93
     extrn loc_32BDE
     extrn word_32C3C:word
-    extrn sub_32D7C:proc
+    extrn decompress_vle:proc
     extrn sub_32FFC:proc
     extrn sub_33014:proc
     extrn loc_3301F

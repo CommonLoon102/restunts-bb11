@@ -4,7 +4,7 @@ seg004 segment byte public 'STUNTSC' use16
     extrn off_1F87E:word
     extrn sub_1FAE4:proc
     extrn load_game_3dshapes:proc
-    extrn sub_1FF5E:proc
+    extrn unload_game_resources:proc
     extrn sub_1FF92:proc
     extrn sub_20438:proc
     extrn sub_204AE:proc

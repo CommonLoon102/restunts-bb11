@@ -679,7 +679,7 @@ loc_3A300:
     mov     [bp+var_306], ax
     push    [bp+var_30A]
     push    [bp+var_30C]
-    call    sub_3147C
+    call    unload_resource2
     add     sp, 4
     mov     ax, 0Fh
     push    ax
@@ -749,7 +749,7 @@ loc_3A300:
     add     sp, 8
     push    [bp+var_30A]
     push    [bp+var_30C]
-    call    sub_3147C
+    call    unload_resource2
     add     sp, 4
     call    sub_28F3C
     pop     si

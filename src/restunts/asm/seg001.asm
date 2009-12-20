@@ -4818,11 +4818,11 @@ loc_17322:
 loc_1732E:
     mov     di, state.field_2F4
     shl     di, 1
-    les     bx, dword_42D22
+    les     bx, trackdata1
     mov     ax, [bp+var_2]
     cmp     es:[bx+di], ax
     jz      short loc_17349
-    les     bx, dword_438E8
+    les     bx, trackdata2
     cmp     es:[bx+di], ax
     jnz     short loc_17350
 loc_17349:
@@ -4833,11 +4833,11 @@ loc_17349:
 loc_17350:
     mov     di, [bp+var_2]
     shl     di, 1
-    les     bx, dword_42D22
+    les     bx, trackdata1
     mov     ax, state.field_2F4
     cmp     es:[bx+di], ax
     jz      short loc_1736A
-    les     bx, dword_438E8
+    les     bx, trackdata2
     cmp     es:[bx+di], ax
     jnz     short loc_1736F
 loc_1736A:
@@ -4907,11 +4907,11 @@ loc_1740F:
     jz      short loc_1743A
     mov     di, ax
     shl     di, 1
-    les     bx, dword_42D22
+    les     bx, trackdata1
     mov     ax, state.playerstate.car_trackdata3_index
     cmp     es:[bx+di], ax
     jz      short loc_1743A
-    les     bx, dword_438E8
+    les     bx, trackdata2
     cmp     es:[bx+di], ax
     jz      short loc_1743A
 loc_17431:
@@ -4986,7 +4986,7 @@ loc_174C9:
     mov     [bp+var_2], ax
     mov     bx, ax
     shl     bx, 1
-    les     di, dword_438E8
+    les     di, trackdata2
     cmp     word ptr es:[bx+di], 0FFFFh
     jz      short loc_174DD
     jmp     loc_17771
@@ -5178,7 +5178,7 @@ loc_1764C:
     jz      short loc_17699
     mov     bx, state.field_2F2
     shl     bx, 1
-    les     di, dword_438E8
+    les     di, trackdata2
     cmp     word ptr es:[bx+di], 0FFFFh
     jz      short loc_17684
     mov     state.playerstate.car_trackdata3_index, 0FFFFh
@@ -5186,7 +5186,7 @@ loc_1764C:
 loc_17684:
     mov     bx, state.field_2F2
     shl     bx, 1
-    les     di, dword_42D22
+    les     di, trackdata1
     mov     ax, es:[bx+di]
     mov     state.playerstate.car_trackdata3_index, ax
 loc_17694:
@@ -5458,8 +5458,8 @@ loc_178AE:
 loc_178B9:
     mov     bx, si
     shl     bx, 1
-    add     bx, word ptr dword_42D22
-    mov     es, word ptr dword_42D22+2
+    add     bx, word ptr trackdata1
+    mov     es, word ptr trackdata1+2
     mov     ax, es:[bx]
     mov     [bp+var_2], ax
     mov     bx, ax
@@ -5572,8 +5572,8 @@ loc_179BF:
 loc_179CD:
     mov     bx, si
     shl     bx, 1
-    add     bx, word ptr dword_438E8
-    mov     es, word ptr dword_438E8+2
+    add     bx, word ptr trackdata2
+    mov     es, word ptr trackdata2+2
     cmp     word ptr es:[bx], 0FFFFh
     jz      short loc_179E2
     mov     [bp+var_2], si
@@ -5603,8 +5603,8 @@ loc_17A0F:
 loc_17A19:
     mov     bx, si
     shl     bx, 1
-    add     bx, word ptr dword_438E8
-    mov     es, word ptr dword_438E8+2
+    add     bx, word ptr trackdata2
+    mov     es, word ptr trackdata2+2
     mov     ax, es:[bx]
     mov     [bp+var_8], ax
     cmp     ax, 0FFFFh

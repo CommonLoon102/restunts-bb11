@@ -162,7 +162,7 @@ seg012 segment byte public 'STUNTSC' use16
     public load_binary_file2
     public load_binary_file
     public loc_30AFB
-    public sub_30B62
+    public decompress_rle
     public sub_30BF8
     public sub_30CCF
     public load_res0_1_alt
@@ -171,7 +171,7 @@ seg012 segment byte public 'STUNTSC' use16
     public sub_30DE6
     public load_pvs
     public decompress_fileres
-    public off_30F04
+    public _alt_decompress
     public sub_30F92
     public locate_shape
     public locate_sound
@@ -185,7 +185,7 @@ seg012 segment byte public 'STUNTSC' use16
     public alloc_respages2
     public sub_312FD
     public get_res_unk
-    public sub_3147C
+    public unload_resource2
     public loc_31498
     public sub_31641
     public get_res_size
@@ -244,7 +244,7 @@ seg012 segment byte public 'STUNTSC' use16
     public loc_32B93
     public loc_32BDE
     public word_32C3C
-    public sub_32D7C
+    public decompress_vle
     public sub_32FFC
     public sub_33014
     public loc_3301F
@@ -5611,7 +5611,7 @@ loc_30B52:
     push    ax
     call    far ptr fatal_error
 load_binary_file endp
-sub_30B62 proc far
+decompress_rle proc far
     var_1A = word ptr -26
     var_18 = word ptr -24
     var_16 = word ptr -22
@@ -5691,7 +5691,7 @@ loc_30BE6:
     pop     ds
     pop     bp
     retf
-sub_30B62 endp
+decompress_rle endp
 sub_30BF8 proc near
 
     mov     cx, 80h ; '€'
@@ -6054,13 +6054,13 @@ loc_30E2C:
     mov     si, ax
     mov     al, [si]
     test    al, 80h
-    jz      short loc_30E9E
+    jz      short decompress_subfile
 smart
     and     ax, 7Fh
 nosmart
     mov     [bp+var_8], ax
     add     si, 4
-loc_30E9E:
+decompress_subfile:
     push    [bp+var_6]
     push    [bp+var_4]
     push    [bp+var_2]
@@ -6076,7 +6076,7 @@ loc_30E9E:
     mov     ax, seg dseg
     mov     ds, ax
     shl     bx, 1
-    call    cs:off_30F04[bx]
+    call    dword ptr cs:compression_type[bx]
     add     sp, 0Ah
     dec     [bp+var_8]
     jle     short loc_30F2F
@@ -6104,9 +6104,9 @@ loc_30EE5:
     add     sp, 6
     mov     ds, [bp+var_A]
     xor     si, si
-    jmp     short loc_30E9E
-off_30F04     dd sub_30B62
-    dd sub_32D7C
+    jmp     short decompress_subfile
+compression_type     dd decompress_rle
+    dd decompress_vle
 loc_30F0C:
     add     sp, 8
 loc_30F0F:
@@ -6848,7 +6848,7 @@ loc_31475:
     pop     bp
     retf
 get_res_unk endp
-sub_3147C proc far
+unload_resource2 proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -6869,7 +6869,7 @@ loc_31488:
     jmp     short loc_31488
 loc_31498:
     push    [bp+arg_2]
-    mov     ax, 4783h
+    mov     ax, offset aMemoryManagerB; "memory manager - BLOCK NOT FOUND at SEG"...
     push    ax
     call    far ptr fatal_error
 loc_314A4:
@@ -7040,7 +7040,7 @@ loc_31635:
     mov     sp, bp
     pop     bp
     retf
-sub_3147C endp
+unload_resource2 endp
 sub_31641 proc far
      s = byte ptr 0
      r = byte ptr 2
@@ -10317,7 +10317,7 @@ word_32C3C     dw 0
     db 0
     db 0
 sub_32AE2 endp
-sub_32D7C proc far
+decompress_vle proc far
     var_210 = byte ptr -528
     var_110 = byte ptr -272
     var_E = word ptr -14
@@ -10658,7 +10658,7 @@ loc_32FF6:
     test    al, 8
     jz      short loc_32FF6
     retf
-sub_32D7C endp
+decompress_vle endp
 sub_32FFC proc far
 
     mov     dx, 3DAh
