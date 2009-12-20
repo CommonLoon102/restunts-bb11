@@ -49,8 +49,8 @@ seg006 segment byte public 'STUNTSC' use16
     public init_polyinfo
     public sub_24DC2
     public sub_24DE6
-    public sub_24E06
-    public sub_24E9E
+    public select_rect_rotate
+    public transformed_shape_op
     public sub_25E24
     public sub_25EE2
     public sub_25F2E
@@ -147,7 +147,7 @@ sub_24DE6 proc far
     ; align 2
     db 144
 sub_24DE6 endp
-sub_24E06 proc far
+select_rect_rotate proc far
     var_E = word ptr -14
     var_C = word ptr -12
     var_A = word ptr -10
@@ -231,8 +231,8 @@ nosmart
     mov     sp, bp
     pop     bp
     retf
-sub_24E06 endp
-sub_24E9E proc far
+select_rect_rotate endp
+transformed_shape_op proc far
     var_B7C = word ptr -2940
     var_B7A = word ptr -2938
     var_B78 = dword ptr -2936
@@ -1813,7 +1813,7 @@ loc_25E1B:
     retf
     ; align 2
     db 144
-sub_24E9E endp
+transformed_shape_op endp
 sub_25E24 proc far
      s = byte ptr 0
      r = byte ptr 2

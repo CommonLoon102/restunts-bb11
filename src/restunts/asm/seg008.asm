@@ -53,8 +53,8 @@ seg008 segment byte public 'STUNTSC' use16
     public combine_file_path
     public sub_2863A
     public sub_28762
-    public sub_287C4
-    public sub_289E2
+    public input_checking
+    public do_input_checking
     public load_res_file
     public unload_resource
     public locate_shape_alt
@@ -197,7 +197,7 @@ loc_27506:
     mov     al, 3Ch ; '<'
     mul     byte_3B8FC
     mov     bx, ax
-    les     di, dword_449EE
+    les     di, trackdata12
     push    si
     lea     di, [bx+di]
     lea     si, [bp+var_40]
@@ -210,7 +210,7 @@ loc_27506:
     mov     cx, 1Eh
     mul     cx
     mov     di, ax
-    les     bx, dword_449EE
+    les     bx, trackdata12
     push    si
     lea     di, [bx+di+1Eh]
     lea     si, [bp+var_22]
@@ -274,8 +274,8 @@ loc_275D8:
     add     sp, 8
     mov     al, 3Ch ; '<'
     mul     byte_3B8FC
-    add     ax, word ptr dword_449EE
-    mov     dx, word ptr dword_449EE+2
+    add     ax, word ptr trackdata12
+    mov     dx, word ptr trackdata12+2
     push    si
     push    di
     lea     di, [bp+var_3C]
@@ -294,8 +294,8 @@ loc_275D8:
     shl     ax, 1
     mov     cx, 1Eh
     mul     cx
-    add     ax, word ptr dword_449EE
-    mov     dx, word ptr dword_449EE+2
+    add     ax, word ptr trackdata12
+    mov     dx, word ptr trackdata12+2
     add     ax, cx
     push    si
     push    di
@@ -847,7 +847,7 @@ loc_27B98:
     call    near ptr get_timerdelta2
     push    ax
     push    cs
-    call    near ptr sub_287C4
+    call    near ptr input_checking
     add     sp, 2
     mov     [bp+var_142], ax
     or      ax, ax
@@ -1039,7 +1039,7 @@ loc_27D6D:
     call    near ptr get_timerdelta2
     push    ax
     push    cs
-    call    near ptr sub_287C4
+    call    near ptr input_checking
     add     sp, 2
     mov     [bp+var_142], ax
     lea     ax, [bp+var_EE]
@@ -1719,7 +1719,7 @@ loc_28370:
     call    near ptr get_timerdelta2
     push    ax
     push    cs
-    call    near ptr sub_287C4
+    call    near ptr input_checking
     add     sp, 2
     mov     [bp+var_6CC], ax
     lea     ax, [bp+var_6C8]
@@ -2235,7 +2235,7 @@ loc_28795:
     pop     bp
     retf
 sub_28762 endp
-sub_287C4 proc far
+input_checking proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -2448,8 +2448,8 @@ loc_289D9:
     retf
     ; align 2
     db 144
-sub_287C4 endp
-sub_289E2 proc far
+input_checking endp
+do_input_checking proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -2458,13 +2458,13 @@ sub_289E2 proc far
     mov     bp, sp
     push    [bp+arg_0]
     push    cs
-    call    near ptr sub_287C4
+    call    near ptr input_checking
     add     sp, 2
     pop     bp
     retf
     ; align 2
     db 144
-sub_289E2 endp
+do_input_checking endp
 load_res_file proc far
     var_54 = byte ptr -84
     var_4 = word ptr -4
@@ -2756,7 +2756,7 @@ loc_28BED:
     call    near ptr get_timerdelta2
     push    ax
     push    cs
-    call    near ptr sub_287C4
+    call    near ptr input_checking
     add     sp, 2
     test    byte ptr word_442E8, 3
     jnz     short loc_28BED
@@ -2785,7 +2785,7 @@ loc_28C2E:
     call    near ptr get_timerdelta2
     push    ax
     push    cs
-    call    near ptr sub_287C4
+    call    near ptr input_checking
     add     sp, 2
     cmp     [bp+var_A], 0
     jnz     short loc_28C48
@@ -3123,7 +3123,7 @@ loc_28EFA:
     call    near ptr get_timerdelta2
     push    ax
     push    cs
-    call    near ptr sub_287C4
+    call    near ptr input_checking
     add     sp, 2
     or      ax, ax
     jnz     short loc_28EF3
@@ -3144,7 +3144,7 @@ loc_28F26:
     call    near ptr get_timerdelta2
     push    ax
     push    cs
-    call    near ptr sub_287C4
+    call    near ptr input_checking
     add     sp, 2
     or      ax, ax
     jz      short loc_28F26
@@ -3427,7 +3427,7 @@ loc_2914A:
     add     di, ax
     push    ax
     push    cs
-    call    near ptr sub_289E2
+    call    near ptr do_input_checking
     add     sp, 2
     mov     si, ax
     or      si, si
@@ -4033,7 +4033,7 @@ loc_29670:
     call    near ptr get_timerdelta2
     push    ax
     push    cs
-    call    near ptr sub_289E2
+    call    near ptr do_input_checking
     add     sp, 2
     mov     di, ax
     or      di, di

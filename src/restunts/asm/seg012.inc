@@ -109,7 +109,7 @@ seg012 segment byte public 'STUNTSC' use16
     extrn call_readchar_callback:proc
     extrn read_kb_char:proc
     extrn kb_checking:proc
-    extrn sub_30A5D:proc
+    extrn flush_stdin:proc
     extrn sub_30A68:proc
     extrn load_binary_filew:proc
     extrn load_binary_file2:proc

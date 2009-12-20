@@ -6,8 +6,8 @@ seg008 segment byte public 'STUNTSC' use16
     extrn combine_file_path:proc
     extrn sub_2863A:proc
     extrn sub_28762:proc
-    extrn sub_287C4:proc
-    extrn sub_289E2:proc
+    extrn input_checking:proc
+    extrn do_input_checking:proc
     extrn load_res_file:proc
     extrn unload_resource:proc
     extrn locate_shape_alt:proc

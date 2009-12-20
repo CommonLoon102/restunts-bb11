@@ -2626,7 +2626,7 @@ loc_385B6:
     push    ax
     call    sub_3219D
     add     sp, 2
-    call    sub_30A5D
+    call    flush_stdin
     sub     si, si
     mov     di, 0A2C2h
     mov     word ptr [bp-4], 0A2BEh

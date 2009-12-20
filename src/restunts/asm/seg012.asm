@@ -156,7 +156,7 @@ seg012 segment byte public 'STUNTSC' use16
     public call_readchar_callback
     public read_kb_char
     public kb_checking
-    public sub_30A5D
+    public flush_stdin
     public sub_30A68
     public load_binary_filew
     public load_binary_file2
@@ -345,7 +345,7 @@ fatal_error proc near
     pop     ax
     call    set_sprite2_as_1
     call    _printf
-    call    sub_30A5D
+    call    flush_stdin
     call    call_exitlist
     call    _printf
     add     sp, 2
@@ -5459,13 +5459,13 @@ locret_30A43:
     mov     dx, seg_3FDFE
     retf
 kb_checking endp
-sub_30A5D proc far
+flush_stdin proc far
 
     call    call_readchar_callback
     cmp     ax, 0
-    jz      short near ptr sub_30A5D
+    jz      short near ptr flush_stdin
     retf
-sub_30A5D endp
+flush_stdin endp
 sub_30A68 proc far
 
     mov     ah, 1

@@ -48,9 +48,9 @@ seg003 segment byte public 'STUNTSC' use16
     assume es:nothing, ss:nothing, ds:dseg
     public sub_19F14
     public sub_1A096
-    public sub_1A0F4
+    public update_frame
     public sub_1C302
-    public sub_1C474
+    public skybox_op
     public sub_1CB80
     public sub_1CBDC
     public sub_1D12E
@@ -90,7 +90,7 @@ loc_19F35:
 loc_19F3F:
     sub     si, si
 loc_19F41:
-    mov     byte ptr [si-6250h], 3
+    mov     byte_45520[si], 3
     inc     si
     cmp     si, 0Fh
     jl      short loc_19F41
@@ -117,16 +117,16 @@ loc_19F59:
     mov     byte_45525, 0
 loc_19F8B:
     mov     byte_46166, 0
-    mov     ax, 965Eh
+    mov     ax, offset unk_44DCE
     push    ax
-    mov     ax, 0A9F6h
+    mov     ax, offset byte_46166
     push    ax
     push    [bp+arg_0]
-    mov     ax, 0A1EAh
+    mov     ax, offset rect_array_unk2
     push    ax
-    mov     ax, 9DDCh
+    mov     ax, offset rect_array_unk
     push    ax
-    mov     ax, 9DB0h
+    mov     ax, offset byte_45520
     push    ax
     mov     ax, 0Fh
     push    ax
@@ -134,9 +134,9 @@ loc_19F8B:
     add     sp, 0Eh
     cmp     byte_46166, 0
     jz      short loc_1A01E
-    mov     ax, 9E64h
+    mov     ax, offset word_455D4
     push    ax
-    mov     ax, 965Eh
+    mov     ax, offset unk_44DCE
     push    ax
     mov     al, byte_46166
     cbw
@@ -149,7 +149,7 @@ loc_19F8B:
 loc_19FD8:
     mov     bx, si
     shl     bx, 1
-    mov     ax, [bx-619Ch]
+    mov     ax, word_455D4[bx]
     mov     cl, 3
     shl     ax, cl
     add     ax, 965Eh
@@ -213,8 +213,8 @@ loc_1A072:
     shl     di, cl
     push    si
     push    di
-    lea     si, [di-6224h]
-    lea     di, [di-5E16h]
+    lea     si, rect_array_unk[di]
+    lea     di, rect_array_unk2[di]
     push    ds
     pop     es
     movsw
@@ -245,8 +245,8 @@ sub_1A096 proc far
     cmp     word_44984, 0
     jz      short loc_1A0EE
     push    si
-    mov     di, 9DDCh
-    mov     si, 924h
+    mov     di, offset rect_array_unk
+    mov     si, offset rect_unk5
     push    ds
     pop     es
     movsw
@@ -255,8 +255,8 @@ sub_1A096 proc far
     movsw
     pop     si
     push    si
-    mov     di, 0A1EAh
-    mov     si, 924h
+    mov     di, offset rect_array_unk2
+    mov     si, offset rect_unk5
     movsw
     movsw
     movsw
@@ -269,8 +269,8 @@ loc_1A0C2:
     shl     di, cl
     push    si
     push    di
-    lea     di, [di-6224h]
-    mov     si, 3394h
+    lea     di, rect_array_unk[di]
+    mov     si, offset rect_unk4
     push    ds
     pop     es
     movsw
@@ -281,8 +281,8 @@ loc_1A0C2:
     pop     si
     push    si
     push    di
-    lea     di, [di-5E16h]
-    mov     si, 3394h
+    lea     di, rect_array_unk2[di]
+    mov     si, offset rect_unk4
     movsw
     movsw
     movsw
@@ -299,7 +299,7 @@ loc_1A0EE:
     pop     bp
     retf
 sub_1A096 endp
-sub_1A0F4 proc far
+update_frame proc far
     var_154 = dword ptr -340
     var_150 = word ptr -336
     var_14E = word ptr -334
@@ -395,17 +395,17 @@ sub_1A0F4 proc far
     jz      short loc_1A122
     cmp     [bp+arg_0], 0
     jz      short loc_1A122
-    mov     word_3B808, 9DDCh
-    mov     word_3B80A, 0A1EAh
+    mov     word_3B808, offset rect_array_unk
+    mov     word_3B80A, offset rect_array_unk2
     jmp     short loc_1A12E
 loc_1A122:
-    mov     word_3B80A, 9DDCh
-    mov     word_3B808, 0A1EAh
+    mov     word_3B80A, offset rect_array_unk
+    mov     word_3B808, offset rect_array_unk2
 loc_1A12E:
     cmp     word_44984, 0
     jz      short loc_1A162
     mov     [bp+var_122], 8
-    mov     [bp+var_3E], 9294h
+    mov     [bp+var_3E], offset rect_unk
     sub     si, si
     jmp     short loc_1A145
     ; align 2
@@ -420,7 +420,7 @@ loc_1A145:
     push    si
     push    di
     mov     di, ax
-    mov     si, 3394h
+    mov     si, offset rect_unk4
     push    ds
     pop     es
     movsw
@@ -435,8 +435,8 @@ loc_1A162:
 loc_1A167:
     cmp     byte_463E0, 0
     jnz     short loc_1A1BE
-    mov     ax, state.playerstate.field_0
-    mov     dx, state.playerstate.field_2
+    mov     ax, word ptr state.playerstate.car_longvec1.long_x
+    mov     dx, word ptr state.playerstate.car_longvec1.long_x+2
     mov     cl, 6
 loc_1A177:
     sar     dx, 1
@@ -444,8 +444,8 @@ loc_1A177:
     dec     cl
     jnz     short loc_1A177
     mov     [bp+var_EC], ax
-    mov     ax, state.playerstate.field_4
-    mov     dx, state.playerstate.field_6
+    mov     ax, word ptr state.playerstate.car_longvec1.long_y
+    mov     dx, word ptr state.playerstate.car_longvec1.long_y+2
     mov     cl, 6
 loc_1A18C:
     sar     dx, 1
@@ -453,8 +453,8 @@ loc_1A18C:
     dec     cl
     jnz     short loc_1A18C
     mov     [bp+var_EA], ax
-    mov     ax, state.playerstate.field_8
-    mov     dx, state.playerstate.field_A
+    mov     ax, word ptr state.playerstate.car_longvec1.long_z
+    mov     dx, word ptr state.playerstate.car_longvec1.long_z+2
     mov     cl, 6
 loc_1A1A1:
     sar     dx, 1
@@ -462,15 +462,15 @@ loc_1A1A1:
     dec     cl
     jnz     short loc_1A1A1
     mov     [bp+var_E8], ax
-    mov     ax, state.playerstate.field_1A
+    mov     ax, state.playerstate.car_rotate.y
     mov     [bp+var_46], ax
-    mov     ax, state.playerstate.field_1C
+    mov     ax, state.playerstate.car_rotate.z
     mov     [bp+var_5A], ax
-    mov     ax, state.playerstate.field_18
+    mov     ax, state.playerstate.car_rotate.x
     jmp     short loc_1A20C
 loc_1A1BE:
-    mov     ax, state.opponentstate.field_0
-    mov     dx, state.opponentstate.field_2
+    mov     ax, word ptr state.opponentstate.car_longvec1.long_x
+    mov     dx, word ptr state.opponentstate.car_longvec1.long_x+2
     mov     cl, 6
 loc_1A1C7:
     sar     dx, 1
@@ -478,8 +478,8 @@ loc_1A1C7:
     dec     cl
     jnz     short loc_1A1C7
     mov     [bp+var_EC], ax
-    mov     ax, state.opponentstate.field_4
-    mov     dx, state.opponentstate.field_6
+    mov     ax, word ptr state.opponentstate.car_longvec1.long_y
+    mov     dx, word ptr state.opponentstate.car_longvec1.long_y+2
     mov     cl, 6
 loc_1A1DC:
     sar     dx, 1
@@ -487,8 +487,8 @@ loc_1A1DC:
     dec     cl
     jnz     short loc_1A1DC
     mov     [bp+var_EA], ax
-    mov     ax, state.opponentstate.field_8
-    mov     dx, state.opponentstate.field_A
+    mov     ax, word ptr state.opponentstate.car_longvec1.long_z
+    mov     dx, word ptr state.opponentstate.car_longvec1.long_z+2
     mov     cl, 6
 loc_1A1F1:
     sar     dx, 1
@@ -496,11 +496,11 @@ loc_1A1F1:
     dec     cl
     jnz     short loc_1A1F1
     mov     [bp+var_E8], ax
-    mov     ax, state.opponentstate.field_1A
+    mov     ax, state.opponentstate.car_rotate.y
     mov     [bp+var_46], ax
-    mov     ax, state.opponentstate.field_1C
+    mov     ax, state.opponentstate.car_rotate.z
     mov     [bp+var_5A], ax
-    mov     ax, state.opponentstate.field_18
+    mov     ax, state.opponentstate.car_rotate.x
 loc_1A20C:
     mov     [bp+var_F4], ax
     mov     [bp+var_5C], 0FFFFh
@@ -609,28 +609,28 @@ loc_1A327:
     push    [bp+var_56]
     push    [bp+var_58]
     push    word_44DC6
-    call    sub_19926
+    call    plane_origin_op
     add     sp, 8
     mov     si, ax
     cmp     si, 0Ch
     jge     short loc_1A393
-    mov     word_44F36, 0
+    mov     vec_unk2.x, 0
     mov     ax, 0Ch
     sub     ax, si
-    mov     word_44F38, ax
-    mov     word_44F3A, 0
+    mov     vec_unk2.y, ax
+    mov     vec_unk2.z, 0
     mov     ax, word_44DC6
     mov     word_44F4A, ax
     mov     word_44F48, 0
     mov     word_44F44, 0
     mov     word_44F42, 0
     mov     word_44F46, 0
-    call    sub_19794
-    mov     ax, word_44F3C
+    call    plane_rotate_op
+    mov     ax, vec_planerotopresult.x
     add     [bp+var_58], ax
-    mov     ax, word_44F3E
+    mov     ax, vec_planerotopresult.y
     add     [bp+var_56], ax
-    mov     ax, word_44F40
+    mov     ax, vec_planerotopresult.z
     add     [bp+var_54], ax
 loc_1A393:
     mov     ax, [bp+var_E8]
@@ -689,11 +689,11 @@ loc_1A40A:
     shl     ax, 1
     mov     [bp+var_150], ax
     mov     bx, ax
-    mov     ax, [bx-71BCh]
+    mov     ax, state.game_vec1.x[bx]
     mov     [bp+var_58], ax
-    mov     ax, [bx-71B8h]
+    mov     ax, state.game_vec1.z[bx]
     mov     [bp+var_54], ax
-    mov     ax, [bx-71BAh]
+    mov     ax, state.game_vec1.y[bx]
     mov     [bp+var_56], ax
     jmp     loc_1A303
 loc_1A434:
@@ -738,14 +738,14 @@ loc_1A48E:
     mov     al, byte_463E0
     cbw
     mov     bx, ax
-    mov     al, [bx-6EE5h]
+    mov     al, state.field_3F7[bx]
     cbw
     mov     cx, ax
     shl     ax, 1
     add     ax, cx
     shl     ax, 1
-    add     ax, word_449DC
-    mov     dx, word_449DE
+    add     ax, word ptr trackdata9
+    mov     dx, word ptr trackdata9+2
     mov     word ptr [bp+var_154], ax
     mov     word ptr [bp+var_154+2], dx
     les     bx, [bp+var_154]
@@ -760,19 +760,19 @@ loc_1A48E:
 loc_1A4D0:
     mov     [bp+var_FE], 0
 loc_1A4D6:
-    cmp     state.field_140, 0
+    cmp     state.game_frame, 0
     jnz     short loc_1A4E4
     mov     bx, word_46468
     jmp     short loc_1A4E8
     ; align 2
     db 144
 loc_1A4E4:
-    mov     bx, state.field_140
+    mov     bx, state.game_frame
 loc_1A4E8:
 smart
     and     bx, 0Fh
 nosmart
-    mov     al, [bx+956h]
+    mov     al, byte_3C0C6[bx]
     mov     [bp+var_E4], al
     sub     ax, ax
     push    ax
@@ -780,7 +780,7 @@ nosmart
     push    [bp+var_5C]
     push    [bp+var_FA]
     push    [bp+var_FE]
-    call    sub_24E06
+    call    select_rect_rotate
     add     sp, 0Ah
     mov     [bp+var_52], ax
 smart
@@ -791,7 +791,7 @@ nosmart
     mov     si, ax
     mov     bx, si
     shl     bx, 1
-    mov     ax, [bx+914h]
+    mov     ax, off_3C084[bx]
     mov     [bp+var_50], ax
     mov     ax, 1
     push    ax
@@ -845,7 +845,7 @@ loc_1A58F:
 loc_1A5BA:
     mov     bx, [bp+var_36]
     shl     bx, 1
-    mov     si, [bx+6C4h]
+    mov     si, word_3BE34[bx]
     add     si, [bp+var_5C]
     add     si, word_42D28
 smart
@@ -866,7 +866,7 @@ loc_1A5DD:
     mov     ax, 0AE6h
     sub     ax, [bp+var_56]
     mov     [bp+var_F0], ax
-    mov     [bp+var_EE], 3A98h
+    mov     [bp+var_EE], 3A98h; 15000
     lea     ax, [bp+var_128]
     push    ax
     lea     ax, [bp+var_A0]
@@ -875,8 +875,8 @@ loc_1A5DD:
     push    ax
     call    mat_mul_vector
     add     sp, 6
-    mov     [bp+var_124], 3A98h
-    mov     ax, 72CAh
+    mov     [bp+var_124], 3A98h; 15000
+    mov     ax, offset currenttransshape
     push    ax
     lea     ax, [bp+var_120]
     push    ax
@@ -888,14 +888,14 @@ loc_1A5DD:
     jle     short loc_1A661
     mov     bx, [bp+var_36]
     shl     bx, 1
-    mov     ax, [bx+6D4h]
+    mov     ax, off_3BE44[bx]
     mov     word_42A40, ax
     mov     ax, [bp+var_5C]
     neg     ax
     mov     word_42A48, ax
-    mov     ax, 72CAh
+    mov     ax, offset currenttransshape
     push    ax
-    call    sub_24E9E
+    call    transformed_shape_op
     add     sp, 2
     cbw
     mov     [bp+var_14E], ax
@@ -916,10 +916,10 @@ loc_1A66D:
     mov     [bp+var_134], al
     cmp     byte_3B8FA, 0
     jz      short loc_1A69D
-    mov     al, byte ptr state.playerstate.field_2
+    mov     al, byte ptr state.playerstate.car_longvec1.long_x+2
     mov     [bp+var_D8], al
     mov     al, 1Dh
-    sub     al, byte ptr state.playerstate.field_A
+    sub     al, byte ptr state.playerstate.car_longvec1.long_z+2
     mov     [bp+var_E2], al
 loc_1A69D:
     sub     si, si
@@ -930,7 +930,7 @@ loc_1A69F:
     jl      short loc_1A69F
     mov     bl, byte_3B8FA
     sub     bh, bh
-    mov     al, [bx+92Ch]
+    mov     al, byte_3C09C[bx]
     mov     [bp+var_130], al
     mov     si, 16h
     jmp     short loc_1A6FF
@@ -987,17 +987,17 @@ loc_1A724:
     shl     ax, 1
     mov     [bp+var_150], ax
     mov     bx, ax
-    mov     bx, [bx-5A30h]
+    mov     bx, trackrows[bx]
     add     bx, word ptr [bp+var_154]
-    add     bx, word ptr dword_44D42
-    mov     es, word ptr dword_44D42+2
+    add     bx, word ptr trackdata14
+    mov     es, word ptr trackdata14+2
     mov     al, es:[bx]
     mov     [bp+var_62], al
     mov     bx, [bp+var_150]
-    mov     bx, [bx-73C4h]
+    mov     bx, terrainrows[bx]
     add     bx, word ptr [bp+var_154]
-    add     bx, word ptr dword_454BC
-    mov     es, word ptr dword_454BC+2
+    add     bx, word ptr trackdata15
+    mov     es, word ptr trackdata15+2
     mov     al, es:[bx]
     mov     [bp+var_10C], al
     cmp     [bp+var_62], 0
@@ -1013,7 +1013,7 @@ loc_1A774:
     push    ax
     mov     al, [bp+var_10C]
     push    ax
-    call    sub_21A5A
+    call    map_terrain_track
     add     sp, 4
     mov     [bp+var_62], al
     mov     [bp+var_10C], 0
@@ -1042,17 +1042,17 @@ loc_1A7B8:
     shl     ax, 1
     mov     [bp+var_150], ax
     mov     bx, ax
-    mov     bx, [bx-5A30h]
+    mov     bx, trackrows[bx]
     add     bx, word ptr [bp+var_154]
-    add     bx, word ptr dword_44D42
-    mov     es, word ptr dword_44D42+2
+    add     bx, word ptr trackdata14
+    mov     es, word ptr trackdata14+2
     mov     al, es:[bx]
     mov     [bp+var_62], al
     mov     bx, [bp+var_150]
-    mov     bx, [bx-73C4h]
+    mov     bx, terrainrows[bx]
     add     bx, word ptr [bp+var_154]
-    add     bx, word ptr dword_454BC
-    mov     es, word ptr dword_454BC+2
+    add     bx, word ptr trackdata15
+    mov     es, word ptr trackdata15+2
     mov     al, es:[bx]
     mov     [bp+var_10C], al
 loc_1A7FF:
@@ -1078,7 +1078,7 @@ loc_1A7FF:
     shl     bx, 1
     add     bx, ax
     shl     bx, 1
-    cmp     byte ptr [bx+20A4h], 40h ; '@'
+    cmp     sceneshapes.scene_unk4[bx], 40h ; '@'
     jl      short loc_1A857
     mov     al, [bp+var_D8]
     cmp     [bp+var_F6], al
@@ -1107,7 +1107,7 @@ loc_1A877:
     shl     bx, 1
     add     bx, ax
     shl     bx, 1
-    mov     al, [bx+20A3h]
+    mov     al, sceneshapes.scene_translateflag[bx]
     cbw
     mov     [bp+var_DE], ax
     or      ax, ax
@@ -1276,13 +1276,13 @@ loc_1A9E2:
 loc_1A9EC:
     sub     ax, ax
     push    ax
-    mov     ax, state.playerstate.field_18
+    mov     ax, state.playerstate.car_rotate.x
     neg     ax
     push    ax
-    mov     ax, state.playerstate.field_1A
+    mov     ax, state.playerstate.car_rotate.y
     neg     ax
     push    ax
-    mov     ax, state.playerstate.field_1C
+    mov     ax, state.playerstate.car_rotate.z
     neg     ax
     push    ax
     call    mat_rot_zxy
@@ -1351,7 +1351,7 @@ loc_1AA8C:
     push    si
     push    di
     lea     di, [bp+var_F2]
-    lea     si, [bx-5844h]
+    lea     si, simd_copy.wheel_coords.x[bx]
     push    ss
     pop     es
     movsw
@@ -1368,14 +1368,14 @@ loc_1AA8C:
     add     sp, 6
     mov     ax, [bp+var_44]
     cwd
-    add     ax, state.playerstate.field_0
-    adc     dx, state.playerstate.field_2
+    add     ax, word ptr state.playerstate.car_longvec1.long_x
+    adc     dx, word ptr state.playerstate.car_longvec1.long_x+2
     mov     ax, dx
     mov     [bp+var_F6], al
     mov     ax, [bp+var_40]
     cwd
-    add     ax, state.playerstate.field_8
-    adc     dx, state.playerstate.field_A
+    add     ax, word ptr state.playerstate.car_longvec1.long_z
+    adc     dx, word ptr state.playerstate.car_longvec1.long_z+2
     mov     ax, dx
     sub     al, 1Dh
     neg     al
@@ -1387,13 +1387,13 @@ loc_1AA8C:
 loc_1AAF4:
     cmp     di, 0FFFFh
     jz      short loc_1AB65
-    cmp     byte ptr state.playerstate.field_C2, 4
+    cmp     state.playerstate.car_surfacegrip_idx1, 4
     jnz     short loc_1AB15
-    cmp     byte ptr state.playerstate.field_C2+1, 4
+    cmp     state.playerstate.car_surfacegrip_idx2, 4
     jnz     short loc_1AB15
-    cmp     state.playerstate.field_C4, 4
+    cmp     state.playerstate.car_surfacegrip_idx3, 4
     jnz     short loc_1AB15
-    cmp     state.playerstate.field_C5, 4
+    cmp     state.playerstate.car_surfacegrip_idx4, 4
     jz      short loc_1AB65
 loc_1AB15:
     mov     [bp+var_F2], 0
@@ -1441,13 +1441,13 @@ loc_1AB8A:
 loc_1AB94:
     sub     ax, ax
     push    ax
-    mov     ax, state.opponentstate.field_18
+    mov     ax, state.opponentstate.car_rotate.x
     neg     ax
     push    ax
-    mov     ax, state.opponentstate.field_1A
+    mov     ax, state.opponentstate.car_rotate.y
     neg     ax
     push    ax
-    mov     ax, state.opponentstate.field_1C
+    mov     ax, state.opponentstate.car_rotate.z
     neg     ax
     push    ax
     call    mat_rot_zxy
@@ -1516,7 +1516,7 @@ loc_1AC34:
     push    si
     push    di
     lea     di, [bp+var_F2]
-    lea     si, [bx-605Eh]
+    lea     si, simd2.wheel_coords.x[bx]
     push    ss
     pop     es
     movsw
@@ -1533,14 +1533,14 @@ loc_1AC34:
     add     sp, 6
     mov     ax, [bp+var_44]
     cwd
-    add     ax, state.opponentstate.field_0
-    adc     dx, state.opponentstate.field_2
+    add     ax, word ptr state.opponentstate.car_longvec1.long_x
+    adc     dx, word ptr state.opponentstate.car_longvec1.long_x+2
     mov     ax, dx
     mov     [bp+var_F6], al
     mov     ax, [bp+var_40]
     cwd
-    add     ax, state.opponentstate.field_8
-    adc     dx, state.opponentstate.field_A
+    add     ax, word ptr state.opponentstate.car_longvec1.long_z
+    adc     dx, word ptr state.opponentstate.car_longvec1.long_z+2
     mov     ax, dx
     sub     al, 1Dh
     neg     al
@@ -1552,13 +1552,13 @@ loc_1AC34:
 loc_1AC9C:
     cmp     di, 0FFFFh
     jz      short loc_1AD0E
-    cmp     byte ptr state.opponentstate.field_C2, 4
+    cmp     state.opponentstate.car_surfacegrip_idx1, 4
     jnz     short loc_1ACBD
-    cmp     byte ptr state.opponentstate.field_C2+1, 4
+    cmp     state.opponentstate.car_surfacegrip_idx2, 4
     jnz     short loc_1ACBD
-    cmp     state.opponentstate.field_C4, 4
+    cmp     state.opponentstate.car_surfacegrip_idx3, 4
     jnz     short loc_1ACBD
-    cmp     state.opponentstate.field_C5, 4
+    cmp     state.opponentstate.car_surfacegrip_idx4, 4
     jz      short loc_1AD0E
 loc_1ACBD:
     mov     [bp+var_F2], 0
@@ -1573,7 +1573,7 @@ loc_1ACBD:
     add     sp, 6
     lea     ax, [bp+var_F2]
     push    ax
-    mov     ax, 0ACDCh
+    mov     ax, offset mat_temp
     push    ax
     lea     ax, [bp+var_44]
     push    ax
@@ -1656,7 +1656,7 @@ loc_1AD97:
     jnz     short loc_1AD9F
     jmp     loc_1AE76
 loc_1AD9F:
-    mov     al, [di+976h]
+    mov     al, byte_3C0E6[di]; indices to corner shapes?
     sub     ah, ah
     mov     cx, ax
     shl     ax, 1
@@ -1664,7 +1664,7 @@ loc_1AD9F:
     shl     ax, 1
     add     ax, cx
     shl     ax, 1
-    add     ax, 2098h
+    add     ax, offset sceneshapes
     mov     [bp+var_34], ax
     cmp     [bp+var_FC], 0
     jnz     short loc_1ADF6
@@ -1716,9 +1716,9 @@ loc_1ADFC:
     cbw
     mov     bx, ax
     shl     bx, 1
-    mov     ax, [bx-599Eh]
+    mov     ax, trackcenterpos2[bx]
     sub     ax, [bp+var_58]
-    mov     word_42A3A, ax
+    mov     currenttransshape, ax
     mov     ax, [bp+var_56]
     neg     ax
     mov     word_42A3C, ax
@@ -1726,7 +1726,7 @@ loc_1ADFC:
     cbw
     mov     bx, ax
     shl     bx, 1
-    mov     ax, [bx-55EAh]
+    mov     ax, trackcenterpos[bx]
     sub     ax, [bp+var_54]
     mov     word_42A3E, ax
     mov     word_42A42, 929Ch
@@ -1737,13 +1737,13 @@ loc_1ADFC:
     mov     word_42A46, 0
     mov     bx, di
     shl     bx, 1
-    mov     ax, [bx+966h]
+    mov     ax, word_3C0D6[bx]
     mov     word_42A48, ax
     mov     word_42A4A, 400h
     mov     byte_42A4D, 0
-    mov     ax, 72CAh
+    mov     ax, offset currenttransshape
     push    ax
-    call    sub_24E9E
+    call    transformed_shape_op
     add     sp, 2
     cbw
     mov     [bp+var_14E], ax
@@ -1804,7 +1804,7 @@ loc_1AEEE:
     shl     ax, 1
     add     ax, cx
     shl     ax, 1
-    add     ax, 2C5Ah
+    add     ax, offset sceneshapes2
     mov     [bp+var_12E], ax
     mov     bx, ax
     mov     ax, [bx+4]
@@ -1813,9 +1813,9 @@ loc_1AEEE:
     cbw
     mov     bx, ax
     shl     bx, 1
-    mov     ax, [bx-599Eh]
+    mov     ax, trackcenterpos2[bx]
     sub     ax, [bp+var_58]
-    mov     word_42A3A, ax
+    mov     currenttransshape, ax
     mov     ax, [bp+var_48]
     sub     ax, [bp+var_56]
     mov     word_42A3C, ax
@@ -1823,14 +1823,14 @@ loc_1AEEE:
     cbw
     mov     bx, ax
     shl     bx, 1
-    mov     ax, [bx-55EAh]
+    mov     ax, trackcenterpos[bx]
     sub     ax, [bp+var_54]
     mov     word_42A3E, ax
     cmp     [bp+var_48], 0
     jz      short loc_1AF47
     jmp     loc_1B0D4
 loc_1AF47:
-    mov     word_42A42, 929Ch
+    mov     word_42A42, offset rect_unk2
     jmp     loc_1B0DA
 loc_1AF50:
     mov     [bp+var_48], 0
@@ -1860,10 +1860,10 @@ loc_1AF80:
     shl     ax, 1
     mov     [bp+var_150], ax
     mov     bx, ax
-    mov     bx, [bx-73C4h]
+    mov     bx, terrainrows[bx]
     add     bx, word ptr [bp+var_154]
-    add     bx, word ptr dword_454BC
-    mov     es, word ptr dword_454BC+2
+    add     bx, word ptr trackdata15
+    mov     es, word ptr trackdata15+2
     mov     al, es:[bx]
     mov     [bp+var_10C], al
     or      al, al
@@ -1877,21 +1877,21 @@ loc_1AFB4:
     shl     ax, 1
     add     ax, cx
     shl     ax, 1
-    add     ax, 2C5Ah
+    add     ax, offset sceneshapes2
     mov     [bp+var_12E], ax
     mov     bx, ax
     mov     ax, [bx+4]
     mov     word_42A40, ax
     mov     bx, word ptr [bp+var_154]
     shl     bx, 1
-    mov     ax, [bx-599Eh]
+    mov     ax, trackcenterpos2[bx]
     sub     ax, [bp+var_58]
-    mov     word_42A3A, ax
+    mov     currenttransshape, ax
     mov     ax, [bp+var_56]
     neg     ax
     mov     word_42A3C, ax
     mov     bx, [bp+var_150]
-    mov     ax, [bx-55EAh]
+    mov     ax, trackcenterpos[bx]
     sub     ax, [bp+var_54]
     mov     word_42A3E, ax
     mov     word_42A42, 929Ch
@@ -1905,9 +1905,9 @@ loc_1AFB4:
     mov     word_42A48, ax
     mov     word_42A4A, 400h
     mov     byte_42A4D, 0
-    mov     ax, 72CAh
+    mov     ax, offset currenttransshape
     push    ax
-    call    sub_24E9E
+    call    transformed_shape_op
     add     sp, 2
     cbw
     mov     [bp+var_14E], ax
@@ -1925,7 +1925,7 @@ loc_1B03C:
     cbw
     push    ax
     push    cs
-    call    near ptr sub_1C474
+    call    near ptr skybox_op
     add     sp, 0Eh
     mov     [bp+var_132], ax
     mov     bx, [bp+arg_2]
@@ -1983,7 +1983,7 @@ loc_1B0C1:
     ; align 2
     db 144
 loc_1B0D4:
-    mov     word_42A42, 92A4h
+    mov     word_42A42, offset unk_44A14
 loc_1B0DA:
     mov     al, [bp+var_122]
     or      al, 5
@@ -1995,9 +1995,9 @@ loc_1B0DA:
     mov     word_42A48, ax
     mov     word_42A4A, 400h
     mov     byte_42A4D, 0
-    mov     ax, 72CAh
+    mov     ax, offset currenttransshape
     push    ax
-    call    sub_24E9E
+    call    transformed_shape_op
     add     sp, 2
     cbw
     mov     [bp+var_14E], ax
@@ -2006,7 +2006,7 @@ loc_1B0DA:
     jmp     loc_1B03C
 loc_1B11C:
     mov     byte_45D7E, 0
-    mov     word_46434, 72CAh
+    mov     word_46434, offset currenttransshape
     cmp     [bp+var_62], 0
     jnz     short loc_1B130
     jmp     loc_1B71E
@@ -2019,7 +2019,7 @@ loc_1B130:
     shl     ax, 1
     add     ax, cx
     shl     ax, 1
-    add     ax, 2098h
+    add     ax, offset sceneshapes
     mov     [bp+var_12E], ax
     mov     bx, ax
     test    byte ptr [bx+0Bh], 1
@@ -2028,7 +2028,7 @@ loc_1B130:
     cbw
     mov     bx, ax
     shl     bx, 1
-    mov     ax, [bx-7E84h]
+    mov     ax, trackpos[bx]
     mov     [bp+var_5E], ax
     mov     al, [bp+var_102]
     inc     al
@@ -2038,7 +2038,7 @@ loc_1B168:
     cbw
     mov     bx, ax
     shl     bx, 1
-    mov     ax, [bx-55EAh]
+    mov     ax, trackcenterpos[bx]
     mov     [bp+var_5E], ax
     mov     al, [bp+var_102]
 loc_1B17C:
@@ -2127,7 +2127,7 @@ loc_1B236:
     add     [bp+var_DA], 2
     mov     ax, [bx]
     add     ax, [bp+var_44]
-    mov     word_42A3A, ax
+    mov     currenttransshape, ax
     mov     ax, [bp+var_42]
     mov     word_42A3C, ax
     mov     bx, [bp+var_DA]
@@ -2147,7 +2147,7 @@ loc_1B236:
     mov     byte_42A4D, 0
     mov     ax, 72CAh
     push    ax
-    call    sub_24E9E
+    call    transformed_shape_op
     add     sp, 2
     cbw
     mov     [bp+var_14E], ax
@@ -2227,7 +2227,7 @@ loc_1B336:
     mov     word_42A56, 929Ch
     mov     ax, 72DEh
     push    ax
-    call    sub_24E9E
+    call    transformed_shape_op
     add     sp, 2
     cbw
     mov     [bp+var_14E], ax
@@ -2250,7 +2250,7 @@ loc_1B38B:
     mov     word_42A40, ax
     push    si
     push    di
-    mov     di, 72CAh
+    mov     di, offset currenttransshape
     lea     si, [bp+var_44]
     push    ds
     pop     es
@@ -2289,9 +2289,9 @@ loc_1B3E0:
     test    byte ptr [bx+0Ah], 1
     jz      short loc_1B408
     mov     word_42A42, 929Ch
-    mov     ax, 72CAh
+    mov     ax, offset currenttransshape
     push    ax
-    call    sub_24E9E
+    call    transformed_shape_op
     add     sp, 2
     cbw
     mov     [bp+var_14E], ax
@@ -2343,12 +2343,12 @@ loc_1B46A:
     cbw
     mov     bx, ax
     shl     bx, 1
-    mov     bx, [bx-5A30h]
+    mov     bx, trackrows[bx]
     mov     al, [bp+var_F6]
     cbw
     add     bx, ax
-    add     bx, word ptr dword_45E56
-    mov     es, word ptr dword_45E56+2
+    add     bx, word ptr trackdata19
+    mov     es, word ptr trackdata19+2
     mov     al, es:[bx]
     mov     [bp+var_4C], al
     cmp     al, 0FFh
@@ -2357,7 +2357,7 @@ loc_1B46A:
 loc_1B493:
     cbw
     mov     bx, ax
-    cmp     byte ptr [bx-6EE2h], 0
+    cmp     state.field_3FA[bx], 0
     jnz     short loc_1B4A0
     jmp     loc_1B626
 loc_1B4A0:
@@ -2371,20 +2371,20 @@ loc_1B4AC:
     shl     ax, 1
     mov     word ptr [bp+var_154], ax
     mov     bx, ax
-    cmp     word ptr [bx-6F4Eh], 0
+    cmp     word ptr state.field_38E[bx], 0
     jnz     short loc_1B4C0
     jmp     loc_1B61A
 loc_1B4C0:
     mov     al, [bp+var_4C]
     cbw
     add     ax, 2
-    mov     cl, [di-6E99h]
+    mov     cl, state.field_443[di]
     sub     ch, ch
     cmp     ax, cx
     jz      short loc_1B4D4
     jmp     loc_1B61A
 loc_1B4D4:
-    mov     al, [di-6EB1h]
+    mov     al, state.field_42B[di]
     sub     ah, ah
     mov     cx, ax
     shl     ax, 1
@@ -2392,15 +2392,15 @@ loc_1B4D4:
     shl     ax, 1
     add     ax, cx
     shl     ax, 1
-    add     ax, 2D64h
+    add     ax, offset sceneshapes3
     mov     [bp+var_12E], ax
     mov     ax, di
     shl     ax, 1
     shl     ax, 1
     mov     [bp+var_150], ax
     mov     bx, ax
-    mov     ax, [bx-72DCh]
-    mov     dx, [bx-72DAh]
+    mov     ax, word ptr state.game_longvecs1.long_x[bx]
+    mov     dx, word ptr (state.game_longvecs1.long_x+2)[bx]
     mov     cl, 6
 loc_1B503:
     sar     dx, 1
@@ -2414,15 +2414,15 @@ loc_1B503:
     shl     bx, 1
     add     bx, ax
     shl     bx, 1
-    add     bx, word ptr dword_42A30
-    mov     es, word ptr dword_42A30+2
+    add     bx, word ptr trackdata10
+    mov     es, word ptr trackdata10+2
     add     cx, es:[bx]
     sub     cx, [bp+var_58]
     mov     bx, word_46434
     mov     [bx], cx
     mov     bx, [bp+var_150]
-    mov     ax, [bx-727Ch]
-    mov     dx, [bx-727Ah]
+    mov     ax, word ptr state.game_longvecs2.long_x[bx]
+    mov     dx, word ptr (state.game_longvecs2.long_x+2)[bx]
     mov     cl, 6
 loc_1B53B:
     sar     dx, 1
@@ -2436,8 +2436,8 @@ loc_1B53B:
     shl     bx, 1
     add     bx, ax
     shl     bx, 1
-    add     bx, word ptr dword_42A30
-    mov     es, word ptr dword_42A30+2
+    add     bx, word ptr trackdata10
+    mov     es, word ptr trackdata10+2
     add     cx, es:[bx+2]
     sub     cx, [bp+var_56]
     mov     bx, word_46434
@@ -2458,8 +2458,8 @@ loc_1B575:
     shl     bx, 1
     add     bx, ax
     shl     bx, 1
-    add     bx, word ptr dword_42A30
-    mov     es, word ptr dword_42A30+2
+    add     bx, word ptr trackdata10
+    mov     es, word ptr trackdata10+2
     add     cx, es:[bx+4]
     sub     cx, [bp+var_54]
     mov     bx, word_46434
@@ -2513,8 +2513,8 @@ loc_1B626:
     mov     al, [bp+var_4C]
     cbw
     mov     bx, ax
-    add     bx, word_463DC
-    mov     es, word_463DE
+    add     bx, word ptr trackdata23
+    mov     es, word ptr trackdata23+2
     mov     al, es:[bx]
     sub     ah, ah
     mov     cx, ax
@@ -2531,8 +2531,8 @@ loc_1B626:
     shl     bx, 1
     add     bx, ax
     shl     bx, 1
-    add     bx, word ptr dword_42A30
-    mov     es, word ptr dword_42A30+2
+    add     bx, word ptr trackdata10
+    mov     es, word ptr trackdata10+2
     mov     ax, es:[bx]
     sub     ax, [bp+var_58]
     mov     bx, word_46434
@@ -2543,8 +2543,8 @@ loc_1B626:
     shl     bx, 1
     add     bx, ax
     shl     bx, 1
-    add     bx, word ptr dword_42A30
-    mov     es, word ptr dword_42A30+2
+    add     bx, word ptr trackdata10
+    mov     es, word ptr trackdata10+2
     mov     ax, es:[bx+2]
     sub     ax, [bp+var_56]
     mov     bx, word_46434
@@ -2555,8 +2555,8 @@ loc_1B626:
     shl     bx, 1
     add     bx, ax
     shl     bx, 1
-    add     bx, word ptr dword_42A30
-    mov     es, word ptr dword_42A30+2
+    add     bx, word ptr trackdata10
+    mov     es, word ptr trackdata10+2
     mov     ax, es:[bx+4]
     sub     ax, [bp+var_54]
     mov     bx, word_46434
@@ -2579,8 +2579,8 @@ loc_1B626:
     cbw
     mov     bx, ax
     shl     bx, 1
-    add     bx, word_45DB4
-    mov     es, word_45DB6
+    add     bx, word ptr trackdata8
+    mov     es, word ptr trackdata8+2
     mov     ax, es:[bx]
     mov     bx, word_46434
     mov     [bx+0Eh], ax
@@ -2643,7 +2643,7 @@ loc_1B782:
     shl     ax, 1
     add     ax, cx
     shl     ax, 1
-    add     ax, 2D64h
+    add     ax, offset sceneshapes3
     mov     [bp+var_12E], ax
     mov     ax, di
     shl     ax, 1
@@ -2652,8 +2652,8 @@ loc_1B782:
     mov     bx, ax
     mov     ax, [bx-72DCh]
     mov     dx, [bx-72DAh]
-    add     ax, state.playerstate.field_0
-    adc     dx, state.playerstate.field_2
+    add     ax, word ptr state.playerstate.car_longvec1.long_x
+    adc     dx, word ptr state.playerstate.car_longvec1.long_x+2
     mov     cl, 6
 loc_1B7B9:
     sar     dx, 1
@@ -2666,8 +2666,8 @@ loc_1B7B9:
     mov     bx, [bp+var_150]
     mov     ax, [bx-727Ch]
     mov     dx, [bx-727Ah]
-    add     ax, state.playerstate.field_4
-    adc     dx, state.playerstate.field_6
+    add     ax, word ptr state.playerstate.car_longvec1.long_y
+    adc     dx, word ptr state.playerstate.car_longvec1.long_y+2
     mov     cl, 6
 loc_1B7E0:
     sar     dx, 1
@@ -2680,8 +2680,8 @@ loc_1B7E0:
     mov     bx, [bp+var_150]
     mov     ax, [bx-721Ch]
     mov     dx, [bx-721Ah]
-    add     ax, state.playerstate.field_8
-    adc     dx, state.playerstate.field_A
+    add     ax, word ptr state.playerstate.car_longvec1.long_z
+    adc     dx, word ptr state.playerstate.car_longvec1.long_z+2
     mov     cl, 6
 loc_1B808:
     sar     dx, 1
@@ -2737,8 +2737,8 @@ loc_1B896:
 loc_1B89F:
     mov     [bp+var_12E], 20B4h
     mov     bx, word_46434
-    mov     ax, state.playerstate.field_0
-    mov     dx, state.playerstate.field_2
+    mov     ax, word ptr state.playerstate.car_longvec1.long_x
+    mov     dx, word ptr state.playerstate.car_longvec1.long_x+2
     mov     cl, 6
 loc_1B8B2:
     sar     dx, 1
@@ -2748,8 +2748,8 @@ loc_1B8B2:
     sub     ax, [bp+var_58]
     mov     [bx], ax
     mov     bx, word_46434
-    mov     ax, state.playerstate.field_4
-    mov     dx, state.playerstate.field_6
+    mov     ax, word ptr state.playerstate.car_longvec1.long_y
+    mov     dx, word ptr state.playerstate.car_longvec1.long_y+2
     mov     cl, 6
 loc_1B8CC:
     sar     dx, 1
@@ -2759,8 +2759,8 @@ loc_1B8CC:
     sub     ax, [bp+var_56]
     mov     [bx+2], ax
     mov     bx, word_46434
-    mov     ax, state.playerstate.field_8
-    mov     dx, state.playerstate.field_A
+    mov     ax, word ptr state.playerstate.car_longvec1.long_z
+    mov     dx, word ptr state.playerstate.car_longvec1.long_z+2
     mov     cl, 6
 loc_1B8E7:
     sar     dx, 1
@@ -2837,15 +2837,15 @@ loc_1B988:
     mov     byte ptr [bx+12h], 4
 loc_1B990:
     mov     bx, word_46434
-    mov     ax, state.playerstate.field_1C
+    mov     ax, state.playerstate.car_rotate.z
     neg     ax
     mov     [bx+0Ah], ax
     mov     bx, word_46434
-    mov     ax, state.playerstate.field_1A
+    mov     ax, state.playerstate.car_rotate.y
     neg     ax
     mov     [bx+0Ch], ax
     mov     bx, word_46434
-    mov     ax, state.playerstate.field_18
+    mov     ax, state.playerstate.car_rotate.x
     neg     ax
     mov     [bx+0Eh], ax
     mov     bx, word_46434
@@ -2904,17 +2904,17 @@ loc_1BA2E:
     shl     ax, 1
     add     ax, cx
     shl     ax, 1
-    add     ax, 2D64h
+    add     ax, offset sceneshapes3
     mov     [bp+var_12E], ax
     mov     ax, di
     shl     ax, 1
     shl     ax, 1
     mov     [bp+var_150], ax
     mov     bx, ax
-    mov     ax, [bx-72DCh]
-    mov     dx, [bx-72DAh]
-    add     ax, state.opponentstate.field_0
-    adc     dx, state.opponentstate.field_2
+    mov     ax, word ptr state.game_longvecs1.long_x[bx]
+    mov     dx, word ptr (state.game_longvecs1.long_x+2)[bx]
+    add     ax, word ptr state.opponentstate.car_longvec1.long_x
+    adc     dx, word ptr state.opponentstate.car_longvec1.long_x+2
     mov     cl, 6
 loc_1BA65:
     sar     dx, 1
@@ -2925,10 +2925,10 @@ loc_1BA65:
     mov     bx, word_46434
     mov     [bx], ax
     mov     bx, [bp+var_150]
-    mov     ax, [bx-727Ch]
-    mov     dx, [bx-727Ah]
-    add     ax, state.opponentstate.field_4
-    adc     dx, state.opponentstate.field_6
+    mov     ax, word ptr state.game_longvecs2.long_x[bx]
+    mov     dx, word ptr (state.game_longvecs2.long_x+2)[bx]
+    add     ax, word ptr state.opponentstate.car_longvec1.long_y
+    adc     dx, word ptr state.opponentstate.car_longvec1.long_y+2
     mov     cl, 6
 loc_1BA8C:
     sar     dx, 1
@@ -2939,10 +2939,10 @@ loc_1BA8C:
     mov     bx, word_46434
     mov     [bx+2], ax
     mov     bx, [bp+var_150]
-    mov     ax, [bx-721Ch]
-    mov     dx, [bx-721Ah]
-    add     ax, state.opponentstate.field_8
-    adc     dx, state.opponentstate.field_A
+    mov     ax, word ptr state.game_longvecs3.long_x[bx]
+    mov     dx, word ptr (state.game_longvecs3.long_x+2)[bx]
+    add     ax, word ptr state.opponentstate.car_longvec1.long_z
+    adc     dx, word ptr state.opponentstate.car_longvec1.long_z+2
     mov     cl, 6
 loc_1BAB4:
     sar     dx, 1
@@ -2963,7 +2963,7 @@ loc_1BAB4:
     or      al, 5
     mov     [bx+12h], al
     mov     bx, word ptr [bp+var_154]
-    mov     ax, [bx-6FDEh]
+    mov     ax, state.field_2FE[bx]
     neg     ax
     mov     bx, word_46434
     mov     [bx+0Ah], ax
@@ -2998,8 +2998,8 @@ loc_1BB43:
 loc_1BB4C:
     mov     [bp+var_12E], 20C2h
     mov     bx, word_46434
-    mov     ax, state.opponentstate.field_0
-    mov     dx, state.opponentstate.field_2
+    mov     ax, word ptr state.opponentstate.car_longvec1.long_x
+    mov     dx, word ptr state.opponentstate.car_longvec1.long_x+2
     mov     cl, 6
 loc_1BB5F:
     sar     dx, 1
@@ -3009,8 +3009,8 @@ loc_1BB5F:
     sub     ax, [bp+var_58]
     mov     [bx], ax
     mov     bx, word_46434
-    mov     ax, state.opponentstate.field_4
-    mov     dx, state.opponentstate.field_6
+    mov     ax, word ptr state.opponentstate.car_longvec1.long_y
+    mov     dx, word ptr state.opponentstate.car_longvec1.long_y+2
     mov     cl, 6
 loc_1BB79:
     sar     dx, 1
@@ -3020,8 +3020,8 @@ loc_1BB79:
     sub     ax, [bp+var_56]
     mov     [bx+2], ax
     mov     bx, word_46434
-    mov     ax, state.opponentstate.field_8
-    mov     dx, state.opponentstate.field_A
+    mov     ax, word ptr state.opponentstate.car_longvec1.long_z
+    mov     dx, word ptr state.opponentstate.car_longvec1.long_z+2
     mov     cl, 6
 loc_1BB94:
     sar     dx, 1
@@ -3096,15 +3096,15 @@ loc_1BC36:
     mov     byte ptr [bx+12h], 4
 loc_1BC3E:
     mov     bx, word_46434
-    mov     ax, state.opponentstate.field_1C
+    mov     ax, state.opponentstate.car_rotate.z
     neg     ax
     mov     [bx+0Ah], ax
     mov     bx, word_46434
-    mov     ax, state.opponentstate.field_1A
+    mov     ax, state.opponentstate.car_rotate.y
     neg     ax
     mov     [bx+0Ch], ax
     mov     bx, word_46434
-    mov     ax, state.opponentstate.field_18
+    mov     ax, state.opponentstate.car_rotate.x
     neg     ax
     mov     [bx+0Eh], ax
     mov     bx, word_46434
@@ -3319,7 +3319,7 @@ loc_1BED0:
     mov     [bp+var_DE], 0
     jmp     short loc_1BF38
 loc_1BED8:
-    cmp     state.playerstate.field_BC, 0
+    cmp     state.playerstate.car_is_braking, 0
     jnz     short loc_1BF09
 loc_1BEDF:
     mov     byte_45514, 2Eh ; '.'
@@ -3328,7 +3328,7 @@ loc_1BEE4:
     imul    di
     add     ax, 72CAh
     push    ax
-    call    sub_24E9E
+    call    transformed_shape_op
     add     sp, 2
     cbw
     mov     [bp+var_14E], ax
@@ -3338,7 +3338,7 @@ loc_1BEE4:
     ; align 2
     db 144
 loc_1BF02:
-    cmp     state.opponentstate.field_BC, 0
+    cmp     state.opponentstate.car_is_braking, 0
     jz      short loc_1BEDF
 loc_1BF09:
     mov     byte_45514, 2Fh ; '/'
@@ -3488,7 +3488,7 @@ loc_1C01E:
     mov     ax, [bp+var_36]
     mov     [bp+var_DE], ax
 loc_1C070:
-    mov     ax, state.field_140
+    mov     ax, state.game_frame
     shr     ax, 1
     shr     ax, 1
     sub     dx, dx
@@ -3557,7 +3557,7 @@ loc_1C10A:
     cmp     byte_463E0, 0
     jz      short loc_1C11E
     mov     [bp+var_104], 8F46h
-    mov     si, state.field_148
+    mov     si, state.game_frame2
     jmp     short loc_1C128
     ; align 2
     db 144
@@ -3578,7 +3578,7 @@ loc_1C128:
     sub     ax, [bx+4]
     push    ax
     push    word ptr [bx+4]
-    mov     ax, state.field_140
+    mov     ax, state.game_frame
     sub     ax, si
     push    ax
     push    cs
@@ -3596,7 +3596,7 @@ loc_1C162:
     sub     ax, [bx+4]
     push    ax
     push    word ptr [bx+4]
-    mov     ax, state.field_140
+    mov     ax, state.game_frame
     sub     ax, si
     push    ax
     push    cs
@@ -3618,7 +3618,7 @@ loc_1C17C:
     sub     ax, [bx+4]
     push    ax
     push    word ptr [bx+4]
-    mov     ax, state.field_140
+    mov     ax, state.game_frame
     sub     ax, si
     push    ax
     push    cs
@@ -3630,7 +3630,7 @@ loc_1C1AC:
     sub     ax, [bx+4]
     push    ax
     push    word ptr [bx+4]
-    mov     ax, state.field_140
+    mov     ax, state.game_frame
     sub     ax, si
     push    ax
     push    cs
@@ -3793,7 +3793,7 @@ loc_1C2F8:
     mov     sp, bp
     pop     bp
     retf
-sub_1A0F4 endp
+update_frame endp
 sub_1C302 proc far
      s = byte ptr 0
      r = byte ptr 2
@@ -3944,7 +3944,7 @@ loc_1C46D:
     ; align 2
     db 144
 sub_1C302 endp
-sub_1C474 proc far
+skybox_op proc far
     var_78 = byte ptr -120
     var_76 = word ptr -118
     var_72 = word ptr -114
@@ -4718,7 +4718,7 @@ loc_1CB77:
     mov     sp, bp
     pop     bp
     retf
-sub_1C474 endp
+skybox_op endp
 sub_1CB80 proc far
     var_C = byte ptr -12
     var_8 = word ptr -8
@@ -4930,7 +4930,7 @@ loc_1CC5B:
     push    ax
     push    [bp+var_34]
     push    ax
-    call    sub_24E06
+    call    select_rect_rotate
     add     sp, 0Ah
     mov     [bp+var_1C], 0
     mov     [bp+var_1A], 0
@@ -4995,7 +4995,7 @@ loc_1CD53:
     mov     [bp+var_13], 0
     lea     ax, [bp+var_26]
     push    ax
-    call    sub_24E9E
+    call    transformed_shape_op
     add     sp, 2
 loc_1CDCA:
     cmp     [bp+var_10], 0
@@ -5057,8 +5057,8 @@ loc_1CE2E:
     mov     bx, ax
     mov     bx, [bx-73C4h]
     add     bx, [bp+var_42]
-    add     bx, word ptr dword_454BC
-    mov     es, word ptr dword_454BC+2
+    add     bx, word ptr trackdata15
+    mov     es, word ptr trackdata15+2
     mov     al, es:[bx]
     mov     [bp+var_3A], al
     or      al, al
@@ -5100,7 +5100,7 @@ loc_1CE2E:
     mov     [bp+var_13], 0
     lea     ax, [bp+var_26]
     push    ax
-    call    sub_24E9E
+    call    transformed_shape_op
     add     sp, 2
 loc_1CECD:
     inc     [bp+var_2A]
@@ -5217,7 +5217,7 @@ loc_1CF97:
     mov     [bp+var_13], 0
     lea     ax, [bp+var_26]
     push    ax
-    call    sub_24E9E
+    call    transformed_shape_op
     add     sp, 2
 loc_1CFBF:
     mov     bx, [bp+var_3E]
@@ -5273,7 +5273,7 @@ loc_1D032:
 loc_1D036:
     lea     ax, [bp+var_26]
     push    ax
-    call    sub_24E9E
+    call    transformed_shape_op
     add     sp, 2
 loc_1D042:
     mov     bx, [bp+var_3E]
@@ -5305,7 +5305,7 @@ loc_1D076:
 loc_1D07A:
     lea     ax, [bp+var_26]
     push    ax
-    call    sub_24E9E
+    call    transformed_shape_op
     add     sp, 2
 loc_1D086:
     call    sub_25FF6
@@ -5325,15 +5325,15 @@ loc_1D097:
     mov     bx, ax
     mov     bx, [bx-5A30h]
     add     bx, [bp+var_40]
-    add     bx, word ptr dword_44D42
-    mov     es, word ptr dword_44D42+2
+    add     bx, word ptr trackdata14
+    mov     es, word ptr trackdata14+2
     mov     al, es:[bx]
     mov     [bp+var_10], al
     mov     bx, [bp+var_42]
     mov     bx, [bx-73C4h]
     add     bx, [bp+var_40]
-    add     bx, word ptr dword_454BC
-    mov     es, word ptr dword_454BC+2
+    add     bx, word ptr trackdata15
+    mov     es, word ptr trackdata15+2
     mov     al, es:[bx]
     mov     [bp+var_3A], al
     cmp     [bp+var_10], 0
@@ -5349,7 +5349,7 @@ loc_1D0DF:
     push    ax
     mov     al, [bp+var_3A]
     push    ax
-    call    sub_21A5A
+    call    map_terrain_track
     add     sp, 4
     mov     [bp+var_10], al
     mov     [bp+var_3A], 0
@@ -5754,7 +5754,7 @@ loc_1D47E:
 loc_1D4B0:
     cmp     byte_45DB2, 2
     jnz     short loc_1D52B
-    mov     ax, state.field_140
+    mov     ax, state.game_frame
     sub     dx, dx
     div     word_449D0
     mov     si, dx
@@ -6446,7 +6446,7 @@ loc_1D9CF:
     push    ax
     push    dx
     push    [bp+var_A]
-    call    setup_car_from_simd
+    call    setup_aero_trackdata
     add     sp, 6
     push    [bp+var_8]
     push    [bp+var_A]
@@ -6488,7 +6488,7 @@ loc_1DADE:
 loc_1DAEE:
     mov     ax, word_4499C
     sub     word_44DCC, ax
-    call    sub_195E0
+    call    do_opponent_op
     mov     [bp+var_2A2], 1
     mov     ax, word_449D0
     mov     cx, ax
@@ -6571,8 +6571,8 @@ loc_1DBB4:
 loc_1DBB9:
     mov     [bp+var_2C], 0FFFFh
     mov     [bp+var_2A6], 1
-    mov     ax, state.opponentstate.field_0
-    mov     dx, state.opponentstate.field_2
+    mov     ax, word ptr state.opponentstate.car_longvec1.long_x
+    mov     dx, word ptr state.opponentstate.car_longvec1.long_x+2
     mov     cl, 6
 loc_1DBCD:
     sar     dx, 1
@@ -6580,8 +6580,8 @@ loc_1DBCD:
     dec     cl
     jnz     short loc_1DBCD
     mov     [bp+var_2A0], ax
-    mov     ax, state.opponentstate.field_4
-    mov     dx, state.opponentstate.field_6
+    mov     ax, word ptr state.opponentstate.car_longvec1.long_y
+    mov     dx, word ptr state.opponentstate.car_longvec1.long_y+2
     mov     cl, 6
 loc_1DBE2:
     sar     dx, 1
@@ -6589,8 +6589,8 @@ loc_1DBE2:
     dec     cl
     jnz     short loc_1DBE2
     mov     [bp+var_29E], ax
-    mov     ax, state.opponentstate.field_8
-    mov     dx, state.opponentstate.field_A
+    mov     ax, word ptr state.opponentstate.car_longvec1.long_z
+    mov     dx, word ptr state.opponentstate.car_longvec1.long_z+2
     mov     cl, 6
 loc_1DBF7:
     sar     dx, 1
@@ -6606,7 +6606,7 @@ loc_1DBF7:
     cmp     ax, [bp+var_5D4]
     jle     short loc_1DC44
     mov     [bp+var_2A6], 0
-    mov     ax, state.opponentstate.field_18
+    mov     ax, state.opponentstate.car_rotate.x
 smart
     and     ah, 3
 nosmart
@@ -6798,7 +6798,7 @@ loc_1DDFC:
     call    sub_28D9E
 loc_1DE19:
     push    [bp+var_40]
-    call    sub_289E2
+    call    do_input_checking
     add     sp, 2
     or      ax, ax
     jz      short loc_1DE2E
@@ -6920,7 +6920,7 @@ loc_1DEC4:
     push    [bp+arg_8]
     sub     ax, ax
     push    ax
-    call    sub_24E06
+    call    select_rect_rotate
     add     sp, 0Ah
     cmp     [bp+arg_C], 0
     jz      short loc_1DEE4
@@ -6956,14 +6956,14 @@ loc_1DF1A:
     mov     [bp+var_9], 0
     lea     ax, [bp+var_1C]
     push    ax
-    call    sub_24E9E
+    call    transformed_shape_op
     add     sp, 2
     cmp     [bp+arg_A], 0
     jnz     short loc_1DF47
     jmp     loc_1DFCF
 loc_1DF47:
-    mov     ax, state.opponentstate.field_0
-    mov     dx, state.opponentstate.field_2
+    mov     ax, word ptr state.opponentstate.car_longvec1.long_x
+    mov     dx, word ptr state.opponentstate.car_longvec1.long_x+2
     mov     cl, 6
 loc_1DF50:
     sar     dx, 1
@@ -6972,8 +6972,8 @@ loc_1DF50:
     jnz     short loc_1DF50
     sub     ax, [bp+arg_0]
     mov     [bp+var_1C], ax
-    mov     ax, state.opponentstate.field_4
-    mov     dx, state.opponentstate.field_6
+    mov     ax, word ptr state.opponentstate.car_longvec1.long_y
+    mov     dx, word ptr state.opponentstate.car_longvec1.long_y+2
     mov     cl, 6
 loc_1DF67:
     sar     dx, 1
@@ -6982,8 +6982,8 @@ loc_1DF67:
     jnz     short loc_1DF67
     sub     ax, [bp+arg_2]
     mov     [bp+var_1A], ax
-    mov     ax, state.opponentstate.field_8
-    mov     dx, state.opponentstate.field_A
+    mov     ax, word ptr state.opponentstate.car_longvec1.long_z
+    mov     dx, word ptr state.opponentstate.car_longvec1.long_z+2
     mov     cl, 6
 loc_1DF7E:
     sar     dx, 1
@@ -7004,14 +7004,14 @@ loc_1DFA4:
 loc_1DFA8:
     mov     [bp+var_12], 0
     mov     [bp+var_10], 0
-    mov     ax, state.opponentstate.field_18
+    mov     ax, state.opponentstate.car_rotate.x
     neg     ax
     mov     [bp+var_E], ax
     mov     [bp+var_C], 400h
     mov     [bp+var_9], 0
     lea     ax, [bp+var_1C]
     push    ax
-    call    sub_24E9E
+    call    transformed_shape_op
     add     sp, 2
 loc_1DFCF:
     cmp     word_44984, 0

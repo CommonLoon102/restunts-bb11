@@ -2,8 +2,8 @@ seg006 segment byte public 'STUNTSC' use16
     extrn init_polyinfo:proc
     extrn sub_24DC2:proc
     extrn sub_24DE6:proc
-    extrn sub_24E06:proc
-    extrn sub_24E9E:proc
+    extrn select_rect_rotate:proc
+    extrn transformed_shape_op:proc
     extrn sub_25E24:proc
     extrn sub_25EE2:proc
     extrn sub_25F2E:proc

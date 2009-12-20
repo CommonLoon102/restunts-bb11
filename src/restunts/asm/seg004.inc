@@ -11,5 +11,5 @@ seg004 segment byte public 'STUNTSC' use16
     extrn setup_track:proc
     extrn off_2147C:word
     extrn sub_217CA:proc
-    extrn sub_21A5A:proc
+    extrn map_terrain_track:proc
 seg004 ends

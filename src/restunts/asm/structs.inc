@@ -27,6 +27,11 @@ ressize dw ?
 resofs dw ?
 resunk dw ?
 ends
+VECTORLONG struc
+long_x dd ?
+long_y dd ?
+long_z dd ?
+ends
 PLANE struc
 plane_yz dw ?
 plane_xy dw ?
@@ -59,72 +64,54 @@ simd_unk3 db 10 dup (?)
 collide_points POINT2D 2 dup (?)
 car_height dw ?
 wheel_coords VECTOR 4 dup (?)
-simd_unk4 db 536 dup (?)
-next_simd dw ?
-trackdata5_ptr dw ?
+steeringdots db 62 dup (?)
+spdcenter POINT2D ?
+spdnumpoints dw ?
+spdpoints db 208 dup (?)
+revcenter POINT2D ?
+revnumpoints dw ?
+revpoints db 256 dup (?)
+aerorestable dw ?
+ends
+SHAPE3DHEADER struc
+header_numverts db ?
+header_numprimitives db ?
+header_numpaints db ?
+header_reserved db ?
 ends
 CARSTATE struc
-field_0 dw ?
-field_2 dw ?
-field_4 dw ?
-field_6 dw ?
-field_8 dw ?
-field_A dw ?
-field_C dw ?
-field_E dw ?
-field_10 dw ?
-field_12 dw ?
-field_14 dw ?
-field_16 dw ?
-field_18 dw ?
-field_1A dw ?
-field_1C dw ?
+car_longvec1 VECTORLONG ?
+car_longvec2 VECTORLONG ?
+car_rotate VECTOR ?
 field_1E dw ?
 field_20 dw ?
-field_22 dw ?
-field_24 dw ?
-field_26 dw ?
-field_28 dw ?
-field_2A dw ?
-field_2C dw ?
-field_2E dw ?
-field_30 dw ?
-field_32 dw ?
-field_34 dw ?
+car_currpm dw ?
+car_lastrpm dw ?
+car_idlerpm2 dw ?
+car_gripdiff dw ?
+car_trackgrip dw ?
+car_trackgrip2 dw ?
+car_lasttrackgrip dw ?
+car_gearratio dw ?
+car_gearratioshr8 dw ?
+car_knob_x dw ?
 field_36 dw ?
-field_38 dw ?
-field_3A dw ?
-field_3C dw ?
-field_3E dw ?
+car_knob_y dw ?
+car_knob_x2 dw ?
+car_knob_y2 dw ?
+car_angle_z dw ?
 field_40 dw ?
 field_42 dw ?
 field_44 dw ?
-field_46 dw ?
+car_surfacegrip_sum dw ?
 field_48 dw ?
-field_4A dw ?
-field_4C dw ?
-field_4E dw ?
-field_50 dw ?
-field_52 dw ?
-field_54 dw ?
-field_56 dw ?
-field_58 dw ?
-field_5A dw ?
-field_5C dw ?
-field_5E dw ?
-field_60 dw ?
-field_62 dw ?
-field_64 dw ?
-field_66 dw ?
-field_68 dw ?
-field_6A dw ?
-field_6C dw ?
-field_6E dw ?
-field_70 dw ?
-field_72 dw ?
-field_74 dw ?
-field_76 dw ?
-field_78 dw ?
+car_trackdata3_index dw ?
+car_rc1 dw 4 dup (?)
+car_rc2 dw 4 dup (?)
+car_rc3 dw 4 dup (?)
+car_rc4 dw 4 dup (?)
+car_rc5 dw 4 dup (?)
+car_vec_unk VECTOR ?
 field_7A dw ?
 field_7C dw ?
 field_7E dw ?
@@ -134,66 +121,107 @@ field_84 dw ?
 field_86 dw ?
 field_88 dw ?
 field_8A dw ?
-field_8C dw ?
-field_8E dw ?
-field_90 dw ?
-field_92 dw ?
-field_94 dw ?
-field_96 dw ?
-field_98 dw ?
-field_9A dw ?
-field_9C dw ?
-field_9E dw ?
-field_A0 dw ?
-field_A2 dw ?
-field_A4 dw ?
-field_A6 dw ?
-field_A8 dw ?
-field_AA dw ?
-field_AC dw ?
-field_AE dw ?
-field_B0 dw ?
-field_B2 dw ?
-field_B4 dw ?
+car_vec_unk2 VECTOR 4 dup (?)
+car_vec_unk3 VECTOR ?
+car_vec_unk4 VECTOR ?
+car_vec_unk5 VECTOR ?
 field_B6 dw ?
 field_B8 dw ?
 field_BA dw ?
-field_BC db ?
-field_BD db ?
-field_BE db ?
+car_is_braking db ?
+car_is_accelerating db ?
+car_current_gear db ?
 field_BF db ?
 field_C0 db ?
 field_C1 db ?
-field_C2 dw ?
-field_C4 db ?
-field_C5 db ?
+car_surfacegrip_idx1 db ?
+car_surfacegrip_idx2 db ?
+car_surfacegrip_idx3 db ?
+car_surfacegrip_idx4 db ?
 field_C6 db ?
 field_C7 db ?
 field_C8 db ?
 field_C9 db ?
-field_CA db ?
-field_CB db ?
-field_CC db ?
+car_changing_gear db ?
+car_fpsmul2 db ?
+car_transmission db ?
 field_CD db ?
 field_CE db ?
 field_CF db ?
 ends
+SHAPE3D struc
+shape3d_numverts dw ?
+shape3d_verts dd ?
+shape3d_numprimitives dw ?
+shape3d_numpaints dw ?
+shape3d_primitives dd ?
+shape3d_cull1 dd ?
+shape3d_cull2 dd ?
+ends
+PRIMITIVE struc
+primitive_type db ?
+primitive_flags db ?
+ends
+SCENESHAPE struc
+scene_unk dw ?
+scene_rot_y dw ?
+scene_shapeptr dw ?
+scene_loshapeptr dw ?
+scene_unk2 db ?
+scene_material db ?
+scene_unk3 db ?
+scene_translateflag db ?
+scene_unk4 db ?
+scene_unk5 db ?
+ends
+TRANSFORMEDSHAPE struc
+ts_pos VECTOR ?
+ts_shapeptr dw ?
+ts_rectptr dw ?
+ts_rotvec VECTOR ?
+ts_unk dw ?
+ts_flags db ?
+ts_material db ?
+ends
+SHAPEINFO struc
+si_unk1 dw ?
+si_unk2 dw ?
+si_unk3 dw ?
+si_unk4 dw ?
+si_unk5 dw ?
+si_unk6 dw ?
+si_unk7 dw ?
+ends
+SHAPE2D struc
+s2d_width dw ?
+s2d_height dw ?
+s2d_unk1 dw ?
+s2d_unk2 dw ?
+s2d_pos_x dw ?
+s2d_pos_y dw ?
+s2d_unk3 db ?
+s2d_unk4 db ?
+s2d_unk5 db ?
+s2d_unk6 db ?
+ends
 GAMESTATE struc
-field_0 dw ?
-field_2 dw ?
-field_4_2 db 284 dup (?)
-field_120 VECTOR ?
-field_126 db 18 dup (?)
-field_138 dw ?
-field_13A dw ?
+game_longvecs1 VECTORLONG 8 dup (?)
+game_longvecs2 VECTORLONG 8 dup (?)
+game_longvecs3 VECTORLONG 8 dup (?)
+game_vec1 VECTOR ?
+game_vec2 VECTOR ?
+game_vec3 VECTOR ?
+game_vec4 VECTOR ?
+game_frame_in_sec dw ?
+game_frames_per_sec dw ?
 field_13C dw ?
 field_13E dw ?
-field_140 dw ?
+game_frame dw ?
 field_142 dw ?
 field_144 dw ?
 field_146 dw ?
-field_148 dw ?
-field_14A dw ?
+game_frame2 dw ?
+game_fps_counter dw ?
 field_14C dw ?
 field_14E dw ?
 field_150 dw ?
@@ -201,11 +229,15 @@ playerstate CARSTATE ?
 opponentstate CARSTATE ?
 field_2F2 dw ?
 field_2F4 dw ?
-field_2F6 dw ?
-field_2F8 dw ?
-field_2FA dw ?
-field_2FC dw ?
-field_2FE db 240 dup (?)
+game_startcol dw ?
+game_startcol2 dw ?
+game_startrow dw ?
+game_startrow2 dw ?
+field_2FE dw 24 dup (?)
+field_32E dw 24 dup (?)
+field_35E dw 24 dup (?)
+field_38E db 48 dup (?)
+field_3BE db 48 dup (?)
 kevinseed db 6 dup (?)
 field_3F4 db ?
 field_3F5 db ?

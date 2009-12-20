@@ -63,7 +63,7 @@ seg000 segment byte public 'STUNTSC' use16
     public off_1314A
     public end_hiscore
     public security_check
-    public sub_146E4
+    public set_default_car
 _main proc far
     var_12 = word ptr -18
     var_10 = word ptr -16
@@ -191,56 +191,56 @@ loc_10086:
     mov     word ptr trackdata3+2, dx
     add     [bp+var_4], 70Ah
     mov     ax, [bp+var_4]
-    mov     word ptr dword_44D3E, ax
-    mov     word ptr dword_44D3E+2, dx
+    mov     word ptr trackdata4, ax
+    mov     word ptr trackdata4+2, dx
     add     [bp+var_4], 80h ; '€'
     mov     ax, [bp+var_4]
-    mov     word ptr dword_44D4A, ax
-    mov     word ptr dword_44D4A+2, dx
+    mov     word ptr trackdata5, ax
+    mov     word ptr trackdata5+2, dx
     add     [bp+var_4], 80h ; '€'
     mov     ax, [bp+var_4]
-    mov     word_454D0, ax
-    mov     word_454D2, dx
+    mov     word ptr trackdata6, ax
+    mov     word ptr trackdata6+2, dx
     add     [bp+var_4], 80h ; '€'
     mov     ax, [bp+var_4]
-    mov     word_454B4, ax
-    mov     word_454B6, dx
+    mov     word ptr trackdata7, ax
+    mov     word ptr trackdata7+2, dx
     add     [bp+var_4], 80h ; '€'
     mov     ax, [bp+var_4]
-    mov     word_45DB4, ax
-    mov     word_45DB6, dx
+    mov     word ptr trackdata8, ax
+    mov     word ptr trackdata8+2, dx
     add     [bp+var_4], 60h ; '`'
     mov     ax, [bp+var_4]
-    mov     word_449DC, ax
-    mov     word_449DE, dx
+    mov     word ptr trackdata9, ax
+    mov     word ptr trackdata9+2, dx
     add     [bp+var_4], 180h
     mov     ax, [bp+var_4]
-    mov     word ptr dword_42A30, ax
-    mov     word ptr dword_42A30+2, dx
+    mov     word ptr trackdata10, ax
+    mov     word ptr trackdata10+2, dx
     add     [bp+var_4], 120h
     mov     ax, [bp+var_4]
-    mov     word ptr dword_44CE6, ax
-    mov     word ptr dword_44CE6+2, dx
+    mov     word ptr trackdata11, ax
+    mov     word ptr trackdata11+2, dx
     add     [bp+var_4], 16Ch
     mov     ax, [bp+var_4]
-    mov     word ptr dword_449EE, ax
-    mov     word ptr dword_449EE+2, dx
+    mov     word ptr trackdata12, ax
+    mov     word ptr trackdata12+2, dx
     add     [bp+var_4], 0F0h ; 'ð'
     mov     ax, [bp+var_4]
-    mov     word ptr dword_46162, ax
-    mov     word ptr dword_46162+2, dx
+    mov     word ptr trackdata13, ax
+    mov     word ptr trackdata13+2, dx
     add     [bp+var_4], 1Ah
     mov     ax, [bp+var_4]
-    mov     word ptr dword_44D42, ax
-    mov     word ptr dword_44D42+2, dx
+    mov     word ptr trackdata14, ax
+    mov     word ptr trackdata14+2, dx
     add     [bp+var_4], 385h
     mov     ax, [bp+var_4]
-    mov     word ptr dword_454BC, ax
-    mov     word ptr dword_454BC+2, dx
+    mov     word ptr trackdata15, ax
+    mov     word ptr trackdata15+2, dx
     add     [bp+var_4], 385h
     mov     ax, [bp+var_4]
-    mov     word ptr dword_4562E, ax
-    mov     word ptr dword_4562E+2, dx
+    mov     word ptr trackdata16, ax
+    mov     word ptr trackdata16+2, dx
     add     [bp+var_4], 2EE0h
     mov     ax, [bp+var_4]
     mov     word ptr trackdata17, ax
@@ -251,12 +251,12 @@ loc_10086:
     mov     word ptr trackdata18+2, dx
     add     [bp+var_4], 385h
     mov     ax, [bp+var_4]
-    mov     word ptr dword_45E56, ax
-    mov     word ptr dword_45E56+2, dx
+    mov     word ptr trackdata19, ax
+    mov     word ptr trackdata19+2, dx
     add     [bp+var_4], 385h
     mov     ax, [bp+var_4]
-    mov     word ptr dword_443F6, ax
-    mov     word ptr dword_443F6+2, dx
+    mov     word ptr trackdata20, ax
+    mov     word ptr trackdata20+2, dx
     add     [bp+var_4], 7ACh
     mov     ax, [bp+var_4]
     mov     word ptr trackdata21, ax
@@ -267,8 +267,8 @@ loc_10086:
     mov     word ptr trackdata22+2, dx
     add     [bp+var_4], 385h
     mov     ax, [bp+var_4]
-    mov     word_463DC, ax
-    mov     word_463DE, dx
+    mov     word ptr trackdata23, ax
+    mov     word ptr trackdata23+2, dx
     add     [bp+var_4], 30h ; '0'
     call    sub_22532
     mov     ax, offset aKevin; "kevin"
@@ -284,17 +284,17 @@ loc_10086:
     sub     si, si
     mov     ax, 1
     push    ax
-    call    sub_289E2
+    call    do_input_checking
     add     sp, 2
     mov     ax, 1
     push    ax
-    call    sub_289E2
+    call    do_input_checking
     add     sp, 2
     call    sub_28DB6
     mov     byte_3B8F8, 0
     mov     byte_45E1A, 1
     push    cs
-    call    near ptr sub_146E4
+    call    near ptr set_default_car
     mov     si, 1
     jmp     loc_103F1
     nop
@@ -357,19 +357,19 @@ loc_1031C:
     pop     si
     sub     si, si
 loc_1032F:
-    les     bx, dword_44D42
+    les     bx, trackdata14
     mov     al, es:[bx+si]
-    les     bx, dword_443F6
+    les     bx, trackdata20
     mov     es:[bx+si], al
     inc     si
     cmp     si, 70Ah
     jl      short loc_1032F
     sub     si, si
 loc_10346:
-    les     bx, dword_443F6
+    les     bx, trackdata20
     mov     al, byte_3B80C[si]
     mov     es:[bx+si+70Ah], al
-    les     bx, dword_443F6
+    les     bx, trackdata20
     mov     al, byte_3B85E[si]
     mov     es:[bx+si+75Bh], al
     inc     si
@@ -447,8 +447,8 @@ loc_103F1:
     push    ax              ; char *
     call    combine_file_path
     add     sp, 8
-    push    word ptr dword_44D42+2
-    push    word ptr dword_44D42
+    push    word ptr trackdata14+2
+    push    word ptr trackdata14
     mov     ax, offset unk_44D68
     push    ax
     call    load_binary_file
@@ -539,19 +539,19 @@ loc_104D2:
     pop     si
     sub     si, si
 loc_104E5:
-    les     bx, dword_443F6
+    les     bx, trackdata20
     mov     al, es:[bx+si]
-    les     bx, dword_44D42
+    les     bx, trackdata14
     mov     es:[bx+si], al
     inc     si
     cmp     si, 70Ah
     jl      short loc_104E5
     sub     si, si
 loc_104FC:
-    les     bx, dword_443F6
+    les     bx, trackdata20
     mov     al, es:[bx+si+70Ah]
     mov     byte_3B80C[si], al
-    les     bx, dword_443F6
+    les     bx, trackdata20
     mov     al, es:[bx+si+75Bh]
     mov     byte_3B85E[si], al
     inc     si
@@ -1397,7 +1397,7 @@ loc_10DA0:
     add     sp, 0Ah
     call    sub_28D9E
     push    [bp+var_40]
-    call    sub_289E2
+    call    do_input_checking
     add     sp, 2
     mov     [bp+var_46], ax
     or      ax, ax
@@ -1451,7 +1451,7 @@ loc_10E66:
     call    get_timerdelta2
     mov     [bp+var_40], ax
     push    ax
-    call    sub_289E2
+    call    do_input_checking
     add     sp, 2
     mov     [bp+var_46], ax
     add     si, [bp+var_40]
@@ -1622,7 +1622,7 @@ loc_10FEF:
     add     sp, 0Eh
     mov     [bp+var_8], ax
     push    ax
-    call    sub_287C4
+    call    input_checking
     add     sp, 2
     mov     [bp+var_A], ax
     mov     ax, 2AAh
@@ -1743,7 +1743,7 @@ loc_110ED:
     add     sp, 6
     mov     word ptr wndsprite, ax
     mov     word ptr wndsprite+2, dx
-    les     bx, dword_44D42
+    les     bx, trackdata14
     mov     al, es:[bx+384h]
     sub     ah, ah
     push    ax
@@ -1825,7 +1825,7 @@ loc_111F9:
     mov     ax, 34h ; '4'
     imul    word_46170
     mov     di, ax
-    les     bx, dword_44CE6
+    les     bx, trackdata11
     cmp     word ptr es:[bx+di+32h], 0FFFFh
     jnz     short loc_11210
     jmp     loc_112E5
@@ -2033,7 +2033,7 @@ loc_113E5:
     inc     byte_44AE2
 loc_11423:
     push    [bp+var_C]
-    call    sub_287C4
+    call    input_checking
     add     sp, 2
     mov     [bp+var_E], ax
     mov     ax, 2EEh
@@ -2147,8 +2147,8 @@ loc_114E2:
     add     sp, 8
     or      si, si
     jz      short loc_11552
-    push    word ptr dword_44D42+2
-    push    word ptr dword_44D42
+    push    word ptr trackdata14+2
+    push    word ptr trackdata14
     mov     ax, 95F8h
     push    ax
     call    load_binary_file
@@ -2219,8 +2219,8 @@ loc_1159A:
     cmp     [bp+arg_0], 0
     jnz     short loc_1160A
     mov     byte_3B8FB, 1
-    push    word ptr dword_44CE6+2
-    push    word ptr dword_44CE6
+    push    word ptr trackdata11+2
+    push    word ptr trackdata11
     mov     ax, 95F8h
     push    ax
     mov     ax, 0Ah
@@ -2272,7 +2272,7 @@ loc_11648:
     mov     ax, 34h ; '4'
     imul    [bp+var_3A]
     mov     bx, ax
-    les     si, dword_44CE6
+    les     si, trackdata11
     lea     di, [bx+si]
     lea     si, [bp+var_38]
     mov     cx, 1Ah
@@ -2284,8 +2284,8 @@ loc_11648:
     cwd
     push    dx
     push    ax
-    push    word ptr dword_44CE6+2
-    push    word ptr dword_44CE6
+    push    word ptr trackdata11+2
+    push    word ptr trackdata11
     mov     ax, 95F8h
     push    ax
     call    sub_3250B
@@ -2558,8 +2558,8 @@ sub_118D4 proc far
     shl     bx, 1
     mov     ax, 34h ; '4'
     imul    word ptr [bx-5600h]
-    add     ax, word ptr dword_44CE6
-    mov     dx, word ptr dword_44CE6+2
+    add     ax, word ptr trackdata11
+    mov     dx, word ptr trackdata11+2
     push    si
     lea     di, [bp+var_4A]
     mov     si, ax
@@ -2714,7 +2714,7 @@ sub_11A1C proc far
     jnz     short loc_11A2E
     shl     [bp+arg_0], 1
 loc_11A2E:
-    les     bx, dword_44CE6
+    les     bx, trackdata11
     mov     ax, [bp+arg_0]
     cmp     es:[bx+16Ah], ax
     ja      short loc_11A3F
@@ -2738,7 +2738,7 @@ loc_11A5D:
     mov     al, 34h ; '4'
     imul    [bp+var_38]
     mov     di, ax
-    les     bx, dword_44CE6
+    les     bx, trackdata11
     mov     ax, [bp+arg_0]
     cmp     es:[bx+di+32h], ax
     jbe     short loc_11A46
@@ -2797,7 +2797,7 @@ loc_11AED:
     push    ax              ; char *
     call    _strcpy
     add     sp, 4
-    les     bx, dword_44CE6
+    les     bx, trackdata11
     lea     di, [bx+138h]
     lea     si, [bp+var_36]
     mov     cx, 1Ah
@@ -2846,7 +2846,7 @@ loc_11AED:
     push    ax              ; char *
     call    _strcpy
     add     sp, 4
-    les     bx, dword_44CE6
+    les     bx, trackdata11
     lea     di, [bx+138h]
     lea     si, [bp+var_36]
     mov     cx, 1Ah
@@ -2888,8 +2888,8 @@ loc_11BC3:
     shl     bx, 1
     mov     ax, 34h ; '4'
     imul    word ptr [bx-5600h]
-    add     ax, word ptr dword_44CE6
-    mov     dx, word ptr dword_44CE6+2
+    add     ax, word ptr trackdata11
+    mov     dx, word ptr trackdata11+2
     mov     cx, ax
     mov     ax, 34h ; '4'
     mov     bx, dx
@@ -3376,7 +3376,7 @@ loc_11FC8:
     push    ax
     push    dx
     push    [bp+var_4]
-    call    setup_car_from_simd
+    call    setup_aero_trackdata
     add     sp, 6
     call    sub_28F7C
     sub     ax, ax
@@ -3633,7 +3633,7 @@ loc_12229:
     push    ax
     call    init_game_state
     add     sp, 2
-    mov     state.playerstate.field_CC, 1
+    mov     state.playerstate.car_transmission, 1
     mov     [bp+var_4A], 0
 loc_122CE:
     mov     ax, 0A6EAh
@@ -3646,7 +3646,7 @@ loc_122CE:
     push    ax
     call    sub_17A78
     add     sp, 8
-    mov     ax, state.playerstate.field_2A
+    mov     ax, state.playerstate.car_trackgrip
     mov     cl, 8
     shr     ax, cl
     mov     [bp+var_8], ax
@@ -3791,7 +3791,7 @@ loc_1244F:
     push    ax
     push    [bp+var_F8]
     push    ax
-    call    sub_24E06
+    call    select_rect_rotate
     add     sp, 0Ah
     mov     bx, [bp+arg_2]
     mov     al, byte_4386C
@@ -3806,7 +3806,7 @@ loc_1247A:
     mov     [bp+var_1F], al
     lea     ax, [bp+var_32]
     push    ax
-    call    sub_24E9E
+    call    transformed_shape_op
     add     sp, 2
     mov     al, [bp+var_38]
     cmp     [bp+var_F0], al
@@ -3892,7 +3892,7 @@ loc_12541:
     inc     byte_44AE2
 loc_12585:
     push    [bp+var_4C]
-    call    sub_287C4
+    call    input_checking
     add     sp, 2
     mov     si, ax
     mov     ax, 3D6h
@@ -4657,7 +4657,7 @@ loc_12D2C:
     add     sp, 0Eh
     mov     [bp+var_10], ax
     push    ax
-    call    sub_287C4
+    call    input_checking
     add     sp, 2
     mov     si, ax
     mov     ax, 462h
@@ -5971,7 +5971,7 @@ loc_1398C:
 loc_1398D:
     cmp     di, 385h
     jge     short loc_139A6
-    les     bx, dword_44D42
+    les     bx, trackdata14
     mov     al, es:[bx+di]
     les     bx, [bp+var_4A]
     cmp     es:[bx+di], al
@@ -6014,7 +6014,7 @@ loc_139E1:
     jnz     short loc_13A0F
     or      ax, ax
     jz      short loc_13A0F
-    les     bx, dword_44CE6
+    les     bx, trackdata11
     cmp     es:[bx+16Ah], ax
     jbe     short loc_13A0F
     mov     [bp+var_6E], 1
@@ -6447,7 +6447,7 @@ loc_13EA0:
     call    sub_28D9E
 loc_13EA5:
     push    di
-    call    sub_287C4
+    call    input_checking
     add     sp, 2
     mov     si, ax
     cmp     si, 0Dh
@@ -6923,7 +6923,7 @@ loc_14391:
     mov     [bp+var_92], al
 loc_14395:
     push    [bp+var_72]
-    call    sub_287C4
+    call    input_checking
     add     sp, 2
     mov     si, ax
     or      si, si
@@ -7270,7 +7270,7 @@ loc_146C5:
     pop     bp
     retf
 security_check endp
-sub_146E4 proc far
+set_default_car proc far
 
     mov     player_car_id, 43h ; 'C'
     mov     byte_449A5, 4Fh ; 'O'
@@ -7282,6 +7282,6 @@ sub_146E4 proc far
     mov     byte_449A9, 1
     mov     opponent_car_id, 0FFh
     retf
-sub_146E4 endp
+set_default_car endp
 seg000 ends
 end
