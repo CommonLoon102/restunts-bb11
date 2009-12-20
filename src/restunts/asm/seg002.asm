@@ -48,8 +48,8 @@ seg002 segment byte public 'STUNTSC' use16
     assume es:nothing, ss:nothing, ds:dseg
     public sub_19DC6
     public init_kevinrandom
-    public sub_19E4E
-    public sub_19E7B
+    public get_kevinrandom_seed
+    public get_kevinrandom
     public init_div0
     ; align 2
     db 144
@@ -146,7 +146,7 @@ init_kevinrandom proc far
     pop     bp
     retf
 init_kevinrandom endp
-sub_19E4E proc far
+get_kevinrandom_seed proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -170,8 +170,8 @@ sub_19E4E proc far
     pop     bp
     pop     bp
     retf
-sub_19E4E endp
-sub_19E7B proc far
+get_kevinrandom_seed endp
+get_kevinrandom proc far
 
     mov     al, byte_4594F
     add     al, byte_4594E
@@ -215,7 +215,7 @@ loc_19EC3:
     pop     ds
     pop     bp
     iret
-sub_19E7B endp
+get_kevinrandom endp
 init_div0 proc far
 
     push    ds

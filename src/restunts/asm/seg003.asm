@@ -435,8 +435,8 @@ loc_1A162:
 loc_1A167:
     cmp     byte_463E0, 0
     jnz     short loc_1A1BE
-    mov     ax, word_445E6
-    mov     dx, word_445E8
+    mov     ax, state.playerstate.field_0
+    mov     dx, state.playerstate.field_2
     mov     cl, 6
 loc_1A177:
     sar     dx, 1
@@ -444,8 +444,8 @@ loc_1A177:
     dec     cl
     jnz     short loc_1A177
     mov     [bp+var_EC], ax
-    mov     ax, word_445EA
-    mov     dx, word_445EC
+    mov     ax, state.playerstate.field_4
+    mov     dx, state.playerstate.field_6
     mov     cl, 6
 loc_1A18C:
     sar     dx, 1
@@ -453,8 +453,8 @@ loc_1A18C:
     dec     cl
     jnz     short loc_1A18C
     mov     [bp+var_EA], ax
-    mov     ax, word_445EE
-    mov     dx, word_445F0
+    mov     ax, state.playerstate.field_8
+    mov     dx, state.playerstate.field_A
     mov     cl, 6
 loc_1A1A1:
     sar     dx, 1
@@ -462,15 +462,15 @@ loc_1A1A1:
     dec     cl
     jnz     short loc_1A1A1
     mov     [bp+var_E8], ax
-    mov     ax, word_44600
+    mov     ax, state.playerstate.field_1A
     mov     [bp+var_46], ax
-    mov     ax, word_44602
+    mov     ax, state.playerstate.field_1C
     mov     [bp+var_5A], ax
-    mov     ax, word_445FE
+    mov     ax, state.playerstate.field_18
     jmp     short loc_1A20C
 loc_1A1BE:
-    mov     ax, word_446B6
-    mov     dx, word_446B8
+    mov     ax, state.opponentstate.field_0
+    mov     dx, state.opponentstate.field_2
     mov     cl, 6
 loc_1A1C7:
     sar     dx, 1
@@ -478,8 +478,8 @@ loc_1A1C7:
     dec     cl
     jnz     short loc_1A1C7
     mov     [bp+var_EC], ax
-    mov     ax, word_446BA
-    mov     dx, word_446BC
+    mov     ax, state.opponentstate.field_4
+    mov     dx, state.opponentstate.field_6
     mov     cl, 6
 loc_1A1DC:
     sar     dx, 1
@@ -487,8 +487,8 @@ loc_1A1DC:
     dec     cl
     jnz     short loc_1A1DC
     mov     [bp+var_EA], ax
-    mov     ax, word_446BE
-    mov     dx, word_446C0
+    mov     ax, state.opponentstate.field_8
+    mov     dx, state.opponentstate.field_A
     mov     cl, 6
 loc_1A1F1:
     sar     dx, 1
@@ -496,11 +496,11 @@ loc_1A1F1:
     dec     cl
     jnz     short loc_1A1F1
     mov     [bp+var_E8], ax
-    mov     ax, word_446D0
+    mov     ax, state.opponentstate.field_1A
     mov     [bp+var_46], ax
-    mov     ax, word_446D2
+    mov     ax, state.opponentstate.field_1C
     mov     [bp+var_5A], ax
-    mov     ax, word_446CE
+    mov     ax, state.opponentstate.field_18
 loc_1A20C:
     mov     [bp+var_F4], ax
     mov     [bp+var_5C], 0FFFFh
@@ -760,14 +760,14 @@ loc_1A48E:
 loc_1A4D0:
     mov     [bp+var_FE], 0
 loc_1A4D6:
-    cmp     word_445D4, 0
+    cmp     state.field_140, 0
     jnz     short loc_1A4E4
     mov     bx, word_46468
     jmp     short loc_1A4E8
     ; align 2
     db 144
 loc_1A4E4:
-    mov     bx, word_445D4
+    mov     bx, state.field_140
 loc_1A4E8:
 smart
     and     bx, 0Fh
@@ -916,10 +916,10 @@ loc_1A66D:
     mov     [bp+var_134], al
     cmp     byte_3B8FA, 0
     jz      short loc_1A69D
-    mov     al, byte ptr word_445E8
+    mov     al, byte ptr state.playerstate.field_2
     mov     [bp+var_D8], al
     mov     al, 1Dh
-    sub     al, byte ptr word_445F0
+    sub     al, byte ptr state.playerstate.field_A
     mov     [bp+var_E2], al
 loc_1A69D:
     sub     si, si
@@ -1270,19 +1270,19 @@ loc_1A9C8:
     jnz     short loc_1A9E2
     jmp     loc_1AB65
 loc_1A9E2:
-    cmp     byte_446AF, 2
+    cmp     state.playerstate.field_C9, 2
     jnz     short loc_1A9EC
     jmp     loc_1AB65
 loc_1A9EC:
     sub     ax, ax
     push    ax
-    mov     ax, word_445FE
+    mov     ax, state.playerstate.field_18
     neg     ax
     push    ax
-    mov     ax, word_44600
+    mov     ax, state.playerstate.field_1A
     neg     ax
     push    ax
-    mov     ax, word_44602
+    mov     ax, state.playerstate.field_1C
     neg     ax
     push    ax
     call    mat_rot_zxy
@@ -1368,14 +1368,14 @@ loc_1AA8C:
     add     sp, 6
     mov     ax, [bp+var_44]
     cwd
-    add     ax, word_445E6
-    adc     dx, word_445E8
+    add     ax, state.playerstate.field_0
+    adc     dx, state.playerstate.field_2
     mov     ax, dx
     mov     [bp+var_F6], al
     mov     ax, [bp+var_40]
     cwd
-    add     ax, word_445EE
-    adc     dx, word_445F0
+    add     ax, state.playerstate.field_8
+    adc     dx, state.playerstate.field_A
     mov     ax, dx
     sub     al, 1Dh
     neg     al
@@ -1387,13 +1387,13 @@ loc_1AA8C:
 loc_1AAF4:
     cmp     di, 0FFFFh
     jz      short loc_1AB65
-    cmp     byte_446A8, 4
+    cmp     byte ptr state.playerstate.field_C2, 4
     jnz     short loc_1AB15
-    cmp     byte_446A9, 4
+    cmp     byte ptr state.playerstate.field_C2+1, 4
     jnz     short loc_1AB15
-    cmp     byte_446AA, 4
+    cmp     state.playerstate.field_C4, 4
     jnz     short loc_1AB15
-    cmp     byte_446AB, 4
+    cmp     state.playerstate.field_C5, 4
     jz      short loc_1AB65
 loc_1AB15:
     mov     [bp+var_F2], 0
@@ -1435,19 +1435,19 @@ loc_1AB79:
     jz      short loc_1AB8A
     jmp     loc_1AD0E
 loc_1AB8A:
-    cmp     byte_4477F, 2
+    cmp     state.opponentstate.field_C9, 2
     jnz     short loc_1AB94
     jmp     loc_1AD0E
 loc_1AB94:
     sub     ax, ax
     push    ax
-    mov     ax, word_446CE
+    mov     ax, state.opponentstate.field_18
     neg     ax
     push    ax
-    mov     ax, word_446D0
+    mov     ax, state.opponentstate.field_1A
     neg     ax
     push    ax
-    mov     ax, word_446D2
+    mov     ax, state.opponentstate.field_1C
     neg     ax
     push    ax
     call    mat_rot_zxy
@@ -1533,14 +1533,14 @@ loc_1AC34:
     add     sp, 6
     mov     ax, [bp+var_44]
     cwd
-    add     ax, word_446B6
-    adc     dx, word_446B8
+    add     ax, state.opponentstate.field_0
+    adc     dx, state.opponentstate.field_2
     mov     ax, dx
     mov     [bp+var_F6], al
     mov     ax, [bp+var_40]
     cwd
-    add     ax, word_446BE
-    adc     dx, word_446C0
+    add     ax, state.opponentstate.field_8
+    adc     dx, state.opponentstate.field_A
     mov     ax, dx
     sub     al, 1Dh
     neg     al
@@ -1552,13 +1552,13 @@ loc_1AC34:
 loc_1AC9C:
     cmp     di, 0FFFFh
     jz      short loc_1AD0E
-    cmp     byte_44778, 4
+    cmp     byte ptr state.opponentstate.field_C2, 4
     jnz     short loc_1ACBD
-    cmp     byte_44779, 4
+    cmp     byte ptr state.opponentstate.field_C2+1, 4
     jnz     short loc_1ACBD
-    cmp     byte_4477A, 4
+    cmp     state.opponentstate.field_C4, 4
     jnz     short loc_1ACBD
-    cmp     byte_4477B, 4
+    cmp     state.opponentstate.field_C5, 4
     jz      short loc_1AD0E
 loc_1ACBD:
     mov     [bp+var_F2], 0
@@ -2361,7 +2361,7 @@ loc_1B493:
     jnz     short loc_1B4A0
     jmp     loc_1B626
 loc_1B4A0:
-    cmp     byte_448BE, 0
+    cmp     state.field_42A, 0
     jnz     short loc_1B4AA
     jmp     loc_1B72E
 loc_1B4AA:
@@ -2617,7 +2617,7 @@ loc_1B743:
     jz      short loc_1B758
     jmp     loc_1B9DA
 loc_1B758:
-    cmp     byte_448BE, 0
+    cmp     state.field_42A, 0
     jnz     short loc_1B762
     jmp     loc_1B89F
 loc_1B762:
@@ -2652,8 +2652,8 @@ loc_1B782:
     mov     bx, ax
     mov     ax, [bx-72DCh]
     mov     dx, [bx-72DAh]
-    add     ax, word_445E6
-    adc     dx, word_445E8
+    add     ax, state.playerstate.field_0
+    adc     dx, state.playerstate.field_2
     mov     cl, 6
 loc_1B7B9:
     sar     dx, 1
@@ -2666,8 +2666,8 @@ loc_1B7B9:
     mov     bx, [bp+var_150]
     mov     ax, [bx-727Ch]
     mov     dx, [bx-727Ah]
-    add     ax, word_445EA
-    adc     dx, word_445EC
+    add     ax, state.playerstate.field_4
+    adc     dx, state.playerstate.field_6
     mov     cl, 6
 loc_1B7E0:
     sar     dx, 1
@@ -2680,8 +2680,8 @@ loc_1B7E0:
     mov     bx, [bp+var_150]
     mov     ax, [bx-721Ch]
     mov     dx, [bx-721Ah]
-    add     ax, word_445EE
-    adc     dx, word_445F0
+    add     ax, state.playerstate.field_8
+    adc     dx, state.playerstate.field_A
     mov     cl, 6
 loc_1B808:
     sar     dx, 1
@@ -2737,8 +2737,8 @@ loc_1B896:
 loc_1B89F:
     mov     [bp+var_12E], 20B4h
     mov     bx, word_46434
-    mov     ax, word_445E6
-    mov     dx, word_445E8
+    mov     ax, state.playerstate.field_0
+    mov     dx, state.playerstate.field_2
     mov     cl, 6
 loc_1B8B2:
     sar     dx, 1
@@ -2748,8 +2748,8 @@ loc_1B8B2:
     sub     ax, [bp+var_58]
     mov     [bx], ax
     mov     bx, word_46434
-    mov     ax, word_445EA
-    mov     dx, word_445EC
+    mov     ax, state.playerstate.field_4
+    mov     dx, state.playerstate.field_6
     mov     cl, 6
 loc_1B8CC:
     sar     dx, 1
@@ -2759,8 +2759,8 @@ loc_1B8CC:
     sub     ax, [bp+var_56]
     mov     [bx+2], ax
     mov     bx, word_46434
-    mov     ax, word_445EE
-    mov     dx, word_445F0
+    mov     ax, state.playerstate.field_8
+    mov     dx, state.playerstate.field_A
     mov     cl, 6
 loc_1B8E7:
     sar     dx, 1
@@ -2794,7 +2794,7 @@ loc_1B914:
     push    ax
     mov     ax, 8ECAh
     push    ax
-    push    word_44606
+    push    state.playerstate.field_20
     mov     ax, word_43892
     mov     dx, word_43894
     add     ax, 30h ; '0'
@@ -2812,7 +2812,7 @@ loc_1B95A:
     mov     byte ptr [bx+12h], 0Ch
     jmp     short loc_1B990
 loc_1B964:
-    cmp     byte_446AF, 1
+    cmp     state.playerstate.field_C9, 1
     jnz     short loc_1B988
     push    si
     push    di
@@ -2837,15 +2837,15 @@ loc_1B988:
     mov     byte ptr [bx+12h], 4
 loc_1B990:
     mov     bx, word_46434
-    mov     ax, word_44602
+    mov     ax, state.playerstate.field_1C
     neg     ax
     mov     [bx+0Ah], ax
     mov     bx, word_46434
-    mov     ax, word_44600
+    mov     ax, state.playerstate.field_1A
     neg     ax
     mov     [bx+0Ch], ax
     mov     bx, word_46434
-    mov     ax, word_445FE
+    mov     ax, state.playerstate.field_18
     neg     ax
     mov     [bx+0Eh], ax
     mov     bx, word_46434
@@ -2878,7 +2878,7 @@ loc_1B9EF:
     jz      short loc_1BA04
     jmp     loc_1BC89
 loc_1BA04:
-    cmp     byte_448BE, 0
+    cmp     state.field_42A, 0
     jnz     short loc_1BA0E
     jmp     loc_1BB4C
 loc_1BA0E:
@@ -2913,8 +2913,8 @@ loc_1BA2E:
     mov     bx, ax
     mov     ax, [bx-72DCh]
     mov     dx, [bx-72DAh]
-    add     ax, word_446B6
-    adc     dx, word_446B8
+    add     ax, state.opponentstate.field_0
+    adc     dx, state.opponentstate.field_2
     mov     cl, 6
 loc_1BA65:
     sar     dx, 1
@@ -2927,8 +2927,8 @@ loc_1BA65:
     mov     bx, [bp+var_150]
     mov     ax, [bx-727Ch]
     mov     dx, [bx-727Ah]
-    add     ax, word_446BA
-    adc     dx, word_446BC
+    add     ax, state.opponentstate.field_4
+    adc     dx, state.opponentstate.field_6
     mov     cl, 6
 loc_1BA8C:
     sar     dx, 1
@@ -2941,8 +2941,8 @@ loc_1BA8C:
     mov     bx, [bp+var_150]
     mov     ax, [bx-721Ch]
     mov     dx, [bx-721Ah]
-    add     ax, word_446BE
-    adc     dx, word_446C0
+    add     ax, state.opponentstate.field_8
+    adc     dx, state.opponentstate.field_A
     mov     cl, 6
 loc_1BAB4:
     sar     dx, 1
@@ -2998,8 +2998,8 @@ loc_1BB43:
 loc_1BB4C:
     mov     [bp+var_12E], 20C2h
     mov     bx, word_46434
-    mov     ax, word_446B6
-    mov     dx, word_446B8
+    mov     ax, state.opponentstate.field_0
+    mov     dx, state.opponentstate.field_2
     mov     cl, 6
 loc_1BB5F:
     sar     dx, 1
@@ -3009,8 +3009,8 @@ loc_1BB5F:
     sub     ax, [bp+var_58]
     mov     [bx], ax
     mov     bx, word_46434
-    mov     ax, word_446BA
-    mov     dx, word_446BC
+    mov     ax, state.opponentstate.field_4
+    mov     dx, state.opponentstate.field_6
     mov     cl, 6
 loc_1BB79:
     sar     dx, 1
@@ -3020,8 +3020,8 @@ loc_1BB79:
     sub     ax, [bp+var_56]
     mov     [bx+2], ax
     mov     bx, word_46434
-    mov     ax, word_446BE
-    mov     dx, word_446C0
+    mov     ax, state.opponentstate.field_8
+    mov     dx, state.opponentstate.field_A
     mov     cl, 6
 loc_1BB94:
     sar     dx, 1
@@ -3053,7 +3053,7 @@ loc_1BBC0:
     push    ax
     mov     ax, 8F9Ah
     push    ax
-    push    word_446D6
+    push    state.opponentstate.field_20
     mov     ax, word_438A8
     mov     dx, word_438AA
     add     ax, 30h ; '0'
@@ -3071,7 +3071,7 @@ loc_1BC06:
     mov     byte ptr [bx+12h], 0Ch
     jmp     short loc_1BC3E
 loc_1BC10:
-    cmp     byte_4477F, 1
+    cmp     state.opponentstate.field_C9, 1
     jnz     short loc_1BC36
     push    si
     push    di
@@ -3096,15 +3096,15 @@ loc_1BC36:
     mov     byte ptr [bx+12h], 4
 loc_1BC3E:
     mov     bx, word_46434
-    mov     ax, word_446D2
+    mov     ax, state.opponentstate.field_1C
     neg     ax
     mov     [bx+0Ah], ax
     mov     bx, word_46434
-    mov     ax, word_446D0
+    mov     ax, state.opponentstate.field_1A
     neg     ax
     mov     [bx+0Ch], ax
     mov     bx, word_46434
-    mov     ax, word_446CE
+    mov     ax, state.opponentstate.field_18
     neg     ax
     mov     [bx+0Eh], ax
     mov     bx, word_46434
@@ -3121,7 +3121,7 @@ loc_1BC3E:
     call    near ptr sub_1CB80
     add     sp, 4
 loc_1BC89:
-    cmp     byte_44889, 0
+    cmp     state.field_3F5, 0
     jz      short loc_1BC93
     jmp     loc_1BEAA
 loc_1BC93:
@@ -3319,7 +3319,7 @@ loc_1BED0:
     mov     [bp+var_DE], 0
     jmp     short loc_1BF38
 loc_1BED8:
-    cmp     byte_446A2, 0
+    cmp     state.playerstate.field_BC, 0
     jnz     short loc_1BF09
 loc_1BEDF:
     mov     byte_45514, 2Eh ; '.'
@@ -3338,7 +3338,7 @@ loc_1BEE4:
     ; align 2
     db 144
 loc_1BF02:
-    cmp     byte_44772, 0
+    cmp     state.opponentstate.field_BC, 0
     jz      short loc_1BEDF
 loc_1BF09:
     mov     byte_45514, 2Fh ; '/'
@@ -3354,7 +3354,7 @@ loc_1BF10:
     jz      short loc_1BF5E
     jmp     short loc_1BF34
 loc_1BF28:
-    cmp     byte_446AF, 1
+    cmp     state.playerstate.field_C9, 1
     jnz     short loc_1BF34
     mov     [bp+var_DC], 1
 loc_1BF34:
@@ -3377,7 +3377,7 @@ loc_1BF38:
     ; align 2
     db 144
 loc_1BF5E:
-    cmp     byte_4477F, 1
+    cmp     state.opponentstate.field_C9, 1
     jnz     short loc_1BF34
     mov     [bp+var_DB], 1
     jmp     short loc_1BF34
@@ -3488,7 +3488,7 @@ loc_1C01E:
     mov     ax, [bp+var_36]
     mov     [bp+var_DE], ax
 loc_1C070:
-    mov     ax, word_445D4
+    mov     ax, state.field_140
     shr     ax, 1
     shr     ax, 1
     sub     dx, dx
@@ -3557,13 +3557,13 @@ loc_1C10A:
     cmp     byte_463E0, 0
     jz      short loc_1C11E
     mov     [bp+var_104], 8F46h
-    mov     si, word_445DC
+    mov     si, state.field_148
     jmp     short loc_1C128
     ; align 2
     db 144
 loc_1C11E:
     mov     [bp+var_104], 8E76h
-    mov     si, word_445DA
+    mov     si, state.field_146
 loc_1C128:
     mov     bx, [bp+var_104]
     cmp     byte ptr [bx+0C9h], 1
@@ -3578,7 +3578,7 @@ loc_1C128:
     sub     ax, [bx+4]
     push    ax
     push    word ptr [bx+4]
-    mov     ax, word_445D4
+    mov     ax, state.field_140
     sub     ax, si
     push    ax
     push    cs
@@ -3596,7 +3596,7 @@ loc_1C162:
     sub     ax, [bx+4]
     push    ax
     push    word ptr [bx+4]
-    mov     ax, word_445D4
+    mov     ax, state.field_140
     sub     ax, si
     push    ax
     push    cs
@@ -3618,7 +3618,7 @@ loc_1C17C:
     sub     ax, [bx+4]
     push    ax
     push    word ptr [bx+4]
-    mov     ax, word_445D4
+    mov     ax, state.field_140
     sub     ax, si
     push    ax
     push    cs
@@ -3630,7 +3630,7 @@ loc_1C1AC:
     sub     ax, [bx+4]
     push    ax
     push    word ptr [bx+4]
-    mov     ax, word_445D4
+    mov     ax, state.field_140
     sub     ax, si
     push    ax
     push    cs
@@ -3642,7 +3642,7 @@ loc_1C1C6:
     jz      short loc_1C1D0
     jmp     loc_1C25B
 loc_1C1D0:
-    cmp     byte_44889, 0
+    cmp     state.field_3F5, 0
     jnz     short loc_1C1DA
     jmp     loc_1C25B
 loc_1C1DA:
@@ -5467,7 +5467,7 @@ loc_1D1E6:
     jz      short loc_1D1F0
     jmp     loc_1D4B0
 loc_1D1F0:
-    cmp     byte_44889, 0
+    cmp     state.field_3F5, 0
     jnz     short loc_1D22A
     mov     ax, 9BAh
     push    ax
@@ -5556,11 +5556,11 @@ loc_1D2C8:
     jz      short loc_1D2D2
     jmp     loc_1D52B
 loc_1D2D2:
-    cmp     byte_446AF, 0
+    cmp     state.playerstate.field_C9, 0
     jz      short loc_1D2DC
     jmp     loc_1D52B
 loc_1D2DC:
-    mov     al, byte_448F1
+    mov     al, state.field_45D
     cbw
     cmp     ax, 1
     jz      short loc_1D2F2
@@ -5592,7 +5592,7 @@ loc_1D311:
     add     sp, 6
 loc_1D31E:
     mov     byte_463E4, 0
-    mov     al, byte_448F2
+    mov     al, state.field_45E
     cbw
     cmp     ax, 1
     jz      short loc_1D398
@@ -5754,7 +5754,7 @@ loc_1D47E:
 loc_1D4B0:
     cmp     byte_45DB2, 2
     jnz     short loc_1D52B
-    mov     ax, word_445D4
+    mov     ax, state.field_140
     sub     dx, dx
     div     word_449D0
     mov     si, dx
@@ -6388,7 +6388,7 @@ sub_1D93C proc far
 loc_1D9CA:
     mov     [bp+var_42], 0
 loc_1D9CF:
-    call    sub_19E7B
+    call    get_kevinrandom
     mov     cl, 7
     shl     ax, cl
     sub     ax, 4000h
@@ -6398,7 +6398,7 @@ loc_1D9CF:
     add     si, cx
     shl     si, 1
     mov     [bp+si+var_29A], ax
-    call    sub_19E7B
+    call    get_kevinrandom
     mov     cl, 7
     shl     ax, cl
     sub     ax, 1388h
@@ -6409,7 +6409,7 @@ loc_1D9CF:
     add     si, cx
     shl     si, 1
     mov     [bp+si+var_298], ax
-    call    sub_19E7B
+    call    get_kevinrandom
     mov     cl, 7
     shl     ax, cl
     sub     ax, 4000h
@@ -6571,8 +6571,8 @@ loc_1DBB4:
 loc_1DBB9:
     mov     [bp+var_2C], 0FFFFh
     mov     [bp+var_2A6], 1
-    mov     ax, word_446B6
-    mov     dx, word_446B8
+    mov     ax, state.opponentstate.field_0
+    mov     dx, state.opponentstate.field_2
     mov     cl, 6
 loc_1DBCD:
     sar     dx, 1
@@ -6580,8 +6580,8 @@ loc_1DBCD:
     dec     cl
     jnz     short loc_1DBCD
     mov     [bp+var_2A0], ax
-    mov     ax, word_446BA
-    mov     dx, word_446BC
+    mov     ax, state.opponentstate.field_4
+    mov     dx, state.opponentstate.field_6
     mov     cl, 6
 loc_1DBE2:
     sar     dx, 1
@@ -6589,8 +6589,8 @@ loc_1DBE2:
     dec     cl
     jnz     short loc_1DBE2
     mov     [bp+var_29E], ax
-    mov     ax, word_446BE
-    mov     dx, word_446C0
+    mov     ax, state.opponentstate.field_8
+    mov     dx, state.opponentstate.field_A
     mov     cl, 6
 loc_1DBF7:
     sar     dx, 1
@@ -6606,7 +6606,7 @@ loc_1DBF7:
     cmp     ax, [bp+var_5D4]
     jle     short loc_1DC44
     mov     [bp+var_2A6], 0
-    mov     ax, word_446CE
+    mov     ax, state.opponentstate.field_18
 smart
     and     ah, 3
 nosmart
@@ -6962,8 +6962,8 @@ loc_1DF1A:
     jnz     short loc_1DF47
     jmp     loc_1DFCF
 loc_1DF47:
-    mov     ax, word_446B6
-    mov     dx, word_446B8
+    mov     ax, state.opponentstate.field_0
+    mov     dx, state.opponentstate.field_2
     mov     cl, 6
 loc_1DF50:
     sar     dx, 1
@@ -6972,8 +6972,8 @@ loc_1DF50:
     jnz     short loc_1DF50
     sub     ax, [bp+arg_0]
     mov     [bp+var_1C], ax
-    mov     ax, word_446BA
-    mov     dx, word_446BC
+    mov     ax, state.opponentstate.field_4
+    mov     dx, state.opponentstate.field_6
     mov     cl, 6
 loc_1DF67:
     sar     dx, 1
@@ -6982,8 +6982,8 @@ loc_1DF67:
     jnz     short loc_1DF67
     sub     ax, [bp+arg_2]
     mov     [bp+var_1A], ax
-    mov     ax, word_446BE
-    mov     dx, word_446C0
+    mov     ax, state.opponentstate.field_8
+    mov     dx, state.opponentstate.field_A
     mov     cl, 6
 loc_1DF7E:
     sar     dx, 1
@@ -7004,7 +7004,7 @@ loc_1DFA4:
 loc_1DFA8:
     mov     [bp+var_12], 0
     mov     [bp+var_10], 0
-    mov     ax, word_446CE
+    mov     ax, state.opponentstate.field_18
     neg     ax
     mov     [bp+var_E], ax
     mov     [bp+var_C], 400h

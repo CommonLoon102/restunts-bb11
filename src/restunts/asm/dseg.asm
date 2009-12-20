@@ -888,127 +888,7 @@ dseg segment byte public 'STUNTSD' use16
     public word_443F2
     public word_443F4
     public dword_443F6
-    public word_445B4
-    public word_445B6
-    public word_445B8
-    public word_445CC
-    public word_445CE
-    public word_445D0
-    public word_445D2
-    public word_445D4
-    public word_445D6
-    public word_445D8
-    public word_445DA
-    public word_445DC
-    public word_445DE
-    public word_445E0
-    public word_445E2
-    public word_445E4
-    public word_445E6
-    public word_445E8
-    public word_445EA
-    public word_445EC
-    public word_445EE
-    public word_445F0
-    public word_445F2
-    public word_445F4
-    public word_445F6
-    public word_445F8
-    public word_445FA
-    public word_445FC
-    public word_445FE
-    public word_44600
-    public word_44602
-    public word_44606
-    public word_44608
-    public word_44610
-    public word_44612
-    public word_4461A
-    public word_4461E
-    public word_4462E
-    public word_44630
-    public word_44632
-    public word_44634
-    public word_44636
-    public word_44638
-    public word_4468A
-    public word_4468C
-    public word_4468E
-    public word_4469C
-    public byte_446A2
-    public byte_446A8
-    public byte_446A9
-    public byte_446AA
-    public byte_446AB
-    public byte_446AF
-    public byte_446B0
-    public byte_446B1
-    public byte_446B2
-    public byte_446B3
-    public byte_446B4
-    public byte_446B5
-    public word_446B6
-    public word_446B8
-    public word_446BA
-    public word_446BC
-    public word_446BE
-    public word_446C0
-    public word_446C2
-    public word_446C4
-    public word_446C6
-    public word_446C8
-    public word_446CA
-    public word_446CC
-    public word_446CE
-    public word_446D0
-    public word_446D2
-    public word_446D6
-    public word_446D8
-    public word_446E0
-    public word_446E2
-    public word_446EC
-    public word_446FA
-    public word_446FC
-    public word_446FE
-    public word_44700
-    public word_4475A
-    public word_4475C
-    public word_4475E
-    public word_44760
-    public word_44762
-    public word_44764
-    public word_44766
-    public word_44768
-    public word_4476A
-    public byte_44772
-    public byte_44775
-    public byte_44776
-    public byte_44778
-    public byte_44779
-    public byte_4477A
-    public byte_4477B
-    public byte_4477D
-    public byte_4477F
-    public byte_44783
-    public byte_44784
-    public byte_44785
-    public word_44786
-    public word_44788
-    public word_4478A
-    public word_4478C
-    public word_4478E
-    public word_44790
-    public byte_44888
-    public byte_44889
-    public byte_4488A
-    public byte_4488B
-    public byte_4488C
-    public byte_4488D
-    public byte_448BE
-    public byte_448EF
-    public byte_448F0
-    public byte_448F1
-    public byte_448F2
+    public state
     public word_44984
     public word_44986
     public word_44988
@@ -36557,6 +36437,7 @@ dword_443F6     dd 0
     db 0
     db 0
     db 0
+state     db 0
     db 0
     db 0
     db 0
@@ -36845,9 +36726,6 @@ dword_443F6     dd 0
     db 0
     db 0
     db 0
-word_445B4     dw 0
-word_445B6     dw 0
-word_445B8     dw 0
     db 0
     db 0
     db 0
@@ -36866,56 +36744,22 @@ word_445B8     dw 0
     db 0
     db 0
     db 0
-word_445CC     dw 0
-word_445CE     dw 0
-word_445D0     dw 0
-word_445D2     dw 0
-word_445D4     dw 0
-word_445D6     dw 0
-word_445D8     dw 0
-word_445DA     dw 0
-word_445DC     dw 0
-word_445DE     dw 0
-word_445E0     dw 0
-word_445E2     dw 0
-word_445E4     dw 0
-word_445E6     dw 0
-word_445E8     dw 0
-word_445EA     dw 0
-word_445EC     dw 0
-word_445EE     dw 0
-word_445F0     dw 0
-word_445F2     dw 0
-word_445F4     dw 0
-word_445F6     dw 0
-word_445F8     dw 0
-word_445FA     dw 0
-word_445FC     dw 0
-word_445FE     dw 0
-word_44600     dw 0
-word_44602     dw 0
     db 0
     db 0
-word_44606     dw 0
-word_44608     dw 0
     db 0
     db 0
     db 0
     db 0
     db 0
     db 0
-word_44610     dw 0
-word_44612     dw 0
     db 0
     db 0
     db 0
     db 0
     db 0
     db 0
-word_4461A     dw 0
     db 0
     db 0
-word_4461E     dw 0
     db 0
     db 0
     db 0
@@ -36930,12 +36774,6 @@ word_4461E     dw 0
     db 0
     db 0
     db 0
-word_4462E     dw 0
-word_44630     dw 0
-word_44632     dw 0
-word_44634     dw 0
-word_44636     dw 0
-word_44638     dw 0
     db 0
     db 0
     db 0
@@ -37016,9 +36854,6 @@ word_44638     dw 0
     db 0
     db 0
     db 0
-word_4468A     dw 0
-word_4468C     dw 0
-word_4468E     dw 0
     db 0
     db 0
     db 0
@@ -37031,58 +36866,26 @@ word_4468E     dw 0
     db 0
     db 0
     db 0
-word_4469C     dw 0
     db 0
     db 0
     db 0
     db 0
-byte_446A2     db 0
     db 0
     db 0
     db 0
     db 0
     db 0
-byte_446A8     db 0
-byte_446A9     db 0
-byte_446AA     db 0
-byte_446AB     db 0
     db 0
     db 0
     db 0
-byte_446AF     db 0
-byte_446B0     db 0
-byte_446B1     db 0
-byte_446B2     db 0
-byte_446B3     db 0
-byte_446B4     db 0
-byte_446B5     db 0
-word_446B6     dw 0
-word_446B8     dw 0
-word_446BA     dw 0
-word_446BC     dw 0
-word_446BE     dw 0
-word_446C0     dw 0
-word_446C2     dw 0
-word_446C4     dw 0
-word_446C6     dw 0
-word_446C8     dw 0
-word_446CA     dw 0
-word_446CC     dw 0
-word_446CE     dw 0
-word_446D0     dw 0
-word_446D2     dw 0
     db 0
     db 0
-word_446D6     dw 0
-word_446D8     dw 0
     db 0
     db 0
     db 0
     db 0
     db 0
     db 0
-word_446E0     dw 0
-word_446E2     dw 0
     db 0
     db 0
     db 0
@@ -37091,7 +36894,6 @@ word_446E2     dw 0
     db 0
     db 0
     db 0
-word_446EC     dw 0
     db 0
     db 0
     db 0
@@ -37104,10 +36906,6 @@ word_446EC     dw 0
     db 0
     db 0
     db 0
-word_446FA     dw 0
-word_446FC     dw 0
-word_446FE     dw 0
-word_44700     dw 0
     db 0
     db 0
     db 0
@@ -37196,47 +36994,20 @@ word_44700     dw 0
     db 0
     db 0
     db 0
-word_4475A     dw 0
-word_4475C     dw 0
-word_4475E     dw 0
-word_44760     dw 0
-word_44762     dw 0
-word_44764     dw 0
-word_44766     dw 0
-word_44768     dw 0
-word_4476A     dw 0
     db 0
     db 0
     db 0
     db 0
     db 0
     db 0
-byte_44772     db 0
     db 0
     db 0
-byte_44775     db 0
-byte_44776     db 0
     db 0
-byte_44778     db 0
-byte_44779     db 0
-byte_4477A     db 0
-byte_4477B     db 0
     db 0
-byte_4477D     db 0
     db 0
-byte_4477F     db 0
     db 0
     db 0
     db 0
-byte_44783     db 0
-byte_44784     db 0
-byte_44785     db 0
-word_44786     dw 0
-word_44788     dw 0
-word_4478A     dw 0
-word_4478C     dw 0
-word_4478E     dw 0
-word_44790     dw 0
     db 0
     db 0
     db 0
@@ -37483,12 +37254,6 @@ word_44790     dw 0
     db 0
     db 0
     db 0
-byte_44888     db 0
-byte_44889     db 0
-byte_4488A     db 0
-byte_4488B     db 0
-byte_4488C     db 0
-byte_4488D     db 0
     db 0
     db 0
     db 0
@@ -37537,7 +37302,6 @@ byte_4488D     db 0
     db 0
     db 0
     db 0
-byte_448BE     db 0
     db 0
     db 0
     db 0
@@ -37586,10 +37350,212 @@ byte_448BE     db 0
     db 0
     db 0
     db 0
-byte_448EF     db 0
-byte_448F0     db 0
-byte_448F1     db 0
-byte_448F2     db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
     db 0
     db 0
     db 0

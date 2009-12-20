@@ -586,7 +586,7 @@ loc_3A280:
     jmp     short loc_3A29A
 loc_3A290:
     call    _rand
-    call    sub_19E7B
+    call    get_kevinrandom
 loc_3A29A:
     mov     ax, di
     dec     di
@@ -599,7 +599,7 @@ nosmart
     ; align 2
     db 144
 loc_3A2A8:
-    call    sub_19E7B
+    call    get_kevinrandom
     call    _rand
 loc_3A2B2:
     mov     ax, di

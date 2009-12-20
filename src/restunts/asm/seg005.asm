@@ -88,7 +88,7 @@ run_game proc far
     mov     word_43936, 140h
     mov     [bp+var_2], 0FFFFh
     mov     word_449EA, 0FFFFh
-    call    sub_19E7B
+    call    get_kevinrandom
     mov     cl, 3
     shl     ax, cl
     mov     word_42D28, ax
@@ -205,8 +205,8 @@ loc_21CDC:
     rcl     dx, 1
     dec     cl
     jnz     short loc_21CDC
-    add     word_445E6, ax
-    adc     word_445E8, dx
+    add     state.playerstate.field_0, ax
+    adc     state.playerstate.field_2, dx
     mov     ax, 0FF10h
     push    ax
     push    word_45516
@@ -222,10 +222,10 @@ loc_21D08:
     rcl     dx, 1
     dec     cl
     jnz     short loc_21D08
-    add     word_445EE, ax
-    adc     word_445F0, dx
-    add     word_445EA, 580h
-    adc     word_445EC, 0
+    add     state.playerstate.field_8, ax
+    adc     state.playerstate.field_A, dx
+    add     state.playerstate.field_4, 580h
+    adc     state.playerstate.field_6, 0
     mov     byte_43966, 1
     jmp     short loc_21DA2
     ; align 4
@@ -255,7 +255,7 @@ loc_21D5C:
     jz      short loc_21D7B
     call    sub_17008
 loc_21D72:
-    mov     ax, word_445D4
+    mov     ax, state.field_140
     cmp     word_449BC, ax
     jnz     short loc_21D5C
 loc_21D7B:
@@ -278,26 +278,26 @@ loc_21D9D:
     call    sub_17008
 loc_21DA2:
     mov     ax, word_42D02
-    cmp     word_445D4, ax
+    cmp     state.field_140, ax
     jnz     short loc_21D84
     cmp     byte_45DB2, 0
     jnz     short loc_21DCB
     cmp     byte_449DA, 0
     jnz     short loc_21DCB
-    cmp     byte_44889, 0
+    cmp     state.field_3F5, 0
     jz      short loc_21DCB
-    mov     ax, word_445D4
+    mov     ax, state.field_140
     cmp     [bp+var_C], ax
     jz      short loc_21DA2
     mov     [bp+var_C], ax
 loc_21DCB:
-    cmp     byte_44889, 0
+    cmp     state.field_3F5, 0
     jnz     short loc_21DEB
     cmp     byte_45DB2, 0
     jnz     short loc_21DEB
     mov     word_42D02, 0
     mov     word_449BC, 0
-    mov     word_445D4, 0
+    mov     state.field_140, 0
 loc_21DEB:
     mov     ax, word_44CEA
     cmp     word_44984, ax
@@ -481,8 +481,8 @@ loc_21FC2:
     push    ax
     call    set_sprite1_size
     add     sp, 8
-    push    word_445D4
-    push    word_445D4
+    push    state.field_140
+    push    state.field_140
     mov     ax, 1
     push    ax
     push    cs
@@ -653,7 +653,7 @@ loc_221AA:
     jz      short loc_22208
     cmp     byte_45DB2, 0
     jnz     short loc_221C2
-    cmp     byte_4488A, 4
+    cmp     state.field_3F6, 4
     jz      short loc_221C2
     jmp     loc_22298
 loc_221C2:
@@ -781,7 +781,7 @@ loc_222F1:
     jnz     short loc_222FB
     jmp     loc_223CD
 loc_222FB:
-    cmp     byte_4477F, 0
+    cmp     state.opponentstate.field_C9, 0
     jz      short loc_22305
     jmp     loc_223CD
 loc_22305:
@@ -825,7 +825,7 @@ loc_22347:
     sub     si, si
     mov     ax, 1
     push    ax              ; int
-    mov     ax, word_445D4
+    mov     ax, state.field_140
     add     ax, word_45A24
     push    ax
     mov     ax, 0AC74h
@@ -851,11 +851,11 @@ loc_2239F:
     add     sp, 2
     cmp     ax, 1Bh
     jz      short loc_223CD
-    cmp     byte_4477F, 0
+    cmp     state.opponentstate.field_C9, 0
     jnz     short loc_223CD
     mov     ax, 5DCh
     imul    word_449D0
-    mov     cx, word_445D4
+    mov     cx, state.field_140
     add     cx, word_45A24
     cmp     ax, cx
     jz      short loc_223CD
@@ -1137,8 +1137,8 @@ loc_22612:
 loc_22620:
     cmp     byte_45DB2, 0
     jnz     short loc_2263E
-    mov     ax, word_445CE
-    cmp     word_445CC, ax
+    mov     ax, state.field_13A
+    cmp     state.field_138, ax
     jl      short loc_2263E
     mov     byte_454B8, 1
     call    sub_188A4
@@ -1244,7 +1244,7 @@ loc_226DA:
 loc_226E6:
     cmp     byte_449DA, 0
     jnz     short loc_226A6
-    cmp     byte_4488A, 0
+    cmp     state.field_3F6, 0
     jnz     short loc_226A6
     cmp     byte_45DB2, 1
     jz      short loc_226A6
@@ -1255,7 +1255,7 @@ loc_226E6:
     mov     ax, word_449D0
     shl     ax, 1
     shl     ax, 1
-    cmp     ax, word_445D4
+    cmp     ax, state.field_140
     jnb     short loc_22725
     sub     ax, ax
     push    ax
@@ -1524,7 +1524,7 @@ loc_2293E:
     sub     word_42D02, ax
     sub     word_449BC, ax
     add     word_45A24, ax
-    sub     word_445D4, ax
+    sub     state.field_140, ax
 loc_2296C:
     mov     bx, word_42D02
     inc     word_42D02
@@ -1630,9 +1630,9 @@ loc_229E5:
     mov     [bp+var_E], ax
     or      si, si
     jnz     short loc_22A1E
-    cmp     byte_448EF, 0
+    cmp     state.field_45B, 0
     jnz     short loc_22A40
-    cmp     byte_448F0, 0
+    cmp     state.field_45C, 0
     jnz     short loc_22A40
 loc_22A1E:
     cmp     word ptr [bx+0B6h], 0
@@ -1762,7 +1762,7 @@ loc_22B0D:
     shl     bx, 1
     add     [bx-71B8h], ax
 loc_22B53:
-    mov     ax, word_445D4
+    mov     ax, state.field_140
     sub     dx, dx
     mov     cx, word_449D0
     sar     cx, 1
@@ -2293,10 +2293,10 @@ loc_22FB1:
     ; align 2
     db 144
 loc_23030:
-    mov     al, byte_446B1
+    mov     al, state.playerstate.field_CB
     cbw
     mov     cx, ax
-    mov     al, byte_446B0
+    mov     al, state.playerstate.field_CA
     cbw
     or      ax, cx
     jnz     short loc_2309A
@@ -2336,20 +2336,20 @@ loc_2309A:
     cbw
     mov     [bp+var_20], ax
     mov     bx, ax
-    mov     al, byte_446B0
+    mov     al, state.playerstate.field_CA
     cmp     [bx+568Ah], al
     jnz     short loc_230DE
     mov     ax, bx
     shl     ax, 1
     mov     [bp+var_1E], ax
     mov     bx, ax
-    mov     ax, word_4461A
+    mov     ax, state.playerstate.field_34
     cmp     [bx+5600h], ax
     jnz     short loc_230DE
-    mov     ax, word_4461E
+    mov     ax, state.playerstate.field_38
     cmp     [bx+5604h], ax
     jnz     short loc_230DE
-    cmp     byte_446B1, 0
+    cmp     state.playerstate.field_CB, 0
     jnz     short loc_230D1
     jmp     loc_2319D
 loc_230D1:
@@ -2373,8 +2373,8 @@ loc_230DE:
     push    word ptr dword_40DC0
     call    sub_33EB4
     add     sp, 8
-    mov     si, word_4461A
-    mov     di, word_4461E
+    mov     si, state.playerstate.field_34
+    mov     di, state.playerstate.field_38
     mov     al, byte_4432A
     cbw
     shl     ax, 1
@@ -2424,7 +2424,7 @@ loc_23168:
     add     sp, 8
 loc_2319D:
     mov     [bp+var_1A], 0
-    mov     ax, word_44606
+    mov     ax, state.playerstate.field_20
     cwd
     xor     ax, dx
     sub     ax, dx
@@ -2528,7 +2528,7 @@ loc_2328A:
     jmp     loc_233A2
 loc_23299:
     mov     [bp+var_6], 0
-    mov     ax, word_44610
+    mov     ax, state.playerstate.field_2A
     sub     dx, dx
     mov     cx, 280h
     div     cx
@@ -2542,7 +2542,7 @@ loc_232B6:
     sub     si, si
     mov     [bp+var_6], 2
 loc_232BC:
-    mov     ax, word_44608
+    mov     ax, state.playerstate.field_22
     mov     cl, 7
     shr     ax, cl
     mov     di, ax
@@ -2626,7 +2626,7 @@ loc_2338C:
     jmp     short loc_233BF
 loc_233A2:
     mov     [bp+var_6], 1
-    mov     ax, word_44610
+    mov     ax, state.playerstate.field_2A
     mov     cl, 8
     shr     ax, cl
     mov     si, ax
@@ -3302,7 +3302,7 @@ sub_23A98 proc far
     sub     sp, 0Ah
     push    di
     push    si
-    mov     si, word_445D4
+    mov     si, state.field_140
 smart
     and     si, 3Fh
 nosmart
@@ -3313,7 +3313,7 @@ loc_23AB1:
     mov     al, [si-74DEh]
     cbw
     mov     di, ax
-    mov     ax, word_44612
+    mov     ax, state.playerstate.field_2C
     mov     cl, 0Ah
     shr     ax, cl
 smart
@@ -3325,36 +3325,36 @@ nosmart
     add     bx, word_449E8
     mov     al, [bx+1]
     mov     [bp+var_A], al
-    cmp     word_44606, di
+    cmp     state.playerstate.field_20, di
     jge     short loc_23AE0
-    cmp     word_44606, 0FFFFh
+    cmp     state.playerstate.field_20, 0FFFFh
     jge     short loc_23AF2
     jmp     short loc_23AED
 loc_23AE0:
-    cmp     word_44606, di
+    cmp     state.playerstate.field_20, di
     jle     short loc_23AF2
-    cmp     word_44606, 1
+    cmp     state.playerstate.field_20, 1
     jle     short loc_23AF2
 loc_23AED:
     mov     cl, 2
     shl     [bp+var_A], cl
 loc_23AF2:
-    cmp     word_44606, di
+    cmp     state.playerstate.field_20, di
     jle     short loc_23B0C
     mov     al, [bp+var_A]
     cbw
-    mov     cx, word_44606
+    mov     cx, state.playerstate.field_20
     sub     cx, ax
     cmp     cx, di
     jl      short loc_23B0C
     mov     [bp+var_6], 8
     jmp     short loc_23B28
 loc_23B0C:
-    cmp     word_44606, di
+    cmp     state.playerstate.field_20, di
     jge     short loc_23B24
     mov     al, [bp+var_A]
     cbw
-    add     ax, word_44606
+    add     ax, state.playerstate.field_20
     cmp     ax, di
     jg      short loc_23B24
     mov     [bp+var_6], 4
@@ -3364,7 +3364,7 @@ loc_23B24:
 loc_23B28:
     cmp     [bp+var_6], 0
     jz      short loc_23B40
-    mov     bx, word_445D4
+    mov     bx, state.field_140
     add     bx, word ptr dword_4562E
     mov     es, word ptr dword_4562E+2
     mov     al, [bp+var_6]
@@ -4025,8 +4025,8 @@ loc_24129:
     jnz     short loc_24140
     jmp     loc_24D5E
 loc_24140:
-    push    word_445D4
-    push    word_445D4
+    push    state.field_140
+    push    state.field_140
     mov     ax, 1
     push    ax
     push    cs
@@ -4062,8 +4062,8 @@ loc_24181:
     call    near ptr sub_23B4C
     add     sp, 6
 loc_24193:
-    push    word_445D4
-    push    word_445D4
+    push    state.field_140
+    push    state.field_140
     mov     ax, 1
     push    ax
     push    cs
@@ -4219,8 +4219,8 @@ loc_242C8:
 loc_242E4:
     mov     byte_3E9DB, al
 loc_242E7:
-    push    word_445D4
-    push    word_445D4
+    push    state.field_140
+    push    state.field_140
     mov     ax, 1
     push    ax
     push    cs
@@ -4277,8 +4277,8 @@ loc_24346:
     push    cs
     call    near ptr sub_23B4C
     add     sp, 6
-    push    word_445D4
-    push    word_445D4
+    push    state.field_140
+    push    state.field_140
     mov     ax, 1
     push    ax
     push    cs
@@ -4293,7 +4293,7 @@ loc_24377:
     inc     si
     cmp     si, 8
     jl      short loc_24377
-    cmp     byte_446AF, 0
+    cmp     state.playerstate.field_C9, 0
     jz      short loc_24394
     mov     [bp+var_E], 1
 loc_24394:
@@ -4406,7 +4406,7 @@ loc_2449F:
 loc_244A2:
     mov     byte_43966, 1
 loc_244A7:
-    mov     ax, word_445D4
+    mov     ax, state.field_140
     mov     word_42D02, ax
     mov     word_449BC, ax
 loc_244B0:
@@ -4415,8 +4415,8 @@ loc_244B0:
     mov     byte_463E0, 0
     mov     byte_45DB2, 0
     mov     byte_3B8F5, 0
-    mov     byte_4488A, 0
-    mov     word_445CC, 0
+    mov     state.field_3F6, 0
+    mov     state.field_138, 0
     mov     byte_449E6, 0
     sub     ax, ax
     push    ax
@@ -4858,7 +4858,7 @@ loc_248C4:
     call    __aFldiv
     add     ax, word_42D02
     push    ax
-    push    word_445D4
+    push    state.field_140
     mov     ax, 1
     push    ax
     push    cs
@@ -4973,7 +4973,7 @@ loc_249D2:
 loc_249F8:
     call    sub_17008
     push    word_42D02
-    push    word_445D4
+    push    state.field_140
     mov     ax, 1
     push    ax
     push    cs
@@ -4982,7 +4982,7 @@ loc_24A0D:
     add     sp, 6
 loc_24A10:
     mov     ax, word_42D02
-    cmp     word_445D4, ax
+    cmp     state.field_140, ax
     jnz     short loc_249F8
 loc_24A19:
     mov     ax, 3E8h
@@ -5060,7 +5060,7 @@ loc_24AB8:
     mov     cx, word_42D02
     sub     cx, ax
     push    cx
-    push    word_445D4
+    push    state.field_140
     mov     ax, 1
     push    ax
     push    cs
@@ -5174,7 +5174,7 @@ loc_24BD4:
     add     sp, 2
     mov     word_42D02, si
     mov     ax, si
-    sub     ax, word_445D4
+    sub     ax, state.field_140
     mov     [bp+var_4], ax
     or      ax, ax
     jz      short loc_24C43
@@ -5213,11 +5213,11 @@ loc_24BF8:
     add     sp, 2
 loc_24C3A:
     mov     ax, word_42D02
-    cmp     word_445D4, ax
+    cmp     state.field_140, ax
     jnz     short loc_24BF8
 loc_24C43:
-    push    word_445D4
-    push    word_445D4
+    push    state.field_140
+    push    state.field_140
     mov     ax, 1
     push    ax
     push    cs
@@ -5250,8 +5250,8 @@ loc_24C74:
     push    cs
     call    near ptr sub_23B4C
     add     sp, 6
-    push    word_445D4
-    push    word_445D4
+    push    state.field_140
+    push    state.field_140
     mov     ax, 1
     push    ax
     push    cs
@@ -5270,8 +5270,8 @@ loc_24CA6:
     push    cs
     call    near ptr sub_23B4C
     add     sp, 6
-    push    word_445D4
-    push    word_445D4
+    push    state.field_140
+    push    state.field_140
     mov     ax, 1
     push    ax
     push    cs

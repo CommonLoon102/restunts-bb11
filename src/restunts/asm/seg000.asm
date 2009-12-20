@@ -3633,7 +3633,7 @@ loc_12229:
     push    ax
     call    init_game_state
     add     sp, 2
-    mov     byte_446B2, 1
+    mov     state.playerstate.field_CC, 1
     mov     [bp+var_4A], 0
 loc_122CE:
     mov     ax, 0A6EAh
@@ -3646,7 +3646,7 @@ loc_122CE:
     push    ax
     call    sub_17A78
     add     sp, 8
-    mov     ax, word_44610
+    mov     ax, state.playerstate.field_2A
     mov     cl, 8
     shr     ax, cl
     mov     [bp+var_8], ax
@@ -5858,7 +5858,7 @@ loc_1384B:
     mov     [bp+var_58], dx
     cmp     word_4434E, 0
     jz      short loc_138A0
-    call    sub_19E7B
+    call    get_kevinrandom
     add     ax, word_4434C
 smart
     and     ax, 1
@@ -5868,7 +5868,7 @@ nosmart
     ; align 2
     db 144
 loc_138A0:
-    call    sub_19E7B
+    call    get_kevinrandom
     add     ax, word_4434C
 smart
     and     ax, 1
@@ -5899,7 +5899,7 @@ loc_138B6:
     add     sp, 6
     mov     [bp+var_5A], ax
     mov     [bp+var_58], dx
-    call    sub_19E7B
+    call    get_kevinrandom
     add     ax, word_4434C
 smart
     and     ax, 3

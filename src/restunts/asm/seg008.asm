@@ -4458,7 +4458,7 @@ get_super_random proc far
     push    si
     call    _rand
     mov     di, ax
-    call    sub_19E7B
+    call    get_kevinrandom
     mov     [bp+var_4], ax
     call    get_timer_counter
     add     ax, [bp+var_4]

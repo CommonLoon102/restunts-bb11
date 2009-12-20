@@ -539,7 +539,7 @@ loc_1E5AF:
     ; align 2
     db 144
 loc_1E5B8:
-    cmp     byte_44889, 0
+    cmp     state.field_3F5, 0
     jnz     short loc_1E5E1
     cmp     [bp+var_2C], 0
     jle     short loc_1E5E1
