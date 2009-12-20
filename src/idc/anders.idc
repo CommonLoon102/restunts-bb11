@@ -759,6 +759,40 @@ static GetAnterior(ea) {
 	return result;
 }
 
+static GetFunctionInfo(ea, funcend) {
+
+	auto result, xea, funcname, funcbody, xmnem, callcount;
+
+	result = GetAnterior(ea);
+	if (result != "")
+		result = result + "<br />\n";
+
+	callcount = 0;
+	for (xea = RfirstB(ea); xea != BADADDR; xea = RnextB(ea, xea)) {
+		//funcname = GetFunctionName(xea);
+		//result = result + "\n    <a href=\"#" + funcname + "\">" + funcname + "</a>";
+		callcount++;
+	}
+	result = result + "<small>" + form("%i", callcount) + " callers</small>, ";
+	
+	funcbody = ea;
+	callcount = 0;
+	for (funcbody = ea; funcbody != BADADDR; funcbody = NextNotTail2(funcbody, funcend)) {
+		xmnem = GetMnem(funcbody);
+		if (xmnem == "call") {
+			for (xea = Rfirst(funcbody); xea != BADADDR; xea = Rnext(funcbody, xea)) {
+				//funcname = GetFunctionName(xea);
+				//result = result + "\n    <a href=\"#" + funcname + "\">" + funcname + "</a>";
+				callcount++;
+			}
+		}
+	}
+
+	result = result + "<small>" + form("%i", callcount) + " calls </small>";
+
+	return result;
+}
+
 static PrintReport() {
 
 	auto segea, nextseg, endseg;
@@ -791,11 +825,13 @@ static PrintReport() {
 			} else
 				endfunc = nextfunc;
 			
+			if (!isFunction(GetFlags(funcea))) continue;
+
 			funcname = GetFunctionName(funcea);
 			ported = PortFuncName(funcname) != funcname;
 				
 			fprintf(f, "<tr>\n");
-			fprintf(f, "    <td valign=\"top\">%s</td><td valign=\"top\">%s</td><td valign=\"top\">%s</td>\n", funcname, GetAnterior(funcea), ported ? "PORTED" : "");
+			fprintf(f, "    <td valign=\"top\"><a name=\"%s\"></a>%s</td><td valign=\"top\">%s</td><td valign=\"top\"><b>%s</b></td>\n", funcname, funcname, GetFunctionInfo(funcea, endfunc), ported ? "PORTED" : "");
 			fprintf(f, "</tr>\n");
 		}
 
