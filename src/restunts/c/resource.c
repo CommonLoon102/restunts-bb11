@@ -1,10 +1,10 @@
 #include <dos.h>
 
 struct RESOURCE {
-  char resname[12];
-  short ressize;
-  short resofs;
-  short resunk;
+	char resname[12];
+	short ressize;
+	short resofs;
+	short resunk;
 };
 
 extern unsigned short pspofs;
@@ -24,45 +24,34 @@ extern void fatal_error();
 extern void sub_311D5();
 
 #define pushregs()\
-  _asm {\
-    push dx\
-  }\
+	_asm {\
+		push dx\
+	}\
 
 
 #define popregs()\
-  _asm {\
-    pop dx\
-  }
-
-// normalizes an far pointer to seg:0
-char far * far_normalize(char far * f)
-{
-  // add in offset
-  unsigned seg =  FP_SEG(f);
-  unsigned offs =  FP_OFF(f);
-  seg += (offs >> 4);
-  offs &= 0xf;
-  return(MK_FP (seg, offs));
-}
+	_asm {\
+		pop dx\
+	}
 
 char* mmgr_path_to_name(char* filename) {
-  char* c;
-  char* result;
+	char* c;
+	char* result;
 
-  pushregs();
-
-  result = filename;
-  for (c = filename; *c; c++) {
-    if (*c == ':' || *c == '\\')
-      result = c + 1;
-  }
-
-  popregs();
-  return result;
+	pushregs();
+	
+	result = filename;
+	for (c = filename; *c; c++) {
+		if (*c == ':' || *c == '\\') 
+			result = c + 1;
+	}
+	
+	popregs();
+	return result;
 }
 
 void mmgr_alloc_pages(unsigned short arg_0, unsigned short arg_2) {
-  __asm {
+	__asm {
     push    si
     push    di
     mov     di, resptr2
@@ -144,7 +133,7 @@ endfunc:
 
 void mmgr_alloc_resmem(unsigned short arg_0) {
 
-      //arg_0 = word ptr 6
+	    //arg_0 = word ptr 6
 __asm {
     push    si
     push    di
@@ -160,7 +149,7 @@ loc_3108E:
     mov     pspseg, ds
     cmp     word_3FF82, 0
     jnz     short loc_310CD
-    mov     bx, 64h ; 'd'
+    mov     bx, 64h
     mov     ah, 48h
     int     21h             // DOS - 2+ - ALLOCATE MEMORY
     mov     si, resptr1
@@ -196,15 +185,15 @@ loc_310ED:
 }
 
 void mmgr_alloc_a000() {
-  return mmgr_alloc_resmem(0xa000);
+	return mmgr_alloc_resmem(0xa000);
 }
 
 unsigned short mmgr_get_ofs_diff() {
-  return resendptr2->resofs - resptr2->resofs - resptr2->ressize;
+	return resendptr2->resofs - resptr2->resofs - resptr2->ressize;
 }
 
 void mmgr_free(unsigned short arg_0, unsigned short arg_2) {
-  __asm {
+	__asm {
     push    si
     push    di
     mov     ax, [arg_2]
@@ -274,3 +263,29 @@ loc_3151B:
 }
 }
 
+void mmgr_copy_paras(unsigned short srcseg, unsigned short destseg, short paras) {
+	unsigned short count; // number of words to copy
+	unsigned short far * srcptr;
+	unsigned short far * destptr;
+	
+	while (paras != 0) {
+		count = 0x8000; // 64k in words
+		paras -= 0x1000; // 64k in paras
+		if (paras < 0) {
+			count = (paras + 0x1000) << 3;  // count = remaining paras < 0x1000 in words
+			paras = 0;
+		}
+		srcptr = MK_FP(srcseg, 0);
+		destptr = MK_FP(destseg, 0);
+
+		while (count) {
+			*destptr = *srcptr;
+			srcptr++;
+			destptr++;
+			count--;
+		}
+
+		srcseg += 0x1000;
+		destseg += 0x1000;
+	}
+}

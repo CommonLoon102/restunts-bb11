@@ -139,7 +139,7 @@ seg012 segment byte public 'STUNTSC' use16
     extrn loc_310CD
     extrn mmgr_alloc_a0002:proc
     extrn mmgr_get_ofs_diff2:proc
-    extrn mmgr_op_unk3:proc
+    extrn mmgr_copy_paras2:proc
     extrn sub_311D5:proc
     extrn mmgr_path_to_name2:proc
     extrn mmgr_alloc_pages2:proc
@@ -203,7 +203,8 @@ seg012 segment byte public 'STUNTSC' use16
     extrn loc_32B78
     extrn loc_32B93
     extrn loc_32BDE
-    extrn word_32C3C:word
+    extrn vle_esc1:word
+    extrn vle_esc2:byte
     extrn decompress_vle:proc
     extrn sub_32FFC:proc
     extrn sub_33014:proc

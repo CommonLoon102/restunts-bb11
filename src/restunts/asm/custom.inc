@@ -21,11 +21,12 @@ extrn sin_fast:proc
 extrn cos_fast:proc
 
 extrn mmgr_path_to_name:proc
-;extrn fatal_error:proc
 extrn mmgr_alloc_pages:proc
 extrn mmgr_alloc_resmem:proc
 extrn mmgr_alloc_a000:proc
 extrn mmgr_get_ofs_diff:proc
 extrn mmgr_free:proc
+extrn mmgr_copy_paras:proc
 
 
+;extrn fatal_error:proc

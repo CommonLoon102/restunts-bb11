@@ -228,14 +228,14 @@ __amsg_exit:
     mov     ax, 0FFh
     push    ax
     push    cs
-    call    off_3ED78
+    call    ds:off_3ED78
 loc_2CD27:
     add     [si-32D0h], dh
     and     [bp+di+367Dh], sp
     mov     ax, 3500h
     int     21h             ; DOS - 2+ - GET INTERRUPT VECTOR
-    mov     word ptr dword_3EDD9, bx
-    mov     word ptr dword_3EDD9+2, es
+    mov     word ptr ds:dword_3EDD9, bx
+    mov     word ptr ds:dword_3EDD9+2, es
     push    cs
     pop     ds
     mov     ax, 2500h
