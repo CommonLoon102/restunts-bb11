@@ -165,10 +165,9 @@ seg012 segment byte public 'STUNTSC' use16
     public kb_checking
     public flush_stdin
     public sub_30A68
-    public load_binary_filew
     public load_binary_file2
-    public load_binary_file
-    public loc_30AFB
+    public load_binary_file_nofatal2
+    public load_binary_file_fatal2
     public decompress_rle
     public sub_30BF8
     public sub_30CCF
@@ -5535,7 +5534,7 @@ loc_30ACB:
     ; align 2
     db 0
 sub_30A68 endp
-load_binary_filew proc far
+load_binary_file2 proc far
     var_fatal = word ptr -8
      s = byte ptr 0
      r = byte ptr 2
@@ -5547,11 +5546,11 @@ load_binary_filew proc far
     push    ds
     mov     ax, word ptr [bp+SHAPE2D.s2d_unk3]
     mov     [bp+var_fatal], ax
-    jmp     short loc_30AFB
+    jmp     short _load_binary_file
     ; align 2
     db 144
-load_binary_filew endp
-load_binary_file2 proc far
+load_binary_file2 endp
+load_binary_file_nofatal2 proc far
     var_fatal = word ptr -8
      s = byte ptr 0
      r = byte ptr 2
@@ -5561,10 +5560,10 @@ load_binary_file2 proc far
     sub     sp, 8
     push    ds
     mov     [bp+var_fatal], 0
-    jmp     short loc_30AFB
+    jmp     short _load_binary_file
     db 144
-load_binary_file2 endp
-load_binary_file proc far
+load_binary_file_nofatal2 endp
+load_binary_file_fatal2 proc far
     var_fatal = word ptr -8
     var_curseg = word ptr -6
     var_curoff = word ptr -4
@@ -5580,7 +5579,7 @@ load_binary_file proc far
     sub     sp, 8
     push    ds
     mov     [bp+var_fatal], 1
-loc_30AFB:
+_load_binary_file:
     mov     ax, [bp+arg_dstoff]
     mov     [bp+var_curoff], ax
     mov     ax, [bp+arg_dstseg]
@@ -5627,7 +5626,7 @@ fatal:
     push    [bp+arg_filename]
     push    ax
     call    far ptr fatal_error
-load_binary_file endp
+load_binary_file_fatal2 endp
 decompress_rle proc far
     var_1A = word ptr -26
     var_18 = word ptr -24
@@ -5963,7 +5962,7 @@ loc_30DA1:
     push    dx
     push    ax
     push    [bp+arg_0]
-    call    load_binary_filew
+    call    load_binary_file
     add     sp, 8
 loc_30DDE:
     mov     sp, bp
@@ -6062,7 +6061,7 @@ loc_30E2C:
     push    dx
     push    [bp+var_2]
     push    [bp+arg_filename]
-    call    load_binary_filew
+    call    load_binary_file
     add     sp, 8
     or      dx, dx
     jz      short loc_30E29

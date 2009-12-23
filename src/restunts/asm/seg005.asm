@@ -1937,7 +1937,7 @@ sub_22C92 proc far
     push    word ptr trackdata13
     mov     ax, 95F8h
     push    ax
-    call    load_binary_file
+    call    load_binary_file_fatal
     add     sp, 6
     mov     ax, word ptr trackdata13
     mov     dx, word ptr trackdata13+2

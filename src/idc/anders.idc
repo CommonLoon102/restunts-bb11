@@ -105,7 +105,7 @@ static IsPublicLabel(labelname) {
 		labelname == "_timerintr_callback" || 
 		labelname == "loc_308C6" || 
 		labelname == "loc_309A5" || 
-		labelname == "loc_30AFB" || 
+//		labelname == "_load_binary_file" || // Resolved
 		labelname == "loc_30DA1" || 
 		labelname == "_alt_decompress" || 
 		labelname == "loc_30FB2" || 
@@ -619,7 +619,11 @@ static PortFuncName(labelname) {
 //		labelname == "_abort" ||
 		labelname == "sin_fast" ||
 		labelname == "cos_fast" ||
-		
+
+		labelname == "load_binary_file" ||
+		labelname == "load_binary_file_fatal" ||
+		labelname == "load_binary_file_nofatal" ||
+
 		labelname == "mmgr_path_to_name" ||
 		labelname == "mmgr_alloc_pages" ||
 		labelname == "mmgr_alloc_resmem" ||

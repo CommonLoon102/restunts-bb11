@@ -118,10 +118,9 @@ seg012 segment byte public 'STUNTSC' use16
     extrn kb_checking:proc
     extrn flush_stdin:proc
     extrn sub_30A68:proc
-    extrn load_binary_filew:proc
     extrn load_binary_file2:proc
-    extrn load_binary_file:proc
-    extrn loc_30AFB
+    extrn load_binary_file_nofatal2:proc
+    extrn load_binary_file_fatal2:proc
     extrn decompress_rle:proc
     extrn sub_30BF8:proc
     extrn sub_30CCF:proc
