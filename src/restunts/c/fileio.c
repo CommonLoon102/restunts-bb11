@@ -23,8 +23,9 @@ FILE* fopen(const char* path, const char* mode)
 	(void)mode;
 
 	__asm {
+		push ds
 		mov  ah, 3Dh // Open file
-		mov  al, _A_RDONLY
+		mov  al, 0 //_A_RDONLY
 		mov  ds, segm
 		mov  dx, offs
 		int  21h
@@ -33,6 +34,7 @@ FILE* fopen(const char* path, const char* mode)
 		mov  g_errno, 1
 	open_ok:
 		mov  handle, ax
+		pop ds
 	}
 
 	return handle;
