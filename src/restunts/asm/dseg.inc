@@ -2,7 +2,6 @@ dseg segment byte public 'STUNTSD' use16
     extrn byte_3B770:byte
     extrn word_3B772:word
     extrn word_3B774:word
-    extrn word_3B776:word
     extrn aMsRunTimeLibraryCop:byte
     extrn aMain:byte
     extrn aFontdef_fnt:byte

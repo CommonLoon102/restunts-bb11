@@ -186,7 +186,7 @@ seg012 segment byte public 'STUNTSC' use16
     public mmgr_alloc_a0002
     public mmgr_get_ofs_diff2
     public mmgr_copy_paras2
-    public sub_311D5
+    public copy_paras_reverse2
     public mmgr_path_to_name2
     public mmgr_alloc_pages2
     public mmgr_find_free
@@ -218,8 +218,8 @@ seg012 segment byte public 'STUNTSC' use16
     public loc_32334
     public sub_323D9
     public sub_324AA
-    public sub_3250B
-    public loc_32519
+    public file_write_nofatal
+    public file_write_fatal
     public sub_325AE
     public sub_3260E
     public sub_3262E
@@ -4044,7 +4044,7 @@ file_uncompressed_size2 proc far
     mov     [bp+var_fatal], 1
 _file_uncompressed_size:
     mov     dx, [bp+arg_filename]
-    mov     dx, [bp+arg_filename]
+    mov     dx, [bp+SHAPE2D.s2d_unk2]
     mov     ah, 3Dh ; '='
     xor     al, al
     int     21h             ; DOS - 2+ - OPEN DISK FILE WITH HANDLE
@@ -5604,7 +5604,7 @@ readloop:
     mov     bx, [bp+var_filehandle]
     mov     ah, 3Eh
     int     21h             ; DOS - 2+ - CLOSE A FILE WITH HANDLE
-    mov     ax, word ptr [bp+GAMESTATE.game_longvecs1.long_z]
+    mov     ax, [bp+arg_dstoff]
     mov     dx, [bp+arg_dstseg]
     pop     ds
     mov     sp, bp
@@ -5693,7 +5693,7 @@ loc_30BC9:
     mov     [bp+arg_2], bx
     push    bx
     push    [bp+arg_6]
-    call    sub_311D5
+    call    copy_paras_reverse
     add     sp, 6
     xor     si, si
     mov     [bp+arg_0], si
@@ -5949,7 +5949,7 @@ loc_30DA1:
     or      dx, dx
     jnz     short loc_30DDE
     push    [bp+var_fatal]
-    push    [bp+arg_filename]
+    push    [bp+SHAPE2D.s2d_unk2]
     call    get_file_size
     add     sp, 4
     or      ax, ax
@@ -6006,7 +6006,7 @@ decompress_file_fatal proc far
     var_fatal = word ptr -12
     var_A = word ptr -10
     var_8 = word ptr -8
-    var_6 = word ptr -6
+    var_uncompressed_size = word ptr -6
     var_4 = word ptr -4
     var_2 = word ptr -2
      s = byte ptr 0
@@ -6041,7 +6041,7 @@ loc_30E2C:
     or      ax, ax
     jz      short loc_30E29
     add     ax, 4
-    mov     [bp+var_6], ax
+    mov     [bp+var_uncompressed_size], ax
     push    ax
     push    [bp+arg_filename]
     call    mmgr_alloc_pages
@@ -6054,7 +6054,7 @@ loc_30E2C:
     add     sp, 4
     or      ax, ax
     jz      short loc_30E29
-    mov     dx, [bp+var_6]
+    mov     dx, [bp+var_uncompressed_size]
     sub     dx, ax
     add     dx, [bp+var_4]
     push    [bp+var_fatal]
@@ -6077,7 +6077,7 @@ nosmart
     mov     [bp+var_8], ax
     add     si, 4
 decompress_subfile:
-    push    [bp+var_6]
+    push    [bp+var_uncompressed_size]
     push    [bp+var_4]
     push    [bp+var_2]
     push    ds
@@ -6110,13 +6110,13 @@ decompress_subfile:
     inc     ax
 loc_30EE5:
     push    ax
-    mov     bx, [bp+var_6]
+    mov     bx, [bp+var_uncompressed_size]
     sub     bx, ax
     add     bx, [bp+var_4]
     mov     [bp+var_A], bx
     push    bx
     push    [bp+var_4]
-    call    sub_311D5
+    call    copy_paras_reverse
     add     sp, 6
     mov     ds, [bp+var_A]
     xor     si, si
@@ -6143,7 +6143,7 @@ loc_30F1F:
     push    ax
     call    far ptr fatal_error
 loc_30F2F:
-    mov     ax, [bp+var_6]
+    mov     ax, [bp+var_uncompressed_size]
     sub     ax, 4
     push    ax
     push    [bp+var_4]
@@ -6508,7 +6508,7 @@ loc_311D0:
     pop     bp
     retf
 mmgr_copy_paras2 endp
-sub_311D5 proc far
+copy_paras_reverse2 proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -6562,7 +6562,7 @@ loc_31222:
     pop     ds
     pop     bp
     retf
-sub_311D5 endp
+copy_paras_reverse2 endp
 mmgr_path_to_name2 proc far
      s = byte ptr 0
      r = byte ptr 2
@@ -6724,7 +6724,7 @@ loc_31359:
     mov     byte ptr [bx+di+RESOURCE.resname], al
     inc     bx
     loop    loc_31359
-    call    sub_311D5
+    call    copy_paras_reverse
     add     sp, 6
     jmp     short loc_31319
 mmgr_find_free endp
@@ -6923,7 +6923,7 @@ loc_314F9:
     mov     byte ptr [bx+di+RESOURCE.resname], al
     inc     bx
     loop    loc_314F9
-    call    sub_311D5
+    call    copy_paras_reverse
     add     sp, 6
 loc_31508:
     cmp     si, resptr2
@@ -7038,7 +7038,7 @@ loc_31613:
     mov     [bx+di], al
     inc     bx
     loop    loc_31613
-    call    sub_311D5
+    call    copy_paras_reverse
     add     sp, 6
 loc_31622:
     cmp     si, resptr2
@@ -8961,25 +8961,31 @@ loc_324EC:
     lea     ax, aWindowReleased; "Window Released Out of Order\r\n"
     push    ax
     call    far ptr fatal_error
+sub_324AA endp
+file_write_nofatal proc far
+    var_fatal = word ptr -4
+     s = byte ptr 0
+     r = byte ptr 2
+
     push    bp
     mov     bp, sp
     sub     sp, 6
     push    ds
     push    si
     push    di
-    mov     word ptr [bp-4], 0
-    jmp     short loc_32519
+    mov     [bp+var_fatal], 0
+    jmp     short _file_write
     db 144
-sub_324AA endp
-sub_3250B proc far
-    var_6 = word ptr -6
-    var_4 = word ptr -4
-    var_2 = word ptr -2
+file_write_nofatal endp
+file_write_fatal proc far
+    var_errno = word ptr -6
+    var_fatal = word ptr -4
+    var_filehandle = word ptr -2
      s = byte ptr 0
      r = byte ptr 2
-    arg_0 = word ptr 6
-    arg_2 = word ptr 8
-    arg_4 = word ptr 10
+    arg_filename = word ptr 6
+    arg_srcoff = word ptr 8
+    arg_srcseg = word ptr 10
     arg_6 = word ptr 12
     arg_8 = word ptr 14
 
@@ -8989,14 +8995,14 @@ sub_3250B proc far
     push    ds
     push    si
     push    di
-    mov     [bp+var_4], 1
-loc_32519:
-    mov     dx, [bp+arg_0]
+    mov     [bp+var_fatal], 1
+_file_write:
+    mov     dx, [bp+arg_filename]
     xor     cx, cx
     mov     ah, 3Ch
     int     21h             ; DOS - 2+ - CREATE A FILE WITH HANDLE (CREAT)
     jb      short loc_32570
-    mov     [bp+var_2], ax
+    mov     [bp+var_filehandle], ax
 loc_32527:
     cmp     [bp+arg_6], 0
     jnz     short loc_32533
@@ -9013,39 +9019,39 @@ loc_32533:
     mov     [bp+arg_8], 0
     add     cx, 4000h
 loc_32553:
-    mov     ds, [bp+arg_4]
-    mov     dx, [bp+arg_2]
-    mov     bx, [bp+var_2]
+    mov     ds, [bp+arg_srcseg]
+    mov     dx, [bp+arg_srcoff]
+    mov     bx, [bp+var_filehandle]
     mov     ah, 40h
     int     21h             ; DOS - 2+ - WRITE TO FILE WITH HANDLE
     jb      short loc_32570
     cmp     ax, cx
     jnz     short loc_3256D
-    add     [bp+arg_4], 400h
+    add     [bp+arg_srcseg], 400h
     jmp     short loc_32527
 loc_3256D:
     mov     ax, 1
 loc_32570:
-    mov     [bp+var_6], ax
-    mov     bx, [bp+var_2]
+    mov     [bp+var_errno], ax
+    mov     bx, [bp+var_filehandle]
     mov     ah, 3Eh
     int     21h             ; DOS - 2+ - CLOSE A FILE WITH HANDLE
     mov     ax, ss
     mov     ds, ax
-    mov     dx, [bp+arg_0]
+    mov     dx, [bp+arg_filename]
     mov     ah, 41h
     int     21h             ; DOS - 2+ - DELETE A FILE (UNLINK)
-    mov     ax, [bp+var_6]
-    cmp     [bp+var_4], 0
+    mov     ax, [bp+var_errno]
+    cmp     [bp+var_fatal], 0
     jnz     short loc_325A7
     mov     ax, ss
     mov     ds, ax
     mov     ax, 4C72h
-    push    [bp+arg_0]
+    push    [bp+arg_filename]
     push    ax
     call    far ptr fatal_error
 loc_3259E:
-    mov     bx, [bp+var_2]
+    mov     bx, [bp+var_filehandle]
     mov     ah, 3Eh
     int     21h             ; DOS - 2+ - CLOSE A FILE WITH HANDLE
     xor     ax, ax
@@ -9056,7 +9062,7 @@ loc_325A7:
     mov     sp, bp
     pop     bp
     retf
-sub_3250B endp
+file_write_fatal endp
 sub_325AE proc far
 
     cmp     byte_403F2, 0
@@ -19359,20 +19365,15 @@ loc_36192:
     jnz     short loc_3618A
     mov     es, [bp+var_8]
     mov     di, [bp+var_10]
-loc_361A4:
     mov     ds, [bp+arg_6]
-loc_361A7:
     mov     si, [bp+arg_4]
     mov     cx, [bp+var_E]
-loc_361AD:
     rep movsb
 loc_361AF:
     mov     ax, [bp+var_E]
     add     [bp+var_10], ax
-loc_361B5:
     dec     [bp+var_12]
     jnz     short loc_36177
-loc_361BA:
     jmp     short loc_3614E
 sub_360F6 endp
 seg012 ends

@@ -104,19 +104,15 @@ loc_3707F:
     call    sub_35B76
     add     sp, 0Ah
     push    [bp+arg_8]
-loc_370A2:
     push    [bp+var_4]
     mov     ax, 1
-loc_370A8:
     push    ax
     push    si
     push    [bp+arg_4]
-loc_370AD:
     call    sub_35B76
     add     sp, 0Ah
 loc_370B5:
     pop     si
-loc_370B6:
     mov     sp, bp
     pop     bp
     retf

@@ -632,7 +632,8 @@ static PortFuncName(labelname) {
 		labelname == "mmgr_alloc_a000" ||
 		labelname == "mmgr_get_ofs_diff" ||
 		labelname == "mmgr_free" ||
-		labelname == "mmgr_copy_paras"
+		labelname == "mmgr_copy_paras" ||
+		labelname == "copy_paras_reverse"
 	)
 		return labelname + "2";
 	return labelname;

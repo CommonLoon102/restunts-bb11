@@ -56,14 +56,11 @@ sub_370BA proc far
     mov     bp, sp
     cmp     [bp+arg_0], 61h ; 'a'
     jl      short loc_370CD
-loc_370C3:
     cmp     [bp+arg_0], 7Ah ; 'z'
-loc_370C7:
     jg      short loc_370CD
     sub     [bp+arg_0], 20h ; ' '
 loc_370CD:
     mov     ax, [bp+arg_0]
-loc_370D0:
     pop     bp
     retf
 sub_370BA endp

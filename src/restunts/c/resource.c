@@ -21,7 +21,8 @@ extern char* aReservememoryOutOfMemory;
 extern char* aMemoryManagerB;
 
 extern void fatal_error(char*, ...);
-extern void sub_311D5();
+
+void copy_paras_reverse(unsigned short srcseg, unsigned short destseg, short paras);
 
 #define pushregs()\
 	_asm {\
@@ -207,7 +208,7 @@ void far* mmgr_free(unsigned short arg_0, unsigned short arg_2) {
 		resendptr1->resname[i] = ressi->resname[i];
 	}
 
-	sub_311D5(ressi->resofs, arg_2, ressi->ressize);
+	copy_paras_reverse(ressi->resofs, arg_2, ressi->ressize);
 
 loc_31508:
 	if (ressi == resptr2) {
@@ -245,4 +246,39 @@ void mmgr_copy_paras(unsigned short srcseg, unsigned short destseg, short paras)
 		srcseg += 0x1000;
 		destseg += 0x1000;
 	}
+}
+
+
+void copy_paras_reverse(unsigned short srcseg, unsigned short destseg, short paras) {
+	unsigned short count, ofs;
+	unsigned short far* destptr;
+	unsigned short far* srcptr;
+
+	pushregs();
+
+	srcseg += paras;
+	destseg += paras;
+
+	while (paras != 0) {
+		count = 0x1000;
+		paras -= 0x1000;
+		if (paras < 0) {
+			count = paras + 0x1000;
+			paras = 0;
+		}
+		srcseg -= count;
+		destseg -= count;
+		count <<= 3;
+		ofs = (count << 1) - 2;
+
+		srcptr = MK_FP(srcseg, ofs);
+		destptr = MK_FP(destseg, ofs);
+		while (count) {
+			*destptr = *srcptr;
+			srcptr--;
+			destptr--;
+			count--;
+		}
+	}
+	popregs();
 }

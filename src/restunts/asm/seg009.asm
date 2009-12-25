@@ -2255,14 +2255,14 @@ loc_2B812:
     push    word ptr trackdata14
     mov     ax, 95F8h
     push    ax
-    call    sub_3250B
+    call    file_write_fatal
     add     sp, 0Ah
     mov     si, ax
     or      si, si
     jnz     short loc_2B845
     mov     ax, 1
     push    ax
-    call    sub_11588
+    call    highscore_write_a
     add     sp, 2
 loc_2B845:
     or      si, si
@@ -4402,18 +4402,14 @@ loc_2CC38:
 loc_2CC3C:
     cmp     [bp+var_38C], 1Eh
     jnb     short loc_2CC4C
-loc_2CC43:
     mov     [bp+var_388], 0
-loc_2CC48:
     jmp     loc_2CA7D
     ; align 2
     db 144
 loc_2CC4C:
     pop     si
     pop     di
-loc_2CC4E:
     mov     sp, bp
-loc_2CC50:
     pop     bp
     retf
 sub_2C9B4 endp

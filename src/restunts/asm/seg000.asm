@@ -52,11 +52,11 @@ seg000 segment byte public 'STUNTSC' use16
     public sub_10786
     public run_menu
     public run_tracks_menu
-    public sub_11588
+    public highscore_write_a
     public sub_1168E
     public sub_118D4
     public sub_11A1C
-    public sub_11BB4
+    public highscore_write_b
     public run_car_menu
     public run_opponent_menu
     public run_option_menu
@@ -81,10 +81,8 @@ _main proc far
     push    bp
     mov     bp, sp
     sub     sp, 12h
-loc_10006:
     push    di
     push    si
-loc_10008:
     push    word ptr [bp+p_argv]
     push    [bp+p_argc]
     call    init_video
@@ -1818,7 +1816,7 @@ loc_110ED:
     sub     ax, ax
     push    ax
     push    cs
-    call    near ptr sub_11588
+    call    near ptr highscore_write_a
     add     sp, 2
     or      al, al
     jz      short loc_111F9
@@ -2180,7 +2178,7 @@ loc_1156A:
     ; align 2
     db 144
 run_tracks_menu endp
-sub_11588 proc far
+highscore_write_a proc far
     var_3A = word ptr -58
     var_38 = byte ptr -56
     var_27 = byte ptr -39
@@ -2290,7 +2288,7 @@ loc_11648:
     push    word ptr trackdata11
     mov     ax, 95F8h
     push    ax
-    call    sub_3250B
+    call    file_write_fatal
     add     sp, 0Ah
     mov     [bp+var_3A], ax
     or      ax, ax
@@ -2298,7 +2296,7 @@ loc_11648:
     jmp     loc_11602
 loc_1168B:
     jmp     loc_115F9
-sub_11588 endp
+highscore_write_a endp
 sub_1168E proc far
     var_A = byte ptr -10
     var_8 = word ptr -8
@@ -2863,7 +2861,7 @@ loc_11AED:
     call    sub_29620
     add     sp, 6
     push    cs
-    call    near ptr sub_11BB4
+    call    near ptr highscore_write_b
 loc_11BAA:
     push    cs
     call    near ptr sub_1168E
@@ -2873,7 +2871,7 @@ loc_11BAA:
     pop     bp
     retf
 sub_11A1C endp
-sub_11BB4 proc far
+highscore_write_b proc far
     var_16E = word ptr -366
     var_16C = byte ptr -364
      s = byte ptr 0
@@ -2929,7 +2927,7 @@ loc_11BC3:
     push    ax
     mov     ax, 95F8h
     push    ax
-    call    sub_3250B
+    call    file_write_fatal
     add     sp, 0Ah
     mov     byte_3B8FB, 0
     pop     si
@@ -2939,7 +2937,7 @@ loc_11BC3:
     retf
     ; align 2
     db 144
-sub_11BB4 endp
+highscore_write_b endp
 run_car_menu proc far
     var_10C = dword ptr -268
     var_108 = byte ptr -264
@@ -5993,14 +5991,14 @@ loc_139BA:
     sub     ax, ax
     push    ax
     push    cs
-    call    near ptr sub_11588
+    call    near ptr highscore_write_a
     add     sp, 2
     or      al, al
     jz      short loc_139E1
     mov     ax, 1
     push    ax
     push    cs
-    call    near ptr sub_11588
+    call    near ptr highscore_write_a
     add     sp, 2
     or      al, al
     jz      short loc_139E1
@@ -7280,11 +7278,8 @@ set_default_car proc far
     mov     byte_449A7, 4Eh ; 'N'
     mov     byte_449A8, 0
     mov     opponent_index, 0
-loc_14702:
     mov     byte_449AF, 0
-loc_14707:
     mov     byte_449A9, 1
-loc_1470C:
     mov     opponent_car_id, 0FFh
     retf
 set_default_car endp

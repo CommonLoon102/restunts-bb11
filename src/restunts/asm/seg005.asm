@@ -54,7 +54,7 @@ seg005 segment byte public 'STUNTSC' use16
     public sub_22698
     public sub_2298C
     public sub_22C92
-    public sub_22CE8
+    public write_track
     public setup_car_shapes
     public setup_player_cars
     public sub_239B4
@@ -1957,12 +1957,12 @@ sub_22C92 proc far
     pop     bp
     retf
 sub_22C92 endp
-sub_22CE8 proc far
+write_track proc far
     var_6 = word ptr -6
     var_4 = word ptr -4
      s = byte ptr 0
      r = byte ptr 2
-    arg_0 = word ptr 6
+    arg_filename = word ptr 6
 
     push    bp
     mov     bp, sp
@@ -1986,8 +1986,8 @@ sub_22CE8 proc far
     push    ax
     push    es
     push    bx
-    push    [bp+arg_0]
-    call    sub_3250B
+    push    [bp+SHAPE2D.s2d_unk2]
+    call    file_write_fatal
     add     sp, 0Ah
     mov     byte_3B8FB, 0
     cbw
@@ -1998,7 +1998,7 @@ sub_22CE8 proc far
     retf
     ; align 2
     db 144
-sub_22CE8 endp
+write_track endp
 setup_car_shapes proc far
     var_20 = word ptr -32
     var_1E = word ptr -30
@@ -4651,7 +4651,7 @@ loc_246FD:
     mov     ax, 95F8h
     push    ax
     push    cs
-    call    near ptr sub_22CE8
+    call    near ptr write_track
     add     sp, 2
     mov     [bp+var_20], al
     or      al, al
@@ -5341,7 +5341,6 @@ loc_24D4A:
 loc_24D52:
     cmp     ax, 5000h
     jnz     short loc_24D5A
-loc_24D57:
     jmp     loc_2431E
 loc_24D5A:
     jmp     loc_242E7
@@ -5350,7 +5349,6 @@ loc_24D5A:
 loc_24D5E:
     pop     si
     pop     di
-loc_24D60:
     mov     sp, bp
     pop     bp
     retf

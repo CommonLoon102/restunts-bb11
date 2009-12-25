@@ -62,7 +62,6 @@ locate_many_resources proc far
 
     push    bp
     mov     bp, sp
-loc_367B5:
     jmp     short loc_367D9
     ; align 2
     db 144
@@ -188,18 +187,14 @@ loc_36876:
     shl     bx, 1
     shl     bx, 1
     mov     si, [bp+arg_6]
-loc_36894:
     mov     [bx+si], ax
-loc_36896:
     mov     [bx+si+2], dx
     add     [bp+arg_4], 4
 loc_3689D:
     mov     bx, [bp+arg_4]
-loc_368A0:
     cmp     byte ptr [bx], 0
     jnz     short loc_36876
     pop     si
-loc_368A6:
     mov     sp, bp
     pop     bp
     retf

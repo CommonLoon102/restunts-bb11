@@ -50,7 +50,6 @@ dseg segment byte public 'STUNTSD' use16
     public byte_3B770
     public word_3B772
     public word_3B774
-    public word_3B776
     public aMsRunTimeLibraryCop
     public aMain
     public aFontdef_fnt
@@ -1287,7 +1286,7 @@ byte_3B770     db 0
     db 0
 word_3B772     dw 0
 word_3B774     dw 0
-word_3B776     dw 0
+    dw 0
 aMsRunTimeLibraryCop     db 77
     db 83
     db 32

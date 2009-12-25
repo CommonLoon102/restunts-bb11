@@ -71,10 +71,8 @@ sub_19F14 proc far
     arg_0 = word ptr 6
 
     push    bp
-loc_19F15:
     mov     bp, sp
     sub     sp, 4
-loc_19F1A:
     push    di
     push    si
     cmp     byte_46436, 0
