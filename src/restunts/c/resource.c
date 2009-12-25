@@ -285,226 +285,164 @@ void copy_paras_reverse(unsigned short srcseg, unsigned short destseg, short par
 	popregs();
 }
 
-
-
 void mmgr_find_free() {
-	//return mmgr_find_free2();
-//     r = byte ptr 0
-__asm {
-    push    si
-    push    di
-    push    dx
-    mov     si, resendptr2
-    mov     di, si
-    xor     dx, dx
-loc_31308:
-    test    word ptr [si+.resunk], 1
-    jnz     short loc_31315
-    add     dx, [si+.ressize]
-    jmp     short loc_3131C
-    db 144
-loc_31315:
-    or      dx, dx
-    jnz     short loc_31330
-loc_31319:
-    sub     di, 12h
-loc_3131C:
-    sub     si, 12h
-    cmp     si, resendptr1
-    jnb     short loc_31308
-    add     di, 12h
-    mov     resendptr1, di
-    pop     dx
-    pop     di
-    pop     si
-    jmp endfunc
+	int i;
+	unsigned short regax, regdx;
+	struct RESOURCE* ressi;
+	struct RESOURCE* resdi;
 
-loc_31330:
-    mov     bx, [si+.ressize]
-    push    bx
-    add     di, 12h
-    mov     ax, [di+.resofs]
-    sub     ax, bx
-    push    ax
-    push    word ptr [si+.resofs]
-    sub     di, 12h
-    mov     [di+.ressize], bx
-    mov     [di+.resofs], ax
-    mov     cx, [si+.resunk]
-    mov     word ptr [si+.resunk], 0
-    mov     [di+.resunk], cx
-    xor     bx, bx
-    mov     cx, 0Ch
-loc_31359:
-    mov     al, byte ptr [bx+si+.resname]
-    mov     byte ptr [bx+di+.resname], al
-    inc     bx
-    loop    loc_31359
-    call    far ptr copy_paras_reverse
-    add     sp, 6
-    jmp     short loc_31319
-}
-endfunc:
+	pushregs();
+
+	ressi = resendptr2;
+	resdi = ressi;
+	regdx = 0;
+
+	do {
+		if ((ressi->resunk & 1) == 0) {
+			regdx += ressi->ressize;
+		} else {
+		
+			if (regdx != 0) {
+				resdi++;
+				regax = resdi->resofs - ressi->ressize;
+				resdi--;
+				resdi->ressize = ressi->ressize;
+				resdi->resofs = regax;
+				ressi->resunk = 0;
+				resdi->resunk = ressi->resunk;
+				for (i = 0; i < 0xC; i++) {
+					resdi->resname[i] = ressi->resname[i];
+				}
+				copy_paras_reverse(ressi->resofs, regax, ressi->ressize);
+			}
+		
+			resdi--;
+		}
+		ressi--;
+	} while (ressi > resendptr1);
+
+	resdi++;
+	resendptr1 = resdi;
+
+	popregs();
 }
 
-void mmgr_get_unk(unsigned short arg_0) {
-		//return mmgr_get_unk2(arg_0);
-__asm {
-//     s = byte ptr 0
-//     r = byte ptr 2
-//    arg_0 = word ptr 6
+void far* mmgr_get_unk(char* arg_0) {
+	int i;
+	unsigned short regax, regbx, regcx, regdx;
+	char* strdi;
+	struct RESOURCE* ressi;
+	struct RESOURCE* resdi;
 
-    push    si
-    push    di
-    mov     si, resendptr1
-    push    [arg_0]
-    call    far ptr mmgr_path_to_name
-    add     sp, 2
-    mov     di, ax
-loc_31380:
-    xor     bx, bx
-    cmp     word ptr [si+.resunk], 0
-    jz      short loc_313AE
-loc_31388:
-    mov     al, [bx+di]
-    or      al, al
-    jz      short loc_3139B
-    cmp     al, [bx+si]
-    jnz     short loc_313A5
-    inc     bx
-    cmp     bx, 0Ch
-    jl      short loc_31388
-    jmp     short loc_313B6
-    db 144
-loc_3139B:
-    cmp     byte ptr [bx+si], 2Eh ; '.'
-    jz      short loc_313B6
-    cmp     byte ptr [bx+si], 0
-    jz      short loc_313B6
-loc_313A5:
-    add     si, 12h
-    cmp     si, resendptr2
-    jb      short loc_31380
-loc_313AE:
-    xor     dx, dx
-loc_313B0:
-    xor     ax, ax
-    pop     di
-    pop     si
-    jmp endfunc
+	ressi = resendptr1;
+	strdi = mmgr_path_to_name(arg_0);
 
-loc_313B6:
-    mov     di, resptr2
-    mov     dx, [di+.resofs]
-    add     dx, [di+.ressize]
-    add     di, 12h
-    mov     resptr2, di
-    mov     ax, [si+.ressize]
-    push    ax
-    push    dx
-    push    word ptr [si+.resofs]
-    mov     word ptr [si+.resunk], 0
-    mov     [di+.resofs], dx
-    mov     [di+.ressize], ax
-    mov     word ptr [di+.resunk], 2
-    xor     bx, bx
-    mov     cx, 0Ch
-loc_313E4:
-    mov     al, byte ptr [bx+si+.resname]
-    mov     byte ptr [bx+di+.resname], al
-    inc     bx
-    loop    loc_313E4
-    cmp     di, resendptr1
-    jnz     short loc_313F6
-    add     resendptr1, 12h
-loc_313F6:
-    call    far ptr mmgr_copy_paras
-    add     sp, 6
-    mov     si, resendptr1
-    mov     di, resptr2
-    mov     ax, [di+.resofs]
-    add     ax, [di+.ressize]
-loc_3140C:
-    cmp     ax, [si+.resofs]
-    jbe     short loc_3141F
-    mov     word ptr [si+.resunk], 0
-    add     si, 12h
-    mov     resendptr1, si
-    jmp     short loc_3140C
-loc_3141F:
-    call    far ptr mmgr_find_free
-    mov     dx, [di+.resofs]
-    jmp     short loc_313B0
-}
-endfunc:
+	for (ressi = resendptr1; ressi < resendptr2; ressi++) {
+		regbx = 0;
+		if (ressi->resunk == 0) return MK_FP(0, 0);
+
+		for (; regbx < 0xC; regbx++) {
+			if (strdi[regbx] == 0) break;
+			if (strdi[regbx] != ressi->resname[regbx]) break;
+		}
+
+		if (regbx == 0xC || ressi->resname[regbx] == '.' || ressi->resname[regbx] == 0) {
+			resdi = resptr2;
+			regdx = resdi->resofs;
+			regdx += resdi->ressize;
+			resdi++;
+			resptr2 = resdi;
+			regax = ressi->ressize;
+		
+			ressi->resunk = 0;
+			resdi->resofs = regdx;
+			resdi->ressize = regax;
+			resdi->resunk = 2;
+			regbx = 0;
+			for (i = 0; i < 0xC; i++) {
+				resdi->resname[i] = ressi->resname[i];
+			}
+			
+			if (resdi == resendptr1) {
+				resendptr1++;
+			}
+		
+			mmgr_copy_paras(ressi->resofs, regdx, ressi->ressize);
+			ressi = resendptr1;
+			resdi = resptr2;
+			regax = resdi->resofs;
+			regax += resdi->ressize;
+		
+			while (regax > ressi->resofs) {
+				ressi->resunk = 0;
+				ressi++;
+				resendptr1 = ressi;
+			}
+		
+			mmgr_find_free();
+			regdx = resdi->resofs;
+			return MK_FP(regdx, 0);
+		}
+	}
+
+	return MK_FP(0, 0);
 }
 
 
 
 void mmgr_op_unk2(unsigned short arg_0, unsigned short arg_2) {
+	int i;
+	unsigned short regax, regbx, regcx, regdx;
+	char* strdi;
+	struct RESOURCE* ressi;
+	struct RESOURCE* resdi;
+
 	pushregs();
+	__asm {
+		push bx
+	}
+
+	regax = arg_2;
+	ressi = resptr2;
+
+	for (;;) {
+		if (ressi == resptr1) 
+			fatal_error(aMemoryManagerB, arg_2);
+		if (regax == ressi->resofs) break;
+		ressi--;
+	}
 	
-__asm {
-	push bx
-    push    si
-    push    di
-    mov     ax, [arg_2]
-    mov     si, resptr2
-loc_3164D:
-    cmp     si, resptr1
-    jz      short loc_3165D
-    cmp     ax, [si+.resofs]
-    jz      short loc_31660
-    sub     si, 12h
-    jmp     short loc_3164D
-loc_3165D:
-    //jmp     loc_31498
-    push    [arg_2]
-    mov     ax, offset aMemoryManagerB // "memory manager - BLOCK NOT FOUND at SEG"...
-    push    ax
-    call    far ptr fatal_error
-loc_31660:
-    mov     word ptr [si+.resunk], 0
-    cmp     si, resptr2
-    jnz     short loc_31678
-loc_3166B:
-    sub     si, 12h
-    cmp     word ptr [si+.resunk], 0
-    jz      short loc_3166B
-    mov     resptr2, si
-loc_31678:
-    pop     di
-    pop     si
-    pop bx
-}
+	ressi->resunk = 0;
+	if (ressi == resptr2) {
+		do {
+			ressi--;
+		} while (ressi->resunk == 1);
+		resptr2 = ressi;
+	}
+
+	__asm {
+		pop bx
+	}
 	popregs();
 }
 
 void mmgr_get_chunk_size(unsigned short arg_0, unsigned short arg_2) {
-__asm {
-    push    si
-    push    di
-    mov     ax, [arg_2]
-    mov     si, resptr2
-loc_31688:
-    cmp     si, resptr1
-    jz      short loc_31698
-    cmp     ax, [si+.resofs]
-    jz      short loc_3169B
-    sub     si, 12h
-    jmp     short loc_31688
-loc_31698:
-//    jmp     loc_31498
-    push    [arg_2]
-    mov     ax, offset aMemoryManagerB // "memory manager - BLOCK NOT FOUND at SEG"...
-    push    ax
-    call    far ptr fatal_error
+	int i;
+	unsigned short regax, regbx, regcx, regdx;
+	char* strdi;
+	struct RESOURCE* ressi;
+	struct RESOURCE* resdi;
 
-loc_3169B:
-    mov     ax, [si+.ressize]
-    pop     di
-    pop     si
-}
+	regax = arg_2;
+	ressi = resptr2;
+
+	for (;;) {
+		if (ressi == resptr1) 
+			fatal_error(aMemoryManagerB, arg_2);
+		if (regax == ressi->resofs) break;
+		ressi--;
+	}
+	return ressi->ressize;
 }
 
 void mmgr_resize_memory(unsigned short arg_0, unsigned short arg_2, unsigned short arg_4) {
