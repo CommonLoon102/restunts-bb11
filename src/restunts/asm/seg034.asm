@@ -393,14 +393,18 @@ sub_3ACB0 proc far
 loc_3ACBC:
     mov     bx, [bp+var_2]
     les     si, [bp+arg_0]
+loc_3ACC2:
     mov     al, es:[bx+si]
     mov     shapenums[bx], al
     inc     [bp+var_2]
+loc_3ACCC:
     cmp     [bp+var_2], 10h
+loc_3ACD0:
     jl      short loc_3ACBC
     pop     si
     mov     sp, bp
     pop     bp
+locret_3ACD6:
     retf
 sub_3ACB0 endp
 seg034 ends

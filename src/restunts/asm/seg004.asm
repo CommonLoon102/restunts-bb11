@@ -94,6 +94,7 @@ sub_1E1A0 proc far
     push    bp
     mov     bp, sp
     sub     sp, 40h
+loc_1E1A6:
     push    di
     push    si
     mov     word_44DC6, 0

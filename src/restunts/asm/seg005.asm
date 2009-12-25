@@ -5349,6 +5349,7 @@ loc_24D5A:
 loc_24D5E:
     pop     si
     pop     di
+loc_24D60:
     mov     sp, bp
     pop     bp
     retf

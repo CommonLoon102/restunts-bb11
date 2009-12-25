@@ -64,13 +64,17 @@ sub_36BBE proc far
     push    [bp+arg_0]
     call    sub_36412
     add     sp, 4
+loc_36BD4:
     lea     ax, [bp+var_80]
     push    ax
     mov     ax, 20h ; ' '
     push    ax
+loc_36BDC:
     push    [bp+arg_2]
+loc_36BDF:
     call    sub_317C1
     mov     sp, bp
+loc_36BE6:
     pop     bp
     retf
 sub_36BBE endp

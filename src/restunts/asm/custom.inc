@@ -20,6 +20,7 @@ _TEXT ends
 extrn sin_fast:proc
 extrn cos_fast:proc
 
+extrn get_file_size:proc
 extrn load_binary_file:proc
 extrn load_binary_file_fatal:proc
 extrn load_binary_file_nofatal:proc

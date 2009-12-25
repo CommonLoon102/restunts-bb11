@@ -3619,17 +3619,20 @@ loc_26B7C:
     mov     al, [bp+arg_0]
     cbw
     push    ax
+loc_26B91:
     call    sub_36BE8
     add     sp, 6
     pop     si
     pop     di
     mov     sp, bp
     pop     bp
+locret_26B9E:
     retf
     ; align 2
     db 144
 loc_26BA0:
     mov     bx, [bp+arg_4]
+loc_26BA3:
     mov     word ptr [bx], 0
     pop     si
     pop     di

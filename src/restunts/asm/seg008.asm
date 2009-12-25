@@ -123,6 +123,7 @@ sub_274B0 proc far
     push    bp
     mov     bp, sp
     sub     sp, 40h
+loc_274B6:
     push    di
     push    si
     mov     ax, word_44AE4
@@ -5596,15 +5597,19 @@ loc_2A23C:
     push    cs
     call    near ptr load_resource
     add     sp, 4
+loc_2A2A2:
     mov     [bp+var_4], ax
     mov     [bp+var_2], dx
     or      ax, dx
     jnz     short loc_2A2B2
     push    cs
+loc_2A2AD:
     call    near ptr do_dea_textres
+loc_2A2B0:
     jmp     short loc_2A23C
 loc_2A2B2:
     mov     ax, [bp+var_4]
+loc_2A2B5:
     mov     dx, [bp+var_2]
     mov     sp, bp
     pop     bp

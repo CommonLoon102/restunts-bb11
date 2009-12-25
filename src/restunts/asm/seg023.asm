@@ -62,6 +62,7 @@ sub_36EC0 proc far
     push    bp
     mov     bp, sp
     sub     sp, 0Ah
+loc_36EC6:
     push    si
     push    [bp+arg_4]
     push    [bp+arg_2]
@@ -89,12 +90,15 @@ loc_36EFD:
     mov     ax, [si+2]
     add     ax, [bp+var_A]
     mov     [bx+2], ax
+loc_36F13:
     add     [bp+var_2], 4
     add     [bp+var_4], 4
     inc     [bp+var_6]
+loc_36F1E:
     cmp     [bp+var_6], 10h
     jl      short loc_36EFD
     pop     si
+loc_36F25:
     mov     sp, bp
     pop     bp
     retf

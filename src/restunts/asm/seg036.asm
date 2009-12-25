@@ -89,15 +89,18 @@ loc_3B0DE:
     mov     ax, [bp+var_6]
     cmp     [bp+var_C], ax
     jbe     short loc_3B118
+loc_3B112:
     mov     ax, [bp+var_C]
     mov     [bp+var_6], ax
 loc_3B118:
     inc     [bp+var_8]
 loc_3B11B:
     mov     ax, [bp+var_A]
+loc_3B11E:
     cmp     [bp+var_8], ax
     jl      short loc_3B0DE
     mov     ax, [bp+var_6]
+loc_3B126:
     mov     sp, bp
     pop     bp
     retf

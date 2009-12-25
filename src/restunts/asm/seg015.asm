@@ -68,6 +68,7 @@ sub_36412 proc far
 
     push    bp
     mov     bp, sp
+loc_36415:
     sub     sp, 1Ah
     push    di
     push    si
@@ -405,13 +406,16 @@ loc_3677B:
     add     [si], di
     mov     ax, [bx+2]
     add     [si+2], ax
+loc_367A2:
     inc     [bp+var_E]
     cmp     [bp+var_E], 10h
     jl      short loc_3677B
     pop     si
     pop     di
+loc_367AD:
     mov     sp, bp
     pop     bp
+locret_367B0:
     retf
 sub_36412 endp
 seg015 ends

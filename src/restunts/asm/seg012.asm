@@ -128,7 +128,7 @@ seg012 segment byte public 'STUNTSC' use16
     public add_exit_handler
     public call_exitlist
     public sub_2FE74
-    public get_file_size
+    public get_file_size2
     public read_4_bytes_from_file
     public find_filename
     public loc_30011
@@ -3907,14 +3907,14 @@ sub_2FE74 proc near
     ; align 2
     db 0
 sub_2FE74 endp
-get_file_size proc far
-    var_6 = word ptr -6
-    var_4 = word ptr -4
-    var_2 = word ptr -2
+get_file_size2 proc far
+    var_fatal = word ptr -6
+    var_length = word ptr -4
+    var_filehandle = word ptr -2
      s = byte ptr 0
      r = byte ptr 2
-    arg_0 = word ptr 6
-    arg_2 = word ptr 8
+    arg_filename = word ptr 6
+    arg_fatal = word ptr 8
 
     push    bp
     mov     bp, sp
@@ -3922,35 +3922,35 @@ get_file_size proc far
     push    ds
     push    si
     push    di
-    mov     ax, [bp+arg_2]
-    mov     [bp+var_6], ax
-    jmp     short loc_2FEB3
+    mov     ax, [bp+arg_fatal]
+    mov     [bp+var_fatal], ax
+    jmp     short gfs_open
     ; align 2
     db 144
-    push    bp
+    push    bp              ; file_size_nofatal()
     mov     bp, sp
     sub     sp, 6
     push    ds
     push    si
     push    di
-    mov     [bp+var_6], 0
-    jmp     short loc_2FEB3
+    mov     [bp+var_fatal], 0
+    jmp     short gfs_open
     db 144
-    push    bp
+    push    bp              ; file_size_fatal()
     mov     bp, sp
     sub     sp, 6
     push    ds
     push    si
     push    di
-    mov     [bp+var_6], 1
-loc_2FEB3:
-    mov     dx, [bp+arg_0]
+    mov     [bp+var_fatal], 1
+gfs_open:
+    mov     dx, [bp+arg_filename]
     mov     ah, 3Dh ; '='
     xor     al, al
     int     21h             ; DOS - 2+ - OPEN DISK FILE WITH HANDLE
-    jnb     short loc_2FEDD
-    cmp     [bp+var_6], 0
-    jnz     short loc_2FECD
+    jnb     short gfs_open_ok
+    cmp     [bp+var_fatal], 0
+    jnz     short gfs_fatal
     xor     ax, ax
     pop     di
     pop     si
@@ -3958,15 +3958,15 @@ loc_2FEB3:
     mov     sp, bp
     pop     bp
     retf
-loc_2FECD:
+gfs_fatal:
     mov     ax, offset aSFileError_1; "%s FILE ERROR"
     mov     bx, ss
     mov     ds, bx
-    push    [bp+arg_0]
+    push    [bp+arg_filename]
     push    ax
     call    far ptr fatal_error
-loc_2FEDD:
-    mov     [bp+var_2], ax
+gfs_open_ok:
+    mov     [bp+var_filehandle], ax
     mov     bx, ax
     sub     cx, cx
     sub     dx, dx
@@ -3981,9 +3981,9 @@ loc_2FEDD:
     pop     dx
     xor     bx, bx
     test    ax, 0Fh
-    jz      short loc_2FF00
+    jz      short gfs_dontaddrem
     mov     bx, 1
-loc_2FF00:
+gfs_dontaddrem:
     shr     dx, 1
     rcr     ax, 1
     shr     dx, 1
@@ -3993,18 +3993,18 @@ loc_2FF00:
     shr     dx, 1
     rcr     ax, 1
     add     ax, bx
-    mov     [bp+var_4], ax
-    mov     bx, [bp+var_2]
+    mov     [bp+var_length], ax
+    mov     bx, [bp+var_filehandle]
     mov     ah, 3Eh
     int     21h             ; DOS - 2+ - CLOSE A FILE WITH HANDLE
-    mov     ax, [bp+var_4]
+    mov     ax, [bp+var_length]
     pop     di
     pop     si
     pop     ds
     mov     sp, bp
     pop     bp
     retf
-get_file_size endp
+get_file_size2 endp
 read_4_bytes_from_file proc far
     var_8 = word ptr -8
     var_6 = byte ptr -6
@@ -5544,7 +5544,7 @@ load_binary_file2 proc far
     mov     bp, sp
     sub     sp, 8
     push    ds
-    mov     ax, word ptr [bp+SHAPE2D.s2d_unk3]
+    mov     ax, [bp+arg_fatal]
     mov     [bp+var_fatal], ax
     jmp     short _load_binary_file
     ; align 2
@@ -5926,49 +5926,49 @@ load_res0_1_alt proc far
     db 144
 load_res0_1_alt endp
 load_res0_1_type proc far
-    var_2 = word ptr -2
+    var_fatal = word ptr -2
      s = byte ptr 0
      r = byte ptr 2
-    arg_0 = word ptr 6
+    arg_filename = word ptr 6
 
     push    bp
     mov     bp, sp
     sub     sp, 2
-    mov     [bp+var_2], 0
+    mov     [bp+var_fatal], 0
     jmp     short loc_30DA1
     ; align 2
     db 144
     push    bp
     mov     bp, sp
     sub     sp, 2
-    mov     [bp+var_2], 1
+    mov     [bp+var_fatal], 1
 loc_30DA1:
-    push    [bp+arg_0]
+    push    [bp+arg_filename]
     call    mmgr_get_unk
     add     sp, 2
     or      dx, dx
     jnz     short loc_30DDE
-    push    [bp+var_2]
-    push    [bp+arg_0]
+    push    [bp+var_fatal]
+    push    [bp+arg_filename]
     call    get_file_size
     add     sp, 4
     or      ax, ax
-    jz      short loc_30DE2
+    jz      short emptyfile
     push    ax
-    push    [bp+arg_0]
+    push    [bp+arg_filename]
     call    mmgr_alloc_pages
     add     sp, 4
-    push    [bp+var_2]
+    push    [bp+var_fatal]
     push    dx
     push    ax
-    push    [bp+arg_0]
+    push    [bp+arg_filename]
     call    load_binary_file
     add     sp, 8
 loc_30DDE:
     mov     sp, bp
     pop     bp
     retf
-loc_30DE2:
+emptyfile:
     xor     dx, dx
     jmp     short loc_30DDE
 load_res0_1_type endp
@@ -6003,7 +6003,7 @@ load_pvs proc far
     db 144
 load_pvs endp
 decompress_fileres proc far
-    var_C = word ptr -12
+    var_fatal = word ptr -12
     var_A = word ptr -10
     var_8 = word ptr -8
     var_6 = word ptr -6
@@ -6019,7 +6019,7 @@ decompress_fileres proc far
     sub     sp, 0Ch
     push    si
     push    di
-    mov     [bp+var_C], 1
+    mov     [bp+var_fatal], 1
 _alt_decompress:
     push    [bp+SHAPE2D.s2d_unk2]
     call    mmgr_get_unk
@@ -6034,7 +6034,7 @@ _alt_decompress:
 loc_30E29:
     jmp     loc_30F0F
 loc_30E2C:
-    push    [bp+var_C]
+    push    [bp+var_fatal]
     push    [bp+arg_filename]
     call    read_4_bytes_from_file
     add     sp, 4
@@ -6048,7 +6048,7 @@ loc_30E2C:
     add     sp, 4
     mov     [bp+var_2], ax
     mov     [bp+var_4], dx
-    push    [bp+var_C]
+    push    [bp+var_fatal]
     push    [bp+arg_filename]
     call    get_file_size
     add     sp, 4
@@ -6057,7 +6057,7 @@ loc_30E2C:
     mov     dx, [bp+var_6]
     sub     dx, ax
     add     dx, [bp+var_4]
-    push    [bp+var_C]
+    push    [bp+var_fatal]
     push    dx
     push    [bp+var_2]
     push    [bp+arg_filename]
@@ -6126,7 +6126,7 @@ compression_type     dd decompress_rle
 loc_30F0C:
     add     sp, 8
 loc_30F0F:
-    cmp     [bp+var_C], 0
+    cmp     [bp+var_fatal], 0
     jnz     short loc_30F1F
     xor     ax, ax
     xor     dx, dx
@@ -6163,7 +6163,7 @@ loc_30F2F:
     push    si
     push    di
     mov     ax, [bp+arg_6]
-    mov     [bp+var_C], ax
+    mov     [bp+var_fatal], ax
     jmp     short loc_30F7E
     db 144
     push    bp
@@ -6171,7 +6171,7 @@ loc_30F2F:
     sub     sp, 0Ch
     push    si
     push    di
-    mov     [bp+var_C], 0
+    mov     [bp+var_fatal], 0
     jmp     short loc_30F7E
     db 144
     push    bp
@@ -6179,9 +6179,9 @@ loc_30F2F:
     sub     sp, 0Ch
     push    si
     push    di
-    mov     [bp+var_C], 1
+    mov     [bp+var_fatal], 1
 loc_30F7E:
-    push    [bp+var_C]
+    push    [bp+var_fatal]
     push    [bp+arg_filename]
     call    decompress_fileres
     add     sp, 4
@@ -19359,13 +19359,16 @@ loc_36192:
     jnz     short loc_3618A
     mov     es, [bp+var_8]
     mov     di, [bp+var_10]
+loc_361A4:
     mov     ds, [bp+arg_6]
     mov     si, [bp+arg_4]
     mov     cx, [bp+var_E]
+loc_361AD:
     rep movsb
 loc_361AF:
     mov     ax, [bp+var_E]
     add     [bp+var_10], ax
+loc_361B5:
     dec     [bp+var_12]
     jnz     short loc_36177
     jmp     short loc_3614E

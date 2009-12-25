@@ -620,6 +620,7 @@ static PortFuncName(labelname) {
 		labelname == "sin_fast" ||
 		labelname == "cos_fast" ||
 
+		labelname == "get_file_size" ||
 		labelname == "load_binary_file" ||
 		labelname == "load_binary_file_fatal" ||
 		labelname == "load_binary_file_nofatal" ||
@@ -964,6 +965,6 @@ static main() {
 		//break;
 	}
 
-	Message("Anders rules");
+	Message("Anders rules\n");
 
 }

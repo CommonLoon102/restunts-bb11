@@ -536,14 +536,18 @@ loc_3A8FB:
     push    word ptr es:[bx+12h]
     push    ax
     push    word_42A1A
+loc_3A943:
     mov     ax, [bp+var_6]
     add     ax, word_42A18
     push    ax
+loc_3A94B:
     call    sub_33578
+loc_3A950:
     add     sp, 0Ah
 loc_3A953:
     pop     si
     mov     sp, bp
+loc_3A956:
     pop     bp
     retf
 read_line_helper2 endp

@@ -1,4 +1,5 @@
 seg010 segment byte public 'STUNTSC' use16
+    extrn byte_2CC52:byte
     extrn start:proc
     extrn __amsg_exit
     extrn sub_2CDEC:proc

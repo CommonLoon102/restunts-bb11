@@ -2496,8 +2496,10 @@ loc_39ACA:
     pop     ds
     pop     si
     pop     di
+loc_39ACD:
     mov     sp, bp
     pop     bp
+locret_39AD0:
     retf
 audio_driver_func1E endp
 seg028 ends

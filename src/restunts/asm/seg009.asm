@@ -4402,6 +4402,7 @@ loc_2CC38:
 loc_2CC3C:
     cmp     [bp+var_38C], 1Eh
     jnb     short loc_2CC4C
+loc_2CC43:
     mov     [bp+var_388], 0
     jmp     loc_2CA7D
     ; align 2
@@ -4409,7 +4410,9 @@ loc_2CC3C:
 loc_2CC4C:
     pop     si
     pop     di
+loc_2CC4E:
     mov     sp, bp
+loc_2CC50:
     pop     bp
     retf
 sub_2C9B4 endp

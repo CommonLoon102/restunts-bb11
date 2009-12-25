@@ -227,12 +227,15 @@ loc_363DC:
     add     [si], di
     mov     ax, [bx+2]
     add     [si+2], ax
+loc_36403:
     inc     [bp+var_2]
     cmp     [bp+var_2], 8
     jl      short loc_363DC
     pop     si
     pop     di
+loc_3640E:
     mov     sp, bp
+loc_36410:
     pop     bp
     retf
 sub_36246 endp

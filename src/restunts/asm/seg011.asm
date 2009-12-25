@@ -59,11 +59,15 @@ sub_2EA08 proc far
     mov     bx, [bp+arg_0]
     push    word ptr [bx+4]
     push    word ptr [bx+2]
+loc_2EA14:
     push    word ptr [bx]
     call    sub_300B6
     add     sp, 4
+loc_2EA1E:
     push    ax
+loc_2EA1F:
     call    sub_300B6
+loc_2EA24:
     add     sp, 4
     pop     bp
     retf

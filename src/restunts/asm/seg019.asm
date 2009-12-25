@@ -111,13 +111,17 @@ sub_36B16 proc far
     push    [bp+arg_2]
     push    bx
     call    sub_36246
+loc_36BA2:
     add     sp, 4
     mov     ax, [bp+arg_2]
     add     ax, 40h ; '@'
     push    ax
+loc_36BAC:
     lea     ax, [bp+var_C]
     push    ax
+loc_36BB0:
     call    sub_36246
+loc_36BB5:
     add     sp, 4
     pop     si
     mov     sp, bp

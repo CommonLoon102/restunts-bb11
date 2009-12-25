@@ -492,9 +492,11 @@ loc_3B0A5:
     les     bx, [bp+arg_0]
     inc     word ptr [bp+arg_0]
     mov     al, [bp+var_4]
+loc_3B0AE:
     cmp     es:[bx], al
     jz      short loc_3B0A2
     mov     ax, [bp+var_2]
+loc_3B0B6:
     mov     sp, bp
     pop     bp
     retf

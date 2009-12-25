@@ -204,14 +204,17 @@ loc_39DBF:
     repne scasb
     dec     di
     mov     cx, bx
+loc_39E03:
     shr     cx, 1
     repne movsw
     adc     cx, cx
     repne movsb
 loc_39E0B:
     mov     ax, 75BEh
+loc_39E0E:
     pop     si
     pop     di
+loc_39E10:
     mov     sp, bp
     pop     bp
     retf

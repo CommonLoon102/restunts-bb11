@@ -95,6 +95,7 @@ setup_mcgawnd2 proc far
 loc_3A9C4:
     push    word ptr dword_4392E+2
     push    word ptr dword_4392E
+loc_3A9CC:
     call    set_sprite1
     add     sp, 4
     retf

@@ -81,7 +81,7 @@ seg012 segment byte public 'STUNTSC' use16
     extrn add_exit_handler:proc
     extrn call_exitlist:proc
     extrn sub_2FE74:proc
-    extrn get_file_size:proc
+    extrn get_file_size2:proc
     extrn read_4_bytes_from_file:proc
     extrn find_filename:proc
     extrn loc_30011

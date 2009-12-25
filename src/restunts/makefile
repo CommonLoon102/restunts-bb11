@@ -16,7 +16,7 @@ option packdata=0
 option map
 option nodefaultlibs
 file { $(ASMTARGETS) $(CTARGETS) }
-#library cm.lib
+library cm.lib
 order
 	clname STUNTSC
 	clname STUNTSD

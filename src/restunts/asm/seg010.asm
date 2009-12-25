@@ -46,6 +46,7 @@ nosmart
 seg010 segment byte public 'STUNTSC' use16
     assume cs:seg010
     assume es:nothing, ss:nothing, ds:dseg
+    public byte_2CC52
     public start
     public __amsg_exit
     public sub_2CDEC
@@ -130,7 +131,7 @@ seg010 segment byte public 'STUNTSC' use16
     public unknown_libname_4
     public unknown_libname_5
     public __aFuldiv
-    db 0
+byte_2CC52     db 0
     db 0
     db 0
     db 0
@@ -4381,6 +4382,7 @@ loc_2E9D2:
     jb      short loc_2E9FB
     cmp     dx, [bp+arg_2]
     ja      short loc_2E9FB
+loc_2E9F4:
     jb      short loc_2E9FC
     cmp     ax, [bp+arg_0]
     jbe     short loc_2E9FC
@@ -4388,12 +4390,15 @@ loc_2E9FB:
     dec     si
 loc_2E9FC:
     xor     dx, dx
+loc_2E9FE:
     xchg    ax, si
 loc_2E9FF:
     pop     si
+loc_2EA00:
     pop     bx
     mov     sp, bp
     pop     bp
+locret_2EA04:
     retf    8
 __aFuldiv endp
 seg010 ends

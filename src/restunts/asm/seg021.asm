@@ -121,9 +121,12 @@ loc_36C62:
     idiv    cx
 loc_36C6B:
     mov     [bp+var_4], ax
+loc_36C6E:
     or      ax, ax
+loc_36C70:
     jle     short loc_36C78
     mov     [bp+var_6], ax
+loc_36C75:
     jmp     short loc_36C4E
     ; align 2
     db 144
