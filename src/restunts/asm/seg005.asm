@@ -5341,6 +5341,7 @@ loc_24D4A:
 loc_24D52:
     cmp     ax, 5000h
     jnz     short loc_24D5A
+loc_24D57:
     jmp     loc_2431E
 loc_24D5A:
     jmp     loc_242E7

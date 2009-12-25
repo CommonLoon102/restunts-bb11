@@ -107,7 +107,7 @@ static IsPublicLabel(labelname) {
 		labelname == "loc_309A5" || 
 //		labelname == "_load_binary_file" || // Resolved
 		labelname == "loc_30DA1" || 
-		labelname == "_alt_decompress" || 
+		labelname == "_decompress_file" || 
 		labelname == "loc_30FB2" || 
 		labelname == "loc_310CD" || 
 		labelname == "loc_31498" || 
@@ -621,6 +621,7 @@ static PortFuncName(labelname) {
 		labelname == "cos_fast" ||
 
 		labelname == "get_file_size" ||
+		labelname == "file_uncompressed_size" ||
 		labelname == "load_binary_file" ||
 		labelname == "load_binary_file_fatal" ||
 		labelname == "load_binary_file_nofatal" ||

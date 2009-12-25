@@ -126,6 +126,7 @@ sub_274B0 proc far
 loc_274B6:
     push    di
     push    si
+loc_274B8:
     mov     ax, word_44AE4
     imul    word_461D0
     cwd
@@ -4528,7 +4529,7 @@ loc_29A00:
     db 144
 loc_29A08:
     push    word ptr [bp+arg_2]
-    call    load_pvs
+    call    decompress_file_nofatal
     jmp     short loc_29A00
 loc_29A12:
     push    word ptr [bp+arg_2]
@@ -5600,6 +5601,7 @@ loc_2A23C:
 loc_2A2A2:
     mov     [bp+var_4], ax
     mov     [bp+var_2], dx
+loc_2A2A8:
     or      ax, dx
     jnz     short loc_2A2B2
     push    cs
@@ -5612,6 +5614,7 @@ loc_2A2B2:
 loc_2A2B5:
     mov     dx, [bp+var_2]
     mov     sp, bp
+loc_2A2BA:
     pop     bp
     retf
 load_3dshape endp

@@ -113,6 +113,7 @@ loc_14715:
     sub     sp, 40h
     push    di
     push    si
+loc_1471A:
     cmp     word_449D0, 14h
     jnz     short loc_1472E
     mov     [bp+var_14], 8
@@ -9698,6 +9699,7 @@ loc_19DB3:
     mov     ax, offset carshortname
 loc_19DB6:
     push    ax
+loc_19DB7:
     call    copy_string
 loc_19DBC:
     add     sp, 6

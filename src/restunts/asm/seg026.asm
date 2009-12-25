@@ -58,6 +58,7 @@ sub_370BA proc far
     jl      short loc_370CD
 loc_370C3:
     cmp     [bp+arg_0], 7Ah ; 'z'
+loc_370C7:
     jg      short loc_370CD
     sub     [bp+arg_0], 20h ; ' '
 loc_370CD:

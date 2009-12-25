@@ -335,6 +335,7 @@ nopsub_36ACA proc far
 loc_36AE4:
     mov     ax, 33h ; '3'
     push    ax              ; int
+loc_36AE8:
     call    _int86
 loc_36AED:
     add     sp, 6

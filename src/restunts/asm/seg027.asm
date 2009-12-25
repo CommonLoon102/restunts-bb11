@@ -97,6 +97,7 @@ init_audio_resources proc far
     mov     bp, sp
 loc_370D5:
     sub     sp, 0Ch
+loc_370D8:
     push    [bp+arg_8]
     push    [bp+arg_2]
     push    [bp+arg_0]
@@ -1407,7 +1408,7 @@ loc_37B48:
     call    sub_39CCE
     add     sp, 6
     push    ax
-    call    load_pvs
+    call    decompress_file_nofatal
     add     sp, 2
     mov     [bp+var_4], ax
     mov     [bp+var_2], dx
@@ -1434,7 +1435,7 @@ loc_37B48:
     call    sub_39CCE
     add     sp, 6
     push    ax
-    call    load_pvs
+    call    decompress_file_nofatal
     add     sp, 2
     mov     [bp+var_4], ax
     mov     [bp+var_2], dx
@@ -1465,7 +1466,7 @@ loc_37BF9:
     call    sub_39CCE
     add     sp, 6
     push    ax
-    call    load_pvs
+    call    decompress_file_nofatal
     add     sp, 2
     mov     [bp+var_4], ax
     mov     [bp+var_2], dx
@@ -2649,6 +2650,7 @@ loc_38600:
     add     sp, 0Eh
 loc_38622:
     add     di, 2Eh ; '.'
+loc_38625:
     add     word ptr [bp-4], 2Eh ; '.'
     add     word ptr [bp-8], 2Eh ; '.'
     inc     si
@@ -2660,6 +2662,7 @@ loc_38636:
     pop     si
     pop     di
     mov     sp, bp
+loc_3863A:
     pop     bp
     retf
 copy_4_bytes endp

@@ -62,6 +62,7 @@ sub_36B16 proc far
 
     push    bp
     mov     bp, sp
+loc_36B19:
     sub     sp, 0Ch
     push    si
     mov     bx, [bp+arg_0]
@@ -114,6 +115,7 @@ sub_36B16 proc far
 loc_36BA2:
     add     sp, 4
     mov     ax, [bp+arg_2]
+loc_36BA8:
     add     ax, 40h ; '@'
     push    ax
 loc_36BAC:
@@ -124,6 +126,7 @@ loc_36BB0:
 loc_36BB5:
     add     sp, 4
     pop     si
+loc_36BB9:
     mov     sp, bp
     pop     bp
     retf

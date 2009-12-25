@@ -67,6 +67,7 @@ sub_36BBE proc far
 loc_36BD4:
     lea     ax, [bp+var_80]
     push    ax
+loc_36BD8:
     mov     ax, 20h ; ' '
     push    ax
 loc_36BDC:

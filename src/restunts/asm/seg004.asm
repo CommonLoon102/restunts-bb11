@@ -97,6 +97,7 @@ sub_1E1A0 proc far
 loc_1E1A6:
     push    di
     push    si
+loc_1E1A8:
     mov     word_44DC6, 0
     mov     word_4428E, 0FFFFh
     mov     word_44A8C, 0FFF4h

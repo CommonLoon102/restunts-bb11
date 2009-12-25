@@ -4384,6 +4384,7 @@ loc_2E9D2:
     ja      short loc_2E9FB
 loc_2E9F4:
     jb      short loc_2E9FC
+loc_2E9F6:
     cmp     ax, [bp+arg_0]
     jbe     short loc_2E9FC
 loc_2E9FB:

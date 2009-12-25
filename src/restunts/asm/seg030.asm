@@ -46,8 +46,9 @@ nosmart
 seg030 segment byte public 'STUNTSC' use16
     assume cs:seg030
     assume es:nothing, ss:nothing, ds:dseg
+    public byte_39CCA
     public sub_39CCE
-    db 144
+byte_39CCA     db 144
     db 144
     db 0
     db 0
@@ -207,6 +208,7 @@ loc_39DBF:
 loc_39E03:
     shr     cx, 1
     repne movsw
+loc_39E07:
     adc     cx, cx
     repne movsb
 loc_39E0B:

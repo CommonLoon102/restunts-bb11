@@ -155,6 +155,7 @@ mat_rot_z proc far
     mov     ax, [bp+var_2]
 loc_37012:
     mov     [bx+MATRIX._22], ax
+loc_37015:
     mov     [bx+MATRIX._32], 0
 loc_3701A:
     mov     [bx+MATRIX._13], 0
@@ -162,6 +163,7 @@ loc_3701F:
     mov     [bx+MATRIX._23], 0
 loc_37024:
     mov     [bx+MATRIX._33], 4000h
+loc_37029:
     mov     sp, bp
     pop     bp
     retf

@@ -74,6 +74,7 @@ init_polyinfo proc far
     cwd
     push    dx
     push    ax
+loc_24D6A:
     mov     ax, 32E8h
     push    ax
     call    alloc_resbytes
@@ -3621,6 +3622,7 @@ loc_26B7C:
     push    ax
 loc_26B91:
     call    sub_36BE8
+loc_26B96:
     add     sp, 6
     pop     si
     pop     di
@@ -3636,6 +3638,7 @@ loc_26BA3:
     mov     word ptr [bx], 0
     pop     si
     pop     di
+loc_26BA9:
     mov     sp, bp
     pop     bp
     retf

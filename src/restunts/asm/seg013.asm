@@ -103,6 +103,7 @@ loc_3620B:
     push    ax
 loc_36233:
     push    [bp+arg_2]
+loc_36236:
     push    [bp+arg_4]
     call    sub_33578
 loc_3623E:

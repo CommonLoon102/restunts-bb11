@@ -84,6 +84,7 @@ _main proc far
 loc_10006:
     push    di
     push    si
+loc_10008:
     push    word ptr [bp+p_argv]
     push    [bp+p_argc]
     call    init_video
@@ -7281,6 +7282,7 @@ set_default_car proc far
     mov     opponent_index, 0
 loc_14702:
     mov     byte_449AF, 0
+loc_14707:
     mov     byte_449A9, 1
 loc_1470C:
     mov     opponent_car_id, 0FFh

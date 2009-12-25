@@ -190,6 +190,7 @@ loc_36876:
     mov     si, [bp+arg_6]
 loc_36894:
     mov     [bx+si], ax
+loc_36896:
     mov     [bx+si+2], dx
     add     [bp+arg_4], 4
 loc_3689D:

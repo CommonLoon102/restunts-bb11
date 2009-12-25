@@ -71,6 +71,7 @@ read_line proc far
 
     push    bp
     mov     bp, sp
+loc_3A4B9:
     sub     sp, 0Ah
     push    si
     call    set_sprite2_as_1
@@ -538,6 +539,7 @@ loc_3A8FB:
     push    word_42A1A
 loc_3A943:
     mov     ax, [bp+var_6]
+loc_3A946:
     add     ax, word_42A18
     push    ax
 loc_3A94B:

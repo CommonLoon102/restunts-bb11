@@ -66,6 +66,7 @@ sub_19DC6 proc far
     push    bp
     mov     bp, sp
     push    bp
+loc_19DCA:
     mov     cx, [bp+arg_0]
     mov     ax, [bp+arg_2]
     cmp     [bp+arg_6], 0

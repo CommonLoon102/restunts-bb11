@@ -3,7 +3,8 @@
 #define PAGE_SIZE 0x4000
 #define PAGE_GAP  0x400
 
-extern char* aSFileError;
+extern const char* aSFileError;
+extern const char* aSFileError_1;
 extern void fatal_error(const char*, ...);
 
 // Minimal stdio.h "support" untill we can link with a real CRT.
@@ -164,6 +165,32 @@ unsigned short get_file_size(const char* filename, int fatal)
 
 	return 0;
 }
+
+// Get number of 16-byte blocks needed to store an assumed compressed file.
+unsigned short file_uncompressed_size(const char* filename, int fatal)
+{
+	long length;
+	FILE* file;
+	struct compr_header { char passes; unsigned short sizel; unsigned char sizeh; } hdr;
+	
+	if ((file = fopen(filename, "r"))) {
+		fread(&hdr, sizeof(hdr), 1, file);
+		fclose(file);
+		
+		if (!ferror(file)) {
+			// May overflow, but all Stunts files are rather small.
+			length = hdr.sizel | ((long)hdr.sizeh << 16);
+			return (length >> 4) + (length & 0xF ? 1 : 0);
+		}
+	}
+
+	if (fatal) {
+		fatal_error(aSFileError_1, filename);
+	}
+
+	return 0;
+}
+
 
 // Read entire file to given destination. Optionally handle errors fatal.
 char far* load_binary_file(const char* filename, unsigned short dstoff, unsigned short dstseg, int fatal)

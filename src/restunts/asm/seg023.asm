@@ -65,6 +65,7 @@ sub_36EC0 proc far
 loc_36EC6:
     push    si
     push    [bp+arg_4]
+loc_36ECA:
     push    [bp+arg_2]
     push    [bp+arg_0]
     call    sub_36B16
@@ -92,6 +93,7 @@ loc_36EFD:
     mov     [bx+2], ax
 loc_36F13:
     add     [bp+var_2], 4
+loc_36F17:
     add     [bp+var_4], 4
     inc     [bp+var_6]
 loc_36F1E:

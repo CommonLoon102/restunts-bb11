@@ -72,6 +72,7 @@ loc_36415:
     sub     sp, 1Ah
     push    di
     push    si
+loc_3641A:
     mov     bx, [bp+arg_0]
     mov     si, [bx]
     mov     ax, [bx+4]
@@ -408,6 +409,7 @@ loc_3677B:
     add     [si+2], ax
 loc_367A2:
     inc     [bp+var_E]
+loc_367A5:
     cmp     [bp+var_E], 10h
     jl      short loc_3677B
     pop     si

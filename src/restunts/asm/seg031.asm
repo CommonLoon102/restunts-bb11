@@ -67,6 +67,7 @@ sub_39E14 proc far
 loc_39E15:
     mov     bp, sp
     push    [bp+arg_0]
+loc_39E1A:
     call    j_load_2dshape_0
     add     sp, 2
     pop     bp
@@ -816,6 +817,7 @@ get_res_size_scaled proc far
     call    mmgr_get_chunk_size
 loc_3A4A4:
     add     sp, 4
+loc_3A4A7:
     sub     dx, dx
     mov     cl, 4
 loc_3A4AB:

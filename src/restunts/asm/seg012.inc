@@ -82,7 +82,7 @@ seg012 segment byte public 'STUNTSC' use16
     extrn call_exitlist:proc
     extrn sub_2FE74:proc
     extrn get_file_size2:proc
-    extrn read_4_bytes_from_file:proc
+    extrn file_uncompressed_size2:proc
     extrn find_filename:proc
     extrn loc_30011
     extrn loc_3002A
@@ -127,10 +127,10 @@ seg012 segment byte public 'STUNTSC' use16
     extrn load_res0_1_alt:proc
     extrn load_res0_1_type:proc
     extrn loc_30DA1
-    extrn sub_30DE6:proc
-    extrn load_pvs:proc
-    extrn decompress_fileres:proc
-    extrn _alt_decompress
+    extrn decompress_file:proc
+    extrn decompress_file_nofatal:proc
+    extrn decompress_file_fatal:proc
+    extrn _decompress_file
     extrn locate_shape_0:proc
     extrn locate_shape_1:proc
     extrn locate_sound:proc

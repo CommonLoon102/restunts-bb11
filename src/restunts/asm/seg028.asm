@@ -2491,6 +2491,7 @@ loc_39A9E:
 loc_39AC2:
     mov     byte ptr [si], 0
     add     si, 4Ch ; 'L'
+loc_39AC8:
     loop    loc_39AC2
 loc_39ACA:
     pop     ds

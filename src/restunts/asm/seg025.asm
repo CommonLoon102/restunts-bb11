@@ -107,6 +107,7 @@ loc_3707F:
 loc_370A2:
     push    [bp+var_4]
     mov     ax, 1
+loc_370A8:
     push    ax
     push    si
     push    [bp+arg_4]

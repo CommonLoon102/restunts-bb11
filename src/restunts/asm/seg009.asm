@@ -4404,6 +4404,7 @@ loc_2CC3C:
     jnb     short loc_2CC4C
 loc_2CC43:
     mov     [bp+var_388], 0
+loc_2CC48:
     jmp     loc_2CA7D
     ; align 2
     db 144

@@ -59,6 +59,7 @@ load_2dshape_1 proc far
 
     push    bp
     mov     bp, sp
+loc_3A9D9:
     mov     ax, 1
     push    ax
     push    [bp+arg_0]
@@ -194,7 +195,7 @@ loc_3AAA8:
     push    [bp+arg_2]
     lea     ax, [bp+var_7C]
     push    ax
-    call    sub_30DE6
+    call    decompress_file
     add     sp, 4
     mov     [bp+var_4], ax
     mov     [bp+var_2], dx
@@ -234,7 +235,7 @@ loc_3AB24:
     push    [bp+arg_2]
     lea     ax, [bp+var_7C]
     push    ax
-    call    sub_30DE6
+    call    decompress_file
 loc_3AB44:
     add     sp, 4
     mov     [bp+var_4], ax
@@ -254,7 +255,7 @@ loc_3AB67:
     push    [bp+arg_2]
     lea     ax, [bp+var_7C]
     push    ax
-    call    sub_30DE6
+    call    decompress_file
     add     sp, 4
     mov     [bp+var_4], ax
     mov     [bp+var_2], dx
@@ -395,6 +396,7 @@ loc_3ACBC:
     les     si, [bp+arg_0]
 loc_3ACC2:
     mov     al, es:[bx+si]
+loc_3ACC5:
     mov     shapenums[bx], al
     inc     [bp+var_2]
 loc_3ACCC:

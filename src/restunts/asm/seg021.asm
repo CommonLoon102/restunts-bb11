@@ -59,6 +59,7 @@ sub_36BE8 proc far
     arg_4 = word ptr 10
 
     push    bp
+loc_36BE9:
     mov     bp, sp
     sub     sp, 8
     push    di
@@ -117,6 +118,7 @@ loc_36C4E:
 loc_36C62:
     mov     cx, 2
     mov     ax, [bp+var_4]
+loc_36C68:
     cwd
     idiv    cx
 loc_36C6B:
@@ -133,6 +135,7 @@ loc_36C75:
 loc_36C78:
     pop     si
     pop     di
+loc_36C7A:
     mov     sp, bp
     pop     bp
     retf
