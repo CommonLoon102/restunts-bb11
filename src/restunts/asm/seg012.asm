@@ -128,8 +128,8 @@ seg012 segment byte public 'STUNTSC' use16
     public add_exit_handler
     public call_exitlist
     public sub_2FE74
-    public get_file_size2
-    public file_uncompressed_size2
+    public ported_get_file_size_
+    public ported_file_uncompressed_size_
     public find_filename
     public loc_30011
     public loc_3002A
@@ -165,9 +165,9 @@ seg012 segment byte public 'STUNTSC' use16
     public kb_checking
     public flush_stdin
     public sub_30A68
-    public load_binary_file2
-    public load_binary_file_nofatal2
-    public load_binary_file_fatal2
+    public ported_load_binary_file_
+    public ported_load_binary_file_nofatal_
+    public ported_load_binary_file_fatal_
     public decompress_rle
     public sub_30BF8
     public sub_30CCF
@@ -181,22 +181,22 @@ seg012 segment byte public 'STUNTSC' use16
     public locate_shape_0
     public locate_shape_1
     public locate_sound
-    public mmgr_alloc_resmem2
+    public ported_mmgr_alloc_resmem_
     public loc_310CD
-    public mmgr_alloc_a0002
-    public mmgr_get_ofs_diff2
-    public mmgr_copy_paras2
-    public copy_paras_reverse2
-    public mmgr_path_to_name2
-    public mmgr_alloc_pages2
-    public mmgr_find_free
-    public mmgr_get_unk
-    public mmgr_free2
+    public ported_mmgr_alloc_a000_
+    public ported_mmgr_get_ofs_diff_
+    public ported_mmgr_copy_paras_
+    public ported_copy_paras_reverse_
+    public ported_mmgr_path_to_name_
+    public ported_mmgr_alloc_pages_
+    public ported_mmgr_find_free_
+    public ported_mmgr_get_unk_
+    public ported_mmgr_free_
     public loc_31498
-    public mmgr_op_unk2
-    public mmgr_get_chunk_size
-    public mmgr_resize_memory
-    public mmgr_op_unk
+    public ported_mmgr_op_unk2_
+    public ported_mmgr_get_chunk_size_
+    public ported_mmgr_resize_memory_
+    public ported_mmgr_op_unk_
     public sub_317B2
     public sub_317C1
     public loc_317CE
@@ -225,10 +225,10 @@ seg012 segment byte public 'STUNTSC' use16
     public sub_3262E
     public sub_3264A
     public sub_3265B
-    public sin_fast2
+    public ported_sin_fast_
     public loc_326E4
     public off_326F2
-    public cos_fast2
+    public ported_cos_fast_
     public sub_3275C
     public get_timer_counter
     public get_timerdelta
@@ -3907,7 +3907,7 @@ sub_2FE74 proc near
     ; align 2
     db 0
 sub_2FE74 endp
-get_file_size2 proc far
+ported_get_file_size_ proc far
     var_fatal = word ptr -6
     var_length = word ptr -4
     var_filehandle = word ptr -2
@@ -4004,8 +4004,8 @@ gfs_dontaddrem:
     mov     sp, bp
     pop     bp
     retf
-get_file_size2 endp
-file_uncompressed_size2 proc far
+ported_get_file_size_ endp
+ported_file_uncompressed_size_ proc far
     var_fatal = word ptr -8
     var_6 = byte ptr -6
     var_5 = word ptr -5
@@ -4108,7 +4108,7 @@ loc_2FFC4:
     push    [bp+arg_filename]
     push    ax
     call    far ptr fatal_error
-file_uncompressed_size2 endp
+ported_file_uncompressed_size_ endp
 find_filename proc far
      s = byte ptr 0
      r = byte ptr 2
@@ -5534,7 +5534,7 @@ loc_30ACB:
     ; align 2
     db 0
 sub_30A68 endp
-load_binary_file2 proc far
+ported_load_binary_file_ proc far
     var_fatal = word ptr -8
      s = byte ptr 0
      r = byte ptr 2
@@ -5549,8 +5549,8 @@ load_binary_file2 proc far
     jmp     short _load_binary_file
     ; align 2
     db 144
-load_binary_file2 endp
-load_binary_file_nofatal2 proc far
+ported_load_binary_file_ endp
+ported_load_binary_file_nofatal_ proc far
     var_fatal = word ptr -8
      s = byte ptr 0
      r = byte ptr 2
@@ -5562,8 +5562,8 @@ load_binary_file_nofatal2 proc far
     mov     [bp+var_fatal], 0
     jmp     short _load_binary_file
     db 144
-load_binary_file_nofatal2 endp
-load_binary_file_fatal2 proc far
+ported_load_binary_file_nofatal_ endp
+ported_load_binary_file_fatal_ proc far
     var_fatal = word ptr -8
     var_curseg = word ptr -6
     var_curoff = word ptr -4
@@ -5626,7 +5626,7 @@ fatal:
     push    [bp+arg_filename]
     push    ax
     call    far ptr fatal_error
-load_binary_file_fatal2 endp
+ported_load_binary_file_fatal_ endp
 decompress_rle proc far
     var_1A = word ptr -26
     var_18 = word ptr -24
@@ -6341,7 +6341,7 @@ loc_31075:
     pop     bp
     retf
 locate_sound endp
-mmgr_alloc_resmem2 proc far
+ported_mmgr_alloc_resmem_ proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -6396,8 +6396,8 @@ loc_310ED:
     pop     si
     pop     bp
     retf
-mmgr_alloc_resmem2 endp
-mmgr_alloc_a0002 proc far
+ported_mmgr_alloc_resmem_ endp
+ported_mmgr_alloc_a000_ proc far
 
     mov     ax, 0A000h
     push    ax
@@ -6451,8 +6451,8 @@ loc_3113E:
     mov     bx, resptr1
     sub     ax, [bx+0Eh]
     retf
-mmgr_alloc_a0002 endp
-mmgr_get_ofs_diff2 proc far
+ported_mmgr_alloc_a000_ endp
+ported_mmgr_get_ofs_diff_ proc far
 
     mov     bx, resendptr2
     mov     ax, [bx+RESOURCE.resofs]
@@ -6460,8 +6460,8 @@ mmgr_get_ofs_diff2 proc far
     sub     ax, [bx+RESOURCE.resofs]
     sub     ax, [bx+RESOURCE.ressize]
     retf
-mmgr_get_ofs_diff2 endp
-mmgr_copy_paras2 proc far
+ported_mmgr_get_ofs_diff_ endp
+ported_mmgr_copy_paras_ proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -6507,8 +6507,8 @@ loc_311D0:
     pop     ds
     pop     bp
     retf
-mmgr_copy_paras2 endp
-copy_paras_reverse2 proc far
+ported_mmgr_copy_paras_ endp
+ported_copy_paras_reverse_ proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -6562,8 +6562,8 @@ loc_31222:
     pop     ds
     pop     bp
     retf
-copy_paras_reverse2 endp
-mmgr_path_to_name2 proc far
+ported_copy_paras_reverse_ endp
+ported_mmgr_path_to_name_ proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_filename = word ptr 6
@@ -6590,8 +6590,8 @@ loc_31243:
     pop     si
     pop     bp
     retf
-mmgr_path_to_name2 endp
-mmgr_alloc_pages2 proc far
+ported_mmgr_path_to_name_ endp
+ported_mmgr_alloc_pages_ proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -6672,8 +6672,8 @@ loc_312E9:
     mov     ax, offset aReservememoryOutOfMemory; "reservememory - OUT OF MEMORY RESERVING"...
     push    ax
     call    far ptr fatal_error
-mmgr_alloc_pages2 endp
-mmgr_find_free proc far
+ported_mmgr_alloc_pages_ endp
+ported_mmgr_find_free_ proc far
      r = byte ptr 0
 
     push    si
@@ -6727,8 +6727,8 @@ loc_31359:
     call    copy_paras_reverse
     add     sp, 6
     jmp     short loc_31319
-mmgr_find_free endp
-mmgr_get_unk proc far
+ported_mmgr_find_free_ endp
+ported_mmgr_get_unk_ proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -6744,7 +6744,7 @@ mmgr_get_unk proc far
     mov     di, ax
 loc_31380:
     xor     bx, bx
-    cmp     word ptr [si+10h], 0
+    cmp     [si+RESOURCE.resunk], 0
     jz      short loc_313AE
 loc_31388:
     mov     al, [bx+di]
@@ -6863,8 +6863,8 @@ loc_31475:
     pop     si
     pop     bp
     retf
-mmgr_get_unk endp
-mmgr_free2 proc far
+ported_mmgr_get_unk_ endp
+ported_mmgr_free_ proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -7056,8 +7056,8 @@ loc_31635:
     mov     sp, bp
     pop     bp
     retf
-mmgr_free2 endp
-mmgr_op_unk2 proc far
+ported_mmgr_free_ endp
+ported_mmgr_op_unk2_ proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_2 = word ptr 8
@@ -7091,8 +7091,8 @@ loc_31678:
     pop     si
     pop     bp
     retf
-mmgr_op_unk2 endp
-mmgr_get_chunk_size proc far
+ported_mmgr_op_unk2_ endp
+ported_mmgr_get_chunk_size_ proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_2 = word ptr 8
@@ -7118,8 +7118,8 @@ loc_3169B:
     pop     si
     pop     bp
     retf
-mmgr_get_chunk_size endp
-mmgr_resize_memory proc far
+ported_mmgr_get_chunk_size_ endp
+ported_mmgr_resize_memory_ proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_2 = word ptr 8
@@ -7191,8 +7191,8 @@ loc_31724:
     mov     ax, offset aResizememoryNo; "resizememory - NO MEMORY LEFT TO EXPAND"...
     push    ax
     call    far ptr fatal_error
-mmgr_resize_memory endp
-mmgr_op_unk proc far
+ported_mmgr_resize_memory_ endp
+ported_mmgr_op_unk_ proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_2 = word ptr 8
@@ -7257,7 +7257,7 @@ loc_317AD:
     jmp     short loc_317A4
     ; align 2
     db 0
-mmgr_op_unk endp
+ported_mmgr_op_unk_ endp
 sub_317B2 proc far
     var_A = byte ptr -10
      s = byte ptr 0
@@ -9241,7 +9241,7 @@ nosmart
     pop     bp
     retf
 sub_3265B endp
-sin_fast2 proc far
+ported_sin_fast_ proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -9289,8 +9289,8 @@ loc_3271D:
     neg     ax
     pop     bp
     retf
-sin_fast2 endp
-cos_fast2 proc far
+ported_sin_fast_ endp
+ported_cos_fast_ proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -9321,7 +9321,7 @@ cos_fast2 proc far
     mul     word ptr [bp+6]
     pop     bp
     retf
-cos_fast2 endp
+ported_cos_fast_ endp
 sub_3275C proc far
      s = byte ptr 0
      r = byte ptr 2

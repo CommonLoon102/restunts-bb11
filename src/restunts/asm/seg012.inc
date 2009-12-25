@@ -81,8 +81,8 @@ seg012 segment byte public 'STUNTSC' use16
     extrn add_exit_handler:proc
     extrn call_exitlist:proc
     extrn sub_2FE74:proc
-    extrn get_file_size2:proc
-    extrn file_uncompressed_size2:proc
+    extrn ported_get_file_size_:proc
+    extrn ported_file_uncompressed_size_:proc
     extrn find_filename:proc
     extrn loc_30011
     extrn loc_3002A
@@ -118,9 +118,9 @@ seg012 segment byte public 'STUNTSC' use16
     extrn kb_checking:proc
     extrn flush_stdin:proc
     extrn sub_30A68:proc
-    extrn load_binary_file2:proc
-    extrn load_binary_file_nofatal2:proc
-    extrn load_binary_file_fatal2:proc
+    extrn ported_load_binary_file_:proc
+    extrn ported_load_binary_file_nofatal_:proc
+    extrn ported_load_binary_file_fatal_:proc
     extrn decompress_rle:proc
     extrn sub_30BF8:proc
     extrn sub_30CCF:proc
@@ -134,22 +134,22 @@ seg012 segment byte public 'STUNTSC' use16
     extrn locate_shape_0:proc
     extrn locate_shape_1:proc
     extrn locate_sound:proc
-    extrn mmgr_alloc_resmem2:proc
+    extrn ported_mmgr_alloc_resmem_:proc
     extrn loc_310CD
-    extrn mmgr_alloc_a0002:proc
-    extrn mmgr_get_ofs_diff2:proc
-    extrn mmgr_copy_paras2:proc
-    extrn copy_paras_reverse2:proc
-    extrn mmgr_path_to_name2:proc
-    extrn mmgr_alloc_pages2:proc
-    extrn mmgr_find_free:proc
-    extrn mmgr_get_unk:proc
-    extrn mmgr_free2:proc
+    extrn ported_mmgr_alloc_a000_:proc
+    extrn ported_mmgr_get_ofs_diff_:proc
+    extrn ported_mmgr_copy_paras_:proc
+    extrn ported_copy_paras_reverse_:proc
+    extrn ported_mmgr_path_to_name_:proc
+    extrn ported_mmgr_alloc_pages_:proc
+    extrn ported_mmgr_find_free_:proc
+    extrn ported_mmgr_get_unk_:proc
+    extrn ported_mmgr_free_:proc
     extrn loc_31498
-    extrn mmgr_op_unk2:proc
-    extrn mmgr_get_chunk_size:proc
-    extrn mmgr_resize_memory:proc
-    extrn mmgr_op_unk:proc
+    extrn ported_mmgr_op_unk2_:proc
+    extrn ported_mmgr_get_chunk_size_:proc
+    extrn ported_mmgr_resize_memory_:proc
+    extrn ported_mmgr_op_unk_:proc
     extrn sub_317B2:proc
     extrn sub_317C1:proc
     extrn loc_317CE
@@ -178,10 +178,10 @@ seg012 segment byte public 'STUNTSC' use16
     extrn sub_3262E:proc
     extrn sub_3264A:proc
     extrn sub_3265B:proc
-    extrn sin_fast2:proc
+    extrn ported_sin_fast_:proc
     extrn loc_326E4
     extrn off_326F2:word
-    extrn cos_fast2:proc
+    extrn ported_cos_fast_:proc
     extrn sub_3275C:proc
     extrn get_timer_counter:proc
     extrn get_timerdelta:proc
