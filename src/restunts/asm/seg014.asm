@@ -62,6 +62,7 @@ sub_36246 proc far
 
     push    bp
     mov     bp, sp
+loc_36249:
     sub     sp, 0Ah
     push    di
     push    si
@@ -227,12 +228,16 @@ loc_363DC:
     add     [si], di
     mov     ax, [bx+2]
     add     [si+2], ax
+loc_36403:
     inc     [bp+var_2]
+loc_36406:
     cmp     [bp+var_2], 8
     jl      short loc_363DC
     pop     si
     pop     di
+loc_3640E:
     mov     sp, bp
+loc_36410:
     pop     bp
     retf
 sub_36246 endp

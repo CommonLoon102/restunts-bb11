@@ -171,8 +171,8 @@ seg012 segment byte public 'STUNTSC' use16
     extrn loc_32334
     extrn sub_323D9:proc
     extrn sub_324AA:proc
-    extrn file_write_nofatal:proc
-    extrn file_write_fatal:proc
+    extrn ported_file_write_nofatal_:proc
+    extrn ported_file_write_fatal_:proc
     extrn sub_325AE:proc
     extrn sub_3260E:proc
     extrn sub_3262E:proc

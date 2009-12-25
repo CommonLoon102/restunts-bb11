@@ -25,6 +25,8 @@ extrn file_uncompressed_size:proc
 extrn load_binary_file:proc
 extrn load_binary_file_fatal:proc
 extrn load_binary_file_nofatal:proc
+extrn file_write_fatal:proc
+extrn file_write_nofatal:proc
 
 extrn mmgr_path_to_name:proc
 extrn mmgr_alloc_pages:proc

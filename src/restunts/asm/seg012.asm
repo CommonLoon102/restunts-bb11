@@ -218,8 +218,8 @@ seg012 segment byte public 'STUNTSC' use16
     public loc_32334
     public sub_323D9
     public sub_324AA
-    public file_write_nofatal
-    public file_write_fatal
+    public ported_file_write_nofatal_
+    public ported_file_write_fatal_
     public sub_325AE
     public sub_3260E
     public sub_3262E
@@ -4044,7 +4044,7 @@ ported_file_uncompressed_size_ proc far
     mov     [bp+var_fatal], 1
 _file_uncompressed_size:
     mov     dx, [bp+arg_filename]
-    mov     dx, [bp+SHAPE2D.s2d_unk2]
+    mov     dx, [bp+arg_filename]
     mov     ah, 3Dh ; '='
     xor     al, al
     int     21h             ; DOS - 2+ - OPEN DISK FILE WITH HANDLE
@@ -5604,7 +5604,7 @@ readloop:
     mov     bx, [bp+var_filehandle]
     mov     ah, 3Eh
     int     21h             ; DOS - 2+ - CLOSE A FILE WITH HANDLE
-    mov     ax, [bp+arg_dstoff]
+    mov     ax, word ptr [bp+GAMESTATE.game_longvecs1.long_z]
     mov     dx, [bp+arg_dstseg]
     pop     ds
     mov     sp, bp
@@ -5949,7 +5949,7 @@ loc_30DA1:
     or      dx, dx
     jnz     short loc_30DDE
     push    [bp+var_fatal]
-    push    [bp+SHAPE2D.s2d_unk2]
+    push    [bp+arg_filename]
     call    get_file_size
     add     sp, 4
     or      ax, ax
@@ -8962,7 +8962,7 @@ loc_324EC:
     push    ax
     call    far ptr fatal_error
 sub_324AA endp
-file_write_nofatal proc far
+ported_file_write_nofatal_ proc far
     var_fatal = word ptr -4
      s = byte ptr 0
      r = byte ptr 2
@@ -8976,8 +8976,8 @@ file_write_nofatal proc far
     mov     [bp+var_fatal], 0
     jmp     short _file_write
     db 144
-file_write_nofatal endp
-file_write_fatal proc far
+ported_file_write_nofatal_ endp
+ported_file_write_fatal_ proc far
     var_errno = word ptr -6
     var_fatal = word ptr -4
     var_filehandle = word ptr -2
@@ -8986,8 +8986,8 @@ file_write_fatal proc far
     arg_filename = word ptr 6
     arg_srcoff = word ptr 8
     arg_srcseg = word ptr 10
-    arg_6 = word ptr 12
-    arg_8 = word ptr 14
+    arg_lenl = word ptr 12
+    arg_lenh = word ptr 14
 
     push    bp
     mov     bp, sp
@@ -9004,19 +9004,19 @@ _file_write:
     jb      short loc_32570
     mov     [bp+var_filehandle], ax
 loc_32527:
-    cmp     [bp+arg_6], 0
+    cmp     [bp+arg_lenl], 0
     jnz     short loc_32533
-    cmp     [bp+arg_8], 0
+    cmp     [bp+arg_lenh], 0
     jz      short loc_3259E
 loc_32533:
     mov     cx, 4000h
-    mov     ax, [bp+arg_6]
-    sub     [bp+arg_6], cx
-    sbb     [bp+arg_8], 0
+    mov     ax, [bp+arg_lenl]
+    sub     [bp+arg_lenl], cx
+    sbb     [bp+arg_lenh], 0
     jnb     short loc_32553
-    mov     cx, [bp+arg_6]
-    mov     [bp+arg_6], 0
-    mov     [bp+arg_8], 0
+    mov     cx, [bp+arg_lenl]
+    mov     [bp+arg_lenl], 0
+    mov     [bp+arg_lenh], 0
     add     cx, 4000h
 loc_32553:
     mov     ds, [bp+arg_srcseg]
@@ -9046,7 +9046,7 @@ loc_32570:
     jnz     short loc_325A7
     mov     ax, ss
     mov     ds, ax
-    mov     ax, 4C72h
+    mov     ax, offset aSFileError_0; "%s FILE ERROR\r"
     push    [bp+arg_filename]
     push    ax
     call    far ptr fatal_error
@@ -9062,7 +9062,7 @@ loc_325A7:
     mov     sp, bp
     pop     bp
     retf
-file_write_fatal endp
+ported_file_write_fatal_ endp
 sub_325AE proc far
 
     cmp     byte_403F2, 0
@@ -19365,15 +19365,20 @@ loc_36192:
     jnz     short loc_3618A
     mov     es, [bp+var_8]
     mov     di, [bp+var_10]
+loc_361A4:
     mov     ds, [bp+arg_6]
+loc_361A7:
     mov     si, [bp+arg_4]
     mov     cx, [bp+var_E]
+loc_361AD:
     rep movsb
 loc_361AF:
     mov     ax, [bp+var_E]
     add     [bp+var_10], ax
+loc_361B5:
     dec     [bp+var_12]
     jnz     short loc_36177
+loc_361BA:
     jmp     short loc_3614E
 sub_360F6 endp
 seg012 ends

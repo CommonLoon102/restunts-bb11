@@ -1986,7 +1986,7 @@ write_track proc far
     push    ax
     push    es
     push    bx
-    push    [bp+SHAPE2D.s2d_unk2]
+    push    [bp+arg_filename]
     call    file_write_fatal
     add     sp, 0Ah
     mov     byte_3B8FB, 0
@@ -5341,6 +5341,7 @@ loc_24D4A:
 loc_24D52:
     cmp     ax, 5000h
     jnz     short loc_24D5A
+loc_24D57:
     jmp     loc_2431E
 loc_24D5A:
     jmp     loc_242E7
@@ -5349,6 +5350,7 @@ loc_24D5A:
 loc_24D5E:
     pop     si
     pop     di
+loc_24D60:
     mov     sp, bp
     pop     bp
     retf

@@ -55,17 +55,22 @@ kb_shift_checking1 proc far
 
     mov     ax, 40h ; '@'
     mov     es, ax
+loc_36AF9:
     or      byte ptr es:17h, 20h; 40h:17h = keyboard shift flags
     call    kb_checking
+locret_36B04:
     retf
 kb_shift_checking1 endp
 kb_shift_checking2 proc far
 
     mov     ax, 40h ; '@'
+loc_36B08:
     mov     es, ax
+loc_36B0A:
 smart
     and     byte ptr es:17h, 0DFh; 40h:17h = keyboard shift flags
 nosmart
+loc_36B10:
     call    kb_checking
     retf
 kb_shift_checking2 endp

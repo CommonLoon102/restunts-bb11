@@ -116,7 +116,7 @@ static IsPublicLabel(labelname) {
 		labelname == "loc_3180A" || 
 		labelname == "locret_31AA3" || 
 		labelname == "loc_32334" || 
-		labelname == "loc_32519" || 
+//		labelname == "_file_write" || // Resolved
 		labelname == "loc_326E4" || 
 		labelname == "loc_3284A" || 
 		labelname == "loc_32882" || 
@@ -625,6 +625,8 @@ static PortFuncName(labelname) {
 		labelname == "load_binary_file" ||
 		labelname == "load_binary_file_fatal" ||
 		labelname == "load_binary_file_nofatal" ||
+		labelname == "file_write_fatal" ||
+		labelname == "file_write_nofatal" ||
 
 		labelname == "mmgr_path_to_name" ||
 		labelname == "mmgr_alloc_pages" ||

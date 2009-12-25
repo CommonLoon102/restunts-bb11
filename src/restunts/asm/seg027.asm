@@ -95,7 +95,9 @@ init_audio_resources proc far
 
     push    bp
     mov     bp, sp
+loc_370D5:
     sub     sp, 0Ch
+loc_370D8:
     push    [bp+arg_8]
     push    [bp+arg_2]
     push    [bp+arg_0]
@@ -2646,16 +2648,21 @@ loc_38600:
     push    ax
     call    sub_3219D
     add     sp, 0Eh
+loc_38622:
     add     di, 2Eh ; '.'
+loc_38625:
     add     word ptr [bp-4], 2Eh ; '.'
     add     word ptr [bp-8], 2Eh ; '.'
     inc     si
+loc_3862E:
     cmp     si, 10h
     jl      short loc_38600
     mov     [bp-2], si
+loc_38636:
     pop     si
     pop     di
     mov     sp, bp
+loc_3863A:
     pop     bp
     retf
 copy_4_bytes endp
