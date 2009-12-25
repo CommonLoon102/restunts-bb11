@@ -2,9 +2,9 @@
 
 struct RESOURCE {
 	char resname[12];
-	short ressize;
-	short resofs;
-	short resunk;
+	unsigned short ressize;
+	unsigned short resofs;
+	unsigned short resunk;
 };
 
 extern unsigned short pspofs;
@@ -15,7 +15,7 @@ extern struct RESOURCE* resptr1;
 extern struct RESOURCE* resptr2;
 extern struct RESOURCE* resendptr1;
 extern struct RESOURCE* resendptr2;
-extern short resmaxsize;
+extern unsigned short resmaxsize;
 extern char* aReservememoryO;
 extern char* aReservememoryOutOfMemory;
 extern char* aMemoryManagerB;
@@ -50,85 +50,55 @@ char* mmgr_path_to_name(char* filename) {
 	return result;
 }
 
-void mmgr_alloc_pages(unsigned short arg_0, unsigned short arg_2) {
-	__asm {
-    push    si
-    push    di
-    mov     di, resptr2
-    mov     si, resendptr1
-    mov     dx, [di+.resofs]
-    add     dx, [di+.ressize]
-    add     di, 12h
-    cmp     si, di
-    jbe     short loc_312A7
-loc_31262:
-    mov     resptr2, di
-    push    [arg_0]
-//call    check_pathdrive
-call    far ptr mmgr_path_to_name
-    add     sp, 2
-    mov     si, ax
-    xor     bx, bx
-    mov     cx, 0Ch
-loc_31278:
-    mov     al, byte ptr [bx+si+.resname]
-    mov     byte ptr [bx+di+.resname], al
-    inc     bx
-    loop    loc_31278
-    mov     si, resendptr1
-    mov     ax, [arg_2]
-    mov     [di+.resofs], dx
-    mov     [di+.ressize], ax
-    mov     word ptr [di+.resunk], 2
-    add     ax, dx
-    cmp     ax, resmaxsize
-    jb      short loc_3129C
-    mov     resmaxsize, ax
-loc_3129C:
-    cmp     ax, [si+.resofs]
-    ja      short loc_312C2
-loc_312A1:
-    xor     ax, ax
-    pop     di
-    pop     si
-    jmp endfunc
-    //pop bp
-    //retf
-loc_312A7:
-    cmp     si, resendptr2
-    jz      short loc_312B6
-    add     si, 12h
-    mov     resendptr1, si
-    jmp     short loc_31262
-loc_312B6:
-    push    [arg_0]
-    mov     ax, offset aReservememoryO
-    push    ax
-    call    far ptr fatal_error
-loc_312C2:
-    mov     si, resendptr1
-    mov     di, resptr2
-    mov     ax, [di+.resofs]
-    add     ax, [di+.ressize]
-loc_312D0:
-    cmp     ax, [si+.resofs]
-    jbe     short loc_312A1
-    cmp     si, resendptr2
-    jz      short loc_312E9
-    mov     word ptr [si+.resunk], 0
-    add     si, 12h
-    mov     resendptr1, si
-    jmp     short loc_312D0
-loc_312E9:
-    mov     bx, resmaxsize
-    push    bx
-    push    word ptr [di+.ressize]
-    push    [arg_0]
-    mov     ax, offset aReservememoryOutOfMemory
-    push    ax
-    call    far ptr fatal_error
-}
-endfunc:
+void far* mmgr_alloc_pages(char* arg_0, unsigned short arg_2) {
+	int i;
+	struct RESOURCE* resdi;
+	struct RESOURCE* ressi;
+	char* chunkname;
+	unsigned short rax, rdx;
+
+	resdi = resptr2;
+	ressi = resendptr1;
+	rdx = resdi->resofs + resdi->ressize;
+	resdi++;
+	if (ressi <= resdi) {
+		if (ressi == resendptr2) 
+			fatal_error(aReservememoryO, arg_0);
+
+		ressi++;
+		resendptr1 = ressi;
+	}
+
+	resptr2 = resdi;
+	chunkname = mmgr_path_to_name(arg_0);
+	for (i = 0; i < 0xC; i++)
+		resdi->resname[i] = chunkname[i];
+
+	rax = arg_2;
+	resdi->resofs = rdx;
+	resdi->ressize = rax;
+	resdi->resunk = 2;
+
+	rax += rdx;
+	if (rax > resmaxsize) 
+		resmaxsize = rax;
+
+	if (rax > ressi->resofs) {
+		ressi = resendptr1;
+		resdi = resptr2;
+		rax = resdi->resofs + resdi->ressize;
+	
+		while (rax > ressi->resofs) {
+			if (ressi == resendptr2)
+				fatal_error(aReservememoryOutOfMemory, arg_0, resdi->ressize, resmaxsize);
+
+			ressi->resunk = 0;
+			ressi++;
+			resendptr1 = ressi;
+		}
+	}
+
+	return MK_FP(rdx, 0);
 }
 
 void far* dos_get_psp() {
