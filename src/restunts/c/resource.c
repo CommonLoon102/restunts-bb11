@@ -400,7 +400,7 @@ void mmgr_op_unk2(unsigned short arg_0, unsigned short arg_2) {
 	if (ressi == resptr2) {
 		do {
 			ressi--;
-		} while (ressi->resunk == 1);
+		} while (ressi->resunk == 0);
 		resptr2 = ressi;
 	}
 
@@ -410,7 +410,7 @@ void mmgr_op_unk2(unsigned short arg_0, unsigned short arg_2) {
 	popregs();
 }
 
-void mmgr_get_chunk_size(unsigned short arg_0, unsigned short arg_2) {
+unsigned short mmgr_get_chunk_size(unsigned short arg_0, unsigned short arg_2) {
 	int i;
 	unsigned short regax, regbx, regcx, regdx;
 	char* strdi;
@@ -429,77 +429,60 @@ void mmgr_get_chunk_size(unsigned short arg_0, unsigned short arg_2) {
 	return ressi->ressize;
 }
 
-void mmgr_resize_memory(unsigned short arg_0, unsigned short arg_2, unsigned short arg_4) {
-__asm {
-    push    si
-    push    di
-    mov     ax, [arg_2]
-    mov     si, resptr2
-loc_316AE:
-    cmp     si, resptr1
-    jz      short loc_316BE
-    cmp     ax, [si+.resofs]
-    jz      short loc_316C1
-    sub     si, 12h
-    jmp     short loc_316AE
-loc_316BE:
-    //jmp     loc_31498
-    push    [arg_2]
-    mov     ax, offset aMemoryManagerB // "memory manager - BLOCK NOT FOUND at SEG"...
-    push    ax
-    call    far ptr fatal_error
+unsigned short mmgr_resize_memory(unsigned short arg_0, unsigned short arg_2, unsigned short arg_4) {
+	int i;
+	unsigned short regax, regbx, regcx, regdx;
+	char* strdi;
+	struct RESOURCE* ressi;
+	struct RESOURCE* resdi;
 
-loc_316C1:
-    mov     ax, [arg_4]
-    cmp     ax, [si+.ressize]
-    ja      short loc_316D0
-    mov     [si+.ressize], ax
-    pop     di
-    pop     si
-    jmp endfunc
-loc_316D0:
-    cmp     si, resptr2
-    jnz     short loc_316F4
-    mov     [si+.ressize], ax
-    mov     di, resendptr1
-    add     ax, [si+.resofs]
-    cmp     ax, resmaxsize
-    jb      short loc_316E9
-    mov     resmaxsize, ax
-loc_316E9:
-    cmp     ax, [di+.resofs]
-    ja      short loc_316FD
-loc_316EE:
-    xor     ax, ax
-    pop     di
-    pop     si
-    jmp endfunc
-loc_316F4:
-    mov     ax, offset aResizememoryCa //  "resizememory - CANNOT EXPAND BLOCK NOT "...
-    push    ax
-    call    far ptr fatal_error
-loc_316FD:
-    mov     si, resendptr1
-    mov     di, resptr2
-    mov     ax, [di+.resofs]
-    add     ax, [di+.ressize]
-loc_3170B:
-    cmp     ax, [si+.resofs]
-    jbe     short loc_316EE
-    cmp     si, resendptr2
-    jz      short loc_31724
-    mov     word ptr [si+.resunk], 0
-    add     si, 12h
-    mov     resendptr1, si
-    jmp     short loc_3170B
-loc_31724:
-    mov     bx, resmaxsize
-    push    bx
-    mov     ax, offset aResizememoryNo //  "resizememory - NO MEMORY LEFT TO EXPAND"...
-    push    ax
-    call    far ptr fatal_error
-}
-endfunc:
+	pushregs();
+
+	regax = arg_2;
+	ressi = resptr2;
+
+	for (;;) {
+		if (ressi == resptr1)
+			fatal_error(aMemoryManagerB, arg_2);
+		if (regax == ressi->resofs) break;
+		ressi--;
+	}
+
+	regax = arg_4;
+	if (regax <= ressi->ressize) {
+		ressi->ressize = regax;
+		popregs();
+		return regax;
+	}
+
+	if (ressi != resptr2)
+		fatal_error(aResizememoryCa);
+	ressi->ressize = regax;
+	resdi = resendptr1;
+	regax += ressi->resofs;
+	if (regax >= resmaxsize)
+		resmaxsize = regax;
+
+	if (regax <= resdi->resofs) {
+		popregs();
+		return 0;
+	}
+
+	ressi = resendptr1;
+	resdi = resptr2;
+	regax = resdi->resofs + resdi->ressize;
+
+	for (;;) {
+		if (regax <= ressi->resofs) break;
+		if (ressi == resendptr2) 
+			fatal_error(aResizememoryNo, resmaxsize);
+	
+		ressi->resunk = 0;
+		ressi++;
+		resendptr1 = ressi;
+	}
+	popregs();
+	return 0;
 }
 
 void mmgr_op_unk(unsigned short arg_0, unsigned short arg_2) {
