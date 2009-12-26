@@ -134,15 +134,15 @@ seg012 segment byte public 'STUNTSC' use16
     public ported_file_uncomp_paras_
     public ported_file_uncomp_paras_nofatal_
     public ported_file_uncomp_paras_fatal_
-    public find_filename
+    public file_find
     public loc_30011
     public loc_3002A
-    public find_next
+    public file_find_next
     public scale_value
-    public set_bios_mode4
+    public video_set_mode4
     public sub_300B6
-    public set_bios_mode7
-    public setup_timercallback
+    public video_set_mode7
+    public timer_setup_interrupt
     public loc_301FD
     public audio_stop_unk
     public reg_timer_callback
@@ -159,13 +159,13 @@ seg012 segment byte public 'STUNTSC' use16
     public sub_307B4
     public sub_307D2
     public sub_307E3
-    public sub_30812
+    public kb_init_interrupt
     public sub_30883
     public sub_308C6
     public sub_309A5
     public get_key_status
-    public call_readchar_callback
-    public read_kb_char
+    public kb_call_readchar_callback
+    public kb_read_char
     public kb_checking
     public flush_stdin
     public sub_30A68
@@ -221,30 +221,40 @@ seg012 segment byte public 'STUNTSC' use16
     public sub_322F3
     public loc_32334
     public sub_323D9
-    public sub_324AA
+    public release_window
     public ported_file_write_nofatal_
     public ported_file_write_fatal_
-    public sub_325AE
+    public video_add_exithandler
+    public video_on_exit
     public sub_3260E
     public sub_3262E
     public sub_3264A
     public sub_3265B
+    public nopsub_326BA
     public ported_sin_fast_
     public loc_326E4
     public off_326F2
     public ported_cos_fast_
+    public nopsub_32738
+    public nopsub_32746
+    public nopsub_32751
     public sub_3275C
-    public get_timer_counter
-    public get_timerdelta
-    public copy_timer_counter
-    public sub_327D7
-    public sub_327EB
-    public sub_32805
+    public nopsub_3276A
+    public timer_get_counter
+    public nopsub_32782
+    public timer_get_delta
+    public nopsub_327B7
+    public timer_copy_counter
+    public timer_wait_for_dx
+    public timer_compare_dx
+    public timer_get_counter_unk
     public sub_32832
     public sub_32843
     public loc_3284A
     public loc_32882
     public sub_32886
+    public nopsub_328C9
+    public nopsub_328DB
     public mat_mul_vector
     public mat_multiply
     public mat_copy
@@ -256,13 +266,17 @@ seg012 segment byte public 'STUNTSC' use16
     public vle_esc1
     public vle_esc2
     public decompress_vle
-    public sub_32FFC
-    public sub_33014
+    public nopsub_32FEE
+    public video_get_status
+    public nopsub_33006
+    public vector_op_unk
     public loc_3301F
     public sub_33072
     public set_sprite1_size
-    public sub_332A8
+    public fill_color
     public clear_sprite1_color
+    public nopsub_33330
+    public sub_33344
     public sub_333C0
     public off_3340A
     public sub_33578
@@ -271,23 +285,30 @@ seg012 segment byte public 'STUNTSC' use16
     public loc_335D7
     public loc_33622
     public byte_33646
+    public unk_33652
+    public byte_33656
     public sub_3367A
     public loc_33697
     public sub_33742
-    public sub_33816
+    public video_set_mode_13h
     public j_load_2dshape_res2
     public load_2dshape1
     public j_load_2dshape_0
     public sub_3386C
     public sub_33890
     public loc_338C9
+    public nopsub_339FA
     public sub_33A1E
     public loc_33A57
+    public nopsub_33AC0
+    public nopsub_33AE4
     public sub_33B02
     public loc_33B1D
+    public nopsub_33B98
     public sub_33BBC
     public sub_33BDA
     public loc_33BF5
+    public nopsub_33D0C
     public sub_33D30
     public sub_33D4E
     public loc_33D69
@@ -334,6 +355,7 @@ seg012 segment byte public 'STUNTSC' use16
     public lineoffsets
     public sub_34B0C
     public sub_34B7C
+    public sub_34B96
     public make_wnd_sprite
     public next_wnd_def
     public wnd_defs
@@ -1572,7 +1594,7 @@ loc_2F3FD:
     mov     [bp+arg_2], ax
     mov     ax, [bp+arg_6]
     mov     [bp+arg_4], ax
-    mov     ax, offset loc_33344
+    mov     ax, offset sub_33344
     mov     spritefunc, ax
     mov     ax, offset sub_2FDDE
     mov     imagefunc, ax
@@ -3907,7 +3929,7 @@ sub_2FE74 proc near
     call    call_exitlist
     xor     ax, ax
     push    ax
-    call    far ptr sub_2CDEC
+    call    far ptr libsub_2CDEC
     ; align 2
     db 0
 sub_2FE74 endp
@@ -4160,7 +4182,7 @@ loc_2FFC4:
     push    ax
     call    far ptr fatal_error
 ported_file_uncomp_paras_fatal_ endp
-find_filename proc far
+file_find proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -4215,8 +4237,8 @@ loc_30025:
 loc_3002A:
     xor     ax, ax
     jmp     short loc_30025
-find_filename endp
-find_next proc far
+file_find endp
+file_find_next proc far
      s = byte ptr 0
      r = byte ptr 2
 
@@ -4234,7 +4256,7 @@ find_next proc far
     jmp     short loc_30011
     ; align 2
     db 0
-find_next endp
+file_find_next endp
 scale_value proc far
      s = byte ptr 0
      r = byte ptr 2
@@ -4255,7 +4277,7 @@ scale_value proc far
     pop     bp
     retf
 scale_value endp
-set_bios_mode4 proc far
+video_set_mode4 proc far
      r = byte ptr 0
 
     push    di
@@ -4303,7 +4325,7 @@ loc_30091:
     retf
     ; align 2
     db 0
-set_bios_mode4 endp
+video_set_mode4 endp
 sub_300B6 proc far
      s = byte ptr 0
      r = byte ptr 2
@@ -4363,7 +4385,7 @@ loc_30112:
     pop     bp
     retf
 sub_300B6 endp
-set_bios_mode7 proc far
+video_set_mode7 proc far
      r = byte ptr 0
 
     push    di
@@ -4424,12 +4446,12 @@ loc_30156:
     jmp     short loc_301FD
     ; align 2
     db 144
-set_bios_mode7 endp
-setup_timercallback proc far
+video_set_mode7 endp
+timer_setup_interrupt proc far
      r = byte ptr 0
 
     push    bp
-    mov     dx, 2E9Ch
+    mov     dx, 2E9Ch       ; 11977. afaict this is used as freq-parameter, which gives
     mov     word_3F884, 5
     mov     word_3F886, 5
     mov     byte_3F880, 0
@@ -4508,7 +4530,7 @@ nosmart
     add     sp, 4
     pop     bp
     retf
-setup_timercallback endp
+timer_setup_interrupt endp
 audio_stop_unk proc far
 
     xor     ax, ax
@@ -4722,7 +4744,7 @@ set_bios_mode3 proc far
 
     xor     ax, ax
     push    ax
-    call    sub_332A8
+    call    fill_color
     add     sp, 2
     mov     ax, 40h ; '@'
     mov     es, ax
@@ -5243,7 +5265,7 @@ loc_30805:
     ; align 2
     db 0
 sub_307E3 endp
-sub_30812 proc far
+kb_init_interrupt proc far
      r = byte ptr 0
 
     push    di
@@ -5254,7 +5276,7 @@ sub_30812 proc far
     xor     bx, bx
     mov     es, bx
     mov     bx, es:24h
-    cmp     bx, 1EA6h
+    cmp     bx, offset sub_308C6
     jz      short loc_30861
     mov     word_3FB48, bx
     mov     bx, es:26h
@@ -5284,7 +5306,7 @@ loc_30861:
     add     sp, 4
     pop     di
     retf
-sub_30812 endp
+kb_init_interrupt endp
 sub_30883 proc far
 
     in      al, 21h         ; Interrupt controller, 8259A.
@@ -5489,12 +5511,12 @@ get_key_status proc far
     ; align 2
     db 0
 get_key_status endp
-call_readchar_callback proc far
+kb_call_readchar_callback proc far
 
     call    dword ptr readchar_callback
     retf
-call_readchar_callback endp
-read_kb_char proc far
+kb_call_readchar_callback endp
+kb_read_char proc far
 
     mov     ah, 1
     int     16h             ; KEYBOARD - CHECK BUFFER, DO NOT CLEAR
@@ -5509,7 +5531,7 @@ loc_30A2A:
     xor     ah, ah
 locret_30A34:
     retf
-read_kb_char endp
+kb_read_char endp
 kb_checking proc far
 
     mov     ah, 1
@@ -5536,7 +5558,7 @@ locret_30A43:
 kb_checking endp
 flush_stdin proc far
 
-    call    call_readchar_callback
+    call    kb_call_readchar_callback
     cmp     ax, 0
     jz      short near ptr flush_stdin
     retf
@@ -5553,10 +5575,10 @@ loc_30A71:
     int     16h             ; KEYBOARD - READ CHAR FROM BUFFER, WAIT IF EMPTY
     jmp     short near ptr sub_30A68
 loc_30A77:
-    call    call_readchar_callback
+    call    kb_call_readchar_callback
     cmp     ax, 0
     jnz     short locret_30A96
-    call    get_timer_counter
+    call    timer_get_counter
     cmp     dx, word_405F8
     jb      short loc_30A77
     ja      short loc_30A94
@@ -5569,16 +5591,16 @@ locret_30A96:
     push    bp
     mov     bp, sp
     sub     sp, 4
-    call    get_timer_counter
+    call    timer_get_counter
     add     ax, [bp+6]
     adc     dx, [bp+8]
     mov     [bp-4], ax
     mov     [bp-2], dx
 loc_30AAE:
-    call    call_readchar_callback
+    call    kb_call_readchar_callback
     cmp     ax, 0
     jnz     short loc_30ACB
-    call    get_timer_counter
+    call    timer_get_counter
     cmp     dx, [bp-2]
     jb      short loc_30AAE
     ja      short loc_30AC9
@@ -8978,7 +9000,7 @@ loc_324A2:
     mov     [di+2], ax
     jmp     short loc_32472
 sub_323D9 endp
-sub_324AA proc far
+release_window proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -9020,7 +9042,7 @@ loc_324EC:
     lea     ax, aWindowReleased; "Window Released Out of Order\r\n"
     push    ax
     call    far ptr fatal_error
-sub_324AA endp
+release_window endp
 ported_file_write_nofatal_ proc far
     var_fatal = word ptr -4
      s = byte ptr 0
@@ -9105,7 +9127,7 @@ loc_32570:
     jnz     short loc_325A7
     mov     ax, ss
     mov     ds, ax
-    mov     ax, 4C72h
+    mov     ax, offset aSFileError_0; "%s FILE ERROR\r"
     push    [bp+arg_filename]
     push    ax
     call    far ptr fatal_error
@@ -9122,30 +9144,33 @@ loc_325A7:
     pop     bp
     retf
 ported_file_write_fatal_ endp
-sub_325AE proc far
+video_add_exithandler proc far
 
-    cmp     byte_403F2, 0
+    cmp     currentvideomode, 0
     jnz     short locret_325D5
     mov     ah, 0Fh
     int     10h             ; - VIDEO - GET CURRENT VIDEO MODE
-    mov     byte_403F2, al
+    mov     currentvideomode, al
     mov     ax, 40h ; '@'
     mov     es, ax
     mov     al, es:10h
     mov     byte_403F3, al
     push    cs
-    mov     ax, 3BB6h
+    mov     ax, offset video_on_exit
     push    ax
     call    add_exit_handler
     add     sp, 4
 locret_325D5:
     retf
+video_add_exithandler endp
+video_on_exit proc far
+
     mov     ax, 40h ; '@'
     mov     es, ax
     mov     al, byte_403F3
     mov     es:10h, al
     mov     ah, 0
-    mov     al, byte_403F2
+    mov     al, currentvideomode
     int     10h             ; - VIDEO - SET VIDEO MODE
     mov     ax, 40h ; '@'
     mov     es, ax
@@ -9158,14 +9183,14 @@ nosmart
     jnz     short loc_32606
     xor     ax, ax
     push    ax
-    call    sub_332A8
+    call    fill_color
     add     sp, 2
 loc_32606:
     mov     ah, 0Bh
     mov     bx, 0
     int     10h             ; - VIDEO - 
     retf
-sub_325AE endp
+video_on_exit endp
 sub_3260E proc far
      s = byte ptr 0
      r = byte ptr 2
@@ -9249,6 +9274,7 @@ sub_3265B proc far
     shl     bx, 1
     shl     bx, 1
     add     bx, ax
+loc_32676:
     add     bx, 6
     shl     ax, 1
     add     ax, 6
@@ -9283,23 +9309,32 @@ nosmart
     pop     si
     pop     bp
     retf
+sub_3265B endp
+nopsub_326BA proc far
+     s = byte ptr 0
+     r = byte ptr 2
+    arg_0 = word ptr 6
+    arg_2 = word ptr 8
+    arg_4 = word ptr 10
+    arg_6 = word ptr 12
+
     push    bp
     mov     bp, sp
     push    si
-    mov     es, word ptr [bp+8]
-    mov     si, [bp+6]
-    mov     bx, [bp+0Ah]
+    mov     es, [bp+arg_2]
+    mov     si, [bp+arg_0]
+    mov     bx, [bp+arg_4]
     shl     bx, 1
     shl     bx, 1
     mov     ax, es:[bx+si+6]
     mov     dx, es:[bx+si+8]
-    mov     si, [bp+0Ch]
+    mov     si, [bp+arg_6]
     mov     [si], ax
     mov     [si+2], dx
     pop     si
     pop     bp
     retf
-sub_3265B endp
+nopsub_326BA endp
 ported_sin_fast_ proc far
      s = byte ptr 0
      r = byte ptr 2
@@ -9361,26 +9396,46 @@ ported_cos_fast_ proc far
     jmp     short loc_326E4
     ; align 2
     db 0
+ported_cos_fast_ endp
+nopsub_32738 proc far
+     s = byte ptr 0
+     r = byte ptr 2
+    arg_0 = word ptr 6
+    arg_2 = word ptr 8
+    arg_4 = word ptr 10
+
     push    bp
     mov     bp, sp
-    mov     dx, [bp+8]
-    mov     ax, [bp+6]
-    div     word ptr [bp+0Ah]
+    mov     dx, [bp+arg_2]
+    mov     ax, [bp+arg_0]
+    div     [bp+arg_4]
     pop     bp
     retf
+nopsub_32738 endp
+nopsub_32746 proc far
+     s = byte ptr 0
+     r = byte ptr 2
+    arg_0 = word ptr 6
+
     push    bp
     mov     bp, sp
     mov     ax, word_403BA
-    mul     word ptr [bp+6]
+    mul     [bp+arg_0]
     pop     bp
     retf
+nopsub_32746 endp
+nopsub_32751 proc far
+     s = byte ptr 0
+     r = byte ptr 2
+    arg_0 = word ptr 6
+
     push    bp
     mov     bp, sp
     mov     ax, word_403BC
-    mul     word ptr [bp+6]
+    mul     [bp+arg_0]
     pop     bp
     retf
-ported_cos_fast_ endp
+nopsub_32751 endp
 sub_3275C proc far
      s = byte ptr 0
      r = byte ptr 2
@@ -9394,25 +9449,39 @@ sub_3275C proc far
     div     [bp+arg_2]
     pop     bp
     retf
+sub_3275C endp
+nopsub_3276A proc far
+     s = byte ptr 0
+     r = byte ptr 2
+    arg_0 = word ptr 6
+    arg_2 = word ptr 8
+
     push    bp
     mov     bp, sp
     mov     ax, word_403BC
-    mul     word ptr [bp+6]
-    div     word ptr [bp+8]
+    mul     [bp+arg_0]
+    div     [bp+arg_2]
     pop     bp
     retf
-sub_3275C endp
-get_timer_counter proc far
+nopsub_3276A endp
+timer_get_counter proc far
 
     cli
     mov     ax, word_3F878
     mov     dx, word_3F87A
     sti
     retf
+timer_get_counter endp
+nopsub_32782 proc far
+     s = byte ptr 0
+     r = byte ptr 2
+    arg_0 = word ptr 6
+    arg_2 = word ptr 8
+
     push    bp
     mov     bp, sp
-    mov     bx, [bp+6]
-    mov     cx, [bp+8]
+    mov     bx, [bp+arg_0]
+    mov     cx, [bp+arg_2]
     cli
     mov     ax, word_3F878
     mov     dx, word_3F87A
@@ -9421,8 +9490,8 @@ get_timer_counter proc far
     sbb     dx, cx
     pop     bp
     retf
-get_timer_counter endp
-get_timerdelta proc far
+nopsub_32782 endp
+timer_get_delta proc far
 
     mov     bx, word_405FA
     mov     cx, word_405FC
@@ -9435,12 +9504,15 @@ get_timerdelta proc far
     sub     ax, bx
     sbb     dx, cx
     retf
+timer_get_delta endp
+nopsub_327B7 proc far
+
     xor     ax, ax
     mov     word_3F878, ax
     mov     word_3F87A, ax
     retf
-get_timerdelta endp
-copy_timer_counter proc far
+nopsub_327B7 endp
+timer_copy_counter proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -9448,28 +9520,28 @@ copy_timer_counter proc far
 
     push    bp
     mov     bp, sp
-    call    get_timer_counter
+    call    timer_get_counter
     add     ax, [bp+arg_0]
     adc     dx, [bp+arg_2]
     mov     word_405F6, ax
     mov     word_405F8, dx
     pop     bp
     retf
-copy_timer_counter endp
-sub_327D7 proc far
+timer_copy_counter endp
+timer_wait_for_dx proc far
 
-    call    get_timer_counter
+    call    timer_get_counter
     cmp     dx, word_405F8
-    jb      short near ptr sub_327D7
+    jb      short near ptr timer_wait_for_dx
     ja      short locret_327EA
     cmp     ax, word_405F6
-    jb      short near ptr sub_327D7
+    jb      short near ptr timer_wait_for_dx
 locret_327EA:
     retf
-sub_327D7 endp
-sub_327EB proc far
+timer_wait_for_dx endp
+timer_compare_dx proc far
 
-    call    get_timer_counter
+    call    timer_get_counter
     cmp     dx, word_405F8
     jb      short loc_32802
     ja      short loc_327FE
@@ -9481,8 +9553,8 @@ loc_327FE:
 loc_32802:
     xor     ax, ax
     retf
-sub_327EB endp
-sub_32805 proc far
+timer_compare_dx endp
+timer_get_counter_unk proc far
     var_4 = word ptr -4
     var_2 = word ptr -2
      s = byte ptr 0
@@ -9493,13 +9565,13 @@ sub_32805 proc far
     push    bp
     mov     bp, sp
     sub     sp, 4
-    call    get_timer_counter
+    call    timer_get_counter
     add     ax, [bp+arg_0]
     adc     dx, [bp+arg_2]
     mov     [bp+var_4], ax
     mov     [bp+var_2], dx
 loc_3281C:
-    call    get_timer_counter
+    call    timer_get_counter
     cmp     dx, [bp+var_2]
     jb      short loc_3281C
     ja      short loc_3282D
@@ -9511,7 +9583,7 @@ loc_3282D:
     retf
     ; align 2
     db 0
-sub_32805 endp
+timer_get_counter_unk endp
 sub_32832 proc far
      s = byte ptr 0
      r = byte ptr 2
@@ -9601,30 +9673,44 @@ loc_328A8:
     mov     [bp+arg_0], ax
     mov     ax, [bp+arg_4]
     mov     [bp+arg_2], ax
-    mov     ax, 6176h
+    mov     ax, offset sub_34B96
     mov     spritefunc, ax
-    mov     ax, 13BEh
+    mov     ax, offset sub_2FDDE
     mov     imagefunc, ax
     jmp     loc_3180A
+sub_32886 endp
+nopsub_328C9 proc far
+    var_A = byte ptr -10
+     s = byte ptr 0
+     r = byte ptr 2
+    arg_6 = byte ptr 12
+
     push    bp
     mov     bp, sp
     sub     sp, 7D0h
     push    si
     push    di
-    lea     si, [bp+0Ch]
-    mov     byte ptr [bp-0Ah], 1
+    lea     si, [bp+arg_6]
+    mov     [bp+var_A], 1
     jmp     short loc_328A8
+nopsub_328C9 endp
+nopsub_328DB proc far
+    var_A = byte ptr -10
+     s = byte ptr 0
+     r = byte ptr 2
+    arg_6 = byte ptr 12
+
     push    bp
     mov     bp, sp
     sub     sp, 7D0h
     push    si
     push    di
-    lea     si, [bp+0Ch]
-    mov     byte ptr [bp-0Ah], 0
+    lea     si, [bp+arg_6]
+    mov     [bp+var_A], 0
     jmp     short loc_328A8
     ; align 2
     db 0
-sub_32886 endp
+nopsub_328DB endp
 mat_mul_vector proc far
      s = byte ptr 0
      r = byte ptr 2
@@ -10431,16 +10517,16 @@ nosmart
     xor     bx, bx
     xor     dx, dx
 loc_32DC1:
-    mov     cs:[bx+421Ch], cx
+    mov     cs:vle_esc1[bx], cx
     shl     dx, 1
-    sub     cs:[bx+421Ch], dx
+    sub     cs:vle_esc1[bx], dx
     lodsb
     xor     ah, ah
     add     dx, ax
     add     cx, ax
     or      ax, ax
     jz      short $+2
-    mov     cs:[bx+423Ch], dx
+    mov     word ptr cs:vle_esc2[bx], dx
     add     bx, 2
     cmp     bx, di
     jl      short loc_32DC1
@@ -10573,9 +10659,9 @@ loc_32ED4:
     rcl     dx, 1
     sub     ah, 1
     add     bp, 2
-    cmp     dx, cs:[bp+423Ch]
+    cmp     dx, word ptr cs:vle_esc2[bp]
     jnb     short loc_32EC2
-    add     dx, cs:[bp+421Ch]
+    add     dx, cs:vle_esc1[bp]
     mov     bp, dx
     mov     al, cs:[bp+0]
     stosb
@@ -10715,6 +10801,9 @@ loc_32FE1:
     jmp     short loc_32FDD
     ; align 2
     db 0
+decompress_vle endp
+nopsub_32FEE proc far
+
     mov     dx, 3DAh
 loc_32FF1:
     in      al, dx          ; Video status bits:
@@ -10725,8 +10814,8 @@ loc_32FF6:
     test    al, 8
     jz      short loc_32FF6
     retf
-decompress_vle endp
-sub_32FFC proc far
+nopsub_32FEE endp
+video_get_status proc far
 
     mov     dx, 3DAh
     in      al, dx          ; Video status bits:
@@ -10737,6 +10826,11 @@ nosmart
     retf
     ; align 2
     db 0
+video_get_status endp
+nopsub_33006 proc far
+     s = byte ptr 0
+     r = byte ptr 2
+
     push    bp
     mov     bp, sp
     sub     sp, 4
@@ -10746,8 +10840,8 @@ nosmart
     jmp     short loc_3301F
     ; align 2
     db 144
-sub_32FFC endp
-sub_33014 proc far
+nopsub_33006 endp
+vector_op_unk proc far
     var_4 = word ptr -4
     var_2 = word ptr -2
      s = byte ptr 0
@@ -10799,7 +10893,7 @@ loc_33040:
     mov     bp, sp
     mov     ax, [bp+6]
     mov     ds:4E92h, ax
-sub_33014 endp
+vector_op_unk endp
 sub_33072 proc far
     var_79A = byte ptr -1946
     var_3DA = byte ptr -986
@@ -10919,7 +11013,7 @@ loc_330B6:
     retf
 loc_33148:
     shl     bx, 1
-    mov     ax, [bx+3C58h]
+    mov     ax, ds:off_3F3C8[bx]
     mov     [bp+var_16], ax
     mov     ax, [bp+var_6]
     mov     [bp+var_1A], ax
@@ -11071,7 +11165,7 @@ set_sprite1_size proc far
     pop     bp
     retf
 set_sprite1_size endp
-sub_332A8 proc far
+fill_color proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -11090,7 +11184,7 @@ sub_332A8 proc far
     retf
     ; align 2
     db 0
-sub_332A8 endp
+fill_color endp
 clear_sprite1_color proc far
      s = byte ptr 0
      r = byte ptr 2
@@ -11152,41 +11246,57 @@ loc_33325:
     jmp     short loc_3330D
     ; align 2
     db 0
+clear_sprite1_color endp
+nopsub_33330 proc far
+     s = byte ptr 0
+     r = byte ptr 2
+    arg_A = word ptr 16
+    arg_C = word ptr 18
+
     push    bp
     mov     bp, sp
     push    si
     push    di
-    mov     ax, [bp+12h]
+    mov     ax, [bp+arg_C]
     mov     word_4031E, ax
-    mov     ax, [bp+10h]
+    mov     ax, [bp+arg_A]
     mov     byte ptr word_40320, al
     jmp     short loc_33349
     ; align 2
     db 144
-loc_33344:
+nopsub_33330 endp
+sub_33344 proc far
+     s = byte ptr 0
+     r = byte ptr 2
+    arg_0 = word ptr 6
+    arg_2 = word ptr 8
+    arg_4 = word ptr 10
+    arg_6 = word ptr 12
+    arg_8 = byte ptr 14
+
     push    bp
     mov     bp, sp
     push    si
     push    di
 loc_33349:
     cld
-    mov     si, [bp+0Ah]
+    mov     si, [bp+arg_4]
     test    si, 1
     jnz     short loc_3335B
     mov     ax, word_4031E
     xchg    ah, al
     mov     word_4031E, ax
 loc_3335B:
-    mov     si, [bp+0Ah]
+    mov     si, [bp+arg_4]
     shl     si, 1
     add     si, cs:off_3494A
     mov     ax, cs:word_34942
     mov     es, ax
-    mov     al, [bp+0Eh]
+    mov     al, [bp+arg_8]
 loc_3336E:
-    mov     bx, [bp+8]
+    mov     bx, [bp+arg_2]
     mov     dx, [bx]
-    mov     bx, [bp+6]
+    mov     bx, [bp+arg_0]
     mov     bx, [bx]
     mov     ah, byte ptr word_4031E
     mov     cl, bl
@@ -11207,13 +11317,13 @@ loc_33393:
     stosb
     loop    loc_33393
 loc_3339A:
-    add     word ptr [bp+8], 2
-    add     word ptr [bp+6], 2
+    add     [bp+arg_2], 2
+    add     [bp+arg_0], 2
     add     si, 2
     mov     dx, word_4031E
     xchg    dh, dl
     mov     word_4031E, dx
-    dec     word ptr [bp+0Ch]
+    dec     [bp+arg_6]
     jg      short loc_3336E
     pop     di
     pop     si
@@ -11224,7 +11334,7 @@ loc_333B8:
     inc     di
     loop    loc_33393
     jmp     short loc_3339A
-clear_sprite1_color endp
+sub_33344 endp
 sub_333C0 proc far
     var_E = byte ptr -14
     var_A = word ptr -10
@@ -11564,11 +11674,11 @@ byte_33646     db 11
     db 3
     db 6
     db 0
-    db 1
+unk_33652     db 1
     db 3
     db 0
     db 2
-    db 3
+byte_33656     db 3
     db 1
     db 4
     db 2
@@ -11635,7 +11745,7 @@ loc_33697:
     mov     [bp+var_E], 0Bh
 loc_336C2:
     mov     di, [bp+var_E]
-    mov     cl, cs:[di+4C26h]
+    mov     cl, cs:byte_33646[di]
     xor     ch, ch
     mov     ax, [bp+var_8]
     mul     cx
@@ -11661,14 +11771,14 @@ loc_33701:
 smart
     and     bx, 3
 nosmart
-    mov     al, cs:[bx+4C32h]
+    mov     al, byte ptr cs:unk_33652[bx]
     sub     cx, ax
     jle     short loc_33724
     add     si, ax
     add     di, ax
     mov     al, [si]
     mov     es:[di], al
-    mov     al, cs:[bx+4C36h]
+    mov     al, cs:byte_33656[bx]
     add     si, ax
     add     di, ax
     sub     cx, ax
@@ -11801,9 +11911,9 @@ loc_337FD:
     add     word ptr aMsRunTimeLibraryCop, ax; "MS Run-Time Library - Copyright (c) 198"...
     jmp     loc_33771
 sub_33742 endp
-sub_33816 proc far
+video_set_mode_13h proc far
 
-    call    sub_325AE
+    call    video_add_exithandler
     mov     ax, 40h ; '@'
     mov     es, ax
     mov     ax, es:10h
@@ -11821,11 +11931,11 @@ nosmart
     xor     ax, ax
     push    ax
     push    ax
-    call    sub_332A8
+    call    fill_color
     add     sp, 4
     retf
     jmp far ptr loc_3ACD8
-sub_33816 endp
+video_set_mode_13h endp
 j_load_2dshape_res2 proc far
 
     jmp     load_2dshape_res2
@@ -12062,24 +12172,35 @@ loc_339EC:
     jmp     loc_338E8
     ; align 2
     db 0
+sub_33890 endp
+nopsub_339FA proc far
+    var_4 = word ptr -4
+    var_2 = word ptr -2
+     s = byte ptr 0
+     r = byte ptr 2
+    arg_0 = word ptr 6
+    arg_2 = word ptr 8
+    arg_4 = word ptr 10
+    arg_6 = word ptr 12
+
     push    bp
     mov     bp, sp
     sub     sp, 0Ah
     push    ds
     push    si
     push    di
-    mov     ds, word ptr [bp+8]
-    mov     si, [bp+6]
-    mov     ax, [bp+0Ah]
+    mov     ds, [bp+arg_2]
+    mov     si, [bp+arg_0]
+    mov     ax, [bp+arg_4]
     sub     ax, [si+4]
-    mov     [bp-2], ax
-    mov     ax, [bp+0Ch]
+    mov     [bp+var_2], ax
+    mov     ax, [bp+arg_6]
     sub     ax, [si+6]
-    mov     [bp-4], ax
+    mov     [bp+var_4], ax
     jmp     short loc_33A57
     ; align 2
     db 144
-sub_33890 endp
+nopsub_339FA endp
 sub_33A1E proc far
     var_6 = word ptr -6
     var_4 = word ptr -4
@@ -12179,39 +12300,61 @@ loc_33AB4:
     jmp     short loc_33A9A
     ; align 2
     db 0
-    push    bp
-    mov     bp, sp
-    sub     sp, 10h
-    push    ds
-    push    si
-    push    di
-    mov     ds, word ptr [bp+8]
-    mov     si, [bp+6]
-    mov     ax, [bp+0Ah]
-    sub     ax, [si+4]
-    mov     [bp-2], ax
-    mov     ax, [bp+0Ch]
-    sub     ax, [si+6]
-    mov     [bp-4], ax
-    jmp     short loc_33B1D
-    ; align 2
-    db 144
-    push    bp
-    mov     bp, sp
-    sub     sp, 10h
-    push    ds
-    push    si
-    push    di
-    mov     ds, word ptr [bp+8]
-    mov     si, [bp+6]
-    mov     ax, [bp+0Ah]
-    mov     [bp-2], ax
-    mov     ax, [bp+0Ch]
-    mov     [bp-4], ax
-    jmp     short loc_33B1D
-    ; align 2
-    db 144
 sub_33A1E endp
+nopsub_33AC0 proc far
+    var_4 = word ptr -4
+    var_2 = word ptr -2
+     s = byte ptr 0
+     r = byte ptr 2
+    arg_0 = word ptr 6
+    arg_2 = word ptr 8
+    arg_4 = word ptr 10
+    arg_6 = word ptr 12
+
+    push    bp
+    mov     bp, sp
+    sub     sp, 10h
+    push    ds
+    push    si
+    push    di
+    mov     ds, [bp+arg_2]
+    mov     si, [bp+arg_0]
+    mov     ax, [bp+arg_4]
+    sub     ax, [si+4]
+    mov     [bp+var_2], ax
+    mov     ax, [bp+arg_6]
+    sub     ax, [si+6]
+    mov     [bp+var_4], ax
+    jmp     short loc_33B1D
+    ; align 2
+    db 144
+nopsub_33AC0 endp
+nopsub_33AE4 proc far
+    var_4 = word ptr -4
+    var_2 = word ptr -2
+     s = byte ptr 0
+     r = byte ptr 2
+    arg_0 = word ptr 6
+    arg_2 = word ptr 8
+    arg_4 = word ptr 10
+    arg_6 = word ptr 12
+
+    push    bp
+    mov     bp, sp
+    sub     sp, 10h
+    push    ds
+    push    si
+    push    di
+    mov     ds, [bp+arg_2]
+    mov     si, [bp+arg_0]
+    mov     ax, [bp+arg_4]
+    mov     [bp+var_2], ax
+    mov     ax, [bp+arg_6]
+    mov     [bp+var_4], ax
+    jmp     short loc_33B1D
+    ; align 2
+    db 144
+nopsub_33AE4 endp
 sub_33B02 proc far
     var_10 = word ptr -16
     var_E = word ptr -14
@@ -12231,15 +12374,15 @@ sub_33B02 proc far
     push    di
     mov     ds, [bp+arg_2]
     mov     si, [bp+arg_0]
-    mov     ax, [si+8]
+    mov     ax, [si+SHAPE2D.s2d_pos_x]
     mov     [bp+var_2], ax
-    mov     ax, [si+0Ah]
+    mov     ax, [si+SHAPE2D.s2d_pos_y]
     mov     [bp+var_4], ax
 loc_33B1D:
     cld
-    lea     ax, [si+10h]
+    lea     ax, [si+(size SHAPE2D)]
     mov     [bp+var_E], ax
-    mov     ax, [si]
+    mov     ax, [si+SHAPE2D.s2d_width]
     mov     [bp+var_6], ax
     mov     bx, [bp+var_4]
     shl     bx, 1
@@ -12297,24 +12440,35 @@ loc_33B7C:
 loc_33B94:
     loop    loc_33B7C
     jmp     short loc_33B48
+sub_33B02 endp
+nopsub_33B98 proc far
+    var_4 = word ptr -4
+    var_2 = word ptr -2
+     s = byte ptr 0
+     r = byte ptr 2
+    arg_0 = word ptr 6
+    arg_2 = word ptr 8
+    arg_4 = word ptr 10
+    arg_6 = word ptr 12
+
     push    bp
     mov     bp, sp
     sub     sp, 0Eh
     push    ds
     push    si
     push    di
-    mov     ds, word ptr [bp+8]
-    mov     si, [bp+6]
-    mov     ax, [bp+0Ah]
+    mov     ds, [bp+arg_2]
+    mov     si, [bp+arg_0]
+    mov     ax, [bp+arg_4]
     sub     ax, [si+4]
-    mov     [bp-2], ax
-    mov     ax, [bp+0Ch]
+    mov     [bp+var_2], ax
+    mov     ax, [bp+arg_6]
     sub     ax, [si+6]
-    mov     [bp-4], ax
+    mov     [bp+var_4], ax
     jmp     short loc_33BF5
     ; align 2
     db 144
-sub_33B02 endp
+nopsub_33B98 endp
 sub_33BBC proc far
     var_4 = word ptr -4
     var_2 = word ptr -2
@@ -12362,14 +12516,14 @@ sub_33BDA proc far
     push    di
     mov     ds, [bp+arg_2]
     mov     si, [bp+arg_0]
-    mov     ax, [si+8]
+    mov     ax, [si+SHAPE2D.s2d_pos_x]
     mov     [bp+var_2], ax
-    mov     ax, [si+0Ah]
+    mov     ax, [si+SHAPE2D.s2d_pos_y]
     mov     [bp+var_4], ax
 loc_33BF5:
     mov     bx, [bp+var_4]
-    mov     cx, [si+2]
-    lea     dx, [si+10h]
+    mov     cx, [si+SHAPE2D.s2d_height]
+    lea     dx, [si+(size SHAPE2D)]
     mov     ax, bx
     cmp     ax, cs:word_34950
     jl      short loc_33C1B
@@ -12494,24 +12648,35 @@ loc_33D02:
     dec     dx
     jg      short loc_33D02
     jmp     loc_33C14
+sub_33BDA endp
+nopsub_33D0C proc far
+    var_4 = word ptr -4
+    var_2 = word ptr -2
+     s = byte ptr 0
+     r = byte ptr 2
+    arg_0 = word ptr 6
+    arg_2 = word ptr 8
+    arg_4 = word ptr 10
+    arg_6 = word ptr 12
+
     push    bp
     mov     bp, sp
     sub     sp, 0Ah
     push    ds
     push    si
     push    di
-    mov     ds, word ptr [bp+8]
-    mov     si, [bp+6]
-    mov     ax, [bp+0Ah]
+    mov     ds, [bp+arg_2]
+    mov     si, [bp+arg_0]
+    mov     ax, [bp+arg_4]
     sub     ax, [si+4]
-    mov     [bp-2], ax
-    mov     ax, [bp+0Ch]
+    mov     [bp+var_2], ax
+    mov     ax, [bp+arg_6]
     sub     ax, [si+6]
-    mov     [bp-4], ax
+    mov     [bp+var_4], ax
     jmp     short loc_33D69
     ; align 2
     db 144
-sub_33BDA endp
+nopsub_33D0C endp
 sub_33D30 proc far
     var_4 = word ptr -4
     var_2 = word ptr -2
@@ -14583,29 +14748,39 @@ sub_34B7C proc far
     jmp     short loc_34B9B
     ; align 2
     db 144
+sub_34B7C endp
+sub_34B96 proc far
+     s = byte ptr 0
+     r = byte ptr 2
+    arg_0 = word ptr 6
+    arg_2 = word ptr 8
+    arg_4 = word ptr 10
+    arg_6 = word ptr 12
+    arg_8 = byte ptr 14
+
     push    bp
     mov     bp, sp
     push    si
     push    di
 loc_34B9B:
     cld
-    mov     si, [bp+0Ah]
+    mov     si, [bp+arg_4]
     test    si, 1
     jnz     short loc_34BAD
     mov     ax, word_4031E
     xchg    ah, al
     mov     word_4031E, ax
 loc_34BAD:
-    mov     si, [bp+0Ah]
+    mov     si, [bp+arg_4]
     shl     si, 1
     add     si, cs:off_3494A
     mov     ax, cs:word_34942
     mov     es, ax
-    mov     al, [bp+0Eh]
+    mov     al, [bp+arg_8]
 loc_34BC0:
-    mov     bx, [bp+8]
+    mov     bx, [bp+arg_2]
     mov     dx, [bx]
-    mov     bx, [bp+6]
+    mov     bx, [bp+arg_0]
     mov     bx, [bx]
     mov     ah, byte ptr word_4031E
     mov     cl, bl
@@ -14625,13 +14800,13 @@ loc_34BE1:
     stosb
     loop    loc_34BE1
 loc_34BE8:
-    add     word ptr [bp+8], 2
-    add     word ptr [bp+6], 2
+    add     [bp+arg_2], 2
+    add     [bp+arg_0], 2
     add     si, 2
     mov     dx, word_4031E
     xchg    dh, dl
     mov     word_4031E, dx
-    dec     word ptr [bp+0Ch]
+    dec     [bp+arg_6]
     jg      short loc_34BC0
     pop     di
     pop     si
@@ -14643,7 +14818,7 @@ loc_34C06:
     jmp     short loc_34BE8
     ; align 2
     db 0
-sub_34B7C endp
+sub_34B96 endp
 make_wnd_sprite proc far
     var_8 = word ptr -8
     var_6 = word ptr -6

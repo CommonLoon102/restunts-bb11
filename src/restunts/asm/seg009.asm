@@ -1320,7 +1320,7 @@ loc_2AEFF:
     xor     byte ptr [bp+var_CC], 1
     mov     [bp+var_3A], 0
 loc_2AF0E:
-    call    get_timerdelta2
+    call    timer_get_delta2
     mov     di, ax
     add     [bp+var_3A], di
     push    di
@@ -1413,7 +1413,7 @@ loc_2AFE5:
     cwd
     push    dx
     push    ax
-    call    sub_32805
+    call    timer_get_counter_unk
     add     sp, 4
 loc_2AFF9:
     cmp     [bp+var_CC], 0
@@ -2214,7 +2214,7 @@ loc_2B774:
     mov     [bp+var_176], 1
     mov     ax, 95F8h
     push    ax
-    call    find_filename
+    call    file_find
     add     sp, 2
     or      ax, ax
     jz      short loc_2B812
@@ -2877,23 +2877,23 @@ loc_2BE3A:
 loc_2BE44:
     push    word ptr wndsprite+2
     push    word ptr wndsprite
-    call    sub_324AA
+    call    release_window
     add     sp, 4
     push    [bp+var_164]
     push    [bp+var_166]
-    call    sub_324AA
+    call    release_window
     add     sp, 4
     push    [bp+var_168]
     push    [bp+var_16A]
-    call    sub_324AA
+    call    release_window
     add     sp, 4
     push    [bp+var_16C]
     push    [bp+var_16E]
-    call    sub_324AA
+    call    release_window
     add     sp, 4
     push    [bp+var_170]
     push    [bp+var_172]
-    call    sub_324AA
+    call    release_window
     add     sp, 4
     push    [bp+var_20]
     push    [bp+var_22]

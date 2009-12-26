@@ -958,7 +958,7 @@ loc_2554A:
     add     ax, bp
     sub     ax, 0B6Eh
     push    ax
-    call    sub_33014
+    call    vector_op_unk
     add     sp, 8
     lea     ax, [bp+var_574]
     push    ax
@@ -1050,7 +1050,7 @@ loc_25645:
     mov     ax, [bp+var_B7A]
     sub     ax, 0B6Eh
     push    ax
-    call    sub_33014
+    call    vector_op_unk
     add     sp, 8
     lea     ax, [bp+var_574]
     push    ax
@@ -1272,7 +1272,7 @@ loc_2585C:
     add     ax, bp
     sub     ax, 0B6Eh
     push    ax
-    call    sub_33014
+    call    vector_op_unk
     add     sp, 8
     mov     ax, si
     jmp     short loc_258F6
@@ -1299,7 +1299,7 @@ loc_258BC:
     add     ax, bp
     sub     ax, 0B6Eh
     push    ax
-    call    sub_33014
+    call    vector_op_unk
     add     sp, 8
     mov     ax, di
 loc_258F6:

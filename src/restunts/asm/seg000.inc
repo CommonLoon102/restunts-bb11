@@ -1,14 +1,14 @@
 seg000 segment byte public 'STUNTSC' use16
     extrn _main:proc
     extrn run_intro_looped:proc
-    extrn sub_1069C:proc
-    extrn sub_10786:proc
+    extrn run_intro:proc
+    extrn load_intro_resources:proc
     extrn run_menu:proc
     extrn run_tracks_menu:proc
     extrn highscore_write_a:proc
     extrn sub_1168E:proc
     extrn sub_118D4:proc
-    extrn sub_11A1C:proc
+    extrn enter_hiscore:proc
     extrn highscore_write_b:proc
     extrn run_car_menu:proc
     extrn run_opponent_menu:proc

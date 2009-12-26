@@ -6453,7 +6453,7 @@ loc_1D9CF:
     call    unload_resource
     add     sp, 4
     call    init_plantrak
-    call    get_timerdelta
+    call    timer_get_delta
     mov     [bp+var_2AA], 0
     mov     [bp+var_440], 0
     mov     ax, word_44CEA
@@ -6479,7 +6479,7 @@ loc_1D9CF:
     mov     [bp+var_36], 0
     mov     [bp+var_2A2], 1
 loc_1DADE:
-    call    get_timerdelta
+    call    timer_get_delta
     mov     [bp+var_40], ax
     add     word_44DCC, ax
     jmp     loc_1DB8A
@@ -6837,7 +6837,7 @@ loc_1DE3E:
 loc_1DE7C:
     push    word ptr wndsprite+2
     push    word ptr wndsprite
-    call    sub_324AA
+    call    release_window
     add     sp, 4
 loc_1DE8C:
     push    [bp+var_2AC]

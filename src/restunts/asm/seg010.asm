@@ -48,7 +48,7 @@ seg010 segment byte public 'STUNTSC' use16
     assume es:nothing, ss:nothing, ds:dseg
     public start
     public __amsg_exit
-    public sub_2CDEC
+    public libsub_2CDEC
     public sub_2CE03
     public loc_2CE06
     public sub_2CE4A
@@ -215,7 +215,7 @@ nosmart
     push    argc            ; p_argc
     call    _main
     push    ax
-    call    far ptr sub_2CDEC
+    call    far ptr libsub_2CDEC
 __cintDIV:
     mov     ax, seg dseg
     mov     ds, ax
@@ -326,7 +326,7 @@ loc_2CDD6:
     call    sub_2CE77
     retf
 start endp
-sub_2CDEC proc near
+libsub_2CDEC proc near
      s = byte ptr 0
      r = byte ptr 2
 
@@ -339,7 +339,7 @@ sub_2CDEC proc near
     mov     di, offset aNmsg; "<<NMSG>>"
     call    sub_2CE77
     jmp     short loc_2CE06
-sub_2CDEC endp
+libsub_2CDEC endp
 sub_2CE03 proc near
      s = byte ptr 0
      r = byte ptr 2

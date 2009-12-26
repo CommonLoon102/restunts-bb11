@@ -87,15 +87,15 @@ seg012 segment byte public 'STUNTSC' use16
     extrn ported_file_uncomp_paras_:proc
     extrn ported_file_uncomp_paras_nofatal_:proc
     extrn ported_file_uncomp_paras_fatal_:proc
-    extrn find_filename:proc
+    extrn file_find:proc
     extrn loc_30011
     extrn loc_3002A
-    extrn find_next:proc
+    extrn file_find_next:proc
     extrn scale_value:proc
-    extrn set_bios_mode4:proc
+    extrn video_set_mode4:proc
     extrn sub_300B6:proc
-    extrn set_bios_mode7:proc
-    extrn setup_timercallback:proc
+    extrn video_set_mode7:proc
+    extrn timer_setup_interrupt:proc
     extrn loc_301FD
     extrn audio_stop_unk:proc
     extrn reg_timer_callback:proc
@@ -112,13 +112,13 @@ seg012 segment byte public 'STUNTSC' use16
     extrn sub_307B4:proc
     extrn sub_307D2:proc
     extrn sub_307E3:proc
-    extrn sub_30812:proc
+    extrn kb_init_interrupt:proc
     extrn sub_30883:proc
     extrn sub_308C6:proc
     extrn sub_309A5:proc
     extrn get_key_status:proc
-    extrn call_readchar_callback:proc
-    extrn read_kb_char:proc
+    extrn kb_call_readchar_callback:proc
+    extrn kb_read_char:proc
     extrn kb_checking:proc
     extrn flush_stdin:proc
     extrn sub_30A68:proc
@@ -174,30 +174,40 @@ seg012 segment byte public 'STUNTSC' use16
     extrn sub_322F3:proc
     extrn loc_32334
     extrn sub_323D9:proc
-    extrn sub_324AA:proc
+    extrn release_window:proc
     extrn ported_file_write_nofatal_:proc
     extrn ported_file_write_fatal_:proc
-    extrn sub_325AE:proc
+    extrn video_add_exithandler:proc
+    extrn video_on_exit:proc
     extrn sub_3260E:proc
     extrn sub_3262E:proc
     extrn sub_3264A:proc
     extrn sub_3265B:proc
+    extrn nopsub_326BA:proc
     extrn ported_sin_fast_:proc
     extrn loc_326E4
     extrn off_326F2:word
     extrn ported_cos_fast_:proc
+    extrn nopsub_32738:proc
+    extrn nopsub_32746:proc
+    extrn nopsub_32751:proc
     extrn sub_3275C:proc
-    extrn get_timer_counter:proc
-    extrn get_timerdelta:proc
-    extrn copy_timer_counter:proc
-    extrn sub_327D7:proc
-    extrn sub_327EB:proc
-    extrn sub_32805:proc
+    extrn nopsub_3276A:proc
+    extrn timer_get_counter:proc
+    extrn nopsub_32782:proc
+    extrn timer_get_delta:proc
+    extrn nopsub_327B7:proc
+    extrn timer_copy_counter:proc
+    extrn timer_wait_for_dx:proc
+    extrn timer_compare_dx:proc
+    extrn timer_get_counter_unk:proc
     extrn sub_32832:proc
     extrn sub_32843:proc
     extrn loc_3284A
     extrn loc_32882
     extrn sub_32886:proc
+    extrn nopsub_328C9:proc
+    extrn nopsub_328DB:proc
     extrn mat_mul_vector:proc
     extrn mat_multiply:proc
     extrn mat_copy:proc
@@ -209,13 +219,17 @@ seg012 segment byte public 'STUNTSC' use16
     extrn vle_esc1:word
     extrn vle_esc2:byte
     extrn decompress_vle:proc
-    extrn sub_32FFC:proc
-    extrn sub_33014:proc
+    extrn nopsub_32FEE:proc
+    extrn video_get_status:proc
+    extrn nopsub_33006:proc
+    extrn vector_op_unk:proc
     extrn loc_3301F
     extrn sub_33072:proc
     extrn set_sprite1_size:proc
-    extrn sub_332A8:proc
+    extrn fill_color:proc
     extrn clear_sprite1_color:proc
+    extrn nopsub_33330:proc
+    extrn sub_33344:proc
     extrn sub_333C0:proc
     extrn off_3340A:word
     extrn sub_33578:proc
@@ -224,23 +238,30 @@ seg012 segment byte public 'STUNTSC' use16
     extrn loc_335D7
     extrn loc_33622
     extrn byte_33646:byte
+    extrn unk_33652:byte
+    extrn byte_33656:byte
     extrn sub_3367A:proc
     extrn loc_33697
     extrn sub_33742:proc
-    extrn sub_33816:proc
+    extrn video_set_mode_13h:proc
     extrn j_load_2dshape_res2:proc
     extrn load_2dshape1:proc
     extrn j_load_2dshape_0:proc
     extrn sub_3386C:proc
     extrn sub_33890:proc
     extrn loc_338C9
+    extrn nopsub_339FA:proc
     extrn sub_33A1E:proc
     extrn loc_33A57
+    extrn nopsub_33AC0:proc
+    extrn nopsub_33AE4:proc
     extrn sub_33B02:proc
     extrn loc_33B1D
+    extrn nopsub_33B98:proc
     extrn sub_33BBC:proc
     extrn sub_33BDA:proc
     extrn loc_33BF5
+    extrn nopsub_33D0C:proc
     extrn sub_33D30:proc
     extrn sub_33D4E:proc
     extrn loc_33D69
@@ -287,6 +308,7 @@ seg012 segment byte public 'STUNTSC' use16
     extrn lineoffsets:word
     extrn sub_34B0C:proc
     extrn sub_34B7C:proc
+    extrn sub_34B96:proc
     extrn make_wnd_sprite:proc
     extrn next_wnd_def:word
     extrn wnd_defs:byte

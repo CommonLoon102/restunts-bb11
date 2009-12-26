@@ -106,7 +106,7 @@ seg008 segment byte public 'STUNTSC' use16
     public do_dea_textres
     public ensure_file_exists
     public sub_2A200
-    public get_timerdelta2
+    public timer_get_delta2
     public load_3dshape
 sub_274B0 proc far
     var_40 = byte ptr -64
@@ -318,7 +318,7 @@ loc_275D8:
     shl     bx, 1
     push    word ptr [bx+75A2h]
     push    word ptr [bx+75A0h]
-    call    sub_324AA
+    call    release_window
     add     sp, 4
     push    cs
     call    near ptr sub_28D9E
@@ -844,7 +844,7 @@ loc_27B92:
     jmp     short loc_27BCD
 loc_27B98:
     push    cs
-    call    near ptr get_timerdelta2
+    call    near ptr timer_get_delta2
     push    ax
     push    cs
     call    near ptr input_checking
@@ -883,7 +883,7 @@ loc_27BD4:
     mov     [bp+var_1D4], al
     mov     [bp+var_1C0], 0FFh
     push    cs
-    call    near ptr get_timerdelta2
+    call    near ptr timer_get_delta2
     push    cs
     call    near ptr sub_28DB6
     cmp     [bp+var_140], 2
@@ -1036,7 +1036,7 @@ loc_27D65:
     mov     [bp+var_1C0], al
 loc_27D6D:
     push    cs
-    call    near ptr get_timerdelta2
+    call    near ptr timer_get_delta2
     push    ax
     push    cs
     call    near ptr input_checking
@@ -1604,7 +1604,7 @@ loc_2824D:
     mov     [bp+var_6E4], 0FFh
     mov     [bp+var_718], 0FFh
     push    cs
-    call    near ptr get_timerdelta2
+    call    near ptr timer_get_delta2
     mov     [bp+var_2], 0
 loc_28269:
     mov     al, [bp+var_6E4]
@@ -1716,7 +1716,7 @@ loc_2836C:
     call    near ptr sub_28D9E
 loc_28370:
     push    cs
-    call    near ptr get_timerdelta2
+    call    near ptr timer_get_delta2
     push    ax
     push    cs
     call    near ptr input_checking
@@ -2753,7 +2753,7 @@ loc_28BE2:
     jle     short loc_28C26
 loc_28BED:
     push    cs
-    call    near ptr get_timerdelta2
+    call    near ptr timer_get_delta2
     push    ax
     push    cs
     call    near ptr input_checking
@@ -2782,7 +2782,7 @@ loc_28C26:
     mov     [bp+var_C], si
 loc_28C2E:
     push    cs
-    call    near ptr get_timerdelta2
+    call    near ptr timer_get_delta2
     push    ax
     push    cs
     call    near ptr input_checking
@@ -3120,7 +3120,7 @@ loc_28EF3:
     db 144
 loc_28EFA:
     push    cs
-    call    near ptr get_timerdelta2
+    call    near ptr timer_get_delta2
     push    ax
     push    cs
     call    near ptr input_checking
@@ -3141,7 +3141,7 @@ loc_28F1C:
     retf
 loc_28F26:
     push    cs
-    call    near ptr get_timerdelta2
+    call    near ptr timer_get_delta2
     push    ax
     push    cs
     call    near ptr input_checking
@@ -3418,11 +3418,11 @@ input_repeat_check proc far
     push    si
     sub     di, di
     push    cs
-    call    near ptr get_timerdelta2
+    call    near ptr timer_get_delta2
     jmp     short loc_29161
 loc_2914A:
     push    cs
-    call    near ptr get_timerdelta2
+    call    near ptr timer_get_delta2
     mov     [bp+var_4], ax
     add     di, ax
     push    ax
@@ -4030,7 +4030,7 @@ loc_29670:
     cmp     si, 4
     jge     short loc_29648
     push    cs
-    call    near ptr get_timerdelta2
+    call    near ptr timer_get_delta2
     push    ax
     push    cs
     call    near ptr input_do_checking
@@ -4062,7 +4062,7 @@ show_waiting proc far
     push    ax
     push    ax
     push    word_40802
-    push    word_44382
+    push    waitflag
     mov     ax, 0FFFFh
     push    ax
     mov     ax, 3460h
@@ -4208,7 +4208,7 @@ sub_29786 proc far
     push    di
     push    si
     push    cs
-    call    near ptr get_timerdelta2
+    call    near ptr timer_get_delta2
     mov     si, ax
     add     word_45D1C, si
     jmp     short loc_2979F
@@ -4460,7 +4460,7 @@ get_super_random proc far
     mov     di, ax
     call    get_kevinrandom
     mov     [bp+var_4], ax
-    call    get_timer_counter
+    call    timer_get_counter
     add     ax, [bp+var_4]
     add     ax, di
     add     ax, word_4434C
@@ -4858,7 +4858,7 @@ loc_29B89:
     mov     si, 0FFFFh
     call    sub_307B4
 loc_29C96:
-    call    read_kb_char
+    call    kb_read_char
     or      ax, ax
     jz      short loc_29CA8
 loc_29C9F:
@@ -5502,7 +5502,7 @@ loc_2A1E8:
     mov     bx, [bp+arg_0]
     shl     bx, 1
     push    word ptr [bx+3416h]
-    call    find_filename
+    call    file_find
     add     sp, 2
     or      ax, ax
     jz      short loc_2A1AC
@@ -5539,11 +5539,11 @@ sub_2A200 proc far
     ; align 2
     db 144
 sub_2A200 endp
-get_timerdelta2 proc far
+timer_get_delta2 proc far
 
-    call    get_timerdelta
+    call    timer_get_delta
     retf
-get_timerdelta2 endp
+timer_get_delta2 endp
 load_3dshape proc far
     var_54 = byte ptr -84
     var_4 = word ptr -4

@@ -872,7 +872,7 @@ loc_223CD:
     push    cs
     call    near ptr sub_239B4
 loc_223E4:
-    mov     word_44382, 64h ; 'd'
+    mov     waitflag, 64h ; 'd'
     call    check_input
     call    show_waiting
 loc_223F4:
@@ -1077,7 +1077,7 @@ sub_22576 proc far
     cwd
     push    dx
     push    ax
-    call    sub_32805
+    call    timer_get_counter_unk
     add     sp, 4
     mov     ax, 0A26h
     mov     dx, seg seg005
@@ -2925,15 +2925,15 @@ loc_236A0:
 loc_236AC:
     push    word ptr dword_40DFC+2
     push    word ptr dword_40DFC
-    call    sub_324AA
+    call    release_window
     add     sp, 4
     push    word ptr dword_40DEC+2
     push    word ptr dword_40DEC
-    call    sub_324AA
+    call    release_window
     add     sp, 4
     push    word ptr dword_40D80+2
     push    word ptr dword_40D80
-    call    sub_324AA
+    call    release_window
     add     sp, 4
     push    word_40D86
     push    word_40D84
@@ -3212,7 +3212,7 @@ sub_239B4 proc far
     jz      short loc_239D4
     push    word ptr wndsprite+2
     push    word ptr wndsprite
-    call    sub_324AA
+    call    release_window
     add     sp, 4
 loc_239D4:
     call    unload_game_resources
@@ -3881,7 +3881,7 @@ loc_23FDA:
     xor     al, 1
     mov     byte_4432A, al
 loc_23FEE:
-    call    get_timerdelta2
+    call    timer_get_delta2
     push    ax
     call    input_checking
     add     sp, 2
@@ -4464,7 +4464,7 @@ loc_2450A:
     jnz     short loc_24548
     jmp     loc_24828
 loc_24548:
-    mov     word_44382, 96h ; '–'
+    mov     waitflag, 96h ; '–'
     call    show_waiting
     push    si
     push    di
@@ -4600,7 +4600,7 @@ loc_2466F:
     mov     byte_3B8FB, 1
     mov     ax, 95F8h
     push    ax
-    call    find_filename
+    call    file_find
     add     sp, 2
     or      ax, ax
     jz      short loc_246E8
@@ -4799,7 +4799,7 @@ loc_24830:
     push    cs
     call    near ptr sub_23B4C
     add     sp, 6
-    call    get_timerdelta2
+    call    timer_get_delta2
     mov     [bp+var_24], 14h
     mov     [bp+var_22], 0
     jmp     loc_248F4
@@ -4819,7 +4819,7 @@ loc_2485C:
     jle     short loc_2487A
     mov     di, 64h ; 'd'
 loc_2487A:
-    call    get_timerdelta2
+    call    timer_get_delta2
     mov     [bp+var_18], ax
     imul    di
     mov     si, ax
@@ -5002,7 +5002,7 @@ loc_24A28:
     push    cs
     call    near ptr sub_23B4C
     add     sp, 6
-    call    get_timerdelta2
+    call    timer_get_delta2
     mov     [bp+var_24], 14h
     mov     [bp+var_22], 0
     jmp     loc_24AEA
@@ -5023,7 +5023,7 @@ loc_24A58:
     jle     short loc_24A76
     mov     di, 64h ; 'd'
 loc_24A76:
-    call    get_timerdelta2
+    call    timer_get_delta2
     mov     [bp+var_18], ax
     imul    di
     mov     si, ax
@@ -5285,7 +5285,7 @@ loc_24CA6:
     cwd
     push    dx
     push    ax
-    call    sub_32805
+    call    timer_get_counter_unk
     add     sp, 4
     sub     ax, ax
     push    ax

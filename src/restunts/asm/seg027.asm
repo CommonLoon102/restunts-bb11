@@ -65,7 +65,7 @@ seg027 segment byte public 'STUNTSC' use16
     public sub_3771E
     public audio_driver_func3F
     public sub_37868
-    public load_audio_driver
+    public audio_load_driver
     public audiodrv_atexit
     public load_sfx_ge
     public load_sfx_file
@@ -975,9 +975,9 @@ loc_37796:
     mov     word_4063A, 0
     push    [bp+var_4]
     push    [bp+var_6]
-    call    copy_timer_counter
+    call    timer_copy_counter
     add     sp, 4
-    call    sub_327D7
+    call    timer_wait_for_dx
     sub     si, 2
     or      si, si
     jg      short loc_37796
@@ -1007,9 +1007,9 @@ loc_377D3:
     mov     word_4063A, 0
     push    [bp+var_4]
     push    [bp+var_6]
-    call    copy_timer_counter
+    call    timer_copy_counter
     add     sp, 4
-    call    sub_327D7
+    call    timer_wait_for_dx
     sub     si, 2
     or      si, si
     jg      short loc_377D3
@@ -1024,9 +1024,9 @@ loc_37820:
     cwd
     push    dx
     push    ax
-    call    copy_timer_counter
+    call    timer_copy_counter
     add     sp, 4
-    call    sub_327D7
+    call    timer_wait_for_dx
     mov     byte_40639, 64h ; 'd'
     mov     ax, offset unk_40636
     push    ds
@@ -1109,7 +1109,7 @@ loc_37883:
     pop     bp
     retf
 sub_37868 endp
-load_audio_driver proc far
+audio_load_driver proc far
     var_C = dword ptr -12
     var_8 = word ptr -8
     var_6 = word ptr -6
@@ -1290,7 +1290,7 @@ loc_37A52:
     mov     sp, bp
     pop     bp
     retf
-load_audio_driver endp
+audio_load_driver endp
 audiodrv_atexit proc far
     var_4 = dword ptr -4
      s = byte ptr 0

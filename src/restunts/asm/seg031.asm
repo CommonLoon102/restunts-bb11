@@ -90,14 +90,14 @@ sub_39E24 proc far
     add     sp, 8
     lea     ax, [bp+var_50]
     push    ax
-    call    find_filename
+    call    file_find
     mov     sp, bp
     pop     bp
     retf
 sub_39E24 endp
 sub_39E4C proc far
 
-    call    find_next
+    call    file_find_next
     retf
 sub_39E4C endp
 nullsub_1 proc far
@@ -113,13 +113,13 @@ nullsub_2 proc far
     db 144
 nullsub_2 endp
 init_video proc far
-    var_1E = word ptr -30
+    var_argcmd = word ptr -30
     var_1C = word ptr -28
     var_1A = word ptr -26
     var_18 = word ptr -24
-    var_12 = byte ptr -18
+    var_argmode4 = byte ptr -18
     var_10 = word ptr -16
-    var_E = byte ptr -14
+    var_argnosound = byte ptr -14
     var_C = word ptr -12
     var_A = word ptr -10
     var_8 = word ptr -8
@@ -128,17 +128,17 @@ init_video proc far
     var_2 = byte ptr -2
      s = byte ptr 0
      r = byte ptr 2
-    arg_0 = word ptr 6
-    arg_2 = word ptr 8
+    arg_argv = word ptr 6
+    arg_argc = word ptr 8
 
     push    bp
     mov     bp, sp
     sub     sp, 1Eh
     push    di
     push    si
-    call    sub_30812
+    call    kb_init_interrupt
     call    kb_shift_checking2
-    call    call_readchar_callback
+    call    kb_call_readchar_callback
     mov     ax, offset do_mrl_textres
     mov     dx, seg seg008
     push    dx
@@ -219,26 +219,26 @@ init_video proc far
     mov     byte_46436, 0
     mov     byte_459F1, 1
     mov     byte_4645E, 65h ; 'e'
-    mov     [bp+var_12], 0
-    mov     [bp+var_E], 0
+    mov     [bp+var_argmode4], 0
+    mov     [bp+var_argnosound], 0
     mov     [bp+var_2], 0
     mov     si, 1
     jmp     short loc_39F63
 loc_39F5E:
-    mov     [bp+var_12], 1
+    mov     [bp+var_argmode4], 1
 loc_39F62:
     inc     si
 loc_39F63:
-    cmp     [bp+arg_0], si
+    cmp     [bp+arg_argv], si
     jg      short loc_39F6B
     jmp     loc_3A07A
 loc_39F6B:
-    mov     bx, [bp+arg_2]
+    mov     bx, [bp+arg_argc]
     mov     ax, si
     shl     ax, 1
     add     bx, ax
     mov     ax, [bx]
-    mov     [bp+var_1E], ax
+    mov     [bp+var_argcmd], ax
     mov     bx, ax
     cmp     byte ptr [bx], 2Fh ; '/'
     jnz     short loc_39F62
@@ -252,19 +252,19 @@ loc_39F6B:
 loc_39F91:
     cmp     ax, 73h ; 's'
     jnz     short loc_39F62
-    mov     bx, [bp+arg_2]
+    mov     bx, [bp+arg_argc]
     mov     ax, si
     shl     ax, 1
     add     bx, ax
     mov     ax, [bx]
-    mov     [bp+var_1E], ax
+    mov     [bp+var_argcmd], ax
     mov     bx, ax
     mov     al, [bx+2]
     cbw
     mov     bx, ax
-    test    byte ptr [bx+382Fh], 1
+    test    byte_3EF9F[bx], 1
     jz      short loc_39FC8
-    mov     bx, [bp+arg_2]
+    mov     bx, [bp+arg_argc]
     mov     ax, si
     shl     ax, 1
     add     bx, ax
@@ -276,7 +276,7 @@ loc_39F91:
     ; align 2
     db 144
 loc_39FC8:
-    mov     bx, [bp+arg_2]
+    mov     bx, [bp+arg_argc]
     mov     ax, si
     shl     ax, 1
     add     bx, ax
@@ -286,13 +286,13 @@ loc_39FC8:
 loc_39FD7:
     cmp     ax, 73h ; 's'
     jnz     short loc_3A022
-    mov     bx, [bp+var_1E]
+    mov     bx, [bp+var_argcmd]
     mov     al, [bx+3]
     cbw
     mov     bx, ax
-    test    byte ptr [bx+382Fh], 1
+    test    byte_3EF9F[bx], 1
     jz      short loc_3A000
-    mov     bx, [bp+arg_2]
+    mov     bx, [bp+arg_argc]
     mov     ax, si
     shl     ax, 1
     add     bx, ax
@@ -302,7 +302,7 @@ loc_39FD7:
     add     ax, 20h ; ' '
     jmp     short loc_3A00F
 loc_3A000:
-    mov     bx, [bp+arg_2]
+    mov     bx, [bp+arg_argc]
     mov     ax, si
     shl     ax, 1
     add     bx, ax
@@ -318,32 +318,32 @@ loc_3A00F:
     ; align 2
     db 144
 loc_3A022:
-    mov     ax, [bp+arg_2]
+    mov     ax, [bp+arg_argc]
     mov     cx, si
     shl     cx, 1
     add     ax, cx
-    mov     [bp+var_1E], ax
+    mov     [bp+var_argcmd], ax
     mov     bx, ax
     mov     bx, [bx]
     mov     al, [bx+2]
     mov     audiodriverstring, al
-    mov     bx, [bp+var_1E]
+    mov     bx, [bp+var_argcmd]
     mov     bx, [bx]
     mov     al, [bx+3]
     mov     audiodriverstring+1, al
     jmp     loc_39F62
 loc_3A046:
-    mov     bx, [bp+arg_2]
+    mov     bx, [bp+arg_argc]
     mov     ax, si
     shl     ax, 1
     add     bx, ax
     mov     bx, [bx]
     cmp     byte ptr [bx+2], 73h ; 's'
     jnz     short loc_3A05E
-    mov     [bp+var_E], 1
+    mov     [bp+var_argnosound], 1
     jmp     loc_39F62
 loc_3A05E:
-    mov     bx, [bp+arg_2]
+    mov     bx, [bp+arg_argc]
     mov     ax, si
     shl     ax, 1
     add     bx, ax
@@ -357,12 +357,12 @@ loc_3A072:
     ; align 2
     db 144
 loc_3A07A:
-    call    sub_33816
-    cmp     [bp+var_12], 0
+    call    video_set_mode_13h
+    cmp     [bp+var_argmode4], 0
     jz      short loc_3A08A
-    call    set_bios_mode4
+    call    video_set_mode4
 loc_3A08A:
-    call    setup_timercallback
+    call    timer_setup_interrupt
     call    sub_28F4E
     mov     ax, 0C8h ; 'È'
     push    ax
@@ -373,19 +373,19 @@ loc_3A08A:
     sub     ax, ax
     push    ax              ; int
     push    ax
-    mov     ax, 53A2h
+    mov     ax, offset audiodriverstring
     push    ax              ; char *
-    call    load_audio_driver
+    call    audio_load_driver
     add     sp, 6
     or      ax, ax
     jz      short loc_3A0C9
     call    audio_stop_unk
     mov     ax, 1
     push    ax
-    call    far ptr sub_2CDEC
+    call    far ptr libsub_2CDEC
     add     sp, 2
 loc_3A0C9:
-    cmp     [bp+var_E], 0
+    cmp     [bp+var_argnosound], 0
     jz      short loc_3A0D9
     call    sub_373E8
     call    sub_37708
@@ -409,7 +409,7 @@ loc_3A0D9:
     push    ax
     call    set_sprite1_size
     add     sp, 8
-    call    get_timerdelta2
+    call    timer_get_delta2
     sub     si, si
 loc_3A10F:
     sub     ax, ax
@@ -419,7 +419,7 @@ loc_3A10F:
     inc     si
     cmp     si, 0Fh
     jl      short loc_3A10F
-    call    get_timerdelta2
+    call    timer_get_delta2
     mov     [bp+var_C], ax
     mov     ax, 3Ch ; '<'
     push    ax
@@ -457,7 +457,7 @@ loc_3A156:
     inc     si
     cmp     si, 0Fh
     jl      short loc_3A140
-    call    get_timerdelta2
+    call    timer_get_delta2
     mov     [bp+var_10], ax
     sub     si, si
     jmp     short loc_3A1AB
@@ -485,7 +485,7 @@ loc_3A1AB:
     ; align 2
     db 144
 loc_3A1B6:
-    call    get_timerdelta2
+    call    timer_get_delta2
     mov     [bp+var_1C], ax
     mov     ax, [bp+var_C]
     cmp     [bp+var_10], ax
@@ -562,7 +562,7 @@ random_wait proc far
     sub     sp, 4
     push    di
     push    si
-    call    sub_32FFC
+    call    video_get_status
     mov     si, ax
     sub     di, di
     jmp     short loc_3A277
@@ -573,7 +573,7 @@ loc_3A270:
     jge     short loc_3A280
     inc     di
 loc_3A277:
-    call    sub_32FFC
+    call    video_get_status
     cmp     ax, si
     jz      short loc_3A270
 loc_3A280:

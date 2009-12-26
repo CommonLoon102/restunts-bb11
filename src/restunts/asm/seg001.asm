@@ -1556,7 +1556,7 @@ loc_153AE:
     push    ax
     lea     ax, [bp+var_1C]
     push    ax
-    call    sub_33014
+    call    vector_op_unk
     add     sp, 8
     mov     ax, [bp+var_1C]
     sub     ax, [bp+var_FC]
@@ -2208,7 +2208,7 @@ loc_15A30:
     push    ax
     lea     ax, [bp+var_1C]
     push    ax
-    call    sub_33014
+    call    vector_op_unk
     add     sp, 8
     mov     ax, [bp+var_1C]
     sub     ax, [bp+var_FC]

@@ -123,7 +123,7 @@ loc_3A526:
     call    near ptr read_line_helper
     push    [bp+arg_14]
     push    [bp+arg_12]
-    call    copy_timer_counter
+    call    timer_copy_counter
     add     sp, 4
     mov     ax, 4
     cwd
@@ -144,7 +144,7 @@ loc_3A568:
 loc_3A57C:
     call    [bp+arg_E]
 loc_3A57F:
-    call    call_readchar_callback
+    call    kb_call_readchar_callback
     mov     [bp+var_8], ax
     or      ax, ax
     jnz     short loc_3A599
@@ -178,7 +178,7 @@ loc_3A5D2:
     mov     ax, [bp+arg_12]
     or      ax, [bp+arg_14]
     jz      short loc_3A568
-    call    sub_327EB
+    call    timer_compare_dx
     or      ax, ax
     jz      short loc_3A568
 loc_3A5E3:
@@ -194,7 +194,7 @@ loc_3A5E3:
 loc_3A5F0:
     push    [bp+arg_14]
     push    [bp+arg_12]
-    call    copy_timer_counter
+    call    timer_copy_counter
     add     sp, 4
     cmp     [bp+var_8], 0Dh
     jz      short loc_3A5E3
