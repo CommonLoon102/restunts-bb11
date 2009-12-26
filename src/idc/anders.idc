@@ -105,7 +105,7 @@ static IsPublicLabel(labelname) {
 		labelname == "_timerintr_callback" || 
 		labelname == "loc_308C6" || 
 		labelname == "loc_309A5" || 
-//		labelname == "_load_binary_file" || // Resolved
+//		labelname == "_file_read" || // Resolved
 		labelname == "loc_30DA1" || 
 		labelname == "_decompress_file" || 
 		labelname == "loc_30FB2" || 
@@ -620,11 +620,15 @@ static PortFuncName(labelname) {
 		labelname == "sin_fast" ||
 		labelname == "cos_fast" ||
 
-		labelname == "get_file_size" ||
-		labelname == "file_uncompressed_size" ||
-		labelname == "load_binary_file" ||
-		labelname == "load_binary_file_fatal" ||
-		labelname == "load_binary_file_nofatal" ||
+		labelname == "file_paras" ||
+		labelname == "file_paras_fatal" ||
+		labelname == "file_paras_nofatal" ||
+		labelname == "file_uncomp_paras" ||
+		labelname == "file_uncomp_paras_fatal" ||
+		labelname == "file_uncomp_paras_nofatal" ||
+		labelname == "file_read" ||
+		labelname == "file_read_fatal" ||
+		labelname == "file_read_nofatal" ||
 		labelname == "file_write_fatal" ||
 		labelname == "file_write_nofatal" ||
 

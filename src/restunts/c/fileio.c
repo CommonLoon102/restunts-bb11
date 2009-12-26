@@ -1,12 +1,9 @@
 #include <dos.h>
+#include "externs.h"
+#include "fileio.h"
 
 #define PAGE_SIZE 0x4000
 #define PAGE_GAP  0x400
-
-extern const char* aSFileError;
-extern const char* aSFileError_0;
-extern const char* aSFileError_1;
-extern void fatal_error(const char*, ...);
 
 // Minimal stdio.h "support" untill we can link with a real CRT.
 #ifndef __STDIO_H
@@ -214,7 +211,7 @@ int remove(const char* path)
 #endif
 
 // Get number of 16-byte blocks needed to store entire file.
-unsigned short get_file_size(const char* filename, int fatal)
+unsigned short file_paras(const char* filename, int fatal)
 {
 	long length;
 	FILE* file;
@@ -237,8 +234,18 @@ unsigned short get_file_size(const char* filename, int fatal)
 	return 0;
 }
 
-// Get number of 16-byte blocks needed to store an assumed compressed file.
-unsigned short file_uncompressed_size(const char* filename, int fatal)
+unsigned short file_paras_fatal(const char* filename)
+{
+	return file_paras(filename, 1);
+}
+
+unsigned short file_paras_nofatal(const char* filename)
+{
+	return file_paras(filename, 0);
+}
+
+// Get number of 16-byte blocks needed to store the final result of an assumed compressed file.
+unsigned short file_uncomp_paras(const char* filename, int fatal)
 {
 	long length;
 	FILE* file;
@@ -262,8 +269,18 @@ unsigned short file_uncompressed_size(const char* filename, int fatal)
 	return 0;
 }
 
+unsigned short file_uncomp_paras_fatal(const char* filename)
+{
+	return file_uncomp_paras(filename, 1);
+}
+
+unsigned short file_uncomp_paras_nofatal(const char* filename)
+{
+	return file_uncomp_paras(filename, 0);
+}
+
 // Read entire file to given destination. Optionally handle errors fatal.
-char far* load_binary_file(const char* filename, unsigned short dstoff, unsigned short dstseg, int fatal)
+char far* file_read(const char* filename, unsigned short dstoff, unsigned short dstseg, int fatal)
 {
 	int readlen;
 	unsigned short curseg = dstseg;
@@ -290,16 +307,16 @@ char far* load_binary_file(const char* filename, unsigned short dstoff, unsigned
 	return MK_FP(0, 0);
 }
 
-// Read entire file to given destination, returns NULL pointer if errors occur.
-char far* load_binary_file_nofatal(const char* filename, unsigned short dstoff, unsigned short dstseg)
+// Read entire file to given destination, handle errors as fatal.
+char far* file_read_fatal(const char* filename, unsigned short dstoff, unsigned short dstseg)
 {
-	return load_binary_file(filename, dstoff, dstseg, 0);
+	return file_read(filename, dstoff, dstseg, 1);
 }
 
-// Read entire file to given destination, handle errors as fatal.
-char far* load_binary_file_fatal(const char* filename, unsigned short dstoff, unsigned short dstseg)
+// Read entire file to given destination, returns NULL pointer if errors occur.
+char far* file_read_nofatal(const char* filename, unsigned short dstoff, unsigned short dstseg)
 {
-	return load_binary_file(filename, dstoff, dstseg, 1);
+	return file_read(filename, dstoff, dstseg, 0);
 }
 
 // Read given source buffer to file. Returns a non-zero value on errors unless fatal is set.

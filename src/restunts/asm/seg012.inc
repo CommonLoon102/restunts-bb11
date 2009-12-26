@@ -81,8 +81,12 @@ seg012 segment byte public 'STUNTSC' use16
     extrn add_exit_handler:proc
     extrn call_exitlist:proc
     extrn sub_2FE74:proc
-    extrn ported_get_file_size_:proc
-    extrn ported_file_uncompressed_size_:proc
+    extrn ported_file_paras_:proc
+    extrn ported_file_paras_nofatal_:proc
+    extrn ported_file_paras_fatal_:proc
+    extrn ported_file_uncomp_paras_:proc
+    extrn ported_file_uncomp_paras_nofatal_:proc
+    extrn ported_file_uncomp_paras_fatal_:proc
     extrn find_filename:proc
     extrn loc_30011
     extrn loc_3002A
@@ -118,9 +122,9 @@ seg012 segment byte public 'STUNTSC' use16
     extrn kb_checking:proc
     extrn flush_stdin:proc
     extrn sub_30A68:proc
-    extrn ported_load_binary_file_:proc
-    extrn ported_load_binary_file_nofatal_:proc
-    extrn ported_load_binary_file_fatal_:proc
+    extrn ported_file_read_:proc
+    extrn ported_file_read_nofatal_:proc
+    extrn ported_file_read_fatal_:proc
     extrn decompress_rle:proc
     extrn sub_30BF8:proc
     extrn sub_30CCF:proc

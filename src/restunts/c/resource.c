@@ -1,4 +1,5 @@
 #include <dos.h>
+#include "externs.h"
 
 struct RESOURCE {
 	char resname[12];
@@ -6,23 +7,6 @@ struct RESOURCE {
 	unsigned short resofs;
 	unsigned short resunk;
 };
-
-extern unsigned short pspofs;
-extern unsigned short pspseg;
-extern unsigned short word_3FF82;
-extern unsigned short word_3FF84;
-extern struct RESOURCE* resptr1;
-extern struct RESOURCE* resptr2;
-extern struct RESOURCE* resendptr1;
-extern struct RESOURCE* resendptr2;
-extern unsigned short resmaxsize;
-extern char* aReservememoryO;
-extern char* aReservememoryOutOfMemory;
-extern char* aMemoryManagerB;
-extern char* aResizememoryNo;
-extern char* aResizememoryCa;
-
-extern void fatal_error(char*, ...);
 
 void copy_paras_reverse(unsigned short srcseg, unsigned short destseg, short paras);
 

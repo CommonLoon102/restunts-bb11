@@ -4614,7 +4614,7 @@ loc_29A9C:
     push    [bp+arg_6]
     push    [bp+arg_4]
     push    [bp+arg_2]
-    call    load_binary_file_nofatal
+    call    file_read_nofatal
     add     sp, 6
     mov     [bp+var_4], ax
     mov     [bp+var_2], dx
@@ -4633,7 +4633,7 @@ loc_29AC6:
     push    [bp+arg_6]
     push    [bp+arg_4]
     push    [bp+arg_2]
-    call    load_binary_file_nofatal
+    call    file_read_nofatal
     add     sp, 6
     mov     sp, bp
     pop     bp

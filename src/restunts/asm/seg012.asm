@@ -128,8 +128,12 @@ seg012 segment byte public 'STUNTSC' use16
     public add_exit_handler
     public call_exitlist
     public sub_2FE74
-    public ported_get_file_size_
-    public ported_file_uncompressed_size_
+    public ported_file_paras_
+    public ported_file_paras_nofatal_
+    public ported_file_paras_fatal_
+    public ported_file_uncomp_paras_
+    public ported_file_uncomp_paras_nofatal_
+    public ported_file_uncomp_paras_fatal_
     public find_filename
     public loc_30011
     public loc_3002A
@@ -165,9 +169,9 @@ seg012 segment byte public 'STUNTSC' use16
     public kb_checking
     public flush_stdin
     public sub_30A68
-    public ported_load_binary_file_
-    public ported_load_binary_file_nofatal_
-    public ported_load_binary_file_fatal_
+    public ported_file_read_
+    public ported_file_read_nofatal_
+    public ported_file_read_fatal_
     public decompress_rle
     public sub_30BF8
     public sub_30CCF
@@ -3907,7 +3911,7 @@ sub_2FE74 proc near
     ; align 2
     db 0
 sub_2FE74 endp
-ported_get_file_size_ proc far
+ported_file_paras_ proc far
     var_fatal = word ptr -6
     var_length = word ptr -4
     var_filehandle = word ptr -2
@@ -3924,33 +3928,52 @@ ported_get_file_size_ proc far
     push    di
     mov     ax, [bp+arg_fatal]
     mov     [bp+var_fatal], ax
-    jmp     short gfs_open
+    jmp     short _file_paras
     ; align 2
     db 144
-    push    bp              ; file_size_nofatal()
+ported_file_paras_ endp
+ported_file_paras_nofatal_ proc far
+    var_6 = word ptr -6
+     s = byte ptr 0
+     r = byte ptr 2
+
+    push    bp
     mov     bp, sp
     sub     sp, 6
     push    ds
     push    si
     push    di
-    mov     [bp+var_fatal], 0
-    jmp     short gfs_open
+    mov     [bp+var_6], 0
+    jmp     short _file_paras
     db 144
-    push    bp              ; file_size_fatal()
+ported_file_paras_nofatal_ endp
+ported_file_paras_fatal_ proc near
+    var_fatal = word ptr -6
+     s = byte ptr 0
+     r = byte ptr 2
+
+    push    bp
     mov     bp, sp
     sub     sp, 6
     push    ds
     push    si
     push    di
     mov     [bp+var_fatal], 1
-gfs_open:
+    var_fatal = word ptr -6
+    var_length = word ptr -4
+    var_filehandle = word ptr -2
+     s = byte ptr 0
+     r = byte ptr 2
+    arg_filename = word ptr 6
+    arg_fatal = word ptr 8
+_file_paras:
     mov     dx, [bp+arg_filename]
     mov     ah, 3Dh ; '='
     xor     al, al
     int     21h             ; DOS - 2+ - OPEN DISK FILE WITH HANDLE
-    jnb     short gfs_open_ok
+    jnb     short loc_2FEDD
     cmp     [bp+var_fatal], 0
-    jnz     short gfs_fatal
+    jnz     short loc_2FECD
     xor     ax, ax
     pop     di
     pop     si
@@ -3958,14 +3981,14 @@ gfs_open:
     mov     sp, bp
     pop     bp
     retf
-gfs_fatal:
+loc_2FECD:
     mov     ax, offset aSFileError_1; "%s FILE ERROR"
     mov     bx, ss
     mov     ds, bx
     push    [bp+arg_filename]
     push    ax
     call    far ptr fatal_error
-gfs_open_ok:
+loc_2FEDD:
     mov     [bp+var_filehandle], ax
     mov     bx, ax
     sub     cx, cx
@@ -3981,9 +4004,9 @@ gfs_open_ok:
     pop     dx
     xor     bx, bx
     test    ax, 0Fh
-    jz      short gfs_dontaddrem
+    jz      short loc_2FF00
     mov     bx, 1
-gfs_dontaddrem:
+loc_2FF00:
     shr     dx, 1
     rcr     ax, 1
     shr     dx, 1
@@ -4004,8 +4027,8 @@ gfs_dontaddrem:
     mov     sp, bp
     pop     bp
     retf
-ported_get_file_size_ endp
-ported_file_uncompressed_size_ proc far
+ported_file_paras_fatal_ endp
+ported_file_uncomp_paras_ proc far
     var_fatal = word ptr -8
     var_6 = byte ptr -6
     var_5 = word ptr -5
@@ -4023,26 +4046,46 @@ ported_file_uncompressed_size_ proc far
     push    di
     mov     ax, [bp+arg_fatal]
     mov     [bp+var_fatal], ax
-    jmp     short _file_uncompressed_size
+    jmp     short _file_uncomp_paras
     ; align 2
     db 144
-    push    bp              ; file_uncompressed_size_nofatal()
+ported_file_uncomp_paras_ endp
+ported_file_uncomp_paras_nofatal_ proc far
+    var_fatal = word ptr -8
+     s = byte ptr 0
+     r = byte ptr 2
+
+    push    bp
     mov     bp, sp
     sub     sp, 8
     push    ds
     push    si
     push    di
     mov     [bp+var_fatal], 0
-    jmp     short _file_uncompressed_size
+    jmp     short _file_uncomp_paras
     db 144
-    push    bp              ; file_uncompressed_size_fatal()
+ported_file_uncomp_paras_nofatal_ endp
+ported_file_uncomp_paras_fatal_ proc near
+    var_fatal = word ptr -8
+     s = byte ptr 0
+     r = byte ptr 2
+
+    push    bp
     mov     bp, sp
     sub     sp, 8
     push    ds
     push    si
     push    di
     mov     [bp+var_fatal], 1
-_file_uncompressed_size:
+    var_fatal = word ptr -8
+    var_6 = byte ptr -6
+    var_5 = word ptr -5
+    var_filehandle = word ptr -2
+     s = byte ptr 0
+     r = byte ptr 2
+    arg_filename = word ptr 6
+    arg_fatal = word ptr 8
+_file_uncomp_paras:
     mov     dx, [bp+arg_filename]
     mov     dx, [bp+arg_filename]
     mov     ah, 3Dh ; '='
@@ -4052,6 +4095,14 @@ _file_uncompressed_size:
     jmp     short loc_2FFB5
     ; align 2
     db 144
+    var_fatal = word ptr -8
+    var_6 = byte ptr -6
+    var_5 = word ptr -5
+    var_filehandle = word ptr -2
+     s = byte ptr 0
+     r = byte ptr 2
+    arg_filename = word ptr 6
+    arg_fatal = word ptr 8
 loc_2FF68:
     mov     [bp+var_filehandle], ax
     mov     bx, [bp+var_filehandle]
@@ -4108,7 +4159,7 @@ loc_2FFC4:
     push    [bp+arg_filename]
     push    ax
     call    far ptr fatal_error
-ported_file_uncompressed_size_ endp
+ported_file_uncomp_paras_fatal_ endp
 find_filename proc far
      s = byte ptr 0
      r = byte ptr 2
@@ -5534,7 +5585,7 @@ loc_30ACB:
     ; align 2
     db 0
 sub_30A68 endp
-ported_load_binary_file_ proc far
+ported_file_read_ proc far
     var_fatal = word ptr -8
      s = byte ptr 0
      r = byte ptr 2
@@ -5546,11 +5597,11 @@ ported_load_binary_file_ proc far
     push    ds
     mov     ax, [bp+arg_fatal]
     mov     [bp+var_fatal], ax
-    jmp     short _load_binary_file
+    jmp     short _file_read
     ; align 2
     db 144
-ported_load_binary_file_ endp
-ported_load_binary_file_nofatal_ proc far
+ported_file_read_ endp
+ported_file_read_nofatal_ proc far
     var_fatal = word ptr -8
      s = byte ptr 0
      r = byte ptr 2
@@ -5560,10 +5611,10 @@ ported_load_binary_file_nofatal_ proc far
     sub     sp, 8
     push    ds
     mov     [bp+var_fatal], 0
-    jmp     short _load_binary_file
+    jmp     short _file_read
     db 144
-ported_load_binary_file_nofatal_ endp
-ported_load_binary_file_fatal_ proc far
+ported_file_read_nofatal_ endp
+ported_file_read_fatal_ proc far
     var_fatal = word ptr -8
     var_curseg = word ptr -6
     var_curoff = word ptr -4
@@ -5579,7 +5630,7 @@ ported_load_binary_file_fatal_ proc far
     sub     sp, 8
     push    ds
     mov     [bp+var_fatal], 1
-_load_binary_file:
+_file_read:
     mov     ax, [bp+arg_dstoff]
     mov     [bp+var_curoff], ax
     mov     ax, [bp+arg_dstseg]
@@ -5626,7 +5677,7 @@ fatal:
     push    [bp+arg_filename]
     push    ax
     call    far ptr fatal_error
-ported_load_binary_file_fatal_ endp
+ported_file_read_fatal_ endp
 decompress_rle proc far
     var_1A = word ptr -26
     var_18 = word ptr -24
@@ -5950,7 +6001,7 @@ loc_30DA1:
     jnz     short loc_30DDE
     push    [bp+var_fatal]
     push    [bp+arg_filename]
-    call    get_file_size
+    call    file_paras
     add     sp, 4
     or      ax, ax
     jz      short emptyfile
@@ -5962,7 +6013,7 @@ loc_30DA1:
     push    dx
     push    ax
     push    [bp+arg_filename]
-    call    load_binary_file
+    call    file_read
     add     sp, 8
 loc_30DDE:
     mov     sp, bp
@@ -6036,7 +6087,7 @@ loc_30E29:
 loc_30E2C:
     push    [bp+var_fatal]
     push    [bp+arg_filename]
-    call    file_uncompressed_size
+    call    file_uncomp_paras
     add     sp, 4
     or      ax, ax
     jz      short loc_30E29
@@ -6050,7 +6101,7 @@ loc_30E2C:
     mov     [bp+var_4], dx
     push    [bp+var_fatal]
     push    [bp+arg_filename]
-    call    get_file_size
+    call    file_paras
     add     sp, 4
     or      ax, ax
     jz      short loc_30E29
@@ -6061,7 +6112,7 @@ loc_30E2C:
     push    dx
     push    [bp+var_2]
     push    [bp+arg_filename]
-    call    load_binary_file
+    call    file_read
     add     sp, 8
     or      dx, dx
     jz      short loc_30E29

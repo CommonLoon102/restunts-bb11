@@ -2159,7 +2159,7 @@ loc_2B725:
     push    word ptr trackdata14
     mov     ax, 95F8h
     push    ax
-    call    load_binary_file_fatal
+    call    file_read_fatal
     add     sp, 6
     call    setup_track
     mov     [bp+var_34], 0

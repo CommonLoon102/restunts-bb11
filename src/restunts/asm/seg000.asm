@@ -453,7 +453,7 @@ loc_103F1:
     push    word ptr trackdata14
     mov     ax, offset unk_44D68
     push    ax
-    call    load_binary_file_fatal
+    call    file_read_fatal
     add     sp, 6
 loc_1042D:
     mov     byte_44AE2, 0
@@ -2153,7 +2153,7 @@ loc_114E2:
     push    word ptr trackdata14
     mov     ax, 95F8h
     push    ax
-    call    load_binary_file_fatal
+    call    file_read_fatal
     add     sp, 6
     push    word ptr wndsprite+2
     push    word ptr wndsprite
