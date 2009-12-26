@@ -485,68 +485,49 @@ unsigned short mmgr_resize_memory(unsigned short arg_0, unsigned short arg_2, un
 	return 0;
 }
 
-void mmgr_op_unk(unsigned short arg_0, unsigned short arg_2) {
-__asm {
-    push    si
-    push    di
-    mov     ax, [arg_2]
-    mov     si, resptr2
-loc_3173E:
-    cmp     si, resptr1
-    jz      short loc_3174E
-    cmp     ax, [si+.resofs]
-    jz      short loc_31751
-    sub     si, 12h
-    jmp     short loc_3173E
-loc_3174E:
-//    jmp     loc_31498
-    push    [arg_2]
-    mov     ax, offset aMemoryManagerB // "memory manager - BLOCK NOT FOUND at SEG"...
-    push    ax
-    call    far ptr fatal_error
+void far* mmgr_op_unk(unsigned short arg_0, unsigned short arg_2) {
+	int i;
+	unsigned short regax, regbx, regcx, regdx;
+	char* strdi;
+	struct RESOURCE* ressi;
+	struct RESOURCE* resdi;
 
-loc_31751:
-    mov     di, si
-    sub     di, 12h
-    cmp     word ptr [di+.resunk], 0
-    jnz     short loc_317AD
-loc_3175C:
-    sub     di, 12h
-    cmp     word ptr [di+.resunk], 0
-    jz      short loc_3175C
-    mov     word ptr [si+.resunk], 0
-    mov     bx, [si+.ressize]
-    push    bx
-    mov     ax, [di+.resofs]
-    add     ax, [di+.ressize]
-    push    ax
-    push    word ptr [si+.resofs]
-    add     di, 12h
-    cmp     si, resptr2
-    jnz     short loc_31785
-    mov     resptr2, di
-loc_31785:
-    mov     [di+.resofs], ax
-    mov     [di+.ressize], bx
-    mov     word ptr [di+.resunk], 2
-    mov     cx, 0Ch
-    xor     bx, bx
-loc_31795:
-    mov     al, byte ptr [bx+si+.resname]
-    mov     byte ptr [bx+di+.resname], al
-    inc     bx
-    loop    loc_31795
-    call    far ptr mmgr_copy_paras
-    add     sp, 6
-loc_317A4:
-    mov     dx, [di+.resofs]
-    xor     ax, ax
-    pop     di
-    pop     si
-    jmp endfunc
-loc_317AD:
-    mov     di, si
-    jmp     short loc_317A4
-}
-endfunc:
+	regax = arg_2;
+	ressi = resptr2;
+
+	for (;;) {
+		if (ressi == resptr1)
+			fatal_error(aMemoryManagerB, arg_2);
+		if (regax == ressi->resofs) break;
+		ressi--;
+	}
+
+	resdi = ressi;
+	resdi--;
+	if (resdi->resunk == 0) {
+	
+		do {
+			resdi--;
+		} while (resdi->resunk == 0);
+	
+		ressi->resunk = 0;
+		regax = resdi->resofs + resdi->ressize;
+		resdi++;
+		if (ressi == resptr2) {
+			resptr2 = resdi;
+		}
+	
+		resdi->resofs = regax;
+		resdi->ressize = ressi->ressize;
+		resdi->resunk = 2;
+		for (i = 0; i < 0xC; i++) {
+			resdi->resname[i] = ressi->resname[i];
+		}
+		mmgr_copy_paras(ressi->resofs, regax, ressi->ressize);
+
+	} else {
+		resdi = ressi;
+	}
+
+	return MK_FP(resdi->resofs, 0);
 }
