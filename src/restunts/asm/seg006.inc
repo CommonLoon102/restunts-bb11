@@ -12,7 +12,7 @@ seg006 segment byte public 'STUNTSC' use16
     extrn off_26362:word
     extrn sub_2637A:proc
     extrn sub_263C6:proc
-    extrn sub_26500:proc
+    extrn calc_sincos80:proc
     extrn sub_26572:proc
     extrn sub_265EC:proc
     extrn sub_26670:proc

@@ -3215,7 +3215,7 @@ loc_16487:
     mov     [bp+var_112], ax
     mov     ax, word_4435E
     mov     [bp+var_110], ax
-    cmp     opponent_index, 0
+    cmp     gameconfig.game_opponenttype, 0
     jnz     short loc_164B2
     jmp     loc_16578
 loc_164B2:
@@ -4169,7 +4169,7 @@ loc_16DA4:
     jnz     short loc_16DA4
     push    dx
     push    ax
-    mov     al, byte_449A9
+    mov     al, gameconfig.game_playertransmission
     cbw
     push    ax
     mov     ax, 0A6EAh
@@ -4310,7 +4310,7 @@ loc_16EDB:
     push    cs
     call    near ptr init_carstate_from_simd
     add     sp, 14h
-    cmp     opponent_index, 0
+    cmp     gameconfig.game_opponenttype, 0
     jz      short loc_16F2F
     cmp     [bp+arg_0], 0FFFEh
     jz      short loc_16F2F
@@ -4533,7 +4533,7 @@ loc_170BE:
     push    cs
     call    near ptr sub_171E8
     add     sp, 2
-    cmp     opponent_index, 0
+    cmp     gameconfig.game_opponenttype, 0
     jz      short loc_170DC
     push    cs
     call    near ptr opponent_op
@@ -7296,7 +7296,7 @@ loc_188D6:
     call    audio_function2
     add     sp, 2
 loc_188E9:
-    cmp     opponent_index, 0
+    cmp     gameconfig.game_opponenttype, 0
     jz      short loc_18916
     test    byte_42D2A, 6
     jz      short loc_18903
@@ -7378,7 +7378,7 @@ loc_189A7:
     dec     cl
     jnz     short loc_189A7
     mov     [bp+var_4], ax
-    cmp     opponent_index, 0
+    cmp     gameconfig.game_opponenttype, 0
     jz      short loc_18A31
     mov     ax, word ptr state.opponentstate.car_longvec2.long_x
     mov     dx, word ptr state.opponentstate.car_longvec2.long_x+2
@@ -7514,7 +7514,7 @@ loc_18A82:
     mov     bx, [bp+var_2]
     mov     ax, state.playerstate.car_currpm
     mov     [bx+1Eh], ax
-    cmp     opponent_index, 0
+    cmp     gameconfig.game_opponenttype, 0
     jnz     short loc_18AE9
     jmp     loc_18BB6
 loc_18AE9:
@@ -7774,7 +7774,7 @@ sub_18D06 proc far
     push    word_43964
     call    sub_2712E
     add     sp, 12h
-    cmp     opponent_index, 0
+    cmp     gameconfig.game_opponenttype, 0
     jz      short loc_18D5E
     push    [bp+arg_2]
     mov     bx, [bp+arg_0]

@@ -59,7 +59,7 @@ seg006 segment byte public 'STUNTSC' use16
     public off_26362
     public sub_2637A
     public sub_263C6
-    public sub_26500
+    public calc_sincos80
     public sub_26572
     public sub_265EC
     public sub_26670
@@ -70,16 +70,16 @@ seg006 segment byte public 'STUNTSC' use16
     public sub_26B4A
 init_polyinfo proc far
 
-    mov     ax, 28A0h
+    mov     ax, 28A0h       ; bytes to reserve
     cwd
     push    dx
     push    ax
-    mov     ax, 32E8h
+    mov     ax, offset aPolyinfo; "polyinfo"
     push    ax
-    call    alloc_resbytes
+    call    mmgr_alloc_resbytes
     add     sp, 6
-    mov     word_40ED2, ax
-    mov     word_40ED4, dx
+    mov     word ptr polyinfoptr, ax
+    mov     word ptr polyinfoptr+2, dx
     sub     ax, ax
     push    ax
     mov     ax, offset mat_y0
@@ -105,7 +105,7 @@ init_polyinfo proc far
     call    mat_rot_y
     add     sp, 4
     push    cs
-    call    near ptr sub_26500
+    call    near ptr calc_sincos80
     retf
     ; align 2
     db 144
@@ -674,8 +674,8 @@ loc_25282:
     mov     al, [bx+3302h]
     mov     [bp+var_6], al
     mov     ax, word_41850
-    add     ax, word_40ED2
-    mov     dx, word_40ED4
+    add     ax, word ptr polyinfoptr
+    mov     dx, word ptr polyinfoptr+2
     mov     word ptr dword_40ECA, ax
     mov     word ptr dword_40ECA+2, dx
     mov     bx, word_442E6
@@ -2586,11 +2586,11 @@ sub_263C6 proc far
     add     sp, 4
     mov     [bp+var_4], ax
     mov     [bp+var_2], 0
-    mov     ax, word_41888
-    mov     dx, word_4188A
-    cmp     word_41884, ax
+    mov     ax, word ptr sin80
+    mov     dx, word ptr sin80+2
+    cmp     word ptr cos80, ax
     jnz     short loc_2643A
-    cmp     word_41886, dx
+    cmp     word ptr cos80+2, dx
     jnz     short loc_2643A
     mov     ax, [bp+var_E]
     mov     dx, [bp+var_C]
@@ -2603,13 +2603,13 @@ loc_26435:
     mov     ax, 1
     jmp     short loc_26470
 loc_2643A:
-    push    word_4188A
-    push    word_41888
+    push    word ptr sin80+2
+    push    word ptr sin80
     push    [bp+var_C]
     push    [bp+var_E]
     call    __aFlmul
-    push    word_41886
-    push    word_41884
+    push    word ptr cos80+2
+    push    word ptr cos80
     push    [bp+var_2]
     push    [bp+var_4]
     mov     si, ax
@@ -2699,36 +2699,36 @@ loc_264EB:
     pop     bp
     retf
 sub_263C6 endp
-sub_26500 proc far
+calc_sincos80 proc far
 
-    mov     ax, 80h ; '€'
+    mov     ax, 80h
     push    ax
     call    sin_fast
     add     sp, 2
     cwd
-    mov     word_41888, ax
-    mov     word_4188A, dx
-    mov     ax, 80h ; '€'
+    mov     word ptr sin80, ax
+    mov     word ptr sin80+2, dx
+    mov     ax, 80h
     push    ax
     call    cos_fast
     add     sp, 2
     cwd
-    mov     word_41884, ax
-    mov     word_41886, dx
-    mov     ax, 80h ; '€'
+    mov     word ptr cos80, ax
+    mov     word ptr cos80+2, dx
+    mov     ax, 80h
     push    ax
     call    sin_fast
     add     sp, 2
     cwd
-    mov     word_41890, ax
-    mov     word_41892, dx
-    mov     ax, 80h ; '€'
+    mov     word ptr sin80_2, ax
+    mov     word ptr sin80_2+2, dx
+    mov     ax, 80h
     push    ax
     call    cos_fast
     add     sp, 2
     cwd
-    mov     word_4188C, ax
-    mov     word_4188E, dx
+    mov     word ptr cos80_2, ax
+    mov     word ptr cos80_2+2, dx
     retf
     ; align 2
     db 144
@@ -2748,7 +2748,7 @@ loc_2656A:
     mov     dx, [bp+8]
     pop     bp
     retf
-sub_26500 endp
+calc_sincos80 endp
 sub_26572 proc far
      s = byte ptr 0
      r = byte ptr 2

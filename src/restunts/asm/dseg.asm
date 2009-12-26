@@ -81,7 +81,7 @@ dseg segment byte public 'STUNTSD' use16
     public byte_3B8F5
     public byte_3B8F6
     public byte_3B8F7
-    public byte_3B8F8
+    public kbormouse
     public byte_3B8F9
     public byte_3B8FA
     public byte_3B8FB
@@ -494,6 +494,7 @@ dseg segment byte public 'STUNTSD' use16
     public word_3EA3C
     public word_3EA4C
     public word_3EA4E
+    public aPolyinfo
     public word_3EB02
     public rect_unk4
     public word_3EB2A
@@ -795,8 +796,8 @@ dseg segment byte public 'STUNTSD' use16
     public word_407FA
     public word_407FC
     public word_407FE
-    public word_40800
-    public word_40802
+    public dialogarg1
+    public dialogarg2
     public word_40B0A
     public word_40B0C
     public word_40B0E
@@ -872,8 +873,7 @@ dseg segment byte public 'STUNTSD' use16
     public dword_40ECA
     public word_40ECE
     public word_40ED0
-    public word_40ED2
-    public word_40ED4
+    public polyinfoptr
     public word_411F6
     public unk_41690
     public unk_416AE
@@ -897,14 +897,10 @@ dseg segment byte public 'STUNTSD' use16
     public word_4187C
     public dword_4187E
     public byte_41882
-    public word_41884
-    public word_41886
-    public word_41888
-    public word_4188A
-    public word_4188C
-    public word_4188E
-    public word_41890
-    public word_41892
+    public cos80
+    public sin80
+    public cos80_2
+    public sin80_2
     public audiotimers
     public word_42240
     public word_42242
@@ -1103,19 +1099,7 @@ dseg segment byte public 'STUNTSD' use16
     public byte_4499F
     public word_449A0
     public word_449A2
-    public player_car_id
-    public byte_449A5
-    public byte_449A6
-    public byte_449A7
-    public byte_449A8
-    public byte_449A9
-    public opponent_index
-    public opponent_car_id
-    public byte_449AF
-    public byte_449B0
-    public byte_449B1
-    public byte_449BA
-    public word_449BC
+    public gameconfig
     public word_449BE
     public word_449C0
     public dword_449C2
@@ -1161,12 +1145,10 @@ dseg segment byte public 'STUNTSD' use16
     public word_44AE4
     public trackdata11
     public word_44CEA
-    public word_44CEC
-    public word_44CEE
+    public mainresptr
     public word_44D1E
     public word_44D20
-    public word_44D22
-    public word_44D24
+    public fontnptr
     public wndsprite
     public mat_unk_3
     public word_44D3C
@@ -1212,8 +1194,7 @@ dseg segment byte public 'STUNTSD' use16
     public word_454C0
     public word_454C2
     public word_454C4
-    public word_454C6
-    public word_454C8
+    public fontdefptr
     public word_454CA
     public word_454CC
     public word_454CE
@@ -1270,7 +1251,7 @@ dseg segment byte public 'STUNTSD' use16
     public trackdata22
     public unk_459E0
     public byte_459F1
-    public word_459F2
+    public fontdef_unk_0E
     public word_459F4
     public word_459F6
     public word_459FC
@@ -1315,7 +1296,7 @@ dseg segment byte public 'STUNTSD' use16
     public word_45E12
     public word_45E14
     public byte_45E16
-    public byte_45E1A
+    public passed_security
     public trackdata19
     public simd_copy
     public word_46160
@@ -1749,7 +1730,7 @@ byte_3B8F4     db 0
 byte_3B8F5     db 0
 byte_3B8F6     db 0
 byte_3B8F7     db 0
-byte_3B8F8     db 0
+kbormouse     db 0
 byte_3B8F9     db 0
 byte_3B8FA     db 0
 byte_3B8FB     db 0
@@ -14257,7 +14238,7 @@ word_3EA4E     dw 193
     db 0
     db 200
     db 0
-    db 112
+aPolyinfo     db 112
     db 111
     db 108
     db 121
@@ -21331,8 +21312,8 @@ word_407F8     dw 7
 word_407FA     dw 9
 word_407FC     dw 1
 word_407FE     dw 4
-word_40800     dw 1
-word_40802     dw 4
+dialogarg1     dw 1
+dialogarg2     dw 4
     db 0
     db 0
     db 1
@@ -23000,8 +22981,7 @@ mat_y300     db 0
 dword_40ECA     dd 0
 word_40ECE     dw 0
 word_40ED0     dw 0
-word_40ED2     dw 0
-word_40ED4     dw 0
+polyinfoptr     dd 0
     db 0
     db 0
     db 0
@@ -25459,14 +25439,10 @@ word_4187C     dw 0
 dword_4187E     dd 0
 byte_41882     db 0
     db 0
-word_41884     dw 0
-word_41886     dw 0
-word_41888     dw 0
-word_4188A     dw 0
-word_4188C     dw 0
-word_4188E     dw 0
-word_41890     dw 0
-word_41892     dw 0
+cos80     dd 0
+sin80     dd 0
+cos80_2     dd 0
+sin80_2     dd 0
     db 0
     db 0
     db 0
@@ -37726,20 +37702,7 @@ startrow2     db 0
 byte_4499F     db 0
 word_449A0     dw 0
 word_449A2     dw 0
-player_car_id     db 0
-byte_449A5     db 0
-byte_449A6     db 0
-byte_449A7     db 0
-byte_449A8     db 0
-byte_449A9     db 0
-opponent_index     db 0
-opponent_car_id     db 0
-    db 0
-    db 0
-    db 0
-byte_449AF     db 0
-byte_449B0     db 0
-byte_449B1     db 0
+gameconfig     db 0
     db 0
     db 0
     db 0
@@ -37748,9 +37711,23 @@ byte_449B1     db 0
     db 0
     db 0
     db 0
-byte_449BA     db 0
     db 0
-word_449BC     dw 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
 word_449BE     dw 0
 word_449C0     dw 0
 dword_449C2     dd 0
@@ -38512,8 +38489,7 @@ word_44AE4     dw 0
     db 0
 trackdata11     dd 0
 word_44CEA     dw 0
-word_44CEC     dw 0
-word_44CEE     dw 0
+mainresptr     dd 0
     db 0
     db 0
     db 0
@@ -38562,8 +38538,7 @@ word_44CEE     dw 0
     db 0
 word_44D1E     dw 0
 word_44D20     dw 0
-word_44D22     dw 0
-word_44D24     dw 0
+fontnptr     dd 0
 wndsprite     dd 0
 mat_unk_3     db 0
     db 0
@@ -40465,8 +40440,7 @@ trackdata15     dd 0
 word_454C0     dw 0
 word_454C2     dw 0
 word_454C4     dw 0
-word_454C6     dw 0
-word_454C8     dw 0
+fontdefptr     dd 0
 word_454CA     dw 0
 word_454CC     dw 0
 word_454CE     dw 0
@@ -41737,7 +41711,7 @@ unk_459E0     db 0
     db 0
     db 0
 byte_459F1     db 0
-word_459F2     dw 0
+fontdef_unk_0E     dw 0
 word_459F4     dw 0
 word_459F6     dw 0
     db 0
@@ -42694,7 +42668,7 @@ byte_45E16     db 0
     db 0
     db 0
     db 0
-byte_45E1A     db 0
+passed_security     db 0
     db 0
     db 0
     db 0

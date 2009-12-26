@@ -148,24 +148,24 @@ loc_10086:
     push    ax
     call    load_res_file
     add     sp, 2
-    mov     word_44CEC, ax
-    mov     word_44CEE, dx
+    mov     word ptr mainresptr, ax
+    mov     word ptr mainresptr+2, dx
     mov     ax, offset aFontdef_fnt; "fontdef.fnt"
     push    ax              ; char *
     sub     ax, ax
     push    ax              ; int
     call    load_resource   ; type 0 = binary file
     add     sp, 4
-    mov     word_454C6, ax
-    mov     word_454C8, dx
+    mov     word ptr fontdefptr, ax
+    mov     word ptr fontdefptr+2, dx
     mov     ax, offset aFontn_fnt; "fontn.fnt"
     push    ax              ; char *
     sub     ax, ax
     push    ax              ; int
     call    load_resource
     add     sp, 4
-    mov     word_44D22, ax
-    mov     word_44D24, dx
+    mov     word ptr fontnptr, ax
+    mov     word ptr fontnptr+2, dx
     call    set_fontdef
     call    init_polyinfo
     mov     si, 6BF3h       ; bytes to allocate
@@ -175,7 +175,7 @@ loc_10086:
     push    ax
     mov     ax, offset aTrakdata; "trakdata"
     push    ax
-    call    alloc_resbytes
+    call    mmgr_alloc_resbytes
     add     sp, 6
     mov     [bp+var_4], ax
     mov     [bp+var_2], dx
@@ -277,7 +277,7 @@ loc_10086:
     add     sp, 2
     mov     ax, offset aDefault_0; "DEFAULT"
     push    ax
-    mov     ax, offset byte_449B1
+    mov     ax, offset gameconfig.game_trackname
     push    ax              ; char *
     call    _strcpy
     add     sp, 4
@@ -291,8 +291,8 @@ loc_10086:
     call    input_do_checking
     add     sp, 2
     call    sub_28DB6
-    mov     byte_3B8F8, 0
-    mov     byte_45E1A, 1
+    mov     kbormouse, 0
+    mov     passed_security, 1; originally set to 0 - bypasses the copy protection
     push    cs
     call    near ptr set_default_car
     mov     si, 1
@@ -331,11 +331,11 @@ _do_car_menu:
     call    show_waiting
     sub     ax, ax
     push    ax
-    mov     ax, offset byte_449A9
+    mov     ax, offset gameconfig.game_playertransmission
     push    ax
-    mov     ax, offset byte_449A8
+    mov     ax, offset gameconfig.game_playermaterial
     push    ax
-    mov     ax, offset player_car_id
+    mov     ax, offset gameconfig
     push    ax
     push    cs
     call    near ptr run_car_menu
@@ -348,7 +348,7 @@ _do_game1:
     push    si
     push    di
     mov     di, offset unk_45530
-    mov     si, offset player_car_id
+    mov     si, offset gameconfig
     push    ds
     pop     es
     mov     cx, 0Dh
@@ -384,7 +384,7 @@ loc_10346:
     jmp     _tracks_menu_ax
 _sec_check1:
     call    random_wait
-    cmp     byte_45E1A, 0
+    cmp     passed_security, 0
     jnz     short _init_replay
     call    get_super_random
     cwd
@@ -404,7 +404,7 @@ _init_replay:
     push    ax
     mov     ax, offset aCvx ; "cvx"
     push    ax
-    call    alloc_resbytes
+    call    mmgr_alloc_resbytes
     add     sp, 6
     mov     word_45A20, ax
     mov     word_45A22, dx
@@ -441,7 +441,7 @@ _do_intro:
     push    ax              ; char *
     mov     ax, offset a_trk; ".trk"
     push    ax              ; int
-    mov     ax, offset byte_449B1
+    mov     ax, offset gameconfig.game_trackname
     push    ax
     mov     ax, offset byte_3B80C
     push    ax              ; char *
@@ -511,7 +511,7 @@ loc_1049E:
     jmp     short loc_104AC
     nop
 loc_104A6:
-    mov     word_449BC, 0
+    mov     gameconfig.game_recordedframes, 0
 loc_104AC:
     call    show_waiting
     call    run_game
@@ -529,7 +529,7 @@ loc_104AC:
 loc_104D2:
     push    si
     push    di
-    mov     di, offset player_car_id
+    mov     di, offset gameconfig
     mov     si, offset unk_45530
     push    ds
     pop     es
@@ -571,14 +571,14 @@ _ask_dos:
     sub     ax, ax
     push    ax
     push    ax
-    push    word_40802
+    push    dialogarg2
     mov     ax, 0FFFFh
     push    ax
     push    ax
     mov     ax, offset aDos ; "dos"
     push    ax
-    push    word_44CEE
-    push    word_44CEC
+    push    word ptr mainresptr+2
+    push    word ptr mainresptr
     call    locate_text_res
     add     sp, 6
     push    dx
@@ -1787,7 +1787,7 @@ loc_110ED:
     push    ax              ; char *
     call    _strcpy
     add     sp, 4
-    mov     ax, offset byte_449B1
+    mov     ax, offset gameconfig.game_trackname
     push    ax
     mov     ax, offset byte_463E4
     push    ax              ; char *
@@ -1832,8 +1832,8 @@ loc_111F9:
 loc_11210:
     mov     ax, offset unk_3BA28
     push    ax
-    push    word_44CEE
-    push    word_44CEC
+    push    word ptr mainresptr+2
+    push    word ptr mainresptr
     call    locate_text_res
     add     sp, 6
     push    dx
@@ -1856,9 +1856,9 @@ loc_11210:
     push    ax
     call    sub_28F98
     add     sp, 0Ah
-    push    word_44D24
-    push    word_44D22
-    call    sub_2988A
+    push    word ptr fontnptr+2
+    push    word ptr fontnptr
+    call    set_fontdef2
     add     sp, 4
     lea     ax, [bp+var_A]
     push    ax
@@ -2119,15 +2119,15 @@ loc_114CC:
 loc_114E2:
     mov     ax, offset aTrk ; "trk"
     push    ax
-    push    word_44CEE
-    push    word_44CEC
+    push    word ptr mainresptr+2
+    push    word ptr mainresptr
     call    locate_text_res
     add     sp, 6
     push    dx              ; int
     push    ax              ; int
     mov     ax, offset a_trk_0; ".trk"
     push    ax              ; int
-    mov     ax, offset byte_449B1
+    mov     ax, offset gameconfig.game_trackname
     push    ax
     mov     ax, 9Ch ; 'œ'
     push    ax              ; char *
@@ -2139,7 +2139,7 @@ loc_114E2:
     push    ax              ; char *
     mov     ax, offset a_trk_1; ".trk"
     push    ax              ; int
-    mov     ax, offset byte_449B1
+    mov     ax, offset gameconfig.game_trackname
     push    ax
     mov     ax, 9Ch ; 'œ'
     push    ax              ; char *
@@ -2210,7 +2210,7 @@ loc_1159A:
     push    ax              ; char *
     mov     ax, offset a_hig_0; ".hig"
     push    ax              ; int
-    mov     ax, offset byte_449B1
+    mov     ax, offset gameconfig.game_trackname
     push    ax
     mov     ax, 9Ch ; 'œ'
     push    ax              ; char *
@@ -2314,8 +2314,8 @@ sub_1168E proc far
     call    sub_28F6A
     mov     ax, offset aHs1 ; "hs1"
     push    ax
-    push    word_44CEE
-    push    word_44CEC
+    push    word ptr mainresptr+2
+    push    word ptr mainresptr
     call    locate_text_res
     add     sp, 6
     push    dx
@@ -2330,7 +2330,7 @@ sub_1168E proc far
     push    ax              ; char *
     call    _strcat
     add     sp, 4
-    mov     ax, offset byte_449B1
+    mov     ax, offset gameconfig.game_trackname
     push    ax
     mov     ax, offset byte_463E4
     push    ax              ; char *
@@ -2358,8 +2358,8 @@ sub_1168E proc far
     add     sp, 0Ah
     mov     ax, offset aHs2 ; "hs2"
     push    ax
-    push    word_44CEE
-    push    word_44CEC
+    push    word ptr mainresptr+2
+    push    word ptr mainresptr
     call    locate_text_res
     add     sp, 6
     push    dx
@@ -2381,8 +2381,8 @@ sub_1168E proc far
     add     sp, 0Ah
     mov     ax, offset aHs3 ; "hs3"
     push    ax
-    push    word_44CEE
-    push    word_44CEC
+    push    word ptr mainresptr+2
+    push    word ptr mainresptr
     call    locate_text_res
     add     sp, 6
     push    dx
@@ -2404,8 +2404,8 @@ sub_1168E proc far
     add     sp, 0Ah
     mov     ax, offset aHs5 ; "hs5"
     push    ax
-    push    word_44CEE
-    push    word_44CEC
+    push    word ptr mainresptr+2
+    push    word ptr mainresptr
     call    locate_text_res
     add     sp, 6
     push    dx
@@ -2427,8 +2427,8 @@ sub_1168E proc far
     add     sp, 0Ah
     mov     ax, offset aHs4 ; "hs4"
     push    ax
-    push    word_44CEE
-    push    word_44CEC
+    push    word ptr mainresptr+2
+    push    word ptr mainresptr
     call    locate_text_res
     add     sp, 6
     push    dx
@@ -2448,9 +2448,9 @@ sub_1168E proc far
     push    ax
     call    sub_29008
     add     sp, 0Ah
-    push    word_44D24
-    push    word_44D22
-    call    sub_2988A
+    push    word ptr fontnptr+2
+    push    word ptr fontnptr
+    call    set_fontdef2
     add     sp, 4
     mov     [bp+var_A], 0
     jmp     loc_118A0
@@ -2524,7 +2524,7 @@ loc_118A0:
     jz      short loc_118C1
     jmp     loc_1181A
 loc_118C1:
-    mov     ax, word_40802
+    mov     ax, dialogarg2
     mov     [bp+var_2], ax
     jmp     loc_1181F
 loc_118CA:
@@ -2774,7 +2774,7 @@ loc_11A8D:
     add     sp, 4
     mov     al, [bp+arg_6]
     mov     [bp+var_D], al
-    cmp     opponent_index, 0
+    cmp     gameconfig.game_opponenttype, 0
     jz      short loc_11AE6
     mov     ax, offset unk_46464
     push    ax
@@ -2815,7 +2815,7 @@ loc_11AED:
     push    ax
     lea     ax, [bp+var_3C]
     push    ax
-    push    word_40802
+    push    dialogarg2
     mov     ax, 0FFFFh
     push    ax
     push    ax
@@ -2911,7 +2911,7 @@ loc_11BC3:
     push    ax              ; char *
     mov     ax, offset a_hig; ".hig"
     push    ax              ; int
-    mov     ax, offset byte_449B1
+    mov     ax, offset gameconfig.game_trackname
     push    ax
     mov     ax, 9Ch ; 'œ'
     push    ax              ; char *
@@ -3442,9 +3442,9 @@ loc_11FC8:
     push    ax
     call    sub_33D4E
     add     sp, 4
-    push    word_44D24
-    push    word_44D22
-    call    sub_2988A
+    push    word ptr fontnptr+2
+    push    word ptr fontnptr
+    call    set_fontdef2
     add     sp, 4
     push    word_407CA
     sub     ax, ax
@@ -3677,7 +3677,7 @@ loc_122FB:
     div     cx
     add     ax, 1Ch
     mov     [bp+var_44], ax
-    push    word_40800
+    push    dialogarg1
     push    [bp+var_48]
     push    ax
     call    sub_35B26
@@ -3688,9 +3688,9 @@ loc_122FB:
 loc_12344:
     mov     ax, [bp+var_12]
     mov     word_449D0, ax
-    push    word_44D24
-    push    word_44D22
-    call    sub_2988A
+    push    word ptr fontnptr+2
+    push    word ptr fontnptr
+    call    set_fontdef2
     add     sp, 4
     mov     ax, offset aDes_1; "des"
     push    ax
@@ -3722,7 +3722,7 @@ loc_1237E:
     add     sp, 6
 loc_123B1:
     mov     [bp+var_44], 0
-    mov     ax, word_459F2
+    mov     ax, fontdef_unk_0E
     add     [bp+var_48], ax
     jmp     short loc_123CB
 loc_123BE:
@@ -4311,7 +4311,7 @@ run_opponent_menu proc far
 loc_129A3:
     call    sub_28D9E
 loc_129A8:
-    mov     al, opponent_index
+    mov     al, gameconfig.game_opponenttype
     cmp     [bp+var_1E], al
     jnz     short loc_129B3
     jmp     loc_12CFB
@@ -4333,9 +4333,9 @@ loc_129DD:
     push    ax
     call    ensure_file_exists
     add     sp, 2
-    cmp     opponent_index, 0
+    cmp     gameconfig.game_opponenttype, 0
     jz      short loc_12A10
-    mov     al, opponent_index
+    mov     al, gameconfig.game_opponenttype
     add     al, 30h ; '0'
     mov     byte ptr aOpp1+3, al
     mov     ax, offset aOpp1; "opp1"
@@ -4359,7 +4359,7 @@ loc_12A14:
     add     sp, 6
     mov     word ptr wndsprite, ax
     mov     word ptr wndsprite+2, dx
-    mov     al, opponent_index
+    mov     al, gameconfig.game_opponenttype
     mov     [bp+var_1E], al
     mov     [bp+var_14], 0FFh
     cmp     byte_46436, 0
@@ -4511,7 +4511,7 @@ loc_12A4D:
     push    ax
     call    sub_292DC
     add     sp, 14h
-    mov     al, opponent_index
+    mov     al, gameconfig.game_opponenttype
     add     al, 30h ; '0'
     cbw
     push    ax
@@ -4519,7 +4519,7 @@ loc_12A4D:
     push    word_44A00
     call    nullsub_2
     add     sp, 6
-    mov     al, opponent_index
+    mov     al, gameconfig.game_opponenttype
     cbw
     mov     bx, ax
     shl     bx, 1
@@ -4556,7 +4556,7 @@ loc_12A4D:
     add     sp, 8
     call    sub_28F6A
 loc_12C46:
-    cmp     opponent_index, 0
+    cmp     gameconfig.game_opponenttype, 0
     jz      short loc_12C5A
     mov     ax, 43Bh
     push    ax
@@ -4575,9 +4575,9 @@ loc_12C66:
     add     sp, 6
     mov     word ptr [bp+var_1A], ax
     mov     word ptr [bp+var_1A+2], dx
-    push    word_44D24
-    push    word_44D22
-    call    sub_2988A
+    push    word ptr fontnptr+2
+    push    word ptr fontnptr
+    call    set_fontdef2
     add     sp, 4
     push    word_407CA
     sub     ax, ax
@@ -4608,7 +4608,7 @@ loc_12C9D:
     add     sp, 6
 loc_12CD2:
     mov     [bp+var_8], 0
-    mov     ax, word_459F2
+    mov     ax, fontdef_unk_0E
     add     [bp+var_E], ax
     jmp     short loc_12CED
     ; align 2
@@ -4675,7 +4675,7 @@ loc_12D2C:
     mov     [bp+var_16], al
     cmp     al, 0FFh
     jz      short loc_12D93
-    cmp     opponent_index, 0
+    cmp     gameconfig.game_opponenttype, 0
     jnz     short loc_12D8D
     cmp     al, 3
     jz      short loc_12D93
@@ -4720,26 +4720,26 @@ loc_12DBE:
 loc_12DDD:
     jmp     loc_129A8
 loc_12DE0:
-    dec     opponent_index
-    cmp     opponent_index, 1
+    dec     gameconfig.game_opponenttype
+    cmp     gameconfig.game_opponenttype, 1
     jl      short loc_12DEE
     jmp     loc_129A8
 loc_12DEE:
-    mov     opponent_index, 6
+    mov     gameconfig.game_opponenttype, 6
     jmp     loc_129A8
 loc_12DF6:
-    inc     opponent_index
-    cmp     opponent_index, 7
+    inc     gameconfig.game_opponenttype
+    cmp     gameconfig.game_opponenttype, 7
     jz      short loc_12E04
     jmp     loc_129A8
 loc_12E04:
-    mov     opponent_index, 1
+    mov     gameconfig.game_opponenttype, 1
     jmp     loc_129A8
 loc_12E0C:
-    mov     opponent_index, 0
+    mov     gameconfig.game_opponenttype, 0
     jmp     loc_129A8
 loc_12E14:
-    cmp     opponent_index, 0
+    cmp     gameconfig.game_opponenttype, 0
     jnz     short loc_12E1E
     jmp     loc_129A8
 loc_12E1E:
@@ -4754,7 +4754,7 @@ loc_12E1E:
     call    unload_resource
     add     sp, 4
     call    show_waiting
-    mov     al, opponent_index
+    mov     al, gameconfig.game_opponenttype
     cbw
     push    ax
     mov     ax, 9240h
@@ -4769,30 +4769,30 @@ loc_12E1E:
     mov     [bp+var_1E], 0FFh
     jmp     loc_129A3
 loc_12E6A:
-    cmp     opponent_index, 0
+    cmp     gameconfig.game_opponenttype, 0
     jz      short loc_12EA2
-    cmp     opponent_car_id, 0FFh
+    cmp     gameconfig.game_opponentcarid, 0FFh
     jnz     short loc_12EA7
-    mov     al, player_car_id
-    mov     opponent_car_id, al
-    mov     al, byte_449A5
-    mov     opponent_car_id+1, al
-    mov     al, byte_449A6
-    mov     opponent_car_id+2, al
-    mov     al, byte_449A7
-    mov     opponent_car_id+3, al
-    mov     al, byte_449A8
+    mov     al, gameconfig.game_playercarid
+    mov     gameconfig.game_opponentcarid, al
+    mov     al, gameconfig.game_playercarid+1
+    mov     gameconfig.game_opponentcarid+1, al
+    mov     al, gameconfig.game_playercarid+2
+    mov     gameconfig.game_opponentcarid+2, al
+    mov     al, gameconfig.game_playercarid+3
+    mov     gameconfig.game_opponentcarid+3, al
+    mov     al, gameconfig.game_playermaterial
 smart
     and     al, 1
 nosmart
     xor     al, 1
-    mov     byte_449AF, al
-    mov     byte_449B0, 0
+    mov     gameconfig.game_opponentmaterial, al
+    mov     gameconfig.game_opponenttransmission, 0
     jmp     short loc_12EA7
     ; align 2
     db 144
 loc_12EA2:
-    mov     opponent_car_id, 0FFh
+    mov     gameconfig.game_opponentcarid, 0FFh
 loc_12EA7:
     push    word ptr wndsprite+2
     push    word ptr wndsprite
@@ -4830,7 +4830,7 @@ loc_12EF6:
 loc_12F02:
     mov     [bp+var_1C], 4
 loc_12F06:
-    cmp     opponent_index, 0
+    cmp     gameconfig.game_opponenttype, 0
     jz      short loc_12F10
     jmp     loc_129A8
 loc_12F10:
@@ -4852,7 +4852,7 @@ loc_12F20:
 loc_12F2C:
     mov     [bp+var_1C], 0
 loc_12F30:
-    cmp     opponent_index, 0
+    cmp     gameconfig.game_opponenttype, 0
     jz      short loc_12F3A
     jmp     loc_129A8
 loc_12F3A:
@@ -4942,7 +4942,7 @@ loc_13004:
     sub     ax, ax
     push    ax
     push    ax
-    push    word_40802
+    push    dialogarg2
     mov     ax, 0FFFFh
     push    ax
     push    ax
@@ -4992,7 +4992,7 @@ loc_1306E:
     push    ax
     sub     ax, ax
     push    ax
-    push    word_40800
+    push    dialogarg1
     mov     ax, 0FFFFh
     push    ax
     push    ax
@@ -5039,8 +5039,8 @@ loc_130DA:
 loc_130E2:
     mov     ax, 483h
     push    ax
-    push    word_44CEE
-    push    word_44CEC
+    push    word ptr mainresptr+2
+    push    word ptr mainresptr
     call    locate_text_res
     add     sp, 6
     push    dx              ; int
@@ -5168,9 +5168,9 @@ end_hiscore proc far
     add     sp, 2
     mov     [bp+var_4E], ax
     mov     [bp+var_4C], dx
-    cmp     opponent_index, 0
+    cmp     gameconfig.game_opponenttype, 0
     jz      short loc_131C0
-    mov     al, opponent_index
+    mov     al, gameconfig.game_opponenttype
     add     al, 30h ; '0'
     mov     byte ptr aOpp1+3, al
     mov     ax, offset aOpp1; "opp1"
@@ -5369,7 +5369,7 @@ loc_13380:
     add     [bp+var_70], 0Ah
 loc_133A7:
     mov     [bp+var_18], 2
-    cmp     opponent_index, 0
+    cmp     gameconfig.game_opponenttype, 0
     jnz     short loc_133B5
     jmp     loc_134DC
 loc_133B5:
@@ -5506,7 +5506,7 @@ loc_134FB:
     push    ax              ; char *
     call    load_audio_res
     add     sp, 6
-    mov     al, opponent_index
+    mov     al, gameconfig.game_opponenttype
     mov     [bp+var_16], al
     cmp     [bp+var_18], 2
     jnz     short loc_1351D
@@ -5837,7 +5837,7 @@ loc_13835:
 loc_1384B:
     cmp     [bp+var_18], 1
     jnz     short loc_138B6
-    mov     al, opponent_index
+    mov     al, gameconfig.game_opponenttype
     add     al, 30h ; '0'
     mov     byte_3BD17, al
     mov     ax, 5A4h
@@ -5880,7 +5880,7 @@ loc_138AC:
     ; align 2
     db 144
 loc_138B6:
-    mov     al, opponent_index
+    mov     al, gameconfig.game_opponenttype
     add     al, 30h ; '0'
     mov     byte_3BD1F, al
     mov     ax, 5ACh
@@ -5931,14 +5931,14 @@ loc_138FF:
     sub     ax, ax
     push    ax
     push    ax
-    push    word_40802
+    push    dialogarg2
     mov     ax, 0FFFFh
     push    ax
     push    ax
     mov     ax, 506h
     push    ax
-    push    word_44CEE
-    push    word_44CEC
+    push    word ptr mainresptr+2
+    push    word ptr mainresptr
     call    locate_text_res
     add     sp, 6
     push    dx
@@ -6144,9 +6144,9 @@ loc_13B57:
     mov     word ptr [bp+var_86], ax
     mov     word ptr [bp+var_86+2], dx
 loc_13B6E:
-    push    word_44D24
-    push    word_44D22
-    call    sub_2988A
+    push    word ptr fontnptr+2
+    push    word ptr fontnptr
+    call    set_fontdef2
     add     sp, 4
 loc_13B7E:
     les     bx, [bp+var_86]
@@ -6289,9 +6289,9 @@ loc_13CCD:
 loc_13CD0:
     cmp     [bp+var_40], 0
     jz      short loc_13D06
-    push    word_44D24
-    push    word_44D22
-    call    sub_2988A
+    push    word ptr fontnptr+2
+    push    word ptr fontnptr
+    call    set_fontdef2
     add     sp, 4
     mov     bx, [bp+var_40]
     mov     byte ptr [bx-538Ch], 0
@@ -6992,7 +6992,7 @@ loc_1443A:
     push    word ptr wndsprite
     call    release_window
     add     sp, 4
-    cmp     opponent_index, 0
+    cmp     gameconfig.game_opponenttype, 0
     jz      short loc_1445F
     push    [bp+var_66]
     push    [bp+var_68]
@@ -7132,7 +7132,7 @@ loc_14551:
     push    ax
     lea     ax, [bp+var_428]
     push    ax
-    push    word_40800
+    push    dialogarg1
     mov     ax, 78h ; 'x'
     push    ax
     mov     ax, 0FFFFh
@@ -7248,12 +7248,12 @@ loc_1468D:
     add     sp, 4
     or      ax, ax
     jnz     short loc_146B0
-    mov     byte_45E1A, 1
+    mov     passed_security, 1
     jmp     short loc_146B4
 loc_146B0:
     inc     [bp+var_40E]
 loc_146B4:
-    cmp     byte_45E1A, 0
+    cmp     passed_security, 0
     jnz     short loc_146C5
     cmp     [bp+var_40E], 3
     jz      short loc_146C5
@@ -7272,15 +7272,15 @@ loc_146C5:
 security_check endp
 set_default_car proc far
 
-    mov     player_car_id, 43h ; 'C'
-    mov     byte_449A5, 4Fh ; 'O'
-    mov     byte_449A6, 55h ; 'U'
-    mov     byte_449A7, 4Eh ; 'N'
-    mov     byte_449A8, 0
-    mov     opponent_index, 0
-    mov     byte_449AF, 0
-    mov     byte_449A9, 1
-    mov     opponent_car_id, 0FFh
+    mov     gameconfig.game_playercarid, 43h ; 'C'
+    mov     gameconfig.game_playercarid+1, 4Fh ; 'O'
+    mov     gameconfig.game_playercarid+2, 55h ; 'U'
+    mov     gameconfig.game_playercarid+3, 4Eh ; 'N'
+    mov     gameconfig.game_playermaterial, 0
+    mov     gameconfig.game_opponenttype, 0
+    mov     gameconfig.game_opponentmaterial, 0
+    mov     gameconfig.game_playertransmission, 1
+    mov     gameconfig.game_opponentcarid, 0FFh
     retf
 set_default_car endp
 seg000 ends

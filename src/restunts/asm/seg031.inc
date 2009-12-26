@@ -8,7 +8,7 @@ seg031 segment byte public 'STUNTSC' use16
     extrn random_wait:proc
     extrn load_palandcursor:proc
     extrn get_0:proc
-    extrn alloc_resbytes:proc
+    extrn mmgr_alloc_resbytes:proc
     extrn get_res_ofs_diff_scaled:proc
     extrn get_res_size_scaled:proc
 seg031 ends

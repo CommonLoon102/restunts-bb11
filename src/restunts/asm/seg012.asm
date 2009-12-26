@@ -354,7 +354,7 @@ seg012 segment byte public 'STUNTSC' use16
     public off_34968
     public lineoffsets
     public sub_34B0C
-    public sub_34B7C
+    public set_fontdefseg
     public sub_34B96
     public make_wnd_sprite
     public next_wnd_def
@@ -6447,11 +6447,11 @@ loc_3108E:
     mov     ah, 48h
     int     21h             ; DOS - 2+ - ALLOCATE MEMORY
     mov     si, resptr1
-    mov     [si+RESOURCE.resofs], ax
+    mov     [si+MEMCHUNK.resofs], ax
     mov     word_3FF84, ax
     mov     es, ax
     mov     bx, [bp+arg_0]
-    sub     bx, [si+RESOURCE.resofs]
+    sub     bx, [si+MEMCHUNK.resofs]
     mov     ah, 4Ah
     int     21h             ; DOS - 2+ - ADJUST MEMORY BLOCK SIZE (SETBLOCK)
     mov     ah, 4Ah
@@ -6459,7 +6459,7 @@ loc_3108E:
     mov     ax, word_3FF84
     add     ax, bx
     mov     si, resendptr2
-    mov     [si+RESOURCE.resofs], ax
+    mov     [si+MEMCHUNK.resofs], ax
     mov     word_3FF82, ax
 loc_310CD:
     mov     si, resendptr2
@@ -6470,7 +6470,7 @@ loc_310DD:
     add     si, 12h
     cmp     si, resendptr2
     jz      short loc_310ED
-    mov     [si+RESOURCE.resunk], 0
+    mov     [si+MEMCHUNK.resunk], 0
     jmp     short loc_310DD
 loc_310ED:
     pop     di
@@ -6536,10 +6536,10 @@ ported_mmgr_alloc_a000_ endp
 ported_mmgr_get_ofs_diff_ proc far
 
     mov     bx, resendptr2
-    mov     ax, [bx+RESOURCE.resofs]
+    mov     ax, [bx+MEMCHUNK.resofs]
     mov     bx, resptr2
-    sub     ax, [bx+RESOURCE.resofs]
-    sub     ax, [bx+RESOURCE.ressize]
+    sub     ax, [bx+MEMCHUNK.resofs]
+    sub     ax, [bx+MEMCHUNK.ressize]
     retf
 ported_mmgr_get_ofs_diff_ endp
 ported_mmgr_copy_paras_ proc far
@@ -6684,8 +6684,8 @@ ported_mmgr_alloc_pages_ proc far
     push    di
     mov     di, resptr2
     mov     si, resendptr1
-    mov     dx, [di+RESOURCE.resofs]
-    add     dx, [di+RESOURCE.ressize]
+    mov     dx, [di+MEMCHUNK.resofs]
+    add     dx, [di+MEMCHUNK.ressize]
     add     di, 12h
     cmp     si, di
     jbe     short loc_312A7
@@ -6698,21 +6698,21 @@ loc_31262:
     xor     bx, bx
     mov     cx, 0Ch
 loc_31278:
-    mov     al, byte ptr [bx+si+RESOURCE.resname]
-    mov     byte ptr [bx+di+RESOURCE.resname], al
+    mov     al, byte ptr [bx+si+MEMCHUNK.resname]
+    mov     byte ptr [bx+di+MEMCHUNK.resname], al
     inc     bx
     loop    loc_31278
     mov     si, resendptr1
     mov     ax, [bp+arg_2]
-    mov     [di+RESOURCE.resofs], dx
-    mov     [di+RESOURCE.ressize], ax
-    mov     [di+RESOURCE.resunk], 2
+    mov     [di+MEMCHUNK.resofs], dx
+    mov     [di+MEMCHUNK.ressize], ax
+    mov     [di+MEMCHUNK.resunk], 2
     add     ax, dx
     cmp     ax, resmaxsize
     jb      short loc_3129C
     mov     resmaxsize, ax
 loc_3129C:
-    cmp     ax, [si+RESOURCE.resofs]
+    cmp     ax, [si+MEMCHUNK.resofs]
     ja      short loc_312C2
 loc_312A1:
     xor     ax, ax
@@ -6734,21 +6734,21 @@ loc_312B6:
 loc_312C2:
     mov     si, resendptr1
     mov     di, resptr2
-    mov     ax, [di+RESOURCE.resofs]
-    add     ax, [di+RESOURCE.ressize]
+    mov     ax, [di+MEMCHUNK.resofs]
+    add     ax, [di+MEMCHUNK.ressize]
 loc_312D0:
-    cmp     ax, [si+RESOURCE.resofs]
+    cmp     ax, [si+MEMCHUNK.resofs]
     jbe     short loc_312A1
     cmp     si, resendptr2
     jz      short loc_312E9
-    mov     [si+RESOURCE.resunk], 0
+    mov     [si+MEMCHUNK.resunk], 0
     add     si, 12h
     mov     resendptr1, si
     jmp     short loc_312D0
 loc_312E9:
     mov     bx, resmaxsize
     push    bx
-    push    [di+RESOURCE.ressize]
+    push    [di+MEMCHUNK.ressize]
     push    [bp+arg_0]
     mov     ax, offset aReservememoryOutOfMemory; "reservememory - OUT OF MEMORY RESERVING"...
     push    ax
@@ -6764,9 +6764,9 @@ ported_mmgr_find_free_ proc far
     mov     di, si
     xor     dx, dx
 loc_31308:
-    test    [si+RESOURCE.resunk], 1
+    test    [si+MEMCHUNK.resunk], 1
     jnz     short loc_31315
-    add     dx, [si+RESOURCE.ressize]
+    add     dx, [si+MEMCHUNK.ressize]
     jmp     short loc_3131C
     db 144
 loc_31315:
@@ -6785,24 +6785,24 @@ loc_3131C:
     pop     si
     retf
 loc_31330:
-    mov     bx, [si+RESOURCE.ressize]
+    mov     bx, [si+MEMCHUNK.ressize]
     push    bx
     add     di, 12h
-    mov     ax, [di+RESOURCE.resofs]
+    mov     ax, [di+MEMCHUNK.resofs]
     sub     ax, bx
     push    ax
-    push    [si+RESOURCE.resofs]
+    push    [si+MEMCHUNK.resofs]
     sub     di, 12h
-    mov     [di+RESOURCE.ressize], bx
-    mov     [di+RESOURCE.resofs], ax
-    mov     cx, [si+RESOURCE.resunk]
-    mov     [si+RESOURCE.resunk], 0
-    mov     [di+RESOURCE.resunk], cx
+    mov     [di+MEMCHUNK.ressize], bx
+    mov     [di+MEMCHUNK.resofs], ax
+    mov     cx, [si+MEMCHUNK.resunk]
+    mov     [si+MEMCHUNK.resunk], 0
+    mov     [di+MEMCHUNK.resunk], cx
     xor     bx, bx
     mov     cx, 0Ch
 loc_31359:
-    mov     al, byte ptr [bx+si+RESOURCE.resname]
-    mov     byte ptr [bx+di+RESOURCE.resname], al
+    mov     al, byte ptr [bx+si+MEMCHUNK.resname]
+    mov     byte ptr [bx+di+MEMCHUNK.resname], al
     inc     bx
     loop    loc_31359
     call    copy_paras_reverse
@@ -6825,7 +6825,7 @@ ported_mmgr_get_unk_ proc far
     mov     di, ax
 loc_31380:
     xor     bx, bx
-    cmp     [si+RESOURCE.resunk], 0
+    cmp     [si+MEMCHUNK.resunk], 0
     jz      short loc_313AE
 loc_31388:
     mov     al, [bx+di]
@@ -6857,23 +6857,23 @@ loc_313B0:
     retf
 loc_313B6:
     mov     di, resptr2
-    mov     dx, [di+RESOURCE.resofs]
-    add     dx, [di+RESOURCE.ressize]
+    mov     dx, [di+MEMCHUNK.resofs]
+    add     dx, [di+MEMCHUNK.ressize]
     add     di, 12h
     mov     resptr2, di
-    mov     ax, [si+RESOURCE.ressize]
+    mov     ax, [si+MEMCHUNK.ressize]
     push    ax
     push    dx
-    push    [si+RESOURCE.resofs]
-    mov     [si+RESOURCE.resunk], 0
-    mov     [di+RESOURCE.resofs], dx
-    mov     [di+RESOURCE.ressize], ax
-    mov     [di+RESOURCE.resunk], 2
+    push    [si+MEMCHUNK.resofs]
+    mov     [si+MEMCHUNK.resunk], 0
+    mov     [di+MEMCHUNK.resofs], dx
+    mov     [di+MEMCHUNK.ressize], ax
+    mov     [di+MEMCHUNK.resunk], 2
     xor     bx, bx
     mov     cx, 0Ch
 loc_313E4:
-    mov     al, byte ptr [bx+si+RESOURCE.resname]
-    mov     byte ptr [bx+di+RESOURCE.resname], al
+    mov     al, byte ptr [bx+si+MEMCHUNK.resname]
+    mov     byte ptr [bx+di+MEMCHUNK.resname], al
     inc     bx
     loop    loc_313E4
     cmp     di, resendptr1
@@ -6884,18 +6884,18 @@ loc_313F6:
     add     sp, 6
     mov     si, resendptr1
     mov     di, resptr2
-    mov     ax, [di+RESOURCE.resofs]
-    add     ax, [di+RESOURCE.ressize]
+    mov     ax, [di+MEMCHUNK.resofs]
+    add     ax, [di+MEMCHUNK.ressize]
 loc_3140C:
-    cmp     ax, [si+RESOURCE.resofs]
+    cmp     ax, [si+MEMCHUNK.resofs]
     jbe     short loc_3141F
-    mov     [si+RESOURCE.resunk], 0
+    mov     [si+MEMCHUNK.resunk], 0
     add     si, 12h
     mov     resendptr1, si
     jmp     short loc_3140C
 loc_3141F:
     call    mmgr_find_free
-    mov     dx, [di+RESOURCE.resofs]
+    mov     dx, [di+MEMCHUNK.resofs]
     jmp     short loc_313B0
     push    bp
     mov     bp, sp
@@ -6960,7 +6960,7 @@ ported_mmgr_free_ proc far
 loc_31488:
     cmp     si, resptr1
     jz      short loc_31498
-    cmp     ax, [si+RESOURCE.resofs]
+    cmp     ax, [si+MEMCHUNK.resofs]
     jz      short loc_314A4
     sub     si, 12h
     jmp     short loc_31488
@@ -6971,37 +6971,37 @@ loc_31498:
     call    far ptr fatal_error
 loc_314A4:
     mov     [bp+arg_2], 0
-    mov     [si+RESOURCE.resunk], 0
+    mov     [si+MEMCHUNK.resunk], 0
     cmp     si, resptr2
     jz      short loc_314CE
     mov     bx, resptr2
     mov     di, resendptr1
     cmp     si, di
     jz      short loc_31508
-    mov     ax, [di+RESOURCE.resofs]
-    sub     ax, [bx+RESOURCE.resofs]
-    sub     ax, [bx+RESOURCE.ressize]
-    cmp     ax, [si+RESOURCE.ressize]
+    mov     ax, [di+MEMCHUNK.resofs]
+    sub     ax, [bx+MEMCHUNK.resofs]
+    sub     ax, [bx+MEMCHUNK.ressize]
+    cmp     ax, [si+MEMCHUNK.ressize]
     jb      short loc_31508
 loc_314CE:
-    mov     bx, [si+RESOURCE.ressize]
+    mov     bx, [si+MEMCHUNK.ressize]
     push    bx
     mov     di, resendptr1
-    mov     ax, [di+RESOURCE.resofs]
+    mov     ax, [di+MEMCHUNK.resofs]
     sub     ax, bx
     push    ax
     mov     [bp+arg_2], ax
-    push    [si+RESOURCE.resofs]
+    push    [si+MEMCHUNK.resofs]
     sub     di, 12h
     mov     resendptr1, di
-    mov     [di+RESOURCE.resofs], ax
-    mov     [di+RESOURCE.ressize], bx
-    mov     [di+RESOURCE.resunk], 1
+    mov     [di+MEMCHUNK.resofs], ax
+    mov     [di+MEMCHUNK.ressize], bx
+    mov     [di+MEMCHUNK.resunk], 1
     mov     cx, 0Ch
     xor     bx, bx
 loc_314F9:
-    mov     al, byte ptr [bx+si+RESOURCE.resname]
-    mov     byte ptr [bx+di+RESOURCE.resname], al
+    mov     al, byte ptr [bx+si+MEMCHUNK.resname]
+    mov     byte ptr [bx+di+MEMCHUNK.resname], al
     inc     bx
     loop    loc_314F9
     call    copy_paras_reverse
@@ -7011,7 +7011,7 @@ loc_31508:
     jnz     short loc_3151B
 loc_3150E:
     sub     si, 12h
-    cmp     [si+RESOURCE.resunk], 0
+    cmp     [si+MEMCHUNK.resunk], 0
     jz      short loc_3150E
     mov     resptr2, si
 loc_3151B:
@@ -7152,19 +7152,19 @@ ported_mmgr_op_unk2_ proc far
 loc_3164D:
     cmp     si, resptr1
     jz      short loc_3165D
-    cmp     ax, [si+RESOURCE.resofs]
+    cmp     ax, [si+MEMCHUNK.resofs]
     jz      short loc_31660
     sub     si, 12h
     jmp     short loc_3164D
 loc_3165D:
     jmp     loc_31498
 loc_31660:
-    mov     [si+RESOURCE.resunk], 0
+    mov     [si+MEMCHUNK.resunk], 0
     cmp     si, resptr2
     jnz     short loc_31678
 loc_3166B:
     sub     si, 12h
-    cmp     [si+RESOURCE.resunk], 0
+    cmp     [si+MEMCHUNK.resunk], 0
     jz      short loc_3166B
     mov     resptr2, si
 loc_31678:
@@ -7187,14 +7187,14 @@ ported_mmgr_get_chunk_size_ proc far
 loc_31688:
     cmp     si, resptr1
     jz      short loc_31698
-    cmp     ax, [si+RESOURCE.resofs]
+    cmp     ax, [si+MEMCHUNK.resofs]
     jz      short loc_3169B
     sub     si, 12h
     jmp     short loc_31688
 loc_31698:
     jmp     loc_31498
 loc_3169B:
-    mov     ax, [si+RESOURCE.ressize]
+    mov     ax, [si+MEMCHUNK.ressize]
     pop     di
     pop     si
     pop     bp
@@ -7215,7 +7215,7 @@ ported_mmgr_resize_memory_ proc far
 loc_316AE:
     cmp     si, resptr1
     jz      short loc_316BE
-    cmp     ax, [si+RESOURCE.resofs]
+    cmp     ax, [si+MEMCHUNK.resofs]
     jz      short loc_316C1
     sub     si, 12h
     jmp     short loc_316AE
@@ -7223,9 +7223,9 @@ loc_316BE:
     jmp     loc_31498
 loc_316C1:
     mov     ax, [bp+arg_4]
-    cmp     ax, [si+RESOURCE.ressize]
+    cmp     ax, [si+MEMCHUNK.ressize]
     ja      short loc_316D0
-    mov     [si+RESOURCE.ressize], ax
+    mov     [si+MEMCHUNK.ressize], ax
     pop     di
     pop     si
     pop     bp
@@ -7233,14 +7233,14 @@ loc_316C1:
 loc_316D0:
     cmp     si, resptr2
     jnz     short loc_316F4
-    mov     [si+RESOURCE.ressize], ax
+    mov     [si+MEMCHUNK.ressize], ax
     mov     di, resendptr1
-    add     ax, [si+RESOURCE.resofs]
+    add     ax, [si+MEMCHUNK.resofs]
     cmp     ax, resmaxsize
     jb      short loc_316E9
     mov     resmaxsize, ax
 loc_316E9:
-    cmp     ax, [di+RESOURCE.resofs]
+    cmp     ax, [di+MEMCHUNK.resofs]
     ja      short loc_316FD
 loc_316EE:
     xor     ax, ax
@@ -7255,14 +7255,14 @@ loc_316F4:
 loc_316FD:
     mov     si, resendptr1
     mov     di, resptr2
-    mov     ax, [di+RESOURCE.resofs]
-    add     ax, [di+RESOURCE.ressize]
+    mov     ax, [di+MEMCHUNK.resofs]
+    add     ax, [di+MEMCHUNK.ressize]
 loc_3170B:
-    cmp     ax, [si+RESOURCE.resofs]
+    cmp     ax, [si+MEMCHUNK.resofs]
     jbe     short loc_316EE
     cmp     si, resendptr2
     jz      short loc_31724
-    mov     [si+RESOURCE.resunk], 0
+    mov     [si+MEMCHUNK.resunk], 0
     add     si, 12h
     mov     resendptr1, si
     jmp     short loc_3170B
@@ -7287,7 +7287,7 @@ ported_mmgr_op_unk_ proc far
 loc_3173E:
     cmp     si, resptr1
     jz      short loc_3174E
-    cmp     ax, [si+RESOURCE.resofs]
+    cmp     ax, [si+MEMCHUNK.resofs]
     jz      short loc_31751
     sub     si, 12h
     jmp     short loc_3173E
@@ -7296,38 +7296,38 @@ loc_3174E:
 loc_31751:
     mov     di, si
     sub     di, 12h
-    cmp     [di+RESOURCE.resunk], 0
+    cmp     [di+MEMCHUNK.resunk], 0
     jnz     short loc_317AD
 loc_3175C:
     sub     di, 12h
-    cmp     [di+RESOURCE.resunk], 0
+    cmp     [di+MEMCHUNK.resunk], 0
     jz      short loc_3175C
-    mov     [si+RESOURCE.resunk], 0
-    mov     bx, [si+RESOURCE.ressize]
+    mov     [si+MEMCHUNK.resunk], 0
+    mov     bx, [si+MEMCHUNK.ressize]
     push    bx
-    mov     ax, [di+RESOURCE.resofs]
-    add     ax, [di+RESOURCE.ressize]
+    mov     ax, [di+MEMCHUNK.resofs]
+    add     ax, [di+MEMCHUNK.ressize]
     push    ax
-    push    [si+RESOURCE.resofs]
+    push    [si+MEMCHUNK.resofs]
     add     di, 12h
     cmp     si, resptr2
     jnz     short loc_31785
     mov     resptr2, di
 loc_31785:
-    mov     [di+RESOURCE.resofs], ax
-    mov     [di+RESOURCE.ressize], bx
-    mov     [di+RESOURCE.resunk], 2
+    mov     [di+MEMCHUNK.resofs], ax
+    mov     [di+MEMCHUNK.ressize], bx
+    mov     [di+MEMCHUNK.resunk], 2
     mov     cx, 0Ch
     xor     bx, bx
 loc_31795:
-    mov     al, byte ptr [bx+si+RESOURCE.resname]
-    mov     byte ptr [bx+di+RESOURCE.resname], al
+    mov     al, byte ptr [bx+si+MEMCHUNK.resname]
+    mov     byte ptr [bx+di+MEMCHUNK.resname], al
     inc     bx
     loop    loc_31795
     call    mmgr_copy_paras
     add     sp, 6
 loc_317A4:
-    mov     dx, [di+RESOURCE.resofs]
+    mov     dx, [di+MEMCHUNK.resofs]
     xor     ax, ax
     pop     di
     pop     si
@@ -14726,7 +14726,7 @@ sub_34B0C proc far
     pop     bp
     retf
 sub_34B0C endp
-sub_34B7C proc far
+set_fontdefseg proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_2 = word ptr 8
@@ -14748,7 +14748,7 @@ sub_34B7C proc far
     jmp     short loc_34B9B
     ; align 2
     db 144
-sub_34B7C endp
+set_fontdefseg endp
 sub_34B96 proc far
      s = byte ptr 0
      r = byte ptr 2

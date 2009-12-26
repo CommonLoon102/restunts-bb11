@@ -791,9 +791,10 @@ static GetAnterior(ea) {
 	return result;
 }
 
+// TODO: this should return 3 values: callercount, callcount and linecount
 static GetFunctionInfo(ea, funcend) {
 
-	auto result, xea, funcname, funcbody, xmnem, callcount;
+	auto result, xea, funcname, funcbody, xmnem, callcount, lines;
 
 	result = GetAnterior(ea);
 	if (result != "")
@@ -809,6 +810,7 @@ static GetFunctionInfo(ea, funcend) {
 	
 	funcbody = ea;
 	callcount = 0;
+	lines = 0;
 	for (funcbody = ea; funcbody != BADADDR; funcbody = NextNotTail2(funcbody, funcend)) {
 		xmnem = GetMnem(funcbody);
 		if (xmnem == "call") {
@@ -818,9 +820,10 @@ static GetFunctionInfo(ea, funcend) {
 				callcount++;
 			}
 		}
+		lines++;
 	}
 
-	result = result + "<small>" + form("%i", callcount) + " calls </small>";
+	result = result + "<small>" + form("%i", callcount) + " calls.</small> <small>" + form("%i", lines) + " lines of code.</small>";
 
 	return result;
 }

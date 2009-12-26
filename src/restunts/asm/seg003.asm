@@ -1425,7 +1425,7 @@ loc_1AB60:
 loc_1AB65:
     mov     [bp+var_4A], 0FFh
     mov     [bp+var_A4], 0
-    cmp     opponent_index, 0
+    cmp     gameconfig.game_opponenttype, 0
     jnz     short loc_1AB79
     jmp     loc_1AD0E
 loc_1AB79:
@@ -2719,7 +2719,7 @@ loc_1B808:
     mov     bx, word_46434
     mov     word ptr [bx+10h], 400h
     mov     bx, word_46434
-    mov     al, byte_449A8
+    mov     al, gameconfig.game_playermaterial
     mov     [bx+13h], al
     sub     ax, ax
     push    ax
@@ -2851,7 +2851,7 @@ loc_1B990:
     mov     bx, word_46434
     mov     word ptr [bx+10h], 12Ch
     mov     bx, word_46434
-    mov     al, byte_449A8
+    mov     al, gameconfig.game_playermaterial
     mov     [bx+13h], al
     mov     ax, 2
     push    ax
@@ -2980,7 +2980,7 @@ loc_1BAB4:
     mov     bx, word_46434
     mov     word ptr [bx+10h], 400h
     mov     bx, word_46434
-    mov     al, byte_449AF
+    mov     al, gameconfig.game_opponentmaterial
     mov     [bx+13h], al
     sub     ax, ax
     push    ax
@@ -3110,7 +3110,7 @@ loc_1BC3E:
     mov     bx, word_46434
     mov     word ptr [bx+10h], 12Ch
     mov     bx, word_46434
-    mov     al, byte_449AF
+    mov     al, gameconfig.game_opponentmaterial
     mov     [bx+13h], al
     mov     ax, 3
     push    ax
@@ -3657,7 +3657,7 @@ loc_1C1DA:
     add     sp, 6
     push    word_459F6
     push    word_459F4
-    call    sub_2988A
+    call    set_fontdef2
     add     sp, 4
     cmp     word_44984, 0
     jz      short loc_1C238
@@ -5491,7 +5491,7 @@ loc_1D1F0:
     ; align 2
     db 144
 loc_1D22A:
-    cmp     byte_45E1A, 0
+    cmp     passed_security, 0
     jz      short loc_1D234
     jmp     loc_1D2BE
 loc_1D234:

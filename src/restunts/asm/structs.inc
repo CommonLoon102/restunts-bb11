@@ -21,7 +21,7 @@ x dw ?
 y dw ?
 z dw ?
 ends
-RESOURCE struc
+MEMCHUNK struc
 resname db 12 dup (?)
 ressize dw ?
 resofs dw ?
@@ -254,4 +254,16 @@ field_45C db ?
 field_45D db ?
 field_45E db ?
 field_45F db ?
+ends
+GAMEINFO struc
+game_playercarid db 4 dup (?)
+game_playermaterial db ?
+game_playertransmission db ?
+game_opponenttype db ?
+game_opponentcarid db 4 dup (?)
+game_opponentmaterial db ?
+game_opponenttransmission db ?
+game_trackname db 9 dup (?)
+game_framespersec dw ?
+game_recordedframes dw ?
 ends

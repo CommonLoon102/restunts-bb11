@@ -3526,7 +3526,7 @@ loc_201A9:
     push    ax
     mov     ax, offset aCar2_0; "car2"
     push    ax
-    call    alloc_resbytes
+    call    mmgr_alloc_resbytes
     add     sp, 6
     mov     word ptr dword_454B0, ax
     mov     word ptr dword_454B0+2, dx
@@ -4128,7 +4128,7 @@ setup_track proc far
     push    ax
     mov     ax, 2FA8h
     push    ax
-    call    alloc_resbytes
+    call    mmgr_alloc_resbytes
     add     sp, 6
     mov     [bp+var_AE2], ax
     mov     [bp+var_AE0], dx
@@ -5842,7 +5842,7 @@ sub_217CA proc far
     sub     sp, 0F30h
     push    di
     push    si
-    mov     al, opponent_index
+    mov     al, gameconfig.game_opponenttype
     add     al, 30h ; '0'
     mov     byte ptr aOpp1+3, al
     mov     ax, offset aOpp1; "opp1"

@@ -1,7 +1,7 @@
 #include <dos.h>
 #include "externs.h"
 
-struct RESOURCE {
+struct MEMCHUNK {
 	char resname[12];
 	unsigned short ressize;
 	unsigned short resofs;
@@ -39,8 +39,8 @@ char* mmgr_path_to_name(char* filename) {
 
 void far* mmgr_alloc_pages(char* arg_0, unsigned short arg_2) {
 	int i;
-	struct RESOURCE* resdi;
-	struct RESOURCE* ressi;
+	struct MEMCHUNK* resdi;
+	struct MEMCHUNK* ressi;
 	char* chunkname;
 	unsigned short rax, rdx;
 
@@ -128,7 +128,7 @@ void mmgr_alloc_resmem(unsigned short arg_0) {
 
 	void far* psp;
 	unsigned short maxblocks;
-	struct RESOURCE* rp;
+	struct MEMCHUNK* rp;
 
 	psp = dos_get_psp();
 	pspseg = FP_SEG(psp);
@@ -164,8 +164,8 @@ unsigned short mmgr_get_ofs_diff() {
 void far* mmgr_free(unsigned short arg_0, unsigned short arg_2) {
 	int i;
 	unsigned short ax, bx, cx, dx, di;
-	struct RESOURCE* ressi;
-	struct RESOURCE* resbx;
+	struct MEMCHUNK* ressi;
+	struct MEMCHUNK* resbx;
 
 	ressi = resptr2;
 
@@ -272,8 +272,8 @@ void copy_paras_reverse(unsigned short srcseg, unsigned short destseg, short par
 void mmgr_find_free() {
 	int i;
 	unsigned short regax, regdx;
-	struct RESOURCE* ressi;
-	struct RESOURCE* resdi;
+	struct MEMCHUNK* ressi;
+	struct MEMCHUNK* resdi;
 
 	pushregs();
 
@@ -315,8 +315,8 @@ void far* mmgr_get_unk(char* arg_0) {
 	int i;
 	unsigned short regax, regbx, regcx, regdx;
 	char* strdi;
-	struct RESOURCE* ressi;
-	struct RESOURCE* resdi;
+	struct MEMCHUNK* ressi;
+	struct MEMCHUNK* resdi;
 
 	ressi = resendptr1;
 	strdi = mmgr_path_to_name(arg_0);
@@ -378,8 +378,8 @@ void mmgr_op_unk2(unsigned short arg_0, unsigned short arg_2) {
 	int i;
 	unsigned short regax, regbx, regcx, regdx;
 	char* strdi;
-	struct RESOURCE* ressi;
-	struct RESOURCE* resdi;
+	struct MEMCHUNK* ressi;
+	struct MEMCHUNK* resdi;
 
 	pushregs();
 	__asm {
@@ -414,8 +414,8 @@ unsigned short mmgr_get_chunk_size(unsigned short arg_0, unsigned short arg_2) {
 	int i;
 	unsigned short regax, regbx, regcx, regdx;
 	char* strdi;
-	struct RESOURCE* ressi;
-	struct RESOURCE* resdi;
+	struct MEMCHUNK* ressi;
+	struct MEMCHUNK* resdi;
 
 	regax = arg_2;
 	ressi = resptr2;
@@ -433,8 +433,8 @@ unsigned short mmgr_resize_memory(unsigned short arg_0, unsigned short arg_2, un
 	int i;
 	unsigned short regax, regbx, regcx, regdx;
 	char* strdi;
-	struct RESOURCE* ressi;
-	struct RESOURCE* resdi;
+	struct MEMCHUNK* ressi;
+	struct MEMCHUNK* resdi;
 
 	pushregs();
 
@@ -489,8 +489,8 @@ void far* mmgr_op_unk(unsigned short arg_0, unsigned short arg_2) {
 	int i;
 	unsigned short regax, regbx, regcx, regdx;
 	char* strdi;
-	struct RESOURCE* ressi;
-	struct RESOURCE* resdi;
+	struct MEMCHUNK* ressi;
+	struct MEMCHUNK* resdi;
 
 	regax = arg_2;
 	ressi = resptr2;

@@ -118,7 +118,7 @@ loc_21BE4:
     ; align 2
     db 144
 loc_21BEC:
-    cmp     word_449BC, 0
+    cmp     gameconfig.game_recordedframes, 0
     jnz     short loc_21C00
     mov     byte_3B8F5, 0
     mov     byte_45DB2, 1
@@ -141,7 +141,7 @@ loc_21C0F:
     ; align 2
     db 144
 loc_21C24:
-    mov     byte_3B8F8, 0
+    mov     kbormouse, 0
     mov     byte_449E6, 0
     mov     byte_449DA, 1
     push    cs
@@ -153,7 +153,7 @@ loc_21C24:
     mov     byte_43950, 0
     cmp     byte_44AE2, 0
     jz      short loc_21C6E
-    mov     al, byte_449BA
+    mov     al, byte ptr gameconfig.game_framespersec
     cbw
     mov     word_449D0, ax
 loc_21C5E:
@@ -175,7 +175,7 @@ loc_21C78:
     mov     ax, word_44D4E
     mov     word_449D0, ax
     mov     al, byte ptr word_44D4E
-    mov     byte_449BA, al
+    mov     byte ptr gameconfig.game_framespersec, al
     mov     ax, 0FFFFh
     push    ax
     call    init_game_state
@@ -235,14 +235,14 @@ loc_21D2C:
     mov     byte_3B8F5, 0
     mov     byte_45DB2, 2
     mov     word_44DCA, 1F4h
-    mov     al, byte_449BA
+    mov     al, byte ptr gameconfig.game_framespersec
     cbw
     mov     word_449D0, ax
     sub     ax, ax
     push    ax
     call    sub_16F3A
     add     sp, 2
-    push    word_449BC
+    push    gameconfig.game_recordedframes
     call    sub_16F3A
     add     sp, 2
     jmp     short loc_21D72
@@ -256,10 +256,10 @@ loc_21D5C:
     call    sub_17008
 loc_21D72:
     mov     ax, state.game_frame
-    cmp     word_449BC, ax
+    cmp     gameconfig.game_recordedframes, ax
     jnz     short loc_21D5C
 loc_21D7B:
-    mov     ax, word_449BC
+    mov     ax, gameconfig.game_recordedframes
     mov     word_42D02, ax
     jmp     short loc_21DA2
     ; align 2
@@ -296,7 +296,7 @@ loc_21DCB:
     cmp     byte_45DB2, 0
     jnz     short loc_21DEB
     mov     word_42D02, 0
-    mov     word_449BC, 0
+    mov     gameconfig.game_recordedframes, 0
     mov     state.game_frame, 0
 loc_21DEB:
     mov     ax, word_44CEA
@@ -312,7 +312,7 @@ loc_21DFC:
     sub     ax, ax
     push    ax
     push    ax
-    push    word_40802
+    push    dialogarg2
     mov     ax, 0FFFFh
     push    ax
     push    ax
@@ -623,7 +623,7 @@ loc_22152:
     mov     ax, word_44D4E
     mov     word_449D0, ax
     mov     al, byte ptr word_44D4E
-    mov     byte_449BA, al
+    mov     byte ptr gameconfig.game_framespersec, al
     mov     ax, 0FFFFh
     push    ax
     call    init_game_state
@@ -743,7 +743,7 @@ loc_2227E:
     mov     ax, word_44D4E
     mov     word_449D0, ax
     mov     al, byte ptr word_44D4E
-    mov     byte_449BA, al
+    mov     byte ptr gameconfig.game_framespersec, al
     jmp     loc_21C5E
     ; align 2
     db 144
@@ -777,7 +777,7 @@ loc_222D3:
     jz      short loc_222F1
     jmp     loc_223CD
 loc_222F1:
-    cmp     opponent_index, 0
+    cmp     gameconfig.game_opponenttype, 0
     jnz     short loc_222FB
     jmp     loc_223CD
 loc_222FB:
@@ -789,7 +789,7 @@ loc_22305:
     push    ax
     lea     ax, [bp+var_16]
     push    ax
-    push    word_40800
+    push    dialogarg1
     mov     ax, 50h ; 'P'
     push    ax
     mov     ax, 0FFFFh
@@ -964,7 +964,7 @@ loc_22492:
     ; align 2
     db 144
 loc_2249A:
-    cmp     opponent_index, 0
+    cmp     gameconfig.game_opponenttype, 0
     jz      short loc_224E9
     xor     byte_463E0, 1
     jmp     short loc_224E9
@@ -990,7 +990,7 @@ loc_224C0:
     mov     ax, word_44D4E
     mov     word_449D0, ax
     mov     al, byte ptr word_44D4E
-    mov     byte_449BA, al
+    mov     byte ptr gameconfig.game_framespersec, al
     mov     ax, 0FFFFh
     push    ax
     call    init_game_state
@@ -1217,7 +1217,7 @@ loc_226AC:
     cmp     byte_45DB2, 2
     jnz     short loc_226E6
     mov     ax, word_42D02
-    cmp     word_449BC, ax
+    cmp     gameconfig.game_recordedframes, ax
     jbe     short loc_226C6
     inc     word_42D02
     pop     si
@@ -1248,7 +1248,7 @@ loc_226E6:
     jnz     short loc_226A6
     cmp     byte_45DB2, 1
     jz      short loc_226A6
-    cmp     byte_45E1A, 0
+    cmp     passed_security, 0
     jnz     short loc_22725
     cmp     byte_4393C, 0
     jnz     short loc_22725
@@ -1522,7 +1522,7 @@ loc_2293E:
     imul    word_449D0
     mov     [bp+var_A], ax
     sub     word_42D02, ax
-    sub     word_449BC, ax
+    sub     gameconfig.game_recordedframes, ax
     add     word_45A24, ax
     sub     state.game_frame, ax
 loc_2296C:
@@ -1532,7 +1532,7 @@ loc_2296C:
     mov     es, word ptr trackdata16+2
     mov     ax, si
     mov     es:[bx], al
-    inc     word_449BC
+    inc     gameconfig.game_recordedframes
 loc_22985:
     pop     si
     pop     di
@@ -1574,7 +1574,7 @@ sub_2298C proc far
     push    di
     push    si
     mov     [bp+var_2A], 1
-    cmp     opponent_index, 0
+    cmp     gameconfig.game_opponenttype, 0
     jz      short loc_229A5
     mov     [bp+var_2A], 2
 loc_229A5:
@@ -1976,7 +1976,7 @@ write_track proc far
     mov     cx, 0Dh
     repne movsw
     pop     si
-    mov     ax, word_449BC
+    mov     ax, gameconfig.game_recordedframes
     add     ax, 724h
     cwd
     mov     [bp+var_6], ax
@@ -2045,21 +2045,21 @@ loc_22D55:
     ; align 2
     db 144
 loc_22D5C:
-    mov     al, player_car_id
+    mov     al, gameconfig.game_playercarid
     mov     byte_3E916, al
-    mov     al, byte_449A5
+    mov     al, gameconfig.game_playercarid+1
     mov     byte_3E917, al
-    mov     al, byte_449A6
+    mov     al, gameconfig.game_playercarid+2
     mov     byte_3E918, al
-    mov     al, byte_449A7
+    mov     al, gameconfig.game_playercarid+3
     mov     byte_3E919, al
-    mov     al, player_car_id
+    mov     al, gameconfig.game_playercarid
     mov     byte_3E920, al
-    mov     al, byte_449A5
+    mov     al, gameconfig.game_playercarid+1
     mov     byte_3E921, al
-    mov     al, byte_449A6
+    mov     al, gameconfig.game_playercarid+2
     mov     byte_3E922, al
-    mov     al, byte_449A7
+    mov     al, gameconfig.game_playercarid+3
     mov     byte_3E923, al
     mov     ax, 31A2h
     push    ax              ; char *
@@ -2967,19 +2967,19 @@ setup_player_cars proc far
     push    ax
     call    ensure_file_exists
     add     sp, 2
-    mov     ax, offset opponent_car_id
+    mov     ax, offset gameconfig.game_opponentcarid
     push    ax
-    mov     ax, offset player_car_id
+    mov     ax, offset gameconfig
     push    ax
     call    sub_1FF92
     add     sp, 4
-    mov     al, player_car_id
+    mov     al, gameconfig.game_playercarid
     mov     byte ptr aCarcoun+3, al
-    mov     al, byte_449A5
+    mov     al, gameconfig.game_playercarid+1
     mov     byte ptr aCarcoun+4, al
-    mov     al, byte_449A6
+    mov     al, gameconfig.game_playercarid+2
     mov     byte ptr aCarcoun+5, al
-    mov     al, byte_449A7
+    mov     al, gameconfig.game_playercarid+3
     mov     byte ptr aCarcoun+6, al
     mov     ax, offset aCarcoun; "carcoun"
     push    ax
@@ -2997,15 +2997,15 @@ setup_player_cars proc far
     push    [bp+var_4]
     call    unload_resource
     add     sp, 4
-    cmp     opponent_index, 0
+    cmp     gameconfig.game_opponenttype, 0
     jz      short loc_237D3
-    mov     al, opponent_car_id
+    mov     al, gameconfig.game_opponentcarid
     mov     byte ptr aCarcoun+3, al
-    mov     al, opponent_car_id+1
+    mov     al, gameconfig.game_opponentcarid+1
     mov     byte ptr aCarcoun+4, al
-    mov     al, opponent_car_id+2
+    mov     al, gameconfig.game_opponentcarid+2
     mov     byte ptr aCarcoun+5, al
-    mov     al, opponent_car_id+3
+    mov     al, gameconfig.game_opponentcarid+3
     mov     byte ptr aCarcoun+6, al
     mov     ax, offset aCarcoun; "carcoun"
     push    ax
@@ -3065,7 +3065,7 @@ loc_237D3:
     mov     byte_459D8, 0
     mov     byte_42D26, 0
     mov     byte_42D2A, 0
-    cmp     opponent_index, 0
+    cmp     gameconfig.game_opponenttype, 0
     jz      short loc_23870
     push    word_45E10
     push    word_45E0E
@@ -3493,7 +3493,7 @@ loc_23BD0:
     mov     word ptr [bx+5706h], 0FFFFh
     mov     ax, 1
     push    ax              ; int
-    mov     ax, word_449BC
+    mov     ax, gameconfig.game_recordedframes
     add     ax, word_45A24
     push    ax
     mov     ax, 0AC74h
@@ -3507,7 +3507,7 @@ loc_23BD0:
     add     sp, 4
     push    word_459F6
     push    word_459F4
-    call    sub_2988A
+    call    set_fontdef2
     add     sp, 4
     mov     ax, 0BBh ; '»'
     push    ax
@@ -3547,7 +3547,7 @@ loc_23C66:
     call    sub_28DB6
     push    word_459F6
     push    word_459F4
-    call    sub_2988A
+    call    set_fontdef2
     add     sp, 4
     mov     ax, 0BBh ; '»'
     push    ax
@@ -3600,7 +3600,7 @@ loc_23D32:
     jle     short loc_23D46
     mov     byte ptr [bx], 0FFh
 loc_23D46:
-    cmp     word_449BC, 0
+    cmp     gameconfig.game_recordedframes, 0
     jnz     short loc_23D54
     sub     si, si
     sub     di, di
@@ -3608,7 +3608,7 @@ loc_23D46:
     ; align 2
     db 144
 loc_23D54:
-    mov     ax, word_449BC
+    mov     ax, gameconfig.game_recordedframes
     cwd
     push    dx
     push    ax
@@ -3625,7 +3625,7 @@ loc_23D54:
     push    ax
     call    __aFldiv
     mov     si, ax
-    mov     ax, word_449BC
+    mov     ax, gameconfig.game_recordedframes
     cwd
     push    dx
     push    ax
@@ -4297,14 +4297,14 @@ loc_24377:
     jz      short loc_24394
     mov     [bp+var_E], 1
 loc_24394:
-    cmp     word_449BC, 0
+    cmp     gameconfig.game_recordedframes, 0
     jz      short loc_243A2
     cmp     word_45A24, 0
     jz      short loc_243A7
 loc_243A2:
     mov     [bp+var_A], 1
 loc_243A7:
-    cmp     byte_45E1A, 0
+    cmp     passed_security, 0
     jnz     short loc_243B8
     mov     [bp+var_10], 1
     mov     [bp+var_E], 1
@@ -4319,7 +4319,7 @@ loc_243C4:
     push    ax
     lea     ax, [bp+var_14]
     push    ax
-    push    word_40802
+    push    dialogarg2
     mov     ax, 0FFFFh
     push    ax
     push    ax
@@ -4352,13 +4352,13 @@ loc_24416:
     mov     ax, word_44D4E
     mov     word_449D0, ax
     mov     al, byte ptr word_44D4E
-    mov     byte_449BA, al
+    mov     byte ptr gameconfig.game_framespersec, al
     mov     ax, 0FFFFh
     push    ax
     call    init_game_state
     add     sp, 2
     mov     word_42D02, 0
-    mov     word_449BC, 0
+    mov     gameconfig.game_recordedframes, 0
     mov     byte_45D3E, 0
     mov     byte_43966, 1
     jmp     short loc_244B0
@@ -4372,12 +4372,12 @@ loc_24453:
     jmp     short loc_244A7
 loc_2445A:
     mov     ax, word_42D02
-    cmp     word_449BC, ax
+    cmp     gameconfig.game_recordedframes, ax
     jz      short loc_244A2
     sub     ax, ax
     push    ax
     push    ax
-    push    word_40800
+    push    dialogarg1
     mov     ax, 0FFFFh
     push    ax
     push    ax
@@ -4408,7 +4408,7 @@ loc_244A2:
 loc_244A7:
     mov     ax, state.game_frame
     mov     word_42D02, ax
-    mov     word_449BC, ax
+    mov     gameconfig.game_recordedframes, ax
 loc_244B0:
     mov     byte_43950, 1
     mov     byte_4499F, 0
@@ -4435,7 +4435,7 @@ loc_244B0:
     call    near ptr sub_23A50
     add     sp, 2
     call    check_input
-    mov     byte_3B8F8, 0
+    mov     kbormouse, 0
     jmp     loc_24828
     ; align 2
     db 144
@@ -4444,8 +4444,8 @@ loc_2450A:
     call    sub_188A4
     mov     ax, 3245h
     push    ax
-    push    word_44CEE
-    push    word_44CEC
+    push    word ptr mainresptr+2
+    push    word ptr mainresptr
     call    locate_text_res
     add     sp, 6
     push    dx              ; int
@@ -4489,7 +4489,7 @@ loc_24548:
     add     sp, 4
     or      al, al
     jz      short loc_2458B
-    mov     word_449BC, 0
+    mov     gameconfig.game_recordedframes, 0
 loc_2458B:
     mov     byte_43950, 0
     call    setup_track
@@ -4501,16 +4501,16 @@ loc_2458B:
     jz      short loc_245AA
     mov     si, 1
 loc_245AA:
-    mov     al, player_car_id
+    mov     al, gameconfig.game_playercarid
     cmp     [bp+var_3E], al
     jnz     short loc_245CA
-    mov     al, byte_449A5
+    mov     al, gameconfig.game_playercarid+1
     cmp     [bp+var_3D], al
     jnz     short loc_245CA
-    mov     al, byte_449A6
+    mov     al, gameconfig.game_playercarid+2
     cmp     [bp+var_3C], al
     jnz     short loc_245CA
-    mov     al, byte_449A7
+    mov     al, gameconfig.game_playercarid+3
     cmp     [bp+var_3B], al
     jz      short loc_245D0
 loc_245CA:
@@ -4519,21 +4519,21 @@ loc_245CA:
     ; align 2
     db 144
 loc_245D0:
-    mov     al, opponent_index
+    mov     al, gameconfig.game_opponenttype
     cmp     [bp+var_38], al
     jnz     short loc_245CA
     or      al, al
     jz      short loc_2460D
-    mov     al, opponent_car_id
+    mov     al, gameconfig.game_opponentcarid
     cmp     [bp+var_37], al
     jnz     short loc_245CA
-    mov     al, opponent_car_id+1
+    mov     al, gameconfig.game_opponentcarid+1
     cmp     [bp+var_36], al
     jnz     short loc_245CA
-    mov     al, opponent_car_id+2
+    mov     al, gameconfig.game_opponentcarid+2
     cmp     [bp+var_35], al
     jnz     short loc_245CA
-    mov     al, opponent_car_id+3
+    mov     al, gameconfig.game_opponentcarid+3
     cmp     [bp+var_34], al
     jnz     short loc_245CA
     mov     ax, 2
@@ -4549,7 +4549,7 @@ loc_2460D:
     push    cs
     call    near ptr setup_player_cars
 loc_24619:
-    mov     al, byte_449BA
+    mov     al, byte ptr gameconfig.game_framespersec
     cbw
     mov     word_449D0, ax
     mov     ax, 0FFFFh
@@ -4570,8 +4570,8 @@ loc_24639:
 loc_24642:
     mov     ax, 324Eh
     push    ax
-    push    word_44CEE
-    push    word_44CEC
+    push    word ptr mainresptr+2
+    push    word ptr mainresptr
     call    locate_text_res
     add     sp, 6
     push    dx              ; int
@@ -4607,14 +4607,14 @@ loc_2466F:
     sub     ax, ax
     push    ax
     push    ax
-    push    word_40800
+    push    dialogarg1
     mov     ax, 0FFFFh
     push    ax
     push    ax
     mov     ax, 3257h
     push    ax
-    push    word_44CEE
-    push    word_44CEC
+    push    word ptr mainresptr+2
+    push    word ptr mainresptr
     call    locate_text_res
     add     sp, 6
     push    dx
@@ -4661,14 +4661,14 @@ loc_24712:
     sub     ax, ax
     push    ax
     push    ax
-    push    word_40800
+    push    dialogarg1
     mov     ax, 0FFFFh
     push    ax
     push    ax
     mov     ax, 325Bh
     push    ax
-    push    word_44CEE
-    push    word_44CEC
+    push    word ptr mainresptr+2
+    push    word ptr mainresptr
     call    locate_text_res
     add     sp, 6
     push    dx
@@ -4713,7 +4713,7 @@ loc_24778:
     inc     si
     cmp     si, 5
     jl      short loc_24778
-    cmp     opponent_index, 0
+    cmp     gameconfig.game_opponenttype, 0
     jnz     short loc_24795
     mov     [bp+var_C], 1
 loc_24795:
@@ -4721,7 +4721,7 @@ loc_24795:
     push    ax
     lea     ax, [bp+var_14]
     push    ax
-    push    word_40802
+    push    dialogarg2
     mov     ax, 0FFFFh
     push    ax
     push    ax
@@ -4826,7 +4826,7 @@ loc_2487A:
     cwd
     add     [bp+var_24], ax
     adc     [bp+var_22], dx
-    mov     ax, word_449BC
+    mov     ax, gameconfig.game_recordedframes
     sub     ax, word_42D02
     mov     [bp+var_44], ax
     mov     ax, 14h
@@ -4872,7 +4872,7 @@ loc_248F4:
     jz      short loc_248FE
     jmp     loc_2485C
 loc_248FE:
-    mov     ax, word_449BC
+    mov     ax, gameconfig.game_recordedframes
     sub     ax, word_42D02
     mov     [bp+var_44], ax
     mov     ax, 14h
@@ -4904,9 +4904,9 @@ loc_24935:
     call    __aFldiv
     mov     si, ax
     add     si, word_42D02
-    cmp     word_449BC, si
+    cmp     gameconfig.game_recordedframes, si
     jge     short loc_24956
-    mov     si, word_449BC
+    mov     si, gameconfig.game_recordedframes
 loc_24956:
     push    si
     call    sub_16F3A

@@ -6,10 +6,10 @@ extern unsigned short pspseg;
 extern unsigned short word_3FF82;
 extern unsigned short word_3FF84;
 
-extern struct RESOURCE* resptr1;
-extern struct RESOURCE* resptr2;
-extern struct RESOURCE* resendptr1;
-extern struct RESOURCE* resendptr2;
+extern struct MEMCHUNK* resptr1;
+extern struct MEMCHUNK* resptr2;
+extern struct MEMCHUNK* resendptr1;
+extern struct MEMCHUNK* resendptr2;
 extern unsigned short resmaxsize;
 
 extern const char* aReservememoryO;

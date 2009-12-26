@@ -307,7 +307,7 @@ seg012 segment byte public 'STUNTSC' use16
     extrn off_34968:word
     extrn lineoffsets:word
     extrn sub_34B0C:proc
-    extrn sub_34B7C:proc
+    extrn set_fontdefseg:proc
     extrn sub_34B96:proc
     extrn make_wnd_sprite:proc
     extrn next_wnd_def:word

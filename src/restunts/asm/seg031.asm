@@ -55,7 +55,7 @@ seg031 segment byte public 'STUNTSC' use16
     public random_wait
     public load_palandcursor
     public get_0
-    public alloc_resbytes
+    public mmgr_alloc_resbytes
     public get_res_ofs_diff_scaled
     public get_res_size_scaled
 load_2dshape_0_2 proc far
@@ -764,7 +764,7 @@ get_0 proc far
     ; align 2
     db 144
 get_0 endp
-alloc_resbytes proc far
+mmgr_alloc_resbytes proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -789,7 +789,7 @@ alloc_resbytes proc far
     retf
     ; align 2
     db 144
-alloc_resbytes endp
+mmgr_alloc_resbytes endp
 get_res_ofs_diff_scaled proc far
 
     call    mmgr_get_ofs_diff

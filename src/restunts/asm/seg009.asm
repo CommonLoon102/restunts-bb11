@@ -844,7 +844,7 @@ loc_2AA01:
     push    word ptr [bx+70CCh]
     call    sub_33D30
     add     sp, 8
-    push    word_40800
+    push    dialogarg1
     sub     ax, ax
     push    ax
     mov     ax, 0Fh
@@ -855,7 +855,7 @@ loc_2AA01:
     push    ax
     call    sub_2FDDE
     add     sp, 0Ah
-    push    word_40800
+    push    dialogarg1
     mov     ax, 0Eh
     push    ax
     mov     ax, 0Fh
@@ -866,7 +866,7 @@ loc_2AA01:
     push    ax
     call    sub_2FDDE
     add     sp, 0Ah
-    push    word_40800
+    push    dialogarg1
     mov     ax, 0Eh
     push    ax
     mov     ax, 1
@@ -877,7 +877,7 @@ loc_2AA01:
     push    ax
     call    sub_2FDDE
     add     sp, 0Ah
-    push    word_40800
+    push    dialogarg1
     mov     ax, 0Eh
     push    ax
     mov     ax, 0Fh
@@ -1218,7 +1218,7 @@ loc_2ADF4:
     sub     ax, ax
     push    ax
     push    ax
-    push    word_40800
+    push    dialogarg1
     mov     ax, 0FFFFh
     push    ax
     push    ax
@@ -1829,7 +1829,7 @@ loc_2B3EA:
     sub     ax, ax
     push    ax
     push    ax
-    push    word_40800
+    push    dialogarg1
     mov     ax, 0FFFFh
     push    ax
     push    ax
@@ -1979,7 +1979,7 @@ loc_2B566:
     push    ax
     sub     ax, ax
     push    ax
-    push    word_40802
+    push    dialogarg2
     mov     ax, 0FFFFh
     push    ax
     push    ax
@@ -2021,7 +2021,7 @@ loc_2B5DA:
     sub     ax, ax
     push    ax
     push    ax
-    push    word_40802
+    push    dialogarg2
     mov     ax, 0FFFFh
     push    ax
     push    ax
@@ -2075,7 +2075,7 @@ loc_2B64F:
     inc     si
     cmp     si, 385h
     jl      short loc_2B64F
-    mov     byte_449B1, 0
+    mov     gameconfig.game_trackname, 0
 loc_2B668:
     inc     [bp+var_32]
     mov     [bp+var_D4], 1
@@ -2097,7 +2097,7 @@ loc_2B688:
     sub     ax, ax
     push    ax
     push    ax
-    push    word_40800
+    push    dialogarg1
     mov     ax, 0FFFFh
     push    ax
     push    ax
@@ -2125,8 +2125,8 @@ loc_2B6CE:
     inc     [bp+var_32]
     mov     ax, 34F6h
     push    ax
-    push    word_44CEE
-    push    word_44CEC
+    push    word ptr mainresptr+2
+    push    word ptr mainresptr
     call    locate_text_res
     add     sp, 6
     push    dx              ; int
@@ -2187,8 +2187,8 @@ loc_2B774:
     inc     [bp+var_32]
     mov     ax, 3504h
     push    ax
-    push    word_44CEE
-    push    word_44CEC
+    push    word ptr mainresptr+2
+    push    word ptr mainresptr
     call    locate_text_res
     add     sp, 6
     push    dx              ; int
@@ -2221,14 +2221,14 @@ loc_2B774:
     sub     ax, ax
     push    ax
     push    ax
-    push    word_40800
+    push    dialogarg1
     mov     ax, 0FFFFh
     push    ax
     push    ax
     mov     ax, 350Dh
     push    ax
-    push    word_44CEE
-    push    word_44CEC
+    push    word ptr mainresptr+2
+    push    word ptr mainresptr
     call    locate_text_res
     add     sp, 6
     push    dx
@@ -2270,14 +2270,14 @@ loc_2B845:
     sub     ax, ax
     push    ax
     push    ax
-    push    word_40800
+    push    dialogarg1
     mov     ax, 0FFFFh
     push    ax
     push    ax
     mov     ax, 3511h
     push    ax
-    push    word_44CEE
-    push    word_44CEC
+    push    word ptr mainresptr+2
+    push    word ptr mainresptr
     call    locate_text_res
     add     sp, 6
     push    dx
@@ -2313,7 +2313,7 @@ loc_2B8A4:
     sub     ax, ax
     push    ax
     push    ax
-    push    word_40800
+    push    dialogarg1
     mov     ax, 0FFFFh
     push    ax
     push    ax

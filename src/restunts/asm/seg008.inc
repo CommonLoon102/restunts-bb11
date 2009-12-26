@@ -39,7 +39,7 @@ seg008 segment byte public 'STUNTSC' use16
     extrn sub_29786:proc
     extrn load_audio_res:proc
     extrn unload_audio_res:proc
-    extrn sub_2988A:proc
+    extrn set_fontdef2:proc
     extrn set_fontdef:proc
     extrn sub_298B8:proc
     extrn get_super_random:proc

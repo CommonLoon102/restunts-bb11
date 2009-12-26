@@ -86,7 +86,7 @@ seg008 segment byte public 'STUNTSC' use16
     public sub_29786
     public load_audio_res
     public unload_audio_res
-    public sub_2988A
+    public set_fontdef2
     public set_fontdef
     public sub_298B8
     public get_super_random
@@ -383,7 +383,7 @@ show_dialog proc far
     sub     sp, 1D8h
     push    di
     push    si
-    mov     ax, word_459F2
+    mov     ax, fontdef_unk_0E
     add     ax, 2
     mov     [bp+var_1D6], ax
     mov     [bp+var_1C6], 0
@@ -1020,7 +1020,7 @@ loc_27D39:
     jmp     loc_27C92
 loc_27D4A:
     push    word_3EB90
-    push    word_40800
+    push    dialogarg1
     jmp     loc_27CB0
     ; align 2
     db 144
@@ -1244,14 +1244,14 @@ sub_27ED4 proc far
     push    ax
     lea     ax, [bp+var_712]
     push    ax
-    push    word_40802
+    push    dialogarg2
     mov     ax, 0FFFFh
     push    ax
     push    ax
     mov     ax, 3422h
     push    ax
-    push    word_44CEE
-    push    word_44CEC
+    push    word ptr mainresptr+2
+    push    word ptr mainresptr
     push    cs
     call    near ptr locate_text_res
     add     sp, 6
@@ -1279,7 +1279,7 @@ loc_27F1E:
     mov     ax, [bp+var_708]
     add     ax, 4
     mov     [bp+var_71C], ax
-    push    word_40802
+    push    dialogarg2
     push    ax
     mov     ax, [bp+var_70A]
     add     ax, 0ABh ; '«'
@@ -1548,8 +1548,8 @@ loc_281CC:
     jle     short loc_2824D
     mov     ax, 3428h
     push    ax
-    push    word_44CEE
-    push    word_44CEC
+    push    word ptr mainresptr+2
+    push    word ptr mainresptr
     push    cs
     call    near ptr locate_text_res
     add     sp, 6
@@ -1573,8 +1573,8 @@ loc_281CC:
     add     sp, 6
     mov     ax, 342Ch
     push    ax
-    push    word_44CEE
-    push    word_44CEC
+    push    word ptr mainresptr+2
+    push    word ptr mainresptr
     push    cs
     call    near ptr locate_text_res
     add     sp, 6
@@ -2058,14 +2058,14 @@ sub_2863A proc far
     push    ax
     lea     ax, [bp+var_12]
     push    ax
-    push    word_40802
+    push    dialogarg2
     mov     ax, 0FFFFh
     push    ax
     push    ax
     mov     ax, 343Bh
     push    ax
-    push    word_44CEE
-    push    word_44CEC
+    push    word ptr mainresptr+2
+    push    word ptr mainresptr
     push    cs
     call    near ptr locate_text_res
     add     sp, 6
@@ -2257,7 +2257,7 @@ loc_287ED:
     mov     si, ax
     or      si, si
     jz      short loc_287FD
-    mov     byte_3B8F8, 0
+    mov     kbormouse, 0
 loc_287FD:
     call    get_joy_flags
     mov     di, ax
@@ -2317,7 +2317,7 @@ loc_28881:
     jz      short loc_288A9
     mov     ax, word_3EBC4
     mov     word_3EBB2, ax
-    mov     byte_3B8F8, 0
+    mov     kbormouse, 0
     jmp     short loc_288A9
     ; align 2
     db 144
@@ -2352,7 +2352,7 @@ loc_288D8:
     mov     word_3EBB8, ax
     mov     ax, word_461CE
     mov     word_3EBBA, ax
-    mov     byte_3B8F8, 1
+    mov     kbormouse, 1
     mov     word_3EBBE, 0
     cmp     byte_3B8F7, 0
     jz      short loc_28934
@@ -2367,20 +2367,20 @@ loc_28901:
     ; align 2
     db 144
 loc_28908:
-    cmp     byte_3B8F8, 0
+    cmp     kbormouse, 0
     jz      short loc_28934
     mov     ax, [bp+arg_0]
     add     word_3EBBE, ax
     cmp     word_3EBBE, 1F4h
     jle     short loc_28934
     mov     word_3EBBE, 0
-    mov     byte_3B8F8, 0
+    mov     kbormouse, 0
     cmp     byte_3B8F9, 0
     jz      short loc_28934
     push    cs
     call    near ptr sub_28DC8
 loc_28934:
-    cmp     byte_3B8F8, 0
+    cmp     kbormouse, 0
     jz      short loc_289B0
     mov     ax, word_3EBBC
     cmp     word_442E8, ax
@@ -2941,7 +2941,7 @@ sub_28B0E endp
 sub_28D9E proc far
 
     mov     byte_3B8F7, 1
-    cmp     byte_3B8F8, 0
+    cmp     kbormouse, 0
     jz      short locret_28DB5
     cmp     byte_3B8F9, 0
     jnz     short locret_28DB5
@@ -3055,7 +3055,7 @@ sub_28E90 proc far
     sub     sp, 2
     push    di
     push    si
-    cmp     byte_3B8F8, 0
+    cmp     kbormouse, 0
     jz      short loc_28EDA
     sub     si, si
     jmp     short loc_28EA5
@@ -3127,7 +3127,7 @@ loc_28EFA:
     add     sp, 2
     or      ax, ax
     jnz     short loc_28EF3
-    cmp     byte_3B8F8, 0
+    cmp     kbormouse, 0
     jz      short loc_28F18
     test    byte ptr word_442E8, 3
     jnz     short loc_28EF3
@@ -3215,7 +3215,7 @@ sub_28F98 proc far
     mov     bp, sp
     mov     ax, [bp+arg_4]
     mov     word_4224C, ax
-    add     ax, word_459F2
+    add     ax, fontdef_unk_0E
     inc     ax
     mov     word_4224E, ax
     mov     ax, [bp+arg_2]
@@ -3269,7 +3269,7 @@ sub_29008 proc far
     dec     ax
     mov     word_42254, ax
     mov     ax, [bp+arg_4]
-    add     ax, word_459F2
+    add     ax, fontdef_unk_0E
     inc     ax
     mov     word_42256, ax
     mov     ax, [bp+arg_2]
@@ -4061,14 +4061,14 @@ show_waiting proc far
     sub     ax, ax
     push    ax
     push    ax
-    push    word_40802
+    push    dialogarg2
     push    waitflag
     mov     ax, 0FFFFh
     push    ax
-    mov     ax, 3460h
+    mov     ax, offset aWai ; "wai"
     push    ax
-    push    word_44CEE
-    push    word_44CEC
+    push    word ptr mainresptr+2
+    push    word ptr mainresptr
     push    cs
     call    near ptr locate_text_res
     add     sp, 6
@@ -4319,7 +4319,7 @@ unload_audio_res proc far
     mov     byte_3B8F3, 0
     retf
 unload_audio_res endp
-sub_2988A proc far
+set_fontdef2 proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = dword ptr 6
@@ -4328,22 +4328,22 @@ sub_2988A proc far
     mov     bp, sp
     push    word ptr [bp+arg_0+2]
     push    word ptr [bp+arg_0]
-    call    sub_34B7C
+    call    set_fontdefseg
     add     sp, 4
     les     bx, [bp+arg_0]
     mov     ax, es:[bx+0Eh]
-    mov     word_459F2, ax
+    mov     fontdef_unk_0E, ax
     pop     bp
     retf
     ; align 2
     db 144
-sub_2988A endp
+set_fontdef2 endp
 set_fontdef proc far
 
-    push    word_454C8
-    push    word_454C6
+    push    word ptr fontdefptr+2
+    push    word ptr fontdefptr
     push    cs
-    call    near ptr sub_2988A
+    call    near ptr set_fontdef2
     add     sp, 4
     retf
 set_fontdef endp
@@ -4658,7 +4658,7 @@ input_push_status proc far
     mov     si, ax
     mov     al, byte_3B8F7
     mov     byte_45D0C[si], al
-    mov     al, byte_3B8F8
+    mov     al, kbormouse
     mov     byte_45D14[si], al
     inc     byte_3EBD8
     pop     si
@@ -4679,7 +4679,7 @@ input_pop_status proc far
     mov     al, byte_45D0C[si]
     mov     byte_3B8F7, al
     mov     al, byte_45D14[si]
-    mov     byte_3B8F8, al
+    mov     kbormouse, al
     or      al, al
     jnz     short loc_29B30
     push    cs
@@ -4738,14 +4738,14 @@ do_joy_restext proc far
     push    ax
     lea     ax, [bp+var_2E]
     push    ax
-    push    word_40802
+    push    dialogarg2
     mov     ax, 0FFFFh
     push    ax
     push    ax
     mov     ax, 3469h
     push    ax
-    push    word_44CEE
-    push    word_44CEC
+    push    word ptr mainresptr+2
+    push    word ptr mainresptr
     push    cs
     call    near ptr locate_text_res
     add     sp, 6
@@ -4773,7 +4773,7 @@ loc_29B89:
     mov     byte_3FE00, 1
     push    cs
     call    near ptr sub_28DB6
-    push    word_40802
+    push    dialogarg2
     mov     ax, [bp+var_14]
     sub     ax, [bp+var_28]
     sub     ax, 8
@@ -4786,7 +4786,7 @@ loc_29B89:
     push    ax
     call    sub_335D2
     add     sp, 0Ah
-    push    word_40802
+    push    dialogarg2
     mov     ax, [bp+var_14]
     sub     ax, [bp+var_28]
     sub     ax, 8
@@ -4799,7 +4799,7 @@ loc_29B89:
     push    ax
     call    sub_335D2
     add     sp, 0Ah
-    push    word_40802
+    push    dialogarg2
     mov     ax, 1
     push    ax
     mov     ax, [bp+var_22]
@@ -4811,7 +4811,7 @@ loc_29B89:
     push    [bp+var_2E]
     call    sub_335D2
     add     sp, 0Ah
-    push    word_40802
+    push    dialogarg2
     mov     ax, 1
     push    ax
     mov     ax, [bp+var_22]
@@ -4930,14 +4930,14 @@ loc_29D3A:
     sub     ax, ax
     push    ax
     push    ax
-    push    word_40802
+    push    dialogarg2
     mov     ax, 0FFFFh
     push    ax
     push    ax
     mov     ax, 346Dh
     push    ax
-    push    word_44CEE
-    push    word_44CEC
+    push    word ptr mainresptr+2
+    push    word ptr mainresptr
     push    cs
     call    near ptr locate_text_res
     add     sp, 6
@@ -4976,14 +4976,14 @@ do_key_restext proc far
     sub     ax, ax
     push    ax
     push    ax
-    push    word_40802
+    push    dialogarg2
     mov     ax, 0FFFFh
     push    ax
     push    ax
     mov     ax, 3471h
     push    ax
-    push    word_44CEE
-    push    word_44CEC
+    push    word ptr mainresptr+2
+    push    word ptr mainresptr
     push    cs
     call    near ptr locate_text_res
     add     sp, 6
@@ -5014,14 +5014,14 @@ sub_29DF4 proc far
     sub     ax, ax
     push    ax
     push    ax
-    push    word_40802
+    push    dialogarg2
     mov     ax, 0FFFFh
     push    ax
     push    ax
     mov     ax, 3475h
     push    ax
-    push    word_44CEE
-    push    word_44CEC
+    push    word ptr mainresptr+2
+    push    word ptr mainresptr
     push    cs
     call    near ptr locate_text_res
     add     sp, 6
@@ -5051,14 +5051,14 @@ do_pau_restext proc far
     sub     ax, ax
     push    ax
     push    ax
-    push    word_40802
+    push    dialogarg2
     mov     ax, 0FFFFh
     push    ax
     push    ax
     mov     ax, 3479h
     push    ax
-    push    word_44CEE
-    push    word_44CEC
+    push    word ptr mainresptr+2
+    push    word ptr mainresptr
     push    cs
     call    near ptr locate_text_res
     add     sp, 6
@@ -5089,7 +5089,7 @@ do_mof_restext proc far
     sub     ax, ax
     push    ax
     push    ax
-    push    word_40802
+    push    dialogarg2
     mov     ax, 0FFFFh
     push    ax
     push    ax
@@ -5101,15 +5101,15 @@ loc_29EBE:
     sub     ax, ax
     push    ax
     push    ax
-    push    word_40802
+    push    dialogarg2
     mov     ax, 0FFFFh
     push    ax
     push    ax
     mov     ax, 3481h
 loc_29ECE:
     push    ax
-    push    word_44CEE
-    push    word_44CEC
+    push    word ptr mainresptr+2
+    push    word ptr mainresptr
     push    cs
     call    near ptr locate_text_res
     add     sp, 6
@@ -5138,7 +5138,7 @@ do_sonsof_restext proc far
     sub     ax, ax
     push    ax
     push    ax
-    push    word_40802
+    push    dialogarg2
     mov     ax, 0FFFFh
     push    ax
     push    ax
@@ -5150,15 +5150,15 @@ loc_29F20:
     sub     ax, ax
     push    ax
     push    ax
-    push    word_40802
+    push    dialogarg2
     mov     ax, 0FFFFh
     push    ax
     push    ax
     mov     ax, 3489h
 loc_29F30:
     push    ax
-    push    word_44CEE
-    push    word_44CEC
+    push    word ptr mainresptr+2
+    push    word ptr mainresptr
     push    cs
     call    near ptr locate_text_res
     add     sp, 6
@@ -5185,14 +5185,14 @@ do_dos_restext proc far
     sub     ax, ax
     push    ax
     push    ax
-    push    word_40802
+    push    dialogarg2
     mov     ax, 0FFFFh
     push    ax
     push    ax
     mov     ax, 348Dh
     push    ax
-    push    word_44CEE
-    push    word_44CEC
+    push    word ptr mainresptr+2
+    push    word ptr mainresptr
     push    cs
     call    near ptr locate_text_res
     add     sp, 6
@@ -5241,8 +5241,8 @@ do_mrl_textres proc far
 loc_29FD9:
     mov     ax, 3491h
     push    ax
-    push    word_44CEE
-    push    word_44CEC
+    push    word ptr mainresptr+2
+    push    word ptr mainresptr
     push    cs
     call    near ptr locate_text_res
     add     sp, 6
@@ -5299,7 +5299,7 @@ loc_2A050:
     push    ax
     sub     ax, ax
     push    ax
-    push    word_40800
+    push    dialogarg1
     mov     ax, 0FFFFh
     push    ax
     push    ax
@@ -5358,14 +5358,14 @@ loc_2A0CC:
     sub     ax, ax
     push    ax
     push    ax
-    push    word_40802
+    push    dialogarg2
     mov     ax, 0FFFFh
     push    ax
     push    ax
     mov     ax, 3495h
     push    ax
-    push    word_44CEE
-    push    word_44CEC
+    push    word ptr mainresptr+2
+    push    word ptr mainresptr
     push    cs
     call    near ptr locate_text_res
     add     sp, 6
@@ -5403,14 +5403,14 @@ do_dea_textres proc far
     sub     ax, ax
     push    ax
     push    ax
-    push    word_40802
+    push    dialogarg2
     mov     ax, 0FFFFh
     push    ax
     push    ax
     mov     ax, offset aDea ; "dea"
     push    ax
-    push    word_44CEE
-    push    word_44CEC
+    push    word ptr mainresptr+2
+    push    word ptr mainresptr
     push    cs
     call    near ptr locate_text_res
     add     sp, 6
@@ -5432,14 +5432,14 @@ loc_2A168:
     sub     ax, ax
     push    ax
     push    ax
-    push    word_40802
+    push    dialogarg2
     mov     ax, 0FFFFh
     push    ax
     push    ax
     mov     ax, 349Dh
     push    ax
-    push    word_44CEE
-    push    word_44CEC
+    push    word ptr mainresptr+2
+    push    word ptr mainresptr
     push    cs
     call    near ptr locate_text_res
     add     sp, 6
@@ -5475,15 +5475,15 @@ loc_2A1AC:
     sub     ax, ax
     push    ax
     push    ax
-    push    word_40802
+    push    dialogarg2
     mov     ax, 0FFFFh
     push    ax
     push    ax
     mov     bx, [bp+arg_0]
     shl     bx, 1
     push    word ptr [bx+340Eh]
-    push    word_44CEE
-    push    word_44CEC
+    push    word ptr mainresptr+2
+    push    word ptr mainresptr
     push    cs
     call    near ptr locate_text_res
     add     sp, 6
@@ -5497,7 +5497,7 @@ loc_2A1AC:
     add     sp, 12h
     push    cs
     call    near ptr sub_28DB6
-    mov     byte_3B8F8, 0
+    mov     kbormouse, 0
 loc_2A1E8:
     mov     bx, [bp+arg_0]
     shl     bx, 1
@@ -5516,14 +5516,14 @@ sub_2A200 proc far
     sub     ax, ax
     push    ax
     push    ax
-    push    word_40802
+    push    dialogarg2
     mov     ax, 0FFFFh
     push    ax
     push    ax
     mov     ax, 34A1h
     push    ax
-    push    word_44CEE
-    push    word_44CEC
+    push    word ptr mainresptr+2
+    push    word ptr mainresptr
     push    cs
     call    near ptr locate_text_res
     add     sp, 6
