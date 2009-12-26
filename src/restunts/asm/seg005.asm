@@ -307,7 +307,7 @@ loc_21DEB:
 loc_21DFC:
     cmp     byte_46467, 0
     jz      short loc_21E76
-    call    sub_29AEC
+    call    input_push_status
     call    sub_37216
     sub     ax, ax
     push    ax
@@ -337,7 +337,7 @@ loc_21DFC:
 loc_21E49:
     call    sub_372F4
     mov     word_3F88E, 0
-    call    sub_29B08
+    call    input_pop_status
     or      si, si
     jz      short loc_21E71
     sub     ax, ax
@@ -1986,7 +1986,7 @@ write_track proc far
     push    ax
     push    es
     push    bx
-    push    [bp+arg_filename]
+    push    [bp+SHAPE2D.s2d_unk2]
     call    file_write_fatal
     add     sp, 0Ah
     mov     byte_3B8FB, 0
@@ -5341,7 +5341,6 @@ loc_24D4A:
 loc_24D52:
     cmp     ax, 5000h
     jnz     short loc_24D5A
-loc_24D57:
     jmp     loc_2431E
 loc_24D5A:
     jmp     loc_242E7
@@ -5350,7 +5349,6 @@ loc_24D5A:
 loc_24D5E:
     pop     si
     pop     di
-loc_24D60:
     mov     sp, bp
     pop     bp
     retf

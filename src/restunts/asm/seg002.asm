@@ -51,7 +51,6 @@ seg002 segment byte public 'STUNTSC' use16
     public get_kevinrandom_seed
     public get_kevinrandom
     public init_div0
-    public byte_19F07
     ; align 2
     db 144
 sub_19DC6 proc far
@@ -66,7 +65,6 @@ sub_19DC6 proc far
     push    bp
     mov     bp, sp
     push    bp
-loc_19DCA:
     mov     cx, [bp+arg_0]
     mov     ax, [bp+arg_2]
     cmp     [bp+arg_6], 0
@@ -231,11 +229,10 @@ init_div0 proc far
     mov     dx, 109h
     mov     ah, 25h ; '%'
     mov     al, 0
-loc_19F03:
     int     21h             ; DOS - SET INTERRUPT VECTOR
     pop     ds
     retf
-byte_19F07     db 30
+    db 30
     db 197
     db 22
     db 188

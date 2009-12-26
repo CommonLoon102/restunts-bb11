@@ -74,7 +74,6 @@ init_polyinfo proc far
     cwd
     push    dx
     push    ax
-loc_24D6A:
     mov     ax, 32E8h
     push    ax
     call    alloc_resbytes
@@ -83,25 +82,25 @@ loc_24D6A:
     mov     word_40ED4, dx
     sub     ax, ax
     push    ax
-    mov     ax, 60CEh
+    mov     ax, offset mat_y0
     push    ax
     call    mat_rot_y
     add     sp, 4
     mov     ax, 100h
     push    ax
-    mov     ax, 572Eh
+    mov     ax, offset mat_y100
     push    ax
     call    mat_rot_y
     add     sp, 4
     mov     ax, 200h
     push    ax
-    mov     ax, 571Ch
+    mov     ax, offset mat_y200
     push    ax
     call    mat_rot_y
     add     sp, 4
     mov     ax, 300h
     push    ax
-    mov     ax, 5748h
+    mov     ax, offset mat_y300
     push    ax
     call    mat_rot_y
     add     sp, 4
@@ -185,7 +184,7 @@ select_rect_rotate proc far
     push    cs
     call    near ptr sub_24DE6
     mov     ax, [bp+arg_6]
-    mov     di, 5740h
+    mov     di, offset word_40EB0
     mov     si, ax
     push    ds
     pop     es
@@ -3620,25 +3619,20 @@ loc_26B7C:
     mov     al, [bp+arg_0]
     cbw
     push    ax
-loc_26B91:
     call    sub_36BE8
-loc_26B96:
     add     sp, 6
     pop     si
     pop     di
     mov     sp, bp
     pop     bp
-locret_26B9E:
     retf
     ; align 2
     db 144
 loc_26BA0:
     mov     bx, [bp+arg_4]
-loc_26BA3:
     mov     word ptr [bx], 0
     pop     si
     pop     di
-loc_26BA9:
     mov     sp, bp
     pop     bp
     retf

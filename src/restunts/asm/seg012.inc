@@ -101,7 +101,7 @@ seg012 segment byte public 'STUNTSC' use16
     extrn reg_timer_callback:proc
     extrn remove_timer_callback:proc
     extrn compare_ds_ss:proc
-    extrn _timerintr_callback
+    extrn _timerintr_callback:proc
     extrn sub_303BA:proc
     extrn set_bios_mode3:proc
     extrn parse_kb_key:proc
@@ -114,8 +114,8 @@ seg012 segment byte public 'STUNTSC' use16
     extrn sub_307E3:proc
     extrn sub_30812:proc
     extrn sub_30883:proc
-    extrn loc_308C6
-    extrn loc_309A5
+    extrn sub_308C6:proc
+    extrn sub_309A5:proc
     extrn get_key_status:proc
     extrn call_readchar_callback:proc
     extrn read_kb_char:proc
@@ -228,7 +228,7 @@ seg012 segment byte public 'STUNTSC' use16
     extrn loc_33697
     extrn sub_33742:proc
     extrn sub_33816:proc
-    extrn sub_3384D:proc
+    extrn j_load_2dshape_res2:proc
     extrn load_2dshape1:proc
     extrn j_load_2dshape_0:proc
     extrn sub_3386C:proc

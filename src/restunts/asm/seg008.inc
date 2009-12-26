@@ -46,8 +46,8 @@ seg008 segment byte public 'STUNTSC' use16
     extrn load_resource:proc
     extrn off_29A4E:word
     extrn sub_29A86:proc
-    extrn sub_29AEC:proc
-    extrn sub_29B08:proc
+    extrn input_push_status:proc
+    extrn input_pop_status:proc
     extrn do_joy_restext:proc
     extrn do_key_restext:proc
     extrn sub_29DF4:proc

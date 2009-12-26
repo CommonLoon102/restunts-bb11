@@ -161,8 +161,8 @@ seg012 segment byte public 'STUNTSC' use16
     public sub_307E3
     public sub_30812
     public sub_30883
-    public loc_308C6
-    public loc_309A5
+    public sub_308C6
+    public sub_309A5
     public get_key_status
     public call_readchar_callback
     public read_kb_char
@@ -275,7 +275,7 @@ seg012 segment byte public 'STUNTSC' use16
     public loc_33697
     public sub_33742
     public sub_33816
-    public sub_3384D
+    public j_load_2dshape_res2
     public load_2dshape1
     public j_load_2dshape_0
     public sub_3386C
@@ -4284,7 +4284,7 @@ loc_30091:
     mov     al, bl
     out     dx, al          ; Video: CRT cntrlr addr
     inc     dx
-    mov     al, [bx+40ECh]
+    mov     al, byte_3F85C[bx]
     out     dx, al          ; Video: CRT controller internal registers
     dec     dx
     inc     bx
@@ -4394,7 +4394,7 @@ loc_30156:
     mov     al, bl
     out     dx, al          ; Video: CRT cntrlr addr
     inc     dx
-    mov     al, [bx+40F8h]
+    mov     al, byte_3F868[bx]
     out     dx, al          ; Video: CRT controller internal registers
     dec     dx
     inc     bx
@@ -4462,8 +4462,8 @@ setup_timercallback proc far
 loc_301FD:
     cli
     mov     byte_3F88C, 0
-    mov     timerintr, 0
-    mov     word_3F892, 0
+    mov     word ptr timerintr, 0
+    mov     word ptr timerintr+2, 0
     sti
     in      al, 61h         ; PC/XT PPI port B bits:
 smart
@@ -4502,7 +4502,7 @@ nosmart
     mov     al, dh
     out     40h, al         ; Timer 8253-5 (AT: 8254.2).
     push    cs
-    mov     ax, 1848h
+    mov     ax, offset audio_stop_unk
     push    ax
     call    add_exit_handler
     add     sp, 4
@@ -4626,7 +4626,10 @@ compare_ds_ss proc far
     inc     ax
 locret_30328:
     retf
-_timerintr_callback:
+compare_ds_ss endp
+_timerintr_callback proc far
+     r = byte ptr 0
+
     cli
     push    ds
     push    es
@@ -4671,10 +4674,10 @@ loc_30371:
     mov     byte_3F88C, 1
     sti
 loc_30381:
-    mov     ax, [di+4122h]
+    mov     ax, word ptr (timerintr+2)[di]
     or      ax, ax
     jz      short loc_303A5
-    call    dword ptr [di+4120h]
+    call    timerintr[di]
     add     di, 4
     jmp     short loc_30381
 loc_30392:
@@ -4699,7 +4702,7 @@ loc_303B0:
     pop     es
     pop     ds
     iret
-compare_ds_ss endp
+_timerintr_callback endp
 sub_303BA proc near
 
     cmp     byte_3F880, 0
@@ -4760,7 +4763,7 @@ smart
     and     bx, 7Fh
 nosmart
     mov     [bp+arg_0], bx
-    mov     bl, [bx+416Ah]
+    mov     bl, callbackflags[bx]
 loc_30429:
     dec     bx
     jl      short loc_30454
@@ -4768,7 +4771,7 @@ loc_30429:
     push    di
     push    si
     shl     bx, 1
-    call    dword ptr [bx+4272h]
+    call    dword ptr callbacks[bx]
     pop     si
     pop     di
     xor     ax, ax
@@ -4782,7 +4785,7 @@ loc_30441:
     jl      short loc_3044E
     mov     bx, 84h ; '„'
 loc_3044E:
-    mov     bl, [bx+41EAh]
+    mov     bl, callbackflags2[bx]
     jmp     short loc_30429
 loc_30454:
     mov     ax, [bp+arg_0]
@@ -5210,7 +5213,7 @@ sub_307D2 proc far
 smart
     and     bx, 0Fh
 nosmart
-    mov     al, [bx+43C8h]
+    mov     al, byte_3FB38[bx]
     xor     ah, ah
     pop     bp
     retf
@@ -5256,26 +5259,26 @@ sub_30812 proc far
     mov     word_3FB48, bx
     mov     bx, es:26h
     mov     word_3FB4A, bx
-    mov     word ptr es:24h, offset loc_308C6
+    mov     word ptr es:24h, offset sub_308C6
     mov     word ptr es:26h, cs
     mov     bx, es:58h
     mov     word_3FB4C, bx
     mov     bx, es:5Ah
     mov     word_3FB4E, bx
-    mov     word ptr es:58h, offset loc_309A5
+    mov     word ptr es:58h, offset sub_309A5
     mov     word ptr es:5Ah, cs
 loc_30861:
     mov     al, ah
     out     21h, al         ; Interrupt controller, 8259A.
     mov     ax, ds
     mov     es, ax
-    mov     di, 446Ah
+    mov     di, offset kbinput
     mov     cx, 5Ah ; 'Z'
     xor     ax, ax
     cld
     rep stosb
     push    cs
-    mov     ax, 1E63h
+    mov     ax, offset sub_30883
     push    ax
     call    add_exit_handler
     add     sp, 4
@@ -5309,7 +5312,9 @@ loc_308C1:
     mov     al, ah
     out     21h, al         ; Interrupt controller, 8259A.
     retf
-loc_308C6:
+sub_30883 endp
+sub_308C6 proc far
+
     sti
     push    ax
     push    bx
@@ -5350,7 +5355,7 @@ loc_308F4:
     xor     bx, bx
 loc_308FF:
     mov     word_3FBD8, bx
-    mov     byte ptr [bx+446Ah], 1
+    mov     kbinput[bx], 1
     test    kbinput+38h, 1
     jnz     short loc_30986
     test    kbinput+1Dh, 1
@@ -5361,7 +5366,7 @@ loc_308FF:
     jnz     short loc_3097A
     test    kbinput+3Ah, 1
     jnz     short loc_3098C
-    mov     al, [bx+44C4h]
+    mov     al, byte_3FC34[bx]
 loc_3092F:
     test    al, 80h
     jnz     short loc_3096C
@@ -5369,7 +5374,7 @@ loc_3092F:
 loc_30935:
     mov     bx, word_3FBD0
     cli
-    mov     [bx+43E0h], ax
+    mov     word_3FB50[bx], ax
     add     bx, 2
     cmp     bx, word_3FBD4
     jb      short loc_30949
@@ -5398,16 +5403,16 @@ nosmart
 loc_30978:
     jmp     short loc_30935
 loc_3097A:
-    mov     al, [bx+451Fh]
+    mov     al, byte_3FC8F[bx]
     jmp     short loc_3092F
 loc_30980:
-    mov     al, [bx+45D5h]
+    mov     al, byte_3FD45[bx]
     jmp     short loc_3092F
 loc_30986:
-    mov     al, [bx+4630h]
+    mov     al, byte_3FDA0[bx]
     jmp     short loc_3092F
 loc_3098C:
-    mov     al, [bx+457Ah]
+    mov     al, byte_3FCEA[bx]
     jmp     short loc_3092F
 loc_30992:
     xor     ah, ah
@@ -5416,9 +5421,12 @@ loc_30992:
     jb      short loc_3099D
     xor     bx, bx
 loc_3099D:
-    mov     byte ptr [bx+446Ah], 0
+    mov     kbinput[bx], 0
     jmp     loc_308EA
-loc_309A5:
+sub_308C6 endp
+sub_309A5 proc far
+     r = byte ptr 0
+
     push    bx
     push    ds
     mov     bx, seg dseg
@@ -5441,7 +5449,7 @@ loc_309C3:
     cmp     word_3FBD6, 0
     jz      short loc_309BB
     mov     bx, word_3FBD2
-    mov     ax, [bx+43E0h]
+    mov     ax, word_3FB50[bx]
     add     bx, 2
     cmp     bx, word_3FBD4
     jb      short loc_309DE
@@ -5457,7 +5465,7 @@ loc_309EF:
     jz      short loc_309BB
     sti
     mov     bx, word_3FBD2
-    mov     ax, [bx+43E0h]
+    mov     ax, word_3FB50[bx]
     pop     ds
     pop     bx
     retf    2
@@ -5465,7 +5473,7 @@ loc_30A04:
     mov     al, kbinput+2Ah
     or      al, kbinput+36h
     jmp     short loc_309BD
-sub_30883 endp
+sub_309A5 endp
 get_key_status proc far
      s = byte ptr 0
      r = byte ptr 2
@@ -5655,7 +5663,7 @@ readloop:
     mov     bx, [bp+var_filehandle]
     mov     ah, 3Eh
     int     21h             ; DOS - 2+ - CLOSE A FILE WITH HANDLE
-    mov     ax, word ptr [bp+GAMESTATE.game_longvecs1.long_z]
+    mov     ax, [bp+arg_dstoff]
     mov     dx, [bp+arg_dstseg]
     pop     ds
     mov     sp, bp
@@ -9097,7 +9105,7 @@ loc_32570:
     jnz     short loc_325A7
     mov     ax, ss
     mov     ds, ax
-    mov     ax, offset aSFileError_0; "%s FILE ERROR\r"
+    mov     ax, 4C72h
     push    [bp+arg_filename]
     push    ax
     call    far ptr fatal_error
@@ -11818,12 +11826,12 @@ nosmart
     retf
     jmp far ptr loc_3ACD8
 sub_33816 endp
-sub_3384D proc far
+j_load_2dshape_res2 proc far
 
-    jmp     sub_3ACEC
+    jmp     load_2dshape_res2
     jmp     load_2dshape_res
     jmp     parse_2d_shape
-sub_3384D endp
+j_load_2dshape_res2 endp
 load_2dshape1 proc far
 
     jmp     load_2dshape_1
@@ -19416,20 +19424,15 @@ loc_36192:
     jnz     short loc_3618A
     mov     es, [bp+var_8]
     mov     di, [bp+var_10]
-loc_361A4:
     mov     ds, [bp+arg_6]
-loc_361A7:
     mov     si, [bp+arg_4]
     mov     cx, [bp+var_E]
-loc_361AD:
     rep movsb
 loc_361AF:
     mov     ax, [bp+var_E]
     add     [bp+var_10], ax
-loc_361B5:
     dec     [bp+var_12]
     jnz     short loc_36177
-loc_361BA:
     jmp     short loc_3614E
 sub_360F6 endp
 seg012 ends

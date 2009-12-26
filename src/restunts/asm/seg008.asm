@@ -93,8 +93,8 @@ seg008 segment byte public 'STUNTSC' use16
     public load_resource
     public off_29A4E
     public sub_29A86
-    public sub_29AEC
-    public sub_29B08
+    public input_push_status
+    public input_pop_status
     public do_joy_restext
     public do_key_restext
     public sub_29DF4
@@ -123,10 +123,8 @@ sub_274B0 proc far
     push    bp
     mov     bp, sp
     sub     sp, 40h
-loc_274B6:
     push    di
     push    si
-loc_274B8:
     mov     ax, word_44AE4
     imul    word_461D0
     cwd
@@ -4394,7 +4392,7 @@ sub_298B8 proc far
     push    word ptr [bp+arg_0]; char *
     call    _strcpy
     add     sp, 4
-    mov     ax, 3464h
+    mov     ax, offset asc_3EBD4; ":"
     push    ax
     push    word ptr [bp+arg_0]; char *
     call    _strcat
@@ -4416,7 +4414,7 @@ sub_298B8 proc far
     add     sp, 4
     cmp     [bp+arg_4], 0
     jz      short loc_29988
-    mov     ax, 3466h
+    mov     ax, offset a_   ; "."
     push    ax
     push    word ptr [bp+arg_0]; char *
     call    _strcat
@@ -4537,23 +4535,23 @@ loc_29A12:
     jmp     short loc_299EC
 loc_29A1C:
     push    word ptr [bp+arg_2]
-    call    sub_3384D
+    call    j_load_2dshape_res2
     jmp     short loc_299EC
 loc_29A26:
     push    word ptr [bp+arg_2]; char *
-    call    sub_37CBA
+    call    load_song_file
     jmp     short loc_299EC
 loc_29A30:
     push    word ptr [bp+arg_2]; char *
-    call    sub_37D04
+    call    load_voice_file
     jmp     short loc_299EC
 loc_29A3A:
     push    word ptr [bp+arg_2]; char *
-    call    sub_37C44
+    call    load_sfx_file
     jmp     short loc_299EC
 loc_29A44:
     push    word ptr [bp+arg_2]
-    call    sub_39E14
+    call    load_2dshape_0_2
     jmp     short loc_299EC
 off_29A4E     dw offset loc_299E4
     dw offset loc_299F8
@@ -4651,7 +4649,7 @@ loc_29ADC:
     pop     bp
     retf
 sub_29A86 endp
-sub_29AEC proc far
+input_push_status proc far
      r = byte ptr 0
 
     push    si
@@ -4659,16 +4657,16 @@ sub_29AEC proc far
     cbw
     mov     si, ax
     mov     al, byte_3B8F7
-    mov     [si-5A64h], al
+    mov     byte_45D0C[si], al
     mov     al, byte_3B8F8
-    mov     [si-5A5Ch], al
+    mov     byte_45D14[si], al
     inc     byte_3EBD8
     pop     si
     retf
     ; align 2
     db 144
-sub_29AEC endp
-sub_29B08 proc far
+input_push_status endp
+input_pop_status proc far
      r = byte ptr 0
 
     push    si
@@ -4678,9 +4676,9 @@ sub_29B08 proc far
     mov     al, byte_3EBD8
     cbw
     mov     si, ax
-    mov     al, [si-5A64h]
+    mov     al, byte_45D0C[si]
     mov     byte_3B8F7, al
-    mov     al, [si-5A5Ch]
+    mov     al, byte_45D14[si]
     mov     byte_3B8F8, al
     or      al, al
     jnz     short loc_29B30
@@ -4689,7 +4687,7 @@ sub_29B08 proc far
 loc_29B30:
     pop     si
     retf
-sub_29B08 endp
+input_pop_status endp
 do_joy_restext proc far
     var_56 = word ptr -86
     var_54 = word ptr -84
@@ -4733,7 +4731,7 @@ do_joy_restext proc far
     push    di
     push    si
     push    cs
-    call    near ptr sub_29AEC
+    call    near ptr input_push_status
     mov     word_3F88E, 1
     call    sub_37216
     sub     ax, ax
@@ -4962,7 +4960,7 @@ loc_29D7B:
     call    sub_372F4
     mov     word_3F88E, 0
     push    cs
-    call    near ptr sub_29B08
+    call    near ptr input_pop_status
     pop     si
     pop     di
     mov     sp, bp
@@ -4972,7 +4970,7 @@ do_joy_restext endp
 do_key_restext proc far
 
     push    cs
-    call    near ptr sub_29AEC
+    call    near ptr input_push_status
     mov     word_3F88E, 1
     call    sub_37216
     sub     ax, ax
@@ -5003,13 +5001,13 @@ do_key_restext proc far
     mov     word_3F88E, 0
     call    sub_372F4
     push    cs
-    call    near ptr sub_29B08
+    call    near ptr input_pop_status
     retf
 do_key_restext endp
 sub_29DF4 proc far
 
     push    cs
-    call    near ptr sub_29AEC
+    call    near ptr input_push_status
     mov     word_3F88E, 1
     call    sub_37216
     mov     byte_3B8F2, 1
@@ -5039,7 +5037,7 @@ sub_29DF4 proc far
     mov     word_3F88E, 0
     call    sub_372F4
     push    cs
-    call    near ptr sub_29B08
+    call    near ptr input_pop_status
     retf
     ; align 2
     db 144
@@ -5047,7 +5045,7 @@ sub_29DF4 endp
 do_pau_restext proc far
 
     push    cs
-    call    near ptr sub_29AEC
+    call    near ptr input_push_status
     mov     word_3F88E, 1
     call    sub_37216
     sub     ax, ax
@@ -5075,7 +5073,7 @@ do_pau_restext proc far
     mov     word_3F88E, 0
     call    sub_372F4
     push    cs
-    call    near ptr sub_29B08
+    call    near ptr input_pop_status
     retf
     ; align 2
     db 144
@@ -5083,7 +5081,7 @@ do_pau_restext endp
 do_mof_restext proc far
 
     push    cs
-    call    near ptr sub_29AEC
+    call    near ptr input_push_status
     mov     word_3F88E, 1
     call    sub_373E8
     or      ax, ax
@@ -5126,13 +5124,13 @@ loc_29ECE:
     add     sp, 12h
     mov     word_3F88E, 0
     push    cs
-    call    near ptr sub_29B08
+    call    near ptr input_pop_status
     retf
 do_mof_restext endp
 do_sonsof_restext proc far
 
     push    cs
-    call    near ptr sub_29AEC
+    call    near ptr input_push_status
     mov     word_3F88E, 1
     call    sub_37708
     or      ax, ax
@@ -5175,13 +5173,13 @@ loc_29F30:
     add     sp, 12h
     mov     word_3F88E, 0
     push    cs
-    call    near ptr sub_29B08
+    call    near ptr input_pop_status
     retf
 do_sonsof_restext endp
 do_dos_restext proc far
 
     push    cs
-    call    near ptr sub_29AEC
+    call    near ptr input_push_status
     mov     word_3F88E, 1
     call    sub_37216
     sub     ax, ax
@@ -5214,7 +5212,7 @@ loc_29FA6:
     mov     word_3F88E, 0
     call    sub_372F4
     push    cs
-    call    near ptr sub_29B08
+    call    near ptr input_pop_status
     retf
 do_dos_restext endp
 do_mrl_textres proc far
@@ -5234,7 +5232,7 @@ do_mrl_textres proc far
     push    di
     push    si
     push    cs
-    call    near ptr sub_29AEC
+    call    near ptr input_push_status
     mov     word_3F88E, 1
     call    sub_37216
     mov     ax, word_44D4E
@@ -5383,7 +5381,7 @@ loc_2A103:
     mov     word_3F88E, 0
     call    sub_372F4
     push    cs
-    call    near ptr sub_29B08
+    call    near ptr input_pop_status
     pop     si
     pop     di
     mov     sp, bp
@@ -5399,7 +5397,7 @@ do_dea_textres proc far
     mov     bp, sp
     sub     sp, 2
     push    cs
-    call    near ptr sub_29AEC
+    call    near ptr input_push_status
     cmp     byte_3B8FB, 0
     jz      short loc_2A168
     sub     ax, ax
@@ -5409,7 +5407,7 @@ do_dea_textres proc far
     mov     ax, 0FFFFh
     push    ax
     push    ax
-    mov     ax, 3499h
+    mov     ax, offset aDea ; "dea"
     push    ax
     push    word_44CEE
     push    word_44CEC
@@ -5457,7 +5455,7 @@ loc_2A196:
     mov     [bp+var_2], 1
 loc_2A19B:
     push    cs
-    call    near ptr sub_29B08
+    call    near ptr input_pop_status
     mov     ax, [bp+var_2]
     mov     sp, bp
     pop     bp
@@ -5598,23 +5596,17 @@ loc_2A23C:
     push    cs
     call    near ptr load_resource
     add     sp, 4
-loc_2A2A2:
     mov     [bp+var_4], ax
     mov     [bp+var_2], dx
-loc_2A2A8:
     or      ax, dx
     jnz     short loc_2A2B2
     push    cs
-loc_2A2AD:
     call    near ptr do_dea_textres
-loc_2A2B0:
     jmp     short loc_2A23C
 loc_2A2B2:
     mov     ax, [bp+var_4]
-loc_2A2B5:
     mov     dx, [bp+var_2]
     mov     sp, bp
-loc_2A2BA:
     pop     bp
     retf
 load_3dshape endp

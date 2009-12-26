@@ -47,7 +47,7 @@ seg035 segment byte public 'STUNTSC' use16
     assume cs:seg035
     assume es:nothing, ss:nothing, ds:dseg
     public loc_3ACD8
-    public sub_3ACEC
+    public load_2dshape_res2
     public load_2dshape_res
     public parse_2d_shape
     public sub_3B08C
@@ -55,7 +55,6 @@ seg035 segment byte public 'STUNTSC' use16
     db 144
 loc_3ACD8:
     push    bp
-loc_3ACD9:
     mov     bp, sp
     mov     ax, 1
     push    ax
@@ -67,7 +66,7 @@ loc_3ACD9:
     retf
     ; align 2
     db 144
-sub_3ACEC proc far
+load_2dshape_res2 proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -82,7 +81,7 @@ sub_3ACEC proc far
     add     sp, 4
     pop     bp
     retf
-sub_3ACEC endp
+load_2dshape_res2 endp
 load_2dshape_res proc far
     var_A = word ptr -10
     var_8 = word ptr -8
@@ -491,14 +490,11 @@ loc_3B0A2:
     inc     [bp+var_2]
 loc_3B0A5:
     les     bx, [bp+arg_0]
-loc_3B0A8:
     inc     word ptr [bp+arg_0]
     mov     al, [bp+var_4]
-loc_3B0AE:
     cmp     es:[bx], al
     jz      short loc_3B0A2
     mov     ax, [bp+var_2]
-loc_3B0B6:
     mov     sp, bp
     pop     bp
     retf

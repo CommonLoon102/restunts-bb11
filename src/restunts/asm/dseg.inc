@@ -2,7 +2,6 @@ dseg segment byte public 'STUNTSD' use16
     extrn byte_3B770:byte
     extrn word_3B772:word
     extrn word_3B774:word
-    extrn word_3B776:word
     extrn aMsRunTimeLibraryCop:byte
     extrn aMain:byte
     extrn aFontdef_fnt:byte
@@ -454,8 +453,10 @@ dseg segment byte public 'STUNTSD' use16
     extrn a_res:byte
     extrn a_pre:byte
     extrn aWai:byte
+    extrn asc_3EBD4:byte
     extrn a_:byte
     extrn byte_3EBD8:byte
+    extrn aDea:byte
     extrn byte_3ECBB:byte
     extrn word_3ED74:word
     extrn word_3ED76:word
@@ -517,6 +518,8 @@ dseg segment byte public 'STUNTSD' use16
     extrn dtatransbuffer:byte
     extrn foundfilepath:byte
     extrn byte_3F85A:byte
+    extrn byte_3F85C:byte
+    extrn byte_3F868:byte
     extrn dword_3F874:dword
     extrn word_3F878:word
     extrn word_3F87A:word
@@ -531,8 +534,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn word_3F88A:word
     extrn byte_3F88C:byte
     extrn word_3F88E:word
-    extrn timerintr:word
-    extrn word_3F892:word
+    extrn timerintr:dword
     extrn aNoRoomLeftOnTimerInterru:byte
     extrn callbackflags:byte
     extrn callbackflags2:byte
@@ -562,16 +564,23 @@ dseg segment byte public 'STUNTSD' use16
     extrn word_3FB32:word
     extrn word_3FB34:word
     extrn word_3FB36:word
+    extrn byte_3FB38:byte
     extrn word_3FB48:word
     extrn word_3FB4A:word
     extrn word_3FB4C:word
     extrn word_3FB4E:word
+    extrn word_3FB50:word
     extrn word_3FBD0:word
     extrn word_3FBD2:word
     extrn word_3FBD4:word
     extrn word_3FBD6:word
     extrn word_3FBD8:word
     extrn kbinput:byte
+    extrn byte_3FC34:byte
+    extrn byte_3FC8F:byte
+    extrn byte_3FCEA:byte
+    extrn byte_3FD45:byte
+    extrn byte_3FDA0:byte
     extrn readchar_callback:word
     extrn seg_3FDFE:word
     extrn byte_3FE00:byte
@@ -645,6 +654,11 @@ dseg segment byte public 'STUNTSD' use16
     extrn aDrv:byte
     extrn aMt32_plb:byte
     extrn aCanTFindDriver:byte
+    extrn aKms:byte
+    extrn aCannotLoadSongFileS:byte
+    extrn aDvc:byte
+    extrn aVce:byte
+    extrn aCannotLoadVoiceFileS:byte
     extrn word_407AA:word
     extrn word_407CA:word
     extrn word_407CC:word
@@ -694,6 +708,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn dword_40C1E:dword
     extrn dword_40C22:dword
     extrn dword_40C26:dword
+    extrn off_40C2A:dword
     extrn aNmsg:byte
     extrn aR6000StackOver:byte
     extrn word_40D3A:word
@@ -843,6 +858,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn off_42A1E:word
     extrn word_42A20:word
     extrn word_42A22:word
+    extrn unk_42A24:byte
     extrn trackdata10:dword
     extrn word_42A34:word
     extrn word_42A36:word
@@ -1157,6 +1173,8 @@ dseg segment byte public 'STUNTSD' use16
     extrn word_45D06:word
     extrn word_45D08:word
     extrn word_45D0A:word
+    extrn byte_45D0C:byte
+    extrn byte_45D14:byte
     extrn word_45D1C:word
     extrn word_45D1E:word
     extrn byte_45D3E:byte

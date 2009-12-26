@@ -20,10 +20,10 @@ seg027 segment byte public 'STUNTSC' use16
     extrn sub_37868:proc
     extrn load_audio_driver:proc
     extrn audiodrv_atexit:proc
-    extrn sub_37B14:proc
-    extrn sub_37C44:proc
-    extrn sub_37CBA:proc
-    extrn sub_37D04:proc
+    extrn load_sfx_ge:proc
+    extrn load_sfx_file:proc
+    extrn load_song_file:proc
+    extrn load_voice_file:proc
     extrn init_audio_chunk:proc
     extrn load_vce:proc
     extrn sub_38156:proc

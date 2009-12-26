@@ -332,14 +332,10 @@ nopsub_36ACA proc far
     mov     ax, 921Ah
     push    ax
     push    ax              ; union REGS *
-loc_36AE4:
     mov     ax, 33h ; '3'
     push    ax              ; int
-loc_36AE8:
     call    _int86
-loc_36AED:
     add     sp, 6
-loc_36AF0:
     pop     bp
     retf
 nopsub_36ACA endp

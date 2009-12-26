@@ -59,7 +59,6 @@ sub_36BE8 proc far
     arg_4 = word ptr 10
 
     push    bp
-loc_36BE9:
     mov     bp, sp
     sub     sp, 8
     push    di
@@ -118,24 +117,19 @@ loc_36C4E:
 loc_36C62:
     mov     cx, 2
     mov     ax, [bp+var_4]
-loc_36C68:
     cwd
     idiv    cx
 loc_36C6B:
     mov     [bp+var_4], ax
-loc_36C6E:
     or      ax, ax
-loc_36C70:
     jle     short loc_36C78
     mov     [bp+var_6], ax
-loc_36C75:
     jmp     short loc_36C4E
     ; align 2
     db 144
 loc_36C78:
     pop     si
     pop     di
-loc_36C7A:
     mov     sp, bp
     pop     bp
     retf

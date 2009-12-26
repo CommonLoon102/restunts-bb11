@@ -46,7 +46,7 @@ nosmart
 seg031 segment byte public 'STUNTSC' use16
     assume cs:seg031
     assume es:nothing, ss:nothing, ds:dseg
-    public sub_39E14
+    public load_2dshape_0_2
     public sub_39E24
     public sub_39E4C
     public nullsub_1
@@ -58,21 +58,19 @@ seg031 segment byte public 'STUNTSC' use16
     public alloc_resbytes
     public get_res_ofs_diff_scaled
     public get_res_size_scaled
-sub_39E14 proc far
+load_2dshape_0_2 proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
 
     push    bp
-loc_39E15:
     mov     bp, sp
     push    [bp+arg_0]
-loc_39E1A:
     call    j_load_2dshape_0
     add     sp, 2
     pop     bp
     retf
-sub_39E14 endp
+load_2dshape_0_2 endp
 sub_39E24 proc far
     var_50 = byte ptr -80
      s = byte ptr 0
@@ -815,16 +813,12 @@ get_res_size_scaled proc far
     push    [bp+arg_2]
     push    [bp+arg_0]
     call    mmgr_get_chunk_size
-loc_3A4A4:
     add     sp, 4
-loc_3A4A7:
     sub     dx, dx
     mov     cl, 4
 loc_3A4AB:
     shl     ax, 1
-loc_3A4AD:
     rcl     dx, 1
-loc_3A4AF:
     dec     cl
     jnz     short loc_3A4AB
     pop     bp

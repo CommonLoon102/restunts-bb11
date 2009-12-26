@@ -67,10 +67,10 @@ seg027 segment byte public 'STUNTSC' use16
     public sub_37868
     public load_audio_driver
     public audiodrv_atexit
-    public sub_37B14
-    public sub_37C44
-    public sub_37CBA
-    public sub_37D04
+    public load_sfx_ge
+    public load_sfx_file
+    public load_song_file
+    public load_voice_file
     public init_audio_chunk
     public load_vce
     public sub_38156
@@ -95,9 +95,7 @@ init_audio_resources proc far
 
     push    bp
     mov     bp, sp
-loc_370D5:
     sub     sp, 0Ch
-loc_370D8:
     push    [bp+arg_8]
     push    [bp+arg_2]
     push    [bp+arg_0]
@@ -1360,7 +1358,7 @@ loc_37B09:
     ; align 2
     db 144
 audiodrv_atexit endp
-sub_37B14 proc far
+load_sfx_ge proc far
     var_8 = byte ptr -8
     var_7 = byte ptr -7
     var_6 = byte ptr -6
@@ -1489,8 +1487,8 @@ loc_37C22:
     retf
     ; align 2
     db 144
-sub_37B14 endp
-sub_37C44 proc far
+load_sfx_ge endp
+load_sfx_file proc far
     var_4 = word ptr -4
     var_2 = word ptr -2
      s = byte ptr 0
@@ -1511,7 +1509,7 @@ sub_37C44 proc far
     push    ax
     push    word ptr [bp+arg_0]; char *
     push    cs
-    call    near ptr sub_37B14
+    call    near ptr load_sfx_ge
     add     sp, 6
     mov     [bp+var_4], ax
     mov     [bp+var_2], dx
@@ -1525,7 +1523,7 @@ loc_37C71:
     push    ax
     push    word ptr [bp+arg_0]; char *
     push    cs
-    call    near ptr sub_37B14
+    call    near ptr load_sfx_ge
     add     sp, 6
     mov     [bp+var_4], ax
     mov     [bp+var_2], dx
@@ -1548,8 +1546,8 @@ loc_37CAF:
     retf
     ; align 2
     db 144
-sub_37C44 endp
-sub_37CBA proc far
+load_sfx_file endp
+load_song_file proc far
     var_4 = word ptr -4
     var_2 = word ptr -2
      s = byte ptr 0
@@ -1562,13 +1560,13 @@ sub_37CBA proc far
     sub     ax, ax
     mov     [bp+var_2], ax
     mov     [bp+var_4], ax
-    mov     ax, 763Eh
+    mov     ax, offset byte_42DAE
     push    ax              ; int
-    mov     ax, 4F18h
+    mov     ax, offset aKms ; "kms"
     push    ax
     push    word ptr [bp+arg_0]; char *
     push    cs
-    call    near ptr sub_37B14
+    call    near ptr load_sfx_ge
     add     sp, 6
     mov     [bp+var_4], ax
     mov     [bp+var_2], dx
@@ -1577,7 +1575,7 @@ sub_37CBA proc far
     cmp     word_4063C, 0
     jz      short loc_37CFA
     push    word ptr [bp+arg_0]
-    mov     ax, 4F1Ch
+    mov     ax, offset aCannotLoadSongFileS; "cannot load song file %s"
     push    ax
     call    far ptr fatal_error
     add     sp, 4
@@ -1587,8 +1585,8 @@ loc_37CFA:
     mov     sp, bp
     pop     bp
     retf
-sub_37CBA endp
-sub_37D04 proc far
+load_song_file endp
+load_voice_file proc far
     var_4 = word ptr -4
     var_2 = word ptr -2
      s = byte ptr 0
@@ -1603,13 +1601,13 @@ sub_37D04 proc far
     mov     [bp+var_4], ax
     cmp     byte_40635, 0
     jz      short loc_37D31
-    mov     ax, 763Eh
+    mov     ax, offset byte_42DAE
     push    ax              ; int
-    mov     ax, 4F35h
+    mov     ax, offset aDvc ; "dvc"
     push    ax
     push    word ptr [bp+arg_0]; char *
     push    cs
-    call    near ptr sub_37B14
+    call    near ptr load_sfx_ge
     add     sp, 6
     mov     [bp+var_4], ax
     mov     [bp+var_2], dx
@@ -1617,13 +1615,13 @@ loc_37D31:
     mov     ax, [bp+var_4]
     or      ax, [bp+var_2]
     jnz     short loc_37D51
-    mov     ax, 763Eh
+    mov     ax, offset byte_42DAE
     push    ax              ; int
-    mov     ax, 4F39h
+    mov     ax, offset aVce ; "vce"
     push    ax
     push    word ptr [bp+arg_0]; char *
     push    cs
-    call    near ptr sub_37B14
+    call    near ptr load_sfx_ge
     add     sp, 6
     mov     [bp+var_4], ax
     mov     [bp+var_2], dx
@@ -1634,7 +1632,7 @@ loc_37D51:
     cmp     word_4063C, 0
     jz      short loc_37D6F
     push    word ptr [bp+arg_0]
-    mov     ax, 4F3Dh
+    mov     ax, offset aCannotLoadVoiceFileS; "cannot load voice file %s"
     push    ax
     call    far ptr fatal_error
     add     sp, 4
@@ -1655,7 +1653,7 @@ loc_37D6F:
     push    ax
     push    word ptr [bp+6]
     push    cs
-    call    near ptr sub_37B14
+    call    near ptr load_sfx_ge
     add     sp, 6
     mov     [bp-4], ax
     mov     [bp-2], dx
@@ -1674,7 +1672,7 @@ loc_37DB2:
     mov     sp, bp
     pop     bp
     retf
-sub_37D04 endp
+load_voice_file endp
 init_audio_chunk proc far
     var_A = word ptr -10
     var_8 = word ptr -8
@@ -2648,21 +2646,16 @@ loc_38600:
     push    ax
     call    sub_3219D
     add     sp, 0Eh
-loc_38622:
     add     di, 2Eh ; '.'
-loc_38625:
     add     word ptr [bp-4], 2Eh ; '.'
     add     word ptr [bp-8], 2Eh ; '.'
     inc     si
-loc_3862E:
     cmp     si, 10h
     jl      short loc_38600
     mov     [bp-2], si
-loc_38636:
     pop     si
     pop     di
     mov     sp, bp
-loc_3863A:
     pop     bp
     retf
 copy_4_bytes endp

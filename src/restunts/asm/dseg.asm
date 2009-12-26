@@ -50,7 +50,6 @@ dseg segment byte public 'STUNTSD' use16
     public byte_3B770
     public word_3B772
     public word_3B774
-    public word_3B776
     public aMsRunTimeLibraryCop
     public aMain
     public aFontdef_fnt
@@ -502,8 +501,10 @@ dseg segment byte public 'STUNTSD' use16
     public a_res
     public a_pre
     public aWai
+    public asc_3EBD4
     public a_
     public byte_3EBD8
+    public aDea
     public byte_3ECBB
     public word_3ED74
     public word_3ED76
@@ -565,6 +566,8 @@ dseg segment byte public 'STUNTSD' use16
     public dtatransbuffer
     public foundfilepath
     public byte_3F85A
+    public byte_3F85C
+    public byte_3F868
     public dword_3F874
     public word_3F878
     public word_3F87A
@@ -580,7 +583,6 @@ dseg segment byte public 'STUNTSD' use16
     public byte_3F88C
     public word_3F88E
     public timerintr
-    public word_3F892
     public aNoRoomLeftOnTimerInterru
     public callbackflags
     public callbackflags2
@@ -610,16 +612,23 @@ dseg segment byte public 'STUNTSD' use16
     public word_3FB32
     public word_3FB34
     public word_3FB36
+    public byte_3FB38
     public word_3FB48
     public word_3FB4A
     public word_3FB4C
     public word_3FB4E
+    public word_3FB50
     public word_3FBD0
     public word_3FBD2
     public word_3FBD4
     public word_3FBD6
     public word_3FBD8
     public kbinput
+    public byte_3FC34
+    public byte_3FC8F
+    public byte_3FCEA
+    public byte_3FD45
+    public byte_3FDA0
     public readchar_callback
     public seg_3FDFE
     public byte_3FE00
@@ -693,6 +702,11 @@ dseg segment byte public 'STUNTSD' use16
     public aDrv
     public aMt32_plb
     public aCanTFindDriver
+    public aKms
+    public aCannotLoadSongFileS
+    public aDvc
+    public aVce
+    public aCannotLoadVoiceFileS
     public word_407AA
     public word_407CA
     public word_407CC
@@ -742,6 +756,7 @@ dseg segment byte public 'STUNTSD' use16
     public dword_40C1E
     public dword_40C22
     public dword_40C26
+    public off_40C2A
     public aNmsg
     public aR6000StackOver
     public word_40D3A
@@ -891,6 +906,7 @@ dseg segment byte public 'STUNTSD' use16
     public off_42A1E
     public word_42A20
     public word_42A22
+    public unk_42A24
     public trackdata10
     public word_42A34
     public word_42A36
@@ -1205,6 +1221,8 @@ dseg segment byte public 'STUNTSD' use16
     public word_45D06
     public word_45D08
     public word_45D0A
+    public byte_45D0C
+    public byte_45D14
     public word_45D1C
     public word_45D1E
     public byte_45D3E
@@ -1287,7 +1305,7 @@ byte_3B770     db 0
     db 0
 word_3B772     dw 0
 word_3B774     dw 0
-word_3B776     dw 0
+    dw 0
 aMsRunTimeLibraryCop     db 77
     db 83
     db 32
@@ -14540,7 +14558,7 @@ aWai     db 119
     db 97
     db 105
     db 0
-    db 58
+asc_3EBD4     db 58
     db 0
 a_     db 46
     db 0
@@ -14593,7 +14611,7 @@ byte_3EBD8     db 0
     db 114
     db 115
     db 0
-    db 100
+aDea     db 100
     db 101
     db 97
     db 0
@@ -17662,7 +17680,7 @@ foundfilepath     db 0
     db 0
 byte_3F85A     db 0
     db 0
-    db 53
+byte_3F85C     db 53
     db 40
     db 44
     db 7
@@ -17674,7 +17692,7 @@ byte_3F85A     db 0
     db 2
     db 0
     db 0
-    db 97
+byte_3F868     db 97
     db 80
     db 82
     db 15
@@ -17701,8 +17719,7 @@ word_3F88A     dw 0
 byte_3F88C     db 0
     db 3
 word_3F88E     dw 0
-timerintr     dw 0
-word_3F892     dw 0
+timerintr     dd 0
     db 0
     db 0
     db 0
@@ -18359,7 +18376,7 @@ word_3FB30     dw 0
 word_3FB32     dw 0
 word_3FB34     dw 0
 word_3FB36     dw 0
-    db 0
+byte_3FB38     db 0
     db 1
     db 5
     db 0
@@ -18379,8 +18396,7 @@ word_3FB48     dw 0
 word_3FB4A     dw 0
 word_3FB4C     dw 0
 word_3FB4E     dw 0
-    db 0
-    db 0
+word_3FB50     dw 0
     db 0
     db 0
     db 0
@@ -18602,7 +18618,7 @@ kbinput     db 0
     db 0
     db 0
     db 0
-    db 0
+byte_3FC34     db 0
     db 27
     db 49
     db 50
@@ -18693,7 +18709,7 @@ kbinput     db 0
     db 0
     db 0
     db 0
-    db 0
+byte_3FC8F     db 0
     db 27
     db 33
     db 64
@@ -18784,7 +18800,7 @@ kbinput     db 0
     db 0
     db 0
     db 0
-    db 0
+byte_3FCEA     db 0
     db 27
     db 49
     db 50
@@ -18874,7 +18890,7 @@ kbinput     db 0
     dw 0
     db 0
     db 0
-    db 0
+byte_3FD45     db 0
     db 27
     db 33
     db 0
@@ -18965,7 +18981,7 @@ kbinput     db 0
     db 0
     db 0
     db 0
-    db 0
+byte_3FDA0     db 0
     db 27
     db 33
     db 64
@@ -20942,11 +20958,11 @@ aCanTFindDriver     db 67
     db 37
     db 115
     db 0
-    db 107
+aKms     db 107
     db 109
     db 115
     db 0
-    db 99
+aCannotLoadSongFileS     db 99
     db 97
     db 110
     db 110
@@ -20971,15 +20987,15 @@ aCanTFindDriver     db 67
     db 37
     db 115
     db 0
-    db 100
+aDvc     db 100
     db 118
     db 99
     db 0
-    db 118
+aVce     db 118
     db 99
     db 101
     db 0
-    db 99
+aCannotLoadVoiceFileS     db 99
     db 97
     db 110
     db 110
@@ -22341,7 +22357,7 @@ aMga     db 33
 dword_40C1E     dd 0
 dword_40C22     dd 0
 dword_40C26     dd 0
-    dd _flushall
+off_40C2A     dd _flushall
 aNmsg     db 60
     db 60
     db 78
@@ -29861,7 +29877,7 @@ word_42A1C     dw 0
 off_42A1E     dw ?
 word_42A20     dw 0
 word_42A22     dw 0
-    db 0
+unk_42A24     db 0
     db 0
     db 0
     db 0
@@ -42478,6 +42494,7 @@ unk_45A26     db 0
 word_45D06     dw 0
 word_45D08     dw 0
 word_45D0A     dw 0
+byte_45D0C     db 0
     db 0
     db 0
     db 0
@@ -42485,8 +42502,7 @@ word_45D0A     dw 0
     db 0
     db 0
     db 0
-    db 0
-    db 0
+byte_45D14     db 0
     db 0
     db 0
     db 0

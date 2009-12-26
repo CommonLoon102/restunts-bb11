@@ -64,10 +64,8 @@ sub_39AD4 proc far
     arg_A = word ptr 16
 
     push    bp
-loc_39AD5:
     mov     bp, sp
     sub     sp, 2
-loc_39ADA:
     push    di
     push    si
     cmp     [bp+arg_A], 0
@@ -326,19 +324,15 @@ loc_39CA8:
     mov     dx, ds
     inc     si
     inc     di
-loc_39CB3:
     loop    loc_39CA8
     mov     word ptr [bp+arg_0], si
-loc_39CB8:
     mov     word ptr [bp+arg_0+2], ds
     mov     ds, [bp+var_6]
-loc_39CBE:
     mov     word ptr [bp+arg_4], di
     mov     word ptr [bp+arg_4+2], es
 loc_39CC4:
     pop     si
     pop     di
-loc_39CC6:
     mov     sp, bp
     pop     bp
     retf

@@ -2491,16 +2491,13 @@ loc_39A9E:
 loc_39AC2:
     mov     byte ptr [si], 0
     add     si, 4Ch ; 'L'
-loc_39AC8:
     loop    loc_39AC2
 loc_39ACA:
     pop     ds
     pop     si
     pop     di
-loc_39ACD:
     mov     sp, bp
     pop     bp
-locret_39AD0:
     retf
 audio_driver_func1E endp
 seg028 ends

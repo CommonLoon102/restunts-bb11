@@ -101,12 +101,9 @@ loc_3620B:
     push    [bp+var_4]
     mov     ax, 1
     push    ax
-loc_36233:
     push    [bp+arg_2]
-loc_36236:
     push    [bp+arg_4]
     call    sub_33578
-loc_3623E:
     add     sp, 0Ah
 loc_36241:
     mov     sp, bp
