@@ -1,14 +1,14 @@
 seg001 segment byte public 'STUNTSC' use16
     extrn opponent_op:proc
     extrn mat_mul_vector2:proc
-    extrn sub_14DA2:proc
+    extrn update_player_state:proc
     extrn init_carstate_from_simd:proc
     extrn init_game_state:proc
-    extrn sub_16F3A:proc
-    extrn sub_17008:proc
-    extrn sub_171E8:proc
+    extrn restore_gamestate:proc
+    extrn update_gamestate:proc
+    extrn player_op:proc
     extrn sub_17816:proc
-    extrn sub_17A78:proc
+    extrn update_car_state:proc
     extrn sub_17FD6:proc
     extrn sub_18466:proc
     extrn sub_185F6:proc

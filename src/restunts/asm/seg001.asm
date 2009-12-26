@@ -48,14 +48,14 @@ seg001 segment byte public 'STUNTSC' use16
     assume es:nothing, ss:nothing, ds:dseg
     public opponent_op
     public mat_mul_vector2
-    public sub_14DA2
+    public update_player_state
     public init_carstate_from_simd
     public init_game_state
-    public sub_16F3A
-    public sub_17008
-    public sub_171E8
+    public restore_gamestate
+    public update_gamestate
+    public player_op
     public sub_17816
-    public sub_17A78
+    public update_car_state
     public sub_17FD6
     public sub_18466
     public sub_185F6
@@ -652,7 +652,7 @@ loc_14BFA:
     cbw
     push    ax
     push    cs
-    call    near ptr sub_17A78
+    call    near ptr update_car_state
     add     sp, 8
     sub     ax, ax
     push    ax
@@ -674,7 +674,7 @@ loc_14BFA:
     mov     ax, 8F46h
     push    ax
     push    cs
-    call    near ptr sub_14DA2
+    call    near ptr update_player_state
     add     sp, 0Ah
     cmp     state.opponentstate.field_C9, 0
     jz      short loc_14C49
@@ -844,7 +844,7 @@ mat_mul_vector2 proc far
     pop     bp
     retf
 mat_mul_vector2 endp
-sub_14DA2 proc far
+update_player_state proc far
     var_1E4 = word ptr -484
     var_1E2 = word ptr -482
     var_1E0 = word ptr -480
@@ -3626,7 +3626,7 @@ loc_16892:
     mov     sp, bp
     pop     bp
     retf
-sub_14DA2 endp
+update_player_state endp
 init_carstate_from_simd proc far
     var_E = word ptr -14
     var_C = word ptr -12
@@ -4340,7 +4340,7 @@ loc_16F34:
     pop     bp
     retf
 init_game_state endp
-sub_16F3A proc far
+restore_gamestate proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -4448,8 +4448,8 @@ loc_17002:
     mov     sp, bp
     pop     bp
     retf
-sub_16F3A endp
-sub_17008 proc far
+restore_gamestate endp
+update_gamestate proc far
     var_4 = byte ptr -4
      s = byte ptr 0
      r = byte ptr 2
@@ -4531,7 +4531,7 @@ loc_170BE:
     cbw
     push    ax
     push    cs
-    call    near ptr sub_171E8
+    call    near ptr player_op
     add     sp, 2
     cmp     gameconfig.game_opponenttype, 0
     jz      short loc_170DC
@@ -4630,7 +4630,7 @@ loc_1718A:
 loc_171BD:
     push    ax
     push    cs
-    call    near ptr sub_171E8
+    call    near ptr player_op
     add     sp, 2
     pop     si
     pop     di
@@ -4657,8 +4657,8 @@ loc_171E1:
     retf
     ; align 2
     db 144
-sub_17008 endp
-sub_171E8 proc far
+update_gamestate endp
+player_op proc far
     var_52 = word ptr -82
     var_4E = word ptr -78
     var_3A = byte ptr -58
@@ -4721,7 +4721,7 @@ loc_17242:
     cbw
     push    ax
     push    cs
-    call    near ptr sub_17A78
+    call    near ptr update_car_state
     add     sp, 8
     mov     al, [bp+arg_0]
     cbw
@@ -4754,7 +4754,7 @@ nosmart
     mov     ax, 8E76h
     push    ax
     push    cs
-    call    near ptr sub_14DA2
+    call    near ptr update_player_state
     add     sp, 0Ah
     mov     ax, state.playerstate.car_trackgrip2
     sub     dx, dx
@@ -5362,7 +5362,7 @@ loc_17810:
     mov     sp, bp
     pop     bp
     retf
-sub_171E8 endp
+player_op endp
 sub_17816 proc far
     var_5A4 = word ptr -1444
     var_5A2 = byte ptr -1442
@@ -5643,7 +5643,7 @@ loc_17A71:
     ; align 2
     db 144
 sub_17816 endp
-sub_17A78 proc far
+update_car_state proc far
     var_A = byte ptr -10
     var_8 = word ptr -8
     var_6 = word ptr -6
@@ -5669,27 +5669,27 @@ loc_17A8E:
     mov     [bp+var_2], 0Ch
 loc_17A93:
     mov     bx, [bp+arg_4]
-    cmp     byte ptr [bx+0C6h], 0
+    cmp     [bx+CARSTATE.field_C6], 0
     jz      short loc_17AA1
-    dec     byte ptr [bx+0C6h]
+    dec     [bx+CARSTATE.field_C6]
 loc_17AA1:
     mov     bx, [bp+arg_4]
     mov     si, bx
-    mov     ax, [si+2Ch]
-    sub     ax, [si+2Eh]
-    mov     [bx+28h], ax
+    mov     ax, [si+CARSTATE.car_trackgrip2]
+    sub     ax, [si+CARSTATE.car_lasttrackgrip]
+    mov     [bx+CARSTATE.car_gripdiff], ax
     mov     bx, [bp+arg_4]
     mov     si, bx
-    mov     ax, [si+2Ch]
-    mov     [bx+2Eh], ax
+    mov     ax, [si+CARSTATE.car_trackgrip2]
+    mov     [bx+CARSTATE.car_lasttrackgrip], ax
     mov     bx, [bp+arg_4]
     mov     si, bx
-    mov     ax, [si+22h]
-    mov     [bx+24h], ax
+    mov     ax, [si+CARSTATE.car_currpm]
+    mov     [bx+CARSTATE.car_lastrpm], ax
     mov     bx, [bp+arg_4]
-    cmp     byte ptr [bx+0CCh], 0
+    cmp     [bx+CARSTATE.car_transmission], 0
     jnz     short loc_17AE6
-    cmp     byte ptr [bx+0CAh], 0
+    cmp     [bx+CARSTATE.car_changing_gear], 0
     jnz     short loc_17AE6
     test    [bp+arg_0], 10h
     jnz     short loc_17B0F
@@ -5699,50 +5699,50 @@ loc_17AA1:
     ; align 2
     db 144
 loc_17AE6:
-    cmp     byte ptr [bx+0BEh], 0
+    cmp     [bx+CARSTATE.car_current_gear], 0
     jnz     short loc_17AF0
     jmp     loc_17B86
 loc_17AF0:
-    cmp     byte ptr [bx+0CAh], 0
+    cmp     [bx+CARSTATE.car_changing_gear], 0
     jz      short loc_17AFA
     jmp     loc_17B86
 loc_17AFA:
-    cmp     byte ptr [bx+0C0h], 0
+    cmp     [bx+CARSTATE.field_C0], 0
     jnz     short loc_17B04
     jmp     loc_17B86
 loc_17B04:
     mov     si, [bp+arg_6]
-    mov     ax, [si+0Ah]
-    cmp     [bx+22h], ax
+    mov     ax, [si+SIMD.upshift_rpm]
+    cmp     [bx+CARSTATE.car_currpm], ax
     jbe     short loc_17B20
 loc_17B0F:
     mov     si, [bp+arg_6]
-    mov     al, [si]
-    cmp     [bx+0BEh], al
+    mov     al, [si+SIMD.num_gears]
+    cmp     [bx+CARSTATE.car_current_gear], al
     jz      short loc_17B86
-    inc     byte ptr [bx+0BEh]
+    inc     [bx+CARSTATE.car_current_gear]
     jmp     short loc_17B39
 loc_17B20:
     mov     bx, [bp+arg_4]
     mov     si, [bp+arg_6]
-    mov     ax, [si+8]
-    cmp     [bx+22h], ax
+    mov     ax, [si+SIMD.downshift_rpm]
+    cmp     [bx+CARSTATE.car_currpm], ax
     jnb     short loc_17B86
 loc_17B2E:
-    cmp     byte ptr [bx+0BEh], 1
+    cmp     [bx+CARSTATE.car_current_gear], 1
     jle     short loc_17B86
-    dec     byte ptr [bx+0BEh]
+    dec     [bx+CARSTATE.car_current_gear]
 loc_17B39:
     mov     bx, [bp+arg_4]
-    mov     byte ptr [bx+0CAh], 1
+    mov     [bx+CARSTATE.car_changing_gear], 1
     mov     al, byte ptr word_449D0
     cbw
     sar     ax, 1
     add     al, byte ptr word_449D0
     mov     bx, [bp+arg_4]
-    mov     [bx+0CBh], al
+    mov     [bx+CARSTATE.car_fpsmul2], al
     mov     bx, [bp+arg_4]
-    mov     al, [bx+0BEh]
+    mov     al, [bx+CARSTATE.car_current_gear]
     cbw
     mov     si, ax
     shl     si, 1
@@ -6225,7 +6225,7 @@ loc_17FD0:
     mov     sp, bp
     pop     bp
     retf
-sub_17A78 endp
+update_car_state endp
 sub_17FD6 proc far
     var_10 = word ptr -16
     var_E = byte ptr -14

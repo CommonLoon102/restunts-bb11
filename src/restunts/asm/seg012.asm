@@ -134,10 +134,8 @@ seg012 segment byte public 'STUNTSC' use16
     public ported_file_uncomp_paras_
     public ported_file_uncomp_paras_nofatal_
     public ported_file_uncomp_paras_fatal_
-    public file_find
-    public loc_30011
-    public loc_3002A
-    public file_find_next
+    public ported_file_find_
+    public ported_file_find_next_
     public scale_value
     public video_set_mode4
     public sub_300B6
@@ -4171,7 +4169,7 @@ loc_2FFC4:
     push    ax
     call    far ptr fatal_error
 ported_file_uncomp_paras_fatal_ endp
-file_find proc far
+ported_file_find_ proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -4188,7 +4186,7 @@ file_find proc far
     mov     cl, 6
     mov     ah, 4Eh
     int     21h             ; DOS - 2+ - FIND FIRST ASCIZ (FINDFIRST)
-    jb      short loc_3002A
+    jb      short _file_find_err
     mov     di, offset foundfile
     mov     foundfileptr, di
     mov     si, [bp+arg_0]
@@ -4199,7 +4197,7 @@ loc_2FFFD:
     lodsb
     stosb
     cmp     al, 0
-    jz      short loc_30011
+    jz      short _file_find_ok
     cmp     al, 3Ah ; ':'
     jz      short loc_3000B
     cmp     al, 5Ch ; '\'
@@ -4208,7 +4206,7 @@ loc_3000B:
     mov     foundfileptr, di
 loc_3000F:
     loop    loc_2FFFD
-loc_30011:
+_file_find_ok:
     mov     ax, ds
     mov     es, ax
     mov     si, offset foundfilepath
@@ -4223,11 +4221,11 @@ loc_30025:
     pop     ds
     pop     bp
     retf
-loc_3002A:
+_file_find_err:
     xor     ax, ax
     jmp     short loc_30025
-file_find endp
-file_find_next proc far
+ported_file_find_ endp
+ported_file_find_next_ proc far
      s = byte ptr 0
      r = byte ptr 2
 
@@ -4241,11 +4239,11 @@ file_find_next proc far
     int     21h             ; DOS - SET DISK TRANSFER AREA ADDRESS
     mov     ah, 4Fh
     int     21h             ; DOS - 2+ - FIND NEXT ASCIZ (FINDNEXT)
-    jb      short loc_3002A
-    jmp     short loc_30011
+    jb      short _file_find_err
+    jmp     short _file_find_ok
     ; align 2
     db 0
-file_find_next endp
+ported_file_find_next_ endp
 scale_value proc far
      s = byte ptr 0
      r = byte ptr 2

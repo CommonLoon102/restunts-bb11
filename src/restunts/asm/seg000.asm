@@ -53,7 +53,7 @@ seg000 segment byte public 'STUNTSC' use16
     public run_menu
     public run_tracks_menu
     public highscore_write_a
-    public sub_1168E
+    public highscore_text_unk
     public sub_118D4
     public enter_hiscore
     public highscore_write_b
@@ -2297,7 +2297,7 @@ loc_11648:
 loc_1168B:
     jmp     loc_115F9
 highscore_write_a endp
-sub_1168E proc far
+highscore_text_unk proc far
     var_A = byte ptr -10
     var_8 = word ptr -8
     var_6 = byte ptr -6
@@ -2534,7 +2534,7 @@ loc_118CA:
     retf
     ; align 2
     db 144
-sub_1168E endp
+highscore_text_unk endp
 sub_118D4 proc far
     var_4A = byte ptr -74
     var_39 = byte ptr -57
@@ -2804,7 +2804,7 @@ loc_11AED:
     repne movsw
     call    sub_28F6A
     push    cs
-    call    near ptr sub_1168E
+    call    near ptr highscore_text_unk
     mov     ax, 0FFFFh
     push    ax
     push    word ptr wndsprite+2
@@ -2853,7 +2853,7 @@ loc_11AED:
     repne movsw
     call    sub_28F6A
     push    cs
-    call    near ptr sub_1168E
+    call    near ptr highscore_text_unk
     mov     ax, 0FFFFh
     push    ax
     push    word ptr wndsprite+2
@@ -2864,7 +2864,7 @@ loc_11AED:
     call    near ptr highscore_write_b
 loc_11BAA:
     push    cs
-    call    near ptr sub_1168E
+    call    near ptr highscore_text_unk
     pop     si
     pop     di
     mov     sp, bp
@@ -3644,7 +3644,7 @@ loc_122CE:
     push    ax
     mov     ax, 1
     push    ax
-    call    sub_17A78
+    call    update_car_state
     add     sp, 8
     mov     ax, state.playerstate.car_trackgrip
     mov     cl, 8
@@ -6030,7 +6030,7 @@ loc_13A1D:
     mov     [bp+var_6E], 0
     call    sub_28F6A
     push    cs
-    call    near ptr sub_1168E
+    call    near ptr highscore_text_unk
     mov     [bp+var_92], 1
     mov     [bp+var_14], 1
     jmp     loc_13FDA
@@ -6568,7 +6568,7 @@ loc_13FB2:
     db 144
 loc_13FD6:
     push    cs
-    call    near ptr sub_1168E
+    call    near ptr highscore_text_unk
 loc_13FDA:
     mov     [bp+var_92], 1
     mov     [bp+var_78], 1

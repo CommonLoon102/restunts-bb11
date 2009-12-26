@@ -20,6 +20,8 @@ _TEXT ends
 extrn sin_fast:proc
 extrn cos_fast:proc
 
+extrn file_find:proc
+extrn file_find_next:proc
 extrn file_paras:proc
 extrn file_paras_fatal:proc
 extrn file_paras_nofatal:proc

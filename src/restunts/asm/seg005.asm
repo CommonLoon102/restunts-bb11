@@ -240,10 +240,10 @@ loc_21D2C:
     mov     word_449D0, ax
     sub     ax, ax
     push    ax
-    call    sub_16F3A
+    call    restore_gamestate
     add     sp, 2
     push    gameconfig.game_recordedframes
-    call    sub_16F3A
+    call    restore_gamestate
     add     sp, 2
     jmp     short loc_21D72
 loc_21D5C:
@@ -253,7 +253,7 @@ loc_21D5C:
     add     sp, 2
     cmp     ax, 1Bh
     jz      short loc_21D7B
-    call    sub_17008
+    call    update_gamestate
 loc_21D72:
     mov     ax, state.game_frame
     cmp     gameconfig.game_recordedframes, ax
@@ -275,7 +275,7 @@ loc_21D92:
     push    cs
     call    near ptr sub_23A98
 loc_21D9D:
-    call    sub_17008
+    call    update_gamestate
 loc_21DA2:
     mov     ax, word_42D02
     cmp     state.game_frame, ax
@@ -817,7 +817,7 @@ loc_22347:
     push    cs
     call    near ptr sub_22698
     add     sp, 2
-    call    sub_17008
+    call    update_gamestate
     inc     si
     mov     ax, word_449D0
     cmp     si, ax
@@ -4909,7 +4909,7 @@ loc_24935:
     mov     si, gameconfig.game_recordedframes
 loc_24956:
     push    si
-    call    sub_16F3A
+    call    restore_gamestate
     add     sp, 2
     mov     word_42D02, si
     sub     ax, ax
@@ -4971,7 +4971,7 @@ loc_249D2:
     add     sp, 0Ah
     jmp     short loc_24A10
 loc_249F8:
-    call    sub_17008
+    call    update_gamestate
     push    word_42D02
     push    state.game_frame
     mov     ax, 1
@@ -5170,7 +5170,7 @@ loc_24BD4:
     mov     si, word_42D02
     sub     si, di
     push    si
-    call    sub_16F3A
+    call    restore_gamestate
     add     sp, 2
     mov     word_42D02, si
     mov     ax, si
@@ -5181,7 +5181,7 @@ loc_24BD4:
     mov     si, ax
     jmp     short loc_24C3A
 loc_24BF8:
-    call    sub_17008
+    call    update_gamestate
     dec     si
     push    word_42D02
     mov     ax, [bp+var_4]
@@ -5279,7 +5279,7 @@ loc_24CA6:
     add     sp, 6
     sub     ax, ax
     push    ax
-    call    sub_16F3A
+    call    restore_gamestate
     add     sp, 2
     mov     ax, 32h ; '2'
     cwd

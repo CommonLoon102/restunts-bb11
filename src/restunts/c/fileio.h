@@ -1,6 +1,9 @@
 #ifndef RESTUNTS_FILEIO_H
 #define RESTUNTS_FILEIO_H
 
+const char* file_find(const char* query);
+const char* file_find_next();
+
 unsigned short file_paras(const char* filename, int fatal);
 unsigned short file_paras_fatal(const char* filename);
 unsigned short file_paras_nofatal(const char* filename);

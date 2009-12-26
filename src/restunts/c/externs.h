@@ -22,5 +22,6 @@ extern const char* aSFileError_0;
 extern const char* aSFileError_1;
 
 extern void fatal_error(const char*, ...);
+extern void* _memcpy(void*, const void*, unsigned);
 
 #endif

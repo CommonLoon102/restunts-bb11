@@ -4,6 +4,7 @@
 
 #define PAGE_SIZE 0x4000
 #define PAGE_GAP  0x400
+#define FILENAME_LEN 13
 
 // Minimal stdio.h "support" untill we can link with a real CRT.
 #ifndef __STDIO_H
@@ -210,6 +211,94 @@ int remove(const char* path)
 }
 #endif
 
+static struct file_find_dos {
+	struct find_t dta; // DOS DTA struct
+	char path[128];    // Full path to found file
+	char* dirdelim;    // Last dir delimiter in path string
+} g_find;
+
+// Find file matching given query. Returns pointer to first matched filename
+// including path from the query. NULL is returned on error/no hits.
+// FIXME: DOS specific implementation.
+const char* file_find(const char* query)
+{
+	char const* chsrc;
+	char* chdst;
+	char attrs = FA_NORMAL | FA_HIDDEN | FA_SYSTEM;
+	int retval;
+
+	__asm {
+		mov  ah, 1Ah // Set DTA
+		mov  dx, offset g_find.dta
+		int  21h
+
+		mov  ah, 4Eh // Find first file
+		mov  cl, attrs
+		mov  dx, query
+		int  21h
+
+		jnc  short find_ok
+		mov  retval, -1
+		jmp  short find_done
+	find_ok:
+		mov  retval, 0
+	find_done:
+	}
+
+	// Find failed.
+	if (retval) {
+		return  0;
+	}	
+
+	// Copy path from query.
+	chdst = g_find.dirdelim = g_find.path;
+	for (chsrc = query; *chsrc; ++chsrc, ++chdst) {
+		*chdst = *chsrc;
+		
+		if (*chdst == ':' || *chdst == '\\') {
+			g_find.dirdelim = chdst;
+		}
+	}
+
+	// Copy found filename to result path.
+	_memcpy(g_find.dirdelim, g_find.dta.name, FILENAME_LEN);
+
+	return g_find.path;
+}
+
+// Returns next found filename from file_find() query.
+// FIXME: DOS specific implementation.
+const char* file_find_next()
+{
+	int retval;
+
+	__asm {
+		mov  ah, 1Ah // Set DTA
+		mov  dx, offset g_find.dta
+		int  21h
+
+		mov  ah, 4Fh // Find next file
+		int  21h
+
+		jnc  short findnext_ok
+		mov  retval, -1
+		jmp  short findnext_done
+	findnext_ok:
+		mov  retval, 0
+	findnext_done:
+	}
+
+	// Find next failed.
+	if (retval) {
+		return  0;
+	}
+
+	// Copy found filename to result path.
+	_memcpy(g_find.dirdelim, g_find.dta.name, FILENAME_LEN);
+
+	return g_find.path;
+}
+
 // Get number of 16-byte blocks needed to store entire file.
 unsigned short file_paras(const char* filename, int fatal)
 {
@@ -319,7 +408,7 @@ char far* file_read_nofatal(const char* filename, unsigned short dstoff, unsigne
 	return file_read(filename, dstoff, dstseg, 0);
 }
 
-// Read given source buffer to file. Returns a non-zero value on errors unless fatal is set.
+// Write given source buffer to file. Returns a non-zero value on errors unless fatal is set.
 short file_write(const char* filename, unsigned short srcoff, unsigned short srcseg, unsigned long length, int fatal)
 {
 	unsigned short retval;
@@ -362,13 +451,13 @@ short file_write(const char* filename, unsigned short srcoff, unsigned short src
 	return retval;
 }
 
-// Read given source buffer to file, handle errors as fatal.
+// Write given source buffer to file, handle errors as fatal.
 short file_write_fatal(const char* filename, unsigned short srcoff, unsigned short srcseg, unsigned long length)
 {
 	return file_write(filename, srcoff, srcseg, length, 1);
 }
 
-// Read given source buffer to file, returns a non-zero value on error.
+// Write given source buffer to file, returns a non-zero value on error.
 short file_write_nofatal(const char* filename, unsigned short srcoff, unsigned short srcseg, unsigned long length)
 {
 	return file_write(filename, srcoff, srcseg, length, 0);

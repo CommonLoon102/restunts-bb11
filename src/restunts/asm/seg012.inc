@@ -87,10 +87,8 @@ seg012 segment byte public 'STUNTSC' use16
     extrn ported_file_uncomp_paras_:proc
     extrn ported_file_uncomp_paras_nofatal_:proc
     extrn ported_file_uncomp_paras_fatal_:proc
-    extrn file_find:proc
-    extrn loc_30011
-    extrn loc_3002A
-    extrn file_find_next:proc
+    extrn ported_file_find_:proc
+    extrn ported_file_find_next_:proc
     extrn scale_value:proc
     extrn video_set_mode4:proc
     extrn sub_300B6:proc

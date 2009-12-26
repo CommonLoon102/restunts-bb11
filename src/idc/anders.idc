@@ -99,8 +99,8 @@ static IsPublicLabel(labelname) {
 	if (
 		labelname == "loc_2CE06" || 
 		labelname == "loc_2EB62" || 
-		labelname == "loc_30011" || 
-		labelname == "loc_3002A" || 
+//		labelname == "_file_find_ok" || // Resolved
+//		labelname == "_file_find_err" || // Resolved
 		labelname == "loc_301FD" || 
 		labelname == "_timerintr_callback" || 
 		labelname == "loc_308C6" || 
@@ -620,6 +620,8 @@ static PortFuncName(labelname) {
 		labelname == "sin_fast" ||
 		labelname == "cos_fast" ||
 
+		labelname == "file_find" ||
+		labelname == "file_find_next" ||
 		labelname == "file_paras" ||
 		labelname == "file_paras_fatal" ||
 		labelname == "file_paras_nofatal" ||
