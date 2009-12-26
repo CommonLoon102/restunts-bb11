@@ -192,7 +192,7 @@ loc_27506:
     mov     [si-52EAh], ax
     lea     ax, [bp+var_40]
     push    ax
-    call    sub_3260E
+    call    sprite_copy_both_to_arg
     add     sp, 2
     mov     al, 3Ch ; '<'
     mul     byte_3B8FC
@@ -217,7 +217,7 @@ loc_27506:
     mov     cx, 0Fh
     repne movsw
     pop     si
-    call    set_sprite2_as_1
+    call    sprite_copy_2_to_1
     push    [bp+arg_4]
     push    [bp+arg_0]
     mov     bl, byte_3B8FC
@@ -310,7 +310,7 @@ loc_275D8:
     pop     si
     lea     ax, [bp+var_3C]
     push    ax
-    call    sub_3262E
+    call    sprite_copy_arg_to_both
     add     sp, 2
     mov     bl, byte_3B8FC
     sub     bh, bh
@@ -516,7 +516,7 @@ loc_277A5:
     ; align 2
     db 144
 loc_277F6:
-    call    set_sprite2_as_1
+    call    sprite_copy_2_to_1
     push    [bp+var_2A]
     push    [bp+var_2C]
     push    [bp+var_2E]
@@ -1742,7 +1742,7 @@ loc_28370:
 loc_283A9:
     or      al, al
     jnz     short loc_283CA
-    test    byte ptr word_442E8, 3
+    test    byte ptr mouse_butstate, 3
     jnz     short loc_283B7
     jmp     loc_28452
 loc_283B7:
@@ -1754,7 +1754,7 @@ loc_283C1:
 loc_283CA:
     cmp     [bp+var_6EA], 1
     jnz     short loc_28402
-    test    byte ptr word_442E8, 3
+    test    byte ptr mouse_butstate, 3
     jz      short loc_28452
     mov     al, [bp+var_69A]
     cbw
@@ -1776,7 +1776,7 @@ loc_283EC:
 loc_28402:
     cmp     [bp+var_6EA], 9
     jnz     short loc_28428
-    test    byte ptr word_442E8, 3
+    test    byte ptr mouse_butstate, 3
     jz      short loc_28452
     mov     al, [bp+var_714]
     cbw
@@ -2330,33 +2330,33 @@ loc_28896:
     jge     short loc_288A9
     jmp     loc_28823
 loc_288A9:
-    mov     ax, 0AA5Eh
+    mov     ax, offset mouse_ypos
     push    ax
-    mov     ax, 0A9FCh
+    mov     ax, offset mouse_xpos
     push    ax
-    mov     ax, 8B78h
+    mov     ax, offset mouse_butstate
     push    ax
     call    mouse_get_state
     add     sp, 6
-    mov     ax, word_4616C
-    cmp     word_3EBB8, ax
+    mov     ax, mouse_xpos
+    cmp     mouse_oldx, ax
     jnz     short loc_288D8
-    mov     ax, word_461CE
-    cmp     word_3EBBA, ax
+    mov     ax, mouse_ypos
+    cmp     mouse_oldy, ax
     jnz     short loc_288D8
-    mov     ax, word_442E8
-    cmp     word_3EBBC, ax
+    mov     ax, mouse_butstate
+    cmp     mouse_oldbut, ax
     jz      short loc_28908
 loc_288D8:
-    mov     ax, word_4616C
-    mov     word_3EBB8, ax
-    mov     ax, word_461CE
-    mov     word_3EBBA, ax
+    mov     ax, mouse_xpos
+    mov     mouse_oldx, ax
+    mov     ax, mouse_ypos
+    mov     mouse_oldy, ax
     mov     kbormouse, 1
     mov     word_3EBBE, 0
     cmp     byte_3B8F7, 0
     jz      short loc_28934
-    cmp     byte_3B8F9, 0
+    cmp     mouse_isdirty, 0
     jz      short loc_28901
     push    cs
     call    near ptr sub_28DC8
@@ -2375,27 +2375,27 @@ loc_28908:
     jle     short loc_28934
     mov     word_3EBBE, 0
     mov     kbormouse, 0
-    cmp     byte_3B8F9, 0
+    cmp     mouse_isdirty, 0
     jz      short loc_28934
     push    cs
     call    near ptr sub_28DC8
 loc_28934:
     cmp     kbormouse, 0
     jz      short loc_289B0
-    mov     ax, word_3EBBC
-    cmp     word_442E8, ax
+    mov     ax, mouse_oldbut
+    cmp     mouse_butstate, ax
     jz      short loc_2897C
-    mov     ax, word_442E8
-    mov     word_3EBBC, ax
+    mov     ax, mouse_butstate
+    mov     mouse_oldbut, ax
 loc_2894A:
-    test    byte ptr word_442E8, 1
+    test    byte ptr mouse_butstate, 1
     jz      short loc_2895A
     mov     word_3EBC2, 20h ; ' '
     jmp     short loc_28967
     ; align 2
     db 144
 loc_2895A:
-    test    byte ptr word_442E8, 2
+    test    byte ptr mouse_butstate, 2
     jz      short loc_28967
     mov     word_3EBC2, 0Dh
 loc_28967:
@@ -2407,21 +2407,21 @@ loc_28974:
     mov     word_3EBBE, 0
     jmp     short loc_2898F
 loc_2897C:
-    cmp     word_442E8, 0
+    cmp     mouse_butstate, 0
     jz      short loc_2898F
     mov     ax, word_3EBB0
     add     ax, 14h
     cmp     ax, word_3EBC4
     jl      short loc_2894A
 loc_2898F:
-    cmp     word_442E8, 0
+    cmp     mouse_butstate, 0
     jz      short loc_289B0
-    test    byte ptr word_442E8, 1
+    test    byte ptr mouse_butstate, 1
     jz      short loc_289A4
     or      byte ptr word_454C0, 20h
     jmp     short loc_289B0
 loc_289A4:
-    test    byte ptr word_442E8, 2
+    test    byte ptr mouse_butstate, 2
     jz      short loc_289B0
     or      byte ptr word_454C0, 10h
 loc_289B0:
@@ -2739,11 +2739,11 @@ loc_28BC5:
 loc_28BCE:
     cmp     [bp+var_A], 0
     jnz     short loc_28BDC
-    mov     ax, word_4616C
+    mov     ax, mouse_xpos
     sub     ax, [bp+arg_2]
     jmp     short loc_28BE2
 loc_28BDC:
-    mov     ax, word_461CE
+    mov     ax, mouse_ypos
     sub     ax, [bp+arg_6]
 loc_28BE2:
     mov     [bp+var_4], ax
@@ -2758,7 +2758,7 @@ loc_28BED:
     push    cs
     call    near ptr input_checking
     add     sp, 2
-    test    byte ptr word_442E8, 3
+    test    byte ptr mouse_butstate, 3
     jnz     short loc_28BED
     cmp     [bp+var_4], si
     jge     short loc_28C14
@@ -2789,11 +2789,11 @@ loc_28C2E:
     add     sp, 2
     cmp     [bp+var_A], 0
     jnz     short loc_28C48
-    mov     ax, word_4616C
+    mov     ax, mouse_xpos
     sub     ax, [bp+arg_2]
     jmp     short loc_28C4E
 loc_28C48:
-    mov     ax, word_461CE
+    mov     ax, mouse_ypos
     sub     ax, [bp+arg_6]
 loc_28C4E:
     mov     [bp+var_E], ax
@@ -2857,7 +2857,7 @@ loc_28CD6:
     push    cs
     call    near ptr sub_28D9E
 loc_28CE2:
-    test    byte ptr word_442E8, 3
+    test    byte ptr mouse_butstate, 3
     jz      short loc_28CEC
     jmp     loc_28C2E
 loc_28CEC:
@@ -2943,7 +2943,7 @@ sub_28D9E proc far
     mov     byte_3B8F7, 1
     cmp     kbormouse, 0
     jz      short locret_28DB5
-    cmp     byte_3B8F9, 0
+    cmp     mouse_isdirty, 0
     jnz     short locret_28DB5
     push    cs
     call    near ptr sub_28E04
@@ -2953,7 +2953,7 @@ sub_28D9E endp
 sub_28DB6 proc far
 
     mov     byte_3B8F7, 0
-    cmp     byte_3B8F9, 0
+    cmp     mouse_isdirty, 0
     jz      short locret_28DC6
     push    cs
     call    near ptr sub_28DC8
@@ -2972,9 +2972,9 @@ sub_28DC8 proc far
     sub     sp, 3Ch
     lea     ax, [bp+var_3C]
     push    ax
-    call    sub_3260E
+    call    sprite_copy_both_to_arg
     add     sp, 2
-    call    set_sprite2_as_1
+    call    sprite_copy_2_to_1
     les     bx, dword_455C8
     push    word ptr es:[bx+2]
     push    word ptr es:[bx]
@@ -2982,8 +2982,8 @@ sub_28DC8 proc far
     add     sp, 4
     lea     ax, [bp+var_3C]
     push    ax
-    call    sub_3262E
-    mov     byte_3B8F9, 0
+    call    sprite_copy_arg_to_both
+    mov     mouse_isdirty, 0
     mov     sp, bp
     pop     bp
     retf
@@ -2997,7 +2997,7 @@ sub_28E04 proc far
     mov     bp, sp
     sub     sp, 3Eh
     push    si
-    mov     si, word_4616C
+    mov     si, mouse_xpos
     mov     ax, si
     cwd
     mov     cx, word_44DC8
@@ -3005,25 +3005,25 @@ sub_28E04 proc far
     sub     si, dx
     lea     ax, [bp+var_3C]
     push    ax
-    call    sub_3260E
+    call    sprite_copy_both_to_arg
     add     sp, 2
-    call    set_sprite2_as_1
-    push    word_461CE
+    call    sprite_copy_2_to_1
+    push    mouse_ypos
     push    si
     les     bx, dword_455C8
     push    word ptr es:[bx+2]
     push    word ptr es:[bx]
     call    sub_3475A
     add     sp, 8
-    push    word_461CE
-    push    word_4616C
+    push    mouse_ypos
+    push    mouse_xpos
     les     bx, dword_44364
     push    word ptr es:[bx+2]
     push    word ptr es:[bx]
     call    sub_33890
     add     sp, 8
-    push    word_461CE
-    push    word_4616C
+    push    mouse_ypos
+    push    mouse_xpos
     les     bx, dword_449C2
     push    word ptr es:[bx+2]
     push    word ptr es:[bx]
@@ -3031,9 +3031,9 @@ sub_28E04 proc far
     add     sp, 8
     lea     ax, [bp+var_3C]
     push    ax
-    call    sub_3262E
+    call    sprite_copy_arg_to_both
     add     sp, 2
-    mov     byte_3B8F9, 1
+    mov     mouse_isdirty, 1
     pop     si
     mov     sp, bp
     pop     bp
@@ -3069,14 +3069,14 @@ loc_28EA5:
     mov     di, si
     shl     di, 1
     mov     bx, [bp+arg_2]
-    mov     ax, word_4616C
+    mov     ax, mouse_xpos
     cmp     [bx+di], ax
     jg      short loc_28EA4
     mov     bx, [bp+arg_4]
     cmp     [bx+di], ax
     jl      short loc_28EA4
     mov     bx, [bp+arg_6]
-    mov     ax, word_461CE
+    mov     ax, mouse_ypos
     cmp     [bx+di], ax
     jg      short loc_28EA4
     mov     bx, [bp+arg_8]
@@ -3129,7 +3129,7 @@ loc_28EFA:
     jnz     short loc_28EF3
     cmp     kbormouse, 0
     jz      short loc_28F18
-    test    byte ptr word_442E8, 3
+    test    byte ptr mouse_butstate, 3
     jnz     short loc_28EF3
 loc_28F18:
     mov     [bp+var_2], 0
@@ -3160,7 +3160,7 @@ sub_28F3C proc far
     mov     dx, seg seg012
     push    dx
     push    ax
-    call    set_sprite1
+    call    sprite_set_1
     add     sp, 4
     retf
     ; align 2
@@ -3172,7 +3172,7 @@ sub_28F4E proc far
     mov     dx, seg seg012
     push    dx
     push    ax
-    call    set_sprite1
+    call    sprite_set_1
     add     sp, 4
     sub     ax, ax
     push    ax
@@ -3184,7 +3184,7 @@ sub_28F6A proc far
 
     push    word ptr wndsprite+2
     push    word ptr wndsprite
-    call    set_sprite1
+    call    sprite_set_1
     add     sp, 4
     retf
     ; align 2
@@ -3194,7 +3194,7 @@ sub_28F7C proc far
 
     push    word ptr wndsprite+2
     push    word ptr wndsprite
-    call    set_sprite1
+    call    sprite_set_1
     add     sp, 4
     sub     ax, ax
     push    ax

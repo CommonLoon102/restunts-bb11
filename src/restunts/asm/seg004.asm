@@ -4116,6 +4116,7 @@ setup_track proc far
     var_2 = byte ptr -2
      s = byte ptr 0
      r = byte ptr 2
+    arg_2092 = word ptr 8344
 
     push    bp
     mov     bp, sp
@@ -4126,7 +4127,7 @@ setup_track proc far
     cwd
     push    dx
     push    ax
-    mov     ax, 2FA8h
+    mov     ax, offset aTcomp; "tcomp"
     push    ax
     call    mmgr_alloc_resbytes
     add     sp, 6
@@ -4162,7 +4163,7 @@ loc_20725:
 loc_2073C:
     mov     bl, [bp+var_74E]
     sub     bh, bh
-    mov     al, [bx+2FCEh]
+    mov     al, byte_3E73E[bx]
     mov     [bp+var_12], al
     inc     [bp+var_3A4]
 loc_2074D:
@@ -4172,7 +4173,7 @@ loc_2074D:
     cbw
     mov     bx, ax
     shl     bx, 1
-    mov     bx, [bx-73C4h]
+    mov     bx, terrainrows[bx]
     mov     al, [bp+var_3A4]
     cbw
     add     bx, ax
@@ -4183,7 +4184,7 @@ loc_2074D:
     mov     bl, al
     sub     bh, bh
     mov     al, [bp+var_12]
-    cmp     [bx+2FBAh], al
+    cmp     byte_3E72A[bx], al
     jz      short loc_2073C
     cmp     al, 63h ; 'c'
     jz      short loc_2073C
@@ -4214,7 +4215,7 @@ loc_207B6:
 loc_207BE:
     mov     bl, [bp+var_74E]
     sub     bh, bh
-    mov     al, [bx+2FF6h]
+    mov     al, byte_3E766[bx]
     mov     [bp+var_12], al
     inc     [bp+var_73A]
 loc_207CF:
@@ -4224,7 +4225,7 @@ loc_207CF:
     cbw
     mov     bx, ax
     shl     bx, 1
-    mov     bx, [bx-73C4h]
+    mov     bx, terrainrows[bx]
     mov     al, [bp+var_3A4]
     cbw
     add     bx, ax
@@ -4235,7 +4236,7 @@ loc_207CF:
     mov     bl, al
     sub     bh, bh
     mov     al, [bp+var_12]
-    cmp     [bx+2FE2h], al
+    cmp     byte_3E752[bx], al
     jz      short loc_207BE
     cmp     al, 63h ; 'c'
     jz      short loc_207BE
@@ -4294,7 +4295,7 @@ loc_2087A:
     cbw
     mov     bx, ax
     shl     bx, 1
-    mov     bx, [bx-73C4h]
+    mov     bx, terrainrows[bx]
     mov     al, [bp+var_3A4]
     cbw
     add     bx, ax
@@ -4321,7 +4322,7 @@ loc_208C9:
     cbw
     mov     bx, ax
     shl     bx, 1
-    mov     bx, [bx-5A30h]
+    mov     bx, trackrows[bx]
     mov     al, [bp+var_3A4]
     cbw
     add     bx, ax
@@ -4340,7 +4341,7 @@ loc_208F3:
     cbw
     mov     bx, ax
     shl     bx, 1
-    mov     bx, [bx-5A30h]
+    mov     bx, trackrows[bx]
     mov     al, [bp+var_3A4]
     cbw
     add     bx, ax
@@ -4501,14 +4502,14 @@ loc_20AC2:
     shl     ax, 1
     mov     [bp+var_AEC], ax
     mov     bx, ax
-    mov     bx, [bx-5A30h]
+    mov     bx, trackrows[bx]
     add     bx, [bp+var_AEA]
     add     bx, word ptr trackdata14
     mov     es, word ptr trackdata14+2
     mov     al, es:[bx]
     mov     [bp+var_E], al
     mov     bx, [bp+var_AEC]
-    mov     bx, [bx-73C4h]
+    mov     bx, terrainrows[bx]
     add     bx, [bp+var_AEA]
     add     bx, word ptr trackdata15
     mov     es, word ptr trackdata15+2
@@ -4550,7 +4551,7 @@ loc_20B50:
     cbw
     mov     bx, ax
     shl     bx, 1
-    mov     bx, [bx-5A30h]
+    mov     bx, trackrows[bx]
     mov     al, [bp+var_3A4]
     cbw
     add     bx, ax
@@ -4679,7 +4680,7 @@ loc_20C54:
     shl     bx, 1
     add     bx, ax
     shl     bx, 1
-    mov     ax, [bx+2098h]
+    mov     ax, word ptr sceneshapes.scene_unk[bx]
     mov     [bp+var_39C], ax
     or      ax, ax
     jnz     short loc_20C78
@@ -4714,7 +4715,7 @@ loc_20CAC:
     cbw
     mov     bx, ax
     shl     bx, 1
-    mov     bx, [bx-5A30h]
+    mov     bx, trackrows[bx]
     mov     al, [bp+var_3A4]
     cbw
     add     bx, ax
@@ -4982,7 +4983,7 @@ loc_20F6A:
     cbw
     mov     bx, ax
     shl     bx, 1
-    mov     bx, [bx-5A30h]
+    mov     bx, trackrows[bx]
     mov     al, [bp+var_3A4]
     cbw
     add     bx, ax
@@ -5048,7 +5049,7 @@ loc_20FE0:
     shl     bx, 1
     add     bx, ax
     shl     bx, 1
-    mov     ax, [bx+2098h]
+    mov     ax, word ptr sceneshapes.scene_unk[bx]
     mov     [bp+var_39C], ax
     mov     al, [bp+var_742]
     sub     ah, ah
@@ -5090,7 +5091,7 @@ loc_2109E:
     shl     bx, 1
     add     bx, ax
     shl     bx, 1
-    mov     ax, [bx+2098h]
+    mov     ax, word ptr sceneshapes.scene_unk[bx]
     mov     [bp+var_39C], ax
     mov     al, [bp+var_742]
     sub     ah, ah
@@ -5113,7 +5114,7 @@ loc_2109E:
     shl     bx, 1
     add     bx, ax
     shl     bx, 1
-    mov     ax, [bx+2098h]
+    mov     ax, word ptr sceneshapes.scene_unk[bx]
     mov     [bp+var_39C], ax
     mov     al, [bp+var_3AA]
     sub     ah, ah
@@ -5185,7 +5186,7 @@ loc_21174:
     mov     al, [bp+var_74C]
     cbw
     mov     bx, ax
-    mov     al, [bx+2FB4h]
+    mov     al, byte_3E724[bx]
     jmp     short loc_211A7
     ; align 2
     db 144
@@ -5193,7 +5194,7 @@ loc_2119C:
     mov     al, [bp+var_74C]
     cbw
     mov     bx, ax
-    mov     al, [bx+2FAEh]
+    mov     al, byte_3E71E[bx]
 loc_211A7:
     mov     [bp+var_74C], al
     mov     bx, [bp+var_3AE]
@@ -5264,7 +5265,7 @@ loc_2123F:
     cbw
     mov     bx, ax
     shl     bx, 1
-    mov     bx, [bx-73C4h]
+    mov     bx, terrainrows[bx]
     mov     al, [bp+var_10]
     cbw
     add     bx, ax
@@ -5292,20 +5293,20 @@ loc_2127E:
     shl     bx, 1
     add     bx, ax
     shl     bx, 1
-    test    byte ptr [bx+20A3h], 1
+    test    sceneshapes.scene_translateflag[bx], 1
     jz      short loc_212C2
     mov     al, [bp+var_39A]
     cbw
     mov     bx, ax
     shl     bx, 1
-    mov     ax, [bx-7E84h]
+    mov     ax, trackpos[bx]
     jmp     short loc_212CF
 loc_212C2:
     mov     al, [bp+var_39A]
     cbw
     mov     bx, ax
     shl     bx, 1
-    mov     ax, [bx-55EAh]
+    mov     ax, trackcenterpos[bx]
 loc_212CF:
     add     ax, [bp+var_AD6]
     mov     cx, ax
@@ -5326,20 +5327,20 @@ loc_212CF:
     shl     bx, 1
     add     bx, ax
     shl     bx, 1
-    test    byte ptr [bx+20A3h], 2
+    test    sceneshapes.scene_translateflag[bx], 2
     jz      short loc_21314
     mov     al, [bp+var_10]
     cbw
     mov     bx, ax
     shl     bx, 1
-    mov     ax, [bx+7558h]
+    mov     ax, (trackpos2+2)[bx]
     jmp     short loc_21320
 loc_21314:
     mov     al, [bp+var_10]
     cbw
     mov     bx, ax
     shl     bx, 1
-    mov     ax, [bx-599Eh]
+    mov     ax, trackcenterpos2[bx]
 loc_21320:
     add     ax, [bp+var_ADA]
     mov     cx, ax
@@ -5356,7 +5357,7 @@ loc_21320:
     cbw
     mov     bx, ax
     shl     bx, 1
-    mov     bx, [bx-5A30h]
+    mov     bx, trackrows[bx]
     mov     al, [bp+var_10]
     cbw
     add     bx, ax
@@ -5384,7 +5385,7 @@ loc_2137C:
     shl     bx, 1
     add     bx, ax
     shl     bx, 1
-    mov     ax, [bx+2098h]
+    mov     ax, word ptr sceneshapes.scene_unk[bx]
     mov     [bp+var_39C], ax
     mov     al, [bp+var_742]
     sub     ah, ah
@@ -5562,7 +5563,7 @@ loc_2152A:
     cbw
     mov     bx, ax
     shl     bx, 1
-    mov     bx, [bx-73C4h]
+    mov     bx, terrainrows[bx]
     mov     al, [bp+var_3A4]
     cbw
     add     bx, ax
@@ -5630,13 +5631,13 @@ loc_2159F:
     shl     bx, 1
     add     bx, ax
     shl     bx, 1
-    test    byte ptr [bx+20A3h], 1
+    test    sceneshapes.scene_translateflag[bx], 1
     jz      short loc_21614
     mov     al, [bp+var_73A]
     cbw
     mov     bx, ax
     shl     bx, 1
-    mov     ax, [bx-7E84h]
+    mov     ax, trackpos[bx]
     add     ax, [bp+var_AD6]
     mov     bx, [bp+var_AEC]
     jmp     short loc_2162F
@@ -5645,7 +5646,7 @@ loc_21614:
     cbw
     mov     bx, ax
     shl     bx, 1
-    mov     ax, [bx-55EAh]
+    mov     ax, trackcenterpos[bx]
     add     ax, [bp+var_AD6]
     mov     bx, di
     mov     cx, bx
@@ -5663,20 +5664,20 @@ loc_2162F:
     shl     bx, 1
     add     bx, ax
     shl     bx, 1
-    test    byte ptr [bx+20A3h], 2
+    test    sceneshapes.scene_translateflag[bx], 2
     jz      short loc_21660
     mov     al, [bp+var_3A4]
     cbw
     mov     bx, ax
     shl     bx, 1
-    mov     ax, [bx+7558h]
+    mov     ax, (trackpos2+2)[bx]
     jmp     short loc_2166D
 loc_21660:
     mov     al, [bp+var_3A4]
     cbw
     mov     bx, ax
     shl     bx, 1
-    mov     ax, [bx-599Eh]
+    mov     ax, trackcenterpos2[bx]
 loc_2166D:
     add     ax, [bp+var_ADA]
     mov     bx, di
@@ -5717,7 +5718,7 @@ loc_21697:
     cbw
     mov     bx, ax
     shl     bx, 1
-    mov     ax, [bx-73C4h]
+    mov     ax, terrainrows[bx]
     mov     cx, ax
     mov     al, [bp+var_3A4]
     cbw
@@ -5757,7 +5758,7 @@ nosmart
     shl     bx, 1
     add     bx, ax
     shl     bx, 1
-    mov     ax, [bx+2098h]
+    mov     ax, word ptr sceneshapes.scene_unk[bx]
     mov     [bp+var_3AE], ax
     cmp     [bp+var_AE4], 0
     jnz     short loc_21747
@@ -5883,7 +5884,7 @@ sub_217CA proc far
 loc_21846:
     les     bx, [bp+var_A]
     mov     al, es:[bx+si]
-    mov     [si-6A20h], al
+    mov     byte_44D50[si], al
     inc     si
     cmp     si, 10h
     jl      short loc_21846

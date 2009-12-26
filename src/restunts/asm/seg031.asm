@@ -398,7 +398,7 @@ loc_3A0D9:
     add     sp, 4
     push    cs
     call    near ptr load_palandcursor
-    call    set_sprite2_as_1
+    call    sprite_copy_2_to_1
     mov     ax, 78h ; 'x'
     push    ax
     sub     ax, ax
@@ -715,7 +715,7 @@ loc_3A300:
     mov     [bp+var_30A], dx
     push    word ptr dword_449C2+2
     push    word ptr dword_449C2
-    call    set_sprite1
+    call    sprite_set_1
     add     sp, 4
     sub     ax, ax
     push    ax
@@ -732,7 +732,7 @@ loc_3A300:
     add     sp, 8
     push    word ptr dword_44364+2
     push    word ptr dword_44364
-    call    set_sprite1
+    call    sprite_set_1
     add     sp, 4
     sub     ax, ax
     push    ax

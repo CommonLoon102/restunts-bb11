@@ -70,7 +70,7 @@ _main proc far
     var_E = word ptr -14
     var_C = word ptr -12
     var_A = byte ptr -10
-    var_4 = word ptr -4
+    trkptr = word ptr -4
     var_2 = word ptr -2
      s = byte ptr 0
      r = byte ptr 2
@@ -177,99 +177,99 @@ loc_10086:
     push    ax
     call    mmgr_alloc_resbytes
     add     sp, 6
-    mov     [bp+var_4], ax
+    mov     [bp+trkptr], ax
     mov     [bp+var_2], dx
     mov     word ptr trackdata1, ax
     mov     word ptr trackdata1+2, dx
-    add     [bp+var_4], 70Ah
-    mov     ax, [bp+var_4]
+    add     [bp+trkptr], 70Ah
+    mov     ax, [bp+trkptr]
     mov     word ptr trackdata2, ax
     mov     word ptr trackdata2+2, dx
-    add     [bp+var_4], 70Ah
-    mov     ax, [bp+var_4]
+    add     [bp+trkptr], 70Ah
+    mov     ax, [bp+trkptr]
     mov     word ptr trackdata3, ax
     mov     word ptr trackdata3+2, dx
-    add     [bp+var_4], 70Ah
-    mov     ax, [bp+var_4]
+    add     [bp+trkptr], 70Ah
+    mov     ax, [bp+trkptr]
     mov     word ptr trackdata4, ax
     mov     word ptr trackdata4+2, dx
-    add     [bp+var_4], 80h
-    mov     ax, [bp+var_4]
+    add     [bp+trkptr], 80h
+    mov     ax, [bp+trkptr]
     mov     word ptr trackdata5, ax
     mov     word ptr trackdata5+2, dx
-    add     [bp+var_4], 80h
-    mov     ax, [bp+var_4]
+    add     [bp+trkptr], 80h
+    mov     ax, [bp+trkptr]
     mov     word ptr trackdata6, ax
     mov     word ptr trackdata6+2, dx
-    add     [bp+var_4], 80h
-    mov     ax, [bp+var_4]
+    add     [bp+trkptr], 80h
+    mov     ax, [bp+trkptr]
     mov     word ptr trackdata7, ax
     mov     word ptr trackdata7+2, dx
-    add     [bp+var_4], 80h
-    mov     ax, [bp+var_4]
+    add     [bp+trkptr], 80h
+    mov     ax, [bp+trkptr]
     mov     word ptr trackdata8, ax
     mov     word ptr trackdata8+2, dx
-    add     [bp+var_4], 60h
-    mov     ax, [bp+var_4]
+    add     [bp+trkptr], 60h
+    mov     ax, [bp+trkptr]
     mov     word ptr trackdata9, ax
     mov     word ptr trackdata9+2, dx
-    add     [bp+var_4], 180h
-    mov     ax, [bp+var_4]
+    add     [bp+trkptr], 180h
+    mov     ax, [bp+trkptr]
     mov     word ptr trackdata10, ax
     mov     word ptr trackdata10+2, dx
-    add     [bp+var_4], 120h
-    mov     ax, [bp+var_4]
+    add     [bp+trkptr], 120h
+    mov     ax, [bp+trkptr]
     mov     word ptr trackdata11, ax
     mov     word ptr trackdata11+2, dx
-    add     [bp+var_4], 16Ch
-    mov     ax, [bp+var_4]
+    add     [bp+trkptr], 16Ch
+    mov     ax, [bp+trkptr]
     mov     word ptr trackdata12, ax
     mov     word ptr trackdata12+2, dx
-    add     [bp+var_4], 0F0h
-    mov     ax, [bp+var_4]
+    add     [bp+trkptr], 0F0h
+    mov     ax, [bp+trkptr]
     mov     word ptr trackdata13, ax
     mov     word ptr trackdata13+2, dx
-    add     [bp+var_4], 1Ah
-    mov     ax, [bp+var_4]
+    add     [bp+trkptr], 1Ah
+    mov     ax, [bp+trkptr]
     mov     word ptr trackdata14, ax
     mov     word ptr trackdata14+2, dx
-    add     [bp+var_4], 385h
-    mov     ax, [bp+var_4]
+    add     [bp+trkptr], 385h
+    mov     ax, [bp+trkptr]
     mov     word ptr trackdata15, ax
     mov     word ptr trackdata15+2, dx
-    add     [bp+var_4], 385h
-    mov     ax, [bp+var_4]
+    add     [bp+trkptr], 385h
+    mov     ax, [bp+trkptr]
     mov     word ptr trackdata16, ax
     mov     word ptr trackdata16+2, dx
-    add     [bp+var_4], 2EE0h
-    mov     ax, [bp+var_4]
+    add     [bp+trkptr], 2EE0h
+    mov     ax, [bp+trkptr]
     mov     word ptr trackdata17, ax
     mov     word ptr trackdata17+2, dx
-    add     [bp+var_4], 385h
-    mov     ax, [bp+var_4]
+    add     [bp+trkptr], 385h
+    mov     ax, [bp+trkptr]
     mov     word ptr trackdata18, ax
     mov     word ptr trackdata18+2, dx
-    add     [bp+var_4], 385h
-    mov     ax, [bp+var_4]
+    add     [bp+trkptr], 385h
+    mov     ax, [bp+trkptr]
     mov     word ptr trackdata19, ax
     mov     word ptr trackdata19+2, dx
-    add     [bp+var_4], 385h
-    mov     ax, [bp+var_4]
+    add     [bp+trkptr], 385h
+    mov     ax, [bp+trkptr]
     mov     word ptr trackdata20, ax
     mov     word ptr trackdata20+2, dx
-    add     [bp+var_4], 7ACh
-    mov     ax, [bp+var_4]
+    add     [bp+trkptr], 7ACh
+    mov     ax, [bp+trkptr]
     mov     word ptr trackdata21, ax
     mov     word ptr trackdata21+2, dx
-    add     [bp+var_4], 385h
-    mov     ax, [bp+var_4]
+    add     [bp+trkptr], 385h
+    mov     ax, [bp+trkptr]
     mov     word ptr trackdata22, ax
     mov     word ptr trackdata22+2, dx
-    add     [bp+var_4], 385h
-    mov     ax, [bp+var_4]
+    add     [bp+trkptr], 385h
+    mov     ax, [bp+trkptr]
     mov     word ptr trackdata23, ax
     mov     word ptr trackdata23+2, dx
-    add     [bp+var_4], 30h
+    add     [bp+trkptr], 30h
     call    sub_22532
     mov     ax, offset aKevin; "kevin"
     push    ax
@@ -347,7 +347,7 @@ _do_game0:
 _do_game1:
     push    si
     push    di
-    mov     di, offset unk_45530
+    mov     di, offset gameconfigcopy
     mov     si, offset gameconfig
     push    ds
     pop     es
@@ -406,8 +406,8 @@ _init_replay:
     push    ax
     call    mmgr_alloc_resbytes
     add     sp, 6
-    mov     word_45A20, ax
-    mov     word_45A22, dx
+    mov     word ptr cvxptr, ax
+    mov     word ptr cvxptr+2, dx
     mov     ax, 0FFFFh
     push    ax
     call    init_game_state
@@ -530,7 +530,7 @@ loc_104D2:
     push    si
     push    di
     mov     di, offset gameconfig
-    mov     si, offset unk_45530
+    mov     si, offset gameconfigcopy
     push    ds
     pop     es
     mov     cx, 0Dh
@@ -557,8 +557,8 @@ loc_104FC:
     inc     si
     cmp     si, 51h ; 'Q'
     jl      short loc_104FC
-    push    word_45A22
-    push    word_45A20
+    push    word ptr cvxptr+2
+    push    word ptr cvxptr
     call    mmgr_op_unk2
     add     sp, 4
     cmp     byte_44AE2, 0
@@ -5062,7 +5062,7 @@ loc_130E2:
     push    ax
     mov     ax, 0EEh ; 'î'
     push    ax              ; char *
-    call    sub_22C92
+    call    load_replay_file
     add     sp, 4
     mov     [bp+var_4], 1
     jmp     short loc_13163
@@ -6403,7 +6403,7 @@ loc_13DDF:
     jz      short loc_13E8A
     push    word ptr [bp+var_46+2]
     push    word ptr [bp+var_46]
-    call    set_sprite1
+    call    sprite_set_1
     add     sp, 4
     sub     ax, ax
     push    ax
@@ -6826,7 +6826,7 @@ loc_1424D:
     jz      short loc_142F8
     push    word ptr [bp+var_46+2]
     push    word ptr [bp+var_46]
-    call    set_sprite1
+    call    sprite_set_1
     add     sp, 4
     sub     ax, ax
     push    ax

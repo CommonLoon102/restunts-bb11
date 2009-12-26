@@ -179,8 +179,8 @@ seg012 segment byte public 'STUNTSC' use16
     extrn ported_file_write_fatal_:proc
     extrn video_add_exithandler:proc
     extrn video_on_exit:proc
-    extrn sub_3260E:proc
-    extrn sub_3262E:proc
+    extrn sprite_copy_both_to_arg:proc
+    extrn sprite_copy_arg_to_both:proc
     extrn sub_3264A:proc
     extrn sub_3265B:proc
     extrn nopsub_326BA:proc
@@ -292,19 +292,8 @@ seg012 segment byte public 'STUNTSC' use16
     extrn sub_3477E:proc
     extrn loc_34799
     extrn sub_347DC:proc
-    extrn word_34942:word
-    extrn off_3494A:word
-    extrn word_3494C:word
-    extrn word_3494E:word
-    extrn word_34950:word
-    extrn word_34952:word
-    extrn word_34954:word
-    extrn word_34958:word
-    extrn word_3495A:word
-    extrn word_3495C:word
-    extrn unk_3495E:byte
-    extrn word_34960:word
-    extrn off_34968:word
+    extrn sprite1:SPRITE
+    extrn sprite2:SPRITE
     extrn lineoffsets:word
     extrn sub_34B0C:proc
     extrn set_fontdefseg:proc
@@ -312,8 +301,8 @@ seg012 segment byte public 'STUNTSC' use16
     extrn make_wnd_sprite:proc
     extrn next_wnd_def:word
     extrn wnd_defs:byte
-    extrn set_sprite1:proc
-    extrn set_sprite2_as_1:proc
+    extrn sprite_set_1:proc
+    extrn sprite_copy_2_to_1:proc
     extrn sub_35B26:proc
     extrn sub_35B76:proc
     extrn sub_35C4E:proc

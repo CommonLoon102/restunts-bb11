@@ -82,7 +82,7 @@ dseg segment byte public 'STUNTSD' use16
     public byte_3B8F6
     public byte_3B8F7
     public kbormouse
-    public byte_3B8F9
+    public mouse_isdirty
     public byte_3B8FA
     public byte_3B8FB
     public byte_3B8FC
@@ -444,6 +444,13 @@ dseg segment byte public 'STUNTSD' use16
     public aExp2_1
     public aExp3_1
     public aStxxx
+    public aTcomp
+    public byte_3E71E
+    public byte_3E724
+    public byte_3E72A
+    public byte_3E73E
+    public byte_3E752
+    public byte_3E766
     public aNam
     public aPath
     public aSped
@@ -472,14 +479,20 @@ dseg segment byte public 'STUNTSD' use16
     public aCop
     public unk_3E7FC
     public unk_3E82C
-    public byte_3E916
-    public byte_3E917
-    public byte_3E918
-    public byte_3E919
-    public byte_3E920
-    public byte_3E921
-    public byte_3E922
-    public byte_3E923
+    public a_rpl
+    public aWhl1whl2whl3ins2gboxins1i
+    public aGnobgnabdotDotadot1dot2
+    public aDig0dig1dig2dig3dig4dig5d
+    public aDash
+    public aRoof
+    public aRoof_0
+    public aDast
+    public aDasm
+    public aRoof_1
+    public aRoof_2
+    public aDash_0
+    public aStdaxxxx
+    public aStdbxxxx
     public aEng1
     public aEng
     public aFontled_fnt
@@ -512,9 +525,9 @@ dseg segment byte public 'STUNTSD' use16
     public word_3EBB2
     public word_3EBB4
     public word_3EBB6
-    public word_3EBB8
-    public word_3EBBA
-    public word_3EBBC
+    public mouse_oldx
+    public mouse_oldy
+    public mouse_oldbut
     public word_3EBBE
     public word_3EBC0
     public word_3EBC2
@@ -829,11 +842,16 @@ dseg segment byte public 'STUNTSD' use16
     public mat_unk2
     public unk_40D58
     public byte_40D6A
-    public word_40D7C
-    public word_40D7E
+    public word_40D6C
+    public word_40D70
+    public word_40D74
+    public word_40D78
+    public stdresptr
     public dword_40D80
     public word_40D84
     public word_40D86
+    public word_40D88
+    public word_40D8A
     public word_40DB0
     public word_40DB2
     public word_40DB4
@@ -857,8 +875,15 @@ dseg segment byte public 'STUNTSD' use16
     public dword_40DDC
     public word_40DE0
     public word_40DE2
+    public word_40DE4
+    public word_40DE6
     public dword_40DEC
+    public byte_40DF0
+    public word_40DF2
+    public word_40DF6
+    public byte_40DFA
     public dword_40DFC
+    public word_40E00
     public word_40E0E
     public word_40E10
     public byte_40E6C
@@ -875,8 +900,6 @@ dseg segment byte public 'STUNTSD' use16
     public word_40ED0
     public polyinfoptr
     public word_411F6
-    public unk_41690
-    public unk_416AE
     public mat_y0
     public word_41850
     public word_41852
@@ -1040,7 +1063,7 @@ dseg segment byte public 'STUNTSD' use16
     public mat_unk
     public byte_442E4
     public word_442E6
-    public word_442E8
+    public mouse_butstate
     public byte_4432A
     public word_4432C
     public word_4432E
@@ -1110,6 +1133,7 @@ dseg segment byte public 'STUNTSD' use16
     public byte_449CE
     public word_449D0
     public trackdata17
+    public byte_449D8
     public byte_449DA
     public trackdata9
     public word_449E0
@@ -1210,7 +1234,7 @@ dseg segment byte public 'STUNTSD' use16
     public byte_45520
     public byte_45525
     public byte_4552F
-    public unk_45530
+    public gameconfigcopy
     public word_4554A
     public rect_array_unk
     public word_45574
@@ -1257,8 +1281,7 @@ dseg segment byte public 'STUNTSD' use16
     public word_459FC
     public word_459FE
     public word_45A00
-    public word_45A20
-    public word_45A22
+    public cvxptr
     public word_45A24
     public unk_45A26
     public word_45D06
@@ -1305,7 +1328,7 @@ dseg segment byte public 'STUNTSD' use16
     public byte_46167
     public skybox_res_ofs
     public skybox_res_seg
-    public word_4616C
+    public mouse_xpos
     public byte_4616E
     public byte_4616F
     public word_46170
@@ -1321,7 +1344,7 @@ dseg segment byte public 'STUNTSD' use16
     public byte_461C8
     public word_461CA
     public word_461CC
-    public word_461CE
+    public mouse_ypos
     public word_461D0
     public word_463D2
     public word_463D4
@@ -1731,7 +1754,7 @@ byte_3B8F5     db 0
 byte_3B8F6     db 0
 byte_3B8F7     db 0
 kbormouse     db 0
-byte_3B8F9     db 0
+mouse_isdirty     db 0
 byte_3B8FA     db 0
 byte_3B8FB     db 0
 byte_3B8FC     db 0
@@ -13472,25 +13495,25 @@ aStxxx     db 115
     db 0
     db 0
     db 0
-    db 116
+aTcomp     db 116
     db 99
     db 111
     db 109
     db 112
     db 0
+byte_3E71E     db 0
+    db 0
+    db 1
+    db 0
+    db 1
+    db 0
+byte_3E724     db 0
+    db 1
     db 0
     db 0
     db 1
     db 0
-    db 1
-    db 0
-    db 0
-    db 1
-    db 0
-    db 0
-    db 1
-    db 0
-    db 0
+byte_3E72A     db 0
     db 0
     db 0
     db 0
@@ -13510,7 +13533,7 @@ aStxxx     db 115
     db 3
     db 2
     db 0
-    db 0
+byte_3E73E     db 0
     db 0
     db 0
     db 0
@@ -13530,7 +13553,7 @@ aStxxx     db 115
     db 1
     db 1
     db 0
-    db 0
+byte_3E752     db 0
     db 0
     db 0
     db 0
@@ -13550,7 +13573,7 @@ aStxxx     db 115
     db 4
     db 1
     db 0
-    db 0
+byte_3E766     db 0
     db 0
     db 0
     db 0
@@ -13770,12 +13793,12 @@ unk_3E82C     db 244
     db 127
     db 127
     db 127
-    db 46
+a_rpl     db 46
     db 114
     db 112
     db 108
     db 0
-    db 119
+aWhl1whl2whl3ins2gboxins1i     db 119
     db 104
     db 108
     db 49
@@ -13812,7 +13835,7 @@ unk_3E82C     db 244
     db 109
     db 51
     db 0
-    db 103
+aGnobgnabdotDotadot1dot2     db 103
     db 110
     db 111
     db 98
@@ -13837,7 +13860,7 @@ unk_3E82C     db 244
     db 116
     db 50
     db 0
-    db 100
+aDig0dig1dig2dig3dig4dig5d     db 100
     db 105
     db 103
     db 48
@@ -13878,64 +13901,64 @@ unk_3E82C     db 244
     db 103
     db 57
     db 0
-    db 100
+aDash     db 100
     db 97
     db 115
     db 104
     db 0
-    db 114
+aRoof     db 114
     db 111
     db 111
     db 102
     db 0
-    db 114
+aRoof_0     db 114
     db 111
     db 111
     db 102
     db 0
-    db 100
+aDast     db 100
     db 97
     db 115
     db 116
     db 0
-    db 100
+aDasm     db 100
     db 97
     db 115
     db 109
     db 0
-    db 114
+aRoof_1     db 114
     db 111
     db 111
     db 102
     db 0
-    db 114
+aRoof_2     db 114
     db 111
     db 111
     db 102
     db 0
-    db 100
+aDash_0     db 100
     db 97
     db 115
     db 104
     db 0
-    db 115
+aStdaxxxx     db 115
     db 116
     db 100
     db 97
-byte_3E916     db 120
-byte_3E917     db 120
-byte_3E918     db 120
-byte_3E919     db 120
+    db 120
+    db 120
+    db 120
+    db 120
     db 0
     db 0
-    db 115
+aStdbxxxx     db 115
     db 116
     db 100
     db 98
-byte_3E920     db 120
-byte_3E921     db 120
-byte_3E922     db 120
-byte_3E923     db 120
+    db 120
+    db 120
+    db 120
+    db 120
     db 0
 aEng1     db 101
     db 110
@@ -14583,9 +14606,9 @@ word_3EBB0     dw 0
 word_3EBB2     dw 0
 word_3EBB4     dw 0
 word_3EBB6     dw 0
-word_3EBB8     dw 0
-word_3EBBA     dw 0
-word_3EBBC     dw 0
+mouse_oldx     dw 0
+mouse_oldy     dw 0
+mouse_oldbut     dw 0
 word_3EBBE     dw 0
 word_3EBC0     dw 0
 word_3EBC2     dw 0
@@ -22676,31 +22699,24 @@ unk_40D58     db 0
     db 0
 byte_40D6A     db 0
     db 0
+word_40D6C     dw 0
     db 0
     db 0
+word_40D70     dw 0
     db 0
     db 0
+word_40D74     dw 0
     db 0
     db 0
+word_40D78     dw 0
     db 0
     db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-word_40D7C     dw 0
-word_40D7E     dw 0
+stdresptr     dd 0
 dword_40D80     dd 0
 word_40D84     dw 0
 word_40D86     dw 0
-    db 0
-    db 0
-    db 0
-    db 0
+word_40D88     dw 0
+word_40D8A     dw 0
     db 0
     db 0
     db 0
@@ -22760,30 +22776,25 @@ word_40DDA     dw 0
 dword_40DDC     dd 0
 word_40DE0     dw 0
 word_40DE2     dw 0
-    db 0
-    db 0
-    db 0
-    db 0
+word_40DE4     dw 0
+word_40DE6     dw 0
     db 0
     db 0
     db 0
     db 0
 dword_40DEC     dd 0
+byte_40DF0     db 0
+    db 0
+word_40DF2     dw 0
     db 0
     db 0
+word_40DF6     dw 0
     db 0
     db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
+byte_40DFA     db 0
     db 0
 dword_40DFC     dd 0
-    db 0
-    db 0
+word_40E00     dw 0
     db 0
     db 0
     db 0
@@ -24959,7 +24970,6 @@ word_411F6     dw 0
     db 0
     db 0
     db 0
-unk_41690     db 0
     db 0
     db 0
     db 0
@@ -24989,7 +24999,8 @@ unk_41690     db 0
     db 0
     db 0
     db 0
-unk_416AE     db 0
+    db 0
+    db 0
     db 0
     db 0
     db 0
@@ -36068,7 +36079,7 @@ mat_unk     db 0
 byte_442E4     db 0
     db 0
 word_442E6     dw 0
-word_442E8     dw 0
+mouse_butstate     dw 0
     db 0
     db 0
     db 0
@@ -37741,7 +37752,7 @@ word_449D0     dw 0
     db 0
     db 0
 trackdata17     dd 0
-    db 0
+byte_449D8     db 0
     db 0
 byte_449DA     db 0
     db 0
@@ -40528,7 +40539,7 @@ byte_45525     db 0
     db 0
     db 0
 byte_4552F     db 0
-unk_45530     db 0
+gameconfigcopy     db 0
     db 0
     db 0
     db 0
@@ -41751,8 +41762,7 @@ word_45A00     dw 0
     db 0
     db 0
     db 0
-word_45A20     dw 0
-word_45A22     dw 0
+cvxptr     dd 0
 word_45A24     dw 0
 unk_45A26     db 0
     db 0
@@ -43509,7 +43519,7 @@ byte_46166     db 0
 byte_46167     db 0
 skybox_res_ofs     dw 0
 skybox_res_seg     dw 0
-word_4616C     dw 0
+mouse_xpos     dw 0
 byte_4616E     db 0
 byte_4616F     db 0
 word_46170     dw 0
@@ -43594,7 +43604,7 @@ byte_461C8     db 0
     db 0
 word_461CA     dw 0
 word_461CC     dw 0
-word_461CE     dw 0
+mouse_ypos     dw 0
 word_461D0     dw 0
     db 0
     db 0

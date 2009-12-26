@@ -6,7 +6,7 @@ seg005 segment byte public 'STUNTSC' use16
     extrn sub_22576:proc
     extrn sub_22698:proc
     extrn sub_2298C:proc
-    extrn sub_22C92:proc
+    extrn load_replay_file:proc
     extrn write_track:proc
     extrn setup_car_shapes:proc
     extrn setup_player_cars:proc

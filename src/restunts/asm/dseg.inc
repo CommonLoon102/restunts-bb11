@@ -34,7 +34,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn byte_3B8F6:byte
     extrn byte_3B8F7:byte
     extrn kbormouse:byte
-    extrn byte_3B8F9:byte
+    extrn mouse_isdirty:byte
     extrn byte_3B8FA:byte
     extrn byte_3B8FB:byte
     extrn byte_3B8FC:byte
@@ -396,6 +396,13 @@ dseg segment byte public 'STUNTSD' use16
     extrn aExp2_1:byte
     extrn aExp3_1:byte
     extrn aStxxx:byte
+    extrn aTcomp:byte
+    extrn byte_3E71E:byte
+    extrn byte_3E724:byte
+    extrn byte_3E72A:byte
+    extrn byte_3E73E:byte
+    extrn byte_3E752:byte
+    extrn byte_3E766:byte
     extrn aNam:byte
     extrn aPath:byte
     extrn aSped:byte
@@ -424,14 +431,20 @@ dseg segment byte public 'STUNTSD' use16
     extrn aCop:byte
     extrn unk_3E7FC:byte
     extrn unk_3E82C:byte
-    extrn byte_3E916:byte
-    extrn byte_3E917:byte
-    extrn byte_3E918:byte
-    extrn byte_3E919:byte
-    extrn byte_3E920:byte
-    extrn byte_3E921:byte
-    extrn byte_3E922:byte
-    extrn byte_3E923:byte
+    extrn a_rpl:byte
+    extrn aWhl1whl2whl3ins2gboxins1i:byte
+    extrn aGnobgnabdotDotadot1dot2:byte
+    extrn aDig0dig1dig2dig3dig4dig5d:byte
+    extrn aDash:byte
+    extrn aRoof:byte
+    extrn aRoof_0:byte
+    extrn aDast:byte
+    extrn aDasm:byte
+    extrn aRoof_1:byte
+    extrn aRoof_2:byte
+    extrn aDash_0:byte
+    extrn aStdaxxxx:byte
+    extrn aStdbxxxx:byte
     extrn aEng1:byte
     extrn aEng:byte
     extrn aFontled_fnt:byte
@@ -464,9 +477,9 @@ dseg segment byte public 'STUNTSD' use16
     extrn word_3EBB2:word
     extrn word_3EBB4:word
     extrn word_3EBB6:word
-    extrn word_3EBB8:word
-    extrn word_3EBBA:word
-    extrn word_3EBBC:word
+    extrn mouse_oldx:word
+    extrn mouse_oldy:word
+    extrn mouse_oldbut:word
     extrn word_3EBBE:word
     extrn word_3EBC0:word
     extrn word_3EBC2:word
@@ -781,11 +794,16 @@ dseg segment byte public 'STUNTSD' use16
     extrn mat_unk2:MATRIX
     extrn unk_40D58:byte
     extrn byte_40D6A:byte
-    extrn word_40D7C:word
-    extrn word_40D7E:word
+    extrn word_40D6C:word
+    extrn word_40D70:word
+    extrn word_40D74:word
+    extrn word_40D78:word
+    extrn stdresptr:dword
     extrn dword_40D80:dword
     extrn word_40D84:word
     extrn word_40D86:word
+    extrn word_40D88:word
+    extrn word_40D8A:word
     extrn word_40DB0:word
     extrn word_40DB2:word
     extrn word_40DB4:word
@@ -809,8 +827,15 @@ dseg segment byte public 'STUNTSD' use16
     extrn dword_40DDC:dword
     extrn word_40DE0:word
     extrn word_40DE2:word
+    extrn word_40DE4:word
+    extrn word_40DE6:word
     extrn dword_40DEC:dword
+    extrn byte_40DF0:byte
+    extrn word_40DF2:word
+    extrn word_40DF6:word
+    extrn byte_40DFA:byte
     extrn dword_40DFC:dword
+    extrn word_40E00:word
     extrn word_40E0E:word
     extrn word_40E10:word
     extrn byte_40E6C:byte
@@ -827,8 +852,6 @@ dseg segment byte public 'STUNTSD' use16
     extrn word_40ED0:word
     extrn polyinfoptr:dword
     extrn word_411F6:word
-    extrn unk_41690:byte
-    extrn unk_416AE:byte
     extrn mat_y0:MATRIX
     extrn word_41850:word
     extrn word_41852:word
@@ -992,7 +1015,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn mat_unk:MATRIX
     extrn byte_442E4:byte
     extrn word_442E6:word
-    extrn word_442E8:word
+    extrn mouse_butstate:word
     extrn byte_4432A:byte
     extrn word_4432C:word
     extrn word_4432E:word
@@ -1062,6 +1085,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn byte_449CE:byte
     extrn word_449D0:word
     extrn trackdata17:dword
+    extrn byte_449D8:byte
     extrn byte_449DA:byte
     extrn trackdata9:dword
     extrn word_449E0:word
@@ -1162,7 +1186,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn byte_45520:byte
     extrn byte_45525:byte
     extrn byte_4552F:byte
-    extrn unk_45530:byte
+    extrn gameconfigcopy:GAMEINFO
     extrn word_4554A:word
     extrn rect_array_unk:word
     extrn word_45574:word
@@ -1209,8 +1233,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn word_459FC:word
     extrn word_459FE:word
     extrn word_45A00:word
-    extrn word_45A20:word
-    extrn word_45A22:word
+    extrn cvxptr:dword
     extrn word_45A24:word
     extrn unk_45A26:byte
     extrn word_45D06:word
@@ -1257,7 +1280,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn byte_46167:byte
     extrn skybox_res_ofs:word
     extrn skybox_res_seg:word
-    extrn word_4616C:word
+    extrn mouse_xpos:word
     extrn byte_4616E:byte
     extrn byte_4616F:byte
     extrn word_46170:word
@@ -1273,7 +1296,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn byte_461C8:byte
     extrn word_461CA:word
     extrn word_461CC:word
-    extrn word_461CE:word
+    extrn mouse_ypos:word
     extrn word_461D0:word
     extrn word_463D2:word
     extrn word_463D4:word

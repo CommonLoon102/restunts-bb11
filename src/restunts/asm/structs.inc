@@ -267,3 +267,19 @@ game_trackname db 9 dup (?)
 game_framespersec dw ?
 game_recordedframes dw ?
 ends
+SPRITE struc
+sprite_bitmapptr dd ?
+sprite_unk1 dw ?
+sprite_unk2 dw ?
+sprite_unk3 dw ?
+sprite_lineofs dw ?
+sprite_left dw ?
+sprite_width dw ?
+sprite_top dw ?
+sprite_height dw ?
+sprite_height2 dw ?
+sprite_unk4 dw ?
+sprite_width2 dw ?
+sprite_left2 dw ?
+sprite_widthsum dw ?
+ends

@@ -827,7 +827,7 @@ loc_2A9D6:
     add     bx, bp
     push    word ptr [bx-170h]
     push    word ptr [bx-172h]
-    call    set_sprite1
+    call    sprite_set_1
     add     sp, 4
     cmp     [bp+var_C6], 0
     jz      short loc_2AA01
@@ -1363,7 +1363,7 @@ loc_2AF66:
 loc_2AF6E:
     jmp     short loc_2AFBC
 loc_2AF70:
-    test    byte ptr word_442E8, 3
+    test    byte ptr mouse_butstate, 3
     jz      short loc_2AFBC
     mov     [bp+var_34], 0
     mov     ax, 1Eh
@@ -1440,7 +1440,7 @@ loc_2B011:
     ; align 2
     db 144
 loc_2B038:
-    test    byte ptr word_442E8, 3
+    test    byte ptr mouse_butstate, 3
     jnz     short loc_2B042
     jmp     loc_2AFBC
 loc_2B042:
@@ -1482,7 +1482,7 @@ loc_2B095:
     mov     [bp+var_17F], 6
     mov     [bp+var_C8], 1
 loc_2B0A4:
-    test    byte ptr word_442E8, 3
+    test    byte ptr mouse_butstate, 3
     jnz     short loc_2B0AE
     jmp     loc_2AFBC
 loc_2B0AE:
@@ -1510,7 +1510,7 @@ loc_2B0AE:
     mov     [bp+var_C6], al
     jmp     loc_2AFB6
 loc_2B0E2:
-    mov     ax, word_4616C
+    mov     ax, mouse_xpos
     sub     ax, 8
     cwd
     xor     ax, dx
@@ -1520,7 +1520,7 @@ loc_2B0E2:
     xor     ax, dx
     sub     ax, dx
     mov     [bp+var_D6], al
-    mov     ax, word_461CE
+    mov     ax, mouse_ypos
     sub     ax, cx
     cwd
     xor     ax, dx
@@ -1587,7 +1587,7 @@ loc_2B1A7:
     mov     [bp+var_C8], 0Dh
     jmp     loc_2AFBC
 loc_2B1B0:
-    mov     ax, word_4616C
+    mov     ax, mouse_xpos
     sub     ax, 0DCh ; 'Ü'
     cwd
     xor     ax, dx
@@ -1597,7 +1597,7 @@ loc_2B1B0:
     xor     ax, dx
     sub     ax, dx
     mov     [bp+var_D6], al
-    mov     ax, word_461CE
+    mov     ax, mouse_ypos
     sub     ax, 24h ; '$'
     cwd
     xor     ax, dx
@@ -1665,7 +1665,7 @@ loc_2B25D:
     mov     [bp+var_34], 1
     jmp     loc_2B197
 loc_2B274:
-    mov     ax, word_461CE
+    mov     ax, mouse_ypos
     sub     ax, 1Ch
     cwd
     xor     ax, dx

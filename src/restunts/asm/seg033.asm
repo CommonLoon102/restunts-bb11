@@ -64,11 +64,11 @@ setup_mcgawnd1 proc far
     mov     word ptr dword_4392E, ax
     mov     word ptr dword_4392E+2, dx
 loc_3A97C:
-    mov     ax, offset unk_416AE
+    mov     ax, offset sprite2
     mov     dx, seg seg012
     push    dx
     push    ax
-    call    set_sprite1
+    call    sprite_set_1
     add     sp, 4
     les     bx, dword_4392E
     push    word ptr es:[bx+2]
@@ -95,7 +95,7 @@ setup_mcgawnd2 proc far
 loc_3A9C4:
     push    word ptr dword_4392E+2
     push    word ptr dword_4392E
-    call    set_sprite1
+    call    sprite_set_1
     add     sp, 4
     retf
 setup_mcgawnd2 endp

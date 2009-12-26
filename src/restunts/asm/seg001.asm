@@ -3908,11 +3908,11 @@ loc_16B18:
     call    __aFlmul
     add     ax, 3F4h
     adc     dx, 0
-    add     ax, word_45A20
+    add     ax, word ptr cvxptr
     adc     dx, 0
     mov     cx, 0Ch
     shl     dx, cl
-    add     dx, word_45A22
+    add     dx, word ptr cvxptr+2
     mov     es, dx
     mov     bx, ax
     mov     ax, si
@@ -4390,11 +4390,11 @@ loc_16F81:
     call    __aFlmul
     add     ax, 3F4h
     adc     dx, 0
-    add     ax, word_45A20
+    add     ax, word ptr cvxptr
     adc     dx, 0
     mov     cx, 0Ch
     shl     dx, cl
-    add     dx, word_45A22
+    add     dx, word ptr cvxptr+2
     mov     es, dx
     mov     bx, ax
     cmp     byte ptr es:[bx], 0
@@ -4409,11 +4409,11 @@ loc_16FB1:
     push    dx
     push    ax
     call    __aFlmul
-    add     ax, word_45A20
+    add     ax, word ptr cvxptr
     adc     dx, 0
     mov     cx, 0Ch
     shl     dx, cl
-    add     dx, word_45A22
+    add     dx, word ptr cvxptr+2
     push    si
     mov     di, offset state
     mov     si, ax
@@ -4489,11 +4489,11 @@ loc_17027:
     push    dx
     push    ax
     call    __aFlmul
-    add     ax, word_45A20
+    add     ax, word ptr cvxptr
     adc     dx, 0
     mov     cx, 0Ch
     shl     dx, cl
-    add     dx, word_45A22
+    add     dx, word ptr cvxptr+2
     mov     bx, ax
     mov     es, dx
     push    si

@@ -53,7 +53,7 @@ seg005 segment byte public 'STUNTSC' use16
     public sub_22576
     public sub_22698
     public sub_2298C
-    public sub_22C92
+    public load_replay_file
     public write_track
     public setup_car_shapes
     public setup_player_cars
@@ -102,12 +102,12 @@ run_game proc far
     mov     byte_3B8F5, 0
 loc_21BCA:
     mov     byte_45DB2, 2
-    mov     ax, 307Ch
+    mov     ax, offset aDefault; "default"
     push    ax
     sub     ax, ax
     push    ax              ; char *
     push    cs
-    call    near ptr sub_22C92
+    call    near ptr load_replay_file
     add     sp, 4
     or      al, al
     jz      short loc_21BE4
@@ -731,7 +731,7 @@ loc_22257:
     push    ax
     call    mouse_get_state
     add     sp, 6
-    test    byte ptr word_442E8, 3
+    test    byte ptr mouse_butstate, 3
     jnz     short loc_2227E
     call    get_kb_or_joy_flags
     test    al, 30h
@@ -1280,7 +1280,7 @@ loc_22736:
     push    ax
     call    mouse_get_state
     add     sp, 6
-    mov     di, word_4616C
+    mov     di, mouse_xpos
     sub     di, 0A0h ; ' '
     push    di              ; int
     call    _abs
@@ -1303,12 +1303,12 @@ loc_22776:
 loc_22779:
     mov     ax, di
     mov     byte_40D6A, al
-    test    byte ptr word_442E8, 1
+    test    byte ptr mouse_butstate, 1
     jz      short loc_2278A
     mov     si, 2
     jmp     short loc_227D2
 loc_2278A:
-    test    byte ptr word_442E8, 2
+    test    byte ptr mouse_butstate, 2
     jz      short loc_22796
     mov     si, 1
     jmp     short loc_227D2
@@ -1428,11 +1428,11 @@ loc_2286C:
     call    __aFlmul
     add     ax, 5A0h
     adc     dx, 0
-    add     ax, word_45A20
+    add     ax, word ptr cvxptr
     adc     dx, 0
     mov     cx, 0Ch
     shl     dx, cl
-    add     dx, word_45A22
+    add     dx, word ptr cvxptr+2
     mov     es, dx
     mov     bx, ax
     mov     ax, [bp+var_6]
@@ -1448,11 +1448,11 @@ loc_2286C:
     call    __aFlmul
     add     ax, 460h
     adc     dx, 0
-    add     ax, word_45A20
+    add     ax, word ptr cvxptr
     adc     dx, 0
     mov     cx, 0Ch
     shl     dx, cl
-    add     dx, word_45A22
+    add     dx, word ptr cvxptr+2
     mov     cx, 460h
     sub     bx, bx
     push    bx
@@ -1466,11 +1466,11 @@ loc_2286C:
     mov     [bp+var_A], cx
     mov     [bp+var_8], bx
     call    __aFlmul
-    add     ax, word_45A20
+    add     ax, word ptr cvxptr
     adc     dx, 0
     mov     cx, 0Ch
     shl     dx, cl
-    add     dx, word_45A22
+    add     dx, word ptr cvxptr+2
     mov     bx, ax
     mov     es, dx
     mov     ax, [bp+var_A]
@@ -1915,7 +1915,7 @@ loc_22C8C:
     pop     bp
     retf
 sub_2298C endp
-sub_22C92 proc far
+load_replay_file proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = dword ptr 6
@@ -1924,9 +1924,9 @@ sub_22C92 proc far
     mov     bp, sp
     push    di
     push    si
-    mov     ax, 95F8h
+    mov     ax, offset track_full_path
     push    ax              ; char *
-    mov     ax, 310Eh
+    mov     ax, offset a_rpl; ".rpl"
     push    ax              ; int
     push    word ptr [bp+arg_0+2]
     push    word ptr [bp+arg_0]; char *
@@ -1935,19 +1935,19 @@ sub_22C92 proc far
     mov     byte_3B8FB, 1
     push    word ptr trackdata13+2
     push    word ptr trackdata13
-    mov     ax, 95F8h
+    mov     ax, offset track_full_path
     push    ax
     call    file_read_fatal
     add     sp, 6
     mov     ax, word ptr trackdata13
     mov     dx, word ptr trackdata13+2
-    mov     di, 9234h
+    mov     di, offset gameconfig
     mov     si, ax
     push    ds
     pop     es
     push    ds
     mov     ds, dx
-    mov     cx, 0Dh
+    mov     cx, 0Dh         ; copies 13 words from the rpl to gameconfig
     repne movsw
     pop     ds
     mov     byte_3B8FB, 0
@@ -1956,7 +1956,7 @@ sub_22C92 proc far
     pop     di
     pop     bp
     retf
-sub_22C92 endp
+load_replay_file endp
 write_track proc far
     var_6 = word ptr -6
     var_4 = word ptr -4
@@ -1986,7 +1986,7 @@ write_track proc far
     push    ax
     push    es
     push    bx
-    push    [bp+SHAPE2D.s2d_unk2]
+    push    [bp+arg_filename]
     call    file_write_fatal
     add     sp, 0Ah
     mov     byte_3B8FB, 0
@@ -2046,30 +2046,30 @@ loc_22D55:
     db 144
 loc_22D5C:
     mov     al, gameconfig.game_playercarid
-    mov     byte_3E916, al
+    mov     byte ptr aStdaxxxx+4, al
     mov     al, gameconfig.game_playercarid+1
-    mov     byte_3E917, al
+    mov     byte ptr aStdaxxxx+5, al
     mov     al, gameconfig.game_playercarid+2
-    mov     byte_3E918, al
+    mov     byte ptr aStdaxxxx+6, al
     mov     al, gameconfig.game_playercarid+3
-    mov     byte_3E919, al
+    mov     byte ptr aStdaxxxx+7, al
     mov     al, gameconfig.game_playercarid
-    mov     byte_3E920, al
+    mov     byte ptr aStdbxxxx+4, al
     mov     al, gameconfig.game_playercarid+1
-    mov     byte_3E921, al
+    mov     byte ptr aStdbxxxx+5, al
     mov     al, gameconfig.game_playercarid+2
-    mov     byte_3E922, al
+    mov     byte ptr aStdbxxxx+6, al
     mov     al, gameconfig.game_playercarid+3
-    mov     byte_3E923, al
-    mov     ax, 31A2h
+    mov     byte ptr aStdbxxxx+7, al
+    mov     ax, offset aStdaxxxx; "stdaxxxx"
     push    ax              ; char *
     mov     ax, 3
     push    ax              ; int
     call    load_resource
     add     sp, 4
-    mov     word_40D7C, ax
-    mov     word_40D7E, dx
-    mov     ax, 31ACh
+    mov     word ptr stdresptr, ax
+    mov     word ptr stdresptr+2, dx
+    mov     ax, offset aStdbxxxx; "stdbxxxx"
     push    ax              ; char *
     mov     ax, 2
     push    ax              ; int
@@ -2077,17 +2077,17 @@ loc_22D5C:
     add     sp, 4
     mov     word_40D84, ax
     mov     word_40D86, dx
-    mov     ax, 5640h
+    mov     ax, offset word_40DB0
     push    ax
-    mov     ax, 3113h
+    mov     ax, offset aWhl1whl2whl3ins2gboxins1i; "whl1whl2whl3ins2gboxins1ins3inm1inm3"
     push    ax
-    push    word_40D7E
-    push    word_40D7C
+    push    word ptr stdresptr+2
+    push    word ptr stdresptr
     call    locate_many_resources
     add     sp, 8
-    mov     ax, 5664h
+    mov     ax, offset word_40DD4
     push    ax
-    mov     ax, 3138h
+    mov     ax, offset aGnobgnabdotDotadot1dot2; "gnobgnabdot dotadot1dot2"
     push    ax
     push    word_40D86
     push    word_40D84
@@ -2095,9 +2095,9 @@ loc_22D5C:
     add     sp, 8
     cmp     simd_copy.spdcenter.y2, 0
     jnz     short loc_22E09
-    mov     ax, 5618h
+    mov     ax, offset word_40D88
     push    ax
-    mov     ax, 3151h
+    mov     ax, offset aDig0dig1dig2dig3dig4dig5d; "dig0dig1dig2dig3dig4dig5dig6dig7dig8dig"...
     push    ax
     push    word_40D86
     push    word_40D84
@@ -2137,17 +2137,17 @@ loc_22E09:
     add     sp, 6
     mov     word ptr dword_40DFC, ax
     mov     word ptr dword_40DFC+2, dx
-    mov     ax, 317Ah
+    mov     ax, offset aDash; "dash"
     push    ax
-    push    word_40D7E
-    push    word_40D7C
+    push    word ptr stdresptr+2
+    push    word ptr stdresptr
     call    locate_shape_1
     add     sp, 6
     mov     word ptr [bp+var_C], ax
     mov     word ptr [bp+var_C+2], dx
     push    word ptr dword_40DFC+2
     push    word ptr dword_40DFC
-    call    set_sprite1
+    call    sprite_set_1
     add     sp, 4
     les     bx, [bp+var_C]
     mov     ax, es:[bx+0Ah]
@@ -2163,22 +2163,22 @@ loc_22E09:
     push    word ptr [bp+var_C]
     call    sub_33EB4
     add     sp, 8
-    call    set_sprite2_as_1
+    call    sprite_copy_2_to_1
     les     bx, [bp+var_C]
     mov     ax, es:[bx+0Ah]
     mov     word_45DBA, ax
-    mov     ax, 317Fh
+    mov     ax, offset aRoof; "roof"
     push    ax
-    push    word_40D7E
-    push    word_40D7C
+    push    word ptr stdresptr+2
+    push    word ptr stdresptr
     call    locate_shape_0
     add     sp, 6
     or      dx, ax
     jz      short loc_22F12
-    mov     ax, 3184h
+    mov     ax, offset aRoof_0; "roof"
     push    ax
-    push    word_40D7E
-    push    word_40D7C
+    push    word ptr stdresptr+2
+    push    word ptr stdresptr
     call    locate_shape_1
     add     sp, 6
     mov     bx, ax
@@ -2189,10 +2189,10 @@ loc_22E09:
 loc_22F12:
     mov     word_461CC, 0
 loc_22F18:
-    mov     ax, 3189h
+    mov     ax, offset aDast; "dast"
     push    ax
-    push    word_40D7E
-    push    word_40D7C
+    push    word ptr stdresptr+2
+    push    word ptr stdresptr
     call    locate_shape_0
     add     sp, 6
     mov     word ptr [bp+var_C], ax
@@ -2205,10 +2205,10 @@ loc_22F18:
     mov     ax, bx
     mov     word_4549C, ax
     mov     word_4549E, dx
-    mov     ax, 318Eh
+    mov     ax, offset aDasm; "dasm"
     push    ax
-    push    word_40D7E
-    push    word_40D7C
+    push    word ptr stdresptr+2
+    push    word ptr stdresptr
     call    locate_shape_1
     add     sp, 6
     mov     word_454A0, ax
@@ -2227,18 +2227,18 @@ loc_22F6A:
     retf
 loc_22F76:
     call    sub_28DB6
-    mov     ax, 3193h
+    mov     ax, offset aRoof_1; "roof"
     push    ax
-    push    word_40D7E
-    push    word_40D7C
+    push    word ptr stdresptr+2
+    push    word ptr stdresptr
     call    locate_shape_0
     add     sp, 6
     or      dx, ax
     jz      short loc_22FB1
-    mov     ax, 3198h
+    mov     ax, offset aRoof_2; "roof"
     push    ax
-    push    word_40D7E
-    push    word_40D7C
+    push    word ptr stdresptr+2
+    push    word ptr stdresptr
     call    locate_shape_1
     add     sp, 6
     push    dx
@@ -2246,10 +2246,10 @@ loc_22F76:
     call    sub_33E00
     add     sp, 4
 loc_22FB1:
-    mov     ax, 319Dh
+    mov     ax, offset aDash_0; "dash"
     push    ax
-    push    word_40D7E
-    push    word_40D7C
+    push    word ptr stdresptr+2
+    push    word ptr stdresptr
     call    locate_shape_1
     add     sp, 6
     push    dx
@@ -2267,24 +2267,24 @@ loc_22FB1:
     mov     [bp+var_1E], ax
     mov     bx, ax
     sub     al, al
-    mov     [bx-6D98h], al
+    mov     byte_449D8[bx], al
     mov     bx, [bp+var_1E]
-    mov     [bx+568Ah], al
+    mov     byte_40DFA[bx], al
     mov     ax, [bp+var_1E]
     shl     ax, 1
     mov     [bp+var_20], ax
     mov     bx, ax
-    mov     [bx+5686h], si
+    mov     word_40DF6[bx], si
     mov     bx, [bp+var_1E]
     sub     al, al
-    mov     [bx+5680h], al
+    mov     byte_40DF0[bx], al
     dec     si
     mov     bx, [bp+var_20]
-    mov     [bx+5690h], si
+    mov     word_40E00[bx], si
     mov     bx, [bp+var_20]
-    mov     [bx+5608h], si
+    mov     word_40D78[bx], si
     mov     bx, [bp+var_20]
-    mov     [bx+55FCh], si
+    mov     word_40D6C[bx], si
     pop     si
     pop     di
     mov     sp, bp
@@ -2303,7 +2303,7 @@ loc_23030:
     mov     al, byte_4432A
     cbw
     mov     bx, ax
-    cmp     byte ptr [bx+568Ah], 0
+    cmp     byte_40DFA[bx], 0
     jz      short loc_2309A
     cmp     byte_46436, 0
     jnz     short loc_23057
@@ -2329,7 +2329,7 @@ loc_23057:
     mov     al, byte_4432A
     cbw
     mov     bx, ax
-    mov     byte ptr [bx+568Ah], 0
+    mov     byte_40DFA[bx], 0
     jmp     loc_2319D
 loc_2309A:
     mov     al, byte_4432A
@@ -2337,35 +2337,35 @@ loc_2309A:
     mov     [bp+var_20], ax
     mov     bx, ax
     mov     al, state.playerstate.car_changing_gear
-    cmp     [bx+568Ah], al
+    cmp     byte_40DFA[bx], al
     jnz     short loc_230DE
     mov     ax, bx
     shl     ax, 1
     mov     [bp+var_1E], ax
     mov     bx, ax
     mov     ax, state.playerstate.car_knob_x
-    cmp     [bx+5600h], ax
+    cmp     word_40D70[bx], ax
     jnz     short loc_230DE
     mov     ax, state.playerstate.car_knob_y
-    cmp     [bx+5604h], ax
+    cmp     word_40D74[bx], ax
     jnz     short loc_230DE
     cmp     state.playerstate.car_fpsmul2, 0
     jnz     short loc_230D1
     jmp     loc_2319D
 loc_230D1:
     mov     bx, [bp+var_20]
-    cmp     byte ptr [bx+568Ah], 0
+    cmp     byte_40DFA[bx], 0
     jz      short loc_230DE
     jmp     loc_2319D
 loc_230DE:
     push    word ptr dword_40DEC+2
     push    word ptr dword_40DEC
-    call    set_sprite1
+    call    sprite_set_1
     add     sp, 4
     mov     al, byte_4432A
     cbw
     mov     bx, ax
-    mov     byte ptr [bx+568Ah], 1
+    mov     byte_40DFA[bx], 1
     sub     ax, ax
     push    ax
     push    ax
@@ -2380,9 +2380,9 @@ loc_230DE:
     shl     ax, 1
     mov     [bp+var_20], ax
     mov     bx, ax
-    mov     [bx+5600h], si
+    mov     word_40D70[bx], si
     mov     bx, [bp+var_20]
-    mov     [bx+5604h], di
+    mov     word_40D74[bx], di
     push    di
     push    si
     push    word_40DDA
@@ -2447,7 +2447,7 @@ loc_231CE:
     cbw
     mov     bx, ax
     mov     al, [bp+var_2]
-    cmp     [bx+5680h], al
+    cmp     byte_40DF0[bx], al
     jnz     short loc_231E7
     cmp     byte_454A4, 0
     jnz     short loc_231E7
@@ -2462,24 +2462,24 @@ loc_231F3:
     shl     ax, 1
     mov     [bp+var_20], ax
     mov     bx, ax
-    cmp     word ptr [bx+5686h], 0
+    cmp     word_40DF6[bx], 0
     jz      short loc_23239
-    push    word ptr [bx+5686h]
-    push    word ptr [bx+5682h]
+    push    word_40DF6[bx]
+    push    word_40DF2[bx]
     mov     al, byte_44346
     cbw
     mov     bx, ax
     shl     bx, 1
     shl     bx, 1
-    push    word ptr [bx+5676h]
-    push    word ptr [bx+5674h]
+    push    word_40DE6[bx]
+    push    word_40DE4[bx]
     call    sub_33BBC
     add     sp, 8
     mov     al, byte_4432A
     cbw
     mov     bx, ax
     shl     bx, 1
-    mov     word ptr [bx+5686h], 0
+    mov     word_40DF6[bx], 0
     mov     [bp+var_1A], 1
 loc_23239:
     mov     al, [bp+var_2]
@@ -2504,7 +2504,7 @@ loc_2325E:
     cbw
     mov     bx, ax
     mov     al, [bp+var_2]
-    mov     [bx+5680h], al
+    mov     byte_40DF0[bx], al
     mov     [bp+var_18], 1
     jmp     short loc_2328A
     ; align 2
@@ -2560,9 +2560,9 @@ loc_232D0:
     shl     ax, 1
     mov     [bp+var_20], ax
     mov     bx, ax
-    cmp     [bx+5608h], si
+    cmp     word_40D78[bx], si
     jnz     short loc_232F7
-    cmp     [bx+55FCh], di
+    cmp     word_40D6C[bx], di
     jnz     short loc_232F7
     jmp     loc_23540
 loc_232F7:
@@ -2575,29 +2575,29 @@ loc_23303:
     shl     ax, 1
     mov     [bp+var_20], ax
     mov     bx, ax
-    cmp     word ptr [bx+5686h], 0
+    cmp     word_40DF6[bx], 0
     jz      short loc_23349
-    push    word ptr [bx+5686h]
-    push    word ptr [bx+5682h]
+    push    word_40DF6[bx]
+    push    word_40DF2[bx]
     mov     al, byte_44346
     cbw
     mov     bx, ax
     shl     bx, 1
     shl     bx, 1
-    push    word ptr [bx+5676h]
-    push    word ptr [bx+5674h]
+    push    word_40DE6[bx]
+    push    word_40DE4[bx]
     call    sub_33BBC
     add     sp, 8
     mov     al, byte_4432A
     cbw
     mov     bx, ax
     shl     bx, 1
-    mov     word ptr [bx+5686h], 0
+    mov     word_40DF6[bx], 0
     mov     [bp+var_1A], 1
 loc_23349:
     push    word ptr dword_40D80+2
     push    word ptr dword_40D80
-    call    set_sprite1
+    call    sprite_set_1
     add     sp, 4
     sub     ax, ax
     push    ax
@@ -2611,9 +2611,9 @@ loc_23349:
     shl     ax, 1
     mov     [bp+var_20], ax
     mov     bx, ax
-    mov     [bx+5608h], si
+    mov     word_40D78[bx], si
     mov     bx, [bp+var_20]
-    mov     [bx+55FCh], di
+    mov     word_40D6C[bx], di
     cmp     [bp+var_6], 1
     jz      short loc_2338C
     jmp     loc_23456
@@ -2647,8 +2647,8 @@ loc_233BF:
     mov     bx, [bp+var_8]
     shl     bx, 1
     shl     bx, 1
-    push    word ptr [bx+561Ah]
-    push    word ptr [bx+5618h]
+    push    word_40D8A[bx]
+    push    word_40D88[bx]
     call    sub_34084
     add     sp, 8
     mov     [bp+var_1C], 1
@@ -2671,8 +2671,8 @@ loc_233FF:
     mov     bx, [bp+var_8]
     shl     bx, 1
     shl     bx, 1
-    push    word ptr [bx+561Ah]
-    push    word ptr [bx+5618h]
+    push    word_40D8A[bx]
+    push    word_40D88[bx]
     call    sub_34084
     add     sp, 8
     mov     ax, [bp+var_8]
@@ -2692,8 +2692,8 @@ loc_23433:
     mov     bx, si
     shl     bx, 1
     shl     bx, 1
-    push    word ptr [bx+561Ah]
-    push    word ptr [bx+5618h]
+    push    word_40D8A[bx]
+    push    word_40D88[bx]
     call    sub_34084
     add     sp, 8
     jmp     short loc_23485
@@ -2707,10 +2707,10 @@ loc_23456:
     mov     [bp+var_20], ax
     push    word_44D60
     mov     bx, ax
-    mov     al, [bx-57E7h]
+    mov     al, (simd_copy.spdpoints+1)[bx]
     sub     ah, ah
     push    ax
-    mov     al, [bx-57E8h]
+    mov     al, simd_copy.spdpoints[bx]
     push    ax
     push    simd_copy.spdcenter.y2
     push    simd_copy.spdcenter.x2
@@ -2722,10 +2722,10 @@ loc_23485:
     mov     [bp+var_20], ax
     push    word_44D60
     mov     bx, ax
-    mov     al, [bx-5711h]
+    mov     al, (simd_copy.revpoints+1)[bx]
     sub     ah, ah
     push    ax
-    mov     al, [bx-5712h]
+    mov     al, simd_copy.revpoints[bx]
     push    ax
     push    simd_copy.revcenter.y2
     push    simd_copy.revcenter.x2
@@ -2789,7 +2789,7 @@ loc_23540:
     mov     bx, ax
     shl     bx, 1
     mov     ax, [bp+var_4]
-    cmp     [bx+5690h], ax
+    cmp     word_40E00[bx], ax
     jnz     short loc_23561
     cmp     byte_454A4, 0
     jnz     short loc_23561
@@ -2815,24 +2815,24 @@ loc_2356D:
     shl     ax, 1
     mov     [bp+var_20], ax
     mov     bx, ax
-    cmp     word ptr [bx+5686h], 0
+    cmp     word_40DF6[bx], 0
     jz      short loc_235C5
-    push    word ptr [bx+5686h]
-    push    word ptr [bx+5682h]
+    push    word_40DF6[bx]
+    push    word_40DF2[bx]
     mov     al, byte_44346
     cbw
     mov     bx, ax
     shl     bx, 1
     shl     bx, 1
-    push    word ptr [bx+5676h]
-    push    word ptr [bx+5674h]
+    push    word_40DE6[bx]
+    push    word_40DE4[bx]
     call    sub_33BBC
     add     sp, 8
     mov     al, byte_4432A
     cbw
     mov     bx, ax
     shl     bx, 1
-    mov     word ptr [bx+5686h], 0
+    mov     word_40DF6[bx], 0
 loc_235C5:
     cmp     [bp+var_4], 0
     jge     short loc_235D2
@@ -2866,27 +2866,27 @@ loc_235F9:
     sub     ax, es:[bx+4]
     and     ax, word_454D4
     mov     bx, [bp+var_20]
-    mov     [bx+5682h], ax
+    mov     word_40DF2[bx], ax
     mov     al, [bp+var_16]
     sub     ah, ah
     les     bx, dword_40DDC
     sub     ax, es:[bx+6]
     mov     bx, [bp+var_20]
-    mov     [bx+5686h], ax
+    mov     word_40DF6[bx], ax
     mov     al, [bp+var_16]
     sub     ah, ah
     les     bx, dword_40DDC
     sub     ax, es:[bx+6]
     push    ax
     mov     bx, [bp+var_20]
-    push    word ptr [bx+5682h]
+    push    word_40DF2[bx]
     mov     al, byte_44346
     cbw
     mov     bx, ax
     shl     bx, 1
     shl     bx, 1
-    push    word ptr [bx+5676h]
-    push    word ptr [bx+5674h]
+    push    word_40DE6[bx]
+    push    word_40DE4[bx]
     call    sub_3475A
     add     sp, 8
     mov     al, [bp+var_16]
@@ -2912,7 +2912,7 @@ loc_235F9:
     mov     bx, ax
     shl     bx, 1
     mov     ax, [bp+var_4]
-    mov     [bx+5690h], ax
+    mov     word_40E00[bx], ax
 loc_236A0:
     call    sub_28D9E
     pop     si
@@ -2939,8 +2939,8 @@ loc_236AC:
     push    word_40D84
     call    mmgr_free
     add     sp, 4
-    push    word_40D7E
-    push    word_40D7C
+    push    word ptr stdresptr+2
+    push    word ptr stdresptr
     call    mmgr_free
     add     sp, 4
     pop     si
@@ -3874,7 +3874,7 @@ loc_23FB8:
     mov     al, byte ptr [bp+var_44]
     mov     byte_3E9DB, al
 loc_23FDA:
-    call    set_sprite2_as_1
+    call    sprite_copy_2_to_1
     cmp     byte_46436, 0
     jz      short loc_23FEE
     mov     al, byte_44346
@@ -3931,7 +3931,7 @@ loc_24060:
     mov     ax, word_3EA3A
     add     ax, word_3EA4C
     sar     ax, 1
-    cmp     ax, word_461CE
+    cmp     ax, mouse_ypos
     jge     short loc_2407A
 loc_24071:
     mov     [bp+var_16], 5000h
@@ -3945,9 +3945,9 @@ loc_24082:
     mov     ax, word_3EA3C
     add     ax, word_3EA4E
     sar     ax, 1
-    sub     ax, word_461CE
+    sub     ax, mouse_ypos
     push    ax
-    mov     ax, word_4616C
+    mov     ax, mouse_xpos
     mov     cx, word_3EA18
     add     cx, word_3EA2A
     sar     cx, 1
@@ -4485,7 +4485,7 @@ loc_24548:
     mov     ax, 0EEh ; 'î'
     push    ax              ; char *
     push    cs
-    call    near ptr sub_22C92
+    call    near ptr load_replay_file
     add     sp, 4
     or      al, al
     jz      short loc_2458B
