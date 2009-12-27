@@ -77,7 +77,7 @@ loc_26BB9:
     mov     dx, seg seg007
     push    dx
     push    ax
-    call    reg_timer_callback
+    call    timer_reg_callback
     pop     bx
     pop     bx
     retf
@@ -104,7 +104,7 @@ loc_26BEF:
     mov     dx, seg seg007
     push    dx
     push    ax
-    call    remove_timer_callback
+    call    timer_remove_callback
     pop     bx
     pop     bx
     pop     si

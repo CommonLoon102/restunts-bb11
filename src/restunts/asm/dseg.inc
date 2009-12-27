@@ -492,7 +492,10 @@ dseg segment byte public 'STUNTSD' use16
     extrn aSdtitl_:byte
     extrn aTedit_:byte
     extrn aOpp1_:byte
+    extrn findfilenames:word
     extrn word_3EB90:word
+    extrn asc_3EBA9:byte
+    extrn aSav:byte
     extrn word_3EBB0:word
     extrn word_3EBB2:word
     extrn word_3EBB4:word
@@ -511,6 +514,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn a_:byte
     extrn byte_3EBD8:byte
     extrn aDea:byte
+    extrn aDer:byte
     extrn a_p3s:byte
     extrn a_3sh:byte
     extrn byte_3ECBB:byte

@@ -6438,7 +6438,7 @@ loc_1D9CF:
     mov     [bp+var_5D4], 0
     mov     ax, offset aCarcoun_0; "carcoun"
     push    ax
-    call    load_res_file
+    call    file_load_resfile
     add     sp, 2
     mov     [bp+var_A], ax
     mov     [bp+var_8], dx

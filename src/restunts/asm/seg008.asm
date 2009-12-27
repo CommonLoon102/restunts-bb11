@@ -55,7 +55,7 @@ seg008 segment byte public 'STUNTSC' use16
     public sub_28762
     public input_checking
     public input_do_checking
-    public load_res_file
+    public ported_file_load_resfile_
     public unload_resource
     public locate_shape_alt
     public locate_text_res
@@ -2010,11 +2010,11 @@ loc_285F4:
     mov     bx, word ptr [bp+arg_0]
     mov     al, [bx+si-1]
     mov     [bp+var_2], al
-    cmp     al, 3Ah ; ':'
+    cmp     al, ':'
     jz      short loc_28618
-    cmp     al, 5Ch ; '\'
+    cmp     al, '\'
     jz      short loc_28618
-    mov     ax, 3439h
+    mov     ax, offset asc_3EBA9; "\\"
     push    ax
     push    word ptr [bp+arg_6]; char *
     call    _strcat
@@ -2062,7 +2062,7 @@ sub_2863A proc far
     mov     ax, 0FFFFh
     push    ax
     push    ax
-    mov     ax, 343Bh
+    mov     ax, offset aSav ; "sav"
     push    ax
     push    word ptr mainresptr+2
     push    word ptr mainresptr
@@ -2247,13 +2247,13 @@ input_checking proc far
     push    si
     mov     ax, [bp+arg_0]
     add     word_3EBC4, ax
-    cmp     word_3EBC4, 4E20h
+    cmp     word_3EBC4, 4E20h; 20000
     jle     short loc_287ED
-    sub     word_3EBC4, 2710h
+    sub     word_3EBC4, 2710h; 10000
     sub     word_3EBB0, 2710h
     sub     word_3EBB2, 2710h
 loc_287ED:
-    call    get_kb_char
+    call    kb_get_char
     mov     si, ax
     or      si, si
     jz      short loc_287FD
@@ -2465,7 +2465,7 @@ input_do_checking proc far
     ; align 2
     db 144
 input_do_checking endp
-load_res_file proc far
+ported_file_load_resfile_ proc far
     var_54 = byte ptr -84
     var_4 = word ptr -4
     var_2 = word ptr -2
@@ -2530,7 +2530,7 @@ loc_28A6E:
     mov     sp, bp
     pop     bp
     retf
-load_res_file endp
+ported_file_load_resfile_ endp
 unload_resource proc far
      s = byte ptr 0
      r = byte ptr 2
@@ -5436,7 +5436,7 @@ loc_2A168:
     mov     ax, 0FFFFh
     push    ax
     push    ax
-    mov     ax, 349Dh
+    mov     ax, offset aDer ; "der"
     push    ax
     push    word ptr mainresptr+2
     push    word ptr mainresptr
@@ -5481,7 +5481,7 @@ loc_2A1AC:
     push    ax
     mov     bx, [bp+arg_0]
     shl     bx, 1
-    push    word ptr [bx+340Eh]
+    push    word ptr (aOpp1_+5)[bx]; "Insert Disk A/B .. etc presskey"
     push    word ptr mainresptr+2
     push    word ptr mainresptr
     push    cs
@@ -5501,7 +5501,7 @@ loc_2A1AC:
 loc_2A1E8:
     mov     bx, [bp+arg_0]
     shl     bx, 1
-    push    word ptr [bx+3416h]
+    push    findfilenames[bx]
     call    file_find
     add     sp, 2
     or      ax, ax

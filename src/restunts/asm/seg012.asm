@@ -140,28 +140,33 @@ seg012 segment byte public 'STUNTSC' use16
     public video_set_mode4
     public sub_300B6
     public video_set_mode7
+    public nopsub_30180
     public timer_setup_interrupt
     public loc_301FD
     public audio_stop_unk
-    public reg_timer_callback
-    public remove_timer_callback
+    public timer_reg_callback
+    public timer_remove_callback
     public compare_ds_ss
-    public _timerintr_callback
+    public timer_intr_callback
     public sub_303BA
     public set_bios_mode3
-    public parse_kb_key
+    public kb_parse_key
     public reg_callback
-    public get_kb_char
+    public nopsub_304AF
+    public nopsub_304B6
+    public kb_get_char
     public get_kb_or_joy_flags
+    public nopsub_305C8
     public get_joy_flags
     public sub_307B4
     public sub_307D2
     public sub_307E3
+    public nopsub_307FA
     public kb_init_interrupt
     public sub_30883
-    public sub_308C6
-    public sub_309A5
-    public get_key_status
+    public kb_op_unk2
+    public kb_op_unk
+    public kb_get_key_state
     public kb_call_readchar_callback
     public kb_read_char
     public kb_checking
@@ -4427,6 +4432,11 @@ loc_30156:
     int     10h             ; - VIDEO - SET VIDEO MODE
     pop     di
     retf
+video_set_mode7 endp
+nopsub_30180 proc far
+     s = byte ptr 0
+     r = byte ptr 2
+
     push    bp
     mov     bp, sp
     mov     dx, 2E9Ch
@@ -4437,7 +4447,7 @@ loc_30156:
     jmp     short loc_301FD
     ; align 2
     db 144
-video_set_mode7 endp
+nopsub_30180 endp
 timer_setup_interrupt proc far
      r = byte ptr 0
 
@@ -4501,7 +4511,7 @@ loc_30231:
     cmp     ax, bx
     jz      short loc_3024A
     mov     word ptr dword_3F874+2, ax
-    mov     word ptr es:20h, offset _timerintr_callback
+    mov     word ptr es:20h, offset timer_intr_callback
     mov     word ptr es:22h, cs
 loc_3024A:
     in      al, 21h         ; Interrupt controller, 8259A.
@@ -4561,7 +4571,7 @@ nosmart
     out     61h, al         ; PC/XT PPI port B bits:
     retf
 audio_stop_unk endp
-reg_timer_callback proc far
+timer_reg_callback proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -4588,8 +4598,8 @@ loc_302C7:
     mov     word ptr [bx+6], 0
     pop     bp
     retf
-reg_timer_callback endp
-remove_timer_callback proc far
+timer_reg_callback endp
+timer_remove_callback proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -4628,7 +4638,7 @@ loc_30311:
     sti
     pop     bp
     retf
-remove_timer_callback endp
+timer_remove_callback endp
 compare_ds_ss proc far
 
     xor     ax, ax
@@ -4640,7 +4650,7 @@ compare_ds_ss proc far
 locret_30328:
     retf
 compare_ds_ss endp
-_timerintr_callback proc far
+timer_intr_callback proc far
      r = byte ptr 0
 
     cli
@@ -4715,7 +4725,7 @@ loc_303B0:
     pop     es
     pop     ds
     iret
-_timerintr_callback endp
+timer_intr_callback endp
 sub_303BA proc near
 
     cmp     byte_3F880, 0
@@ -4753,7 +4763,7 @@ nosmart
     int     10h             ; - VIDEO - SET COLOR PALETTE
     retf
 set_bios_mode3 endp
-parse_kb_key proc far
+kb_parse_key proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -4805,7 +4815,7 @@ loc_30454:
     mov     byte_3F9E0, 0
     pop     bp
     retf
-parse_kb_key endp
+kb_parse_key endp
 reg_callback proc far
      s = byte ptr 0
      r = byte ptr 2
@@ -4855,10 +4865,18 @@ loc_3049F:
     mov     callbackflags2[bx], al
     pop     bp
     retf
+reg_callback endp
+nopsub_304AF proc far
+     s = byte ptr 0
+     r = byte ptr 2
+
     push    bp
     mov     bp, sp
     xor     ax, ax
     jmp     short loc_3048D
+nopsub_304AF endp
+nopsub_304B6 proc far
+
     mov     ah, 1
     int     16h             ; KEYBOARD - CHECK BUFFER, DO NOT CLEAR
     jz      short loc_304DB
@@ -4875,7 +4893,7 @@ locret_304C6:
     mov     ah, 0
     int     16h             ; KEYBOARD - READ CHAR FROM BUFFER, WAIT IF EMPTY
     push    ax
-    call    parse_kb_key
+    call    kb_parse_key
     add     sp, 2
     retf
 loc_304DB:
@@ -4909,8 +4927,8 @@ loc_3050F:
     mov     byte_3FB06, 3
     mov     word_3FB04, ax
     jmp     short loc_304FC
-reg_callback endp
-get_kb_char proc far
+nopsub_304B6 endp
+kb_get_char proc far
 
     mov     ah, 1
     int     16h             ; KEYBOARD - CHECK BUFFER, DO NOT CLEAR
@@ -4925,11 +4943,11 @@ loc_30522:
     mov     ah, 0
     int     16h             ; KEYBOARD - READ CHAR FROM BUFFER, WAIT IF EMPTY
     push    ax
-    call    parse_kb_key
+    call    kb_parse_key
     add     sp, 2
 locret_30537:
     retf
-get_kb_char endp
+kb_get_char endp
 get_kb_or_joy_flags proc far
 
     xor     ax, ax
@@ -4989,6 +5007,9 @@ loc_305BE:
     call    get_joy_flags
 locret_305C7:
     retf
+get_kb_or_joy_flags endp
+nopsub_305C8 proc far
+
     xor     cx, cx
     xor     bx, bx
     mov     bl, kbscancodes
@@ -5013,7 +5034,7 @@ nosmart
 loc_305F9:
     or      ax, cx
     retf
-get_kb_or_joy_flags endp
+nopsub_305C8 endp
 get_joy_flags proc far
 
     test    byte_3FE00, 1
@@ -5243,6 +5264,9 @@ loc_307EE:
     mov     ah, dl
     sub     ax, 1Fh
     retf
+sub_307E3 endp
+nopsub_307FA proc far
+
     mov     ax, joyflag2
     sub     ax, word_3FB26
     jge     short loc_30805
@@ -5255,7 +5279,7 @@ loc_30805:
     retf
     ; align 2
     db 0
-sub_307E3 endp
+nopsub_307FA endp
 kb_init_interrupt proc far
      r = byte ptr 0
 
@@ -5267,18 +5291,18 @@ kb_init_interrupt proc far
     xor     bx, bx
     mov     es, bx
     mov     bx, es:24h
-    cmp     bx, offset sub_308C6
+    cmp     bx, offset kb_op_unk2
     jz      short loc_30861
     mov     word_3FB48, bx
     mov     bx, es:26h
     mov     word_3FB4A, bx
-    mov     word ptr es:24h, offset sub_308C6
+    mov     word ptr es:24h, offset kb_op_unk2
     mov     word ptr es:26h, cs
     mov     bx, es:58h
     mov     word_3FB4C, bx
     mov     bx, es:5Ah
     mov     word_3FB4E, bx
-    mov     word ptr es:58h, offset sub_309A5
+    mov     word ptr es:58h, offset kb_op_unk
     mov     word ptr es:5Ah, cs
 loc_30861:
     mov     al, ah
@@ -5326,7 +5350,7 @@ loc_308C1:
     out     21h, al         ; Interrupt controller, 8259A.
     retf
 sub_30883 endp
-sub_308C6 proc far
+kb_op_unk2 proc far
 
     sti
     push    ax
@@ -5436,8 +5460,8 @@ loc_30992:
 loc_3099D:
     mov     kbinput[bx], 0
     jmp     loc_308EA
-sub_308C6 endp
-sub_309A5 proc far
+kb_op_unk2 endp
+kb_op_unk proc far
      r = byte ptr 0
 
     push    bx
@@ -5486,8 +5510,8 @@ loc_30A04:
     mov     al, kbinput+2Ah
     or      al, kbinput+36h
     jmp     short loc_309BD
-sub_309A5 endp
-get_key_status proc far
+kb_op_unk endp
+kb_get_key_state proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -5501,7 +5525,7 @@ get_key_status proc far
     retf
     ; align 2
     db 0
-get_key_status endp
+kb_get_key_state endp
 kb_call_readchar_callback proc far
 
     call    dword ptr readchar_callback

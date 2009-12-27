@@ -631,7 +631,7 @@ loc_22152:
 loc_2217D:
     cmp     byte_44AE2, 0
     jz      short loc_221AA
-    call    get_kb_char
+    call    kb_get_char
     or      ax, ax
     jz      short loc_22190
     jmp     loc_22298
@@ -701,7 +701,7 @@ loc_22208:
     ; align 2
     db 144
 loc_22222:
-    call    get_kb_char
+    call    kb_get_char
     mov     [bp+var_12], ax
     or      ax, ax
     jz      short loc_22236
@@ -1066,7 +1066,7 @@ sub_2255A proc far
     mov     dx, seg seg005
     push    dx
     push    ax
-    call    reg_timer_callback
+    call    timer_reg_callback
     add     sp, 4
     mov     byte_442E4, 0
     retf
@@ -1083,7 +1083,7 @@ sub_22576 proc far
     mov     dx, seg seg005
     push    dx
     push    ax
-    call    remove_timer_callback
+    call    timer_remove_callback
     add     sp, 4
     retf
     ; align 2
@@ -1360,7 +1360,7 @@ loc_227E8:
 loc_227EF:
     mov     ax, 1Eh
     push    ax
-    call    get_key_status
+    call    kb_get_key_state
     add     sp, 2
     or      ax, ax
     jz      short loc_22803
@@ -1371,7 +1371,7 @@ nosmart
 loc_22803:
     mov     ax, 2Ch ; ','
     push    ax
-    call    get_key_status
+    call    kb_get_key_state
     add     sp, 2
     or      ax, ax
     jz      short loc_22817
@@ -2983,7 +2983,7 @@ setup_player_cars proc far
     mov     byte ptr aCarcoun+6, al
     mov     ax, offset aCarcoun; "carcoun"
     push    ax
-    call    load_res_file
+    call    file_load_resfile
     add     sp, 2
     mov     [bp+var_4], ax
     mov     [bp+var_2], dx
@@ -3009,7 +3009,7 @@ setup_player_cars proc far
     mov     byte ptr aCarcoun+6, al
     mov     ax, offset aCarcoun; "carcoun"
     push    ax
-    call    load_res_file
+    call    file_load_resfile
     add     sp, 2
     mov     [bp+var_4], ax
     mov     [bp+var_2], dx
@@ -3122,7 +3122,7 @@ loc_238B4:
 loc_238DE:
     mov     ax, offset aGame; "game"
     push    ax
-    call    load_res_file
+    call    file_load_resfile
     add     sp, 2
     mov     word_449A0, ax
     mov     word_449A2, dx
@@ -4072,7 +4072,7 @@ loc_24193:
     mov     [bp+var_40], 0
     mov     ax, 1Dh
     push    ax
-    call    get_key_status
+    call    kb_get_key_state
     add     sp, 2
     or      ax, ax
     jnz     short loc_241C8

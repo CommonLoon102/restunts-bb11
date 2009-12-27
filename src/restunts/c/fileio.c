@@ -485,3 +485,89 @@ void far* file_load_binary_nofatal(const char* filename) {
 void far* file_load_binary_fatal(const char* filename) {
 	return file_load_binary(filename, 1);
 }
+
+/*
+
+void far* file_load_resource(int type, const char* filename) {
+	void far* result;
+	int dearesult;
+	while (1) {
+		switch (type) {
+			case 0:
+				// try load the file, if it fails, show a dialog, and retry
+				result = file_load_binary_nofatal(filename);
+				if (result != 0) return result;
+				break;
+
+			case 1:
+				return file_load_binary_nofatal(filename);
+
+			case 2:
+				// try load a 2d shape and retry if it failed
+				result = load_2dshape_nofatal_thunk(filename);
+				if (result != 0) return result;
+				break;
+
+			case 3:
+				// try load a 2d shape and retry if it failed
+				result = load_2dshape_res_nofatal_thunk(filename);
+				if (result != 0) return result;
+				break;
+
+			case 4:
+				// try load a 2d shape and retry if it failed
+				result = load_song_file(filename);
+				if (result != 0) return result;
+				break;
+
+			case 5:
+				// try load a 2d shape and retry if it failed
+				result = load_voice_file(filename);
+				if (result != 0) return result;
+				break;
+
+			case 6:
+				// try load a 2d shape and retry if it failed
+				result = load_sfx_file(filename);
+				if (result != 0) return result;
+				break;
+
+			case 7:
+				// try load a compressed file
+				return file_decomp_nofatal(filename);
+
+			case 8:
+				// try load a 2d shape and retry if it failed
+				result = load_2dshape_nofatal2(filename);
+				if (result != 0) return result;
+				break;
+			default:
+				break;
+		}
+
+		dearesult = do_dea_textres();
+		if (dearesult == 2) return 0;
+	}
+}
+*/
+
+void far* file_load_resfile(const char* filename) {
+	char name[0x50];
+	void far* result;
+	
+	while (1) {
+		strcpy(name, filename);
+		strcat(name, ".res");
+		
+		result = file_load_resource(1, name);
+		if (result != 0) return result;
+	
+		strcpy(name, filename);
+		strcat(name, ".pre");
+		
+		result = file_load_resource(7, name);
+		if (result != 0) return result;
+			
+		do_dea_textres();
+	}
+}

@@ -146,7 +146,7 @@ loc_10086:
     jl      short loc_10086
     mov     ax, offset aMain; "main"
     push    ax
-    call    load_res_file
+    call    file_load_resfile
     add     sp, 2
     mov     word ptr mainresptr, ax
     mov     word ptr mainresptr+2, dx
@@ -816,7 +816,7 @@ load_intro_resources proc far
     push    si
     mov     ax, offset aCred; "cred"
     push    ax
-    call    load_res_file
+    call    file_load_resfile
     add     sp, 2
     mov     [bp+var_3A], ax
     mov     [bp+var_38], dx
@@ -1916,7 +1916,7 @@ loc_11210:
 loc_112E5:
     mov     ax, offset aTedit; "tedit"
     push    ax
-    call    load_res_file
+    call    file_load_resfile
     add     sp, 2
     mov     [bp+var_4], ax
     mov     [bp+var_2], dx
@@ -3229,7 +3229,7 @@ loc_11E68:
     jnz     short loc_11EA2
     mov     ax, offset aMisc_0; "misc"
     push    ax
-    call    load_res_file
+    call    file_load_resfile
     add     sp, 2
     mov     word_455CC, ax
     mov     word_455CE, dx
@@ -3368,7 +3368,7 @@ loc_11FC8:
     mov     byte ptr aCarcoun+6, al
     mov     ax, offset aCarcoun; "carcoun"
     push    ax
-    call    load_res_file
+    call    file_load_resfile
     add     sp, 2
     mov     [bp+var_4], ax
     mov     [bp+var_2], dx
@@ -4283,7 +4283,7 @@ run_opponent_menu proc far
     add     sp, 2
     mov     ax, 3F4h
     push    ax
-    call    load_res_file
+    call    file_load_resfile
     add     sp, 2
     mov     word_455CC, ax
     mov     word_455CE, dx
@@ -4340,7 +4340,7 @@ loc_129DD:
     mov     byte ptr aOpp1+3, al
     mov     ax, offset aOpp1; "opp1"
     push    ax
-    call    load_res_file
+    call    file_load_resfile
     add     sp, 2
     mov     [bp+var_C], ax
     mov     [bp+var_A], dx
@@ -4877,7 +4877,7 @@ run_option_menu proc far
     sub     sp, 6
     mov     ax, 46Ch
     push    ax
-    call    load_res_file
+    call    file_load_resfile
     add     sp, 2
     mov     word_455CC, ax
     mov     word_455CE, dx
@@ -5164,7 +5164,7 @@ end_hiscore proc far
     add     sp, 2
     mov     ax, 48Ch
     push    ax
-    call    load_res_file
+    call    file_load_resfile
     add     sp, 2
     mov     [bp+var_4E], ax
     mov     [bp+var_4C], dx
@@ -5175,7 +5175,7 @@ end_hiscore proc far
     mov     byte ptr aOpp1+3, al
     mov     ax, offset aOpp1; "opp1"
     push    ax
-    call    load_res_file
+    call    file_load_resfile
     add     sp, 2
     mov     [bp+var_68], ax
     mov     [bp+var_66], dx
@@ -7087,7 +7087,7 @@ security_check proc far
     mov     byte_3BD50, al
     mov     ax, 5BBh
     push    ax
-    call    load_res_file
+    call    file_load_resfile
     add     sp, 2
     mov     [bp+var_40C], ax
     mov     [bp+var_40A], dx

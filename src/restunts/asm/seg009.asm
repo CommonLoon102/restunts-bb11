@@ -208,7 +208,7 @@ sub_2A2BC proc far
     mov     [bp+var_164], dx
     mov     ax, 34B8h
     push    ax
-    call    load_res_file
+    call    file_load_resfile
     add     sp, 2
     mov     [bp+var_22], ax
     mov     [bp+var_20], dx

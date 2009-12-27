@@ -93,28 +93,33 @@ seg012 segment byte public 'STUNTSC' use16
     extrn video_set_mode4:proc
     extrn sub_300B6:proc
     extrn video_set_mode7:proc
+    extrn nopsub_30180:proc
     extrn timer_setup_interrupt:proc
     extrn loc_301FD
     extrn audio_stop_unk:proc
-    extrn reg_timer_callback:proc
-    extrn remove_timer_callback:proc
+    extrn timer_reg_callback:proc
+    extrn timer_remove_callback:proc
     extrn compare_ds_ss:proc
-    extrn _timerintr_callback:proc
+    extrn timer_intr_callback:proc
     extrn sub_303BA:proc
     extrn set_bios_mode3:proc
-    extrn parse_kb_key:proc
+    extrn kb_parse_key:proc
     extrn reg_callback:proc
-    extrn get_kb_char:proc
+    extrn nopsub_304AF:proc
+    extrn nopsub_304B6:proc
+    extrn kb_get_char:proc
     extrn get_kb_or_joy_flags:proc
+    extrn nopsub_305C8:proc
     extrn get_joy_flags:proc
     extrn sub_307B4:proc
     extrn sub_307D2:proc
     extrn sub_307E3:proc
+    extrn nopsub_307FA:proc
     extrn kb_init_interrupt:proc
     extrn sub_30883:proc
-    extrn sub_308C6:proc
-    extrn sub_309A5:proc
-    extrn get_key_status:proc
+    extrn kb_op_unk2:proc
+    extrn kb_op_unk:proc
+    extrn kb_get_key_state:proc
     extrn kb_call_readchar_callback:proc
     extrn kb_read_char:proc
     extrn kb_checking:proc

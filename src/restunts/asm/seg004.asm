@@ -5848,7 +5848,7 @@ sub_217CA proc far
     mov     byte ptr aOpp1+3, al
     mov     ax, offset aOpp1; "opp1"
     push    ax
-    call    load_res_file
+    call    file_load_resfile
     add     sp, 2
     mov     [bp+var_B2E], ax
     mov     [bp+var_B2C], dx

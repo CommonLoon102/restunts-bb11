@@ -540,7 +540,10 @@ dseg segment byte public 'STUNTSD' use16
     public aSdtitl_
     public aTedit_
     public aOpp1_
+    public findfilenames
     public word_3EB90
+    public asc_3EBA9
+    public aSav
     public word_3EBB0
     public word_3EBB2
     public word_3EBB4
@@ -559,6 +562,7 @@ dseg segment byte public 'STUNTSD' use16
     public a_
     public byte_3EBD8
     public aDea
+    public aDer
     public a_p3s
     public a_3sh
     public byte_3ECBB
@@ -14584,22 +14588,14 @@ aOpp1_     db 111
     db 46
     db 42
     db 0
-    db 222
-    db 51
-    db 226
-    db 51
-    db 230
-    db 51
-    db 234
-    db 51
-    db 238
-    db 51
-    db 248
-    db 51
-    db 1
-    db 52
-    db 9
-    db 52
+    dw offset aId1          ; "id1"
+    dw offset aId2          ; "id2"
+    dw offset aId3          ; "id3"
+findfilenames     dw offset aId4          ; "id4"
+    dw offset aSetup_exe    ; "setup.exe"
+    dw offset aSdtitl_      ; "sdtitl.*"
+    dw offset aTedit_       ; "tedit.*"
+    dw offset aOpp1_        ; "opp1.*"
 word_3EB90     dw 0
     db 108
     db 111
@@ -14624,9 +14620,9 @@ word_3EB90     dw 0
     db 32
     db 32
     db 0
-    db 92
+asc_3EBA9     db 92
     db 0
-    db 115
+aSav     db 115
     db 97
     db 118
     db 0
@@ -14713,7 +14709,7 @@ aDea     db 100
     db 101
     db 97
     db 0
-    db 100
+aDer     db 100
     db 101
     db 114
     db 0
