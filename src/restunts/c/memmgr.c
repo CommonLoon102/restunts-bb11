@@ -1,14 +1,6 @@
 #include <dos.h>
 #include "externs.h"
-
-struct MEMCHUNK {
-	char resname[12];
-	unsigned short ressize;
-	unsigned short resofs;
-	unsigned short resunk;
-};
-
-void copy_paras_reverse(unsigned short srcseg, unsigned short destseg, short paras);
+#include "memmgr.h"
 
 #define pushregs()\
 	_asm {\
@@ -21,9 +13,45 @@ void copy_paras_reverse(unsigned short srcseg, unsigned short destseg, short par
 		pop dx\
 	}
 
-char* mmgr_path_to_name(char* filename) {
-	char* c;
-	char* result;
+void far* dos_get_psp(void) {
+	unsigned short resseg, resofs;
+	__asm {
+		push ds
+		mov ah, 62h
+		int 21h
+		mov resseg, ds
+		mov resofs, bx
+		pop ds
+	}
+	return MK_FP(resseg, resofs);
+}
+
+unsigned short dos_alloc(unsigned short paras) {
+	unsigned short resseg;
+	__asm {
+		mov bx, paras
+		mov ah, 48h
+		int 21h
+		mov resseg, ax
+	}
+	return resseg;
+}
+
+unsigned short dos_setblock(unsigned short blockseg, unsigned short newsize) {
+	unsigned short res;
+	__asm {
+		mov bx, newsize
+		mov es, blockseg
+		mov ah, 4ah
+		int 21h
+		mov res, bx	// bx = max blocks
+	}
+	return res;
+}
+
+const char* mmgr_path_to_name(const char* filename) {
+	const char* c;
+	const char* result;
 
 	pushregs();
 	
@@ -37,11 +65,11 @@ char* mmgr_path_to_name(char* filename) {
 	return result;
 }
 
-void far* mmgr_alloc_pages(char* arg_0, unsigned short arg_2) {
+void far* mmgr_alloc_pages(const char* arg_0, unsigned short arg_2) {
 	int i;
 	struct MEMCHUNK* resdi;
 	struct MEMCHUNK* ressi;
-	char* chunkname;
+	const char* chunkname;
 	unsigned short rax, rdx;
 
 	resdi = resptr2;
@@ -88,42 +116,6 @@ void far* mmgr_alloc_pages(char* arg_0, unsigned short arg_2) {
 	return MK_FP(rdx, 0);
 }
 
-void far* dos_get_psp() {
-	unsigned short resseg, resofs;
-	__asm {
-		push ds
-		mov ah, 62h
-		int 21h
-		mov resseg, ds
-		mov resofs, bx
-		pop ds
-	}
-	return MK_FP(resseg, resofs);
-}
-
-unsigned short dos_alloc(unsigned short paras) {
-	unsigned short resseg;
-	__asm {
-		mov bx, paras
-		mov ah, 48h
-		int 21h
-		mov resseg, ax
-	}
-	return resseg;
-}
-
-unsigned short dos_setblock(unsigned short blockseg, unsigned short newsize) {
-	unsigned short res;
-	__asm {
-		mov bx, newsize
-		mov es, blockseg
-		mov ah, 4ah
-		int 21h
-		mov res, bx	// bx = max blocks
-	}
-	return res;
-}
-
 void mmgr_alloc_resmem(unsigned short arg_0) {
 
 	void far* psp;
@@ -154,7 +146,7 @@ void mmgr_alloc_resmem(unsigned short arg_0) {
 }
 
 void mmgr_alloc_a000() {
-	return mmgr_alloc_resmem(0xa000);
+	mmgr_alloc_resmem(0xa000);
 }
 
 unsigned short mmgr_get_ofs_diff() {
@@ -269,7 +261,7 @@ void copy_paras_reverse(unsigned short srcseg, unsigned short destseg, short par
 	popregs();
 }
 
-void mmgr_find_free() {
+void mmgr_find_free(void) {
 	int i;
 	unsigned short regax, regdx;
 	struct MEMCHUNK* ressi;
@@ -311,23 +303,23 @@ void mmgr_find_free() {
 	popregs();
 }
 
-void far* mmgr_get_unk(char* arg_0) {
+void far* mmgr_get_unk(const char* arg_0) {
 	int i;
 	unsigned short regax, regbx, regcx, regdx;
-	char* strdi;
+	const char* chunkname;
 	struct MEMCHUNK* ressi;
 	struct MEMCHUNK* resdi;
 
 	ressi = resendptr1;
-	strdi = mmgr_path_to_name(arg_0);
+	chunkname = mmgr_path_to_name(arg_0);
 
 	for (ressi = resendptr1; ressi < resendptr2; ressi++) {
 		regbx = 0;
 		if (ressi->resunk == 0) return MK_FP(0, 0);
 
 		for (; regbx < 0xC; regbx++) {
-			if (strdi[regbx] == 0) break;
-			if (strdi[regbx] != ressi->resname[regbx]) break;
+			if (chunkname[regbx] == 0) break;
+			if (chunkname[regbx] != ressi->resname[regbx]) break;
 		}
 
 		if (regbx == 0xC || ressi->resname[regbx] == '.' || ressi->resname[regbx] == 0) {
@@ -385,7 +377,8 @@ void mmgr_op_unk2(unsigned short arg_0, unsigned short arg_2) {
 	__asm {
 		push bx
 	}
-
+	
+	(void)arg_0;
 	regax = arg_2;
 	ressi = resptr2;
 
@@ -417,6 +410,7 @@ unsigned short mmgr_get_chunk_size(unsigned short arg_0, unsigned short arg_2) {
 	struct MEMCHUNK* ressi;
 	struct MEMCHUNK* resdi;
 
+	(void)arg_0;
 	regax = arg_2;
 	ressi = resptr2;
 
@@ -438,6 +432,7 @@ unsigned short mmgr_resize_memory(unsigned short arg_0, unsigned short arg_2, un
 
 	pushregs();
 
+	(void)arg_0;
 	regax = arg_2;
 	ressi = resptr2;
 
@@ -492,6 +487,7 @@ void far* mmgr_op_unk(unsigned short arg_0, unsigned short arg_2) {
 	struct MEMCHUNK* ressi;
 	struct MEMCHUNK* resdi;
 
+	(void)arg_0;
 	regax = arg_2;
 	ressi = resptr2;
 

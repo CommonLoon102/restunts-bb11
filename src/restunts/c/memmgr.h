@@ -1,0 +1,27 @@
+#ifndef RESTUNTS_MEMMGR_H
+#define RESTUNTS_MEMMGR_H
+
+struct MEMCHUNK {
+	char resname[12];
+	unsigned short ressize;
+	unsigned short resofs;
+	unsigned short resunk;
+};
+
+const char* mmgr_path_to_name(const char* filename);
+void far* mmgr_alloc_pages(const char* arg_0, unsigned short arg_2);
+void mmgr_alloc_resmem(unsigned short arg_0);
+void mmgr_alloc_a000();
+unsigned short mmgr_get_ofs_diff();
+void far* mmgr_free(unsigned short arg_0, unsigned short arg_2);
+void mmgr_copy_paras(unsigned short srcseg, unsigned short destseg, short paras);
+void copy_paras_reverse(unsigned short srcseg, unsigned short destseg, short paras);
+void mmgr_find_free();
+void far* mmgr_get_unk(const char* arg_0);
+void mmgr_op_unk2(unsigned short arg_0, unsigned short arg_2);
+unsigned short mmgr_get_chunk_size(unsigned short arg_0, unsigned short arg_2);
+unsigned short mmgr_resize_memory(unsigned short arg_0, unsigned short arg_2, unsigned short arg_4);
+void far* mmgr_op_unk(unsigned short arg_0, unsigned short arg_2);
+
+
+#endif

@@ -1,6 +1,7 @@
 #include <dos.h>
 #include "externs.h"
 #include "fileio.h"
+#include "memmgr.h"
 
 #define PAGE_SIZE 0x4000
 #define PAGE_GAP  0x400
@@ -462,9 +463,6 @@ short file_write_nofatal(const char* filename, unsigned short srcoff, unsigned s
 {
 	return file_write(filename, srcoff, srcseg, length, 0);
 }
-
-void far* mmgr_get_unk(char* arg_0);
-void far* mmgr_alloc_pages(char* arg_0, unsigned short arg_2);
 
 // Allocates, reads and returns a pointer to the contents of a binary file
 void far* file_load_binary(const char* filename, int fatal) {
