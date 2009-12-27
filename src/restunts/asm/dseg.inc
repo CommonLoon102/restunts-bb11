@@ -170,6 +170,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn unk_3BD70:byte
     extrn unk_3BD71:byte
     extrn unk_3BD72:byte
+    extrn brakedivtab:word
     extrn byte_3BE02:byte
     extrn word_3BE14:word
     extrn word_3BE16:word
@@ -208,6 +209,19 @@ dseg segment byte public 'STUNTSD' use16
     extrn word_3C10E:word
     extrn word_3C110:word
     extrn word_3C112:word
+    extrn aDm1:byte
+    extrn aDm2:byte
+    extrn aPre:byte
+    extrn aSe1:byte
+    extrn aSe2:byte
+    extrn aWww:byte
+    extrn aOpp:byte
+    extrn aOpp_0:byte
+    extrn aPen:byte
+    extrn aRpl_0:byte
+    extrn unk_3C152:byte
+    extrn aCrak:byte
+    extrn aCinf:byte
     extrn aScensce2sce3sce4:byte
     extrn aTitle:byte
     extrn aLogolog2brav:byte
@@ -378,6 +392,12 @@ dseg segment byte public 'STUNTSD' use16
     extrn word_3E5C4:word
     extrn word_3E5D0:word
     extrn word_3E5D2:word
+    extrn unk_3E640:byte
+    extrn unk_3E646:byte
+    extrn unk_3E676:byte
+    extrn unk_3E682:byte
+    extrn unk_3E68E:byte
+    extrn unk_3E69A:byte
     extrn aGame1:byte
     extrn aGame2:byte
     extrn aCar0:byte
@@ -491,6 +511,8 @@ dseg segment byte public 'STUNTSD' use16
     extrn a_:byte
     extrn byte_3EBD8:byte
     extrn aDea:byte
+    extrn a_p3s:byte
+    extrn a_3sh:byte
     extrn byte_3ECBB:byte
     extrn word_3ED74:word
     extrn word_3ED76:word
@@ -728,11 +750,16 @@ dseg segment byte public 'STUNTSD' use16
     extrn aDrv:byte
     extrn aMt32_plb:byte
     extrn aCanTFindDriver:byte
+    extrn aDsf:byte
+    extrn aSfx:byte
+    extrn aCannotLoadSfxFileS:byte
     extrn aKms:byte
     extrn aCannotLoadSongFileS:byte
     extrn aDvc:byte
     extrn aVce:byte
     extrn aCannotLoadVoiceFileS:byte
+    extrn aSlb:byte
+    extrn aCannotLoadSampleFileS:byte
     extrn word_407AA:word
     extrn word_407CA:word
     extrn word_407CC:word
@@ -771,6 +798,13 @@ dseg segment byte public 'STUNTSD' use16
     extrn byte_40B86:byte
     extrn aMcgaWindow:byte
     extrn aWindowdefOutOfRowTableSpa:byte
+    extrn a_pvs_0:byte
+    extrn a_xvs_0:byte
+    extrn a_vsh:byte
+    extrn a_pes_0:byte
+    extrn a_esh_0:byte
+    extrn unk_40BD5:byte
+    extrn shapeexts:word
     extrn shapenums:byte
     extrn a_pvs:byte
     extrn aUnflip_0:byte
@@ -1245,7 +1279,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn word_45D1E:word
     extrn word_45D22:word
     extrn word_45D24:word
-    extrn byte_45D3E:byte
+    extrn word_45D3E:word
     extrn trackrows:word
     extrn word_45D7C:word
     extrn byte_45D7E:byte

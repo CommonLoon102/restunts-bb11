@@ -181,7 +181,7 @@ loc_21C78:
     call    init_game_state
     add     sp, 2
     mov     word_45D94, 0
-    mov     byte_45D3E, 0
+    mov     byte ptr word_45D3E, 0
     mov     byte_4393C, 1
     mov     al, byte_3B8F2
     cbw
@@ -808,7 +808,7 @@ loc_22305:
     push    ax
     call    show_dialog
     add     sp, 12h
-    mov     byte_45D3E, 1
+    mov     byte ptr word_45D3E, 1
     mov     si, word_449D0
     dec     si
 loc_22347:
@@ -861,7 +861,7 @@ loc_2239F:
     jz      short loc_223CD
     jmp     loc_22347
 loc_223CD:
-    mov     byte_45D3E, 0
+    mov     byte ptr word_45D3E, 0
     sub     ax, ax
     push    ax
     push    cs
@@ -1400,9 +1400,9 @@ loc_2283C:
 loc_22847:
     cmp     word_45A24, 0
     jnz     short loc_22866
-    cmp     byte_45D3E, 0
+    cmp     byte ptr word_45D3E, 0
     jnz     short loc_22866
-    mov     byte_45D3E, 1
+    mov     byte ptr word_45D3E, 1
     mov     byte_46467, 1
     pop     si
     pop     di
@@ -2065,7 +2065,7 @@ loc_22D5C:
     push    ax              ; char *
     mov     ax, 3
     push    ax              ; int
-    call    load_resource
+    call    file_load_resource
     add     sp, 4
     mov     word ptr stdresptr, ax
     mov     word ptr stdresptr+2, dx
@@ -2073,7 +2073,7 @@ loc_22D5C:
     push    ax              ; char *
     mov     ax, 2
     push    ax              ; int
-    call    load_resource
+    call    file_load_resource
     add     sp, 4
     mov     word_40D84, ax
     mov     word_40D86, dx
@@ -2141,7 +2141,7 @@ loc_22E09:
     push    ax
     push    word ptr stdresptr+2
     push    word ptr stdresptr
-    call    locate_shape_1
+    call    locate_shape_fatal
     add     sp, 6
     mov     word ptr [bp+var_C], ax
     mov     word ptr [bp+var_C+2], dx
@@ -2171,7 +2171,7 @@ loc_22E09:
     push    ax
     push    word ptr stdresptr+2
     push    word ptr stdresptr
-    call    locate_shape_0
+    call    locate_shape_nofatal
     add     sp, 6
     or      dx, ax
     jz      short loc_22F12
@@ -2179,7 +2179,7 @@ loc_22E09:
     push    ax
     push    word ptr stdresptr+2
     push    word ptr stdresptr
-    call    locate_shape_1
+    call    locate_shape_fatal
     add     sp, 6
     mov     bx, ax
     mov     es, dx
@@ -2193,7 +2193,7 @@ loc_22F18:
     push    ax
     push    word ptr stdresptr+2
     push    word ptr stdresptr
-    call    locate_shape_0
+    call    locate_shape_nofatal
     add     sp, 6
     mov     word ptr [bp+var_C], ax
     mov     word ptr [bp+var_C+2], dx
@@ -2209,7 +2209,7 @@ loc_22F18:
     push    ax
     push    word ptr stdresptr+2
     push    word ptr stdresptr
-    call    locate_shape_1
+    call    locate_shape_fatal
     add     sp, 6
     mov     word_454A0, ax
     mov     word_454A2, dx
@@ -2231,7 +2231,7 @@ loc_22F76:
     push    ax
     push    word ptr stdresptr+2
     push    word ptr stdresptr
-    call    locate_shape_0
+    call    locate_shape_nofatal
     add     sp, 6
     or      dx, ax
     jz      short loc_22FB1
@@ -2239,7 +2239,7 @@ loc_22F76:
     push    ax
     push    word ptr stdresptr+2
     push    word ptr stdresptr
-    call    locate_shape_1
+    call    locate_shape_fatal
     add     sp, 6
     push    dx
     push    ax
@@ -2250,7 +2250,7 @@ loc_22FB1:
     push    ax
     push    word ptr stdresptr+2
     push    word ptr stdresptr
-    call    locate_shape_1
+    call    locate_shape_fatal
     add     sp, 6
     push    dx
     push    ax
@@ -3037,7 +3037,7 @@ loc_237D3:
     push    ax              ; char *
     mov     ax, 5
     push    ax              ; int
-    call    load_resource
+    call    file_load_resource
     add     sp, 4
     mov     word_454A6, ax
     mov     word_454A8, dx
@@ -3045,7 +3045,7 @@ loc_237D3:
     push    ax              ; char *
     mov     ax, 6
     push    ax              ; int
-    call    load_resource
+    call    file_load_resource
     add     sp, 4
     mov     word_45E0E, ax
     mov     word_45E10, dx
@@ -3087,7 +3087,7 @@ loc_23870:
     push    ax              ; char *
     sub     ax, ax
     push    ax              ; int
-    call    load_resource
+    call    file_load_resource
     add     sp, 4
     mov     word_459F4, ax
     mov     word_459F6, dx
@@ -3108,7 +3108,7 @@ loc_238B4:
     push    ax              ; char *
     mov     ax, 3
     push    ax              ; int
-    call    load_resource
+    call    file_load_resource
     add     sp, 4
     mov     word_45D08, ax
     mov     word_45D0A, dx
@@ -4359,7 +4359,7 @@ loc_24416:
     add     sp, 2
     mov     word_42D02, 0
     mov     gameconfig.game_recordedframes, 0
-    mov     byte_45D3E, 0
+    mov     byte ptr word_45D3E, 0
     mov     byte_43966, 1
     jmp     short loc_244B0
     ; align 2

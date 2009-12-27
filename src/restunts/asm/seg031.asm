@@ -46,7 +46,7 @@ nosmart
 seg031 segment byte public 'STUNTSC' use16
     assume cs:seg031
     assume es:nothing, ss:nothing, ds:dseg
-    public load_2dshape_0_2
+    public load_2dshape_nofatal2
     public sub_39E24
     public sub_39E4C
     public nullsub_1
@@ -58,7 +58,7 @@ seg031 segment byte public 'STUNTSC' use16
     public mmgr_alloc_resbytes
     public get_res_ofs_diff_scaled
     public get_res_size_scaled
-load_2dshape_0_2 proc far
+load_2dshape_nofatal2 proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -66,11 +66,11 @@ load_2dshape_0_2 proc far
     push    bp
     mov     bp, sp
     push    [bp+arg_0]
-    call    j_load_2dshape_0
+    call    load_2dshape_nofatal_thunk
     add     sp, 2
     pop     bp
     retf
-load_2dshape_0_2 endp
+load_2dshape_nofatal2 endp
 sub_39E24 proc far
     var_50 = byte ptr -80
      s = byte ptr 0
@@ -632,7 +632,7 @@ load_palandcursor proc far
     push    si
     mov     ax, 53A7h
     push    ax
-    call    load_2dshape1
+    call    load_2dshape_fatal_thunk
     add     sp, 2
     mov     [bp+var_30C], ax
     mov     [bp+var_30A], dx
@@ -640,7 +640,7 @@ load_palandcursor proc far
     push    ax
     push    dx
     push    [bp+var_30C]
-    call    locate_shape_1
+    call    locate_shape_fatal
     add     sp, 6
     mov     word ptr [bp+var_304], ax
     mov     word ptr [bp+var_304+2], dx
@@ -667,7 +667,7 @@ loc_3A300:
     push    ax
     push    [bp+var_30A]
     push    [bp+var_30C]
-    call    locate_shape_1
+    call    locate_shape_fatal
     add     sp, 6
     mov     word ptr [bp+var_310], ax
     mov     word ptr [bp+var_310+2], dx
@@ -709,7 +709,7 @@ loc_3A300:
     mov     word ptr dword_455C8+2, dx
     mov     ax, 53B8h
     push    ax
-    call    load_2dshape1
+    call    load_2dshape_fatal_thunk
     add     sp, 2
     mov     [bp+var_30C], ax
     mov     [bp+var_30A], dx
@@ -724,7 +724,7 @@ loc_3A300:
     push    ax
     push    [bp+var_30A]
     push    [bp+var_30C]
-    call    locate_shape_1
+    call    locate_shape_fatal
     add     sp, 6
     push    dx
     push    ax
@@ -741,7 +741,7 @@ loc_3A300:
     push    ax
     push    [bp+var_30A]
     push    [bp+var_30C]
-    call    locate_shape_1
+    call    locate_shape_fatal
     add     sp, 6
     push    dx
     push    ax

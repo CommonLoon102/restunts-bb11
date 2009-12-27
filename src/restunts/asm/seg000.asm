@@ -154,7 +154,7 @@ loc_10086:
     push    ax              ; char *
     sub     ax, ax
     push    ax              ; int
-    call    load_resource   ; type 0 = binary file
+    call    file_load_resource; type 0 = binary file
     add     sp, 4
     mov     word ptr fontdefptr, ax
     mov     word ptr fontdefptr+2, dx
@@ -162,7 +162,7 @@ loc_10086:
     push    ax              ; char *
     sub     ax, ax
     push    ax              ; int
-    call    load_resource
+    call    file_load_resource
     add     sp, 4
     mov     word ptr fontnptr, ax
     mov     word ptr fontnptr+2, dx
@@ -626,7 +626,7 @@ run_intro_looped proc far
     push    ax              ; char *
     mov     ax, 2
     push    ax              ; int
-    call    load_resource
+    call    file_load_resource
     add     sp, 4
     mov     word_45E12, ax
     mov     word_45E14, dx
@@ -662,7 +662,7 @@ run_intro_looped proc far
     push    ax              ; char *
     mov     ax, 2
     push    ax              ; int
-    call    load_resource
+    call    file_load_resource
     add     sp, 4
     mov     word_45E12, ax
     mov     word_45E14, dx
@@ -722,7 +722,7 @@ run_intro proc far
     push    ax
     push    word_45E14
     push    word_45E12
-    call    locate_shape_1
+    call    locate_shape_fatal
     add     sp, 6
     mov     bx, ax
     mov     es, dx
@@ -737,7 +737,7 @@ loc_106E4:
     push    ax
     push    word_45E14
     push    word_45E12
-    call    locate_shape_1
+    call    locate_shape_fatal
     add     sp, 6
     push    dx
     push    ax
@@ -765,7 +765,7 @@ loc_106E4:
     push    ax
     push    word_45E14
     push    word_45E12
-    call    locate_shape_1
+    call    locate_shape_fatal
     add     sp, 6
     push    dx
     push    ax
@@ -1568,7 +1568,7 @@ run_menu proc far
     push    ax              ; char *
     mov     ax, 2
     push    ax              ; int
-    call    load_resource
+    call    file_load_resource
     add     sp, 4
     mov     [bp+var_4], ax
     mov     [bp+var_2], dx
@@ -1577,7 +1577,7 @@ run_menu proc far
     push    ax
     push    [bp+var_2]
     push    [bp+var_4]
-    call    locate_shape_1
+    call    locate_shape_fatal
     add     sp, 6
     push    dx
     push    ax
@@ -3221,7 +3221,7 @@ loc_11E68:
     mov     byte_45514, 2Dh ; '-'
     mov     ax, offset aSdcsel; "sdcsel"
     push    ax
-    call    load_2dshape1
+    call    load_2dshape_fatal_thunk
     add     sp, 2
     mov     [bp+var_36], ax
     mov     [bp+var_34], dx
@@ -3436,7 +3436,7 @@ loc_11FC8:
     push    ax
     push    [bp+var_34]
     push    [bp+var_36]
-    call    locate_shape_1
+    call    locate_shape_fatal
     add     sp, 6
     push    dx
     push    ax
@@ -3959,7 +3959,7 @@ loc_125FE:
     push    ax
     push    [bp+var_34]
     push    [bp+var_36]
-    call    locate_shape_1
+    call    locate_shape_fatal
     add     sp, 6
     push    dx
     push    ax
@@ -4291,7 +4291,7 @@ run_opponent_menu proc far
     push    ax              ; char *
     mov     ax, 8
     push    ax              ; int
-    call    load_resource
+    call    file_load_resource
     add     sp, 4
     mov     word_44A00, ax
     mov     word_44A02, dx
@@ -4385,7 +4385,7 @@ loc_12A4D:
     push    ax
     push    word_44A02
     push    word_44A00
-    call    locate_shape_1
+    call    locate_shape_fatal
     add     sp, 6
     push    dx
     push    ax
@@ -4538,7 +4538,7 @@ loc_12A4D:
     push    ax
     push    word_44A02
     push    word_44A00
-    call    locate_shape_1
+    call    locate_shape_fatal
     add     sp, 6
     push    dx
     push    ax
@@ -5844,7 +5844,7 @@ loc_1384B:
     push    ax              ; char *
     mov     ax, 3
     push    ax              ; int
-    call    load_resource
+    call    file_load_resource
     add     sp, 4
     mov     [bp+var_1C], ax
     mov     [bp+var_1A], dx
@@ -5887,7 +5887,7 @@ loc_138B6:
     push    ax              ; char *
     mov     ax, 3
     push    ax              ; int
-    call    load_resource
+    call    file_load_resource
     add     sp, 4
     mov     [bp+var_1C], ax
     mov     [bp+var_1A], dx
@@ -5922,7 +5922,7 @@ loc_138FF:
     push    ax              ; char *
     mov     ax, 1
     push    ax              ; int
-    call    load_resource
+    call    file_load_resource
     add     sp, 4
     mov     word ptr [bp+var_4A], ax
     mov     word ptr [bp+var_4A+2], dx
@@ -5954,7 +5954,7 @@ loc_138FF:
     push    ax              ; char *
     mov     ax, 1
     push    ax              ; int
-    call    load_resource
+    call    file_load_resource
     add     sp, 4
     mov     word ptr [bp+var_4A], ax
     mov     word ptr [bp+var_4A+2], dx
@@ -6044,7 +6044,7 @@ loc_13A4B:
     push    ax
     push    [bp+var_1A]
     push    [bp+var_1C]
-    call    locate_shape_1
+    call    locate_shape_fatal
     add     sp, 6
     mov     word ptr [bp+var_56], ax
     mov     word ptr [bp+var_56+2], dx
@@ -6091,7 +6091,7 @@ loc_13A4B:
     push    ax
     push    [bp+var_1A]
     push    [bp+var_1C]
-    call    locate_shape_1
+    call    locate_shape_fatal
     add     sp, 6
     push    dx
     push    ax
@@ -6395,7 +6395,7 @@ loc_13DDF:
     push    ax
     push    [bp+var_1A]
     push    [bp+var_1C]
-    call    locate_shape_1
+    call    locate_shape_fatal
     add     sp, 6
     mov     word ptr [bp+var_56], ax
     mov     word ptr [bp+var_56+2], dx
@@ -6818,7 +6818,7 @@ loc_1424D:
     push    ax
     push    [bp+var_1A]
     push    [bp+var_1C]
-    call    locate_shape_1
+    call    locate_shape_fatal
     add     sp, 6
     mov     word ptr [bp+var_56], ax
     mov     word ptr [bp+var_56+2], dx
@@ -6873,7 +6873,7 @@ loc_1430E:
     push    ax
     push    [bp+var_1A]
     push    [bp+var_1C]
-    call    locate_shape_1
+    call    locate_shape_fatal
     add     sp, 6
     push    dx
     push    ax

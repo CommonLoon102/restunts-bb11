@@ -173,19 +173,21 @@ seg012 segment byte public 'STUNTSC' use16
     public decompress_rle
     public sub_30BF8
     public sub_30CCF
-    public load_res0_1_alt
-    public load_res0_1_type
-    public loc_30DA1
-    public decompress_file
-    public decompress_file_nofatal
-    public decompress_file_fatal
-    public _decompress_file
-    public locate_shape_0
-    public locate_shape_1
-    public locate_sound
+    public ported_file_load_binary_
+    public ported_file_load_binary_nofatal_
+    public file_decomp
+    public file_decomp_nofatal
+    public file_decomp_fatal
+    public locate_shape_nofatal
+    public locate_shape_fatal
+    public locate_sound_fatal
     public ported_mmgr_alloc_resmem_
     public loc_310CD
     public ported_mmgr_alloc_a000_
+    public nopsub_310FE
+    public nopsub_3111D
+    public nopsub_31157
+    public nopsub_31169
     public ported_mmgr_get_ofs_diff_
     public ported_mmgr_copy_paras_
     public ported_copy_paras_reverse_
@@ -193,8 +195,10 @@ seg012 segment byte public 'STUNTSC' use16
     public ported_mmgr_alloc_pages_
     public ported_mmgr_find_free_
     public ported_mmgr_get_unk_
+    public nopsub_31429
     public ported_mmgr_free_
     public loc_31498
+    public nopsub_31525
     public ported_mmgr_op_unk2_
     public ported_mmgr_get_chunk_size_
     public ported_mmgr_resize_memory_
@@ -289,9 +293,9 @@ seg012 segment byte public 'STUNTSC' use16
     public loc_33697
     public sub_33742
     public video_set_mode_13h
-    public j_load_2dshape_res2
-    public load_2dshape1
-    public j_load_2dshape_0
+    public load_2dshape_res_nofatal_thunk
+    public load_2dshape_fatal_thunk
+    public load_2dshape_nofatal_thunk
     public sub_3386C
     public sub_33890
     public loc_338C9
@@ -5703,10 +5707,10 @@ decompress_rle proc far
     var_12 = word ptr -18
      s = byte ptr 0
      r = byte ptr 2
-    arg_0 = word ptr 6
-    arg_2 = word ptr 8
-    arg_6 = word ptr 12
-    arg_8 = word ptr 14
+    arg_srcoff = word ptr 6
+    arg_srcseg = word ptr 8
+    arg_dstoff = word ptr 12
+    arg_dstseg = word ptr 14
 
     push    bp
     mov     bp, sp
@@ -5717,8 +5721,8 @@ decompress_rle proc far
     cld
     mov     ax, ds
     mov     es, ax
-    mov     si, [bp+arg_0]
-    mov     ds, [bp+arg_2]
+    mov     si, [bp+arg_srcoff]
+    mov     ds, [bp+arg_srcseg]
     mov     ax, [si+1]
     mov     [bp+var_1A], ax
     mov     al, [si+3]
@@ -5728,14 +5732,14 @@ decompress_rle proc far
     mov     cx, 8
     lea     di, [bp+var_16]
     rep movsw
-    mov     si, [bp+arg_0]
+    mov     si, [bp+arg_srcoff]
     add     si, 9
     mov     dx, [bp+var_12]
 smart
     and     dx, 7Fh
 nosmart
     add     si, dx
-    mov     [bp+arg_0], si
+    mov     [bp+arg_srcoff], si
     cmp     byte ptr [bp+var_12], 80h ; '€'
     ja      short loc_30BE6
     call    sub_30CCF
@@ -5755,16 +5759,16 @@ nosmart
     inc     ax
 loc_30BC9:
     push    ax
-    mov     bx, [bp+arg_8]
+    mov     bx, [bp+arg_dstseg]
     sub     bx, ax
-    add     bx, [bp+arg_6]
-    mov     [bp+arg_2], bx
+    add     bx, [bp+arg_dstoff]
+    mov     [bp+arg_srcseg], bx
     push    bx
-    push    [bp+arg_6]
+    push    [bp+arg_dstoff]
     call    copy_paras_reverse
     add     sp, 6
     xor     si, si
-    mov     [bp+arg_0], si
+    mov     [bp+arg_srcoff], si
 loc_30BE6:
     call    sub_30BF8
     mov     ax, [bp+var_1A]
@@ -5978,22 +5982,22 @@ loc_30D5A:
     jz      short loc_30D29
     jmp     loc_30CED
 sub_30CCF endp
-load_res0_1_alt proc far
-    var_2 = word ptr -2
+ported_file_load_binary_ proc far
+    var_fatal = word ptr -2
      s = byte ptr 0
      r = byte ptr 2
-    arg_4 = word ptr 8
+    arg_fatal = word ptr 8
 
     push    bp
     mov     bp, sp
     sub     sp, 2
-    mov     ax, [bp+arg_4]
-    mov     [bp+var_2], ax
-    jmp     short loc_30DA1
+    mov     ax, [bp+arg_fatal]
+    mov     [bp+var_fatal], ax
+    jmp     short _file_load_binary_fatal_var
     ; align 2
     db 144
-load_res0_1_alt endp
-load_res0_1_type proc far
+ported_file_load_binary_ endp
+ported_file_load_binary_nofatal_ proc far
     var_fatal = word ptr -2
      s = byte ptr 0
      r = byte ptr 2
@@ -6003,14 +6007,14 @@ load_res0_1_type proc far
     mov     bp, sp
     sub     sp, 2
     mov     [bp+var_fatal], 0
-    jmp     short loc_30DA1
+    jmp     short _file_load_binary_fatal_var
     ; align 2
     db 144
     push    bp
     mov     bp, sp
     sub     sp, 2
     mov     [bp+var_fatal], 1
-loc_30DA1:
+_file_load_binary_fatal_var:
     push    [bp+arg_filename]
     call    mmgr_get_unk
     add     sp, 2
@@ -6039,8 +6043,8 @@ loc_30DDE:
 emptyfile:
     xor     dx, dx
     jmp     short loc_30DDE
-load_res0_1_type endp
-decompress_file proc far
+ported_file_load_binary_nofatal_ endp
+file_decomp proc far
     var_fatal = word ptr -12
      s = byte ptr 0
      r = byte ptr 2
@@ -6053,10 +6057,10 @@ decompress_file proc far
     push    di
     mov     ax, [bp+arg_fatal]
     mov     [bp+var_fatal], ax
-    jmp     short _decompress_file
+    jmp     short _file_decomp
     db 144
-decompress_file endp
-decompress_file_nofatal proc far
+file_decomp endp
+file_decomp_nofatal proc far
     var_fatal = word ptr -12
      s = byte ptr 0
      r = byte ptr 2
@@ -6067,16 +6071,16 @@ decompress_file_nofatal proc far
     push    si
     push    di
     mov     [bp+var_fatal], 0
-    jmp     short _decompress_file
+    jmp     short _file_decomp
     db 144
-decompress_file_nofatal endp
-decompress_file_fatal proc far
+file_decomp_nofatal endp
+file_decomp_fatal proc far
     var_fatal = word ptr -12
-    var_A = word ptr -10
-    var_8 = word ptr -8
-    var_uncompressed_size = word ptr -6
-    var_4 = word ptr -4
-    var_2 = word ptr -2
+    var_nextsrcseg = word ptr -10
+    var_passes = word ptr -8
+    var_decomp_paras = word ptr -6
+    var_dstseg = word ptr -4
+    var_dstoff = word ptr -2
      s = byte ptr 0
      r = byte ptr 2
     arg_filename = word ptr 6
@@ -6088,12 +6092,12 @@ decompress_file_fatal proc far
     push    si
     push    di
     mov     [bp+var_fatal], 1
-_decompress_file:
+_file_decomp:
     push    [bp+arg_filename]
     call    mmgr_get_unk
     add     sp, 2
     or      dx, dx
-    jz      short loc_30E2C
+    jz      short fd_not_found
     pop     di
     pop     si
     mov     sp, bp
@@ -6101,7 +6105,7 @@ _decompress_file:
     retf
 loc_30E29:
     jmp     loc_30F0F
-loc_30E2C:
+fd_not_found:
     push    [bp+var_fatal]
     push    [bp+arg_filename]
     call    file_uncomp_paras
@@ -6109,31 +6113,31 @@ loc_30E2C:
     or      ax, ax
     jz      short loc_30E29
     add     ax, 4
-    mov     [bp+var_uncompressed_size], ax
+    mov     [bp+var_decomp_paras], ax
     push    ax
     push    [bp+arg_filename]
     call    mmgr_alloc_pages
     add     sp, 4
-    mov     [bp+var_2], ax
-    mov     [bp+var_4], dx
+    mov     [bp+var_dstoff], ax
+    mov     [bp+var_dstseg], dx
     push    [bp+var_fatal]
     push    [bp+arg_filename]
     call    file_paras
     add     sp, 4
     or      ax, ax
     jz      short loc_30E29
-    mov     dx, [bp+var_uncompressed_size]
+    mov     dx, [bp+var_decomp_paras]
     sub     dx, ax
-    add     dx, [bp+var_4]
+    add     dx, [bp+var_dstseg]
     push    [bp+var_fatal]
     push    dx
-    push    [bp+var_2]
+    push    [bp+var_dstoff]
     push    [bp+arg_filename]
     call    file_read
     add     sp, 8
     or      dx, dx
     jz      short loc_30E29
-    mov     [bp+var_8], 1
+    mov     [bp+var_passes], 1
     mov     ds, dx
     mov     si, ax
     mov     al, [si]
@@ -6142,12 +6146,12 @@ loc_30E2C:
 smart
     and     ax, 7Fh
 nosmart
-    mov     [bp+var_8], ax
+    mov     [bp+var_passes], ax
     add     si, 4
 decompress_subfile:
-    push    [bp+var_uncompressed_size]
-    push    [bp+var_4]
-    push    [bp+var_2]
+    push    [bp+var_decomp_paras]
+    push    [bp+var_dstseg]
+    push    [bp+var_dstoff]
     push    ds
     mov     bl, [si]
     dec     bl
@@ -6162,7 +6166,7 @@ decompress_subfile:
     shl     bx, 1
     call    dword ptr cs:compression_type[bx]
     add     sp, 0Ah
-    dec     [bp+var_8]
+    dec     [bp+var_passes]
     jle     short loc_30F2F
     mov     si, ax
     shr     dx, 1
@@ -6178,15 +6182,15 @@ decompress_subfile:
     inc     ax
 loc_30EE5:
     push    ax
-    mov     bx, [bp+var_uncompressed_size]
+    mov     bx, [bp+var_decomp_paras]
     sub     bx, ax
-    add     bx, [bp+var_4]
-    mov     [bp+var_A], bx
+    add     bx, [bp+var_dstseg]
+    mov     [bp+var_nextsrcseg], bx
     push    bx
-    push    [bp+var_4]
+    push    [bp+var_dstseg]
     call    copy_paras_reverse
     add     sp, 6
-    mov     ds, [bp+var_A]
+    mov     ds, [bp+var_nextsrcseg]
     xor     si, si
     jmp     short decompress_subfile
 compression_type     dd decompress_rle
@@ -6211,15 +6215,15 @@ loc_30F1F:
     push    ax
     call    far ptr fatal_error
 loc_30F2F:
-    mov     ax, [bp+var_uncompressed_size]
+    mov     ax, [bp+var_decomp_paras]
     sub     ax, 4
     push    ax
-    push    [bp+var_4]
-    push    [bp+var_2]
+    push    [bp+var_dstseg]
+    push    [bp+var_dstoff]
     call    mmgr_resize_memory
     add     sp, 6
-    mov     ax, [bp+var_2]
-    mov     dx, [bp+var_4]
+    mov     ax, [bp+var_dstoff]
+    mov     dx, [bp+var_dstseg]
     pop     di
     pop     si
     mov     sp, bp
@@ -6251,15 +6255,15 @@ loc_30F2F:
 loc_30F7E:
     push    [bp+var_fatal]
     push    [bp+arg_filename]
-    call    decompress_file_fatal
+    call    file_decomp_fatal
     add     sp, 4
     pop     di
     pop     si
     mov     sp, bp
     pop     bp
     retf
-decompress_file_fatal endp
-locate_shape_0 proc far
+file_decomp_fatal endp
+locate_shape_nofatal proc far
      s = byte ptr 0
      r = byte ptr 2
 
@@ -6271,8 +6275,8 @@ locate_shape_0 proc far
     xor     dx, dx
     jmp     short _alt_locate_resource
     db 144
-locate_shape_0 endp
-locate_shape_1 proc far
+locate_shape_nofatal endp
+locate_shape_fatal proc far
      s = byte ptr 0
      r = byte ptr 2
 
@@ -6284,8 +6288,8 @@ locate_shape_1 proc far
     mov     dx, 1
     jmp     short _alt_locate_resource
     db 144
-locate_shape_1 endp
-locate_sound proc far
+locate_shape_fatal endp
+locate_sound_fatal proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -6354,8 +6358,7 @@ loc_3100F:
     push    [bp+arg_4]
     push    dx
     call    far ptr fatal_error
-    db 205
-    db 32
+    int     20h             ; DOS - PROGRAM TERMINATION
 loc_3101F:
     xor     ax, ax
     jmp     short loc_31075
@@ -6408,7 +6411,7 @@ loc_31075:
     pop     ds
     pop     bp
     retf
-locate_sound endp
+locate_sound_fatal endp
 ported_mmgr_alloc_resmem_ proc far
      s = byte ptr 0
      r = byte ptr 2
@@ -6472,18 +6475,30 @@ ported_mmgr_alloc_a000_ proc far
     call    mmgr_alloc_resmem
     add     sp, 2
     retf
+ported_mmgr_alloc_a000_ endp
+nopsub_310FE proc far
+     s = byte ptr 0
+     r = byte ptr 2
+    arg_0 = word ptr 6
+
     push    bp
     mov     bp, sp
     mov     ax, 0A000h
     push    ax
     call    mmgr_alloc_resmem
     add     sp, 2
-    mov     ax, [bp+6]
+    mov     ax, [bp+arg_0]
     mov     bx, resendptr2
-    sub     [bx+0Eh], ax
+    sub     [bx+MEMCHUNK.resofs], ax
     sub     word_3FF82, ax
     pop     bp
     retf
+nopsub_310FE endp
+nopsub_3111D proc far
+     s = byte ptr 0
+     r = byte ptr 2
+    arg_0 = word ptr 6
+
     push    bp
     mov     bp, sp
     push    si
@@ -6492,7 +6507,7 @@ ported_mmgr_alloc_a000_ proc far
     mov     pspseg, ds
     cmp     word_3FF82, 0
     jnz     short loc_310CD
-    mov     bx, [bp+6]
+    mov     bx, [bp+arg_0]
     mov     ah, 48h
     int     21h             ; DOS - 2+ - ALLOCATE MEMORY
     jnb     short loc_3113E
@@ -6500,26 +6515,32 @@ ported_mmgr_alloc_a000_ proc far
     int     21h             ; DOS - 2+ - ALLOCATE MEMORY
 loc_3113E:
     mov     si, resptr1
-    mov     [si+0Eh], ax
+    mov     [si+MEMCHUNK.resofs], ax
     mov     word_3FF84, ax
     add     ax, bx
     mov     si, resendptr2
-    mov     [si+0Eh], ax
+    mov     [si+MEMCHUNK.resofs], ax
     mov     word_3FF82, ax
     jmp     loc_310CD
+nopsub_3111D endp
+nopsub_31157 proc far
+
     mov     bx, resendptr1
-    mov     ax, [bx+0Eh]
+    mov     ax, [bx+MEMCHUNK.resofs]
     mov     bx, resptr2
-    sub     ax, [bx+0Eh]
-    sub     ax, [bx+0Ch]
+    sub     ax, [bx+MEMCHUNK.resofs]
+    sub     ax, [bx+MEMCHUNK.ressize]
     retf
+nopsub_31157 endp
+nopsub_31169 proc far
+
     mov     bx, resptr2
-    mov     ax, [bx+0Eh]
-    add     ax, [bx+0Ch]
+    mov     ax, [bx+MEMCHUNK.resofs]
+    add     ax, [bx+MEMCHUNK.ressize]
     mov     bx, resptr1
-    sub     ax, [bx+0Eh]
+    sub     ax, [bx+MEMCHUNK.resofs]
     retf
-ported_mmgr_alloc_a000_ endp
+nopsub_31169 endp
 ported_mmgr_get_ofs_diff_ proc far
 
     mov     bx, resendptr2
@@ -6884,12 +6905,18 @@ loc_3141F:
     call    mmgr_find_free
     mov     dx, [di+MEMCHUNK.resofs]
     jmp     short loc_313B0
+ported_mmgr_get_unk_ endp
+nopsub_31429 proc far
+     s = byte ptr 0
+     r = byte ptr 2
+    arg_0 = word ptr 6
+
     push    bp
     mov     bp, sp
     push    si
     push    di
     mov     si, resendptr1
-    push    word ptr [bp+6]
+    push    [bp+arg_0]
     call    mmgr_path_to_name
     add     sp, 2
     mov     di, ax
@@ -6931,7 +6958,7 @@ loc_31475:
     pop     si
     pop     bp
     retf
-ported_mmgr_get_unk_ endp
+nopsub_31429 endp
 ported_mmgr_free_ proc far
      s = byte ptr 0
      r = byte ptr 2
@@ -7008,12 +7035,21 @@ loc_3151B:
     pop     si
     pop     bp
     retf
+ported_mmgr_free_ endp
+nopsub_31525 proc far
+    var_4 = word ptr -4
+    var_2 = word ptr -2
+     s = byte ptr 0
+     r = byte ptr 2
+    arg_0 = word ptr 6
+    arg_2 = word ptr 8
+
     push    bp
     mov     bp, sp
     sub     sp, 6
     push    si
     push    di
-    mov     ax, [bp+8]
+    mov     ax, [bp+arg_2]
     mov     si, resptr2
 loc_31534:
     cmp     si, resptr1
@@ -7025,7 +7061,7 @@ loc_31534:
 loc_31544:
     jmp     loc_31498
 loc_31547:
-    mov     word ptr [bp+8], 0
+    mov     [bp+arg_2], 0
     mov     word ptr [si+10h], 0
     cmp     si, resptr2
     jz      short loc_31570
@@ -7041,24 +7077,24 @@ loc_31570:
     mov     di, resptr2
     mov     ax, [di+0Eh]
     add     ax, [di+0Ch]
-    mov     [bp-2], ax
-    mov     word ptr [bp-4], 0
+    mov     [bp+var_2], ax
+    mov     [bp+var_4], 0
     mov     di, resendptr1
 loc_31586:
     cmp     di, resendptr2
     jz      short loc_315E9
     mov     ax, [di+0Eh]
     sub     ax, [si+0Ch]
-    cmp     [bp-2], ax
+    cmp     [bp+var_2], ax
     ja      short loc_315E4
     mov     bx, di
     sub     bx, 12h
     cmp     bx, resptr2
     jz      short loc_315E4
-    cmp     word ptr [bp-4], 0
+    cmp     [bp+var_4], 0
     jnz     short loc_315B1
     mov     resendptr1, bx
-    mov     word ptr [bp-4], 1
+    mov     [bp+var_4], 1
 loc_315B1:
     mov     ax, [di+10h]
     mov     [bx+10h], ax
@@ -7087,7 +7123,7 @@ loc_315E4:
 loc_315E9:
     mov     ax, [di+0Eh]
     sub     di, 12h
-    cmp     word ptr [bp-4], 0
+    cmp     [bp+var_4], 0
     jnz     short loc_315F9
     mov     resendptr1, di
 loc_315F9:
@@ -7117,14 +7153,14 @@ loc_31628:
     jz      short loc_31628
     mov     resptr2, si
 loc_31635:
-    mov     ax, [bp+6]
-    mov     dx, [bp+8]
+    mov     ax, [bp+arg_0]
+    mov     dx, [bp+arg_2]
     pop     di
     pop     si
     mov     sp, bp
     pop     bp
     retf
-ported_mmgr_free_ endp
+nopsub_31525 endp
 ported_mmgr_op_unk2_ proc far
      s = byte ptr 0
      r = byte ptr 2
@@ -10460,18 +10496,18 @@ sub_32AE2 endp
 decompress_vle proc far
     var_lengths = byte ptr -528
     var_symbols = byte ptr -272
-    var_E = word ptr -14
-    var_A = word ptr -10
-    var_8 = word ptr -8
-    var_6 = word ptr -6
-    var_4 = word ptr -4
-    var_2 = word ptr -2
+    var_codoff = word ptr -14
+    var_codlen = word ptr -10
+    var_lenhi = word ptr -8
+    var_lenlo = word ptr -6
+    var_lenlefthi = word ptr -4
+    var_lenleftlo = word ptr -2
      s = byte ptr 0
      r = byte ptr 2
-    arg_0 = word ptr 6
-    arg_2 = word ptr 8
-    arg_4 = word ptr 10
-    arg_6 = word ptr 12
+    arg_srcoff = word ptr 6
+    arg_srcseg = word ptr 8
+    arg_dstoff = word ptr 10
+    arg_dstseg = word ptr 12
 
     push    bp
     mov     bp, sp
@@ -10481,29 +10517,29 @@ decompress_vle proc far
     push    ds
     cld
     sub     sp, 200h
-    mov     ds, [bp+arg_2]
-    mov     si, [bp+arg_0]
+    mov     ds, [bp+arg_srcseg]
+    mov     si, [bp+arg_srcoff]
     mov     ax, [si+1]
-    mov     [bp+var_2], ax
-    mov     [bp+var_6], ax
+    mov     [bp+var_lenleftlo], ax
+    mov     [bp+var_lenlo], ax
     mov     al, [si+3]
     xor     ah, ah
-    mov     [bp+var_4], ax
-    mov     [bp+var_8], ax
+    mov     [bp+var_lenlefthi], ax
+    mov     [bp+var_lenhi], ax
     mov     al, [si+4]
     xor     ah, ah
-    mov     [bp+var_A], ax
+    mov     [bp+var_codlen], ax
 smart
     and     ax, 7Fh
 nosmart
     add     si, 5
-    mov     [bp+var_E], si
+    mov     [bp+var_codoff], si
     lea     cx, callbackflags2+72h
     shl     ax, 1
     mov     di, ax
     xor     bx, bx
     xor     dx, dx
-loc_32DC1:
+gen_esc:
     mov     cs:vle_esc1[bx], cx
     shl     dx, 1
     sub     cs:vle_esc1[bx], dx
@@ -10516,14 +10552,14 @@ loc_32DC1:
     mov     word ptr cs:vle_esc2[bx], dx
     add     bx, 2
     cmp     bx, di
-    jl      short loc_32DC1
+    jl      short gen_esc
     sub     cx, 425Ch
     mov     ax, cs
     mov     es, ax
     mov     di, 425Ch
     rep movsb
     push    si
-    mov     bx, [bp+var_A]
+    mov     bx, [bp+var_codlen]
     mov     bh, bl
     cmp     bh, 8
     jle     short loc_32DFE
@@ -10534,9 +10570,9 @@ loc_32DFE:
     mov     cl, 80h ; '€'
     mov     di, cs:vle_esc1
 loc_32E09:
-    xchg    si, [bp+var_E]
+    xchg    si, [bp+var_codoff]
     lodsb
-    xchg    si, [bp+var_E]
+    xchg    si, [bp+var_codoff]
     mov     dh, al
     or      al, al
     jz      short loc_32E29
@@ -10564,14 +10600,14 @@ loc_32E35:
     jnz     short loc_32E35
     pop     si
     mov     bx, si
-    mov     es, [bp+arg_6]
-    mov     di, [bp+arg_4]
+    mov     es, [bp+arg_dstseg]
+    mov     di, [bp+arg_dstoff]
     mov     dl, [bx]
     inc     bx
     mov     dh, [bx]
     inc     bx
     mov     ah, 8
-    test    [bp+var_A], 80h
+    test    [bp+var_codlen], 80h
     jz      short loc_32E5C
     jmp     loc_32F27
 loc_32E5C:
@@ -10598,9 +10634,9 @@ loc_32E7F:
     or      di, di
     jz      short loc_32E94
 loc_32E87:
-    dec     [bp+var_2]
+    dec     [bp+var_lenleftlo]
     jnz     short loc_32E5C
-    dec     [bp+var_4]
+    dec     [bp+var_lenlefthi]
     jge     short loc_32E5C
     jmp     loc_32F16
 loc_32E94:
@@ -10674,8 +10710,8 @@ loc_32F0A:
     xor     si, si
     jmp     short loc_32F06
 loc_32F16:
-    mov     ax, [bp+var_6]
-    mov     dx, [bp+var_8]
+    mov     ax, [bp+var_lenlo]
+    mov     dx, [bp+var_lenhi]
     add     sp, 200h
     pop     ds
     pop     si
@@ -10710,9 +10746,9 @@ loc_32F4C:
     jz      short loc_32F62
 loc_32F54:
     mov     ch, al
-    dec     [bp+var_2]
+    dec     [bp+var_lenleftlo]
     jnz     short loc_32F27
-    dec     [bp+var_4]
+    dec     [bp+var_lenlefthi]
     jge     short loc_32F27
     jmp     short loc_32F16
 loc_32F62:
@@ -10741,12 +10777,12 @@ loc_32F83:
     mov     bp, 0Eh
     mov     bh, dh
     xor     dh, dh
-    mov     [bp+var_E], 0
+    mov     [bp+var_codoff], 0
 loc_32F93:
     cmp     ah, 0
     jz      short loc_32FD8
 loc_32F98:
-    cmp     [bp+var_E], 0
+    cmp     [bp+var_codoff], 0
     jz      short loc_32FA6
     mov     dh, bh
     mov     bx, si
@@ -10771,7 +10807,7 @@ loc_32FA6:
     mov     cl, 8
     sub     cl, ah
     mov     ah, 0
-    mov     [bp+var_E], 1
+    mov     [bp+var_codoff], 1
     jmp     short loc_32F93
 loc_32FD8:
     mov     bh, [si]
@@ -11921,25 +11957,25 @@ nosmart
     call    fill_color
     add     sp, 4
     retf
-    jmp far ptr loc_3ACD8
+    jmp     load_2dshape_res_fatal
 video_set_mode_13h endp
-j_load_2dshape_res2 proc far
+load_2dshape_res_nofatal_thunk proc far
 
-    jmp     load_2dshape_res2
+    jmp     load_2dshape_res_nofatal
     jmp     load_2dshape_res
     jmp     parse_2d_shape
-j_load_2dshape_res2 endp
-load_2dshape1 proc far
+load_2dshape_res_nofatal_thunk endp
+load_2dshape_fatal_thunk proc far
 
-    jmp     load_2dshape_1
-load_2dshape1 endp
-j_load_2dshape_0 proc far
+    jmp     load_2dshape_fatal
+load_2dshape_fatal_thunk endp
+load_2dshape_nofatal_thunk proc far
 
-    jmp     load_2dshape_0
+    jmp     load_2dshape_nofatal
     jmp     load_2dshape
     ; align 2
     db 0
-j_load_2dshape_0 endp
+load_2dshape_nofatal_thunk endp
 sub_3386C proc far
     var_4 = word ptr -4
     var_2 = word ptr -2

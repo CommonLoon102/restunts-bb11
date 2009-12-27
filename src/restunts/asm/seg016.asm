@@ -69,7 +69,7 @@ loc_367B8:
     push    [bp+arg_4]
     push    [bp+arg_2]
     push    [bp+arg_0]
-    call    locate_shape_1
+    call    locate_shape_fatal
     add     sp, 6
     mov     bx, [bp+arg_6]
     add     [bp+arg_6], 4
@@ -104,7 +104,7 @@ loc_367F2:
     push    [bp+arg_4]
     push    [bp+arg_2]
     push    [bp+arg_0]
-    call    locate_shape_0
+    call    locate_shape_nofatal
     add     sp, 6
     mov     bx, [bp+var_2]
     inc     [bp+var_2]
@@ -142,7 +142,7 @@ loc_36834:
     push    [bp+arg_4]
     push    [bp+arg_2]
     push    [bp+arg_0]
-    call    locate_sound
+    call    locate_sound_fatal
     add     sp, 6
     mov     bx, [bp+var_2]
     inc     [bp+var_2]
@@ -180,7 +180,7 @@ loc_36876:
     push    [bp+arg_4]
     push    [bp+arg_2]
     push    [bp+arg_0]
-    call    locate_shape_0
+    call    locate_shape_nofatal
     add     sp, 6
     mov     bx, [bp+var_2]
     inc     [bp+var_2]

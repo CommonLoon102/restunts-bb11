@@ -134,7 +134,7 @@ sub_2A2BC proc far
     push    si
     mov     ax, 34B0h
     push    ax
-    call    load_2dshape1
+    call    load_2dshape_fatal_thunk
     add     sp, 2
     mov     [bp+var_2A], ax
     mov     [bp+var_28], dx
@@ -286,7 +286,7 @@ loc_2A451:
     push    ax
     push    [bp+var_28]
     push    [bp+var_2A]
-    call    locate_shape_1
+    call    locate_shape_fatal
     add     sp, 6
     mov     bx, [bp+var_194]
     mov     [bx+6AE8h], ax
@@ -313,7 +313,7 @@ loc_2A451:
     push    ax
     push    [bp+var_28]
     push    [bp+var_2A]
-    call    locate_shape_1
+    call    locate_shape_fatal
     add     sp, 6
     mov     bx, [bp+var_196]
     mov     [bx+6DD4h], ax

@@ -126,19 +126,21 @@ seg012 segment byte public 'STUNTSC' use16
     extrn decompress_rle:proc
     extrn sub_30BF8:proc
     extrn sub_30CCF:proc
-    extrn load_res0_1_alt:proc
-    extrn load_res0_1_type:proc
-    extrn loc_30DA1
-    extrn decompress_file:proc
-    extrn decompress_file_nofatal:proc
-    extrn decompress_file_fatal:proc
-    extrn _decompress_file
-    extrn locate_shape_0:proc
-    extrn locate_shape_1:proc
-    extrn locate_sound:proc
+    extrn ported_file_load_binary_:proc
+    extrn ported_file_load_binary_nofatal_:proc
+    extrn file_decomp:proc
+    extrn file_decomp_nofatal:proc
+    extrn file_decomp_fatal:proc
+    extrn locate_shape_nofatal:proc
+    extrn locate_shape_fatal:proc
+    extrn locate_sound_fatal:proc
     extrn ported_mmgr_alloc_resmem_:proc
     extrn loc_310CD
     extrn ported_mmgr_alloc_a000_:proc
+    extrn nopsub_310FE:proc
+    extrn nopsub_3111D:proc
+    extrn nopsub_31157:proc
+    extrn nopsub_31169:proc
     extrn ported_mmgr_get_ofs_diff_:proc
     extrn ported_mmgr_copy_paras_:proc
     extrn ported_copy_paras_reverse_:proc
@@ -146,8 +148,10 @@ seg012 segment byte public 'STUNTSC' use16
     extrn ported_mmgr_alloc_pages_:proc
     extrn ported_mmgr_find_free_:proc
     extrn ported_mmgr_get_unk_:proc
+    extrn nopsub_31429:proc
     extrn ported_mmgr_free_:proc
     extrn loc_31498
+    extrn nopsub_31525:proc
     extrn ported_mmgr_op_unk2_:proc
     extrn ported_mmgr_get_chunk_size_:proc
     extrn ported_mmgr_resize_memory_:proc
@@ -242,9 +246,9 @@ seg012 segment byte public 'STUNTSC' use16
     extrn loc_33697
     extrn sub_33742:proc
     extrn video_set_mode_13h:proc
-    extrn j_load_2dshape_res2:proc
-    extrn load_2dshape1:proc
-    extrn j_load_2dshape_0:proc
+    extrn load_2dshape_res_nofatal_thunk:proc
+    extrn load_2dshape_fatal_thunk:proc
+    extrn load_2dshape_nofatal_thunk:proc
     extrn sub_3386C:proc
     extrn sub_33890:proc
     extrn loc_338C9

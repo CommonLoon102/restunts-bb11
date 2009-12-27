@@ -43,7 +43,7 @@ seg008 segment byte public 'STUNTSC' use16
     extrn set_fontdef:proc
     extrn sub_298B8:proc
     extrn get_super_random:proc
-    extrn load_resource:proc
+    extrn file_load_resource:proc
     extrn off_29A4E:word
     extrn sub_29A86:proc
     extrn input_push_status:proc

@@ -462,3 +462,28 @@ short file_write_nofatal(const char* filename, unsigned short srcoff, unsigned s
 {
 	return file_write(filename, srcoff, srcseg, length, 0);
 }
+
+void far* mmgr_get_unk(char* arg_0);
+void far* mmgr_alloc_pages(char* arg_0, unsigned short arg_2);
+
+// Allocates, reads and returns a pointer to the contents of a binary file
+void far* file_load_binary(const char* filename, int fatal) {
+	void far* memptr;
+	int numparas;
+
+	memptr = mmgr_get_unk(filename);
+	if (FP_SEG(memptr) != 0) return memptr;
+	
+	numparas = file_paras(filename, fatal);
+	if (numparas == 0) return MK_FP(0, 0);
+	memptr = mmgr_alloc_pages(filename, numparas);
+	return file_read(filename, FP_OFF(memptr), FP_SEG(memptr), fatal);
+}
+
+void far* file_load_binary_nofatal(const char* filename) {
+	return file_load_binary(filename, 0);
+}
+
+void far* file_load_binary_fatal(const char* filename) {
+	return file_load_binary(filename, 1);
+}

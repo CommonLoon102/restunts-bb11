@@ -9,7 +9,7 @@ seg001 segment byte public 'STUNTSC' use16
     extrn player_op:proc
     extrn sub_17816:proc
     extrn update_car_state:proc
-    extrn sub_17FD6:proc
+    extrn update_player_carstate:proc
     extrn sub_18466:proc
     extrn sub_185F6:proc
     extrn sub_187B2:proc

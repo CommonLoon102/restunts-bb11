@@ -56,7 +56,7 @@ seg001 segment byte public 'STUNTSC' use16
     public player_op
     public sub_17816
     public update_car_state
-    public sub_17FD6
+    public update_player_carstate
     public sub_18466
     public sub_185F6
     public sub_187B2
@@ -661,7 +661,7 @@ loc_14BFA:
     mov     ax, 8F46h
     push    ax
     push    cs
-    call    near ptr sub_17FD6
+    call    near ptr update_player_carstate
     add     sp, 6
     mov     ax, 1
     push    ax
@@ -4741,7 +4741,7 @@ nosmart
     mov     ax, 8E76h
     push    ax
     push    cs
-    call    near ptr sub_17FD6
+    call    near ptr update_player_carstate
     add     sp, 6
     sub     ax, ax
     push    ax
@@ -5297,7 +5297,7 @@ loc_1777B:
     cbw
     mov     bx, ax
     shl     bx, 1
-    mov     ax, [bx-55EAh]
+    mov     ax, trackcenterpos[bx]
     mov     cx, word ptr state.playerstate.car_longvec1.long_z
     mov     bx, word ptr state.playerstate.car_longvec1.long_z+2
     mov     dx, cx
@@ -5329,7 +5329,7 @@ loc_177AC:
     cbw
     mov     bx, ax
     shl     bx, 1
-    mov     ax, [bx-599Eh]
+    mov     ax, trackcenterpos2[bx]
     mov     cx, word ptr state.playerstate.car_longvec1.long_x
     mov     bx, word ptr state.playerstate.car_longvec1.long_x+2
     mov     dx, cx
@@ -5748,11 +5748,11 @@ loc_17B39:
     shl     si, 1
     shl     si, 1
     mov     bx, [bp+arg_6]
-    mov     ax, [bx+si+1Ch]
+    mov     ax, [bx+si+SIMD.knob_points.x2]
     mov     bx, [bp+arg_4]
-    mov     [bx+3Ah], ax
+    mov     [bx+CARSTATE.car_knob_x2], ax
     mov     bx, [bp+arg_4]
-    mov     al, [bx+0BEh]
+    mov     al, [bx+CARSTATE.car_current_gear]
     cbw
     mov     si, ax
     shl     si, 1
@@ -5760,38 +5760,38 @@ loc_17B39:
     mov     bx, [bp+arg_6]
     mov     ax, [bx+si+1Eh]
     mov     bx, [bp+arg_4]
-    mov     [bx+3Ch], ax
+    mov     [bx+CARSTATE.car_knob_y2], ax
 loc_17B86:
     mov     bx, [bp+arg_4]
-    cmp     byte ptr [bx+0CAh], 0
+    cmp     [bx+CARSTATE.car_changing_gear], 0
     jnz     short loc_17B93
     jmp     loc_17C9E
 loc_17B93:
     mov     si, bx
-    mov     ax, [si+3Ah]
-    cmp     [bx+34h], ax
+    mov     ax, [si+CARSTATE.car_knob_x2]
+    cmp     [bx+CARSTATE.car_knob_x], ax
     jnz     short loc_17C0C
-    mov     ax, [bx+3Ch]
-    sub     ax, [bx+38h]
+    mov     ax, [bx+CARSTATE.car_knob_y2]
+    sub     ax, [bx+CARSTATE.car_knob_y]
     mov     [bp+var_4], ax
     or      ax, ax
     jnz     short loc_17BDA
-    mov     byte ptr [bx+0CAh], 0
+    mov     [bx+CARSTATE.car_changing_gear], 0
     mov     bx, [bp+arg_4]
-    mov     al, [bx+0BEh]
+    mov     al, [bx+CARSTATE.car_current_gear]
     cbw
     mov     si, ax
     shl     si, 1
     mov     bx, [bp+arg_6]
-    mov     ax, [bx+si+0Eh]
+    mov     ax, [bx+si+SIMD.gear_ratios]
     mov     bx, [bp+arg_4]
-    mov     [bx+30h], ax
+    mov     [bx+CARSTATE.car_gearratio], ax
     mov     bx, [bp+arg_4]
     mov     si, bx
-    mov     ax, [si+30h]
+    mov     ax, [si+CARSTATE.car_gearratio]
     mov     cl, 8
     shr     ax, cl
-    mov     [bx+32h], ax
+    mov     [bx+CARSTATE.car_gearratioshr8], ax
     jmp     loc_17CAC
     ; align 2
     db 144
@@ -5803,7 +5803,7 @@ loc_17BDA:
     jg      short loc_17BF6
     mov     bx, [bp+arg_4]
     mov     si, bx
-    mov     ax, [si+3Ch]
+    mov     ax, [si+CARSTATE.car_knob_y2]
     jmp     loc_17C84
     ; align 2
     db 144
@@ -5814,19 +5814,19 @@ loc_17BF6:
 loc_17BFF:
     mov     bx, [bp+arg_4]
     mov     ax, [bp+var_2]
-    sub     [bx+38h], ax
+    sub     [bx+CARSTATE.car_knob_y], ax
     jmp     loc_17CAC
     ; align 2
     db 144
 loc_17C0C:
     mov     bx, [bp+arg_6]
     mov     si, [bp+arg_4]
-    mov     ax, [si+38h]
-    cmp     [bx+1Eh], ax
+    mov     ax, [si+CARSTATE.car_knob_y]
+    cmp     [bx+SIMD.knob_points.y2], ax
     jnz     short loc_17C5E
     mov     bx, si
-    mov     ax, [bx+3Ah]
-    sub     ax, [bx+34h]
+    mov     ax, [bx+CARSTATE.car_knob_x2]
+    sub     ax, [bx+CARSTATE.car_knob_x]
     mov     [bp+var_4], ax
     push    ax              ; int
     call    _abs
@@ -5835,30 +5835,30 @@ loc_17C0C:
     jg      short loc_17C40
     mov     bx, [bp+arg_4]
     mov     si, bx
-    mov     ax, [si+3Ah]
-    mov     [bx+34h], ax
+    mov     ax, [si+CARSTATE.car_knob_x2]
+    mov     [bx+CARSTATE.car_knob_x], ax
     jmp     short loc_17CAC
 loc_17C40:
     cmp     [bp+var_4], 0
     jle     short loc_17C52
     mov     bx, [bp+arg_4]
     mov     ax, [bp+var_2]
-    add     [bx+34h], ax
+    add     [bx+CARSTATE.car_knob_x], ax
     jmp     short loc_17CAC
     ; align 2
     db 144
 loc_17C52:
     mov     bx, [bp+arg_4]
     mov     ax, [bp+var_2]
-    sub     [bx+34h], ax
+    sub     [bx+CARSTATE.car_knob_x], ax
     jmp     short loc_17CAC
     ; align 2
     db 144
 loc_17C5E:
     mov     bx, [bp+arg_6]
-    mov     ax, [bx+1Eh]
+    mov     ax, [bx+SIMD.knob_points.y2]
     mov     bx, [bp+arg_4]
-    sub     ax, [bx+38h]
+    sub     ax, [bx+CARSTATE.car_knob_y]
     mov     [bp+var_4], ax
     push    ax              ; int
     call    _abs
@@ -5867,9 +5867,9 @@ loc_17C5E:
     jg      short loc_17C8A
     mov     bx, [bp+arg_4]
     mov     si, [bp+arg_6]
-    mov     ax, [si+1Eh]
+    mov     ax, [si+SIMD.knob_points.y2]
 loc_17C84:
-    mov     [bx+38h], ax
+    mov     [bx+CARSTATE.car_knob_y], ax
     jmp     short loc_17CAC
     ; align 2
     db 144
@@ -5880,37 +5880,37 @@ loc_17C8A:
 loc_17C93:
     mov     bx, [bp+arg_4]
     mov     ax, [bp+var_2]
-    add     [bx+38h], ax
+    add     [bx+CARSTATE.car_knob_y], ax
     jmp     short loc_17CAC
 loc_17C9E:
     mov     bx, [bp+arg_4]
-    cmp     byte ptr [bx+0CBh], 0
+    cmp     [bx+CARSTATE.car_fpsmul2], 0
     jz      short loc_17CAC
-    dec     byte ptr [bx+0CBh]
+    dec     [bx+CARSTATE.car_fpsmul2]
 loc_17CAC:
     mov     bx, [bp+arg_4]
-    mov     ax, [bx+2Ah]
+    mov     ax, [bx+CARSTATE.car_trackgrip]
     mov     [bp+var_6], ax
     mov     si, ax
     mov     cl, 0Ah
     shr     si, cl
     shl     si, 1
     mov     bx, [bp+arg_6]
-    les     bx, [bx+304h]
+    les     bx, dword ptr [bx+SIMD.aerorestable]
     mov     di, [bp+arg_4]
-    mov     ax, [di+1Eh]
+    mov     ax, [di+CARSTATE.field_1E]
     sub     ax, es:[bx+si]
     mov     [bp+var_8], ax
     mov     bx, di
     mov     si, [bp+arg_6]
-    mov     ax, [si+0Ch]
-    cmp     [bx+22h], ax
+    mov     ax, [si+SIMD.max_rpm]
+    cmp     [bx+CARSTATE.car_currpm], ax
     jbe     short loc_17CEA
     dec     ax
-    mov     [bx+22h], ax
+    mov     [bx+CARSTATE.car_currpm], ax
 loc_17CE1:
     mov     bx, [bp+arg_6]
-    mov     ax, [bx+4]
+    mov     ax, [bx+SIMD.braging_eff]
     jmp     short loc_17D36
     ; align 2
     db 144
@@ -5926,19 +5926,19 @@ loc_17CF8:
     cmp     ax, 2
     jz      short loc_17D10
     mov     bx, [bp+arg_4]
-    mov     byte ptr [bx+0BDh], 0
+    mov     [bx+CARSTATE.car_is_accelerating], 0
     mov     bx, [bp+arg_4]
-    mov     byte ptr [bx+0BCh], 0
+    mov     [bx+CARSTATE.car_is_braking], 0
     jmp     short loc_17D39
     ; align 2
     db 144
 loc_17D10:
     mov     bx, [bp+arg_4]
-    mov     byte ptr [bx+0BDh], 0
+    mov     [bx+CARSTATE.car_is_accelerating], 0
     mov     bx, [bp+arg_4]
-    mov     byte ptr [bx+0C6h], 0
+    mov     [bx+CARSTATE.field_C6], 0
     mov     bx, [bp+arg_4]
-    mov     byte ptr [bx+0BCh], 1
+    mov     [bx+CARSTATE.car_is_braking], 1
     cmp     [bp+arg_2], 0
     jz      short loc_17CE1
     mov     bx, [bp+arg_6]
@@ -5964,11 +5964,11 @@ loc_17D59:
     add     [bp+var_6], ax
 loc_17D5F:
     mov     bx, [bp+arg_4]
-    cmp     byte ptr [bx+0C0h], 0
+    cmp     [bx+CARSTATE.field_C0], 0
     jnz     short loc_17D6C
     jmp     loc_17F3C
 loc_17D6C:
-    mov     ax, [bx+2Ch]
+    mov     ax, [bx+CARSTATE.car_trackgrip2]
     sub     ax, [bp+var_6]
     mov     [bp+var_4], ax
     or      ax, ax
@@ -5981,31 +5981,31 @@ loc_17D7C:
     db 144
 loc_17D82:
     mov     bx, [bp+arg_4]
-    mov     byte ptr [bx+0BCh], 0
+    mov     [bx+CARSTATE.car_is_braking], 0
     mov     bx, [bp+arg_4]
-    mov     byte ptr [bx+0BDh], 1
+    mov     [bx+CARSTATE.car_is_accelerating], 1
     mov     bx, [bp+arg_4]
-    cmp     byte ptr [bx+0CAh], 0
+    cmp     [bx+CARSTATE.car_changing_gear], 0
     jz      short loc_17DBC
-    mov     byte ptr [bx+0C6h], 0
+    mov     [bx+CARSTATE.field_C6], 0
     cmp     word_449D0, 0Ah
     jnz     short loc_17DB2
     mov     bx, [bp+arg_4]
-    sub     word ptr [bx+22h], 50h ; 'P'
+    sub     [bx+CARSTATE.car_currpm], 50h ; 'P'
     jmp     short loc_17D39
     ; align 2
     db 144
 loc_17DB2:
     mov     bx, [bp+arg_4]
-    sub     word ptr [bx+22h], 28h ; '('
+    sub     [bx+CARSTATE.car_currpm], 28h ; '('
     jmp     loc_17D39
 loc_17DBC:
     mov     bx, [bp+arg_4]
-    cmp     byte ptr [bx+0C0h], 0
+    cmp     [bx+CARSTATE.field_C0], 0
     jnz     short loc_17DE6
     mov     si, [bp+arg_6]
-    mov     ax, [si+0Ch]
-    cmp     [bx+22h], ax
+    mov     ax, [si+SIMD.max_rpm]
+    cmp     [bx+CARSTATE.car_currpm], ax
     jb      short loc_17DD4
     jmp     loc_17D39
 loc_17DD4:
@@ -6018,29 +6018,29 @@ loc_17DDE:
     ; align 2
     db 144
 loc_17DE6:
-    cmp     byte ptr [bx+0BEh], 1
+    cmp     [bx+CARSTATE.car_current_gear], 1
     jg      short loc_17DFC
-    cmp     word ptr [bx+22h], 0A28h
+    cmp     [bx+CARSTATE.car_currpm], 0A28h
     jge     short loc_17DFC
     mov     bx, [bp+arg_6]
-    mov     al, [bx+3Ah]
+    mov     al, [bx+SIMD.torque_curve]
     jmp     short loc_17E0C
 loc_17DFC:
     mov     bx, [bp+arg_4]
-    mov     si, [bx+22h]
+    mov     si, [bx+CARSTATE.car_currpm]
     mov     cl, 7
     shr     si, cl
     mov     bx, [bp+arg_6]
-    mov     al, [bx+si+3Bh]
+    mov     al, [bx+si+(SIMD.torque_curve+1)]
 loc_17E0C:
     mov     [bp+var_A], al
     mov     bx, [bp+arg_4]
-    cmp     byte ptr [bx+0C6h], 0
+    cmp     [bx+CARSTATE.field_C6], 0
     jz      short loc_17E34
-    cmp     word ptr [bx+22h], 1388h
+    cmp     [bx+CARSTATE.car_currpm], 1388h
     jge     short loc_17E34
     mov     bx, [bp+arg_6]
-    mov     al, [bx+3Ah]
+    mov     al, [bx+SIMD.torque_curve]
     sub     ah, ah
     mov     cl, [bp+var_A]
     sub     ch, ch
@@ -6052,7 +6052,7 @@ loc_17E34:
     sub     ah, ah
     mov     cx, ax
     mov     bx, [bp+arg_4]
-    mov     ax, [bx+32h]
+    mov     ax, [bx+CARSTATE.car_gearratioshr8]
     mul     cx
     mov     cl, 4
     shr     ax, cl
@@ -6060,7 +6060,7 @@ loc_17E34:
     mov     bx, [bp+arg_6]
     sub     ax, ax
     push    ax
-    push    word ptr [bx+2]
+    push    [bx+SIMD.car_mass]
     mov     ax, 19h
     cwd
     push    dx
@@ -6109,7 +6109,7 @@ loc_17EAD:
     jmp     loc_17D39
 loc_17EB7:
     mov     bx, [bp+arg_4]
-    mov     byte ptr [bx+0C6h], 5
+    mov     [bx+CARSTATE.field_C6], 5
     jmp     loc_17D39
 loc_17EC2:
     mov     ax, [bp+var_8]
@@ -6141,83 +6141,83 @@ loc_17EFB:
     cmp     ax, 1400h
     jle     short loc_17F28
     mov     si, bx
-    mov     ax, [si+2Ah]
+    mov     ax, [si+CARSTATE.car_trackgrip]
     sub     dx, dx
-    add     ax, [si+2Ch]
+    add     ax, [si+CARSTATE.car_trackgrip2]
     adc     dx, dx
     shr     dx, 1
     rcr     ax, 1
-    mov     [bx+2Ah], ax
+    mov     [bx+CARSTATE.car_trackgrip], ax
     mov     bx, [bp+arg_4]
     mov     si, bx
-    mov     ax, [si+2Ah]
-    mov     [bx+2Ch], ax
+    mov     ax, [si+CARSTATE.car_trackgrip]
+    mov     [bx+CARSTATE.car_trackgrip2], ax
     mov     bx, [bp+arg_4]
-    mov     byte ptr [bx+0C6h], 5
+    mov     [bx+CARSTATE.field_C6], 5
     jmp     short loc_17F45
 loc_17F28:
     mov     bx, [bp+arg_4]
     mov     ax, [bp+var_6]
-    mov     [bx+2Ah], ax
+    mov     [bx+CARSTATE.car_trackgrip], ax
     mov     bx, [bp+arg_4]
     mov     ax, [bp+var_6]
-    mov     [bx+2Ch], ax
+    mov     [bx+CARSTATE.car_trackgrip2], ax
     jmp     short loc_17F45
 loc_17F3C:
     mov     bx, [bp+arg_4]
     mov     ax, [bp+var_6]
-    mov     [bx+2Ah], ax
+    mov     [bx+CARSTATE.car_trackgrip], ax
 loc_17F45:
     mov     bx, [bp+arg_6]
-    push    word ptr [bx+6]
+    push    [bx+SIMD.idle_rpm]
     mov     bx, [bp+arg_4]
-    mov     al, [bx+0CAh]
+    mov     al, [bx+CARSTATE.car_changing_gear]
     cbw
     push    ax
-    push    word ptr [bx+30h]
-    push    word ptr [bx+2Ah]
-    push    word ptr [bx+22h]
+    push    [bx+CARSTATE.car_gearratio]
+    push    [bx+CARSTATE.car_trackgrip]
+    push    [bx+CARSTATE.car_currpm]
     call    sub_19DC6
     add     sp, 0Ah
     mov     bx, [bp+arg_4]
-    mov     [bx+22h], ax
+    mov     [bx+CARSTATE.car_currpm], ax
     mov     bx, [bp+arg_4]
-    cmp     byte ptr [bx+0C1h], 0
+    cmp     [bx+CARSTATE.field_C1], 0
     jz      short loc_17FBF
     mov     si, bx
-    mov     ax, [si+22h]
-    cmp     [bx+24h], ax
+    mov     ax, [si+CARSTATE.car_currpm]
+    cmp     [bx+CARSTATE.car_lastrpm], ax
     jle     short loc_17FBF
-    mov     ax, [bx+24h]
-    sub     ax, [bx+22h]
+    mov     ax, [bx+CARSTATE.car_lastrpm]
+    sub     ax, [bx+CARSTATE.car_currpm]
     cmp     ax, 7D0h
     jle     short loc_17FA4
     mov     bx, [bp+arg_6]
-    mov     al, [bx+3Ah]
+    mov     al, [bx+SIMD.torque_curve]
     sub     ah, ah
     mov     bx, si
-    mul     word ptr [bx+32h]
+    mul     [bx+CARSTATE.car_gearratioshr8]
     cmp     ax, 2EE0h
     jle     short loc_17FBF
-    mov     byte ptr [bx+0C6h], 1Eh
+    mov     [bx+CARSTATE.field_C6], 1Eh
     jmp     short loc_17FBF
     ; align 2
     db 144
 loc_17FA4:
     mov     bx, [bp+arg_4]
-    mov     ax, [bx+22h]
-    sub     ax, [bx+24h]
+    mov     ax, [bx+CARSTATE.car_currpm]
+    sub     ax, [bx+CARSTATE.car_lastrpm]
     cmp     ax, 7D0h
     jle     short loc_17FBF
-    mov     byte ptr [bx+0C6h], 0Ah
+    mov     [bx+CARSTATE.field_C6], 0Ah
     mov     bx, [bp+arg_4]
-    sub     word ptr [bx+2Ch], 500h
+    sub     [bx+CARSTATE.car_trackgrip2], 500h
 loc_17FBF:
     mov     bx, [bp+arg_4]
     mov     ax, state.field_14E
-    cmp     [bx+2Ch], ax
+    cmp     [bx+CARSTATE.car_trackgrip2], ax
     jbe     short loc_17FD0
-    mov     ax, [bx+2Ch]
+    mov     ax, [bx+CARSTATE.car_trackgrip2]
     mov     state.field_14E, ax
 loc_17FD0:
     pop     si
@@ -6226,7 +6226,7 @@ loc_17FD0:
     pop     bp
     retf
 update_car_state endp
-sub_17FD6 proc far
+update_player_carstate proc far
     var_10 = word ptr -16
     var_E = byte ptr -14
     var_C = word ptr -12
@@ -6247,11 +6247,11 @@ sub_17FD6 proc far
     push    di
     push    si
     mov     bx, [bp+arg_0]
-    cmp     byte ptr [bx+0C1h], 0
+    cmp     [bx+CARSTATE.field_C1], 0
     jnz     short loc_17FFC
-    mov     word ptr [bx+40h], 0
+    mov     [bx+CARSTATE.field_40], 0
     mov     bx, [bp+arg_0]
-    mov     byte ptr [bx+0C7h], 0
+    mov     [bx+CARSTATE.field_C7], 0
     pop     si
     pop     di
     mov     sp, bp
@@ -6262,42 +6262,42 @@ sub_17FD6 proc far
 loc_17FFC:
     mov     [bp+var_8], 0
     mov     bx, [bp+arg_0]
-    cmp     byte ptr [bx+0C2h], 4
+    cmp     [bx+CARSTATE.car_surfacegrip_idx1], 4
     jnz     short loc_1800E
     inc     [bp+var_8]
 loc_1800E:
-    cmp     byte ptr [bx+0C3h], 4
+    cmp     [bx+CARSTATE.car_surfacegrip_idx2], 4
     jnz     short loc_18018
     inc     [bp+var_8]
 loc_18018:
-    cmp     byte ptr [bx+0C4h], 4
+    cmp     [bx+CARSTATE.car_surfacegrip_idx3], 4
     jnz     short loc_18022
     inc     [bp+var_8]
 loc_18022:
-    cmp     byte ptr [bx+0C5h], 4
+    cmp     [bx+CARSTATE.car_surfacegrip_idx4], 4
     jnz     short loc_1802C
     inc     [bp+var_8]
 loc_1802C:
     cmp     [bp+var_8], 0
     jz      short loc_18051
-    mov     ax, [bx+2Ch]
+    mov     ax, [bx+CARSTATE.car_trackgrip2]
     sub     dx, dx
     mov     bx, [bp+var_8]
     shl     bx, 1
-    div     word ptr [bx+688h]
+    div     brakedivtab[bx]
     mov     bx, [bp+arg_0]
-    sub     [bx+2Ch], ax
+    sub     [bx+CARSTATE.car_trackgrip2], ax
     mov     bx, [bp+arg_0]
     mov     si, bx
-    mov     ax, [si+2Ch]
-    mov     [bx+2Ah], ax
+    mov     ax, [si+CARSTATE.car_trackgrip2]
+    mov     [bx+CARSTATE.car_trackgrip], ax
 loc_18051:
     mov     bx, [bp+arg_0]
-    mov     ax, [bx+20h]
-    add     ax, [bx+36h]
+    mov     ax, [bx+CARSTATE.field_20]
+    add     ax, [bx+CARSTATE.field_36]
     mov     [bp+var_10], ax
     mov     [bp+var_C], ax
-    mov     ax, [bx+2Ah]
+    mov     ax, [bx+CARSTATE.car_trackgrip]
     mov     cl, 8
     shr     ax, cl
     mov     [bp+var_2], ax
@@ -6321,42 +6321,42 @@ loc_1807B:
     mul     [bp+var_8]
     mov     [bp+var_4], ax
     mov     bx, [bp+arg_2]
-    mov     ax, [bx+0A4h]
+    mov     ax, word ptr [bx+SIMD.simd_unk2]
     shl     ax, 1
     mov     [bp+var_6], ax
     cwd
     push    dx
     push    ax
     mov     bx, [bp+arg_0]
-    mov     al, [bx+0C5h]
+    mov     al, [bx+CARSTATE.car_surfacegrip_idx4]
     cbw
     mov     si, ax
     shl     si, 1
     mov     bx, [bp+arg_2]
     mov     di, [bp+arg_0]
-    mov     al, [di+0C4h]
+    mov     al, [di+CARSTATE.car_surfacegrip_idx3]
     cbw
     mov     di, ax
     shl     di, 1
-    mov     ax, [bx+si+0B4h]
+    mov     ax, [bx+si+SIMD.sliding]
     mov     bx, [bp+arg_0]
     mov     cx, ax
-    mov     al, [bx+0C3h]
+    mov     al, [bx+CARSTATE.car_surfacegrip_idx2]
     cbw
     mov     si, ax
     shl     si, 1
     mov     bx, [bp+arg_2]
-    mov     ax, [bx+si+0B4h]
+    mov     ax, [bx+si+SIMD.sliding]
     mov     bx, [bp+arg_0]
     mov     dx, ax
-    mov     al, [bx+0C2h]
+    mov     al, [bx+CARSTATE.car_surfacegrip_idx1]
     cbw
     mov     si, ax
     shl     si, 1
     mov     bx, [bp+arg_2]
-    mov     ax, [bx+si+0B4h]
+    mov     ax, [bx+si+SIMD.sliding]
     add     ax, dx
-    add     ax, [bx+di+0B4h]
+    add     ax, [bx+di+SIMD.sliding]
     add     ax, cx
     cwd
     push    dx
@@ -6371,18 +6371,18 @@ loc_180FB:
     mov     [bp+var_6], ax
     mov     bx, [bp+arg_0]
     mov     ax, [bp+var_4]
-    mov     [bx+44h], ax
+    mov     [bx+CARSTATE.field_44], ax
     mov     bx, [bp+arg_0]
     mov     ax, [bp+var_6]
-    mov     [bx+46h], ax
+    mov     [bx+CARSTATE.car_surfacegrip_sum], ax
     cmp     [bp+arg_4], 0
     jnz     short loc_18121
     jmp     loc_1835E
 loc_18121:
     mov     bx, [bp+arg_0]
-    cmp     word ptr [bx+20h], 0
+    cmp     [bx+CARSTATE.field_20], 0
     jnz     short loc_18168
-    mov     al, [bx+18h]
+    mov     al, byte ptr [bx+CARSTATE.car_rotate.x]
     sub     ah, ah
     mov     [bp+var_8], ax
     cmp     ax, 7Fh ; ''
@@ -6405,17 +6405,17 @@ loc_1814F:
     cmp     [bp+var_8], 0
     jle     short loc_18162
     mov     bx, [bp+arg_0]
-    dec     word ptr [bx+18h]
+    dec     [bx+CARSTATE.car_rotate.x]
     jmp     short loc_18168
 loc_18162:
     mov     bx, [bp+arg_0]
-    inc     word ptr [bx+18h]
+    inc     [bx+CARSTATE.car_rotate.x]
 loc_18168:
     mov     ax, [bp+var_6]
     cmp     [bp+var_4], ax
     jle     short loc_181CE
     mov     bx, [bp+arg_0]
-    mov     byte ptr [bx+0C7h], 1
+    mov     [bx+CARSTATE.field_C7], 1
     mov     ax, [bp+var_2]
     cwd
     push    dx
@@ -6453,72 +6453,72 @@ loc_181AD:
     mov     bx, [bp+arg_0]
     mov     ax, [bp+var_10]
     sub     ax, [bp+var_C]
-    mov     [bx+42h], ax
+    mov     [bx+CARSTATE.field_42], ax
     jmp     short loc_18207
 loc_181CE:
     mov     bx, [bp+arg_0]
-    mov     byte ptr [bx+0C7h], 0
+    mov     [bx+CARSTATE.field_C7], 0
     mov     bx, [bp+arg_0]
-    cmp     word ptr [bx+42h], 0
+    cmp     [bx+CARSTATE.field_42], 0
     jz      short loc_18207
     mov     si, bx
-    mov     ax, [si+42h]
+    mov     ax, [si+CARSTATE.field_42]
     mov     cl, 4
     sar     ax, cl
-    sub     [bx+42h], ax
+    sub     [bx+CARSTATE.field_42], ax
     mov     bx, [bp+arg_0]
-    cmp     word ptr [bx+42h], 0
+    cmp     [bx+CARSTATE.field_42], 0
     jge     short loc_181FC
-    mov     ax, [bx+42h]
+    mov     ax, [bx+CARSTATE.field_42]
     neg     ax
     jmp     short loc_181FF
     ; align 2
     db 144
 loc_181FC:
-    mov     ax, [bx+42h]
+    mov     ax, [bx+CARSTATE.field_42]
 loc_181FF:
     cmp     ax, 10h
     jge     short loc_18207
-    sar     word ptr [bx+42h], 1
+    sar     [bx+CARSTATE.field_42], 1
 loc_18207:
     mov     bx, [bp+arg_0]
-    cmp     word ptr [bx+3Eh], 0
+    cmp     [bx+CARSTATE.car_angle_z], 0
     jnz     short loc_18220
-    cmp     byte ptr [bx+0C9h], 1
+    cmp     [bx+CARSTATE.field_C9], 1
     jz      short loc_18220
     mov     ax, [bp+var_C]
-    mov     [bx+40h], ax
+    mov     [bx+CARSTATE.field_40], ax
     jmp     short loc_18228
     ; align 2
     db 144
 loc_18220:
     mov     bx, [bp+arg_0]
-    mov     word ptr [bx+40h], 0
+    mov     [bx+CARSTATE.field_40], 0
 loc_18228:
     mov     bx, [bp+arg_0]
-    cmp     word ptr [bx+1Ch], 0
+    cmp     [bx+CARSTATE.car_rotate.z], 0
     jnz     short loc_18234
     jmp     loc_182BD
 loc_18234:
     jge     short loc_1823E
-    mov     ax, [bx+1Ch]
+    mov     ax, [bx+CARSTATE.car_rotate.z]
     neg     ax
     jmp     short loc_18241
     ; align 2
     db 144
 loc_1823E:
-    mov     ax, [bx+1Ch]
+    mov     ax, [bx+CARSTATE.car_rotate.z]
 loc_18241:
     cmp     ax, 4
     jle     short loc_182BD
-    mov     al, [bx+2]
+    mov     al, byte ptr [bx+(CARSTATE.car_longvec1.long_x+2)]
     mov     [bp+var_A], al
-    mov     al, [bx+0Ah]
+    mov     al, byte ptr [bx+(CARSTATE.car_longvec1.long_z+2)]
     mov     [bp+var_E], al
     mov     bl, al
     sub     bh, bh
     shl     bx, 1
-    mov     bx, [bx-73C4h]
+    mov     bx, terrainrows[bx]
     mov     al, [bp+var_A]
     sub     ah, ah
     add     bx, ax
@@ -6541,7 +6541,7 @@ loc_18282:
     mov     bl, [bp+var_E]
     sub     bh, bh
     shl     bx, 1
-    mov     bx, [bx-73C4h]
+    mov     bx, terrainrows[bx]
     mov     al, [bp+var_A]
     sub     ah, ah
     add     bx, ax
@@ -6561,11 +6561,11 @@ loc_182A8:
     db 144
 loc_182AE:
     mov     bx, [bp+arg_0]
-    mov     ax, [bx+1Ch]
+    mov     ax, [bx+CARSTATE.car_rotate.z]
     cwd
     mov     cx, 5
     idiv    cx
-    add     [bx+40h], ax
+    add     [bx+CARSTATE.field_40], ax
 loc_182BD:
     mov     ax, [bp+var_6]
     add     ax, 3E8h
@@ -6577,10 +6577,10 @@ loc_182BD:
     mov     cx, 0Eh
     idiv    cx
     mov     bx, [bp+arg_0]
-    add     [bx+3Eh], ax
+    add     [bx+CARSTATE.car_angle_z], ax
     mov     bx, [bp+arg_0]
     mov     cx, 2
-    mov     ax, [bx+3Eh]
+    mov     ax, [bx+CARSTATE.car_angle_z]
     cwd
     idiv    cx
     jmp     loc_1838B
@@ -6588,7 +6588,7 @@ loc_182BD:
     db 144
 loc_182EA:
     mov     bx, [bp+arg_0]
-    cmp     word ptr [bx+3Eh], 0
+    cmp     [bx+CARSTATE.car_angle_z], 0
     jnz     short loc_182F6
     jmp     loc_1838E
 loc_182F6:
@@ -6597,49 +6597,49 @@ loc_182F6:
     cwd
     mov     cx, 0Eh
     idiv    cx
-    add     [bx+3Eh], ax
+    add     [bx+CARSTATE.car_angle_z], ax
     mov     bx, [bp+arg_0]
     mov     cx, 2
-    mov     ax, [bx+3Eh]
+    mov     ax, [bx+CARSTATE.car_angle_z]
     cwd
     idiv    cx
-    mov     [bx+3Eh], ax
+    mov     [bx+CARSTATE.car_angle_z], ax
     mov     bx, [bp+arg_0]
-    cmp     word ptr [bx+3Eh], 0
+    cmp     [bx+CARSTATE.car_angle_z], 0
     jnz     short loc_1838E
-    push    word ptr [bx+2Ch]
-    push    word ptr [bx+36h]
+    push    [bx+CARSTATE.car_trackgrip2]
+    push    [bx+CARSTATE.field_36]
     call    cos_fast
     add     sp, 2
     push    ax
     call    scale_value
     add     sp, 4
     mov     bx, [bp+arg_0]
-    mov     [bx+2Ch], ax
+    mov     [bx+CARSTATE.car_trackgrip2], ax
     mov     bx, [bp+arg_0]
-    push    word ptr [bx+36h]
+    push    [bx+CARSTATE.field_36]
     call    cos_fast
     add     sp, 2
     or      ax, ax
     jge     short loc_18354
     mov     bx, [bp+arg_0]
-    mov     word ptr [bx+2Ch], 0
+    mov     [bx+CARSTATE.car_trackgrip2], 0
 loc_18354:
     mov     bx, [bp+arg_0]
-    mov     word ptr [bx+36h], 0
+    mov     [bx+CARSTATE.field_36], 0
     jmp     short loc_1838E
 loc_1835E:
     mov     bx, [bp+arg_0]
     mov     si, bx
-    mov     ax, [si+20h]
+    mov     ax, [si+CARSTATE.field_20]
     shl     ax, 1
     shl     ax, 1
-    mov     [bx+40h], ax
+    mov     [bx+CARSTATE.field_40], ax
     mov     bx, [bp+arg_0]
-    cmp     word ptr [bx+3Eh], 0
+    cmp     [bx+CARSTATE.car_angle_z], 0
     jz      short loc_1838E
     mov     si, bx
-    mov     ax, [si+3Eh]
+    mov     ax, [si+CARSTATE.car_angle_z]
     mov     cx, ax
     shl     ax, 1
     shl     ax, 1
@@ -6649,15 +6649,15 @@ loc_1835E:
     mov     cl, 4
     sar     ax, cl
 loc_1838B:
-    mov     [bx+3Eh], ax
+    mov     [bx+CARSTATE.car_angle_z], ax
 loc_1838E:
     mov     bx, [bp+arg_0]
-    cmp     word ptr [bx+36h], 0
+    cmp     [bx+CARSTATE.field_36], 0
     jz      short loc_183B5
-    cmp     word ptr [bx+3Eh], 0
+    cmp     [bx+CARSTATE.car_angle_z], 0
     jnz     short loc_183B5
     mov     si, bx
-    mov     ax, [si+36h]
+    mov     ax, [si+CARSTATE.field_36]
     mov     cx, ax
     shl     ax, 1
     shl     ax, 1
@@ -6666,59 +6666,59 @@ loc_1838E:
     sub     ax, cx
     mov     cl, 4
     sar     ax, cl
-    mov     [bx+36h], ax
+    mov     [bx+CARSTATE.field_36], ax
 loc_183B5:
     mov     bx, [bp+arg_0]
-    cmp     word ptr [bx+3Eh], 0
+    cmp     [bx+CARSTATE.car_angle_z], 0
     jz      short loc_183C6
     mov     si, bx
-    mov     ax, [si+3Eh]
-    sub     [bx+36h], ax
+    mov     ax, [si+CARSTATE.car_angle_z]
+    sub     [bx+CARSTATE.field_36], ax
 loc_183C6:
     mov     bx, [bp+arg_0]
-    cmp     byte ptr [bx+0C7h], 0
+    cmp     [bx+CARSTATE.field_C7], 0
     jnz     short loc_183D3
     jmp     loc_18458
 loc_183D3:
-    cmp     word ptr [bx+42h], 0
+    cmp     [bx+CARSTATE.field_42], 0
     jge     short loc_183E0
-    mov     ax, [bx+42h]
+    mov     ax, [bx+CARSTATE.field_42]
     neg     ax
     jmp     short loc_183E3
 loc_183E0:
-    mov     ax, [bx+42h]
+    mov     ax, [bx+CARSTATE.field_42]
 loc_183E3:
     shl     ax, 1
     mov     [bp+var_8], ax
-    cmp     [bx+2Ah], ax
+    cmp     [bx+CARSTATE.car_trackgrip], ax
     jbe     short loc_18448
-    cmp     [bx+2Ch], ax
+    cmp     [bx+CARSTATE.car_trackgrip2], ax
     jbe     short loc_18400
-    sub     [bx+2Ah], ax
+    sub     [bx+CARSTATE.car_trackgrip], ax
     mov     bx, [bp+arg_0]
     mov     ax, [bp+var_8]
-    sub     [bx+2Ch], ax
+    sub     [bx+CARSTATE.car_trackgrip2], ax
     jmp     short loc_18410
 loc_18400:
     mov     bx, [bp+arg_0]
-    mov     word ptr [bx+2Ah], 0
+    mov     [bx+CARSTATE.car_trackgrip], 0
     mov     bx, [bp+arg_0]
-    mov     word ptr [bx+2Ch], 0
+    mov     [bx+CARSTATE.car_trackgrip2], 0
 loc_18410:
     mov     bx, [bp+arg_0]
-    cmp     byte ptr [bx+0C9h], 0
+    cmp     [bx+CARSTATE.field_C9], 0
     jnz     short loc_18458
-    cmp     byte ptr [bx+0C2h], 1
+    cmp     [bx+CARSTATE.car_surfacegrip_idx1], 1
     jz      short loc_18436
-    cmp     byte ptr [bx+0C3h], 1
+    cmp     [bx+CARSTATE.car_surfacegrip_idx2], 1
     jz      short loc_18436
-    cmp     byte ptr [bx+0C4h], 1
+    cmp     [bx+CARSTATE.car_surfacegrip_idx3], 1
     jz      short loc_18436
-    cmp     byte ptr [bx+0C5h], 1
+    cmp     [bx+CARSTATE.car_surfacegrip_idx4], 1
     jnz     short loc_1843E
 loc_18436:
 smart
-    or      byte ptr [bx+0CFh], 2
+    or      [bx+CARSTATE.field_CF], 2
 nosmart
     jmp     short loc_18458
     ; align 2
@@ -6726,23 +6726,23 @@ nosmart
 loc_1843E:
     mov     bx, [bp+arg_0]
 smart
-    or      byte ptr [bx+0CFh], 4
+    or      [bx+CARSTATE.field_CF], 4
 nosmart
     jmp     short loc_18458
 loc_18448:
     mov     bx, [bp+arg_0]
-    mov     word ptr [bx+2Ah], 0
+    mov     [bx+CARSTATE.car_trackgrip], 0
     mov     bx, [bp+arg_0]
-    mov     word ptr [bx+2Ch], 0
+    mov     [bx+CARSTATE.car_trackgrip2], 0
 loc_18458:
     mov     bx, [bp+arg_0]
-    mov     word ptr [bx+42h], 0
+    mov     [bx+CARSTATE.field_42], 0
     pop     si
     pop     di
     mov     sp, bp
     pop     bp
     retf
-sub_17FD6 endp
+update_player_carstate endp
 sub_18466 proc far
     var_18 = word ptr -24
     var_16 = word ptr -22

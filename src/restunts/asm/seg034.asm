@@ -46,13 +46,13 @@ nosmart
 seg034 segment byte public 'STUNTSC' use16
     assume cs:seg034
     assume es:nothing, ss:nothing, ds:dseg
-    public load_2dshape_1
-    public load_2dshape_0
+    public load_2dshape_fatal
+    public load_2dshape_nofatal
     public load_2dshape
     public sub_3ACB0
     ; align 2
     db 144
-load_2dshape_1 proc far
+load_2dshape_fatal proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -69,8 +69,8 @@ load_2dshape_1 proc far
     retf
     ; align 2
     db 144
-load_2dshape_1 endp
-load_2dshape_0 proc far
+load_2dshape_fatal endp
+load_2dshape_nofatal proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -85,7 +85,7 @@ load_2dshape_0 proc far
     add     sp, 4
     pop     bp
     retf
-load_2dshape_0 endp
+load_2dshape_nofatal endp
 load_2dshape proc far
     var_80 = byte ptr -128
     var_7E = word ptr -126
@@ -101,7 +101,7 @@ load_2dshape proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
-    arg_2 = word ptr 8
+    arg_fatal = word ptr 8
 
     push    bp
     mov     bp, sp
@@ -144,7 +144,7 @@ loc_3AA40:
 loc_3AA53:
     mov     bx, [bp+var_14]
     shl     bx, 1
-    mov     si, [bx+5466h]
+    mov     si, shapeexts[bx]
     cmp     byte ptr [si], 0
     jz      short loc_3AAA8
     mov     ax, word ptr [bp+var_C]
@@ -191,10 +191,10 @@ loc_3AAA8:
     add     sp, 4
     or      ax, ax
     jnz     short loc_3AB24
-    push    [bp+arg_2]
+    push    [bp+arg_fatal]
     lea     ax, [bp+var_7C]
     push    ax
-    call    decompress_file
+    call    file_decomp
     add     sp, 4
     mov     [bp+var_4], ax
     mov     [bp+var_2], dx
@@ -231,10 +231,10 @@ loc_3AB24:
     add     sp, 4
     or      ax, ax
     jnz     short loc_3AB50
-    push    [bp+arg_2]
+    push    [bp+arg_fatal]
     lea     ax, [bp+var_7C]
     push    ax
-    call    decompress_file
+    call    file_decomp
 loc_3AB44:
     add     sp, 4
     mov     [bp+var_4], ax
@@ -251,10 +251,10 @@ loc_3AB50:
     jz      short loc_3AB67
     jmp     loc_3AC1C
 loc_3AB67:
-    push    [bp+arg_2]
+    push    [bp+arg_fatal]
     lea     ax, [bp+var_7C]
     push    ax
-    call    decompress_file
+    call    file_decomp
     add     sp, 4
     mov     [bp+var_4], ax
     mov     [bp+var_2], dx
@@ -290,7 +290,7 @@ loc_3ABB7:
     push    ax
     push    [bp+var_2]
     push    [bp+var_4]
-    call    locate_shape_0
+    call    locate_shape_nofatal
     add     sp, 6
     mov     [bp+var_18], ax
     mov     [bp+var_16], dx
@@ -330,10 +330,10 @@ loc_3AC1C:
     add     sp, 4
     or      ax, ax
     jnz     short loc_3AC50
-    push    [bp+arg_2]
+    push    [bp+arg_fatal]
     lea     ax, [bp+var_7C]
     push    ax
-    call    load_res0_1_alt
+    call    file_load_binary
     add     sp, 4
     mov     [bp+var_4], ax
     mov     [bp+var_2], dx
@@ -345,10 +345,10 @@ loc_3AC4C:
     ; align 2
     db 144
 loc_3AC50:
-    push    [bp+arg_2]
+    push    [bp+arg_fatal]
     lea     ax, [bp+var_7C]
     push    ax
-    call    load_res0_1_alt
+    call    file_load_binary
     jmp     loc_3AB44
     ; align 2
     db 144

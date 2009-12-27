@@ -218,6 +218,7 @@ dseg segment byte public 'STUNTSD' use16
     public unk_3BD70
     public unk_3BD71
     public unk_3BD72
+    public brakedivtab
     public byte_3BE02
     public word_3BE14
     public word_3BE16
@@ -256,6 +257,19 @@ dseg segment byte public 'STUNTSD' use16
     public word_3C10E
     public word_3C110
     public word_3C112
+    public aDm1
+    public aDm2
+    public aPre
+    public aSe1
+    public aSe2
+    public aWww
+    public aOpp
+    public aOpp_0
+    public aPen
+    public aRpl_0
+    public unk_3C152
+    public aCrak
+    public aCinf
     public aScensce2sce3sce4
     public aTitle
     public aLogolog2brav
@@ -426,6 +440,12 @@ dseg segment byte public 'STUNTSD' use16
     public word_3E5C4
     public word_3E5D0
     public word_3E5D2
+    public unk_3E640
+    public unk_3E646
+    public unk_3E676
+    public unk_3E682
+    public unk_3E68E
+    public unk_3E69A
     public aGame1
     public aGame2
     public aCar0
@@ -539,6 +559,8 @@ dseg segment byte public 'STUNTSD' use16
     public a_
     public byte_3EBD8
     public aDea
+    public a_p3s
+    public a_3sh
     public byte_3ECBB
     public word_3ED74
     public word_3ED76
@@ -776,11 +798,16 @@ dseg segment byte public 'STUNTSD' use16
     public aDrv
     public aMt32_plb
     public aCanTFindDriver
+    public aDsf
+    public aSfx
+    public aCannotLoadSfxFileS
     public aKms
     public aCannotLoadSongFileS
     public aDvc
     public aVce
     public aCannotLoadVoiceFileS
+    public aSlb
+    public aCannotLoadSampleFileS
     public word_407AA
     public word_407CA
     public word_407CC
@@ -819,6 +846,13 @@ dseg segment byte public 'STUNTSD' use16
     public byte_40B86
     public aMcgaWindow
     public aWindowdefOutOfRowTableSpa
+    public a_pvs_0
+    public a_xvs_0
+    public a_vsh
+    public a_pes_0
+    public a_esh_0
+    public unk_40BD5
+    public shapeexts
     public shapenums
     public a_pvs
     public aUnflip_0
@@ -1293,7 +1327,7 @@ dseg segment byte public 'STUNTSD' use16
     public word_45D1E
     public word_45D22
     public word_45D24
-    public byte_45D3E
+    public word_45D3E
     public trackrows
     public word_45D7C
     public byte_45D7E
@@ -3014,16 +3048,11 @@ unk_3BD72     db 21
     db 0
     db 0
     db 1
-    db 255
-    db 0
-    db 0
-    db 1
-    db 192
-    db 0
-    db 128
-    db 0
-    db 64
-    db 0
+brakedivtab     dw 255
+    dw 256
+    dw 192
+    dw 128
+    dw 64
 byte_3BE02     db 255
     db 0
     db 1
@@ -3793,43 +3822,43 @@ word_3C112     dw 10960
     db 0
     db 200
     db 0
-    db 100
+aDm1     db 100
     db 109
     db 49
     db 0
-    db 100
+aDm2     db 100
     db 109
     db 50
     db 0
-    db 112
+aPre     db 112
     db 114
     db 101
     db 0
-    db 115
+aSe1     db 115
     db 101
     db 49
     db 0
-    db 115
+aSe2     db 115
     db 101
     db 50
     db 0
-    db 119
+aWww     db 119
     db 119
     db 119
     db 0
-    db 111
+aOpp     db 111
     db 112
     db 112
     db 0
-    db 111
+aOpp_0     db 111
     db 112
     db 112
     db 0
-    db 112
+aPen     db 112
     db 101
     db 110
     db 0
-    db 114
+aRpl_0     db 114
     db 112
     db 108
     db 0
@@ -3841,7 +3870,7 @@ word_3C112     dw 10960
     db 0
     db 108
     db 0
-    db 68
+unk_3C152     db 68
     db 0
     db 92
     db 0
@@ -3857,12 +3886,12 @@ word_3C112     dw 10960
     db 0
     db 128
     db 0
-    db 99
+aCrak     db 99
     db 114
     db 97
     db 107
     db 0
-    db 99
+aCinf     db 99
     db 105
     db 110
     db 102
@@ -13279,13 +13308,13 @@ word_3E5D2     dw 361
     db 1
     db 104
     db 1
+unk_3E640     db 0
     db 0
     db 0
     db 0
     db 0
     db 0
-    db 0
-    db 136
+unk_3E646     db 136
     db 255
     db 0
     db 0
@@ -13333,7 +13362,7 @@ word_3E5D2     dw 361
     db 0
     db 231
     db 0
-    db 196
+unk_3E676     db 196
     db 255
     db 0
     db 0
@@ -13345,7 +13374,7 @@ word_3E5D2     dw 361
     db 0
     db 0
     db 2
-    db 120
+unk_3E682     db 120
     db 254
     db 0
     db 0
@@ -13357,7 +13386,7 @@ word_3E5D2     dw 361
     db 0
     db 0
     db 0
-    db 136
+unk_3E68E     db 136
     db 1
     db 0
     db 0
@@ -13369,7 +13398,7 @@ word_3E5D2     dw 361
     db 0
     db 0
     db 0
-    db 23
+unk_3E69A     db 23
     db 0
     db 0
     db 0
@@ -14692,12 +14721,12 @@ aDea     db 100
     db 101
     db 114
     db 0
-    db 46
+a_p3s     db 46
     db 112
     db 51
     db 115
     db 0
-    db 46
+a_3sh     db 46
     db 51
     db 115
     db 104
@@ -20955,15 +20984,15 @@ aCanTFindDriver     db 67
     db 0
     db 0
     db 0
-    db 100
+aDsf     db 100
     db 115
     db 102
     db 0
-    db 115
+aSfx     db 115
     db 102
     db 120
     db 0
-    db 99
+aCannotLoadSfxFileS     db 99
     db 97
     db 110
     db 110
@@ -21050,11 +21079,11 @@ aCannotLoadVoiceFileS     db 99
     db 37
     db 115
     db 0
-    db 115
+aSlb     db 115
     db 108
     db 98
     db 0
-    db 99
+aCannotLoadSampleFileS     db 99
     db 97
     db 110
     db 110
@@ -22285,44 +22314,38 @@ aWindowdefOutOfRowTableSpa     db 119
     db 69
     db 13
     db 0
-    db 46
+a_pvs_0     db 46
     db 80
     db 86
     db 83
     db 0
-    db 46
+a_xvs_0     db 46
     db 88
     db 86
     db 83
     db 0
-    db 46
+a_vsh     db 46
     db 86
     db 83
     db 72
     db 0
-    db 46
+a_pes_0     db 46
     db 80
     db 69
     db 83
     db 0
-    db 46
+a_esh_0     db 46
     db 69
     db 83
     db 72
     db 0
-    db 0
-    db 76
-    db 84
-    db 81
-    db 84
-    db 86
-    db 84
-    db 91
-    db 84
-    db 96
-    db 84
-    db 101
-    db 84
+unk_40BD5     db 0
+shapeexts     dw offset a_pvs_0       ; ".PVS"
+    dw offset a_xvs_0       ; ".XVS"
+    dw offset a_vsh         ; ".VSH"
+    dw offset a_pes_0       ; ".PES"
+    dw offset a_esh_0       ; ".ESH"
+    dw offset unk_40BD5
 shapenums     db 0
     db 1
     db 2
@@ -42549,8 +42572,7 @@ word_45D24     dw 0
     db 0
     db 0
     db 0
-byte_45D3E     db 0
-    db 0
+word_45D3E     dw 0
 trackrows     dw 0
     dw 0
     dw 0

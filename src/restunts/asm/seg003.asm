@@ -53,7 +53,7 @@ seg003 segment byte public 'STUNTSC' use16
     public skybox_op
     public sub_1CB80
     public sub_1CBDC
-    public sub_1D12E
+    public draw_ingame_text
     public sub_1D534
     public sub_1D5B4
     public load_skybox
@@ -3707,7 +3707,7 @@ loc_1C265:
     push    ax
     push    ax
     push    cs
-    call    near ptr sub_1D12E
+    call    near ptr draw_ingame_text
     push    ax
     call    sub_26572
     add     sp, 6
@@ -3787,7 +3787,7 @@ loc_1C2B0:
     db 144
 loc_1C2F8:
     push    cs
-    call    near ptr sub_1D12E
+    call    near ptr draw_ingame_text
     pop     si
     pop     di
     mov     sp, bp
@@ -5379,7 +5379,7 @@ loc_1D128:
     pop     bp
     retf
 sub_1CBDC endp
-sub_1D12E proc far
+draw_ingame_text proc far
      s = byte ptr 0
      r = byte ptr 2
 
@@ -5389,8 +5389,8 @@ sub_1D12E proc far
     push    di
     push    si
     push    si
-    mov     di, 0AA0Eh
-    mov     si, 3394h
+    mov     di, offset word_4617E
+    mov     si, offset rect_unk4
     push    ds
     pop     es
     movsw
@@ -5402,7 +5402,7 @@ sub_1D12E proc far
     jnz     short loc_1D14E
     jmp     loc_1D1E6
 loc_1D14E:
-    mov     ax, 9B2h
+    mov     ax, offset aDm1 ; "Professional Driver"
     push    ax
     push    word_449A2
     push    word_449A0
@@ -5410,32 +5410,32 @@ loc_1D14E:
     add     sp, 6
     push    dx
     push    ax
-    mov     ax, 0AC74h
+    mov     ax, offset byte_463E4
     push    ax
     call    copy_string
     add     sp, 6
-    mov     ax, 0AA0Eh
+    mov     ax, offset word_4617E
     push    ax
     sub     ax, ax
     push    ax
     push    word_407CA
     mov     ax, 0AAh ; 'ª'
     push    ax
-    mov     ax, 0AC74h
+    mov     ax, offset byte_463E4
     push    ax
     call    sub_29606
     add     sp, 2
     push    ax
-    mov     ax, 0AC74h
+    mov     ax, offset byte_463E4
     push    ax
     call    sub_28F98
     add     sp, 0Ah
     push    ax
-    mov     ax, 0AA0Eh
+    mov     ax, offset word_4617E
     push    ax
     call    sub_26572
     add     sp, 6
-    mov     ax, 9B6h
+    mov     ax, offset aDm2 ; on Closed Circuit
     push    ax
     push    word_449A2
     push    word_449A0
@@ -5443,11 +5443,11 @@ loc_1D14E:
     add     sp, 6
     push    dx
     push    ax
-    mov     ax, 0AC74h
+    mov     ax, offset byte_463E4
     push    ax
     call    copy_string
     add     sp, 6
-    mov     ax, 0AA0Eh
+    mov     ax, offset word_4617E
     push    ax
     sub     ax, ax
     push    ax
@@ -5455,7 +5455,7 @@ loc_1D14E:
     mov     ax, 0B6h ; '¶'
 loc_1D1D5:
     push    ax
-    mov     ax, 0AC74h
+    mov     ax, offset byte_463E4
     push    ax
     call    sub_29606
     add     sp, 2
@@ -5469,7 +5469,7 @@ loc_1D1E6:
 loc_1D1F0:
     cmp     state.field_3F5, 0
     jnz     short loc_1D22A
-    mov     ax, 9BAh
+    mov     ax, offset aPre ; Fasten Your Seatbelt
     push    ax
     push    word_449A2
     push    word_449A0
@@ -5477,11 +5477,11 @@ loc_1D1F0:
     add     sp, 6
     push    dx
     push    ax
-    mov     ax, 0AC74h
+    mov     ax, offset byte_463E4
     push    ax
     call    copy_string
     add     sp, 6
-    mov     ax, 0AA0Eh
+    mov     ax, offset word_4617E
     push    ax
     sub     ax, ax
     push    ax
@@ -5495,7 +5495,7 @@ loc_1D22A:
     jz      short loc_1D234
     jmp     loc_1D2BE
 loc_1D234:
-    mov     ax, 9BEh
+    mov     ax, offset aSe1 ; You forgot to disable the
     push    ax
     push    word_449A2
     push    word_449A0
@@ -5503,32 +5503,32 @@ loc_1D234:
     add     sp, 6
     push    dx
     push    ax
-    mov     ax, 0AC74h
+    mov     ax, offset byte_463E4
     push    ax
     call    copy_string
     add     sp, 6
-    mov     ax, 0AA0Eh
+    mov     ax, offset word_4617E
     push    ax
     sub     ax, ax
     push    ax
     push    word_407CA
     mov     ax, 5Dh ; ']'
     push    ax
-    mov     ax, 0AC74h
+    mov     ax, offset byte_463E4
     push    ax
     call    sub_29606
     add     sp, 2
     push    ax
-    mov     ax, 0AC74h
+    mov     ax, offset byte_463E4
     push    ax
     call    sub_28F98
     add     sp, 0Ah
     push    ax
-    mov     ax, 0AA0Eh
+    mov     ax, offset word_4617E
     push    ax
     call    sub_26572
     add     sp, 6
-    mov     ax, 9C2h
+    mov     ax, offset aSe2 ; "Car's security system first"
     push    ax
     push    word_449A2
     push    word_449A0
@@ -5536,11 +5536,11 @@ loc_1D234:
     add     sp, 6
     push    dx
     push    ax
-    mov     ax, 0AC74h
+    mov     ax, offset byte_463E4
     push    ax
     call    copy_string
     add     sp, 6
-    mov     ax, 0AA0Eh
+    mov     ax, offset word_4617E
     push    ax
     sub     ax, ax
     push    ax
@@ -5581,12 +5581,12 @@ loc_1D2F2:
 loc_1D302:
     call    sub_343B0
     add     sp, 8
-    mov     ax, 0AA0Eh
+    mov     ax, offset word_4617E
     push    ax
     mov     ax, 9DAh
 loc_1D311:
     push    ax
-    mov     ax, 0AA0Eh
+    mov     ax, offset word_4617E
     push    ax
     call    sub_26572
     add     sp, 6
@@ -5612,7 +5612,7 @@ loc_1D338:
     push    word_45DCC
     jmp     short loc_1D302
 loc_1D34A:
-    mov     ax, 9C6h
+    mov     ax, offset aWww ; "Wrong Way"
     push    ax
     push    word_449A2
     push    word_449A0
@@ -5620,23 +5620,23 @@ loc_1D34A:
     add     sp, 6
     push    dx
     push    ax
-    mov     ax, 0AC74h
+    mov     ax, offset byte_463E4
     push    ax
     call    copy_string
     add     sp, 6
-    mov     ax, 0AA0Eh
+    mov     ax, offset word_4617E
     push    ax
     sub     ax, ax
     push    ax
     push    word_407CA
     mov     ax, 5Dh ; ']'
     push    ax
-    mov     ax, 0AC74h
+    mov     ax, offset byte_463E4
     push    ax
     call    sub_29606
     add     sp, 2
     push    ax
-    mov     ax, 0AC74h
+    mov     ax, offset byte_463E4
     push    ax
     call    sub_28F98
     add     sp, 0Ah
@@ -5652,15 +5652,15 @@ loc_1D398:
     push    word_45DC8
     call    sub_343B0
     add     sp, 8
-    mov     ax, 0AA0Eh
+    mov     ax, offset word_4617E
     push    ax
-    mov     ax, 9E2h
+    mov     ax, offset unk_3C152
     push    ax
-    mov     ax, 0AA0Eh
+    mov     ax, offset word_4617E
     push    ax
     call    sub_26572
     add     sp, 6
-    mov     ax, 9CAh
+    mov     ax, offset aOpp ; "Opponent Near"
 loc_1D3C7:
     push    ax
     push    word_449A2
@@ -5669,31 +5669,31 @@ loc_1D3C7:
     add     sp, 6
     push    dx
     push    ax
-    mov     ax, 0AC74h
+    mov     ax, offset byte_463E4
     push    ax
     call    copy_string
     add     sp, 6
 loc_1D3E6:
     cmp     byte_463E4, 0
     jz      short loc_1D422
-    mov     ax, 0AA0Eh
+    mov     ax, offset word_4617E
     push    ax
     sub     ax, ax
     push    ax
     push    word_407CA
     mov     ax, 74h ; 't'
     push    ax
-    mov     ax, 0AC74h
+    mov     ax, offset byte_463E4
     push    ax
     call    sub_29606
     add     sp, 2
     push    ax
-    mov     ax, 0AC74h
+    mov     ax, offset byte_463E4
     push    ax
     call    sub_28F98
     add     sp, 0Ah
     push    ax
-    mov     ax, 0AA0Eh
+    mov     ax, offset word_4617E
     push    ax
     call    sub_26572
     add     sp, 6
@@ -5702,7 +5702,7 @@ loc_1D422:
     jnz     short loc_1D42C
     jmp     loc_1D52B
 loc_1D42C:
-    mov     ax, 9D2h
+    mov     ax, offset aPen ; "pen"
     push    ax
     push    word_449A2
     push    word_449A0
@@ -5710,22 +5710,22 @@ loc_1D42C:
     add     sp, 6
     push    dx
     push    ax
-    mov     ax, 0AC74h
+    mov     ax, offset byte_463E4
     push    ax
     call    copy_string
     add     sp, 6
     sub     ax, ax
     push    ax              ; int
     push    word_461CA
-    mov     ax, 0AC74h
+    mov     ax, offset byte_463E4
     push    ax              ; char *
     call    _strlen
     add     sp, 2
-    add     ax, 0AC74h
+    add     ax, offset byte_463E4
     push    ax              ; char *
     call    sub_298B8
     add     sp, 6
-    mov     ax, 0AA0Eh
+    mov     ax, offset word_4617E
     push    ax
     sub     ax, ax
     push    ax
@@ -5741,11 +5741,11 @@ loc_1D47E:
     push    word_45DCC
     call    sub_343B0
     add     sp, 8
-    mov     ax, 0AA0Eh
+    mov     ax, offset word_4617E
     push    ax
     mov     ax, 9EAh
     push    ax
-    mov     ax, 0AA0Eh
+    mov     ax, offset word_4617E
     push    ax
     call    sub_26572
     add     sp, 6
@@ -5762,7 +5762,7 @@ loc_1D4B0:
     sar     ax, 1
     cmp     ax, si
     jle     short loc_1D52B
-    mov     ax, 9D6h
+    mov     ax, offset aRpl_0; "rpl"
     push    ax
     push    word_449A2
     push    word_449A0
@@ -5770,18 +5770,18 @@ loc_1D4B0:
     add     sp, 6
     push    dx
     push    ax
-    mov     ax, 0AC74h
+    mov     ax, offset byte_463E4
     push    ax
     call    copy_string
     add     sp, 6
-    mov     ax, 0AA0Eh
+    mov     ax, offset word_4617E
     push    ax
     sub     ax, ax
     push    ax
     push    word_407CA
     mov     ax, 0Fh
     push    ax
-    mov     ax, 0AC74h
+    mov     ax, offset byte_463E4
     push    ax              ; char *
     call    _strlen
     add     sp, 2
@@ -5791,23 +5791,23 @@ loc_1D4B0:
     neg     ax
 loc_1D511:
     push    ax
-    mov     ax, 0AC74h
+    mov     ax, offset byte_463E4
     push    ax
     call    sub_28F98
     add     sp, 0Ah
     push    ax
-    mov     ax, 0AA0Eh
+    mov     ax, offset word_4617E
     push    ax
     call    sub_26572
     add     sp, 6
 loc_1D52B:
-    mov     ax, 0AA0Eh
+    mov     ax, offset word_4617E
     pop     si
     pop     di
     mov     sp, bp
     pop     bp
     retf
-sub_1D12E endp
+draw_ingame_text endp
 sub_1D534 proc far
      s = byte ptr 0
      r = byte ptr 2
@@ -5896,7 +5896,7 @@ sub_1D5B4 proc far
     sub     sp, 1Ah
     push    di
     push    si
-    mov     ax, 9F2h
+    mov     ax, offset aCrak; "crak"
     push    ax
     push    word_449A2
     push    word_449A0
@@ -5904,7 +5904,7 @@ sub_1D5B4 proc far
     add     sp, 6
     mov     word ptr [bp+var_8], ax
     mov     word ptr [bp+var_8+2], dx
-    mov     ax, 9F7h
+    mov     ax, offset aCinf; "cinf"
     push    ax
     push    word_449A2
     push    word_449A0
@@ -5934,8 +5934,8 @@ loc_1D614:
     mov     ax, es:[bx+di+2]
     mov     [bp+var_18], ax
     push    si
-    mov     di, 0AA0Eh
-    mov     si, 3394h
+    mov     di, offset word_4617E
+    mov     si, offset rect_unk4
     push    ds
     pop     es
     movsw
@@ -6140,7 +6140,7 @@ loc_1D7C8:
     add     ax, cx
     add     ax, offset aDesert; "desert"
     push    ax
-    call    load_2dshape1
+    call    load_2dshape_fatal_thunk
     add     sp, 2
     mov     skybox_res_ofs, ax
     mov     skybox_res_seg, dx
@@ -6243,7 +6243,7 @@ load_sdgame2_shapes proc far
     push    ax              ; char *
     mov     ax, 8
     push    ax              ; int
-    call    load_resource
+    call    file_load_resource
     add     sp, 4
     mov     word_463D8, ax
     mov     word_463DA, dx

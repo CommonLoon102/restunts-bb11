@@ -71,8 +71,10 @@ seg027 segment byte public 'STUNTSC' use16
     public load_sfx_file
     public load_song_file
     public load_voice_file
+    public nopsub_37D7A
     public init_audio_chunk
     public load_vce
+    public sub_3803C
     public sub_38156
     public sub_38178
     public audio_hdr1_unk
@@ -1191,7 +1193,7 @@ loc_3793B:
     add     sp, 6
     mov     [bp+var_6], ax
     push    ax
-    call    load_res0_1_type
+    call    file_load_binary_nofatal
     add     sp, 2
     mov     word ptr audiodriverbinary, ax
     mov     word ptr audiodriverbinary+2, dx
@@ -1235,7 +1237,7 @@ loc_379B8:
     jz      short loc_37A35
     mov     ax, offset aMt32_plb; "mt32.plb"
     push    ax
-    call    load_res0_1_type
+    call    file_load_binary_nofatal
     add     sp, 2
     mov     [bp+var_4], ax
     mov     [bp+var_2], dx
@@ -1379,7 +1381,7 @@ load_sfx_ge proc far
     call    sub_39CCE
     add     sp, 6
     push    ax
-    call    load_res0_1_type
+    call    file_load_binary_nofatal
     add     sp, 2
     mov     [bp+var_4], ax
     mov     [bp+var_2], dx
@@ -1406,7 +1408,7 @@ loc_37B48:
     call    sub_39CCE
     add     sp, 6
     push    ax
-    call    decompress_file_nofatal
+    call    file_decomp_nofatal
     add     sp, 2
     mov     [bp+var_4], ax
     mov     [bp+var_2], dx
@@ -1419,7 +1421,7 @@ loc_37B48:
     call    sub_39CCE
     add     sp, 6
     push    ax
-    call    load_res0_1_type
+    call    file_load_binary_nofatal
     add     sp, 2
     mov     [bp+var_4], ax
     mov     [bp+var_2], dx
@@ -1433,7 +1435,7 @@ loc_37B48:
     call    sub_39CCE
     add     sp, 6
     push    ax
-    call    decompress_file_nofatal
+    call    file_decomp_nofatal
     add     sp, 2
     mov     [bp+var_4], ax
     mov     [bp+var_2], dx
@@ -1448,7 +1450,7 @@ loc_37BD1:
     call    sub_39CCE
     add     sp, 6
     push    ax
-    call    load_res0_1_type
+    call    file_load_binary_nofatal
     add     sp, 2
     mov     [bp+var_4], ax
     mov     [bp+var_2], dx
@@ -1464,7 +1466,7 @@ loc_37BF9:
     call    sub_39CCE
     add     sp, 6
     push    ax
-    call    decompress_file_nofatal
+    call    file_decomp_nofatal
     add     sp, 2
     mov     [bp+var_4], ax
     mov     [bp+var_2], dx
@@ -1473,7 +1475,7 @@ loc_37BF9:
     jmp     loc_37B3E
 loc_37C22:
     push    word ptr [bp+arg_0]
-    call    load_res0_1_type
+    call    file_load_binary_nofatal
     add     sp, 2
     mov     [bp+var_4], ax
     mov     [bp+var_2], dx
@@ -1503,9 +1505,9 @@ load_sfx_file proc far
     mov     [bp+var_4], ax
     cmp     byte_40635, 0
     jz      short loc_37C71
-    mov     ax, 763Eh
+    mov     ax, offset byte_42DAE
     push    ax              ; int
-    mov     ax, 4EF8h
+    mov     ax, offset aDsf ; "dsf"
     push    ax
     push    word ptr [bp+arg_0]; char *
     push    cs
@@ -1517,9 +1519,9 @@ loc_37C71:
     mov     ax, [bp+var_4]
     or      ax, [bp+var_2]
     jnz     short loc_37C91
-    mov     ax, 763Eh
+    mov     ax, offset byte_42DAE
     push    ax              ; int
-    mov     ax, 4EFCh
+    mov     ax, offset aSfx ; "sfx"
     push    ax
     push    word ptr [bp+arg_0]; char *
     push    cs
@@ -1534,7 +1536,7 @@ loc_37C91:
     cmp     word_4063C, 0
     jz      short loc_37CAF
     push    word ptr [bp+arg_0]
-    mov     ax, 4F00h
+    mov     ax, offset aCannotLoadSfxFileS; "cannot load sfx file %s"
     push    ax
     call    far ptr fatal_error
     add     sp, 4
@@ -1644,35 +1646,43 @@ loc_37D6F:
     retf
     ; align 2
     db 144
+load_voice_file endp
+nopsub_37D7A proc far
+    var_4 = word ptr -4
+    var_2 = word ptr -2
+     s = byte ptr 0
+     r = byte ptr 2
+    arg_0 = dword ptr 6
+
     push    bp
     mov     bp, sp
     sub     sp, 4
-    mov     ax, 763Eh
+    mov     ax, offset byte_42DAE
+    push    ax              ; int
+    mov     ax, offset aSlb ; "slb"
     push    ax
-    mov     ax, 4F57h
-    push    ax
-    push    word ptr [bp+6]
+    push    word ptr [bp+arg_0]; char *
     push    cs
     call    near ptr load_sfx_ge
     add     sp, 6
-    mov     [bp-4], ax
-    mov     [bp-2], dx
+    mov     [bp+var_4], ax
+    mov     [bp+var_2], dx
     or      ax, dx
     jnz     short loc_37DB2
     cmp     word_4063C, 0
     jz      short loc_37DB2
-    push    word ptr [bp+6]
-    mov     ax, 4F5Bh
+    push    word ptr [bp+arg_0]
+    mov     ax, offset aCannotLoadSampleFileS; "cannot load sample file %s"
     push    ax
     call    far ptr fatal_error
     add     sp, 4
 loc_37DB2:
-    mov     ax, [bp-4]
-    mov     dx, [bp-2]
+    mov     ax, [bp+var_4]
+    mov     dx, [bp+var_2]
     mov     sp, bp
     pop     bp
     retf
-load_voice_file endp
+nopsub_37D7A endp
 init_audio_chunk proc far
     var_A = word ptr -10
     var_8 = word ptr -8
@@ -1949,59 +1959,79 @@ loc_38036:
     mov     sp, bp
     pop     bp
     retf
+load_vce endp
+sub_3803C proc far
+    var_22 = word ptr -34
+    var_20 = word ptr -32
+    var_1C = word ptr -28
+    var_18 = word ptr -24
+    var_16 = word ptr -22
+    var_14 = word ptr -20
+    var_12 = word ptr -18
+    var_10 = word ptr -16
+    var_E = word ptr -14
+    var_C = word ptr -12
+    var_A = byte ptr -10
+    var_4 = dword ptr -4
+     s = byte ptr 0
+     r = byte ptr 2
+    arg_0 = dword ptr 6
+    arg_4 = word ptr 10
+    arg_6 = word ptr 12
+
     push    bp
     mov     bp, sp
     sub     sp, 22h
     push    di
     push    si
-    mov     ax, [bp+0Ah]
-    or      ax, [bp+0Ch]
+    mov     ax, [bp+arg_4]
+    or      ax, [bp+arg_6]
     jnz     short loc_3804F
     jmp     loc_3814F
 loc_3804F:
-    mov     ax, [bp+6]
-    or      ax, [bp+8]
+    mov     ax, word ptr [bp+arg_0]
+    or      ax, word ptr [bp+arg_0+2]
     jnz     short loc_3805A
     jmp     loc_3814F
 loc_3805A:
-    les     bx, [bp+6]
+    les     bx, [bp+arg_0]
     mov     al, es:[bx+4]
     sub     ah, ah
-    mov     [bp-22h], ax
-    mov     [bp-14h], ax
-    mov     word ptr [bp-16h], 0
+    mov     [bp+var_22], ax
+    mov     [bp+var_14], ax
+    mov     [bp+var_16], 0
     or      ax, ax
     jnz     short loc_38075
     jmp     loc_3814F
 loc_38075:
-    mov     word ptr [bp-20h], 0
+    mov     [bp+var_20], 0
 loc_3807A:
-    mov     word ptr [bp-18h], 0
-    mov     di, [bp-20h]
+    mov     [bp+var_18], 0
+    mov     di, [bp+var_20]
     sub     cx, cx
-    mov     word ptr [bp-1Ch], ds
-    lds     si, [bp+6]
+    mov     [bp+var_1C], ds
+    lds     si, [bp+arg_0]
 loc_3808A:
     mov     bx, di
     add     bx, cx
     mov     al, [bx+si+6]
     mov     bx, cx
     add     bx, bp
-    mov     ss:[bx-0Ah], al
+    mov     ss:[bx+var_A], al
     inc     cx
     cmp     cx, 4
     jl      short loc_3808A
-    mov     ds, word ptr [bp-1Ch]
-    mov     [bp-18h], cx
-    lea     ax, [bp-0Ah]
+    mov     ds, [bp+var_1C]
+    mov     [bp+var_18], cx
+    lea     ax, [bp+var_A]
     push    ax
-    push    word ptr [bp+8]
-    push    word ptr [bp+6]
+    push    word ptr [bp+arg_0+2]
+    push    word ptr [bp+arg_0]
     call    init_audio_resource
     add     sp, 6
-    mov     [bp-4], ax
-    mov     [bp-2], dx
-    les     bx, [bp-4]
+    mov     word ptr [bp+var_4], ax
+    mov     word ptr [bp+var_4+2], dx
+    les     bx, [bp+var_4]
     cmp     byte ptr es:[bx+5], 3
     jz      short loc_380CE
     cmp     byte ptr es:[bx+5], 6
@@ -2009,12 +2039,12 @@ loc_3808A:
 loc_380CE:
     cmp     byte ptr es:[bx+0Ah], 0
     jnz     short loc_38137
-    mov     word ptr [bp-18h], 0
+    mov     [bp+var_18], 0
     mov     ax, bx
     mov     dx, es
     add     ax, 6
     mov     cx, 2
-    lea     di, [bp-0Ah]
+    lea     di, [bp+var_A]
     mov     si, ax
     push    ss
     pop     es
@@ -2022,38 +2052,38 @@ loc_380CE:
     mov     ds, dx
     repne movsw
     pop     ds
-    mov     word ptr [bp-18h], 4
+    mov     [bp+var_18], 4
     mov     ax, bx
     add     ax, 6
-    mov     [bp-0Eh], ax
-    mov     [bp-0Ch], dx
-    lea     ax, [bp-0Ah]
+    mov     [bp+var_E], ax
+    mov     [bp+var_C], dx
+    lea     ax, [bp+var_A]
     push    ax
-    push    word ptr [bp+0Ch]
-    push    word ptr [bp+0Ah]
-    call    locate_shape_0
+    push    [bp+arg_6]
+    push    [bp+arg_4]
+    call    locate_shape_nofatal
     add     sp, 6
-    mov     [bp-12h], ax
-    mov     [bp-10h], dx
+    mov     [bp+var_12], ax
+    mov     [bp+var_10], dx
     or      ax, dx
     jz      short loc_38137
-    lea     ax, [bp-12h]
+    lea     ax, [bp+var_12]
     push    ss
     push    ax
-    push    word ptr [bp-0Ch]
-    push    word ptr [bp-0Eh]
+    push    [bp+var_C]
+    push    [bp+var_E]
     push    cs
     call    near ptr copy_4_bytes
     add     sp, 8
-    les     bx, [bp-4]
+    les     bx, [bp+var_4]
     mov     byte ptr es:[bx+0Ah], 0FFh
 loc_38137:
-    add     word ptr [bp-20h], 4
-    inc     word ptr [bp-16h]
-    les     bx, [bp+6]
+    add     [bp+var_20], 4
+    inc     [bp+var_16]
+    les     bx, [bp+arg_0]
     mov     al, es:[bx+4]
     sub     ah, ah
-    cmp     ax, [bp-16h]
+    cmp     ax, [bp+var_16]
     jbe     short loc_3814F
     jmp     loc_3807A
 loc_3814F:
@@ -2064,7 +2094,7 @@ loc_3814F:
     retf
     ; align 2
     db 144
-load_vce endp
+sub_3803C endp
 sub_38156 proc far
     var_2 = word ptr -2
      s = byte ptr 0

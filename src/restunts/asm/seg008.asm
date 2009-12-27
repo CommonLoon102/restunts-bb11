@@ -90,7 +90,7 @@ seg008 segment byte public 'STUNTSC' use16
     public set_fontdef
     public sub_298B8
     public get_super_random
-    public load_resource
+    public file_load_resource
     public off_29A4E
     public sub_29A86
     public input_push_status
@@ -2493,7 +2493,7 @@ loc_289F8:
     mov     ax, 1
     push    ax              ; int
     push    cs
-    call    near ptr load_resource
+    call    near ptr file_load_resource
     add     sp, 4
     mov     [bp+var_4], ax
     mov     [bp+var_2], dx
@@ -2515,7 +2515,7 @@ loc_289F8:
     mov     ax, 7
     push    ax              ; int
     push    cs
-    call    near ptr load_resource
+    call    near ptr file_load_resource
     add     sp, 4
     mov     [bp+var_4], ax
     mov     [bp+var_2], dx
@@ -2560,7 +2560,7 @@ locate_shape_alt proc far
     push    [bp+arg_4]
     push    [bp+arg_2]
     push    [bp+arg_0]
-    call    locate_shape_1
+    call    locate_shape_fatal
     add     sp, 6
     pop     bp
     retf
@@ -2592,7 +2592,7 @@ locate_text_res proc far
     push    ax
     push    [bp+arg_2]
     push    [bp+arg_0]
-    call    locate_shape_1
+    call    locate_shape_fatal
     mov     sp, bp
     pop     bp
     retf
@@ -4271,7 +4271,7 @@ load_audio_res proc far
     mov     ax, 5
     push    ax              ; int
     push    cs
-    call    near ptr load_resource
+    call    near ptr file_load_resource
     add     sp, 4
     mov     word_44A7C, ax
     mov     word_44A7E, dx
@@ -4279,7 +4279,7 @@ load_audio_res proc far
     mov     ax, 4
     push    ax              ; int
     push    cs
-    call    near ptr load_resource
+    call    near ptr file_load_resource
     add     sp, 4
     mov     word_44360, ax
     mov     word_44362, dx
@@ -4483,7 +4483,7 @@ loc_299C2:
     pop     bp
     retf
 get_super_random endp
-load_resource proc far
+file_load_resource proc far
     var_4 = word ptr -4
     var_2 = word ptr -2
      s = byte ptr 0
@@ -4507,7 +4507,7 @@ loc_299DB:
     db 144
 loc_299E4:
     push    word ptr [bp+arg_2]
-    call    load_res0_1_type
+    call    file_load_binary_nofatal
 loc_299EC:
     add     sp, 2
     mov     [bp+var_4], ax
@@ -4517,7 +4517,7 @@ loc_299EC:
     db 144
 loc_299F8:
     push    word ptr [bp+arg_2]
-    call    load_res0_1_type
+    call    file_load_binary_nofatal
 loc_29A00:
     add     sp, 2
     mov     sp, bp
@@ -4527,15 +4527,15 @@ loc_29A00:
     db 144
 loc_29A08:
     push    word ptr [bp+arg_2]
-    call    decompress_file_nofatal
+    call    file_decomp_nofatal
     jmp     short loc_29A00
 loc_29A12:
     push    word ptr [bp+arg_2]
-    call    j_load_2dshape_0
+    call    load_2dshape_nofatal_thunk
     jmp     short loc_299EC
 loc_29A1C:
     push    word ptr [bp+arg_2]
-    call    j_load_2dshape_res2
+    call    load_2dshape_res_nofatal_thunk
     jmp     short loc_299EC
 loc_29A26:
     push    word ptr [bp+arg_2]; char *
@@ -4551,7 +4551,7 @@ loc_29A3A:
     jmp     short loc_299EC
 loc_29A44:
     push    word ptr [bp+arg_2]
-    call    load_2dshape_0_2
+    call    load_2dshape_nofatal2
     jmp     short loc_299EC
 off_29A4E     dw offset loc_299E4
     dw offset loc_299F8
@@ -4585,7 +4585,7 @@ loc_29A7E:
     retf
     ; align 2
     db 144
-load_resource endp
+file_load_resource endp
 sub_29A86 proc far
     var_4 = word ptr -4
     var_2 = word ptr -2
@@ -5561,7 +5561,7 @@ loc_2A23C:
     push    ax              ; char *
     call    _strcpy
     add     sp, 4
-    mov     ax, 34A5h
+    mov     ax, offset a_p3s; ".p3s"
     push    ax
     lea     ax, [bp+var_54]
     push    ax              ; char *
@@ -5572,7 +5572,7 @@ loc_2A23C:
     mov     ax, 7
     push    ax              ; int
     push    cs
-    call    near ptr load_resource
+    call    near ptr file_load_resource
     add     sp, 4
     mov     [bp+var_4], ax
     mov     [bp+var_2], dx
@@ -5583,7 +5583,7 @@ loc_2A23C:
     push    ax              ; char *
     call    _strcpy
     add     sp, 4
-    mov     ax, 34AAh
+    mov     ax, offset a_3sh; ".3sh"
     push    ax
     lea     ax, [bp+var_54]
     push    ax              ; char *
@@ -5594,7 +5594,7 @@ loc_2A23C:
     mov     ax, 1
     push    ax              ; int
     push    cs
-    call    near ptr load_resource
+    call    near ptr file_load_resource
     add     sp, 4
     mov     [bp+var_4], ax
     mov     [bp+var_2], dx

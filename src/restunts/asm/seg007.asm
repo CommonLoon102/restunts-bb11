@@ -229,7 +229,7 @@ loc_26CCB:
     push    ax
     push    [bp+arg_8]
     push    [bp+arg_6]
-    call    locate_shape_1
+    call    locate_shape_fatal
     add     sp, 6
     mov     es, si
     mov     es:[di+8], ax

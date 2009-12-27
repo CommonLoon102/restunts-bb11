@@ -2771,7 +2771,7 @@ sub_1FAE4 proc far
     push    si
     mov     bx, [bp+arg_2]
     shl     bx, 1
-    mov     bx, [bx-5A30h]
+    mov     bx, trackrows[bx]
     add     bx, [bp+arg_0]
     add     bx, word ptr trackdata14
     mov     es, word ptr trackdata14+2
@@ -2789,11 +2789,11 @@ loc_1FB0A:
 loc_1FB12:
     mov     bx, [bp+arg_0]
     shl     bx, 1
-    mov     ax, [bx-599Eh]
+    mov     ax, trackcenterpos2[bx]
     mov     [bp+var_6], ax
     mov     bx, [bp+arg_2]
     shl     bx, 1
-    mov     ax, [bx-55EAh]
+    mov     ax, trackcenterpos[bx]
     mov     [bp+var_C], ax
     cmp     [bp+var_2], 0FDh ; 'ý'
     jnb     short loc_1FB33
@@ -2817,7 +2817,7 @@ loc_1FB4E:
     shl     ax, 1
     mov     [bp+var_14], ax
     mov     bx, ax
-    mov     bx, [bx-5A32h]
+    mov     bx, word_45D3E[bx]
     add     bx, [bp+arg_0]
     add     bx, word ptr trackdata14
     mov     es, word ptr trackdata14+2
@@ -2830,10 +2830,10 @@ loc_1FB4E:
     shl     bx, 1
     add     bx, ax
     shl     bx, 1
-    test    byte ptr [bx+20A3h], 1
+    test    sceneshapes.scene_translateflag[bx], 1
     jz      short loc_1FB8D
     mov     bx, [bp+var_14]
-    mov     ax, [bx-7E82h]
+    mov     ax, (trackpos+2)[bx]
 loc_1FB8A:
     mov     [bp+var_C], ax
 loc_1FB8D:
@@ -2845,20 +2845,20 @@ loc_1FB8D:
     shl     bx, 1
     add     bx, ax
     shl     bx, 1
-    test    byte ptr [bx+20A3h], 2
+    test    sceneshapes.scene_translateflag[bx], 2
     jnz     short loc_1FBA8
     jmp     loc_1FC86
 loc_1FBA8:
     mov     bx, [bp+arg_0]
     shl     bx, 1
-    mov     ax, [bx+7556h]
+    mov     ax, trackpos2[bx]
     jmp     loc_1FC83
 loc_1FBB4:
     mov     ax, [bp+arg_2]
     shl     ax, 1
     mov     [bp+var_14], ax
     mov     bx, ax
-    mov     bx, [bx-5A32h]
+    mov     bx, word_45D3E[bx]
     add     bx, [bp+arg_0]
     add     bx, word ptr trackdata14
     mov     es, word ptr trackdata14+2
@@ -2871,10 +2871,10 @@ loc_1FBB4:
     shl     bx, 1
     add     bx, ax
     shl     bx, 1
-    test    byte ptr [bx+20A3h], 1
+    test    sceneshapes.scene_translateflag[bx], 1
     jz      short loc_1FC62
     mov     bx, [bp+var_14]
-    mov     ax, [bx-7E82h]
+    mov     ax, (trackpos+2)[bx]
     jmp     short loc_1FC5F
     ; align 2
     db 144
@@ -2883,7 +2883,7 @@ loc_1FBF2:
     shl     ax, 1
     mov     [bp+var_14], ax
     mov     bx, ax
-    mov     bx, [bx-5A30h]
+    mov     bx, trackrows[bx]
     add     bx, [bp+arg_0]
     add     bx, word ptr trackdata14
     mov     es, word ptr trackdata14+2
@@ -2896,12 +2896,12 @@ loc_1FBF2:
     shl     bx, 1
     add     bx, ax
     shl     bx, 1
-    test    byte ptr [bx+20A3h], 1
+    test    sceneshapes.scene_translateflag[bx], 1
     jnz     short loc_1FC2A
     jmp     loc_1FB8D
 loc_1FC2A:
     mov     bx, [bp+var_14]
-    mov     ax, [bx-7E84h]
+    mov     ax, trackpos[bx]
     jmp     loc_1FB8A
 loc_1FC34:
     mov     al, [bp+var_2]
@@ -2912,7 +2912,7 @@ loc_1FC34:
     shl     bx, 1
     add     bx, ax
     shl     bx, 1
-    mov     al, [bx+20A3h]
+    mov     al, sceneshapes.scene_translateflag[bx]
     mov     byte ptr [bp+var_14], al
     cmp     al, ah
     jz      short loc_1FC86
@@ -2920,7 +2920,7 @@ loc_1FC34:
     jz      short loc_1FC62
     mov     bx, [bp+arg_2]
     shl     bx, 1
-    mov     ax, [bx-7E84h]
+    mov     ax, trackpos[bx]
 loc_1FC5F:
     mov     [bp+var_C], ax
 loc_1FC62:
@@ -2932,11 +2932,11 @@ loc_1FC62:
     shl     bx, 1
     add     bx, ax
     shl     bx, 1
-    test    byte ptr [bx+20A3h], 2
+    test    sceneshapes.scene_translateflag[bx], 2
     jz      short loc_1FC86
     mov     bx, [bp+arg_0]
     shl     bx, 1
-    mov     ax, [bx+7558h]
+    mov     ax, (trackpos2+2)[bx]
 loc_1FC83:
     mov     [bp+var_6], ax
 loc_1FC86:
@@ -2949,7 +2949,7 @@ loc_1FC86:
     shl     bx, 1
     add     bx, ax
     shl     bx, 1
-    mov     al, [bx+20A4h]
+    mov     al, sceneshapes.scene_unk4[bx]
     cbw
     cmp     ax, 20h ; ' '
     jz      short loc_1FCC2
@@ -2963,7 +2963,7 @@ loc_1FC86:
     db 144
 loc_1FCB2:
     mov     di, 2
-    mov     [bp+var_4], 2F06h
+    mov     [bp+var_4], offset unk_3E676
 loc_1FCBA:
     or      di, di
     jnz     short loc_1FD14
@@ -2972,23 +2972,23 @@ loc_1FCBA:
     db 144
 loc_1FCC2:
     mov     di, 2
-    mov     [bp+var_4], 2F12h
+    mov     [bp+var_4], offset unk_3E682
     jmp     short loc_1FCBA
 loc_1FCCC:
     mov     di, 2
-    mov     [bp+var_4], 2F1Eh
+    mov     [bp+var_4], offset unk_3E68E
     jmp     short loc_1FCBA
 loc_1FCD6:
     mov     di, 4
-    mov     [bp+var_4], 2F2Ah
+    mov     [bp+var_4], offset unk_3E69A
     jmp     short loc_1FCBA
 loc_1FCE0:
     mov     di, 1
-    mov     [bp+var_4], 2ED0h
+    mov     [bp+var_4], offset unk_3E640
     jmp     short loc_1FCBA
 loc_1FCEA:
     mov     di, 8
-    mov     [bp+var_4], 2ED6h
+    mov     [bp+var_4], offset unk_3E646
     jmp     short loc_1FCBA
 loc_1FCF4:
     cmp     ax, 22h ; '"'
@@ -3010,7 +3010,7 @@ loc_1FD02:
 loc_1FD14:
     mov     bx, [bp+arg_2]
     shl     bx, 1
-    mov     bx, [bx-73C4h]
+    mov     bx, terrainrows[bx]
     add     bx, [bp+arg_0]
     add     bx, word ptr trackdata15
     mov     es, word ptr trackdata15+2
@@ -3032,7 +3032,7 @@ loc_1FD3F:
     shl     bx, 1
     add     bx, ax
     shl     bx, 1
-    mov     ax, [bx+209Ah]
+    mov     ax, sceneshapes.scene_rot_y[bx]
     mov     [bp+var_8], ax
     sub     si, si
     jmp     short loc_1FDA6
@@ -3226,7 +3226,7 @@ loc_1FEEA:
     push    ax
     push    word_461C6
     push    word_461C4
-    call    locate_shape_0
+    call    locate_shape_nofatal
     add     sp, 6
     mov     word_449F8, ax
     mov     word_449FA, dx
@@ -3241,7 +3241,7 @@ loc_1FEEA:
     push    ax
     push    word_463D4
     push    word_463D2
-    call    locate_shape_1
+    call    locate_shape_fatal
     add     sp, 6
     mov     word_449F8, ax
     mov     word_449FA, dx
@@ -3323,7 +3323,7 @@ sub_1FF92 proc far
     push    ax
     push    dx
     push    word ptr dword_454AA
-    call    locate_shape_1
+    call    locate_shape_fatal
     add     sp, 6
     push    dx
     push    ax
@@ -3335,7 +3335,7 @@ sub_1FF92 proc far
     push    ax
     push    word ptr dword_454AA+2
     push    word ptr dword_454AA
-    call    locate_shape_1
+    call    locate_shape_fatal
     add     sp, 6
     push    dx
     push    ax
@@ -3440,7 +3440,7 @@ loc_200D6:
     push    ax
     push    word ptr dword_454AA+2
     push    word ptr dword_454AA
-    call    locate_shape_1
+    call    locate_shape_fatal
     add     sp, 6
     push    dx
     push    ax
@@ -3452,7 +3452,7 @@ loc_200D6:
     push    ax
     push    word ptr dword_454AA+2
     push    word ptr dword_454AA
-    call    locate_shape_1
+    call    locate_shape_fatal
     add     sp, 6
     push    dx
     push    ax
@@ -3464,7 +3464,7 @@ loc_200D6:
     push    ax
     push    word ptr dword_454AA+2
     push    word ptr dword_454AA
-    call    locate_shape_1
+    call    locate_shape_fatal
     add     sp, 6
     push    dx
     push    ax
@@ -3476,7 +3476,7 @@ loc_200D6:
     push    ax
     push    word ptr dword_454AA+2
     push    word ptr dword_454AA
-    call    locate_shape_1
+    call    locate_shape_fatal
     add     sp, 6
     push    dx
     push    ax
@@ -3488,7 +3488,7 @@ loc_200D6:
     push    ax
     push    word ptr dword_454AA+2
     push    word ptr dword_454AA
-    call    locate_shape_1
+    call    locate_shape_fatal
     add     sp, 6
     push    dx
     push    ax
@@ -3581,7 +3581,7 @@ loc_20257:
     push    ax
     push    word ptr dword_454B0+2
     push    word ptr dword_454B0
-    call    locate_shape_1
+    call    locate_shape_fatal
     add     sp, 6
     push    dx
     push    ax
@@ -3593,7 +3593,7 @@ loc_20257:
     push    ax
     push    word ptr dword_454B0+2
     push    word ptr dword_454B0
-    call    locate_shape_1
+    call    locate_shape_fatal
     add     sp, 6
     push    dx
     push    ax
@@ -3698,7 +3698,7 @@ loc_20369:
     push    ax
     push    word ptr dword_454B0+2
     push    word ptr dword_454B0
-    call    locate_shape_1
+    call    locate_shape_fatal
     add     sp, 6
     push    dx
     push    ax
@@ -3710,7 +3710,7 @@ loc_20369:
     push    ax
     push    word ptr dword_454B0+2
     push    word ptr dword_454B0
-    call    locate_shape_1
+    call    locate_shape_fatal
     add     sp, 6
     push    dx
     push    ax
@@ -3722,7 +3722,7 @@ loc_20369:
     push    ax
     push    word ptr dword_454B0+2
     push    word ptr dword_454B0
-    call    locate_shape_1
+    call    locate_shape_fatal
     add     sp, 6
     push    dx
     push    ax
@@ -3734,7 +3734,7 @@ loc_20369:
     push    ax
     push    word ptr dword_454B0+2
     push    word ptr dword_454B0
-    call    locate_shape_1
+    call    locate_shape_fatal
     add     sp, 6
     push    dx
     push    ax
@@ -3746,7 +3746,7 @@ loc_20369:
     push    ax
     push    word ptr dword_454B0+2
     push    word ptr dword_454B0
-    call    locate_shape_1
+    call    locate_shape_fatal
     add     sp, 6
     push    dx
     push    ax

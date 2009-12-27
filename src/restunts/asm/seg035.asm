@@ -46,19 +46,23 @@ nosmart
 seg035 segment byte public 'STUNTSC' use16
     assume cs:seg035
     assume es:nothing, ss:nothing, ds:dseg
-    public loc_3ACD8
-    public load_2dshape_res2
+    public load_2dshape_res_fatal
+    public load_2dshape_res_nofatal
     public load_2dshape_res
     public parse_2d_shape
     public sub_3B08C
     ; align 2
     db 144
-loc_3ACD8:
+load_2dshape_res_fatal proc far
+     s = byte ptr 0
+     r = byte ptr 2
+    arg_0 = word ptr 6
+
     push    bp
     mov     bp, sp
     mov     ax, 1
     push    ax
-    push    word ptr [bp+6]
+    push    [bp+arg_0]
     push    cs
     call    near ptr load_2dshape_res
     add     sp, 4
@@ -66,7 +70,8 @@ loc_3ACD8:
     retf
     ; align 2
     db 144
-load_2dshape_res2 proc far
+load_2dshape_res_fatal endp
+load_2dshape_res_nofatal proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -81,7 +86,7 @@ load_2dshape_res2 proc far
     add     sp, 4
     pop     bp
     retf
-load_2dshape_res2 endp
+load_2dshape_res_nofatal endp
 load_2dshape_res proc far
     var_A = word ptr -10
     var_8 = word ptr -8
@@ -91,7 +96,7 @@ load_2dshape_res proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
-    arg_2 = word ptr 8
+    arg_fatal = word ptr 8
 
     push    bp
     mov     bp, sp
@@ -113,7 +118,7 @@ load_2dshape_res proc far
     ; align 2
     db 144
 loc_3AD2A:
-    push    [bp+arg_2]
+    push    [bp+arg_fatal]
     push    [bp+arg_0]
     call    load_2dshape
     add     sp, 4
