@@ -410,7 +410,7 @@ static PrintFixedAsm(f, ea, lastpushcs) {
 	// with "nosmart", these are fixed, but other problems appear
 
 	auto mnem, op1, op2, optype1, optype2;
-	auto funcflags, funcofs, funclocal, funcstart;
+	auto funcflags, funcofs, funclocal, funcstart, funcname;
 	
 	tempsmart = 0;
 	nooutput = 0;
@@ -475,6 +475,13 @@ static PrintFixedAsm(f, ea, lastpushcs) {
 			fprintf(f, "    jmp far ptr %s\n", ExtractCallTarget(ea));
 			nooutput = 1;
 		}
+	}
+	
+	if (mnem == "call" && optype1 == o_near) {
+		funcname = PortFuncName(ExtractCallTarget(ea));
+		//Message("Translated %s into call near ptr %s\n", GetDisasm(ea), funcname);
+		fprintf(f, "    call near ptr %s\n", funcname);
+		nooutput = 1;
 	}
 	
 	if (nooutput == 0)
@@ -636,7 +643,7 @@ static PortFuncName(labelname) {
 		labelname == "file_load_binary" ||
 		labelname == "file_load_binary_fatal" ||
 		labelname == "file_load_binary_nofatal" ||
-//		labelname == "file_load_resource" ||
+		labelname == "file_load_resource" ||
 		labelname == "file_load_resfile" ||
 		labelname == "file_load_3dres" ||
 		labelname == "file_load_audiores" ||

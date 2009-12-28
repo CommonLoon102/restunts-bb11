@@ -420,7 +420,7 @@ loc_1E464:
     mov     al, [bp+var_34]
     push    ax
     push    cs
-    call    near ptr map_terrain_track
+    call near ptr map_terrain_track
     add     sp, 4
     mov     [bp+var_8], al
 loc_1E4B6:
@@ -3790,7 +3790,7 @@ sub_20438 proc far
     push    dx
     push    ax
     push    cs
-    call    near ptr sub_204AE
+    call near ptr sub_204AE
     add     sp, 0Eh
     push    word ptr dword_454B0+2
     push    word ptr dword_454B0
@@ -3813,7 +3813,7 @@ loc_20477:
     push    dx
     push    ax
     push    cs
-    call    near ptr sub_204AE
+    call near ptr sub_204AE
     add     sp, 0Eh
     push    word ptr dword_454AA+2
     push    word ptr dword_454AA
@@ -4529,7 +4529,7 @@ loc_20AC2:
     mov     al, [bp+var_74E]
     push    ax
     push    cs
-    call    near ptr map_terrain_track
+    call near ptr map_terrain_track
     add     sp, 4
     mov     [bp+var_E], al
 loc_20B30:

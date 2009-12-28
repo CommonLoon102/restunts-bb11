@@ -63,7 +63,7 @@ load_2dshape_fatal proc far
     push    ax
     push    [bp+arg_0]
     push    cs
-    call    near ptr load_2dshape
+    call near ptr load_2dshape
     add     sp, 4
     pop     bp
     retf
@@ -81,7 +81,7 @@ load_2dshape_nofatal proc far
     push    ax
     push    [bp+arg_0]
     push    cs
-    call    near ptr load_2dshape
+    call near ptr load_2dshape
     add     sp, 4
     pop     bp
     retf
@@ -301,7 +301,7 @@ loc_3ABB7:
     push    dx
     push    ax
     push    cs
-    call    near ptr sub_3ACB0
+    call near ptr sub_3ACB0
     add     sp, 4
 loc_3ABF3:
     push    [bp+var_7E]

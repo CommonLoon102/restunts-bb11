@@ -261,7 +261,7 @@ loc_14866:
     les     di, trackdata3
     push    word ptr es:[bx+di]
     push    cs
-    call    near ptr sub_18D60
+    call near ptr sub_18D60
     add     sp, 8
     or      al, al
     jz      short loc_148B3
@@ -520,7 +520,7 @@ loc_14AB1:
     les     di, trackdata3
     push    word ptr es:[bx+di]
     push    cs
-    call    near ptr sub_18D60
+    call near ptr sub_18D60
     add     sp, 8
     or      al, al
     jz      short loc_14B03
@@ -652,7 +652,7 @@ loc_14BFA:
     cbw
     push    ax
     push    cs
-    call    near ptr update_car_state
+    call near ptr update_car_state
     add     sp, 8
     sub     ax, ax
     push    ax
@@ -661,7 +661,7 @@ loc_14BFA:
     mov     ax, 8F46h
     push    ax
     push    cs
-    call    near ptr update_player_carstate
+    call near ptr update_player_carstate
     add     sp, 6
     mov     ax, 1
     push    ax
@@ -674,7 +674,7 @@ loc_14BFA:
     mov     ax, 8F46h
     push    ax
     push    cs
-    call    near ptr update_player_state
+    call near ptr update_player_state
     add     sp, 0Ah
     cmp     state.opponentstate.field_C9, 0
     jz      short loc_14C49
@@ -798,7 +798,7 @@ loc_14D33:
     mov     ax, 3
     push    ax
     push    cs
-    call    near ptr audio_engine_unk
+    call near ptr audio_engine_unk
     add     sp, 4
 loc_14D66:
     pop     si
@@ -1158,7 +1158,7 @@ loc_14FAC:
     mov     ax, word_44F48
     mov     [bp+di+var_140], ax
     push    cs
-    call    near ptr plane_rotate_op
+    call near ptr plane_rotate_op
     mov     ax, vec_planerotopresult.x
     cwd
     mov     bx, [bp+var_DE]
@@ -1314,7 +1314,7 @@ loc_15142:
     mov     ax, 1
     push    ax
     push    cs
-    call    near ptr audio_engine_unk
+    call near ptr audio_engine_unk
     add     sp, 4
 loc_15163:
     mov     bx, [bp+arg_0]
@@ -1332,7 +1332,7 @@ loc_15163:
     mov     ax, 2
     push    ax
     push    cs
-    call    near ptr audio_engine_unk
+    call near ptr audio_engine_unk
     add     sp, 4
 loc_15192:
     lea     ax, [bp+var_1C0]
@@ -1407,7 +1407,7 @@ loc_15240:
     push    [bp+var_1C6]
     push    word_44DC6
     push    cs
-    call    near ptr plane_origin_op
+    call near ptr plane_origin_op
     add     sp, 8
 loc_15257:
     mov     word_459FE, ax
@@ -1682,7 +1682,7 @@ loc_154FA:
     mov     ax, 1
     push    ax
     push    cs
-    call    near ptr audio_engine_unk
+    call near ptr audio_engine_unk
     add     sp, 4
 loc_15513:
     mov     bx, [bp+arg_0]
@@ -1858,7 +1858,7 @@ loc_156AF:
     push    [bp+var_1C6]
     push    word_44DC6
     push    cs
-    call    near ptr plane_origin_op
+    call near ptr plane_origin_op
     add     sp, 8
 loc_156D6:
     mov     word_459FE, ax
@@ -2017,7 +2017,7 @@ loc_157DC:
     mov     ax, 5
     push    ax
     push    cs
-    call    near ptr audio_engine_unk
+    call near ptr audio_engine_unk
     add     sp, 4
     mov     [bp+var_136], 1
 loc_15879:
@@ -2037,7 +2037,7 @@ loc_15882:
     mov     ax, [bp+di+var_140]
     mov     word_44F48, ax
     push    cs
-    call    near ptr plane_rotate_op
+    call near ptr plane_rotate_op
     mov     ax, vec_planerotopresult.x
     cwd
     mov     bx, [bp+var_DE]
@@ -2097,7 +2097,7 @@ loc_1592E:
     sub     ax, ax
     push    ax
     push    cs
-    call    near ptr plane_origin_op
+    call near ptr plane_origin_op
     add     sp, 8
     mov     word_459FE, ax
 loc_15950:
@@ -2151,7 +2151,7 @@ loc_159AD:
     mov     ax, [bp+di+var_140]
     mov     word_44F48, ax
     push    cs
-    call    near ptr plane_rotate_op
+    call near ptr plane_rotate_op
     mov     ax, vec_planerotopresult.x
     cwd
     mov     bx, [bp+var_146]
@@ -2310,7 +2310,7 @@ loc_15A30:
     mov     ax, [bp+di+var_140]
     mov     word_44F48, ax
     push    cs
-    call    near ptr plane_rotate_op
+    call near ptr plane_rotate_op
     mov     bx, [bp+var_146]
     mov     ax, [bx]
     mov     dx, [bx+2]
@@ -2398,7 +2398,7 @@ loc_15C3F:
     push    [bp+var_1C6]
     push    word_44DC6
     push    cs
-    call    near ptr plane_origin_op
+    call near ptr plane_origin_op
     add     sp, 8
     mov     word_459FE, ax
     or      ax, ax
@@ -2428,7 +2428,7 @@ loc_15C75:
     lea     ax, [bp+var_1C6]
     push    ax
     push    cs
-    call    near ptr mat_mul_vector2
+    call near ptr mat_mul_vector2
     add     sp, 8
     mov     ax, [bp+var_FC]
     cwd
@@ -2471,7 +2471,7 @@ loc_15CF7:
     mov     ax, 1
     push    ax
     push    cs
-    call    near ptr audio_engine_unk
+    call near ptr audio_engine_unk
     add     sp, 4
 loc_15D1A:
     mov     al, [bp+var_E8]
@@ -2610,7 +2610,7 @@ loc_15E38:
     push    word ptr [bx-16h]
     push    [bp+arg_0]
     push    cs
-    call    near ptr sub_185F6
+    call near ptr sub_185F6
     add     sp, 6
     mov     [bp+var_EE], ax
     cmp     word_44998, 0
@@ -2969,7 +2969,7 @@ loc_1624E:
     sub     ah, ah
     push    ax
     push    cs
-    call    near ptr sub_18CD8
+    call near ptr sub_18CD8
     add     sp, 4
 loc_1625F:
     sub     ax, ax
@@ -3021,7 +3021,7 @@ loc_16288:
     push    [bp+var_1C6]
     push    ax
     push    cs
-    call    near ptr plane_origin_op
+    call near ptr plane_origin_op
     add     sp, 8
     mov     [bp+var_138], ax
     cmp     byte_45DB2, 1
@@ -3042,7 +3042,7 @@ loc_162F9:
     mov     ax, 5
     push    ax
     push    cs
-    call    near ptr audio_engine_unk
+    call near ptr audio_engine_unk
     add     sp, 4
 loc_16309:
     mov     al, [bp+var_E8]
@@ -3155,7 +3155,7 @@ loc_163BF:
     push    [bp+var_1C6]
     push    word_44DC6
     push    cs
-    call    near ptr plane_origin_op
+    call near ptr plane_origin_op
     add     sp, 8
     mov     si, ax
     cmp     word_44DC6, 4
@@ -3267,7 +3267,7 @@ loc_164EA:
     add     ax, 0C8h ; 'È'
     push    ax
     push    cs
-    call    near ptr sub_19074
+    call near ptr sub_19074
     add     sp, 8
     or      al, al
     jz      short loc_16578
@@ -3279,7 +3279,7 @@ loc_1653E:
     push    [bp+arg_4]
     push    bx
     push    cs
-    call    near ptr sub_18466
+    call near ptr sub_18466
     add     sp, 4
     or      al, al
     jnz     short loc_16550
@@ -3291,7 +3291,7 @@ loc_16550:
     mov     ax, 1
     push    ax
     push    cs
-    call    near ptr audio_engine_unk
+    call near ptr audio_engine_unk
     add     sp, 4
     mov     al, [bp+arg_8]
     cbw
@@ -3301,7 +3301,7 @@ loc_16566:
     mov     ax, 1
     push    ax
     push    cs
-    call    near ptr audio_engine_unk
+    call near ptr audio_engine_unk
     add     sp, 4
     pop     si
     pop     di
@@ -3381,7 +3381,7 @@ loc_165F0:
     add     ax, 0C8h ; 'È'
     push    ax
     push    cs
-    call    near ptr sub_19074
+    call near ptr sub_19074
     add     sp, 8
     or      al, al
     jz      short loc_165EA
@@ -3442,7 +3442,7 @@ loc_1667A:
     add     ax, 0C8h ; 'È'
     push    ax
     push    cs
-    call    near ptr sub_19074
+    call near ptr sub_19074
     add     sp, 8
     or      al, al
     jz      short loc_16710
@@ -3471,7 +3471,7 @@ loc_1667A:
     lea     ax, [si+2]
     push    ax
     push    cs
-    call    near ptr state_op_unk
+    call near ptr state_op_unk
     add     sp, 6
 loc_16710:
     mov     al, startcol2
@@ -3535,7 +3535,7 @@ loc_1672C:
     add     ax, 0C8h ; 'È'
     push    ax
     push    cs
-    call    near ptr sub_19074
+    call near ptr sub_19074
     add     sp, 8
     cbw
     mov     [bp+var_138], ax
@@ -3585,7 +3585,7 @@ loc_1672C:
     add     ax, 0C8h ; 'È'
     push    ax
     push    cs
-    call    near ptr sub_19074
+    call near ptr sub_19074
     add     sp, 8
     cbw
     mov     [bp+var_138], ax
@@ -4177,7 +4177,7 @@ loc_16DA4:
     mov     ax, 8E76h
     push    ax
     push    cs
-    call    near ptr init_carstate_from_simd
+    call near ptr init_carstate_from_simd
     add     sp, 14h
     mov     state.field_2F2, si
     mov     ax, si
@@ -4205,7 +4205,7 @@ loc_16DA4:
     push    ax
     push    state.playerstate.car_trackdata3_index
     push    cs
-    call    near ptr sub_18D60
+    call near ptr sub_18D60
     add     sp, 8
 loc_16E0A:
     mov     ax, 0D2h ; 'Ò'
@@ -4308,7 +4308,7 @@ loc_16EDB:
     mov     ax, 8F46h
     push    ax
     push    cs
-    call    near ptr init_carstate_from_simd
+    call near ptr init_carstate_from_simd
     add     sp, 14h
     cmp     gameconfig.game_opponenttype, 0
     jz      short loc_16F2F
@@ -4328,7 +4328,7 @@ loc_16EDB:
     mov     es, word ptr trackdata3+2
     push    word ptr es:[bx]
     push    cs
-    call    near ptr sub_18D60
+    call near ptr sub_18D60
     add     sp, 8
 loc_16F2F:
     mov     ax, si
@@ -4357,7 +4357,7 @@ restore_gamestate proc far
     sub     ax, ax
     push    ax
     push    cs
-    call    near ptr init_game_state
+    call near ptr init_game_state
     add     sp, 2
 loc_16F59:
     mov     ax, [bp+arg_0]
@@ -4531,21 +4531,21 @@ loc_170BE:
     cbw
     push    ax
     push    cs
-    call    near ptr player_op
+    call near ptr player_op
     add     sp, 2
     cmp     gameconfig.game_opponenttype, 0
     jz      short loc_170DC
     push    cs
-    call    near ptr opponent_op
+    call near ptr opponent_op
 loc_170DC:
     call    sub_2298C
     cmp     state.field_42A, 0
     jz      short loc_170EC
     push    cs
-    call    near ptr sub_19BA0
+    call near ptr sub_19BA0
 loc_170EC:
     push    cs
-    call    near ptr sub_188A4
+    call near ptr sub_188A4
     pop     si
     pop     di
     mov     sp, bp
@@ -4557,7 +4557,7 @@ loc_170F6:
     jmp     loc_171E1
 loc_17100:
     push    cs
-    call    near ptr sub_188A4
+    call near ptr sub_188A4
     cmp     byte_4393C, 0
     jnz     short loc_1710E
     jmp     loc_171E1
@@ -4630,7 +4630,7 @@ loc_1718A:
 loc_171BD:
     push    ax
     push    cs
-    call    near ptr player_op
+    call near ptr player_op
     add     sp, 2
     pop     si
     pop     di
@@ -4721,7 +4721,7 @@ loc_17242:
     cbw
     push    ax
     push    cs
-    call    near ptr update_car_state
+    call near ptr update_car_state
     add     sp, 8
     mov     al, [bp+arg_0]
     cbw
@@ -4732,7 +4732,7 @@ smart
 nosmart
     push    ax
     push    cs
-    call    near ptr sub_187B2
+    call near ptr sub_187B2
     add     sp, 2
     mov     ax, 1
     push    ax
@@ -4741,7 +4741,7 @@ nosmart
     mov     ax, 8E76h
     push    ax
     push    cs
-    call    near ptr update_player_carstate
+    call near ptr update_player_carstate
     add     sp, 6
     sub     ax, ax
     push    ax
@@ -4754,7 +4754,7 @@ nosmart
     mov     ax, 8E76h
     push    ax
     push    cs
-    call    near ptr update_player_state
+    call near ptr update_player_state
     add     sp, 0Ah
     mov     ax, state.playerstate.car_trackgrip2
     sub     dx, dx
@@ -4769,7 +4769,7 @@ nosmart
     lea     ax, [bp+var_2]
     push    ax
     push    cs
-    call    near ptr sub_17816
+    call near ptr sub_17816
     add     sp, 4
     cbw
     mov     si, ax
@@ -5003,7 +5003,7 @@ loc_174E5:
     push    ax
     push    [bp+var_2]
     push    cs
-    call    near ptr sub_18D60
+    call near ptr sub_18D60
     add     sp, 8
     mov     [bp+var_2A], al
     push    si
@@ -5095,7 +5095,7 @@ loc_175AF:
     push    ax
     push    [bp+var_2]
     push    cs
-    call    near ptr sub_18D60
+    call near ptr sub_18D60
     add     sp, 8
     sub     ax, ax
     push    ax
@@ -5114,7 +5114,7 @@ loc_175D0:
     push    ax
     push    [bp+var_2]
     push    cs
-    call    near ptr sub_18D60
+    call near ptr sub_18D60
     add     sp, 8
     sub     ax, ax
     push    ax
@@ -5126,7 +5126,7 @@ loc_175F0:
     push    ax
     push    [bp+var_2]
     push    cs
-    call    near ptr sub_18D60
+    call near ptr sub_18D60
     add     sp, 8
     mov     ax, [bp+var_16]
     sub     ax, [bp+var_4E]
@@ -5172,7 +5172,7 @@ loc_1764C:
     push    ax
     push    state.playerstate.car_trackdata3_index
     push    cs
-    call    near ptr sub_18D60
+    call near ptr sub_18D60
     add     sp, 8
     or      al, al
     jz      short loc_17699
@@ -5354,7 +5354,7 @@ loc_177DE:
     mov     ax, 3
     push    ax
     push    cs
-    call    near ptr audio_engine_unk
+    call near ptr audio_engine_unk
     add     sp, 4
 loc_17810:
     pop     si
@@ -8590,7 +8590,7 @@ init_plantrak proc far
     mov     ax, 0FFFDh
     push    ax
     push    cs
-    call    near ptr init_game_state
+    call near ptr init_game_state
     add     sp, 2
     sub     si, si
     mov     state.field_3F5, 2
@@ -8709,7 +8709,7 @@ loc_1958C:
     mov     ax, offset state.opponentstate
     push    ax
     push    cs
-    call    near ptr init_carstate_from_simd
+    call near ptr init_carstate_from_simd
     add     sp, 14h
     mov     ax, 911Dh
     push    ax
@@ -8724,7 +8724,7 @@ loc_1958C:
     les     di, trackdata3
     push    word ptr es:[bx+di]
     push    cs
-    call    near ptr sub_18D60
+    call near ptr sub_18D60
     add     sp, 8
     pop     si
     pop     di
@@ -8735,7 +8735,7 @@ init_plantrak endp
 do_opponent_op proc far
 
     push    cs
-    call    near ptr opponent_op
+    call near ptr opponent_op
     retf
     ; align 2
     db 144
@@ -8825,7 +8825,7 @@ loc_1967F:
     push    word ptr [bx+18h]
     push    [bp+arg_2]
     push    cs
-    call    near ptr state_op_unk
+    call near ptr state_op_unk
     add     sp, 6
     cmp     [bp+arg_2], 0
     jnz     short loc_196B3
@@ -9053,7 +9053,7 @@ loc_19866:
 loc_19895:
     push    ax
     push    cs
-    call    near ptr mat_mul_vector2
+    call near ptr mat_mul_vector2
     add     sp, 8
     pop     si
     pop     di
@@ -9187,7 +9187,7 @@ loc_1994C:
     push    [bp+var_8]
     push    [bp+var_A]
     push    cs
-    call    near ptr vec_normal_op
+    call near ptr vec_normal_op
     add     sp, 0Ah
 loc_199AE:
     mov     sp, bp

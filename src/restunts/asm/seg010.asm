@@ -320,10 +320,10 @@ loc_2CDD6:
     jns     short loc_2CDC0
     mov     si, 54BAh
     mov     di, 54BAh
-    call    sub_2CE77
+    call near ptr sub_2CE77
     mov     si, 54BAh
     mov     di, 54BAh
-    call    sub_2CE77
+    call near ptr sub_2CE77
     retf
 start endp
 libsub_2CDEC proc near
@@ -334,10 +334,10 @@ libsub_2CDEC proc near
     mov     bp, sp
     mov     si, offset unk_42A24
     mov     di, offset unk_42A24
-    call    sub_2CE77
+    call near ptr sub_2CE77
     mov     si, offset off_40C2A
     mov     di, offset aNmsg; "<<NMSG>>"
-    call    sub_2CE77
+    call near ptr sub_2CE77
     jmp     short loc_2CE06
 libsub_2CDEC endp
 sub_2CE03 proc near
@@ -350,10 +350,10 @@ sub_2CE03 proc near
 loc_2CE06:
     mov     si, 54BEh
     mov     di, 54BEh
-    call    sub_2CE77
+    call near ptr sub_2CE77
     mov     si, 54BEh
     mov     di, 54BEh
-    call    sub_2CE77
+    call near ptr sub_2CE77
     call    __nullcheck
     or      ax, ax
     jz      short loc_2CE2C
@@ -371,7 +371,7 @@ loc_2CE32:
 loc_2CE3D:
     inc     bx
     loop    loc_2CE32
-    call    sub_2CE4A
+    call near ptr sub_2CE4A
     mov     ax, [bp+arg_2]
     mov     ah, 4Ch
     int     21h             ; DOS - 2+ - QUIT WITH EXIT CODE (EXIT)
@@ -763,7 +763,7 @@ nosmart
     pop     ds
     push    di
     mov     di, 9
-    call    __myalloc
+    call near ptr __myalloc
     pop     di
     mov     cx, di
     mov     di, bp
@@ -903,7 +903,7 @@ loc_2D198:
 __dosreturn:
     jnb     short loc_2D198
     push    ax
-    call    sub_2D1BC
+    call near ptr sub_2D1BC
     pop     ax
     mov     sp, bp
     pop     bp
@@ -919,7 +919,7 @@ __dosreturn:
 __dosretax:
     jnb     short loc_2D1B2
 loc_2D1AB:
-    call    sub_2D1BC
+    call near ptr sub_2D1BC
     mov     ax, 0FFFFh
     cwd
 loc_2D1B2:
@@ -930,7 +930,7 @@ __myalloc endp
 __maperror proc far
 
     xor     ah, ah
-    call    sub_2D1BC
+    call near ptr sub_2D1BC
     retf
 __maperror endp
 sub_2D1BC proc near
@@ -1132,7 +1132,7 @@ loc_2D305:
     db 144
 loc_2D318:
     push    si
-    call    __getbuf
+    call near ptr __getbuf
     add     sp, 2
 loc_2D31F:
     test    byte ptr [si+6], 8
@@ -1548,7 +1548,7 @@ loc_2D663:
     cbw
     push    ax
     push    cs
-    call    near ptr flagchar
+    call near ptr flagchar
     add     sp, 2
     or      ax, ax
     jnz     short loc_2D65A
@@ -1556,7 +1556,7 @@ loc_2D663:
     mov     ax, 7148h
     push    ax
     push    cs
-    call    near ptr getnum
+    call near ptr getnum
     add     sp, 4
     mov     si, ax
     cmp     word_428B8, 0
@@ -1574,7 +1574,7 @@ loc_2D694:
     mov     ax, 7142h
     push    ax
     push    cs
-    call    near ptr getnum
+    call near ptr getnum
     add     sp, 4
     mov     si, ax
     cmp     word_428B2, 0
@@ -1656,7 +1656,7 @@ loc_2D756:
 loc_2D75F:
     push    ax
     push    cs
-    call    near ptr iprint
+    call near ptr iprint
 loc_2D764:
     add     sp, 2
     jmp     loc_2D8C2
@@ -1709,12 +1709,12 @@ loc_2D7D7:
     mov     ax, 10h
     push    ax
     push    cs
-    call    near ptr iprint
+    call near ptr iprint
     add     sp, 2
     mov     ax, 3Ah ; ':'
     push    ax
     push    cs
-    call    near ptr _outc
+    call near ptr _outc
     add     sp, 2
     cmp     [bp+var_4], 0
     jz      short loc_2D81A
@@ -1738,7 +1738,7 @@ loc_2D81A:
     mov     ax, 10h
     push    ax
     push    cs
-    call    near ptr iprint
+    call near ptr iprint
     add     sp, 2
     jmp     loc_2D749
     ; align 2
@@ -1751,7 +1751,7 @@ loc_2D834:
 loc_2D836:
     push    ax
     push    cs
-    call    near ptr sprint
+    call near ptr sprint
     jmp     loc_2D764
 loc_2D83E:
     mov     ax, 1
@@ -1761,7 +1761,7 @@ loc_2D83E:
 loc_2D844:
     push    [bp+var_164]
     push    cs
-    call    near ptr fprint
+    call near ptr fprint
     jmp     loc_2D764
     ; align 2
     db 144
@@ -1785,7 +1785,7 @@ loc_2D867:
     push    ds
     push    si
     push    cs
-    call    near ptr putbuf
+    call near ptr putbuf
     add     sp, 6
     mov     si, di
 loc_2D877:
@@ -1989,7 +1989,7 @@ loc_2DA14:
 loc_2DA16:
     push    ax
     push    cs
-    call    near ptr _out
+    call near ptr _out
     add     sp, 2
     pop     si
     pop     di
@@ -2091,20 +2091,20 @@ loc_2DAD7:
     jnz     short loc_2DAEC
     push    di
     push    cs
-    call    near ptr putpad
+    call near ptr putpad
     add     sp, 2
 loc_2DAEC:
     push    si
     push    [bp+var_6]
     push    [bp+var_8]
     push    cs
-    call    near ptr putbuf
+    call near ptr putbuf
     add     sp, 6
     cmp     word_428A4, 0
     jz      short loc_2DB09
     push    di
     push    cs
-    call    near ptr putpad
+    call near ptr putpad
     add     sp, 2
 loc_2DB09:
     pop     si
@@ -2188,7 +2188,7 @@ loc_2DBC2:
 loc_2DBC4:
     push    ax
     push    cs
-    call    near ptr _out
+    call near ptr _out
     mov     sp, bp
     pop     bp
     retf
@@ -2390,7 +2390,7 @@ loc_2DD0B:
     cbw
     push    ax
     push    cs
-    call    near ptr _outc
+    call near ptr _outc
     add     sp, 2
     dec     [bp+var_8]
 loc_2DD40:
@@ -2405,46 +2405,46 @@ loc_2DD52:
     jz      short loc_2DD5F
     inc     [bp+var_6]
     push    cs
-    call    near ptr putsign
+    call near ptr putsign
 loc_2DD5F:
     cmp     word_428BA, 0
     jz      short loc_2DD6D
     inc     [bp+var_4]
     push    cs
-    call    near ptr putprefix
+    call near ptr putprefix
 loc_2DD6D:
     cmp     word_428A4, 0
     jnz     short loc_2DD9D
     push    di
     push    cs
-    call    near ptr putpad
+    call near ptr putpad
     add     sp, 2
     cmp     [bp+arg_0], 0
     jz      short loc_2DD8C
     cmp     [bp+var_6], 0
     jnz     short loc_2DD8C
     push    cs
-    call    near ptr putsign
+    call near ptr putsign
 loc_2DD8C:
     cmp     word_428BA, 0
     jz      short loc_2DD9D
     cmp     [bp+var_4], 0
     jnz     short loc_2DD9D
     push    cs
-    call    near ptr putprefix
+    call near ptr putprefix
 loc_2DD9D:
     push    [bp+var_8]
     push    ds
     push    si
     push    cs
-    call    near ptr putbuf
+    call near ptr putbuf
     add     sp, 6
     cmp     word_428A4, 0
     jz      short loc_2DDBE
     mov     word_428BC, 20h ; ' '
     push    di
     push    cs
-    call    near ptr putpad
+    call near ptr putpad
     add     sp, 2
 loc_2DDBE:
     pop     si
@@ -2464,7 +2464,7 @@ loc_2DDD0:
 loc_2DDD3:
     push    ax
     push    cs
-    call    near ptr _outc
+    call near ptr _outc
     add     sp, 2
     retf
 putsign endp
@@ -2473,7 +2473,7 @@ putprefix proc far
     mov     ax, 30h ; '0'
     push    ax
     push    cs
-    call    near ptr _outc
+    call near ptr _outc
     add     sp, 2
     cmp     word_428BA, 10h
     jnz     short locret_2DE05
@@ -2486,7 +2486,7 @@ loc_2DDFA:
 loc_2DDFD:
     push    ax
     push    cs
-    call    near ptr _outc
+    call near ptr _outc
     add     sp, 2
 locret_2DE05:
     retf
@@ -2736,20 +2736,20 @@ loc_2DFA3:
 loc_2DFA7:
     stosb
     loop    loc_2DF9E
-    call    loc_2DFD0
+    call near ptr loc_2DFD0
     jmp     short loc_2E010
 loc_2DFAF:
     mov     al, 0Dh
     cmp     di, bx
     jnz     short loc_2DFB8
-    call    loc_2DFD0
+    call near ptr loc_2DFD0
 loc_2DFB8:
     stosb
     mov     al, 0Ah
     inc     [bp+var_4]
     jmp     short loc_2DFA3
 loc_2DFC0:
-    call    loc_2DFD0
+    call near ptr loc_2DFD0
     jmp     short loc_2DFA7
 loc_2DFC5:
     pop     si
@@ -2893,7 +2893,7 @@ unknown_libname_2 proc far
     push    ds
     pop     es
     mov     ax, 5
-    call    __amallocbrk
+    call near ptr __amallocbrk
     jnz     short loc_2E094
     xor     ax, ax
     cwd
@@ -2914,7 +2914,7 @@ loc_2E0AE:
     mov     cx, [bp+arg_0]
     mov     ax, ds
     mov     es, ax
-    call    __amalloc
+    call near ptr __amalloc
 loc_2E0B8:
     pop     di
     pop     si
@@ -3021,7 +3021,7 @@ loc_2E168:
 loc_2E16C:
     mov     si, [bx+6]
     xor     ax, ax
-    call    __amlink
+    call near ptr __amlink
     cmp     ax, si
     jz      short loc_2E185
 smart
@@ -3030,11 +3030,11 @@ nosmart
     inc     ax
     inc     ax
     cbw
-    call    __amlink
+    call near ptr __amlink
     jz      short loc_2E18F
     dec     byte ptr [di-2]
 loc_2E185:
-    call    __amexpand
+    call near ptr __amexpand
     jz      short loc_2E18F
     xchg    ax, si
     dec     si
@@ -3079,7 +3079,7 @@ loc_2E1BF:
     not     dx
     and     ax, dx
     sub     ax, si
-    call    __amlink
+    call near ptr __amlink
     jnz     short loc_2E1DC
     not     dx
 loc_2E1D6:
@@ -3095,7 +3095,7 @@ __amlink proc near
 
     push    dx
     push    cx
-    call    __amallocbrk
+    call near ptr __amallocbrk
     jz      short loc_2E1FD
     push    di
     mov     di, si
@@ -3160,7 +3160,7 @@ _brkctl proc far
     mov     ax, [bp+arg_0]
     dec     ax
     jnz     short loc_2E241
-    call    sub_2E290
+    call near ptr sub_2E290
     jb      short loc_2E266
     jmp     short loc_2E289
 loc_2E241:
@@ -3172,7 +3172,7 @@ loc_2E241:
     mov     ax, [si+2]
     mov     [bp+arg_8], ax
     push    si
-    call    sub_2E290
+    call near ptr sub_2E290
     pop     si
     jnb     short loc_2E289
 loc_2E259:

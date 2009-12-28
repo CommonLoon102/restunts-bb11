@@ -486,8 +486,6 @@ void far* file_load_binary_fatal(const char* filename) {
 	return file_load_binary(filename, 1);
 }
 
-/*
-
 void far* file_load_resource(int type, const char* filename) {
 	void far* result;
 	int dearesult;
@@ -549,7 +547,7 @@ void far* file_load_resource(int type, const char* filename) {
 		if (dearesult == 2) return 0;
 	}
 }
-*/
+
 
 void far* file_load_resfile(const char* filename) {
 	char name[0x50];

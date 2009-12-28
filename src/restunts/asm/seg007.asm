@@ -223,7 +223,7 @@ loc_26CCB:
     push    word ptr es:[di+8]
     mov     si, es
     push    cs
-    call    near ptr pad_id
+    call near ptr pad_id
     pop     bx
     pop     bx
     push    ax
@@ -237,7 +237,7 @@ loc_26CCB:
     push    word ptr es:[di+12h]
     push    word ptr es:[di+10h]
     push    cs
-    call    near ptr pad_id
+    call near ptr pad_id
     pop     bx
     pop     bx
     push    ax
@@ -253,7 +253,7 @@ loc_26CCB:
     push    word ptr es:[di+16h]
     push    word ptr es:[di+14h]
     push    cs
-    call    near ptr pad_id
+    call near ptr pad_id
     pop     bx
     pop     bx
     push    ax
@@ -269,7 +269,7 @@ loc_26CCB:
     push    word ptr es:[di+1Ah]
     push    word ptr es:[di+18h]
     push    cs
-    call    near ptr pad_id
+    call near ptr pad_id
     pop     bx
     pop     bx
     push    ax
@@ -285,7 +285,7 @@ loc_26CCB:
     push    word ptr es:[di+1Eh]
     push    word ptr es:[di+1Ch]
     push    cs
-    call    near ptr pad_id
+    call near ptr pad_id
     pop     bx
     pop     bx
     push    ax
@@ -301,7 +301,7 @@ loc_26CCB:
     push    word ptr es:[di+22h]
     push    word ptr es:[di+20h]
     push    cs
-    call    near ptr pad_id
+    call near ptr pad_id
     pop     bx
     pop     bx
     push    ax
@@ -317,7 +317,7 @@ loc_26CCB:
     push    word ptr es:[di+26h]
     push    word ptr es:[di+24h]
     push    cs
-    call    near ptr pad_id
+    call near ptr pad_id
     pop     bx
     pop     bx
     push    ax
@@ -333,7 +333,7 @@ loc_26CCB:
     push    word ptr es:[di+2Ah]
     push    word ptr es:[di+28h]
     push    cs
-    call    near ptr pad_id
+    call near ptr pad_id
     pop     bx
     pop     bx
     push    ax
@@ -349,7 +349,7 @@ loc_26CCB:
     push    word ptr es:[di+2Eh]
     push    word ptr es:[di+2Ch]
     push    cs
-    call    near ptr pad_id
+    call near ptr pad_id
     pop     bx
     pop     bx
     push    ax
@@ -664,7 +664,7 @@ loc_270EE:
     jz      short loc_2710B
     push    [bp+var_4]
     push    cs
-    call    near ptr sub_26EF4
+    call near ptr sub_26EF4
 loc_27104:
     add     sp, 2
     mov     byte ptr [si+1Bh], 0
@@ -857,7 +857,7 @@ loc_27213:
     mov     byte ptr [si+1Ah], 1
     push    word ptr [bp+6]
     push    cs
-    call    near ptr audio_function2
+    call near ptr audio_function2
     pop     bx
     pop     si
     mov     sp, bp
@@ -887,7 +887,7 @@ loc_27213:
     mov     byte ptr [si+1Ah], 1
     push    word ptr [bp+6]
     push    cs
-    call    near ptr audio_function2
+    call near ptr audio_function2
     pop     bx
     pop     si
     mov     sp, bp
@@ -923,7 +923,7 @@ audio_function2_wrap proc far
     mov     byte ptr [si+1Ah], 1
     push    [bp+arg_0]
     push    cs
-    call    near ptr audio_function2
+    call near ptr audio_function2
     pop     bx
     pop     si
     mov     sp, bp

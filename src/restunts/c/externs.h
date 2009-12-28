@@ -25,13 +25,19 @@ extern short is_audioloaded;
 extern void far* songfileptr;
 extern void far* voicefileptr;
 
+extern void far* file_decomp_nofatal(const char* filename);
+extern void far* load_song_file(const char* filename);
+extern void far* load_voice_file(const char* filename);
+extern void far* load_sfx_file(const char* filename);
+extern void far* load_2dshape_nofatal_thunk(const char* filename);
+extern void far* load_2dshape_res_nofatal_thunk(const char* filename);
+extern void far* load_2dshape_nofatal2(const char* filename);
 extern void far* init_audio_resources(void far* songptr, void far* voiceptr, const char* name);
 extern void load_audio_finalize(void far* audiores);
 extern void fatal_error(const char*, ...);
 extern void far* file_load_resource(int type, const char* filename);
 extern int do_dea_textres(void);
 extern void* _memcpy(void*, const void*, unsigned);
-
 extern char* _strcpy(char* dest, const char* src);
 extern char* _strcat(char* dest, const char* src);
 

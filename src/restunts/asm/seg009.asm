@@ -685,7 +685,7 @@ loc_2A878:
     cbw
     push    ax
     push    cs
-    call    near ptr sub_2BEB6
+    call near ptr sub_2BEB6
     add     sp, 2
     cmp     [bp+var_C6], 0
     jnz     short loc_2A8CA
@@ -723,7 +723,7 @@ loc_2A8F4:
     jz      short loc_2A905
     mov     [bp+var_30], 0
     push    cs
-    call    near ptr sub_2C81C
+    call near ptr sub_2C81C
     mov     [bp+var_12], al
 loc_2A905:
     cmp     [bp+var_32], 0
@@ -801,7 +801,7 @@ loc_2A983:
     cbw
     push    ax
     push    cs
-    call    near ptr sub_2C0A8
+    call near ptr sub_2C0A8
     add     sp, 8
     mov     ax, 0C8h ; 'È'
     push    ax
@@ -3969,7 +3969,7 @@ sub_2C81C proc far
     push    di
     push    si
     push    cs
-    call    near ptr sub_2C9B4
+    call near ptr sub_2C9B4
     mov     [bp+var_A], 0
     mov     [bp+var_6], 0
     jmp     loc_2C993
@@ -4132,7 +4132,7 @@ loc_2C9A0:
     cmp     [bp+var_A], 0
     jz      short loc_2C9AA
     push    cs
-    call    near ptr sub_2C9B4
+    call near ptr sub_2C9B4
 loc_2C9AA:
     mov     al, [bp+var_A]
     cbw

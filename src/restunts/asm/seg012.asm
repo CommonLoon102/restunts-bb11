@@ -4676,7 +4676,7 @@ loc_30349:
     mov     word_3F886, ax
     cmp     byte_3F881, 0
     jz      short loc_3035C
-    call    sub_303BA
+    call near ptr sub_303BA
     jmp     short loc_30360
     ; align 2
     db 144
@@ -5766,7 +5766,7 @@ nosmart
     mov     [bp+arg_srcoff], si
     cmp     byte ptr [bp+var_12], 80h ; '€'
     ja      short loc_30BE6
-    call    sub_30CCF
+    call near ptr sub_30CCF
     mov     [bp+var_16], ax
     mov     [bp+var_14], dx
     mov     si, ax
@@ -5794,7 +5794,7 @@ loc_30BC9:
     xor     si, si
     mov     [bp+arg_srcoff], si
 loc_30BE6:
-    call    sub_30BF8
+    call near ptr sub_30BF8
     mov     ax, [bp+var_1A]
     mov     dx, [bp+var_18]
     add     sp, 116h
@@ -7595,14 +7595,14 @@ loc_3190D:
     jz      short loc_3192E
     call    sub_2EB56
     mov     [bp+var_16], di
-    call    sub_319CD
+    call near ptr sub_319CD
     jmp     short loc_31939
     ; align 2
     db 144
 loc_3192E:
     call    sub_2EB48
     mov     [bp+var_16], di
-    call    sub_31A67
+    call near ptr sub_31A67
 loc_31939:
     mov     di, [bp+var_16]
     add     sp, 0Ah
@@ -7636,7 +7636,7 @@ loc_31972:
     call    sub_2EB48
 loc_31977:
     mov     [bp+var_16], di
-    call    sub_31B5E
+    call near ptr sub_31B5E
     mov     di, [bp+var_16]
     add     sp, 0Ah
 loc_31983:
@@ -8561,12 +8561,12 @@ loc_320BF:
     mov     [bp-16h], di
     cmp     byte ptr [bp-0Ch], 0
     jz      short loc_320D6
-    call    sub_319CD
+    call near ptr sub_319CD
     jmp     short loc_320D9
     ; align 2
     db 144
 loc_320D6:
-    call    sub_31A67
+    call near ptr sub_31A67
 loc_320D9:
     mov     di, [bp-16h]
 loc_320DC:
@@ -8591,7 +8591,7 @@ loc_320FC:
     cmp     byte ptr [si+12h], 2
     jl      short loc_320F1
     mov     [bp-16h], di
-    call    sub_31B5E
+    call near ptr sub_31B5E
     mov     di, [bp-16h]
     jmp     short loc_320F1
 loc_32114:

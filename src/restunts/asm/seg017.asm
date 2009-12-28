@@ -127,13 +127,13 @@ loc_3692E:
     push    ax
     push    ax
     push    cs
-    call    near ptr mouse_set_minmax
+    call near ptr mouse_set_minmax
     add     sp, 8
     mov     ax, 10h
     push    ax
     push    ax
     push    cs
-    call    near ptr mouse_set_pixratio
+    call near ptr mouse_set_pixratio
     add     sp, 4
     mov     word_40318, 0FFFFh
 loc_36955:

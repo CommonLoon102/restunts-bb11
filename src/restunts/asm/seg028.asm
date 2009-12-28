@@ -83,7 +83,7 @@ audiodriver_timer proc far
     jnz     short loc_38688
     inc     word_407AA
     push    cs
-    call    near ptr sub_39700
+    call near ptr sub_39700
     cmp     byte_40632, 1
     jnz     short loc_3867C
     cmp     byte_40631, 1
@@ -91,14 +91,14 @@ audiodriver_timer proc far
     cmp     byte_40630, 0
     jnz     short loc_3867C
     push    cs
-    call    near ptr sub_3868A
+    call near ptr sub_3868A
     jmp     short loc_38680
 loc_3867C:
     push    cs
-    call    near ptr sub_3963C
+    call near ptr sub_3963C
 loc_38680:
     push    cs
-    call    near ptr sub_386D6
+    call near ptr sub_386D6
     dec     word_407AA
 loc_38688:
     pop     ds
@@ -122,7 +122,7 @@ loc_3869E:
     sub     ah, ah
     push    ax
     push    cs
-    call    near ptr sub_38702
+    call near ptr sub_38702
     add     sp, 2
     inc     [bp+var_2]
 loc_386AE:
@@ -134,7 +134,7 @@ loc_386B6:
     cmp     word_44D48, ax
     jb      short loc_386D0
     push    cs
-    call    near ptr sub_3963C
+    call near ptr sub_3963C
     mov     ax, word_454BA
     sub     word_44D48, ax
     mov     [bp+var_2], 0
@@ -164,7 +164,7 @@ loc_386E6:
     sub     ah, ah
     push    ax
     push    cs
-    call    near ptr sub_38702
+    call near ptr sub_38702
     add     sp, 2
     inc     [bp+var_2]
     cmp     [bp+var_2], 17h
@@ -225,7 +225,7 @@ loc_3874C:
     mov     ax, 728Eh
     push    ax
     push    cs
-    call    near ptr sub_3945A
+    call near ptr sub_3945A
     add     sp, 6
     mov     bx, [bp+var_4]
     mov     al, byte_42A08
@@ -275,7 +275,7 @@ loc_387B2:
     push    [bp+arg_0]
     push    [bp+arg_0]
     push    cs
-    call    near ptr audio_driver_func1E
+    call near ptr audio_driver_func1E
     add     sp, 4
 loc_387D2:
     mov     ax, word ptr [bp+var_8]
@@ -341,7 +341,7 @@ loc_38844:
     push    [bp+arg_0]
     push    [bp+arg_0]
     push    cs
-    call    near ptr audio_driver_func1E
+    call near ptr audio_driver_func1E
     add     sp, 4
     sub     ax, ax
     push    ax
@@ -376,7 +376,7 @@ loc_388A2:
     sub     ah, ah
     push    ax
     push    cs
-    call    near ptr sub_38AC4
+    call near ptr sub_38AC4
     add     sp, 4
     mov     bx, [bp+var_4]
     mov     [bx+1Eh], ax
@@ -452,7 +452,7 @@ loc_38952:
     push    ax
     push    [bp+arg_0]
     push    cs
-    call    near ptr sub_38C4C
+    call near ptr sub_38C4C
     jmp     loc_38A64
 loc_38962:
     push    word_42A04
@@ -461,7 +461,7 @@ loc_38962:
     push    ax
     push    [bp+arg_0]
     push    cs
-    call    near ptr sub_38AEA
+    call near ptr sub_38AEA
     add     sp, 6
     jmp     loc_38A67
     ; align 2
@@ -541,7 +541,7 @@ loc_38A10:
     push    word_42A04
     push    [bp+arg_0]
     push    cs
-    call    near ptr sub_38BEA
+    call near ptr sub_38BEA
     jmp     short loc_38A64
     ; align 2
     db 144
@@ -578,7 +578,7 @@ nosmart
     mov     ax, 728Eh
     push    ax
     push    cs
-    call    near ptr sub_38DE6
+    call near ptr sub_38DE6
 loc_38A64:
     add     sp, 4
 loc_38A67:
@@ -593,7 +593,7 @@ loc_38A74:
     mov     ax, 7282h
     push    ax
     push    cs
-    call    near ptr sub_3945A
+    call near ptr sub_3945A
     add     sp, 6
     mov     bx, [bp+var_4]
     mov     ax, word_429F2
@@ -1151,7 +1151,7 @@ loc_38EB0:
     push    word ptr [bp+var_4+2]
     push    word ptr [bp+var_4]
     push    cs
-    call    loc_390C8
+    call near ptr loc_390C8
     add     sp, 6
     mov     [bp+var_6], ax
     cmp     ax, 0FFFFh
@@ -1319,7 +1319,7 @@ sub_39050 proc far
     mov     ax, 729Ah
     push    ax
     push    cs
-    call    near ptr sub_38DE6
+    call near ptr sub_38DE6
     add     sp, 4
     pop     ds
     pop     bp
@@ -2008,7 +2008,7 @@ loc_3965B:
     jnb     short loc_39670
     push    si
     push    cs
-    call    near ptr sub_3968A
+    call near ptr sub_3968A
     add     sp, 2
 loc_39670:
     add     di, 2Eh ; '.'
@@ -2292,7 +2292,7 @@ loc_398D0:
     jbe     short loc_398FB
     push    ax
     push    cs
-    call    near ptr sub_3968A
+    call near ptr sub_3968A
     add     sp, 2
 loc_398FB:
     mov     bx, [bp+var_8]

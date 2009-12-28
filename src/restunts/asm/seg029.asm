@@ -182,7 +182,7 @@ loc_39B82:
     sub     ax, ax
     push    ax
     push    cs
-    call    near ptr sub_39AD4
+    call near ptr sub_39AD4
     add     sp, 0Ch
     or      ax, ax
     jz      short loc_39BC4
@@ -253,7 +253,7 @@ init_audio_resource proc far
     sub     ax, ax
     push    ax
     push    cs
-    call    near ptr sub_39B5A
+    call near ptr sub_39B5A
     add     sp, 0Ah
     mov     [bp+var_10], ax
     or      ax, ax

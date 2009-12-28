@@ -1925,7 +1925,7 @@ loc_1B03C:
     cbw
     push    ax
     push    cs
-    call    near ptr skybox_op
+    call near ptr skybox_op
     add     sp, 0Eh
     mov     [bp+var_132], ax
     mov     bx, [bp+arg_2]
@@ -2306,7 +2306,7 @@ loc_1B408:
     push    ax
     push    ax
     push    cs
-    call    near ptr sub_1CB80
+    call near ptr sub_1CB80
     add     sp, 4
     cmp     [bp+var_4E], 0
     jz      short loc_1B449
@@ -2316,7 +2316,7 @@ loc_1B408:
     mov     ax, 0F800h
     push    ax
     push    cs
-    call    near ptr sub_1CB80
+    call near ptr sub_1CB80
     add     sp, 4
     cmp     [bp+var_6C], 0
     jz      short loc_1B43C
@@ -2500,7 +2500,7 @@ loc_1B575:
     push    ax
     push    ax
     push    cs
-    call    near ptr sub_1CB80
+    call near ptr sub_1CB80
     add     sp, 4
 loc_1B61A:
     inc     di
@@ -2592,7 +2592,7 @@ loc_1B626:
     push    ax
     push    ax
     push    cs
-    call    near ptr sub_1CB80
+    call near ptr sub_1CB80
     add     sp, 4
     jmp     short loc_1B72E
 loc_1B71E:
@@ -2727,7 +2727,7 @@ loc_1B808:
     and     ax, [bp+var_12A]
     push    ax
     push    cs
-    call    near ptr sub_1CB80
+    call near ptr sub_1CB80
     add     sp, 4
 loc_1B896:
     inc     di
@@ -2859,7 +2859,7 @@ loc_1B990:
     and     ax, [bp+var_12A]
     push    ax
     push    cs
-    call    near ptr sub_1CB80
+    call near ptr sub_1CB80
     add     sp, 4
 loc_1B9DA:
     mov     al, [bp+var_F6]
@@ -2988,7 +2988,7 @@ loc_1BAB4:
     and     ax, [bp+var_12A]
     push    ax
     push    cs
-    call    near ptr sub_1CB80
+    call near ptr sub_1CB80
     add     sp, 4
 loc_1BB43:
     inc     di
@@ -3118,7 +3118,7 @@ loc_1BC3E:
     and     ax, [bp+var_12A]
     push    ax
     push    cs
-    call    near ptr sub_1CB80
+    call near ptr sub_1CB80
     add     sp, 4
 loc_1BC89:
     cmp     state.field_3F5, 0
@@ -3297,7 +3297,7 @@ smart
 nosmart
     push    ax
     push    cs
-    call    near ptr sub_1CB80
+    call near ptr sub_1CB80
     add     sp, 4
 loc_1BEAA:
     cmp     byte_45D7E, 0
@@ -3582,7 +3582,7 @@ loc_1C128:
     sub     ax, si
     push    ax
     push    cs
-    call    near ptr sub_1D5B4
+    call near ptr sub_1D5B4
 loc_1C156:
     add     sp, 6
     push    ax
@@ -3600,7 +3600,7 @@ loc_1C162:
     sub     ax, si
     push    ax
     push    cs
-    call    near ptr sub_1D5B4
+    call near ptr sub_1D5B4
     jmp     short loc_1C1C3
     ; align 2
     db 144
@@ -3622,7 +3622,7 @@ loc_1C17C:
     sub     ax, si
     push    ax
     push    cs
-    call    near ptr sub_1D534
+    call near ptr sub_1D534
     jmp     short loc_1C156
 loc_1C1AC:
     mov     bx, [bp+arg_2]
@@ -3634,7 +3634,7 @@ loc_1C1AC:
     sub     ax, si
     push    ax
     push    cs
-    call    near ptr sub_1D534
+    call near ptr sub_1D534
 loc_1C1C3:
     add     sp, 6
 loc_1C1C6:
@@ -3707,7 +3707,7 @@ loc_1C265:
     push    ax
     push    ax
     push    cs
-    call    near ptr draw_ingame_text
+    call near ptr draw_ingame_text
     push    ax
     call    sub_26572
     add     sp, 6
@@ -3787,7 +3787,7 @@ loc_1C2B0:
     db 144
 loc_1C2F8:
     push    cs
-    call    near ptr draw_ingame_text
+    call near ptr draw_ingame_text
     pop     si
     pop     di
     mov     sp, bp
@@ -4383,7 +4383,7 @@ loc_1C80A:
     lea     ax, [bp+var_30]
     push    ax
     push    cs
-    call    near ptr sub_1C302
+    call near ptr sub_1C302
     add     sp, 6
     mov     ax, [bp+var_2E]
     mov     [bp+var_34], ax
@@ -4584,7 +4584,7 @@ loc_1CA25:
     lea     ax, [bp+var_30]
     push    ax
     push    cs
-    call    near ptr sub_1C302
+    call near ptr sub_1C302
     add     sp, 6
     jmp     loc_1CB77
 loc_1CA52:
@@ -4654,7 +4654,7 @@ loc_1CADE:
     add     ax, 965Eh
     push    ax
     push    cs
-    call    near ptr sub_1C302
+    call near ptr sub_1C302
     add     sp, 6
     inc     di
 loc_1CAF6:
@@ -6128,7 +6128,7 @@ loc_1D7B6:
     jmp     loc_1D8AF
 loc_1D7C8:
     push    cs
-    call    near ptr unload_skybox
+    call near ptr unload_skybox
     mov     al, [bp+arg_0]
     mov     byte_46167, al
     mov     byte_3B8F6, 1
@@ -6715,7 +6715,7 @@ loc_1DCFC:
     push    [bp+var_3C]
     push    [bp+var_3E]
     push    cs
-    call    near ptr sub_1DEA6
+    call near ptr sub_1DEA6
     add     sp, 20h
     cmp     byte_46436, 0
     jz      short loc_1DD7E

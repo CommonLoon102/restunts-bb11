@@ -294,7 +294,7 @@ loc_10086:
     mov     kbormouse, 0
     mov     passed_security, 1; originally set to 0 - bypasses the copy protection
     push    cs
-    call    near ptr set_default_car
+    call near ptr set_default_car
     mov     si, 1
     jmp     _do_intro
     nop
@@ -303,7 +303,7 @@ _tracks_menu0:
 _tracks_menu_ax:
     push    ax
     push    cs
-    call    near ptr run_tracks_menu
+    call near ptr run_tracks_menu
     add     sp, 2
     jmp     _show_menu
     nop
@@ -311,14 +311,14 @@ _do_opp_menu:
     call    check_input
     call    show_waiting
     push    cs
-    call    near ptr run_opponent_menu
+    call near ptr run_opponent_menu
     jmp     _show_menu
     nop
 _do_option_menu:
     call    check_input
     call    show_waiting
     push    cs
-    call    near ptr run_option_menu
+    call near ptr run_option_menu
     or      al, al
     jnz     short _goto_game1
     jmp     _show_menu
@@ -338,7 +338,7 @@ _do_car_menu:
     mov     ax, offset gameconfig
     push    ax
     push    cs
-    call    near ptr run_car_menu
+    call near ptr run_car_menu
     add     sp, 8
     jmp     _show_menu
     nop
@@ -394,7 +394,7 @@ _sec_check1:
     cbw
     push    ax
     push    cs
-    call    near ptr security_check
+    call near ptr security_check
     add     sp, 2
 _init_replay:
     call    unload_audio_res
@@ -456,7 +456,7 @@ _do_intro:
 loc_1042D:
     mov     byte_44AE2, 0
     push    cs
-    call    near ptr run_intro_looped
+    call near ptr run_intro_looped
     mov     di, ax
     cmp     di, 1Bh
     jnz     short _show_menu
@@ -478,7 +478,7 @@ _show_menu:
     add     sp, 6
 loc_10467:
     push    cs
-    call    near ptr run_menu
+    call near ptr run_menu
     cbw
     cmp     ax, 0FFFFh
     jnz     short loc_10474
@@ -520,7 +520,7 @@ loc_104AC:
     cmp     byte_43966, 0
     jz      short loc_104D2
     push    cs
-    call    near ptr end_hiscore
+    call near ptr end_hiscore
     cbw
     or      ax, ax
     jz      short loc_1049E
@@ -641,7 +641,7 @@ run_intro_looped proc far
     mov     word ptr wndsprite, ax
     mov     word ptr wndsprite+2, dx
     push    cs
-    call    near ptr run_intro
+    call near ptr run_intro
     mov     si, ax
     push    word ptr wndsprite+2
     push    word ptr wndsprite
@@ -684,7 +684,7 @@ run_intro_looped proc far
     call    sub_29620
     add     sp, 6
     push    cs
-    call    near ptr load_intro_resources
+    call near ptr load_intro_resources
     cbw
     mov     si, ax
     push    word ptr wndsprite+2
@@ -1816,7 +1816,7 @@ loc_110ED:
     sub     ax, ax
     push    ax
     push    cs
-    call    near ptr highscore_write_a
+    call near ptr highscore_write_a
     add     sp, 2
     or      al, al
     jz      short loc_111F9
@@ -1865,7 +1865,7 @@ loc_11210:
     sub     ax, ax
     push    ax
     push    cs
-    call    near ptr sub_118D4
+    call near ptr sub_118D4
     add     sp, 4
     sub     ax, ax
     push    ax
@@ -2517,7 +2517,7 @@ loc_118A0:
     cbw
     push    ax
     push    cs
-    call    near ptr sub_118D4
+    call near ptr sub_118D4
     add     sp, 4
     mov     al, byte_449CE
     cmp     [bp+var_A], al
@@ -2804,7 +2804,7 @@ loc_11AED:
     repne movsw
     call    sprite_copy_wnd_to_1
     push    cs
-    call    near ptr highscore_text_unk
+    call near ptr highscore_text_unk
     mov     ax, 0FFFFh
     push    ax
     push    word ptr wndsprite+2
@@ -2853,7 +2853,7 @@ loc_11AED:
     repne movsw
     call    sprite_copy_wnd_to_1
     push    cs
-    call    near ptr highscore_text_unk
+    call near ptr highscore_text_unk
     mov     ax, 0FFFFh
     push    ax
     push    word ptr wndsprite+2
@@ -2861,10 +2861,10 @@ loc_11AED:
     call    sub_29620
     add     sp, 6
     push    cs
-    call    near ptr highscore_write_b
+    call near ptr highscore_write_b
 loc_11BAA:
     push    cs
-    call    near ptr highscore_text_unk
+    call near ptr highscore_text_unk
     pop     si
     pop     di
     mov     sp, bp
@@ -4764,7 +4764,7 @@ loc_12E1E:
     mov     ax, 923Bh
     push    ax
     push    cs
-    call    near ptr run_car_menu
+    call near ptr run_car_menu
     add     sp, 8
     mov     [bp+var_1E], 0FFh
     jmp     loc_129A3
@@ -5991,14 +5991,14 @@ loc_139BA:
     sub     ax, ax
     push    ax
     push    cs
-    call    near ptr highscore_write_a
+    call near ptr highscore_write_a
     add     sp, 2
     or      al, al
     jz      short loc_139E1
     mov     ax, 1
     push    ax
     push    cs
-    call    near ptr highscore_write_a
+    call near ptr highscore_write_a
     add     sp, 2
     or      al, al
     jz      short loc_139E1
@@ -6030,7 +6030,7 @@ loc_13A1D:
     mov     [bp+var_6E], 0
     call    sprite_copy_wnd_to_1
     push    cs
-    call    near ptr highscore_text_unk
+    call near ptr highscore_text_unk
     mov     [bp+var_92], 1
     mov     [bp+var_14], 1
     jmp     loc_13FDA
@@ -6507,7 +6507,7 @@ loc_13ECD:
     push    ax
     push    [bp+var_88]
     push    cs
-    call    near ptr enter_hiscore
+    call near ptr enter_hiscore
     add     sp, 8
     jmp     loc_13FDA
 loc_13F48:
@@ -6527,7 +6527,7 @@ loc_13F48:
     push    ax
     push    [bp+var_88]
     push    cs
-    call    near ptr enter_hiscore
+    call near ptr enter_hiscore
     add     sp, 8
     mov     [bp+var_6E], 0
     mov     [bp+var_52], 0FEh ; 'þ'
@@ -6568,7 +6568,7 @@ loc_13FB2:
     db 144
 loc_13FD6:
     push    cs
-    call    near ptr highscore_text_unk
+    call near ptr highscore_text_unk
 loc_13FDA:
     mov     [bp+var_92], 1
     mov     [bp+var_78], 1

@@ -107,7 +107,7 @@ loc_21BCA:
     sub     ax, ax
     push    ax              ; char *
     push    cs
-    call    near ptr load_replay_file
+    call near ptr load_replay_file
     add     sp, 4
     or      al, al
     jz      short loc_21BE4
@@ -131,11 +131,11 @@ loc_21C00:
     mov     byte_454B8, 1
 loc_21C0F:
     push    cs
-    call    near ptr setup_player_cars
+    call near ptr setup_player_cars
     or      ax, ax
     jz      short loc_21C24
     push    cs
-    call    near ptr sub_239B4
+    call near ptr sub_239B4
     call    sub_2A200
     jmp     loc_223E4
     ; align 2
@@ -145,7 +145,7 @@ loc_21C24:
     mov     byte_449E6, 0
     mov     byte_449DA, 1
     push    cs
-    call    near ptr sub_2255A
+    call near ptr sub_2255A
     mov     byte_461C8, 0FFh
     mov     byte_44346, 0
     mov     byte_4432A, 0
@@ -187,7 +187,7 @@ loc_21C78:
     cbw
     push    ax
     push    cs
-    call    near ptr sub_23A50
+    call near ptr sub_23A50
     add     sp, 2
     mov     byte_45DB2, 1
     mov     ax, 0FF10h
@@ -273,7 +273,7 @@ loc_21D92:
     cmp     byte_45DB2, 0
     jnz     short loc_21D9D
     push    cs
-    call    near ptr sub_23A98
+    call near ptr sub_23A98
 loc_21D9D:
     call    update_gamestate
 loc_21DA2:
@@ -464,7 +464,7 @@ loc_21F84:
     mov     ax, 1
     push    ax
     push    cs
-    call    near ptr setup_car_shapes
+    call near ptr setup_car_shapes
     add     sp, 2
 loc_21FB8:
     cmp     byte_46484, 0
@@ -486,7 +486,7 @@ loc_21FC2:
     mov     ax, 1
     push    ax
     push    cs
-    call    near ptr sub_23B4C
+    call near ptr sub_23B4C
     add     sp, 6
     jmp     short loc_22064
     ; align 2
@@ -589,7 +589,7 @@ loc_220DB:
     mov     ax, 2
     push    ax
     push    cs
-    call    near ptr setup_car_shapes
+    call near ptr setup_car_shapes
     add     sp, 2
     mov     ax, 0C8h ; 'È'
     push    ax
@@ -666,14 +666,14 @@ loc_221CC:
     sub     ax, ax
     push    ax
     push    cs
-    call    near ptr sub_23A50
+    call near ptr sub_23A50
     add     sp, 2
     sub     ax, ax
     push    ax
     push    ax
     push    ax
     push    cs
-    call    near ptr sub_23B4C
+    call near ptr sub_23B4C
     add     sp, 6
     sub     ax, ax
     push    ax
@@ -682,7 +682,7 @@ loc_221CC:
     mov     ax, 2
     push    ax
     push    cs
-    call    near ptr sub_23B4C
+    call near ptr sub_23B4C
     add     sp, 6
     mov     byte_454B8, 1
     call    sub_188A4
@@ -695,7 +695,7 @@ loc_22208:
     mov     ax, 3
     push    ax
     push    cs
-    call    near ptr sub_23B4C
+    call near ptr sub_23B4C
     add     sp, 6
     jmp     loc_21DA2
     ; align 2
@@ -707,7 +707,7 @@ loc_22222:
     jz      short loc_22236
     push    ax
     push    cs
-    call    near ptr sub_223FA
+    call near ptr sub_223FA
     add     sp, 2
 loc_22236:
     mov     ax, [bp+var_12]
@@ -815,7 +815,7 @@ loc_22347:
     mov     ax, 1
     push    ax
     push    cs
-    call    near ptr sub_22698
+    call near ptr sub_22698
     add     sp, 2
     call    update_gamestate
     inc     si
@@ -865,12 +865,12 @@ loc_223CD:
     sub     ax, ax
     push    ax
     push    cs
-    call    near ptr sub_23A50
+    call near ptr sub_23A50
     add     sp, 2
     push    cs
-    call    near ptr sub_22576
+    call near ptr sub_22576
     push    cs
-    call    near ptr sub_239B4
+    call near ptr sub_239B4
 loc_223E4:
     mov     waitflag, 64h ; 'd'
     call    check_input
@@ -937,7 +937,7 @@ loc_2245E:
     cbw
     push    ax
     push    cs
-    call    near ptr sub_23A50
+    call near ptr sub_23A50
     jmp     short loc_224E6
     ; align 4
     db 144
@@ -1168,7 +1168,7 @@ loc_22666:
     sub     ax, ax
     push    ax
     push    cs
-    call    near ptr sub_22698
+    call near ptr sub_22698
     add     sp, 2
     mov     byte_4552F, 2
     jmp     short loc_22692
@@ -1178,13 +1178,13 @@ loc_2267E:
     sub     ax, ax
     push    ax
     push    cs
-    call    near ptr sub_22698
+    call near ptr sub_22698
     add     sp, 2
 loc_22688:
     sub     ax, ax
     push    ax
     push    cs
-    call    near ptr sub_22698
+    call near ptr sub_22698
     add     sp, 2
 loc_22692:
     dec     byte_442E4
@@ -3099,7 +3099,7 @@ loc_23870:
     sub     ax, ax
     push    ax
     push    cs
-    call    near ptr setup_car_shapes
+    call near ptr setup_car_shapes
     add     sp, 2
 loc_238B4:
     cmp     byte_44AE2, 0
@@ -3117,7 +3117,7 @@ loc_238B4:
     push    ax
     push    ax
     push    cs
-    call    near ptr sub_23B4C
+    call near ptr sub_23B4C
     add     sp, 6
 loc_238DE:
     mov     ax, offset aGame; "game"
@@ -3231,7 +3231,7 @@ loc_239D4:
     mov     ax, 3
     push    ax
     push    cs
-    call    near ptr setup_car_shapes
+    call near ptr setup_car_shapes
     add     sp, 2
 loc_23A15:
     push    word_459F6
@@ -4011,7 +4011,7 @@ loc_2410C:
     jz      short loc_24129
     push    [bp+var_16]
     push    cs
-    call    near ptr sub_223FA
+    call near ptr sub_223FA
     add     sp, 2
     or      al, al
     jz      short loc_24129
@@ -4030,7 +4030,7 @@ loc_24140:
     mov     ax, 1
     push    ax
     push    cs
-    call    near ptr sub_23B4C
+    call near ptr sub_23B4C
     add     sp, 6
     pop     si
     pop     di
@@ -4059,7 +4059,7 @@ loc_24181:
     mov     ax, 2
     push    ax
     push    cs
-    call    near ptr sub_23B4C
+    call near ptr sub_23B4C
     add     sp, 6
 loc_24193:
     push    state.game_frame
@@ -4067,7 +4067,7 @@ loc_24193:
     mov     ax, 1
     push    ax
     push    cs
-    call    near ptr sub_23B4C
+    call near ptr sub_23B4C
     add     sp, 6
     mov     [bp+var_40], 0
     mov     ax, 1Dh
@@ -4224,7 +4224,7 @@ loc_242E7:
     mov     ax, 1
     push    ax
     push    cs
-    call    near ptr sub_23B4C
+    call near ptr sub_23B4C
     add     sp, 6
     jmp     loc_23FEE
     ; align 2
@@ -4275,14 +4275,14 @@ loc_24346:
     mov     ax, 2
     push    ax
     push    cs
-    call    near ptr sub_23B4C
+    call near ptr sub_23B4C
     add     sp, 6
     push    state.game_frame
     push    state.game_frame
     mov     ax, 1
     push    ax
     push    cs
-    call    near ptr sub_23B4C
+    call near ptr sub_23B4C
     add     sp, 6
     sub     si, si
 loc_24377:
@@ -4425,14 +4425,14 @@ loc_244B0:
     mov     ax, 2
     push    ax
     push    cs
-    call    near ptr sub_23B4C
+    call near ptr sub_23B4C
     add     sp, 6
     mov     byte_454B8, 0
     mov     al, byte_3B8F2
     cbw
     push    ax
     push    cs
-    call    near ptr sub_23A50
+    call near ptr sub_23A50
     add     sp, 2
     call    check_input
     mov     kbormouse, 0
@@ -4485,7 +4485,7 @@ loc_24548:
     mov     ax, 0EEh ; 'î'
     push    ax              ; char *
     push    cs
-    call    near ptr load_replay_file
+    call near ptr load_replay_file
     add     sp, 4
     or      al, al
     jz      short loc_2458B
@@ -4545,9 +4545,9 @@ loc_2460D:
     or      si, si
     jz      short loc_24619
     push    cs
-    call    near ptr sub_239B4
+    call near ptr sub_239B4
     push    cs
-    call    near ptr setup_player_cars
+    call near ptr setup_player_cars
 loc_24619:
     mov     al, byte ptr gameconfig.game_framespersec
     cbw
@@ -4651,7 +4651,7 @@ loc_246FD:
     mov     ax, 95F8h
     push    ax
     push    cs
-    call    near ptr write_track
+    call near ptr write_track
     add     sp, 2
     mov     [bp+var_20], al
     or      al, al
@@ -4797,7 +4797,7 @@ loc_24830:
     mov     ax, 2
     push    ax
     push    cs
-    call    near ptr sub_23B4C
+    call near ptr sub_23B4C
     add     sp, 6
     call    timer_get_delta2
     mov     [bp+var_24], 14h
@@ -4862,7 +4862,7 @@ loc_248C4:
     mov     ax, 1
     push    ax
     push    cs
-    call    near ptr sub_23B4C
+    call near ptr sub_23B4C
     add     sp, 6
     push    [bp+var_18]
     call    input_do_checking
@@ -4919,7 +4919,7 @@ loc_24956:
     mov     ax, 2
     push    ax
     push    cs
-    call    near ptr sub_23B4C
+    call near ptr sub_23B4C
     add     sp, 6
     mov     ax, 3263h
     push    ax
@@ -4977,7 +4977,7 @@ loc_249F8:
     mov     ax, 1
     push    ax
     push    cs
-    call    near ptr sub_23B4C
+    call near ptr sub_23B4C
 loc_24A0D:
     add     sp, 6
 loc_24A10:
@@ -5000,7 +5000,7 @@ loc_24A28:
     mov     ax, 2
     push    ax
     push    cs
-    call    near ptr sub_23B4C
+    call near ptr sub_23B4C
     add     sp, 6
     call    timer_get_delta2
     mov     [bp+var_24], 14h
@@ -5064,7 +5064,7 @@ loc_24AB8:
     mov     ax, 1
     push    ax
     push    cs
-    call    near ptr sub_23B4C
+    call near ptr sub_23B4C
     add     sp, 6
     push    [bp+var_18]
     call    input_do_checking
@@ -5109,7 +5109,7 @@ loc_24B23:
     mov     ax, 2
     push    ax
     push    cs
-    call    near ptr sub_23B4C
+    call near ptr sub_23B4C
     add     sp, 6
     or      di, di
     jnz     short loc_24B4F
@@ -5205,7 +5205,7 @@ loc_24BF8:
     mov     ax, 1
     push    ax
     push    cs
-    call    near ptr sub_23B4C
+    call near ptr sub_23B4C
     add     sp, 6
     mov     ax, 1
     push    ax
@@ -5221,7 +5221,7 @@ loc_24C43:
     mov     ax, 1
     push    ax
     push    cs
-    call    near ptr sub_23B4C
+    call near ptr sub_23B4C
     add     sp, 6
     jmp     loc_24A19
     ; align 2
@@ -5235,7 +5235,7 @@ loc_24C5A:
     mov     ax, 2
     push    ax
     push    cs
-    call    near ptr sub_23B4C
+    call near ptr sub_23B4C
     add     sp, 6
     jmp     loc_24D18
 loc_24C74:
@@ -5248,14 +5248,14 @@ loc_24C74:
     mov     ax, 2
     push    ax
     push    cs
-    call    near ptr sub_23B4C
+    call near ptr sub_23B4C
     add     sp, 6
     push    state.game_frame
     push    state.game_frame
     mov     ax, 1
     push    ax
     push    cs
-    call    near ptr sub_23B4C
+    call near ptr sub_23B4C
     add     sp, 6
     jmp     loc_242E7
 loc_24CA6:
@@ -5268,14 +5268,14 @@ loc_24CA6:
     mov     ax, 2
     push    ax
     push    cs
-    call    near ptr sub_23B4C
+    call near ptr sub_23B4C
     add     sp, 6
     push    state.game_frame
     push    state.game_frame
     mov     ax, 1
     push    ax
     push    cs
-    call    near ptr sub_23B4C
+    call near ptr sub_23B4C
     add     sp, 6
     sub     ax, ax
     push    ax
@@ -5294,7 +5294,7 @@ loc_24CA6:
     mov     ax, 2
     push    ax
     push    cs
-    call    near ptr sub_23B4C
+    call near ptr sub_23B4C
     add     sp, 6
     jmp     loc_24140
     ; align 2
@@ -5306,7 +5306,7 @@ loc_24D04:
     push    ax
     push    ax
     push    cs
-    call    near ptr sub_23B4C
+    call near ptr sub_23B4C
     add     sp, 6
     mov     byte_449E6, 3
 loc_24D18:

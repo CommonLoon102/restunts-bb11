@@ -105,7 +105,7 @@ init_polyinfo proc far
     call    mat_rot_y
     add     sp, 4
     push    cs
-    call    near ptr calc_sincos80
+    call near ptr calc_sincos80
     retf
     ; align 2
     db 144
@@ -173,7 +173,7 @@ select_rect_rotate proc far
     push    [bp+arg_2]
     push    [bp+arg_0]
     push    cs
-    call    near ptr mat_rot_zxy
+    call near ptr mat_rot_zxy
     add     sp, 8
     mov     di, 0ACDCh
     mov     si, ax
@@ -182,7 +182,7 @@ select_rect_rotate proc far
     mov     cx, 9
     repne movsw
     push    cs
-    call    near ptr sub_24DE6
+    call near ptr sub_24DE6
     mov     ax, [bp+arg_6]
     mov     di, offset word_40EB0
     mov     si, ax
@@ -206,7 +206,7 @@ select_rect_rotate proc far
     neg     ax
     push    ax
     push    cs
-    call    near ptr mat_rot_zxy
+    call near ptr mat_rot_zxy
     add     sp, 8
     mov     [bp+var_8], ax
     mov     [bp+var_A], 2710h
@@ -367,7 +367,7 @@ loc_24F50:
     push    word ptr [bx+0Ch]
     push    word ptr [bx+0Ah]
     push    cs
-    call    near ptr mat_rot_zxy
+    call near ptr mat_rot_zxy
     add     sp, 8
     mov     [bp+var_42C], ax
     lea     ax, [bp+var_42A]
@@ -404,7 +404,7 @@ loc_24FB6:
     push    word ptr [bx+0Ch]
     push    word ptr [bx+0Ah]
     push    cs
-    call    near ptr mat_rot_zxy
+    call near ptr mat_rot_zxy
     add     sp, 8
     mov     [bp+var_42C], ax
     lea     ax, [bp+var_14]
@@ -466,7 +466,7 @@ loc_25077:
     lea     ax, [bp+var_56A]
     push    ax
     push    cs
-    call    near ptr sub_263C6
+    call near ptr sub_263C6
     add     sp, 2
     mov     byte_4393D, al
     cbw
@@ -522,7 +522,7 @@ loc_250FA:
     shl     bx, 1
     push    word ptr [bx+60E4h]
     push    cs
-    call    near ptr sub_25EE2
+    call near ptr sub_25EE2
     add     sp, 2
     and     [bp+var_44A], al
 loc_25134:
@@ -712,7 +712,7 @@ loc_2530A:
     shl     bx, 1
     push    word ptr [bx+60E4h]
     push    cs
-    call    near ptr sub_25EE2
+    call near ptr sub_25EE2
     add     sp, 2
     and     [bp+var_44A], al
 loc_25325:
@@ -914,7 +914,7 @@ loc_254B3:
     mov     bx, [bp+var_B7A]
     push    word ptr [bx]
     push    cs
-    call    near ptr sub_25EE2
+    call near ptr sub_25EE2
     add     sp, 2
     and     [bp+var_44A], al
 loc_25511:
@@ -984,7 +984,7 @@ loc_255B4:
     lea     ax, [bp+var_574]
     push    ax
     push    cs
-    call    near ptr sub_25EE2
+    call near ptr sub_25EE2
     add     sp, 2
     and     [bp+var_44A], al
 loc_255CB:
@@ -1076,7 +1076,7 @@ loc_256A5:
     lea     ax, [bp+var_574]
     push    ax
     push    cs
-    call    near ptr sub_25EE2
+    call near ptr sub_25EE2
     add     sp, 2
     and     [bp+var_44A], al
 loc_256BC:
@@ -1106,7 +1106,7 @@ loc_25700:
     mov     bx, [bp+var_B7C]
     push    word ptr [bx]
     push    cs
-    call    near ptr sub_25EE2
+    call near ptr sub_25EE2
     add     sp, 2
     and     [bp+var_44A], al
     jmp     loc_255DE
@@ -1137,7 +1137,7 @@ loc_2572E:
     push    dx
     push    ax
     push    cs
-    call    near ptr sub_25F2E
+    call near ptr sub_25F2E
     add     sp, 4
     or      al, al
     jz      short loc_25763
@@ -1347,13 +1347,13 @@ loc_2590D:
     push    word_41878
     push    word_41854
     push    cs
-    call    near ptr sub_2637A
+    call near ptr sub_2637A
     add     sp, 4
     push    word_41878
     push    word_41856
 loc_2597C:
     push    cs
-    call    near ptr sub_2637A
+    call near ptr sub_2637A
     add     sp, 4
 loc_25983:
     mov     byte_449F4, 2
@@ -1395,7 +1395,7 @@ loc_25997:
     push    dx
     push    ax
     push    cs
-    call    near ptr sub_25F2E
+    call near ptr sub_25F2E
     add     sp, 4
     or      al, al
     jnz     short loc_25A7C
@@ -1503,7 +1503,7 @@ loc_25AF4:
     lea     ax, [bp+var_450]
     push    ax
     push    cs
-    call    near ptr sub_2637A
+    call near ptr sub_2637A
     add     sp, 4
     les     bx, dword_40ECA
     mov     ax, es:[bx+8]
@@ -1518,7 +1518,7 @@ loc_25AF4:
     lea     ax, [bp+var_450]
     push    ax
     push    cs
-    call    near ptr sub_2637A
+    call near ptr sub_2637A
     add     sp, 4
     les     bx, dword_40ECA
     mov     ax, es:[bx+12h]
@@ -1533,7 +1533,7 @@ loc_25AF4:
     lea     ax, [bp+var_450]
     push    ax
     push    cs
-    call    near ptr sub_2637A
+    call near ptr sub_2637A
     add     sp, 4
     les     bx, dword_40ECA
     mov     ax, es:[bx+14h]
@@ -1548,7 +1548,7 @@ loc_25AF4:
     lea     ax, [bp+var_450]
     push    ax
     push    cs
-    call    near ptr sub_2637A
+    call near ptr sub_2637A
     add     sp, 4
 loc_25B9C:
     mov     byte_449F4, 4
@@ -1655,7 +1655,7 @@ loc_25C92:
     lea     ax, [bp+var_450]
     push    ax
     push    cs
-    call    near ptr sub_2637A
+    call near ptr sub_2637A
     add     sp, 4
     mov     ax, [bp+var_462]
     mov     bx, word_41854
@@ -1697,7 +1697,7 @@ loc_25CF4:
     push    word_41878
     push    word_41854
     push    cs
-    call    near ptr sub_2637A
+    call near ptr sub_2637A
     add     sp, 4
 loc_25D34:
     mov     byte_449F4, 1
@@ -1789,7 +1789,7 @@ loc_25DF1:
     push    ax
     push    si
     push    cs
-    call    near ptr sub_25E24
+    call near ptr sub_25E24
     add     sp, 4
     mov     word_40ECE, ax
     or      ax, ax
@@ -2283,7 +2283,7 @@ loc_261DA:
     jmp     loc_2607F
 loc_261F0:
     push    cs
-    call    near ptr sub_24DE6
+    call near ptr sub_24DE6
     pop     si
     pop     di
     mov     sp, bp
@@ -2962,14 +2962,14 @@ loc_266D6:
     push    ax
     push    [bp+arg_4]
     push    cs
-    call    near ptr sub_2695E
+    call near ptr sub_2695E
     add     sp, 4
     or      al, al
     jz      short loc_266C6
     push    [bp+var_16]
     push    [bp+arg_4]
     push    cs
-    call    near ptr sub_2699C
+    call near ptr sub_2699C
     add     sp, 4
     or      al, al
     jz      short loc_26704
@@ -2978,7 +2978,7 @@ loc_26704:
     push    [bp+arg_4]
     push    [bp+var_16]
     push    cs
-    call    near ptr sub_2699C
+    call near ptr sub_2699C
     add     sp, 4
     or      al, al
     jz      short loc_2671E
@@ -3141,7 +3141,7 @@ loc_26825:
     push    [bp+arg_2]
     push    [bp+arg_0]
     push    cs
-    call    near ptr sub_26670
+    call near ptr sub_26670
     add     sp, 6
 loc_2684F:
     lea     ax, [bp+var_10]
@@ -3149,7 +3149,7 @@ loc_2684F:
     push    [bp+arg_2]
     push    [bp+arg_0]
     push    cs
-    call    near ptr sub_26670
+    call near ptr sub_26670
     add     sp, 6
     cmp     [bp+var_22], 0
     jnz     short loc_26869
@@ -3161,7 +3161,7 @@ loc_2686C:
     push    [bp+arg_2]
     push    [bp+arg_0]
     push    cs
-    call    near ptr sub_26670
+    call near ptr sub_26670
     add     sp, 6
     pop     si
     pop     di
@@ -3218,7 +3218,7 @@ loc_268BB:
     push    [bp+arg_4]
     push    ax
     push    cs
-    call    near ptr sub_269D0
+    call near ptr sub_269D0
     add     sp, 4
     or      al, al
     jz      short loc_268B8
@@ -3494,7 +3494,7 @@ loc_26A86:
     lea     ax, [bp+var_14]
     push    ax
     push    cs
-    call    near ptr sub_265EC
+    call near ptr sub_265EC
     add     sp, 4
     or      al, al
     jnz     short loc_26ABD
@@ -3503,7 +3503,7 @@ loc_26A86:
     push    [bp+arg_C]
     push    [bp+arg_A]
     push    cs
-    call    near ptr sub_26670
+    call near ptr sub_26670
     add     sp, 6
 loc_26ABD:
     inc     [bp+var_18]
@@ -3562,7 +3562,7 @@ loc_26B2E:
     push    bx
     push    [bp+var_1A]
     push    cs
-    call    near ptr sub_26572
+    call near ptr sub_26572
     add     sp, 6
     lea     ax, [bp+var_C]
     jmp     loc_26A63

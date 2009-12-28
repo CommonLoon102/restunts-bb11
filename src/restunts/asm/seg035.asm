@@ -64,7 +64,7 @@ load_2dshape_res_fatal proc far
     push    ax
     push    [bp+arg_0]
     push    cs
-    call    near ptr load_2dshape_res
+    call near ptr load_2dshape_res
     add     sp, 4
     pop     bp
     retf
@@ -82,7 +82,7 @@ load_2dshape_res_nofatal proc far
     push    ax
     push    [bp+arg_0]
     push    cs
-    call    near ptr load_2dshape_res
+    call near ptr load_2dshape_res
     add     sp, 4
     pop     bp
     retf
@@ -149,7 +149,7 @@ loc_3AD4A:
     push    [bp+var_2]
     push    [bp+var_4]
     push    cs
-    call    near ptr parse_2d_shape
+    call near ptr parse_2d_shape
     add     sp, 8
     push    [bp+var_2]
     push    [bp+var_4]
@@ -247,7 +247,7 @@ loc_3AE2C:
     push    word ptr [bp+var_2E+2]
     push    word ptr [bp+var_2E]
     push    cs
-    call    near ptr sub_3B08C
+    call near ptr sub_3B08C
     add     sp, 4
     mov     [bp+var_10], ax
     cmp     ax, 3

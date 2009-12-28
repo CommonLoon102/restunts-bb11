@@ -397,7 +397,7 @@ loc_3A0D9:
     call    set_criterr_handler
     add     sp, 4
     push    cs
-    call    near ptr load_palandcursor
+    call near ptr load_palandcursor
     call    sprite_copy_2_to_1
     mov     ax, 78h ; 'x'
     push    ax
@@ -538,7 +538,7 @@ loc_3A22B:
     mov     ax, word_44CEA
     mov     word_44984, ax
     push    cs
-    call    near ptr random_wait
+    call near ptr random_wait
     sub     ax, ax
     push    ax
     push    word_40B10
