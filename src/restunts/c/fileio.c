@@ -169,7 +169,7 @@ long ftell(FILE *file)
 		mov  dx, 0
 		int  21h
 		jnc  short tell_ok
-		mov  g_errno, 1
+		mov  word ptr g_errno, 1
 	tell_ok:
 		mov  oh, dx
 		mov  ol, ax
@@ -199,11 +199,11 @@ int remove(const char* path)
 		mov  dx, offs
 		int  21h
 		jnc  short unlink_ok
-		mov  retval, -1
+		mov  word ptr retval, -1
 		mov  g_errno, ax
 		jmp  short unlink_done
 	unlink_ok:
-		mov  retval, 0
+		mov  word ptr retval, 0
 	unlink_done:
 		pop ds
 	}
@@ -212,7 +212,7 @@ int remove(const char* path)
 }
 #endif
 
-static struct file_find_dos {
+struct file_find_dos {
 	struct find_t dta; // DOS DTA struct
 	char path[128];    // Full path to found file
 	char* dirdelim;    // Last dir delimiter in path string
@@ -239,10 +239,10 @@ const char* file_find(const char* query)
 		int  21h
 
 		jnc  short find_ok
-		mov  retval, -1
+		mov  word ptr retval, -1
 		jmp  short find_done
 	find_ok:
-		mov  retval, 0
+		mov  word ptr retval, 0
 	find_done:
 	}
 
@@ -282,10 +282,10 @@ const char* file_find_next()
 		int  21h
 
 		jnc  short findnext_ok
-		mov  retval, -1
+		mov  word ptr retval, -1
 		jmp  short findnext_done
 	findnext_ok:
-		mov  retval, 0
+		mov  word ptr retval, 0
 	findnext_done:
 	}
 

@@ -1,5 +1,5 @@
 ASM = tasm
-CC = bcc /c /u- /mm
+CC = bcc /c /u- /mm /B
 LINK = tlink
 SED = sed
 
