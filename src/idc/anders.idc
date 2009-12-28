@@ -847,9 +847,9 @@ static GetFunctionInfo(ea, funcend) {
 static PrintReport() {
 
 	auto segea, nextseg, endseg;
-	auto funcea, nextfunc, endfunc, funcname, funccount, portfunccount;
+	auto funcea, nextfunc, endfunc, funcname, funccount, portfunccount, ignorefunccount, funcflags;
 	auto f, filename;
-	auto ported;
+	auto ported, ignorable, statustext;
 
 	filename = form("%s\\%s", GetIdbDirectory(), "status.html");
 	f = fopen(filename, "w");
@@ -883,20 +883,30 @@ static PrintReport() {
 			if (!isFunction(GetFlags(funcea))) continue;
 
 			funcname = GetFunctionName(funcea);
+			funcflags = GetFunctionFlags(funcea);
 			ported = PortFuncName(funcname) != funcname;
+			ignorable = ((funcflags & (FUNC_LIB|FUNC_THUNK)) != 0) || substr(funcname, 0, 6) == "nopsub";
 			
 			funccount ++;
 			if (ported)
 				portfunccount ++;
+			if (ignorable)
+				ignorefunccount++;
+				
+			if (ported) 
+				statustext = "PORTED"; else 
+			if (ignorable)
+				statustext = "IGNORE"; else
+				statustext = "";
 				
 			fprintf(f, "<tr>\n");
-			fprintf(f, "    <td valign=\"top\"><a name=\"%s\"></a>%s</td><td valign=\"top\">%s</td><td valign=\"top\"><b>%s</b></td>\n", funcname, funcname, GetFunctionInfo(funcea, endfunc), ported ? "PORTED" : "");
+			fprintf(f, "    <td valign=\"top\"><a name=\"%s\"></a>%s</td><td valign=\"top\">%s</td><td valign=\"top\"><b>%s</b></td>\n", funcname, funcname, GetFunctionInfo(funcea, endfunc), statustext);
 			fprintf(f, "</tr>\n");
 		}
 
 	}
 	fprintf(f, "<tr>\n");
-	fprintf(f, "    <td valign=\"top\" colspan=\"3\"><b>Total functions: %i / Ported: %i</b></td>\n", funccount, portfunccount);
+	fprintf(f, "    <td valign=\"top\" colspan=\"3\"><b>Total functions: %i / Ignored: %i / Ported: %i</b></td>\n", funccount, ignorefunccount, portfunccount);
 	fprintf(f, "</tr>\n");
 	fprintf(f, "</table>\n");
 
