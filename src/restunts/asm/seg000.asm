@@ -46,7 +46,7 @@ nosmart
 seg000 segment byte public 'STUNTSC' use16
     assume cs:seg000
     assume es:nothing, ss:nothing, ds:dseg
-    public _main
+    public ported_stuntsmain_
     public run_intro_looped
     public run_intro
     public load_intro_resources
@@ -64,7 +64,7 @@ seg000 segment byte public 'STUNTSC' use16
     public end_hiscore
     public security_check
     public set_default_car
-_main proc far
+ported_stuntsmain_ proc far
     var_12 = word ptr -18
     var_10 = word ptr -16
     var_E = word ptr -14
@@ -397,7 +397,7 @@ _sec_check1:
     call near ptr security_check
     add     sp, 2
 _init_replay:
-    call    unload_audio_res
+    call    audio_unload
     mov     ax, 5780h       ; size to allocate, 20*1120
     cwd
     push    dx
@@ -427,7 +427,7 @@ _find_tedit:
     or      ax, ax
     jnz     short _init_replay
 _prepare_intro:
-    call    unload_audio_res
+    call    audio_unload
 loc_103EF:
     sub     si, si
 _do_intro:
@@ -605,7 +605,7 @@ loc_10575:
     pop     bp
     retf
     nop
-_main endp
+ported_stuntsmain_ endp
 run_intro_looped proc far
      s = byte ptr 0
      r = byte ptr 2
@@ -628,8 +628,8 @@ run_intro_looped proc far
     push    ax              ; int
     call    file_load_resource
     add     sp, 4
-    mov     word_45E12, ax
-    mov     word_45E14, dx
+    mov     word ptr tempdataptr, ax
+    mov     word ptr tempdataptr+2, dx
     mov     ax, 0Fh
     push    ax
     mov     ax, 0C8h ; 'È'
@@ -647,8 +647,8 @@ run_intro_looped proc far
     push    word ptr wndsprite
     call    release_window
     add     sp, 4
-    push    word_45E14
-    push    word_45E12
+    push    word ptr tempdataptr+2
+    push    word ptr tempdataptr
     call    mmgr_free
     add     sp, 4
     or      si, si
@@ -664,8 +664,8 @@ run_intro_looped proc far
     push    ax              ; int
     call    file_load_resource
     add     sp, 4
-    mov     word_45E12, ax
-    mov     word_45E14, dx
+    mov     word ptr tempdataptr, ax
+    mov     word ptr tempdataptr+2, dx
     mov     ax, 0Fh
     push    ax
     mov     ax, 0C8h ; 'È'
@@ -691,12 +691,12 @@ run_intro_looped proc far
     push    word ptr wndsprite
     call    release_window
     add     sp, 4
-    push    word_45E14
-    push    word_45E12
+    push    word ptr tempdataptr+2
+    push    word ptr tempdataptr
     call    mmgr_free
     add     sp, 4
 loc_1068E:
-    call    unload_audio_res
+    call    audio_unload
     mov     ax, si
     pop     si
     mov     sp, bp
@@ -720,8 +720,8 @@ run_intro proc far
     call    sprite_copy_wnd_to_1_clear
     mov     ax, offset aProd; "prod"
     push    ax
-    push    word_45E14
-    push    word_45E12
+    push    word ptr tempdataptr+2
+    push    word ptr tempdataptr
     call    locate_shape_fatal
     add     sp, 6
     mov     bx, ax
@@ -735,8 +735,8 @@ loc_106DE:
 loc_106E4:
     mov     ax, offset aProd_0; "prod"
     push    ax
-    push    word_45E14
-    push    word_45E12
+    push    word ptr tempdataptr+2
+    push    word ptr tempdataptr
     call    locate_shape_fatal
     add     sp, 6
     push    dx
@@ -763,8 +763,8 @@ loc_106E4:
     mov     waitflag, 0B4h ; '´'
     mov     ax, offset aTitl_0; "titl"
     push    ax
-    push    word_45E14
-    push    word_45E12
+    push    word ptr tempdataptr+2
+    push    word ptr tempdataptr
     call    locate_shape_fatal
     add     sp, 6
     push    dx
@@ -824,8 +824,8 @@ load_intro_resources proc far
     push    ax
     mov     ax, offset aArowarrwarw1ar; "arowarrwarw1arw2arw3arw4arw5arw6arw7arw"...
     push    ax
-    push    word_45E14
-    push    word_45E12
+    push    word ptr tempdataptr+2
+    push    word ptr tempdataptr
     call    locate_many_resources
     add     sp, 8
     mov     waitflag, 96h ; '–'
@@ -1356,7 +1356,7 @@ load_intro_resources proc far
     push    word ptr wndsprite
     call    sub_29620
     add     sp, 6
-    call    sub_28F3C
+    call    sprite_copy_2_to_1_2
     call    timer_get_delta2
     mov     si, 14Ah
 loc_10D77:
@@ -1428,7 +1428,7 @@ loc_10DEC:
     push    word ptr [bx-34h]
     call    sub_33D4E
     add     sp, 4
-    call    sub_28F3C
+    call    sprite_copy_2_to_1_2
     mov     ax, 0C8h ; 'È'
     push    ax
     push    [bp+var_4]
@@ -1602,7 +1602,7 @@ loc_10FB9:
     call    sub_29620
     add     sp, 6
     mov     [bp+var_6], 0FEh ; 'þ'
-    call    sub_28F3C
+    call    sprite_copy_2_to_1_2
     call    sub_29772
 loc_10FEF:
     push    word_407D0
@@ -2007,7 +2007,7 @@ loc_113B4:
     call    sub_29620
     add     sp, 6
     mov     [bp+var_6], 0FEh ; 'þ'
-    call    sub_28F3C
+    call    sprite_copy_2_to_1_2
     call    sub_29772
 loc_113E5:
     push    word_407D0
@@ -2221,7 +2221,7 @@ loc_1159A:
     mov     byte_3B8FB, 1
     push    word ptr trackdata11+2
     push    word ptr trackdata11
-    mov     ax, 95F8h
+    mov     ax, offset track_full_path
     push    ax
     mov     ax, 0Ah
     push    ax
@@ -2646,9 +2646,9 @@ loc_119AF:
     add     sp, 2
     inc     al
     add     [bp+var_16], al
-    mov     ax, word_449D0
+    mov     ax, framespersec
     mov     [bp+var_14], ax
-    mov     word_449D0, 14h
+    mov     framespersec, 14h
     cmp     [bp+var_18], 0FFFFh
     jz      short loc_119E0
     mov     ax, 1
@@ -2679,7 +2679,7 @@ loc_119E7:
     call    _strcpy
     add     sp, 4
     mov     ax, [bp+var_14]
-    mov     word_449D0, ax
+    mov     framespersec, ax
     pop     si
     pop     di
     mov     sp, bp
@@ -2710,7 +2710,7 @@ enter_hiscore proc far
     sub     sp, 3Ch
     push    di
     push    si
-    cmp     word_449D0, 0Ah
+    cmp     framespersec, 0Ah
     jnz     short loc_11A2E
     shl     [bp+arg_0], 1
 loc_11A2E:
@@ -3626,9 +3626,9 @@ loc_12229:
     push    ax
     call    sub_292DC
     add     sp, 14h
-    mov     ax, word_449D0
+    mov     ax, framespersec
     mov     [bp+var_12], ax
-    mov     word_449D0, 14h
+    mov     framespersec, 14h
     mov     ax, 0FFFEh
     push    ax
     call    init_game_state
@@ -3687,7 +3687,7 @@ loc_122FB:
     jl      short loc_122CE
 loc_12344:
     mov     ax, [bp+var_12]
-    mov     word_449D0, ax
+    mov     framespersec, ax
     push    word ptr fontnptr+2
     push    word ptr fontnptr
     call    set_fontdef2
@@ -3843,7 +3843,7 @@ loc_124DE:
     jz      short loc_12541
     cmp     al, 0FFh
     jz      short loc_12534
-    call    sub_28F3C
+    call    sprite_copy_2_to_1_2
     mov     ax, word_3BB4E
     inc     ax
     push    ax
@@ -3862,13 +3862,13 @@ loc_124DE:
     call    sub_33BDA
     add     sp, 4
     call    sub_28D9E
-    call    sub_28F3C
+    call    sprite_copy_2_to_1_2
 loc_12534:
     call    sub_29772
     mov     al, [bp+var_106]
     mov     [bp+var_F2], al
 loc_12541:
-    call    sub_28F3C
+    call    sprite_copy_2_to_1_2
     push    word_407D0
     push    word_407CE
     mov     ax, 3D6h
@@ -4022,7 +4022,7 @@ loc_126B8:
 loc_126CE:
     add     sp, 8
 loc_126D1:
-    call    sub_28F3C
+    call    sprite_copy_2_to_1_2
     push    [bp+var_14]
     push    [bp+var_16]
     push    [bp+var_18]
@@ -4211,7 +4211,7 @@ loc_1287F:
     push    [bp+var_3C]
     call    sub_292DC
     add     sp, 14h
-    call    sub_28F3C
+    call    sprite_copy_2_to_1_2
     call    sub_28DB6
     sub     ax, ax
     push    ax
@@ -4881,7 +4881,7 @@ run_option_menu proc far
     add     sp, 2
     mov     word_455CC, ax
     mov     word_455CE, dx
-    call    sub_28F3C
+    call    sprite_copy_2_to_1_2
     push    word_407FA
     call    clear_sprite1_color
     add     sp, 2
@@ -6345,7 +6345,7 @@ loc_13D13:
     call    sub_29772
     call    check_input
     mov     [bp+var_70], 1
-    call    sub_28F3C
+    call    sprite_copy_2_to_1_2
 loc_13D83:
     push    word_407D0
     push    word_407CE
@@ -6412,7 +6412,7 @@ loc_13DDF:
     push    word ptr [bp+var_56]
     call    sub_33DE2
     add     sp, 8
-    call    sub_28F3C
+    call    sprite_copy_2_to_1_2
     les     bx, [bp+var_56]
     mov     ax, es:[bx+2]
     add     ax, [bp+var_90]
@@ -6432,7 +6432,7 @@ loc_13DDF:
     push    word ptr es:[bx]
     call    sub_33BBC
     add     sp, 8
-    call    sub_28F3C
+    call    sprite_copy_2_to_1_2
     jmp     short loc_13EA0
     ; align 2
     db 144
@@ -6733,14 +6733,14 @@ loc_14130:
     call    sub_29620
     add     sp, 6
     mov     [bp+var_52], 0FEh ; 'þ'
-    call    sub_28F3C
+    call    sprite_copy_2_to_1_2
 loc_14188:
     mov     al, [bp+var_78]
     cmp     [bp+var_92], al
     jz      short loc_141DC
     mov     al, [bp+var_92]
     mov     [bp+var_78], al
-    call    sub_28F3C
+    call    sprite_copy_2_to_1_2
     mov     ax, word_3BD0A
     inc     ax
     push    ax
@@ -6835,7 +6835,7 @@ loc_1424D:
     push    word ptr [bp+var_56]
     call    sub_33DE2
     add     sp, 8
-    call    sub_28F3C
+    call    sprite_copy_2_to_1_2
     les     bx, [bp+var_56]
     mov     ax, es:[bx+2]
     add     ax, [bp+var_90]
@@ -6855,7 +6855,7 @@ loc_1424D:
     push    word ptr es:[bx]
     call    sub_33BBC
     add     sp, 8
-    call    sub_28F3C
+    call    sprite_copy_2_to_1_2
     jmp     short loc_1430E
     ; align 2
     db 144
@@ -6973,7 +6973,7 @@ loc_14404:
     ; align 2
     db 144
 loc_1440C:
-    call    unload_audio_res
+    call    audio_unload
     cmp     [bp+var_16], 0
     jz      short loc_14425
     push    [bp+var_1A]

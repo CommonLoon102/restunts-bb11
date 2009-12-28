@@ -112,7 +112,7 @@ opponent_op proc far
     sub     sp, 40h
     push    di
     push    si
-    cmp     word_449D0, 14h
+    cmp     framespersec, 14h
     jnz     short loc_1472E
     mov     [bp+var_14], 8
     mov     [bp+var_10], 1
@@ -999,7 +999,7 @@ update_player_state proc far
 loc_14E1E:
     mov     [bp+var_142], 0
 loc_14E24:
-    cmp     word_449D0, 0Ah
+    cmp     framespersec, 0Ah
     jnz     short loc_14E30
     mov     ax, 1E00h
     jmp     short loc_14E33
@@ -1821,7 +1821,7 @@ loc_15642:
     mov     bx, [bp+var_DE]
     sub     [bx+4], ax
     sbb     [bx+6], dx
-    cmp     word_449D0, 0Ah
+    cmp     framespersec, 0Ah
     jnz     short loc_156A3
     mov     al, [bp+var_E8]
     cbw
@@ -3921,7 +3921,7 @@ loc_16B18:
     cmp     di, 14h
     jl      short loc_16B18
 loc_16B4D:
-    cmp     word_449D0, 0Ah
+    cmp     framespersec, 0Ah
     jnz     short loc_16B5C
     mov     word_449E8, 64Ah
     jmp     short loc_16B62
@@ -3929,11 +3929,11 @@ loc_16B5C:
     mov     word_449E8, 60Ah
 loc_16B62:
     mov     ax, 1Eh
-    imul    word_449D0
+    imul    framespersec
     mov     word_45A00, ax
     mov     ax, 64h ; 'd'
     cwd
-    mov     cx, word_449D0
+    mov     cx, framespersec
     idiv    cx
     mov     word_4499C, ax
     cmp     [bp+arg_0], 0FFFDh
@@ -4854,12 +4854,12 @@ loc_1737B:
     cmp     [bp+var_1E], 0
     jle     short loc_173AD
     mov     ax, [bp+var_1E]
-    imul    word_449D0
+    imul    framespersec
     mov     cx, ax
     shl     ax, 1
     add     ax, cx
     mov     word_461CA, ax
-    mov     al, byte ptr word_449D0
+    mov     al, byte ptr framespersec
     shl     al, 1
     shl     al, 1
     mov     byte_4499F, al
@@ -5661,7 +5661,7 @@ update_car_state proc far
     sub     sp, 0Ah
     push    di
     push    si
-    cmp     word_449D0, 14h
+    cmp     framespersec, 14h
     jnz     short loc_17A8E
     mov     [bp+var_2], 6
     jmp     short loc_17A93
@@ -5735,10 +5735,10 @@ loc_17B2E:
 loc_17B39:
     mov     bx, [bp+arg_4]
     mov     [bx+CARSTATE.car_changing_gear], 1
-    mov     al, byte ptr word_449D0
+    mov     al, byte ptr framespersec
     cbw
     sar     ax, 1
-    add     al, byte ptr word_449D0
+    add     al, byte ptr framespersec
     mov     bx, [bp+arg_4]
     mov     [bx+CARSTATE.car_fpsmul2], al
     mov     bx, [bp+arg_4]
@@ -5947,7 +5947,7 @@ loc_17D10:
 loc_17D36:
     sub     [bp+var_8], ax
 loc_17D39:
-    cmp     word_449D0, 0Ah
+    cmp     framespersec, 0Ah
     jnz     short loc_17D46
     mov     ax, [bp+var_8]
     add     [bp+var_8], ax
@@ -5988,7 +5988,7 @@ loc_17D82:
     cmp     [bx+CARSTATE.car_changing_gear], 0
     jz      short loc_17DBC
     mov     [bx+CARSTATE.field_C6], 0
-    cmp     word_449D0, 0Ah
+    cmp     framespersec, 0Ah
     jnz     short loc_17DB2
     mov     bx, [bp+arg_4]
     sub     [bx+CARSTATE.car_currpm], 50h ; 'P'
@@ -7189,7 +7189,7 @@ loc_18831:
     neg     ax
     mov     si, ax
 loc_18835:
-    cmp     word_449D0, 0Ah
+    cmp     framespersec, 0Ah
     jnz     short loc_18850
     cmp     si, 0A0h ; ' '
     jle     short loc_18845
@@ -8832,7 +8832,7 @@ loc_1967F:
     mov     bx, [bp+var_4]
     mov     ax, [bx+2Ch]
     mov     state.field_14C, ax
-    mov     ax, word_449D0
+    mov     ax, framespersec
     shl     ax, 1
     shl     ax, 1
     mov     state.game_frames_per_sec, ax
@@ -8880,7 +8880,7 @@ loc_19719:
     mov     bx, [bp+var_4]
     mov     ax, [bx+2Ch]
     mov     state.field_14C, ax
-    mov     ax, word_449D0
+    mov     ax, framespersec
     shl     ax, 1
     shl     ax, 1
 loc_19729:
@@ -8897,7 +8897,7 @@ loc_19730:
     add     ax, state.game_fps_counter
     add     ax, word_45A24
     mov     state.field_142, ax
-    mov     ax, word_449D0
+    mov     ax, framespersec
     jmp     short loc_19729
     ; align 2
     db 144
@@ -9520,7 +9520,7 @@ loc_19BCB:
     cwd
     add     word ptr state.game_longvecs2.long_x[di], ax
     adc     word ptr (state.game_longvecs2.long_x+2)[di], dx
-    cmp     word_449D0, 0Ah
+    cmp     framespersec, 0Ah
     jnz     short loc_19C6B
     mov     bx, [bp+var_14]
     sub     word ptr [bx], 13h

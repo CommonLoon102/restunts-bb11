@@ -116,6 +116,10 @@ void far* mmgr_alloc_pages(const char* arg_0, unsigned short arg_2) {
 	return MK_FP(rdx, 0);
 }
 
+void* far mmgr_alloc_resbytes(const char* name, long int size) {
+	return mmgr_alloc_pages(name, size / 16);
+}
+
 void mmgr_alloc_resmem(unsigned short arg_0) {
 
 	void far* psp;

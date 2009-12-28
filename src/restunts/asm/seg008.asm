@@ -67,7 +67,8 @@ seg008 segment byte public 'STUNTSC' use16
     public sub_28E04
     public sub_28E90
     public check_input
-    public sub_28F3C
+    public nopsub_28F26
+    public sprite_copy_2_to_1_2
     public sprite_copy_2_to_1_clear
     public sprite_copy_wnd_to_1
     public sprite_copy_wnd_to_1_clear
@@ -85,7 +86,7 @@ seg008 segment byte public 'STUNTSC' use16
     public sub_29772
     public sub_29786
     public ported_file_load_audiores_
-    public unload_audio_res
+    public audio_unload
     public set_fontdef2
     public set_fontdef
     public sub_298B8
@@ -3139,7 +3140,9 @@ loc_28F1C:
     mov     sp, bp
     pop     bp
     retf
-loc_28F26:
+check_input endp
+nopsub_28F26 proc far
+
     push    cs
     call near ptr timer_get_delta2
     push    ax
@@ -3147,16 +3150,16 @@ loc_28F26:
     call near ptr input_checking
     add     sp, 2
     or      ax, ax
-    jz      short loc_28F26
+    jz      short near ptr nopsub_28F26
     push    cs
     call near ptr check_input
     retf
     ; align 2
     db 144
-check_input endp
-sub_28F3C proc far
+nopsub_28F26 endp
+sprite_copy_2_to_1_2 proc far
 
-    mov     ax, 5F3Eh
+    mov     ax, offset sprite2
     mov     dx, seg seg012
     push    dx
     push    ax
@@ -3165,7 +3168,7 @@ sub_28F3C proc far
     retf
     ; align 2
     db 144
-sub_28F3C endp
+sprite_copy_2_to_1_2 endp
 sprite_copy_2_to_1_clear proc far
 
     mov     ax, offset sprite2
@@ -3993,7 +3996,7 @@ sub_29620 proc far
     push    di
     push    si
     push    cs
-    call near ptr sub_28F3C
+    call near ptr sprite_copy_2_to_1_2
     push    cs
     call near ptr sub_28DB6
     cmp     [bp+arg_4], 0FFFEh
@@ -4039,7 +4042,7 @@ loc_29670:
     or      di, di
     jz      short loc_2965C
     push    cs
-    call near ptr sub_28F3C
+    call near ptr sprite_copy_2_to_1_2
     les     bx, [bp+arg_0]
     push    word ptr es:[bx+2]
     push    word ptr es:[bx]
@@ -4304,7 +4307,7 @@ ported_file_load_audiores_ proc far
     ; align 2
     db 144
 ported_file_load_audiores_ endp
-unload_audio_res proc far
+audio_unload proc far
 
     mov     ax, 2
     push    ax
@@ -4320,7 +4323,7 @@ unload_audio_res proc far
     add     sp, 4
     mov     is_audioloaded, 0
     retf
-unload_audio_res endp
+audio_unload endp
 set_fontdef2 proc far
      s = byte ptr 0
      r = byte ptr 2
@@ -4363,7 +4366,7 @@ sub_298B8 proc far
     push    di
     push    si
     mov     ax, 3Ch ; '<'
-    imul    word_449D0
+    imul    framespersec
     mov     [bp+var_16], ax
     mov     ax, word ptr [bp+arg_0+2]
     sub     dx, dx
@@ -4374,9 +4377,9 @@ sub_298B8 proc far
     sub     word ptr [bp+arg_0+2], ax
     mov     ax, word ptr [bp+arg_0+2]
     sub     dx, dx
-    div     word_449D0
+    div     framespersec
     mov     di, ax
-    mov     ax, word_449D0
+    mov     ax, framespersec
     imul    di
     sub     word ptr [bp+arg_0+2], ax
     mov     ax, 2
@@ -4427,7 +4430,7 @@ sub_298B8 proc far
     push    ax              ; int
     mov     ax, 64h ; 'd'
     cwd
-    mov     cx, word_449D0
+    mov     cx, framespersec
     idiv    cx
     mul     word ptr [bp+arg_0+2]
     push    ax

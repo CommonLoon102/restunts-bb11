@@ -20,4 +20,7 @@ short file_write(const char* filename, unsigned short srcoff, unsigned short src
 short file_write_fatal(const char* filename, unsigned short srcoff, unsigned short srcseg, unsigned long length);
 short file_write_nofatal(const char* filename, unsigned short srcoff, unsigned short srcseg, unsigned long length);
 
+void far* file_load_resfile(const char* filename);
+void far* file_load_resource(int type, const char* filename);
+
 #endif

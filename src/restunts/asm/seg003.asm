@@ -79,7 +79,7 @@ sub_19F14 proc far
     jz      short loc_19F26
     jmp     loc_1A090
 loc_19F26:
-    call    sub_28F3C
+    call    sprite_copy_2_to_1_2
     cmp     byte_454A4, 0
     jz      short loc_19F35
     jmp     loc_1A046
@@ -1983,7 +1983,7 @@ loc_1B0C1:
     ; align 2
     db 144
 loc_1B0D4:
-    mov     word_42A42, offset unk_44A14
+    mov     word_42A42, offset rect_unk6
 loc_1B0DA:
     mov     al, [bp+var_122]
     or      al, 5
@@ -5756,9 +5756,9 @@ loc_1D4B0:
     jnz     short loc_1D52B
     mov     ax, state.game_frame
     sub     dx, dx
-    div     word_449D0
+    div     framespersec
     mov     si, dx
-    mov     ax, word_449D0
+    mov     ax, framespersec
     sar     ax, 1
     cmp     ax, si
     jle     short loc_1D52B
@@ -5820,14 +5820,14 @@ sub_1D534 proc far
     sub     sp, 2
     push    di
     push    si
-    mov     di, word_449D0
+    mov     di, framespersec
     mov     cl, 2
     shl     di, cl
     cmp     [bp+arg_0], di
     jle     short loc_1D54C
     mov     [bp+arg_0], di
 loc_1D54C:
-    mov     ax, word_449D0
+    mov     ax, framespersec
     shl     ax, 1
     shl     ax, 1
     cwd
@@ -5912,7 +5912,7 @@ sub_1D5B4 proc far
     add     sp, 6
     mov     word ptr [bp+var_4], ax
     mov     word ptr [bp+var_4+2], dx
-    mov     ax, word_449D0
+    mov     ax, framespersec
     cwd
     mov     cx, 7
     idiv    cx
@@ -6355,19 +6355,19 @@ setup_intro proc far
     push    [bp+var_2AE]
     call    locate_many_resources
     add     sp, 8
-    mov     ax, 8BC0h
+    mov     ax, offset logoshape
     push    ax
     push    [bp+var_20]
     push    [bp+var_22]
     call    setup_3d_res
     add     sp, 6
-    mov     ax, 8BFCh
+    mov     ax, offset logo2shape
     push    ax
     push    [bp+var_1C]
     push    [bp+var_1E]
     call    setup_3d_res
     add     sp, 6
-    mov     ax, 9580h
+    mov     ax, offset bravshape
     push    ax
     push    [bp+var_18]
     push    [bp+var_1A]
@@ -6490,7 +6490,7 @@ loc_1DAEE:
     sub     word_44DCC, ax
     call    do_opponent_op
     mov     [bp+var_2A2], 1
-    mov     ax, word_449D0
+    mov     ax, framespersec
     mov     cx, ax
     shl     ax, 1
     shl     ax, 1
@@ -6598,7 +6598,7 @@ loc_1DBF7:
     dec     cl
     jnz     short loc_1DBF7
     mov     [bp+var_29C], ax
-    mov     ax, word_449D0
+    mov     ax, framespersec
     mov     cx, ax
     shl     ax, 1
     add     ax, cx
@@ -6623,7 +6623,7 @@ nosmart
     ; align 2
     db 144
 loc_1DC44:
-    mov     ax, word_449D0
+    mov     ax, framespersec
     mov     cx, ax
     shl     ax, 1
     shl     ax, 1
@@ -6699,10 +6699,10 @@ loc_1DCFC:
     mov     bx, [bp+var_36]
     mov     cl, 3
     shl     bx, cl
-    push    word ptr [bx-6D66h]
-    push    word ptr [bx-6D68h]
-    push    word ptr [bx-6D6Ah]
-    push    word ptr [bx-6D6Ch]
+    push    (rect_unk+6)[bx]
+    push    (rect_unk+4)[bx]
+    push    (rect_unk+2)[bx]
+    push    rect_unk[bx]
     push    [bp+var_5D2]
     push    [bp+var_2A8]
     lea     ax, [bp+var_29A]
@@ -6727,7 +6727,7 @@ loc_1DCFC:
     mov     bx, [bp+var_36]
     mov     cl, 3
     shl     bx, cl
-    lea     di, [bx-6D6Ch]
+    lea     di, rect_unk[bx]
     lea     si, [bp+var_16]
     push    ds
     pop     es
@@ -6739,12 +6739,12 @@ loc_1DD77:
     xor     byte ptr [bp+var_36], 1
     jmp     loc_1DE19
 loc_1DD7E:
-    call    sub_28F3C
+    call    sprite_copy_2_to_1_2
     cmp     word_44984, 0
     jz      short loc_1DDFC
     lea     ax, [bp+var_2A]
     push    ax
-    mov     ax, 92A4h
+    mov     ax, offset rect_unk6
     push    ax
     lea     ax, [bp+var_34]
     push    ax
@@ -6779,7 +6779,7 @@ loc_1DD7E:
     movsw
     movsw
     movsw
-    mov     di, 92A4h
+    mov     di, offset rect_unk6
     lea     si, [bp+var_34]
     movsw
     movsw
@@ -6806,7 +6806,7 @@ loc_1DE19:
     jmp     short loc_1DE3E
 loc_1DE2E:
     mov     ax, 17h
-    imul    word_449D0
+    imul    framespersec
     cmp     ax, [bp+var_5D4]
     jle     short loc_1DE3E
     jmp     loc_1DADE

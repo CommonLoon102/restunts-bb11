@@ -939,7 +939,7 @@ loc_2AAF0:
     mov     [bp+var_36], 0FEh ; 'þ'
     mov     [bp+var_C2], 0FFh
 loc_2AB0E:
-    call    sub_28F3C
+    call    sprite_copy_2_to_1_2
     cmp     [bp+var_34], 0
     jz      short loc_2AB1C
     jmp     loc_2ABEA
@@ -2091,7 +2091,7 @@ loc_2B67E:
     jz      short loc_2B688
     jmp     loc_2B75C
 loc_2B688:
-    call    sub_28F3C
+    call    sprite_copy_2_to_1_2
     cmp     [bp+var_D4], 0
     jz      short loc_2B6CE
     sub     ax, ax
@@ -2183,7 +2183,7 @@ loc_2B766:
     ; align 2
     db 144
 loc_2B774:
-    call    sub_28F3C
+    call    sprite_copy_2_to_1_2
     inc     [bp+var_32]
     mov     ax, 3504h
     push    ax

@@ -20,7 +20,8 @@ seg008 segment byte public 'STUNTSC' use16
     extrn sub_28E04:proc
     extrn sub_28E90:proc
     extrn check_input:proc
-    extrn sub_28F3C:proc
+    extrn nopsub_28F26:proc
+    extrn sprite_copy_2_to_1_2:proc
     extrn sprite_copy_2_to_1_clear:proc
     extrn sprite_copy_wnd_to_1:proc
     extrn sprite_copy_wnd_to_1_clear:proc
@@ -38,7 +39,7 @@ seg008 segment byte public 'STUNTSC' use16
     extrn sub_29772:proc
     extrn sub_29786:proc
     extrn ported_file_load_audiores_:proc
-    extrn unload_audio_res:proc
+    extrn audio_unload:proc
     extrn set_fontdef2:proc
     extrn set_fontdef:proc
     extrn sub_298B8:proc

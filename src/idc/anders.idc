@@ -661,7 +661,10 @@ static PortFuncName(labelname) {
 		labelname == "mmgr_op_unk2" ||
 		labelname == "mmgr_get_chunk_size" ||
 		labelname == "mmgr_resize_memory" ||
-		labelname == "mmgr_op_unk"
+		labelname == "mmgr_op_unk" ||
+		labelname == "mmgr_alloc_resbytes" ||
+
+		labelname == "stuntsmain"
 	)
 		return "ported_" + labelname + "_";
 	return labelname;
@@ -914,7 +917,7 @@ static PrintReport() {
 }
 
 static main() {
-	auto segea, funcea, nextseg, endseg, endfunc, nextfunc, segss;
+	auto segea, funcea, nextseg, endseg, endfunc, nextfunc, segss, segtype;
 	auto maxfuncs, funccount, startseg;
 	auto i;
 	auto f, filename, flags;
@@ -963,8 +966,6 @@ static main() {
 		f = fopen(filename, "w");
 		
 		PrintAsmHeader(f, segea, endseg);
-
-		//Message("HEISEG: %i\n", GetSegmentAttr(segea, SEGATTR_TYPE));
 
 		for (funcea = segea; funcea != BADADDR; funcea = nextfunc) {
 			nextfunc = NextFunction(funcea);

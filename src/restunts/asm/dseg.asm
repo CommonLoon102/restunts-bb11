@@ -1111,6 +1111,7 @@ dseg segment byte public 'STUNTSD' use16
     public byte_4432A
     public word_4432C
     public word_4432E
+    public logoshape
     public byte_44346
     public word_44348
     public word_4434A
@@ -1128,6 +1129,7 @@ dseg segment byte public 'STUNTSD' use16
     public dword_44364
     public word_44368
     public word_4436A
+    public logo2shape
     public waitflag
     public unk_44384
     public terrainrows
@@ -1174,7 +1176,7 @@ dseg segment byte public 'STUNTSD' use16
     public word_449CA
     public word_449CC
     public byte_449CE
-    public word_449D0
+    public framespersec
     public trackdata17
     public byte_449D8
     public byte_449DA
@@ -1197,7 +1199,7 @@ dseg segment byte public 'STUNTSD' use16
     public word_44A02
     public rect_unk
     public rect_unk2
-    public unk_44A14
+    public rect_unk6
     public word_44A2C
     public word_44A2E
     public word_44A30
@@ -1212,6 +1214,7 @@ dseg segment byte public 'STUNTSD' use16
     public trackdata11
     public word_44CEA
     public mainresptr
+    public bravshape
     public word_44D1E
     public word_44D20
     public fontnptr
@@ -1358,8 +1361,7 @@ dseg segment byte public 'STUNTSD' use16
     public trackcenterpos2
     public word_45E0E
     public word_45E10
-    public word_45E12
-    public word_45E14
+    public tempdataptr
     public byte_45E16
     public passed_security
     public trackdata19
@@ -36171,7 +36173,7 @@ byte_4432A     db 0
     db 0
 word_4432C     dw 0
 word_4432E     dw 0
-    db 0
+logoshape     db 0
     db 0
     db 0
     db 0
@@ -36211,7 +36213,7 @@ songfileptr     dd 0
 dword_44364     dd 0
 word_44368     dw 0
 word_4436A     dw 0
-    db 0
+logo2shape     db 0
     db 0
     db 0
     db 0
@@ -37770,7 +37772,7 @@ word_449CA     dw 0
 word_449CC     dw 0
 byte_449CE     db 0
     db 0
-word_449D0     dw 0
+framespersec     dw 0
     db 0
     db 0
 trackdata17     dd 0
@@ -37808,14 +37810,10 @@ rect_unk2     dw 0
     dw 0
     dw 0
     dw 0
-unk_44A14     db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
+rect_unk6     dw 0
+    dw 0
+    dw 0
+    dw 0
     db 0
     db 0
     db 0
@@ -38522,7 +38520,7 @@ word_44AE4     dw 0
 trackdata11     dd 0
 word_44CEA     dw 0
 mainresptr     dd 0
-    db 0
+bravshape     db 0
     db 0
     db 0
     db 0
@@ -42692,8 +42690,7 @@ trackcenterpos2     dw 0
     dw 0
 word_45E0E     dw 0
 word_45E10     dw 0
-word_45E12     dw 0
-word_45E14     dw 0
+tempdataptr     dd 0
 byte_45E16     db 0
     db 0
     db 0

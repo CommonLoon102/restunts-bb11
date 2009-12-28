@@ -155,7 +155,7 @@ loc_21C24:
     jz      short loc_21C6E
     mov     al, byte ptr gameconfig.game_framespersec
     cbw
-    mov     word_449D0, ax
+    mov     framespersec, ax
 loc_21C5E:
     mov     ax, 0FFFFh
     push    ax
@@ -173,7 +173,7 @@ loc_21C78:
     mov     byte_43950, 1
     mov     byte_4499F, 0
     mov     ax, word_44D4E
-    mov     word_449D0, ax
+    mov     framespersec, ax
     mov     al, byte ptr word_44D4E
     mov     byte ptr gameconfig.game_framespersec, al
     mov     ax, 0FFFFh
@@ -237,7 +237,7 @@ loc_21D2C:
     mov     word_44DCA, 1F4h
     mov     al, byte ptr gameconfig.game_framespersec
     cbw
-    mov     word_449D0, ax
+    mov     framespersec, ax
     sub     ax, ax
     push    ax
     call    restore_gamestate
@@ -621,7 +621,7 @@ loc_22152:
     jnz     short loc_2217D
     mov     byte_45DB2, 0
     mov     ax, word_44D4E
-    mov     word_449D0, ax
+    mov     framespersec, ax
     mov     al, byte ptr word_44D4E
     mov     byte ptr gameconfig.game_framespersec, al
     mov     ax, 0FFFFh
@@ -741,7 +741,7 @@ loc_2227E:
     mov     byte_45DB2, 0
     mov     byte_4393C, 0
     mov     ax, word_44D4E
-    mov     word_449D0, ax
+    mov     framespersec, ax
     mov     al, byte ptr word_44D4E
     mov     byte ptr gameconfig.game_framespersec, al
     jmp     loc_21C5E
@@ -769,7 +769,7 @@ loc_22298:
     call    setup_mcgawnd1
     call    sub_28D9E
 loc_222D3:
-    call    sub_28F3C
+    call    sprite_copy_2_to_1_2
     mov     byte_454B8, 1
     call    sub_188A4
     call    remove_audiodriver_timer
@@ -809,7 +809,7 @@ loc_22305:
     call    show_dialog
     add     sp, 12h
     mov     byte ptr word_45D3E, 1
-    mov     si, word_449D0
+    mov     si, framespersec
     dec     si
 loc_22347:
     mov     ax, 1
@@ -819,7 +819,7 @@ loc_22347:
     add     sp, 2
     call    update_gamestate
     inc     si
-    mov     ax, word_449D0
+    mov     ax, framespersec
     cmp     si, ax
     jnz     short loc_2239F
     sub     si, si
@@ -854,7 +854,7 @@ loc_2239F:
     cmp     state.opponentstate.field_C9, 0
     jnz     short loc_223CD
     mov     ax, 5DCh
-    imul    word_449D0
+    imul    framespersec
     mov     cx, state.game_frame
     add     cx, word_45A24
     cmp     ax, cx
@@ -988,7 +988,7 @@ loc_224C0:
     mov     byte_45DB2, 0
     mov     byte_4393C, 0
     mov     ax, word_44D4E
-    mov     word_449D0, ax
+    mov     framespersec, ax
     mov     al, byte ptr word_44D4E
     mov     byte ptr gameconfig.game_framespersec, al
     mov     ax, 0FFFFh
@@ -1252,7 +1252,7 @@ loc_226E6:
     jnz     short loc_22725
     cmp     byte_4393C, 0
     jnz     short loc_22725
-    mov     ax, word_449D0
+    mov     ax, framespersec
     shl     ax, 1
     shl     ax, 1
     cmp     ax, state.game_frame
@@ -1381,7 +1381,7 @@ smart
 nosmart
 loc_22817:
     mov     ax, 5DCh
-    imul    word_449D0
+    imul    framespersec
     mov     cx, word_42D02
     add     cx, word_45A24
     cmp     ax, cx
@@ -1489,7 +1489,7 @@ loc_2286C:
     inc     di
 loc_22909:
     mov     ax, 1Eh
-    imul    word_449D0
+    imul    framespersec
     mov     [bp+var_6], ax
     mov     ax, 2EE0h
     cwd
@@ -1512,14 +1512,14 @@ loc_22928:
     inc     di
 loc_2293E:
     mov     ax, 1Eh
-    imul    word_449D0
+    imul    framespersec
     mov     [bp+var_A], ax
     mov     ax, 2EE0h
     sub     ax, [bp+var_A]
     cmp     ax, di
     jg      short loc_22928
     mov     ax, 1Eh
-    imul    word_449D0
+    imul    framespersec
     mov     [bp+var_A], ax
     sub     word_42D02, ax
     sub     gameconfig.game_recordedframes, ax
@@ -1724,7 +1724,7 @@ loc_22A96:
     cmp     [bp+var_22], di
     jge     short loc_22B53
     sub     di, [bp+var_22]
-    cmp     word_449D0, 14h
+    cmp     framespersec, 14h
     jnz     short loc_22B04
     cmp     di, 78h ; 'x'
     jle     short loc_22B0D
@@ -1764,7 +1764,7 @@ loc_22B0D:
 loc_22B53:
     mov     ax, state.game_frame
     sub     dx, dx
-    mov     cx, word_449D0
+    mov     cx, framespersec
     sar     cx, 1
     div     cx
     or      dx, dx
@@ -2402,7 +2402,7 @@ loc_230DE:
     ; align 2
     db 144
 loc_2315E:
-    call    sub_28F3C
+    call    sprite_copy_2_to_1_2
     call    sub_28DB6
 loc_23168:
     push    word_459D4
@@ -2764,7 +2764,7 @@ loc_234EC:
     push    word_40DC8
     jmp     short loc_234D6
 loc_23506:
-    call    sub_28F3C
+    call    sprite_copy_2_to_1_2
 loc_2350B:
     push    word_459D4
     sub     ax, ax
@@ -4350,7 +4350,7 @@ loc_2440E:
 loc_24416:
     call    check_input
     mov     ax, word_44D4E
-    mov     word_449D0, ax
+    mov     framespersec, ax
     mov     al, byte ptr word_44D4E
     mov     byte ptr gameconfig.game_framespersec, al
     mov     ax, 0FFFFh
@@ -4551,7 +4551,7 @@ loc_2460D:
 loc_24619:
     mov     al, byte ptr gameconfig.game_framespersec
     cbw
-    mov     word_449D0, ax
+    mov     framespersec, ax
     mov     ax, 0FFFFh
     push    ax
     call    init_game_state

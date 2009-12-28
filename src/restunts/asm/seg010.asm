@@ -213,7 +213,7 @@ nosmart
     push    word_3EE0C
     push    argv            ; p_argv
     push    argc            ; p_argc
-    call    _main
+    call    stuntsmain
     push    ax
     call    far ptr libsub_2CDEC
 __cintDIV:

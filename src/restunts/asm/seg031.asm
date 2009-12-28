@@ -55,7 +55,7 @@ seg031 segment byte public 'STUNTSC' use16
     public random_wait
     public load_palandcursor
     public get_0
-    public mmgr_alloc_resbytes
+    public ported_mmgr_alloc_resbytes_
     public get_res_ofs_diff_scaled
     public get_res_size_scaled
 load_2dshape_nofatal2 proc far
@@ -534,7 +534,7 @@ loc_3A226:
     mov     byte_3B8FA, 4
 loc_3A22B:
     mov     ax, word_44D4E
-    mov     word_449D0, ax
+    mov     framespersec, ax
     mov     ax, word_44CEA
     mov     word_44984, ax
     push    cs
@@ -751,7 +751,7 @@ loc_3A300:
     push    [bp+var_30C]
     call    mmgr_free
     add     sp, 4
-    call    sub_28F3C
+    call    sprite_copy_2_to_1_2
     pop     si
     mov     sp, bp
     pop     bp
@@ -764,7 +764,7 @@ get_0 proc far
     ; align 2
     db 144
 get_0 endp
-mmgr_alloc_resbytes proc far
+ported_mmgr_alloc_resbytes_ proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -789,7 +789,7 @@ mmgr_alloc_resbytes proc far
     retf
     ; align 2
     db 144
-mmgr_alloc_resbytes endp
+ported_mmgr_alloc_resbytes_ endp
 get_res_ofs_diff_scaled proc far
 
     call    mmgr_get_ofs_diff

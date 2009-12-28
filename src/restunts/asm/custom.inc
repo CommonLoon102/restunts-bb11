@@ -55,5 +55,8 @@ extrn mmgr_op_unk2:proc
 extrn mmgr_get_chunk_size:proc
 extrn mmgr_resize_memory:proc
 extrn mmgr_op_unk:proc
+extrn mmgr_alloc_resbytes:proc
+
+extrn stuntsmain:proc
 
 ;extrn fatal_error:proc

@@ -22,6 +22,6 @@ void mmgr_op_unk2(unsigned short arg_0, unsigned short arg_2);
 unsigned short mmgr_get_chunk_size(unsigned short arg_0, unsigned short arg_2);
 unsigned short mmgr_resize_memory(unsigned short arg_0, unsigned short arg_2, unsigned short arg_4);
 void far* mmgr_op_unk(unsigned short arg_0, unsigned short arg_2);
-
+void* far mmgr_alloc_resbytes(const char* name, long int size);
 
 #endif
