@@ -21,9 +21,9 @@ seg008 segment byte public 'STUNTSC' use16
     extrn sub_28E90:proc
     extrn check_input:proc
     extrn sub_28F3C:proc
-    extrn sub_28F4E:proc
-    extrn sub_28F6A:proc
-    extrn sub_28F7C:proc
+    extrn sprite_copy_2_to_1_clear:proc
+    extrn sprite_copy_wnd_to_1:proc
+    extrn sprite_copy_wnd_to_1_clear:proc
     extrn sub_28F98:proc
     extrn sub_29008:proc
     extrn sub_290BC:proc
@@ -37,7 +37,7 @@ seg008 segment byte public 'STUNTSC' use16
     extrn sub_296E0:proc
     extrn sub_29772:proc
     extrn sub_29786:proc
-    extrn load_audio_res:proc
+    extrn ported_file_load_audiores_:proc
     extrn unload_audio_res:proc
     extrn set_fontdef2:proc
     extrn set_fontdef:proc
@@ -60,5 +60,5 @@ seg008 segment byte public 'STUNTSC' use16
     extrn ensure_file_exists:proc
     extrn sub_2A200:proc
     extrn timer_get_delta2:proc
-    extrn load_3dshape:proc
+    extrn ported_file_load_3dres_:proc
 seg008 ends

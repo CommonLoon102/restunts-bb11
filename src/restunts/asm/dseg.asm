@@ -76,7 +76,7 @@ dseg segment byte public 'STUNTSD' use16
     public word_3B8EE
     public word_3B8F0
     public byte_3B8F2
-    public byte_3B8F3
+    public is_audioloaded
     public byte_3B8F4
     public byte_3B8F5
     public byte_3B8F6
@@ -847,6 +847,12 @@ dseg segment byte public 'STUNTSD' use16
     public word_40B0E
     public word_40B10
     public audiodriverstring
+    public aSdmain
+    public aPal
+    public aSmou
+    public aSdmain_0
+    public aSmou_0
+    public aMmou
     public byte_40B86
     public aMcgaWindow
     public aWindowdefOutOfRowTableSpa
@@ -1118,8 +1124,7 @@ dseg segment byte public 'STUNTSD' use16
     public word_4435A
     public word_4435C
     public word_4435E
-    public word_44360
-    public word_44362
+    public songfileptr
     public dword_44364
     public word_44368
     public word_4436A
@@ -1197,8 +1202,7 @@ dseg segment byte public 'STUNTSD' use16
     public word_44A2E
     public word_44A30
     public word_44A32
-    public word_44A7C
-    public word_44A7E
+    public voicefileptr
     public skybox_unk2
     public byte_44A8A
     public word_44A8C
@@ -1786,7 +1790,7 @@ word_3B8EC     dw 210
 word_3B8EE     dw 464
 word_3B8F0     dw 80
 byte_3B8F2     db 0
-byte_3B8F3     db 0
+is_audioloaded     db 0
 byte_3B8F4     db 0
 byte_3B8F5     db 0
 byte_3B8F6     db 0
@@ -22145,36 +22149,36 @@ audiodriverstring     db 112
     db 49
     db 53
     db 0
-    db 115
+aSdmain     db 115
     db 100
     db 109
     db 97
     db 105
     db 110
     db 0
-    db 33
+aPal     db 33
     db 112
     db 97
     db 108
     db 0
-    db 115
+aSmou     db 115
     db 109
     db 111
     db 117
     db 0
-    db 115
+aSdmain_0     db 115
     db 100
     db 109
     db 97
     db 105
     db 110
     db 0
-    db 115
+aSmou_0     db 115
     db 109
     db 111
     db 117
     db 0
-    db 109
+aMmou     db 109
     db 109
     db 111
     db 117
@@ -36203,8 +36207,7 @@ word_44358     dw 0
 word_4435A     dw 0
 word_4435C     dw 0
 word_4435E     dw 0
-word_44360     dw 0
-word_44362     dw 0
+songfileptr     dd 0
 dword_44364     dd 0
 word_44368     dw 0
 word_4436A     dw 0
@@ -37905,8 +37908,7 @@ word_44A32     dw 0
     db 0
     db 0
     db 0
-word_44A7C     dw 0
-word_44A7E     dw 0
+voicefileptr     dd 0
     db 0
     db 0
     db 0

@@ -3205,13 +3205,13 @@ loc_1FEB9:
 loc_1FEC2:
     mov     ax, offset aGame1; "game1"
     push    ax
-    call    load_3dshape
+    call    file_load_3dres
     add     sp, 2
     mov     word_461C4, ax
     mov     word_461C6, dx
     mov     ax, offset aGame2; "game2"
     push    ax
-    call    load_3dshape
+    call    file_load_3dres
     add     sp, 2
     mov     word_463D2, ax
     mov     word_463D4, dx
@@ -3313,7 +3313,7 @@ sub_1FF92 proc far
     mov     byte ptr aStxxx+5, al
     mov     ax, offset aStxxx; "stxxx"
     push    ax
-    call    load_3dshape
+    call    file_load_3dres
     add     sp, 2
     mov     word ptr dword_454AA, ax
     mov     word ptr dword_454AA+2, dx
@@ -3570,7 +3570,7 @@ loc_2022A:
     mov     byte ptr aStxxx+5, al
     mov     ax, offset aStxxx; "stxxx"
     push    ax
-    call    load_3dshape
+    call    file_load_3dres
     add     sp, 2
     mov     word ptr dword_454B0, ax
     mov     word ptr dword_454B0+2, dx

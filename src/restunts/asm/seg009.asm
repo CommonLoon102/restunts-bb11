@@ -346,7 +346,7 @@ loc_2A50D:
     mov     al, byte_45E16
     mov     [bp+var_180], al
     mov     [bp+var_17F], 7
-    call    sub_28F7C
+    call    sprite_copy_wnd_to_1_clear
     sub     ax, ax
     push    ax
     push    word_407F8
@@ -680,7 +680,7 @@ loc_2A878:
     mov     byte ptr [bp+var_196], al
     cmp     al, 0FEh ; 'þ'
     jnb     short loc_2A866
-    call    sub_28F6A
+    call    sprite_copy_wnd_to_1
     mov     al, [bp+var_C6]
     cbw
     push    ax
@@ -732,7 +732,7 @@ loc_2A905:
     jnz     short loc_2A914
     jmp     loc_2AB0E
 loc_2A914:
-    call    sub_28F6A
+    call    sprite_copy_wnd_to_1
     cmp     [bp+var_32], 0
     jnz     short loc_2A922
     jmp     loc_2A9CD

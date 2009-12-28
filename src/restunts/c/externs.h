@@ -21,6 +21,12 @@ extern const char* aSFileError;
 extern const char* aSFileError_0;
 extern const char* aSFileError_1;
 
+extern short is_audioloaded;
+extern void far* songfileptr;
+extern void far* voicefileptr;
+
+extern void far* init_audio_resources(void far* songptr, void far* voiceptr, const char* name);
+extern void load_audio_finalize(void far* audiores);
 extern void fatal_error(const char*, ...);
 extern void far* file_load_resource(int type, const char* filename);
 extern int do_dea_textres(void);

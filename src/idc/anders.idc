@@ -638,6 +638,8 @@ static PortFuncName(labelname) {
 		labelname == "file_load_binary_nofatal" ||
 //		labelname == "file_load_resource" ||
 		labelname == "file_load_resfile" ||
+		labelname == "file_load_3dres" ||
+		labelname == "file_load_audiores" ||
 
 		labelname == "mmgr_path_to_name" ||
 		labelname == "mmgr_alloc_pages" ||

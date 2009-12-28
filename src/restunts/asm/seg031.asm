@@ -363,7 +363,7 @@ loc_3A07A:
     call    video_set_mode4
 loc_3A08A:
     call    timer_setup_interrupt
-    call    sub_28F4E
+    call    sprite_copy_2_to_1_clear
     mov     ax, 0C8h ; 'È'
     push    ax
     mov     ax, 140h
@@ -630,13 +630,13 @@ load_palandcursor proc far
     mov     bp, sp
     sub     sp, 312h
     push    si
-    mov     ax, 53A7h
+    mov     ax, offset aSdmain; "sdmain"
     push    ax
     call    load_2dshape_fatal_thunk
     add     sp, 2
     mov     [bp+var_30C], ax
     mov     [bp+var_30A], dx
-    mov     ax, 53AEh
+    mov     ax, offset aPal ; "!pal"
     push    ax
     push    dx
     push    [bp+var_30C]
@@ -663,7 +663,7 @@ loc_3A300:
     push    ax
     call    sub_346A3
     add     sp, 6
-    mov     ax, 53B3h
+    mov     ax, offset aSmou; "smou"
     push    ax
     push    [bp+var_30A]
     push    [bp+var_30C]
@@ -707,7 +707,7 @@ loc_3A300:
     add     sp, 6
     mov     word ptr dword_455C8, ax
     mov     word ptr dword_455C8+2, dx
-    mov     ax, 53B8h
+    mov     ax, offset aSdmain_0; "sdmain"
     push    ax
     call    load_2dshape_fatal_thunk
     add     sp, 2
@@ -720,7 +720,7 @@ loc_3A300:
     sub     ax, ax
     push    ax
     push    ax
-    mov     ax, 53BFh
+    mov     ax, offset aSmou_0; "smou"
     push    ax
     push    [bp+var_30A]
     push    [bp+var_30C]
@@ -737,7 +737,7 @@ loc_3A300:
     sub     ax, ax
     push    ax
     push    ax
-    mov     ax, 53C4h
+    mov     ax, offset aMmou; "mmou"
     push    ax
     push    [bp+var_30A]
     push    [bp+var_30C]

@@ -38,6 +38,8 @@ extrn file_load_binary_fatal:proc
 extrn file_load_binary_nofatal:proc
 ;extrn file_load_resource:proc
 extrn file_load_resfile:proc
+extrn file_load_3dres:proc
+extrn file_load_audiores:proc
 
 extrn mmgr_path_to_name:proc
 extrn mmgr_alloc_pages:proc

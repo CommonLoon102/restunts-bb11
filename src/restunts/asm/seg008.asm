@@ -68,9 +68,9 @@ seg008 segment byte public 'STUNTSC' use16
     public sub_28E90
     public check_input
     public sub_28F3C
-    public sub_28F4E
-    public sub_28F6A
-    public sub_28F7C
+    public sprite_copy_2_to_1_clear
+    public sprite_copy_wnd_to_1
+    public sprite_copy_wnd_to_1_clear
     public sub_28F98
     public sub_29008
     public sub_290BC
@@ -84,7 +84,7 @@ seg008 segment byte public 'STUNTSC' use16
     public sub_296E0
     public sub_29772
     public sub_29786
-    public load_audio_res
+    public ported_file_load_audiores_
     public unload_audio_res
     public set_fontdef2
     public set_fontdef
@@ -107,7 +107,7 @@ seg008 segment byte public 'STUNTSC' use16
     public ensure_file_exists
     public sub_2A200
     public timer_get_delta2
-    public load_3dshape
+    public ported_file_load_3dres_
 sub_274B0 proc far
     var_40 = byte ptr -64
     var_22 = byte ptr -34
@@ -3166,9 +3166,9 @@ sub_28F3C proc far
     ; align 2
     db 144
 sub_28F3C endp
-sub_28F4E proc far
+sprite_copy_2_to_1_clear proc far
 
-    mov     ax, 5F3Eh
+    mov     ax, offset sprite2
     mov     dx, seg seg012
     push    dx
     push    ax
@@ -3179,8 +3179,8 @@ sub_28F4E proc far
     call    clear_sprite1_color
     add     sp, 2
     retf
-sub_28F4E endp
-sub_28F6A proc far
+sprite_copy_2_to_1_clear endp
+sprite_copy_wnd_to_1 proc far
 
     push    word ptr wndsprite+2
     push    word ptr wndsprite
@@ -3189,8 +3189,8 @@ sub_28F6A proc far
     retf
     ; align 2
     db 144
-sub_28F6A endp
-sub_28F7C proc far
+sprite_copy_wnd_to_1 endp
+sprite_copy_wnd_to_1_clear proc far
 
     push    word ptr wndsprite+2
     push    word ptr wndsprite
@@ -3201,7 +3201,7 @@ sub_28F7C proc far
     call    clear_sprite1_color
     add     sp, 2
     retf
-sub_28F7C endp
+sprite_copy_wnd_to_1_clear endp
 sub_28F98 proc far
      s = byte ptr 0
      r = byte ptr 2
@@ -3250,7 +3250,7 @@ sub_28F98 proc far
     push    [bp+arg_0]
     call    sub_33742
     add     sp, 6
-    mov     ax, 6AD8h
+    mov     ax, offset word_42248
     pop     bp
     retf
 sub_28F98 endp
@@ -4257,35 +4257,37 @@ loc_297F4:
     pop     bp
     retf
 sub_29786 endp
-load_audio_res proc far
+ported_file_load_audiores_ proc far
     var_4 = word ptr -4
     var_2 = word ptr -2
      s = byte ptr 0
      r = byte ptr 2
-    arg_0 = dword ptr 6
+    arg_0 = word ptr 6
+    arg_2 = word ptr 8
+    arg_4 = word ptr 10
 
     push    bp
     mov     bp, sp
     sub     sp, 4
-    push    word ptr [bp+arg_0+2]; char *
+    push    [bp+arg_2]      ; char *
     mov     ax, 5
     push    ax              ; int
     push    cs
     call    near ptr file_load_resource
     add     sp, 4
-    mov     word_44A7C, ax
-    mov     word_44A7E, dx
-    push    word ptr [bp+arg_0]; char *
+    mov     word ptr voicefileptr, ax
+    mov     word ptr voicefileptr+2, dx
+    push    [bp+arg_0]      ; char *
     mov     ax, 4
     push    ax              ; int
     push    cs
     call    near ptr file_load_resource
     add     sp, 4
-    mov     word_44360, ax
-    mov     word_44362, dx
-    push    word ptr [bp+0Ah]
-    push    word_44A7E
-    push    word_44A7C
+    mov     word ptr songfileptr, ax
+    mov     word ptr songfileptr+2, dx
+    push    [bp+arg_4]
+    push    word ptr voicefileptr+2
+    push    word ptr voicefileptr
     push    dx
     push    ax
     call    init_audio_resources
@@ -4295,28 +4297,28 @@ load_audio_res proc far
     push    dx
     push    ax
     call    load_audio_finalize
-    mov     byte_3B8F3, 1
+    mov     is_audioloaded, 1
     mov     sp, bp
     pop     bp
     retf
     ; align 2
     db 144
-load_audio_res endp
+ported_file_load_audiores_ endp
 unload_audio_res proc far
 
     mov     ax, 2
     push    ax
     call    audio_driver_func3F
     add     sp, 2
-    push    word_44362
-    push    word_44360
+    push    word ptr songfileptr+2
+    push    word ptr songfileptr
     call    mmgr_free
     add     sp, 4
-    push    word_44A7E
-    push    word_44A7C
+    push    word ptr voicefileptr+2
+    push    word ptr voicefileptr
     call    mmgr_free
     add     sp, 4
-    mov     byte_3B8F3, 0
+    mov     is_audioloaded, 0
     retf
 unload_audio_res endp
 set_fontdef2 proc far
@@ -5544,7 +5546,7 @@ timer_get_delta2 proc far
     call    timer_get_delta
     retf
 timer_get_delta2 endp
-load_3dshape proc far
+ported_file_load_3dres_ proc far
     var_54 = byte ptr -84
     var_4 = word ptr -4
     var_2 = word ptr -2
@@ -5609,6 +5611,6 @@ loc_2A2B2:
     mov     sp, bp
     pop     bp
     retf
-load_3dshape endp
+ported_file_load_3dres_ endp
 seg008 ends
 end

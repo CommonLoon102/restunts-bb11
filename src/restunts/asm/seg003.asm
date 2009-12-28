@@ -6343,7 +6343,7 @@ setup_intro proc far
     mov     [bp+var_38], 0
     mov     ax, offset aTitle; "title"
     push    ax
-    call    load_3dshape
+    call    file_load_3dres
     add     sp, 2
     mov     [bp+var_2AE], ax
     mov     [bp+var_2AC], dx
@@ -6567,7 +6567,7 @@ loc_1DBA0:
     ; align 2
     db 144
 loc_1DBB4:
-    call    sub_28F6A
+    call    sprite_copy_wnd_to_1
 loc_1DBB9:
     mov     [bp+var_2C], 0FFFFh
     mov     [bp+var_2A6], 1

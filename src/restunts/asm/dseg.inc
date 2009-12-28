@@ -28,7 +28,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn word_3B8EE:word
     extrn word_3B8F0:word
     extrn byte_3B8F2:byte
-    extrn byte_3B8F3:byte
+    extrn is_audioloaded:byte
     extrn byte_3B8F4:byte
     extrn byte_3B8F5:byte
     extrn byte_3B8F6:byte
@@ -799,6 +799,12 @@ dseg segment byte public 'STUNTSD' use16
     extrn word_40B0E:word
     extrn word_40B10:word
     extrn audiodriverstring:byte
+    extrn aSdmain:byte
+    extrn aPal:byte
+    extrn aSmou:byte
+    extrn aSdmain_0:byte
+    extrn aSmou_0:byte
+    extrn aMmou:byte
     extrn byte_40B86:byte
     extrn aMcgaWindow:byte
     extrn aWindowdefOutOfRowTableSpa:byte
@@ -1070,8 +1076,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn word_4435A:word
     extrn word_4435C:word
     extrn word_4435E:word
-    extrn word_44360:word
-    extrn word_44362:word
+    extrn songfileptr:dword
     extrn dword_44364:dword
     extrn word_44368:word
     extrn word_4436A:word
@@ -1149,8 +1154,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn word_44A2E:word
     extrn word_44A30:word
     extrn word_44A32:word
-    extrn word_44A7C:word
-    extrn word_44A7E:word
+    extrn voicefileptr:dword
     extrn skybox_unk2:word
     extrn byte_44A8A:byte
     extrn word_44A8C:word

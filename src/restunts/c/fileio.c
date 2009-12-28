@@ -515,19 +515,19 @@ void far* file_load_resource(int type, const char* filename) {
 				break;
 
 			case 4:
-				// try load a 2d shape and retry if it failed
+				// try load a song file and retry if it failed
 				result = load_song_file(filename);
 				if (result != 0) return result;
 				break;
 
 			case 5:
-				// try load a 2d shape and retry if it failed
+				// try load a voice file and retry if it failed
 				result = load_voice_file(filename);
 				if (result != 0) return result;
 				break;
 
 			case 6:
-				// try load a 2d shape and retry if it failed
+				// try load an sfx file and retry if it failed
 				result = load_sfx_file(filename);
 				if (result != 0) return result;
 				break;
@@ -571,3 +571,35 @@ void far* file_load_resfile(const char* filename) {
 		do_dea_textres();
 	}
 }
+
+
+void far* file_load_3dres(const char* filename) {
+	char name[0x50];
+	void far* result;
+	
+	while (1) {
+		strcpy(name, filename);
+		strcat(name, ".p3s");
+		
+		result = file_load_resource(7, name);
+		if (result != 0) return result;
+			
+		strcpy(name, filename);
+		strcat(name, ".3sh");
+		
+		result = file_load_resource(1, name);
+		if (result != 0) return result;
+	
+		do_dea_textres();
+	}
+}
+
+void file_load_audiores(const char* songfile, const char* voicefile, const char* name) {
+	void far* audiores;
+	voicefileptr = file_load_resource(5, voicefile);
+	songfileptr = file_load_resource(4, songfile);
+	audiores = init_audio_resources(songfileptr, voicefileptr, name);
+	load_audio_finalize(audiores);
+	is_audioloaded = 1;
+}
+

@@ -357,7 +357,7 @@ loc_21E76:
     mov     byte_4432A, al
     jmp     short loc_21E8F
 loc_21E8A:
-    call    sub_28F6A
+    call    sprite_copy_wnd_to_1
 loc_21E8F:
     mov     al, byte_461C8
     cmp     byte_45DB2, al

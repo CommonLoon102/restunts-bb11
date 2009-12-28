@@ -466,7 +466,7 @@ _show_menu:
     push    ax
     call    ensure_file_exists
     add     sp, 2
-    cmp     byte_3B8F3, 0
+    cmp     is_audioloaded, 0
     jnz     short loc_10467
     mov     ax, offset aSlct; "SLCT"
     push    ax
@@ -474,7 +474,7 @@ _show_menu:
     push    ax
     mov     ax, offset aSkidslct; "skidslct"
     push    ax              ; char *
-    call    load_audio_res
+    call    file_load_audiores
     add     sp, 6
 loc_10467:
     push    cs
@@ -620,7 +620,7 @@ run_intro_looped proc far
     push    ax
     mov     ax, offset aSkidtitl; "skidtitl"
     push    ax              ; char *
-    call    load_audio_res
+    call    file_load_audiores
     add     sp, 6
     mov     ax, offset aSdtitl; "sdtitl"
     push    ax              ; char *
@@ -676,7 +676,7 @@ run_intro_looped proc far
     add     sp, 6
     mov     word ptr wndsprite, ax
     mov     word ptr wndsprite+2, dx
-    call    sub_28F7C
+    call    sprite_copy_wnd_to_1_clear
     sub     ax, ax
     push    ax
     push    word ptr wndsprite+2
@@ -715,9 +715,9 @@ run_intro proc far
     sub     sp, 2
     push    si
     call    sub_28DB6
-    call    sub_28F4E
+    call    sprite_copy_2_to_1_clear
     call    sub_28D9E
-    call    sub_28F7C
+    call    sprite_copy_wnd_to_1_clear
     mov     ax, offset aProd; "prod"
     push    ax
     push    word_45E14
@@ -759,7 +759,7 @@ loc_106E4:
     mov     si, ax
     or      si, si
     jnz     short loc_1077F
-    call    sub_28F7C
+    call    sprite_copy_wnd_to_1_clear
     mov     waitflag, 0B4h ; '´'
     mov     ax, offset aTitl_0; "titl"
     push    ax
@@ -829,7 +829,7 @@ load_intro_resources proc far
     call    locate_many_resources
     add     sp, 8
     mov     waitflag, 96h ; '–'
-    call    sub_28F7C
+    call    sprite_copy_wnd_to_1_clear
     les     bx, [bp+var_30]
     mov     ax, es:[bx+8]
     mov     [bp+var_2], ax
@@ -1406,7 +1406,7 @@ loc_10DA0:
     ; align 2
     db 144
 loc_10DEC:
-    call    sub_28F6A
+    call    sprite_copy_wnd_to_1
     mov     ax, 0C8h ; 'È'
     push    ax
     push    [bp+var_4]
@@ -1482,7 +1482,7 @@ loc_10E91:
     push    word ptr es:[bx]
     call    sub_3477E
     add     sp, 4
-    call    sub_28F6A
+    call    sprite_copy_wnd_to_1
     mov     ax, 0C8h ; 'È'
     push    ax
     push    [bp+var_4]
@@ -1572,7 +1572,7 @@ run_menu proc far
     add     sp, 4
     mov     [bp+var_4], ax
     mov     [bp+var_2], dx
-    call    sub_28F6A
+    call    sprite_copy_wnd_to_1
     mov     ax, 27Ah
     push    ax
     push    [bp+var_2]
@@ -1593,7 +1593,7 @@ loc_10FB9:
     jz      short loc_10FEF
     mov     al, [bp+var_10]
     mov     [bp+var_C], al
-    call    sub_28F6A
+    call    sprite_copy_wnd_to_1
     mov     al, [bp+var_6]
     cbw
     push    ax
@@ -1763,7 +1763,7 @@ loc_110ED:
     push    ax
     call    init_game_state
     add     sp, 2
-    call    sub_28F6A
+    call    sprite_copy_wnd_to_1
     push    skybox_unk2
     call    clear_sprite1_color
     add     sp, 2
@@ -1780,7 +1780,7 @@ loc_110ED:
     call    sub_1CBDC
     call    unload_game_resources
     call    unload_skybox
-    call    sub_28F6A
+    call    sprite_copy_wnd_to_1
     mov     ax, offset asc_3BA24; "'"
     push    ax
     mov     ax, offset byte_463E4
@@ -2311,7 +2311,7 @@ highscore_text_unk proc far
     push    bp
     mov     bp, sp
     sub     sp, 0Ah
-    call    sub_28F6A
+    call    sprite_copy_wnd_to_1
     mov     ax, offset aHs1 ; "hs1"
     push    ax
     push    word ptr mainresptr+2
@@ -2802,7 +2802,7 @@ loc_11AED:
     lea     si, [bp+var_36]
     mov     cx, 1Ah
     repne movsw
-    call    sub_28F6A
+    call    sprite_copy_wnd_to_1
     push    cs
     call    near ptr highscore_text_unk
     mov     ax, 0FFFFh
@@ -2851,7 +2851,7 @@ loc_11AED:
     lea     si, [bp+var_36]
     mov     cx, 1Ah
     repne movsw
-    call    sub_28F6A
+    call    sprite_copy_wnd_to_1
     push    cs
     call    near ptr highscore_text_unk
     mov     ax, 0FFFFh
@@ -3378,7 +3378,7 @@ loc_11FC8:
     push    [bp+var_4]
     call    setup_aero_trackdata
     add     sp, 6
-    call    sub_28F7C
+    call    sprite_copy_wnd_to_1_clear
     sub     ax, ax
     push    ax
     push    word_407F8
@@ -3948,7 +3948,7 @@ loc_125FA:
 loc_125FE:
     mov     [bp+var_6], 0
     mov     [bp+var_108], 1
-    call    sub_28F6A
+    call    sprite_copy_wnd_to_1
     push    [bp+var_14]
     push    [bp+var_16]
     push    [bp+var_18]
@@ -3966,7 +3966,7 @@ loc_125FE:
     call    sub_33BDA
     add     sp, 4
     call    sub_25FF6
-    call    sub_28F6A
+    call    sprite_copy_wnd_to_1
     push    [bp+var_14]
     push    [bp+var_16]
     push    [bp+var_18]
@@ -3988,7 +3988,7 @@ loc_125FE:
     mov     al, [bp+var_38]
     cmp     [bp+var_F0], al
     jz      short loc_126D1
-    call    sub_28F6A
+    call    sprite_copy_wnd_to_1
     cmp     byte_46436, 0
     jnz     short loc_126B8
     mov     al, byte ptr [bp+arg_6]
@@ -4176,7 +4176,7 @@ loc_12857:
 loc_12864:
     mov     bx, [bp+arg_4]
     xor     byte ptr [bx], 1
-    call    sub_28F6A
+    call    sprite_copy_wnd_to_1
     mov     bx, [bp+arg_4]
     cmp     byte ptr [bx], 0
     jz      short loc_1287C
@@ -4364,7 +4364,7 @@ loc_12A14:
     mov     [bp+var_14], 0FFh
     cmp     byte_46436, 0
     jnz     short loc_12A48
-    call    sub_28F6A
+    call    sprite_copy_wnd_to_1
     jmp     short loc_12A4D
     ; align 2
     db 144
@@ -4554,7 +4554,7 @@ loc_12A4D:
     push    word ptr es:[bx]
     call    sub_3475A
     add     sp, 8
-    call    sub_28F6A
+    call    sprite_copy_wnd_to_1
 loc_12C46:
     cmp     gameconfig.game_opponenttype, 0
     jz      short loc_12C5A
@@ -5204,7 +5204,7 @@ loc_131C0:
     mov     word ptr [bp+var_46+2], dx
 loc_131FC:
     mov     [bp+var_52], 0FFh
-    call    sub_28F7C
+    call    sprite_copy_wnd_to_1_clear
     sub     ax, ax
     push    ax
     push    word_407F8
@@ -5504,7 +5504,7 @@ loc_134F0:
     mov     ax, 4D2h
 loc_134FB:
     push    ax              ; char *
-    call    load_audio_res
+    call    file_load_audiores
     add     sp, 6
     mov     al, gameconfig.game_opponenttype
     mov     [bp+var_16], al
@@ -6028,7 +6028,7 @@ loc_13A1D:
     cmp     [bp+var_6E], 2
     jnz     short loc_13A42
     mov     [bp+var_6E], 0
-    call    sub_28F6A
+    call    sprite_copy_wnd_to_1
     push    cs
     call    near ptr highscore_text_unk
     mov     [bp+var_92], 1
@@ -6463,7 +6463,7 @@ loc_13EC4:
     jz      short loc_13ECD
     jmp     loc_13D83
 loc_13ECD:
-    call    sub_28F6A
+    call    sprite_copy_wnd_to_1
     sub     ax, ax
     push    ax
     push    word_407F8
@@ -6573,7 +6573,7 @@ loc_13FDA:
     mov     [bp+var_92], 1
     mov     [bp+var_78], 1
     call    sub_29772
-    call    sub_28F6A
+    call    sprite_copy_wnd_to_1
     cmp     [bp+var_16], 0
     jz      short loc_13FF9
     cmp     [bp+var_6E], 0FFh
@@ -6946,7 +6946,7 @@ loc_143C3:
 loc_143C6:
     cmp     [bp+var_92], 0
     jnz     short loc_1440C
-    call    sub_28F6A
+    call    sprite_copy_wnd_to_1
     sub     ax, ax
     push    ax
     push    word_407F8
