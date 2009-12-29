@@ -3,6 +3,21 @@
 #include "fileio.h"
 #include "externs.h"
 
+struct GAMEINFO {
+	char game_playercarid[4];
+	char game_playermaterial;
+	char game_playertransmission;
+	char game_opponenttype;
+	char game_opponentcarid[4];
+	char game_opponentmaterial;
+	char game_opponenttransmission;
+	char game_trackname[9];
+	unsigned short game_framespersec;
+	unsigned short game_recordedframes;
+};
+
+extern struct GAMEINFO gameconfig;
+extern struct GAMEINFO gameconfigcopy;
 extern void far* fontnptr;
 extern void far* fontdefptr;
 extern void far* mainresptr;
@@ -38,6 +53,27 @@ extern char far* trackdata20;
 extern char far* trackdata21;
 extern char far* trackdata22;
 extern char far* trackdata23;
+extern char kbormouse;
+extern char passed_security;
+extern char byte_3B80C[];
+extern char track_full_path[];
+extern char byte_44AE2;
+extern unsigned short dialogarg2;
+extern char byte_3B85E[];
+extern char byte_43966;
+extern char aMain[];
+extern char aFontdef_fnt[];
+extern char aFontn_fnt[];
+extern char aTrakdata[];
+extern char aKevin[];
+extern char aDefault_0[];
+extern char aCvx[];
+extern char aTedit__0[];
+extern char a_trk[];
+extern char aSlct[];
+extern char aSkidms_0[];
+extern char aSkidslct[];
+extern char aDos[];
 
 extern void init_video(int argc, char* argv);
 extern void init_div0(void);
@@ -57,7 +93,6 @@ extern void audiodrv_atexit(void);
 extern void sub_30883(void);
 extern void kb_shift_checking1(void);
 extern void video_set_mode7(void);
-
 extern void far* locate_text_res(void far* ptr, const char* resname);
 extern unsigned short show_dialog(int unk1, int unk2, void far* textresptr, unsigned short unk3, unsigned short unk4, int arg, int unk5, int unk6);
 extern void audio_unload(void);
@@ -65,61 +100,21 @@ extern char run_menu(void);
 extern void random_wait(void);
 extern char setup_track(void);
 extern void run_tracks_menu(int unk);
-
-struct GAMEINFO {
-	char game_playercarid[4];
-	char game_playermaterial;
-	char game_playertransmission;
-	char game_opponenttype;
-	char game_opponentcarid[4];
-	char game_opponentmaterial;
-	char game_opponenttransmission;
-	char game_trackname[9];
-	unsigned short game_framespersec;
-	unsigned short game_recordedframes;
-};
-
-
-extern char kbormouse;
-extern char passed_security;
-extern char byte_3B80C[];
-extern char track_full_path[];
-extern char byte_44AE2;
-extern unsigned short dialogarg2;
-extern char byte_3B85E[];
-
-extern struct GAMEINFO gameconfig;
-extern struct GAMEINFO gameconfigcopy;
-
-extern char aMain[];
-extern char aFontdef_fnt[];
-extern char aFontn_fnt[];
-extern char aTrakdata[];
-extern char aKevin[];
-extern char aDefault_0[];
-extern char aCvx[];
-extern char aTedit__0[];
-extern char a_trk[];
-extern char aSlct[];
-extern char aSkidms_0[];
-extern char aSkidslct[];
-extern char aDos[];
-extern char byte_43966;
-
+extern void run_opponent_menu(void);
 extern void check_input(void);
 extern void show_waiting(void);
-extern void run_opponent_menu();
-extern void run_car_menu();
+extern void run_car_menu(struct GAMEINFO* unk, char* unk2, char* unk3, unsigned int unk4);
 extern void get_super_random();
-extern void run_game();
-extern unsigned end_hiscore();
+extern void run_game(void);
+extern unsigned end_hiscore(void);
 extern unsigned run_option_menu(void);
-extern void init_game_state();
+extern void init_game_state(unsigned short unk);
 extern void security_check();
 
-int stuntsmain(int argc, char* argv, char* envp) {
-	return ported_stuntsmain_(argc, argv, envp);
-/*
+
+int stuntsmain(int argc, char* argv) {
+//	return ported_stuntsmain_(argc, argv, envp);
+
 	int i, result;
 	int regax, regsi;
 	char var_A;
@@ -144,8 +139,9 @@ int stuntsmain(int argc, char* argv, char* envp) {
 		trackcenterpos2[i] = (i << 10) + 0x200;
 	}
 
+	
 	mainresptr = file_load_resfile("main");
-
+	
 	fontdefptr = file_load_resource(0, "fontdef.fnt");
 	fontnptr = file_load_resource(0, "fontn.fnt");
 
@@ -247,7 +243,10 @@ _tracks_menu_ax:
 	run_tracks_menu(regax);
 	goto _show_menu;
 _do_opp_menu:
-	fatal_error("opponent menu");
+	check_input();
+	show_waiting();
+	run_opponent_menu();
+	goto _show_menu;
 _do_option_menu:
 	check_input();
 	show_waiting();
@@ -258,7 +257,10 @@ _goto_game1:
 	var_A = 1;
 	goto _do_game1;
 _do_car_menu:
-	fatal_error("car menu");
+	check_input();
+	show_waiting();
+	run_car_menu(&gameconfig, &gameconfig.game_playermaterial, &gameconfig.game_playertransmission, 0);
+	goto _show_menu;
 
 _do_game0:
 	var_A = 0;
@@ -272,11 +274,9 @@ _do_game1:
 		trackdata20[i + 0x75B] = byte_3B85E[i];
 	}
 	
-	//file_write_fatal("td20.raw", FP_OFF(trackdata20), FP_SEG(trackdata20), 0x7ac);
-
 	if (byte_44AE2 != 0) {
-		fatal_error("jmp _find_tedit");
-		//goto _find_tedit;
+		if (file_find("tedit.*") != 0) goto _init_replay;
+		goto _prepare_intro;
 	}
 	result = setup_track();
 	if (result != 0) {
@@ -290,6 +290,7 @@ _do_game1:
 		//security_check();
 	}
 
+_init_replay:
 	audio_unload();
 
 	cvxptr = mmgr_alloc_resbytes("cvx", 0x5780);
@@ -310,7 +311,7 @@ _do_intro:
 	
 	if (regsi != 0) {
 		combine_file_path(byte_3B80C, gameconfig.game_trackname, ".trk", track_full_path);
-		file_read_fatal(track_full_path, FP_OFF(trackdata14), FP_SEG(trackdata14));
+		file_read_fatal(track_full_path, trackdata14);
 	}
 	
 	byte_44AE2 = 0;
@@ -380,7 +381,5 @@ _ask_dos:
 		return result;
 	}
 	goto _do_intro0;
-
-	return 0;
-*/
 }
+
