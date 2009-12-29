@@ -49,7 +49,7 @@ seg010 segment byte public 'STUNTSC' use16
     public start
     public __amsg_exit
     public libsub_2CDEC
-    public sub_2CE03
+    public libsub_quit_to_dos
     public loc_2CE06
     public sub_2CE4A
     public sub_2CE77
@@ -156,17 +156,17 @@ start proc near
     int     20h             ; DOS - PROGRAM TERMINATION
 loc_2CC6C:
     mov     di, seg dseg
-    mov     si, ds:2
+    mov     si, ds:2        ; pspseg:2 = Memory size in paragraphs 
     sub     si, di
     cmp     si, 1000h
     jb      short loc_2CC7E
-    mov     si, 1000h
+    mov     si, 1000h       ; si = 1000h or memory size if less than 1000h
 loc_2CC7E:
     cli
-    mov     ss, di
-    add     sp, 0AD1Eh
+    mov     ss, di          ; ss = dseg
+    add     sp, 0AD1Eh      ; sp = end of stack in data segment
     sti
-    jnb     short loc_2CC9C
+    jnb     short _no_stack_overflow; check for overflow and abort if there was more than 64k data+stack
     push    ss
     pop     ds
     call    __FF_MSGBANNER
@@ -175,36 +175,36 @@ loc_2CC7E:
     call    __NMSG_WRITE
     mov     ax, 4CFFh
     int     21h             ; DOS - 2+ - QUIT WITH EXIT CODE (EXIT)
-loc_2CC9C:
+_no_stack_overflow:
 smart
     and     sp, 0FFFEh
 nosmart
-    mov     ss:word_3ED7A, sp
-    mov     ss:word_3ED76, sp
+    mov     ss:crtsp1, sp
+    mov     ss:crtsp2, sp
     mov     ax, si
     mov     cl, 4
     shl     ax, cl
     dec     ax
-    mov     ss:word_3ED74, ax
+    mov     ss:word_3ED74, ax; ax = (01000h << 4) - 1 = 0ffffh
     add     si, di
-    mov     word_3B772, si
-    mov     bx, es
+    mov     ds:2, si        ; set memory size in psp?, si = 01000h + dseg
+    mov     bx, es          ; es = pspseg on startup
     sub     bx, si
-    neg     bx
+    neg     bx              ; bx = -(pspseg - si) = -(pspseg - (1000h + dseg))
     mov     ah, 4Ah
     int     21h             ; DOS - 2+ - ADJUST MEMORY BLOCK SIZE (SETBLOCK)
-    mov     ss:word_3EDEB, ds
+    mov     ss:crtpspseg, ds
     push    ss
     pop     es
     cld
-    mov     di, 55CAh
-    mov     cx, 0AD20h
+    mov     di, 55CAh       ; offset in dseg where uninitialized data starts
+    mov     cx, 0AD20h      ; original size/end of dseg
     sub     cx, di
     xor     ax, ax
-    rep stosb
+    rep stosb               ; initialize uninitialized data to 0
     push    ss
     pop     ds
-    call    far ptr loc_2CD27+1
+    call    far ptr word_2CD27+1
     push    ss
     pop     ds
     call    __setenvp
@@ -220,7 +220,7 @@ __cintDIV:
     mov     ax, seg dseg
     mov     ds, ax
     mov     ax, 3
-    mov     ss:off_3ED78, 19Ch
+    mov     ss:crtquitfunction, 19Ch
 __amsg_exit:
     push    ax
     call    __FF_MSGBANNER
@@ -228,25 +228,26 @@ __amsg_exit:
     mov     ax, 0FFh
     push    ax
     push    cs
-    call    ds:off_3ED78
-loc_2CD27:
-    add     [si-32D0h], dh
-    and     [bp+di+367Dh], sp
+    call    ds:crtquitfunction
+word_2CD27     dw 46080
+    db 48
+    int     21h             ; DOS - GET DOS VERSION
+    mov     ds:367Dh, ax
     mov     ax, 3500h
     int     21h             ; DOS - 2+ - GET INTERRUPT VECTOR
-    mov     word ptr ds:dword_3EDD9, bx
-    mov     word ptr ds:dword_3EDD9+2, es
+    mov     ds:3669h, bx
+    mov     word ptr ds:366Bh, es
     push    cs
     pop     ds
     mov     ax, 2500h
-    mov     dx, 0B4h ; '¥'
+    mov     dx, 0B4h
     int     21h             ; DOS - SET INTERRUPT VECTOR
     push    ss
     pop     ds
     mov     cx, word ptr dword_40C1E+2
     jcxz    short loc_2CD7C
-    mov     es, word_3EDEB
-    mov     si, es:2Ch
+    mov     es, crtpspseg
+    mov     si, es:2Ch      ; si = environment segment
     lds     ax, dword_40C22
     mov     dx, ds
     xor     bx, bx
@@ -263,8 +264,8 @@ loc_2CD6B:
     push    ss
     pop     ds
 loc_2CD7C:
-    mov     es, word_3EDEB
-    mov     cx, es:2Ch
+    mov     es, crtpspseg
+    mov     cx, es:2Ch      ; es:2C = environment segment
     jcxz    short loc_2CDBD
     mov     es, cx
     xor     di, di
@@ -335,12 +336,12 @@ libsub_2CDEC proc near
     mov     si, offset unk_42A24
     mov     di, offset unk_42A24
     call near ptr sub_2CE77
-    mov     si, offset off_40C2A
+    mov     si, offset _flushallptr
     mov     di, offset aNmsg; "<<NMSG>>"
     call near ptr sub_2CE77
     jmp     short loc_2CE06
 libsub_2CDEC endp
-sub_2CE03 proc near
+libsub_quit_to_dos proc near
      s = byte ptr 0
      r = byte ptr 2
     arg_2 = word ptr 6
@@ -375,7 +376,7 @@ loc_2CE3D:
     mov     ax, [bp+arg_2]
     mov     ah, 4Ch
     int     21h             ; DOS - 2+ - QUIT WITH EXIT CODE (EXIT)
-sub_2CE03 endp
+libsub_quit_to_dos endp
 sub_2CE4A proc near
 
     mov     cx, word ptr dword_40C1E+2
@@ -384,7 +385,7 @@ sub_2CE4A proc near
     call    dword_40C1E
 loc_2CE57:
     push    ds
-    lds     dx, dword_3EDD9
+    lds     dx, crtintrvec0
     mov     ax, 2500h
     int     21h             ; DOS - SET INTERRUPT VECTOR
     pop     ds
@@ -489,11 +490,11 @@ __setargv proc near
     pop     word ptr dword_3EE26
     pop     word ptr dword_3EE26+2
     mov     dx, 2
-    cmp     byte_3EDED, dl
+    cmp     byte ptr crtdosversion, dl
     jz      short loc_2CF38
-    mov     es, word_3EDEB
-    mov     es, word ptr es:2Ch
-    mov     seg_3EE10, es
+    mov     es, crtpspseg
+    mov     es, word ptr es:2Ch; es:2c = environemtn segment
+    mov     crtenvseg, es
     xor     ax, ax
     cwd
     mov     cx, 8000h
@@ -512,7 +513,7 @@ loc_2CF24:
 loc_2CF38:
     mov     di, 1
     mov     si, 81h ; 'Å'
-    mov     ds, word_3EDEB
+    mov     ds, crtpspseg
 loc_2CF42:
     lodsb
     cmp     al, 20h ; ' '
@@ -620,7 +621,7 @@ loc_2CFE4:
     or      al, al
     jnz     short loc_2CFE4
     mov     si, 81h ; 'Å'
-    mov     ds, ss:word_3EDEB
+    mov     ds, ss:crtpspseg
     jmp     short loc_2CFF7
 loc_2CFF4:
     xor     ax, ax
@@ -732,13 +733,13 @@ __setenvp proc far
     push    bp
     mov     bp, sp
     push    bp
-    mov     ds, word_3EDEB
+    mov     ds, crtpspseg
     xor     cx, cx
     mov     ax, cx
     mov     bp, cx
     mov     di, cx
-    dec     cx
-    mov     si, word ptr aMsRunTimeLibraryCop+24h
+    dec     cx              ; cx = 0ffffh
+    mov     si, word ptr aMsRunTimeLibraryCop+24h; psp:2c = environment segment
     or      si, si
     jz      short loc_2D0B9
     mov     es, si
@@ -861,7 +862,7 @@ __NMSG_WRITE endp
 __myalloc proc near
 
     mov     dx, ax
-    add     ax, word_3ED7A
+    add     ax, crtsp1
     jb      short loc_2D191
     cmp     word_3ED74, ax
     jnb     short loc_2D187
@@ -871,7 +872,7 @@ __myalloc proc near
     mov     cl, 3
     shr     ax, cl
     mov     cx, ds
-    mov     bx, word_3EDEB
+    mov     bx, crtpspseg
     sub     cx, bx
     add     ax, cx
     mov     es, bx
@@ -887,8 +888,8 @@ nosmart
     mov     word_3ED74, ax
 loc_2D187:
     xchg    ax, bp
-    mov     bp, word_3ED7A
-    add     word_3ED7A, dx
+    mov     bp, crtsp1
+    add     crtsp1, dx
     retn
 loc_2D191:
     mov     ax, di
@@ -938,7 +939,7 @@ sub_2D1BC proc near
     mov     byte_3EDF0, al
     or      ah, ah
     jnz     short loc_2D1E6
-    cmp     byte_3EDED, 3
+    cmp     byte ptr crtdosversion, 3
     jb      short loc_2D1D7
     cmp     al, 22h ; '"'
     jnb     short loc_2D1DB
@@ -3238,7 +3239,7 @@ loc_2E2BA:
     cmp     si, di
     jnz     short loc_2E2D2
     add     bx, cx
-    mov     ax, word_3EDEB
+    mov     ax, crtpspseg
     sub     bx, ax
     mov     es, ax
 loc_2E2D2:
@@ -3436,7 +3437,7 @@ _abort proc far
     call    _raise
     mov     ax, 3
     push    ax
-    call    far ptr sub_2CE03
+    call    far ptr libsub_quit_to_dos
     mov     sp, bp
     pop     bp
     retf
@@ -3803,7 +3804,7 @@ loc_2E61E:
 loc_2E626:
     mov     ax, 3
     push    ax
-    call    far ptr sub_2CE03
+    call    far ptr libsub_quit_to_dos
 loc_2E62F:
     mov     ax, 0FFFFh
     jmp     short loc_2E637

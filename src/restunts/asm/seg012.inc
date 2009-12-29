@@ -129,8 +129,8 @@ seg012 segment byte public 'STUNTSC' use16
     extrn ported_file_read_nofatal_:proc
     extrn ported_file_read_fatal_:proc
     extrn file_decomp_rle:proc
-    extrn sub_30BF8:proc
-    extrn sub_30CCF:proc
+    extrn file_decomp_rle_b:proc
+    extrn file_decomp_rle_a:proc
     extrn ported_file_load_binary_:proc
     extrn ported_file_load_binary_nofatal_:proc
     extrn ported_file_decomp_:proc

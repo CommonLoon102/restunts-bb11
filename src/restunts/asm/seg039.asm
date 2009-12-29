@@ -49,19 +49,16 @@ seg039 segment byte public 'STUNTSD' use16
     public word_3B1F0
 word_3B1F0     dw 3
     dw 0
-    db 0
-    db 0
+    dw 0
     db 0
     db 0
     dw 0
     dw 0
     db 1
     db 0
-    db 8
-    db 0
     dw 8
-    db 8
-    db 0
+    dw 8
+    dw 8
     db 0
     db 0
     db 0

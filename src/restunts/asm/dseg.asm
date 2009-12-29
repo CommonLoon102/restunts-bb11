@@ -567,22 +567,23 @@ dseg segment byte public 'STUNTSD' use16
     public a_3sh
     public byte_3ECBB
     public word_3ED74
-    public word_3ED76
-    public off_3ED78
-    public word_3ED7A
+    public crtsp2
+    public crtquitfunction
+    public crtsp1
     public word_3EDCA
     public aC_file_info
-    public dword_3EDD9
+    public crtintrvec0
     public word_3EDE5
-    public word_3EDEB
-    public byte_3EDED
+    public crtpspseg
+    public crtdosversion
     public byte_3EDF0
     public word_3EDF2
+    public crtfilehandles
     public argc
     public argv
     public word_3EE0C
     public word_3EE0E
-    public seg_3EE10
+    public crtenvseg
     public word_3EE14
     public byte_3EE16
     public byte_3EE17
@@ -874,7 +875,7 @@ dseg segment byte public 'STUNTSD' use16
     public dword_40C1E
     public dword_40C22
     public dword_40C26
-    public off_40C2A
+    public _flushallptr
     public aNmsg
     public aR6000StackOver
     public word_40D3A
@@ -15075,9 +15076,9 @@ byte_3ECBB     db 48
     db 0
     db 0
 word_3ED74     dw 0
-word_3ED76     dw 0
-off_3ED78     dw offset sub_2CE03
-word_3ED7A     dw 0
+crtsp2     dw 0
+crtquitfunction     dw offset libsub_quit_to_dos
+crtsp1     dw 0
     dw seg dseg
     db 0
     db 0
@@ -15169,7 +15170,7 @@ aC_file_info     db 59
     db 70
     db 79
     db 0
-dword_3EDD9     dd 0
+crtintrvec0     dd 0
     db 0
     db 0
     db 0
@@ -15183,14 +15184,13 @@ word_3EDE5     dw 0
     db 0
     db 0
     db 0
-word_3EDEB     dw 0
-byte_3EDED     db 0
-    db 0
+crtpspseg     dw 0
+crtdosversion     dw 0
     db 0
 byte_3EDF0     db 0
     db 0
 word_3EDF2     dw 20
-    db 129
+crtfilehandles     db 129
     db 129
     db 129
     db 1
@@ -15214,7 +15214,7 @@ argc     dw 0
 argv     dw 0
 word_3EE0C     dw 0
 word_3EE0E     dw 13986
-seg_3EE10     dw seg dseg
+crtenvseg     dw seg dseg
     db 67
     db 0
 word_3EE14     dw 0
@@ -22411,7 +22411,7 @@ aMga     db 33
 dword_40C1E     dd 0
 dword_40C22     dd 0
 dword_40C26     dd 0
-off_40C2A     dd _flushall
+_flushallptr     dd _flushall
 aNmsg     db 60
     db 60
     db 78

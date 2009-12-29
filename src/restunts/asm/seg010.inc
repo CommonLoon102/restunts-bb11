@@ -2,7 +2,7 @@ seg010 segment byte public 'STUNTSC' use16
     extrn start:proc
     extrn __amsg_exit
     extrn libsub_2CDEC:proc
-    extrn sub_2CE03:proc
+    extrn libsub_quit_to_dos:proc
     extrn loc_2CE06
     extrn sub_2CE4A:proc
     extrn sub_2CE77:proc

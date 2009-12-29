@@ -106,7 +106,7 @@ static IsPublicLabel(labelname) {
 		labelname == "loc_308C6" || 
 		labelname == "loc_309A5" || 
 //		labelname == "_file_read" || // Resolved
-		labelname == "loc_30DA1" || 
+//		labelname == "_file_load_binary" || // Resolved
 //		labelname == "_file_decomp" || // Resolved
 		labelname == "loc_30FB2" || 
 		labelname == "loc_310CD" || 

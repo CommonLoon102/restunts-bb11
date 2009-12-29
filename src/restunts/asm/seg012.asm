@@ -176,8 +176,8 @@ seg012 segment byte public 'STUNTSC' use16
     public ported_file_read_nofatal_
     public ported_file_read_fatal_
     public file_decomp_rle
-    public sub_30BF8
-    public sub_30CCF
+    public file_decomp_rle_b
+    public file_decomp_rle_a
     public ported_file_load_binary_
     public ported_file_load_binary_nofatal_
     public ported_file_decomp_
@@ -5766,7 +5766,7 @@ nosmart
     mov     [bp+arg_srcoff], si
     cmp     byte ptr [bp+var_12], 80h ; '€'
     ja      short loc_30BE6
-    call near ptr sub_30CCF
+    call near ptr file_decomp_rle_a
     mov     [bp+var_16], ax
     mov     [bp+var_14], dx
     mov     si, ax
@@ -5794,7 +5794,7 @@ loc_30BC9:
     xor     si, si
     mov     [bp+arg_srcoff], si
 loc_30BE6:
-    call near ptr sub_30BF8
+    call near ptr file_decomp_rle_b
     mov     ax, [bp+var_1A]
     mov     dx, [bp+var_18]
     add     sp, 116h
@@ -5804,7 +5804,7 @@ loc_30BE6:
     pop     bp
     retf
 file_decomp_rle endp
-sub_30BF8 proc near
+file_decomp_rle_b proc near
 
     mov     cx, 80h ; '€'
     lea     di, [bp-11Ch]
@@ -5913,8 +5913,8 @@ loc_30CC1:
     add     ax, 800h
     mov     es, ax
     jmp     loc_30C48
-sub_30BF8 endp
-sub_30CCF proc near
+file_decomp_rle_b endp
+file_decomp_rle_a proc near
 
     cmp     byte ptr [bp-12h], 1
     jnz     short loc_30CD6
@@ -6005,7 +6005,7 @@ loc_30D5A:
     or      dx, bx
     jz      short loc_30D29
     jmp     loc_30CED
-sub_30CCF endp
+file_decomp_rle_a endp
 ported_file_load_binary_ proc far
     var_fatal = word ptr -2
      s = byte ptr 0
@@ -6017,7 +6017,7 @@ ported_file_load_binary_ proc far
     sub     sp, 2
     mov     ax, [bp+arg_fatal]
     mov     [bp+var_fatal], ax
-    jmp     short _file_load_binary_fatal_var
+    jmp     short _file_load_binary
     ; align 2
     db 144
 ported_file_load_binary_ endp
@@ -6031,14 +6031,14 @@ ported_file_load_binary_nofatal_ proc far
     mov     bp, sp
     sub     sp, 2
     mov     [bp+var_fatal], 0
-    jmp     short _file_load_binary_fatal_var
+    jmp     short _file_load_binary
     ; align 2
     db 144
     push    bp
     mov     bp, sp
     sub     sp, 2
     mov     [bp+var_fatal], 1
-_file_load_binary_fatal_var:
+_file_load_binary:
     push    [bp+arg_filename]
     call    mmgr_get_unk
     add     sp, 2
@@ -13971,7 +13971,7 @@ sub_345BC proc far
     push    ds
     push    si
     push    di
-    mov     ds, word ptr off_405FE+2
+    mov     ds, word ptr off_405FE+2; ds = seg039
     mov     ax, [bp+arg_2]
     mov     word ptr aMsRunTimeLibraryCop, ax; "MS Run-Time Library - Copyright (c) 198"...
     mov     ax, [bp+arg_4]

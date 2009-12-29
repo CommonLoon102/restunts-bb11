@@ -519,22 +519,23 @@ dseg segment byte public 'STUNTSD' use16
     extrn a_3sh:byte
     extrn byte_3ECBB:byte
     extrn word_3ED74:word
-    extrn word_3ED76:word
-    extrn off_3ED78:word
-    extrn word_3ED7A:word
+    extrn crtsp2:word
+    extrn crtquitfunction:word
+    extrn crtsp1:word
     extrn word_3EDCA:word
     extrn aC_file_info:byte
-    extrn dword_3EDD9:dword
+    extrn crtintrvec0:dword
     extrn word_3EDE5:word
-    extrn word_3EDEB:word
-    extrn byte_3EDED:byte
+    extrn crtpspseg:word
+    extrn crtdosversion:word
     extrn byte_3EDF0:byte
     extrn word_3EDF2:word
+    extrn crtfilehandles:byte
     extrn argc:word
     extrn argv:word
     extrn word_3EE0C:word
     extrn word_3EE0E:word
-    extrn seg_3EE10:word
+    extrn crtenvseg:word
     extrn word_3EE14:word
     extrn byte_3EE16:byte
     extrn byte_3EE17:byte
@@ -826,7 +827,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn dword_40C1E:dword
     extrn dword_40C22:dword
     extrn dword_40C26:dword
-    extrn off_40C2A:dword
+    extrn _flushallptr:dword
     extrn aNmsg:byte
     extrn aR6000StackOver:byte
     extrn word_40D3A:word

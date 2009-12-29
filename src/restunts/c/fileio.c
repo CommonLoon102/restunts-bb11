@@ -7,6 +7,15 @@
 #define PAGE_GAP  0x400
 #define FILENAME_LEN 13
 
+struct compr_header {
+	union {
+		char passes;
+		char type;
+	};
+	unsigned short sizel;
+	unsigned char sizeh;
+};
+
 // Minimal stdio.h "support" untill we can link with a real CRT.
 #ifndef __STDIO_H
 #define __STDIO_H
@@ -261,7 +270,7 @@ const char* file_find(const char* query)
 	}
 
 	// Copy found filename to result path.
-	_memcpy(g_find.dirdelim, g_find.dta.name, FILENAME_LEN);
+	memcpy(g_find.dirdelim, g_find.dta.name, FILENAME_LEN);
 
 	return g_find.path;
 }
@@ -294,7 +303,7 @@ const char* file_find_next()
 	}
 
 	// Copy found filename to result path.
-	_memcpy(g_find.dirdelim, g_find.dta.name, FILENAME_LEN);
+	memcpy(g_find.dirdelim, g_find.dta.name, FILENAME_LEN);
 
 	return g_find.path;
 }
@@ -305,7 +314,7 @@ unsigned short file_paras(const char* filename, int fatal)
 	long length;
 	FILE* file;
 	
-	if ((file = fopen(filename, "rb"))) {
+	if ((file = fopen(filename, "rb")) != 0) {
 		fseek(file, 0, SEEK_END);
 		length = ftell(file);
 		fclose(file);
@@ -338,9 +347,9 @@ unsigned short file_decomp_paras(const char* filename, int fatal)
 {
 	long length;
 	FILE* file;
-	struct compr_header { char passes; unsigned short sizel; unsigned char sizeh; } hdr;
+	struct compr_header hdr;
 	
-	if ((file = fopen(filename, "rb"))) {
+	if ((file = fopen(filename, "rb")) != 0) {
 		fread(&hdr, sizeof(hdr), 1, file);
 		fclose(file);
 		
@@ -369,23 +378,23 @@ unsigned short file_decomp_paras_nofatal(const char* filename)
 }
 
 // Read entire file to given destination. Optionally handle errors fatal.
-char far* file_read(const char* filename, unsigned short dstoff, unsigned short dstseg, int fatal)
+void far* file_read(const char* filename, void far* dst, int fatal)
 {
 	int readlen;
-	unsigned short curseg = dstseg;
+	void far* curdst = dst;
 	FILE* file;
 
-	if ((file = fopen(filename, "rb"))) {
+	if ((file = fopen(filename, "rb")) != 0) {
 		// Read one page at a time.
 		do {
-			readlen = fread(MK_FP(curseg, dstoff), PAGE_SIZE, 1, file);
-			curseg += PAGE_GAP;
+			readlen = fread(curdst, PAGE_SIZE, 1, file);
+			curdst = MK_FP(FP_SEG(curdst) + PAGE_GAP, FP_OFF(dst));
 		} while (readlen == PAGE_SIZE);
 
 		fclose(file);
 
 		if (!ferror(file)) {
-			return MK_FP(dstseg, dstoff);
+			return dst;
 		}
 	}
 
@@ -397,35 +406,35 @@ char far* file_read(const char* filename, unsigned short dstoff, unsigned short 
 }
 
 // Read entire file to given destination, handle errors as fatal.
-char far* file_read_fatal(const char* filename, unsigned short dstoff, unsigned short dstseg)
+void far* file_read_fatal(const char* filename, void far* dst)
 {
-	return file_read(filename, dstoff, dstseg, 1);
+	return file_read(filename, dst, 1);
 }
 
 // Read entire file to given destination, returns NULL pointer if errors occur.
-char far* file_read_nofatal(const char* filename, unsigned short dstoff, unsigned short dstseg)
+void far* file_read_nofatal(const char* filename, void far* dst)
 {
-	return file_read(filename, dstoff, dstseg, 0);
+	return file_read(filename, dst, 0);
 }
 
 // Write given source buffer to file. Returns a non-zero value on errors unless fatal is set.
-short file_write(const char* filename, unsigned short srcoff, unsigned short srcseg, unsigned long length, int fatal)
+short file_write(const char* filename, void far* src, unsigned long length, int fatal)
 {
 	unsigned short retval;
 	unsigned short wrtlen;
 	FILE* file;
 	
-	if ((file = fopen(filename, "wb"))) {
+	if ((file = fopen(filename, "wb")) != 0) {
 		// Write one page at a time.
 		while (length != 0) {
 			wrtlen = length > PAGE_SIZE ? PAGE_SIZE : length;
 
-			if (fwrite(MK_FP(srcseg, srcoff), wrtlen, 1, file) != wrtlen) {
+			if (fwrite(src, wrtlen, 1, file) != wrtlen) {
 				retval = -1;
 				break;
 			}
 			length -= wrtlen;
-			srcseg += PAGE_GAP;
+			src = MK_FP(FP_SEG(src) + PAGE_GAP, FP_OFF(src));
 		}
 
 		fclose(file);
@@ -452,15 +461,15 @@ short file_write(const char* filename, unsigned short srcoff, unsigned short src
 }
 
 // Write given source buffer to file, handle errors as fatal.
-short file_write_fatal(const char* filename, unsigned short srcoff, unsigned short srcseg, unsigned long length)
+short file_write_fatal(const char* filename, void far* src, unsigned long length)
 {
-	return file_write(filename, srcoff, srcseg, length, 1);
+	return file_write(filename, src, length, 1);
 }
 
 // Write given source buffer to file, returns a non-zero value on error.
-short file_write_nofatal(const char* filename, unsigned short srcoff, unsigned short srcseg, unsigned long length)
+short file_write_nofatal(const char* filename, void far* src, unsigned long length)
 {
-	return file_write(filename, srcoff, srcseg, length, 0);
+	return file_write(filename, src, length, 0);
 }
 
 // Decompress file. Returns pointer to result, NULL or raises fatal error.
@@ -489,7 +498,7 @@ void far* file_decomp(const char* filename, int fatal)
 		paras = file_paras(filename, fatal);
 		if (paras) {
 			src = MK_FP(decompparas - paras + FP_SEG(dst), FP_OFF(dst));
-			src = file_read(filename, FP_OFF(src), FP_SEG(src), fatal);
+			src = file_read(filename, src, fatal);
 			if (src) {
 				passes = *src;
 				
@@ -521,7 +530,7 @@ void far* file_decomp(const char* filename, int fatal)
 					}
 
 					// Set source for next pass.
-					if (!err && --passes) {
+					if (!err && (--passes != 0)) {
 						paras = (passlen >> 4) + (passlen & 0xF ? 1 : 0);
 						src = MK_FP(decompparas - paras + FP_SEG(dst), FP_OFF(dst));
 						copy_paras_reverse(FP_SEG(dst), FP_SEG(src), paras);
@@ -567,7 +576,7 @@ void far* file_load_binary(const char* filename, int fatal) {
 	numparas = file_paras(filename, fatal);
 	if (numparas == 0) return MK_FP(0, 0);
 	memptr = mmgr_alloc_pages(filename, numparas);
-	return file_read(filename, FP_OFF(memptr), FP_SEG(memptr), fatal);
+	return file_read(filename, memptr, fatal);
 }
 
 void far* file_load_binary_nofatal(const char* filename) {
