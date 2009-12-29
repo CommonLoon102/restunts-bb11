@@ -482,6 +482,19 @@ static PrintFixedAsm(f, ea, lastpushcs) {
 		//Message("Translated %s into call near ptr %s\n", GetDisasm(ea), funcname);
 		fprintf(f, "    call near ptr %s\n", funcname);
 		nooutput = 1;
+	} else
+	if (mnem == "call") {
+		funcname = PortFuncName(ExtractCallTarget(ea));
+		if (funcname == "__setenvp") {
+			//Message("****** hello from SETENVP!\n");
+			fprintf(f, "    ;call %s    ; -- stunts does not need the environment, and this call trashes our injected code\n", funcname);
+			fprintf(f, "    nop\n");
+			fprintf(f, "    nop\n");
+			fprintf(f, "    nop\n");
+			fprintf(f, "    nop\n");
+			fprintf(f, "    nop\n");
+			nooutput = 1;
+		}
 	}
 	
 	if (nooutput == 0)
@@ -970,37 +983,41 @@ static main() {
 		
 		PrintAsmHeader(f, segea, endseg);
 
-		for (funcea = segea; funcea != BADADDR; funcea = nextfunc) {
-			nextfunc = NextFunction(funcea);
-			if (endseg <= nextfunc || nextfunc == BADADDR) {
-				endfunc = endseg; 
-				nextfunc = BADADDR;
-			} else
-				endfunc = nextfunc;
-			
-			flags = GetFlags(funcea);
-			if (isFunction(flags) && GetFunctionName(funcea) != "") {
-				//Message("function %s at %i-%i\n", GetFunctionName(funcea), funcea, endfunc);
-				PrintFunction(f, funcea, endfunc);
-				if (GetFunctionName(funcea) == "start") {
-					startseg = 1;
+		// the stack is generated with the .stack directive, so printing it would just add extra bytes to our image
+		segtype = GetSegmentAttr(segea, SEGATTR_TYPE);
+		if (segtype != SEG_BSS) {
+			for (funcea = segea; funcea != BADADDR; funcea = nextfunc) {
+				nextfunc = NextFunction(funcea);
+				if (endseg <= nextfunc || nextfunc == BADADDR) {
+					endfunc = endseg; 
+					nextfunc = BADADDR;
+				} else
+					endfunc = nextfunc;
+				
+				flags = GetFlags(funcea);
+				if (isFunction(flags) && GetFunctionName(funcea) != "") {
+					//Message("function %s at %i-%i\n", GetFunctionName(funcea), funcea, endfunc);
+					PrintFunction(f, funcea, endfunc);
+					if (GetFunctionName(funcea) == "start") {
+						startseg = 1;
+					}
+				} else 
+				if (isCode(flags)) {
+					PrintBody(f, funcea, endfunc, 0);
+					//Message("unhandlet code at %i-%i\n", funcea, endfunc);
+				} else
+				if (isData(flags) || hasValue(flags)) {
+					//Message("data at %i-%i\n", funcea, endfunc);
+					PrintBody(f, funcea, endfunc, 0);
+					//Message("unhandled data - should be at the beginning of a segment that doesnt start with a function!\n");
+				} else {
+					Message("unhandled flags: %i\n", flags);
 				}
-			} else 
-			if (isCode(flags)) {
-				PrintBody(f, funcea, endfunc, 0);
-				//Message("unhandlet code at %i-%i\n", funcea, endfunc);
-			} else
-			if (isData(flags) || hasValue(flags)) {
-				//Message("data at %i-%i\n", funcea, endfunc);
-				PrintBody(f, funcea, endfunc, 0);
-				//Message("unhandled data - should be at the beginning of a segment that doesnt start with a function!\n");
-			} else {
-				Message("unhandled flags: %i\n", flags);
+	
+				//funccount++;
+				//if (funccount > maxfuncs) break;
+				//continue;
 			}
-
-			//funccount++;
-			//if (funccount > maxfuncs) break;
-			//continue;
 		}
 		
 		fprintf(f, "%s ends\n", SegName(segea));

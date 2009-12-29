@@ -22,7 +22,8 @@ order
 	clname STUNTSC
 	clname STUNTSD
 	clname DATA
-	clname STACK copy
+	clname STACK
+	clname BSS
 |
 	copy restunts.exe s:\stunts
 

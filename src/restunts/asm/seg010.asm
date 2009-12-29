@@ -160,6 +160,7 @@ loc_2CC6C:
     sub     si, di
     cmp     si, 1000h
     jb      short loc_2CC7E
+loc_2CC7B:
     mov     si, 1000h       ; si = 1000h or memory size if less than 1000h
 loc_2CC7E:
     cli
@@ -204,10 +205,15 @@ nosmart
     rep stosb               ; initialize uninitialized data to 0
     push    ss
     pop     ds
-    call    far ptr word_2CD27+1
+    call    far ptr loc_2CD28
     push    ss
     pop     ds
-    call    __setenvp
+    ;call __setenvp    ; -- stunts does not need the environment, and this call trashes our injected code
+    nop
+    nop
+    nop
+    nop
+    nop
     call    far ptr __setargv
     xor     bp, bp
     push    word_3EE0C
@@ -220,7 +226,7 @@ __cintDIV:
     mov     ax, seg dseg
     mov     ds, ax
     mov     ax, 3
-    mov     ss:crtquitfunction, 19Ch
+    mov     ss:crtquitfunction, offset libsub_2CDEC
 __amsg_exit:
     push    ax
     call    __FF_MSGBANNER
@@ -229,18 +235,19 @@ __amsg_exit:
     push    ax
     push    cs
     call    ds:crtquitfunction
-word_2CD27     dw 46080
-    db 48
+    db 0
+loc_2CD28:
+    mov     ah, 30h
     int     21h             ; DOS - GET DOS VERSION
-    mov     ds:367Dh, ax
+    mov     ds:crtdosversion, ax
     mov     ax, 3500h
     int     21h             ; DOS - 2+ - GET INTERRUPT VECTOR
-    mov     ds:3669h, bx
-    mov     word ptr ds:366Bh, es
+    mov     word ptr ds:crtintrvec0, bx
+    mov     word ptr ds:crtintrvec0+2, es
     push    cs
     pop     ds
     mov     ax, 2500h
-    mov     dx, 0B4h
+    mov     dx, offset __cintDIV
     int     21h             ; DOS - SET INTERRUPT VECTOR
     push    ss
     pop     ds
@@ -273,7 +280,7 @@ loc_2CD8B:
     cmp     byte ptr es:[di], 0
     jz      short loc_2CDBD
     mov     cx, 0Ch
-    mov     si, 365Ch
+    mov     si, offset aC_file_info; ";C_FILE_INFO"
     repe cmpsb
     jz      short loc_2CDA6
     mov     cx, 7FFFh
@@ -287,7 +294,7 @@ loc_2CDA6:
     pop     es
     pop     ds
     mov     si, di
-    mov     di, 3684h
+    mov     di, offset crtfilehandles
     lodsb
     cbw
     xchg    ax, cx
@@ -306,7 +313,7 @@ loc_2CDBD:
 loc_2CDC0:
 smart
 smart
-    and     byte ptr [bx+3684h], 0BFh
+    and     crtfilehandles[bx], 0BFh
 nosmart
     mov     ax, 4400h
     int     21h             ; DOS - 2+ - IOCTL - GET DEVICE INFORMATION
@@ -314,16 +321,16 @@ nosmart
     test    dl, 80h
     jz      short loc_2CDD6
 smart
-    or      byte ptr [bx+3684h], 40h
+    or      crtfilehandles[bx], 40h
 nosmart
 loc_2CDD6:
     dec     bx
     jns     short loc_2CDC0
-    mov     si, 54BAh
-    mov     di, 54BAh
+    mov     si, offset _flushallptr
+    mov     di, offset _flushallptr
     call near ptr sub_2CE77
-    mov     si, 54BAh
-    mov     di, 54BAh
+    mov     si, offset _flushallptr
+    mov     di, offset _flushallptr
     call near ptr sub_2CE77
     retf
 start endp
@@ -349,11 +356,11 @@ libsub_quit_to_dos proc near
     push    bp
     mov     bp, sp
 loc_2CE06:
-    mov     si, 54BEh
-    mov     di, 54BEh
+    mov     si, offset aNmsg; "<<NMSG>>"
+    mov     di, offset aNmsg; "<<NMSG>>"
     call near ptr sub_2CE77
-    mov     si, 54BEh
-    mov     di, 54BEh
+    mov     si, offset aNmsg; "<<NMSG>>"
+    mov     di, offset aNmsg; "<<NMSG>>"
     call near ptr sub_2CE77
     call    __nullcheck
     or      ax, ax
@@ -365,7 +372,7 @@ loc_2CE2C:
     mov     cx, 0Fh
     mov     bx, 5
 loc_2CE32:
-    test    byte ptr [bx+3684h], 1
+    test    crtfilehandles[bx], 1
     jz      short loc_2CE3D
     mov     ah, 3Eh
     int     21h             ; DOS - 2+ - CLOSE A FILE WITH HANDLE
@@ -739,36 +746,36 @@ __setenvp proc far
     mov     bp, cx
     mov     di, cx
     dec     cx              ; cx = 0ffffh
-    mov     si, word ptr aMsRunTimeLibraryCop+24h; psp:2c = environment segment
+    mov     si, word ptr ds:2Ch; psp:2c = environment segment
     or      si, si
     jz      short loc_2D0B9
     mov     es, si
     cmp     byte ptr es:0, 0
-    jz      short loc_2D0B9
+    jz      short loc_2D0B9 ; empty environment?
 loc_2D0B3:
     repne scasb
-    inc     bp
-    scasb
+    inc     bp              ; count x=y strings in environment
+    scasb                   ; two nulls in a row = end of environment
     jnz     short loc_2D0B3
 loc_2D0B9:
-    inc     bp
-    xchg    ax, di
+    inc     bp              ; bp = number of envirment strings
+    xchg    ax, di          ; set ax to number of bytes in environent, di to 0
     inc     ax
 smart
     and     al, 0FEh
 nosmart
-    mov     di, bp
+    mov     di, bp          ; di = number of environment strings
     shl     bp, 1
-    add     ax, bp
+    add     ax, bp          ; ax = ((envsize+1)&FFFE) + numstrings*2
     push    ss
     pop     ds
     push    di
     mov     di, 9
     call near ptr __myalloc
     pop     di
-    mov     cx, di
-    mov     di, bp
-    add     di, ax
+    mov     cx, di          ; cx = number of environment strings
+    mov     di, bp          ; bp = old crtsp1 (was changed in myalloc)
+    add     di, ax          ; ax = old bp = numstrings*2
     mov     word_3EE0C, bp
     push    ds
     pop     es
@@ -777,7 +784,7 @@ nosmart
     dec     cx
     jcxz    short loc_2D0F4
 loc_2D0E1:
-    cmp     word ptr [si], 433Bh
+    cmp     word ptr [si], 433Bh; if the env string does not start with "C;" (or ;C) put its ofs at ds:bp
     jz      short loc_2D0EC
     mov     [bp+0], di
     inc     bp
