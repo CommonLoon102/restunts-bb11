@@ -428,7 +428,7 @@ _find_tedit:
     jnz     short _init_replay
 _prepare_intro:
     call    audio_unload
-loc_103EF:
+_do_intro0:
     sub     si, si
 _do_intro:
     mov     ax, 2
@@ -565,7 +565,7 @@ loc_104FC:
     jnz     short loc_10536
     jmp     _show_menu
 loc_10536:
-    jmp     loc_103EF
+    jmp     _do_intro0
     nop
 _ask_dos:
     sub     ax, ax
@@ -591,7 +591,7 @@ _ask_dos:
     add     sp, 12h
     cmp     ax, 1
     jge     short loc_10575
-    jmp     loc_103EF
+    jmp     _do_intro0
 loc_10575:
     call    sub_28DB6
     call    audio_stop_unk
@@ -3337,7 +3337,7 @@ loc_11FB1:
     add     sp, 4
     call    sub_20438
 loc_11FC8:
-    mov     ax, 923Bh
+    mov     ax, offset gameconfig.game_opponentcarid
     push    ax
     mov     al, [bp+var_F0]
     cbw

@@ -84,9 +84,9 @@ seg012 segment byte public 'STUNTSC' use16
     extrn ported_file_paras_:proc
     extrn ported_file_paras_nofatal_:proc
     extrn ported_file_paras_fatal_:proc
-    extrn ported_file_uncomp_paras_:proc
-    extrn ported_file_uncomp_paras_nofatal_:proc
-    extrn ported_file_uncomp_paras_fatal_:proc
+    extrn ported_file_decomp_paras_:proc
+    extrn ported_file_decomp_paras_nofatal_:proc
+    extrn ported_file_decomp_paras_fatal_:proc
     extrn ported_file_find_:proc
     extrn ported_file_find_next_:proc
     extrn scale_value:proc
@@ -128,14 +128,14 @@ seg012 segment byte public 'STUNTSC' use16
     extrn ported_file_read_:proc
     extrn ported_file_read_nofatal_:proc
     extrn ported_file_read_fatal_:proc
-    extrn decompress_rle:proc
+    extrn file_decomp_rle:proc
     extrn sub_30BF8:proc
     extrn sub_30CCF:proc
     extrn ported_file_load_binary_:proc
     extrn ported_file_load_binary_nofatal_:proc
-    extrn file_decomp:proc
-    extrn file_decomp_nofatal:proc
-    extrn file_decomp_fatal:proc
+    extrn ported_file_decomp_:proc
+    extrn ported_file_decomp_nofatal_:proc
+    extrn ported_file_decomp_fatal_:proc
     extrn locate_shape_nofatal:proc
     extrn locate_shape_fatal:proc
     extrn locate_sound_fatal:proc
@@ -225,7 +225,7 @@ seg012 segment byte public 'STUNTSC' use16
     extrn loc_32BDE
     extrn vle_esc1:word
     extrn vle_esc2:byte
-    extrn decompress_vle:proc
+    extrn file_decomp_vle:proc
     extrn nopsub_32FEE:proc
     extrn video_get_status:proc
     extrn nopsub_33006:proc

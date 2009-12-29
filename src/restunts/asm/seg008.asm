@@ -1982,33 +1982,34 @@ combine_file_path proc far
     var_2 = byte ptr -2
      s = byte ptr 0
      r = byte ptr 2
-    arg_0 = dword ptr 6
+    arg_0 = word ptr 6
+    arg_2 = word ptr 8
     arg_4 = word ptr 10
-    arg_6 = dword ptr 12
+    arg_6 = word ptr 12
 
     push    bp
     mov     bp, sp
     sub     sp, 4
     push    si
-    cmp     word ptr [bp+arg_0], 0
+    cmp     [bp+arg_0], 0
     jz      short loc_285EC
-    push    word ptr [bp+arg_0]
-    push    word ptr [bp+arg_6]; char *
+    push    [bp+arg_0]
+    push    [bp+arg_6]      ; char *
     call    _strcpy
     add     sp, 4
-    push    word ptr [bp+arg_0]; char *
+    push    [bp+arg_0]      ; char *
     call    _strlen
     add     sp, 2
     mov     si, ax
     jmp     short loc_285F4
 loc_285EC:
-    mov     bx, word ptr [bp+arg_6]
+    mov     bx, [bp+arg_6]
     mov     byte ptr [bx], 0
     sub     si, si
 loc_285F4:
     or      si, si
     jz      short loc_28618
-    mov     bx, word ptr [bp+arg_0]
+    mov     bx, [bp+arg_0]
     mov     al, [bx+si-1]
     mov     [bp+var_2], al
     cmp     al, ':'
@@ -2017,16 +2018,16 @@ loc_285F4:
     jz      short loc_28618
     mov     ax, offset asc_3EBA9; "\\"
     push    ax
-    push    word ptr [bp+arg_6]; char *
+    push    [bp+arg_6]      ; char *
     call    _strcat
     add     sp, 4
 loc_28618:
-    push    word ptr [bp+arg_0+2]
-    push    word ptr [bp+arg_6]; char *
+    push    [bp+arg_2]
+    push    [bp+arg_6]      ; char *
     call    _strcat
     add     sp, 4
     push    [bp+arg_4]
-    push    word ptr [bp+arg_6]; char *
+    push    [bp+arg_6]      ; char *
     call    _strcat
     add     sp, 4
     pop     si

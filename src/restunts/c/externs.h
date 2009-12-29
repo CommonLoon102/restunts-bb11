@@ -20,12 +20,12 @@ extern const char* aResizememoryCa;
 extern const char* aSFileError;
 extern const char* aSFileError_0;
 extern const char* aSFileError_1;
+extern const char* aSInvalidPackTy;
 
 extern short is_audioloaded;
 extern void far* songfileptr;
 extern void far* voicefileptr;
 
-extern void far* file_decomp_nofatal(const char* filename);
 extern void far* load_song_file(const char* filename);
 extern void far* load_voice_file(const char* filename);
 extern void far* load_sfx_file(const char* filename);
@@ -36,10 +36,13 @@ extern void far* init_audio_resources(void far* songptr, void far* voiceptr, con
 extern void load_audio_finalize(void far* audiores);
 extern void fatal_error(const char*, ...);
 extern int do_dea_textres(void);
+extern unsigned long file_decomp_rle(void far* src, void far* dst, unsigned paras);
+extern unsigned long file_decomp_vle(void far* src, void far* dst, unsigned paras);
 extern void* _memcpy(void*, const void*, unsigned);
 extern char* _strcpy(char* dest, const char* src);
 extern char* _strcat(char* dest, const char* src);
 
+#define memcpy _memcpy
 #define strcpy _strcpy
 #define strcat _strcat
 

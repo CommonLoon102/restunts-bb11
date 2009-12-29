@@ -21,7 +21,6 @@ FILE* fopen(const char* path, const char* mode)
 	unsigned short offs = FP_OFF(path);
 	FILE* handle;
 
-	(void)mode;
 	g_errno = 0;
 
 	if (mode[0] == 'w') { // Create new file for writing
@@ -335,7 +334,7 @@ unsigned short file_paras_nofatal(const char* filename)
 }
 
 // Get number of 16-byte blocks needed to store the final result of an assumed compressed file.
-unsigned short file_uncomp_paras(const char* filename, int fatal)
+unsigned short file_decomp_paras(const char* filename, int fatal)
 {
 	long length;
 	FILE* file;
@@ -359,14 +358,14 @@ unsigned short file_uncomp_paras(const char* filename, int fatal)
 	return 0;
 }
 
-unsigned short file_uncomp_paras_fatal(const char* filename)
+unsigned short file_decomp_paras_fatal(const char* filename)
 {
-	return file_uncomp_paras(filename, 1);
+	return file_decomp_paras(filename, 1);
 }
 
-unsigned short file_uncomp_paras_nofatal(const char* filename)
+unsigned short file_decomp_paras_nofatal(const char* filename)
 {
-	return file_uncomp_paras(filename, 0);
+	return file_decomp_paras(filename, 0);
 }
 
 // Read entire file to given destination. Optionally handle errors fatal.
@@ -462,6 +461,99 @@ short file_write_fatal(const char* filename, unsigned short srcoff, unsigned sho
 short file_write_nofatal(const char* filename, unsigned short srcoff, unsigned short srcseg, unsigned long length)
 {
 	return file_write(filename, srcoff, srcseg, length, 0);
+}
+
+// Decompress file. Returns pointer to result, NULL or raises fatal error.
+void far* file_decomp(const char* filename, int fatal)
+{
+	unsigned long passlen;
+	unsigned short paras, decompparas;
+	unsigned char passes, type;
+	unsigned char far* src;
+	unsigned char far* dst;
+	int err = 0;
+
+	// Check if resource archive is already loaded.
+	dst = mmgr_get_unk(filename);
+	if (dst) {
+		return dst;
+	}
+	
+	decompparas = file_decomp_paras(filename, fatal);
+	if (decompparas) {
+		// Allocate extra paragraphs for alphabet and escape tables
+		// overhead used during decompression.
+		decompparas += 4;
+		dst = mmgr_alloc_pages(filename, decompparas);
+		
+		paras = file_paras(filename, fatal);
+		if (paras) {
+			src = MK_FP(decompparas - paras + FP_SEG(dst), FP_OFF(dst));
+			src = file_read(filename, FP_OFF(src), FP_SEG(src), fatal);
+			if (src) {
+				passes = *src;
+				
+				// If the multi-pass flag is set the first byte contains the
+				// number of compression passes and the next three bytes holds
+				// the final decompressed size.
+				if (passes & 0x80) {
+					passes &= ~0x80;
+					src += 4; // Skip past length data.
+				}
+				// Flag not set, first byte is compression type of the first
+				// and only pass.
+				else {
+					passes = 1;
+				}
+
+				// Decode all compression passes.
+				while (!err && passes) {
+					type = *src;
+					switch (type) {
+						case 1:
+							passlen = file_decomp_rle(src, dst, decompparas);
+							break;
+						case 2:
+							passlen = file_decomp_vle(src, dst, decompparas);
+							break;
+						default:
+							err = 1;
+					}
+
+					// Set source for next pass.
+					if (!err && --passes) {
+						paras = (passlen >> 4) + (passlen & 0xF ? 1 : 0);
+						src = MK_FP(decompparas - paras + FP_SEG(dst), FP_OFF(dst));
+						copy_paras_reverse(FP_SEG(dst), FP_SEG(src), paras);
+					}
+				}
+
+				// Free unneeded overhead.
+				if (!err) {
+					decompparas -= 4;
+					mmgr_resize_memory(FP_OFF(dst), FP_SEG(dst), decompparas);
+
+					return dst;
+				}
+			}
+		}
+	}
+
+	if (fatal) {
+		fatal_error(aSInvalidPackTy, filename);
+	}
+
+	return MK_FP(0, 0);
+}
+
+void far* file_decomp_fatal(const char* filename)
+{
+	return file_decomp(filename, 1);
+}
+
+void far* file_decomp_nofatal(const char* filename)
+{
+	return file_decomp(filename, 0);
 }
 
 // Allocates, reads and returns a pointer to the contents of a binary file
@@ -600,4 +692,3 @@ void file_load_audiores(const char* songfile, const char* voicefile, const char*
 	load_audio_finalize(audiores);
 	is_audioloaded = 1;
 }
-

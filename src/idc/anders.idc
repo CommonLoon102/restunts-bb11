@@ -107,7 +107,7 @@ static IsPublicLabel(labelname) {
 		labelname == "loc_309A5" || 
 //		labelname == "_file_read" || // Resolved
 		labelname == "loc_30DA1" || 
-		labelname == "_decompress_file" || 
+//		labelname == "_file_decomp" || // Resolved
 		labelname == "loc_30FB2" || 
 		labelname == "loc_310CD" || 
 		labelname == "loc_31498" || 
@@ -632,14 +632,17 @@ static PortFuncName(labelname) {
 		labelname == "file_paras" ||
 		labelname == "file_paras_fatal" ||
 		labelname == "file_paras_nofatal" ||
-		labelname == "file_uncomp_paras" ||
-		labelname == "file_uncomp_paras_fatal" ||
-		labelname == "file_uncomp_paras_nofatal" ||
+		labelname == "file_decomp_paras" ||
+		labelname == "file_decomp_paras_fatal" ||
+		labelname == "file_decomp_paras_nofatal" ||
 		labelname == "file_read" ||
 		labelname == "file_read_fatal" ||
 		labelname == "file_read_nofatal" ||
 		labelname == "file_write_fatal" ||
 		labelname == "file_write_nofatal" ||
+		labelname == "file_decomp" ||
+		labelname == "file_decomp_fatal" ||
+		labelname == "file_decomp_nofatal" ||
 		labelname == "file_load_binary" ||
 		labelname == "file_load_binary_fatal" ||
 		labelname == "file_load_binary_nofatal" ||

@@ -131,9 +131,9 @@ seg012 segment byte public 'STUNTSC' use16
     public ported_file_paras_
     public ported_file_paras_nofatal_
     public ported_file_paras_fatal_
-    public ported_file_uncomp_paras_
-    public ported_file_uncomp_paras_nofatal_
-    public ported_file_uncomp_paras_fatal_
+    public ported_file_decomp_paras_
+    public ported_file_decomp_paras_nofatal_
+    public ported_file_decomp_paras_fatal_
     public ported_file_find_
     public ported_file_find_next_
     public scale_value
@@ -175,14 +175,14 @@ seg012 segment byte public 'STUNTSC' use16
     public ported_file_read_
     public ported_file_read_nofatal_
     public ported_file_read_fatal_
-    public decompress_rle
+    public file_decomp_rle
     public sub_30BF8
     public sub_30CCF
     public ported_file_load_binary_
     public ported_file_load_binary_nofatal_
-    public file_decomp
-    public file_decomp_nofatal
-    public file_decomp_fatal
+    public ported_file_decomp_
+    public ported_file_decomp_nofatal_
+    public ported_file_decomp_fatal_
     public locate_shape_nofatal
     public locate_shape_fatal
     public locate_sound_fatal
@@ -272,7 +272,7 @@ seg012 segment byte public 'STUNTSC' use16
     public loc_32BDE
     public vle_esc1
     public vle_esc2
-    public decompress_vle
+    public file_decomp_vle
     public nopsub_32FEE
     public video_get_status
     public nopsub_33006
@@ -4046,7 +4046,7 @@ loc_2FF00:
     pop     bp
     retf
 ported_file_paras_fatal_ endp
-ported_file_uncomp_paras_ proc far
+ported_file_decomp_paras_ proc far
     var_fatal = word ptr -8
     var_6 = byte ptr -6
     var_5 = word ptr -5
@@ -4064,11 +4064,11 @@ ported_file_uncomp_paras_ proc far
     push    di
     mov     ax, [bp+arg_fatal]
     mov     [bp+var_fatal], ax
-    jmp     short _file_uncomp_paras
+    jmp     short _file_decomp_paras
     ; align 2
     db 144
-ported_file_uncomp_paras_ endp
-ported_file_uncomp_paras_nofatal_ proc far
+ported_file_decomp_paras_ endp
+ported_file_decomp_paras_nofatal_ proc far
     var_fatal = word ptr -8
      s = byte ptr 0
      r = byte ptr 2
@@ -4080,10 +4080,10 @@ ported_file_uncomp_paras_nofatal_ proc far
     push    si
     push    di
     mov     [bp+var_fatal], 0
-    jmp     short _file_uncomp_paras
+    jmp     short _file_decomp_paras
     db 144
-ported_file_uncomp_paras_nofatal_ endp
-ported_file_uncomp_paras_fatal_ proc near
+ported_file_decomp_paras_nofatal_ endp
+ported_file_decomp_paras_fatal_ proc near
     var_fatal = word ptr -8
      s = byte ptr 0
      r = byte ptr 2
@@ -4103,7 +4103,7 @@ ported_file_uncomp_paras_fatal_ proc near
      r = byte ptr 2
     arg_filename = word ptr 6
     arg_fatal = word ptr 8
-_file_uncomp_paras:
+_file_decomp_paras:
     mov     dx, [bp+arg_filename]
     mov     dx, [bp+arg_filename]
     mov     ah, 3Dh ; '='
@@ -4177,7 +4177,7 @@ loc_2FFC4:
     push    [bp+arg_filename]
     push    ax
     call    far ptr fatal_error
-ported_file_uncomp_paras_fatal_ endp
+ported_file_decomp_paras_fatal_ endp
 ported_file_find_ proc far
      s = byte ptr 0
      r = byte ptr 2
@@ -5723,7 +5723,7 @@ fatal:
     push    ax
     call    far ptr fatal_error
 ported_file_read_fatal_ endp
-decompress_rle proc far
+file_decomp_rle proc far
     var_1A = word ptr -26
     var_18 = word ptr -24
     var_16 = word ptr -22
@@ -5803,7 +5803,7 @@ loc_30BE6:
     pop     ds
     pop     bp
     retf
-decompress_rle endp
+file_decomp_rle endp
 sub_30BF8 proc near
 
     mov     cx, 80h ; '€'
@@ -6068,7 +6068,7 @@ emptyfile:
     xor     dx, dx
     jmp     short loc_30DDE
 ported_file_load_binary_nofatal_ endp
-file_decomp proc far
+ported_file_decomp_ proc far
     var_fatal = word ptr -12
      s = byte ptr 0
      r = byte ptr 2
@@ -6083,8 +6083,8 @@ file_decomp proc far
     mov     [bp+var_fatal], ax
     jmp     short _file_decomp
     db 144
-file_decomp endp
-file_decomp_nofatal proc far
+ported_file_decomp_ endp
+ported_file_decomp_nofatal_ proc far
     var_fatal = word ptr -12
      s = byte ptr 0
      r = byte ptr 2
@@ -6097,8 +6097,8 @@ file_decomp_nofatal proc far
     mov     [bp+var_fatal], 0
     jmp     short _file_decomp
     db 144
-file_decomp_nofatal endp
-file_decomp_fatal proc far
+ported_file_decomp_nofatal_ endp
+ported_file_decomp_fatal_ proc far
     var_fatal = word ptr -12
     var_nextsrcseg = word ptr -10
     var_passes = word ptr -8
@@ -6132,7 +6132,7 @@ loc_30E29:
 fd_not_found:
     push    [bp+var_fatal]
     push    [bp+arg_filename]
-    call    file_uncomp_paras
+    call    file_decomp_paras
     add     sp, 4
     or      ax, ax
     jz      short loc_30E29
@@ -6191,7 +6191,7 @@ decompress_subfile:
     call    dword ptr cs:compression_type[bx]
     add     sp, 0Ah
     dec     [bp+var_passes]
-    jle     short loc_30F2F
+    jle     short fd_done
     mov     si, ax
     shr     dx, 1
     rcr     ax, 1
@@ -6217,8 +6217,8 @@ loc_30EE5:
     mov     ds, [bp+var_nextsrcseg]
     xor     si, si
     jmp     short decompress_subfile
-compression_type     dd decompress_rle
-    dd decompress_vle
+compression_type     dd file_decomp_rle
+    dd file_decomp_vle
 loc_30F0C:
     add     sp, 8
 loc_30F0F:
@@ -6238,7 +6238,7 @@ loc_30F1F:
     mov     ax, offset aSInvalidPackTy; "%s INVALID PACK TYPE\r"
     push    ax
     call    far ptr fatal_error
-loc_30F2F:
+fd_done:
     mov     ax, [bp+var_decomp_paras]
     sub     ax, 4
     push    ax
@@ -6286,7 +6286,7 @@ loc_30F7E:
     mov     sp, bp
     pop     bp
     retf
-file_decomp_fatal endp
+ported_file_decomp_fatal_ endp
 locate_shape_nofatal proc far
      s = byte ptr 0
      r = byte ptr 2
@@ -10517,7 +10517,7 @@ vle_esc2     db 0
     db 0
     db 0
 sub_32AE2 endp
-decompress_vle proc far
+file_decomp_vle proc far
     var_lengths = byte ptr -528
     var_symbols = byte ptr -272
     var_codoff = word ptr -14
@@ -10848,7 +10848,7 @@ loc_32FE1:
     jmp     short loc_32FDD
     ; align 2
     db 0
-decompress_vle endp
+file_decomp_vle endp
 nopsub_32FEE proc far
 
     mov     dx, 3DAh
