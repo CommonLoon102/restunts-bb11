@@ -136,9 +136,9 @@ seg012 segment byte public 'STUNTSC' use16
     extrn ported_file_decomp_:proc
     extrn ported_file_decomp_nofatal_:proc
     extrn ported_file_decomp_fatal_:proc
-    extrn locate_shape_nofatal:proc
-    extrn locate_shape_fatal:proc
-    extrn locate_sound_fatal:proc
+    extrn ported_locate_shape_nofatal_:proc
+    extrn ported_locate_shape_fatal_:proc
+    extrn ported_locate_sound_fatal_:proc
     extrn ported_mmgr_alloc_resmem_:proc
     extrn loc_310CD
     extrn ported_mmgr_alloc_a000_:proc

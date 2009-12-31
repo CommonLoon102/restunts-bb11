@@ -57,7 +57,7 @@ seg008 segment byte public 'STUNTSC' use16
     public input_do_checking
     public ported_file_load_resfile_
     public unload_resource
-    public locate_shape_alt
+    public ported_locate_shape_alt_
     public locate_text_res
     public copy_string
     public sub_28B0E
@@ -2550,7 +2550,7 @@ unload_resource proc far
     ; align 2
     db 144
 unload_resource endp
-locate_shape_alt proc far
+ported_locate_shape_alt_ proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -2566,7 +2566,7 @@ locate_shape_alt proc far
     add     sp, 6
     pop     bp
     retf
-locate_shape_alt endp
+ported_locate_shape_alt_ endp
 locate_text_res proc far
     var_4 = byte ptr -4
     var_3 = byte ptr -3

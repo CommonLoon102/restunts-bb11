@@ -531,3 +531,137 @@ void far* mmgr_op_unk(unsigned short arg_0, unsigned short arg_2) {
 
 	return MK_FP(resdi->resofs, 0);
 }
+
+void far* locate_resource(unsigned short arg_0, unsigned short arg_2, unsigned short arg_4, unsigned short fatal) {
+	unsigned short oldds;
+__asm {
+    push    ds
+    push    si
+    push    di
+    mov     dx, fatal
+    mov oldds, ds
+_alt_locate_resource:
+    cld
+    mov     ds, [arg_2]
+    mov     si, [arg_0]
+    mov     ax, oldds //seg dseg
+    mov     es, ax
+    mov     di, [arg_4]
+    mov     cx, 4
+    mov     bx, 0
+loc_30FC7:
+    cmp     byte ptr es:[bx+di], 0
+    jz      short loc_31024
+    inc     bx
+    loop    loc_30FC7
+loc_30FD0:
+    mov     ax, [si+4]
+    or      ax, ax
+    jz      short _end_of_locate
+    add     si, 6
+    mov     bx, si
+loc_30FDC:
+    mov     si, bx
+    mov     di, [arg_4]
+    mov     cx, 4
+loc_30FE4:
+    cmpsb
+    jnz     short loc_30FEC
+    loop    loc_30FE4
+    jmp     short _found_resource
+    // align 2
+    db 144
+loc_30FEC:
+    cmp     byte ptr [si-1], 0
+    jnz     short loc_30FF9
+    cmp     byte ptr es:[di-1], 20h // ' '
+    jz      short _found_resource
+loc_30FF9:
+    add     bx, 4
+    dec     ax
+    jge     short loc_30FDC
+_end_of_locate:
+    cmp     dx, 1
+    jl      short loc_3101F
+    jg      short loc_3100C
+    mov     dx, offset aLocateshape4_4sShapeNotF// "locateshape - %-4.4s SHAPE NOT FOUND\r\n"
+    jmp     short loc_3100F
+    // align 2
+    db 144
+loc_3100C:
+    mov     dx, offset aLocatesound4_4sSoundNotF // "locatesound - %-4.4s SOUND NOT FOUND\r\n"
+loc_3100F:
+    mov     ax, oldds //seg dseg
+    mov     ds, ax
+    push    [arg_4]
+    push    dx
+    call    far ptr fatal_error
+    int     20h             // DOS - PROGRAM TERMINATION
+loc_3101F:
+    xor     ax, ax
+    jmp     short loc_31075
+    // align 2
+    db 144
+loc_31024:
+    mov     byte ptr es:[bx+di], 20h // ' '
+    inc     bx
+    loop    loc_31024
+    jmp     short loc_30FD0
+_found_resource:
+    mov     si, [arg_0]
+    mov     ax, [si+4]
+    shl     ax, 1
+    shl     ax, 1
+    add     bx, ax
+    shl     ax, 1
+    add     ax, 6
+    mov     cx, ds
+    xor     dx, dx
+    shl     cx, 1
+    rcl     dx, 1
+    shl     cx, 1
+    rcl     dx, 1
+    shl     cx, 1
+    rcl     dx, 1
+    shl     cx, 1
+    rcl     dx, 1
+    add     ax, cx
+    adc     dx, 0
+    add     ax, [bx]
+    adc     dx, [bx+2]
+    mov     bx, ax
+smart
+    and     bx, 0Fh
+nosmart
+    shr     dx, 1
+    rcr     ax, 1
+    shr     dx, 1
+    rcr     ax, 1
+    shr     dx, 1
+    rcr     ax, 1
+    shr     dx, 1
+    rcr     ax, 1
+    mov     dx, ax
+    mov     ax, bx
+loc_31075:
+    pop     di
+    pop     si
+    pop     ds
+}
+}
+
+void far* locate_shape_nofatal(unsigned short arg_0, unsigned short arg_2, unsigned short arg_4) {
+	return locate_resource(arg_0, arg_2, arg_4, 0);
+}
+
+void far* locate_shape_fatal(unsigned short arg_0, unsigned short arg_2, unsigned short arg_4) {
+	return locate_resource(arg_0, arg_2, arg_4, 1);
+}
+
+void far* locate_shape_alt(unsigned short arg_0, unsigned short arg_2, unsigned short arg_4) {
+	return locate_shape_fatal(arg_0, arg_2, arg_4);
+}
+
+void far* locate_sound_fatal(unsigned short arg_0, unsigned short arg_2, unsigned short arg_4) {
+	return locate_resource(arg_0, arg_2, arg_4, 2);
+}

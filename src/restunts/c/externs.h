@@ -21,6 +21,8 @@ extern const char* aSFileError;
 extern const char* aSFileError_0;
 extern const char* aSFileError_1;
 extern const char* aSInvalidPackTy;
+extern const char* aLocateshape4_4sShapeNotF;
+extern const char* aLocatesound4_4sSoundNotF;
 
 extern short is_audioloaded;
 extern void far* songfileptr;

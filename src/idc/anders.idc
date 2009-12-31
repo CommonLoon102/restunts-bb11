@@ -680,6 +680,11 @@ static PortFuncName(labelname) {
 		labelname == "mmgr_op_unk" ||
 		labelname == "mmgr_alloc_resbytes" ||
 
+		labelname == "locate_shape_nofatal" ||
+		labelname == "locate_shape_fatal" ||
+		labelname == "locate_shape_alt" ||
+		labelname == "locate_sound_fatal" ||
+
 		labelname == "stuntsmain"
 	)
 		return "ported_" + labelname + "_";

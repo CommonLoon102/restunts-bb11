@@ -10,7 +10,7 @@ seg008 segment byte public 'STUNTSC' use16
     extrn input_do_checking:proc
     extrn ported_file_load_resfile_:proc
     extrn unload_resource:proc
-    extrn locate_shape_alt:proc
+    extrn ported_locate_shape_alt_:proc
     extrn locate_text_res:proc
     extrn copy_string:proc
     extrn sub_28B0E:proc

@@ -316,7 +316,7 @@ loc_21DFC:
     mov     ax, 0FFFFh
     push    ax
     push    ax
-    mov     ax, 3084h
+    mov     ax, offset aRbf ; "rbf"
     push    ax
     push    word_449A2
     push    word_449A0
@@ -450,7 +450,7 @@ loc_21F84:
     mov     al, byte_4432A
     cbw
     mov     bx, ax
-    mov     byte ptr [bx-6D98h], 0
+    mov     byte_449D8[bx], 0
     cmp     byte_449E2, 0
     jz      short loc_21FB8
     push    word_459D4
@@ -533,7 +533,7 @@ loc_22052:
     mov     al, byte_4432A
     cbw
     mov     bx, ax
-    mov     byte ptr [bx-6D98h], 0
+    mov     byte_449D8[bx], 0
 loc_22064:
     mov     ax, 81C4h
     push    ax
@@ -723,11 +723,11 @@ loc_22236:
     jz      short loc_22257
     jmp     loc_21DA2
 loc_22257:
-    mov     ax, 0AA5Eh
+    mov     ax, offset mouse_ypos
     push    ax
-    mov     ax, 0A9FCh
+    mov     ax, offset mouse_xpos
     push    ax
-    mov     ax, 8B78h
+    mov     ax, offset mouse_butstate
     push    ax
     call    mouse_get_state
     add     sp, 6
@@ -794,7 +794,7 @@ loc_22305:
     push    ax
     mov     ax, 0FFFFh
     push    ax
-    mov     ax, 3088h
+    mov     ax, offset aCop ; "cop"
     push    ax
     push    word_449A2
     push    word_449A0
@@ -828,18 +828,18 @@ loc_22347:
     mov     ax, state.game_frame
     add     ax, word_45A24
     push    ax
-    mov     ax, 0AC74h
+    mov     ax, offset byte_463E4
     push    ax              ; char *
     call    sub_298B8
     add     sp, 6
     call    sub_28DB6
     push    [bp+var_14]
-    mov     ax, 0AC74h
+    mov     ax, offset byte_463E4
     push    ax
     call    sub_29606
     add     sp, 2
     push    ax
-    mov     ax, 0AC74h
+    mov     ax, offset byte_463E4
     push    ax
     call    sub_345BC
     add     sp, 6

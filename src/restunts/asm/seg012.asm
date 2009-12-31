@@ -183,9 +183,9 @@ seg012 segment byte public 'STUNTSC' use16
     public ported_file_decomp_
     public ported_file_decomp_nofatal_
     public ported_file_decomp_fatal_
-    public locate_shape_nofatal
-    public locate_shape_fatal
-    public locate_sound_fatal
+    public ported_locate_shape_nofatal_
+    public ported_locate_shape_fatal_
+    public ported_locate_sound_fatal_
     public ported_mmgr_alloc_resmem_
     public loc_310CD
     public ported_mmgr_alloc_a000_
@@ -6287,7 +6287,7 @@ loc_30F7E:
     pop     bp
     retf
 ported_file_decomp_fatal_ endp
-locate_shape_nofatal proc far
+ported_locate_shape_nofatal_ proc far
      s = byte ptr 0
      r = byte ptr 2
 
@@ -6299,8 +6299,8 @@ locate_shape_nofatal proc far
     xor     dx, dx
     jmp     short _alt_locate_resource
     db 144
-locate_shape_nofatal endp
-locate_shape_fatal proc far
+ported_locate_shape_nofatal_ endp
+ported_locate_shape_fatal_ proc far
      s = byte ptr 0
      r = byte ptr 2
 
@@ -6312,8 +6312,8 @@ locate_shape_fatal proc far
     mov     dx, 1
     jmp     short _alt_locate_resource
     db 144
-locate_shape_fatal endp
-locate_sound_fatal proc far
+ported_locate_shape_fatal_ endp
+ported_locate_sound_fatal_ proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -6435,7 +6435,7 @@ loc_31075:
     pop     ds
     pop     bp
     retf
-locate_sound_fatal endp
+ported_locate_sound_fatal_ endp
 ported_mmgr_alloc_resmem_ proc far
      s = byte ptr 0
      r = byte ptr 2

@@ -60,6 +60,11 @@ extrn mmgr_resize_memory:proc
 extrn mmgr_op_unk:proc
 extrn mmgr_alloc_resbytes:proc
 
+extrn locate_shape_fatal:proc
+extrn locate_shape_nofatal:proc
+extrn locate_shape_alt:proc
+extrn locate_sound_fatal:proc
+
 extrn stuntsmain:proc
 
 ;extrn fatal_error:proc
