@@ -587,3 +587,11 @@ char far* locate_shape_alt(char far* data, char* name) {
 char far* locate_sound_fatal(char far* data, char* name) {
 	return locate_resource(data, name, 2);
 }
+
+void locate_many_resources(char far* data, char* names, char far** result) {
+	while (*names != 0) {
+		*result = locate_shape_fatal(data, names);
+		names += 4;
+		result ++;
+	}
+}

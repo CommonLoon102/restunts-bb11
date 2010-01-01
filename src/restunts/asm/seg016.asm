@@ -46,13 +46,13 @@ nosmart
 seg016 segment byte public 'STUNTSC' use16
     assume cs:seg016
     assume es:nothing, ss:nothing, ds:dseg
-    public locate_many_resources
+    public ported_locate_many_resources_
     public nopsub_367E4
     public nopsub_36826
     public nopsub_36868
     ; align 2
     db 144
-locate_many_resources proc far
+ported_locate_many_resources_ proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -84,7 +84,7 @@ loc_367D9:
     retf
     ; align 2
     db 144
-locate_many_resources endp
+ported_locate_many_resources_ endp
 nopsub_367E4 proc far
     var_2 = word ptr -2
      s = byte ptr 0
