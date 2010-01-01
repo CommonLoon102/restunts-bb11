@@ -58,7 +58,7 @@ seg008 segment byte public 'STUNTSC' use16
     public ported_file_load_resfile_
     public unload_resource
     public ported_locate_shape_alt_
-    public locate_text_res
+    public ported_locate_text_res_
     public copy_string
     public sub_28B0E
     public sub_28D9E
@@ -1254,7 +1254,7 @@ sub_27ED4 proc far
     push    word ptr mainresptr+2
     push    word ptr mainresptr
     push    cs
-    call near ptr locate_text_res
+    call near ptr ported_locate_text_res_
     add     sp, 6
     push    dx
     push    ax
@@ -1552,7 +1552,7 @@ loc_281CC:
     push    word ptr mainresptr+2
     push    word ptr mainresptr
     push    cs
-    call near ptr locate_text_res
+    call near ptr ported_locate_text_res_
     add     sp, 6
     push    dx
     push    ax
@@ -1577,7 +1577,7 @@ loc_281CC:
     push    word ptr mainresptr+2
     push    word ptr mainresptr
     push    cs
-    call near ptr locate_text_res
+    call near ptr ported_locate_text_res_
     add     sp, 6
     push    dx
     push    ax
@@ -2069,7 +2069,7 @@ sub_2863A proc far
     push    word ptr mainresptr+2
     push    word ptr mainresptr
     push    cs
-    call near ptr locate_text_res
+    call near ptr ported_locate_text_res_
     add     sp, 6
     push    dx
     push    ax
@@ -2567,7 +2567,7 @@ ported_locate_shape_alt_ proc far
     pop     bp
     retf
 ported_locate_shape_alt_ endp
-locate_text_res proc far
+ported_locate_text_res_ proc far
     var_4 = byte ptr -4
     var_3 = byte ptr -3
     var_2 = byte ptr -2
@@ -2581,7 +2581,7 @@ locate_text_res proc far
     push    bp
     mov     bp, sp
     sub     sp, 4
-    mov     al, byte_4645E
+    mov     al, textresprefix
     mov     [bp+var_4], al
     mov     bx, [bp+arg_4]
     mov     al, [bx]
@@ -2600,7 +2600,7 @@ locate_text_res proc far
     retf
     ; align 2
     db 144
-locate_text_res endp
+ported_locate_text_res_ endp
 copy_string proc far
     var_4 = dword ptr -4
      s = byte ptr 0
@@ -4074,7 +4074,7 @@ show_waiting proc far
     push    word ptr mainresptr+2
     push    word ptr mainresptr
     push    cs
-    call near ptr locate_text_res
+    call near ptr ported_locate_text_res_
     add     sp, 6
     push    dx
     push    ax
@@ -4753,7 +4753,7 @@ do_joy_restext proc far
     push    word ptr mainresptr+2
     push    word ptr mainresptr
     push    cs
-    call near ptr locate_text_res
+    call near ptr ported_locate_text_res_
     add     sp, 6
     push    dx
     push    ax
@@ -4945,7 +4945,7 @@ loc_29D3A:
     push    word ptr mainresptr+2
     push    word ptr mainresptr
     push    cs
-    call near ptr locate_text_res
+    call near ptr ported_locate_text_res_
     add     sp, 6
     push    dx
     push    ax
@@ -4991,7 +4991,7 @@ do_key_restext proc far
     push    word ptr mainresptr+2
     push    word ptr mainresptr
     push    cs
-    call near ptr locate_text_res
+    call near ptr ported_locate_text_res_
     add     sp, 6
     push    dx
     push    ax
@@ -5029,7 +5029,7 @@ sub_29DF4 proc far
     push    word ptr mainresptr+2
     push    word ptr mainresptr
     push    cs
-    call near ptr locate_text_res
+    call near ptr ported_locate_text_res_
     add     sp, 6
     push    dx
     push    ax
@@ -5066,7 +5066,7 @@ do_pau_restext proc far
     push    word ptr mainresptr+2
     push    word ptr mainresptr
     push    cs
-    call near ptr locate_text_res
+    call near ptr ported_locate_text_res_
     add     sp, 6
     push    dx
     push    ax
@@ -5117,7 +5117,7 @@ loc_29ECE:
     push    word ptr mainresptr+2
     push    word ptr mainresptr
     push    cs
-    call near ptr locate_text_res
+    call near ptr ported_locate_text_res_
     add     sp, 6
     push    dx
     push    ax
@@ -5166,7 +5166,7 @@ loc_29F30:
     push    word ptr mainresptr+2
     push    word ptr mainresptr
     push    cs
-    call near ptr locate_text_res
+    call near ptr ported_locate_text_res_
     add     sp, 6
     push    dx
     push    ax
@@ -5200,7 +5200,7 @@ do_dos_restext proc far
     push    word ptr mainresptr+2
     push    word ptr mainresptr
     push    cs
-    call near ptr locate_text_res
+    call near ptr ported_locate_text_res_
     add     sp, 6
     push    dx
     push    ax
@@ -5250,7 +5250,7 @@ loc_29FD9:
     push    word ptr mainresptr+2
     push    word ptr mainresptr
     push    cs
-    call near ptr locate_text_res
+    call near ptr ported_locate_text_res_
     add     sp, 6
     push    dx
     push    ax
@@ -5373,7 +5373,7 @@ loc_2A0CC:
     push    word ptr mainresptr+2
     push    word ptr mainresptr
     push    cs
-    call near ptr locate_text_res
+    call near ptr ported_locate_text_res_
     add     sp, 6
     push    dx
     push    ax
@@ -5418,7 +5418,7 @@ do_dea_textres proc far
     push    word ptr mainresptr+2
     push    word ptr mainresptr
     push    cs
-    call near ptr locate_text_res
+    call near ptr ported_locate_text_res_
     add     sp, 6
     push    dx
     push    ax
@@ -5447,7 +5447,7 @@ loc_2A168:
     push    word ptr mainresptr+2
     push    word ptr mainresptr
     push    cs
-    call near ptr locate_text_res
+    call near ptr ported_locate_text_res_
     add     sp, 6
     push    dx
     push    ax
@@ -5491,7 +5491,7 @@ loc_2A1AC:
     push    word ptr mainresptr+2
     push    word ptr mainresptr
     push    cs
-    call near ptr locate_text_res
+    call near ptr ported_locate_text_res_
     add     sp, 6
     push    dx
     push    ax
@@ -5531,7 +5531,7 @@ sub_2A200 proc far
     push    word ptr mainresptr+2
     push    word ptr mainresptr
     push    cs
-    call near ptr locate_text_res
+    call near ptr ported_locate_text_res_
     add     sp, 6
     push    dx
     push    ax

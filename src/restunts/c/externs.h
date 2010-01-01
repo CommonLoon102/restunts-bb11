@@ -27,6 +27,7 @@ extern const char* aLocatesound4_4sSoundNotF;
 extern short is_audioloaded;
 extern void far* songfileptr;
 extern void far* voicefileptr;
+extern char textresprefix; // = 'e'
 
 extern void far* load_song_file(const char* filename);
 extern void far* load_voice_file(const char* filename);

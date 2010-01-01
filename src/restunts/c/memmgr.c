@@ -560,7 +560,10 @@ char far* locate_resource(char far* data, char* name, unsigned short fatal) {
 			}
 		}
 		if (i == 4 || (resnames[i] == 0 && name[i] == 20)) {
-			return result + *(unsigned long int far*)(&resnames[hdr->chunks * 4]) + hdr->chunks * 8 + 6;
+			result = data;
+			result += hdr->chunks * 8 + 6; // header, names and offsets
+			result += *(unsigned long int far*)(&resnames[hdr->chunks * 4]); // extract the offset
+			return (char far*)result;
 		}
 		resnames += 4; // move pointer to next 4-byte resource identifier
 	}
@@ -594,4 +597,13 @@ void locate_many_resources(char far* data, char* names, char far** result) {
 		names += 4;
 		result ++;
 	}
+}
+
+char far* locate_text_res(char far* data, char* name) {
+	char textname[4];
+	textname[0] = textresprefix;
+	textname[1] = name[0];
+	textname[2] = name[1];
+	textname[3] = name[2];
+	return locate_shape_fatal(data, textname);
 }

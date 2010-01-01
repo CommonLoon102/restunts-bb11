@@ -218,7 +218,7 @@ init_video proc far
     call    mmgr_alloc_a000
     mov     byte_46436, 0
     mov     byte_459F1, 1
-    mov     byte_4645E, 65h ; 'e'
+    mov     textresprefix, 'e'
     mov     [bp+var_argmode4], 0
     mov     [bp+var_argnosound], 0
     mov     [bp+var_2], 0

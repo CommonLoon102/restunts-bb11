@@ -1360,7 +1360,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn mat_rot_temp:MATRIX
     extrn byte_4644A:byte
     extrn mat_temp:MATRIX
-    extrn byte_4645E:byte
+    extrn textresprefix:byte
     extrn dword_46460:dword
     extrn unk_46464:byte
     extrn byte_46467:byte

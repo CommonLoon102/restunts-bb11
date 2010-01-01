@@ -1408,7 +1408,7 @@ dseg segment byte public 'STUNTSD' use16
     public mat_rot_temp
     public byte_4644A
     public mat_temp
-    public byte_4645E
+    public textresprefix
     public dword_46460
     public unk_46464
     public byte_46467
@@ -44207,7 +44207,7 @@ mat_temp     db 0
     db 0
     db 0
     db 0
-byte_4645E     db 0
+textresprefix     db 0
     db 0
 dword_46460     dd 0
 unk_46464     db 0

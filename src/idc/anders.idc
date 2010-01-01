@@ -685,6 +685,7 @@ static PortFuncName(labelname) {
 		labelname == "locate_shape_alt" ||
 		labelname == "locate_sound_fatal" ||
 		labelname == "locate_many_resources" ||
+		labelname == "locate_text_res" ||
 
 		labelname == "stuntsmain"
 	)

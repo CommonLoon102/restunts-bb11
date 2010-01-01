@@ -65,6 +65,7 @@ extrn locate_shape_nofatal:proc
 extrn locate_shape_alt:proc
 extrn locate_sound_fatal:proc
 extrn locate_many_resources:proc
+extrn locate_text_res:proc
 
 extrn stuntsmain:proc
 
