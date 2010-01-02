@@ -34,12 +34,13 @@ struct SPRITE {
 
 extern char aWindowdefOutOfRowTableSpa[];
 extern char aMcgaWindow[];
+extern char aWindowReleased[];
 extern unsigned char* far wnd_defs; // a reserved memory chunk of 0xE10 bytes in seg012. contents are SPRITE structs followed by lineoffsets. cast to a far pointer for access to the contents in other segments.
 extern char* far next_wnd_def; // near pointer relative to seg012 to the current SPRITE in wnd_defs. cast to a far pointer for access to the contents in other segments
 
 extern void sprite_set_1(void);
 
-struct SPRITE far* sprite_make_wnd(unsigned int width, unsigned int height) {
+struct SPRITE far* sprite_make_wnd(unsigned int width, unsigned int height, unsigned int unk) {
 	int pages, i;
 	char* wnd;
 	char* nextwnd;
@@ -99,16 +100,12 @@ struct SPRITE far* sprite_make_wnd(unsigned int width, unsigned int height) {
 	return farwnd;
 }
 
-/*
-void release_window(struct SPRITE far* wndsprite) {
-	
-	struct SPRITE* wnd;
-	struct SPRITE* prevwnd;
-
-	wnd = _next_wnd_def;
-	prevwnd = ((char*)_next_wnd_def) - ((sizeof(struct SPRITE) + wndsprite->sprite_height) * sizeof(unsigned short));
-	if (prevwnd != _next_wnd_def) {
+void sprite_free_wnd(struct SPRITE far* wndsprite) {
+	unsigned short spritesize;
+	spritesize = sizeof(struct SPRITE) + wndsprite->sprite_height * sizeof(unsigned short);
+	if (FP_OFF(wndsprite) + spritesize != FP_OFF(next_wnd_def)) {
 		fatal_error(aWindowReleased);
 	}
+	next_wnd_def = next_wnd_def - spritesize;
+	mmgr_op_unk2(FP_OFF(wndsprite->sprite_bitmapptr), FP_SEG((wndsprite->sprite_bitmapptr)));
 }
-*/

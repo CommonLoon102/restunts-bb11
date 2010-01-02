@@ -31,3 +31,4 @@ clean:
 	del $(OBJDIR)\memmgr.obj
 	del $(OBJDIR)\restunts.obj
 	del $(OBJDIR)\shape3d.obj
+	del $(OBJDIR)\shape2d.obj

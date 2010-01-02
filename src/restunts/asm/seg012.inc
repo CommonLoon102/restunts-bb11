@@ -181,7 +181,7 @@ seg012 segment byte public 'STUNTSC' use16
     extrn sub_322F3:proc
     extrn loc_32334
     extrn sub_323D9:proc
-    extrn sprite_free_wnd:proc
+    extrn ported_sprite_free_wnd_:proc
     extrn ported_file_write_nofatal_:proc
     extrn ported_file_write_fatal_:proc
     extrn video_add_exithandler:proc

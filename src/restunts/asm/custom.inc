@@ -72,6 +72,7 @@ extrn shape3d_free_all:proc
 extrn shape3d_init_shape:proc
 
 extrn sprite_make_wnd:proc
+extrn sprite_free_wnd:proc
 
 extrn stuntsmain:proc
 

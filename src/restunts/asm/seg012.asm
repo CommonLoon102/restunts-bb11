@@ -228,7 +228,7 @@ seg012 segment byte public 'STUNTSC' use16
     public sub_322F3
     public loc_32334
     public sub_323D9
-    public sprite_free_wnd
+    public ported_sprite_free_wnd_
     public ported_file_write_nofatal_
     public ported_file_write_fatal_
     public video_add_exithandler
@@ -9047,7 +9047,7 @@ loc_324A2:
     mov     [di+2], ax
     jmp     short loc_32472
 sub_323D9 endp
-sprite_free_wnd proc far
+ported_sprite_free_wnd_ proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -9089,7 +9089,7 @@ loc_324EC:
     lea     ax, aWindowReleased; "Window Released Out of Order\r\n"
     push    ax
     call    far ptr fatal_error
-sprite_free_wnd endp
+ported_sprite_free_wnd_ endp
 ported_file_write_nofatal_ proc far
     var_fatal = word ptr -4
      s = byte ptr 0
