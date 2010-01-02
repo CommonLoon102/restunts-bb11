@@ -145,7 +145,7 @@ init_video proc far
     push    ax
     mov     ax, 7
     push    ax
-    call    reg_callback
+    call    kb_reg_callback
     add     sp, 6
     mov     ax, offset do_joy_restext
     mov     dx, seg seg008
@@ -153,7 +153,7 @@ init_video proc far
     push    ax
     mov     ax, 0Ah
     push    ax
-    call    reg_callback
+    call    kb_reg_callback
     add     sp, 6
     mov     ax, offset do_key_restext
     mov     dx, seg seg008
@@ -161,7 +161,7 @@ init_video proc far
     push    ax
     mov     ax, 0Bh
     push    ax
-    call    reg_callback
+    call    kb_reg_callback
     add     sp, 6
     mov     ax, offset do_mof_restext
     mov     dx, seg seg008
@@ -169,7 +169,7 @@ init_video proc far
     push    ax
     mov     ax, 3200h
     push    ax
-    call    reg_callback
+    call    kb_reg_callback
     add     sp, 6
     mov     ax, offset do_pau_restext
     mov     dx, seg seg008
@@ -177,7 +177,7 @@ init_video proc far
     push    ax
     mov     ax, 10h
     push    ax
-    call    reg_callback
+    call    kb_reg_callback
     add     sp, 6
     mov     ax, offset do_pau_restext
     mov     dx, seg seg008
@@ -185,7 +185,7 @@ init_video proc far
     push    ax
     mov     ax, 70h ; 'p'
     push    ax
-    call    reg_callback
+    call    kb_reg_callback
     add     sp, 6
     mov     ax, offset do_dos_restext
     mov     dx, seg seg008
@@ -193,7 +193,7 @@ init_video proc far
     push    ax
     mov     ax, 11h
     push    ax
-    call    reg_callback
+    call    kb_reg_callback
     add     sp, 6
     mov     ax, offset do_sonsof_restext
     mov     dx, seg seg008
@@ -201,7 +201,7 @@ init_video proc far
     push    ax
     mov     ax, 13h
     push    ax
-    call    reg_callback
+    call    kb_reg_callback
     add     sp, 6
     mov     ax, offset do_dos_restext
     mov     dx, seg seg008
@@ -209,7 +209,7 @@ init_video proc far
     push    ax
     mov     ax, 18h
     push    ax
-    call    reg_callback
+    call    kb_reg_callback
     add     sp, 6
     mov     word_44AE4, 1
     mov     word_44DC8, 1
@@ -497,10 +497,10 @@ loc_3A1CE:
 loc_3A1D4:
     cmp     [bp+var_1C], 4Bh ; 'K'
     jge     short loc_3A1E2
-    mov     word_44D4E, 14h
+    mov     framespersec2, 14h
     jmp     short loc_3A1E8
 loc_3A1E2:
-    mov     word_44D4E, 0Ah
+    mov     framespersec2, 0Ah
 loc_3A1E8:
     cmp     [bp+var_1C], 23h ; '#'
     jge     short loc_3A1F6
@@ -533,7 +533,7 @@ loc_3A21F:
 loc_3A226:
     mov     byte_3B8FA, 4
 loc_3A22B:
-    mov     ax, word_44D4E
+    mov     ax, framespersec2
     mov     framespersec, ax
     mov     ax, word_44CEA
     mov     word_44984, ax
@@ -685,7 +685,7 @@ loc_3A300:
     push    ax
     push    [bp+var_306]
     push    [bp+var_312]
-    call    make_wnd_sprite
+    call    sprite_make_wnd
     add     sp, 6
     mov     word ptr dword_449C2, ax
     mov     word ptr dword_449C2+2, dx
@@ -693,7 +693,7 @@ loc_3A300:
     push    ax
     push    [bp+var_306]
     push    [bp+var_312]
-    call    make_wnd_sprite
+    call    sprite_make_wnd
     add     sp, 6
     mov     word ptr dword_44364, ax
     mov     word ptr dword_44364+2, dx
@@ -703,7 +703,7 @@ loc_3A300:
     mov     ax, [bp+var_312]
     add     ax, word_44DC8
     push    ax
-    call    make_wnd_sprite
+    call    sprite_make_wnd
     add     sp, 6
     mov     word ptr dword_455C8, ax
     mov     word ptr dword_455C8+2, dx

@@ -5,7 +5,7 @@ SED = sed
 
 OBJDIR = ..\build
 
-all: $(OBJDIR)\fileio.obj $(OBJDIR)\math.obj $(OBJDIR)\memmgr.obj $(OBJDIR)\restunts.obj  $(OBJDIR)\shape3d.obj
+all: $(OBJDIR)\fileio.obj $(OBJDIR)\math.obj $(OBJDIR)\memmgr.obj $(OBJDIR)\restunts.obj $(OBJDIR)\shape3d.obj $(OBJDIR)\shape2d.obj
 
 $(OBJDIR)\fileio.obj: fileio.c
 	$(CC) -n$(OBJDIR) $?
@@ -20,6 +20,9 @@ $(OBJDIR)\restunts.obj: restunts.c
 	$(CC) -n$(OBJDIR) $? 
 
 $(OBJDIR)\shape3d.obj: shape3d.c
+	$(CC) -n$(OBJDIR) $? 
+
+$(OBJDIR)\shape2d.obj: shape2d.c
 	$(CC) -n$(OBJDIR) $? 
 
 clean:

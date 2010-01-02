@@ -50,8 +50,8 @@ seg033 segment byte public 'STUNTSC' use16
     public setup_mcgawnd2
 setup_mcgawnd1 proc far
 
-    mov     ax, word ptr dword_4392E
-    or      ax, word ptr dword_4392E+2
+    mov     ax, word ptr mcgawndsprite
+    or      ax, word ptr mcgawndsprite+2
     jnz     short loc_3A97C
     mov     ax, 0Fh
     push    ax
@@ -59,10 +59,10 @@ setup_mcgawnd1 proc far
     push    ax
     mov     ax, 140h
     push    ax
-    call    make_wnd_sprite
+    call    sprite_make_wnd
     add     sp, 6
-    mov     word ptr dword_4392E, ax
-    mov     word ptr dword_4392E+2, dx
+    mov     word ptr mcgawndsprite, ax
+    mov     word ptr mcgawndsprite+2, dx
 loc_3A97C:
     mov     ax, offset sprite2
     mov     dx, seg seg012
@@ -70,7 +70,7 @@ loc_3A97C:
     push    ax
     call    sprite_set_1
     add     sp, 4
-    les     bx, dword_4392E
+    les     bx, mcgawndsprite
     push    word ptr es:[bx+2]
     push    word ptr es:[bx]
     call    sub_33BDA
@@ -79,8 +79,8 @@ loc_3A97C:
 setup_mcgawnd1 endp
 setup_mcgawnd2 proc far
 
-    mov     ax, word ptr dword_4392E
-    or      ax, word ptr dword_4392E+2
+    mov     ax, word ptr mcgawndsprite
+    or      ax, word ptr mcgawndsprite+2
     jnz     short loc_3A9C4
     mov     ax, 0Fh
     push    ax
@@ -88,13 +88,13 @@ setup_mcgawnd2 proc far
     push    ax
     mov     ax, 140h
     push    ax
-    call    make_wnd_sprite
+    call    sprite_make_wnd
     add     sp, 6
-    mov     word ptr dword_4392E, ax
-    mov     word ptr dword_4392E+2, dx
+    mov     word ptr mcgawndsprite, ax
+    mov     word ptr mcgawndsprite+2, dx
 loc_3A9C4:
-    push    word ptr dword_4392E+2
-    push    word ptr dword_4392E
+    push    word ptr mcgawndsprite+2
+    push    word ptr mcgawndsprite
     call    sprite_set_1
     add     sp, 4
     retf

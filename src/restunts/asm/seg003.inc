@@ -12,7 +12,7 @@ seg003 segment byte public 'STUNTSC' use16
     extrn load_skybox:proc
     extrn unload_skybox:proc
     extrn load_sdgame2_shapes:proc
-    extrn sub_1D92A:proc
+    extrn free_sdgame2:proc
     extrn setup_intro:proc
-    extrn sub_1DEA6:proc
+    extrn intro_op:proc
 seg003 ends

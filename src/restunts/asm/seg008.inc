@@ -51,7 +51,7 @@ seg008 segment byte public 'STUNTSC' use16
     extrn input_pop_status:proc
     extrn do_joy_restext:proc
     extrn do_key_restext:proc
-    extrn sub_29DF4:proc
+    extrn do_mou_restext:proc
     extrn do_pau_restext:proc
     extrn do_mof_restext:proc
     extrn do_sonsof_restext:proc
@@ -59,7 +59,7 @@ seg008 segment byte public 'STUNTSC' use16
     extrn do_mrl_textres:proc
     extrn do_dea_textres:proc
     extrn ensure_file_exists:proc
-    extrn sub_2A200:proc
+    extrn do_mer_restext:proc
     extrn timer_get_delta2:proc
     extrn ported_file_load_3dres_:proc
 seg008 ends

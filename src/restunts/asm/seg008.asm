@@ -98,7 +98,7 @@ seg008 segment byte public 'STUNTSC' use16
     public input_pop_status
     public do_joy_restext
     public do_key_restext
-    public sub_29DF4
+    public do_mou_restext
     public do_pau_restext
     public do_mof_restext
     public do_sonsof_restext
@@ -106,7 +106,7 @@ seg008 segment byte public 'STUNTSC' use16
     public do_mrl_textres
     public do_dea_textres
     public ensure_file_exists
-    public sub_2A200
+    public do_mer_restext
     public timer_get_delta2
     public ported_file_load_3dres_
 sub_274B0 proc far
@@ -175,22 +175,22 @@ loc_27506:
     mov     ax, [bp+arg_2]
     sub     ax, [bp+arg_0]
     push    ax
-    call    make_wnd_sprite
+    call    sprite_make_wnd
     add     sp, 6
     mov     bl, byte_3B8FC
     sub     bh, bh
     shl     bx, 1
     shl     bx, 1
-    mov     [bx+75A0h], ax
-    mov     [bx+75A2h], dx
+    mov     word ptr dword_42D10[bx], ax
+    mov     word ptr (dword_42D10+2)[bx], dx
     mov     al, byte_3B8FC
     sub     ah, ah
     mov     si, ax
     shl     si, 1
     mov     ax, [bp+arg_0]
-    mov     [si-5306h], ax
+    mov     word_4646A[si], ax
     mov     ax, [bp+arg_4]
-    mov     [si-52EAh], ax
+    mov     word_46486[si], ax
     lea     ax, [bp+var_40]
     push    ax
     call    sprite_copy_both_to_arg
@@ -225,7 +225,7 @@ loc_27506:
     sub     bh, bh
     shl     bx, 1
     shl     bx, 1
-    les     bx, [bx+75A0h]
+    les     bx, dword_42D10[bx]
     push    word ptr es:[bx+2]
     push    word ptr es:[bx]
     call    sub_3475A
@@ -263,12 +263,12 @@ loc_275D8:
     mov     si, ax
     mov     di, si
     shl     di, 1
-    push    word ptr [di-52EAh]
-    push    word ptr [di-5306h]
+    push    word_46486[di]
+    push    word_4646A[di]
     mov     bx, si
     shl     bx, 1
     shl     bx, 1
-    les     bx, [bx+75A0h]
+    les     bx, dword_42D10[bx]
     push    word ptr es:[bx+2]
     push    word ptr es:[bx]
     call    sub_33D30
@@ -317,9 +317,9 @@ loc_275D8:
     sub     bh, bh
     shl     bx, 1
     shl     bx, 1
-    push    word ptr [bx+75A2h]
-    push    word ptr [bx+75A0h]
-    call    release_window
+    push    word ptr (dword_42D10+2)[bx]
+    push    word ptr dword_42D10[bx]
+    call    sprite_free_wnd
     add     sp, 4
     push    cs
     call near ptr sub_28D9E
@@ -4748,7 +4748,7 @@ do_joy_restext proc far
     mov     ax, 0FFFFh
     push    ax
     push    ax
-    mov     ax, 3469h
+    mov     ax, offset aJoy ; "joy"
     push    ax
     push    word ptr mainresptr+2
     push    word ptr mainresptr
@@ -4940,7 +4940,7 @@ loc_29D3A:
     mov     ax, 0FFFFh
     push    ax
     push    ax
-    mov     ax, 346Dh
+    mov     ax, offset aJox ; "jox"
     push    ax
     push    word ptr mainresptr+2
     push    word ptr mainresptr
@@ -4986,7 +4986,7 @@ do_key_restext proc far
     mov     ax, 0FFFFh
     push    ax
     push    ax
-    mov     ax, 3471h
+    mov     ax, offset aKey ; "key"
     push    ax
     push    word ptr mainresptr+2
     push    word ptr mainresptr
@@ -5010,7 +5010,7 @@ do_key_restext proc far
     call near ptr input_pop_status
     retf
 do_key_restext endp
-sub_29DF4 proc far
+do_mou_restext proc far
 
     push    cs
     call near ptr input_push_status
@@ -5024,7 +5024,7 @@ sub_29DF4 proc far
     mov     ax, 0FFFFh
     push    ax
     push    ax
-    mov     ax, 3475h
+    mov     ax, offset aMou ; "mou"
     push    ax
     push    word ptr mainresptr+2
     push    word ptr mainresptr
@@ -5047,7 +5047,7 @@ sub_29DF4 proc far
     retf
     ; align 2
     db 144
-sub_29DF4 endp
+do_mou_restext endp
 do_pau_restext proc far
 
     push    cs
@@ -5061,7 +5061,7 @@ do_pau_restext proc far
     mov     ax, 0FFFFh
     push    ax
     push    ax
-    mov     ax, 3479h
+    mov     ax, offset aPau ; "pau"
     push    ax
     push    word ptr mainresptr+2
     push    word ptr mainresptr
@@ -5099,7 +5099,7 @@ do_mof_restext proc far
     mov     ax, 0FFFFh
     push    ax
     push    ax
-    mov     ax, 347Dh
+    mov     ax, offset aMon ; "mon"
     jmp     short loc_29ECE
     ; align 2
     db 144
@@ -5111,7 +5111,7 @@ loc_29EBE:
     mov     ax, 0FFFFh
     push    ax
     push    ax
-    mov     ax, 3481h
+    mov     ax, offset aMof ; "mof"
 loc_29ECE:
     push    ax
     push    word ptr mainresptr+2
@@ -5148,7 +5148,7 @@ do_sonsof_restext proc far
     mov     ax, 0FFFFh
     push    ax
     push    ax
-    mov     ax, 3485h
+    mov     ax, offset aSon ; "son"
     jmp     short loc_29F30
     ; align 2
     db 144
@@ -5160,7 +5160,7 @@ loc_29F20:
     mov     ax, 0FFFFh
     push    ax
     push    ax
-    mov     ax, 3489h
+    mov     ax, offset aSof ; "sof"
 loc_29F30:
     push    ax
     push    word ptr mainresptr+2
@@ -5195,7 +5195,7 @@ do_dos_restext proc far
     mov     ax, 0FFFFh
     push    ax
     push    ax
-    mov     ax, 348Dh
+    mov     ax, offset aDos_0; "dos"
     push    ax
     push    word ptr mainresptr+2
     push    word ptr mainresptr
@@ -5241,11 +5241,11 @@ do_mrl_textres proc far
     call near ptr input_push_status
     mov     word_3F88E, 1
     call    sub_37216
-    mov     ax, word_44D4E
+    mov     ax, framespersec2
     mov     [bp+var_212], ax
     mov     [bp+var_2], 0
 loc_29FD9:
-    mov     ax, 3491h
+    mov     ax, offset aMrl ; "mrl"
     push    ax
     push    word ptr mainresptr+2
     push    word ptr mainresptr
@@ -5272,7 +5272,7 @@ loc_29FFC:
     mov     bx, word_44CEA
     add     bx, bp
     mov     byte ptr [bx-207h], 1
-    cmp     word_44D4E, 0Ah
+    cmp     framespersec2, 0Ah
     jnz     short loc_2A02E
     mov     [bp+var_205], 1
     jmp     short loc_2A033
@@ -5348,17 +5348,17 @@ loc_2A0AE:
     ; align 2
     db 144
 loc_2A0B8:
-    mov     word_44D4E, 0Ah
+    mov     framespersec2, 0Ah
     jmp     loc_29FD9
     ; align 2
     db 144
 loc_2A0C2:
-    mov     word_44D4E, 14h
+    mov     framespersec2, 14h
     jmp     loc_29FD9
     ; align 2
     db 144
 loc_2A0CC:
-    mov     ax, word_44D4E
+    mov     ax, framespersec2
     cmp     [bp+var_212], ax
     jz      short loc_2A103
     sub     ax, ax
@@ -5368,7 +5368,7 @@ loc_2A0CC:
     mov     ax, 0FFFFh
     push    ax
     push    ax
-    mov     ax, 3495h
+    mov     ax, offset aMrs ; "mrs"
     push    ax
     push    word ptr mainresptr+2
     push    word ptr mainresptr
@@ -5517,7 +5517,7 @@ loc_2A1E8:
     ; align 2
     db 144
 ensure_file_exists endp
-sub_2A200 proc far
+do_mer_restext proc far
 
     sub     ax, ax
     push    ax
@@ -5526,7 +5526,7 @@ sub_2A200 proc far
     mov     ax, 0FFFFh
     push    ax
     push    ax
-    mov     ax, 34A1h
+    mov     ax, offset aMer ; "mer"
     push    ax
     push    word ptr mainresptr+2
     push    word ptr mainresptr
@@ -5544,7 +5544,7 @@ sub_2A200 proc far
     retf
     ; align 2
     db 144
-sub_2A200 endp
+do_mer_restext endp
 timer_get_delta2 proc far
 
     call    timer_get_delta

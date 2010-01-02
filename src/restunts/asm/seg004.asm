@@ -52,8 +52,8 @@ seg004 segment byte public 'STUNTSC' use16
     public sub_1FAE4
     public ported_shape3d_load_all_
     public ported_shape3d_free_all_
-    public sub_1FF92
-    public sub_20438
+    public shape3d_load_car_shapes
+    public shape3d_free_car_shapes
     public sub_204AE
     public setup_track
     public off_2147C
@@ -68,16 +68,14 @@ sub_1E1A0 proc far
     var_34 = byte ptr -52
     var_32 = word ptr -50
     var_2E = word ptr -46
-    var_2C = word ptr -44
-    var_28 = word ptr -40
+    var_2C = VECTOR ptr -44
     var_24 = word ptr -36
     var_22 = word ptr -34
     var_20 = byte ptr -32
     var_1E = word ptr -30
     var_1C = word ptr -28
     var_1A = byte ptr -26
-    var_18 = word ptr -24
-    var_14 = word ptr -20
+    var_18 = VECTOR ptr -24
     var_12 = byte ptr -18
     var_10 = word ptr -16
     var_E = word ptr -14
@@ -96,7 +94,7 @@ sub_1E1A0 proc far
     sub     sp, 40h
     push    di
     push    si
-    mov     word_44DC6, 0
+    mov     planindex, 0
     mov     word_4428E, 0FFFFh
     mov     word_44A8C, 0FFF4h
     mov     word_44988, 0FC18h
@@ -137,16 +135,16 @@ loc_1E214:
     mov     di, ax
     mov     bx, di
     shl     bx, 1
-    mov     ax, [bx-599Eh]
+    mov     ax, trackcenterpos2[bx]
     mov     word_449E0, ax
     mov     al, [bp+var_20]
     cbw
     shl     ax, 1
     mov     [bp+var_3C], ax
     mov     bx, ax
-    mov     ax, [bx+750Eh]
+    mov     ax, terraincenterpos[bx]
     mov     word_449F6, ax
-    mov     bx, [bx-5A30h]
+    mov     bx, trackrows[bx]
     add     bx, word ptr trackdata15
     mov     es, word ptr trackdata15+2
     mov     al, es:[bx+di]
@@ -175,7 +173,7 @@ loc_1E276:
     cbw
     mov     bx, ax
     shl     bx, 1
-    mov     bx, [bx-73C4h]
+    mov     bx, terrainrows[bx]
     mov     al, [bp+var_1A]
     cbw
     add     bx, ax
@@ -208,10 +206,10 @@ loc_1E2AF:
     mov     bx, [bp+arg_0]
     mov     ax, [bx]
     sub     ax, word_449E0
-    mov     [bp+var_2C], ax
+    mov     [bp+var_2C.x], ax
     mov     ax, [bx+4]
     sub     ax, word_449F6
-    mov     [bp+var_28], ax
+    mov     [bp+var_2C.z], ax
     push    ax
     push    si
     call    sin_fast
@@ -219,7 +217,7 @@ loc_1E2AF:
     push    ax
     call    scale_value
     add     sp, 4
-    push    [bp+var_2C]
+    push    [bp+var_2C.x]
     push    si
     mov     di, ax
     call    cos_fast
@@ -263,7 +261,7 @@ loc_1E328:
     mov     al, [bp+var_1A]
     cbw
     mov     bx, ax
-    add     bx, [di-73C2h]
+    add     bx, (terrainrows+2)[di]
     add     bx, word ptr trackdata14
     mov     es, word ptr trackdata14+2
     mov     al, es:[bx-1]
@@ -275,9 +273,9 @@ loc_1E328:
     shl     bx, 1
     add     bx, ax
     shl     bx, 1
-    test    byte ptr [bx+20A3h], 1
+    test    sceneshapes.scene_translateflag[bx], 1
     jz      short loc_1E365
-    mov     ax, [di-6CE0h]
+    mov     ax, (terrainpos+2)[di]
 loc_1E362:
     mov     word_449F6, ax
 loc_1E365:
@@ -289,7 +287,7 @@ loc_1E365:
     shl     bx, 1
     add     bx, ax
     shl     bx, 1
-    test    byte ptr [bx+20A3h], 2
+    test    sceneshapes.scene_translateflag[bx], 2
     jnz     short loc_1E380
     jmp     loc_1E464
 loc_1E380:
@@ -297,7 +295,7 @@ loc_1E380:
     cbw
     mov     bx, ax
     shl     bx, 1
-    mov     ax, [bx+7556h]
+    mov     ax, trackpos2[bx]
     jmp     loc_1E461
     ; align 2
     db 144
@@ -309,7 +307,7 @@ loc_1E390:
     mov     al, [bp+var_1A]
     cbw
     mov     bx, ax
-    add     bx, [di-73C2h]
+    add     bx, (terrainrows+2)[di]
     add     bx, word ptr trackdata14
     mov     es, word ptr trackdata14+2
     mov     al, es:[bx]
@@ -321,9 +319,9 @@ loc_1E390:
     shl     bx, 1
     add     bx, ax
     shl     bx, 1
-    test    byte ptr [bx+20A3h], 1
+    test    sceneshapes.scene_translateflag[bx], 1
     jz      short loc_1E43D
-    mov     ax, [di-6CE0h]
+    mov     ax, (terrainpos+2)[di]
     jmp     short loc_1E43A
     ; align 2
     db 144
@@ -335,7 +333,7 @@ loc_1E3CC:
     mov     al, [bp+var_1A]
     cbw
     mov     bx, ax
-    add     bx, [di-73C4h]
+    add     bx, terrainrows[di]
     add     bx, word ptr trackdata14
     mov     es, word ptr trackdata14+2
     mov     al, es:[bx-1]
@@ -347,11 +345,11 @@ loc_1E3CC:
     shl     bx, 1
     add     bx, ax
     shl     bx, 1
-    test    byte ptr [bx+20A3h], 1
+    test    sceneshapes.scene_translateflag[bx], 1
     jnz     short loc_1E405
     jmp     loc_1E365
 loc_1E405:
-    mov     ax, [di-6CE2h]
+    mov     ax, terrainpos[di]
     jmp     loc_1E362
 loc_1E40C:
     mov     al, [bp+var_8]
@@ -362,7 +360,7 @@ loc_1E40C:
     shl     bx, 1
     add     bx, ax
     shl     bx, 1
-    mov     al, [bx+20A3h]
+    mov     al, sceneshapes.scene_translateflag[bx]
     mov     byte ptr [bp+var_3C], al
     cmp     al, ah
     jz      short loc_1E464
@@ -372,7 +370,7 @@ loc_1E40C:
     cbw
     mov     bx, ax
     shl     bx, 1
-    mov     ax, [bx-6CE2h]
+    mov     ax, terrainpos[bx]
 loc_1E43A:
     mov     word_449F6, ax
 loc_1E43D:
@@ -384,30 +382,30 @@ loc_1E43D:
     shl     bx, 1
     add     bx, ax
     shl     bx, 1
-    test    byte ptr [bx+20A3h], 2
+    test    sceneshapes.scene_translateflag[bx], 2
     jz      short loc_1E464
     mov     al, [bp+var_1A]
     cbw
     mov     bx, ax
     shl     bx, 1
-    mov     ax, [bx+7558h]
+    mov     ax, (trackpos2+2)[bx]
 loc_1E461:
     mov     word_449E0, ax
 loc_1E464:
     mov     bx, [bp+arg_0]
     mov     ax, [bx]
     sub     ax, word_449E0
-    mov     [bp+var_2C], ax
+    mov     [bp+var_2C.x], ax
     mov     ax, [bx+4]
     sub     ax, word_449F6
-    mov     [bp+var_28], ax
+    mov     [bp+var_2C.z], ax
     mov     bx, [bp+arg_2]
     mov     ax, [bx]
     sub     ax, word_449E0
-    mov     [bp+var_18], ax
+    mov     [bp+var_18.x], ax
     mov     ax, [bx+4]
     sub     ax, word_449F6
-    mov     [bp+var_14], ax
+    mov     [bp+var_18.z], ax
     cmp     [bp+var_8], 0
     jz      short loc_1E4B6
     cmp     [bp+var_34], 7
@@ -432,7 +430,7 @@ loc_1E4B6:
     shl     ax, 1
     add     ax, cx
     shl     ax, 1
-    add     ax, 2098h
+    add     ax, offset sceneshapes
     mov     [bp+var_3A], ax
     mov     bx, ax
     mov     al, [bx+0Ch]
@@ -458,74 +456,74 @@ loc_1E4EF:
     jge     short loc_1E507
     mov     [bp+var_12], 1
 loc_1E507:
-    cmp     [bp+var_2C], 0
+    cmp     [bp+var_2C.x], 0
     jge     short loc_1E58A
-    mov     ax, [bp+var_2C]
+    mov     ax, [bp+var_2C.x]
     neg     ax
     jmp     short loc_1E58D
     db 144
     db 144
 loc_1E516:
-    mov     ax, [bp+var_2C]
+    mov     ax, [bp+var_2C.x]
     mov     [bp+var_1E], ax
-    mov     ax, [bp+var_28]
-    mov     [bp+var_2C], ax
+    mov     ax, [bp+var_2C.z]
+    mov     [bp+var_2C.x], ax
     mov     ax, [bp+var_1E]
     neg     ax
-    mov     [bp+var_28], ax
-    mov     ax, [bp+var_18]
+    mov     [bp+var_2C.z], ax
+    mov     ax, [bp+var_18.x]
     mov     [bp+var_1E], ax
-    mov     ax, [bp+var_14]
-    mov     [bp+var_18], ax
+    mov     ax, [bp+var_18.z]
+    mov     [bp+var_18.x], ax
     mov     ax, [bp+var_1E]
     neg     ax
 loc_1E53B:
-    mov     [bp+var_14], ax
+    mov     [bp+var_18.z], ax
     jmp     short loc_1E4EF
 loc_1E540:
-    mov     ax, [bp+var_28]
+    mov     ax, [bp+var_2C.z]
     neg     ax
-    mov     [bp+var_28], ax
-    mov     ax, [bp+var_2C]
+    mov     [bp+var_2C.z], ax
+    mov     ax, [bp+var_2C.x]
     neg     ax
-    mov     [bp+var_2C], ax
-    mov     ax, [bp+var_14]
+    mov     [bp+var_2C.x], ax
+    mov     ax, [bp+var_18.z]
     neg     ax
-    mov     [bp+var_14], ax
-    mov     ax, [bp+var_18]
+    mov     [bp+var_18.z], ax
+    mov     ax, [bp+var_18.x]
     neg     ax
-    mov     [bp+var_18], ax
+    mov     [bp+var_18.x], ax
     jmp     short loc_1E4EF
 loc_1E562:
-    mov     ax, [bp+var_2C]
+    mov     ax, [bp+var_2C.x]
     mov     [bp+var_1E], ax
-    mov     ax, [bp+var_28]
+    mov     ax, [bp+var_2C.z]
     neg     ax
-    mov     [bp+var_2C], ax
+    mov     [bp+var_2C.x], ax
     mov     ax, [bp+var_1E]
-    mov     [bp+var_28], ax
-    mov     ax, [bp+var_18]
+    mov     [bp+var_2C.z], ax
+    mov     ax, [bp+var_18.x]
     mov     [bp+var_1E], ax
-    mov     ax, [bp+var_14]
+    mov     ax, [bp+var_18.z]
     neg     ax
-    mov     [bp+var_18], ax
+    mov     [bp+var_18.x], ax
     mov     ax, [bp+var_1E]
     jmp     short loc_1E53B
     ; align 2
     db 144
 loc_1E58A:
-    mov     ax, [bp+var_2C]
+    mov     ax, [bp+var_2C.x]
 loc_1E58D:
     mov     [bp+var_32], ax
-    cmp     [bp+var_28], 0
+    cmp     [bp+var_2C.z], 0
     jge     short loc_1E59E
-    mov     ax, [bp+var_28]
+    mov     ax, [bp+var_2C.z]
     neg     ax
     jmp     short loc_1E5A1
     ; align 2
     db 144
 loc_1E59E:
-    mov     ax, [bp+var_28]
+    mov     ax, [bp+var_2C.z]
 loc_1E5A1:
     mov     [bp+var_2E], ax
     mov     ax, [bp+var_24]
@@ -541,16 +539,16 @@ loc_1E5AF:
 loc_1E5B8:
     cmp     state.field_3F5, 0
     jnz     short loc_1E5E1
-    cmp     [bp+var_2C], 0
+    cmp     [bp+var_2C.x], 0
     jle     short loc_1E5E1
-    cmp     [bp+var_28], 0FE84h
+    cmp     [bp+var_2C.z], 0FE84h
     jge     short loc_1E5D4
-    mov     word_44DC6, 83h ; 'É'
+    mov     planindex, 83h ; 'É'
     jmp     short loc_1E5E1
 loc_1E5D4:
-    cmp     [bp+var_28], 0FED4h
+    cmp     [bp+var_2C.z], 0FED4h
     jge     short loc_1E5E1
-    mov     word_44DC6, 84h ; 'Ñ'
+    mov     planindex, 84h ; 'Ñ'
 loc_1E5E1:
     cmp     [bp+var_32], 78h ; 'x'
 loc_1E5E5:
@@ -568,25 +566,25 @@ loc_1E5F4:
     cmp     [bp+var_2E], 78h ; 'x'
     jmp     short loc_1E5E5
 loc_1E600:
-    mov     ax, [bp+var_2C]
+    mov     ax, [bp+var_2C.x]
     neg     ax
-    mov     [bp+var_2C], ax
+    mov     [bp+var_2C.x], ax
 loc_1E608:
     mov     al, [bp+var_12]
     mov     byte_44D47, al
-    cmp     [bp+var_2C], 0
+    cmp     [bp+var_2C.x], 0
     jle     short loc_1E624
-    mov     ax, [bp+var_28]
+    mov     ax, [bp+var_2C.z]
     neg     ax
-    mov     [bp+var_28], ax
-    mov     ax, [bp+var_2C]
+    mov     [bp+var_2C.z], ax
+    mov     ax, [bp+var_2C.x]
     neg     ax
-    mov     [bp+var_2C], ax
+    mov     [bp+var_2C.x], ax
 loc_1E624:
-    mov     ax, [bp+var_28]
+    mov     ax, [bp+var_2C.z]
     add     ah, 4
     push    ax
-    mov     ax, [bp+var_2C]
+    mov     ax, [bp+var_2C.x]
     add     ah, 4
 loc_1E631:
     push    ax
@@ -603,10 +601,10 @@ loc_1E64A:
     cmp     [bp+var_32], 78h ; 'x'
     jl      short loc_1E5EA
 loc_1E650:
-    mov     ax, [bp+var_28]
+    mov     ax, [bp+var_2C.z]
     add     ah, 2
     push    ax
-    mov     ax, [bp+var_2C]
+    mov     ax, [bp+var_2C.x]
     add     ah, 2
 loc_1E65D:
     push    ax
@@ -626,16 +624,16 @@ loc_1E678:
     jge     short loc_1E681
     jmp     loc_1E5EA
 loc_1E681:
-    mov     ax, [bp+var_28]
+    mov     ax, [bp+var_2C.z]
     add     ah, 2
     push    ax
     mov     ax, 200h
-    sub     ax, [bp+var_2C]
+    sub     ax, [bp+var_2C.x]
     jmp     short loc_1E65D
 loc_1E690:
-    cmp     [bp+var_2C], 188h
+    cmp     [bp+var_2C.x], 188h
     jl      short loc_1E624
-    cmp     [bp+var_2C], 278h
+    cmp     [bp+var_2C.x], 278h
     jg      short loc_1E6A1
     jmp     loc_1E5EA
 loc_1E6A1:
@@ -643,30 +641,30 @@ loc_1E6A1:
     ; align 2
     db 144
 loc_1E6A4:
-    cmp     [bp+var_2C], 0FD88h
+    cmp     [bp+var_2C.x], 0FD88h
     jl      short loc_1E6B5
-    cmp     [bp+var_2C], 0FE78h
+    cmp     [bp+var_2C.x], 0FE78h
     jg      short loc_1E6B5
     jmp     loc_1E5EA
 loc_1E6B5:
-    mov     ax, [bp+var_28]
+    mov     ax, [bp+var_2C.z]
     add     ah, 4
     push    ax
     mov     ax, 400h
-    sub     ax, [bp+var_2C]
+    sub     ax, [bp+var_2C.x]
     jmp     loc_1E631
     ; align 2
     db 144
 loc_1E6C6:
-    cmp     [bp+var_2C], 0
+    cmp     [bp+var_2C.x], 0
     jge     short loc_1E6D4
-    mov     ax, [bp+var_2C]
+    mov     ax, [bp+var_2C.x]
     neg     ax
     jmp     short loc_1E6D7
     ; align 2
     db 144
 loc_1E6D4:
-    mov     ax, [bp+var_2C]
+    mov     ax, [bp+var_2C.x]
 loc_1E6D7:
     mov     [bp+var_1C], ax
     sub     si, si
@@ -676,28 +674,28 @@ loc_1E6DE:
 loc_1E6DF:
     mov     bx, si
     shl     bx, 1
-    mov     ax, [bp+var_28]
-    cmp     [bx+2EA8h], ax
+    mov     ax, [bp+var_2C.z]
+    cmp     word_3E618[bx], ax
     jl      short loc_1E6DE
     mov     di, si
     shl     di, 1
-    mov     ax, [di+2EB4h]
-    cmp     [di+2EB6h], ax
+    mov     ax, word_3E624[di]
+    cmp     word_3E626[di], ax
     jz      short loc_1E72E
     mov     di, si
     shl     di, 1
-    mov     ax, [di+2EA8h]
-    sub     ax, [di+2EA6h]
+    mov     ax, word_3E618[di]
+    sub     ax, word_3E616[di]
     cwd
     push    dx
     push    ax
-    mov     ax, [bp+var_28]
-    sub     ax, [di+2EA6h]
+    mov     ax, [bp+var_2C.z]
+    sub     ax, word_3E616[di]
     cwd
     push    dx
     push    ax
-    mov     ax, [di+2EB6h]
-    sub     ax, [di+2EB4h]
+    mov     ax, word_3E626[di]
+    sub     ax, word_3E624[di]
     cwd
     push    dx
     push    ax
@@ -705,28 +703,28 @@ loc_1E6DF:
     push    dx
     push    ax
     call    __aFldiv
-    add     ax, [di+2EB4h]
+    add     ax, word_3E624[di]
 loc_1E72E:
     mov     [bp+var_1E], ax
     mov     di, si
     shl     di, 1
-    mov     ax, [di+2EC2h]
-    cmp     [di+2EC4h], ax
+    mov     ax, word_3E632[di]
+    cmp     word_3E634[di], ax
     jz      short loc_1E773
     mov     di, si
     shl     di, 1
-    mov     ax, [di+2EA8h]
-    sub     ax, [di+2EA6h]
+    mov     ax, word_3E618[di]
+    sub     ax, word_3E616[di]
     cwd
     push    dx
     push    ax
-    mov     ax, [bp+var_28]
-    sub     ax, [di+2EA6h]
+    mov     ax, [bp+var_2C.z]
+    sub     ax, word_3E616[di]
     cwd
     push    dx
     push    ax
-    mov     ax, [di+2EC4h]
-    sub     ax, [di+2EC2h]
+    mov     ax, word_3E634[di]
+    sub     ax, word_3E632[di]
     cwd
     push    dx
     push    ax
@@ -734,7 +732,7 @@ loc_1E72E:
     push    dx
     push    ax
     call    __aFldiv
-    add     ax, [di+2EC2h]
+    add     ax, word_3E632[di]
 loc_1E773:
     mov     [bp+var_22], ax
     mov     ax, [bp+var_1E]
@@ -745,7 +743,7 @@ loc_1E773:
     jge     short loc_1E789
     jmp     loc_1E5EA
 loc_1E789:
-    cmp     [bp+var_28], 0
+    cmp     [bp+var_2C.z], 0
     jge     short loc_1E792
     jmp     loc_1F7E6
 loc_1E792:
@@ -753,20 +751,20 @@ loc_1E792:
     jle     short loc_1E79B
     jmp     loc_1F7E6
 loc_1E79B:
-    mov     word_44DC6, 1
-    cmp     [bp+var_28], 14Eh
+    mov     planindex, 1
+    cmp     [bp+var_2C.z], 14Eh
     jl      short loc_1E7C0
-    cmp     [bp+var_18], 0FF88h
+    cmp     [bp+var_18.x], 0FF88h
     jle     short loc_1E7F9
 loc_1E7AE:
-    cmp     [bp+var_18], 78h ; 'x'
+    cmp     [bp+var_18.x], 78h ; 'x'
     jge     short loc_1E7B7
     jmp     loc_1F7E6
 loc_1E7B7:
     mov     word_4428E, 0BAh ; '∫'
     jmp     loc_1F7E6
 loc_1E7C0:
-    cmp     [bp+var_18], 0
+    cmp     [bp+var_18.x], 0
     jl      short loc_1E7D0
     mov     word_4428E, 0BBh ; 'ª'
     jmp     loc_1F7E6
@@ -786,47 +784,47 @@ loc_1E7E4:
     jle     short loc_1E7ED
     jmp     loc_1E5EA
 loc_1E7ED:
-    mov     word_44DC6, 1
-    cmp     [bp+var_18], 0FF88h
+    mov     planindex, 1
+    cmp     [bp+var_18.x], 0FF88h
     jg      short loc_1E7AE
 loc_1E7F9:
     mov     word_4428E, 0BCh ; 'º'
     jmp     loc_1F7E6
 loc_1E802:
-    cmp     [bp+var_28], 0
+    cmp     [bp+var_2C.z], 0
     jle     short loc_1E810
     mov     byte_4392C, 0
     jmp     short loc_1E82B
     ; align 2
     db 144
 loc_1E810:
-    cmp     [bp+var_14], 0
+    cmp     [bp+var_18.z], 0
     jl      short loc_1E82B
     mov     word_4428E, 66h ; 'f'
     jmp     short loc_1E82B
 loc_1E81E:
-    cmp     [bp+var_14], 1DCh
+    cmp     [bp+var_18.z], 1DCh
     jl      short loc_1E82B
     mov     word_4428E, 67h ; 'g'
 loc_1E82B:
-    cmp     [bp+var_18], 0
+    cmp     [bp+var_18.x], 0
     jge     short loc_1E838
-    mov     ax, [bp+var_18]
+    mov     ax, [bp+var_18.x]
     neg     ax
     jmp     short loc_1E83B
 loc_1E838:
-    mov     ax, [bp+var_18]
+    mov     ax, [bp+var_18.x]
 loc_1E83B:
     cmp     ax, 78h ; 'x'
     jge     short loc_1E886
-    mov     word_44DC6, 3
+    mov     planindex, 3
     mov     al, [bp+var_12]
     mov     byte_44D47, al
     cmp     word_4428E, 0FFFFh
     jz      short loc_1E856
     jmp     loc_1F7E6
 loc_1E856:
-    cmp     [bp+var_28], 0
+    cmp     [bp+var_2C.z], 0
     jge     short loc_1E85F
     jmp     loc_1F7E6
 loc_1E85F:
@@ -836,7 +834,7 @@ loc_1E85F:
 loc_1E868:
     mov     word_44A8C, 2Ah ; '*'
     mov     word_44988, 0FFF4h
-    cmp     [bp+var_2C], 0
+    cmp     [bp+var_2C.x], 0
     jge     short loc_1E87D
     jmp     loc_1E96F
 loc_1E87D:
@@ -851,14 +849,14 @@ loc_1E890:
     jle     short loc_1E899
     jmp     loc_1F7E6
 loc_1E899:
-    mov     word_44DC6, 3
+    mov     planindex, 3
     cmp     word_4428E, 0FFFFh
     jz      short loc_1E8A9
     jmp     loc_1F7E6
 loc_1E8A9:
     mov     [bp+var_38], 200h
 loc_1E8AE:
-    cmp     [bp+var_2C], 0
+    cmp     [bp+var_2C.x], 0
     jmp     loc_1E96A
     ; align 2
     db 144
@@ -871,9 +869,9 @@ loc_1E8B6:
 loc_1E8C5:
     mov     byte_4392C, 0
 loc_1E8CA:
-    cmp     [bp+var_18], 0
+    cmp     [bp+var_18.x], 0
     jge     short loc_1E8F8
-    mov     ax, [bp+var_18]
+    mov     ax, [bp+var_18.x]
     neg     ax
     jmp     short loc_1E8FB
     ; align 2
@@ -895,21 +893,21 @@ loc_1E8E4:
 loc_1E8F6:
     jmp     short loc_1E8C5
 loc_1E8F8:
-    mov     ax, [bp+var_18]
+    mov     ax, [bp+var_18.x]
 loc_1E8FB:
     cmp     ax, 78h ; 'x'
     jg      short loc_1E942
-    mov     word_44DC6, 2
+    mov     planindex, 2
     mov     al, [bp+var_12]
     mov     byte_44D47, al
     cmp     byte_4392C, 0
     jz      short loc_1E92F
-    cmp     [bp+var_14], 1DCh
+    cmp     [bp+var_18.z], 1DCh
     jl      short loc_1E922
     mov     word_4428E, 67h ; 'g'
     jmp     short loc_1E92F
 loc_1E922:
-    cmp     [bp+var_14], 0FE24h
+    cmp     [bp+var_18.z], 0FE24h
     jg      short loc_1E92F
     mov     word_4428E, 68h ; 'h'
 loc_1E92F:
@@ -930,10 +928,10 @@ loc_1E94C:
     jle     short loc_1E955
     jmp     loc_1F7E6
 loc_1E955:
-    mov     word_44DC6, 2
+    mov     planindex, 2
     mov     word_44A8C, 2Ah ; '*'
     mov     [bp+var_38], 200h
-    cmp     [bp+var_18], 0
+    cmp     [bp+var_18.x], 0
 loc_1E96A:
     jl      short loc_1E96F
     jmp     loc_1E87D
@@ -948,10 +946,10 @@ loc_1E978:
     jg      short loc_1E98A
     jmp     loc_1F7E6
 loc_1E98A:
-    mov     ax, [bp+var_28]
+    mov     ax, [bp+var_2C.z]
     add     ah, 4
     push    ax
-    mov     ax, [bp+var_2C]
+    mov     ax, [bp+var_2C.x]
     add     ah, 4
     push    ax
     call    sub_300B6
@@ -968,7 +966,7 @@ loc_1E9AE:
 loc_1E9B6:
     mov     al, [bp+var_12]
     mov     byte_44D47, al
-    mov     word_44DC6, 2
+    mov     planindex, 2
     mov     byte_4392C, 0
     cmp     [bp+var_A], 0FF94h
     jl      short loc_1E9D6
@@ -976,10 +974,10 @@ loc_1E9B6:
     jg      short loc_1E9D6
     jmp     loc_1F7E6
 loc_1E9D6:
-    mov     ax, [bp+var_28]
+    mov     ax, [bp+var_2C.z]
     add     ah, 4
     push    ax
-    mov     ax, [bp+var_2C]
+    mov     ax, [bp+var_2C.x]
     add     ah, 4
     push    ax
     call    sub_2EA4E
@@ -1025,7 +1023,7 @@ loc_1EA43:
 loc_1EA4C:
     cmp     [bp+var_1E], 0
     jnz     short loc_1EA66
-    cmp     [bp+var_18], 0FF88h
+    cmp     [bp+var_18.x], 0FF88h
     jg      short loc_1EA66
     mov     [bp+var_38], 200h
     mov     word_4428E, 64h ; 'd'
@@ -1035,69 +1033,69 @@ loc_1EA4C:
 loc_1EA66:
     cmp     [bp+var_1E], 0
     jz      short loc_1EA7D
-    cmp     [bp+var_18], 78h ; 'x'
+    cmp     [bp+var_18.x], 78h ; 'x'
     jl      short loc_1EA7D
     mov     [bp+var_38], 200h
     mov     word_4428E, 65h ; 'e'
 loc_1EA7D:
     mov     al, [bp+var_12]
     mov     byte_44D47, al
-    cmp     [bp+var_28], 0FEB2h
+    cmp     [bp+var_2C.z], 0FEB2h
     jge     short loc_1EA90
     mov     ax, [bp+var_1C]
     jmp     short loc_1EA9D
     ; align 2
     db 144
 loc_1EA90:
-    cmp     [bp+var_28], 14Eh
+    cmp     [bp+var_2C.z], 14Eh
     jl      short loc_1EAA4
     mov     ax, [bp+var_1C]
     add     ax, 9
 loc_1EA9D:
-    mov     word_44DC6, ax
+    mov     planindex, ax
     jmp     loc_1F7E6
     ; align 2
     db 144
 loc_1EAA4:
-    cmp     [bp+var_28], 0FF58h
+    cmp     [bp+var_2C.z], 0FF58h
     jge     short loc_1EABA
     mov     ax, [bp+var_1C]
     inc     ax
-    mov     word_44DC6, ax
+    mov     planindex, ax
     mov     [bp+var_1E], 0
     jmp     short loc_1EAFD
     ; align 2
     db 144
 loc_1EABA:
-    cmp     [bp+var_28], 0
+    cmp     [bp+var_2C.z], 0
     jge     short loc_1EAD0
     mov     ax, [bp+var_1C]
     add     ax, 3
-    mov     word_44DC6, ax
+    mov     planindex, ax
     mov     [bp+var_1E], 1
     jmp     short loc_1EAFD
 loc_1EAD0:
-    cmp     [bp+var_28], 0A8h ; '®'
+    cmp     [bp+var_2C.z], 0A8h ; '®'
     jge     short loc_1EAE8
     mov     ax, [bp+var_1C]
     add     ax, 5
-    mov     word_44DC6, ax
+    mov     planindex, ax
     mov     [bp+var_1E], 2
     jmp     short loc_1EAFD
     ; align 2
     db 144
 loc_1EAE8:
-    cmp     [bp+var_28], 14Eh
+    cmp     [bp+var_2C.z], 14Eh
     jge     short loc_1EAFD
     mov     ax, [bp+var_1C]
     add     ax, 7
-    mov     word_44DC6, ax
+    mov     planindex, ax
     mov     [bp+var_1E], 3
 loc_1EAFD:
-    mov     ax, [bp+var_28]
+    mov     ax, [bp+var_2C.z]
     mov     bx, [bp+var_1E]
     shl     bx, 1
-    sub     ax, [bx+2E6Eh]
+    sub     ax, word_3E5DE[bx]
     push    ax
     push    si
     call    sin_fast
@@ -1105,7 +1103,7 @@ loc_1EAFD:
     push    ax
     call    scale_value
     add     sp, 4
-    push    [bp+var_2C]
+    push    [bp+var_2C.x]
     push    si
     mov     di, ax
     call    cos_fast
@@ -1119,7 +1117,7 @@ loc_1EAFD:
     jg      short loc_1EB3F
     jmp     loc_1F7E6
 loc_1EB3F:
-    inc     word_44DC6
+    inc     planindex
     jmp     loc_1F7E6
 loc_1EB46:
     cmp     [bp+var_32], 78h ; 'x'
@@ -1128,18 +1126,18 @@ loc_1EB46:
 loc_1EB4F:
     mov     al, [bp+var_12]
     mov     byte_44D47, al
-    mov     word_44DC6, 6
-    cmp     [bp+var_18], 78h ; 'x'
+    mov     planindex, 6
+    cmp     [bp+var_18.x], 78h ; 'x'
     jge     short loc_1EB64
     jmp     loc_1F7E6
 loc_1EB64:
     mov     [bp+var_38], 200h
     jmp     loc_1E87D
 loc_1EB6C:
-    mov     ax, [bp+var_28]
+    mov     ax, [bp+var_2C.z]
     add     ah, 4
     push    ax
-    mov     ax, [bp+var_2C]
+    mov     ax, [bp+var_2C.x]
     add     ah, 4
     push    ax
     call    sub_300B6
@@ -1154,10 +1152,10 @@ loc_1EB90:
     jl      short loc_1EB98
     jmp     loc_1F7E6
 loc_1EB98:
-    mov     ax, [bp+var_28]
+    mov     ax, [bp+var_2C.z]
     add     ah, 4
     push    ax
-    mov     ax, [bp+var_2C]
+    mov     ax, [bp+var_2C.x]
     add     ah, 4
     push    ax
     call    sub_2EA4E
@@ -1172,7 +1170,7 @@ loc_1EB98:
     neg     ax
     mov     [bp+var_1E], ax
     add     ax, 7
-    mov     word_44DC6, ax
+    mov     planindex, ax
     mov     al, [bp+var_12]
     mov     byte_44D47, al
     cmp     [bp+var_A], 66h ; 'f'
@@ -1189,20 +1187,20 @@ loc_1EBE7:
     ; align 2
     db 144
 loc_1EBF0:
-    cmp     [bp+var_28], 0
+    cmp     [bp+var_2C.z], 0
     jge     short loc_1EC0A
     mov     [bp+var_1C], 33h ; '3'
-    mov     ax, [bp+var_2C]
+    mov     ax, [bp+var_2C.x]
     neg     ax
     mov     [bp+var_6], ax
-    mov     ax, [bp+var_28]
+    mov     ax, [bp+var_2C.z]
     neg     ax
     jmp     short loc_1EC18
 loc_1EC0A:
     mov     [bp+var_1C], 2Dh ; '-'
-    mov     ax, [bp+var_2C]
+    mov     ax, [bp+var_2C.x]
     mov     [bp+var_6], ax
-    mov     ax, [bp+var_28]
+    mov     ax, [bp+var_2C.z]
 loc_1EC18:
     mov     [bp+var_2], ax
     mov     ax, word_3E590
@@ -1230,7 +1228,7 @@ loc_1EC43:
     mov     bx, si
     shl     bx, 1
     mov     ax, [bp+var_1E]
-    cmp     [bx+2E1Ch], ax
+    cmp     word_3E58C[bx], ax
     jl      short loc_1EC42
     mov     bx, [bp+arg_0]
     mov     ax, [bx+2]
@@ -1301,7 +1299,7 @@ loc_1ECE5:
 loc_1ECF3:
     mov     ax, [bp+var_1C]
     add     ax, si
-    mov     word_44DC6, ax
+    mov     planindex, ax
     mov     al, [bp+var_12]
     mov     byte_44D47, al
     jmp     loc_1EBE7
@@ -1455,7 +1453,7 @@ loc_1EE5C:
 loc_1EE66:
     mov     al, [bp+var_12]
     mov     byte_44D47, al
-    mov     word_44DC6, 85h ; 'Ö'
+    mov     planindex, 85h ; 'Ö'
     jmp     loc_1F7E6
     ; align 2
     db 144
@@ -1465,21 +1463,21 @@ loc_1EE76:
     mov     al, [bp+var_12]
     mov     byte_44D47, al
 loc_1EE82:
-    cmp     [bp+var_2C], 78h ; 'x'
+    cmp     [bp+var_2C.x], 78h ; 'x'
     jl      short loc_1EEC6
-    cmp     [bp+var_2C], 10Eh
+    cmp     [bp+var_2C.x], 10Eh
     jg      short loc_1EEC6
     mov     word_44A8C, 90h ; 'ê'
-    cmp     [bp+var_14], 0FE00h
+    cmp     [bp+var_18.z], 0FE00h
     jle     short loc_1EEE6
-    cmp     [bp+var_14], 200h
+    cmp     [bp+var_18.z], 200h
     jge     short loc_1EEF7
-    cmp     [bp+var_18], 78h ; 'x'
+    cmp     [bp+var_18.x], 78h ; 'x'
     jg      short loc_1EEB2
     mov     word_4428E, 98h ; 'ò'
     jmp     loc_1F7E6
 loc_1EEB2:
-    cmp     [bp+var_18], 10Eh
+    cmp     [bp+var_18.x], 10Eh
     jge     short loc_1EEBC
     jmp     loc_1F7E6
 loc_1EEBC:
@@ -1488,16 +1486,16 @@ loc_1EEBC:
     ; align 2
     db 144
 loc_1EEC6:
-    cmp     [bp+var_2C], 0FF88h
+    cmp     [bp+var_2C.x], 0FF88h
     jle     short loc_1EECF
     jmp     loc_1F7E6
 loc_1EECF:
-    cmp     [bp+var_2C], 0FEF2h
+    cmp     [bp+var_2C.x], 0FEF2h
     jge     short loc_1EED9
     jmp     loc_1F7E6
 loc_1EED9:
     mov     word_44A8C, 90h ; 'ê'
-    cmp     [bp+var_14], 0FE00h
+    cmp     [bp+var_18.z], 0FE00h
     jg      short loc_1EEF0
 loc_1EEE6:
     mov     word_4428E, 9Ah ; 'ö'
@@ -1505,20 +1503,20 @@ loc_1EEE6:
     ; align 2
     db 144
 loc_1EEF0:
-    cmp     [bp+var_14], 200h
+    cmp     [bp+var_18.z], 200h
     jl      short loc_1EF00
 loc_1EEF7:
     mov     word_4428E, 99h ; 'ô'
     jmp     loc_1F7E6
 loc_1EF00:
-    cmp     [bp+var_18], 0FF88h
+    cmp     [bp+var_18.x], 0FF88h
     jl      short loc_1EF10
     mov     word_4428E, 97h ; 'ó'
     jmp     loc_1F7E6
     ; align 2
     db 144
 loc_1EF10:
-    cmp     [bp+var_18], 0FEF2h
+    cmp     [bp+var_18.x], 0FEF2h
     jle     short loc_1EF1A
     jmp     loc_1F7E6
 loc_1EF1A:
@@ -1527,22 +1525,22 @@ loc_1EF1A:
     ; align 2
     db 144
 loc_1EF24:
-    cmp     [bp+var_18], 0
+    cmp     [bp+var_18.x], 0
     jge     short loc_1EF32
-    mov     ax, [bp+var_18]
+    mov     ax, [bp+var_18.x]
     neg     ax
     jmp     short loc_1EF35
     ; align 2
     db 144
 loc_1EF32:
-    mov     ax, [bp+var_18]
+    mov     ax, [bp+var_18.x]
 loc_1EF35:
     cmp     ax, 73h ; 's'
     jl      short loc_1EF60
     cmp     [bp+var_32], 0A4h ; '§'
     jg      short loc_1EF60
     mov     word_44A8C, 97h ; 'ó'
-    cmp     [bp+var_18], 0
+    cmp     [bp+var_18.x], 0
     jle     short loc_1EF56
     mov     word_4428E, 9Fh ; 'ü'
     jmp     loc_1F7E6
@@ -1567,42 +1565,42 @@ loc_1EF7B:
     mov     byte_44D47, al
     cmp     [bp+var_32], 1Fh
     jge     short loc_1EF90
-    mov     word_44DC6, 46h ; 'F'
+    mov     planindex, 46h ; 'F'
     jmp     loc_1F7E6
 loc_1EF90:
-    cmp     [bp+var_2C], 0FFACh
+    cmp     [bp+var_2C.x], 0FFACh
     jge     short loc_1EFA6
-    mov     word_44DC6, 49h ; 'I'
+    mov     planindex, 49h ; 'I'
     mov     [bp+var_1E], 0FF9Ch
     mov     si, 0FFFBh
     jmp     short loc_1EFE0
 loc_1EFA6:
-    cmp     [bp+var_2C], 0
+    cmp     [bp+var_2C.x], 0
     jge     short loc_1EFBC
-    mov     word_44DC6, 47h ; 'G'
+    mov     planindex, 47h ; 'G'
     mov     [bp+var_1E], 0FFC7h
     mov     si, 0FFF8h
     jmp     short loc_1EFE0
 loc_1EFBC:
-    cmp     [bp+var_2C], 54h ; 'T'
+    cmp     [bp+var_2C.x], 54h ; 'T'
     jle     short loc_1EFD2
-    mov     word_44DC6, 4Dh ; 'M'
+    mov     planindex, 4Dh ; 'M'
     mov     [bp+var_1E], 64h ; 'd'
     mov     si, 5
     jmp     short loc_1EFE0
 loc_1EFD2:
-    mov     word_44DC6, 4Bh ; 'K'
+    mov     planindex, 4Bh ; 'K'
     mov     [bp+var_1E], 39h ; '9'
     mov     si, 8
 loc_1EFE0:
-    push    [bp+var_28]
+    push    [bp+var_2C.z]
     push    si
     call    sin_fast
     add     sp, 2
     push    ax
     call    scale_value
     add     sp, 4
-    mov     cx, [bp+var_2C]
+    mov     cx, [bp+var_2C.x]
     sub     cx, [bp+var_1E]
     push    cx
     push    si
@@ -1629,20 +1627,20 @@ loc_1F020:
 loc_1F028:
     mov     [bp+var_22], 0
 loc_1F02D:
-    cmp     [bp+var_18], 0
+    cmp     [bp+var_18.x], 0
     jge     short loc_1F03A
-    mov     ax, [bp+var_18]
+    mov     ax, [bp+var_18.x]
     neg     ax
     jmp     short loc_1F03D
 loc_1F03A:
-    mov     ax, [bp+var_18]
+    mov     ax, [bp+var_18.x]
 loc_1F03D:
     cmp     ax, 0A4h ; '§'
     jl      short loc_1F068
     cmp     [bp+var_32], 0A4h ; '§'
     jg      short loc_1F068
     mov     word_44A8C, 97h ; 'ó'
-    cmp     [bp+var_18], 0
+    cmp     [bp+var_18.x], 0
     jle     short loc_1F05E
     mov     word_4428E, 9Bh ; 'õ'
     jmp     loc_1F7E6
@@ -1685,13 +1683,13 @@ loc_1F0A9:
     jg      short loc_1F0E8
     cmp     [bp+var_2E], 4Bh ; 'K'
     jg      short loc_1F0E8
-    mov     word_44DC6, 45h ; 'E'
-    cmp     [bp+var_14], 0FFB5h
+    mov     planindex, 45h ; 'E'
+    cmp     [bp+var_18.z], 0FFB5h
     jg      short loc_1F0D6
     mov     word_4428E, 9Dh ; 'ù'
     jmp     loc_1F7E6
 loc_1F0D6:
-    cmp     [bp+var_14], 4Bh ; 'K'
+    cmp     [bp+var_18.z], 4Bh ; 'K'
     jge     short loc_1F0DF
     jmp     loc_1F7E6
 loc_1F0DF:
@@ -1705,12 +1703,12 @@ loc_1F0E8:
     jle     short loc_1F116
     cmp     [bp+var_1E], 0
     jnz     short loc_1F116
-    cmp     [bp+var_2C], 0
+    cmp     [bp+var_2C.x], 0
     jge     short loc_1F10C
-    mov     word_44DC6, 3Ch ; '<'
+    mov     planindex, 3Ch ; '<'
     jmp     loc_1F7E6
 loc_1F10C:
-    mov     word_44DC6, 42h ; 'B'
+    mov     planindex, 42h ; 'B'
     jmp     loc_1F7E6
     ; align 2
     db 144
@@ -1719,66 +1717,66 @@ loc_1F116:
     jge     short loc_1F136
     cmp     [bp+var_1E], 0
     jz      short loc_1F12C
-    mov     word_44DC6, 3Fh ; '?'
+    mov     planindex, 3Fh ; '?'
     jmp     loc_1F7E6
     ; align 2
     db 144
 loc_1F12C:
-    mov     word_44DC6, 39h ; '9'
+    mov     planindex, 39h ; '9'
     jmp     loc_1F7E6
     ; align 2
     db 144
 loc_1F136:
-    cmp     [bp+var_2C], 0FFACh
+    cmp     [bp+var_2C.x], 0FFACh
     jge     short loc_1F156
     cmp     [bp+var_1E], 0
     jz      short loc_1F14C
-    mov     word_44DC6, 3Dh ; '='
+    mov     planindex, 3Dh ; '='
     jmp     loc_1F7E6
     ; align 2
     db 144
 loc_1F14C:
-    mov     word_44DC6, 3Bh ; ';'
+    mov     planindex, 3Bh ; ';'
     jmp     loc_1F7E6
     ; align 2
     db 144
 loc_1F156:
-    cmp     [bp+var_2C], 0
+    cmp     [bp+var_2C.x], 0
     jge     short loc_1F176
     cmp     [bp+var_1E], 0
     jz      short loc_1F16C
-    mov     word_44DC6, 3Eh ; '>'
+    mov     planindex, 3Eh ; '>'
     jmp     loc_1F7E6
     ; align 2
     db 144
 loc_1F16C:
-    mov     word_44DC6, 3Ah ; ':'
+    mov     planindex, 3Ah ; ':'
     jmp     loc_1F7E6
     ; align 2
     db 144
 loc_1F176:
-    cmp     [bp+var_2C], 54h ; 'T'
+    cmp     [bp+var_2C.x], 54h ; 'T'
     jle     short loc_1F196
     cmp     [bp+var_1E], 0
     jz      short loc_1F18C
-    mov     word_44DC6, 41h ; 'A'
+    mov     planindex, 41h ; 'A'
     jmp     loc_1F7E6
     ; align 2
     db 144
 loc_1F18C:
-    mov     word_44DC6, 43h ; 'C'
+    mov     planindex, 43h ; 'C'
     jmp     loc_1F7E6
     ; align 2
     db 144
 loc_1F196:
     cmp     [bp+var_1E], 0
     jz      short loc_1F1A6
-    mov     word_44DC6, 40h ; '@'
+    mov     planindex, 40h ; '@'
     jmp     loc_1F7E6
     ; align 2
     db 144
 loc_1F1A6:
-    mov     word_44DC6, 44h ; 'D'
+    mov     planindex, 44h ; 'D'
     jmp     loc_1F7E6
     ; align 2
     db 144
@@ -1814,7 +1812,7 @@ loc_1F1EB:
     jle     short loc_1F21A
     cmp     [bp+var_1E], 0
     jnz     short loc_1F21A
-    cmp     [bp+var_2C], 0
+    cmp     [bp+var_2C.x], 0
     jge     short loc_1F212
     mov     [bp+var_22], 3
     jmp     loc_1F295
@@ -1835,7 +1833,7 @@ loc_1F21A:
     ; align 2
     db 144
 loc_1F22E:
-    cmp     [bp+var_2C], 0FFACh
+    cmp     [bp+var_2C.x], 0FFACh
     jge     short loc_1F24A
     cmp     [bp+var_1E], 0
     jz      short loc_1F242
@@ -1849,7 +1847,7 @@ loc_1F242:
     ; align 2
     db 144
 loc_1F24A:
-    cmp     [bp+var_2C], 0
+    cmp     [bp+var_2C.x], 0
     jge     short loc_1F266
     cmp     [bp+var_1E], 0
     jz      short loc_1F25E
@@ -1863,7 +1861,7 @@ loc_1F25E:
     ; align 2
     db 144
 loc_1F266:
-    cmp     [bp+var_2C], 54h ; 'T'
+    cmp     [bp+var_2C.x], 54h ; 'T'
     jle     short loc_1F282
     cmp     [bp+var_1E], 0
     jz      short loc_1F27A
@@ -1890,16 +1888,16 @@ loc_1F295:
     jz      short loc_1F2B8
     mov     di, [bp+var_22]
     shl     di, 1
-    mov     ax, [bp+var_28]
-    cmp     [di+2E76h], ax
+    mov     ax, [bp+var_2C.z]
+    cmp     word_3E5E6[di], ax
     jge     short loc_1F2B8
-    cmp     [di+2E8Eh], ax
+    cmp     word_3E5FE[di], ax
     jle     short loc_1F2B8
     mov     ax, [bp+var_22]
     add     ax, 39h ; '9'
-    mov     word_44DC6, ax
+    mov     planindex, ax
 loc_1F2B8:
-    cmp     word_44DC6, 0
+    cmp     planindex, 0
     jz      short loc_1F2C2
     jmp     loc_1F7E6
 loc_1F2C2:
@@ -1912,7 +1910,7 @@ loc_1F2CC:
     mov     word_44A8C, 75h ; 'u'
     jmp     loc_1F7E6
 loc_1F2E0:
-    mov     ax, [bp+var_2C]
+    mov     ax, [bp+var_2C.x]
     neg     ax
     mov     [bp+var_1E], ax
     mov     [bp+var_22], 4Fh ; 'O'
@@ -1922,14 +1920,14 @@ loc_1F2E0:
     ; align 2
     db 144
 loc_1F2FA:
-    mov     ax, [bp+var_2C]
+    mov     ax, [bp+var_2C.x]
     mov     [bp+var_1E], ax
     mov     [bp+var_22], 69h ; 'i'
     mov     [bp+var_C], 0
     mov     [bp+var_E], 19h
 loc_1F30F:
     mov     byte_44D46, 1
-    cmp     [bp+var_28], 0
+    cmp     [bp+var_2C.z], 0
     jge     short loc_1F350
     mov     bx, [bp+arg_0]
     mov     ax, [bx+2]
@@ -1953,7 +1951,7 @@ loc_1F343:
     ; align 2
     db 144
 loc_1F350:
-    cmp     [bp+var_28], 0
+    cmp     [bp+var_2C.z], 0
     jle     short loc_1F3A8
     mov     bx, [bp+arg_0]
     mov     ax, [bx+2]
@@ -1981,12 +1979,12 @@ loc_1F38F:
     mov     byte_44D47, al
     mov     ax, [bp+var_22]
     add     ax, 19h
-    mov     word_44DC6, ax
+    mov     planindex, ax
     jmp     loc_1EBE7
     ; align 2
     db 144
 loc_1F3A8:
-    push    [bp+var_28]
+    push    [bp+var_2C.z]
     push    [bp+var_1E]
     call    sub_300B6
     add     sp, 4
@@ -1999,7 +1997,7 @@ loc_1F3C1:
     jl      short loc_1F3C9
     jmp     loc_1F7E6
 loc_1F3C9:
-    push    [bp+var_28]
+    push    [bp+var_2C.z]
     push    [bp+var_1E]
     call    sub_2EA4E
     add     sp, 4
@@ -2016,7 +2014,7 @@ nosmart
     mov     ax, [bp+var_22]
     add     ax, si
     inc     ax
-    mov     word_44DC6, ax
+    mov     planindex, ax
     mov     al, [bp+var_12]
     mov     byte_44D47, al
     mov     byte_4392C, 0
@@ -2049,74 +2047,74 @@ loc_1F432:
     mov     al, [bp+var_12]
     mov     byte_44D47, al
 loc_1F43E:
-    cmp     [bp+var_2C], 17h
+    cmp     [bp+var_2C.x], 17h
     jl      short loc_1F4A0
-    cmp     [bp+var_2C], 61h ; 'a'
+    cmp     [bp+var_2C.x], 61h ; 'a'
     jg      short loc_1F4A0
-    cmp     [bp+var_28], 0FEF1h
+    cmp     [bp+var_2C.z], 0FEF1h
     jle     short loc_1F4A0
-    cmp     [bp+var_28], 0FF0Fh
+    cmp     [bp+var_2C.z], 0FF0Fh
     jge     short loc_1F4A0
     mov     word_44A8C, 2Ah ; '*'
-    cmp     [bp+var_14], 0FEF1h
+    cmp     [bp+var_18.z], 0FEF1h
     jge     short loc_1F46E
     mov     word_4428E, 91h ; 'ë'
     jmp     loc_1F7E6
 loc_1F46E:
-    cmp     [bp+var_14], 0FF0Fh
+    cmp     [bp+var_18.z], 0FF0Fh
     jle     short loc_1F47E
     mov     word_4428E, 92h ; 'í'
     jmp     loc_1F7E6
 loc_1F47E:
-    cmp     [bp+var_18], 17h
+    cmp     [bp+var_18.x], 17h
     jge     short loc_1F48E
     mov     word_4428E, 94h ; 'î'
     jmp     loc_1F7E6
     ; align 2
     db 144
 loc_1F48E:
-    cmp     [bp+var_18], 61h ; 'a'
+    cmp     [bp+var_18.x], 61h ; 'a'
     jg      short loc_1F497
     jmp     loc_1F7E6
 loc_1F497:
     mov     word_4428E, 93h ; 'ì'
     jmp     loc_1F7E6
 loc_1F4A0:
-    cmp     [bp+var_2C], 0FFE9h
+    cmp     [bp+var_2C.x], 0FFE9h
     jle     short loc_1F4A9
     jmp     loc_1F7E6
 loc_1F4A9:
-    cmp     [bp+var_2C], 0FF9Fh
+    cmp     [bp+var_2C.x], 0FF9Fh
     jge     short loc_1F4B2
     jmp     loc_1F7E6
 loc_1F4B2:
-    cmp     [bp+var_28], 10Fh
+    cmp     [bp+var_2C.z], 10Fh
     jl      short loc_1F4BC
     jmp     loc_1F7E6
 loc_1F4BC:
-    cmp     [bp+var_28], 0F1h ; 'Ò'
+    cmp     [bp+var_2C.z], 0F1h ; 'Ò'
     jg      short loc_1F4C6
     jmp     loc_1F7E6
 loc_1F4C6:
     mov     word_44A8C, 2Ah ; '*'
-    cmp     [bp+var_14], 10Fh
+    cmp     [bp+var_18.z], 10Fh
     jle     short loc_1F4DC
     mov     word_4428E, 8Dh ; 'ç'
     jmp     loc_1F7E6
 loc_1F4DC:
-    cmp     [bp+var_14], 0F1h ; 'Ò'
+    cmp     [bp+var_18.z], 0F1h ; 'Ò'
     jge     short loc_1F4EC
     mov     word_4428E, 8Eh ; 'é'
     jmp     loc_1F7E6
 loc_1F4EC:
-    cmp     [bp+var_18], 0FFE9h
+    cmp     [bp+var_18.x], 0FFE9h
     jle     short loc_1F4FC
     mov     word_4428E, 8Fh ; 'è'
     jmp     loc_1F7E6
     ; align 2
     db 144
 loc_1F4FC:
-    cmp     [bp+var_18], 0FF9Fh
+    cmp     [bp+var_18.x], 0FF9Fh
     jl      short loc_1F505
     jmp     loc_1F7E6
 loc_1F505:
@@ -2132,22 +2130,22 @@ loc_1F518:
     jmp     loc_1F7E6
 loc_1F522:
     mov     word_44A8C, 1A9h
-    cmp     [bp+var_14], 0FF6Ah
+    cmp     [bp+var_18.z], 0FF6Ah
     jg      short loc_1F538
     mov     word_4428E, 0A1h ; '°'
     jmp     loc_1F7E6
 loc_1F538:
-    cmp     [bp+var_14], 96h ; 'ñ'
+    cmp     [bp+var_18.z], 96h ; 'ñ'
     jl      short loc_1F548
     mov     word_4428E, 0A2h ; '¢'
     jmp     loc_1F7E6
 loc_1F548:
-    cmp     [bp+var_18], 96h ; 'ñ'
+    cmp     [bp+var_18.x], 96h ; 'ñ'
     jl      short loc_1F558
     mov     word_4428E, 0A3h ; '£'
     jmp     loc_1F7E6
 loc_1F558:
-    cmp     [bp+var_18], 0FF6Ah
+    cmp     [bp+var_18.x], 0FF6Ah
     jle     short loc_1F562
     jmp     loc_1F7E6
 loc_1F562:
@@ -2156,11 +2154,11 @@ loc_1F562:
     ; align 2
     db 144
 loc_1F56C:
-    cmp     [bp+var_2C], 0FF38h
+    cmp     [bp+var_2C.x], 0FF38h
     jge     short loc_1F576
     jmp     loc_1F7E6
 loc_1F576:
-    cmp     [bp+var_2C], 104h
+    cmp     [bp+var_2C.x], 104h
     jle     short loc_1F580
     jmp     loc_1F7E6
 loc_1F580:
@@ -2169,24 +2167,24 @@ loc_1F580:
     jmp     loc_1F7E6
 loc_1F589:
     mov     word_44A8C, 0E6h ; 'Ê'
-    cmp     [bp+var_14], 0FFB0h
+    cmp     [bp+var_18.z], 0FFB0h
     jg      short loc_1F59E
     mov     word_4428E, 0A5h ; '•'
     jmp     loc_1F7E6
 loc_1F59E:
-    cmp     [bp+var_14], 50h ; 'P'
+    cmp     [bp+var_18.z], 50h ; 'P'
     jl      short loc_1F5AE
     mov     word_4428E, 0A8h ; '®'
     jmp     loc_1F7E6
     ; align 2
     db 144
 loc_1F5AE:
-    cmp     [bp+var_18], 0FF38h
+    cmp     [bp+var_18.x], 0FF38h
     jg      short loc_1F5BE
     mov     word_4428E, 0A6h ; '¶'
     jmp     loc_1F7E6
 loc_1F5BE:
-    cmp     [bp+var_18], 104h
+    cmp     [bp+var_18.x], 104h
     jge     short loc_1F5C8
     jmp     loc_1F7E6
 loc_1F5C8:
@@ -2204,24 +2202,24 @@ loc_1F5DC:
     jmp     loc_1F7E6
 loc_1F5E5:
     mov     word_44A8C, 0F8h ; '¯'
-    cmp     [bp+var_14], 0FF9Ch
+    cmp     [bp+var_18.z], 0FF9Ch
     jg      short loc_1F5FA
     mov     word_4428E, 0A9h ; '©'
     jmp     loc_1F7E6
 loc_1F5FA:
-    cmp     [bp+var_14], 64h ; 'd'
+    cmp     [bp+var_18.z], 64h ; 'd'
     jl      short loc_1F60A
     mov     word_4428E, 0ACh ; '¨'
     jmp     loc_1F7E6
     ; align 2
     db 144
 loc_1F60A:
-    cmp     [bp+var_18], 0FF4Ch
+    cmp     [bp+var_18.x], 0FF4Ch
     jg      short loc_1F61A
     mov     word_4428E, 0ABh ; '´'
     jmp     loc_1F7E6
 loc_1F61A:
-    cmp     [bp+var_18], 0B4h ; '¥'
+    cmp     [bp+var_18.x], 0B4h ; '¥'
     jge     short loc_1F624
     jmp     loc_1F7E6
 loc_1F624:
@@ -2239,22 +2237,22 @@ loc_1F638:
     jmp     loc_1F7E6
 loc_1F642:
     mov     word_44A8C, 226h
-    cmp     [bp+var_14], 0FF38h
+    cmp     [bp+var_18.z], 0FF38h
     jg      short loc_1F658
     mov     word_4428E, 0ADh ; '≠'
     jmp     loc_1F7E6
 loc_1F658:
-    cmp     [bp+var_14], 0C8h ; '»'
+    cmp     [bp+var_18.z], 0C8h ; '»'
     jl      short loc_1F668
     mov     word_4428E, 0AEh ; 'Æ'
     jmp     loc_1F7E6
 loc_1F668:
-    cmp     [bp+var_18], 0FF38h
+    cmp     [bp+var_18.x], 0FF38h
     jg      short loc_1F678
     mov     word_4428E, 0AFh ; 'Ø'
     jmp     loc_1F7E6
 loc_1F678:
-    cmp     [bp+var_18], 0C8h ; '»'
+    cmp     [bp+var_18.x], 0C8h ; '»'
     jge     short loc_1F682
     jmp     loc_1F7E6
 loc_1F682:
@@ -2272,39 +2270,39 @@ loc_1F695:
     jmp     loc_1F7E6
 loc_1F69E:
     mov     word_44A8C, 1EFh
-    cmp     [bp+var_14], 0FF8Eh
+    cmp     [bp+var_18.z], 0FF8Eh
     jg      short loc_1F6B4
     mov     word_4428E, 0B4h ; '¥'
     jmp     loc_1F7E6
     ; align 2
     db 144
 loc_1F6B4:
-    cmp     [bp+var_14], 72h ; 'r'
+    cmp     [bp+var_18.z], 72h ; 'r'
     jl      short loc_1F6C4
     mov     word_4428E, 0B2h ; '≤'
     jmp     loc_1F7E6
     ; align 2
     db 144
 loc_1F6C4:
-    cmp     [bp+var_18], 0FF8Eh
+    cmp     [bp+var_18.x], 0FF8Eh
     jg      short loc_1F6D4
     mov     word_4428E, 0B1h ; '±'
     jmp     loc_1F7E6
     ; align 2
     db 144
 loc_1F6D4:
-    cmp     [bp+var_18], 72h ; 'r'
+    cmp     [bp+var_18.x], 72h ; 'r'
     jge     short loc_1F6DD
     jmp     loc_1F7E6
 loc_1F6DD:
     mov     word_4428E, 0B3h ; '≥'
     jmp     loc_1F7E6
 loc_1F6E6:
-    cmp     [bp+var_2C], 0FF56h
+    cmp     [bp+var_2C.x], 0FF56h
     jge     short loc_1F6F0
     jmp     loc_1F7E6
 loc_1F6F0:
-    cmp     [bp+var_2C], 104h
+    cmp     [bp+var_2C.x], 104h
     jle     short loc_1F6FA
     jmp     loc_1F7E6
 loc_1F6FA:
@@ -2313,21 +2311,21 @@ loc_1F6FA:
     jmp     loc_1F7E6
 loc_1F703:
     mov     word_44A8C, 0E6h ; 'Ê'
-    cmp     [bp+var_14], 0FF92h
+    cmp     [bp+var_18.z], 0FF92h
     jg      short loc_1F71A
     mov     word_4428E, 0B5h ; 'µ'
     jmp     loc_1F7E6
     db 144
     db 144
 loc_1F71A:
-    cmp     [bp+var_14], 6Eh ; 'n'
+    cmp     [bp+var_18.z], 6Eh ; 'n'
     jl      short loc_1F72A
     mov     word_4428E, 0B8h ; '∏'
     jmp     loc_1F7E6
     ; align 2
     db 144
 loc_1F72A:
-    cmp     [bp+var_18], 0FF56h
+    cmp     [bp+var_18.x], 0FF56h
     jg      short loc_1F73C
     mov     word_4428E, 0B7h ; '∑'
     jmp     loc_1F7E6
@@ -2335,7 +2333,7 @@ loc_1F72A:
     db 144
     db 144
 loc_1F73C:
-    cmp     [bp+var_18], 104h
+    cmp     [bp+var_18.x], 104h
     jge     short loc_1F746
     jmp     loc_1F7E6
 loc_1F746:
@@ -2429,15 +2427,15 @@ loc_1F7EF:
     shl     bx, 1
     mov     di, [bp+arg_0]
     mov     ax, [di]
-    sub     ax, [bx-599Eh]
-    mov     [bp+var_2C], ax
+    sub     ax, trackcenterpos2[bx]
+    mov     [bp+var_2C.x], ax
     mov     al, [bp+var_20]
     cbw
     mov     bx, ax
     shl     bx, 1
     mov     ax, [di+4]
-    sub     ax, [bx+750Eh]
-    mov     [bp+var_28], ax
+    sub     ax, terraincenterpos[bx]
+    mov     [bp+var_2C.z], ax
     mov     al, [bp+var_34]
     sub     ah, ah
     sub     ax, 7
@@ -2453,35 +2451,35 @@ loc_1F82A:
     db 144
 loc_1F832:
     mov     [bp+var_10], 300h
-    mov     ax, [bp+var_2C]
+    mov     ax, [bp+var_2C.x]
     mov     [bp+var_1E], ax
-    mov     ax, [bp+var_28]
-    mov     [bp+var_2C], ax
+    mov     ax, [bp+var_2C.z]
+    mov     [bp+var_2C.x], ax
     mov     ax, [bp+var_1E]
     neg     ax
 loc_1F848:
-    mov     [bp+var_28], ax
+    mov     [bp+var_2C.z], ax
     jmp     short loc_1F896
     ; align 2
     db 144
 loc_1F84E:
     mov     [bp+var_10], 200h
-    mov     ax, [bp+var_28]
+    mov     ax, [bp+var_2C.z]
     neg     ax
-    mov     [bp+var_28], ax
-    mov     ax, [bp+var_2C]
+    mov     [bp+var_2C.z], ax
+    mov     ax, [bp+var_2C.x]
     neg     ax
-    mov     [bp+var_2C], ax
+    mov     [bp+var_2C.x], ax
     jmp     short loc_1F896
     ; align 2
     db 144
 loc_1F866:
     mov     [bp+var_10], 100h
-    mov     ax, [bp+var_2C]
+    mov     ax, [bp+var_2C.x]
     mov     [bp+var_1E], ax
-    mov     ax, [bp+var_28]
+    mov     ax, [bp+var_2C.z]
     neg     ax
-    mov     [bp+var_2C], ax
+    mov     [bp+var_2C.x], ax
     mov     ax, [bp+var_1E]
     jmp     short loc_1F848
 off_1F87E     dw offset loc_1F82A
@@ -2518,16 +2516,16 @@ loc_1F8BC:
     db 144
     db 144
 loc_1F8C0:
-    cmp     word_44DC6, 0
+    cmp     planindex, 0
     jnz     short loc_1F8CD
-    mov     word_44DC6, 3
+    mov     planindex, 3
 loc_1F8CD:
-    cmp     word_44DC6, 0
+    cmp     planindex, 0
     jg      short loc_1F8D7
     jmp     loc_1F992
 loc_1F8D7:
     mov     cl, 2
-    shl     word_44DC6, cl
+    shl     planindex, cl
     mov     ax, [bp+var_10]
     cmp     ax, 100h
     jnz     short loc_1F8E8
@@ -2545,7 +2543,7 @@ loc_1F8F8:
     ; align 2
     db 144
 loc_1F8FC:
-    push    [bp+var_28]
+    push    [bp+var_2C.z]
     mov     ax, 0FF80h
     push    ax
     call    sin_fast
@@ -2553,7 +2551,7 @@ loc_1F8FC:
     push    ax
     call    scale_value
     add     sp, 4
-    push    [bp+var_2C]
+    push    [bp+var_2C.x]
     mov     cx, 0FF80h
     push    cx
     mov     di, ax
@@ -2566,12 +2564,12 @@ loc_1F8FC:
     mov     [bp+var_22], ax
     or      ax, ax
     jge     short loc_1F8CD
-    mov     word_44DC6, 4
+    mov     planindex, 4
     jmp     short loc_1F8CD
     ; align 2
     db 144
 loc_1F940:
-    push    [bp+var_28]
+    push    [bp+var_2C.z]
     mov     ax, 0FF80h
     push    ax
     call    sin_fast
@@ -2579,7 +2577,7 @@ loc_1F940:
     push    ax
     call    scale_value
     add     sp, 4
-    push    [bp+var_2C]
+    push    [bp+var_2C.x]
     mov     cx, 0FF80h
     push    cx
     mov     di, ax
@@ -2592,7 +2590,7 @@ loc_1F940:
     mov     [bp+var_22], ax
     or      ax, ax
     jle     short loc_1F984
-    mov     word_44DC6, 5
+    mov     planindex, 5
     jmp     loc_1F8CD
 loc_1F984:
     mov     word_449EC, 1C2h
@@ -2600,10 +2598,10 @@ loc_1F984:
     ; align 2
     db 144
 loc_1F98E:
-    inc     word_44DC6
+    inc     planindex
 loc_1F992:
     mov     ax, 22h ; '"'
-    imul    word_44DC6
+    imul    planindex
     add     ax, word_454C2
     mov     dx, word_454C4
     mov     word_44D64, ax
@@ -2621,12 +2619,12 @@ nosmart
     add     word_449EC, ax
     jmp     short loc_1F9D9
 loc_1F9C4:
-    add     word_44DC6, 2
+    add     planindex, 2
     jmp     short loc_1F992
     ; align 2
     db 144
 loc_1F9CC:
-    add     word_44DC6, 3
+    add     planindex, 3
     jmp     short loc_1F992
     ; align 2
     db 144
@@ -3285,7 +3283,7 @@ locret_1FF90:
     ; align 2
     db 144
 ported_shape3d_free_all_ endp
-sub_1FF92 proc far
+shape3d_load_car_shapes proc far
     var_10 = byte ptr -16
     var_E = dword ptr -14
     var_A = word ptr -10
@@ -3315,14 +3313,14 @@ sub_1FF92 proc far
     push    ax
     call    file_load_3dres
     add     sp, 2
-    mov     word ptr dword_454AA, ax
-    mov     word ptr dword_454AA+2, dx
+    mov     word ptr carresptr, ax
+    mov     word ptr carresptr+2, dx
     mov     ax, (offset game3dshapes.shape3d_numverts+0AA8h)
     push    ax
     mov     ax, offset aCar0; "car0"
     push    ax
     push    dx
-    push    word ptr dword_454AA
+    push    word ptr carresptr
     call    locate_shape_fatal
     add     sp, 6
     push    dx
@@ -3333,8 +3331,8 @@ sub_1FF92 proc far
     push    ax
     mov     ax, offset aCar1; "car1"
     push    ax
-    push    word ptr dword_454AA+2
-    push    word ptr dword_454AA
+    push    word ptr carresptr+2
+    push    word ptr carresptr
     call    locate_shape_fatal
     add     sp, 6
     push    dx
@@ -3434,12 +3432,12 @@ loc_200D6:
     inc     si
     cmp     si, 5
     jl      short loc_200D6
-    mov     ax, 814Ch
+    mov     ax, (offset game3dshapes.shape3d_numverts+0B00h)
     push    ax
     mov     ax, offset aCar2; "car2"
     push    ax
-    push    word ptr dword_454AA+2
-    push    word ptr dword_454AA
+    push    word ptr carresptr+2
+    push    word ptr carresptr
     call    locate_shape_fatal
     add     sp, 6
     push    dx
@@ -3450,8 +3448,8 @@ loc_200D6:
     push    ax
     mov     ax, offset aExp0_0; "exp0"
     push    ax
-    push    word ptr dword_454AA+2
-    push    word ptr dword_454AA
+    push    word ptr carresptr+2
+    push    word ptr carresptr
     call    locate_shape_fatal
     add     sp, 6
     push    dx
@@ -3462,8 +3460,8 @@ loc_200D6:
     push    ax
     mov     ax, offset aExp1_0; "exp1"
     push    ax
-    push    word ptr dword_454AA+2
-    push    word ptr dword_454AA
+    push    word ptr carresptr+2
+    push    word ptr carresptr
     call    locate_shape_fatal
     add     sp, 6
     push    dx
@@ -3474,8 +3472,8 @@ loc_200D6:
     push    ax
     mov     ax, offset aExp2_0; "exp2"
     push    ax
-    push    word ptr dword_454AA+2
-    push    word ptr dword_454AA
+    push    word ptr carresptr+2
+    push    word ptr carresptr
     call    locate_shape_fatal
     add     sp, 6
     push    dx
@@ -3486,8 +3484,8 @@ loc_200D6:
     push    ax
     mov     ax, offset aExp3_0; "exp3"
     push    ax
-    push    word ptr dword_454AA+2
-    push    word ptr dword_454AA
+    push    word ptr carresptr+2
+    push    word ptr carresptr
     call    locate_shape_fatal
     add     sp, 6
     push    dx
@@ -3516,8 +3514,8 @@ loc_201A9:
     mov     al, [di+3]
     cmp     [bx+3], al
     jnz     short loc_2022A
-    push    word ptr dword_454AA+2
-    push    word ptr dword_454AA
+    push    word ptr carresptr+2
+    push    word ptr carresptr
     call    mmgr_get_res_size_scaled
     add     sp, 4
     mov     [bp+var_6], ax
@@ -3528,8 +3526,8 @@ loc_201A9:
     push    ax
     call    mmgr_alloc_resbytes
     add     sp, 6
-    mov     word ptr dword_454B0, ax
-    mov     word ptr dword_454B0+2, dx
+    mov     word ptr car2resptr, ax
+    mov     word ptr car2resptr+2, dx
     sub     ax, ax
     mov     [bp+var_8], ax
     mov     [bp+var_A], ax
@@ -3551,9 +3549,9 @@ loc_20204:
     jnb     short loc_20257
 loc_20216:
     mov     bx, [bp+var_A]
-    les     di, dword_454AA
+    les     di, carresptr
     mov     al, es:[bx+di]
-    les     di, dword_454B0
+    les     di, car2resptr
     mov     es:[bx+di], al
     jmp     short loc_201FC
     ; align 2
@@ -3572,15 +3570,15 @@ loc_2022A:
     push    ax
     call    file_load_3dres
     add     sp, 2
-    mov     word ptr dword_454B0, ax
-    mov     word ptr dword_454B0+2, dx
+    mov     word ptr car2resptr, ax
+    mov     word ptr car2resptr+2, dx
 loc_20257:
     mov     ax, (offset game3dshapes.shape3d_numverts+0ABEh)
     push    ax
     mov     ax, offset aCar0_0; "car0"
     push    ax
-    push    word ptr dword_454B0+2
-    push    word ptr dword_454B0
+    push    word ptr car2resptr+2
+    push    word ptr car2resptr
     call    locate_shape_fatal
     add     sp, 6
     push    dx
@@ -3591,8 +3589,8 @@ loc_20257:
     push    ax
     mov     ax, offset aCar1_0; "car1"
     push    ax
-    push    word ptr dword_454B0+2
-    push    word ptr dword_454B0
+    push    word ptr car2resptr+2
+    push    word ptr car2resptr
     call    locate_shape_fatal
     add     sp, 6
     push    dx
@@ -3696,8 +3694,8 @@ loc_20369:
     push    ax
     mov     ax, offset aCar2_1; "car2"
     push    ax
-    push    word ptr dword_454B0+2
-    push    word ptr dword_454B0
+    push    word ptr car2resptr+2
+    push    word ptr car2resptr
     call    locate_shape_fatal
     add     sp, 6
     push    dx
@@ -3708,8 +3706,8 @@ loc_20369:
     push    ax
     mov     ax, offset aExp0_1; "exp0"
     push    ax
-    push    word ptr dword_454B0+2
-    push    word ptr dword_454B0
+    push    word ptr car2resptr+2
+    push    word ptr car2resptr
     call    locate_shape_fatal
     add     sp, 6
     push    dx
@@ -3720,8 +3718,8 @@ loc_20369:
     push    ax
     mov     ax, offset aExp1_1; "exp1"
     push    ax
-    push    word ptr dword_454B0+2
-    push    word ptr dword_454B0
+    push    word ptr car2resptr+2
+    push    word ptr car2resptr
     call    locate_shape_fatal
     add     sp, 6
     push    dx
@@ -3732,8 +3730,8 @@ loc_20369:
     push    ax
     mov     ax, offset aExp2_1; "exp2"
     push    ax
-    push    word ptr dword_454B0+2
-    push    word ptr dword_454B0
+    push    word ptr car2resptr+2
+    push    word ptr car2resptr
     call    locate_shape_fatal
     add     sp, 6
     push    dx
@@ -3744,8 +3742,8 @@ loc_20369:
     push    ax
     mov     ax, offset aExp3_1; "exp3"
     push    ax
-    push    word ptr dword_454B0+2
-    push    word ptr dword_454B0
+    push    word ptr car2resptr+2
+    push    word ptr car2resptr
     call    locate_shape_fatal
     add     sp, 6
     push    dx
@@ -3761,26 +3759,26 @@ loc_20369:
     db 144
 loc_2042A:
     sub     ax, ax
-    mov     word ptr dword_454B0+2, ax
-    mov     word ptr dword_454B0, ax
+    mov     word ptr car2resptr+2, ax
+    mov     word ptr car2resptr, ax
     pop     si
     pop     di
     mov     sp, bp
     pop     bp
     retf
-sub_1FF92 endp
-sub_20438 proc far
+shape3d_load_car_shapes endp
+shape3d_free_car_shapes proc far
 
-    mov     ax, word ptr dword_454B0
-    or      ax, word ptr dword_454B0+2
+    mov     ax, word ptr car2resptr
+    or      ax, word ptr car2resptr+2
     jz      short loc_20477
-    mov     ax, 7594h
+    mov     ax, offset word_42D04
     push    ax
-    mov     ax, 9184h
+    mov     ax, offset word_448F4
     push    ax
-    mov     ax, 8D1Ah
+    mov     ax, offset word_4448A
     push    ax
-    mov     ax, 2FA0h
+    mov     ax, offset unk_3E710
     push    ax
     sub     ax, ax
     push    ax
@@ -3792,18 +3790,18 @@ sub_20438 proc far
     push    cs
     call near ptr sub_204AE
     add     sp, 0Eh
-    push    word ptr dword_454B0+2
-    push    word ptr dword_454B0
+    push    word ptr car2resptr+2
+    push    word ptr car2resptr
     call    mmgr_op_unk2
     add     sp, 4
 loc_20477:
-    mov     ax, 754Ah
+    mov     ax, offset word_42CBA
     push    ax
-    mov     ax, 8C8Ah
+    mov     ax, offset word_443FA
     push    ax
-    mov     ax, 8C78h
+    mov     ax, offset word_443E8
     push    ax
-    mov     ax, 2FA0h
+    mov     ax, offset unk_3E710
     push    ax
     sub     ax, ax
     push    ax
@@ -3815,12 +3813,12 @@ loc_20477:
     push    cs
     call near ptr sub_204AE
     add     sp, 0Eh
-    push    word ptr dword_454AA+2
-    push    word ptr dword_454AA
+    push    word ptr carresptr+2
+    push    word ptr carresptr
     call    mmgr_free
     add     sp, 4
     retf
-sub_20438 endp
+shape3d_free_car_shapes endp
 sub_204AE proc far
     var_14 = word ptr -20
     var_12 = word ptr -18

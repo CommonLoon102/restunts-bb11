@@ -104,7 +104,7 @@ seg012 segment byte public 'STUNTSC' use16
     extrn sub_303BA:proc
     extrn set_bios_mode3:proc
     extrn kb_parse_key:proc
-    extrn reg_callback:proc
+    extrn kb_reg_callback:proc
     extrn nopsub_304AF:proc
     extrn nopsub_304B6:proc
     extrn kb_get_char:proc
@@ -181,7 +181,7 @@ seg012 segment byte public 'STUNTSC' use16
     extrn sub_322F3:proc
     extrn loc_32334
     extrn sub_323D9:proc
-    extrn release_window:proc
+    extrn sprite_free_wnd:proc
     extrn ported_file_write_nofatal_:proc
     extrn ported_file_write_fatal_:proc
     extrn video_add_exithandler:proc
@@ -305,7 +305,7 @@ seg012 segment byte public 'STUNTSC' use16
     extrn sub_34B0C:proc
     extrn set_fontdefseg:proc
     extrn sub_34B96:proc
-    extrn make_wnd_sprite:proc
+    extrn ported_sprite_make_wnd_:proc
     extrn next_wnd_def:word
     extrn wnd_defs:byte
     extrn sprite_set_1:proc

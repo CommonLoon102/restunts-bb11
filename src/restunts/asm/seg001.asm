@@ -211,7 +211,7 @@ loc_14803:
 loc_1480C:
     push    si
     lea     di, [bp+var_3C]
-    mov     si, 8FEAh
+    mov     si, offset state.opponentstate.car_vec_unk3
     push    ss
     pop     es
     movsw
@@ -248,13 +248,13 @@ loc_1485E:
     cmp     si, 0C8h ; 'È'
     jge     short loc_148B3
 loc_14866:
-    mov     ax, 911Dh
+    mov     ax, offset state.field_3F9
     push    ax
     mov     al, state.opponentstate.field_CE
     inc     state.opponentstate.field_CE
     sub     ah, ah
     push    ax
-    mov     ax, 8FEAh
+    mov     ax, offset state.opponentstate.car_vec_unk3
     push    ax
     mov     bx, state.opponentstate.car_trackdata3_index
     shl     bx, 1
@@ -281,7 +281,7 @@ loc_148B3:
 loc_148BA:
     push    si
     lea     di, [bp+var_C]
-    mov     si, 8FEAh
+    mov     si, offset state.opponentstate.car_vec_unk3
     push    ss
     pop     es
     movsw
@@ -507,13 +507,13 @@ loc_14AAE:
 loc_14AB1:
     cmp     ax, 100h
     jle     short loc_14B03
-    mov     ax, 911Dh
+    mov     ax, offset state.field_3F9
     push    ax
     mov     al, state.opponentstate.field_CE
     inc     state.opponentstate.field_CE
     sub     ah, ah
     push    ax
-    mov     ax, 8FEAh
+    mov     ax, offset state.opponentstate.car_vec_unk3
     push    ax
     mov     bx, state.opponentstate.car_trackdata3_index
     shl     bx, 1
@@ -642,9 +642,9 @@ loc_14BEA:
 loc_14BF6:
     mov     [bp+var_E], 2
 loc_14BFA:
-    mov     ax, 9ED0h
+    mov     ax, offset simd2
     push    ax
-    mov     ax, 8F46h
+    mov     ax, offset state.opponentstate
     push    ax
     mov     ax, 1
     push    ax
@@ -656,22 +656,22 @@ loc_14BFA:
     add     sp, 8
     sub     ax, ax
     push    ax
-    mov     ax, 9ED0h
+    mov     ax, offset simd2
     push    ax
-    mov     ax, 8F46h
+    mov     ax, offset state.opponentstate
     push    ax
     push    cs
     call near ptr update_player_carstate
     add     sp, 6
     mov     ax, 1
     push    ax
-    mov     ax, 0A6EAh
+    mov     ax, offset simd_copy
     push    ax
-    mov     ax, 8E76h
+    mov     ax, offset state.playerstate
     push    ax
-    mov     ax, 9ED0h
+    mov     ax, offset simd2
     push    ax
-    mov     ax, 8F46h
+    mov     ax, offset state.opponentstate
     push    ax
     push    cs
     call near ptr update_player_state
@@ -682,7 +682,7 @@ loc_14BFA:
 loc_14C49:
     push    si
     lea     di, [bp+var_26]
-    mov     si, 8FEAh
+    mov     si, offset state.opponentstate.car_vec_unk3
     push    ss
     pop     es
     movsw
@@ -1405,7 +1405,7 @@ loc_15240:
     push    [bp+var_1C2]
     push    [bp+var_1C4]
     push    [bp+var_1C6]
-    push    word_44DC6
+    push    planindex
     push    cs
     call near ptr plane_origin_op
     add     sp, 8
@@ -1856,7 +1856,7 @@ loc_156AF:
     push    [bp+var_1C2]
     push    ax
     push    [bp+var_1C6]
-    push    word_44DC6
+    push    planindex
     push    cs
     call near ptr plane_origin_op
     add     sp, 8
@@ -1885,7 +1885,7 @@ loc_15703:
     jmp     loc_15D2B
 loc_1570A:
     mov     ax, 22h ; '"'
-    imul    word_44DC6
+    imul    planindex
     add     ax, word_454C2
     mov     dx, word_454C4
     mov     word ptr [bp+var_6], ax
@@ -2028,7 +2028,7 @@ loc_15882:
     mov     vec_unk2.x, 0
     mov     vec_unk2.y, 0
     mov     vec_unk2.z, 40h ; '@'
-    mov     ax, word_44DC6
+    mov     ax, planindex
     mov     word_44F4A, ax
     mov     al, [bp+var_E8]
     cbw
@@ -2055,7 +2055,7 @@ loc_15882:
     sbb     [bx+0Ah], dx
     jmp     loc_15CDF
 loc_158DA:
-    mov     word_44DC6, 0
+    mov     planindex, 0
     mov     ax, word_454C2
     mov     dx, word_454C4
     mov     word_44D64, ax
@@ -2142,7 +2142,7 @@ loc_159AD:
     mov     vec_unk2.y, 0
     mov     ax, [bp+var_E6]
     mov     vec_unk2.z, ax
-    mov     ax, word_44DC6
+    mov     ax, planindex
     mov     word_44F4A, ax
     mov     al, [bp+var_E8]
     cbw
@@ -2305,7 +2305,7 @@ loc_15A30:
     mov     vec_unk2.y, 0
     mov     ax, [bp+var_EE]
     mov     vec_unk2.z, ax
-    mov     ax, word_44DC6
+    mov     ax, planindex
     mov     word_44F4A, ax
     mov     ax, [bp+di+var_140]
     mov     word_44F48, ax
@@ -2396,7 +2396,7 @@ loc_15C3F:
     push    ax
     push    [bp+var_1C4]
     push    [bp+var_1C6]
-    push    word_44DC6
+    push    planindex
     push    cs
     call near ptr plane_origin_op
     add     sp, 8
@@ -2419,7 +2419,7 @@ loc_15C75:
     lea     ax, [bp+var_FC]
     push    ax
     mov     ax, 22h ; '"'
-    imul    word_44DC6
+    imul    planindex
     add     ax, word_454C2
     mov     dx, word_454C4
     add     ax, 10h
@@ -2525,7 +2525,7 @@ loc_15D7E:
 loc_15D94:
     mov     word_4428E, 0FFFFh
     mov     byte_44D47, 1
-    mov     word_44DC6, 0
+    mov     planindex, 0
     mov     ax, word_454C2
     mov     dx, word_454C4
     mov     word_44D64, ax
@@ -2989,7 +2989,7 @@ loc_1625F:
     mov     [bp+var_E8], 0
     jmp     loc_1632C
 loc_16288:
-    mov     ax, word_44DC6
+    mov     ax, planindex
     mov     [bp+var_E], ax
     mov     al, [bp+var_E8]
     cbw
@@ -3013,7 +3013,7 @@ loc_16288:
     push    ax
     call    sub_1E1A0
     add     sp, 4
-    mov     ax, word_44DC6
+    mov     ax, planindex
     cmp     [bp+var_E], ax
     jnz     short loc_16309
     push    [bp+var_1C2]
@@ -3153,12 +3153,12 @@ loc_163BF:
     push    [bp+var_1C2]
     push    [bp+var_1C4]
     push    [bp+var_1C6]
-    push    word_44DC6
+    push    planindex
     push    cs
     call near ptr plane_origin_op
     add     sp, 8
     mov     si, ax
-    cmp     word_44DC6, 4
+    cmp     planindex, 4
     jl      short loc_1641E
     jmp     loc_16288
 loc_1641E:
@@ -7435,7 +7435,7 @@ loc_18A26:
     jnz     short loc_18A26
     mov     [bp+var_A], ax
 loc_18A31:
-    mov     al, byte_3B8F5
+    mov     al, cameramode
     cbw
     or      ax, ax
     jz      short loc_18A52
@@ -9142,16 +9142,16 @@ plane_origin_op proc far
     push    bp
     mov     bp, sp
     sub     sp, 10h
-    mov     ax, word_44DC6
+    mov     ax, planindex
     cmp     [bp+arg_0], ax
-    jnz     short loc_1993E
+    jnz     short loc_1993E ; sizeof PLANE
     mov     ax, word_44D64
     mov     dx, word_44D66
     jmp     short loc_1994C
     ; align 2
     db 144
 loc_1993E:
-    mov     ax, 22h ; '"'
+    mov     ax, 22h         ; sizeof PLANE
     imul    [bp+arg_0]
     add     ax, word_454C2
     mov     dx, word_454C4
@@ -9159,7 +9159,7 @@ loc_1994C:
     mov     word ptr [bp+var_4], ax
     mov     word ptr [bp+var_4+2], dx
     les     bx, [bp+var_4]
-    mov     ax, es:[bx+6]
+    mov     ax, es:[bx+PLANE.plane_origin.y]
     add     ax, word_449EC
     mov     [bp+var_E], ax
     mov     ax, [bp+arg_4]
@@ -9167,10 +9167,10 @@ loc_1994C:
     mov     [bp+var_8], ax
     cmp     [bp+arg_0], 4
     jl      short loc_199AE
-    mov     ax, es:[bx+4]
+    mov     ax, es:[bx+PLANE.plane_origin.x]
     add     ax, word_449E0
     mov     [bp+var_10], ax
-    mov     ax, es:[bx+8]
+    mov     ax, es:[bx+PLANE.plane_origin.z]
     add     ax, word_449F6
     mov     [bp+var_C], ax
     mov     ax, [bp+arg_2]
@@ -9180,7 +9180,7 @@ loc_1994C:
     sub     ax, [bp+var_C]
     mov     [bp+var_6], ax
     mov     ax, bx
-    add     ax, 0Ah
+    add     ax, PLANE.plane_normal
     push    dx
     push    ax
     push    [bp+var_6]
@@ -9511,7 +9511,7 @@ loc_19BCB:
     adc     word ptr (state.game_longvecs3.long_x+2)[di], dx
     mov     ax, si
     shl     ax, 1
-    add     ax, 90E2h
+    add     ax, offset state.field_3BE
     mov     [bp+var_14], ax
     mov     bx, ax
     sub     word ptr [bx], 13h
@@ -9631,7 +9631,7 @@ loc_19D03:
     add     sp, 6
     push    dx
     push    ax
-    mov     ax, 8C14h
+    mov     ax, offset unk_44384
     jmp     loc_19DB6
 loc_19D36:
     mov     ax, offset aSimd_0; "simd"
@@ -9641,7 +9641,7 @@ loc_19D36:
     call    locate_shape_alt
     add     sp, 6
     push    si
-    mov     di, 9ED0h
+    mov     di, offset simd2
     mov     si, ax
     push    ds
     pop     es

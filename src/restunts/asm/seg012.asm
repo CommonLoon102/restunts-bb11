@@ -151,7 +151,7 @@ seg012 segment byte public 'STUNTSC' use16
     public sub_303BA
     public set_bios_mode3
     public kb_parse_key
-    public reg_callback
+    public kb_reg_callback
     public nopsub_304AF
     public nopsub_304B6
     public kb_get_char
@@ -228,7 +228,7 @@ seg012 segment byte public 'STUNTSC' use16
     public sub_322F3
     public loc_32334
     public sub_323D9
-    public release_window
+    public sprite_free_wnd
     public ported_file_write_nofatal_
     public ported_file_write_fatal_
     public video_add_exithandler
@@ -352,7 +352,7 @@ seg012 segment byte public 'STUNTSC' use16
     public sub_34B0C
     public set_fontdefseg
     public sub_34B96
-    public make_wnd_sprite
+    public ported_sprite_make_wnd_
     public next_wnd_def
     public wnd_defs
     public sprite_set_1
@@ -4816,7 +4816,7 @@ loc_30454:
     pop     bp
     retf
 kb_parse_key endp
-reg_callback proc far
+kb_reg_callback proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -4865,7 +4865,7 @@ loc_3049F:
     mov     callbackflags2[bx], al
     pop     bp
     retf
-reg_callback endp
+kb_reg_callback endp
 nopsub_304AF proc far
      s = byte ptr 0
      r = byte ptr 2
@@ -9047,7 +9047,7 @@ loc_324A2:
     mov     [di+2], ax
     jmp     short loc_32472
 sub_323D9 endp
-release_window proc far
+sprite_free_wnd proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -9060,9 +9060,9 @@ release_window proc far
     push    di
     mov     es, [bp+arg_2]
     mov     di, [bp+arg_0]
-    mov     ds, word ptr es:[di+2]
-    mov     si, es:[di]
-    mov     ax, [si+2]
+    mov     ds, word ptr es:[di+(SPRITE.sprite_bitmapptr+2)]
+    mov     si, word ptr es:[di+SPRITE.sprite_bitmapptr]
+    mov     ax, [si+SHAPE2D.s2d_height]
     add     ax, 0Fh
     shl     ax, 1
     mov     dx, ax
@@ -9089,7 +9089,7 @@ loc_324EC:
     lea     ax, aWindowReleased; "Window Released Out of Order\r\n"
     push    ax
     call    far ptr fatal_error
-release_window endp
+sprite_free_wnd endp
 ported_file_write_nofatal_ proc far
     var_fatal = word ptr -4
      s = byte ptr 0
@@ -10617,11 +10617,11 @@ loc_32E29:
     inc     bl
     cmp     bl, bh
     jle     short loc_32E09
-loc_32E35:
+pad_lens:
     mov     [bp+si+var_lengths], 40h ; '@'
     inc     si
     cmp     si, 100h
-    jnz     short loc_32E35
+    jnz     short pad_lens
     pop     si
     mov     bx, si
     mov     es, [bp+arg_dstseg]
@@ -10641,7 +10641,7 @@ smart
 nosmart
     mov     cl, [bp+si+var_lengths]
     cmp     cl, 8
-    ja      short loc_32EB5
+    ja      short len_gt_8bit
     mov     al, [bp+si+var_symbols]
     stosb
     cmp     cl, ah
@@ -10682,7 +10682,7 @@ loc_32EA9:
     mov     ds, bx
     xor     bx, bx
     jmp     short loc_32EA5
-loc_32EB5:
+len_gt_8bit:
     push    si
     push    bp
     mov     si, bx
@@ -11926,7 +11926,7 @@ loc_337AD:
     shr     ax, 1
     mov     byte ptr aMsRunTimeLibraryCop+4, al
 loc_337CE:
-    mov     al, byte_3B770
+    mov     al, byte ptr word_3B770
     mov     ah, byte ptr word_3B772
     mov     cx, word ptr aMsRunTimeLibraryCop+6
     mov     [bp+var_4], cx
@@ -14034,7 +14034,7 @@ loc_34626:
     shr     ax, 1
     mov     byte ptr aMsRunTimeLibraryCop+4, al
 loc_34647:
-    mov     al, byte_3B770
+    mov     al, byte ptr word_3B770
     mov     ah, byte ptr word_3B772
     mov     cx, word ptr aMsRunTimeLibraryCop+6
     mov     [bp+var_4], cx
@@ -14875,7 +14875,7 @@ loc_34C06:
     ; align 2
     db 0
 sub_34B96 endp
-make_wnd_sprite proc far
+ported_sprite_make_wnd_ proc far
     var_8 = word ptr -8
     var_6 = word ptr -6
     var_4 = word ptr -4
@@ -14910,43 +14910,43 @@ make_wnd_sprite proc far
     mov     ds, dx
     xor     bx, bx
     mov     ax, [bp+var_8]
-    mov     [bx], ax
+    mov     [bx+SHAPE2D.s2d_width], ax
     mov     ax, [bp+arg_2]
-    mov     [bx+2], ax
+    mov     [bx+SHAPE2D.s2d_height], ax
     xor     ax, ax
-    mov     [bx+8], ax
-    mov     [bx+0Ah], ax
-    mov     [bx+4], ax
-    mov     [bx+6], ax
-    mov     ax, 0Fh
-    add     ax, [bp+arg_2]
+    mov     [bx+SHAPE2D.s2d_pos_x], ax
+    mov     [bx+SHAPE2D.s2d_pos_y], ax
+    mov     [bx+SHAPE2D.s2d_unk1], ax
+    mov     [bx+SHAPE2D.s2d_unk2], ax
+    mov     ax, 0Fh         ; sizeof SPRITE (in words)
+    add     ax, [bp+arg_2]  ; height ??
     shl     ax, 1
     mov     bx, cs:next_wnd_def
     mov     [bp+var_4], bx
     add     ax, bx
-    cmp     ax, offset unk_42846
+    cmp     ax, offset sprite_set_1; sprite_set_1 happens to be the end of the buffer.. see below this func
     jnb     short loc_34CD6
     mov     cs:next_wnd_def, ax
-    mov     word ptr cs:[bx], 0
+    mov     word ptr cs:[bx+SPRITE.sprite_bitmapptr], 0
     mov     ax, [bp+var_2]
-    mov     cs:[bx+2], ax
-    lea     ax, [bx+1Eh]
-    mov     cs:[bx+0Ah], ax
-    mov     word ptr cs:[bx+0Ch], 0
-    mov     word ptr cs:[bx+1Ah], 0
+    mov     word ptr cs:[bx+(SPRITE.sprite_bitmapptr+2)], ax
+    lea     ax, [bx+(size SPRITE)]
+    mov     cs:[bx+SPRITE.sprite_lineofs], ax
+    mov     cs:[bx+SPRITE.sprite_left], 0
+    mov     cs:[bx+SPRITE.sprite_left2], 0
     mov     ax, [bp+var_8]
-    mov     cs:[bx+0Eh], ax
-    mov     cs:[bx+14h], ax
-    mov     word ptr cs:[bx+10h], 0
+    mov     cs:[bx+SPRITE.sprite_width], ax
+    mov     cs:[bx+SPRITE.sprite_height2], ax
+    mov     cs:[bx+SPRITE.sprite_top], 0
     mov     ax, [bp+arg_2]
-    mov     cs:[bx+12h], ax
+    mov     cs:[bx+SPRITE.sprite_height], ax
     mov     ax, [bp+arg_0]
-    mov     cs:[bx+18h], ax
-    mov     cs:[bx+1Ch], ax
+    mov     cs:[bx+SPRITE.sprite_width2], ax
+    mov     cs:[bx+SPRITE.sprite_widthsum], ax
     mov     cx, [bp+arg_2]
-    mov     ax, 10h
+    mov     ax, size SHAPE2D
 loc_34CBE:
-    mov     cs:[bx+1Eh], ax
+    mov     cs:[bx+(size SPRITE)], ax
     add     bx, 2
     add     ax, [bp+var_8]
     loop    loc_34CBE
@@ -18567,7 +18567,7 @@ wnd_defs     db 0
     db 0
     db 0
     db 0
-make_wnd_sprite endp
+ported_sprite_make_wnd_ endp
 sprite_set_1 proc far
      s = byte ptr 0
      r = byte ptr 2

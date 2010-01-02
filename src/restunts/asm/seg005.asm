@@ -96,10 +96,10 @@ run_game proc far
     mov     byte_454B8, 0
     cmp     byte_44AE2, 0
     jz      short loc_21BEC
-    inc     byte_3B8F5
-    cmp     byte_3B8F5, 4
+    inc     cameramode
+    cmp     cameramode, 4
     jnz     short loc_21BCA
-    mov     byte_3B8F5, 0
+    mov     cameramode, 0
 loc_21BCA:
     mov     byte_45DB2, 2
     mov     ax, offset aDefault; "default"
@@ -120,13 +120,13 @@ loc_21BE4:
 loc_21BEC:
     cmp     gameconfig.game_recordedframes, 0
     jnz     short loc_21C00
-    mov     byte_3B8F5, 0
+    mov     cameramode, 0
     mov     byte_45DB2, 1
     jmp     short loc_21C0F
     ; align 2
     db 144
 loc_21C00:
-    mov     byte_3B8F5, 0
+    mov     cameramode, 0
     mov     byte_45DB2, 2
     mov     byte_454B8, 1
 loc_21C0F:
@@ -136,7 +136,7 @@ loc_21C0F:
     jz      short loc_21C24
     push    cs
     call near ptr sub_239B4
-    call    sub_2A200
+    call    do_mer_restext
     jmp     loc_223E4
     ; align 2
     db 144
@@ -169,12 +169,12 @@ loc_21C6E:
     jz      short loc_21C78
     jmp     loc_21D2C
 loc_21C78:
-    mov     byte_3B8F5, 0
+    mov     cameramode, 0
     mov     byte_43950, 1
     mov     byte_4499F, 0
-    mov     ax, word_44D4E
+    mov     ax, framespersec2
     mov     framespersec, ax
-    mov     al, byte ptr word_44D4E
+    mov     al, byte ptr framespersec2
     mov     byte ptr gameconfig.game_framespersec, al
     mov     ax, 0FFFFh
     push    ax
@@ -232,7 +232,7 @@ loc_21D08:
     db 144
     db 144
 loc_21D2C:
-    mov     byte_3B8F5, 0
+    mov     cameramode, 0
     mov     byte_45DB2, 2
     mov     word_44DCA, 1F4h
     mov     al, byte ptr gameconfig.game_framespersec
@@ -563,8 +563,8 @@ loc_22064:
     call    sub_26572
     add     sp, 6
 loc_220BB:
-    push    word_454A2
-    push    word_454A0
+    push    word ptr dasmshapeptr+2
+    push    word ptr dasmshapeptr
     call    sub_33B02
     add     sp, 4
     push    word_4549E
@@ -620,9 +620,9 @@ loc_22152:
     cmp     byte_4393C, 0
     jnz     short loc_2217D
     mov     byte_45DB2, 0
-    mov     ax, word_44D4E
+    mov     ax, framespersec2
     mov     framespersec, ax
-    mov     al, byte ptr word_44D4E
+    mov     al, byte ptr framespersec2
     mov     byte ptr gameconfig.game_framespersec, al
     mov     ax, 0FFFFh
     push    ax
@@ -740,9 +740,9 @@ loc_22257:
 loc_2227E:
     mov     byte_45DB2, 0
     mov     byte_4393C, 0
-    mov     ax, word_44D4E
+    mov     ax, framespersec2
     mov     framespersec, ax
-    mov     al, byte ptr word_44D4E
+    mov     al, byte ptr framespersec2
     mov     byte ptr gameconfig.game_framespersec, al
     jmp     loc_21C5E
     ; align 2
@@ -920,19 +920,19 @@ loc_22436:
     mov     byte_449DA, 1
     jmp     loc_224E9
 loc_2243E:
-    mov     byte_3B8F5, 1
+    mov     cameramode, 1
     jmp     loc_224E9
 loc_22446:
-    mov     byte_3B8F5, 2
+    mov     cameramode, 2
     jmp     loc_224E9
 loc_2244E:
-    mov     byte_3B8F5, 3
+    mov     cameramode, 3
     jmp     loc_224E9
 loc_22456:
     xor     byte_3B8F4, 1
     jmp     loc_224E9
 loc_2245E:
-    call    sub_29DF4
+    call    do_mou_restext
     mov     al, byte_3B8F2
     cbw
     push    ax
@@ -955,11 +955,11 @@ loc_22478:
 loc_22480:
     cmp     byte_45DB2, 1
     jz      short loc_224E9
-    inc     byte_3B8F5
-    cmp     byte_3B8F5, 4
+    inc     cameramode
+    cmp     cameramode, 4
     jnz     short loc_224E9
 loc_22492:
-    mov     byte_3B8F5, 0
+    mov     cameramode, 0
     jmp     short loc_224E9
     ; align 2
     db 144
@@ -987,9 +987,9 @@ loc_224C0:
     jnz     short loc_224A8
     mov     byte_45DB2, 0
     mov     byte_4393C, 0
-    mov     ax, word_44D4E
+    mov     ax, framespersec2
     mov     framespersec, ax
-    mov     al, byte ptr word_44D4E
+    mov     al, byte ptr framespersec2
     mov     byte ptr gameconfig.game_framespersec, al
     mov     ax, 0FFFFh
     push    ax
@@ -2067,30 +2067,30 @@ loc_22D5C:
     push    ax              ; int
     call    file_load_resource
     add     sp, 4
-    mov     word ptr stdresptr, ax
-    mov     word ptr stdresptr+2, dx
+    mov     word ptr stdaresptr, ax
+    mov     word ptr stdaresptr+2, dx
     mov     ax, offset aStdbxxxx; "stdbxxxx"
     push    ax              ; char *
     mov     ax, 2
     push    ax              ; int
     call    file_load_resource
     add     sp, 4
-    mov     word_40D84, ax
-    mov     word_40D86, dx
+    mov     word ptr stdbresptr, ax
+    mov     word ptr stdbresptr+2, dx
     mov     ax, offset word_40DB0
     push    ax
     mov     ax, offset aWhl1whl2whl3ins2gboxins1i; "whl1whl2whl3ins2gboxins1ins3inm1inm3"
     push    ax
-    push    word ptr stdresptr+2
-    push    word ptr stdresptr
+    push    word ptr stdaresptr+2
+    push    word ptr stdaresptr
     call    locate_many_resources
     add     sp, 8
     mov     ax, offset word_40DD4
     push    ax
     mov     ax, offset aGnobgnabdotDotadot1dot2; "gnobgnabdot dotadot1dot2"
     push    ax
-    push    word_40D86
-    push    word_40D84
+    push    word ptr stdbresptr+2
+    push    word ptr stdbresptr
     call    locate_many_resources
     add     sp, 8
     cmp     simd_copy.spdcenter.y2, 0
@@ -2099,8 +2099,8 @@ loc_22D5C:
     push    ax
     mov     ax, offset aDig0dig1dig2dig3dig4dig5d; "dig0dig1dig2dig3dig4dig5dig6dig7dig8dig"...
     push    ax
-    push    word_40D86
-    push    word_40D84
+    push    word ptr stdbresptr+2
+    push    word ptr stdbresptr
     call    locate_many_resources
     add     sp, 8
 loc_22E09:
@@ -2111,7 +2111,7 @@ loc_22E09:
     mov     ax, es:[bx]
     imul    word_44AE4
     push    ax
-    call    make_wnd_sprite
+    call    sprite_make_wnd
     add     sp, 6
     mov     word ptr dword_40D80, ax
     mov     word ptr dword_40D80+2, dx
@@ -2122,7 +2122,7 @@ loc_22E09:
     mov     ax, es:[bx]
     imul    word_44AE4
     push    ax
-    call    make_wnd_sprite
+    call    sprite_make_wnd
     add     sp, 6
     mov     word ptr dword_40DEC, ax
     mov     word ptr dword_40DEC+2, dx
@@ -2133,14 +2133,14 @@ loc_22E09:
     mov     ax, es:[bx]
     imul    word_44AE4
     push    ax
-    call    make_wnd_sprite
+    call    sprite_make_wnd
     add     sp, 6
     mov     word ptr dword_40DFC, ax
     mov     word ptr dword_40DFC+2, dx
     mov     ax, offset aDash; "dash"
     push    ax
-    push    word ptr stdresptr+2
-    push    word ptr stdresptr
+    push    word ptr stdaresptr+2
+    push    word ptr stdaresptr
     call    locate_shape_fatal
     add     sp, 6
     mov     word ptr [bp+var_C], ax
@@ -2169,16 +2169,16 @@ loc_22E09:
     mov     word_45DBA, ax
     mov     ax, offset aRoof; "roof"
     push    ax
-    push    word ptr stdresptr+2
-    push    word ptr stdresptr
+    push    word ptr stdaresptr+2
+    push    word ptr stdaresptr
     call    locate_shape_nofatal
     add     sp, 6
     or      dx, ax
     jz      short loc_22F12
     mov     ax, offset aRoof_0; "roof"
     push    ax
-    push    word ptr stdresptr+2
-    push    word ptr stdresptr
+    push    word ptr stdaresptr+2
+    push    word ptr stdaresptr
     call    locate_shape_fatal
     add     sp, 6
     mov     bx, ax
@@ -2191,8 +2191,8 @@ loc_22F12:
 loc_22F18:
     mov     ax, offset aDast; "dast"
     push    ax
-    push    word ptr stdresptr+2
-    push    word ptr stdresptr
+    push    word ptr stdaresptr+2
+    push    word ptr stdaresptr
     call    locate_shape_nofatal
     add     sp, 6
     mov     word ptr [bp+var_C], ax
@@ -2207,12 +2207,12 @@ loc_22F18:
     mov     word_4549E, dx
     mov     ax, offset aDasm; "dasm"
     push    ax
-    push    word ptr stdresptr+2
-    push    word ptr stdresptr
+    push    word ptr stdaresptr+2
+    push    word ptr stdaresptr
     call    locate_shape_fatal
     add     sp, 6
-    mov     word_454A0, ax
-    mov     word_454A2, dx
+    mov     word ptr dasmshapeptr, ax
+    mov     word ptr dasmshapeptr+2, dx
     pop     si
     pop     di
     mov     sp, bp
@@ -2229,16 +2229,16 @@ loc_22F76:
     call    sub_28DB6
     mov     ax, offset aRoof_1; "roof"
     push    ax
-    push    word ptr stdresptr+2
-    push    word ptr stdresptr
+    push    word ptr stdaresptr+2
+    push    word ptr stdaresptr
     call    locate_shape_nofatal
     add     sp, 6
     or      dx, ax
     jz      short loc_22FB1
     mov     ax, offset aRoof_2; "roof"
     push    ax
-    push    word ptr stdresptr+2
-    push    word ptr stdresptr
+    push    word ptr stdaresptr+2
+    push    word ptr stdaresptr
     call    locate_shape_fatal
     add     sp, 6
     push    dx
@@ -2248,8 +2248,8 @@ loc_22F76:
 loc_22FB1:
     mov     ax, offset aDash_0; "dash"
     push    ax
-    push    word ptr stdresptr+2
-    push    word ptr stdresptr
+    push    word ptr stdaresptr+2
+    push    word ptr stdaresptr
     call    locate_shape_fatal
     add     sp, 6
     push    dx
@@ -2925,22 +2925,22 @@ loc_236A0:
 loc_236AC:
     push    word ptr dword_40DFC+2
     push    word ptr dword_40DFC
-    call    release_window
+    call    sprite_free_wnd
     add     sp, 4
     push    word ptr dword_40DEC+2
     push    word ptr dword_40DEC
-    call    release_window
+    call    sprite_free_wnd
     add     sp, 4
     push    word ptr dword_40D80+2
     push    word ptr dword_40D80
-    call    release_window
+    call    sprite_free_wnd
     add     sp, 4
-    push    word_40D86
-    push    word_40D84
+    push    word ptr stdbresptr+2
+    push    word ptr stdbresptr
     call    mmgr_free
     add     sp, 4
-    push    word ptr stdresptr+2
-    push    word ptr stdresptr
+    push    word ptr stdaresptr+2
+    push    word ptr stdaresptr
     call    mmgr_free
     add     sp, 4
     pop     si
@@ -2971,7 +2971,7 @@ setup_player_cars proc far
     push    ax
     mov     ax, offset gameconfig
     push    ax
-    call    sub_1FF92
+    call    shape3d_load_car_shapes
     add     sp, 4
     mov     al, gameconfig.game_playercarid
     mov     byte ptr aCarcoun+3, al
@@ -3189,7 +3189,7 @@ loc_23988:
     push    ax
     mov     ax, 140h
     push    ax
-    call    make_wnd_sprite
+    call    sprite_make_wnd
     add     sp, 6
     mov     word ptr wndsprite, ax
     mov     word ptr wndsprite+2, dx
@@ -3212,12 +3212,12 @@ sub_239B4 proc far
     jz      short loc_239D4
     push    word ptr wndsprite+2
     push    word ptr wndsprite
-    call    release_window
+    call    sprite_free_wnd
     add     sp, 4
 loc_239D4:
     call    shape3d_free_all
     call    unload_skybox
-    call    sub_1D92A
+    call    free_sdgame2
     push    word_449A2
     push    word_449A0
     call    unload_resource
@@ -3247,7 +3247,7 @@ loc_23A15:
     push    word_454A6
     call    mmgr_free
     add     sp, 4
-    call    sub_20438
+    call    shape3d_free_car_shapes
     retf
 sub_239B4 endp
 sub_23A50 proc far
@@ -3563,7 +3563,7 @@ loc_23CD7:
     cbw
     mov     [bp+var_44], ax
     mov     bx, ax
-    mov     al, byte_3B8F5
+    mov     al, cameramode
     cmp     [bx+5704h], al
     jz      short loc_23D46
     mov     [bx+5704h], al
@@ -3571,7 +3571,7 @@ loc_23CD7:
     shl     bx, 1
     mov     word ptr [bx+5706h], 0FFFFh
     call    sub_28DB6
-    mov     al, byte_3B8F5
+    mov     al, cameramode
     cbw
     mov     bx, ax
     shl     bx, 1
@@ -3580,7 +3580,7 @@ loc_23CD7:
     push    word ptr [bx+56A2h]
     call    sub_33E00
     add     sp, 4
-    mov     al, byte_3B8F5
+    mov     al, cameramode
     cbw
     mov     bx, ax
     mov     al, [bx+3294h]
@@ -3861,7 +3861,7 @@ loc_23FB0:
     call    sub_28D9E
     jmp     loc_24D5E
 loc_23FB8:
-    mov     al, byte_3B8F5
+    mov     al, cameramode
     cbw
     mov     bx, ax
     mov     al, [bx+3294h]
@@ -3869,7 +3869,7 @@ loc_23FB8:
     mov     al, byte_3E9DB
     cmp     byte ptr [bp+var_44], al
     jge     short loc_23FDA
-    cmp     byte_3B8F5, 2
+    cmp     cameramode, 2
     jz      short loc_23FDA
     mov     al, byte ptr [bp+var_44]
     mov     byte_3E9DB, al
@@ -3894,7 +3894,7 @@ loc_23FEE:
     push    ax
     mov     ax, 3298h
     push    ax
-    mov     al, byte_3B8F5
+    mov     al, cameramode
     cbw
     mov     bx, ax
     mov     al, [bx+3294h]
@@ -4169,7 +4169,7 @@ loc_24258:
     pop     bp
     retf
 loc_2426E:
-    cmp     byte_3B8F5, 3
+    cmp     cameramode, 3
     jnz     short loc_24288
     cmp     word_44D20, 0
     jg      short loc_2427F
@@ -4189,7 +4189,7 @@ loc_24293:
     ; align 2
     db 144
 loc_2429C:
-    cmp     byte_3B8F5, 3
+    cmp     cameramode, 3
     jnz     short loc_242B6
     cmp     word_44D20, 384h
     jl      short loc_242AE
@@ -4210,7 +4210,7 @@ loc_242C8:
     mov     bx, ax
     mov     al, [bx+326Ch]
     mov     byte ptr [bp+var_44], al
-    mov     al, byte_3B8F5
+    mov     al, cameramode
     cbw
     mov     bx, ax
     mov     al, byte ptr [bp+var_44]
@@ -4349,9 +4349,9 @@ loc_2440E:
     jmp     cs:off_2481A[bx]
 loc_24416:
     call    check_input
-    mov     ax, word_44D4E
+    mov     ax, framespersec2
     mov     framespersec, ax
-    mov     al, byte ptr word_44D4E
+    mov     al, byte ptr framespersec2
     mov     byte ptr gameconfig.game_framespersec, al
     mov     ax, 0FFFFh
     push    ax
@@ -4414,7 +4414,7 @@ loc_244B0:
     mov     byte_4499F, 0
     mov     byte_463E0, 0
     mov     byte_45DB2, 0
-    mov     byte_3B8F5, 0
+    mov     cameramode, 0
     mov     state.field_3F6, 0
     mov     state.game_frame_in_sec, 0
     mov     byte_449E6, 0
@@ -4763,10 +4763,10 @@ loc_247F0:
     ; align 2
     db 144
 loc_247F8:
-    inc     byte_3B8F5
-    cmp     byte_3B8F5, 4
+    inc     cameramode
+    cmp     cameramode, 4
     jnz     short loc_24828
-    mov     byte_3B8F5, 0
+    mov     cameramode, 0
     jmp     short loc_24828
 loc_2480A:
     call    do_mrl_textres

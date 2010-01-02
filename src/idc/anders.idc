@@ -691,6 +691,8 @@ static PortFuncName(labelname) {
 		labelname == "shape3d_free_all" ||
 		labelname == "shape3d_init_shape" ||
 
+		labelname == "sprite_make_wnd" ||
+
 		labelname == "stuntsmain"
 	)
 		return "ported_" + labelname + "_";

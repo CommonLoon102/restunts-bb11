@@ -71,6 +71,8 @@ extrn shape3d_load_all:proc
 extrn shape3d_free_all:proc
 extrn shape3d_init_shape:proc
 
+extrn sprite_make_wnd:proc
+
 extrn stuntsmain:proc
 
 ;extrn fatal_error:proc

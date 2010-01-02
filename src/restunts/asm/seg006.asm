@@ -2161,12 +2161,12 @@ loc_260AC:
 loc_260B7:
     mov     bx, di
     shl     bx, 1
-    mov     di, [bx+5766h]
+    mov     di, word_40ED6[bx]
     mov     bx, di
     shl     bx, 1
     shl     bx, 1
-    mov     ax, [bx+5A88h]
-    mov     dx, [bx+5A8Ah]
+    mov     ax, word_411F8[bx]
+    mov     dx, word_411FA[bx]
     mov     word ptr [bp+var_38], ax
     mov     word ptr [bp+var_38+2], dx
     les     bx, [bp+var_38]

@@ -59,9 +59,9 @@ seg003 segment byte public 'STUNTSC' use16
     public load_skybox
     public unload_skybox
     public load_sdgame2_shapes
-    public sub_1D92A
+    public free_sdgame2
     public setup_intro
-    public sub_1DEA6
+    public intro_op
     pop     ds
     retf
 sub_19F14 proc far
@@ -505,7 +505,7 @@ loc_1A20C:
     mov     [bp+var_F4], ax
     mov     [bp+var_5C], 0FFFFh
     mov     [bp+var_E0], 0
-    mov     al, byte_3B8F5
+    mov     al, cameramode
     cbw
     or      ax, ax
     jnz     short loc_1A226
@@ -608,7 +608,7 @@ loc_1A327:
     push    [bp+var_54]
     push    [bp+var_56]
     push    [bp+var_58]
-    push    word_44DC6
+    push    planindex
     call    plane_origin_op
     add     sp, 8
     mov     si, ax
@@ -619,7 +619,7 @@ loc_1A327:
     sub     ax, si
     mov     vec_unk2.y, ax
     mov     vec_unk2.z, 0
-    mov     ax, word_44DC6
+    mov     ax, planindex
     mov     word_44F4A, ax
     mov     word_44F48, 0
     mov     word_44F44, 0
@@ -1264,7 +1264,7 @@ loc_1A9C1:
 loc_1A9C8:
     mov     [bp+var_3C], 0FFh
     mov     [bp+var_6C], 0
-    cmp     byte_3B8F5, 0
+    cmp     cameramode, 0
     jnz     short loc_1A9E2
     cmp     byte_463E0, 0
     jnz     short loc_1A9E2
@@ -1429,7 +1429,7 @@ loc_1AB65:
     jnz     short loc_1AB79
     jmp     loc_1AD0E
 loc_1AB79:
-    cmp     byte_3B8F5, 0
+    cmp     cameramode, 0
     jnz     short loc_1AB8A
     cmp     byte_463E0, 0
     jz      short loc_1AB8A
@@ -3550,7 +3550,7 @@ loc_1C0E8:
     push    ax
     call    set_sprite1_size
     add     sp, 8
-    cmp     byte_3B8F5, 0
+    cmp     cameramode, 0
     jz      short loc_1C10A
     jmp     loc_1C1C6
 loc_1C10A:
@@ -4206,7 +4206,7 @@ loc_1C691:
     mov     word_44A32, ax
     sub     si, si
 loc_1C696:
-    mov     byte ptr [si-6250h], 1
+    mov     byte_45520[si], 1
     inc     si
     cmp     si, 0Fh
     jl      short loc_1C696
@@ -4222,16 +4222,16 @@ loc_1C696:
     or      al, al
     jnz     short loc_1C728
     mov     byte_46166, 0
-    mov     ax, 965Eh
+    mov     ax, offset unk_44DCE
     push    ax
-    mov     ax, 0A9F6h
+    mov     ax, offset byte_46166
     push    ax
     lea     ax, [bp+var_30]
     push    ax
-    mov     ax, 9294h
+    mov     ax, offset rect_unk
     push    ax
     push    word_3B80A
-    mov     ax, 9DB0h
+    mov     ax, offset byte_45520
     push    ax
     mov     ax, 0Fh
     push    ax
@@ -4245,7 +4245,7 @@ loc_1C6F2:
     mov     ax, di
     mov     cl, 3
     shl     ax, cl
-    add     ax, 965Eh
+    add     ax, offset unk_44DCE
     mov     [bp+var_28], ax
     mov     bx, ax
     push    word ptr [bx+6]
@@ -4275,16 +4275,16 @@ loc_1C728:
     or      al, al
     jnz     short loc_1C7AA
     mov     byte_46166, 0
-    mov     ax, 965Eh
+    mov     ax, offset unk_44DCE
     push    ax
-    mov     ax, 0A9F6h
+    mov     ax, offset byte_46166
     push    ax
     lea     ax, [bp+var_30]
     push    ax
-    mov     ax, 9294h
+    mov     ax, offset rect_unk
     push    ax
     push    word_3B80A
-    mov     ax, 9DB0h
+    mov     ax, offset byte_45520
     push    ax
     mov     ax, 0Fh
     push    ax
@@ -4298,7 +4298,7 @@ loc_1C774:
     mov     ax, di
     mov     cl, 3
     shl     ax, cl
-    add     ax, 965Eh
+    add     ax, offset unk_44DCE
     mov     [bp+var_28], ax
     mov     bx, ax
     push    word ptr [bx+6]
@@ -4590,7 +4590,7 @@ loc_1CA25:
 loc_1CA52:
     sub     si, si
 loc_1CA54:
-    mov     byte ptr [si-6250h], 1
+    mov     byte_45520[si], 1
     inc     si
     cmp     si, 0Fh
     jl      short loc_1CA54
@@ -4599,12 +4599,12 @@ loc_1CA54:
     mov     bx, [bp+arg_0]
     shl     bx, 1
     mov     ax, word_463D6
-    mov     [bx-6D74h], ax
+    mov     word_449FC[bx], ax
 loc_1CA72:
     mov     bx, [bp+arg_0]
     shl     bx, 1
     mov     ax, [bp+arg_A]
-    cmp     [bx-6D74h], ax
+    cmp     word_449FC[bx], ax
     jnz     short loc_1CAAC
     mov     bx, word_3B80A
     mov     ax, word_44A2C
@@ -4627,15 +4627,15 @@ loc_1CAAC:
     mov     byte_45525, 3
 loc_1CAB1:
     mov     byte_46166, 0
-    mov     ax, 965Eh
+    mov     ax, offset unk_44DCE
     push    ax
-    mov     ax, 0A9F6h
+    mov     ax, offset byte_46166
     push    ax
     push    [bp+arg_2]
-    mov     ax, 9294h
+    mov     ax, offset rect_unk
     push    ax
     push    word_3B80A
-    mov     ax, 9DB0h
+    mov     ax, offset byte_45520
     push    ax
     mov     ax, 0Fh
     push    ax
@@ -4651,7 +4651,7 @@ loc_1CADE:
     mov     ax, di
     mov     cl, 3
     shl     ax, cl
-    add     ax, 965Eh
+    add     ax, offset unk_44DCE
     push    ax
     push    cs
     call near ptr sub_1C302
@@ -4747,7 +4747,7 @@ sub_1CB80 proc far
     pop     si
     lea     ax, [bp+var_C]
     push    ax
-    mov     ax, 0ACDCh
+    mov     ax, offset mat_temp
     push    ax
     lea     ax, [bp+var_6]
     push    ax
@@ -4760,10 +4760,10 @@ sub_1CB80 proc far
     shl     di, 1
     mov     ax, [bp+var_8]
     add     ax, [bp+arg_0]
-    mov     [di-6296h], ax
+    mov     word_454DA[di], ax
     mov     al, [bp+arg_2]
-    mov     [si-5D6Eh], al
-    mov     [di-5954h], si
+    mov     byte_45A02[si], al
+    mov     word_45E1C[di], si
     inc     byte_45D7E
     add     word_46434, 14h
     pop     si
@@ -4842,7 +4842,7 @@ sub_1CBDC proc far
     lea     ax, [bp+var_C]
     push    ax
     push    [bp+var_28]
-    mov     ax, 9A4h
+    mov     ax, offset unk_3C114
     push    ax
     call    mat_mul_vector
     add     sp, 6
@@ -4963,7 +4963,7 @@ loc_1CD53:
     shl     ax, 1
     add     ax, cx
     shl     ax, 1
-    add     ax, 2C5Ah
+    add     ax, offset sceneshapes2
     mov     [bp+var_3E], ax
     mov     bx, ax
     mov     ax, [bx+6]
@@ -4972,7 +4972,7 @@ loc_1CD53:
     cbw
     mov     bx, ax
     shl     bx, 1
-    mov     ax, [bx-599Eh]
+    mov     ax, trackcenterpos2[bx]
     sub     ax, word_3C108
     sar     ax, 1
     mov     [bp+var_26], ax
@@ -4984,7 +4984,7 @@ loc_1CD53:
     cbw
     mov     bx, ax
     shl     bx, 1
-    mov     ax, [bx-55EAh]
+    mov     ax, trackcenterpos[bx]
     sub     ax, word_3C10C
     sar     ax, 1
     mov     [bp+var_22], ax
@@ -5010,7 +5010,7 @@ loc_1CDD3:
     shl     ax, 1
     add     ax, cx
     shl     ax, 1
-    add     ax, 2098h
+    add     ax, offset sceneshapes
     mov     [bp+var_3E], ax
     mov     bx, ax
     test    byte ptr [bx+0Bh], 1
@@ -5021,7 +5021,7 @@ loc_1CDF5:
     cbw
     mov     bx, ax
     shl     bx, 1
-    mov     ax, [bx-7E84h]
+    mov     ax, trackpos[bx]
     jmp     loc_1CF20
 loc_1CE04:
     sub     di, di
@@ -5055,7 +5055,7 @@ loc_1CE2E:
     shl     ax, 1
     mov     [bp+var_40], ax
     mov     bx, ax
-    mov     bx, [bx-73C4h]
+    mov     bx, terrainrows[bx]
     add     bx, [bp+var_42]
     add     bx, word ptr trackdata15
     mov     es, word ptr trackdata15+2
@@ -5070,14 +5070,14 @@ loc_1CE2E:
     shl     ax, 1
     add     ax, cx
     shl     ax, 1
-    add     ax, 2C5Ah
+    add     ax, offset sceneshapes2
     mov     [bp+var_3E], ax
     mov     bx, ax
     mov     ax, [bx+4]
     mov     [bp+var_20], ax
     mov     bx, [bp+var_42]
     shl     bx, 1
-    mov     ax, [bx-599Eh]
+    mov     ax, trackcenterpos2[bx]
     sub     ax, word_3C108
     sar     ax, 1
     mov     [bp+var_26], ax
@@ -5086,7 +5086,7 @@ loc_1CE2E:
     sar     ax, 1
     mov     [bp+var_24], ax
     mov     bx, [bp+var_40]
-    mov     ax, [bx-55EAh]
+    mov     ax, trackcenterpos[bx]
     sub     ax, word_3C10C
     sar     ax, 1
     mov     [bp+var_22], ax
@@ -5145,7 +5145,7 @@ loc_1CF14:
     cbw
     mov     bx, ax
     shl     bx, 1
-    mov     ax, [bx-55EAh]
+    mov     ax, trackcenterpos[bx]
 loc_1CF20:
     mov     [bp+var_12], ax
     mov     bx, [bp+var_3E]
@@ -5155,14 +5155,14 @@ loc_1CF20:
     cbw
     mov     bx, ax
     shl     bx, 1
-    mov     si, [bx+7558h]
+    mov     si, (trackpos2+2)[bx]
     jmp     short loc_1CF46
 loc_1CF3A:
     mov     al, [bp+var_32]
     cbw
     mov     bx, ax
     shl     bx, 1
-    mov     si, [bx-599Eh]
+    mov     si, trackcenterpos2[bx]
 loc_1CF46:
     mov     ax, si
     sub     ax, word_3C108
@@ -5199,7 +5199,7 @@ loc_1CF8F:
     ; align 2
     db 144
 loc_1CF92:
-    mov     [bp+var_20], 79FEh
+    mov     [bp+var_20], (offset game3dshapes.shape3d_numverts+3B2h)
 loc_1CF97:
     push    si
     push    di
@@ -5231,7 +5231,7 @@ loc_1CFBF:
     shl     ax, 1
     add     ax, cx
     shl     ax, 1
-    add     ax, 2098h
+    add     ax, offset sceneshapes
     mov     [bp+var_2], ax
     mov     bx, ax
     cmp     word ptr [bx+6], 0
@@ -5260,13 +5260,13 @@ loc_1CFBF:
     mov     [bp+var_13], al
     jmp     short loc_1D036
 loc_1D01A:
-    mov     [bp+var_20], 7E1Eh
+    mov     [bp+var_20], (offset game3dshapes.shape3d_numverts+7D2h)
     jmp     loc_1CF97
 loc_1D022:
-    mov     [bp+var_20], 7E34h
+    mov     [bp+var_20], (offset game3dshapes.shape3d_numverts+7E8h)
     jmp     loc_1CF97
 loc_1D02A:
-    mov     [bp+var_20], 7E4Ah
+    mov     [bp+var_20], (offset game3dshapes.shape3d_numverts+7FEh)
     jmp     loc_1CF97
 loc_1D032:
     mov     [bp+var_13], 0
@@ -5323,14 +5323,14 @@ loc_1D097:
     shl     ax, 1
     mov     [bp+var_42], ax
     mov     bx, ax
-    mov     bx, [bx-5A30h]
+    mov     bx, trackrows[bx]
     add     bx, [bp+var_40]
     add     bx, word ptr trackdata14
     mov     es, word ptr trackdata14+2
     mov     al, es:[bx]
     mov     [bp+var_10], al
     mov     bx, [bp+var_42]
-    mov     bx, [bx-73C4h]
+    mov     bx, terrainrows[bx]
     add     bx, [bp+var_40]
     add     bx, word ptr trackdata15
     mov     es, word ptr trackdata15+2
@@ -5552,7 +5552,7 @@ loc_1D2BE:
     jz      short loc_1D2C8
     jmp     loc_1D52B
 loc_1D2C8:
-    cmp     byte_3B8F5, 0
+    cmp     cameramode, 0
     jz      short loc_1D2D2
     jmp     loc_1D52B
 loc_1D2D2:
@@ -6239,20 +6239,20 @@ load_sdgame2_shapes proc far
     sub     sp, 2
     push    di
     push    si
-    mov     ax, 0A0Dh
+    mov     ax, offset aSdgame2; "sdgame2"
     push    ax              ; char *
     mov     ax, 8
     push    ax              ; int
     call    file_load_resource
     add     sp, 4
-    mov     word_463D8, ax
-    mov     word_463DA, dx
-    mov     ax, 0A64Ch
+    mov     word ptr sdgame2ptr, ax
+    mov     word ptr sdgame2ptr+2, dx
+    mov     ax, offset dword_45DBC
     push    ax
-    mov     ax, 0A15h
+    mov     ax, offset aEx01ex02ex03leftrigh; "ex01ex02ex03leftrigh"
     push    ax
     push    dx
-    push    word_463D8
+    push    word ptr sdgame2ptr
     call    locate_many_resources
     add     sp, 8
     sub     si, si
@@ -6262,9 +6262,9 @@ loc_1D908:
     mov     di, si
     shl     di, 1
     shl     di, 1
-    les     di, [di-59B4h]
+    les     di, dword_45DBC[di]
     mov     ax, es:[di]
-    mov     [bx-613Ah], ax
+    mov     word_45636[bx], ax
     inc     si
     cmp     si, 3
     jl      short loc_1D908
@@ -6276,16 +6276,16 @@ loc_1D908:
     ; align 2
     db 144
 load_sdgame2_shapes endp
-sub_1D92A proc far
+free_sdgame2 proc far
 
-    push    word_463DA
-    push    word_463D8
+    push    word ptr sdgame2ptr+2
+    push    word ptr sdgame2ptr
     call    mmgr_free
     add     sp, 4
     retf
     ; align 2
     db 144
-sub_1D92A endp
+free_sdgame2 endp
 setup_intro proc far
     var_5D4 = word ptr -1492
     var_5D2 = word ptr -1490
@@ -6381,7 +6381,7 @@ setup_intro proc far
     push    ax
     mov     ax, 140h
     push    ax
-    call    make_wnd_sprite
+    call    sprite_make_wnd
     add     sp, 6
     mov     word ptr wndsprite, ax
     mov     word ptr wndsprite+2, dx
@@ -6715,7 +6715,7 @@ loc_1DCFC:
     push    [bp+var_3C]
     push    [bp+var_3E]
     push    cs
-    call near ptr sub_1DEA6
+    call near ptr intro_op
     add     sp, 20h
     cmp     byte_46436, 0
     jz      short loc_1DD7E
@@ -6837,7 +6837,7 @@ loc_1DE3E:
 loc_1DE7C:
     push    word ptr wndsprite+2
     push    word ptr wndsprite
-    call    release_window
+    call    sprite_free_wnd
     add     sp, 4
 loc_1DE8C:
     push    [bp+var_2AC]
@@ -6852,7 +6852,7 @@ loc_1DE8C:
     pop     bp
     retf
 setup_intro endp
-sub_1DEA6 proc far
+intro_op proc far
     var_42 = word ptr -66
     var_40 = byte ptr -64
     var_3C = word ptr -60
@@ -6902,7 +6902,7 @@ sub_1DEA6 proc far
     push    si
     push    di
     lea     di, [bp+var_8]
-    mov     si, 3394h
+    mov     si, offset rect_unk4
     push    ss
     pop     es
     movsw
@@ -6913,7 +6913,7 @@ sub_1DEA6 proc far
     pop     si
     sub     ax, ax
     push    ax
-    mov     ax, 0A46h
+    mov     ax, offset rect_unk7
 loc_1DEC4:
     push    ax
     push    [bp+arg_6]
@@ -6929,7 +6929,7 @@ loc_1DEC4:
     ; align 2
     db 144
 loc_1DEE4:
-    mov     [bp+var_16], 8BFCh
+    mov     [bp+var_16], offset logo2shape
 loc_1DEE9:
     mov     ax, 400h
     sub     ax, [bp+arg_0]
@@ -6992,7 +6992,7 @@ loc_1DF7E:
     jnz     short loc_1DF7E
     sub     ax, [bp+arg_4]
     mov     [bp+var_18], ax
-    mov     [bp+var_16], 9580h
+    mov     [bp+var_16], offset bravshape
     cmp     word_44984, 0
     jz      short loc_1DFA4
     lea     ax, [bp+var_8]
@@ -7092,7 +7092,7 @@ loc_1E06C:
     push    word_3C1BC
     push    word_3C1BA
     push    word_3C1B8
-    push    word_3C1B6
+    push    rect_unk7
     call    set_sprite1_size
     add     sp, 8
     sub     ax, ax
@@ -7103,7 +7103,7 @@ loc_1E08F:
     push    word_3C1BC
     push    word_3C1BA
     push    word_3C1B8
-    push    word_3C1B6
+    push    rect_unk7
     call    set_sprite1_size
     add     sp, 8
     sub     di, di
@@ -7216,6 +7216,6 @@ loc_1E19A:
     mov     sp, bp
     pop     bp
     retf
-sub_1DEA6 endp
+intro_op endp
 seg003 ends
 end
