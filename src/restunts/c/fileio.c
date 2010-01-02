@@ -483,7 +483,7 @@ void far* file_decomp(const char* filename, int fatal)
 	int err = 0;
 
 	// Check if resource archive is already loaded.
-	dst = mmgr_get_unk(filename);
+	dst = mmgr_get_chunk_by_name(filename);
 	if (dst) {
 		return dst;
 	}
@@ -570,7 +570,7 @@ void far* file_load_binary(const char* filename, int fatal) {
 	void far* memptr;
 	int numparas;
 
-	memptr = mmgr_get_unk(filename);
+	memptr = mmgr_get_chunk_by_name(filename);
 	if (FP_SEG(memptr) != 0) return memptr;
 	
 	numparas = file_paras(filename, fatal);

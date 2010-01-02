@@ -673,7 +673,7 @@ static PortFuncName(labelname) {
 		labelname == "mmgr_copy_paras" ||
 		labelname == "copy_paras_reverse" ||
 		labelname == "mmgr_find_free" ||
-		labelname == "mmgr_get_unk" ||
+		labelname == "mmgr_get_chunk_by_name" ||
 		labelname == "mmgr_op_unk2" ||
 		labelname == "mmgr_get_chunk_size" ||
 		labelname == "mmgr_resize_memory" ||

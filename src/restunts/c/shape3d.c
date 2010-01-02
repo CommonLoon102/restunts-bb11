@@ -58,9 +58,9 @@ int shape3d_load_all() {
 
 void shape3d_free_all() {
 	if (game1ptr != 0)
-		mmgr_free(FP_OFF(game1ptr), FP_SEG(game1ptr));
+		mmgr_free(game1ptr);
 	if (game2ptr != 0)
-		mmgr_free(FP_OFF(game2ptr), FP_SEG(game2ptr));
+		mmgr_free(game2ptr);
 }
 
 void shape3d_init_shape(char far* shapeptr, struct SHAPE3D* gameshape) {

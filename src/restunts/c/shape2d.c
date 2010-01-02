@@ -107,5 +107,5 @@ void sprite_free_wnd(struct SPRITE far* wndsprite) {
 		fatal_error(aWindowReleased);
 	}
 	next_wnd_def = next_wnd_def - spritesize;
-	mmgr_op_unk2(FP_OFF(wndsprite->sprite_bitmapptr), FP_SEG((wndsprite->sprite_bitmapptr)));
+	mmgr_op_unk2((void far*)wndsprite->sprite_bitmapptr);
 }

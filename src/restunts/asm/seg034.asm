@@ -155,7 +155,7 @@ loc_3AA53:
     add     sp, 4
     lea     ax, [bp+var_7C]
     push    ax
-    call    mmgr_get_unk
+    call    mmgr_get_chunk_by_name
     add     sp, 2
     mov     [bp+var_4], ax
     mov     [bp+var_2], dx
@@ -171,7 +171,7 @@ loc_3AA87:
 loc_3AA92:
     lea     ax, [bp+var_7C]
     push    ax
-    call    mmgr_get_unk
+    call    mmgr_get_chunk_by_name
     add     sp, 2
     mov     [bp+var_4], ax
     mov     [bp+var_2], dx

@@ -157,22 +157,24 @@ unsigned short mmgr_get_ofs_diff() {
 	return resendptr2->resofs - resptr2->resofs - resptr2->ressize;
 }
 
-void far* mmgr_free(unsigned short arg_0, unsigned short arg_2) {
+void far* mmgr_free(char far* ptr) {
 	int i;
 	unsigned short ax, bx, cx, dx, di;
+	unsigned short ptrseg;
 	struct MEMCHUNK* ressi;
 	struct MEMCHUNK* resbx;
 
 	ressi = resptr2;
+	ptrseg = FP_SEG(ptr);
 
 	while (1) {
 		if (ressi == resptr1) 
-			fatal_error(aMemoryManagerB, arg_2);
-		if (ressi->resofs == arg_2) break;
+			fatal_error(aMemoryManagerB, ptrseg);
+		if (ressi->resofs == ptrseg) break;
 		ressi--;
 	}
 
-	arg_2 = 0;
+	ptrseg = 0;
 	ressi->resunk = 0;
 	if (ressi != resptr2) {
 		if (ressi == resendptr1) goto loc_31508;
@@ -180,9 +182,9 @@ void far* mmgr_free(unsigned short arg_0, unsigned short arg_2) {
 		if (ax < ressi->ressize) goto loc_31508;
 	}
 
-	arg_2 = resendptr1->resofs - ressi->ressize;
+	ptrseg = resendptr1->resofs - ressi->ressize;
 	resendptr1--;
-	resendptr1->resofs = arg_2;
+	resendptr1->resofs = ptrseg;
 	resendptr1->ressize = ressi->ressize;
 	resendptr1->resunk = 1;
 
@@ -190,7 +192,7 @@ void far* mmgr_free(unsigned short arg_0, unsigned short arg_2) {
 		resendptr1->resname[i] = ressi->resname[i];
 	}
 
-	copy_paras_reverse(ressi->resofs, arg_2, ressi->ressize);
+	copy_paras_reverse(ressi->resofs, ptrseg, ressi->ressize);
 
 loc_31508:
 	if (ressi == resptr2) {
@@ -200,7 +202,7 @@ loc_31508:
 		resptr2 = ressi;
 	}
 
-	return MK_FP(arg_0, arg_2);
+	return MK_FP(ptrseg, FP_OFF(ptr));
 }
 
 void mmgr_copy_paras(unsigned short srcseg, unsigned short destseg, short paras) {
@@ -307,7 +309,7 @@ void mmgr_find_free(void) {
 	popregs();
 }
 
-void far* mmgr_get_unk(const char* arg_0) {
+void far* mmgr_get_chunk_by_name(const char* name) {
 	int i;
 	unsigned short regax, regbx, regcx, regdx;
 	const char* chunkname;
@@ -315,7 +317,7 @@ void far* mmgr_get_unk(const char* arg_0) {
 	struct MEMCHUNK* resdi;
 
 	ressi = resendptr1;
-	chunkname = mmgr_path_to_name(arg_0);
+	chunkname = mmgr_path_to_name(name);
 
 	for (ressi = resendptr1; ressi < resendptr2; ressi++) {
 		regbx = 0;
@@ -369,8 +371,7 @@ void far* mmgr_get_unk(const char* arg_0) {
 }
 
 
-
-void mmgr_op_unk2(unsigned short arg_0, unsigned short arg_2) {
+void mmgr_op_unk2(char far* ptr) {
 	int i;
 	unsigned short regax, regbx, regcx, regdx;
 	char* strdi;
@@ -382,13 +383,12 @@ void mmgr_op_unk2(unsigned short arg_0, unsigned short arg_2) {
 		push bx
 	}
 	
-	(void)arg_0;
-	regax = arg_2;
+	regax = FP_SEG(ptr);
 	ressi = resptr2;
 
 	for (;;) {
 		if (ressi == resptr1) 
-			fatal_error(aMemoryManagerB, arg_2);
+			fatal_error(aMemoryManagerB, regax);
 		if (regax == ressi->resofs) break;
 		ressi--;
 	}
@@ -484,20 +484,19 @@ unsigned short mmgr_resize_memory(unsigned short arg_0, unsigned short arg_2, un
 	return 0;
 }
 
-void far* mmgr_op_unk(unsigned short arg_0, unsigned short arg_2) {
+void far* mmgr_op_unk(char far* ptr) {
 	int i;
 	unsigned short regax, regbx, regcx, regdx;
 	char* strdi;
 	struct MEMCHUNK* ressi;
 	struct MEMCHUNK* resdi;
 
-	(void)arg_0;
-	regax = arg_2;
+	regax = FP_SEG(ptr);
 	ressi = resptr2;
 
 	for (;;) {
 		if (ressi == resptr1)
-			fatal_error(aMemoryManagerB, arg_2);
+			fatal_error(aMemoryManagerB, regax);
 		if (regax == ressi->resofs) break;
 		ressi--;
 	}

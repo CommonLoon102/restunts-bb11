@@ -363,7 +363,7 @@ loc_104D2:
 		byte_3B80C[i] = trackdata20[i + 0x70A];
 		byte_3B85E[i] = trackdata20[i + 0x75B];
 	}
-	mmgr_op_unk(FP_OFF(cvxptr), FP_SEG(cvxptr));
+	mmgr_op_unk(cvxptr);
 	
 	if (byte_44AE2 != 0) goto _do_intro0;
 	goto _show_menu;

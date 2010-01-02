@@ -105,7 +105,7 @@ load_2dshape_res proc far
     call    mmgr_path_to_name
     add     sp, 2
     push    ax
-    call    mmgr_get_unk
+    call    mmgr_get_chunk_by_name
     add     sp, 2
     mov     [bp+var_8], ax
     mov     [bp+var_6], dx

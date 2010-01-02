@@ -199,7 +199,7 @@ seg012 segment byte public 'STUNTSC' use16
     public ported_mmgr_path_to_name_
     public ported_mmgr_alloc_pages_
     public ported_mmgr_find_free_
-    public ported_mmgr_get_unk_
+    public ported_mmgr_get_chunk_by_name_
     public nopsub_31429
     public ported_mmgr_free_
     public loc_31498
@@ -6040,7 +6040,7 @@ ported_file_load_binary_nofatal_ proc far
     mov     [bp+var_fatal], 1
 _file_load_binary:
     push    [bp+arg_filename]
-    call    mmgr_get_unk
+    call    mmgr_get_chunk_by_name
     add     sp, 2
     or      dx, dx
     jnz     short loc_30DDE
@@ -6118,7 +6118,7 @@ ported_file_decomp_fatal_ proc far
     mov     [bp+var_fatal], 1
 _file_decomp:
     push    [bp+arg_filename]
-    call    mmgr_get_unk
+    call    mmgr_get_chunk_by_name
     add     sp, 2
     or      dx, dx
     jz      short fd_not_found
@@ -6841,7 +6841,7 @@ loc_31359:
     add     sp, 6
     jmp     short loc_31319
 ported_mmgr_find_free_ endp
-ported_mmgr_get_unk_ proc far
+ported_mmgr_get_chunk_by_name_ proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -6929,7 +6929,7 @@ loc_3141F:
     call    mmgr_find_free
     mov     dx, [di+MEMCHUNK.resofs]
     jmp     short loc_313B0
-ported_mmgr_get_unk_ endp
+ported_mmgr_get_chunk_by_name_ endp
 nopsub_31429 proc far
      s = byte ptr 0
      r = byte ptr 2
