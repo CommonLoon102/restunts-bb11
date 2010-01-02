@@ -69,6 +69,7 @@ extrn locate_text_res:proc
 
 extrn shape3d_load_all:proc
 extrn shape3d_free_all:proc
+extrn shape3d_init_shape:proc
 
 extrn stuntsmain:proc
 

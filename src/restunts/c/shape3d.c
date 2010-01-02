@@ -13,6 +13,13 @@ struct SHAPE3D {
 	char far* shape3d_cull2;
 };
 
+struct SHAPE3DHEADER {
+	unsigned char header_numverts;
+	unsigned char header_numprimitives;
+	unsigned char header_numpaints;
+	unsigned char header_reserved;
+};
+
 extern char far* game1ptr;
 extern char far* game2ptr;
 extern char far* curshapeptr;
@@ -54,4 +61,15 @@ void shape3d_free_all() {
 		mmgr_free(FP_OFF(game1ptr), FP_SEG(game1ptr));
 	if (game2ptr != 0)
 		mmgr_free(FP_OFF(game2ptr), FP_SEG(game2ptr));
+}
+
+void shape3d_init_shape(char far* shapeptr, struct SHAPE3D* gameshape) {
+	struct SHAPE3DHEADER far* hdr;
+	gameshape->shape3d_numverts = hdr->header_numverts;
+	gameshape->shape3d_numprimitives = hdr->header_numprimitives;
+	gameshape->shape3d_numpaints = hdr->header_numpaints;
+	gameshape->shape3d_verts = shapeptr + 4;
+	gameshape->shape3d_cull1 = shapeptr + hdr->header_numverts * 6 + 4;
+	gameshape->shape3d_cull2 = shapeptr + hdr->header_numprimitives * 4 + hdr->header_numverts * 6 + 4;
+	gameshape->shape3d_primitives = shapeptr + hdr->header_numprimitives * 8 + hdr->header_numverts * 6 + 4;
 }

@@ -689,6 +689,7 @@ static PortFuncName(labelname) {
 		
 		labelname == "shape3d_load_all" ||
 		labelname == "shape3d_free_all" ||
+		labelname == "shape3d_init_shape" ||
 
 		labelname == "stuntsmain"
 	)

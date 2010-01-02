@@ -78,7 +78,7 @@ seg008 segment byte public 'STUNTSC' use16
     public input_repeat_check
     public sub_2916E
     public sub_292DC
-    public shape3d_init_shape
+    public ported_shape3d_init_shape_
     public sub_29606
     public sub_29620
     public show_waiting
@@ -3891,7 +3891,7 @@ loc_29554:
     pop     bp
     retf
 sub_292DC endp
-shape3d_init_shape proc far
+ported_shape3d_init_shape_ proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = dword ptr 6
@@ -3966,7 +3966,7 @@ shape3d_init_shape proc far
     pop     si
     pop     bp
     retf
-shape3d_init_shape endp
+ported_shape3d_init_shape_ endp
 sub_29606 proc far
      s = byte ptr 0
      r = byte ptr 2
