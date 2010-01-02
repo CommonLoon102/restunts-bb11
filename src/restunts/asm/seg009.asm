@@ -46,12 +46,12 @@ nosmart
 seg009 segment byte public 'STUNTSC' use16
     assume cs:seg009
     assume es:nothing, ss:nothing, ds:dseg
-    public sub_2A2BC
+    public load_tracks_menu_shapes
     public sub_2BEB6
     public sub_2C0A8
     public sub_2C81C
     public sub_2C9B4
-sub_2A2BC proc far
+load_tracks_menu_shapes proc far
     var_198 = word ptr -408
     var_196 = word ptr -406
     var_194 = word ptr -404
@@ -138,7 +138,7 @@ sub_2A2BC proc far
     add     sp, 2
     mov     [bp+var_2A], ax
     mov     [bp+var_28], dx
-    mov     ax, offset word_4283C
+    mov     ax, offset tracksmenushapes1
     push    ax
     mov     ax, offset aFlatlakelak1lak2lak3lak4highg; "flatlakelak1lak2lak3lak4highgoungouwgou"...
     push    ax
@@ -146,7 +146,7 @@ sub_2A2BC proc far
     push    [bp+var_2A]
     call    locate_many_resources
     add     sp, 8
-    mov     ax, offset dword_4282C
+    mov     ax, offset tracksmenushapes2
     push    ax
     mov     ax, offset aCrs0crs1crs2crs3; "crs0crs1crs2crs3"
     push    ax
@@ -154,7 +154,7 @@ sub_2A2BC proc far
     push    [bp+var_2A]
     call    locate_many_resources
     add     sp, 8
-    mov     ax, offset word_42888
+    mov     ax, offset tracksmenushapes3
     push    ax
     mov     ax, offset aUcr0ucr1ucr2ucr3; "ucr0ucr1ucr2ucr3"
     push    ax
@@ -164,10 +164,10 @@ sub_2A2BC proc far
     add     sp, 8
     mov     ax, 0Fh
     push    ax
-    les     bx, dword_4282C
-    push    word ptr es:[bx+2]
-    mov     ax, es:[bx]
-    imul    word_44AE4
+    les     bx, tracksmenushapes2
+    push    es:[bx+SHAPE2D.s2d_height]
+    mov     ax, es:[bx+SHAPE2D.s2d_width]
+    imul    video_flag1_is1
     push    ax
     call    sprite_make_wnd
     add     sp, 6
@@ -175,10 +175,10 @@ sub_2A2BC proc far
     mov     [bp+var_170], dx
     mov     ax, 0Fh
     push    ax
-    les     bx, dword_42830
-    push    word ptr es:[bx+2]
-    mov     ax, es:[bx]
-    imul    word_44AE4
+    les     bx, tracksmenushapes2+4
+    push    es:[bx+SHAPE2D.s2d_height]
+    mov     ax, es:[bx+SHAPE2D.s2d_width]
+    imul    video_flag1_is1
     push    ax
     call    sprite_make_wnd
     add     sp, 6
@@ -186,10 +186,10 @@ sub_2A2BC proc far
     mov     [bp+var_16C], dx
     mov     ax, 0Fh
     push    ax
-    les     bx, dword_42834
-    push    word ptr es:[bx+2]
-    mov     ax, es:[bx]
-    imul    word_44AE4
+    les     bx, tracksmenushapes2+8
+    push    es:[bx+SHAPE2D.s2d_height]
+    mov     ax, es:[bx+SHAPE2D.s2d_width]
+    imul    video_flag1_is1
     push    ax
     call    sprite_make_wnd
     add     sp, 6
@@ -197,10 +197,10 @@ sub_2A2BC proc far
     mov     [bp+var_168], dx
     mov     ax, 0Fh
     push    ax
-    les     bx, dword_42838
-    push    word ptr es:[bx+2]
-    mov     ax, es:[bx]
-    imul    word_44AE4
+    les     bx, tracksmenushapes2+0Ch
+    push    es:[bx+SHAPE2D.s2d_height]
+    mov     ax, es:[bx+SHAPE2D.s2d_width]
+    imul    video_flag1_is1
     push    ax
     call    sprite_make_wnd
     add     sp, 6
@@ -282,7 +282,7 @@ loc_2A451:
     mov     byte_463E6, al
     mov     al, es:[bx+3]
     mov     byte_463E7, al
-    mov     ax, 0AC74h
+    mov     ax, offset byte_463E4
     push    ax
     push    [bp+var_28]
     push    [bp+var_2A]
@@ -788,7 +788,7 @@ loc_2A983:
     push    ax
     mov     ax, 8
     push    ax
-    call    set_sprite1_size
+    call    sprite_set_1_size
     add     sp, 8
     lea     ax, [bp+var_BE]
     push    ax
@@ -811,7 +811,7 @@ loc_2A983:
     push    ax
     sub     ax, ax
     push    ax
-    call    set_sprite1_size
+    call    sprite_set_1_size
     add     sp, 8
 loc_2A9CD:
     cmp     [bp+var_A], 0
@@ -827,7 +827,7 @@ loc_2A9D6:
     add     bx, bp
     push    word ptr [bx-170h]
     push    word ptr [bx-172h]
-    call    sprite_set_1
+    call    sprite_set_1_from_argptr
     add     sp, 4
     cmp     [bp+var_C6], 0
     jz      short loc_2AA01
@@ -840,9 +840,9 @@ loc_2AA01:
     sub     bh, bh
     shl     bx, 1
     shl     bx, 1
-    push    word_4283E[bx]
-    push    word_4283C[bx]
-    call    sub_33D30
+    push    word ptr (tracksmenushapes1+2)[bx]
+    push    word ptr tracksmenushapes1[bx]
+    call    sprite_shape_to_1
     add     sp, 8
     push    dialogarg1
     sub     ax, ax
@@ -900,9 +900,9 @@ loc_2AA8E:
     mov     bx, ax
     shl     bx, 1
     shl     bx, 1
-    push    word ptr (dword_4282C+2)[bx]
-    push    word ptr dword_4282C[bx]
-    call    sub_33D30
+    push    word ptr (tracksmenushapes2+2)[bx]
+    push    word ptr tracksmenushapes2[bx]
+    call    sprite_shape_to_1
     add     sp, 8
     cmp     [bp+var_190], 0
     jz      short loc_2AAF0
@@ -1256,8 +1256,8 @@ loc_2AE36:
     mov     bx, ax
     shl     bx, 1
     shl     bx, 1
-    push    word_4288A[bx]
-    push    word_42888[bx]
+    push    word ptr (tracksmenushapes3+2)[bx]
+    push    word ptr tracksmenushapes3[bx]
     call    sub_3475A
     add     sp, 8
 loc_2AE73:
@@ -1277,10 +1277,10 @@ loc_2AE7C:
     mov     bx, ax
     shl     bx, 1
     shl     bx, 1
-    push    word_4288A[bx]
-    push    word_42888[bx]
+    push    word ptr (tracksmenushapes3+2)[bx]
+    push    word ptr tracksmenushapes3[bx]
 loc_2AEA9:
-    call    sub_33D30
+    call    sprite_shape_to_1
     add     sp, 8
     jmp     short loc_2AEFF
     ; align 2
@@ -1432,9 +1432,9 @@ loc_2B011:
     mov     bx, ax
     shl     bx, 1
     shl     bx, 1
-    push    word_4288A[bx]
-    push    word_42888[bx]
-    call    sub_33D30
+    push    word ptr (tracksmenushapes3+2)[bx]
+    push    word ptr tracksmenushapes3[bx]
+    call    sprite_shape_to_1
     add     sp, 8
     jmp     loc_2B2CF
     ; align 2
@@ -2908,7 +2908,7 @@ loc_2BE44:
     mov     sp, bp
     pop     bp
     retf
-sub_2A2BC endp
+load_tracks_menu_shapes endp
 sub_2BEB6 proc far
     var_6 = byte ptr -6
     var_4 = byte ptr -4
@@ -2939,9 +2939,9 @@ loc_2BECD:
     shl     ax, cl
     add     ax, 0DCh ; 'Ü'
     push    ax
-    push    word_4283E
-    push    word_4283C
-    call    sub_33D30
+    push    word ptr tracksmenushapes1+2
+    push    word ptr tracksmenushapes1
+    call    sprite_shape_to_1
     add     sp, 8
     mov     al, [bp+var_6]
     sub     ah, ah
@@ -2951,7 +2951,7 @@ loc_2BECD:
     shl     bx, 1
     add     bx, ax
     shl     bx, 1
-    mov     al, [bx+20A3h]
+    mov     al, sceneshapes.scene_translateflag[bx]
     cbw
     cmp     ax, 1
     jz      short loc_2BF22
@@ -2977,9 +2977,9 @@ loc_2BF22:
     add     ax, 0DCh ; 'Ü'
 loc_2BF39:
     push    ax
-    push    word_4283E
-    push    word_4283C
-    call    sub_33D30
+    push    word ptr tracksmenushapes1+2
+    push    word ptr tracksmenushapes1
+    call    sprite_shape_to_1
     add     sp, 8
 loc_2BF4A:
     mov     al, [bp+var_2]
@@ -2997,8 +2997,8 @@ loc_2BF4A:
     sub     bh, bh
     shl     bx, 1
     shl     bx, 1
-    push    word ptr [bx+6DD6h]
-    push    word ptr [bx+6DD4h]
+    push    word_42546[bx]
+    push    word_42544[bx]
     call    sub_33A1E
     add     sp, 8
     mov     al, [bp+var_2]
@@ -3016,8 +3016,8 @@ loc_2BF4A:
     sub     bh, bh
     shl     bx, 1
     shl     bx, 1
-    push    word ptr [bx+6AEAh]
-    push    word ptr [bx+6AE8h]
+    push    word_4225A[bx]
+    push    word_42258[bx]
     call    sub_34212
 loc_2BFA9:
     add     sp, 8
@@ -3063,9 +3063,9 @@ loc_2BFEC:
     sub     bh, bh
     shl     bx, 1
     shl     bx, 1
-    push    word ptr [bx+70CEh]
-    push    word ptr [bx+70CCh]
-    call    sub_33D30
+    push    word ptr (tracksmenushapes1+2)[bx]
+    push    word ptr tracksmenushapes1[bx]
+    call    sprite_shape_to_1
     jmp     short loc_2BFA9
     ; align 2
     db 144
@@ -3094,9 +3094,9 @@ loc_2C034:
     shl     ax, cl
     add     ax, 0ECh ; 'ì'
     push    ax
-    push    word_4283E
-    push    word_4283C
-    call    sub_33D30
+    push    word ptr tracksmenushapes1+2
+    push    word ptr tracksmenushapes1
+    call    sprite_shape_to_1
     add     sp, 8
     mov     al, [bp+var_2]
     sub     ah, ah
@@ -3109,9 +3109,9 @@ loc_2C034:
     shl     ax, cl
     add     ax, 0DCh ; 'Ü'
     push    ax
-    push    word_4283E
-    push    word_4283C
-    call    sub_33D30
+    push    word ptr tracksmenushapes1+2
+    push    word ptr tracksmenushapes1
+    call    sprite_shape_to_1
     add     sp, 8
     mov     al, [bp+var_2]
     sub     ah, ah
@@ -3185,7 +3185,7 @@ loc_2C0CA:
     sub     bh, bh
     add     bx, di
     shl     bx, 1
-    mov     bx, [bx-73C4h]
+    mov     bx, terrainrows[bx]
     add     bx, si
     mov     al, [bp+arg_0]
     sub     ah, ah
@@ -3196,8 +3196,8 @@ loc_2C0CA:
     sub     bh, bh
     shl     bx, 1
     shl     bx, 1
-    push    word ptr [bx+70CEh]
-    push    word ptr [bx+70CCh]
+    push    word ptr (tracksmenushapes1+2)[bx]
+    push    word ptr tracksmenushapes1[bx]
     call    sub_33BBC
     add     sp, 8
     mov     al, [bp+var_8]
@@ -3218,7 +3218,7 @@ loc_2C0CA:
     sub     bh, bh
     add     bx, di
     shl     bx, 1
-    mov     bx, [bx-73C4h]
+    mov     bx, terrainrows[bx]
     add     bx, si
     mov     al, [bp+arg_0]
     sub     ah, ah
@@ -3229,8 +3229,8 @@ loc_2C0CA:
     sub     bh, bh
     shl     bx, 1
     shl     bx, 1
-    push    word ptr [bx+70CEh]
-    push    word ptr [bx+70CCh]
+    push    word ptr (tracksmenushapes1+2)[bx]
+    push    word ptr tracksmenushapes1[bx]
     call    sub_33BBC
     add     sp, 8
     mov     al, [bp+var_8]
@@ -3251,7 +3251,7 @@ loc_2C0CA:
     sub     bh, bh
     add     bx, di
     shl     bx, 1
-    mov     bx, [bx-5A32h]
+    mov     bx, word_45D3E[bx]
     add     bx, si
     mov     al, [bp+arg_0]
     sub     ah, ah
@@ -3262,8 +3262,8 @@ loc_2C0CA:
     sub     bh, bh
     shl     bx, 1
     shl     bx, 1
-    push    word ptr [bx+6DD6h]
-    push    word ptr [bx+6DD4h]
+    push    word_42546[bx]
+    push    word_42544[bx]
     call    sub_33890
     add     sp, 8
     mov     al, [bp+var_8]
@@ -3284,7 +3284,7 @@ loc_2C0CA:
     sub     bh, bh
     add     bx, di
     shl     bx, 1
-    mov     bx, [bx-5A32h]
+    mov     bx, word_45D3E[bx]
     add     bx, si
     mov     al, [bp+arg_0]
     sub     ah, ah
@@ -3296,8 +3296,8 @@ loc_2C201:
     sub     bh, bh
     shl     bx, 1
     shl     bx, 1
-    push    word ptr [bx+6AEAh]
-    push    word ptr [bx+6AE8h]
+    push    word_4225A[bx]
+    push    word_42258[bx]
     call    sub_34084
 loc_2C214:
     add     sp, 8
@@ -3333,7 +3333,7 @@ loc_2C235:
     sub     bh, bh
     add     bx, di
     shl     bx, 1
-    mov     bx, [bx-73C4h]
+    mov     bx, terrainrows[bx]
     add     bx, si
     mov     al, [bp+arg_0]
     sub     ah, ah
@@ -3344,8 +3344,8 @@ loc_2C235:
     sub     bh, bh
     shl     bx, 1
     shl     bx, 1
-    push    word ptr [bx+70CEh]
-    push    word ptr [bx+70CCh]
+    push    word ptr (tracksmenushapes1+2)[bx]
+    push    word ptr tracksmenushapes1[bx]
     call    sub_33BBC
     add     sp, 8
     mov     al, [bp+var_8]
@@ -3366,7 +3366,7 @@ loc_2C235:
     sub     bh, bh
     add     bx, di
     shl     bx, 1
-    mov     bx, [bx-5A32h]
+    mov     bx, word_45D3E[bx]
     add     bx, si
     mov     al, [bp+arg_0]
     sub     ah, ah
@@ -3377,8 +3377,8 @@ loc_2C235:
     sub     bh, bh
     shl     bx, 1
     shl     bx, 1
-    push    word ptr [bx+6DD6h]
-    push    word ptr [bx+6DD4h]
+    push    word_42546[bx]
+    push    word_42544[bx]
     call    sub_33890
     add     sp, 8
     mov     al, [bp+var_8]
@@ -3399,7 +3399,7 @@ loc_2C235:
     sub     bh, bh
     add     bx, di
     shl     bx, 1
-    mov     bx, [bx-5A32h]
+    mov     bx, word_45D3E[bx]
 loc_2C305:
     add     bx, si
     mov     al, [bp+arg_0]
@@ -3439,9 +3439,9 @@ loc_2C33C:
     sub     bh, bh
     shl     bx, 1
     shl     bx, 1
-    push    word ptr [bx+70CEh]
-    push    word ptr [bx+70CCh]
-    call    sub_33D30
+    push    word ptr (tracksmenushapes1+2)[bx]
+    push    word ptr tracksmenushapes1[bx]
+    call    sprite_shape_to_1
     add     sp, 8
     mov     bx, [bp+var_4]
     mov     si, [bp+arg_4]
@@ -3489,9 +3489,9 @@ loc_2C3A5:
     sub     bh, bh
     shl     bx, 1
     shl     bx, 1
-    push    word ptr [bx+70CEh]
-    push    word ptr [bx+70CCh]
-    call    sub_33D30
+    push    word ptr (tracksmenushapes1+2)[bx]
+    push    word ptr tracksmenushapes1[bx]
+    call    sprite_shape_to_1
     add     sp, 8
     mov     al, [bp+var_C]
     sub     ah, ah
@@ -3501,7 +3501,7 @@ loc_2C3A5:
     shl     bx, 1
     add     bx, ax
     shl     bx, 1
-    mov     al, [bx+20A3h]
+    mov     al, sceneshapes.scene_translateflag[bx]
     cbw
     or      ax, ax
     jz      short loc_2C41A
@@ -3534,8 +3534,8 @@ loc_2C41A:
     sub     bh, bh
     shl     bx, 1
     shl     bx, 1
-    push    word ptr [bx+6DD6h]
-    push    word ptr [bx+6DD4h]
+    push    word_42546[bx]
+    push    word_42544[bx]
     call    sub_33A1E
     add     sp, 8
     mov     al, [bp+var_6]
@@ -3553,8 +3553,8 @@ loc_2C41A:
     sub     bh, bh
     shl     bx, 1
     shl     bx, 1
-    push    word ptr [bx+6AEAh]
-    push    word ptr [bx+6AE8h]
+    push    word_4225A[bx]
+    push    word_42258[bx]
     call    sub_34212
     jmp     loc_2C214
 loc_2C478:
@@ -3576,7 +3576,7 @@ loc_2C478:
     sub     bh, bh
     add     bx, di
     shl     bx, 1
-    mov     bx, [bx-73C2h]
+    mov     bx, (terrainrows+2)[bx]
     add     bx, si
     mov     al, [bp+arg_0]
     sub     ah, ah
@@ -3588,8 +3588,8 @@ loc_2C4B5:
     sub     bh, bh
     shl     bx, 1
     shl     bx, 1
-    push    word ptr [bx+70CEh]
-    push    word ptr [bx+70CCh]
+    push    word ptr (tracksmenushapes1+2)[bx]
+    push    word ptr tracksmenushapes1[bx]
     call    sub_33BBC
     add     sp, 8
     mov     al, [bp+var_6]
@@ -3607,8 +3607,8 @@ loc_2C4B5:
     sub     bh, bh
     shl     bx, 1
     shl     bx, 1
-    push    word ptr [bx+6DD6h]
-    push    word ptr [bx+6DD4h]
+    push    word_42546[bx]
+    push    word_42544[bx]
     call    sub_33890
     add     sp, 8
     mov     al, [bp+var_6]
@@ -3643,7 +3643,7 @@ loc_2C516:
     sub     bh, bh
     add     bx, di
     shl     bx, 1
-    mov     bx, [bx-73C4h]
+    mov     bx, terrainrows[bx]
 loc_2C53F:
     add     bx, si
     mov     al, [bp+arg_0]
@@ -3674,7 +3674,7 @@ loc_2C558:
     sub     bh, bh
     add     bx, di
     shl     bx, 1
-    mov     bx, [bx-73C4h]
+    mov     bx, terrainrows[bx]
     add     bx, si
     mov     al, [bp+arg_0]
     sub     ah, ah
@@ -3685,8 +3685,8 @@ loc_2C558:
     sub     bh, bh
     shl     bx, 1
     shl     bx, 1
-    push    word ptr [bx+70CEh]
-    push    word ptr [bx+70CCh]
+    push    word ptr (tracksmenushapes1+2)[bx]
+    push    word ptr tracksmenushapes1[bx]
     call    sub_33BBC
     add     sp, 8
     mov     al, [bp+var_8]
@@ -3707,7 +3707,7 @@ loc_2C558:
     sub     bh, bh
     add     bx, di
     shl     bx, 1
-    mov     bx, [bx-73C2h]
+    mov     bx, (terrainrows+2)[bx]
     add     bx, si
     mov     al, [bp+arg_0]
     sub     ah, ah
@@ -3718,8 +3718,8 @@ loc_2C558:
     sub     bh, bh
     shl     bx, 1
     shl     bx, 1
-    push    word ptr [bx+70CEh]
-    push    word ptr [bx+70CCh]
+    push    word ptr (tracksmenushapes1+2)[bx]
+    push    word ptr tracksmenushapes1[bx]
     call    sub_33BBC
     add     sp, 8
     mov     al, [bp+var_8]
@@ -3740,7 +3740,7 @@ loc_2C558:
     sub     bh, bh
     add     bx, di
     shl     bx, 1
-    mov     bx, [bx-73C2h]
+    mov     bx, (terrainrows+2)[bx]
     jmp     loc_2C53F
     ; align 2
     db 144
@@ -3772,14 +3772,14 @@ loc_2C64A:
     shl     ax, 1
     mov     [bp+var_E], ax
     mov     bx, ax
-    mov     bx, [bx-5A30h]
+    mov     bx, trackrows[bx]
     add     bx, si
     add     bx, word ptr trackdata14
     mov     es, word ptr trackdata14+2
     mov     al, es:[bx+di]
     mov     [bp+var_C], al
     mov     bx, [bp+var_E]
-    mov     bx, [bx-73C4h]
+    mov     bx, terrainrows[bx]
     add     bx, si
     add     bx, word ptr trackdata15
     mov     es, word ptr trackdata15+2
@@ -3827,7 +3827,7 @@ loc_2C6CD:
     sub     bh, bh
     add     bx, di
     shl     bx, 1
-    mov     bx, [bx-73C4h]
+    mov     bx, terrainrows[bx]
     add     bx, si
     mov     al, [bp+arg_0]
     sub     ah, ah
@@ -3838,8 +3838,8 @@ loc_2C6CD:
     sub     bh, bh
     shl     bx, 1
     shl     bx, 1
-    push    word ptr [bx+70CEh]
-    push    word ptr [bx+70CCh]
+    push    word ptr (tracksmenushapes1+2)[bx]
+    push    word ptr tracksmenushapes1[bx]
     call    sub_33BBC
     add     sp, 8
     mov     al, [bp+var_8]
@@ -3860,7 +3860,7 @@ loc_2C6CD:
     sub     bh, bh
     add     bx, di
     shl     bx, 1
-    mov     bx, [bx-73C2h]
+    mov     bx, (terrainrows+2)[bx]
     add     bx, si
     mov     al, [bp+arg_0]
     sub     ah, ah
@@ -3871,8 +3871,8 @@ loc_2C6CD:
     sub     bh, bh
     shl     bx, 1
     shl     bx, 1
-    push    word ptr [bx+70CEh]
-    push    word ptr [bx+70CCh]
+    push    word ptr (tracksmenushapes1+2)[bx]
+    push    word ptr tracksmenushapes1[bx]
     call    sub_33BBC
     add     sp, 8
     mov     al, [bp+var_8]
@@ -3893,7 +3893,7 @@ loc_2C6CD:
     sub     bh, bh
     add     bx, di
     shl     bx, 1
-    mov     bx, [bx-5A30h]
+    mov     bx, trackrows[bx]
     add     bx, si
     mov     al, [bp+arg_0]
     sub     ah, ah
@@ -3904,8 +3904,8 @@ loc_2C6CD:
     sub     bh, bh
     shl     bx, 1
     shl     bx, 1
-    push    word ptr [bx+6DD6h]
-    push    word ptr [bx+6DD4h]
+    push    word_42546[bx]
+    push    word_42544[bx]
     call    sub_33890
     add     sp, 8
     mov     al, [bp+var_8]
@@ -3926,7 +3926,7 @@ loc_2C6CD:
     sub     bh, bh
     add     bx, di
     shl     bx, 1
-    mov     bx, [bx-5A30h]
+    mov     bx, trackrows[bx]
     jmp     loc_2C305
     ; align 2
     db 144

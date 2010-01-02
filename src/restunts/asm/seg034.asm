@@ -219,7 +219,7 @@ loc_3AAA8:
     add     sp, 8
     push    word ptr [bp+var_10+2]
     push    word ptr [bp+var_10]
-    call    mmgr_op_unk2
+    call    mmgr_release
     add     sp, 4
     jmp     loc_3AA87
 loc_3AB24:
@@ -278,7 +278,7 @@ loc_3AB83:
     add     sp, 8
     push    word ptr [bp+var_10+2]
     push    word ptr [bp+var_10]
-    call    mmgr_op_unk2
+    call    mmgr_release
     add     sp, 4
 loc_3ABB7:
     push    [bp+var_2]
@@ -363,7 +363,7 @@ loc_3AC60:
     add     sp, 8
     push    [bp+var_2]
     push    [bp+var_4]
-    call    mmgr_op_unk2
+    call    mmgr_release
     add     sp, 4
     push    word ptr [bp+var_10+2]
     push    word ptr [bp+var_10]

@@ -559,7 +559,7 @@ loc_104FC:
     jl      short loc_104FC
     push    word ptr cvxptr+2
     push    word ptr cvxptr
-    call    mmgr_op_unk2
+    call    mmgr_release
     add     sp, 4
     cmp     byte_44AE2, 0
     jnz     short loc_10536
@@ -741,7 +741,7 @@ loc_106E4:
     add     sp, 6
     push    dx
     push    ax
-    call    sub_33D4E
+    call    sprite_shape_to_1_alt
     add     sp, 4
     mov     ax, 0FFFFh
     push    ax
@@ -769,7 +769,7 @@ loc_106E4:
     add     sp, 6
     push    dx
     push    ax
-    call    sub_33D4E
+    call    sprite_shape_to_1_alt
     add     sp, 4
     mov     ax, 0FFFFh
     push    ax
@@ -836,7 +836,7 @@ load_intro_resources proc far
     mov     ax, es:[bx+0Ah]
     mov     [bp+var_4], ax
     mov     ax, es:[bx]
-    imul    word_44AE4
+    imul    video_flag1_is1
     mov     [bp+var_3E], ax
     mov     ax, es:[bx+2]
     mov     [bp+var_44], ax
@@ -1414,7 +1414,7 @@ loc_10DEC:
     push    ax
     sub     ax, ax
     push    ax
-    call    set_sprite1_size
+    call    sprite_set_1_size
     add     sp, 8
     sub     ax, ax
     push    ax
@@ -1426,7 +1426,7 @@ loc_10DEC:
     add     bx, bp
     push    word ptr [bx-32h]
     push    word ptr [bx-34h]
-    call    sub_33D4E
+    call    sprite_shape_to_1_alt
     add     sp, 4
     call    sprite_copy_2_to_1_2
     mov     ax, 0C8h ; 'È'
@@ -1436,7 +1436,7 @@ loc_10DEC:
     push    ax
     sub     ax, ax
     push    ax
-    call    set_sprite1_size
+    call    sprite_set_1_size
     add     sp, 8
     call    sub_28DB6
     les     bx, wndsprite
@@ -1474,7 +1474,7 @@ loc_10E91:
     push    ax
     sub     ax, ax
     push    ax
-    call    set_sprite1_size
+    call    sprite_set_1_size
     add     sp, 8
     call    sub_28DB6
     les     bx, wndsprite
@@ -1490,7 +1490,7 @@ loc_10E91:
     push    ax
     sub     ax, ax
     push    ax
-    call    set_sprite1_size
+    call    sprite_set_1_size
     add     sp, 8
     sub     ax, ax
     push    ax
@@ -1498,11 +1498,11 @@ loc_10E91:
     add     sp, 2
     push    word ptr [bp+var_34+2]
     push    word ptr [bp+var_34]
-    call    sub_33D4E
+    call    sprite_shape_to_1_alt
     add     sp, 4
     push    [bp+var_A]
     push    [bp+var_C]
-    call    sub_33D4E
+    call    sprite_shape_to_1_alt
     add     sp, 4
     sub     ax, ax
     push    ax
@@ -1581,7 +1581,7 @@ run_menu proc far
     add     sp, 6
     push    dx
     push    ax
-    call    sub_33D4E
+    call    sprite_shape_to_1_alt
     add     sp, 4
     push    [bp+var_2]
     push    [bp+var_4]
@@ -1775,7 +1775,7 @@ loc_110ED:
     push    ax
     sub     ax, ax
     push    ax
-    call    set_sprite1_size
+    call    sprite_set_1_size
     add     sp, 8
     call    sub_1CBDC
     call    shape3d_free_all
@@ -2173,7 +2173,7 @@ loc_1156A:
     call    show_waiting
     mov     waitflag, 82h ; '‚'
     call    setup_track
-    call    sub_2A2BC
+    call    load_tracks_menu_shapes
     jmp     loc_110ED
     ; align 2
     db 144
@@ -3239,7 +3239,7 @@ loc_11EA2:
     jmp     loc_11F4A
 loc_11EAB:
     mov     word_3BB58, 0F0h ; 'ð'
-    cmp     byte_46436, 0
+    cmp     video_flag5_is0, 0
     jnz     short loc_11EBB
     jmp     loc_11F50
 loc_11EBB:
@@ -3440,7 +3440,7 @@ loc_11FC8:
     add     sp, 6
     push    dx
     push    ax
-    call    sub_33D4E
+    call    sprite_shape_to_1_alt
     add     sp, 4
     push    word ptr fontnptr+2
     push    word ptr fontnptr
@@ -3849,11 +3849,11 @@ loc_124DE:
     push    ax
     push    word_3BB3C
     mov     ax, word_3BB32
-    add     ax, word_44DC8
-    and     ax, word_454D4
+    add     ax, video_flag2_is1
+    and     ax, video_flag3_isFFFF
     push    ax
     push    word_3BB28
-    call    set_sprite1_size
+    call    sprite_set_1_size
     add     sp, 8
     call    sub_28DB6
     les     bx, wndsprite
@@ -3953,7 +3953,7 @@ loc_125FE:
     push    [bp+var_16]
     push    [bp+var_18]
     push    [bp+var_1A]
-    call    set_sprite1_size
+    call    sprite_set_1_size
     add     sp, 8
     mov     ax, 3A3h
     push    ax
@@ -3971,7 +3971,7 @@ loc_125FE:
     push    [bp+var_16]
     push    [bp+var_18]
     push    [bp+var_1A]
-    call    set_sprite1_size
+    call    sprite_set_1_size
     add     sp, 8
     push    si
     lea     di, [bp+var_104]
@@ -3989,7 +3989,7 @@ loc_125FE:
     cmp     [bp+var_F0], al
     jz      short loc_126D1
     call    sprite_copy_wnd_to_1
-    cmp     byte_46436, 0
+    cmp     video_flag5_is0, 0
     jnz     short loc_126B8
     mov     al, byte ptr [bp+arg_6]
     add     al, 30h ; '0'
@@ -4027,7 +4027,7 @@ loc_126D1:
     push    [bp+var_16]
     push    [bp+var_18]
     push    [bp+var_1A]
-    call    set_sprite1_size
+    call    sprite_set_1_size
     add     sp, 8
     call    sub_28DB6
     cmp     [bp+var_3E], 0FEh ; 'þ'
@@ -4090,7 +4090,7 @@ loc_12768:
     call    shape3d_free_car_shapes
     cmp     [bp+arg_6], 0
     jz      short loc_127A6
-    cmp     byte_46436, 0
+    cmp     video_flag5_is0, 0
     jz      short loc_127A6
     push    word ptr [bp+var_42+2]
     push    word ptr [bp+var_42]
@@ -4362,7 +4362,7 @@ loc_12A14:
     mov     al, gameconfig.game_opponenttype
     mov     [bp+var_1E], al
     mov     [bp+var_14], 0FFh
-    cmp     byte_46436, 0
+    cmp     video_flag5_is0, 0
     jnz     short loc_12A48
     call    sprite_copy_wnd_to_1
     jmp     short loc_12A4D
@@ -4544,7 +4544,7 @@ loc_12A4D:
     push    ax
     call    sub_34526
     add     sp, 4
-    cmp     byte_46436, 0
+    cmp     video_flag5_is0, 0
     jz      short loc_12C46
     sub     ax, ax
     push    ax
@@ -5190,7 +5190,7 @@ loc_131C0:
     add     sp, 6
     mov     word ptr wndsprite, ax
     mov     word ptr wndsprite+2, dx
-    cmp     byte_46436, 0
+    cmp     video_flag5_is0, 0
     jz      short loc_131FC
     mov     ax, 0Fh
     push    ax
@@ -5980,7 +5980,7 @@ loc_1398D:
 loc_139A6:
     push    word ptr [bp+var_4A+2]
     push    word ptr [bp+var_4A]
-    call    mmgr_op_unk2
+    call    mmgr_release
     add     sp, 4
     jmp     short loc_139BA
 loc_139B6:
@@ -6050,7 +6050,7 @@ loc_13A4B:
     mov     word ptr [bp+var_56+2], dx
     les     bx, [bp+var_56]
     mov     ax, es:[bx]
-    imul    word_44AE4
+    imul    video_flag1_is1
     mov     [bp+var_70], ax
     mov     ax, 138h
     sub     ax, [bp+var_70]
@@ -6399,11 +6399,11 @@ loc_13DDF:
     add     sp, 6
     mov     word ptr [bp+var_56], ax
     mov     word ptr [bp+var_56+2], dx
-    cmp     byte_46436, 0
+    cmp     video_flag5_is0, 0
     jz      short loc_13E8A
     push    word ptr [bp+var_46+2]
     push    word ptr [bp+var_46]
-    call    sprite_set_1
+    call    sprite_set_1_from_argptr
     add     sp, 4
     sub     ax, ax
     push    ax
@@ -6419,11 +6419,11 @@ loc_13DDF:
     push    ax
     push    [bp+var_90]
     mov     ax, es:[bx]
-    imul    word_44AE4
+    imul    video_flag1_is1
     add     ax, [bp+var_8C]
     push    ax
     push    [bp+var_8C]
-    call    set_sprite1_size
+    call    sprite_set_1_size
     add     sp, 8
     push    [bp+var_90]
     push    [bp+var_8C]
@@ -6488,7 +6488,7 @@ loc_13ECD:
     push    ax
     mov     ax, 8
     push    ax
-    call    set_sprite1_size
+    call    sprite_set_1_size
     add     sp, 8
     push    word_407F8
     call    clear_sprite1_color
@@ -6749,7 +6749,7 @@ loc_14188:
     push    ax
     sub     ax, ax
     push    ax
-    call    set_sprite1_size
+    call    sprite_set_1_size
     add     sp, 8
     call    sub_28DB6
     les     bx, wndsprite
@@ -6822,11 +6822,11 @@ loc_1424D:
     add     sp, 6
     mov     word ptr [bp+var_56], ax
     mov     word ptr [bp+var_56+2], dx
-    cmp     byte_46436, 0
+    cmp     video_flag5_is0, 0
     jz      short loc_142F8
     push    word ptr [bp+var_46+2]
     push    word ptr [bp+var_46]
-    call    sprite_set_1
+    call    sprite_set_1_from_argptr
     add     sp, 4
     sub     ax, ax
     push    ax
@@ -6842,11 +6842,11 @@ loc_1424D:
     push    ax
     push    [bp+var_90]
     mov     ax, es:[bx]
-    imul    word_44AE4
+    imul    video_flag1_is1
     add     ax, [bp+var_8C]
     push    ax
     push    [bp+var_8C]
-    call    set_sprite1_size
+    call    sprite_set_1_size
     add     sp, 8
     push    [bp+var_90]
     push    [bp+var_8C]
@@ -6978,10 +6978,10 @@ loc_1440C:
     jz      short loc_14425
     push    [bp+var_1A]
     push    [bp+var_1C]
-    call    mmgr_op_unk2
+    call    mmgr_release
     add     sp, 4
 loc_14425:
-    cmp     byte_46436, 0
+    cmp     video_flag5_is0, 0
     jz      short loc_1443A
     push    word ptr [bp+var_46+2]
     push    word ptr [bp+var_46]

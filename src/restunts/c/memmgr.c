@@ -371,7 +371,7 @@ void far* mmgr_get_chunk_by_name(const char* name) {
 }
 
 
-void mmgr_op_unk2(char far* ptr) {
+void mmgr_release(char far* ptr) {
 	int i;
 	unsigned short regax, regbx, regcx, regdx;
 	char* strdi;

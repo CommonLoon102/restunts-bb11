@@ -68,7 +68,7 @@ loc_3A97C:
     mov     dx, seg seg012
     push    dx
     push    ax
-    call    sprite_set_1
+    call    sprite_set_1_from_argptr
     add     sp, 4
     les     bx, mcgawndsprite
     push    word ptr es:[bx+2]
@@ -95,7 +95,7 @@ setup_mcgawnd2 proc far
 loc_3A9C4:
     push    word ptr mcgawndsprite+2
     push    word ptr mcgawndsprite
-    call    sprite_set_1
+    call    sprite_set_1_from_argptr
     add     sp, 4
     retf
 setup_mcgawnd2 endp

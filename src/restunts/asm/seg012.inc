@@ -157,7 +157,7 @@ seg012 segment byte public 'STUNTSC' use16
     extrn ported_mmgr_free_:proc
     extrn loc_31498
     extrn nopsub_31525:proc
-    extrn ported_mmgr_op_unk2_:proc
+    extrn ported_mmgr_release_:proc
     extrn ported_mmgr_get_chunk_size_:proc
     extrn ported_mmgr_resize_memory_:proc
     extrn ported_mmgr_op_unk_:proc
@@ -232,7 +232,7 @@ seg012 segment byte public 'STUNTSC' use16
     extrn vector_op_unk:proc
     extrn loc_3301F
     extrn sub_33072:proc
-    extrn set_sprite1_size:proc
+    extrn sprite_set_1_size:proc
     extrn fill_color:proc
     extrn clear_sprite1_color:proc
     extrn nopsub_33330:proc
@@ -269,9 +269,10 @@ seg012 segment byte public 'STUNTSC' use16
     extrn sub_33BDA:proc
     extrn loc_33BF5
     extrn nopsub_33D0C:proc
-    extrn sub_33D30:proc
-    extrn sub_33D4E:proc
+    extrn sprite_shape_to_1:proc
+    extrn sprite_shape_to_1_alt:proc
     extrn loc_33D69
+    extrn nopsub_33DBE:proc
     extrn sub_33DE2:proc
     extrn sub_33E00:proc
     extrn loc_33E1B
@@ -292,7 +293,7 @@ seg012 segment byte public 'STUNTSC' use16
     extrn loc_34541
     extrn sub_345BC:proc
     extrn loc_345E5
-    extrn sub_346A3:proc
+    extrn video_set_palette:proc
     extrn loc_346A8
     extrn sub_346BC:proc
     extrn sub_3475A:proc
@@ -308,7 +309,7 @@ seg012 segment byte public 'STUNTSC' use16
     extrn ported_sprite_make_wnd_:proc
     extrn next_wnd_def:word
     extrn wnd_defs:byte
-    extrn sprite_set_1:proc
+    extrn sprite_set_1_from_argptr:proc
     extrn sprite_copy_2_to_1:proc
     extrn sub_35B26:proc
     extrn sub_35B76:proc

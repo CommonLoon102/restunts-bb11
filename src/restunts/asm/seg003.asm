@@ -75,7 +75,7 @@ sub_19F14 proc far
     sub     sp, 4
     push    di
     push    si
-    cmp     byte_46436, 0
+    cmp     video_flag5_is0, 0
     jz      short loc_19F26
     jmp     loc_1A090
 loc_19F26:
@@ -159,7 +159,7 @@ loc_19FD8:
     push    word ptr [bx+4]
     push    word ptr [bx+2]
     push    word ptr [bx]
-    call    set_sprite1_size
+    call    sprite_set_1_size
     add     sp, 8
     les     bx, wndsprite
     push    word ptr es:[bx+2]
@@ -191,7 +191,7 @@ loc_1A030:
     push    word ptr [bx+2]
     push    word ptr [bx]
 loc_1A03E:
-    call    set_sprite1_size
+    call    sprite_set_1_size
     add     sp, 8
 loc_1A046:
     call    sub_28DB6
@@ -391,7 +391,7 @@ update_frame proc far
     push    si
     mov     [bp+var_DC], 0
     mov     [bp+var_DB], 0
-    cmp     byte_46436, 0
+    cmp     video_flag5_is0, 0
     jz      short loc_1A122
     cmp     [bp+arg_0], 0
     jz      short loc_1A122
@@ -1935,7 +1935,7 @@ loc_1B03C:
     push    ax
     sub     ax, ax
     push    ax
-    call    set_sprite1_size
+    call    sprite_set_1_size
     add     sp, 8
     call    sub_25FF6
     sub     si, si
@@ -3465,7 +3465,7 @@ loc_1C01E:
     push    word ptr [bx+4]
     push    word ptr [bx+2]
     push    word ptr [bx]
-    call    set_sprite1_size
+    call    sprite_set_1_size
     add     sp, 8
     mov     bx, [bp+var_3E]
     mov     ax, [bx+2]
@@ -3548,7 +3548,7 @@ loc_1C0E8:
     push    ax
     sub     ax, ax
     push    ax
-    call    set_sprite1_size
+    call    sprite_set_1_size
     add     sp, 8
     cmp     cameramode, 0
     jz      short loc_1C10A
@@ -3833,7 +3833,7 @@ loc_1C339:
     push    word ptr [bx+4]
     push    word ptr [bx+2]
     push    word ptr [bx]
-    call    set_sprite1_size
+    call    sprite_set_1_size
     add     sp, 8
     push    skybox_unk1
     call    clear_sprite1_color
@@ -3864,7 +3864,7 @@ loc_1C392:
     push    word ptr [bx+4]
     push    word ptr [bx+2]
     push    word ptr [bx]
-    call    set_sprite1_size
+    call    sprite_set_1_size
     add     sp, 8
     mov     ax, [bp+arg_4]
     sub     ax, skybox_ptr1
@@ -3930,7 +3930,7 @@ loc_1C445:
     push    di
     push    word ptr [bx+2]
     push    word ptr [bx]
-    call    set_sprite1_size
+    call    sprite_set_1_size
     add     sp, 8
     push    skybox_unk2
     call    clear_sprite1_color
@@ -4003,7 +4003,7 @@ skybox_op proc far
     push    ax
     sub     ax, ax
     push    ax
-    call    set_sprite1_size
+    call    sprite_set_1_size
     add     sp, 8
     cmp     [bp+arg_8], 0
     jnz     short loc_1C4A7
@@ -4049,7 +4049,7 @@ loc_1C500:
     push    ax
     sub     ax, ax
     push    ax
-    call    set_sprite1_size
+    call    sprite_set_1_size
     add     sp, 8
     push    di
     jmp     loc_1CB6A
@@ -4252,7 +4252,7 @@ loc_1C6F2:
     push    word ptr [bx+4]
     push    word ptr [bx+2]
     push    word ptr [bx]
-    call    set_sprite1_size
+    call    sprite_set_1_size
     add     sp, 8
     push    skybox_unk1
     call    clear_sprite1_color
@@ -4305,7 +4305,7 @@ loc_1C774:
     push    word ptr [bx+4]
     push    word ptr [bx+2]
     push    word ptr [bx]
-    call    set_sprite1_size
+    call    sprite_set_1_size
     add     sp, 8
     push    skybox_unk2
     call    clear_sprite1_color
@@ -4368,7 +4368,7 @@ loc_1C80A:
     add     ax, 140h
     cwd
     idiv    di
-    and     ax, word_454D4
+    and     ax, video_flag3_isFFFF
     mov     [bp+var_2E], ax
     cmp     [bp+var_30], ax
     jz      short loc_1C84A
@@ -4684,7 +4684,7 @@ loc_1CB19:
     push    ax
     sub     ax, ax
     push    ax
-    call    set_sprite1_size
+    call    sprite_set_1_size
     add     sp, 8
     push    skybox_unk2
     call    clear_sprite1_color
@@ -4703,7 +4703,7 @@ loc_1CB41:
     push    ax
     sub     ax, ax
     push    ax
-    call    set_sprite1_size
+    call    sprite_set_1_size
     add     sp, 8
     push    skybox_unk1
 loc_1CB6A:
@@ -4867,7 +4867,7 @@ loc_1CC5B:
     push    ax
     sub     ax, ax
     push    ax
-    call    set_sprite1_size
+    call    sprite_set_1_size
     add     sp, 8
     push    skybox_unk1
     call    clear_sprite1_color
@@ -4880,7 +4880,7 @@ loc_1CC5B:
     push    ax
     sub     ax, ax
     push    ax
-    call    set_sprite1_size
+    call    sprite_set_1_size
     add     sp, 8
     mov     ax, [bp+var_30]
     sub     ax, skybox_ptr3
@@ -4907,7 +4907,7 @@ loc_1CC5B:
     push    ax
     sub     ax, ax
     push    ax
-    call    set_sprite1_size
+    call    sprite_set_1_size
     add     sp, 8
     push    skybox_unk2
     call    clear_sprite1_color
@@ -4920,7 +4920,7 @@ loc_1CC5B:
     push    ax
     sub     ax, ax
     push    ax
-    call    set_sprite1_size
+    call    sprite_set_1_size
     add     sp, 8
     mov     ax, 1
     push    ax
@@ -5576,8 +5576,8 @@ loc_1D2F2:
     push    ax
     mov     ax, 94h ; '”'
     push    ax
-    push    word_45DCA
-    push    word_45DC8
+    push    word ptr sdgame2shapes+0Eh
+    push    word ptr sdgame2shapes+0Ch
 loc_1D302:
     call    sub_343B0
     add     sp, 8
@@ -5608,8 +5608,8 @@ loc_1D338:
     push    ax
     mov     ax, 94h ; '”'
     push    ax
-    push    word_45DCE
-    push    word_45DCC
+    push    word ptr sdgame2shapes+12h
+    push    word ptr sdgame2shapes+10h
     jmp     short loc_1D302
 loc_1D34A:
     mov     ax, offset aWww ; "Wrong Way"
@@ -5648,8 +5648,8 @@ loc_1D398:
     push    ax
     mov     ax, 44h ; 'D'
     push    ax
-    push    word_45DCA
-    push    word_45DC8
+    push    word ptr sdgame2shapes+0Eh
+    push    word ptr sdgame2shapes+0Ch
     call    sub_343B0
     add     sp, 8
     mov     ax, offset word_4617E
@@ -5737,8 +5737,8 @@ loc_1D47E:
     push    ax
     mov     ax, 0E4h ; 'ä'
     push    ax
-    push    word_45DCE
-    push    word_45DCC
+    push    word ptr sdgame2shapes+12h
+    push    word ptr sdgame2shapes+10h
     call    sub_343B0
     add     sp, 8
     mov     ax, offset word_4617E
@@ -5860,7 +5860,7 @@ loc_1D54C:
     push    ax
     sub     ax, ax
     push    ax
-    call    set_sprite1_size
+    call    sprite_set_1_size
     add     sp, 8
     push    word_463E2
     call    clear_sprite1_color
@@ -6247,7 +6247,7 @@ load_sdgame2_shapes proc far
     add     sp, 4
     mov     word ptr sdgame2ptr, ax
     mov     word ptr sdgame2ptr+2, dx
-    mov     ax, offset dword_45DBC
+    mov     ax, offset sdgame2shapes
     push    ax
     mov     ax, offset aEx01ex02ex03leftrigh; "ex01ex02ex03leftrigh"
     push    ax
@@ -6262,7 +6262,7 @@ loc_1D908:
     mov     di, si
     shl     di, 1
     shl     di, 1
-    les     di, dword_45DBC[di]
+    les     di, sdgame2shapes[di]
     mov     ax, es:[di]
     mov     word_45636[bx], ax
     inc     si
@@ -6373,7 +6373,7 @@ setup_intro proc far
     push    [bp+var_1A]
     call    shape3d_init_shape
     add     sp, 6
-    cmp     byte_46436, 0
+    cmp     video_flag5_is0, 0
     jnz     short loc_1D9CA
     mov     ax, 0Fh
     push    ax
@@ -6560,7 +6560,7 @@ loc_1DB96:
     jmp     loc_1DE19
 loc_1DBA0:
     mov     [bp+var_2A2], 0
-    cmp     byte_46436, 0
+    cmp     video_flag5_is0, 0
     jz      short loc_1DBB4
     call    setup_mcgawnd2
     jmp     short loc_1DBB9
@@ -6717,7 +6717,7 @@ loc_1DCFC:
     push    cs
     call near ptr intro_op
     add     sp, 20h
-    cmp     byte_46436, 0
+    cmp     video_flag5_is0, 0
     jz      short loc_1DD7E
     call    sub_28DB6
     call    setup_mcgawnd1
@@ -6762,7 +6762,7 @@ loc_1DD7E:
     push    [bp+var_26]
     push    [bp+var_28]
     push    [bp+var_2A]
-    call    set_sprite1_size
+    call    sprite_set_1_size
     add     sp, 8
     call    sub_28DB6
     les     bx, wndsprite
@@ -6811,7 +6811,7 @@ loc_1DE2E:
     jle     short loc_1DE3E
     jmp     loc_1DADE
 loc_1DE3E:
-    cmp     byte_46436, 0
+    cmp     video_flag5_is0, 0
     jz      short loc_1DE7C
     call    get_0
     or      ax, ax
@@ -7066,7 +7066,7 @@ loc_1E013:
     push    [bp+var_28]
     push    [bp+var_2A]
     push    [bp+var_2C]
-    call    set_sprite1_size
+    call    sprite_set_1_size
     add     sp, 8
     sub     ax, ax
     push    ax
@@ -7093,7 +7093,7 @@ loc_1E06C:
     push    word_3C1BA
     push    word_3C1B8
     push    rect_unk7
-    call    set_sprite1_size
+    call    sprite_set_1_size
     add     sp, 8
     sub     ax, ax
     push    ax
@@ -7104,7 +7104,7 @@ loc_1E08F:
     push    word_3C1BA
     push    word_3C1B8
     push    rect_unk7
-    call    set_sprite1_size
+    call    sprite_set_1_size
     add     sp, 8
     sub     di, di
     sub     si, si

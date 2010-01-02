@@ -545,6 +545,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn aPolyinfo:byte
     extrn word_3EB02:word
     extrn rect_unk4:byte
+    extrn aInitengineAllHandlesUsed_:byte
     extrn word_3EB2A:word
     extrn aStartengineNew:byte
     extrn aId1:byte
@@ -1052,14 +1053,9 @@ dseg segment byte public 'STUNTSD' use16
     extrn word_42542:word
     extrn word_42544:word
     extrn word_42546:word
-    extrn dword_4282C:dword
-    extrn dword_42830:dword
-    extrn dword_42834:dword
-    extrn dword_42838:dword
-    extrn word_4283C:word
-    extrn word_4283E:word
-    extrn word_42888:word
-    extrn word_4288A:word
+    extrn tracksmenushapes2:dword
+    extrn tracksmenushapes1:dword
+    extrn tracksmenushapes3:dword
     extrn word_42898:word
     extrn off_4289A:word
     extrn word_4289C:word
@@ -1197,7 +1193,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn word_4435C:word
     extrn word_4435E:word
     extrn songfileptr:dword
-    extrn dword_44364:dword
+    extrn mmouspriteptr:dword
     extrn word_44368:word
     extrn word_4436A:word
     extrn logo2shape:SHAPE3D
@@ -1241,7 +1237,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn gameconfig:GAMEINFO
     extrn word_449BE:word
     extrn word_449C0:word
-    extrn dword_449C2:dword
+    extrn smouspriteptr:dword
     extrn word_449C6:word
     extrn word_449C8:word
     extrn word_449CA:word
@@ -1281,7 +1277,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn word_44A8C:word
     extrn terrainpos:word
     extrn byte_44AE2:byte
-    extrn word_44AE4:word
+    extrn video_flag1_is1:word
     extrn trackdata11:dword
     extrn word_44CEA:word
     extrn mainresptr:dword
@@ -1306,7 +1302,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn word_44D66:word
     extrn track_full_path:byte
     extrn planindex:word
-    extrn word_44DC8:word
+    extrn video_flag2_is1:word
     extrn word_44DCA:word
     extrn word_44DCC:word
     extrn unk_44DCE:byte
@@ -1321,8 +1317,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn word_4549E:word
     extrn dasmshapeptr:dword
     extrn byte_454A4:byte
-    extrn word_454A6:word
-    extrn word_454A8:word
+    extrn eng1ptr:dword
     extrn carresptr:dword
     extrn word_454AE:word
     extrn car2resptr:dword
@@ -1338,7 +1333,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn word_454CC:word
     extrn word_454CE:word
     extrn trackdata6:dword
-    extrn word_454D4:word
+    extrn video_flag3_isFFFF:word
     extrn trackdata18:dword
     extrn word_454DA:word
     extrn byte_45514:byte
@@ -1390,7 +1385,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn byte_459D8:byte
     extrn trackdata22:dword
     extrn unk_459E0:byte
-    extrn byte_459F1:byte
+    extrn video_flag6_is1:byte
     extrn fontdef_unk_0E:word
     extrn word_459F4:word
     extrn word_459F6:word
@@ -1425,15 +1420,10 @@ dseg segment byte public 'STUNTSD' use16
     extrn trackdata8:dword
     extrn word_45DB8:word
     extrn word_45DBA:word
-    extrn dword_45DBC:dword
-    extrn word_45DC8:word
-    extrn word_45DCA:word
-    extrn word_45DCC:word
-    extrn word_45DCE:word
+    extrn sdgame2shapes:dword
     extrn word_45DD0:word
     extrn trackcenterpos2:word
-    extrn word_45E0E:word
-    extrn word_45E10:word
+    extrn engptr:dword
     extrn tempdataptr:dword
     extrn byte_45E16:byte
     extrn passed_security:byte
@@ -1462,7 +1452,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn word_461CA:word
     extrn word_461CC:word
     extrn mouse_ypos:word
-    extrn word_461D0:word
+    extrn video_flag4_is1:word
     extrn game2ptr:dword
     extrn word_463D6:word
     extrn sdgame2ptr:dword
@@ -1475,7 +1465,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn byte_463E7:byte
     extrn unk_463EA:byte
     extrn word_46434:word
-    extrn byte_46436:byte
+    extrn video_flag5_is0:byte
     extrn mat_rot_temp:MATRIX
     extrn byte_4644A:byte
     extrn mat_temp:MATRIX

@@ -2795,14 +2795,14 @@ loc_265B4:
     mov     ax, [si+6]
 loc_265CB:
     mov     [bx+6], ax
-    cmp     word_44DC8, 1
+    cmp     video_flag2_is1, 1
     jz      short loc_265E9
     mov     bx, [bp+arg_4]
     mov     si, bx
     mov     ax, [si+2]
-    add     ax, word_44DC8
+    add     ax, video_flag2_is1
     dec     ax
-    and     ax, word_454D4
+    and     ax, video_flag3_isFFFF
     mov     [bx+2], ax
 loc_265E9:
     pop     si
@@ -2903,14 +2903,14 @@ sub_26670 proc far
     sub     sp, 22h
     push    di
     push    si
-    cmp     word_44DC8, 1
+    cmp     video_flag2_is1, 1
     jz      short loc_26693
     mov     bx, [bp+arg_4]
     mov     si, bx
     mov     ax, [si+2]
-    add     ax, word_44DC8
+    add     ax, video_flag2_is1
     dec     ax
-    and     ax, word_454D4
+    and     ax, video_flag3_isFFFF
     mov     [bx+2], ax
 loc_26693:
     mov     [bp+var_14], 0

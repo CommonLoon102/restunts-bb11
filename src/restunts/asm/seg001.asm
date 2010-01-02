@@ -7287,7 +7287,7 @@ loc_188B6:
     test    byte_42D26, 6
     jz      short loc_188D6
     push    word_43964
-    call    sub_27466
+    call    audio_op_unk7
     add     sp, 2
 loc_188D6:
     test    byte_42D26, 1
@@ -7301,7 +7301,7 @@ loc_188E9:
     test    byte_42D2A, 6
     jz      short loc_18903
     push    word_4408C
-    call    sub_27466
+    call    audio_op_unk7
     add     sp, 2
 loc_18903:
     test    byte_42D2A, 1
@@ -7625,7 +7625,7 @@ smart
     or      [bp+var_16], 1
 nosmart
     push    [bp+var_2E]
-    call    sub_26EF4
+    call    audio_op_unk
     jmp     short loc_18C05
     ; align 2
     db 144
@@ -7657,7 +7657,7 @@ nosmart
     test    byte ptr [bx+0CFh], 2
     jz      short loc_18C44
     push    [bp+var_2E]
-    call    sub_273B0
+    call    audio_op_unk5
     add     sp, 2
     add     [bp+var_16], 2
     jmp     short loc_18C7B
@@ -7665,7 +7665,7 @@ nosmart
     db 144
 loc_18C44:
     push    [bp+var_2E]
-    call    sub_2740B
+    call    audio_op_unk6
     add     sp, 2
     add     [bp+var_16], 4
     jmp     short loc_18C7B
@@ -7684,7 +7684,7 @@ loc_18C66:
     sub     [bp+var_16], 4
 loc_18C70:
     push    [bp+var_2E]
-    call    sub_27466
+    call    audio_op_unk7
     add     sp, 2
 loc_18C7B:
     cmp     [bp+var_1E], 0
@@ -7742,13 +7742,13 @@ sub_18CD8 proc far
     test    [bp+arg_0], 10h
     jz      short loc_18CF3
     push    [bp+arg_2]
-    call    sub_27374
+    call    audio_op_unk4
     add     sp, 2
 loc_18CF3:
     test    [bp+arg_0], 20h
     jz      short loc_18D04
     push    [bp+arg_2]
-    call    sub_27338
+    call    audio_op_unk3
     add     sp, 2
 loc_18D04:
     pop     bp
@@ -7772,7 +7772,7 @@ sub_18D06 proc far
     push    word ptr [bx+6]
     push    word ptr [bx+1Eh]
     push    word_43964
-    call    sub_2712E
+    call    audio_op_unk2
     add     sp, 12h
     cmp     gameconfig.game_opponenttype, 0
     jz      short loc_18D5E
@@ -7786,7 +7786,7 @@ sub_18D06 proc far
     push    word ptr [bx+12h]
     push    word ptr [bx+20h]
     push    word_4408C
-    call    sub_2712E
+    call    audio_op_unk2
     add     sp, 12h
 loc_18D5E:
     pop     bp

@@ -56,9 +56,9 @@ seg027 segment byte public 'STUNTSC' use16
     public sub_373E8
     public sub_37470
     public sub_374DE
-    public sub_374FA
-    public check_audio_flag
-    public init_audio_chunk2
+    public audio_check_flag2
+    public audio_check_flag
+    public audio_init_chunk2
     public sub_37696
     public sub_376CA
     public sub_37708
@@ -72,7 +72,7 @@ seg027 segment byte public 'STUNTSC' use16
     public load_song_file
     public load_voice_file
     public nopsub_37D7A
-    public init_audio_chunk
+    public audio_init_chunk
     public load_vce
     public sub_3803C
     public sub_38156
@@ -222,7 +222,7 @@ load_audio_finalize proc far
     sub     ax, ax
     push    ax
     push    cs
-    call near ptr init_audio_chunk
+    call near ptr audio_init_chunk
     add     sp, 0Eh
     mov     byte_40632, 1
     mov     word_4063A, 0
@@ -413,7 +413,7 @@ sub_3736A proc far
     sub     ax, ax
     push    ax
     push    cs
-    call near ptr init_audio_chunk
+    call near ptr audio_init_chunk
     add     sp, 0Eh
     mov     byte_44290, 0
     call    sub_39700
@@ -516,7 +516,7 @@ loc_37446:
     push    word ptr [bp+8]
     push    word ptr [bp+6]
     push    cs
-    call near ptr sub_374FA
+    call near ptr audio_check_flag2
     add     sp, 8
     pop     bp
     retf
@@ -574,7 +574,7 @@ loc_374C5:
     retf
 loc_374CE:
     mov     bx, [bp+arg_0]
-    mov     byte ptr [bx-59D6h], 1
+    mov     byte_45D9A[bx], 1
     mov     ax, 4Ch ; 'L'
     imul    bx
     jmp     short loc_374BC
@@ -591,10 +591,10 @@ sub_374DE proc far
     cmp     [bp+arg_0], 0FFFFh
     jle     short loc_374F7
     mov     bx, [bp+arg_0]
-    mov     byte ptr [bx-59D6h], 0
+    mov     byte_45D9A[bx], 0
     push    bx
     push    cs
-    call near ptr init_audio_chunk2
+    call near ptr audio_init_chunk2
     add     sp, 2
 loc_374F7:
     pop     bp
@@ -602,7 +602,7 @@ loc_374F7:
     ; align 2
     db 144
 sub_374DE endp
-sub_374FA proc far
+audio_check_flag2 proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -621,14 +621,14 @@ sub_374FA proc far
     push    [bp+arg_2]
     push    [bp+arg_0]
     push    cs
-    call near ptr check_audio_flag
+    call near ptr audio_check_flag
     add     sp, 0Ah
     pop     bp
     retf
     ; align 2
     db 144
-sub_374FA endp
-check_audio_flag proc far
+audio_check_flag2 endp
+audio_check_flag proc far
     var_6 = word ptr -6
     var_4 = word ptr -4
     var_2 = word ptr -2
@@ -745,7 +745,7 @@ loc_375CB:
 loc_37601:
     push    bx
     push    cs
-    call near ptr init_audio_chunk2
+    call near ptr audio_init_chunk2
     add     sp, 2
 loc_37609:
     cmp     [bp+arg_4], 0FFFFh
@@ -769,7 +769,7 @@ loc_37612:
     push    [bp+arg_4]
     push    [bp+arg_4]
     push    cs
-    call near ptr init_audio_chunk
+    call near ptr audio_init_chunk
     add     sp, 0Eh
     mov     ax, [bp+arg_4]
     pop     si
@@ -779,8 +779,8 @@ loc_37612:
     retf
     ; align 2
     db 144
-check_audio_flag endp
-init_audio_chunk2 proc far
+audio_check_flag endp
+audio_init_chunk2 proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -813,12 +813,12 @@ init_audio_chunk2 proc far
     push    [bp+arg_0]
     push    [bp+arg_0]
     push    cs
-    call near ptr init_audio_chunk
+    call near ptr audio_init_chunk
     add     sp, 0Eh
 loc_37694:
     pop     bp
     retf
-init_audio_chunk2 endp
+audio_init_chunk2 endp
 sub_37696 proc far
     var_2 = word ptr -2
      s = byte ptr 0
@@ -1254,7 +1254,7 @@ loc_379B8:
     add     sp, 4
     push    [bp+var_2]
     push    [bp+var_4]
-    call    mmgr_op_unk2
+    call    mmgr_release
     add     sp, 4
     mov     byte_40639, 64h ; 'd'
     mov     ax, offset unk_40636
@@ -1345,7 +1345,7 @@ loc_37AC1:
     call    [bp+var_4]
     push    word ptr audiodriverbinary+2
     push    word ptr audiodriverbinary
-    call    mmgr_op_unk2
+    call    mmgr_release
     add     sp, 4
     sub     ax, ax
     mov     word ptr audiodriverbinary+2, ax
@@ -1683,7 +1683,7 @@ loc_37DB2:
     pop     bp
     retf
 nopsub_37D7A endp
-init_audio_chunk proc far
+audio_init_chunk proc far
     var_A = word ptr -10
     var_8 = word ptr -8
     var_6 = word ptr -6
@@ -1797,7 +1797,7 @@ loc_37EBA:
     mov     sp, bp
     pop     bp
     retf
-init_audio_chunk endp
+audio_init_chunk endp
 load_vce proc far
     var_22 = word ptr -34
     var_20 = word ptr -32
@@ -2144,7 +2144,7 @@ sub_38178 proc far
     sub     ax, ax
     push    ax
     push    cs
-    call near ptr init_audio_chunk
+    call near ptr audio_init_chunk
     add     sp, 0Eh
     mov     [bp+var_2], 0
     mov     al, byte_459D2

@@ -3792,7 +3792,7 @@ shape3d_free_car_shapes proc far
     add     sp, 0Eh
     push    word ptr car2resptr+2
     push    word ptr car2resptr
-    call    mmgr_op_unk2
+    call    mmgr_release
     add     sp, 4
 loc_20477:
     mov     ax, offset word_42CBA
@@ -5804,7 +5804,7 @@ loc_217A0:
 loc_217AE:
     push    [bp+var_AE0]
     push    [bp+var_AE2]
-    call    mmgr_op_unk2
+    call    mmgr_release
     add     sp, 4
     mov     al, [bp+var_3B0]
     cbw

@@ -211,13 +211,13 @@ init_video proc far
     push    ax
     call    kb_reg_callback
     add     sp, 6
-    mov     word_44AE4, 1
-    mov     word_44DC8, 1
-    mov     word_454D4, 0FFFFh
-    mov     word_461D0, 1
+    mov     video_flag1_is1, 1
+    mov     video_flag2_is1, 1
+    mov     video_flag3_isFFFF, 0FFFFh
+    mov     video_flag4_is1, 1
     call    mmgr_alloc_a000
-    mov     byte_46436, 0
-    mov     byte_459F1, 1
+    mov     video_flag5_is0, 0
+    mov     video_flag6_is1, 1
     mov     textresprefix, 'e'
     mov     [bp+var_argmode4], 0
     mov     [bp+var_argnosound], 0
@@ -407,7 +407,7 @@ loc_3A0D9:
     push    ax
     sub     ax, ax
     push    ax
-    call    set_sprite1_size
+    call    sprite_set_1_size
     add     sp, 8
     call    timer_get_delta2
     sub     si, si
@@ -429,7 +429,7 @@ loc_3A10F:
     push    ax
     sub     ax, ax
     push    ax
-    call    set_sprite1_size
+    call    sprite_set_1_size
     add     sp, 8
     sub     si, si
 loc_3A140:
@@ -661,7 +661,7 @@ loc_3A300:
     push    ax
     sub     ax, ax
     push    ax
-    call    sub_346A3
+    call    video_set_palette
     add     sp, 6
     mov     ax, offset aSmou; "smou"
     push    ax
@@ -673,7 +673,7 @@ loc_3A300:
     mov     word ptr [bp+var_310+2], dx
     les     bx, [bp+var_310]
     mov     ax, es:[bx]
-    imul    word_44DC8
+    imul    video_flag2_is1
     mov     [bp+var_312], ax
     mov     ax, es:[bx+2]
     mov     [bp+var_306], ax
@@ -687,21 +687,21 @@ loc_3A300:
     push    [bp+var_312]
     call    sprite_make_wnd
     add     sp, 6
-    mov     word ptr dword_449C2, ax
-    mov     word ptr dword_449C2+2, dx
+    mov     word ptr smouspriteptr, ax
+    mov     word ptr smouspriteptr+2, dx
     mov     ax, 0Fh
     push    ax
     push    [bp+var_306]
     push    [bp+var_312]
     call    sprite_make_wnd
     add     sp, 6
-    mov     word ptr dword_44364, ax
-    mov     word ptr dword_44364+2, dx
+    mov     word ptr mmouspriteptr, ax
+    mov     word ptr mmouspriteptr+2, dx
     mov     ax, 0Fh
     push    ax
     push    [bp+var_306]
     mov     ax, [bp+var_312]
-    add     ax, word_44DC8
+    add     ax, video_flag2_is1
     push    ax
     call    sprite_make_wnd
     add     sp, 6
@@ -713,9 +713,9 @@ loc_3A300:
     add     sp, 2
     mov     [bp+var_30C], ax
     mov     [bp+var_30A], dx
-    push    word ptr dword_449C2+2
-    push    word ptr dword_449C2
-    call    sprite_set_1
+    push    word ptr smouspriteptr+2
+    push    word ptr smouspriteptr
+    call    sprite_set_1_from_argptr
     add     sp, 4
     sub     ax, ax
     push    ax
@@ -728,11 +728,11 @@ loc_3A300:
     add     sp, 6
     push    dx
     push    ax
-    call    sub_33D30
+    call    sprite_shape_to_1
     add     sp, 8
-    push    word ptr dword_44364+2
-    push    word ptr dword_44364
-    call    sprite_set_1
+    push    word ptr mmouspriteptr+2
+    push    word ptr mmouspriteptr
+    call    sprite_set_1_from_argptr
     add     sp, 4
     sub     ax, ax
     push    ax
@@ -745,7 +745,7 @@ loc_3A300:
     add     sp, 6
     push    dx
     push    ax
-    call    sub_33D30
+    call    sprite_shape_to_1
     add     sp, 8
     push    [bp+var_30A]
     push    [bp+var_30C]

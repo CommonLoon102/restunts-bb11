@@ -126,8 +126,8 @@ sub_274B0 proc far
     sub     sp, 40h
     push    di
     push    si
-    mov     ax, word_44AE4
-    imul    word_461D0
+    mov     ax, video_flag1_is1
+    imul    video_flag4_is1
     cwd
     push    dx
     push    ax
@@ -271,7 +271,7 @@ loc_275D8:
     les     bx, dword_42D10[bx]
     push    word ptr es:[bx+2]
     push    word ptr es:[bx]
-    call    sub_33D30
+    call    sprite_shape_to_1
     add     sp, 8
     mov     al, 3Ch ; '<'
     mul     byte_3B8FC
@@ -522,7 +522,7 @@ loc_277F6:
     push    [bp+var_2C]
     push    [bp+var_2E]
     push    [bp+var_30]
-    call    set_sprite1_size
+    call    sprite_set_1_size
     add     sp, 8
     sub     ax, ax
     push    ax
@@ -3002,7 +3002,7 @@ sub_28E04 proc far
     mov     si, mouse_xpos
     mov     ax, si
     cwd
-    mov     cx, word_44DC8
+    mov     cx, video_flag2_is1
     idiv    cx
     sub     si, dx
     lea     ax, [bp+var_3C]
@@ -3019,14 +3019,14 @@ sub_28E04 proc far
     add     sp, 8
     push    mouse_ypos
     push    mouse_xpos
-    les     bx, dword_44364
+    les     bx, mmouspriteptr
     push    word ptr es:[bx+2]
     push    word ptr es:[bx]
     call    sub_33890
     add     sp, 8
     push    mouse_ypos
     push    mouse_xpos
-    les     bx, dword_449C2
+    les     bx, smouspriteptr
     push    word ptr es:[bx+2]
     push    word ptr es:[bx]
     call    sub_34084
@@ -3164,7 +3164,7 @@ sprite_copy_2_to_1_2 proc far
     mov     dx, seg seg012
     push    dx
     push    ax
-    call    sprite_set_1
+    call    sprite_set_1_from_argptr
     add     sp, 4
     retf
     ; align 2
@@ -3176,7 +3176,7 @@ sprite_copy_2_to_1_clear proc far
     mov     dx, seg seg012
     push    dx
     push    ax
-    call    sprite_set_1
+    call    sprite_set_1_from_argptr
     add     sp, 4
     sub     ax, ax
     push    ax
@@ -3188,7 +3188,7 @@ sprite_copy_wnd_to_1 proc far
 
     push    word ptr wndsprite+2
     push    word ptr wndsprite
-    call    sprite_set_1
+    call    sprite_set_1_from_argptr
     add     sp, 4
     retf
     ; align 2
@@ -3198,7 +3198,7 @@ sprite_copy_wnd_to_1_clear proc far
 
     push    word ptr wndsprite+2
     push    word ptr wndsprite
-    call    sprite_set_1
+    call    sprite_set_1_from_argptr
     add     sp, 4
     sub     ax, ax
     push    ax

@@ -593,6 +593,7 @@ dseg segment byte public 'STUNTSD' use16
     public aPolyinfo
     public word_3EB02
     public rect_unk4
+    public aInitengineAllHandlesUsed_
     public word_3EB2A
     public aStartengineNew
     public aId1
@@ -1100,14 +1101,9 @@ dseg segment byte public 'STUNTSD' use16
     public word_42542
     public word_42544
     public word_42546
-    public dword_4282C
-    public dword_42830
-    public dword_42834
-    public dword_42838
-    public word_4283C
-    public word_4283E
-    public word_42888
-    public word_4288A
+    public tracksmenushapes2
+    public tracksmenushapes1
+    public tracksmenushapes3
     public word_42898
     public off_4289A
     public word_4289C
@@ -1245,7 +1241,7 @@ dseg segment byte public 'STUNTSD' use16
     public word_4435C
     public word_4435E
     public songfileptr
-    public dword_44364
+    public mmouspriteptr
     public word_44368
     public word_4436A
     public logo2shape
@@ -1289,7 +1285,7 @@ dseg segment byte public 'STUNTSD' use16
     public gameconfig
     public word_449BE
     public word_449C0
-    public dword_449C2
+    public smouspriteptr
     public word_449C6
     public word_449C8
     public word_449CA
@@ -1329,7 +1325,7 @@ dseg segment byte public 'STUNTSD' use16
     public word_44A8C
     public terrainpos
     public byte_44AE2
-    public word_44AE4
+    public video_flag1_is1
     public trackdata11
     public word_44CEA
     public mainresptr
@@ -1354,7 +1350,7 @@ dseg segment byte public 'STUNTSD' use16
     public word_44D66
     public track_full_path
     public planindex
-    public word_44DC8
+    public video_flag2_is1
     public word_44DCA
     public word_44DCC
     public unk_44DCE
@@ -1369,8 +1365,7 @@ dseg segment byte public 'STUNTSD' use16
     public word_4549E
     public dasmshapeptr
     public byte_454A4
-    public word_454A6
-    public word_454A8
+    public eng1ptr
     public carresptr
     public word_454AE
     public car2resptr
@@ -1386,7 +1381,7 @@ dseg segment byte public 'STUNTSD' use16
     public word_454CC
     public word_454CE
     public trackdata6
-    public word_454D4
+    public video_flag3_isFFFF
     public trackdata18
     public word_454DA
     public byte_45514
@@ -1438,7 +1433,7 @@ dseg segment byte public 'STUNTSD' use16
     public byte_459D8
     public trackdata22
     public unk_459E0
-    public byte_459F1
+    public video_flag6_is1
     public fontdef_unk_0E
     public word_459F4
     public word_459F6
@@ -1473,15 +1468,10 @@ dseg segment byte public 'STUNTSD' use16
     public trackdata8
     public word_45DB8
     public word_45DBA
-    public dword_45DBC
-    public word_45DC8
-    public word_45DCA
-    public word_45DCC
-    public word_45DCE
+    public sdgame2shapes
     public word_45DD0
     public trackcenterpos2
-    public word_45E0E
-    public word_45E10
+    public engptr
     public tempdataptr
     public byte_45E16
     public passed_security
@@ -1510,7 +1500,7 @@ dseg segment byte public 'STUNTSD' use16
     public word_461CA
     public word_461CC
     public mouse_ypos
-    public word_461D0
+    public video_flag4_is1
     public game2ptr
     public word_463D6
     public sdgame2ptr
@@ -1523,7 +1513,7 @@ dseg segment byte public 'STUNTSD' use16
     public byte_463E7
     public unk_463EA
     public word_46434
-    public byte_46436
+    public video_flag5_is0
     public mat_rot_temp
     public byte_4644A
     public mat_temp
@@ -14588,7 +14578,7 @@ rect_unk4     db 15
     db 39
     db 255
     db 255
-    db 73
+aInitengineAllHandlesUsed_     db 73
     db 110
     db 105
     db 116
@@ -29557,98 +29547,33 @@ word_42546     dw 0
     db 0
     db 0
     db 0
-dword_4282C     dd 0
-dword_42830     dd 0
-dword_42834     dd 0
-dword_42838     dd 0
-word_4283C     dw 0
-word_4283E     dw 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-word_42888     dw 0
-word_4288A     dw 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
+tracksmenushapes2     dd 0
+    dd 0
+    dd 0
+    dd 0
+tracksmenushapes1     dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+tracksmenushapes3     dd 0
+    dd 0
+    dd 0
+    dd 0
 word_42898     dw 0
 off_4289A     dw ?
 word_4289C     dw 0
@@ -36304,7 +36229,7 @@ word_4435A     dw 0
 word_4435C     dw 0
 word_4435E     dw 0
 songfileptr     dd 0
-dword_44364     dd 0
+mmouspriteptr     dd 0
 word_44368     dw 0
 word_4436A     dw 0
 logo2shape     db 0
@@ -37859,7 +37784,7 @@ gameconfig     db 0
     db 0
 word_449BE     dw 0
 word_449C0     dw 0
-dword_449C2     dd 0
+smouspriteptr     dd 0
 word_449C6     dw 0
 word_449C8     dw 0
 word_449CA     dw 0
@@ -38067,7 +37992,7 @@ terrainpos     dw 0
     db 0
 byte_44AE2     db 0
     db 0
-word_44AE4     dw 0
+video_flag1_is1     dw 0
     db 0
     db 0
     db 0
@@ -38774,7 +38699,7 @@ track_full_path     db 0
     db 0
     db 0
 planindex     dw 0
-word_44DC8     dw 0
+video_flag2_is1     dw 0
 word_44DCA     dw 0
 word_44DCC     dw 0
 unk_44DCE     db 0
@@ -40519,8 +40444,7 @@ word_4549E     dw 0
 dasmshapeptr     dd 0
 byte_454A4     db 0
     db 0
-word_454A6     dw 0
-word_454A8     dw 0
+eng1ptr     dd 0
 carresptr     dd 0
 word_454AE     dw 0
 car2resptr     dd 0
@@ -40537,7 +40461,7 @@ word_454CA     dw 0
 word_454CC     dw 0
 word_454CE     dw 0
 trackdata6     dd 0
-word_454D4     dw 0
+video_flag3_isFFFF     dw 0
 trackdata18     dd 0
 word_454DA     dw 0
     db 0
@@ -41799,7 +41723,7 @@ unk_459E0     db 0
     db 0
     db 0
     db 0
-byte_459F1     db 0
+video_flag6_is1     db 0
 fontdef_unk_0E     dw 0
 word_459F4     dw 0
 word_459F6     dw 0
@@ -42700,19 +42624,11 @@ byte_45DB2     db 0
 trackdata8     dd 0
 word_45DB8     dw 0
 word_45DBA     dw 0
-dword_45DBC     dd 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-word_45DC8     dw 0
-word_45DCA     dw 0
-word_45DCC     dw 0
-word_45DCE     dw 0
+sdgame2shapes     dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
 word_45DD0     dw 0
 trackcenterpos2     dw 0
     dw 0
@@ -42744,8 +42660,7 @@ trackcenterpos2     dw 0
     dw 0
     dw 0
     dw 0
-word_45E0E     dw 0
-word_45E10     dw 0
+engptr     dd 0
 tempdataptr     dd 0
 byte_45E16     db 0
     db 0
@@ -43647,7 +43562,7 @@ byte_461C8     db 0
 word_461CA     dw 0
 word_461CC     dw 0
 mouse_ypos     dw 0
-word_461D0     dw 0
+video_flag4_is1     dw 0
     db 0
     db 0
     db 0
@@ -44248,7 +44163,7 @@ unk_463EA     db 0
     db 0
     db 0
 word_46434     dw 0
-byte_46436     db 0
+video_flag5_is0     db 0
     db 0
 mat_rot_temp     db 0
     db 0

@@ -204,7 +204,7 @@ seg012 segment byte public 'STUNTSC' use16
     public ported_mmgr_free_
     public loc_31498
     public nopsub_31525
-    public ported_mmgr_op_unk2_
+    public ported_mmgr_release_
     public ported_mmgr_get_chunk_size_
     public ported_mmgr_resize_memory_
     public ported_mmgr_op_unk_
@@ -279,7 +279,7 @@ seg012 segment byte public 'STUNTSC' use16
     public vector_op_unk
     public loc_3301F
     public sub_33072
-    public set_sprite1_size
+    public sprite_set_1_size
     public fill_color
     public clear_sprite1_color
     public nopsub_33330
@@ -316,9 +316,10 @@ seg012 segment byte public 'STUNTSC' use16
     public sub_33BDA
     public loc_33BF5
     public nopsub_33D0C
-    public sub_33D30
-    public sub_33D4E
+    public sprite_shape_to_1
+    public sprite_shape_to_1_alt
     public loc_33D69
+    public nopsub_33DBE
     public sub_33DE2
     public sub_33E00
     public loc_33E1B
@@ -339,7 +340,7 @@ seg012 segment byte public 'STUNTSC' use16
     public loc_34541
     public sub_345BC
     public loc_345E5
-    public sub_346A3
+    public video_set_palette
     public loc_346A8
     public sub_346BC
     public sub_3475A
@@ -355,7 +356,7 @@ seg012 segment byte public 'STUNTSC' use16
     public ported_sprite_make_wnd_
     public next_wnd_def
     public wnd_defs
-    public sprite_set_1
+    public sprite_set_1_from_argptr
     public sprite_copy_2_to_1
     public sub_35B26
     public sub_35B76
@@ -7185,7 +7186,7 @@ loc_31635:
     pop     bp
     retf
 nopsub_31525 endp
-ported_mmgr_op_unk2_ proc far
+ported_mmgr_release_ proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_2 = word ptr 8
@@ -7219,7 +7220,7 @@ loc_31678:
     pop     si
     pop     bp
     retf
-ported_mmgr_op_unk2_ endp
+ported_mmgr_release_ endp
 ported_mmgr_get_chunk_size_ proc far
      s = byte ptr 0
      r = byte ptr 2
@@ -9076,7 +9077,7 @@ ported_sprite_free_wnd_ proc far
     push    si
     mov     ax, ss
     mov     ds, ax
-    call    mmgr_op_unk2
+    call    mmgr_release
     add     sp, 4
     pop     di
     pop     si
@@ -11189,7 +11190,7 @@ loc_3325D:
     pop     bp
     retf
 sub_33072 endp
-set_sprite1_size proc far
+sprite_set_1_size proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -11211,7 +11212,7 @@ set_sprite1_size proc far
     mov     cs:sprite1.sprite_height, ax
     pop     bp
     retf
-set_sprite1_size endp
+sprite_set_1_size endp
 fill_color proc far
      s = byte ptr 0
      r = byte ptr 2
@@ -12724,7 +12725,7 @@ nopsub_33D0C proc far
     ; align 2
     db 144
 nopsub_33D0C endp
-sub_33D30 proc far
+sprite_shape_to_1 proc far
     var_4 = word ptr -4
     var_2 = word ptr -2
      s = byte ptr 0
@@ -12749,8 +12750,8 @@ sub_33D30 proc far
     jmp     short loc_33D69
     ; align 2
     db 144
-sub_33D30 endp
-sub_33D4E proc far
+sprite_shape_to_1 endp
+sprite_shape_to_1_alt proc far
     var_6 = word ptr -6
     var_4 = word ptr -4
     var_2 = word ptr -2
@@ -12817,24 +12818,35 @@ loc_33DB5:
     jmp     short loc_33DA2
     ; align 2
     db 0
+sprite_shape_to_1_alt endp
+nopsub_33DBE proc far
+    var_4 = word ptr -4
+    var_2 = word ptr -2
+     s = byte ptr 0
+     r = byte ptr 2
+    arg_0 = word ptr 6
+    arg_2 = word ptr 8
+    arg_4 = word ptr 10
+    arg_6 = word ptr 12
+
     push    bp
     mov     bp, sp
     sub     sp, 10h
     push    ds
     push    si
     push    di
-    mov     ds, word ptr [bp+8]
-    mov     si, [bp+6]
-    mov     ax, [bp+0Ah]
+    mov     ds, [bp+arg_2]
+    mov     si, [bp+arg_0]
+    mov     ax, [bp+arg_4]
     sub     ax, [si+4]
-    mov     [bp-2], ax
-    mov     ax, [bp+0Ch]
+    mov     [bp+var_2], ax
+    mov     ax, [bp+arg_6]
     sub     ax, [si+6]
-    mov     [bp-4], ax
+    mov     [bp+var_4], ax
     jmp     short loc_33E1B
     ; align 2
     db 144
-sub_33D4E endp
+nopsub_33DBE endp
 sub_33DE2 proc far
     var_4 = word ptr -4
     var_2 = word ptr -2
@@ -14080,7 +14092,7 @@ loc_3468C:
     jmp     short loc_346A8
     db 144
 sub_345BC endp
-sub_346A3 proc far
+video_set_palette proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -14102,7 +14114,7 @@ loc_346A8:
     retf
     ; align 2
     db 0
-sub_346A3 endp
+video_set_palette endp
 sub_346BC proc far
      s = byte ptr 0
      r = byte ptr 2
@@ -14924,7 +14936,7 @@ ported_sprite_make_wnd_ proc far
     mov     bx, cs:next_wnd_def
     mov     [bp+var_4], bx
     add     ax, bx
-    cmp     ax, offset sprite_set_1; sprite_set_1 happens to be the end of the buffer.. see below this func
+    cmp     ax, offset sprite_set_1_from_argptr; sprite_set_1 happens to be the end of the buffer.. see below this func
     jnb     short loc_34CD6
     mov     cs:next_wnd_def, ax
     mov     word ptr cs:[bx+SPRITE.sprite_bitmapptr], 0
@@ -18568,7 +18580,7 @@ wnd_defs     db 0
     db 0
     db 0
 ported_sprite_make_wnd_ endp
-sprite_set_1 proc far
+sprite_set_1_from_argptr proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -18592,14 +18604,14 @@ sprite_set_1 proc far
     pop     ds
     pop     bp
     retf
-sprite_set_1 endp
+sprite_set_1_from_argptr endp
 sprite_copy_2_to_1 proc far
 
     mov     ax, seg seg012
     push    ax
     mov     ax, offset sprite2
     push    ax
-    call    sprite_set_1
+    call    sprite_set_1_from_argptr
     add     sp, 4
     retf
     ; align 2

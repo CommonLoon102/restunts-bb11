@@ -18,7 +18,7 @@ void mmgr_copy_paras(unsigned short srcseg, unsigned short destseg, short paras)
 void copy_paras_reverse(unsigned short srcseg, unsigned short destseg, short paras);
 void mmgr_find_free();
 void far* mmgr_get_chunk_by_name(const char* arg_0);
-void mmgr_op_unk2(char far* ptr);
+void mmgr_release(char far* ptr);
 unsigned short mmgr_get_chunk_size(unsigned short arg_0, unsigned short arg_2);
 unsigned short mmgr_resize_memory(unsigned short arg_0, unsigned short arg_2, unsigned short arg_4);
 void far* mmgr_op_unk(char far* ptr);

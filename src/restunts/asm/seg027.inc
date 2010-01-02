@@ -9,9 +9,9 @@ seg027 segment byte public 'STUNTSC' use16
     extrn sub_373E8:proc
     extrn sub_37470:proc
     extrn sub_374DE:proc
-    extrn sub_374FA:proc
-    extrn check_audio_flag:proc
-    extrn init_audio_chunk2:proc
+    extrn audio_check_flag2:proc
+    extrn audio_check_flag:proc
+    extrn audio_init_chunk2:proc
     extrn sub_37696:proc
     extrn sub_376CA:proc
     extrn sub_37708:proc
@@ -25,7 +25,7 @@ seg027 segment byte public 'STUNTSC' use16
     extrn load_song_file:proc
     extrn load_voice_file:proc
     extrn nopsub_37D7A:proc
-    extrn init_audio_chunk:proc
+    extrn audio_init_chunk:proc
     extrn load_vce:proc
     extrn sub_3803C:proc
     extrn sub_38156:proc

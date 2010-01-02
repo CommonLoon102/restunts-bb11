@@ -350,7 +350,7 @@ loc_21E49:
 loc_21E71:
     mov     byte_46467, 0
 loc_21E76:
-    cmp     byte_46436, 0
+    cmp     video_flag5_is0, 0
     jz      short loc_21E8A
     call    setup_mcgawnd2
     mov     al, byte_44346
@@ -418,7 +418,7 @@ loc_21F1F:
     cmp     [bp+var_E], ax
     jz      short loc_21F7A
 loc_21F38:
-    mov     al, byte_459F1
+    mov     al, video_flag6_is1
     mov     byte_454A4, al
     push    word_454AE
     mov     ax, 140h
@@ -459,7 +459,7 @@ loc_21F84:
     push    ax
     sub     ax, ax
     push    ax
-    call    set_sprite1_size
+    call    sprite_set_1_size
     add     sp, 8
     mov     ax, 1
     push    ax
@@ -479,7 +479,7 @@ loc_21FC2:
     push    ax
     sub     ax, ax
     push    ax
-    call    set_sprite1_size
+    call    sprite_set_1_size
     add     sp, 8
     push    state.game_frame
     push    state.game_frame
@@ -584,7 +584,7 @@ loc_220DB:
     push    ax
     sub     ax, ax
     push    ax
-    call    set_sprite1_size
+    call    sprite_set_1_size
     add     sp, 8
     mov     ax, 2
     push    ax
@@ -599,14 +599,14 @@ loc_220DB:
     push    ax
     sub     ax, ax
     push    ax
-    call    set_sprite1_size
+    call    sprite_set_1_size
     add     sp, 8
 loc_22126:
     cmp     byte_454A4, 0
     jz      short loc_22131
     dec     byte_454A4
 loc_22131:
-    cmp     byte_46436, 0
+    cmp     video_flag5_is0, 0
     jz      short loc_22152
     call    sub_28DB6
     call    setup_mcgawnd1
@@ -748,7 +748,7 @@ loc_2227E:
     ; align 2
     db 144
 loc_22298:
-    cmp     byte_46436, 0
+    cmp     video_flag5_is0, 0
     jz      short loc_222D3
     call    get_0
     or      ax, ax
@@ -772,7 +772,7 @@ loc_222D3:
     call    sprite_copy_2_to_1_2
     mov     byte_454B8, 1
     call    sub_188A4
-    call    remove_audiodriver_timer
+    call    audio_remove_driver_timer
     cmp     byte_45DB2, 0
     jz      short loc_222F1
     jmp     loc_223CD
@@ -2109,7 +2109,7 @@ loc_22E09:
     les     bx, dword_40DBC
     push    word ptr es:[bx+2]
     mov     ax, es:[bx]
-    imul    word_44AE4
+    imul    video_flag1_is1
     push    ax
     call    sprite_make_wnd
     add     sp, 6
@@ -2120,7 +2120,7 @@ loc_22E09:
     les     bx, dword_40DC0
     push    word ptr es:[bx+2]
     mov     ax, es:[bx]
-    imul    word_44AE4
+    imul    video_flag1_is1
     push    ax
     call    sprite_make_wnd
     add     sp, 6
@@ -2131,7 +2131,7 @@ loc_22E09:
     les     bx, dword_40DC0
     push    word ptr es:[bx+2]
     mov     ax, es:[bx]
-    imul    word_44AE4
+    imul    video_flag1_is1
     push    ax
     call    sprite_make_wnd
     add     sp, 6
@@ -2147,7 +2147,7 @@ loc_22E09:
     mov     word ptr [bp+var_C+2], dx
     push    word ptr dword_40DFC+2
     push    word ptr dword_40DFC
-    call    sprite_set_1
+    call    sprite_set_1_from_argptr
     add     sp, 4
     les     bx, [bp+var_C]
     mov     ax, es:[bx+0Ah]
@@ -2305,7 +2305,7 @@ loc_23030:
     mov     bx, ax
     cmp     byte_40DFA[bx], 0
     jz      short loc_2309A
-    cmp     byte_46436, 0
+    cmp     video_flag5_is0, 0
     jnz     short loc_23057
     call    sub_28DB6
 loc_23057:
@@ -2316,7 +2316,7 @@ loc_23057:
     push    ax
     sub     ax, ax
     push    ax
-    call    set_sprite1_size
+    call    sprite_set_1_size
     add     sp, 8
     les     bx, dword_40DC0
     push    word ptr es:[bx+0Ah]
@@ -2360,7 +2360,7 @@ loc_230D1:
 loc_230DE:
     push    word ptr dword_40DEC+2
     push    word ptr dword_40DEC
-    call    sprite_set_1
+    call    sprite_set_1_from_argptr
     add     sp, 4
     mov     al, byte_4432A
     cbw
@@ -2395,7 +2395,7 @@ loc_230DE:
     push    word_40DD4
     call    sub_34060
     add     sp, 8
-    cmp     byte_46436, 0
+    cmp     video_flag5_is0, 0
     jz      short loc_2315E
     call    setup_mcgawnd2
     jmp     short loc_23168
@@ -2412,7 +2412,7 @@ loc_23168:
     push    ax
     sub     ax, ax
     push    ax
-    call    set_sprite1_size
+    call    sprite_set_1_size
     add     sp, 8
     les     bx, dword_40DC0
     push    word ptr es:[bx+0Ah]
@@ -2453,7 +2453,7 @@ loc_231CE:
     jnz     short loc_231E7
     jmp     loc_23286
 loc_231E7:
-    cmp     byte_46436, 0
+    cmp     video_flag5_is0, 0
     jnz     short loc_231F3
     call    sub_28DB6
 loc_231F3:
@@ -2566,7 +2566,7 @@ loc_232D0:
     jnz     short loc_232F7
     jmp     loc_23540
 loc_232F7:
-    cmp     byte_46436, 0
+    cmp     video_flag5_is0, 0
     jnz     short loc_23303
     call    sub_28DB6
 loc_23303:
@@ -2597,7 +2597,7 @@ loc_23303:
 loc_23349:
     push    word ptr dword_40D80+2
     push    word ptr dword_40D80
-    call    sprite_set_1
+    call    sprite_set_1_from_argptr
     add     sp, 4
     sub     ax, ax
     push    ax
@@ -2751,7 +2751,7 @@ loc_234D6:
     call    sub_342F6
     add     sp, 4
 loc_234DE:
-    cmp     byte_46436, 0
+    cmp     video_flag5_is0, 0
     jz      short loc_23506
     call    setup_mcgawnd2
     jmp     short loc_2350B
@@ -2773,7 +2773,7 @@ loc_2350B:
     push    ax
     sub     ax, ax
     push    ax
-    call    set_sprite1_size
+    call    sprite_set_1_size
     add     sp, 8
     les     bx, dword_40DBC
     push    word ptr es:[bx+0Ah]
@@ -2797,7 +2797,7 @@ loc_23540:
     jnz     short loc_23561
     jmp     loc_236A0
 loc_23561:
-    cmp     byte_46436, 0
+    cmp     video_flag5_is0, 0
     jnz     short loc_2356D
     call    sub_28DB6
 loc_2356D:
@@ -2808,7 +2808,7 @@ loc_2356D:
     push    ax
     sub     ax, ax
     push    ax
-    call    set_sprite1_size
+    call    sprite_set_1_size
     add     sp, 8
     mov     al, byte_4432A
     cbw
@@ -2864,7 +2864,7 @@ loc_235F9:
     sub     ah, ah
     les     bx, dword_40DDC
     sub     ax, es:[bx+4]
-    and     ax, word_454D4
+    and     ax, video_flag3_isFFFF
     mov     bx, [bp+var_20]
     mov     word_40DF2[bx], ax
     mov     al, [bp+var_16]
@@ -3039,27 +3039,27 @@ loc_237D3:
     push    ax              ; int
     call    file_load_resource
     add     sp, 4
-    mov     word_454A6, ax
-    mov     word_454A8, dx
+    mov     word ptr eng1ptr, ax
+    mov     word ptr eng1ptr+2, dx
     mov     ax, offset aEng ; "eng"
     push    ax              ; char *
     mov     ax, 6
     push    ax              ; int
     call    file_load_resource
     add     sp, 4
-    mov     word_45E0E, ax
-    mov     word_45E10, dx
-    call    add_audiodriver_timer
-    push    word_45E10
-    push    word_45E0E
-    push    word_454A8
-    push    word_454A6
+    mov     word ptr engptr, ax
+    mov     word ptr engptr+2, dx
+    call    audio_add_driver_timer
+    push    word ptr engptr+2
+    push    word ptr engptr
+    push    word ptr eng1ptr+2
+    push    word ptr eng1ptr
     mov     ax, offset unk_3E7FC
     push    ds
     push    ax
     mov     ax, 21h ; '!'
     push    ax
-    call    init_sfx_engine
+    call    audio_init_engine
     add     sp, 0Eh
     mov     word_43964, ax
     mov     byte_459D8, 0
@@ -3067,16 +3067,16 @@ loc_237D3:
     mov     byte_42D2A, 0
     cmp     gameconfig.game_opponenttype, 0
     jz      short loc_23870
-    push    word_45E10
-    push    word_45E0E
-    push    word_454A8
-    push    word_454A6
+    push    word ptr engptr+2
+    push    word ptr engptr
+    push    word ptr eng1ptr+2
+    push    word ptr eng1ptr
     mov     ax, offset unk_3E82C
     push    ds
     push    ax
     mov     ax, 20h ; ' '
     push    ax
-    call    init_sfx_engine
+    call    audio_init_engine
     add     sp, 0Eh
     mov     word_4408C, ax
 loc_23870:
@@ -3160,10 +3160,10 @@ loc_23946:
     ; align 2
     db 144
 loc_2394E:
-    cmp     byte_46436, 0
+    cmp     video_flag5_is0, 0
     jnz     short loc_239A3
-    mov     ax, word_44AE4
-    imul    word_461D0
+    mov     ax, video_flag1_is1
+    imul    video_flag4_is1
     cwd
     push    dx
     push    ax
@@ -3205,7 +3205,7 @@ loc_239A3:
 setup_player_cars endp
 sub_239B4 proc far
 
-    cmp     byte_46436, 0
+    cmp     video_flag5_is0, 0
     jnz     short loc_239D4
     mov     ax, word ptr wndsprite
     or      ax, word ptr wndsprite+2
@@ -3238,13 +3238,13 @@ loc_23A15:
     push    word_459F4
     call    mmgr_free
     add     sp, 4
-    call    remove_audiodriver_timer
-    push    word_45E10
-    push    word_45E0E
+    call    audio_remove_driver_timer
+    push    word ptr engptr+2
+    push    word ptr engptr
     call    mmgr_free
     add     sp, 4
-    push    word_454A8
-    push    word_454A6
+    push    word ptr eng1ptr+2
+    push    word ptr eng1ptr
     call    mmgr_free
     add     sp, 4
     call    shape3d_free_car_shapes
@@ -3875,7 +3875,7 @@ loc_23FB8:
     mov     byte_3E9DB, al
 loc_23FDA:
     call    sprite_copy_2_to_1
-    cmp     byte_46436, 0
+    cmp     video_flag5_is0, 0
     jz      short loc_23FEE
     mov     al, byte_44346
     xor     al, 1
@@ -4313,7 +4313,7 @@ loc_243B8:
     jnz     short loc_243C4
     mov     [bp+var_12], 1
 loc_243C4:
-    mov     al, byte_459F1
+    mov     al, video_flag6_is1
     mov     byte_454A4, al
     sub     ax, ax
     push    ax

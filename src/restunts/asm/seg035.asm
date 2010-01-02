@@ -153,7 +153,7 @@ loc_3AD4A:
     add     sp, 8
     push    [bp+var_2]
     push    [bp+var_4]
-    call    mmgr_op_unk2
+    call    mmgr_release
     add     sp, 4
     push    [bp+var_6]
     push    [bp+var_8]
