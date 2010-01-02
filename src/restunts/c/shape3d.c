@@ -64,7 +64,7 @@ void shape3d_free_all() {
 }
 
 void shape3d_init_shape(char far* shapeptr, struct SHAPE3D* gameshape) {
-	struct SHAPE3DHEADER far* hdr;
+	struct SHAPE3DHEADER far* hdr = shapeptr;
 	gameshape->shape3d_numverts = hdr->header_numverts;
 	gameshape->shape3d_numprimitives = hdr->header_numprimitives;
 	gameshape->shape3d_numpaints = hdr->header_numpaints;
