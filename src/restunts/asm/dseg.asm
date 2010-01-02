@@ -1193,8 +1193,7 @@ dseg segment byte public 'STUNTSD' use16
     public word_449F2
     public byte_449F4
     public word_449F6
-    public word_449F8
-    public word_449FA
+    public curshapeptr
     public word_449FE
     public word_44A00
     public word_44A02
@@ -1384,15 +1383,13 @@ dseg segment byte public 'STUNTSD' use16
     public word_46184
     public trackcenterpos
     public word_461C2
-    public word_461C4
-    public word_461C6
+    public game1ptr
     public byte_461C8
     public word_461CA
     public word_461CC
     public mouse_ypos
     public word_461D0
-    public word_463D2
-    public word_463D4
+    public game2ptr
     public word_463D6
     public word_463D8
     public word_463DA
@@ -37795,8 +37792,7 @@ word_449F2     dw 0
 byte_449F4     db 0
     db 0
 word_449F6     dw 0
-word_449F8     dw 0
-word_449FA     dw 0
+curshapeptr     dd 0
     db 0
     db 0
 word_449FE     dw 0
@@ -43557,8 +43553,7 @@ trackcenterpos     dw 0
     dw 0
     dw 0
 word_461C2     dw 0
-word_461C4     dw 0
-word_461C6     dw 0
+game1ptr     dd 0
 byte_461C8     db 0
     db 0
 word_461CA     dw 0
@@ -44077,8 +44072,7 @@ word_461D0     dw 0
     db 0
     db 0
     db 0
-word_463D2     dw 0
-word_463D4     dw 0
+game2ptr     dd 0
 word_463D6     dw 0
 word_463D8     dw 0
 word_463DA     dw 0

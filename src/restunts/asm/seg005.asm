@@ -3149,7 +3149,7 @@ loc_238DE:
     push    ax
     call    load_skybox
     add     sp, 2
-    call    load_game_3dshapes
+    call    shape3d_load_all
     or      ax, ax
     jz      short loc_2394E
 loc_23946:
@@ -3176,7 +3176,7 @@ loc_2394E:
     adc     dx, 0
     mov     [bp+var_8], ax
     mov     [bp+var_6], dx
-    call    get_res_ofs_diff_scaled
+    call    mmgr_get_res_ofs_diff_scaled
     cmp     dx, [bp+var_6]
     jg      short loc_23988
     jl      short loc_23946
@@ -3215,7 +3215,7 @@ sub_239B4 proc far
     call    release_window
     add     sp, 4
 loc_239D4:
-    call    unload_game_resources
+    call    shape3d_free_all
     call    unload_skybox
     call    sub_1D92A
     push    word_449A2

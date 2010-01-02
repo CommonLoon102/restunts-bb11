@@ -1749,7 +1749,7 @@ loc_110ED:
     push    ax
     call    load_skybox
     add     sp, 2
-    call    load_game_3dshapes
+    call    shape3d_load_all
     mov     ax, 0C8h ; 'È'
     push    ax
     mov     ax, 140h
@@ -1778,7 +1778,7 @@ loc_110ED:
     call    set_sprite1_size
     add     sp, 8
     call    sub_1CBDC
-    call    unload_game_resources
+    call    shape3d_free_all
     call    unload_skybox
     call    sprite_copy_wnd_to_1
     mov     ax, offset asc_3BA24; "'"

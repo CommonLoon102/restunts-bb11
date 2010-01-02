@@ -1145,8 +1145,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn word_449F2:word
     extrn byte_449F4:byte
     extrn word_449F6:word
-    extrn word_449F8:word
-    extrn word_449FA:word
+    extrn curshapeptr:dword
     extrn word_449FE:word
     extrn word_44A00:word
     extrn word_44A02:word
@@ -1336,15 +1335,13 @@ dseg segment byte public 'STUNTSD' use16
     extrn word_46184:word
     extrn trackcenterpos:word
     extrn word_461C2:word
-    extrn word_461C4:word
-    extrn word_461C6:word
+    extrn game1ptr:dword
     extrn byte_461C8:byte
     extrn word_461CA:word
     extrn word_461CC:word
     extrn mouse_ypos:word
     extrn word_461D0:word
-    extrn word_463D2:word
-    extrn word_463D4:word
+    extrn game2ptr:dword
     extrn word_463D6:word
     extrn word_463D8:word
     extrn word_463DA:word

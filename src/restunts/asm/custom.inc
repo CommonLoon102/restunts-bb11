@@ -67,6 +67,9 @@ extrn locate_sound_fatal:proc
 extrn locate_many_resources:proc
 extrn locate_text_res:proc
 
+extrn shape3d_load_all:proc
+extrn shape3d_free_all:proc
+
 extrn stuntsmain:proc
 
 ;extrn fatal_error:proc

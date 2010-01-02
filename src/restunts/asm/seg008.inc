@@ -31,7 +31,7 @@ seg008 segment byte public 'STUNTSC' use16
     extrn input_repeat_check:proc
     extrn sub_2916E:proc
     extrn sub_292DC:proc
-    extrn setup_3d_res:proc
+    extrn shape3d_init_shape:proc
     extrn sub_29606:proc
     extrn sub_29620:proc
     extrn show_waiting:proc

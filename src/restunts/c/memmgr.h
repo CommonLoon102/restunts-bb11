@@ -24,4 +24,7 @@ unsigned short mmgr_resize_memory(unsigned short arg_0, unsigned short arg_2, un
 void far* mmgr_op_unk(unsigned short arg_0, unsigned short arg_2);
 void far* mmgr_alloc_resbytes(const char* name, long int size);
 
+char far* locate_shape_nofatal(char far* data, char* name);
+char far* locate_shape_fatal(char far* data, char* name);
+
 #endif

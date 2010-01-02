@@ -27,5 +27,6 @@ void far* file_decomp_nofatal(const char* filename);
 void far* file_load_resfile(const char* filename);
 void far* file_load_resource(int type, const char* filename);
 void file_load_audiores(const char* songfile, const char* voicefile, const char* name);
+void far* file_load_3dres(const char* filename);
 
 #endif

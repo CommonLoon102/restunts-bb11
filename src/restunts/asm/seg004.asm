@@ -50,8 +50,8 @@ seg004 segment byte public 'STUNTSC' use16
     public off_1F750
     public off_1F87E
     public sub_1FAE4
-    public load_game_3dshapes
-    public unload_game_resources
+    public ported_shape3d_load_all_
+    public ported_shape3d_free_all_
     public sub_1FF92
     public sub_20438
     public sub_204AE
@@ -3175,7 +3175,7 @@ loc_1FE8C:
     pop     bp
     retf
 sub_1FAE4 endp
-load_game_3dshapes proc far
+ported_shape3d_load_all_ proc far
      s = byte ptr 0
      r = byte ptr 2
 
@@ -3184,11 +3184,11 @@ load_game_3dshapes proc far
     sub     sp, 2
     push    si
     sub     ax, ax
-    mov     word_461C6, ax
-    mov     word_461C4, ax
-    mov     word_463D4, ax
-    mov     word_463D2, ax
-    call    get_res_ofs_diff_scaled
+    mov     word ptr game1ptr+2, ax
+    mov     word ptr game1ptr, ax
+    mov     word ptr game2ptr+2, ax
+    mov     word ptr game2ptr, ax
+    call    mmgr_get_res_ofs_diff_scaled
     or      dx, dx
     jg      short loc_1FEC2
     jl      short loc_1FEB9
@@ -3207,14 +3207,14 @@ loc_1FEC2:
     push    ax
     call    file_load_3dres
     add     sp, 2
-    mov     word_461C4, ax
-    mov     word_461C6, dx
+    mov     word ptr game1ptr, ax
+    mov     word ptr game1ptr+2, dx
     mov     ax, offset aGame2; "game2"
     push    ax
     call    file_load_3dres
     add     sp, 2
-    mov     word_463D2, ax
-    mov     word_463D4, dx
+    mov     word ptr game2ptr, ax
+    mov     word ptr game2ptr+2, dx
     sub     si, si
 loc_1FEEA:
     mov     ax, si
@@ -3224,12 +3224,12 @@ loc_1FEEA:
     add     ax, cx
     add     ax, offset aBarn; "barn"
     push    ax
-    push    word_461C6
-    push    word_461C4
+    push    word ptr game1ptr+2
+    push    word ptr game1ptr
     call    locate_shape_nofatal
     add     sp, 6
-    mov     word_449F8, ax
-    mov     word_449FA, dx
+    mov     word ptr curshapeptr, ax
+    mov     word ptr curshapeptr+2, dx
     or      ax, dx
     jnz     short loc_1FF38
     mov     ax, si
@@ -3239,20 +3239,20 @@ loc_1FEEA:
     add     ax, cx
     add     ax, offset aBarn; "barn"
     push    ax
-    push    word_463D4
-    push    word_463D2
+    push    word ptr game2ptr+2
+    push    word ptr game2ptr
     call    locate_shape_fatal
     add     sp, 6
-    mov     word_449F8, ax
-    mov     word_449FA, dx
+    mov     word ptr curshapeptr, ax
+    mov     word ptr curshapeptr+2, dx
 loc_1FF38:
     mov     ax, 16h
     imul    si
     add     ax, offset game3dshapes
     push    ax
-    push    word_449FA
-    push    word_449F8
-    call    setup_3d_res
+    push    word ptr curshapeptr+2
+    push    word ptr curshapeptr
+    call    shape3d_init_shape
     add     sp, 6
     inc     si
     cmp     si, 74h ; 't'
@@ -3262,29 +3262,29 @@ loc_1FF38:
     mov     sp, bp
     pop     bp
     retf
-load_game_3dshapes endp
-unload_game_resources proc far
+ported_shape3d_load_all_ endp
+ported_shape3d_free_all_ proc far
 
-    mov     ax, word_461C4
-    or      ax, word_461C6
+    mov     ax, word ptr game1ptr
+    or      ax, word ptr game1ptr+2
     jz      short loc_1FF77
-    push    word_461C6
-    push    word_461C4
+    push    word ptr game1ptr+2
+    push    word ptr game1ptr
     call    mmgr_free
     add     sp, 4
 loc_1FF77:
-    mov     ax, word_463D2
-    or      ax, word_463D4
+    mov     ax, word ptr game2ptr
+    or      ax, word ptr game2ptr+2
     jz      short locret_1FF90
-    push    word_463D4
-    push    word_463D2
+    push    word ptr game2ptr+2
+    push    word ptr game2ptr
     call    mmgr_free
     add     sp, 4
 locret_1FF90:
     retf
     ; align 2
     db 144
-unload_game_resources endp
+ported_shape3d_free_all_ endp
 sub_1FF92 proc far
     var_10 = byte ptr -16
     var_E = dword ptr -14
@@ -3327,7 +3327,7 @@ sub_1FF92 proc far
     add     sp, 6
     push    dx
     push    ax
-    call    setup_3d_res
+    call    shape3d_init_shape
     add     sp, 6
     mov     ax, (offset game3dshapes.shape3d_numverts+0AD4h)
     push    ax
@@ -3339,7 +3339,7 @@ sub_1FF92 proc far
     add     sp, 6
     push    dx
     push    ax
-    call    setup_3d_res
+    call    shape3d_init_shape
     add     sp, 6
     mov     ax, word ptr game3dshapes.shape3d_verts+0AD4h
     mov     dx, word ptr game3dshapes.shape3d_verts+0AD6h
@@ -3444,7 +3444,7 @@ loc_200D6:
     add     sp, 6
     push    dx
     push    ax
-    call    setup_3d_res
+    call    shape3d_init_shape
     add     sp, 6
     mov     ax, 8044h
     push    ax
@@ -3456,7 +3456,7 @@ loc_200D6:
     add     sp, 6
     push    dx
     push    ax
-    call    setup_3d_res
+    call    shape3d_init_shape
     add     sp, 6
     mov     ax, 805Ah
     push    ax
@@ -3468,7 +3468,7 @@ loc_200D6:
     add     sp, 6
     push    dx
     push    ax
-    call    setup_3d_res
+    call    shape3d_init_shape
     add     sp, 6
     mov     ax, (offset game3dshapes.shape3d_numverts+0A24h)
     push    ax
@@ -3480,7 +3480,7 @@ loc_200D6:
     add     sp, 6
     push    dx
     push    ax
-    call    setup_3d_res
+    call    shape3d_init_shape
     add     sp, 6
     mov     ax, (offset game3dshapes.shape3d_numverts+0A3Ah)
     push    ax
@@ -3492,7 +3492,7 @@ loc_200D6:
     add     sp, 6
     push    dx
     push    ax
-    call    setup_3d_res
+    call    shape3d_init_shape
     add     sp, 6
     mov     bx, [bp+arg_2]
     mov     al, [bx]
@@ -3518,7 +3518,7 @@ loc_201A9:
     jnz     short loc_2022A
     push    word ptr dword_454AA+2
     push    word ptr dword_454AA
-    call    get_res_size_scaled
+    call    mmgr_get_res_size_scaled
     add     sp, 4
     mov     [bp+var_6], ax
     mov     [bp+var_4], dx
@@ -3585,7 +3585,7 @@ loc_20257:
     add     sp, 6
     push    dx
     push    ax
-    call    setup_3d_res
+    call    shape3d_init_shape
     add     sp, 6
     mov     ax, (offset game3dshapes.shape3d_numverts+0AEAh)
     push    ax
@@ -3597,7 +3597,7 @@ loc_20257:
     add     sp, 6
     push    dx
     push    ax
-    call    setup_3d_res
+    call    shape3d_init_shape
     add     sp, 6
     mov     ax, word ptr game3dshapes.shape3d_verts+0AEAh
     mov     dx, word ptr game3dshapes.shape3d_verts+0AECh
@@ -3702,7 +3702,7 @@ loc_20369:
     add     sp, 6
     push    dx
     push    ax
-    call    setup_3d_res
+    call    shape3d_init_shape
     add     sp, 6
     mov     ax, (offset game3dshapes.shape3d_numverts+0A50h)
     push    ax
@@ -3714,7 +3714,7 @@ loc_20369:
     add     sp, 6
     push    dx
     push    ax
-    call    setup_3d_res
+    call    shape3d_init_shape
     add     sp, 6
     mov     ax, (offset game3dshapes.shape3d_numverts+0A66h)
     push    ax
@@ -3726,7 +3726,7 @@ loc_20369:
     add     sp, 6
     push    dx
     push    ax
-    call    setup_3d_res
+    call    shape3d_init_shape
     add     sp, 6
     mov     ax, (offset game3dshapes.shape3d_numverts+0A7Ch)
     push    ax
@@ -3738,7 +3738,7 @@ loc_20369:
     add     sp, 6
     push    dx
     push    ax
-    call    setup_3d_res
+    call    shape3d_init_shape
     add     sp, 6
     mov     ax, (offset game3dshapes.shape3d_numverts+0A92h)
     push    ax
@@ -3750,7 +3750,7 @@ loc_20369:
     add     sp, 6
     push    dx
     push    ax
-    call    setup_3d_res
+    call    shape3d_init_shape
     add     sp, 6
     pop     si
     pop     di

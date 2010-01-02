@@ -78,7 +78,7 @@ seg008 segment byte public 'STUNTSC' use16
     public input_repeat_check
     public sub_2916E
     public sub_292DC
-    public setup_3d_res
+    public shape3d_init_shape
     public sub_29606
     public sub_29620
     public show_waiting
@@ -149,7 +149,7 @@ sub_274B0 proc far
     adc     dx, 0
     mov     [bp+var_4], ax
     mov     [bp+var_2], dx
-    call    get_res_ofs_diff_scaled
+    call    mmgr_get_res_ofs_diff_scaled
     cmp     dx, [bp+var_2]
     jg      short loc_27506
     jl      short loc_274FD
@@ -3891,7 +3891,7 @@ loc_29554:
     pop     bp
     retf
 sub_292DC endp
-setup_3d_res proc far
+shape3d_init_shape proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = dword ptr 6
@@ -3966,7 +3966,7 @@ setup_3d_res proc far
     pop     si
     pop     bp
     retf
-setup_3d_res endp
+shape3d_init_shape endp
 sub_29606 proc far
      s = byte ptr 0
      r = byte ptr 2

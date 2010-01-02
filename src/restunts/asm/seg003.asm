@@ -6359,19 +6359,19 @@ setup_intro proc far
     push    ax
     push    [bp+var_20]
     push    [bp+var_22]
-    call    setup_3d_res
+    call    shape3d_init_shape
     add     sp, 6
     mov     ax, offset logo2shape
     push    ax
     push    [bp+var_1C]
     push    [bp+var_1E]
-    call    setup_3d_res
+    call    shape3d_init_shape
     add     sp, 6
     mov     ax, offset bravshape
     push    ax
     push    [bp+var_18]
     push    [bp+var_1A]
-    call    setup_3d_res
+    call    shape3d_init_shape
     add     sp, 6
     cmp     byte_46436, 0
     jnz     short loc_1D9CA
