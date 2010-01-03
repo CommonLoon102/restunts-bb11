@@ -310,8 +310,8 @@ seg012 segment byte public 'STUNTSC' use16
     extrn ported_sprite_make_wnd_:proc
     extrn next_wnd_def:word
     extrn wnd_defs:byte
-    extrn sprite_set_1_from_argptr:proc
-    extrn sprite_copy_2_to_1:proc
+    extrn ported_sprite_set_1_from_argptr_:proc
+    extrn ported_sprite_copy_2_to_1_:proc
     extrn sub_35B26:proc
     extrn sub_35B76:proc
     extrn sub_35C4E:proc

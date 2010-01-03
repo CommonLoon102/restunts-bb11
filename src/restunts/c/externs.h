@@ -43,9 +43,11 @@ extern unsigned long file_decomp_rle(void far* src, void far* dst, unsigned para
 extern void* _memcpy(void*, const void*, unsigned);
 extern char* _strcpy(char* dest, const char* src);
 extern char* _strcat(char* dest, const char* src);
+extern void far* __fmemcpy(void far*, const void far*, unsigned);
 
 #define memcpy _memcpy
 #define strcpy _strcpy
 #define strcat _strcat
+#define fmemcpy __fmemcpy
 
 #endif

@@ -3,6 +3,7 @@
 #include "fileio.h"
 #include "externs.h"
 
+#pragma pack (push, 1)
 struct GAMEINFO {
 	char game_playercarid[4];
 	char game_playermaterial;
@@ -15,6 +16,7 @@ struct GAMEINFO {
 	unsigned short game_framespersec;
 	unsigned short game_recordedframes;
 };
+#pragma pack (pop)
 
 extern struct GAMEINFO gameconfig;
 extern struct GAMEINFO gameconfigcopy;

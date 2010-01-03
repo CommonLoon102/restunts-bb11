@@ -1,7 +1,9 @@
 #include <dos.h>
+#include <mem.h>
 #include "externs.h"
 #include "memmgr.h"
 
+#pragma pack (push, 1)
 struct SHAPE2D {
 	unsigned short s2d_width;
 	unsigned short s2d_height;
@@ -31,14 +33,19 @@ struct SPRITE {
 	unsigned short sprite_left2;
 	unsigned short sprite_widthsum;
 };
+#pragma pack (pop)
 
 extern char aWindowdefOutOfRowTableSpa[];
 extern char aMcgaWindow[];
 extern char aWindowReleased[];
+extern struct SPRITE far* wndsprite;
+
 extern unsigned char* far wnd_defs; // a reserved memory chunk of 0xE10 bytes in seg012. contents are SPRITE structs followed by lineoffsets. cast to a far pointer for access to the contents in other segments.
 extern char* far next_wnd_def; // near pointer relative to seg012 to the current SPRITE in wnd_defs. cast to a far pointer for access to the contents in other segments
+extern struct SPRITE far sprite1; // seg012
+extern struct SPRITE far sprite2; // seg012
 
-extern void sprite_set_1(void);
+extern void sprite_clear_1_color(int);	
 
 struct SPRITE far* sprite_make_wnd(unsigned int width, unsigned int height, unsigned int unk) {
 	int pages, i;
@@ -108,4 +115,30 @@ void sprite_free_wnd(struct SPRITE far* wndsprite) {
 	}
 	next_wnd_def = next_wnd_def - spritesize;
 	mmgr_release((void far*)wndsprite->sprite_bitmapptr);
+}
+
+void sprite_set_1_from_argptr(struct SPRITE far* argsprite) {
+	fmemcpy(&sprite1, argsprite, sizeof(struct SPRITE));
+}
+
+void sprite_copy_2_to_1() {
+	sprite_set_1_from_argptr(&sprite2);
+}
+
+void sprite_copy_2_to_1_2() {
+	sprite_set_1_from_argptr(&sprite2);
+}
+
+void sprite_copy_2_to_1_clear() {
+	sprite_set_1_from_argptr(&sprite2);
+	sprite_clear_1_color(0);
+}
+
+void sprite_copy_wnd_to_1() {
+	sprite_set_1_from_argptr(wndsprite);
+}
+
+void sprite_copy_wnd_to_1_clear() {
+	sprite_set_1_from_argptr(wndsprite);
+	sprite_clear_1_color(0);
 }

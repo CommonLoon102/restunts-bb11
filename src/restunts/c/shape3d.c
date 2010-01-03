@@ -3,6 +3,7 @@
 #include "fileio.h"
 #include "memmgr.h"
 
+#pragma pack (push, 1)
 struct SHAPE3D {
 	unsigned short shape3d_numverts;
 	char far* shape3d_verts;
@@ -19,6 +20,7 @@ struct SHAPE3DHEADER {
 	unsigned char header_numpaints;
 	unsigned char header_reserved;
 };
+#pragma pack (pop)
 
 extern char far* game1ptr;
 extern char far* game2ptr;

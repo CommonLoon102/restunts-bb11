@@ -21,10 +21,10 @@ seg008 segment byte public 'STUNTSC' use16
     extrn mouse_op_unk:proc
     extrn check_input:proc
     extrn nopsub_28F26:proc
-    extrn sprite_copy_2_to_1_2:proc
-    extrn sprite_copy_2_to_1_clear:proc
-    extrn sprite_copy_wnd_to_1:proc
-    extrn sprite_copy_wnd_to_1_clear:proc
+    extrn ported_sprite_copy_2_to_1_2_:proc
+    extrn ported_sprite_copy_2_to_1_clear_:proc
+    extrn ported_sprite_copy_wnd_to_1_:proc
+    extrn ported_sprite_copy_wnd_to_1_clear_:proc
     extrn sub_28F98:proc
     extrn sub_29008:proc
     extrn sub_290BC:proc

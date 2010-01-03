@@ -1,12 +1,14 @@
 #ifndef RESTUNTS_MEMMGR_H
 #define RESTUNTS_MEMMGR_H
 
+#pragma pack (push, 1)
 struct MEMCHUNK {
 	char resname[12];
 	unsigned short ressize;
 	unsigned short resofs;
 	unsigned short resunk;
 };
+#pragma pack (pop)
 
 const char* mmgr_path_to_name(const char* filename);
 void far* mmgr_alloc_pages(const char* arg_0, unsigned short arg_2);

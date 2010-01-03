@@ -68,10 +68,10 @@ seg008 segment byte public 'STUNTSC' use16
     public mouse_op_unk
     public check_input
     public nopsub_28F26
-    public sprite_copy_2_to_1_2
-    public sprite_copy_2_to_1_clear
-    public sprite_copy_wnd_to_1
-    public sprite_copy_wnd_to_1_clear
+    public ported_sprite_copy_2_to_1_2_
+    public ported_sprite_copy_2_to_1_clear_
+    public ported_sprite_copy_wnd_to_1_
+    public ported_sprite_copy_wnd_to_1_clear_
     public sub_28F98
     public sub_29008
     public sub_290BC
@@ -3158,7 +3158,7 @@ nopsub_28F26 proc far
     ; align 2
     db 144
 nopsub_28F26 endp
-sprite_copy_2_to_1_2 proc far
+ported_sprite_copy_2_to_1_2_ proc far
 
     mov     ax, offset sprite2
     mov     dx, seg seg012
@@ -3169,8 +3169,8 @@ sprite_copy_2_to_1_2 proc far
     retf
     ; align 2
     db 144
-sprite_copy_2_to_1_2 endp
-sprite_copy_2_to_1_clear proc far
+ported_sprite_copy_2_to_1_2_ endp
+ported_sprite_copy_2_to_1_clear_ proc far
 
     mov     ax, offset sprite2
     mov     dx, seg seg012
@@ -3183,8 +3183,8 @@ sprite_copy_2_to_1_clear proc far
     call    sprite_clear_1_color
     add     sp, 2
     retf
-sprite_copy_2_to_1_clear endp
-sprite_copy_wnd_to_1 proc far
+ported_sprite_copy_2_to_1_clear_ endp
+ported_sprite_copy_wnd_to_1_ proc far
 
     push    word ptr wndsprite+2
     push    word ptr wndsprite
@@ -3193,8 +3193,8 @@ sprite_copy_wnd_to_1 proc far
     retf
     ; align 2
     db 144
-sprite_copy_wnd_to_1 endp
-sprite_copy_wnd_to_1_clear proc far
+ported_sprite_copy_wnd_to_1_ endp
+ported_sprite_copy_wnd_to_1_clear_ proc far
 
     push    word ptr wndsprite+2
     push    word ptr wndsprite
@@ -3205,7 +3205,7 @@ sprite_copy_wnd_to_1_clear proc far
     call    sprite_clear_1_color
     add     sp, 2
     retf
-sprite_copy_wnd_to_1_clear endp
+ported_sprite_copy_wnd_to_1_clear_ endp
 sub_28F98 proc far
      s = byte ptr 0
      r = byte ptr 2
@@ -3997,7 +3997,7 @@ sub_29620 proc far
     push    di
     push    si
     push    cs
-    call near ptr sprite_copy_2_to_1_2
+    call near ptr ported_sprite_copy_2_to_1_2_
     push    cs
     call near ptr mouse_draw_opaque_check
     cmp     [bp+arg_4], 0FFFEh
@@ -4043,7 +4043,7 @@ loc_29670:
     or      di, di
     jz      short loc_2965C
     push    cs
-    call near ptr sprite_copy_2_to_1_2
+    call near ptr ported_sprite_copy_2_to_1_2_
     les     bx, [bp+arg_0]
     push    word ptr es:[bx+2]
     push    word ptr es:[bx]

@@ -694,6 +694,12 @@ static PortFuncName(labelname) {
 
 		labelname == "sprite_make_wnd" ||
 		labelname == "sprite_free_wnd" ||
+		labelname == "sprite_set_1_from_argptr" ||
+		labelname == "sprite_copy_2_to_1" ||
+		labelname == "sprite_copy_2_to_1_2" ||
+		labelname == "sprite_copy_2_to_1_clear" ||
+		labelname == "sprite_copy_wnd_to_1" || 
+		labelname == "sprite_copy_wnd_to_1_clear" ||
 
 		labelname == "stuntsmain"
 	)

@@ -357,8 +357,8 @@ seg012 segment byte public 'STUNTSC' use16
     public ported_sprite_make_wnd_
     public next_wnd_def
     public wnd_defs
-    public sprite_set_1_from_argptr
-    public sprite_copy_2_to_1
+    public ported_sprite_set_1_from_argptr_
+    public ported_sprite_copy_2_to_1_
     public sub_35B26
     public sub_35B76
     public sub_35C4E
@@ -18592,7 +18592,7 @@ wnd_defs     db 0
     db 0
     db 0
 ported_sprite_make_wnd_ endp
-sprite_set_1_from_argptr proc far
+ported_sprite_set_1_from_argptr_ proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -18616,8 +18616,8 @@ sprite_set_1_from_argptr proc far
     pop     ds
     pop     bp
     retf
-sprite_set_1_from_argptr endp
-sprite_copy_2_to_1 proc far
+ported_sprite_set_1_from_argptr_ endp
+ported_sprite_copy_2_to_1_ proc far
 
     mov     ax, seg seg012
     push    ax
@@ -18628,7 +18628,7 @@ sprite_copy_2_to_1 proc far
     retf
     ; align 2
     db 0
-sprite_copy_2_to_1 endp
+ported_sprite_copy_2_to_1_ endp
 sub_35B26 proc far
      s = byte ptr 0
      r = byte ptr 2

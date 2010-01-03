@@ -74,6 +74,12 @@ extrn shape3d_init_shape:proc
 
 extrn sprite_make_wnd:proc
 extrn sprite_free_wnd:proc
+extrn sprite_set_1_from_argptr:proc
+extrn sprite_copy_2_to_1:proc
+extrn sprite_copy_2_to_1_2:proc
+extrn sprite_copy_2_to_1_clear:proc
+extrn sprite_copy_wnd_to_1:proc
+extern sprite_copy_wnd_to_1_clear:proc
 
 extrn stuntsmain:proc
 
