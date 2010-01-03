@@ -1,29 +1,42 @@
-ASM = tasm
-CC = bcc /c /u- /mm /B
-LINK = tlink
-SED = sed
+!ifndef TARGET
+TARGET=dos
+!endif
 
-OBJDIR = ..\build
+OBJDIR = ..\$(TARGET)\build
+
+# Set up tools for DOS
+!if ($(TARGET)==dos)
+CC = bcc /c /u- /mm /B /n$(OBJDIR) /DRESTUNTS_DOS
+
+# Set up tools for SDL
+!elif ($(TARGET)==sdl)
+SDLPATH = s:\src\sdl
+CC = cl /MD /c /I$(SDLPATH)\include /DRESTUNTS_SDL
+
+!else
+!error Unsupported C target: $(TARGET)
+!endif
+
 
 all: $(OBJDIR)\fileio.obj $(OBJDIR)\math.obj $(OBJDIR)\memmgr.obj $(OBJDIR)\restunts.obj $(OBJDIR)\shape3d.obj $(OBJDIR)\shape2d.obj
 
 $(OBJDIR)\fileio.obj: fileio.c
-	$(CC) -n$(OBJDIR) $?
+	$(CC) $?
 
 $(OBJDIR)\math.obj: math.c
-	$(CC) -n$(OBJDIR) $? 
+	$(CC) $?
 
 $(OBJDIR)\memmgr.obj: memmgr.c
-	$(CC) -n$(OBJDIR) $? 
+	$(CC) $?
 
 $(OBJDIR)\restunts.obj: restunts.c
-	$(CC) -n$(OBJDIR) $? 
+	$(CC) $?
 
 $(OBJDIR)\shape3d.obj: shape3d.c
-	$(CC) -n$(OBJDIR) $? 
+	$(CC) $?
 
 $(OBJDIR)\shape2d.obj: shape2d.c
-	$(CC) -n$(OBJDIR) $? 
+	$(CC) $?
 
 clean:
 	del $(OBJDIR)\fileio.obj
