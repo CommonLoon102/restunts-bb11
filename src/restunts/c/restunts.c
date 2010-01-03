@@ -112,7 +112,6 @@ extern void security_check();
 
 
 int stuntsmain(int argc, char* argv) {
-//	return ported_stuntsmain_(argc, argv, envp);
 
 	int i, result;
 	int regax, regsi;
@@ -120,6 +119,7 @@ int stuntsmain(int argc, char* argv) {
 	char far* trkptr;
 	char far* textresptr;
 
+	return ported_stuntsmain_(argc, argv);
 
 	init_video(argc, argv);
 	init_div0();

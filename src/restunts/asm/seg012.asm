@@ -272,7 +272,7 @@ seg012 segment byte public 'STUNTSC' use16
     public loc_32BDE
     public vle_esc1
     public vle_esc2
-    public file_decomp_vle
+    public ported_file_decomp_vle_
     public nopsub_32FEE
     public video_get_status
     public nopsub_33006
@@ -10518,7 +10518,7 @@ vle_esc2     db 0
     db 0
     db 0
 sub_32AE2 endp
-file_decomp_vle proc far
+ported_file_decomp_vle_ proc far
     var_lengths = byte ptr -528
     var_symbols = byte ptr -272
     var_codoff = word ptr -14
@@ -10849,7 +10849,7 @@ loc_32FE1:
     jmp     short loc_32FDD
     ; align 2
     db 0
-file_decomp_vle endp
+ported_file_decomp_vle_ endp
 nopsub_32FEE proc far
 
     mov     dx, 3DAh

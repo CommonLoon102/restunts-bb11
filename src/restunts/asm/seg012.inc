@@ -225,7 +225,7 @@ seg012 segment byte public 'STUNTSC' use16
     extrn loc_32BDE
     extrn vle_esc1:word
     extrn vle_esc2:byte
-    extrn file_decomp_vle:proc
+    extrn ported_file_decomp_vle_:proc
     extrn nopsub_32FEE:proc
     extrn video_get_status:proc
     extrn nopsub_33006:proc
