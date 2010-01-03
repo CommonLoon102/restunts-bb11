@@ -680,6 +680,8 @@ static PortFuncName(labelname) {
 		labelname == "mmgr_resize_memory" ||
 		labelname == "mmgr_op_unk" ||
 		labelname == "mmgr_alloc_resbytes" ||
+		labelname == "mmgr_get_res_ofs_diff_scaled" ||
+		labelname == "mmgr_get_chunk_size_bytes" ||
 
 		labelname == "locate_shape_nofatal" ||
 		labelname == "locate_shape_fatal" ||

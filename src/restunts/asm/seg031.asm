@@ -56,8 +56,8 @@ seg031 segment byte public 'STUNTSC' use16
     public load_palandcursor
     public get_0
     public ported_mmgr_alloc_resbytes_
-    public mmgr_get_res_ofs_diff_scaled
-    public mmgr_get_res_size_scaled
+    public ported_mmgr_get_res_ofs_diff_scaled_
+    public ported_mmgr_get_chunk_size_bytes_
 load_2dshape_nofatal2 proc far
      s = byte ptr 0
      r = byte ptr 2
@@ -790,7 +790,7 @@ ported_mmgr_alloc_resbytes_ proc far
     ; align 2
     db 144
 ported_mmgr_alloc_resbytes_ endp
-mmgr_get_res_ofs_diff_scaled proc far
+ported_mmgr_get_res_ofs_diff_scaled_ proc far
 
     call    mmgr_get_ofs_diff
     sub     dx, dx
@@ -801,8 +801,8 @@ loc_3A48D:
     dec     cl
     jnz     short loc_3A48D
     retf
-mmgr_get_res_ofs_diff_scaled endp
-mmgr_get_res_size_scaled proc far
+ported_mmgr_get_res_ofs_diff_scaled_ endp
+ported_mmgr_get_chunk_size_bytes_ proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -823,6 +823,6 @@ loc_3A4AB:
     jnz     short loc_3A4AB
     pop     bp
     retf
-mmgr_get_res_size_scaled endp
+ported_mmgr_get_chunk_size_bytes_ endp
 seg031 ends
 end

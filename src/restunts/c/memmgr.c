@@ -153,7 +153,7 @@ void mmgr_alloc_a000() {
 	mmgr_alloc_resmem(0xa000);
 }
 
-unsigned short mmgr_get_ofs_diff() {
+unsigned short mmgr_get_ofs_diff(void) {
 	return resendptr2->resofs - resptr2->resofs - resptr2->ressize;
 }
 
@@ -407,20 +407,19 @@ void mmgr_release(char far* ptr) {
 	popregs();
 }
 
-unsigned short mmgr_get_chunk_size(unsigned short arg_0, unsigned short arg_2) {
+unsigned short mmgr_get_chunk_size(char far* ptr) {
 	int i;
 	unsigned short regax, regbx, regcx, regdx;
 	char* strdi;
 	struct MEMCHUNK* ressi;
 	struct MEMCHUNK* resdi;
 
-	(void)arg_0;
-	regax = arg_2;
+	regax = FP_SEG(ptr);
 	ressi = resptr2;
 
 	for (;;) {
 		if (ressi == resptr1) 
-			fatal_error(aMemoryManagerB, arg_2);
+			fatal_error(aMemoryManagerB, regax);
 		if (regax == ressi->resofs) break;
 		ressi--;
 	}
@@ -530,6 +529,17 @@ void far* mmgr_op_unk(char far* ptr) {
 
 	return MK_FP(resdi->resofs, 0);
 }
+
+unsigned long mmgr_get_res_ofs_diff_scaled() {
+	unsigned long result = mmgr_get_ofs_diff();
+	return result << 4;
+}
+
+unsigned long mmgr_get_chunk_size_bytes(char far* ptr) {
+	unsigned long result = mmgr_get_chunk_size(ptr);
+	return result << 4;
+}
+
 
 struct resheader {
 	unsigned long size;

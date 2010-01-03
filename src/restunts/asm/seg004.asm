@@ -3516,7 +3516,7 @@ loc_201A9:
     jnz     short loc_2022A
     push    word ptr carresptr+2
     push    word ptr carresptr
-    call    mmgr_get_res_size_scaled
+    call    mmgr_get_chunk_size_bytes
     add     sp, 4
     mov     [bp+var_6], ax
     mov     [bp+var_4], dx

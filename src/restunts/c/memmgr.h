@@ -21,10 +21,12 @@ void copy_paras_reverse(unsigned short srcseg, unsigned short destseg, short par
 void mmgr_find_free();
 void far* mmgr_get_chunk_by_name(const char* arg_0);
 void mmgr_release(char far* ptr);
-unsigned short mmgr_get_chunk_size(unsigned short arg_0, unsigned short arg_2);
+unsigned short mmgr_get_chunk_size(char far* ptr);
 unsigned short mmgr_resize_memory(unsigned short arg_0, unsigned short arg_2, unsigned short arg_4);
 void far* mmgr_op_unk(char far* ptr);
 void far* mmgr_alloc_resbytes(const char* name, long int size);
+unsigned long mmgr_get_res_ofs_diff_scaled();
+unsigned long mmgr_get_chunk_size_bytes();
 
 char far* locate_shape_nofatal(char far* data, char* name);
 char far* locate_shape_fatal(char far* data, char* name);
