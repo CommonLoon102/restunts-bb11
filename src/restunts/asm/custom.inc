@@ -81,7 +81,9 @@ extrn sprite_copy_2_to_1:proc
 extrn sprite_copy_2_to_1_2:proc
 extrn sprite_copy_2_to_1_clear:proc
 extrn sprite_copy_wnd_to_1:proc
-extern sprite_copy_wnd_to_1_clear:proc
+extrn sprite_copy_wnd_to_1_clear:proc
+extrn sprite_copy_both_to_arg:proc
+extrn sprite_copy_arg_to_both:proc
 
 extrn stuntsmain:proc
 

@@ -702,6 +702,8 @@ static PortFuncName(labelname) {
 		labelname == "sprite_copy_2_to_1_clear" ||
 		labelname == "sprite_copy_wnd_to_1" || 
 		labelname == "sprite_copy_wnd_to_1_clear" ||
+		labelname == "sprite_copy_both_to_arg" ||
+		labelname == "sprite_copy_arg_to_both" ||
 
 		labelname == "stuntsmain"
 	)

@@ -142,3 +142,11 @@ void sprite_copy_wnd_to_1_clear() {
 	sprite_set_1_from_argptr(wndsprite);
 	sprite_clear_1_color(0);
 }
+
+void sprite_copy_both_to_arg(struct SPRITE* argsprite) {
+	fmemcpy(argsprite, &sprite1, sizeof(struct SPRITE) * 2);
+}
+
+void sprite_copy_arg_to_both(struct SPRITE* argsprite) {
+	fmemcpy(&sprite1, argsprite, sizeof(struct SPRITE) * 2);
+}

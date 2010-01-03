@@ -233,8 +233,8 @@ seg012 segment byte public 'STUNTSC' use16
     public ported_file_write_fatal_
     public video_add_exithandler
     public video_on_exit
-    public sprite_copy_both_to_arg
-    public sprite_copy_arg_to_both
+    public ported_sprite_copy_both_to_arg_
+    public ported_sprite_copy_arg_to_both_
     public sub_3264A
     public sub_3265B
     public nopsub_326BA
@@ -9240,7 +9240,7 @@ loc_32606:
     int     10h             ; - VIDEO - 
     retf
 video_on_exit endp
-sprite_copy_both_to_arg proc far
+ported_sprite_copy_both_to_arg_ proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -9264,8 +9264,8 @@ sprite_copy_both_to_arg proc far
     pop     ds
     pop     bp
     retf
-sprite_copy_both_to_arg endp
-sprite_copy_arg_to_both proc far
+ported_sprite_copy_both_to_arg_ endp
+ported_sprite_copy_arg_to_both_ proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -9287,7 +9287,7 @@ sprite_copy_arg_to_both proc far
     pop     ds
     pop     bp
     retf
-sprite_copy_arg_to_both endp
+ported_sprite_copy_arg_to_both_ endp
 sub_3264A proc far
      s = byte ptr 0
      r = byte ptr 2
