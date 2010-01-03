@@ -653,6 +653,7 @@ static PortFuncName(labelname) {
 		labelname == "file_read_nofatal" ||
 		labelname == "file_write_fatal" ||
 		labelname == "file_write_nofatal" ||
+		labelname == "file_decomp_vle" ||
 		labelname == "file_decomp" ||
 		labelname == "file_decomp_fatal" ||
 		labelname == "file_decomp_nofatal" ||

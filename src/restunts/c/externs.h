@@ -40,7 +40,6 @@ extern void load_audio_finalize(void far* audiores);
 extern void fatal_error(const char*, ...);
 extern int do_dea_textres(void);
 extern unsigned long file_decomp_rle(void far* src, void far* dst, unsigned paras);
-extern unsigned long file_decomp_vle(void far* src, void far* dst, unsigned paras);
 extern void* _memcpy(void*, const void*, unsigned);
 extern char* _strcpy(char* dest, const char* src);
 extern char* _strcat(char* dest, const char* src);

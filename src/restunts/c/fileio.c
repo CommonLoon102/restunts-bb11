@@ -13,7 +13,7 @@ struct compr_header {
 		char type;
 	};
 	unsigned short sizel;
-	unsigned char sizeh;
+	unsigned char  sizeh;
 };
 
 // Minimal stdio.h "support" untill we can link with a real CRT.
@@ -472,6 +472,154 @@ short file_write_nofatal(const char* filename, void far* src, unsigned long leng
 	return file_write(filename, src, length, 0);
 }
 
+#define RS_VLE_ESC_LEN   0x10
+#define RS_VLE_ALPH_LEN  0x100
+#define RS_VLE_ESC_WIDTH 0x40
+#define RS_VLE_NUM_SYMB  0x80
+
+// Decompress variable-length encoded sub-files.
+unsigned long file_decomp_vle(unsigned char huge* src, unsigned char huge* dst, unsigned short decompparas)
+{
+	unsigned long len, lenleft;
+	unsigned int additive, alphlen, width, widthdistr, i, j;
+	unsigned short esc1[RS_VLE_ESC_LEN], esc2[RS_VLE_ESC_LEN];
+	unsigned char alph[RS_VLE_ALPH_LEN], symb[RS_VLE_ALPH_LEN], wdth[RS_VLE_ALPH_LEN];
+	unsigned char esclen, symbwdth, numsymb, numsymbleft, cursymb, tmp;
+	unsigned char curwdt, nextwdt, code;
+	unsigned short curword;
+
+	unsigned char huge* wdtpos;
+	unsigned char huge* codpos;
+	struct compr_header far* hdr;
+
+	(void)decompparas;
+
+	// Get decompressed size from header.
+	hdr = (struct compr_header far*)src;
+	len = lenleft = hdr->sizel | ((long)hdr->sizeh << 16);
+	src += sizeof(*hdr);
+
+	// One-byte escape codes length counter.
+	esclen = *src++;
+	additive = (esclen & 0x80) == 0x80; // MSB is additive flag
+	esclen &= ~0x80;
+
+	// Store postion of width data for later.
+	wdtpos = src;
+
+	// Generate escape codes.
+	for (i = 0, j = 0, alphlen = 0; i < esclen; ++i) {
+		j *= 2;
+		esc1[i] = alphlen - j;
+		tmp = *src++;
+		j += tmp;
+		alphlen += tmp;
+		esc2[i] = j;
+	}
+
+	// Read alphabet.
+	for (i = 0; i < alphlen; ++i) {
+		alph[i] = *src++;
+	}
+
+	// Store start position of compression codes, roll back to code width data.
+	codpos = src;
+	src = wdtpos;
+
+	// Generate lookup tables.
+	width = 1;
+	widthdistr = (esclen >= 8 ? 8 : esclen);
+	numsymb = RS_VLE_NUM_SYMB;
+	for (i = 0, j = 0; width <= widthdistr; ++width, numsymb >>= 1) {
+		for (symbwdth = *src++; symbwdth > 0; --symbwdth, ++j) {
+			for (numsymbleft = numsymb; numsymbleft; --numsymbleft, ++i) {
+				symb[i] = alph[j];
+				wdth[i] = width;
+			}
+		}
+	}
+
+	// Pad widths.
+	for (; i < RS_VLE_ALPH_LEN; ++i) {
+		wdth[i] = RS_VLE_ESC_WIDTH;
+	}
+
+	// Go to compression codes.
+	src = codpos;
+
+	curword = *src << 8 | *(src + 1);
+	src += 2;
+	curwdt = 8;
+	cursymb = 0;
+
+	++lenleft;
+	while (lenleft) {
+		code = curword >> 8;
+		nextwdt = wdth[code];
+		// Expand.
+		if (nextwdt > 8) {
+			code = curword;
+			curword >>= 8;
+
+			i = 7;
+			while (1) {
+				if (!curwdt) {
+					code = *src++;
+					curwdt = 8;
+				}
+
+				curword = (curword << 1) + ((code & 0x80) == 0x80);
+				code <<= 1;
+				--curwdt;
+				++i;
+
+				if (curword < esc2[i]) {
+					curword += esc1[i];
+
+					if (additive) {
+						cursymb += alph[curword];
+					}
+					else {
+						cursymb = alph[curword];
+					}
+					*dst++ = cursymb;
+					--lenleft;
+
+					break;
+				}
+			}
+
+			curword = (code << curwdt) | *src++;
+			nextwdt = 8 - curwdt;
+			curwdt = 8;
+		}
+		// Direct lookup.
+		else {
+			if (additive) {
+				cursymb += symb[code];
+			}
+			else {
+				cursymb = symb[code];
+			}
+
+			*dst++ = cursymb;
+			--lenleft;
+
+			if (curwdt < nextwdt) {
+				curword <<= curwdt;
+				nextwdt -= curwdt;
+				curwdt = 8;
+				curword |= *src++;
+			}
+		}
+
+		curword <<= nextwdt;
+		curwdt -= nextwdt;
+	}
+
+	return len;
+}
+
 // Decompress file. Returns pointer to result, NULL or raises fatal error.
 void far* file_decomp(const char* filename, int fatal)
 {
@@ -487,21 +635,21 @@ void far* file_decomp(const char* filename, int fatal)
 	if (dst) {
 		return dst;
 	}
-	
+
 	decompparas = file_decomp_paras(filename, fatal);
 	if (decompparas) {
 		// Allocate extra paragraphs for alphabet and escape tables
 		// overhead used during decompression.
 		decompparas += 4;
 		dst = mmgr_alloc_pages(filename, decompparas);
-		
+
 		paras = file_paras(filename, fatal);
 		if (paras) {
 			src = MK_FP(decompparas - paras + FP_SEG(dst), FP_OFF(dst));
 			src = file_read(filename, src, fatal);
 			if (src) {
 				passes = *src;
-				
+
 				// If the multi-pass flag is set the first byte contains the
 				// number of compression passes and the next three bytes holds
 				// the final decompressed size.

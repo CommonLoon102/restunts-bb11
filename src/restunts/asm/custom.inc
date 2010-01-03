@@ -33,6 +33,7 @@ extrn file_read_fatal:proc
 extrn file_read_nofatal:proc
 extrn file_write_fatal:proc
 extrn file_write_nofatal:proc
+extrn file_decomp_vle:proc
 extrn file_decomp:proc
 extrn file_decomp_fatal:proc
 extrn file_decomp_nofatal:proc
