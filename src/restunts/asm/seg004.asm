@@ -2602,8 +2602,8 @@ loc_1F98E:
 loc_1F992:
     mov     ax, 22h ; '"'
     imul    planindex
-    add     ax, word_454C2
-    mov     dx, word_454C4
+    add     ax, word ptr planptr
+    mov     dx, word ptr planptr+2
     mov     word_44D64, ax
     mov     word_44D66, dx
     cmp     byte_44D47, 4
@@ -2640,7 +2640,7 @@ loc_1F9E3:
     shl     bx, 1
     add     bx, ax
     shl     bx, 1
-    les     di, dword_46460
+    les     di, wallptr
     mov     ax, es:[bx+di]
     neg     ax
     add     ax, [bp+var_10]
@@ -2667,7 +2667,7 @@ loc_1FA20:
     shl     ax, 1
     add     ax, cx
     shl     ax, 1
-    add     ax, word ptr dword_46460
+    add     ax, word ptr wallptr
     mov     dx, es
     mov     word ptr [bp+var_40], ax
     mov     word ptr [bp+var_40+2], dx
@@ -2686,8 +2686,8 @@ loc_1FA4C:
     shl     ax, 1
     add     ax, cx
     shl     ax, 1
-    add     ax, word ptr dword_46460
-    mov     dx, word ptr dword_46460+2
+    add     ax, word ptr wallptr
+    mov     dx, word ptr wallptr+2
     mov     word ptr [bp+var_40], ax
     mov     word ptr [bp+var_40+2], dx
     les     bx, [bp+var_40]
@@ -2704,8 +2704,8 @@ loc_1FA78:
     shl     ax, 1
     add     ax, cx
     shl     ax, 1
-    add     ax, word ptr dword_46460
-    mov     dx, word ptr dword_46460+2
+    add     ax, word ptr wallptr
+    mov     dx, word ptr wallptr+2
     mov     word ptr [bp+var_40], ax
     mov     word ptr [bp+var_40+2], dx
     les     bx, [bp+var_40]
@@ -2724,8 +2724,8 @@ loc_1FAA6:
     shl     ax, 1
     add     ax, cx
     shl     ax, 1
-    add     ax, word ptr dword_46460
-    mov     dx, word ptr dword_46460+2
+    add     ax, word ptr wallptr
+    mov     dx, word ptr wallptr+2
     mov     word ptr [bp+var_40], ax
     mov     word ptr [bp+var_40+2], dx
     les     bx, [bp+var_40]

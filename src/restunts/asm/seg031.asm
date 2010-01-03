@@ -387,8 +387,8 @@ loc_3A08A:
 loc_3A0C9:
     cmp     [bp+var_argnosound], 0
     jz      short loc_3A0D9
-    call    sub_373E8
-    call    sub_37708
+    call    audio_toggle_flag2
+    call    audio_toggle_flag6
 loc_3A0D9:
     mov     ax, offset do_dea_textres
     mov     dx, seg seg008
@@ -414,7 +414,7 @@ loc_3A0D9:
 loc_3A10F:
     sub     ax, ax
     push    ax
-    call    clear_sprite1_color
+    call    sprite_clear_1_color
     add     sp, 2
     inc     si
     cmp     si, 0Fh
@@ -452,7 +452,7 @@ loc_3A156:
     jl      short loc_3A156
     sub     ax, ax
     push    ax
-    call    clear_sprite1_color
+    call    sprite_clear_1_color
     add     sp, 2
     inc     si
     cmp     si, 0Fh
@@ -705,8 +705,8 @@ loc_3A300:
     push    ax
     call    sprite_make_wnd
     add     sp, 6
-    mov     word ptr dword_455C8, ax
-    mov     word ptr dword_455C8+2, dx
+    mov     word ptr mouseunkspriteptr, ax
+    mov     word ptr mouseunkspriteptr+2, dx
     mov     ax, offset aSdmain_0; "sdmain"
     push    ax
     call    load_2dshape_fatal_thunk

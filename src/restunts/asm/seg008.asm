@@ -61,10 +61,10 @@ seg008 segment byte public 'STUNTSC' use16
     public ported_locate_text_res_
     public copy_string
     public mouse_track_op
-    public mouse_sprite_op2_check
-    public mouse_sprite_op_check
-    public mouse_sprite_op
-    public mouse_sprite_op2
+    public mouse_draw_transparent_check
+    public mouse_draw_opaque_check
+    public mouse_draw_opaque
+    public mouse_draw_transparent
     public mouse_op_unk
     public check_input
     public nopsub_28F26
@@ -166,7 +166,7 @@ loc_274FD:
     db 144
 loc_27506:
     push    cs
-    call near ptr mouse_sprite_op_check
+    call near ptr mouse_draw_opaque_check
     mov     ax, 0Fh
     push    ax
     mov     ax, [bp+arg_6]
@@ -228,7 +228,7 @@ loc_27506:
     les     bx, dword_42D10[bx]
     push    word ptr es:[bx+2]
     push    word ptr es:[bx]
-    call    sub_3475A
+    call    sprite_clear_shape_alt
     add     sp, 8
     inc     byte_3B8FC
     mov     ax, 1
@@ -257,7 +257,7 @@ sub_275C6 proc far
 loc_275D8:
     dec     byte_3B8FC
     push    cs
-    call near ptr mouse_sprite_op_check
+    call near ptr mouse_draw_opaque_check
     mov     al, byte_3B8FC
     sub     ah, ah
     mov     si, ax
@@ -322,7 +322,7 @@ loc_275D8:
     call    sprite_free_wnd
     add     sp, 4
     push    cs
-    call near ptr mouse_sprite_op2_check
+    call near ptr mouse_draw_transparent_check
 loc_27680:
     pop     si
     pop     di
@@ -390,7 +390,7 @@ show_dialog proc far
     mov     [bp+var_1C6], 0
     mov     [bp+var_194], 20h ; ' '
     push    cs
-    call near ptr mouse_sprite_op_check
+    call near ptr mouse_draw_opaque_check
     mov     ax, [bp+arg_4]
     mov     dx, [bp+arg_6]
     mov     word ptr [bp+var_1D0], ax
@@ -526,7 +526,7 @@ loc_277F6:
     add     sp, 8
     sub     ax, ax
     push    ax
-    call    clear_sprite1_color
+    call    sprite_clear_1_color
     add     sp, 2
     push    [bp+arg_C]
     mov     ax, [bp+arg_A]
@@ -816,7 +816,7 @@ loc_27B4B:
     jg      short loc_27B34
 loc_27B56:
     push    cs
-    call near ptr mouse_sprite_op2_check
+    call near ptr mouse_draw_transparent_check
     mov     [bp+var_1D4], 1
     mov     ax, [bp+arg_0]
     or      ax, ax
@@ -886,7 +886,7 @@ loc_27BD4:
     push    cs
     call near ptr timer_get_delta2
     push    cs
-    call near ptr mouse_sprite_op_check
+    call near ptr mouse_draw_opaque_check
     cmp     [bp+var_140], 2
     jnz     short loc_27C68
     mov     [bp+var_196], 0
@@ -900,9 +900,9 @@ loc_27BF5:
     cmp     ax, 20h ; ' '
     jz      short loc_27BF5
     mov     bx, ax
-    test    byte ptr [bx+382Fh], 1
+    test    byte_3EF9F[bx], 1
     jz      short loc_27C2C
-    test    byte ptr [bx+382Fh], 1
+    test    byte_3EF9F[bx], 1
     jz      short loc_27C26
     add     ax, 20h ; ' '
     jmp     short loc_27C28
@@ -924,9 +924,9 @@ loc_27C32:
     cmp     ax, 20h ; ' '
     jz      short loc_27C32
     mov     bx, ax
-    test    byte ptr [bx+382Fh], 1
+    test    byte_3EF9F[bx], 1
     jz      short loc_27C68
-    test    byte ptr [bx+382Fh], 1
+    test    byte_3EF9F[bx], 1
     jz      short loc_27C62
     add     ax, 20h ; ' '
     jmp     short loc_27C64
@@ -949,7 +949,7 @@ loc_27C77:
     jmp     loc_27D6D
 loc_27C84:
     push    cs
-    call near ptr mouse_sprite_op_check
+    call near ptr mouse_draw_opaque_check
     mov     [bp+var_196], 0
     jmp     loc_27D25
     ; align 2
@@ -1027,7 +1027,7 @@ loc_27D4A:
     db 144
 loc_27D56:
     push    cs
-    call near ptr mouse_sprite_op2_check
+    call near ptr mouse_draw_transparent_check
     cmp     [bp+var_1C0], 0FFh
     jnz     short loc_27D65
     push    cs
@@ -1078,9 +1078,9 @@ loc_27DBC:
     mov     ax, [bp+var_142]
     mov     [bp+var_1D2], ax
     mov     bx, ax
-    test    byte ptr [bx+382Fh], 1
+    test    byte_3EF9F[bx], 1
     jz      short loc_27DEE
-    test    byte ptr [bx+382Fh], 1
+    test    byte_3EF9F[bx], 1
     jz      short loc_27DE8
     add     ax, 20h ; ' '
     jmp     short loc_27DEA
@@ -1249,7 +1249,7 @@ sub_27ED4 proc far
     mov     ax, 0FFFFh
     push    ax
     push    ax
-    mov     ax, 3422h
+    mov     ax, offset aLoa
     push    ax
     push    word ptr mainresptr+2
     push    word ptr mainresptr
@@ -1297,14 +1297,14 @@ loc_27F1E:
     add     sp, 4
     push    [bp+arg_8]
     push    [bp+arg_6]
-    mov     ax, 0AC74h
+    mov     ax, offset byte_463E4
     push    ax
     push    cs
     call near ptr copy_string
     add     sp, 6
     push    [bp+var_710]
     push    [bp+var_712]
-    mov     ax, 0AC74h
+    mov     ax, offset byte_463E4
     push    ax
     call    sub_345BC
     add     sp, 6
@@ -1370,10 +1370,10 @@ loc_28016:
     add     sp, 6
 loc_28036:
     push    cs
-    call near ptr mouse_sprite_op2_check
+    call near ptr mouse_draw_transparent_check
     mov     [bp+var_714], 0
     push    word ptr [bp+0Ah]; int
-    mov     ax, 3426h
+    mov     ax, offset asc_3EB96
     push    ax
     push    word ptr [bp+arg_0]; char *
     call    sub_39E24
@@ -1387,7 +1387,7 @@ loc_2805E:
     push    word_407CA
     call    sub_34B0C
     add     sp, 4
-    mov     ax, 7530h
+    mov     ax, (offset terraincenterpos+22h)
     cwd
     push    dx              ; int
     push    ax              ; int
@@ -1488,7 +1488,7 @@ loc_28108:
     add     ax, bp
     sub     ax, 698h
     push    ax
-    mov     ax, 0AC74h
+    mov     ax, offset byte_463E4
     push    ax              ; char *
     call    _strcpy
     add     sp, 4
@@ -1514,7 +1514,7 @@ loc_28108:
     push    ax              ; char *
     call    _strcpy
     add     sp, 4
-    mov     ax, 0AC74h
+    mov     ax, offset byte_463E4
     push    ax
     mov     ax, [bp+var_6CA]
     mov     cx, ax
@@ -1547,7 +1547,7 @@ loc_281B7:
 loc_281CC:
     cmp     [bp+var_714], 7
     jle     short loc_2824D
-    mov     ax, 3428h
+    mov     ax, offset aLsu
     push    ax
     push    word ptr mainresptr+2
     push    word ptr mainresptr
@@ -1556,23 +1556,23 @@ loc_281CC:
     add     sp, 6
     push    dx
     push    ax
-    mov     ax, 0AC74h
+    mov     ax, offset byte_463E4
     push    ax
     push    cs
     call near ptr copy_string
     add     sp, 6
     push    [bp+var_6E0]
-    mov     ax, 0AC74h
+    mov     ax, offset byte_463E4
     push    ax
     push    cs
     call near ptr sub_29606
     add     sp, 2
     push    ax
-    mov     ax, 0AC74h
+    mov     ax, offset byte_463E4
     push    ax
     call    sub_345BC
     add     sp, 6
-    mov     ax, 342Ch
+    mov     ax, offset aLsd
     push    ax
     push    word ptr mainresptr+2
     push    word ptr mainresptr
@@ -1581,7 +1581,7 @@ loc_281CC:
     add     sp, 6
     push    dx
     push    ax
-    mov     ax, 0AC74h
+    mov     ax, offset byte_463E4
     push    ax
     push    cs
     call near ptr copy_string
@@ -1589,13 +1589,13 @@ loc_281CC:
     mov     ax, [bp+var_6D0]
     dec     ax
     push    ax
-    mov     ax, 0AC74h
+    mov     ax, offset byte_463E4
     push    ax
     push    cs
     call near ptr sub_29606
     add     sp, 2
     push    ax
-    mov     ax, 0AC74h
+    mov     ax, offset byte_463E4
     push    ax
     call    sub_345BC
     add     sp, 6
@@ -1621,7 +1621,7 @@ loc_28280:
     mov     al, [bp+var_69A]
     mov     [bp+var_718], al
     push    cs
-    call near ptr mouse_sprite_op_check
+    call near ptr mouse_draw_opaque_check
     sub     si, si
     jmp     loc_28346
     ; align 2
@@ -1650,7 +1650,7 @@ loc_282A2:
     add     ax, bp
     sub     ax, 698h
     push    ax
-    mov     ax, 0AC74h
+    mov     ax, offset byte_463E4
     push    ax              ; char *
     call    _strcpy
     add     sp, 4
@@ -1659,7 +1659,7 @@ loc_282A2:
     add     bx, bp
     push    word ptr [bx-6DEh]
     push    di
-    mov     ax, 0AC74h
+    mov     ax, offset byte_463E4
     jmp     short loc_28300
 loc_282F2:
     mov     bx, si
@@ -1667,12 +1667,12 @@ loc_282F2:
     add     bx, bp
     push    word ptr [bx-6DEh]
     push    di
-    mov     ax, 3430h
+    mov     ax, offset asc_3EBA0
 loc_28300:
     push    ax
     call    sub_345BC
     add     sp, 6
-    mov     ax, 0AC74h
+    mov     ax, offset byte_463E4
     push    ax
     call    sub_32843
     add     sp, 2
@@ -1714,7 +1714,7 @@ loc_28360:
     db 144
 loc_2836C:
     push    cs
-    call near ptr mouse_sprite_op2_check
+    call near ptr mouse_draw_transparent_check
 loc_28370:
     push    cs
     call near ptr timer_get_delta2
@@ -1821,13 +1821,13 @@ loc_28452:
     cmp     ax, 5000h
     jz      short loc_284B6
     mov     bx, ax
-    test    byte ptr [bx+382Fh], 1
+    test    byte_3EF9F[bx], 1
     jnz     short loc_2847F
-    test    byte ptr [bx+382Fh], 2
+    test    byte_3EF9F[bx], 2
     jz      short loc_28496
 loc_2847F:
     mov     bx, [bp+var_6CC]
-    test    byte ptr [bx+382Fh], 1
+    test    byte_3EF9F[bx], 1
     jz      short loc_284DA
     mov     al, byte ptr [bp+var_6CC]
     add     al, 20h ; ' '
@@ -1914,7 +1914,7 @@ loc_28523:
     mov     al, [bx-698h]
     cbw
     mov     bx, ax
-    test    byte ptr [bx+382Fh], 1
+    test    byte_3EF9F[bx], 1
     jz      short loc_284EA
     mov     al, [bp+var_6EA]
     cbw
@@ -2122,7 +2122,7 @@ loc_28682:
     call    sub_345BC
     add     sp, 6
     push    cs
-    call near ptr mouse_sprite_op2_check
+    call near ptr mouse_draw_transparent_check
     jmp     short loc_2872F
     ; align 2
     db 144
@@ -2361,10 +2361,10 @@ loc_288D8:
     cmp     mouse_isdirty, 0
     jz      short loc_28901
     push    cs
-    call near ptr mouse_sprite_op
+    call near ptr mouse_draw_opaque
 loc_28901:
     push    cs
-    call near ptr mouse_sprite_op2
+    call near ptr mouse_draw_transparent
     jmp     short loc_28934
     ; align 2
     db 144
@@ -2380,7 +2380,7 @@ loc_28908:
     cmp     mouse_isdirty, 0
     jz      short loc_28934
     push    cs
-    call near ptr mouse_sprite_op
+    call near ptr mouse_draw_opaque
 loc_28934:
     cmp     kbormouse, 0
     jz      short loc_289B0
@@ -2824,7 +2824,7 @@ loc_28C7C:
     mov     ax, [bp+var_2]
     mov     [bp+var_C], ax
     push    cs
-    call near ptr mouse_sprite_op_check
+    call near ptr mouse_draw_opaque_check
     sub     ax, ax
     push    ax
     push    [bp+arg_8]
@@ -2857,7 +2857,7 @@ loc_28CD6:
     call    sub_335D2
     add     sp, 0Ah
     push    cs
-    call near ptr mouse_sprite_op2_check
+    call near ptr mouse_draw_transparent_check
 loc_28CE2:
     test    byte ptr mouse_butstate, 3
     jz      short loc_28CEC
@@ -2904,7 +2904,7 @@ loc_28D0E:
     sub     ax, si
     mov     [bp+var_12], ax
     push    cs
-    call near ptr mouse_sprite_op_check
+    call near ptr mouse_draw_opaque_check
     sub     ax, ax
     push    ax
     push    [bp+arg_8]
@@ -2937,10 +2937,10 @@ loc_28D8F:
     call    sub_335D2
     add     sp, 0Ah
     push    cs
-    call near ptr mouse_sprite_op2_check
+    call near ptr mouse_draw_transparent_check
     jmp     loc_28BC5
 mouse_track_op endp
-mouse_sprite_op2_check proc far
+mouse_draw_transparent_check proc far
 
     mov     byte_3B8F7, 1
     cmp     kbormouse, 0
@@ -2948,23 +2948,23 @@ mouse_sprite_op2_check proc far
     cmp     mouse_isdirty, 0
     jnz     short locret_28DB5
     push    cs
-    call near ptr mouse_sprite_op2
+    call near ptr mouse_draw_transparent
 locret_28DB5:
     retf
-mouse_sprite_op2_check endp
-mouse_sprite_op_check proc far
+mouse_draw_transparent_check endp
+mouse_draw_opaque_check proc far
 
     mov     byte_3B8F7, 0
     cmp     mouse_isdirty, 0
     jz      short locret_28DC6
     push    cs
-    call near ptr mouse_sprite_op
+    call near ptr mouse_draw_opaque
 locret_28DC6:
     retf
     ; align 2
     db 144
-mouse_sprite_op_check endp
-mouse_sprite_op proc far
+mouse_draw_opaque_check endp
+mouse_draw_opaque proc far
     var_3C = byte ptr -60
      s = byte ptr 0
      r = byte ptr 2
@@ -2977,10 +2977,10 @@ mouse_sprite_op proc far
     call    sprite_copy_both_to_arg
     add     sp, 2
     call    sprite_copy_2_to_1
-    les     bx, dword_455C8
-    push    word ptr es:[bx+2]
-    push    word ptr es:[bx]
-    call    sub_33BDA
+    les     bx, mouseunkspriteptr
+    push    word ptr es:[bx+(SPRITE.sprite_bitmapptr+2)]
+    push    word ptr es:[bx+SPRITE.sprite_bitmapptr]
+    call    sprite_putimage
     add     sp, 4
     lea     ax, [bp+var_3C]
     push    ax
@@ -2989,8 +2989,8 @@ mouse_sprite_op proc far
     mov     sp, bp
     pop     bp
     retf
-mouse_sprite_op endp
-mouse_sprite_op2 proc far
+mouse_draw_opaque endp
+mouse_draw_transparent proc far
     var_3C = byte ptr -60
      s = byte ptr 0
      r = byte ptr 2
@@ -3012,24 +3012,24 @@ mouse_sprite_op2 proc far
     call    sprite_copy_2_to_1
     push    mouse_ypos
     push    si
-    les     bx, dword_455C8
-    push    word ptr es:[bx+2]
-    push    word ptr es:[bx]
-    call    sub_3475A
+    les     bx, mouseunkspriteptr
+    push    word ptr es:[bx+(SPRITE.sprite_bitmapptr+2)]
+    push    word ptr es:[bx+SPRITE.sprite_bitmapptr]
+    call    sprite_clear_shape_alt
     add     sp, 8
     push    mouse_ypos
     push    mouse_xpos
     les     bx, mmouspriteptr
-    push    word ptr es:[bx+2]
-    push    word ptr es:[bx]
-    call    sub_33890
+    push    word ptr es:[bx+(SPRITE.sprite_bitmapptr+2)]
+    push    word ptr es:[bx+SPRITE.sprite_bitmapptr]
+    call    sprite_putimage_and
     add     sp, 8
     push    mouse_ypos
     push    mouse_xpos
     les     bx, smouspriteptr
-    push    word ptr es:[bx+2]
-    push    word ptr es:[bx]
-    call    sub_34084
+    push    word ptr es:[bx+(SPRITE.sprite_bitmapptr+2)]
+    push    word ptr es:[bx+SPRITE.sprite_bitmapptr]
+    call    sprite_putimage_or
     add     sp, 8
     lea     ax, [bp+var_3C]
     push    ax
@@ -3042,7 +3042,7 @@ mouse_sprite_op2 proc far
     retf
     ; align 2
     db 144
-mouse_sprite_op2 endp
+mouse_draw_transparent endp
 mouse_op_unk proc far
      s = byte ptr 0
      r = byte ptr 2
@@ -3180,7 +3180,7 @@ sprite_copy_2_to_1_clear proc far
     add     sp, 4
     sub     ax, ax
     push    ax
-    call    clear_sprite1_color
+    call    sprite_clear_1_color
     add     sp, 2
     retf
 sprite_copy_2_to_1_clear endp
@@ -3202,7 +3202,7 @@ sprite_copy_wnd_to_1_clear proc far
     add     sp, 4
     sub     ax, ax
     push    ax
-    call    clear_sprite1_color
+    call    sprite_clear_1_color
     add     sp, 2
     retf
 sprite_copy_wnd_to_1_clear endp
@@ -3356,7 +3356,7 @@ sub_290BC proc far
     sub     sp, 4
     push    si
     push    cs
-    call near ptr mouse_sprite_op_check
+    call near ptr mouse_draw_opaque_check
     push    [bp+arg_A]      ; int
     push    [bp+arg_8]      ; int
     mov     ax, 2
@@ -3383,7 +3383,7 @@ sub_290BC proc far
     add     sp, 16h
     mov     [bp+var_4], ax
     push    cs
-    call near ptr mouse_sprite_op2_check
+    call near ptr mouse_draw_transparent_check
     push    word ptr [bp+arg_0]; char *
     call    _strlen
     add     sp, 2
@@ -3999,17 +3999,17 @@ sub_29620 proc far
     push    cs
     call near ptr sprite_copy_2_to_1_2
     push    cs
-    call near ptr mouse_sprite_op_check
+    call near ptr mouse_draw_opaque_check
     cmp     [bp+arg_4], 0FFFEh
     jnz     short loc_29654
     les     bx, [bp+arg_0]
     push    word ptr es:[bx+2]
     push    word ptr es:[bx]
-    call    sub_33BDA
+    call    sprite_putimage
     add     sp, 4
 loc_29648:
     push    cs
-    call near ptr mouse_sprite_op2_check
+    call near ptr mouse_draw_transparent_check
     sub     ax, ax
     pop     si
     pop     di
@@ -4047,10 +4047,10 @@ loc_29670:
     les     bx, [bp+arg_0]
     push    word ptr es:[bx+2]
     push    word ptr es:[bx]
-    call    sub_33BDA
+    call    sprite_putimage
     add     sp, 4
     push    cs
-    call near ptr mouse_sprite_op2_check
+    call near ptr mouse_draw_transparent_check
     mov     ax, di
     pop     si
     pop     di
@@ -4085,7 +4085,7 @@ show_waiting proc far
     call near ptr show_dialog
     add     sp, 12h
     push    cs
-    call near ptr mouse_sprite_op_check
+    call near ptr mouse_draw_opaque_check
     retf
     ; align 2
     db 144
@@ -4232,7 +4232,7 @@ loc_297B5:
     jz      short loc_297F4
     mov     word_45D06, di
     push    cs
-    call near ptr mouse_sprite_op_check
+    call near ptr mouse_draw_opaque_check
     mov     ax, [bp+arg_0]
     shl     ax, 1
     mov     [bp+var_6], ax
@@ -4252,7 +4252,7 @@ loc_297B5:
     call    sub_361BC
     add     sp, 0Ah
     push    cs
-    call near ptr mouse_sprite_op2_check
+    call near ptr mouse_draw_transparent_check
 loc_297F4:
     mov     ax, si
     pop     si
@@ -4689,7 +4689,7 @@ input_pop_status proc far
     or      al, al
     jnz     short loc_29B30
     push    cs
-    call near ptr mouse_sprite_op_check
+    call near ptr mouse_draw_opaque_check
 loc_29B30:
     pop     si
     retf
@@ -4778,7 +4778,7 @@ loc_29B89:
     jl      short loc_29B89
     mov     byte_3FE00, 1
     push    cs
-    call near ptr mouse_sprite_op_check
+    call near ptr mouse_draw_opaque_check
     push    dialogarg2
     mov     ax, [bp+var_14]
     sub     ax, [bp+var_28]
@@ -5089,7 +5089,7 @@ do_mof_restext proc far
     push    cs
     call near ptr input_push_status
     mov     word_3F88E, 1
-    call    sub_373E8
+    call    audio_toggle_flag2
     or      ax, ax
     jz      short loc_29EBE
     sub     ax, ax
@@ -5138,7 +5138,7 @@ do_sonsof_restext proc far
     push    cs
     call near ptr input_push_status
     mov     word_3F88E, 1
-    call    sub_37708
+    call    audio_toggle_flag6
     or      ax, ax
     jz      short loc_29F20
     sub     ax, ax
@@ -5502,7 +5502,7 @@ loc_2A1AC:
     call near ptr show_dialog
     add     sp, 12h
     push    cs
-    call near ptr mouse_sprite_op_check
+    call near ptr mouse_draw_opaque_check
     mov     kbormouse, 0
 loc_2A1E8:
     mov     bx, [bp+arg_0]

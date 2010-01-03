@@ -73,7 +73,7 @@ loc_3A97C:
     les     bx, mcgawndsprite
     push    word ptr es:[bx+2]
     push    word ptr es:[bx]
-    call    sub_33BDA
+    call    sprite_putimage
     add     sp, 4
     retf
 setup_mcgawnd1 endp

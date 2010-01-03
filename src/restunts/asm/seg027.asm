@@ -51,17 +51,17 @@ seg027 segment byte public 'STUNTSC' use16
     public sub_37216
     public sub_372F4
     public sub_3736A
-    public sub_373B2
-    public sub_373B8
-    public sub_373E8
+    public audio_enable_flag2
+    public audio_disable_flag2
+    public audio_toggle_flag2
     public sub_37470
     public sub_374DE
     public audio_check_flag2
     public audio_check_flag
     public audio_init_chunk2
-    public sub_37696
-    public sub_376CA
-    public sub_37708
+    public audio_enable_flag6
+    public audio_disable_flag6
+    public audio_toggle_flag6
     public sub_3771E
     public audio_driver_func3F
     public sub_37868
@@ -254,7 +254,7 @@ sub_37216 proc far
     sub     si, si
     mov     di, 8224h
 loc_37235:
-    cmp     byte_40633, 1
+    cmp     audioflag6, 1
     jz      short loc_37241
     cmp     si, 10h
     jge     short loc_37253
@@ -350,7 +350,7 @@ sub_372F4 proc far
     jnz     short loc_37336
     sub     si, si
 loc_3730F:
-    cmp     byte_40633, 1
+    cmp     audioflag6, 1
     jz      short loc_3731B
     cmp     si, 10h
     jge     short loc_3732B
@@ -422,14 +422,14 @@ sub_3736A proc far
     ; align 2
     db 144
 sub_3736A endp
-sub_373B2 proc far
+audio_enable_flag2 proc far
 
-    mov     byte_40631, 1
+    mov     audioflag2, 1
     retf
-sub_373B2 endp
-sub_373B8 proc far
+audio_enable_flag2 endp
+audio_disable_flag2 proc far
 
-    mov     byte_40631, 0
+    mov     audioflag2, 0
     mov     word_4063A, 1
     cmp     byte_44290, 0
     jz      short loc_373DC
@@ -445,18 +445,18 @@ loc_373DC:
     call    sub_39700
     mov     word_4063A, 0
     retf
-sub_373B8 endp
-sub_373E8 proc far
+audio_disable_flag2 endp
+audio_toggle_flag2 proc far
 
-    cmp     byte_40631, 1
+    cmp     audioflag2, 1
     jnz     short loc_373F6
     push    cs
-    call near ptr sub_373B8
+    call near ptr audio_disable_flag2
     sub     ax, ax
     retf
 loc_373F6:
     push    cs
-    call near ptr sub_373B2
+    call near ptr audio_enable_flag2
     mov     ax, 1
     retf
     push    bp
@@ -466,7 +466,7 @@ loc_373F6:
     push    si
     cmp     byte_40630, 1
     jz      short loc_37414
-    cmp     byte_40631, 0
+    cmp     audioflag2, 0
     jnz     short loc_3741E
 loc_37414:
     mov     ax, 1
@@ -520,7 +520,7 @@ loc_37446:
     add     sp, 8
     pop     bp
     retf
-sub_373E8 endp
+audio_toggle_flag2 endp
 sub_37470 proc far
     var_2 = word ptr -2
      s = byte ptr 0
@@ -644,7 +644,7 @@ audio_check_flag proc far
     sub     sp, 8
     push    di
     push    si
-    cmp     byte_40633, 0
+    cmp     audioflag6, 0
     jnz     short loc_37532
 loc_37529:
     mov     ax, 0FFFFh
@@ -819,7 +819,7 @@ loc_37694:
     pop     bp
     retf
 audio_init_chunk2 endp
-sub_37696 proc far
+audio_enable_flag6 proc far
     var_2 = word ptr -2
      s = byte ptr 0
      r = byte ptr 2
@@ -828,7 +828,7 @@ sub_37696 proc far
     mov     bp, sp
     sub     sp, 2
     push    si
-    cmp     byte_40633, 1
+    cmp     audioflag6, 1
     jz      short loc_376C5
     mov     si, 10h
 loc_376A7:
@@ -842,14 +842,14 @@ loc_376A7:
     cmp     si, 18h
     jl      short loc_376A7
     mov     [bp+var_2], si
-    mov     byte_40633, 1
+    mov     audioflag6, 1
 loc_376C5:
     pop     si
     mov     sp, bp
     pop     bp
     retf
-sub_37696 endp
-sub_376CA proc far
+audio_enable_flag6 endp
+audio_disable_flag6 proc far
     var_2 = word ptr -2
      s = byte ptr 0
      r = byte ptr 2
@@ -859,7 +859,7 @@ sub_376CA proc far
     sub     sp, 4
     push    di
     push    si
-    cmp     byte_40633, 0
+    cmp     audioflag6, 0
     jz      short loc_37702
     mov     si, 10h
     mov     di, (offset audiochunks_unk2+28h)
@@ -876,28 +876,28 @@ loc_376DF:
     cmp     si, 18h
     jl      short loc_376DF
     mov     [bp+var_2], si
-    mov     byte_40633, 0
+    mov     audioflag6, 0
 loc_37702:
     pop     si
     pop     di
     mov     sp, bp
     pop     bp
     retf
-sub_376CA endp
-sub_37708 proc far
+audio_disable_flag6 endp
+audio_toggle_flag6 proc far
 
-    cmp     byte_40633, 1
+    cmp     audioflag6, 1
     jnz     short loc_37716
     push    cs
-    call near ptr sub_376CA
+    call near ptr audio_disable_flag6
     sub     ax, ax
     retf
 loc_37716:
     push    cs
-    call near ptr sub_37696
+    call near ptr audio_enable_flag6
     mov     ax, 1
     retf
-sub_37708 endp
+audio_toggle_flag6 endp
 sub_3771E proc far
      s = byte ptr 0
      r = byte ptr 2
@@ -905,7 +905,7 @@ sub_3771E proc far
 
     push    bp
     mov     bp, sp
-    cmp     byte_40633, 0
+    cmp     audioflag6, 0
     jnz     short loc_3772E
 loc_37728:
     mov     ax, 1
@@ -1271,9 +1271,9 @@ loc_379B8:
     add     sp, 6
 loc_37A35:
     mov     byte_40630, 0
-    mov     byte_40631, 1
+    mov     audioflag2, 1
     mov     byte_40632, 0
-    mov     byte_40633, 1
+    mov     audioflag6, 1
     sub     ax, ax
     pop     si
     pop     di
@@ -1313,8 +1313,8 @@ loc_37A7C:
     push    ax
     call    timer_remove_callback
     add     sp, 4
-    mov     byte_40631, 0
-    mov     byte_40633, 0
+    mov     audioflag2, 0
+    mov     audioflag6, 0
     cmp     byte_40634, 0
     jz      short loc_37AC1
     mov     byte_40639, 64h ; 'd'
@@ -2610,12 +2610,12 @@ copy_4_bytes proc far
     sub     sp, 8
     push    di
     push    si
-    mov     al, byte_40633
+    mov     al, audioflag6
     sub     ah, ah
     push    ax
     mov     al, byte_40632
     push    ax
-    mov     al, byte_40631
+    mov     al, audioflag2
     push    ax
     mov     al, byte_40630
     push    ax

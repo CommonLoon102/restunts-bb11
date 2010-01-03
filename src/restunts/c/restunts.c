@@ -79,7 +79,7 @@ extern void init_video(int argc, char* argv);
 extern void init_div0(void);
 extern void set_fontdef(void);
 extern void init_polyinfo(void);
-extern void mouse_sprite_op_check(void);
+extern void mouse_draw_opaque_check(void);
 extern void sub_22532(void);
 extern void input_do_checking(int unk);
 extern void init_kevinrandom(const char* seed);
@@ -119,7 +119,7 @@ int stuntsmain(int argc, char* argv) {
 	char far* trkptr;
 	char far* textresptr;
 
-	return ported_stuntsmain_(argc, argv);
+	//return ported_stuntsmain_(argc, argv);
 
 	init_video(argc, argv);
 	init_div0();
@@ -227,7 +227,7 @@ int stuntsmain(int argc, char* argv) {
 	
 	input_do_checking(1);
 	input_do_checking(1);
-	mouse_sprite_op_check();
+	mouse_draw_opaque_check();
 	
 	kbormouse = 0;
 	passed_security = 1;  // set to 0 for the original copy protection
@@ -362,7 +362,7 @@ loc_104D2:
 		byte_3B80C[i] = trackdata20[i + 0x70A];
 		byte_3B85E[i] = trackdata20[i + 0x75B];
 	}
-	mmgr_op_unk(cvxptr);
+	mmgr_release(cvxptr);
 	
 	if (byte_44AE2 != 0) goto _do_intro0;
 	goto _show_menu;
@@ -371,7 +371,7 @@ _ask_dos:
 	textresptr = locate_text_res(mainresptr, "dos");
 	result = show_dialog(2, 1, textresptr, 0xFFFF, 0xFFFF, dialogarg2, 0, 0);
 	if (result >= 1) {
-		mouse_sprite_op_check();
+		mouse_draw_opaque_check();
 		audio_stop_unk();
 		audiodrv_atexit();
 		sub_30883();

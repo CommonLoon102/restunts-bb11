@@ -583,13 +583,31 @@ dseg segment byte public 'STUNTSD' use16
     public aGame
     public aPlan
     public aWall
+    public aRplyrpicrpacrpmcrptcbof6bof5b
+    public aMen_0
+    public aCon_0
+    public aRep
+    public a_rpl_1
     public byte_3E9DB
+    public byte_3E9DC
+    public byte_3E9E6
+    public byte_3E9F0
+    public byte_3E9FA
+    public byte_3EA04
+    public word_3EA08
     public word_3EA18
+    public word_3EA1A
     public word_3EA2A
+    public word_3EA2C
     public word_3EA3A
     public word_3EA3C
+    public word_3EA3E
     public word_3EA4C
     public word_3EA4E
+    public unk_3EA50
+    public unk_3EA52
+    public unk_3EA54
+    public unk_3EA56
     public aPolyinfo
     public word_3EB02
     public rect_unk4
@@ -606,6 +624,11 @@ dseg segment byte public 'STUNTSD' use16
     public aOpp1_
     public findfilenames
     public word_3EB90
+    public aLoa
+    public asc_3EB96
+    public aLsu
+    public aLsd
+    public asc_3EBA0
     public asc_3EBA9
     public aSav
     public word_3EBB0
@@ -901,9 +924,9 @@ dseg segment byte public 'STUNTSD' use16
     public aHdr1
     public audiodriverbinary
     public byte_40630
-    public byte_40631
+    public audioflag2
     public byte_40632
-    public byte_40633
+    public audioflag6
     public byte_40634
     public byte_40635
     public unk_40636
@@ -1015,10 +1038,16 @@ dseg segment byte public 'STUNTSD' use16
     public byte_40DFA
     public whlsprite3
     public word_40E00
-    public word_40E0E
-    public word_40E10
+    public word_40E04
+    public byte_40E08
+    public word_40E0A
+    public rplyshapes
+    public byte_40E6A
     public byte_40E6C
     public byte_40E6D
+    public byte_40E74
+    public word_40E76
+    public byte_40E7A
     public mat_y200
     public mat_y100
     public word_40EB0
@@ -1253,8 +1282,7 @@ dseg segment byte public 'STUNTSD' use16
     public word_4499C
     public startrow2
     public byte_4499F
-    public word_449A0
-    public word_449A2
+    public gameresptr
     public gameconfig
     public word_449BE
     public word_449C0
@@ -1347,8 +1375,7 @@ dseg segment byte public 'STUNTSD' use16
     public word_454BA
     public trackdata15
     public word_454C0
-    public word_454C2
-    public word_454C4
+    public planptr
     public fontdefptr
     public word_454CA
     public word_454CC
@@ -1373,7 +1400,7 @@ dseg segment byte public 'STUNTSD' use16
     public word_45576
     public word_45578
     public word_4557A
-    public dword_455C8
+    public mouseunkspriteptr
     public miscptr
     public skybox_unk1
     public byte_455D2
@@ -1418,8 +1445,7 @@ dseg segment byte public 'STUNTSD' use16
     public word_45A24
     public unk_45A26
     public word_45D06
-    public word_45D08
-    public word_45D0A
+    public sdgameresptr
     public byte_45D0C
     public byte_45D14
     public word_45D1C
@@ -1491,7 +1517,7 @@ dseg segment byte public 'STUNTSD' use16
     public byte_4644A
     public mat_temp
     public textresprefix
-    public dword_46460
+    public wallptr
     public unk_46464
     public byte_46467
     public word_46468
@@ -14114,7 +14140,7 @@ aWall     db 119
     db 108
     db 108
     db 0
-    db 114
+aRplyrpicrpacrpmcrptcbof6bof5b     db 114
     db 112
     db 108
     db 121
@@ -14207,19 +14233,19 @@ aWall     db 119
     db 110
     db 110
     db 0
-    db 109
+aMen_0     db 109
     db 101
     db 110
     db 0
-    db 99
+aCon_0     db 99
     db 111
     db 110
     db 0
-    db 114
+aRep     db 114
     db 101
     db 112
     db 0
-    db 46
+a_rpl_1     db 46
     db 114
     db 112
     db 108
@@ -14254,7 +14280,7 @@ aWall     db 119
     db 105
     db 0
 byte_3E9DB     db 6
-    db 1
+byte_3E9DC     db 1
     db 7
     db 3
     db 4
@@ -14264,27 +14290,27 @@ byte_3E9DB     db 6
     db 8
     db 8
     db 0
-    db 0
-    db 0
-    db 2
-    db 2
-    db 3
-    db 4
-    db 5
-    db 1
-    db 7
+byte_3E9E6     db 0
     db 0
     db 2
-    db 6
     db 2
     db 3
     db 4
     db 5
+    db 1
+    db 7
+    db 0
+byte_3E9F0     db 2
+    db 6
+    db 2
+    db 3
+    db 4
+    db 5
     db 6
     db 7
     db 8
     db 0
-    db 0
+byte_3E9FA     db 0
     db 1
     db 0
     db 0
@@ -14294,12 +14320,11 @@ byte_3E9DB     db 6
     db 7
     db 8
     db 0
-    db 6
+byte_3EA04     db 6
     db 6
     db 8
     db 7
-    db 16
-    db 1
+word_3EA08     dw 272
     db 109
     db 0
     db 18
@@ -14315,8 +14340,7 @@ byte_3E9DB     db 6
     db 66
     db 0
 word_3EA18     dw 10
-    db 58
-    db 1
+word_3EA1A     dw 314
     db 151
     db 0
     db 58
@@ -14332,8 +14356,7 @@ word_3EA18     dw 10
     db 91
     db 0
 word_3EA2A     dw 47
-    db 176
-    db 0
+word_3EA2C     dw 176
     db 176
     db 0
     db 156
@@ -14348,8 +14371,7 @@ word_3EA2A     dw 47
     db 0
 word_3EA3A     dw 156
 word_3EA3C     dw 156
-    db 193
-    db 0
+word_3EA3E     dw 193
     db 193
     db 0
     db 173
@@ -14364,13 +14386,13 @@ word_3EA3C     dw 156
     db 0
 word_3EA4C     dw 193
 word_3EA4E     dw 193
+unk_3EA50     db 0
     db 0
+unk_3EA52     db 104
     db 0
-    db 104
+unk_3EA54     db 151
     db 0
-    db 151
-    db 0
-    db 200
+unk_3EA56     db 200
     db 0
 aPolyinfo     db 112
     db 111
@@ -14675,21 +14697,21 @@ findfilenames     dw offset aId4          ; "id4"
     dw offset aTedit_       ; "tedit.*"
     dw offset aOpp1_        ; "opp1.*"
 word_3EB90     dw 0
-    db 108
+aLoa     db 108
     db 111
     db 97
     db 0
-    db 42
+asc_3EB96     db 42
     db 0
-    db 108
+aLsu     db 108
     db 115
     db 117
     db 0
-    db 108
+aLsd     db 108
     db 115
     db 100
     db 0
-    db 32
+asc_3EBA0     db 32
     db 32
     db 32
     db 32
@@ -21003,9 +21025,9 @@ audiodriverbinary     dd 0
     db 0
     db 0
 byte_40630     db 0
-byte_40631     db 1
+audioflag2     db 1
 byte_40632     db 0
-byte_40633     db 1
+audioflag6     db 1
 byte_40634     db 0
 byte_40635     db 0
 unk_40636     db 16
@@ -22849,18 +22871,34 @@ whlsprite3     dd 0
 word_40E00     dw 0
     db 0
     db 0
+word_40E04     dw 0
     db 0
     db 0
+byte_40E08     db 0
     db 0
+word_40E0A     dw 0
     db 0
     db 0
+rplyshapes     dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
     db 0
     db 0
     db 0
     db 0
     db 0
-word_40E0E     dw 0
-word_40E10     dw 0
     db 0
     db 0
     db 0
@@ -22888,68 +22926,7 @@ word_40E10     dw 0
     db 0
     db 0
     db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
+byte_40E6A     db 0
     db 0
 byte_40E6C     db 0
 byte_40E6D     db 0
@@ -22959,13 +22936,12 @@ byte_40E6D     db 0
     db 0
     db 0
     db 0
+byte_40E74     db 0
+    db 0
+word_40E76     dw 0
     db 0
     db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
+byte_40E7A     db 0
     db 0
     db 0
     db 0
@@ -37682,8 +37658,7 @@ byte_4499B     db 0
 word_4499C     dw 0
 startrow2     db 0
 byte_4499F     db 0
-word_449A0     dw 0
-word_449A2     dw 0
+gameresptr     dd 0
 gameconfig     db 0
     db 0
     db 0
@@ -40382,8 +40357,7 @@ byte_454B8     db 0
 word_454BA     dw 0
 trackdata15     dd 0
 word_454C0     dw 0
-word_454C2     dw 0
-word_454C4     dw 0
+planptr     dd 0
 fontdefptr     dd 0
 word_454CA     dw 0
 word_454CC     dw 0
@@ -40617,7 +40591,7 @@ word_4557A     dw 0
     db 0
     db 0
     db 0
-dword_455C8     dd 0
+mouseunkspriteptr     dd 0
 miscptr     dd 0
 skybox_unk1     dw 0
 byte_455D2     db 0
@@ -42431,8 +42405,7 @@ unk_45A26     db 0
     db 0
     db 0
 word_45D06     dw 0
-word_45D08     dw 0
-word_45D0A     dw 0
+sdgameresptr     dd 0
 byte_45D0C     db 0
     db 0
     db 0
@@ -44133,7 +44106,7 @@ mat_temp     db 0
     db 0
 textresprefix     db 0
     db 0
-dword_46460     dd 0
+wallptr     dd 0
 unk_46464     db 0
     db 0
     db 0

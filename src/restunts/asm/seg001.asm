@@ -1886,8 +1886,8 @@ loc_15703:
 loc_1570A:
     mov     ax, 22h ; '"'
     imul    planindex
-    add     ax, word_454C2
-    mov     dx, word_454C4
+    add     ax, word ptr planptr
+    mov     dx, word ptr planptr+2
     mov     word ptr [bp+var_6], ax
     mov     word ptr [bp+var_6+2], dx
     les     bx, [bp+var_6]
@@ -2056,8 +2056,8 @@ loc_15882:
     jmp     loc_15CDF
 loc_158DA:
     mov     planindex, 0
-    mov     ax, word_454C2
-    mov     dx, word_454C4
+    mov     ax, word ptr planptr
+    mov     dx, word ptr planptr+2
     mov     word_44D64, ax
     mov     word_44D66, dx
     mov     byte_4392C, 1
@@ -2420,8 +2420,8 @@ loc_15C75:
     push    ax
     mov     ax, 22h ; '"'
     imul    planindex
-    add     ax, word_454C2
-    mov     dx, word_454C4
+    add     ax, word ptr planptr
+    mov     dx, word ptr planptr+2
     add     ax, 10h
     push    dx
     push    ax
@@ -2526,8 +2526,8 @@ loc_15D94:
     mov     word_4428E, 0FFFFh
     mov     byte_44D47, 1
     mov     planindex, 0
-    mov     ax, word_454C2
-    mov     dx, word_454C4
+    mov     ax, word ptr planptr
+    mov     dx, word ptr planptr+2
     mov     word_44D64, ax
     mov     word_44D66, dx
     jmp     loc_151DB
@@ -8594,8 +8594,8 @@ init_plantrak proc far
     add     sp, 2
     sub     si, si
     mov     state.field_3F5, 2
-    mov     word_454C2, offset plan_memres
-    mov     word_454C4, seg seg038
+    mov     word ptr planptr, offset plan_memres
+    mov     word ptr planptr+2, seg seg038
     mov     startcol2, 1
     mov     startrow2, 1Ch
     les     bx, trackdata17
@@ -8957,8 +8957,8 @@ plane_rotate_op proc far
 loc_197A6:
     mov     ax, 22h ; '"'
     imul    word_44F4A
-    add     ax, word_454C2
-    mov     dx, word_454C4
+    add     ax, word ptr planptr
+    mov     dx, word ptr planptr+2
     mov     word ptr [bp+var_36], ax
     mov     word ptr [bp+var_36+2], dx
     les     bx, [bp+var_36]
@@ -8983,8 +8983,8 @@ loc_197D6:
     add     sp, 6
     mov     ax, 22h ; '"'
     imul    word_44F4A
-    add     ax, word_454C2
-    mov     dx, word_454C4
+    add     ax, word ptr planptr
+    mov     dx, word ptr planptr+2
     add     ax, 10h
     push    si
     lea     di, [bp+var_1A]
@@ -9044,8 +9044,8 @@ loc_19866:
     push    ax
     mov     ax, 22h ; '"'
     imul    word_44F4A
-    add     ax, word_454C2
-    mov     dx, word_454C4
+    add     ax, word ptr planptr
+    mov     dx, word ptr planptr+2
     add     ax, 10h
     push    dx
     push    ax
@@ -9067,8 +9067,8 @@ loc_198A4:
     push    ax
     mov     ax, 22h         ; sizeof plane
     imul    word_44F4A
-    add     ax, word_454C2
-    mov     dx, word_454C4
+    add     ax, word ptr planptr
+    mov     dx, word ptr planptr+2
     add     ax, 10h
     push    dx
     push    ax
@@ -9153,8 +9153,8 @@ plane_origin_op proc far
 loc_1993E:
     mov     ax, 22h         ; sizeof PLANE
     imul    [bp+arg_0]
-    add     ax, word_454C2
-    mov     dx, word_454C4
+    add     ax, word ptr planptr
+    mov     dx, word ptr planptr+2
 loc_1994C:
     mov     word ptr [bp+var_4], ax
     mov     word ptr [bp+var_4+2], dx

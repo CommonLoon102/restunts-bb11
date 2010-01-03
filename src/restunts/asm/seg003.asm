@@ -143,7 +143,7 @@ loc_19F8B:
     push    ax
     call    sub_26B4A
     add     sp, 6
-    call    mouse_sprite_op_check
+    call    mouse_draw_opaque_check
     sub     si, si
     jmp     short loc_1A013
 loc_19FD8:
@@ -164,7 +164,7 @@ loc_19FD8:
     les     bx, wndsprite
     push    word ptr es:[bx+2]
     push    word ptr es:[bx]
-    call    sub_33BDA
+    call    sprite_putimage
     add     sp, 4
     inc     si
 loc_1A013:
@@ -194,14 +194,14 @@ loc_1A03E:
     call    sprite_set_1_size
     add     sp, 8
 loc_1A046:
-    call    mouse_sprite_op_check
+    call    mouse_draw_opaque_check
     les     bx, wndsprite
     push    word ptr es:[bx+2]
     push    word ptr es:[bx]
-    call    sub_33BDA
+    call    sprite_putimage
     add     sp, 4
 loc_1A05E:
-    call    mouse_sprite_op2_check
+    call    mouse_draw_transparent_check
     cmp     word_44984, 0
     jz      short loc_1A090
     mov     ax, word_463D6
@@ -3836,7 +3836,7 @@ loc_1C339:
     call    sprite_set_1_size
     add     sp, 8
     push    skybox_unk1
-    call    clear_sprite1_color
+    call    sprite_clear_1_color
     add     sp, 2
 loc_1C35F:
     cmp     byte_3B8FA, 4
@@ -3933,7 +3933,7 @@ loc_1C445:
     call    sprite_set_1_size
     add     sp, 8
     push    skybox_unk2
-    call    clear_sprite1_color
+    call    sprite_clear_1_color
     add     sp, 2
 loc_1C46D:
     pop     si
@@ -4255,7 +4255,7 @@ loc_1C6F2:
     call    sprite_set_1_size
     add     sp, 8
     push    skybox_unk1
-    call    clear_sprite1_color
+    call    sprite_clear_1_color
     add     sp, 2
     inc     di
 loc_1C720:
@@ -4308,7 +4308,7 @@ loc_1C774:
     call    sprite_set_1_size
     add     sp, 8
     push    skybox_unk2
-    call    clear_sprite1_color
+    call    sprite_clear_1_color
     add     sp, 2
     inc     di
 loc_1C7A2:
@@ -4517,7 +4517,7 @@ loc_1C958:
     cmp     [bp+var_20], 0
     jge     short loc_1C9C0
     push    skybox_unk1
-    call    clear_sprite1_color
+    call    sprite_clear_1_color
     add     sp, 2
     cmp     word_44984, 0
     jnz     short loc_1C99D
@@ -4687,7 +4687,7 @@ loc_1CB19:
     call    sprite_set_1_size
     add     sp, 8
     push    skybox_unk2
-    call    clear_sprite1_color
+    call    sprite_clear_1_color
     add     sp, 2
 loc_1CB41:
     mov     bx, [bp+arg_2]
@@ -4707,7 +4707,7 @@ loc_1CB41:
     add     sp, 8
     push    skybox_unk1
 loc_1CB6A:
-    call    clear_sprite1_color
+    call    sprite_clear_1_color
     add     sp, 2
 loc_1CB72:
     mov     [bp+var_5C], 1
@@ -4870,7 +4870,7 @@ loc_1CC5B:
     call    sprite_set_1_size
     add     sp, 8
     push    skybox_unk1
-    call    clear_sprite1_color
+    call    sprite_clear_1_color
     add     sp, 2
     mov     ax, 64h ; 'd'
     push    ax
@@ -4910,7 +4910,7 @@ loc_1CC5B:
     call    sprite_set_1_size
     add     sp, 8
     push    skybox_unk2
-    call    clear_sprite1_color
+    call    sprite_clear_1_color
     add     sp, 2
     mov     ax, 0C8h ; 'È'
     push    ax
@@ -5404,8 +5404,8 @@ draw_ingame_text proc far
 loc_1D14E:
     mov     ax, offset aDm1 ; "Professional Driver"
     push    ax
-    push    word_449A2
-    push    word_449A0
+    push    word ptr gameresptr+2
+    push    word ptr gameresptr
     call    locate_text_res
     add     sp, 6
     push    dx
@@ -5437,8 +5437,8 @@ loc_1D14E:
     add     sp, 6
     mov     ax, offset aDm2 ; on Closed Circuit
     push    ax
-    push    word_449A2
-    push    word_449A0
+    push    word ptr gameresptr+2
+    push    word ptr gameresptr
     call    locate_text_res
     add     sp, 6
     push    dx
@@ -5471,8 +5471,8 @@ loc_1D1F0:
     jnz     short loc_1D22A
     mov     ax, offset aPre ; Fasten Your Seatbelt
     push    ax
-    push    word_449A2
-    push    word_449A0
+    push    word ptr gameresptr+2
+    push    word ptr gameresptr
     call    locate_text_res
     add     sp, 6
     push    dx
@@ -5497,8 +5497,8 @@ loc_1D22A:
 loc_1D234:
     mov     ax, offset aSe1 ; You forgot to disable the
     push    ax
-    push    word_449A2
-    push    word_449A0
+    push    word ptr gameresptr+2
+    push    word ptr gameresptr
     call    locate_text_res
     add     sp, 6
     push    dx
@@ -5530,8 +5530,8 @@ loc_1D234:
     add     sp, 6
     mov     ax, offset aSe2 ; "Car's security system first"
     push    ax
-    push    word_449A2
-    push    word_449A0
+    push    word ptr gameresptr+2
+    push    word ptr gameresptr
     call    locate_text_res
     add     sp, 6
     push    dx
@@ -5614,8 +5614,8 @@ loc_1D338:
 loc_1D34A:
     mov     ax, offset aWww ; "Wrong Way"
     push    ax
-    push    word_449A2
-    push    word_449A0
+    push    word ptr gameresptr+2
+    push    word ptr gameresptr
     call    locate_text_res
     add     sp, 6
     push    dx
@@ -5663,8 +5663,8 @@ loc_1D398:
     mov     ax, offset aOpp ; "Opponent Near"
 loc_1D3C7:
     push    ax
-    push    word_449A2
-    push    word_449A0
+    push    word ptr gameresptr+2
+    push    word ptr gameresptr
     call    locate_text_res
     add     sp, 6
     push    dx
@@ -5704,8 +5704,8 @@ loc_1D422:
 loc_1D42C:
     mov     ax, offset aPen ; "pen"
     push    ax
-    push    word_449A2
-    push    word_449A0
+    push    word ptr gameresptr+2
+    push    word ptr gameresptr
     call    locate_text_res
     add     sp, 6
     push    dx
@@ -5764,8 +5764,8 @@ loc_1D4B0:
     jle     short loc_1D52B
     mov     ax, offset aRpl_0; "rpl"
     push    ax
-    push    word_449A2
-    push    word_449A0
+    push    word ptr gameresptr+2
+    push    word ptr gameresptr
     call    locate_text_res
     add     sp, 6
     push    dx
@@ -5863,7 +5863,7 @@ loc_1D54C:
     call    sprite_set_1_size
     add     sp, 8
     push    word_463E2
-    call    clear_sprite1_color
+    call    sprite_clear_1_color
     add     sp, 2
     mov     ax, 0AA0Eh
     pop     si
@@ -5898,16 +5898,16 @@ sub_1D5B4 proc far
     push    si
     mov     ax, offset aCrak; "crak"
     push    ax
-    push    word_449A2
-    push    word_449A0
+    push    word ptr gameresptr+2
+    push    word ptr gameresptr
     call    locate_shape_alt
     add     sp, 6
     mov     word ptr [bp+var_8], ax
     mov     word ptr [bp+var_8+2], dx
     mov     ax, offset aCinf; "cinf"
     push    ax
-    push    word_449A2
-    push    word_449A0
+    push    word ptr gameresptr+2
+    push    word ptr gameresptr
     call    locate_shape_alt
     add     sp, 6
     mov     word ptr [bp+var_4], ax
@@ -6719,9 +6719,9 @@ loc_1DCFC:
     add     sp, 20h
     cmp     video_flag5_is0, 0
     jz      short loc_1DD7E
-    call    mouse_sprite_op_check
+    call    mouse_draw_opaque_check
     call    setup_mcgawnd1
-    call    mouse_sprite_op2_check
+    call    mouse_draw_transparent_check
     cmp     word_44984, 0
     jz      short loc_1DD77
     mov     bx, [bp+var_36]
@@ -6764,13 +6764,13 @@ loc_1DD7E:
     push    [bp+var_2A]
     call    sprite_set_1_size
     add     sp, 8
-    call    mouse_sprite_op_check
+    call    mouse_draw_opaque_check
     les     bx, wndsprite
     push    word ptr es:[bx+2]
     push    word ptr es:[bx]
-    call    sub_33BDA
+    call    sprite_putimage
     add     sp, 4
-    call    mouse_sprite_op2_check
+    call    mouse_draw_transparent_check
     mov     di, 9294h
     lea     si, [bp+var_16]
     push    ds
@@ -6789,13 +6789,13 @@ loc_1DD7E:
     ; align 2
     db 144
 loc_1DDFC:
-    call    mouse_sprite_op_check
+    call    mouse_draw_opaque_check
     les     bx, wndsprite
     push    word ptr es:[bx+2]
     push    word ptr es:[bx]
-    call    sub_33BDA
+    call    sprite_putimage
     add     sp, 4
-    call    mouse_sprite_op2_check
+    call    mouse_draw_transparent_check
 loc_1DE19:
     push    [bp+var_40]
     call    input_do_checking
@@ -6828,9 +6828,9 @@ loc_1DE3E:
     push    ax
     call    sub_35C4E
     add     sp, 0Ah
-    call    mouse_sprite_op_check
+    call    mouse_draw_opaque_check
     call    setup_mcgawnd1
-    call    mouse_sprite_op2_check
+    call    mouse_draw_transparent_check
     jmp     short loc_1DE8C
     ; align 2
     db 144
@@ -7070,7 +7070,7 @@ loc_1E013:
     add     sp, 8
     sub     ax, ax
     push    ax
-    call    clear_sprite1_color
+    call    sprite_clear_1_color
     add     sp, 2
 loc_1E059:
     push    si
@@ -7097,7 +7097,7 @@ loc_1E06C:
     add     sp, 8
     sub     ax, ax
     push    ax
-    call    clear_sprite1_color
+    call    sprite_clear_1_color
     add     sp, 2
 loc_1E08F:
     push    word_3C1BC

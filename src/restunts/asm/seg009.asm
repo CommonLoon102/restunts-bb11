@@ -1145,7 +1145,7 @@ loc_2AD2B:
     jnz     short loc_2AD38
     jmp     loc_2ADF4
 loc_2AD38:
-    call    mouse_sprite_op_check
+    call    mouse_draw_opaque_check
     sub     ax, ax
     push    ax
     push    word_407CA
@@ -1208,7 +1208,7 @@ loc_2AD38:
     call    sub_335D2
     add     sp, 0Ah
 loc_2ADE4:
-    call    mouse_sprite_op2_check
+    call    mouse_draw_transparent_check
     mov     [bp+var_38], si
     mov     al, [bp+var_182]
     mov     [bp+var_C2], al
@@ -1244,7 +1244,7 @@ loc_2ADF4:
 loc_2AE36:
     mov     [bp+var_3A], 63h ; 'c'
     mov     [bp+var_CC], 0
-    call    mouse_sprite_op_check
+    call    mouse_draw_opaque_check
     mov     al, [bp+var_34]
     mov     [bp+var_16], al
     or      al, al
@@ -1258,14 +1258,14 @@ loc_2AE36:
     shl     bx, 1
     push    word ptr (tracksmenushapes3+2)[bx]
     push    word ptr tracksmenushapes3[bx]
-    call    sub_3475A
+    call    sprite_clear_shape_alt
     add     sp, 8
 loc_2AE73:
     cmp     [bp+var_3A], 0Fh
     jg      short loc_2AE7C
     jmp     loc_2AF0E
 loc_2AE7C:
-    call    mouse_sprite_op_check
+    call    mouse_draw_opaque_check
     cmp     [bp+var_34], 0
     jnz     short loc_2AED6
     cmp     [bp+var_CC], 0
@@ -1316,7 +1316,7 @@ loc_2AED6:
     call    sub_3702E
     add     sp, 0Ah
 loc_2AEFF:
-    call    mouse_sprite_op2_check
+    call    mouse_draw_transparent_check
     xor     byte ptr [bp+var_CC], 1
     mov     [bp+var_3A], 0
 loc_2AF0E:
@@ -1420,7 +1420,7 @@ loc_2AFF9:
     jnz     short loc_2B003
     jmp     loc_2B2D4
 loc_2B003:
-    call    mouse_sprite_op_check
+    call    mouse_draw_opaque_check
     cmp     [bp+var_16], 0
     jz      short loc_2B011
     jmp     loc_2B2A6
@@ -1705,7 +1705,7 @@ loc_2B2A6:
     call    sub_3702E
     add     sp, 0Ah
 loc_2B2CF:
-    call    mouse_sprite_op2_check
+    call    mouse_draw_transparent_check
 loc_2B2D4:
     cmp     [bp+var_18], 0
     jz      short loc_2B356
@@ -3264,7 +3264,7 @@ loc_2C0CA:
     shl     bx, 1
     push    word ptr (tracksmenushape2dunk2+2)[bx]
     push    word ptr tracksmenushape2dunk2[bx]
-    call    sub_33890
+    call    sprite_putimage_and
     add     sp, 8
     mov     al, [bp+var_8]
     cbw
@@ -3298,7 +3298,7 @@ loc_2C201:
     shl     bx, 1
     push    word ptr (tracksmenushape2dunk+2)[bx]
     push    word ptr tracksmenushape2dunk[bx]
-    call    sub_34084
+    call    sprite_putimage_or
 loc_2C214:
     add     sp, 8
     jmp     loc_2C63E
@@ -3379,7 +3379,7 @@ loc_2C235:
     shl     bx, 1
     push    word ptr (tracksmenushape2dunk2+2)[bx]
     push    word ptr tracksmenushape2dunk2[bx]
-    call    sub_33890
+    call    sprite_putimage_and
     add     sp, 8
     mov     al, [bp+var_8]
     cbw
@@ -3609,7 +3609,7 @@ loc_2C4B5:
     shl     bx, 1
     push    word ptr (tracksmenushape2dunk2+2)[bx]
     push    word ptr tracksmenushape2dunk2[bx]
-    call    sub_33890
+    call    sprite_putimage_and
     add     sp, 8
     mov     al, [bp+var_6]
     cbw
@@ -3906,7 +3906,7 @@ loc_2C6CD:
     shl     bx, 1
     push    word ptr (tracksmenushape2dunk2+2)[bx]
     push    word ptr tracksmenushape2dunk2[bx]
-    call    sub_33890
+    call    sprite_putimage_and
     add     sp, 8
     mov     al, [bp+var_8]
     cbw

@@ -279,9 +279,10 @@ seg012 segment byte public 'STUNTSC' use16
     public vector_op_unk
     public loc_3301F
     public sub_33072
+    public nopsub_3320E
     public sprite_set_1_size
-    public fill_color
-    public clear_sprite1_color
+    public video_clear_color
+    public sprite_clear_1_color
     public nopsub_33330
     public sub_33344
     public sub_333C0
@@ -302,7 +303,7 @@ seg012 segment byte public 'STUNTSC' use16
     public load_2dshape_fatal_thunk
     public load_2dshape_nofatal_thunk
     public sub_3386C
-    public sub_33890
+    public sprite_putimage_and
     public loc_338C9
     public nopsub_339FA
     public sub_33A1E
@@ -313,7 +314,7 @@ seg012 segment byte public 'STUNTSC' use16
     public loc_33B1D
     public nopsub_33B98
     public sub_33BBC
-    public sub_33BDA
+    public sprite_putimage
     public loc_33BF5
     public nopsub_33D0C
     public sprite_shape_to_1
@@ -328,7 +329,7 @@ seg012 segment byte public 'STUNTSC' use16
     public sub_33ED2
     public loc_33EED
     public sub_34060
-    public sub_34084
+    public sprite_putimage_or
     public loc_340BD
     public sub_34212
     public loc_3424B
@@ -343,8 +344,8 @@ seg012 segment byte public 'STUNTSC' use16
     public video_set_palette
     public loc_346A8
     public sub_346BC
-    public sub_3475A
-    public sub_3477E
+    public sprite_clear_shape_alt
+    public sprite_clear_shape
     public loc_34799
     public sub_347DC
     public sprite1
@@ -4746,7 +4747,7 @@ set_bios_mode3 proc far
 
     xor     ax, ax
     push    ax
-    call    fill_color
+    call    video_clear_color
     add     sp, 2
     mov     ax, 40h ; '@'
     mov     es, ax
@@ -9231,7 +9232,7 @@ nosmart
     jnz     short loc_32606
     xor     ax, ax
     push    ax
-    call    fill_color
+    call    video_clear_color
     add     sp, 2
 loc_32606:
     mov     ah, 0Bh
@@ -11145,29 +11146,40 @@ loc_331E9:
     mov     sp, bp
     pop     bp
     retf
+sub_33072 endp
+nopsub_3320E proc far
+     s = byte ptr 0
+     r = byte ptr 2
+    arg_0 = word ptr 6
+    arg_2 = word ptr 8
+    arg_4 = word ptr 10
+    arg_6 = word ptr 12
+    arg_8 = word ptr 14
+    arg_A = word ptr 16
+
     push    bp
     mov     bp, sp
     push    ds
     push    si
-    mov     ds, word ptr [bp+8]
-    mov     si, [bp+6]
+    mov     ds, [bp+arg_2]
+    mov     si, [bp+arg_0]
     mov     ax, [si+2]
     cmp     word ptr cs:sprite1.sprite_bitmapptr+2, ax
     jnz     short loc_3325D
-    mov     ax, [bp+0Ah]
+    mov     ax, [bp+arg_4]
     mov     [si+1Ah], ax
     mov     cs:sprite1.sprite_left2, ax
     mov     [si+0Ch], ax
     mov     cs:sprite1.sprite_left, ax
-    mov     ax, [bp+0Ch]
+    mov     ax, [bp+arg_6]
     mov     [si+1Ch], ax
     mov     cs:sprite1.sprite_widthsum, ax
     mov     [si+0Eh], ax
     mov     cs:sprite1.sprite_width, ax
-    mov     ax, [bp+0Eh]
+    mov     ax, [bp+arg_8]
     mov     [si+10h], ax
     mov     cs:sprite1.sprite_top, ax
-    mov     ax, [bp+10h]
+    mov     ax, [bp+arg_A]
     mov     [si+12h], ax
     mov     cs:sprite1.sprite_height, ax
     pop     si
@@ -11175,21 +11187,21 @@ loc_331E9:
     pop     bp
     retf
 loc_3325D:
-    mov     ax, [bp+0Ah]
+    mov     ax, [bp+arg_4]
     mov     [si+1Ah], ax
     mov     [si+0Ch], ax
-    mov     ax, [bp+0Ch]
+    mov     ax, [bp+arg_6]
     mov     [si+1Ch], ax
     mov     [si+0Eh], ax
-    mov     ax, [bp+0Eh]
+    mov     ax, [bp+arg_8]
     mov     [si+10h], ax
-    mov     ax, [bp+10h]
+    mov     ax, [bp+arg_A]
     mov     [si+12h], ax
     pop     si
     pop     ds
     pop     bp
     retf
-sub_33072 endp
+nopsub_3320E endp
 sprite_set_1_size proc far
      s = byte ptr 0
      r = byte ptr 2
@@ -11213,7 +11225,7 @@ sprite_set_1_size proc far
     pop     bp
     retf
 sprite_set_1_size endp
-fill_color proc far
+video_clear_color proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -11232,8 +11244,8 @@ fill_color proc far
     retf
     ; align 2
     db 0
-fill_color endp
-clear_sprite1_color proc far
+video_clear_color endp
+sprite_clear_1_color proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = byte ptr 6
@@ -11294,7 +11306,7 @@ loc_33325:
     jmp     short loc_3330D
     ; align 2
     db 0
-clear_sprite1_color endp
+sprite_clear_1_color endp
 nopsub_33330 proc far
      s = byte ptr 0
      r = byte ptr 2
@@ -11866,9 +11878,9 @@ sub_33742 proc far
     push    di
     mov     ds, word ptr off_405FE+2
     mov     ax, [bp+arg_2]
-    mov     word ptr aMsRunTimeLibraryCop, ax; "MS Run-Time Library - Copyright (c) 198"...
+    mov     ds:8, ax
     mov     ax, [bp+arg_4]
-    mov     word ptr aMsRunTimeLibraryCop+2, ax
+    mov     ds:0Ah, ax
     jmp     short loc_3376B
     ; align 2
     db 144
@@ -11979,7 +11991,7 @@ nosmart
     xor     ax, ax
     push    ax
     push    ax
-    call    fill_color
+    call    video_clear_color
     add     sp, 4
     retf
     jmp     load_2dshape_res_fatal
@@ -12029,7 +12041,7 @@ sub_3386C proc far
     ; align 2
     db 144
 sub_3386C endp
-sub_33890 proc far
+sprite_putimage_and proc far
     var_E = word ptr -14
     var_C = word ptr -12
     var_A = word ptr -10
@@ -12220,7 +12232,7 @@ loc_339EC:
     jmp     loc_338E8
     ; align 2
     db 0
-sub_33890 endp
+sprite_putimage_and endp
 nopsub_339FA proc far
     var_4 = word ptr -4
     var_2 = word ptr -2
@@ -12543,7 +12555,7 @@ sub_33BBC proc far
     ; align 2
     db 144
 sub_33BBC endp
-sub_33BDA proc far
+sprite_putimage proc far
     var_E = word ptr -14
     var_C = word ptr -12
     var_A = word ptr -10
@@ -12696,7 +12708,7 @@ loc_33D02:
     dec     dx
     jg      short loc_33D02
     jmp     loc_33C14
-sub_33BDA endp
+sprite_putimage endp
 nopsub_33D0C proc far
     var_4 = word ptr -4
     var_2 = word ptr -2
@@ -13249,7 +13261,7 @@ sub_34060 proc far
     ; align 2
     db 144
 sub_34060 endp
-sub_34084 proc far
+sprite_putimage_or proc far
     var_E = word ptr -14
     var_C = word ptr -12
     var_A = word ptr -10
@@ -13457,7 +13469,7 @@ loc_341E0:
     jmp     short loc_3424B
     ; align 2
     db 144
-sub_34084 endp
+sprite_putimage_or endp
 sub_34212 proc far
     var_6 = word ptr -6
     var_4 = word ptr -4
@@ -14207,7 +14219,7 @@ loc_34730:
     ; align 2
     db 144
 sub_346BC endp
-sub_3475A proc far
+sprite_clear_shape_alt proc far
     var_4 = word ptr -4
     var_2 = word ptr -2
      s = byte ptr 0
@@ -14227,15 +14239,15 @@ sub_3475A proc far
     mov     di, [bp+arg_2]
     mov     ax, [bp+arg_6]
     mov     [bp+var_2], ax
-    mov     [di+8], ax
+    mov     [di+SHAPE2D.s2d_pos_x], ax
     mov     ax, [bp+arg_8]
     mov     [bp+var_4], ax
-    mov     [di+0Ah], ax
+    mov     [di+SHAPE2D.s2d_pos_y], ax
     jmp     short loc_34799
     ; align 2
     db 144
-sub_3475A endp
-sub_3477E proc far
+sprite_clear_shape_alt endp
+sprite_clear_shape proc far
     var_A = word ptr -10
     var_8 = word ptr -8
     var_6 = word ptr -6
@@ -14287,7 +14299,7 @@ loc_347C0:
     mov     sp, bp
     pop     bp
     retf
-sub_3477E endp
+sprite_clear_shape endp
 sub_347DC proc far
     var_14 = word ptr -20
     var_12 = word ptr -18

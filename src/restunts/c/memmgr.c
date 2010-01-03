@@ -546,7 +546,7 @@ char far* locate_resource(char far* data, char* name, unsigned short fatal) {
 	for (i = 0; i < 4; i++) {
 		if (name[i] == 0) {
 			for (; i < 4; i++) {
-				name[i] = 20;
+				name[i] = 0x20;
 			}
 			break;
 		}
@@ -558,7 +558,7 @@ char far* locate_resource(char far* data, char* name, unsigned short fatal) {
 				break;
 			}
 		}
-		if (i == 4 || (resnames[i] == 0 && name[i] == 20)) {
+		if (i == 4 || (resnames[i] == 0 && name[i] == 0x20)) {
 			result = data;
 			result += hdr->chunks * 8 + 6; // header, names and offsets
 			result += *(unsigned long int far*)(&resnames[hdr->chunks * 4]); // extract the offset

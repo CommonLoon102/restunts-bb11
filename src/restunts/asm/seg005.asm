@@ -318,8 +318,8 @@ loc_21DFC:
     push    ax
     mov     ax, offset aRbf ; "rbf"
     push    ax
-    push    word_449A2
-    push    word_449A0
+    push    word ptr gameresptr+2
+    push    word ptr gameresptr
     call    locate_text_res
     add     sp, 6
     push    dx
@@ -608,12 +608,12 @@ loc_22126:
 loc_22131:
     cmp     video_flag5_is0, 0
     jz      short loc_22152
-    call    mouse_sprite_op_check
+    call    mouse_draw_opaque_check
     call    setup_mcgawnd1
     xor     byte_44346, 1
     mov     al, byte_44346
     mov     byte_4432A, al
-    call    mouse_sprite_op2_check
+    call    mouse_draw_transparent_check
 loc_22152:
     cmp     byte_45DB2, 1
     jnz     short loc_2217D
@@ -753,7 +753,7 @@ loc_22298:
     call    get_0
     or      ax, ax
     jz      short loc_222D3
-    call    mouse_sprite_op_check
+    call    mouse_draw_opaque_check
     call    setup_mcgawnd2
     sub     ax, ax
     push    ax
@@ -767,7 +767,7 @@ loc_22298:
     call    sub_35C4E
     add     sp, 0Ah
     call    setup_mcgawnd1
-    call    mouse_sprite_op2_check
+    call    mouse_draw_transparent_check
 loc_222D3:
     call    sprite_copy_2_to_1_2
     mov     byte_454B8, 1
@@ -796,8 +796,8 @@ loc_22305:
     push    ax
     mov     ax, offset aCop ; "cop"
     push    ax
-    push    word_449A2
-    push    word_449A0
+    push    word ptr gameresptr+2
+    push    word ptr gameresptr
     call    locate_text_res
     add     sp, 6
     push    dx
@@ -832,7 +832,7 @@ loc_22347:
     push    ax              ; char *
     call    sub_298B8
     add     sp, 6
-    call    mouse_sprite_op_check
+    call    mouse_draw_opaque_check
     push    [bp+var_14]
     mov     ax, offset byte_463E4
     push    ax
@@ -843,7 +843,7 @@ loc_22347:
     push    ax
     call    sub_345BC
     add     sp, 6
-    call    mouse_sprite_op2_check
+    call    mouse_draw_transparent_check
 loc_2239F:
     mov     ax, 1
     push    ax
@@ -2226,7 +2226,7 @@ loc_22F6A:
     pop     bp
     retf
 loc_22F76:
-    call    mouse_sprite_op_check
+    call    mouse_draw_opaque_check
     mov     ax, offset aRoof_1; "roof"
     push    ax
     push    word ptr stdaresptr+2
@@ -2260,7 +2260,7 @@ loc_22FB1:
     push    word ptr whlshapes+4
     call    sub_33ED2
     add     sp, 4
-    call    mouse_sprite_op2_check
+    call    mouse_draw_transparent_check
     sub     si, si
     mov     al, byte_4432A
     cbw
@@ -2307,7 +2307,7 @@ loc_23030:
     jz      short loc_2309A
     cmp     video_flag5_is0, 0
     jnz     short loc_23057
-    call    mouse_sprite_op_check
+    call    mouse_draw_opaque_check
 loc_23057:
     push    word_459D4
     sub     ax, ax
@@ -2403,7 +2403,7 @@ loc_230DE:
     db 144
 loc_2315E:
     call    sprite_copy_2_to_1_2
-    call    mouse_sprite_op_check
+    call    mouse_draw_opaque_check
 loc_23168:
     push    word_459D4
     sub     ax, ax
@@ -2455,7 +2455,7 @@ loc_231CE:
 loc_231E7:
     cmp     video_flag5_is0, 0
     jnz     short loc_231F3
-    call    mouse_sprite_op_check
+    call    mouse_draw_opaque_check
 loc_231F3:
     mov     al, byte_4432A
     cbw
@@ -2568,7 +2568,7 @@ loc_232D0:
 loc_232F7:
     cmp     video_flag5_is0, 0
     jnz     short loc_23303
-    call    mouse_sprite_op_check
+    call    mouse_draw_opaque_check
 loc_23303:
     mov     al, byte_4432A
     cbw
@@ -2649,7 +2649,7 @@ loc_233BF:
     shl     bx, 1
     push    word ptr (digshapes+2)[bx]
     push    word ptr digshapes[bx]
-    call    sub_34084
+    call    sprite_putimage_or
     add     sp, 8
     mov     [bp+var_1C], 1
 loc_233EA:
@@ -2673,7 +2673,7 @@ loc_233FF:
     shl     bx, 1
     push    word ptr (digshapes+2)[bx]
     push    word ptr digshapes[bx]
-    call    sub_34084
+    call    sprite_putimage_or
     add     sp, 8
     mov     ax, [bp+var_8]
     mov     cx, ax
@@ -2694,7 +2694,7 @@ loc_23433:
     shl     bx, 1
     push    word ptr (digshapes+2)[bx]
     push    word ptr digshapes[bx]
-    call    sub_34084
+    call    sprite_putimage_or
     add     sp, 8
     jmp     short loc_23485
     ; align 2
@@ -2799,7 +2799,7 @@ loc_23540:
 loc_23561:
     cmp     video_flag5_is0, 0
     jnz     short loc_2356D
-    call    mouse_sprite_op_check
+    call    mouse_draw_opaque_check
 loc_2356D:
     push    word_459D4
     sub     ax, ax
@@ -2887,7 +2887,7 @@ loc_235F9:
     shl     bx, 1
     push    word ptr (gnobshapes+12h)[bx]
     push    word ptr (gnobshapes+10h)[bx]
-    call    sub_3475A
+    call    sprite_clear_shape_alt
     add     sp, 8
     mov     al, [bp+var_16]
     sub     ah, ah
@@ -2914,7 +2914,7 @@ loc_235F9:
     mov     ax, [bp+var_4]
     mov     word_40E00[bx], ax
 loc_236A0:
-    call    mouse_sprite_op2_check
+    call    mouse_draw_transparent_check
     pop     si
     pop     di
     mov     sp, bp
@@ -3110,8 +3110,8 @@ loc_238B4:
     push    ax              ; int
     call    file_load_resource
     add     sp, 4
-    mov     word_45D08, ax
-    mov     word_45D0A, dx
+    mov     word ptr sdgameresptr, ax
+    mov     word ptr sdgameresptr+2, dx
     sub     ax, ax
     push    ax
     push    ax
@@ -3124,24 +3124,24 @@ loc_238DE:
     push    ax
     call    file_load_resfile
     add     sp, 2
-    mov     word_449A0, ax
-    mov     word_449A2, dx
+    mov     word ptr gameresptr, ax
+    mov     word ptr gameresptr+2, dx
     mov     ax, offset aPlan; "plan"
     push    ax
     push    dx
-    push    word_449A0
+    push    word ptr gameresptr
     call    locate_shape_alt
     add     sp, 6
-    mov     word_454C2, ax
-    mov     word_454C4, dx
+    mov     word ptr planptr, ax
+    mov     word ptr planptr+2, dx
     mov     ax, offset aWall; "wall"
     push    ax
-    push    word_449A2
-    push    word_449A0
+    push    word ptr gameresptr+2
+    push    word ptr gameresptr
     call    locate_shape_alt
     add     sp, 6
-    mov     word ptr dword_46460, ax
-    mov     word ptr dword_46460+2, dx
+    mov     word ptr wallptr, ax
+    mov     word ptr wallptr+2, dx
     call    load_sdgame2_shapes
     les     bx, trackdata14
     mov     al, es:[bx+384h]; 384h = sky box position in track data
@@ -3218,14 +3218,14 @@ loc_239D4:
     call    shape3d_free_all
     call    unload_skybox
     call    free_sdgame2
-    push    word_449A2
-    push    word_449A0
+    push    word ptr gameresptr+2
+    push    word ptr gameresptr
     call    unload_resource
     add     sp, 4
     cmp     byte_44AE2, 0
     jnz     short loc_23A15
-    push    word_45D0A
-    push    word_45D08
+    push    word ptr sdgameresptr+2
+    push    word ptr sdgameresptr
     call    mmgr_free
     add     sp, 4
     mov     ax, 3
@@ -3431,24 +3431,24 @@ sub_23B4C proc far
 loc_23B6D:
     jmp     loc_24D5E
 loc_23B70:
-    mov     ax, 569Eh
+    mov     ax, offset rplyshapes
     push    ax
-    mov     ax, 31E0h
+    mov     ax, offset aRplyrpicrpacrpmcrptcbof6bof5b; "rplyrpicrpacrpmcrptcbof6bof5bof4bof3bof"...
     push    ax
-    push    word_45D0A
-    push    word_45D08
+    push    word ptr sdgameresptr+2
+    push    word ptr sdgameresptr
     call    locate_many_resources
     add     sp, 8
     mov     [bp+arg_2], 4
 loc_23B8D:
     sub     si, si
 loc_23B8F:
-    mov     byte ptr [si+56FAh], 0
+    mov     byte_40E6A[si], 0
     inc     si
     cmp     si, 9
     jl      short loc_23B8F
     mov     bx, [bp+arg_2]
-    mov     byte ptr [bx+56FAh], 1
+    mov     byte_40E6A[bx], 1
     jmp     loc_24D5E
     ; align 2
     db 144
@@ -3457,15 +3457,15 @@ loc_23BA6:
     cbw
     mov     [bp+var_42], ax
     mov     bx, ax
-    cmp     byte ptr [bx-6D98h], 0
+    cmp     byte_449D8[bx], 0
     jz      short loc_23BB9
     jmp     loc_23C66
 loc_23BB9:
-    mov     byte ptr [bx-6D98h], 1
+    mov     byte_449D8[bx], 1
     mov     bx, [bp+var_42]
-    mov     byte ptr [bx+5704h], 0FFh
+    mov     byte_40E74[bx], 0FFh
     mov     bx, [bp+var_42]
-    mov     byte ptr [bx+5698h], 0FFh
+    mov     byte_40E08[bx], 0FFh
     sub     si, si
 loc_23BD0:
     mov     al, byte_4432A
@@ -3474,13 +3474,13 @@ loc_23BD0:
     mov     ax, si
     shl     ax, 1
     add     bx, ax
-    mov     byte ptr [bx+570Ah], 0
+    mov     byte_40E7A[bx], 0
     inc     si
     cmp     si, 9
     jl      short loc_23BD0
-    call    mouse_sprite_op_check
-    push    word_40E10
-    push    word_40E0E
+    call    mouse_draw_opaque_check
+    push    word ptr rplyshapes+2
+    push    word ptr rplyshapes
     call    sub_33E00
     add     sp, 4
     mov     al, byte_4432A
@@ -3488,9 +3488,9 @@ loc_23BD0:
     shl     ax, 1
     mov     [bp+var_42], ax
     mov     bx, ax
-    mov     word ptr [bx+569Ah], 0FFFFh
+    mov     word_40E0A[bx], 0FFFFh
     mov     bx, [bp+var_42]
-    mov     word ptr [bx+5706h], 0FFFFh
+    mov     word_40E76[bx], 0FFFFh
     mov     ax, 1
     push    ax              ; int
     mov     ax, gameconfig.game_recordedframes
@@ -3513,7 +3513,7 @@ loc_23BD0:
     push    ax
     mov     ax, 0D8h ; 'Ø'
     push    ax
-    mov     ax, 0AC74h
+    mov     ax, offset byte_463E4
     push    ax
     call    sub_345BC
     add     sp, 6
@@ -3525,7 +3525,7 @@ loc_23C66:
     mov     al, byte_4432A
     cbw
     shl     ax, 1
-    add     ax, 569Ah
+    add     ax, offset word_40E0A
     mov     [bp+var_44], ax
     mov     bx, ax
     mov     ax, [bp+var_42]
@@ -3535,7 +3535,7 @@ loc_23C66:
     mov     ax, 1
     push    ax              ; int
     push    [bp+var_42]
-    mov     ax, 0AC74h
+    mov     ax, offset byte_463E4
     push    ax              ; char *
     call    sub_298B8
     add     sp, 6
@@ -3544,7 +3544,7 @@ loc_23C66:
     push    word_407CA
     call    sub_34B0C
     add     sp, 4
-    call    mouse_sprite_op_check
+    call    mouse_draw_opaque_check
     push    word_459F6
     push    word_459F4
     call    set_fontdef2
@@ -3553,7 +3553,7 @@ loc_23C66:
     push    ax
     mov     ax, 98h ; '˜'
     push    ax
-    mov     ax, 0AC74h
+    mov     ax, offset byte_463E4
     push    ax
     call    sub_345BC
     add     sp, 6
@@ -3564,26 +3564,26 @@ loc_23CD7:
     mov     [bp+var_44], ax
     mov     bx, ax
     mov     al, cameramode
-    cmp     [bx+5704h], al
+    cmp     byte_40E74[bx], al
     jz      short loc_23D46
-    mov     [bx+5704h], al
+    mov     byte_40E74[bx], al
     mov     bx, [bp+var_44]
     shl     bx, 1
-    mov     word ptr [bx+5706h], 0FFFFh
-    call    mouse_sprite_op_check
+    mov     word_40E76[bx], 0FFFFh
+    call    mouse_draw_opaque_check
     mov     al, cameramode
     cbw
     mov     bx, ax
     shl     bx, 1
     shl     bx, 1
-    push    word ptr [bx+56A4h]
-    push    word ptr [bx+56A2h]
+    push    word ptr (rplyshapes+6)[bx]
+    push    word ptr (rplyshapes+4)[bx]
     call    sub_33E00
     add     sp, 4
     mov     al, cameramode
     cbw
     mov     bx, ax
-    mov     al, [bx+3294h]
+    mov     al, byte_3EA04[bx]
     mov     byte ptr [bp+var_42], al
     mov     al, byte_3E9DB
     cmp     byte ptr [bp+var_42], al
@@ -3593,7 +3593,7 @@ loc_23CD7:
 loc_23D32:
     mov     al, byte_4432A
     cbw
-    add     ax, 5698h
+    add     ax, offset byte_40E08
     mov     [bp+var_44], ax
     mov     bx, ax
     cmp     byte ptr [bx], 6
@@ -3648,20 +3648,20 @@ loc_23D94:
     shl     ax, 1
     mov     [bp+var_44], ax
     mov     bx, ax
-    cmp     [bx+5706h], si
+    cmp     word_40E76[bx], si
     jnz     short loc_23DAB
-    cmp     [bx+5694h], di
+    cmp     word_40E04[bx], di
     jz      short loc_23E1A
 loc_23DAB:
-    call    mouse_sprite_op_check
+    call    mouse_draw_opaque_check
     mov     al, byte_4432A
     cbw
     shl     ax, 1
     mov     [bp+var_44], ax
     mov     bx, ax
-    mov     [bx+5706h], si
+    mov     word_40E76[bx], si
     mov     bx, [bp+var_44]
-    mov     [bx+5694h], di
+    mov     word_40E04[bx], di
     push    word_407FC
     mov     ax, 6
     push    ax
@@ -3699,31 +3699,31 @@ loc_23E1A:
     cbw
     mov     bx, ax
     mov     al, byte_3E9DB
-    cmp     [bx+5698h], al
+    cmp     byte_40E08[bx], al
     jz      short loc_23E68
 loc_23E29:
-    call    mouse_sprite_op_check
+    call    mouse_draw_opaque_check
     mov     al, byte_4432A
     cbw
     mov     [bp+var_44], ax
     mov     bx, ax
-    cmp     byte ptr [bx+5698h], 0FFh
+    cmp     byte_40E08[bx], 0FFh
     jnz     short loc_23E41
     jmp     loc_23EC6
 loc_23E41:
-    mov     al, [bx+5698h]
+    mov     al, byte_40E08[bx]
     cbw
     mov     [bp+var_42], ax
     mov     bx, ax
     shl     bx, 1
     add     bx, [bp+var_44]
-    cmp     byte ptr [bx+570Ah], 0
+    cmp     byte_40E7A[bx], 0
     jz      short loc_23E9A
     mov     bx, ax
     shl     bx, 1
     shl     bx, 1
-    push    word ptr [bx+56D8h]
-    push    word ptr [bx+56D6h]
+    push    word ptr (rplyshapes+3Ah)[bx]
+    push    word ptr (rplyshapes+38h)[bx]
     jmp     short loc_23EB3
     ; align 2
     db 144
@@ -3741,13 +3741,13 @@ loc_23E7A:
     cbw
     mov     [bp+var_44], ax
     mov     bx, ax
-    mov     al, [bx+56FAh]
+    mov     al, byte_40E6A[bx]
     mov     cx, ax
     mov     al, byte_4432A
     cbw
     shl     bx, 1
     add     bx, ax
-    cmp     [bx+570Ah], cl
+    cmp     byte_40E7A[bx], cl
     jz      short loc_23E6E
     jmp     short loc_23E29
     ; align 2
@@ -3756,20 +3756,20 @@ loc_23E9A:
     mov     al, byte_4432A
     cbw
     mov     bx, ax
-    mov     al, [bx+5698h]
+    mov     al, byte_40E08[bx]
     cbw
     mov     bx, ax
     shl     bx, 1
     shl     bx, 1
-    push    word ptr [bx+56B4h]
-    push    word ptr [bx+56B2h]
+    push    word ptr (rplyshapes+16h)[bx]
+    push    word ptr (rplyshapes+14h)[bx]
 loc_23EB3:
     call    sub_33E00
     add     sp, 4
     mov     al, byte_4432A
     cbw
     mov     bx, ax
-    mov     byte ptr [bx+5698h], 0FFh
+    mov     byte_40E08[bx], 0FFh
 loc_23EC6:
     mov     [bp+var_20], 0
 loc_23ECA:
@@ -3777,21 +3777,21 @@ loc_23ECA:
     cbw
     mov     [bp+var_44], ax
     mov     bx, ax
-    cmp     byte ptr [bx+56FAh], 0
+    cmp     byte_40E6A[bx], 0
     jnz     short loc_23F18
-    mov     al, [bx+56FAh]
+    mov     al, byte_40E6A[bx]
     mov     cx, ax
     mov     al, byte_4432A
     cbw
     shl     bx, 1
     add     bx, ax
-    cmp     [bx+570Ah], cl
+    cmp     byte_40E7A[bx], cl
     jz      short loc_23F18
     mov     bx, [bp+var_44]
     shl     bx, 1
     shl     bx, 1
-    push    word ptr [bx+56B4h]
-    push    word ptr [bx+56B2h]
+    push    word ptr (rplyshapes+16h)[bx]
+    push    word ptr (rplyshapes+14h)[bx]
     call    sub_33E00
     add     sp, 4
     mov     al, [bp+var_20]
@@ -3801,7 +3801,7 @@ loc_23ECA:
     mov     al, byte_4432A
     cbw
     add     bx, ax
-    mov     byte ptr [bx+570Ah], 0
+    mov     byte_40E7A[bx], 0
 loc_23F18:
     inc     [bp+var_20]
     cmp     [bp+var_20], 7
@@ -3812,18 +3812,18 @@ loc_23F25:
     cbw
     mov     [bp+var_44], ax
     mov     bx, ax
-    cmp     byte ptr [bx+56FAh], 0
+    cmp     byte_40E6A[bx], 0
     jz      short loc_23F6C
     mov     al, byte_4432A
     cbw
     shl     bx, 1
     add     bx, ax
-    mov     byte ptr [bx+570Ah], 1
+    mov     byte_40E7A[bx], 1
     mov     bx, [bp+var_44]
     shl     bx, 1
     shl     bx, 1
-    push    word ptr [bx+56D8h]
-    push    word ptr [bx+56D6h]
+    push    word ptr (rplyshapes+3Ah)[bx]
+    push    word ptr (rplyshapes+38h)[bx]
     call    sub_33E00
     add     sp, 4
     mov     al, [bp+var_20]
@@ -3833,7 +3833,7 @@ loc_23F25:
     mov     al, byte_4432A
     cbw
     add     bx, ax
-    mov     byte ptr [bx+570Ah], 1
+    mov     byte_40E7A[bx], 1
 loc_23F6C:
     inc     [bp+var_20]
     cmp     [bp+var_20], 7
@@ -3842,7 +3842,7 @@ loc_23F6C:
     cbw
     mov     bx, ax
     mov     al, byte_3E9DB
-    mov     [bx+5698h], al
+    mov     byte_40E08[bx], al
     cmp     byte_3E9DB, 0FFh
     jz      short loc_23FB0
     mov     al, byte_3E9DB
@@ -3851,20 +3851,20 @@ loc_23F6C:
     mov     [bp+var_44], ax
     push    word_407FE
     mov     bx, ax
-    push    word ptr [bx+32CEh]
-    push    word ptr [bx+32AAh]
-    push    word ptr [bx+32BCh]
-    push    word ptr [bx+3298h]
+    push    word_3EA3E[bx]
+    push    word_3EA1A[bx]
+    push    word_3EA2C[bx]
+    push    word_3EA08[bx]
     call    sub_361BC
     add     sp, 0Ah
 loc_23FB0:
-    call    mouse_sprite_op2_check
+    call    mouse_draw_transparent_check
     jmp     loc_24D5E
 loc_23FB8:
     mov     al, cameramode
     cbw
     mov     bx, ax
-    mov     al, [bx+3294h]
+    mov     al, byte_3EA04[bx]
     mov     byte ptr [bp+var_44], al
     mov     al, byte_3E9DB
     cmp     byte ptr [bp+var_44], al
@@ -3886,18 +3886,18 @@ loc_23FEE:
     call    input_checking
     add     sp, 2
     mov     [bp+var_16], ax
-    mov     ax, 32CEh
+    mov     ax, offset word_3EA3E
     push    ax
-    mov     ax, 32BCh
+    mov     ax, offset word_3EA2C
     push    ax
-    mov     ax, 32AAh
+    mov     ax, offset word_3EA1A
     push    ax
-    mov     ax, 3298h
+    mov     ax, offset word_3EA08
     push    ax
     mov     al, cameramode
     cbw
     mov     bx, ax
-    mov     al, [bx+3294h]
+    mov     al, byte_3EA04[bx]
     cbw
     inc     ax
     push    ax
@@ -3983,13 +3983,13 @@ loc_240D0:
     ; align 2
     db 144
 loc_240D8:
-    mov     ax, 32E6h
+    mov     ax, offset unk_3EA56
     push    ax
-    mov     ax, 32E4h
+    mov     ax, offset unk_3EA54
     push    ax
-    mov     ax, 32E2h
+    mov     ax, offset unk_3EA52
     push    ax
-    mov     ax, 32E0h
+    mov     ax, offset unk_3EA50
     push    ax
     mov     ax, 1
     push    ax
@@ -4208,13 +4208,13 @@ loc_242C8:
     mov     al, byte_3E9DB
     cbw
     mov     bx, ax
-    mov     al, [bx+326Ch]
+    mov     al, byte_3E9DC[bx]
     mov     byte ptr [bp+var_44], al
     mov     al, cameramode
     cbw
     mov     bx, ax
     mov     al, byte ptr [bp+var_44]
-    cmp     [bx+3294h], al
+    cmp     byte_3EA04[bx], al
     jl      short loc_242E7
 loc_242E4:
     mov     byte_3E9DB, al
@@ -4233,7 +4233,7 @@ loc_242FE:
     mov     al, byte_3E9DB
     cbw
     mov     bx, ax
-    mov     al, [bx+3276h]
+    mov     al, byte_3E9E6[bx]
     jmp     short loc_242E4
 loc_2430A:
     cmp     byte_3E9DB, 7
@@ -4241,7 +4241,7 @@ loc_2430A:
     mov     al, byte_3E9DB
     cbw
     mov     bx, ax
-    mov     al, [bx+3280h]
+    mov     al, byte_3E9F0[bx]
     jmp     short loc_242E4
     ; align 2
     db 144
@@ -4253,7 +4253,7 @@ loc_24328:
     mov     al, byte_3E9DB
     cbw
     mov     bx, ax
-    mov     al, [bx+328Ah]
+    mov     al, byte_3E9FA[bx]
     jmp     short loc_242E4
 loc_24334:
     mov     al, byte_3E9DB
@@ -4323,10 +4323,10 @@ loc_243C4:
     mov     ax, 0FFFFh
     push    ax
     push    ax
-    mov     ax, 323Dh
+    mov     ax, offset aMen_0
     push    ax
-    push    word_449A2
-    push    word_449A0
+    push    word ptr gameresptr+2
+    push    word ptr gameresptr
     call    locate_text_res
     add     sp, 6
     push    dx
@@ -4381,10 +4381,10 @@ loc_2445A:
     mov     ax, 0FFFFh
     push    ax
     push    ax
-    mov     ax, 3241h
+    mov     ax, offset aCon_0
     push    ax
-    push    word_449A2
-    push    word_449A0
+    push    word ptr gameresptr+2
+    push    word ptr gameresptr
     call    locate_text_res
     add     sp, 6
     push    dx
@@ -4442,7 +4442,7 @@ loc_244B0:
 loc_2450A:
     mov     byte_43966, 0
     call    sub_188A4
-    mov     ax, 3245h
+    mov     ax, offset aRep
     push    ax
     push    word ptr mainresptr+2
     push    word ptr mainresptr
@@ -4450,11 +4450,11 @@ loc_2450A:
     add     sp, 6
     push    dx              ; int
     push    ax              ; int
-    mov     ax, 3249h
+    mov     ax, offset a_rpl_1
     push    ax              ; int
     mov     ax, 140h
     push    ax
-    mov     ax, 0EEh ; 'î'
+    mov     ax, offset byte_3B85E
     push    ax              ; char *
     call    sub_27ED4
     add     sp, 0Ah
@@ -4727,8 +4727,8 @@ loc_24795:
     push    ax
     mov     ax, 325Fh
     push    ax
-    push    word_449A2
-    push    word_449A0
+    push    word ptr gameresptr+2
+    push    word ptr gameresptr
     call    locate_text_res
     add     sp, 6
     push    dx
@@ -4923,8 +4923,8 @@ loc_24956:
     add     sp, 6
     mov     ax, 3263h
     push    ax
-    push    word_449A2
-    push    word_449A0
+    push    word ptr gameresptr+2
+    push    word ptr gameresptr
     call    locate_text_res
     add     sp, 6
     push    dx
@@ -5117,8 +5117,8 @@ loc_24B23:
 loc_24B4F:
     mov     ax, 3267h
     push    ax
-    push    word_449A2
-    push    word_449A0
+    push    word ptr gameresptr+2
+    push    word ptr gameresptr
     call    locate_text_res
     add     sp, 6
     push    dx

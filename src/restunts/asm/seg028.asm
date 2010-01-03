@@ -86,7 +86,7 @@ audiodriver_timer proc far
     call near ptr sub_39700
     cmp     byte_40632, 1
     jnz     short loc_3867C
-    cmp     byte_40631, 1
+    cmp     audioflag2, 1
     jnz     short loc_3867C
     cmp     byte_40630, 0
     jnz     short loc_3867C

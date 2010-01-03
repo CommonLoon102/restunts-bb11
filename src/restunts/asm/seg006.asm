@@ -2258,7 +2258,7 @@ loc_2616B:
     push    word ptr [bx+4]
     push    word ptr [bx+2]
     push    [bp+var_8]
-    mov     ax, 2500h
+    mov     ax, (offset sceneshapes.scene_unk2+460h)
     push    ax
     lea     ax, [bp+var_32]
     push    ax

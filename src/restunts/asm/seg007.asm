@@ -543,7 +543,7 @@ loc_26FD4:
     jnz     short loc_26FDC
     jmp     loc_2710B
 loc_26FDC:
-    cmp     byte_40633, 0
+    cmp     audioflag6, 0
     jnz     short loc_26FE6
     jmp     loc_2710B
 loc_26FE6:
