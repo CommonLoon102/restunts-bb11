@@ -47,9 +47,14 @@ seg002 segment byte public 'STUNTSC' use16
     assume cs:seg002
     assume es:nothing, ss:nothing, ds:dseg
     public sub_19DC6
+    public nopsub_19DE8
+    public nopsub_19DFF
+    public nopsub_19E09
+    public nopsub_19E13
     public init_kevinrandom
     public get_kevinrandom_seed
     public get_kevinrandom
+    public nopsub_19EC9
     public init_div0
     ; align 2
     db 144
@@ -80,11 +85,17 @@ loc_19DE3:
     pop     bp
     pop     bp
     retf
+sub_19DC6 endp
+nopsub_19DE8 proc far
+     s = byte ptr 0
+     r = byte ptr 2
+    arg_0 = word ptr 6
+
     push    bp
     mov     bp, sp
     push    bp
     xor     ax, ax
-    mov     bx, [bp+6]
+    mov     bx, [bp+arg_0]
     or      bx, bx
     jz      short loc_19DFC
     jl      short loc_19DFB
@@ -98,29 +109,47 @@ loc_19DFC:
     pop     bp
     pop     bp
     retf
+nopsub_19DE8 endp
+nopsub_19DFF proc far
+     s = byte ptr 0
+     r = byte ptr 2
+    arg_0 = word ptr 6
+
     push    bp
     mov     bp, sp
-    mov     ax, [bp+6]
+    mov     ax, [bp+arg_0]
     int     61h             ; reserved for user interrupt
     pop     bp
     retf
+nopsub_19DFF endp
+nopsub_19E09 proc far
+     s = byte ptr 0
+     r = byte ptr 2
+    arg_0 = word ptr 6
+
     push    bp
     mov     bp, sp
-    mov     ax, [bp+6]
+    mov     ax, [bp+arg_0]
     int     60h
     pop     bp
     retf
+nopsub_19E09 endp
+nopsub_19E13 proc far
+     s = byte ptr 0
+     r = byte ptr 2
+    arg_0 = word ptr 6
+
     push    bp
     mov     bp, sp
     push    bp
     push    si
-    mov     si, [bp+6]
+    mov     si, [bp+arg_0]
     int     62h             ; reserved for user interrupt
     pop     si
     pop     bp
     pop     bp
     retf
-sub_19DC6 endp
+nopsub_19E13 endp
 init_kevinrandom proc far
      s = byte ptr 0
      r = byte ptr 2
@@ -199,6 +228,11 @@ loc_19EC3:
     mov     al, byte_4594A
     xor     ah, ah
     retf
+get_kevinrandom endp
+nopsub_19EC9 proc far
+     s = byte ptr 0
+     r = byte ptr 2
+
     push    bp
     mov     bp, sp
     push    ds
@@ -215,7 +249,7 @@ loc_19EC3:
     pop     ds
     pop     bp
     iret
-get_kevinrandom endp
+nopsub_19EC9 endp
 init_div0 proc far
 
     push    ds

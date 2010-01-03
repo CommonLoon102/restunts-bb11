@@ -955,41 +955,17 @@ dseg segment byte public 'STUNTSD' use16
     extrn word_40D74:word
     extrn word_40D78:word
     extrn stdaresptr:dword
-    extrn dword_40D80:dword
+    extrn whlsprite1:dword
     extrn stdbresptr:dword
-    extrn word_40D88:word
-    extrn word_40D8A:word
-    extrn word_40DB0:word
-    extrn word_40DB2:word
-    extrn word_40DB4:word
-    extrn word_40DB6:word
-    extrn word_40DB8:word
-    extrn word_40DBA:word
-    extrn dword_40DBC:dword
-    extrn dword_40DC0:dword
-    extrn word_40DC4:word
-    extrn word_40DC6:word
-    extrn word_40DC8:word
-    extrn word_40DCA:word
-    extrn word_40DCC:word
-    extrn word_40DCE:word
-    extrn word_40DD0:word
-    extrn word_40DD2:word
-    extrn word_40DD4:word
-    extrn word_40DD6:word
-    extrn word_40DD8:word
-    extrn word_40DDA:word
-    extrn dword_40DDC:dword
-    extrn word_40DE0:word
-    extrn word_40DE2:word
-    extrn word_40DE4:word
-    extrn word_40DE6:word
-    extrn dword_40DEC:dword
+    extrn digshapes:dword
+    extrn whlshapes:dword
+    extrn gnobshapes:dword
+    extrn whlsprite2:dword
     extrn byte_40DF0:byte
     extrn word_40DF2:word
     extrn word_40DF6:word
     extrn byte_40DFA:byte
-    extrn dword_40DFC:dword
+    extrn whlsprite3:dword
     extrn word_40E00:word
     extrn word_40E0E:word
     extrn word_40E10:word
@@ -1047,12 +1023,9 @@ dseg segment byte public 'STUNTSD' use16
     extrn word_42252:word
     extrn word_42254:word
     extrn word_42256:word
-    extrn word_42258:word
-    extrn word_4225A:word
-    extrn word_42540:word
-    extrn word_42542:word
-    extrn word_42544:word
-    extrn word_42546:word
+    extrn tracksmenushape2dunk:dword
+    extrn pboxshape:dword
+    extrn tracksmenushape2dunk2:dword
     extrn tracksmenushapes2:dword
     extrn tracksmenushapes1:dword
     extrn tracksmenushapes3:dword

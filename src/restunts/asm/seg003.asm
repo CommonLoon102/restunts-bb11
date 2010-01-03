@@ -143,7 +143,7 @@ loc_19F8B:
     push    ax
     call    sub_26B4A
     add     sp, 6
-    call    sub_28DB6
+    call    mouse_sprite_op_check
     sub     si, si
     jmp     short loc_1A013
 loc_19FD8:
@@ -194,14 +194,14 @@ loc_1A03E:
     call    sprite_set_1_size
     add     sp, 8
 loc_1A046:
-    call    sub_28DB6
+    call    mouse_sprite_op_check
     les     bx, wndsprite
     push    word ptr es:[bx+2]
     push    word ptr es:[bx]
     call    sub_33BDA
     add     sp, 4
 loc_1A05E:
-    call    sub_28D9E
+    call    mouse_sprite_op2_check
     cmp     word_44984, 0
     jz      short loc_1A090
     mov     ax, word_463D6
@@ -6719,9 +6719,9 @@ loc_1DCFC:
     add     sp, 20h
     cmp     video_flag5_is0, 0
     jz      short loc_1DD7E
-    call    sub_28DB6
+    call    mouse_sprite_op_check
     call    setup_mcgawnd1
-    call    sub_28D9E
+    call    mouse_sprite_op2_check
     cmp     word_44984, 0
     jz      short loc_1DD77
     mov     bx, [bp+var_36]
@@ -6764,13 +6764,13 @@ loc_1DD7E:
     push    [bp+var_2A]
     call    sprite_set_1_size
     add     sp, 8
-    call    sub_28DB6
+    call    mouse_sprite_op_check
     les     bx, wndsprite
     push    word ptr es:[bx+2]
     push    word ptr es:[bx]
     call    sub_33BDA
     add     sp, 4
-    call    sub_28D9E
+    call    mouse_sprite_op2_check
     mov     di, 9294h
     lea     si, [bp+var_16]
     push    ds
@@ -6789,13 +6789,13 @@ loc_1DD7E:
     ; align 2
     db 144
 loc_1DDFC:
-    call    sub_28DB6
+    call    mouse_sprite_op_check
     les     bx, wndsprite
     push    word ptr es:[bx+2]
     push    word ptr es:[bx]
     call    sub_33BDA
     add     sp, 4
-    call    sub_28D9E
+    call    mouse_sprite_op2_check
 loc_1DE19:
     push    [bp+var_40]
     call    input_do_checking
@@ -6828,9 +6828,9 @@ loc_1DE3E:
     push    ax
     call    sub_35C4E
     add     sp, 0Ah
-    call    sub_28DB6
+    call    mouse_sprite_op_check
     call    setup_mcgawnd1
-    call    sub_28D9E
+    call    mouse_sprite_op2_check
     jmp     short loc_1DE8C
     ; align 2
     db 144

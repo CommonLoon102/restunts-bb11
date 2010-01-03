@@ -79,7 +79,7 @@ extern void init_video(int argc, char* argv);
 extern void init_div0(void);
 extern void set_fontdef(void);
 extern void init_polyinfo(void);
-extern void sub_28DB6(void);
+extern void mouse_sprite_op_check(void);
 extern void sub_22532(void);
 extern void input_do_checking(int unk);
 extern void init_kevinrandom(const char* seed);
@@ -87,7 +87,6 @@ extern void set_default_car(void);
 extern void combine_file_path(const char* str1, const char* str2, const char* str3, const char* str4);
 extern void ensure_file_exists(int unk);
 extern unsigned short run_intro_looped(void);
-extern void sub_28DB6(void);
 extern void audio_stop_unk(void);
 extern void audiodrv_atexit(void);
 extern void sub_30883(void);
@@ -228,7 +227,7 @@ int stuntsmain(int argc, char* argv) {
 	
 	input_do_checking(1);
 	input_do_checking(1);
-	sub_28DB6();
+	mouse_sprite_op_check();
 	
 	kbormouse = 0;
 	passed_security = 1;  // set to 0 for the original copy protection
@@ -372,7 +371,7 @@ _ask_dos:
 	textresptr = locate_text_res(mainresptr, "dos");
 	result = show_dialog(2, 1, textresptr, 0xFFFF, 0xFFFF, dialogarg2, 0, 0);
 	if (result >= 1) {
-		sub_28DB6();
+		mouse_sprite_op_check();
 		audio_stop_unk();
 		audiodrv_atexit();
 		sub_30883();

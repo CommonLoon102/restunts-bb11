@@ -49,7 +49,7 @@ seg034 segment byte public 'STUNTSC' use16
     public load_2dshape_fatal
     public load_2dshape_nofatal
     public load_2dshape
-    public sub_3ACB0
+    public load_2dshape_helper
     ; align 2
     db 144
 load_2dshape_fatal proc far
@@ -301,7 +301,7 @@ loc_3ABB7:
     push    dx
     push    ax
     push    cs
-    call near ptr sub_3ACB0
+    call near ptr load_2dshape_helper
     add     sp, 4
 loc_3ABF3:
     push    [bp+var_7E]
@@ -379,7 +379,7 @@ loc_3AC60:
     add     sp, 6
     jmp     loc_3AA87
 load_2dshape endp
-sub_3ACB0 proc far
+load_2dshape_helper proc far
     var_2 = word ptr -2
      s = byte ptr 0
      r = byte ptr 2
@@ -402,6 +402,6 @@ loc_3ACBC:
     mov     sp, bp
     pop     bp
     retf
-sub_3ACB0 endp
+load_2dshape_helper endp
 seg034 ends
 end

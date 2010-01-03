@@ -228,8 +228,8 @@ load_tracks_menu_shapes proc far
     push    [bp+var_22]
     call    locate_shape_alt
     add     sp, 6
-    mov     word_42540, ax
-    mov     word_42542, dx
+    mov     word ptr pboxshape, ax
+    mov     word ptr pboxshape+2, dx
     mov     ax, offset aSnam; "snam"
     push    ax
     push    [bp+var_20]
@@ -289,8 +289,8 @@ loc_2A451:
     call    locate_shape_fatal
     add     sp, 6
     mov     bx, [bp+var_194]
-    mov     word_42258[bx], ax
-    mov     word_4225A[bx], dx
+    mov     word ptr tracksmenushape2dunk[bx], ax
+    mov     word ptr (tracksmenushape2dunk+2)[bx], dx
     mov     ax, si
     shl     ax, 1
     shl     ax, 1
@@ -316,8 +316,8 @@ loc_2A451:
     call    locate_shape_fatal
     add     sp, 6
     mov     bx, [bp+var_196]
-    mov     word_42544[bx], ax
-    mov     word_42546[bx], dx
+    mov     word ptr tracksmenushape2dunk2[bx], ax
+    mov     word ptr (tracksmenushape2dunk2+2)[bx], dx
     inc     si
     cmp     si, 0BAh ; 'º'
     jge     short loc_2A50D
@@ -674,8 +674,8 @@ loc_2A878:
     mov     al, [bp+var_18D]
     cbw
     add     bx, ax
-    add     bx, word_42540
-    mov     es, word_42542
+    add     bx, word ptr pboxshape
+    mov     es, word ptr pboxshape+2
     mov     al, es:[bx]
     mov     byte ptr [bp+var_196], al
     cmp     al, 0FEh ; 'þ'
@@ -716,7 +716,7 @@ loc_2A8D8:
     push    ax
     sub     ax, ax
     push    ax
-    call    sub_28B0E
+    call    mouse_track_op
     add     sp, 10h
 loc_2A8F4:
     cmp     [bp+var_30], 0
@@ -758,7 +758,7 @@ loc_2A922:
     push    ax
     sub     ax, ax
     push    ax
-    call    sub_28B0E
+    call    mouse_track_op
     add     sp, 10h
     mov     ax, 1Eh
     push    ax
@@ -777,7 +777,7 @@ loc_2A922:
     push    ax
     sub     ax, ax
     push    ax
-    call    sub_28B0E
+    call    mouse_track_op
     add     sp, 10h
 loc_2A983:
     mov     ax, 0B3h ; '³'
@@ -913,8 +913,8 @@ loc_2AA8E:
     sub     bh, bh
     shl     bx, 1
     shl     bx, 1
-    push    word_42546[bx]
-    push    word_42544[bx]
+    push    word ptr (tracksmenushape2dunk2+2)[bx]
+    push    word ptr tracksmenushape2dunk2[bx]
     call    sub_33A1E
     add     sp, 8
     sub     ax, ax
@@ -924,8 +924,8 @@ loc_2AA8E:
     sub     bh, bh
     shl     bx, 1
     shl     bx, 1
-    push    word_4225A[bx]
-    push    word_42258[bx]
+    push    word ptr (tracksmenushape2dunk+2)[bx]
+    push    word ptr tracksmenushape2dunk[bx]
     call    sub_34212
     add     sp, 8
 loc_2AAF0:
@@ -1089,8 +1089,8 @@ loc_2AC6E:
     imul    [bp+var_C6]
     add     bx, ax
     add     bx, [bp+var_196]
-    add     bx, word_42540
-    mov     es, word_42542
+    add     bx, word ptr pboxshape
+    mov     es, word ptr pboxshape+2
     cmp     byte ptr es:[bx+6], 0FEh ; 'þ'
     jnz     short loc_2ACB5
     mov     [bp+var_1A], 20h ; ' '
@@ -1109,8 +1109,8 @@ loc_2ACB5:
     mov     al, [bp+var_18D]
     cbw
     add     bx, ax
-    add     bx, word_42540
-    mov     es, word_42542
+    add     bx, word ptr pboxshape
+    mov     es, word ptr pboxshape+2
     cmp     byte ptr es:[bx+1], 0FFh
     jnz     short loc_2ACEB
     mov     [bp+var_2E], 20h ; ' '
@@ -1127,8 +1127,8 @@ loc_2ACEB:
     mov     al, [bp+var_18D]
     cbw
     add     bx, ax
-    add     bx, word_42540
-    mov     es, word_42542
+    add     bx, word ptr pboxshape
+    mov     es, word ptr pboxshape+2
     mov     al, es:[bx]
     mov     [bp+var_182], al
     cmp     al, 0FDh ; 'ý'
@@ -1145,7 +1145,7 @@ loc_2AD2B:
     jnz     short loc_2AD38
     jmp     loc_2ADF4
 loc_2AD38:
-    call    sub_28DB6
+    call    mouse_sprite_op_check
     sub     ax, ax
     push    ax
     push    word_407CA
@@ -1208,7 +1208,7 @@ loc_2AD38:
     call    sub_335D2
     add     sp, 0Ah
 loc_2ADE4:
-    call    sub_28D9E
+    call    mouse_sprite_op2_check
     mov     [bp+var_38], si
     mov     al, [bp+var_182]
     mov     [bp+var_C2], al
@@ -1244,7 +1244,7 @@ loc_2ADF4:
 loc_2AE36:
     mov     [bp+var_3A], 63h ; 'c'
     mov     [bp+var_CC], 0
-    call    sub_28DB6
+    call    mouse_sprite_op_check
     mov     al, [bp+var_34]
     mov     [bp+var_16], al
     or      al, al
@@ -1265,7 +1265,7 @@ loc_2AE73:
     jg      short loc_2AE7C
     jmp     loc_2AF0E
 loc_2AE7C:
-    call    sub_28DB6
+    call    mouse_sprite_op_check
     cmp     [bp+var_34], 0
     jnz     short loc_2AED6
     cmp     [bp+var_CC], 0
@@ -1316,7 +1316,7 @@ loc_2AED6:
     call    sub_3702E
     add     sp, 0Ah
 loc_2AEFF:
-    call    sub_28D9E
+    call    mouse_sprite_op2_check
     xor     byte ptr [bp+var_CC], 1
     mov     [bp+var_3A], 0
 loc_2AF0E:
@@ -1337,7 +1337,7 @@ loc_2AF0E:
     push    ax
     mov     ax, 5
     push    ax
-    call    sub_28E90
+    call    mouse_op_unk
     add     sp, 0Ah
     mov     [bp+var_18A], al
     cmp     al, 0FFh
@@ -1383,7 +1383,7 @@ loc_2AF70:
     push    ax
     mov     ax, 1
     push    ax
-    call    sub_28B0E
+    call    mouse_track_op
     add     sp, 10h
     mov     [bp+var_186], al
     sub     al, [bp+var_8]
@@ -1420,7 +1420,7 @@ loc_2AFF9:
     jnz     short loc_2B003
     jmp     loc_2B2D4
 loc_2B003:
-    call    sub_28DB6
+    call    mouse_sprite_op_check
     cmp     [bp+var_16], 0
     jz      short loc_2B011
     jmp     loc_2B2A6
@@ -1462,7 +1462,7 @@ loc_2B042:
     push    ax
     mov     ax, 1
     push    ax
-    call    sub_28B0E
+    call    mouse_track_op
     add     sp, 10h
     mov     [bp+var_186], al
     sub     al, [bp+var_18C]
@@ -1504,7 +1504,7 @@ loc_2B0AE:
     push    ax
     mov     ax, 1
     push    ax
-    call    sub_28B0E
+    call    mouse_track_op
     add     sp, 10h
     inc     al
     mov     [bp+var_C6], al
@@ -1623,8 +1623,8 @@ loc_2B1E4:
     mov     al, [bp+var_D6]
     cbw
     add     bx, ax
-    add     bx, word_42540
-    mov     es, word_42542
+    add     bx, word ptr pboxshape
+    mov     es, word ptr pboxshape+2
     cmp     byte ptr es:[bx], 0FEh ; 'þ'
     jnz     short loc_2B212
     dec     [bp+var_174]
@@ -1643,7 +1643,7 @@ loc_2B212:
     mov     al, [bp+var_D6]
     cbw
     add     bx, ax
-    add     bx, word_42540
+    add     bx, word ptr pboxshape
     cmp     byte ptr es:[bx], 0FFh
     jnz     short loc_2B240
     dec     [bp+var_D6]
@@ -1705,7 +1705,7 @@ loc_2B2A6:
     call    sub_3702E
     add     sp, 0Ah
 loc_2B2CF:
-    call    sub_28D9E
+    call    mouse_sprite_op2_check
 loc_2B2D4:
     cmp     [bp+var_18], 0
     jz      short loc_2B356
@@ -1909,8 +1909,8 @@ loc_2B4AD:
     mov     al, [bp+var_18D]
     cbw
     add     bx, ax
-    add     bx, word_42540
-    mov     es, word_42542
+    add     bx, word ptr pboxshape
+    mov     es, word ptr pboxshape+2
     mov     al, es:[bx]
     mov     [bp+var_190], al
     cmp     [bp+var_C6], 0
@@ -2629,8 +2629,8 @@ loc_2BBD3:
     mov     al, [bp+var_18D]
     cbw
     add     bx, ax
-    add     bx, word_42540
-    mov     es, word_42542
+    add     bx, word ptr pboxshape
+    mov     es, word ptr pboxshape+2
     mov     al, es:[bx]
     mov     byte ptr [bp+var_196], al
     cmp     al, 0FEh ; 'þ'
@@ -2673,8 +2673,8 @@ loc_2BC41:
     mov     al, [bp+var_18D]
     cbw
     add     bx, ax
-    add     bx, word_42540
-    mov     es, word_42542
+    add     bx, word ptr pboxshape
+    mov     es, word ptr pboxshape+2
     mov     al, es:[bx]
     mov     [bp+var_178], al
     cmp     al, 0FFh
@@ -2744,8 +2744,8 @@ loc_2BCED:
     mov     al, [bp+var_18D]
     cbw
     add     bx, ax
-    add     bx, word_42540
-    mov     es, word_42542
+    add     bx, word ptr pboxshape
+    mov     es, word ptr pboxshape+2
     mov     al, es:[bx]
     mov     byte ptr [bp+var_196], al
     cmp     al, 0FEh ; 'þ'
@@ -2785,8 +2785,8 @@ loc_2BD4E:
     cbw
     add     bx, ax
     add     bx, [bp+var_196]
-    add     bx, word_42540
-    mov     es, word_42542
+    add     bx, word ptr pboxshape
+    mov     es, word ptr pboxshape+2
     mov     al, es:[bx]
     mov     byte ptr [bp+var_198], al
     cmp     al, 0FEh ; 'þ'
@@ -2997,8 +2997,8 @@ loc_2BF4A:
     sub     bh, bh
     shl     bx, 1
     shl     bx, 1
-    push    word_42546[bx]
-    push    word_42544[bx]
+    push    word ptr (tracksmenushape2dunk2+2)[bx]
+    push    word ptr tracksmenushape2dunk2[bx]
     call    sub_33A1E
     add     sp, 8
     mov     al, [bp+var_2]
@@ -3016,8 +3016,8 @@ loc_2BF4A:
     sub     bh, bh
     shl     bx, 1
     shl     bx, 1
-    push    word_4225A[bx]
-    push    word_42258[bx]
+    push    word ptr (tracksmenushape2dunk+2)[bx]
+    push    word ptr tracksmenushape2dunk[bx]
     call    sub_34212
 loc_2BFA9:
     add     sp, 8
@@ -3041,8 +3041,8 @@ loc_2BFB8:
     mul     [bp+arg_0]
     mov     bx, ax
     add     bx, cx
-    add     bx, word_42540
-    mov     es, word_42542
+    add     bx, word ptr pboxshape
+    mov     es, word ptr pboxshape+2
     mov     al, es:[bx+si]
     mov     [bp+var_6], al
     cmp     [bp+arg_0], 0
@@ -3262,8 +3262,8 @@ loc_2C0CA:
     sub     bh, bh
     shl     bx, 1
     shl     bx, 1
-    push    word_42546[bx]
-    push    word_42544[bx]
+    push    word ptr (tracksmenushape2dunk2+2)[bx]
+    push    word ptr tracksmenushape2dunk2[bx]
     call    sub_33890
     add     sp, 8
     mov     al, [bp+var_8]
@@ -3296,8 +3296,8 @@ loc_2C201:
     sub     bh, bh
     shl     bx, 1
     shl     bx, 1
-    push    word_4225A[bx]
-    push    word_42258[bx]
+    push    word ptr (tracksmenushape2dunk+2)[bx]
+    push    word ptr tracksmenushape2dunk[bx]
     call    sub_34084
 loc_2C214:
     add     sp, 8
@@ -3377,8 +3377,8 @@ loc_2C235:
     sub     bh, bh
     shl     bx, 1
     shl     bx, 1
-    push    word_42546[bx]
-    push    word_42544[bx]
+    push    word ptr (tracksmenushape2dunk2+2)[bx]
+    push    word ptr tracksmenushape2dunk2[bx]
     call    sub_33890
     add     sp, 8
     mov     al, [bp+var_8]
@@ -3534,8 +3534,8 @@ loc_2C41A:
     sub     bh, bh
     shl     bx, 1
     shl     bx, 1
-    push    word_42546[bx]
-    push    word_42544[bx]
+    push    word ptr (tracksmenushape2dunk2+2)[bx]
+    push    word ptr tracksmenushape2dunk2[bx]
     call    sub_33A1E
     add     sp, 8
     mov     al, [bp+var_6]
@@ -3553,8 +3553,8 @@ loc_2C41A:
     sub     bh, bh
     shl     bx, 1
     shl     bx, 1
-    push    word_4225A[bx]
-    push    word_42258[bx]
+    push    word ptr (tracksmenushape2dunk+2)[bx]
+    push    word ptr tracksmenushape2dunk[bx]
     call    sub_34212
     jmp     loc_2C214
 loc_2C478:
@@ -3607,8 +3607,8 @@ loc_2C4B5:
     sub     bh, bh
     shl     bx, 1
     shl     bx, 1
-    push    word_42546[bx]
-    push    word_42544[bx]
+    push    word ptr (tracksmenushape2dunk2+2)[bx]
+    push    word ptr tracksmenushape2dunk2[bx]
     call    sub_33890
     add     sp, 8
     mov     al, [bp+var_6]
@@ -3904,8 +3904,8 @@ loc_2C6CD:
     sub     bh, bh
     shl     bx, 1
     shl     bx, 1
-    push    word_42546[bx]
-    push    word_42544[bx]
+    push    word ptr (tracksmenushape2dunk2+2)[bx]
+    push    word ptr tracksmenushape2dunk2[bx]
     call    sub_33890
     add     sp, 8
     mov     al, [bp+var_8]

@@ -608,12 +608,12 @@ loc_22126:
 loc_22131:
     cmp     video_flag5_is0, 0
     jz      short loc_22152
-    call    sub_28DB6
+    call    mouse_sprite_op_check
     call    setup_mcgawnd1
     xor     byte_44346, 1
     mov     al, byte_44346
     mov     byte_4432A, al
-    call    sub_28D9E
+    call    mouse_sprite_op2_check
 loc_22152:
     cmp     byte_45DB2, 1
     jnz     short loc_2217D
@@ -753,7 +753,7 @@ loc_22298:
     call    get_0
     or      ax, ax
     jz      short loc_222D3
-    call    sub_28DB6
+    call    mouse_sprite_op_check
     call    setup_mcgawnd2
     sub     ax, ax
     push    ax
@@ -767,7 +767,7 @@ loc_22298:
     call    sub_35C4E
     add     sp, 0Ah
     call    setup_mcgawnd1
-    call    sub_28D9E
+    call    mouse_sprite_op2_check
 loc_222D3:
     call    sprite_copy_2_to_1_2
     mov     byte_454B8, 1
@@ -832,7 +832,7 @@ loc_22347:
     push    ax              ; char *
     call    sub_298B8
     add     sp, 6
-    call    sub_28DB6
+    call    mouse_sprite_op_check
     push    [bp+var_14]
     mov     ax, offset byte_463E4
     push    ax
@@ -843,7 +843,7 @@ loc_22347:
     push    ax
     call    sub_345BC
     add     sp, 6
-    call    sub_28D9E
+    call    mouse_sprite_op2_check
 loc_2239F:
     mov     ax, 1
     push    ax
@@ -2077,7 +2077,7 @@ loc_22D5C:
     add     sp, 4
     mov     word ptr stdbresptr, ax
     mov     word ptr stdbresptr+2, dx
-    mov     ax, offset word_40DB0
+    mov     ax, offset whlshapes
     push    ax
     mov     ax, offset aWhl1whl2whl3ins2gboxins1i; "whl1whl2whl3ins2gboxins1ins3inm1inm3"
     push    ax
@@ -2085,7 +2085,7 @@ loc_22D5C:
     push    word ptr stdaresptr
     call    locate_many_resources
     add     sp, 8
-    mov     ax, offset word_40DD4
+    mov     ax, offset gnobshapes
     push    ax
     mov     ax, offset aGnobgnabdotDotadot1dot2; "gnobgnabdot dotadot1dot2"
     push    ax
@@ -2095,7 +2095,7 @@ loc_22D5C:
     add     sp, 8
     cmp     simd_copy.spdcenter.y2, 0
     jnz     short loc_22E09
-    mov     ax, offset word_40D88
+    mov     ax, offset digshapes
     push    ax
     mov     ax, offset aDig0dig1dig2dig3dig4dig5d; "dig0dig1dig2dig3dig4dig5dig6dig7dig8dig"...
     push    ax
@@ -2106,37 +2106,37 @@ loc_22D5C:
 loc_22E09:
     mov     ax, 0Fh
     push    ax
-    les     bx, dword_40DBC
+    les     bx, whlshapes+0Ch
     push    word ptr es:[bx+2]
     mov     ax, es:[bx]
     imul    video_flag1_is1
     push    ax
     call    sprite_make_wnd
     add     sp, 6
-    mov     word ptr dword_40D80, ax
-    mov     word ptr dword_40D80+2, dx
+    mov     word ptr whlsprite1, ax
+    mov     word ptr whlsprite1+2, dx
     mov     ax, 0Fh
     push    ax
-    les     bx, dword_40DC0
+    les     bx, whlshapes+10h
     push    word ptr es:[bx+2]
     mov     ax, es:[bx]
     imul    video_flag1_is1
     push    ax
     call    sprite_make_wnd
     add     sp, 6
-    mov     word ptr dword_40DEC, ax
-    mov     word ptr dword_40DEC+2, dx
+    mov     word ptr whlsprite2, ax
+    mov     word ptr whlsprite2+2, dx
     mov     ax, 0Fh
     push    ax
-    les     bx, dword_40DC0
+    les     bx, whlshapes+10h
     push    word ptr es:[bx+2]
     mov     ax, es:[bx]
     imul    video_flag1_is1
     push    ax
     call    sprite_make_wnd
     add     sp, 6
-    mov     word ptr dword_40DFC, ax
-    mov     word ptr dword_40DFC+2, dx
+    mov     word ptr whlsprite3, ax
+    mov     word ptr whlsprite3+2, dx
     mov     ax, offset aDash; "dash"
     push    ax
     push    word ptr stdaresptr+2
@@ -2145,18 +2145,18 @@ loc_22E09:
     add     sp, 6
     mov     word ptr [bp+var_C], ax
     mov     word ptr [bp+var_C+2], dx
-    push    word ptr dword_40DFC+2
-    push    word ptr dword_40DFC
+    push    word ptr whlsprite3+2
+    push    word ptr whlsprite3
     call    sprite_set_1_from_argptr
     add     sp, 4
     les     bx, [bp+var_C]
     mov     ax, es:[bx+0Ah]
-    les     bx, dword_40DC0
+    les     bx, whlshapes+10h
     sub     ax, es:[bx+0Ah]
     push    ax
     les     bx, [bp+var_C]
     mov     ax, es:[bx+8]
-    les     bx, dword_40DC0
+    les     bx, whlshapes+10h
     sub     ax, es:[bx+8]
     push    ax
     push    word ptr [bp+var_C+2]
@@ -2226,7 +2226,7 @@ loc_22F6A:
     pop     bp
     retf
 loc_22F76:
-    call    sub_28DB6
+    call    mouse_sprite_op_check
     mov     ax, offset aRoof_1; "roof"
     push    ax
     push    word ptr stdaresptr+2
@@ -2256,11 +2256,11 @@ loc_22FB1:
     push    ax
     call    sub_33ED2
     add     sp, 4
-    push    word_40DB6
-    push    word_40DB4
+    push    word ptr whlshapes+6
+    push    word ptr whlshapes+4
     call    sub_33ED2
     add     sp, 4
-    call    sub_28D9E
+    call    mouse_sprite_op2_check
     sub     si, si
     mov     al, byte_4432A
     cbw
@@ -2307,7 +2307,7 @@ loc_23030:
     jz      short loc_2309A
     cmp     video_flag5_is0, 0
     jnz     short loc_23057
-    call    sub_28DB6
+    call    mouse_sprite_op_check
 loc_23057:
     push    word_459D4
     sub     ax, ax
@@ -2318,10 +2318,10 @@ loc_23057:
     push    ax
     call    sprite_set_1_size
     add     sp, 8
-    les     bx, dword_40DC0
+    les     bx, whlshapes+10h
     push    word ptr es:[bx+0Ah]
     push    word ptr es:[bx+8]
-    les     bx, dword_40DFC
+    les     bx, whlsprite3
     push    word ptr es:[bx+2]
     push    word ptr es:[bx]
     call    sub_33BBC
@@ -2358,8 +2358,8 @@ loc_230D1:
     jz      short loc_230DE
     jmp     loc_2319D
 loc_230DE:
-    push    word ptr dword_40DEC+2
-    push    word ptr dword_40DEC
+    push    word ptr whlsprite2+2
+    push    word ptr whlsprite2
     call    sprite_set_1_from_argptr
     add     sp, 4
     mov     al, byte_4432A
@@ -2369,8 +2369,8 @@ loc_230DE:
     sub     ax, ax
     push    ax
     push    ax
-    push    word ptr dword_40DC0+2
-    push    word ptr dword_40DC0
+    push    word ptr whlshapes+12h
+    push    word ptr whlshapes+10h
     call    sub_33EB4
     add     sp, 8
     mov     si, state.playerstate.car_knob_x
@@ -2385,14 +2385,14 @@ loc_230DE:
     mov     word_40D74[bx], di
     push    di
     push    si
-    push    word_40DDA
-    push    word_40DD8
+    push    word ptr gnobshapes+6
+    push    word ptr gnobshapes+4
     call    sub_3386C
     add     sp, 8
     push    di
     push    si
-    push    word_40DD6
-    push    word_40DD4
+    push    word ptr gnobshapes+2
+    push    word ptr gnobshapes
     call    sub_34060
     add     sp, 8
     cmp     video_flag5_is0, 0
@@ -2403,7 +2403,7 @@ loc_230DE:
     db 144
 loc_2315E:
     call    sprite_copy_2_to_1_2
-    call    sub_28DB6
+    call    mouse_sprite_op_check
 loc_23168:
     push    word_459D4
     sub     ax, ax
@@ -2414,10 +2414,10 @@ loc_23168:
     push    ax
     call    sprite_set_1_size
     add     sp, 8
-    les     bx, dword_40DC0
+    les     bx, whlshapes+10h
     push    word ptr es:[bx+0Ah]
     push    word ptr es:[bx+8]
-    les     bx, dword_40DEC
+    les     bx, whlsprite2
     push    word ptr es:[bx+2]
     push    word ptr es:[bx]
     call    sub_33BBC
@@ -2455,7 +2455,7 @@ loc_231CE:
 loc_231E7:
     cmp     video_flag5_is0, 0
     jnz     short loc_231F3
-    call    sub_28DB6
+    call    mouse_sprite_op_check
 loc_231F3:
     mov     al, byte_4432A
     cbw
@@ -2471,8 +2471,8 @@ loc_231F3:
     mov     bx, ax
     shl     bx, 1
     shl     bx, 1
-    push    word_40DE6[bx]
-    push    word_40DE4[bx]
+    push    word ptr (gnobshapes+12h)[bx]
+    push    word ptr (gnobshapes+10h)[bx]
     call    sub_33BBC
     add     sp, 8
     mov     al, byte_4432A
@@ -2494,8 +2494,8 @@ loc_23239:
     ; align 2
     db 144
 loc_2324E:
-    push    word_40DB2
-    push    word_40DB0
+    push    word ptr whlshapes+2
+    push    word ptr whlshapes
 loc_23256:
     call    sub_33ED2
     add     sp, 4
@@ -2510,12 +2510,12 @@ loc_2325E:
     ; align 2
     db 144
 loc_23272:
-    push    word_40DB6
-    push    word_40DB4
+    push    word ptr whlshapes+6
+    push    word ptr whlshapes+4
     jmp     short loc_23256
 loc_2327C:
-    push    word_40DBA
-    push    word_40DB8
+    push    word ptr whlshapes+0Ah
+    push    word ptr whlshapes+8
     jmp     short loc_23256
 loc_23286:
     mov     [bp+var_18], 0
@@ -2568,7 +2568,7 @@ loc_232D0:
 loc_232F7:
     cmp     video_flag5_is0, 0
     jnz     short loc_23303
-    call    sub_28DB6
+    call    mouse_sprite_op_check
 loc_23303:
     mov     al, byte_4432A
     cbw
@@ -2584,8 +2584,8 @@ loc_23303:
     mov     bx, ax
     shl     bx, 1
     shl     bx, 1
-    push    word_40DE6[bx]
-    push    word_40DE4[bx]
+    push    word ptr (gnobshapes+12h)[bx]
+    push    word ptr (gnobshapes+10h)[bx]
     call    sub_33BBC
     add     sp, 8
     mov     al, byte_4432A
@@ -2595,15 +2595,15 @@ loc_23303:
     mov     word_40DF6[bx], 0
     mov     [bp+var_1A], 1
 loc_23349:
-    push    word ptr dword_40D80+2
-    push    word ptr dword_40D80
+    push    word ptr whlsprite1+2
+    push    word ptr whlsprite1
     call    sprite_set_1_from_argptr
     add     sp, 4
     sub     ax, ax
     push    ax
     push    ax
-    push    word ptr dword_40DBC+2
-    push    word ptr dword_40DBC
+    push    word ptr whlshapes+0Eh
+    push    word ptr whlshapes+0Ch
     call    sub_33DE2
     add     sp, 8
     mov     al, byte_4432A
@@ -2647,8 +2647,8 @@ loc_233BF:
     mov     bx, [bp+var_8]
     shl     bx, 1
     shl     bx, 1
-    push    word_40D8A[bx]
-    push    word_40D88[bx]
+    push    word ptr (digshapes+2)[bx]
+    push    word ptr digshapes[bx]
     call    sub_34084
     add     sp, 8
     mov     [bp+var_1C], 1
@@ -2671,8 +2671,8 @@ loc_233FF:
     mov     bx, [bp+var_8]
     shl     bx, 1
     shl     bx, 1
-    push    word_40D8A[bx]
-    push    word_40D88[bx]
+    push    word ptr (digshapes+2)[bx]
+    push    word ptr digshapes[bx]
     call    sub_34084
     add     sp, 8
     mov     ax, [bp+var_8]
@@ -2692,8 +2692,8 @@ loc_23433:
     mov     bx, si
     shl     bx, 1
     shl     bx, 1
-    push    word_40D8A[bx]
-    push    word_40D88[bx]
+    push    word ptr (digshapes+2)[bx]
+    push    word ptr digshapes[bx]
     call    sub_34084
     add     sp, 8
     jmp     short loc_23485
@@ -2741,12 +2741,12 @@ loc_23485:
     ; align 2
     db 144
 loc_234BE:
-    push    word_40DCE
-    push    word_40DCC
+    push    word ptr whlshapes+1Eh
+    push    word ptr whlshapes+1Ch
     call    sub_33B02
     add     sp, 4
-    push    word_40DC6
-    push    word_40DC4
+    push    word ptr whlshapes+16h
+    push    word ptr whlshapes+14h
 loc_234D6:
     call    sub_342F6
     add     sp, 4
@@ -2756,12 +2756,12 @@ loc_234DE:
     call    setup_mcgawnd2
     jmp     short loc_2350B
 loc_234EC:
-    push    word_40DD2
-    push    word_40DD0
+    push    word ptr whlshapes+22h
+    push    word ptr whlshapes+20h
     call    sub_33B02
     add     sp, 4
-    push    word_40DCA
-    push    word_40DC8
+    push    word ptr whlshapes+1Ah
+    push    word ptr whlshapes+18h
     jmp     short loc_234D6
 loc_23506:
     call    sprite_copy_2_to_1_2
@@ -2775,10 +2775,10 @@ loc_2350B:
     push    ax
     call    sprite_set_1_size
     add     sp, 8
-    les     bx, dword_40DBC
+    les     bx, whlshapes+0Ch
     push    word ptr es:[bx+0Ah]
     push    word ptr es:[bx+8]
-    les     bx, dword_40D80
+    les     bx, whlsprite1
     push    word ptr es:[bx+2]
     push    word ptr es:[bx]
     call    sub_33BBC
@@ -2799,7 +2799,7 @@ loc_23540:
 loc_23561:
     cmp     video_flag5_is0, 0
     jnz     short loc_2356D
-    call    sub_28DB6
+    call    mouse_sprite_op_check
 loc_2356D:
     push    word_459D4
     sub     ax, ax
@@ -2824,8 +2824,8 @@ loc_2356D:
     mov     bx, ax
     shl     bx, 1
     shl     bx, 1
-    push    word_40DE6[bx]
-    push    word_40DE4[bx]
+    push    word ptr (gnobshapes+12h)[bx]
+    push    word ptr (gnobshapes+10h)[bx]
     call    sub_33BBC
     add     sp, 8
     mov     al, byte_4432A
@@ -2862,20 +2862,20 @@ loc_235F9:
     mov     [bp+var_20], ax
     mov     al, [bp+var_14]
     sub     ah, ah
-    les     bx, dword_40DDC
+    les     bx, gnobshapes+8
     sub     ax, es:[bx+4]
     and     ax, video_flag3_isFFFF
     mov     bx, [bp+var_20]
     mov     word_40DF2[bx], ax
     mov     al, [bp+var_16]
     sub     ah, ah
-    les     bx, dword_40DDC
+    les     bx, gnobshapes+8
     sub     ax, es:[bx+6]
     mov     bx, [bp+var_20]
     mov     word_40DF6[bx], ax
     mov     al, [bp+var_16]
     sub     ah, ah
-    les     bx, dword_40DDC
+    les     bx, gnobshapes+8
     sub     ax, es:[bx+6]
     push    ax
     mov     bx, [bp+var_20]
@@ -2885,8 +2885,8 @@ loc_235F9:
     mov     bx, ax
     shl     bx, 1
     shl     bx, 1
-    push    word_40DE6[bx]
-    push    word_40DE4[bx]
+    push    word ptr (gnobshapes+12h)[bx]
+    push    word ptr (gnobshapes+10h)[bx]
     call    sub_3475A
     add     sp, 8
     mov     al, [bp+var_16]
@@ -2894,8 +2894,8 @@ loc_235F9:
     push    ax
     mov     al, [bp+var_14]
     push    ax
-    push    word_40DE2
-    push    word_40DE0
+    push    word ptr gnobshapes+0Eh
+    push    word ptr gnobshapes+0Ch
     call    sub_3386C
     add     sp, 8
     mov     al, [bp+var_16]
@@ -2903,8 +2903,8 @@ loc_235F9:
     push    ax
     mov     al, [bp+var_14]
     push    ax
-    push    word ptr dword_40DDC+2
-    push    word ptr dword_40DDC
+    push    word ptr gnobshapes+0Ah
+    push    word ptr gnobshapes+8
     call    sub_34060
     add     sp, 8
     mov     al, byte_4432A
@@ -2914,7 +2914,7 @@ loc_235F9:
     mov     ax, [bp+var_4]
     mov     word_40E00[bx], ax
 loc_236A0:
-    call    sub_28D9E
+    call    mouse_sprite_op2_check
     pop     si
     pop     di
     mov     sp, bp
@@ -2923,16 +2923,16 @@ loc_236A0:
     ; align 2
     db 144
 loc_236AC:
-    push    word ptr dword_40DFC+2
-    push    word ptr dword_40DFC
+    push    word ptr whlsprite3+2
+    push    word ptr whlsprite3
     call    sprite_free_wnd
     add     sp, 4
-    push    word ptr dword_40DEC+2
-    push    word ptr dword_40DEC
+    push    word ptr whlsprite2+2
+    push    word ptr whlsprite2
     call    sprite_free_wnd
     add     sp, 4
-    push    word ptr dword_40D80+2
-    push    word ptr dword_40D80
+    push    word ptr whlsprite1+2
+    push    word ptr whlsprite1
     call    sprite_free_wnd
     add     sp, 4
     push    word ptr stdbresptr+2
@@ -3478,7 +3478,7 @@ loc_23BD0:
     inc     si
     cmp     si, 9
     jl      short loc_23BD0
-    call    sub_28DB6
+    call    mouse_sprite_op_check
     push    word_40E10
     push    word_40E0E
     call    sub_33E00
@@ -3544,7 +3544,7 @@ loc_23C66:
     push    word_407CA
     call    sub_34B0C
     add     sp, 4
-    call    sub_28DB6
+    call    mouse_sprite_op_check
     push    word_459F6
     push    word_459F4
     call    set_fontdef2
@@ -3570,7 +3570,7 @@ loc_23CD7:
     mov     bx, [bp+var_44]
     shl     bx, 1
     mov     word ptr [bx+5706h], 0FFFFh
-    call    sub_28DB6
+    call    mouse_sprite_op_check
     mov     al, cameramode
     cbw
     mov     bx, ax
@@ -3653,7 +3653,7 @@ loc_23D94:
     cmp     [bx+5694h], di
     jz      short loc_23E1A
 loc_23DAB:
-    call    sub_28DB6
+    call    mouse_sprite_op_check
     mov     al, byte_4432A
     cbw
     shl     ax, 1
@@ -3702,7 +3702,7 @@ loc_23E1A:
     cmp     [bx+5698h], al
     jz      short loc_23E68
 loc_23E29:
-    call    sub_28DB6
+    call    mouse_sprite_op_check
     mov     al, byte_4432A
     cbw
     mov     [bp+var_44], ax
@@ -3858,7 +3858,7 @@ loc_23F6C:
     call    sub_361BC
     add     sp, 0Ah
 loc_23FB0:
-    call    sub_28D9E
+    call    mouse_sprite_op2_check
     jmp     loc_24D5E
 loc_23FB8:
     mov     al, cameramode
@@ -3901,7 +3901,7 @@ loc_23FEE:
     cbw
     inc     ax
     push    ax
-    call    sub_28E90
+    call    mouse_op_unk
     add     sp, 0Ah
     mov     [bp+var_20], al
     cmp     al, 0FFh
@@ -3993,7 +3993,7 @@ loc_240D8:
     push    ax
     mov     ax, 1
     push    ax
-    call    sub_28E90
+    call    mouse_op_unk
     add     sp, 0Ah
     mov     [bp+var_20], al
     or      al, al

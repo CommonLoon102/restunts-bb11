@@ -13985,7 +13985,7 @@ sub_345BC proc far
     push    di
     mov     ds, word ptr off_405FE+2; ds = seg039
     mov     ax, [bp+arg_2]
-    mov     word ptr aMsRunTimeLibraryCop, ax; "MS Run-Time Library - Copyright (c) 198"...
+    mov     ds:8, ax
     mov     ax, [bp+arg_4]
     mov     word ptr aMsRunTimeLibraryCop+2, ax
     jmp     short loc_345E5

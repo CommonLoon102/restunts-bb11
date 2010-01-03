@@ -13,12 +13,12 @@ seg008 segment byte public 'STUNTSC' use16
     extrn ported_locate_shape_alt_:proc
     extrn ported_locate_text_res_:proc
     extrn copy_string:proc
-    extrn sub_28B0E:proc
-    extrn sub_28D9E:proc
-    extrn sub_28DB6:proc
-    extrn sub_28DC8:proc
-    extrn sub_28E04:proc
-    extrn sub_28E90:proc
+    extrn mouse_track_op:proc
+    extrn mouse_sprite_op2_check:proc
+    extrn mouse_sprite_op_check:proc
+    extrn mouse_sprite_op:proc
+    extrn mouse_sprite_op2:proc
+    extrn mouse_op_unk:proc
     extrn check_input:proc
     extrn nopsub_28F26:proc
     extrn sprite_copy_2_to_1_2:proc

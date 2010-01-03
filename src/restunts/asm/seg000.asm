@@ -290,7 +290,7 @@ loc_10086:
     push    ax
     call    input_do_checking
     add     sp, 2
-    call    sub_28DB6
+    call    mouse_sprite_op_check
     mov     kbormouse, 0
     mov     passed_security, 1; originally set to 0 - bypasses the copy protection
     push    cs
@@ -593,7 +593,7 @@ _ask_dos:
     jge     short loc_10575
     jmp     _do_intro0
 loc_10575:
-    call    sub_28DB6
+    call    mouse_sprite_op_check
     call    audio_stop_unk
     call    audiodrv_atexit
     call    sub_30883
@@ -714,9 +714,9 @@ run_intro proc far
     mov     bp, sp
     sub     sp, 2
     push    si
-    call    sub_28DB6
+    call    mouse_sprite_op_check
     call    sprite_copy_2_to_1_clear
-    call    sub_28D9E
+    call    mouse_sprite_op2_check
     call    sprite_copy_wnd_to_1_clear
     mov     ax, offset aProd; "prod"
     push    ax
@@ -1377,7 +1377,7 @@ loc_10D88:
     ; align 2
     db 144
 loc_10DA0:
-    call    sub_28DB6
+    call    mouse_sprite_op_check
     push    [bp+var_4]
     push    si
     push    word ptr [bp+var_30+2]
@@ -1395,7 +1395,7 @@ loc_10DA0:
     push    ax
     call    sub_33578
     add     sp, 0Ah
-    call    sub_28D9E
+    call    mouse_sprite_op2_check
     push    [bp+var_40]
     call    input_do_checking
     add     sp, 2
@@ -1438,13 +1438,13 @@ loc_10DEC:
     push    ax
     call    sprite_set_1_size
     add     sp, 8
-    call    sub_28DB6
+    call    mouse_sprite_op_check
     les     bx, wndsprite
     push    word ptr es:[bx+2]
     push    word ptr es:[bx]
     call    sub_33BDA
     add     sp, 4
-    call    sub_28D9E
+    call    mouse_sprite_op2_check
     add     [bp+var_36], 5
     jmp     short loc_10E7D
 loc_10E66:
@@ -1476,7 +1476,7 @@ loc_10E91:
     push    ax
     call    sprite_set_1_size
     add     sp, 8
-    call    sub_28DB6
+    call    mouse_sprite_op_check
     les     bx, wndsprite
     push    word ptr es:[bx+2]
     push    word ptr es:[bx]
@@ -1635,7 +1635,7 @@ loc_10FEF:
     push    ax
     mov     ax, 5
     push    ax
-    call    sub_28E90
+    call    mouse_op_unk
     add     sp, 0Ah
     mov     [bp+var_E], al
     cmp     al, 0FFh
@@ -2046,7 +2046,7 @@ loc_11423:
     push    ax
     mov     ax, 3
     push    ax
-    call    sub_28E90
+    call    mouse_op_unk
     add     sp, 0Ah
     mov     [bp+var_14], al
     cmp     al, 0FFh
@@ -3855,13 +3855,13 @@ loc_124DE:
     push    word_3BB28
     call    sprite_set_1_size
     add     sp, 8
-    call    sub_28DB6
+    call    mouse_sprite_op_check
     les     bx, wndsprite
     push    word ptr es:[bx+2]
     push    word ptr es:[bx]
     call    sub_33BDA
     add     sp, 4
-    call    sub_28D9E
+    call    mouse_sprite_op2_check
     call    sprite_copy_2_to_1_2
 loc_12534:
     call    sub_29772
@@ -3905,7 +3905,7 @@ loc_12585:
     push    ax
     mov     ax, 5
     push    ax
-    call    sub_28E90
+    call    mouse_op_unk
     add     sp, 0Ah
     mov     [bp+var_F6], al
     cmp     al, 0FFh
@@ -4029,7 +4029,7 @@ loc_126D1:
     push    [bp+var_1A]
     call    sprite_set_1_size
     add     sp, 8
-    call    sub_28DB6
+    call    mouse_sprite_op_check
     cmp     [bp+var_3E], 0FEh ; 'þ'
     jz      short loc_12710
     mov     al, [bp+var_3E]
@@ -4048,7 +4048,7 @@ loc_12710:
     call    sub_33BDA
     add     sp, 4
 loc_12723:
-    call    sub_28D9E
+    call    mouse_sprite_op2_check
     mov     al, [bp+var_F0]
     mov     [bp+var_38], al
     jmp     loc_124DE
@@ -4108,7 +4108,7 @@ loc_127BC:
     push    [bp+var_36]
     call    mmgr_free
     add     sp, 4
-    call    sub_28DB6
+    call    mouse_sprite_op_check
     mov     al, [bp+var_F0]
     cbw
     mov     di, ax
@@ -4212,7 +4212,7 @@ loc_1287F:
     call    sub_292DC
     add     sp, 14h
     call    sprite_copy_2_to_1_2
-    call    sub_28DB6
+    call    mouse_sprite_op_check
     sub     ax, ax
     push    ax
     push    word_407F8
@@ -4232,7 +4232,7 @@ loc_1287F:
     push    [bp+var_3C]
     call    sub_292DC
     add     sp, 14h
-    call    sub_28D9E
+    call    mouse_sprite_op2_check
     jmp     loc_11FA5
 loc_12904:
     mov     bx, [bp+arg_2]
@@ -4309,7 +4309,7 @@ run_opponent_menu proc far
     mov     [bp+var_4], 0FFh
     call    sub_29772
 loc_129A3:
-    call    sub_28D9E
+    call    mouse_sprite_op2_check
 loc_129A8:
     mov     al, gameconfig.game_opponenttype
     cmp     [bp+var_1E], al
@@ -4670,7 +4670,7 @@ loc_12D2C:
     push    ax
     mov     ax, 5
     push    ax
-    call    sub_28E90
+    call    mouse_op_unk
     add     sp, 0Ah
     mov     [bp+var_16], al
     cmp     al, 0FFh
@@ -4744,7 +4744,7 @@ loc_12E14:
     jmp     loc_129A8
 loc_12E1E:
     call    check_input
-    call    sub_28DB6
+    call    mouse_sprite_op_check
     push    word ptr wndsprite+2
     push    word ptr wndsprite
     call    sprite_free_wnd
@@ -4813,7 +4813,7 @@ loc_12ECB:
     push    word ptr miscptr
     call    unload_resource
     add     sp, 4
-    call    sub_28DB6
+    call    mouse_sprite_op_check
     pop     si
     mov     sp, bp
     pop     bp
@@ -6390,7 +6390,7 @@ loc_13DDF:
     mov     al, es:[bx]
     add     al, 30h ; '0'
     mov     byte ptr aOp01+3, al
-    call    sub_28DB6
+    call    mouse_sprite_op_check
     mov     ax, offset aOp01; "op01"
     push    ax
     push    [bp+var_1A]
@@ -6444,7 +6444,7 @@ loc_13E8A:
     call    sub_33DE2
     add     sp, 8
 loc_13EA0:
-    call    sub_28D9E
+    call    mouse_sprite_op2_check
 loc_13EA5:
     push    di
     call    input_checking
@@ -6493,7 +6493,7 @@ loc_13ECD:
     push    word_407F8
     call    clear_sprite1_color
     add     sp, 2
-    call    sub_28DB6
+    call    mouse_sprite_op_check
     mov     al, [bp+var_18]
     cbw
     push    ax
@@ -6514,7 +6514,7 @@ loc_13F48:
     cmp     [bp+var_6E], 0
     jle     short loc_13F84
     call    check_input
-    call    sub_28DB6
+    call    mouse_sprite_op_check
     sub     ax, ax
     push    ax
     mov     ax, offset aInh_0; "inh"
@@ -6533,7 +6533,7 @@ loc_13F48:
     mov     [bp+var_52], 0FEh ; 'þ'
     jmp     short loc_13FDA
 loc_13F84:
-    call    sub_28DB6
+    call    mouse_sprite_op_check
     cmp     [bp+var_6E], 0FFh
     jnz     short loc_13FD6
     mov     ax, offset aHna ; "hna"
@@ -6751,13 +6751,13 @@ loc_14188:
     push    ax
     call    sprite_set_1_size
     add     sp, 8
-    call    sub_28DB6
+    call    mouse_sprite_op_check
     les     bx, wndsprite
     push    word ptr es:[bx+2]
     push    word ptr es:[bx]
     call    sub_33BDA
     add     sp, 4
-    call    sub_28D9E
+    call    mouse_sprite_op2_check
     call    timer_get_delta2
     call    sub_29772
 loc_141DC:
@@ -6813,7 +6813,7 @@ loc_1424D:
     mov     al, es:[bx]
     add     al, 30h ; '0'
     mov     byte ptr aOp01+3, al
-    call    sub_28DB6
+    call    mouse_sprite_op_check
     mov     ax, offset aOp01; "op01"
     push    ax
     push    [bp+var_1A]
@@ -6879,7 +6879,7 @@ loc_1430E:
     push    ax
     call    sub_33DE2
     add     sp, 8
-    call    sub_28D9E
+    call    mouse_sprite_op2_check
 loc_14337:
     cmp     [bp+var_16], 0
     jz      short loc_14343
@@ -6896,7 +6896,7 @@ loc_14343:
     push    ax
     mov     ax, 3
     push    ax
-    call    sub_28E90
+    call    mouse_op_unk
     add     sp, 0Ah
     mov     [bp+var_82], al
     cmp     al, 0FFh
@@ -6914,7 +6914,7 @@ loc_1436C:
     push    ax
     mov     ax, 4
     push    ax
-    call    sub_28E90
+    call    mouse_op_unk
     add     sp, 0Ah
     mov     [bp+var_82], al
     cmp     al, 0FFh
@@ -7260,7 +7260,7 @@ loc_146B4:
     jmp     loc_14641
 loc_146C5:
     call    sub_275C6
-    call    sub_28D9E
+    call    mouse_sprite_op2_check
     push    [bp+var_40A]
     push    [bp+var_40C]
     call    unload_resource

@@ -1003,41 +1003,17 @@ dseg segment byte public 'STUNTSD' use16
     public word_40D74
     public word_40D78
     public stdaresptr
-    public dword_40D80
+    public whlsprite1
     public stdbresptr
-    public word_40D88
-    public word_40D8A
-    public word_40DB0
-    public word_40DB2
-    public word_40DB4
-    public word_40DB6
-    public word_40DB8
-    public word_40DBA
-    public dword_40DBC
-    public dword_40DC0
-    public word_40DC4
-    public word_40DC6
-    public word_40DC8
-    public word_40DCA
-    public word_40DCC
-    public word_40DCE
-    public word_40DD0
-    public word_40DD2
-    public word_40DD4
-    public word_40DD6
-    public word_40DD8
-    public word_40DDA
-    public dword_40DDC
-    public word_40DE0
-    public word_40DE2
-    public word_40DE4
-    public word_40DE6
-    public dword_40DEC
+    public digshapes
+    public whlshapes
+    public gnobshapes
+    public whlsprite2
     public byte_40DF0
     public word_40DF2
     public word_40DF6
     public byte_40DFA
-    public dword_40DFC
+    public whlsprite3
     public word_40E00
     public word_40E0E
     public word_40E10
@@ -1095,12 +1071,9 @@ dseg segment byte public 'STUNTSD' use16
     public word_42252
     public word_42254
     public word_42256
-    public word_42258
-    public word_4225A
-    public word_42540
-    public word_42542
-    public word_42544
-    public word_42546
+    public tracksmenushape2dunk
+    public pboxshape
+    public tracksmenushape2dunk2
     public tracksmenushapes2
     public tracksmenushapes1
     public tracksmenushapes3
@@ -22834,76 +22807,34 @@ word_40D78     dw 0
     db 0
     db 0
 stdaresptr     dd 0
-dword_40D80     dd 0
+whlsprite1     dd 0
 stdbresptr     dd 0
-word_40D88     dw 0
-word_40D8A     dw 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-word_40DB0     dw 0
-word_40DB2     dw 0
-word_40DB4     dw 0
-word_40DB6     dw 0
-word_40DB8     dw 0
-word_40DBA     dw 0
-dword_40DBC     dd 0
-dword_40DC0     dd 0
-word_40DC4     dw 0
-word_40DC6     dw 0
-word_40DC8     dw 0
-word_40DCA     dw 0
-word_40DCC     dw 0
-word_40DCE     dw 0
-word_40DD0     dw 0
-word_40DD2     dw 0
-word_40DD4     dw 0
-word_40DD6     dw 0
-word_40DD8     dw 0
-word_40DDA     dw 0
-dword_40DDC     dd 0
-word_40DE0     dw 0
-word_40DE2     dw 0
-word_40DE4     dw 0
-word_40DE6     dw 0
-    db 0
-    db 0
-    db 0
-    db 0
-dword_40DEC     dd 0
+digshapes     dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+whlshapes     dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+gnobshapes     dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+whlsprite2     dd 0
 byte_40DF0     db 0
     db 0
 word_40DF2     dw 0
@@ -22914,7 +22845,7 @@ word_40DF6     dw 0
     db 0
 byte_40DFA     db 0
     db 0
-dword_40DFC     dd 0
+whlsprite3     dd 0
 word_40E00     dw 0
     db 0
     db 0
@@ -28061,8 +27992,7 @@ word_42250     dw 0
 word_42252     dw 0
 word_42254     dw 0
 word_42256     dw 0
-word_42258     dw 0
-word_4225A     dw 0
+tracksmenushape2dunk     dd 0
     db 0
     db 0
     db 0
@@ -28803,10 +28733,8 @@ word_4225A     dw 0
     db 0
     db 0
     db 0
-word_42540     dw 0
-word_42542     dw 0
-word_42544     dw 0
-word_42546     dw 0
+pboxshape     dd 0
+tracksmenushape2dunk2     dd 0
     db 0
     db 0
     db 0
