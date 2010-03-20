@@ -282,7 +282,7 @@ seg012 segment byte public 'STUNTSC' use16
     public nopsub_3320E
     public sprite_set_1_size
     public video_clear_color
-    public sprite_clear_1_color
+    public ported_sprite_clear_1_color_
     public nopsub_33330
     public sub_33344
     public sub_333C0
@@ -11245,7 +11245,7 @@ video_clear_color proc far
     ; align 2
     db 0
 video_clear_color endp
-sprite_clear_1_color proc far
+ported_sprite_clear_1_color_ proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = byte ptr 6
@@ -11306,7 +11306,7 @@ loc_33325:
     jmp     short loc_3330D
     ; align 2
     db 0
-sprite_clear_1_color endp
+ported_sprite_clear_1_color_ endp
 nopsub_33330 proc far
      s = byte ptr 0
      r = byte ptr 2

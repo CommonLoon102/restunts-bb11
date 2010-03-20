@@ -24,10 +24,10 @@ struct SPRITE {
 	unsigned short sprite_unk3;
 	unsigned int* sprite_lineofs;
 	unsigned short sprite_left;
-	unsigned short sprite_width;
+	unsigned short sprite_right;
 	unsigned short sprite_top;
 	unsigned short sprite_height;
-	unsigned short sprite_height2;
+	unsigned short sprite_pitch;
 	unsigned short sprite_unk4;
 	unsigned short sprite_width2;
 	unsigned short sprite_left2;
@@ -45,7 +45,7 @@ extern char* far next_wnd_def; // near pointer relative to seg012 to the current
 extern struct SPRITE far sprite1; // seg012
 extern struct SPRITE far sprite2; // seg012
 
-extern void sprite_clear_1_color(int);	
+extern void sprite_clear_1_color(unsigned char);	
 
 struct SPRITE far* sprite_make_wnd(unsigned int width, unsigned int height, unsigned int unk) {
 	int pages, i;
@@ -88,8 +88,8 @@ struct SPRITE far* sprite_make_wnd(unsigned int width, unsigned int height, unsi
 	farwnd->sprite_lineofs = lineofsptr;
 	farwnd->sprite_left = 0;
 	farwnd->sprite_left2 = 0;
-	farwnd->sprite_width = width;
-	farwnd->sprite_height2 = width;	// ??
+	farwnd->sprite_right = width;
+	farwnd->sprite_pitch = width;	// ??
 	farwnd->sprite_top = 0;
 	farwnd->sprite_height = height;
 	farwnd->sprite_width2 = width;
@@ -149,4 +149,36 @@ void sprite_copy_both_to_arg(struct SPRITE* argsprite) {
 
 void sprite_copy_arg_to_both(struct SPRITE* argsprite) {
 	fmemcpy(&sprite1, argsprite, sizeof(struct SPRITE) * 2);
+}
+
+void sprite_clear_1_color(unsigned char color) {
+	
+	int height, top, left, right, pitch, lines, width, widthdiff, i, j;
+	unsigned int ofs;
+	unsigned char far* bitmapptr;
+	unsigned int far* lineofs;
+
+	top = sprite1.sprite_top;
+	left = sprite1.sprite_left;
+	right = sprite1.sprite_right;
+	pitch = sprite1.sprite_pitch;
+	bitmapptr = (unsigned char far*)sprite1.sprite_bitmapptr;
+	lineofs = MK_FP(FP_SEG(&sprite1), FP_OFF(sprite1.sprite_lineofs));
+
+	lines = sprite1.sprite_height - top;
+	if (lines <= 0) return;
+
+	ofs = lineofs[top] + left;
+
+	width = right - left;
+	if (width <= 0) return ;
+	
+	widthdiff = pitch - width;
+
+	for (i = 0; i < lines; i++) {
+		for (j = 0; j < width; j++) {
+			bitmapptr[ofs ++] = color;
+		}
+		ofs += widthdiff;
+	}
 }
