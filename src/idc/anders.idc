@@ -175,6 +175,9 @@ static PrintExterns(f, segstart, segend, exceptstart, exceptend) {
 		
 		if (isAnyName(flags)) {
 			labelname = NameEx(BADADDR, funcea);
+			if (isAlign(flags)) {
+				// do nothing
+			} else
 			if (isCode(flags)) {
 			
 				if (isFunction(flags)) {
@@ -213,6 +216,9 @@ static PrintPublics(f, segstart, segend) {
 		
 		if (isAnyName(flags)) {
 			labelname = NameEx(BADADDR, funcea);
+			if (isAlign(flags)) {
+				// do nothing
+			} else
 			if (isCode(flags)) {
 			
 				if (isFunction(flags) || IsPublicLabel(labelname)) {
@@ -323,7 +329,7 @@ static PrintBody(f, funcstart, funcend, skipfirstlabel) {
 		
 		if (((skipfirstlabel && funcbody != funcstart) || !skipfirstlabel) && isAnyName(bodyflags)) {
 			locname = NameEx(funcstart, funcbody);
-			if (isCode(bodyflags))
+			if (isCode(bodyflags) || isAlign(bodyflags))
 				fprintf(f, "%s:\n", locname); else
 			if (isData(bodyflags) || isUnknown(bodyflags))
 				fprintf(f, "%s ", locname); else
@@ -384,7 +390,7 @@ static PrintBody(f, funcstart, funcend, skipfirstlabel) {
 						fprintf(f, "    db ?\n");
 				}
 			} else {
-				Message("TODO: unhandled data size\n");
+				Message("TODO: unhandled data size X%i\n", bodyflags);
 			}
 		} else {
 			 PrintFixedAsm(f, funcbody, lastpushcs);
@@ -791,14 +797,29 @@ static PrintSegInc(segstart, segend) {
 
 static PrintStruct(f, id) {
 	auto memberofs, membername, memberflag, membersize, memberid, strucsize, i;
-	fprintf(f, "%s struc\n", GetStrucName(id));
 
 	strucsize = GetStrucSize(id);
+
+	if (IsUnion(id)) {
+		fprintf(f, "%s union\n", GetStrucName(id));
+		// can unions have non-struct members?
+		for (;;) {
+			memberid = GetMemberStrId(id, i);
+			membername = GetStrucName(memberid);
+			if (membername == "") break;
+			fprintf(f, "  %s %s ?\n", GetMemberName(id, i), membername);
+			i++;
+		}
+		fprintf(f, "ends\n", id);
+		return ;
+	}
+
+	fprintf(f, "%s struc\n", GetStrucName(id));
 
 	for (memberofs = 0; memberofs < strucsize; memberofs = GetStrucNextOff(id, memberofs)) {
 		membername = GetMemberName(id, memberofs);
 		memberflag = GetMemberFlag(id, memberofs);
-	
+
 		if (isStruct(memberflag)) {
 			memberid = GetMemberStrId(id, memberofs);
 			membersize = GetMemberSize(id, memberofs) / GetStrucSize(memberid);
@@ -832,7 +853,7 @@ static PrintStruct(f, id) {
 				fprintf(f, "%s db %i dup (?)\n", membername, membersize);
 			}
 		} else {
-			Message("TODO: unhandled data size\n");
+			Message("TODO: unhandled member %s in %s data size %i\n", membername, GetStrucName(id), memberflag);
 		}
 		//fprintf(f, "%s %s\n", membername, GetMemberTypeString(id, memberofs));
 	}
@@ -961,8 +982,9 @@ static PrintReport() {
 static main() {
 	auto segea, funcea, nextseg, endseg, endfunc, nextfunc, segss, segtype;
 	auto maxfuncs, funccount, startseg;
-	auto i;
+	auto i, j;
 	auto f, filename, flags;
+	auto enumid, constid;
 
 	maxfuncs = 5;
 	funccount = 0;
@@ -980,6 +1002,16 @@ static main() {
 
 	for (i = GetFirstStrucIdx(); i != -1; i = GetNextStrucIdx(i)) {
 		PrintStruct(f, GetStrucId(i));
+	}
+	
+	for (i = 0; i < GetEnumQty(); i++) {
+		enumid = GetnEnum(i);
+		fprintf(f, "; enum %s (%i)\n", GetEnumName(enumid), enumid);
+		for (j = GetFirstConst(enumid, -1); j != -1; j = GetNextConst(enumid, j, -1)) {
+			// TODO: 3rd arg is a "serial number", ie index of const with the same value, not supported yet
+			constid = GetConstEx(enumid, j, 0, -1);
+			fprintf(f, "%s = %i\n", GetConstName(constid), j);
+		}
 	}
 	
 	fclose(f);
