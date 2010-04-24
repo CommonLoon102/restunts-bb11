@@ -256,7 +256,7 @@ seg012 segment byte public 'STUNTSC' use16
     extrn load_2dshape_fatal_thunk:proc
     extrn load_2dshape_nofatal_thunk:proc
     extrn sub_3386C:proc
-    extrn sprite_putimage_and:proc
+    extrn ported_sprite_putimage_and_:proc
     extrn loc_338C9
     extrn nopsub_339FA:proc
     extrn sub_33A1E:proc
@@ -267,7 +267,7 @@ seg012 segment byte public 'STUNTSC' use16
     extrn loc_33B1D
     extrn nopsub_33B98:proc
     extrn sub_33BBC:proc
-    extrn sprite_putimage:proc
+    extrn ported_sprite_putimage_:proc
     extrn loc_33BF5
     extrn nopsub_33D0C:proc
     extrn sprite_shape_to_1:proc
@@ -282,7 +282,7 @@ seg012 segment byte public 'STUNTSC' use16
     extrn sub_33ED2:proc
     extrn loc_33EED
     extrn sub_34060:proc
-    extrn sprite_putimage_or:proc
+    extrn ported_sprite_putimage_or_:proc
     extrn loc_340BD
     extrn sub_34212:proc
     extrn loc_3424B

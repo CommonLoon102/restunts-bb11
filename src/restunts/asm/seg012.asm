@@ -303,7 +303,7 @@ seg012 segment byte public 'STUNTSC' use16
     public load_2dshape_fatal_thunk
     public load_2dshape_nofatal_thunk
     public sub_3386C
-    public sprite_putimage_and
+    public ported_sprite_putimage_and_
     public loc_338C9
     public nopsub_339FA
     public sub_33A1E
@@ -314,7 +314,7 @@ seg012 segment byte public 'STUNTSC' use16
     public loc_33B1D
     public nopsub_33B98
     public sub_33BBC
-    public sprite_putimage
+    public ported_sprite_putimage_
     public loc_33BF5
     public nopsub_33D0C
     public sprite_shape_to_1
@@ -329,7 +329,7 @@ seg012 segment byte public 'STUNTSC' use16
     public sub_33ED2
     public loc_33EED
     public sub_34060
-    public sprite_putimage_or
+    public ported_sprite_putimage_or_
     public loc_340BD
     public sub_34212
     public loc_3424B
@@ -12041,7 +12041,7 @@ sub_3386C proc far
     ; align 2
     db 144
 sub_3386C endp
-sprite_putimage_and proc far
+ported_sprite_putimage_and_ proc far
     var_E = word ptr -14
     var_C = word ptr -12
     var_A = word ptr -10
@@ -12232,7 +12232,7 @@ loc_339EC:
     jmp     loc_338E8
     ; align 2
     db 0
-sprite_putimage_and endp
+ported_sprite_putimage_and_ endp
 nopsub_339FA proc far
     var_4 = word ptr -4
     var_2 = word ptr -2
@@ -12555,7 +12555,7 @@ sub_33BBC proc far
     ; align 2
     db 144
 sub_33BBC endp
-sprite_putimage proc far
+ported_sprite_putimage_ proc far
     var_E = word ptr -14
     var_C = word ptr -12
     var_A = word ptr -10
@@ -12708,7 +12708,7 @@ loc_33D02:
     dec     dx
     jg      short loc_33D02
     jmp     loc_33C14
-sprite_putimage endp
+ported_sprite_putimage_ endp
 nopsub_33D0C proc far
     var_4 = word ptr -4
     var_2 = word ptr -2
@@ -13261,7 +13261,7 @@ sub_34060 proc far
     ; align 2
     db 144
 sub_34060 endp
-sprite_putimage_or proc far
+ported_sprite_putimage_or_ proc far
     var_E = word ptr -14
     var_C = word ptr -12
     var_A = word ptr -10
@@ -13469,7 +13469,7 @@ loc_341E0:
     jmp     short loc_3424B
     ; align 2
     db 144
-sprite_putimage_or endp
+ported_sprite_putimage_or_ endp
 sub_34212 proc far
     var_6 = word ptr -6
     var_4 = word ptr -4

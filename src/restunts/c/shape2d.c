@@ -1,5 +1,6 @@
 #include <dos.h>
 #include <mem.h>
+#include <stddef.h>
 #include "externs.h"
 #include "memmgr.h"
 
@@ -181,4 +182,43 @@ void sprite_clear_1_color(unsigned char color) {
 		}
 		ofs += widthdiff;
 	}
+}
+
+void sprite_putimage(struct SHAPE2D far* shape) {
+	//ported_sprite_putimage_(shape);
+
+	int lines, widthdiff, i, j;
+	unsigned int ofs;
+	unsigned char far* destbitmapptr;
+	unsigned int far* destlineofs;
+	unsigned char far* srcbitmapptr;
+
+	destbitmapptr = (unsigned char far*)sprite1.sprite_bitmapptr;
+	destlineofs = MK_FP(FP_SEG(&sprite1), FP_OFF(sprite1.sprite_lineofs));
+	srcbitmapptr = ((unsigned char far*)shape) + sizeof(struct SHAPE2D);
+
+	if (shape->s2d_pos_y + shape->s2d_height > sprite1.sprite_height) {
+		lines = sprite1.sprite_height - shape->s2d_pos_y;
+	} else {
+		lines = shape->s2d_height;
+	}
+
+	ofs = destlineofs[shape->s2d_pos_y] + shape->s2d_pos_x;
+	widthdiff = sprite1.sprite_pitch - shape->s2d_width;
+
+	for (i = 0; i < lines; i++) {
+		for (j = 0; j < shape->s2d_width; j++) {
+			destbitmapptr[ofs ++] = *srcbitmapptr++;
+		}
+		ofs += widthdiff;
+	}
+	
+}
+
+void sprite_putimage_and(struct SHAPE2D far* shape, unsigned short a, unsigned short b) {
+	ported_sprite_putimage_and_(shape, a, b);
+}
+
+void sprite_putimage_or(struct SHAPE2D far* shape, unsigned short a, unsigned short b) {
+	ported_sprite_putimage_or_(shape, a, b);
 }
