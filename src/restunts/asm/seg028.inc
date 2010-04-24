@@ -7,7 +7,7 @@ seg028 segment byte public 'STUNTSC' use16
     extrn sub_38AC4:proc
     extrn sub_38AEA:proc
     extrn sub_38BEA:proc
-    extrn sub_38C4C:proc
+    extrn audio_unk2:proc
     extrn sub_38CF8:proc
     extrn sub_38DE6:proc
     extrn off_38E7E:word

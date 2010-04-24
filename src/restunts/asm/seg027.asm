@@ -48,7 +48,7 @@ seg027 segment byte public 'STUNTSC' use16
     assume es:nothing, ss:nothing, ds:dseg
     public init_audio_resources
     public load_audio_finalize
-    public sub_37216
+    public audio_unk
     public sub_372F4
     public sub_3736A
     public audio_enable_flag2
@@ -271,7 +271,7 @@ loc_3720F:
     db 144
     db 144
 load_audio_finalize endp
-sub_37216 proc far
+audio_unk proc far
     var_C = word ptr -12
     var_A = dword ptr -10
     var_4 = word ptr -4
@@ -297,12 +297,12 @@ loc_37235:
     jge     short loc_37253
 loc_37241:
     mov     al, [di]
-    mov     [si+714Eh], al
+    mov     byte_428BE[si], al
 loc_37247:
     sub     ax, ax
     push    ax
     push    si
-    call    sub_38C4C
+    call    audio_unk2
     add     sp, 4
 loc_37253:
     add     di, 4Ch ; 'L'
@@ -315,7 +315,7 @@ loc_37253:
     db 144
 loc_37262:
     mov     byte_40639, 0
-    mov     ax, 4EC6h
+    mov     ax, offset unk_40636
     push    ds
     push    ax
     mov     ax, 4
@@ -371,7 +371,7 @@ loc_372E7:
     retf
     ; align 2
     db 144
-sub_37216 endp
+audio_unk endp
 sub_372F4 proc far
     var_6 = dword ptr -6
     var_2 = word ptr -2
@@ -393,11 +393,11 @@ loc_3730F:
     cmp     si, 10h
     jge     short loc_3732B
 loc_3731B:
-    mov     al, [si+714Eh]
+    mov     al, byte_428BE[si]
     sub     ah, ah
     push    ax
     push    si
-    call    sub_38C4C
+    call    audio_unk2
     add     sp, 4
 loc_3732B:
     inc     si
@@ -407,7 +407,7 @@ loc_3732B:
     jmp     short loc_3735A
 loc_37336:
     mov     byte_40639, 64h ; 'd'
-    mov     ax, 4EC6h
+    mov     ax, offset unk_40636
     push    ds
     push    ax
     mov     ax, 4
@@ -582,7 +582,7 @@ loc_37487:
     mov     ax, [di]
     or      ax, [di+2]
     jnz     short loc_3749C
-    cmp     byte ptr [si-59D6h], 0
+    cmp     byte_45D9A[si], 0
     jnz     short loc_3749C
 loc_3749A:
     mov     cx, si
@@ -597,13 +597,13 @@ loc_374A5:
     cmp     cx, 0FFFFh
     jz      short loc_374C5
     mov     bx, cx
-    mov     byte ptr [bx-59D6h], 1
+    mov     byte_45D9A[bx], 1
     mov     ax, 4Ch ; 'L'
     imul    cx
 loc_374BC:
     mov     bx, ax
     mov     al, [bp+arg_2]
-    mov     [bx-7DE0h], al
+    mov     (audiochunks_unk+24h)[bx], al
 loc_374C5:
     mov     ax, [bp+arg_0]
     pop     si
@@ -878,7 +878,7 @@ loc_376A7:
     sub     ah, ah
     push    ax
     push    si
-    call    sub_38C4C
+    call    audio_unk2
     add     sp, 4
     inc     si
     cmp     si, 18h
@@ -912,7 +912,7 @@ loc_376DF:
     sub     ax, ax
     push    ax
     push    si
-    call    sub_38C4C
+    call    audio_unk2
     add     sp, 4
     add     di, 4Ch ; 'L'
     inc     si
@@ -1113,7 +1113,7 @@ sub_37868 proc far
 loc_37878:
     push    di
     push    si
-    call    sub_38C4C
+    call    audio_unk2
     add     sp, 4
     inc     si
 loc_37883:

@@ -1,6 +1,6 @@
 seg003 segment byte public 'STUNTSC' use16
     extrn sub_19F14:proc
-    extrn sub_1A096:proc
+    extrn init_rect_arrays:proc
     extrn update_frame:proc
     extrn sub_1C302:proc
     extrn skybox_op:proc

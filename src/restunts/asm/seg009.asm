@@ -1244,7 +1244,7 @@ loc_2AD38:
     push    ax
     lea     ax, [si+8]
     push    ax
-    call    sub_335D2
+    call    sprite_1_unk
     add     sp, 0Ah
 loc_2ADE4:
     call    mouse_draw_transparent_check

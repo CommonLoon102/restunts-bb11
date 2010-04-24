@@ -65,8 +65,8 @@ dseg segment byte public 'STUNTSD' use16
     public aTedit__0
     public aCvx
     public aDos
-    public word_3B808
-    public word_3B80A
+    public rectptr_unk2
+    public rectptr_unk
     public byte_3B80C
     public byte_3B85E
     public aDefault_1
@@ -313,6 +313,7 @@ dseg segment byte public 'STUNTSD' use16
     public word_3C110
     public word_3C112
     public unk_3C114
+    public unk_3C11A
     public aDm1
     public aDm2
     public aPre
@@ -568,6 +569,7 @@ dseg segment byte public 'STUNTSD' use16
     public unk_3E7FC
     public off_3E808
     public unk_3E82C
+    public byte_3E85C
     public a_rpl
     public aWhl1whl2whl3ins2gboxins1i
     public aGnobgnabdotDotadot1dot2
@@ -594,6 +596,13 @@ dseg segment byte public 'STUNTSD' use16
     public aCon_0
     public aRep
     public a_rpl_1
+    public aRep_1
+    public a_rpl_2
+    public aFex_0
+    public aSer_0
+    public aMdo
+    public aWai_0
+    public aWai_1
     public byte_3E9DB
     public byte_3E9DC
     public byte_3E9E6
@@ -615,6 +624,10 @@ dseg segment byte public 'STUNTSD' use16
     public unk_3EA54
     public unk_3EA56
     public aPolyinfo
+    public byte_3EA62
+    public byte_3EA72
+    public word_3EA82
+    public word_3EA84
     public word_3EB02
     public rect_unk4
     public aInitengineAllHandlesUsed_
@@ -1060,12 +1073,9 @@ dseg segment byte public 'STUNTSD' use16
     public byte_40E7A
     public mat_y200
     public mat_y100
-    public word_40EB0
-    public word_40EB2
-    public word_40EB4
-    public word_40EB6
+    public rect_unk8
     public mat_y300
-    public dword_40ECA
+    public transshapepolyinfo
     public word_40ECE
     public word_40ED0
     public polyinfoptr
@@ -1074,7 +1084,7 @@ dseg segment byte public 'STUNTSD' use16
     public dword_411F8
     public mat_y0
     public word_41850
-    public word_41852
+    public transshapenumpaints
     public word_41854
     public word_41856
     public word_41858
@@ -1084,13 +1094,13 @@ dseg segment byte public 'STUNTSD' use16
     public word_4186A
     public word_4186C
     public byte_4186E
-    public dword_41870
+    public transshapeprimitives
     public word_41874
     public word_41876
     public word_41878
     public byte_4187A
-    public word_4187C
-    public dword_4187E
+    public transshapenumverts
+    public transshapeverts
     public byte_41882
     public cos80
     public sin80
@@ -1134,6 +1144,7 @@ dseg segment byte public 'STUNTSD' use16
     public word_428B8
     public word_428BA
     public word_428BC
+    public byte_428BE
     public byte_428D6
     public word_429F2
     public word_429F4
@@ -1160,24 +1171,7 @@ dseg segment byte public 'STUNTSD' use16
     public word_42A36
     public byte_42A38
     public currenttransshape
-    public word_42A3C
-    public word_42A3E
-    public word_42A40
-    public word_42A42
-    public word_42A44
-    public word_42A46
-    public word_42A48
-    public word_42A4A
-    public byte_42A4C
-    public byte_42A4D
-    public word_42A54
-    public word_42A56
-    public word_42A58
-    public word_42A5A
-    public word_42A5C
-    public word_42A5E
-    public byte_42A60
-    public byte_42A61
+    public transshapeunk
     public terraincenterpos
     public word_42CBA
     public word_42CBE
@@ -1318,7 +1312,7 @@ dseg segment byte public 'STUNTSD' use16
     public terrainHeight
     public trackdata12
     public word_449F2
-    public byte_449F4
+    public transshapenumvertscopy
     public elem_zCenter
     public curshapeptr
     public word_449FC
@@ -1332,6 +1326,7 @@ dseg segment byte public 'STUNTSD' use16
     public word_44A2E
     public word_44A30
     public word_44A32
+    public rect_unk9
     public voicefileptr
     public skybox_grd_color
     public byte_44A8A
@@ -1687,8 +1682,8 @@ aDos     db 100
     db 111
     db 115
     db 0
-word_3B808     dw 0
-word_3B80A     dw 0
+rectptr_unk2     dw 0
+rectptr_unk     dw 0
 byte_3B80C     db 0
     db 0
     db 0
@@ -3941,7 +3936,7 @@ unk_3C114     db 0
     db 216
     db 120
     db 65
-    db 0
+unk_3C11A     db 0
     db 0
     db 64
     db 1
@@ -13857,7 +13852,7 @@ unk_3E82C     db 244
     dd aSki2_0              ; "SKI2"
     dd aBump_0              ; "BUMP"
     dd aScra_0              ; "SCRA"
-    db 0
+byte_3E85C     db 0
     db 0
     db 0
     db 0
@@ -14211,32 +14206,32 @@ a_rpl_1     db 46
     db 112
     db 108
     db 0
-    db 114
+aRep_1     db 114
     db 101
     db 112
     db 0
-    db 46
+a_rpl_2     db 46
     db 114
     db 112
     db 108
     db 0
-    db 102
+aFex_0     db 102
     db 101
     db 120
     db 0
-    db 115
+aSer_0     db 115
     db 101
     db 114
     db 0
-    db 109
+aMdo     db 109
     db 100
     db 111
     db 0
-    db 119
+aWai_0     db 119
     db 97
     db 105
     db 0
-    db 119
+aWai_1     db 119
     db 97
     db 105
     db 0
@@ -14286,65 +14281,39 @@ byte_3EA04     db 6
     db 8
     db 7
 word_3EA08     dw 272
-    db 109
-    db 0
-    db 18
-    db 1
-    db 232
-    db 0
-    db 190
-    db 0
-    db 151
-    db 0
-    db 108
-    db 0
-    db 66
-    db 0
+    dw 109
+    dw 274
+    dw 232
+    dw 190
+    dw 151
+    dw 108
+    dw 66
 word_3EA18     dw 10
 word_3EA1A     dw 314
-    db 151
-    db 0
-    db 58
-    db 1
-    db 18
-    db 1
-    db 232
-    db 0
-    db 190
-    db 0
-    db 151
-    db 0
-    db 91
-    db 0
+    dw 151
+    dw 314
+    dw 274
+    dw 232
+    dw 190
+    dw 151
+    dw 91
 word_3EA2A     dw 47
 word_3EA2C     dw 176
-    db 176
-    db 0
-    db 156
-    db 0
-    db 156
-    db 0
-    db 156
-    db 0
-    db 156
-    db 0
-    db 156
-    db 0
+    dw 176
+    dw 156
+    dw 156
+    dw 156
+    dw 156
+    dw 156
 word_3EA3A     dw 156
 word_3EA3C     dw 156
 word_3EA3E     dw 193
-    db 193
-    db 0
-    db 173
-    db 0
-    db 173
-    db 0
-    db 173
-    db 0
-    db 173
-    db 0
-    db 173
-    db 0
+    dw 193
+    dw 173
+    dw 173
+    dw 173
+    dw 173
+    dw 173
 word_3EA4C     dw 193
 word_3EA4E     dw 193
 unk_3EA50     db 0
@@ -14365,7 +14334,7 @@ aPolyinfo     db 112
     db 111
     db 0
     db 0
-    db 0
+byte_3EA62     db 0
     db 1
     db 2
     db 3
@@ -14381,7 +14350,7 @@ aPolyinfo     db 112
     db 3
     db 0
     db 0
-    db 0
+byte_3EA72     db 0
     db 5
     db 1
     db 0
@@ -14397,10 +14366,8 @@ aPolyinfo     db 112
     db 4
     db 0
     db 0
-    db 0
-    db 0
-    db 0
-    db 128
+word_3EA82     dw 0
+word_3EA84     dw 32768
     db 0
     db 0
     db 0
@@ -22569,10 +22536,14 @@ mat_y100     db 0
     db 0
     db 0
     db 0
-word_40EB0     dw 0
-word_40EB2     dw 0
-word_40EB4     dw 0
-word_40EB6     dw 0
+rect_unk8     db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
 mat_y300     db 0
     db 0
     db 0
@@ -22591,7 +22562,7 @@ mat_y300     db 0
     db 0
     db 0
     db 0
-dword_40ECA     dd 0
+transshapepolyinfo     dd 0
 word_40ECE     dw 0
 word_40ED0     dw 0
 polyinfoptr     dd 0
@@ -23421,7 +23392,7 @@ mat_y0     db 0
     db 0
     db 0
 word_41850     dw 0
-word_41852     dw 0
+transshapenumpaints     dw 0
 word_41854     dw 0
 word_41856     dw 0
 word_41858     dw 0
@@ -23442,14 +23413,14 @@ word_4186A     dw 0
 word_4186C     dw 0
 byte_4186E     db 0
     db 0
-dword_41870     dd 0
+transshapeprimitives     dd 0
 word_41874     dw 0
 word_41876     dw 0
 word_41878     dw 0
 byte_4187A     db 0
     db 0
-word_4187C     dw 0
-dword_4187E     dd 0
+transshapenumverts     dw 0
+transshapeverts     dd 0
 byte_41882     db 0
     db 0
 cos80     dd 0
@@ -27474,7 +27445,7 @@ off_428B6     dw ?
 word_428B8     dw 0
 word_428BA     dw 0
 word_428BC     dw 0
-    db 0
+byte_428BE     db 0
     db 0
     db 0
     db 0
@@ -27834,31 +27805,46 @@ word_42A34     dw 0
 word_42A36     dw 0
 byte_42A38     db 0
     db 0
-currenttransshape     dw 0
-word_42A3C     dw 0
-word_42A3E     dw 0
-word_42A40     dw 0
-word_42A42     dw 0
-word_42A44     dw 0
-word_42A46     dw 0
-word_42A48     dw 0
-word_42A4A     dw 0
-byte_42A4C     db 0
-byte_42A4D     db 0
+currenttransshape     db 0
     db 0
     db 0
     db 0
     db 0
     db 0
     db 0
-word_42A54     dw 0
-word_42A56     dw 0
-word_42A58     dw 0
-word_42A5A     dw 0
-word_42A5C     dw 0
-word_42A5E     dw 0
-byte_42A60     db 0
-byte_42A61     db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+transshapeunk     db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
     db 0
     db 0
     db 0
@@ -35698,7 +35684,7 @@ word_449EA     dw 0
 terrainHeight     dw 0
 trackdata12     dd 0
 word_449F2     dw 0
-byte_449F4     db 0
+transshapenumvertscopy     db 0
     db 0
 elem_zCenter     dw 0
 curshapeptr     dd 0
@@ -35746,7 +35732,7 @@ word_44A32     dw 0
     db 0
     db 0
     db 0
-    db 0
+rect_unk9     db 0
     db 0
     db 0
     db 0

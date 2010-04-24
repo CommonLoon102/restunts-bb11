@@ -295,14 +295,20 @@ sprite_unk2 dw ?
 sprite_unk3 dw ?
 sprite_lineofs dw ?
 sprite_left dw ?
-sprite_width dw ?
+sprite_right dw ?
 sprite_top dw ?
 sprite_height dw ?
-sprite_height2 dw ?
+sprite_pitch dw ?
 sprite_unk4 dw ?
 sprite_width2 dw ?
 sprite_left2 dw ?
 sprite_widthsum dw ?
+ends
+RECTANGLE struc
+rc_left dw ?
+rc_top dw ?
+rc_right dw ?
+rc_bottom dw ?
 ends
 ; enum enum_surface_type (-16772249)
 tarmac = 1

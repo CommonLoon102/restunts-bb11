@@ -59,78 +59,47 @@ get_unflip_size proc far
     arg_2 = word ptr 8
 
     push    bp
-loc_3B0BB:
     mov     bp, sp
-loc_3B0BD:
     sub     sp, 0Ch
-loc_3B0C0:
     push    [bp+arg_2]
-loc_3B0C3:
     push    [bp+arg_0]
-loc_3B0C6:
     call    sub_3264A
-loc_3B0CB:
     add     sp, 4
-loc_3B0CE:
     mov     [bp+var_A], ax
-loc_3B0D1:
     mov     [bp+var_6], 0
-loc_3B0D6:
     mov     [bp+var_8], 0
-loc_3B0DB:
     jmp     short loc_3B11B
     ; align 2
     db 144
 loc_3B0DE:
     push    [bp+var_8]
-loc_3B0E1:
     push    [bp+arg_2]
-loc_3B0E4:
     push    [bp+arg_0]
-loc_3B0E7:
     call    sub_3265B
-loc_3B0EC:
     add     sp, 6
-loc_3B0EF:
     mov     word ptr [bp+var_4], ax
-loc_3B0F2:
     mov     word ptr [bp+var_4+2], dx
-loc_3B0F5:
     les     bx, [bp+var_4]
-loc_3B0F8:
     mov     ax, es:[bx+2]
-loc_3B0FC:
     imul    word ptr es:[bx]
     add     ax, 20h ; ' '
-loc_3B102:
     mov     [bp+var_C], ax
     mov     cl, 4
-loc_3B107:
     shr     [bp+var_C], cl
-loc_3B10A:
     mov     ax, [bp+var_6]
-loc_3B10D:
     cmp     [bp+var_C], ax
-loc_3B110:
     jbe     short loc_3B118
     mov     ax, [bp+var_C]
-loc_3B115:
     mov     [bp+var_6], ax
 loc_3B118:
     inc     [bp+var_8]
 loc_3B11B:
     mov     ax, [bp+var_A]
-loc_3B11E:
     cmp     [bp+var_8], ax
-loc_3B121:
     jl      short loc_3B0DE
-loc_3B123:
     mov     ax, [bp+var_6]
-loc_3B126:
     mov     sp, bp
-loc_3B128:
     pop     bp
-locret_3B129:
     retf
 get_unflip_size endp
 seg036 ends

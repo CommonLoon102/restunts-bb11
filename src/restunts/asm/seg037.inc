@@ -1,3 +1,3 @@
 seg037 segment byte public 'STUNTSC' use16
-    extrn sub_3B12A:proc
+    extrn load_2dshape_helper5:proc
 seg037 ends

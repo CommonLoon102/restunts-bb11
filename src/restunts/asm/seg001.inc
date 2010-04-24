@@ -13,8 +13,8 @@ seg001 segment byte public 'STUNTSC' use16
     extrn car_car_speed_adjust_maybe:proc
     extrn carState_rc_op:proc
     extrn upd_statef20_from_steer_input:proc
-    extrn sub_188A4:proc
-    extrn sub_18CD8:proc
+    extrn audio_carstate:proc
+    extrn audio_unk3:proc
     extrn sub_18D06:proc
     extrn sub_18D60:proc
     extrn car_car_coll_detect_maybe:proc

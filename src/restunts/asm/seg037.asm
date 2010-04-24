@@ -46,8 +46,8 @@ nosmart
 seg037 segment byte public 'STUNTSC' use16
     assume cs:seg037
     assume es:nothing, ss:nothing, ds:dseg
-    public sub_3B12A
-sub_3B12A proc far
+    public load_2dshape_helper5
+load_2dshape_helper5 proc far
     var_E = word ptr -14
     var_C = word ptr -12
     var_A = word ptr -10
@@ -60,53 +60,31 @@ sub_3B12A proc far
     arg_2 = word ptr 8
 
     push    bp
-loc_3B12B:
     mov     bp, sp
-loc_3B12D:
     sub     sp, 0Eh
-loc_3B130:
     push    [bp+arg_2]
-loc_3B133:
     push    [bp+arg_0]
-loc_3B136:
     call    sub_3264A
-loc_3B13B:
     add     sp, 4
-loc_3B13E:
     mov     [bp+var_A], ax
-loc_3B141:
     mov     cl, 3
-loc_3B143:
     shl     ax, cl
-loc_3B145:
     add     ax, 10h
-loc_3B148:
     cwd
-loc_3B149:
     mov     [bp+var_E], ax
-loc_3B14C:
     mov     [bp+var_C], dx
-loc_3B14F:
     mov     [bp+var_8], 0
-loc_3B154:
     jmp     short loc_3B191
 loc_3B156:
     push    [bp+var_8]
-loc_3B159:
     push    [bp+arg_2]
-loc_3B15C:
     push    [bp+arg_0]
-loc_3B15F:
     call    sub_3265B
-loc_3B164:
     add     sp, 6
-loc_3B167:
     mov     word ptr [bp+var_4], ax
-loc_3B16A:
     mov     word ptr [bp+var_4+2], dx
     les     bx, [bp+var_4]
     mov     ax, es:[bx+2]
-loc_3B174:
     imul    word ptr es:[bx]
     mov     cl, 3
     shl     ax, cl
@@ -115,14 +93,11 @@ loc_3B174:
     add     [bp+var_E], ax
     adc     [bp+var_C], dx
     add     [bp+var_E], 10h
-loc_3B18A:
     adc     [bp+var_C], 0
     inc     [bp+var_8]
 loc_3B191:
     mov     ax, [bp+var_A]
-loc_3B194:
     cmp     [bp+var_8], ax
-loc_3B197:
     jl      short loc_3B156
     add     [bp+var_E], 10h
     adc     [bp+var_C], 0
@@ -130,7 +105,6 @@ loc_3B197:
     push    ax
     lea     ax, [bp+var_E]
     push    ax
-loc_3B1A8:
     call    unknown_libname_4; MS Quick C v1.0/v2.01 & MSC v5.1 DOS run-time & graphic
     mov     ax, [bp+var_E]
     mov     sp, bp
@@ -149,6 +123,6 @@ loc_3B1A8:
     db 0
     db 0
     db 0
-sub_3B12A endp
+load_2dshape_helper5 endp
 seg037 ends
 end

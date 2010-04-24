@@ -54,7 +54,7 @@ seg028 segment byte public 'STUNTSC' use16
     public sub_38AC4
     public sub_38AEA
     public sub_38BEA
-    public sub_38C4C
+    public audio_unk2
     public sub_38CF8
     public sub_38DE6
     public off_38E7E
@@ -488,7 +488,7 @@ loc_38952:
     push    ax
     push    [bp+arg_0]
     push    cs
-    call near ptr sub_38C4C
+    call near ptr audio_unk2
     jmp     loc_38A64
 loc_38962:
     push    word_42A04
@@ -866,7 +866,7 @@ loc_38C31:
     pop     bp
     retf
 sub_38BEA endp
-sub_38C4C proc far
+audio_unk2 proc far
     var_C = dword ptr -12
     var_6 = word ptr -6
     var_4 = word ptr -4
@@ -886,7 +886,7 @@ sub_38C4C proc far
     mov     ds, ax
     mov     ax, 4Ch ; 'L'
     imul    [bp+arg_0]
-    add     ax, 81FCh
+    add     ax, offset audiochunks_unk
     mov     [bp+var_4], ax
     mov     bx, ax
     mov     al, [bp+arg_2]
@@ -900,7 +900,7 @@ sub_38C4C proc far
     jz      short loc_38CF0
     mov     al, [bp+arg_2]
     mov     [bp+var_6], ax
-    mov     si, 0A2B6h
+    mov     si, offset unk_45A26
     mov     di, [bp+var_2]
 loc_38C8F:
     mov     al, [si]
@@ -954,7 +954,7 @@ loc_38CF0:
     retf
     ; align 2
     db 144
-sub_38C4C endp
+audio_unk2 endp
 sub_38CF8 proc far
     var_A = dword ptr -10
     var_4 = word ptr -4

@@ -507,7 +507,7 @@ audio_op_unk proc far
     sub     ax, ax
     push    ax
     push    word ptr [si+2]
-    call    sub_38C4C
+    call    audio_unk2
     pop     bx
     pop     bx
 loc_26F67:
@@ -606,7 +606,7 @@ loc_27017:
     push    ax
     push    word ptr [si+2]
     mov     di, ax
-    call    sub_38C4C
+    call    audio_unk2
     add     sp, 4
     mov     ax, di
     sub     di, 0Ah
@@ -617,14 +617,14 @@ loc_27033:
     jz      short loc_27045
     push    di
     push    word ptr [si+14h]
-    call    sub_38C4C
+    call    audio_unk2
     add     sp, 4
 loc_27045:
     cmp     word ptr [si+16h], 0FFFFh
     jz      short loc_27057
     push    di
     push    word ptr [si+16h]
-    call    sub_38C4C
+    call    audio_unk2
     add     sp, 4
 loc_27057:
     mov     al, [bp+var_1]

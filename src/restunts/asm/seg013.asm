@@ -93,7 +93,7 @@ loc_361E5:
 loc_361E8:
     push    [bp+arg_0]
 loc_361EB:
-    call    sub_33578
+    call    sprite_1_unk2
 loc_361F0:
     add     sp, 0Ah
 loc_361F3:
@@ -107,7 +107,7 @@ loc_361FA:
 loc_36200:
     push    [bp+arg_0]
 loc_36203:
-    call    sub_33578
+    call    sprite_1_unk2
 loc_36208:
     add     sp, 0Ah
 loc_3620B:
@@ -125,7 +125,7 @@ loc_3621B:
     push    [bp+arg_2]
     push    [bp+arg_0]
 loc_36221:
-    call    sub_33578
+    call    sprite_1_unk2
 loc_36226:
     add     sp, 0Ah
 loc_36229:
@@ -139,7 +139,7 @@ loc_3622F:
 loc_36236:
     push    [bp+arg_4]
 loc_36239:
-    call    sub_33578
+    call    sprite_1_unk2
 loc_3623E:
     add     sp, 0Ah
 loc_36241:

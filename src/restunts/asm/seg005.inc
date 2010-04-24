@@ -2,17 +2,18 @@ seg005 segment byte public 'STUNTSC' use16
     extrn run_game:proc
     extrn handle_ingame_kb_shortcuts:proc
     extrn sub_22532:proc
-    extrn sub_2255A:proc
-    extrn sub_22576:proc
-    extrn sub_22698:proc
+    extrn set_frame_callback:proc
+    extrn remove_frame_callback:proc
+    extrn frame_callback:proc
+    extrn replay_unk2:proc
     extrn sub_2298C:proc
     extrn load_replay_file:proc
     extrn write_rpl:proc
     extrn setup_car_shapes:proc
     extrn setup_player_cars:proc
-    extrn sub_239B4:proc
-    extrn sub_23A50:proc
-    extrn sub_23A98:proc
+    extrn free_player_cars:proc
+    extrn mouse_minmax_position:proc
+    extrn replay_unk:proc
     extrn loop_game:proc
     extrn off_2481A:word
     extrn off_24D20:word

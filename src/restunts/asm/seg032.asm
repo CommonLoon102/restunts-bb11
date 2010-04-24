@@ -603,7 +603,7 @@ loc_3A946:
 loc_3A94A:
     push    ax
 loc_3A94B:
-    call    sub_33578
+    call    sprite_1_unk2
 loc_3A950:
     add     sp, 0Ah
 loc_3A953:

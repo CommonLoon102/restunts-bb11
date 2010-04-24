@@ -60,8 +60,8 @@ seg001 segment byte public 'STUNTSC' use16
     public car_car_speed_adjust_maybe
     public carState_rc_op
     public upd_statef20_from_steer_input
-    public sub_188A4
-    public sub_18CD8
+    public audio_carstate
+    public audio_unk3
     public sub_18D06
     public sub_18D60
     public car_car_coll_detect_maybe
@@ -1971,7 +1971,7 @@ loc_157DC:
     push    ax
     lea     ax, [bp+var_134]
     push    ax
-    call    mat_copy
+    call    mat_invert
     add     sp, 4
     lea     ax, [bp+var_C]
     push    ax
@@ -2957,7 +2957,7 @@ loc_1624E:
     sub     ah, ah
     push    ax
     push    cs
-    call near ptr sub_18CD8
+    call near ptr audio_unk3
     add     sp, 4
 loc_1625F:
     sub     ax, ax
@@ -3394,7 +3394,7 @@ loc_16650:
     jnz     short loc_16670
     jmp     loc_16710
 loc_16670:
-    cmp     byte ptr [si-6EE2h], 0
+    cmp     state.field_3FA[si], 0
     jz      short loc_1667A
     jmp     loc_16710
 loc_1667A:
@@ -3434,7 +3434,7 @@ loc_1667A:
     add     sp, 8
     or      al, al
     jz      short loc_16710
-    mov     byte ptr [si-6EE2h], 1
+    mov     state.field_3FA[si], 1
     mov     ax, 3C00h       ; 15360 = track grid length / 2
     cwd
     push    dx
@@ -3487,7 +3487,7 @@ loc_1672C:
     add     sp, 4
     mov     bx, di
     shl     bx, 1
-    mov     cx, [bx-599Eh]
+    mov     cx, trackcenterpos2[bx]
     add     cx, ax
     mov     [bp+var_18EoStateWorldCrds.vx], cx
     mov     al, hillFlag
@@ -3511,7 +3511,7 @@ loc_1672C:
     cbw
     mov     bx, ax
     shl     bx, 1
-    add     cx, [bx-55EAh]
+    add     cx, trackcenterpos[bx]
     mov     [bp+var_18EoStateWorldCrds.vz], cx
     lea     ax, [bp+var_18EoStateWorldCrds]
     push    ax
@@ -3943,7 +3943,7 @@ loc_16B82:
     jmp     short loc_16BB3
 loc_16BAC:
     mov     ax, si
-    mov     [di-6EE2h], al
+    mov     state.field_3FA[di], al
     inc     di
 loc_16BB3:
     cmp     di, 30h ; '0'
@@ -3953,7 +3953,7 @@ loc_16BB3:
 loc_16BBC:
     mov     bx, di
     shl     bx, 1
-    mov     [bx-6F4Eh], si
+    mov     word ptr state.field_38E[bx], si
     inc     di
 loc_16BC5:
     cmp     di, 18h
@@ -4022,13 +4022,13 @@ loc_16C0F:
     cbw
     mov     bx, ax
     shl     bx, 1
-    add     cx, [bx-7E84h]
+    add     cx, trackpos[bx]
     add     cx, [bp+var_A]
     mov     state.game_vec1.vz, cx
     push    si
     push    di
-    mov     di, 8E4Ah
-    mov     si, 8E44h
+    mov     di, offset state.game_vec2
+    mov     si, offset state.game_vec1
     push    ds
     pop     es
     movsw
@@ -4038,8 +4038,8 @@ loc_16C0F:
     pop     si
     push    si
     push    di
-    mov     di, 8E50h
-    mov     si, 8E44h
+    mov     di, offset state.game_vec3
+    mov     si, offset state.game_vec1
     movsw
     movsw
     movsw
@@ -4047,8 +4047,8 @@ loc_16C0F:
     pop     si
     push    si
     push    di
-    mov     di, 8E56h
-    mov     si, 8E44h
+    mov     di, offset state.game_vec4
+    mov     si, offset state.game_vec1
     movsw
     movsw
     movsw
@@ -4119,7 +4119,7 @@ loc_16C0F:
     cbw
     mov     bx, ax
     shl     bx, 1
-    mov     ax, [bx-55EAh]
+    mov     ax, trackcenterpos[bx]
     add     ax, [bp+var_2]
     cwd
     mov     cl, 6
@@ -4148,7 +4148,7 @@ loc_16D88:
     cbw
     mov     bx, ax
     shl     bx, 1
-    mov     ax, [bx-599Eh]
+    mov     ax, trackcenterpos2[bx]
     add     ax, [bp+var_8]
     cwd
     mov     cl, 6
@@ -4280,7 +4280,7 @@ loc_16EBF:
     cbw
     mov     bx, ax
     shl     bx, 1
-    mov     ax, [bx-599Eh]
+    mov     ax, trackcenterpos2[bx]
     add     ax, [bp+var_8]
     cwd
     mov     cl, 6
@@ -4535,7 +4535,7 @@ loc_170DC:
     call near ptr sub_19BA0
 loc_170EC:
     push    cs
-    call near ptr sub_188A4
+    call near ptr audio_carstate
     pop     si
     pop     di
     mov     sp, bp
@@ -4547,7 +4547,7 @@ loc_170F6:
     jmp     loc_171E1
 loc_17100:
     push    cs
-    call near ptr sub_188A4
+    call near ptr audio_carstate
     cmp     byte_4393C, 0
     jnz     short loc_1710E
     jmp     loc_171E1
@@ -7237,7 +7237,7 @@ loc_18899:
     ; align 2
     db 144
 upd_statef20_from_steer_input endp
-sub_188A4 proc far
+audio_carstate proc far
     var_34 = dword ptr -52
     var_30 = word ptr -48
     var_2E = word ptr -46
@@ -7634,14 +7634,14 @@ loc_18C05:
     add     sp, 2
 loc_18C08:
     mov     bx, [bp+var_2C]
-    test    byte ptr [bx+0CFh], 6
+    test    [bx+CARSTATE.field_CF], 6
     jz      short loc_18C56
     mov     al, [bp+var_16]
 smart
     and     al, 6
 nosmart
     mov     byte ptr [bp+var_34], al
-    mov     al, [bx+0CFh]
+    mov     al, [bx+CARSTATE.field_CF]
 smart
     and     al, 6
 nosmart
@@ -7649,7 +7649,7 @@ nosmart
     jz      short loc_18C7B
     test    [bp+var_16], 6
     jnz     short loc_18C5C
-    test    byte ptr [bx+0CFh], 2
+    test    [bx+CARSTATE.field_CF], 2
     jz      short loc_18C44
     push    [bp+var_2E]
     call    audio_op_unk5
@@ -7723,8 +7723,8 @@ loc_18CCC:
     mov     sp, bp
     pop     bp
     retf
-sub_188A4 endp
-sub_18CD8 proc far
+audio_carstate endp
+audio_unk3 proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = byte ptr 6
@@ -7748,7 +7748,7 @@ loc_18CF3:
 loc_18D04:
     pop     bp
     retf
-sub_18CD8 endp
+audio_unk3 endp
 sub_18D06 proc far
      s = byte ptr 0
      r = byte ptr 2
@@ -9001,7 +9001,7 @@ loc_197D6:
     push    ax
     lea     ax, [bp+var_1A]
     push    ax
-    call    mat_copy
+    call    mat_invert
     add     sp, 4
 loc_1981E:
     lea     ax, [bp+var_32]

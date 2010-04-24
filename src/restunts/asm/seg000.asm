@@ -1421,7 +1421,7 @@ loc_10DA0:
     mov     ax, [bp+var_3E]
     add     ax, si
     push    ax
-    call    sub_33578
+    call    sprite_1_unk2
     add     sp, 0Ah
     call    mouse_draw_transparent_check
     push    [bp+var_40]
@@ -2998,15 +2998,7 @@ run_car_menu proc far
     var_38 = byte ptr -56
     var_36 = word ptr -54
     var_34 = word ptr -52
-    var_32 = byte ptr -50
-    var_2C = word ptr -44
-    var_2A = word ptr -42
-    var_28 = word ptr -40
-    var_26 = word ptr -38
-    var_24 = word ptr -36
-    var_22 = word ptr -34
-    var_20 = byte ptr -32
-    var_1F = byte ptr -31
+    var_transshape = TRANSFORMEDSHAPE ptr -50
     var_1E = word ptr -30
     var_1C = byte ptr -28
     var_1A = word ptr -26
@@ -3032,7 +3024,7 @@ run_car_menu proc far
     push    di
     push    si
     push    si
-    lea     di, [bp+var_32]
+    lea     di, [bp+var_transshape]
     mov     si, offset unk_3BB5E
     push    ss
     pop     es
@@ -3040,20 +3032,20 @@ run_car_menu proc far
     movsw
     movsw
     pop     si
-    mov     [bp+var_2C], 80F4h
-    mov     [bp+var_28], 0
-    mov     [bp+var_26], 0
-    mov     [bp+var_22], 7530h
+    mov     [bp+var_transshape.ts_shapeptr], (offset game3dshapes.shape3d_numverts+0AA8h)
+    mov     [bp+var_transshape.ts_rotvec.vx], 0
+    mov     [bp+var_transshape.ts_rotvec.vy], 0
+    mov     [bp+var_transshape.ts_unk], 7530h
     mov     ax, word_44CEA
     mov     word_44984, ax
     or      ax, ax
     jz      short loc_11C82
     lea     ax, [bp+var_10]
-    mov     [bp+var_2A], ax
-    mov     [bp+var_20], 8
+    mov     [bp+var_transshape.ts_rectptr], ax
+    mov     [bp+var_transshape.ts_flags], 8
     jmp     short loc_11C86
 loc_11C82:
-    mov     [bp+var_20], 0
+    mov     [bp+var_transshape.ts_flags], 0
 loc_11C86:
     mov     ax, 2
     push    ax
@@ -3830,11 +3822,11 @@ loc_1244F:
     mov     byte ptr [bx], 0
 loc_1247A:
     mov     ax, [bp+var_1E]
-    mov     [bp+var_24], ax
+    mov     [bp+var_transshape.ts_rotvec.vz], ax
     mov     bx, [bp+arg_2]
     mov     al, [bx]
-    mov     [bp+var_1F], al
-    lea     ax, [bp+var_32]
+    mov     [bp+var_transshape.ts_material], al
+    lea     ax, [bp+var_transshape]
     push    ax
     call    transformed_shape_op
     add     sp, 2

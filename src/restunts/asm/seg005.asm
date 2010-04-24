@@ -49,17 +49,18 @@ seg005 segment byte public 'STUNTSC' use16
     public run_game
     public handle_ingame_kb_shortcuts
     public sub_22532
-    public sub_2255A
-    public sub_22576
-    public sub_22698
+    public set_frame_callback
+    public remove_frame_callback
+    public frame_callback
+    public replay_unk2
     public sub_2298C
     public load_replay_file
     public write_rpl
     public setup_car_shapes
     public setup_player_cars
-    public sub_239B4
-    public sub_23A50
-    public sub_23A98
+    public free_player_cars
+    public mouse_minmax_position
+    public replay_unk
     public loop_game
     public off_2481A
     public off_24D20
@@ -160,7 +161,7 @@ loc_21C0F:
     or      ax, ax
     jz      short loc_21C24
     push    cs
-    call near ptr sub_239B4
+    call near ptr free_player_cars
     call    do_mer_restext
     jmp     loc_223E4
     ; align 2
@@ -174,7 +175,7 @@ loc_21C2E:
 loc_21C33:
     push    cs
 loc_21C34:
-    call near ptr sub_2255A
+    call near ptr set_frame_callback
 loc_21C37:
     mov     byte_461C8, 0FFh
 loc_21C3C:
@@ -219,7 +220,7 @@ loc_21C78:
     cbw
     push    ax
     push    cs
-    call near ptr sub_23A50
+    call near ptr mouse_minmax_position
     add     sp, 2
     mov     byte_45DB2, 1
     mov     ax, 0FF10h
@@ -306,7 +307,7 @@ loc_21D92:
     cmp     byte_45DB2, 0
     jnz     short loc_21D9D
     push    cs
-    call near ptr sub_23A98
+    call near ptr replay_unk
 loc_21D9D:
     call    update_gamestate
 loc_21DA2:
@@ -336,12 +337,12 @@ loc_21DEB:
     cmp     word_44984, ax
     jz      short loc_21DFC
     mov     word_44984, ax
-    call    sub_1A096
+    call    init_rect_arrays
 loc_21DFC:
     cmp     byte_46467, 0
     jz      short loc_21E76
     call    input_push_status
-    call    sub_37216
+    call    audio_unk
     sub     ax, ax
     push    ax
     push    ax
@@ -587,12 +588,12 @@ loc_22064:
     mov     [bp+var_6], ax
     mov     ax, word_454AE
     mov     [bp+var_4], ax
-    cmp     word_3B80A, 0
+    cmp     rectptr_unk, 0
     jz      short loc_220BB
-    push    word_3B80A
+    push    rectptr_unk
     lea     ax, [bp+var_A]
     push    ax
-    push    word_3B80A
+    push    rectptr_unk
     call    sub_26572
     add     sp, 6
 loc_220BB:
@@ -700,7 +701,7 @@ loc_221CC:
     sub     ax, ax
     push    ax
     push    cs
-    call near ptr sub_23A50
+    call near ptr mouse_minmax_position
     add     sp, 2
     sub     ax, ax
     push    ax
@@ -720,7 +721,7 @@ loc_221CC:
     add     sp, 6
     mov     byte_454B8, 1
 loc_22203:
-    call    sub_188A4
+    call    audio_carstate
 loc_22208:
     cmp     byte_45DB2, 2
     jnz     short loc_22222
@@ -806,7 +807,7 @@ loc_22298:
 loc_222D3:
     call    sprite_copy_2_to_1_2
     mov     byte_454B8, 1
-    call    sub_188A4
+    call    audio_carstate
     call    audio_remove_driver_timer
     cmp     byte_45DB2, 0
     jz      short loc_222F1
@@ -850,7 +851,7 @@ loc_22347:
     mov     ax, 1
     push    ax
     push    cs
-    call near ptr sub_22698
+    call near ptr replay_unk2
     add     sp, 2
     call    update_gamestate
     inc     si
@@ -900,12 +901,12 @@ loc_223CD:
     sub     ax, ax
     push    ax
     push    cs
-    call near ptr sub_23A50
+    call near ptr mouse_minmax_position
     add     sp, 2
     push    cs
-    call near ptr sub_22576
+    call near ptr remove_frame_callback
     push    cs
-    call near ptr sub_239B4
+    call near ptr free_player_cars
 loc_223E4:
     mov     waitflag, 64h ; 'd'
     call    check_input
@@ -972,7 +973,7 @@ loc_2245E:
     cbw
     push    ax
     push    cs
-    call near ptr sub_23A50
+    call near ptr mouse_minmax_position
     jmp     short loc_224E6
     ; align 4
     db 144
@@ -1094,10 +1095,10 @@ sub_22532 proc far
     pop     bp
     retf
 sub_22532 endp
-sub_2255A proc far
+set_frame_callback proc far
 
     mov     word_46468, 0
-    mov     ax, 0A26h
+    mov     ax, offset frame_callback
     mov     dx, seg seg005
     push    dx
     push    ax
@@ -1105,8 +1106,8 @@ sub_2255A proc far
     add     sp, 4
     mov     byte_442E4, 0
     retf
-sub_2255A endp
-sub_22576 proc far
+set_frame_callback endp
+remove_frame_callback proc far
 
     mov     ax, 0Ah
     cwd
@@ -1114,7 +1115,7 @@ sub_22576 proc far
     push    ax
     call    timer_get_counter_unk
     add     sp, 4
-    mov     ax, 0A26h
+    mov     ax, offset frame_callback
     mov     dx, seg seg005
     push    dx
     push    ax
@@ -1123,6 +1124,9 @@ sub_22576 proc far
     retf
     ; align 2
     db 144
+remove_frame_callback endp
+frame_callback proc far
+
     call    compare_ds_ss
     or      ax, ax
     jnz     short loc_225A2
@@ -1176,7 +1180,7 @@ loc_22620:
     cmp     state.game_frame_in_sec, ax
     jl      short loc_2263E
     mov     byte_454B8, 1
-    call    sub_188A4
+    call    audio_carstate
     jmp     short loc_22692
     db 144
     db 144
@@ -1203,7 +1207,7 @@ loc_22666:
     sub     ax, ax
     push    ax
     push    cs
-    call near ptr sub_22698
+    call near ptr replay_unk2
     add     sp, 2
     mov     byte_4552F, 2
     jmp     short loc_22692
@@ -1213,13 +1217,13 @@ loc_2267E:
     sub     ax, ax
     push    ax
     push    cs
-    call near ptr sub_22698
+    call near ptr replay_unk2
     add     sp, 2
 loc_22688:
     sub     ax, ax
     push    ax
     push    cs
-    call near ptr sub_22698
+    call near ptr replay_unk2
     add     sp, 2
 loc_22692:
     dec     byte_442E4
@@ -1227,8 +1231,8 @@ locret_22696:
     retf
     ; align 2
     db 144
-sub_22576 endp
-sub_22698 proc far
+frame_callback endp
+replay_unk2 proc far
     var_A = word ptr -10
     var_8 = word ptr -8
     var_6 = word ptr -6
@@ -1266,7 +1270,7 @@ loc_226C6:
     jmp     loc_22985
 loc_226D0:
     mov     byte_454B8, 1
-    call    sub_188A4
+    call    audio_carstate
 loc_226DA:
     mov     byte_449DA, 1
     pop     si
@@ -1357,7 +1361,7 @@ loc_2279A:
     jle     short loc_227B0
     cbw
     mov     bx, ax
-    mov     al, [bx+30ECh]
+    mov     al, byte_3E85C[bx]
     jmp     short loc_227C5
     ; align 2
     db 144
@@ -1368,7 +1372,7 @@ loc_227B0:
     cbw
     mov     bx, ax
     neg     bx
-    mov     al, [bx+30ECh]
+    mov     al, byte_3E85C[bx]
     neg     al
 loc_227C5:
     mov     byte_40D6A, al
@@ -1576,7 +1580,7 @@ loc_22985:
     retf
     ; align 2
     db 144
-sub_22698 endp
+replay_unk2 endp
 sub_2298C proc far
     var_34 = dword ptr -52
     var_30 = word ptr -48
@@ -3129,7 +3133,7 @@ loc_23870:
     mov     word_459F6, dx
     mov     ax, word_44CEA
     mov     word_44984, ax
-    call    sub_1A096
+    call    init_rect_arrays
     cmp     byte_44AE2, 0
     jnz     short loc_238B4
     sub     ax, ax
@@ -3239,7 +3243,7 @@ loc_239A3:
     ; align 2
     db 144
 setup_player_cars endp
-sub_239B4 proc far
+free_player_cars proc far
 
     cmp     video_flag5_is0, 0
     jnz     short loc_239D4
@@ -3285,8 +3289,8 @@ loc_23A15:
     add     sp, 4
     call    shape3d_free_car_shapes
     retf
-sub_239B4 endp
-sub_23A50 proc far
+free_player_cars endp
+mouse_minmax_position proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -3325,8 +3329,8 @@ loc_23A82:
     add     sp, 8
     pop     bp
     retf
-sub_23A50 endp
-sub_23A98 proc far
+mouse_minmax_position endp
+replay_unk proc far
     var_A = byte ptr -10
     var_8 = byte ptr -8
     var_6 = byte ptr -6
@@ -3406,7 +3410,7 @@ loc_23B28:
     mov     al, [bp+var_6]
     or      es:[bx], al     ; writing action into rpl buff?!
 loc_23B40:
-    mov     byte ptr [si-7486h], 0
+    mov     byte_442EA[si], 0
 loc_23B45:
     pop     si
     pop     di
@@ -3415,7 +3419,7 @@ loc_23B45:
     retf
     ; align 2
     db 144
-sub_23A98 endp
+replay_unk endp
 loop_game proc far
     var_44 = word ptr -68
     var_42 = word ptr -66
@@ -3708,7 +3712,7 @@ loc_23DAB:
     push    ax
     mov     ax, 9Ah ; 'š'
     push    ax
-    call    sub_335D2
+    call    sprite_1_unk
     add     sp, 0Ah
     push    dialog_fnt_colour
     mov     ax, 6
@@ -3718,7 +3722,7 @@ loc_23DAB:
     push    ax
     lea     ax, [si+9Ah]
     push    ax
-    call    sub_335D2
+    call    sprite_1_unk
     add     sp, 0Ah
     push    word_407FE
     mov     ax, 0B6h ; '¶'
@@ -4307,7 +4311,7 @@ loc_24334:
     db 144
 loc_24346:
     mov     byte_454B8, 1
-    call    sub_188A4
+    call    audio_carstate
     sub     ax, ax
     push    ax
     mov     ax, 4
@@ -4472,7 +4476,7 @@ loc_244B0:
     cbw
     push    ax
     push    cs
-    call near ptr sub_23A50
+    call near ptr mouse_minmax_position
     add     sp, 2
     call    check_input
     mov     kbormouse, 0
@@ -4481,7 +4485,7 @@ loc_244B0:
     db 144
 loc_2450A:
     mov     byte_43966, 0
-    call    sub_188A4
+    call    audio_carstate
     mov     ax, offset aRep ; "rep"
     push    ax
     push    word ptr mainresptr+2
@@ -4585,7 +4589,7 @@ loc_2460D:
     or      si, si
     jz      short loc_24619
     push    cs
-    call near ptr sub_239B4
+    call near ptr free_player_cars
     push    cs
     call near ptr setup_player_cars
 loc_24619:
@@ -4604,7 +4608,7 @@ loc_24624:
     ; align 2
     db 144
 loc_24630:
-    call    sub_188A4
+    call    audio_carstate
 loc_24635:
     mov     [bp+var_1E], 0
 loc_24639:
@@ -4612,7 +4616,7 @@ loc_24639:
     jz      short loc_24642
     jmp     loc_24828
 loc_24642:
-    mov     ax, 324Eh
+    mov     ax, offset aRep_1; "rep"
     push    ax
     push    word ptr mainresptr+2
     push    word ptr mainresptr
@@ -4630,9 +4634,9 @@ loc_24642:
     jnz     short loc_2466F
     jmp     loc_246F0
 loc_2466F:
-    mov     ax, 95F8h
+    mov     ax, offset track_full_path
     push    ax              ; char *
-    mov     ax, 3252h
+    mov     ax, offset a_rpl_2; ".rpl"
     push    ax              ; int
     mov     ax, 140h
     push    ax
@@ -4642,7 +4646,7 @@ loc_2466F:
     add     sp, 8
     mov     [bp+var_1E], 1
     mov     byte_3B8FB, 1
-    mov     ax, 95F8h
+    mov     ax, offset track_full_path
     push    ax
     call    file_find
     add     sp, 2
@@ -4655,7 +4659,7 @@ loc_2466F:
     mov     ax, 0FFFFh
     push    ax
     push    ax
-    mov     ax, 3257h
+    mov     ax, offset aFex_0; "fex"
     push    ax
     push    word ptr mainresptr+2
     push    word ptr mainresptr
@@ -4709,7 +4713,7 @@ loc_24712:
     mov     ax, 0FFFFh
     push    ax
     push    ax
-    mov     ax, 325Bh
+    mov     ax, offset aSer_0; "ser"
     push    ax
     push    word ptr mainresptr+2
     push    word ptr mainresptr
@@ -4769,7 +4773,7 @@ loc_24795:
     mov     ax, 0FFFFh
     push    ax
     push    ax
-    mov     ax, 325Fh
+    mov     ax, offset aMdo ; "mdo"
     push    ax
     push    word ptr gameresptr+2
     push    word ptr gameresptr
@@ -4835,7 +4839,7 @@ loc_24828:
     jmp     loc_24D5E
 loc_24830:
     mov     byte_454B8, 1
-    call    sub_188A4
+    call    audio_carstate
     sub     ax, ax
     push    ax
     push    ax
@@ -4967,7 +4971,7 @@ loc_24956:
     push    cs
     call near ptr loop_game
     add     sp, 6
-    mov     ax, 3263h
+    mov     ax, offset aWai_0; "wai"
     push    ax
     push    word ptr gameresptr+2
     push    word ptr gameresptr
@@ -4982,7 +4986,7 @@ loc_24956:
 loc_24997:
     cmp     word_44984, 0
     jz      short loc_249D2
-    push    word_3B808
+    push    rectptr_unk2
     sub     ax, ax
     push    ax
     push    dialog_fnt_colour
@@ -5003,7 +5007,7 @@ loc_249C3:
     add     sp, 0Ah
 loc_249C6:
     push    ax
-    push    word_3B808
+    push    rectptr_unk2
     call    sub_26572
     jmp     short loc_24A0D
 loc_249D2:
@@ -5046,7 +5050,7 @@ loc_24A19:
     jmp     loc_24D5E
 loc_24A28:
     mov     byte_454B8, 1
-    call    sub_188A4
+    call    audio_carstate
     sub     ax, ax
     push    ax
     mov     ax, 1
@@ -5171,7 +5175,7 @@ loc_24B4A:
     jnz     short loc_24B4F
     jmp     loc_24C43
 loc_24B4F:
-    mov     ax, 3267h
+    mov     ax, offset aWai_1; "wai"
 loc_24B52:
     push    ax
     push    word ptr gameresptr+2
@@ -5187,7 +5191,7 @@ loc_24B65:
     add     sp, 6
     cmp     word_44984, 0
     jz      short loc_24BB0
-    push    word_3B808
+    push    rectptr_unk2
 loc_24B7C:
     sub     ax, ax
     push    ax
@@ -5206,7 +5210,7 @@ loc_24B98:
 loc_24B9D:
     add     sp, 0Ah
     push    ax
-    push    word_3B808
+    push    rectptr_unk2
     call    sub_26572
     add     sp, 6
     jmp     short loc_24BD4
@@ -5306,7 +5310,7 @@ loc_24C6E:
     jmp     loc_24D18
 loc_24C74:
     mov     byte_454B8, 1
-    call    sub_188A4
+    call    audio_carstate
     sub     ax, ax
     push    ax
 loc_24C81:
@@ -5327,7 +5331,7 @@ loc_24C81:
     jmp     loc_242E7
 loc_24CA6:
     mov     byte_454B8, 1
-    call    sub_188A4
+    call    audio_carstate
     sub     ax, ax
     push    ax
     mov     ax, 5

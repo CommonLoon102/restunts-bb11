@@ -17,8 +17,8 @@ dseg segment byte public 'STUNTSD' use16
     extrn aTedit__0:byte
     extrn aCvx:byte
     extrn aDos:byte
-    extrn word_3B808:word
-    extrn word_3B80A:word
+    extrn rectptr_unk2:word
+    extrn rectptr_unk:word
     extrn byte_3B80C:byte
     extrn byte_3B85E:byte
     extrn aDefault_1:byte
@@ -265,6 +265,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn word_3C110:word
     extrn word_3C112:word
     extrn unk_3C114:byte
+    extrn unk_3C11A:byte
     extrn aDm1:byte
     extrn aDm2:byte
     extrn aPre:byte
@@ -520,6 +521,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn unk_3E7FC:byte
     extrn off_3E808:dword
     extrn unk_3E82C:byte
+    extrn byte_3E85C:byte
     extrn a_rpl:byte
     extrn aWhl1whl2whl3ins2gboxins1i:byte
     extrn aGnobgnabdotDotadot1dot2:byte
@@ -546,6 +548,13 @@ dseg segment byte public 'STUNTSD' use16
     extrn aCon_0:byte
     extrn aRep:byte
     extrn a_rpl_1:byte
+    extrn aRep_1:byte
+    extrn a_rpl_2:byte
+    extrn aFex_0:byte
+    extrn aSer_0:byte
+    extrn aMdo:byte
+    extrn aWai_0:byte
+    extrn aWai_1:byte
     extrn byte_3E9DB:byte
     extrn byte_3E9DC:byte
     extrn byte_3E9E6:byte
@@ -567,6 +576,10 @@ dseg segment byte public 'STUNTSD' use16
     extrn unk_3EA54:byte
     extrn unk_3EA56:byte
     extrn aPolyinfo:byte
+    extrn byte_3EA62:byte
+    extrn byte_3EA72:byte
+    extrn word_3EA82:word
+    extrn word_3EA84:word
     extrn word_3EB02:word
     extrn rect_unk4:byte
     extrn aInitengineAllHandlesUsed_:byte
@@ -1012,12 +1025,9 @@ dseg segment byte public 'STUNTSD' use16
     extrn byte_40E7A:byte
     extrn mat_y200:MATRIX
     extrn mat_y100:MATRIX
-    extrn word_40EB0:word
-    extrn word_40EB2:word
-    extrn word_40EB4:word
-    extrn word_40EB6:word
+    extrn rect_unk8:RECTANGLE
     extrn mat_y300:MATRIX
-    extrn dword_40ECA:dword
+    extrn transshapepolyinfo:dword
     extrn word_40ECE:word
     extrn word_40ED0:word
     extrn polyinfoptr:dword
@@ -1026,7 +1036,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn dword_411F8:dword
     extrn mat_y0:MATRIX
     extrn word_41850:word
-    extrn word_41852:word
+    extrn transshapenumpaints:word
     extrn word_41854:word
     extrn word_41856:word
     extrn word_41858:word
@@ -1036,13 +1046,13 @@ dseg segment byte public 'STUNTSD' use16
     extrn word_4186A:word
     extrn word_4186C:word
     extrn byte_4186E:byte
-    extrn dword_41870:dword
+    extrn transshapeprimitives:dword
     extrn word_41874:word
     extrn word_41876:word
     extrn word_41878:word
     extrn byte_4187A:byte
-    extrn word_4187C:word
-    extrn dword_4187E:dword
+    extrn transshapenumverts:word
+    extrn transshapeverts:dword
     extrn byte_41882:byte
     extrn cos80:dword
     extrn sin80:dword
@@ -1086,6 +1096,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn word_428B8:word
     extrn word_428BA:word
     extrn word_428BC:word
+    extrn byte_428BE:byte
     extrn byte_428D6:byte
     extrn word_429F2:word
     extrn word_429F4:word
@@ -1111,25 +1122,8 @@ dseg segment byte public 'STUNTSD' use16
     extrn word_42A34:word
     extrn word_42A36:word
     extrn byte_42A38:byte
-    extrn currenttransshape:word
-    extrn word_42A3C:word
-    extrn word_42A3E:word
-    extrn word_42A40:word
-    extrn word_42A42:word
-    extrn word_42A44:word
-    extrn word_42A46:word
-    extrn word_42A48:word
-    extrn word_42A4A:word
-    extrn byte_42A4C:byte
-    extrn byte_42A4D:byte
-    extrn word_42A54:word
-    extrn word_42A56:word
-    extrn word_42A58:word
-    extrn word_42A5A:word
-    extrn word_42A5C:word
-    extrn word_42A5E:word
-    extrn byte_42A60:byte
-    extrn byte_42A61:byte
+    extrn currenttransshape:TRANSFORMEDSHAPE
+    extrn transshapeunk:TRANSFORMEDSHAPE
     extrn terraincenterpos:word
     extrn word_42CBA:word
     extrn word_42CBE:word
@@ -1270,7 +1264,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn terrainHeight:word
     extrn trackdata12:dword
     extrn word_449F2:word
-    extrn byte_449F4:byte
+    extrn transshapenumvertscopy:byte
     extrn elem_zCenter:word
     extrn curshapeptr:dword
     extrn word_449FC:word
@@ -1284,6 +1278,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn word_44A2E:word
     extrn word_44A30:word
     extrn word_44A32:word
+    extrn rect_unk9:RECTANGLE
     extrn voicefileptr:dword
     extrn skybox_grd_color:word
     extrn byte_44A8A:byte

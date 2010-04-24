@@ -1736,7 +1736,7 @@ loc_28300:
     mov     ax, [bp+var_71A]
     add     ax, di
     push    ax
-    call    sub_335D2
+    call    sprite_1_unk
     add     sp, 0Ah
     inc     si
 loc_28346:
@@ -2753,7 +2753,7 @@ loc_28B78:
     push    [bp+arg_4]
     push    [bp+arg_6]
     push    [bp+arg_2]
-    call    sub_335D2
+    call    sprite_1_unk
     add     sp, 0Ah
     cmp     [bp+var_A], 0
     jnz     short loc_28BAA
@@ -2774,7 +2774,7 @@ loc_28BAA:
     push    ax
     push    [bp+arg_2]
 loc_28BBD:
-    call    sub_335D2
+    call    sprite_1_unk
     add     sp, 0Ah
 loc_28BC5:
     mov     ax, [bp+arg_A]
@@ -2876,7 +2876,7 @@ loc_28C7C:
     push    [bp+arg_4]
     push    [bp+arg_6]
     push    [bp+arg_2]
-    call    sub_335D2
+    call    sprite_1_unk
     add     sp, 0Ah
     cmp     [bp+var_A], 0
     jnz     short loc_28CC2
@@ -2899,7 +2899,7 @@ loc_28CC2:
     push    ax
     push    [bp+arg_2]
 loc_28CD6:
-    call    sub_335D2
+    call    sprite_1_unk
     add     sp, 0Ah
     push    cs
     call near ptr mouse_draw_transparent_check
@@ -2956,7 +2956,7 @@ loc_28D0E:
     push    [bp+arg_4]
     push    [bp+arg_6]
     push    [bp+arg_2]
-    call    sub_335D2
+    call    sprite_1_unk
     add     sp, 0Ah
     cmp     [bp+var_A], 0
     jnz     short loc_28D7C
@@ -2979,7 +2979,7 @@ loc_28D7C:
     push    ax
     push    [bp+arg_2]
 loc_28D8F:
-    call    sub_335D2
+    call    sprite_1_unk
     add     sp, 0Ah
     push    cs
     call near ptr mouse_draw_transparent_check
@@ -3698,7 +3698,7 @@ sub_292DC proc far
     push    [bp+arg_8]
     push    [bp+arg_6]
     push    [bp+arg_4]
-    call    sub_335D2
+    call    sprite_1_unk
     add     sp, 0Ah
     push    [bp+arg_C]
     push    [bp+arg_6]
@@ -4073,7 +4073,7 @@ loc_2965C:
     les     bx, [bp+arg_0]
     push    word ptr es:[bx+2]
     push    word ptr es:[bx]
-    call    sub_3367A
+    call    sprite_1_unk3
     add     sp, 6
     inc     si
 loc_29670:
@@ -4789,7 +4789,7 @@ do_joy_restext proc far
     push    cs
     call near ptr input_push_status
     mov     word_3F88E, 1
-    call    sub_37216
+    call    audio_unk
     sub     ax, ax
     push    ax
     lea     ax, [bp+var_2E]
@@ -4845,7 +4845,7 @@ loc_29B89:
     mov     ax, [bp+var_2A]
     sub     ax, 4
     push    ax
-    call    sub_335D2
+    call    sprite_1_unk
     add     sp, 0Ah
     push    dialogarg2
     mov     ax, [bp+var_14]
@@ -4858,7 +4858,7 @@ loc_29B89:
     mov     ax, [bp+var_26]
     sub     ax, 4
     push    ax
-    call    sub_335D2
+    call    sprite_1_unk
     add     sp, 0Ah
     push    dialogarg2
     mov     ax, 1
@@ -4870,7 +4870,7 @@ loc_29B89:
     sub     ax, 4
     push    ax
     push    [bp+var_2E]
-    call    sub_335D2
+    call    sprite_1_unk
     add     sp, 0Ah
     push    dialogarg2
     mov     ax, 1
@@ -4882,7 +4882,7 @@ loc_29B89:
     sub     ax, 4
     push    ax
     push    [bp+var_2E]
-    call    sub_335D2
+    call    sprite_1_unk
     add     sp, 0Ah
     mov     ax, [bp+var_2A]
     mov     [bp+var_40], ax
@@ -4951,7 +4951,7 @@ loc_29CC9:
     mov     bx, ax
     push    word ptr [bx-54h]
     push    word ptr [bx-40h]
-    call    sub_335D2
+    call    sprite_1_unk
     add     sp, 0Ah
     inc     [bp+var_C]
     cmp     [bp+var_C], 9
@@ -4968,7 +4968,7 @@ loc_29CFA:
     push    word ptr [bx-54h]
 loc_29D0E:
     push    word ptr [bx-40h]
-    call    sub_335D2
+    call    sprite_1_unk
     add     sp, 0Ah
     mov     si, di
     mov     [bp+di+var_A], 1
@@ -5035,7 +5035,7 @@ do_key_restext proc far
     push    cs
     call near ptr input_push_status
     mov     word_3F88E, 1
-    call    sub_37216
+    call    audio_unk
     sub     ax, ax
     push    ax
     push    ax
@@ -5072,7 +5072,7 @@ do_mou_restext proc far
     push    cs
     call near ptr input_push_status
     mov     word_3F88E, 1
-    call    sub_37216
+    call    audio_unk
     mov     byte_3B8F2, 1
     sub     ax, ax
     push    ax
@@ -5110,7 +5110,7 @@ do_pau_restext proc far
     push    cs
     call near ptr input_push_status
     mov     word_3F88E, 1
-    call    sub_37216
+    call    audio_unk
     sub     ax, ax
     push    ax
     push    ax
@@ -5249,7 +5249,7 @@ do_dos_restext proc far
     push    cs
     call near ptr input_push_status
     mov     word_3F88E, 1
-    call    sub_37216
+    call    audio_unk
     sub     ax, ax
     push    ax
     push    ax
@@ -5302,7 +5302,7 @@ do_mrl_textres proc far
     push    cs
     call near ptr input_push_status
     mov     word_3F88E, 1
-    call    sub_37216
+    call    audio_unk
     mov     ax, framespersec2
     mov     [bp+var_212], ax
     mov     [bp+var_2], 0
