@@ -50,7 +50,9 @@ dseg segment byte public 'STUNTSD' use16
     public word_3B770
     public word_3B772
     public word_3B774
+    public word_3B776
     public aMsRunTimeLibraryCop
+    public unk_3B7B0
     public aMain
     public aFontdef_fnt
     public aFontn_fnt
@@ -73,13 +75,14 @@ dseg segment byte public 'STUNTSD' use16
     public aAlpine
     public aCity
     public aCountry
-    public word_3B8EA
+    public unk_3B8E8
+    public hillHeightConst
     public word_3B8EC
     public word_3B8EE
     public word_3B8F0
     public byte_3B8F2
     public is_audioloaded
-    public byte_3B8F4
+    public HKeyFlag
     public cameramode
     public byte_3B8F6
     public byte_3B8F7
@@ -128,7 +131,7 @@ dseg segment byte public 'STUNTSD' use16
     public aScrn
     public asc_3BA24
     public asc_3BA26
-    public unk_3BA28
+    public aHs0
     public aTedit
     public aBmt
     public aBet
@@ -207,7 +210,7 @@ dseg segment byte public 'STUNTSD' use16
     public aGver
     public aMop
     public aMid
-    public unk_3BBF3
+    public aRep_0
     public a_rpl_0
     public aMisc_2
     public aElt
@@ -267,10 +270,13 @@ dseg segment byte public 'STUNTSD' use16
     public aA00
     public unk_3BD70
     public unk_3BD71
-    public unk_3BD72
-    public brakedivtab
+    public word_3BD72
+    public steerWhlRespTable_20fps
+    public steerWhlRespTable_10fps
+    public grassDecelDivTab
     public byte_3BE02
-    public word_3BE14
+    public unk_3BE04
+    public f36f40_whlData
     public word_3BE16
     public aSimd
     public aGnam
@@ -292,7 +298,6 @@ dseg segment byte public 'STUNTSD' use16
     public unk_3BFB2
     public unk_3BFF8
     public unk_3C03E
-    public unk_3C070
     public unk_3C071
     public unk_3C072
     public off_3C084
@@ -300,7 +305,7 @@ dseg segment byte public 'STUNTSD' use16
     public byte_3C09C
     public byte_3C0C6
     public word_3C0D6
-    public byte_3C0E6
+    public fence_TrkObjCodes
     public word_3C108
     public word_3C10A
     public word_3C10C
@@ -479,29 +484,29 @@ dseg segment byte public 'STUNTSD' use16
     public shapedata54_4
     public shapedata54_3
     public shapeinfos
-    public sceneshapes
+    public trkObjectList
     public sceneshapes2
     public sceneshapes3
-    public word_3E58A
-    public word_3E58C
-    public word_3E590
-    public word_3E598
-    public word_3E59A
-    public word_3E5B4
-    public word_3E5B6
-    public word_3E5C2
-    public word_3E5C4
-    public word_3E5D0
-    public word_3E5D2
-    public word_3E5DE
-    public word_3E5E6
-    public word_3E5FE
-    public word_3E616
-    public word_3E618
-    public word_3E624
-    public word_3E626
-    public word_3E632
-    public word_3E634
+    public loopSurface_ZBounds0
+    public loopSurface_ZBounds1
+    public loopSurface_maxZ
+    public loopSurface_XBounds0
+    public loopSurface_XBounds1
+    public loopBase_ZBounds0
+    public loopBase_ZBounds1
+    public loopBae_InnXBounds0
+    public loopBase_InnXBounds1
+    public loopBase_OutXBounds0
+    public loopBase_OutXBounds1
+    public bkRdEntr_triang_zAdjust
+    public corkLR_negZBound
+    public corkLR_posZBound
+    public highEntrZBounds0
+    public highEntrZBounds1
+    public highEntrXInnBounds0
+    public highEntrXInnBounds1
+    public highEntrXOutBounds0
+    public highEntrXOutBounds1
     public unk_3E640
     public unk_3E646
     public unk_3E676
@@ -530,10 +535,10 @@ dseg segment byte public 'STUNTSD' use16
     public aTcomp
     public byte_3E71E
     public byte_3E724
-    public byte_3E72A
-    public byte_3E73E
-    public byte_3E752
-    public byte_3E766
+    public terrConnDataEtoW
+    public terrConnDataWtoE
+    public terrConnDataNtoS
+    public terrConnDataStoN
     public aNam
     public aPath
     public aSped
@@ -561,6 +566,7 @@ dseg segment byte public 'STUNTSD' use16
     public aRbf
     public aCop
     public unk_3E7FC
+    public off_3E808
     public unk_3E82C
     public a_rpl
     public aWhl1whl2whl3ins2gboxins1i
@@ -751,6 +757,7 @@ dseg segment byte public 'STUNTSD' use16
     public word_3F0A6
     public unk_3F0AE
     public dword_3F0BC
+    public atantable
     public word_3F1C2
     public word_3F1C4
     public off_3F3C8
@@ -948,7 +955,7 @@ dseg segment byte public 'STUNTSD' use16
     public aSlb
     public aCannotLoadSampleFileS
     public word_407AA
-    public word_407CA
+    public dialog_fnt_colour
     public word_407CC
     public word_407CE
     public word_407D0
@@ -975,12 +982,15 @@ dseg segment byte public 'STUNTSD' use16
     public word_407FA
     public word_407FC
     public word_407FE
-    public dialogarg1
+    public performGraphColor
     public dialogarg2
-    public word_40B0A
-    public word_40B0C
-    public word_40B0E
-    public word_40B10
+    public material_color_list
+    public material_pattern_list
+    public material_pattern2_list
+    public material_clrlist_ptr
+    public material_clrlist_ptr2
+    public material_patlist_ptr
+    public material_patlist2_ptr
     public audiodriverstring
     public aSdmain
     public aPal
@@ -1061,8 +1071,7 @@ dseg segment byte public 'STUNTSD' use16
     public polyinfoptr
     public word_40ED6
     public word_411F6
-    public word_411F8
-    public word_411FA
+    public dword_411F8
     public mat_y0
     public word_41850
     public word_41852
@@ -1146,7 +1155,7 @@ dseg segment byte public 'STUNTSD' use16
     public word_42A20
     public word_42A22
     public unk_42A24
-    public trackdata10
+    public td10_track_check_rel
     public word_42A34
     public word_42A36
     public byte_42A38
@@ -1181,18 +1190,18 @@ dseg segment byte public 'STUNTSD' use16
     public word_42D0A
     public word_42D0E
     public dword_42D10
-    public word_42D20
-    public trackdata1
+    public wallStartX
+    public td01_track_file_cpy
     public byte_42D26
     public word_42D28
     public byte_42D2A
-    public word_42D2C
+    public wallStartZ
     public byte_42D2E
     public byte_42DAE
     public byte_42DAF
     public byte_42DB0
     public game3dshapes
-    public trackdata2
+    public td02_penalty_related
     public trackpos
     public word_43928
     public word_4392A
@@ -1211,37 +1220,40 @@ dseg segment byte public 'STUNTSD' use16
     public word_4394A
     public word_4394C
     public word_4394E
-    public byte_43950
+    public dashb_toggle
     public mat_unk_1
     public word_43964
     public byte_43966
     public carshortname
     public audiochunks_unk
+    public byte_43B34
     public audiochunks_unk2
     public word_4408C
-    public word_4428E
+    public wallindex
     public byte_44290
+    public byte_44292
     public mat_unk
     public byte_442E4
     public word_442E6
     public mouse_butstate
+    public byte_442EA
     public byte_4432A
     public word_4432C
     public word_4432E
     public logoshape
     public byte_44346
-    public word_44348
-    public word_4434A
-    public word_4434C
-    public word_4434E
-    public word_44350
-    public word_44352
-    public word_44354
-    public word_44356
-    public word_44358
-    public word_4435A
-    public word_4435C
-    public word_4435E
+    public gState_13C
+    public gState_13E
+    public gState_game_frame
+    public gState_142
+    public gState_144
+    public gState_146
+    public gState_game_frame2
+    public gState_fps_counter
+    public gState_14C
+    public gState_14E
+    public gState_150
+    public pState_minusRotate_y_1
     public songfileptr
     public mmouspriteptr
     public word_44368
@@ -1253,7 +1265,7 @@ dseg segment byte public 'STUNTSD' use16
     public word_443E8
     public word_443F2
     public word_443F4
-    public trackdata20
+    public td20_trk_file_appnd
     public word_443FA
     public word_443FC
     public word_443FE
@@ -1273,41 +1285,41 @@ dseg segment byte public 'STUNTSD' use16
     public word_4493C
     public word_44960
     public word_44984
-    public word_44986
-    public word_44988
+    public pState_minusRotate_x_1
+    public elRdWallRelated
     public regs_x86
-    public word_44998
+    public pState_minusRotate_z_1
     public startcol2
-    public byte_4499B
+    public hillFlag
     public word_4499C
     public startrow2
     public byte_4499F
     public gameresptr
     public gameconfig
-    public word_449BE
-    public word_449C0
+    public pState_lvec1_x_ax
+    public pState_lvec1_x_dx
     public smouspriteptr
-    public word_449C6
-    public word_449C8
-    public word_449CA
-    public word_449CC
+    public pState_lvec1_y_ax
+    public pState_lvec1_y_dx
+    public pState_lvec1_z_ax
+    public pState_lvec1_z_dx
     public byte_449CE
     public framespersec
-    public trackdata17
+    public td17_trk_elem_ordered
     public byte_449D8
     public byte_449DA
     public trackdata9
-    public word_449E0
+    public elem_xCenter
     public byte_449E2
     public word_449E4
     public byte_449E6
-    public word_449E8
+    public steerWhlRespTable_ptr
     public word_449EA
-    public word_449EC
+    public terrainHeight
     public trackdata12
     public word_449F2
     public byte_449F4
-    public word_449F6
+    public elem_zCenter
     public curshapeptr
     public word_449FC
     public word_449FE
@@ -1321,13 +1333,13 @@ dseg segment byte public 'STUNTSD' use16
     public word_44A30
     public word_44A32
     public voicefileptr
-    public skybox_unk2
+    public skybox_grd_color
     public byte_44A8A
-    public word_44A8C
+    public wallHeight
     public terrainpos
     public byte_44AE2
     public video_flag1_is1
-    public trackdata11
+    public td11_highscores
     public word_44CEA
     public mainresptr
     public bravshape
@@ -1337,18 +1349,18 @@ dseg segment byte public 'STUNTSD' use16
     public wndsprite
     public mat_unk_3
     public word_44D3C
-    public trackdata4
-    public trackdata14
-    public byte_44D46
-    public byte_44D47
+    public td04_aerotable_pl
+    public td14_elem_map_main
+    public corkFlag
+    public current_surf_type
     public word_44D48
-    public trackdata5
+    public td05_aerotable_op
     public framespersec2
-    public byte_44D50
-    public word_44D60
+    public oppnentSped
+    public meter_needle_color
     public word_44D62
-    public word_44D64
-    public word_44D66
+    public current_planptr_ax
+    public current_planptr_dx
     public track_full_path
     public planindex
     public video_flag2_is1
@@ -1357,11 +1369,12 @@ dseg segment byte public 'STUNTSD' use16
     public unk_44DCE
     public vec_unk2
     public vec_planerotopresult
-    public word_44F42
-    public word_44F44
-    public word_44F46
-    public word_44F48
-    public word_44F4A
+    public pState_minusRotate_z_2
+    public pState_minusRotate_x_2
+    public pState_minusRotate_y_2
+    public pState_f36Mminf40sar2
+    public planindex_copy
+    public unk_44F4C
     public word_4549C
     public word_4549E
     public dasmshapeptr
@@ -1373,7 +1386,7 @@ dseg segment byte public 'STUNTSD' use16
     public trackdata7
     public byte_454B8
     public word_454BA
-    public trackdata15
+    public td15_terr_map_main
     public word_454C0
     public planptr
     public fontdefptr
@@ -1402,16 +1415,16 @@ dseg segment byte public 'STUNTSD' use16
     public word_4557A
     public mouseunkspriteptr
     public miscptr
-    public skybox_unk1
+    public skybox_sky_color
     public byte_455D2
     public word_455D4
-    public trackdata16
-    public word_45632
+    public td16_rpl_buffer
+    public material_clrlist_ptr_cpy
     public byte_45634
     public byte_45635
     public word_45636
-    public trackdata21
-    public simd2
+    public td21_col_from_path
+    public simd_opponent
     public word_45946
     public byte_45948
     public byte_4594A
@@ -1429,16 +1442,16 @@ dseg segment byte public 'STUNTSD' use16
     public word_45988
     public byte_459D2
     public word_459D4
-    public word_459D6
+    public material_clrlist_ptr2_cpy
     public byte_459D8
-    public trackdata22
-    public unk_459E0
+    public td22_row_from_path
+    public byte_459E0
     public video_flag6_is1
     public fontdef_unk_0E
     public word_459F4
     public word_459F6
-    public word_459FC
-    public word_459FE
+    public someZeroVideoConst
+    public nextPosAndNormalIP
     public word_45A00
     public byte_45A02
     public cvxptr
@@ -1449,7 +1462,7 @@ dseg segment byte public 'STUNTSD' use16
     public byte_45D0C
     public byte_45D14
     public word_45D1C
-    public word_45D1E
+    public material_patlist_ptr_cpy
     public word_45D22
     public word_45D24
     public word_45D3E
@@ -1458,17 +1471,17 @@ dseg segment byte public 'STUNTSD' use16
     public byte_45D7E
     public skyboxes
     public byte_45D90
-    public word_45D92
+    public material_patlist2_ptr_cpy
     public word_45D94
-    public word_45D96
+    public wallOrientation
     public word_45D98
     public byte_45D9A
     public byte_45DB2
-    public trackdata8
+    public td08_direction_related
     public word_45DB8
     public word_45DBA
     public sdgame2shapes
-    public word_45DD0
+    public track_pieces_counter
     public trackcenterpos2
     public engptr
     public tempdataptr
@@ -1476,9 +1489,9 @@ dseg segment byte public 'STUNTSD' use16
     public passed_security
     public word_45E1C
     public trackdata19
-    public simd_copy
+    public simd_player
     public word_46160
-    public trackdata13
+    public td13_rpl_header
     public byte_46166
     public byte_46167
     public skybox_res_ofs
@@ -1500,16 +1513,17 @@ dseg segment byte public 'STUNTSD' use16
     public word_461CC
     public mouse_ypos
     public video_flag4_is1
+    public unk_461FA
     public game2ptr
     public word_463D6
     public sdgame2ptr
     public trackdata23
-    public byte_463E0
-    public word_463E2
-    public byte_463E4
-    public byte_463E5
-    public byte_463E6
-    public byte_463E7
+    public followOpponentFlag
+    public skybox_wat_color
+    public resID_byte1
+    public resID_byte2
+    public resID_byte3
+    public resID_byte4
     public unk_463EA
     public word_46434
     public video_flag5_is0
@@ -1528,7 +1542,7 @@ dseg segment byte public 'STUNTSD' use16
 word_3B770     dw 0
 word_3B772     dw 0
 word_3B774     dw 0
-    dw 0
+word_3B776     dw 0
 aMsRunTimeLibraryCop     db 77
     db 83
     db 32
@@ -1585,7 +1599,7 @@ aMsRunTimeLibraryCop     db 77
     db 111
     db 114
     db 112
-    db 17
+unk_3B7B0     db 17
     db 0
 aMain     db 109
     db 97
@@ -1895,15 +1909,15 @@ aCountry     db 99
     db 0
     db 0
     db 0
+unk_3B8E8     db 0
     db 0
-    db 0
-word_3B8EA     dw 450
+hillHeightConst     dw 450
 word_3B8EC     dw 210
 word_3B8EE     dw 464
 word_3B8F0     dw 80
 byte_3B8F2     db 0
 is_audioloaded     db 0
-byte_3B8F4     db 0
+HKeyFlag     db 0
 cameramode     db 0
 byte_3B8F6     db 0
 byte_3B8F7     db 0
@@ -2211,7 +2225,7 @@ asc_3BA24     db 39
     db 0
 asc_3BA26     db 39
     db 0
-unk_3BA28     db 104
+aHs0     db 104
     db 115
     db 48
     db 0
@@ -2657,7 +2671,7 @@ aMid     db 109
     db 105
     db 100
     db 0
-unk_3BBF3     db 114
+aRep_0     db 114
     db 101
     db 112
     db 0
@@ -3031,15 +3045,11 @@ aA00     db 97
     db 0
 unk_3BD70     db 10
 unk_3BD71     db 0
-unk_3BD72     db 21
-    db 0
-    db 21
-    db 0
-    db 15
-    db 0
-    db 15
-    db 0
-    db 0
+word_3BD72     dw 21
+    dw 21
+    dw 15
+    dw 15
+steerWhlRespTable_20fps     db 0
     db 8
     db 248
     db 0
@@ -3103,7 +3113,7 @@ unk_3BD72     db 21
     db 1
     db 255
     db 0
-    db 0
+steerWhlRespTable_10fps     db 0
     db 16
     db 240
     db 0
@@ -3165,14 +3175,14 @@ unk_3BD72     db 21
     db 0
     db 0
     db 1
-brakedivtab     dw 255
+grassDecelDivTab     dw 255
     dw 256
     dw 192
     dw 128
     dw 64
 byte_3BE02     db 255
     db 0
-    db 1
+unk_3BE04     db 1
     db 0
     db 0
     db 0
@@ -3188,7 +3198,7 @@ byte_3BE02     db 255
     db 0
     db 1
     db 0
-word_3BE14     dw 9999
+f36f40_whlData     dw 9999
 word_3BE16     dw 9999
 aSimd     db 115
     db 105
@@ -3776,7 +3786,7 @@ unk_3C03E     db 252
     db 0
     db 255
     db 255
-unk_3C070     db 0
+    db 0
 unk_3C071     db 255
 unk_3C072     db 0
     db 0
@@ -3885,7 +3895,7 @@ word_3C0D6     dw 0
     db 3
     db 0
     db 3
-byte_3C0E6     db 214
+fence_TrkObjCodes     db 214
     db 215
     db 214
     db 215
@@ -9796,7 +9806,7 @@ shapeinfos     db 1
     db 0
     db 0
     db 12
-sceneshapes     db 0
+trkObjectList     db 0
     db 0
     db 0
     db 0
@@ -13254,19 +13264,15 @@ sceneshapes3     db 0
     db 0
     db 255
     db 0
-word_3E58A     dw 0
-word_3E58C     dw 224
-    db 133
-    db 1
-word_3E590     dw 449
-    db 133
-    db 1
-    db 224
-    db 0
-    db 0
-    db 0
-word_3E598     dw 65136
-word_3E59A     dw 65136
+loopSurface_ZBounds0     dw 0
+loopSurface_ZBounds1     dw 224
+    dw 389
+loopSurface_maxZ     dw 449
+    dw 389
+    dw 224
+    dw 0
+loopSurface_XBounds0     dw 65136
+loopSurface_XBounds1     dw 65136
     db 160
     db 254
     db 208
@@ -13291,20 +13297,15 @@ word_3E59A     dw 65136
     db 3
     db 207
     db 3
-word_3E5B4     dw 0
-word_3E5B6     dw 178
-    db 104
-    db 1
-    db 24
-    db 2
-    db 192
-    db 2
-    db 100
-    db 3
-    db 208
-    db 7
-word_3E5C2     dw 0
-word_3E5C4     dw 65516
+loopBase_ZBounds0     dw 0
+loopBase_ZBounds1     dw 178
+    dw 360
+    dw 536
+    dw 704
+    dw 868
+    dw 2000
+loopBae_InnXBounds0     dw 0
+loopBase_InnXBounds1     dw 65516
     db 216
     db 255
     db 196
@@ -13315,8 +13316,8 @@ word_3E5C4     dw 65516
     db 255
     db 136
     db 255
-word_3E5D0     dw 400
-word_3E5D2     dw 361
+loopBase_OutXBounds0     dw 400
+loopBase_OutXBounds1     dw 361
     db 64
     db 1
     db 20
@@ -13327,95 +13328,55 @@ word_3E5D2     dw 361
     db 0
     db 120
     db 0
-word_3E5DE     dw 65285
-    db 172
-    db 255
-    db 84
-    db 0
-    db 251
-    db 0
-word_3E5E6     dw 0
-    db 162
-    db 255
-    db 69
-    db 255
-    db 232
-    db 254
-    db 139
-    db 254
-    db 46
-    db 254
-    db 209
-    db 253
-    db 116
-    db 253
-    db 23
-    db 253
-    db 186
-    db 252
-    db 93
-    db 252
-    db 0
-    db 252
-word_3E5FE     dw 0
-    db 0
-    db 4
-    db 163
-    db 3
-    db 70
-    db 3
-    db 233
-    db 2
-    db 140
-    db 2
-    db 47
-    db 2
-    db 210
-    db 1
-    db 117
-    db 1
-    db 24
-    db 1
-    db 187
-    db 0
-    db 94
-    db 0
-word_3E616     dw 65024
-word_3E618     dw 65202
-    db 88
-    db 255
-    db 0
-    db 0
-    db 168
-    db 0
-    db 78
-    db 1
-    db 232
-    db 3
-word_3E624     dw 0
-word_3E626     dw 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 120
-    db 0
-    db 120
-    db 0
-word_3E632     dw 120
-word_3E634     dw 168
-    db 216
-    db 0
-    db 8
-    db 1
-    db 56
-    db 1
-    db 104
-    db 1
-    db 104
-    db 1
+bkRdEntr_triang_zAdjust     dw 65285
+    dw 65452
+    dw 84
+    dw 251
+corkLR_negZBound     dw 0
+    dw 65442
+    dw 65349
+    dw 65256
+    dw 65163
+    dw 65070
+    dw 64977
+    dw 64884
+    dw 64791
+    dw 64698
+    dw 64605
+    dw 64512
+corkLR_posZBound     dw 0
+    dw 1024
+    dw 931
+    dw 838
+    dw 745
+    dw 652
+    dw 559
+    dw 466
+    dw 373
+    dw 280
+    dw 187
+    dw 94
+highEntrZBounds0     dw 65024
+highEntrZBounds1     dw 65202
+    dw 65368
+    dw 0
+    dw 168
+    dw 334
+    dw 1000
+highEntrXInnBounds0     dw 0
+highEntrXInnBounds1     dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 120
+    dw 120
+highEntrXOutBounds0     dw 120
+highEntrXOutBounds1     dw 168
+    dw 216
+    dw 264
+    dw 312
+    dw 360
+    dw 360
 unk_3E640     db 0
     db 0
     db 0
@@ -13650,7 +13611,7 @@ byte_3E724     db 0
     db 0
     db 1
     db 0
-byte_3E72A     db 0
+terrConnDataEtoW     db 0
     db 0
     db 0
     db 0
@@ -13670,7 +13631,7 @@ byte_3E72A     db 0
     db 3
     db 2
     db 0
-byte_3E73E     db 0
+terrConnDataWtoE     db 0
     db 0
     db 0
     db 0
@@ -13690,7 +13651,7 @@ byte_3E73E     db 0
     db 1
     db 1
     db 0
-byte_3E752     db 0
+terrConnDataNtoS     db 0
     db 0
     db 0
     db 0
@@ -13710,7 +13671,7 @@ byte_3E752     db 0
     db 4
     db 1
     db 0
-byte_3E766     db 0
+terrConnDataStoN     db 0
     db 0
     db 0
     db 0
@@ -13869,7 +13830,7 @@ unk_3E7FC     db 244
     db 0
     db 0
     dd aEngi                ; "ENGI"
-    dd aEngi_0              ; "ENGI"
+off_3E808     dd aEngi_0              ; "ENGI"
     dd aStar                ; "STAR"
     dd aStop                ; "STOP"
     dd aBlow                ; "BLOW"
@@ -15949,7 +15910,7 @@ unk_3F0AE     db 0
     db 0
     db 0
 dword_3F0BC     dd 0
-    db 0
+atantable     db 0
     db 1
     db 1
     db 2
@@ -21431,7 +21392,7 @@ word_407AA     dw 0
     db 0
     db 14
     db 0
-word_407CA     dw 15
+dialog_fnt_colour     dw 15
 word_407CC     dw 16
 word_407CE     dw 5
 word_407D0     dw 14
@@ -21458,786 +21419,399 @@ word_407F8     dw 7
 word_407FA     dw 9
 word_407FC     dw 1
 word_407FE     dw 4
-dialogarg1     dw 1
+performGraphColor     dw 1
 dialogarg2     dw 4
-    db 0
-    db 0
-    db 1
-    db 0
-    db 2
-    db 0
-    db 3
-    db 0
-    db 4
-    db 0
-    db 5
-    db 0
-    db 6
-    db 0
-    db 7
-    db 0
-    db 8
-    db 0
-    db 9
-    db 0
-    db 10
-    db 0
-    db 11
-    db 0
-    db 12
-    db 0
-    db 13
-    db 0
-    db 14
-    db 0
-    db 15
-    db 0
-    db 108
-    db 0
-    db 116
-    db 0
-    db 15
-    db 0
-    db 28
-    db 0
-    db 29
-    db 0
-    db 14
-    db 0
-    db 28
-    db 0
-    db 31
-    db 0
-    db 14
-    db 0
-    db 200
-    db 0
-    db 198
-    db 0
-    db 196
-    db 0
-    db 112
-    db 0
-    db 114
-    db 0
-    db 116
-    db 0
-    db 194
-    db 0
-    db 197
-    db 0
-    db 200
-    db 0
-    db 146
-    db 0
-    db 37
-    db 0
-    db 35
-    db 0
-    db 181
-    db 0
-    db 29
-    db 0
-    db 31
-    db 0
-    db 19
-    db 0
-    db 3
-    db 0
-    db 11
-    db 0
-    db 27
-    db 0
-    db 0
-    db 0
-    db 4
-    db 0
-    db 4
-    db 0
-    db 12
-    db 0
-    db 156
-    db 0
-    db 154
-    db 0
-    db 152
-    db 0
-    db 150
-    db 0
-    db 42
-    db 0
-    db 40
-    db 0
-    db 38
-    db 0
-    db 37
-    db 0
-    db 27
-    db 0
-    db 26
-    db 0
-    db 25
-    db 0
-    db 24
-    db 0
-    db 72
-    db 0
-    db 70
-    db 0
-    db 68
-    db 0
-    db 66
-    db 0
-    db 123
-    db 0
-    db 121
-    db 0
-    db 120
-    db 0
-    db 117
-    db 0
-    db 92
-    db 0
-    db 90
-    db 0
-    db 88
-    db 0
-    db 87
-    db 0
-    db 173
-    db 0
-    db 171
-    db 0
-    db 169
-    db 0
-    db 167
-    db 0
-    db 20
-    db 0
-    db 19
-    db 0
-    db 18
-    db 0
-    db 17
-    db 0
-    db 77
-    db 0
-    db 76
-    db 0
-    db 74
-    db 0
-    db 73
-    db 0
-    db 45
-    db 0
-    db 44
-    db 0
-    db 42
-    db 0
-    db 41
-    db 0
-    db 159
-    db 0
-    db 175
-    db 0
-    db 174
-    db 0
-    db 172
-    db 0
-    db 29
-    db 0
-    db 28
-    db 0
-    db 18
-    db 0
-    db 90
-    db 0
-    db 15
-    db 0
-    db 7
-    db 0
-    db 200
-    db 0
-    db 219
-    db 0
-    db 136
-    db 0
-    db 99
-    db 0
-    db 101
-    db 0
-    db 103
-    db 0
-    db 104
-    db 0
-    db 106
-    db 0
-    db 17
-    db 0
-    db 20
-    db 0
-    db 60
-    db 0
-    db 77
-    db 0
-    db 46
-    db 0
-    db 61
-    db 0
-    db 45
-    db 0
-    db 202
-    db 0
-    db 190
-    db 0
-    db 186
-    db 0
-    db 183
-    db 0
-    db 180
-    db 0
-    db 0
-    db 0
-    db 28
-    db 0
-    db 30
-    db 0
-    db 16
-    db 0
-    db 20
-    db 0
-    db 68
-    db 0
-    db 54
-    db 0
-    db 39
-    db 0
-    db 43
-    db 0
-    db 12
-    db 0
-    db 17
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 1
-    db 0
-    db 1
-    db 0
-    db 1
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 1
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 1
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 1
-    db 0
-    db 1
-    db 0
-    db 1
-    db 0
-    db 1
-    db 0
-    db 1
-    db 0
-    db 1
-    db 0
-    db 1
-    db 0
-    db 1
-    db 0
-    db 1
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 0
-    db 0
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 221
-    db 119
-    db 119
-    db 221
-    db 221
-    db 119
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 221
-    db 119
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 221
-    db 119
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 255
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 51
-    db 204
-    db 204
-    db 51
-    db 109
-    db 182
-    db 146
-    db 73
-    db 109
-    db 182
-    db 146
-    db 73
-    db 109
-    db 182
-    db 146
-    db 73
-    db 0
-    db 0
-    db 0
-    db 0
-word_40B0A     dw 20628
-word_40B0C     dw 20628
-word_40B0E     dw 20886
-word_40B10     dw 21144
+material_color_list     dw 0
+    dw 1
+    dw 2
+    dw 3
+    dw 4
+    dw 5
+    dw 6
+    dw 7
+    dw 8
+    dw 9
+    dw 10
+    dw 11
+    dw 12
+    dw 13
+    dw 14
+    dw 15
+    dw 108
+    dw 116
+    dw 15
+    dw 28
+    dw 29
+    dw 14
+    dw 28
+    dw 31
+    dw 14
+    dw 200
+    dw 198
+    dw 196
+    dw 112
+    dw 114
+    dw 116
+    dw 194
+    dw 197
+    dw 200
+    dw 146
+    dw 37
+    dw 35
+    dw 181
+    dw 29
+    dw 31
+    dw 19
+    dw 3
+    dw 11
+    dw 27
+    dw 0
+    dw 4
+    dw 4
+    dw 12
+    dw 156
+    dw 154
+    dw 152
+    dw 150
+    dw 42
+    dw 40
+    dw 38
+    dw 37
+    dw 27
+    dw 26
+    dw 25
+    dw 24
+    dw 72
+    dw 70
+    dw 68
+    dw 66
+    dw 123
+    dw 121
+    dw 120
+    dw 117
+    dw 92
+    dw 90
+    dw 88
+    dw 87
+    dw 173
+    dw 171
+    dw 169
+    dw 167
+    dw 20
+    dw 19
+    dw 18
+    dw 17
+    dw 77
+    dw 76
+    dw 74
+    dw 73
+    dw 45
+    dw 44
+    dw 42
+    dw 41
+    dw 159
+    dw 175
+    dw 174
+    dw 172
+    dw 29
+    dw 28
+    dw 18
+    dw 90
+    dw 15
+    dw 7
+    dw 200
+    dw 219
+    dw 136
+    dw 99
+    dw 101
+    dw 103
+    dw 104
+    dw 106
+    dw 17
+    dw 20
+    dw 60
+    dw 77
+    dw 46
+    dw 61
+    dw 45
+    dw 202
+    dw 190
+    dw 186
+    dw 183
+    dw 180
+    dw 0
+    dw 28
+    dw 30
+    dw 16
+    dw 20
+    dw 68
+    dw 54
+    dw 39
+    dw 43
+    dw 12
+    dw 17
+material_pattern_list     dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 1
+    dw 1
+    dw 1
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 1
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 1
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 1
+    dw 1
+    dw 1
+    dw 1
+    dw 1
+    dw 1
+    dw 1
+    dw 1
+    dw 1
+    dw 0
+    dw 0
+material_pattern2_list     dw 65535
+    dw 65535
+    dw 65535
+    dw 65535
+    dw 65535
+    dw 65535
+    dw 65535
+    dw 65535
+    dw 65535
+    dw 65535
+    dw 65535
+    dw 65535
+    dw 65535
+    dw 65535
+    dw 65535
+    dw 65535
+    dw 65535
+    dw 65535
+    dw 0
+    dw 65535
+    dw 65535
+    dw 65535
+    dw 30685
+    dw 56695
+    dw 30685
+    dw 65535
+    dw 65535
+    dw 65535
+    dw 65535
+    dw 65535
+    dw 65535
+    dw 65535
+    dw 65535
+    dw 65535
+    dw 30685
+    dw 65535
+    dw 65535
+    dw 65535
+    dw 65535
+    dw 65535
+    dw 65535
+    dw 65535
+    dw 65535
+    dw 65535
+    dw 65535
+    dw 65535
+    dw 65535
+    dw 65535
+    dw 65535
+    dw 65535
+    dw 65535
+    dw 65535
+    dw 65535
+    dw 65535
+    dw 65535
+    dw 65535
+    dw 65535
+    dw 65535
+    dw 65535
+    dw 65535
+    dw 65535
+    dw 65535
+    dw 65535
+    dw 65535
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 30685
+    dw 65535
+    dw 65535
+    dw 65535
+    dw 65535
+    dw 65535
+    dw 65535
+    dw 65535
+    dw 65535
+    dw 65535
+    dw 65535
+    dw 65535
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 52275
+    dw 13260
+    dw 46701
+    dw 18834
+    dw 46701
+    dw 18834
+    dw 46701
+    dw 18834
+    dw 0
+    dw 0
+material_clrlist_ptr     dw 20628
+material_clrlist_ptr2     dw 20628
+material_patlist_ptr     dw 20886
+material_patlist2_ptr     dw 21144
 audiodriverstring     db 112
     db 99
     db 49
@@ -23022,2403 +22596,806 @@ word_40ECE     dw 0
 word_40ED0     dw 0
 polyinfoptr     dd 0
 word_40ED6     dw 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
 word_411F6     dw 0
-word_411F8     dw 0
-word_411FA     dw 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
+dword_411F8     dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
+    dd 0
     db 0
     db 0
     db 0
@@ -29852,7 +27829,7 @@ unk_42A24     db 0
     db 0
     db 0
     db 0
-trackdata10     dd 0
+td10_track_check_rel     dd 0
 word_42A34     dw 0
 word_42A36     dw 0
 byte_42A38     db 0
@@ -30512,14 +28489,14 @@ dword_42D10     dd 0
     db 0
     db 0
     db 0
-word_42D20     dw 0
-trackdata1     dd 0
+wallStartX     dw 0
+td01_track_file_cpy     dd 0
 byte_42D26     db 0
     db 0
 word_42D28     dw 0
 byte_42D2A     db 0
     db 0
-word_42D2C     dw 0
+wallStartZ     dw 0
 byte_42D2E     db 0
     db 0
     db 0
@@ -33522,7 +31499,7 @@ game3dshapes     db 0
     db 0
     db 0
     db 0
-trackdata2     dd 0
+td02_penalty_related     dd 0
 trackpos     dw 0
     dw 0
     dw 0
@@ -33575,7 +31552,7 @@ trackdata3     dd 0
 word_4394A     dw 0
 word_4394C     dw 0
 word_4394E     dw 0
-byte_43950     db 0
+dashb_toggle     db 0
     db 0
 mat_unk_1     db 0
     db 0
@@ -34058,7 +32035,7 @@ audiochunks_unk     db 0
     db 0
     db 0
     db 0
-    db 0
+byte_43B34     db 0
     db 0
     db 0
     db 0
@@ -35939,10 +33916,10 @@ word_4408C     dw 0
     db 0
     db 0
     db 0
-word_4428E     dw 0
+wallindex     dw 0
 byte_44290     db 0
     db 0
-    db 0
+byte_44292     db 0
     db 0
     db 0
     db 0
@@ -36028,7 +34005,7 @@ byte_442E4     db 0
     db 0
 word_442E6     dw 0
 mouse_butstate     dw 0
-    db 0
+byte_442EA     db 0
     db 0
     db 0
     db 0
@@ -36120,18 +34097,18 @@ logoshape     db 0
     db 0
 byte_44346     db 0
     db 0
-word_44348     dw 0
-word_4434A     dw 0
-word_4434C     dw 0
-word_4434E     dw 0
-word_44350     dw 0
-word_44352     dw 0
-word_44354     dw 0
-word_44356     dw 0
-word_44358     dw 0
-word_4435A     dw 0
-word_4435C     dw 0
-word_4435E     dw 0
+gState_13C     dw 0
+gState_13E     dw 0
+gState_game_frame     dw 0
+gState_142     dw 0
+gState_144     dw 0
+gState_146     dw 0
+gState_game_frame2     dw 0
+gState_fps_counter     dw 0
+gState_14C     dw 0
+gState_14E     dw 0
+gState_150     dw 0
+pState_minusRotate_y_1     dw 0
 songfileptr     dd 0
 mmouspriteptr     dd 0
 word_44368     dw 0
@@ -36240,7 +34217,7 @@ word_443E8     dw 0
     db 0
 word_443F2     dw 0
 word_443F4     dw 0
-trackdata20     dd 0
+td20_trk_file_appnd     dd 0
 word_443FA     dw 0
 word_443FC     dw 0
 word_443FE     dw 0
@@ -37643,18 +35620,25 @@ word_44960     dw 0
     db 0
     db 0
 word_44984     dw 0
-word_44986     dw 0
-word_44988     dw 0
-regs_x86     dw 0
-    dw 0
-    dw 0
-    dw 0
-    dw 0
-    dw 0
-    dw 0
-word_44998     dw 0
+pState_minusRotate_x_1     dw 0
+elRdWallRelated     dw 0
+regs_x86     db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+pState_minusRotate_z_1     dw 0
 startcol2     db 0
-byte_4499B     db 0
+hillFlag     db 0
 word_4499C     dw 0
 startrow2     db 0
 byte_4499F     db 0
@@ -37685,38 +35669,38 @@ gameconfig     db 0
     db 0
     db 0
     db 0
-word_449BE     dw 0
-word_449C0     dw 0
+pState_lvec1_x_ax     dw 0
+pState_lvec1_x_dx     dw 0
 smouspriteptr     dd 0
-word_449C6     dw 0
-word_449C8     dw 0
-word_449CA     dw 0
-word_449CC     dw 0
+pState_lvec1_y_ax     dw 0
+pState_lvec1_y_dx     dw 0
+pState_lvec1_z_ax     dw 0
+pState_lvec1_z_dx     dw 0
 byte_449CE     db 0
     db 0
 framespersec     dw 0
     db 0
     db 0
-trackdata17     dd 0
+td17_trk_elem_ordered     dd 0
 byte_449D8     db 0
     db 0
 byte_449DA     db 0
     db 0
 trackdata9     dd 0
-word_449E0     dw 0
+elem_xCenter     dw 0
 byte_449E2     db 0
     db 0
 word_449E4     dw 0
 byte_449E6     db 0
     db 0
-word_449E8     dw 0
+steerWhlRespTable_ptr     dw 0
 word_449EA     dw 0
-word_449EC     dw 0
+terrainHeight     dw 0
 trackdata12     dd 0
 word_449F2     dw 0
 byte_449F4     db 0
     db 0
-word_449F6     dw 0
+elem_zCenter     dw 0
 curshapeptr     dd 0
 word_449FC     dw 0
 word_449FE     dw 0
@@ -37835,10 +35819,10 @@ voicefileptr     dd 0
     db 0
     db 0
     db 0
-skybox_unk2     dw 0
+skybox_grd_color     dw 0
 byte_44A8A     db 0
     db 0
-word_44A8C     dw 0
+wallHeight     dw 0
 terrainpos     dw 0
     dw 0
     dw 0
@@ -38408,7 +36392,7 @@ video_flag1_is1     dw 0
     db 0
     db 0
     db 0
-trackdata11     dd 0
+td11_highscores     dd 0
 word_44CEA     dw 0
 mainresptr     dd 0
 bravshape     db 0
@@ -38480,14 +36464,14 @@ mat_unk_3     db 0
     db 0
     db 0
 word_44D3C     dw 0
-trackdata4     dd 0
-trackdata14     dd 0
-byte_44D46     db 0
-byte_44D47     db 0
+td04_aerotable_pl     dd 0
+td14_elem_map_main     dd 0
+corkFlag     db 0
+current_surf_type     db 0
 word_44D48     dw 0
-trackdata5     dd 0
+td05_aerotable_op     dd 0
 framespersec2     dw 0
-byte_44D50     db 0
+oppnentSped     db 0
     db 0
     db 0
     db 0
@@ -38503,10 +36487,10 @@ byte_44D50     db 0
     db 0
     db 0
     db 0
-word_44D60     dw 0
+meter_needle_color     dw 0
 word_44D62     dw 0
-word_44D64     dw 0
-word_44D66     dw 0
+current_planptr_ax     dw 0
+current_planptr_dx     dw 0
 track_full_path     db 0
     db 0
     db 0
@@ -38977,12 +36961,12 @@ vec_planerotopresult     db 0
     db 0
     db 0
     db 0
-word_44F42     dw 0
-word_44F44     dw 0
-word_44F46     dw 0
-word_44F48     dw 0
-word_44F4A     dw 0
-    db 0
+pState_minusRotate_z_2     dw 0
+pState_minusRotate_x_2     dw 0
+pState_minusRotate_y_2     dw 0
+pState_f36Mminf40sar2     dw 0
+planindex_copy     dw 0
+unk_44F4C     db 0
     db 0
     db 0
     db 0
@@ -40355,7 +38339,7 @@ trackdata7     dd 0
 byte_454B8     db 0
     db 0
 word_454BA     dw 0
-trackdata15     dd 0
+td15_terr_map_main     dd 0
 word_454C0     dw 0
 planptr     dd 0
 fontdefptr     dd 0
@@ -40593,7 +38577,7 @@ word_4557A     dw 0
     db 0
 mouseunkspriteptr     dd 0
 miscptr     dd 0
-skybox_unk1     dw 0
+skybox_sky_color     dw 0
 byte_455D2     db 0
     db 0
 word_455D4     dw 0
@@ -40685,8 +38669,8 @@ word_455D4     dw 0
     db 0
     db 0
     db 0
-trackdata16     dd 0
-word_45632     dw 0
+td16_rpl_buffer     dd 0
+material_clrlist_ptr_cpy     dw 0
 byte_45634     db 0
 byte_45635     db 0
 word_45636     dw 0
@@ -40694,8 +38678,8 @@ word_45636     dw 0
     db 0
     db 0
     db 0
-trackdata21     dd 0
-simd2     db 0
+td21_col_from_path     dd 0
+simd_opponent     db 0
     db 0
     db 0
     db 0
@@ -41602,13 +39586,13 @@ word_45988     dw 0
 byte_459D2     db 0
     db 0
 word_459D4     dw 0
-word_459D6     dw 0
+material_clrlist_ptr2_cpy     dw 0
 byte_459D8     db 0
     db 0
-trackdata22     dd 0
+td22_row_from_path     dd 0
     db 0
     db 0
-unk_459E0     db 0
+byte_459E0     db 0
     db 0
     db 0
     db 0
@@ -41633,8 +39617,8 @@ word_459F6     dw 0
     db 0
     db 0
     db 0
-word_459FC     dw 0
-word_459FE     dw 0
+someZeroVideoConst     dw 0
+nextPosAndNormalIP     dw 0
 word_45A00     dw 0
 byte_45A02     db 0
     db 0
@@ -42423,7 +40407,7 @@ byte_45D14     db 0
     db 0
     db 0
 word_45D1C     dw 0
-word_45D1E     dw 0
+material_patlist_ptr_cpy     dw 0
     db 0
     db 0
 word_45D22     dw 0
@@ -42492,9 +40476,9 @@ skyboxes     dd 0
     dd 0
 byte_45D90     db 0
     db 0
-word_45D92     dw 0
+material_patlist2_ptr_cpy     dw 0
 word_45D94     dw 0
-word_45D96     dw 0
+wallOrientation     dw 0
 word_45D98     dw 0
 byte_45D9A     db 0
     db 0
@@ -42522,7 +40506,7 @@ byte_45D9A     db 0
     db 0
 byte_45DB2     db 0
     db 0
-trackdata8     dd 0
+td08_direction_related     dd 0
 word_45DB8     dw 0
 word_45DBA     dw 0
 sdgame2shapes     dd 0
@@ -42530,7 +40514,7 @@ sdgame2shapes     dd 0
     dd 0
     dd 0
     dd 0
-word_45DD0     dw 0
+track_pieces_counter     dw 0
 trackcenterpos2     dw 0
     dw 0
     dw 0
@@ -42627,7 +40611,7 @@ word_45E1C     dw 0
     db 0
     db 0
 trackdata19     dd 0
-simd_copy     db 0
+simd_player     db 0
     db 0
     db 0
     db 0
@@ -43402,7 +41386,7 @@ simd_copy     db 0
     db 0
     db 0
 word_46160     dw 0
-trackdata13     dd 0
+td13_rpl_header     dd 0
 byte_46166     db 0
 byte_46167     db 0
 skybox_res_ofs     dw 0
@@ -43504,7 +41488,7 @@ video_flag4_is1     dw 0
     db 0
     db 0
     db 0
-    db 0
+unk_461FA     db 0
     db 0
     db 0
     db 0
@@ -43980,13 +41964,13 @@ game2ptr     dd 0
 word_463D6     dw 0
 sdgame2ptr     dd 0
 trackdata23     dd 0
-byte_463E0     db 0
+followOpponentFlag     db 0
     db 0
-word_463E2     dw 0
-byte_463E4     db 0
-byte_463E5     db 0
-byte_463E6     db 0
-byte_463E7     db 0
+skybox_wat_color     dw 0
+resID_byte1     db 0
+resID_byte2     db 0
+resID_byte3     db 0
+resID_byte4     db 0
     db 0
     db 0
 unk_463EA     db 0

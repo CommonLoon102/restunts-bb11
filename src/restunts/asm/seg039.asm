@@ -47,43 +47,144 @@ seg039 segment byte public 'STUNTSD' use16
     assume cs:seg039
     assume es:nothing, ss:nothing, ds:dseg
     public word_3B1F0
+    public word_3B1F2
+    public word_3B1F4
+    public unk_3B1F6
+    public word_3B1F8
+    public word_3B1FA
+    public byte_3B1FC
+    public unk_3B1FD
+    public word_3B1FE
+    public word_3B200
+    public word_3B202
+    public byte_3B204
+    public unk_3B206
+    public unk_3B208
+    public unk_3B20A
+    public unk_3B20C
+    public unk_3B20E
+    public unk_3B210
+    public unk_3B212
+    public unk_3B214
+    public unk_3B216
+    public unk_3B218
+    public unk_3B21A
+    public unk_3B21C
+    public unk_3B21E
+    public unk_3B220
+    public unk_3B222
+    public unk_3B224
+    public unk_3B226
+    public unk_3B227
+    public unk_3B228
+    public unk_3B22A
+    public unk_3B22C
+    public unk_3B22E
+    public unk_3B230
+    public unk_3B232
+    public unk_3B234
+    public unk_3B236
+    public unk_3B238
+    public unk_3B23A
+    public unk_3B23C
+    public unk_3B244
+    public unk_3B25C
+    public unk_3B264
+    public unk_3B266
+    public unk_3B268
+    public unk_3B27C
+    public unk_3B2A4
+    public unk_3B2AC
+    public unk_3B2AD
+    public unk_3B2AE
+    public unk_3B2AF
+    public unk_3B2B0
+    public unk_3B2B1
+    public unk_3B2B2
+    public unk_3B2B3
+    public unk_3B2B4
+    public unk_3B2B5
+    public unk_3B2B6
+    public unk_3B2B7
+    public unk_3B2B8
+    public unk_3B2B9
+    public unk_3B2BA
+    public unk_3B2BB
+    public unk_3B2BC
+    public unk_3B2BD
+    public unk_3B2BE
+    public unk_3B2BF
+    public unk_3B2C2
+    public unk_3B368
 word_3B1F0     dw 3
-    dw 0
-    dw 0
+word_3B1F2     dw 0
+word_3B1F4     dw 0
+unk_3B1F6     db 0
     db 0
+word_3B1F8     dw 0
+word_3B1FA     dw 0
+byte_3B1FC     db 1
+unk_3B1FD     db 0
+word_3B1FE     dw 8
+word_3B200     dw 8
+word_3B202     dw 8
+byte_3B204     db 0
     db 0
-    dw 0
-    dw 0
-    db 1
+unk_3B206     db 0
     db 0
-    dw 8
-    dw 8
-    dw 8
+unk_3B208     db 0
     db 0
+unk_3B20A     db 0
     db 0
+unk_3B20C     db 0
     db 0
+unk_3B20E     db 0
     db 0
+unk_3B210     db 0
     db 0
+unk_3B212     db 0
     db 0
+unk_3B214     db 0
     db 0
+unk_3B216     db 0
     db 0
+unk_3B218     db 0
     db 0
+unk_3B21A     db 0
     db 0
+unk_3B21C     db 0
     db 0
+unk_3B21E     db 0
     db 0
+unk_3B220     db 0
     db 0
+unk_3B222     db 0
     db 0
+unk_3B224     db 0
     db 0
+unk_3B226     db 0
+unk_3B227     db 0
+unk_3B228     db 0
     db 0
+unk_3B22A     db 0
     db 0
+unk_3B22C     db 0
     db 0
+unk_3B22E     db 0
     db 0
+unk_3B230     db 0
     db 0
+unk_3B232     db 0
     db 0
+unk_3B234     db 0
     db 0
+unk_3B236     db 0
     db 0
+unk_3B238     db 0
     db 0
+unk_3B23A     db 0
     db 0
+unk_3B23C     db 0
     db 0
     db 0
     db 0
@@ -91,39 +192,7 @@ word_3B1F0     dw 3
     db 0
     db 0
     db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
+unk_3B244     db 0
     db 0
     db 22
     db 2
@@ -147,7 +216,7 @@ word_3B1F0     dw 3
     db 2
     db 102
     db 2
-    db 110
+unk_3B25C     db 110
     db 2
     db 118
     db 2
@@ -155,11 +224,11 @@ word_3B1F0     dw 3
     db 2
     db 134
     db 2
-    db 142
+unk_3B264     db 142
     db 2
-    db 150
+unk_3B266     db 150
     db 2
-    db 158
+unk_3B268     db 158
     db 2
     db 166
     db 2
@@ -179,7 +248,7 @@ word_3B1F0     dw 3
     db 2
     db 230
     db 2
-    db 238
+unk_3B27C     db 238
     db 2
     db 246
     db 2
@@ -219,7 +288,7 @@ word_3B1F0     dw 3
     db 3
     db 134
     db 3
-    db 142
+unk_3B2A4     db 142
     db 3
     db 150
     db 3
@@ -227,29 +296,29 @@ word_3B1F0     dw 3
     db 3
     db 166
     db 3
-    db 174
-    db 3
-    db 182
-    db 3
-    db 190
-    db 3
-    db 198
-    db 3
-    db 206
-    db 3
-    db 214
-    db 3
-    db 222
-    db 3
-    db 230
-    db 3
-    db 238
-    db 3
-    db 246
-    db 3
+unk_3B2AC     db 174
+unk_3B2AD     db 3
+unk_3B2AE     db 182
+unk_3B2AF     db 3
+unk_3B2B0     db 190
+unk_3B2B1     db 3
+unk_3B2B2     db 198
+unk_3B2B3     db 3
+unk_3B2B4     db 206
+unk_3B2B5     db 3
+unk_3B2B6     db 214
+unk_3B2B7     db 3
+unk_3B2B8     db 222
+unk_3B2B9     db 3
+unk_3B2BA     db 230
+unk_3B2BB     db 3
+unk_3B2BC     db 238
+unk_3B2BD     db 3
+unk_3B2BE     db 246
+unk_3B2BF     db 3
     db 254
     db 3
-    db 6
+unk_3B2C2     db 6
     db 4
     db 14
     db 4
@@ -415,7 +484,7 @@ word_3B1F0     dw 3
     db 0
     db 0
     db 0
-    db 0
+unk_3B368     db 0
     db 0
     db 0
     db 0

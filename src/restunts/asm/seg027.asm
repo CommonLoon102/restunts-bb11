@@ -96,38 +96,62 @@ init_audio_resources proc far
     arg_8 = word ptr 14
 
     push    bp
+loc_370D3:
     mov     bp, sp
+loc_370D5:
     sub     sp, 0Ch
+loc_370D8:
     push    [bp+arg_8]
+loc_370DB:
     push    [bp+arg_2]
+loc_370DE:
     push    [bp+arg_0]
+loc_370E1:
     call    init_audio_resource
+loc_370E6:
     add     sp, 6
+loc_370E9:
     mov     word ptr [bp+var_C], ax
+loc_370EC:
     mov     word ptr [bp+var_C+2], dx
+loc_370EF:
     or      dx, ax
+loc_370F1:
     jnz     short loc_370FA
 loc_370F3:
     sub     ax, ax
     cwd
+loc_370F6:
     mov     sp, bp
+loc_370F8:
     pop     bp
     retf
 loc_370FA:
     mov     ax, offset aHdr1; "hdr1"
     push    ax
+loc_370FE:
     push    word ptr [bp+var_C+2]
+loc_37101:
     push    word ptr [bp+var_C]
+loc_37104:
     call    init_audio_resource
+loc_37109:
     add     sp, 6
+loc_3710C:
     mov     word ptr [bp+var_4], ax
+loc_3710F:
     mov     word ptr [bp+var_4+2], dx
+loc_37112:
     or      ax, dx
+loc_37114:
     jz      short loc_370F3
+loc_37116:
     les     bx, [bp+var_4]
+loc_37119:
     cmp     byte ptr es:[bx+5], 1
     jz      short loc_37172
     push    [bp+arg_6]
+loc_37123:
     push    [bp+arg_4]
     push    word ptr [bp+var_C+2]
     push    word ptr [bp+var_C]
@@ -137,10 +161,13 @@ loc_370FA:
     push    word ptr [bp+var_C+2]
     push    word ptr [bp+var_C]
     push    cs
+loc_3713A:
     call near ptr audio_hdr1_unk
     add     sp, 4
     les     bx, [bp+var_4]
+loc_37143:
     mov     byte ptr es:[bx+5], 1
+loc_37148:
     les     bx, [bp+var_C]
     mov     al, es:[bx+4]
     sub     ah, ah
@@ -149,6 +176,7 @@ loc_370FA:
     add     ax, bx
     mov     dx, es
     inc     ax
+loc_3715A:
     mov     [bp+var_8], ax
     mov     [bp+var_6], dx
     lea     ax, [bp+var_8]
@@ -171,21 +199,30 @@ load_audio_finalize proc far
     var_2 = word ptr -2
      s = byte ptr 0
      r = byte ptr 2
-    arg_0 = dword ptr 6
+    arg_Mnote = dword ptr 6
 
     push    bp
     mov     bp, sp
     sub     sp, 6
     push    si
+loc_37183:
     mov     word_4063A, 1
     push    cs
+loc_3718A:
     call near ptr sub_3736A
-    mov     ax, word ptr [bp+arg_0]
-    or      ax, word ptr [bp+arg_0+2]
+loc_3718D:
+    mov     ax, word ptr [bp+arg_Mnote]
+loc_37190:
+    or      ax, word ptr [bp+arg_Mnote+2]
+loc_37193:
     jz      short loc_3720F
-    les     bx, [bp+arg_0]
+loc_37195:
+    les     bx, [bp+arg_Mnote]
+loc_37198:
     cmp     byte ptr es:[bx+4], 0
+loc_3719D:
     jnz     short loc_3720F
+loc_3719F:
     cmp     byte ptr es:[bx+5], 1
     jnz     short loc_3720F
     mov     ax, word ptr audiodriverbinary
@@ -196,7 +233,7 @@ load_audio_finalize proc far
     call    [bp+var_6]
     mov     word_44D48, 0
     mov     word_454BA, 80h ; '€'
-    les     bx, [bp+arg_0]
+    les     bx, [bp+arg_Mnote]
     mov     al, es:[bx+6]
     sub     ah, ah
     shl     ax, 1
@@ -205,7 +242,7 @@ load_audio_finalize proc far
     mov     [bp+var_2], ax
     mov     bx, ax
     inc     [bp+var_2]
-    mov     si, word ptr [bp+arg_0]
+    mov     si, word ptr [bp+arg_Mnote]
     mov     al, es:[bx+si]
     mov     byte_44290, al
     mov     ax, 20h ; ' '
@@ -261,6 +298,7 @@ loc_37235:
 loc_37241:
     mov     al, [di]
     mov     [si+714Eh], al
+loc_37247:
     sub     ax, ax
     push    ax
     push    si
@@ -546,6 +584,7 @@ loc_37487:
     jnz     short loc_3749C
     cmp     byte ptr [si-59D6h], 0
     jnz     short loc_3749C
+loc_3749A:
     mov     cx, si
 loc_3749C:
     add     di, 4Ch ; 'L'
@@ -659,6 +698,7 @@ loc_37532:
     jz      short loc_37529
     les     bx, [bp+arg_0]
     cmp     byte ptr es:[bx+5], 1
+loc_37542:
     jnz     short loc_37529
     cmp     byte_45948, 0
     jz      short loc_37568
@@ -699,6 +739,7 @@ loc_3757F:
 loc_37594:
     add     di, 4Ch ; 'L'
     inc     si
+loc_37598:
     cmp     si, 17h
     jle     short loc_3757F
 loc_3759D:
@@ -792,6 +833,7 @@ audio_init_chunk2 proc far
     cmp     [bp+arg_0], 17h
     jg      short loc_37694
     mov     ax, 4Ch ; 'L'
+loc_3765C:
     imul    [bp+arg_0]
     mov     bx, ax
     sub     ax, ax
@@ -859,6 +901,7 @@ audio_disable_flag6 proc far
     sub     sp, 4
     push    di
     push    si
+loc_376D2:
     cmp     audioflag6, 0
     jz      short loc_37702
     mov     si, 10h
@@ -934,6 +977,7 @@ loc_3772E:
     mov     bx, ax
     mov     ax, [bp+8]
     mov     dx, [bp+0Ah]
+loc_37761:
     mov     word ptr (audiochunks_unk+48h)[bx], ax
     mov     word ptr (audiochunks_unk+4Ah)[bx], dx
     pop     bp
@@ -1391,10 +1435,12 @@ loc_37B3E:
     mov     ax, [bp+var_4]
     mov     dx, [bp+var_2]
     mov     sp, bp
+loc_37B46:
     pop     bp
     retf
 loc_37B48:
     mov     [bp+var_8], 50h ; 'P'
+loc_37B4C:
     mov     bx, word ptr [bp+arg_0+2]
     mov     al, [bx]
     mov     [bp+var_7], al
@@ -1836,11 +1882,15 @@ load_vce proc far
     mov     word ptr [bp+var_16+2], dx
     or      ax, dx
     jnz     short loc_37EEB
+loc_37EE8:
     jmp     loc_38036
 loc_37EEB:
     mov     [bp+var_10], 0
+loc_37EF0:
     les     bx, [bp+var_16]
+loc_37EF3:
     mov     al, es:[bx+6]
+loc_37EF7:
     sub     ah, ah
     or      ax, ax
     jnz     short loc_37F00
@@ -2014,6 +2064,7 @@ loc_3807A:
 loc_3808A:
     mov     bx, di
     add     bx, cx
+loc_3808E:
     mov     al, [bx+si+6]
     mov     bx, cx
     add     bx, bp
@@ -2187,6 +2238,7 @@ loc_381C8:
     mov     cl, byte_459D2
     sub     ch, ch
     cmp     ax, cx
+loc_3821C:
     jb      short loc_381C8
     mov     [bp+var_2], si
 loc_38221:
@@ -2258,14 +2310,18 @@ audio_hdr1_unk proc far
     mov     ax, [bp+arg_0]
     mov     dx, [bp+arg_2]
     add     ax, 6
+loc_3827E:
     mov     [bp+var_28], ax
+loc_38281:
     mov     [bp+var_26], dx
     mov     ax, [bp+var_16]
     shl     ax, 1
     shl     ax, 1
+loc_3828B:
     add     ax, [bp+var_28]
     mov     [bp+var_6], ax
     mov     [bp+var_4], dx
+loc_38294:
     mov     ax, [bp+var_16]
     mov     cl, 3
     shl     ax, cl
@@ -2436,6 +2492,7 @@ loc_383D4:
     add     word ptr [bp+var_14], 4
     mov     ax, 4
     push    ax
+loc_38419:
     mov     ax, 4F9Eh
     push    ds
     push    ax
@@ -2458,6 +2515,7 @@ loc_3843B:
     mov     [bp+var_24], al
     sub     ah, ah
     shl     ax, 1
+loc_3844C:
     shl     ax, 1
     inc     ax
     add     word ptr [bp+var_14], ax
@@ -2469,6 +2527,7 @@ loc_3843B:
     sub     ah, ah
     or      ax, ax
     jnz     short loc_3846C
+loc_38469:
     jmp     loc_383C6
 loc_3846C:
     mov     [bp+var_30], ax
@@ -2525,6 +2584,7 @@ loc_384DF:
     cmp     ax, [bp+var_30]
     jb      short loc_38472
     mov     [bp+var_2C], di
+loc_384EE:
     mov     [bp+var_2E], si
     jmp     loc_383C6
 loc_384F4:
@@ -2544,6 +2604,7 @@ sub_384FA proc far
     push    bp
     mov     bp, sp
     sub     sp, 4
+loc_38500:
     les     bx, [bp+arg_0]
     mov     ax, es:[bx]
     mov     dx, es:[bx+2]
@@ -2564,6 +2625,7 @@ sub_38514 proc far
     sub     sp, 2
     les     bx, [bp+arg_0]
     mov     ax, es:[bx]
+loc_38520:
     mov     [bp+var_2], ax
     mov     sp, bp
     pop     bp
@@ -2582,9 +2644,11 @@ copy_4_bytes proc far
     les     bx, [bp+arg_4]
     inc     word ptr [bp+arg_4]
     mov     al, es:[bx]
+loc_38534:
     les     bx, [bp+arg_0]
     inc     word ptr [bp+arg_0]
     mov     es:[bx], al
+loc_3853D:
     les     bx, [bp+arg_4]
     inc     word ptr [bp+arg_4]
     mov     al, es:[bx]
@@ -2592,6 +2656,7 @@ copy_4_bytes proc far
     inc     word ptr [bp+arg_0]
     mov     es:[bx], al
     les     bx, [bp+arg_4]
+loc_38552:
     inc     word ptr [bp+arg_4]
     mov     al, es:[bx]
     les     bx, [bp+arg_0]
@@ -2654,38 +2719,59 @@ loc_385B6:
     mov     [bp-2], si
     mov     ax, 5010h
     push    ax
+loc_385E4:
     call    sub_3219D
     add     sp, 2
+loc_385EC:
     call    flush_stdin
+loc_385F1:
     sub     si, si
+loc_385F3:
     mov     di, 0A2C2h
+loc_385F6:
     mov     word ptr [bp-4], 0A2BEh
+loc_385FB:
     mov     word ptr [bp-8], 0A2B7h
 loc_38600:
     push    word ptr [di+2]
+loc_38603:
     push    word ptr [di]
     mov     bx, [bp-4]
+loc_38608:
     push    word ptr [bx+2]
+loc_3860B:
     push    word ptr [bx]
     mov     bx, [bp-8]
     mov     al, [bx]
+loc_38612:
     sub     ah, ah
     push    ax
     push    si
+loc_38616:
     mov     ax, 501Dh
     push    ax
+loc_3861A:
     call    sub_3219D
+loc_3861F:
     add     sp, 0Eh
     add     di, 2Eh ; '.'
+loc_38625:
     add     word ptr [bp-4], 2Eh ; '.'
+loc_38629:
     add     word ptr [bp-8], 2Eh ; '.'
     inc     si
+loc_3862E:
     cmp     si, 10h
+loc_38631:
     jl      short loc_38600
+loc_38633:
     mov     [bp-2], si
+loc_38636:
     pop     si
     pop     di
+loc_38638:
     mov     sp, bp
+loc_3863A:
     pop     bp
     retf
 copy_4_bytes endp

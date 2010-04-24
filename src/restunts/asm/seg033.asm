@@ -51,52 +51,86 @@ seg033 segment byte public 'STUNTSC' use16
 setup_mcgawnd1 proc far
 
     mov     ax, word ptr mcgawndsprite
+loc_3A95B:
     or      ax, word ptr mcgawndsprite+2
+loc_3A95F:
     jnz     short loc_3A97C
+loc_3A961:
     mov     ax, 0Fh
+loc_3A964:
     push    ax
+loc_3A965:
     mov     ax, 0C8h ; 'È'
+loc_3A968:
     push    ax
+loc_3A969:
     mov     ax, 140h
+loc_3A96C:
     push    ax
+loc_3A96D:
     call    sprite_make_wnd
+loc_3A972:
     add     sp, 6
+loc_3A975:
     mov     word ptr mcgawndsprite, ax
+loc_3A978:
     mov     word ptr mcgawndsprite+2, dx
 loc_3A97C:
     mov     ax, offset sprite2
+loc_3A97F:
     mov     dx, seg seg012
+loc_3A982:
     push    dx
     push    ax
+loc_3A984:
     call    sprite_set_1_from_argptr
+loc_3A989:
     add     sp, 4
+loc_3A98C:
     les     bx, mcgawndsprite
+loc_3A990:
     push    word ptr es:[bx+2]
+loc_3A994:
     push    word ptr es:[bx]
+loc_3A997:
     call    sprite_putimage
+loc_3A99C:
     add     sp, 4
     retf
 setup_mcgawnd1 endp
 setup_mcgawnd2 proc far
 
     mov     ax, word ptr mcgawndsprite
+loc_3A9A3:
     or      ax, word ptr mcgawndsprite+2
+loc_3A9A7:
     jnz     short loc_3A9C4
+loc_3A9A9:
     mov     ax, 0Fh
+loc_3A9AC:
     push    ax
     mov     ax, 0C8h ; 'È'
     push    ax
+loc_3A9B1:
     mov     ax, 140h
     push    ax
+loc_3A9B5:
     call    sprite_make_wnd
+loc_3A9BA:
     add     sp, 6
+loc_3A9BD:
     mov     word ptr mcgawndsprite, ax
+loc_3A9C0:
     mov     word ptr mcgawndsprite+2, dx
 loc_3A9C4:
     push    word ptr mcgawndsprite+2
+loc_3A9C8:
     push    word ptr mcgawndsprite
+loc_3A9CC:
     call    sprite_set_1_from_argptr
+loc_3A9D1:
     add     sp, 4
+locret_3A9D4:
     retf
 setup_mcgawnd2 endp
 seg033 ends

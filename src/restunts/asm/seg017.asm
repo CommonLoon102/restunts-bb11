@@ -60,19 +60,31 @@ mouse_set_pixratio proc far
     arg_2 = word ptr 8
 
     push    bp
+loc_368AB:
     mov     bp, sp
-    mov     regs_x86, 0Fh
+loc_368AD:
+    mov     word ptr regs_x86, 0Fh
+loc_368B3:
     mov     ax, [bp+arg_0]
-    mov     regs_x86+4, ax
+loc_368B6:
+    mov     word ptr regs_x86+4, ax
+loc_368B9:
     mov     ax, [bp+arg_2]
-    mov     regs_x86+6, ax
+loc_368BC:
+    mov     word ptr regs_x86+6, ax
+loc_368BF:
     mov     ax, offset regs_x86
+loc_368C2:
     push    ax
     push    ax              ; union REGS *
+loc_368C4:
     mov     ax, 33h         ; int 33,f = set mouse mickey pixel ratio
     push    ax              ; int
+loc_368C8:
     call    _int86
+loc_368CD:
     add     sp, 6
+loc_368D0:
     pop     bp
     retf
 mouse_set_pixratio endp
@@ -84,17 +96,27 @@ mouse_init proc far
     arg_2 = word ptr 8
 
     push    bp
+loc_368D3:
     mov     bp, sp
+loc_368D5:
     sub     sp, 2
-    mov     regs_x86, 0C201h
+loc_368D8:
+    mov     word ptr regs_x86, 0C201h
+loc_368DE:
     mov     ax, offset regs_x86
     push    ax
+loc_368E2:
     push    ax              ; union REGS *
+loc_368E3:
     mov     ax, 15h         ; int 15,c201 = enable ps2 pointing device
+loc_368E6:
     push    ax              ; int
+loc_368E7:
     call    _int86
+loc_368EC:
     add     sp, 6
-    mov     regs_x86, 0
+loc_368EF:
+    mov     word ptr regs_x86, 0
     mov     ax, 921Ah
     push    ax
     push    ax              ; union REGS *
@@ -102,12 +124,16 @@ mouse_init proc far
     push    ax              ; int
     call    _int86
     add     sp, 6
-    mov     ax, regs_x86
+    mov     ax, word ptr regs_x86
     mov     [bp+var_2], ax
-    mov     ax, regs_x86+2
+loc_3690C:
+    mov     ax, word ptr regs_x86+2
     mov     word_45D7C, ax
+loc_36912:
     cmp     [bp+var_2], 0
+loc_36916:
     jz      short loc_36955
+loc_36918:
     cmp     [bp+arg_0], 140h
     jnz     short loc_36928
     mov     mousehorscale, 1
@@ -135,6 +161,7 @@ loc_3692E:
     push    cs
     call near ptr mouse_set_pixratio
     add     sp, 4
+loc_3694F:
     mov     word_40318, 0FFFFh
 loc_36955:
     mov     ax, [bp+var_2]
@@ -151,15 +178,22 @@ mouse_set_minmax proc far
     arg_6 = word ptr 12
 
     push    bp
+loc_3695D:
     mov     bp, sp
-    mov     regs_x86, 7
+loc_3695F:
+    mov     word ptr regs_x86, 7
+loc_36965:
     mov     ax, [bp+arg_0]
+loc_36968:
     mov     cl, byte ptr mousehorscale
+loc_3696C:
     shl     ax, cl
-    mov     regs_x86+4, ax
+loc_3696E:
+    mov     word ptr regs_x86+4, ax
+loc_36971:
     mov     ax, [bp+arg_4]
     shl     ax, cl
-    mov     regs_x86+6, ax
+    mov     word ptr regs_x86+6, ax
     mov     ax, offset regs_x86
     push    ax
     push    ax              ; union REGS *
@@ -167,11 +201,11 @@ mouse_set_minmax proc far
     push    ax              ; int
     call    _int86
     add     sp, 6
-    mov     regs_x86, 8
+    mov     word ptr regs_x86, 8
     mov     ax, [bp+arg_2]
-    mov     regs_x86+4, ax
+    mov     word ptr regs_x86+4, ax
     mov     ax, [bp+arg_6]
-    mov     regs_x86+6, ax
+    mov     word ptr regs_x86+6, ax
     mov     ax, offset regs_x86
     push    ax
     push    ax              ; union REGS *
@@ -180,26 +214,31 @@ mouse_set_minmax proc far
     call    _int86
     add     sp, 6
     pop     bp
+locret_369AE:
     retf
     ; align 2
     db 144
-    mov     regs_x86, 3
+loc_369B0:
+    mov     word ptr regs_x86, 3
     mov     ax, offset regs_x86
     push    ax
     push    ax
     mov     ax, 33h         ; int 33,3 = get mouse pos/but status
     push    ax
+loc_369BF:
     call    _int86
     add     sp, 6
-    mov     ax, regs_x86+2
+    mov     ax, word ptr regs_x86+2
     mov     word_45D7C, ax
-    mov     ax, regs_x86+4
+    mov     ax, word ptr regs_x86+4
     mov     cl, byte ptr mousehorscale
+loc_369D4:
     shr     ax, cl
     mov     word_44D3C, ax
-    mov     ax, regs_x86+6
+    mov     ax, word ptr regs_x86+6
     mov     word_44D62, ax
     mov     ax, word_45D7C
+locret_369E2:
     retf
     ; align 2
     db 144
@@ -207,8 +246,10 @@ mouse_set_minmax proc far
     cmp     showmouse, 1
     jl      short locret_36A0C
     mov     showmouse, 1
-    mov     regs_x86, 1
+loc_369F5:
+    mov     word ptr regs_x86, 1
     mov     ax, offset regs_x86
+loc_369FE:
     push    ax
     push    ax
     mov     ax, 33h         ; int 33,1 = show mouse cursor
@@ -220,8 +261,10 @@ locret_36A0C:
     ; align 2
     db 144
     dec     showmouse
+loc_36A12:
     jnz     short locret_36A2B
-    mov     regs_x86, 2
+loc_36A14:
+    mov     word ptr regs_x86, 2
     mov     ax, offset regs_x86
     push    ax
     push    ax
@@ -240,14 +283,14 @@ mouse_set_position proc far
 
     push    bp
     mov     bp, sp
-    mov     regs_x86, 4
+    mov     word ptr regs_x86, 4
     mov     ax, [bp+arg_0]
     mov     word_44D3C, ax
     mov     cl, byte ptr mousehorscale
     shl     ax, cl
-    mov     regs_x86+4, ax
+    mov     word ptr regs_x86+4, ax
     mov     ax, [bp+arg_2]
-    mov     regs_x86+6, ax
+    mov     word ptr regs_x86+6, ax
     mov     word_44D62, ax
     mov     ax, 921Ah
     push    ax
@@ -268,7 +311,7 @@ mouse_get_state proc far
 
     push    bp
     mov     bp, sp
-    mov     regs_x86, 3
+    mov     word ptr regs_x86, 3
     mov     ax, 921Ah
     push    ax
     push    ax              ; union REGS *
@@ -277,15 +320,15 @@ mouse_get_state proc far
     call    _int86
     add     sp, 6
     mov     bx, [bp+arg_0]
-    mov     ax, regs_x86+2
+    mov     ax, word ptr regs_x86+2
     mov     [bx], ax
     mov     bx, [bp+arg_2]
-    mov     ax, regs_x86+4
+    mov     ax, word ptr regs_x86+4
     mov     cl, byte ptr mousehorscale
     shr     ax, cl
     mov     [bx], ax
     mov     bx, [bp+arg_4]
-    mov     ax, regs_x86+6
+    mov     ax, word ptr regs_x86+6
     mov     [bx], ax
     pop     bp
     retf
@@ -298,21 +341,29 @@ nopsub_36A9A proc far
 
     push    bp
     mov     bp, sp
-    mov     regs_x86, 7
+    mov     word ptr regs_x86, 7
+loc_36AA3:
     mov     ax, [bp+arg_0]
     mov     cl, byte ptr mousehorscale
     sar     ax, cl
-    mov     regs_x86+4, ax
+    mov     word ptr regs_x86+4, ax
+loc_36AAF:
     mov     ax, [bp+arg_2]
+loc_36AB2:
     sar     ax, cl
-    mov     regs_x86+6, ax
+loc_36AB4:
+    mov     word ptr regs_x86+6, ax
+loc_36AB7:
     mov     ax, 921Ah
     push    ax
     push    ax              ; union REGS *
+loc_36ABC:
     mov     ax, 33h ; '3'
     push    ax              ; int
+loc_36AC0:
     call    _int86
     add     sp, 6
+loc_36AC8:
     pop     bp
     retf
 nopsub_36A9A endp
@@ -323,20 +374,31 @@ nopsub_36ACA proc far
     arg_2 = word ptr 8
 
     push    bp
+loc_36ACB:
     mov     bp, sp
-    mov     regs_x86, 8
+loc_36ACD:
+    mov     word ptr regs_x86, 8
     mov     ax, [bp+arg_0]
-    mov     regs_x86+4, ax
+loc_36AD6:
+    mov     word ptr regs_x86+4, ax
+loc_36AD9:
     mov     ax, [bp+arg_2]
-    mov     regs_x86+6, ax
+loc_36ADC:
+    mov     word ptr regs_x86+6, ax
+loc_36ADF:
     mov     ax, 921Ah
     push    ax
     push    ax              ; union REGS *
+loc_36AE4:
     mov     ax, 33h ; '3'
     push    ax              ; int
+loc_36AE8:
     call    _int86
+loc_36AED:
     add     sp, 6
+loc_36AF0:
     pop     bp
+locret_36AF1:
     retf
 nopsub_36ACA endp
 seg017 ends

@@ -47,8 +47,8 @@ seg009 segment byte public 'STUNTSC' use16
     assume cs:seg009
     assume es:nothing, ss:nothing, ds:dseg
     public load_tracks_menu_shapes
-    public sub_2BEB6
-    public sub_2C0A8
+    public preRender_icons
+    public draw_2DtrackMap
     public sub_2C81C
     public sub_2C9B4
 load_tracks_menu_shapes proc far
@@ -128,33 +128,57 @@ load_tracks_menu_shapes proc far
      r = byte ptr 2
 
     push    bp
+loc_2A2BD:
     mov     bp, sp
+loc_2A2BF:
     sub     sp, 198h
     push    di
+loc_2A2C4:
     push    si
+loc_2A2C5:
     mov     ax, offset aSdtedit; "sdtedit"
+loc_2A2C8:
     push    ax
+loc_2A2C9:
     call    load_2dshape_fatal_thunk
+loc_2A2CE:
     add     sp, 2
+loc_2A2D1:
     mov     [bp+var_2A], ax
+loc_2A2D4:
     mov     [bp+var_28], dx
+loc_2A2D7:
     mov     ax, offset tracksmenushapes1
+loc_2A2DA:
     push    ax
+loc_2A2DB:
     mov     ax, offset aFlatlakelak1lak2lak3lak4highg; "flatlakelak1lak2lak3lak4highgoungouwgou"...
+loc_2A2DE:
     push    ax
     push    dx
+loc_2A2E0:
     push    [bp+var_2A]
+loc_2A2E3:
     call    locate_many_resources
+loc_2A2E8:
     add     sp, 8
+loc_2A2EB:
     mov     ax, offset tracksmenushapes2
+loc_2A2EE:
     push    ax
+loc_2A2EF:
     mov     ax, offset aCrs0crs1crs2crs3; "crs0crs1crs2crs3"
+loc_2A2F2:
     push    ax
+loc_2A2F3:
     push    [bp+var_28]
+loc_2A2F6:
     push    [bp+var_2A]
+loc_2A2F9:
     call    locate_many_resources
     add     sp, 8
     mov     ax, offset tracksmenushapes3
+loc_2A304:
     push    ax
     mov     ax, offset aUcr0ucr1ucr2ucr3; "ucr0ucr1ucr2ucr3"
     push    ax
@@ -164,15 +188,19 @@ load_tracks_menu_shapes proc far
     add     sp, 8
     mov     ax, 0Fh
     push    ax
+loc_2A31B:
     les     bx, tracksmenushapes2
     push    es:[bx+SHAPE2D.s2d_height]
+loc_2A323:
     mov     ax, es:[bx+SHAPE2D.s2d_width]
+loc_2A326:
     imul    video_flag1_is1
     push    ax
     call    sprite_make_wnd
     add     sp, 6
     mov     [bp+var_172], ax
     mov     [bp+var_170], dx
+loc_2A33B:
     mov     ax, 0Fh
     push    ax
     les     bx, tracksmenushapes2+4
@@ -186,14 +214,22 @@ load_tracks_menu_shapes proc far
     mov     [bp+var_16C], dx
     mov     ax, 0Fh
     push    ax
+loc_2A363:
     les     bx, tracksmenushapes2+8
     push    es:[bx+SHAPE2D.s2d_height]
+loc_2A36B:
     mov     ax, es:[bx+SHAPE2D.s2d_width]
+loc_2A36E:
     imul    video_flag1_is1
+loc_2A372:
     push    ax
+loc_2A373:
     call    sprite_make_wnd
+loc_2A378:
     add     sp, 6
+loc_2A37B:
     mov     [bp+var_16A], ax
+loc_2A37F:
     mov     [bp+var_168], dx
     mov     ax, 0Fh
     push    ax
@@ -250,6 +286,7 @@ load_tracks_menu_shapes proc far
     push    ax
     push    [bp+var_20]
     push    [bp+var_22]
+loc_2A427:
     call    locate_shape_alt
     add     sp, 6
     mov     [bp+var_D2], ax
@@ -275,14 +312,14 @@ loc_2A451:
     mov     word ptr [bp+var_17C+2], dx
     les     bx, [bp+var_17C]
     mov     al, es:[bx]
-    mov     byte_463E4, al
+    mov     resID_byte1, al
     mov     al, es:[bx+1]
-    mov     byte_463E5, al
+    mov     resID_byte2, al
     mov     al, es:[bx+2]
-    mov     byte_463E6, al
+    mov     resID_byte3, al
     mov     al, es:[bx+3]
-    mov     byte_463E7, al
-    mov     ax, offset byte_463E4
+    mov     resID_byte4, al
+    mov     ax, offset resID_byte1
     push    ax
     push    [bp+var_28]
     push    [bp+var_2A]
@@ -302,14 +339,14 @@ loc_2A451:
     mov     word ptr [bp+var_17C+2], dx
     les     bx, [bp+var_17C]
     mov     al, es:[bx]
-    mov     byte_463E4, al
+    mov     resID_byte1, al
     mov     al, es:[bx+1]
-    mov     byte_463E5, al
+    mov     resID_byte2, al
     mov     al, es:[bx+2]
-    mov     byte_463E6, al
+    mov     resID_byte3, al
     mov     al, es:[bx+3]
-    mov     byte_463E7, al
-    mov     ax, offset byte_463E4
+    mov     resID_byte4, al
+    mov     ax, offset resID_byte1
     push    ax
     push    [bp+var_28]
     push    [bp+var_2A]
@@ -319,7 +356,7 @@ loc_2A451:
     mov     word ptr tracksmenushape2dunk2[bx], ax
     mov     word ptr (tracksmenushape2dunk2+2)[bx], dx
     inc     si
-    cmp     si, 0BAh ; 'º'
+    cmp     si, 0BAh ; 'º'  ; 186 - number of elem. icons?
     jge     short loc_2A50D
     jmp     loc_2A451
 loc_2A50D:
@@ -531,7 +568,7 @@ loc_2A72F:
     shl     bx, 1
     add     bx, ax
     shl     bx, 1
-    mov     al, sceneshapes.scene_translateflag[bx]
+    mov     al, trkObjectList.ss_multiTileFlag[bx]
     cbw
     cmp     ax, 1
     jz      short loc_2A76C
@@ -684,8 +721,9 @@ loc_2A878:
     mov     al, [bp+var_C6]
     cbw
     push    ax
+loc_2A8B2:
     push    cs
-    call near ptr sub_2BEB6
+    call near ptr preRender_icons
     add     sp, 2
     cmp     [bp+var_C6], 0
     jnz     short loc_2A8CA
@@ -750,6 +788,7 @@ loc_2A922:
     push    ax
     mov     ax, 5
     push    ax
+loc_2A943:
     mov     ax, 0B5h ; 'µ'
     push    ax
     mov     ax, 0C0h ; 'À'
@@ -801,7 +840,7 @@ loc_2A983:
     cbw
     push    ax
     push    cs
-    call near ptr sub_2C0A8
+    call near ptr draw_2DtrackMap
     add     sp, 8
     mov     ax, 0C8h ; 'È'
     push    ax
@@ -844,7 +883,7 @@ loc_2AA01:
     push    word ptr tracksmenushapes1[bx]
     call    sprite_shape_to_1
     add     sp, 8
-    push    dialogarg1
+    push    performGraphColor
     sub     ax, ax
     push    ax
     mov     ax, 0Fh
@@ -853,9 +892,9 @@ loc_2AA01:
     push    ax
     mov     ax, 1
     push    ax
-    call    sub_2FDDE
+    call    preRender_line
     add     sp, 0Ah
-    push    dialogarg1
+    push    performGraphColor
     mov     ax, 0Eh
     push    ax
     mov     ax, 0Fh
@@ -864,9 +903,9 @@ loc_2AA01:
     push    ax
     mov     ax, 1
     push    ax
-    call    sub_2FDDE
+    call    preRender_line
     add     sp, 0Ah
-    push    dialogarg1
+    push    performGraphColor
     mov     ax, 0Eh
     push    ax
     mov     ax, 1
@@ -875,9 +914,9 @@ loc_2AA01:
     push    ax
     mov     ax, 1
     push    ax
-    call    sub_2FDDE
+    call    preRender_line
     add     sp, 0Ah
-    push    dialogarg1
+    push    performGraphColor
     mov     ax, 0Eh
     push    ax
     mov     ax, 0Fh
@@ -886,7 +925,7 @@ loc_2AA01:
     push    ax
     mov     ax, 0Fh
     push    ax
-    call    sub_2FDDE
+    call    preRender_line
     add     sp, 0Ah
     jmp     short loc_2AAF0
     ; align 2
@@ -915,7 +954,7 @@ loc_2AA8E:
     shl     bx, 1
     push    word ptr (tracksmenushape2dunk2+2)[bx]
     push    word ptr tracksmenushape2dunk2[bx]
-    call    sub_33A1E
+    call    putpixel_iconMask
     add     sp, 8
     sub     ax, ax
     push    ax
@@ -926,7 +965,7 @@ loc_2AA8E:
     shl     bx, 1
     push    word ptr (tracksmenushape2dunk+2)[bx]
     push    word ptr tracksmenushape2dunk[bx]
-    call    sub_34212
+    call    putpixel_iconFillings
     add     sp, 8
 loc_2AAF0:
     mov     al, [bp+var_36]
@@ -975,8 +1014,8 @@ loc_2AB1C:
     shl     bx, 1
     mov     bx, trackrows[bx]
     add     bx, [bp+var_196]
-    add     bx, word ptr trackdata14
-    mov     es, word ptr trackdata14+2
+    add     bx, word ptr td14_elem_map_main
+    mov     es, word ptr td14_elem_map_main+2
     mov     al, es:[bx]
     mov     [bp+var_182], al
     sub     ah, ah
@@ -997,7 +1036,7 @@ loc_2ABA5:
     mov     al, [bp+var_18E]
     cbw
     add     bx, ax
-    add     bx, word ptr trackdata14
+    add     bx, word ptr td14_elem_map_main
     mov     al, es:[bx-1]
 loc_2ABB4:
     mov     [bp+var_182], al
@@ -1013,7 +1052,7 @@ loc_2ABBC:
     mov     al, [bp+var_18E]
     cbw
     add     bx, ax
-    add     bx, word ptr trackdata14
+    add     bx, word ptr td14_elem_map_main
     mov     al, es:[bx]
     jmp     short loc_2ABB4
     ; align 2
@@ -1148,26 +1187,26 @@ loc_2AD38:
     call    mouse_draw_opaque_check
     sub     ax, ax
     push    ax
-    push    word_407CA
+    push    dialog_fnt_colour
     call    sub_34B0C
     add     sp, 4
     mov     al, [bp+var_182]
     sub     ah, ah
     mov     cx, ax
     shl     ax, 1
-    add     ax, cx
+    add     ax, cx          ; *3
     add     ax, [bp+var_D2]
     mov     dx, [bp+var_D0]
     mov     word ptr [bp+var_17C], ax
     mov     word ptr [bp+var_17C+2], dx
     les     bx, [bp+var_17C]
     mov     al, es:[bx]
-    mov     byte_463E4, al
+    mov     resID_byte1, al
     mov     al, es:[bx+1]
-    mov     byte_463E5, al
+    mov     resID_byte2, al
     mov     al, es:[bx+2]
-    mov     byte_463E6, al
-    mov     ax, 0AC74h
+    mov     resID_byte3, al
+    mov     ax, offset resID_byte1
     push    ax
     push    [bp+var_20]
     push    [bp+var_22]
@@ -1175,11 +1214,11 @@ loc_2AD38:
     add     sp, 6
     push    dx
     push    ax
-    mov     ax, 0AC74h
+    mov     ax, offset resID_byte1
     push    ax
     call    copy_string
     add     sp, 6
-    mov     ax, 0AC74h
+    mov     ax, offset resID_byte1
     push    ax
     call    sub_32843
     add     sp, 2
@@ -1188,7 +1227,7 @@ loc_2AD38:
     push    ax
     mov     ax, 8
     push    ax
-    mov     ax, 0AC74h
+    mov     ax, offset resID_byte1
     push    ax
     call    sub_345BC
     add     sp, 6
@@ -1218,7 +1257,7 @@ loc_2ADF4:
     sub     ax, ax
     push    ax
     push    ax
-    push    dialogarg1
+    push    performGraphColor
     mov     ax, 0FFFFh
     push    ax
     push    ax
@@ -1541,7 +1580,7 @@ loc_2B0E2:
     shl     bx, 1
     add     bx, ax
     shl     bx, 1
-    test    sceneshapes.scene_translateflag[bx], 1
+    test    trkObjectList.ss_multiTileFlag[bx], 1
     jz      short loc_2B136
     dec     [bp+var_174]
 loc_2B136:
@@ -1555,7 +1594,7 @@ loc_2B136:
     shl     bx, 1
     add     bx, ax
     shl     bx, 1
-    test    sceneshapes.scene_translateflag[bx], 2
+    test    trkObjectList.ss_multiTileFlag[bx], 2
     jz      short loc_2B15A
     dec     [bp+var_D6]
 loc_2B15A:
@@ -1714,18 +1753,18 @@ loc_2B2D4:
     cmp     [bp+var_34], 0
     jz      short loc_2B2EE
 loc_2B2E7:
-    mov     ax, word_45DD0
+    mov     ax, track_pieces_counter
     dec     ax
     mov     [bp+var_18], ax
 loc_2B2EE:
     mov     bx, [bp+var_18]
-    add     bx, word ptr trackdata21
-    mov     es, word ptr trackdata21+2
+    add     bx, word ptr td21_col_from_path
+    mov     es, word ptr td21_col_from_path+2
     mov     al, es:[bx]
     mov     [bp+var_18E], al
     mov     bx, [bp+var_18]
-    add     bx, word ptr trackdata22
-    mov     es, word ptr trackdata22+2
+    add     bx, word ptr td22_row_from_path
+    mov     es, word ptr td22_row_from_path+2
     mov     al, es:[bx]
     mov     [bp+var_180], al
     cbw
@@ -1735,14 +1774,14 @@ loc_2B2EE:
     mov     al, [bp+var_18E]
     cbw
     add     bx, ax
-    add     bx, word ptr trackdata14
-    mov     es, word ptr trackdata14+2
+    add     bx, word ptr td14_elem_map_main
+    mov     es, word ptr td14_elem_map_main+2
     mov     al, es:[bx]
     mov     [bp+var_190], al
     mov     [bp+var_32], 1
     mov     [bp+var_A], 1
     inc     [bp+var_18]
-    mov     ax, word_45DD0
+    mov     ax, track_pieces_counter
     cmp     [bp+var_18], ax
     jge     short loc_2B347
     jmp     loc_2A720
@@ -1829,7 +1868,7 @@ loc_2B3EA:
     sub     ax, ax
     push    ax
     push    ax
-    push    dialogarg1
+    push    performGraphColor
     mov     ax, 0FFFFh
     push    ax
     push    ax
@@ -1853,7 +1892,7 @@ loc_2B3EA:
     cmp     si, 1
     jle     short loc_2B491
     mov     [bp+var_34], 0
-    cmp     word_45DD0, 0
+    cmp     track_pieces_counter, 0
     jnz     short loc_2B448
     mov     al, byte_45D90
     mov     [bp+var_18E], al
@@ -1861,10 +1900,10 @@ loc_2B3EA:
     mov     [bp+var_180], al
     jmp     short loc_2B491
 loc_2B448:
-    les     bx, trackdata21
+    les     bx, td21_col_from_path
     mov     al, es:[bx]
     mov     [bp+var_18E], al
-    les     bx, trackdata22
+    les     bx, td22_row_from_path
     mov     al, es:[bx]
     mov     [bp+var_180], al
     mov     al, [bp+var_190]
@@ -1877,8 +1916,8 @@ loc_2B448:
     mov     al, [bp+var_18E]
     cbw
     add     bx, ax
-    add     bx, word ptr trackdata14
-    mov     es, word ptr trackdata14+2
+    add     bx, word ptr td14_elem_map_main
+    mov     es, word ptr td14_elem_map_main+2
     mov     al, es:[bx]
     mov     [bp+var_190], al
     mov     [bp+var_18], 1
@@ -1922,7 +1961,7 @@ loc_2B4AD:
     shl     bx, 1
     add     bx, ax
     shl     bx, 1
-    test    sceneshapes.scene_translateflag[bx], 1
+    test    trkObjectList.ss_multiTileFlag[bx], 1
     jz      short loc_2B50B
     mov     al, [bp+var_18C]
     cbw
@@ -1942,7 +1981,7 @@ loc_2B50B:
     shl     bx, 1
     add     bx, ax
     shl     bx, 1
-    test    sceneshapes.scene_translateflag[bx], 2
+    test    trkObjectList.ss_multiTileFlag[bx], 2
     jz      short loc_2B53A
     mov     al, [bp+var_8]
     cbw
@@ -1973,7 +2012,7 @@ loc_2B55D:
 loc_2B566:
     cmp     [bp+var_17F], 7
     jnz     short loc_2B5C6
-    les     bx, trackdata14
+    les     bx, td14_elem_map_main
     mov     al, es:[bx+384h]
     sub     ah, ah
     push    ax
@@ -2006,7 +2045,7 @@ loc_2B5B3:
     jnz     short loc_2B5BA
     jmp     loc_2B491
 loc_2B5BA:
-    les     bx, trackdata14
+    les     bx, td14_elem_map_main
     mov     es:[bx+384h], al
     jmp     loc_2B668
 loc_2B5C6:
@@ -2050,7 +2089,7 @@ loc_2B615:
 loc_2B61C:
     sub     si, si
 loc_2B61E:
-    les     bx, trackdata14
+    les     bx, td14_elem_map_main
     mov     byte ptr es:[bx+si], 0
     inc     si
     cmp     si, 384h
@@ -2070,7 +2109,7 @@ loc_2B61E:
 loc_2B64F:
     les     bx, [bp+var_10]
     mov     al, es:[bx+si]
-    les     bx, trackdata15
+    les     bx, td15_terr_map_main
     mov     es:[bx+si], al
     inc     si
     cmp     si, 385h
@@ -2097,7 +2136,7 @@ loc_2B688:
     sub     ax, ax
     push    ax
     push    ax
-    push    dialogarg1
+    push    performGraphColor
     mov     ax, 0FFFFh
     push    ax
     push    ax
@@ -2137,7 +2176,7 @@ loc_2B6CE:
     push    ax
     mov     ax, offset byte_3B80C
     push    ax              ; char *
-    call    sub_27ED4
+    call    do_fileselect_dialog
     add     sp, 0Ah
     cbw
     mov     si, ax
@@ -2155,8 +2194,8 @@ loc_2B6CE:
     jg      short loc_2B725
     jmp     loc_2B89B
 loc_2B725:
-    push    word ptr trackdata14+2
-    push    word ptr trackdata14
+    push    word ptr td14_elem_map_main+2
+    push    word ptr td14_elem_map_main
     mov     ax, 95F8h
     push    ax
     call    file_read_fatal
@@ -2197,7 +2236,7 @@ loc_2B774:
     push    ax
     mov     ax, offset byte_3B80C
     push    ax              ; char *
-    call    sub_2863A
+    call    do_savefile_dialog
     add     sp, 8
     or      al, al
     jz      short loc_2B80D
@@ -2221,7 +2260,7 @@ loc_2B774:
     sub     ax, ax
     push    ax
     push    ax
-    push    dialogarg1
+    push    performGraphColor
     mov     ax, 0FFFFh
     push    ax
     push    ax
@@ -2247,12 +2286,12 @@ loc_2B80D:
 loc_2B812:
     cmp     [bp+var_176], 1
     jnz     short loc_2B891
-    mov     ax, 70Ah
+    mov     ax, 70Ah        ; .trk size
     cwd
     push    dx
     push    ax
-    push    word ptr trackdata14+2
-    push    word ptr trackdata14
+    push    word ptr td14_elem_map_main+2
+    push    word ptr td14_elem_map_main
     mov     ax, offset track_full_path
     push    ax
     call    file_write_fatal
@@ -2270,13 +2309,14 @@ loc_2B845:
     sub     ax, ax
     push    ax
     push    ax
-    push    dialogarg1
+    push    performGraphColor
     mov     ax, 0FFFFh
     push    ax
     push    ax
     mov     ax, offset aSer ; "ser"
     push    ax
     push    word ptr mainresptr+2
+loc_2B85E:
     push    word ptr mainresptr
     call    locate_text_res
     add     sp, 6
@@ -2313,7 +2353,7 @@ loc_2B8A4:
     sub     ax, ax
     push    ax
     push    ax
-    push    dialogarg1
+    push    performGraphColor
     mov     ax, 0FFFFh
     push    ax
     push    ax
@@ -2370,8 +2410,8 @@ loc_2B928:
     mov     al, [bp+var_18E]
     cbw
     add     bx, ax
-    add     bx, word ptr trackdata15
-    mov     es, word ptr trackdata15+2
+    add     bx, word ptr td15_terr_map_main
+    mov     es, word ptr td15_terr_map_main+2
     mov     al, es:[bx]
     mov     [bp+var_192], al
     mov     al, [bp+var_18E]
@@ -2387,8 +2427,8 @@ loc_2B95B:
     mov     al, [bp+var_DA]
     cbw
     add     bx, ax
-    add     bx, word ptr trackdata15
-    mov     es, word ptr trackdata15+2
+    add     bx, word ptr td15_terr_map_main
+    mov     es, word ptr td15_terr_map_main+2
     mov     al, [bp+var_190]
     mov     es:[bx], al
     mov     [bp+var_D4], 1
@@ -2406,7 +2446,7 @@ loc_2B98E:
     shl     bx, 1
     add     bx, ax
     shl     bx, 1
-    test    sceneshapes.scene_translateflag[bx], 1
+    test    trkObjectList.ss_multiTileFlag[bx], 1
     jz      short loc_2B9B1
     cmp     [bp+var_180], 1Ch
     jle     short loc_2B9B1
@@ -2420,7 +2460,7 @@ loc_2B9B1:
     shl     bx, 1
     add     bx, ax
     shl     bx, 1
-    test    sceneshapes.scene_translateflag[bx], 2
+    test    trkObjectList.ss_multiTileFlag[bx], 2
     jz      short loc_2B9D4
     cmp     [bp+var_18E], 1Ch
     jle     short loc_2B9D4
@@ -2451,8 +2491,8 @@ loc_2BA04:
     mov     al, [bp+var_18E]
     cbw
     add     bx, ax
-    add     bx, word ptr trackdata14
-    mov     es, word ptr trackdata14+2
+    add     bx, word ptr td14_elem_map_main
+    mov     es, word ptr td14_elem_map_main+2
     mov     al, es:[bx]
     mov     [bp+var_192], al
     cmp     al, 0FDh ; 'ý'
@@ -2472,8 +2512,8 @@ loc_2BA40:
     mov     al, [bp+var_DA]
     cbw
     add     bx, ax
-    add     bx, word ptr trackdata14
-    mov     es, word ptr trackdata14+2
+    add     bx, word ptr td14_elem_map_main
+    mov     es, word ptr td14_elem_map_main+2
     mov     al, [bp+var_190]
     mov     es:[bx], al
     mov     [bp+var_D4], 1
@@ -2487,7 +2527,7 @@ loc_2BA40:
     shl     bx, 1
     add     bx, ax
     shl     bx, 1
-    mov     al, sceneshapes.scene_translateflag[bx]
+    mov     al, trkObjectList.ss_multiTileFlag[bx]
     cbw
     cmp     ax, 1
     jz      short loc_2BA98
@@ -2505,8 +2545,8 @@ loc_2BA98:
     mov     al, [bp+var_DA]
     cbw
     add     bx, ax
-    add     bx, word ptr trackdata14
-    mov     es, word ptr trackdata14+2
+    add     bx, word ptr td14_elem_map_main
+    mov     es, word ptr td14_elem_map_main+2
     mov     byte ptr es:[bx], 0FEh ; 'þ'
     jmp     loc_2B491
     ; align 2
@@ -2520,8 +2560,8 @@ loc_2BABC:
     mov     al, [bp+var_DA]
     cbw
     add     bx, ax
-    add     bx, word ptr trackdata14
-    mov     es, word ptr trackdata14+2
+    add     bx, word ptr td14_elem_map_main
+    mov     es, word ptr td14_elem_map_main+2
     mov     byte ptr es:[bx+1], 0FFh
     jmp     loc_2B491
 loc_2BAE0:
@@ -2533,8 +2573,8 @@ loc_2BAE0:
     mov     al, [bp+var_DA]
     cbw
     add     bx, ax
-    add     bx, word ptr trackdata14
-    mov     es, word ptr trackdata14+2
+    add     bx, word ptr td14_elem_map_main
+    mov     es, word ptr td14_elem_map_main+2
     mov     byte ptr es:[bx+1], 0FFh
     mov     al, [bp+var_C0]
     cbw
@@ -2544,8 +2584,8 @@ loc_2BAE0:
     mov     al, [bp+var_DA]
     cbw
     add     bx, ax
-    add     bx, word ptr trackdata14
-    mov     es, word ptr trackdata14+2
+    add     bx, word ptr td14_elem_map_main
+    mov     es, word ptr td14_elem_map_main+2
     mov     byte ptr es:[bx], 0FEh ; 'þ'
     mov     al, [bp+var_C0]
     cbw
@@ -2555,8 +2595,8 @@ loc_2BAE0:
     mov     al, [bp+var_DA]
     cbw
     add     bx, ax
-    add     bx, word ptr trackdata14
-    mov     es, word ptr trackdata14+2
+    add     bx, word ptr td14_elem_map_main
+    mov     es, word ptr td14_elem_map_main+2
     mov     byte ptr es:[bx+1], 0FDh ; 'ý'
     jmp     loc_2B491
     ; align 2
@@ -2909,7 +2949,7 @@ loc_2BE44:
     pop     bp
     retf
 load_tracks_menu_shapes endp
-sub_2BEB6 proc far
+preRender_icons proc far
     var_6 = byte ptr -6
     var_4 = byte ptr -4
     var_2 = byte ptr -2
@@ -2951,7 +2991,7 @@ loc_2BECD:
     shl     bx, 1
     add     bx, ax
     shl     bx, 1
-    mov     al, sceneshapes.scene_translateflag[bx]
+    mov     al, trkObjectList.ss_multiTileFlag[bx]
     cbw
     cmp     ax, 1
     jz      short loc_2BF22
@@ -2999,7 +3039,7 @@ loc_2BF4A:
     shl     bx, 1
     push    word ptr (tracksmenushape2dunk2+2)[bx]
     push    word ptr tracksmenushape2dunk2[bx]
-    call    sub_33A1E
+    call    putpixel_iconMask; renders the "surroundings"
     add     sp, 8
     mov     al, [bp+var_2]
     sub     ah, ah
@@ -3018,7 +3058,7 @@ loc_2BF4A:
     shl     bx, 1
     push    word ptr (tracksmenushape2dunk+2)[bx]
     push    word ptr tracksmenushape2dunk[bx]
-    call    sub_34212
+    call    putpixel_iconFillings; renders the "filling" of the icons
 loc_2BFA9:
     add     sp, 8
 loc_2BFAC:
@@ -3133,8 +3173,8 @@ loc_2C0A2:
     retf
     ; align 2
     db 144
-sub_2BEB6 endp
-sub_2C0A8 proc far
+preRender_icons endp
+draw_2DtrackMap proc far
     var_E = word ptr -14
     var_C = byte ptr -12
     var_A = byte ptr -10
@@ -3190,15 +3230,15 @@ loc_2C0CA:
     mov     al, [bp+arg_0]
     sub     ah, ah
     add     bx, ax
-    add     bx, word ptr trackdata15
-    mov     es, word ptr trackdata15+2
+    add     bx, word ptr td15_terr_map_main
+    mov     es, word ptr td15_terr_map_main+2
     mov     bl, es:[bx]
     sub     bh, bh
     shl     bx, 1
     shl     bx, 1
     push    word ptr (tracksmenushapes1+2)[bx]
     push    word ptr tracksmenushapes1[bx]
-    call    sub_33BBC
+    call    sprite_putimage_and_alt
     add     sp, 8
     mov     al, [bp+var_8]
     cbw
@@ -3223,15 +3263,17 @@ loc_2C0CA:
     mov     al, [bp+arg_0]
     sub     ah, ah
     add     bx, ax
-    add     bx, word ptr trackdata15
-    mov     es, word ptr trackdata15+2
+    add     bx, word ptr td15_terr_map_main
+    mov     es, word ptr td15_terr_map_main+2
     mov     bl, es:[bx+1]
     sub     bh, bh
     shl     bx, 1
     shl     bx, 1
     push    word ptr (tracksmenushapes1+2)[bx]
+loc_2C165:
     push    word ptr tracksmenushapes1[bx]
-    call    sub_33BBC
+loc_2C169:
+    call    sprite_putimage_and_alt
     add     sp, 8
     mov     al, [bp+var_8]
     cbw
@@ -3256,8 +3298,8 @@ loc_2C0CA:
     mov     al, [bp+arg_0]
     sub     ah, ah
     add     bx, ax
-    add     bx, word ptr trackdata14
-    mov     es, word ptr trackdata14+2
+    add     bx, word ptr td14_elem_map_main
+    mov     es, word ptr td14_elem_map_main+2
     mov     bl, es:[bx]
     sub     bh, bh
     shl     bx, 1
@@ -3289,8 +3331,8 @@ loc_2C0CA:
     mov     al, [bp+arg_0]
     sub     ah, ah
     add     bx, ax
-    add     bx, word ptr trackdata14
-    mov     es, word ptr trackdata14+2
+    add     bx, word ptr td14_elem_map_main
+    mov     es, word ptr td14_elem_map_main+2
     mov     bl, es:[bx]
 loc_2C201:
     sub     bh, bh
@@ -3338,15 +3380,15 @@ loc_2C235:
     mov     al, [bp+arg_0]
     sub     ah, ah
     add     bx, ax
-    add     bx, word ptr trackdata15
-    mov     es, word ptr trackdata15+2
+    add     bx, word ptr td15_terr_map_main
+    mov     es, word ptr td15_terr_map_main+2
     mov     bl, es:[bx]
     sub     bh, bh
     shl     bx, 1
     shl     bx, 1
     push    word ptr (tracksmenushapes1+2)[bx]
     push    word ptr tracksmenushapes1[bx]
-    call    sub_33BBC
+    call    sprite_putimage_and_alt
     add     sp, 8
     mov     al, [bp+var_8]
     cbw
@@ -3371,8 +3413,8 @@ loc_2C235:
     mov     al, [bp+arg_0]
     sub     ah, ah
     add     bx, ax
-    add     bx, word ptr trackdata14
-    mov     es, word ptr trackdata14+2
+    add     bx, word ptr td14_elem_map_main
+    mov     es, word ptr td14_elem_map_main+2
     mov     bl, es:[bx-1]
     sub     bh, bh
     shl     bx, 1
@@ -3405,8 +3447,8 @@ loc_2C305:
     mov     al, [bp+arg_0]
     sub     ah, ah
     add     bx, ax
-    add     bx, word ptr trackdata14
-    mov     es, word ptr trackdata14+2
+    add     bx, word ptr td14_elem_map_main
+    mov     es, word ptr td14_elem_map_main+2
     mov     bl, es:[bx-1]
     jmp     loc_2C201
     ; align 2
@@ -3435,6 +3477,7 @@ loc_2C33C:
     shl     ax, cl
     add     ax, 8
     push    ax
+loc_2C352:
     mov     bl, [bp+var_A]
     sub     bh, bh
     shl     bx, 1
@@ -3501,7 +3544,7 @@ loc_2C3A5:
     shl     bx, 1
     add     bx, ax
     shl     bx, 1
-    mov     al, sceneshapes.scene_translateflag[bx]
+    mov     al, trkObjectList.ss_multiTileFlag[bx]
     cbw
     or      ax, ax
     jz      short loc_2C41A
@@ -3536,7 +3579,7 @@ loc_2C41A:
     shl     bx, 1
     push    word ptr (tracksmenushape2dunk2+2)[bx]
     push    word ptr tracksmenushape2dunk2[bx]
-    call    sub_33A1E
+    call    putpixel_iconMask
     add     sp, 8
     mov     al, [bp+var_6]
     cbw
@@ -3555,7 +3598,7 @@ loc_2C41A:
     shl     bx, 1
     push    word ptr (tracksmenushape2dunk+2)[bx]
     push    word ptr tracksmenushape2dunk[bx]
-    call    sub_34212
+    call    putpixel_iconFillings
     jmp     loc_2C214
 loc_2C478:
     mov     al, [bp+var_8]
@@ -3581,8 +3624,8 @@ loc_2C478:
     mov     al, [bp+arg_0]
     sub     ah, ah
     add     bx, ax
-    add     bx, word ptr trackdata15
-    mov     es, word ptr trackdata15+2
+    add     bx, word ptr td15_terr_map_main
+    mov     es, word ptr td15_terr_map_main+2
     mov     bl, es:[bx]
 loc_2C4B5:
     sub     bh, bh
@@ -3590,7 +3633,7 @@ loc_2C4B5:
     shl     bx, 1
     push    word ptr (tracksmenushapes1+2)[bx]
     push    word ptr tracksmenushapes1[bx]
-    call    sub_33BBC
+    call    sprite_putimage_and_alt
     add     sp, 8
     mov     al, [bp+var_6]
     cbw
@@ -3619,9 +3662,12 @@ loc_2C4B5:
     push    ax
     mov     al, [bp+var_8]
     cbw
+loc_2C50A:
     shl     ax, cl
+loc_2C50C:
     add     ax, 8
     push    ax
+loc_2C510:
     mov     bl, [bp+var_C]
     jmp     loc_2C201
 loc_2C516:
@@ -3649,8 +3695,8 @@ loc_2C53F:
     mov     al, [bp+arg_0]
     sub     ah, ah
     add     bx, ax
-    add     bx, word ptr trackdata15
-    mov     es, word ptr trackdata15+2
+    add     bx, word ptr td15_terr_map_main
+    mov     es, word ptr td15_terr_map_main+2
     mov     bl, es:[bx+1]
     jmp     loc_2C4B5
     ; align 2
@@ -3679,15 +3725,15 @@ loc_2C558:
     mov     al, [bp+arg_0]
     sub     ah, ah
     add     bx, ax
-    add     bx, word ptr trackdata15
-    mov     es, word ptr trackdata15+2
+    add     bx, word ptr td15_terr_map_main
+    mov     es, word ptr td15_terr_map_main+2
     mov     bl, es:[bx+1]
     sub     bh, bh
     shl     bx, 1
     shl     bx, 1
     push    word ptr (tracksmenushapes1+2)[bx]
     push    word ptr tracksmenushapes1[bx]
-    call    sub_33BBC
+    call    sprite_putimage_and_alt
     add     sp, 8
     mov     al, [bp+var_8]
     cbw
@@ -3712,15 +3758,15 @@ loc_2C558:
     mov     al, [bp+arg_0]
     sub     ah, ah
     add     bx, ax
-    add     bx, word ptr trackdata15
-    mov     es, word ptr trackdata15+2
+    add     bx, word ptr td15_terr_map_main
+    mov     es, word ptr td15_terr_map_main+2
     mov     bl, es:[bx]
     sub     bh, bh
     shl     bx, 1
     shl     bx, 1
     push    word ptr (tracksmenushapes1+2)[bx]
     push    word ptr tracksmenushapes1[bx]
-    call    sub_33BBC
+    call    sprite_putimage_and_alt
     add     sp, 8
     mov     al, [bp+var_8]
     cbw
@@ -3774,15 +3820,15 @@ loc_2C64A:
     mov     bx, ax
     mov     bx, trackrows[bx]
     add     bx, si
-    add     bx, word ptr trackdata14
-    mov     es, word ptr trackdata14+2
+    add     bx, word ptr td14_elem_map_main
+    mov     es, word ptr td14_elem_map_main+2
     mov     al, es:[bx+di]
     mov     [bp+var_C], al
     mov     bx, [bp+var_E]
     mov     bx, terrainrows[bx]
     add     bx, si
-    add     bx, word ptr trackdata15
-    mov     es, word ptr trackdata15+2
+    add     bx, word ptr td15_terr_map_main
+    mov     es, word ptr td15_terr_map_main+2
     mov     al, es:[bx+di]
     mov     [bp+var_A], al
     mov     ax, [bp+var_2]
@@ -3795,6 +3841,7 @@ loc_2C6A5:
     cmp     [bp+var_6], ch
     jz      short loc_2C6B2
     cmp     [bp+var_8], ch
+loc_2C6AD:
     jz      short loc_2C6B2
     jmp     loc_2C31E
 loc_2C6B2:
@@ -3832,15 +3879,15 @@ loc_2C6CD:
     mov     al, [bp+arg_0]
     sub     ah, ah
     add     bx, ax
-    add     bx, word ptr trackdata15
-    mov     es, word ptr trackdata15+2
+    add     bx, word ptr td15_terr_map_main
+    mov     es, word ptr td15_terr_map_main+2
     mov     bl, es:[bx]
     sub     bh, bh
     shl     bx, 1
     shl     bx, 1
     push    word ptr (tracksmenushapes1+2)[bx]
     push    word ptr tracksmenushapes1[bx]
-    call    sub_33BBC
+    call    sprite_putimage_and_alt
     add     sp, 8
     mov     al, [bp+var_8]
     cbw
@@ -3865,15 +3912,15 @@ loc_2C6CD:
     mov     al, [bp+arg_0]
     sub     ah, ah
     add     bx, ax
-    add     bx, word ptr trackdata15
-    mov     es, word ptr trackdata15+2
+    add     bx, word ptr td15_terr_map_main
+    mov     es, word ptr td15_terr_map_main+2
     mov     bl, es:[bx]
     sub     bh, bh
     shl     bx, 1
     shl     bx, 1
     push    word ptr (tracksmenushapes1+2)[bx]
     push    word ptr tracksmenushapes1[bx]
-    call    sub_33BBC
+    call    sprite_putimage_and_alt
     add     sp, 8
     mov     al, [bp+var_8]
     cbw
@@ -3898,8 +3945,9 @@ loc_2C6CD:
     mov     al, [bp+arg_0]
     sub     ah, ah
     add     bx, ax
-    add     bx, word ptr trackdata14
-    mov     es, word ptr trackdata14+2
+    add     bx, word ptr td14_elem_map_main
+    mov     es, word ptr td14_elem_map_main+2
+loc_2C7AD:
     mov     bl, es:[bx-1]
     sub     bh, bh
     shl     bx, 1
@@ -3953,7 +4001,7 @@ loc_2C816:
     mov     sp, bp
     pop     bp
     retf
-sub_2C0A8 endp
+draw_2DtrackMap endp
 sub_2C81C proc far
     var_A = byte ptr -10
     var_8 = byte ptr -8
@@ -3978,6 +4026,7 @@ sub_2C81C proc far
 loc_2C834:
     cmp     [bp+var_4], 0FFh
     jnz     short loc_2C848
+loc_2C83A:
     mov     bl, [bp+var_6]
     sub     bh, bh
     shl     bx, 1
@@ -3995,7 +4044,7 @@ loc_2C848:
     mov     al, [bp+var_2]
     sub     ah, ah
     add     bx, ax
-    les     si, trackdata14
+    les     si, td14_elem_map_main
     mov     al, es:[bx+si]
     jmp     short loc_2C88A
     ; align 2
@@ -4011,7 +4060,7 @@ loc_2C87B:
     mov     al, [bp+var_2]
     sub     ah, ah
     add     si, ax
-    les     bx, trackdata14
+    les     bx, td14_elem_map_main
     mov     al, es:[bx+si-1]
 loc_2C88A:
     mov     [bp+var_4], al
@@ -4023,22 +4072,27 @@ loc_2C88D:
     cmp     ax, 23h ; '#'
     jbe     short loc_2C903
     cmp     ax, 67h ; 'g'
+loc_2C89F:
     jb      short loc_2C8B0
+loc_2C8A1:
     cmp     ax, 6Ch ; 'l'
     jbe     short loc_2C903
     cmp     ax, 0ABh ; '«'
     jb      short loc_2C8B0
+loc_2C8AB:
     cmp     ax, 0AEh ; '®'
     jbe     short loc_2C903
 loc_2C8B0:
     mov     bl, [bp+var_6]
+loc_2C8B3:
     sub     bh, bh
+loc_2C8B5:
     shl     bx, 1
     mov     bx, [bx-5A30h]
     mov     al, [bp+var_2]
     sub     ah, ah
     add     bx, ax
-    les     si, trackdata14
+    les     si, td14_elem_map_main
     mov     es:[bx+si], ah
     mov     [bp+var_A], 0Ch
     jmp     short loc_2C903
@@ -4050,7 +4104,7 @@ loc_2C8D0:
     push    ax
     mov     al, [bp+var_8]
     push    ax
-    call    map_terrain_track
+    call    subst_hillroad_track
     add     sp, 4
     or      al, al
     jnz     short loc_2C903
@@ -4061,7 +4115,7 @@ loc_2C8D0:
     mov     al, [bp+var_2]
     sub     ah, ah
     add     bx, ax
-    les     si, trackdata14
+    les     si, td14_elem_map_main
     mov     es:[bx+si], ah
     mov     [bp+var_A], 0Dh
 loc_2C903:
@@ -4078,13 +4132,13 @@ loc_2C90F:
     mov     di, ax
     shl     di, 1
     mov     bx, [di-73C4h]
-    add     bx, word ptr trackdata15
-    mov     es, word ptr trackdata15+2
+    add     bx, word ptr td15_terr_map_main
+    mov     es, word ptr td15_terr_map_main+2
     mov     al, es:[bx+si]
     mov     [bp+var_8], al
     mov     bx, [di-5A30h]
-    add     bx, word ptr trackdata14
-    mov     es, word ptr trackdata14+2
+    add     bx, word ptr td14_elem_map_main
+    mov     es, word ptr td14_elem_map_main+2
     mov     al, es:[bx+si]
     mov     [bp+var_4], al
     cmp     al, ah
@@ -4114,7 +4168,7 @@ loc_2C96D:
     mov     al, [bp+var_2]
     sub     ah, ah
     add     bx, ax
-    mov     si, word ptr trackdata14
+    mov     si, word ptr td14_elem_map_main
     mov     es:[bx+si], ah
     jmp     loc_2C903
     ; align 4
@@ -4211,16 +4265,17 @@ loc_2CA2A:
     mov     di, ax
     mov     al, [bp+var_38C]
     shl     ax, 1
+loc_2CA38:
     mov     [bp+var_38E], ax
     mov     bx, ax
     mov     bx, [bx-5A2Eh]
-    add     bx, word ptr trackdata14
-    mov     es, word ptr trackdata14+2
+    add     bx, word ptr td14_elem_map_main
+    mov     es, word ptr td14_elem_map_main+2
     cmp     byte ptr es:[bx+di], 0FEh ; 'þ'
     jz      short loc_2CA60
     mov     bx, ax
     mov     bx, [bx-5A30h]
-    add     bx, word ptr trackdata14
+    add     bx, word ptr td14_elem_map_main
 loc_2CA5A:
     mov     byte ptr es:[bx+di], 0
     jmp     short loc_2CA79
@@ -4229,6 +4284,7 @@ loc_2CA60:
     sub     bh, bh
     shl     bx, 1
     mov     di, [bx-5A2Eh]
+loc_2CA6C:
     mov     al, [bp+var_388]
     sub     ah, ah
     add     di, ax
@@ -4242,12 +4298,13 @@ loc_2CA7D:
 loc_2CA87:
     mov     bl, [bp+var_38C]
     sub     bh, bh
+loc_2CA8D:
     shl     bx, 1
     mov     di, [bx-5A30h]
     mov     al, [bp+var_388]
     sub     ah, ah
     add     di, ax
-    les     bx, trackdata14
+    les     bx, td14_elem_map_main
     mov     al, es:[bx+di]
     mov     [bp+var_38A], al
     cmp     al, ah
@@ -4271,7 +4328,7 @@ loc_2CABC:
     add     di, ax
     cmp     [bp+di+var_383], ah
     jz      short loc_2CADE
-    les     bx, trackdata14
+    les     bx, td14_elem_map_main
     jmp     loc_2CA5A
     ; align 2
     db 144
@@ -4283,14 +4340,16 @@ loc_2CADE:
     mov     cl, [bp+var_388]
     sub     ch, ch
     add     ax, cx
-    add     ax, word ptr trackdata14
-    mov     dx, word ptr trackdata14+2
+    add     ax, word ptr td14_elem_map_main
+    mov     dx, word ptr td14_elem_map_main+2
     mov     word ptr [bp+var_392], ax
     mov     word ptr [bp+var_392+2], dx
     les     bx, [bp+var_392]
     cmp     byte ptr es:[bx+1], 0FFh
     jz      short loc_2CB14
+loc_2CB0D:
     mov     es:[bx], ch
+loc_2CB10:
     jmp     loc_2CA79
     ; align 2
     db 144
@@ -4299,6 +4358,7 @@ loc_2CB14:
     sub     bh, bh
     shl     bx, 1
     mov     di, [bx-5A30h]
+loc_2CB20:
     mov     al, [bp+var_388]
     sub     ah, ah
     add     di, ax
@@ -4306,11 +4366,13 @@ loc_2CB14:
     jmp     loc_2CA79
 loc_2CB30:
     mov     al, [bp+var_388]
+loc_2CB34:
     sub     ah, ah
     mov     di, ax
     mov     al, [bp+var_38C]
     shl     ax, 1
     mov     word ptr [bp+var_392], ax
+loc_2CB42:
     mov     bx, ax
     mov     bx, [bx-5A2Eh]
     add     bx, di
@@ -4318,9 +4380,11 @@ loc_2CB30:
     mov     al, [bx-383h]
     sub     ah, ah
     mov     bx, word ptr [bp+var_392]
+loc_2CB56:
     mov     bx, [bx-5A30h]
     add     bx, di
     add     bx, bp
+loc_2CB5E:
     mov     cl, [bx-383h]
     sub     ch, ch
     add     ax, cx
@@ -4328,14 +4392,15 @@ loc_2CB30:
     mov     bx, [bx-5A2Eh]
     add     bx, di
     add     bx, bp
+loc_2CB72:
     mov     cl, [bx-384h]
     add     ax, cx
     jz      short loc_2CB8E
     mov     bx, word ptr [bp+var_392]
 loc_2CB7E:
     mov     bx, [bx-5A30h]
-    add     bx, word ptr trackdata14
-    mov     es, word ptr trackdata14+2
+    add     bx, word ptr td14_elem_map_main
+    mov     es, word ptr td14_elem_map_main+2
     jmp     loc_2CA5A
     ; align 2
     db 144
@@ -4348,18 +4413,18 @@ loc_2CB8E:
     mov     word ptr [bp+var_392], ax
     mov     bx, ax
     mov     bx, [bx-5A30h]
-    add     bx, word ptr trackdata14
-    mov     es, word ptr trackdata14+2
+    add     bx, word ptr td14_elem_map_main
+    mov     es, word ptr td14_elem_map_main+2
     cmp     byte ptr es:[bx+di+1], 0FFh
     jnz     short loc_2CBD6
     mov     bx, ax
     mov     bx, [bx-5A2Eh]
-    add     bx, word ptr trackdata14
+    add     bx, word ptr td14_elem_map_main
     cmp     byte ptr es:[bx+di], 0FEh ; 'þ'
     jnz     short loc_2CBD6
     mov     bx, ax
     mov     bx, [bx-5A2Eh]
-    add     bx, word ptr trackdata14
+    add     bx, word ptr td14_elem_map_main
     cmp     byte ptr es:[bx+di+1], 0FDh ; 'ý'
     jz      short loc_2CBF2
 loc_2CBD6:
@@ -4370,7 +4435,7 @@ loc_2CBD6:
     mov     al, [bp+var_388]
     sub     ah, ah
     add     bx, ax
-    mov     di, word ptr trackdata14
+    mov     di, word ptr td14_elem_map_main
     jmp     loc_2CAB7
     ; align 2
     db 144
@@ -4381,20 +4446,30 @@ loc_2CBF2:
     mov     al, [bp+var_38C]
     shl     ax, 1
     mov     word ptr [bp+var_392], ax
+loc_2CC04:
     mov     bx, ax
     mov     bx, [bx-5A30h]
     add     bx, di
     add     bx, bp
+loc_2CC0E:
     mov     byte ptr [bx-383h], 1
+loc_2CC13:
     mov     bx, word ptr [bp+var_392]
+loc_2CC17:
     mov     bx, [bx-5A2Eh]
     add     bx, di
+loc_2CC1D:
     add     bx, bp
+loc_2CC1F:
     mov     byte ptr [bx-384h], 1
+loc_2CC24:
     mov     bx, word ptr [bp+var_392]
+loc_2CC28:
     mov     bx, [bx-5A2Eh]
+loc_2CC2C:
     add     bx, di
     add     bx, bp
+loc_2CC30:
     mov     byte ptr [bx-383h], 1
     jmp     loc_2CA79
 loc_2CC38:
@@ -4402,15 +4477,20 @@ loc_2CC38:
 loc_2CC3C:
     cmp     [bp+var_38C], 1Eh
     jnb     short loc_2CC4C
+loc_2CC43:
     mov     [bp+var_388], 0
+loc_2CC48:
     jmp     loc_2CA7D
     ; align 2
     db 144
 loc_2CC4C:
     pop     si
     pop     di
+loc_2CC4E:
     mov     sp, bp
+loc_2CC50:
     pop     bp
+locret_2CC51:
     retf
 sub_2C9B4 endp
 seg009 ends

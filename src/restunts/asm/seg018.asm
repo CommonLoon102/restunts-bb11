@@ -48,25 +48,35 @@ seg018 segment byte public 'STUNTSC' use16
     assume es:nothing, ss:nothing, ds:dseg
     public kb_shift_checking1
     public kb_shift_checking2
+locret_36AF2:
     retf
+algn_36AF3:
     ; align 2
     db 144
 kb_shift_checking1 proc far
 
     mov     ax, 40h ; '@'
+loc_36AF7:
     mov     es, ax
+loc_36AF9:
     or      byte ptr es:17h, 20h; 40h:17h = keyboard shift flags
+loc_36AFF:
     call    kb_checking
+locret_36B04:
     retf
 kb_shift_checking1 endp
 kb_shift_checking2 proc far
 
     mov     ax, 40h ; '@'
+loc_36B08:
     mov     es, ax
+loc_36B0A:
 smart
     and     byte ptr es:17h, 0DFh; 40h:17h = keyboard shift flags
 nosmart
+loc_36B10:
     call    kb_checking
+locret_36B15:
     retf
 kb_shift_checking2 endp
 seg018 ends

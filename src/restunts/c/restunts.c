@@ -32,28 +32,28 @@ extern int terrainpos[];
 extern int terraincenterpos[];
 extern int trackpos2[];
 extern int trackcenterpos2[];
-extern char far* trackdata1;
-extern char far* trackdata2;
+extern char far* td01_track_file_cpy; //trackdata1;
+extern char far* td02_penalty_related; //trackdata2;
 extern char far* trackdata3;
-extern char far* trackdata4;
-extern char far* trackdata5;
+extern char far* td04_aerotable_pl; //trackdata4;
+extern char far* td05_aerotable_op; //trackdata5;
 extern char far* trackdata6;
 extern char far* trackdata7;
-extern char far* trackdata8;
+extern char far* td08_direction_related; //trackdata8;
 extern char far* trackdata9;
-extern char far* trackdata10;
-extern char far* trackdata11;
+extern char far* td10_track_check_rel;// trackdata10;
+extern char far* td11_highscores; //trackdata11;
 extern char far* trackdata12;
-extern char far* trackdata13;
-extern char far* trackdata14;
-extern char far* trackdata15;
-extern char far* trackdata16;
-extern char far* trackdata17;
+extern char far* td13_rpl_header; //trackdata13;
+extern char far* td14_elem_map_main; //trackdata14;
+extern char far* td15_terr_map_main; //trackdata15;
+extern char far* td16_rpl_buffer; //trackdata16;
+extern char far* td17_trk_elem_ordered; //trackdata17;
 extern char far* trackdata18;
 extern char far* trackdata19;
-extern char far* trackdata20;
-extern char far* trackdata21;
-extern char far* trackdata22;
+extern char far* td20_trk_file_appnd; //trackdata20;
+extern char far* td21_col_from_path; //trackdata21;
+extern char far* td22_row_from_path; //trackdata22;
 extern char far* trackdata23;
 extern char kbormouse;
 extern char passed_security;
@@ -151,19 +151,19 @@ int stuntsmain(int argc, char* argv) {
 
 	trkptr = mmgr_alloc_resbytes("trakdata", 0x6BF3);
 
-	trackdata1 = trkptr;
+	td01_track_file_cpy = trkptr;
 	
 	trkptr += 0x70a;
-	trackdata2 = trkptr;
+	td02_penalty_related = trkptr;
 	
 	trkptr += 0x70a;
 	trackdata3 = trkptr;
 
 	trkptr += 0x70a;
-	trackdata4 = trkptr;
+	td04_aerotable_pl = trkptr;
 
 	trkptr += 0x80;
-	trackdata5 = trkptr;
+	td05_aerotable_op = trkptr;
 
 	trkptr += 0x80;
 	trackdata6 = trkptr;
@@ -172,34 +172,34 @@ int stuntsmain(int argc, char* argv) {
 	trackdata7 = trkptr;
 
 	trkptr += 0x80;
-	trackdata8 = trkptr;
+	td08_direction_related = trkptr;
 
 	trkptr += 0x60;
 	trackdata9 = trkptr;
 
 	trkptr += 0x180;
-	trackdata10 = trkptr;
+	td10_track_check_rel = trkptr;
 
 	trkptr += 0x120;
-	trackdata11 = trkptr;
+	td11_highscores = trkptr;
 
 	trkptr += 0x16c;
 	trackdata12 = trkptr;
 
 	trkptr += 0x0f0;
-	trackdata13 = trkptr;
+	td13_rpl_header = trkptr;
 
 	trkptr += 0x1a;
-	trackdata14 = trkptr;
+	td14_elem_map_main = trkptr;
 
 	trkptr += 0x385;
-	trackdata15 = trkptr;
+	td15_terr_map_main = trkptr;
 
 	trkptr += 0x385;
-	trackdata16 = trkptr;
+	td16_rpl_buffer = trkptr;
 
 	trkptr += 0x2ee0;
-	trackdata17 = trkptr;
+	td17_trk_elem_ordered = trkptr;
 
 	trkptr += 0x385;
 	trackdata18 = trkptr;
@@ -208,13 +208,13 @@ int stuntsmain(int argc, char* argv) {
 	trackdata19 = trkptr;
 
 	trkptr += 0x385;
-	trackdata20 = trkptr;
+	td20_trk_file_appnd = trkptr;
 
 	trkptr += 0x7ac;
-	trackdata21 = trkptr;
+	td21_col_from_path = trkptr;
 
 	trkptr += 0x385;
-	trackdata22 = trkptr;
+	td22_row_from_path = trkptr;
 
 	trkptr += 0x385;
 	trackdata23 = trkptr;
@@ -268,11 +268,11 @@ _do_game0:
 _do_game1:
 	_memcpy(&gameconfigcopy, &gameconfig, sizeof(struct GAMEINFO));
 	for (i = 0; i < 0x70A; i++) {
-		trackdata20[i] = trackdata14[i];
+		td20_trk_file_appnd[i] = td14_elem_map_main[i];
 	}
 	for (i = 0; i < 0x51; i++) {
-		trackdata20[i + 0x70A] = byte_3B80C[i];
-		trackdata20[i + 0x75B] = byte_3B85E[i];
+		td20_trk_file_appnd[i + 0x70A] = byte_3B80C[i];
+		td20_trk_file_appnd[i + 0x75B] = byte_3B85E[i];
 	}
 	
 	if (byte_44AE2 != 0) {
@@ -312,7 +312,7 @@ _do_intro:
 	
 	if (regsi != 0) {
 		combine_file_path(byte_3B80C, gameconfig.game_trackname, ".trk", track_full_path);
-		file_read_fatal(track_full_path, trackdata14);
+		file_read_fatal(track_full_path, td14_elem_map_main);
 	}
 	
 	byte_44AE2 = 0;
@@ -358,11 +358,11 @@ loc_104AC:
 loc_104D2:
 	_memcpy(&gameconfigcopy, &gameconfig, sizeof(struct GAMEINFO));
 	for (i = 0; i < 0x70A; i++) {
-		trackdata14[i] = trackdata20[i];
+		td14_elem_map_main[i] = td20_trk_file_appnd[i];
 	}
 	for (i = 0; i < 0x51; i++) {
-		byte_3B80C[i] = trackdata20[i + 0x70A];
-		byte_3B85E[i] = trackdata20[i + 0x75B];
+		byte_3B80C[i] = td20_trk_file_appnd[i + 0x70A];
+		byte_3B85E[i] = td20_trk_file_appnd[i + 0x75B];
 	}
 	mmgr_release(cvxptr);
 	

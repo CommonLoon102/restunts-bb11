@@ -5,9 +5,9 @@ seg003 segment byte public 'STUNTSC' use16
     extrn sub_1C302:proc
     extrn skybox_op:proc
     extrn sub_1CB80:proc
-    extrn sub_1CBDC:proc
+    extrn draw_track_preview:proc
     extrn draw_ingame_text:proc
-    extrn sub_1D534:proc
+    extrn do_sinking:proc
     extrn sub_1D5B4:proc
     extrn load_skybox:proc
     extrn unload_skybox:proc

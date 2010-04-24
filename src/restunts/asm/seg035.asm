@@ -59,14 +59,22 @@ load_2dshape_res_fatal proc far
     arg_0 = word ptr 6
 
     push    bp
+loc_3ACD9:
     mov     bp, sp
+loc_3ACDB:
     mov     ax, 1
+loc_3ACDE:
     push    ax
+loc_3ACDF:
     push    [bp+arg_0]
+loc_3ACE2:
     push    cs
+loc_3ACE3:
     call near ptr load_2dshape_res
+loc_3ACE6:
     add     sp, 4
     pop     bp
+locret_3ACEA:
     retf
     ; align 2
     db 144
@@ -77,13 +85,19 @@ load_2dshape_res_nofatal proc far
     arg_0 = word ptr 6
 
     push    bp
+loc_3ACED:
     mov     bp, sp
+loc_3ACEF:
     sub     ax, ax
     push    ax
+loc_3ACF2:
     push    [bp+arg_0]
     push    cs
+loc_3ACF6:
     call near ptr load_2dshape_res
+loc_3ACF9:
     add     sp, 4
+loc_3ACFC:
     pop     bp
     retf
 load_2dshape_res_nofatal endp
@@ -99,18 +113,28 @@ load_2dshape_res proc far
     arg_fatal = word ptr 8
 
     push    bp
+loc_3ACFF:
     mov     bp, sp
+loc_3AD01:
     sub     sp, 0Ah
+loc_3AD04:
     push    [bp+arg_0]
+loc_3AD07:
     call    mmgr_path_to_name
+loc_3AD0C:
     add     sp, 2
     push    ax
+loc_3AD10:
     call    mmgr_get_chunk_by_name
+loc_3AD15:
     add     sp, 2
+loc_3AD18:
     mov     [bp+var_8], ax
+loc_3AD1B:
     mov     [bp+var_6], dx
     or      ax, dx
     jz      short loc_3AD2A
+loc_3AD22:
     mov     ax, [bp+var_8]
     mov     sp, bp
     pop     bp
@@ -123,12 +147,16 @@ loc_3AD2A:
     call    load_2dshape
     add     sp, 4
     mov     [bp+var_4], ax
+loc_3AD3B:
     mov     [bp+var_2], dx
     or      ax, dx
     jnz     short loc_3AD4A
+loc_3AD42:
     mov     ax, [bp+var_4]
+loc_3AD45:
     mov     sp, bp
     pop     bp
+locret_3AD48:
     retf
     ; align 2
     db 144
@@ -139,6 +167,7 @@ loc_3AD4A:
     add     sp, 4
     mov     [bp+var_A], ax
     push    ax
+loc_3AD5C:
     push    [bp+arg_0]
     call    mmgr_alloc_pages
     add     sp, 4
@@ -153,14 +182,22 @@ loc_3AD4A:
     add     sp, 8
     push    [bp+var_2]
     push    [bp+var_4]
+loc_3AD82:
     call    mmgr_release
     add     sp, 4
+loc_3AD8A:
     push    [bp+var_6]
+loc_3AD8D:
     push    [bp+var_8]
+loc_3AD90:
     call    mmgr_op_unk
+loc_3AD95:
     add     sp, 4
+loc_3AD98:
     mov     sp, bp
+loc_3AD9A:
     pop     bp
+locret_3AD9B:
     retf
 load_2dshape_res endp
 parse_2d_shape proc far
@@ -191,8 +228,11 @@ parse_2d_shape proc far
     arg_6 = word ptr 12
 
     push    bp
+loc_3AD9D:
     mov     bp, sp
+loc_3AD9F:
     sub     sp, 38h
+loc_3ADA2:
     push    di
     push    si
     push    [bp+arg_2]
@@ -254,6 +294,7 @@ loc_3AE2C:
     jg      short loc_3AE4C
     mov     ax, [bp+var_1E]
     cmp     [bp+var_E], ax
+loc_3AE47:
     jnb     short loc_3AE4C
     jmp     loc_3AF3F
 loc_3AE4C:
@@ -310,6 +351,7 @@ loc_3AEC1:
     jl      short loc_3AEAC
 loc_3AEC9:
     mov     ax, [bp+var_1E]
+loc_3AECC:
     cmp     [bp+var_10], ax
     jbe     short loc_3AEFB
     mov     [bp+var_10], ax
@@ -320,8 +362,10 @@ loc_3AED6:
     les     bx, [bp+var_8]
     inc     word ptr [bp+var_8]
     mov     byte ptr es:[bx], 7Fh ; ''
+loc_3AEE8:
     les     bx, [bp+var_2E]
     mov     al, es:[bx]
+loc_3AEEE:
     les     bx, [bp+var_8]
     inc     word ptr [bp+var_8]
     mov     es:[bx], al
@@ -370,12 +414,15 @@ loc_3AF5B:
 loc_3AF66:
     push    [bp+var_2A]
     push    [bp+arg_2]
+loc_3AF6C:
     push    [bp+arg_0]
+loc_3AF6F:
     call    sub_3265B
     add     sp, 6
     mov     word ptr [bp+var_C], ax
     mov     word ptr [bp+var_C+2], dx
     push    word ptr [bp+var_8+2]
+loc_3AF80:
     push    word ptr [bp+var_8]
     call    sub_2F314
     add     sp, 4
@@ -383,25 +430,30 @@ loc_3AF66:
     mov     [bp+var_12], dx
     push    dx
     push    ax
+loc_3AF93:
     call    sub_2F334
     add     sp, 4
     mov     word ptr [bp+var_8], ax
     mov     word ptr [bp+var_8+2], dx
+loc_3AFA1:
     push    [bp+var_24]
     push    [bp+var_26]
     call    sub_2F314
     add     sp, 4
     push    word ptr [bp+var_8+2]
     push    word ptr [bp+var_8]
+loc_3AFB5:
     mov     si, ax
     mov     di, dx
     call    sub_2F314
+loc_3AFBE:
     add     sp, 4
     sub     ax, si
     sbb     dx, di
     les     bx, [bp+var_18]
     add     word ptr [bp+var_18], 4
     mov     es:[bx], ax
+loc_3AFCF:
     mov     es:[bx+2], dx
     mov     ax, word ptr [bp+var_C]
     mov     dx, word ptr [bp+var_C+2]
@@ -454,6 +506,7 @@ loc_3B052:
     add     ax, 1
     adc     dx, 0
     mov     [bp+var_34], ax
+loc_3B063:
     mov     [bp+var_32], dx
     jmp     short loc_3B074
 loc_3B068:
@@ -461,17 +514,23 @@ loc_3B068:
     push    ax
     lea     ax, [bp+var_34]
     push    ax
+loc_3B06F:
     call    unknown_libname_4; MS Quick C v1.0/v2.01 & MSC v5.1 DOS run-time & graphic
 loc_3B074:
     push    [bp+var_34]
+loc_3B077:
     push    [bp+arg_6]
     push    [bp+arg_4]
+loc_3B07D:
     call    mmgr_resize_memory
+loc_3B082:
     add     sp, 6
     pop     si
     pop     di
+loc_3B087:
     mov     sp, bp
     pop     bp
+locret_3B08A:
     retf
     ; align 2
     db 144
@@ -486,22 +545,34 @@ sub_3B08C proc far
     push    bp
     mov     bp, sp
     sub     sp, 4
+loc_3B092:
     les     bx, [bp+arg_0]
     mov     al, es:[bx]
+loc_3B098:
     mov     [bp+var_4], al
+loc_3B09B:
     mov     [bp+var_2], 0
+loc_3B0A0:
     jmp     short loc_3B0A5
 loc_3B0A2:
     inc     [bp+var_2]
 loc_3B0A5:
     les     bx, [bp+arg_0]
+loc_3B0A8:
     inc     word ptr [bp+arg_0]
+loc_3B0AB:
     mov     al, [bp+var_4]
+loc_3B0AE:
     cmp     es:[bx], al
+loc_3B0B1:
     jz      short loc_3B0A2
+loc_3B0B3:
     mov     ax, [bp+var_2]
+loc_3B0B6:
     mov     sp, bp
+loc_3B0B8:
     pop     bp
+locret_3B0B9:
     retf
 sub_3B08C endp
 seg035 ends

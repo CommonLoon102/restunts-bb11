@@ -49,10 +49,10 @@ seg008 segment byte public 'STUNTSC' use16
     public sub_274B0
     public sub_275C6
     public show_dialog
-    public sub_27ED4
+    public do_fileselect_dialog
     public combine_file_path
-    public sub_2863A
-    public sub_28762
+    public do_savefile_dialog
+    public parse_filepath_separators
     public input_checking
     public input_do_checking
     public ported_file_load_resfile_
@@ -74,7 +74,7 @@ seg008 segment byte public 'STUNTSC' use16
     public ported_sprite_copy_wnd_to_1_clear_
     public sub_28F98
     public sub_29008
-    public sub_290BC
+    public call_read_line
     public input_repeat_check
     public sub_2916E
     public sub_292DC
@@ -82,7 +82,7 @@ seg008 segment byte public 'STUNTSC' use16
     public sub_29606
     public sub_29620
     public show_waiting
-    public sub_296E0
+    public print_int_as_string_maybe
     public sub_29772
     public sub_29786
     public ported_file_load_audiores_
@@ -122,38 +122,64 @@ sub_274B0 proc far
     arg_6 = word ptr 12
 
     push    bp
+loc_274B1:
     mov     bp, sp
+loc_274B3:
     sub     sp, 40h
+loc_274B6:
     push    di
     push    si
+loc_274B8:
     mov     ax, video_flag1_is1
+loc_274BB:
     imul    video_flag4_is1
     cwd
+loc_274C0:
     push    dx
     push    ax
+loc_274C2:
     mov     ax, [bp+arg_6]
+loc_274C5:
     sub     ax, [bp+arg_4]
+loc_274C8:
     cwd
     push    dx
+loc_274CA:
     push    ax
+loc_274CB:
     mov     ax, [bp+arg_2]
+loc_274CE:
     sub     ax, [bp+arg_0]
     cwd
+loc_274D2:
     push    dx
     push    ax
+loc_274D4:
     call    __aFlmul
     push    dx
+loc_274DA:
     push    ax
+loc_274DB:
     call    __aFldiv
+loc_274E0:
     add     ax, 12h
+loc_274E3:
     adc     dx, 0
+loc_274E6:
     mov     [bp+var_4], ax
+loc_274E9:
     mov     [bp+var_2], dx
+loc_274EC:
     call    mmgr_get_res_ofs_diff_scaled
+loc_274F1:
     cmp     dx, [bp+var_2]
+loc_274F4:
     jg      short loc_27506
+loc_274F6:
     jl      short loc_274FD
+loc_274F8:
     cmp     ax, [bp+var_4]
+loc_274FB:
     ja      short loc_27506
 loc_274FD:
     sub     ax, ax
@@ -161,6 +187,7 @@ loc_274FD:
     pop     di
     mov     sp, bp
     pop     bp
+locret_27504:
     retf
     ; align 2
     db 144
@@ -175,9 +202,12 @@ loc_27506:
     mov     ax, [bp+arg_2]
     sub     ax, [bp+arg_0]
     push    ax
+loc_2751C:
     call    sprite_make_wnd
     add     sp, 6
+loc_27524:
     mov     bl, byte_3B8FC
+loc_27528:
     sub     bh, bh
     shl     bx, 1
     shl     bx, 1
@@ -185,6 +215,7 @@ loc_27506:
     mov     word ptr (dword_42D10+2)[bx], dx
     mov     al, byte_3B8FC
     sub     ah, ah
+loc_2753B:
     mov     si, ax
     shl     si, 1
     mov     ax, [bp+arg_0]
@@ -198,19 +229,30 @@ loc_27506:
     mov     al, 3Ch ; '<'
     mul     byte_3B8FC
     mov     bx, ax
+loc_27561:
     les     di, trackdata12
     push    si
     lea     di, [bx+di]
     lea     si, [bp+var_40]
+loc_2756B:
     mov     cx, 0Fh
+loc_2756E:
     repne movsw
+loc_27570:
     pop     si
+loc_27571:
     mov     al, byte_3B8FC
+loc_27574:
     sub     ah, ah
+loc_27576:
     shl     ax, 1
+loc_27578:
     mov     cx, 1Eh
+loc_2757B:
     mul     cx
+loc_2757D:
     mov     di, ax
+loc_2757F:
     les     bx, trackdata12
     push    si
     lea     di, [bx+di+1Eh]
@@ -285,6 +327,7 @@ loc_275D8:
     pop     es
     push    ds
     mov     ds, dx
+loc_27626:
     mov     cx, 0Fh
     repne movsw
     pop     ds
@@ -547,13 +590,13 @@ loc_277F6:
     add     sp, 0Ah
     sub     ax, ax
     push    ax
-    push    word_407CA
+    push    dialog_fnt_colour
     call    sub_34B0C
     add     sp, 4
     mov     word_3EB90, 0
     sub     ax, ax
     push    ax
-    push    word_407CA
+    push    dialog_fnt_colour
     call    sub_34B0C
     add     sp, 4
     mov     [bp+var_82], 0
@@ -755,6 +798,7 @@ loc_27AAA:
     inc     word ptr [bp+var_1D0]
 loc_27AAE:
     les     bx, [bp+var_1D0]
+loc_27AB2:
     mov     al, es:[bx]
     mov     [bp+var_1D8], al
     or      al, al
@@ -807,6 +851,7 @@ loc_27B34:
     add     si, bp
     mov     ax, [si-28h]
     add     ax, [bp+var_194]
+loc_27B43:
     mov     [si-0C6h], ax
     inc     [bp+var_196]
 loc_27B4B:
@@ -959,14 +1004,14 @@ loc_27C92:
     cbw
     cmp     ax, [bp+var_196]
     jnz     short loc_27CA8
-    push    word_407CA
+    push    dialog_fnt_colour
     push    word_3EB90
     jmp     short loc_27CB0
     ; align 2
     db 144
 loc_27CA8:
     push    word_3EB90
-    push    word_407CA
+    push    dialog_fnt_colour
 loc_27CB0:
     call    sub_34B0C
     add     sp, 4
@@ -1021,7 +1066,7 @@ loc_27D39:
     jmp     loc_27C92
 loc_27D4A:
     push    word_3EB90
-    push    dialogarg1
+    push    performGraphColor
     jmp     loc_27CB0
     ; align 2
     db 144
@@ -1201,7 +1246,7 @@ loc_27EC6:
     ; align 2
     db 144
 show_dialog endp
-sub_27ED4 proc far
+do_fileselect_dialog proc far
     var_71C = word ptr -1820
     var_71A = word ptr -1818
     var_718 = byte ptr -1816
@@ -1249,7 +1294,7 @@ sub_27ED4 proc far
     mov     ax, 0FFFFh
     push    ax
     push    ax
-    mov     ax, offset aLoa
+    mov     ax, offset aLoa ; "loa"
     push    ax
     push    word ptr mainresptr+2
     push    word ptr mainresptr
@@ -1289,22 +1334,22 @@ loc_27F1E:
     mov     ax, [bp+var_70A]
     sub     ax, 4
     push    ax
-    call    sub_2FDDE
+    call    preRender_line
     add     sp, 0Ah
     push    word_3EB90
-    push    word_407CA
+    push    dialog_fnt_colour
     call    sub_34B0C
     add     sp, 4
     push    [bp+arg_8]
     push    [bp+arg_6]
-    mov     ax, offset byte_463E4
+    mov     ax, offset resID_byte1
     push    ax
     push    cs
     call near ptr copy_string
     add     sp, 6
     push    [bp+var_710]
     push    [bp+var_712]
-    mov     ax, offset byte_463E4
+    mov     ax, offset resID_byte1
     push    ax
     call    sub_345BC
     add     sp, 6
@@ -1360,7 +1405,7 @@ loc_27FDD:
     jmp     short loc_27FBB
 loc_28016:
     push    word_3EB90
-    push    word_407CA
+    push    dialog_fnt_colour
     call    sub_34B0C
     add     sp, 4
     push    [bp+var_70C]
@@ -1373,7 +1418,7 @@ loc_28036:
     call near ptr mouse_draw_transparent_check
     mov     [bp+var_714], 0
     push    word ptr [bp+0Ah]; int
-    mov     ax, offset asc_3EB96
+    mov     ax, offset asc_3EB96; "*"
     push    ax
     push    word ptr [bp+arg_0]; char *
     call    sub_39E24
@@ -1384,7 +1429,7 @@ loc_28036:
     call    nullsub_1
 loc_2805E:
     push    word_3EB90
-    push    word_407CA
+    push    dialog_fnt_colour
     call    sub_34B0C
     add     sp, 4
     mov     ax, (offset terraincenterpos+22h)
@@ -1397,7 +1442,7 @@ loc_2805E:
     push    ax
     push    word ptr [bp+arg_0]; char *
     push    cs
-    call near ptr sub_290BC
+    call near ptr call_read_line
     add     sp, 0Ch
     cmp     ax, 1Bh
     jnz     short loc_28036
@@ -1409,7 +1454,7 @@ loc_28094:
     lea     ax, [bp+var_698]
     push    ax              ; int
     push    cs
-    call near ptr sub_28762
+    call near ptr parse_filepath_separators
     add     sp, 4
     inc     [bp+var_714]
 loc_280A8:
@@ -1430,7 +1475,7 @@ loc_280A8:
     sub     ax, 698h
     push    ax              ; int
     push    cs
-    call near ptr sub_28762
+    call near ptr parse_filepath_separators
     add     sp, 4
     inc     [bp+var_714]
     mov     al, [bp+var_714]
@@ -1488,7 +1533,7 @@ loc_28108:
     add     ax, bp
     sub     ax, 698h
     push    ax
-    mov     ax, offset byte_463E4
+    mov     ax, offset resID_byte1
     push    ax              ; char *
     call    _strcpy
     add     sp, 4
@@ -1514,7 +1559,7 @@ loc_28108:
     push    ax              ; char *
     call    _strcpy
     add     sp, 4
-    mov     ax, offset byte_463E4
+    mov     ax, offset resID_byte1
     push    ax
     mov     ax, [bp+var_6CA]
     mov     cx, ax
@@ -1547,7 +1592,7 @@ loc_281B7:
 loc_281CC:
     cmp     [bp+var_714], 7
     jle     short loc_2824D
-    mov     ax, offset aLsu
+    mov     ax, offset aLsu ; "lsu"
     push    ax
     push    word ptr mainresptr+2
     push    word ptr mainresptr
@@ -1556,23 +1601,23 @@ loc_281CC:
     add     sp, 6
     push    dx
     push    ax
-    mov     ax, offset byte_463E4
+    mov     ax, offset resID_byte1
     push    ax
     push    cs
     call near ptr copy_string
     add     sp, 6
     push    [bp+var_6E0]
-    mov     ax, offset byte_463E4
+    mov     ax, offset resID_byte1
     push    ax
     push    cs
     call near ptr sub_29606
     add     sp, 2
     push    ax
-    mov     ax, offset byte_463E4
+    mov     ax, offset resID_byte1
     push    ax
     call    sub_345BC
     add     sp, 6
-    mov     ax, offset aLsd
+    mov     ax, offset aLsd ; "lsd"
     push    ax
     push    word ptr mainresptr+2
     push    word ptr mainresptr
@@ -1581,7 +1626,7 @@ loc_281CC:
     add     sp, 6
     push    dx
     push    ax
-    mov     ax, offset byte_463E4
+    mov     ax, offset resID_byte1
     push    ax
     push    cs
     call near ptr copy_string
@@ -1589,13 +1634,13 @@ loc_281CC:
     mov     ax, [bp+var_6D0]
     dec     ax
     push    ax
-    mov     ax, offset byte_463E4
+    mov     ax, offset resID_byte1
     push    ax
     push    cs
     call near ptr sub_29606
     add     sp, 2
     push    ax
-    mov     ax, offset byte_463E4
+    mov     ax, offset resID_byte1
     push    ax
     call    sub_345BC
     add     sp, 6
@@ -1628,7 +1673,7 @@ loc_28280:
     db 144
 loc_2829A:
     push    word_3EB90
-    push    word_407CA
+    push    dialog_fnt_colour
 loc_282A2:
     call    sub_34B0C
     add     sp, 4
@@ -1650,7 +1695,7 @@ loc_282A2:
     add     ax, bp
     sub     ax, 698h
     push    ax
-    mov     ax, offset byte_463E4
+    mov     ax, offset resID_byte1
     push    ax              ; char *
     call    _strcpy
     add     sp, 4
@@ -1659,7 +1704,7 @@ loc_282A2:
     add     bx, bp
     push    word ptr [bx-6DEh]
     push    di
-    mov     ax, offset byte_463E4
+    mov     ax, offset resID_byte1
     jmp     short loc_28300
 loc_282F2:
     mov     bx, si
@@ -1667,12 +1712,12 @@ loc_282F2:
     add     bx, bp
     push    word ptr [bx-6DEh]
     push    di
-    mov     ax, offset asc_3EBA0
+    mov     ax, offset asc_3EBA0; "        "
 loc_28300:
     push    ax
     call    sub_345BC
     add     sp, 6
-    mov     ax, offset byte_463E4
+    mov     ax, offset resID_byte1
     push    ax
     call    sub_32843
     add     sp, 2
@@ -1707,7 +1752,7 @@ loc_28346:
     jz      short loc_28360
     jmp     loc_2829A
 loc_28360:
-    push    word_407CA
+    push    dialog_fnt_colour
     push    word_3EB90
     jmp     loc_282A2
     ; align 2
@@ -1977,39 +2022,38 @@ loc_285AC:
     retf
     ; align 2
     db 144
-sub_27ED4 endp
+do_fileselect_dialog endp
 combine_file_path proc far
     var_2 = byte ptr -2
      s = byte ptr 0
      r = byte ptr 2
-    arg_0 = word ptr 6
-    arg_2 = word ptr 8
+    arg_0 = dword ptr 6
     arg_4 = word ptr 10
-    arg_6 = word ptr 12
+    arg_6 = dword ptr 12
 
     push    bp
     mov     bp, sp
     sub     sp, 4
     push    si
-    cmp     [bp+arg_0], 0
+    cmp     word ptr [bp+arg_0], 0
     jz      short loc_285EC
-    push    [bp+arg_0]
-    push    [bp+arg_6]      ; char *
+    push    word ptr [bp+arg_0]
+    push    word ptr [bp+arg_6]; char *
     call    _strcpy
     add     sp, 4
-    push    [bp+arg_0]      ; char *
+    push    word ptr [bp+arg_0]; char *
     call    _strlen
     add     sp, 2
     mov     si, ax
     jmp     short loc_285F4
 loc_285EC:
-    mov     bx, [bp+arg_6]
+    mov     bx, word ptr [bp+arg_6]
     mov     byte ptr [bx], 0
     sub     si, si
 loc_285F4:
     or      si, si
     jz      short loc_28618
-    mov     bx, [bp+arg_0]
+    mov     bx, word ptr [bp+arg_0]
     mov     al, [bx+si-1]
     mov     [bp+var_2], al
     cmp     al, ':'
@@ -2018,16 +2062,16 @@ loc_285F4:
     jz      short loc_28618
     mov     ax, offset asc_3EBA9; "\\"
     push    ax
-    push    [bp+arg_6]      ; char *
+    push    word ptr [bp+arg_6]; char *
     call    _strcat
     add     sp, 4
 loc_28618:
-    push    [bp+arg_2]
-    push    [bp+arg_6]      ; char *
+    push    word ptr [bp+arg_0+2]
+    push    word ptr [bp+arg_6]; char *
     call    _strcat
     add     sp, 4
     push    [bp+arg_4]
-    push    [bp+arg_6]      ; char *
+    push    word ptr [bp+arg_6]; char *
     call    _strcat
     add     sp, 4
     pop     si
@@ -2037,7 +2081,7 @@ loc_28618:
     ; align 2
     db 144
 combine_file_path endp
-sub_2863A proc far
+do_savefile_dialog proc far
     var_12 = word ptr -18
     var_10 = word ptr -16
     var_E = word ptr -14
@@ -2091,7 +2135,7 @@ sub_2863A proc far
 loc_28682:
     mov     [bp+var_4], 0
     push    word_3EB90
-    push    word_407CA
+    push    dialog_fnt_colour
     call    sub_34B0C
     add     sp, 4
     push    [bp+arg_6]
@@ -2108,7 +2152,7 @@ loc_28682:
     call    sub_345BC
     add     sp, 6
     push    word_3EB90
-    push    word_407CA
+    push    dialog_fnt_colour
     call    sub_34B0C
     add     sp, 4
     push    [bp+var_C]
@@ -2151,7 +2195,7 @@ loc_286FE:
     push    ax
     push    word ptr [bp+arg_0]; char *
     push    cs
-    call near ptr sub_290BC
+    call near ptr call_read_line
     add     sp, 0Ch
     cmp     ax, 1Bh
     jz      short loc_28754
@@ -2166,7 +2210,7 @@ loc_2872F:
     push    ax
     push    word ptr [bp+arg_0+2]; char *
     push    cs
-    call near ptr sub_290BC
+    call near ptr call_read_line
     add     sp, 0Ch
     mov     si, ax
     sub     di, di
@@ -2185,8 +2229,8 @@ loc_28754:
     mov     sp, bp
     pop     bp
     retf
-sub_2863A endp
-sub_28762 proc far
+do_savefile_dialog endp
+parse_filepath_separators proc far
     var_6 = word ptr -6
     var_4 = word ptr -4
     var_2 = byte ptr -2
@@ -2236,7 +2280,7 @@ loc_28795:
     mov     sp, bp
     pop     bp
     retf
-sub_28762 endp
+parse_filepath_separators endp
 input_checking proc far
      s = byte ptr 0
      r = byte ptr 2
@@ -2519,6 +2563,7 @@ loc_289F8:
     push    cs
     call near ptr ported_file_load_resource_
     add     sp, 4
+loc_28A5E:
     mov     [bp+var_4], ax
     mov     [bp+var_2], dx
     or      ax, dx
@@ -2712,7 +2757,7 @@ loc_28B78:
     add     sp, 0Ah
     cmp     [bp+var_A], 0
     jnz     short loc_28BAA
-    push    word_407CA
+    push    dialog_fnt_colour
     push    [bp+arg_8]
     push    [bp+var_12]
     push    [bp+arg_6]
@@ -2721,7 +2766,7 @@ loc_28B78:
     push    ax
     jmp     short loc_28BBD
 loc_28BAA:
-    push    word_407CA
+    push    dialog_fnt_colour
     push    [bp+var_12]
     push    [bp+arg_4]
     mov     ax, [bp+arg_6]
@@ -2835,7 +2880,7 @@ loc_28C7C:
     add     sp, 0Ah
     cmp     [bp+var_A], 0
     jnz     short loc_28CC2
-    push    word_407CA
+    push    dialog_fnt_colour
     push    [bp+arg_8]
     push    [bp+var_12]
     push    [bp+arg_6]
@@ -2846,7 +2891,7 @@ loc_28C7C:
     ; align 2
     db 144
 loc_28CC2:
-    push    word_407CA
+    push    dialog_fnt_colour
     push    [bp+var_12]
     push    [bp+arg_4]
     mov     ax, [bp+arg_6]
@@ -2915,7 +2960,7 @@ loc_28D0E:
     add     sp, 0Ah
     cmp     [bp+var_A], 0
     jnz     short loc_28D7C
-    push    word_407CA
+    push    dialog_fnt_colour
     push    [bp+arg_8]
     push    [bp+var_12]
     push    [bp+arg_6]
@@ -2926,7 +2971,7 @@ loc_28D0E:
     ; align 2
     db 144
 loc_28D7C:
-    push    word_407CA
+    push    dialog_fnt_colour
     push    [bp+var_12]
     push    [bp+arg_4]
     mov     ax, [bp+arg_6]
@@ -3340,7 +3385,7 @@ sub_29008 proc far
     pop     bp
     retf
 sub_29008 endp
-sub_290BC proc far
+call_read_line proc far
     var_4 = word ptr -4
     var_2 = word ptr -2
      s = byte ptr 0
@@ -3408,7 +3453,7 @@ loc_2911D:
     retf
     ; align 2
     db 144
-sub_290BC endp
+call_read_line endp
 input_repeat_check proc far
     var_4 = word ptr -4
      s = byte ptr 0
@@ -3480,7 +3525,7 @@ sub_2916E proc far
     push    si
     push    [bp+arg_2]
     push    [bp+arg_0]
-    call    sub_2FDDE
+    call    preRender_line
     add     sp, 0Ah
     mov     ax, [bp+arg_2]
     inc     ax
@@ -3493,7 +3538,7 @@ sub_2916E proc far
     mov     ax, [bp+arg_0]
     inc     ax
     push    ax
-    call    sub_2FDDE
+    call    preRender_line
     add     sp, 0Ah
     mov     ax, [bp+arg_2]
     add     ax, 2
@@ -3506,14 +3551,14 @@ sub_2916E proc far
     mov     ax, [bp+arg_0]
     add     ax, 2
     push    ax
-    call    sub_2FDDE
+    call    preRender_line
     add     sp, 0Ah
     push    [bp+arg_8]
     push    di
     push    [bp+arg_0]
     push    [bp+arg_2]
     push    [bp+arg_0]
-    call    sub_2FDDE
+    call    preRender_line
     add     sp, 0Ah
     mov     ax, [bp+arg_0]
     inc     ax
@@ -3526,7 +3571,7 @@ sub_2916E proc far
     inc     ax
     push    ax
     push    [bp+var_A]
-    call    sub_2FDDE
+    call    preRender_line
     add     sp, 0Ah
     mov     ax, [bp+arg_0]
     add     ax, 2
@@ -3539,14 +3584,14 @@ sub_2916E proc far
     add     ax, 2
     push    ax
     push    [bp+var_C]
-    call    sub_2FDDE
+    call    preRender_line
     add     sp, 0Ah
     push    [bp+arg_C]
     push    di
     push    si
     push    di
     push    [bp+arg_0]
-    call    sub_2FDDE
+    call    preRender_line
     add     sp, 0Ah
     lea     ax, [di-1]
     mov     [bp+var_E], ax
@@ -3558,7 +3603,7 @@ sub_2916E proc far
     mov     ax, [bp+arg_0]
     inc     ax
     push    ax
-    call    sub_2FDDE
+    call    preRender_line
     add     sp, 0Ah
     lea     ax, [di-2]
     mov     [bp+var_10], ax
@@ -3570,14 +3615,14 @@ sub_2916E proc far
     mov     ax, [bp+arg_0]
     add     ax, 2
     push    ax
-    call    sub_2FDDE
+    call    preRender_line
     add     sp, 0Ah
     push    [bp+arg_C]
     push    di
     push    si
     push    [bp+arg_2]
     push    si
-    call    sub_2FDDE
+    call    preRender_line
     add     sp, 0Ah
     lea     ax, [si-1]
     mov     [bp+var_12], ax
@@ -3589,7 +3634,7 @@ sub_2916E proc far
     inc     ax
     push    ax
     push    [bp+var_12]
-    call    sub_2FDDE
+    call    preRender_line
     add     sp, 0Ah
     lea     ax, [si-2]
     mov     [bp+var_14], ax
@@ -3601,7 +3646,7 @@ sub_2916E proc far
     add     ax, 2
     push    ax
     push    [bp+var_14]
-    call    sub_2FDDE
+    call    preRender_line
     add     sp, 0Ah
     pop     si
     pop     di
@@ -3660,7 +3705,7 @@ sub_292DC proc far
     push    si
     push    [bp+arg_6]
     push    [bp+arg_4]
-    call    sub_2FDDE
+    call    preRender_line
     add     sp, 0Ah
     mov     ax, [bp+arg_6]
     inc     ax
@@ -3673,7 +3718,7 @@ sub_292DC proc far
     mov     ax, [bp+arg_4]
     inc     ax
     push    ax
-    call    sub_2FDDE
+    call    preRender_line
     add     sp, 0Ah
     mov     ax, [bp+arg_6]
     add     ax, 2
@@ -3686,14 +3731,14 @@ sub_292DC proc far
     mov     ax, [bp+arg_4]
     add     ax, 2
     push    ax
-    call    sub_2FDDE
+    call    preRender_line
     add     sp, 0Ah
     push    [bp+arg_C]
     push    di
     push    [bp+arg_4]
     push    [bp+arg_6]
     push    [bp+arg_4]
-    call    sub_2FDDE
+    call    preRender_line
     add     sp, 0Ah
     mov     ax, [bp+arg_4]
     inc     ax
@@ -3706,7 +3751,7 @@ sub_292DC proc far
     inc     ax
     push    ax
     push    [bp+var_68]
-    call    sub_2FDDE
+    call    preRender_line
     add     sp, 0Ah
     mov     ax, [bp+arg_4]
     add     ax, 2
@@ -3719,14 +3764,14 @@ sub_292DC proc far
     add     ax, 2
     push    ax
     push    [bp+var_6A]
-    call    sub_2FDDE
+    call    preRender_line
     add     sp, 0Ah
     push    [bp+arg_E]
     push    di
     push    si
     push    di
     push    [bp+arg_4]
-    call    sub_2FDDE
+    call    preRender_line
     add     sp, 0Ah
     lea     ax, [di-1]
     mov     [bp+var_6C], ax
@@ -3738,7 +3783,7 @@ sub_292DC proc far
     mov     ax, [bp+arg_4]
     inc     ax
     push    ax
-    call    sub_2FDDE
+    call    preRender_line
     add     sp, 0Ah
     lea     ax, [di-2]
     mov     [bp+var_6E], ax
@@ -3750,14 +3795,14 @@ sub_292DC proc far
     mov     ax, [bp+arg_4]
     add     ax, 2
     push    ax
-    call    sub_2FDDE
+    call    preRender_line
     add     sp, 0Ah
     push    [bp+arg_E]
     push    di
     push    si
     push    [bp+arg_6]
     push    si
-    call    sub_2FDDE
+    call    preRender_line
     add     sp, 0Ah
     lea     ax, [si-1]
     mov     [bp+var_70], ax
@@ -3769,7 +3814,7 @@ sub_292DC proc far
     inc     ax
     push    ax
     push    [bp+var_70]
-    call    sub_2FDDE
+    call    preRender_line
     add     sp, 0Ah
     lea     ax, [si-2]
     mov     [bp+var_72], ax
@@ -3781,7 +3826,7 @@ sub_292DC proc far
     add     ax, 2
     push    ax
     push    [bp+var_72]
-    call    sub_2FDDE
+    call    preRender_line
     add     sp, 0Ah
     mov     ax, [bp+arg_0]
     or      ax, [bp+arg_2]
@@ -3810,7 +3855,7 @@ loc_29466:
     jmp     short loc_294B0
 loc_294A0:
     mov     bx, [bp+var_8]
-    cmp     byte_463E4[bx], 5Dh ; ']'
+    cmp     resID_byte1[bx], 5Dh ; ']'
     jnz     short loc_294AD
     inc     [bp+var_5C]
 loc_294AD:
@@ -3847,7 +3892,7 @@ loc_294EF:
     cmp     ax, [bp+var_8]
     jle     short loc_29554
     mov     bx, [bp+var_8]
-    mov     al, byte_463E4[bx]
+    mov     al, resID_byte1[bx]
     mov     [bp+var_4], al
     cmp     al, 5Dh ; ']'
     jz      short loc_2950A
@@ -3882,6 +3927,7 @@ loc_2950A:
     inc     [bp+var_6]
     mov     [bp+var_2], 0
     jmp     short loc_294EC
+algn_29553:
     ; align 2
     db 144
 loc_29554:
@@ -4090,7 +4136,7 @@ show_waiting proc far
     ; align 2
     db 144
 show_waiting endp
-sub_296E0 proc far
+print_int_as_string_maybe proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = dword ptr 6
@@ -4184,7 +4230,7 @@ loc_2976B:
     retf
     ; align 2
     db 144
-sub_296E0 endp
+print_int_as_string_maybe endp
 sub_29772 proc far
 
     mov     word_45D1C, 0
@@ -4234,14 +4280,18 @@ loc_297B5:
     push    cs
     call near ptr mouse_draw_opaque_check
     mov     ax, [bp+arg_0]
+loc_297C6:
     shl     ax, 1
+loc_297C8:
     mov     [bp+var_6], ax
     push    di
+loc_297CC:
     mov     bx, ax
     add     bx, [bp+arg_8]
     push    word ptr [bx]
     mov     bx, ax
     add     bx, [bp+arg_4]
+loc_297D8:
     push    word ptr [bx]
     mov     bx, ax
     add     bx, [bp+arg_6]
@@ -4266,14 +4316,12 @@ ported_file_load_audiores_ proc far
     var_2 = word ptr -2
      s = byte ptr 0
      r = byte ptr 2
-    arg_0 = word ptr 6
-    arg_2 = word ptr 8
-    arg_4 = word ptr 10
+    arg_0 = dword ptr 6
 
     push    bp
     mov     bp, sp
     sub     sp, 4
-    push    [bp+arg_2]      ; char *
+    push    word ptr [bp+arg_0+2]; char *
     mov     ax, 5
     push    ax              ; int
     push    cs
@@ -4281,7 +4329,7 @@ ported_file_load_audiores_ proc far
     add     sp, 4
     mov     word ptr voicefileptr, ax
     mov     word ptr voicefileptr+2, dx
-    push    [bp+arg_0]      ; char *
+    push    word ptr [bp+arg_0]; char *
     mov     ax, 4
     push    ax              ; int
     push    cs
@@ -4289,7 +4337,7 @@ ported_file_load_audiores_ proc far
     add     sp, 4
     mov     word ptr songfileptr, ax
     mov     word ptr songfileptr+2, dx
-    push    [bp+arg_4]
+    push    word ptr [bp+0Ah]
     push    word ptr voicefileptr+2
     push    word ptr voicefileptr
     push    dx
@@ -4391,7 +4439,7 @@ sub_298B8 proc far
     lea     ax, [bp+var_12]
     push    ax              ; char *
     push    cs
-    call near ptr sub_296E0
+    call near ptr print_int_as_string_maybe
     add     sp, 8
     lea     ax, [bp+var_12]
     push    ax
@@ -4411,7 +4459,7 @@ sub_298B8 proc far
     lea     ax, [bp+var_12]
     push    ax              ; char *
     push    cs
-    call near ptr sub_296E0
+    call near ptr print_int_as_string_maybe
     add     sp, 8
     lea     ax, [bp+var_12]
     push    ax
@@ -4435,10 +4483,11 @@ sub_298B8 proc far
     idiv    cx
     mul     word ptr [bp+arg_0+2]
     push    ax
+loc_2996E:
     lea     ax, [bp+var_12]
     push    ax              ; char *
     push    cs
-    call near ptr sub_296E0
+    call near ptr print_int_as_string_maybe
     add     sp, 8
     lea     ax, [bp+var_12]
     push    ax
@@ -4469,7 +4518,8 @@ get_super_random proc far
     call    timer_get_counter
     add     ax, [bp+var_4]
     add     ax, di
-    add     ax, word_4434C
+loc_299AF:
+    add     ax, gState_game_frame
     mov     si, ax
     or      si, si
     jge     short loc_299C2
@@ -4754,14 +4804,19 @@ do_joy_restext proc far
     push    word ptr mainresptr
     push    cs
     call near ptr ported_locate_text_res_
+loc_29B69:
     add     sp, 6
+loc_29B6C:
     push    dx
     push    ax
+loc_29B6E:
     mov     ax, 1
     push    ax
     mov     ax, 3
     push    ax
+loc_29B76:
     push    cs
+loc_29B77:
     call near ptr show_dialog
     add     sp, 12h
     or      ax, ax
@@ -4903,13 +4958,15 @@ loc_29CC9:
     jl      short loc_29CC9
     mov     ax, di
     shl     ax, 1
+loc_29CFA:
     add     ax, bp
     mov     [bp+var_56], ax
-    push    word_407CA
+    push    dialog_fnt_colour
     push    [bp+var_42]
     push    [bp+var_12]
     mov     bx, ax
     push    word ptr [bx-54h]
+loc_29D0E:
     push    word ptr [bx-40h]
     call    sub_335D2
     add     sp, 0Ah
@@ -5088,6 +5145,7 @@ do_mof_restext proc far
 
     push    cs
     call near ptr input_push_status
+loc_29E9C:
     mov     word_3F88E, 1
     call    audio_toggle_flag2
     or      ax, ax
@@ -5137,14 +5195,18 @@ do_sonsof_restext proc far
 
     push    cs
     call near ptr input_push_status
+loc_29EFE:
     mov     word_3F88E, 1
     call    audio_toggle_flag6
     or      ax, ax
+loc_29F0B:
     jz      short loc_29F20
     sub     ax, ax
     push    ax
     push    ax
+loc_29F11:
     push    dialogarg2
+loc_29F15:
     mov     ax, 0FFFFh
     push    ax
     push    ax
@@ -5305,7 +5367,7 @@ loc_2A050:
     push    ax
     sub     ax, ax
     push    ax
-    push    dialogarg1
+    push    performGraphColor
     mov     ax, 0FFFFh
     push    ax
     push    ax
@@ -5331,6 +5393,7 @@ loc_2A050:
     jz      short loc_2A0B8
     cmp     ax, 8
     jz      short loc_2A0C2
+loc_2A098:
     cmp     ax, 9
     jz      short loc_2A0CC
     mov     byte_3B8FA, al
@@ -5371,7 +5434,9 @@ loc_2A0CC:
     mov     ax, offset aMrs ; "mrs"
     push    ax
     push    word ptr mainresptr+2
+loc_2A0EA:
     push    word ptr mainresptr
+loc_2A0EE:
     push    cs
     call near ptr ported_locate_text_res_
     add     sp, 6
@@ -5438,7 +5503,9 @@ loc_2A168:
     sub     ax, ax
     push    ax
     push    ax
+loc_2A16C:
     push    dialogarg2
+loc_2A170:
     mov     ax, 0FFFFh
     push    ax
     push    ax
@@ -5447,6 +5514,7 @@ loc_2A168:
     push    word ptr mainresptr+2
     push    word ptr mainresptr
     push    cs
+loc_2A182:
     call near ptr ported_locate_text_res_
     add     sp, 6
     push    dx
@@ -5456,6 +5524,7 @@ loc_2A168:
     push    ax
     push    cs
     call near ptr show_dialog
+loc_2A193:
     add     sp, 12h
 loc_2A196:
     mov     [bp+var_2], 1
@@ -5463,6 +5532,7 @@ loc_2A19B:
     push    cs
     call near ptr input_pop_status
     mov     ax, [bp+var_2]
+loc_2A1A2:
     mov     sp, bp
     pop     bp
     retf
@@ -5482,11 +5552,13 @@ loc_2A1AC:
     push    ax
     push    ax
     push    dialogarg2
+loc_2A1B4:
     mov     ax, 0FFFFh
     push    ax
     push    ax
     mov     bx, [bp+arg_0]
     shl     bx, 1
+loc_2A1BE:
     push    word ptr (aOpp1_+5)[bx]; "Insert Disk A/B .. etc presskey"
     push    word ptr mainresptr+2
     push    word ptr mainresptr
@@ -5494,6 +5566,7 @@ loc_2A1AC:
     call near ptr ported_locate_text_res_
     add     sp, 6
     push    dx
+loc_2A1D2:
     push    ax
     mov     ax, 1
     push    ax
@@ -5578,41 +5651,66 @@ loc_2A23C:
     mov     ax, 7
     push    ax              ; int
     push    cs
+loc_2A264:
     call near ptr ported_file_load_resource_
     add     sp, 4
     mov     [bp+var_4], ax
     mov     [bp+var_2], dx
+loc_2A270:
     or      ax, dx
+loc_2A272:
     jnz     short loc_2A2B2
+loc_2A274:
     push    [bp+arg_0]
+loc_2A277:
     lea     ax, [bp+var_54]
     push    ax              ; char *
+loc_2A27B:
     call    _strcpy
+loc_2A280:
     add     sp, 4
+loc_2A283:
     mov     ax, offset a_3sh; ".3sh"
     push    ax
+loc_2A287:
     lea     ax, [bp+var_54]
+loc_2A28A:
     push    ax              ; char *
+loc_2A28B:
     call    _strcat
+loc_2A290:
     add     sp, 4
     lea     ax, [bp+var_54]
     push    ax              ; char *
+loc_2A297:
     mov     ax, 1
+loc_2A29A:
     push    ax              ; int
     push    cs
+loc_2A29C:
     call near ptr ported_file_load_resource_
+loc_2A29F:
     add     sp, 4
     mov     [bp+var_4], ax
+loc_2A2A5:
     mov     [bp+var_2], dx
+loc_2A2A8:
     or      ax, dx
+loc_2A2AA:
     jnz     short loc_2A2B2
+loc_2A2AC:
     push    cs
+loc_2A2AD:
     call near ptr do_dea_textres
+loc_2A2B0:
     jmp     short loc_2A23C
 loc_2A2B2:
     mov     ax, [bp+var_4]
+loc_2A2B5:
     mov     dx, [bp+var_2]
+loc_2A2B8:
     mov     sp, bp
+loc_2A2BA:
     pop     bp
     retf
 ported_file_load_3dres_ endp

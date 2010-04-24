@@ -60,43 +60,78 @@ sub_36EC0 proc far
     arg_4 = word ptr 10
 
     push    bp
+loc_36EC1:
     mov     bp, sp
+loc_36EC3:
     sub     sp, 0Ah
+loc_36EC6:
     push    si
+loc_36EC7:
     push    [bp+arg_4]
+loc_36ECA:
     push    [bp+arg_2]
+loc_36ECD:
     push    [bp+arg_0]
+loc_36ED0:
     call    sub_36B16
+loc_36ED5:
     add     sp, 6
+loc_36ED8:
     mov     bx, [bp+arg_0]
+loc_36EDB:
     mov     ax, [bx+0Ch]
+loc_36EDE:
     sub     ax, [bx]
+loc_36EE0:
     mov     [bp+var_8], ax
+loc_36EE3:
     mov     ax, [bx+0Eh]
+loc_36EE6:
     sub     ax, [bx+2]
+loc_36EE9:
     mov     [bp+var_A], ax
+loc_36EEC:
     mov     ax, [bp+arg_2]
+loc_36EEF:
     mov     [bp+var_2], ax
+loc_36EF2:
     add     ax, 80h ; '€'
+loc_36EF5:
     mov     [bp+var_4], ax
+loc_36EF8:
     mov     [bp+var_6], 0
 loc_36EFD:
     mov     bx, [bp+var_4]
+loc_36F00:
     mov     si, [bp+var_2]
+loc_36F03:
     mov     ax, [si]
+loc_36F05:
     add     ax, [bp+var_8]
+loc_36F08:
     mov     [bx], ax
+loc_36F0A:
     mov     ax, [si+2]
+loc_36F0D:
     add     ax, [bp+var_A]
+loc_36F10:
     mov     [bx+2], ax
+loc_36F13:
     add     [bp+var_2], 4
+loc_36F17:
     add     [bp+var_4], 4
+loc_36F1B:
     inc     [bp+var_6]
+loc_36F1E:
     cmp     [bp+var_6], 10h
+loc_36F22:
     jl      short loc_36EFD
+loc_36F24:
     pop     si
+loc_36F25:
     mov     sp, bp
     pop     bp
+locret_36F28:
     retf
 sub_36EC0 endp
 seg023 ends

@@ -47,6 +47,7 @@ seg025 segment byte public 'STUNTSC' use16
     assume cs:seg025
     assume es:nothing, ss:nothing, ds:dseg
     public sub_3702E
+algn_3702D:
     ; align 2
     db 144
 sub_3702E proc far
@@ -61,60 +62,102 @@ sub_3702E proc far
     arg_8 = word ptr 14
 
     push    bp
+loc_3702F:
     mov     bp, sp
+loc_37031:
     sub     sp, 4
+loc_37034:
     push    si
+loc_37035:
     mov     ax, [bp+arg_4]
+loc_37038:
     sub     ax, [bp+arg_0]
     inc     ax
+loc_3703C:
     mov     [bp+var_2], ax
+loc_3703F:
     mov     ax, [bp+arg_6]
+loc_37042:
     sub     ax, [bp+arg_2]
     dec     ax
+loc_37046:
     mov     [bp+var_4], ax
+loc_37049:
     cmp     [bp+var_2], 0
+loc_3704D:
     jle     short loc_3707F
+loc_3704F:
     push    [bp+arg_8]
+loc_37052:
     mov     ax, 1
     push    ax
+loc_37056:
     push    [bp+var_2]
+loc_37059:
     push    [bp+arg_2]
+loc_3705C:
     push    [bp+arg_0]
+loc_3705F:
     call    sub_35B76
+loc_37064:
     add     sp, 0Ah
+loc_37067:
     push    [bp+arg_8]
+loc_3706A:
     mov     ax, 1
     push    ax
+loc_3706E:
     push    [bp+var_2]
+loc_37071:
     push    [bp+arg_6]
+loc_37074:
     push    [bp+arg_0]
+loc_37077:
     call    sub_35B76
+loc_3707C:
     add     sp, 0Ah
 loc_3707F:
     cmp     [bp+var_4], 0
+loc_37083:
     jle     short loc_370B5
     mov     si, [bp+arg_2]
+loc_37088:
     inc     si
+loc_37089:
     push    [bp+arg_8]
+loc_3708C:
     push    [bp+var_4]
     mov     ax, 1
+loc_37092:
     push    ax
     push    si
+loc_37094:
     push    [bp+arg_0]
+loc_37097:
     call    sub_35B76
+loc_3709C:
     add     sp, 0Ah
+loc_3709F:
     push    [bp+arg_8]
     push    [bp+var_4]
+loc_370A5:
     mov     ax, 1
+loc_370A8:
     push    ax
     push    si
+loc_370AA:
     push    [bp+arg_4]
+loc_370AD:
     call    sub_35B76
+loc_370B2:
     add     sp, 0Ah
 loc_370B5:
     pop     si
+loc_370B6:
     mov     sp, bp
+loc_370B8:
     pop     bp
+locret_370B9:
     retf
 sub_3702E endp
 seg025 ends

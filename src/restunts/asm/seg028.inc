@@ -15,7 +15,6 @@ seg028 segment byte public 'STUNTSC' use16
     extrn sub_39088:proc
     extrn loc_390C8
     extrn byte_3930E:byte
-    extrn byte_39310:byte
     extrn sub_3945A:proc
     extrn off_395A8:word
     extrn sub_3963C:proc

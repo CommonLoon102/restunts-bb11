@@ -64,45 +64,64 @@ seg007 segment byte public 'STUNTSC' use16
     public audio_op_unk6
     public audio_op_unk7
     public nopsub_27489
+algn_26BAD:
     ; align 2
     db 144
 audio_add_driver_timer proc far
 
     mov     bx, offset audiotimers
+loc_26BB1:
     jmp     short loc_26BB9
 loc_26BB3:
     mov     byte ptr [bx], 0
+loc_26BB6:
     add     bx, 4Ch ; 'L'
 loc_26BB9:
     cmp     bx, 6AD0h
+loc_26BBD:
     jb      short loc_26BB3
+loc_26BBF:
     mov     word_42240, 16h
+loc_26BC5:
     mov     ax, offset audio_driver_timer
+loc_26BC8:
     mov     dx, seg seg007
     push    dx
+loc_26BCC:
     push    ax
+loc_26BCD:
     call    timer_reg_callback
+loc_26BD2:
     pop     bx
     pop     bx
+locret_26BD4:
     retf
 audio_add_driver_timer endp
 audio_remove_driver_timer proc far
      r = byte ptr 0
 
     push    si
+loc_26BD6:
     mov     si, offset audiotimers
+loc_26BD9:
     jmp     short loc_26BEF
 loc_26BDB:
     cmp     byte ptr [si], 1
+loc_26BDE:
     jnz     short loc_26BE9
+loc_26BE0:
     push    word ptr [si+2]
+loc_26BE3:
     call    sub_374DE
+loc_26BE8:
     pop     bx
 loc_26BE9:
     mov     byte ptr [si], 0
+loc_26BEC:
     add     si, 4Ch ; 'L'
 loc_26BEF:
     cmp     si, 6AD0h
+loc_26BF3:
     jb      short loc_26BDB
     mov     ax, offset audio_driver_timer
     mov     dx, seg seg007
@@ -122,16 +141,20 @@ pad_id proc far
     push    bp
     mov     bp, sp
     push    si
+loc_26C0A:
     les     bx, [bp+arg_0]
     mov     ax, es:[bx]
     mov     dx, es:[bx+2]
+loc_26C14:
     mov     word_42242, ax
+loc_26C17:
     mov     word_42244, dx
     mov     byte_42246, 0
     sub     si, si
 loc_26C22:
     cmp     byte ptr word_42242[si], 0
     jnz     short loc_26C2E
+loc_26C29:
     mov     byte ptr word_42242[si], 20h ; ' '
 loc_26C2E:
     inc     si
@@ -173,23 +196,31 @@ audio_init_engine proc far
 loc_26C4E:
     or      di, di
     jge     short loc_26C63
+loc_26C52:
     cmp     byte ptr [bx], 0
     jnz     short loc_26C59
     mov     di, dx
 loc_26C59:
     add     bx, 4Ch ; 'L'
+loc_26C5C:
     inc     dx
 loc_26C5D:
     cmp     bx, offset word_42240; end of audiotimer
+loc_26C61:
     jb      short loc_26C4E
 loc_26C63:
     or      di, di
+loc_26C65:
     jge     short loc_26C6A
+loc_26C67:
     jmp     loc_26EE4
 loc_26C6A:
     mov     ax, di
+loc_26C6C:
     mov     cx, 4Ch ; 'L'
+loc_26C6F:
     imul    cx
+loc_26C71:
     add     ax, offset audiotimers
     mov     [bp+var_14], ax
     add     ax, 1Ch
@@ -251,6 +282,7 @@ loc_26CCB:
     push    [bp+arg_A]
     call    init_audio_resources
     add     sp, 0Ah
+loc_26D17:
     mov     es, si
     mov     es:[di+10h], ax
     mov     es:[di+12h], dx
@@ -723,10 +755,10 @@ audio_op_unk2 proc far
     push    [bp+arg_C]
     push    [bp+arg_E]
     push    [bp+arg_A]
-    call    sub_300B6
+    call    polarRadius2D
     add     sp, 4
     push    ax
-    call    sub_300B6
+    call    polarRadius2D
     add     sp, 4
     mov     [bp+var_C], ax
     cmp     ax, 1770h
@@ -741,10 +773,10 @@ loc_27172:
     push    [bp+arg_6]
     push    [bp+arg_8]
     push    [bp+arg_4]
-    call    sub_300B6
+    call    polarRadius2D
     add     sp, 4
     push    ax
-    call    sub_300B6
+    call    polarRadius2D
     add     sp, 4
     mov     [bp+var_A], ax
     sub     ax, [bp+var_C]
@@ -753,6 +785,7 @@ loc_27172:
     xor     dx, dx
     div     [bp+arg_10]
     imul    [bp+var_16]
+loc_271A0:
     mov     [bp+var_16], ax
     mov     ax, 7Fh ; ''
     mul     [bp+var_C]
@@ -817,6 +850,7 @@ nopsub_27220 proc far
     mov     bx, ax
     add     bx, 6364h
     mov     ax, [bx+4]
+loc_27233:
     mov     cl, 4
     shr     ax, cl
     push    ax

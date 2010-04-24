@@ -47,22 +47,27 @@ seg005 segment byte public 'STUNTSC' use16
     assume cs:seg005
     assume es:nothing, ss:nothing, ds:dseg
     public run_game
-    public sub_223FA
+    public handle_ingame_kb_shortcuts
     public sub_22532
     public sub_2255A
     public sub_22576
     public sub_22698
     public sub_2298C
     public load_replay_file
-    public write_track
+    public write_rpl
     public setup_car_shapes
     public setup_player_cars
     public sub_239B4
     public sub_23A50
     public sub_23A98
-    public sub_23B4C
+    public loop_game
     public off_2481A
     public off_24D20
+    public off_24D22
+    public off_24D24
+    public off_24D26
+    public off_24D28
+algn_21B79:
     ; align 2
     db 144
 run_game proc far
@@ -80,24 +85,42 @@ run_game proc far
      r = byte ptr 2
 
     push    bp
+loc_21B7B:
     mov     bp, sp
+loc_21B7D:
     sub     sp, 16h
+loc_21B80:
     push    si
+loc_21B81:
     mov     [bp+var_C], 0FFFFh
+loc_21B86:
     mov     word_43934, 0
+loc_21B8C:
     mov     word_43936, 140h
+loc_21B92:
     mov     [bp+var_2], 0FFFFh
+loc_21B97:
     mov     word_449EA, 0FFFFh
+loc_21B9D:
     call    get_kevinrandom
+loc_21BA2:
     mov     cl, 3
+loc_21BA4:
     shl     ax, cl
+loc_21BA6:
     mov     word_42D28, ax
+loc_21BA9:
     mov     byte_4616F, 1
+loc_21BAE:
     mov     byte_454B8, 0
+loc_21BB3:
     cmp     byte_44AE2, 0
+loc_21BB8:
     jz      short loc_21BEC
+loc_21BBA:
     inc     cameramode
     cmp     cameramode, 4
+loc_21BC3:
     jnz     short loc_21BCA
     mov     cameramode, 0
 loc_21BCA:
@@ -108,6 +131,7 @@ loc_21BCA:
     push    ax              ; char *
     push    cs
     call near ptr load_replay_file
+loc_21BDA:
     add     sp, 4
     or      al, al
     jz      short loc_21BE4
@@ -121,6 +145,7 @@ loc_21BEC:
     cmp     gameconfig.game_recordedframes, 0
     jnz     short loc_21C00
     mov     cameramode, 0
+loc_21BF8:
     mov     byte_45DB2, 1
     jmp     short loc_21C0F
     ; align 2
@@ -142,15 +167,22 @@ loc_21C0F:
     db 144
 loc_21C24:
     mov     kbormouse, 0
+loc_21C29:
     mov     byte_449E6, 0
+loc_21C2E:
     mov     byte_449DA, 1
+loc_21C33:
     push    cs
+loc_21C34:
     call near ptr sub_2255A
+loc_21C37:
     mov     byte_461C8, 0FFh
+loc_21C3C:
     mov     byte_44346, 0
+loc_21C41:
     mov     byte_4432A, 0
     mov     byte_46467, 0
-    mov     byte_43950, 0
+    mov     dashb_toggle, 0
     cmp     byte_44AE2, 0
     jz      short loc_21C6E
     mov     al, byte ptr gameconfig.game_framespersec
@@ -170,7 +202,7 @@ loc_21C6E:
     jmp     loc_21D2C
 loc_21C78:
     mov     cameramode, 0
-    mov     byte_43950, 1
+    mov     dashb_toggle, 1
     mov     byte_4499F, 0
     mov     ax, framespersec2
     mov     framespersec, ax
@@ -196,7 +228,7 @@ loc_21C78:
     call    sin_fast
     add     sp, 2
     push    ax
-    call    scale_value
+    call    multiply_and_scale
     add     sp, 4
     cwd
     mov     cl, 6
@@ -205,15 +237,16 @@ loc_21CDC:
     rcl     dx, 1
     dec     cl
     jnz     short loc_21CDC
-    add     word ptr state.playerstate.car_longvec1.long_x, ax
-    adc     word ptr state.playerstate.car_longvec1.long_x+2, dx
-    mov     ax, 0FF10h
+    add     word ptr state.playerstate.car_posWorld1.lx, ax
+loc_21CE8:
+    adc     word ptr state.playerstate.car_posWorld1.lx+2, dx
+    mov     ax, 0FF10h      ; -240
     push    ax
     push    track_angle
     call    cos_fast
     add     sp, 2
     push    ax
-    call    scale_value
+    call    multiply_and_scale
     add     sp, 4
     cwd
     mov     cl, 6
@@ -222,10 +255,10 @@ loc_21D08:
     rcl     dx, 1
     dec     cl
     jnz     short loc_21D08
-    add     word ptr state.playerstate.car_longvec1.long_z, ax
-    adc     word ptr state.playerstate.car_longvec1.long_z+2, dx
-    add     word ptr state.playerstate.car_longvec1.long_y, 580h
-    adc     word ptr state.playerstate.car_longvec1.long_y+2, 0
+    add     word ptr state.playerstate.car_posWorld1.lz, ax
+    adc     word ptr state.playerstate.car_posWorld1.lz+2, dx
+    add     word ptr state.playerstate.car_posWorld1.ly, 580h
+    adc     word ptr state.playerstate.car_posWorld1.ly+2, 0
     mov     byte_43966, 1
     jmp     short loc_21DA2
     ; align 4
@@ -344,7 +377,7 @@ loc_21E49:
     push    ax
     mov     ax, 4
     push    ax
-    call    audio_engine_unk
+    call    set_AV_event_triggers
     add     sp, 4
     mov     byte_449DA, 1
 loc_21E71:
@@ -363,7 +396,7 @@ loc_21E8F:
     cmp     byte_45DB2, al
     jnz     short loc_21EBF
     mov     al, byte_4644A
-    cmp     byte_43950, al
+    cmp     dashb_toggle, al
     jnz     short loc_21EBF
     mov     al, byte_455D2
     cmp     byte_4616F, al
@@ -372,19 +405,19 @@ loc_21E8F:
     cmp     byte_454B8, al
     jnz     short loc_21EBF
     mov     al, byte_42A38
-    cmp     byte_463E0, al
+    cmp     followOpponentFlag, al
     jnz     short loc_21EBF
     jmp     loc_21F7A
 loc_21EBF:
     mov     al, byte_45DB2
     mov     byte_461C8, al
-    mov     al, byte_43950
+    mov     al, dashb_toggle
     mov     byte_4644A, al
     mov     al, byte_4616F
     mov     byte_455D2, al
     mov     al, byte_454B8
     mov     byte_45634, al
-    mov     al, byte_463E0
+    mov     al, followOpponentFlag
     mov     byte_42A38, al
     mov     word_45DB8, 0
     mov     byte_449E2, 0
@@ -486,7 +519,7 @@ loc_21FC2:
     mov     ax, 1
     push    ax
     push    cs
-    call near ptr sub_23B4C
+    call near ptr loop_game
     add     sp, 6
     jmp     short loc_22064
     ; align 2
@@ -495,9 +528,9 @@ loc_21FEE:
     mov     byte_46484, 1
     jmp     loc_21F0F
 loc_21FF6:
-    cmp     byte_43950, 0
+    cmp     dashb_toggle, 0
     jz      short loc_22034
-    cmp     byte_463E0, 0
+    cmp     followOpponentFlag, 0
     jnz     short loc_22034
     cmp     byte_45DB2, 2
     jnz     short loc_2201A
@@ -535,7 +568,7 @@ loc_22052:
     mov     bx, ax
     mov     byte_449D8[bx], 0
 loc_22064:
-    mov     ax, 81C4h
+    mov     ax, offset word_43934
     push    ax
     mov     al, byte_44346
     cbw
@@ -565,14 +598,14 @@ loc_22064:
 loc_220BB:
     push    word ptr dasmshapeptr+2
     push    word ptr dasmshapeptr
-    call    sub_33B02
+    call    render_bmp_as_mask
     add     sp, 4
     push    word_4549E
     push    word_4549C
     call    sub_342F6
     add     sp, 4
 loc_220DB:
-    mov     ax, 81C4h
+    mov     ax, offset word_43934
     push    ax
     call    sub_19F14
     add     sp, 2
@@ -624,6 +657,7 @@ loc_22152:
     mov     framespersec, ax
     mov     al, byte ptr framespersec2
     mov     byte ptr gameconfig.game_framespersec, al
+loc_22171:
     mov     ax, 0FFFFh
     push    ax
     call    init_game_state
@@ -653,7 +687,7 @@ loc_221AA:
     jz      short loc_22208
     cmp     byte_45DB2, 0
     jnz     short loc_221C2
-    cmp     state.field_3F6, 4
+    cmp     state.game_3F6autoLoadEvalFlag, 4
     jz      short loc_221C2
     jmp     loc_22298
 loc_221C2:
@@ -673,7 +707,7 @@ loc_221CC:
     push    ax
     push    ax
     push    cs
-    call near ptr sub_23B4C
+    call near ptr loop_game
     add     sp, 6
     sub     ax, ax
     push    ax
@@ -682,9 +716,10 @@ loc_221CC:
     mov     ax, 2
     push    ax
     push    cs
-    call near ptr sub_23B4C
+    call near ptr loop_game
     add     sp, 6
     mov     byte_454B8, 1
+loc_22203:
     call    sub_188A4
 loc_22208:
     cmp     byte_45DB2, 2
@@ -695,7 +730,7 @@ loc_22208:
     mov     ax, 3
     push    ax
     push    cs
-    call near ptr sub_23B4C
+    call near ptr loop_game
     add     sp, 6
     jmp     loc_21DA2
     ; align 2
@@ -707,7 +742,7 @@ loc_22222:
     jz      short loc_22236
     push    ax
     push    cs
-    call near ptr sub_223FA
+    call near ptr handle_ingame_kb_shortcuts
     add     sp, 2
 loc_22236:
     mov     ax, [bp+var_12]
@@ -757,9 +792,9 @@ loc_22298:
     call    setup_mcgawnd2
     sub     ax, ax
     push    ax
-    mov     ax, 0C8h ; 'È'
+    mov     ax, 0C8h ; 'È'  ; 200
     push    ax
-    mov     ax, 140h
+    mov     ax, 140h        ; 320
     push    ax
     sub     ax, ax
     push    ax
@@ -781,7 +816,7 @@ loc_222F1:
     jnz     short loc_222FB
     jmp     loc_223CD
 loc_222FB:
-    cmp     state.opponentstate.field_C9, 0
+    cmp     state.opponentstate.car_crashBmpFlag, 0
     jz      short loc_22305
     jmp     loc_223CD
 loc_22305:
@@ -789,7 +824,7 @@ loc_22305:
     push    ax
     lea     ax, [bp+var_16]
     push    ax
-    push    dialogarg1
+    push    performGraphColor
     mov     ax, 50h ; 'P'
     push    ax
     mov     ax, 0FFFFh
@@ -828,18 +863,18 @@ loc_22347:
     mov     ax, state.game_frame
     add     ax, word_45A24
     push    ax
-    mov     ax, offset byte_463E4
+    mov     ax, offset resID_byte1
     push    ax              ; char *
     call    sub_298B8
     add     sp, 6
     call    mouse_draw_opaque_check
     push    [bp+var_14]
-    mov     ax, offset byte_463E4
+    mov     ax, offset resID_byte1
     push    ax
     call    sub_29606
     add     sp, 2
     push    ax
-    mov     ax, offset byte_463E4
+    mov     ax, offset resID_byte1
     push    ax
     call    sub_345BC
     add     sp, 6
@@ -851,7 +886,7 @@ loc_2239F:
     add     sp, 2
     cmp     ax, 1Bh
     jz      short loc_223CD
-    cmp     state.opponentstate.field_C9, 0
+    cmp     state.opponentstate.car_crashBmpFlag, 0
     jnz     short loc_223CD
     mov     ax, 5DCh
     imul    framespersec
@@ -883,7 +918,7 @@ loc_223F4:
     ; align 2
     db 144
 run_game endp
-sub_223FA proc far
+handle_ingame_kb_shortcuts proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -901,7 +936,7 @@ loc_2240A:
     jbe     short loc_22414
     jmp     loc_224AC
 loc_22414:
-    cmp     ax, 1Bh
+    cmp     ax, 1Bh         ; ESC
     jz      short loc_22420
     cmp     ax, 43h ; 'C'
     jmp     loc_224BE
@@ -914,7 +949,7 @@ loc_22420:
     push    ax
     mov     ax, 4
     push    ax
-    call    audio_engine_unk
+    call    set_AV_event_triggers
     add     sp, 4
 loc_22436:
     mov     byte_449DA, 1
@@ -929,7 +964,7 @@ loc_2244E:
     mov     cameramode, 3
     jmp     loc_224E9
 loc_22456:
-    xor     byte_3B8F4, 1
+    xor     HKeyFlag, 1
     jmp     loc_224E9
 loc_2245E:
     call    do_mou_restext
@@ -943,7 +978,7 @@ loc_2245E:
     db 144
     db 144
 loc_22470:
-    xor     byte_43950, 1
+    xor     dashb_toggle, 1
     jmp     short loc_224E9
     ; align 2
     db 144
@@ -966,7 +1001,7 @@ loc_22492:
 loc_2249A:
     cmp     gameconfig.game_opponenttype, 0
     jz      short loc_224E9
-    xor     byte_463E0, 1
+    xor     followOpponentFlag, 1
     jmp     short loc_224E9
 loc_224A8:
     sub     ax, ax
@@ -1037,7 +1072,7 @@ loc_22528:
     jmp     loc_2244E
 loc_22530:
     jmp     short loc_224C0
-sub_223FA endp
+handle_ingame_kb_shortcuts endp
 sub_22532 proc far
      s = byte ptr 0
      r = byte ptr 2
@@ -1244,7 +1279,7 @@ loc_226DA:
 loc_226E6:
     cmp     byte_449DA, 0
     jnz     short loc_226A6
-    cmp     state.field_3F6, 0
+    cmp     state.game_3F6autoLoadEvalFlag, 0
     jnz     short loc_226A6
     cmp     byte_45DB2, 1
     jz      short loc_226A6
@@ -1261,7 +1296,7 @@ loc_226E6:
     push    ax
     mov     ax, 1
     push    ax
-    call    audio_engine_unk
+    call    set_AV_event_triggers
     add     sp, 4
 loc_22725:
     cmp     byte_3B8F2, 0
@@ -1349,8 +1384,8 @@ smart
     and     di, 3Fh
 nosmart
     mov     al, byte_40D6A
-    mov     [di-74DEh], al
-    mov     byte ptr [di-7486h], 1
+    mov     byte_44292[di], al
+    mov     byte_442EA[di], 1
     jmp     short loc_227EF
     ; align 2
     db 144
@@ -1390,7 +1425,7 @@ loc_22817:
     push    ax
     mov     ax, 4
     push    ax
-    call    audio_engine_unk
+    call    set_AV_event_triggers
     add     sp, 4
     jmp     loc_226DA
 loc_2283C:
@@ -1504,10 +1539,10 @@ loc_22924:
     jmp     short loc_2293E
 loc_22928:
     mov     bx, [bp+var_A]
-    add     bx, word ptr trackdata16
-    mov     es, word ptr trackdata16+2
+    add     bx, word ptr td16_rpl_buffer
+    mov     es, word ptr td16_rpl_buffer+2
     mov     al, es:[bx+di]
-    mov     bx, word ptr trackdata16
+    mov     bx, word ptr td16_rpl_buffer
     mov     es:[bx+di], al
     inc     di
 loc_2293E:
@@ -1528,8 +1563,8 @@ loc_2293E:
 loc_2296C:
     mov     bx, word_42D02
     inc     word_42D02
-    add     bx, word ptr trackdata16
-    mov     es, word ptr trackdata16+2
+    add     bx, word ptr td16_rpl_buffer
+    mov     es, word ptr td16_rpl_buffer+2
     mov     ax, si
     mov     es:[bx], al
     inc     gameconfig.game_recordedframes
@@ -1702,7 +1737,7 @@ loc_22A96:
     mov     ax, [bp+var_6]
     sub     ax, [bx-71BCh]
     push    ax
-    call    sub_2EA4E
+    call    polarAngle
     add     sp, 4
     mov     [bp+var_10], ax
     mov     ax, si
@@ -1718,7 +1753,7 @@ loc_22A96:
     mov     ax, [bp+var_1C]
     sub     ax, [bx-71BCh]
     push    ax
-    call    sub_300B6
+    call    polarRadius2D
     add     sp, 4
     mov     di, ax
     cmp     [bp+var_22], di
@@ -1740,7 +1775,7 @@ loc_22B0D:
     add     sp, 2
     push    ax
     push    di
-    call    scale_value
+    call    multiply_and_scale
     add     sp, 4
     mov     bx, si
     mov     cx, bx
@@ -1753,7 +1788,7 @@ loc_22B0D:
     add     sp, 2
     push    ax
     push    di
-    call    scale_value
+    call    multiply_and_scale
     add     sp, 4
     mov     bx, si
     mov     cx, bx
@@ -1817,7 +1852,7 @@ loc_22BA8:
 loc_22BBA:
     push    [bp+var_28]
     push    [bp+var_20]
-    call    sub_300B6
+    call    polarRadius2D
     add     sp, 4
     mov     [bp+var_8], ax
     mov     ax, [bp+var_2C]
@@ -1933,14 +1968,14 @@ load_replay_file proc far
     call    combine_file_path
     add     sp, 8
     mov     byte_3B8FB, 1
-    push    word ptr trackdata13+2
-    push    word ptr trackdata13
+    push    word ptr td13_rpl_header+2
+    push    word ptr td13_rpl_header
     mov     ax, offset track_full_path
     push    ax
     call    file_read_fatal
     add     sp, 6
-    mov     ax, word ptr trackdata13
-    mov     dx, word ptr trackdata13+2
+    mov     ax, word ptr td13_rpl_header
+    mov     dx, word ptr td13_rpl_header+2
     mov     di, offset gameconfig
     mov     si, ax
     push    ds
@@ -1957,7 +1992,7 @@ load_replay_file proc far
     pop     bp
     retf
 load_replay_file endp
-write_track proc far
+write_rpl proc far
     var_6 = word ptr -6
     var_4 = word ptr -4
      s = byte ptr 0
@@ -1969,7 +2004,7 @@ write_track proc far
     sub     sp, 6
     push    di
     push    si
-    les     bx, trackdata13
+    les     bx, td13_rpl_header
     push    si
     mov     di, bx
     mov     si, 9234h
@@ -1977,7 +2012,7 @@ write_track proc far
     repne movsw
     pop     si
     mov     ax, gameconfig.game_recordedframes
-    add     ax, 724h
+    add     ax, 724h        ; offset of .rpl kb. event block
     cwd
     mov     [bp+var_6], ax
     mov     [bp+var_4], dx
@@ -1998,7 +2033,7 @@ write_track proc far
     retf
     ; align 2
     db 144
-write_track endp
+write_rpl endp
 setup_car_shapes proc far
     var_20 = word ptr -32
     var_1E = word ptr -30
@@ -2093,7 +2128,7 @@ loc_22D5C:
     push    word ptr stdbresptr
     call    locate_many_resources
     add     sp, 8
-    cmp     simd_copy.spdcenter.y2, 0
+    cmp     simd_player.spdcenter.y2, 0
     jnz     short loc_22E09
     mov     ax, offset digshapes
     push    ax
@@ -2324,7 +2359,7 @@ loc_23057:
     les     bx, whlsprite3
     push    word ptr es:[bx+2]
     push    word ptr es:[bx]
-    call    sub_33BBC
+    call    sprite_putimage_and_alt
     add     sp, 8
     mov     al, byte_4432A
     cbw
@@ -2380,6 +2415,7 @@ loc_230DE:
     shl     ax, 1
     mov     [bp+var_20], ax
     mov     bx, ax
+loc_23120:
     mov     word_40D70[bx], si
     mov     bx, [bp+var_20]
     mov     word_40D74[bx], di
@@ -2420,11 +2456,11 @@ loc_23168:
     les     bx, whlsprite2
     push    word ptr es:[bx+2]
     push    word ptr es:[bx]
-    call    sub_33BBC
+    call    sprite_putimage_and_alt
     add     sp, 8
 loc_2319D:
     mov     [bp+var_1A], 0
-    mov     ax, state.playerstate.field_20
+    mov     ax, state.playerstate.car_steeringAngle
     cwd
     xor     ax, dx
     sub     ax, dx
@@ -2473,7 +2509,7 @@ loc_231F3:
     shl     bx, 1
     push    word ptr (gnobshapes+12h)[bx]
     push    word ptr (gnobshapes+10h)[bx]
-    call    sub_33BBC
+    call    sprite_putimage_and_alt
     add     sp, 8
     mov     al, byte_4432A
     cbw
@@ -2520,7 +2556,7 @@ loc_2327C:
 loc_23286:
     mov     [bp+var_18], 0
 loc_2328A:
-    mov     ax, simd_copy.spdcenter.y2
+    mov     ax, simd_player.spdcenter.y2
     cmp     ax, 0FFFFh
     jz      short loc_232B6
     or      ax, ax
@@ -2528,14 +2564,14 @@ loc_2328A:
     jmp     loc_233A2
 loc_23299:
     mov     [bp+var_6], 0
-    mov     ax, state.playerstate.car_trackgrip
+    mov     ax, state.playerstate.car_speed
     sub     dx, dx
     mov     cx, 280h
     div     cx
     mov     si, ax
-    cmp     simd_copy.spdnumpoints, si
+    cmp     simd_player.spdnumpoints, si
     jg      short loc_232BC
-    mov     si, simd_copy.spdnumpoints
+    mov     si, simd_player.spdnumpoints
     dec     si
     jmp     short loc_232BC
 loc_232B6:
@@ -2546,9 +2582,9 @@ loc_232BC:
     mov     cl, 7
     shr     ax, cl
     mov     di, ax
-    cmp     simd_copy.revnumpoints, di
+    cmp     simd_player.revnumpoints, di
     jg      short loc_232D0
-    mov     di, simd_copy.revnumpoints
+    mov     di, simd_player.revnumpoints
     dec     di
 loc_232D0:
     cmp     [bp+var_18], 0
@@ -2586,7 +2622,7 @@ loc_23303:
     shl     bx, 1
     push    word ptr (gnobshapes+12h)[bx]
     push    word ptr (gnobshapes+10h)[bx]
-    call    sub_33BBC
+    call    sprite_putimage_and_alt
     add     sp, 8
     mov     al, byte_4432A
     cbw
@@ -2626,7 +2662,7 @@ loc_2338C:
     jmp     short loc_233BF
 loc_233A2:
     mov     [bp+var_6], 1
-    mov     ax, state.playerstate.car_trackgrip
+    mov     ax, state.playerstate.car_speed
     mov     cl, 8
     shr     ax, cl
     mov     si, ax
@@ -2639,10 +2675,10 @@ loc_233B2:
 loc_233BF:
     cmp     [bp+var_8], 0
     jz      short loc_233EA
-    mov     al, simd_copy.spdpoints+1
+    mov     al, simd_player.spdpoints+1
     sub     ah, ah
     push    ax
-    mov     al, simd_copy.spdpoints
+    mov     al, simd_player.spdpoints
     push    ax
     mov     bx, [bp+var_8]
     shl     bx, 1
@@ -2663,10 +2699,10 @@ loc_233EA:
     cmp     [bp+var_1C], 0
     jz      short loc_23433
 loc_233FF:
-    mov     al, simd_copy.spdpoints+3
+    mov     al, simd_player.spdpoints+3
     sub     ah, ah
     push    ax
-    mov     al, simd_copy.spdpoints+2
+    mov     al, simd_player.spdpoints+2
     push    ax
     mov     bx, [bp+var_8]
     shl     bx, 1
@@ -2684,10 +2720,10 @@ loc_233FF:
     sub     si, ax
     mov     [bp+var_1C], 1
 loc_23433:
-    mov     al, simd_copy.spdpoints+5
+    mov     al, simd_player.spdpoints+5
     sub     ah, ah
     push    ax
-    mov     al, simd_copy.spdpoints+4
+    mov     al, simd_player.spdpoints+4
     push    ax
     mov     bx, si
     shl     bx, 1
@@ -2705,37 +2741,37 @@ loc_23456:
     mov     ax, si
     shl     ax, 1
     mov     [bp+var_20], ax
-    push    word_44D60
+    push    meter_needle_color
     mov     bx, ax
-    mov     al, (simd_copy.spdpoints+1)[bx]
+    mov     al, (simd_player.spdpoints+1)[bx]
     sub     ah, ah
     push    ax
-    mov     al, simd_copy.spdpoints[bx]
+    mov     al, simd_player.spdpoints[bx]
     push    ax
-    push    simd_copy.spdcenter.y2
-    push    simd_copy.spdcenter.x2
-    call    sub_2FDDE
+    push    simd_player.spdcenter.y2
+    push    simd_player.spdcenter.x2
+    call    preRender_line
     add     sp, 0Ah
 loc_23485:
     mov     ax, di
     shl     ax, 1
     mov     [bp+var_20], ax
-    push    word_44D60
+    push    meter_needle_color
     mov     bx, ax
-    mov     al, (simd_copy.revpoints+1)[bx]
+    mov     al, (simd_player.revpoints+1)[bx]
     sub     ah, ah
     push    ax
-    mov     al, simd_copy.revpoints[bx]
+    mov     al, simd_player.revpoints[bx]
     push    ax
-    push    simd_copy.revcenter.y2
-    push    simd_copy.revcenter.x2
-    call    sub_2FDDE
+    push    simd_player.revcenter.y2
+    push    simd_player.revcenter.x2
+    call    preRender_line
     add     sp, 0Ah
     mov     al, [bp+var_2]
     cbw
     or      ax, ax
     jz      short loc_234BE
-    cmp     ax, 2
+    cmp     ax, 2           ; st. whl. position flag
     jz      short loc_234EC
     jmp     short loc_234DE
     ; align 2
@@ -2743,7 +2779,7 @@ loc_23485:
 loc_234BE:
     push    word ptr whlshapes+1Eh
     push    word ptr whlshapes+1Ch
-    call    sub_33B02
+    call    render_bmp_as_mask
     add     sp, 4
     push    word ptr whlshapes+16h
     push    word ptr whlshapes+14h
@@ -2758,7 +2794,7 @@ loc_234DE:
 loc_234EC:
     push    word ptr whlshapes+22h
     push    word ptr whlshapes+20h
-    call    sub_33B02
+    call    render_bmp_as_mask
     add     sp, 4
     push    word ptr whlshapes+1Ah
     push    word ptr whlshapes+18h
@@ -2781,7 +2817,7 @@ loc_2350B:
     les     bx, whlsprite1
     push    word ptr es:[bx+2]
     push    word ptr es:[bx]
-    call    sub_33BBC
+    call    sprite_putimage_and_alt
     add     sp, 8
 loc_23540:
     mov     al, byte_4432A
@@ -2826,7 +2862,7 @@ loc_2356D:
     shl     bx, 1
     push    word ptr (gnobshapes+12h)[bx]
     push    word ptr (gnobshapes+10h)[bx]
-    call    sub_33BBC
+    call    sprite_putimage_and_alt
     add     sp, 8
     mov     al, byte_4432A
     cbw
@@ -2852,7 +2888,7 @@ loc_235D5:
     mov     [bp+var_14], al
     cmp     [bp+var_4], 0
     jge     short loc_235F9
-    sub     al, simd_copy.steeringdots
+    sub     al, simd_player.steeringdots
     shl     al, 1
     sub     [bp+var_14], al
 loc_235F9:
@@ -3027,7 +3063,7 @@ setup_player_cars proc far
     push    ax
     call    ensure_file_exists
     add     sp, 2
-    call    sub_217CA
+    call    load_opponent_data
 loc_237D3:
     mov     ax, 3
     push    ax
@@ -3117,7 +3153,7 @@ loc_238B4:
     push    ax
     push    ax
     push    cs
-    call near ptr sub_23B4C
+    call near ptr loop_game
     add     sp, 6
 loc_238DE:
     mov     ax, offset aGame; "game"
@@ -3143,7 +3179,7 @@ loc_238DE:
     mov     word ptr wallptr, ax
     mov     word ptr wallptr+2, dx
     call    load_sdgame2_shapes
-    les     bx, trackdata14
+    les     bx, td14_elem_map_main
     mov     al, es:[bx+384h]; 384h = sky box position in track data
     sub     ah, ah
     push    ax
@@ -3194,7 +3230,7 @@ loc_23988:
     mov     word ptr wndsprite, ax
     mov     word ptr wndsprite+2, dx
 loc_239A3:
-    mov     byte_463E0, 0
+    mov     followOpponentFlag, 0
     mov     byte_45634, 0FFh
     sub     ax, ax
     mov     sp, bp
@@ -3306,14 +3342,14 @@ sub_23A98 proc far
 smart
     and     si, 3Fh
 nosmart
-    cmp     byte ptr [si-7486h], 0
+    cmp     byte_442EA[si], 0
     jnz     short loc_23AB1
     jmp     loc_23B45
 loc_23AB1:
-    mov     al, [si-74DEh]
+    mov     al, byte_44292[si]
     cbw
     mov     di, ax
-    mov     ax, state.playerstate.car_trackgrip2
+    mov     ax, state.playerstate.car_speed2
     mov     cl, 0Ah
     shr     ax, cl
 smart
@@ -3322,39 +3358,39 @@ nosmart
     mov     [bp+var_8], al
     cbw
     mov     bx, ax
-    add     bx, word_449E8
+    add     bx, steerWhlRespTable_ptr
     mov     al, [bx+1]
     mov     [bp+var_A], al
-    cmp     state.playerstate.field_20, di
+    cmp     state.playerstate.car_steeringAngle, di
     jge     short loc_23AE0
-    cmp     state.playerstate.field_20, 0FFFFh
+    cmp     state.playerstate.car_steeringAngle, 0FFFFh
     jge     short loc_23AF2
     jmp     short loc_23AED
 loc_23AE0:
-    cmp     state.playerstate.field_20, di
+    cmp     state.playerstate.car_steeringAngle, di
     jle     short loc_23AF2
-    cmp     state.playerstate.field_20, 1
+    cmp     state.playerstate.car_steeringAngle, 1
     jle     short loc_23AF2
 loc_23AED:
     mov     cl, 2
     shl     [bp+var_A], cl
 loc_23AF2:
-    cmp     state.playerstate.field_20, di
+    cmp     state.playerstate.car_steeringAngle, di
     jle     short loc_23B0C
     mov     al, [bp+var_A]
     cbw
-    mov     cx, state.playerstate.field_20
+    mov     cx, state.playerstate.car_steeringAngle
     sub     cx, ax
     cmp     cx, di
     jl      short loc_23B0C
     mov     [bp+var_6], 8
     jmp     short loc_23B28
 loc_23B0C:
-    cmp     state.playerstate.field_20, di
+    cmp     state.playerstate.car_steeringAngle, di
     jge     short loc_23B24
     mov     al, [bp+var_A]
     cbw
-    add     ax, state.playerstate.field_20
+    add     ax, state.playerstate.car_steeringAngle
     cmp     ax, di
     jg      short loc_23B24
     mov     [bp+var_6], 4
@@ -3365,10 +3401,10 @@ loc_23B28:
     cmp     [bp+var_6], 0
     jz      short loc_23B40
     mov     bx, state.game_frame
-    add     bx, word ptr trackdata16
-    mov     es, word ptr trackdata16+2
+    add     bx, word ptr td16_rpl_buffer
+    mov     es, word ptr td16_rpl_buffer+2
     mov     al, [bp+var_6]
-    or      es:[bx], al
+    or      es:[bx], al     ; writing action into rpl buff?!
 loc_23B40:
     mov     byte ptr [si-7486h], 0
 loc_23B45:
@@ -3380,7 +3416,7 @@ loc_23B45:
     ; align 2
     db 144
 sub_23A98 endp
-sub_23B4C proc far
+loop_game proc far
     var_44 = word ptr -68
     var_42 = word ptr -66
     var_40 = byte ptr -64
@@ -3490,19 +3526,20 @@ loc_23BD0:
     mov     bx, ax
     mov     word_40E0A[bx], 0FFFFh
     mov     bx, [bp+var_42]
+loc_23C10:
     mov     word_40E76[bx], 0FFFFh
     mov     ax, 1
     push    ax              ; int
     mov     ax, gameconfig.game_recordedframes
     add     ax, word_45A24
     push    ax
-    mov     ax, 0AC74h
+    mov     ax, offset resID_byte1
     push    ax              ; char *
     call    sub_298B8
     add     sp, 6
     sub     ax, ax
     push    ax
-    push    word_407CA
+    push    dialog_fnt_colour
     call    sub_34B0C
     add     sp, 4
     push    word_459F6
@@ -3513,7 +3550,7 @@ loc_23BD0:
     push    ax
     mov     ax, 0D8h ; 'Ø'
     push    ax
-    mov     ax, offset byte_463E4
+    mov     ax, offset resID_byte1
     push    ax
     call    sub_345BC
     add     sp, 6
@@ -3535,13 +3572,13 @@ loc_23C66:
     mov     ax, 1
     push    ax              ; int
     push    [bp+var_42]
-    mov     ax, offset byte_463E4
+    mov     ax, offset resID_byte1
     push    ax              ; char *
     call    sub_298B8
     add     sp, 6
     sub     ax, ax
     push    ax
-    push    word_407CA
+    push    dialog_fnt_colour
     call    sub_34B0C
     add     sp, 4
     call    mouse_draw_opaque_check
@@ -3553,7 +3590,7 @@ loc_23C66:
     push    ax
     mov     ax, 98h ; '˜'
     push    ax
-    mov     ax, offset byte_463E4
+    mov     ax, offset resID_byte1
     push    ax
     call    sub_345BC
     add     sp, 6
@@ -3673,7 +3710,7 @@ loc_23DAB:
     push    ax
     call    sub_335D2
     add     sp, 0Ah
-    push    word_407CA
+    push    dialog_fnt_colour
     mov     ax, 6
     push    ax
     push    ax
@@ -3953,7 +3990,7 @@ loc_24082:
     sar     cx, 1
     sub     ax, cx
     push    ax
-    call    sub_2EA4E
+    call    polarAngle
     add     sp, 4
     add     ax, 80h ; '€'
 smart
@@ -4011,7 +4048,7 @@ loc_2410C:
     jz      short loc_24129
     push    [bp+var_16]
     push    cs
-    call near ptr sub_223FA
+    call near ptr handle_ingame_kb_shortcuts
     add     sp, 2
     or      al, al
     jz      short loc_24129
@@ -4030,7 +4067,7 @@ loc_24140:
     mov     ax, 1
     push    ax
     push    cs
-    call near ptr sub_23B4C
+    call near ptr loop_game
     add     sp, 6
     pop     si
     pop     di
@@ -4059,7 +4096,7 @@ loc_24181:
     mov     ax, 2
     push    ax
     push    cs
-    call near ptr sub_23B4C
+    call near ptr loop_game
     add     sp, 6
 loc_24193:
     push    state.game_frame
@@ -4067,7 +4104,7 @@ loc_24193:
     mov     ax, 1
     push    ax
     push    cs
-    call near ptr sub_23B4C
+    call near ptr loop_game
     add     sp, 6
     mov     [bp+var_40], 0
     mov     ax, 1Dh
@@ -4171,8 +4208,11 @@ loc_24258:
 loc_2426E:
     cmp     cameramode, 3
     jnz     short loc_24288
+loc_24275:
     cmp     word_44D20, 0
+loc_2427A:
     jg      short loc_2427F
+loc_2427C:
     jmp     loc_241F9
 loc_2427F:
     sub     word_44D20, 1Eh
@@ -4224,7 +4264,7 @@ loc_242E7:
     mov     ax, 1
     push    ax
     push    cs
-    call near ptr sub_23B4C
+    call near ptr loop_game
     add     sp, 6
     jmp     loc_23FEE
     ; align 2
@@ -4275,14 +4315,14 @@ loc_24346:
     mov     ax, 2
     push    ax
     push    cs
-    call near ptr sub_23B4C
+    call near ptr loop_game
     add     sp, 6
     push    state.game_frame
     push    state.game_frame
     mov     ax, 1
     push    ax
     push    cs
-    call near ptr sub_23B4C
+    call near ptr loop_game
     add     sp, 6
     sub     si, si
 loc_24377:
@@ -4293,7 +4333,7 @@ loc_24377:
     inc     si
     cmp     si, 8
     jl      short loc_24377
-    cmp     state.playerstate.field_C9, 0
+    cmp     state.playerstate.car_crashBmpFlag, 0
     jz      short loc_24394
     mov     [bp+var_E], 1
 loc_24394:
@@ -4313,7 +4353,7 @@ loc_243B8:
     jnz     short loc_243C4
     mov     [bp+var_12], 1
 loc_243C4:
-    mov     al, video_flag6_is1
+    mov     al, video_flag6_is1; pause menu
     mov     byte_454A4, al
     sub     ax, ax
     push    ax
@@ -4323,7 +4363,7 @@ loc_243C4:
     mov     ax, 0FFFFh
     push    ax
     push    ax
-    mov     ax, offset aMen_0
+    mov     ax, offset aMen_0; "men"
     push    ax
     push    word ptr gameresptr+2
     push    word ptr gameresptr
@@ -4377,11 +4417,11 @@ loc_2445A:
     sub     ax, ax
     push    ax
     push    ax
-    push    dialogarg1
+    push    performGraphColor
     mov     ax, 0FFFFh
     push    ax
     push    ax
-    mov     ax, offset aCon_0
+    mov     ax, offset aCon_0; RH warning
     push    ax
     push    word ptr gameresptr+2
     push    word ptr gameresptr
@@ -4410,12 +4450,12 @@ loc_244A7:
     mov     word_42D02, ax
     mov     gameconfig.game_recordedframes, ax
 loc_244B0:
-    mov     byte_43950, 1
+    mov     dashb_toggle, 1
     mov     byte_4499F, 0
-    mov     byte_463E0, 0
+    mov     followOpponentFlag, 0
     mov     byte_45DB2, 0
     mov     cameramode, 0
-    mov     state.field_3F6, 0
+    mov     state.game_3F6autoLoadEvalFlag, 0
     mov     state.game_frame_in_sec, 0
     mov     byte_449E6, 0
     sub     ax, ax
@@ -4425,7 +4465,7 @@ loc_244B0:
     mov     ax, 2
     push    ax
     push    cs
-    call near ptr sub_23B4C
+    call near ptr loop_game
     add     sp, 6
     mov     byte_454B8, 0
     mov     al, byte_3B8F2
@@ -4442,7 +4482,7 @@ loc_244B0:
 loc_2450A:
     mov     byte_43966, 0
     call    sub_188A4
-    mov     ax, offset aRep
+    mov     ax, offset aRep ; "rep"
     push    ax
     push    word ptr mainresptr+2
     push    word ptr mainresptr
@@ -4450,13 +4490,13 @@ loc_2450A:
     add     sp, 6
     push    dx              ; int
     push    ax              ; int
-    mov     ax, offset a_rpl_1
+    mov     ax, offset a_rpl_1; ".rpl"
     push    ax              ; int
     mov     ax, 140h
     push    ax
     mov     ax, offset byte_3B85E
     push    ax              ; char *
-    call    sub_27ED4
+    call    do_fileselect_dialog
     add     sp, 0Ah
     cbw
     mov     si, ax
@@ -4476,7 +4516,7 @@ loc_24548:
     repne movsw
     pop     di
     pop     si
-    les     bx, trackdata14
+    les     bx, td14_elem_map_main
     mov     al, es:[bx+384h]
     sub     ah, ah
     mov     [bp+var_4], ax
@@ -4491,10 +4531,10 @@ loc_24548:
     jz      short loc_2458B
     mov     gameconfig.game_recordedframes, 0
 loc_2458B:
-    mov     byte_43950, 0
+    mov     dashb_toggle, 0
     call    setup_track
     sub     si, si
-    les     bx, trackdata14
+    les     bx, td14_elem_map_main
     mov     al, es:[bx+384h]
     sub     ah, ah
     cmp     ax, [bp+var_4]
@@ -4540,7 +4580,7 @@ loc_245D0:
     push    ax
     call    ensure_file_exists
     add     sp, 2
-    call    sub_217CA
+    call    load_opponent_data
 loc_2460D:
     or      si, si
     jz      short loc_24619
@@ -4550,10 +4590,14 @@ loc_2460D:
     call near ptr setup_player_cars
 loc_24619:
     mov     al, byte ptr gameconfig.game_framespersec
+loc_2461C:
     cbw
+loc_2461D:
     mov     framespersec, ax
+loc_24620:
     mov     ax, 0FFFFh
     push    ax
+loc_24624:
     call    init_game_state
     add     sp, 2
     jmp     loc_24828
@@ -4580,7 +4624,7 @@ loc_24642:
     push    ax
     mov     ax, 0EEh ; 'î'
     push    ax              ; char *
-    call    sub_2863A
+    call    do_savefile_dialog
     add     sp, 8
     or      al, al
     jnz     short loc_2466F
@@ -4607,7 +4651,7 @@ loc_2466F:
     sub     ax, ax
     push    ax
     push    ax
-    push    dialogarg1
+    push    performGraphColor
     mov     ax, 0FFFFh
     push    ax
     push    ax
@@ -4651,7 +4695,7 @@ loc_246FD:
     mov     ax, 95F8h
     push    ax
     push    cs
-    call near ptr write_track
+    call near ptr write_rpl
     add     sp, 2
     mov     [bp+var_20], al
     or      al, al
@@ -4661,7 +4705,7 @@ loc_24712:
     sub     ax, ax
     push    ax
     push    ax
-    push    dialogarg1
+    push    performGraphColor
     mov     ax, 0FFFFh
     push    ax
     push    ax
@@ -4687,7 +4731,7 @@ loc_24748:
     push    ax
     mov     ax, 4
     push    ax
-    call    audio_engine_unk
+    call    set_AV_event_triggers
     add     sp, 4
 loc_24757:
     mov     byte_449DA, 2
@@ -4699,7 +4743,7 @@ loc_24760:
     push    ax
     mov     ax, 4
     push    ax
-    call    audio_engine_unk
+    call    set_AV_event_triggers
     add     sp, 4
     mov     byte_43966, 0
     jmp     short loc_24757
@@ -4735,6 +4779,7 @@ loc_24795:
     push    ax
     sub     ax, ax
     push    ax
+loc_247BE:
     mov     ax, 2
     push    ax
     call    show_dialog
@@ -4753,7 +4798,7 @@ loc_24795:
     jz      short loc_24812
     jmp     short loc_24828
 loc_247E8:
-    xor     byte_43950, 1
+    xor     dashb_toggle, 1
     jmp     short loc_24828
     ; align 2
     db 144
@@ -4774,13 +4819,13 @@ loc_2480A:
     ; align 2
     db 144
 loc_24812:
-    xor     byte_463E0, 1
+    xor     followOpponentFlag, 1
     jmp     short loc_24828
     ; align 2
     db 144
 off_2481A     dw offset loc_24748
     dw offset loc_24416
-    dw offset loc_2444C
+    dw offset loc_2444C     ; modifying this to 0x2CB8 disables Continue Driving
     dw offset loc_2450A
     dw offset loc_24630
     dw offset loc_24776
@@ -4797,7 +4842,7 @@ loc_24830:
     mov     ax, 2
     push    ax
     push    cs
-    call near ptr sub_23B4C
+    call near ptr loop_game
     add     sp, 6
     call    timer_get_delta2
     mov     [bp+var_24], 14h
@@ -4862,7 +4907,7 @@ loc_248C4:
     mov     ax, 1
     push    ax
     push    cs
-    call near ptr sub_23B4C
+    call near ptr loop_game
     add     sp, 6
     push    [bp+var_18]
     call    input_do_checking
@@ -4904,6 +4949,7 @@ loc_24935:
     call    __aFldiv
     mov     si, ax
     add     si, word_42D02
+loc_2494C:
     cmp     gameconfig.game_recordedframes, si
     jge     short loc_24956
     mov     si, gameconfig.game_recordedframes
@@ -4919,7 +4965,7 @@ loc_24956:
     mov     ax, 2
     push    ax
     push    cs
-    call near ptr sub_23B4C
+    call near ptr loop_game
     add     sp, 6
     mov     ax, 3263h
     push    ax
@@ -4933,23 +4979,29 @@ loc_24956:
     push    ax
     call    copy_string
     add     sp, 6
+loc_24997:
     cmp     word_44984, 0
     jz      short loc_249D2
     push    word_3B808
     sub     ax, ax
     push    ax
-    push    word_407CA
+    push    dialog_fnt_colour
     mov     ax, 64h ; 'd'
     push    ax
     mov     ax, 0AC74h
+loc_249B0:
     push    ax
+loc_249B1:
     call    sub_29606
     add     sp, 2
     push    ax
+loc_249BA:
     mov     ax, 0AC74h
     push    ax
     call    sub_28F98
+loc_249C3:
     add     sp, 0Ah
+loc_249C6:
     push    ax
     push    word_3B808
     call    sub_26572
@@ -4957,9 +5009,10 @@ loc_24956:
 loc_249D2:
     sub     ax, ax
     push    ax
-    push    word_407CA
+    push    dialog_fnt_colour
     mov     ax, 64h ; 'd'
     push    ax
+loc_249DD:
     mov     ax, 0AC74h
     push    ax
     call    sub_29606
@@ -4977,12 +5030,13 @@ loc_249F8:
     mov     ax, 1
     push    ax
     push    cs
-    call near ptr sub_23B4C
+    call near ptr loop_game
 loc_24A0D:
     add     sp, 6
 loc_24A10:
     mov     ax, word_42D02
     cmp     state.game_frame, ax
+loc_24A17:
     jnz     short loc_249F8
 loc_24A19:
     mov     ax, 3E8h
@@ -5000,7 +5054,7 @@ loc_24A28:
     mov     ax, 2
     push    ax
     push    cs
-    call near ptr sub_23B4C
+    call near ptr loop_game
     add     sp, 6
     call    timer_get_delta2
     mov     [bp+var_24], 14h
@@ -5064,7 +5118,7 @@ loc_24AB8:
     mov     ax, 1
     push    ax
     push    cs
-    call near ptr sub_23B4C
+    call near ptr loop_game
     add     sp, 6
     push    [bp+var_18]
     call    input_do_checking
@@ -5106,16 +5160,19 @@ loc_24B23:
     push    ax
     mov     ax, 4
     push    ax
+loc_24B3D:
     mov     ax, 2
     push    ax
     push    cs
-    call near ptr sub_23B4C
+    call near ptr loop_game
     add     sp, 6
     or      di, di
+loc_24B4A:
     jnz     short loc_24B4F
     jmp     loc_24C43
 loc_24B4F:
     mov     ax, 3267h
+loc_24B52:
     push    ax
     push    word ptr gameresptr+2
     push    word ptr gameresptr
@@ -5123,6 +5180,7 @@ loc_24B4F:
     add     sp, 6
     push    dx
     push    ax
+loc_24B65:
     mov     ax, 0AC74h
     push    ax
     call    copy_string
@@ -5130,9 +5188,10 @@ loc_24B4F:
     cmp     word_44984, 0
     jz      short loc_24BB0
     push    word_3B808
+loc_24B7C:
     sub     ax, ax
     push    ax
-    push    word_407CA
+    push    dialog_fnt_colour
     mov     ax, 64h ; 'd'
     push    ax
     mov     ax, 0AC74h
@@ -5142,7 +5201,9 @@ loc_24B4F:
     push    ax
     mov     ax, 0AC74h
     push    ax
+loc_24B98:
     call    sub_28F98
+loc_24B9D:
     add     sp, 0Ah
     push    ax
     push    word_3B808
@@ -5154,7 +5215,7 @@ loc_24B4F:
 loc_24BB0:
     sub     ax, ax
     push    ax
-    push    word_407CA
+    push    dialog_fnt_colour
     mov     ax, 64h ; 'd'
     push    ax
     mov     ax, 0AC74h
@@ -5200,15 +5261,17 @@ loc_24BF8:
     push    dx
     push    ax
     call    __aFldiv
+loc_24C1E:
     add     ax, word_42D02
     push    ax
     mov     ax, 1
     push    ax
     push    cs
-    call near ptr sub_23B4C
+    call near ptr loop_game
     add     sp, 6
     mov     ax, 1
     push    ax
+loc_24C32:
     call    input_do_checking
     add     sp, 2
 loc_24C3A:
@@ -5221,7 +5284,8 @@ loc_24C43:
     mov     ax, 1
     push    ax
     push    cs
-    call near ptr sub_23B4C
+loc_24C50:
+    call near ptr loop_game
     add     sp, 6
     jmp     loc_24A19
     ; align 2
@@ -5232,10 +5296,12 @@ loc_24C5A:
     push    ax
     mov     ax, 3
     push    ax
+loc_24C66:
     mov     ax, 2
     push    ax
     push    cs
-    call near ptr sub_23B4C
+    call near ptr loop_game
+loc_24C6E:
     add     sp, 6
     jmp     loc_24D18
 loc_24C74:
@@ -5243,19 +5309,20 @@ loc_24C74:
     call    sub_188A4
     sub     ax, ax
     push    ax
+loc_24C81:
     mov     ax, 4
     push    ax
     mov     ax, 2
     push    ax
     push    cs
-    call near ptr sub_23B4C
+    call near ptr loop_game
     add     sp, 6
     push    state.game_frame
     push    state.game_frame
     mov     ax, 1
     push    ax
     push    cs
-    call near ptr sub_23B4C
+    call near ptr loop_game
     add     sp, 6
     jmp     loc_242E7
 loc_24CA6:
@@ -5268,14 +5335,14 @@ loc_24CA6:
     mov     ax, 2
     push    ax
     push    cs
-    call near ptr sub_23B4C
+    call near ptr loop_game
     add     sp, 6
     push    state.game_frame
     push    state.game_frame
     mov     ax, 1
     push    ax
     push    cs
-    call near ptr sub_23B4C
+    call near ptr loop_game
     add     sp, 6
     sub     ax, ax
     push    ax
@@ -5294,7 +5361,7 @@ loc_24CA6:
     mov     ax, 2
     push    ax
     push    cs
-    call near ptr sub_23B4C
+    call near ptr loop_game
     add     sp, 6
     jmp     loc_24140
     ; align 2
@@ -5306,25 +5373,28 @@ loc_24D04:
     push    ax
     push    ax
     push    cs
-    call near ptr sub_23B4C
+    call near ptr loop_game
     add     sp, 6
+loc_24D13:
     mov     byte_449E6, 3
 loc_24D18:
     mov     byte_454B8, 0
     jmp     loc_242E7
 off_24D20     dw offset loc_24830
-    dw offset loc_24A28
-    dw offset loc_24D04
-    dw offset loc_24C5A
-    dw offset loc_24C74
+off_24D22     dw offset loc_24A28
+off_24D24     dw offset loc_24D04
+off_24D26     dw offset loc_24C5A
+off_24D28     dw offset loc_24C74
     dw offset loc_24CA6
     dw offset loc_24346
+loc_24D2E:
     jmp     loc_242E7
     ; align 2
     db 144
 loc_24D32:
     cmp     ax, 2Dh ; '-'
     jnz     short loc_24D3A
+loc_24D37:
     jmp     loc_2426E
 loc_24D3A:
     cmp     ax, 4800h
@@ -5333,14 +5403,19 @@ loc_24D3A:
 loc_24D42:
     cmp     ax, 4B00h
     jnz     short loc_24D4A
+loc_24D47:
     jmp     loc_242C8
 loc_24D4A:
     cmp     ax, 4D00h
+loc_24D4D:
     jnz     short loc_24D52
+loc_24D4F:
     jmp     loc_242FE
 loc_24D52:
     cmp     ax, 5000h
+loc_24D55:
     jnz     short loc_24D5A
+loc_24D57:
     jmp     loc_2431E
 loc_24D5A:
     jmp     loc_242E7
@@ -5349,9 +5424,12 @@ loc_24D5A:
 loc_24D5E:
     pop     si
     pop     di
+loc_24D60:
     mov     sp, bp
+loc_24D62:
     pop     bp
+locret_24D63:
     retf
-sub_23B4C endp
+loop_game endp
 seg005 ends
 end

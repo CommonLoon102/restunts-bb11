@@ -59,55 +59,94 @@ sub_361BC proc far
     arg_8 = word ptr 14
 
     push    bp
+loc_361BD:
     mov     bp, sp
+loc_361BF:
     sub     sp, 4
+loc_361C2:
     mov     ax, [bp+arg_4]
+loc_361C5:
     sub     ax, [bp+arg_0]
+loc_361C8:
     inc     ax
+loc_361C9:
     mov     [bp+var_2], ax
+loc_361CC:
     mov     ax, [bp+arg_6]
+loc_361CF:
     sub     ax, [bp+arg_2]
+loc_361D2:
     mov     [bp+var_4], ax
+loc_361D5:
     cmp     [bp+var_2], 0
+loc_361D9:
     jle     short loc_3620B
+loc_361DB:
     push    [bp+arg_8]
+loc_361DE:
     mov     ax, 1
     push    ax
+loc_361E2:
     push    [bp+var_2]
+loc_361E5:
     push    [bp+arg_2]
+loc_361E8:
     push    [bp+arg_0]
+loc_361EB:
     call    sub_33578
+loc_361F0:
     add     sp, 0Ah
+loc_361F3:
     push    [bp+arg_8]
+loc_361F6:
     mov     ax, 1
     push    ax
+loc_361FA:
     push    [bp+var_2]
     push    [bp+arg_6]
+loc_36200:
     push    [bp+arg_0]
+loc_36203:
     call    sub_33578
+loc_36208:
     add     sp, 0Ah
 loc_3620B:
     cmp     [bp+var_4], 0
     jle     short loc_36241
+loc_36211:
     push    [bp+arg_8]
+loc_36214:
     push    [bp+var_4]
+loc_36217:
     mov     ax, 1
+loc_3621A:
     push    ax
+loc_3621B:
     push    [bp+arg_2]
     push    [bp+arg_0]
+loc_36221:
     call    sub_33578
+loc_36226:
     add     sp, 0Ah
+loc_36229:
     push    [bp+arg_8]
+loc_3622C:
     push    [bp+var_4]
+loc_3622F:
     mov     ax, 1
     push    ax
     push    [bp+arg_2]
+loc_36236:
     push    [bp+arg_4]
+loc_36239:
     call    sub_33578
+loc_3623E:
     add     sp, 0Ah
 loc_36241:
     mov     sp, bp
+loc_36243:
     pop     bp
+locret_36244:
     retf
 sub_361BC endp
 seg013 ends

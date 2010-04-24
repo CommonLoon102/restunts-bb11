@@ -62,7 +62,6 @@ seg028 segment byte public 'STUNTSC' use16
     public sub_39088
     public loc_390C8
     public byte_3930E
-    public byte_39310
     public sub_3945A
     public off_395A8
     public sub_3963C
@@ -72,26 +71,46 @@ seg028 segment byte public 'STUNTSC' use16
 audiodriver_timer proc far
 
     push    ds
+loc_3863D:
     mov     ax, seg dseg
+loc_38640:
     mov     ds, ax
+loc_38642:
     mov     ax, word ptr audiodriverbinary
+loc_38645:
     or      ax, word ptr audiodriverbinary+2
+loc_38649:
     jz      short loc_38688
+loc_3864B:
     cmp     word_4063A, 0
+loc_38650:
     jnz     short loc_38688
+loc_38652:
     cmp     word_407AA, 0
+loc_38657:
     jnz     short loc_38688
+loc_38659:
     inc     word_407AA
     push    cs
+loc_3865E:
     call near ptr sub_39700
+loc_38661:
     cmp     byte_40632, 1
+loc_38666:
     jnz     short loc_3867C
+loc_38668:
     cmp     audioflag2, 1
+loc_3866D:
     jnz     short loc_3867C
+loc_3866F:
     cmp     byte_40630, 0
+loc_38674:
     jnz     short loc_3867C
+loc_38676:
     push    cs
+loc_38677:
     call near ptr sub_3868A
+loc_3867A:
     jmp     short loc_38680
 loc_3867C:
     push    cs
@@ -99,6 +118,7 @@ loc_3867C:
 loc_38680:
     push    cs
     call near ptr sub_386D6
+loc_38684:
     dec     word_407AA
 loc_38688:
     pop     ds
@@ -116,13 +136,17 @@ sub_3868A proc far
     mov     ax, seg dseg
     mov     ds, ax
     add     word_44D48, 80h ; '€'
+loc_3869C:
     jmp     short loc_386B6
 loc_3869E:
     mov     al, [bp+var_2]
     sub     ah, ah
     push    ax
+loc_386A4:
     push    cs
+loc_386A5:
     call near ptr sub_38702
+loc_386A8:
     add     sp, 2
     inc     [bp+var_2]
 loc_386AE:
@@ -131,6 +155,7 @@ loc_386AE:
     jb      short loc_3869E
 loc_386B6:
     mov     ax, word_454BA
+loc_386B9:
     cmp     word_44D48, ax
     jb      short loc_386D0
     push    cs
@@ -158,19 +183,29 @@ sub_386D6 proc far
     push    ds
     mov     ax, seg dseg
     mov     ds, ax
+loc_386E2:
     mov     [bp+var_2], 10h
 loc_386E6:
     mov     al, [bp+var_2]
     sub     ah, ah
     push    ax
+loc_386EC:
     push    cs
+loc_386ED:
     call near ptr sub_38702
+loc_386F0:
     add     sp, 2
+loc_386F3:
     inc     [bp+var_2]
+loc_386F6:
     cmp     [bp+var_2], 17h
+loc_386FA:
     jb      short loc_386E6
+loc_386FC:
     pop     ds
+loc_386FD:
     mov     sp, bp
+loc_386FF:
     pop     bp
     retf
     ; align 2
@@ -259,6 +294,7 @@ nosmart
     mov     ax, [bx+si+5]
     mov     dx, [bx+si+7]
     mov     [bx], ax
+loc_387A8:
     mov     [bx+2], dx
     dec     byte ptr [bx+4]
     jmp     loc_38A67
@@ -817,6 +853,7 @@ loc_38C0D:
     push    ax
     push    cx
     push    bx
+loc_38C31:
     mov     ax, word ptr audiodriverbinary
     mov     dx, word ptr audiodriverbinary+2
     add     ax, 1Bh
@@ -888,6 +925,7 @@ loc_38CB3:
     sub     ch, ch
     cmp     ax, cx
     jb      short loc_38C8F
+loc_38CC3:
     mov     [bp+var_2], di
     jmp     short loc_38CF0
 loc_38CC8:
@@ -1248,15 +1286,20 @@ loc_38FB4:
     sub     ah, ah
     push    ax
     mov     ax, word ptr audiodriverbinary
+loc_38FD1:
     mov     dx, word ptr audiodriverbinary+2
     add     ax, 24h ; '$'
     mov     word ptr [bp+var_E+2], dx
     mov     word ptr [bp+var_E], ax
     call    [bp+var_E]
     add     sp, 6
+loc_38FE4:
     cmp     byte_40634, 0
+loc_38FE9:
     jz      short loc_38FF2
+loc_38FEB:
     mov     bx, [bp+arg_0]
+loc_38FEE:
     mov     byte ptr [bx+4], 3Ch ; '<'
 loc_38FF2:
     push    word ptr [bp+var_4+2]
@@ -1320,6 +1363,7 @@ sub_39050 proc far
     push    ax
     push    cs
     call near ptr sub_38DE6
+loc_39081:
     add     sp, 4
     pop     ds
     pop     bp
@@ -1608,7 +1652,7 @@ loc_392CB:
     jmp     loc_3918D
 byte_3930E     db 131
     db 126
-byte_39310     db 240
+    db 240
     push    word ptr [di+3]
     jmp     loc_390F7
 loc_39317:
@@ -1657,11 +1701,15 @@ loc_39363:
     db 144
 loc_39386:
     mov     bx, cx
+loc_39388:
     mov     al, [bx+2]
+loc_3938B:
     mov     bx, [bp+0Ah]
+loc_3938E:
     cmp     [bx+24h], al
     jb      short loc_393E9
     mov     bx, cx
+loc_39395:
     cmp     byte ptr [bx+1], 1
     jnz     short loc_393BE
     mov     ax, [bp-0Ah]
@@ -1730,6 +1778,7 @@ loc_39428:
     jmp     loc_390F7
 loc_39431:
     mov     ax, 2Eh ; '.'
+loc_39434:
     imul    word ptr [bp-10h]
     mov     bx, ax
     mov     si, [bx-5D20h]
@@ -1862,6 +1911,7 @@ loc_39518:
     db 144
 loc_3952A:
     mov     bx, [bp+arg_0]
+loc_3952D:
     mov     si, word ptr [bp+arg_2]
     inc     word ptr [bp+arg_2]
     mov     al, es:[si]
@@ -2051,6 +2101,7 @@ sub_3968A proc far
     mov     ax, word ptr audiodriverbinary
     mov     dx, word ptr audiodriverbinary+2
     add     ax, 0Ch
+loc_396BA:
     mov     word ptr [bp+var_4+2], dx
     mov     word ptr [bp+var_4], ax
     call    [bp+var_4]
@@ -2109,13 +2160,17 @@ loc_39716:
     mov     byte ptr [bx+16h], 2
 loc_3971D:
     cmp     byte ptr [bx+16h], 2
+loc_39721:
     jnz     short loc_3973D
     les     si, [bp+var_6]
     mov     ax, es:[si+22h]
+loc_3972A:
     sub     [bx+14h], ax
     mov     ax, es:[si+24h]
     cmp     [bx+14h], ax
+loc_39734:
     jg      short loc_3973D
+loc_39736:
     mov     byte ptr [bx+16h], 3
     mov     [bx+14h], ax
 loc_3973D:
@@ -2287,6 +2342,7 @@ loc_398D0:
     mov     [bp+var_8], ax
     mov     bx, ax
     cmp     byte ptr [bx+1], 0
+loc_398EC:
     jz      short loc_398CD
     cmp     byte ptr [bx], 0Fh
     jbe     short loc_398FB
@@ -2300,7 +2356,9 @@ loc_398FB:
     mov     dx, [bx+12h]
     mov     word ptr [bp+var_6], ax
     mov     word ptr [bp+var_6+2], dx
+loc_3990A:
     cmp     byte ptr [bx+16h], 1
+loc_3990E:
     jz      short loc_39913
     jmp     loc_3971D
 loc_39913:
@@ -2372,12 +2430,14 @@ loc_3997E:
     sub     ah, ah
     or      ax, ax
     jnz     short loc_3998F
+loc_3998C:
     jmp     loc_39A9E
 loc_3998F:
     mov     si, 0A2B6h
     mov     [bp+var_8], 0A2B7h
     mov     [bp+var_A], 0A2C6h
     mov     [bp+var_C], 0A2B8h
+loc_399A1:
     mov     di, [bp+var_2]
 loc_399A4:
     mov     al, [si]
@@ -2387,10 +2447,12 @@ loc_399A4:
     cmp     ax, [bp+arg_0]
     jb      short loc_399E2
     push    di
+loc_399B3:
     mov     ax, word ptr audiodriverbinary
     mov     dx, word ptr audiodriverbinary+2
     add     ax, 1Eh
     mov     word ptr [bp+var_10+2], dx
+loc_399C0:
     mov     word ptr [bp+var_10], ax
     call    [bp+var_10]
     add     sp, 2
@@ -2398,9 +2460,11 @@ loc_399A4:
     mov     byte ptr [bx], 0
     mov     bx, [bp+var_A]
     sub     ax, ax
+loc_399D4:
     mov     [bx+2], ax
     mov     [bx], ax
     mov     byte ptr [si], 0FFh
+loc_399DC:
     mov     bx, [bp+var_C]
     mov     byte ptr [bx], 0
 loc_399E2:
@@ -2409,6 +2473,7 @@ loc_399E2:
     add     [bp+var_A], 2Eh ; '.'
     add     [bp+var_C], 2Eh ; '.'
     inc     di
+loc_399F2:
     mov     ax, di
     mov     cl, byte_459D2
     sub     ch, ch
@@ -2464,40 +2529,57 @@ loc_39A61:
     mov     byte ptr [bx], 0
 loc_39A7F:
     add     si, 2Eh ; '.'
+loc_39A82:
     add     di, 2Eh ; '.'
     add     [bp+var_A], 2Eh ; '.'
     add     [bp+var_8], 2Eh ; '.'
     loop    loc_39A61
 loc_39A8F:
     add     [bp+var_12], 4Ch ; 'L'
+loc_39A93:
     inc     [bp+var_2]
+loc_39A96:
     mov     ax, [bp+arg_2]
     cmp     [bp+var_2], ax
     jle     short loc_39A21
 loc_39A9E:
     mov     ax, [bp+arg_0]
+loc_39AA1:
     mov     [bp+var_2], ax
+loc_39AA4:
     mov     ax, [bp+arg_2]
+loc_39AA7:
     cmp     [bp+var_2], ax
+loc_39AAA:
     jg      short loc_39ACA
+loc_39AAC:
     mov     ax, 4Ch ; 'L'
     imul    [bp+arg_0]
+loc_39AB2:
     mov     si, ax
     add     si, 8211h
+loc_39AB8:
     mov     cx, [bp+arg_2]
     sub     cx, [bp+arg_0]
+loc_39ABE:
     inc     cx
+loc_39ABF:
     add     [bp+var_2], cx
 loc_39AC2:
     mov     byte ptr [si], 0
+loc_39AC5:
     add     si, 4Ch ; 'L'
+loc_39AC8:
     loop    loc_39AC2
 loc_39ACA:
     pop     ds
     pop     si
+loc_39ACC:
     pop     di
+loc_39ACD:
     mov     sp, bp
     pop     bp
+locret_39AD0:
     retf
 audio_driver_func1E endp
 seg028 ends

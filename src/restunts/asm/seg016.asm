@@ -50,6 +50,7 @@ seg016 segment byte public 'STUNTSC' use16
     public nopsub_367E4
     public nopsub_36826
     public nopsub_36868
+algn_367B1:
     ; align 2
     db 144
 ported_locate_many_resources_ proc far
@@ -61,23 +62,31 @@ ported_locate_many_resources_ proc far
     arg_6 = word ptr 12
 
     push    bp
+loc_367B3:
     mov     bp, sp
+loc_367B5:
     jmp     short loc_367D9
     ; align 2
     db 144
 loc_367B8:
     push    [bp+arg_4]
+loc_367BB:
     push    [bp+arg_2]
     push    [bp+arg_0]
+loc_367C1:
     call    locate_shape_fatal
+loc_367C6:
     add     sp, 6
+loc_367C9:
     mov     bx, [bp+arg_6]
+loc_367CC:
     add     [bp+arg_6], 4
     mov     [bx], ax
     mov     [bx+2], dx
     add     [bp+arg_4], 4
 loc_367D9:
     mov     bx, [bp+arg_4]
+loc_367DC:
     cmp     byte ptr [bx], 0
     jnz     short loc_367B8
     pop     bp
@@ -95,17 +104,26 @@ nopsub_367E4 proc far
     arg_6 = word ptr 12
 
     push    bp
+loc_367E5:
     mov     bp, sp
+loc_367E7:
     sub     sp, 2
+loc_367EA:
     push    si
+loc_367EB:
     mov     [bp+var_2], 0
+loc_367F0:
     jmp     short loc_36819
 loc_367F2:
     push    [bp+arg_4]
+loc_367F5:
     push    [bp+arg_2]
+loc_367F8:
     push    [bp+arg_0]
+loc_367FB:
     call    locate_shape_nofatal
     add     sp, 6
+loc_36803:
     mov     bx, [bp+var_2]
     inc     [bp+var_2]
     shl     bx, 1
@@ -116,10 +134,12 @@ loc_367F2:
     add     [bp+arg_4], 4
 loc_36819:
     mov     bx, [bp+arg_4]
+loc_3681C:
     cmp     byte ptr [bx], 0
     jnz     short loc_367F2
     pop     si
     mov     sp, bp
+loc_36824:
     pop     bp
     retf
 nopsub_367E4 endp
@@ -133,6 +153,7 @@ nopsub_36826 proc far
     arg_6 = word ptr 12
 
     push    bp
+loc_36827:
     mov     bp, sp
     sub     sp, 2
     push    si
@@ -141,6 +162,7 @@ nopsub_36826 proc far
 loc_36834:
     push    [bp+arg_4]
     push    [bp+arg_2]
+loc_3683A:
     push    [bp+arg_0]
     call    locate_sound_fatal
     add     sp, 6
@@ -150,14 +172,19 @@ loc_36834:
     shl     bx, 1
     mov     si, [bp+arg_6]
     mov     [bx+si], ax
+loc_36854:
     mov     [bx+si+2], dx
     add     [bp+arg_4], 4
 loc_3685B:
     mov     bx, [bp+arg_4]
+loc_3685E:
     cmp     byte ptr [bx], 0
+loc_36861:
     jnz     short loc_36834
     pop     si
+loc_36864:
     mov     sp, bp
+loc_36866:
     pop     bp
     retf
 nopsub_36826 endp
@@ -172,31 +199,50 @@ nopsub_36868 proc far
 
     push    bp
     mov     bp, sp
+loc_3686B:
     sub     sp, 2
+loc_3686E:
     push    si
+loc_3686F:
     mov     [bp+var_2], 0
+loc_36874:
     jmp     short loc_3689D
 loc_36876:
     push    [bp+arg_4]
+loc_36879:
     push    [bp+arg_2]
+loc_3687C:
     push    [bp+arg_0]
+loc_3687F:
     call    locate_shape_nofatal
     add     sp, 6
+loc_36887:
     mov     bx, [bp+var_2]
+loc_3688A:
     inc     [bp+var_2]
+loc_3688D:
     shl     bx, 1
+loc_3688F:
     shl     bx, 1
     mov     si, [bp+arg_6]
     mov     [bx+si], ax
+loc_36896:
     mov     [bx+si+2], dx
+loc_36899:
     add     [bp+arg_4], 4
 loc_3689D:
     mov     bx, [bp+arg_4]
+loc_368A0:
     cmp     byte ptr [bx], 0
+loc_368A3:
     jnz     short loc_36876
+loc_368A5:
     pop     si
+loc_368A6:
     mov     sp, bp
+loc_368A8:
     pop     bp
+locret_368A9:
     retf
 nopsub_36868 endp
 seg016 ends

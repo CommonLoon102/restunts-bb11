@@ -47,16 +47,15 @@ seg006 segment byte public 'STUNTSC' use16
     assume cs:seg006
     assume es:nothing, ss:nothing, ds:dseg
     public init_polyinfo
-    public sub_24DC2
+    public copy_material_list_pointers
     public sub_24DE6
     public select_rect_rotate
     public transformed_shape_op
     public sub_25E24
     public sub_25EE2
     public sub_25F2E
-    public sub_25FF6
+    public get_a_poly_info
     public mat_rot_zxy
-    public off_26362
     public sub_2637A
     public sub_263C6
     public calc_sincos80
@@ -72,36 +71,58 @@ init_polyinfo proc far
 
     mov     ax, 28A0h       ; bytes to reserve
     cwd
+loc_24D68:
     push    dx
+loc_24D69:
     push    ax
+loc_24D6A:
     mov     ax, offset aPolyinfo; "polyinfo"
+loc_24D6D:
     push    ax
+loc_24D6E:
     call    mmgr_alloc_resbytes
+loc_24D73:
     add     sp, 6
+loc_24D76:
     mov     word ptr polyinfoptr, ax
+loc_24D79:
     mov     word ptr polyinfoptr+2, dx
+loc_24D7D:
     sub     ax, ax
     push    ax
+loc_24D80:
     mov     ax, offset mat_y0
     push    ax
+loc_24D84:
     call    mat_rot_y
+loc_24D89:
     add     sp, 4
+loc_24D8C:
     mov     ax, 100h
     push    ax
+loc_24D90:
     mov     ax, offset mat_y100
     push    ax
+loc_24D94:
     call    mat_rot_y
+loc_24D99:
     add     sp, 4
+loc_24D9C:
     mov     ax, 200h
     push    ax
+loc_24DA0:
     mov     ax, offset mat_y200
     push    ax
+loc_24DA4:
     call    mat_rot_y
+loc_24DA9:
     add     sp, 4
+loc_24DAC:
     mov     ax, 300h
     push    ax
     mov     ax, offset mat_y300
     push    ax
+loc_24DB4:
     call    mat_rot_y
     add     sp, 4
     push    cs
@@ -110,7 +131,7 @@ init_polyinfo proc far
     ; align 2
     db 144
 init_polyinfo endp
-sub_24DC2 proc far
+copy_material_list_pointers proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -122,23 +143,27 @@ sub_24DC2 proc far
     push    bp
     mov     bp, sp
     mov     ax, [bp+arg_0]
-    mov     word_45632, ax
+    mov     material_clrlist_ptr_cpy, ax
+loc_24DCB:
     mov     ax, [bp+arg_2]
-    mov     word_459D6, ax
+    mov     material_clrlist_ptr2_cpy, ax
     mov     ax, [bp+arg_4]
-    mov     word_45D1E, ax
+loc_24DD4:
+    mov     material_patlist_ptr_cpy, ax
+loc_24DD7:
     mov     ax, [bp+arg_6]
-    mov     word_45D92, ax
+    mov     material_patlist2_ptr_cpy, ax
     mov     ax, [bp+arg_8]
-    mov     word_459FC, ax
+    mov     someZeroVideoConst, ax
     pop     bp
     retf
     ; align 2
     db 144
-sub_24DC2 endp
+copy_material_list_pointers endp
 sub_24DE6 proc far
 
     mov     word_442E6, 0
+loc_24DEC:
     mov     word_41850, 0
     mov     word_40ECE, 0
     mov     word_411F6, 0FFFFh
@@ -169,20 +194,32 @@ select_rect_rotate proc far
     push    si
     mov     ax, 1
     push    ax
+loc_24E12:
     push    [bp+arg_4]
     push    [bp+arg_2]
     push    [bp+arg_0]
     push    cs
+loc_24E1C:
     call near ptr mat_rot_zxy
+loc_24E1F:
     add     sp, 8
+loc_24E22:
     mov     di, 0ACDCh
+loc_24E25:
     mov     si, ax
+loc_24E27:
     push    ds
+loc_24E28:
     pop     es
+loc_24E29:
     mov     cx, 9
+loc_24E2C:
     repne movsw
+loc_24E2E:
     push    cs
+loc_24E2F:
     call near ptr sub_24DE6
+loc_24E32:
     mov     ax, [bp+arg_6]
     mov     di, offset word_40EB0
     mov     si, ax
@@ -221,7 +258,7 @@ select_rect_rotate proc far
     add     sp, 6
     push    [bp+var_2]
     push    [bp+var_6]
-    call    sub_2EA4E
+    call    polarAngle
     add     sp, 4
 smart
     and     ah, 3
@@ -310,6 +347,7 @@ loc_24EB8:
     mov     dx, [bx+0Ch]
     mov     word ptr dword_41870, ax
     mov     word ptr dword_41870+2, dx
+loc_24ED6:
     mov     bx, [bp+arg_0]
     mov     bx, [bx+6]
     mov     ax, [bx+2]
@@ -740,6 +778,7 @@ loc_25335:
     cbw
     cmp     ax, 0FFFFh
     jz      short loc_25370
+loc_25362:
     or      ax, ax
     jz      short loc_25304
     cmp     ax, 1
@@ -806,6 +845,7 @@ loc_253A8:
     movsw
     pop     di
     pop     si
+loc_253F1:
     cmp     [bp+var_566], 0Ch
     jge     short loc_25406
     mov     [bp+si+var_562], 1
@@ -1469,7 +1509,7 @@ loc_25A9E:
     mov     ax, es:[bx+6]
     sub     ax, es:[bx+0Ah]
     push    ax
-    call    sub_300B6
+    call    polarRadius2D
     add     sp, 4
     mov     si, ax
     les     bx, dword_40ECA
@@ -1479,7 +1519,7 @@ loc_25A9E:
     mov     ax, es:[bx+6]
     sub     ax, es:[bx+0Eh]
     push    ax
-    call    sub_300B6
+    call    polarRadius2D
     add     sp, 4
     mov     di, ax
     cmp     di, si
@@ -1632,7 +1672,7 @@ loc_25C01:
     push    [bp+var_566]
     lea     ax, [bp+var_458]
     push    ax
-    call    sub_2EA08
+    call    polarRadius3D
     add     sp, 2
     push    ax
     call    sub_3275C
@@ -2060,7 +2100,7 @@ loc_25FEE:
     pop     bp
     retf
 sub_25F2E endp
-sub_25FF6 proc far
+get_a_poly_info proc far
     var_40 = word ptr -64
     var_3E = dword ptr -62
     var_38 = dword ptr -56
@@ -2113,10 +2153,10 @@ loc_26049:
     jb      short loc_2602C
     mov     bx, [bp+var_6]
     shl     bx, 1
-    add     bx, word_45D1E
+    add     bx, material_patlist_ptr_cpy
     mov     ax, [bx]
     or      ax, ax
-    jz      short loc_26070
+    jz      short loc_26070 ; 0 normal 1 grille 2? 3 invisible
     cmp     ax, 1
     jz      short loc_26084
     cmp     ax, 2
@@ -2131,14 +2171,14 @@ loc_26070:
     push    ax
     push    [bp+var_2]
     push    [bp+var_8]
-    call    sub_317B2
+    call    preRender_default
 loc_2607F:
     add     sp, 6
     jmp     short loc_260AB
 loc_26084:
     mov     bx, [bp+var_6]
     shl     bx, 1
-    add     bx, word_45D92
+    add     bx, material_patlist2_ptr_cpy
     mov     ax, [bx]
     mov     [bp+var_40], ax
     or      ax, ax
@@ -2148,7 +2188,7 @@ loc_26084:
     push    [bp+var_2]
     push    [bp+var_8]
     push    [bp+var_40]
-    call    sub_32886
+    call    preRender_patterned
 loc_260A8:
     add     sp, 8
 loc_260AB:
@@ -2157,6 +2197,7 @@ loc_260AC:
     mov     ax, si
     cmp     ax, word_442E6
     jb      short loc_260B7
+loc_260B4:
     jmp     loc_261F0
 loc_260B7:
     mov     bx, di
@@ -2165,17 +2206,17 @@ loc_260B7:
     mov     bx, di
     shl     bx, 1
     shl     bx, 1
-    mov     ax, word_411F8[bx]
-    mov     dx, word_411FA[bx]
+    mov     ax, word ptr dword_411F8[bx]
+    mov     dx, word ptr (dword_411F8+2)[bx]
     mov     word ptr [bp+var_38], ax
     mov     word ptr [bp+var_38+2], dx
     les     bx, [bp+var_38]
     mov     al, es:[bx+2]
     sub     ah, ah
     mov     [bp+var_6], ax
-    mov     bx, ax
+    mov     bx, ax          ; material index...
     shl     bx, 1
-    add     bx, word_45632
+    add     bx, material_clrlist_ptr_cpy
     mov     ax, [bx]
     mov     [bp+var_8], ax
     mov     bx, word ptr [bp+var_38]
@@ -2209,10 +2250,10 @@ loc_26118:
     push    [bp+var_2]
     push    [bp+var_8]
     mov     bx, [bp+var_40]
-    add     bx, word_459D6
+    add     bx, material_clrlist_ptr2_cpy
     push    word ptr [bx]
     mov     bx, [bp+var_40]
-    add     bx, word_45D92
+    add     bx, material_patlist2_ptr_cpy
     push    word ptr [bx]
     call    sub_2F3DA
     jmp     short loc_2615F
@@ -2225,7 +2266,7 @@ loc_26144:
     push    word ptr es:[bx+0Ah]
     push    word ptr es:[bx+8]
     push    word ptr es:[bx+6]
-    call    sub_2FDDE
+    call    preRender_line
 loc_2615F:
     add     sp, 0Ah
     jmp     loc_260AB
@@ -2249,20 +2290,20 @@ loc_2616B:
     mov     [bx-30h], dx
     inc     [bp+var_4]
     cmp     [bp+var_4], 4
-    jb      short loc_2616B
-    mov     ax, [bp+var_6]
+    jb      short loc_2616B ; b4 every car0 render
+    mov     ax, [bp+var_6]  ; material index
     shl     ax, 1
-    add     ax, word_45632
+    add     ax, material_clrlist_ptr_cpy
     mov     [bp+var_40], ax
     mov     bx, ax
     push    word ptr [bx+4]
     push    word ptr [bx+2]
     push    [bp+var_8]
-    mov     ax, (offset sceneshapes.scene_unk2+460h)
+    mov     ax, (offset trkObjectList.ss_ssOvelay+460h)
     push    ax
     lea     ax, [bp+var_32]
     push    ax
-    call    sub_36C7E
+    call    preRender_wheel
     jmp     short loc_2615F
     ; align 2
     db 144
@@ -2272,14 +2313,14 @@ loc_261C0:
     push    word ptr es:[bx+0Ah]
     push    word ptr es:[bx+8]
     push    word ptr es:[bx+6]
-    call    sub_33072
+    call    preRender_sphere
     jmp     loc_260A8
 loc_261DA:
     push    [bp+var_8]
     les     bx, [bp+var_38]
     push    word ptr es:[bx+8]
     push    word ptr es:[bx+6]
-    call    sub_35B26
+    call    putpixel_single_maybe
     jmp     loc_2607F
 loc_261F0:
     push    cs
@@ -2289,13 +2330,13 @@ loc_261F0:
     mov     sp, bp
     pop     bp
     retf
-sub_25FF6 endp
+get_a_poly_info endp
 mat_rot_zxy proc far
      s = byte ptr 0
      r = byte ptr 2
-    arg_0 = word ptr 6
-    arg_2 = word ptr 8
-    arg_4 = word ptr 10
+    arg_angleZ = word ptr 6
+    arg_angleX = word ptr 8
+    arg_angleY = word ptr 10
     arg_6 = byte ptr 12
 
     push    bp
@@ -2304,34 +2345,34 @@ mat_rot_zxy proc far
     push    di
     push    si
     sub     si, si
-    test    [bp+arg_0], 3FFh
+    test    [bp+arg_angleZ], 3FFh
     jz      short loc_2621C
     mov     si, 4
-    push    [bp+arg_0]
+    push    [bp+arg_angleZ]
     mov     ax, offset mat_unk_1
     push    ax
     call    mat_rot_z
     add     sp, si
 loc_2621C:
-    test    [bp+arg_2], 3FFh
+    test    [bp+arg_angleX], 3FFh
     jz      short loc_26236
 smart
     nop
     or      si, 2
 nosmart
-    push    [bp+arg_2]
+    push    [bp+arg_angleX]
     mov     ax, offset mat_unk_2
     push    ax
     call    mat_rot_x
     add     sp, 4
 loc_26236:
-    test    [bp+arg_4], 3FFh
+    test    [bp+arg_angleY], 3FFh
     jz      short loc_26285
 smart
     nop
     or      si, 1
 nosmart
-    mov     ax, [bp+arg_4]
+    mov     ax, [bp+arg_angleY]
 smart
     and     ah, 3
 nosmart
@@ -2341,7 +2382,7 @@ loc_2624D:
     mov     di, offset mat_unk_3
     jmp     short loc_26285
 loc_26252:
-    mov     ax, [bp+arg_4]
+    mov     ax, [bp+arg_angleY]
 smart
     and     ah, 3
 nosmart
@@ -2351,12 +2392,12 @@ nosmart
     jz      short loc_26298
     cmp     ax, 300h
     jz      short loc_2629E
-    push    [bp+arg_4]
+    push    [bp+arg_angleY]
     mov     ax, offset mat_unk_3
     push    ax
     call    mat_rot_y
     add     sp, 4
-    mov     ax, [bp+arg_4]
+    mov     ax, [bp+arg_angleY]
 smart
     and     ah, 3
 nosmart
@@ -2374,7 +2415,7 @@ loc_26285:
 loc_2628F:
     add     ax, ax
     xchg    ax, bx
-    jmp     cs:off_26362[bx]
+    jmp     word ptr cs:rotZXY_offset[bx]
     ; align 2
     db 144
 loc_26298:
@@ -2450,6 +2491,7 @@ loc_262FE:
 loc_26308:
     test    [bp+arg_6], 1
     jz      short loc_26338
+loc_2630E:
     mov     ax, offset mat_rot_temp
     push    ax
     mov     ax, offset mat_unk_2
@@ -2487,7 +2529,7 @@ loc_26338:
 loc_2635D:
     mov     di, offset mat_unk_1
     jmp     short loc_26372
-off_26362     dw offset loc_262A4
+rotZXY_offset     dw offset loc_262A4
     dw offset loc_26372
     dw offset loc_26333
     dw offset loc_262AA
@@ -2582,7 +2624,7 @@ sub_263C6 proc far
     call    _abs
     add     sp, 2
     push    ax
-    call    sub_300B6
+    call    polarRadius2D
     add     sp, 4
     mov     [bp+var_4], ax
     mov     [bp+var_2], 0
@@ -2611,12 +2653,18 @@ loc_2643A:
     push    word ptr cos80+2
     push    word ptr cos80
     push    [bp+var_2]
+loc_26458:
     push    [bp+var_4]
+loc_2645B:
     mov     si, ax
+loc_2645D:
     mov     di, dx
+loc_2645F:
     call    __aFlmul
     cmp     dx, di
+loc_26466:
     jg      short loc_2646E
+loc_26468:
     jl      short loc_26435
     cmp     ax, si
     jb      short loc_26435
@@ -2662,7 +2710,7 @@ loc_264B0:
     neg     ax
     push    ax
     push    word ptr [bx+4]
-    call    sub_2EA4E
+    call    polarAngle
     add     sp, 4
     neg     ax
     mov     [bp+var_6], ax
@@ -3043,6 +3091,7 @@ loc_26780:
 loc_26784:
     mov     bx, [bp+var_16]
     mov     si, [bp+arg_4]
+loc_2678A:
     mov     ax, [si+6]
     cmp     [bx+6], ax
     jle     short loc_267B4
@@ -3093,15 +3142,20 @@ loc_267DE:
     mov     ax, [bx]
 loc_267EC:
     mov     [bp+var_10], ax
+loc_267EF:
     mov     bx, [bp+arg_4]
+loc_267F2:
     mov     ax, [bx+2]
     mov     bx, [bp+var_16]
     cmp     ax, [bx+2]
+loc_267FB:
     jge     short loc_26800
     mov     ax, [bx+2]
 loc_26800:
     mov     [bp+var_E], ax
+loc_26803:
     mov     al, [bp+var_14]
+loc_26806:
     mov     [bp+var_12], al
     jmp     short loc_26825
     ; align 2
@@ -3315,6 +3369,7 @@ loc_26974:
     mov     bx, si
     mov     si, [bp+arg_2]
     mov     ax, [si+6]
+loc_26989:
     cmp     [bx+4], ax
     jge     short loc_2696F
     mov     ax, [si+4]
@@ -3345,6 +3400,7 @@ sub_2699C proc far
     mov     ax, [si+4]
     cmp     [bx+4], ax
     jl      short loc_269CA
+loc_269BC:
     mov     ax, [si+6]
     cmp     [bx+6], ax
     jg      short loc_269CA
@@ -3371,7 +3427,9 @@ sub_269D0 proc far
     push    si
     mov     bx, [bp+arg_0]
     mov     si, [bp+arg_2]
+loc_269DA:
     mov     ax, [si+4]
+loc_269DD:
     cmp     [bx+6], ax
     jnz     short loc_26A02
     mov     ax, [si]
@@ -3459,6 +3517,7 @@ sub_26A52 proc far
     push    di
     push    si
     mov     [bp+var_18], 0
+loc_26A5E:
     jmp     short loc_26AC0
 loc_26A60:
     mov     ax, [bp+var_1A]
@@ -3469,6 +3528,7 @@ loc_26A63:
 loc_26A6C:
     test    [bp+var_16], 2
     jz      short loc_26A82
+loc_26A72:
     mov     bx, [bp+var_1C]
     mov     si, bx
     mov     ax, [si]
@@ -3483,6 +3543,7 @@ loc_26A86:
     jz      short loc_26ABD
     mov     ax, [bp+var_4]
     lea     di, [bp+var_14]
+loc_26A92:
     mov     si, ax
     push    ss
     pop     es
@@ -3495,9 +3556,11 @@ loc_26A86:
     push    ax
     push    cs
     call near ptr sub_265EC
+loc_26AA5:
     add     sp, 4
     or      al, al
     jnz     short loc_26ABD
+loc_26AAC:
     lea     ax, [bp+var_14]
     push    ax
     push    [bp+arg_C]
@@ -3588,6 +3651,7 @@ sub_26B4A proc far
     sub     sp, 202h
     push    di
     push    si
+loc_26B53:
     cmp     [bp+arg_0], 1
     jle     short loc_26BA0
     sub     si, si
@@ -3596,45 +3660,65 @@ sub_26B4A proc far
     db 144
 loc_26B5E:
     mov     di, si
+loc_26B60:
     shl     di, 1
+loc_26B62:
     mov     bx, [bp+arg_2]
+loc_26B65:
     mov     ax, si
+loc_26B67:
     mov     cl, 3
     shl     ax, cl
     add     bx, ax
+loc_26B6D:
     mov     ax, [bx+4]
     neg     ax
+loc_26B72:
     mov     [bp+di+var_202], ax
+loc_26B76:
     mov     bx, [bp+arg_4]
+loc_26B79:
     mov     [bx+di], si
     inc     si
 loc_26B7C:
     mov     al, [bp+arg_0]
     cbw
     cmp     ax, si
+loc_26B82:
     jg      short loc_26B5E
     push    [bp+arg_4]
+loc_26B87:
     lea     ax, [bp+var_202]
     push    ax
+loc_26B8C:
     mov     al, [bp+arg_0]
     cbw
+loc_26B90:
     push    ax
     call    sub_36BE8
+loc_26B96:
     add     sp, 6
     pop     si
+loc_26B9A:
     pop     di
+loc_26B9B:
     mov     sp, bp
     pop     bp
+locret_26B9E:
     retf
     ; align 2
     db 144
 loc_26BA0:
     mov     bx, [bp+arg_4]
+loc_26BA3:
     mov     word ptr [bx], 0
     pop     si
+loc_26BA8:
     pop     di
+loc_26BA9:
     mov     sp, bp
     pop     bp
+locret_26BAC:
     retf
 sub_26B4A endp
 seg006 ends

@@ -46,6 +46,7 @@ nosmart
 seg010 segment byte public 'STUNTSC' use16
     assume cs:seg010
     assume es:nothing, ss:nothing, ds:dseg
+    public byte_2CC52
     public start
     public __amsg_exit
     public libsub_2CDEC
@@ -130,7 +131,7 @@ seg010 segment byte public 'STUNTSC' use16
     public unknown_libname_4
     public unknown_libname_5
     public __aFuldiv
-    db 0
+byte_2CC52     db 0
     db 0
     db 0
     db 0
@@ -150,37 +151,55 @@ start proc near
      r = byte ptr 0
 
     mov     ah, 30h
+loc_2CC64:
     int     21h             ; DOS - GET DOS VERSION
+loc_2CC66:
     cmp     al, 2
+loc_2CC68:
     jnb     short loc_2CC6C
+loc_2CC6A:
     int     20h             ; DOS - PROGRAM TERMINATION
 loc_2CC6C:
     mov     di, seg dseg
+loc_2CC6F:
     mov     si, ds:2        ; pspseg:2 = Memory size in paragraphs 
+loc_2CC73:
     sub     si, di
+loc_2CC75:
     cmp     si, 1000h
+loc_2CC79:
     jb      short loc_2CC7E
 loc_2CC7B:
     mov     si, 1000h       ; si = 1000h or memory size if less than 1000h
 loc_2CC7E:
     cli
+loc_2CC7F:
     mov     ss, di          ; ss = dseg
+loc_2CC81:
     add     sp, 0AD1Eh      ; sp = end of stack in data segment
     sti
+loc_2CC86:
     jnb     short _no_stack_overflow; check for overflow and abort if there was more than 64k data+stack
+loc_2CC88:
     push    ss
     pop     ds
+loc_2CC8A:
     call    __FF_MSGBANNER
+loc_2CC8F:
     xor     ax, ax
     push    ax
+loc_2CC92:
     call    __NMSG_WRITE
+loc_2CC97:
     mov     ax, 4CFFh
+loc_2CC9A:
     int     21h             ; DOS - 2+ - QUIT WITH EXIT CODE (EXIT)
 _no_stack_overflow:
 smart
     and     sp, 0FFFEh
 nosmart
     mov     ss:crtsp1, sp
+loc_2CCA4:
     mov     ss:crtsp2, sp
     mov     ax, si
     mov     cl, 4
@@ -190,10 +209,12 @@ nosmart
     add     si, di
     mov     ds:2, si        ; set memory size in psp?, si = 01000h + dseg
     mov     bx, es          ; es = pspseg on startup
+loc_2CCBC:
     sub     bx, si
     neg     bx              ; bx = -(pspseg - si) = -(pspseg - (1000h + dseg))
     mov     ah, 4Ah
     int     21h             ; DOS - 2+ - ADJUST MEMORY BLOCK SIZE (SETBLOCK)
+loc_2CCC4:
     mov     ss:crtpspseg, ds
     push    ss
     pop     es
@@ -205,6 +226,7 @@ nosmart
     rep stosb               ; initialize uninitialized data to 0
     push    ss
     pop     ds
+loc_2CCDA:
     call    far ptr loc_2CD28
     push    ss
     pop     ds
@@ -226,24 +248,29 @@ __cintDIV:
     mov     ax, seg dseg
     mov     ds, ax
     mov     ax, 3
+loc_2CD0C:
     mov     ss:crtquitfunction, offset libsub_2CDEC
 __amsg_exit:
     push    ax
+loc_2CD14:
     call    __FF_MSGBANNER
+loc_2CD19:
     call    __NMSG_WRITE
+loc_2CD1E:
     mov     ax, 0FFh
     push    ax
+loc_2CD22:
     push    cs
-    call    ds:crtquitfunction
+    call    crtquitfunction
     db 0
 loc_2CD28:
     mov     ah, 30h
     int     21h             ; DOS - GET DOS VERSION
-    mov     ds:crtdosversion, ax
+    mov     crtdosversion, ax
     mov     ax, 3500h
     int     21h             ; DOS - 2+ - GET INTERRUPT VECTOR
-    mov     word ptr ds:crtintrvec0, bx
-    mov     word ptr ds:crtintrvec0+2, es
+    mov     word ptr crtintrvec0, bx
+    mov     word ptr crtintrvec0+2, es
     push    cs
     pop     ds
     mov     ax, 2500h
@@ -316,6 +343,7 @@ smart
     and     crtfilehandles[bx], 0BFh
 nosmart
     mov     ax, 4400h
+loc_2CDC8:
     int     21h             ; DOS - 2+ - IOCTL - GET DEVICE INFORMATION
     jb      short loc_2CDD6
     test    dl, 80h
@@ -1035,6 +1063,7 @@ _printf proc far
     mov     [bp+var_8], ax
     push    si              ; FILE *
     push    di              ; int
+loc_2D24F:
     call    __ftbuf
     add     sp, 4
     mov     ax, [bp+var_8]
@@ -1481,14 +1510,8 @@ loc_2D5AC:
     retf
 _fflush endp
 __output proc far
-    var_164 = word ptr -356
-    var_162 = byte ptr -354
-    var_4 = word ptr -4
      s = byte ptr 0
      r = byte ptr 2
-    arg_0 = word ptr 6
-    arg_2 = word ptr 8
-    arg_4 = word ptr 10
 
     push    bp
     mov     bp, sp
@@ -1496,12 +1519,12 @@ __output proc far
     call    __chkstk
     push    di
     push    si
-    mov     si, [bp+arg_2]
-    lea     ax, [bp+var_162]
+    mov     si, [bp+8]
+    lea     ax, [bp-162h]
     mov     off_428B6, ax
-    mov     ax, [bp+arg_4]
+    mov     ax, [bp+0Ah]
     mov     word_428A6, ax
-    mov     ax, [bp+arg_0]
+    mov     ax, [bp+6]
     mov     off_4289A, ax
     mov     word_428B0, 0
     mov     word_428AE, 0
@@ -1626,7 +1649,7 @@ loc_2D700:
 loc_2D708:
     mov     al, [si]
     cbw
-    mov     [bp+var_164], ax
+    mov     [bp-164h], ax
     cmp     ax, 45h ; 'E'
     jz      short loc_2D71E
     cmp     ax, 47h ; 'G'
@@ -1635,9 +1658,9 @@ loc_2D708:
     jnz     short loc_2D727
 loc_2D71E:
     inc     word_4289E
-    add     [bp+var_164], 20h ; ' '
+    add     word ptr [bp-164h], 20h ; ' '
 loc_2D727:
-    mov     ax, [bp+var_164]
+    mov     ax, [bp-164h]
     sub     ax, 63h ; 'c'
     cmp     ax, 15h
     jbe     short loc_2D736
@@ -1693,11 +1716,11 @@ loc_2D78E:
 loc_2D7A2:
     sub     ax, ax
     mov     word_428A0, ax
-    mov     [bp+var_4], ax
+    mov     [bp-4], ax
     cmp     word_428B8, ax
     jz      short loc_2D7D7
     mov     ax, word_428B8
-    mov     [bp+var_4], ax
+    mov     [bp-4], ax
     cmp     word_428A4, 0
     jz      short loc_2D7C6
     mov     word_428B8, 0
@@ -1724,11 +1747,11 @@ loc_2D7D7:
     push    cs
     call near ptr _outc
     add     sp, 2
-    cmp     [bp+var_4], 0
+    cmp     word ptr [bp-4], 0
     jz      short loc_2D81A
     cmp     word_428A4, 0
     jz      short loc_2D814
-    mov     ax, [bp+var_4]
+    mov     ax, [bp-4]
     sub     ax, 5
     mov     word_428B8, ax
     or      ax, ax
@@ -1767,7 +1790,7 @@ loc_2D83E:
     ; align 2
     db 144
 loc_2D844:
-    push    [bp+var_164]
+    push    word ptr [bp-164h]
     push    cs
     call near ptr fprint
     jmp     loc_2D764
@@ -2041,6 +2064,7 @@ loc_2DA46:
     db 144
 loc_2DA64:
     mov     bx, word_428A6
+loc_2DA68:
     mov     ax, [bx]
     mov     [bp+var_4], ax
     mov     [bp+var_8], ax
@@ -2231,6 +2255,7 @@ loc_2DBF0:
     add     sp, 4
 loc_2DBFC:
     inc     ax
+loc_2DBFD:
     jnz     short loc_2DC06
     inc     word_428B0
     jmp     short loc_2DC0A
@@ -2658,9 +2683,12 @@ loc_2DEEF:
     jmp     short loc_2DEE9
 loc_2DF11:
     mov     dx, [bp+arg_2]
+loc_2DF14:
     mov     cx, [bp+arg_6]
     mov     al, byte ptr [bp+arg_8]
+loc_2DF1A:
     mov     ah, 42h
+loc_2DF1C:
     int     21h             ; DOS - 2+ - MOVE FILE READ/WRITE POINTER (LSEEK)
     jb      short loc_2DF25
 smart
@@ -2723,6 +2751,7 @@ loc_2DF50:
     jbe     short loc_2DFCB
     sub     sp, 2
     mov     bx, sp
+loc_2DF88:
     mov     dx, 200h
     cmp     ax, 228h
     jnb     short loc_2DF93
@@ -3044,6 +3073,7 @@ nosmart
 loc_2E185:
     call near ptr __amexpand
     jz      short loc_2E18F
+loc_2E18A:
     xchg    ax, si
     dec     si
     dec     si
@@ -3239,10 +3269,13 @@ loc_2E2A6:
     jnb     short loc_2E2E0
 loc_2E2BA:
     add     bx, 0Fh
+loc_2E2BD:
     rcr     bx, 1
+loc_2E2BF:
     shr     bx, 1
     shr     bx, 1
     shr     bx, 1
+loc_2E2C5:
     cmp     si, di
     jnz     short loc_2E2D2
     add     bx, cx
@@ -3521,6 +3554,7 @@ loc_2E438:
     pop     bp
     cld
     push    di
+loc_2E45C:
     mov     di, [bp+arg_4]
     mov     [di], ax
     mov     [di+2], bx
@@ -3776,6 +3810,7 @@ loc_2E5D0:
     or      ax, ax
     jnz     short loc_2E635
     mov     bx, cx
+loc_2E5EB:
     shl     bx, 1
     jmp     cs:off_2E59E[bx]
 loc_2E5F2:
@@ -3843,13 +3878,17 @@ _srand endp
 _rand proc far
 
     mov     ax, 43FDh
+loc_2E651:
     mov     dx, 3
     push    dx
     push    ax
     push    word_3F0A2
+loc_2E65A:
     push    word_3F0A0
     call    __aFlmul
+loc_2E663:
     add     ax, 9EC3h
+loc_2E666:
     adc     dx, 26h ; '&'
     mov     word_3F0A0, ax
     mov     word_3F0A2, dx
@@ -4094,6 +4133,7 @@ _strrchr proc far
     pop     es
     mov     di, [bp+arg_0]
     xor     ax, ax
+loc_2E81B:
     mov     cx, 0FFFFh
     repne scasb
     inc     cx
@@ -4114,6 +4154,7 @@ loc_2E835:
     pop     di
     mov     sp, bp
     pop     bp
+locret_2E83A:
     retf
     ; align 2
     db 0
@@ -4127,6 +4168,7 @@ __aFldiv proc far
     arg_6 = word ptr 12
 
     push    bp
+loc_2E83D:
     mov     bp, sp
     push    di
     push    si
@@ -4188,7 +4230,9 @@ loc_2E898:
     cmp     dx, [bp+arg_2]
     ja      short loc_2E8C1
     jb      short loc_2E8C2
+loc_2E8BC:
     cmp     ax, [bp+arg_0]
+loc_2E8BF:
     jbe     short loc_2E8C2
 loc_2E8C1:
     dec     si
@@ -4205,6 +4249,7 @@ loc_2E8CF:
     pop     bx
     pop     si
     pop     di
+loc_2E8D2:
     mov     sp, bp
     pop     bp
     retf    8
@@ -4222,12 +4267,14 @@ __aFlmul proc far
     mov     ax, [bp+arg_2]
     mov     bx, [bp+arg_6]
     or      bx, ax
+loc_2E8E3:
     mov     bx, [bp+arg_4]
     jnz     short loc_2E8F3
     mov     ax, [bp+arg_0]
     mul     bx
     mov     sp, bp
     pop     bp
+locret_2E8F0:
     retf    8
 loc_2E8F3:
     mul     bx
@@ -4238,6 +4285,7 @@ loc_2E8F3:
     mov     ax, [bp+arg_0]
     mul     bx
     add     dx, cx
+loc_2E906:
     mov     sp, bp
     pop     bp
     retf    8
@@ -4245,6 +4293,7 @@ __aFlmul endp
 __aFlshr proc far
 
     xor     ch, ch
+loc_2E90E:
     jcxz    short locret_2E916
 loc_2E910:
     sar     dx, 1
@@ -4266,6 +4315,7 @@ unknown_libname_3 proc far
     mov     bp, sp
     mov     bx, [bp+arg_0]
     push    [bp+arg_4]
+loc_2E921:
     push    [bp+arg_2]
     push    word ptr [bx+2]
     push    word ptr [bx]
@@ -4358,50 +4408,72 @@ __aFuldiv proc far
     mov     ax, [bp+arg_6]
     or      ax, ax
     jnz     short loc_2E9C7
+loc_2E9B2:
     mov     cx, [bp+arg_4]
     mov     ax, [bp+arg_2]
     xor     dx, dx
     div     cx
     mov     bx, ax
+loc_2E9BE:
     mov     ax, [bp+arg_0]
+loc_2E9C1:
     div     cx
+loc_2E9C3:
     mov     dx, bx
+loc_2E9C5:
     jmp     short loc_2E9FF
 loc_2E9C7:
     mov     cx, ax
     mov     bx, [bp+arg_4]
+loc_2E9CC:
     mov     dx, [bp+arg_2]
     mov     ax, [bp+arg_0]
 loc_2E9D2:
     shr     cx, 1
+loc_2E9D4:
     rcr     bx, 1
     shr     dx, 1
+loc_2E9D8:
     rcr     ax, 1
+loc_2E9DA:
     or      cx, cx
+loc_2E9DC:
     jnz     short loc_2E9D2
     div     bx
     mov     si, ax
+loc_2E9E2:
     mul     [bp+arg_6]
     xchg    ax, cx
+loc_2E9E6:
     mov     ax, [bp+arg_4]
+loc_2E9E9:
     mul     si
     add     dx, cx
+loc_2E9ED:
     jb      short loc_2E9FB
+loc_2E9EF:
     cmp     dx, [bp+arg_2]
     ja      short loc_2E9FB
     jb      short loc_2E9FC
+loc_2E9F6:
     cmp     ax, [bp+arg_0]
+loc_2E9F9:
     jbe     short loc_2E9FC
 loc_2E9FB:
     dec     si
 loc_2E9FC:
     xor     dx, dx
+loc_2E9FE:
     xchg    ax, si
 loc_2E9FF:
     pop     si
+loc_2EA00:
     pop     bx
+loc_2EA01:
     mov     sp, bp
+loc_2EA03:
     pop     bp
+locret_2EA04:
     retf    8
 __aFuldiv endp
 seg010 ends

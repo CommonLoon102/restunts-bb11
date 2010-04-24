@@ -64,10 +64,15 @@ load_2dshape_nofatal2 proc far
     arg_0 = word ptr 6
 
     push    bp
+loc_39E15:
     mov     bp, sp
+loc_39E17:
     push    [bp+arg_0]
+loc_39E1A:
     call    load_2dshape_nofatal_thunk
+loc_39E1F:
     add     sp, 2
+loc_39E22:
     pop     bp
     retf
 load_2dshape_nofatal2 endp
@@ -79,19 +84,32 @@ sub_39E24 proc far
     arg_4 = word ptr 10
 
     push    bp
+loc_39E25:
     mov     bp, sp
+loc_39E27:
     sub     sp, 50h
+loc_39E2A:
     lea     ax, [bp+var_50]
     push    ax              ; char *
+loc_39E2E:
     push    [bp+arg_4]      ; int
+loc_39E31:
     push    word ptr [bp+arg_0+2]
+loc_39E34:
     push    word ptr [bp+arg_0]; char *
+loc_39E37:
     call    combine_file_path
+loc_39E3C:
     add     sp, 8
+loc_39E3F:
     lea     ax, [bp+var_50]
+loc_39E42:
     push    ax
+loc_39E43:
     call    file_find
+loc_39E48:
     mov     sp, bp
+loc_39E4A:
     pop     bp
     retf
 sub_39E24 endp
@@ -132,11 +150,15 @@ init_video proc far
     arg_argc = word ptr 8
 
     push    bp
+loc_39E57:
     mov     bp, sp
+loc_39E59:
     sub     sp, 1Eh
+loc_39E5C:
     push    di
     push    si
     call    kb_init_interrupt
+loc_39E63:
     call    kb_shift_checking2
     call    kb_call_readchar_callback
     mov     ax, offset do_mrl_textres
@@ -145,11 +167,14 @@ init_video proc far
     push    ax
     mov     ax, 7
     push    ax
+loc_39E79:
     call    kb_reg_callback
     add     sp, 6
     mov     ax, offset do_joy_restext
+loc_39E84:
     mov     dx, seg seg008
     push    dx
+loc_39E88:
     push    ax
     mov     ax, 0Ah
     push    ax
@@ -158,6 +183,7 @@ init_video proc far
     mov     ax, offset do_key_restext
     mov     dx, seg seg008
     push    dx
+loc_39E9C:
     push    ax
     mov     ax, 0Bh
     push    ax
@@ -174,18 +200,29 @@ init_video proc far
     mov     ax, offset do_pau_restext
     mov     dx, seg seg008
     push    dx
+loc_39EC4:
     push    ax
     mov     ax, 10h
     push    ax
+loc_39EC9:
     call    kb_reg_callback
+loc_39ECE:
     add     sp, 6
+loc_39ED1:
     mov     ax, offset do_pau_restext
+loc_39ED4:
     mov     dx, seg seg008
+loc_39ED7:
     push    dx
+loc_39ED8:
     push    ax
+loc_39ED9:
     mov     ax, 70h ; 'p'
+loc_39EDC:
     push    ax
+loc_39EDD:
     call    kb_reg_callback
+loc_39EE2:
     add     sp, 6
     mov     ax, offset do_dos_restext
     mov     dx, seg seg008
@@ -203,6 +240,7 @@ init_video proc far
     push    ax
     call    kb_reg_callback
     add     sp, 6
+loc_39F0D:
     mov     ax, offset do_dos_restext
     mov     dx, seg seg008
     push    dx
@@ -245,6 +283,7 @@ loc_39F6B:
     mov     al, [bx+1]
     cbw
     cmp     ax, 68h ; 'h'
+loc_39F87:
     jz      short loc_39F5E
     cmp     ax, 6Eh ; 'n'
     jnz     short loc_39F91
@@ -368,6 +407,7 @@ loc_3A08A:
     push    ax
     mov     ax, 140h
     push    ax
+loc_3A09C:
     call    mouse_init
     add     sp, 4
     sub     ax, ax
@@ -407,13 +447,16 @@ loc_3A0D9:
     push    ax
     sub     ax, ax
     push    ax
+loc_3A100:
     call    sprite_set_1_size
     add     sp, 8
+loc_3A108:
     call    timer_get_delta2
     sub     si, si
 loc_3A10F:
     sub     ax, ax
     push    ax
+loc_3A112:
     call    sprite_clear_1_color
     add     sp, 2
     inc     si
@@ -541,11 +584,11 @@ loc_3A22B:
     call near ptr random_wait
     sub     ax, ax
     push    ax
-    push    word_40B10
-    push    word_40B0E
-    push    word_40B0C
-    push    word_40B0A
-    call    sub_24DC2
+    push    material_patlist2_ptr
+    push    material_patlist_ptr
+    push    material_clrlist_ptr2
+    push    material_clrlist_ptr
+    call    copy_material_list_pointers
     add     sp, 0Ah
     pop     si
     pop     di
@@ -632,6 +675,7 @@ load_palandcursor proc far
     push    si
     mov     ax, offset aSdmain; "sdmain"
     push    ax
+loc_3A2CC:
     call    load_2dshape_fatal_thunk
     add     sp, 2
     mov     [bp+var_30C], ax
@@ -641,7 +685,9 @@ load_palandcursor proc far
     push    dx
     push    [bp+var_30C]
     call    locate_shape_fatal
+loc_3A2EA:
     add     sp, 6
+loc_3A2ED:
     mov     word ptr [bp+var_304], ax
     mov     word ptr [bp+var_304+2], dx
     add     word ptr [bp+var_304], 10h
@@ -679,21 +725,25 @@ loc_3A300:
     mov     [bp+var_306], ax
     push    [bp+var_30A]
     push    [bp+var_30C]
+loc_3A36C:
     call    mmgr_free
     add     sp, 4
     mov     ax, 0Fh
     push    ax
     push    [bp+var_306]
     push    [bp+var_312]
+loc_3A380:
     call    sprite_make_wnd
     add     sp, 6
     mov     word ptr smouspriteptr, ax
     mov     word ptr smouspriteptr+2, dx
     mov     ax, 0Fh
     push    ax
+loc_3A393:
     push    [bp+var_306]
     push    [bp+var_312]
     call    sprite_make_wnd
+loc_3A3A0:
     add     sp, 6
     mov     word ptr mmouspriteptr, ax
     mov     word ptr mmouspriteptr+2, dx
@@ -701,14 +751,17 @@ loc_3A300:
     push    ax
     push    [bp+var_306]
     mov     ax, [bp+var_312]
+loc_3A3B6:
     add     ax, video_flag2_is1
     push    ax
+loc_3A3BB:
     call    sprite_make_wnd
     add     sp, 6
     mov     word ptr mouseunkspriteptr, ax
     mov     word ptr mouseunkspriteptr+2, dx
     mov     ax, offset aSdmain_0; "sdmain"
     push    ax
+loc_3A3CE:
     call    load_2dshape_fatal_thunk
     add     sp, 2
     mov     [bp+var_30C], ax
@@ -730,6 +783,7 @@ loc_3A300:
     push    ax
     call    sprite_shape_to_1
     add     sp, 8
+loc_3A410:
     push    word ptr mmouspriteptr+2
     push    word ptr mmouspriteptr
     call    sprite_set_1_from_argptr
@@ -773,19 +827,25 @@ ported_mmgr_alloc_resbytes_ proc far
 
     push    bp
     mov     bp, sp
+loc_3A463:
     mov     ax, 10h
     cwd
     push    dx
     push    ax
     push    [bp+arg_4]
     push    [bp+arg_2]
+loc_3A46F:
     call    __aFldiv
+loc_3A474:
     inc     ax
     push    ax
+loc_3A476:
     push    [bp+arg_0]
     call    mmgr_alloc_pages
+loc_3A47E:
     add     sp, 4
     pop     bp
+locret_3A482:
     retf
     ; align 2
     db 144
@@ -793,11 +853,14 @@ ported_mmgr_alloc_resbytes_ endp
 ported_mmgr_get_res_ofs_diff_scaled_ proc far
 
     call    mmgr_get_ofs_diff
+loc_3A489:
     sub     dx, dx
+loc_3A48B:
     mov     cl, 4
 loc_3A48D:
     shl     ax, 1
     rcl     dx, 1
+loc_3A491:
     dec     cl
     jnz     short loc_3A48D
     retf
@@ -809,19 +872,31 @@ ported_mmgr_get_chunk_size_bytes_ proc far
     arg_2 = word ptr 8
 
     push    bp
+loc_3A497:
     mov     bp, sp
+loc_3A499:
     push    [bp+arg_2]
+loc_3A49C:
     push    [bp+arg_0]
+loc_3A49F:
     call    mmgr_get_chunk_size
+loc_3A4A4:
     add     sp, 4
+loc_3A4A7:
     sub     dx, dx
+loc_3A4A9:
     mov     cl, 4
 loc_3A4AB:
     shl     ax, 1
+loc_3A4AD:
     rcl     dx, 1
+loc_3A4AF:
     dec     cl
+loc_3A4B1:
     jnz     short loc_3A4AB
+loc_3A4B3:
     pop     bp
+locret_3A4B4:
     retf
 ported_mmgr_get_chunk_size_bytes_ endp
 seg031 ends

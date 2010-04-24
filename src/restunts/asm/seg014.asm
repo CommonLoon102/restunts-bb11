@@ -47,6 +47,7 @@ seg014 segment byte public 'STUNTSC' use16
     assume cs:seg014
     assume es:nothing, ss:nothing, ds:dseg
     public sub_36246
+algn_36245:
     ; align 2
     db 144
 sub_36246 proc far
@@ -61,48 +62,79 @@ sub_36246 proc far
     arg_2 = word ptr 8
 
     push    bp
+loc_36247:
     mov     bp, sp
+loc_36249:
     sub     sp, 0Ah
+loc_3624C:
     push    di
+loc_3624D:
     push    si
+loc_3624E:
     mov     bx, [bp+arg_0]
+loc_36251:
     mov     si, [bx]
+loc_36253:
     mov     ax, [bx+4]
+loc_36256:
     sub     ax, si
+loc_36258:
     mov     bx, [bp+arg_2]
+loc_3625B:
     mov     [bx], ax
+loc_3625D:
     mov     bx, [bp+arg_0]
+loc_36260:
     mov     ax, [bx+6]
+loc_36263:
     sub     ax, [bx+2]
+loc_36266:
     mov     bx, [bp+arg_2]
+loc_36269:
     mov     [bx+2], ax
+loc_3626C:
     mov     bx, [bp+arg_0]
+loc_3626F:
     mov     ax, [bx+8]
+loc_36272:
     sub     ax, si
+loc_36274:
     mov     bx, [bp+arg_2]
+loc_36277:
     mov     [bx+10h], ax
+loc_3627A:
     mov     bx, [bp+arg_0]
+loc_3627D:
     mov     ax, [bx+0Ah]
+loc_36280:
     sub     ax, [bx+2]
+loc_36283:
     mov     bx, [bp+arg_2]
+loc_36286:
     mov     [bx+12h], ax
-    mov     ax, (offset sceneshapes2.scene_loshapeptr+0E1h)
+loc_36289:
+    mov     ax, (offset sceneshapes2.ss_loShapePtr+0E1h)
+loc_3628C:
     push    ax
     mov     ax, [bx+10h]
     add     ax, [bx]
     push    ax
-    call    scale_value
+loc_36293:
+    call    multiply_and_scale
     add     sp, 4
     mov     bx, [bp+arg_2]
     mov     [bx+8], ax
-    mov     ax, (offset sceneshapes2.scene_loshapeptr+0E1h)
+    mov     ax, (offset sceneshapes2.ss_loShapePtr+0E1h)
     push    ax
     mov     ax, [bx+2]
     add     ax, [bx+12h]
     push    ax
-    call    scale_value
+loc_362AC:
+    call    multiply_and_scale
     add     sp, 4
+loc_362B4:
     mov     bx, [bp+arg_2]
+loc_362B7:
     mov     [bx+0Ah], ax
     mov     si, [bx+10h]
     sar     si, 1
@@ -111,8 +143,11 @@ sub_36246 proc far
     mov     ax, [bx]
     add     ax, si
     push    ax
-    call    scale_value
+loc_362C8:
+    call    multiply_and_scale
+loc_362CD:
     add     sp, 4
+loc_362D0:
     mov     bx, [bp+arg_2]
     mov     [bx+4], ax
     mov     di, [bx+12h]
@@ -120,57 +155,71 @@ sub_36246 proc far
     mov     ax, offset unk_3F0AE
     push    ax
     mov     ax, [bx+2]
+loc_362E2:
     add     ax, di
     push    ax
-    call    scale_value
+    call    multiply_and_scale
     add     sp, 4
     mov     bx, [bp+arg_2]
     mov     [bx+6], ax
+loc_362F3:
     mov     ax, [bx]
     sar     ax, 1
     mov     [bp+var_4], ax
+loc_362FA:
     mov     ax, offset unk_3F0AE
+loc_362FD:
     push    ax
+loc_362FE:
     mov     ax, [bx+10h]
+loc_36301:
     add     ax, [bp+var_4]
+loc_36304:
     push    ax
-    call    scale_value
+loc_36305:
+    call    multiply_and_scale
+loc_3630A:
     add     sp, 4
+loc_3630D:
     mov     bx, [bp+arg_2]
+loc_36310:
     mov     [bx+0Ch], ax
     mov     ax, [bx+2]
+loc_36316:
     sar     ax, 1
     mov     [bp+var_6], ax
     mov     ax, offset unk_3F0AE
+loc_3631E:
     push    ax
     mov     ax, [bx+12h]
     add     ax, [bp+var_6]
     push    ax
-    call    scale_value
+    call    multiply_and_scale
     add     sp, 4
     mov     bx, [bp+arg_2]
+loc_36331:
     mov     [bx+0Eh], ax
     mov     ax, [bx]
     neg     ax
     mov     [bp+var_8], ax
-    mov     ax, (offset sceneshapes2.scene_loshapeptr+0E1h)
+    mov     ax, (offset sceneshapes2.ss_loShapePtr+0E1h)
     push    ax
     mov     ax, [bx+10h]
     add     ax, [bp+var_8]
     push    ax
-    call    scale_value
+    call    multiply_and_scale
     add     sp, 4
     mov     bx, [bp+arg_2]
     mov     [bx+18h], ax
     mov     ax, [bx+2]
     neg     ax
     mov     [bp+var_A], ax
-    mov     ax, (offset sceneshapes2.scene_loshapeptr+0E1h)
+    mov     ax, (offset sceneshapes2.ss_loShapePtr+0E1h)
     push    ax
     mov     ax, [bx+12h]
     add     ax, [bp+var_A]
     push    ax
-    call    scale_value
+    call    multiply_and_scale
     add     sp, 4
     mov     bx, [bp+arg_2]
     mov     [bx+1Ah], ax
@@ -179,7 +228,7 @@ sub_36246 proc far
     mov     ax, [bp+var_8]
     add     ax, si
     push    ax
-    call    scale_value
+    call    multiply_and_scale
     add     sp, 4
     mov     bx, [bp+arg_2]
     mov     [bx+1Ch], ax
@@ -188,7 +237,7 @@ sub_36246 proc far
     mov     ax, [bp+var_A]
     add     ax, di
     push    ax
-    call    scale_value
+    call    multiply_and_scale
     add     sp, 4
     mov     bx, [bp+arg_2]
     mov     [bx+1Eh], ax
@@ -197,43 +246,64 @@ sub_36246 proc far
     mov     ax, [bx+10h]
     sub     ax, [bp+var_4]
     push    ax
-    call    scale_value
+    call    multiply_and_scale
     add     sp, 4
+loc_363B8:
     mov     bx, [bp+arg_2]
     mov     [bx+14h], ax
     mov     ax, offset unk_3F0AE
     push    ax
+loc_363C2:
     mov     ax, [bx+12h]
     sub     ax, [bp+var_6]
     push    ax
-    call    scale_value
+    call    multiply_and_scale
+loc_363CE:
     add     sp, 4
+loc_363D1:
     mov     bx, [bp+arg_2]
+loc_363D4:
     mov     [bx+16h], ax
+loc_363D7:
     mov     [bp+var_2], 0
 loc_363DC:
     mov     si, [bp+var_2]
     mov     cl, 2
+loc_363E1:
     shl     si, cl
+loc_363E3:
     add     si, [bp+arg_2]
+loc_363E6:
     mov     bx, [bp+arg_0]
+loc_363E9:
     mov     di, [bx]
+loc_363EB:
     mov     ax, di
     sub     ax, [si]
     mov     [si+20h], ax
+loc_363F2:
     mov     ax, [bx+2]
     sub     ax, [si+2]
+loc_363F8:
     mov     [si+22h], ax
     add     [si], di
+loc_363FD:
     mov     ax, [bx+2]
+loc_36400:
     add     [si+2], ax
     inc     [bp+var_2]
+loc_36406:
     cmp     [bp+var_2], 8
+loc_3640A:
     jl      short loc_363DC
+loc_3640C:
     pop     si
     pop     di
+loc_3640E:
     mov     sp, bp
+loc_36410:
     pop     bp
+locret_36411:
     retf
 sub_36246 endp
 seg014 ends

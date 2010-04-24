@@ -47,6 +47,13 @@ seg038 segment byte public 'STUNTSD' use16
     assume cs:seg038
     assume es:nothing, ss:nothing, ds:dseg
     public plan_memres
+    public unk_3B1E2
+    public unk_3B1E4
+    public unk_3B1E6
+    public unk_3B1E8
+    public unk_3B1EA
+    public unk_3B1EC
+    public unk_3B1EE
 plan_memres     db 0
     db 0
     db 0
@@ -81,19 +88,19 @@ plan_memres     db 0
     db 0
     db 0
     db 0
+unk_3B1E2     db 0
     db 0
+unk_3B1E4     db 0
     db 0
+unk_3B1E6     db 0
     db 0
+unk_3B1E8     db 0
     db 0
+unk_3B1EA     db 0
     db 0
+unk_3B1EC     db 0
     db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
+unk_3B1EE     db 0
     db 0
 seg038 ends
 end

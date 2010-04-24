@@ -2,10 +2,10 @@ seg008 segment byte public 'STUNTSC' use16
     extrn sub_274B0:proc
     extrn sub_275C6:proc
     extrn show_dialog:proc
-    extrn sub_27ED4:proc
+    extrn do_fileselect_dialog:proc
     extrn combine_file_path:proc
-    extrn sub_2863A:proc
-    extrn sub_28762:proc
+    extrn do_savefile_dialog:proc
+    extrn parse_filepath_separators:proc
     extrn input_checking:proc
     extrn input_do_checking:proc
     extrn ported_file_load_resfile_:proc
@@ -27,7 +27,7 @@ seg008 segment byte public 'STUNTSC' use16
     extrn ported_sprite_copy_wnd_to_1_clear_:proc
     extrn sub_28F98:proc
     extrn sub_29008:proc
-    extrn sub_290BC:proc
+    extrn call_read_line:proc
     extrn input_repeat_check:proc
     extrn sub_2916E:proc
     extrn sub_292DC:proc
@@ -35,7 +35,7 @@ seg008 segment byte public 'STUNTSC' use16
     extrn sub_29606:proc
     extrn sub_29620:proc
     extrn show_waiting:proc
-    extrn sub_296E0:proc
+    extrn print_int_as_string_maybe:proc
     extrn sub_29772:proc
     extrn sub_29786:proc
     extrn ported_file_load_audiores_:proc

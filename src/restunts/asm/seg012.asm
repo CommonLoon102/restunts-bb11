@@ -47,7 +47,7 @@ seg012 segment byte public 'STUNTSC' use16
     assume cs:seg012
     assume es:nothing, ss:nothing, ds:dseg
     public fatal_error
-    public sub_2EA4E
+    public polarAngle
     public off_2EA9B
     public sub_2EAD4
     public set_add_value
@@ -57,6 +57,7 @@ seg012 segment byte public 'STUNTSC' use16
     public sub_2EB56
     public loc_2EB62
     public off_2ECB9
+    public off_2ECD1
     public word_2ECF8
     public word_2EDBD
     public word_2EE82
@@ -103,6 +104,7 @@ seg012 segment byte public 'STUNTSC' use16
     public unk_2F704
     public unk_2F736
     public unk_2F76A
+    public unk_2F790
     public unk_2F7A0
     public unk_2F7D8
     public unk_2F812
@@ -124,7 +126,7 @@ seg012 segment byte public 'STUNTSC' use16
     public unk_2FCC2
     public unk_2FD1E
     public unk_2FD7C
-    public sub_2FDDE
+    public preRender_line
     public add_exit_handler
     public call_exitlist
     public sub_2FE74
@@ -136,9 +138,9 @@ seg012 segment byte public 'STUNTSC' use16
     public ported_file_decomp_paras_fatal_
     public ported_file_find_
     public ported_file_find_next_
-    public scale_value
+    public multiply_and_scale
     public video_set_mode4
-    public sub_300B6
+    public polarRadius2D
     public video_set_mode7
     public nopsub_30180
     public timer_setup_interrupt
@@ -208,7 +210,7 @@ seg012 segment byte public 'STUNTSC' use16
     public ported_mmgr_get_chunk_size_
     public ported_mmgr_resize_memory_
     public ported_mmgr_op_unk_
-    public sub_317B2
+    public preRender_default
     public sub_317C1
     public loc_317CE
     public sub_317DF
@@ -239,7 +241,6 @@ seg012 segment byte public 'STUNTSC' use16
     public sub_3265B
     public nopsub_326BA
     public ported_sin_fast_
-    public loc_326E4
     public off_326F2
     public ported_cos_fast_
     public nopsub_32738
@@ -259,7 +260,7 @@ seg012 segment byte public 'STUNTSC' use16
     public sub_32843
     public loc_3284A
     public loc_32882
-    public sub_32886
+    public preRender_patterned
     public nopsub_328C9
     public nopsub_328DB
     public mat_mul_vector
@@ -278,14 +279,14 @@ seg012 segment byte public 'STUNTSC' use16
     public nopsub_33006
     public vector_op_unk
     public loc_3301F
-    public sub_33072
+    public preRender_sphere
     public nopsub_3320E
     public sprite_set_1_size
     public video_clear_color
     public ported_sprite_clear_1_color_
     public nopsub_33330
     public sub_33344
-    public sub_333C0
+    public putpixel_line1_maybe
     public off_3340A
     public sub_33578
     public loc_335CF
@@ -293,7 +294,7 @@ seg012 segment byte public 'STUNTSC' use16
     public loc_335D7
     public loc_33622
     public byte_33646
-    public unk_33652
+    public byte_33652
     public byte_33656
     public sub_3367A
     public loc_33697
@@ -306,14 +307,14 @@ seg012 segment byte public 'STUNTSC' use16
     public ported_sprite_putimage_and_
     public loc_338C9
     public nopsub_339FA
-    public sub_33A1E
+    public putpixel_iconMask
     public loc_33A57
     public nopsub_33AC0
     public nopsub_33AE4
-    public sub_33B02
+    public render_bmp_as_mask
     public loc_33B1D
     public nopsub_33B98
-    public sub_33BBC
+    public sprite_putimage_and_alt
     public ported_sprite_putimage_
     public loc_33BF5
     public nopsub_33D0C
@@ -331,7 +332,7 @@ seg012 segment byte public 'STUNTSC' use16
     public sub_34060
     public ported_sprite_putimage_or_
     public loc_340BD
-    public sub_34212
+    public putpixel_iconFillings
     public loc_3424B
     public sub_342F6
     public loc_34311
@@ -343,7 +344,7 @@ seg012 segment byte public 'STUNTSC' use16
     public loc_345E5
     public video_set_palette
     public loc_346A8
-    public sub_346BC
+    public putpixel_3DShapes_maybe
     public sprite_clear_shape_alt
     public sprite_clear_shape
     public loc_34799
@@ -359,7 +360,7 @@ seg012 segment byte public 'STUNTSC' use16
     public wnd_defs
     public ported_sprite_set_1_from_argptr_
     public ported_sprite_copy_2_to_1_
-    public sub_35B26
+    public putpixel_single_maybe
     public sub_35B76
     public sub_35C4E
     public incnums
@@ -370,52 +371,72 @@ seg012 segment byte public 'STUNTSC' use16
     public sub_35F48
     public sub_35FA2
     public sub_360F6
+algn_2EA29:
     ; align 2
     db 144
 fatal_error proc near
 
     pop     ax
     pop     ax
+loc_2EA2C:
     call    sprite_copy_2_to_1
+loc_2EA31:
     call    _printf
+loc_2EA36:
     call    flush_stdin
+loc_2EA3B:
     call    call_exitlist
+loc_2EA40:
     call    _printf
+loc_2EA45:
     add     sp, 2
+loc_2EA48:
     call    _abort
     ; align 2
     db 0
 fatal_error endp
-sub_2EA4E proc far
+polarAngle proc far
      s = byte ptr 0
      r = byte ptr 2
-    arg_0 = word ptr 6
-    arg_2 = word ptr 8
+    arg_z = word ptr 6
+    arg_x = word ptr 8
 
     push    bp
+loc_2EA4F:
     mov     bp, sp
     push    di
+loc_2EA52:
     xor     di, di
-    mov     dx, [bp+arg_0]
-    mov     cx, [bp+arg_2]
+loc_2EA54:
+    mov     dx, [bp+arg_z]
+loc_2EA57:
+    mov     cx, [bp+arg_x]
+loc_2EA5A:
     or      dx, dx
+loc_2EA5C:
     jge     short loc_2EA63
+loc_2EA5E:
 smart
     or      di, 8
 nosmart
+loc_2EA61:
     neg     dx
 loc_2EA63:
     or      cx, cx
+loc_2EA65:
     jge     short loc_2EA6C
+loc_2EA67:
 smart
     or      di, 4
 nosmart
+loc_2EA6A:
     neg     cx
 loc_2EA6C:
     cmp     dx, cx
     jl      short loc_2EA77
     jz      short loc_2EA8F
     xchg    dx, cx
+loc_2EA74:
 smart
     or      di, 2
 nosmart
@@ -426,13 +447,16 @@ loc_2EA77:
     xor     bh, bh
     add     al, 80h ; '€'
     adc     bx, 0
-    mov     al, [bx+3950h]
+    mov     al, atantable[bx]
     xor     ah, ah
+loc_2EA8A:
     jmp     cs:off_2EA9B[di]
 loc_2EA8F:
     or      dx, dx
     jz      short loc_2EAB0
+loc_2EA93:
     mov     ax, 80h ; '€'
+loc_2EA96:
     jmp     cs:off_2EA9B[di]
 off_2EA9B     dw offset loc_2EAB0
     dw offset loc_2EAAB
@@ -469,13 +493,15 @@ loc_2EAC8:
 loc_2EACF:
     sub     ah, 2
     jmp     short loc_2EAB0
-sub_2EA4E endp
+polarAngle endp
 sub_2EAD4 proc far
 
     cli
     mov     ax, word_3F87C
     mov     dx, word_3F87E
+loc_2EADC:
     sti
+locret_2EADD:
     retf
 sub_2EAD4 endp
 set_add_value proc far
@@ -485,11 +511,17 @@ set_add_value proc far
     arg_2 = word ptr 8
 
     push    bp
+loc_2EADF:
     mov     bp, sp
+loc_2EAE1:
     call    sub_2EAD4
+loc_2EAE6:
     add     ax, [bp+arg_0]
+loc_2EAE9:
     adc     dx, [bp+arg_2]
+loc_2EAEC:
     mov     word_3F1C2, ax
+loc_2EAEF:
     mov     word_3F1C4, dx
     pop     bp
     retf
@@ -589,6 +621,7 @@ loc_2EB62:
     mov     [si+2], cx
     mov     [si+6], ax
     mov     [si+8], dx
+loc_2EB96:
     mov     [si+0Ah], bx
     jmp     short loc_2EBA8
     ; align 2
@@ -745,7 +778,7 @@ off_2ECB9     dw offset loc_2ECD9
     dw offset loc_2EDA5
     dw offset loc_2EDA5
     dw offset loc_2EDA5
-    dw offset loc_2ECE1
+off_2ECD1     dw offset loc_2ECE1
     dw offset loc_2ECE1
     dw offset loc_2ECE1
     dw offset loc_2ECE1
@@ -788,6 +821,7 @@ loc_2ED22:
     mov     ax, [si+0Ch]
     mul     cx
     sub     [si], ax
+loc_2ED29:
     sbb     [si+2], dx
     sub     [si+0Eh], cx
     jmp     loc_2F13E
@@ -1109,6 +1143,7 @@ loc_2F017:
     retf
 loc_2F01F:
     mov     bl, [si+12h]
+loc_2F022:
     xor     bh, bh
     shl     bx, 1
     jmp     cs:word_2F02B[bx]
@@ -1169,6 +1204,7 @@ loc_2F0A3:
     xor     ax, ax
     sub     ax, [si]
     sbb     dx, [si+2]
+loc_2F0B3:
     jl      short loc_2F03D
     mov     cx, [si+0Ch]
     div     cx
@@ -1594,7 +1630,7 @@ loc_2F3FD:
     mov     [bp+arg_4], ax
     mov     ax, offset sub_33344
     mov     spritefunc, ax
-    mov     ax, offset sub_2FDDE
+    mov     ax, offset preRender_line
     mov     imagefunc, ax
     jmp     loc_3180A
 sub_2F3DA endp
@@ -2217,7 +2253,7 @@ unk_2F76A     db 132
     db 155
     db 146
     db 164
-    db 182
+unk_2F790     db 182
     db 173
     db 219
     db 182
@@ -3832,27 +3868,27 @@ unk_2FD7C     db 170
     db 198
     db 250
 sub_2F436 endp
-sub_2FDDE proc far
+preRender_line proc far
     var_1C = byte ptr -28
      s = byte ptr 0
      r = byte ptr 2
-    arg_0 = word ptr 6
-    arg_2 = word ptr 8
-    arg_4 = word ptr 10
-    arg_6 = word ptr 12
-    arg_8 = word ptr 14
+    arg_startX = word ptr 6
+    arg_startY = word ptr 8
+    arg_endX = word ptr 10
+    arg_endY = word ptr 12
+    arg_color = word ptr 14
 
     push    bp
     mov     bp, sp
     sub     sp, 1Ch
-    mov     ax, [bp+arg_8]
+    mov     ax, [bp+arg_color]
     lea     bx, [bp+var_1C]
     mov     [bx+10h], ax
     push    bx
-    push    [bp+arg_6]
-    push    [bp+arg_4]
-    push    [bp+arg_2]
-    push    [bp+arg_0]
+    push    [bp+arg_endY]
+    push    [bp+arg_endX]
+    push    [bp+arg_startY]
+    push    [bp+arg_startX]
     call    sub_2EB56
     add     sp, 0Ah
     or      ax, ax
@@ -3861,13 +3897,13 @@ sub_2FDDE proc far
     cmp     word ptr [bx+0Eh], 0
     jle     short loc_2FE18
     push    bx
-    call    sub_333C0
+    call    putpixel_line1_maybe
     add     sp, 2
 loc_2FE18:
     mov     sp, bp
     pop     bp
     retf
-sub_2FDDE endp
+preRender_line endp
 add_exit_handler proc far
      s = byte ptr 0
      r = byte ptr 2
@@ -4178,6 +4214,7 @@ loc_2FFC4:
     mov     ds, bx
     push    [bp+arg_filename]
     push    ax
+loc_2FFCF:
     call    far ptr fatal_error
 ported_file_decomp_paras_fatal_ endp
 ported_file_find_ proc far
@@ -4255,7 +4292,7 @@ ported_file_find_next_ proc far
     ; align 2
     db 0
 ported_file_find_next_ endp
-scale_value proc far
+multiply_and_scale proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -4274,7 +4311,7 @@ scale_value proc far
     mov     ax, dx
     pop     bp
     retf
-scale_value endp
+multiply_and_scale endp
 video_set_mode4 proc far
      r = byte ptr 0
 
@@ -4324,17 +4361,17 @@ loc_30091:
     ; align 2
     db 0
 video_set_mode4 endp
-sub_300B6 proc far
+polarRadius2D proc far
      s = byte ptr 0
      r = byte ptr 2
-    arg_0 = word ptr 6
-    arg_2 = word ptr 8
+    arg_z = word ptr 6
+    arg_x = word ptr 8
 
     push    bp
     mov     bp, sp
-    push    [bp+arg_2]
-    push    [bp+arg_0]
-    call    sub_2EA4E
+    push    [bp+arg_x]
+    push    [bp+arg_z]
+    call    polarAngle
     add     sp, 4
     or      ax, ax
     jge     short loc_300CD
@@ -4351,7 +4388,7 @@ loc_300D7:
     call    cos_fast
     add     sp, 2
     mov     bx, ax
-    mov     dx, [bp+arg_2]
+    mov     dx, [bp+arg_x]
     or      dx, dx
     jge     short loc_300F0
     neg     dx
@@ -4369,7 +4406,7 @@ loc_300FE:
     call    sin_fast
     add     sp, 2
     mov     bx, ax
-    mov     dx, [bp+arg_0]
+    mov     dx, [bp+arg_z]
     or      dx, dx
     jge     short loc_30112
     neg     dx
@@ -4382,7 +4419,7 @@ loc_30112:
     div     bx
     pop     bp
     retf
-sub_300B6 endp
+polarRadius2D endp
 video_set_mode7 proc far
      r = byte ptr 0
 
@@ -5620,6 +5657,7 @@ loc_30AAE:
     call    timer_get_counter
     cmp     dx, [bp-2]
     jb      short loc_30AAE
+loc_30AC2:
     ja      short loc_30AC9
     cmp     ax, [bp-4]
     jb      short loc_30AAE
@@ -7388,7 +7426,7 @@ loc_317AD:
     ; align 2
     db 0
 ported_mmgr_op_unk_ endp
-sub_317B2 proc far
+preRender_default proc far
     var_A = byte ptr -10
      s = byte ptr 0
      r = byte ptr 2
@@ -7400,7 +7438,7 @@ sub_317B2 proc far
     push    di
     mov     [bp+var_A], 1
     jmp     short loc_317CE
-sub_317B2 endp
+preRender_default endp
 sub_317C1 proc far
     var_A = byte ptr -10
      s = byte ptr 0
@@ -7414,9 +7452,9 @@ sub_317C1 proc far
     push    di
     mov     [bp+var_A], 0
 loc_317CE:
-    mov     ax, offset sub_346BC
+    mov     ax, offset putpixel_3DShapes_maybe
     mov     spritefunc, ax
-    mov     ax, offset sub_2FDDE
+    mov     ax, offset preRender_line
     mov     imagefunc, ax
     mov     si, [bp+arg_6]
     jmp     short loc_3180A
@@ -7463,9 +7501,9 @@ sub_317EE proc far
     push    di
     mov     [bp+var_A], 0
 loc_317FB:
-    mov     ax, offset sub_346BC
+    mov     ax, offset putpixel_3DShapes_maybe
     mov     spritefunc, ax
-    mov     ax, offset sub_2FDDE
+    mov     ax, offset preRender_line
     mov     imagefunc, ax
     lea     si, [bp+arg_4]
 loc_3180A:
@@ -7493,6 +7531,7 @@ loc_3180A:
     mov     bx, [si]
     mov     dx, bx
     mov     [bp+var_10], si
+loc_31847:
     mov     [bp+var_14], si
     add     si, 4
     dec     cx
@@ -7548,6 +7587,7 @@ loc_31894:
     jg      short loc_318D3
     cmp     bx, [bp+var_2]
     jl      short loc_318D3
+loc_318C5:
     cmp     ax, cs:sprite1.sprite_height
     jge     short loc_318D3
     cmp     cx, cs:sprite1.sprite_top
@@ -7692,6 +7732,7 @@ sub_319CD proc near
     mov     ax, cs:sprite1.sprite_left2
     push    cx
     push    di
+loc_319EE:
     rep stosw
     pop     di
     pop     cx
@@ -7702,6 +7743,7 @@ loc_319F9:
     mov     cx, [si+18h]
     or      cx, cx
     jle     short loc_31A25
+loc_31A00:
     mov     di, [si+6]
     mov     dx, [si+4]
     add     dx, 8000h
@@ -7709,6 +7751,7 @@ loc_319F9:
     sub     di, cx
     shl     di, 1
     add     di, [bp-18h]
+loc_31A14:
     mov     ax, cs:sprite1.sprite_widthsum
     push    cx
     push    di
@@ -8882,6 +8925,7 @@ loc_32334:
     mov     di, dx
     push    word_403BE
     call    sin_fast
+loc_3236F:
     add     sp, 2
     mov     cx, ax
     mov     dx, di
@@ -8920,7 +8964,7 @@ loc_323B4:
     mov     word_403BC, ax
     push    word_403B0
     push    ax
-    call    sub_2EA4E
+    call    polarAngle
     add     sp, 4
     mov     word_403C0, ax
     pop     di
@@ -9392,11 +9436,11 @@ ported_sin_fast_ proc far
     push    bp
     mov     bp, sp
     mov     ax, [bp+arg_0]
-loc_326E4:
+code_sin_fast_main:
     mov     bl, ah
     xor     ah, ah
 smart
-    and     bx, 3
+    and     bx, 3           ; constrain angles to [0, 2pi]
 nosmart
     shl     bx, 1
     jmp     cs:off_326F2[bx]
@@ -9442,7 +9486,7 @@ ported_cos_fast_ proc far
     mov     bp, sp
     mov     ax, [bp+arg_0]
     add     ax, 100h
-    jmp     short loc_326E4
+    jmp     short code_sin_fast_main
     ; align 2
     db 0
 ported_cos_fast_ endp
@@ -9691,7 +9735,7 @@ loc_32882:
     pop     bp
     retf
 sub_32843 endp
-sub_32886 proc far
+preRender_patterned proc far
     var_A = byte ptr -10
      s = byte ptr 0
      r = byte ptr 2
@@ -9724,10 +9768,10 @@ loc_328A8:
     mov     [bp+arg_2], ax
     mov     ax, offset sub_34B96
     mov     spritefunc, ax
-    mov     ax, offset sub_2FDDE
+    mov     ax, offset preRender_line
     mov     imagefunc, ax
     jmp     loc_3180A
-sub_32886 endp
+preRender_patterned endp
 nopsub_328C9 proc far
     var_A = byte ptr -10
      s = byte ptr 0
@@ -9763,22 +9807,22 @@ nopsub_328DB endp
 mat_mul_vector proc far
      s = byte ptr 0
      r = byte ptr 2
-    arg_0 = word ptr 6
-    arg_2 = word ptr 8
-    arg_4 = word ptr 10
+    arg_inpVector = word ptr 6
+    arg_matrix = word ptr 8
+    arg_outVector = word ptr 10
 
     push    bp
     mov     bp, sp
     push    si
     push    di
-    mov     bx, [bp+arg_2]
-    mov     si, [bp+arg_0]
-    mov     di, [bp+arg_4]
+    mov     bx, [bp+arg_matrix]
+    mov     si, [bp+arg_inpVector]
+    mov     di, [bp+arg_outVector]
     xor     dx, dx
     mov     ax, [bx+MATRIX._11]
     or      ax, ax
     jz      short loc_32914
-    mov     cx, [si+VECTOR.x]
+    mov     cx, [si+VECTOR.vx]
     or      cx, cx
     jz      short loc_32914
     imul    cx
@@ -9787,11 +9831,11 @@ mat_mul_vector proc far
     shl     ax, 1
     rcl     dx, 1
 loc_32914:
-    mov     [di+VECTOR.x], dx
+    mov     [di+VECTOR.vx], dx
     mov     ax, [bx+MATRIX._12]
     or      ax, ax
     jz      short loc_32930
-    mov     cx, [si+VECTOR.y]
+    mov     cx, [si+VECTOR.vy]
     or      cx, cx
     jz      short loc_32930
     imul    cx
@@ -9799,12 +9843,12 @@ loc_32914:
     rcl     dx, 1
     shl     ax, 1
     rcl     dx, 1
-    add     [di+VECTOR.x], dx
+    add     [di+VECTOR.vx], dx
 loc_32930:
     mov     ax, [bx+MATRIX._13]
     or      ax, ax
     jz      short loc_3294A
-    mov     cx, [si+VECTOR.z]
+    mov     cx, [si+VECTOR.vz]
     or      cx, cx
     jz      short loc_3294A
     imul    cx
@@ -9812,13 +9856,13 @@ loc_32930:
     rcl     dx, 1
     shl     ax, 1
     rcl     dx, 1
-    add     [di+VECTOR.x], dx
+    add     [di+VECTOR.vx], dx
 loc_3294A:
     xor     dx, dx
     mov     ax, [bx+MATRIX._21]
     or      ax, ax
     jz      short loc_32963
-    mov     cx, [si+VECTOR.x]
+    mov     cx, [si+VECTOR.vx]
     or      cx, cx
     jz      short loc_32963
     imul    cx
@@ -9827,11 +9871,11 @@ loc_3294A:
     shl     ax, 1
     rcl     dx, 1
 loc_32963:
-    mov     [di+VECTOR.y], dx
+    mov     [di+VECTOR.vy], dx
     mov     ax, [bx+MATRIX._22]
     or      ax, ax
     jz      short loc_32981
-    mov     cx, [si+VECTOR.y]
+    mov     cx, [si+VECTOR.vy]
     or      cx, cx
     jz      short loc_32981
     imul    cx
@@ -9844,7 +9888,7 @@ loc_32981:
     mov     ax, [bx+MATRIX._23]
     or      ax, ax
     jz      short loc_3299C
-    mov     cx, [si+VECTOR.z]
+    mov     cx, [si+VECTOR.vz]
     or      cx, cx
     jz      short loc_3299C
     imul    cx
@@ -9852,13 +9896,13 @@ loc_32981:
     rcl     dx, 1
     shl     ax, 1
     rcl     dx, 1
-    add     [di+VECTOR.y], dx
+    add     [di+VECTOR.vy], dx
 loc_3299C:
     xor     dx, dx
     mov     ax, [bx+MATRIX._31]
     or      ax, ax
     jz      short loc_329B5
-    mov     cx, [si+VECTOR.x]
+    mov     cx, [si+VECTOR.vx]
     or      cx, cx
     jz      short loc_329B5
     imul    cx
@@ -9867,11 +9911,11 @@ loc_3299C:
     shl     ax, 1
     rcl     dx, 1
 loc_329B5:
-    mov     [di+VECTOR.z], dx
+    mov     [di+VECTOR.vz], dx
     mov     ax, [bx+MATRIX._32]
     or      ax, ax
     jz      short loc_329D3
-    mov     cx, [si+VECTOR.y]
+    mov     cx, [si+VECTOR.vy]
     or      cx, cx
     jz      short loc_329D3
     imul    cx
@@ -9879,12 +9923,12 @@ loc_329B5:
     rcl     dx, 1
     shl     ax, 1
     rcl     dx, 1
-    add     [di+VECTOR.z], dx
+    add     [di+VECTOR.vz], dx
 loc_329D3:
     mov     ax, [bx+MATRIX._33]
     or      ax, ax
     jz      short loc_329EE
-    mov     cx, [si+VECTOR.z]
+    mov     cx, [si+VECTOR.vz]
     or      cx, cx
     jz      short loc_329EE
     imul    cx
@@ -9892,7 +9936,7 @@ loc_329D3:
     rcl     dx, 1
     shl     ax, 1
     rcl     dx, 1
-    add     [di+VECTOR.z], dx
+    add     [di+VECTOR.vz], dx
 loc_329EE:
     pop     di
     pop     si
@@ -9902,17 +9946,17 @@ mat_mul_vector endp
 mat_multiply proc far
      s = byte ptr 0
      r = byte ptr 2
-    arg_0 = word ptr 6
-    arg_2 = word ptr 8
-    arg_4 = word ptr 10
+    arg_rightMatrix = word ptr 6
+    arg_leftMatrix = word ptr 8
+    arg_outputMatrix = word ptr 10
 
     push    bp
     mov     bp, sp
     push    si
     push    di
-    mov     si, [bp+arg_0]
-    mov     bx, [bp+arg_2]
-    mov     di, [bp+arg_4]
+    mov     si, [bp+arg_rightMatrix]
+    mov     bx, [bp+arg_leftMatrix]
+    mov     di, [bp+arg_outputMatrix]
     mov     cx, 9
 loc_32A03:
     xor     dx, dx
@@ -10943,7 +10987,7 @@ loc_33040:
     mov     ax, [bp+6]
     mov     ds:4E92h, ax
 vector_op_unk endp
-sub_33072 proc far
+preRender_sphere proc far
     var_79A = byte ptr -1946
     var_3DA = byte ptr -986
     var_1A = word ptr -26
@@ -10994,7 +11038,7 @@ loc_33096:
     push    [bp+arg_6]
     push    [bp+arg_2]
     push    [bp+arg_0]
-    call    sub_35B26
+    call    putpixel_single_maybe
     add     sp, 6
 loc_330B0:
     pop     di
@@ -11139,14 +11183,14 @@ loc_331E9:
     lea     ax, [bp+var_3DA]
     add     ax, dx
     push    ax
-    call    sub_346BC
+    call    putpixel_3DShapes_maybe
     add     sp, 0Ah
     pop     di
     pop     si
     mov     sp, bp
     pop     bp
     retf
-sub_33072 endp
+preRender_sphere endp
 nopsub_3320E proc far
      s = byte ptr 0
      r = byte ptr 2
@@ -11395,7 +11439,7 @@ loc_333B8:
     loop    loc_33393
     jmp     short loc_3339A
 sub_33344 endp
-sub_333C0 proc far
+putpixel_line1_maybe proc far
     var_E = byte ptr -14
     var_A = word ptr -10
     var_8 = word ptr -8
@@ -11603,7 +11647,7 @@ loc_33558:
     mov     sp, bp
     pop     bp
     retf
-sub_333C0 endp
+putpixel_line1_maybe endp
 sub_33578 proc far
      s = byte ptr 0
      r = byte ptr 2
@@ -11734,7 +11778,7 @@ byte_33646     db 11
     db 3
     db 6
     db 0
-unk_33652     db 1
+byte_33652     db 1
     db 3
     db 0
     db 2
@@ -11831,7 +11875,7 @@ loc_33701:
 smart
     and     bx, 3
 nosmart
-    mov     al, byte ptr cs:unk_33652[bx]
+    mov     al, cs:byte_33652[bx]
     sub     cx, ax
     jle     short loc_33724
     add     si, ax
@@ -12261,7 +12305,7 @@ nopsub_339FA proc far
     ; align 2
     db 144
 nopsub_339FA endp
-sub_33A1E proc far
+putpixel_iconMask proc far
     var_6 = word ptr -6
     var_4 = word ptr -4
     var_2 = word ptr -2
@@ -12360,7 +12404,7 @@ loc_33AB4:
     jmp     short loc_33A9A
     ; align 2
     db 0
-sub_33A1E endp
+putpixel_iconMask endp
 nopsub_33AC0 proc far
     var_4 = word ptr -4
     var_2 = word ptr -2
@@ -12415,7 +12459,7 @@ nopsub_33AE4 proc far
     ; align 2
     db 144
 nopsub_33AE4 endp
-sub_33B02 proc far
+render_bmp_as_mask proc far
     var_10 = word ptr -16
     var_E = word ptr -14
     var_6 = word ptr -6
@@ -12500,7 +12544,7 @@ loc_33B7C:
 loc_33B94:
     loop    loc_33B7C
     jmp     short loc_33B48
-sub_33B02 endp
+render_bmp_as_mask endp
 nopsub_33B98 proc far
     var_4 = word ptr -4
     var_2 = word ptr -2
@@ -12529,7 +12573,7 @@ nopsub_33B98 proc far
     ; align 2
     db 144
 nopsub_33B98 endp
-sub_33BBC proc far
+sprite_putimage_and_alt proc far
     var_4 = word ptr -4
     var_2 = word ptr -2
      s = byte ptr 0
@@ -12554,7 +12598,7 @@ sub_33BBC proc far
     jmp     short loc_33BF5
     ; align 2
     db 144
-sub_33BBC endp
+sprite_putimage_and_alt endp
 ported_sprite_putimage_ proc far
     var_E = word ptr -14
     var_C = word ptr -12
@@ -13390,6 +13434,7 @@ loc_3415C:
     add     di, [bp+var_2]
     mov     si, [bp+var_C]
     mov     dx, [bp+var_A]
+loc_34185:
     mov     bx, cs:sprite1.sprite_height2
     sub     bx, [bp+var_6]
     cmp     [bp+var_8], 0
@@ -13470,7 +13515,7 @@ loc_341E0:
     ; align 2
     db 144
 ported_sprite_putimage_or_ endp
-sub_34212 proc far
+putpixel_iconFillings proc far
     var_6 = word ptr -6
     var_4 = word ptr -4
     var_2 = word ptr -2
@@ -13601,7 +13646,7 @@ loc_342A8:
     jmp     short loc_34311
     ; align 2
     db 144
-sub_34212 endp
+putpixel_iconFillings endp
 sub_342F6 proc far
     var_10 = word ptr -16
     var_E = word ptr -14
@@ -13830,6 +13875,7 @@ loc_34488:
     shl     bx, 1
     add     bx, cs:sprite1.sprite_lineofs
     mov     di, cs:[bx]
+loc_344A8:
     add     di, [bp+var_2]
     mov     si, [bp+var_C]
     mov     dx, cs:sprite1.sprite_height2
@@ -14127,7 +14173,7 @@ loc_346A8:
     ; align 2
     db 0
 video_set_palette endp
-sub_346BC proc far
+putpixel_3DShapes_maybe proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -14218,7 +14264,7 @@ loc_34730:
     jmp     short loc_34799
     ; align 2
     db 144
-sub_346BC endp
+putpixel_3DShapes_maybe endp
 sprite_clear_shape_alt proc far
     var_4 = word ptr -4
     var_2 = word ptr -2
@@ -18629,23 +18675,23 @@ ported_sprite_copy_2_to_1_ proc far
     ; align 2
     db 0
 ported_sprite_copy_2_to_1_ endp
-sub_35B26 proc far
+putpixel_single_maybe proc far
      s = byte ptr 0
      r = byte ptr 2
-    arg_0 = word ptr 6
-    arg_2 = word ptr 8
-    arg_4 = word ptr 10
+    arg_0x = word ptr 6
+    arg_2y = word ptr 8
+    arg_4col = word ptr 10
 
     push    bp
     mov     bp, sp
     push    si
     push    di
-    mov     ax, [bp+arg_0]
+    mov     ax, [bp+arg_0x]
     cmp     ax, cs:sprite1.sprite_left
     jl      short loc_35B4D
     cmp     ax, cs:sprite1.sprite_width
     jge     short loc_35B4D
-    mov     ax, [bp+arg_2]
+    mov     ax, [bp+arg_2y]
     cmp     ax, cs:sprite1.sprite_top
     jl      short loc_35B4D
     cmp     ax, cs:sprite1.sprite_height
@@ -18660,13 +18706,13 @@ loc_35B4D:
     push    si
     push    di
 loc_35B56:
-    mov     di, [bp+arg_0]
-    mov     si, [bp+arg_2]
+    mov     di, [bp+arg_0x]
+    mov     si, [bp+arg_2y]
     shl     si, 1
     add     si, cs:sprite1.sprite_lineofs
     add     di, cs:[si]
     mov     es, word ptr cs:sprite1.sprite_bitmapptr+2
-    mov     ax, [bp+arg_4]
+    mov     ax, [bp+arg_4col]
     mov     es:[di], al
     pop     di
     pop     si
@@ -18674,7 +18720,7 @@ loc_35B56:
     retf
     ; align 2
     db 0
-sub_35B26 endp
+putpixel_single_maybe endp
 sub_35B76 proc far
      s = byte ptr 0
      r = byte ptr 2
@@ -18747,6 +18793,7 @@ loc_35BD5:
     mov     dx, cs:sprite1.sprite_height2
     sub     dx, [bp+arg_4]
     mov     cx, [bp+arg_4]
+loc_35C0D:
     sar     cx, 1
     mov     [bp+arg_4], cx
     jb      short loc_35C29
@@ -19164,7 +19211,9 @@ sub_35DE6 proc far
     mov     es, ax
     lea     di, incnums[si]
     mov     si, [bp+arg_4]
+loc_35E00:
     cld
+loc_35E01:
     rep movsb
     pop     di
     pop     si
@@ -19193,11 +19242,13 @@ sub_35E08 proc far
 
     push    bp
     mov     bp, sp
+loc_35E0B:
     sub     sp, 16h
     push    ds
     push    si
     push    di
     mov     ds, [bp+arg_4]
+loc_35E14:
     mov     si, [bp+arg_2]
     mov     cx, [bp+arg_6]
     mov     ax, [si+4]
@@ -19445,6 +19496,7 @@ sub_35FA2 proc far
     add     di, 4
     rep movsw
     xor     ax, ax
+loc_35FCC:
     mov     [bp+var_4], ax
     mov     [bp+var_6], di
     mov     es:[di], ax
@@ -19461,7 +19513,9 @@ loc_35FD9:
     retf
 loc_35FE8:
     push    ax
+loc_35FE9:
     push    [bp+arg_2]
+loc_35FEC:
     push    [bp+arg_0]
     mov     ax, ss
     mov     ds, ax
@@ -19513,7 +19567,9 @@ loc_3605B:
     mov     ax, ss
     mov     ds, ax
     call    sub_3265B
+loc_3606D:
     add     sp, 6
+loc_36070:
     mov     es, dx
     mov     di, ax
     mov     [bp+var_10], ax
@@ -19521,6 +19577,7 @@ loc_3605B:
     mov     cx, 6
     rep movsw
     mov     si, [bp+var_C]
+loc_36082:
     mov     di, [bp+var_10]
     mov     ax, [si]
     shl     ax, 1
@@ -19528,12 +19585,14 @@ loc_3605B:
     shl     ax, 1
     mov     es:[di], ax
     mov     al, [si+0Dh]
+loc_36093:
     shr     al, 1
     shr     al, 1
     shr     al, 1
     shr     al, 1
     mov     ah, al
     add     di, 10h
+loc_360A0:
     mov     cx, [bp+var_E]
     cmp     cx, 0
     jle     short loc_360EF
@@ -19542,6 +19601,7 @@ loc_3605B:
     shl     cx, 1
     shl     cx, 1
     rep stosw
+loc_360B4:
     add     si, 10h
     mov     [bp+var_8], si
     xor     bx, bx
@@ -19555,6 +19615,7 @@ nosmart
     mov     di, [bp+var_10]
     add     di, 10h
     mov     si, [bp+var_8]
+loc_360D0:
     mov     dx, [bp+var_E]
 loc_360D3:
     lodsb
@@ -19650,20 +19711,26 @@ loc_3614E:
 loc_3615D:
     mov     ax, [si]
     mov     [bp+var_A], ax
+loc_36162:
     mov     dx, [si+2]
     mov     [bp+var_C], dx
     mul     dx
     mov     [bp+var_E], ax
     add     si, 10h
+loc_36170:
     mov     [bp+var_10], si
+loc_36173:
     mov     [bp+var_12], 4
 loc_36177:
     shr     [bp+var_14], 1
     jnb     short loc_361AF
+loc_3617C:
     mov     es, [bp+arg_6]
     mov     di, [bp+arg_4]
+loc_36182:
     mov     ds, [bp+var_8]
     xor     dx, dx
+loc_36187:
     mov     bx, [bp+var_C]
 loc_3618A:
     mov     si, [bp+var_10]
@@ -19673,21 +19740,32 @@ loc_36192:
     mov     al, [si]
     stosb
     add     si, bx
+loc_36197:
     loop    loc_36192
     inc     dx
+loc_3619A:
     cmp     dx, bx
     jnz     short loc_3618A
+loc_3619E:
     mov     es, [bp+var_8]
     mov     di, [bp+var_10]
+loc_361A4:
     mov     ds, [bp+arg_6]
+loc_361A7:
     mov     si, [bp+arg_4]
+loc_361AA:
     mov     cx, [bp+var_E]
+loc_361AD:
     rep movsb
 loc_361AF:
     mov     ax, [bp+var_E]
+loc_361B2:
     add     [bp+var_10], ax
+loc_361B5:
     dec     [bp+var_12]
+loc_361B8:
     jnz     short loc_36177
+loc_361BA:
     jmp     short loc_3614E
 sub_360F6 endp
 seg012 ends

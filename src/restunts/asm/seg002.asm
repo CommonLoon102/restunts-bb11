@@ -46,7 +46,7 @@ nosmart
 seg002 segment byte public 'STUNTSC' use16
     assume cs:seg002
     assume es:nothing, ss:nothing, ds:dseg
-    public sub_19DC6
+    public update_rpm_from_speed
     public nopsub_19DE8
     public nopsub_19DFF
     public nopsub_19E09
@@ -56,58 +56,81 @@ seg002 segment byte public 'STUNTSC' use16
     public get_kevinrandom
     public nopsub_19EC9
     public init_div0
+    public byte_19F07
+algn_19DC5:
     ; align 2
     db 144
-sub_19DC6 proc far
+update_rpm_from_speed proc far
      s = byte ptr 0
      r = byte ptr 2
-    arg_0 = word ptr 6
-    arg_2 = word ptr 8
-    arg_4 = word ptr 10
-    arg_6 = word ptr 12
-    arg_8 = word ptr 14
+    arg_currRpm = word ptr 6
+    arg_speed = word ptr 8
+    arg_gearRatio = word ptr 10
+    arg_isChangingGear = word ptr 12
+    arg_idleRpm = word ptr 14
 
     push    bp
+loc_19DC7:
     mov     bp, sp
+loc_19DC9:
     push    bp
-    mov     cx, [bp+arg_0]
-    mov     ax, [bp+arg_2]
-    cmp     [bp+arg_6], 0
+loc_19DCA:
+    mov     cx, [bp+arg_currRpm]
+loc_19DCD:
+    mov     ax, [bp+arg_speed]
+loc_19DD0:
+    cmp     [bp+arg_isChangingGear], 0
+loc_19DD4:
     jnz     short loc_19DDB
-    mul     [bp+arg_4]
+loc_19DD6:
+    mul     [bp+arg_gearRatio]
+loc_19DD9:
     mov     cx, dx
 loc_19DDB:
-    cmp     cx, [bp+arg_8]
+    cmp     cx, [bp+arg_idleRpm]
+loc_19DDE:
     jnb     short loc_19DE3
-    mov     cx, [bp+arg_8]
+loc_19DE0:
+    mov     cx, [bp+arg_idleRpm]
 loc_19DE3:
     mov     ax, cx
     pop     bp
+loc_19DE6:
     pop     bp
     retf
-sub_19DC6 endp
+update_rpm_from_speed endp
 nopsub_19DE8 proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
 
     push    bp
+loc_19DE9:
     mov     bp, sp
     push    bp
+loc_19DEC:
     xor     ax, ax
+loc_19DEE:
     mov     bx, [bp+arg_0]
+loc_19DF1:
     or      bx, bx
+loc_19DF3:
     jz      short loc_19DFC
+loc_19DF5:
     jl      short loc_19DFB
+loc_19DF7:
     inc     ax
+loc_19DF8:
     pop     bp
     pop     bp
+locret_19DFA:
     retf
 loc_19DFB:
     dec     ax
 loc_19DFC:
     pop     bp
     pop     bp
+locret_19DFE:
     retf
 nopsub_19DE8 endp
 nopsub_19DFF proc far
@@ -116,10 +139,14 @@ nopsub_19DFF proc far
     arg_0 = word ptr 6
 
     push    bp
+loc_19E00:
     mov     bp, sp
+loc_19E02:
     mov     ax, [bp+arg_0]
+loc_19E05:
     int     61h             ; reserved for user interrupt
     pop     bp
+locret_19E08:
     retf
 nopsub_19DFF endp
 nopsub_19E09 proc far
@@ -128,7 +155,9 @@ nopsub_19E09 proc far
     arg_0 = word ptr 6
 
     push    bp
+loc_19E0A:
     mov     bp, sp
+loc_19E0C:
     mov     ax, [bp+arg_0]
     int     60h
     pop     bp
@@ -140,12 +169,15 @@ nopsub_19E13 proc far
     arg_0 = word ptr 6
 
     push    bp
+loc_19E14:
     mov     bp, sp
+loc_19E16:
     push    bp
     push    si
     mov     si, [bp+arg_0]
     int     62h             ; reserved for user interrupt
     pop     si
+loc_19E1E:
     pop     bp
     pop     bp
     retf
@@ -160,10 +192,14 @@ init_kevinrandom proc far
     push    bp
     mov     bx, [bp+arg_0]
     mov     al, [bx]
+loc_19E2A:
     mov     byte_4594A, al
     mov     al, [bx+1]
+loc_19E30:
     mov     byte_4594B, al
+loc_19E33:
     mov     al, [bx+2]
+loc_19E36:
     mov     byte_4594C, al
     mov     al, [bx+3]
     mov     byte_4594D, al
@@ -172,6 +208,7 @@ init_kevinrandom proc far
     mov     al, [bx+5]
     mov     byte_4594F, al
     pop     bp
+loc_19E4C:
     pop     bp
     retf
 init_kevinrandom endp
@@ -194,6 +231,7 @@ get_kevinrandom_seed proc far
     mov     [bx+3], al
     mov     al, byte_4594E
     mov     [bx+4], al
+loc_19E72:
     mov     al, byte_4594F
     mov     [bx+5], al
     pop     bp
@@ -203,11 +241,17 @@ get_kevinrandom_seed endp
 get_kevinrandom proc far
 
     mov     al, byte_4594F
+loc_19E7E:
     add     al, byte_4594E
+loc_19E82:
     mov     byte_4594E, al
+loc_19E85:
     add     al, byte_4594D
+loc_19E89:
     mov     byte_4594D, al
+loc_19E8C:
     add     al, byte_4594C
+loc_19E90:
     mov     byte_4594C, al
     add     al, byte_4594B
     mov     byte_4594B, al
@@ -237,14 +281,21 @@ nopsub_19EC9 proc far
     mov     bp, sp
     push    ds
     mov     ax, seg dseg
+loc_19ED0:
     mov     ds, ax
+loc_19ED2:
     mov     ax, [bp+4]
+loc_19ED5:
     mov     word_3BE30, ax
+loc_19ED8:
     mov     ax, [bp+2]
     mov     word_3BE32, ax
+loc_19EDE:
     inc     ax
     inc     ax
+loc_19EE0:
     mov     [bp+2], ax
+loc_19EE3:
     xor     ax, ax
     pop     ds
     pop     bp
@@ -253,20 +304,28 @@ nopsub_19EC9 endp
 init_div0 proc far
 
     push    ds
+loc_19EE9:
     mov     ah, 35h ; '5'
+loc_19EEB:
     mov     al, 0
     int     21h             ; DOS - 2+ - GET INTERRUPT VECTOR
+loc_19EEF:
     mov     word ptr dword_3BE2C+2, es
     mov     word ptr dword_3BE2C, bx
+loc_19EF7:
     mov     dx, seg seg002
+loc_19EFA:
     mov     ds, dx
+loc_19EFC:
     mov     dx, 109h
+loc_19EFF:
     mov     ah, 25h ; '%'
     mov     al, 0
     int     21h             ; DOS - SET INTERRUPT VECTOR
     pop     ds
+locret_19F06:
     retf
-    db 30
+byte_19F07     db 30
     db 197
     db 22
     db 188

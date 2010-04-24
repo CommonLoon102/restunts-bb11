@@ -46,8 +46,8 @@ nosmart
 seg022 segment byte public 'STUNTSC' use16
     assume cs:seg022
     assume es:nothing, ss:nothing, ds:dseg
-    public sub_36C7E
-sub_36C7E proc far
+    public preRender_wheel
+preRender_wheel proc far
     var_11A = word ptr -282
     var_118 = word ptr -280
     var_116 = word ptr -278
@@ -76,28 +76,45 @@ sub_36C7E proc far
     arg_8 = word ptr 14
 
     push    bp
+loc_36C7F:
     mov     bp, sp
+loc_36C81:
     sub     sp, 11Ah
     push    si
+loc_36C86:
     push    [bp+arg_2]
+loc_36C89:
     lea     ax, [bp+var_10E]
     push    ax
+loc_36C8E:
     push    [bp+arg_0]
+loc_36C91:
     call    sub_36EC0
+loc_36C96:
     add     sp, 6
+loc_36C99:
     lea     ax, [bp+var_10E]
+loc_36C9D:
     mov     [bp+var_2], ax
+loc_36CA0:
     mov     [bp+var_110], 0
 loc_36CA6:
     mov     bx, [bp+var_2]
+loc_36CA9:
     push    word ptr [bx+82h]
+loc_36CAD:
     push    word ptr [bx+80h]
+loc_36CB1:
     push    word ptr [bx+86h]
+loc_36CB5:
     push    word ptr [bx+84h]
+loc_36CB9:
     push    word ptr [bx+6]
+loc_36CBC:
     push    word ptr [bx+4]
     push    word ptr [bx+2]
     push    word ptr [bx]
+loc_36CC4:
     mov     ax, 4
     push    ax
     push    [bp+arg_4]
@@ -105,14 +122,18 @@ loc_36CA6:
     add     sp, 14h
     add     [bp+var_2], 4
     inc     [bp+var_110]
+loc_36CDB:
     cmp     [bp+var_110], 0Fh
     jl      short loc_36CA6
+loc_36CE2:
     mov     bx, [bp+var_2]
+loc_36CE5:
     push    word ptr [bx+82h]
     push    word ptr [bx+80h]
     push    [bp+var_8C]
     push    [bp+var_8E]
     push    [bp+var_10C]
+loc_36CF9:
     push    [bp+var_10E]
     push    word ptr [bx+2]
     push    word ptr [bx]
@@ -125,15 +146,22 @@ loc_36CA6:
     mov     [bp+var_4], ax
     mov     ax, [bp+var_10C]
     mov     [bp+var_118], ax
+loc_36D20:
     mov     [bp+var_11A], 0
     mov     [bp+var_110], 1
 loc_36D2C:
     mov     bx, [bp+var_4]
+loc_36D2F:
     mov     ax, [bp+var_118]
+loc_36D33:
     cmp     [bx+2], ax
+loc_36D36:
     jge     short loc_36D47
+loc_36D38:
     mov     ax, [bx+2]
+loc_36D3B:
     mov     [bp+var_118], ax
+loc_36D3F:
     mov     ax, [bp+var_110]
     mov     [bp+var_11A], ax
 loc_36D47:
@@ -152,6 +180,7 @@ loc_36D47:
     lea     ax, [bp+var_4E]
     mov     [bp+var_6], ax
     lea     ax, [bp+var_A]
+loc_36D78:
     mov     [bp+var_116], ax
     mov     ax, [bp+var_11A]
     mov     [bp+var_112], ax
@@ -186,6 +215,7 @@ loc_36DA2:
     mov     [bp+var_4], ax
     lea     ax, [bp+var_CE]
     mov     [bp+var_114], ax
+loc_36DE5:
     mov     [bp+var_112], 0
     jmp     short loc_36D95
     ; align 2
@@ -265,6 +295,6 @@ loc_36E94:
     mov     sp, bp
     pop     bp
     retf
-sub_36C7E endp
+preRender_wheel endp
 seg022 ends
 end

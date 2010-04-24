@@ -1,5 +1,5 @@
 seg002 segment byte public 'STUNTSC' use16
-    extrn sub_19DC6:proc
+    extrn update_rpm_from_speed:proc
     extrn nopsub_19DE8:proc
     extrn nopsub_19DFF:proc
     extrn nopsub_19E09:proc
@@ -9,4 +9,5 @@ seg002 segment byte public 'STUNTSC' use16
     extrn get_kevinrandom:proc
     extrn nopsub_19EC9:proc
     extrn init_div0:proc
+    extrn byte_19F07:byte
 seg002 ends

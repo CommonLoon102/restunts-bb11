@@ -49,6 +49,7 @@ seg032 segment byte public 'STUNTSC' use16
     public read_line
     public read_line_helper
     public read_line_helper2
+algn_3A4B5:
     ; align 2
     db 144
 read_line proc far
@@ -70,33 +71,56 @@ read_line proc far
     arg_14 = word ptr 26
 
     push    bp
+loc_3A4B7:
     mov     bp, sp
+loc_3A4B9:
     sub     sp, 0Ah
+loc_3A4BC:
     push    si
+loc_3A4BD:
     call    sprite_copy_2_to_1
+loc_3A4C2:
     mov     ax, [bp+arg_A]
+loc_3A4C5:
     mov     word_42A18, ax
+loc_3A4C8:
     mov     ax, [bp+arg_C]
+loc_3A4CB:
     mov     word_42A1A, ax
+loc_3A4CE:
     mov     ax, word ptr [bp+arg_2]
+loc_3A4D1:
     mov     off_42A1E, ax
+loc_3A4D4:
     mov     ax, [bp+arg_8]
+loc_3A4D7:
     mov     word_42A20, ax
+loc_3A4DA:
     mov     bx, [bp+arg_6]
+loc_3A4DD:
     mov     si, word ptr [bp+arg_2]
+loc_3A4E0:
     mov     byte ptr [bx+si], 0
+loc_3A4E3:
     test    [bp+arg_0], 1
+loc_3A4E7:
     jz      short loc_3A4EE
+loc_3A4E9:
     mov     bx, si
+loc_3A4EB:
     mov     byte ptr [bx], 0
 loc_3A4EE:
     test    [bp+arg_0], 2
+loc_3A4F2:
     jz      short loc_3A4FC
+loc_3A4F4:
     mov     word_42A22, 0
+loc_3A4FA:
     jmp     short loc_3A50A
 loc_3A4FC:
     push    word ptr [bp+arg_2]; char *
     call    _strlen
+loc_3A504:
     add     sp, 2
     mov     word_42A22, ax
 loc_3A50A:
@@ -109,6 +133,7 @@ loc_3A51A:
     mov     bx, [bp+var_6]
     inc     [bp+var_6]
     mov     si, word ptr [bp+arg_2]
+loc_3A523:
     mov     byte ptr [bx+si], 20h ; ' '
 loc_3A526:
     mov     ax, [bp+arg_6]
@@ -117,6 +142,7 @@ loc_3A526:
     push    cs
     call near ptr read_line_helper2
     mov     word_42A16, 1
+loc_3A538:
     mov     word_42A1C, 1
     mov     [bp+var_A], 0
     push    cs
@@ -131,14 +157,21 @@ loc_3A526:
     push    ax
     call    set_add_value
     add     sp, 4
+loc_3A563:
     mov     [bp+var_2], 1
 loc_3A568:
     cmp     word ptr [bp+arg_2+2], 0
+loc_3A56C:
     jz      short loc_3A57F
+loc_3A56E:
     mov     ax, word ptr [bp+arg_2+2]
+loc_3A571:
     mov     [bp+var_8], ax
+loc_3A574:
     mov     word ptr [bp+arg_2+2], 0
+loc_3A579:
     jmp     short loc_3A599
+algn_3A57B:
     ; align 2
     db 144
 loc_3A57C:
@@ -155,14 +188,18 @@ loc_3A57F:
 loc_3A599:
     cmp     [bp+var_8], 0
     jnz     short loc_3A5F0
+loc_3A59F:
     mov     ax, 4
+loc_3A5A2:
     cwd
     push    dx
     push    ax
     call    set_add_value
+loc_3A5AA:
     add     sp, 4
     mov     ax, word_42A1C
     mov     [bp+var_4], ax
+loc_3A5B3:
     mov     word_42A1C, 1
     push    cs
     call near ptr read_line_helper
@@ -210,6 +247,7 @@ loc_3A61E:
     cmp     [bp+var_8], 9
     jnz     short loc_3A62A
     test    [bp+arg_0], 10h
+loc_3A628:
     jz      short loc_3A5E3
 loc_3A62A:
     cmp     [bp+var_8], 4D00h
@@ -345,6 +383,7 @@ loc_3A75A:
 loc_3A765:
     push    cs
     call near ptr read_line_helper
+loc_3A769:
     cmp     [bp+var_2], 0
     jz      short loc_3A796
     test    [bp+arg_0], 4
@@ -355,6 +394,7 @@ loc_3A765:
 loc_3A782:
     mov     bx, [bp+var_6]
     mov     si, word ptr [bp+arg_2]
+loc_3A788:
     mov     byte ptr [bx+si], 20h ; ' '
     inc     [bp+var_6]
 loc_3A78E:
@@ -422,12 +462,15 @@ read_line_helper proc far
     jmp     loc_3A891
 loc_3A806:
     push    off_42A1E       ; char *
+loc_3A80A:
     call    _strlen
+loc_3A80F:
     add     sp, 2
     cmp     ax, word_42A22
     jge     short loc_3A827
     push    off_42A1E       ; char *
     call    _strlen
+loc_3A821:
     add     sp, 2
     mov     word_42A22, ax
 loc_3A827:
@@ -436,11 +479,13 @@ loc_3A827:
     mov     ax, word_42A22
     add     ax, off_42A1E
     push    ax
+loc_3A833:
     call    sub_32832
     add     sp, 4
     mov     [bp+var_2], ax
     or      ax, ax
     jnz     short loc_3A851
+loc_3A842:
     mov     ax, 53CAh
     push    ax
     call    sub_32843
@@ -448,13 +493,16 @@ loc_3A827:
     mov     [bp+var_2], ax
 loc_3A851:
     push    word_42A22
+loc_3A855:
     push    off_42A1E
     call    sub_32832
+loc_3A85E:
     add     sp, 4
     add     ax, word_42A18
     mov     [bp+var_4], ax
     les     bx, off_405FE
     mov     ax, es:[bx+12h]
+loc_3A870:
     add     ax, word_42A1A
     sub     ax, word_42A16
     mov     [bp+var_6], ax
@@ -517,33 +565,52 @@ loc_3A8DE:
 loc_3A8FB:
     push    word_42A1A
     push    word_42A18
+loc_3A903:
     push    off_42A1E
     call    sub_345BC
     add     sp, 6
+loc_3A90F:
     cmp     word_42A20, 0
+loc_3A914:
     jz      short loc_3A953
+loc_3A916:
     push    off_42A1E
+loc_3A91A:
     call    sub_32843
     add     sp, 2
+loc_3A922:
     mov     [bp+var_6], ax
     mov     ax, word_42A20
+loc_3A928:
     sub     ax, [bp+var_6]
+loc_3A92B:
     mov     [bp+var_4], ax
     or      ax, ax
     jle     short loc_3A953
+loc_3A932:
     les     bx, off_405FE
+loc_3A936:
     push    word ptr es:[bx+2]
+loc_3A93A:
     push    word ptr es:[bx+12h]
+loc_3A93E:
     push    ax
+loc_3A93F:
     push    word_42A1A
     mov     ax, [bp+var_6]
+loc_3A946:
     add     ax, word_42A18
+loc_3A94A:
     push    ax
+loc_3A94B:
     call    sub_33578
+loc_3A950:
     add     sp, 0Ah
 loc_3A953:
     pop     si
+loc_3A954:
     mov     sp, bp
+loc_3A956:
     pop     bp
     retf
 read_line_helper2 endp

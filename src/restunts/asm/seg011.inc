@@ -1,3 +1,3 @@
 seg011 segment byte public 'STUNTSC' use16
-    extrn sub_2EA08:proc
+    extrn polarRadius3D:proc
 seg011 ends

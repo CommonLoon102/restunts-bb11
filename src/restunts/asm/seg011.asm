@@ -46,27 +46,35 @@ nosmart
 seg011 segment byte public 'STUNTSC' use16
     assume cs:seg011
     assume es:nothing, ss:nothing, ds:dseg
-    public sub_2EA08
+    public polarRadius3D
     ; align 2
     db 0
-sub_2EA08 proc far
+polarRadius3D proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
 
     push    bp
+loc_2EA09:
     mov     bp, sp
+loc_2EA0B:
     mov     bx, [bp+arg_0]
     push    word ptr [bx+4]
     push    word ptr [bx+2]
     push    word ptr [bx]
-    call    sub_300B6
+loc_2EA16:
+    call    polarRadius2D
+loc_2EA1B:
     add     sp, 4
+loc_2EA1E:
     push    ax
-    call    sub_300B6
+loc_2EA1F:
+    call    polarRadius2D
+loc_2EA24:
     add     sp, 4
     pop     bp
+locret_2EA28:
     retf
-sub_2EA08 endp
+polarRadius3D endp
 seg011 ends
 end
