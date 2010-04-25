@@ -46,8 +46,8 @@ nosmart
 seg036 segment byte public 'STUNTSC' use16
     assume cs:seg036
     assume es:nothing, ss:nothing, ds:dseg
-    public get_unflip_size
-get_unflip_size proc far
+    public ported_file_get_unflip_size_
+ported_file_get_unflip_size_ proc far
     var_C = word ptr -12
     var_A = word ptr -10
     var_8 = word ptr -8
@@ -80,8 +80,8 @@ loc_3B0DE:
     mov     word ptr [bp+var_4], ax
     mov     word ptr [bp+var_4+2], dx
     les     bx, [bp+var_4]
-    mov     ax, es:[bx+2]
-    imul    word ptr es:[bx]
+    mov     ax, es:[bx+SHAPE2D.s2d_height]
+    imul    es:[bx+SHAPE2D.s2d_width]
     add     ax, 20h ; ' '
     mov     [bp+var_C], ax
     mov     cl, 4
@@ -101,6 +101,6 @@ loc_3B11B:
     mov     sp, bp
     pop     bp
     retf
-get_unflip_size endp
+ported_file_get_unflip_size_ endp
 seg036 ends
 end

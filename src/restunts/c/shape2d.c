@@ -3,6 +3,7 @@
 #include <dos.h>
 #include <mem.h>
 #include <stddef.h>
+#include <stdlib.h>
 #include "externs.h"
 #include "memmgr.h"
 #include "fileio.h"
@@ -342,6 +343,23 @@ loc_32C08:
 
 }
 
+int file_get_unflip_size(char far* memchunk) {
+	int shapecount, size, maxsize;
+	int i;
+	struct SHAPE2D far* memshape;
+
+	shapecount = *(unsigned short far*)&memchunk[4];
+	maxsize = 0;
+	i = 0;
+	
+	for (i = 0; i < shapecount; i++) {
+		memshape = file_get_shape2d(memchunk, i);
+		size = (memshape->s2d_width * memshape->s2d_height + 0x20) >> 4;
+		maxsize = max(maxsize, size);
+	}
+	return maxsize;
+}
+
 void far* file_load_shape2d(char* shapename, int fatal) {
 	char str[100];
 	char* strptr;
@@ -374,7 +392,7 @@ void far* file_load_shape2d(char* shapename, int fatal) {
 				memchunk = file_decomp(str, fatal);
 				if (!memchunk) return MK_FP(0, 0);
 				
-				unflipsize = get_unflip_size(memchunk);
+				unflipsize = file_get_unflip_size(memchunk);
 				mempages = mmgr_alloc_pages("UNFLIP", unflipsize);
 				file_unflip_shape2d(memchunk, mempages);
 				//ported_file_unflip_2dshape_(memchunk, mempages);
@@ -408,17 +426,17 @@ void far* file_load_shape2d_res(char* resname, int fatal) {
 	char* shapename = mmgr_path_to_name(resname);
 	void far* mempages;
 	void far* memchunk = mmgr_get_chunk_by_name(shapename);
-	
+
 	if (memchunk) return memchunk;
-	
+
 	memchunk = file_load_shape2d(shapename, fatal);
 	if (!memchunk) return 0;
-		
+
 	chunksize = mmgr_get_chunk_size(memchunk);
 	mempages = mmgr_alloc_pages(resname, chunksize);
-	
+
 	parse_shape2d(memchunk, mempages);
-	
+
 	mmgr_release(memchunk);
 	return mmgr_op_unk(mempages);
 }

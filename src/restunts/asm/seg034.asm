@@ -217,7 +217,7 @@ _try_load_pvs:
     jz      short _end_load_2dshape
     push    dx
     push    [bp+var_memchunkofs]
-    call    get_unflip_size
+    call    file_get_unflip_size
     add     sp, 4
     push    ax
     mov     ax, offset aUnflip_0; "UNFLIP"
