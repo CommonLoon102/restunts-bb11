@@ -238,7 +238,7 @@ seg012 segment byte public 'STUNTSC' use16
     public ported_sprite_copy_both_to_arg_
     public ported_sprite_copy_arg_to_both_
     public sub_3264A
-    public sub_3265B
+    public ported_file_get_shape2d_
     public nopsub_326BA
     public ported_sin_fast_
     public off_326F2
@@ -9352,7 +9352,7 @@ sub_3264A proc far
     pop     bp
     retf
 sub_3264A endp
-sub_3265B proc far
+ported_file_get_shape2d_ proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -9364,17 +9364,16 @@ sub_3265B proc far
     push    si
     mov     es, [bp+arg_2]
     mov     si, [bp+arg_0]
-    mov     ax, es:[si+4]
+    mov     ax, es:[si+4]   ; number of objects in resource file
     shl     ax, 1
     shl     ax, 1
-    mov     bx, [bp+arg_4]
+    mov     bx, [bp+arg_4]  ; index
     shl     bx, 1
     shl     bx, 1
-    add     bx, ax
-loc_32676:
-    add     bx, 6
-    shl     ax, 1
-    add     ax, 6
+    add     bx, ax          ; bx = index<<2 + count<<2
+    add     bx, 6           ; bx += 6
+    shl     ax, 1           ; ax = index<<2 << 1
+    add     ax, 6           ; ax += 6
     mov     cx, es
     xor     dx, dx
     shl     cx, 1
@@ -9406,7 +9405,7 @@ nosmart
     pop     si
     pop     bp
     retf
-sub_3265B endp
+ported_file_get_shape2d_ endp
 nopsub_326BA proc far
      s = byte ptr 0
      r = byte ptr 2
@@ -10116,7 +10115,7 @@ loc_32B0D:
     push    [bp+arg_memchunkofs]
     mov     ax, seg dseg
     mov     ds, ax
-    call    sub_3265B       ; get shape in binary at index
+    call    file_get_shape2d; get shape in binary at index
     add     sp, 6
     mov     [bp+var_6], ax
     mov     si, ax
@@ -19459,7 +19458,7 @@ loc_35F73:
     push    ax
     push    [bp+arg_2]
     push    [bp+arg_0]
-    call    sub_3265B
+    call    file_get_shape2d
     add     sp, 6
     mov     es, dx
     mov     di, ax
@@ -19535,7 +19534,7 @@ loc_35FEC:
     push    [bp+arg_0]
     mov     ax, ss
     mov     ds, ax
-    call    sub_3265B
+    call    file_get_shape2d
     add     sp, 6
     mov     ds, dx
     mov     si, ax
@@ -19582,7 +19581,7 @@ loc_3605B:
     push    [bp+arg_4]
     mov     ax, ss
     mov     ds, ax
-    call    sub_3265B
+    call    file_get_shape2d
 loc_3606D:
     add     sp, 6
 loc_36070:
@@ -19693,7 +19692,7 @@ loc_36114:
     push    [bp+arg_0]
     mov     ax, seg dseg
     mov     ds, ax
-    call    sub_3265B
+    call    file_get_shape2d
     add     sp, 6
     mov     [bp+var_6], ax
     mov     [bp+var_8], dx

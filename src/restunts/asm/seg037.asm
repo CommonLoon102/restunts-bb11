@@ -79,7 +79,7 @@ loc_3B156:
     push    [bp+var_8]
     push    [bp+arg_2]
     push    [bp+arg_0]
-    call    sub_3265B
+    call    file_get_shape2d
     add     sp, 6
     mov     word ptr [bp+var_4], ax
     mov     word ptr [bp+var_4+2], dx

@@ -191,7 +191,7 @@ seg012 segment byte public 'STUNTSC' use16
     extrn ported_sprite_copy_both_to_arg_:proc
     extrn ported_sprite_copy_arg_to_both_:proc
     extrn sub_3264A:proc
-    extrn sub_3265B:proc
+    extrn ported_file_get_shape2d_:proc
     extrn nopsub_326BA:proc
     extrn ported_sin_fast_:proc
     extrn off_326F2:word

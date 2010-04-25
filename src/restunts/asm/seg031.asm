@@ -46,7 +46,7 @@ nosmart
 seg031 segment byte public 'STUNTSC' use16
     assume cs:seg031
     assume es:nothing, ss:nothing, ds:dseg
-    public file_load_shape2d_nofatal2
+    public ported_file_load_shape2d_nofatal2_
     public sub_39E24
     public sub_39E4C
     public nullsub_1
@@ -58,7 +58,7 @@ seg031 segment byte public 'STUNTSC' use16
     public ported_mmgr_alloc_resbytes_
     public ported_mmgr_get_res_ofs_diff_scaled_
     public ported_mmgr_get_chunk_size_bytes_
-file_load_shape2d_nofatal2 proc far
+ported_file_load_shape2d_nofatal2_ proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -70,7 +70,7 @@ file_load_shape2d_nofatal2 proc far
     add     sp, 2
     pop     bp
     retf
-file_load_shape2d_nofatal2 endp
+ported_file_load_shape2d_nofatal2_ endp
 sub_39E24 proc far
     var_50 = byte ptr -80
      s = byte ptr 0

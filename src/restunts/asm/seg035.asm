@@ -417,7 +417,7 @@ loc_3AF66:
 loc_3AF6C:
     push    [bp+arg_0]
 loc_3AF6F:
-    call    sub_3265B
+    call    file_get_shape2d
     add     sp, 6
     mov     word ptr [bp+var_C], ax
     mov     word ptr [bp+var_C+2], dx

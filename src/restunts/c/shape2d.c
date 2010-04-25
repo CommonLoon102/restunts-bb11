@@ -226,52 +226,60 @@ void sprite_putimage_or(struct SHAPE2D far* shape, unsigned short a, unsigned sh
 	ported_sprite_putimage_or_(shape, a, b);
 }
 
-extern void far* sub_3265B(unsigned char far* memchunk, int arg_4); // file_shape2d_res_find()
+// like locate_resource_by_index()
+struct SHAPE2D far* file_get_shape2d(unsigned char far* memchunk, int index) {
+	unsigned short shapecount, offsetofs, dataofs;
+	unsigned long chunkofs;
+	unsigned char huge* result;
+	
+	shapecount = *(unsigned short far*)&memchunk[4];
+	offsetofs = (index << 2) + (shapecount << 2) + 6;
+	dataofs = (shapecount << 3) + 6;
+	chunkofs = *(unsigned long far*)(&memchunk[offsetofs]);
+	result = memchunk;
+	result += dataofs + chunkofs;
+	return (struct SHAPE2D far*)result;
+}
 
 void file_unflip_shape2d(unsigned char far* memchunk, char far* mempages) {
 
-	int var_2, var_counter;
-	unsigned short var_6, var_8, var_A, var_C, var_E, src_height;
-	unsigned char far* subres;
-	unsigned char subchar;
+	int shapecount, counter, width, height;
+	struct SHAPE2D far* memshape;
+	char far* membitmapptr;
+	unsigned char flag;
 	int i, j;
-	unsigned short arg_0 = FP_OFF(memchunk);
-	unsigned short arg_2 = FP_SEG(memchunk);
-	unsigned short arg_4 = FP_OFF(mempages);
-	unsigned short arg_6 = FP_SEG(mempages);
-	unsigned int dseg = FP_SEG(wndsprite); // any object on the dseg will do
 
-	var_2 = *(unsigned short far*)&memchunk[4];
-	var_counter = 0;
+	shapecount = *(unsigned short far*)&memchunk[4];
+	counter = 0;
 	do {
-		subres = sub_3265B(memchunk, var_counter); // find_shape2d??
-		
-		subchar = subres[15];
-		if ((subchar & 0xF0) == 0) {
-			subchar = subres[14] >> 4;
-			if (subchar != 0) {
-				if (subchar < 4) {
-					var_C = *(unsigned short far*)(&subres[0]); // SHAPE2D?
-					var_E = *(unsigned short far*)(&subres[2]); // SHAPE2D?
-					switch (subchar - 1) {
+		memshape = file_get_shape2d(memchunk, counter);
+		membitmapptr = ((char far*)memshape) + sizeof(struct SHAPE2D);
+		flag = memshape->s2d_unk6;
+		if ((flag & 0xF0) == 0) {
+			flag = memshape->s2d_unk5 >> 4;
+			if (flag != 0) {
+				if (flag < 4) {
+					width = memshape->s2d_width;
+					height = memshape->s2d_height;
+					switch (flag - 1) {
 						case 0:
 							// regular flip
-							for (j = 0; j < var_E; j++) { // height
-								for (i = 0; i < var_C; i++) { // width
-									mempages[i + j * var_C] = subres[0x10 + j + i * var_E];
+							for (j = 0; j < height; j++) { // height
+								for (i = 0; i < width; i++) { // width
+									mempages[i + j * width] = membitmapptr[j + i * height];
 								}
 							}
 							break;
 						case 1:
 							// interlaced flip?
-							for (j = 0; j < var_E; j += 2) { // height
-								for (i = 0; i < var_C; i++) { // width
-									mempages[i + j * var_C] = subres[0x10 + (j / 2) + i * var_E];
+							for (j = 0; j < height; j += 2) { // height
+								for (i = 0; i < width; i++) { // width
+									mempages[i + j * width] = membitmapptr[(j / 2) + i * height];
 								}
 							}
-							for (j = 0; j < var_E; j += 2) { // height
-								for (i = 0; i < var_C; i++) { // width
-									mempages[var_C + i + j * var_C] = subres[0x10 + ((var_E + j + 1) / 2) + i * var_E];
+							for (j = 0; j < height; j += 2) { // height
+								for (i = 0; i < width; i++) { // width
+									mempages[width + i + j * width] = membitmapptr[((height + j + 1) / 2) + i * height];
 								}
 							}
 							break;
@@ -282,17 +290,17 @@ void file_unflip_shape2d(unsigned char far* memchunk, char far* mempages) {
 					}
 					
 					// copy flipped bits from mempages -> subres
-					for (j = 0; j < var_E; j++) { // height
-						for (i = 0; i < var_C; i++) { // width
-							subres[0x10 + i + j * var_C] = mempages[i + j * var_C];
+					for (j = 0; j < height; j++) { // height
+						for (i = 0; i < width; i++) { // width
+							membitmapptr[i + j * width] = mempages[i + j * width];
 						}
 					}
 				}
 			}
 		}
-		var_counter++;
-		var_2--;
-	} while (var_2 > 0);
+		counter++;
+		shapecount--;
+	} while (shapecount > 0);
 	
 /*    asm {
 
@@ -378,6 +386,7 @@ void far* file_load_shape2d(char* shapename, int fatal) {
 		}
 	}
 	fatal_error("unhandled - cannot load %s", str);
+	return 0;
 }
 
 void far* file_load_shape2d_fatal(char* shapename) {
@@ -385,6 +394,10 @@ void far* file_load_shape2d_fatal(char* shapename) {
 }
 
 void far* file_load_shape2d_nofatal(char* shapename) {
+	return file_load_shape2d(shapename, 0);
+}
+
+void far* file_load_shape2d_nofatal2(char* shapename) {
 	return file_load_shape2d(shapename, 0);
 }
 
