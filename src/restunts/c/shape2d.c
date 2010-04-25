@@ -401,4 +401,34 @@ void far* file_load_shape2d_nofatal2(char* shapename) {
 	return file_load_shape2d(shapename, 0);
 }
 
+extern void parse_shape2d(void far* memchunk, void far* mempages);
+
+void far* file_load_shape2d_res(char* resname, int fatal) {
+	int chunksize;
+	char* shapename = mmgr_path_to_name(resname);
+	void far* mempages;
+	void far* memchunk = mmgr_get_chunk_by_name(shapename);
+	
+	if (memchunk) return memchunk;
+	
+	memchunk = file_load_shape2d(shapename, fatal);
+	if (!memchunk) return 0;
+		
+	chunksize = mmgr_get_chunk_size(memchunk);
+	mempages = mmgr_alloc_pages(resname, chunksize);
+	
+	parse_shape2d(memchunk, mempages);
+	
+	mmgr_release(memchunk);
+	return mmgr_op_unk(mempages);
+}
+
+void far* file_load_shape2d_res_fatal(char* resname) {
+	return file_load_shape2d_res(resname, 1);
+}
+
+void far* file_load_shape2d_res_nofatal(char* resname) {
+	return file_load_shape2d_res(resname, 0);
+}
+
 #endif

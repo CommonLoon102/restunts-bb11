@@ -1,7 +1,7 @@
 seg035 segment byte public 'STUNTSC' use16
-    extrn file_load_shape2d_res_fatal:proc
-    extrn file_load_shape2d_res_nofatal:proc
-    extrn file_load_shape2d_res:proc
+    extrn ported_file_load_shape2d_res_fatal_:proc
+    extrn ported_file_load_shape2d_res_nofatal_:proc
+    extrn ported_file_load_shape2d_res_:proc
     extrn parse_shape2d:proc
     extrn sub_3B08C:proc
 seg035 ends

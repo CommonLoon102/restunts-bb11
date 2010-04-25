@@ -46,14 +46,14 @@ nosmart
 seg035 segment byte public 'STUNTSC' use16
     assume cs:seg035
     assume es:nothing, ss:nothing, ds:dseg
-    public file_load_shape2d_res_fatal
-    public file_load_shape2d_res_nofatal
-    public file_load_shape2d_res
+    public ported_file_load_shape2d_res_fatal_
+    public ported_file_load_shape2d_res_nofatal_
+    public ported_file_load_shape2d_res_
     public parse_shape2d
     public sub_3B08C
     ; align 2
     db 144
-file_load_shape2d_res_fatal proc far
+ported_file_load_shape2d_res_fatal_ proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -70,7 +70,7 @@ loc_3ACDF:
 loc_3ACE2:
     push    cs
 loc_3ACE3:
-    call near ptr file_load_shape2d_res
+    call near ptr ported_file_load_shape2d_res_
 loc_3ACE6:
     add     sp, 4
     pop     bp
@@ -78,8 +78,8 @@ locret_3ACEA:
     retf
     ; align 2
     db 144
-file_load_shape2d_res_fatal endp
-file_load_shape2d_res_nofatal proc far
+ported_file_load_shape2d_res_fatal_ endp
+ported_file_load_shape2d_res_nofatal_ proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -94,14 +94,14 @@ loc_3ACF2:
     push    [bp+arg_0]
     push    cs
 loc_3ACF6:
-    call near ptr file_load_shape2d_res
+    call near ptr ported_file_load_shape2d_res_
 loc_3ACF9:
     add     sp, 4
 loc_3ACFC:
     pop     bp
     retf
-file_load_shape2d_res_nofatal endp
-file_load_shape2d_res proc far
+ported_file_load_shape2d_res_nofatal_ endp
+ported_file_load_shape2d_res_ proc far
     var_A = word ptr -10
     var_8 = word ptr -8
     var_6 = word ptr -6
@@ -113,28 +113,18 @@ file_load_shape2d_res proc far
     arg_fatal = word ptr 8
 
     push    bp
-loc_3ACFF:
     mov     bp, sp
-loc_3AD01:
     sub     sp, 0Ah
-loc_3AD04:
     push    [bp+arg_0]
-loc_3AD07:
     call    mmgr_path_to_name
-loc_3AD0C:
     add     sp, 2
     push    ax
-loc_3AD10:
     call    mmgr_get_chunk_by_name
-loc_3AD15:
     add     sp, 2
-loc_3AD18:
     mov     [bp+var_8], ax
-loc_3AD1B:
     mov     [bp+var_6], dx
     or      ax, dx
     jz      short loc_3AD2A
-loc_3AD22:
     mov     ax, [bp+var_8]
     mov     sp, bp
     pop     bp
@@ -147,16 +137,12 @@ loc_3AD2A:
     call    file_load_shape2d
     add     sp, 4
     mov     [bp+var_4], ax
-loc_3AD3B:
     mov     [bp+var_2], dx
     or      ax, dx
     jnz     short loc_3AD4A
-loc_3AD42:
     mov     ax, [bp+var_4]
-loc_3AD45:
     mov     sp, bp
     pop     bp
-locret_3AD48:
     retf
     ; align 2
     db 144
@@ -167,7 +153,6 @@ loc_3AD4A:
     add     sp, 4
     mov     [bp+var_A], ax
     push    ax
-loc_3AD5C:
     push    [bp+arg_0]
     call    mmgr_alloc_pages
     add     sp, 4
@@ -182,24 +167,16 @@ loc_3AD5C:
     add     sp, 8
     push    [bp+var_2]
     push    [bp+var_4]
-loc_3AD82:
     call    mmgr_release
     add     sp, 4
-loc_3AD8A:
     push    [bp+var_6]
-loc_3AD8D:
     push    [bp+var_8]
-loc_3AD90:
     call    mmgr_op_unk
-loc_3AD95:
     add     sp, 4
-loc_3AD98:
     mov     sp, bp
-loc_3AD9A:
     pop     bp
-locret_3AD9B:
     retf
-file_load_shape2d_res endp
+ported_file_load_shape2d_res_ endp
 parse_shape2d proc far
     var_38 = dword ptr -56
     var_34 = word ptr -52

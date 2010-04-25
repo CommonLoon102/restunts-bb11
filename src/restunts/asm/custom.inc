@@ -92,6 +92,9 @@ extrn file_load_shape2d:proc
 extrn file_load_shape2d_fatal:proc
 extrn file_load_shape2d_nofatal:proc
 extrn file_load_shape2d_nofatal2:proc
+extrn file_load_shape2d_res:proc
+extrn file_load_shape2d_res_fatal:proc
+extrn file_load_shape2d_res_nofatal:proc
 extrn file_unflip_shape2d:proc
 extrn file_get_shape2d:proc
 

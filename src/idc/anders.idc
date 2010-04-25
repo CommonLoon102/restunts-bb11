@@ -670,6 +670,15 @@ static PortFuncName(labelname) {
 		labelname == "file_load_resfile" ||
 		labelname == "file_load_3dres" ||
 		labelname == "file_load_audiores" ||
+		labelname == "file_load_shape2d" ||
+		labelname == "file_load_shape2d_fatal" ||
+		labelname == "file_load_shape2d_nofatal" ||
+		labelname == "file_load_shape2d_nofatal2" ||
+		labelname == "file_load_shape2d_res" ||
+		labelname == "file_load_shape2d_res_fatal" ||
+		labelname == "file_load_shape2d_res_nofatal" ||
+		labelname == "file_unflip_shape2d" ||
+		labelname == "file_get_shape2d" ||
 
 		labelname == "mmgr_path_to_name" ||
 		labelname == "mmgr_alloc_pages" ||
