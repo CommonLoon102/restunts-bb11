@@ -446,7 +446,7 @@ loc_3A100:
     call    sprite_set_1_size
     add     sp, 8
 loc_3A108:
-    call    timer_get_delta2
+    call    timer_get_delta_alt
     sub     si, si
 loc_3A10F:
     sub     ax, ax
@@ -457,7 +457,7 @@ loc_3A112:
     inc     si
     cmp     si, 0Fh
     jl      short loc_3A10F
-    call    timer_get_delta2
+    call    timer_get_delta_alt
     mov     [bp+var_C], ax
     mov     ax, 3Ch ; '<'
     push    ax
@@ -495,7 +495,7 @@ loc_3A156:
     inc     si
     cmp     si, 0Fh
     jl      short loc_3A140
-    call    timer_get_delta2
+    call    timer_get_delta_alt
     mov     [bp+var_10], ax
     sub     si, si
     jmp     short loc_3A1AB
@@ -523,7 +523,7 @@ loc_3A1AB:
     ; align 2
     db 144
 loc_3A1B6:
-    call    timer_get_delta2
+    call    timer_get_delta_alt
     mov     [bp+var_1C], ax
     mov     ax, [bp+var_C]
     cmp     [bp+var_10], ax

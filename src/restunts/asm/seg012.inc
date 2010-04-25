@@ -118,9 +118,9 @@ seg012 segment byte public 'STUNTSC' use16
     extrn sub_307E3:proc
     extrn nopsub_307FA:proc
     extrn kb_init_interrupt:proc
-    extrn sub_30883:proc
-    extrn kb_op_unk2:proc
-    extrn kb_op_unk:proc
+    extrn kb_exit_handler:proc
+    extrn kb_intr_handler:proc
+    extrn kb_intr_bios_handler:proc
     extrn kb_get_key_state:proc
     extrn kb_call_readchar_callback:proc
     extrn kb_read_char:proc
@@ -190,7 +190,7 @@ seg012 segment byte public 'STUNTSC' use16
     extrn video_on_exit:proc
     extrn ported_sprite_copy_both_to_arg_:proc
     extrn ported_sprite_copy_arg_to_both_:proc
-    extrn sub_3264A:proc
+    extrn file_get_res_shape_count:proc
     extrn ported_file_get_shape2d_:proc
     extrn nopsub_326BA:proc
     extrn ported_sin_fast_:proc
@@ -268,7 +268,7 @@ seg012 segment byte public 'STUNTSC' use16
     extrn loc_33A57
     extrn nopsub_33AC0:proc
     extrn nopsub_33AE4:proc
-    extrn render_bmp_as_mask:proc
+    extrn shape2d_render_bmp_as_mask:proc
     extrn loc_33B1D
     extrn nopsub_33B98:proc
     extrn sprite_putimage_and_alt:proc
@@ -279,19 +279,20 @@ seg012 segment byte public 'STUNTSC' use16
     extrn sprite_shape_to_1_alt:proc
     extrn loc_33D69
     extrn nopsub_33DBE:proc
-    extrn sub_33DE2:proc
-    extrn sub_33E00:proc
+    extrn shape2d_op_unk5:proc
+    extrn shape2d_op_unk:proc
     extrn loc_33E1B
     extrn loc_33E27
-    extrn sub_33EB4:proc
-    extrn sub_33ED2:proc
+    extrn nopsub_33E90:proc
+    extrn shape2d_op_unk2:proc
+    extrn shape2d_op_unk3:proc
     extrn loc_33EED
-    extrn sub_34060:proc
+    extrn sprite_putimage_or_alt:proc
     extrn ported_sprite_putimage_or_:proc
     extrn loc_340BD
     extrn putpixel_iconFillings:proc
     extrn loc_3424B
-    extrn sub_342F6:proc
+    extrn shape2d_op_unk4:proc
     extrn loc_34311
     extrn sub_343B0:proc
     extrn loc_343E9

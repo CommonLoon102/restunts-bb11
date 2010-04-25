@@ -91,7 +91,7 @@ extern void ensure_file_exists(int unk);
 extern unsigned short run_intro_looped(void);
 extern void audio_stop_unk(void);
 extern void audiodrv_atexit(void);
-extern void sub_30883(void);
+extern void kb_exit_handler(void);
 extern void kb_shift_checking1(void);
 extern void video_set_mode7(void);
 extern void far* locate_text_res(void far* ptr, const char* resname);
@@ -376,7 +376,7 @@ _ask_dos:
 		mouse_draw_opaque_check();
 		audio_stop_unk();
 		audiodrv_atexit();
-		sub_30883();
+		kb_exit_handler();
 		kb_shift_checking1();
 		video_set_mode7();
 		return result;

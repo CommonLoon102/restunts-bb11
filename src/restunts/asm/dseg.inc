@@ -602,17 +602,17 @@ dseg segment byte public 'STUNTSD' use16
     extrn asc_3EBA0:byte
     extrn asc_3EBA9:byte
     extrn aSav:byte
-    extrn word_3EBB0:word
-    extrn word_3EBB2:word
-    extrn word_3EBB4:word
-    extrn word_3EBB6:word
+    extrn input_framecount2:word
+    extrn input_framecount3:word
+    extrn joyflags:word
+    extrn newjoyflags:word
     extrn mouse_oldx:word
     extrn mouse_oldy:word
     extrn mouse_oldbut:word
-    extrn word_3EBBE:word
-    extrn word_3EBC0:word
-    extrn word_3EBC2:word
-    extrn word_3EBC4:word
+    extrn input_framecounter:word
+    extrn joyinputcode:word
+    extrn mousebutinputcode:word
+    extrn input_framecount:word
     extrn a_res:byte
     extrn a_pre:byte
     extrn aWai:byte
@@ -776,8 +776,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn byte_3F85C:byte
     extrn byte_3F868:byte
     extrn dword_3F874:dword
-    extrn word_3F878:word
-    extrn word_3F87A:word
+    extrn timer_callback_counter:dword
     extrn word_3F87C:word
     extrn word_3F87E:word
     extrn byte_3F880:byte
@@ -820,10 +819,10 @@ dseg segment byte public 'STUNTSD' use16
     extrn word_3FB34:word
     extrn word_3FB36:word
     extrn byte_3FB38:byte
-    extrn word_3FB48:word
-    extrn word_3FB4A:word
-    extrn word_3FB4C:word
-    extrn word_3FB4E:word
+    extrn old_kb_intr_ofs:word
+    extrn old_kb_intr_seg:word
+    extrn old_kb_intr_bios_ofs:word
+    extrn old_kb_intr_bios_seg:word
     extrn word_3FB50:word
     extrn word_3FBD0:word
     extrn word_3FBD2:word
@@ -890,8 +889,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn sinetable:word
     extrn word_405F6:word
     extrn word_405F8:word
-    extrn word_405FA:word
-    extrn word_405FC:word
+    extrn last_timer_callback_counter:dword
     extrn off_405FE:dword
     extrn aHdr1:byte
     extrn audiodriverbinary:dword
@@ -1024,6 +1022,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn byte_40E74:byte
     extrn word_40E76:word
     extrn byte_40E7A:byte
+    extrn unk_40E7E:byte
     extrn mat_y200:MATRIX
     extrn mat_y100:MATRIX
     extrn rect_unk8:RECTANGLE
@@ -1122,7 +1121,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn td10_track_check_rel:dword
     extrn word_42A34:word
     extrn word_42A36:word
-    extrn byte_42A38:byte
+    extrn followOpponentFlag_copy:byte
     extrn currenttransshape:TRANSFORMEDSHAPE
     extrn transshapeunk:TRANSFORMEDSHAPE
     extrn terraincenterpos:word
@@ -1155,10 +1154,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn byte_4392C:byte
     extrn mcgawndsprite:dword
     extrn skybox_current:word
-    extrn word_43934:word
-    extrn word_43936:word
-    extrn word_43938:word
-    extrn word_4393A:word
+    extrn rect_unk10:RECTANGLE
     extrn byte_4393C:byte
     extrn byte_4393D:byte
     extrn word_4393E:word
@@ -1323,19 +1319,19 @@ dseg segment byte public 'STUNTSD' use16
     extrn pState_f36Mminf40sar2:word
     extrn planindex_copy:word
     extrn unk_44F4C:byte
-    extrn word_4549C:word
-    extrn word_4549E:word
+    extrn dastbmp_y2:word
+    extrn dastseg:word
     extrn dasmshapeptr:dword
     extrn byte_454A4:byte
     extrn eng1ptr:dword
     extrn carresptr:dword
-    extrn word_454AE:word
+    extrn dashbmp_y_copy:word
     extrn car2resptr:dword
     extrn trackdata7:dword
     extrn byte_454B8:byte
     extrn word_454BA:word
     extrn td15_terr_map_main:dword
-    extrn word_454C0:word
+    extrn kbjoyflags:word
     extrn planptr:dword
     extrn fontdefptr:dword
     extrn word_454CA:word
@@ -1364,7 +1360,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn mouseunkspriteptr:dword
     extrn miscptr:dword
     extrn skybox_sky_color:word
-    extrn byte_455D2:byte
+    extrn replaybar_toggle_copy:byte
     extrn word_455D4:word
     extrn td16_rpl_buffer:dword
     extrn material_clrlist_ptr_cpy:word
@@ -1396,8 +1392,8 @@ dseg segment byte public 'STUNTSD' use16
     extrn byte_459E0:byte
     extrn video_flag6_is1:byte
     extrn fontdef_unk_0E:word
-    extrn word_459F4:word
-    extrn word_459F6:word
+    extrn fontledresofs:word
+    extrn fontledresseg:word
     extrn someZeroVideoConst:word
     extrn nextPosAndNormalIP:word
     extrn word_45A00:word
@@ -1426,8 +1422,8 @@ dseg segment byte public 'STUNTSD' use16
     extrn byte_45D9A:byte
     extrn byte_45DB2:byte
     extrn td08_direction_related:dword
-    extrn word_45DB8:word
-    extrn word_45DBA:word
+    extrn roofbmpheight_copy:word
+    extrn dashbmp_y:word
     extrn sdgame2shapes:dword
     extrn track_pieces_counter:word
     extrn trackcenterpos2:word
@@ -1446,7 +1442,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn skybox_res_seg:word
     extrn mouse_xpos:word
     extrn byte_4616E:byte
-    extrn byte_4616F:byte
+    extrn replaybar_toggle:byte
     extrn word_46170:word
     extrn word_46172:word
     extrn word_4617E:word
@@ -1454,11 +1450,11 @@ dseg segment byte public 'STUNTSD' use16
     extrn word_46182:word
     extrn word_46184:word
     extrn trackcenterpos:word
-    extrn word_461C2:word
+    extrn dastbmp_y:word
     extrn game1ptr:dword
     extrn byte_461C8:byte
     extrn word_461CA:word
-    extrn word_461CC:word
+    extrn roofbmpheight:word
     extrn mouse_ypos:word
     extrn video_flag4_is1:word
     extrn unk_461FA:byte
@@ -1476,7 +1472,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn word_46434:word
     extrn video_flag5_is0:byte
     extrn mat_rot_temp:MATRIX
-    extrn byte_4644A:byte
+    extrn dashb_toggle_copy:byte
     extrn mat_temp:MATRIX
     extrn textresprefix:byte
     extrn wallptr:dword

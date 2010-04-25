@@ -165,9 +165,9 @@ seg012 segment byte public 'STUNTSC' use16
     public sub_307E3
     public nopsub_307FA
     public kb_init_interrupt
-    public sub_30883
-    public kb_op_unk2
-    public kb_op_unk
+    public kb_exit_handler
+    public kb_intr_handler
+    public kb_intr_bios_handler
     public kb_get_key_state
     public kb_call_readchar_callback
     public kb_read_char
@@ -237,7 +237,7 @@ seg012 segment byte public 'STUNTSC' use16
     public video_on_exit
     public ported_sprite_copy_both_to_arg_
     public ported_sprite_copy_arg_to_both_
-    public sub_3264A
+    public file_get_res_shape_count
     public ported_file_get_shape2d_
     public nopsub_326BA
     public ported_sin_fast_
@@ -315,7 +315,7 @@ seg012 segment byte public 'STUNTSC' use16
     public loc_33A57
     public nopsub_33AC0
     public nopsub_33AE4
-    public render_bmp_as_mask
+    public shape2d_render_bmp_as_mask
     public loc_33B1D
     public nopsub_33B98
     public sprite_putimage_and_alt
@@ -326,19 +326,20 @@ seg012 segment byte public 'STUNTSC' use16
     public sprite_shape_to_1_alt
     public loc_33D69
     public nopsub_33DBE
-    public sub_33DE2
-    public sub_33E00
+    public shape2d_op_unk5
+    public shape2d_op_unk
     public loc_33E1B
     public loc_33E27
-    public sub_33EB4
-    public sub_33ED2
+    public nopsub_33E90
+    public shape2d_op_unk2
+    public shape2d_op_unk3
     public loc_33EED
-    public sub_34060
+    public sprite_putimage_or_alt
     public ported_sprite_putimage_or_
     public loc_340BD
     public putpixel_iconFillings
     public loc_3424B
-    public sub_342F6
+    public shape2d_op_unk4
     public loc_34311
     public sub_343B0
     public loc_343E9
@@ -4729,9 +4730,9 @@ loc_3035C:
 loc_30360:
     cmp     byte ptr word_3F88E, 0
     jnz     short loc_303A5
-    inc     word_3F878
+    inc     word ptr timer_callback_counter
     jnz     short loc_30371
-    inc     word_3F87A
+    inc     word ptr timer_callback_counter+2
 loc_30371:
     xor     di, di
     cli
@@ -5333,19 +5334,19 @@ kb_init_interrupt proc far
     out     21h, al         ; Interrupt controller, 8259A.
     xor     bx, bx
     mov     es, bx
-    mov     bx, es:24h
-    cmp     bx, offset kb_op_unk2
+    mov     bx, es:24h      ; 24h = func ofs for keyboard action
+    cmp     bx, offset kb_intr_handler
     jz      short loc_30861
-    mov     word_3FB48, bx
-    mov     bx, es:26h
-    mov     word_3FB4A, bx
-    mov     word ptr es:24h, offset kb_op_unk2
+    mov     old_kb_intr_ofs, bx
+    mov     bx, es:26h      ; 26h - func seg for keyboard action
+    mov     old_kb_intr_seg, bx
+    mov     word ptr es:24h, offset kb_intr_handler
     mov     word ptr es:26h, cs
-    mov     bx, es:58h
-    mov     word_3FB4C, bx
-    mov     bx, es:5Ah
-    mov     word_3FB4E, bx
-    mov     word ptr es:58h, offset kb_op_unk
+    mov     bx, es:58h      ; 58h - func ofs for bios keyboard
+    mov     old_kb_intr_bios_ofs, bx
+    mov     bx, es:5Ah      ; 5Ah - func seg for bios keyboard
+    mov     old_kb_intr_bios_seg, bx
+    mov     word ptr es:58h, offset kb_intr_bios_handler
     mov     word ptr es:5Ah, cs
 loc_30861:
     mov     al, ah
@@ -5358,14 +5359,14 @@ loc_30861:
     cld
     rep stosb
     push    cs
-    mov     ax, offset sub_30883
+    mov     ax, offset kb_exit_handler
     push    ax
     call    add_exit_handler
     add     sp, 4
     pop     di
     retf
 kb_init_interrupt endp
-sub_30883 proc far
+kb_exit_handler proc far
 
     in      al, 21h         ; Interrupt controller, 8259A.
     mov     ah, al
@@ -5373,15 +5374,15 @@ sub_30883 proc far
     out     21h, al         ; Interrupt controller, 8259A.
     xor     bx, bx
     mov     es, bx
-    mov     bx, word_3FB48
+    mov     bx, old_kb_intr_ofs
     or      bx, bx
     jz      short loc_308C1
     mov     es:24h, bx
-    mov     bx, word_3FB4A
+    mov     bx, old_kb_intr_seg
     mov     es:26h, bx
-    mov     bx, word_3FB4C
+    mov     bx, old_kb_intr_bios_ofs
     mov     es:58h, bx
-    mov     bx, word_3FB4E
+    mov     bx, old_kb_intr_bios_seg
     mov     es:5Ah, bx
     mov     al, es:417h
 smart
@@ -5392,8 +5393,8 @@ loc_308C1:
     mov     al, ah
     out     21h, al         ; Interrupt controller, 8259A.
     retf
-sub_30883 endp
-kb_op_unk2 proc far
+kb_exit_handler endp
+kb_intr_handler proc far
 
     sti
     push    ax
@@ -5503,8 +5504,8 @@ loc_30992:
 loc_3099D:
     mov     kbinput[bx], 0
     jmp     loc_308EA
-kb_op_unk2 endp
-kb_op_unk proc far
+kb_intr_handler endp
+kb_intr_bios_handler proc far
      r = byte ptr 0
 
     push    bx
@@ -5553,7 +5554,7 @@ loc_30A04:
     mov     al, kbinput+2Ah
     or      al, kbinput+36h
     jmp     short loc_309BD
-kb_op_unk endp
+kb_intr_bios_handler endp
 kb_get_key_state proc far
      s = byte ptr 0
      r = byte ptr 2
@@ -9336,7 +9337,7 @@ ported_sprite_copy_arg_to_both_ proc far
     pop     bp
     retf
 ported_sprite_copy_arg_to_both_ endp
-sub_3264A proc far
+file_get_res_shape_count proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -9351,7 +9352,7 @@ sub_3264A proc far
     pop     si
     pop     bp
     retf
-sub_3264A endp
+file_get_res_shape_count endp
 ported_file_get_shape2d_ proc far
      s = byte ptr 0
      r = byte ptr 2
@@ -9563,8 +9564,8 @@ nopsub_3276A endp
 timer_get_counter proc far
 
     cli
-    mov     ax, word_3F878
-    mov     dx, word_3F87A
+    mov     ax, word ptr timer_callback_counter
+    mov     dx, word ptr timer_callback_counter+2
     sti
     retf
 timer_get_counter endp
@@ -9579,8 +9580,8 @@ nopsub_32782 proc far
     mov     bx, [bp+arg_0]
     mov     cx, [bp+arg_2]
     cli
-    mov     ax, word_3F878
-    mov     dx, word_3F87A
+    mov     ax, word ptr timer_callback_counter
+    mov     dx, word ptr timer_callback_counter+2
     sti
     sub     ax, bx
     sbb     dx, cx
@@ -9589,14 +9590,14 @@ nopsub_32782 proc far
 nopsub_32782 endp
 timer_get_delta proc far
 
-    mov     bx, word_405FA
-    mov     cx, word_405FC
+    mov     bx, word ptr last_timer_callback_counter
+    mov     cx, word ptr last_timer_callback_counter+2
     cli
-    mov     ax, word_3F878
-    mov     dx, word_3F87A
+    mov     ax, word ptr timer_callback_counter
+    mov     dx, word ptr timer_callback_counter+2
     sti
-    mov     word_405FA, ax
-    mov     word_405FC, dx
+    mov     word ptr last_timer_callback_counter, ax
+    mov     word ptr last_timer_callback_counter+2, dx
     sub     ax, bx
     sbb     dx, cx
     retf
@@ -9604,8 +9605,8 @@ timer_get_delta endp
 nopsub_327B7 proc far
 
     xor     ax, ax
-    mov     word_3F878, ax
-    mov     word_3F87A, ax
+    mov     word ptr timer_callback_counter, ax
+    mov     word ptr timer_callback_counter+2, ax
     retf
 nopsub_327B7 endp
 timer_copy_counter proc far
@@ -12474,7 +12475,7 @@ nopsub_33AE4 proc far
     ; align 2
     db 144
 nopsub_33AE4 endp
-render_bmp_as_mask proc far
+shape2d_render_bmp_as_mask proc far
     var_10 = word ptr -16
     var_E = word ptr -14
     var_6 = word ptr -6
@@ -12482,8 +12483,8 @@ render_bmp_as_mask proc far
     var_2 = word ptr -2
      s = byte ptr 0
      r = byte ptr 2
-    arg_0 = word ptr 6
-    arg_2 = word ptr 8
+    arg_shapeofs = word ptr 6
+    arg_shapeseg = word ptr 8
 
     push    bp
     mov     bp, sp
@@ -12491,8 +12492,8 @@ render_bmp_as_mask proc far
     push    ds
     push    si
     push    di
-    mov     ds, [bp+arg_2]
-    mov     si, [bp+arg_0]
+    mov     ds, [bp+arg_shapeseg]
+    mov     si, [bp+arg_shapeofs]
     mov     ax, [si+SHAPE2D.s2d_pos_x]
     mov     [bp+var_2], ax
     mov     ax, [si+SHAPE2D.s2d_pos_y]
@@ -12559,7 +12560,7 @@ loc_33B7C:
 loc_33B94:
     loop    loc_33B7C
     jmp     short loc_33B48
-render_bmp_as_mask endp
+shape2d_render_bmp_as_mask endp
 nopsub_33B98 proc far
     var_4 = word ptr -4
     var_2 = word ptr -2
@@ -12918,7 +12919,7 @@ nopsub_33DBE proc far
     ; align 2
     db 144
 nopsub_33DBE endp
-sub_33DE2 proc far
+shape2d_op_unk5 proc far
     var_4 = word ptr -4
     var_2 = word ptr -2
      s = byte ptr 0
@@ -12940,11 +12941,11 @@ sub_33DE2 proc far
     mov     [bp+var_2], ax
     mov     ax, [bp+arg_8]
     mov     [bp+var_4], ax
-    jmp     short loc_33E1B
+    jmp     short loc_33E1B ; goto shape2d_op_unk3
     ; align 2
     db 144
-sub_33DE2 endp
-sub_33E00 proc far
+shape2d_op_unk5 endp
+shape2d_op_unk proc far
     var_10 = word ptr -16
     var_E = word ptr -14
     var_6 = word ptr -6
@@ -12952,8 +12953,8 @@ sub_33E00 proc far
     var_2 = word ptr -2
      s = byte ptr 0
      r = byte ptr 2
-    arg_0 = word ptr 6
-    arg_2 = word ptr 8
+    arg_shapeseg = word ptr 6
+    arg_shapeofs = word ptr 8
 
     push    bp
     mov     bp, sp
@@ -12961,15 +12962,15 @@ sub_33E00 proc far
     push    ds
     push    si
     push    di
-    mov     ds, [bp+arg_2]
-    mov     si, [bp+arg_0]
-    mov     ax, [si+8]
+    mov     ds, [bp+arg_shapeofs]
+    mov     si, [bp+arg_shapeseg]
+    mov     ax, [si+SHAPE2D.s2d_pos_x]
     mov     [bp+var_2], ax
-    mov     ax, [si+0Ah]
+    mov     ax, [si+SHAPE2D.s2d_pos_y]
     mov     [bp+var_4], ax
 loc_33E1B:
     cld
-    lea     ax, [si+10h]
+    lea     ax, [si+(size SHAPE2D)]
     mov     [bp+var_E], ax
     mov     ax, [si]
     mov     [bp+var_6], ax
@@ -13029,25 +13030,36 @@ loc_33E8B:
     jmp     short loc_33E46
     ; align 2
     db 0
+shape2d_op_unk endp
+nopsub_33E90 proc far
+    var_4 = word ptr -4
+    var_2 = word ptr -2
+     s = byte ptr 0
+     r = byte ptr 2
+    arg_0 = word ptr 6
+    arg_2 = word ptr 8
+    arg_4 = word ptr 10
+    arg_6 = word ptr 12
+
     push    bp
     mov     bp, sp
     sub     sp, 10h
     push    ds
     push    si
     push    di
-    mov     ds, word ptr [bp+8]
-    mov     si, [bp+6]
-    mov     ax, [bp+0Ah]
+    mov     ds, [bp+arg_2]
+    mov     si, [bp+arg_0]
+    mov     ax, [bp+arg_4]
     sub     ax, [si+4]
-    mov     [bp-2], ax
-    mov     ax, [bp+0Ch]
+    mov     [bp+var_2], ax
+    mov     ax, [bp+arg_6]
     sub     ax, [si+6]
-    mov     [bp-4], ax
+    mov     [bp+var_4], ax
     jmp     short loc_33EED
     ; align 2
     db 144
-sub_33E00 endp
-sub_33EB4 proc far
+nopsub_33E90 endp
+shape2d_op_unk2 proc far
     var_4 = word ptr -4
     var_2 = word ptr -2
      s = byte ptr 0
@@ -13069,11 +13081,11 @@ sub_33EB4 proc far
     mov     [bp+var_2], ax
     mov     ax, [bp+arg_8]
     mov     [bp+var_4], ax
-    jmp     short loc_33EED
+    jmp     short loc_33EED ; goto somewhere inside shape2d_op_unk3
     ; align 2
     db 144
-sub_33EB4 endp
-sub_33ED2 proc far
+shape2d_op_unk2 endp
+shape2d_op_unk3 proc far
     var_10 = word ptr -16
     var_E = word ptr -14
     var_C = word ptr -12
@@ -13084,8 +13096,8 @@ sub_33ED2 proc far
     var_2 = word ptr -2
      s = byte ptr 0
      r = byte ptr 2
-    arg_0 = word ptr 6
-    arg_2 = word ptr 8
+    arg_shape2dofs = word ptr 6
+    arg_shape2dseg = word ptr 8
 
     push    bp
     mov     bp, sp
@@ -13093,15 +13105,15 @@ sub_33ED2 proc far
     push    ds
     push    si
     push    di
-    mov     ds, [bp+arg_2]
-    mov     si, [bp+arg_0]
-    mov     ax, [si+8]
+    mov     ds, [bp+arg_shape2dseg]
+    mov     si, [bp+arg_shape2dofs]
+    mov     ax, [si+SHAPE2D.s2d_pos_x]
     mov     [bp+var_2], ax
-    mov     ax, [si+0Ah]
+    mov     ax, [si+SHAPE2D.s2d_pos_y]
     mov     [bp+var_4], ax
 loc_33EED:
     cld
-    lea     ax, [si+10h]
+    lea     ax, [si+(size SHAPE2D)]
     mov     [bp+var_E], ax
     mov     ax, [si]
     mov     [bp+var_6], ax
@@ -13291,8 +13303,8 @@ loc_34057:
     jmp     short loc_3402F
     ; align 2
     db 0
-sub_33ED2 endp
-sub_34060 proc far
+shape2d_op_unk3 endp
+sprite_putimage_or_alt proc far
     var_4 = word ptr -4
     var_2 = word ptr -2
      s = byte ptr 0
@@ -13316,10 +13328,10 @@ sub_34060 proc far
     mov     ax, [bp+arg_8]
     sub     ax, [si+6]
     mov     [bp+var_4], ax
-    jmp     short loc_340BD
+    jmp     short loc_340BD ; goto sprite_putimage_or
     ; align 2
     db 144
-sub_34060 endp
+sprite_putimage_or_alt endp
 ported_sprite_putimage_or_ proc far
     var_E = word ptr -14
     var_C = word ptr -12
@@ -13662,7 +13674,7 @@ loc_342A8:
     ; align 2
     db 144
 putpixel_iconFillings endp
-sub_342F6 proc far
+shape2d_op_unk4 proc far
     var_10 = word ptr -16
     var_E = word ptr -14
     var_6 = word ptr -6
@@ -13670,8 +13682,8 @@ sub_342F6 proc far
     var_2 = word ptr -2
      s = byte ptr 0
      r = byte ptr 2
-    arg_0 = word ptr 6
-    arg_2 = word ptr 8
+    arg_shapeofs = word ptr 6
+    arg_shapeseg = word ptr 8
 
     push    bp
     mov     bp, sp
@@ -13679,15 +13691,15 @@ sub_342F6 proc far
     push    ds
     push    si
     push    di
-    mov     ds, [bp+arg_2]
-    mov     si, [bp+arg_0]
-    mov     ax, [si+8]
+    mov     ds, [bp+arg_shapeseg]
+    mov     si, [bp+arg_shapeofs]
+    mov     ax, [si+SHAPE2D.s2d_pos_x]
     mov     [bp+var_2], ax
-    mov     ax, [si+0Ah]
+    mov     ax, [si+SHAPE2D.s2d_pos_y]
     mov     [bp+var_4], ax
 loc_34311:
     cld
-    lea     ax, [si+10h]
+    lea     ax, [si+(size SHAPE2D)]
     mov     [bp+var_E], ax
     mov     ax, [si]
     mov     [bp+var_6], ax
@@ -13764,7 +13776,7 @@ loc_34388:
     jmp     short loc_343E9
     ; align 2
     db 144
-sub_342F6 endp
+shape2d_op_unk4 endp
 sub_343B0 proc far
     var_C = word ptr -12
     var_A = word ptr -10

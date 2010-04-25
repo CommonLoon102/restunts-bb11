@@ -64,7 +64,7 @@ file_load_shape2d_helper5 proc far
     sub     sp, 0Eh
     push    [bp+arg_2]
     push    [bp+arg_0]
-    call    sub_3264A
+    call    file_get_res_shape_count
     add     sp, 4
     mov     [bp+var_A], ax
     mov     cl, 3

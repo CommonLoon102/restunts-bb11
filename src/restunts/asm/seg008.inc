@@ -60,6 +60,6 @@ seg008 segment byte public 'STUNTSC' use16
     extrn do_dea_textres:proc
     extrn ensure_file_exists:proc
     extrn do_mer_restext:proc
-    extrn timer_get_delta2:proc
+    extrn timer_get_delta_alt:proc
     extrn ported_file_load_3dres_:proc
 seg008 ends

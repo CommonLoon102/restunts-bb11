@@ -1359,7 +1359,7 @@ loc_2AEFF:
     xor     byte ptr [bp+var_CC], 1
     mov     [bp+var_3A], 0
 loc_2AF0E:
-    call    timer_get_delta2
+    call    timer_get_delta_alt
     mov     di, ax
     add     [bp+var_3A], di
     push    di

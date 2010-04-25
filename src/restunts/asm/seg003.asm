@@ -70,7 +70,7 @@ sub_19F14 proc far
     var_2 = word ptr -2
      s = byte ptr 0
      r = byte ptr 2
-    arg_0 = word ptr 6
+    arg_rectptr = word ptr 6
 
     push    bp
 loc_19F15:
@@ -146,7 +146,7 @@ loc_19F8B:
     push    ax
     mov     ax, offset byte_46166
     push    ax
-    push    [bp+arg_0]
+    push    [bp+arg_rectptr]
 loc_19F9B:
     mov     ax, offset rect_array_unk2
     push    ax
@@ -210,7 +210,7 @@ loc_1A013:
     ; align 2
     db 144
 loc_1A01E:
-    mov     bx, [bp+arg_0]
+    mov     bx, [bp+arg_rectptr]
     push    word ptr [bx+6]
     push    word ptr [bx+4]
     mov     ax, 140h
@@ -219,7 +219,7 @@ loc_1A01E:
     push    ax
     jmp     short loc_1A03E
 loc_1A030:
-    mov     bx, [bp+arg_0]
+    mov     bx, [bp+arg_rectptr]
     push    word ptr [bx+6]
     push    word ptr [bx+4]
     push    word ptr [bx+2]
@@ -3683,8 +3683,8 @@ loc_1C1DA:
     push    ax              ; char *
     call    sub_298B8
     add     sp, 6
-    push    word_459F6
-    push    word_459F4
+    push    fontledresseg
+    push    fontledresofs
     call    set_fontdef2
     add     sp, 4
     cmp     word_44984, 0
@@ -3695,7 +3695,7 @@ loc_1C1DA:
     sub     ax, ax
     push    ax
     push    dialog_fnt_colour
-    mov     ax, word_461CC
+    mov     ax, roofbmpheight
     add     ax, 2
     push    ax
     mov     ax, 8Ch ; 'Œ'
@@ -3715,7 +3715,7 @@ loc_1C238:
     sub     ax, ax
     push    ax
     push    dialog_fnt_colour
-    mov     ax, word_461CC
+    mov     ax, roofbmpheight
     add     ax, 2
     push    ax
     mov     ax, 8Ch ; 'Œ'

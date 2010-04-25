@@ -650,17 +650,17 @@ dseg segment byte public 'STUNTSD' use16
     public asc_3EBA0
     public asc_3EBA9
     public aSav
-    public word_3EBB0
-    public word_3EBB2
-    public word_3EBB4
-    public word_3EBB6
+    public input_framecount2
+    public input_framecount3
+    public joyflags
+    public newjoyflags
     public mouse_oldx
     public mouse_oldy
     public mouse_oldbut
-    public word_3EBBE
-    public word_3EBC0
-    public word_3EBC2
-    public word_3EBC4
+    public input_framecounter
+    public joyinputcode
+    public mousebutinputcode
+    public input_framecount
     public a_res
     public a_pre
     public aWai
@@ -824,8 +824,7 @@ dseg segment byte public 'STUNTSD' use16
     public byte_3F85C
     public byte_3F868
     public dword_3F874
-    public word_3F878
-    public word_3F87A
+    public timer_callback_counter
     public word_3F87C
     public word_3F87E
     public byte_3F880
@@ -868,10 +867,10 @@ dseg segment byte public 'STUNTSD' use16
     public word_3FB34
     public word_3FB36
     public byte_3FB38
-    public word_3FB48
-    public word_3FB4A
-    public word_3FB4C
-    public word_3FB4E
+    public old_kb_intr_ofs
+    public old_kb_intr_seg
+    public old_kb_intr_bios_ofs
+    public old_kb_intr_bios_seg
     public word_3FB50
     public word_3FBD0
     public word_3FBD2
@@ -938,8 +937,7 @@ dseg segment byte public 'STUNTSD' use16
     public sinetable
     public word_405F6
     public word_405F8
-    public word_405FA
-    public word_405FC
+    public last_timer_callback_counter
     public off_405FE
     public aHdr1
     public audiodriverbinary
@@ -1072,6 +1070,7 @@ dseg segment byte public 'STUNTSD' use16
     public byte_40E74
     public word_40E76
     public byte_40E7A
+    public unk_40E7E
     public mat_y200
     public mat_y100
     public rect_unk8
@@ -1170,7 +1169,7 @@ dseg segment byte public 'STUNTSD' use16
     public td10_track_check_rel
     public word_42A34
     public word_42A36
-    public byte_42A38
+    public followOpponentFlag_copy
     public currenttransshape
     public transshapeunk
     public terraincenterpos
@@ -1203,10 +1202,7 @@ dseg segment byte public 'STUNTSD' use16
     public byte_4392C
     public mcgawndsprite
     public skybox_current
-    public word_43934
-    public word_43936
-    public word_43938
-    public word_4393A
+    public rect_unk10
     public byte_4393C
     public byte_4393D
     public word_4393E
@@ -1371,19 +1367,19 @@ dseg segment byte public 'STUNTSD' use16
     public pState_f36Mminf40sar2
     public planindex_copy
     public unk_44F4C
-    public word_4549C
-    public word_4549E
+    public dastbmp_y2
+    public dastseg
     public dasmshapeptr
     public byte_454A4
     public eng1ptr
     public carresptr
-    public word_454AE
+    public dashbmp_y_copy
     public car2resptr
     public trackdata7
     public byte_454B8
     public word_454BA
     public td15_terr_map_main
-    public word_454C0
+    public kbjoyflags
     public planptr
     public fontdefptr
     public word_454CA
@@ -1412,7 +1408,7 @@ dseg segment byte public 'STUNTSD' use16
     public mouseunkspriteptr
     public miscptr
     public skybox_sky_color
-    public byte_455D2
+    public replaybar_toggle_copy
     public word_455D4
     public td16_rpl_buffer
     public material_clrlist_ptr_cpy
@@ -1444,8 +1440,8 @@ dseg segment byte public 'STUNTSD' use16
     public byte_459E0
     public video_flag6_is1
     public fontdef_unk_0E
-    public word_459F4
-    public word_459F6
+    public fontledresofs
+    public fontledresseg
     public someZeroVideoConst
     public nextPosAndNormalIP
     public word_45A00
@@ -1474,8 +1470,8 @@ dseg segment byte public 'STUNTSD' use16
     public byte_45D9A
     public byte_45DB2
     public td08_direction_related
-    public word_45DB8
-    public word_45DBA
+    public roofbmpheight_copy
+    public dashbmp_y
     public sdgame2shapes
     public track_pieces_counter
     public trackcenterpos2
@@ -1494,7 +1490,7 @@ dseg segment byte public 'STUNTSD' use16
     public skybox_res_seg
     public mouse_xpos
     public byte_4616E
-    public byte_4616F
+    public replaybar_toggle
     public word_46170
     public word_46172
     public word_4617E
@@ -1502,11 +1498,11 @@ dseg segment byte public 'STUNTSD' use16
     public word_46182
     public word_46184
     public trackcenterpos
-    public word_461C2
+    public dastbmp_y
     public game1ptr
     public byte_461C8
     public word_461CA
-    public word_461CC
+    public roofbmpheight
     public mouse_ypos
     public video_flag4_is1
     public unk_461FA
@@ -1524,7 +1520,7 @@ dseg segment byte public 'STUNTSD' use16
     public word_46434
     public video_flag5_is0
     public mat_rot_temp
-    public byte_4644A
+    public dashb_toggle_copy
     public mat_temp
     public textresprefix
     public wallptr
@@ -14656,17 +14652,17 @@ aSav     db 115
     db 118
     db 0
     db 0
-word_3EBB0     dw 0
-word_3EBB2     dw 0
-word_3EBB4     dw 0
-word_3EBB6     dw 0
+input_framecount2     dw 0
+input_framecount3     dw 0
+joyflags     dw 0
+newjoyflags     dw 0
 mouse_oldx     dw 0
 mouse_oldy     dw 0
 mouse_oldbut     dw 0
-word_3EBBE     dw 0
-word_3EBC0     dw 0
-word_3EBC2     dw 0
-word_3EBC4     dw 0
+input_framecounter     dw 0
+joyinputcode     dw 0
+mousebutinputcode     dw 0
+input_framecount     dw 0
 a_res     db 46
     db 114
     db 101
@@ -17786,8 +17782,7 @@ byte_3F868     db 97
     db 11
     db 12
 dword_3F874     dd 0
-word_3F878     dw 0
-word_3F87A     dw 0
+timer_callback_counter     dd 0
 word_3F87C     dw 0
 word_3F87E     dw 0
 byte_3F880     db 0
@@ -18473,10 +18468,10 @@ byte_3FB38     db 0
     db 1
     db 5
     db 0
-word_3FB48     dw 0
-word_3FB4A     dw 0
-word_3FB4C     dw 0
-word_3FB4E     dw 0
+old_kb_intr_ofs     dw 0
+old_kb_intr_seg     dw 0
+old_kb_intr_bios_ofs     dw 0
+old_kb_intr_bios_seg     dw 0
 word_3FB50     dw 0
     db 0
     db 0
@@ -20907,8 +20902,7 @@ sinetable     dw 0
     dw 16384
 word_405F6     dw 0
 word_405F8     dw 0
-word_405FA     dw 0
-word_405FC     dw 0
+last_timer_callback_counter     dd 0
 off_405FE     dd word_3B1F0
     db 10
     db 0
@@ -22487,7 +22481,7 @@ byte_40E7A     db 0
     db 0
     db 0
     db 0
-    db 0
+unk_40E7E     db 0
     db 0
     db 0
     db 0
@@ -27804,7 +27798,7 @@ unk_42A24     db 0
 td10_track_check_rel     dd 0
 word_42A34     dw 0
 word_42A36     dw 0
-byte_42A38     db 0
+followOpponentFlag_copy     db 0
     db 0
 currenttransshape     db 0
     db 0
@@ -31523,10 +31517,14 @@ byte_4392C     db 0
     db 0
 mcgawndsprite     dd 0
 skybox_current     dw 0
-word_43934     dw 0
-word_43936     dw 0
-word_43938     dw 0
-word_4393A     dw 0
+rect_unk10     db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
 byte_4393C     db 0
 byte_4393D     db 0
 word_4393E     dw 0
@@ -38313,21 +38311,21 @@ unk_44F4C     db 0
     db 0
     db 0
     db 0
-word_4549C     dw 0
-word_4549E     dw 0
+dastbmp_y2     dw 0
+dastseg     dw 0
 dasmshapeptr     dd 0
 byte_454A4     db 0
     db 0
 eng1ptr     dd 0
 carresptr     dd 0
-word_454AE     dw 0
+dashbmp_y_copy     dw 0
 car2resptr     dd 0
 trackdata7     dd 0
 byte_454B8     db 0
     db 0
 word_454BA     dw 0
 td15_terr_map_main     dd 0
-word_454C0     dw 0
+kbjoyflags     dw 0
 planptr     dd 0
 fontdefptr     dd 0
 word_454CA     dw 0
@@ -38565,7 +38563,7 @@ word_4557A     dw 0
 mouseunkspriteptr     dd 0
 miscptr     dd 0
 skybox_sky_color     dw 0
-byte_455D2     db 0
+replaybar_toggle_copy     db 0
     db 0
 word_455D4     dw 0
     db 0
@@ -39598,8 +39596,8 @@ byte_459E0     db 0
     db 0
 video_flag6_is1     db 0
 fontdef_unk_0E     dw 0
-word_459F4     dw 0
-word_459F6     dw 0
+fontledresofs     dw 0
+fontledresseg     dw 0
     db 0
     db 0
     db 0
@@ -40494,8 +40492,8 @@ byte_45D9A     db 0
 byte_45DB2     db 0
     db 0
 td08_direction_related     dd 0
-word_45DB8     dw 0
-word_45DBA     dw 0
+roofbmpheight_copy     dw 0
+dashbmp_y     dw 0
 sdgame2shapes     dd 0
     dd 0
     dd 0
@@ -41380,7 +41378,7 @@ skybox_res_ofs     dw 0
 skybox_res_seg     dw 0
 mouse_xpos     dw 0
 byte_4616E     db 0
-byte_4616F     db 0
+replaybar_toggle     db 0
 word_46170     dw 0
 word_46172     dw 0
     db 0
@@ -41427,12 +41425,12 @@ trackcenterpos     dw 0
     dw 0
     dw 0
     dw 0
-word_461C2     dw 0
+dastbmp_y     dw 0
 game1ptr     dd 0
 byte_461C8     db 0
     db 0
 word_461CA     dw 0
-word_461CC     dw 0
+roofbmpheight     dw 0
 mouse_ypos     dw 0
 video_flag4_is1     dw 0
     db 0
@@ -42055,7 +42053,7 @@ mat_rot_temp     db 0
     db 0
     db 0
     db 0
-byte_4644A     db 0
+dashb_toggle_copy     db 0
     db 0
 mat_temp     db 0
     db 0

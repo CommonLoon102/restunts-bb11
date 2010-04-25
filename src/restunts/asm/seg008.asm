@@ -107,7 +107,7 @@ seg008 segment byte public 'STUNTSC' use16
     public do_dea_textres
     public ensure_file_exists
     public do_mer_restext
-    public timer_get_delta2
+    public timer_get_delta_alt
     public ported_file_load_3dres_
 sub_274B0 proc far
     var_40 = byte ptr -64
@@ -890,7 +890,7 @@ loc_27B92:
     jmp     short loc_27BCD
 loc_27B98:
     push    cs
-    call near ptr timer_get_delta2
+    call near ptr timer_get_delta_alt
     push    ax
     push    cs
     call near ptr input_checking
@@ -929,7 +929,7 @@ loc_27BD4:
     mov     [bp+var_1D4], al
     mov     [bp+var_1C0], 0FFh
     push    cs
-    call near ptr timer_get_delta2
+    call near ptr timer_get_delta_alt
     push    cs
     call near ptr mouse_draw_opaque_check
     cmp     [bp+var_140], 2
@@ -1082,7 +1082,7 @@ loc_27D65:
     mov     [bp+var_1C0], al
 loc_27D6D:
     push    cs
-    call near ptr timer_get_delta2
+    call near ptr timer_get_delta_alt
     push    ax
     push    cs
     call near ptr input_checking
@@ -1278,6 +1278,7 @@ do_fileselect_dialog proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = dword ptr 6
+    arg_4 = word ptr 10
     arg_6 = word ptr 12
     arg_8 = word ptr 14
 
@@ -1417,7 +1418,7 @@ loc_28036:
     push    cs
     call near ptr mouse_draw_transparent_check
     mov     [bp+var_714], 0
-    push    word ptr [bp+0Ah]; int
+    push    [bp+arg_4]      ; int
     mov     ax, offset asc_3EB96; "*"
     push    ax
     push    word ptr [bp+arg_0]; char *
@@ -1650,7 +1651,7 @@ loc_2824D:
     mov     [bp+var_6E4], 0FFh
     mov     [bp+var_718], 0FFh
     push    cs
-    call near ptr timer_get_delta2
+    call near ptr timer_get_delta_alt
     mov     [bp+var_2], 0
 loc_28269:
     mov     al, [bp+var_6E4]
@@ -1762,7 +1763,7 @@ loc_2836C:
     call near ptr mouse_draw_transparent_check
 loc_28370:
     push    cs
-    call near ptr timer_get_delta2
+    call near ptr timer_get_delta_alt
     push    ax
     push    cs
     call near ptr input_checking
@@ -2292,12 +2293,12 @@ input_checking proc far
     push    di
     push    si
     mov     ax, [bp+arg_0]
-    add     word_3EBC4, ax
-    cmp     word_3EBC4, 4E20h; 20000
+    add     input_framecount, ax
+    cmp     input_framecount, 4E20h; 20000
     jle     short loc_287ED
-    sub     word_3EBC4, 2710h; 10000
-    sub     word_3EBB0, 2710h
-    sub     word_3EBB2, 2710h
+    sub     input_framecount, 2710h; 10000
+    sub     input_framecount2, 2710h
+    sub     input_framecount3, 2710h
 loc_287ED:
     call    kb_get_char
     mov     si, ax
@@ -2308,61 +2309,61 @@ loc_287FD:
     call    get_joy_flags
     mov     di, ax
     call    get_kb_or_joy_flags
-    mov     word_454C0, ax
-    cmp     word_3EBB4, di
+    mov     kbjoyflags, ax
+    cmp     joyflags, di
     jnz     short loc_28815
     jmp     loc_28896
 loc_28815:
-    mov     ax, word_3EBB4
+    mov     ax, joyflags
     xor     ax, di
-    and     ax, di
-    mov     word_3EBB6, ax
-    mov     word_3EBB4, di
+    and     ax, di          ; find changed flags from last?
+    mov     newjoyflags, ax
+    mov     joyflags, di
 loc_28823:
-    test    byte ptr word_3EBB6, 20h
+    test    byte ptr newjoyflags, 20h
     jz      short loc_28834
-    mov     word_3EBC0, 0Dh
+    mov     joyinputcode, 0Dh
     jmp     short loc_28881
     ; align 4
     db 144
     db 144
 loc_28834:
-    test    byte ptr word_3EBB6, 10h
+    test    byte ptr newjoyflags, 10h
     jz      short loc_28844
-    mov     word_3EBC0, 20h ; ' '
+    mov     joyinputcode, 20h ; ' '
     jmp     short loc_28881
     ; align 2
     db 144
 loc_28844:
-    test    byte ptr word_3EBB6, 1
+    test    byte ptr newjoyflags, 1
     jz      short loc_28854
-    mov     word_3EBC0, 4800h
+    mov     joyinputcode, 4800h
     jmp     short loc_28881
     ; align 2
     db 144
 loc_28854:
-    test    byte ptr word_3EBB6, 2
+    test    byte ptr newjoyflags, 2
     jz      short loc_28864
-    mov     word_3EBC0, 5000h
+    mov     joyinputcode, 5000h
     jmp     short loc_28881
     ; align 2
     db 144
 loc_28864:
-    test    byte ptr word_3EBB6, 8
+    test    byte ptr newjoyflags, 8
     jz      short loc_28874
-    mov     word_3EBC0, 4B00h
+    mov     joyinputcode, 4B00h
     jmp     short loc_28881
     ; align 2
     db 144
 loc_28874:
-    test    byte ptr word_3EBB6, 4
+    test    byte ptr newjoyflags, 4
     jz      short loc_28881
-    mov     word_3EBC0, 4D00h
+    mov     joyinputcode, 4D00h
 loc_28881:
-    cmp     word_3EBC0, 0
+    cmp     joyinputcode, 0
     jz      short loc_288A9
-    mov     ax, word_3EBC4
-    mov     word_3EBB2, ax
+    mov     ax, input_framecount
+    mov     input_framecount3, ax
     mov     kbormouse, 0
     jmp     short loc_288A9
     ; align 2
@@ -2370,9 +2371,9 @@ loc_28881:
 loc_28896:
     or      di, di
     jz      short loc_288A9
-    mov     ax, word_3EBB2
+    mov     ax, input_framecount3
     add     ax, 14h
-    cmp     ax, word_3EBC4
+    cmp     ax, input_framecount
     jge     short loc_288A9
     jmp     loc_28823
 loc_288A9:
@@ -2399,7 +2400,7 @@ loc_288D8:
     mov     ax, mouse_ypos
     mov     mouse_oldy, ax
     mov     kbormouse, 1
-    mov     word_3EBBE, 0
+    mov     input_framecounter, 0
     cmp     byte_3B8F7, 0
     jz      short loc_28934
     cmp     mouse_isdirty, 0
@@ -2416,10 +2417,10 @@ loc_28908:
     cmp     kbormouse, 0
     jz      short loc_28934
     mov     ax, [bp+arg_0]
-    add     word_3EBBE, ax
-    cmp     word_3EBBE, 1F4h
+    add     input_framecounter, ax
+    cmp     input_framecounter, 1F4h
     jle     short loc_28934
-    mov     word_3EBBE, 0
+    mov     input_framecounter, 0
     mov     kbormouse, 0
     cmp     mouse_isdirty, 0
     jz      short loc_28934
@@ -2427,7 +2428,7 @@ loc_28908:
     call near ptr mouse_draw_opaque
 loc_28934:
     cmp     kbormouse, 0
-    jz      short loc_289B0
+    jz      short _try_ret_joyinput
     mov     ax, mouse_oldbut
     cmp     mouse_butstate, ax
     jz      short loc_2897C
@@ -2436,55 +2437,55 @@ loc_28934:
 loc_2894A:
     test    byte ptr mouse_butstate, 1
     jz      short loc_2895A
-    mov     word_3EBC2, 20h ; ' '
+    mov     mousebutinputcode, 20h ; ' '
     jmp     short loc_28967
     ; align 2
     db 144
 loc_2895A:
     test    byte ptr mouse_butstate, 2
     jz      short loc_28967
-    mov     word_3EBC2, 0Dh
+    mov     mousebutinputcode, 0Dh
 loc_28967:
-    cmp     word_3EBC2, 0
+    cmp     mousebutinputcode, 0
     jz      short loc_28974
-    mov     ax, word_3EBC4
-    mov     word_3EBB0, ax
+    mov     ax, input_framecount
+    mov     input_framecount2, ax
 loc_28974:
-    mov     word_3EBBE, 0
-    jmp     short loc_2898F
+    mov     input_framecounter, 0
+    jmp     short _try_ret_mousebut01
 loc_2897C:
     cmp     mouse_butstate, 0
-    jz      short loc_2898F
-    mov     ax, word_3EBB0
+    jz      short _try_ret_mousebut01
+    mov     ax, input_framecount2
     add     ax, 14h
-    cmp     ax, word_3EBC4
+    cmp     ax, input_framecount
     jl      short loc_2894A
-loc_2898F:
+_try_ret_mousebut01:
     cmp     mouse_butstate, 0
-    jz      short loc_289B0
+    jz      short _try_ret_joyinput
     test    byte ptr mouse_butstate, 1
-    jz      short loc_289A4
-    or      byte ptr word_454C0, 20h
-    jmp     short loc_289B0
-loc_289A4:
+    jz      short _try_ret_mousebut2
+    or      byte ptr kbjoyflags, 20h
+    jmp     short _try_ret_joyinput
+_try_ret_mousebut2:
     test    byte ptr mouse_butstate, 2
-    jz      short loc_289B0
-    or      byte ptr word_454C0, 10h
-loc_289B0:
+    jz      short _try_ret_joyinput
+    or      byte ptr kbjoyflags, 10h
+_try_ret_joyinput:
     or      si, si
     jnz     short loc_289D9
-    cmp     word_3EBC0, 0
-    jz      short loc_289C8
-    mov     si, word_3EBC0
-    mov     word_3EBC0, 0
+    cmp     joyinputcode, 0
+    jz      short _try_ret_mousebutinput
+    mov     si, joyinputcode
+    mov     joyinputcode, 0
     jmp     short loc_289D9
     ; align 2
     db 144
-loc_289C8:
-    cmp     word_3EBC2, 0
+_try_ret_mousebutinput:
+    cmp     mousebutinputcode, 0
     jz      short loc_289D9
-    mov     si, word_3EBC2
-    mov     word_3EBC2, 0
+    mov     si, mousebutinputcode
+    mov     mousebutinputcode, 0
 loc_289D9:
     mov     ax, si
     pop     si
@@ -2800,7 +2801,7 @@ loc_28BE2:
     jle     short loc_28C26
 loc_28BED:
     push    cs
-    call near ptr timer_get_delta2
+    call near ptr timer_get_delta_alt
     push    ax
     push    cs
     call near ptr input_checking
@@ -2829,7 +2830,7 @@ loc_28C26:
     mov     [bp+var_C], si
 loc_28C2E:
     push    cs
-    call near ptr timer_get_delta2
+    call near ptr timer_get_delta_alt
     push    ax
     push    cs
     call near ptr input_checking
@@ -3167,7 +3168,7 @@ loc_28EF3:
     db 144
 loc_28EFA:
     push    cs
-    call near ptr timer_get_delta2
+    call near ptr timer_get_delta_alt
     push    ax
     push    cs
     call near ptr input_checking
@@ -3190,7 +3191,7 @@ check_input endp
 nopsub_28F26 proc far
 
     push    cs
-    call near ptr timer_get_delta2
+    call near ptr timer_get_delta_alt
     push    ax
     push    cs
     call near ptr input_checking
@@ -3467,11 +3468,11 @@ input_repeat_check proc far
     push    si
     sub     di, di
     push    cs
-    call near ptr timer_get_delta2
+    call near ptr timer_get_delta_alt
     jmp     short loc_29161
 loc_2914A:
     push    cs
-    call near ptr timer_get_delta2
+    call near ptr timer_get_delta_alt
     mov     [bp+var_4], ax
     add     di, ax
     push    ax
@@ -4080,7 +4081,7 @@ loc_29670:
     cmp     si, 4
     jge     short loc_29648
     push    cs
-    call near ptr timer_get_delta2
+    call near ptr timer_get_delta_alt
     push    ax
     push    cs
     call near ptr input_do_checking
@@ -4258,7 +4259,7 @@ sub_29786 proc far
     push    di
     push    si
     push    cs
-    call near ptr timer_get_delta2
+    call near ptr timer_get_delta_alt
     mov     si, ax
     add     word_45D1C, si
     jmp     short loc_2979F
@@ -5618,11 +5619,11 @@ do_mer_restext proc far
     ; align 2
     db 144
 do_mer_restext endp
-timer_get_delta2 proc far
+timer_get_delta_alt proc far
 
     call    timer_get_delta
     retf
-timer_get_delta2 endp
+timer_get_delta_alt endp
 ported_file_load_3dres_ proc far
     var_54 = byte ptr -84
     var_4 = word ptr -4

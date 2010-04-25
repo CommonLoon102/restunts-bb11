@@ -178,18 +178,18 @@ loc_3AD4A:
     retf
 ported_file_load_shape2d_res_ endp
 parse_shape2d proc far
-    var_38 = dword ptr -56
+    var_chunkptr = dword ptr -56
     var_34 = word ptr -52
     var_32 = word ptr -50
     var_30 = word ptr -48
     var_2E = dword ptr -46
-    var_2A = word ptr -42
-    var_28 = word ptr -40
+    var_counter = word ptr -42
+    var_shapecount = word ptr -40
     var_26 = word ptr -38
     var_24 = word ptr -36
     var_1E = word ptr -30
-    var_1C = dword ptr -28
-    var_18 = dword ptr -24
+    var_pagesptr = dword ptr -28
+    var_pagescnt6ptr = dword ptr -24
     var_14 = word ptr -20
     var_12 = word ptr -18
     var_10 = word ptr -16
@@ -199,66 +199,63 @@ parse_shape2d proc far
     var_4 = dword ptr -4
      s = byte ptr 0
      r = byte ptr 2
-    arg_0 = word ptr 6
-    arg_2 = word ptr 8
-    arg_4 = word ptr 10
-    arg_6 = word ptr 12
+    arg_memchunkofs = word ptr 6
+    arg_memchunkseg = word ptr 8
+    arg_mempagesofs = word ptr 10
+    arg_mempagesseg = word ptr 12
 
     push    bp
-loc_3AD9D:
     mov     bp, sp
-loc_3AD9F:
     sub     sp, 38h
-loc_3ADA2:
     push    di
     push    si
-    push    [bp+arg_2]
-    push    [bp+arg_0]
-    call    sub_3264A
+    push    [bp+arg_memchunkseg]
+    push    [bp+arg_memchunkofs]
+    call    file_get_res_shape_count
     add     sp, 4
-    mov     [bp+var_28], ax
+    mov     [bp+var_shapecount], ax
     shl     ax, 1
     shl     ax, 1
-    add     ax, [bp+arg_4]
-    mov     dx, [bp+arg_6]
+    add     ax, [bp+arg_mempagesofs]
+    mov     dx, [bp+arg_mempagesseg]
     add     ax, 6
-    mov     word ptr [bp+var_18], ax
-    mov     word ptr [bp+var_18+2], dx
-    mov     ax, [bp+arg_4]
-    mov     word ptr [bp+var_1C], ax
-    mov     word ptr [bp+var_1C+2], dx
-    mov     ax, [bp+arg_0]
-    mov     dx, [bp+arg_2]
-    mov     word ptr [bp+var_38], ax
-    mov     word ptr [bp+var_38+2], dx
-    mov     [bp+var_2A], 0
+    mov     word ptr [bp+var_pagescnt6ptr], ax
+    mov     word ptr [bp+var_pagescnt6ptr+2], dx
+    mov     ax, [bp+arg_mempagesofs]
+    mov     word ptr [bp+var_pagesptr], ax
+    mov     word ptr [bp+var_pagesptr+2], dx
+    mov     ax, [bp+arg_memchunkofs]
+    mov     dx, [bp+arg_memchunkseg]
+    mov     word ptr [bp+var_chunkptr], ax
+    mov     word ptr [bp+var_chunkptr+2], dx
+    mov     [bp+var_counter], 0
     jmp     short loc_3ADF9
 loc_3ADE4:
-    les     bx, [bp+var_38]
-    inc     word ptr [bp+var_38]
+    les     bx, [bp+var_chunkptr]
+    inc     word ptr [bp+var_chunkptr]
     mov     al, es:[bx]
-    les     bx, [bp+var_1C]
-    inc     word ptr [bp+var_1C]
+    les     bx, [bp+var_pagesptr]
+    inc     word ptr [bp+var_pagesptr]
     mov     es:[bx], al
-    inc     [bp+var_2A]
+    inc     [bp+var_counter]
 loc_3ADF9:
-    mov     ax, [bp+var_28]
+    mov     ax, [bp+var_shapecount]
     shl     ax, 1
     shl     ax, 1
     add     ax, 6
-    cmp     ax, [bp+var_2A]
+    cmp     ax, [bp+var_counter]
     jg      short loc_3ADE4
-    mov     ax, [bp+var_28]
+    mov     ax, [bp+var_shapecount]
     mov     cl, 3
     shl     ax, cl
-    add     ax, [bp+arg_4]
-    mov     dx, [bp+arg_6]
+    add     ax, [bp+arg_mempagesofs]
+    mov     dx, [bp+arg_mempagesseg]
     add     ax, 6
     mov     word ptr [bp+var_8], ax
     mov     word ptr [bp+var_8+2], dx
     mov     [bp+var_26], ax
     mov     [bp+var_24], dx
-    mov     [bp+var_2A], 0
+    mov     [bp+var_counter], 0
     jmp     loc_3AF5B
 loc_3AE2C:
     push    word ptr [bp+var_2E+2]
@@ -382,17 +379,17 @@ loc_3AF4E:
     les     bx, [bp+var_8]
     inc     word ptr [bp+var_8]
     mov     byte ptr es:[bx], 0
-    inc     [bp+var_2A]
+    inc     [bp+var_counter]
 loc_3AF5B:
-    mov     ax, [bp+var_28]
-    cmp     [bp+var_2A], ax
+    mov     ax, [bp+var_shapecount]
+    cmp     [bp+var_counter], ax
     jl      short loc_3AF66
     jmp     loc_3B020
 loc_3AF66:
-    push    [bp+var_2A]
-    push    [bp+arg_2]
+    push    [bp+var_counter]
+    push    [bp+arg_memchunkseg]
 loc_3AF6C:
-    push    [bp+arg_0]
+    push    [bp+arg_memchunkofs]
 loc_3AF6F:
     call    file_get_shape2d
     add     sp, 6
@@ -427,8 +424,8 @@ loc_3AFBE:
     add     sp, 4
     sub     ax, si
     sbb     dx, di
-    les     bx, [bp+var_18]
-    add     word ptr [bp+var_18], 4
+    les     bx, [bp+var_pagescnt6ptr]
+    add     word ptr [bp+var_pagescnt6ptr], 4
     mov     es:[bx], ax
 loc_3AFCF:
     mov     es:[bx+2], dx
@@ -458,8 +455,8 @@ loc_3AFE4:
     mov     [bp+var_1E], ax
     jmp     loc_3AF45
 loc_3B020:
-    push    [bp+arg_6]
-    push    [bp+arg_4]
+    push    [bp+arg_mempagesseg]
+    push    [bp+arg_mempagesofs]
     call    sub_2F314
     add     sp, 4
     push    word ptr [bp+var_8+2]
@@ -496,8 +493,8 @@ loc_3B06F:
 loc_3B074:
     push    [bp+var_34]
 loc_3B077:
-    push    [bp+arg_6]
-    push    [bp+arg_4]
+    push    [bp+arg_mempagesseg]
+    push    [bp+arg_mempagesofs]
 loc_3B07D:
     call    mmgr_resize_memory
 loc_3B082:
@@ -522,34 +519,22 @@ sub_3B08C proc far
     push    bp
     mov     bp, sp
     sub     sp, 4
-loc_3B092:
     les     bx, [bp+arg_0]
     mov     al, es:[bx]
-loc_3B098:
     mov     [bp+var_4], al
-loc_3B09B:
     mov     [bp+var_2], 0
-loc_3B0A0:
     jmp     short loc_3B0A5
 loc_3B0A2:
     inc     [bp+var_2]
 loc_3B0A5:
     les     bx, [bp+arg_0]
-loc_3B0A8:
     inc     word ptr [bp+arg_0]
-loc_3B0AB:
     mov     al, [bp+var_4]
-loc_3B0AE:
     cmp     es:[bx], al
-loc_3B0B1:
     jz      short loc_3B0A2
-loc_3B0B3:
     mov     ax, [bp+var_2]
-loc_3B0B6:
     mov     sp, bp
-loc_3B0B8:
     pop     bp
-locret_3B0B9:
     retf
 sub_3B08C endp
 seg035 ends

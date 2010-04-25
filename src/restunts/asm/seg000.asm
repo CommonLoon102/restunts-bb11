@@ -622,7 +622,7 @@ loc_10575:
     call    mouse_draw_opaque_check
     call    audio_stop_unk
     call    audiodrv_atexit
-    call    sub_30883
+    call    kb_exit_handler
     call    kb_shift_checking1
     call    video_set_mode7
     pop     si
@@ -1385,10 +1385,10 @@ load_intro_resources proc far
     call    sub_29620
     add     sp, 6
     call    sprite_copy_2_to_1_2
-    call    timer_get_delta2
+    call    timer_get_delta_alt
     mov     si, 14Ah
 loc_10D77:
-    call    timer_get_delta2
+    call    timer_get_delta_alt
     mov     [bp+var_40], ax
     shl     ax, 1
     sub     si, ax
@@ -1476,7 +1476,7 @@ loc_10DEC:
     add     [bp+var_36], 5
     jmp     short loc_10E7D
 loc_10E66:
-    call    timer_get_delta2
+    call    timer_get_delta_alt
     mov     [bp+var_40], ax
     push    ax
     call    input_do_checking
@@ -3333,7 +3333,7 @@ loc_11F50:
     push    ax
     call    sub_322F3
     add     sp, 8
-    call    timer_get_delta2
+    call    timer_get_delta_alt
     mov     ax, 0Fh
     push    ax
     mov     ax, 0C8h ; 'È'
@@ -3757,7 +3757,7 @@ loc_123CB:
     cmp     byte ptr es:[bx], 0
     jnz     short loc_1237E
     call    set_fontdef
-    call    timer_get_delta2
+    call    timer_get_delta_alt
     mov     [bp+var_F2], 0FFh
     mov     [bp+var_104], 0
     mov     [bp+var_102], 140h
@@ -4660,7 +4660,7 @@ loc_12CFB:
     call    sub_29620
     add     sp, 6
     mov     [bp+var_4], 0FEh ; 'þ'
-    call    timer_get_delta2
+    call    timer_get_delta_alt
     call    sub_29772
 loc_12D2C:
     push    word_407D0
@@ -6123,7 +6123,7 @@ loc_13A4B:
     add     sp, 6
     push    dx
     push    ax
-    call    sub_33DE2
+    call    shape2d_op_unk5
     add     sp, 8
     mov     al, [bp+var_8E]
     mov     [bp+var_6C], al
@@ -6441,7 +6441,7 @@ loc_13DDF:
     push    ax
     push    word ptr [bp+var_56+2]
     push    word ptr [bp+var_56]
-    call    sub_33DE2
+    call    shape2d_op_unk5
     add     sp, 8
     call    sprite_copy_2_to_1_2
     les     bx, [bp+var_56]
@@ -6472,7 +6472,7 @@ loc_13E8A:
     push    [bp+var_8C]
     push    word ptr [bp+var_56+2]
     push    word ptr [bp+var_56]
-    call    sub_33DE2
+    call    shape2d_op_unk5
     add     sp, 8
 loc_13EA0:
     call    mouse_draw_transparent_check
@@ -6794,7 +6794,7 @@ loc_14188:
     call    sprite_putimage
     add     sp, 4
     call    mouse_draw_transparent_check
-    call    timer_get_delta2
+    call    timer_get_delta_alt
     call    sub_29772
 loc_141DC:
     push    word_407D0
@@ -6869,7 +6869,7 @@ loc_1424D:
     push    ax
     push    word ptr [bp+var_56+2]
     push    word ptr [bp+var_56]
-    call    sub_33DE2
+    call    shape2d_op_unk5
     add     sp, 8
     call    sprite_copy_2_to_1_2
     les     bx, [bp+var_56]
@@ -6901,7 +6901,7 @@ loc_142FC:
     push    [bp+var_8C]
     push    word ptr [bp+var_56+2]
     push    word ptr [bp+var_56]
-    call    sub_33DE2
+    call    shape2d_op_unk5
     add     sp, 8
 loc_1430E:
     push    [bp+var_90]
@@ -6914,7 +6914,7 @@ loc_1430E:
     add     sp, 6
     push    dx
     push    ax
-    call    sub_33DE2
+    call    shape2d_op_unk5
     add     sp, 8
     call    mouse_draw_transparent_check
 loc_14337:

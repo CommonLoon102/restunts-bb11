@@ -95,9 +95,9 @@ loc_21B80:
 loc_21B81:
     mov     [bp+var_C], 0FFFFh
 loc_21B86:
-    mov     word_43934, 0
+    mov     rect_unk10.rc_left, 0
 loc_21B8C:
-    mov     word_43936, 140h
+    mov     rect_unk10.rc_top, 140h
 loc_21B92:
     mov     [bp+var_2], 0FFFFh
 loc_21B97:
@@ -111,7 +111,7 @@ loc_21BA4:
 loc_21BA6:
     mov     word_42D28, ax
 loc_21BA9:
-    mov     byte_4616F, 1
+    mov     replaybar_toggle, 1
 loc_21BAE:
     mov     byte_454B8, 0
 loc_21BB3:
@@ -396,16 +396,16 @@ loc_21E8F:
     mov     al, byte_461C8
     cmp     byte_45DB2, al
     jnz     short loc_21EBF
-    mov     al, byte_4644A
+    mov     al, dashb_toggle_copy
     cmp     dashb_toggle, al
     jnz     short loc_21EBF
-    mov     al, byte_455D2
-    cmp     byte_4616F, al
+    mov     al, replaybar_toggle_copy
+    cmp     replaybar_toggle, al
     jnz     short loc_21EBF
     mov     al, byte_45634
     cmp     byte_454B8, al
     jnz     short loc_21EBF
-    mov     al, byte_42A38
+    mov     al, followOpponentFlag_copy
     cmp     followOpponentFlag, al
     jnz     short loc_21EBF
     jmp     loc_21F7A
@@ -413,20 +413,20 @@ loc_21EBF:
     mov     al, byte_45DB2
     mov     byte_461C8, al
     mov     al, dashb_toggle
-    mov     byte_4644A, al
-    mov     al, byte_4616F
-    mov     byte_455D2, al
+    mov     dashb_toggle_copy, al
+    mov     al, replaybar_toggle
+    mov     replaybar_toggle_copy, al
     mov     al, byte_454B8
     mov     byte_45634, al
     mov     al, followOpponentFlag
-    mov     byte_42A38, al
-    mov     word_45DB8, 0
+    mov     followOpponentFlag_copy, al
+    mov     roofbmpheight_copy, 0
     mov     byte_449E2, 0
     cmp     byte_45DB2, 2
     jnz     short loc_21F0A
     cmp     byte_44AE2, 0
     jnz     short loc_21F0A
-    cmp     byte_4616F, 0
+    cmp     replaybar_toggle, 0
     jz      short loc_21F00
     jmp     loc_21FEE
 loc_21F00:
@@ -440,13 +440,13 @@ loc_21F0F:
     jnz     short loc_21F19
     jmp     loc_21FF6
 loc_21F19:
-    mov     word_454AE, 0C8h ; 'È'
+    mov     dashbmp_y_copy, 0C8h ; 'È'
 loc_21F1F:
-    mov     ax, word_45DB8
+    mov     ax, roofbmpheight_copy
     cmp     [bp+var_2], ax
     jnz     short loc_21F38
     mov     ax, word_449EA
-    cmp     word_454AE, ax
+    cmp     dashbmp_y_copy, ax
     jnz     short loc_21F38
     mov     ax, word_459D4
     cmp     [bp+var_E], ax
@@ -454,10 +454,10 @@ loc_21F1F:
 loc_21F38:
     mov     al, video_flag6_is1
     mov     byte_454A4, al
-    push    word_454AE
+    push    dashbmp_y_copy
     mov     ax, 140h
     push    ax
-    mov     ax, word_454AE
+    mov     ax, dashbmp_y_copy
     cwd
     mov     cx, 6
     idiv    cx
@@ -466,13 +466,13 @@ loc_21F38:
     push    ax
     call    sub_322F3
     add     sp, 8
-    mov     ax, word_45DB8
-    mov     word_43938, ax
-    mov     ax, word_454AE
-    mov     word_4393A, ax
-    mov     ax, word_45DB8
+    mov     ax, roofbmpheight_copy
+    mov     rect_unk10.rc_right, ax
+    mov     ax, dashbmp_y_copy
+    mov     rect_unk10.rc_bottom, ax
+    mov     ax, roofbmpheight_copy
     mov     [bp+var_2], ax
-    mov     ax, word_454AE
+    mov     ax, dashbmp_y_copy
     mov     word_449EA, ax
     mov     ax, word_459D4
     mov     [bp+var_E], ax
@@ -488,7 +488,7 @@ loc_21F84:
     cmp     byte_449E2, 0
     jz      short loc_21FB8
     push    word_459D4
-    push    word_454AE
+    push    dashbmp_y_copy
     mov     ax, 140h
     push    ax
     sub     ax, ax
@@ -543,10 +543,10 @@ loc_2201A:
     mov     word_459D4, 0C8h ; 'È'
 loc_22020:
     mov     byte_449E2, 1
-    mov     ax, word_461CC
-    mov     word_45DB8, ax
-    mov     ax, word_45DBA
-    mov     word_454AE, ax
+    mov     ax, roofbmpheight
+    mov     roofbmpheight_copy, ax
+    mov     ax, dashbmp_y
+    mov     dashbmp_y_copy, ax
     jmp     loc_21F1F
 loc_22034:
     cmp     byte_45DB2, 2
@@ -557,7 +557,7 @@ loc_2203E:
     jnz     short loc_22048
     jmp     loc_21F19
 loc_22048:
-    mov     word_454AE, 97h ; '—'
+    mov     dashbmp_y_copy, 97h ; '—'
     jmp     loc_21F1F
     ; align 2
     db 144
@@ -569,14 +569,14 @@ loc_22052:
     mov     bx, ax
     mov     byte_449D8[bx], 0
 loc_22064:
-    mov     ax, offset word_43934
+    mov     ax, offset rect_unk10
     push    ax
     mov     al, byte_44346
     cbw
     push    ax
     call    update_frame
     add     sp, 4
-    cmp     word_461C2, 0
+    cmp     dastbmp_y, 0
     jz      short loc_220DB
     cmp     byte_449E2, 0
     jz      short loc_220DB
@@ -584,9 +584,9 @@ loc_22064:
     jz      short loc_220BB
     mov     [bp+var_A], 0
     mov     [bp+var_8], 140h
-    mov     ax, word_461C2
+    mov     ax, dastbmp_y
     mov     [bp+var_6], ax
-    mov     ax, word_454AE
+    mov     ax, dashbmp_y_copy
     mov     [bp+var_4], ax
     cmp     rectptr_unk, 0
     jz      short loc_220BB
@@ -599,21 +599,21 @@ loc_22064:
 loc_220BB:
     push    word ptr dasmshapeptr+2
     push    word ptr dasmshapeptr
-    call    render_bmp_as_mask
+    call    shape2d_render_bmp_as_mask
     add     sp, 4
-    push    word_4549E
-    push    word_4549C
-    call    sub_342F6
+    push    dastseg
+    push    dastbmp_y2
+    call    shape2d_op_unk4
     add     sp, 4
 loc_220DB:
-    mov     ax, offset word_43934
+    mov     ax, offset rect_unk10
     push    ax
     call    sub_19F14
     add     sp, 2
     cmp     byte_449E2, 0
     jz      short loc_22126
     push    word_459D4
-    push    word_454AE
+    push    dashbmp_y_copy
     mov     ax, 140h
     push    ax
     sub     ax, ax
@@ -984,7 +984,7 @@ loc_22470:
     ; align 2
     db 144
 loc_22478:
-    xor     byte_4616F, 1
+    xor     replaybar_toggle, 1
     jmp     short loc_224E9
     ; align 2
     db 144
@@ -2189,23 +2189,23 @@ loc_22E09:
     call    sprite_set_1_from_argptr
     add     sp, 4
     les     bx, [bp+var_C]
-    mov     ax, es:[bx+0Ah]
+    mov     ax, es:[bx+SHAPE2D.s2d_pos_y]
     les     bx, whlshapes+10h
-    sub     ax, es:[bx+0Ah]
+    sub     ax, es:[bx+SHAPE2D.s2d_pos_y]
     push    ax
     les     bx, [bp+var_C]
-    mov     ax, es:[bx+8]
+    mov     ax, es:[bx+SHAPE2D.s2d_pos_x]
     les     bx, whlshapes+10h
-    sub     ax, es:[bx+8]
+    sub     ax, es:[bx+SHAPE2D.s2d_pos_x]
     push    ax
     push    word ptr [bp+var_C+2]
     push    word ptr [bp+var_C]
-    call    sub_33EB4
+    call    shape2d_op_unk2
     add     sp, 8
     call    sprite_copy_2_to_1
     les     bx, [bp+var_C]
-    mov     ax, es:[bx+0Ah]
-    mov     word_45DBA, ax
+    mov     ax, es:[bx+SHAPE2D.s2d_pos_y]
+    mov     dashbmp_y, ax
     mov     ax, offset aRoof; "roof"
     push    ax
     push    word ptr stdaresptr+2
@@ -2222,11 +2222,11 @@ loc_22E09:
     add     sp, 6
     mov     bx, ax
     mov     es, dx
-    mov     ax, es:[bx+2]
-    mov     word_461CC, ax
+    mov     ax, es:[bx+SHAPE2D.s2d_height]
+    mov     roofbmpheight, ax
     jmp     short loc_22F18
 loc_22F12:
-    mov     word_461CC, 0
+    mov     roofbmpheight, 0
 loc_22F18:
     mov     ax, offset aDast; "dast"
     push    ax
@@ -2239,11 +2239,11 @@ loc_22F18:
     or      ax, dx
     jz      short loc_22F6A
     les     bx, [bp+var_C]
-    mov     ax, es:[bx+0Ah]
-    mov     word_461C2, ax
+    mov     ax, es:[bx+SHAPE2D.s2d_pos_y]
+    mov     dastbmp_y, ax
     mov     ax, bx
-    mov     word_4549C, ax
-    mov     word_4549E, dx
+    mov     dastbmp_y2, ax
+    mov     dastseg, dx
     mov     ax, offset aDasm; "dasm"
     push    ax
     push    word ptr stdaresptr+2
@@ -2258,7 +2258,7 @@ loc_22F18:
     pop     bp
     retf
 loc_22F6A:
-    mov     word_461C2, 0
+    mov     dastbmp_y, 0
     pop     si
     pop     di
     mov     sp, bp
@@ -2282,7 +2282,7 @@ loc_22F76:
     add     sp, 6
     push    dx
     push    ax
-    call    sub_33E00
+    call    shape2d_op_unk
     add     sp, 4
 loc_22FB1:
     mov     ax, offset aDash_0; "dash"
@@ -2293,11 +2293,11 @@ loc_22FB1:
     add     sp, 6
     push    dx
     push    ax
-    call    sub_33ED2
+    call    shape2d_op_unk3
     add     sp, 4
     push    word ptr whlshapes+6
     push    word ptr whlshapes+4
-    call    sub_33ED2
+    call    shape2d_op_unk3
     add     sp, 4
     call    mouse_draw_transparent_check
     sub     si, si
@@ -2410,7 +2410,7 @@ loc_230DE:
     push    ax
     push    word ptr whlshapes+12h
     push    word ptr whlshapes+10h
-    call    sub_33EB4
+    call    shape2d_op_unk2
     add     sp, 8
     mov     si, state.playerstate.car_knob_x
     mov     di, state.playerstate.car_knob_y
@@ -2433,7 +2433,7 @@ loc_23120:
     push    si
     push    word ptr gnobshapes+2
     push    word ptr gnobshapes
-    call    sub_34060
+    call    sprite_putimage_or_alt
     add     sp, 8
     cmp     video_flag5_is0, 0
     jz      short loc_2315E
@@ -2537,7 +2537,7 @@ loc_2324E:
     push    word ptr whlshapes+2
     push    word ptr whlshapes
 loc_23256:
-    call    sub_33ED2
+    call    shape2d_op_unk3
     add     sp, 4
 loc_2325E:
     mov     al, byte_4432A
@@ -2644,7 +2644,7 @@ loc_23349:
     push    ax
     push    word ptr whlshapes+0Eh
     push    word ptr whlshapes+0Ch
-    call    sub_33DE2
+    call    shape2d_op_unk5
     add     sp, 8
     mov     al, byte_4432A
     cbw
@@ -2783,12 +2783,12 @@ loc_23485:
 loc_234BE:
     push    word ptr whlshapes+1Eh
     push    word ptr whlshapes+1Ch
-    call    render_bmp_as_mask
+    call    shape2d_render_bmp_as_mask
     add     sp, 4
     push    word ptr whlshapes+16h
     push    word ptr whlshapes+14h
 loc_234D6:
-    call    sub_342F6
+    call    shape2d_op_unk4
     add     sp, 4
 loc_234DE:
     cmp     video_flag5_is0, 0
@@ -2798,7 +2798,7 @@ loc_234DE:
 loc_234EC:
     push    word ptr whlshapes+22h
     push    word ptr whlshapes+20h
-    call    render_bmp_as_mask
+    call    shape2d_render_bmp_as_mask
     add     sp, 4
     push    word ptr whlshapes+1Ah
     push    word ptr whlshapes+18h
@@ -2816,11 +2816,11 @@ loc_2350B:
     call    sprite_set_1_size
     add     sp, 8
     les     bx, whlshapes+0Ch
-    push    word ptr es:[bx+0Ah]
-    push    word ptr es:[bx+8]
+    push    es:[bx+SHAPE2D.s2d_pos_y]
+    push    es:[bx+SHAPE2D.s2d_pos_x]
     les     bx, whlsprite1
-    push    word ptr es:[bx+2]
-    push    word ptr es:[bx]
+    push    word ptr es:[bx+(SPRITE.sprite_bitmapptr+2)]
+    push    word ptr es:[bx+SPRITE.sprite_bitmapptr]
     call    sprite_putimage_and_alt
     add     sp, 8
 loc_23540:
@@ -2945,7 +2945,7 @@ loc_235F9:
     push    ax
     push    word ptr gnobshapes+0Ah
     push    word ptr gnobshapes+8
-    call    sub_34060
+    call    sprite_putimage_or_alt
     add     sp, 8
     mov     al, byte_4432A
     cbw
@@ -3129,8 +3129,8 @@ loc_23870:
     push    ax              ; int
     call    file_load_resource
     add     sp, 4
-    mov     word_459F4, ax
-    mov     word_459F6, dx
+    mov     fontledresofs, ax
+    mov     fontledresseg, dx
     mov     ax, word_44CEA
     mov     word_44984, ax
     call    init_rect_arrays
@@ -3274,8 +3274,8 @@ loc_239D4:
     call near ptr setup_car_shapes
     add     sp, 2
 loc_23A15:
-    push    word_459F6
-    push    word_459F4
+    push    fontledresseg
+    push    fontledresofs
     call    mmgr_free
     add     sp, 4
     call    audio_remove_driver_timer
@@ -3435,10 +3435,10 @@ loop_game proc far
     var_34 = byte ptr -52
     var_24 = word ptr -36
     var_22 = word ptr -34
-    var_20 = byte ptr -32
+    var_counter = byte ptr -32
     var_1E = byte ptr -30
     var_18 = word ptr -24
-    var_16 = word ptr -22
+    var_inputcode = word ptr -22
     var_14 = byte ptr -20
     var_12 = word ptr -18
     var_10 = word ptr -16
@@ -3521,7 +3521,7 @@ loc_23BD0:
     call    mouse_draw_opaque_check
     push    word ptr rplyshapes+2
     push    word ptr rplyshapes
-    call    sub_33E00
+    call    shape2d_op_unk
     add     sp, 4
     mov     al, byte_4432A
     cbw
@@ -3546,8 +3546,8 @@ loc_23C10:
     push    dialog_fnt_colour
     call    sub_34B0C
     add     sp, 4
-    push    word_459F6
-    push    word_459F4
+    push    fontledresseg
+    push    fontledresofs
     call    set_fontdef2
     add     sp, 4
     mov     ax, 0BBh ; '»'
@@ -3586,8 +3586,8 @@ loc_23C66:
     call    sub_34B0C
     add     sp, 4
     call    mouse_draw_opaque_check
-    push    word_459F6
-    push    word_459F4
+    push    fontledresseg
+    push    fontledresofs
     call    set_fontdef2
     add     sp, 4
     mov     ax, 0BBh ; '»'
@@ -3619,7 +3619,7 @@ loc_23CD7:
     shl     bx, 1
     push    word ptr (rplyshapes+6)[bx]
     push    word ptr (rplyshapes+4)[bx]
-    call    sub_33E00
+    call    shape2d_op_unk
     add     sp, 4
     mov     al, cameramode
     cbw
@@ -3769,16 +3769,16 @@ loc_23E41:
     ; align 2
     db 144
 loc_23E68:
-    mov     [bp+var_20], 0
+    mov     [bp+var_counter], 0
     jmp     short loc_23E71
 loc_23E6E:
-    inc     [bp+var_20]
+    inc     [bp+var_counter]
 loc_23E71:
-    cmp     [bp+var_20], 7
+    cmp     [bp+var_counter], 7
     jl      short loc_23E7A
     jmp     loc_23FB0
 loc_23E7A:
-    mov     al, [bp+var_20]
+    mov     al, [bp+var_counter]
     cbw
     mov     [bp+var_44], ax
     mov     bx, ax
@@ -3805,16 +3805,16 @@ loc_23E9A:
     push    word ptr (rplyshapes+16h)[bx]
     push    word ptr (rplyshapes+14h)[bx]
 loc_23EB3:
-    call    sub_33E00
+    call    shape2d_op_unk
     add     sp, 4
     mov     al, byte_4432A
     cbw
     mov     bx, ax
     mov     byte_40E08[bx], 0FFh
 loc_23EC6:
-    mov     [bp+var_20], 0
+    mov     [bp+var_counter], 0
 loc_23ECA:
-    mov     al, [bp+var_20]
+    mov     al, [bp+var_counter]
     cbw
     mov     [bp+var_44], ax
     mov     bx, ax
@@ -3833,9 +3833,9 @@ loc_23ECA:
     shl     bx, 1
     push    word ptr (rplyshapes+16h)[bx]
     push    word ptr (rplyshapes+14h)[bx]
-    call    sub_33E00
+    call    shape2d_op_unk
     add     sp, 4
-    mov     al, [bp+var_20]
+    mov     al, [bp+var_counter]
     cbw
     mov     bx, ax
     shl     bx, 1
@@ -3844,12 +3844,12 @@ loc_23ECA:
     add     bx, ax
     mov     byte_40E7A[bx], 0
 loc_23F18:
-    inc     [bp+var_20]
-    cmp     [bp+var_20], 7
+    inc     [bp+var_counter]
+    cmp     [bp+var_counter], 7
     jl      short loc_23ECA
-    mov     [bp+var_20], 0
+    mov     [bp+var_counter], 0
 loc_23F25:
-    mov     al, [bp+var_20]
+    mov     al, [bp+var_counter]
     cbw
     mov     [bp+var_44], ax
     mov     bx, ax
@@ -3865,9 +3865,9 @@ loc_23F25:
     shl     bx, 1
     push    word ptr (rplyshapes+3Ah)[bx]
     push    word ptr (rplyshapes+38h)[bx]
-    call    sub_33E00
+    call    shape2d_op_unk
     add     sp, 4
-    mov     al, [bp+var_20]
+    mov     al, [bp+var_counter]
     cbw
     mov     bx, ax
     shl     bx, 1
@@ -3876,8 +3876,8 @@ loc_23F25:
     add     bx, ax
     mov     byte_40E7A[bx], 1
 loc_23F6C:
-    inc     [bp+var_20]
-    cmp     [bp+var_20], 7
+    inc     [bp+var_counter]
+    cmp     [bp+var_counter], 7
     jl      short loc_23F25
     mov     al, byte_4432A
     cbw
@@ -3922,11 +3922,11 @@ loc_23FDA:
     xor     al, 1
     mov     byte_4432A, al
 loc_23FEE:
-    call    timer_get_delta2
+    call    timer_get_delta_alt
     push    ax
     call    input_checking
     add     sp, 2
-    mov     [bp+var_16], ax
+    mov     [bp+var_inputcode], ax
     mov     ax, offset word_3EA3E
     push    ax
     mov     ax, offset word_3EA2C
@@ -3944,23 +3944,23 @@ loc_23FEE:
     push    ax
     call    mouse_op_unk
     add     sp, 0Ah
-    mov     [bp+var_20], al
+    mov     [bp+var_counter], al
     cmp     al, 0FFh
     jnz     short loc_2402E
     jmp     loc_240D8
 loc_2402E:
     mov     al, byte_3E9DB
-    cmp     [bp+var_20], al
+    cmp     [bp+var_counter], al
     jz      short loc_24041
-    cmp     [bp+var_16], 0
+    cmp     [bp+var_inputcode], 0
     jnz     short loc_24041
-    mov     [bp+var_16], 1
+    mov     [bp+var_inputcode], 1
 loc_24041:
-    mov     al, [bp+var_20]
+    mov     al, [bp+var_counter]
     mov     byte_3E9DB, al
-    cmp     [bp+var_16], 20h ; ' '
+    cmp     [bp+var_inputcode], 20h ; ' '
     jz      short loc_24056
-    cmp     [bp+var_16], 0Dh
+    cmp     [bp+var_inputcode], 0Dh
     jz      short loc_24056
     jmp     loc_2410C
 loc_24056:
@@ -3975,12 +3975,12 @@ loc_24060:
     cmp     ax, mouse_ypos
     jge     short loc_2407A
 loc_24071:
-    mov     [bp+var_16], 5000h
+    mov     [bp+var_inputcode], 5000h
     jmp     loc_2410C
     ; align 2
     db 144
 loc_2407A:
-    mov     [bp+var_16], 4800h
+    mov     [bp+var_inputcode], 4800h
     jmp     loc_2410C
 loc_24082:
     mov     ax, word_3EA3C
@@ -4014,12 +4014,12 @@ nosmart
     ; align 2
     db 144
 loc_240C8:
-    mov     [bp+var_16], 4D00h
+    mov     [bp+var_inputcode], 4D00h
     jmp     short loc_2410C
     ; align 2
     db 144
 loc_240D0:
-    mov     [bp+var_16], 4B00h
+    mov     [bp+var_inputcode], 4B00h
     jmp     short loc_2410C
     ; align 2
     db 144
@@ -4036,21 +4036,21 @@ loc_240D8:
     push    ax
     call    mouse_op_unk
     add     sp, 0Ah
-    mov     [bp+var_20], al
+    mov     [bp+var_counter], al
     or      al, al
     jnz     short loc_2410C
-    cmp     [bp+var_16], 20h ; ' '
+    cmp     [bp+var_inputcode], 20h ; ' '
     jz      short loc_24107
-    cmp     [bp+var_16], 0Dh
+    cmp     [bp+var_inputcode], 0Dh
     jnz     short loc_2410C
 loc_24107:
-    mov     [bp+var_16], 63h ; 'c'
+    mov     [bp+var_inputcode], 63h ; 'c'
 loc_2410C:
-    cmp     [bp+var_16], 0
+    cmp     [bp+var_inputcode], 0
     jz      short loc_24129
-    cmp     [bp+var_16], 1Bh
+    cmp     [bp+var_inputcode], 1Bh
     jz      short loc_24129
-    push    [bp+var_16]
+    push    [bp+var_inputcode]
     push    cs
     call near ptr handle_ingame_kb_shortcuts
     add     sp, 2
@@ -4060,7 +4060,7 @@ loc_2410C:
 loc_24129:
     cmp     byte_454B8, 0
     jnz     short loc_2415A
-    cmp     [bp+var_16], 0
+    cmp     [bp+var_inputcode], 0
     jnz     short loc_2415A
     cmp     byte_46484, 0
     jnz     short loc_24140
@@ -4119,14 +4119,14 @@ loc_24193:
     jnz     short loc_241C8
     cmp     byte_3E9DB, 8
     jnz     short loc_241CC
-    test    byte ptr word_454C0, 30h
+    test    byte ptr kbjoyflags, 30h
     jz      short loc_241CC
 loc_241C8:
     mov     [bp+var_40], 1
 loc_241CC:
     cmp     [bp+var_40], 0
     jz      short loc_241FE
-    mov     ax, [bp+var_16]
+    mov     ax, [bp+var_inputcode]
     cmp     ax, 2Bh ; '+'
     jnz     short loc_241DD
     jmp     loc_2429C
@@ -4144,9 +4144,9 @@ loc_241E5:
     cmp     ax, 5000h
     jz      short loc_24258
 loc_241F9:
-    mov     [bp+var_16], 0
+    mov     [bp+var_inputcode], 0
 loc_241FE:
-    mov     ax, [bp+var_16]
+    mov     ax, [bp+var_inputcode]
     cmp     ax, 2Bh ; '+'
     jnz     short loc_24209
     jmp     loc_2429C
@@ -4701,7 +4701,7 @@ loc_246FD:
     push    cs
     call near ptr write_rpl
     add     sp, 2
-    mov     [bp+var_20], al
+    mov     [bp+var_counter], al
     or      al, al
     jnz     short loc_24712
     jmp     loc_24639
@@ -4807,7 +4807,7 @@ loc_247E8:
     ; align 2
     db 144
 loc_247F0:
-    xor     byte_4616F, 1
+    xor     replaybar_toggle, 1; "replay bar on/off (while driving)"
     jmp     short loc_24828
     ; align 2
     db 144
@@ -4848,7 +4848,7 @@ loc_24830:
     push    cs
     call near ptr loop_game
     add     sp, 6
-    call    timer_get_delta2
+    call    timer_get_delta_alt
     mov     [bp+var_24], 14h
     mov     [bp+var_22], 0
     jmp     loc_248F4
@@ -4868,7 +4868,7 @@ loc_2485C:
     jle     short loc_2487A
     mov     di, 64h ; 'd'
 loc_2487A:
-    call    timer_get_delta2
+    call    timer_get_delta_alt
     mov     [bp+var_18], ax
     imul    di
     mov     si, ax
@@ -4917,7 +4917,7 @@ loc_248C4:
     call    input_do_checking
     add     sp, 2
 loc_248F4:
-    test    byte ptr word_454C0, 30h
+    test    byte ptr kbjoyflags, 30h
     jz      short loc_248FE
     jmp     loc_2485C
 loc_248FE:
@@ -5060,7 +5060,7 @@ loc_24A28:
     push    cs
     call near ptr loop_game
     add     sp, 6
-    call    timer_get_delta2
+    call    timer_get_delta_alt
     mov     [bp+var_24], 14h
     mov     [bp+var_22], 0
     jmp     loc_24AEA
@@ -5081,7 +5081,7 @@ loc_24A58:
     jle     short loc_24A76
     mov     di, 64h ; 'd'
 loc_24A76:
-    call    timer_get_delta2
+    call    timer_get_delta_alt
     mov     [bp+var_18], ax
     imul    di
     mov     si, ax
@@ -5128,7 +5128,7 @@ loc_24AB8:
     call    input_do_checking
     add     sp, 2
 loc_24AEA:
-    test    byte ptr word_454C0, 30h
+    test    byte ptr kbjoyflags, 30h
     jz      short loc_24AF4
     jmp     loc_24A58
 loc_24AF4:
