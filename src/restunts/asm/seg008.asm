@@ -4587,11 +4587,11 @@ loc_29A08:
     jmp     short loc_29A00
 loc_29A12:
     push    word ptr [bp+arg_2]
-    call    load_2dshape_nofatal_thunk
+    call    file_load_shape2d_nofatal_thunk
     jmp     short loc_299EC
 loc_29A1C:
     push    word ptr [bp+arg_2]
-    call    load_2dshape_res_nofatal_thunk
+    call    file_load_shape2d_res_nofatal_thunk
     jmp     short loc_299EC
 loc_29A26:
     push    word ptr [bp+arg_2]; char *
@@ -4607,7 +4607,7 @@ loc_29A3A:
     jmp     short loc_299EC
 loc_29A44:
     push    word ptr [bp+arg_2]
-    call    load_2dshape_nofatal2
+    call    file_load_shape2d_nofatal2
     jmp     short loc_299EC
 off_29A4E     dw offset loc_299E4
     dw offset loc_299F8

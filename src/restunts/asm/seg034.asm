@@ -46,14 +46,14 @@ nosmart
 seg034 segment byte public 'STUNTSC' use16
     assume cs:seg034
     assume es:nothing, ss:nothing, ds:dseg
-    public load_2dshape_fatal
-    public load_2dshape_nofatal
-    public load_2dshape
-    public load_2dshape_helper
+    public ported_file_load_shape2d_fatal_
+    public ported_file_load_shape2d_nofatal_
+    public ported_file_load_shape2d_
+    public file_load_shape2d_helper
 algn_3A9D5:
     ; align 2
     db 144
-load_2dshape_fatal proc far
+ported_file_load_shape2d_fatal_ proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_shapename = word ptr 6
@@ -70,7 +70,7 @@ loc_3A9DD:
 loc_3A9E0:
     push    cs
 loc_3A9E1:
-    call near ptr load_2dshape
+    call near ptr ported_file_load_shape2d_
 loc_3A9E4:
     add     sp, 4
     pop     bp
@@ -78,8 +78,8 @@ locret_3A9E8:
     retf
     ; align 2
     db 144
-load_2dshape_fatal endp
-load_2dshape_nofatal proc far
+ported_file_load_shape2d_fatal_ endp
+ported_file_load_shape2d_nofatal_ proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -94,14 +94,14 @@ loc_3A9F0:
     push    [bp+arg_0]
     push    cs
 loc_3A9F4:
-    call near ptr load_2dshape
+    call near ptr ported_file_load_shape2d_
 loc_3A9F7:
     add     sp, 4
 loc_3A9FA:
     pop     bp
     retf
-load_2dshape_nofatal endp
-load_2dshape proc far
+ported_file_load_shape2d_nofatal_ endp
+ported_file_load_shape2d_ proc far
     var_strchar = byte ptr -128
     var_7E = word ptr -126
     var_str = byte ptr -124
@@ -154,14 +154,14 @@ loc_3AA40:
     call    file_find
     add     sp, 2
     or      ax, ax
-    jnz     short loc_3AAA8
+    jnz     short _try_load_pvs
     inc     [bp+var_counter]
 loc_3AA53:
     mov     bx, [bp+var_counter]
     shl     bx, 1
     mov     si, shapeexts[bx]
     cmp     byte ptr [si], 0
-    jz      short loc_3AAA8
+    jz      short _try_load_pvs
     mov     ax, word ptr [bp+var_strptr]
     mov     [bp+var_oldstrptr], ax
     push    si
@@ -176,7 +176,7 @@ loc_3AA53:
     mov     [bp+var_memchunkseg], dx
     or      dx, ax
     jz      short loc_3AA40
-loc_3AA87:
+_end_load_2dshape:
     mov     ax, [bp+var_memchunkofs]
     mov     dx, [bp+var_memchunkseg]
     pop     si
@@ -191,8 +191,8 @@ loc_3AA92:
     mov     [bp+var_memchunkofs], ax
     mov     [bp+var_memchunkseg], dx
     or      dx, ax
-    jnz     short loc_3AA87
-loc_3AAA8:
+    jnz     short _end_load_2dshape
+_try_load_pvs:
     push    word ptr [bp+var_strptr]
     lea     ax, [bp+var_strptr+2]
     push    ax              ; char *
@@ -205,7 +205,7 @@ loc_3AAA8:
     call    _stricmp
     add     sp, 4
     or      ax, ax
-    jnz     short loc_3AB24
+    jnz     short _try_load_xvs
     push    [bp+arg_fatal]
     lea     ax, [bp+var_str]
     push    ax
@@ -214,7 +214,7 @@ loc_3AAA8:
     mov     [bp+var_memchunkofs], ax
     mov     [bp+var_memchunkseg], dx
     or      ax, dx
-    jz      short loc_3AA87
+    jz      short _end_load_2dshape
     push    dx
     push    [bp+var_memchunkofs]
     call    get_unflip_size
@@ -230,14 +230,14 @@ loc_3AAA8:
     push    ax
     push    [bp+var_memchunkseg]
     push    [bp+var_memchunkofs]
-    call    load_2dshape_helper3
+    call    file_unflip_shape2d
     add     sp, 8
     push    word ptr [bp+var_mempages+2]
     push    word ptr [bp+var_mempages]
     call    mmgr_release
     add     sp, 4
-    jmp     loc_3AA87
-loc_3AB24:
+    jmp     _end_load_2dshape
+_try_load_xvs:
     mov     ax, offset a_xvs; ".XVS"
     push    ax
     lea     ax, [bp+var_strptr+2]
@@ -245,17 +245,17 @@ loc_3AB24:
     call    _stricmp
     add     sp, 4
     or      ax, ax
-    jnz     short loc_3AB50
+    jnz     short _try_load_pes
     push    [bp+arg_fatal]
     lea     ax, [bp+var_str]
     push    ax
     call    file_decomp
-loc_3AB44:
+_do_end_load_2dshape:
     add     sp, 4
     mov     [bp+var_memchunkofs], ax
     mov     [bp+var_memchunkseg], dx
-    jmp     loc_3AA87
-loc_3AB50:
+    jmp     _end_load_2dshape
+_try_load_pes:
     mov     ax, offset a_pes; ".PES"
     push    ax
     lea     ax, [bp+var_strptr+2]
@@ -264,7 +264,7 @@ loc_3AB50:
     add     sp, 4
     or      ax, ax
     jz      short loc_3AB67
-    jmp     loc_3AC1C
+    jmp     _try_load_esh
 loc_3AB67:
     push    [bp+arg_fatal]
     lea     ax, [bp+var_str]
@@ -275,7 +275,7 @@ loc_3AB67:
     mov     [bp+var_memchunkseg], dx
     or      ax, dx
     jnz     short loc_3AB83
-    jmp     loc_3AA87
+    jmp     _end_load_2dshape
 loc_3AB83:
     mov     ax, 3E8h
     push    ax
@@ -289,7 +289,7 @@ loc_3AB83:
     push    ax
     push    [bp+var_memchunkseg]
     push    [bp+var_memchunkofs]
-    call    load_2dshape_helper4
+    call    file_load_shape2d_helper4
     add     sp, 8
     push    word ptr [bp+var_mempages+2]
     push    word ptr [bp+var_mempages]
@@ -298,7 +298,7 @@ loc_3AB83:
 loc_3ABB7:
     push    [bp+var_memchunkseg]
     push    [bp+var_memchunkofs]
-    call    load_2dshape_helper5
+    call    file_load_shape2d_helper5
     add     sp, 4
     mov     [bp+var_7E], ax
     mov     ax, offset aMga ; "!MGA"
@@ -316,7 +316,7 @@ loc_3ABB7:
     push    dx
     push    ax
     push    cs
-    call near ptr load_2dshape_helper
+    call near ptr file_load_shape2d_helper
     add     sp, 4
 loc_3ABF3:
     push    [bp+var_7E]
@@ -336,7 +336,7 @@ loc_3AC12:
     dec     cl
     jz      short loc_3AC60
     jmp     short loc_3AC12
-loc_3AC1C:
+_try_load_esh:
     mov     ax, offset a_esh; ".ESH"
     push    ax
     lea     ax, [bp+var_strptr+2]
@@ -356,7 +356,7 @@ loc_3AC1C:
     jz      short loc_3AC4C
     jmp     loc_3ABB7
 loc_3AC4C:
-    jmp     loc_3AA87
+    jmp     _end_load_2dshape
     ; align 2
     db 144
 loc_3AC50:
@@ -364,7 +364,7 @@ loc_3AC50:
     lea     ax, [bp+var_str]
     push    ax
     call    file_load_binary
-    jmp     loc_3AB44
+    jmp     _do_end_load_2dshape
     ; align 2
     db 144
 loc_3AC60:
@@ -374,7 +374,7 @@ loc_3AC60:
     push    word ptr [bp+var_mempages]
     push    [bp+var_memchunkseg]
     push    [bp+var_memchunkofs]
-    call    load_2dshape_helper2
+    call    file_load_shape2d_helper2
     add     sp, 8
     push    [bp+var_memchunkseg]
     push    [bp+var_memchunkofs]
@@ -390,11 +390,11 @@ loc_3AC60:
     push    ax
     push    dx
     push    [bp+var_memchunkofs]
-    call    load_2dshape_helper6
+    call    file_load_shape2d_helper6
     add     sp, 6
-    jmp     loc_3AA87
-load_2dshape endp
-load_2dshape_helper proc far
+    jmp     _end_load_2dshape
+ported_file_load_shape2d_ endp
+file_load_shape2d_helper proc far
     var_2 = word ptr -2
      s = byte ptr 0
      r = byte ptr 2
@@ -428,6 +428,6 @@ loc_3ACD5:
     pop     bp
 locret_3ACD6:
     retf
-load_2dshape_helper endp
+file_load_shape2d_helper endp
 seg034 ends
 end

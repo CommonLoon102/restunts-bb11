@@ -267,7 +267,7 @@ seg012 segment byte public 'STUNTSC' use16
     public mat_multiply
     public mat_invert
     public off_32ADC
-    public load_2dshape_helper3
+    public ported_file_unflip_shape2d_
     public loc_32B78
     public loc_32B93
     public loc_32BDE
@@ -300,13 +300,14 @@ seg012 segment byte public 'STUNTSC' use16
     public loc_33697
     public sub_33742
     public video_set_mode_13h
-    public load_2dshape_res_nofatal_thunk
-    public load_2dshape_res_thunk
-    public parse_2d_shape_thunk
-    public load_2dshape_fatal_thunk
-    public load_2dshape_nofatal_thunk
-    public load_2dshape_thunk
-    public sub_3386C
+    public file_load_shape2d_res_fatal_thunk
+    public file_load_shape2d_res_nofatal_thunk
+    public file_load_shape2d_res_thunk
+    public parse_shape2d_thunk
+    public file_load_shape2d_fatal_thunk
+    public file_load_shape2d_nofatal_thunk
+    public file_load_shape2d_thunk
+    public sprite_putimage_and_alt2
     public ported_sprite_putimage_and_
     public loc_338C9
     public nopsub_339FA
@@ -371,9 +372,9 @@ seg012 segment byte public 'STUNTSC' use16
     public sub_35DE6
     public sub_35E08
     public loc_35ED9
-    public load_2dshape_helper6
-    public load_2dshape_helper2
-    public load_2dshape_helper4
+    public file_load_shape2d_helper6
+    public file_load_shape2d_helper2
+    public file_load_shape2d_helper4
 algn_2EA29:
     ; align 2
     db 144
@@ -10076,20 +10077,20 @@ off_32ADC     dw offset loc_32B78
     dw offset loc_32B93
     dw offset loc_32BDE
 mat_invert endp
-load_2dshape_helper3 proc far
+ported_file_unflip_shape2d_ proc far
     var_E = word ptr -14
     var_C = word ptr -12
     var_A = word ptr -10
     var_8 = word ptr -8
     var_6 = word ptr -6
-    var_4 = word ptr -4
+    var_counter = word ptr -4
     var_2 = word ptr -2
      s = byte ptr 0
      r = byte ptr 2
-    arg_0 = word ptr 6
-    arg_2 = word ptr 8
-    arg_4 = word ptr 10
-    arg_6 = word ptr 12
+    arg_memchunkofs = word ptr 6
+    arg_memchunkseg = word ptr 8
+    arg_mempagesofs = word ptr 10
+    arg_mempagesseg = word ptr 12
 
     push    bp
     mov     bp, sp
@@ -10098,36 +10099,36 @@ load_2dshape_helper3 proc far
     push    si
     push    di
     cld
-    mov     ax, [bp+arg_2]
+    mov     ax, [bp+arg_memchunkseg]
     mov     ds, ax
-    mov     ax, [bp+arg_0]
+    mov     ax, [bp+arg_memchunkofs]
     mov     si, ax
-    mov     ax, [bp+arg_6]
+    mov     ax, [bp+arg_mempagesseg]
     mov     [bp+var_A], ax
-    mov     ax, [bp+arg_4]
+    mov     ax, [bp+arg_mempagesofs]
     mov     [bp+var_8], ax
-    mov     bx, [si+4]
+    mov     bx, [si+4]      ; number of shapes in binary
     mov     [bp+var_2], bx
-    mov     [bp+var_4], 0
+    mov     [bp+var_counter], 0
 loc_32B0D:
-    push    [bp+var_4]
-    push    [bp+arg_2]
-    push    [bp+arg_0]
+    push    [bp+var_counter]
+    push    [bp+arg_memchunkseg]
+    push    [bp+arg_memchunkofs]
     mov     ax, seg dseg
     mov     ds, ax
-    call    sub_3265B
+    call    sub_3265B       ; get shape in binary at index
     add     sp, 6
     mov     [bp+var_6], ax
     mov     si, ax
     mov     ds, dx
     mov     di, [bp+var_8]
     mov     es, [bp+var_A]
-    mov     al, [si+0Fh]
+    mov     al, [si+SHAPE2D.s2d_unk6]; unk6 = is flipped
 smart
     and     al, 0F0h
 nosmart
     jnz     short loc_32B4E
-    mov     al, [si+0Eh]
+    mov     al, [si+SHAPE2D.s2d_unk5]; (unk4 >> 4) = fliptype, 1..3
     shr     al, 1
     shr     al, 1
     shr     al, 1
@@ -10140,7 +10141,7 @@ nosmart
     ; align 2
     db 144
 loc_32B4E:
-    inc     [bp+var_4]
+    inc     [bp+var_counter]
     dec     [bp+var_2]
     jg      short loc_32B0D
     xor     ax, ax
@@ -10152,16 +10153,16 @@ loc_32B58:
     pop     bp
     retf
 loc_32B5F:
-    mov     dx, [si]
+    mov     dx, [si+SHAPE2D.s2d_width]
     mov     [bp+var_C], dx
-    mov     dx, [si+2]
+    mov     dx, [si+SHAPE2D.s2d_height]
     mov     [bp+var_E], dx
     xor     dx, dx
     xor     ah, ah
     mov     bx, ax
     dec     bx
     shl     bx, 1
-    jmp     cs:off_32ADC[bx]
+    jmp     cs:off_32ADC[bx]; jump to flip type handler
 loc_32B78:
     mov     bx, si
     add     bx, 10h
@@ -10565,7 +10566,7 @@ vle_esc2     db 0
     db 0
     db 0
     db 0
-load_2dshape_helper3 endp
+ported_file_unflip_shape2d_ endp
 ported_file_decomp_vle_ proc far
     var_lengths = byte ptr -528
     var_symbols = byte ptr -272
@@ -12041,35 +12042,38 @@ nosmart
     call    video_clear_color
     add     sp, 4
     retf
-    jmp     load_2dshape_res_fatal
 video_set_mode_13h endp
-load_2dshape_res_nofatal_thunk proc far
+file_load_shape2d_res_fatal_thunk proc far
 
-    jmp     load_2dshape_res_nofatal
-load_2dshape_res_nofatal_thunk endp
-load_2dshape_res_thunk proc far
+    jmp     file_load_shape2d_res_fatal
+file_load_shape2d_res_fatal_thunk endp
+file_load_shape2d_res_nofatal_thunk proc far
 
-    jmp     load_2dshape_res
-load_2dshape_res_thunk endp
-parse_2d_shape_thunk proc far
+    jmp     file_load_shape2d_res_nofatal
+file_load_shape2d_res_nofatal_thunk endp
+file_load_shape2d_res_thunk proc far
 
-    jmp     parse_2d_shape
-parse_2d_shape_thunk endp
-load_2dshape_fatal_thunk proc far
+    jmp     file_load_shape2d_res
+file_load_shape2d_res_thunk endp
+parse_shape2d_thunk proc far
 
-    jmp     load_2dshape_fatal
-load_2dshape_fatal_thunk endp
-load_2dshape_nofatal_thunk proc far
+    jmp     parse_shape2d
+parse_shape2d_thunk endp
+file_load_shape2d_fatal_thunk proc far
 
-    jmp     load_2dshape_nofatal
-load_2dshape_nofatal_thunk endp
-load_2dshape_thunk proc far
+    jmp     file_load_shape2d_fatal
+file_load_shape2d_fatal_thunk endp
+file_load_shape2d_nofatal_thunk proc far
 
-    jmp     load_2dshape
+    jmp     file_load_shape2d_nofatal
+file_load_shape2d_nofatal_thunk endp
+file_load_shape2d_thunk proc far
+
+    jmp     file_load_shape2d
     ; align 2
     db 0
-load_2dshape_thunk endp
-sub_3386C proc far
+file_load_shape2d_thunk endp
+sprite_putimage_and_alt2 proc far
     var_4 = word ptr -4
     var_2 = word ptr -2
      s = byte ptr 0
@@ -12096,7 +12100,7 @@ sub_3386C proc far
     jmp     short loc_338C9
     ; align 2
     db 144
-sub_3386C endp
+sprite_putimage_and_alt2 endp
 ported_sprite_putimage_and_ proc far
     var_E = word ptr -14
     var_C = word ptr -12
@@ -19421,7 +19425,7 @@ loc_35F40:
     ; align 2
     db 0
 sub_35E08 endp
-load_2dshape_helper6 proc far
+file_load_shape2d_helper6 proc far
     var_4 = word ptr -4
     var_2 = word ptr -2
      s = byte ptr 0
@@ -19473,8 +19477,8 @@ loc_35F94:
     jmp     short loc_35F65
     ; align 2
     db 0
-load_2dshape_helper6 endp
-load_2dshape_helper2 proc far
+file_load_shape2d_helper6 endp
+file_load_shape2d_helper2 proc far
     var_10 = word ptr -16
     var_E = word ptr -14
     var_C = word ptr -12
@@ -19651,8 +19655,8 @@ loc_360EF:
     jmp     loc_35FD9
     ; align 2
     db 0
-load_2dshape_helper2 endp
-load_2dshape_helper4 proc far
+file_load_shape2d_helper2 endp
+file_load_shape2d_helper4 proc far
     var_14 = byte ptr -20
     var_12 = byte ptr -18
     var_10 = word ptr -16
@@ -19779,6 +19783,6 @@ loc_361B8:
     jnz     short loc_36177
 loc_361BA:
     jmp     short loc_3614E
-load_2dshape_helper4 endp
+file_load_shape2d_helper4 endp
 seg012 ends
 end

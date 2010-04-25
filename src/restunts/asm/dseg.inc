@@ -920,6 +920,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn aSlb:byte
     extrn aCannotLoadSampleFileS:byte
     extrn word_407AA:word
+    extrn unk_407AC:byte
     extrn dialog_fnt_colour:word
     extrn word_407CC:word
     extrn word_407CE:word
@@ -971,7 +972,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn a_vsh:byte
     extrn a_pes_0:byte
     extrn a_esh_0:byte
-    extrn unk_40BD5:byte
+    extrn shapeextend:byte
     extrn shapeexts:word
     extrn shapenums:byte
     extrn a_pvs:byte

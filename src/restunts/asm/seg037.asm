@@ -46,8 +46,8 @@ nosmart
 seg037 segment byte public 'STUNTSC' use16
     assume cs:seg037
     assume es:nothing, ss:nothing, ds:dseg
-    public load_2dshape_helper5
-load_2dshape_helper5 proc far
+    public file_load_shape2d_helper5
+file_load_shape2d_helper5 proc far
     var_E = word ptr -14
     var_C = word ptr -12
     var_A = word ptr -10
@@ -123,6 +123,6 @@ loc_3B191:
     db 0
     db 0
     db 0
-load_2dshape_helper5 endp
+file_load_shape2d_helper5 endp
 seg037 ends
 end

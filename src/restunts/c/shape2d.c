@@ -1,8 +1,11 @@
+#ifdef RESTUNTS_DOS
+
 #include <dos.h>
 #include <mem.h>
 #include <stddef.h>
 #include "externs.h"
 #include "memmgr.h"
+#include "fileio.h"
 
 #pragma pack (push, 1)
 struct SHAPE2D {
@@ -222,3 +225,167 @@ void sprite_putimage_and(struct SHAPE2D far* shape, unsigned short a, unsigned s
 void sprite_putimage_or(struct SHAPE2D far* shape, unsigned short a, unsigned short b) {
 	ported_sprite_putimage_or_(shape, a, b);
 }
+
+extern void far* sub_3265B(unsigned char far* memchunk, int arg_4); // file_shape2d_res_find()
+
+void file_unflip_shape2d(unsigned char far* memchunk, char far* mempages) {
+
+	int var_2, var_counter;
+	unsigned short var_6, var_8, var_A, var_C, var_E, src_height;
+	unsigned char far* subres;
+	unsigned char subchar;
+	int i, j;
+	unsigned short arg_0 = FP_OFF(memchunk);
+	unsigned short arg_2 = FP_SEG(memchunk);
+	unsigned short arg_4 = FP_OFF(mempages);
+	unsigned short arg_6 = FP_SEG(mempages);
+	unsigned int dseg = FP_SEG(wndsprite); // any object on the dseg will do
+
+	var_2 = *(unsigned short far*)&memchunk[4];
+	var_counter = 0;
+	do {
+		subres = sub_3265B(memchunk, var_counter); // find_shape2d??
+		
+		subchar = subres[15];
+		if ((subchar & 0xF0) == 0) {
+			subchar = subres[14] >> 4;
+			if (subchar != 0) {
+				if (subchar < 4) {
+					var_C = *(unsigned short far*)(&subres[0]); // SHAPE2D?
+					var_E = *(unsigned short far*)(&subres[2]); // SHAPE2D?
+					switch (subchar - 1) {
+						case 0:
+							// regular flip
+							for (j = 0; j < var_E; j++) { // height
+								for (i = 0; i < var_C; i++) { // width
+									mempages[i + j * var_C] = subres[0x10 + j + i * var_E];
+								}
+							}
+							break;
+						case 1:
+							// interlaced flip?
+							for (j = 0; j < var_E; j += 2) { // height
+								for (i = 0; i < var_C; i++) { // width
+									mempages[i + j * var_C] = subres[0x10 + (j / 2) + i * var_E];
+								}
+							}
+							for (j = 0; j < var_E; j += 2) { // height
+								for (i = 0; i < var_C; i++) { // width
+									mempages[var_C + i + j * var_C] = subres[0x10 + ((var_E + j + 1) / 2) + i * var_E];
+								}
+							}
+							break;
+						case 2:
+							// refer to loc_32BDE in the original function
+							fatal_error("unhandled flip type 2");
+							break;
+					}
+					
+					// copy flipped bits from mempages -> subres
+					for (j = 0; j < var_E; j++) { // height
+						for (i = 0; i < var_C; i++) { // width
+							subres[0x10 + i + j * var_C] = mempages[i + j * var_C];
+						}
+					}
+				}
+			}
+		}
+		var_counter++;
+		var_2--;
+	} while (var_2 > 0);
+	
+/*    asm {
+
+	this is the unimplemented unflip case 2 above:
+
+// switch 2
+loc_32BDE:
+    mov     bx, dx // dx = row counter
+    shr     bx, 1
+    add     bx, 10h
+    add     bx, [var_6]
+    mov     cx, [var_C] // width
+    mov     si, [var_E]  // height
+    shr     si, 1
+    adc     si, 0		// si = (height + 1) / 2
+
+loc_32BF3:
+    mov     al, [bx]
+    stosb
+    add     bx, si
+    loop    loc_32BF3
+
+    inc     dx
+    cmp     dx, [var_E]
+    jz      short loc_32C15 // done
+
+    mov     cx, [var_C]
+    mov     si, [var_E]
+    shr     si, 1
+loc_32C08:
+    mov     al, [bx]
+    stosb
+    add     bx, si
+    loop    loc_32C08
+    inc     dx
+    cmp     dx, [var_E]
+    jnz     short loc_32BDE
+    */
+
+}
+
+void far* file_load_shape2d(char* shapename, int fatal) {
+	char str[100];
+	char* strptr;
+	char strchar;
+	int counter;
+	void far* memchunk;
+	void far* mempages;
+	int unflipsize;
+
+	strcpy(str, shapename);
+	strptr = str;
+	
+	while (*strptr != '.' && *strptr) {
+		strptr++;
+	}
+	
+	if (*strptr != 0) {
+		fatal_error("unhandled - load_2dshape has dot in the name");
+	}
+
+	counter = 0;
+	for (counter = 0; shapeexts[counter] != 0; counter++) {
+
+		strcpy(strptr, &shapeexts[counter]);
+		memchunk = mmgr_get_chunk_by_name(str);
+		if (memchunk) return memchunk; // return existing chunk with same name
+
+		if (file_find(str)) {
+			if (strcmp(strptr, ".PVS") == 0) {
+				memchunk = file_decomp(str, fatal);
+				if (!memchunk) return MK_FP(0, 0);
+				
+				unflipsize = get_unflip_size(memchunk);
+				mempages = mmgr_alloc_pages("UNFLIP", unflipsize);
+				file_unflip_shape2d(memchunk, mempages);
+				//ported_file_unflip_2dshape_(memchunk, mempages);
+				mmgr_release(mempages);
+				
+				return memchunk;
+			}
+			// TODO: cases for XVS, PES, ESH
+		}
+	}
+	fatal_error("unhandled - cannot load %s", str);
+}
+
+void far* file_load_shape2d_fatal(char* shapename) {
+	return file_load_shape2d(shapename, 1);
+}
+
+void far* file_load_shape2d_nofatal(char* shapename) {
+	return file_load_shape2d(shapename, 0);
+}
+
+#endif

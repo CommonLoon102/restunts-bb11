@@ -1,3 +1,4 @@
+#ifdef RESTUNTS_DOS
 #include <dos.h>
 #include "externs.h"
 #include "memmgr.h"
@@ -616,3 +617,5 @@ char far* locate_text_res(char far* data, char* name) {
 	textname[3] = name[2];
 	return locate_shape_fatal(data, textname);
 }
+
+#endif

@@ -1,6 +1,14 @@
 #ifndef RESTUNTS_FILEIO_H
 #define RESTUNTS_FILEIO_H
 
+#ifdef RESTUNTS_SDL
+#define far
+#endif
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 const char* file_find(const char* query);
 const char* file_find_next();
 
@@ -28,5 +36,9 @@ void far* file_load_resfile(const char* filename);
 void far* file_load_resource(int type, const char* filename);
 void file_load_audiores(const char* songfile, const char* voicefile, const char* name);
 void far* file_load_3dres(const char* filename);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

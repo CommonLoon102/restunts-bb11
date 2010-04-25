@@ -3242,7 +3242,7 @@ loc_11E68:
     mov     byte_45514, 2Dh ; '-'
     mov     ax, offset aSdcsel; "sdcsel"
     push    ax
-    call    load_2dshape_fatal_thunk
+    call    file_load_shape2d_fatal_thunk
     add     sp, 2
     mov     [bp+var_36], ax
     mov     [bp+var_34], dx

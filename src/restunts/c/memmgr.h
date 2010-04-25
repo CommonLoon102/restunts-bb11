@@ -1,6 +1,10 @@
 #ifndef RESTUNTS_MEMMGR_H
 #define RESTUNTS_MEMMGR_H
 
+#ifdef RESTUNTS_SDL
+#define far
+#endif
+
 #pragma pack (push, 1)
 struct MEMCHUNK {
 	char resname[12];

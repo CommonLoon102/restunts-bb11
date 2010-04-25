@@ -1,4 +1,10 @@
+#ifdef RESTUNTS_DOS
 #include <dos.h>
+#endif
+#ifdef RESTUNTS_SDL
+#include <stdio.h>
+#define huge 
+#endif
 #include "externs.h"
 #include "fileio.h"
 #include "memmgr.h"
@@ -16,6 +22,7 @@ struct compr_header {
 	unsigned char  sizeh;
 };
 
+#ifdef RESTUNTS_DOS
 // Minimal stdio.h "support" untill we can link with a real CRT.
 #ifndef __STDIO_H
 #define __STDIO_H
@@ -307,6 +314,8 @@ const char* file_find_next()
 
 	return g_find.path;
 }
+
+#endif // RESTUNTS_DOS
 
 // Get number of 16-byte blocks needed to store entire file.
 unsigned short file_paras(const char* filename, int fatal)
@@ -751,13 +760,13 @@ void far* file_load_resource(int type, const char* filename) {
 
 			case 2:
 				// try load a 2d shape and retry if it failed
-				result = load_2dshape_nofatal_thunk(filename);
+				result = file_load_shape2d_nofatal_thunk(filename);
 				if (result != 0) return result;
 				break;
 
 			case 3:
 				// try load a 2d shape and retry if it failed
-				result = load_2dshape_res_nofatal_thunk(filename);
+				result = file_load_shape2d_res_nofatal_thunk(filename);
 				if (result != 0) return result;
 				break;
 
@@ -785,7 +794,7 @@ void far* file_load_resource(int type, const char* filename) {
 
 			case 8:
 				// try load a 2d shape and retry if it failed
-				result = load_2dshape_nofatal2(filename);
+				result = file_load_shape2d_nofatal2(filename);
 				if (result != 0) return result;
 				break;
 			default:
@@ -849,3 +858,4 @@ void file_load_audiores(const char* songfile, const char* voicefile, const char*
 	load_audio_finalize(audiores);
 	is_audioloaded = 1;
 }
+

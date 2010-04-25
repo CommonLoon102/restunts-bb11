@@ -46,7 +46,7 @@ nosmart
 seg031 segment byte public 'STUNTSC' use16
     assume cs:seg031
     assume es:nothing, ss:nothing, ds:dseg
-    public load_2dshape_nofatal2
+    public file_load_shape2d_nofatal2
     public sub_39E24
     public sub_39E4C
     public nullsub_1
@@ -58,24 +58,19 @@ seg031 segment byte public 'STUNTSC' use16
     public ported_mmgr_alloc_resbytes_
     public ported_mmgr_get_res_ofs_diff_scaled_
     public ported_mmgr_get_chunk_size_bytes_
-load_2dshape_nofatal2 proc far
+file_load_shape2d_nofatal2 proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
 
     push    bp
-loc_39E15:
     mov     bp, sp
-loc_39E17:
     push    [bp+arg_0]
-loc_39E1A:
-    call    load_2dshape_nofatal_thunk
-loc_39E1F:
+    call    file_load_shape2d_nofatal_thunk
     add     sp, 2
-loc_39E22:
     pop     bp
     retf
-load_2dshape_nofatal2 endp
+file_load_shape2d_nofatal2 endp
 sub_39E24 proc far
     var_50 = byte ptr -80
      s = byte ptr 0
@@ -676,7 +671,7 @@ load_palandcursor proc far
     mov     ax, offset aSdmain; "sdmain"
     push    ax
 loc_3A2CC:
-    call    load_2dshape_fatal_thunk
+    call    file_load_shape2d_fatal_thunk
     add     sp, 2
     mov     [bp+var_30C], ax
     mov     [bp+var_30A], dx
@@ -762,7 +757,7 @@ loc_3A3BB:
     mov     ax, offset aSdmain_0; "sdmain"
     push    ax
 loc_3A3CE:
-    call    load_2dshape_fatal_thunk
+    call    file_load_shape2d_fatal_thunk
     add     sp, 2
     mov     [bp+var_30C], ax
     mov     [bp+var_30A], dx

@@ -88,6 +88,10 @@ extrn sprite_clear_1_color:proc
 extrn sprite_putimage:proc
 extrn sprite_putimage_and:proc
 extrn sprite_putimage_or:proc
+extrn file_load_shape2d:proc
+extrn file_load_shape2d_fatal:proc
+extrn file_load_shape2d_nofatal:proc
+extrn file_unflip_shape2d:proc
 
 extrn stuntsmain:proc
 

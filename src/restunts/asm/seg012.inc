@@ -220,7 +220,7 @@ seg012 segment byte public 'STUNTSC' use16
     extrn mat_multiply:proc
     extrn mat_invert:proc
     extrn off_32ADC:word
-    extrn load_2dshape_helper3:proc
+    extrn ported_file_unflip_shape2d_:proc
     extrn loc_32B78
     extrn loc_32B93
     extrn loc_32BDE
@@ -253,13 +253,14 @@ seg012 segment byte public 'STUNTSC' use16
     extrn loc_33697
     extrn sub_33742:proc
     extrn video_set_mode_13h:proc
-    extrn load_2dshape_res_nofatal_thunk:proc
-    extrn load_2dshape_res_thunk:proc
-    extrn parse_2d_shape_thunk:proc
-    extrn load_2dshape_fatal_thunk:proc
-    extrn load_2dshape_nofatal_thunk:proc
-    extrn load_2dshape_thunk:proc
-    extrn sub_3386C:proc
+    extrn file_load_shape2d_res_fatal_thunk:proc
+    extrn file_load_shape2d_res_nofatal_thunk:proc
+    extrn file_load_shape2d_res_thunk:proc
+    extrn parse_shape2d_thunk:proc
+    extrn file_load_shape2d_fatal_thunk:proc
+    extrn file_load_shape2d_nofatal_thunk:proc
+    extrn file_load_shape2d_thunk:proc
+    extrn sprite_putimage_and_alt2:proc
     extrn ported_sprite_putimage_and_:proc
     extrn loc_338C9
     extrn nopsub_339FA:proc
@@ -324,7 +325,7 @@ seg012 segment byte public 'STUNTSC' use16
     extrn sub_35DE6:proc
     extrn sub_35E08:proc
     extrn loc_35ED9
-    extrn load_2dshape_helper6:proc
-    extrn load_2dshape_helper2:proc
-    extrn load_2dshape_helper4:proc
+    extrn file_load_shape2d_helper6:proc
+    extrn file_load_shape2d_helper2:proc
+    extrn file_load_shape2d_helper4:proc
 seg012 ends

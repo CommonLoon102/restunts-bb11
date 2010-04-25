@@ -46,14 +46,14 @@ nosmart
 seg035 segment byte public 'STUNTSC' use16
     assume cs:seg035
     assume es:nothing, ss:nothing, ds:dseg
-    public load_2dshape_res_fatal
-    public load_2dshape_res_nofatal
-    public load_2dshape_res
-    public parse_2d_shape
+    public file_load_shape2d_res_fatal
+    public file_load_shape2d_res_nofatal
+    public file_load_shape2d_res
+    public parse_shape2d
     public sub_3B08C
     ; align 2
     db 144
-load_2dshape_res_fatal proc far
+file_load_shape2d_res_fatal proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -70,7 +70,7 @@ loc_3ACDF:
 loc_3ACE2:
     push    cs
 loc_3ACE3:
-    call near ptr load_2dshape_res
+    call near ptr file_load_shape2d_res
 loc_3ACE6:
     add     sp, 4
     pop     bp
@@ -78,8 +78,8 @@ locret_3ACEA:
     retf
     ; align 2
     db 144
-load_2dshape_res_fatal endp
-load_2dshape_res_nofatal proc far
+file_load_shape2d_res_fatal endp
+file_load_shape2d_res_nofatal proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -94,14 +94,14 @@ loc_3ACF2:
     push    [bp+arg_0]
     push    cs
 loc_3ACF6:
-    call near ptr load_2dshape_res
+    call near ptr file_load_shape2d_res
 loc_3ACF9:
     add     sp, 4
 loc_3ACFC:
     pop     bp
     retf
-load_2dshape_res_nofatal endp
-load_2dshape_res proc far
+file_load_shape2d_res_nofatal endp
+file_load_shape2d_res proc far
     var_A = word ptr -10
     var_8 = word ptr -8
     var_6 = word ptr -6
@@ -144,7 +144,7 @@ loc_3AD22:
 loc_3AD2A:
     push    [bp+arg_fatal]
     push    [bp+arg_0]
-    call    load_2dshape
+    call    file_load_shape2d
     add     sp, 4
     mov     [bp+var_4], ax
 loc_3AD3B:
@@ -178,7 +178,7 @@ loc_3AD5C:
     push    [bp+var_2]
     push    [bp+var_4]
     push    cs
-    call near ptr parse_2d_shape
+    call near ptr parse_shape2d
     add     sp, 8
     push    [bp+var_2]
     push    [bp+var_4]
@@ -199,8 +199,8 @@ loc_3AD9A:
     pop     bp
 locret_3AD9B:
     retf
-load_2dshape_res endp
-parse_2d_shape proc far
+file_load_shape2d_res endp
+parse_shape2d proc far
     var_38 = dword ptr -56
     var_34 = word ptr -52
     var_32 = word ptr -50
@@ -534,7 +534,7 @@ locret_3B08A:
     retf
     ; align 2
     db 144
-parse_2d_shape endp
+parse_shape2d endp
 sub_3B08C proc far
     var_4 = byte ptr -4
     var_2 = word ptr -2

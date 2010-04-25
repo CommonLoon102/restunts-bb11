@@ -2427,7 +2427,7 @@ loc_23120:
     push    si
     push    word ptr gnobshapes+6
     push    word ptr gnobshapes+4
-    call    sub_3386C
+    call    sprite_putimage_and_alt2
     add     sp, 8
     push    di
     push    si
@@ -2936,7 +2936,7 @@ loc_235F9:
     push    ax
     push    word ptr gnobshapes+0Eh
     push    word ptr gnobshapes+0Ch
-    call    sub_3386C
+    call    sprite_putimage_and_alt2
     add     sp, 8
     mov     al, [bp+var_16]
     sub     ah, ah

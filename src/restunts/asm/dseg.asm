@@ -968,6 +968,7 @@ dseg segment byte public 'STUNTSD' use16
     public aSlb
     public aCannotLoadSampleFileS
     public word_407AA
+    public unk_407AC
     public dialog_fnt_colour
     public word_407CC
     public word_407CE
@@ -1019,7 +1020,7 @@ dseg segment byte public 'STUNTSD' use16
     public a_vsh
     public a_pes_0
     public a_esh_0
-    public unk_40BD5
+    public shapeextend
     public shapeexts
     public shapenums
     public a_pvs
@@ -21329,7 +21330,7 @@ aCannotLoadSampleFileS     db 99
     db 10
     db 0
 word_407AA     dw 0
-    db 46
+unk_407AC     db 46
     db 0
     db 1
     db 0
@@ -21974,13 +21975,13 @@ a_esh_0     db 46
     db 83
     db 72
     db 0
-unk_40BD5     db 0
+shapeextend     db 0
 shapeexts     dw offset a_pvs_0       ; ".PVS"
     dw offset a_xvs_0       ; ".XVS"
     dw offset a_vsh         ; ".VSH"
     dw offset a_pes_0       ; ".PES"
     dw offset a_esh_0       ; ".ESH"
-    dw offset unk_40BD5
+    dw offset shapeextend
 shapenums     db 0
     db 1
     db 2

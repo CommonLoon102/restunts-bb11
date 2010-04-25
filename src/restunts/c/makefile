@@ -11,7 +11,7 @@ CC = bcc /c /u- /mm /B /n$(OBJDIR) /DRESTUNTS_DOS
 # Set up tools for SDL
 !elif ($(TARGET)==sdl)
 SDLPATH = s:\src\sdl
-CC = cl /MD /c /I$(SDLPATH)\include /DRESTUNTS_SDL
+CC = cl /MD /c /I$(SDLPATH)\include /DRESTUNTS_SDL /Fo$(OBJDIR)\$?
 
 !else
 !error Unsupported C target: $(TARGET)

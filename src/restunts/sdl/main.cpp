@@ -1,4 +1,5 @@
 #include "SDL.h"
+#include "fileio.h"
 
 /* Function Prototypes */
 void PrintKeyInfo( SDL_KeyboardEvent *key );
@@ -6,6 +7,8 @@ void PrintModifiers( SDLMod mod );
 
 /* main */
 int main( int argc, char *argv[] ){
+	
+	file_decomp("sdmain.pvs", 1);
 	
 	SDL_Event event;
 	int quit = 0;

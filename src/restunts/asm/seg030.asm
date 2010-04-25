@@ -69,7 +69,7 @@ loc_39CD4:
     push    di
     push    si
 loc_39CD6:
-    mov     si, 75BEh
+    mov     si, offset byte_42D2E
     push    ds
 loc_39CDA:
     pop     es
@@ -100,7 +100,7 @@ loc_39CF3:
 loc_39CF6:
     push    ax
 loc_39CF7:
-    mov     ax, 75BEh
+    mov     ax, offset byte_42D2E
 loc_39CFA:
     push    ax              ; char *
 loc_39CFB:
@@ -124,7 +124,7 @@ loc_39D13:
 loc_39D16:
     mov     byte_42D2E, 0
 loc_39D1B:
-    mov     si, 75BEh
+    mov     si, offset byte_42D2E
 loc_39D1E:
     push    ds
     pop     es
@@ -160,14 +160,14 @@ loc_39D49:
     inc     [bp+var_2]
     mov     bx, [bp+var_2]
     mov     di, bx
-    mov     si, 75BEh
+    mov     si, offset byte_42D2E
     mov     ax, ds
     mov     es, ax
     jmp     short loc_39D72
     ; align 2
     db 144
 loc_39D6A:
-    mov     si, 75BEh
+    mov     si, offset byte_42D2E
     push    ds
     pop     es
     mov     di, word ptr [bp+arg_0]
@@ -199,7 +199,7 @@ loc_39D8D:
 loc_39D8F:
     repne movsb
 loc_39D91:
-    mov     di, 75BEh
+    mov     di, offset byte_42D2E
     mov     ax, ds
     mov     es, ax
     mov     cx, 0FFFFh
@@ -208,9 +208,9 @@ loc_39D91:
     not     cx
     dec     cx
     mov     bx, cx
-    cmp     byte ptr [bx+75BAh], 2Eh ; '.'
+    cmp     byte_42D2A[bx], 2Eh ; '.'
     jnz     short loc_39DBF
-    mov     di, 75BEh
+    mov     di, offset byte_42D2E
     mov     ax, ds
     mov     cx, 0FFFFh
     xor     ax, ax
@@ -220,9 +220,9 @@ loc_39D91:
     cmp     cx, 4
     ja      short loc_39E0B
 loc_39DBF:
-    mov     di, 503Ch
+    mov     di, offset unk_407AC
 loc_39DC2:
-    mov     si, 75BEh
+    mov     si, offset byte_42D2E
     mov     ax, ds
     mov     cx, 0FFFFh
     xor     ax, ax
@@ -247,7 +247,7 @@ loc_39DE2:
 loc_39DE4:
     repne movsb
 loc_39DE6:
-    mov     si, 75BEh
+    mov     si, offset byte_42D2E
 loc_39DE9:
     mov     di, word ptr [bp+arg_0+2]
 loc_39DEC:
@@ -275,7 +275,7 @@ loc_39E07:
 loc_39E09:
     repne movsb
 loc_39E0B:
-    mov     ax, 75BEh
+    mov     ax, offset byte_42D2E
 loc_39E0E:
     pop     si
     pop     di

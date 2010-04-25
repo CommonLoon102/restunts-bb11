@@ -1,5 +1,5 @@
 seg031 segment byte public 'STUNTSC' use16
-    extrn load_2dshape_nofatal2:proc
+    extrn file_load_shape2d_nofatal2:proc
     extrn sub_39E24:proc
     extrn sub_39E4C:proc
     extrn nullsub_1:proc
