@@ -166,8 +166,8 @@ seg012 segment byte public 'STUNTSC' use16
     public nopsub_307FA
     public ported_kb_init_interrupt_
     public ported_kb_exit_handler_
-    public kb_intr_handler
-    public kb_intr_bios_handler
+    public ported_kb_int9_handler_
+    public ported_kb_int16_handler_
     public kb_get_key_state
     public kb_call_readchar_callback
     public kb_read_char
@@ -5335,18 +5335,18 @@ ported_kb_init_interrupt_ proc far
     xor     bx, bx
     mov     es, bx
     mov     bx, es:24h      ; 24h = func ofs for keyboard action
-    cmp     bx, offset kb_intr_handler
+    cmp     bx, offset kb_int9_handler
     jz      short loc_30861
     mov     old_kb_intr_ofs, bx
     mov     bx, es:26h      ; 26h - func seg for keyboard action
     mov     old_kb_intr_seg, bx
-    mov     word ptr es:24h, offset kb_intr_handler
+    mov     word ptr es:24h, offset kb_int9_handler
     mov     word ptr es:26h, cs
     mov     bx, es:58h      ; 58h - func ofs for bios keyboard
     mov     old_kb_intr_bios_ofs, bx
     mov     bx, es:5Ah      ; 5Ah - func seg for bios keyboard
     mov     old_kb_intr_bios_seg, bx
-    mov     word ptr es:58h, offset kb_intr_bios_handler
+    mov     word ptr es:58h, offset kb_int16_handler
     mov     word ptr es:5Ah, cs
 loc_30861:
     mov     al, ah
@@ -5394,7 +5394,7 @@ loc_308C1:
     out     21h, al         ; Interrupt controller, 8259A.
     retf
 ported_kb_exit_handler_ endp
-kb_intr_handler proc far
+ported_kb_int9_handler_ proc far
 
     sti
     push    ax
@@ -5504,8 +5504,8 @@ loc_30992:
 loc_3099D:
     mov     kbinput[bx], 0
     jmp     loc_308EA
-kb_intr_handler endp
-kb_intr_bios_handler proc far
+ported_kb_int9_handler_ endp
+ported_kb_int16_handler_ proc far
      r = byte ptr 0
 
     push    bx
@@ -5554,7 +5554,7 @@ loc_30A04:
     mov     al, kbinput+2Ah
     or      al, kbinput+36h
     jmp     short loc_309BD
-kb_intr_bios_handler endp
+ported_kb_int16_handler_ endp
 kb_get_key_state proc far
      s = byte ptr 0
      r = byte ptr 2

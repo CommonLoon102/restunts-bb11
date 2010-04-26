@@ -727,6 +727,8 @@ static PortFuncName(labelname) {
 
 		labelname == "kb_init_interrupt" ||
 		labelname == "kb_exit_handler" ||
+		labelname == "kb_int9_handler" ||
+		labelname == "kb_int16_handler" ||
 
 		labelname == "stuntsmain"
 	)

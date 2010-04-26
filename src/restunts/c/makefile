@@ -7,7 +7,7 @@ OBJDIR = ..\$(TARGET)\build
 # Set up tools for DOS
 !if ($(TARGET)==dos)
 CC = bcc /c /u- /mm /B /n$(OBJDIR) /DRESTUNTS_DOS
-
+ASM = tasm
 # Set up tools for SDL
 !elif ($(TARGET)==sdl)
 SDLPATH = s:\src\sdl
@@ -18,7 +18,7 @@ CC = cl /MD /c /I$(SDLPATH)\include /DRESTUNTS_SDL /Fo$(OBJDIR)\$?
 !endif
 
 
-all: $(OBJDIR)\fileio.obj $(OBJDIR)\math.obj $(OBJDIR)\memmgr.obj $(OBJDIR)\restunts.obj $(OBJDIR)\shape3d.obj $(OBJDIR)\shape2d.obj $(OBJDIR)\keyboard.obj
+all: $(OBJDIR)\fileio.obj $(OBJDIR)\math.obj $(OBJDIR)\memmgr.obj $(OBJDIR)\restunts.obj $(OBJDIR)\shape3d.obj $(OBJDIR)\shape2d.obj $(OBJDIR)\keyboard.obj $(OBJDIR)\dos_int16.obj
 
 $(OBJDIR)\fileio.obj: fileio.c
 	$(CC) $?
@@ -40,6 +40,9 @@ $(OBJDIR)\shape2d.obj: shape2d.c
 
 $(OBJDIR)\keyboard.obj: keyboard.c
 	$(CC) $?
+
+$(OBJDIR)\dos_int16.obj: dos_int16.asm
+	$(ASM) $? $(OBJDIR)
 
 clean:
 	del $(OBJDIR)\fileio.obj

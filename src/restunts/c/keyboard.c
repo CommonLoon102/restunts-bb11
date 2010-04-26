@@ -9,13 +9,13 @@ extern void interrupt( far * _CType _getvect( int __interruptno ))( );
 typedef void interrupt (far* voidinterruptfunctype)();
 typedef void (far* voidfunctype)();
 
-voidinterruptfunctype old_kb_intr_handler;
-voidinterruptfunctype old_kb_intr_bios_handler;
+voidinterruptfunctype old_kb_int9_handler;
+voidinterruptfunctype old_kb_int16_handler;
 
-extern void interrupt kb_intr_handler();
-extern void interrupt kb_intr_bios_handler();
 extern void add_exit_handler(voidfunctype exitfunc);
+extern void interrupt kb_int16_handler(); // our asm proxy, simply redirects to kb_int16_handler_c
 
+// these data are local to keyboard.c, but kept in their original slots for convencience:
 extern unsigned char kbinput[];
 extern unsigned int kb_intr_data;
 extern unsigned int kb_intr_data2;
@@ -28,9 +28,10 @@ extern unsigned char keymap3[];
 extern unsigned char keymap4[];
 extern unsigned char keymap5[];
 extern unsigned int kblastinput;
+
 void kb_exit_handler();
 
-void interrupt my_kb_intr_handler() {
+void interrupt kb_int9_handler() {
 	unsigned char kbc, kbp;
 	unsigned int kbval, kbdata;
 
@@ -97,12 +98,45 @@ void interrupt my_kb_intr_handler() {
 	
 }
 
-/*void interrupt my_kb_intr_bios_handler() {
-	unsigned char bioscall;
-	asm {
-		mov bioscall, ah
+// the int16 interrupt handler calls kb_int16_handler() (implemented in asm), which in turn calls kb_int16_handler_c:
+int kb_int16_handler_c(unsigned int ax) {
+	unsigned int result, kbdata;
+	unsigned char bioscall = ax >> 8;
+	disable();
+	if (bioscall == 0) {
+		if (kb_intr_data4 == 0) {
+			enable();
+			return 0;
+		}
+		kbdata = kb_intr_data2;
+		result = kb_intr_data_array[kbdata];
+		kbdata+=2;
+		if (kbdata >= kb_intr_data3)
+			kbdata = 0;
+		kb_intr_data2 = kbdata;
+		kb_intr_data4 = kb_intr_data4 - 2;
+		enable();
+		return result;
 	}
-}*/
+	
+	if (bioscall == 1) {
+		if (kb_intr_data4 == 0) {
+			enable();
+			return 0;
+		}
+		result = kb_intr_data_array[kb_intr_data2];
+		enable();
+		return result;
+	}
+	
+	if (bioscall == 2) {
+		result = kbinput[0x2A] | kbinput[0x36];
+		enable();
+		return result;
+	}
+	enable();
+	return 0;
+}
 
 void kb_init_interrupt() {
 	unsigned char irqmask;
@@ -110,11 +144,11 @@ void kb_init_interrupt() {
 	irqmask = inp(0x21);
 	outp(0x21, irqmask | 0x3);
 
-	old_kb_intr_handler = getvect(9);
-	setvect(9, my_kb_intr_handler);
+	old_kb_int9_handler = getvect(9);
+	setvect(9, kb_int9_handler);
 
-	old_kb_intr_bios_handler = getvect(22);
-	setvect(22, kb_intr_bios_handler);
+	old_kb_int16_handler = getvect(0x16);
+	setvect(0x16, kb_int16_handler); // register the int16 asm proxy for kb_int16_handler_c
 
 	outp(0x21, irqmask);
 	add_exit_handler(kb_exit_handler);
@@ -125,8 +159,8 @@ void kb_exit_handler() {
 
 	irqmask = inp(0x21);
 	outp(0x21, irqmask | 0x3);
-	setvect(9, old_kb_intr_handler);
-	setvect(22, old_kb_intr_bios_handler);
+	setvect(9, old_kb_int9_handler);
+	setvect(0x16, old_kb_int16_handler);
 	pokeb(0, 0x417, peekb(0, 0x417) & 0xf0);
 	outp(0x21, irqmask);
 }

@@ -101,6 +101,8 @@ extrn file_get_shape2d:proc
 
 extrn kb_init_interrupt:proc
 extrn kb_exit_handler:proc
+extrn kb_int9_handler:proc
+extrn kb_int16_handler:proc
 
 extrn stuntsmain:proc
 

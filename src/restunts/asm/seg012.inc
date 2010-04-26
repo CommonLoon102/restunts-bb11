@@ -119,8 +119,8 @@ seg012 segment byte public 'STUNTSC' use16
     extrn nopsub_307FA:proc
     extrn ported_kb_init_interrupt_:proc
     extrn ported_kb_exit_handler_:proc
-    extrn kb_intr_handler:proc
-    extrn kb_intr_bios_handler:proc
+    extrn ported_kb_int9_handler_:proc
+    extrn ported_kb_int16_handler_:proc
     extrn kb_get_key_state:proc
     extrn kb_call_readchar_callback:proc
     extrn kb_read_char:proc
