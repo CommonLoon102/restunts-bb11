@@ -5431,11 +5431,11 @@ loc_308EA:
 loc_308F4:
     xor     ah, ah
     mov     bx, ax
-    cmp     bx, 5Ah ; 'Z'
+    cmp     bx, 5Ah ; 'Z'   ; keymaps are 91 bytes
     jb      short loc_308FF
     xor     bx, bx
 loc_308FF:
-    mov     word_3FBD8, bx
+    mov     kblastinput, bx
     mov     kbinput[bx], 1
     test    kbinput+38h, 1
     jnz     short loc_30986 ; test keymap5
@@ -5453,24 +5453,24 @@ loc_3092F:
     jnz     short loc_3096C
     xor     ah, ah
 loc_30935:
-    mov     bx, word_3FBD0
+    mov     bx, kb_intr_data
     cli
-    mov     word_3FB50[bx], ax
+    mov     kb_intr_data_array[bx], ax
     add     bx, 2
-    cmp     bx, word_3FBD4
+    cmp     bx, kb_intr_data3
     jb      short loc_30949
     xor     bx, bx
 loc_30949:
-    mov     word_3FBD0, bx
-    mov     bx, word_3FBD6
+    mov     kb_intr_data, bx
+    mov     bx, kb_intr_data4
     add     bx, 2
-    cmp     bx, word_3FBD4
+    cmp     bx, kb_intr_data3
     jbe     short loc_30964
-    mov     bx, word_3FBD4
-    mov     ax, word_3FBD0
-    mov     word_3FBD2, ax
+    mov     bx, kb_intr_data3
+    mov     ax, kb_intr_data
+    mov     kb_intr_data2, ax
 loc_30964:
-    mov     word_3FBD6, bx
+    mov     kb_intr_data4, bx
     sti
     jmp     loc_308EA
 loc_3096C:
@@ -5527,26 +5527,26 @@ loc_309BD:
     retf    2
 loc_309C3:
     cli
-    cmp     word_3FBD6, 0
+    cmp     kb_intr_data4, 0
     jz      short loc_309BB
-    mov     bx, word_3FBD2
-    mov     ax, word_3FB50[bx]
+    mov     bx, kb_intr_data2
+    mov     ax, kb_intr_data_array[bx]
     add     bx, 2
-    cmp     bx, word_3FBD4
+    cmp     bx, kb_intr_data3
     jb      short loc_309DE
     xor     bx, bx
 loc_309DE:
-    mov     word_3FBD2, bx
-    mov     bx, word_3FBD6
+    mov     kb_intr_data2, bx
+    mov     bx, kb_intr_data4
     sub     bx, 2
-    mov     word_3FBD6, bx
+    mov     kb_intr_data4, bx
     jmp     short loc_309BD
 loc_309EF:
-    cmp     word_3FBD6, 0
+    cmp     kb_intr_data4, 0
     jz      short loc_309BB
     sti
-    mov     bx, word_3FBD2
-    mov     ax, word_3FB50[bx]
+    mov     bx, kb_intr_data2
+    mov     ax, kb_intr_data_array[bx]
     pop     ds
     pop     bx
     retf    2

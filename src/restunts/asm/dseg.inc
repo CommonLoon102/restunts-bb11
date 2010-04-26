@@ -823,12 +823,12 @@ dseg segment byte public 'STUNTSD' use16
     extrn old_kb_intr_seg:word
     extrn old_kb_intr_bios_ofs:word
     extrn old_kb_intr_bios_seg:word
-    extrn word_3FB50:word
-    extrn word_3FBD0:word
-    extrn word_3FBD2:word
-    extrn word_3FBD4:word
-    extrn word_3FBD6:word
-    extrn word_3FBD8:word
+    extrn kb_intr_data_array:word
+    extrn kb_intr_data:word
+    extrn kb_intr_data2:word
+    extrn kb_intr_data3:word
+    extrn kb_intr_data4:word
+    extrn kblastinput:word
     extrn kbinput:byte
     extrn keymap1:byte
     extrn keymap2:byte
