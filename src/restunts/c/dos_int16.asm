@@ -16,7 +16,7 @@ kb_int16_handler proc far
 	add sp, 2
 	pop ds
 	pop bx
-	iret
+	retf 2
 kb_int16_handler endp
 
 cseg ends

@@ -168,12 +168,16 @@ seg012 segment byte public 'STUNTSC' use16
     public ported_kb_exit_handler_
     public ported_kb_int9_handler_
     public ported_kb_int16_handler_
-    public kb_get_key_state
-    public kb_call_readchar_callback
-    public kb_read_char
-    public kb_checking
+    public ported_kb_get_key_state_
+    public ported_kb_call_readchar_callback_
+    public ported_kb_read_char_
+    public ported_kb_checking_
+    public nopsub_kb_set_readchar_callback
+    public nopsub_kb_get_readchar_callback
     public flush_stdin
-    public sub_30A68
+    public kb_check
+    public nopsub_30A77
+    public nopsub_30A97
     public ported_file_read_
     public ported_file_read_nofatal_
     public ported_file_read_fatal_
@@ -5555,7 +5559,7 @@ loc_30A04:
     or      al, kbinput+36h
     jmp     short loc_309BD
 ported_kb_int16_handler_ endp
-kb_get_key_state proc far
+ported_kb_get_key_state_ proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -5569,13 +5573,13 @@ kb_get_key_state proc far
     retf
     ; align 2
     db 0
-kb_get_key_state endp
-kb_call_readchar_callback proc far
+ported_kb_get_key_state_ endp
+ported_kb_call_readchar_callback_ proc far
 
     call    dword ptr readchar_callback_ofs
     retf
-kb_call_readchar_callback endp
-kb_read_char proc far
+ported_kb_call_readchar_callback_ endp
+ported_kb_read_char_ proc far
 
     mov     ah, 1
     int     16h             ; KEYBOARD - CHECK BUFFER, DO NOT CLEAR
@@ -5590,8 +5594,8 @@ loc_30A2A:
     xor     ah, ah
 locret_30A34:
     retf
-kb_read_char endp
-kb_checking proc far
+ported_kb_read_char_ endp
+ported_kb_checking_ proc far
 
     mov     ah, 1
     int     16h             ; KEYBOARD - CHECK BUFFER, DO NOT CLEAR
@@ -5603,18 +5607,28 @@ loc_30A3D:
     xor     ah, ah
 locret_30A43:
     retf
+ported_kb_checking_ endp
+nopsub_kb_set_readchar_callback proc far
+     s = byte ptr 0
+     r = byte ptr 2
+    arg_0 = word ptr 6
+    arg_2 = word ptr 8
+
     push    bp
     mov     bp, sp
-    mov     ax, [bp+6]
+    mov     ax, [bp+arg_0]
     mov     readchar_callback_ofs, ax
-    mov     ax, [bp+8]
+    mov     ax, [bp+arg_2]
     mov     readchar_callback_seg, ax
     pop     bp
     retf
+nopsub_kb_set_readchar_callback endp
+nopsub_kb_get_readchar_callback proc far
+
     mov     ax, readchar_callback_ofs
     mov     dx, readchar_callback_seg
     retf
-kb_checking endp
+nopsub_kb_get_readchar_callback endp
 flush_stdin proc far
 
     call    kb_call_readchar_callback
@@ -5622,7 +5636,7 @@ flush_stdin proc far
     jz      short near ptr flush_stdin
     retf
 flush_stdin endp
-sub_30A68 proc far
+kb_check proc far
 
     mov     ah, 1
     int     16h             ; KEYBOARD - CHECK BUFFER, DO NOT CLEAR
@@ -5632,39 +5646,50 @@ sub_30A68 proc far
 loc_30A71:
     mov     ah, 0
     int     16h             ; KEYBOARD - READ CHAR FROM BUFFER, WAIT IF EMPTY
-    jmp     short near ptr sub_30A68
-loc_30A77:
+    jmp     short near ptr kb_check
+kb_check endp
+nopsub_30A77 proc far
+
     call    kb_call_readchar_callback
     cmp     ax, 0
     jnz     short locret_30A96
     call    timer_get_counter
     cmp     dx, word_405F8
-    jb      short loc_30A77
+    jb      short near ptr nopsub_30A77
     ja      short loc_30A94
     cmp     ax, word_405F6
-    jb      short loc_30A77
+    jb      short near ptr nopsub_30A77
 loc_30A94:
     xor     ax, ax
 locret_30A96:
     retf
+nopsub_30A77 endp
+nopsub_30A97 proc far
+    var_4 = word ptr -4
+    var_2 = word ptr -2
+     s = byte ptr 0
+     r = byte ptr 2
+    arg_0 = word ptr 6
+    arg_2 = word ptr 8
+
     push    bp
     mov     bp, sp
     sub     sp, 4
     call    timer_get_counter
-    add     ax, [bp+6]
-    adc     dx, [bp+8]
-    mov     [bp-4], ax
-    mov     [bp-2], dx
+    add     ax, [bp+arg_0]
+    adc     dx, [bp+arg_2]
+    mov     [bp+var_4], ax
+    mov     [bp+var_2], dx
 loc_30AAE:
     call    kb_call_readchar_callback
     cmp     ax, 0
     jnz     short loc_30ACB
     call    timer_get_counter
-    cmp     dx, [bp-2]
+    cmp     dx, [bp+var_2]
     jb      short loc_30AAE
 loc_30AC2:
     ja      short loc_30AC9
-    cmp     ax, [bp-4]
+    cmp     ax, [bp+var_4]
     jb      short loc_30AAE
 loc_30AC9:
     xor     ax, ax
@@ -5674,7 +5699,7 @@ loc_30ACB:
     retf
     ; align 2
     db 0
-sub_30A68 endp
+nopsub_30A97 endp
 ported_file_read_ proc far
     var_fatal = word ptr -8
      s = byte ptr 0

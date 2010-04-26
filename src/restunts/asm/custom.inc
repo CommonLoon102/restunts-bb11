@@ -103,6 +103,10 @@ extrn kb_init_interrupt:proc
 extrn kb_exit_handler:proc
 extrn kb_int9_handler:proc
 extrn kb_int16_handler:proc
+extrn kb_get_key_state:proc
+extrn kb_call_readchar_callback:proc
+extrn kb_read_char:proc
+extrn kb_checking:proc
 
 extrn stuntsmain:proc
 

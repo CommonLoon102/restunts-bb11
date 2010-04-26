@@ -729,6 +729,10 @@ static PortFuncName(labelname) {
 		labelname == "kb_exit_handler" ||
 		labelname == "kb_int9_handler" ||
 		labelname == "kb_int16_handler" ||
+		labelname == "kb_get_key_state" ||
+		labelname == "kb_call_readchar_callback" ||
+		labelname == "kb_read_char" ||
+		labelname == "kb_checking" ||
 
 		labelname == "stuntsmain"
 	)

@@ -5019,7 +5019,7 @@ loc_29D3A:
 loc_29D76:
     mov     byte_3FE00, 0
 loc_29D7B:
-    call    sub_30A68
+    call    kb_check
     mov     byte_3B8F2, 0
     call    sub_372F4
     mov     word_3F88E, 0

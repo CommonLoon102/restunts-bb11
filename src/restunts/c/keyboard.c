@@ -3,8 +3,10 @@
 // need these since we are referncing external symbols without an underscore
 #define getvect _getvect
 #define setvect _setvect
+#define int86 _int86
 extern void _CType _setvect( int __interruptno, void interrupt( far *__isr )( ) );
 extern void interrupt( far * _CType _getvect( int __interruptno ))( );
+int _Cdecl _int86( int __intno, union REGS _FAR *__inregs, union REGS _FAR *__outregs );
 
 typedef void interrupt (far* voidinterruptfunctype)();
 typedef void (far* voidfunctype)();
@@ -30,6 +32,7 @@ extern unsigned char keymap5[];
 extern unsigned int kblastinput;
 
 void kb_exit_handler();
+int kb_read_char();
 
 void interrupt kb_int9_handler() {
 	unsigned char kbc, kbp;
@@ -109,7 +112,7 @@ int kb_int16_handler_c(unsigned int ax) {
 			return 0;
 		}
 		kbdata = kb_intr_data2;
-		result = kb_intr_data_array[kbdata];
+		result = kb_intr_data_array[kbdata / 2];
 		kbdata+=2;
 		if (kbdata >= kb_intr_data3)
 			kbdata = 0;
@@ -124,7 +127,7 @@ int kb_int16_handler_c(unsigned int ax) {
 			enable();
 			return 0;
 		}
-		result = kb_intr_data_array[kb_intr_data2];
+		result = kb_intr_data_array[kb_intr_data2 / 2];
 		enable();
 		return result;
 	}
@@ -132,7 +135,7 @@ int kb_int16_handler_c(unsigned int ax) {
 	if (bioscall == 2) {
 		result = kbinput[0x2A] | kbinput[0x36];
 		enable();
-		return result;
+		return result & 0xFF;
 	}
 	enable();
 	return 0;
@@ -163,4 +166,37 @@ void kb_exit_handler() {
 	setvect(0x16, old_kb_int16_handler);
 	pokeb(0, 0x417, peekb(0, 0x417) & 0xf0);
 	outp(0x21, irqmask);
+}
+
+int kb_get_key_state(int key) {
+	return kbinput[key];
+}
+
+int kb_call_readchar_callback() {
+	// the orginal code uses a (hard-coded, non-changing) callback for
+	// reading chars.. we just call kb_read_char() directly:
+	return kb_read_char();
+}
+
+int kb_read_char() {
+	// we could've called kb_int16_handler_c() directly
+	union REGS inregs;
+	union REGS outregs;
+	
+	inregs.h.ah = 1;
+	int86(0x16, &inregs, &outregs);
+	if (!outregs.x.ax) return 0;
+
+	inregs.h.ah = 0;
+	int86(0x16, &inregs, &outregs);
+	return outregs.h.al;
+}
+
+int kb_checking() {
+	union REGS inregs;
+	union REGS outregs;
+	
+	inregs.h.ah = 1;
+	int86(0x16, &inregs, &outregs);
+	return outregs.h.al;
 }
