@@ -9729,13 +9729,11 @@ loc_19DB7:
 loc_19DBC:
     add     sp, 6
     pop     si
-loc_19DC0:
     pop     di
 loc_19DC1:
     mov     sp, bp
 loc_19DC3:
     pop     bp
-locret_19DC4:
     retf
 setup_aero_trackdata endp
 seg001 ends

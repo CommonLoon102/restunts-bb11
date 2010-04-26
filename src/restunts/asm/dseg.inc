@@ -234,7 +234,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn aGnam:byte
     extrn aSimd_0:byte
     extrn aGsna:byte
-    extrn dword_3BE2C:dword
+    extrn old_intr0_handler:dword
     extrn word_3BE30:word
     extrn word_3BE32:word
     extrn word_3BE34:word
@@ -792,7 +792,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn aNoRoomLeftOnTimerInterru:byte
     extrn callbackflags:byte
     extrn callbackflags2:byte
-    extrn byte_3F9E0:byte
+    extrn in_kb_parse_key:byte
     extrn callbacks:byte
     extrn word_3FB02:word
     extrn word_3FB04:word
@@ -830,13 +830,13 @@ dseg segment byte public 'STUNTSD' use16
     extrn word_3FBD6:word
     extrn word_3FBD8:word
     extrn kbinput:byte
-    extrn byte_3FC34:byte
-    extrn byte_3FC8F:byte
-    extrn byte_3FCEA:byte
-    extrn byte_3FD45:byte
-    extrn byte_3FDA0:byte
-    extrn readchar_callback:word
-    extrn seg_3FDFE:word
+    extrn keymap1:byte
+    extrn keymap2:byte
+    extrn keymap3:byte
+    extrn keymap4:byte
+    extrn keymap5:byte
+    extrn readchar_callback_ofs:word
+    extrn readchar_callback_seg:word
     extrn byte_3FE00:byte
     extrn aSFileError:byte
     extrn aSNotPackedFile:byte

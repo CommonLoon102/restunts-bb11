@@ -725,6 +725,9 @@ static PortFuncName(labelname) {
 		labelname == "sprite_putimage_and" ||
 		labelname == "sprite_putimage_or" ||
 
+		labelname == "kb_init_interrupt" ||
+		labelname == "kb_exit_handler" ||
+
 		labelname == "stuntsmain"
 	)
 		return "ported_" + labelname + "_";

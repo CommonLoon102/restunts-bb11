@@ -99,6 +99,9 @@ extrn file_unflip_shape2d:proc
 extrn file_get_unflip_size:proc
 extrn file_get_shape2d:proc
 
+extrn kb_init_interrupt:proc
+extrn kb_exit_handler:proc
+
 extrn stuntsmain:proc
 
 ;extrn fatal_error:proc

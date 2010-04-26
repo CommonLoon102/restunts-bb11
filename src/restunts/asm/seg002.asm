@@ -54,7 +54,7 @@ seg002 segment byte public 'STUNTSC' use16
     public init_kevinrandom
     public get_kevinrandom_seed
     public get_kevinrandom
-    public nopsub_19EC9
+    public intr0_handler
     public init_div0
     public byte_19F07
 algn_19DC5:
@@ -273,7 +273,7 @@ loc_19EC3:
     xor     ah, ah
     retf
 get_kevinrandom endp
-nopsub_19EC9 proc far
+intr0_handler proc far
      s = byte ptr 0
      r = byte ptr 2
 
@@ -300,7 +300,7 @@ loc_19EE3:
     pop     ds
     pop     bp
     iret
-nopsub_19EC9 endp
+intr0_handler endp
 init_div0 proc far
 
     push    ds
@@ -310,14 +310,14 @@ loc_19EEB:
     mov     al, 0
     int     21h             ; DOS - 2+ - GET INTERRUPT VECTOR
 loc_19EEF:
-    mov     word ptr dword_3BE2C+2, es
-    mov     word ptr dword_3BE2C, bx
+    mov     word ptr old_intr0_handler+2, es
+    mov     word ptr old_intr0_handler, bx
 loc_19EF7:
     mov     dx, seg seg002
 loc_19EFA:
     mov     ds, dx
 loc_19EFC:
-    mov     dx, 109h
+    mov     dx, offset intr0_handler
 loc_19EFF:
     mov     ah, 25h ; '%'
     mov     al, 0

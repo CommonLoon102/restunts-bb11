@@ -18,7 +18,7 @@ CC = cl /MD /c /I$(SDLPATH)\include /DRESTUNTS_SDL /Fo$(OBJDIR)\$?
 !endif
 
 
-all: $(OBJDIR)\fileio.obj $(OBJDIR)\math.obj $(OBJDIR)\memmgr.obj $(OBJDIR)\restunts.obj $(OBJDIR)\shape3d.obj $(OBJDIR)\shape2d.obj
+all: $(OBJDIR)\fileio.obj $(OBJDIR)\math.obj $(OBJDIR)\memmgr.obj $(OBJDIR)\restunts.obj $(OBJDIR)\shape3d.obj $(OBJDIR)\shape2d.obj $(OBJDIR)\keyboard.obj
 
 $(OBJDIR)\fileio.obj: fileio.c
 	$(CC) $?
@@ -36,6 +36,9 @@ $(OBJDIR)\shape3d.obj: shape3d.c
 	$(CC) $?
 
 $(OBJDIR)\shape2d.obj: shape2d.c
+	$(CC) $?
+
+$(OBJDIR)\keyboard.obj: keyboard.c
 	$(CC) $?
 
 clean:

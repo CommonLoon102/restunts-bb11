@@ -282,7 +282,7 @@ dseg segment byte public 'STUNTSD' use16
     public aGnam
     public aSimd_0
     public aGsna
-    public dword_3BE2C
+    public old_intr0_handler
     public word_3BE30
     public word_3BE32
     public word_3BE34
@@ -840,7 +840,7 @@ dseg segment byte public 'STUNTSD' use16
     public aNoRoomLeftOnTimerInterru
     public callbackflags
     public callbackflags2
-    public byte_3F9E0
+    public in_kb_parse_key
     public callbacks
     public word_3FB02
     public word_3FB04
@@ -878,13 +878,13 @@ dseg segment byte public 'STUNTSD' use16
     public word_3FBD6
     public word_3FBD8
     public kbinput
-    public byte_3FC34
-    public byte_3FC8F
-    public byte_3FCEA
-    public byte_3FD45
-    public byte_3FDA0
-    public readchar_callback
-    public seg_3FDFE
+    public keymap1
+    public keymap2
+    public keymap3
+    public keymap4
+    public keymap5
+    public readchar_callback_ofs
+    public readchar_callback_seg
     public byte_3FE00
     public aSFileError
     public aSNotPackedFile
@@ -3212,7 +3212,7 @@ aGsna     db 103
     db 110
     db 97
     db 0
-dword_3BE2C     dd 0
+old_intr0_handler     dd 0
 word_3BE30     dw 0
 word_3BE32     dw 0
 word_3BE34     dw 30
@@ -18128,7 +18128,7 @@ callbackflags2     db 0
     db 0
     db 0
     db 0
-byte_3F9E0     db 0
+in_kb_parse_key     db 0
     db 0
 callbacks     db 0
     db 0
@@ -18694,7 +18694,7 @@ kbinput     db 0
     db 0
     db 0
     db 0
-byte_3FC34     db 0
+keymap1     db 0
     db 27
     db 49
     db 50
@@ -18785,7 +18785,7 @@ byte_3FC34     db 0
     db 0
     db 0
     db 0
-byte_3FC8F     db 0
+keymap2     db 0
     db 27
     db 33
     db 64
@@ -18876,7 +18876,7 @@ byte_3FC8F     db 0
     db 0
     db 0
     db 0
-byte_3FCEA     db 0
+keymap3     db 0
     db 27
     db 49
     db 50
@@ -18963,10 +18963,11 @@ byte_3FCEA     db 0
     db 0
     db 0
     db 0
-    dw 0
     db 0
     db 0
-byte_3FD45     db 0
+    db 0
+    db 0
+keymap4     db 0
     db 27
     db 33
     db 0
@@ -19057,7 +19058,7 @@ byte_3FD45     db 0
     db 0
     db 0
     db 0
-byte_3FDA0     db 0
+keymap5     db 0
     db 27
     db 33
     db 64
@@ -19149,8 +19150,8 @@ byte_3FDA0     db 0
     db 0
     db 0
     db 0
-readchar_callback     dw offset kb_read_char
-seg_3FDFE     dw seg seg012
+readchar_callback_ofs     dw offset kb_read_char
+readchar_callback_seg     dw seg seg012
 byte_3FE00     db 0
     db 0
 aSFileError     db 37

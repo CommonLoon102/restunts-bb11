@@ -7,7 +7,7 @@ seg002 segment byte public 'STUNTSC' use16
     extrn init_kevinrandom:proc
     extrn get_kevinrandom_seed:proc
     extrn get_kevinrandom:proc
-    extrn nopsub_19EC9:proc
+    extrn intr0_handler:proc
     extrn init_div0:proc
     extrn byte_19F07:byte
 seg002 ends

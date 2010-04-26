@@ -129,7 +129,7 @@ seg012 segment byte public 'STUNTSC' use16
     public preRender_line
     public add_exit_handler
     public call_exitlist
-    public sub_2FE74
+    public call_exitlist2
     public ported_file_paras_
     public ported_file_paras_nofatal_
     public ported_file_paras_fatal_
@@ -164,8 +164,8 @@ seg012 segment byte public 'STUNTSC' use16
     public sub_307D2
     public sub_307E3
     public nopsub_307FA
-    public kb_init_interrupt
-    public kb_exit_handler
+    public ported_kb_init_interrupt_
+    public ported_kb_exit_handler_
     public kb_intr_handler
     public kb_intr_bios_handler
     public kb_get_key_state
@@ -3963,7 +3963,7 @@ loc_2FE72:
     pop     di
     retf
 call_exitlist endp
-sub_2FE74 proc near
+call_exitlist2 proc near
 
     call    call_exitlist
     xor     ax, ax
@@ -3971,7 +3971,7 @@ sub_2FE74 proc near
     call    far ptr libsub_2CDEC
     ; align 2
     db 0
-sub_2FE74 endp
+call_exitlist2 endp
 ported_file_paras_ proc far
     var_fatal = word ptr -6
     var_length = word ptr -4
@@ -4815,13 +4815,13 @@ kb_parse_key proc far
     push    bp
     mov     bp, sp
     cli
-    cmp     byte_3F9E0, 0
+    cmp     in_kb_parse_key, 0
     jz      short loc_30412
     sti
     pop     bp
     retf
 loc_30412:
-    mov     byte_3F9E0, 1
+    mov     in_kb_parse_key, 1
     sti
     mov     bx, [bp+arg_0]
     or      bl, bl
@@ -4842,7 +4842,7 @@ loc_30429:
     pop     si
     pop     di
     xor     ax, ax
-    mov     byte_3F9E0, 0
+    mov     in_kb_parse_key, 0
     pop     bp
     retf
 loc_30441:
@@ -4856,7 +4856,7 @@ loc_3044E:
     jmp     short loc_30429
 loc_30454:
     mov     ax, [bp+arg_0]
-    mov     byte_3F9E0, 0
+    mov     in_kb_parse_key, 0
     pop     bp
     retf
 kb_parse_key endp
@@ -5324,7 +5324,7 @@ loc_30805:
     ; align 2
     db 0
 nopsub_307FA endp
-kb_init_interrupt proc far
+ported_kb_init_interrupt_ proc far
      r = byte ptr 0
 
     push    di
@@ -5365,8 +5365,8 @@ loc_30861:
     add     sp, 4
     pop     di
     retf
-kb_init_interrupt endp
-kb_exit_handler proc far
+ported_kb_init_interrupt_ endp
+ported_kb_exit_handler_ proc far
 
     in      al, 21h         ; Interrupt controller, 8259A.
     mov     ah, al
@@ -5393,7 +5393,7 @@ loc_308C1:
     mov     al, ah
     out     21h, al         ; Interrupt controller, 8259A.
     retf
-kb_exit_handler endp
+ported_kb_exit_handler_ endp
 kb_intr_handler proc far
 
     sti
@@ -5418,7 +5418,7 @@ kb_intr_handler proc far
 smart
     and     al, 7Fh
 nosmart
-    jmp     loc_30992
+    jmp     loc_30992       ; .. do some stuff, then end
 loc_308EA:
     mov     al, 20h ; ' '
     out     20h, al         ; Interrupt controller, 8259A.
@@ -5438,16 +5438,16 @@ loc_308FF:
     mov     word_3FBD8, bx
     mov     kbinput[bx], 1
     test    kbinput+38h, 1
-    jnz     short loc_30986
+    jnz     short loc_30986 ; test keymap5
     test    kbinput+1Dh, 1
-    jnz     short loc_30980
+    jnz     short loc_30980 ; test keymap4
     test    kbinput+2Ah, 1
-    jnz     short loc_3097A
+    jnz     short loc_3097A ; test keymap2
     test    kbinput+36h, 1
-    jnz     short loc_3097A
+    jnz     short loc_3097A ; test keymap2
     test    kbinput+3Ah, 1
-    jnz     short loc_3098C
-    mov     al, byte_3FC34[bx]
+    jnz     short loc_3098C ; test keymap3
+    mov     al, keymap1[bx]
 loc_3092F:
     test    al, 80h
     jnz     short loc_3096C
@@ -5484,16 +5484,16 @@ nosmart
 loc_30978:
     jmp     short loc_30935
 loc_3097A:
-    mov     al, byte_3FC8F[bx]
+    mov     al, keymap2[bx]
     jmp     short loc_3092F
 loc_30980:
-    mov     al, byte_3FD45[bx]
+    mov     al, keymap4[bx]
     jmp     short loc_3092F
 loc_30986:
-    mov     al, byte_3FDA0[bx]
+    mov     al, keymap5[bx]
     jmp     short loc_3092F
 loc_3098C:
-    mov     al, byte_3FCEA[bx]
+    mov     al, keymap3[bx]
     jmp     short loc_3092F
 loc_30992:
     xor     ah, ah
@@ -5572,7 +5572,7 @@ kb_get_key_state proc far
 kb_get_key_state endp
 kb_call_readchar_callback proc far
 
-    call    dword ptr readchar_callback
+    call    dword ptr readchar_callback_ofs
     retf
 kb_call_readchar_callback endp
 kb_read_char proc far
@@ -5606,13 +5606,13 @@ locret_30A43:
     push    bp
     mov     bp, sp
     mov     ax, [bp+6]
-    mov     readchar_callback, ax
+    mov     readchar_callback_ofs, ax
     mov     ax, [bp+8]
-    mov     seg_3FDFE, ax
+    mov     readchar_callback_seg, ax
     pop     bp
     retf
-    mov     ax, readchar_callback
-    mov     dx, seg_3FDFE
+    mov     ax, readchar_callback_ofs
+    mov     dx, readchar_callback_seg
     retf
 kb_checking endp
 flush_stdin proc far

@@ -82,7 +82,7 @@ seg012 segment byte public 'STUNTSC' use16
     extrn preRender_line:proc
     extrn add_exit_handler:proc
     extrn call_exitlist:proc
-    extrn sub_2FE74:proc
+    extrn call_exitlist2:proc
     extrn ported_file_paras_:proc
     extrn ported_file_paras_nofatal_:proc
     extrn ported_file_paras_fatal_:proc
@@ -117,8 +117,8 @@ seg012 segment byte public 'STUNTSC' use16
     extrn sub_307D2:proc
     extrn sub_307E3:proc
     extrn nopsub_307FA:proc
-    extrn kb_init_interrupt:proc
-    extrn kb_exit_handler:proc
+    extrn ported_kb_init_interrupt_:proc
+    extrn ported_kb_exit_handler_:proc
     extrn kb_intr_handler:proc
     extrn kb_intr_bios_handler:proc
     extrn kb_get_key_state:proc

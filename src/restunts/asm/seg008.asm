@@ -5276,7 +5276,7 @@ do_dos_restext proc far
     add     sp, 12h
     cmp     ax, 1
     jnz     short loc_29FA6
-    call    far ptr sub_2FE74
+    call    far ptr call_exitlist2
 loc_29FA6:
     mov     word_3F88E, 0
     call    sub_372F4
