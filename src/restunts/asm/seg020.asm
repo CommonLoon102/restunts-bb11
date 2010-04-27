@@ -46,11 +46,11 @@ nosmart
 seg020 segment byte public 'STUNTSC' use16
     assume cs:seg020
     assume es:nothing, ss:nothing, ds:dseg
-    public sub_36BBE
+    public preRender_sphere_helper
 algn_36BBD:
     ; align 2
     db 144
-sub_36BBE proc far
+preRender_sphere_helper proc far
     var_80 = byte ptr -128
      s = byte ptr 0
      r = byte ptr 2
@@ -58,36 +58,22 @@ sub_36BBE proc far
     arg_2 = word ptr 8
 
     push    bp
-loc_36BBF:
     mov     bp, sp
-loc_36BC1:
     sub     sp, 80h
-loc_36BC5:
     lea     ax, [bp+var_80]
-loc_36BC8:
     push    ax
-loc_36BC9:
     push    [bp+arg_0]
-loc_36BCC:
-    call    sub_36412
-loc_36BD1:
+    call    preRender_sphere_helper2
     add     sp, 4
-loc_36BD4:
     lea     ax, [bp+var_80]
     push    ax
-loc_36BD8:
     mov     ax, 20h ; ' '
     push    ax
-loc_36BDC:
     push    [bp+arg_2]
-loc_36BDF:
-    call    sub_317C1
-loc_36BE4:
+    call    preRender_default_alt
     mov     sp, bp
-loc_36BE6:
     pop     bp
-locret_36BE7:
     retf
-sub_36BBE endp
+preRender_sphere_helper endp
 seg020 ends
 end

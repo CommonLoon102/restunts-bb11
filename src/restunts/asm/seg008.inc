@@ -25,14 +25,14 @@ seg008 segment byte public 'STUNTSC' use16
     extrn ported_sprite_copy_2_to_1_clear_:proc
     extrn ported_sprite_copy_wnd_to_1_:proc
     extrn ported_sprite_copy_wnd_to_1_clear_:proc
-    extrn sub_28F98:proc
-    extrn sub_29008:proc
+    extrn intro_draw_text:proc
+    extrn hiscore_draw_text:proc
     extrn call_read_line:proc
     extrn input_repeat_check:proc
-    extrn sub_2916E:proc
-    extrn sub_292DC:proc
+    extrn draw_lines_unk:proc
+    extrn draw_button:proc
     extrn ported_shape3d_init_shape_:proc
-    extrn sub_29606:proc
+    extrn font_op2_alt:proc
     extrn sub_29620:proc
     extrn show_waiting:proc
     extrn print_int_as_string_maybe:proc
@@ -40,9 +40,9 @@ seg008 segment byte public 'STUNTSC' use16
     extrn sub_29786:proc
     extrn ported_file_load_audiores_:proc
     extrn audio_unload:proc
-    extrn set_fontdef2:proc
-    extrn set_fontdef:proc
-    extrn sub_298B8:proc
+    extrn font_set_fontdef2:proc
+    extrn font_set_fontdef:proc
+    extrn format_frame_as_string:proc
     extrn get_super_random:proc
     extrn ported_file_load_resource_:proc
     extrn off_29A4E:word

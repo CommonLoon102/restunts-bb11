@@ -53,8 +53,8 @@ seg012 segment byte public 'STUNTSC' use16
     public set_add_value
     public sub_2EB07
     public sub_2EB1E
-    public sub_2EB48
-    public sub_2EB56
+    public draw_line_related_alt
+    public draw_line_related
     public loc_2EB62
     public off_2ECB9
     public off_2ECD1
@@ -215,10 +215,10 @@ seg012 segment byte public 'STUNTSC' use16
     public ported_mmgr_resize_memory_
     public ported_mmgr_op_unk_
     public preRender_default
-    public sub_317C1
+    public preRender_default_alt
     public loc_317CE
-    public sub_317DF
-    public sub_317EE
+    public skybox_op_helper
+    public preRender_wheel_helper4
     public loc_317FB
     public loc_3180A
     public sub_319CD
@@ -260,8 +260,8 @@ seg012 segment byte public 'STUNTSC' use16
     public timer_wait_for_dx
     public timer_compare_dx
     public timer_get_counter_unk
-    public sub_32832
-    public sub_32843
+    public font_op
+    public font_op2
     public loc_3284A
     public loc_32882
     public preRender_patterned
@@ -302,7 +302,7 @@ seg012 segment byte public 'STUNTSC' use16
     public byte_33656
     public sprite_1_unk3
     public loc_33697
-    public sub_33742
+    public font_draw_text
     public video_set_mode_13h
     public file_load_shape2d_res_fatal_thunk
     public file_load_shape2d_res_nofatal_thunk
@@ -361,9 +361,9 @@ seg012 segment byte public 'STUNTSC' use16
     public sprite1
     public sprite2
     public lineoffsets
-    public sub_34B0C
+    public font_set_unk
     public set_fontdefseg
-    public sub_34B96
+    public draw_patterned
     public ported_sprite_make_wnd_
     public next_wnd_def
     public wnd_defs
@@ -581,7 +581,7 @@ loc_2EB35:
     pop     bp
     retf
 sub_2EB1E endp
-sub_2EB48 proc far
+draw_line_related_alt proc far
     var_4 = byte ptr -4
      s = byte ptr 0
      r = byte ptr 2
@@ -593,16 +593,16 @@ sub_2EB48 proc far
     push    di
     mov     [bp+var_4], 1
     jmp     short loc_2EB62
-sub_2EB48 endp
-sub_2EB56 proc far
+draw_line_related_alt endp
+draw_line_related proc far
     var_4 = byte ptr -4
     var_2 = word ptr -2
      s = byte ptr 0
      r = byte ptr 2
-    arg_0 = word ptr 6
-    arg_2 = word ptr 8
-    arg_4 = word ptr 10
-    arg_6 = word ptr 12
+    arg_startX = word ptr 6
+    arg_startY = word ptr 8
+    arg_endX = word ptr 10
+    arg_endY = word ptr 12
     arg_8 = word ptr 14
 
     push    bp
@@ -612,7 +612,7 @@ sub_2EB56 proc far
     push    di
     mov     [bp+var_4], 0
 loc_2EB62:
-    mov     si, [bp+arg_8]
+    mov     si, [bp+arg_8]  ; arg_8 is a pointer to something sizeof 0x1C
     mov     word ptr [si+12h], 0FFh
     xor     ax, ax
     mov     [si], ax
@@ -621,10 +621,10 @@ loc_2EB62:
     mov     [si+16h], ax
     mov     [si+18h], ax
     mov     [si+1Ah], ax
-    mov     ax, [bp+arg_2]
-    mov     bx, [bp+arg_6]
-    mov     cx, [bp+arg_0]
-    mov     dx, [bp+arg_4]
+    mov     ax, [bp+arg_startY]
+    mov     bx, [bp+arg_endY]
+    mov     cx, [bp+arg_startX]
+    mov     dx, [bp+arg_endX]
     cmp     ax, bx
     jg      short loc_2EB9C
     mov     [si+2], cx
@@ -1475,7 +1475,7 @@ loc_2F30C:
 loc_2F30F:
     sub     [si+8], dx
     jmp     short loc_2F2B0
-sub_2EB56 endp
+draw_line_related endp
 sub_2F314 proc far
      s = byte ptr 0
      r = byte ptr 2
@@ -3891,14 +3891,14 @@ preRender_line proc far
     mov     bp, sp
     sub     sp, 1Ch
     mov     ax, [bp+arg_color]
-    lea     bx, [bp+var_1C]
+    lea     bx, [bp+var_1C] ; var_1C is some kind of struct sizeof 0x1C
     mov     [bx+10h], ax
     push    bx
     push    [bp+arg_endY]
     push    [bp+arg_endX]
     push    [bp+arg_startY]
     push    [bp+arg_startX]
-    call    sub_2EB56
+    call    draw_line_related
     add     sp, 0Ah
     or      ax, ax
     jnz     short loc_2FE18
@@ -7469,7 +7469,7 @@ preRender_default proc far
     mov     [bp+var_A], 1
     jmp     short loc_317CE
 preRender_default endp
-sub_317C1 proc far
+preRender_default_alt proc far
     var_A = byte ptr -10
      s = byte ptr 0
      r = byte ptr 2
@@ -7488,8 +7488,8 @@ loc_317CE:
     mov     imagefunc, ax
     mov     si, [bp+arg_6]
     jmp     short loc_3180A
-sub_317C1 endp
-sub_317DF proc far
+preRender_default_alt endp
+skybox_op_helper proc far
     var_A = byte ptr -10
      s = byte ptr 0
      r = byte ptr 2
@@ -7501,8 +7501,8 @@ sub_317DF proc far
     push    di
     mov     [bp+var_A], 1
     jmp     short loc_317FB
-sub_317DF endp
-sub_317EE proc far
+skybox_op_helper endp
+preRender_wheel_helper4 proc far
     var_7D0 = byte ptr -2000
     var_798 = byte ptr -1944
     var_3D8 = byte ptr -984
@@ -7665,14 +7665,14 @@ loc_3190D:
     push    cx
     cmp     [bp+var_C], 0
     jz      short loc_3192E
-    call    sub_2EB56
+    call    draw_line_related
     mov     [bp+var_16], di
     call near ptr sub_319CD
     jmp     short loc_31939
     ; align 2
     db 144
 loc_3192E:
-    call    sub_2EB48
+    call    draw_line_related_alt
     mov     [bp+var_16], di
     call near ptr sub_31A67
 loc_31939:
@@ -7700,12 +7700,12 @@ loc_31957:
     push    cx
     cmp     [bp+var_C], 0
     jz      short loc_31972
-    call    sub_2EB56
+    call    draw_line_related
     jmp     short loc_31977
     ; align 2
     db 144
 loc_31972:
-    call    sub_2EB48
+    call    draw_line_related_alt
 loc_31977:
     mov     [bp+var_16], di
     call near ptr sub_31B5E
@@ -7746,7 +7746,7 @@ loc_319C7:
     mov     sp, bp
     pop     bp
     retf
-sub_317EE endp
+preRender_wheel_helper4 endp
 sub_319CD proc near
 
     mov     cx, [si+14h]
@@ -9706,7 +9706,7 @@ loc_3282D:
     ; align 2
     db 0
 timer_get_counter_unk endp
-sub_32832 proc far
+font_op proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_4 = word ptr 8
@@ -9721,8 +9721,8 @@ sub_32832 proc far
     xor     ax, ax
     jmp     short loc_32882
     db 144
-sub_32832 endp
-sub_32843 proc far
+font_op endp
+font_op2 proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -9733,7 +9733,7 @@ sub_32843 proc far
     push    di
     xor     dx, dx
 loc_3284A:
-    mov     es, word ptr off_405FE+2
+    mov     es, fontdefseg
     mov     si, [bp+arg_0]
     xor     ax, ax
     mov     cl, es:14h
@@ -9763,7 +9763,7 @@ loc_32882:
     pop     si
     pop     bp
     retf
-sub_32843 endp
+font_op2 endp
 preRender_patterned proc far
     var_A = byte ptr -10
      s = byte ptr 0
@@ -9795,7 +9795,7 @@ loc_328A8:
     mov     [bp+arg_0], ax
     mov     ax, [bp+arg_4]
     mov     [bp+arg_2], ax
-    mov     ax, offset sub_34B96
+    mov     ax, offset draw_patterned
     mov     spritefunc, ax
     mov     ax, offset preRender_line
     mov     imagefunc, ax
@@ -11125,7 +11125,7 @@ loc_330B6:
     add     sp, 780h
     push    dx
     push    ax
-    call    sub_36BBE
+    call    preRender_sphere_helper
     add     sp, 4
     sub     sp, 780h
     pop     di
@@ -11934,7 +11934,7 @@ loc_33733:
     pop     bp
     retf
 sprite_1_unk3 endp
-sub_33742 proc far
+font_draw_text proc far
     var_4 = word ptr -4
     var_2 = word ptr -2
      s = byte ptr 0
@@ -11949,7 +11949,7 @@ sub_33742 proc far
     push    ds
     push    si
     push    di
-    mov     ds, word ptr off_405FE+2
+    mov     ds, fontdefseg
     mov     ax, [bp+arg_2]
     mov     ds:8, ax
     mov     ax, [bp+arg_4]
@@ -11963,7 +11963,7 @@ sub_33742 proc far
     push    ds
     push    si
     push    di
-    mov     ds, word ptr off_405FE+2
+    mov     ds, fontdefseg
 loc_3376B:
     cld
     mov     es, word ptr cs:sprite1.sprite_bitmapptr+2
@@ -12043,7 +12043,7 @@ loc_337FD:
     mov     ax, word ptr aMsRunTimeLibraryCop+8
     add     word ptr aMsRunTimeLibraryCop, ax; "MS Run-Time Library - Copyright (c) 198"...
     jmp     loc_33771
-sub_33742 endp
+font_draw_text endp
 video_set_mode_13h proc far
 
     call    video_add_exithandler
@@ -14069,7 +14069,7 @@ loc_34586:
     mov     byte_40B86, al
     mov     ax, 5416h
     mov     [bp+6], ax
-    mov     ds, word ptr off_405FE+2
+    mov     ds, fontdefseg
     mov     ax, [bp+8]
     mov     word ptr aMsRunTimeLibraryCop, ax; "MS Run-Time Library - Copyright (c) 198"...
     mov     ax, [bp+0Ah]
@@ -14093,7 +14093,7 @@ sub_345BC proc far
     push    ds
     push    si
     push    di
-    mov     ds, word ptr off_405FE+2; ds = seg039
+    mov     ds, fontdefseg  ; ds = seg039
     mov     ax, [bp+arg_2]
     mov     ds:8, ax
     mov     ax, [bp+arg_4]
@@ -14107,7 +14107,7 @@ sub_345BC proc far
     push    ds
     push    si
     push    di
-    mov     ds, word ptr off_405FE+2
+    mov     ds, fontdefseg
 loc_345E5:
     cld
     mov     es, word ptr cs:sprite1.sprite_bitmapptr+2
@@ -14842,7 +14842,7 @@ lineoffsets     dw 0
     dw 63360
     dw 63680
 sub_347DC endp
-sub_34B0C proc far
+font_set_unk proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -14850,7 +14850,7 @@ sub_34B0C proc far
 
     push    bp
     mov     bp, sp
-    mov     es, word ptr off_405FE+2
+    mov     es, fontdefseg
     mov     ax, [bp+arg_2]
     xor     ah, ah
     mov     es:2, ax
@@ -14861,7 +14861,7 @@ sub_34B0C proc far
     retf
     push    bp
     mov     bp, sp
-    mov     es, word ptr off_405FE+2
+    mov     es, fontdefseg
     mov     ax, [bp+6]
     mov     es:8, ax
     mov     ax, [bp+8]
@@ -14877,7 +14877,7 @@ sub_34B0C proc far
     mov     di, [bp+6]
     mov     ax, ds
     mov     es, ax
-    mov     ds, word ptr off_405FE+2
+    mov     ds, fontdefseg
     cld
     mov     word ptr es:[di+16h], ds
     mov     cx, 0Bh
@@ -14893,7 +14893,7 @@ sub_34B0C proc far
     push    si
     mov     si, [bp+6]
     mov     ax, [si+16h]
-    mov     word ptr off_405FE+2, ax
+    mov     fontdefseg, ax
     mov     es, ax
     xor     di, di
     cld
@@ -14903,7 +14903,7 @@ sub_34B0C proc far
     pop     di
     pop     bp
     retf
-sub_34B0C endp
+font_set_unk endp
 set_fontdefseg proc far
      s = byte ptr 0
      r = byte ptr 2
@@ -14912,7 +14912,7 @@ set_fontdefseg proc far
     push    bp
     mov     bp, sp
     mov     ax, [bp+arg_2]
-    mov     word ptr off_405FE+2, ax
+    mov     fontdefseg, ax
     pop     bp
     retf
     ; align 2
@@ -14927,7 +14927,7 @@ set_fontdefseg proc far
     ; align 2
     db 144
 set_fontdefseg endp
-sub_34B96 proc far
+draw_patterned proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -14996,7 +14996,7 @@ loc_34C06:
     jmp     short loc_34BE8
     ; align 2
     db 0
-sub_34B96 endp
+draw_patterned endp
 ported_sprite_make_wnd_ proc far
     var_8 = word ptr -8
     var_6 = word ptr -6
@@ -19736,6 +19736,7 @@ loc_36114:
     mov     si, ax
     mov     ds, dx
     mov     al, [si+0Fh]
+loc_36137:
 smart
     and     al, 0F0h
 nosmart

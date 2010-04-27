@@ -6,8 +6,8 @@ seg012 segment byte public 'STUNTSC' use16
     extrn set_add_value:proc
     extrn sub_2EB07:proc
     extrn sub_2EB1E:proc
-    extrn sub_2EB48:proc
-    extrn sub_2EB56:proc
+    extrn draw_line_related_alt:proc
+    extrn draw_line_related:proc
     extrn loc_2EB62
     extrn off_2ECB9:word
     extrn off_2ECD1:word
@@ -168,10 +168,10 @@ seg012 segment byte public 'STUNTSC' use16
     extrn ported_mmgr_resize_memory_:proc
     extrn ported_mmgr_op_unk_:proc
     extrn preRender_default:proc
-    extrn sub_317C1:proc
+    extrn preRender_default_alt:proc
     extrn loc_317CE
-    extrn sub_317DF:proc
-    extrn sub_317EE:proc
+    extrn skybox_op_helper:proc
+    extrn preRender_wheel_helper4:proc
     extrn loc_317FB
     extrn loc_3180A
     extrn sub_319CD:proc
@@ -213,8 +213,8 @@ seg012 segment byte public 'STUNTSC' use16
     extrn timer_wait_for_dx:proc
     extrn timer_compare_dx:proc
     extrn timer_get_counter_unk:proc
-    extrn sub_32832:proc
-    extrn sub_32843:proc
+    extrn font_op:proc
+    extrn font_op2:proc
     extrn loc_3284A
     extrn loc_32882
     extrn preRender_patterned:proc
@@ -255,7 +255,7 @@ seg012 segment byte public 'STUNTSC' use16
     extrn byte_33656:byte
     extrn sprite_1_unk3:proc
     extrn loc_33697
-    extrn sub_33742:proc
+    extrn font_draw_text:proc
     extrn video_set_mode_13h:proc
     extrn file_load_shape2d_res_fatal_thunk:proc
     extrn file_load_shape2d_res_nofatal_thunk:proc
@@ -314,9 +314,9 @@ seg012 segment byte public 'STUNTSC' use16
     extrn sprite1:SPRITE
     extrn sprite2:SPRITE
     extrn lineoffsets:word
-    extrn sub_34B0C:proc
+    extrn font_set_unk:proc
     extrn set_fontdefseg:proc
-    extrn sub_34B96:proc
+    extrn draw_patterned:proc
     extrn ported_sprite_make_wnd_:proc
     extrn next_wnd_def:word
     extrn wnd_defs:byte

@@ -88,7 +88,7 @@ dseg segment byte public 'STUNTSD' use16
     public byte_3B8F7
     public kbormouse
     public mouse_isdirty
-    public byte_3B8FA
+    public timertestflag2
     public byte_3B8FB
     public byte_3B8FC
     public aKevin
@@ -938,7 +938,8 @@ dseg segment byte public 'STUNTSD' use16
     public word_405F6
     public word_405F8
     public last_timer_callback_counter
-    public off_405FE
+    public word_405FE
+    public fontdefseg
     public aHdr1
     public audiodriverbinary
     public byte_40630
@@ -1275,7 +1276,7 @@ dseg segment byte public 'STUNTSD' use16
     public word_4491C
     public word_4493C
     public word_44960
-    public word_44984
+    public timertestflag_copy
     public pState_minusRotate_x_1
     public elRdWallRelated
     public regs_x86
@@ -1332,7 +1333,7 @@ dseg segment byte public 'STUNTSD' use16
     public byte_44AE2
     public video_flag1_is1
     public td11_highscores
-    public word_44CEA
+    public timertestflag
     public mainresptr
     public bravshape
     public word_44D1E
@@ -1915,7 +1916,7 @@ byte_3B8F6     db 0
 byte_3B8F7     db 0
 kbormouse     db 0
 mouse_isdirty     db 0
-byte_3B8FA     db 0
+timertestflag2     db 0
 byte_3B8FB     db 0
 byte_3B8FC     db 0
     db 0
@@ -20841,7 +20842,8 @@ sinetable     dw 0
 word_405F6     dw 0
 word_405F8     dw 0
 last_timer_callback_counter     dd 0
-off_405FE     dd word_3B1F0
+word_405FE     dw 0
+fontdefseg     dw seg seg039
     db 10
     db 0
 aHdr1     db 104
@@ -35542,7 +35544,7 @@ word_44960     dw 0
     db 0
     db 0
     db 0
-word_44984     dw 0
+timertestflag_copy     dw 0
 pState_minusRotate_x_1     dw 0
 elRdWallRelated     dw 0
 regs_x86     db 0
@@ -36316,7 +36318,7 @@ video_flag1_is1     dw 0
     db 0
     db 0
 td11_highscores     dd 0
-word_44CEA     dw 0
+timertestflag     dw 0
 mainresptr     dd 0
 bravshape     db 0
     db 0

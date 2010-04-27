@@ -318,6 +318,7 @@ mouse_get_state proc far
     mov     ax, 33h         ; int 33, 3 = get mouse position and button
     push    ax              ; int
     call    _int86
+loc_36A77:
     add     sp, 6
     mov     bx, [bp+arg_0]
     mov     ax, word ptr regs_x86+2

@@ -9656,6 +9656,7 @@ loc_19D36:
     push    [bp+arg_0]
     call    locate_shape_alt
     add     sp, 6
+loc_19D48:
     push    si
     mov     di, offset simd_opponent
     mov     si, ax
@@ -9729,6 +9730,7 @@ loc_19DB7:
 loc_19DBC:
     add     sp, 6
     pop     si
+loc_19DC0:
     pop     di
 loc_19DC1:
     mov     sp, bp

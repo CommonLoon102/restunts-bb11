@@ -127,13 +127,13 @@ nullsub_2 proc far
 nullsub_2 endp
 init_video proc far
     var_argcmd = word ptr -30
-    var_1C = word ptr -28
+    var_timerdelta3 = word ptr -28
     var_1A = word ptr -26
     var_18 = word ptr -24
     var_argmode4 = byte ptr -18
-    var_10 = word ptr -16
+    var_timerdelta2 = word ptr -16
     var_argnosound = byte ptr -14
-    var_C = word ptr -12
+    var_timerdelta1 = word ptr -12
     var_A = word ptr -10
     var_8 = word ptr -8
     var_6 = word ptr -6
@@ -145,15 +145,11 @@ init_video proc far
     arg_argc = word ptr 8
 
     push    bp
-loc_39E57:
     mov     bp, sp
-loc_39E59:
     sub     sp, 1Eh
-loc_39E5C:
     push    di
     push    si
     call    kb_init_interrupt
-loc_39E63:
     call    kb_shift_checking2
     call    kb_call_readchar_callback
     mov     ax, offset do_mrl_textres
@@ -162,14 +158,11 @@ loc_39E63:
     push    ax
     mov     ax, 7
     push    ax
-loc_39E79:
     call    kb_reg_callback
     add     sp, 6
     mov     ax, offset do_joy_restext
-loc_39E84:
     mov     dx, seg seg008
     push    dx
-loc_39E88:
     push    ax
     mov     ax, 0Ah
     push    ax
@@ -178,7 +171,6 @@ loc_39E88:
     mov     ax, offset do_key_restext
     mov     dx, seg seg008
     push    dx
-loc_39E9C:
     push    ax
     mov     ax, 0Bh
     push    ax
@@ -195,29 +187,18 @@ loc_39E9C:
     mov     ax, offset do_pau_restext
     mov     dx, seg seg008
     push    dx
-loc_39EC4:
     push    ax
     mov     ax, 10h
     push    ax
-loc_39EC9:
     call    kb_reg_callback
-loc_39ECE:
     add     sp, 6
-loc_39ED1:
     mov     ax, offset do_pau_restext
-loc_39ED4:
     mov     dx, seg seg008
-loc_39ED7:
     push    dx
-loc_39ED8:
     push    ax
-loc_39ED9:
     mov     ax, 70h ; 'p'
-loc_39EDC:
     push    ax
-loc_39EDD:
     call    kb_reg_callback
-loc_39EE2:
     add     sp, 6
     mov     ax, offset do_dos_restext
     mov     dx, seg seg008
@@ -235,7 +216,6 @@ loc_39EE2:
     push    ax
     call    kb_reg_callback
     add     sp, 6
-loc_39F0D:
     mov     ax, offset do_dos_restext
     mov     dx, seg seg008
     push    dx
@@ -278,7 +258,6 @@ loc_39F6B:
     mov     al, [bx+1]
     cbw
     cmp     ax, 68h ; 'h'
-loc_39F87:
     jz      short loc_39F5E
     cmp     ax, 6Eh ; 'n'
     jnz     short loc_39F91
@@ -402,7 +381,6 @@ loc_3A08A:
     push    ax
     mov     ax, 140h
     push    ax
-loc_3A09C:
     call    mouse_init
     add     sp, 4
     sub     ax, ax
@@ -442,23 +420,20 @@ loc_3A0D9:
     push    ax
     sub     ax, ax
     push    ax
-loc_3A100:
     call    sprite_set_1_size
     add     sp, 8
-loc_3A108:
     call    timer_get_delta_alt
     sub     si, si
 loc_3A10F:
     sub     ax, ax
     push    ax
-loc_3A112:
     call    sprite_clear_1_color
     add     sp, 2
     inc     si
     cmp     si, 0Fh
     jl      short loc_3A10F
     call    timer_get_delta_alt
-    mov     [bp+var_C], ax
+    mov     [bp+var_timerdelta1], ax
     mov     ax, 3Ch ; '<'
     push    ax
     sub     ax, ax
@@ -496,7 +471,7 @@ loc_3A156:
     cmp     si, 0Fh
     jl      short loc_3A140
     call    timer_get_delta_alt
-    mov     [bp+var_10], ax
+    mov     [bp+var_timerdelta2], ax
     sub     si, si
     jmp     short loc_3A1AB
 loc_3A190:
@@ -524,57 +499,57 @@ loc_3A1AB:
     db 144
 loc_3A1B6:
     call    timer_get_delta_alt
-    mov     [bp+var_1C], ax
-    mov     ax, [bp+var_C]
-    cmp     [bp+var_10], ax
+    mov     [bp+var_timerdelta3], ax
+    mov     ax, [bp+var_timerdelta1]
+    cmp     [bp+var_timerdelta2], ax
     jle     short loc_3A1CE
-    mov     word_44CEA, 0
+    mov     timertestflag, 0
     jmp     short loc_3A1D4
 loc_3A1CE:
-    mov     word_44CEA, 1
+    mov     timertestflag, 1
 loc_3A1D4:
-    cmp     [bp+var_1C], 4Bh ; 'K'
+    cmp     [bp+var_timerdelta3], 4Bh ; 'K'
     jge     short loc_3A1E2
     mov     framespersec2, 14h
     jmp     short loc_3A1E8
 loc_3A1E2:
     mov     framespersec2, 0Ah
 loc_3A1E8:
-    cmp     [bp+var_1C], 23h ; '#'
+    cmp     [bp+var_timerdelta3], 23h ; '#'
     jge     short loc_3A1F6
-    mov     byte_3B8FA, 0
+    mov     timertestflag2, 0
     jmp     short loc_3A22B
     ; align 2
     db 144
 loc_3A1F6:
-    cmp     [bp+var_1C], 37h ; '7'
+    cmp     [bp+var_timerdelta3], 37h ; '7'
     jge     short loc_3A204
-    mov     byte_3B8FA, 1
+    mov     timertestflag2, 1
     jmp     short loc_3A22B
     ; align 2
     db 144
 loc_3A204:
-    cmp     [bp+var_1C], 4Bh ; 'K'
+    cmp     [bp+var_timerdelta3], 4Bh ; 'K'
     jge     short loc_3A212
-    mov     byte_3B8FA, 2
+    mov     timertestflag2, 2
     jmp     short loc_3A22B
     ; align 2
     db 144
 loc_3A212:
-    cmp     [bp+var_1C], 64h ; 'd'
+    cmp     [bp+var_timerdelta3], 64h ; 'd'
     jl      short loc_3A21F
-    cmp     word_44CEA, 0
+    cmp     timertestflag, 0
     jnz     short loc_3A226
 loc_3A21F:
-    mov     byte_3B8FA, 3
+    mov     timertestflag2, 3
     jmp     short loc_3A22B
 loc_3A226:
-    mov     byte_3B8FA, 4
+    mov     timertestflag2, 4
 loc_3A22B:
     mov     ax, framespersec2
     mov     framespersec, ax
-    mov     ax, word_44CEA
-    mov     word_44984, ax
+    mov     ax, timertestflag
+    mov     timertestflag_copy, ax
     push    cs
     call near ptr random_wait
     sub     ax, ax
@@ -792,6 +767,7 @@ loc_3A410:
     push    [bp+var_30C]
     call    locate_shape_fatal
     add     sp, 6
+loc_3A438:
     push    dx
     push    ax
     call    sprite_shape_to_1

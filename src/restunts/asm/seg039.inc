@@ -1,5 +1,4 @@
 seg039 segment byte public 'STUNTSD' use16
-    extrn word_3B1F0:word
     extrn word_3B1F2:word
     extrn word_3B1F4:word
     extrn unk_3B1F6:byte

@@ -191,7 +191,7 @@ loc_100D2:
     add     sp, 4
     mov     word ptr fontnptr, ax
     mov     word ptr fontnptr+2, dx
-    call    set_fontdef
+    call    font_set_fontdef
     call    init_polyinfo
     mov     si, 6BF3h       ; bytes to allocate
     mov     ax, si
@@ -888,7 +888,7 @@ load_intro_resources proc far
     push    ax
     mov     ax, offset resID_byte1
     push    ax
-    call    sub_28F98
+    call    intro_draw_text
     add     sp, 0Ah
     mov     ax, offset aGds0; "gds0"
     push    ax
@@ -910,7 +910,7 @@ load_intro_resources proc far
     push    ax
     mov     ax, offset resID_byte1
     push    ax
-    call    sub_28F98
+    call    intro_draw_text
     add     sp, 0Ah
     mov     ax, offset aGds1; "gds1"
     push    ax
@@ -932,7 +932,7 @@ load_intro_resources proc far
     push    ax
     mov     ax, offset resID_byte1
     push    ax
-    call    sub_28F98
+    call    intro_draw_text
     add     sp, 0Ah
     mov     ax, offset aDes ; "des"
     push    ax
@@ -954,7 +954,7 @@ load_intro_resources proc far
     push    ax
     mov     ax, offset resID_byte1
     push    ax
-    call    sub_28F98
+    call    intro_draw_text
     add     sp, 0Ah
     mov     ax, offset aGdon; "gdon"
     push    ax
@@ -976,7 +976,7 @@ load_intro_resources proc far
     push    ax
     mov     ax, offset resID_byte1
     push    ax
-    call    sub_28F98
+    call    intro_draw_text
     add     sp, 0Ah
     mov     ax, offset aGkev; "gkev"
     push    ax
@@ -998,7 +998,7 @@ load_intro_resources proc far
     push    ax
     mov     ax, offset resID_byte1
     push    ax
-    call    sub_28F98
+    call    intro_draw_text
     add     sp, 0Ah
     mov     ax, offset aGbra; "gbra"
     push    ax
@@ -1020,7 +1020,7 @@ load_intro_resources proc far
     push    ax
     mov     ax, offset resID_byte1
     push    ax
-    call    sub_28F98
+    call    intro_draw_text
     add     sp, 0Ah
     mov     ax, offset aGrob; "grob"
     push    ax
@@ -1042,7 +1042,7 @@ load_intro_resources proc far
     push    ax
     mov     ax, offset resID_byte1
     push    ax
-    call    sub_28F98
+    call    intro_draw_text
     add     sp, 0Ah
     mov     ax, offset aGsta; "gsta"
     push    ax
@@ -1064,7 +1064,7 @@ load_intro_resources proc far
     push    ax
     mov     ax, offset resID_byte1
     push    ax
-    call    sub_28F98
+    call    intro_draw_text
     add     sp, 0Ah
     mov     ax, offset aMus ; "mus"
     push    ax
@@ -1086,7 +1086,7 @@ load_intro_resources proc far
     push    ax
     mov     ax, offset resID_byte1
     push    ax
-    call    sub_28F98
+    call    intro_draw_text
     add     sp, 0Ah
     mov     ax, offset aGmsy; "gmsy"
     push    ax
@@ -1108,7 +1108,7 @@ load_intro_resources proc far
     push    ax
     mov     ax, offset resID_byte1
     push    ax
-    call    sub_28F98
+    call    intro_draw_text
     add     sp, 0Ah
     mov     ax, offset aGkri; "gkri"
     push    ax
@@ -1130,7 +1130,7 @@ load_intro_resources proc far
     push    ax
     mov     ax, offset resID_byte1
     push    ax
-    call    sub_28F98
+    call    intro_draw_text
     add     sp, 0Ah
     mov     ax, offset aGbri; "gbri"
     push    ax
@@ -1152,7 +1152,7 @@ load_intro_resources proc far
     push    ax
     mov     ax, offset resID_byte1
     push    ax
-    call    sub_28F98
+    call    intro_draw_text
     add     sp, 0Ah
     mov     ax, offset aPro ; "pro"
     push    ax
@@ -1174,7 +1174,7 @@ load_intro_resources proc far
     push    ax
     mov     ax, offset resID_byte1
     push    ax
-    call    sub_28F98
+    call    intro_draw_text
     add     sp, 0Ah
     mov     ax, offset aGkev_0; "gkev"
     push    ax
@@ -1196,7 +1196,7 @@ load_intro_resources proc far
     push    ax
     mov     ax, offset resID_byte1
     push    ax
-    call    sub_28F98
+    call    intro_draw_text
     add     sp, 0Ah
     mov     ax, offset aOpr ; "opr"
     push    ax
@@ -1218,7 +1218,7 @@ load_intro_resources proc far
     push    ax
     mov     ax, offset resID_byte1
     push    ax
-    call    sub_28F98
+    call    intro_draw_text
     add     sp, 0Ah
     mov     ax, offset aGbra_0; "gbra"
     push    ax
@@ -1240,7 +1240,7 @@ load_intro_resources proc far
     push    ax
     mov     ax, offset resID_byte1
     push    ax
-    call    sub_28F98
+    call    intro_draw_text
     add     sp, 0Ah
     mov     ax, offset aGric; "gric"
     push    ax
@@ -1262,7 +1262,7 @@ load_intro_resources proc far
     push    ax
     mov     ax, offset resID_byte1
     push    ax
-    call    sub_28F98
+    call    intro_draw_text
     add     sp, 0Ah
     mov     ax, offset aArt ; "art"
     push    ax
@@ -1284,7 +1284,7 @@ load_intro_resources proc far
     push    ax
     mov     ax, offset resID_byte1
     push    ax
-    call    sub_28F98
+    call    intro_draw_text
     add     sp, 0Ah
     mov     ax, offset aGmsm; "gmsm"
     push    ax
@@ -1306,7 +1306,7 @@ load_intro_resources proc far
     push    ax
     mov     ax, offset resID_byte1
     push    ax
-    call    sub_28F98
+    call    intro_draw_text
     add     sp, 0Ah
     mov     ax, offset aGdav; "gdav"
     push    ax
@@ -1328,7 +1328,7 @@ load_intro_resources proc far
     push    ax
     mov     ax, offset resID_byte1
     push    ax
-    call    sub_28F98
+    call    intro_draw_text
     add     sp, 0Ah
     mov     ax, offset aGnic; "gnic"
     push    ax
@@ -1350,7 +1350,7 @@ load_intro_resources proc far
     push    ax
     mov     ax, offset resID_byte1
     push    ax
-    call    sub_28F98
+    call    intro_draw_text
     add     sp, 0Ah
     mov     ax, offset aGkev_1; "gkev"
     push    ax
@@ -1372,7 +1372,7 @@ load_intro_resources proc far
     push    ax
     mov     ax, offset resID_byte1
     push    ax
-    call    sub_28F98
+    call    intro_draw_text
     add     sp, 0Ah
     push    [bp+var_38]
     push    [bp+var_3A]
@@ -1834,12 +1834,12 @@ loc_110ED:
     push    ax
     mov     ax, offset resID_byte1
     push    ax
-    call    sub_29606
+    call    font_op2_alt
     add     sp, 2
     push    ax
     mov     ax, offset resID_byte1
     push    ax
-    call    sub_28F98
+    call    intro_draw_text
     add     sp, 0Ah
     sub     ax, ax
     push    ax
@@ -1877,16 +1877,16 @@ loc_11210:
     push    ax
     mov     ax, offset resID_byte1
     push    ax
-    call    sub_29606
+    call    font_op2_alt
     add     sp, 2
     push    ax
     mov     ax, offset resID_byte1
     push    ax
-    call    sub_28F98
+    call    intro_draw_text
     add     sp, 0Ah
     push    word ptr fontnptr+2
     push    word ptr fontnptr
-    call    set_fontdef2
+    call    font_set_fontdef2
     add     sp, 4
     lea     ax, [bp+var_A]
     push    ax
@@ -1898,7 +1898,7 @@ loc_11210:
     sub     ax, ax
     push    ax
     push    ax
-    call    sub_34B0C
+    call    font_set_unk
     add     sp, 4
     mov     ax, 1Eh
     push    ax
@@ -1908,7 +1908,7 @@ loc_11210:
     cbw
     add     ax, offset resID_byte1
     push    ax
-    call    sub_33742
+    call    font_draw_text
     add     sp, 6
     mov     ax, 1Eh
     push    ax
@@ -1918,7 +1918,7 @@ loc_11210:
     cbw
     add     ax, offset resID_byte1
     push    ax
-    call    sub_33742
+    call    font_draw_text
     add     sp, 6
     mov     ax, 1Eh
     push    ax
@@ -1928,7 +1928,7 @@ loc_11210:
     cbw
     add     ax, 0AC74h
     push    ax
-    call    sub_33742
+    call    font_draw_text
     add     sp, 6
     mov     ax, 1Eh
     push    ax
@@ -1938,9 +1938,9 @@ loc_11210:
     cbw
     add     ax, offset resID_byte1
     push    ax
-    call    sub_33742
+    call    font_draw_text
     add     sp, 6
-    call    set_fontdef
+    call    font_set_fontdef
 loc_112E5:
     mov     ax, offset aTedit; "tedit"
     push    ax
@@ -1969,7 +1969,7 @@ loc_112E5:
     add     sp, 6
     push    dx
     push    ax
-    call    sub_292DC
+    call    draw_button
     add     sp, 14h
     sub     ax, ax
     push    ax
@@ -1992,7 +1992,7 @@ loc_112E5:
     add     sp, 6
     push    dx
     push    ax
-    call    sub_292DC
+    call    draw_button
     add     sp, 14h
     sub     ax, ax
     push    ax
@@ -2015,7 +2015,7 @@ loc_112E5:
     add     sp, 6
     push    dx
     push    ax
-    call    sub_292DC
+    call    draw_button
     add     sp, 14h
     push    [bp+var_2]
     push    [bp+var_4]
@@ -2378,12 +2378,12 @@ highscore_text_unk proc far
     push    ax
     mov     ax, offset resID_byte1
     push    ax
-    call    sub_29606
+    call    font_op2_alt
     add     sp, 2
     push    ax
     mov     ax, 0AC74h
     push    ax
-    call    sub_29008
+    call    hiscore_draw_text
     add     sp, 0Ah
     mov     ax, offset aHs2 ; "hs2"
     push    ax
@@ -2406,7 +2406,7 @@ highscore_text_unk proc far
     push    ax
     mov     ax, offset resID_byte1
     push    ax
-    call    sub_29008
+    call    hiscore_draw_text
     add     sp, 0Ah
     mov     ax, offset aHs3 ; "hs3"
     push    ax
@@ -2429,7 +2429,7 @@ highscore_text_unk proc far
     push    ax
     mov     ax, offset resID_byte1
     push    ax
-    call    sub_29008
+    call    hiscore_draw_text
     add     sp, 0Ah
     mov     ax, offset aHs5 ; "hs5"
     push    ax
@@ -2452,7 +2452,7 @@ highscore_text_unk proc far
     push    ax
     mov     ax, offset resID_byte1
     push    ax
-    call    sub_29008
+    call    hiscore_draw_text
     add     sp, 0Ah
     mov     ax, offset aHs4 ; "hs4"
     push    ax
@@ -2475,11 +2475,11 @@ highscore_text_unk proc far
     push    ax
     mov     ax, offset resID_byte1
     push    ax
-    call    sub_29008
+    call    hiscore_draw_text
     add     sp, 0Ah
     push    word ptr fontnptr+2
     push    word ptr fontnptr
-    call    set_fontdef2
+    call    font_set_fontdef2
     add     sp, 4
     mov     [bp+var_A], 0
     jmp     loc_118A0
@@ -2498,7 +2498,7 @@ loc_1181F:
     sub     ax, ax
     push    ax
     push    [bp+var_2]
-    call    sub_34B0C
+    call    font_set_unk
     add     sp, 4
     push    [bp+var_8]
     mov     ax, 10h
@@ -2507,7 +2507,7 @@ loc_1181F:
     cbw
     add     ax, offset resID_byte1
     push    ax
-    call    sub_33742
+    call    font_draw_text
     add     sp, 6
     push    [bp+var_8]
     mov     ax, 78h ; 'x'
@@ -2516,7 +2516,7 @@ loc_1181F:
     cbw
     add     ax, offset resID_byte1
     push    ax
-    call    sub_33742
+    call    font_draw_text
     add     sp, 6
     push    [bp+var_8]
     mov     ax, 0E0h ; 'à'
@@ -2525,7 +2525,7 @@ loc_1181F:
     cbw
     add     ax, offset resID_byte1
     push    ax
-    call    sub_33742
+    call    font_draw_text
     add     sp, 6
     push    [bp+var_8]
     mov     ax, 110h
@@ -2534,7 +2534,7 @@ loc_1181F:
     cbw
     add     ax, offset resID_byte1
     push    ax
-    call    sub_33742
+    call    font_draw_text
     add     sp, 6
     inc     [bp+var_A]
 loc_118A0:
@@ -2557,7 +2557,7 @@ loc_118C1:
     mov     [bp+var_2], ax
     jmp     loc_1181F
 loc_118CA:
-    call    set_fontdef
+    call    font_set_fontdef
     mov     sp, bp
     pop     bp
     retf
@@ -2694,7 +2694,7 @@ loc_119E0:
 loc_119E7:
     lea     ax, [bp+var_12]
     push    ax              ; char *
-    call    sub_298B8
+    call    format_frame_as_string
     add     sp, 6
     mov     bx, [bp+arg_2]
     mov     al, [bp+var_16]
@@ -3036,8 +3036,8 @@ run_car_menu proc far
     mov     [bp+var_transshape.ts_rotvec.vx], 0
     mov     [bp+var_transshape.ts_rotvec.vy], 0
     mov     [bp+var_transshape.ts_unk], 7530h
-    mov     ax, word_44CEA
-    mov     word_44984, ax
+    mov     ax, timertestflag
+    mov     timertestflag_copy, ax
     or      ax, ax
     jz      short loc_11C82
     lea     ax, [bp+var_10]
@@ -3415,7 +3415,7 @@ loc_11FC8:
     push    ax
     push    ax
     push    ax
-    call    sub_292DC
+    call    draw_button
     add     sp, 14h
     sub     ax, ax
     push    ax
@@ -3433,7 +3433,7 @@ loc_11FC8:
     sub     ax, ax
     push    ax
     push    ax
-    call    sub_292DC
+    call    draw_button
     add     sp, 14h
     sub     ax, ax
     push    ax
@@ -3452,7 +3452,7 @@ loc_120A3:
     sub     ax, ax
     push    ax
     push    ax
-    call    sub_292DC
+    call    draw_button
     add     sp, 14h
     mov     ax, offset aGrap; "grap"
     push    ax
@@ -3466,12 +3466,12 @@ loc_120A3:
     add     sp, 4
     push    word ptr fontnptr+2
     push    word ptr fontnptr
-    call    set_fontdef2
+    call    font_set_fontdef2
     add     sp, 4
     push    dialog_fnt_colour; the graph
     sub     ax, ax
     push    ax
-    call    sub_34B0C
+    call    font_set_unk
     add     sp, 4
     mov     ax, 73h ; 's'
     push    ax
@@ -3479,7 +3479,7 @@ loc_120A3:
     push    ax
     mov     ax, offset a150 ; "150"
     push    ax
-    call    sub_33742
+    call    font_draw_text
     add     sp, 6
     mov     ax, 87h ; '‡'
     push    ax
@@ -3487,7 +3487,7 @@ loc_120A3:
     push    ax
     mov     ax, offset a100 ; "100"
     push    ax
-    call    sub_33742
+    call    font_draw_text
     add     sp, 6
     mov     ax, 9Bh ; '›'
     push    ax
@@ -3495,7 +3495,7 @@ loc_120A3:
     push    ax
     mov     ax, offset a50  ; " 50"
     push    ax
-    call    sub_33742
+    call    font_draw_text
     add     sp, 6
     mov     ax, 0AFh ; '¯'
     push    ax
@@ -3503,7 +3503,7 @@ loc_120A3:
     push    ax
     mov     ax, offset a0   ; "  0"
     push    ax
-    call    sub_33742
+    call    font_draw_text
     add     sp, 6
     mov     ax, 0B9h ; '¹'
     push    ax
@@ -3511,9 +3511,9 @@ loc_120A3:
     push    ax
     mov     ax, offset a02040; "0  20  40"
     push    ax
-    call    sub_33742
+    call    font_draw_text
     add     sp, 6
-    call    set_fontdef
+    call    font_set_fontdef
     sub     ax, ax
     push    ax
     push    word_407F8
@@ -3537,7 +3537,7 @@ loc_120A3:
     add     sp, 6
     push    dx
     push    ax
-    call    sub_292DC
+    call    draw_button
     add     sp, 14h
     sub     ax, ax
     push    ax
@@ -3562,7 +3562,7 @@ loc_120A3:
     add     sp, 6
     push    dx
     push    ax
-    call    sub_292DC
+    call    draw_button
     add     sp, 14h
     sub     ax, ax
     push    ax
@@ -3587,7 +3587,7 @@ loc_120A3:
     add     sp, 6
     push    dx
     push    ax
-    call    sub_292DC
+    call    draw_button
     add     sp, 14h
     mov     bx, [bp+arg_4]
     cmp     byte ptr [bx], 0
@@ -3621,7 +3621,7 @@ loc_12229:
     push    ax
     push    dx
     push    [bp+var_3C]
-    call    sub_292DC
+    call    draw_button
     add     sp, 14h
     sub     ax, ax
     push    ax
@@ -3646,7 +3646,7 @@ loc_12229:
     add     sp, 6
     push    dx
     push    ax
-    call    sub_292DC
+    call    draw_button
     add     sp, 14h
     mov     ax, framespersec
     mov     [bp+var_12], ax
@@ -3712,7 +3712,7 @@ loc_12344:
     mov     framespersec, ax
     push    word ptr fontnptr+2
     push    word ptr fontnptr
-    call    set_fontdef2
+    call    font_set_fontdef2
     add     sp, 4
     mov     ax, offset aDes_1; "des"
     push    ax
@@ -3740,7 +3740,7 @@ loc_1237E:
     push    ax
     mov     ax, 0AC74h
     push    ax
-    call    sub_33742
+    call    font_draw_text
     add     sp, 6
 loc_123B1:
     mov     [bp+var_44], 0
@@ -3756,7 +3756,7 @@ loc_123CB:
     les     bx, [bp+var_FC]
     cmp     byte ptr es:[bx], 0
     jnz     short loc_1237E
-    call    set_fontdef
+    call    font_set_fontdef
     call    timer_get_delta_alt
     mov     [bp+var_F2], 0FFh
     mov     [bp+var_104], 0
@@ -3785,7 +3785,7 @@ loc_12423:
     call    polarAngle
     add     sp, 4
     mov     [bp+var_F8], ax
-    cmp     word_44984, 0
+    cmp     timertestflag_copy, 0
     jz      short loc_12448
     push    si
     lea     di, [bp+var_10]
@@ -4232,7 +4232,7 @@ loc_1287F:
     push    ax
     push    dx
     push    [bp+var_3C]
-    call    sub_292DC
+    call    draw_button
     add     sp, 14h
     call    sprite_copy_2_to_1_2
     call    mouse_draw_opaque_check
@@ -4253,7 +4253,7 @@ loc_1287F:
     push    ax
     push    [bp+var_3A]
     push    [bp+var_3C]
-    call    sub_292DC
+    call    draw_button
     add     sp, 14h
     call    mouse_draw_transparent_check
     jmp     loc_11FA5
@@ -4436,7 +4436,7 @@ loc_12A4D:
     add     sp, 6
     push    dx
     push    ax
-    call    sub_292DC
+    call    draw_button
     add     sp, 14h
     sub     ax, ax
     push    ax
@@ -4460,7 +4460,7 @@ loc_12A4D:
     add     sp, 6
     push    dx
     push    ax
-    call    sub_292DC
+    call    draw_button
     add     sp, 14h
     sub     ax, ax
     push    ax
@@ -4484,7 +4484,7 @@ loc_12A4D:
     add     sp, 6
     push    dx
     push    ax
-    call    sub_292DC
+    call    draw_button
     add     sp, 14h
     sub     ax, ax
     push    ax
@@ -4508,7 +4508,7 @@ loc_12A4D:
     add     sp, 6
     push    dx
     push    ax
-    call    sub_292DC
+    call    draw_button
     add     sp, 14h
     sub     ax, ax
     push    ax
@@ -4532,7 +4532,7 @@ loc_12A4D:
     add     sp, 6
     push    dx
     push    ax
-    call    sub_292DC
+    call    draw_button
     add     sp, 14h
     mov     al, gameconfig.game_opponenttype
     add     al, 30h ; '0'
@@ -4600,12 +4600,12 @@ loc_12C66:
     mov     word ptr [bp+var_1A+2], dx
     push    word ptr fontnptr+2
     push    word ptr fontnptr
-    call    set_fontdef2
+    call    font_set_fontdef2
     add     sp, 4
     push    dialog_fnt_colour
     sub     ax, ax
     push    ax
-    call    sub_34B0C
+    call    font_set_unk
     add     sp, 4
     mov     [bp+var_8], 0
     mov     [bp+var_E], 0
@@ -4627,7 +4627,7 @@ loc_12C9D:
     push    ax
     mov     ax, 0AC74h
     push    ax
-    call    sub_33742
+    call    font_draw_text
     add     sp, 6
 loc_12CD2:
     mov     [bp+var_8], 0
@@ -4645,7 +4645,7 @@ loc_12CED:
     les     bx, [bp+var_1A]
     cmp     byte ptr es:[bx], 0
     jnz     short loc_12C9D
-    call    set_fontdef
+    call    font_set_fontdef
 loc_12CFB:
     mov     al, [bp+var_14]
     cmp     [bp+var_1C], al
@@ -4928,12 +4928,12 @@ run_option_menu proc far
     push    ax
     mov     ax, offset resID_byte1
     push    ax
-    call    sub_29606
+    call    font_op2_alt
     add     sp, 2
     push    ax
     mov     ax, offset resID_byte1
     push    ax
-    call    sub_28F98
+    call    intro_draw_text
     add     sp, 0Ah
     mov     ax, offset aGver; "gver"
     push    ax
@@ -4956,13 +4956,13 @@ loc_12FDF:
     push    ax
     mov     ax, offset resID_byte1
     push    ax
-    call    sub_29606
+    call    font_op2_alt
     add     sp, 2
     push    ax
 loc_12FF4:
     mov     ax, offset resID_byte1
     push    ax
-    call    sub_28F98
+    call    intro_draw_text
     add     sp, 0Ah
     mov     [bp+var_4], 1
 loc_13004:
@@ -5246,7 +5246,7 @@ loc_131FC:
     push    ax
     push    ax
     push    ax
-    call    sub_292DC
+    call    draw_button
     add     sp, 14h
     sub     ax, ax
     push    ax
@@ -5263,7 +5263,7 @@ loc_131FC:
     push    ax
     push    ax
     push    ax
-    call    sub_292DC
+    call    draw_button
     add     sp, 14h
     mov     [bp+var_70], 6Bh ; 'k'
     mov     ax, offset aElt ; "elt"
@@ -5289,7 +5289,7 @@ loc_13281:
     push    ax
     lea     ax, [bp+var_12]
     push    ax              ; char *
-    call    sub_298B8
+    call    format_frame_as_string
     add     sp, 6
     lea     ax, [bp+var_12]
     push    ax
@@ -5322,12 +5322,12 @@ loc_132DC:
     push    [bp+var_70]
     mov     ax, offset resID_byte1
     push    ax
-    call    sub_29606
+    call    font_op2_alt
     add     sp, 2
     push    ax
     mov     ax, offset resID_byte1
     push    ax
-    call    sub_29008
+    call    hiscore_draw_text
     add     sp, 0Ah
     add     [bp+var_70], 0Ah
     cmp     gState_fps_counter, 0
@@ -5351,7 +5351,7 @@ loc_1330D:
     push    gState_fps_counter
     lea     ax, [bp+var_12]
     push    ax              ; char *
-    call    sub_298B8
+    call    format_frame_as_string
     add     sp, 6
     lea     ax, [bp+var_12]
     push    ax
@@ -5386,12 +5386,12 @@ loc_13380:
     push    [bp+var_70]
     mov     ax, offset resID_byte1
     push    ax
-    call    sub_29606
+    call    font_op2_alt
     add     sp, 2
     push    ax
     mov     ax, offset resID_byte1
     push    ax
-    call    sub_29008
+    call    hiscore_draw_text
     add     sp, 0Ah
     add     [bp+var_70], 0Ah
 loc_133A7:
@@ -5457,7 +5457,7 @@ loc_1341C:
     push    gState_144
     lea     ax, [bp+var_12]
     push    ax              ; char *
-    call    sub_298B8
+    call    format_frame_as_string
     add     sp, 6
     lea     ax, [bp+var_12]
     push    ax
@@ -5485,7 +5485,7 @@ loc_13466:
     push    gState_144
     lea     ax, [bp+var_12]
     push    ax              ; char *
-    call    sub_298B8
+    call    format_frame_as_string
     add     sp, 6
     lea     ax, [bp+var_12]
     push    ax
@@ -5504,12 +5504,12 @@ loc_134B5:
     push    [bp+var_70]
     mov     ax, offset resID_byte1
     push    ax
-    call    sub_29606
+    call    font_op2_alt
     add     sp, 2
     push    ax
     mov     ax, offset resID_byte1
     push    ax
-    call    sub_29008
+    call    hiscore_draw_text
     add     sp, 0Ah
     add     [bp+var_70], 0Ah
 loc_134DC:
@@ -5611,12 +5611,12 @@ loc_1356C:
     push    [bp+var_70]
     mov     ax, offset resID_byte1
     push    ax
-    call    sub_29606
+    call    font_op2_alt
     add     sp, 2
     push    ax
     mov     ax, offset resID_byte1
     push    ax
-    call    sub_29008
+    call    hiscore_draw_text
     add     sp, 0Ah
     add     [bp+var_70], 0Ah
     cmp     gState_14C, 0
@@ -5675,12 +5675,12 @@ loc_135ED:
     push    [bp+var_70]
     mov     ax, offset resID_byte1
     push    ax
-    call    sub_29606
+    call    font_op2_alt
     add     sp, 2
     push    ax
     mov     ax, offset resID_byte1
     push    ax
-    call    sub_29008
+    call    hiscore_draw_text
     add     sp, 0Ah
     add     [bp+var_70], 0Ah
 loc_1368B:
@@ -5736,12 +5736,12 @@ loc_1368B:
     push    [bp+var_70]
     mov     ax, offset resID_byte1
     push    ax
-    call    sub_29606
+    call    font_op2_alt
     add     sp, 2
     push    ax
     mov     ax, offset resID_byte1
     push    ax
-    call    sub_29008
+    call    hiscore_draw_text
     add     sp, 0Ah
     add     [bp+var_70], 0Ah
     cmp     gState_150, 0
@@ -5779,12 +5779,12 @@ loc_1368B:
     push    [bp+var_70]
     mov     ax, offset resID_byte1
     push    ax
-    call    sub_29606
+    call    font_op2_alt
     add     sp, 2
     push    ax
     mov     ax, offset resID_byte1
     push    ax
-    call    sub_29008
+    call    hiscore_draw_text
     add     sp, 0Ah
 loc_1379A:
     cmp     [bp+var_16], 0
@@ -6103,7 +6103,7 @@ loc_13A4B:
     mov     ax, [bp+var_8C]
     sub     ax, 3
     push    ax
-    call    sub_2916E
+    call    draw_lines_unk  ; border around opponent animation on eval screen
     add     sp, 0Eh
     mov     al, [bp+var_8E]
     cbw
@@ -6130,7 +6130,7 @@ loc_13A4B:
     sub     ax, ax
     push    ax
     push    ax
-    call    sub_34B0C
+    call    font_set_unk
     add     sp, 4
     mov     [bp+var_70], 8
     mov     [bp+var_40], 0
@@ -6174,7 +6174,7 @@ loc_13B57:
 loc_13B6E:
     push    word ptr fontnptr+2
     push    word ptr fontnptr
-    call    set_fontdef2
+    call    font_set_fontdef2
     add     sp, 4
 loc_13B7E:
     les     bx, [bp+var_86]
@@ -6192,7 +6192,7 @@ loc_13B97:
     mov     byte ptr [bx-3Ch], 0
     lea     ax, [bp+var_3C]
     push    ax
-    call    sub_32843
+    call    font_op2
     add     sp, 2
     mov     [bp+var_8A], ax
     add     ax, [bp+var_50]
@@ -6250,7 +6250,7 @@ loc_13C29:
     mov     ax, 0AC74h
 loc_13C2C:
     push    ax
-    call    sub_33742
+    call    font_draw_text
     add     sp, 6
     add     [bp+var_70], 8
     cmp     [bp+var_3C], 20h ; ' '
@@ -6278,7 +6278,7 @@ loc_13C67:
     mov     resID_byte1[bx], 0
     mov     ax, 0AC74h
     push    ax
-    call    sub_32843
+    call    font_op2
     add     sp, 2
     mov     [bp+var_50], ax
 loc_13C86:
@@ -6298,7 +6298,7 @@ loc_13CA0:
     jz      short loc_13CA9
     jmp     loc_13B7E
 loc_13CA9:
-    call    set_fontdef
+    call    font_set_fontdef
     inc     di
 loc_13CAF:
     cmp     [bp+var_7A], di
@@ -6322,7 +6322,7 @@ loc_13CD0:
     jz      short loc_13D06
     push    word ptr fontnptr+2
     push    word ptr fontnptr
-    call    set_fontdef2
+    call    font_set_fontdef2
     add     sp, 4
     mov     bx, [bp+var_40]
     mov     resID_byte1[bx], 0
@@ -6331,9 +6331,9 @@ loc_13CD0:
     push    ax
     mov     ax, offset resID_byte1
     push    ax
-    call    sub_33742
+    call    font_draw_text
     add     sp, 6
-    call    set_fontdef
+    call    font_set_fontdef
 loc_13D06:
     mov     [bp+var_14], 0
     cmp     [bp+var_6E], 0
@@ -6363,7 +6363,7 @@ loc_13D13:
     add     sp, 6
     push    dx
     push    ax
-    call    sub_292DC
+    call    draw_button
     add     sp, 14h
     mov     al, [bp+var_52]
     cbw
@@ -6509,7 +6509,7 @@ loc_13ECD:
     push    ax
     push    ax
     push    ax
-    call    sub_292DC
+    call    draw_button
     add     sp, 14h
     mov     ax, word_3BD0A
     inc     ax
@@ -6587,14 +6587,14 @@ loc_13FB2:
     push    ax
     mov     ax, 0AC74h
     push    ax
-    call    sub_29606
+    call    font_op2_alt
     add     sp, 2
     push    ax
     mov     ax, 0AC74h
 loc_13FCA:
     push    ax
 loc_13FCB:
-    call    sub_29008
+    call    hiscore_draw_text
 loc_13FD0:
     add     sp, 0Ah
     jmp     short loc_13FDA
@@ -6652,7 +6652,7 @@ loc_14017:
     push    ax
     push    dx
     push    [bp+var_7E]
-    call    sub_292DC
+    call    draw_button
     add     sp, 14h
 loc_14058:
     sub     ax, ax
@@ -6678,7 +6678,7 @@ loc_14058:
     add     sp, 6
     push    dx
     push    ax
-    call    sub_292DC
+    call    draw_button
     add     sp, 14h
     cmp     [bp+var_16], 0
     jz      short loc_140A4
@@ -6711,7 +6711,7 @@ loc_140A7:
     push    ax
     push    dx
     push    [bp+var_7E]
-    call    sub_292DC
+    call    draw_button
     add     sp, 14h
     sub     ax, ax
     push    ax
@@ -6736,7 +6736,7 @@ loc_140A7:
     add     sp, 6
     push    dx
     push    ax
-    call    sub_292DC
+    call    draw_button
     add     sp, 14h
     sub     di, di
 loc_14130:
@@ -7000,7 +7000,7 @@ loc_143C6:
     push    ax
     push    ax
     push    ax
-    call    sub_292DC
+    call    draw_button
     add     sp, 14h
     cmp     [bp+var_14], 0
     jz      short loc_14404
@@ -7198,7 +7198,7 @@ loc_14551:
     push    [bp+var_428]
     mov     ax, offset resID_byte1
     push    ax
-    call    sub_33742
+    call    font_draw_text
     add     sp, 6
     mov     al, [bp+var_404]
     mov     resID_byte1, al
@@ -7209,7 +7209,7 @@ loc_14551:
     mov     ax, offset resID_byte1
     push    ax
 loc_145CA:
-    call    sub_33742
+    call    font_draw_text
 loc_145CF:
     add     sp, 6
     mov     al, [bp+var_402]
@@ -7221,7 +7221,7 @@ loc_145E0:
     push    [bp+var_420]
     mov     ax, offset resID_byte1
     push    ax
-    call    sub_33742
+    call    font_draw_text
     add     sp, 6
 loc_145F4:
     mov     ax, offset aA00 ; "a00"
@@ -7293,6 +7293,7 @@ loc_1468D:
     jnz     short loc_14664
     mov     ax, offset resID_byte1
     push    ax
+loc_14698:
     lea     ax, [bp+var_43E]
     push    ax              ; char *
     call    _strcmp

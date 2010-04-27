@@ -89,7 +89,7 @@ loc_36C89:
 loc_36C8E:
     push    [bp+arg_0]
 loc_36C91:
-    call    sub_36EC0
+    call    preRender_wheel_helper
 loc_36C96:
     add     sp, 6
 loc_36C99:
@@ -118,7 +118,7 @@ loc_36CC4:
     mov     ax, 4
     push    ax
     push    [bp+arg_4]
-    call    sub_317EE
+    call    preRender_wheel_helper4
     add     sp, 14h
     add     [bp+var_2], 4
     inc     [bp+var_110]
@@ -140,7 +140,7 @@ loc_36CF9:
     mov     ax, 4
     push    ax
     push    [bp+arg_4]
-    call    sub_317EE
+    call    preRender_wheel_helper4
     add     sp, 14h
     lea     ax, [bp+var_10A]
     mov     [bp+var_4], ax
@@ -226,7 +226,7 @@ loc_36DEE:
     mov     ax, 12h
     push    ax
     push    [bp+arg_6]
-    call    sub_317C1
+    call    preRender_default_alt
     add     sp, 6
     mov     si, [bp+var_11A]
     mov     cl, 2
@@ -282,14 +282,14 @@ loc_36E94:
     mov     ax, 12h
     push    ax
     push    [bp+arg_6]
-    call    sub_317C1
+    call    preRender_default_alt
     add     sp, 6
     lea     ax, [bp+var_CE]
     push    ax
     mov     ax, 10h
     push    ax
     push    [bp+arg_8]
-    call    sub_317C1
+    call    preRender_default_alt
     add     sp, 6
     pop     si
     mov     sp, bp

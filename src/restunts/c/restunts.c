@@ -79,7 +79,7 @@ extern char aDos[];
 
 extern void init_video(int argc, char* argv);
 extern void init_div0(void);
-extern void set_fontdef(void);
+extern void font_set_fontdef(void);
 extern void init_polyinfo(void);
 extern void mouse_draw_opaque_check(void);
 extern void sub_22532(void);
@@ -146,7 +146,7 @@ int stuntsmain(int argc, char* argv) {
 	fontdefptr = file_load_resource(0, "fontdef.fnt");
 	fontnptr = file_load_resource(0, "fontn.fnt");
 
-	set_fontdef();
+	font_set_fontdef();
 	init_polyinfo();
 
 	trkptr = mmgr_alloc_resbytes("trakdata", 0x6BF3);

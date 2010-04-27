@@ -95,7 +95,7 @@ loc_19F30:
 loc_19F32:
     jmp     loc_1A046
 loc_19F35:
-    cmp     word_44984, 0
+    cmp     timertestflag_copy, 0
 loc_19F3A:
     jnz     short loc_19F3F
 loc_19F3C:
@@ -111,7 +111,7 @@ loc_19F47:
 loc_19F4A:
     jl      short loc_19F41
 loc_19F4C:
-    cmp     byte_3B8FA, 4
+    cmp     timertestflag2, 4
 loc_19F51:
     jnz     short loc_19F59
 loc_19F53:
@@ -236,7 +236,7 @@ loc_1A046:
     add     sp, 4
 loc_1A05E:
     call    mouse_draw_transparent_check
-    cmp     word_44984, 0
+    cmp     timertestflag_copy, 0
     jz      short loc_1A090
     mov     ax, word_463D6
     mov     word_449FE, ax
@@ -277,7 +277,7 @@ init_rect_arrays proc far
     sub     sp, 2
     push    di
     push    si
-    cmp     word_44984, 0
+    cmp     timertestflag_copy, 0
     jz      short loc_1A0EE
     push    si
     mov     di, offset rect_array_unk
@@ -427,7 +427,7 @@ loc_1A122:
     mov     rectptr_unk, offset rect_array_unk
     mov     rectptr_unk2, offset rect_array_unk2
 loc_1A12E:
-    cmp     word_44984, 0
+    cmp     timertestflag_copy, 0
     jz      short loc_1A162
     mov     [bp+var_122], 8
     mov     [bp+var_rectptr], offset rect_unk
@@ -855,7 +855,7 @@ loc_1A512:
 loc_1A580:
     mov     [bp+var_2], 0FFFFh
 loc_1A585:
-    cmp     byte_3B8FA, 0
+    cmp     timertestflag2, 0
     jz      short loc_1A58F
     jmp     loc_1A66D
 loc_1A58F:
@@ -941,7 +941,7 @@ loc_1A66D:
     sub     al, 1Dh
     neg     al
     mov     [bp+var_134], al
-    cmp     byte_3B8FA, 0
+    cmp     timertestflag2, 0
     jz      short loc_1A69D
     mov     al, byte ptr state.playerstate.car_posWorld1.lx+2
     mov     [bp+var_D8], al
@@ -955,7 +955,7 @@ loc_1A69F:
     inc     si
     cmp     si, 17h
     jl      short loc_1A69F
-    mov     bl, byte_3B8FA
+    mov     bl, timertestflag2
     sub     bh, bh
     mov     al, byte_3C09C[bx]
     mov     [bp+var_130], al
@@ -1095,7 +1095,7 @@ loc_1A7FF:
     mov     [bp+si+var_BC], al
     cmp     [bp+var_62], 0
     jz      short loc_1A857
-    cmp     byte_3B8FA, 0
+    cmp     timertestflag2, 0
     jz      short loc_1A857
     mov     al, [bp+var_62]
     sub     ah, ah
@@ -1794,7 +1794,7 @@ loc_1AE7A:
     mov     al, [bx+1]
     add     al, [bp+var_102]
     mov     [bp+var_12C], al
-    cmp     byte_3B8FA, 0
+    cmp     timertestflag2, 0
     jnz     short loc_1AEB2
     jmp     loc_1AD5E
 loc_1AEB2:
@@ -2798,7 +2798,7 @@ loc_1B8E7:
     mov     [bx+4], ax
     cmp     [bp+var_FC], 0
     jnz     short loc_1B903
-    cmp     byte_3B8FA, 2
+    cmp     timertestflag2, 2
     jbe     short loc_1B914
 loc_1B903:
     mov     bx, [bp+var_12E]
@@ -2830,7 +2830,7 @@ loc_1B914:
     call    sub_204AE
     add     sp, 0Eh
 loc_1B94A:
-    cmp     word_44984, 0
+    cmp     timertestflag_copy, 0
     jz      short loc_1B964
     mov     bx, word_46434
     mov     word ptr [bx+8], 92ACh
@@ -3059,7 +3059,7 @@ loc_1BB94:
     mov     [bx+4], ax
     cmp     [bp+var_FC], 0
     jnz     short loc_1BBB0
-    cmp     byte_3B8FA, 2
+    cmp     timertestflag2, 2
     jbe     short loc_1BBC0
 loc_1BBB0:
     mov     bx, [bp+var_12E]
@@ -3089,7 +3089,7 @@ loc_1BBC0:
     call    sub_204AE
     add     sp, 0Eh
 loc_1BBF6:
-    cmp     word_44984, 0
+    cmp     timertestflag_copy, 0
     jz      short loc_1BC10
     mov     bx, word_46434
     mov     word ptr [bx+8], 92B4h
@@ -3556,7 +3556,7 @@ loc_1C0C2:
     jge     short loc_1C0E8
     cmp     [bp+si+var_DC], 0
     jz      short loc_1C0C1
-    cmp     word_44984, 0
+    cmp     timertestflag_copy, 0
     jnz     short loc_1C0D8
     jmp     loc_1BFF8
 loc_1C0D8:
@@ -3596,7 +3596,7 @@ loc_1C128:
     mov     bx, [bp+var_104]
     cmp     byte ptr [bx+0C9h], 1
     jnz     short loc_1C17C
-    cmp     word_44984, 0
+    cmp     timertestflag_copy, 0
     jz      short loc_1C162
     mov     ax, 9294h
     push    ax
@@ -3636,7 +3636,7 @@ loc_1C17C:
     mov     bx, [bp+var_104]
     cmp     byte ptr [bx+0C9h], 2
     jnz     short loc_1C1C6
-    cmp     word_44984, 0
+    cmp     timertestflag_copy, 0
     jz      short loc_1C1AC
     mov     ax, 9294h
     push    ax
@@ -3681,13 +3681,13 @@ loc_1C1DA:
     push    ax
     mov     ax, 0AC74h
     push    ax              ; char *
-    call    sub_298B8
+    call    format_frame_as_string
     add     sp, 6
     push    fontledresseg
     push    fontledresofs
-    call    set_fontdef2
+    call    font_set_fontdef2
     add     sp, 4
-    cmp     word_44984, 0
+    cmp     timertestflag_copy, 0
     jz      short loc_1C238
     mov     ax, 92C4h
     push    ax
@@ -3702,7 +3702,7 @@ loc_1C1DA:
     push    ax
     mov     ax, 0AC74h
     push    ax
-    call    sub_28F98
+    call    intro_draw_text
     add     sp, 0Ah
     push    ax
     call    sub_26572
@@ -3722,12 +3722,12 @@ loc_1C238:
     push    ax
     mov     ax, 0AC74h
     push    ax
-    call    sub_28F98
+    call    intro_draw_text
     add     sp, 0Ah
 loc_1C256:
-    call    set_fontdef
+    call    font_set_fontdef
 loc_1C25B:
-    cmp     word_44984, 0
+    cmp     timertestflag_copy, 0
     jnz     short loc_1C265
     jmp     loc_1C2F8
 loc_1C265:
@@ -3834,7 +3834,7 @@ sub_1C302 proc far
     sub     sp, 4
     push    di
     push    si
-    cmp     byte_3B8FA, 4
+    cmp     timertestflag2, 4
     jz      short loc_1C320
     mov     si, [bp+arg_4]
     mov     bx, [bp+arg_0]
@@ -3867,7 +3867,7 @@ loc_1C339:
     call    sprite_clear_1_color
     add     sp, 2
 loc_1C35F:
-    cmp     byte_3B8FA, 4
+    cmp     timertestflag2, 4
     jnz     short loc_1C369
     jmp     loc_1C432
 loc_1C369:
@@ -4142,7 +4142,7 @@ loc_1C58A:
     db 144
 loc_1C5A6:
     mov     [bp+var_5A], 0
-    cmp     byte_3B8FA, 4
+    cmp     timertestflag2, 4
     jz      short loc_1C61D
     cmp     [bp+var_4A], 0
     jge     short loc_1C61D
@@ -4154,7 +4154,7 @@ loc_1C5A6:
     push    [bp+var_4E]
     push    [bp+var_48]
     push    [bp+var_4A]
-    call    sub_2EB56
+    call    draw_line_related
     add     sp, 0Ah
     or      ax, ax
     jnz     short loc_1C61D
@@ -4192,7 +4192,7 @@ loc_1C61D:
     jnz     short loc_1C626
     jmp     loc_1C852
 loc_1C626:
-    cmp     word_44984, 0
+    cmp     timertestflag_copy, 0
     jnz     short loc_1C630
     jmp     loc_1C7B6
 loc_1C630:
@@ -4509,7 +4509,7 @@ loc_1C904:
     mov     ax, 4
     push    ax
     push    skybox_sky_color
-    call    sub_317DF
+    call    skybox_op_helper
     add     sp, 14h
     push    [bp+var_38]
     push    [bp+var_3A]
@@ -4522,7 +4522,7 @@ loc_1C904:
     mov     ax, 4
     push    ax
     push    skybox_grd_color
-    call    sub_317DF
+    call    skybox_op_helper
     add     sp, 14h
     jmp     loc_1CB72
     ; align 2
@@ -4547,7 +4547,7 @@ loc_1C958:
     push    skybox_sky_color
     call    sprite_clear_1_color
     add     sp, 2
-    cmp     word_44984, 0
+    cmp     timertestflag_copy, 0
     jnz     short loc_1C99D
     jmp     loc_1CB77
 loc_1C99D:
@@ -4579,9 +4579,9 @@ loc_1C9E4:
     jz      short loc_1C9ED
     jmp     loc_1CB00
 loc_1C9ED:
-    cmp     word_44984, 0
+    cmp     timertestflag_copy, 0
     jz      short loc_1CA25
-    cmp     byte_3B8FA, 4
+    cmp     timertestflag2, 4
     jnz     short loc_1CA02
     mov     ax, [bp+var_50]
     dec     ax
@@ -4622,7 +4622,7 @@ loc_1CA54:
     inc     si
     cmp     si, 0Fh
     jl      short loc_1CA54
-    cmp     byte_3B8FA, 4
+    cmp     timertestflag2, 4
     jnz     short loc_1CA72
     mov     bx, [bp+arg_0]
     shl     bx, 1
@@ -5448,12 +5448,12 @@ loc_1D14E:
     push    ax
     mov     ax, offset resID_byte1
     push    ax
-    call    sub_29606
+    call    font_op2_alt
     add     sp, 2
     push    ax
     mov     ax, offset resID_byte1
     push    ax
-    call    sub_28F98
+    call    intro_draw_text
     add     sp, 0Ah
     push    ax
     mov     ax, offset word_4617E
@@ -5482,7 +5482,7 @@ loc_1D1D5:
     push    ax
     mov     ax, offset resID_byte1
     push    ax
-    call    sub_29606
+    call    font_op2_alt
     add     sp, 2
     jmp     loc_1D511
     ; align 2
@@ -5541,12 +5541,12 @@ loc_1D234:
     push    ax
     mov     ax, offset resID_byte1
     push    ax
-    call    sub_29606
+    call    font_op2_alt
     add     sp, 2
     push    ax
     mov     ax, offset resID_byte1
     push    ax
-    call    sub_28F98
+    call    intro_draw_text
     add     sp, 0Ah
     push    ax
     mov     ax, offset word_4617E
@@ -5658,12 +5658,12 @@ loc_1D34A:
     push    ax
     mov     ax, offset resID_byte1
     push    ax
-    call    sub_29606
+    call    font_op2_alt
     add     sp, 2
     push    ax
     mov     ax, offset resID_byte1
     push    ax
-    call    sub_28F98
+    call    intro_draw_text
     add     sp, 0Ah
     jmp     loc_1D311
     ; align 2
@@ -5710,12 +5710,12 @@ loc_1D3E6:
     push    ax
     mov     ax, offset resID_byte1
     push    ax
-    call    sub_29606
+    call    font_op2_alt
     add     sp, 2
     push    ax
     mov     ax, offset resID_byte1
     push    ax
-    call    sub_28F98
+    call    intro_draw_text
     add     sp, 0Ah
     push    ax
     mov     ax, offset word_4617E
@@ -5748,7 +5748,7 @@ loc_1D42C:
     add     sp, 2
     add     ax, offset resID_byte1
     push    ax              ; char *
-    call    sub_298B8
+    call    format_frame_as_string
     add     sp, 6
     mov     ax, offset word_4617E
     push    ax
@@ -5818,7 +5818,7 @@ loc_1D511:
     push    ax
     mov     ax, offset resID_byte1
     push    ax
-    call    sub_28F98
+    call    intro_draw_text
     add     sp, 0Ah
     push    ax
     mov     ax, offset word_4617E
@@ -5908,11 +5908,11 @@ sub_1D5B4 proc far
     var_E = word ptr -14
     var_C = word ptr -12
     var_A = word ptr -10
-    var_8 = dword ptr -8
-    var_4 = dword ptr -4
+    var_cracshape = dword ptr -8
+    var_cinfshape = dword ptr -4
      s = byte ptr 0
      r = byte ptr 2
-    arg_0 = word ptr 6
+    arg_framecount = word ptr 6
     arg_2 = word ptr 8
     arg_4 = word ptr 10
 
@@ -5927,26 +5927,26 @@ sub_1D5B4 proc far
     push    word ptr gameresptr
     call    locate_shape_alt
     add     sp, 6
-    mov     word ptr [bp+var_8], ax
-    mov     word ptr [bp+var_8+2], dx
+    mov     word ptr [bp+var_cracshape], ax
+    mov     word ptr [bp+var_cracshape+2], dx
     mov     ax, offset aCinf; "cinf"
     push    ax
     push    word ptr gameresptr+2
     push    word ptr gameresptr
     call    locate_shape_alt
     add     sp, 6
-    mov     word ptr [bp+var_4], ax
-    mov     word ptr [bp+var_4+2], dx
+    mov     word ptr [bp+var_cinfshape], ax
+    mov     word ptr [bp+var_cinfshape+2], dx
     mov     ax, framespersec
     cwd
     mov     cx, 7
     idiv    cx
     mov     cx, ax
-    mov     ax, [bp+arg_0]
+    mov     ax, [bp+arg_framecount]
     cwd
     idiv    cx
-    mov     [bp+var_1A], ax
-    les     bx, [bp+var_4]
+    mov     [bp+var_1A], ax ; var_1A = ax = (framespersec / 7) / framecount
+    les     bx, [bp+var_cinfshape]
     mov     di, es:[bx]
     cmp     ax, di
     jl      short loc_1D614
@@ -5955,7 +5955,7 @@ sub_1D5B4 proc far
 loc_1D614:
     mov     di, [bp+var_1A]
     shl     di, 1
-    les     bx, [bp+var_4]
+    les     bx, [bp+var_cinfshape]
     mov     ax, es:[bx+di+2]
     mov     [bp+var_18], ax
     push    si
@@ -5974,14 +5974,14 @@ loc_1D636:
     mov     di, si
     mov     cl, 3
     shl     di, cl
-    les     bx, [bp+var_8]
+    les     bx, [bp+var_cracshape]
     mov     ax, es:[bx+di]
     mov     dx, es:[bx+di+2]
     mov     [bp+var_10], ax
     mov     [bp+var_E], dx
     mov     bx, si
     shl     bx, cl
-    mov     di, word ptr [bp+var_8]
+    mov     di, word ptr [bp+var_cracshape]
     mov     ax, es:[bx+di+4]
     mov     dx, es:[bx+di+6]
     mov     [bp+var_14], ax
@@ -6059,7 +6059,7 @@ loc_1D636:
     push    [bp+var_10]
     call    preRender_line
     add     sp, 0Ah
-    cmp     word_44984, 0
+    cmp     timertestflag_copy, 0
     jnz     short loc_1D70F
     jmp     loc_1D78F
 loc_1D70F:
@@ -6069,7 +6069,7 @@ loc_1D70F:
     add     ax, [bp+arg_2]
     dec     ax
     mov     [bp+var_A], ax
-    mov     ax, 0AA0Eh
+    mov     ax, offset word_4617E
     push    ax
     lea     ax, [bp+var_C]
     push    ax
@@ -6081,7 +6081,7 @@ loc_1D70F:
     add     ax, [bp+arg_2]
     inc     ax
     mov     [bp+var_A], ax
-    mov     ax, 0AA0Eh
+    mov     ax, offset word_4617E
     push    ax
     lea     ax, [bp+var_C]
     push    ax
@@ -6093,7 +6093,7 @@ loc_1D70F:
     add     ax, [bp+arg_2]
     inc     ax
     mov     [bp+var_A], ax
-    mov     ax, 0AA0Eh
+    mov     ax, offset word_4617E
     push    ax
     lea     ax, [bp+var_C]
     push    ax
@@ -6105,7 +6105,7 @@ loc_1D70F:
     add     ax, [bp+arg_2]
     dec     ax
     mov     [bp+var_A], ax
-    mov     ax, 0AA0Eh
+    mov     ax, offset word_4617E
     push    ax
     lea     ax, [bp+var_C]
     push    ax
@@ -6118,7 +6118,7 @@ loc_1D790:
     jle     short loc_1D798
     jmp     loc_1D636
 loc_1D798:
-    mov     ax, 0AA0Eh
+    mov     ax, offset word_4617E
     pop     si
     pop     di
     mov     sp, bp
@@ -6481,8 +6481,8 @@ loc_1D9CF:
     call    timer_get_delta
     mov     [bp+var_2AA], 0
     mov     [bp+var_440], 0
-    mov     ax, word_44CEA
-    mov     word_44984, ax
+    mov     ax, timertestflag
+    mov     timertestflag_copy, ax
     mov     rect_unk, 0
     mov     rect_unk+2, 140h
     mov     rect_unk+4, 0
@@ -6702,7 +6702,7 @@ smart
 nosmart
     mov     [bp+var_2A4], ax
 loc_1DCD1:
-    cmp     word_44984, 0
+    cmp     timertestflag_copy, 0
     jz      short loc_1DCFC
     cmp     [bp+var_36], 0
     jnz     short loc_1DCEC
@@ -6747,7 +6747,7 @@ loc_1DCFC:
     call    mouse_draw_opaque_check
     call    setup_mcgawnd1
     call    mouse_draw_transparent_check
-    cmp     word_44984, 0
+    cmp     timertestflag_copy, 0
     jz      short loc_1DD77
     mov     bx, [bp+var_36]
     mov     cl, 3
@@ -6765,7 +6765,7 @@ loc_1DD77:
     jmp     loc_1DE19
 loc_1DD7E:
     call    sprite_copy_2_to_1_2
-    cmp     word_44984, 0
+    cmp     timertestflag_copy, 0
     jz      short loc_1DDFC
     lea     ax, [bp+var_2A]
     push    ax
@@ -6955,7 +6955,7 @@ loc_1DEE9:
     mov     ax, 400h
     sub     ax, [bp+arg_4]
     mov     [bp+var_transshape.ts_pos.vz], ax
-    cmp     word_44984, 0
+    cmp     timertestflag_copy, 0
     jz      short loc_1DF16
     lea     ax, [bp+var_rc]
     mov     [bp+var_transshape.ts_rectptr], ax
@@ -7008,7 +7008,7 @@ loc_1DF7E:
     sub     ax, [bp+arg_4]
     mov     [bp+var_transshape.ts_pos.vz], ax
     mov     [bp+var_transshape.ts_shapeptr], offset bravshape
-    cmp     word_44984, 0
+    cmp     timertestflag_copy, 0
     jz      short loc_1DFA4
     lea     ax, [bp+var_rc]
     mov     [bp+var_transshape.ts_rectptr], ax
@@ -7029,7 +7029,7 @@ loc_1DFA8:
     call    transformed_shape_op
     add     sp, 2
 loc_1DFCF:
-    cmp     word_44984, 0
+    cmp     timertestflag_copy, 0
     jnz     short loc_1DFD9
     jmp     loc_1E06C
 loc_1DFD9:
@@ -7163,7 +7163,7 @@ loc_1E0AB:
     push    [bp+var_3A]
     call    putpixel_single_maybe
     add     sp, 6
-    cmp     word_44984, 0
+    cmp     timertestflag_copy, 0
     jz      short loc_1E144
     mov     bx, [bp+arg_10]
     mov     ax, di
@@ -7193,13 +7193,13 @@ loc_1E157:
     jge     short loc_1E160
     jmp     loc_1E0AB
 loc_1E160:
-    cmp     word_44984, 0
+    cmp     timertestflag_copy, 0
     jz      short loc_1E16C
     mov     bx, [bp+arg_12]
     mov     [bx], di
 loc_1E16C:
     call    get_a_poly_info
-    cmp     word_44984, 0
+    cmp     timertestflag_copy, 0
     jz      short loc_1E19A
     mov     bx, [bp+arg_1C]
     push    si

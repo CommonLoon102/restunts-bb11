@@ -3610,6 +3610,7 @@ loc_26B1F:
     mov     bx, [bp+var_1C]
     mov     si, bx
     mov     ax, [si]
+loc_26B26:
     cmp     [bx+2], ax
     jg      short loc_26B2E
     jmp     loc_26A60

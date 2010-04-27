@@ -4381,6 +4381,7 @@ unknown_libname_5 proc far
     push    bp
     mov     bp, sp
     mov     bx, [bp+arg_0]
+loc_2E988:
     push    [bp+arg_4]
     push    [bp+arg_2]
     push    word ptr [bx+2]

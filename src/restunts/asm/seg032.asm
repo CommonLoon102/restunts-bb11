@@ -480,7 +480,7 @@ loc_3A827:
     add     ax, off_42A1E
     push    ax
 loc_3A833:
-    call    sub_32832
+    call    font_op
     add     sp, 4
     mov     [bp+var_2], ax
     or      ax, ax
@@ -488,19 +488,19 @@ loc_3A833:
 loc_3A842:
     mov     ax, 53CAh
     push    ax
-    call    sub_32843
+    call    font_op2
     add     sp, 2
     mov     [bp+var_2], ax
 loc_3A851:
     push    word_42A22
 loc_3A855:
     push    off_42A1E
-    call    sub_32832
+    call    font_op
 loc_3A85E:
     add     sp, 4
     add     ax, word_42A18
     mov     [bp+var_4], ax
-    les     bx, off_405FE
+    les     bx, dword ptr word_405FE
     mov     ax, es:[bx+12h]
 loc_3A870:
     add     ax, word_42A1A
@@ -548,8 +548,9 @@ loc_3A8A6:
     mov     byte ptr [bx+si-1], 0
 loc_3A8CC:
     push    off_42A1E
-    call    sub_32843
+    call    font_op2
     add     sp, 2
+loc_3A8D8:
     cmp     ax, word_42A20
     jg      short loc_3A8A6
 loc_3A8DE:
@@ -565,52 +566,34 @@ loc_3A8DE:
 loc_3A8FB:
     push    word_42A1A
     push    word_42A18
-loc_3A903:
     push    off_42A1E
     call    sub_345BC
     add     sp, 6
-loc_3A90F:
     cmp     word_42A20, 0
-loc_3A914:
     jz      short loc_3A953
-loc_3A916:
     push    off_42A1E
-loc_3A91A:
-    call    sub_32843
+    call    font_op2
     add     sp, 2
-loc_3A922:
     mov     [bp+var_6], ax
     mov     ax, word_42A20
-loc_3A928:
     sub     ax, [bp+var_6]
-loc_3A92B:
     mov     [bp+var_4], ax
     or      ax, ax
     jle     short loc_3A953
-loc_3A932:
-    les     bx, off_405FE
-loc_3A936:
+    les     bx, dword ptr word_405FE
     push    word ptr es:[bx+2]
-loc_3A93A:
     push    word ptr es:[bx+12h]
-loc_3A93E:
     push    ax
-loc_3A93F:
     push    word_42A1A
     mov     ax, [bp+var_6]
-loc_3A946:
     add     ax, word_42A18
-loc_3A94A:
     push    ax
-loc_3A94B:
     call    sprite_1_unk2
 loc_3A950:
     add     sp, 0Ah
 loc_3A953:
     pop     si
-loc_3A954:
     mov     sp, bp
-loc_3A956:
     pop     bp
     retf
 read_line_helper2 endp

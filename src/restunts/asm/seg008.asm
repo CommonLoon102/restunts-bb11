@@ -72,14 +72,14 @@ seg008 segment byte public 'STUNTSC' use16
     public ported_sprite_copy_2_to_1_clear_
     public ported_sprite_copy_wnd_to_1_
     public ported_sprite_copy_wnd_to_1_clear_
-    public sub_28F98
-    public sub_29008
+    public intro_draw_text
+    public hiscore_draw_text
     public call_read_line
     public input_repeat_check
-    public sub_2916E
-    public sub_292DC
+    public draw_lines_unk
+    public draw_button
     public ported_shape3d_init_shape_
-    public sub_29606
+    public font_op2_alt
     public sub_29620
     public show_waiting
     public print_int_as_string_maybe
@@ -87,9 +87,9 @@ seg008 segment byte public 'STUNTSC' use16
     public sub_29786
     public ported_file_load_audiores_
     public audio_unload
-    public set_fontdef2
-    public set_fontdef
-    public sub_298B8
+    public font_set_fontdef2
+    public font_set_fontdef
+    public format_frame_as_string
     public get_super_random
     public ported_file_load_resource_
     public off_29A4E
@@ -447,7 +447,7 @@ loc_276C0:
     mov     [bp+si+var_80], 0
     lea     ax, [bp+var_80]
     push    ax
-    call    sub_32843
+    call    font_op2
     add     sp, 2
     mov     [bp+var_1C2], ax
     mov     ax, [bp+var_194]
@@ -470,7 +470,7 @@ loc_27702:
     mov     [bp+si+var_80], 0
     lea     ax, [bp+var_80]
     push    ax
-    call    sub_32843
+    call    font_op2
     add     sp, 2
     mov     [bp+var_1C2], ax
     mov     ax, [bp+var_194]
@@ -591,13 +591,13 @@ loc_277F6:
     sub     ax, ax
     push    ax
     push    dialog_fnt_colour
-    call    sub_34B0C
+    call    font_set_unk
     add     sp, 4
     mov     word_3EB90, 0
     sub     ax, ax
     push    ax
     push    dialog_fnt_colour
-    call    sub_34B0C
+    call    font_set_unk
     add     sp, 4
     mov     [bp+var_82], 0
     mov     [bp+var_9E], 0
@@ -664,7 +664,7 @@ loc_27918:
     mov     [bp+si+var_80], 0
     lea     ax, [bp+var_80]
     push    ax
-    call    sub_32843
+    call    font_op2
     add     sp, 2
     add     ax, [bp+arg_8]
     mov     cx, ax
@@ -724,7 +724,7 @@ loc_279A8:
     mov     byte ptr [bx-80h], 0
     lea     ax, [bp+var_80]
     push    ax
-    call    sub_32843
+    call    font_op2
     add     sp, 2
     add     ax, [bp+arg_8]
     mov     bx, si
@@ -762,7 +762,7 @@ loc_27A34:
     mov     [bp+si+var_80], 0
     lea     ax, [bp+var_80]
     push    ax
-    call    sub_32843
+    call    font_op2
     add     sp, 2
     mov     [bp+var_1C2], ax
     mov     [bp+var_82], 0
@@ -779,7 +779,7 @@ loc_27A64:
     mov     [bp+si+var_80], 0
     lea     ax, [bp+var_80]
     push    ax
-    call    sub_32843
+    call    font_op2
     add     sp, 2
     mov     [bp+var_1C2], ax
     mov     [bp+var_82], 0
@@ -816,7 +816,7 @@ loc_27AC0:
     jnz     short loc_27AEE
     lea     ax, [bp+var_80]
     push    ax
-    call    sub_32843
+    call    font_op2
     add     sp, 2
     mov     [bp+var_1C2], ax
 loc_27AEE:
@@ -1013,7 +1013,7 @@ loc_27CA8:
     push    word_3EB90
     push    dialog_fnt_colour
 loc_27CB0:
-    call    sub_34B0C
+    call    font_set_unk
     add     sp, 4
     mov     si, [bp+var_196]
     shl     si, 1
@@ -1339,7 +1339,7 @@ loc_27F1E:
     add     sp, 0Ah
     push    word_3EB90
     push    dialog_fnt_colour
-    call    sub_34B0C
+    call    font_set_unk
     add     sp, 4
     push    [bp+arg_8]
     push    [bp+arg_6]
@@ -1407,7 +1407,7 @@ loc_27FDD:
 loc_28016:
     push    word_3EB90
     push    dialog_fnt_colour
-    call    sub_34B0C
+    call    font_set_unk
     add     sp, 4
     push    [bp+var_70C]
     push    di
@@ -1431,7 +1431,7 @@ loc_28036:
 loc_2805E:
     push    word_3EB90
     push    dialog_fnt_colour
-    call    sub_34B0C
+    call    font_set_unk
     add     sp, 4
     mov     ax, (offset terraincenterpos+22h)
     cwd
@@ -1611,7 +1611,7 @@ loc_281CC:
     mov     ax, offset resID_byte1
     push    ax
     push    cs
-    call near ptr sub_29606
+    call near ptr font_op2_alt
     add     sp, 2
     push    ax
     mov     ax, offset resID_byte1
@@ -1638,7 +1638,7 @@ loc_281CC:
     mov     ax, offset resID_byte1
     push    ax
     push    cs
-    call near ptr sub_29606
+    call near ptr font_op2_alt
     add     sp, 2
     push    ax
     mov     ax, offset resID_byte1
@@ -1676,7 +1676,7 @@ loc_2829A:
     push    word_3EB90
     push    dialog_fnt_colour
 loc_282A2:
-    call    sub_34B0C
+    call    font_set_unk
     add     sp, 4
     mov     al, [bp+var_69A]
     cbw
@@ -1720,7 +1720,7 @@ loc_28300:
     add     sp, 6
     mov     ax, offset resID_byte1
     push    ax
-    call    sub_32843
+    call    font_op2
     add     sp, 2
     mov     [bp+var_71A], ax
     push    word_3EB90
@@ -2137,7 +2137,7 @@ loc_28682:
     mov     [bp+var_4], 0
     push    word_3EB90
     push    dialog_fnt_colour
-    call    sub_34B0C
+    call    font_set_unk
     add     sp, 4
     push    [bp+arg_6]
     push    [bp+arg_4]
@@ -2154,7 +2154,7 @@ loc_28682:
     add     sp, 6
     push    word_3EB90
     push    dialog_fnt_colour
-    call    sub_34B0C
+    call    font_set_unk
     add     sp, 4
     push    [bp+var_C]
     push    [bp+var_E]
@@ -3252,7 +3252,7 @@ ported_sprite_copy_wnd_to_1_clear_ proc far
     add     sp, 2
     retf
 ported_sprite_copy_wnd_to_1_clear_ endp
-sub_28F98 proc far
+intro_draw_text proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -3271,7 +3271,7 @@ sub_28F98 proc far
     mov     ax, [bp+arg_2]
     mov     word_42248, ax
     push    [bp+arg_0]
-    call    sub_32843
+    call    font_op2
     add     sp, 2
     add     ax, [bp+arg_2]
     inc     ax
@@ -3279,7 +3279,7 @@ sub_28F98 proc far
     sub     ax, ax
     push    ax
     push    [bp+arg_8]
-    call    sub_34B0C
+    call    font_set_unk
     add     sp, 4
     mov     ax, [bp+arg_4]
     inc     ax
@@ -3288,23 +3288,23 @@ sub_28F98 proc far
     inc     ax
     push    ax
     push    [bp+arg_0]
-    call    sub_33742
+    call    font_draw_text
     add     sp, 6
     sub     ax, ax
     push    ax
     push    [bp+arg_6]
-    call    sub_34B0C
+    call    font_set_unk
     add     sp, 4
     push    [bp+arg_4]
     push    [bp+arg_2]
     push    [bp+arg_0]
-    call    sub_33742
+    call    font_draw_text
     add     sp, 6
     mov     ax, offset word_42248
     pop     bp
     retf
-sub_28F98 endp
-sub_29008 proc far
+intro_draw_text endp
+hiscore_draw_text proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -3326,7 +3326,7 @@ sub_29008 proc far
     dec     ax
     mov     word_42250, ax
     push    [bp+arg_0]
-    call    sub_32843
+    call    font_op2
     add     sp, 2
     add     ax, [bp+arg_2]
     inc     ax
@@ -3334,7 +3334,7 @@ sub_29008 proc far
     sub     ax, ax
     push    ax
     push    [bp+arg_8]
-    call    sub_34B0C
+    call    font_set_unk
     add     sp, 4
     mov     ax, [bp+arg_4]
     inc     ax
@@ -3343,7 +3343,7 @@ sub_29008 proc far
     inc     ax
     push    ax
     push    [bp+arg_0]
-    call    sub_33742
+    call    font_draw_text
     add     sp, 6
     mov     ax, [bp+arg_4]
     inc     ax
@@ -3352,7 +3352,7 @@ sub_29008 proc far
     dec     ax
     push    ax
     push    [bp+arg_0]
-    call    sub_33742
+    call    font_draw_text
     add     sp, 6
     mov     ax, [bp+arg_4]
     dec     ax
@@ -3361,7 +3361,7 @@ sub_29008 proc far
     inc     ax
     push    ax
     push    [bp+arg_0]
-    call    sub_33742
+    call    font_draw_text
     add     sp, 6
     mov     ax, [bp+arg_4]
     dec     ax
@@ -3370,22 +3370,22 @@ sub_29008 proc far
     dec     ax
     push    ax
     push    [bp+arg_0]
-    call    sub_33742
+    call    font_draw_text
     add     sp, 6
     sub     ax, ax
     push    ax
     push    [bp+arg_6]
-    call    sub_34B0C
+    call    font_set_unk
     add     sp, 4
     push    [bp+arg_4]
     push    [bp+arg_2]
     push    [bp+arg_0]
-    call    sub_33742
+    call    font_draw_text
     add     sp, 6
     mov     ax, offset word_42250
     pop     bp
     retf
-sub_29008 endp
+hiscore_draw_text endp
 call_read_line proc far
     var_4 = word ptr -4
     var_2 = word ptr -2
@@ -3493,7 +3493,7 @@ loc_29168:
     pop     bp
     retf
 input_repeat_check endp
-sub_2916E proc far
+draw_lines_unk proc far
     var_14 = word ptr -20
     var_12 = word ptr -18
     var_10 = word ptr -16
@@ -3654,8 +3654,8 @@ sub_2916E proc far
     mov     sp, bp
     pop     bp
     retf
-sub_2916E endp
-sub_292DC proc far
+draw_lines_unk endp
+draw_button proc far
     var_72 = word ptr -114
     var_70 = word ptr -112
     var_6E = word ptr -110
@@ -3837,7 +3837,7 @@ loc_29466:
     sub     ax, ax
     push    ax
     push    [bp+arg_12]
-    call    sub_34B0C
+    call    font_set_unk
     add     sp, 4
     push    [bp+arg_2]
     push    [bp+arg_0]
@@ -3911,7 +3911,7 @@ loc_2950A:
     push    ax
     lea     ax, [bp+var_5A]
     push    ax
-    call    sub_32843
+    call    font_op2
     add     sp, 2
     mov     cx, ax
     mov     ax, [bp+arg_8]
@@ -3923,7 +3923,7 @@ loc_2950A:
     push    ax
     lea     ax, [bp+var_5A]
     push    ax
-    call    sub_33742
+    call    font_draw_text  ; when nop instead of this call = no text on buttons
     add     sp, 6
     inc     [bp+var_6]
     mov     [bp+var_2], 0
@@ -3937,7 +3937,7 @@ loc_29554:
     mov     sp, bp
     pop     bp
     retf
-sub_292DC endp
+draw_button endp
 ported_shape3d_init_shape_ proc far
      s = byte ptr 0
      r = byte ptr 2
@@ -4014,7 +4014,7 @@ ported_shape3d_init_shape_ proc far
     pop     bp
     retf
 ported_shape3d_init_shape_ endp
-sub_29606 proc far
+font_op2_alt proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -4022,7 +4022,7 @@ sub_29606 proc far
     push    bp
     mov     bp, sp
     push    [bp+arg_0]
-    call    sub_32843
+    call    font_op2
     add     sp, 2
     sub     ax, 140h
     neg     ax
@@ -4031,7 +4031,7 @@ sub_29606 proc far
     sar     ax, 1
     pop     bp
     retf
-sub_29606 endp
+font_op2_alt endp
 sub_29620 proc far
      s = byte ptr 0
      r = byte ptr 2
@@ -4374,7 +4374,7 @@ audio_unload proc far
     mov     is_audioloaded, 0
     retf
 audio_unload endp
-set_fontdef2 proc far
+font_set_fontdef2 proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = dword ptr 6
@@ -4392,17 +4392,17 @@ set_fontdef2 proc far
     retf
     ; align 2
     db 144
-set_fontdef2 endp
-set_fontdef proc far
+font_set_fontdef2 endp
+font_set_fontdef proc far
 
     push    word ptr fontdefptr+2
     push    word ptr fontdefptr
     push    cs
-    call near ptr set_fontdef2
+    call near ptr font_set_fontdef2
     add     sp, 4
     retf
-set_fontdef endp
-sub_298B8 proc far
+font_set_fontdef endp
+format_frame_as_string proc far
     var_16 = word ptr -22
     var_12 = byte ptr -18
      s = byte ptr 0
@@ -4501,7 +4501,7 @@ loc_29988:
     mov     sp, bp
     pop     bp
     retf
-sub_298B8 endp
+format_frame_as_string endp
 get_super_random proc far
     var_4 = word ptr -4
      s = byte ptr 0
@@ -5328,11 +5328,11 @@ loc_29FFC:
     inc     si
     cmp     si, 9
     jl      short loc_29FFC
-    mov     bl, byte_3B8FA
+    mov     bl, timertestflag2
     sub     bh, bh
     add     bx, bp
     mov     byte ptr [bx-20Ch], 1
-    mov     bx, word_44CEA
+    mov     bx, timertestflag
     add     bx, bp
     mov     byte ptr [bx-207h], 1
     cmp     framespersec2, 0Ah
@@ -5397,17 +5397,17 @@ loc_2A050:
 loc_2A098:
     cmp     ax, 9
     jz      short loc_2A0CC
-    mov     byte_3B8FA, al
+    mov     timertestflag2, al
     jmp     loc_29FD9
     ; align 2
     db 144
 loc_2A0A4:
-    mov     word_44CEA, 0
+    mov     timertestflag, 0
     jmp     loc_29FD9
     ; align 2
     db 144
 loc_2A0AE:
-    mov     word_44CEA, 1
+    mov     timertestflag, 1
     jmp     loc_29FD9
     ; align 2
     db 144
@@ -5633,6 +5633,7 @@ ported_file_load_3dres_ proc far
     arg_0 = word ptr 6
 
     push    bp
+loc_2A237:
     mov     bp, sp
     sub     sp, 54h
 loc_2A23C:

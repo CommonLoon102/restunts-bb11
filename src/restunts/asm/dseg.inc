@@ -40,7 +40,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn byte_3B8F7:byte
     extrn kbormouse:byte
     extrn mouse_isdirty:byte
-    extrn byte_3B8FA:byte
+    extrn timertestflag2:byte
     extrn byte_3B8FB:byte
     extrn byte_3B8FC:byte
     extrn aKevin:byte
@@ -890,7 +890,8 @@ dseg segment byte public 'STUNTSD' use16
     extrn word_405F6:word
     extrn word_405F8:word
     extrn last_timer_callback_counter:dword
-    extrn off_405FE:dword
+    extrn word_405FE:word
+    extrn fontdefseg:word
     extrn aHdr1:byte
     extrn audiodriverbinary:dword
     extrn byte_40630:byte
@@ -1227,7 +1228,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn word_4491C:word
     extrn word_4493C:word
     extrn word_44960:word
-    extrn word_44984:word
+    extrn timertestflag_copy:word
     extrn pState_minusRotate_x_1:word
     extrn elRdWallRelated:word
     extrn regs_x86:REGS
@@ -1284,7 +1285,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn byte_44AE2:byte
     extrn video_flag1_is1:word
     extrn td11_highscores:dword
-    extrn word_44CEA:word
+    extrn timertestflag:word
     extrn mainresptr:dword
     extrn bravshape:SHAPE3D
     extrn word_44D1E:word

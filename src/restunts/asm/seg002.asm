@@ -254,6 +254,7 @@ loc_19E8C:
 loc_19E90:
     mov     byte_4594C, al
     add     al, byte_4594B
+loc_19E97:
     mov     byte_4594B, al
     add     al, byte_4594A
     mov     byte_4594A, al

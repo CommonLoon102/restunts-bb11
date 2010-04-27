@@ -1,3 +1,3 @@
 seg015 segment byte public 'STUNTSC' use16
-    extrn sub_36412:proc
+    extrn preRender_sphere_helper2:proc
 seg015 ends

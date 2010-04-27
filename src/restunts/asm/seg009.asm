@@ -405,7 +405,7 @@ loc_2A50D:
     add     sp, 6
     push    dx
     push    ax
-    call    sub_292DC
+    call    draw_button
     add     sp, 14h
     push    word_407F0
     push    word_407EE
@@ -418,7 +418,7 @@ loc_2A50D:
     push    ax
     mov     ax, 5
     push    ax
-    call    sub_2916E
+    call    draw_lines_unk
     add     sp, 0Eh
     push    word_407F0
     push    word_407EE
@@ -431,7 +431,7 @@ loc_2A50D:
     push    ax
     mov     ax, 0D9h ; 'Ù'
     push    ax
-    call    sub_2916E
+    call    draw_lines_unk
     add     sp, 0Eh
     sub     ax, ax
     push    ax
@@ -454,7 +454,7 @@ loc_2A50D:
     add     sp, 6
     push    dx
     push    ax
-    call    sub_292DC
+    call    draw_button
     add     sp, 14h
     sub     ax, ax
     push    ax
@@ -477,7 +477,7 @@ loc_2A50D:
     add     sp, 6
     push    dx
     push    ax
-    call    sub_292DC
+    call    draw_button
     add     sp, 14h
     sub     ax, ax
     push    ax
@@ -500,7 +500,7 @@ loc_2A50D:
     add     sp, 6
     push    dx
     push    ax
-    call    sub_292DC
+    call    draw_button
     add     sp, 14h
     sub     ax, ax
     push    ax
@@ -523,7 +523,7 @@ loc_2A50D:
     add     sp, 6
     push    dx
     push    ax
-    call    sub_292DC
+    call    draw_button
     add     sp, 14h
     sub     ax, ax
     push    ax
@@ -546,7 +546,7 @@ loc_2A50D:
     add     sp, 6
     push    dx
     push    ax
-    call    sub_292DC
+    call    draw_button
     add     sp, 14h
 loc_2A720:
     cmp     [bp+var_A], 0
@@ -1188,7 +1188,7 @@ loc_2AD38:
     sub     ax, ax
     push    ax
     push    dialog_fnt_colour
-    call    sub_34B0C
+    call    font_set_unk
     add     sp, 4
     mov     al, [bp+var_182]
     sub     ah, ah
@@ -1220,7 +1220,7 @@ loc_2AD38:
     add     sp, 6
     mov     ax, offset resID_byte1
     push    ax
-    call    sub_32843
+    call    font_op2
     add     sp, 2
     mov     si, ax
     mov     ax, 0C0h ; 'À'

@@ -333,10 +333,10 @@ loc_21DCB:
     mov     gameconfig.game_recordedframes, 0
     mov     state.game_frame, 0
 loc_21DEB:
-    mov     ax, word_44CEA
-    cmp     word_44984, ax
+    mov     ax, timertestflag
+    cmp     timertestflag_copy, ax
     jz      short loc_21DFC
-    mov     word_44984, ax
+    mov     timertestflag_copy, ax
     call    init_rect_arrays
 loc_21DFC:
     cmp     byte_46467, 0
@@ -580,7 +580,7 @@ loc_22064:
     jz      short loc_220DB
     cmp     byte_449E2, 0
     jz      short loc_220DB
-    cmp     word_44984, 0
+    cmp     timertestflag_copy, 0
     jz      short loc_220BB
     mov     [bp+var_A], 0
     mov     [bp+var_8], 140h
@@ -866,13 +866,13 @@ loc_22347:
     push    ax
     mov     ax, offset resID_byte1
     push    ax              ; char *
-    call    sub_298B8
+    call    format_frame_as_string
     add     sp, 6
     call    mouse_draw_opaque_check
     push    [bp+var_14]
     mov     ax, offset resID_byte1
     push    ax
-    call    sub_29606
+    call    font_op2_alt
     add     sp, 2
     push    ax
     mov     ax, offset resID_byte1
@@ -3131,8 +3131,8 @@ loc_23870:
     add     sp, 4
     mov     fontledresofs, ax
     mov     fontledresseg, dx
-    mov     ax, word_44CEA
-    mov     word_44984, ax
+    mov     ax, timertestflag
+    mov     timertestflag_copy, ax
     call    init_rect_arrays
     cmp     byte_44AE2, 0
     jnz     short loc_238B4
@@ -3539,16 +3539,16 @@ loc_23C10:
     push    ax
     mov     ax, offset resID_byte1
     push    ax              ; char *
-    call    sub_298B8
+    call    format_frame_as_string
     add     sp, 6
     sub     ax, ax
     push    ax
     push    dialog_fnt_colour
-    call    sub_34B0C
+    call    font_set_unk
     add     sp, 4
     push    fontledresseg
     push    fontledresofs
-    call    set_fontdef2
+    call    font_set_fontdef2
     add     sp, 4
     mov     ax, 0BBh ; '»'
     push    ax
@@ -3558,7 +3558,7 @@ loc_23C10:
     push    ax
     call    sub_345BC
     add     sp, 6
-    call    set_fontdef
+    call    font_set_fontdef
 loc_23C66:
     mov     ax, [bp+arg_4]
     add     ax, word_45A24
@@ -3578,17 +3578,17 @@ loc_23C66:
     push    [bp+var_42]
     mov     ax, offset resID_byte1
     push    ax              ; char *
-    call    sub_298B8
+    call    format_frame_as_string
     add     sp, 6
     sub     ax, ax
     push    ax
     push    dialog_fnt_colour
-    call    sub_34B0C
+    call    font_set_unk
     add     sp, 4
     call    mouse_draw_opaque_check
     push    fontledresseg
     push    fontledresofs
-    call    set_fontdef2
+    call    font_set_fontdef2
     add     sp, 4
     mov     ax, 0BBh ; '»'
     push    ax
@@ -3598,7 +3598,7 @@ loc_23C66:
     push    ax
     call    sub_345BC
     add     sp, 6
-    call    set_fontdef
+    call    font_set_fontdef
 loc_23CD7:
     mov     al, byte_4432A
     cbw
@@ -4984,7 +4984,7 @@ loc_24956:
     call    copy_string
     add     sp, 6
 loc_24997:
-    cmp     word_44984, 0
+    cmp     timertestflag_copy, 0
     jz      short loc_249D2
     push    rectptr_unk2
     sub     ax, ax
@@ -4996,13 +4996,13 @@ loc_24997:
 loc_249B0:
     push    ax
 loc_249B1:
-    call    sub_29606
+    call    font_op2_alt
     add     sp, 2
     push    ax
 loc_249BA:
     mov     ax, 0AC74h
     push    ax
-    call    sub_28F98
+    call    intro_draw_text
 loc_249C3:
     add     sp, 0Ah
 loc_249C6:
@@ -5019,12 +5019,12 @@ loc_249D2:
 loc_249DD:
     mov     ax, 0AC74h
     push    ax
-    call    sub_29606
+    call    font_op2_alt
     add     sp, 2
     push    ax
     mov     ax, 0AC74h
     push    ax
-    call    sub_28F98
+    call    intro_draw_text
     add     sp, 0Ah
     jmp     short loc_24A10
 loc_249F8:
@@ -5189,7 +5189,7 @@ loc_24B65:
     push    ax
     call    copy_string
     add     sp, 6
-    cmp     word_44984, 0
+    cmp     timertestflag_copy, 0
     jz      short loc_24BB0
     push    rectptr_unk2
 loc_24B7C:
@@ -5200,13 +5200,13 @@ loc_24B7C:
     push    ax
     mov     ax, 0AC74h
     push    ax
-    call    sub_29606
+    call    font_op2_alt
     add     sp, 2
     push    ax
     mov     ax, 0AC74h
     push    ax
 loc_24B98:
-    call    sub_28F98
+    call    intro_draw_text
 loc_24B9D:
     add     sp, 0Ah
     push    ax
@@ -5224,12 +5224,12 @@ loc_24BB0:
     push    ax
     mov     ax, 0AC74h
     push    ax
-    call    sub_29606
+    call    font_op2_alt
     add     sp, 2
     push    ax
     mov     ax, 0AC74h
     push    ax
-    call    sub_28F98
+    call    intro_draw_text
     add     sp, 0Ah
 loc_24BD4:
     mov     si, word_42D02
@@ -5356,6 +5356,7 @@ loc_24CA6:
     cwd
     push    dx
     push    ax
+loc_24CE6:
     call    timer_get_counter_unk
     add     sp, 4
     sub     ax, ax

@@ -134,6 +134,7 @@ loc_36F97:
     mov     bx, [bp+arg_outMatrix]
     mov     ax, [bp+var_2]
     mov     [bx+MATRIX._11], ax
+loc_36FA7:
     mov     [bx+MATRIX._21], 0
 loc_36FAC:
     mov     ax, [bp+var_4]

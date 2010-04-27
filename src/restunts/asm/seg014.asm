@@ -46,11 +46,11 @@ nosmart
 seg014 segment byte public 'STUNTSC' use16
     assume cs:seg014
     assume es:nothing, ss:nothing, ds:dseg
-    public sub_36246
+    public preRender_wheel_helper3
 algn_36245:
     ; align 2
     db 144
-sub_36246 proc far
+preRender_wheel_helper3 proc far
     var_A = word ptr -10
     var_8 = word ptr -8
     var_6 = word ptr -6
@@ -113,7 +113,7 @@ loc_36283:
 loc_36286:
     mov     [bx+12h], ax
 loc_36289:
-    mov     ax, (offset sceneshapes2.ss_loShapePtr+0E1h)
+    mov     ax, 2D41h
 loc_3628C:
     push    ax
     mov     ax, [bx+10h]
@@ -124,7 +124,7 @@ loc_36293:
     add     sp, 4
     mov     bx, [bp+arg_2]
     mov     [bx+8], ax
-    mov     ax, (offset sceneshapes2.ss_loShapePtr+0E1h)
+    mov     ax, 2D41h
     push    ax
     mov     ax, [bx+2]
     add     ax, [bx+12h]
@@ -152,7 +152,7 @@ loc_362D0:
     mov     [bx+4], ax
     mov     di, [bx+12h]
     sar     di, 1
-    mov     ax, offset unk_3F0AE
+    mov     ax, 393Eh
     push    ax
     mov     ax, [bx+2]
 loc_362E2:
@@ -167,7 +167,7 @@ loc_362F3:
     sar     ax, 1
     mov     [bp+var_4], ax
 loc_362FA:
-    mov     ax, offset unk_3F0AE
+    mov     ax, 393Eh
 loc_362FD:
     push    ax
 loc_362FE:
@@ -188,7 +188,7 @@ loc_36310:
 loc_36316:
     sar     ax, 1
     mov     [bp+var_6], ax
-    mov     ax, offset unk_3F0AE
+    mov     ax, 393Eh
 loc_3631E:
     push    ax
     mov     ax, [bx+12h]
@@ -202,7 +202,7 @@ loc_36331:
     mov     ax, [bx]
     neg     ax
     mov     [bp+var_8], ax
-    mov     ax, (offset sceneshapes2.ss_loShapePtr+0E1h)
+    mov     ax, 2D41h
     push    ax
     mov     ax, [bx+10h]
     add     ax, [bp+var_8]
@@ -214,7 +214,7 @@ loc_36331:
     mov     ax, [bx+2]
     neg     ax
     mov     [bp+var_A], ax
-    mov     ax, (offset sceneshapes2.ss_loShapePtr+0E1h)
+    mov     ax, 2D41h
     push    ax
     mov     ax, [bx+12h]
     add     ax, [bp+var_A]
@@ -223,7 +223,7 @@ loc_36331:
     add     sp, 4
     mov     bx, [bp+arg_2]
     mov     [bx+1Ah], ax
-    mov     ax, offset unk_3F0AE
+    mov     ax, 393Eh
     push    ax
     mov     ax, [bp+var_8]
     add     ax, si
@@ -232,16 +232,17 @@ loc_36331:
     add     sp, 4
     mov     bx, [bp+arg_2]
     mov     [bx+1Ch], ax
-    mov     ax, offset unk_3F0AE
+    mov     ax, 393Eh
     push    ax
     mov     ax, [bp+var_A]
     add     ax, di
     push    ax
+loc_36397:
     call    multiply_and_scale
     add     sp, 4
     mov     bx, [bp+arg_2]
     mov     [bx+1Eh], ax
-    mov     ax, offset unk_3F0AE
+    mov     ax, 393Eh
     push    ax
     mov     ax, [bx+10h]
     sub     ax, [bp+var_4]
@@ -251,7 +252,7 @@ loc_36331:
 loc_363B8:
     mov     bx, [bp+arg_2]
     mov     [bx+14h], ax
-    mov     ax, offset unk_3F0AE
+    mov     ax, 393Eh
     push    ax
 loc_363C2:
     mov     ax, [bx+12h]
@@ -305,6 +306,6 @@ loc_36410:
     pop     bp
 locret_36411:
     retf
-sub_36246 endp
+preRender_wheel_helper3 endp
 seg014 ends
 end

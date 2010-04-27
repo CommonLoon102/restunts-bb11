@@ -202,6 +202,7 @@ loc_39D91:
     mov     di, offset byte_42D2E
     mov     ax, ds
     mov     es, ax
+loc_39D98:
     mov     cx, 0FFFFh
     xor     ax, ax
     repne scasb

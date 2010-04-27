@@ -2511,6 +2511,7 @@ loc_39A21:
     mov     si, 0A2B6h
     mov     di, 0A2B7h
     mov     [bp+var_A], 0A2C6h
+loc_39A54:
     mov     [bp+var_8], 0A2B8h
     mov     [bp+var_6], 10h
     mov     cx, 10h

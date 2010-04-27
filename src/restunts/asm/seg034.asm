@@ -363,6 +363,7 @@ loc_3AC50:
     push    [bp+arg_fatal]
     lea     ax, [bp+var_str]
     push    ax
+loc_3AC57:
     call    file_load_binary
     jmp     _do_end_load_2dshape
     ; align 2
