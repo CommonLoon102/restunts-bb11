@@ -127,8 +127,8 @@ seg012 segment byte public 'STUNTSC' use16
     extrn ported_kb_checking_:proc
     extrn nopsub_kb_set_readchar_callback:proc
     extrn nopsub_kb_get_readchar_callback:proc
-    extrn flush_stdin:proc
-    extrn kb_check:proc
+    extrn ported_flush_stdin_:proc
+    extrn ported_kb_check_:proc
     extrn nopsub_30A77:proc
     extrn nopsub_30A97:proc
     extrn ported_file_read_:proc

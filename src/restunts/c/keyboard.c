@@ -32,7 +32,7 @@ extern unsigned char keymap5[];
 extern unsigned int kblastinput;
 
 void kb_exit_handler();
-int kb_read_char();
+int kb_read_char(void);
 
 void interrupt kb_int9_handler() {
 	unsigned char kbc, kbp;
@@ -172,7 +172,7 @@ int kb_get_key_state(int key) {
 	return kbinput[key];
 }
 
-int kb_call_readchar_callback() {
+int kb_call_readchar_callback(void) {
 	// the orginal code uses a (hard-coded, non-changing) callback for
 	// reading chars.. we just call kb_read_char() directly:
 	return kb_read_char();
@@ -199,4 +199,25 @@ int kb_checking() {
 	inregs.h.ah = 1;
 	int86(0x16, &inregs, &outregs);
 	return outregs.h.al;
+}
+
+void flush_stdin() {
+	int result;
+	do {
+		result = kb_call_readchar_callback();
+	} while (result == 0);
+}
+
+void kb_check() {
+	union REGS inregs;
+	union REGS outregs;
+	
+	while (1) {
+		inregs.h.ah = 1;
+		int86(0x16, &inregs, &outregs);
+		if (!outregs.x.ax) return 0;
+	
+		inregs.h.ah = 0;
+		int86(0x16, &inregs, &outregs);
+	}
 }

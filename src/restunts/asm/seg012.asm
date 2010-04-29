@@ -174,8 +174,8 @@ seg012 segment byte public 'STUNTSC' use16
     public ported_kb_checking_
     public nopsub_kb_set_readchar_callback
     public nopsub_kb_get_readchar_callback
-    public flush_stdin
-    public kb_check
+    public ported_flush_stdin_
+    public ported_kb_check_
     public nopsub_30A77
     public nopsub_30A97
     public ported_file_read_
@@ -5629,14 +5629,14 @@ nopsub_kb_get_readchar_callback proc far
     mov     dx, readchar_callback_seg
     retf
 nopsub_kb_get_readchar_callback endp
-flush_stdin proc far
+ported_flush_stdin_ proc far
 
     call    kb_call_readchar_callback
     cmp     ax, 0
-    jz      short near ptr flush_stdin
+    jz short near ptr ported_flush_stdin_ ; (fixed jump to ported self)
     retf
-flush_stdin endp
-kb_check proc far
+ported_flush_stdin_ endp
+ported_kb_check_ proc far
 
     mov     ah, 1
     int     16h             ; KEYBOARD - CHECK BUFFER, DO NOT CLEAR
@@ -5646,8 +5646,8 @@ kb_check proc far
 loc_30A71:
     mov     ah, 0
     int     16h             ; KEYBOARD - READ CHAR FROM BUFFER, WAIT IF EMPTY
-    jmp     short near ptr kb_check
-kb_check endp
+    jmp short near ptr ported_kb_check_ ; (fixed jump to ported self)
+ported_kb_check_ endp
 nopsub_30A77 proc far
 
     call    kb_call_readchar_callback

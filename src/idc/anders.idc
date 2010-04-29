@@ -416,7 +416,7 @@ static PrintFixedAsm(f, ea, lastpushcs) {
 	// with "nosmart", these are fixed, but other problems appear
 
 	auto mnem, op1, op2, optype1, optype2;
-	auto funcflags, funcofs, funclocal, funcstart, funcname;
+	auto funcflags, funcofs, funclocal, funcstart, funcname, portfuncname;
 	
 	tempsmart = 0;
 	nooutput = 0;
@@ -480,6 +480,18 @@ static PrintFixedAsm(f, ea, lastpushcs) {
 			Message("Translated %s into jmp far ptr %s\n", GetDisasm(ea), ExtractCallTarget(ea));
 			fprintf(f, "    jmp far ptr %s\n", ExtractCallTarget(ea));
 			nooutput = 1;
+		}
+	}
+	
+	if ((mnem == "jz" || mnem == "jmp") && optype1 == o_near) {
+		// if jumping to ourselves AND this is a ported function, we need to jump to the original non-ported function
+		funcname = ExtractCallTarget(ea);
+		if (funcname == GetFunctionName(ea)) {
+			portfuncname = PortFuncName(funcname);
+			if (portfuncname != funcname) {
+				fprintf(f, "    %s short near ptr %s ; (fixed jump to ported self)\n", mnem, portfuncname);
+				nooutput = 1;
+			}
 		}
 	}
 	
@@ -733,6 +745,8 @@ static PortFuncName(labelname) {
 		labelname == "kb_call_readchar_callback" ||
 		labelname == "kb_read_char" ||
 		labelname == "kb_checking" ||
+		labelname == "flush_stdin" ||
+		labelname == "kb_check" ||
 
 		labelname == "stuntsmain"
 	)

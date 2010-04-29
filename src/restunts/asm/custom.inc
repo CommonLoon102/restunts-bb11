@@ -107,6 +107,8 @@ extrn kb_get_key_state:proc
 extrn kb_call_readchar_callback:proc
 extrn kb_read_char:proc
 extrn kb_checking:proc
+extrn flush_stdin:proc
+extrn kb_check:proc
 
 extrn stuntsmain:proc
 
