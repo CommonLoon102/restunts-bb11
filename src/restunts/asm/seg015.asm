@@ -388,6 +388,7 @@ preRender_sphere_helper2 proc far
     add     sp, 4
     mov     bx, [bp+arg_2]
     mov     [bx+2Eh], ax
+loc_36776:
     mov     [bp+var_E], 0
 loc_3677B:
     mov     si, [bp+var_E]
@@ -412,6 +413,7 @@ loc_3677B:
     pop     di
     mov     sp, bp
     pop     bp
+locret_367B0:
     retf
 preRender_sphere_helper2 endp
 seg015 ends

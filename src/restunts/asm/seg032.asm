@@ -571,6 +571,7 @@ loc_3A8FB:
     add     sp, 6
     cmp     word_42A20, 0
     jz      short loc_3A953
+loc_3A916:
     push    off_42A1E
     call    font_op2
     add     sp, 2

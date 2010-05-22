@@ -3324,15 +3324,15 @@ shape3d_load_car_shapes proc far
     var_4 = word ptr -4
      s = byte ptr 0
      r = byte ptr 2
-    arg_0 = word ptr 6
-    arg_2 = word ptr 8
+    arg_playercarid = word ptr 6
+    arg_opponentcarid = word ptr 8
 
     push    bp
     mov     bp, sp
     sub     sp, 10h
     push    di
     push    si
-    mov     bx, [bp+arg_0]
+    mov     bx, [bp+arg_playercarid]
     mov     al, [bx]
     mov     byte ptr aStxxx+2, al
     mov     al, [bx+1]
@@ -3525,19 +3525,19 @@ loc_200D6:
     push    ax
     call    shape3d_init_shape
     add     sp, 6
-    mov     bx, [bp+arg_2]
+    mov     bx, [bp+arg_opponentcarid]
     mov     al, [bx]
     mov     [bp+var_10], al
     cmp     al, 0FFh
     jnz     short loc_2019F
     jmp     loc_2042A
 loc_2019F:
-    mov     bx, [bp+arg_0]
+    mov     bx, [bp+arg_playercarid]
     cmp     [bx], al
     jz      short loc_201A9
     jmp     loc_2022A
 loc_201A9:
-    mov     di, [bp+arg_2]
+    mov     di, [bp+arg_opponentcarid]
     mov     al, [di+1]
     cmp     [bx+1], al
     jnz     short loc_2022A
@@ -3590,7 +3590,7 @@ loc_20216:
     ; align 2
     db 144
 loc_2022A:
-    mov     bx, [bp+arg_2]
+    mov     bx, [bp+arg_opponentcarid]
     mov     al, [bx]
     mov     byte ptr aStxxx+2, al
     mov     al, [bx+1]

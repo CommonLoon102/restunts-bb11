@@ -46,8 +46,8 @@ nosmart
 seg013 segment byte public 'STUNTSC' use16
     assume cs:seg013
     assume es:nothing, ss:nothing, ds:dseg
-    public sub_361BC
-sub_361BC proc far
+    public sprite_1_unk4
+sprite_1_unk4 proc far
     var_4 = word ptr -4
     var_2 = word ptr -2
      s = byte ptr 0
@@ -148,6 +148,6 @@ loc_36243:
     pop     bp
 locret_36244:
     retf
-sub_361BC endp
+sprite_1_unk4 endp
 seg013 ends
 end

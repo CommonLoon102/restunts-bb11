@@ -49,14 +49,14 @@ seg006 segment byte public 'STUNTSC' use16
     public init_polyinfo
     public copy_material_list_pointers
     public sub_24DE6
-    public select_rect_rotate
+    public select_cliprect_rotate
     public transformed_shape_op
     public sub_25E24
-    public sub_25EE2
+    public rect_compare_point
     public sub_25F2E
     public get_a_poly_info
     public mat_rot_zxy
-    public sub_2637A
+    public rect_adjust_unk
     public sub_263C6
     public calc_sincos80
     public sub_26572
@@ -162,9 +162,9 @@ loc_24DD7:
 copy_material_list_pointers endp
 sub_24DE6 proc far
 
-    mov     word_442E6, 0
+    mov     polyinfonumpolys, 0
 loc_24DEC:
-    mov     word_41850, 0
+    mov     polyinfoptrnext, 0
     mov     word_40ECE, 0
     mov     word_411F6, 0FFFFh
     mov     word_443F2, 190h
@@ -172,7 +172,7 @@ loc_24DEC:
     ; align 2
     db 144
 sub_24DE6 endp
-select_rect_rotate proc far
+select_cliprect_rotate proc far
     var_E = word ptr -14
     var_C = word ptr -12
     var_A = word ptr -10
@@ -184,8 +184,8 @@ select_rect_rotate proc far
     arg_angZ = word ptr 6
     arg_angX = word ptr 8
     arg_angY = word ptr 10
-    arg_rectptr = word ptr 12
-    arg_rotflag = word ptr 14
+    arg_cliprectptr = word ptr 12
+    arg_8 = word ptr 14
 
     push    bp
     mov     bp, sp
@@ -194,34 +194,22 @@ select_rect_rotate proc far
     push    si
     mov     ax, 1
     push    ax
-loc_24E12:
     push    [bp+arg_angY]
     push    [bp+arg_angX]
     push    [bp+arg_angZ]
     push    cs
-loc_24E1C:
     call near ptr mat_rot_zxy
-loc_24E1F:
     add     sp, 8
-loc_24E22:
     mov     di, offset mat_temp
-loc_24E25:
     mov     si, ax
-loc_24E27:
     push    ds
-loc_24E28:
     pop     es
-loc_24E29:
     mov     cx, 9
-loc_24E2C:
     repne movsw
-loc_24E2E:
     push    cs
-loc_24E2F:
     call near ptr sub_24DE6
-loc_24E32:
-    mov     ax, [bp+arg_rectptr]
-    mov     di, offset rect_unk8
+    mov     ax, [bp+arg_cliprectptr]
+    mov     di, offset select_rect_rc
     mov     si, ax
     push    ds
     pop     es
@@ -229,8 +217,8 @@ loc_24E32:
     movsw
     movsw
     movsw
-    mov     ax, [bp+arg_rotflag]
-    mov     word_40ED0, ax
+    mov     ax, [bp+arg_8]
+    mov     select_rect_param, ax
     sub     ax, ax
     push    ax
     mov     ax, [bp+arg_angY]
@@ -268,51 +256,47 @@ nosmart
     mov     sp, bp
     pop     bp
     retf
-select_rect_rotate endp
+select_cliprect_rotate endp
 transformed_shape_op proc far
     var_B7C = word ptr -2940
-    var_B7A = word ptr -2938
+    var_polyvertunktabptr = word ptr -2938
     var_cull1 = dword ptr -2936
-    var_B74 = word ptr -2932
-    var_B72 = word ptr -2930
-    var_B70 = word ptr -2928
-    var_574 = word ptr -1396
-    var_572 = word ptr -1394
-    var_570 = word ptr -1392
-    var_56E = dword ptr -1390
+    var_vec4 = VECTOR ptr -2932
+    var_vecarr = VECTOR ptr -2926
+    var_574 = POINT2D ptr -1396
+    var_polyvertY = word ptr -1392
+    var_polyvertsptr = dword ptr -1390
     var_vec3 = VECTOR ptr -1386
-    var_564 = word ptr -1380
-    var_562 = byte ptr -1378
+    var_polyvertX = word ptr -1380
+    var_vertflagtbl = byte ptr -1378
     var_462 = word ptr -1122
     var_460 = word ptr -1120
     var_45E = word ptr -1118
-    var_45C = word ptr -1116
-    var_45A = word ptr -1114
+    var_45C = dword ptr -1116
     var_vec2 = VECTOR ptr -1112
     var_450 = word ptr -1104
     var_44E = word ptr -1102
-    var_44A = byte ptr -1098
+    var_ptrectflag = byte ptr -1098
     var_448 = word ptr -1096
     var_mat = MATRIX ptr -1094
     var_cull2 = dword ptr -1076
-    var_430 = dword ptr -1072
+    var_transshapepolyinfoptptr = dword ptr -1072
     var_rotmatptr = word ptr -1068
     var_mat2 = MATRIX ptr -1066
-    var_418 = word ptr -1048
+    var_fileprimtype = word ptr -1048
+    var_vecarr2 = VECTOR ptr -1046
     var_1A = word ptr -26
-    var_18 = word ptr -24
-    var_16 = word ptr -22
+    var_18 = dword ptr -24
     var_vec = VECTOR ptr -20
-    var_E = word ptr -14
+    var_polyvertcounter = word ptr -14
     var_C = word ptr -12
-    var_A = word ptr -10
-    var_8 = word ptr -8
-    var_6 = byte ptr -6
+    var_A = dword ptr -10
+    var_primtype = byte ptr -6
     var_4 = word ptr -4
-    var_2 = word ptr -2
+    var_primitiveflags = word ptr -2
      s = byte ptr 0
      r = byte ptr 2
-    arg_0 = word ptr 6
+    arg_transshapeptr = word ptr 6
 
     push    bp
     mov     bp, sp
@@ -331,70 +315,70 @@ loc_24EAE:
     ; align 2
     db 144
 loc_24EB8:
-    mov     bx, [bp+arg_0]
+    mov     bx, [bp+arg_transshapeptr]
     mov     bx, [bx+TRANSFORMEDSHAPE.ts_shapeptr]
     mov     ax, [bx+SHAPE3D.shape3d_numverts]
     mov     transshapenumverts, ax
-    mov     bx, [bp+arg_0]
+    mov     bx, [bp+arg_transshapeptr]
     mov     bx, [bx+TRANSFORMEDSHAPE.ts_shapeptr]
     mov     ax, word ptr [bx+SHAPE3D.shape3d_primitives]
     mov     dx, word ptr [bx+(SHAPE3D.shape3d_primitives+2)]
     mov     word ptr transshapeprimitives, ax
     mov     word ptr transshapeprimitives+2, dx
 loc_24ED6:
-    mov     bx, [bp+arg_0]
+    mov     bx, [bp+arg_transshapeptr]
     mov     bx, [bx+TRANSFORMEDSHAPE.ts_shapeptr]
     mov     ax, word ptr [bx+SHAPE3D.shape3d_verts]
     mov     dx, word ptr [bx+(SHAPE3D.shape3d_verts+2)]
     mov     word ptr transshapeverts, ax
     mov     word ptr transshapeverts+2, dx
-    mov     bx, [bp+arg_0]
+    mov     bx, [bp+arg_transshapeptr]
     mov     bx, [bx+TRANSFORMEDSHAPE.ts_shapeptr]
     mov     al, byte ptr [bx+SHAPE3D.shape3d_numpaints]
     cbw
     mov     transshapenumpaints, ax
-    mov     bx, [bp+arg_0]
+    mov     bx, [bp+arg_transshapeptr]
     mov     bx, [bx+TRANSFORMEDSHAPE.ts_shapeptr]
     mov     ax, word ptr [bx+SHAPE3D.shape3d_cull1]
     mov     dx, word ptr [bx+(SHAPE3D.shape3d_cull1+2)]
     mov     word ptr [bp+var_cull1], ax
     mov     word ptr [bp+var_cull1+2], dx
-    mov     bx, [bp+arg_0]
+    mov     bx, [bp+arg_transshapeptr]
     mov     bx, [bx+TRANSFORMEDSHAPE.ts_shapeptr]
     mov     ax, word ptr [bx+SHAPE3D.shape3d_cull2]
     mov     dx, word ptr [bx+(SHAPE3D.shape3d_cull2+2)]
     mov     word ptr [bp+var_cull2], ax
     mov     word ptr [bp+var_cull2+2], dx
-    mov     bx, [bp+arg_0]
+    mov     bx, [bp+arg_transshapeptr]
     mov     al, [bx+TRANSFORMEDSHAPE.ts_material]
-    mov     byte_4187A, al
+    mov     transshapematerial, al
     cmp     byte ptr transshapenumpaints, al
     ja      short loc_24F32
-    mov     byte_4187A, 0
+    mov     transshapematerial, 0
 loc_24F32:
     mov     al, [bx+TRANSFORMEDSHAPE.ts_flags]
-    mov     byte_4186E, al
-    test    byte_4186E, 8
+    mov     transshapeflags, al
+    test    transshapeflags, 8
     jz      short loc_24F45
     mov     ax, [bx+TRANSFORMEDSHAPE.ts_rectptr]
-    mov     word_41878, ax
+    mov     transshaperectptr, ax
 loc_24F45:
     sub     si, si
     jmp     short loc_24F50
     ; align 2
     db 144
 loc_24F4A:
-    mov     [bp+si+var_562], 0FFh
+    mov     [bp+si+var_vertflagtbl], 0FFh
     inc     si
 loc_24F50:
     mov     ax, si
     cmp     ax, transshapenumverts
     jb      short loc_24F4A
-    test    byte_4186E, 2
+    test    transshapeflags, 2
     jz      short loc_24FB6
     sub     ax, ax
     push    ax
-    mov     bx, [bp+arg_0]
+    mov     bx, [bp+arg_transshapeptr]
     push    [bx+TRANSFORMEDSHAPE.ts_rotvec.vz]
     push    [bx+TRANSFORMEDSHAPE.ts_rotvec.vy]
     push    [bx+TRANSFORMEDSHAPE.ts_rotvec.vx]
@@ -409,7 +393,7 @@ loc_24F50:
     push    [bp+var_rotmatptr]
     call    mat_multiply
     add     sp, 6
-    mov     ax, [bp+arg_0]
+    mov     ax, [bp+arg_transshapeptr]
     push    si
     push    di
     lea     di, [bp+var_vec]
@@ -422,16 +406,16 @@ loc_24F50:
     pop     di
     pop     si
 loc_24F9F:
-    mov     [bp+var_45C], 0FFFFh
-    mov     [bp+var_45A], 0FFFFh
+    mov     word ptr [bp+var_45C], 0FFFFh
+    mov     word ptr [bp+var_45C+2], 0FFFFh
     sub     ax, ax
-    mov     [bp+var_8], ax
-    mov     [bp+var_A], ax
+    mov     word ptr [bp+var_A+2], ax
+    mov     word ptr [bp+var_A], ax
     jmp     loc_250A3
 loc_24FB6:
     sub     ax, ax
     push    ax
-    mov     bx, [bp+arg_0]
+    mov     bx, [bp+arg_transshapeptr]
     push    [bx+TRANSFORMEDSHAPE.ts_rotvec.vz]
     push    [bx+TRANSFORMEDSHAPE.ts_rotvec.vy]
     push    [bx+TRANSFORMEDSHAPE.ts_rotvec.vx]
@@ -443,7 +427,7 @@ loc_24FB6:
     push    ax
     mov     ax, offset mat_temp
     push    ax
-    push    [bp+arg_0]
+    push    [bp+arg_transshapeptr]
     call    mat_mul_vector
     add     sp, 6
     lea     ax, [bp+var_mat2]
@@ -472,7 +456,7 @@ loc_24FB6:
     add     sp, 6
     cmp     [bp+var_vec3.vy], 0
     jle     short loc_25046
-    mov     bx, [bp+arg_0]
+    mov     bx, [bp+arg_transshapeptr]
     cmp     [bx+TRANSFORMEDSHAPE.ts_pos.vy], 0
     jge     short loc_25046
     jmp     loc_24F9F
@@ -480,7 +464,7 @@ loc_25046:
     push    [bp+var_vec.vx] ; int
     call    _abs
     add     sp, 2
-    mov     bx, [bp+arg_0]
+    mov     bx, [bp+arg_transshapeptr]
     mov     cx, [bx+TRANSFORMEDSHAPE.ts_unk]
     shl     cx, 1
     cmp     cx, ax
@@ -488,7 +472,7 @@ loc_25046:
     push    [bp+var_vec.vz] ; int
     call    _abs
     add     sp, 2
-    mov     bx, [bp+arg_0]
+    mov     bx, [bp+arg_transshapeptr]
     mov     cx, [bx+TRANSFORMEDSHAPE.ts_unk]
     shl     cx, 1
     cmp     cx, ax
@@ -505,12 +489,12 @@ loc_25077:
     mov     bx, ax
     shl     bx, 1
     shl     bx, 1
-    mov     ax, word_3EA82[bx]
-    mov     dx, word_3EA84[bx]
-    mov     [bp+var_45C], ax
-    mov     [bp+var_45A], dx
-    mov     [bp+var_A], ax
-    mov     [bp+var_8], dx
+    mov     ax, word ptr invpow2tbl[bx]
+    mov     dx, word ptr (invpow2tbl+2)[bx]
+    mov     word ptr [bp+var_45C], ax
+    mov     word ptr [bp+var_45C+2], dx
+    mov     word ptr [bp+var_A], ax
+    mov     word ptr [bp+var_A+2], dx
 loc_250A3:
     mov     ax, word_443F2
     mov     word_4394E, ax
@@ -533,32 +517,32 @@ loc_250CC:
     jnz     short loc_250E6
     mov     transshapenumvertscopy, 4
 loc_250E6:
-    mov     [bp+var_44A], 0Fh
+    mov     [bp+var_ptrectflag], 0Fh
     mov     [bp+var_460], 1
     mov     [bp+var_1A], 0
     sub     si, si
     jmp     short loc_2513F
 loc_250FA:
     mov     [bp+var_460], 0
-    mov     [bp+si+var_562], 0
+    mov     [bp+si+var_vertflagtbl], 0
     mov     bx, si
     shl     bx, 1
-    push    word_41854[bx]
+    push    polyvertpointptrtab[bx]
     lea     ax, [bp+var_vec3]
     push    ax
-    call    sub_323D9
+    call    vector_to_point
     add     sp, 4
-    cmp     [bp+var_44A], 0
+    cmp     [bp+var_ptrectflag], 0
     jz      short loc_25134
     mov     bx, si
     shl     bx, 1
-    push    word_41854[bx]
+    push    polyvertpointptrtab[bx]
     push    cs
-    call near ptr sub_25EE2
+    call near ptr rect_compare_point
     add     sp, 2
-    and     [bp+var_44A], al
+    and     [bp+var_ptrectflag], al
 loc_25134:
-    cmp     [bp+var_44A], 0
+    cmp     [bp+var_ptrectflag], 0
     jnz     short loc_2513E
     jmp     loc_25220
 loc_2513E:
@@ -576,8 +560,8 @@ loc_2514B:
     shl     ax, 1
     shl     ax, 1
     add     ax, bp
-    sub     ax, 416h
-    mov     word_41854[bx], ax
+    sub     ax, 416h        ; array access in var_416, but dunno how to make IDA show this
+    mov     polyvertpointptrtab[bx], ax
     mov     ax, si
     mov     cx, ax
     shl     ax, 1
@@ -599,7 +583,7 @@ loc_2514B:
     pop     ds
     pop     di
     pop     si
-    cmp     word_40ED0, 0
+    cmp     select_rect_param, 0
     jz      short loc_25196
     sar     [bp+var_vec2.vx], 1
     sar     [bp+var_vec2.vy], 1
@@ -623,11 +607,11 @@ loc_25196:
     mov     ax, bx
     shl     bx, 1
     add     bx, ax
-    shl     bx, 1
+    shl     bx, 1           ; bx = vertex index * 6
     add     bx, bp
     push    si
     push    di
-    lea     di, [bx-0B6Eh]
+    lea     di, [bx+var_vecarr]
     lea     si, [bp+var_vec3]
     push    ss
     pop     es
@@ -640,21 +624,21 @@ loc_25196:
     jl      short loc_251E9
     jmp     loc_250FA
 loc_251E9:
-    mov     [bp+si+var_562], 1
+    mov     [bp+si+var_vertflagtbl], 1
     mov     [bp+var_1A], 1
     jmp     loc_2513E
 loc_251F6:
     cmp     [bp+var_460], 0
-    jnz     short loc_25216
+    jnz     short _done_ret_neg1
     cmp     [bp+var_1A], 0
-    jz      short loc_25216
+    jz      short _done_ret_neg1
     push    [bp+var_vec.vx] ; int
     call    _abs
     add     sp, 2
-    mov     bx, [bp+arg_0]
+    mov     bx, [bp+arg_transshapeptr]
     cmp     [bx+TRANSFORMEDSHAPE.ts_unk], ax
     jge     short loc_25220
-loc_25216:
+_done_ret_neg1:
     mov     ax, 0FFFFh
     pop     si
     pop     di
@@ -664,7 +648,7 @@ loc_25216:
     ; align 2
     db 144
 loc_25220:
-    mov     bx, [bp+arg_0]
+    mov     bx, [bp+arg_transshapeptr]
     mov     bx, [bx+TRANSFORMEDSHAPE.ts_shapeptr]
     mov     ax, word ptr [bx+SHAPE3D.shape3d_primitives]
     mov     dx, word ptr [bx+(SHAPE3D.shape3d_primitives+2)]
@@ -672,103 +656,103 @@ loc_25220:
     mov     word ptr transshapeprimitives+2, dx
 loc_25233:
     les     bx, transshapeprimitives
-    mov     bl, es:[bx]
+    mov     bl, es:[bx]     ; primitives+0 = primitive type
     sub     bh, bh
-    mov     al, byte_3EA62[bx]
+    mov     al, primidxcounttab[bx]; look up maybe indexcount from a table?
     sub     ah, ah
     add     ax, transshapenumpaints
     add     ax, word ptr transshapeprimitives
     mov     dx, es
     add     ax, 2
-    mov     word_4186A, ax
-    mov     word_4186C, dx
+    mov     word ptr transshapeprimptr, ax
+    mov     word ptr transshapeprimptr+2, dx
     mov     bx, word ptr transshapeprimitives
-    mov     al, es:[bx+1]
+    mov     al, es:[bx+1]   ; primitives+1 = primitive flags
     sub     ah, ah
-    mov     [bp+var_2], ax
+    mov     [bp+var_primitiveflags], ax
     mov     [bp+var_4], 0
     les     bx, [bp+var_cull1]
     mov     ax, es:[bx]
     mov     dx, es:[bx+2]
-    and     ax, [bp+var_45C]
-    and     dx, [bp+var_45A]
+    and     ax, word ptr [bp+var_45C]
+    and     dx, word ptr [bp+var_45C+2]
     or      dx, ax
     jnz     short loc_25282
     jmp     loc_25801
 loc_25282:
     les     bx, transshapeprimitives
-    mov     al, es:[bx]
+    mov     al, es:[bx]     ; primitives+0 = type
     sub     ah, ah
-    mov     [bp+var_418], ax
+    mov     [bp+var_fileprimtype], ax
     mov     bx, ax
-    mov     al, byte_3EA62[bx]
+    mov     al, primidxcounttab[bx]
     mov     transshapenumvertscopy, al
-    mov     al, byte_3EA72[bx]
-    mov     [bp+var_6], al
-    mov     ax, word_41850
+    mov     al, primtypetab[bx]
+    mov     [bp+var_primtype], al; primunktab maps from file-based primitive type to internal type:
+    mov     ax, polyinfoptrnext
     add     ax, word ptr polyinfoptr
     mov     dx, word ptr polyinfoptr+2
     mov     word ptr transshapepolyinfo, ax
     mov     word ptr transshapepolyinfo+2, dx
-    mov     bx, word_442E6
+    mov     bx, polyinfonumpolys
     shl     bx, 1
     shl     bx, 1
-    mov     word ptr dword_411F8[bx], ax
-    mov     word ptr (dword_411F8+2)[bx], dx
-    mov     bl, byte_4187A
+    mov     word ptr polyinfoptrs[bx], ax
+    mov     word ptr (polyinfoptrs+2)[bx], dx
+    mov     bl, transshapematerial
     sub     bh, bh
     add     bx, word ptr transshapeprimitives
     mov     es, word ptr transshapeprimitives+2
-    mov     al, es:[bx+2]
-    mov     byte_41882, al
+    mov     al, es:[bx+2]   ; primitives+2+X = paint job color, X in [0..numpaints]
+    mov     transprimitivepaintjob, al
     mov     ax, transshapenumpaints
     add     ax, 2
-    add     word ptr transshapeprimitives, ax
-    mov     [bp+var_44A], 0Fh
+    add     word ptr transshapeprimitives, ax; <- skip header and materials, -> point at indices
+    mov     [bp+var_ptrectflag], 0Fh
     mov     [bp+var_460], 1
     mov     [bp+var_1A], 0
     mov     ax, word ptr transshapeprimitives
     mov     dx, es
-    mov     word_41874, ax
-    mov     word_41876, dx
-    mov     [bp+var_E], 0
+    mov     word ptr transshapeprimindexptr, ax
+    mov     word ptr transshapeprimindexptr+2, dx
+    mov     [bp+var_polyvertcounter], 0
     jmp     short loc_25328
     ; align 2
     db 144
 loc_25304:
     mov     [bp+var_460], 0
 loc_2530A:
-    cmp     [bp+var_44A], 0
+    cmp     [bp+var_ptrectflag], 0
     jz      short loc_25325
-    mov     bx, [bp+var_E]
+    mov     bx, [bp+var_polyvertcounter]
     shl     bx, 1
-    push    word_41854[bx]
+    push    polyvertpointptrtab[bx]
     push    cs
-    call near ptr sub_25EE2
+    call near ptr rect_compare_point
     add     sp, 2
-    and     [bp+var_44A], al
+    and     [bp+var_ptrectflag], al
 loc_25325:
-    inc     [bp+var_E]
+    inc     [bp+var_polyvertcounter]
 loc_25328:
     mov     al, transshapenumvertscopy
     sub     ah, ah
-    cmp     [bp+var_E], ax
+    cmp     [bp+var_polyvertcounter], ax
     jb      short loc_25335
     jmp     loc_2542A
 loc_25335:
-    mov     bx, word_41874
-    inc     word_41874
-    mov     es, word_41876
+    mov     bx, word ptr transshapeprimindexptr
+    inc     word ptr transshapeprimindexptr
+    mov     es, word ptr transshapeprimindexptr+2
     mov     al, es:[bx]
     mov     si, ax
-    mov     bx, [bp+var_E]
+    mov     bx, [bp+var_polyvertcounter]
     shl     bx, 1
     shl     ax, 1
     shl     ax, 1
     add     ax, bp
     sub     ax, 416h
-    mov     word_41854[bx], ax
-    mov     al, [bp+si+var_562]
+    mov     polyvertpointptrtab[bx], ax
+    mov     al, [bp+si+var_vertflagtbl]
     cbw
     cmp     ax, 0FFFFh
     jz      short loc_25370
@@ -802,7 +786,7 @@ loc_25370:
     pop     ds
     pop     di
     pop     si
-    cmp     word_40ED0, 0
+    cmp     select_rect_param, 0
     jz      short loc_253A8
     sar     [bp+var_vec2.vx], 1
     sar     [bp+var_vec2.vy], 1
@@ -830,7 +814,7 @@ loc_253A8:
     add     bx, bp
     push    si
     push    di
-    lea     di, [bx-0B6Eh]
+    lea     di, [bx+var_vecarr]
     lea     si, [bp+var_vec3]
     push    ss
     pop     es
@@ -842,7 +826,7 @@ loc_253A8:
 loc_253F1:
     cmp     [bp+var_vec3.vz], 0Ch
     jge     short loc_25406
-    mov     [bp+si+var_562], 1
+    mov     [bp+si+var_vertflagtbl], 1
 loc_253FD:
     mov     [bp+var_1A], 1
     jmp     loc_25325
@@ -850,13 +834,13 @@ loc_253FD:
     db 144
 loc_25406:
     mov     [bp+var_460], 0
-    mov     [bp+si+var_562], 0
-    mov     bx, [bp+var_E]
+    mov     [bp+si+var_vertflagtbl], 0
+    mov     bx, [bp+var_polyvertcounter]
     shl     bx, 1
-    push    word_41854[bx]
+    push    polyvertpointptrtab[bx]
     lea     ax, [bp+var_vec3]
     push    ax
-    call    sub_323D9
+    call    vector_to_point
     add     sp, 4
     jmp     loc_2530A
 loc_2542A:
@@ -864,47 +848,47 @@ loc_2542A:
     jz      short loc_25434
     jmp     loc_25801
 loc_25434:
-    cmp     [bp+var_44A], 0
+    cmp     [bp+var_ptrectflag], 0
     jz      short loc_25444
     cmp     [bp+var_1A], 0
     jnz     short loc_25444
     jmp     loc_25801
 loc_25444:
-    mov     al, [bp+var_6]
+    mov     al, [bp+var_primtype]
     sub     ah, ah
     or      ax, ax
-    jz      short loc_25470
-    cmp     ax, 1
+    jz      short _primtype_poly; al = 0 for polygons,
+    cmp     ax, 1           ; 1 = lines
     jnz     short loc_25455
-    jmp     loc_2585C
+    jmp     _primtype_line
 loc_25455:
     cmp     ax, 2
     jnz     short loc_2545D
-    jmp     loc_25BAA
+    jmp     _primtype_sphere; 2 = sphere
 loc_2545D:
     cmp     ax, 3
     jnz     short loc_25465
-    jmp     loc_2598E
+    jmp     _primtype_wheel ; 3 = wheel
 loc_25465:
     cmp     ax, 5
     jnz     short loc_2546D
-    jmp     loc_25CE0
+    jmp     loc_25CE0       ; 5 = particle
 loc_2546D:
-    jmp     loc_25801
-loc_25470:
+    jmp     loc_25801       ; everything else? (4?)
+_primtype_poly:
     mov     ax, word ptr transshapepolyinfo
     mov     dx, word ptr transshapepolyinfo+2
     add     ax, 6
-    mov     word ptr [bp+var_430], ax
-    mov     word ptr [bp+var_430+2], dx
+    mov     word ptr [bp+var_transshapepolyinfoptptr], ax
+    mov     word ptr [bp+var_transshapepolyinfoptptr+2], dx
     mov     ax, word ptr transshapeprimitives
     mov     dx, word ptr transshapeprimitives+2
-    mov     word_41874, ax
-    mov     word_41876, dx
+    mov     word ptr transshapeprimindexptr, ax
+    mov     word ptr transshapeprimindexptr+2, dx
     sub     ax, ax
-    mov     [bp+var_16], ax
-    mov     [bp+var_18], ax
-    mov     [bp+var_44A], 0Fh
+    mov     word ptr [bp+var_18+2], ax
+    mov     word ptr [bp+var_18], ax
+    mov     [bp+var_ptrectflag], 0Fh
     cmp     [bp+var_1A], ax
     jnz     short loc_25518
     sub     si, si
@@ -918,9 +902,9 @@ loc_254A7:
     ja      short loc_254B3
     jmp     loc_2571A
 loc_254B3:
-    mov     bx, word_41874
-    inc     word_41874
-    mov     es, word_41876
+    mov     bx, word ptr transshapeprimindexptr
+    inc     word ptr transshapeprimindexptr
+    mov     es, word ptr transshapeprimindexptr+2
     mov     al, es:[bx]
     mov     [bp+var_C], ax
     mov     bx, ax
@@ -928,34 +912,34 @@ loc_254B3:
     add     bx, ax
     shl     bx, 1
     add     bx, bp
-    mov     ax, [bx-0B6Ah]
+    mov     ax, [bx+var_vecarr.vz]
     cwd
-    add     [bp+var_18], ax
-    adc     [bp+var_16], dx
+    add     word ptr [bp+var_18], ax
+    adc     word ptr [bp+var_18+2], dx
     mov     ax, si
     shl     ax, 1
-    add     ax, offset word_41854
-    mov     [bp+var_B7A], ax
+    add     ax, offset polyvertpointptrtab
+    mov     [bp+var_polyvertunktabptr], ax
     mov     bx, ax
     mov     bx, [bx]
     mov     ax, [bx]
     mov     dx, [bx+2]
-    les     bx, [bp+var_430]
+    les     bx, [bp+var_transshapepolyinfoptptr]
     mov     es:[bx], ax
     mov     es:[bx+2], dx
-    cmp     [bp+var_44A], 0
+    cmp     [bp+var_ptrectflag], 0
     jz      short loc_25511
-    mov     bx, [bp+var_B7A]
+    mov     bx, [bp+var_polyvertunktabptr]
     push    word ptr [bx]
     push    cs
-    call near ptr sub_25EE2
+    call near ptr rect_compare_point
     add     sp, 2
-    and     [bp+var_44A], al
+    and     [bp+var_ptrectflag], al
 loc_25511:
-    add     word ptr [bp+var_430], 4
+    add     word ptr [bp+var_transshapepolyinfoptptr], 4
     jmp     short loc_254A6
 loc_25518:
-    mov     [bp+var_E], 0
+    mov     [bp+var_polyvertcounter], 0
     mov     bl, transshapenumvertscopy
     sub     bh, bh
     add     bx, word ptr transshapeprimitives
@@ -968,7 +952,7 @@ loc_25518:
 loc_2553A:
     mov     bx, [bp+var_448]
     add     bx, bp
-    cmp     byte ptr [bx-562h], 0
+    cmp     [bx+var_vertflagtbl], 0
     jz      short loc_2554A
     jmp     loc_255E6
 loc_2554A:
@@ -998,7 +982,7 @@ loc_2554A:
     push    ax
     lea     ax, [bp+var_vec2]
     push    ax
-    call    sub_323D9
+    call    vector_to_point
     add     sp, 4
     mov     ax, [bp+var_448]
     shl     ax, 1
@@ -1006,30 +990,30 @@ loc_2554A:
     add     ax, bp
     mov     [bp+var_B7C], ax
     mov     bx, ax
-    mov     ax, [bp+var_574]
-    cmp     [bx-416h], ax
+    mov     ax, [bp+var_574.x2]
+    cmp     [bx+var_vecarr2.vx], ax
     jnz     short loc_255B4
-    mov     ax, [bp+var_572]
-    cmp     [bx-414h], ax
+    mov     ax, [bp+var_574.y2]
+    cmp     [bx+var_vecarr2.vy], ax
     jz      short loc_255E6
 loc_255B4:
-    cmp     [bp+var_44A], 0
+    cmp     [bp+var_ptrectflag], 0
     jz      short loc_255CB
     lea     ax, [bp+var_574]
     push    ax
     push    cs
-    call near ptr sub_25EE2
+    call near ptr rect_compare_point
     add     sp, 2
-    and     [bp+var_44A], al
+    and     [bp+var_ptrectflag], al
 loc_255CB:
-    les     bx, [bp+var_430]
-    mov     ax, [bp+var_574]
-    mov     dx, [bp+var_572]
+    les     bx, [bp+var_transshapepolyinfoptptr]
+    mov     ax, [bp+var_574.x2]
+    mov     dx, [bp+var_574.y2]
     mov     es:[bx], ax
     mov     es:[bx+2], dx
 loc_255DE:
-    add     word ptr [bp+var_430], 4
-    inc     [bp+var_E]
+    add     word ptr [bp+var_transshapepolyinfoptptr], 4
+    inc     [bp+var_polyvertcounter]
 loc_255E6:
     mov     ax, [bp+var_C]
     mov     [bp+var_448], ax
@@ -1041,9 +1025,9 @@ loc_255EE:
     ja      short loc_255FA
     jmp     loc_25714
 loc_255FA:
-    mov     bx, word_41874
-    inc     word_41874
-    mov     es, word_41876
+    mov     bx, word ptr transshapeprimindexptr
+    inc     word ptr transshapeprimindexptr
+    mov     es, word ptr transshapeprimindexptr+2
     mov     al, es:[bx]
     mov     [bp+var_C], ax
     mov     cx, ax
@@ -1051,21 +1035,21 @@ loc_255FA:
     add     ax, cx
     shl     ax, 1
     add     ax, bp
-    mov     [bp+var_B7A], ax
+    mov     [bp+var_polyvertunktabptr], ax
     mov     bx, ax
-    mov     ax, [bx-0B6Ah]
+    mov     ax, [bx+var_vecarr.vz]
     cwd
-    add     [bp+var_18], ax
-    adc     [bp+var_16], dx
+    add     word ptr [bp+var_18], ax
+    adc     word ptr [bp+var_18+2], dx
     mov     bx, cx
     add     bx, bp
-    cmp     byte ptr [bx-562h], 0
+    cmp     [bx+var_vertflagtbl], 0
     jz      short loc_25635
     jmp     loc_2553A
 loc_25635:
     mov     bx, [bp+var_448]
     add     bx, bp
-    cmp     byte ptr [bx-562h], 0
+    cmp     [bx+var_vertflagtbl], 0
     jnz     short loc_25645
     jmp     loc_256D7
 loc_25645:
@@ -1081,7 +1065,7 @@ loc_25645:
     add     ax, bp
     sub     ax, 0B6Eh
     push    ax
-    mov     ax, [bp+var_B7A]
+    mov     ax, [bp+var_polyvertunktabptr]
     sub     ax, 0B6Eh
     push    ax
     call    vector_op_unk
@@ -1090,7 +1074,7 @@ loc_25645:
     push    ax
     lea     ax, [bp+var_vec2]
     push    ax
-    call    sub_323D9
+    call    vector_to_point
     add     sp, 4
     mov     ax, [bp+var_C]
     shl     ax, 1
@@ -1098,71 +1082,71 @@ loc_25645:
     add     ax, bp
     mov     [bp+var_B7C], ax
     mov     bx, ax
-    mov     ax, [bp+var_574]
-    cmp     [bx-416h], ax
+    mov     ax, [bp+var_574.x2]
+    cmp     [bx+var_vecarr2.vx], ax
     jnz     short loc_256A5
-    mov     ax, [bp+var_572]
-    cmp     [bx-414h], ax
+    mov     ax, [bp+var_574.y2]
+    cmp     [bx+var_vecarr2.vy], ax
     jz      short loc_256D7
 loc_256A5:
-    cmp     [bp+var_44A], 0
+    cmp     [bp+var_ptrectflag], 0
     jz      short loc_256BC
     lea     ax, [bp+var_574]
     push    ax
     push    cs
-    call near ptr sub_25EE2
+    call near ptr rect_compare_point
     add     sp, 2
-    and     [bp+var_44A], al
+    and     [bp+var_ptrectflag], al
 loc_256BC:
-    les     bx, [bp+var_430]
-    mov     ax, [bp+var_574]
-    mov     dx, [bp+var_572]
+    les     bx, [bp+var_transshapepolyinfoptptr]
+    mov     ax, [bp+var_574.x2]
+    mov     dx, [bp+var_574.y2]
     mov     es:[bx], ax
     mov     es:[bx+2], dx
-    add     word ptr [bp+var_430], 4
-    inc     [bp+var_E]
+    add     word ptr [bp+var_transshapepolyinfoptptr], 4
+    inc     [bp+var_polyvertcounter]
 loc_256D7:
     mov     ax, si
     shl     ax, 1
-    add     ax, offset word_41854
+    add     ax, offset polyvertpointptrtab
     mov     [bp+var_B7C], ax
     mov     bx, ax
     mov     bx, [bx]
     mov     ax, [bx]
     mov     dx, [bx+2]
-    les     bx, [bp+var_430]
+    les     bx, [bp+var_transshapepolyinfoptptr]
     mov     es:[bx], ax
     mov     es:[bx+2], dx
-    cmp     [bp+var_44A], 0
+    cmp     [bp+var_ptrectflag], 0
     jnz     short loc_25700
     jmp     loc_255DE
 loc_25700:
     mov     bx, [bp+var_B7C]
     push    word ptr [bx]
     push    cs
-    call near ptr sub_25EE2
+    call near ptr rect_compare_point
     add     sp, 2
-    and     [bp+var_44A], al
+    and     [bp+var_ptrectflag], al
     jmp     loc_255DE
 loc_25714:
-    mov     al, byte ptr [bp+var_E]
+    mov     al, byte ptr [bp+var_polyvertcounter]
     mov     transshapenumvertscopy, al
 loc_2571A:
     cmp     transshapenumvertscopy, 0
     jnz     short loc_25724
     jmp     loc_25801
 loc_25724:
-    cmp     [bp+var_44A], 0
+    cmp     [bp+var_ptrectflag], 0
     jz      short loc_2572E
     jmp     loc_25801
 loc_2572E:
-    test    byte ptr [bp+var_2], 1
+    test    byte ptr [bp+var_primitiveflags], 1
     jnz     short loc_25760
     les     bx, [bp+var_cull2]
     mov     ax, es:[bx]
     mov     dx, es:[bx+2]
-    and     ax, [bp+var_A]
-    and     dx, [bp+var_8]
+    and     ax, word ptr [bp+var_A]
+    and     dx, word ptr [bp+var_A+2]
     or      dx, ax
     jnz     short loc_25760
     mov     ax, word ptr transshapepolyinfo
@@ -1182,64 +1166,64 @@ loc_25763:
     jnz     short loc_2576C
     jmp     loc_25801
 loc_2576C:
-    test    byte_4186E, 8
+    test    transshapeflags, 8
     jnz     short loc_25776
     jmp     loc_25801
 loc_25776:
     mov     ax, word ptr transshapepolyinfo
     mov     dx, word ptr transshapepolyinfo+2
     add     ax, 6
-    mov     word ptr [bp+var_56E], ax
-    mov     word ptr [bp+var_56E+2], dx
-    mov     [bp+var_E], 0
+    mov     word ptr [bp+var_polyvertsptr], ax
+    mov     word ptr [bp+var_polyvertsptr+2], dx
+    mov     [bp+var_polyvertcounter], 0
     jmp     short loc_257F7
     ; align 2
     db 144
 loc_25790:
-    les     bx, [bp+var_56E]
-    mov     ax, es:[bx]
-    mov     [bp+var_564], ax
-    mov     ax, es:[bx+2]
-    mov     [bp+var_570], ax
-    add     word ptr [bp+var_56E], 4
-    mov     bx, word_41878
-    mov     ax, [bx]
-    cmp     [bp+var_564], ax
+    les     bx, [bp+var_polyvertsptr]
+    mov     ax, es:[bx+POINT2D.x2]
+    mov     [bp+var_polyvertX], ax
+    mov     ax, es:[bx+POINT2D.y2]
+    mov     [bp+var_polyvertY], ax
+    add     word ptr [bp+var_polyvertsptr], 4
+    mov     bx, transshaperectptr
+    mov     ax, [bx+RECTANGLE.rc_left]
+    cmp     [bp+var_polyvertX], ax
     jge     short loc_257BA
-    mov     ax, [bp+var_564]
-    mov     [bx], ax
+    mov     ax, [bp+var_polyvertX]
+    mov     [bx+RECTANGLE.rc_left], ax
 loc_257BA:
-    mov     ax, [bp+var_564]
+    mov     ax, [bp+var_polyvertX]
     inc     ax
     mov     [bp+var_B7C], ax
-    mov     bx, word_41878
-    cmp     [bx+2], ax
+    mov     bx, transshaperectptr
+    cmp     [bx+RECTANGLE.rc_top], ax
     jge     short loc_257CF
-    mov     [bx+2], ax
+    mov     [bx+RECTANGLE.rc_top], ax
 loc_257CF:
-    mov     bx, word_41878
-    mov     ax, [bp+var_570]
-    cmp     [bx+4], ax
+    mov     bx, transshaperectptr
+    mov     ax, [bp+var_polyvertY]
+    cmp     [bx+RECTANGLE.rc_right], ax
     jle     short loc_257DF
-    mov     [bx+4], ax
+    mov     [bx+RECTANGLE.rc_right], ax
 loc_257DF:
-    mov     ax, [bp+var_570]
+    mov     ax, [bp+var_polyvertY]
     inc     ax
     mov     [bp+var_B7C], ax
-    mov     bx, word_41878
-    cmp     [bx+6], ax
+    mov     bx, transshaperectptr
+    cmp     [bx+RECTANGLE.rc_bottom], ax
     jge     short loc_257F4
-    mov     [bx+6], ax
+    mov     [bx+RECTANGLE.rc_bottom], ax
 loc_257F4:
-    inc     [bp+var_E]
+    inc     [bp+var_polyvertcounter]
 loc_257F7:
     mov     al, transshapenumvertscopy
     sub     ah, ah
-    cmp     [bp+var_E], ax
+    cmp     [bp+var_polyvertcounter], ax
     jb      short loc_25790
 loc_25801:
-    mov     ax, word_4186A
-    mov     dx, word_4186C
+    mov     ax, word ptr transshapeprimptr
+    mov     dx, word ptr transshapeprimptr+2
     mov     word ptr transshapeprimitives, ax
     mov     word ptr transshapeprimitives+2, dx
     add     word ptr [bp+var_cull2], 4
@@ -1248,7 +1232,7 @@ loc_25801:
     jz      short loc_25822
     jmp     loc_25D3C
 loc_25822:
-    test    byte ptr [bp+var_2], 2
+    test    byte ptr [bp+var_primitiveflags], 2
     jz      short loc_2582B
     jmp     loc_25E04
 loc_2582B:
@@ -1259,7 +1243,7 @@ loc_2582B:
 loc_25839:
     mov     bl, es:[bx]
     sub     bh, bh
-    mov     al, byte_3EA62[bx]
+    mov     al, primidxcounttab[bx]
     sub     ah, ah
     add     ax, transshapenumpaints
     add     ax, 2
@@ -1269,22 +1253,22 @@ loc_25839:
     jmp     short loc_2582B
     ; align 2
     db 144
-loc_2585C:
+_primtype_line:
     les     bx, transshapeprimitives
     mov     al, es:[bx]
     sub     ah, ah
     mov     si, ax
     mov     al, es:[bx+1]
     mov     di, ax
-    mov     al, [bp+di+var_562]
+    mov     al, [bp+di+var_vertflagtbl]
     cbw
     mov     cx, ax
-    mov     al, [bp+si+var_562]
+    mov     al, [bp+si+var_vertflagtbl]
     cbw
     add     ax, cx
     cmp     ax, 2
     jz      short loc_25801
-    cmp     [bp+si+var_562], 0
+    cmp     [bp+si+var_vertflagtbl], 0
     jz      short loc_258BC
     mov     ax, 0Ch
     push    ax
@@ -1311,7 +1295,7 @@ loc_2585C:
     mov     ax, si
     jmp     short loc_258F6
 loc_258BC:
-    cmp     [bp+di+var_562], 0
+    cmp     [bp+di+var_vertflagtbl], 0
     jz      short loc_2590D
     mov     ax, 0Ch
     push    ax
@@ -1344,7 +1328,7 @@ loc_258F6:
     push    ax
     lea     ax, [bp+var_vec2]
     push    ax
-    call    sub_323D9
+    call    vector_to_point
     add     sp, 4
 loc_2590D:
     mov     bx, si
@@ -1353,71 +1337,71 @@ loc_2590D:
     add     bx, ax
     shl     bx, 1
     add     bx, bp
-    mov     ax, [bx-0B6Ah]
+    mov     ax, [bx+var_vecarr.vz]
     mov     bx, di
     mov     cx, bx
     shl     bx, 1
     add     bx, cx
     shl     bx, 1
     add     bx, bp
-    add     ax, [bx-0B6Ah]
+    add     ax, [bx+var_vecarr.vz]
     cwd
-    mov     [bp+var_18], ax
-    mov     [bp+var_16], dx
-    mov     bx, word_41854
+    mov     word ptr [bp+var_18], ax
+    mov     word ptr [bp+var_18+2], dx
+    mov     bx, polyvertpointptrtab
     mov     ax, [bx]
     mov     dx, [bx+2]
     les     bx, transshapepolyinfo
     mov     es:[bx+6], ax
     mov     es:[bx+8], dx
-    mov     bx, word_41856
+    mov     bx, polyvertpointptrtab+2
     mov     ax, [bx]
     mov     dx, [bx+2]
     les     bx, transshapepolyinfo
     mov     es:[bx+0Ah], ax
     mov     es:[bx+0Ch], dx
-    test    byte_4186E, 8
+    test    transshapeflags, 8
     jz      short loc_25983
-    push    word_41878
-    push    word_41854
+    push    transshaperectptr
+    push    polyvertpointptrtab
     push    cs
-    call near ptr sub_2637A
+    call near ptr rect_adjust_unk
     add     sp, 4
-    push    word_41878
-    push    word_41856
+    push    transshaperectptr
+    push    polyvertpointptrtab+2
 loc_2597C:
     push    cs
-    call near ptr sub_2637A
+    call near ptr rect_adjust_unk
     add     sp, 4
 loc_25983:
     mov     transshapenumvertscopy, 2
 loc_25988:
     inc     [bp+var_4]
     jmp     loc_25801
-loc_2598E:
+_primtype_wheel:
     cmp     [bp+var_1A], 0
     jz      short loc_25997
     jmp     loc_25801
 loc_25997:
-    mov     bx, word_41854
+    mov     bx, polyvertpointptrtab
     mov     ax, [bx]
     mov     dx, [bx+2]
     les     bx, transshapepolyinfo
     mov     es:[bx+6], ax
     mov     es:[bx+8], dx
-    mov     bx, word_41856
+    mov     bx, polyvertpointptrtab+2
     mov     ax, [bx]
     mov     dx, [bx+2]
     les     bx, transshapepolyinfo
     mov     es:[bx+0Ah], ax
     mov     es:[bx+0Ch], dx
-    mov     bx, word_41858
+    mov     bx, polyvertpointptrtab+4
     mov     ax, [bx]
     mov     dx, [bx+2]
     les     bx, transshapepolyinfo
     mov     es:[bx+0Eh], ax
     mov     es:[bx+10h], dx
-    mov     bx, word_4185A
+    mov     bx, polyvertpointptrtab+6
     mov     ax, [bx]
     mov     dx, [bx+2]
     les     bx, transshapepolyinfo
@@ -1433,39 +1417,39 @@ loc_25997:
     add     sp, 4
     or      al, al
     jnz     short loc_25A7C
-    mov     bx, word_4185A
+    mov     bx, polyvertpointptrtab+6
     mov     ax, [bx]
     mov     dx, [bx+2]
     les     bx, transshapepolyinfo
     mov     es:[bx+6], ax
     mov     es:[bx+8], dx
-    mov     bx, word_4185C
+    mov     bx, polyvertpointptrtab+8
     mov     ax, [bx]
     mov     dx, [bx+2]
     les     bx, transshapepolyinfo
     mov     es:[bx+0Ah], ax
     mov     es:[bx+0Ch], dx
-    mov     bx, word_4185E
+    mov     bx, polyvertpointptrtab+0Ah
     mov     ax, [bx]
     mov     dx, [bx+2]
     les     bx, transshapepolyinfo
     mov     es:[bx+0Eh], ax
     mov     es:[bx+10h], dx
-    mov     bx, word_41854
+    mov     bx, polyvertpointptrtab
     mov     ax, [bx]
     mov     dx, [bx+2]
     les     bx, transshapepolyinfo
     mov     es:[bx+12h], ax
     mov     es:[bx+14h], dx
     les     bx, transshapeprimitives
-    mov     al, es:[bx+3]
+    mov     al, es:[bx+3]   ; primitives+3 = paintjob 1? [0..x]
     sub     ah, ah
     mov     bx, ax
     shl     bx, 1
     add     bx, ax
     shl     bx, 1
     add     bx, bp
-    mov     ax, [bx-0B6Ah]
+    mov     ax, [bx+var_vecarr.vz]
     cwd
     mov     cl, 2
 loc_25A71:
@@ -1478,14 +1462,14 @@ loc_25A71:
     db 144
 loc_25A7C:
     les     bx, transshapeprimitives
-    mov     al, es:[bx]
+    mov     al, es:[bx]     ; primitives+0 = primitivetype
     sub     ah, ah
     mov     bx, ax
     shl     bx, 1
     add     bx, ax
     shl     bx, 1
     add     bx, bp
-    mov     ax, [bx-0B6Ah]
+    mov     ax, [bx+var_vecarr.vz]
     cwd
     mov     cl, 2
 loc_25A96:
@@ -1494,8 +1478,8 @@ loc_25A96:
     dec     cl
     jnz     short loc_25A96
 loc_25A9E:
-    mov     [bp+var_18], ax
-    mov     [bp+var_16], dx
+    mov     word ptr [bp+var_18], ax
+    mov     word ptr [bp+var_18+2], dx
     les     bx, transshapepolyinfo
     mov     ax, es:[bx+8]
     sub     ax, es:[bx+0Ch]
@@ -1520,7 +1504,7 @@ loc_25A9E:
     jle     short loc_25AEA
     mov     si, di
 loc_25AEA:
-    test    byte_4186E, 8
+    test    transshapeflags, 8
     jnz     short loc_25AF4
     jmp     loc_25B9C
 loc_25AF4:
@@ -1533,11 +1517,11 @@ loc_25AF4:
     sub     ax, si
     dec     ax
     mov     [bp+var_44E], ax
-    push    word_41878
+    push    transshaperectptr
     lea     ax, [bp+var_450]
     push    ax
     push    cs
-    call near ptr sub_2637A
+    call near ptr rect_adjust_unk
     add     sp, 4
     les     bx, transshapepolyinfo
     mov     ax, es:[bx+8]
@@ -1548,11 +1532,11 @@ loc_25AF4:
     add     ax, si
     inc     ax
     mov     [bp+var_450], ax
-    push    word_41878
+    push    transshaperectptr
     lea     ax, [bp+var_450]
     push    ax
     push    cs
-    call near ptr sub_2637A
+    call near ptr rect_adjust_unk
     add     sp, 4
     les     bx, transshapepolyinfo
     mov     ax, es:[bx+12h]
@@ -1563,11 +1547,11 @@ loc_25AF4:
     sub     ax, si
     dec     ax
     mov     [bp+var_44E], ax
-    push    word_41878
+    push    transshaperectptr
     lea     ax, [bp+var_450]
     push    ax
     push    cs
-    call near ptr sub_2637A
+    call near ptr rect_adjust_unk
     add     sp, 4
     les     bx, transshapepolyinfo
     mov     ax, es:[bx+14h]
@@ -1578,11 +1562,11 @@ loc_25AF4:
     add     ax, si
     inc     ax
     mov     [bp+var_450], ax
-    push    word_41878
+    push    transshaperectptr
     lea     ax, [bp+var_450]
     push    ax
     push    cs
-    call near ptr sub_2637A
+    call near ptr rect_adjust_unk
     add     sp, 4
 loc_25B9C:
     mov     transshapenumvertscopy, 4
@@ -1590,7 +1574,7 @@ loc_25B9C:
     jmp     loc_25801
     ; align 2
     db 144
-loc_25BAA:
+_primtype_sphere:
     les     bx, transshapeprimitives
     mov     al, es:[bx]
     sub     ah, ah
@@ -1609,34 +1593,34 @@ loc_25BAA:
     add     ax, cx
     shl     ax, 1
     add     ax, bp
-    mov     [bp+var_B7A], ax
+    mov     [bp+var_polyvertunktabptr], ax
     mov     bx, ax
-    mov     ax, [bx-0B6Ah]
+    mov     ax, [bx+var_vecarr.vz]
     mov     bx, [bp+var_B7C]
-    add     ax, [bx-0B6Ah]
+    add     ax, [bx+var_vecarr.vz]
     cwd
-    mov     [bp+var_18], ax
-    mov     [bp+var_16], dx
-    mov     al, [bp+di+var_562]
+    mov     word ptr [bp+var_18], ax
+    mov     word ptr [bp+var_18+2], dx
+    mov     al, [bp+di+var_vertflagtbl]
     cbw
     mov     cx, ax
-    mov     al, [bp+si+var_562]
+    mov     al, [bp+si+var_vertflagtbl]
     cbw
     add     ax, cx
     jz      short loc_25C01
     jmp     loc_25801
 loc_25C01:
-    mov     bx, word_41854
+    mov     bx, polyvertpointptrtab
     mov     ax, [bx]
     mov     dx, [bx+2]
     les     bx, transshapepolyinfo
     mov     es:[bx+6], ax
     mov     es:[bx+8], dx
-    mov     bx, [bp+var_B7A]
+    mov     bx, [bp+var_polyvertunktabptr]
     push    si
     push    di
     lea     di, [bp+var_vec3]
-    lea     si, [bx-0B6Eh]
+    lea     si, [bx+var_vecarr]
     push    ss
     pop     es
     movsw
@@ -1647,7 +1631,7 @@ loc_25C01:
     mov     bx, [bp+var_B7C]
     push    si
     push    di
-    lea     di, [bp+var_B74]
+    lea     di, [bp+var_vec4]
     lea     si, [bx-0B6Eh]
     movsw
     movsw
@@ -1655,13 +1639,13 @@ loc_25C01:
     pop     di
     pop     si
     mov     ax, [bp+var_vec3.vx]
-    sub     ax, [bp+var_B74]
+    sub     ax, [bp+var_vec4.vx]
     mov     [bp+var_vec2.vx], ax
     mov     ax, [bp+var_vec3.vy]
-    sub     ax, [bp+var_B72]
+    sub     ax, [bp+var_vec4.vy]
     mov     [bp+var_vec2.vy], ax
     mov     ax, [bp+var_vec3.vz]
-    sub     ax, [bp+var_B70]
+    sub     ax, [bp+var_vec4.vz]
     mov     [bp+var_vec2.vz], ax
     push    [bp+var_vec3.vz]
     lea     ax, [bp+var_vec2]
@@ -1674,40 +1658,40 @@ loc_25C01:
     mov     [bp+var_462], ax
     les     bx, transshapepolyinfo
     mov     es:[bx+0Ah], ax
-    test    byte_4186E, 8
+    test    transshapeflags, 8
     jnz     short loc_25C92
     jmp     loc_25983
 loc_25C92:
-    mov     bx, word_41854
+    mov     bx, polyvertpointptrtab
     mov     ax, [bx+2]
     sub     ax, [bp+var_462]
     mov     [bp+var_44E], ax
     mov     ax, [bx]
     sub     ax, [bp+var_462]
     mov     [bp+var_450], ax
-    push    word_41878
+    push    transshaperectptr
     lea     ax, [bp+var_450]
     push    ax
     push    cs
-    call near ptr sub_2637A
+    call near ptr rect_adjust_unk
     add     sp, 4
     mov     ax, [bp+var_462]
-    mov     bx, word_41854
+    mov     bx, polyvertpointptrtab
     add     ax, [bx]
     mov     [bp+var_450], ax
     mov     ax, [bx+2]
     add     ax, [bp+var_462]
     mov     [bp+var_450], ax
-    push    word_41878
+    push    transshaperectptr
     lea     ax, [bp+var_450]
     push    ax
     jmp     loc_2597C
 loc_25CE0:
     les     bx, transshapeprimitives
-    mov     al, es:[bx]
+    mov     al, es:[bx]     ; primitives+ 0 = type
     sub     ah, ah
     mov     si, ax
-    cmp     [bp+si+var_562], ah
+    cmp     [bp+si+var_vertflagtbl], ah
     jz      short loc_25CF4
     jmp     loc_25801
 loc_25CF4:
@@ -1716,22 +1700,22 @@ loc_25CF4:
     add     bx, ax
     shl     bx, 1
     add     bx, bp
-    mov     ax, [bx-0B6Ah]
+    mov     ax, [bx+var_vecarr.vz]
     cwd
-    mov     [bp+var_18], ax
-    mov     [bp+var_16], dx
-    mov     bx, word_41854
+    mov     word ptr [bp+var_18], ax
+    mov     word ptr [bp+var_18+2], dx
+    mov     bx, polyvertpointptrtab
     mov     ax, [bx]
     mov     dx, [bx+2]
     les     bx, transshapepolyinfo
     mov     es:[bx+6], ax
     mov     es:[bx+8], dx
-    test    byte_4186E, 8
+    test    transshapeflags, 8
     jz      short loc_25D34
-    push    word_41878
-    push    word_41854
+    push    transshaperectptr
+    push    polyvertpointptrtab
     push    cs
-    call near ptr sub_2637A
+    call near ptr rect_adjust_unk
     add     sp, 4
 loc_25D34:
     mov     transshapenumvertscopy, 1
@@ -1740,20 +1724,20 @@ loc_25D3C:
     inc     [bp+var_45E]
     les     bx, transshapepolyinfo
     mov     al, transshapenumvertscopy
-    mov     es:[bx+3], al
+    mov     es:[bx+3], al   ; polyinfo+3 = numverts
     les     bx, transshapepolyinfo
-    mov     al, [bp+var_6]
-    mov     es:[bx+4], al
-    cmp     byte_41882, 2Dh ; '-'
+    mov     al, [bp+var_primtype]
+    mov     es:[bx+4], al   ; polyinfo+4 = primtype
+    cmp     transprimitivepaintjob, 2Dh ; '-'
     jnz     short loc_25D66
     les     bx, transshapepolyinfo
     mov     al, byte_45514
     jmp     short loc_25D6D
 loc_25D66:
     les     bx, transshapepolyinfo
-    mov     al, byte_41882
+    mov     al, transprimitivepaintjob
 loc_25D6D:
-    mov     es:[bx+2], al
+    mov     es:[bx+2], al   ; polyinfo+2 = paintjob
     mov     al, transshapenumvertscopy
     sub     ah, ah
     cmp     ax, 1
@@ -1767,20 +1751,20 @@ loc_25D6D:
     sub     cx, cx
     push    cx
     push    ax
-    push    [bp+var_16]
-    push    [bp+var_18]
+    push    word ptr [bp+var_18+2]
+    push    word ptr [bp+var_18]
     call    __aFuldiv
     jmp     short loc_25DC2
     ; align 2
     db 144
 loc_25D9C:
-    mov     si, [bp+var_18]
+    mov     si, word ptr [bp+var_18]
 loc_25D9F:
     les     bx, transshapepolyinfo
-    mov     es:[bx], si
-    test    byte_4186E, 1
+    mov     es:[bx], si     ; polyinfo+0 = ???
+    test    transshapeflags, 1
     jnz     short loc_25DB3
-    test    byte ptr [bp+var_2], 2
+    test    byte ptr [bp+var_primitiveflags], 2
     jz      short loc_25DEE
 loc_25DB3:
     sub     ax, ax
@@ -1788,16 +1772,16 @@ loc_25DB3:
     ; align 2
     db 144
 loc_25DB8:
-    mov     ax, [bp+var_18]
-    mov     dx, [bp+var_16]
+    mov     ax, word ptr [bp+var_18]
+    mov     dx, word ptr [bp+var_18+2]
     sar     dx, 1
     rcr     ax, 1
 loc_25DC2:
     mov     si, ax
     jmp     short loc_25D9F
 loc_25DC6:
-    mov     ax, [bp+var_18]
-    mov     dx, [bp+var_16]
+    mov     ax, word ptr [bp+var_18]
+    mov     dx, word ptr [bp+var_18+2]
     mov     cl, 2
 loc_25DCE:
     or      cl, cl
@@ -1807,8 +1791,8 @@ loc_25DCE:
     dec     cl
     jmp     short loc_25DCE
 loc_25DDA:
-    mov     ax, [bp+var_18]
-    mov     dx, [bp+var_16]
+    mov     ax, word ptr [bp+var_18]
+    mov     dx, word ptr [bp+var_18+2]
     mov     cl, 3
 loc_25DE2:
     or      cl, cl
@@ -1832,13 +1816,13 @@ loc_25DF1:
 loc_25E04:
     les     bx, transshapeprimitives
     cmp     byte ptr es:[bx], 0
-    jz      short loc_25E11
+    jz      short _transform_done
     jmp     loc_25233
-loc_25E11:
+_transform_done:
     cmp     [bp+var_45E], 0
-    jnz     short loc_25E1B
-    jmp     loc_25216
-loc_25E1B:
+    jnz     short _done_ret_0
+    jmp     _done_ret_neg1
+_done_ret_0:
     sub     ax, ax
     pop     si
     pop     di
@@ -1881,7 +1865,7 @@ loc_25E52:
     mov     bx, di
     shl     bx, 1
     shl     bx, 1
-    les     bx, dword_411F8[bx]
+    les     bx, polyinfoptrs[bx]
     mov     ax, [bp+arg_0]
     cmp     es:[bx], ax
     jl      short loc_25E7B
@@ -1893,36 +1877,36 @@ loc_25E77:
     or      di, di
     jge     short loc_25E52
 loc_25E7B:
-    mov     bx, word_442E6
+    mov     bx, polyinfonumpolys
     shl     bx, 1
     mov     word_40ED6[bx], di
     mov     bx, word_45D98
     shl     bx, 1
-    mov     ax, word_442E6
+    mov     ax, polyinfonumpolys
     mov     word_40ED6[bx], ax
     inc     word_4554A
     or      di, di
     jge     short loc_25EA0
-    mov     ax, word_442E6
+    mov     ax, polyinfonumpolys
     mov     word_443F2, ax
 loc_25EA0:
     mov     bx, word_45D98
     shl     bx, 1
     mov     ax, word_40ED6[bx]
     mov     word_45D98, ax
-    inc     word_442E6
+    inc     polyinfonumpolys
     mov     al, transshapenumvertscopy
     sub     ah, ah
     shl     ax, 1
     shl     ax, 1
     add     ax, 6
-    add     word_41850, ax
-    cmp     word_442E6, 190h
+    add     polyinfoptrnext, ax
+    cmp     polyinfonumpolys, 190h
     jz      short loc_25ED1
-    cmp     word_41850, 2872h
+    cmp     polyinfoptrnext, 2872h
     jle     short loc_25EDA
 loc_25ED1:
-    mov     ax, 1
+    mov     ax, 1           ; return 1 if error
     pop     si
     pop     di
     mov     sp, bp
@@ -1936,55 +1920,55 @@ loc_25EDA:
     pop     bp
     retf
 sub_25E24 endp
-sub_25EE2 proc far
-    var_4 = byte ptr -4
+rect_compare_point proc far
+    var_flags = byte ptr -4
      s = byte ptr 0
      r = byte ptr 2
-    arg_0 = word ptr 6
+    arg_pointptr = word ptr 6
 
     push    bp
     mov     bp, sp
     sub     sp, 4
     push    si
-    mov     si, [bp+arg_0]
-    mov     ax, rect_unk8.rc_right
-    cmp     [si+2], ax
+    mov     si, [bp+arg_pointptr]
+    mov     ax, select_rect_rc.rc_right
+    cmp     [si+POINT2D.y2], ax
     jge     short loc_25EFA
-    mov     [bp+var_4], 1
+    mov     [bp+var_flags], 1
     jmp     short loc_25F0C
 loc_25EFA:
-    mov     ax, rect_unk8.rc_bottom
-    cmp     [si+2], ax
+    mov     ax, select_rect_rc.rc_bottom
+    cmp     [si+POINT2D.y2], ax
     jle     short loc_25F08
-    mov     [bp+var_4], 2
+    mov     [bp+var_flags], 2
     jmp     short loc_25F0C
 loc_25F08:
-    mov     [bp+var_4], 0
+    mov     [bp+var_flags], 0
 loc_25F0C:
-    mov     ax, rect_unk8.rc_left
-    cmp     [si], ax
+    mov     ax, select_rect_rc.rc_left
+    cmp     [si+POINT2D.x2], ax
     jge     short loc_25F1A
 smart
-    or      [bp+var_4], 4
+    or      [bp+var_flags], 4
 nosmart
     jmp     short loc_25F25
     ; align 2
     db 144
 loc_25F1A:
-    mov     ax, rect_unk8.rc_top
-    cmp     [si], ax
+    mov     ax, select_rect_rc.rc_top
+    cmp     [si+POINT2D.x2], ax
     jle     short loc_25F25
 smart
-    or      [bp+var_4], 8
+    or      [bp+var_flags], 8
 nosmart
 loc_25F25:
-    mov     al, [bp+var_4]
+    mov     al, [bp+var_flags]
     cbw
     pop     si
     mov     sp, bp
     pop     bp
     retf
-sub_25EE2 endp
+rect_compare_point endp
 sub_25F2E proc far
     var_10 = word ptr -16
     var_E = word ptr -14
@@ -2097,7 +2081,7 @@ sub_25F2E endp
 get_a_poly_info proc far
     var_40 = word ptr -64
     var_3E = dword ptr -62
-    var_38 = dword ptr -56
+    var_polyinfoptr = dword ptr -56
     var_32 = byte ptr -50
     var_A = word ptr -10
     var_8 = word ptr -8
@@ -2116,7 +2100,7 @@ get_a_poly_info proc far
     sub     si, si
     jmp     loc_260AC
 loc_26006:
-    les     bx, [bp+var_38]
+    les     bx, [bp+var_polyinfoptr]
     mov     al, es:[bx+3]
     cbw
     mov     [bp+var_2], ax
@@ -2152,12 +2136,12 @@ loc_26049:
     or      ax, ax
     jz      short loc_26070 ; 0 normal 1 grille 2? 3 invisible
     cmp     ax, 1
-    jz      short loc_26084
+    jz      short _fill_patterned
     cmp     ax, 2
     jnz     short loc_2606D
-    jmp     loc_26118
+    jmp     _fill_unk
 loc_2606D:
-    jmp     short loc_260AB
+    jmp     short _fill_next
     ; align 2
     db 144
 loc_26070:
@@ -2166,46 +2150,46 @@ loc_26070:
     push    [bp+var_2]
     push    [bp+var_8]
     call    preRender_default
-loc_2607F:
+_fill_next_eop6:
     add     sp, 6
-    jmp     short loc_260AB
-loc_26084:
+    jmp     short _fill_next
+_fill_patterned:
     mov     bx, [bp+var_6]
     shl     bx, 1
     add     bx, material_patlist2_ptr_cpy
     mov     ax, [bx]
     mov     [bp+var_40], ax
     or      ax, ax
-    jz      short loc_260AB
+    jz      short _fill_next
     lea     ax, [bp+var_32]
     push    ax
     push    [bp+var_2]
     push    [bp+var_8]
     push    [bp+var_40]
     call    preRender_patterned
-loc_260A8:
+_fill_next_eop8:
     add     sp, 8
-loc_260AB:
+_fill_next:
     inc     si
 loc_260AC:
     mov     ax, si
-    cmp     ax, word_442E6
+    cmp     ax, polyinfonumpolys
     jb      short loc_260B7
 loc_260B4:
-    jmp     loc_261F0
+    jmp     _get_a_poly_info_done
 loc_260B7:
-    mov     bx, di
+    mov     bx, di          ; di = 400
     shl     bx, 1
     mov     di, word_40ED6[bx]
     mov     bx, di
     shl     bx, 1
     shl     bx, 1
-    mov     ax, word ptr dword_411F8[bx]
-    mov     dx, word ptr (dword_411F8+2)[bx]
-    mov     word ptr [bp+var_38], ax
-    mov     word ptr [bp+var_38+2], dx
-    les     bx, [bp+var_38]
-    mov     al, es:[bx+2]
+    mov     ax, word ptr polyinfoptrs[bx]
+    mov     dx, word ptr (polyinfoptrs+2)[bx]
+    mov     word ptr [bp+var_polyinfoptr], ax
+    mov     word ptr [bp+var_polyinfoptr+2], dx
+    les     bx, [bp+var_polyinfoptr]
+    mov     al, es:[bx+2]   ; material type
     sub     ah, ah
     mov     [bp+var_6], ax
     mov     bx, ax          ; material index...
@@ -2213,29 +2197,29 @@ loc_260B7:
     add     bx, material_clrlist_ptr_cpy
     mov     ax, [bx]
     mov     [bp+var_8], ax
-    mov     bx, word ptr [bp+var_38]
-    mov     al, es:[bx+4]
+    mov     bx, word ptr [bp+var_polyinfoptr]
+    mov     al, es:[bx+4]   ; object type (solid, sphere, wheel, pixel)
     cbw
     or      ax, ax
     jnz     short loc_260FB
     jmp     loc_26006
 loc_260FB:
     cmp     ax, 1
-    jz      short loc_26144
+    jz      short _fill_solid
     cmp     ax, 2
     jnz     short loc_26108
-    jmp     loc_261C0
+    jmp     _fill_sphere
 loc_26108:
     cmp     ax, 3
-    jz      short loc_26166
+    jz      short _fill_wheel0
     cmp     ax, 5
-    jnz     short loc_26115
-    jmp     loc_261DA
-loc_26115:
-    jmp     short loc_260AB
+    jnz     short _fill_next_jmp
+    jmp     _fill_pixel
+_fill_next_jmp:
+    jmp     short _fill_next
     ; align 2
     db 144
-loc_26118:
+_fill_unk:
     mov     ax, [bp+var_6]
     shl     ax, 1
     mov     [bp+var_40], ax
@@ -2249,13 +2233,13 @@ loc_26118:
     mov     bx, [bp+var_40]
     add     bx, material_patlist2_ptr_cpy
     push    word ptr [bx]
-    call    sub_2F3DA
+    call    preRender_unk
     jmp     short loc_2615F
     ; align 2
     db 144
-loc_26144:
+_fill_solid:
     push    [bp+var_8]
-    les     bx, [bp+var_38]
+    les     bx, [bp+var_polyinfoptr]
     push    word ptr es:[bx+0Ch]
     push    word ptr es:[bx+0Ah]
     push    word ptr es:[bx+8]
@@ -2263,19 +2247,19 @@ loc_26144:
     call    preRender_line
 loc_2615F:
     add     sp, 0Ah
-    jmp     loc_260AB
+    jmp     _fill_next
     ; align 2
     db 144
-loc_26166:
+_fill_wheel0:
     mov     [bp+var_4], 0
-loc_2616B:
+_fill_wheel:
     mov     ax, [bp+var_4]
     shl     ax, 1
     shl     ax, 1
     mov     [bp+var_40], ax
     mov     bx, ax
-    add     bx, word ptr [bp+var_38]
-    mov     es, word ptr [bp+var_38+2]
+    add     bx, word ptr [bp+var_polyinfoptr]
+    mov     es, word ptr [bp+var_polyinfoptr+2]
     mov     ax, es:[bx+6]
     mov     dx, es:[bx+8]
     mov     bx, [bp+var_40]
@@ -2284,7 +2268,7 @@ loc_2616B:
     mov     [bx-30h], dx
     inc     [bp+var_4]
     cmp     [bp+var_4], 4
-    jb      short loc_2616B ; b4 every car0 render
+    jb      short _fill_wheel; b4 every car0 render
     mov     ax, [bp+var_6]  ; material index
     shl     ax, 1
     add     ax, material_clrlist_ptr_cpy
@@ -2301,22 +2285,22 @@ loc_2616B:
     jmp     short loc_2615F
     ; align 2
     db 144
-loc_261C0:
+_fill_sphere:
     push    [bp+var_8]
-    les     bx, [bp+var_38]
+    les     bx, [bp+var_polyinfoptr]
     push    word ptr es:[bx+0Ah]
     push    word ptr es:[bx+8]
     push    word ptr es:[bx+6]
     call    preRender_sphere
-    jmp     loc_260A8
-loc_261DA:
+    jmp     _fill_next_eop8
+_fill_pixel:
     push    [bp+var_8]
-    les     bx, [bp+var_38]
+    les     bx, [bp+var_polyinfoptr]
     push    word ptr es:[bx+8]
     push    word ptr es:[bx+6]
     call    putpixel_single_maybe
-    jmp     loc_2607F
-loc_261F0:
+    jmp     _fill_next_eop6
+_get_a_poly_info_done:
     push    cs
     call near ptr sub_24DE6
     pop     si
@@ -2539,12 +2523,12 @@ loc_26372:
     pop     bp
     retf
 mat_rot_zxy endp
-sub_2637A proc far
+rect_adjust_unk proc far
     var_6 = word ptr -6
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
-    arg_2 = word ptr 8
+    arg_rectptr = word ptr 8
 
     push    bp
     mov     bp, sp
@@ -2554,39 +2538,38 @@ sub_2637A proc far
     mov     bx, [bp+arg_0]
     mov     si, [bx]
     mov     di, [bx+2]
-    mov     bx, [bp+arg_2]
-    cmp     [bx], si
+    mov     bx, [bp+arg_rectptr]
+    cmp     [bx+RECTANGLE.rc_left], si
     jle     short loc_26393
-    mov     [bx], si
+    mov     [bx+RECTANGLE.rc_left], si
 loc_26393:
     lea     ax, [si+1]
     mov     [bp+var_6], ax
-    mov     bx, [bp+arg_2]
-    cmp     [bx+2], ax
+    mov     bx, [bp+arg_rectptr]
+    cmp     [bx+RECTANGLE.rc_top], ax
     jge     short loc_263A4
-    mov     [bx+2], ax
+    mov     [bx+RECTANGLE.rc_top], ax
 loc_263A4:
-    mov     bx, [bp+arg_2]
-    cmp     [bx+4], di
+    mov     bx, [bp+arg_rectptr]
+    cmp     [bx+RECTANGLE.rc_right], di
     jle     short loc_263AF
-    mov     [bx+4], di
+    mov     [bx+RECTANGLE.rc_right], di
 loc_263AF:
     lea     ax, [di+1]
     mov     [bp+var_6], ax
-    mov     bx, [bp+arg_2]
-    cmp     [bx+6], ax
+    mov     bx, [bp+arg_rectptr]
+    cmp     [bx+RECTANGLE.rc_bottom], ax
     jge     short loc_263C0
-    mov     [bx+6], ax
+    mov     [bx+RECTANGLE.rc_bottom], ax
 loc_263C0:
     pop     si
     pop     di
     mov     sp, bp
     pop     bp
     retf
-sub_2637A endp
+rect_adjust_unk endp
 sub_263C6 proc far
-    var_E = word ptr -14
-    var_C = word ptr -12
+    var_y = dword ptr -14
     var_A = byte ptr -10
     var_8 = word ptr -8
     var_6 = word ptr -6
@@ -2606,8 +2589,8 @@ sub_263C6 proc far
     call    _abs
     add     sp, 2
     cwd
-    mov     [bp+var_E], ax
-    mov     [bp+var_C], dx
+    mov     word ptr [bp+var_y], ax
+    mov     word ptr [bp+var_y+2], dx
     mov     bx, [bp+arg_vec]
     push    [bx+VECTOR.vz]  ; int
     call    _abs
@@ -2628,8 +2611,8 @@ sub_263C6 proc far
     jnz     short loc_2643A
     cmp     word ptr cos80+2, dx
     jnz     short loc_2643A
-    mov     ax, [bp+var_E]
-    mov     dx, [bp+var_C]
+    mov     ax, word ptr [bp+var_y]
+    mov     dx, word ptr [bp+var_y+2]
     cmp     [bp+var_2], dx
     jg      short loc_2646E
     jl      short loc_26435
@@ -2641,24 +2624,18 @@ loc_26435:
 loc_2643A:
     push    word ptr sin80+2
     push    word ptr sin80
-    push    [bp+var_C]
-    push    [bp+var_E]
+    push    word ptr [bp+var_y+2]
+    push    word ptr [bp+var_y]
     call    __aFlmul
     push    word ptr cos80+2
     push    word ptr cos80
     push    [bp+var_2]
-loc_26458:
     push    [bp+var_4]
-loc_2645B:
     mov     si, ax
-loc_2645D:
     mov     di, dx
-loc_2645F:
     call    __aFlmul
     cmp     dx, di
-loc_26466:
     jg      short loc_2646E
-loc_26468:
     jl      short loc_26435
     cmp     ax, si
     jb      short loc_26435

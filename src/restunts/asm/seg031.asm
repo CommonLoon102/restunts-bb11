@@ -47,8 +47,8 @@ seg031 segment byte public 'STUNTSC' use16
     assume cs:seg031
     assume es:nothing, ss:nothing, ds:dseg
     public ported_file_load_shape2d_nofatal2_
-    public sub_39E24
-    public sub_39E4C
+    public file_combine_and_find
+    public file_find_next_alt
     public nullsub_1
     public nullsub_2
     public init_video
@@ -71,7 +71,7 @@ ported_file_load_shape2d_nofatal2_ proc far
     pop     bp
     retf
 ported_file_load_shape2d_nofatal2_ endp
-sub_39E24 proc far
+file_combine_and_find proc far
     var_50 = byte ptr -80
      s = byte ptr 0
      r = byte ptr 2
@@ -107,12 +107,12 @@ loc_39E48:
 loc_39E4A:
     pop     bp
     retf
-sub_39E24 endp
-sub_39E4C proc far
+file_combine_and_find endp
+file_find_next_alt proc far
 
     call    file_find_next
     retf
-sub_39E4C endp
+file_find_next_alt endp
 nullsub_1 proc far
 
     retf
@@ -458,7 +458,7 @@ loc_3A156:
     push    ax
     lea     ax, [bp+var_1A]
     push    ax
-    call    sub_2637A
+    call    rect_adjust_unk
     add     sp, 4
     inc     di
     cmp     di, 190h
@@ -483,7 +483,7 @@ loc_3A191:
     push    ax
     lea     ax, [bp+var_1A]
     push    ax
-    call    sub_2637A
+    call    rect_adjust_unk
     add     sp, 4
     jmp     short loc_3A190
     ; align 2

@@ -75,6 +75,7 @@ loc_3B0DE:
     push    [bp+var_8]
     push    [bp+arg_2]
     push    [bp+arg_0]
+loc_3B0E7:
     call    file_get_shape2d
     add     sp, 6
     mov     word ptr [bp+var_4], ax
@@ -95,6 +96,7 @@ loc_3B118:
     inc     [bp+var_8]
 loc_3B11B:
     mov     ax, [bp+var_A]
+loc_3B11E:
     cmp     [bp+var_8], ax
     jl      short loc_3B0DE
     mov     ax, [bp+var_6]

@@ -84,7 +84,7 @@ seg008 segment byte public 'STUNTSC' use16
     public show_waiting
     public print_int_as_string_maybe
     public sub_29772
-    public sub_29786
+    public mouse_timer_sprite_unk
     public ported_file_load_audiores_
     public audio_unload
     public font_set_fontdef2
@@ -586,7 +586,7 @@ loc_277F6:
     mov     ax, [bp+arg_8]
     sub     ax, 4
     push    ax
-    call    sub_361BC
+    call    sprite_1_unk4
     add     sp, 0Ah
     sub     ax, ax
     push    ax
@@ -1422,7 +1422,7 @@ loc_28036:
     mov     ax, offset asc_3EB96; "*"
     push    ax
     push    word ptr [bp+arg_0]; char *
-    call    sub_39E24
+    call    file_combine_and_find
     add     sp, 6
     mov     word ptr [bp+var_6E8], ax
     or      ax, ax
@@ -1459,7 +1459,7 @@ loc_28094:
     add     sp, 4
     inc     [bp+var_714]
 loc_280A8:
-    call    sub_39E4C
+    call    file_find_next_alt
     mov     word ptr [bp+var_6E8], ax
     or      ax, ax
     jz      short loc_280E2
@@ -4241,7 +4241,7 @@ sub_29772 proc far
     ; align 2
     db 144
 sub_29772 endp
-sub_29786 proc far
+mouse_timer_sprite_unk proc far
     var_6 = word ptr -6
      s = byte ptr 0
      r = byte ptr 2
@@ -4300,7 +4300,7 @@ loc_297D8:
     mov     bx, ax
     add     bx, [bp+arg_2]
     push    word ptr [bx]
-    call    sub_361BC
+    call    sprite_1_unk4
     add     sp, 0Ah
     push    cs
     call near ptr mouse_draw_transparent_check
@@ -4311,7 +4311,7 @@ loc_297F4:
     mov     sp, bp
     pop     bp
     retf
-sub_29786 endp
+mouse_timer_sprite_unk endp
 ported_file_load_audiores_ proc far
     var_4 = word ptr -4
     var_2 = word ptr -2

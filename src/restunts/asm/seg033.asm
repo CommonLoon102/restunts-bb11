@@ -73,6 +73,7 @@ loc_3A97C:
     les     bx, mcgawndsprite
     push    word ptr es:[bx+2]
     push    word ptr es:[bx]
+loc_3A997:
     call    sprite_putimage
     add     sp, 4
     retf

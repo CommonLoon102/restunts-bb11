@@ -3733,7 +3733,7 @@ loc_23DAB:
     push    ax
     lea     ax, [di+9Ah]
     push    ax
-    call    sub_361BC
+    call    sprite_1_unk4
     add     sp, 0Ah
 loc_23E1A:
     mov     al, byte_4432A
@@ -3896,7 +3896,7 @@ loc_23F6C:
     push    word_3EA1A[bx]
     push    word_3EA2C[bx]
     push    word_3EA08[bx]
-    call    sub_361BC
+    call    sprite_1_unk4
     add     sp, 0Ah
 loc_23FB0:
     call    mouse_draw_transparent_check

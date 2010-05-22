@@ -1,7 +1,7 @@
 seg031 segment byte public 'STUNTSC' use16
     extrn ported_file_load_shape2d_nofatal2_:proc
-    extrn sub_39E24:proc
-    extrn sub_39E4C:proc
+    extrn file_combine_and_find:proc
+    extrn file_find_next_alt:proc
     extrn nullsub_1:proc
     extrn nullsub_2:proc
     extrn init_video:proc

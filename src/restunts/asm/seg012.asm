@@ -71,7 +71,7 @@ seg012 segment byte public 'STUNTSC' use16
     public sub_2F35C
     public set_criterr_handler
     public sub_2F3BC
-    public sub_2F3DA
+    public preRender_unk
     public sub_2F424
     public sub_2F436
     public word_2F448
@@ -233,7 +233,7 @@ seg012 segment byte public 'STUNTSC' use16
     public sub_3219D
     public sub_322F3
     public loc_32334
-    public sub_323D9
+    public vector_to_point
     public ported_sprite_free_wnd_
     public ported_file_write_nofatal_
     public ported_file_write_fatal_
@@ -289,7 +289,7 @@ seg012 segment byte public 'STUNTSC' use16
     public video_clear_color
     public ported_sprite_clear_1_color_
     public nopsub_33330
-    public sub_33344
+    public draw_unknown_lines
     public putpixel_line1_maybe
     public off_3340A
     public sprite_1_unk2
@@ -353,7 +353,7 @@ seg012 segment byte public 'STUNTSC' use16
     public loc_345E5
     public video_set_palette
     public loc_346A8
-    public putpixel_3DShapes_maybe
+    public draw_filled_lines
     public sprite_clear_shape_alt
     public sprite_clear_shape
     public loc_34799
@@ -363,7 +363,7 @@ seg012 segment byte public 'STUNTSC' use16
     public lineoffsets
     public font_set_unk
     public set_fontdefseg
-    public draw_patterned
+    public draw_patterned_lines
     public ported_sprite_make_wnd_
     public next_wnd_def
     public wnd_defs
@@ -1603,7 +1603,7 @@ loc_2F3D8:
     pop     ds
     retf
 sub_2F3BC endp
-sub_2F3DA proc far
+preRender_unk proc far
     var_A = byte ptr -10
      s = byte ptr 0
      r = byte ptr 2
@@ -1637,12 +1637,12 @@ loc_2F3FD:
     mov     [bp+arg_2], ax
     mov     ax, [bp+arg_6]
     mov     [bp+arg_4], ax
-    mov     ax, offset sub_33344
+    mov     ax, offset draw_unknown_lines
     mov     spritefunc, ax
     mov     ax, offset preRender_line
     mov     imagefunc, ax
     jmp     loc_3180A
-sub_2F3DA endp
+preRender_unk endp
 sub_2F424 proc far
     var_A = byte ptr -10
      s = byte ptr 0
@@ -5241,6 +5241,7 @@ loc_30755:
     jle     short loc_30777
     dec     word_3FB2E
     jz      short loc_3076D
+loc_30761:
     cmp     ax, word_3FB2C
     jge     short loc_30789
     mov     word_3FB2C, ax
@@ -7482,7 +7483,7 @@ preRender_default_alt proc far
     push    di
     mov     [bp+var_A], 0
 loc_317CE:
-    mov     ax, offset putpixel_3DShapes_maybe
+    mov     ax, offset draw_filled_lines
     mov     spritefunc, ax
     mov     ax, offset preRender_line
     mov     imagefunc, ax
@@ -7531,7 +7532,7 @@ preRender_wheel_helper4 proc far
     push    di
     mov     [bp+var_A], 0
 loc_317FB:
-    mov     ax, offset putpixel_3DShapes_maybe
+    mov     ax, offset draw_filled_lines
     mov     spritefunc, ax
     mov     ax, offset preRender_line
     mov     imagefunc, ax
@@ -7748,6 +7749,8 @@ loc_319C7:
     retf
 preRender_wheel_helper4 endp
 sub_319CD proc near
+     s = byte ptr 0
+     r = byte ptr 2
 
     mov     cx, [si+14h]
     or      cx, cx
@@ -8455,7 +8458,7 @@ locret_31F38:
     push    si
     push    di
     mov     byte ptr [bp-0Ah], 1
-    mov     ax, 5C9Ch
+    mov     ax, offset draw_filled_lines
     mov     spritefunc, ax
     mov     ax, 49A0h
     mov     imagefunc, ax
@@ -8467,7 +8470,7 @@ locret_31F38:
     push    si
     push    di
     mov     byte ptr [bp-0Ah], 0
-    mov     ax, 5C9Ch
+    mov     ax, offset draw_filled_lines
     mov     spritefunc, ax
     mov     ax, 49A0h
     mov     imagefunc, ax
@@ -9002,22 +9005,22 @@ loc_323B4:
     pop     bp
     retf
 sub_322F3 endp
-sub_323D9 proc far
+vector_to_point proc far
      s = byte ptr 0
      r = byte ptr 2
-    arg_0 = word ptr 6
-    arg_2 = word ptr 8
+    arg_vec = word ptr 6
+    arg_point2dout = word ptr 8
 
     push    bp
     mov     bp, sp
     push    di
     push    si
-    mov     si, [bp+arg_0]
-    mov     di, [bp+arg_2]
-    mov     cx, [si+4]
+    mov     si, [bp+arg_vec]
+    mov     di, [bp+arg_point2dout]
+    mov     cx, [si+VECTOR.vz]
     or      cx, cx
     jle     short loc_32431
-    mov     ax, [si]
+    mov     ax, [si+VECTOR.vx]
     or      ax, ax
     jl      short loc_3240F
     mul     word_403BA
@@ -9073,7 +9076,7 @@ loc_32448:
     mov     ax, 8300h
     mov     [di], ax
 loc_3244D:
-    mov     ax, [si+2]
+    mov     ax, [si+VECTOR.vy]
     or      ax, ax
     jl      short loc_32476
     mul     word_403BC
@@ -9122,7 +9125,7 @@ loc_324A2:
     mov     ax, 7D00h
     mov     [di+2], ax
     jmp     short loc_32472
-sub_323D9 endp
+vector_to_point endp
 ported_sprite_free_wnd_ proc far
      s = byte ptr 0
      r = byte ptr 2
@@ -9795,7 +9798,7 @@ loc_328A8:
     mov     [bp+arg_0], ax
     mov     ax, [bp+arg_4]
     mov     [bp+arg_2], ax
-    mov     ax, offset draw_patterned
+    mov     ax, offset draw_patterned_lines
     mov     spritefunc, ax
     mov     ax, offset preRender_line
     mov     imagefunc, ax
@@ -11212,7 +11215,7 @@ loc_331E9:
     lea     ax, [bp+var_3DA]
     add     ax, dx
     push    ax
-    call    putpixel_3DShapes_maybe
+    call    draw_filled_lines
     add     sp, 0Ah
     pop     di
     pop     si
@@ -11398,7 +11401,7 @@ nopsub_33330 proc far
     ; align 2
     db 144
 nopsub_33330 endp
-sub_33344 proc far
+draw_unknown_lines proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -11467,7 +11470,7 @@ loc_333B8:
     inc     di
     loop    loc_33393
     jmp     short loc_3339A
-sub_33344 endp
+draw_unknown_lines endp
 putpixel_line1_maybe proc far
     var_E = byte ptr -14
     var_A = word ptr -10
@@ -14225,48 +14228,48 @@ loc_346A8:
     ; align 2
     db 0
 video_set_palette endp
-putpixel_3DShapes_maybe proc far
+draw_filled_lines proc far
      s = byte ptr 0
      r = byte ptr 2
-    arg_0 = word ptr 6
-    arg_2 = word ptr 8
-    arg_4 = word ptr 10
-    arg_6 = word ptr 12
-    arg_8 = word ptr 14
+    arg_x1arr = word ptr 6
+    arg_x2arr = word ptr 8
+    arg_y = word ptr 10
+    arg_numlines = word ptr 12
+    arg_color = word ptr 14
 
     push    bp
     mov     bp, sp
     sub     sp, 2
     push    si
     push    di
-    cmp     [bp+arg_6], 0
-    jz      short loc_3470C
+    cmp     [bp+arg_numlines], 0
+    jz      short loc_3470C ; if arg6 == 0, return
     cld
-    mov     si, [bp+arg_4]
+    mov     si, [bp+arg_y]
     shl     si, 1
     add     si, cs:sprite1.sprite_lineofs
     mov     ax, word ptr cs:sprite1.sprite_bitmapptr+2
     mov     es, ax
-    mov     ax, [bp+arg_8]
+    mov     ax, [bp+arg_color]
     mov     ah, al
 loc_346E0:
-    mov     bx, [bp+arg_2]
+    mov     bx, [bp+arg_x2arr]
     mov     cx, [bx]
-    mov     bx, [bp+arg_0]
+    mov     bx, [bp+arg_x1arr]
     mov     bx, [bx]
     sub     cx, bx
     inc     cx
     jle     short loc_346FC
-    mov     di, cs:[si]
+    mov     di, cs:[si]     ; si = offset in lineofs table, di = y offset in bitmapptr
     add     di, bx
     test    cx, 0FFF8h
-    jnz     short loc_34712
-    rep stosb
+    jnz     short loc_34712 ; jump if (cx & 0xFFF8), ie jump if cx >= 8.
+    rep stosb               ; rep count = cx = (arg2->member0 - arg0->member0) + 1
 loc_346FC:
-    add     [bp+arg_2], 2
-    add     [bp+arg_0], 2
+    add     [bp+arg_x2arr], 2
+    add     [bp+arg_x1arr], 2
     add     si, 2
-    dec     [bp+arg_6]
+    dec     [bp+arg_numlines]
     jg      short loc_346E0
 loc_3470C:
     pop     di
@@ -14275,7 +14278,7 @@ loc_3470C:
     pop     bp
     retf
 loc_34712:
-    test    di, 1
+    test    di, 1           ; looks like its figuring out which alignment optimizations to use
     jnz     short loc_34725
     shr     cx, 1
     jb      short loc_34720
@@ -14316,7 +14319,7 @@ loc_34730:
     jmp     short loc_34799
     ; align 2
     db 144
-putpixel_3DShapes_maybe endp
+draw_filled_lines endp
 sprite_clear_shape_alt proc far
     var_4 = word ptr -4
     var_2 = word ptr -2
@@ -14927,7 +14930,7 @@ set_fontdefseg proc far
     ; align 2
     db 144
 set_fontdefseg endp
-draw_patterned proc far
+draw_patterned_lines proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -14996,7 +14999,7 @@ loc_34C06:
     jmp     short loc_34BE8
     ; align 2
     db 0
-draw_patterned endp
+draw_patterned_lines endp
 ported_sprite_make_wnd_ proc far
     var_8 = word ptr -8
     var_6 = word ptr -6

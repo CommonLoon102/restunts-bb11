@@ -1601,7 +1601,7 @@ run_menu proc far
     mov     [bp+var_4], ax
     mov     [bp+var_2], dx
     call    sprite_copy_wnd_to_1
-    mov     ax, 27Ah
+    mov     ax, offset aScrn; "scrn"
     push    ax
     push    [bp+var_2]
     push    [bp+var_4]
@@ -1646,7 +1646,7 @@ loc_10FEF:
     mov     al, [bp+var_10]
     cbw
     push    ax
-    call    sub_29786
+    call    mouse_timer_sprite_unk
     add     sp, 0Eh
     mov     [bp+var_8], ax
     push    ax
@@ -2051,7 +2051,7 @@ loc_113E5:
     mov     al, [bp+var_16]
     cbw
     push    ax
-    call    sub_29786
+    call    mouse_timer_sprite_unk
     add     sp, 0Eh
     mov     [bp+var_C], ax
     add     word_449F2, ax
@@ -2976,47 +2976,42 @@ run_car_menu proc far
     var_100 = word ptr -256
     var_FE = word ptr -254
     var_FC = dword ptr -252
-    var_F8 = word ptr -248
+    var_carpospolarangle = word ptr -248
     var_F6 = byte ptr -246
-    var_F4 = word ptr -244
+    var_findfile = word ptr -244
     var_F2 = byte ptr -242
-    var_F0 = byte ptr -240
-    var_EE = byte ptr -238
-    var_ED = byte ptr -237
-    var_EC = byte ptr -236
-    var_EB = byte ptr -235
-    var_EA = byte ptr -234
-    var_4C = word ptr -76
+    var_caridindex = byte ptr -240
+    var_carids = byte ptr -238
+    var_rotationdelta = word ptr -76
     var_4A = word ptr -74
     var_48 = word ptr -72
     var_46 = byte ptr -70
     var_44 = word ptr -68
-    var_42 = dword ptr -66
+    var_42wnd = dword ptr -66
     var_3E = byte ptr -62
     var_3C = word ptr -60
     var_3A = word ptr -58
-    var_38 = byte ptr -56
+    var_prevcaridindex = byte ptr -56
     var_36 = word ptr -54
     var_34 = word ptr -52
     var_transshape = TRANSFORMEDSHAPE ptr -50
-    var_1E = word ptr -30
+    var_rotation = word ptr -30
     var_1C = byte ptr -28
     var_1A = word ptr -26
     var_18 = word ptr -24
     var_16 = word ptr -22
     var_14 = word ptr -20
     var_12 = word ptr -18
-    var_10 = byte ptr -16
-    var_8 = word ptr -8
+    var_10 = RECTANGLE ptr -16
+    var_carspeed = word ptr -8
     var_6 = byte ptr -6
-    var_4 = word ptr -4
-    var_2 = word ptr -2
+    var_carres = dword ptr -4
      s = byte ptr 0
      r = byte ptr 2
-    arg_0 = word ptr 6
-    arg_2 = word ptr 8
-    arg_4 = word ptr 10
-    arg_6 = word ptr 12
+    arg_caridptr = word ptr 6
+    arg_materialofs = word ptr 8
+    arg_transmissionofs = word ptr 10
+    arg_opponenttype = word ptr 12
 
     push    bp
     mov     bp, sp
@@ -3025,7 +3020,7 @@ run_car_menu proc far
     push    si
     push    si
     lea     di, [bp+var_transshape]
-    mov     si, offset unk_3BB5E
+    mov     si, offset carmenu_carpos
     push    ss
     pop     es
     movsw
@@ -3057,9 +3052,9 @@ loc_11C86:
     push    ax
     sub     ax, ax
     push    ax              ; char *
-    call    sub_39E24
+    call    file_combine_and_find
     add     sp, 6
-    mov     [bp+var_F4], ax
+    mov     [bp+var_findfile], ax
     or      ax, ax
     jnz     short loc_11CB8
     call    nullsub_1
@@ -3069,20 +3064,20 @@ loc_11C86:
     pop     bp
     retf
 loc_11CB8:
-    mov     bx, [bp+var_F4]
+    mov     bx, [bp+var_findfile]
     mov     al, [bx+3]
-    mov     [bp+var_EE], al
+    mov     [bp+var_carids], al
     mov     al, [bx+4]
-    mov     [bp+var_ED], al
+    mov     [bp+var_carids+1], al
     mov     al, [bx+5]
-    mov     [bp+var_EC], al
+    mov     [bp+var_carids+2], al
     mov     al, [bx+6]
-    mov     [bp+var_EB], al
-    mov     [bp+var_EA], 0
+    mov     [bp+var_carids+3], al
+    mov     [bp+var_carids+4], 0
     mov     [bp+var_46], 1
 loc_11CE1:
-    call    sub_39E4C
-    mov     [bp+var_F4], ax
+    call    file_find_next_alt
+    mov     [bp+var_findfile], ax
     or      ax, ax
     jz      short loc_11D44
     mov     al, [bp+var_46]
@@ -3093,25 +3088,25 @@ loc_11CE1:
     add     ax, cx
     mov     di, ax
     add     di, bp
-    mov     bx, [bp+var_F4]
+    mov     bx, [bp+var_findfile]
     mov     al, [bx+3]
-    mov     [di-0EEh], al
-    mov     bx, [bp+var_F4]
+    mov     [di+var_carids], al
+    mov     bx, [bp+var_findfile]
     mov     al, [bx+4]
-    mov     [di-0EDh], al
-    mov     bx, [bp+var_F4]
+    mov     [di+var_carids+1], al
+    mov     bx, [bp+var_findfile]
     mov     al, [bx+5]
-    mov     [di-0ECh], al
-    mov     bx, [bp+var_F4]
+    mov     [di+var_carids+2], al
+    mov     bx, [bp+var_findfile]
     mov     al, [bx+6]
-    mov     [di-0EBh], al
+    mov     [di+var_carids+3], al
     mov     al, [bp+var_46]
     cbw
     mov     di, ax
     shl     di, 1
     shl     di, 1
     add     di, ax
-    mov     [bp+di+var_EA], 0
+    mov     [bp+di+var_carids+4], 0
     inc     [bp+var_46]
     cmp     [bp+var_46], 20h ; ' '
     jnz     short loc_11CE1
@@ -3137,14 +3132,14 @@ loc_11D69:
     shl     di, 1
     shl     di, 1
     add     di, ax
-    lea     ax, [bp+di+var_EE]
+    lea     ax, [bp+di+var_carids]
     push    ax
     mov     di, [bp+var_4A]
     mov     ax, di
     shl     di, 1
     shl     di, 1
     add     di, ax
-    lea     ax, [bp+di+var_EE]
+    lea     ax, [bp+di+var_carids]
     push    ax              ; char *
     call    _strcmp
     add     sp, 4
@@ -3155,7 +3150,7 @@ loc_11D69:
     shl     di, 1
     shl     di, 1
     add     di, ax
-    lea     ax, [bp+di+var_EE]
+    lea     ax, [bp+di+var_carids]
     push    ax
     mov     ax, offset resID_byte1
     push    ax              ; char *
@@ -3166,14 +3161,14 @@ loc_11D69:
     shl     di, 1
     shl     di, 1
     add     di, ax
-    lea     ax, [bp+di+var_EE]
+    lea     ax, [bp+di+var_carids]
     push    ax
     mov     di, [bp+var_4A]
     mov     ax, di
     shl     di, 1
     shl     di, 1
     add     di, ax
-    lea     ax, [bp+di+var_EE]
+    lea     ax, [bp+di+var_carids]
     push    ax              ; char *
     call    _strcpy
     add     sp, 4
@@ -3184,7 +3179,7 @@ loc_11D69:
     shl     di, 1
     shl     di, 1
     add     di, ax
-    lea     ax, [bp+di+var_EE]
+    lea     ax, [bp+di+var_carids]
     push    ax              ; char *
     call    _strcpy
     add     sp, 4
@@ -3204,7 +3199,7 @@ loc_11DFB:
     ; align 2
     db 144
 loc_11E10:
-    mov     [bp+var_F0], 0
+    mov     [bp+var_caridindex], 0
     mov     [bp+var_F6], 0
     jmp     short loc_11E20
 loc_11E1C:
@@ -3221,21 +3216,21 @@ loc_11E20:
     add     ax, cx
     mov     di, ax
     add     di, bp
-    mov     bx, [bp+arg_0]
-    mov     al, [di-0EEh]
+    mov     bx, [bp+arg_caridptr]
+    mov     al, [di+var_carids]
     cmp     [bx], al
     jnz     short loc_11E1C
-    mov     al, [di-0EDh]
+    mov     al, [di+var_carids+1]
     cmp     [bx+1], al
     jnz     short loc_11E1C
-    mov     al, [di-0ECh]
+    mov     al, [di+var_carids+2]
     cmp     [bx+2], al
     jnz     short loc_11E1C
-    mov     al, [di-0EBh]
+    mov     al, [di+var_carids+3]
     cmp     [bx+3], al
     jnz     short loc_11E1C
     mov     al, [bp+var_F6]
-    mov     [bp+var_F0], al
+    mov     [bp+var_caridindex], al
 loc_11E68:
     mov     waitflag, 5Ah ; 'Z'
     mov     [bp+var_3E], 0FFh
@@ -3246,7 +3241,7 @@ loc_11E68:
     add     sp, 2
     mov     [bp+var_36], ax
     mov     [bp+var_34], dx
-    cmp     [bp+arg_6], 0
+    cmp     [bp+arg_opponenttype], 0
     jnz     short loc_11EA2
     mov     ax, offset aMisc_0; "misc"
     push    ax
@@ -3255,20 +3250,20 @@ loc_11E68:
     mov     word ptr miscptr, ax
     mov     word ptr miscptr+2, dx
 loc_11EA2:
-    cmp     [bp+arg_6], 0
+    cmp     [bp+arg_opponenttype], 0
     jnz     short loc_11EAB
     jmp     loc_11F4A
 loc_11EAB:
-    mov     word_3BB58, 0F0h ; 'ð'
+    mov     stru_3BB56.rc_top, 0F0h ; 'ð'
     cmp     video_flag5_is0, 0
     jnz     short loc_11EBB
     jmp     loc_11F50
 loc_11EBB:
-    mov     bx, [bp+arg_6]
+    mov     bx, [bp+arg_opponenttype]
     shl     bx, 1
     shl     bx, 1
-    mov     ax, word_45D22[bx]
-    mov     dx, word_45D24[bx]
+    mov     ax, word ptr oppresources[bx]
+    mov     dx, word ptr (oppresources+2)[bx]
     mov     word ptr [bp+var_10C], ax
     mov     word ptr [bp+var_10C+2], dx
     mov     ax, 0Fh
@@ -3278,35 +3273,35 @@ loc_11EBB:
     push    word ptr es:[bx]
     call    sprite_make_wnd
     add     sp, 6
-    mov     word ptr [bp+var_42], ax
-    mov     word ptr [bp+var_42+2], dx
+    mov     word ptr [bp+var_42wnd], ax
+    mov     word ptr [bp+var_42wnd+2], dx
     call    setup_mcgawnd2
     sub     ax, ax
     push    ax
     call    sprite_clear_1_color
     add     sp, 2
-    mov     al, byte ptr [bp+arg_6]
+    mov     al, byte ptr [bp+arg_opponenttype]
     add     al, 30h ; '0'
     cbw
     push    ax
-    push    word_44A02
-    push    word_44A00
+    push    word ptr opp_res+2
+    push    word ptr opp_res
     call    nullsub_2
     add     sp, 6
     sub     ax, ax
     push    ax
     push    ax
-    mov     bx, [bp+arg_6]
+    mov     bx, [bp+arg_opponenttype]
     shl     bx, 1
     shl     bx, 1
-    push    word_45D24[bx]
-    push    word_45D22[bx]
+    push    word ptr (oppresources+2)[bx]
+    push    word ptr oppresources[bx]
     call    sub_343B0
     add     sp, 8
     sub     ax, ax
     push    ax
     push    ax
-    les     bx, [bp+var_42]
+    les     bx, [bp+var_42wnd]
     push    word ptr es:[bx+2]
     push    word ptr es:[bx]
     call    sprite_clear_shape_alt
@@ -3315,13 +3310,13 @@ loc_11EBB:
     ; align 2
     db 144
 loc_11F4A:
-    mov     word_3BB58, 140h
+    mov     stru_3BB56.rc_top, 140h
 loc_11F50:
-    mov     [bp+var_38], 0FFh
-    mov     [bp+var_1E], 0
+    mov     [bp+var_prevcaridindex], 0FFh
+    mov     [bp+var_rotation], 0
     mov     [bp+var_106], 0
     call    sub_29772
-    mov     [bp+var_4C], 0
+    mov     [bp+var_rotationdelta], 0
     mov     [bp+var_F2], 0FFh
     mov     ax, 64h ; 'd'
     push    ax
@@ -3345,33 +3340,33 @@ loc_11F50:
     mov     word ptr wndsprite, ax
     mov     word ptr wndsprite+2, dx
 loc_11FA5:
-    mov     al, [bp+var_38]
-    cmp     [bp+var_F0], al
+    mov     al, [bp+var_prevcaridindex]
+    cmp     [bp+var_caridindex], al
     jnz     short loc_11FB1
     jmp     loc_12405
 loc_11FB1:
     cmp     al, 0FFh
     jz      short loc_11FC8
-    push    [bp+var_2]
-    push    [bp+var_4]
+    push    word ptr [bp+var_carres+2]
+    push    word ptr [bp+var_carres]
     call    unload_resource
     add     sp, 4
     call    shape3d_free_car_shapes
 loc_11FC8:
     mov     ax, offset gameconfig.game_opponentcarid
     push    ax
-    mov     al, [bp+var_F0]
+    mov     al, [bp+var_caridindex]
     cbw
     mov     cx, ax
     shl     ax, 1
     shl     ax, 1
     add     ax, cx
     add     ax, bp
-    sub     ax, 0EEh ; 'î'
+    sub     ax, 0EEh ; 'î'  ; var_EE = var_carids
     push    ax
     call    shape3d_load_car_shapes
     add     sp, 4
-    mov     al, [bp+var_F0]
+    mov     al, [bp+var_caridindex]
     cbw
     mov     cx, ax
     shl     ax, 1
@@ -3379,32 +3374,32 @@ loc_11FC8:
     add     ax, cx
     mov     di, ax
     add     di, bp
-    mov     al, [di-0EEh]
+    mov     al, [di+var_carids]
     mov     byte ptr aCarcoun+3, al
-    mov     al, [di-0EDh]
+    mov     al, [di+var_carids+1]
     mov     byte ptr aCarcoun+4, al
-    mov     al, [di-0ECh]
+    mov     al, [di+var_carids+2]
     mov     byte ptr aCarcoun+5, al
-    mov     al, [di-0EBh]
+    mov     al, [di+var_carids+3]
     mov     byte ptr aCarcoun+6, al
     mov     ax, offset aCarcoun; "carcoun"
     push    ax
     call    file_load_resfile
     add     sp, 2
-    mov     [bp+var_4], ax
-    mov     [bp+var_2], dx
+    mov     word ptr [bp+var_carres], ax
+    mov     word ptr [bp+var_carres+2], dx
     sub     ax, ax
     push    ax
     push    dx
-    push    [bp+var_4]
+    push    word ptr [bp+var_carres]
     call    setup_aero_trackdata
     add     sp, 6
     call    sprite_copy_wnd_to_1_clear
     sub     ax, ax
     push    ax
-    push    word_407F8
-    push    word_407F6
-    push    word_407F4
+    push    word_407F8      ; 7
+    push    word_407F6      ; 8
+    push    word_407F4      ; F
     mov     ax, 61h ; 'a'
     push    ax
     mov     ax, 140h
@@ -3589,7 +3584,7 @@ loc_120A3:
     push    ax
     call    draw_button
     add     sp, 14h
-    mov     bx, [bp+arg_4]
+    mov     bx, [bp+arg_transmissionofs]
     cmp     byte ptr [bx], 0
     jz      short loc_12226
     mov     ax, offset aBau ; "bau"
@@ -3671,12 +3666,12 @@ loc_122CE:
     mov     ax, state.playerstate.car_speed
     mov     cl, 8
     shr     ax, cl
-    mov     [bp+var_8], ax
+    mov     [bp+var_carspeed], ax
     mov     ax, 96h ; '–'
     cwd
     push    dx
     push    ax
-    mov     ax, [bp+var_8]
+    mov     ax, [bp+var_carspeed]
     cwd
     mov     cl, 6
 loc_122FB:
@@ -3716,8 +3711,8 @@ loc_12344:
     add     sp, 4
     mov     ax, offset aDes_1; "des"
     push    ax
-    push    [bp+var_2]
-    push    [bp+var_4]
+    push    word ptr [bp+var_carres+2]
+    push    word ptr [bp+var_carres]
     call    locate_text_res
     add     sp, 6
     mov     word ptr [bp+var_FC], ax
@@ -3738,7 +3733,7 @@ loc_1237E:
     push    [bp+var_48]
     mov     ax, 58h ; 'X'
     push    ax
-    mov     ax, 0AC74h
+    mov     ax, offset resID_byte1
     push    ax
     call    font_draw_text
     add     sp, 6
@@ -3766,8 +3761,8 @@ loc_123CB:
     mov     [bp+var_108], 0
     mov     [bp+var_6], 3
 loc_12405:
-    mov     ax, [bp+var_4C]
-    add     [bp+var_1E], ax
+    mov     ax, [bp+var_rotationdelta]
+    add     [bp+var_rotation], ax
     mov     al, [bp+var_6]
     cbw
     or      ax, ax
@@ -3780,23 +3775,23 @@ loc_1241B:
     jz      short loc_12423
     jmp     loc_124DE
 loc_12423:
-    push    word_3BB62
-    push    word_3BB60
+    push    carmenu_carpos.vz
+    push    carmenu_carpos.vy
     call    polarAngle
     add     sp, 4
-    mov     [bp+var_F8], ax
+    mov     [bp+var_carpospolarangle], ax
     cmp     timertestflag_copy, 0
     jz      short loc_12448
     push    si
     lea     di, [bp+var_10]
-    mov     si, offset rect_unk4
+    mov     si, offset cliprect_unk
     jmp     short loc_1244F
     ; align 2
     db 144
 loc_12448:
     push    si
     lea     di, [bp+var_10]
-    mov     si, 3B0h
+    mov     si, offset carmenu_cliprect
 loc_1244F:
     push    ss
     pop     es
@@ -3807,40 +3802,40 @@ loc_1244F:
     pop     si
     sub     ax, ax
     push    ax
-    mov     ax, 3B0h
+    mov     ax, offset carmenu_cliprect
     push    ax
     sub     ax, ax
     push    ax
-    push    [bp+var_F8]
+    push    [bp+var_carpospolarangle]
     push    ax
-    call    select_rect_rotate
+    call    select_cliprect_rotate
     add     sp, 0Ah
-    mov     bx, [bp+arg_2]
+    mov     bx, [bp+arg_materialofs]
     mov     al, byte ptr game3dshapes.shape3d_numpaints+0AA8h
     cmp     [bx], al
     jl      short loc_1247A
     mov     byte ptr [bx], 0
 loc_1247A:
-    mov     ax, [bp+var_1E]
+    mov     ax, [bp+var_rotation]
     mov     [bp+var_transshape.ts_rotvec.vz], ax
-    mov     bx, [bp+arg_2]
+    mov     bx, [bp+arg_materialofs]
     mov     al, [bx]
     mov     [bp+var_transshape.ts_material], al
     lea     ax, [bp+var_transshape]
     push    ax
     call    transformed_shape_op
     add     sp, 2
-    mov     al, [bp+var_38]
-    cmp     [bp+var_F0], al
+    mov     al, [bp+var_prevcaridindex]
+    cmp     [bp+var_caridindex], al
     jnz     short loc_124A6
-    mov     word_3BB5C, 5Fh ; '_'
+    mov     stru_3BB56.rc_bottom, 5Fh ; '_'
     jmp     short loc_124AC
     ; align 2
     db 144
 loc_124A6:
-    mov     word_3BB5C, 0C8h ; 'È'
+    mov     stru_3BB56.rc_bottom, 0C8h ; 'È'
 loc_124AC:
-    mov     ax, 3E6h
+    mov     ax, offset stru_3BB56
     push    ax
     lea     ax, [bp+var_10]
     push    ax
@@ -3905,16 +3900,16 @@ loc_12541:
     mov     al, [bp+var_106]
     cbw
     push    ax
-    call    sub_29786
+    call    mouse_timer_sprite_unk
     add     sp, 0Eh
-    mov     [bp+var_4C], ax
+    mov     [bp+var_rotationdelta], ax
     add     word_449F2, ax
     cmp     word_449F2, 2EE0h
     jle     short loc_12585
     mov     word_449F2, 0
     inc     byte_44AE2
 loc_12585:
-    push    [bp+var_4C]
+    push    [bp+var_rotationdelta]
     call    input_checking
     add     sp, 2
     mov     si, ax
@@ -3978,7 +3973,7 @@ loc_125FE:
     push    [bp+var_1A]
     call    sprite_set_1_size
     add     sp, 8
-    mov     ax, 3A3h
+    mov     ax, offset aStop_1; "stop"
     push    ax
     push    [bp+var_34]
     push    [bp+var_36]
@@ -4006,31 +4001,31 @@ loc_125FE:
     movsw
     movsw
     pop     si
-    cmp     [bp+arg_6], 0
+    cmp     [bp+arg_opponenttype], 0
     jz      short loc_126D1
-    mov     al, [bp+var_38]
-    cmp     [bp+var_F0], al
+    mov     al, [bp+var_prevcaridindex]
+    cmp     [bp+var_caridindex], al
     jz      short loc_126D1
     call    sprite_copy_wnd_to_1
     cmp     video_flag5_is0, 0
     jnz     short loc_126B8
-    mov     al, byte ptr [bp+arg_6]
+    mov     al, byte ptr [bp+arg_opponenttype]
     add     al, 30h ; '0'
     cbw
     push    ax
-    push    word_44A02
-    push    word_44A00
+    push    word ptr opp_res+2
+    push    word ptr opp_res
     call    nullsub_2
     add     sp, 6
     sub     ax, ax
     push    ax
     mov     ax, 0F0h ; 'ð'
     push    ax
-    mov     bx, [bp+arg_6]
+    mov     bx, [bp+arg_opponenttype]
     shl     bx, 1
     shl     bx, 1
-    push    word_45D24[bx]
-    push    word_45D22[bx]
+    push    word ptr (oppresources+2)[bx]
+    push    word ptr oppresources[bx]
     call    sub_343B0
     jmp     short loc_126CE
 loc_126B8:
@@ -4038,7 +4033,7 @@ loc_126B8:
     push    ax
     mov     ax, 0F0h ; 'ð'
     push    ax
-    les     bx, [bp+var_42]
+    les     bx, [bp+var_42wnd]
     push    word ptr es:[bx+2]
     push    word ptr es:[bx]
     call    sprite_putimage_and_alt
@@ -4072,32 +4067,32 @@ loc_12710:
     add     sp, 4
 loc_12723:
     call    mouse_draw_transparent_check
-    mov     al, [bp+var_F0]
-    mov     [bp+var_38], al
+    mov     al, [bp+var_caridindex]
+    mov     [bp+var_prevcaridindex], al
     jmp     loc_124DE
 loc_12732:
     mov     al, [bp+var_106]
     cbw
     or      ax, ax
-    jz      short loc_1275E
+    jz      short _menu_done
     cmp     ax, 1
     jnz     short loc_12743
-    jmp     loc_12836
+    jmp     _menu_nextcar
 loc_12743:
     cmp     ax, 2
     jnz     short loc_1274B
-    jmp     loc_1284E
+    jmp     _menu_prevcar
 loc_1274B:
     cmp     ax, 3
     jnz     short loc_12753
-    jmp     loc_12864
+    jmp     _menu_transmission
 loc_12753:
     cmp     ax, 4
     jnz     short loc_1275B
-    jmp     loc_12904
+    jmp     _menu_color
 loc_1275B:
     jmp     loc_11FA5
-loc_1275E:
+_menu_done:
     cmp     [bp+var_108], 0
     jnz     short loc_12768
     jmp     loc_11FA5
@@ -4106,21 +4101,21 @@ loc_12768:
     push    word ptr wndsprite
     call    sprite_free_wnd
     add     sp, 4
-    push    [bp+var_2]
-    push    [bp+var_4]
+    push    word ptr [bp+var_carres+2]
+    push    word ptr [bp+var_carres]
     call    unload_resource
     add     sp, 4
     call    shape3d_free_car_shapes
-    cmp     [bp+arg_6], 0
+    cmp     [bp+arg_opponenttype], 0
     jz      short loc_127A6
     cmp     video_flag5_is0, 0
     jz      short loc_127A6
-    push    word ptr [bp+var_42+2]
-    push    word ptr [bp+var_42]
+    push    word ptr [bp+var_42wnd+2]
+    push    word ptr [bp+var_42wnd]
     call    sprite_free_wnd
     add     sp, 4
 loc_127A6:
-    cmp     [bp+arg_6], 0
+    cmp     [bp+arg_opponenttype], 0
     jnz     short loc_127BC
     push    word ptr miscptr+2
     push    word ptr miscptr
@@ -4132,41 +4127,41 @@ loc_127BC:
     call    mmgr_free
     add     sp, 4
     call    mouse_draw_opaque_check
-    mov     al, [bp+var_F0]
+    mov     al, [bp+var_caridindex]
     cbw
     mov     di, ax
     shl     di, 1
     shl     di, 1
     add     di, ax
-    mov     al, [bp+di+var_EE]
-    mov     bx, [bp+arg_0]
+    mov     al, [bp+di+var_carids]
+    mov     bx, [bp+arg_caridptr]
     mov     [bx], al
-    mov     al, [bp+var_F0]
+    mov     al, [bp+var_caridindex]
     cbw
     mov     di, ax
     shl     di, 1
     shl     di, 1
     add     di, ax
-    mov     al, [bp+di+var_ED]
-    mov     bx, [bp+arg_0]
+    mov     al, [bp+di+var_carids+1]
+    mov     bx, [bp+arg_caridptr]
     mov     [bx+1], al
-    mov     al, [bp+var_F0]
+    mov     al, [bp+var_caridindex]
     cbw
     mov     di, ax
     shl     di, 1
     shl     di, 1
     add     di, ax
-    mov     al, [bp+di+var_EC]
-    mov     bx, [bp+arg_0]
+    mov     al, [bp+di+var_carids+2]
+    mov     bx, [bp+arg_caridptr]
     mov     [bx+2], al
-    mov     al, [bp+var_F0]
+    mov     al, [bp+var_caridindex]
     cbw
     mov     di, ax
     shl     di, 1
     shl     di, 1
     add     di, ax
-    mov     al, [bp+di+var_EB]
-    mov     bx, [bp+arg_0]
+    mov     al, [bp+di+var_carids+3]
+    mov     bx, [bp+arg_caridptr]
     mov     [bx+3], al
     mov     byte_44AE2, 0
     pop     si
@@ -4176,31 +4171,31 @@ loc_127BC:
     retf
     ; align 2
     db 144
-loc_12836:
-    inc     [bp+var_F0]
+_menu_nextcar:
+    inc     [bp+var_caridindex]
     mov     al, [bp+var_46]
-    cmp     [bp+var_F0], al
+    cmp     [bp+var_caridindex], al
     jz      short loc_12846
     jmp     loc_11FA5
 loc_12846:
-    mov     [bp+var_F0], 0
+    mov     [bp+var_caridindex], 0
     jmp     loc_11FA5
-loc_1284E:
-    dec     [bp+var_F0]
+_menu_prevcar:
+    dec     [bp+var_caridindex]
     js      short loc_12857
     jmp     loc_11FA5
 loc_12857:
     mov     al, [bp+var_46]
     dec     al
-    mov     [bp+var_F0], al
+    mov     [bp+var_caridindex], al
     jmp     loc_11FA5
     ; align 2
     db 144
-loc_12864:
-    mov     bx, [bp+arg_4]
+_menu_transmission:
+    mov     bx, [bp+arg_transmissionofs]
     xor     byte ptr [bx], 1
     call    sprite_copy_wnd_to_1
-    mov     bx, [bp+arg_4]
+    mov     bx, [bp+arg_transmissionofs]
     cmp     byte ptr [bx], 0
     jz      short loc_1287C
     mov     ax, offset aBau_0; "bau"
@@ -4257,9 +4252,9 @@ loc_1287F:
     add     sp, 14h
     call    mouse_draw_transparent_check
     jmp     loc_11FA5
-loc_12904:
-    mov     bx, [bp+arg_2]
-    inc     byte ptr [bx]
+_menu_color:
+    mov     bx, [bp+arg_materialofs]
+    inc     byte ptr [bx]   ; change color/material
     mov     [bp+var_6], 3
     jmp     loc_11FA5
 loc_12910:
@@ -4304,26 +4299,26 @@ run_opponent_menu proc far
     push    ax
     call    ensure_file_exists
     add     sp, 2
-    mov     ax, 3F4h
+    mov     ax, offset aMisc; "misc"
     push    ax
     call    file_load_resfile
     add     sp, 2
     mov     word ptr miscptr, ax
     mov     word ptr miscptr+2, dx
-    mov     ax, 3F9h
+    mov     ax, offset aSdosel; "sdosel"
     push    ax              ; char *
     mov     ax, 8
     push    ax              ; int
     call    file_load_resource
     add     sp, 4
-    mov     word_44A00, ax
-    mov     word_44A02, dx
-    mov     ax, 0A5B2h
+    mov     word ptr opp_res, ax
+    mov     word ptr opp_res+2, dx
+    mov     ax, offset oppresources
     push    ax
-    mov     ax, 400h
+    mov     ax, offset aOpp0opp1opp2op; "opp0opp1opp2opp3opp4opp5opp6"
     push    ax
     push    dx
-    push    word_44A00
+    push    word ptr opp_res
     call    locate_many_resources
     add     sp, 8
     mov     [bp+var_1C], 0
@@ -4400,14 +4395,14 @@ loc_12A4D:
     add     sp, 2
     mov     ax, 37h ; '7'
     push    ax
-    push    word_44A02
-    push    word_44A00
+    push    word ptr opp_res+2
+    push    word ptr opp_res
     call    nullsub_2
     add     sp, 6
-    mov     ax, 41Dh
+    mov     ax, offset aScrn_0; "scrn"
     push    ax
-    push    word_44A02
-    push    word_44A00
+    push    word ptr opp_res+2
+    push    word ptr opp_res
     call    locate_shape_fatal
     add     sp, 6
     push    dx
@@ -4428,7 +4423,7 @@ loc_12A4D:
     push    ax
     mov     ax, 15h
     push    ax
-    mov     ax, 422h
+    mov     ax, offset aBla ; "bla"
     push    ax
     push    word ptr miscptr+2
     push    word ptr miscptr
@@ -4452,7 +4447,7 @@ loc_12A4D:
     push    ax
     mov     ax, 4Dh ; 'M'
     push    ax
-    mov     ax, 426h
+    mov     ax, offset aBnx ; "bnx"
     push    ax
     push    word ptr miscptr+2
     push    word ptr miscptr
@@ -4476,7 +4471,7 @@ loc_12A4D:
     push    ax
     mov     ax, 85h ; '…'
     push    ax
-    mov     ax, 42Ah
+    mov     ax, offset aBcl ; "bcl"
     push    ax
     push    word ptr miscptr+2
     push    word ptr miscptr
@@ -4500,7 +4495,7 @@ loc_12A4D:
     push    ax
     mov     ax, 0BDh ; '½'
     push    ax
-    mov     ax, 42Eh
+    mov     ax, offset aBca ; "bca"
     push    ax
     push    word ptr miscptr+2
     push    word ptr miscptr
@@ -4524,7 +4519,7 @@ loc_12A4D:
     push    ax
     mov     ax, 0F5h ; 'õ'
     push    ax
-    mov     ax, 432h
+    mov     ax, offset aBdo ; "bdo"
     push    ax
     push    word ptr miscptr+2
     push    word ptr miscptr
@@ -4538,8 +4533,8 @@ loc_12A4D:
     add     al, 30h ; '0'
     cbw
     push    ax
-    push    word_44A02
-    push    word_44A00
+    push    word ptr opp_res+2
+    push    word ptr opp_res
     call    nullsub_2
     add     sp, 6
     mov     al, gameconfig.game_opponenttype
@@ -4547,20 +4542,20 @@ loc_12A4D:
     mov     bx, ax
     shl     bx, 1
     shl     bx, 1
-    push    word ptr [bx-5A4Ch]
-    push    word ptr [bx-5A4Eh]
+    push    word ptr (oppresources+2)[bx]
+    push    word ptr oppresources[bx]
     call    sub_34526
     add     sp, 4
     mov     ax, 37h ; '7'
     push    ax
-    push    word_44A02
-    push    word_44A00
+    push    word ptr opp_res+2
+    push    word ptr opp_res
     call    nullsub_2
     add     sp, 6
-    mov     ax, 436h
+    mov     ax, offset aClip; "clip"
     push    ax
-    push    word_44A02
-    push    word_44A00
+    push    word ptr opp_res+2
+    push    word ptr opp_res
     call    locate_shape_fatal
     add     sp, 6
     push    dx
@@ -4581,7 +4576,7 @@ loc_12A4D:
 loc_12C46:
     cmp     gameconfig.game_opponenttype, 0
     jz      short loc_12C5A
-    mov     ax, 43Bh
+    mov     ax, offset aDes_0; "des"
     push    ax
     push    [bp+var_A]
     push    [bp+var_C]
@@ -4589,7 +4584,7 @@ loc_12C46:
     ; align 2
     db 144
 loc_12C5A:
-    mov     ax, 43Fh
+    mov     ax, offset aRac ; "rac"
     push    ax
     push    word ptr miscptr+2
     push    word ptr miscptr
@@ -4619,7 +4614,7 @@ loc_12C9D:
     cmp     [bp+var_8], 0
     jz      short loc_12CD2
     mov     bx, [bp+var_8]
-    mov     byte ptr [bx-538Ch], 0
+    mov     resID_byte1[bx], 0
     mov     ax, [bp+var_E]
     add     ax, 21h ; '!'
     push    ax
@@ -4640,7 +4635,7 @@ loc_12CE0:
     mov     bx, [bp+var_8]
     inc     [bp+var_8]
     mov     al, [bp+var_2]
-    mov     [bx-538Ch], al
+    mov     resID_byte1[bx], al
 loc_12CED:
     les     bx, [bp+var_1A]
     cmp     byte ptr es:[bx], 0
@@ -4676,7 +4671,7 @@ loc_12D2C:
     mov     al, [bp+var_1C]
     cbw
     push    ax
-    call    sub_29786
+    call    mouse_timer_sprite_unk
     add     sp, 0Eh
     mov     [bp+var_10], ax
     push    ax
@@ -4781,11 +4776,11 @@ loc_12E28:
     mov     al, gameconfig.game_opponenttype
     cbw
     push    ax
-    mov     ax, 9240h
+    mov     ax, offset gameconfig.game_opponenttransmission
     push    ax
-    mov     ax, 923Fh
+    mov     ax, offset gameconfig.game_opponentmaterial
     push    ax
-    mov     ax, 923Bh
+    mov     ax, offset gameconfig.game_opponentcarid
     push    ax
     push    cs
     call near ptr run_car_menu
@@ -4829,8 +4824,8 @@ loc_12EA7:
     call    unload_resource
     add     sp, 4
 loc_12ECB:
-    push    word_44A02
-    push    word_44A00
+    push    word ptr opp_res+2
+    push    word ptr opp_res
     call    mmgr_free
     add     sp, 4
     push    word ptr miscptr+2
@@ -6390,7 +6385,7 @@ loc_13D83:
     push    ax
     mov     ax, 4
     push    ax
-    call    sub_29786
+    call    mouse_timer_sprite_unk
     add     sp, 0Eh
     mov     [bp+var_72], ax
     add     [bp+var_42], ax
@@ -6810,7 +6805,7 @@ loc_141DC:
     mov     al, [bp+var_92]
     cbw
     push    ax
-    call    sub_29786
+    call    mouse_timer_sprite_unk
     add     sp, 0Eh
     mov     [bp+var_72], ax
     cmp     [bp+var_14], 0

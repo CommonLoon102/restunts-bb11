@@ -385,6 +385,7 @@ loc_3AC60:
     push    word ptr [bp+var_mempages]
     call    mmgr_op_unk
     add     sp, 4
+loc_3AC97:
     mov     [bp+var_memchunkofs], ax
     mov     [bp+var_memchunkseg], dx
     mov     ax, offset shapenums

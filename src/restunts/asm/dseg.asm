@@ -178,6 +178,7 @@ dseg segment byte public 'STUNTSD' use16
     public aStop_1
     public aBau_0
     public aBma_0
+    public carmenu_cliprect
     public word_3BB28
     public word_3BB32
     public word_3BB3C
@@ -187,11 +188,8 @@ dseg segment byte public 'STUNTSD' use16
     public word_3BB44
     public word_3BB4E
     public aLnam
-    public word_3BB58
-    public word_3BB5C
-    public unk_3BB5E
-    public word_3BB60
-    public word_3BB62
+    public stru_3BB56
+    public carmenu_carpos
     public aMisc
     public aSdosel
     public aOpp0opp1opp2op
@@ -313,7 +311,7 @@ dseg segment byte public 'STUNTSD' use16
     public word_3C110
     public word_3C112
     public unk_3C114
-    public unk_3C11A
+    public trackpreview_cliprect
     public aDm1
     public aDm2
     public aPre
@@ -333,7 +331,7 @@ dseg segment byte public 'STUNTSD' use16
     public aTitle
     public aLogolog2brav
     public aCarcoun_0
-    public rect_unk7
+    public intro_cliprect
     public word_3C1B8
     public word_3C1BA
     public word_3C1BC
@@ -624,12 +622,11 @@ dseg segment byte public 'STUNTSD' use16
     public unk_3EA54
     public unk_3EA56
     public aPolyinfo
-    public byte_3EA62
-    public byte_3EA72
-    public word_3EA82
-    public word_3EA84
+    public primidxcounttab
+    public primtypetab
+    public invpow2tbl
     public word_3EB02
-    public rect_unk4
+    public cliprect_unk
     public aInitengineAllHandlesUsed_
     public word_3EB2A
     public aStartengineNew
@@ -1074,35 +1071,28 @@ dseg segment byte public 'STUNTSD' use16
     public unk_40E7E
     public mat_y200
     public mat_y100
-    public rect_unk8
+    public select_rect_rc
     public mat_y300
     public transshapepolyinfo
     public word_40ECE
-    public word_40ED0
+    public select_rect_param
     public polyinfoptr
     public word_40ED6
     public word_411F6
-    public dword_411F8
+    public polyinfoptrs
     public mat_y0
-    public word_41850
+    public polyinfoptrnext
     public transshapenumpaints
-    public word_41854
-    public word_41856
-    public word_41858
-    public word_4185A
-    public word_4185C
-    public word_4185E
-    public word_4186A
-    public word_4186C
-    public byte_4186E
+    public polyvertpointptrtab
+    public transshapeprimptr
+    public transshapeflags
     public transshapeprimitives
-    public word_41874
-    public word_41876
-    public word_41878
-    public byte_4187A
+    public transshapeprimindexptr
+    public transshaperectptr
+    public transshapematerial
     public transshapenumverts
     public transshapeverts
-    public byte_41882
+    public transprimitivepaintjob
     public cos80
     public sin80
     public cos80_2
@@ -1226,7 +1216,7 @@ dseg segment byte public 'STUNTSD' use16
     public byte_44292
     public mat_unk
     public byte_442E4
-    public word_442E6
+    public polyinfonumpolys
     public mouse_butstate
     public byte_442EA
     public byte_4432A
@@ -1315,8 +1305,7 @@ dseg segment byte public 'STUNTSD' use16
     public curshapeptr
     public word_449FC
     public word_449FE
-    public word_44A00
-    public word_44A02
+    public opp_res
     public rect_unk
     public rect_unk2
     public rect_unk6
@@ -1456,8 +1445,7 @@ dseg segment byte public 'STUNTSD' use16
     public byte_45D14
     public word_45D1C
     public material_patlist_ptr_cpy
-    public word_45D22
-    public word_45D24
+    public oppresources
     public word_45D3E
     public trackrows
     public word_45D7C
@@ -2466,7 +2454,7 @@ aBma_0     db 98
     db 109
     db 97
     db 0
-    db 0
+carmenu_cliprect     db 0
     db 0
     db 64
     db 1
@@ -2512,16 +2500,20 @@ aLnam     db 108
     db 109
     db 0
     db 0
+stru_3BB56     db 0
+    db 0
+    db 64
+    db 1
     db 0
     db 0
-word_3BB58     dw 320
     db 0
     db 0
-word_3BB5C     dw 0
-unk_3BB5E     db 0
+carmenu_carpos     db 0
     db 0
-word_3BB60     dw 64696
-word_3BB62     dw 2880
+    db 184
+    db 252
+    db 64
+    db 11
 aMisc     db 109
     db 105
     db 115
@@ -3934,7 +3926,7 @@ unk_3C114     db 0
     db 216
     db 120
     db 65
-unk_3C11A     db 0
+trackpreview_cliprect     db 0
     db 0
     db 64
     db 1
@@ -4090,7 +4082,7 @@ aCarcoun_0     db 99
     db 117
     db 110
     db 0
-rect_unk7     dw 0
+intro_cliprect     dw 0
 word_3C1B8     dw 320
 word_3C1BA     dw 0
 word_3C1BC     dw 200
@@ -14332,7 +14324,7 @@ aPolyinfo     db 112
     db 111
     db 0
     db 0
-byte_3EA62     db 0
+primidxcounttab     db 0
     db 1
     db 2
     db 3
@@ -14348,7 +14340,7 @@ byte_3EA62     db 0
     db 3
     db 0
     db 0
-byte_3EA72     db 0
+primtypetab     db 0
     db 5
     db 1
     db 0
@@ -14364,134 +14356,40 @@ byte_3EA72     db 0
     db 4
     db 0
     db 0
-word_3EA82     dw 0
-word_3EA84     dw 32768
-    db 0
-    db 0
-    db 0
-    db 64
-    db 0
-    db 0
-    db 0
-    db 32
-    db 0
-    db 0
-    db 0
-    db 16
-    db 0
-    db 0
-    db 0
-    db 8
-    db 0
-    db 0
-    db 0
-    db 4
-    db 0
-    db 0
-    db 0
-    db 2
-    db 0
-    db 0
-    db 0
-    db 1
-    db 0
-    db 0
-    db 128
-    db 0
-    db 0
-    db 0
-    db 64
-    db 0
-    db 0
-    db 0
-    db 32
-    db 0
-    db 0
-    db 0
-    db 16
-    db 0
-    db 0
-    db 0
-    db 8
-    db 0
-    db 0
-    db 0
-    db 4
-    db 0
-    db 0
-    db 0
-    db 2
-    db 0
-    db 0
-    db 0
-    db 1
-    db 0
-    db 0
-    db 128
-    db 0
-    db 0
-    db 0
-    db 64
-    db 0
-    db 0
-    db 0
-    db 32
-    db 0
-    db 0
-    db 0
-    db 16
-    db 0
-    db 0
-    db 0
-    db 8
-    db 0
-    db 0
-    db 0
-    db 4
-    db 0
-    db 0
-    db 0
-    db 2
-    db 0
-    db 0
-    db 0
-    db 1
-    db 0
-    db 0
-    db 128
-    db 0
-    db 0
-    db 0
-    db 64
-    db 0
-    db 0
-    db 0
-    db 32
-    db 0
-    db 0
-    db 0
-    db 16
-    db 0
-    db 0
-    db 0
-    db 8
-    db 0
-    db 0
-    db 0
-    db 4
-    db 0
-    db 0
-    db 0
-    db 2
-    db 0
-    db 0
-    db 0
-    db 1
-    db 0
-    db 0
-    db 0
+invpow2tbl     dd -2147483648
+    dd 1073741824
+    dd 536870912
+    dd 268435456
+    dd 134217728
+    dd 67108864
+    dd 33554432
+    dd 16777216
+    dd 8388608
+    dd 4194304
+    dd 2097152
+    dd 1048576
+    dd 524288
+    dd 262144
+    dd 131072
+    dd 65536
+    dd 32768
+    dd 16384
+    dd 8192
+    dd 4096
+    dd 2048
+    dd 1024
+    dd 512
+    dd 256
+    dd 128
+    dd 64
+    dd 32
+    dd 16
+    dd 8
+    dd 4
+    dd 2
+    dd 1
 word_3EB02     dw 65535
-rect_unk4     db 15
+cliprect_unk     db 15
     db 39
     db 255
     db 255
@@ -22471,7 +22369,7 @@ mat_y100     db 0
     db 0
     db 0
     db 0
-rect_unk8     db 0
+select_rect_rc     db 0
     db 0
     db 0
     db 0
@@ -22499,7 +22397,7 @@ mat_y300     db 0
     db 0
 transshapepolyinfo     dd 0
 word_40ECE     dw 0
-word_40ED0     dw 0
+select_rect_param     dw 0
 polyinfoptr     dd 0
 word_40ED6     dw 0
     dw 0
@@ -22902,7 +22800,7 @@ word_40ED6     dw 0
     dw 0
     dw 0
 word_411F6     dw 0
-dword_411F8     dd 0
+polyinfoptrs     dd 0
     dd 0
     dd 0
     dd 0
@@ -23326,37 +23224,31 @@ mat_y0     db 0
     db 0
     db 0
     db 0
-word_41850     dw 0
+polyinfoptrnext     dw 0
 transshapenumpaints     dw 0
-word_41854     dw 0
-word_41856     dw 0
-word_41858     dw 0
-word_4185A     dw 0
-word_4185C     dw 0
-word_4185E     dw 0
+polyvertpointptrtab     dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
     db 0
     db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-word_4186A     dw 0
-word_4186C     dw 0
-byte_4186E     db 0
+transshapeprimptr     dd 0
+transshapeflags     db 0
     db 0
 transshapeprimitives     dd 0
-word_41874     dw 0
-word_41876     dw 0
-word_41878     dw 0
-byte_4187A     db 0
+transshapeprimindexptr     dd 0
+transshaperectptr     dw 0
+transshapematerial     db 0
     db 0
 transshapenumverts     dw 0
 transshapeverts     dd 0
-byte_41882     db 0
+transprimitivepaintjob     db 0
     db 0
 cos80     dd 0
 sin80     dd 0
@@ -33928,7 +33820,7 @@ mat_unk     db 0
     db 0
 byte_442E4     db 0
     db 0
-word_442E6     dw 0
+polyinfonumpolys     dw 0
 mouse_butstate     dw 0
 byte_442EA     db 0
     db 0
@@ -35629,8 +35521,7 @@ elem_zCenter     dw 0
 curshapeptr     dd 0
 word_449FC     dw 0
 word_449FE     dw 0
-word_44A00     dw 0
-word_44A02     dw 0
+opp_res     dd 0
 rect_unk     dw 0
     dw 0
     dw 0
@@ -40335,8 +40226,7 @@ word_45D1C     dw 0
 material_patlist_ptr_cpy     dw 0
     db 0
     db 0
-word_45D22     dw 0
-word_45D24     dw 0
+oppresources     dd 0
     db 0
     db 0
     db 0

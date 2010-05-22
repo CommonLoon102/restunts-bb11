@@ -37,7 +37,7 @@ seg008 segment byte public 'STUNTSC' use16
     extrn show_waiting:proc
     extrn print_int_as_string_maybe:proc
     extrn sub_29772:proc
-    extrn sub_29786:proc
+    extrn mouse_timer_sprite_unk:proc
     extrn ported_file_load_audiores_:proc
     extrn audio_unload:proc
     extrn font_set_fontdef2:proc

@@ -305,7 +305,7 @@ loc_1A0C2:
     push    si
     push    di
     lea     di, rect_array_unk[di]
-    mov     si, offset rect_unk4
+    mov     si, offset cliprect_unk
     push    ds
     pop     es
     movsw
@@ -317,7 +317,7 @@ loc_1A0C2:
     push    si
     push    di
     lea     di, rect_array_unk2[di]
-    mov     si, offset rect_unk4
+    mov     si, offset cliprect_unk
     movsw
     movsw
     movsw
@@ -407,7 +407,7 @@ update_frame proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = byte ptr 6
-    arg_rectptr = word ptr 8
+    arg_cliprectptr = word ptr 8
 
     push    bp
     mov     bp, sp
@@ -445,7 +445,7 @@ loc_1A145:
     push    si
     push    di
     mov     di, ax
-    mov     si, offset rect_unk4
+    mov     si, offset cliprect_unk
     push    ds
     pop     es
     movsw
@@ -801,11 +801,11 @@ nosmart
     mov     [bp+var_E4], al
     sub     ax, ax
     push    ax
-    push    [bp+arg_rectptr]
+    push    [bp+arg_cliprectptr]
     push    [bp+var_angY]
     push    [bp+var_angX]
     push    [bp+var_angZ]
-    call    select_rect_rotate
+    call    select_cliprect_rotate
     add     sp, 0Ah
     mov     [bp+var_52], ax
 smart
@@ -1947,7 +1947,7 @@ loc_1B03C:
     lea     ax, [bp+var_mat]
     push    ax
     push    [bp+var_2]
-    push    [bp+arg_rectptr]
+    push    [bp+arg_cliprectptr]
     mov     al, [bp+arg_0]
     cbw
     push    ax
@@ -1955,7 +1955,7 @@ loc_1B03C:
     call near ptr skybox_op
     add     sp, 0Eh
     mov     [bp+var_132], ax
-    mov     bx, [bp+arg_rectptr]
+    mov     bx, [bp+arg_cliprectptr]
     push    word ptr [bx+6]
     push    word ptr [bx+4]
     mov     ax, 140h
@@ -2844,7 +2844,7 @@ loc_1B964:
     push    si
     push    di
     lea     di, [bp+var_6A]
-    mov     si, offset rect_unk4
+    mov     si, offset cliprect_unk
     push    ss
     pop     es
     movsw
@@ -3103,7 +3103,7 @@ loc_1BC10:
     push    si
     push    di
     lea     di, [bp+var_8E]
-    mov     si, offset rect_unk4
+    mov     si, offset cliprect_unk
     push    ss
     pop     es
     movsw
@@ -3480,7 +3480,7 @@ loc_1C002:
 loc_1C006:
     mov     [bp+var_rectptr], ax
 loc_1C009:
-    push    [bp+arg_rectptr]
+    push    [bp+arg_cliprectptr]
     push    [bp+var_rectptr]
     call    sub_265EC
     add     sp, 4
@@ -3569,7 +3569,7 @@ loc_1C0DF:
     ; align 2
     db 144
 loc_1C0E8:
-    mov     bx, [bp+arg_rectptr]
+    mov     bx, [bp+arg_cliprectptr]
     push    word ptr [bx+6]
     push    word ptr [bx+4]
     mov     ax, 140h
@@ -3601,7 +3601,7 @@ loc_1C128:
     mov     ax, 9294h
     push    ax
     push    ax
-    mov     bx, [bp+arg_rectptr]
+    mov     bx, [bp+arg_cliprectptr]
     mov     ax, [bx+6]
     sub     ax, [bx+4]
     push    ax
@@ -3619,7 +3619,7 @@ loc_1C156:
     ; align 2
     db 144
 loc_1C162:
-    mov     bx, [bp+arg_rectptr]
+    mov     bx, [bp+arg_cliprectptr]
     mov     ax, [bx+6]
     sub     ax, [bx+4]
     push    ax
@@ -3641,7 +3641,7 @@ loc_1C17C:
     mov     ax, 9294h
     push    ax
     push    ax
-    mov     bx, [bp+arg_rectptr]
+    mov     bx, [bp+arg_cliprectptr]
     mov     ax, [bx+6]
     sub     ax, [bx+4]
     push    ax
@@ -3653,7 +3653,7 @@ loc_1C17C:
     call near ptr do_sinking
     jmp     short loc_1C156
 loc_1C1AC:
-    mov     bx, [bp+arg_rectptr]
+    mov     bx, [bp+arg_cliprectptr]
     mov     ax, [bx+6]
     sub     ax, [bx+4]
     push    ax
@@ -3741,7 +3741,7 @@ loc_1C265:
     add     sp, 6
     cmp     [bp+var_132], 0
     jz      short loc_1C2AE
-    mov     ax, [bp+arg_rectptr]
+    mov     ax, [bp+arg_cliprectptr]
     push    si
     push    di
     mov     di, 9294h
@@ -3762,7 +3762,7 @@ loc_1C293:
     push    si
     push    di
     lea     di, rect_unk[bx]
-    mov     si, offset rect_unk4
+    mov     si, offset cliprect_unk
     movsw
     movsw
     movsw
@@ -3983,10 +3983,8 @@ skybox_op proc far
     var_56 = word ptr -86
     var_54 = word ptr -84
     var_50 = word ptr -80
-    var_4E = word ptr -78
-    var_4C = word ptr -76
-    var_4A = word ptr -74
-    var_48 = word ptr -72
+    var_4E = POINT2D ptr -78
+    var_4A = POINT2D ptr -74
     var_46 = word ptr -70
     var_44 = word ptr -68
     var_42 = word ptr -66
@@ -4003,10 +4001,8 @@ skybox_op proc far
     var_2A = word ptr -42
     var_28 = word ptr -40
     var_26 = word ptr -38
-    var_24 = byte ptr -36
-    var_20 = word ptr -32
-    var_1E = byte ptr -30
-    var_1A = word ptr -26
+    var_vec = VECTOR ptr -36
+    var_vec2 = VECTOR ptr -30
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -4046,7 +4042,7 @@ loc_1C4A7:
     mov     ax, 3A98h
     imul    [bp+arg_4]
     mov     [bp+var_54], ax
-    lea     ax, [bp+var_24]
+    lea     ax, [bp+var_vec]
     push    ax
     push    [bp+arg_6]
     lea     ax, [bp+var_58]
@@ -4056,16 +4052,16 @@ loc_1C4A7:
     mov     ax, 0B9B0h
     imul    [bp+arg_4]
     mov     [bp+var_58], ax
-    lea     ax, [bp+var_1E]
+    lea     ax, [bp+var_vec2]
     push    ax
     push    [bp+arg_6]
     lea     ax, [bp+var_58]
     push    ax
     call    mat_mul_vector
     add     sp, 6
-    cmp     [bp+var_20], 0
+    cmp     [bp+var_vec.vz], 0
     jl      short loc_1C4FC
-    cmp     [bp+var_1A], 0
+    cmp     [bp+var_vec2.vz], 0
     jge     short loc_1C51C
 loc_1C4FC:
     mov     di, skybox_sky_color
@@ -4084,58 +4080,58 @@ loc_1C500:
 loc_1C51C:
     lea     ax, [bp+var_4E]
     push    ax
-    lea     ax, [bp+var_24]
+    lea     ax, [bp+var_vec]
     push    ax
-    call    sub_323D9
+    call    vector_to_point
     add     sp, 4
     lea     ax, [bp+var_4A]
     push    ax
-    lea     ax, [bp+var_1E]
+    lea     ax, [bp+var_vec2]
     push    ax
-    call    sub_323D9
+    call    vector_to_point
     add     sp, 4
-    cmp     [bp+var_4E], 140h
+    cmp     [bp+var_4E.x2], 140h
     jle     short loc_1C558
-    cmp     [bp+var_4A], 140h
+    cmp     [bp+var_4A.x2], 140h
     jle     short loc_1C558
-    mov     ax, [bp+var_48]
-    cmp     [bp+var_4C], ax
+    mov     ax, [bp+var_4A.y2]
+    cmp     [bp+var_4E.y2], ax
     jl      short loc_1C4FC
 loc_1C552:
     mov     di, skybox_grd_color
     jmp     short loc_1C500
 loc_1C558:
-    cmp     [bp+var_4E], 0
+    cmp     [bp+var_4E.x2], 0
     jge     short loc_1C56E
-    cmp     [bp+var_4A], 0
+    cmp     [bp+var_4A.x2], 0
     jge     short loc_1C56E
-    mov     ax, [bp+var_48]
-    cmp     [bp+var_4C], ax
+    mov     ax, [bp+var_4A.y2]
+    cmp     [bp+var_4E.y2], ax
 loc_1C56A:
     jle     short loc_1C552
     jmp     short loc_1C4FC
 loc_1C56E:
     mov     bx, [bp+arg_2]
-    mov     ax, [bp+var_4C]
+    mov     ax, [bp+var_4E.y2]
     cmp     [bx+6], ax
     jge     short loc_1C58A
-    mov     ax, [bp+var_48]
+    mov     ax, [bp+var_4A.y2]
     cmp     [bx+6], ax
     jge     short loc_1C58A
-    mov     ax, [bp+var_4A]
-    cmp     [bp+var_4E], ax
+    mov     ax, [bp+var_4A.x2]
+    cmp     [bp+var_4E.x2], ax
     jmp     short loc_1C56A
     ; align 2
     db 144
 loc_1C58A:
-    mov     ax, [bp+var_4C]
+    mov     ax, [bp+var_4E.y2]
     cmp     [bx+4], ax
     jle     short loc_1C5A6
-    mov     ax, [bp+var_48]
+    mov     ax, [bp+var_4A.y2]
     cmp     [bx+4], ax
     jle     short loc_1C5A6
-    mov     ax, [bp+var_4A]
-    cmp     [bp+var_4E], ax
+    mov     ax, [bp+var_4A.x2]
+    cmp     [bp+var_4E.x2], ax
     jge     short loc_1C552
     jmp     loc_1C4FC
     ; align 2
@@ -4144,16 +4140,16 @@ loc_1C5A6:
     mov     [bp+var_5A], 0
     cmp     timertestflag2, 4
     jz      short loc_1C61D
-    cmp     [bp+var_4A], 0
+    cmp     [bp+var_4A.x2], 0
     jge     short loc_1C61D
-    cmp     [bp+var_4E], 140h
+    cmp     [bp+var_4E.x2], 140h
     jle     short loc_1C61D
     lea     ax, [bp+var_78]
     push    ax
-    push    [bp+var_4C]
-    push    [bp+var_4E]
-    push    [bp+var_48]
-    push    [bp+var_4A]
+    push    [bp+var_4E.y2]
+    push    [bp+var_4E.x2]
+    push    [bp+var_4A.y2]
+    push    [bp+var_4A.x2]
     call    draw_line_related
     add     sp, 0Ah
     or      ax, ax
@@ -4422,11 +4418,11 @@ loc_1C84B:
     jl      short loc_1C80A
     jmp     loc_1CB77
 loc_1C852:
-    mov     ax, [bp+var_4C]
-    sub     ax, [bp+var_48]
+    mov     ax, [bp+var_4E.y2]
+    sub     ax, [bp+var_4A.y2]
     push    ax
-    mov     ax, [bp+var_4E]
-    sub     ax, [bp+var_4A]
+    mov     ax, [bp+var_4E.x2]
+    sub     ax, [bp+var_4A.x2]
     push    ax
     call    polarAngle
     add     sp, 4
@@ -4502,10 +4498,10 @@ loc_1C904:
     push    [bp+var_46]
     push    [bp+var_40]
     push    [bp+var_42]
-    push    [bp+var_48]
-    push    [bp+var_4A]
-    push    [bp+var_4C]
-    push    [bp+var_4E]
+    push    [bp+var_4A.y2]
+    push    [bp+var_4A.x2]
+    push    [bp+var_4E.y2]
+    push    [bp+var_4E.x2]
     mov     ax, 4
     push    ax
     push    skybox_sky_color
@@ -4515,10 +4511,10 @@ loc_1C904:
     push    [bp+var_3A]
     push    [bp+var_3C]
     push    [bp+var_3E]
-    push    [bp+var_48]
-    push    [bp+var_4A]
-    push    [bp+var_4C]
-    push    [bp+var_4E]
+    push    [bp+var_4A.y2]
+    push    [bp+var_4A.x2]
+    push    [bp+var_4E.y2]
+    push    [bp+var_4E.x2]
     mov     ax, 4
     push    ax
     push    skybox_grd_color
@@ -4535,14 +4531,14 @@ loc_1C958:
     mov     ax, 3A98h
     imul    [bp+arg_4]
     mov     [bp+var_54], ax
-    lea     ax, [bp+var_24]
+    lea     ax, [bp+var_vec]
     push    ax
     push    [bp+arg_6]
     lea     ax, [bp+var_58]
     push    ax
     call    mat_mul_vector
     add     sp, 6
-    cmp     [bp+var_20], 0
+    cmp     [bp+var_vec.vz], 0
     jge     short loc_1C9C0
     push    skybox_sky_color
     call    sprite_clear_1_color
@@ -4563,11 +4559,11 @@ loc_1C99D:
 loc_1C9C0:
     lea     ax, [bp+var_4E]
     push    ax
-    lea     ax, [bp+var_24]
+    lea     ax, [bp+var_vec]
     push    ax
-    call    sub_323D9
+    call    vector_to_point
     add     sp, 4
-    mov     ax, [bp+var_4C]
+    mov     ax, [bp+var_4E.y2]
     mov     [bp+var_50], ax
     mov     bx, [bp+arg_2]
     cmp     [bx+4], ax
@@ -4820,9 +4816,7 @@ draw_track_preview proc far
     var_transshape = TRANSFORMEDSHAPE ptr -38
     var_12 = word ptr -18
     var_10 = byte ptr -16
-    var_C = word ptr -12
-    var_A = word ptr -10
-    var_8 = word ptr -8
+    var_vec = VECTOR ptr -12
     var_4 = word ptr -4
     var_2 = word ptr -2
      s = byte ptr 0
@@ -4858,7 +4852,7 @@ draw_track_preview proc far
     call    mat_rot_zxy
     add     sp, 8
     mov     [bp+var_28], ax
-    lea     ax, [bp+var_C]
+    lea     ax, [bp+var_vec]
     push    ax
     push    [bp+var_28]
     mov     ax, offset unk_3C114
@@ -4867,9 +4861,9 @@ draw_track_preview proc far
     add     sp, 6
     lea     ax, [bp+var_2E]
     push    ax
-    lea     ax, [bp+var_C]
+    lea     ax, [bp+var_vec]
     push    ax
-    call    sub_323D9
+    call    vector_to_point
     add     sp, 4
     mov     ax, [bp+var_2C]
     mov     [bp+var_30], ax
@@ -4943,13 +4937,13 @@ loc_1CC5B:
     add     sp, 8
     mov     ax, 1
     push    ax
-    mov     ax, offset unk_3C11A
+    mov     ax, offset trackpreview_cliprect
     push    ax
     sub     ax, ax
     push    ax
     push    [bp+var_34]
     push    ax
-    call    select_rect_rotate
+    call    select_cliprect_rotate
     add     sp, 0Ah
     mov     [bp+var_transshape.ts_rotvec.vx], 0
     mov     [bp+var_transshape.ts_rotvec.vy], 0
@@ -5192,15 +5186,15 @@ loc_1CF46:
     mov     ax, si
     sub     ax, word_3C108
     sar     ax, 1
-    mov     [bp+var_C], ax
+    mov     [bp+var_vec.vx], ax
     mov     ax, di
     sub     ax, word_3C10A
     sar     ax, 1
-    mov     [bp+var_A], ax
+    mov     [bp+var_vec.vy], ax
     mov     ax, [bp+var_12]
     sub     ax, word_3C10C
     sar     ax, 1
-    mov     [bp+var_8], ax
+    mov     [bp+var_vec.vz], ax
     or      di, di
     jz      short loc_1CFBF
     mov     bx, [bp+var_3E]
@@ -5229,7 +5223,7 @@ loc_1CF97:
     push    si
     push    di
     lea     di, [bp+var_transshape]
-    lea     si, [bp+var_C]
+    lea     si, [bp+var_vec]
     push    ss
     pop     es
     movsw
@@ -5266,7 +5260,7 @@ loc_1CFBF:
     push    si
     push    di
     lea     di, [bp+var_transshape]
-    lea     si, [bp+var_C]
+    lea     si, [bp+var_vec]
     push    ss
     pop     es
     movsw
@@ -5307,7 +5301,7 @@ loc_1D042:
     push    si
     push    di
     lea     di, [bp+var_transshape]
-    lea     si, [bp+var_C]
+    lea     si, [bp+var_vec]
     push    ss
     pop     es
     movsw
@@ -5415,7 +5409,7 @@ draw_ingame_text proc far
     push    si
     push    si
     mov     di, offset word_4617E
-    mov     si, offset rect_unk4
+    mov     si, offset cliprect_unk
     push    ds
     pop     es
     movsw
@@ -5960,7 +5954,7 @@ loc_1D614:
     mov     [bp+var_18], ax
     push    si
     mov     di, offset word_4617E
-    mov     si, offset rect_unk4
+    mov     si, offset cliprect_unk
     push    ds
     pop     es
     movsw
@@ -6073,7 +6067,7 @@ loc_1D70F:
     push    ax
     lea     ax, [bp+var_C]
     push    ax
-    call    sub_2637A
+    call    rect_adjust_unk
     add     sp, 4
     mov     ax, [bp+var_14]
     mov     [bp+var_C], ax
@@ -6085,7 +6079,7 @@ loc_1D70F:
     push    ax
     lea     ax, [bp+var_C]
     push    ax
-    call    sub_2637A
+    call    rect_adjust_unk
     add     sp, 4
     mov     ax, [bp+var_10]
     mov     [bp+var_C], ax
@@ -6097,7 +6091,7 @@ loc_1D70F:
     push    ax
     lea     ax, [bp+var_C]
     push    ax
-    call    sub_2637A
+    call    rect_adjust_unk
     add     sp, 4
     mov     ax, [bp+var_14]
     mov     [bp+var_C], ax
@@ -6109,7 +6103,7 @@ loc_1D70F:
     push    ax
     lea     ax, [bp+var_C]
     push    ax
-    call    sub_2637A
+    call    rect_adjust_unk
     add     sp, 4
 loc_1D78F:
     inc     si
@@ -6879,10 +6873,8 @@ loc_1DE8C:
 setup_intro endp
 intro_op proc far
     var_42 = word ptr -66
-    var_40 = byte ptr -64
-    var_3C = word ptr -60
-    var_3A = word ptr -58
-    var_38 = word ptr -56
+    var_vec = VECTOR ptr -64
+    var_3A = POINT2D ptr -58
     var_36 = word ptr -54
     var_34 = word ptr -52
     var_32 = word ptr -50
@@ -6917,7 +6909,7 @@ intro_op proc far
     push    si
     push    di
     lea     di, [bp+var_rc]
-    mov     si, offset rect_unk4
+    mov     si, offset cliprect_unk
     push    ss
     pop     es
     movsw
@@ -6928,14 +6920,14 @@ intro_op proc far
     pop     si
     sub     ax, ax
     push    ax
-    mov     ax, offset rect_unk7
+    mov     ax, offset intro_cliprect
 loc_1DEC4:
     push    ax
     push    [bp+arg_6]
     push    [bp+arg_8]
     sub     ax, ax
     push    ax
-    call    select_rect_rotate
+    call    select_cliprect_rotate
     add     sp, 0Ah
     cmp     [bp+arg_C], 0
     jz      short loc_1DEE4
@@ -7048,12 +7040,12 @@ loc_1DFE6:
     add     bx, ax
     mov     ax, [bx]
     mov     dx, [bx+2]
-    mov     [bp+var_3A], ax
-    mov     [bp+var_38], dx
+    mov     [bp+var_3A.x2], ax
+    mov     [bp+var_3A.y2], dx
     sub     ax, ax
     push    ax
     push    dx
-    push    [bp+var_3A]
+    push    [bp+var_3A.x2]
     call    putpixel_single_maybe
     add     sp, 6
     inc     si
@@ -7107,7 +7099,7 @@ loc_1E06C:
     push    word_3C1BC
     push    word_3C1BA
     push    word_3C1B8
-    push    rect_unk7
+    push    intro_cliprect
     call    sprite_set_1_size
     add     sp, 8
     sub     ax, ax
@@ -7118,7 +7110,7 @@ loc_1E08F:
     push    word_3C1BC
     push    word_3C1BA
     push    word_3C1B8
-    push    rect_unk7
+    push    intro_cliprect
     call    sprite_set_1_size
     add     sp, 8
     sub     di, di
@@ -7142,7 +7134,7 @@ loc_1E0AB:
     mov     ax, [bx+4]
     sub     ax, [bp+arg_4]
     mov     [bp+var_32], ax
-    lea     ax, [bp+var_40]
+    lea     ax, [bp+var_vec]
     push    ax
     mov     ax, offset mat_temp
     push    ax
@@ -7150,17 +7142,17 @@ loc_1E0AB:
     push    ax
     call    mat_mul_vector
     add     sp, 6
-    cmp     [bp+var_3C], 0C8h ; 'È'
+    cmp     [bp+var_vec.vz], 0C8h ; 'È'
     jle     short loc_1E157
     lea     ax, [bp+var_3A]
     push    ax
-    lea     ax, [bp+var_40]
+    lea     ax, [bp+var_vec]
     push    ax
-    call    sub_323D9
+    call    vector_to_point
     add     sp, 4
     push    word_3C1BE
-    push    [bp+var_38]
-    push    [bp+var_3A]
+    push    [bp+var_3A.y2]
+    push    [bp+var_3A.x2]
     call    putpixel_single_maybe
     add     sp, 6
     cmp     timertestflag_copy, 0
@@ -7171,15 +7163,15 @@ loc_1E0AB:
     shl     ax, 1
     shl     ax, 1
     add     bx, ax
-    mov     ax, [bp+var_3A]
-    mov     dx, [bp+var_38]
+    mov     ax, [bp+var_3A.x2]
+    mov     dx, [bp+var_3A.y2]
     mov     [bx], ax
     mov     [bx+2], dx
     lea     ax, [bp+var_24]
     push    ax
     lea     ax, [bp+var_3A]
     push    ax
-    call    sub_2637A
+    call    rect_adjust_unk
     add     sp, 4
 loc_1E144:
     inc     word_3C1BE
