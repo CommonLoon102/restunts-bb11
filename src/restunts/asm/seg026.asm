@@ -46,31 +46,23 @@ nosmart
 seg026 segment byte public 'STUNTSC' use16
     assume cs:seg026
     assume es:nothing, ss:nothing, ds:dseg
-    public sub_370BA
-sub_370BA proc far
+    public toupper
+toupper proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
 
     push    bp
-loc_370BB:
     mov     bp, sp
-loc_370BD:
     cmp     [bp+arg_0], 61h ; 'a'
-loc_370C1:
     jl      short loc_370CD
-loc_370C3:
     cmp     [bp+arg_0], 7Ah ; 'z'
-loc_370C7:
     jg      short loc_370CD
-loc_370C9:
     sub     [bp+arg_0], 20h ; ' '
 loc_370CD:
     mov     ax, [bp+arg_0]
-loc_370D0:
     pop     bp
-locret_370D1:
     retf
-sub_370BA endp
+toupper endp
 seg026 ends
 end

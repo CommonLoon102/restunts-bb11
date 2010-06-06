@@ -51,9 +51,9 @@ seg006 segment byte public 'STUNTSC' use16
     public sub_24DE6
     public select_cliprect_rotate
     public transformed_shape_op
-    public sub_25E24
+    public transformed_shape_op_helper
     public rect_compare_point
-    public sub_25F2E
+    public transformed_shape_op_helper3
     public get_a_poly_info
     public mat_rot_zxy
     public rect_adjust_unk
@@ -1155,7 +1155,7 @@ loc_2572E:
     push    dx
     push    ax
     push    cs
-    call near ptr sub_25F2E
+    call near ptr transformed_shape_op_helper3
     add     sp, 4
     or      al, al
     jz      short loc_25763
@@ -1413,7 +1413,7 @@ loc_25997:
     push    dx
     push    ax
     push    cs
-    call near ptr sub_25F2E
+    call near ptr transformed_shape_op_helper3
     add     sp, 4
     or      al, al
     jnz     short loc_25A7C
@@ -1653,7 +1653,7 @@ loc_25C01:
     call    polarRadius3D
     add     sp, 2
     push    ax
-    call    sub_3275C
+    call    transformed_shape_op_helper2
     add     sp, 4
     mov     [bp+var_462], ax
     les     bx, transshapepolyinfo
@@ -1807,7 +1807,7 @@ loc_25DF1:
     push    ax
     push    si
     push    cs
-    call near ptr sub_25E24
+    call near ptr transformed_shape_op_helper
     add     sp, 4
     mov     word_40ECE, ax
     or      ax, ax
@@ -1832,7 +1832,7 @@ _done_ret_0:
     ; align 2
     db 144
 transformed_shape_op endp
-sub_25E24 proc far
+transformed_shape_op_helper proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -1919,7 +1919,7 @@ loc_25EDA:
     mov     sp, bp
     pop     bp
     retf
-sub_25E24 endp
+transformed_shape_op_helper endp
 rect_compare_point proc far
     var_flags = byte ptr -4
      s = byte ptr 0
@@ -1969,7 +1969,7 @@ loc_25F25:
     pop     bp
     retf
 rect_compare_point endp
-sub_25F2E proc far
+transformed_shape_op_helper3 proc far
     var_10 = word ptr -16
     var_E = word ptr -14
     var_C = word ptr -12
@@ -2077,7 +2077,7 @@ loc_25FEE:
     mov     sp, bp
     pop     bp
     retf
-sub_25F2E endp
+transformed_shape_op_helper3 endp
 get_a_poly_info proc far
     var_40 = word ptr -64
     var_3E = dword ptr -62

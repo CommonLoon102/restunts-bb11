@@ -1111,8 +1111,8 @@ loc_38E1A:
     xchg    ax, bx
     jmp     cs:off_38E7E[bx]
 loc_38E32:
-    mov     ax, word_42A34
-    mov     dx, word_42A36
+    mov     ax, word ptr basdres
+    mov     dx, word ptr basdres+2
 loc_38E39:
     mov     word ptr [bp+var_4], ax
     mov     word ptr [bp+var_4+2], dx
@@ -1120,38 +1120,38 @@ loc_38E39:
     ; align 2
     db 144
 loc_38E42:
-    mov     ax, word_4393E
-    mov     dx, word_43940
+    mov     ax, word ptr snarres
+    mov     dx, word ptr snarres+2
     jmp     short loc_38E39
     ; align 2
     db 144
 loc_38E4C:
-    mov     ax, word_454CA
-    mov     dx, word_454CC
+    mov     ax, word ptr rideres
+    mov     dx, word ptr rideres+2
     jmp     short loc_38E39
     ; align 2
     db 144
 loc_38E56:
-    mov     ax, word_4432C
-    mov     dx, word_4432E
+    mov     ax, word ptr crshres
+    mov     dx, word ptr crshres+2
     jmp     short loc_38E39
     ; align 2
     db 144
 loc_38E60:
-    mov     ax, word_43928
-    mov     dx, word_4392A
+    mov     ax, word ptr chhtres
+    mov     dx, word ptr chhtres+2
     jmp     short loc_38E39
     ; align 2
     db 144
 loc_38E6A:
-    mov     ax, word_44368
-    mov     dx, word_4436A
+    mov     ax, word ptr ohhtres
+    mov     dx, word ptr ohhtres+2
     jmp     short loc_38E39
     ; align 2
     db 144
 loc_38E74:
-    mov     ax, word_4394A
-    mov     dx, word_4394C
+    mov     ax, word ptr tommres
+    mov     dx, word ptr tommres+2
     jmp     short loc_38E39
     ; align 2
     db 144
@@ -1333,7 +1333,7 @@ loc_38FF2:
     mov     bx, [bp+arg_2]
     mov     si, [bp+arg_0]
     mov     al, [si+4]
-    mov     [bx-6CA6h], al
+    mov     byte_44ACA[bx], al
     mov     ax, [bp+var_6]
     pop     ds
     pop     si
@@ -1918,7 +1918,7 @@ loc_3952D:
     mov     [bx+5], al
     push    es
     push    word ptr [bp+arg_2]
-    call    sub_384FA
+    call    audioresource_get_dword
     add     sp, 4
     mov     bx, [bp+arg_0]
     mov     [bx+6], ax
@@ -1950,7 +1950,7 @@ loc_39566:
 loc_3958A:
     push    es
     push    word ptr [bp+arg_2]
-    call    sub_38514
+    call    audioresource_get_word
     add     sp, 4
     mov     bx, [bp+arg_0]
     mov     [bx+6], ax
@@ -2196,7 +2196,7 @@ loc_39754:
     mov     al, 4Ch ; 'L'
     mul     byte ptr [bx]
     mov     bx, ax
-    dec     byte ptr [bx-7DEFh]
+    dec     (audiochunks_unk+15h)[bx]
     push    [bp+var_8]
     mov     bx, [bp+var_8]
     mov     al, [bx+2Ch]
@@ -2212,7 +2212,7 @@ loc_39754:
     mov     bx, [bp+var_8]
     mov     bl, [bx]
     sub     bh, bh
-    mov     [bx-6CA6h], bh
+    mov     byte_44ACA[bx], bh
 loc_397B1:
     les     bx, [bp+var_6]
     cmp     byte ptr es:[bx+28h], 0

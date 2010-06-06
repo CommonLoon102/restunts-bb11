@@ -1,7 +1,7 @@
 seg029 segment byte public 'STUNTSC' use16
-    extrn sub_39AD4:proc
+    extrn audioresource_compare_chunknames:proc
     extrn byte_39B14:byte
-    extrn sub_39B5A:proc
-    extrn init_audio_resource:proc
-    extrn sub_39C84:proc
+    extrn audioresource_get_chunk_index:proc
+    extrn audioresource_find:proc
+    extrn audioresource_copy_n_bytes:proc
 seg029 ends

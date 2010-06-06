@@ -4317,12 +4317,14 @@ ported_file_load_audiores_ proc far
     var_2 = word ptr -2
      s = byte ptr 0
      r = byte ptr 2
-    arg_0 = dword ptr 6
+    arg_0 = word ptr 6
+    arg_2 = word ptr 8
+    arg_4 = word ptr 10
 
     push    bp
     mov     bp, sp
     sub     sp, 4
-    push    word ptr [bp+arg_0+2]; char *
+    push    [bp+arg_2]      ; char *
     mov     ax, 5
     push    ax              ; int
     push    cs
@@ -4330,7 +4332,7 @@ ported_file_load_audiores_ proc far
     add     sp, 4
     mov     word ptr voicefileptr, ax
     mov     word ptr voicefileptr+2, dx
-    push    word ptr [bp+arg_0]; char *
+    push    [bp+arg_0]      ; char *
     mov     ax, 4
     push    ax              ; int
     push    cs
@@ -4338,7 +4340,7 @@ ported_file_load_audiores_ proc far
     add     sp, 4
     mov     word ptr songfileptr, ax
     mov     word ptr songfileptr+2, dx
-    push    word ptr [bp+0Ah]
+    push    [bp+arg_4]      ; arg_4 is a string, e.g "TITL"
     push    word ptr voicefileptr+2
     push    word ptr voicefileptr
     push    dx

@@ -905,6 +905,10 @@ dseg segment byte public 'STUNTSD' use16
     extrn aDrv:byte
     extrn aMt32_plb:byte
     extrn aCanTFindDriver:byte
+    extrn aGe:byte
+    extrn aGe_0:byte
+    extrn aBlankstr:byte
+    extrn aBlankstr2:byte
     extrn aDsf:byte
     extrn aSfx:byte
     extrn aCannotLoadSfxFileS:byte
@@ -915,6 +919,15 @@ dseg segment byte public 'STUNTSD' use16
     extrn aCannotLoadVoiceFileS:byte
     extrn aSlb:byte
     extrn aCannotLoadSampleFileS:byte
+    extrn aHdr1_0:byte
+    extrn aBasd:byte
+    extrn aSnar:byte
+    extrn aTomm:byte
+    extrn aRide:byte
+    extrn aCrsh:byte
+    extrn aChht:byte
+    extrn aOhht:byte
+    extrn aHdr1_1:byte
     extrn word_407AA:word
     extrn unk_407AC:byte
     extrn dialog_fnt_colour:word
@@ -1110,8 +1123,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn word_42A22:word
     extrn unk_42A24:byte
     extrn td10_track_check_rel:dword
-    extrn word_42A34:word
-    extrn word_42A36:word
+    extrn basdres:dword
     extrn followOpponentFlag_copy:byte
     extrn currenttransshape:TRANSFORMEDSHAPE
     extrn transshapeunk:TRANSFORMEDSHAPE
@@ -1134,25 +1146,20 @@ dseg segment byte public 'STUNTSD' use16
     extrn byte_42D2A:byte
     extrn wallStartZ:word
     extrn byte_42D2E:byte
-    extrn byte_42DAE:byte
-    extrn byte_42DAF:byte
-    extrn byte_42DB0:byte
+    extrn audiodriverstring2:byte
     extrn game3dshapes:SHAPE3D
     extrn td02_penalty_related:dword
     extrn trackpos:word
-    extrn word_43928:word
-    extrn word_4392A:word
+    extrn chhtres:dword
     extrn byte_4392C:byte
     extrn mcgawndsprite:dword
     extrn skybox_current:word
     extrn rect_unk10:RECTANGLE
     extrn byte_4393C:byte
     extrn byte_4393D:byte
-    extrn word_4393E:word
-    extrn word_43940:word
+    extrn snarres:dword
     extrn trackdata3:dword
-    extrn word_4394A:word
-    extrn word_4394C:word
+    extrn tommres:dword
     extrn word_4394E:word
     extrn dashb_toggle:byte
     extrn mat_unk_1:MATRIX
@@ -1172,8 +1179,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn mouse_butstate:word
     extrn byte_442EA:byte
     extrn byte_4432A:byte
-    extrn word_4432C:word
-    extrn word_4432E:word
+    extrn crshres:dword
     extrn logoshape:SHAPE3D
     extrn byte_44346:byte
     extrn gState_13C:word
@@ -1190,8 +1196,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn pState_minusRotate_y_1:word
     extrn songfileptr:dword
     extrn mmouspriteptr:dword
-    extrn word_44368:word
-    extrn word_4436A:word
+    extrn ohhtres:dword
     extrn logo2shape:SHAPE3D
     extrn waitflag:word
     extrn unk_44384:byte
@@ -1271,12 +1276,14 @@ dseg segment byte public 'STUNTSD' use16
     extrn byte_44A8A:byte
     extrn wallHeight:word
     extrn terrainpos:word
+    extrn byte_44ACA:byte
     extrn byte_44AE2:byte
     extrn video_flag1_is1:word
     extrn td11_highscores:dword
     extrn timertestflag:word
     extrn mainresptr:dword
     extrn bravshape:SHAPE3D
+    extrn byte_44D06:byte
     extrn word_44D1E:word
     extrn word_44D20:word
     extrn fontnptr:dword
@@ -1324,8 +1331,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn kbjoyflags:word
     extrn planptr:dword
     extrn fontdefptr:dword
-    extrn word_454CA:word
-    extrn word_454CC:word
+    extrn rideres:dword
     extrn word_454CE:word
     extrn trackdata6:dword
     extrn video_flag3_isFFFF:word

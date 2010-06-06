@@ -46,109 +46,82 @@ nosmart
 seg029 segment byte public 'STUNTSC' use16
     assume cs:seg029
     assume es:nothing, ss:nothing, ds:dseg
-    public sub_39AD4
+    public audioresource_compare_chunknames
     public byte_39B14
-    public sub_39B5A
-    public init_audio_resource
-    public sub_39C84
+    public audioresource_get_chunk_index
+    public audioresource_find
+    public audioresource_copy_n_bytes
 algn_39AD1:
     ; align 4
     db 144
     db 0
     db 0
-sub_39AD4 proc far
+audioresource_compare_chunknames proc far
     var_2 = word ptr -2
      s = byte ptr 0
      r = byte ptr 2
-    arg_0 = word ptr 6
-    arg_2 = dword ptr 8
-    arg_6 = dword ptr 12
-    arg_A = word ptr 16
+    arg_casesensitive = word ptr 6
+    arg_chunkname = dword ptr 8
+    arg_foundname = dword ptr 12
+    arg_num = word ptr 16
 
     push    bp
-loc_39AD5:
     mov     bp, sp
-loc_39AD7:
     sub     sp, 2
-loc_39ADA:
     push    di
     push    si
-loc_39ADC:
-    cmp     [bp+arg_A], 0
-loc_39AE0:
+    cmp     [bp+arg_num], 0
     jz      short loc_39B50
-loc_39AE2:
-    mov     di, [bp+arg_0]
-loc_39AE5:
-    mov     si, [bp+arg_A]
+    mov     di, [bp+arg_casesensitive]
+    mov     si, [bp+arg_num]
 loc_39AE8:
-    les     bx, [bp+arg_2]
-loc_39AEB:
+    les     bx, [bp+arg_chunkname]
     cmp     byte ptr es:[bx], 0
-loc_39AEF:
-    jz      short loc_39B4D
-loc_39AF1:
-    les     bx, [bp+arg_6]
-loc_39AF4:
+    jz      short loc_39B4D ; goto end
+    les     bx, [bp+arg_foundname]
     cmp     byte ptr es:[bx], 0
-loc_39AF8:
-    jz      short loc_39B4D
-loc_39AFA:
+    jz      short loc_39B4D ; goto end
     or      di, di
-loc_39AFC:
     jz      short loc_39B16
-loc_39AFE:
-    mov     al, es:[bx]
-loc_39B01:
-    les     bx, [bp+arg_2]
-loc_39B04:
+    mov     al, es:[bx]     ; al = arg_foundname[]
+    les     bx, [bp+arg_chunkname]
     cmp     es:[bx], al
-loc_39B07:
     jz      short loc_39B16
 loc_39B09:
     sub     ax, ax
-loc_39B0B:
-    mov     [bp+arg_A], si
-loc_39B0E:
+    mov     [bp+arg_num], si
     pop     si
     pop     di
-loc_39B10:
     mov     sp, bp
-loc_39B12:
     pop     bp
     retf
 byte_39B14     db 144
     db 144
 loc_39B16:
     or      di, di
-loc_39B18:
     jnz     short loc_39B44
-loc_39B1A:
-    les     bx, [bp+arg_6]
+    les     bx, [bp+arg_foundname]
     mov     al, es:[bx]
     sub     ah, ah
     push    ax
-loc_39B23:
-    call    sub_370BA
+    call    toupper
     add     sp, 2
-    les     bx, [bp+arg_2]
+    les     bx, [bp+arg_chunkname]
     mov     cl, es:[bx]
     sub     ch, ch
     push    cx
     mov     [bp+var_2], ax
-    call    sub_370BA
-loc_39B3C:
+    call    toupper
     add     sp, 2
     cmp     ax, [bp+var_2]
     jnz     short loc_39B09
 loc_39B44:
-    inc     word ptr [bp+arg_2]
-loc_39B47:
-    inc     word ptr [bp+arg_6]
+    inc     word ptr [bp+arg_chunkname]
+    inc     word ptr [bp+arg_foundname]
     dec     si
     jnz     short loc_39AE8
 loc_39B4D:
-    mov     [bp+arg_A], si
+    mov     [bp+arg_num], si
 loc_39B50:
     mov     ax, 1
     pop     si
@@ -158,93 +131,77 @@ loc_39B50:
     retf
     ; align 2
     db 144
-sub_39AD4 endp
-sub_39B5A proc far
-    var_E = word ptr -14
-    var_C = word ptr -12
+audioresource_compare_chunknames endp
+audioresource_get_chunk_index proc far
+    var_chunkname = word ptr -14
+    var_chunknameseg = word ptr -12
     var_A = word ptr -10
-    var_8 = word ptr -8
-    var_6 = byte ptr -6
+    var_counter = word ptr -8
+    var_namebuf = byte ptr -6
     var_2 = byte ptr -2
      s = byte ptr 0
      r = byte ptr 2
-    arg_0 = word ptr 6
-    arg_2 = word ptr 8
-    arg_4 = word ptr 10
-    arg_6 = dword ptr 12
+    arg_num = word ptr 6
+    arg_numchunks = word ptr 8
+    arg_chunkname = word ptr 10
+    arg_chunkptr = dword ptr 12
 
     push    bp
-loc_39B5B:
     mov     bp, sp
     sub     sp, 0Eh
     push    di
     push    si
     mov     [bp+var_2], 0
-    mov     [bp+var_8], 0
-    cmp     [bp+arg_2], 0
+    mov     [bp+var_counter], 0
+    cmp     [bp+arg_numchunks], 0
     jle     short loc_39BD3
-    mov     ax, [bp+arg_4]
-    mov     [bp+var_E], ax
-    mov     [bp+var_C], ds
-    mov     si, [bp+var_8]
+    mov     ax, [bp+arg_chunkname]
+    mov     [bp+var_chunkname], ax
+    mov     [bp+var_chunknameseg], ds
+    mov     si, [bp+var_counter]
 loc_39B7D:
     sub     cx, cx
-loc_39B7F:
-    les     di, [bp+arg_6]
+    les     di, [bp+arg_chunkptr]
 loc_39B82:
     mov     bx, cx
-loc_39B84:
     add     bx, bp
     mov     al, es:[di]
-    mov     [bx-6], al
-loc_39B8C:
+    mov     [bx+var_namebuf], al
     inc     di
-loc_39B8D:
     inc     cx
-loc_39B8E:
     cmp     cx, 4
-loc_39B91:
     jl      short loc_39B82
-loc_39B93:
-    mov     word ptr [bp+arg_6], di
-loc_39B96:
-    mov     word ptr [bp+arg_6+2], es
-loc_39B99:
+    mov     word ptr [bp+arg_chunkptr], di; point at next chunk name
+    mov     word ptr [bp+arg_chunkptr+2], es
     mov     [bp+var_A], cx
-loc_39B9C:
     mov     ax, 4
-loc_39B9F:
     push    ax
-loc_39BA0:
-    push    [bp+var_C]
-loc_39BA3:
-    push    [bp+var_E]
-    lea     ax, [bp+var_6]
+    push    [bp+var_chunknameseg]
+    push    [bp+var_chunkname]
+    lea     ax, [bp+var_namebuf]
     push    ss
     push    ax
     sub     ax, ax
     push    ax
     push    cs
-    call near ptr sub_39AD4
-loc_39BB2:
+    call near ptr audioresource_compare_chunknames
     add     sp, 0Ch
     or      ax, ax
-    jz      short loc_39BC4
+    jz      short loc_39BC4 ; if ax = 0, then try next
     mov     ax, si
-    mov     [bp+var_8], si
+    mov     [bp+var_counter], si
     pop     si
     pop     di
     mov     sp, bp
     pop     bp
     retf
 loc_39BC4:
-    mov     ax, [bp+arg_0]
-    add     word ptr [bp+arg_6], ax
+    mov     ax, [bp+arg_num]
+    add     word ptr [bp+arg_chunkptr], ax
     inc     si
-    cmp     si, [bp+arg_2]
-loc_39BCE:
+    cmp     si, [bp+arg_numchunks]
     jl      short loc_39B7D
-    mov     [bp+var_8], si
+    mov     [bp+var_counter], si
 loc_39BD3:
     mov     ax, 0FFFFh
     pop     si
@@ -252,21 +209,21 @@ loc_39BD3:
     mov     sp, bp
     pop     bp
     retf
-sub_39B5A endp
-init_audio_resource proc far
-    var_10 = word ptr -16
+audioresource_get_chunk_index endp
+audioresource_find proc far
+    var_chunkindex = word ptr -16
     var_E = word ptr -14
     var_C = word ptr -12
     var_A = word ptr -10
     var_8 = word ptr -8
     var_6 = word ptr -6
     var_4 = word ptr -4
-    var_2 = word ptr -2
+    var_numchunks = word ptr -2
      s = byte ptr 0
      r = byte ptr 2
-    arg_0 = word ptr 6
-    arg_2 = word ptr 8
-    arg_4 = word ptr 10
+    arg_chunkofs = word ptr 6
+    arg_chunkseg = word ptr 8
+    arg_chunkname = word ptr 10
 
     push    bp
     mov     bp, sp
@@ -277,135 +234,112 @@ loc_39BE2:
     mov     [bp+var_A], ax
     mov     ax, 4
     cwd
-    add     ax, [bp+arg_0]
+    add     ax, [bp+arg_chunkofs]
     adc     dx, 0
     mov     cx, 0Ch
     shl     dx, cl
-    add     dx, [bp+arg_2]
+    add     dx, [bp+arg_chunkseg]
     mov     es, dx
     mov     bx, ax
-    mov     ax, es:[bx]
-    mov     [bp+var_2], ax
+    mov     ax, es:[bx]     ; read a word from songfile+4 = number of (sub)chunks?
+    mov     [bp+var_numchunks], ax
     mov     ax, 6
     cwd
-    add     ax, [bp+arg_0]
+    add     ax, [bp+arg_chunkofs]
     adc     dx, 0
     shl     dx, cl
-    add     dx, [bp+arg_2]
+    add     dx, [bp+arg_chunkseg]
     push    dx
-    push    ax
-    push    [bp+arg_4]
-    push    [bp+var_2]
+    push    ax              ; songfile+6 = chunknames
+    push    [bp+arg_chunkname]
+    push    [bp+var_numchunks]
     sub     ax, ax
     push    ax
     push    cs
-    call near ptr sub_39B5A
+    call near ptr audioresource_get_chunk_index
     add     sp, 0Ah
-    mov     [bp+var_10], ax
+    mov     [bp+var_chunkindex], ax
     or      ax, ax
-    jl      short loc_39C7A
-    mov     ax, [bp+arg_0]
-    mov     dx, [bp+arg_2]
-    mov     cx, [bp+var_2]
+    jl      short loc_39C7A ; -1 = not found
+    mov     ax, [bp+arg_chunkofs]
+    mov     dx, [bp+arg_chunkseg]
+    mov     cx, [bp+var_numchunks]
     shl     cx, 1
     shl     cx, 1
     add     ax, cx
-    mov     cx, [bp+var_10]
+    mov     cx, [bp+var_chunkindex]
     shl     cx, 1
     shl     cx, 1
     add     ax, cx
 loc_39C46:
     add     ax, 6
-    mov     [bp+var_6], ax
+    mov     [bp+var_6], ax  ; ax = chunkofs + 6 + (chunkindex << 2) + (numchunk << 2)
     mov     [bp+var_4], dx
     push    dx
     push    ax
-    call    sub_384FA
+    call    audioresource_get_dword; read dword from the audio resource buffer
     add     sp, 4
     mov     [bp+var_E], ax
     mov     [bp+var_C], dx
-    mov     ax, [bp+arg_0]
-    mov     dx, [bp+arg_2]
-    mov     bx, [bp+var_2]
+    mov     ax, [bp+arg_chunkofs]
+    mov     dx, [bp+arg_chunkseg]
+    mov     bx, [bp+var_numchunks]
     mov     cl, 3
     shl     bx, cl
     add     ax, bx
     add     ax, [bp+var_E]
     add     ax, 6
-loc_39C74:
-    mov     [bp+var_A], ax
+    mov     [bp+var_A], ax  ; ax = chunkofs + 6 + readdword + (numchunks << 3)
     mov     [bp+var_8], dx
 loc_39C7A:
     mov     ax, [bp+var_A]
     mov     dx, [bp+var_8]
-loc_39C80:
     mov     sp, bp
-loc_39C82:
     pop     bp
     retf
-init_audio_resource endp
-sub_39C84 proc far
+audioresource_find endp
+audioresource_copy_n_bytes proc far
     var_6 = word ptr -6
     var_2 = word ptr -2
      s = byte ptr 0
      r = byte ptr 2
-    arg_0 = dword ptr 6
-    arg_4 = dword ptr 10
-    arg_8 = word ptr 14
+    arg_srcptr = dword ptr 6
+    arg_destptr = dword ptr 10
+    arg_size = word ptr 14
 
     push    bp
-loc_39C85:
     mov     bp, sp
-loc_39C87:
     sub     sp, 6
     push    di
     push    si
-loc_39C8C:
     mov     [bp+var_2], 0
-loc_39C91:
-    cmp     [bp+arg_8], 0
+    cmp     [bp+arg_size], 0
     jle     short loc_39CC4
-loc_39C97:
-    mov     cx, [bp+arg_8]
-loc_39C9A:
+    mov     cx, [bp+arg_size]
     mov     ax, cx
-loc_39C9C:
     add     [bp+var_2], ax
-    les     di, [bp+arg_4]
-loc_39CA2:
+    les     di, [bp+arg_destptr]
     mov     [bp+var_6], ds
-    lds     si, [bp+arg_0]
+    lds     si, [bp+arg_srcptr]
 loc_39CA8:
     mov     al, [si]
-loc_39CAA:
     mov     es:[di], al
-loc_39CAD:
     mov     ax, si
-loc_39CAF:
     mov     dx, ds
     inc     si
     inc     di
     loop    loc_39CA8
-loc_39CB5:
-    mov     word ptr [bp+arg_0], si
-loc_39CB8:
-    mov     word ptr [bp+arg_0+2], ds
-loc_39CBB:
+    mov     word ptr [bp+arg_srcptr], si; ??
+    mov     word ptr [bp+arg_srcptr+2], ds; ??
     mov     ds, [bp+var_6]
-loc_39CBE:
-    mov     word ptr [bp+arg_4], di
-loc_39CC1:
-    mov     word ptr [bp+arg_4+2], es
+    mov     word ptr [bp+arg_destptr], di; ??
+    mov     word ptr [bp+arg_destptr+2], es; ??
 loc_39CC4:
     pop     si
-loc_39CC5:
     pop     di
-loc_39CC6:
     mov     sp, bp
-loc_39CC8:
     pop     bp
-locret_39CC9:
     retf
-sub_39C84 endp
+audioresource_copy_n_bytes endp
 seg029 ends
 end

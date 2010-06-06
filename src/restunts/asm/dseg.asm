@@ -953,6 +953,10 @@ dseg segment byte public 'STUNTSD' use16
     public aDrv
     public aMt32_plb
     public aCanTFindDriver
+    public aGe
+    public aGe_0
+    public aBlankstr
+    public aBlankstr2
     public aDsf
     public aSfx
     public aCannotLoadSfxFileS
@@ -963,6 +967,15 @@ dseg segment byte public 'STUNTSD' use16
     public aCannotLoadVoiceFileS
     public aSlb
     public aCannotLoadSampleFileS
+    public aHdr1_0
+    public aBasd
+    public aSnar
+    public aTomm
+    public aRide
+    public aCrsh
+    public aChht
+    public aOhht
+    public aHdr1_1
     public word_407AA
     public unk_407AC
     public dialog_fnt_colour
@@ -1158,8 +1171,7 @@ dseg segment byte public 'STUNTSD' use16
     public word_42A22
     public unk_42A24
     public td10_track_check_rel
-    public word_42A34
-    public word_42A36
+    public basdres
     public followOpponentFlag_copy
     public currenttransshape
     public transshapeunk
@@ -1182,25 +1194,20 @@ dseg segment byte public 'STUNTSD' use16
     public byte_42D2A
     public wallStartZ
     public byte_42D2E
-    public byte_42DAE
-    public byte_42DAF
-    public byte_42DB0
+    public audiodriverstring2
     public game3dshapes
     public td02_penalty_related
     public trackpos
-    public word_43928
-    public word_4392A
+    public chhtres
     public byte_4392C
     public mcgawndsprite
     public skybox_current
     public rect_unk10
     public byte_4393C
     public byte_4393D
-    public word_4393E
-    public word_43940
+    public snarres
     public trackdata3
-    public word_4394A
-    public word_4394C
+    public tommres
     public word_4394E
     public dashb_toggle
     public mat_unk_1
@@ -1220,8 +1227,7 @@ dseg segment byte public 'STUNTSD' use16
     public mouse_butstate
     public byte_442EA
     public byte_4432A
-    public word_4432C
-    public word_4432E
+    public crshres
     public logoshape
     public byte_44346
     public gState_13C
@@ -1238,8 +1244,7 @@ dseg segment byte public 'STUNTSD' use16
     public pState_minusRotate_y_1
     public songfileptr
     public mmouspriteptr
-    public word_44368
-    public word_4436A
+    public ohhtres
     public logo2shape
     public waitflag
     public unk_44384
@@ -1319,12 +1324,14 @@ dseg segment byte public 'STUNTSD' use16
     public byte_44A8A
     public wallHeight
     public terrainpos
+    public byte_44ACA
     public byte_44AE2
     public video_flag1_is1
     public td11_highscores
     public timertestflag
     public mainresptr
     public bravshape
+    public byte_44D06
     public word_44D1E
     public word_44D20
     public fontnptr
@@ -1372,8 +1379,7 @@ dseg segment byte public 'STUNTSD' use16
     public kbjoyflags
     public planptr
     public fontdefptr
-    public word_454CA
-    public word_454CC
+    public rideres
     public word_454CE
     public trackdata6
     public video_flag3_isFFFF
@@ -20831,14 +20837,14 @@ aCanTFindDriver     db 67
     db 33
     db 10
     db 0
-    db 103
+aGe     db 103
     db 101
     db 0
-    db 103
+aGe_0     db 103
     db 101
     db 0
-    db 0
-    db 0
+aBlankstr     db 0
+aBlankstr2     db 0
 aDsf     db 100
     db 115
     db 102
@@ -20965,47 +20971,47 @@ aCannotLoadSampleFileS     db 99
     db 37
     db 115
     db 0
-    db 104
+aHdr1_0     db 104
     db 100
     db 114
     db 49
     db 0
-    db 66
+aBasd     db 66
     db 65
     db 83
     db 68
     db 0
-    db 83
+aSnar     db 83
     db 78
     db 65
     db 82
     db 0
-    db 84
+aTomm     db 84
     db 79
     db 77
     db 77
     db 0
-    db 82
+aRide     db 82
     db 73
     db 68
     db 69
     db 0
-    db 67
+aCrsh     db 67
     db 82
     db 83
     db 72
     db 0
-    db 67
+aChht     db 67
     db 72
     db 72
     db 84
     db 0
-    db 79
+aOhht     db 79
     db 72
     db 72
     db 84
     db 0
-    db 104
+aHdr1_1     db 104
     db 100
     db 114
     db 49
@@ -27628,8 +27634,7 @@ unk_42A24     db 0
     db 0
     db 0
 td10_track_check_rel     dd 0
-word_42A34     dw 0
-word_42A36     dw 0
+basdres     dd 0
 followOpponentFlag_copy     db 0
     db 0
 currenttransshape     db 0
@@ -28438,9 +28443,9 @@ byte_42D2E     db 0
     db 0
     db 0
     db 0
-byte_42DAE     db 0
-byte_42DAF     db 0
-byte_42DB0     db 0
+audiodriverstring2     db 0
+    db 0
+    db 0
     db 0
     db 0
     db 0
@@ -31343,8 +31348,7 @@ trackpos     dw 0
     dw 0
     dw 0
     dw 0
-word_43928     dw 0
-word_4392A     dw 0
+chhtres     dd 0
 byte_4392C     db 0
     db 0
 mcgawndsprite     dd 0
@@ -31359,15 +31363,13 @@ rect_unk10     db 0
     db 0
 byte_4393C     db 0
 byte_4393D     db 0
-word_4393E     dw 0
-word_43940     dw 0
+snarres     dd 0
 trackdata3     dd 0
     db 0
     db 0
     db 0
     db 0
-word_4394A     dw 0
-word_4394C     dw 0
+tommres     dd 0
 word_4394E     dw 0
 dashb_toggle     db 0
     db 0
@@ -33888,8 +33890,7 @@ byte_442EA     db 0
     db 0
 byte_4432A     db 0
     db 0
-word_4432C     dw 0
-word_4432E     dw 0
+crshres     dd 0
 logoshape     db 0
     db 0
     db 0
@@ -33928,8 +33929,7 @@ gState_150     dw 0
 pState_minusRotate_y_1     dw 0
 songfileptr     dd 0
 mmouspriteptr     dd 0
-word_44368     dw 0
-word_4436A     dw 0
+ohhtres     dd 0
 logo2shape     db 0
     db 0
     db 0
@@ -35669,7 +35669,7 @@ terrainpos     dw 0
     dw 0
     dw 0
     dw 0
-    db 0
+byte_44ACA     db 0
     db 0
     db 0
     db 0
@@ -36233,7 +36233,7 @@ bravshape     db 0
     db 0
     db 0
     db 0
-    db 0
+byte_44D06     db 0
     db 0
     db 0
     db 0
@@ -38159,8 +38159,7 @@ td15_terr_map_main     dd 0
 kbjoyflags     dw 0
 planptr     dd 0
 fontdefptr     dd 0
-word_454CA     dw 0
-word_454CC     dw 0
+rideres     dd 0
 word_454CE     dw 0
 trackdata6     dd 0
 video_flag3_isFFFF     dw 0
