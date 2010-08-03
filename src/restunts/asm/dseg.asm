@@ -129,6 +129,10 @@ dseg segment byte public 'STUNTSD' use16
     public aGkev_1
     public aSdmsel
     public aScrn
+    public menu_buttons_x1
+    public menu_buttons_x2
+    public menu_buttons_y1
+    public menu_buttons_y2
     public asc_3BA24
     public asc_3BA26
     public aHs0
@@ -139,10 +143,10 @@ dseg segment byte public 'STUNTSD' use16
     public aTrk
     public a_trk_0
     public a_trk_1
-    public unk_3BA4C
-    public unk_3BA52
-    public unk_3BA58
-    public unk_3BA5E
+    public trackmenu_buttons_x1
+    public trackmenu_buttons_x2
+    public trackmenu_buttons_y1
+    public trackmenu_buttons_y2
     public a_hig_0
     public a______________
     public a_______________________
@@ -179,14 +183,10 @@ dseg segment byte public 'STUNTSD' use16
     public aBau_0
     public aBma_0
     public carmenu_cliprect
-    public word_3BB28
-    public word_3BB32
-    public word_3BB3C
-    public word_3BB3E
-    public word_3BB40
-    public word_3BB42
-    public word_3BB44
-    public word_3BB4E
+    public carmenu_buttons_y1
+    public carmenu_buttons_y2
+    public carmenu_buttons_x1
+    public carmenu_buttons_x2
     public aLnam
     public stru_3BB56
     public carmenu_carpos
@@ -202,7 +202,10 @@ dseg segment byte public 'STUNTSD' use16
     public aClip
     public aDes_0
     public aRac
-    public word_3BBC8
+    public opponentmenu_buttons_x1
+    public opponentmenu_buttons_x2
+    public opponentmenu_buttons_y1
+    public opponentmenu_buttons_y2
     public aMisc_1
     public aGstu
     public aGver
@@ -254,10 +257,8 @@ dseg segment byte public 'STUNTSD' use16
     public word_3BCF0
     public word_3BCF2
     public word_3BCF6
-    public word_3BD00
-    public unk_3BD02
-    public word_3BD0A
-    public unk_3BD0C
+    public hiscore_buttons_y1
+    public hiscore_buttons_y2
     public aOpp2win
     public aOpp2lose
     public aOp01
@@ -606,21 +607,21 @@ dseg segment byte public 'STUNTSD' use16
     public byte_3E9E6
     public byte_3E9F0
     public byte_3E9FA
-    public byte_3EA04
-    public word_3EA08
+    public game_camera_buttons_count
+    public game_camera_buttons_x1
     public word_3EA18
-    public word_3EA1A
+    public game_camera_buttons_x2
     public word_3EA2A
-    public word_3EA2C
+    public game_camera_buttons_y1
     public word_3EA3A
     public word_3EA3C
-    public word_3EA3E
+    public game_camera_buttons_y2
     public word_3EA4C
     public word_3EA4E
-    public unk_3EA50
-    public unk_3EA52
-    public unk_3EA54
-    public unk_3EA56
+    public gameunk_button_x1
+    public gameunk_button_x2
+    public gameunk_button_y1
+    public gameunk_button_y2
     public aPolyinfo
     public primidxcounttab
     public primtypetab
@@ -707,10 +708,10 @@ dseg segment byte public 'STUNTSD' use16
     public aEokenseieemseedewwefuenpestej
     public aTer0
     public word_3ECBE
-    public unk_3ECD6
-    public unk_3ECE0
-    public unk_3ECEA
-    public unk_3ECF4
+    public trackmenu2_buttons_x1
+    public trackmenu2_buttons_x2
+    public trackmenu2_buttons_y1
+    public trackmenu2_buttons_y2
     public byte_3ECFE
     public byte_3ED00
     public aFlatlakelak1lak2lak3lak4highg
@@ -917,16 +918,16 @@ dseg segment byte public 'STUNTSD' use16
     public word_40330
     public word_40332
     public word_40334
-    public word_403AE
-    public word_403B0
-    public word_403B2
-    public word_403B4
-    public word_403B6
-    public word_403B8
-    public word_403BA
-    public word_403BC
-    public word_403BE
-    public word_403C0
+    public projectiondata3
+    public projectiondata6
+    public projectiondata4
+    public projectiondata7
+    public projectiondata5
+    public projectiondata8
+    public projectiondata9
+    public projectiondata10
+    public projectiondata1
+    public projectiondata2
     public aWindowReleased
     public aSFileError_0
     public currentvideomode
@@ -1021,7 +1022,7 @@ dseg segment byte public 'STUNTSD' use16
     public aSdmain_0
     public aSmou_0
     public aMmou
-    public byte_40B86
+    public aCopyrightCUnlimitedSoftwareInc_198
     public aMcgaWindow
     public aWindowdefOutOfRowTableSpa
     public a_pvs_0
@@ -2168,46 +2169,26 @@ aScrn     db 115
     db 4
     db 2
     db 0
-    db 105
-    db 0
-    db 66
-    db 0
-    db 5
-    db 0
-    db 190
-    db 0
-    db 255
-    db 0
-    db 208
-    db 0
-    db 107
-    db 0
-    db 67
-    db 0
-    db 253
-    db 0
-    db 56
-    db 1
-    db 119
-    db 0
-    db 77
-    db 0
-    db 114
-    db 0
-    db 76
-    db 0
-    db 116
-    db 0
-    db 197
-    db 0
-    db 120
-    db 0
-    db 170
-    db 0
-    db 122
-    db 0
-    db 166
-    db 0
+menu_buttons_x1     dw 105
+    dw 66
+    dw 5
+    dw 190
+    dw 255
+menu_buttons_x2     dw 208
+    dw 107
+    dw 67
+    dw 253
+    dw 312
+menu_buttons_y1     dw 119
+    dw 77
+    dw 114
+    dw 76
+    dw 116
+menu_buttons_y2     dw 197
+    dw 120
+    dw 170
+    dw 122
+    dw 166
 asc_3BA24     db 39
     db 0
 asc_3BA26     db 39
@@ -2248,30 +2229,18 @@ a_trk_1     db 46
     db 114
     db 107
     db 0
-unk_3BA4C     db 16
-    db 0
-    db 112
-    db 0
-    db 208
-    db 0
-unk_3BA52     db 112
-    db 0
-    db 208
-    db 0
-    db 48
-    db 1
-unk_3BA58     db 171
-    db 0
-    db 171
-    db 0
-    db 171
-    db 0
-unk_3BA5E     db 197
-    db 0
-    db 197
-    db 0
-    db 197
-    db 0
+trackmenu_buttons_x1     dw 16
+    dw 112
+    dw 208
+trackmenu_buttons_x2     dw 112
+    dw 208
+    dw 304
+trackmenu_buttons_y1     dw 171
+    dw 171
+    dw 171
+trackmenu_buttons_y2     dw 197
+    dw 197
+    dw 197
 a_hig_0     db 46
     db 104
     db 105
@@ -2468,38 +2437,26 @@ carmenu_cliprect     db 0
     db 0
     db 95
     db 0
-word_3BB28     dw 229
-    db 229
-    db 0
-    db 229
-    db 0
-    db 229
-    db 0
-    db 229
-    db 0
-word_3BB32     dw 316
-    db 60
-    db 1
-    db 60
-    db 1
-    db 60
-    db 1
-    db 60
-    db 1
-word_3BB3C     dw 107
-word_3BB3E     dw 125
-word_3BB40     dw 143
-word_3BB42     dw 161
-word_3BB44     dw 179
-    db 124
-    db 0
-    db 142
-    db 0
-    db 160
-    db 0
-    db 178
-    db 0
-word_3BB4E     dw 196
+carmenu_buttons_y1     dw 229
+    dw 229
+    dw 229
+    dw 229
+    dw 229
+carmenu_buttons_y2     dw 316
+    dw 316
+    dw 316
+    dw 316
+    dw 316
+carmenu_buttons_x1     dw 107
+    dw 125
+    dw 143
+    dw 161
+    dw 179
+carmenu_buttons_x2     dw 124
+    dw 142
+    dw 160
+    dw 178
+    dw 196
 aLnam     db 108
     db 110
     db 97
@@ -2600,45 +2557,26 @@ aRac     db 114
     db 99
     db 0
     db 0
-    db 20
-    db 0
-    db 76
-    db 0
-    db 132
-    db 0
-    db 188
-    db 0
-    db 244
-    db 0
-    db 76
-    db 0
-    db 132
-    db 0
-    db 188
-    db 0
-    db 244
-    db 0
-    db 44
-    db 1
-word_3BBC8     dw 177
-    db 177
-    db 0
-    db 177
-    db 0
-    db 177
-    db 0
-    db 177
-    db 0
-    db 197
-    db 0
-    db 197
-    db 0
-    db 197
-    db 0
-    db 197
-    db 0
-    db 197
-    db 0
+opponentmenu_buttons_x1     dw 20
+    dw 76
+    dw 132
+    dw 188
+    dw 244
+opponentmenu_buttons_x2     dw 76
+    dw 132
+    dw 188
+    dw 244
+    dw 300
+opponentmenu_buttons_y1     dw 177
+    dw 177
+    dw 177
+    dw 177
+    dw 177
+opponentmenu_buttons_y2     dw 197
+    dw 197
+    dw 197
+    dw 197
+    dw 197
 aMisc_1     db 109
     db 105
     db 115
@@ -2924,24 +2862,16 @@ word_3BCF6     dw 75
     db 1
     db 199
     db 0
-word_3BD00     dw 174
-unk_3BD02     db 174
-    db 0
-    db 174
-    db 0
-    db 174
-    db 0
-    db 174
-    db 0
-word_3BD0A     dw 197
-unk_3BD0C     db 197
-    db 0
-    db 197
-    db 0
-    db 197
-    db 0
-    db 197
-    db 0
+hiscore_buttons_y1     dw 174
+    dw 174
+    dw 174
+    dw 174
+    dw 174
+hiscore_buttons_y2     dw 197
+    dw 197
+    dw 197
+    dw 197
+    dw 197
 aOpp2win     db 111
     db 112
     db 112
@@ -14272,11 +14202,11 @@ byte_3E9FA     db 0
     db 7
     db 8
     db 0
-byte_3EA04     db 6
+game_camera_buttons_count     db 6
     db 6
     db 8
     db 7
-word_3EA08     dw 272
+game_camera_buttons_x1     dw 272
     dw 109
     dw 274
     dw 232
@@ -14285,7 +14215,7 @@ word_3EA08     dw 272
     dw 108
     dw 66
 word_3EA18     dw 10
-word_3EA1A     dw 314
+game_camera_buttons_x2     dw 314
     dw 151
     dw 314
     dw 274
@@ -14294,7 +14224,7 @@ word_3EA1A     dw 314
     dw 151
     dw 91
 word_3EA2A     dw 47
-word_3EA2C     dw 176
+game_camera_buttons_y1     dw 176
     dw 176
     dw 156
     dw 156
@@ -14303,7 +14233,7 @@ word_3EA2C     dw 176
     dw 156
 word_3EA3A     dw 156
 word_3EA3C     dw 156
-word_3EA3E     dw 193
+game_camera_buttons_y2     dw 193
     dw 193
     dw 173
     dw 173
@@ -14312,14 +14242,10 @@ word_3EA3E     dw 193
     dw 173
 word_3EA4C     dw 193
 word_3EA4E     dw 193
-unk_3EA50     db 0
-    db 0
-unk_3EA52     db 104
-    db 0
-unk_3EA54     db 151
-    db 0
-unk_3EA56     db 200
-    db 0
+gameunk_button_x1     dw 0
+gameunk_button_x2     dw 104
+gameunk_button_y1     dw 151
+gameunk_button_y2     dw 200
 aPolyinfo     db 112
     db 111
     db 108
@@ -14839,46 +14765,26 @@ word_3ECBE     dw 15104
     db 0
     db 0
     db 0
-unk_3ECD6     db 9
-    db 0
-    db 202
-    db 0
-    db 220
-    db 0
-    db 8
-    db 0
-    db 220
-    db 0
-unk_3ECE0     db 199
-    db 0
-    db 206
-    db 0
-    db 59
-    db 1
-    db 199
-    db 0
-    db 59
-    db 1
-unk_3ECEA     db 181
-    db 0
-    db 4
-    db 0
-    db 132
-    db 0
-    db 4
-    db 0
-    db 36
-    db 0
-unk_3ECF4     db 187
-    db 0
-    db 179
-    db 0
-    db 139
-    db 0
-    db 179
-    db 0
-    db 187
-    db 0
+trackmenu2_buttons_x1     dw 9
+    dw 202
+    dw 220
+    dw 8
+    dw 220
+trackmenu2_buttons_x2     dw 199
+    dw 206
+    dw 315
+    dw 199
+    dw 315
+trackmenu2_buttons_y1     dw 181
+    dw 4
+    dw 132
+    dw 4
+    dw 36
+trackmenu2_buttons_y2     dw 187
+    dw 179
+    dw 139
+    dw 179
+    dw 187
 byte_3ECFE     db 30
     db 6
 byte_3ED00     db 29
@@ -20426,16 +20332,16 @@ word_40334     dw 0
     db 0
     db 0
     db 0
-word_403AE     dw 160
-word_403B0     dw 100
-word_403B2     dw 0
-word_403B4     dw 0
-word_403B6     dw 160
-word_403B8     dw 100
-word_403BA     dw 0
-word_403BC     dw 0
-word_403BE     dw 0
-word_403C0     dw 0
+projectiondata3     dw 160
+projectiondata6     dw 100
+projectiondata4     dw 0
+projectiondata7     dw 0
+projectiondata5     dw 160
+projectiondata8     dw 100
+projectiondata9     dw 0
+projectiondata10     dw 0
+projectiondata1     dw 0
+projectiondata2     dw 0
 aWindowReleased     db 87
     db 105
     db 110
@@ -21614,10 +21520,10 @@ material_pattern2_list     dw 65535
     dw 18834
     dw 0
     dw 0
-material_clrlist_ptr     dw 20628
-material_clrlist_ptr2     dw 20628
-material_patlist_ptr     dw 20886
-material_patlist2_ptr     dw 21144
+material_clrlist_ptr     dw offset material_color_list
+material_clrlist_ptr2     dw offset material_color_list
+material_patlist_ptr     dw offset material_pattern_list
+material_patlist2_ptr     dw offset material_pattern2_list
 audiodriverstring     db 112
     db 99
     db 49
@@ -21664,7 +21570,7 @@ aMmou     db 109
     db 0
     db 0
     db 0
-    db 67
+aCopyrightCUnlimitedSoftwareInc_198     db 67
     db 111
     db 112
     db 121
@@ -21734,7 +21640,7 @@ aMmou     db 109
     db 101
     db 100
     db 46
-byte_40B86     db 0
+    db 0
     db 0
     db 0
     db 0

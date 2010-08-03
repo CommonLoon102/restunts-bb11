@@ -6448,7 +6448,7 @@ loc_1D9CF:
     mov     ax, 28h ; '('
     push    ax
     push    ax
-    call    sub_322F3
+    call    set_projection
     add     sp, 8
     mov     [bp+var_3E], 400h
     mov     [bp+var_3A], 400h

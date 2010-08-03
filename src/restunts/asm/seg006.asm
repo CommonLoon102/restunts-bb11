@@ -48,7 +48,7 @@ seg006 segment byte public 'STUNTSC' use16
     assume es:nothing, ss:nothing, ds:dseg
     public init_polyinfo
     public copy_material_list_pointers
-    public sub_24DE6
+    public polyinfo_reset
     public select_cliprect_rotate
     public transformed_shape_op
     public transformed_shape_op_helper
@@ -160,7 +160,7 @@ loc_24DD7:
     ; align 2
     db 144
 copy_material_list_pointers endp
-sub_24DE6 proc far
+polyinfo_reset proc far
 
     mov     polyinfonumpolys, 0
 loc_24DEC:
@@ -171,7 +171,7 @@ loc_24DEC:
     retf
     ; align 2
     db 144
-sub_24DE6 endp
+polyinfo_reset endp
 select_cliprect_rotate proc far
     var_E = word ptr -14
     var_C = word ptr -12
@@ -207,7 +207,7 @@ select_cliprect_rotate proc far
     mov     cx, 9
     repne movsw
     push    cs
-    call near ptr sub_24DE6
+    call near ptr polyinfo_reset
     mov     ax, [bp+arg_cliprectptr]
     mov     di, offset select_rect_rc
     mov     si, ax
@@ -2079,15 +2079,15 @@ loc_25FEE:
     retf
 transformed_shape_op_helper3 endp
 get_a_poly_info proc far
-    var_40 = word ptr -64
-    var_3E = dword ptr -62
+    var_pattype2 = word ptr -64
+    var_polyinfoptrdata = dword ptr -62
     var_polyinfoptr = dword ptr -56
     var_32 = byte ptr -50
-    var_A = word ptr -10
-    var_8 = word ptr -8
-    var_6 = word ptr -6
-    var_4 = word ptr -4
-    var_2 = word ptr -2
+    var_32ptr = word ptr -10
+    var_matcolor = word ptr -8
+    var_mattype = word ptr -6
+    var_counter = word ptr -4
+    var_maxcount = word ptr -2
      s = byte ptr 0
      r = byte ptr 2
 
@@ -2099,73 +2099,73 @@ get_a_poly_info proc far
     mov     di, 190h
     sub     si, si
     jmp     loc_260AC
-loc_26006:
+_fill_type0:
     les     bx, [bp+var_polyinfoptr]
     mov     al, es:[bx+3]
     cbw
-    mov     [bp+var_2], ax
+    mov     [bp+var_maxcount], ax
     mov     ax, bx
     mov     dx, es
     add     ax, 6
-    mov     word ptr [bp+var_3E], ax
-    mov     word ptr [bp+var_3E+2], dx
+    mov     word ptr [bp+var_polyinfoptrdata], ax; polyinfoptrdata = polyinfoptr+6
+    mov     word ptr [bp+var_polyinfoptrdata+2], dx
     lea     ax, [bp+var_32]
-    mov     [bp+var_A], ax
-    mov     [bp+var_4], 0
+    mov     [bp+var_32ptr], ax
+    mov     [bp+var_counter], 0
     jmp     short loc_26049
     ; align 2
     db 144
 loc_2602C:
-    les     bx, [bp+var_3E]
+    les     bx, [bp+var_polyinfoptrdata]
     mov     ax, es:[bx]
     mov     dx, es:[bx+2]
-    mov     bx, [bp+var_A]
+    mov     bx, [bp+var_32ptr]
     mov     [bx], ax
     mov     [bx+2], dx
-    add     [bp+var_A], 4
-    add     word ptr [bp+var_3E], 4
-    inc     [bp+var_4]
+    add     [bp+var_32ptr], 4
+    add     word ptr [bp+var_polyinfoptrdata], 4
+    inc     [bp+var_counter]
 loc_26049:
-    mov     ax, [bp+var_2]
-    cmp     [bp+var_4], ax
+    mov     ax, [bp+var_maxcount]
+    cmp     [bp+var_counter], ax
     jb      short loc_2602C
-    mov     bx, [bp+var_6]
+    mov     bx, [bp+var_mattype]
     shl     bx, 1
     add     bx, material_patlist_ptr_cpy
     mov     ax, [bx]
     or      ax, ax
-    jz      short loc_26070 ; 0 normal 1 grille 2? 3 invisible
+    jz      short _fill_default; 0 normal 1 grille 2? 3 invisible
     cmp     ax, 1
     jz      short _fill_patterned
     cmp     ax, 2
-    jnz     short loc_2606D
+    jnz     short _do_fill_next
     jmp     _fill_unk
-loc_2606D:
+_do_fill_next:
     jmp     short _fill_next
     ; align 2
     db 144
-loc_26070:
+_fill_default:
     lea     ax, [bp+var_32]
     push    ax
-    push    [bp+var_2]
-    push    [bp+var_8]
+    push    [bp+var_maxcount]
+    push    [bp+var_matcolor]
     call    preRender_default
 _fill_next_eop6:
     add     sp, 6
     jmp     short _fill_next
 _fill_patterned:
-    mov     bx, [bp+var_6]
+    mov     bx, [bp+var_mattype]
     shl     bx, 1
     add     bx, material_patlist2_ptr_cpy
     mov     ax, [bx]
-    mov     [bp+var_40], ax
+    mov     [bp+var_pattype2], ax
     or      ax, ax
     jz      short _fill_next
     lea     ax, [bp+var_32]
     push    ax
-    push    [bp+var_2]
-    push    [bp+var_8]
-    push    [bp+var_40]
+    push    [bp+var_maxcount]
+    push    [bp+var_matcolor]
+    push    [bp+var_pattype2]
     call    preRender_patterned
 _fill_next_eop8:
     add     sp, 8
@@ -2191,19 +2191,19 @@ loc_260B7:
     les     bx, [bp+var_polyinfoptr]
     mov     al, es:[bx+2]   ; material type
     sub     ah, ah
-    mov     [bp+var_6], ax
+    mov     [bp+var_mattype], ax
     mov     bx, ax          ; material index...
     shl     bx, 1
     add     bx, material_clrlist_ptr_cpy
     mov     ax, [bx]
-    mov     [bp+var_8], ax
+    mov     [bp+var_matcolor], ax
     mov     bx, word ptr [bp+var_polyinfoptr]
     mov     al, es:[bx+4]   ; object type (solid, sphere, wheel, pixel)
     cbw
     or      ax, ax
-    jnz     short loc_260FB
-    jmp     loc_26006
-loc_260FB:
+    jnz     short _fill_nonzero
+    jmp     _fill_type0
+_fill_nonzero:
     cmp     ax, 1
     jz      short _fill_solid
     cmp     ax, 2
@@ -2220,73 +2220,73 @@ _fill_next_jmp:
     ; align 2
     db 144
 _fill_unk:
-    mov     ax, [bp+var_6]
+    mov     ax, [bp+var_mattype]
     shl     ax, 1
-    mov     [bp+var_40], ax
+    mov     [bp+var_pattype2], ax
     lea     ax, [bp+var_32]
     push    ax
-    push    [bp+var_2]
-    push    [bp+var_8]
-    mov     bx, [bp+var_40]
+    push    [bp+var_maxcount]
+    push    [bp+var_matcolor]
+    mov     bx, [bp+var_pattype2]
     add     bx, material_clrlist_ptr2_cpy
     push    word ptr [bx]
-    mov     bx, [bp+var_40]
+    mov     bx, [bp+var_pattype2]
     add     bx, material_patlist2_ptr_cpy
     push    word ptr [bx]
     call    preRender_unk
-    jmp     short loc_2615F
+    jmp     short _fill_next_eop10
     ; align 2
     db 144
 _fill_solid:
-    push    [bp+var_8]
+    push    [bp+var_matcolor]
     les     bx, [bp+var_polyinfoptr]
     push    word ptr es:[bx+0Ch]
     push    word ptr es:[bx+0Ah]
     push    word ptr es:[bx+8]
     push    word ptr es:[bx+6]
     call    preRender_line
-loc_2615F:
+_fill_next_eop10:
     add     sp, 0Ah
     jmp     _fill_next
     ; align 2
     db 144
 _fill_wheel0:
-    mov     [bp+var_4], 0
+    mov     [bp+var_counter], 0
 _fill_wheel:
-    mov     ax, [bp+var_4]
+    mov     ax, [bp+var_counter]
     shl     ax, 1
     shl     ax, 1
-    mov     [bp+var_40], ax
+    mov     [bp+var_pattype2], ax
     mov     bx, ax
     add     bx, word ptr [bp+var_polyinfoptr]
     mov     es, word ptr [bp+var_polyinfoptr+2]
     mov     ax, es:[bx+6]
     mov     dx, es:[bx+8]
-    mov     bx, [bp+var_40]
+    mov     bx, [bp+var_pattype2]
     add     bx, bp
     mov     [bx-32h], ax
     mov     [bx-30h], dx
-    inc     [bp+var_4]
-    cmp     [bp+var_4], 4
+    inc     [bp+var_counter]
+    cmp     [bp+var_counter], 4
     jb      short _fill_wheel; b4 every car0 render
-    mov     ax, [bp+var_6]  ; material index
+    mov     ax, [bp+var_mattype]; material index
     shl     ax, 1
     add     ax, material_clrlist_ptr_cpy
-    mov     [bp+var_40], ax
+    mov     [bp+var_pattype2], ax
     mov     bx, ax
     push    word ptr [bx+4]
     push    word ptr [bx+2]
-    push    [bp+var_8]
+    push    [bp+var_matcolor]
     mov     ax, (offset trkObjectList.ss_ssOvelay+460h)
     push    ax
     lea     ax, [bp+var_32]
     push    ax
     call    preRender_wheel
-    jmp     short loc_2615F
+    jmp     short _fill_next_eop10
     ; align 2
     db 144
 _fill_sphere:
-    push    [bp+var_8]
+    push    [bp+var_matcolor]
     les     bx, [bp+var_polyinfoptr]
     push    word ptr es:[bx+0Ah]
     push    word ptr es:[bx+8]
@@ -2294,7 +2294,7 @@ _fill_sphere:
     call    preRender_sphere
     jmp     _fill_next_eop8
 _fill_pixel:
-    push    [bp+var_8]
+    push    [bp+var_matcolor]
     les     bx, [bp+var_polyinfoptr]
     push    word ptr es:[bx+8]
     push    word ptr es:[bx+6]
@@ -2302,7 +2302,7 @@ _fill_pixel:
     jmp     _fill_next_eop6
 _get_a_poly_info_done:
     push    cs
-    call near ptr sub_24DE6
+    call near ptr polyinfo_reset
     pop     si
     pop     di
     mov     sp, bp

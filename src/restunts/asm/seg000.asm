@@ -674,7 +674,6 @@ run_intro_looped proc far
     call    sprite_free_wnd
     add     sp, 4
     push    word ptr tempdataptr+2
-loc_10601:
     push    word ptr tempdataptr
     call    mmgr_free
     add     sp, 4
@@ -708,7 +707,7 @@ loc_10601:
     push    ax
     push    word ptr wndsprite+2
     push    word ptr wndsprite
-    call    sub_29620
+    call    sprite_blit_to_video
     add     sp, 6
     push    cs
     call near ptr load_intro_resources
@@ -775,7 +774,7 @@ loc_106E4:
     push    ax
     push    word ptr wndsprite+2
     push    word ptr wndsprite
-    call    sub_29620
+    call    sprite_blit_to_video
     add     sp, 6
     mov     si, ax
     or      si, si
@@ -803,7 +802,7 @@ loc_106E4:
     push    ax
     push    word ptr wndsprite+2
     push    word ptr wndsprite
-    call    sub_29620
+    call    sprite_blit_to_video
     add     sp, 6
     mov     si, ax
     or      si, si
@@ -1382,7 +1381,7 @@ load_intro_resources proc far
     push    ax
     push    word ptr wndsprite+2
     push    word ptr wndsprite
-    call    sub_29620
+    call    sprite_blit_to_video
     add     sp, 6
     call    sprite_copy_2_to_1_2
     call    timer_get_delta_alt
@@ -1536,7 +1535,7 @@ loc_10E91:
     push    ax
     push    word ptr wndsprite+2
     push    word ptr wndsprite
-    call    sub_29620
+    call    sprite_blit_to_video
     add     sp, 6
     mov     [bp+var_46], ax
     or      ax, ax
@@ -1592,7 +1591,7 @@ run_menu proc far
     add     sp, 6
     mov     word ptr wndsprite, ax
     mov     word ptr wndsprite+2, dx
-    mov     ax, 273h
+    mov     ax, offset aSdmsel; "sdmsel"
     push    ax              ; char *
     mov     ax, 2
     push    ax              ; int
@@ -1627,7 +1626,7 @@ loc_10FB9:
     push    ax
     push    word ptr wndsprite+2
     push    word ptr wndsprite
-    call    sub_29620
+    call    sprite_blit_to_video
     add     sp, 6
     mov     [bp+var_6], 0FEh ; 'þ'
     call    sprite_copy_2_to_1_2
@@ -1635,13 +1634,13 @@ loc_10FB9:
 loc_10FEF:
     push    word_407D0
     push    word_407CE
-    mov     ax, 2AAh
+    mov     ax, offset menu_buttons_y2
     push    ax
-    mov     ax, 2A0h
+    mov     ax, offset menu_buttons_y1
     push    ax
-    mov     ax, 296h
+    mov     ax, offset menu_buttons_x2
     push    ax
-    mov     ax, 28Ch
+    mov     ax, offset menu_buttons_x1
     push    ax
     mov     al, [bp+var_10]
     cbw
@@ -1653,13 +1652,13 @@ loc_10FEF:
     call    input_checking
     add     sp, 2
     mov     [bp+var_A], ax
-    mov     ax, 2AAh
+    mov     ax, offset menu_buttons_y2
     push    ax
-    mov     ax, 2A0h
+    mov     ax, offset menu_buttons_y1
     push    ax
-    mov     ax, 296h
+    mov     ax, offset menu_buttons_x2
     push    ax
-    mov     ax, 28Ch
+    mov     ax, offset menu_buttons_x1
     push    ax
     mov     ax, 5
     push    ax
@@ -1785,7 +1784,7 @@ loc_110ED:
     mov     ax, 28h ; '('
     push    ax
     push    ax
-    call    sub_322F3
+    call    set_projection
     add     sp, 8
     mov     ax, 0FFFEh
     push    ax
@@ -2032,7 +2031,7 @@ loc_113B4:
     push    ax
     push    word ptr wndsprite+2
     push    word ptr wndsprite
-    call    sub_29620
+    call    sprite_blit_to_video
     add     sp, 6
     mov     [bp+var_6], 0FEh ; 'þ'
     call    sprite_copy_2_to_1_2
@@ -2040,13 +2039,13 @@ loc_113B4:
 loc_113E5:
     push    word_407D0
     push    word_407CE
-    mov     ax, offset unk_3BA5E
+    mov     ax, offset trackmenu_buttons_y2
     push    ax
-    mov     ax, offset unk_3BA58
+    mov     ax, offset trackmenu_buttons_y1
     push    ax
-    mov     ax, offset unk_3BA52
+    mov     ax, offset trackmenu_buttons_x2
     push    ax
-    mov     ax, offset unk_3BA4C
+    mov     ax, offset trackmenu_buttons_x1
     push    ax
     mov     al, [bp+var_16]
     cbw
@@ -2064,13 +2063,13 @@ loc_11423:
     call    input_checking
     add     sp, 2
     mov     [bp+var_E], ax
-    mov     ax, offset unk_3BA5E
+    mov     ax, offset trackmenu_buttons_y2
     push    ax
-    mov     ax, offset unk_3BA58
+    mov     ax, offset trackmenu_buttons_y1
     push    ax
-    mov     ax, offset unk_3BA52
+    mov     ax, offset trackmenu_buttons_x2
     push    ax
-    mov     ax, offset unk_3BA4C
+    mov     ax, offset trackmenu_buttons_x1
     push    ax
     mov     ax, 3
     push    ax
@@ -2838,7 +2837,7 @@ loc_11AED:
     push    ax
     push    word ptr wndsprite+2
     push    word ptr wndsprite
-    call    sub_29620
+    call    sprite_blit_to_video
     add     sp, 6
     sub     ax, ax
     push    ax
@@ -2887,7 +2886,7 @@ loc_11AED:
     push    ax
     push    word ptr wndsprite+2
     push    word ptr wndsprite
-    call    sub_29620
+    call    sprite_blit_to_video
     add     sp, 6
     push    cs
     call near ptr highscore_write_b
@@ -2971,10 +2970,7 @@ run_car_menu proc far
     var_10C = dword ptr -268
     var_108 = byte ptr -264
     var_106 = byte ptr -262
-    var_104 = word ptr -260
-    var_102 = word ptr -258
-    var_100 = word ptr -256
-    var_FE = word ptr -254
+    var_104_rc = RECTANGLE ptr -260
     var_FC = dword ptr -252
     var_carpospolarangle = word ptr -248
     var_F6 = byte ptr -246
@@ -2997,12 +2993,9 @@ run_car_menu proc far
     var_transshape = TRANSFORMEDSHAPE ptr -50
     var_rotation = word ptr -30
     var_1C = byte ptr -28
-    var_1A = word ptr -26
-    var_18 = word ptr -24
-    var_16 = word ptr -22
-    var_14 = word ptr -20
+    var_1A_rc = RECTANGLE ptr -26
     var_12 = word ptr -18
-    var_10 = RECTANGLE ptr -16
+    var_10_rc = RECTANGLE ptr -16
     var_carspeed = word ptr -8
     var_6 = byte ptr -6
     var_carres = dword ptr -4
@@ -3035,7 +3028,7 @@ run_car_menu proc far
     mov     timertestflag_copy, ax
     or      ax, ax
     jz      short loc_11C82
-    lea     ax, [bp+var_10]
+    lea     ax, [bp+var_10_rc]
     mov     [bp+var_transshape.ts_rectptr], ax
     mov     [bp+var_transshape.ts_flags], 8
     jmp     short loc_11C86
@@ -3326,7 +3319,7 @@ loc_11F50:
     push    ax
     mov     ax, 24h ; '$'
     push    ax
-    call    sub_322F3
+    call    set_projection
     add     sp, 8
     call    timer_get_delta_alt
     mov     ax, 0Fh
@@ -3518,10 +3511,10 @@ loc_120A3:
     push    ax
     mov     ax, 56h ; 'V'
     push    ax
-    mov     ax, word_3BB3C
+    mov     ax, carmenu_buttons_x1
     inc     ax
     push    ax
-    mov     ax, word_3BB28
+    mov     ax, carmenu_buttons_y1
     inc     ax
     push    ax
     mov     ax, offset aBdo_0; "bdo"
@@ -3543,10 +3536,10 @@ loc_120A3:
     push    ax
     mov     ax, 56h ; 'V'
     push    ax
-    mov     ax, word_3BB3E
+    mov     ax, carmenu_buttons_x1+2
     inc     ax
     push    ax
-    mov     ax, word_3BB28
+    mov     ax, carmenu_buttons_y1
     inc     ax
     push    ax
     mov     ax, offset aBnx_0; "bnx"
@@ -3568,10 +3561,10 @@ loc_120A3:
     push    ax
     mov     ax, 56h ; 'V'
     push    ax
-    mov     ax, word_3BB40
+    mov     ax, carmenu_buttons_x1+4
     inc     ax
     push    ax
-    mov     ax, word_3BB28
+    mov     ax, carmenu_buttons_y1
     inc     ax
     push    ax
     mov     ax, offset aBla_0; "bla"
@@ -3608,10 +3601,10 @@ loc_12229:
     push    ax
     mov     ax, 56h ; 'V'
     push    ax
-    mov     ax, word_3BB42
+    mov     ax, carmenu_buttons_x1+6
     inc     ax
     push    ax
-    mov     ax, word_3BB28
+    mov     ax, carmenu_buttons_y1
     inc     ax
     push    ax
     push    dx
@@ -3627,10 +3620,10 @@ loc_12229:
     push    ax
     mov     ax, 56h ; 'V'
     push    ax
-    mov     ax, word_3BB44
+    mov     ax, carmenu_buttons_x1+8
     inc     ax
     push    ax
-    mov     ax, word_3BB28
+    mov     ax, carmenu_buttons_y1
     inc     ax
     push    ax
     mov     ax, offset aBco ; "bco"
@@ -3754,10 +3747,10 @@ loc_123CB:
     call    font_set_fontdef
     call    timer_get_delta_alt
     mov     [bp+var_F2], 0FFh
-    mov     [bp+var_104], 0
-    mov     [bp+var_102], 140h
-    mov     [bp+var_100], 0
-    mov     [bp+var_FE], 0C8h ; 'È'
+    mov     [bp+var_104_rc.rc_left], 0
+    mov     [bp+var_104_rc.rc_top], 140h
+    mov     [bp+var_104_rc.rc_right], 0
+    mov     [bp+var_104_rc.rc_bottom], 0C8h ; 'È'
     mov     [bp+var_108], 0
     mov     [bp+var_6], 3
 loc_12405:
@@ -3783,14 +3776,14 @@ loc_12423:
     cmp     timertestflag_copy, 0
     jz      short loc_12448
     push    si
-    lea     di, [bp+var_10]
+    lea     di, [bp+var_10_rc]
     mov     si, offset cliprect_unk
     jmp     short loc_1244F
     ; align 2
     db 144
 loc_12448:
     push    si
-    lea     di, [bp+var_10]
+    lea     di, [bp+var_10_rc]
     mov     si, offset carmenu_cliprect
 loc_1244F:
     push    ss
@@ -3837,15 +3830,15 @@ loc_124A6:
 loc_124AC:
     mov     ax, offset stru_3BB56
     push    ax
-    lea     ax, [bp+var_10]
+    lea     ax, [bp+var_10_rc]
     push    ax
     call    sub_265EC
     add     sp, 4
-    lea     ax, [bp+var_1A]
+    lea     ax, [bp+var_1A_rc]
     push    ax
-    lea     ax, [bp+var_104]
+    lea     ax, [bp+var_104_rc]
     push    ax
-    lea     ax, [bp+var_10]
+    lea     ax, [bp+var_10_rc]
     push    ax
     call    sub_26572
     add     sp, 6
@@ -3861,16 +3854,16 @@ loc_124DE:
     cmp     al, 0FFh
     jz      short loc_12534
     call    sprite_copy_2_to_1_2
-    mov     ax, word_3BB4E
+    mov     ax, carmenu_buttons_x2+8
     inc     ax
     push    ax
-    push    word_3BB3C
-    mov     ax, word_3BB32
+    push    carmenu_buttons_x1
+    mov     ax, carmenu_buttons_y2
 loc_124FD:
     add     ax, video_flag2_is1
     and     ax, video_flag3_isFFFF
     push    ax
-    push    word_3BB28
+    push    carmenu_buttons_y1
     call    sprite_set_1_size
     add     sp, 8
     call    mouse_draw_opaque_check
@@ -3889,13 +3882,13 @@ loc_12541:
     call    sprite_copy_2_to_1_2
     push    word_407D0
     push    word_407CE
-    mov     ax, 3D6h
+    mov     ax, offset carmenu_buttons_x2
     push    ax
-    mov     ax, 3CCh
+    mov     ax, offset carmenu_buttons_x1
     push    ax
-    mov     ax, 3C2h
+    mov     ax, offset carmenu_buttons_y2
     push    ax
-    mov     ax, 3B8h
+    mov     ax, offset carmenu_buttons_y1
     push    ax
     mov     al, [bp+var_106]
     cbw
@@ -3913,13 +3906,13 @@ loc_12585:
     call    input_checking
     add     sp, 2
     mov     si, ax
-    mov     ax, 3D6h
+    mov     ax, offset carmenu_buttons_x2
     push    ax
-    mov     ax, 3CCh
+    mov     ax, offset carmenu_buttons_x1
     push    ax
-    mov     ax, 3C2h
+    mov     ax, offset carmenu_buttons_y2
     push    ax
-    mov     ax, 3B8h
+    mov     ax, offset carmenu_buttons_y1
     push    ax
     mov     ax, 5
     push    ax
@@ -3967,10 +3960,10 @@ loc_125FE:
     mov     [bp+var_6], 0
     mov     [bp+var_108], 1
     call    sprite_copy_wnd_to_1
-    push    [bp+var_14]
-    push    [bp+var_16]
-    push    [bp+var_18]
-    push    [bp+var_1A]
+    push    [bp+var_1A_rc.rc_bottom]
+    push    [bp+var_1A_rc.rc_right]
+    push    [bp+var_1A_rc.rc_top]
+    push    [bp+var_1A_rc.rc_left]
     call    sprite_set_1_size
     add     sp, 8
     mov     ax, offset aStop_1; "stop"
@@ -3985,15 +3978,15 @@ loc_125FE:
     add     sp, 4
     call    get_a_poly_info
     call    sprite_copy_wnd_to_1
-    push    [bp+var_14]
-    push    [bp+var_16]
-    push    [bp+var_18]
-    push    [bp+var_1A]
+    push    [bp+var_1A_rc.rc_bottom]
+    push    [bp+var_1A_rc.rc_right]
+    push    [bp+var_1A_rc.rc_top]
+    push    [bp+var_1A_rc.rc_left]
     call    sprite_set_1_size
     add     sp, 8
     push    si
-    lea     di, [bp+var_104]
-    lea     si, [bp+var_10]
+    lea     di, [bp+var_104_rc]
+    lea     si, [bp+var_10_rc]
     push    ss
     pop     es
     movsw
@@ -4041,10 +4034,10 @@ loc_126CE:
     add     sp, 8
 loc_126D1:
     call    sprite_copy_2_to_1_2
-    push    [bp+var_14]
-    push    [bp+var_16]
-    push    [bp+var_18]
-    push    [bp+var_1A]
+    push    [bp+var_1A_rc.rc_bottom]
+    push    [bp+var_1A_rc.rc_right]
+    push    [bp+var_1A_rc.rc_top]
+    push    [bp+var_1A_rc.rc_left]
     call    sprite_set_1_size
     add     sp, 8
     call    mouse_draw_opaque_check
@@ -4055,7 +4048,7 @@ loc_126D1:
     push    ax
     push    word ptr wndsprite+2
     push    word ptr wndsprite
-    call    sub_29620
+    call    sprite_blit_to_video
     add     sp, 6
     mov     [bp+var_3E], 0FEh ; 'þ'
     jmp     short loc_12723
@@ -4219,10 +4212,10 @@ loc_1287F:
     push    ax
     mov     ax, 56h ; 'V'
     push    ax
-    mov     ax, word_3BB42
+    mov     ax, carmenu_buttons_x1+6
     inc     ax
     push    ax
-    mov     ax, word_3BB28
+    mov     ax, carmenu_buttons_y1
     inc     ax
     push    ax
     push    dx
@@ -4240,10 +4233,10 @@ loc_1287F:
     push    ax
     mov     ax, 56h ; 'V'
     push    ax
-    mov     ax, word_3BB42
+    mov     ax, carmenu_buttons_x1+6
     inc     ax
     push    ax
-    mov     ax, word_3BB28
+    mov     ax, carmenu_buttons_y1
     inc     ax
     push    ax
     push    [bp+var_3A]
@@ -4418,7 +4411,7 @@ loc_12A4D:
     push    ax
     mov     ax, 36h ; '6'
     push    ax
-    mov     ax, word_3BBC8
+    mov     ax, opponentmenu_buttons_y1
     inc     ax
     push    ax
     mov     ax, 15h
@@ -4442,7 +4435,7 @@ loc_12A4D:
     push    ax
     mov     ax, 36h ; '6'
     push    ax
-    mov     ax, word_3BBC8
+    mov     ax, opponentmenu_buttons_y1
     inc     ax
     push    ax
     mov     ax, 4Dh ; 'M'
@@ -4466,7 +4459,7 @@ loc_12A4D:
     push    ax
     mov     ax, 36h ; '6'
     push    ax
-    mov     ax, word_3BBC8
+    mov     ax, opponentmenu_buttons_y1
     inc     ax
     push    ax
     mov     ax, 85h ; '…'
@@ -4490,7 +4483,7 @@ loc_12A4D:
     push    ax
     mov     ax, 36h ; '6'
     push    ax
-    mov     ax, word_3BBC8
+    mov     ax, opponentmenu_buttons_y1
     inc     ax
     push    ax
     mov     ax, 0BDh ; '½'
@@ -4514,7 +4507,7 @@ loc_12A4D:
     push    ax
     mov     ax, 36h ; '6'
     push    ax
-    mov     ax, word_3BBC8
+    mov     ax, opponentmenu_buttons_y1
     inc     ax
     push    ax
     mov     ax, 0F5h ; 'õ'
@@ -4652,7 +4645,7 @@ loc_12CFB:
     push    ax
     push    word ptr wndsprite+2
     push    word ptr wndsprite
-    call    sub_29620
+    call    sprite_blit_to_video
     add     sp, 6
     mov     [bp+var_4], 0FEh ; 'þ'
     call    timer_get_delta_alt
@@ -4678,13 +4671,13 @@ loc_12D2C:
     call    input_checking
     add     sp, 2
     mov     si, ax
-    mov     ax, 462h
+    mov     ax, offset opponentmenu_buttons_y2
     push    ax
-    mov     ax, 458h
+    mov     ax, offset opponentmenu_buttons_y1
     push    ax
-    mov     ax, 44Eh
+    mov     ax, offset opponentmenu_buttons_x2
     push    ax
-    mov     ax, 444h
+    mov     ax, offset opponentmenu_buttons_x1
     push    ax
     mov     ax, 5
     push    ax
@@ -6365,7 +6358,7 @@ loc_13D13:
     push    ax
     push    word ptr wndsprite+2
     push    word ptr wndsprite
-    call    sub_29620
+    call    sprite_blit_to_video
     add     sp, 6
     mov     [bp+var_52], 0FEh ; 'þ'
     call    sub_29772
@@ -6506,10 +6499,10 @@ loc_13ECD:
     push    ax
     call    draw_button
     add     sp, 14h
-    mov     ax, word_3BD0A
+    mov     ax, hiscore_buttons_y2
     inc     ax
     push    ax
-    push    word_3BD00
+    push    hiscore_buttons_y1
     mov     ax, 138h
     push    ax
     mov     ax, 8
@@ -6761,7 +6754,7 @@ loc_1416E:
     push    ax
     push    word ptr wndsprite+2
     push    word ptr wndsprite
-    call    sub_29620
+    call    sprite_blit_to_video
     add     sp, 6
     mov     [bp+var_52], 0FEh ; 'þ'
     call    sprite_copy_2_to_1_2
@@ -6772,10 +6765,10 @@ loc_14188:
     mov     al, [bp+var_92]
     mov     [bp+var_78], al
     call    sprite_copy_2_to_1_2
-    mov     ax, word_3BD0A
+    mov     ax, hiscore_buttons_y2
     inc     ax
     push    ax
-    push    word_3BD00
+    push    hiscore_buttons_y1
     mov     ax, 140h
     push    ax
     sub     ax, ax
@@ -6794,9 +6787,9 @@ loc_14188:
 loc_141DC:
     push    word_407D0
     push    word_407CE
-    mov     ax, offset word_3BD0A
+    mov     ax, offset hiscore_buttons_y2
     push    ax
-    mov     ax, offset word_3BD00
+    mov     ax, offset hiscore_buttons_y1
     push    ax
     lea     ax, [bp+var_9A]
     push    ax
@@ -6918,9 +6911,9 @@ loc_14337:
     cmp     [bp+var_6E], 0FFh
     jnz     short loc_1436C
 loc_14343:
-    mov     ax, offset unk_3BD0C
+    mov     ax, (offset hiscore_buttons_y2+2); references the last three y pos in the array
     push    ax
-    mov     ax, offset unk_3BD02
+    mov     ax, (offset hiscore_buttons_y1+2); ditto
     push    ax
     lea     ax, [bp+var_98]
     push    ax
@@ -6937,9 +6930,9 @@ loc_14360:
     inc     al
     jmp     short loc_14391
 loc_1436C:
-    mov     ax, offset word_3BD0A
+    mov     ax, offset hiscore_buttons_y2
     push    ax
-    mov     ax, offset word_3BD00
+    mov     ax, offset hiscore_buttons_y1
     push    ax
 loc_14374:
     lea     ax, [bp+var_9A]

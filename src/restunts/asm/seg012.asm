@@ -231,7 +231,7 @@ seg012 segment byte public 'STUNTSC' use16
     public sub_3215A
     public sub_3216C
     public sub_3219D
-    public sub_322F3
+    public set_projection
     public loc_32334
     public vector_to_point
     public ported_sprite_free_wnd_
@@ -3972,7 +3972,7 @@ call_exitlist2 proc near
     call    call_exitlist
     xor     ax, ax
     push    ax
-    call    far ptr libsub_2CDEC
+    call    far ptr libsub_quit_to_dos_alt
     ; align 2
     db 0
 call_exitlist2 endp
@@ -8879,13 +8879,13 @@ loc_322AF:
     push    bp
     mov     bp, sp
     mov     ax, [bp+6]
-    mov     word_403B2, ax
-    add     ax, word_403AE
-    mov     word_403B6, ax
+    mov     projectiondata4, ax
+    add     ax, projectiondata3
+    mov     projectiondata5, ax
     mov     ax, [bp+8]
-    mov     word_403B4, ax
-    add     ax, word_403B0
-    mov     word_403B8, ax
+    mov     projectiondata7, ax
+    add     ax, projectiondata6
+    mov     projectiondata8, ax
     pop     bp
     retf
     push    bp
@@ -8893,13 +8893,13 @@ loc_322AF:
     push    si
     push    di
     mov     ax, [bp+6]
-    mov     word_403BE, ax
+    mov     projectiondata1, ax
     mov     ax, [bp+8]
-    mov     word_403C0, ax
+    mov     projectiondata2, ax
     jmp     short loc_32334
     db 144
 sub_3219D endp
-sub_322F3 proc far
+set_projection proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -8924,7 +8924,7 @@ loc_32306:
     mov     cx, 168h
     div     cx
     shr     ax, 1
-    mov     word_403BE, ax
+    mov     projectiondata1, ax
     mov     ax, [bp+arg_2]
     xor     dh, dh
     mov     dl, ah
@@ -8938,25 +8938,25 @@ loc_32324:
     mov     cx, 168h
     div     cx
     shr     ax, 1
-    mov     word_403C0, ax
+    mov     projectiondata2, ax
 loc_32334:
     mov     ax, [bp+arg_4]
     shr     ax, 1
-    mov     word_403AE, ax
-    add     ax, word_403B2
-    mov     word_403B6, ax
+    mov     projectiondata3, ax
+    add     ax, projectiondata4
+    mov     projectiondata5, ax
     mov     ax, [bp+arg_6]
     shr     ax, 1
-    mov     word_403B0, ax
-    add     ax, word_403B4
-    mov     word_403B8, ax
-    push    word_403BE
+    mov     projectiondata6, ax
+    add     ax, projectiondata7
+    mov     projectiondata8, ax
+    push    projectiondata1
     call    cos_fast
     add     sp, 2
-    mul     word_403AE
+    mul     projectiondata3
     mov     si, ax
     mov     di, dx
-    push    word_403BE
+    push    projectiondata1
     call    sin_fast
 loc_3236F:
     add     sp, 2
@@ -8964,24 +8964,24 @@ loc_3236F:
     mov     dx, di
     mov     ax, si
     div     cx
-    mov     word_403BA, ax
-    mov     bx, word_403C0
+    mov     projectiondata9, ax
+    mov     bx, projectiondata2
     or      bx, bx
     jz      short loc_323B4
-    push    word_403C0
+    push    projectiondata2
     call    cos_fast
     add     sp, 2
-    mul     word_403B0
+    mul     projectiondata6
     mov     si, ax
     mov     di, dx
-    push    word_403C0
+    push    projectiondata2
     call    sin_fast
     add     sp, 2
     mov     cx, ax
     mov     dx, di
     mov     ax, si
     div     cx
-    mov     word_403BC, ax
+    mov     projectiondata10, ax
     pop     di
     pop     si
     pop     bp
@@ -8994,17 +8994,17 @@ loc_323B4:
     sub     ax, bx
     shr     bx, 1
     sub     ax, bx
-    mov     word_403BC, ax
-    push    word_403B0
+    mov     projectiondata10, ax
+    push    projectiondata6
     push    ax
     call    polarAngle
     add     sp, 4
-    mov     word_403C0, ax
+    mov     projectiondata2, ax
     pop     di
     pop     si
     pop     bp
     retf
-sub_322F3 endp
+set_projection endp
 vector_to_point proc far
      s = byte ptr 0
      r = byte ptr 2
@@ -9023,7 +9023,7 @@ vector_to_point proc far
     mov     ax, [si+VECTOR.vx]
     or      ax, ax
     jl      short loc_3240F
-    mul     word_403BA
+    mul     projectiondata9
     mov     bx, dx
     shl     bx, 1
     or      ax, ax
@@ -9033,14 +9033,14 @@ loc_323FE:
     cmp     cx, bx
     jle     short loc_32440
     div     cx
-    add     ax, word_403B6
+    add     ax, projectiondata5
     jo      short loc_3243C
     mov     [di], ax
     jmp     short loc_3244D
     db 144
 loc_3240F:
     neg     ax
-    mul     word_403BA
+    mul     projectiondata9
     mov     bx, dx
     shl     bx, 1
     or      ax, ax
@@ -9051,7 +9051,7 @@ loc_3241E:
     jle     short loc_32448
     div     cx
     neg     ax
-    add     ax, word_403B6
+    add     ax, projectiondata5
     jo      short loc_3243C
     mov     [di], ax
     jmp     short loc_3244D
@@ -9079,7 +9079,7 @@ loc_3244D:
     mov     ax, [si+VECTOR.vy]
     or      ax, ax
     jl      short loc_32476
-    mul     word_403BC
+    mul     projectiondata10
     mov     bx, dx
     shl     bx, 1
     or      ax, ax
@@ -9090,7 +9090,7 @@ loc_32461:
     jle     short loc_3249A
     div     cx
     neg     ax
-    add     ax, word_403B8
+    add     ax, projectiondata8
     jo      short loc_32496
     mov     [di+2], ax
 loc_32472:
@@ -9100,7 +9100,7 @@ loc_32472:
     retf
 loc_32476:
     neg     ax
-    mul     word_403BC
+    mul     projectiondata10
     mov     bx, dx
     shl     bx, 1
     or      ax, ax
@@ -9110,7 +9110,7 @@ loc_32485:
     cmp     cx, bx
     jle     short loc_324A2
     div     cx
-    add     ax, word_403B8
+    add     ax, projectiondata8
     jo      short loc_32496
     mov     [di+2], ax
     jmp     short loc_32472
@@ -9544,7 +9544,7 @@ nopsub_32746 proc far
 
     push    bp
     mov     bp, sp
-    mov     ax, word_403BA
+    mov     ax, projectiondata9
     mul     [bp+arg_0]
     pop     bp
     retf
@@ -9556,7 +9556,7 @@ nopsub_32751 proc far
 
     push    bp
     mov     bp, sp
-    mov     ax, word_403BC
+    mov     ax, projectiondata10
     mul     [bp+arg_0]
     pop     bp
     retf
@@ -9569,7 +9569,7 @@ transformed_shape_op_helper2 proc far
 
     push    bp
     mov     bp, sp
-    mov     ax, word_403BA
+    mov     ax, projectiondata9
     mul     [bp+arg_0]
     div     [bp+arg_2]
     pop     bp
@@ -9583,7 +9583,7 @@ nopsub_3276A proc far
 
     push    bp
     mov     bp, sp
-    mov     ax, word_403BC
+    mov     ax, projectiondata10
     mul     [bp+arg_0]
     div     [bp+arg_2]
     pop     bp
@@ -14069,7 +14069,7 @@ loc_34586:
     push    si
     push    di
     mov     ax, [bp+6]
-    mov     byte_40B86, al
+    mov     byte ptr aCopyrightCUnlimitedSoftwareInc_198+46h, al
     mov     ax, 5416h
     mov     [bp+6], ax
     mov     ds, fontdefseg

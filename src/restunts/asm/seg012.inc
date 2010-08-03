@@ -184,7 +184,7 @@ seg012 segment byte public 'STUNTSC' use16
     extrn sub_3215A:proc
     extrn sub_3216C:proc
     extrn sub_3219D:proc
-    extrn sub_322F3:proc
+    extrn set_projection:proc
     extrn loc_32334
     extrn vector_to_point:proc
     extrn ported_sprite_free_wnd_:proc

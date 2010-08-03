@@ -464,7 +464,7 @@ loc_21F38:
     push    ax
     mov     ax, 23h ; '#'
     push    ax
-    call    sub_322F3
+    call    set_projection
     add     sp, 8
     mov     ax, roofbmpheight_copy
     mov     rect_unk10.rc_right, ax
@@ -3624,7 +3624,7 @@ loc_23CD7:
     mov     al, cameramode
     cbw
     mov     bx, ax
-    mov     al, byte_3EA04[bx]
+    mov     al, game_camera_buttons_count[bx]
     mov     byte ptr [bp+var_42], al
     mov     al, byte_3E9DB
     cmp     byte ptr [bp+var_42], al
@@ -3892,10 +3892,10 @@ loc_23F6C:
     mov     [bp+var_44], ax
     push    word_407FE
     mov     bx, ax
-    push    word_3EA3E[bx]
-    push    word_3EA1A[bx]
-    push    word_3EA2C[bx]
-    push    word_3EA08[bx]
+    push    game_camera_buttons_y2[bx]
+    push    game_camera_buttons_x2[bx]
+    push    game_camera_buttons_y1[bx]
+    push    game_camera_buttons_x1[bx]
     call    sprite_1_unk4
     add     sp, 0Ah
 loc_23FB0:
@@ -3905,7 +3905,7 @@ loc_23FB8:
     mov     al, cameramode
     cbw
     mov     bx, ax
-    mov     al, byte_3EA04[bx]
+    mov     al, game_camera_buttons_count[bx]
     mov     byte ptr [bp+var_44], al
     mov     al, byte_3E9DB
     cmp     byte ptr [bp+var_44], al
@@ -3927,18 +3927,18 @@ loc_23FEE:
     call    input_checking
     add     sp, 2
     mov     [bp+var_inputcode], ax
-    mov     ax, offset word_3EA3E
+    mov     ax, offset game_camera_buttons_y2
     push    ax
-    mov     ax, offset word_3EA2C
+    mov     ax, offset game_camera_buttons_y1
     push    ax
-    mov     ax, offset word_3EA1A
+    mov     ax, offset game_camera_buttons_x2
     push    ax
-    mov     ax, offset word_3EA08
+    mov     ax, offset game_camera_buttons_x1
     push    ax
     mov     al, cameramode
     cbw
     mov     bx, ax
-    mov     al, byte_3EA04[bx]
+    mov     al, game_camera_buttons_count[bx]; get number of buttons by cameramode
     cbw
     inc     ax
     push    ax
@@ -4024,13 +4024,13 @@ loc_240D0:
     ; align 2
     db 144
 loc_240D8:
-    mov     ax, offset unk_3EA56
+    mov     ax, offset gameunk_button_y2
     push    ax
-    mov     ax, offset unk_3EA54
+    mov     ax, offset gameunk_button_y1
     push    ax
-    mov     ax, offset unk_3EA52
+    mov     ax, offset gameunk_button_x2
     push    ax
-    mov     ax, offset unk_3EA50
+    mov     ax, offset gameunk_button_x1
     push    ax
     mov     ax, 1
     push    ax
@@ -4258,7 +4258,7 @@ loc_242C8:
     cbw
     mov     bx, ax
     mov     al, byte ptr [bp+var_44]
-    cmp     byte_3EA04[bx], al
+    cmp     game_camera_buttons_count[bx], al
     jl      short loc_242E7
 loc_242E4:
     mov     byte_3E9DB, al

@@ -973,7 +973,7 @@ loc_2AAF0:
     push    ax
     push    word ptr wndsprite+2
     push    word ptr wndsprite
-    call    sub_29620
+    call    sprite_blit_to_video
     add     sp, 6
     mov     [bp+var_36], 0FEh ; 'þ'
     mov     [bp+var_C2], 0FFh
@@ -1366,13 +1366,13 @@ loc_2AF0E:
     call    input_checking
     add     sp, 2
     mov     [bp+var_C8], ax
-    mov     ax, offset unk_3ECF4
+    mov     ax, offset trackmenu2_buttons_y2
     push    ax
-    mov     ax, offset unk_3ECEA
+    mov     ax, offset trackmenu2_buttons_y1
     push    ax
-    mov     ax, offset unk_3ECE0
+    mov     ax, offset trackmenu2_buttons_x2
     push    ax
-    mov     ax, offset unk_3ECD6
+    mov     ax, offset trackmenu2_buttons_x1
     push    ax
     mov     ax, 5
     push    ax

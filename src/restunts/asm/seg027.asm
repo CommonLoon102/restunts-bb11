@@ -54,6 +54,8 @@ seg027 segment byte public 'STUNTSC' use16
     public audio_enable_flag2
     public audio_disable_flag2
     public audio_toggle_flag2
+    public nopsub_373FE
+    public nopsub_37456
     public sub_37470
     public sub_374DE
     public audio_check_flag2
@@ -63,8 +65,12 @@ seg027 segment byte public 'STUNTSC' use16
     public audio_disable_flag6
     public audio_toggle_flag6
     public sub_3771E
+    public nopsub_37750
     public audio_driver_func3F
     public sub_37868
+    public nopsub_37898
+    public nopsub_378AE
+    public nopsub_378BC
     public audio_load_driver
     public audiodrv_atexit
     public load_sfx_ge
@@ -459,6 +465,12 @@ loc_373F6:
     call near ptr audio_enable_flag2
     mov     ax, 1
     retf
+audio_toggle_flag2 endp
+nopsub_373FE proc far
+    var_2 = word ptr -2
+     s = byte ptr 0
+     r = byte ptr 2
+
     push    bp
     mov     bp, sp
     sub     sp, 6
@@ -478,20 +490,20 @@ loc_37414:
     ; align 2
     db 144
 loc_3741E:
-    mov     word ptr [bp-2], 0
+    mov     [bp+var_2], 0
     mov     al, byte_44290
     sub     ah, ah
     or      ax, ax
     jz      short loc_37414
     mov     di, ax
     mov     si, 81FCh
-    mov     cx, [bp-2]
+    mov     cx, [bp+var_2]
 loc_37434:
     mov     ax, [si]
     or      ax, [si+2]
     jz      short loc_37446
     sub     ax, ax
-    mov     [bp-2], cx
+    mov     [bp+var_2], cx
     pop     si
     pop     di
     mov     sp, bp
@@ -503,24 +515,31 @@ loc_37446:
     mov     ax, cx
     cmp     ax, di
     jb      short loc_37434
-    mov     [bp-2], cx
+    mov     [bp+var_2], cx
     jmp     short loc_37414
     ; align 2
     db 144
+nopsub_373FE endp
+nopsub_37456 proc far
+     s = byte ptr 0
+     r = byte ptr 2
+    arg_0 = word ptr 6
+    arg_2 = word ptr 8
+
     push    bp
     mov     bp, sp
     mov     ax, 40h ; '@'
     push    ax
     mov     ax, 0FFFFh
     push    ax
-    push    word ptr [bp+8]
-    push    word ptr [bp+6]
+    push    [bp+arg_2]
+    push    [bp+arg_0]
     push    cs
     call near ptr audio_check_flag2
     add     sp, 8
     pop     bp
     retf
-audio_toggle_flag2 endp
+nopsub_37456 endp
 sub_37470 proc far
     var_2 = word ptr -2
      s = byte ptr 0
@@ -932,13 +951,21 @@ loc_3772E:
     sub     ax, ax
     pop     bp
     retf
+sub_3771E endp
+nopsub_37750 proc far
+     s = byte ptr 0
+     r = byte ptr 2
+    arg_0 = word ptr 6
+    arg_2 = word ptr 8
+    arg_4 = word ptr 10
+
     push    bp
     mov     bp, sp
     mov     ax, 4Ch ; 'L'
-    mul     word ptr [bp+6]
+    mul     [bp+arg_0]
     mov     bx, ax
-    mov     ax, [bp+8]
-    mov     dx, [bp+0Ah]
+    mov     ax, [bp+arg_2]
+    mov     dx, [bp+arg_4]
 loc_37761:
     mov     word ptr (audiochunks_unk+48h)[bx], ax
     mov     word ptr (audiochunks_unk+4Ah)[bx], dx
@@ -946,7 +973,7 @@ loc_37761:
     retf
     ; align 2
     db 144
-sub_3771E endp
+nopsub_37750 endp
 audio_driver_func3F proc far
     var_A = dword ptr -10
     var_6 = word ptr -6
@@ -1090,11 +1117,17 @@ loc_37883:
     mov     sp, bp
     pop     bp
     retf
+sub_37868 endp
+nopsub_37898 proc far
+     s = byte ptr 0
+     r = byte ptr 2
+    arg_0 = word ptr 6
+
     push    bp
     mov     bp, sp
-    mov     al, [bp+6]
+    mov     al, byte ptr [bp+arg_0]
     mov     byte_45950, al
-    push    word ptr [bp+6]
+    push    [bp+arg_0]
     push    cs
     call near ptr sub_37868
     add     sp, 2
@@ -1102,21 +1135,33 @@ loc_37883:
     retf
     ; align 2
     db 144
+nopsub_37898 endp
+nopsub_378AE proc far
+     s = byte ptr 0
+     r = byte ptr 2
+    arg_0 = word ptr 6
+
     push    bp
     mov     bp, sp
-    mov     bx, [bp+6]
-    mov     al, [bx-6A6Ah]
+    mov     bx, [bp+arg_0]
+    mov     al, byte_44D06[bx]
     sub     ah, ah
     pop     bp
     retf
+nopsub_378AE endp
+nopsub_378BC proc far
+     s = byte ptr 0
+     r = byte ptr 2
+    arg_0 = word ptr 6
+
     push    bp
     mov     bp, sp
-    mov     bx, [bp+6]
-    mov     al, [bx-6CA6h]
+    mov     bx, [bp+arg_0]
+    mov     al, byte_44ACA[bx]
     sub     ah, ah
     pop     bp
     retf
-sub_37868 endp
+nopsub_378BC endp
 audio_load_driver proc far
     var_C = dword ptr -12
     var_8 = word ptr -8

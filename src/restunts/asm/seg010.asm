@@ -49,7 +49,7 @@ seg010 segment byte public 'STUNTSC' use16
     public byte_2CC52
     public start
     public __amsg_exit
-    public libsub_2CDEC
+    public libsub_quit_to_dos_alt
     public libsub_quit_to_dos
     public loc_2CE06
     public sub_2CE4A
@@ -151,55 +151,36 @@ start proc near
      r = byte ptr 0
 
     mov     ah, 30h
-loc_2CC64:
     int     21h             ; DOS - GET DOS VERSION
-loc_2CC66:
     cmp     al, 2
-loc_2CC68:
     jnb     short loc_2CC6C
-loc_2CC6A:
     int     20h             ; DOS - PROGRAM TERMINATION
 loc_2CC6C:
     mov     di, seg dseg
-loc_2CC6F:
     mov     si, ds:2        ; pspseg:2 = Memory size in paragraphs 
-loc_2CC73:
     sub     si, di
-loc_2CC75:
     cmp     si, 1000h
-loc_2CC79:
     jb      short loc_2CC7E
-loc_2CC7B:
     mov     si, 1000h       ; si = 1000h or memory size if less than 1000h
 loc_2CC7E:
     cli
-loc_2CC7F:
     mov     ss, di          ; ss = dseg
-loc_2CC81:
     add     sp, 0AD1Eh      ; sp = end of stack in data segment
     sti
-loc_2CC86:
     jnb     short _no_stack_overflow; check for overflow and abort if there was more than 64k data+stack
-loc_2CC88:
     push    ss
     pop     ds
-loc_2CC8A:
     call    __FF_MSGBANNER
-loc_2CC8F:
     xor     ax, ax
     push    ax
-loc_2CC92:
     call    __NMSG_WRITE
-loc_2CC97:
     mov     ax, 4CFFh
-loc_2CC9A:
     int     21h             ; DOS - 2+ - QUIT WITH EXIT CODE (EXIT)
 _no_stack_overflow:
 smart
     and     sp, 0FFFEh
 nosmart
     mov     ss:crtsp1, sp
-loc_2CCA4:
     mov     ss:crtsp2, sp
     mov     ax, si
     mov     cl, 4
@@ -209,12 +190,10 @@ loc_2CCA4:
     add     si, di
     mov     ds:2, si        ; set memory size in psp?, si = 01000h + dseg
     mov     bx, es          ; es = pspseg on startup
-loc_2CCBC:
     sub     bx, si
     neg     bx              ; bx = -(pspseg - si) = -(pspseg - (1000h + dseg))
     mov     ah, 4Ah
     int     21h             ; DOS - 2+ - ADJUST MEMORY BLOCK SIZE (SETBLOCK)
-loc_2CCC4:
     mov     ss:crtpspseg, ds
     push    ss
     pop     es
@@ -226,7 +205,6 @@ loc_2CCC4:
     rep stosb               ; initialize uninitialized data to 0
     push    ss
     pop     ds
-loc_2CCDA:
     call    far ptr loc_2CD28
     push    ss
     pop     ds
@@ -243,23 +221,18 @@ loc_2CCDA:
     push    argc            ; p_argc
     call    stuntsmain
     push    ax
-    call    far ptr libsub_2CDEC
+    call    far ptr libsub_quit_to_dos_alt
 __cintDIV:
     mov     ax, seg dseg
     mov     ds, ax
     mov     ax, 3
-loc_2CD0C:
-    mov     ss:crtquitfunction, offset libsub_2CDEC
+    mov     ss:crtquitfunction, offset libsub_quit_to_dos_alt
 __amsg_exit:
     push    ax
-loc_2CD14:
     call    __FF_MSGBANNER
-loc_2CD19:
     call    __NMSG_WRITE
-loc_2CD1E:
     mov     ax, 0FFh
     push    ax
-loc_2CD22:
     push    cs
     call    crtquitfunction
     db 0
@@ -362,7 +335,7 @@ loc_2CDD6:
     call near ptr sub_2CE77
     retf
 start endp
-libsub_2CDEC proc near
+libsub_quit_to_dos_alt proc near
      s = byte ptr 0
      r = byte ptr 2
 
@@ -375,7 +348,7 @@ libsub_2CDEC proc near
     mov     di, offset aNmsg; "<<NMSG>>"
     call near ptr sub_2CE77
     jmp     short loc_2CE06
-libsub_2CDEC endp
+libsub_quit_to_dos_alt endp
 libsub_quit_to_dos proc near
      s = byte ptr 0
      r = byte ptr 2
@@ -1063,7 +1036,6 @@ _printf proc far
     mov     [bp+var_8], ax
     push    si              ; FILE *
     push    di              ; int
-loc_2D24F:
     call    __ftbuf
     add     sp, 4
     mov     ax, [bp+var_8]
@@ -1584,7 +1556,7 @@ loc_2D663:
     or      ax, ax
     jnz     short loc_2D65A
     push    si
-    mov     ax, 7148h
+    mov     ax, offset word_428B8
     push    ax
     push    cs
     call near ptr getnum
@@ -1602,7 +1574,7 @@ loc_2D694:
     inc     word_428AA
     inc     si
     push    si
-    mov     ax, 7142h
+    mov     ax, offset word_428B2
     push    ax
     push    cs
     call near ptr getnum

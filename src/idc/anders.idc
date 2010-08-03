@@ -70,6 +70,41 @@ static GetIdbDirectory() {
 	return substr(path, 0, ls);
 }
 
+static LastIndexOf(str, c) {
+	auto len, testch;
+	len = strlen(str);
+	while (len > 0) {
+		testch = substr(str, len - 1, len);
+		if (testch == c) return len - 1;
+		len--;
+	}
+	return -1;
+}
+
+static FirstIndexOf(str, c) {
+	auto i, len, testch;
+	len = strlen(str);
+	for (i = 0; i < len; i++) {
+		testch = substr(str, i, i + 1);
+		if (testch == c) return i;
+	}
+	return -1;
+}
+
+static ExtractCallTarget(ea) {
+	auto str, ls;
+	str = GetDisasm(ea);
+	ls = FirstIndexOf(str, ";");
+	if (ls != -1) {
+		str = substr(str, 0, ls);
+		while (strlen(str) > 0 && LastIndexOf(str, " ") == strlen(str) -1) {
+			str = substr(str, 0, strlen(str) - 1);
+		}
+	}
+	ls = LastIndexOf(str, " ");
+	return substr(str, ls + 1, -1);
+}
+
 static PrintFrame(f, funcstart) {
 
 	auto funcframe, framesize, framelsize, framersize, frameasize;
@@ -298,25 +333,12 @@ static PrintFunction(f, funcstart, funcend) {
 	fprintf(f, "%s endp\n", PortFuncName(funcname));
 }
 
-static IsPushCs(ea) {
-	auto mnem, op;
-	mnem = GetMnem(ea);
-	
-	if (mnem != "push") return 0;
-	
-	op = GetOpnd(ea, 0);
-	
-	return op == "cs";
-}
-
 static PrintBody(f, funcstart, funcend, skipfirstlabel) {
 	auto funcbody, bodyflags, locname;
 	auto i;
 	auto fchunkstart, fchunklast;
-	auto lastpushcs;
 	
 	fchunklast = -1;
-	lastpushcs = 0;
 	for (funcbody = funcstart; funcbody != BADADDR; funcbody = NextNotTail2(funcbody, funcend)) {
 		bodyflags = GetFlags(funcbody);
 		
@@ -393,18 +415,14 @@ static PrintBody(f, funcstart, funcend, skipfirstlabel) {
 				Message("TODO: unhandled data size X%i\n", bodyflags);
 			}
 		} else {
-			 PrintFixedAsm(f, funcbody, lastpushcs);
+			 
+			 PrintFixedAsm(f, funcbody);
 			//fprintf(f, "    %s\n", GetDisasm(funcbody));
-			
-			lastpushcs = IsPushCs(funcbody);
-			
-			//if (lastpushcs)
-			//Message("%s\n", GetDisasm(funcbody));
 		}
 	}
 }
 
-static PrintFixedAsm(f, ea, lastpushcs) {
+static PrintFixedAsm(f, ea) {
 
 	auto tempsmart, nooutput;
 
@@ -522,116 +540,6 @@ static PrintFixedAsm(f, ea, lastpushcs) {
 		fprintf(f, "nosmart\n");
 	}
 
-/*
-
-abandoned attempts not using nosmart/smart:
-
-	if (mnem == "or") {
-		fprintf(f, "    %s\n", GetDisasm(ea));
-		op1 = GetOpnd(ea, 0);
-		if (op1 == "si") {
-			op2 = GetOpType(ea, 1);
-			if (op2 == o_imm) {
-				op2 = GetOperandValue(ea, 1);
-				if (op2 >= 0 && op2 < 256) {
-					Message("Adding nop for: %s\n", GetDisasm(ea));
-					fprintf(f, "    %s\n", "nop");
-				}
-			}
-		}
-	} else 
-	if (mnem == "call") {
-		fprintf(f, "    %s\n", GetDisasm(ea));
-		op1 = GetOpnd(ea, 0);
-		op2 = GetOpType(ea, 0);
-		if (op2 == o_near || op2 == o_far) {
-			funcofs = Rfirst0(ea);
-			
-			//if (funcofs == GetFchunkAttr(funcofs, FUNCATTR_START)) {
-			funclocal = (SegStart(ea) == SegStart(funcofs)) ? 1 : 0;
-			
-			if (funclocal == 1 && IsFixFunc(ExtractCallTarget(ea))) {
-				Message("call to '%s'\n", ExtractCallTarget(ea));
-				fprintf(f, "    %s\n", "nop");
-			} else {
-				if (SegName(ea) == "seg010") Message("Call to: %s\n", ExtractCallTarget(ea));
-				if (SegName(ea) == "seg012") {
-					Message("Call to: %s\n", ExtractCallTarget(ea));
-					
-				}
-			}
-		}
-	} else 
-	if (mnem == "lea") {
-		fprintf(f, "    %s\n", GetDisasm(ea));
-		op1 = GetOpnd(ea, 0);
-		if (op1 == "bx") {
-			op2 = GetOpType(ea, 1);
-			if (op2 == o_mem) {
-				Message("lea bx = %s %i\n", GetDisasm(ea), op2);
-				fprintf(f, "    %s\n", "nop");
-			}
-		}
-	} else 
-	if (mnem == "jmp") {
-		fprintf(f, "    %s\n", GetDisasm(ea));
-		op1 = GetOpnd(ea, 0);
-		if (op1 == "__aFldiv") {
-			fprintf(f, "    %s\n", "nop");
-			fprintf(f, "    %s\n", "nop");
-			fprintf(f, "    %s\n", "nop");
-		} else
-		if (op1 == "unknown_libname_3" ||
-		    op1 == "__aFlmul" ||
-		    op1 == "__aFFblmul" ||
-		    op1 == "unknown_libname_4" ||
-		    op1 == "__aFlshr" ||
-		    op1 == "__aFuldiv" ||
-		    op1 == "unknown_libname_5") 
-		{
-			fprintf(f, "    %s\n", "nop");
-			fprintf(f, "    %s\n", "nop");
-		}
-	} else {
-		fprintf(f, "    %s\n", GetDisasm(ea));
-	}
-	
-*/
-}
-
-static LastIndexOf(str, c) {
-	auto len, testch;
-	len = strlen(str);
-	while (len > 0) {
-		testch = substr(str, len - 1, len);
-		if (testch == c) return len - 1;
-		len--;
-	}
-	return -1;
-}
-
-static FirstIndexOf(str, c) {
-	auto i, len, testch;
-	len = strlen(str);
-	for (i = 0; i < len; i++) {
-		testch = substr(str, i, i + 1);
-		if (testch == c) return i;
-	}
-	return -1;
-}
-
-static ExtractCallTarget(ea) {
-	auto str, ls;
-	str = GetDisasm(ea);
-	ls = FirstIndexOf(str, ";");
-	if (ls != -1) {
-		str = substr(str, 0, ls);
-		while (strlen(str) > 0 && LastIndexOf(str, " ") == strlen(str) -1) {
-			str = substr(str, 0, strlen(str) - 1);
-		}
-	}
-	ls = LastIndexOf(str, " ");
-	return substr(str, ls + 1, -1);
 }
 
 // add functions in PortFuncName as they are ported to c
@@ -752,56 +660,6 @@ static PortFuncName(labelname) {
 	)
 		return "ported_" + labelname + "_";
 	return labelname;
-}
-
-static IsFixFunc(labelname) {
-	if (
-		labelname == "__FF_MSGBANNER" ||
-		labelname == "__NMSG_WRITE" ||
-		labelname == "loc_2CD27+1" ||
-		labelname == "__setenvp" ||
-		labelname == "__setargv" ||
-		labelname == "sub_2CDEC" ||
-		labelname == "__nullcheck" ||
-		labelname == "__chkstk" ||
-		labelname == "__NMSG_TEXT" ||
-		labelname == "__maperror" ||
-		labelname == "_fflush" ||
-		labelname == "__stbuf" ||
-		labelname == "__output" ||
-		labelname == "__ftbuf" ||
-		labelname == "__flsbuf" ||
-		labelname == "_isatty" ||
-		labelname == "_write" ||
-		labelname == "_lseek" ||
-		labelname == "unknown_libname_2" ||
-		labelname == "_ultoa" ||
-		labelname == "_strlen" ||
-		labelname == "_stackavail" ||
-		labelname == "_brkctl" ||
-		labelname == "_raise" ||
-		labelname == "sub_2CE03" ||
-		labelname == "__sigentry" ||
-		labelname == "__aFlmul" ||
-		labelname == "__sigentry" ||
-		labelname == "__aFldiv" ||
-		labelname == "__aFlshr" ||
-		labelname == "__aFuldiv"/* ||
-		
-		// seg012:
-		labelname == "sub_35B14" ||
-		labelname == "sub_30A5D" || 
-		labelname == "sub_2FE59" ||
-		labelname == "sub_2EAD4" ||
-		labelname == "sub_2FE1C" ||
-		labelname == "sub_2EB56" || 
-		labelname == "loc_3336C" || 
-		labelname == "sub_2EA2A"*/
-		
-		
-	) 
-		return 1;
-	return 0;
 }
 
 static PrintSegDecl(f, ea) {

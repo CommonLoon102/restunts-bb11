@@ -1,3 +1,4 @@
+#ifdef RESTUNTS_DOS
 #include <dos.h>
 
 // need these since we are referncing external symbols without an underscore
@@ -101,15 +102,20 @@ void interrupt kb_int9_handler() {
 	
 }
 
-// the int16 interrupt handler calls kb_int16_handler() (implemented in asm), which in turn calls kb_int16_handler_c:
-int kb_int16_handler_c(unsigned int ax) {
+#pragma argsused   
+void interrupt kb_int16_handler(unsigned bp, unsigned di, unsigned si,
+                                     unsigned ds, unsigned es, unsigned dx,
+                                     unsigned cx, unsigned bx, unsigned ax,
+                                     unsigned ip, unsigned cs, unsigned flags) {
+
 	unsigned int result, kbdata;
 	unsigned char bioscall = ax >> 8;
 	disable();
 	if (bioscall == 0) {
 		if (kb_intr_data4 == 0) {
 			enable();
-			return 0;
+			ax = 0;
+			return ;
 		}
 		kbdata = kb_intr_data2;
 		result = kb_intr_data_array[kbdata / 2];
@@ -119,26 +125,30 @@ int kb_int16_handler_c(unsigned int ax) {
 		kb_intr_data2 = kbdata;
 		kb_intr_data4 = kb_intr_data4 - 2;
 		enable();
-		return result;
+		ax = result;
+		return ;
 	}
 	
 	if (bioscall == 1) {
 		if (kb_intr_data4 == 0) {
 			enable();
-			return 0;
+			ax = 0;
 		}
 		result = kb_intr_data_array[kb_intr_data2 / 2];
 		enable();
-		return result;
+		ax = result;
+		return ;
 	}
 	
 	if (bioscall == 2) {
 		result = kbinput[0x2A] | kbinput[0x36];
 		enable();
-		return result & 0xFF;
+		ax = result & 0xFF;
+		return ;
 	}
 	enable();
-	return 0;
+	ax = 0;
+	//return 0;
 }
 
 void kb_init_interrupt() {
@@ -151,7 +161,7 @@ void kb_init_interrupt() {
 	setvect(9, kb_int9_handler);
 
 	old_kb_int16_handler = getvect(0x16);
-	setvect(0x16, kb_int16_handler); // register the int16 asm proxy for kb_int16_handler_c
+	setvect(0x16, kb_int16_handler);
 
 	outp(0x21, irqmask);
 	add_exit_handler(kb_exit_handler);
@@ -221,3 +231,5 @@ void kb_check() {
 		int86(0x16, &inregs, &outregs);
 	}
 }
+
+#endif

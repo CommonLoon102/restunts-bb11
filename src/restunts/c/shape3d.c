@@ -1,26 +1,9 @@
 #include <dos.h>
+#include <stddef.h>
 #include "externs.h"
 #include "fileio.h"
 #include "memmgr.h"
-
-#pragma pack (push, 1)
-struct SHAPE3D {
-	unsigned short shape3d_numverts;
-	char far* shape3d_verts;
-	unsigned short shape3d_numprimitives;
-	unsigned short shape3d_numpaints;
-	char far* shape3d_primitives;
-	char far* shape3d_cull1;
-	char far* shape3d_cull2;
-};
-
-struct SHAPE3DHEADER {
-	unsigned char header_numverts;
-	unsigned char header_numprimitives;
-	unsigned char header_numpaints;
-	unsigned char header_reserved;
-};
-#pragma pack (pop)
+#include "shape3d.h"
 
 extern char far* game1ptr;
 extern char far* game2ptr;

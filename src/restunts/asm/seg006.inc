@@ -1,7 +1,7 @@
 seg006 segment byte public 'STUNTSC' use16
     extrn init_polyinfo:proc
     extrn copy_material_list_pointers:proc
-    extrn sub_24DE6:proc
+    extrn polyinfo_reset:proc
     extrn select_cliprect_rotate:proc
     extrn transformed_shape_op:proc
     extrn transformed_shape_op_helper:proc

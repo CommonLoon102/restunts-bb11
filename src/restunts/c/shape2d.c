@@ -1,44 +1,16 @@
 #ifdef RESTUNTS_DOS
-
 #include <dos.h>
 #include <mem.h>
+#elif RESTUNTS_SDL
+
+#endif
 #include <stddef.h>
 #include <stdlib.h>
+
 #include "externs.h"
 #include "memmgr.h"
 #include "fileio.h"
-
-#pragma pack (push, 1)
-struct SHAPE2D {
-	unsigned short s2d_width;
-	unsigned short s2d_height;
-	unsigned short s2d_unk1;
-	unsigned short s2d_unk2;
-	unsigned short s2d_pos_x;
-	unsigned short s2d_pos_y;
-	unsigned char s2d_unk3;
-	unsigned char s2d_unk4;
-	unsigned char s2d_unk5;
-	unsigned char s2d_unk6;
-};
-
-struct SPRITE {
-	struct SHAPE2D far* sprite_bitmapptr;
-	unsigned short sprite_unk1;
-	unsigned short sprite_unk2;
-	unsigned short sprite_unk3;
-	unsigned int* sprite_lineofs;
-	unsigned short sprite_left;
-	unsigned short sprite_right;
-	unsigned short sprite_top;
-	unsigned short sprite_height;
-	unsigned short sprite_pitch;
-	unsigned short sprite_unk4;
-	unsigned short sprite_width2;
-	unsigned short sprite_left2;
-	unsigned short sprite_widthsum;
-};
-#pragma pack (pop)
+#include "shape2d.h"
 
 extern char aWindowdefOutOfRowTableSpa[];
 extern char aMcgaWindow[];
@@ -449,4 +421,4 @@ void far* file_load_shape2d_res_nofatal(char* resname) {
 	return file_load_shape2d_res(resname, 0);
 }
 
-#endif
+//#endif

@@ -1,7 +1,11 @@
 #ifdef RESTUNTS_DOS
 #include <dos.h>
+#endif
+#include <stdlib.h>
 #include "externs.h"
 #include "memmgr.h"
+
+#ifdef RESTUNTS_DOS
 
 #define pushregs()\
 	_asm {\
@@ -50,6 +54,39 @@ unsigned short dos_setblock(unsigned short blockseg, unsigned short newsize) {
 	return res;
 }
 
+#else
+void pushregs() {}
+void popregs() {}
+	
+size_t word_3FF82 = 0; // last para reserved by memmgr
+size_t word_3FF84 = 0; // first para reserved by memmgr
+unsigned short resmaxsize = 0; // size of largest chunk?
+
+struct MEMCHUNK resources[] = {
+	{ 0, 0, 0, 2 },
+	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, 
+	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, 
+	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, 
+	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, 
+
+	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, 
+	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, 
+	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, 
+	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, 
+
+	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, 
+	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, 
+	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, 
+	{ 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, { 0, 0, 0, 0 }, 
+	{ 0, 0, 0, 1 },
+};
+struct MEMCHUNK* resendptr1 = &resources[49]; // eller 49?
+struct MEMCHUNK* resendptr2 = &resources[49]; // ditto
+struct MEMCHUNK* resptr1 = resources;
+struct MEMCHUNK* resptr2 = resources;
+
+#endif
+
 const char* mmgr_path_to_name(const char* filename) {
 	const char* c;
 	const char* result;
@@ -66,6 +103,8 @@ const char* mmgr_path_to_name(const char* filename) {
 	return result;
 }
 
+extern void far* ported_mmgr_alloc_pages_(const char* arg_0, unsigned short arg_2);
+
 void far* mmgr_alloc_pages(const char* arg_0, unsigned short arg_2) {
 	int i;
 	struct MEMCHUNK* resdi;
@@ -76,10 +115,11 @@ void far* mmgr_alloc_pages(const char* arg_0, unsigned short arg_2) {
 	resdi = resptr2;
 	ressi = resendptr1;
 	rdx = resdi->resofs + resdi->ressize;
+
 	resdi++;
 	if (ressi <= resdi) {
 		if (ressi == resendptr2) 
-			fatal_error(aReservememoryO, arg_0);
+			fatal_error("r");//eservememory - OUT OF MEMORY SLOTS RESERVING %s");//, arg_0);
 
 		ressi++;
 		resendptr1 = ressi;
@@ -105,8 +145,10 @@ void far* mmgr_alloc_pages(const char* arg_0, unsigned short arg_2) {
 		rax = resdi->resofs + resdi->ressize;
 	
 		while (rax > ressi->resofs) {
-			if (ressi == resendptr2)
-				fatal_error(aReservememoryOutOfMemory, arg_0, resdi->ressize, resmaxsize);
+			if (ressi == resendptr2) {
+				fatal_error("r");// - OUT OF MEMORY RESERVING %s P=%x HW=%x\r\n");//, arg_0, resdi->ressize, resmaxsize);
+			}
+			//fatal_error("r");
 
 			ressi->resunk = 0;
 			ressi++;
@@ -126,7 +168,9 @@ void mmgr_alloc_resmem(unsigned short arg_0) {
 	void far* psp;
 	unsigned short maxblocks;
 	struct MEMCHUNK* rp;
+	char* tempptr;
 
+#ifdef RESTUNTS_DOS
 	psp = dos_get_psp();
 	pspseg = FP_SEG(psp);
 	pspofs = FP_OFF(psp);
@@ -138,7 +182,20 @@ void mmgr_alloc_resmem(unsigned short arg_0) {
 		maxblocks = dos_setblock(resptr1->resofs, maxblocks);
 		resendptr2->resofs = word_3FF84 + maxblocks;
 		word_3FF82 = resendptr2->resofs;
+		//fatal_error("%u\n", word_3FF82 - word_3FF84);
 	}
+#else
+	if (word_3FF82 == 0) {
+		// assume 640k is enough for anybody:
+		maxblocks = (640 * 1024) >> 4;
+		tempptr = malloc((maxblocks << 4) + 16);
+		resptr1->resofs = (((size_t)tempptr) + 16)>>4;
+		word_3FF84 = resptr1->resofs;
+		resendptr2->resofs = word_3FF84 + maxblocks;
+		word_3FF82 = resendptr2->resofs;
+		
+	}
+#endif
 	resendptr1 = resendptr2;
 	resptr2 = resptr1;
 	
@@ -170,7 +227,7 @@ void far* mmgr_free(char far* ptr) {
 
 	while (1) {
 		if (ressi == resptr1) 
-			fatal_error(aMemoryManagerB, ptrseg);
+			fatal_error("memory manager - BLOCK NOT FOUND at SEG= %x");//, ptrseg);
 		if (ressi->resofs == ptrseg) break;
 		ressi--;
 	}
@@ -389,7 +446,7 @@ void mmgr_release(char far* ptr) {
 
 	for (;;) {
 		if (ressi == resptr1) 
-			fatal_error(aMemoryManagerB, regax);
+			fatal_error("memory manager - BLOCK NOT FOUND at SEG= %x");//, regax);
 		if (regax == ressi->resofs) break;
 		ressi--;
 	}
@@ -420,7 +477,7 @@ unsigned short mmgr_get_chunk_size(char far* ptr) {
 
 	for (;;) {
 		if (ressi == resptr1) 
-			fatal_error(aMemoryManagerB, regax);
+			fatal_error("memory manager - BLOCK NOT FOUND at SEG= %x");//, regax);
 		if (regax == ressi->resofs) break;
 		ressi--;
 	}
@@ -442,7 +499,7 @@ unsigned short mmgr_resize_memory(unsigned short arg_0, unsigned short arg_2, un
 
 	for (;;) {
 		if (ressi == resptr1)
-			fatal_error(aMemoryManagerB, arg_2);
+			fatal_error("memory manager - BLOCK NOT FOUND at SEG= %x");//, arg_2);
 		if (regax == ressi->resofs) break;
 		ressi--;
 	}
@@ -455,7 +512,7 @@ unsigned short mmgr_resize_memory(unsigned short arg_0, unsigned short arg_2, un
 	}
 
 	if (ressi != resptr2)
-		fatal_error(aResizememoryCa);
+		fatal_error("resizememory - CANNOT EXPAND BLOCK NOT AT TOP");
 	ressi->ressize = regax;
 	resdi = resendptr1;
 	regax += ressi->resofs;
@@ -474,7 +531,7 @@ unsigned short mmgr_resize_memory(unsigned short arg_0, unsigned short arg_2, un
 	for (;;) {
 		if (regax <= ressi->resofs) break;
 		if (ressi == resendptr2) 
-			fatal_error(aResizememoryNo, resmaxsize);
+			fatal_error("resizememory - NO MEMORY LEFT TO EXPAND HW=%x");//, resmaxsize);
 	
 		ressi->resunk = 0;
 		ressi++;
@@ -496,7 +553,7 @@ void far* mmgr_op_unk(char far* ptr) {
 
 	for (;;) {
 		if (ressi == resptr1)
-			fatal_error(aMemoryManagerB, regax);
+			fatal_error("memory manager - BLOCK NOT FOUND at SEG= %x");//, regax);
 		if (regax == ressi->resofs) break;
 		ressi--;
 	}
@@ -540,6 +597,7 @@ unsigned long mmgr_get_chunk_size_bytes(char far* ptr) {
 	unsigned long result = mmgr_get_chunk_size(ptr);
 	return result << 4;
 }
+//#endif
 
 
 struct resheader {
@@ -552,6 +610,8 @@ char far* locate_resource(char far* data, char* name, unsigned short fatal) {
 	struct resheader far* hdr = (struct resheader far*)data;
 	char far* resnames = (char far*)data + 6; // point at first 4-byte resource identifier
 	char huge* result = data; // cannot add >64k on a far pointer, use a huge pointer instead
+
+	//printf("locate_resource: %s\n", name);
 
 	// pad name with spaces
 	for (i = 0; i < 4; i++) {
@@ -618,4 +678,3 @@ char far* locate_text_res(char far* data, char* name) {
 	return locate_shape_fatal(data, textname);
 }
 
-#endif

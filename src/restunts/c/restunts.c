@@ -1,7 +1,10 @@
 #include <dos.h>
+#include <stddef.h>
 #include "memmgr.h"
 #include "fileio.h"
 #include "externs.h"
+#include "shape3d.h"
+#include "shape2d.h"
 
 #pragma pack (push, 1)
 struct GAMEINFO {
@@ -105,27 +108,16 @@ extern void run_opponent_menu(void);
 extern void check_input(void);
 extern void show_waiting(void);
 extern void run_car_menu(struct GAMEINFO* unk, char* unk2, char* unk3, unsigned int unk4);
-extern void get_super_random();
+extern void get_super_random(void);
 extern void run_game(void);
 extern unsigned end_hiscore(void);
 extern unsigned run_option_menu(void);
 extern void init_game_state(unsigned short unk);
-extern void security_check();
+extern void security_check(void);
 
 
-int stuntsmain(int argc, char* argv) {
-
-	int i, result;
-	int regax, regsi;
-	char var_A;
-	char far* trkptr;
-	char far* textresptr;
-
-	//return ported_stuntsmain_(argc, argv);
-
-	init_video(argc, argv);
-	init_div0();
-
+void init_row_tables(void) {
+	int i;
 	for (i = 0; i < 30; i++) {
 		trackrows[i] = 30 * (29 - i);
 		terrainrows[i] = 30 * i;
@@ -140,15 +132,10 @@ int stuntsmain(int argc, char* argv) {
 		trackcenterpos2[i] = (i << 10) + 0x200;
 	}
 
-	
-	mainresptr = file_load_resfile("main");
-	
-	fontdefptr = file_load_resource(0, "fontdef.fnt");
-	fontnptr = file_load_resource(0, "fontn.fnt");
+}
 
-	font_set_fontdef();
-	init_polyinfo();
-
+void init_trackdata(void) {
+	char far* trkptr;
 	trkptr = mmgr_alloc_resbytes("trakdata", 0x6BF3);
 
 	td01_track_file_cpy = trkptr;
@@ -220,12 +207,270 @@ int stuntsmain(int argc, char* argv) {
 	trackdata23 = trkptr;
 
 	trkptr += 0x30;
+}
+
+struct RECTANGLE {
+	int x1, x2;
+	int y1, y2;
+};
+
+
+extern struct SHAPE3D game3dshapes[];
+
+extern void shape3d_load_car_shapes(char* carid, char* oppcarid);
+extern void select_cliprect_rotate(int angX, int angY, int angZ, struct RECTANGLE* cliprect, int unk);
+extern void transformed_shape_op(struct TRANSFORMSHAPE3D* shape);
+
+extern void sprite_blit_to_video(struct SPRITE far* sprite);
+extern void sub_29772(void);
+extern void set_projection(int, int, int, int);
+
+struct RECTANGLE shaperect = { 0, 320, 0, 200 };
+struct TRANSFORMEDSHAPE3D transshape;
+struct RECTANGLE cliprect = { 0, 0x140, 0, 0x5F };
+struct VECTOR carpos = { 0, 0x0FCB8, 0x0B40 }; // from the original
+//struct VECTOR carpos = { 0, 0, 320 };
+
+extern struct SPRITE far* sprite_make_wnd(int width, int height);
+extern struct SPRITE far* wndsprite;
+
+extern struct RECTANGLE cliprect_unk;
+//cliprect_unk    RECTANGLE <270Fh, 0FFFFh, 270Fh, 0FFFFh>
+
+
+extern int polyinfonumpolys;
+extern unsigned char far* polyinfoptrs[]; // array size = 0x190 
+extern unsigned int word_40ED6[]; // array size = 0x190
+extern int* material_clrlist_ptr_cpy;
+extern int* material_patlist_ptr_cpy;
+
+extern void preRender_default(int color, int vertlinecount, int* vertlines);
+/*
+void get_a_poly_info2(void) {
+
+	int counter;
+	int materialtype; // var_6
+	int materialcolor; // var_8
+	int materialpattern;
+	int objtype;
+	int somecount; // var_2
+	unsigned int regdi;
+	unsigned char far* polyinfoptr;
+	int far* polyptr;
+	int i;
+	int var_32[256];
+
+	regdi = 0x190;
+	counter = 0;
+	while (counter < polyinfonumpolys) {
+		regdi = word_40ED6[regdi];
+		polyinfoptr = polyinfoptrs[regdi];
+		materialtype = polyinfoptr[2];
+
+		materialcolor = material_clrlist_ptr_cpy[materialtype];
+		objtype = polyinfoptr[4];
+
+		if (objtype == 0) {
+			somecount = polyinfoptr[3];
+			polyptr = polyinfoptr + 6;
+			
+			for (i = 0; i < somecount; i++) {
+				var_32[i * 2 + 0] = polyptr[i * 2 + 0];
+				var_32[i * 2 + 1] = polyptr[i * 2 + 1];
+			}
+			materialpattern = material_patlist_ptr_cpy[materialtype];
+			if (materialpattern == 0) {
+				preRender_default(materialcolor, somecount, var_32);
+			} else
+			if (materialpattern == 1) {
+				// fill poatterned
+			} else {
+				// fill unk
+			}
+		} else
+		if (objtype == 1) {
+			// goto fill_solid
+		} else
+		if (objtype == 2) {
+			// goto fill_sphere
+		} else
+		if (objtype == 3) {
+			// goto fill_wheel0
+		} else
+		if (objtype == 5) {
+			// goto fill_next
+		} else {
+			// goto fill_pixel
+		}
+		
+		counter++;
+	}
+	
+	polyinfo_reset(); // polyinfo_reset();
+}
+
+int stuntsmain(int argc, char* argv) {
+	int result;
+	char far* textresptr;
+	int carposangle;
+	struct SPRITE far* var42wnd;
+	int counter;
+	int inch;
+	int shapeindex;
+
+	// initialization
+	init_video(argc, argv);
+	init_div0();
+	init_row_tables();
+	
+	mainresptr = file_load_resfile("main");
+	fontdefptr = file_load_resource(0, "fontdef.fnt");
+	fontnptr = file_load_resource(0, "fontn.fnt");
+	
+	font_set_fontdef();
+	init_polyinfo();
+	init_trackdata();
+
+	sub_22532();
+	
+	init_kevinrandom("kevin");
+
+	strcpy(gameconfig.game_trackname, "DEFAULT");
+	
+	input_do_checking(1);
+	input_do_checking(1);
+	mouse_draw_opaque_check();
+
+	kbormouse = 0;
+	passed_security = 1;  // set to 0 for the original copy protection	
+	//set_default_car();
+		
+	// try do something
+	sub_29772();
+	set_projection(0x24, 0x11, 0x140, 0x64);	// would at best draw just a pixel without this - camera projection??
+
+	wndsprite = sprite_make_wnd(320, 100);
+
+	//run_intro_looped();
+	
+	carposangle = polarAngle(carpos.y, carpos.z);
+
+	shape3d_load_all();
+	shape3d_load_car_shapes("coun", "coun");
+	select_cliprect_rotate(0, carposangle, 0, &cliprect, 0);
+
+	//shaperect = cliprect;
+	transshape.material = 0;
+	transshape.rotvec.x = 0;
+	transshape.rotvec.y = 0;
+	transshape.pos = carpos;
+
+	transshape.unk = 0;//0x7530;
+	transshape.flags = 0;
+	transshape.rectptr = &shaperect;
+
+	counter = 0;
+	shapeindex = 124;
+	for (; ; counter++) {
+
+		transshape.rotvec.z = counter + 0x230;
+		
+		// seg000:1C58                 mov     [bp+var_transshape.ts_shapeptr], (offset game3dshapes.shape3d_numverts+0AA8h)
+		// 0xAA8 / sizeof(SHAPE3D) = 0xAA8 / 0x16 = 124, points at where car0 is loaded during shape3d_load_car_shapes();
+
+		transshape.shapeptr = &game3dshapes[shapeindex];
+
+		//transshape.shapeptr = &game3dshapes[124];
+		//transshape.shapeptr = &game3dshapes[124];
+		
+		transformed_shape_op(&transshape);
+		
+		sprite_copy_wnd_to_1();
+		sprite_clear_1_color(3);
+		
+		//sprite_set_1_size(50, 200, 50, 100);
+		get_a_poly_info2(); // renders to sprite1
+	
+		//sprite_copy_2_to_1_2();
+		sprite_blit_to_video(wndsprite); // sprite_blit_to_video(wndsprite);
+		
+		inch = get_kb_or_joy_flags();//kb_get_char();
+		if (inch == 4) { // right
+			shapeindex++;
+			shapeindex = (shapeindex + 0x74) % 0x74;
+		} else
+		if (inch == 8) { // left
+			shapeindex--;
+			shapeindex = (shapeindex + 0x74) % 0x74;
+		} else
+		if (inch != 0) {
+			textresptr = locate_text_res(mainresptr, "dos");
+			//result = show_dialog(2, 1, textresptr, 0xFFFF, 0xFFFF, dialogarg2, 0, 0); // center
+			result = show_dialog(2, 1, textresptr, 0, 170, dialogarg2, 0, 0);
+			if (result >= 1)
+				break;
+		}
+	}
+
+	//var42wnd = sprite_make_wnd(320, 200);
+	//setup_mcgawnd2();
+	//sprite_set_1_size(0, 320, 0, 200);
+	//sprite_copy_2_to_1_2();
+	//sprite_clear_1_color(2);
+		//sprite_copy_wnd_to_1();
+		//sprite_copy_2_to_1_2();
+	
+		//sprite_putimage(wndsprite->sprite_bitmapptr);
+		//sprite_putimage(var42wnd->sprite_bitmapptr);
+	
+	//fatal_error("happy yet?");
+
+
+	// shutdown
+	mouse_draw_opaque_check();
+	audio_stop_unk();
+	audiodrv_atexit();
+	kb_exit_handler();
+	kb_shift_checking1();
+	video_set_mode7();
+	
+	fatal_error("err %i", inch);
+
+	return 0;
+}
+*/
+
+int stuntsmain(int argc, char* argv) {
+
+	int i, result;
+	int regax, regsi;
+	char var_A;
+	char far* trkptr;
+	char far* textresptr;
+
+	//return ported_stuntsmain_(argc, argv);
+
+	init_video(argc, argv);
+	init_div0();
+	init_row_tables();
+	
+	mainresptr = file_load_resfile("main");
+	
+	fontdefptr = file_load_resource(0, "fontdef.fnt");
+	fontnptr = file_load_resource(0, "fontn.fnt");
+
+	font_set_fontdef();
+	init_polyinfo();
+	
+	init_trackdata();
 
 	sub_22532();
 	
 	init_kevinrandom("kevin");
 	
 	strcpy(gameconfig.game_trackname, "DEFAULT");
+	
+	//fatal_error("ai");
 	
 	input_do_checking(1);
 	input_do_checking(1);
@@ -383,4 +628,3 @@ _ask_dos:
 	}
 	goto _do_intro0;
 }
-

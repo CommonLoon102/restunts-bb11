@@ -395,7 +395,7 @@ loc_3A08A:
     call    audio_stop_unk
     mov     ax, 1
     push    ax
-    call    far ptr libsub_2CDEC
+    call    far ptr libsub_quit_to_dos_alt
     add     sp, 2
 loc_3A0C9:
     cmp     [bp+var_argnosound], 0

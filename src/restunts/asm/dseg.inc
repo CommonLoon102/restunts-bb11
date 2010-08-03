@@ -81,6 +81,10 @@ dseg segment byte public 'STUNTSD' use16
     extrn aGkev_1:byte
     extrn aSdmsel:byte
     extrn aScrn:byte
+    extrn menu_buttons_x1:word
+    extrn menu_buttons_x2:word
+    extrn menu_buttons_y1:word
+    extrn menu_buttons_y2:word
     extrn asc_3BA24:byte
     extrn asc_3BA26:byte
     extrn aHs0:byte
@@ -91,10 +95,10 @@ dseg segment byte public 'STUNTSD' use16
     extrn aTrk:byte
     extrn a_trk_0:byte
     extrn a_trk_1:byte
-    extrn unk_3BA4C:byte
-    extrn unk_3BA52:byte
-    extrn unk_3BA58:byte
-    extrn unk_3BA5E:byte
+    extrn trackmenu_buttons_x1:word
+    extrn trackmenu_buttons_x2:word
+    extrn trackmenu_buttons_y1:word
+    extrn trackmenu_buttons_y2:word
     extrn a_hig_0:byte
     extrn a______________:byte
     extrn a_______________________:byte
@@ -131,14 +135,10 @@ dseg segment byte public 'STUNTSD' use16
     extrn aBau_0:byte
     extrn aBma_0:byte
     extrn carmenu_cliprect:RECTANGLE
-    extrn word_3BB28:word
-    extrn word_3BB32:word
-    extrn word_3BB3C:word
-    extrn word_3BB3E:word
-    extrn word_3BB40:word
-    extrn word_3BB42:word
-    extrn word_3BB44:word
-    extrn word_3BB4E:word
+    extrn carmenu_buttons_y1:word
+    extrn carmenu_buttons_y2:word
+    extrn carmenu_buttons_x1:word
+    extrn carmenu_buttons_x2:word
     extrn aLnam:byte
     extrn stru_3BB56:RECTANGLE
     extrn carmenu_carpos:VECTOR
@@ -154,7 +154,10 @@ dseg segment byte public 'STUNTSD' use16
     extrn aClip:byte
     extrn aDes_0:byte
     extrn aRac:byte
-    extrn word_3BBC8:word
+    extrn opponentmenu_buttons_x1:word
+    extrn opponentmenu_buttons_x2:word
+    extrn opponentmenu_buttons_y1:word
+    extrn opponentmenu_buttons_y2:word
     extrn aMisc_1:byte
     extrn aGstu:byte
     extrn aGver:byte
@@ -206,10 +209,8 @@ dseg segment byte public 'STUNTSD' use16
     extrn word_3BCF0:word
     extrn word_3BCF2:word
     extrn word_3BCF6:word
-    extrn word_3BD00:word
-    extrn unk_3BD02:byte
-    extrn word_3BD0A:word
-    extrn unk_3BD0C:byte
+    extrn hiscore_buttons_y1:word
+    extrn hiscore_buttons_y2:word
     extrn aOpp2win:byte
     extrn aOpp2lose:byte
     extrn aOp01:byte
@@ -558,21 +559,21 @@ dseg segment byte public 'STUNTSD' use16
     extrn byte_3E9E6:byte
     extrn byte_3E9F0:byte
     extrn byte_3E9FA:byte
-    extrn byte_3EA04:byte
-    extrn word_3EA08:word
+    extrn game_camera_buttons_count:byte
+    extrn game_camera_buttons_x1:word
     extrn word_3EA18:word
-    extrn word_3EA1A:word
+    extrn game_camera_buttons_x2:word
     extrn word_3EA2A:word
-    extrn word_3EA2C:word
+    extrn game_camera_buttons_y1:word
     extrn word_3EA3A:word
     extrn word_3EA3C:word
-    extrn word_3EA3E:word
+    extrn game_camera_buttons_y2:word
     extrn word_3EA4C:word
     extrn word_3EA4E:word
-    extrn unk_3EA50:byte
-    extrn unk_3EA52:byte
-    extrn unk_3EA54:byte
-    extrn unk_3EA56:byte
+    extrn gameunk_button_x1:word
+    extrn gameunk_button_x2:word
+    extrn gameunk_button_y1:word
+    extrn gameunk_button_y2:word
     extrn aPolyinfo:byte
     extrn primidxcounttab:byte
     extrn primtypetab:byte
@@ -659,10 +660,10 @@ dseg segment byte public 'STUNTSD' use16
     extrn aEokenseieemseedewwefuenpestej:byte
     extrn aTer0:byte
     extrn word_3ECBE:word
-    extrn unk_3ECD6:byte
-    extrn unk_3ECE0:byte
-    extrn unk_3ECEA:byte
-    extrn unk_3ECF4:byte
+    extrn trackmenu2_buttons_x1:word
+    extrn trackmenu2_buttons_x2:word
+    extrn trackmenu2_buttons_y1:word
+    extrn trackmenu2_buttons_y2:word
     extrn byte_3ECFE:byte
     extrn byte_3ED00:byte
     extrn aFlatlakelak1lak2lak3lak4highg:byte
@@ -869,16 +870,16 @@ dseg segment byte public 'STUNTSD' use16
     extrn word_40330:word
     extrn word_40332:word
     extrn word_40334:word
-    extrn word_403AE:word
-    extrn word_403B0:word
-    extrn word_403B2:word
-    extrn word_403B4:word
-    extrn word_403B6:word
-    extrn word_403B8:word
-    extrn word_403BA:word
-    extrn word_403BC:word
-    extrn word_403BE:word
-    extrn word_403C0:word
+    extrn projectiondata3:word
+    extrn projectiondata6:word
+    extrn projectiondata4:word
+    extrn projectiondata7:word
+    extrn projectiondata5:word
+    extrn projectiondata8:word
+    extrn projectiondata9:word
+    extrn projectiondata10:word
+    extrn projectiondata1:word
+    extrn projectiondata2:word
     extrn aWindowReleased:byte
     extrn aSFileError_0:byte
     extrn currentvideomode:byte
@@ -973,7 +974,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn aSdmain_0:byte
     extrn aSmou_0:byte
     extrn aMmou:byte
-    extrn byte_40B86:byte
+    extrn aCopyrightCUnlimitedSoftwareInc_198:byte
     extrn aMcgaWindow:byte
     extrn aWindowdefOutOfRowTableSpa:byte
     extrn a_pvs_0:byte

@@ -3,6 +3,7 @@
 
 #ifdef RESTUNTS_SDL
 #define far
+#define huge
 #endif
 
 extern unsigned short pspofs;
@@ -59,6 +60,10 @@ extern void far* __fmemcpy(void far*, const void far*, unsigned);
 #define strcat _strcat
 #define fmemcpy __fmemcpy
 #define strcmp _strcmp
+#else
+#define MK_FP(x, y) ((x << 4) + y)
+#define FP_SEG(x) 0
+#define FP_OFF(x) (size_t)x
 #endif
 
 #endif

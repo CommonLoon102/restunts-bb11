@@ -5,6 +5,7 @@
 #include <stdio.h>
 #define huge 
 #endif
+#include <stddef.h>
 #include "externs.h"
 #include "fileio.h"
 #include "memmgr.h"

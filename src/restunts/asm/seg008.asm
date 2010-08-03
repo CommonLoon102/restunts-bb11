@@ -80,7 +80,7 @@ seg008 segment byte public 'STUNTSC' use16
     public draw_button
     public ported_shape3d_init_shape_
     public font_op2_alt
-    public sub_29620
+    public sprite_blit_to_video
     public show_waiting
     public print_int_as_string_maybe
     public sub_29772
@@ -4032,7 +4032,7 @@ font_op2_alt proc far
     pop     bp
     retf
 font_op2_alt endp
-sub_29620 proc far
+sprite_blit_to_video proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = dword ptr 6
@@ -4106,7 +4106,7 @@ loc_29670:
     retf
     ; align 2
     db 144
-sub_29620 endp
+sprite_blit_to_video endp
 show_waiting proc far
 
     sub     ax, ax
