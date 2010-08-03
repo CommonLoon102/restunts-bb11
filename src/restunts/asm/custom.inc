@@ -1,3 +1,8 @@
+; this empty segment is placed at the end of the executable.
+; it is used by the hacked crt to determine how large the image is
+endseg segment byte public 'ENDSEG' use16
+endseg ends
+
 ;extrn _abort:proc
 ;extrn _printf:proc
 ;extrn__fputn:proc

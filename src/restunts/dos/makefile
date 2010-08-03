@@ -1,5 +1,5 @@
-ASM = tasm
-CC = bcc /S
+ASM = tasm /m2 /s
+CC = bcc /c /u- /mm /B /n$(OBJDIR) /DRESTUNTS_DOS
 LINK = wlink
 OBJDIR = build
 
@@ -21,9 +21,11 @@ library cm.lib
 order
 	clname STUNTSC
 	clname STUNTSD
-	clname DATA
 	clname STACK
+	clname DATA
 	clname BSS
+	clname CODE
+	clname ENDSEG
 |
 	copy restunts.exe s:\stunts
 

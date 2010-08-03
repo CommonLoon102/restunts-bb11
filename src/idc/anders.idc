@@ -415,8 +415,22 @@ static PrintBody(f, funcstart, funcend, skipfirstlabel) {
 				Message("TODO: unhandled data size X%i\n", bodyflags);
 			}
 		} else {
-			 
-			 PrintFixedAsm(f, funcbody);
+			 // seg010 @ 183378-190983
+			 // 0x2cc6f = mov si, di:2
+			 if (funcbody == 0x2cc6f) {
+				fprintf(f, "    ; begin hack the crt startup\n");
+				fprintf(f, "    ; assume endseg is linked at the end of the program\n");
+				fprintf(f, "    mov si, seg endseg\n");
+				fprintf(f, "    sub si, di\n");
+				for (i = 0; i < 10; i++) {
+					fprintf(f, "    nop\n");
+				}
+				fprintf(f, "    ; end hack the crt startup\n");
+			 } else 
+			 if (funcbody > 0x2cc6f && funcbody < 0x2cc7e) {
+				// skip this
+			 } else
+				PrintFixedAsm(f, funcbody);
 			//fprintf(f, "    %s\n", GetDisasm(funcbody));
 		}
 	}

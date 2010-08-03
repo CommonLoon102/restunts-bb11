@@ -157,11 +157,21 @@ start proc near
     int     20h             ; DOS - PROGRAM TERMINATION
 loc_2CC6C:
     mov     di, seg dseg
-    mov     si, ds:2        ; pspseg:2 = Memory size in paragraphs 
-    sub     si, di
-    cmp     si, 1000h
-    jb      short loc_2CC7E
-    mov     si, 1000h       ; si = 1000h or memory size if less than 1000h
+    ; begin hack the crt startup
+    ; assume endseg is linked at the end of the program
+    mov si, seg endseg
+    sub si, di
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop
+    ; end hack the crt startup
 loc_2CC7E:
     cli
     mov     ss, di          ; ss = dseg
