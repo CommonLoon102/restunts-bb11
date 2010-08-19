@@ -207,6 +207,7 @@ unsigned transformed_shape_op(struct TRANSFORMEDSHAPE3D* arg_transshapeptr) {
 	const char* errorstr2 = "errorstr2 %i %i";
 
 	//result = ported_transformed_shape_op_(arg_transshapeptr);
+	//return result;
 
 	if (word_40ECE != 0) return 1;
 	transshapenumverts = arg_transshapeptr->shapeptr->shape3d_numverts;
@@ -1297,11 +1298,11 @@ loc_255EE:
 	if (var_vertflagtbl[var_C] != 0) goto loc_2553A;
 
 	if (var_vertflagtbl[var_448] == 0) goto loc_256D7;
-asm {
+/*asm {
 	
 mov si, i
 	
-/*    mov     al, transshapenumvertscopy
+    mov     al, transshapenumvertscopy
     sub     ah, ah
     cmp     ax, si
     ja      short loc_255FA
@@ -1348,9 +1349,9 @@ loc_25635:
     jnz     short loc_25645
     jmp     loc_256D7
 loc_25645:
-*/
-}
 
+}
+*/
 // &var_vecarr[var_C] is equivalent to var_polyvertunktabptr-stuff+var_vecarr... becoz var_polyvertunktabptr is an array-indexer relative to the stack frame
 	vector_op_unk(&var_vecarr[var_C], &var_vecarr[var_448], &var_vec2, 0x0C);
 	vector_to_point(&var_vec2, &var_574);
@@ -1471,7 +1472,7 @@ loc_2571A:
 	if (transshapenumvertscopy == 0) goto loc_25801;
 	if (var_ptrectflag != 0) goto loc_25801;
 	if ((var_primitiveflags & 1) != 0) goto loc_25760;
-	if (var_A != *var_cull2) goto loc_25760;
+	if ((var_A & *var_cull2) != 0) goto loc_25760;
 	
 	if (transformed_shape_op_helper3(transshapepolyinfo + 6) == 0) goto loc_25763;
 
@@ -1802,7 +1803,7 @@ loc_2590D:
 
 	if ((transshapeflags & 8) == 0) goto loc_25983;
 	rect_adjust_unk(polyvertpointptrtab[0], transshaperectptr);
-	rect_adjust_unk(polyvertpointptrtab[0], transshaperectptr);
+	rect_adjust_unk(polyvertpointptrtab[1], transshaperectptr);
 
 /*asm {
 	
