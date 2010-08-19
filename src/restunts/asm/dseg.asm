@@ -626,7 +626,7 @@ dseg segment byte public 'STUNTSD' use16
     public primidxcounttab
     public primtypetab
     public invpow2tbl
-    public word_3EB02
+    public mat_y_rot_angle
     public cliprect_unk
     public aInitengineAllHandlesUsed_
     public word_3EB2A
@@ -1211,7 +1211,7 @@ dseg segment byte public 'STUNTSD' use16
     public tommres
     public word_4394E
     public dashb_toggle
-    public mat_unk_1
+    public mat_z_rot
     public word_43964
     public byte_43966
     public carshortname
@@ -1337,7 +1337,7 @@ dseg segment byte public 'STUNTSD' use16
     public word_44D20
     public fontnptr
     public wndsprite
-    public mat_unk_3
+    public mat_y_rot
     public word_44D3C
     public td04_aerotable_pl
     public td14_elem_map_main
@@ -1524,7 +1524,7 @@ dseg segment byte public 'STUNTSD' use16
     public byte_46467
     public word_46468
     public word_4646A
-    public mat_unk_2
+    public mat_x_rot
     public byte_46484
     public word_46486
 word_3B770     dw 0
@@ -14320,7 +14320,7 @@ invpow2tbl     dd -2147483648
     dd 4
     dd 2
     dd 1
-word_3EB02     dw 65535
+mat_y_rot_angle     dw 65535
 cliprect_unk     db 15
     db 39
     db 255
@@ -31279,7 +31279,7 @@ tommres     dd 0
 word_4394E     dw 0
 dashb_toggle     db 0
     db 0
-mat_unk_1     db 0
+mat_z_rot     db 0
     db 0
     db 0
     db 0
@@ -36167,7 +36167,7 @@ word_44D1E     dw 0
 word_44D20     dw 0
 fontnptr     dd 0
 wndsprite     dd 0
-mat_unk_3     db 0
+mat_y_rot     db 0
     db 0
     db 0
     db 0
@@ -41823,7 +41823,7 @@ word_4646A     dw 0
     db 0
     db 0
     db 0
-mat_unk_2     db 0
+mat_x_rot     db 0
     db 0
     db 0
     db 0

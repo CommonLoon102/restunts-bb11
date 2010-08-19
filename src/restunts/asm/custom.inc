@@ -31,6 +31,10 @@ extrn rect_compare_point:proc
 extrn mat_mul_vector:proc
 extrn mat_multiply:proc
 extrn mat_invert:proc
+extrn mat_rot_x:proc
+extrn mat_rot_y:proc
+extrn mat_rot_z:proc
+extrn mat_rot_zxy:proc
 
 extrn file_find:proc
 extrn file_find_next:proc

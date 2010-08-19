@@ -578,7 +578,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn primidxcounttab:byte
     extrn primtypetab:byte
     extrn invpow2tbl:dword
-    extrn word_3EB02:word
+    extrn mat_y_rot_angle:word
     extrn cliprect_unk:RECTANGLE
     extrn aInitengineAllHandlesUsed_:byte
     extrn word_3EB2A:word
@@ -1163,7 +1163,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn tommres:dword
     extrn word_4394E:word
     extrn dashb_toggle:byte
-    extrn mat_unk_1:MATRIX
+    extrn mat_z_rot:MATRIX
     extrn word_43964:word
     extrn byte_43966:byte
     extrn carshortname:byte
@@ -1289,7 +1289,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn word_44D20:word
     extrn fontnptr:dword
     extrn wndsprite:dword
-    extrn mat_unk_3:MATRIX
+    extrn mat_y_rot:MATRIX
     extrn word_44D3C:word
     extrn td04_aerotable_pl:dword
     extrn td14_elem_map_main:dword
@@ -1476,7 +1476,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn byte_46467:byte
     extrn word_46468:word
     extrn word_4646A:word
-    extrn mat_unk_2:MATRIX
+    extrn mat_x_rot:MATRIX
     extrn byte_46484:byte
     extrn word_46486:word
 dseg ends

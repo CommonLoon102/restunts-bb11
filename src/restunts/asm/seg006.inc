@@ -8,7 +8,7 @@ seg006 segment byte public 'STUNTSC' use16
     extrn ported_rect_compare_point_:proc
     extrn transformed_shape_op_helper3:proc
     extrn get_a_poly_info:proc
-    extrn mat_rot_zxy:proc
+    extrn ported_mat_rot_zxy_:proc
     extrn rect_adjust_unk:proc
     extrn vector_op_unk2:proc
     extrn calc_sincos80:proc

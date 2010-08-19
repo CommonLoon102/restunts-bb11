@@ -46,13 +46,13 @@ nosmart
 seg024 segment byte public 'STUNTSC' use16
     assume cs:seg024
     assume es:nothing, ss:nothing, ds:dseg
-    public mat_rot_x
-    public mat_rot_y
-    public mat_rot_z
+    public ported_mat_rot_x_
+    public ported_mat_rot_y_
+    public ported_mat_rot_z_
 algn_36F29:
     ; align 2
     db 144
-mat_rot_x proc far
+ported_mat_rot_x_ proc far
     var_4 = word ptr -4
     var_2 = word ptr -2
      s = byte ptr 0
@@ -61,46 +61,26 @@ mat_rot_x proc far
     arg_angleYZ = word ptr 8
 
     push    bp
-loc_36F2B:
     mov     bp, sp
-loc_36F2D:
     sub     sp, 4
-loc_36F30:
     push    [bp+arg_angleYZ]
-loc_36F33:
     call    cos_fast
-loc_36F38:
     add     sp, 2
-loc_36F3B:
     mov     [bp+var_2], ax
-loc_36F3E:
     push    [bp+arg_angleYZ]
-loc_36F41:
     call    sin_fast
-loc_36F46:
     mov     [bp+var_4], ax
-loc_36F49:
     mov     bx, [bp+arg_outMatrix]
-loc_36F4C:
     mov     [bx+MATRIX._11], 4000h
-loc_36F50:
     mov     [bx+MATRIX._21], 0
-loc_36F55:
     mov     [bx+MATRIX._31], 0
-loc_36F5A:
     mov     [bx+MATRIX._12], 0
-loc_36F5F:
     mov     ax, [bp+var_2]
-loc_36F62:
     mov     [bx+MATRIX._22], ax
-loc_36F65:
     mov     ax, [bp+var_4]
-loc_36F68:
     mov     [bx+MATRIX._32], ax
-loc_36F6B:
     mov     [bx+MATRIX._13], 0
     neg     ax
-loc_36F72:
     mov     [bx+MATRIX._23], ax
     mov     ax, [bp+var_2]
     mov     [bx+MATRIX._33], ax
@@ -109,8 +89,8 @@ loc_36F72:
     retf
     ; align 2
     db 144
-mat_rot_x endp
-mat_rot_y proc far
+ported_mat_rot_x_ endp
+ported_mat_rot_y_ proc far
     var_4 = word ptr -4
     var_2 = word ptr -2
      s = byte ptr 0
@@ -122,21 +102,16 @@ mat_rot_y proc far
     mov     bp, sp
     sub     sp, 4
     push    [bp+arg_angleXZ]
-loc_36F89:
     call    cos_fast
     add     sp, 2
     mov     [bp+var_2], ax
-loc_36F94:
     push    [bp+arg_angleXZ]
-loc_36F97:
     call    sin_fast
     mov     [bp+var_4], ax
     mov     bx, [bp+arg_outMatrix]
     mov     ax, [bp+var_2]
     mov     [bx+MATRIX._11], ax
-loc_36FA7:
     mov     [bx+MATRIX._21], 0
-loc_36FAC:
     mov     ax, [bp+var_4]
     neg     ax
     mov     [bx+MATRIX._31], ax
@@ -148,12 +123,11 @@ loc_36FAC:
     mov     [bx+MATRIX._23], 0
     mov     ax, [bp+var_2]
     mov     [bx+MATRIX._33], ax
-loc_36FD4:
     mov     sp, bp
     pop     bp
     retf
-mat_rot_y endp
-mat_rot_z proc far
+ported_mat_rot_y_ endp
+ported_mat_rot_z_ proc far
     var_4 = word ptr -4
     var_2 = word ptr -2
      s = byte ptr 0
@@ -163,52 +137,31 @@ mat_rot_z proc far
 
     push    bp
     mov     bp, sp
-loc_36FDB:
     sub     sp, 4
-loc_36FDE:
     push    [bp+arg_angleXY]
-loc_36FE1:
     call    cos_fast
-loc_36FE6:
     add     sp, 2
-loc_36FE9:
     mov     [bp+var_2], ax
-loc_36FEC:
     push    [bp+arg_angleXY]
-loc_36FEF:
     call    sin_fast
-loc_36FF4:
     mov     [bp+var_4], ax
-loc_36FF7:
     mov     bx, [bp+arg_outMatrix]
-loc_36FFA:
     mov     ax, [bp+var_2]
     mov     [bx+MATRIX._11], ax
     mov     ax, [bp+var_4]
-loc_37002:
     mov     [bx+MATRIX._21], ax
-loc_37005:
     mov     [bx+MATRIX._31], 0
-loc_3700A:
     neg     ax
-loc_3700C:
     mov     [bx+MATRIX._12], ax
-loc_3700F:
     mov     ax, [bp+var_2]
     mov     [bx+MATRIX._22], ax
-loc_37015:
     mov     [bx+MATRIX._32], 0
-loc_3701A:
     mov     [bx+MATRIX._13], 0
-loc_3701F:
     mov     [bx+MATRIX._23], 0
-loc_37024:
     mov     [bx+MATRIX._33], 4000h
-loc_37029:
     mov     sp, bp
     pop     bp
-locret_3702C:
     retf
-mat_rot_z endp
+ported_mat_rot_z_ endp
 seg024 ends
 end

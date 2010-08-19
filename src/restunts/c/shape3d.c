@@ -11,7 +11,7 @@ TODO:
 
   lines function (calls)
 - ----- --------- -------
-    159 mat_rot_zxy (16)
+X   159 mat_rot_zxy (16)
 X    60 mat_multiply (0)
 X   122 mat_mul_vector (0)
 X    48 mat_invert (0)
@@ -26,6 +26,10 @@ X    13 polarRadius3D (4)
       7 transformed_shape_op_helper2 (0)
      74 transformed_shape_op_helper (0)
 X     - polarAngle (0)
+X     - mat_rot_z (0)
+X     - mat_rot_x (0)
+X     - mat_rot_y (0)
+
 
 */
 

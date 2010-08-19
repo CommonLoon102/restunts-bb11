@@ -586,6 +586,10 @@ static PortFuncName(labelname) {
 		labelname == "mat_mul_vector" || 
 		labelname == "mat_multiply" || 
 		labelname == "mat_invert" || 
+		labelname == "mat_rot_x" || 
+		labelname == "mat_rot_y" || 
+		labelname == "mat_rot_z" || 
+		labelname == "mat_rot_zxy" || 
 
 		labelname == "file_find" ||
 		labelname == "file_find_next" ||
