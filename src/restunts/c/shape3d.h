@@ -17,9 +17,14 @@ struct POINT2D {
 };
 
 struct MATRIX {
-	int _11, _12, _13;
-	int _21, _22, _23;
-	int _31, _32, _33;
+	union {
+		int vals[9];
+		struct {
+			int _11, _21, _31;
+			int _12, _22, _32;
+			int _13, _23, _33;
+		} m;
+	};
 };
 
 struct SHAPE3D {
@@ -30,7 +35,7 @@ struct SHAPE3D {
 	char far* shape3d_primitives;
 	char far* shape3d_cull1;
 	char far* shape3d_cull2;
-} _SHAPE3D;
+};
 
 struct SHAPE3DHEADER {
 	unsigned char header_numverts;
@@ -47,7 +52,7 @@ struct TRANSFORMEDSHAPE3D {
 	unsigned short unk;
 	unsigned char ts_flags;
 	unsigned char material;
-} _TRANSFORMEDSHAPE3D;
+};
 
 #pragma pack (pop)
 

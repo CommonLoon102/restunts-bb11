@@ -579,6 +579,13 @@ static PortFuncName(labelname) {
 //		labelname == "_abort" ||
 		labelname == "sin_fast" ||
 		labelname == "cos_fast" ||
+		labelname == "polarAngle" || 
+		labelname == "polarRadius2D" || 
+		labelname == "polarRadius3D" || 
+		labelname == "rect_compare_point" || 
+		labelname == "mat_mul_vector" || 
+		labelname == "mat_multiply" || 
+		labelname == "mat_invert" || 
 
 		labelname == "file_find" ||
 		labelname == "file_find_next" ||

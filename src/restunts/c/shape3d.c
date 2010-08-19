@@ -9,22 +9,23 @@
 
 TODO:
 
-lines function (calls)
------ --------- -------
-  159 mat_rot_zxy (16)
-   60 mat_multiply (0)
-  122 mat_mul_vector (0)
-   48 mat_invert (0)
-  126 vector_op_unk2 (14)
-   97 vector_to_point (0)
-   32 rect_compare_point (0)
-   40 vector_op_unk (0)
-   86 transformed_shape_op_helper3 (4)
-   33 rect_adjust_unk (0)
-   47 polarRadius2D (6)
-   13 polarRadius3D (4)
-    7 transformed_shape_op_helper2 (0)
-   74 transformed_shape_op_helper (0)
+  lines function (calls)
+- ----- --------- -------
+    159 mat_rot_zxy (16)
+X    60 mat_multiply (0)
+X   122 mat_mul_vector (0)
+X    48 mat_invert (0)
+    126 vector_op_unk2 (14)
+     97 vector_to_point (0)
+X    32 rect_compare_point (0)
+     40 vector_op_unk (0)
+     86 transformed_shape_op_helper3 (4)
+     33 rect_adjust_unk (0)
+X    47 polarRadius2D (6)
+X    13 polarRadius3D (4)
+      7 transformed_shape_op_helper2 (0)
+     74 transformed_shape_op_helper (0)
+X     - polarAngle (0)
 
 */
 
@@ -88,7 +89,7 @@ extern void mat_mul_vector(struct VECTOR* vec, struct MATRIX*, struct VECTOR* re
 extern void mat_invert(struct MATRIX*, struct MATRIX*);
 extern char vector_op_unk2(struct VECTOR*);
 extern void vector_to_point(struct VECTOR*, struct POINT2D*);
-extern char  rect_compare_point(struct POINT2D*);
+extern unsigned rect_compare_point(struct POINT2D*);
 extern char transformed_shape_op_helper3(struct POINT2D far*);
 extern void vector_op_unk(struct VECTOR*, struct VECTOR*, struct VECTOR*, unsigned);
 extern void rect_adjust_unk(struct POINT2D*, struct RECTANGLE*);

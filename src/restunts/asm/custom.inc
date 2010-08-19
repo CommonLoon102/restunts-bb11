@@ -24,6 +24,13 @@ _TEXT ends
 
 extrn sin_fast:proc
 extrn cos_fast:proc
+extrn polarAngle:proc
+extrn polarRadius3D:proc
+extrn polarRadius2D:proc
+extrn rect_compare_point:proc
+extrn mat_mul_vector:proc
+extrn mat_multiply:proc
+extrn mat_invert:proc
 
 extrn file_find:proc
 extrn file_find_next:proc

@@ -47,7 +47,7 @@ seg012 segment byte public 'STUNTSC' use16
     assume cs:seg012
     assume es:nothing, ss:nothing, ds:dseg
     public fatal_error
-    public polarAngle
+    public ported_polarAngle_
     public off_2EA9B
     public sub_2EAD4
     public set_add_value
@@ -140,7 +140,7 @@ seg012 segment byte public 'STUNTSC' use16
     public ported_file_find_next_
     public multiply_and_scale
     public video_set_mode4
-    public polarRadius2D
+    public ported_polarRadius2D_
     public video_set_mode7
     public nopsub_30180
     public timer_setup_interrupt
@@ -267,9 +267,9 @@ seg012 segment byte public 'STUNTSC' use16
     public preRender_patterned
     public nopsub_328C9
     public nopsub_328DB
-    public mat_mul_vector
-    public mat_multiply
-    public mat_invert
+    public ported_mat_mul_vector_
+    public ported_mat_multiply_
+    public ported_mat_invert_
     public off_32ADC
     public ported_file_unflip_shape2d_
     public loc_32B78
@@ -404,48 +404,36 @@ loc_2EA48:
     ; align 2
     db 0
 fatal_error endp
-polarAngle proc far
+ported_polarAngle_ proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_z = word ptr 6
     arg_x = word ptr 8
 
     push    bp
-loc_2EA4F:
     mov     bp, sp
     push    di
-loc_2EA52:
     xor     di, di
-loc_2EA54:
     mov     dx, [bp+arg_z]
-loc_2EA57:
     mov     cx, [bp+arg_x]
-loc_2EA5A:
     or      dx, dx
-loc_2EA5C:
     jge     short loc_2EA63
-loc_2EA5E:
 smart
     or      di, 8
 nosmart
-loc_2EA61:
     neg     dx
 loc_2EA63:
     or      cx, cx
-loc_2EA65:
     jge     short loc_2EA6C
-loc_2EA67:
 smart
     or      di, 4
 nosmart
-loc_2EA6A:
     neg     cx
 loc_2EA6C:
     cmp     dx, cx
     jl      short loc_2EA77
     jz      short loc_2EA8F
     xchg    dx, cx
-loc_2EA74:
 smart
     or      di, 2
 nosmart
@@ -458,14 +446,11 @@ loc_2EA77:
     adc     bx, 0
     mov     al, atantable[bx]
     xor     ah, ah
-loc_2EA8A:
     jmp     cs:off_2EA9B[di]
 loc_2EA8F:
     or      dx, dx
     jz      short loc_2EAB0
-loc_2EA93:
     mov     ax, 80h ; '€'
-loc_2EA96:
     jmp     cs:off_2EA9B[di]
 off_2EA9B     dw offset loc_2EAB0
     dw offset loc_2EAAB
@@ -502,7 +487,7 @@ loc_2EAC8:
 loc_2EACF:
     sub     ah, 2
     jmp     short loc_2EAB0
-polarAngle endp
+ported_polarAngle_ endp
 sub_2EAD4 proc far
 
     cli
@@ -4370,15 +4355,15 @@ loc_30091:
     ; align 2
     db 0
 video_set_mode4 endp
-polarRadius2D proc far
+ported_polarRadius2D_ proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_z = word ptr 6
-    arg_x = word ptr 8
+    arg_y = word ptr 8
 
     push    bp
     mov     bp, sp
-    push    [bp+arg_x]
+    push    [bp+arg_y]
     push    [bp+arg_z]
     call    polarAngle
     add     sp, 4
@@ -4397,7 +4382,7 @@ loc_300D7:
     call    cos_fast
     add     sp, 2
     mov     bx, ax
-    mov     dx, [bp+arg_x]
+    mov     dx, [bp+arg_y]
     or      dx, dx
     jge     short loc_300F0
     neg     dx
@@ -4428,7 +4413,7 @@ loc_30112:
     div     bx
     pop     bp
     retf
-polarRadius2D endp
+ported_polarRadius2D_ endp
 video_set_mode7 proc far
      r = byte ptr 0
 
@@ -9836,7 +9821,7 @@ nopsub_328DB proc far
     ; align 2
     db 0
 nopsub_328DB endp
-mat_mul_vector proc far
+ported_mat_mul_vector_ proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_inpVector = word ptr 6
@@ -9974,8 +9959,8 @@ loc_329EE:
     pop     si
     pop     bp
     retf
-mat_mul_vector endp
-mat_multiply proc far
+ported_mat_mul_vector_ endp
+ported_mat_multiply_ proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_rightMatrix = word ptr 6
@@ -10047,8 +10032,8 @@ loc_32A66:
     pop     si
     pop     bp
     retf
-mat_multiply endp
-mat_invert proc far
+ported_mat_multiply_ endp
+ported_mat_invert_ proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_mat_in = word ptr 6
@@ -10104,7 +10089,7 @@ loc_32AA3:
 off_32ADC     dw offset loc_32B78
     dw offset loc_32B93
     dw offset loc_32BDE
-mat_invert endp
+ported_mat_invert_ endp
 ported_file_unflip_shape2d_ proc far
     var_E = word ptr -14
     var_C = word ptr -12

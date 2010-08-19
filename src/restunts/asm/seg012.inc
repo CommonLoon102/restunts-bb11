@@ -1,6 +1,6 @@
 seg012 segment byte public 'STUNTSC' use16
     extrn fatal_error:proc
-    extrn polarAngle:proc
+    extrn ported_polarAngle_:proc
     extrn off_2EA9B:word
     extrn sub_2EAD4:proc
     extrn set_add_value:proc
@@ -93,7 +93,7 @@ seg012 segment byte public 'STUNTSC' use16
     extrn ported_file_find_next_:proc
     extrn multiply_and_scale:proc
     extrn video_set_mode4:proc
-    extrn polarRadius2D:proc
+    extrn ported_polarRadius2D_:proc
     extrn video_set_mode7:proc
     extrn nopsub_30180:proc
     extrn timer_setup_interrupt:proc
@@ -220,9 +220,9 @@ seg012 segment byte public 'STUNTSC' use16
     extrn preRender_patterned:proc
     extrn nopsub_328C9:proc
     extrn nopsub_328DB:proc
-    extrn mat_mul_vector:proc
-    extrn mat_multiply:proc
-    extrn mat_invert:proc
+    extrn ported_mat_mul_vector_:proc
+    extrn ported_mat_multiply_:proc
+    extrn ported_mat_invert_:proc
     extrn off_32ADC:word
     extrn ported_file_unflip_shape2d_:proc
     extrn loc_32B78

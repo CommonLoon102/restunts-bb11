@@ -5,7 +5,7 @@ seg006 segment byte public 'STUNTSC' use16
     extrn select_cliprect_rotate:proc
     extrn ported_transformed_shape_op_:proc
     extrn transformed_shape_op_helper:proc
-    extrn rect_compare_point:proc
+    extrn ported_rect_compare_point_:proc
     extrn transformed_shape_op_helper3:proc
     extrn get_a_poly_info:proc
     extrn mat_rot_zxy:proc

@@ -52,7 +52,7 @@ seg006 segment byte public 'STUNTSC' use16
     public select_cliprect_rotate
     public ported_transformed_shape_op_
     public transformed_shape_op_helper
-    public rect_compare_point
+    public ported_rect_compare_point_
     public transformed_shape_op_helper3
     public get_a_poly_info
     public mat_rot_zxy
@@ -536,7 +536,7 @@ loc_250FA:
     shl     bx, 1
     push    polyvertpointptrtab[bx]
     push    cs
-    call near ptr rect_compare_point
+    call near ptr ported_rect_compare_point_
     add     sp, 2
     and     [bp+var_ptrectflag], al
 loc_25134:
@@ -726,7 +726,7 @@ loc_2530A:
     shl     bx, 1
     push    polyvertpointptrtab[bx]
     push    cs
-    call near ptr rect_compare_point
+    call near ptr ported_rect_compare_point_
     add     sp, 2
     and     [bp+var_ptrectflag], al
 loc_25325:
@@ -930,7 +930,7 @@ loc_254B3:
     mov     bx, [bp+var_polyvertunktabptr]
     push    word ptr [bx]
     push    cs
-    call near ptr rect_compare_point
+    call near ptr ported_rect_compare_point_
     add     sp, 2
     and     [bp+var_ptrectflag], al
 loc_25511:
@@ -1000,7 +1000,7 @@ loc_255B4:
     lea     ax, [bp+var_574]
     push    ax
     push    cs
-    call near ptr rect_compare_point
+    call near ptr ported_rect_compare_point_
     add     sp, 2
     and     [bp+var_ptrectflag], al
 loc_255CB:
@@ -1092,7 +1092,7 @@ loc_256A5:
     lea     ax, [bp+var_574]
     push    ax
     push    cs
-    call near ptr rect_compare_point
+    call near ptr ported_rect_compare_point_
     add     sp, 2
     and     [bp+var_ptrectflag], al
 loc_256BC:
@@ -1122,7 +1122,7 @@ loc_25700:
     mov     bx, [bp+var_B7C]
     push    word ptr [bx]
     push    cs
-    call near ptr rect_compare_point
+    call near ptr ported_rect_compare_point_
     add     sp, 2
     and     [bp+var_ptrectflag], al
     jmp     loc_255DE
@@ -1918,7 +1918,7 @@ loc_25EDA:
     pop     bp
     retf
 transformed_shape_op_helper endp
-rect_compare_point proc far
+ported_rect_compare_point_ proc far
     var_flags = byte ptr -4
      s = byte ptr 0
      r = byte ptr 2
@@ -1966,7 +1966,7 @@ loc_25F25:
     mov     sp, bp
     pop     bp
     retf
-rect_compare_point endp
+ported_rect_compare_point_ endp
 transformed_shape_op_helper3 proc far
     var_10 = word ptr -16
     var_E = word ptr -14
