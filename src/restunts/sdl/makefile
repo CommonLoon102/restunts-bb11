@@ -1,5 +1,5 @@
 SDLPATH = s:\src\sdl
-CC = cl /MD /c /I$(SDLPATH)\include /I../c /DRESTUNTS_SDL
+CC = cl /MD /c /EHsc /I$(SDLPATH)\include /I../c /DRESTUNTS_SDL
 LINK = cl
 LINKFLAGS = /link /LIBPATH:$(SDLPATH)\lib /SUBSYSTEM:console
 OBJDIR = build

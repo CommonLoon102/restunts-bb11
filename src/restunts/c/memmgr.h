@@ -8,9 +8,9 @@
 #pragma pack (push, 1)
 struct MEMCHUNK {
 	char resname[12];
-	unsigned short ressize;
-	unsigned short resofs;
-	unsigned short resunk;
+	unsigned ressize;
+	unsigned resofs;
+	unsigned resunk;
 };
 #pragma pack (pop)
 

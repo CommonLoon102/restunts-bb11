@@ -78,6 +78,7 @@ extrn locate_text_res:proc
 extrn shape3d_load_all:proc
 extrn shape3d_free_all:proc
 extrn shape3d_init_shape:proc
+extrn transformed_shape_op:proc
 
 extrn sprite_make_wnd:proc
 extrn sprite_free_wnd:proc

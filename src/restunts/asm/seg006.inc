@@ -3,14 +3,14 @@ seg006 segment byte public 'STUNTSC' use16
     extrn copy_material_list_pointers:proc
     extrn polyinfo_reset:proc
     extrn select_cliprect_rotate:proc
-    extrn transformed_shape_op:proc
+    extrn ported_transformed_shape_op_:proc
     extrn transformed_shape_op_helper:proc
     extrn rect_compare_point:proc
     extrn transformed_shape_op_helper3:proc
     extrn get_a_poly_info:proc
     extrn mat_rot_zxy:proc
     extrn rect_adjust_unk:proc
-    extrn sub_263C6:proc
+    extrn vector_op_unk2:proc
     extrn calc_sincos80:proc
     extrn sub_26572:proc
     extrn sub_265EC:proc

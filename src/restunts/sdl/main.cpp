@@ -190,7 +190,7 @@ struct stunts_engine {
 
 		shape3d_load_all();
 		
-		void* tempdataptr = file_load_resource(2, "sdtitl");
+		//void* tempdataptr = file_load_resource(2, "sdtitl");
 		//void* titlshapeptr = locate_shape_fatal(tempdataptr, "titl");
 		
 		// font_set_fontdef();

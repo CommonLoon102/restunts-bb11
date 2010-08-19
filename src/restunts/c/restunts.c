@@ -209,12 +209,6 @@ void init_trackdata(void) {
 	trkptr += 0x30;
 }
 
-struct RECTANGLE {
-	int x1, x2;
-	int y1, y2;
-};
-
-
 extern struct SHAPE3D game3dshapes[];
 
 extern void shape3d_load_car_shapes(char* carid, char* oppcarid);

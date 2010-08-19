@@ -107,15 +107,15 @@ static ExtractCallTarget(ea) {
 
 static PrintFrame(f, funcstart) {
 
-	auto funcframe, framesize, framelsize, framersize, frameasize;
+	auto funcframe, framesize, framelsize;//, framersize, frameasize;
 	auto memberofs, membername, memberflag, memberloc;
 
 	funcframe = GetFrame(funcstart);
 	if (funcframe != 0) {
 		framesize = GetStrucSize(funcframe);
 		framelsize = GetFrameLvarSize(funcstart);
-		framersize = GetFrameRegsSize(funcstart);
-		frameasize = GetFrameArgsSize(funcstart);
+		//framersize = GetFrameRegsSize(funcstart);
+		//frameasize = GetFrameArgsSize(funcstart);
 		
 		for (memberofs = 0; memberofs < framesize; memberofs = GetStrucNextOff(funcframe, memberofs)) {
 			membername = GetMemberName(funcframe, memberofs);
@@ -643,6 +643,7 @@ static PortFuncName(labelname) {
 		labelname == "shape3d_load_all" ||
 		labelname == "shape3d_free_all" ||
 		labelname == "shape3d_init_shape" ||
+		labelname == "transformed_shape_op" ||
 
 		labelname == "sprite_make_wnd" ||
 		labelname == "sprite_free_wnd" ||

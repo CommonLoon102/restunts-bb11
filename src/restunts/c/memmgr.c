@@ -110,7 +110,7 @@ void far* mmgr_alloc_pages(const char* arg_0, unsigned short arg_2) {
 	struct MEMCHUNK* resdi;
 	struct MEMCHUNK* ressi;
 	const char* chunkname;
-	unsigned short rax, rdx;
+	unsigned rax, rdx;
 
 	resdi = resptr2;
 	ressi = resendptr1;
@@ -119,7 +119,7 @@ void far* mmgr_alloc_pages(const char* arg_0, unsigned short arg_2) {
 	resdi++;
 	if (ressi <= resdi) {
 		if (ressi == resendptr2) 
-			fatal_error("r");//eservememory - OUT OF MEMORY SLOTS RESERVING %s");//, arg_0);
+			fatal_error("reservememory - OUT OF MEMORY SLOTS RESERVING %s", arg_0);
 
 		ressi++;
 		resendptr1 = ressi;
@@ -146,9 +146,8 @@ void far* mmgr_alloc_pages(const char* arg_0, unsigned short arg_2) {
 	
 		while (rax > ressi->resofs) {
 			if (ressi == resendptr2) {
-				fatal_error("r");// - OUT OF MEMORY RESERVING %s P=%x HW=%x\r\n");//, arg_0, resdi->ressize, resmaxsize);
+				fatal_error("reservememory - OUT OF MEMORY RESERVING %s P=%x HW=%x\r\n", arg_0, resdi->ressize, resmaxsize);
 			}
-			//fatal_error("r");
 
 			ressi->resunk = 0;
 			ressi++;
@@ -166,7 +165,7 @@ void far* mmgr_alloc_resbytes(const char* name, long int size) {
 void mmgr_alloc_resmem(unsigned short arg_0) {
 
 	void far* psp;
-	unsigned short maxblocks;
+	unsigned maxblocks;
 	struct MEMCHUNK* rp;
 	char* tempptr;
 
@@ -217,8 +216,8 @@ unsigned short mmgr_get_ofs_diff(void) {
 
 void far* mmgr_free(char far* ptr) {
 	int i;
-	unsigned short ax, bx, cx, dx, di;
-	unsigned short ptrseg;
+	unsigned ax, bx, cx, dx, di;
+	unsigned ptrseg;
 	struct MEMCHUNK* ressi;
 	struct MEMCHUNK* resbx;
 
@@ -227,7 +226,7 @@ void far* mmgr_free(char far* ptr) {
 
 	while (1) {
 		if (ressi == resptr1) 
-			fatal_error("memory manager - BLOCK NOT FOUND at SEG= %x");//, ptrseg);
+			fatal_error("memory manager - BLOCK NOT FOUND at SEG= %x", ptrseg);
 		if (ressi->resofs == ptrseg) break;
 		ressi--;
 	}
@@ -446,7 +445,7 @@ void mmgr_release(char far* ptr) {
 
 	for (;;) {
 		if (ressi == resptr1) 
-			fatal_error("memory manager - BLOCK NOT FOUND at SEG= %x");//, regax);
+			fatal_error("memory manager - BLOCK NOT FOUND at SEG= %x", regax);
 		if (regax == ressi->resofs) break;
 		ressi--;
 	}
@@ -477,7 +476,7 @@ unsigned short mmgr_get_chunk_size(char far* ptr) {
 
 	for (;;) {
 		if (ressi == resptr1) 
-			fatal_error("memory manager - BLOCK NOT FOUND at SEG= %x");//, regax);
+			fatal_error("memory manager - BLOCK NOT FOUND at SEG= %x", regax);
 		if (regax == ressi->resofs) break;
 		ressi--;
 	}
@@ -499,7 +498,7 @@ unsigned short mmgr_resize_memory(unsigned short arg_0, unsigned short arg_2, un
 
 	for (;;) {
 		if (ressi == resptr1)
-			fatal_error("memory manager - BLOCK NOT FOUND at SEG= %x");//, arg_2);
+			fatal_error("memory manager - BLOCK NOT FOUND at SEG= %x", arg_2);
 		if (regax == ressi->resofs) break;
 		ressi--;
 	}
@@ -531,7 +530,7 @@ unsigned short mmgr_resize_memory(unsigned short arg_0, unsigned short arg_2, un
 	for (;;) {
 		if (regax <= ressi->resofs) break;
 		if (ressi == resendptr2) 
-			fatal_error("resizememory - NO MEMORY LEFT TO EXPAND HW=%x");//, resmaxsize);
+			fatal_error("resizememory - NO MEMORY LEFT TO EXPAND HW=%x", resmaxsize);
 	
 		ressi->resunk = 0;
 		ressi++;
@@ -553,7 +552,7 @@ void far* mmgr_op_unk(char far* ptr) {
 
 	for (;;) {
 		if (ressi == resptr1)
-			fatal_error("memory manager - BLOCK NOT FOUND at SEG= %x");//, regax);
+			fatal_error("memory manager - BLOCK NOT FOUND at SEG= %x", regax);
 		if (regax == ressi->resofs) break;
 		ressi--;
 	}
@@ -639,9 +638,9 @@ char far* locate_resource(char far* data, char* name, unsigned short fatal) {
 	}
 
 	if (fatal > 1)
-		fatal_error(aLocatesound4_4sSoundNotF);
+		fatal_error(aLocatesound4_4sSoundNotF, name);
 	if (fatal == 1)
-		fatal_error(aLocateshape4_4sShapeNotF);
+		fatal_error(aLocateshape4_4sShapeNotF, name);
 	return MK_FP(0, 0);
 }
 

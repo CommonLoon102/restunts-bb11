@@ -50,14 +50,14 @@ seg006 segment byte public 'STUNTSC' use16
     public copy_material_list_pointers
     public polyinfo_reset
     public select_cliprect_rotate
-    public transformed_shape_op
+    public ported_transformed_shape_op_
     public transformed_shape_op_helper
     public rect_compare_point
     public transformed_shape_op_helper3
     public get_a_poly_info
     public mat_rot_zxy
     public rect_adjust_unk
-    public sub_263C6
+    public vector_op_unk2
     public calc_sincos80
     public sub_26572
     public sub_265EC
@@ -257,7 +257,7 @@ nosmart
     pop     bp
     retf
 select_cliprect_rotate endp
-transformed_shape_op proc far
+ported_transformed_shape_op_ proc far
     var_B7C = word ptr -2940
     var_polyvertunktabptr = word ptr -2938
     var_cull1 = dword ptr -2936
@@ -274,8 +274,7 @@ transformed_shape_op proc far
     var_45E = word ptr -1118
     var_45C = dword ptr -1116
     var_vec2 = VECTOR ptr -1112
-    var_450 = word ptr -1104
-    var_44E = word ptr -1102
+    var_450 = POINT2D ptr -1104
     var_ptrectflag = byte ptr -1098
     var_448 = word ptr -1096
     var_mat = MATRIX ptr -1094
@@ -284,7 +283,7 @@ transformed_shape_op proc far
     var_rotmatptr = word ptr -1068
     var_mat2 = MATRIX ptr -1066
     var_fileprimtype = word ptr -1048
-    var_vecarr2 = VECTOR ptr -1046
+    var_vecarr2 = POINT2D ptr -1046
     var_1A = word ptr -26
     var_18 = dword ptr -24
     var_vec = VECTOR ptr -20
@@ -325,7 +324,6 @@ loc_24EB8:
     mov     dx, word ptr [bx+(SHAPE3D.shape3d_primitives+2)]
     mov     word ptr transshapeprimitives, ax
     mov     word ptr transshapeprimitives+2, dx
-loc_24ED6:
     mov     bx, [bp+arg_transshapeptr]
     mov     bx, [bx+TRANSFORMEDSHAPE.ts_shapeptr]
     mov     ax, word ptr [bx+SHAPE3D.shape3d_verts]
@@ -411,7 +409,7 @@ loc_24F9F:
     sub     ax, ax
     mov     word ptr [bp+var_A+2], ax
     mov     word ptr [bp+var_A], ax
-    jmp     loc_250A3
+    jmp     loc_250A3       ; initialized to 190h in polyinfo_reset()
 loc_24FB6:
     sub     ax, ax
     push    ax
@@ -482,7 +480,7 @@ loc_25077:
     lea     ax, [bp+var_vec3]
     push    ax
     push    cs
-    call near ptr sub_263C6
+    call near ptr vector_op_unk2
     add     sp, 2
     mov     byte_4393D, al
     cbw
@@ -496,7 +494,7 @@ loc_25077:
     mov     word ptr [bp+var_A], ax
     mov     word ptr [bp+var_A+2], dx
 loc_250A3:
-    mov     ax, word_443F2
+    mov     ax, word_443F2  ; initialized to 190h in polyinfo_reset()
     mov     word_4394E, ax
     mov     word_45D98, ax
     mov     word_4554A, 0
@@ -991,10 +989,10 @@ loc_2554A:
     mov     [bp+var_B7C], ax
     mov     bx, ax
     mov     ax, [bp+var_574.x2]
-    cmp     [bx+var_vecarr2.vx], ax
+    cmp     [bx+var_vecarr2.x2], ax
     jnz     short loc_255B4
     mov     ax, [bp+var_574.y2]
-    cmp     [bx+var_vecarr2.vy], ax
+    cmp     [bx+var_vecarr2.y2], ax
     jz      short loc_255E6
 loc_255B4:
     cmp     [bp+var_ptrectflag], 0
@@ -1083,10 +1081,10 @@ loc_25645:
     mov     [bp+var_B7C], ax
     mov     bx, ax
     mov     ax, [bp+var_574.x2]
-    cmp     [bx+var_vecarr2.vx], ax
+    cmp     [bx+var_vecarr2.x2], ax
     jnz     short loc_256A5
     mov     ax, [bp+var_574.y2]
-    cmp     [bx+var_vecarr2.vy], ax
+    cmp     [bx+var_vecarr2.y2], ax
     jz      short loc_256D7
 loc_256A5:
     cmp     [bp+var_ptrectflag], 0
@@ -1512,11 +1510,11 @@ loc_25AF4:
     mov     ax, es:[bx+6]
     sub     ax, si
     dec     ax
-    mov     [bp+var_450], ax
+    mov     [bp+var_450.x2], ax
     mov     ax, es:[bx+8]
     sub     ax, si
     dec     ax
-    mov     [bp+var_44E], ax
+    mov     [bp+var_450.y2], ax
     push    transshaperectptr
     lea     ax, [bp+var_450]
     push    ax
@@ -1527,11 +1525,11 @@ loc_25AF4:
     mov     ax, es:[bx+8]
     add     ax, si
     inc     ax
-    mov     [bp+var_44E], ax
+    mov     [bp+var_450.y2], ax
     mov     ax, es:[bx+6]
     add     ax, si
     inc     ax
-    mov     [bp+var_450], ax
+    mov     [bp+var_450.x2], ax
     push    transshaperectptr
     lea     ax, [bp+var_450]
     push    ax
@@ -1542,11 +1540,11 @@ loc_25AF4:
     mov     ax, es:[bx+12h]
     sub     ax, si
     dec     ax
-    mov     [bp+var_450], ax
+    mov     [bp+var_450.x2], ax
     mov     ax, es:[bx+14h]
     sub     ax, si
     dec     ax
-    mov     [bp+var_44E], ax
+    mov     [bp+var_450.y2], ax
     push    transshaperectptr
     lea     ax, [bp+var_450]
     push    ax
@@ -1557,11 +1555,11 @@ loc_25AF4:
     mov     ax, es:[bx+14h]
     add     ax, si
     inc     ax
-    mov     [bp+var_44E], ax
+    mov     [bp+var_450.y2], ax
     mov     ax, es:[bx+12h]
     add     ax, si
     inc     ax
-    mov     [bp+var_450], ax
+    mov     [bp+var_450.x2], ax
     push    transshaperectptr
     lea     ax, [bp+var_450]
     push    ax
@@ -1665,10 +1663,10 @@ loc_25C92:
     mov     bx, polyvertpointptrtab
     mov     ax, [bx+2]
     sub     ax, [bp+var_462]
-    mov     [bp+var_44E], ax
+    mov     [bp+var_450.y2], ax
     mov     ax, [bx]
     sub     ax, [bp+var_462]
-    mov     [bp+var_450], ax
+    mov     [bp+var_450.x2], ax
     push    transshaperectptr
     lea     ax, [bp+var_450]
     push    ax
@@ -1678,10 +1676,10 @@ loc_25C92:
     mov     ax, [bp+var_462]
     mov     bx, polyvertpointptrtab
     add     ax, [bx]
-    mov     [bp+var_450], ax
+    mov     [bp+var_450.x2], ax
     mov     ax, [bx+2]
     add     ax, [bp+var_462]
-    mov     [bp+var_450], ax
+    mov     [bp+var_450.x2], ax
     push    transshaperectptr
     lea     ax, [bp+var_450]
     push    ax
@@ -1831,7 +1829,7 @@ _done_ret_0:
     retf
     ; align 2
     db 144
-transformed_shape_op endp
+ported_transformed_shape_op_ endp
 transformed_shape_op_helper proc far
      s = byte ptr 0
      r = byte ptr 2
@@ -2568,7 +2566,7 @@ loc_263C0:
     pop     bp
     retf
 rect_adjust_unk endp
-sub_263C6 proc far
+vector_op_unk2 proc far
     var_y = dword ptr -14
     var_A = byte ptr -10
     var_8 = word ptr -8
@@ -2717,7 +2715,7 @@ loc_264EB:
     mov     sp, bp
     pop     bp
     retf
-sub_263C6 endp
+vector_op_unk2 endp
 calc_sincos80 proc far
 
     mov     ax, 80h

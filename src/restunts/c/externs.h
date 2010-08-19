@@ -8,8 +8,8 @@
 
 extern unsigned short pspofs;
 extern unsigned short pspseg;
-extern unsigned short word_3FF82;
-extern unsigned short word_3FF84;
+extern unsigned word_3FF82;
+extern unsigned word_3FF84;
 
 extern struct MEMCHUNK* resptr1;
 extern struct MEMCHUNK* resptr2;
@@ -53,6 +53,7 @@ extern char* _strcpy(char* dest, const char* src);
 extern char* _strcat(char* dest, const char* src);
 extern int _strcmp(const char* dest, const char* src);
 extern void far* __fmemcpy(void far*, const void far*, unsigned);
+extern unsigned _abs(unsigned);
 
 #ifdef RESTUNTS_DOS
 #define memcpy _memcpy
@@ -60,6 +61,7 @@ extern void far* __fmemcpy(void far*, const void far*, unsigned);
 #define strcat _strcat
 #define fmemcpy __fmemcpy
 #define strcmp _strcmp
+#define abs _abs
 #else
 #define MK_FP(x, y) ((x << 4) + y)
 #define FP_SEG(x) 0
