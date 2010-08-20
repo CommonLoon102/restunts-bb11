@@ -583,6 +583,8 @@ static PortFuncName(labelname) {
 		labelname == "polarRadius2D" || 
 		labelname == "polarRadius3D" || 
 		labelname == "rect_compare_point" || 
+		labelname == "rect_adjust_from_point" || 
+		labelname == "vector_op_unk2" || 
 		labelname == "mat_mul_vector" || 
 		labelname == "mat_multiply" || 
 		labelname == "mat_invert" || 

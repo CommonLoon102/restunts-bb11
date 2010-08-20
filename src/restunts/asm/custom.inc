@@ -28,6 +28,7 @@ extrn polarAngle:proc
 extrn polarRadius3D:proc
 extrn polarRadius2D:proc
 extrn rect_compare_point:proc
+extrn rect_adjust_from_point:proc
 extrn mat_mul_vector:proc
 extrn mat_multiply:proc
 extrn mat_invert:proc
@@ -35,6 +36,7 @@ extrn mat_rot_x:proc
 extrn mat_rot_y:proc
 extrn mat_rot_z:proc
 extrn mat_rot_zxy:proc
+extrn vector_op_unk2:proc
 
 extrn file_find:proc
 extrn file_find_next:proc

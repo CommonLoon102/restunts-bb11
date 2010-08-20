@@ -9,8 +9,8 @@ seg006 segment byte public 'STUNTSC' use16
     extrn transformed_shape_op_helper3:proc
     extrn get_a_poly_info:proc
     extrn ported_mat_rot_zxy_:proc
-    extrn rect_adjust_unk:proc
-    extrn vector_op_unk2:proc
+    extrn ported_rect_adjust_from_point_:proc
+    extrn ported_vector_op_unk2_:proc
     extrn calc_sincos80:proc
     extrn sub_26572:proc
     extrn sub_265EC:proc

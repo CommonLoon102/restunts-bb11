@@ -302,8 +302,8 @@ void get_a_poly_info2(void) {
 	
 	polyinfo_reset(); // polyinfo_reset();
 }
-
-int stuntsmain(int argc, char* argv) {
+*/
+int stuntsmain2(int argc, char* argv) {
 	int result;
 	char far* textresptr;
 	int carposangle;
@@ -360,7 +360,7 @@ int stuntsmain(int argc, char* argv) {
 	transshape.pos = carpos;
 
 	transshape.unk = 0;//0x7530;
-	transshape.flags = 0;
+	transshape.ts_flags = 0;
 	transshape.rectptr = &shaperect;
 
 	counter = 0;
@@ -383,7 +383,7 @@ int stuntsmain(int argc, char* argv) {
 		sprite_clear_1_color(3);
 		
 		//sprite_set_1_size(50, 200, 50, 100);
-		get_a_poly_info2(); // renders to sprite1
+		get_a_poly_info(); // renders to sprite1
 	
 		//sprite_copy_2_to_1_2();
 		sprite_blit_to_video(wndsprite); // sprite_blit_to_video(wndsprite);
@@ -432,7 +432,7 @@ int stuntsmain(int argc, char* argv) {
 
 	return 0;
 }
-*/
+
 
 int stuntsmain(int argc, char* argv) {
 

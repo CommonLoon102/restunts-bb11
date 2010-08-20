@@ -15,12 +15,12 @@ X   159 mat_rot_zxy (16)
 X    60 mat_multiply (0)
 X   122 mat_mul_vector (0)
 X    48 mat_invert (0)
-    126 vector_op_unk2 (14)
+X   126 vector_op_unk2 (14)
      97 vector_to_point (0)
 X    32 rect_compare_point (0)
      40 vector_op_unk (0)
      86 transformed_shape_op_helper3 (4)
-     33 rect_adjust_unk (0)
+X    33 rect_adjust_from_point(0)
 X    47 polarRadius2D (6)
 X    13 polarRadius3D (4)
       7 transformed_shape_op_helper2 (0)
@@ -29,6 +29,7 @@ X     - polarAngle (0)
 X     - mat_rot_z (0)
 X     - mat_rot_x (0)
 X     - mat_rot_y (0)
+      - set_projection (0)
 
 
 */
@@ -96,7 +97,7 @@ extern void vector_to_point(struct VECTOR*, struct POINT2D*);
 extern unsigned rect_compare_point(struct POINT2D*);
 extern char transformed_shape_op_helper3(struct POINT2D far*);
 extern void vector_op_unk(struct VECTOR*, struct VECTOR*, struct VECTOR*, unsigned);
-extern void rect_adjust_unk(struct POINT2D*, struct RECTANGLE*);
+extern void rect_adjust_from_point(struct POINT2D*, struct RECTANGLE*);
 extern unsigned polarRadius2D(unsigned, unsigned);
 extern unsigned polarRadius3D(struct VECTOR*);
 extern unsigned transformed_shape_op_helper(unsigned, unsigned);
@@ -1807,8 +1808,8 @@ loc_2590D:
 	transshapepolyinfopts[1] = *polyvertpointptrtab[1];
 
 	if ((transshapeflags & 8) == 0) goto loc_25983;
-	rect_adjust_unk(polyvertpointptrtab[0], transshaperectptr);
-	rect_adjust_unk(polyvertpointptrtab[1], transshaperectptr);
+	rect_adjust_from_point(polyvertpointptrtab[0], transshaperectptr);
+	rect_adjust_from_point(polyvertpointptrtab[1], transshaperectptr);
 
 /*asm {
 	
@@ -1855,17 +1856,17 @@ loc_2590D:
     jz      short loc_25983
     push    word ptr transshaperectptr
     push    word ptr polyvertpointptrtab
-    call far ptr rect_adjust_unk
+    call far ptr rect_adjust_from_point
     add     sp, 4
     push    word ptr transshaperectptr
     push    word ptr polyvertpointptrtab+2
 // injected start
-    call far ptr rect_adjust_unk
+    call far ptr rect_adjust_from_point
     add     sp, 4
 // injected end
 
 loc_2597C:
-    //call far ptr rect_adjust_unk // been injected in respective calls
+    //call far ptr rect_adjust_from_point // been injected in respective calls
     //add     sp, 4
 }*/
 
@@ -2016,19 +2017,19 @@ loc_25A9E:
 	
 	var_450.px = transshapepolyinfopts[0].px - temp - 1;
 	var_450.py = transshapepolyinfopts[0].py - temp - 1;
-	rect_adjust_unk(&var_450, transshaperectptr);
+	rect_adjust_from_point(&var_450, transshaperectptr);
 
 	var_450.px = transshapepolyinfopts[0].px + temp + 1;
 	var_450.py = transshapepolyinfopts[0].py + temp + 1;
-	rect_adjust_unk(&var_450, transshaperectptr);
+	rect_adjust_from_point(&var_450, transshaperectptr);
 	
 	var_450.px = transshapepolyinfopts[3].px - temp - 1;
 	var_450.py = transshapepolyinfopts[3].py - temp - 1;
-	rect_adjust_unk(&var_450, transshaperectptr);
+	rect_adjust_from_point(&var_450, transshaperectptr);
 
 	var_450.px = transshapepolyinfopts[3].px + temp + 1;
 	var_450.py = transshapepolyinfopts[3].py + temp + 1;
-	rect_adjust_unk(&var_450, transshaperectptr);
+	rect_adjust_from_point(&var_450, transshaperectptr);
 
 /*
 asm {
@@ -2074,7 +2075,7 @@ loc_25AF4:
     push    word ptr transshaperectptr
     lea     ax, [var_450]
     push    ax
-    call far ptr rect_adjust_unk
+    call far ptr rect_adjust_from_point
     add     sp, 4
     les     bx, transshapepolyinfo
     mov     ax, es:[bx+8]
@@ -2088,7 +2089,7 @@ loc_25AF4:
     push    word ptr transshaperectptr
     lea     ax, [var_450]
     push    ax
-    call far ptr rect_adjust_unk
+    call far ptr rect_adjust_from_point
     add     sp, 4
     les     bx, transshapepolyinfo
     mov     ax, es:[bx+12h]
@@ -2102,7 +2103,7 @@ loc_25AF4:
     push    word ptr transshaperectptr
     lea     ax, [var_450]
     push    ax
-    call far ptr rect_adjust_unk
+    call far ptr rect_adjust_from_point
     add     sp, 4
     les     bx, transshapepolyinfo
     mov     ax, es:[bx+14h]
@@ -2118,7 +2119,7 @@ loc_25AF4:
     lea     ax, [var_450]
     push    ax
     ;push    cs
-    call far ptr rect_adjust_unk   // denne fucker opppppp litt inni
+    call far ptr rect_adjust_from_point   // denne fucker opppppp litt inni
     add     sp, 4
 }*/
 loc_25B9C:
@@ -2157,12 +2158,12 @@ _primtype_sphere:
 	var_450.py = polyvertpointptrtab[0]->py - var_462;
 	var_450.px = polyvertpointptrtab[0]->px - var_462;
 
-	rect_adjust_unk(&var_450, transshaperectptr);
+	rect_adjust_from_point(&var_450, transshaperectptr);
 
 	var_450.py = polyvertpointptrtab[0]->py + var_462;
 	var_450.px = polyvertpointptrtab[0]->px + var_462;
 
-	rect_adjust_unk(&var_450, transshaperectptr);
+	rect_adjust_from_point(&var_450, transshaperectptr);
 	goto loc_25983;
 /*	
 asm {
@@ -2271,7 +2272,7 @@ loc_25C92:
     lea     ax, [var_450]
     push    ax
     ;push    cs
-    call far ptr rect_adjust_unk
+    call far ptr rect_adjust_from_point
     add     sp, 4
     mov     ax, [var_462]
     mov     bx, polyvertpointptrtab
@@ -2284,7 +2285,7 @@ loc_25C92:
     lea     ax, [var_450]
     push    ax
 // injected start
-    call far ptr rect_adjust_unk
+    call far ptr rect_adjust_from_point
     add     sp, 4
 // injected end
     jmp     loc_25983
@@ -2324,7 +2325,7 @@ loc_25CF4:
     push    word ptr transshaperectptr
     push    word ptr polyvertpointptrtab
     ;push    cs
-    call far ptr rect_adjust_unk
+    call far ptr rect_adjust_from_point
     add     sp, 4
 loc_25D34:
     mov     transshapenumvertscopy, 1

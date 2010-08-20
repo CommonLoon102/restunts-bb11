@@ -6067,7 +6067,7 @@ loc_1D70F:
     push    ax
     lea     ax, [bp+var_C]
     push    ax
-    call    rect_adjust_unk
+    call    rect_adjust_from_point
     add     sp, 4
     mov     ax, [bp+var_14]
     mov     [bp+var_C], ax
@@ -6079,7 +6079,7 @@ loc_1D70F:
     push    ax
     lea     ax, [bp+var_C]
     push    ax
-    call    rect_adjust_unk
+    call    rect_adjust_from_point
     add     sp, 4
     mov     ax, [bp+var_10]
     mov     [bp+var_C], ax
@@ -6091,7 +6091,7 @@ loc_1D70F:
     push    ax
     lea     ax, [bp+var_C]
     push    ax
-    call    rect_adjust_unk
+    call    rect_adjust_from_point
     add     sp, 4
     mov     ax, [bp+var_14]
     mov     [bp+var_C], ax
@@ -6103,7 +6103,7 @@ loc_1D70F:
     push    ax
     lea     ax, [bp+var_C]
     push    ax
-    call    rect_adjust_unk
+    call    rect_adjust_from_point
     add     sp, 4
 loc_1D78F:
     inc     si
@@ -7171,7 +7171,7 @@ loc_1E0AB:
     push    ax
     lea     ax, [bp+var_3A]
     push    ax
-    call    rect_adjust_unk
+    call    rect_adjust_from_point
     add     sp, 4
 loc_1E144:
     inc     word_3C1BE

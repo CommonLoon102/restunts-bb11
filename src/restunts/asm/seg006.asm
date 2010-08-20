@@ -56,8 +56,8 @@ seg006 segment byte public 'STUNTSC' use16
     public transformed_shape_op_helper3
     public get_a_poly_info
     public ported_mat_rot_zxy_
-    public rect_adjust_unk
-    public vector_op_unk2
+    public ported_rect_adjust_from_point_
+    public ported_vector_op_unk2_
     public calc_sincos80
     public sub_26572
     public sub_265EC
@@ -480,7 +480,7 @@ loc_25077:
     lea     ax, [bp+var_vec3]
     push    ax
     push    cs
-    call near ptr vector_op_unk2
+    call near ptr ported_vector_op_unk2_
     add     sp, 2
     mov     byte_4393D, al
     cbw
@@ -1363,13 +1363,13 @@ loc_2590D:
     push    transshaperectptr
     push    polyvertpointptrtab
     push    cs
-    call near ptr rect_adjust_unk
+    call near ptr ported_rect_adjust_from_point_
     add     sp, 4
     push    transshaperectptr
     push    polyvertpointptrtab+2
 loc_2597C:
     push    cs
-    call near ptr rect_adjust_unk
+    call near ptr ported_rect_adjust_from_point_
     add     sp, 4
 loc_25983:
     mov     transshapenumvertscopy, 2
@@ -1519,7 +1519,7 @@ loc_25AF4:
     lea     ax, [bp+var_450]
     push    ax
     push    cs
-    call near ptr rect_adjust_unk
+    call near ptr ported_rect_adjust_from_point_
     add     sp, 4
     les     bx, transshapepolyinfo
     mov     ax, es:[bx+8]
@@ -1534,7 +1534,7 @@ loc_25AF4:
     lea     ax, [bp+var_450]
     push    ax
     push    cs
-    call near ptr rect_adjust_unk
+    call near ptr ported_rect_adjust_from_point_
     add     sp, 4
     les     bx, transshapepolyinfo
     mov     ax, es:[bx+12h]
@@ -1549,7 +1549,7 @@ loc_25AF4:
     lea     ax, [bp+var_450]
     push    ax
     push    cs
-    call near ptr rect_adjust_unk
+    call near ptr ported_rect_adjust_from_point_
     add     sp, 4
     les     bx, transshapepolyinfo
     mov     ax, es:[bx+14h]
@@ -1564,7 +1564,7 @@ loc_25AF4:
     lea     ax, [bp+var_450]
     push    ax
     push    cs
-    call near ptr rect_adjust_unk
+    call near ptr ported_rect_adjust_from_point_
     add     sp, 4
 loc_25B9C:
     mov     transshapenumvertscopy, 4
@@ -1671,7 +1671,7 @@ loc_25C92:
     lea     ax, [bp+var_450]
     push    ax
     push    cs
-    call near ptr rect_adjust_unk
+    call near ptr ported_rect_adjust_from_point_
     add     sp, 4
     mov     ax, [bp+var_462]
     mov     bx, polyvertpointptrtab
@@ -1713,7 +1713,7 @@ loc_25CF4:
     push    transshaperectptr
     push    polyvertpointptrtab
     push    cs
-    call near ptr rect_adjust_unk
+    call near ptr ported_rect_adjust_from_point_
     add     sp, 4
 loc_25D34:
     mov     transshapenumvertscopy, 1
@@ -2521,7 +2521,7 @@ loc_26372:
     pop     bp
     retf
 ported_mat_rot_zxy_ endp
-rect_adjust_unk proc far
+ported_rect_adjust_from_point_ proc far
     var_6 = word ptr -6
      s = byte ptr 0
      r = byte ptr 2
@@ -2565,8 +2565,8 @@ loc_263C0:
     mov     sp, bp
     pop     bp
     retf
-rect_adjust_unk endp
-vector_op_unk2 proc far
+ported_rect_adjust_from_point_ endp
+ported_vector_op_unk2_ proc far
     var_y = dword ptr -14
     var_A = byte ptr -10
     var_8 = word ptr -8
@@ -2715,7 +2715,7 @@ loc_264EB:
     mov     sp, bp
     pop     bp
     retf
-vector_op_unk2 endp
+ported_vector_op_unk2_ endp
 calc_sincos80 proc far
 
     mov     ax, 80h

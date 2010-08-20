@@ -458,7 +458,7 @@ loc_3A156:
     push    ax
     lea     ax, [bp+var_1A]
     push    ax
-    call    rect_adjust_unk
+    call    rect_adjust_from_point
     add     sp, 4
     inc     di
     cmp     di, 190h
@@ -483,7 +483,7 @@ loc_3A191:
     push    ax
     lea     ax, [bp+var_1A]
     push    ax
-    call    rect_adjust_unk
+    call    rect_adjust_from_point
     add     sp, 4
     jmp     short loc_3A190
     ; align 2
