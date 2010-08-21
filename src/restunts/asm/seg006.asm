@@ -51,9 +51,9 @@ seg006 segment byte public 'STUNTSC' use16
     public polyinfo_reset
     public select_cliprect_rotate
     public ported_transformed_shape_op_
-    public transformed_shape_op_helper
+    public ported_transformed_shape_op_helper_
     public ported_rect_compare_point_
-    public transformed_shape_op_helper3
+    public ported_transformed_shape_op_helper3_
     public get_a_poly_info
     public ported_mat_rot_zxy_
     public ported_rect_adjust_from_point_
@@ -1153,7 +1153,7 @@ loc_2572E:
     push    dx
     push    ax
     push    cs
-    call near ptr transformed_shape_op_helper3
+    call near ptr ported_transformed_shape_op_helper3_
     add     sp, 4
     or      al, al
     jz      short loc_25763
@@ -1411,7 +1411,7 @@ loc_25997:
     push    dx
     push    ax
     push    cs
-    call near ptr transformed_shape_op_helper3
+    call near ptr ported_transformed_shape_op_helper3_
     add     sp, 4
     or      al, al
     jnz     short loc_25A7C
@@ -1805,7 +1805,7 @@ loc_25DF1:
     push    ax
     push    si
     push    cs
-    call near ptr transformed_shape_op_helper
+    call near ptr ported_transformed_shape_op_helper_
     add     sp, 4
     mov     word_40ECE, ax
     or      ax, ax
@@ -1830,7 +1830,7 @@ _done_ret_0:
     ; align 2
     db 144
 ported_transformed_shape_op_ endp
-transformed_shape_op_helper proc far
+ported_transformed_shape_op_helper_ proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -1917,7 +1917,7 @@ loc_25EDA:
     mov     sp, bp
     pop     bp
     retf
-transformed_shape_op_helper endp
+ported_transformed_shape_op_helper_ endp
 ported_rect_compare_point_ proc far
     var_flags = byte ptr -4
      s = byte ptr 0
@@ -1967,15 +1967,11 @@ loc_25F25:
     pop     bp
     retf
 ported_rect_compare_point_ endp
-transformed_shape_op_helper3 proc far
-    var_10 = word ptr -16
-    var_E = word ptr -14
-    var_C = word ptr -12
-    var_A = word ptr -10
-    var_8 = word ptr -8
-    var_6 = word ptr -6
-    var_4 = word ptr -4
-    var_2 = word ptr -2
+ported_transformed_shape_op_helper3_ proc far
+    var_10 = dword ptr -16
+    var_C = dword ptr -12
+    var_8 = dword ptr -8
+    var_4 = dword ptr -4
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = dword ptr 6
@@ -1994,8 +1990,8 @@ transformed_shape_op_helper3 proc far
     cwd
     sub     ax, cx
     sbb     dx, bx
-    mov     [bp+var_4], ax
-    mov     [bp+var_2], dx
+    mov     word ptr [bp+var_4], ax
+    mov     word ptr [bp+var_4+2], dx
     mov     bx, word ptr [bp+arg_0]
     mov     ax, es:[bx+4]
     cwd
@@ -2005,12 +2001,12 @@ transformed_shape_op_helper3 proc far
     cwd
     sub     ax, cx
     sbb     dx, bx
-    mov     [bp+var_C], ax
-    mov     [bp+var_A], dx
-    mov     ax, [bp+var_4]
-    or      ax, [bp+var_2]
+    mov     word ptr [bp+var_C], ax
+    mov     word ptr [bp+var_C+2], dx
+    mov     ax, word ptr [bp+var_4]
+    or      ax, word ptr [bp+var_4+2]
     jnz     short loc_25F7A
-    mov     ax, [bp+var_C]
+    mov     ax, word ptr [bp+var_C]
     or      ax, dx
     jz      short loc_25FEE
 loc_25F7A:
@@ -2018,29 +2014,29 @@ loc_25F7A:
     mov     ax, es:[bx+2]
     sub     ax, es:[bx+6]
     cwd
-    mov     [bp+var_8], ax
-    mov     [bp+var_6], dx
+    mov     word ptr [bp+var_8], ax
+    mov     word ptr [bp+var_8+2], dx
     mov     ax, es:[bx+0Ah]
     sub     ax, es:[bx+6]
     cwd
-    mov     [bp+var_10], ax
-    mov     [bp+var_E], dx
-    mov     ax, [bp+var_8]
-    or      ax, [bp+var_6]
+    mov     word ptr [bp+var_10], ax
+    mov     word ptr [bp+var_10+2], dx
+    mov     ax, word ptr [bp+var_8]
+    or      ax, word ptr [bp+var_8+2]
     jnz     short loc_25FAA
-    mov     ax, [bp+var_10]
+    mov     ax, word ptr [bp+var_10]
     or      ax, dx
     jz      short loc_25FEE
 loc_25FAA:
-    push    [bp+var_E]
-    push    [bp+var_10]
-    push    [bp+var_2]
-    push    [bp+var_4]
+    push    word ptr [bp+var_10+2]
+    push    word ptr [bp+var_10]
+    push    word ptr [bp+var_4+2]
+    push    word ptr [bp+var_4]
     call    __aFlmul
-    push    [bp+var_6]
-    push    [bp+var_8]
-    push    [bp+var_A]
-    push    [bp+var_C]
+    push    word ptr [bp+var_8+2]
+    push    word ptr [bp+var_8]
+    push    word ptr [bp+var_C+2]
+    push    word ptr [bp+var_C]
     mov     si, ax
     mov     di, dx
     call    __aFlmul
@@ -2075,7 +2071,7 @@ loc_25FEE:
     mov     sp, bp
     pop     bp
     retf
-transformed_shape_op_helper3 endp
+ported_transformed_shape_op_helper3_ endp
 get_a_poly_info proc far
     var_pattype2 = word ptr -64
     var_polyinfoptrdata = dword ptr -62

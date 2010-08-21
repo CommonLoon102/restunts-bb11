@@ -16,21 +16,21 @@ X    60 mat_multiply (0)
 X   122 mat_mul_vector (0)
 X    48 mat_invert (0)
 X   126 vector_op_unk2 (14)
-     97 vector_to_point (0)
+X    97 vector_to_point (0)
 X    32 rect_compare_point (0)
-     40 vector_op_unk (0)
-     86 transformed_shape_op_helper3 (4)
+X    40 vector_op_unk (0)
+X    86 transformed_shape_op_helper3 (4)
 X    33 rect_adjust_from_point(0)
 X    47 polarRadius2D (6)
 X    13 polarRadius3D (4)
-      7 transformed_shape_op_helper2 (0)
+X     7 transformed_shape_op_helper2 (0)
      74 transformed_shape_op_helper (0)
 X     - polarAngle (0)
-X     - mat_rot_z (0)
-X     - mat_rot_x (0)
-X     - mat_rot_y (0)
-      - set_projection (0)
-
+X     - mat_rot_z (4)
+X     - mat_rot_x (4)
+X     - mat_rot_y (4)
+      - set_projection (10)
+      - select_cliprect_rotate (10)
 
 */
 
@@ -96,7 +96,7 @@ extern char vector_op_unk2(struct VECTOR*);
 extern void vector_to_point(struct VECTOR*, struct POINT2D*);
 extern unsigned rect_compare_point(struct POINT2D*);
 extern char transformed_shape_op_helper3(struct POINT2D far*);
-extern void vector_op_unk(struct VECTOR*, struct VECTOR*, struct VECTOR*, unsigned);
+extern void vector_op_unk(struct VECTOR*, struct VECTOR*, struct VECTOR*, int);
 extern void rect_adjust_from_point(struct POINT2D*, struct RECTANGLE*);
 extern unsigned polarRadius2D(unsigned, unsigned);
 extern unsigned polarRadius3D(struct VECTOR*);
@@ -129,7 +129,7 @@ extern unsigned polyinfoptrnext;
 extern char far* polyinfoptr;
 extern char far* transshapepolyinfo;
 struct POINT2D far* transshapepolyinfopts;
-extern char far* polyinfoptrs[];
+extern unsigned far* polyinfoptrs[];
 extern unsigned polyinfonumpolys;
 extern char transprimitivepaintjob;
 extern unsigned char far* transshapeprimindexptr;
@@ -2531,4 +2531,65 @@ asm {
 	//return result;
 return result;
 */
+}
+
+
+
+
+// parameter points to a far array of 2d points
+char transformed_shape_op_helper3(struct POINT2D far* pts) {
+	long dx0, dy0, dx1, dy1;
+	long temp;
+
+	dx0 = (long)pts[0].px - pts[1].px;
+	dx1 = (long)pts[2].px - pts[1].px;
+	
+	if (dx0 == 0 && dx1 == 0) return 0;
+		
+	dy0 = (long)pts[0].py - pts[1].py;
+	dy1 = (long)pts[2].py - pts[1].py;
+
+	if (dy0 == 0 && dy1 == 0) return 0;
+	temp = (dx1 * dy0) - (dx0 * dy1);
+	return temp <= 0 ? 0 : 1;
+}
+
+extern unsigned projectiondata9;
+
+unsigned transformed_shape_op_helper2(unsigned i1, int i2) {
+	return projectiondata9 * i1 / i2;
+}
+
+extern int word_40ED6[];
+
+extern unsigned transformed_shape_op_helper(unsigned arg_0, unsigned arg_2) {
+
+	int regdi, regsi;
+
+	if (arg_2 == 0) {
+		regdi = word_40ED6[word_45D98];
+	} else {
+		word_45D98 = word_4394E;
+		regdi = word_40ED6[word_4394E];
+		regsi = word_4554A;
+
+		while (regdi >= 0 && regsi-- != 0) {
+			if (*polyinfoptrs[regdi] < arg_0) break;
+			word_45D98 = regdi;
+			regdi = word_40ED6[regdi];
+		}
+	}
+
+	word_40ED6[polyinfonumpolys] = regdi;
+	word_40ED6[word_45D98] = polyinfonumpolys;
+	word_4554A++;
+	if (regdi < 0) {
+		word_443F2 = polyinfonumpolys;
+	}
+	word_45D98 = word_40ED6[word_45D98];
+	polyinfonumpolys++;
+	polyinfoptrnext += (transshapenumvertscopy << 2) + 6;
+	if (polyinfonumpolys == 0x190) return 1;
+	if (polyinfoptrnext <= 0x2872) return 0;
+	return 1;
 }

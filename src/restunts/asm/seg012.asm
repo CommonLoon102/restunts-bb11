@@ -233,7 +233,7 @@ seg012 segment byte public 'STUNTSC' use16
     public sub_3219D
     public set_projection
     public loc_32334
-    public vector_to_point
+    public ported_vector_to_point_
     public ported_sprite_free_wnd_
     public ported_file_write_nofatal_
     public ported_file_write_fatal_
@@ -250,7 +250,7 @@ seg012 segment byte public 'STUNTSC' use16
     public nopsub_32738
     public nopsub_32746
     public nopsub_32751
-    public transformed_shape_op_helper2
+    public ported_transformed_shape_op_helper2_
     public nopsub_3276A
     public timer_get_counter
     public nopsub_32782
@@ -281,7 +281,7 @@ seg012 segment byte public 'STUNTSC' use16
     public nopsub_32FEE
     public video_get_status
     public nopsub_33006
-    public vector_op_unk
+    public ported_vector_op_unk_
     public loc_3301F
     public preRender_sphere
     public nopsub_3320E
@@ -8990,7 +8990,7 @@ loc_323B4:
     pop     bp
     retf
 set_projection endp
-vector_to_point proc far
+ported_vector_to_point_ proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_vec = word ptr 6
@@ -9110,7 +9110,7 @@ loc_324A2:
     mov     ax, 7D00h
     mov     [di+2], ax
     jmp     short loc_32472
-vector_to_point endp
+ported_vector_to_point_ endp
 ported_sprite_free_wnd_ proc far
      s = byte ptr 0
      r = byte ptr 2
@@ -9546,7 +9546,7 @@ nopsub_32751 proc far
     pop     bp
     retf
 nopsub_32751 endp
-transformed_shape_op_helper2 proc far
+ported_transformed_shape_op_helper2_ proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -9559,7 +9559,7 @@ transformed_shape_op_helper2 proc far
     div     [bp+arg_2]
     pop     bp
     retf
-transformed_shape_op_helper2 endp
+ported_transformed_shape_op_helper2_ endp
 nopsub_3276A proc far
      s = byte ptr 0
      r = byte ptr 2
@@ -10951,7 +10951,7 @@ nopsub_33006 proc far
     ; align 2
     db 144
 nopsub_33006 endp
-vector_op_unk proc far
+ported_vector_op_unk_ proc far
     var_4 = word ptr -4
     var_2 = word ptr -2
      s = byte ptr 0
@@ -10971,29 +10971,29 @@ loc_3301F:
     mov     si, [bp+arg_0]
     mov     bx, [bp+arg_2]
     mov     di, [bp+arg_4]
-    mov     [di+4], ax
-    sub     ax, [bx+4]
+    mov     [di+VECTOR.vz], ax
+    sub     ax, [bx+VECTOR.vz]
     mov     [bp+var_4], ax
-    mov     ax, [si+4]
-    sub     ax, [bx+4]
+    mov     ax, [si+VECTOR.vz]
+    sub     ax, [bx+VECTOR.vz]
     or      ax, ax
     jge     short loc_33040
     shr     [bp+var_4], 1
     shr     ax, 1
 loc_33040:
     mov     [bp+var_2], ax
-    mov     ax, [si]
-    sub     ax, [bx]
+    mov     ax, [si+VECTOR.vx]
+    sub     ax, [bx+VECTOR.vx]
     imul    [bp+var_4]
     idiv    [bp+var_2]
-    add     ax, [bx]
-    mov     [di], ax
-    mov     ax, [si+2]
-    sub     ax, [bx+2]
+    add     ax, [bx+VECTOR.vx]
+    mov     [di+VECTOR.vx], ax
+    mov     ax, [si+VECTOR.vy]
+    sub     ax, [bx+VECTOR.vy]
     imul    [bp+var_4]
     idiv    [bp+var_2]
-    add     ax, [bx+2]
-    mov     [di+2], ax
+    add     ax, [bx+VECTOR.vy]
+    mov     [di+VECTOR.vy], ax
     pop     di
     pop     si
     mov     sp, bp
@@ -11003,7 +11003,7 @@ loc_33040:
     mov     bp, sp
     mov     ax, [bp+6]
     mov     ds:4E92h, ax
-vector_op_unk endp
+ported_vector_op_unk_ endp
 preRender_sphere proc far
     var_79A = byte ptr -1946
     var_3DA = byte ptr -986

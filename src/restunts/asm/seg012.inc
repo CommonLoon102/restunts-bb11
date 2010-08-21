@@ -186,7 +186,7 @@ seg012 segment byte public 'STUNTSC' use16
     extrn sub_3219D:proc
     extrn set_projection:proc
     extrn loc_32334
-    extrn vector_to_point:proc
+    extrn ported_vector_to_point_:proc
     extrn ported_sprite_free_wnd_:proc
     extrn ported_file_write_nofatal_:proc
     extrn ported_file_write_fatal_:proc
@@ -203,7 +203,7 @@ seg012 segment byte public 'STUNTSC' use16
     extrn nopsub_32738:proc
     extrn nopsub_32746:proc
     extrn nopsub_32751:proc
-    extrn transformed_shape_op_helper2:proc
+    extrn ported_transformed_shape_op_helper2_:proc
     extrn nopsub_3276A:proc
     extrn timer_get_counter:proc
     extrn nopsub_32782:proc
@@ -234,7 +234,7 @@ seg012 segment byte public 'STUNTSC' use16
     extrn nopsub_32FEE:proc
     extrn video_get_status:proc
     extrn nopsub_33006:proc
-    extrn vector_op_unk:proc
+    extrn ported_vector_op_unk_:proc
     extrn loc_3301F
     extrn preRender_sphere:proc
     extrn nopsub_3320E:proc

@@ -338,7 +338,7 @@ int vector_op_unk2(struct VECTOR* vec) {
 	temp = polarRadius2D(abs(vec->x), abs(vec->z));
 	
 	if (sin80 != cos80) {
-		fatal_error("sin80 != cos80 - not observed");
+		//fatal_error("sin80 != cos80 - not observed");
 		y = y * sin80;
 		temp = temp * cos80;
 	} 
@@ -372,16 +372,50 @@ int vector_op_unk2(struct VECTOR* vec) {
 	return result;
 }
 
-/*
+extern int projectiondata5, projectiondata8, projectiondata9, projectiondata10;
+
 
 void vector_to_point(struct VECTOR* vec, struct POINT2D* outpt) {
-	if (vec->z <= 0) goto loc_32431;
-	if (vec->x < 0) goto loc_3240F;
+
+	// the original code checks for several overflows (in a strange way) - this code does not, but seems to do well anyway
+
+	long proj;
+	if (vec->z <= 0) {
+		outpt->px = 0x8000;
+		outpt->py = 0x8000;
+		return;
+	}
 	
-	vec->x * projectiondata9
+	if (vec->x < 0) {
+		proj = (long)-vec->x * projectiondata9;
+		outpt->px = -(proj / vec->z) + projectiondata5;
+	} else {
+		proj = (long)vec->x * projectiondata9;
+		outpt->px = (proj / vec->z) + projectiondata5;
+	}
 
-wicked...
-
-
+	if (vec->y < 0) {
+		proj = (long)-vec->y * projectiondata10;
+		outpt->py = (proj / vec->z) + projectiondata8;
+	} else {
+		proj = (long)vec->y * projectiondata10;
+		outpt->py = -(proj / vec->z) + projectiondata8;
+	}
 }
-*/
+
+void vector_op_unk(struct VECTOR* vec1, struct VECTOR* vec2, struct VECTOR* outvec, int i) {
+	
+	long var_4, var_2;
+	
+	outvec->z = i;
+
+	var_4 = outvec->z - vec2->z;
+	var_2 = vec1->z - vec2->z;
+	if (var_2 < 0) {
+		var_4 = var_4 >> 1;
+		var_2 = var_2 >> 1;
+	}
+	
+	outvec->x = (vec1->x - vec2->x) * var_4 / var_2 + vec2->x;
+	outvec->y = (vec1->y - vec2->y) * var_4 / var_2 + vec2->y;
+}

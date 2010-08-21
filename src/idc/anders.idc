@@ -584,7 +584,9 @@ static PortFuncName(labelname) {
 		labelname == "polarRadius3D" || 
 		labelname == "rect_compare_point" || 
 		labelname == "rect_adjust_from_point" || 
+		labelname == "vector_op_unk" || 
 		labelname == "vector_op_unk2" || 
+		labelname == "vector_to_point" || 
 		labelname == "mat_mul_vector" || 
 		labelname == "mat_multiply" || 
 		labelname == "mat_invert" || 
@@ -657,6 +659,9 @@ static PortFuncName(labelname) {
 		labelname == "shape3d_free_all" ||
 		labelname == "shape3d_init_shape" ||
 		labelname == "transformed_shape_op" ||
+		labelname == "transformed_shape_op_helper" ||
+		labelname == "transformed_shape_op_helper2" ||
+		labelname == "transformed_shape_op_helper3" ||
 
 		labelname == "sprite_make_wnd" ||
 		labelname == "sprite_free_wnd" ||

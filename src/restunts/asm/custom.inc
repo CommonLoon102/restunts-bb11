@@ -36,7 +36,9 @@ extrn mat_rot_x:proc
 extrn mat_rot_y:proc
 extrn mat_rot_z:proc
 extrn mat_rot_zxy:proc
+extrn vector_op_unk:proc
 extrn vector_op_unk2:proc
+extrn vector_to_point:proc
 
 extrn file_find:proc
 extrn file_find_next:proc
@@ -92,6 +94,8 @@ extrn shape3d_load_all:proc
 extrn shape3d_free_all:proc
 extrn shape3d_init_shape:proc
 extrn transformed_shape_op:proc
+extrn transformed_shape_op_helper2:proc
+extrn transformed_shape_op_helper3:proc
 
 extrn sprite_make_wnd:proc
 extrn sprite_free_wnd:proc
