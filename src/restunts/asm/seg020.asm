@@ -64,12 +64,15 @@ preRender_sphere_helper proc far
     push    ax
     push    [bp+arg_0]
     call    preRender_sphere_helper2
+loc_36BD1:
     add     sp, 4
     lea     ax, [bp+var_80]
     push    ax
+loc_36BD8:
     mov     ax, 20h ; ' '
     push    ax
     push    [bp+arg_2]
+loc_36BDF:
     call    preRender_default_alt
     mov     sp, bp
     pop     bp

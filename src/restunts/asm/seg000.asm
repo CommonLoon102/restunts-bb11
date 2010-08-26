@@ -5301,6 +5301,7 @@ loc_13281:
     add     sp, 2
     add     ax, offset resID_byte1
     push    ax
+loc_132D4:
     call    copy_string
     add     sp, 6
 loc_132DC:

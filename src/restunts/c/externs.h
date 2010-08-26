@@ -62,6 +62,7 @@ extern unsigned _abs(unsigned);
 #define fmemcpy __fmemcpy
 #define strcmp _strcmp
 #define abs _abs
+#define printf _printf
 #else
 #define MK_FP(x, y) ((x << 4) + y)
 #define FP_SEG(x) 0

@@ -205,15 +205,18 @@ loc_39DBF:
     mov     cx, 0FFFFh
     repne scasb
     dec     di
+loc_39E01:
     mov     cx, bx
     shr     cx, 1
     repne movsw
     adc     cx, cx
+loc_39E09:
     repne movsb
 loc_39E0B:
     mov     ax, offset byte_42D2E
     pop     si
     pop     di
+loc_39E10:
     mov     sp, bp
     pop     bp
     retf

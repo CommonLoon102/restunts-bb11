@@ -3985,14 +3985,10 @@ skybox_op proc far
     var_50 = word ptr -80
     var_4E = POINT2D ptr -78
     var_4A = POINT2D ptr -74
-    var_46 = word ptr -70
-    var_44 = word ptr -68
-    var_42 = word ptr -66
-    var_40 = word ptr -64
-    var_3E = word ptr -62
-    var_3C = word ptr -60
-    var_3A = word ptr -58
-    var_38 = word ptr -56
+    var_46 = POINT2D ptr -70
+    var_42 = POINT2D ptr -66
+    var_3E = POINT2D ptr -62
+    var_3A = POINT2D ptr -58
     var_34 = word ptr -52
     var_32 = word ptr -50
     var_30 = word ptr -48
@@ -4494,10 +4490,10 @@ loc_1C8FF:
     sub     di, di
     jmp     loc_1C879
 loc_1C904:
-    push    [bp+var_44]
-    push    [bp+var_46]
-    push    [bp+var_40]
-    push    [bp+var_42]
+    push    [bp+var_46.y2]
+    push    [bp+var_46.x2]
+    push    [bp+var_42.y2]
+    push    [bp+var_42.x2]
     push    [bp+var_4A.y2]
     push    [bp+var_4A.x2]
     push    [bp+var_4E.y2]
@@ -4507,10 +4503,10 @@ loc_1C904:
     push    skybox_sky_color
     call    skybox_op_helper
     add     sp, 14h
-    push    [bp+var_38]
-    push    [bp+var_3A]
-    push    [bp+var_3C]
-    push    [bp+var_3E]
+    push    [bp+var_3A.y2]
+    push    [bp+var_3A.x2]
+    push    [bp+var_3E.y2]
+    push    [bp+var_3E.x2]
     push    [bp+var_4A.y2]
     push    [bp+var_4A.x2]
     push    [bp+var_4E.y2]

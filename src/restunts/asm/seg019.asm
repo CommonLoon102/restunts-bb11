@@ -149,6 +149,7 @@ loc_36B9C:
     push    bx
 loc_36B9D:
     call    preRender_wheel_helper3
+loc_36BA2:
     add     sp, 4
 loc_36BA5:
     mov     ax, [bp+arg_2]

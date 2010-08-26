@@ -568,6 +568,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn word_3EA3A:word
     extrn word_3EA3C:word
     extrn game_camera_buttons_y2:word
+    extrn word_3EA46:word
     extrn word_3EA4C:word
     extrn word_3EA4E:word
     extrn gameunk_button_x1:word

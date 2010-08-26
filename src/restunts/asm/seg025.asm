@@ -139,6 +139,7 @@ loc_3709C:
     add     sp, 0Ah
 loc_3709F:
     push    [bp+arg_8]
+loc_370A2:
     push    [bp+var_4]
 loc_370A5:
     mov     ax, 1

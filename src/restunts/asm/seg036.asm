@@ -90,6 +90,7 @@ loc_3B0E7:
     mov     ax, [bp+var_6]
     cmp     [bp+var_C], ax
     jbe     short loc_3B118
+loc_3B112:
     mov     ax, [bp+var_C]
     mov     [bp+var_6], ax
 loc_3B118:

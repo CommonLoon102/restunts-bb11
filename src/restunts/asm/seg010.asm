@@ -4436,6 +4436,7 @@ loc_2E9ED:
     jb      short loc_2E9FB
 loc_2E9EF:
     cmp     dx, [bp+arg_2]
+loc_2E9F2:
     ja      short loc_2E9FB
     jb      short loc_2E9FC
 loc_2E9F6:

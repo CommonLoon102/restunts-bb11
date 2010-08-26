@@ -2693,7 +2693,7 @@ loc_38552:
     push    ax
     mov     ax, 4FA3h
     push    ax
-    call    sub_3219D
+    call    nopsub_3219D
     add     sp, 0Ah
     mov     al, byte_45948
     sub     ah, ah
@@ -2702,7 +2702,7 @@ loc_38552:
     push    ax
     mov     ax, 4FD5h
     push    ax
-    call    sub_3219D
+    call    nopsub_3219D
     add     sp, 6
     sub     si, si
     mov     di, 8214h
@@ -2716,7 +2716,7 @@ loc_385B6:
     push    si
     mov     ax, 4FFBh
     push    ax
-    call    sub_3219D
+    call    nopsub_3219D
     add     sp, 0Ch
     add     di, 4Ch ; 'L'
     add     word ptr [bp-6], 4Ch ; 'L'
@@ -2727,7 +2727,7 @@ loc_385B6:
     mov     ax, 5010h
     push    ax
 loc_385E4:
-    call    sub_3219D
+    call    nopsub_3219D
     add     sp, 2
 loc_385EC:
     call    flush_stdin
@@ -2758,9 +2758,10 @@ loc_38616:
     mov     ax, 501Dh
     push    ax
 loc_3861A:
-    call    sub_3219D
+    call    nopsub_3219D
 loc_3861F:
     add     sp, 0Eh
+loc_38622:
     add     di, 2Eh ; '.'
 loc_38625:
     add     word ptr [bp-4], 2Eh ; '.'

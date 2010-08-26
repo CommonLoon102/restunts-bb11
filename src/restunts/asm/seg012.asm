@@ -53,27 +53,26 @@ seg012 segment byte public 'STUNTSC' use16
     public set_add_value
     public sub_2EB07
     public sub_2EB1E
-    public draw_line_related_alt
-    public draw_line_related
+    public ported_draw_line_related_alt_
+    public ported_draw_line_related_
     public loc_2EB62
     public off_2ECB9
-    public off_2ECD1
     public word_2ECF8
     public word_2EDBD
     public word_2EE82
     public word_2F02B
-    public sub_2F314
-    public sub_2F334
+    public parse_shape2d_helper
+    public parse_shape2d_helper2
     public word_2F354
     public word_2F356
     public word_2F358
     public word_2F35A
-    public sub_2F35C
+    public criterr_interrupt_handler
     public set_criterr_handler
-    public sub_2F3BC
-    public preRender_unk
-    public sub_2F424
-    public sub_2F436
+    public criterr_exithandler
+    public ported_preRender_unk_
+    public nopsub_2F424
+    public nopsub_2F436
     public word_2F448
     public off_2F44A
     public off_2F4AC
@@ -97,35 +96,35 @@ seg012 segment byte public 'STUNTSC' use16
     public word_2F5DE
     public word_2F602
     public word_2F628
-    public unk_2F650
-    public unk_2F67A
-    public unk_2F6A6
-    public unk_2F6D4
-    public unk_2F704
-    public unk_2F736
-    public unk_2F76A
-    public unk_2F790
-    public unk_2F7A0
-    public unk_2F7D8
-    public unk_2F812
-    public unk_2F84E
-    public unk_2F88C
-    public unk_2F8CC
-    public unk_2F90E
-    public unk_2F952
-    public unk_2F998
-    public unk_2F9E0
-    public unk_2FA2A
-    public unk_2FA76
-    public unk_2FAC4
-    public unk_2FB14
-    public unk_2FB66
-    public unk_2FBBA
-    public unk_2FC10
-    public unk_2FC68
-    public unk_2FCC2
-    public unk_2FD1E
-    public unk_2FD7C
+    public word_2F650
+    public word_2F67A
+    public word_2F6A6
+    public word_2F6D4
+    public word_2F704
+    public word_2F736
+    public word_2F76A
+    public word_2F790
+    public word_2F7A0
+    public word_2F7D8
+    public word_2F812
+    public word_2F84E
+    public word_2F88C
+    public word_2F8CC
+    public word_2F90E
+    public word_2F952
+    public word_2F998
+    public word_2F9E0
+    public word_2FA2A
+    public word_2FA76
+    public word_2FAC4
+    public word_2FB14
+    public word_2FB66
+    public word_2FBBA
+    public word_2FC10
+    public word_2FC68
+    public word_2FCC2
+    public word_2FD1E
+    public word_2FD7C
     public preRender_line
     public add_exit_handler
     public call_exitlist
@@ -214,24 +213,29 @@ seg012 segment byte public 'STUNTSC' use16
     public ported_mmgr_get_chunk_size_
     public ported_mmgr_resize_memory_
     public ported_mmgr_op_unk_
-    public preRender_default
-    public preRender_default_alt
+    public ported_preRender_default_
+    public ported_preRender_default_alt_
     public loc_317CE
-    public skybox_op_helper
-    public preRender_wheel_helper4
+    public ported_skybox_op_helper_
+    public ported_preRender_wheel_helper4_
     public loc_317FB
     public loc_3180A
-    public sub_319CD
-    public sub_31A67
+    public ported_preRender_helper_
+    public preRender_helper2
     public off_31A82
     public locret_31AA3
-    public sub_31B5E
+    public ported_preRender_helper3_
     public off_31B84
     public off_31CF7
-    public sub_3215A
-    public sub_3216C
-    public sub_3219D
-    public set_projection
+    public nopsub_31F39
+    public nopsub_31F55
+    public nopsub_3215A
+    public nopsub_3216C
+    public nopsub_3219D
+    public nopsub_322B4
+    public nopsub_322C0
+    public nopsub_322DF
+    public ported_set_projection_
     public loc_32334
     public ported_vector_to_point_
     public ported_sprite_free_wnd_
@@ -264,7 +268,7 @@ seg012 segment byte public 'STUNTSC' use16
     public font_op2
     public loc_3284A
     public loc_32882
-    public preRender_patterned
+    public ported_preRender_patterned_
     public nopsub_328C9
     public nopsub_328DB
     public ported_mat_mul_vector_
@@ -354,6 +358,7 @@ seg012 segment byte public 'STUNTSC' use16
     public video_set_palette
     public loc_346A8
     public draw_filled_lines
+    public nopsub_34736
     public sprite_clear_shape_alt
     public sprite_clear_shape
     public loc_34799
@@ -566,7 +571,7 @@ loc_2EB35:
     pop     bp
     retf
 sub_2EB1E endp
-draw_line_related_alt proc far
+ported_draw_line_related_alt_ proc far
     var_4 = byte ptr -4
      s = byte ptr 0
      r = byte ptr 2
@@ -578,8 +583,8 @@ draw_line_related_alt proc far
     push    di
     mov     [bp+var_4], 1
     jmp     short loc_2EB62
-draw_line_related_alt endp
-draw_line_related proc far
+ported_draw_line_related_alt_ endp
+ported_draw_line_related_ proc far
     var_4 = byte ptr -4
     var_2 = word ptr -2
      s = byte ptr 0
@@ -615,7 +620,6 @@ loc_2EB62:
     mov     [si+2], cx
     mov     [si+6], ax
     mov     [si+8], dx
-loc_2EB96:
     mov     [si+0Ah], bx
     jmp     short loc_2EBA8
     ; align 2
@@ -647,7 +651,6 @@ loc_2EBD2:
     mov     ax, [si+0Ah]
     cmp     ax, bx
     jge     short loc_2EBDE
-loc_2EBD9:
     mov     dl, 4
     jmp     loc_2EF9B
 loc_2EBDE:
@@ -772,7 +775,7 @@ off_2ECB9     dw offset loc_2ECD9
     dw offset loc_2EDA5
     dw offset loc_2EDA5
     dw offset loc_2EDA5
-off_2ECD1     dw offset loc_2ECE1
+    dw offset loc_2ECE1
     dw offset loc_2ECE1
     dw offset loc_2ECE1
     dw offset loc_2ECE1
@@ -815,7 +818,6 @@ loc_2ED22:
     mov     ax, [si+0Ch]
     mul     cx
     sub     [si], ax
-loc_2ED29:
     sbb     [si+2], dx
     sub     [si+0Eh], cx
     jmp     loc_2F13E
@@ -1198,7 +1200,6 @@ loc_2F0A3:
     xor     ax, ax
     sub     ax, [si]
     sbb     dx, [si+2]
-loc_2F0B3:
     jl      short loc_2F03D
     mov     cx, [si+0Ch]
     div     cx
@@ -1460,8 +1461,8 @@ loc_2F30C:
 loc_2F30F:
     sub     [si+8], dx
     jmp     short loc_2F2B0
-draw_line_related endp
-sub_2F314 proc far
+ported_draw_line_related_ endp
+parse_shape2d_helper proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -1483,8 +1484,8 @@ sub_2F314 proc far
     adc     dx, 0
     pop     bp
     retf
-sub_2F314 endp
-sub_2F334 proc far
+parse_shape2d_helper endp
+parse_shape2d_helper2 proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -1512,8 +1513,8 @@ word_2F354     dw 0
 word_2F356     dw 0
 word_2F358     dw 0
 word_2F35A     dw 0
-sub_2F334 endp
-sub_2F35C proc far
+parse_shape2d_helper2 endp
+criterr_interrupt_handler proc far
      r = byte ptr 0
 
     push    bx
@@ -1537,7 +1538,7 @@ sub_2F35C proc far
     pop     dx
     pop     bx
     iret
-sub_2F35C endp
+criterr_interrupt_handler endp
 set_criterr_handler proc far
      s = byte ptr 0
      r = byte ptr 2
@@ -1548,7 +1549,7 @@ set_criterr_handler proc far
     mov     bp, sp
     push    ds
     push    cs
-    mov     ax, offset sub_2F3BC
+    mov     ax, offset criterr_exithandler
     push    ax
     call    add_exit_handler
     add     sp, 4
@@ -1563,7 +1564,7 @@ set_criterr_handler proc far
     mov     cs:word_2F354, ax
     mov     ax, es:[bx+2]
     mov     cs:word_2F356, ax
-    mov     dx, offset sub_2F35C
+    mov     dx, offset criterr_interrupt_handler
     mov     ax, cs
     mov     ds, ax
     mov     al, 24h ; '$'
@@ -1573,7 +1574,7 @@ set_criterr_handler proc far
     pop     bp
     retf
 set_criterr_handler endp
-sub_2F3BC proc far
+criterr_exithandler proc far
 
     push    ds
     mov     ax, cs:word_2F356
@@ -1587,8 +1588,8 @@ sub_2F3BC proc far
 loc_2F3D8:
     pop     ds
     retf
-sub_2F3BC endp
-preRender_unk proc far
+criterr_exithandler endp
+ported_preRender_unk_ proc far
     var_A = byte ptr -10
      s = byte ptr 0
      r = byte ptr 2
@@ -1627,8 +1628,8 @@ loc_2F3FD:
     mov     ax, offset preRender_line
     mov     imagefunc, ax
     jmp     loc_3180A
-preRender_unk endp
-sub_2F424 proc far
+ported_preRender_unk_ endp
+nopsub_2F424 proc far
     var_A = byte ptr -10
      s = byte ptr 0
      r = byte ptr 2
@@ -1642,8 +1643,8 @@ sub_2F424 proc far
     lea     si, [bp+arg_8]
     mov     [bp+var_A], 0
     jmp     short loc_2F3FD
-sub_2F424 endp
-sub_2F436 proc far
+nopsub_2F424 endp
+nopsub_2F436 proc far
     var_A = byte ptr -10
      s = byte ptr 0
      r = byte ptr 2
@@ -1680,34 +1681,34 @@ off_2F44A     dw offset off_2F4AC
     dw offset word_2F5DE
     dw offset word_2F602
     dw offset word_2F628
-    dw offset unk_2F650
-    dw offset unk_2F67A
-    dw offset unk_2F6A6
-    dw offset unk_2F6D4
-    dw offset unk_2F704
-    dw offset unk_2F736
-    dw offset unk_2F76A
-    dw offset unk_2F7A0
-    dw offset unk_2F7D8
-    dw offset unk_2F812
-    dw offset unk_2F84E
-    dw offset unk_2F88C
-    dw offset unk_2F8CC
-    dw offset unk_2F90E
-    dw offset unk_2F952
-    dw offset unk_2F998
-    dw offset unk_2F9E0
-    dw offset unk_2FA2A
-    dw offset unk_2FA76
-    dw offset unk_2FAC4
-    dw offset unk_2FB14
-    dw offset unk_2FB66
-    dw offset unk_2FBBA
-    dw offset unk_2FC10
-    dw offset unk_2FC68
-    dw offset unk_2FCC2
-    dw offset unk_2FD1E
-off_2F4AC     dw offset unk_2FD7C
+    dw offset word_2F650
+    dw offset word_2F67A
+    dw offset word_2F6A6
+    dw offset word_2F6D4
+    dw offset word_2F704
+    dw offset word_2F736
+    dw offset word_2F76A
+    dw offset word_2F7A0
+    dw offset word_2F7D8
+    dw offset word_2F812
+    dw offset word_2F84E
+    dw offset word_2F88C
+    dw offset word_2F8CC
+    dw offset word_2F90E
+    dw offset word_2F952
+    dw offset word_2F998
+    dw offset word_2F9E0
+    dw offset word_2FA2A
+    dw offset word_2FA76
+    dw offset word_2FAC4
+    dw offset word_2FB14
+    dw offset word_2FB66
+    dw offset word_2FBBA
+    dw offset word_2FC10
+    dw offset word_2FC68
+    dw offset word_2FCC2
+    dw offset word_2FD1E
+off_2F4AC     dw offset word_2FD7C
 word_2F4AE     dw 32768
     dw 21845
 word_2F4B2     dw 43690
@@ -1907,1961 +1908,984 @@ word_2F628     dw 62259
     dw 21845
     dw 24966
     dw 28086
-    db 231
-    db 121
-    db 24
-    db 134
-    db 73
-    db 146
-    db 121
-    db 158
-    db 170
-    db 170
-    db 219
-    db 182
-    db 12
-    db 195
-    db 60
-    db 207
-    db 109
-    db 219
-    db 158
-    db 231
-unk_2F650     db 207
-    db 243
-    db 162
-    db 11
-    db 69
-    db 23
-    db 232
-    db 34
-    db 139
-    db 46
-    db 46
-    db 58
-    db 209
-    db 69
-    db 116
-    db 81
-    db 23
-    db 93
-    db 186
-    db 104
-    db 93
-    db 116
-    db 0
-    db 128
-    db 162
-    db 139
-    db 69
-    db 151
-    db 232
-    db 162
-    db 139
-    db 174
-    db 46
-    db 186
-    db 209
-    db 197
-    db 116
-    db 209
-    db 23
-    db 221
-    db 186
-    db 232
-unk_2F67A     db 93
-    db 244
-    db 33
-    db 11
-    db 66
-    db 22
-    db 100
-    db 33
-    db 133
-    db 44
-    db 166
-    db 55
-    db 200
-    db 66
-    db 233
-    db 77
-    db 11
-    db 89
-    db 44
-    db 100
-    db 77
-    db 111
-    db 111
-    db 122
-    db 144
-    db 133
-    db 178
-    db 144
-    db 211
-    db 155
-    db 244
-    db 166
-    db 22
-    db 178
-    db 55
-    db 189
-    db 89
-    db 200
-    db 122
-    db 211
-    db 155
-    db 222
-    db 189
-    db 233
-unk_2F6A6     db 222
-    db 244
-    db 170
-    db 10
-    db 85
-    db 21
-    db 0
-    db 32
-    db 170
-    db 42
-    db 85
-    db 53
-    db 0
-    db 64
-    db 170
-    db 74
-    db 85
-    db 85
-    db 0
-    db 96
-    db 170
-    db 106
-    db 85
-    db 117
-    db 0
-    db 128
-    db 170
-    db 138
-    db 85
-    db 149
-    db 0
-    db 160
-    db 170
-    db 170
-    db 85
-    db 181
-    db 0
-    db 192
-    db 170
-    db 202
-    db 85
-    db 213
-    db 0
-    db 224
-    db 170
-    db 234
-unk_2F6D4     db 85
-    db 245
-    db 61
-    db 10
-    db 122
-    db 20
-    db 184
-    db 30
-    db 245
-    db 40
-    db 51
-    db 51
-    db 112
-    db 61
-    db 174
-    db 71
-    db 235
-    db 81
-    db 40
-    db 92
-    db 102
-    db 102
-    db 163
-    db 112
-    db 225
-    db 122
-    db 30
-    db 133
-    db 92
-    db 143
-    db 153
-    db 153
-    db 215
-    db 163
-    db 20
-    db 174
-    db 81
-    db 184
-    db 143
-    db 194
-    db 204
-    db 204
-    db 10
-    db 215
-    db 71
-    db 225
-    db 133
-    db 235
-unk_2F704     db 194
-    db 245
-    db 216
-    db 9
-    db 177
-    db 19
-    db 137
-    db 29
-    db 98
-    db 39
-    db 59
-    db 49
-    db 19
-    db 59
-    db 236
-    db 68
-    db 196
-    db 78
-    db 157
-    db 88
-    db 118
-    db 98
-    db 78
-    db 108
-    db 39
-    db 118
-    db 0
-    db 128
-    db 216
-    db 137
-    db 177
-    db 147
-    db 137
-    db 157
-    db 98
-    db 167
-    db 59
-    db 177
-    db 19
-    db 187
-    db 236
-    db 196
-    db 196
-    db 206
-    db 157
-    db 216
-    db 118
-    db 226
-    db 78
-    db 236
-unk_2F736     db 39
-    db 246
-    db 123
-    db 9
-    db 246
-    db 18
-    db 113
-    db 28
-    db 237
-    db 37
-    db 104
-    db 47
-    db 227
-    db 56
-    db 94
-    db 66
-    db 218
-    db 75
-    db 85
-    db 85
-    db 208
-    db 94
-    db 75
-    db 104
-    db 199
-    db 113
-    db 66
-    db 123
-    db 189
-    db 132
-    db 56
-    db 142
-    db 180
-    db 151
-    db 47
-    db 161
-    db 170
-    db 170
-    db 37
-    db 180
-    db 161
-    db 189
-    db 28
-    db 199
-    db 151
-    db 208
-    db 18
-    db 218
-    db 142
-    db 227
-    db 9
-    db 237
-unk_2F76A     db 132
-    db 246
-    db 36
-    db 9
-    db 73
-    db 18
-    db 109
-    db 27
-    db 146
-    db 36
-    db 182
-    db 45
-    db 219
-    db 54
-    db 0
-    db 64
-    db 36
-    db 73
-    db 73
-    db 82
-    db 109
-    db 91
-    db 146
-    db 100
-    db 182
-    db 109
-    db 219
-    db 118
-    db 0
-    db 128
-    db 36
-    db 137
-    db 73
-    db 146
-    db 109
-    db 155
-    db 146
-    db 164
-unk_2F790     db 182
-    db 173
-    db 219
-    db 182
-    db 0
-    db 192
-    db 36
-    db 201
-    db 73
-    db 210
-    db 109
-    db 219
-    db 146
-    db 228
-    db 182
-    db 237
-unk_2F7A0     db 219
-    db 246
-    db 211
-    db 8
-    db 167
-    db 17
-    db 123
-    db 26
-    db 79
-    db 35
-    db 35
-    db 44
-    db 247
-    db 52
-    db 203
-    db 61
-    db 158
-    db 70
-    db 114
-    db 79
-    db 70
-    db 88
-    db 26
-    db 97
-    db 238
-    db 105
-    db 194
-    db 114
-    db 150
-    db 123
-    db 105
-    db 132
-    db 61
-    db 141
-    db 17
-    db 150
-    db 229
-    db 158
-    db 185
-    db 167
-    db 141
-    db 176
-    db 97
-    db 185
-    db 52
-    db 194
-    db 8
-    db 203
-    db 220
-    db 211
-    db 176
-    db 220
-    db 132
-    db 229
-    db 88
-    db 238
-unk_2F7D8     db 44
-    db 247
-    db 136
-    db 8
-    db 17
-    db 17
-    db 153
-    db 25
-    db 34
-    db 34
-    db 170
-    db 42
-    db 51
-    db 51
-    db 187
-    db 59
-    db 68
-    db 68
-    db 204
-    db 76
-    db 85
-    db 85
-    db 221
-    db 93
-    db 102
-    db 102
-    db 238
-    db 110
-    db 119
-    db 119
-    db 0
-    db 128
-    db 136
-    db 136
-    db 17
-    db 145
-    db 153
-    db 153
-    db 34
-    db 162
-    db 170
-    db 170
-    db 51
-    db 179
-    db 187
-    db 187
-    db 68
-    db 196
-    db 204
-    db 204
-    db 85
-    db 213
-    db 221
-    db 221
-    db 102
-    db 230
-    db 238
-    db 238
-unk_2F812     db 119
-    db 247
-    db 66
-    db 8
-    db 132
-    db 16
-    db 198
-    db 24
-    db 8
-    db 33
-    db 74
-    db 41
-    db 140
-    db 49
-    db 206
-    db 57
-    db 16
-    db 66
-    db 82
-    db 74
-    db 148
-    db 82
-    db 214
-    db 90
-    db 24
-    db 99
-    db 90
-    db 107
-    db 156
-    db 115
-    db 222
-    db 123
-    db 33
-    db 132
-    db 99
-    db 140
-    db 165
-    db 148
-    db 231
-    db 156
-    db 41
-    db 165
-    db 107
-    db 173
-    db 173
-    db 181
-    db 239
-    db 189
-    db 49
-    db 198
-    db 115
-    db 206
-    db 181
-    db 214
-    db 247
-    db 222
-    db 57
-    db 231
-    db 123
-    db 239
-unk_2F84E     db 189
-    db 247
-    db 0
-    db 8
-    db 0
-    db 16
-    db 0
-    db 24
-    db 0
-    db 32
-    db 0
-    db 40
-    db 0
-    db 48
-    db 0
-    db 56
-    db 0
-    db 64
-    db 0
-    db 72
-    db 0
-    db 80
-    db 0
-    db 88
-    db 0
-    db 96
-    db 0
-    db 104
-    db 0
-    db 112
-    db 0
-    db 120
-    db 0
-    db 128
-    db 0
-    db 136
-    db 0
-    db 144
-    db 0
-    db 152
-    db 0
-    db 160
-    db 0
-    db 168
-    db 0
-    db 176
-    db 0
-    db 184
-    db 0
-    db 192
-    db 0
-    db 200
-    db 0
-    db 208
-    db 0
-    db 216
-    db 0
-    db 224
-    db 0
-    db 232
-    db 0
-    db 240
-unk_2F88C     db 0
-    db 248
-    db 193
-    db 7
-    db 131
-    db 15
-    db 69
-    db 23
-    db 7
-    db 31
-    db 201
-    db 38
-    db 139
-    db 46
-    db 77
-    db 54
-    db 15
-    db 62
-    db 209
-    db 69
-    db 147
-    db 77
-    db 85
-    db 85
-    db 23
-    db 93
-    db 217
-    db 100
-    db 155
-    db 108
-    db 93
-    db 116
-    db 31
-    db 124
-    db 224
-    db 131
-    db 162
-    db 139
-    db 100
-    db 147
-    db 38
-    db 155
-    db 232
-    db 162
-    db 170
-    db 170
-    db 108
-    db 178
-    db 46
-    db 186
-    db 240
-    db 193
-    db 178
-    db 201
-    db 116
-    db 209
-    db 54
-    db 217
-    db 248
-    db 224
-    db 186
-    db 232
-    db 124
-    db 240
-unk_2F8CC     db 62
-    db 248
-    db 135
-    db 7
-    db 15
-    db 15
-    db 150
-    db 22
-    db 30
-    db 30
-    db 165
-    db 37
-    db 45
-    db 45
-    db 180
-    db 52
-    db 60
-    db 60
-    db 195
-    db 67
-    db 75
-    db 75
-    db 210
-    db 82
-    db 90
-    db 90
-    db 225
-    db 97
-    db 105
-    db 105
-    db 240
-    db 112
-    db 120
-    db 120
-    db 0
-    db 128
-    db 135
-    db 135
-    db 15
-    db 143
-    db 150
-    db 150
-    db 30
-    db 158
-    db 165
-    db 165
-    db 45
-    db 173
-    db 180
-    db 180
-    db 60
-    db 188
-    db 195
-    db 195
-    db 75
-    db 203
-    db 210
-    db 210
-    db 90
-    db 218
-    db 225
-    db 225
-    db 105
-    db 233
-    db 240
-    db 240
-unk_2F90E     db 120
-    db 248
-    db 80
-    db 7
-    db 160
-    db 14
-    db 241
-    db 21
-    db 65
-    db 29
-    db 146
-    db 36
-    db 226
-    db 43
-    db 51
-    db 51
-    db 131
-    db 58
-    db 212
-    db 65
-    db 36
-    db 73
-    db 117
-    db 80
-    db 197
-    db 87
-    db 21
-    db 95
-    db 102
-    db 102
-    db 182
-    db 109
-    db 7
-    db 117
-    db 87
-    db 124
-    db 168
-    db 131
-    db 248
-    db 138
-    db 73
-    db 146
-    db 153
-    db 153
-    db 234
-    db 160
-    db 58
-    db 168
-    db 138
-    db 175
-    db 219
-    db 182
-    db 43
-    db 190
-    db 124
-    db 197
-    db 204
-    db 204
-    db 29
-    db 212
-    db 109
-    db 219
-    db 190
-    db 226
-    db 14
-    db 234
-    db 95
-    db 241
-unk_2F952     db 175
-    db 248
-    db 28
-    db 7
-    db 56
-    db 14
-    db 85
-    db 21
-    db 113
-    db 28
-    db 142
-    db 35
-    db 170
-    db 42
-    db 199
-    db 49
-    db 227
-    db 56
-    db 0
-    db 64
-    db 28
-    db 71
-    db 56
-    db 78
-    db 85
-    db 85
-    db 113
-    db 92
-    db 142
-    db 99
-    db 170
-    db 106
-    db 199
-    db 113
-    db 227
-    db 120
-    db 0
-    db 128
-    db 28
-    db 135
-    db 56
-    db 142
-    db 85
-    db 149
-    db 113
-    db 156
-    db 142
-    db 163
-    db 170
-    db 170
-    db 199
-    db 177
-    db 227
-    db 184
-    db 0
-    db 192
-    db 28
-    db 199
-    db 56
-    db 206
-    db 85
-    db 213
-    db 113
-    db 220
-    db 142
-    db 227
-    db 170
-    db 234
-    db 199
-    db 241
-unk_2F998     db 227
-    db 248
-    db 235
-    db 6
-    db 214
-    db 13
-    db 193
-    db 20
-    db 172
-    db 27
-    db 152
-    db 34
-    db 131
-    db 41
-    db 110
-    db 48
-    db 89
-    db 55
-    db 69
-    db 62
-    db 48
-    db 69
-    db 27
-    db 76
-    db 6
-    db 83
-    db 242
-    db 89
-    db 221
-    db 96
-    db 200
-    db 103
-    db 179
-    db 110
-    db 159
-    db 117
-    db 138
-    db 124
-    db 117
-    db 131
-    db 96
-    db 138
-    db 76
-    db 145
-    db 55
-    db 152
-    db 34
-    db 159
-    db 13
-    db 166
-    db 249
-    db 172
-    db 228
-    db 179
-    db 207
-    db 186
-    db 186
-    db 193
-    db 166
-    db 200
-    db 145
-    db 207
-    db 124
-    db 214
-    db 103
-    db 221
-    db 83
-    db 228
-    db 62
-    db 235
-    db 41
-    db 242
-unk_2F9E0     db 20
-    db 249
-    db 188
-    db 6
-    db 121
-    db 13
-    db 53
-    db 20
-    db 242
-    db 26
-    db 175
-    db 33
-    db 107
-    db 40
-    db 40
-    db 47
-    db 229
-    db 53
-    db 161
-    db 60
-    db 94
-    db 67
-    db 26
-    db 74
-    db 215
-    db 80
-    db 148
-    db 87
-    db 80
-    db 94
-    db 13
-    db 101
-    db 202
-    db 107
-    db 134
-    db 114
-    db 67
-    db 121
-    db 0
-    db 128
-    db 188
-    db 134
-    db 121
-    db 141
-    db 53
-    db 148
-    db 242
-    db 154
-    db 175
-    db 161
-    db 107
-    db 168
-    db 40
-    db 175
-    db 229
-    db 181
-    db 161
-    db 188
-    db 94
-    db 195
-    db 26
-    db 202
-    db 215
-    db 208
-    db 148
-    db 215
-    db 80
-    db 222
-    db 13
-    db 229
-    db 202
-    db 235
-    db 134
-    db 242
-unk_2FA2A     db 67
-    db 249
-    db 144
-    db 6
-    db 32
-    db 13
-    db 177
-    db 19
-    db 65
-    db 26
-    db 210
-    db 32
-    db 98
-    db 39
-    db 242
-    db 45
-    db 131
-    db 52
-    db 19
-    db 59
-    db 164
-    db 65
-    db 52
-    db 72
-    db 196
-    db 78
-    db 85
-    db 85
-    db 229
-    db 91
-    db 118
-    db 98
-    db 6
-    db 105
-    db 150
-    db 111
-    db 39
-    db 118
-    db 183
-    db 124
-    db 72
-    db 131
-    db 216
-    db 137
-    db 105
-    db 144
-    db 249
-    db 150
-    db 137
-    db 157
-    db 26
-    db 164
-    db 170
-    db 170
-    db 59
-    db 177
-    db 203
-    db 183
-    db 91
-    db 190
-    db 236
-    db 196
-    db 124
-    db 203
-    db 13
-    db 210
-    db 157
-    db 216
-    db 45
-    db 223
-    db 190
-    db 229
-    db 78
-    db 236
-    db 223
-    db 242
-unk_2FA76     db 111
-    db 249
-    db 102
-    db 6
-    db 204
-    db 12
-    db 51
-    db 19
-    db 153
-    db 25
-    db 0
-    db 32
-    db 102
-    db 38
-    db 204
-    db 44
-    db 51
-    db 51
-    db 153
-    db 57
-    db 0
-    db 64
-    db 102
-    db 70
-    db 204
-    db 76
-    db 51
-    db 83
-    db 153
-    db 89
-    db 0
-    db 96
-    db 102
-    db 102
-    db 204
-    db 108
-    db 51
-    db 115
-    db 153
-    db 121
-    db 0
-    db 128
-    db 102
-    db 134
-    db 204
-    db 140
-    db 51
-    db 147
-    db 153
-    db 153
-    db 0
-    db 160
-    db 102
-    db 166
-    db 204
-    db 172
-    db 51
-    db 179
-    db 153
-    db 185
-    db 0
-    db 192
-    db 102
-    db 198
-    db 204
-    db 204
-    db 51
-    db 211
-    db 153
-    db 217
-    db 0
-    db 224
-    db 102
-    db 230
-    db 204
-    db 236
-    db 51
-    db 243
-unk_2FAC4     db 153
-    db 249
-    db 62
-    db 6
-    db 124
-    db 12
-    db 187
-    db 18
-    db 249
-    db 24
-    db 56
-    db 31
-    db 118
-    db 37
-    db 181
-    db 43
-    db 243
-    db 49
-    db 49
-    db 56
-    db 112
-    db 62
-    db 174
-    db 68
-    db 237
-    db 74
-    db 43
-    db 81
-    db 106
-    db 87
-    db 168
-    db 93
-    db 231
-    db 99
-    db 37
-    db 106
-    db 99
-    db 112
-    db 162
-    db 118
-    db 224
-    db 124
-    db 31
-    db 131
-    db 93
-    db 137
-    db 156
-    db 143
-    db 218
-    db 149
-    db 24
-    db 156
-    db 87
-    db 162
-    db 149
-    db 168
-    db 212
-    db 174
-    db 18
-    db 181
-    db 81
-    db 187
-    db 143
-    db 193
-    db 206
-    db 199
-    db 12
-    db 206
-    db 74
-    db 212
-    db 137
-    db 218
-    db 199
-    db 224
-    db 6
-    db 231
-    db 68
-    db 237
-    db 131
-    db 243
-unk_2FB14     db 193
-    db 249
-    db 24
-    db 6
-    db 48
-    db 12
-    db 73
-    db 18
-    db 97
-    db 24
-    db 121
-    db 30
-    db 146
-    db 36
-    db 170
-    db 42
-    db 195
-    db 48
-    db 219
-    db 54
-    db 243
-    db 60
-    db 12
-    db 67
-    db 36
-    db 73
-    db 60
-    db 79
-    db 85
-    db 85
-    db 109
-    db 91
-    db 134
-    db 97
-    db 158
-    db 103
-    db 182
-    db 109
-    db 207
-    db 115
-    db 231
-    db 121
-    db 0
-    db 128
-    db 24
-    db 134
-    db 48
-    db 140
-    db 73
-    db 146
-    db 97
-    db 152
-    db 121
-    db 158
-    db 146
-    db 164
-    db 170
-    db 170
-    db 195
-    db 176
-    db 219
-    db 182
-    db 243
-    db 188
-    db 12
-    db 195
-    db 36
-    db 201
-    db 60
-    db 207
-    db 85
-    db 213
-    db 109
-    db 219
-    db 134
-    db 225
-    db 158
-    db 231
-    db 182
-    db 237
-    db 207
-    db 243
-unk_2FB66     db 231
-    db 249
-    db 244
-    db 5
-    db 232
-    db 11
-    db 220
-    db 17
-    db 208
-    db 23
-    db 196
-    db 29
-    db 184
-    db 35
-    db 172
-    db 41
-    db 160
-    db 47
-    db 148
-    db 53
-    db 136
-    db 59
-    db 125
-    db 65
-    db 113
-    db 71
-    db 101
-    db 77
-    db 89
-    db 83
-    db 77
-    db 89
-    db 65
-    db 95
-    db 53
-    db 101
-    db 41
-    db 107
-    db 29
-    db 113
-    db 17
-    db 119
-    db 5
-    db 125
-    db 250
-    db 130
-    db 238
-    db 136
-    db 226
-    db 142
-    db 214
-    db 148
-    db 202
-    db 154
-    db 190
-    db 160
-    db 178
-    db 166
-    db 166
-    db 172
-    db 154
-    db 178
-    db 142
-    db 184
-    db 130
-    db 190
-    db 119
-    db 196
-    db 107
-    db 202
-    db 95
-    db 208
-    db 83
-    db 214
-    db 71
-    db 220
-    db 59
-    db 226
-    db 47
-    db 232
-    db 35
-    db 238
-    db 23
-    db 244
-unk_2FBBA     db 11
-    db 250
-    db 209
-    db 5
-    db 162
-    db 11
-    db 116
-    db 17
-    db 69
-    db 23
-    db 23
-    db 29
-    db 232
-    db 34
-    db 186
-    db 40
-    db 139
-    db 46
-    db 93
-    db 52
-    db 46
-    db 58
-    db 0
-    db 64
-    db 209
-    db 69
-    db 162
-    db 75
-    db 116
-    db 81
-    db 69
-    db 87
-    db 23
-    db 93
-    db 232
-    db 98
-    db 186
-    db 104
-    db 139
-    db 110
-    db 93
-    db 116
-    db 46
-    db 122
-    db 0
-    db 128
-    db 209
-    db 133
-    db 162
-    db 139
-    db 116
-    db 145
-    db 69
-    db 151
-    db 23
-    db 157
-    db 232
-    db 162
-    db 186
-    db 168
-    db 139
-    db 174
-    db 93
-    db 180
-    db 46
-    db 186
-    db 0
-    db 192
-    db 209
-    db 197
-    db 162
-    db 203
-    db 116
-    db 209
-    db 69
-    db 215
-    db 23
-    db 221
-    db 232
-    db 226
-    db 186
-    db 232
-    db 139
-    db 238
-    db 93
-    db 244
-unk_2FC10     db 46
-    db 250
-    db 176
-    db 5
-    db 96
-    db 11
-    db 17
-    db 17
-    db 193
-    db 22
-    db 113
-    db 28
-    db 34
-    db 34
-    db 210
-    db 39
-    db 130
-    db 45
-    db 51
-    db 51
-    db 227
-    db 56
-    db 147
-    db 62
-    db 68
-    db 68
-    db 244
-    db 73
-    db 164
-    db 79
-    db 85
-    db 85
-    db 5
-    db 91
-    db 182
-    db 96
-    db 102
-    db 102
-    db 22
-    db 108
-    db 199
-    db 113
-    db 119
-    db 119
-    db 39
-    db 125
-    db 216
-    db 130
-    db 136
-    db 136
-    db 56
-    db 142
-    db 233
-    db 147
-    db 153
-    db 153
-    db 73
-    db 159
-    db 250
-    db 164
-    db 170
-    db 170
-    db 91
-    db 176
-    db 11
-    db 182
-    db 187
-    db 187
-    db 108
-    db 193
-    db 28
-    db 199
-    db 204
-    db 204
-    db 125
-    db 210
-    db 45
-    db 216
-    db 221
-    db 221
-    db 142
-    db 227
-    db 62
-    db 233
-    db 238
-    db 238
-    db 159
-    db 244
-unk_2FC68     db 79
-    db 250
-    db 144
-    db 5
-    db 33
-    db 11
-    db 178
-    db 16
-    db 66
-    db 22
-    db 211
-    db 27
-    db 100
-    db 33
-    db 244
-    db 38
-    db 133
-    db 44
-    db 22
-    db 50
-    db 166
-    db 55
-    db 55
-    db 61
-    db 200
-    db 66
-    db 89
-    db 72
-    db 233
-    db 77
-    db 122
-    db 83
-    db 11
-    db 89
-    db 155
-    db 94
-    db 44
-    db 100
-    db 189
-    db 105
-    db 77
-    db 111
-    db 222
-    db 116
-    db 111
-    db 122
-    db 0
-    db 128
-    db 144
-    db 133
-    db 33
-    db 139
-    db 178
-    db 144
-    db 66
-    db 150
-    db 211
-    db 155
-    db 100
-    db 161
-    db 244
-    db 166
-    db 133
-    db 172
-    db 22
-    db 178
-    db 166
-    db 183
-    db 55
-    db 189
-    db 200
-    db 194
-    db 89
-    db 200
-    db 233
-    db 205
-    db 122
-    db 211
-    db 11
-    db 217
-    db 155
-    db 222
-    db 44
-    db 228
-    db 189
-    db 233
-    db 77
-    db 239
-    db 222
-    db 244
-unk_2FCC2     db 111
-    db 250
-    db 114
-    db 5
-    db 228
-    db 10
-    db 87
-    db 16
-    db 201
-    db 21
-    db 59
-    db 27
-    db 174
-    db 32
-    db 32
-    db 38
-    db 147
-    db 43
-    db 5
-    db 49
-    db 119
-    db 54
-    db 234
-    db 59
-    db 92
-    db 65
-    db 206
-    db 70
-    db 65
-    db 76
-    db 179
-    db 81
-    db 38
-    db 87
-    db 152
-    db 92
-    db 10
-    db 98
-    db 125
-    db 103
-    db 239
-    db 108
-    db 98
-    db 114
-    db 212
-    db 119
-    db 70
-    db 125
-    db 185
-    db 130
-    db 43
-    db 136
-    db 157
-    db 141
-    db 16
-    db 147
-    db 130
-    db 152
-    db 245
-    db 157
-    db 103
-    db 163
-    db 217
-    db 168
-    db 76
-    db 174
-    db 190
-    db 179
-    db 49
-    db 185
-    db 163
-    db 190
-    db 21
-    db 196
-    db 136
-    db 201
-    db 250
-    db 206
-    db 108
-    db 212
-    db 223
-    db 217
-    db 81
-    db 223
-    db 196
-    db 228
-    db 54
-    db 234
-    db 168
-    db 239
-    db 27
-    db 245
-unk_2FD1E     db 141
-    db 250
-    db 85
-    db 5
-    db 170
-    db 10
-    db 0
-    db 16
-    db 85
-    db 21
-    db 170
-    db 26
-    db 0
-    db 32
-    db 85
-    db 37
-    db 170
-    db 42
-    db 0
-    db 48
-    db 85
-    db 53
-    db 170
-    db 58
-    db 0
-    db 64
-    db 85
-    db 69
-    db 170
-    db 74
-    db 0
-    db 80
-    db 85
-    db 85
-    db 170
-    db 90
-    db 0
-    db 96
-    db 85
-    db 101
-    db 170
-    db 106
-    db 0
-    db 112
-    db 85
-    db 117
-    db 170
-    db 122
-    db 0
-    db 128
-    db 85
-    db 133
-    db 170
-    db 138
-    db 0
-    db 144
-    db 85
-    db 149
-    db 170
-    db 154
-    db 0
-    db 160
-    db 85
-    db 165
-    db 170
-    db 170
-    db 0
-    db 176
-    db 85
-    db 181
-    db 170
-    db 186
-    db 0
-    db 192
-    db 85
-    db 197
-    db 170
-    db 202
-    db 0
-    db 208
-    db 85
-    db 213
-    db 170
-    db 218
-    db 0
-    db 224
-    db 85
-    db 229
-    db 170
-    db 234
-    db 0
-    db 240
-    db 85
-    db 245
-unk_2FD7C     db 170
-    db 250
-    db 57
-    db 5
-    db 114
-    db 10
-    db 172
-    db 15
-    db 229
-    db 20
-    db 31
-    db 26
-    db 88
-    db 31
-    db 146
-    db 36
-    db 203
-    db 41
-    db 5
-    db 47
-    db 62
-    db 52
-    db 120
-    db 57
-    db 177
-    db 62
-    db 235
-    db 67
-    db 36
-    db 73
-    db 94
-    db 78
-    db 151
-    db 83
-    db 208
-    db 88
-    db 10
-    db 94
-    db 67
-    db 99
-    db 125
-    db 104
-    db 182
-    db 109
-    db 240
-    db 114
-    db 41
-    db 120
-    db 99
-    db 125
-    db 156
-    db 130
-    db 214
-    db 135
-    db 15
-    db 141
-    db 73
-    db 146
-    db 130
-    db 151
-    db 188
-    db 156
-    db 245
-    db 161
-    db 47
-    db 167
-    db 104
-    db 172
-    db 161
-    db 177
-    db 219
-    db 182
-    db 20
-    db 188
-    db 78
-    db 193
-    db 135
-    db 198
-    db 193
-    db 203
-    db 250
-    db 208
-    db 52
-    db 214
-    db 109
-    db 219
-    db 167
-    db 224
-    db 224
-    db 229
-    db 26
-    db 235
-    db 83
-    db 240
-    db 141
-    db 245
-    db 198
-    db 250
-sub_2F436 endp
+    dw 31207
+    dw 34328
+    dw 37449
+    dw 40569
+    dw 43690
+    dw 46811
+    dw 49932
+    dw 53052
+    dw 56173
+    dw 59294
+word_2F650     dw 62415
+    dw 2978
+    dw 5957
+    dw 8936
+    dw 11915
+    dw 14894
+    dw 17873
+    dw 20852
+    dw 23831
+    dw 26810
+    dw 29789
+    dw 32768
+    dw 35746
+    dw 38725
+    dw 41704
+    dw 44683
+    dw 47662
+    dw 50641
+    dw 53620
+    dw 56599
+    dw 59578
+word_2F67A     dw 62557
+    dw 2849
+    dw 5698
+    dw 8548
+    dw 11397
+    dw 14246
+    dw 17096
+    dw 19945
+    dw 22795
+    dw 25644
+    dw 28493
+    dw 31343
+    dw 34192
+    dw 37042
+    dw 39891
+    dw 42740
+    dw 45590
+    dw 48439
+    dw 51289
+    dw 54138
+    dw 56987
+    dw 59837
+word_2F6A6     dw 62686
+    dw 2730
+    dw 5461
+    dw 8192
+    dw 10922
+    dw 13653
+    dw 16384
+    dw 19114
+    dw 21845
+    dw 24576
+    dw 27306
+    dw 30037
+    dw 32768
+    dw 35498
+    dw 38229
+    dw 40960
+    dw 43690
+    dw 46421
+    dw 49152
+    dw 51882
+    dw 54613
+    dw 57344
+    dw 60074
+word_2F6D4     dw 62805
+    dw 2621
+    dw 5242
+    dw 7864
+    dw 10485
+    dw 13107
+    dw 15728
+    dw 18350
+    dw 20971
+    dw 23592
+    dw 26214
+    dw 28835
+    dw 31457
+    dw 34078
+    dw 36700
+    dw 39321
+    dw 41943
+    dw 44564
+    dw 47185
+    dw 49807
+    dw 52428
+    dw 55050
+    dw 57671
+    dw 60293
+word_2F704     dw 62914
+    dw 2520
+    dw 5041
+    dw 7561
+    dw 10082
+    dw 12603
+    dw 15123
+    dw 17644
+    dw 20164
+    dw 22685
+    dw 25206
+    dw 27726
+    dw 30247
+    dw 32768
+    dw 35288
+    dw 37809
+    dw 40329
+    dw 42850
+    dw 45371
+    dw 47891
+    dw 50412
+    dw 52932
+    dw 55453
+    dw 57974
+    dw 60494
+word_2F736     dw 63015
+    dw 2427
+    dw 4854
+    dw 7281
+    dw 9709
+    dw 12136
+    dw 14563
+    dw 16990
+    dw 19418
+    dw 21845
+    dw 24272
+    dw 26699
+    dw 29127
+    dw 31554
+    dw 33981
+    dw 36408
+    dw 38836
+    dw 41263
+    dw 43690
+    dw 46117
+    dw 48545
+    dw 50972
+    dw 53399
+    dw 55826
+    dw 58254
+    dw 60681
+word_2F76A     dw 63108
+    dw 2340
+    dw 4681
+    dw 7021
+    dw 9362
+    dw 11702
+    dw 14043
+    dw 16384
+    dw 18724
+    dw 21065
+    dw 23405
+    dw 25746
+    dw 28086
+    dw 30427
+    dw 32768
+    dw 35108
+    dw 37449
+    dw 39789
+    dw 42130
+word_2F790     dw 44470
+    dw 46811
+    dw 49152
+    dw 51492
+    dw 53833
+    dw 56173
+    dw 58514
+    dw 60854
+word_2F7A0     dw 63195
+    dw 2259
+    dw 4519
+    dw 6779
+    dw 9039
+    dw 11299
+    dw 13559
+    dw 15819
+    dw 18078
+    dw 20338
+    dw 22598
+    dw 24858
+    dw 27118
+    dw 29378
+    dw 31638
+    dw 33897
+    dw 36157
+    dw 38417
+    dw 40677
+    dw 42937
+    dw 45197
+    dw 47457
+    dw 49716
+    dw 51976
+    dw 54236
+    dw 56496
+    dw 58756
+    dw 61016
+word_2F7D8     dw 63276
+    dw 2184
+    dw 4369
+    dw 6553
+    dw 8738
+    dw 10922
+    dw 13107
+    dw 15291
+    dw 17476
+    dw 19660
+    dw 21845
+    dw 24029
+    dw 26214
+    dw 28398
+    dw 30583
+    dw 32768
+    dw 34952
+    dw 37137
+    dw 39321
+    dw 41506
+    dw 43690
+    dw 45875
+    dw 48059
+    dw 50244
+    dw 52428
+    dw 54613
+    dw 56797
+    dw 58982
+    dw 61166
+word_2F812     dw 63351
+    dw 2114
+    dw 4228
+    dw 6342
+    dw 8456
+    dw 10570
+    dw 12684
+    dw 14798
+    dw 16912
+    dw 19026
+    dw 21140
+    dw 23254
+    dw 25368
+    dw 27482
+    dw 29596
+    dw 31710
+    dw 33825
+    dw 35939
+    dw 38053
+    dw 40167
+    dw 42281
+    dw 44395
+    dw 46509
+    dw 48623
+    dw 50737
+    dw 52851
+    dw 54965
+    dw 57079
+    dw 59193
+    dw 61307
+word_2F84E     dw 63421
+    dw 2048
+    dw 4096
+    dw 6144
+    dw 8192
+    dw 10240
+    dw 12288
+    dw 14336
+    dw 16384
+    dw 18432
+    dw 20480
+    dw 22528
+    dw 24576
+    dw 26624
+    dw 28672
+    dw 30720
+    dw 32768
+    dw 34816
+    dw 36864
+    dw 38912
+    dw 40960
+    dw 43008
+    dw 45056
+    dw 47104
+    dw 49152
+    dw 51200
+    dw 53248
+    dw 55296
+    dw 57344
+    dw 59392
+    dw 61440
+word_2F88C     dw 63488
+    dw 1985
+    dw 3971
+    dw 5957
+    dw 7943
+    dw 9929
+    dw 11915
+    dw 13901
+    dw 15887
+    dw 17873
+    dw 19859
+    dw 21845
+    dw 23831
+    dw 25817
+    dw 27803
+    dw 29789
+    dw 31775
+    dw 33760
+    dw 35746
+    dw 37732
+    dw 39718
+    dw 41704
+    dw 43690
+    dw 45676
+    dw 47662
+    dw 49648
+    dw 51634
+    dw 53620
+    dw 55606
+    dw 57592
+    dw 59578
+    dw 61564
+word_2F8CC     dw 63550
+    dw 1927
+    dw 3855
+    dw 5782
+    dw 7710
+    dw 9637
+    dw 11565
+    dw 13492
+    dw 15420
+    dw 17347
+    dw 19275
+    dw 21202
+    dw 23130
+    dw 25057
+    dw 26985
+    dw 28912
+    dw 30840
+    dw 32768
+    dw 34695
+    dw 36623
+    dw 38550
+    dw 40478
+    dw 42405
+    dw 44333
+    dw 46260
+    dw 48188
+    dw 50115
+    dw 52043
+    dw 53970
+    dw 55898
+    dw 57825
+    dw 59753
+    dw 61680
+word_2F90E     dw 63608
+    dw 1872
+    dw 3744
+    dw 5617
+    dw 7489
+    dw 9362
+    dw 11234
+    dw 13107
+    dw 14979
+    dw 16852
+    dw 18724
+    dw 20597
+    dw 22469
+    dw 24341
+    dw 26214
+    dw 28086
+    dw 29959
+    dw 31831
+    dw 33704
+    dw 35576
+    dw 37449
+    dw 39321
+    dw 41194
+    dw 43066
+    dw 44938
+    dw 46811
+    dw 48683
+    dw 50556
+    dw 52428
+    dw 54301
+    dw 56173
+    dw 58046
+    dw 59918
+    dw 61791
+word_2F952     dw 63663
+    dw 1820
+    dw 3640
+    dw 5461
+    dw 7281
+    dw 9102
+    dw 10922
+    dw 12743
+    dw 14563
+    dw 16384
+    dw 18204
+    dw 20024
+    dw 21845
+    dw 23665
+    dw 25486
+    dw 27306
+    dw 29127
+    dw 30947
+    dw 32768
+    dw 34588
+    dw 36408
+    dw 38229
+    dw 40049
+    dw 41870
+    dw 43690
+    dw 45511
+    dw 47331
+    dw 49152
+    dw 50972
+    dw 52792
+    dw 54613
+    dw 56433
+    dw 58254
+    dw 60074
+    dw 61895
+word_2F998     dw 63715
+    dw 1771
+    dw 3542
+    dw 5313
+    dw 7084
+    dw 8856
+    dw 10627
+    dw 12398
+    dw 14169
+    dw 15941
+    dw 17712
+    dw 19483
+    dw 21254
+    dw 23026
+    dw 24797
+    dw 26568
+    dw 28339
+    dw 30111
+    dw 31882
+    dw 33653
+    dw 35424
+    dw 37196
+    dw 38967
+    dw 40738
+    dw 42509
+    dw 44281
+    dw 46052
+    dw 47823
+    dw 49594
+    dw 51366
+    dw 53137
+    dw 54908
+    dw 56679
+    dw 58451
+    dw 60222
+    dw 61993
+word_2F9E0     dw 63764
+    dw 1724
+    dw 3449
+    dw 5173
+    dw 6898
+    dw 8623
+    dw 10347
+    dw 12072
+    dw 13797
+    dw 15521
+    dw 17246
+    dw 18970
+    dw 20695
+    dw 22420
+    dw 24144
+    dw 25869
+    dw 27594
+    dw 29318
+    dw 31043
+    dw 32768
+    dw 34492
+    dw 36217
+    dw 37941
+    dw 39666
+    dw 41391
+    dw 43115
+    dw 44840
+    dw 46565
+    dw 48289
+    dw 50014
+    dw 51738
+    dw 53463
+    dw 55188
+    dw 56912
+    dw 58637
+    dw 60362
+    dw 62086
+word_2FA2A     dw 63811
+    dw 1680
+    dw 3360
+    dw 5041
+    dw 6721
+    dw 8402
+    dw 10082
+    dw 11762
+    dw 13443
+    dw 15123
+    dw 16804
+    dw 18484
+    dw 20164
+    dw 21845
+    dw 23525
+    dw 25206
+    dw 26886
+    dw 28566
+    dw 30247
+    dw 31927
+    dw 33608
+    dw 35288
+    dw 36969
+    dw 38649
+    dw 40329
+    dw 42010
+    dw 43690
+    dw 45371
+    dw 47051
+    dw 48731
+    dw 50412
+    dw 52092
+    dw 53773
+    dw 55453
+    dw 57133
+    dw 58814
+    dw 60494
+    dw 62175
+word_2FA76     dw 63855
+    dw 1638
+    dw 3276
+    dw 4915
+    dw 6553
+    dw 8192
+    dw 9830
+    dw 11468
+    dw 13107
+    dw 14745
+    dw 16384
+    dw 18022
+    dw 19660
+    dw 21299
+    dw 22937
+    dw 24576
+    dw 26214
+    dw 27852
+    dw 29491
+    dw 31129
+    dw 32768
+    dw 34406
+    dw 36044
+    dw 37683
+    dw 39321
+    dw 40960
+    dw 42598
+    dw 44236
+    dw 45875
+    dw 47513
+    dw 49152
+    dw 50790
+    dw 52428
+    dw 54067
+    dw 55705
+    dw 57344
+    dw 58982
+    dw 60620
+    dw 62259
+word_2FAC4     dw 63897
+    dw 1598
+    dw 3196
+    dw 4795
+    dw 6393
+    dw 7992
+    dw 9590
+    dw 11189
+    dw 12787
+    dw 14385
+    dw 15984
+    dw 17582
+    dw 19181
+    dw 20779
+    dw 22378
+    dw 23976
+    dw 25575
+    dw 27173
+    dw 28771
+    dw 30370
+    dw 31968
+    dw 33567
+    dw 35165
+    dw 36764
+    dw 38362
+    dw 39960
+    dw 41559
+    dw 43157
+    dw 44756
+    dw 46354
+    dw 47953
+    dw 49551
+    dw 51150
+    dw 52748
+    dw 54346
+    dw 55945
+    dw 57543
+    dw 59142
+    dw 60740
+    dw 62339
+word_2FB14     dw 63937
+    dw 1560
+    dw 3120
+    dw 4681
+    dw 6241
+    dw 7801
+    dw 9362
+    dw 10922
+    dw 12483
+    dw 14043
+    dw 15603
+    dw 17164
+    dw 18724
+    dw 20284
+    dw 21845
+    dw 23405
+    dw 24966
+    dw 26526
+    dw 28086
+    dw 29647
+    dw 31207
+    dw 32768
+    dw 34328
+    dw 35888
+    dw 37449
+    dw 39009
+    dw 40569
+    dw 42130
+    dw 43690
+    dw 45251
+    dw 46811
+    dw 48371
+    dw 49932
+    dw 51492
+    dw 53052
+    dw 54613
+    dw 56173
+    dw 57734
+    dw 59294
+    dw 60854
+    dw 62415
+word_2FB66     dw 63975
+    dw 1524
+    dw 3048
+    dw 4572
+    dw 6096
+    dw 7620
+    dw 9144
+    dw 10668
+    dw 12192
+    dw 13716
+    dw 15240
+    dw 16765
+    dw 18289
+    dw 19813
+    dw 21337
+    dw 22861
+    dw 24385
+    dw 25909
+    dw 27433
+    dw 28957
+    dw 30481
+    dw 32005
+    dw 33530
+    dw 35054
+    dw 36578
+    dw 38102
+    dw 39626
+    dw 41150
+    dw 42674
+    dw 44198
+    dw 45722
+    dw 47246
+    dw 48770
+    dw 50295
+    dw 51819
+    dw 53343
+    dw 54867
+    dw 56391
+    dw 57915
+    dw 59439
+    dw 60963
+    dw 62487
+word_2FBBA     dw 64011
+    dw 1489
+    dw 2978
+    dw 4468
+    dw 5957
+    dw 7447
+    dw 8936
+    dw 10426
+    dw 11915
+    dw 13405
+    dw 14894
+    dw 16384
+    dw 17873
+    dw 19362
+    dw 20852
+    dw 22341
+    dw 23831
+    dw 25320
+    dw 26810
+    dw 28299
+    dw 29789
+    dw 31278
+    dw 32768
+    dw 34257
+    dw 35746
+    dw 37236
+    dw 38725
+    dw 40215
+    dw 41704
+    dw 43194
+    dw 44683
+    dw 46173
+    dw 47662
+    dw 49152
+    dw 50641
+    dw 52130
+    dw 53620
+    dw 55109
+    dw 56599
+    dw 58088
+    dw 59578
+    dw 61067
+    dw 62557
+word_2FC10     dw 64046
+    dw 1456
+    dw 2912
+    dw 4369
+    dw 5825
+    dw 7281
+    dw 8738
+    dw 10194
+    dw 11650
+    dw 13107
+    dw 14563
+    dw 16019
+    dw 17476
+    dw 18932
+    dw 20388
+    dw 21845
+    dw 23301
+    dw 24758
+    dw 26214
+    dw 27670
+    dw 29127
+    dw 30583
+    dw 32039
+    dw 33496
+    dw 34952
+    dw 36408
+    dw 37865
+    dw 39321
+    dw 40777
+    dw 42234
+    dw 43690
+    dw 45147
+    dw 46603
+    dw 48059
+    dw 49516
+    dw 50972
+    dw 52428
+    dw 53885
+    dw 55341
+    dw 56797
+    dw 58254
+    dw 59710
+    dw 61166
+    dw 62623
+word_2FC68     dw 64079
+    dw 1424
+    dw 2849
+    dw 4274
+    dw 5698
+    dw 7123
+    dw 8548
+    dw 9972
+    dw 11397
+    dw 12822
+    dw 14246
+    dw 15671
+    dw 17096
+    dw 18521
+    dw 19945
+    dw 21370
+    dw 22795
+    dw 24219
+    dw 25644
+    dw 27069
+    dw 28493
+    dw 29918
+    dw 31343
+    dw 32768
+    dw 34192
+    dw 35617
+    dw 37042
+    dw 38466
+    dw 39891
+    dw 41316
+    dw 42740
+    dw 44165
+    dw 45590
+    dw 47014
+    dw 48439
+    dw 49864
+    dw 51289
+    dw 52713
+    dw 54138
+    dw 55563
+    dw 56987
+    dw 58412
+    dw 59837
+    dw 61261
+    dw 62686
+word_2FCC2     dw 64111
+    dw 1394
+    dw 2788
+    dw 4183
+    dw 5577
+    dw 6971
+    dw 8366
+    dw 9760
+    dw 11155
+    dw 12549
+    dw 13943
+    dw 15338
+    dw 16732
+    dw 18126
+    dw 19521
+    dw 20915
+    dw 22310
+    dw 23704
+    dw 25098
+    dw 26493
+    dw 27887
+    dw 29282
+    dw 30676
+    dw 32070
+    dw 33465
+    dw 34859
+    dw 36253
+    dw 37648
+    dw 39042
+    dw 40437
+    dw 41831
+    dw 43225
+    dw 44620
+    dw 46014
+    dw 47409
+    dw 48803
+    dw 50197
+    dw 51592
+    dw 52986
+    dw 54380
+    dw 55775
+    dw 57169
+    dw 58564
+    dw 59958
+    dw 61352
+    dw 62747
+word_2FD1E     dw 64141
+    dw 1365
+    dw 2730
+    dw 4096
+    dw 5461
+    dw 6826
+    dw 8192
+    dw 9557
+    dw 10922
+    dw 12288
+    dw 13653
+    dw 15018
+    dw 16384
+    dw 17749
+    dw 19114
+    dw 20480
+    dw 21845
+    dw 23210
+    dw 24576
+    dw 25941
+    dw 27306
+    dw 28672
+    dw 30037
+    dw 31402
+    dw 32768
+    dw 34133
+    dw 35498
+    dw 36864
+    dw 38229
+    dw 39594
+    dw 40960
+    dw 42325
+    dw 43690
+    dw 45056
+    dw 46421
+    dw 47786
+    dw 49152
+    dw 50517
+    dw 51882
+    dw 53248
+    dw 54613
+    dw 55978
+    dw 57344
+    dw 58709
+    dw 60074
+    dw 61440
+    dw 62805
+word_2FD7C     dw 64170
+    dw 1337
+    dw 2674
+    dw 4012
+    dw 5349
+    dw 6687
+    dw 8024
+    dw 9362
+    dw 10699
+    dw 12037
+    dw 13374
+    dw 14712
+    dw 16049
+    dw 17387
+    dw 18724
+    dw 20062
+    dw 21399
+    dw 22736
+    dw 24074
+    dw 25411
+    dw 26749
+    dw 28086
+    dw 29424
+    dw 30761
+    dw 32099
+    dw 33436
+    dw 34774
+    dw 36111
+    dw 37449
+    dw 38786
+    dw 40124
+    dw 41461
+    dw 42799
+    dw 44136
+    dw 45473
+    dw 46811
+    dw 48148
+    dw 49486
+    dw 50823
+    dw 52161
+    dw 53498
+    dw 54836
+    dw 56173
+    dw 57511
+    dw 58848
+    dw 60186
+    dw 61523
+    dw 62861
+    dw 64198
+nopsub_2F436 endp
 preRender_line proc far
     var_1C = byte ptr -28
      s = byte ptr 0
@@ -7442,7 +6466,7 @@ loc_317AD:
     ; align 2
     db 0
 ported_mmgr_op_unk_ endp
-preRender_default proc far
+ported_preRender_default_ proc far
     var_A = byte ptr -10
      s = byte ptr 0
      r = byte ptr 2
@@ -7454,8 +6478,8 @@ preRender_default proc far
     push    di
     mov     [bp+var_A], 1
     jmp     short loc_317CE
-preRender_default endp
-preRender_default_alt proc far
+ported_preRender_default_ endp
+ported_preRender_default_alt_ proc far
     var_A = byte ptr -10
      s = byte ptr 0
      r = byte ptr 2
@@ -7474,8 +6498,8 @@ loc_317CE:
     mov     imagefunc, ax
     mov     si, [bp+arg_6]
     jmp     short loc_3180A
-preRender_default_alt endp
-skybox_op_helper proc far
+ported_preRender_default_alt_ endp
+ported_skybox_op_helper_ proc far
     var_A = byte ptr -10
      s = byte ptr 0
      r = byte ptr 2
@@ -7487,11 +6511,11 @@ skybox_op_helper proc far
     push    di
     mov     [bp+var_A], 1
     jmp     short loc_317FB
-skybox_op_helper endp
-preRender_wheel_helper4 proc far
-    var_7D0 = byte ptr -2000
-    var_798 = byte ptr -1944
-    var_3D8 = byte ptr -984
+ported_skybox_op_helper_ endp
+ported_preRender_wheel_helper4_ proc far
+    var_7D0 = word ptr -2000
+    var_798 = word ptr -1944
+    var_3D8 = word ptr -984
     var_18 = word ptr -24
     var_16 = word ptr -22
     var_14 = word ptr -20
@@ -7501,14 +6525,14 @@ preRender_wheel_helper4 proc far
     var_C = byte ptr -12
     var_A = byte ptr -10
     var_8 = word ptr -8
-    var_6 = word ptr -6
+    var_vertlineptr = word ptr -6
     var_4 = word ptr -4
     var_2 = word ptr -2
      s = byte ptr 0
      r = byte ptr 2
-    arg_0 = word ptr 6
-    arg_2 = word ptr 8
-    arg_4 = byte ptr 10
+    arg_color = word ptr 6
+    arg_vertlinecount = word ptr 8
+    arg_vertlines = byte ptr 10
 
     push    bp
     mov     bp, sp
@@ -7521,10 +6545,10 @@ loc_317FB:
     mov     spritefunc, ax
     mov     ax, offset preRender_line
     mov     imagefunc, ax
-    lea     si, [bp+arg_4]
+    lea     si, [bp+arg_vertlines]
 loc_3180A:
-    mov     [bp+var_6], si
-    mov     cx, [bp+arg_2]
+    mov     [bp+var_vertlineptr], si
+    mov     cx, [bp+arg_vertlinecount]
     mov     ax, cx
     dec     ax
     shl     ax, 1
@@ -7547,13 +6571,12 @@ loc_3180A:
     mov     bx, [si]
     mov     dx, bx
     mov     [bp+var_10], si
-loc_31847:
     mov     [bp+var_14], si
     add     si, 4
     dec     cx
     jnz     short loc_3186D
-    push    [bp+arg_0]
-    mov     si, [bp+var_6]
+    push    [bp+arg_color]
+    mov     si, [bp+var_vertlineptr]
     push    word ptr [si+2]
     push    word ptr [si]
     push    word ptr [si+2]
@@ -7603,7 +6626,6 @@ loc_31894:
     jg      short loc_318D3
     cmp     bx, [bp+var_2]
     jl      short loc_318D3
-loc_318C5:
     cmp     ax, cs:sprite1.sprite_height
     jge     short loc_318D3
     cmp     cx, cs:sprite1.sprite_top
@@ -7616,8 +6638,8 @@ loc_318D7:
     cmp     dx, bx
     jnz     short loc_318F6
 loc_318DF:
-    push    [bp+arg_0]
-    mov     si, [bp+var_6]
+    push    [bp+arg_color]
+    mov     si, [bp+var_vertlineptr]
     push    ax
     push    dx
     push    cx
@@ -7639,7 +6661,7 @@ loc_318FD:
     add     di, 4
     cmp     di, [bp+var_8]
     jbe     short loc_3190D
-    mov     di, [bp+var_6]
+    mov     di, [bp+var_vertlineptr]
 loc_3190D:
     mov     dx, [di+2]
     cmp     dx, ax
@@ -7653,14 +6675,14 @@ loc_3190D:
     jz      short loc_3192E
     call    draw_line_related
     mov     [bp+var_16], di
-    call near ptr sub_319CD
+    call near ptr ported_preRender_helper_
     jmp     short loc_31939
     ; align 2
     db 144
 loc_3192E:
     call    draw_line_related_alt
     mov     [bp+var_16], di
-    call near ptr sub_31A67
+    call near ptr preRender_helper2
 loc_31939:
     mov     di, [bp+var_16]
     add     sp, 0Ah
@@ -7672,7 +6694,7 @@ loc_31947:
     mov     ax, [di+2]
     mov     cx, [di]
     sub     di, 4
-    cmp     di, [bp+var_6]
+    cmp     di, [bp+var_vertlineptr]
     jnb     short loc_31957
     mov     di, [bp+var_8]
 loc_31957:
@@ -7694,7 +6716,7 @@ loc_31972:
     call    draw_line_related_alt
 loc_31977:
     mov     [bp+var_16], di
-    call near ptr sub_31B5E
+    call near ptr ported_preRender_helper3_
     mov     di, [bp+var_16]
     add     sp, 0Ah
 loc_31983:
@@ -7714,7 +6736,7 @@ loc_319A6:
     sub     ax, bx
     jle     short loc_319C7
     inc     ax
-    push    [bp+arg_0]
+    push    [bp+arg_color]
     push    ax
     push    bx
     shl     bx, 1
@@ -7732,8 +6754,9 @@ loc_319C7:
     mov     sp, bp
     pop     bp
     retf
-preRender_wheel_helper4 endp
-sub_319CD proc near
+ported_preRender_wheel_helper4_ endp
+ported_preRender_helper_ proc near
+    var_18 = word ptr -24
      s = byte ptr 0
      r = byte ptr 2
 
@@ -7746,11 +6769,10 @@ sub_319CD proc near
     adc     di, 0
     sub     di, cx
     shl     di, 1
-    add     di, [bp-18h]
+    add     di, [bp+var_18]
     mov     ax, cs:sprite1.sprite_left2
     push    cx
     push    di
-loc_319EE:
     rep stosw
     pop     di
     pop     cx
@@ -7761,15 +6783,13 @@ loc_319F9:
     mov     cx, [si+18h]
     or      cx, cx
     jle     short loc_31A25
-loc_31A00:
     mov     di, [si+6]
     mov     dx, [si+4]
     add     dx, 8000h
     adc     di, 0
     sub     di, cx
     shl     di, 1
-    add     di, [bp-18h]
-loc_31A14:
+    add     di, [bp+var_18]
     mov     ax, cs:sprite1.sprite_widthsum
     push    cx
     push    di
@@ -7786,7 +6806,7 @@ loc_31A25:
     mov     di, [si+0Ah]
     inc     di
     shl     di, 1
-    add     di, [bp-18h]
+    add     di, [bp+var_18]
     mov     ax, cs:sprite1.sprite_left2
     push    cx
     push    di
@@ -7799,11 +6819,11 @@ loc_31A25:
 loc_31A46:
     mov     cx, [si+1Ah]
     or      cx, cx
-    jle     short sub_31A67
+    jle     short preRender_helper2
     mov     di, [si+0Ah]
     inc     di
     shl     di, 1
-    add     di, [bp-18h]
+    add     di, [bp+var_18]
     mov     ax, cs:sprite1.sprite_widthsum
     push    cx
     push    di
@@ -7813,15 +6833,17 @@ loc_31A46:
     add     di, 3C0h
     dec     ax
     rep stosw
-sub_319CD endp
-sub_31A67 proc near
+ported_preRender_helper_ endp
+preRender_helper2 proc near
+    var_18 = word ptr -24
+     r = byte ptr 0
 
     mov     cx, [si+0Eh]
     or      cx, cx
     jle     short locret_31AA3
     mov     di, [si+6]
     shl     di, 1
-    add     di, [bp-18h]
+    add     di, [bp+var_18]
     mov     bl, [si+12h]
     xor     bh, bh
     shl     bx, 1
@@ -7940,19 +6962,23 @@ loc_31B55:
     dec     ax
     mov     [di+3C0h], ax
     retn
-sub_31A67 endp
-sub_31B5E proc near
+preRender_helper2 endp
+ported_preRender_helper3_ proc near
+    var_18 = word ptr -24
+    var_C = byte ptr -12
+    var_A = byte ptr -10
+     r = byte ptr 0
 
     mov     cx, [si+0Eh]
     or      cx, cx
     jle     short loc_31BA8
     mov     di, [si+6]
     shl     di, 1
-    add     di, [bp-18h]
+    add     di, [bp+var_18]
     mov     bl, [si+12h]
     xor     bh, bh
     shl     bx, 1
-    cmp     byte ptr [bp-0Ah], 0
+    cmp     [bp+var_A], 0   ; var_A is 1 when calling prerender_default, or 0 when calling prerender_default_alt
     jnz     short loc_31B7F
     jmp     cs:off_31CF7[bx]
 loc_31B7F:
@@ -8382,7 +7408,7 @@ loc_31EB3:
     jmp     short loc_31EB9
     db 144
 loc_31EB9:
-    cmp     byte ptr [bp-0Ch], 0
+    cmp     [bp+var_C], 0
     jnz     short loc_31EC0
     retn
 loc_31EC0:
@@ -8395,7 +7421,7 @@ loc_31EC0:
     adc     di, 0
     sub     di, cx
     shl     di, 1
-    add     di, [bp-18h]
+    add     di, [bp+var_18]
     mov     ax, cs:sprite1.sprite_left2
     rep stosw
 loc_31EE1:
@@ -8408,7 +7434,7 @@ loc_31EE1:
     adc     di, 0
     sub     di, cx
     shl     di, 1
-    add     di, [bp-18h]
+    add     di, [bp+var_18]
     add     di, 3C0h
     mov     ax, cs:sprite1.sprite_widthsum
     dec     ax
@@ -8420,7 +7446,7 @@ loc_31F07:
     mov     di, [si+0Ah]
     inc     di
     shl     di, 1
-    add     di, [bp-18h]
+    add     di, [bp+var_18]
     mov     ax, cs:sprite1.sprite_left2
     rep stosw
 loc_31F1D:
@@ -8430,77 +7456,126 @@ loc_31F1D:
     mov     di, [si+0Ah]
     inc     di
     shl     di, 1
-    add     di, [bp-18h]
+    add     di, [bp+var_18]
     add     di, 3C0h
     mov     ax, cs:sprite1.sprite_widthsum
     dec     ax
     rep stosw
 locret_31F38:
     retn
+ported_preRender_helper3_ endp
+nopsub_31F39 proc far
+    var_7D0 = word ptr -2000
+    var_798 = byte ptr -1944
+    var_3D8 = byte ptr -984
+    var_18 = word ptr -24
+    var_16 = word ptr -22
+    var_14 = word ptr -20
+    var_12 = word ptr -18
+    var_10 = word ptr -16
+    var_E = word ptr -14
+    var_C = byte ptr -12
+    var_A = byte ptr -10
+    var_8 = word ptr -8
+    var_6 = word ptr -6
+    var_4 = word ptr -4
+    var_2 = word ptr -2
+     s = byte ptr 0
+     r = byte ptr 2
+    arg_0 = word ptr 6
+    arg_2 = word ptr 8
+    arg_4 = byte ptr 10
+
     push    bp
     mov     bp, sp
     sub     sp, 7D0h
     push    si
     push    di
-    mov     byte ptr [bp-0Ah], 1
+    mov     [bp+var_A], 1
     mov     ax, offset draw_filled_lines
     mov     spritefunc, ax
     mov     ax, 49A0h
     mov     imagefunc, ax
     jmp     short loc_31F6E
     db 144
+nopsub_31F39 endp
+nopsub_31F55 proc near
+    var_A = byte ptr -10
+     s = byte ptr 0
+     r = byte ptr 2
+
     push    bp
     mov     bp, sp
     sub     sp, 7D0h
     push    si
     push    di
-    mov     byte ptr [bp-0Ah], 0
+    mov     [bp+var_A], 0
     mov     ax, offset draw_filled_lines
     mov     spritefunc, ax
     mov     ax, 49A0h
     mov     imagefunc, ax
+    var_7D0 = word ptr -2000
+    var_798 = byte ptr -1944
+    var_3D8 = byte ptr -984
+    var_18 = word ptr -24
+    var_16 = word ptr -22
+    var_14 = word ptr -20
+    var_12 = word ptr -18
+    var_10 = word ptr -16
+    var_E = word ptr -14
+    var_C = byte ptr -12
+    var_A = byte ptr -10
+    var_8 = word ptr -8
+    var_6 = word ptr -6
+    var_4 = word ptr -4
+    var_2 = word ptr -2
+     s = byte ptr 0
+     r = byte ptr 2
+    arg_0 = word ptr 6
+    arg_2 = word ptr 8
+    arg_4 = byte ptr 10
 loc_31F6E:
-    lea     si, [bp+0Ah]
-    mov     [bp-6], si
-    mov     cx, [bp+8]
+    lea     si, [bp+arg_4]
+    mov     [bp+var_6], si
+    mov     cx, [bp+arg_2]
     mov     ax, cx
     dec     ax
     shl     ax, 1
     add     ax, si
-    mov     [bp-8], ax
+    mov     [bp+var_8], ax
     cld
     mov     ax, ss
     mov     es, ax
-    lea     ax, [bp-798h]
-    mov     [bp-18h], ax
+    lea     ax, [bp+var_798]
+    mov     [bp+var_18], ax
     mov     ax, cs:sprite1.sprite_left2
-    mov     [bp-2], ax
+    mov     [bp+var_2], ax
     mov     ax, cs:sprite1.sprite_widthsum
     dec     ax
-    mov     [bp-4], ax
+    mov     [bp+var_4], ax
     mov     di, [si]
     mov     ax, [di+6]
     sub     ax, [di+14h]
     sub     ax, [di+18h]
-    mov     [bp-0Eh], ax
+    mov     [bp+var_E], ax
     mov     ax, [di+0Ah]
     add     ax, [di+16h]
     add     ax, [di+1Ah]
-    mov     [bp-12h], ax
-    mov     word ptr [bp-7D0h], 3
+    mov     [bp+var_12], ax
+    mov     [bp+var_7D0], 3
     mov     bx, [di+2]
     mov     dx, [di+8]
     cmp     bx, dx
     jle     short loc_31FC8
     xchg    bx, dx
 loc_31FC8:
-    mov     [bp-10h], si
-    mov     [bp-14h], si
+    mov     [bp+var_10], si
+    mov     [bp+var_14], si
     add     si, 2
     dec     cx
     jnz     short loc_31FE8
-    mov     ax, [bp+6]
-    mov     [bp+di+6], ax
+    mov     ax, [bp+arg_0]
+    mov     [bp+di+arg_0], ax
     push    di
     call    dword ptr imagefunc
     add     sp, 2
@@ -8514,47 +7589,87 @@ loc_31FE8:
     mov     ax, [di+6]
     sub     ax, [di+14h]
     sub     ax, [di+18h]
-    cmp     ax, [bp-0Eh]
+    cmp     ax, [bp+var_E]
     jg      short loc_32010
     jnz     short loc_32002
-    test    word ptr [bp-7D0h], 1
+    test    [bp+var_7D0], 1
     jz      short loc_32015
 loc_32002:
-    mov     [bp-0Eh], ax
-    mov     [bp-10h], si
+    mov     [bp+var_E], ax
+    mov     [bp+var_10], si
 smart
-    or      word ptr [bp-7D0h], 1
+    or      [bp+var_7D0], 1
 nosmart
     jmp     short loc_32015
     ; align 2
     db 144
+    var_7D0 = word ptr -2000
+    var_798 = byte ptr -1944
+    var_3D8 = byte ptr -984
+    var_18 = word ptr -24
+    var_16 = word ptr -22
+    var_14 = word ptr -20
+    var_12 = word ptr -18
+    var_10 = word ptr -16
+    var_E = word ptr -14
+    var_C = byte ptr -12
+    var_A = byte ptr -10
+    var_8 = word ptr -8
+    var_6 = word ptr -6
+    var_4 = word ptr -4
+    var_2 = word ptr -2
+     s = byte ptr 0
+     r = byte ptr 2
+    arg_0 = word ptr 6
+    arg_2 = word ptr 8
+    arg_4 = byte ptr 10
 loc_32010:
 smart
 smart
-    and     word ptr [bp-7D0h], 2
+    and     [bp+var_7D0], 2
 nosmart
 loc_32015:
     mov     ax, [di+0Ah]
     add     ax, [di+16h]
     add     ax, [di+1Ah]
-    cmp     ax, [bp-12h]
+    cmp     ax, [bp+var_12]
     jl      short loc_3203B
     jnz     short loc_3202D
 loc_32025:
-    test    word ptr [bp-7D0h], 2
+    test    [bp+var_7D0], 2
     jnz     short loc_32040
 loc_3202D:
-    mov     [bp-12h], ax
-    mov     [bp-14h], si
+    mov     [bp+var_12], ax
+    mov     [bp+var_14], si
 smart
-    or      word ptr [bp-7D0h], 2
+    or      [bp+var_7D0], 2
 nosmart
     jmp     short loc_32040
     db 144
+    var_7D0 = word ptr -2000
+    var_798 = byte ptr -1944
+    var_3D8 = byte ptr -984
+    var_18 = word ptr -24
+    var_16 = word ptr -22
+    var_14 = word ptr -20
+    var_12 = word ptr -18
+    var_10 = word ptr -16
+    var_E = word ptr -14
+    var_C = byte ptr -12
+    var_A = byte ptr -10
+    var_8 = word ptr -8
+    var_6 = word ptr -6
+    var_4 = word ptr -4
+    var_2 = word ptr -2
+     s = byte ptr 0
+     r = byte ptr 2
+    arg_0 = word ptr 6
+    arg_2 = word ptr 8
+    arg_4 = byte ptr 10
 loc_3203B:
 smart
 smart
-    and     word ptr [bp-7D0h], 1
+    and     [bp+var_7D0], 1
 nosmart
 loc_32040:
     mov     ax, [di+2]
@@ -8577,34 +7692,34 @@ loc_32058:
 loc_3205E:
     add     si, 2
     loop    loc_31FE8
-    cmp     dx, [bp-2]
+    cmp     dx, [bp+var_2]
     jl      short loc_320B6
-    cmp     bx, [bp-4]
+    cmp     bx, [bp+var_4]
     jge     short loc_320B6
-    mov     ax, [bp-12h]
+    mov     ax, [bp+var_12]
     cmp     ax, cs:sprite1.sprite_top
     jl      short loc_320B6
-    mov     cx, [bp-0Eh]
+    mov     cx, [bp+var_E]
     cmp     cx, cs:sprite1.sprite_height
     jge     short loc_320B6
-    mov     byte ptr [bp-0Ch], 0
-    cmp     dx, [bp-4]
+    mov     [bp+var_C], 0
+    cmp     dx, [bp+var_4]
     jg      short loc_3209D
-    cmp     bx, [bp-2]
+    cmp     bx, [bp+var_2]
     jl      short loc_3209D
     cmp     ax, cs:sprite1.sprite_height
     jge     short loc_3209D
     cmp     cx, cs:sprite1.sprite_top
     jge     short loc_320A1
 loc_3209D:
-    mov     byte ptr [bp-0Ch], 1
+    mov     [bp+var_C], 1
 loc_320A1:
     cmp     ax, cx
     jz      short loc_320A9
     cmp     dx, bx
     jnz     short loc_320BC
 loc_320A9:
-    mov     si, [bp-6]
+    mov     si, [bp+var_6]
     mov     di, [si]
     push    di
     call    dword ptr imagefunc
@@ -8616,55 +7731,75 @@ loc_320B6:
     pop     bp
     retf
 loc_320BC:
-    mov     di, [bp-10h]
+    mov     di, [bp+var_10]
 loc_320BF:
     mov     si, [di]
     cmp     byte ptr [si+12h], 2
     jl      short loc_320DC
-    mov     [bp-16h], di
-    cmp     byte ptr [bp-0Ch], 0
+    mov     [bp+var_16], di
+    cmp     [bp+var_C], 0
     jz      short loc_320D6
-    call near ptr sub_319CD
+    call near ptr ported_preRender_helper_
     jmp     short loc_320D9
     ; align 2
     db 144
+    var_7D0 = word ptr -2000
+    var_798 = byte ptr -1944
+    var_3D8 = byte ptr -984
+    var_18 = word ptr -24
+    var_16 = word ptr -22
+    var_14 = word ptr -20
+    var_12 = word ptr -18
+    var_10 = word ptr -16
+    var_E = word ptr -14
+    var_C = byte ptr -12
+    var_A = byte ptr -10
+    var_8 = word ptr -8
+    var_6 = word ptr -6
+    var_4 = word ptr -4
+    var_2 = word ptr -2
+     s = byte ptr 0
+     r = byte ptr 2
+    arg_0 = word ptr 6
+    arg_2 = word ptr 8
+    arg_4 = byte ptr 10
 loc_320D6:
-    call near ptr sub_31A67
+    call near ptr preRender_helper2
 loc_320D9:
-    mov     di, [bp-16h]
+    mov     di, [bp+var_16]
 loc_320DC:
-    cmp     di, [bp-14h]
+    cmp     di, [bp+var_14]
     jz      short loc_320EE
     add     di, 2
-    cmp     di, [bp-8]
+    cmp     di, [bp+var_8]
     jbe     short loc_320BF
-    mov     di, [bp-6]
+    mov     di, [bp+var_6]
     jmp     short loc_320BF
 loc_320EE:
-    mov     di, [bp-10h]
+    mov     di, [bp+var_10]
 loc_320F1:
     sub     di, 2
-    cmp     di, [bp-6]
+    cmp     di, [bp+var_6]
     jnb     short loc_320FC
-    mov     di, [bp-8]
+    mov     di, [bp+var_8]
 loc_320FC:
-    cmp     di, [bp-14h]
+    cmp     di, [bp+var_14]
     jz      short loc_32114
     mov     si, [di]
     cmp     byte ptr [si+12h], 2
     jl      short loc_320F1
-    mov     [bp-16h], di
-    call near ptr sub_31B5E
-    mov     di, [bp-16h]
+    mov     [bp+var_16], di
+    call near ptr ported_preRender_helper3_
+    mov     di, [bp+var_16]
     jmp     short loc_320F1
 loc_32114:
-    mov     ax, [bp-12h]
+    mov     ax, [bp+var_12]
     cmp     ax, cs:sprite1.sprite_height
     jl      short loc_32123
     mov     ax, cs:sprite1.sprite_height
     dec     ax
 loc_32123:
-    mov     bx, [bp-0Eh]
+    mov     bx, [bp+var_E]
     cmp     bx, cs:sprite1.sprite_top
     jge     short loc_32132
     mov     bx, cs:sprite1.sprite_top
@@ -8672,14 +7807,14 @@ loc_32132:
     sub     ax, bx
     jle     short loc_32153
     inc     ax
-    push    word ptr [bp+6]
+    push    [bp+arg_0]
     push    ax
     push    bx
     shl     bx, 1
-    lea     ax, [bp-3D8h]
+    lea     ax, [bp+var_3D8]
     add     ax, bx
     push    ax
-    lea     ax, [bp-798h]
+    lea     ax, [bp+var_798]
     add     ax, bx
     push    ax
     call    dword ptr spritefunc
@@ -8692,8 +7827,8 @@ loc_32153:
     retf
     ; align 2
     db 0
-sub_31B5E endp
-sub_3215A proc far
+nopsub_31F55 endp
+nopsub_3215A proc far
      r = byte ptr 0
 
     push    di
@@ -8706,8 +7841,8 @@ sub_3215A proc far
     rep stosw
     pop     di
     retf
-sub_3215A endp
-sub_3216C proc far
+nopsub_3215A endp
+nopsub_3216C proc far
      r = byte ptr 0
 
     push    si
@@ -8735,8 +7870,8 @@ sub_3216C proc far
     pop     di
     pop     si
     retf
-sub_3216C endp
-sub_3219D proc far
+nopsub_3216C endp
+nopsub_3219D proc far
 
     pop     ax
     mov     word_40332, ax
@@ -8769,7 +7904,7 @@ loc_321D1:
     mov     bx, word_40330
     cmp     bx, 0FA0h
     jl      short loc_321F3
-    call    sub_3216C
+    call    nopsub_3216C
     mov     bx, 0F00h
     mov     word_40330, bx
 loc_321F3:
@@ -8789,7 +7924,7 @@ loc_3220C:
     jnz     short loc_3223A
     cmp     word_40330, 0F00h
     jle     short loc_32226
-    call    sub_3216C
+    call    nopsub_3216C
     mov     word_40330, 0F00h
     jmp     short loc_321D1
 loc_32226:
@@ -8811,7 +7946,7 @@ loc_3223A:
 loc_3224D:
     cmp     dl, 0Ch
     jnz     short loc_32260
-    call    sub_3215A
+    call    nopsub_3215A
     mov     word_40330, 0
     jmp     loc_321D1
 loc_32260:
@@ -8834,7 +7969,7 @@ loc_3226F:
     add     ax, dx
     mov     word_40330, ax
     mov     ax, 4BC6h
-    push    ax
+    push    ax              ; char *
     call    _sprintf
     sub     sp, 2
     mov     byte_4032B, 0
@@ -8853,38 +7988,58 @@ loc_322AF:
     mov     byte_4032A, al
     pop     bp
     retf
+nopsub_3219D endp
+nopsub_322B4 proc far
+     s = byte ptr 0
+     r = byte ptr 2
+    arg_0 = word ptr 6
+
     push    bp
     mov     bp, sp
-    mov     ax, [bp+6]
+    mov     ax, [bp+arg_0]
     mov     byte_4032C, al
     pop     bp
     retf
     ; align 2
     db 0
+nopsub_322B4 endp
+nopsub_322C0 proc far
+     s = byte ptr 0
+     r = byte ptr 2
+    arg_0 = word ptr 6
+    arg_2 = word ptr 8
+
     push    bp
     mov     bp, sp
-    mov     ax, [bp+6]
+    mov     ax, [bp+arg_0]
     mov     projectiondata4, ax
     add     ax, projectiondata3
     mov     projectiondata5, ax
-    mov     ax, [bp+8]
+    mov     ax, [bp+arg_2]
     mov     projectiondata7, ax
     add     ax, projectiondata6
     mov     projectiondata8, ax
     pop     bp
     retf
+nopsub_322C0 endp
+nopsub_322DF proc far
+     s = byte ptr 0
+     r = byte ptr 2
+    arg_0 = word ptr 6
+    arg_2 = word ptr 8
+
     push    bp
     mov     bp, sp
     push    si
     push    di
-    mov     ax, [bp+6]
+    mov     ax, [bp+arg_0]
     mov     projectiondata1, ax
-    mov     ax, [bp+8]
+    mov     ax, [bp+arg_2]
     mov     projectiondata2, ax
     jmp     short loc_32334
     db 144
-sub_3219D endp
-set_projection proc far
+nopsub_322DF endp
+ported_set_projection_ proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -8943,7 +8098,6 @@ loc_32334:
     mov     di, dx
     push    projectiondata1
     call    sin_fast
-loc_3236F:
     add     sp, 2
     mov     cx, ax
     mov     dx, di
@@ -8989,7 +8143,7 @@ loc_323B4:
     pop     si
     pop     bp
     retf
-set_projection endp
+ported_set_projection_ endp
 ported_vector_to_point_ proc far
      s = byte ptr 0
      r = byte ptr 2
@@ -9752,7 +8906,7 @@ loc_32882:
     pop     bp
     retf
 font_op2 endp
-preRender_patterned proc far
+ported_preRender_patterned_ proc far
     var_A = byte ptr -10
      s = byte ptr 0
      r = byte ptr 2
@@ -9788,7 +8942,7 @@ loc_328A8:
     mov     ax, offset preRender_line
     mov     imagefunc, ax
     jmp     loc_3180A
-preRender_patterned endp
+ported_preRender_patterned_ endp
 nopsub_328C9 proc far
     var_A = byte ptr -10
      s = byte ptr 0
@@ -14287,24 +13441,35 @@ loc_34730:
     jmp     short loc_346FC
     ; align 2
     db 0
+draw_filled_lines endp
+nopsub_34736 proc far
+    var_4 = word ptr -4
+    var_2 = word ptr -2
+     s = byte ptr 0
+     r = byte ptr 2
+    arg_0 = word ptr 6
+    arg_2 = word ptr 8
+    arg_4 = word ptr 10
+    arg_6 = word ptr 12
+
     push    bp
     mov     bp, sp
     sub     sp, 0Ah
     push    ds
     push    si
     push    di
-    mov     ds, word ptr [bp+8]
-    mov     di, [bp+6]
-    mov     ax, [bp+0Ah]
+    mov     ds, [bp+arg_2]
+    mov     di, [bp+arg_0]
+    mov     ax, [bp+arg_4]
     sub     ax, [di+4]
-    mov     [bp-2], ax
-    mov     ax, [bp+0Ch]
+    mov     [bp+var_2], ax
+    mov     ax, [bp+arg_6]
     sub     ax, [di+6]
-    mov     [bp-4], ax
+    mov     [bp+var_4], ax
     jmp     short loc_34799
     ; align 2
     db 144
-draw_filled_lines endp
+nopsub_34736 endp
 sprite_clear_shape_alt proc far
     var_4 = word ptr -4
     var_2 = word ptr -2
@@ -19789,6 +18954,7 @@ loc_3619A:
     jnz     short loc_3618A
 loc_3619E:
     mov     es, [bp+var_8]
+loc_361A1:
     mov     di, [bp+var_10]
 loc_361A4:
     mov     ds, [bp+arg_6]

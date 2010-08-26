@@ -288,10 +288,11 @@ struct MATRIX* mat_rot_zxy(int z, int x, int y, int unk) {
 	mat_rot_x(&mat_x_rot, x);
 	
 	// y rotation matrix cache
-	if (mat_y_rot_angle != y) {
+	/*if (mat_y_rot_angle != y) {
 		mat_rot_y(&mat_y_rot, y);
 		mat_y_rot_angle = y;
-	}
+	}*/
+	mat_rot_y(&mat_y_rot, y);
 	
 	if ((unk & 1) != 0) {
 		mat_multiply(&mat_y_rot, &mat_x_rot, &mat_rot_temp);

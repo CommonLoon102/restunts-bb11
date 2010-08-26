@@ -327,11 +327,14 @@ loc_39CA8:
     mov     ax, si
     mov     dx, ds
     inc     si
+loc_39CB2:
     inc     di
     loop    loc_39CA8
     mov     word ptr [bp+arg_srcptr], si; ??
+loc_39CB8:
     mov     word ptr [bp+arg_srcptr+2], ds; ??
     mov     ds, [bp+var_6]
+loc_39CBE:
     mov     word ptr [bp+arg_destptr], di; ??
     mov     word ptr [bp+arg_destptr+2], es; ??
 loc_39CC4:

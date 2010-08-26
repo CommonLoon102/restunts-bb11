@@ -4476,6 +4476,7 @@ loc_2CC38:
     inc     [bp+var_38C]
 loc_2CC3C:
     cmp     [bp+var_38C], 1Eh
+loc_2CC41:
     jnb     short loc_2CC4C
 loc_2CC43:
     mov     [bp+var_388], 0

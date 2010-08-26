@@ -587,6 +587,8 @@ static PortFuncName(labelname) {
 		labelname == "vector_op_unk" || 
 		labelname == "vector_op_unk2" || 
 		labelname == "vector_to_point" || 
+		labelname == "set_projection" ||
+		labelname == "select_cliprect_rotate" ||
 		labelname == "mat_mul_vector" || 
 		labelname == "mat_multiply" || 
 		labelname == "mat_invert" || 
@@ -594,6 +596,9 @@ static PortFuncName(labelname) {
 		labelname == "mat_rot_y" || 
 		labelname == "mat_rot_z" || 
 		labelname == "mat_rot_zxy" || 
+		labelname == "polyinfo_reset" || 
+		labelname == "init_polyinfo" || 
+		labelname == "calc_sincos80" ||
 
 		labelname == "file_find" ||
 		labelname == "file_find_next" ||
@@ -662,6 +667,19 @@ static PortFuncName(labelname) {
 		labelname == "transformed_shape_op_helper" ||
 		labelname == "transformed_shape_op_helper2" ||
 		labelname == "transformed_shape_op_helper3" ||
+		labelname == "get_a_poly_info" ||
+		labelname == "preRender_default" ||
+		labelname == "preRender_default_alt" ||
+		labelname == "skybox_op_helper" ||
+		labelname == "preRender_wheel_helper4" ||
+		labelname == "preRender_unk" ||
+		labelname == "preRender_patterned" ||
+		labelname == "preRender_helper" ||
+		//labelname == "preRender_helper2" ||
+		labelname == "preRender_helper3" ||
+
+		labelname == "draw_line_related" ||
+		labelname == "draw_line_related_alt" ||
 
 		labelname == "sprite_make_wnd" ||
 		labelname == "sprite_free_wnd" ||

@@ -616,6 +616,7 @@ dseg segment byte public 'STUNTSD' use16
     public word_3EA3A
     public word_3EA3C
     public game_camera_buttons_y2
+    public word_3EA46
     public word_3EA4C
     public word_3EA4E
     public gameunk_button_x1
@@ -14237,7 +14238,7 @@ game_camera_buttons_y2     dw 193
     dw 193
     dw 173
     dw 173
-    dw 173
+word_3EA46     dw 173
     dw 173
     dw 173
 word_3EA4C     dw 193

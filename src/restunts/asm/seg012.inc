@@ -6,27 +6,26 @@ seg012 segment byte public 'STUNTSC' use16
     extrn set_add_value:proc
     extrn sub_2EB07:proc
     extrn sub_2EB1E:proc
-    extrn draw_line_related_alt:proc
-    extrn draw_line_related:proc
+    extrn ported_draw_line_related_alt_:proc
+    extrn ported_draw_line_related_:proc
     extrn loc_2EB62
     extrn off_2ECB9:word
-    extrn off_2ECD1:word
     extrn word_2ECF8:word
     extrn word_2EDBD:word
     extrn word_2EE82:word
     extrn word_2F02B:word
-    extrn sub_2F314:proc
-    extrn sub_2F334:proc
+    extrn parse_shape2d_helper:proc
+    extrn parse_shape2d_helper2:proc
     extrn word_2F354:word
     extrn word_2F356:word
     extrn word_2F358:word
     extrn word_2F35A:word
-    extrn sub_2F35C:proc
+    extrn criterr_interrupt_handler:proc
     extrn set_criterr_handler:proc
-    extrn sub_2F3BC:proc
-    extrn preRender_unk:proc
-    extrn sub_2F424:proc
-    extrn sub_2F436:proc
+    extrn criterr_exithandler:proc
+    extrn ported_preRender_unk_:proc
+    extrn nopsub_2F424:proc
+    extrn nopsub_2F436:proc
     extrn word_2F448:word
     extrn off_2F44A:word
     extrn off_2F4AC:word
@@ -50,35 +49,35 @@ seg012 segment byte public 'STUNTSC' use16
     extrn word_2F5DE:word
     extrn word_2F602:word
     extrn word_2F628:word
-    extrn unk_2F650:byte
-    extrn unk_2F67A:byte
-    extrn unk_2F6A6:byte
-    extrn unk_2F6D4:byte
-    extrn unk_2F704:byte
-    extrn unk_2F736:byte
-    extrn unk_2F76A:byte
-    extrn unk_2F790:byte
-    extrn unk_2F7A0:byte
-    extrn unk_2F7D8:byte
-    extrn unk_2F812:byte
-    extrn unk_2F84E:byte
-    extrn unk_2F88C:byte
-    extrn unk_2F8CC:byte
-    extrn unk_2F90E:byte
-    extrn unk_2F952:byte
-    extrn unk_2F998:byte
-    extrn unk_2F9E0:byte
-    extrn unk_2FA2A:byte
-    extrn unk_2FA76:byte
-    extrn unk_2FAC4:byte
-    extrn unk_2FB14:byte
-    extrn unk_2FB66:byte
-    extrn unk_2FBBA:byte
-    extrn unk_2FC10:byte
-    extrn unk_2FC68:byte
-    extrn unk_2FCC2:byte
-    extrn unk_2FD1E:byte
-    extrn unk_2FD7C:byte
+    extrn word_2F650:word
+    extrn word_2F67A:word
+    extrn word_2F6A6:word
+    extrn word_2F6D4:word
+    extrn word_2F704:word
+    extrn word_2F736:word
+    extrn word_2F76A:word
+    extrn word_2F790:word
+    extrn word_2F7A0:word
+    extrn word_2F7D8:word
+    extrn word_2F812:word
+    extrn word_2F84E:word
+    extrn word_2F88C:word
+    extrn word_2F8CC:word
+    extrn word_2F90E:word
+    extrn word_2F952:word
+    extrn word_2F998:word
+    extrn word_2F9E0:word
+    extrn word_2FA2A:word
+    extrn word_2FA76:word
+    extrn word_2FAC4:word
+    extrn word_2FB14:word
+    extrn word_2FB66:word
+    extrn word_2FBBA:word
+    extrn word_2FC10:word
+    extrn word_2FC68:word
+    extrn word_2FCC2:word
+    extrn word_2FD1E:word
+    extrn word_2FD7C:word
     extrn preRender_line:proc
     extrn add_exit_handler:proc
     extrn call_exitlist:proc
@@ -167,24 +166,29 @@ seg012 segment byte public 'STUNTSC' use16
     extrn ported_mmgr_get_chunk_size_:proc
     extrn ported_mmgr_resize_memory_:proc
     extrn ported_mmgr_op_unk_:proc
-    extrn preRender_default:proc
-    extrn preRender_default_alt:proc
+    extrn ported_preRender_default_:proc
+    extrn ported_preRender_default_alt_:proc
     extrn loc_317CE
-    extrn skybox_op_helper:proc
-    extrn preRender_wheel_helper4:proc
+    extrn ported_skybox_op_helper_:proc
+    extrn ported_preRender_wheel_helper4_:proc
     extrn loc_317FB
     extrn loc_3180A
-    extrn sub_319CD:proc
-    extrn sub_31A67:proc
+    extrn ported_preRender_helper_:proc
+    extrn preRender_helper2:proc
     extrn off_31A82:word
     extrn locret_31AA3
-    extrn sub_31B5E:proc
+    extrn ported_preRender_helper3_:proc
     extrn off_31B84:word
     extrn off_31CF7:word
-    extrn sub_3215A:proc
-    extrn sub_3216C:proc
-    extrn sub_3219D:proc
-    extrn set_projection:proc
+    extrn nopsub_31F39:proc
+    extrn nopsub_31F55:proc
+    extrn nopsub_3215A:proc
+    extrn nopsub_3216C:proc
+    extrn nopsub_3219D:proc
+    extrn nopsub_322B4:proc
+    extrn nopsub_322C0:proc
+    extrn nopsub_322DF:proc
+    extrn ported_set_projection_:proc
     extrn loc_32334
     extrn ported_vector_to_point_:proc
     extrn ported_sprite_free_wnd_:proc
@@ -217,7 +221,7 @@ seg012 segment byte public 'STUNTSC' use16
     extrn font_op2:proc
     extrn loc_3284A
     extrn loc_32882
-    extrn preRender_patterned:proc
+    extrn ported_preRender_patterned_:proc
     extrn nopsub_328C9:proc
     extrn nopsub_328DB:proc
     extrn ported_mat_mul_vector_:proc
@@ -307,6 +311,7 @@ seg012 segment byte public 'STUNTSC' use16
     extrn video_set_palette:proc
     extrn loc_346A8
     extrn draw_filled_lines:proc
+    extrn nopsub_34736:proc
     extrn sprite_clear_shape_alt:proc
     extrn sprite_clear_shape:proc
     extrn loc_34799

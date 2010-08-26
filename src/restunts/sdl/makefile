@@ -1,7 +1,7 @@
 SDLPATH = s:\src\sdl
-CC = cl /MD /c /EHsc /I$(SDLPATH)\include /I../c /DRESTUNTS_SDL
+CC = cl /MD /c /EHsc /I$(SDLPATH)\include /I../c /DRESTUNTS_SDL /Zi
 LINK = cl
-LINKFLAGS = /link /LIBPATH:$(SDLPATH)\lib /SUBSYSTEM:console
+LINKFLAGS = /link /LIBPATH:$(SDLPATH)\lib /SUBSYSTEM:console /DEBUG
 OBJDIR = build
 
 CTARGETS = $(OBJDIR)\fileio.obj $(OBJDIR)\memmgr.obj $(OBJDIR)\shape3d.obj $(OBJDIR)\math.obj

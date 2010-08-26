@@ -4,6 +4,7 @@
 #include "fileio.h"
 #include "memmgr.h"
 #include "shape3d.h"
+#include "shape2d.h"
 
 /*
 
@@ -82,7 +83,7 @@ void shape3d_init_shape(char far* shapeptr, struct SHAPE3D* gameshape) {
 	gameshape->shape3d_numverts = hdr->header_numverts;
 	gameshape->shape3d_numprimitives = hdr->header_numprimitives;
 	gameshape->shape3d_numpaints = hdr->header_numpaints;
-	gameshape->shape3d_verts = shapeptr + 4;
+	gameshape->shape3d_verts = shapeptr + 4; // TODO: deserialize from 16 bit to "int" (on 32bit)
 	gameshape->shape3d_cull1 = shapeptr + hdr->header_numverts * 6 + 4;
 	gameshape->shape3d_cull2 = shapeptr + hdr->header_numprimitives * 4 + hdr->header_numverts * 6 + 4;
 	gameshape->shape3d_primitives = shapeptr + hdr->header_numprimitives * 8 + hdr->header_numverts * 6 + 4;
@@ -2364,7 +2365,7 @@ loc_25D3C:
 		temp0 = var_18 / transshapenumvertscopy;
 	}
 	
-	((unsigned int far*)transshapepolyinfo)[0] = temp0;
+	((unsigned short far*)transshapepolyinfo)[0] = temp0;
 	
 	
 	if ((transshapeflags & 1) != 0 || (var_primitiveflags & 2) != 0) {
@@ -2554,7 +2555,16 @@ char transformed_shape_op_helper3(struct POINT2D far* pts) {
 	return temp <= 0 ? 0 : 1;
 }
 
+extern unsigned projectiondata1;
+extern unsigned projectiondata2;
+extern unsigned projectiondata3;
+extern unsigned projectiondata4;
+extern unsigned projectiondata5;
+extern unsigned projectiondata6;
+extern unsigned projectiondata7;
+extern unsigned projectiondata8;
 extern unsigned projectiondata9;
+extern unsigned projectiondata10;
 
 unsigned transformed_shape_op_helper2(unsigned i1, int i2) {
 	return projectiondata9 * i1 / i2;
@@ -2588,8 +2598,2355 @@ extern unsigned transformed_shape_op_helper(unsigned arg_0, unsigned arg_2) {
 	}
 	word_45D98 = word_40ED6[word_45D98];
 	polyinfonumpolys++;
-	polyinfoptrnext += (transshapenumvertscopy << 2) + 6;
+	polyinfoptrnext += (transshapenumvertscopy * sizeof(struct POINT2D)) + 6; // TODO: sizeof POINT2D?
 	if (polyinfonumpolys == 0x190) return 1;
 	if (polyinfoptrnext <= 0x2872) return 0;
 	return 1;
+}
+
+void set_projection(int i1, int i2, int i3, int i4) {
+	
+	projectiondata1 = (((long)i1 << 11) / 0x168) >> 1;
+	projectiondata2 = (((long)i2 << 11) / 0x168) >> 1;
+	projectiondata3 = i3 >> 1;
+	projectiondata5 = projectiondata3 + projectiondata4;
+	projectiondata6 = i4 >> 1;
+	projectiondata8 = projectiondata6 + projectiondata7;
+	projectiondata9 = (long)cos_fast(projectiondata1) * projectiondata3 / sin_fast(projectiondata1);
+
+	if (projectiondata2 != 0) {
+		projectiondata10 = (long)cos_fast(projectiondata2) * projectiondata6 / sin_fast(projectiondata2);
+	} else {
+		projectiondata10 = projectiondata9 - (projectiondata9 >> 3) - (projectiondata9 >> 4);
+		projectiondata2 = polarAngle(projectiondata10, projectiondata6);
+	}
+	
+}
+
+extern struct RECTANGLE select_rect_rc;
+//extern unsigned word_411F6;
+extern struct MATRIX mat_y0, mat_y100, mat_y200, mat_y300;
+extern long sin80, cos80, sin80_2, cos80_2;
+
+unsigned select_cliprect_rotate(int angZ, int angX, int angY, struct RECTANGLE* cliprect, int unk) {
+	struct MATRIX* matptr;
+	struct VECTOR vec, vec2;
+
+	//return ported_select_cliprect_rotate_(angX, angY, angZ, cliprect, unk);
+	
+	mat_temp = *mat_rot_zxy(angZ, angX, angY, 1);
+	polyinfo_reset();
+	select_rect_rc = *cliprect;
+	select_rect_param = unk;
+	matptr = mat_rot_zxy(-angZ, -angX, -angY, 0);
+	vec.z = 0x2710;
+	vec.y = 0;
+	vec.x = 0;
+	mat_mul_vector(&vec, matptr, &vec2);
+	return polarAngle(vec2.x, vec2.z) & 0x3FF;
+}
+
+void polyinfo_reset() {
+	polyinfonumpolys = 0;
+	polyinfoptrnext = 0;
+	word_40ECE = 0;
+	word_40ED6[0x190] = 0xFFFF;
+	word_443F2 = 0x190;
+}
+
+void calc_sincos80() {
+	sin80 = sin_fast(0x80);
+	cos80 = cos_fast(0x80);
+	sin80_2 = sin_fast(0x80);
+	cos80_2 = cos_fast(0x80);
+}
+
+void init_polyinfo() {
+	polyinfoptr = mmgr_alloc_resbytes("polyinfo", 0x28A0);
+	
+	mat_rot_y(&mat_y0, 0);
+	mat_rot_y(&mat_y100, 0x100);
+	mat_rot_y(&mat_y200, 0x200);
+	mat_rot_y(&mat_y300, 0x300);
+	calc_sincos80();
+}
+
+extern int* material_clrlist_ptr_cpy;
+extern int* material_patlist_ptr_cpy;
+
+void get_a_poly_info(void) {
+
+	int counter;
+	int materialtype; // var_6
+	int materialcolor; // var_8
+	int materialpattern;
+	int objtype;
+	int somecount; // var_2
+	unsigned int regdi;
+	unsigned char far* polyinfoptr;
+	int far* polyptr;
+	int i;
+	int var_32[256];
+
+	return ported_get_a_poly_info_();
+/*
+	regdi = 0x190;
+	counter = 0;
+	while (counter < polyinfonumpolys) {
+		regdi = word_40ED6[regdi];
+		polyinfoptr = polyinfoptrs[regdi];
+		materialtype = polyinfoptr[2];
+
+		materialcolor = material_clrlist_ptr_cpy[materialtype];
+		objtype = polyinfoptr[4];
+
+		if (objtype == 0) {
+			somecount = polyinfoptr[3];
+			polyptr = polyinfoptr + 6;
+			
+			for (i = 0; i < somecount; i++) {
+				var_32[i * 2 + 0] = polyptr[i * 2 + 0];
+				var_32[i * 2 + 1] = polyptr[i * 2 + 1];
+			}
+			materialpattern = material_patlist_ptr_cpy[materialtype];
+			if (materialpattern == 0) {
+				for (i = 0; i < somecount; i++) {
+					printf("count: %i color: %i, %i, %i\n", somecount, materialcolor, var_32[i * 2 + 0], var_32[i * 2 + 1]);
+				}
+				//printf("somecount %i @ %i", somecount, polyinfonumpolys);
+				preRender_default(materialcolor, somecount, var_32);
+			} else
+			if (materialpattern == 1) {
+				// fill poatterned
+			} else {
+				// fill unk
+			}
+		} else
+		if (objtype == 1) {
+			// goto fill_solid
+		} else
+		if (objtype == 2) {
+			// goto fill_sphere
+		} else
+		if (objtype == 3) {
+			// goto fill_wheel0
+		} else
+		if (objtype == 5) {
+			// goto fill_next
+		} else {
+			// goto fill_pixel
+		}
+		
+		counter++;
+	}
+	
+	polyinfo_reset(); // polyinfo_reset();
+*/
+}
+
+extern void draw_filled_lines();
+extern void draw_patterned_lines();
+extern void draw_unknown_lines();
+extern void preRender_line();
+extern unsigned draw_line_related(unsigned, unsigned, unsigned, unsigned, unsigned);
+extern unsigned draw_line_related_alt(unsigned, unsigned, unsigned, unsigned, unsigned);
+void preRender_helper(int var_18, int regsi, int mode);
+//void preRender_helper2();
+void preRender_helper3(unsigned regsi, unsigned var_A, unsigned var_C, unsigned var_18);
+
+extern void (*spritefunc)(unsigned, unsigned, unsigned, unsigned, unsigned);
+extern void (*imagefunc)(unsigned, unsigned, unsigned, unsigned, unsigned);
+
+extern struct SPRITE far sprite1; // seg012
+extern struct SPRITE far sprite2; // seg012
+
+void preRender_default_impl(unsigned arg_color, unsigned arg_vertlinecount, unsigned* arg_vertlines, unsigned var_A);
+
+void preRender_default_alt(unsigned arg_color, unsigned arg_vertlinecount, unsigned* arg_vertlines) {
+	spritefunc = &draw_filled_lines;
+	imagefunc = &preRender_line;
+	preRender_default_impl(arg_color, arg_vertlinecount, arg_vertlines, 0);
+}
+
+void preRender_default(unsigned arg_color, unsigned arg_vertlinecount, unsigned* arg_vertlines) {
+	spritefunc = &draw_filled_lines;
+	imagefunc = &preRender_line;
+	preRender_default_impl(arg_color, arg_vertlinecount, arg_vertlines, 1);
+}
+
+void skybox_op_helper(unsigned arg_color, unsigned arg_vertlinecount, struct POINT2D arg_vertlines[]) {
+	spritefunc = &draw_filled_lines;
+	imagefunc = &preRender_line;
+	preRender_default_impl(arg_color, arg_vertlinecount, &arg_vertlines, 1);
+}
+
+void preRender_wheel_helper4(unsigned arg_color, unsigned arg_vertlinecount, struct POINT2D arg_vertlines[]) {
+	spritefunc = &draw_filled_lines;
+	imagefunc = &preRender_line;
+	preRender_default_impl(arg_color, arg_vertlinecount, &arg_vertlines, 0);
+}
+
+
+extern unsigned word_4031E;
+extern unsigned word_40320;
+
+void preRender_unk(unsigned arg_color, unsigned unk, unsigned arg_vertlinecount, struct POINT2D* arg_vertlines, unsigned unk2) {
+	fatal_error("untested - what causes this?");
+	spritefunc = &draw_unknown_lines;
+	imagefunc = &preRender_line;
+
+	word_4031E = unk;
+	word_40320 = unk2;
+	preRender_default_impl(arg_color, arg_vertlinecount, &arg_vertlines, 1);
+}
+
+void preRender_patterned(unsigned unk, unsigned arg_color, unsigned arg_vertlinecount, struct POINT2D* arg_vertlines) {
+	spritefunc = &draw_patterned_lines;
+	imagefunc = &preRender_line;
+	word_4031E = unk;
+	
+	preRender_default_impl(arg_color, arg_vertlinecount, arg_vertlines, 0);
+}
+	
+void preRender_default_impl(unsigned arg_color, unsigned arg_vertlinecount, unsigned* arg_vertlines, unsigned var_A) {
+	//printf("%i %i %i", materialcolor, somecount, var_32);
+
+	unsigned char var_798[960 + 960];
+	unsigned char var_7D0[56];
+
+	unsigned var_18, var_16, var_14, var_12, var_10, var_E;
+	//unsigned var_A;
+	unsigned var_C;
+	unsigned var_8;
+	unsigned var_6; // unused
+	unsigned var_4, var_2;
+
+	//unsigned var_2, var_4, var_8, var_E, var_10, var_12, var_14, var_16, var_18;
+	unsigned* var_vertlineptr;
+
+	unsigned sprite1_sprite_left2 = sprite1.sprite_left2;
+	unsigned sprite1_sprite_widthsum = sprite1.sprite_widthsum;
+	unsigned sprite1_sprite_top = sprite1.sprite_top;
+	unsigned sprite1_sprite_height = sprite1.sprite_height;
+	
+	//return ported_preRender_default_(arg_color, arg_vertlinecount, arg_vertlines);
+
+	//var_A = 1;
+asm {
+
+/*    mov     [var_A], 1
+
+    mov     ax, offset draw_filled_lines
+    mov     spritefunc, ax
+    mov     ax, offset preRender_line
+    mov     imagefunc, ax*/
+    mov     si, [arg_vertlines]
+
+    mov     [var_vertlineptr], si
+    mov     cx, [arg_vertlinecount]
+    mov     ax, cx
+    dec     ax
+    shl     ax, 1
+    shl     ax, 1
+    add     ax, si
+    mov     [var_8], ax
+    cld
+    mov     ax, ss
+    mov     es, ax
+    lea     ax, [var_798]
+    mov     [var_18], ax
+    mov ax, [sprite1_sprite_left2]
+    mov     [var_2], ax
+    mov ax, [sprite1_sprite_widthsum]
+    dec     ax
+    mov     [var_4], ax
+    mov     ax, [si+2]
+    mov     [var_E], ax
+    mov     [var_12], ax
+    mov     bx, [si]
+    mov     dx, bx
+    mov     [var_10], si
+    mov     [var_14], si
+    add     si, 4
+    dec     cx
+    jnz     short loc_3186D
+
+    push    [arg_color]
+    mov     si, [var_vertlineptr]
+    push    word ptr [si+2]
+    push    word ptr [si]
+    push    word ptr [si+2]
+    push    word ptr [si]
+    call    dword ptr imagefunc
+    add     sp, 0Ah
+jmp the_end
+
+loc_3186D:
+    mov     ax, [si+2]
+    cmp     ax, [var_E]
+    jg      short loc_3187B
+    mov     [var_E], ax
+    mov     [var_10], si
+loc_3187B:
+    cmp     ax, [var_12]
+    jle     short loc_31886
+    mov     [var_12], ax
+    mov     [var_14], si
+loc_31886:
+    mov     ax, [si]
+    cmp     ax, bx
+    jge     short loc_3188E
+    mov     bx, ax
+loc_3188E:
+    cmp     ax, dx
+    jle     short loc_31894
+    mov     dx, ax
+loc_31894:
+    add     si, 4
+    loop    loc_3186D
+
+    cmp     dx, [var_2]
+    jl      short loc_318F0
+    cmp     bx, [var_4]
+    jge     short loc_318F0
+    mov     ax, [var_12]
+    cmp     ax, [sprite1_sprite_top]
+    jl      short loc_318F0
+    mov     cx, [var_E]
+    cmp     cx, [sprite1_sprite_height]
+    jge     short loc_318F0
+    mov     word ptr [var_C], 0
+    cmp     dx, [var_4]
+    jg      short loc_318D3
+    cmp     bx, [var_2]
+    jl      short loc_318D3
+
+    cmp     ax, [sprite1_sprite_height]
+    jge     short loc_318D3
+    cmp     cx, [sprite1_sprite_top]
+    jge     short loc_318D7
+loc_318D3:
+    mov     word ptr [var_C], 1
+loc_318D7:
+    cmp     ax, cx
+    jz      short loc_318DF
+    cmp     dx, bx
+    jnz     short loc_318F6
+loc_318DF:
+    push    [arg_color]
+    mov     si, [var_vertlineptr]
+    push    ax
+    push    dx
+    push    cx
+    push    bx
+    call    dword ptr imagefunc
+    add     sp, 0Ah
+loc_318F0:
+jmp the_end
+
+loc_318F6:
+    lea     si, [var_7D0]
+    mov     di, [var_10]
+loc_318FD:
+    mov     ax, [di+2]
+    mov     cx, [di]
+    add     di, 4
+    cmp     di, [var_8]
+    jbe     short loc_3190D
+    mov     di, [var_vertlineptr]
+loc_3190D:
+    mov     dx, [di+2]
+    cmp     dx, ax
+    jle     short loc_3193F
+    push    si
+    push    dx
+    push    word ptr [di]
+    push    ax
+    push    cx
+
+    cmp     word ptr [var_C], 0
+    jz      short loc_3192E
+
+    call    far ptr draw_line_related
+    add     sp, 0Ah
+    mov     [var_16], di
+
+//    call near ptr preRender_helper	// this is related to retn, and the call + jle thingy below to the sub ... 
+
+mov ax, 0
+push ax
+push si
+push word ptr [var_18]
+call far ptr preRender_helper	// this is related to retn, and the call + jle thingy below to the sub ... 
+add sp, 6
+
+    jmp     short loc_31939
+
+loc_3192E:
+    call    far ptr draw_line_related_alt
+    add     sp, 0Ah
+    mov     [var_16], di
+//    call near ptr preRender_helper2 // CALL NEAR HERE; JLE ELSEWHERE
+
+mov ax, 1
+push ax
+push si
+push word ptr [var_18]
+call far ptr preRender_helper // CALL NEAR HERE; JLE ELSEWHERE
+add sp, 6
+
+loc_31939:
+    mov     di, [var_16]
+loc_3193F:
+    cmp     di, [var_14]
+    jnz     short loc_318FD
+    mov     di, [var_10]
+loc_31947:
+    mov     ax, [di+2]
+    mov     cx, [di]
+    sub     di, 4
+    cmp     di, [var_vertlineptr]
+    jnb     short loc_31957
+    mov     di, [var_8]
+loc_31957:
+    mov     dx, [di+2]
+    cmp     dx, ax
+    jle     short loc_31983
+    push    si
+    push    dx
+    push    word ptr [di]
+    push    ax
+    push    cx
+    cmp     word ptr [var_C], 0
+    jz      short loc_31972
+    call    far ptr draw_line_related
+    add     sp, 0Ah
+    jmp     short loc_31977
+
+loc_31972:
+    call    far ptr draw_line_related_alt
+    add     sp, 0Ah
+loc_31977:
+    mov     [var_16], di
+//    call near ptr preRender_helper3
+
+push word ptr [var_18]
+push word ptr [var_C]
+push word ptr [var_A]
+push si
+call far ptr preRender_helper3
+add sp, 8
+
+    mov     di, [var_16]
+loc_31983:
+    cmp     di, [var_14]
+    jnz     short loc_31947
+    mov     ax, [var_12]
+
+    cmp     ax, [sprite1_sprite_height]
+    jl      short loc_31997
+    mov     ax, [sprite1_sprite_height]
+
+    dec     ax
+loc_31997:
+    mov     bx, [var_E]
+
+    cmp     bx, [sprite1_sprite_top]
+    jge     short loc_319A6
+    mov     bx, [sprite1_sprite_top]
+
+loc_319A6:
+    sub     ax, bx
+    jle     short loc_319C7
+    inc     ax
+    push    word ptr [arg_color]
+    push    ax
+    push    bx
+    shl     bx, 1
+    lea     ax, [var_798 + 960] // var_3D8]
+    add     ax, bx
+    push    ax
+    lea     ax, [var_798]
+    add     ax, bx
+    push    ax
+    call    dword ptr spritefunc
+    add     sp, 0Ah
+loc_319C7:
+//    pop     di
+//    pop     si
+
+}
+
+the_end:
+}
+
+
+void preRender_helper(int var_18, int regsi, int mode) {
+
+	unsigned sprite1_sprite_left2 = sprite1.sprite_left2;
+	unsigned sprite1_sprite_widthsum = sprite1.sprite_widthsum;
+	unsigned sprite1_sprite_top = sprite1.sprite_top;
+	unsigned sprite1_sprite_height = sprite1.sprite_height;
+
+asm {
+    mov     ax, ss
+    mov     es, ax
+
+	mov si, regsi
+	mov ax, mode
+	cmp ax, 1
+	jne _allok // cannot je to preRender_helper2, too far. jmp is ok tho
+	jmp preRender_helper2
+	
+_allok:
+    mov     cx, [si+14h]
+    or      cx, cx
+    jle     short loc_319F9
+    mov     di, [si+6]
+    mov     dx, [si+4]
+    add     dx, 8000h
+    adc     di, 0
+    sub     di, cx
+    shl     di, 1
+    add     di, [var_18]
+
+    //mov     ax, cs:sprite1.sprite_left2
+mov     ax, sprite1_sprite_left2
+
+    push    cx
+    push    di
+loc_319EE:
+    rep stosw
+    pop     di
+    pop     cx
+    add     di, 3C0h
+    dec     ax
+    rep stosw
+loc_319F9:
+    mov     cx, [si+18h]
+    or      cx, cx
+    jle     short loc_31A25
+loc_31A00:
+    mov     di, [si+6]
+    mov     dx, [si+4]
+    add     dx, 8000h
+    adc     di, 0
+    sub     di, cx
+    shl     di, 1
+    add     di, [var_18]
+loc_31A14:
+    mov     ax, [sprite1_sprite_widthsum]
+
+    push    cx
+    push    di
+    rep stosw
+    pop     di
+    pop     cx
+    add     di, 3C0h
+    dec     ax
+    rep stosw
+loc_31A25:
+    mov     cx, [si+16h]
+    or      cx, cx
+    jle     short loc_31A46
+    mov     di, [si+0Ah]
+    inc     di
+    shl     di, 1
+    add     di, [var_18]
+
+    mov     ax, [sprite1_sprite_left2]
+
+    push    cx
+    push    di
+    rep stosw
+    pop     di
+    pop     cx
+    add     di, 3C0h
+    dec     ax
+    rep stosw
+loc_31A46:
+    mov     cx, [si+1Ah]
+    or      cx, cx
+
+    jle     short preRender_helper2		// JLE HERE CALL ABOVE! WTF! THIS JUMP REACHES A RETN WHICH RETURNS FROM _THIS_ FUNCTION
+    
+    mov     di, [si+0Ah]
+    inc     di
+    shl     di, 1
+    add     di, [var_18]
+
+    mov     ax, [sprite1_sprite_widthsum]
+
+    push    cx
+    push    di
+    rep stosw
+    pop     di
+    pop     cx
+    add     di, 3C0h
+    dec     ax
+    rep stosw
+    
+// does not really end here - but we're calling the next offset .. so ... uhm
+//sub_319CD endp
+
+
+
+preRender_helper2:
+
+    mov     cx, [si+0Eh]
+    or      cx, cx
+    jle     short locret_31AA3
+    mov     di, [si+6]
+    shl     di, 1
+    add     di, [var_18]
+    mov     bl, [si+12h]
+    xor     bh, bh
+    
+    cmp bx, 0
+    jne _noo0
+    jmp locret_31AA3
+_noo0:
+    cmp bx, 1
+    jne _noo1
+    jmp locret_31AA3
+_noo1:
+    cmp bx, 2
+    jne _noo2
+    jmp loc_31A96
+_noo2:
+    cmp bx, 3
+    jne _noo3
+    jmp loc_31AA4
+_noo3:
+    cmp bx, 4
+    jne _noo4
+    jmp loc_31AB3
+_noo4:
+    cmp bx, 5
+    jne _noo5
+    jmp loc_31AC2
+_noo5:
+    cmp bx, 6
+    jne _noo6
+    jmp loc_31AE1
+_noo6:
+    cmp bx, 7
+    jne _noo7
+    jmp loc_31B00
+_noo7:
+    cmp bx, 8
+    jne _noo8
+    jmp loc_31B2C
+_noo8:
+    cmp bx, 9	    
+    
+    jmp locret_31AA3 // same as 0
+    
+loc_31A96:
+    mov     cx, [si+0Eh]
+    mov     ax, [si+2]
+loc_31A9C:
+    mov     [di+3C0h], ax
+    stosw
+    loop    loc_31A9C
+locret_31AA3:
+    //retn
+    jmp the_end
+loc_31AA4:
+    mov     cx, [si+0Eh]
+    mov     ax, [si+2]
+loc_31AAA:
+    mov     [di+3C0h], ax
+    stosw
+    dec     ax
+    loop    loc_31AAA
+    //retn
+    jmp the_end
+loc_31AB3:
+    mov     cx, [si+0Eh]
+    mov     ax, [si+2]
+loc_31AB9:
+    mov     [di+3C0h], ax
+    stosw
+    inc     ax
+    loop    loc_31AB9
+    //retn
+    jmp the_end
+loc_31AC2:
+    mov     cx, [si+0Eh]
+    mov     ax, [si+2]
+    mov     dx, [si]
+    add     dx, 8000h
+    adc     ax, 0
+    mov     bx, [si+0Ch]
+loc_31AD4:
+    mov     [di+3C0h], ax
+    stosw
+    sub     dx, bx
+    sbb     ax, 0
+    loop    loc_31AD4
+    //retn
+    jmp the_end
+loc_31AE1:
+    mov     cx, [si+0Eh]
+    mov     ax, [si+2]
+    mov     dx, [si]
+    add     dx, 8000h
+    adc     ax, 0
+    mov     bx, [si+0Ch]
+loc_31AF3:
+    mov     [di+3C0h], ax
+    stosw
+    add     dx, bx
+    adc     ax, 0
+    loop    loc_31AF3
+    //retn
+    jmp the_end
+loc_31B00:
+    mov     cx, [si+0Eh]
+    mov     ax, [si+2]
+    mov     bx, [si+0Ch]
+    mov     dx, [si+4]
+    add     dx, 8000h
+    jnb     short loc_31B15
+    add     di, 2
+loc_31B15:
+    mov     [di+3C0h], ax
+loc_31B19:
+    add     dx, bx
+    jnb     short loc_31B25
+    stosw
+    dec     ax
+    loop    loc_31B15
+    sub     di, 2
+    //retn
+    jmp the_end
+
+loc_31B25:
+    dec     ax
+    loop    loc_31B19
+    inc     ax
+    mov     [di], ax
+    //retn
+    jmp the_end
+
+loc_31B2C:
+    mov     cx, [si+0Eh]
+    mov     ax, [si+2]
+    mov     bx, [si+0Ch]
+    mov     dx, [si+4]
+    add     dx, 8000h
+    jnb     short loc_31B41
+    add     di, 2
+loc_31B41:
+    mov     [di], ax
+loc_31B43:
+    add     dx, bx
+    jnb     short loc_31B55
+    mov     [di+3C0h], ax
+    add     di, 2
+    inc     ax
+    loop    loc_31B41
+    sub     di, 2
+    //retn
+    jmp the_end
+
+loc_31B55:
+    inc     ax
+    loop    loc_31B43
+    dec     ax
+    mov     [di+3C0h], ax
+    //retn
+    jmp the_end
+    
+    }
+the_end:
+}
+
+
+
+
+void preRender_helper3(unsigned regsi, unsigned var_A, unsigned var_C, unsigned var_18) {
+	unsigned sprite1_sprite_left2 = sprite1.sprite_left2;
+	unsigned sprite1_sprite_widthsum = sprite1.sprite_widthsum;
+	unsigned sprite1_sprite_top = sprite1.sprite_top;
+	unsigned sprite1_sprite_height = sprite1.sprite_height;
+
+asm {
+    mov     ax, ss
+    mov     es, ax
+	mov si, regsi
+    mov     cx, [si+0Eh]
+    or      cx, cx
+    //jle     short loc_31BA8  // TOO FAR JUMP??
+
+ja _nole
+jmp loc_31BA8
+	
+
+_nole:
+    mov     di, [si+6]
+    shl     di, 1
+    add     di, [var_18]
+    mov     bl, [si+12h]
+    xor     bh, bh
+    //shl     bx, 1
+    cmp     byte ptr [var_A], 0   // var_A is 1 when calling prerender_default, or 0 when calling prerender_default_alt
+    jnz     short loc_31B7F
+
+    cmp bx, 0
+    jne _noo0
+    jmp locret_31AA3
+_noo0:
+    cmp bx, 1
+    jne _noo1
+    jmp locret_31AA3
+_noo1:
+    cmp bx, 2
+    jne _noo2
+    jmp loc_31D0B
+_noo2:
+    cmp bx, 3
+    jne _noo3
+    jmp loc_31D31
+_noo3:
+    cmp bx, 4
+    jne _noo4
+    jmp loc_31D5C
+_noo4:
+    cmp bx, 5
+    jne _noo5
+    jmp loc_31D87
+_noo5:
+    cmp bx, 6
+    jne _noo6
+    jmp loc_31DCA
+_noo6:
+    cmp bx, 7
+    jne _noo7
+    jmp loc_31E0D
+_noo7:
+    cmp bx, 8
+    jne _noo8
+    jmp loc_31E61
+_noo8:
+    cmp bx, 9	
+	
+    jmp locret_31AA3 // same as 0
+
+
+loc_31B7F:
+
+
+    cmp bx, 0
+    jne _no0
+    jmp locret_31AA3
+_no0:
+    cmp bx, 1
+    jne _no1
+    jmp locret_31AA3
+_no1:
+    cmp bx, 2
+    jne _no2
+    jmp loc_31B98
+_no2:
+    cmp bx, 3
+    jne _no3
+    jmp loc_31BB7
+_no3:
+    cmp bx, 4
+    jne _no4
+    jmp loc_31BDB
+_no4:
+    cmp bx, 5
+    jne _no5
+    jmp loc_31BFF
+_no5:
+    cmp bx, 6
+    jne _no6
+    jmp loc_31C37
+_no6:
+    cmp bx, 7
+    jne _no7
+    jmp loc_31C6F
+_no7:
+    cmp bx, 8
+    jne _no8
+    jmp loc_31CB1
+_no8:
+    cmp bx, 9
+    
+    //je locret_31AA3
+    
+    jmp locret_31AA3 // same as 0
+
+locret_31AA3:
+    //retn
+    jmp the_end
+
+
+loc_31B98:
+    mov     ax, [si+2]
+loc_31B9B:
+    cmp     [di+3C0h], ax
+    jl      short loc_31BAB
+    cmp     [di], ax
+    jle     short loc_31BAF
+    stosw
+    loop    loc_31B9B
+loc_31BA8:
+    jmp     loc_31EB9
+loc_31BAB:
+    mov     [di+3C0h], ax
+loc_31BAF:
+    add     di, 2
+    loop    loc_31B9B
+    jmp     loc_31EB9
+
+loc_31BB7:
+    mov     cx, [si+0Eh]
+    mov     ax, [si+2]
+loc_31BBD:
+    cmp     [di+3C0h], ax
+    jl      short loc_31BCE
+    cmp     [di], ax
+    jle     short loc_31BD2
+    stosw
+    dec     ax
+    loop    loc_31BBD
+    jmp     loc_31EB9
+loc_31BCE:
+    mov     [di+3C0h], ax
+loc_31BD2:
+    add     di, 2
+    dec     ax
+    loop    loc_31BBD
+    jmp     loc_31EB9
+
+loc_31BDB:
+    mov     cx, [si+0Eh]
+    mov     ax, [si+2]
+loc_31BE1:
+    cmp     [di+3C0h], ax
+    jl      short loc_31BF2
+    cmp     [di], ax
+    jle     short loc_31BF6
+    stosw
+    inc     ax
+    loop    loc_31BE1
+    jmp     loc_31EB9
+loc_31BF2:
+    mov     [di+3C0h], ax
+loc_31BF6:
+    add     di, 2
+    inc     ax
+    loop    loc_31BE1
+    jmp     loc_31EB9
+
+loc_31BFF:
+    mov     cx, [si+0Eh]
+    mov     ax, [si+2]
+    mov     dx, [si]
+    add     dx, 8000h
+    adc     ax, 0
+    mov     bx, [si+0Ch]
+loc_31C11:
+    cmp     [di+3C0h], ax
+    jl      short loc_31C26
+    cmp     [di], ax
+    jle     short loc_31C2A
+    stosw
+    sub     dx, bx
+    sbb     ax, 0
+    loop    loc_31C11
+    jmp     loc_31EB9
+loc_31C26:
+    mov     [di+3C0h], ax
+loc_31C2A:
+    add     di, 2
+    sub     dx, bx
+    sbb     ax, 0
+    loop    loc_31C11
+    jmp     loc_31EB9
+
+loc_31C37:
+    mov     cx, [si+0Eh]
+    mov     ax, [si+2]
+    mov     dx, [si]
+    add     dx, 8000h
+    adc     ax, 0
+    mov     bx, [si+0Ch]
+loc_31C49:
+    cmp     [di+3C0h], ax
+    jl      short loc_31C5E
+    cmp     [di], ax
+    jle     short loc_31C62
+    stosw
+    add     dx, bx
+    adc     ax, 0
+    loop    loc_31C49
+    jmp     loc_31EB9
+loc_31C5E:
+    mov     [di+3C0h], ax
+loc_31C62:
+    add     di, 2
+    add     dx, bx
+    adc     ax, 0
+    loop    loc_31C49
+    jmp     loc_31EB9
+
+loc_31C6F:
+    mov     cx, [si+0Eh]
+    mov     ax, [si+2]
+    mov     bx, [si+0Ch]
+    mov     dx, [si+4]
+    add     dx, 8000h
+    jnb     short loc_31C84
+    add     di, 2
+loc_31C84:
+    cmp     [di+3C0h], ax
+    jge     short loc_31C8E
+    mov     [di+3C0h], ax
+loc_31C8E:
+    add     dx, bx
+    jnb     short loc_31CA4
+    cmp     [di], ax
+    jle     short loc_31C98
+    mov     [di], ax
+loc_31C98:
+    add     di, 2
+    dec     ax
+    loop    loc_31C84
+    sub     di, 2
+    jmp     loc_31EB9
+loc_31CA4:
+    dec     ax
+    loop    loc_31C8E
+    inc     ax
+    cmp     [di], ax
+    jle     short loc_31CAE
+    mov     [di], ax
+loc_31CAE:
+    jmp     loc_31EB9
+
+loc_31CB1:
+    mov     cx, [si+0Eh]
+    mov     ax, [si+2]
+    mov     bx, [si+0Ch]
+    mov     dx, [si+4]
+    add     dx, 8000h
+    jnb     short loc_31CC6
+    add     di, 2
+loc_31CC6:
+    cmp     [di], ax
+    jle     short loc_31CCC
+    mov     [di], ax
+loc_31CCC:
+    add     dx, bx
+    jnb     short loc_31CE6
+    cmp     [di+3C0h], ax
+    jge     short loc_31CDA
+    mov     [di+3C0h], ax
+loc_31CDA:
+    add     di, 2
+    inc     ax
+    loop    loc_31CC6
+    sub     di, 2
+    jmp     loc_31EB9
+loc_31CE6:
+    inc     ax
+    loop    loc_31CCC
+    dec     ax
+    cmp     [di+3C0h], ax
+    jge     short loc_31CAE
+    mov     [di+3C0h], ax
+    jmp     loc_31EB9
+
+loc_31D0B:
+    mov     cx, [si+0Eh]
+    mov     ax, [si+2]
+loc_31D11:
+    cmp     [di], ax
+    jg      short loc_31D23
+    cmp     [di+3C0h], ax
+    jl      short loc_31D28
+    add     di, 2
+    loop    loc_31D11
+    jmp     loc_31EB9
+loc_31D23:
+    rep stosw
+    jmp     loc_31EB9
+loc_31D28:
+    add     di, 3C0h
+    rep stosw
+    jmp     loc_31EB9
+loc_31D31:
+    mov     cx, [si+0Eh]
+    mov     ax, [si+2]
+loc_31D37:
+    cmp     [di], ax
+    jg      short loc_31D4A
+    cmp     [di+3C0h], ax
+    jl      short loc_31D51
+    add     di, 2
+    dec     ax
+    loop    loc_31D37
+    jmp     loc_31EB9
+loc_31D4A:
+    stosw
+    dec     ax
+    loop    loc_31D4A
+    jmp     loc_31EB9
+loc_31D51:
+    add     di, 3C0h
+loc_31D55:
+    stosw
+    dec     ax
+    loop    loc_31D55
+    jmp     loc_31EB9
+loc_31D5C:
+    mov     cx, [si+0Eh]
+    mov     ax, [si+2]
+loc_31D62:
+    cmp     [di], ax
+    jg      short loc_31D75
+    cmp     [di+3C0h], ax
+    jl      short loc_31D7C
+    add     di, 2
+    inc     ax
+    loop    loc_31D62
+    jmp     loc_31EB9
+loc_31D75:
+    stosw
+    inc     ax
+    loop    loc_31D75
+    jmp     loc_31EB9
+loc_31D7C:
+    add     di, 3C0h
+loc_31D80:
+    stosw
+    inc     ax
+    loop    loc_31D80
+    jmp     loc_31EB9
+loc_31D87:
+    mov     cx, [si+0Eh]
+    mov     ax, [si+2]
+    mov     dx, [si]
+    add     dx, 8000h
+    adc     ax, 0
+    mov     bx, [si+0Ch]
+loc_31D99:
+    cmp     [di], ax
+    jg      short loc_31DB0
+    cmp     [di+3C0h], ax
+    jl      short loc_31DBB
+    add     di, 2
+    sub     dx, bx
+    sbb     ax, 0
+    loop    loc_31D99
+    jmp     loc_31EB9
+loc_31DB0:
+    stosw
+    sub     dx, bx
+    sbb     ax, 0
+    loop    loc_31DB0
+    jmp     loc_31EB9
+loc_31DBB:
+    add     di, 3C0h
+loc_31DBF:
+    stosw
+    sub     dx, bx
+    sbb     ax, 0
+    loop    loc_31DBF
+    jmp     loc_31EB9
+loc_31DCA:
+    mov     cx, [si+0Eh]
+    mov     ax, [si+2]
+    mov     dx, [si]
+    add     dx, 8000h
+    adc     ax, 0
+    mov     bx, [si+0Ch]
+loc_31DDC:
+    cmp     [di], ax
+    jg      short loc_31DF3
+    cmp     [di+3C0h], ax
+    jl      short loc_31DFE
+    add     di, 2
+    add     dx, bx
+    adc     ax, 0
+    loop    loc_31DDC
+    jmp     loc_31EB9
+loc_31DF3:
+    stosw
+    add     dx, bx
+    adc     ax, 0
+    loop    loc_31DF3
+    jmp     loc_31EB9
+loc_31DFE:
+    add     di, 3C0h
+loc_31E02:
+    stosw
+    add     dx, bx
+    adc     ax, 0
+    loop    loc_31E02
+    jmp     loc_31EB9
+loc_31E0D:
+    mov     cx, [si+0Eh]
+    mov     ax, [si+2]
+    mov     bx, [si+0Ch]
+    mov     dx, [si+4]
+    add     dx, 8000h
+    jnb     short loc_31E22
+    add     di, 2
+loc_31E22:
+    cmp     [di+3C0h], ax
+    jl      short loc_31E39
+    add     dx, bx
+    jnb     short loc_31E33
+    cmp     [di], ax
+    jg      short loc_31E51
+    add     di, 2
+loc_31E33:
+    dec     ax
+    loop    loc_31E22
+    jmp     loc_31EB9
+loc_31E39:
+    add     di, 3C0h
+loc_31E3D:
+    stosw
+loc_31E3E:
+    dec     ax
+    add     dx, bx
+    jnb     short loc_31E48
+    loop    loc_31E3D
+    jmp     short loc_31EB9
+
+loc_31E48:
+    loop    loc_31E3E
+    jmp     short loc_31EB9
+
+loc_31E4D:
+    add     dx, bx
+    jnb     short loc_31E58
+loc_31E51:
+    stosw
+    dec     ax
+    loop    loc_31E4D
+    jmp     short loc_31EB9
+
+loc_31E58:
+    dec     ax
+    loop    loc_31E4D
+    inc     ax
+    mov     [di], ax
+    jmp     short loc_31EB9
+
+loc_31E61:
+    mov     cx, [si+0Eh]
+    mov     ax, [si+2]
+    mov     bx, [si+0Ch]
+    mov     dx, [si+4]
+    add     dx, 8000h
+    jnb     short loc_31E76
+    add     di, 2
+loc_31E76:
+    cmp     [di], ax
+    jg      short loc_31EB2
+    add     dx, bx
+    jnb     short loc_31E87
+    cmp     [di+3C0h], ax
+    jl      short loc_31E8D
+    add     di, 2
+loc_31E87:
+    inc     ax
+    loop    loc_31E76
+    jmp     short loc_31EB9
+
+loc_31E8D:
+    add     di, 3C0h
+loc_31E91:
+    mov     [di], ax
+loc_31E93:
+    inc     ax
+    add     dx, bx
+    jnb     short loc_31EA3
+    add     di, 2
+    loop    loc_31E91
+    dec     ax
+    mov     [di], ax
+    jmp     short loc_31EB9
+
+loc_31EA3:
+    loop    loc_31E93
+    add     di, 2
+    dec     ax
+    mov     [di], ax
+    jmp     short loc_31EB9
+
+loc_31EAE:
+    add     dx, bx
+    jnb     short loc_31EB3
+loc_31EB2:
+    stosw
+loc_31EB3:
+    inc     ax
+    loop    loc_31EAE
+    jmp     short loc_31EB9
+
+loc_31EB9:
+    cmp     byte ptr [var_C], 0
+    jnz     short loc_31EC0
+    //retn
+    jmp the_end
+loc_31EC0:
+    mov     cx, [si+14h]
+    or      cx, cx
+    jle     short loc_31EE1
+    mov     di, [si+6]
+    mov     dx, [si+4]
+    add     dx, 8000h
+    adc     di, 0
+    sub     di, cx
+    shl     di, 1
+    add     di, [var_18]
+    mov     ax, [sprite1_sprite_left2]
+    rep stosw
+loc_31EE1:
+    mov     cx, [si+18h]
+    or      cx, cx
+    jle     short loc_31F07
+    mov     di, [si+6]
+    mov     dx, [si+4]
+    add     dx, 8000h
+    adc     di, 0
+    sub     di, cx
+    shl     di, 1
+    add     di, [var_18]
+    add     di, 3C0h
+    mov     ax, [sprite1_sprite_widthsum]
+    dec     ax
+    rep stosw
+loc_31F07:
+    mov     cx, [si+16h]
+    or      cx, cx
+    jle     short loc_31F1D
+    mov     di, [si+0Ah]
+    inc     di
+    shl     di, 1
+    add     di, [var_18]
+    mov     ax, [sprite1_sprite_left2]
+    rep stosw
+loc_31F1D:
+    mov     cx, [si+1Ah]
+    or      cx, cx
+    jle     short locret_31F38
+    mov     di, [si+0Ah]
+    inc     di
+    shl     di, 1
+    add     di, [var_18]
+    add     di, 3C0h
+    mov     ax, [sprite1_sprite_widthsum]
+    dec     ax
+    rep stosw
+locret_31F38:
+    //retn
+    jmp the_end
+}
+
+the_end:
+}
+
+
+extern unsigned far word_2F448; // seg012
+extern unsigned far off_2F44A[]; // seg012
+
+unsigned draw_line_related_impl(unsigned arg_startX, unsigned arg_startY, unsigned arg_endX, unsigned arg_endY, unsigned arg_8, unsigned var_4);
+
+unsigned draw_line_related(unsigned arg_startX, unsigned arg_startY, unsigned arg_endX, unsigned arg_endY, unsigned arg_8) {
+	draw_line_related_impl(arg_startX, arg_startY, arg_endX, arg_endY, arg_8, 0);
+}
+
+unsigned draw_line_related_alt(unsigned arg_startX, unsigned arg_startY, unsigned arg_endX, unsigned arg_endY, unsigned arg_8) {
+	draw_line_related_impl(arg_startX, arg_startY, arg_endX, arg_endY, arg_8, 1);
+}
+
+unsigned draw_line_related_impl(unsigned arg_startX, unsigned arg_startY, unsigned arg_endX, unsigned arg_endY, unsigned arg_8, unsigned var_4) {
+
+	//unsigned var_4;
+	unsigned var_2;
+
+	unsigned seg012 = FP_SEG(&sprite1);
+	unsigned result;
+	
+	unsigned sprite1_sprite_left2 = sprite1.sprite_left2;
+	unsigned sprite1_sprite_widthsum = sprite1.sprite_widthsum;
+	unsigned sprite1_sprite_top = sprite1.sprite_top;
+	unsigned sprite1_sprite_height = sprite1.sprite_height;
+
+	//ported_draw_line_related_(arg_startX, arg_startY, arg_endX, arg_endY, arg_8);
+
+asm {
+/*    var_4 = byte ptr -4
+    var_2 = word ptr -2
+     s = byte ptr 0
+     r = byte ptr 2
+    arg_startX = word ptr 6
+    arg_startY = word ptr 8
+    arg_endX = word ptr 10
+    arg_endY = word ptr 12
+    arg_8 = word ptr 14
+
+    push    bp
+    mov     bp, sp
+    sub     sp, 4
+    push    si
+    push    di*/
+
+    //mov     word ptr [var_4], 0
+loc_2EB62:
+    mov     si, [arg_8]  // arg_8 is a pointer to something sizeof 0x1C
+    mov     word ptr [si+12h], 0FFh
+    xor     ax, ax
+    mov     [si], ax
+    mov     [si+4], ax
+    mov     [si+14h], ax
+    mov     [si+16h], ax
+    mov     [si+18h], ax
+    mov     [si+1Ah], ax
+    mov     ax, [arg_startY]
+    mov     bx, [arg_endY]
+    mov     cx, [arg_startX]
+    mov     dx, [arg_endX]
+    cmp     ax, bx
+    jg      short loc_2EB9C
+    mov     [si+2], cx
+    mov     [si+6], ax
+    mov     [si+8], dx
+loc_2EB96:
+    mov     [si+0Ah], bx
+    jmp     short loc_2EBA8
+    
+    
+loc_2EB9C:
+    mov     [si+2], dx
+    mov     [si+6], bx
+    mov     [si+8], cx
+    mov     [si+0Ah], ax
+loc_2EBA8:
+    jnz     short loc_2EBAD
+    jmp     loc_2F1A3
+loc_2EBAD:
+    xor     dx, dx
+    cmp     word ptr [var_4], 0
+    jnz     short loc_2EC1A
+    mov     ax, [si+6]
+    mov     bx, sprite1_sprite_top
+    mov     cx, sprite1_sprite_height
+    cmp     ax, cx
+    jl      short loc_2EBCB
+    mov     dl, 8
+    jmp     loc_2EF9B
+loc_2EBCB:
+    cmp     ax, bx
+    jge     short loc_2EBD2
+    or      dh, 4
+loc_2EBD2:
+    mov     ax, [si+0Ah]
+    cmp     ax, bx
+    jge     short loc_2EBDE
+loc_2EBD9:
+    mov     dl, 4
+    jmp     loc_2EF9B
+loc_2EBDE:
+    cmp     ax, cx
+    jl      short loc_2EBE5
+    or      dl, 8
+loc_2EBE5:
+    mov     bx, sprite1_sprite_left2
+    mov     cx, sprite1_sprite_widthsum
+    mov     ax, [si+2]
+    cmp     ax, bx
+    jge     short loc_2EBF9
+    or      dh, 2
+loc_2EBF9:
+    cmp     ax, cx
+    jl      short loc_2EC00
+    or      dh, 1
+loc_2EC00:
+    mov     ax, [si+8]
+    cmp     ax, bx
+    jge     short loc_2EC0A
+    or      dl, 2
+loc_2EC0A:
+    cmp     ax, cx
+    jl      short loc_2EC11
+    or      dl, 1
+loc_2EC11:
+    test    dl, dh
+    jz      short loc_2EC1A
+    and     dl, dh
+    jmp     loc_2EF9B
+loc_2EC1A:
+    or      dl, dh
+    xor     dh, dh
+    mov     [var_2], dx
+    mov     cx, [si+0Ah]
+    sub     cx, [si+6]
+    jno     short loc_2EC2C
+loc_2EC29:
+    jmp     loc_2F253
+loc_2EC2C:
+    mov     dx, [si+8]
+    sub     dx, [si+2]
+    jo      short loc_2EC29
+    jnz     short loc_2EC41
+    inc     cx
+    mov     [si+0Eh], cx
+    mov     byte ptr [si+12h], 2
+    jmp     short loc_2ECAD
+
+loc_2EC41:
+    jl      short loc_2EC8F
+    cmp     dx, cx
+    jb      short loc_2EC82
+    jz      short loc_2EC88
+    mov     byte ptr [si+12h], 8
+loc_2EC4D:
+    xchg    cx, dx
+loc_2EC4F:
+	mov ax, seg012
+	mov es, ax
+    //cmp     cx, cs:word_2F448			// 0x32 <- number of interpolation tables?
+    cmp     cx, es:word_2F448			// 0x32 <- number of interpolation tables?
+    jge     short loc_2EC69
+    mov     bx, cx
+    shl     bx, 1
+//    mov     bx, cs:off_2F44A[bx]		// strange tables at seg012:0A28 - 0x32 interpolation tables?
+    mov     bx, es:off_2F44A[bx]		// strange tables at seg012:0A28 - 0x32 interpolation tables?
+    add     bx, dx
+    add     bx, dx
+    //mov     ax, cs:[bx]
+    mov     ax, es:[bx]
+    jmp     short loc_2EC76
+
+loc_2EC69:
+    xor     ax, ax
+    div     cx
+    mov     bx, cx
+    shr     bx, 1
+    sub     bx, dx
+    adc     ax, 0
+loc_2EC76:
+    mov     [si+0Ch], ax
+    inc     cx
+    jo      short loc_2EC29
+    mov     [si+0Eh], cx
+    jmp     short loc_2ECAD
+
+loc_2EC82:
+    mov     byte ptr [si+12h], 6
+    jmp     short loc_2EC4F
+loc_2EC88:
+    mov     byte ptr [si+12h], 4
+    jmp     short loc_2ECA9
+
+loc_2EC8F:
+    neg     dx
+    jo      short loc_2EC29
+    cmp     dx, cx
+    jb      short loc_2EC9F
+    jz      short loc_2ECA5
+    mov     byte ptr [si+12h], 7
+    jmp     short loc_2EC4D
+loc_2EC9F:
+    mov     byte ptr [si+12h], 5
+    jmp     short loc_2EC4F
+loc_2ECA5:
+    mov     byte ptr [si+12h], 3
+loc_2ECA9:
+    inc     cx
+    mov     [si+0Eh], cx
+loc_2ECAD:
+    mov     bx, [var_2]
+    
+}
+#define ASMCASE(prefix, x, y) \
+	asm { cmp bx, x }\
+	asm { jne _no##prefix }\
+	asm { jmp y }\
+	asm { _no##prefix: }\
+
+    ASMCASE(Q1, 0, loc_2ECD9)
+    ASMCASE(Q2, 1, loc_2F01F)
+    ASMCASE(Q3, 2, loc_2EE78)
+    ASMCASE(Q4, 3, loc_2EE78)
+    ASMCASE(Q5, 4, loc_2ECE1)
+    ASMCASE(Q6, 5, loc_2ECE1)
+    ASMCASE(Q7, 6, loc_2ECE1)
+    ASMCASE(Q8, 7, loc_2ECE1)
+    ASMCASE(Q9, 8, loc_2EDA5)
+    ASMCASE(Q0, 9, loc_2EDA5)
+    ASMCASE(QA, 10, loc_2EDA5)
+    ASMCASE(QB, 11, loc_2EDA5)
+    ASMCASE(QC, 12, loc_2ECE1)
+    ASMCASE(QD, 13, loc_2ECE1)
+    ASMCASE(QE, 14, loc_2ECE1)
+    ASMCASE(QF, 15, loc_2ECE1)
+    
+asm {
+    
+    
+/*    shl     bx, 1
+    jz      short loc_2ECD9
+    jmp     cs:off_2ECB9[bx]
+
+ off_2ECB9 dw offset loc_2ECD9
+    dw offset loc_2F01F
+    dw offset loc_2EE78
+    dw offset loc_2EE78
+    dw offset loc_2ECE1
+    dw offset loc_2ECE1
+    dw offset loc_2ECE1
+    dw offset loc_2ECE1
+    dw offset loc_2EDA5
+    dw offset loc_2EDA5
+    dw offset loc_2EDA5
+    dw offset loc_2EDA5
+    dw offset loc_2ECE1
+    dw offset loc_2ECE1
+    dw offset loc_2ECE1
+    dw offset loc_2ECE1*/
+}
+loc_2ECD9:
+asm {
+    xor     ax, ax
+    jmp the_end
+
+loc_2ECE1:
+    mov     ax, [si+6]
+    mov     cx, sprite1_sprite_top
+    mov     [si+6], cx
+    sub     cx, ax
+    mov     bl, [si+12h]
+}
+    ASMCASE(WA, 0, 0)
+    ASMCASE(WB, 1, 0)
+    ASMCASE(WC, 2, loc_2ED0A)
+    ASMCASE(WD, 3, loc_2ED10)
+    ASMCASE(WE, 4, loc_2ED19)
+    ASMCASE(WF, 5, loc_2ED22)
+    ASMCASE(WG, 6, loc_2ED32)
+    ASMCASE(WH, 7, loc_2ED42)
+    ASMCASE(WI, 8, loc_2ED7E)
+asm {
+/*    shl     bx, 1
+    jmp     cs:word_2ECF8[bx]
+word_2ECF8     dw 0
+    dw 0
+    dw offset loc_2ED0A
+    dw offset loc_2ED10
+    dw offset loc_2ED19
+    dw offset loc_2ED22
+    dw offset loc_2ED32
+    dw offset loc_2ED42
+    dw offset loc_2ED7E*/
+loc_2ED0A:
+    sub     [si+0Eh], cx
+    jmp     loc_2F13E
+loc_2ED10:
+    sub     [si+2], cx
+    sub     [si+0Eh], cx
+    jmp     loc_2F13E
+loc_2ED19:
+    add     [si+2], cx
+    sub     [si+0Eh], cx
+    jmp     loc_2F13E
+loc_2ED22:
+    mov     ax, [si+0Ch]
+    mul     cx
+    sub     [si], ax
+loc_2ED29:
+    sbb     [si+2], dx
+    sub     [si+0Eh], cx
+    jmp     loc_2F13E
+loc_2ED32:
+    mov     ax, [si+0Ch]
+    mul     cx
+    add     [si], ax
+    adc     [si+2], dx
+    sub     [si+0Eh], cx
+    jmp     loc_2F13E
+loc_2ED42:
+    mov     [si+6], ax
+    mov     dx, cx
+    xor     ax, ax
+    mov     cx, [si+0Ch]
+    div     cx
+    shr     cx, 1
+    sub     cx, dx
+    adc     ax, 0
+    sub     [si+2], ax
+    sub     [si+0Eh], ax
+    jle     short loc_2ED69
+    mul     word ptr [si+0Ch]
+    add     [si+4], ax
+    adc     [si+6], dx
+    jmp     loc_2F13E
+loc_2ED69:
+    mov     word ptr [si+0Eh], 1
+    mov     ax, sprite1_sprite_top
+    mov     [si+6], ax
+    mov     ax, [si+8]
+    mov     [si+2], ax
+    jmp     loc_2F13E
+loc_2ED7E:
+    mov     [si+6], ax
+    mov     dx, cx
+    xor     ax, ax
+    mov     cx, [si+0Ch]
+    div     cx
+    shr     cx, 1
+    sub     cx, dx
+    adc     ax, 0
+    add     [si+2], ax
+    sub     [si+0Eh], ax
+    jle     short loc_2ED69
+    mul     word ptr [si+0Ch]
+    add     [si+4], ax
+    adc     [si+6], dx
+    jmp     loc_2F13E
+loc_2EDA5:
+    mov     cx, [si+0Ah]
+    mov     dx, sprite1_sprite_height
+    dec     dx
+    mov     [si+0Ah], dx
+    sub     cx, dx
+    mov     bl, [si+12h]
+}
+
+
+    ASMCASE(E1, 0, 0)
+    ASMCASE(E2, 1, 0)
+    ASMCASE(E3, 2, loc_2EDCF)
+    ASMCASE(E4, 3, loc_2EDD5)
+    ASMCASE(E5, 4, loc_2EDDE)
+    ASMCASE(E6, 5, loc_2EDE7)
+    ASMCASE(E7, 6, loc_2EE0B)
+    ASMCASE(E8, 7, loc_2EE2A)
+    ASMCASE(E9, 8, loc_2EE53)
+
+asm {
+/*    shl     bx, 1
+    jmp     cs:word_2EDBD[bx]
+word_2EDBD     dw 0
+    dw 0
+    dw offset loc_2EDCF
+    dw offset loc_2EDD5
+    dw offset loc_2EDDE
+    dw offset loc_2EDE7
+    dw offset loc_2EE0B
+    dw offset loc_2EE2A
+    dw offset loc_2EE53*/
+loc_2EDCF:
+    sub     [si+0Eh], cx
+    jmp     loc_2F148
+loc_2EDD5:
+    add     [si+8], cx
+    sub     [si+0Eh], cx
+    jmp     loc_2F148
+loc_2EDDE:
+    sub     [si+8], cx
+    sub     [si+0Eh], cx
+    jmp     loc_2F148
+loc_2EDE7:
+    mov     dx, [si+0Eh]
+    sub     dx, cx
+    mov     [si+0Eh], dx
+    dec     dx
+    mov     ax, [si+0Ch]
+    mul     dx
+    mov     bx, [si]
+    mov     cx, [si+2]
+    sub     bx, ax
+    sbb     cx, dx
+    add     bx, 8000h
+    adc     cx, 0
+    mov     [si+8], cx
+    jmp     loc_2F148
+loc_2EE0B:
+    mov     dx, [si+0Eh]
+    sub     dx, cx
+    mov     [si+0Eh], dx
+    dec     dx
+    mov     ax, [si+0Ch]
+    mul     dx
+    add     ax, [si]
+    adc     dx, [si+2]
+    add     ax, 8000h
+    adc     dx, 0
+    mov     [si+8], dx
+    jmp     loc_2F148
+loc_2EE2A:
+    xor     ax, ax
+    sub     ax, [si+4]
+    sbb     dx, [si+6]
+    jl      short loc_2EE4F
+    mov     cx, [si+0Ch]
+    div     cx
+    shr     cx, 1
+    sub     cx, dx
+    adc     ax, 0
+loc_2EE40:
+    mov     dx, [si+2]
+    sub     dx, ax
+    mov     [si+8], dx
+    inc     ax
+    mov     [si+0Eh], ax
+    jmp     loc_2F148
+loc_2EE4F:
+    xor     ax, ax
+    jmp     short loc_2EE40
+loc_2EE53:
+    xor     ax, ax
+    sub     ax, [si+4]
+    sbb     dx, [si+6]
+    jl      short loc_2EE4F
+    mov     cx, [si+0Ch]
+    div     cx
+    shr     cx, 1
+    sub     cx, dx
+    adc     ax, 0
+    mov     dx, [si+2]
+    add     dx, ax
+    mov     [si+8], dx
+    inc     ax
+    mov     [si+0Eh], ax
+    jmp     loc_2F148
+loc_2EE78:
+    mov     bl, [si+12h]
+}
+
+    ASMCASE(R1, 0, 0)
+    ASMCASE(R2, 1, 0)
+    ASMCASE(R3, 2, loc_2EF98)
+    ASMCASE(R4, 3, loc_2EE94)
+    ASMCASE(R5, 4, loc_2EEAD)
+    ASMCASE(R6, 5, loc_2EEC6)
+    ASMCASE(R7, 6, loc_2EEFE)
+    ASMCASE(R8, 7, loc_2EF31)
+    ASMCASE(R9, 8, loc_2EF61)
+
+asm {
+/*    shl     bx, 1
+    jmp     cs:word_2EE82[bx]
+word_2EE82     dw 0
+    dw 0
+    dw offset loc_2EF98
+    dw offset loc_2EE94
+    dw offset loc_2EEAD
+    dw offset loc_2EEC6
+    dw offset loc_2EEFE
+    dw offset loc_2EF31
+    dw offset loc_2EF61*/
+loc_2EE94:
+    mov     cx, sprite1_sprite_left2
+    mov     ax, [si+8]
+    mov     [si+8], cx
+    sub     cx, ax
+    add     [si+16h], cx
+    sub     [si+0Eh], cx
+    sub     [si+0Ah], cx
+    jmp     loc_2F196
+loc_2EEAD:
+    mov     ax, [si+2]
+    mov     cx, sprite1_sprite_left2
+    mov     [si+2], cx
+    sub     cx, ax
+    add     [si+14h], cx
+    add     [si+6], cx
+    sub     [si+0Eh], cx
+    jmp     loc_2F196
+loc_2EEC6:
+    mov     ax, [si]
+    mov     dx, [si+2]
+    mov     cx, sprite1_sprite_left2
+    mov     [si+8], cx
+    sub     dx, cx
+    jl      short loc_2EEF9
+    mov     cx, [si+0Ch]
+    div     cx
+    shr     cx, 1
+    sub     cx, dx
+    adc     ax, 0
+    inc     ax
+loc_2EEE4:
+    mov     cx, [si+0Eh]
+    mov     [si+0Eh], ax
+    sub     cx, ax
+    add     [si+16h], cx
+    dec     ax
+    add     ax, [si+6]
+    mov     [si+0Ah], ax
+    jmp     loc_2F196
+loc_2EEF9:
+    mov     ax, 1
+    jmp     short loc_2EEE4
+loc_2EEFE:
+    mov     dx, sprite1_sprite_left2
+    xor     ax, ax
+    sub     ax, [si]
+    sbb     dx, [si+2]
+    jl      short loc_2EF2E
+    mov     cx, [si+0Ch]
+    div     cx
+    shr     cx, 1
+    sub     cx, dx
+    adc     ax, 0
+    add     [si+6], ax
+    add     [si+14h], ax
+    sub     [si+0Eh], ax
+    jle     short loc_2EF98
+    mul     word ptr [si+0Ch]
+    add     [si], ax
+    adc     [si+2], dx
+    jmp     loc_2F196
+loc_2EF2E:
+    jmp     short loc_2EF98
+    nop
+loc_2EF31:
+    mov     ax, [si+2]
+    mov     dx, sprite1_sprite_left2
+    mov     [si+8], dx
+    sub     ax, dx
+    mov     cx, ax
+    inc     cx
+    mov     [si+0Eh], cx
+    mul     word ptr [si+0Ch]
+    add     ax, [si+4]
+    adc     dx, [si+6]
+    add     ax, 8000h
+    adc     dx, 0
+    mov     ax, [si+0Ah]
+    sub     ax, dx
+    mov     [si+0Ah], dx
+    add     [si+16h], ax
+    jmp     loc_2F196
+loc_2EF61:
+    mov     cx, [si+2]
+    mov     ax, sprite1_sprite_left2
+    mov     [si+2], ax
+    sub     ax, cx
+    sub     [si+0Eh], ax
+    mul     word ptr [si+0Ch]
+    mov     bx, [si+4]
+    mov     cx, [si+6]
+    add     ax, bx
+    adc     dx, cx
+    mov     [si+4], ax
+    mov     [si+6], dx
+    add     bx, 8000h
+    adc     cx, 0
+    add     ax, 8000h
+    adc     dx, 0
+    sub     dx, cx
+    add     [si+14h], dx
+    jmp     loc_2F196
+loc_2EF98:
+    mov     dx, 2
+loc_2EF9B:
+    mov     [si+13h], dl
+    mov     word ptr [si+0Eh], 0
+    mov     al, [si+13h]
+    test    al, 4
+    jz      short loc_2EFBE
+    mov     bx, sprite1_sprite_top
+    mov     [si+6], bx
+    mov     word ptr [si+4], 0
+    dec     bx
+    mov     [si+0Ah], bx
+    jmp     short loc_2F017
+
+loc_2EFBE:
+    test    al, 8
+    jz      short loc_2EFD2
+    mov     bx, sprite1_sprite_height
+    mov     [si+6], bx
+    mov     word ptr [si+4], 0
+    jmp     short loc_2F017
+
+loc_2EFD2:
+    mov     cx, [si+0Ah]
+    cmp     cx, sprite1_sprite_height
+    jl      short loc_2EFE2
+    mov     cx, sprite1_sprite_height
+    dec     cx
+loc_2EFE2:
+    mov     dx, [si+6]
+    mov     bx, [si+4]
+    add     bx, 8000h
+    adc     dx, 0
+    cmp     dx, sprite1_sprite_top
+    jge     short loc_2EFFB
+    mov     dx, sprite1_sprite_top
+loc_2EFFB:
+    mov     [si+6], dx
+    mov     word ptr [si+4], 0
+    sub     cx, dx
+    dec     dx
+    inc     cx
+    mov     [si+0Ah], dx
+    test    al, 2
+    jz      short loc_2F014
+    add     [si+16h], cx
+    jmp     short loc_2F017
+
+loc_2F014:
+    add     [si+1Ah], cx
+loc_2F017:
+    xor     ah, ah
+
+    jmp the_end
+
+loc_2F01F:
+    mov     bl, [si+12h]
+loc_2F022:
+    xor     bh, bh
+}    
+    ASMCASE(T1, 0, 0)
+    ASMCASE(T2, 1, 0)
+    ASMCASE(T3, 2, loc_2F03D)
+    ASMCASE(T4, 3, loc_2F043)
+    ASMCASE(T5, 4, loc_2F05C)
+    ASMCASE(T6, 5, loc_2F076)
+    ASMCASE(T7, 6, loc_2F0A3)
+    ASMCASE(T8, 7, loc_2F0D7)
+    ASMCASE(T9, 8, loc_2F110)
+
+asm {
+/*    shl     bx, 1
+    jmp     cs:word_2F02B[bx]
+word_2F02B     dw 0
+    dw 0
+    dw offset loc_2F03D
+    dw offset loc_2F043
+    dw offset loc_2F05C
+    dw offset loc_2F076
+    dw offset loc_2F0A3
+    dw offset loc_2F0D7
+    dw offset loc_2F110*/
+loc_2F03D:
+    mov     dx, 1
+    jmp     loc_2EF9B
+loc_2F043:
+    mov     cx, [si+2]
+    mov     ax, sprite1_sprite_widthsum
+    dec     ax
+    mov     [si+2], ax
+    sub     cx, ax
+    add     [si+6], cx
+    sub     [si+0Eh], cx
+    add     [si+18h], cx
+    jmp     loc_2ECD9
+loc_2F05C:
+    mov     cx, sprite1_sprite_widthsum
+    dec     cx
+    mov     ax, [si+8]
+    mov     [si+8], cx
+    sub     ax, cx
+    add     [si+1Ah], ax
+    sub     [si+0Eh], ax
+    sub     [si+0Ah], ax
+    jmp     loc_2ECD9
+loc_2F076:
+    mov     ax, [si]
+    mov     dx, [si+2]
+    sub     dx, sprite1_sprite_widthsum
+    inc     dx
+    mov     cx, [si+0Ch]
+    div     cx
+    shr     cx, 1
+    sub     cx, dx
+    adc     ax, 0
+    sub     [si+0Eh], ax
+    jle     short loc_2F03D
+    add     [si+6], ax
+    add     [si+18h], ax
+    mul     word ptr [si+0Ch]
+    sub     [si], ax
+    sbb     [si+2], dx
+    jmp     loc_2ECD9
+loc_2F0A3:
+    mov     dx, sprite1_sprite_widthsum
+    dec     dx
+    mov     [si+8], dx
+    xor     ax, ax
+    sub     ax, [si]
+    sbb     dx, [si+2]
+loc_2F0B3:
+    jl      short loc_2F03D
+    mov     cx, [si+0Ch]
+    div     cx
+    shr     cx, 1
+    sub     cx, dx
+    adc     ax, 0
+    inc     ax
+    mov     cx, [si+0Eh]
+    mov     [si+0Eh], ax
+    sub     cx, ax
+    add     [si+1Ah], cx
+    dec     ax
+    add     ax, [si+6]
+    mov     [si+0Ah], ax
+    jmp     loc_2ECD9
+
+loc_2F0D7:
+    mov     ax, [si+2]
+    mov     cx, sprite1_sprite_widthsum
+    dec     cx
+    sub     ax, cx
+    mov     [si+2], cx
+    sub     [si+0Eh], ax
+    mul     word ptr [si+0Ch]
+    mov     bx, [si+4]
+    mov     cx, [si+6]
+    add     ax, bx
+    adc     dx, cx
+    mov     [si+4], ax
+    mov     [si+6], dx
+    add     bx, 8000h
+    adc     cx, 0
+    add     ax, 8000h
+    adc     dx, 0
+    sub     dx, cx
+    add     [si+18h], dx
+    jmp     loc_2ECD9
+loc_2F110:
+    mov     ax, sprite1_sprite_widthsum
+    mov     cx, ax
+    dec     cx
+    mov     [si+8], cx
+    sub     ax, [si+2]
+    mov     [si+0Eh], ax
+    dec     ax
+    mul     word ptr [si+0Ch]
+    add     ax, [si+4]
+    adc     dx, [si+6]
+    add     ax, 8000h
+    adc     dx, 0
+    mov     ax, [si+0Ah]
+    sub     ax, dx
+    mov     [si+0Ah], dx
+    add     [si+1Ah], ax
+    jmp     loc_2ECD9
+
+loc_2F13E:
+    test    word ptr [var_2], 8
+    jz      short loc_2F148
+    jmp     loc_2EDA5
+loc_2F148:
+    xor     dx, dx
+    mov     ax, [si+2]
+    cmp     ax, sprite1_sprite_left2
+    jge     short loc_2F157
+    or      dh, 2
+loc_2F157:
+    mov     bx, [si]
+    add     bx, 8000h
+    adc     ax, 0
+    cmp     ax, sprite1_sprite_widthsum
+    jl      short loc_2F16A
+    or      dh, 1
+loc_2F16A:
+    mov     ax, [si+8]
+    cmp     ax, sprite1_sprite_left2
+    jge     short loc_2F177
+    or      dl, 2
+loc_2F177:
+    cmp     ax, sprite1_sprite_widthsum
+    jl      short loc_2F181
+    or      dl, 1
+loc_2F181:
+    test    dl, dh
+    jz      short loc_2F18A
+    and     dl, dh
+    jmp     loc_2EF9B
+loc_2F18A:
+    or      dl, dh
+    jz      short loc_2F1A0
+    xor     dh, dh
+    mov     [var_2], dx
+    jmp     loc_2ECAD
+loc_2F196:
+    test    word ptr [var_2], 1
+    jz      short loc_2F1A0
+    jmp     loc_2F01F
+loc_2F1A0:
+    jmp     loc_2ECD9
+loc_2F1A3:
+    mov     byte ptr [si+12h], 1
+    cmp     cx, dx
+    jnz     short loc_2F1AF
+    mov     byte ptr [si+12h], 9
+loc_2F1AF:
+    jle     short loc_2F1BD
+    mov     byte ptr [si+12h], 0
+    mov     [si+2], dx
+    mov     [si+8], cx
+    xchg    cx, dx
+loc_2F1BD:
+    cmp     word ptr [var_4], 0
+    jnz     short loc_2F1E4
+    mov     bx, sprite1_sprite_top
+    cmp     ax, bx
+    jge     short loc_2F1ED
+    mov     al, 4
+    mov     [si+6], bx
+    mov     [si+0Ah], bx
+loc_2F1D4:
+    mov     [si+13h], al
+    mov     word ptr [si+0Eh], 0
+    xor     ah, ah
+
+    jmp the_end
+
+loc_2F1E4:
+    sub     dx, cx
+    inc     dx
+    mov     [si+0Eh], dx
+    jmp     loc_2ECD9
+loc_2F1ED:
+    mov     bx, sprite1_sprite_height
+    cmp     ax, bx
+    jl      short loc_2F200
+    mov     al, 8
+    mov     [si+6], bx
+    mov     [si+0Ah], bx
+    jmp     short loc_2F1D4
+loc_2F200:
+    mov     ax, dx
+    sub     ax, cx
+    inc     ax
+    mov     [si+0Eh], ax
+    cmp     dx, sprite1_sprite_left2
+    jge     short loc_2F21B
+    dec     word ptr [si+0Ah]
+    mov     word ptr [si+16h], 1
+    mov     al, 2
+    jmp     short loc_2F1D4
+loc_2F21B:
+    cmp     cx, sprite1_sprite_widthsum
+    jl      short loc_2F22E
+    dec     word ptr [si+0Ah]
+    mov     word ptr [si+1Ah], 1
+    mov     al, 1
+    jmp     short loc_2F1D4
+loc_2F22E:
+    mov     ax, sprite1_sprite_left2
+    mov     bx, ax
+    sub     ax, cx
+    jle     short loc_2F23E
+    mov     [si+2], bx
+    sub     [si+0Eh], ax
+loc_2F23E:
+    mov     ax, dx
+    mov     bx, sprite1_sprite_widthsum
+    dec     bx
+    sub     ax, bx
+    jle     short loc_2F250
+    sub     [si+0Eh], ax
+    mov     [si+8], bx
+loc_2F250:
+    jmp     loc_2ECD9
+loc_2F253:
+    mov     cx, [si+0Ah]
+    sar     cx, 1
+    mov     ax, [si+6]
+    sar     ax, 1
+    sub     cx, ax
+    sar     cx, 1
+    mov     dx, [si+8]
+    sar     dx, 1
+    mov     ax, [si+2]
+    sar     ax, 1
+    sub     dx, ax
+    sar     dx, 1
+loc_2F26F:
+    cmp     word ptr [si+6], 0C180h
+    jg      short loc_2F2B0
+loc_2F276:
+    mov     ax, [si+6]
+    add     ax, cx
+    mov     [si+6], ax
+    mov     bx, ax
+    sub     ax, sprite1_sprite_top
+    jle     short loc_2F2AB
+    cmp     ax, cx
+    jle     short loc_2F28D
+    mov     ax, cx
+loc_2F28D:
+    sub     bx, sprite1_sprite_height
+    jle     short loc_2F298
+    sub     ax, bx
+    jle     short loc_2F2AB
+loc_2F298:
+    mov     bx, [si+2]
+    cmp     bx, sprite1_sprite_left2
+    jge     short loc_2F2A8
+    add     [si+14h], ax
+    jmp     short loc_2F2AB
+
+loc_2F2A8:
+    add     [si+18h], ax
+loc_2F2AB:
+    add     [si+2], dx
+    jmp     short loc_2F26F
+loc_2F2B0:
+    cmp     word ptr [si+0Ah], 3E80h
+    jge     short loc_2F2D6
+    cmp     word ptr [si+2], 0C180h
+    jle     short loc_2F276
+    cmp     word ptr [si+2], 3E80h
+    jge     short loc_2F276
+    cmp     word ptr [si+8], 0C180h
+    jle     short loc_2F2D6
+    cmp     word ptr [si+8], 3E80h
+    jge     short loc_2F2D6
+    jmp     loc_2EBAD
+loc_2F2D6:
+    mov     ax, [si+0Ah]
+    sub     ax, cx
+    mov     [si+0Ah], ax
+    mov     bx, ax
+    sub     ax, sprite1_sprite_height
+    inc     ax
+    jge     short loc_2F30F
+    neg     ax
+    cmp     ax, cx
+    jle     short loc_2F2F0
+    mov     ax, cx
+loc_2F2F0:
+    sub     bx, sprite1_sprite_top
+    inc     bx
+    jge     short loc_2F2FC
+    add     ax, bx
+    jle     short loc_2F30F
+loc_2F2FC:
+    mov     bx, [si+8]
+    cmp     bx, sprite1_sprite_left2
+    jge     short loc_2F30C
+    add     [si+16h], ax
+    jmp     short loc_2F30F
+
+loc_2F30C:
+    add     [si+1Ah], ax
+loc_2F30F:
+    sub     [si+8], dx
+    jmp     short loc_2F2B0
+}
+
+the_end:
+asm {
+	mov result, ax
+}
+	return result;
 }

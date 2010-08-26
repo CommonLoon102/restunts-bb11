@@ -46,19 +46,20 @@ nosmart
 seg006 segment byte public 'STUNTSC' use16
     assume cs:seg006
     assume es:nothing, ss:nothing, ds:dseg
-    public init_polyinfo
+    public ported_init_polyinfo_
     public copy_material_list_pointers
-    public polyinfo_reset
-    public select_cliprect_rotate
+    public ported_polyinfo_reset_
+    public ported_select_cliprect_rotate_
     public ported_transformed_shape_op_
     public ported_transformed_shape_op_helper_
     public ported_rect_compare_point_
     public ported_transformed_shape_op_helper3_
-    public get_a_poly_info
+    public ported_get_a_poly_info_
     public ported_mat_rot_zxy_
     public ported_rect_adjust_from_point_
     public ported_vector_op_unk2_
-    public calc_sincos80
+    public ported_calc_sincos80_
+    public nopsub_26552
     public sub_26572
     public sub_265EC
     public sub_26670
@@ -67,70 +68,48 @@ seg006 segment byte public 'STUNTSC' use16
     public sub_269D0
     public sub_26A52
     public sub_26B4A
-init_polyinfo proc far
+ported_init_polyinfo_ proc far
 
     mov     ax, 28A0h       ; bytes to reserve
     cwd
-loc_24D68:
     push    dx
-loc_24D69:
     push    ax
-loc_24D6A:
     mov     ax, offset aPolyinfo; "polyinfo"
-loc_24D6D:
     push    ax
-loc_24D6E:
     call    mmgr_alloc_resbytes
-loc_24D73:
     add     sp, 6
-loc_24D76:
     mov     word ptr polyinfoptr, ax
-loc_24D79:
     mov     word ptr polyinfoptr+2, dx
-loc_24D7D:
     sub     ax, ax
     push    ax
-loc_24D80:
     mov     ax, offset mat_y0
     push    ax
-loc_24D84:
     call    mat_rot_y
-loc_24D89:
     add     sp, 4
-loc_24D8C:
     mov     ax, 100h
     push    ax
-loc_24D90:
     mov     ax, offset mat_y100
     push    ax
-loc_24D94:
     call    mat_rot_y
-loc_24D99:
     add     sp, 4
-loc_24D9C:
     mov     ax, 200h
     push    ax
-loc_24DA0:
     mov     ax, offset mat_y200
     push    ax
-loc_24DA4:
     call    mat_rot_y
-loc_24DA9:
     add     sp, 4
-loc_24DAC:
     mov     ax, 300h
     push    ax
     mov     ax, offset mat_y300
     push    ax
-loc_24DB4:
     call    mat_rot_y
     add     sp, 4
     push    cs
-    call near ptr calc_sincos80
+    call near ptr ported_calc_sincos80_
     retf
     ; align 2
     db 144
-init_polyinfo endp
+ported_init_polyinfo_ endp
 copy_material_list_pointers proc far
      s = byte ptr 0
      r = byte ptr 2
@@ -160,7 +139,7 @@ loc_24DD7:
     ; align 2
     db 144
 copy_material_list_pointers endp
-polyinfo_reset proc far
+ported_polyinfo_reset_ proc far
 
     mov     polyinfonumpolys, 0
 loc_24DEC:
@@ -171,14 +150,11 @@ loc_24DEC:
     retf
     ; align 2
     db 144
-polyinfo_reset endp
-select_cliprect_rotate proc far
-    var_E = word ptr -14
-    var_C = word ptr -12
-    var_A = word ptr -10
-    var_8 = word ptr -8
-    var_6 = word ptr -6
-    var_2 = word ptr -2
+ported_polyinfo_reset_ endp
+ported_select_cliprect_rotate_ proc far
+    var_vec = VECTOR ptr -14
+    var_matptr = word ptr -8
+    var_vec2 = VECTOR ptr -6
      s = byte ptr 0
      r = byte ptr 2
     arg_angZ = word ptr 6
@@ -207,7 +183,7 @@ select_cliprect_rotate proc far
     mov     cx, 9
     repne movsw
     push    cs
-    call near ptr polyinfo_reset
+    call near ptr ported_polyinfo_reset_
     mov     ax, [bp+arg_cliprectptr]
     mov     di, offset select_rect_rc
     mov     si, ax
@@ -233,19 +209,19 @@ select_cliprect_rotate proc far
     push    cs
     call near ptr ported_mat_rot_zxy_
     add     sp, 8
-    mov     [bp+var_8], ax
-    mov     [bp+var_A], 2710h
-    mov     [bp+var_C], 0
-    mov     [bp+var_E], 0
-    lea     ax, [bp+var_6]
+    mov     [bp+var_matptr], ax
+    mov     [bp+var_vec.vz], 2710h
+    mov     [bp+var_vec.vy], 0
+    mov     [bp+var_vec.vx], 0
+    lea     ax, [bp+var_vec2]
     push    ax
-    push    [bp+var_8]
-    lea     ax, [bp+var_E]
+    push    [bp+var_matptr]
+    lea     ax, [bp+var_vec]
     push    ax
     call    mat_mul_vector
     add     sp, 6
-    push    [bp+var_2]
-    push    [bp+var_6]
+    push    [bp+var_vec2.vz]
+    push    [bp+var_vec2.vx]
     call    polarAngle
     add     sp, 4
 smart
@@ -256,7 +232,7 @@ nosmart
     mov     sp, bp
     pop     bp
     retf
-select_cliprect_rotate endp
+ported_select_cliprect_rotate_ endp
 ported_transformed_shape_op_ proc far
     var_B7C = word ptr -2940
     var_polyvertunktabptr = word ptr -2938
@@ -2072,7 +2048,7 @@ loc_25FEE:
     pop     bp
     retf
 ported_transformed_shape_op_helper3_ endp
-get_a_poly_info proc far
+ported_get_a_poly_info_ proc far
     var_pattype2 = word ptr -64
     var_polyinfoptrdata = dword ptr -62
     var_polyinfoptr = dword ptr -56
@@ -2296,13 +2272,13 @@ _fill_pixel:
     jmp     _fill_next_eop6
 _get_a_poly_info_done:
     push    cs
-    call near ptr polyinfo_reset
+    call near ptr ported_polyinfo_reset_
     pop     si
     pop     di
     mov     sp, bp
     pop     bp
     retf
-get_a_poly_info endp
+ported_get_a_poly_info_ endp
 ported_mat_rot_zxy_ proc far
      s = byte ptr 0
      r = byte ptr 2
@@ -2712,7 +2688,7 @@ loc_264EB:
     pop     bp
     retf
 ported_vector_op_unk2_ endp
-calc_sincos80 proc far
+ported_calc_sincos80_ proc far
 
     mov     ax, 80h
     push    ax
@@ -2745,23 +2721,30 @@ calc_sincos80 proc far
     retf
     ; align 2
     db 144
+ported_calc_sincos80_ endp
+nopsub_26552 proc far
+     s = byte ptr 0
+     r = byte ptr 2
+    arg_0 = word ptr 6
+    arg_2 = word ptr 8
+
     push    bp
     mov     bp, sp
-    cmp     word ptr [bp+8], 0
+    cmp     [bp+arg_2], 0
     jge     short loc_2656A
-    mov     ax, [bp+6]
-    mov     dx, [bp+8]
+    mov     ax, [bp+arg_0]
+    mov     dx, [bp+arg_2]
     neg     ax
     adc     dx, 0
     neg     dx
     pop     bp
     retf
 loc_2656A:
-    mov     ax, [bp+6]
-    mov     dx, [bp+8]
+    mov     ax, [bp+arg_0]
+    mov     dx, [bp+arg_2]
     pop     bp
     retf
-calc_sincos80 endp
+nopsub_26552 endp
 sub_26572 proc far
      s = byte ptr 0
      r = byte ptr 2
@@ -3661,6 +3644,7 @@ loc_26B8C:
     cbw
 loc_26B90:
     push    ax
+loc_26B91:
     call    sub_36BE8
 loc_26B96:
     add     sp, 6

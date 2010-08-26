@@ -388,6 +388,7 @@ loc_36ADC:
     mov     word ptr regs_x86+6, ax
 loc_36ADF:
     mov     ax, 921Ah
+loc_36AE2:
     push    ax
     push    ax              ; union REGS *
 loc_36AE4:

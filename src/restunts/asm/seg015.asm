@@ -406,8 +406,10 @@ loc_3677B:
     add     [si], di
     mov     ax, [bx+2]
     add     [si+2], ax
+loc_367A2:
     inc     [bp+var_E]
     cmp     [bp+var_E], 10h
+loc_367A9:
     jl      short loc_3677B
     pop     si
     pop     di

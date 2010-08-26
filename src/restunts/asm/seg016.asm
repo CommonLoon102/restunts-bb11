@@ -224,6 +224,7 @@ loc_3688D:
     shl     bx, 1
 loc_3688F:
     shl     bx, 1
+loc_36891:
     mov     si, [bp+arg_6]
     mov     [bx+si], ax
 loc_36896:

@@ -413,6 +413,7 @@ loc_3ACBC:
     mov     bx, [bp+var_2]
 loc_3ACBF:
     les     si, [bp+arg_0]
+loc_3ACC2:
     mov     al, es:[bx+si]
 loc_3ACC5:
     mov     shapenums[bx], al

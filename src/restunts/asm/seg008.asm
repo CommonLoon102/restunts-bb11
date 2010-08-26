@@ -5695,6 +5695,7 @@ loc_2A29C:
     call near ptr ported_file_load_resource_
 loc_2A29F:
     add     sp, 4
+loc_2A2A2:
     mov     [bp+var_4], ax
 loc_2A2A5:
     mov     [bp+var_2], dx

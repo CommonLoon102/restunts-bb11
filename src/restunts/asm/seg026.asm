@@ -55,12 +55,15 @@ toupper proc far
     push    bp
     mov     bp, sp
     cmp     [bp+arg_0], 61h ; 'a'
+loc_370C1:
     jl      short loc_370CD
     cmp     [bp+arg_0], 7Ah ; 'z'
     jg      short loc_370CD
+loc_370C9:
     sub     [bp+arg_0], 20h ; ' '
 loc_370CD:
     mov     ax, [bp+arg_0]
+loc_370D0:
     pop     bp
     retf
 toupper endp

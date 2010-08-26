@@ -7,11 +7,13 @@ OBJDIR = ..\$(TARGET)\build
 # Set up tools for DOS
 !if ($(TARGET)==dos)
 CC = bcc /c /u- /mm /B /n$(OBJDIR) /DRESTUNTS_DOS
+CC2 = bcc /c /u- /mm /n$(OBJDIR) /DRESTUNTS_DOS
 ASM = tasm
 # Set up tools for SDL
 !elif ($(TARGET)==sdl)
 SDLPATH = s:\src\sdl
-CC = cl /MD /c /I$(SDLPATH)\include /DRESTUNTS_SDL /Fo$(OBJDIR)\$?
+CC = cl  /Zi /MD /c /I$(SDLPATH)\include /DRESTUNTS_SDL /Fo$(OBJDIR)\$?
+CC2 = cl  /Zi /MD /c /I$(SDLPATH)\include /DRESTUNTS_SDL /Fo$(OBJDIR)\$?
 
 !else
 !error Unsupported C target: $(TARGET)
@@ -33,7 +35,7 @@ $(OBJDIR)\restunts.obj: restunts.c
 	$(CC) $?
 
 $(OBJDIR)\shape3d.obj: shape3d.c
-	$(CC) $?
+	$(CC2) $?
 
 $(OBJDIR)\shape2d.obj: shape2d.c
 	$(CC) $?

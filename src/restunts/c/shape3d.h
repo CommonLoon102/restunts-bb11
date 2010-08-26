@@ -9,7 +9,7 @@ struct RECTANGLE {
 };
 
 struct VECTOR {
-	int x, y, z;
+	short x, y, z;
 };
 
 struct POINT2D {
@@ -59,5 +59,12 @@ struct TRANSFORMEDSHAPE3D {
 int shape3d_load_all(void);
 void shape3d_free_all(void);
 void shape3d_init_shape(char far* shapeptr, struct SHAPE3D* gameshape);
+unsigned transformed_shape_op(struct TRANSFORMEDSHAPE3D* arg_transshapeptr);
+void set_projection(int i1, int i2, int i3, int i4);
+int polarAngle(int z, int y);
+unsigned select_cliprect_rotate(int angZ, int angX, int angY, struct RECTANGLE* cliprect, int unk);
+void init_polyinfo();
+void polyinfo_reset();
+void get_a_poly_info();
 
 #endif

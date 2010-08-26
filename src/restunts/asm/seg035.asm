@@ -398,28 +398,28 @@ loc_3AF6F:
     push    word ptr [bp+var_8+2]
 loc_3AF80:
     push    word ptr [bp+var_8]
-    call    sub_2F314
+    call    parse_shape2d_helper
     add     sp, 4
     mov     [bp+var_14], ax
     mov     [bp+var_12], dx
     push    dx
     push    ax
 loc_3AF93:
-    call    sub_2F334
+    call    parse_shape2d_helper2
     add     sp, 4
     mov     word ptr [bp+var_8], ax
     mov     word ptr [bp+var_8+2], dx
 loc_3AFA1:
     push    [bp+var_24]
     push    [bp+var_26]
-    call    sub_2F314
+    call    parse_shape2d_helper
     add     sp, 4
     push    word ptr [bp+var_8+2]
     push    word ptr [bp+var_8]
 loc_3AFB5:
     mov     si, ax
     mov     di, dx
-    call    sub_2F314
+    call    parse_shape2d_helper
 loc_3AFBE:
     add     sp, 4
     sub     ax, si
@@ -457,14 +457,14 @@ loc_3AFE4:
 loc_3B020:
     push    [bp+arg_mempagesseg]
     push    [bp+arg_mempagesofs]
-    call    sub_2F314
+    call    parse_shape2d_helper
     add     sp, 4
     push    word ptr [bp+var_8+2]
     push    word ptr [bp+var_8]
     mov     si, ax
     mov     di, dx
 loc_3B038:
-    call    sub_2F314
+    call    parse_shape2d_helper
     add     sp, 4
     sub     ax, si
     sbb     dx, di
@@ -529,6 +529,7 @@ loc_3B0A2:
     inc     [bp+var_2]
 loc_3B0A5:
     les     bx, [bp+arg_0]
+loc_3B0A8:
     inc     word ptr [bp+arg_0]
     mov     al, [bp+var_4]
 loc_3B0AE:

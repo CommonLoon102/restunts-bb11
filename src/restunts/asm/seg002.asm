@@ -321,6 +321,7 @@ loc_19EFC:
     mov     dx, offset intr0_handler
 loc_19EFF:
     mov     ah, 25h ; '%'
+loc_19F01:
     mov     al, 0
     int     21h             ; DOS - SET INTERRUPT VECTOR
     pop     ds

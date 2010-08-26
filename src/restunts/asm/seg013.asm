@@ -134,6 +134,7 @@ loc_3622C:
     push    [bp+var_4]
 loc_3622F:
     mov     ax, 1
+loc_36232:
     push    ax
     push    [bp+arg_2]
 loc_36236:

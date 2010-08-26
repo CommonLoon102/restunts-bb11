@@ -39,6 +39,11 @@ extrn mat_rot_zxy:proc
 extrn vector_op_unk:proc
 extrn vector_op_unk2:proc
 extrn vector_to_point:proc
+extrn set_projection:proc
+extrn select_cliprect_rotate:proc
+extrn polyinfo_reset:proc
+extrn init_polyinfo:proc
+extrn calc_sincos80:proc
 
 extrn file_find:proc
 extrn file_find_next:proc
@@ -96,6 +101,18 @@ extrn shape3d_init_shape:proc
 extrn transformed_shape_op:proc
 extrn transformed_shape_op_helper2:proc
 extrn transformed_shape_op_helper3:proc
+extrn get_a_poly_info:proc
+extrn preRender_default:proc
+extrn preRender_default_alt:proc
+extrn preRender_helper:proc
+extrn preRender_helper3:proc
+extrn skybox_op_helper:proc
+extrn preRender_wheel_helper4:proc
+extrn preRender_patterned:proc
+extrn preRender_unk:proc
+
+extrn draw_line_related:proc
+extrn draw_line_related_alt:proc
 
 extrn sprite_make_wnd:proc
 extrn sprite_free_wnd:proc

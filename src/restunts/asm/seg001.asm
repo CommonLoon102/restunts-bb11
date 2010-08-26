@@ -5574,6 +5574,7 @@ loc_179CD:
 loc_179E2:
     mov     al, [bp+var_C]
     cbw
+loc_179E6:
     mov     state.game_startcol, ax
     mov     al, [bp+var_114]
     cbw
@@ -9721,6 +9722,7 @@ loc_19DA9:
 loc_19DAE:
     add     sp, 6
     push    dx
+loc_19DB2:
     push    ax
     mov     ax, offset carshortname
 loc_19DB6:

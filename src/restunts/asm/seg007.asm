@@ -867,7 +867,7 @@ loc_27233:
     push    ax
     mov     ax, 33BCh
     push    ax
-    call    sub_3219D
+    call    nopsub_3219D
     pop     bx
     pop     bx
     mov     al, 1

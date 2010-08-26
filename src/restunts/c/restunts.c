@@ -211,9 +211,9 @@ void init_trackdata(void) {
 
 extern struct SHAPE3D game3dshapes[];
 
-extern void shape3d_load_car_shapes(char* carid, char* oppcarid);
-extern void select_cliprect_rotate(int angX, int angY, int angZ, struct RECTANGLE* cliprect, int unk);
-extern void transformed_shape_op(struct TRANSFORMSHAPE3D* shape);
+//extern void shape3d_load_car_shapes(char* carid, char* oppcarid);
+extern unsigned select_cliprect_rotate(int angX, int angY, int angZ, struct RECTANGLE* cliprect, int unk);
+//extern void transformed_shape_op(struct TRANSFORMSHAPE3D* shape);
 
 extern void sprite_blit_to_video(struct SPRITE far* sprite);
 extern void sub_29772(void);
@@ -239,70 +239,7 @@ extern int* material_clrlist_ptr_cpy;
 extern int* material_patlist_ptr_cpy;
 
 extern void preRender_default(int color, int vertlinecount, int* vertlines);
-/*
-void get_a_poly_info2(void) {
 
-	int counter;
-	int materialtype; // var_6
-	int materialcolor; // var_8
-	int materialpattern;
-	int objtype;
-	int somecount; // var_2
-	unsigned int regdi;
-	unsigned char far* polyinfoptr;
-	int far* polyptr;
-	int i;
-	int var_32[256];
-
-	regdi = 0x190;
-	counter = 0;
-	while (counter < polyinfonumpolys) {
-		regdi = word_40ED6[regdi];
-		polyinfoptr = polyinfoptrs[regdi];
-		materialtype = polyinfoptr[2];
-
-		materialcolor = material_clrlist_ptr_cpy[materialtype];
-		objtype = polyinfoptr[4];
-
-		if (objtype == 0) {
-			somecount = polyinfoptr[3];
-			polyptr = polyinfoptr + 6;
-			
-			for (i = 0; i < somecount; i++) {
-				var_32[i * 2 + 0] = polyptr[i * 2 + 0];
-				var_32[i * 2 + 1] = polyptr[i * 2 + 1];
-			}
-			materialpattern = material_patlist_ptr_cpy[materialtype];
-			if (materialpattern == 0) {
-				preRender_default(materialcolor, somecount, var_32);
-			} else
-			if (materialpattern == 1) {
-				// fill poatterned
-			} else {
-				// fill unk
-			}
-		} else
-		if (objtype == 1) {
-			// goto fill_solid
-		} else
-		if (objtype == 2) {
-			// goto fill_sphere
-		} else
-		if (objtype == 3) {
-			// goto fill_wheel0
-		} else
-		if (objtype == 5) {
-			// goto fill_next
-		} else {
-			// goto fill_pixel
-		}
-		
-		counter++;
-	}
-	
-	polyinfo_reset(); // polyinfo_reset();
-}
-*/
 int stuntsmain2(int argc, char* argv) {
 	int result;
 	char far* textresptr;
@@ -364,10 +301,10 @@ int stuntsmain2(int argc, char* argv) {
 	transshape.rectptr = &shaperect;
 
 	counter = 0;
-	shapeindex = 124;
+	shapeindex = 24;
 	for (; ; counter++) {
 
-		transshape.rotvec.z = counter + 0x230;
+		transshape.rotvec.z = 0; //counter + 0x230;
 		
 		// seg000:1C58                 mov     [bp+var_transshape.ts_shapeptr], (offset game3dshapes.shape3d_numverts+0AA8h)
 		// 0xAA8 / sizeof(SHAPE3D) = 0xAA8 / 0x16 = 124, points at where car0 is loaded during shape3d_load_car_shapes();

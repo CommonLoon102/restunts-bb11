@@ -1,17 +1,18 @@
 seg006 segment byte public 'STUNTSC' use16
-    extrn init_polyinfo:proc
+    extrn ported_init_polyinfo_:proc
     extrn copy_material_list_pointers:proc
-    extrn polyinfo_reset:proc
-    extrn select_cliprect_rotate:proc
+    extrn ported_polyinfo_reset_:proc
+    extrn ported_select_cliprect_rotate_:proc
     extrn ported_transformed_shape_op_:proc
     extrn ported_transformed_shape_op_helper_:proc
     extrn ported_rect_compare_point_:proc
     extrn ported_transformed_shape_op_helper3_:proc
-    extrn get_a_poly_info:proc
+    extrn ported_get_a_poly_info_:proc
     extrn ported_mat_rot_zxy_:proc
     extrn ported_rect_adjust_from_point_:proc
     extrn ported_vector_op_unk2_:proc
-    extrn calc_sincos80:proc
+    extrn ported_calc_sincos80_:proc
+    extrn nopsub_26552:proc
     extrn sub_26572:proc
     extrn sub_265EC:proc
     extrn sub_26670:proc

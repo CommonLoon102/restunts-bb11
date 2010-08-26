@@ -585,9 +585,11 @@ loc_3A916:
     push    word ptr es:[bx+2]
     push    word ptr es:[bx+12h]
     push    ax
+loc_3A93F:
     push    word_42A1A
     mov     ax, [bp+var_6]
     add     ax, word_42A18
+loc_3A94A:
     push    ax
     call    sprite_1_unk2
 loc_3A950:
