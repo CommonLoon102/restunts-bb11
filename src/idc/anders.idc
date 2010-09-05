@@ -674,9 +674,9 @@ static PortFuncName(labelname) {
 		labelname == "preRender_wheel_helper4" ||
 		labelname == "preRender_unk" ||
 		labelname == "preRender_patterned" ||
-		labelname == "preRender_helper" ||
+		//labelname == "preRender_helper" ||
 		//labelname == "preRender_helper2" ||
-		labelname == "preRender_helper3" ||
+		//labelname == "preRender_helper3" ||
 
 		labelname == "draw_line_related" ||
 		labelname == "draw_line_related_alt" ||

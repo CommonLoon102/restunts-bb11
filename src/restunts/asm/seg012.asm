@@ -220,11 +220,11 @@ seg012 segment byte public 'STUNTSC' use16
     public ported_preRender_wheel_helper4_
     public loc_317FB
     public loc_3180A
-    public ported_preRender_helper_
+    public preRender_helper
     public preRender_helper2
     public off_31A82
     public locret_31AA3
-    public ported_preRender_helper3_
+    public preRender_helper3
     public off_31B84
     public off_31CF7
     public nopsub_31F39
@@ -6675,7 +6675,7 @@ loc_3190D:
     jz      short loc_3192E
     call    draw_line_related
     mov     [bp+var_16], di
-    call near ptr ported_preRender_helper_
+    call near ptr preRender_helper
     jmp     short loc_31939
     ; align 2
     db 144
@@ -6716,7 +6716,7 @@ loc_31972:
     call    draw_line_related_alt
 loc_31977:
     mov     [bp+var_16], di
-    call near ptr ported_preRender_helper3_
+    call near ptr preRender_helper3
     mov     di, [bp+var_16]
     add     sp, 0Ah
 loc_31983:
@@ -6755,7 +6755,7 @@ loc_319C7:
     pop     bp
     retf
 ported_preRender_wheel_helper4_ endp
-ported_preRender_helper_ proc near
+preRender_helper proc near
     var_18 = word ptr -24
      s = byte ptr 0
      r = byte ptr 2
@@ -6833,7 +6833,7 @@ loc_31A46:
     add     di, 3C0h
     dec     ax
     rep stosw
-ported_preRender_helper_ endp
+preRender_helper endp
 preRender_helper2 proc near
     var_18 = word ptr -24
      r = byte ptr 0
@@ -6963,7 +6963,7 @@ loc_31B55:
     mov     [di+3C0h], ax
     retn
 preRender_helper2 endp
-ported_preRender_helper3_ proc near
+preRender_helper3 proc near
     var_18 = word ptr -24
     var_C = byte ptr -12
     var_A = byte ptr -10
@@ -7463,7 +7463,7 @@ loc_31F1D:
     rep stosw
 locret_31F38:
     retn
-ported_preRender_helper3_ endp
+preRender_helper3 endp
 nopsub_31F39 proc far
     var_7D0 = word ptr -2000
     var_798 = byte ptr -1944
@@ -7739,7 +7739,7 @@ loc_320BF:
     mov     [bp+var_16], di
     cmp     [bp+var_C], 0
     jz      short loc_320D6
-    call near ptr ported_preRender_helper_
+    call near ptr preRender_helper
     jmp     short loc_320D9
     ; align 2
     db 144
@@ -7789,7 +7789,7 @@ loc_320FC:
     cmp     byte ptr [si+12h], 2
     jl      short loc_320F1
     mov     [bp+var_16], di
-    call near ptr ported_preRender_helper3_
+    call near ptr preRender_helper3
     mov     di, [bp+var_16]
     jmp     short loc_320F1
 loc_32114:
@@ -8145,6 +8145,7 @@ loc_323B4:
     retf
 ported_set_projection_ endp
 ported_vector_to_point_ proc far
+    var_8000 = byte ptr -32768
      s = byte ptr 0
      r = byte ptr 2
     arg_vec = word ptr 6
@@ -8196,7 +8197,7 @@ loc_3241E:
     jmp     short loc_3244D
     db 144
 loc_32431:
-    mov     ax, 8000h
+    mov     ax, 32768
     mov     [di], ax
     mov     [di+2], ax
     jmp     short loc_32472
@@ -8257,7 +8258,7 @@ loc_32496:
     or      ax, ax
     jl      short loc_324A2
 loc_3249A:
-    mov     ax, 8300h
+    mov     ax, -7D00h
     mov     [di+2], ax
     jmp     short loc_32472
 loc_324A2:

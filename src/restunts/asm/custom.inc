@@ -104,8 +104,8 @@ extrn transformed_shape_op_helper3:proc
 extrn get_a_poly_info:proc
 extrn preRender_default:proc
 extrn preRender_default_alt:proc
-extrn preRender_helper:proc
-extrn preRender_helper3:proc
+;extrn preRender_helper:proc
+;extrn preRender_helper3:proc
 extrn skybox_op_helper:proc
 extrn preRender_wheel_helper4:proc
 extrn preRender_patterned:proc

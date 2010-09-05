@@ -1,5 +1,6 @@
 #include <dos.h>
 #include <stddef.h>
+#include <limits.h>
 #include "externs.h"
 #include "fileio.h"
 #include "memmgr.h"
@@ -25,13 +26,13 @@ X    33 rect_adjust_from_point(0)
 X    47 polarRadius2D (6)
 X    13 polarRadius3D (4)
 X     7 transformed_shape_op_helper2 (0)
-     74 transformed_shape_op_helper (0)
+X    74 transformed_shape_op_helper (0)
 X     - polarAngle (0)
 X     - mat_rot_z (4)
 X     - mat_rot_x (4)
 X     - mat_rot_y (4)
-      - set_projection (10)
-      - select_cliprect_rotate (10)
+X     - set_projection (10)
+X     - select_cliprect_rotate (10)
 
 */
 
@@ -130,7 +131,7 @@ extern unsigned polyinfoptrnext;
 extern char far* polyinfoptr;
 extern char far* transshapepolyinfo;
 struct POINT2D far* transshapepolyinfopts;
-extern unsigned far* polyinfoptrs[];
+extern int far* polyinfoptrs[];
 extern unsigned polyinfonumpolys;
 extern char transprimitivepaintjob;
 extern unsigned char far* transshapeprimindexptr;
@@ -245,7 +246,7 @@ unsigned transformed_shape_op(struct TRANSFORMEDSHAPE3D* arg_transshapeptr) {
 		var_vec2.y = 0;
 		var_vec2.z = 0x1000;
 		mat_mul_vector(&var_vec2, &var_mat, &var_vec3);
-		if (var_vec3.y <= 0 || arg_transshapeptr->pos.y >= 0 || arg_transshapeptr->unk * 2 <= abs(var_vec.x) || arg_transshapeptr->unk * 2 <= abs(var_vec.z)) {
+		if ((var_vec3.y <= 0 || arg_transshapeptr->pos.y >= 0) && (arg_transshapeptr->unk * 2 <= abs(var_vec.x) || arg_transshapeptr->unk * 2 <= abs(var_vec.z))) {
 			byte_4393D = vector_op_unk2(&var_vec3);
 			var_45C = invpow2tbl[byte_4393D];
 			var_A = invpow2tbl[byte_4393D];
@@ -904,7 +905,8 @@ loc_25335:
     jz      short loc_25304
     cmp     ax, 1
     jnz     short loc_2536E
-    jmp     loc_253FD
+    //jmp     loc_253FD
+    mov word ptr [var_1A], 1
 loc_2536E:
     jmp     short loc_25325
 }
@@ -1031,7 +1033,7 @@ asm {
 loc_2542A:
 
 	if (var_460 != 0) goto loc_25801;
-	if (var_ptrectflag != 0 && var_1A != 0) goto loc_25801;
+	if (var_ptrectflag != 0 && var_1A == 0) goto loc_25801;
 	if (var_primtype == 0) goto _primtype_poly;
 	if (var_primtype == 1) goto _primtype_line;
 	if (var_primtype == 2) goto _primtype_sphere;
@@ -2573,8 +2575,10 @@ unsigned transformed_shape_op_helper2(unsigned i1, int i2) {
 extern int word_40ED6[];
 
 extern unsigned transformed_shape_op_helper(unsigned arg_0, unsigned arg_2) {
+	unsigned result;
+	int regdi, regsi, regax;
 
-	int regdi, regsi;
+	//return ported_transformed_shape_op_helper_(arg_0, arg_2);
 
 	if (arg_2 == 0) {
 		regdi = word_40ED6[word_45D98];
@@ -2583,8 +2587,11 @@ extern unsigned transformed_shape_op_helper(unsigned arg_0, unsigned arg_2) {
 		regdi = word_40ED6[word_4394E];
 		regsi = word_4554A;
 
-		while (regdi >= 0 && regsi-- != 0) {
-			if (*polyinfoptrs[regdi] < arg_0) break;
+		while (regdi >= 0) {
+			regax = regsi;
+			regsi--;
+			if (regax == 0) break;
+			if (polyinfoptrs[regdi][0] < (int)arg_0) break;
 			word_45D98 = regdi;
 			regdi = word_40ED6[regdi];
 		}
@@ -2748,39 +2755,46 @@ extern void draw_filled_lines();
 extern void draw_patterned_lines();
 extern void draw_unknown_lines();
 extern void preRender_line();
-extern unsigned draw_line_related(unsigned, unsigned, unsigned, unsigned, unsigned);
-extern unsigned draw_line_related_alt(unsigned, unsigned, unsigned, unsigned, unsigned);
-void preRender_helper(int var_18, int regsi, int mode);
-//void preRender_helper2();
-void preRender_helper3(unsigned regsi, unsigned var_A, unsigned var_C, unsigned var_18);
+extern unsigned draw_line_related(unsigned, unsigned, unsigned, unsigned, int*);
+extern unsigned draw_line_related_alt(unsigned, unsigned, unsigned, unsigned, int*);
+void generate_poly_edges(int* var_18, int* regsi, int mode);
+void preRender_default_impl_helper(int* regsi, unsigned var_A, unsigned var_C, int* var_18);
 
-extern void (*spritefunc)(unsigned, unsigned, unsigned, unsigned, unsigned);
+extern void (*spritefunc)(int*, int*, unsigned, unsigned, unsigned);
 extern void (*imagefunc)(unsigned, unsigned, unsigned, unsigned, unsigned);
 
 extern struct SPRITE far sprite1; // seg012
 extern struct SPRITE far sprite2; // seg012
 
-void preRender_default_impl(unsigned arg_color, unsigned arg_vertlinecount, unsigned* arg_vertlines, unsigned var_A);
+void preRender_default_impl(unsigned arg_color, unsigned arg_vertlinecount, int* arg_vertlines, unsigned var_A);
 
 void preRender_default_alt(unsigned arg_color, unsigned arg_vertlinecount, unsigned* arg_vertlines) {
+	//return ported_preRender_default_alt_(arg_color, arg_vertlinecount, arg_vertlines);
+
 	spritefunc = &draw_filled_lines;
 	imagefunc = &preRender_line;
 	preRender_default_impl(arg_color, arg_vertlinecount, arg_vertlines, 0);
 }
 
 void preRender_default(unsigned arg_color, unsigned arg_vertlinecount, unsigned* arg_vertlines) {
+	//return ported_preRender_default_(arg_color, arg_vertlinecount, arg_vertlines);
+
 	spritefunc = &draw_filled_lines;
 	imagefunc = &preRender_line;
 	preRender_default_impl(arg_color, arg_vertlinecount, arg_vertlines, 1);
 }
 
 void skybox_op_helper(unsigned arg_color, unsigned arg_vertlinecount, struct POINT2D arg_vertlines[]) {
+	//return ported_skybox_op_helper_(arg_color, arg_vertlinecount, &arg_vertlines);
+
 	spritefunc = &draw_filled_lines;
 	imagefunc = &preRender_line;
 	preRender_default_impl(arg_color, arg_vertlinecount, &arg_vertlines, 1);
 }
 
 void preRender_wheel_helper4(unsigned arg_color, unsigned arg_vertlinecount, struct POINT2D arg_vertlines[]) {
+	//return ported_preRender_wheel_helper4_(arg_color, arg_vertlinecount, &arg_vertlines);
+
 	spritefunc = &draw_filled_lines;
 	imagefunc = &preRender_line;
 	preRender_default_impl(arg_color, arg_vertlinecount, &arg_vertlines, 0);
@@ -2801,303 +2815,213 @@ void preRender_unk(unsigned arg_color, unsigned unk, unsigned arg_vertlinecount,
 }
 
 void preRender_patterned(unsigned unk, unsigned arg_color, unsigned arg_vertlinecount, struct POINT2D* arg_vertlines) {
+	//return ported_preRender_patterned_(unk, arg_color, arg_vertlinecount, arg_vertlines);
+
 	spritefunc = &draw_patterned_lines;
 	imagefunc = &preRender_line;
 	word_4031E = unk;
 	
 	preRender_default_impl(arg_color, arg_vertlinecount, arg_vertlines, 0);
 }
-	
-void preRender_default_impl(unsigned arg_color, unsigned arg_vertlinecount, unsigned* arg_vertlines, unsigned var_A) {
-	//printf("%i %i %i", materialcolor, somecount, var_32);
 
-	unsigned char var_798[960 + 960];
+void preRender_default_impl(unsigned arg_color, unsigned arg_vertlinecount, int* arg_vertlines, unsigned var_A) {
+	unsigned short var_798[480 + 480];
 	unsigned char var_7D0[56];
 
-	unsigned var_18, var_16, var_14, var_12, var_10, var_E;
-	//unsigned var_A;
+	unsigned* var_18;
+	unsigned* var_16;
+	unsigned* var_14;
+	unsigned* var_10;
+	int var_E, var_12;
 	unsigned var_C;
-	unsigned var_8;
-	unsigned var_6; // unused
-	unsigned var_4, var_2;
+	unsigned* var_8;
+	int var_4, var_2;
 
-	//unsigned var_2, var_4, var_8, var_E, var_10, var_12, var_14, var_16, var_18;
-	unsigned* var_vertlineptr;
+	int* var_vertlineptr;
+	int minx, maxx, i;
+	int temp0x, temp0y, temp1x, temp1y;
 
-	unsigned sprite1_sprite_left2 = sprite1.sprite_left2;
-	unsigned sprite1_sprite_widthsum = sprite1.sprite_widthsum;
-	unsigned sprite1_sprite_top = sprite1.sprite_top;
-	unsigned sprite1_sprite_height = sprite1.sprite_height;
+	int sprite1_sprite_left2 = sprite1.sprite_left2;
+	int sprite1_sprite_widthsum = sprite1.sprite_widthsum;
+	int sprite1_sprite_top = sprite1.sprite_top;
+	int sprite1_sprite_height = sprite1.sprite_height;
 	
-	//return ported_preRender_default_(arg_color, arg_vertlinecount, arg_vertlines);
+	var_vertlineptr = arg_vertlines;
+	var_8 = var_vertlineptr + ((arg_vertlinecount - 1) << 1); // asm does shl 2 for byte-offset - points at end of vertptr
+	var_18 = &var_798;
+	var_2 = sprite1_sprite_left2;
+	var_4 = sprite1_sprite_widthsum - 1;
+	var_12 = var_E = var_vertlineptr[1];
+	maxx = minx = var_vertlineptr[0];
+	var_10 = arg_vertlines;
+	var_14 = arg_vertlines;
+	if (arg_vertlinecount - 1 == 0) {
+		fatal_error("untested imagefunc");
+		imagefunc(var_vertlineptr[0], var_vertlineptr[1], var_vertlineptr[0], var_vertlineptr[0], arg_color);
+		return ;
+	}
 
-	//var_A = 1;
-asm {
+	for (i = 1; i < arg_vertlinecount; i++) {
+		if (arg_vertlines[i * 2 + 1] <= var_E) {
+			var_E = arg_vertlines[i*2 + 1];
+			var_10 = &arg_vertlines[i * 2];
+		}
+		if (arg_vertlines[i * 2 + 1] > var_12) {
+			var_12 = arg_vertlines[i * 2 + 1];
+			var_14 = &arg_vertlines[i * 2];
+		}
+		
+		if (arg_vertlines[i * 2 + 0] < minx) {
+			minx = arg_vertlines[i * 2 + 0];
+		}
+		if (arg_vertlines[i * 2 + 0] > maxx) {
+			maxx = arg_vertlines[i * 2 + 0];
+		}
+		
+	}
 
-/*    mov     [var_A], 1
+	if (maxx < var_2) return;
+	if (minx >= var_4) return ;
+	if (var_12 < sprite1_sprite_top) return ;
+	if (var_E >= sprite1_sprite_height) return ;
+	var_C = 0;
 
-    mov     ax, offset draw_filled_lines
-    mov     spritefunc, ax
-    mov     ax, offset preRender_line
-    mov     imagefunc, ax*/
-    mov     si, [arg_vertlines]
+	if (maxx > var_4 || minx < var_2 || var_12 >= sprite1_sprite_height || var_E < sprite1_sprite_top) {
+		var_C = 1;
+	}
+	if (var_12 == var_E || maxx == minx) {
+		imagefunc(minx, var_E, maxx, var_12, arg_color);
+		return ;
+	}
 
-    mov     [var_vertlineptr], si
-    mov     cx, [arg_vertlinecount]
-    mov     ax, cx
-    dec     ax
-    shl     ax, 1
-    shl     ax, 1
-    add     ax, si
-    mov     [var_8], ax
-    cld
-    mov     ax, ss
-    mov     es, ax
-    lea     ax, [var_798]
-    mov     [var_18], ax
-    mov ax, [sprite1_sprite_left2]
-    mov     [var_2], ax
-    mov ax, [sprite1_sprite_widthsum]
-    dec     ax
-    mov     [var_4], ax
-    mov     ax, [si+2]
-    mov     [var_E], ax
-    mov     [var_12], ax
-    mov     bx, [si]
-    mov     dx, bx
-    mov     [var_10], si
-    mov     [var_14], si
-    add     si, 4
-    dec     cx
-    jnz     short loc_3186D
+	var_16 = var_10;
+	
+	do {
+		temp0x = var_16[0];
+		temp0y = var_16[1];
+		var_16+=2;
+		if (var_16 > var_8)
+			var_16 = var_vertlineptr;
+		
+		temp1x = var_16[0];
+		temp1y = var_16[1];
+		if (temp1y > temp0y) {
+			
+			if (var_C != 0) {
+				draw_line_related(temp0x, temp0y, temp1x, temp1y, var_7D0);
+				generate_poly_edges(var_18, var_7D0, 0);
+			} else {
+				draw_line_related_alt(temp0x, temp0y, temp1x, temp1y, var_7D0);
+				generate_poly_edges(var_18, var_7D0, 1);
+			}
+		}
+		
+	} while (var_16 != var_14);
 
-    push    [arg_color]
-    mov     si, [var_vertlineptr]
-    push    word ptr [si+2]
-    push    word ptr [si]
-    push    word ptr [si+2]
-    push    word ptr [si]
-    call    dword ptr imagefunc
-    add     sp, 0Ah
-jmp the_end
+	var_16 = var_10;
+	do {
+		temp0x = var_16[0];
+		temp0y = var_16[1];
+		var_16-=2;
+		if (var_16 < var_vertlineptr)
+			var_16 = var_8;
+		temp1x = var_16[0];
+		temp1y = var_16[1];
+		if (temp1y > temp0y) {
+			
+			if (var_C != 0) {
+				draw_line_related(temp0x, temp0y, temp1x, temp1y, var_7D0);
+			} else {
+				draw_line_related_alt(temp0x, temp0y, temp1x, temp1y, var_7D0);
+			}
+			preRender_default_impl_helper(var_7D0, var_A, var_C, var_18);
+		}
+	} while (var_16 != var_14);
 
-loc_3186D:
-    mov     ax, [si+2]
-    cmp     ax, [var_E]
-    jg      short loc_3187B
-    mov     [var_E], ax
-    mov     [var_10], si
-loc_3187B:
-    cmp     ax, [var_12]
-    jle     short loc_31886
-    mov     [var_12], ax
-    mov     [var_14], si
-loc_31886:
-    mov     ax, [si]
-    cmp     ax, bx
-    jge     short loc_3188E
-    mov     bx, ax
-loc_3188E:
-    cmp     ax, dx
-    jle     short loc_31894
-    mov     dx, ax
-loc_31894:
-    add     si, 4
-    loop    loc_3186D
+	temp0y = var_12;
 
-    cmp     dx, [var_2]
-    jl      short loc_318F0
-    cmp     bx, [var_4]
-    jge     short loc_318F0
-    mov     ax, [var_12]
-    cmp     ax, [sprite1_sprite_top]
-    jl      short loc_318F0
-    mov     cx, [var_E]
-    cmp     cx, [sprite1_sprite_height]
-    jge     short loc_318F0
-    mov     word ptr [var_C], 0
-    cmp     dx, [var_4]
-    jg      short loc_318D3
-    cmp     bx, [var_2]
-    jl      short loc_318D3
-
-    cmp     ax, [sprite1_sprite_height]
-    jge     short loc_318D3
-    cmp     cx, [sprite1_sprite_top]
-    jge     short loc_318D7
-loc_318D3:
-    mov     word ptr [var_C], 1
-loc_318D7:
-    cmp     ax, cx
-    jz      short loc_318DF
-    cmp     dx, bx
-    jnz     short loc_318F6
-loc_318DF:
-    push    [arg_color]
-    mov     si, [var_vertlineptr]
-    push    ax
-    push    dx
-    push    cx
-    push    bx
-    call    dword ptr imagefunc
-    add     sp, 0Ah
-loc_318F0:
-jmp the_end
-
-loc_318F6:
-    lea     si, [var_7D0]
-    mov     di, [var_10]
-loc_318FD:
-    mov     ax, [di+2]
-    mov     cx, [di]
-    add     di, 4
-    cmp     di, [var_8]
-    jbe     short loc_3190D
-    mov     di, [var_vertlineptr]
-loc_3190D:
-    mov     dx, [di+2]
-    cmp     dx, ax
-    jle     short loc_3193F
-    push    si
-    push    dx
-    push    word ptr [di]
-    push    ax
-    push    cx
-
-    cmp     word ptr [var_C], 0
-    jz      short loc_3192E
-
-    call    far ptr draw_line_related
-    add     sp, 0Ah
-    mov     [var_16], di
-
-//    call near ptr preRender_helper	// this is related to retn, and the call + jle thingy below to the sub ... 
-
-mov ax, 0
-push ax
-push si
-push word ptr [var_18]
-call far ptr preRender_helper	// this is related to retn, and the call + jle thingy below to the sub ... 
-add sp, 6
-
-    jmp     short loc_31939
-
-loc_3192E:
-    call    far ptr draw_line_related_alt
-    add     sp, 0Ah
-    mov     [var_16], di
-//    call near ptr preRender_helper2 // CALL NEAR HERE; JLE ELSEWHERE
-
-mov ax, 1
-push ax
-push si
-push word ptr [var_18]
-call far ptr preRender_helper // CALL NEAR HERE; JLE ELSEWHERE
-add sp, 6
-
-loc_31939:
-    mov     di, [var_16]
-loc_3193F:
-    cmp     di, [var_14]
-    jnz     short loc_318FD
-    mov     di, [var_10]
-loc_31947:
-    mov     ax, [di+2]
-    mov     cx, [di]
-    sub     di, 4
-    cmp     di, [var_vertlineptr]
-    jnb     short loc_31957
-    mov     di, [var_8]
-loc_31957:
-    mov     dx, [di+2]
-    cmp     dx, ax
-    jle     short loc_31983
-    push    si
-    push    dx
-    push    word ptr [di]
-    push    ax
-    push    cx
-    cmp     word ptr [var_C], 0
-    jz      short loc_31972
-    call    far ptr draw_line_related
-    add     sp, 0Ah
-    jmp     short loc_31977
-
-loc_31972:
-    call    far ptr draw_line_related_alt
-    add     sp, 0Ah
-loc_31977:
-    mov     [var_16], di
-//    call near ptr preRender_helper3
-
-push word ptr [var_18]
-push word ptr [var_C]
-push word ptr [var_A]
-push si
-call far ptr preRender_helper3
-add sp, 8
-
-    mov     di, [var_16]
-loc_31983:
-    cmp     di, [var_14]
-    jnz     short loc_31947
-    mov     ax, [var_12]
-
-    cmp     ax, [sprite1_sprite_height]
-    jl      short loc_31997
-    mov     ax, [sprite1_sprite_height]
-
-    dec     ax
-loc_31997:
-    mov     bx, [var_E]
-
-    cmp     bx, [sprite1_sprite_top]
-    jge     short loc_319A6
-    mov     bx, [sprite1_sprite_top]
-
-loc_319A6:
-    sub     ax, bx
-    jle     short loc_319C7
-    inc     ax
-    push    word ptr [arg_color]
-    push    ax
-    push    bx
-    shl     bx, 1
-    lea     ax, [var_798 + 960] // var_3D8]
-    add     ax, bx
-    push    ax
-    lea     ax, [var_798]
-    add     ax, bx
-    push    ax
-    call    dword ptr spritefunc
-    add     sp, 0Ah
-loc_319C7:
-//    pop     di
-//    pop     si
+	if (temp0y >= sprite1_sprite_height) 
+		temp0y = sprite1_sprite_height - 1;
+	temp1y = var_E;
+	if (temp1y < sprite1_sprite_top)
+		temp1y = sprite1_sprite_top;
+	
+	temp0x = temp0y - temp1y;
+	if (temp0x <= 0) return ;
+	temp0x++;
+	
+	spritefunc(&var_798[temp1y], &var_798[480 + temp1y], temp1y, temp0x, arg_color);
 
 }
 
-the_end:
-}
 
 
-void preRender_helper(int var_18, int regsi, int mode) {
+extern void _printf(const char*, ...);
 
-	unsigned sprite1_sprite_left2 = sprite1.sprite_left2;
-	unsigned sprite1_sprite_widthsum = sprite1.sprite_widthsum;
-	unsigned sprite1_sprite_top = sprite1.sprite_top;
-	unsigned sprite1_sprite_height = sprite1.sprite_height;
+// generate_poly_edges is called preRender_helper in the IDB.
+void generate_poly_edges(int* var_18, int* regsi, int mode) {
+
+	int sprite1_sprite_left2 = sprite1.sprite_left2;
+	int sprite1_sprite_widthsum = sprite1.sprite_widthsum;
+	int sprite1_sprite_top = sprite1.sprite_top;
+	int sprite1_sprite_height = sprite1.sprite_height;
+	int i, count, ofs;
+	unsigned long value;
+	unsigned long temp;
+	char* errorstr = "%i ";
+	
+	if (mode == 1) asm jmp preRender_helper2;
+
+	//fatal_error("%i %i", sprite1_sprite_left2, sprite1_sprite_widthsum);
+	
+	count = regsi[10];
+	if (count > 0) {
+		ofs = regsi[3] - count; // TODO: 32bit thingy?
+		if (regsi[2] < 0) ofs++;
+		for (i = 0; i < count; i++) {
+			var_18[ofs + i] = sprite1_sprite_left2;
+			var_18[480 + ofs + i] = sprite1_sprite_left2 - 1;
+		}
+	}
+	
+	count = regsi[12];
+	if (count > 0) {
+		ofs = regsi[3] - count; // TODO: 32bit thingy?
+		if (regsi[2] < 0) ofs++;
+		for (i = 0; i < count; i++) {
+			var_18[ofs + i] = sprite1_sprite_widthsum;
+			var_18[480 + ofs + i] = sprite1_sprite_widthsum - 1;
+		}
+	}
+	
+	count = regsi[11];
+	if (count > 0) {
+		ofs = regsi[5] + 1;
+		for (i = 0; i < count; i++) {
+			var_18[ofs + i] = sprite1_sprite_left2;
+			var_18[480 + ofs + i] = sprite1_sprite_left2 - 1;
+		}
+	}
+	
+	count = regsi[13];
+	if (count > 0) {
+		ofs = regsi[5] + 1;
+		for (i = 0; i < count; i++) {
+			var_18[ofs + i] = sprite1_sprite_widthsum;
+			var_18[480 + ofs + i] = sprite1_sprite_widthsum - 1;
+		}
+	}
 
 asm {
     mov     ax, ss
     mov     es, ax
 
 	mov si, regsi
-	mov ax, mode
+/*	mov ax, mode
 	cmp ax, 1
 	jne _allok // cannot je to preRender_helper2, too far. jmp is ok tho
 	jmp preRender_helper2
-	
+
 _allok:
     mov     cx, [si+14h]
     or      cx, cx
@@ -3109,19 +3033,16 @@ _allok:
     sub     di, cx
     shl     di, 1
     add     di, [var_18]
-
-    //mov     ax, cs:sprite1.sprite_left2
-mov     ax, sprite1_sprite_left2
-
+    mov     ax, sprite1_sprite_left2
     push    cx
     push    di
-loc_319EE:
     rep stosw
     pop     di
     pop     cx
     add     di, 3C0h
     dec     ax
     rep stosw
+
 loc_319F9:
     mov     cx, [si+18h]
     or      cx, cx
@@ -3134,9 +3055,7 @@ loc_31A00:
     sub     di, cx
     shl     di, 1
     add     di, [var_18]
-loc_31A14:
     mov     ax, [sprite1_sprite_widthsum]
-
     push    cx
     push    di
     rep stosw
@@ -3145,17 +3064,16 @@ loc_31A14:
     add     di, 3C0h
     dec     ax
     rep stosw
+
 loc_31A25:
-    mov     cx, [si+16h]
+/*    mov     cx, [si+16h]
     or      cx, cx
     jle     short loc_31A46
     mov     di, [si+0Ah]
     inc     di
     shl     di, 1
     add     di, [var_18]
-
     mov     ax, [sprite1_sprite_left2]
-
     push    cx
     push    di
     rep stosw
@@ -3164,19 +3082,16 @@ loc_31A25:
     add     di, 3C0h
     dec     ax
     rep stosw
+
 loc_31A46:
     mov     cx, [si+1Ah]
     or      cx, cx
-
     jle     short preRender_helper2		// JLE HERE CALL ABOVE! WTF! THIS JUMP REACHES A RETN WHICH RETURNS FROM _THIS_ FUNCTION
-    
     mov     di, [si+0Ah]
     inc     di
     shl     di, 1
     add     di, [var_18]
-
     mov     ax, [sprite1_sprite_widthsum]
-
     push    cx
     push    di
     rep stosw
@@ -3185,13 +3100,133 @@ loc_31A46:
     add     di, 3C0h
     dec     ax
     rep stosw
-    
-// does not really end here - but we're calling the next offset .. so ... uhm
-//sub_319CD endp
-
-
+*/
+}
 
 preRender_helper2:
+
+	count = regsi[7];
+	if (count <= 0) return ;
+
+	ofs = regsi[3];
+	
+	switch (regsi[9]) {
+		case 0:
+		case 1:
+			return;
+		case 2:
+			for (i = 0; i < count; i++) {
+				var_18[ofs + i] = regsi[1];
+				var_18[480 + ofs + i] = regsi[1];
+			}
+			return ;
+		case 3:
+			for (i = 0; i < count; i++) {
+				var_18[ofs + i] = regsi[1] - i;
+				var_18[480 + ofs + i] = regsi[1] - i;
+			}
+			return ;
+		case 4:
+			for (i = 0; i < count; i++) {
+				var_18[ofs + i] = regsi[1] + i;
+				var_18[480 + ofs + i] = regsi[1] + i;
+			}
+			return ;
+		case 5:
+			value = ((unsigned long*)regsi)[0] + 0x8000;
+			for (i = 0; i < count; i++) {
+				var_18[ofs + i] = value >> 16;
+				var_18[480 + ofs + i] = value >> 16;
+				value -= (unsigned int)regsi[6];
+			}
+			return ;
+		case 6:
+			value = ((unsigned long*)regsi)[0] + 0x8000;
+			for (i = 0; i < count; i++) {
+				var_18[ofs + i] = value >> 16;
+				var_18[480 + ofs + i] = value >> 16;
+				
+				value += (unsigned int)regsi[6];
+			}
+			return ;
+		case 7:
+			value = (unsigned int)regsi[1];
+			temp = (unsigned int)regsi[2];
+			if (temp + 0x8000 > USHRT_MAX)
+				ofs++;
+			temp = (temp + 0x8000) & 0xFFFF;
+			var_18[480 + ofs] = value;
+			for (i = 0; i < count; i++) {
+				if (temp + (unsigned int)regsi[6] <= USHRT_MAX) {
+					value--;
+					if (i == count - 1) {
+						var_18[ofs] = value + 1;
+					}
+				} else {
+					var_18[ofs] = value;
+					value--;
+					ofs++;
+					var_18[480 + ofs] = value;
+				}
+				temp = (temp + (unsigned int)regsi[6])  & 0xFFFF;
+			}
+			return ;
+
+		case 8:
+			value = (unsigned int)regsi[1];
+			temp = (unsigned int)regsi[2];
+			if (temp + 0x8000 > USHRT_MAX)
+				ofs++;
+			temp = (temp + 0x8000) & 0xFFFF;
+			var_18[ofs] = value;
+			for (i = 0; i < count; i++) {
+				if (temp + (unsigned int)regsi[6] <= USHRT_MAX) {
+					value++;
+					if (i == count - 1) {
+						var_18[480+ofs] = value - 1;
+					}
+				} else {
+					var_18[480+ofs] = value;
+					value++;
+					ofs++;
+					var_18[ofs] = value;
+				}
+				temp = (temp + (unsigned int)regsi[6])  & 0xFFFF;
+			}
+			return ;
+
+			
+		/*case 8:
+			value = regsi[1];
+			temp = regsi[2] + 0x8000;
+			if (temp <= 0)
+				ofs++;
+			var_18[ofs] = value;
+			for (i = 0; i < count; i++) {
+				temp += (unsigned int)regsi[6];
+				if (temp >= 0) {
+					value++;
+				} else {
+					var_18[480 + ofs + i] = value;
+					value++;
+					var_18[ofs + i] = value;
+				}
+				
+			}
+			if (temp > 0) {
+				var_18[480 + ofs + i] = value - 1;
+			}
+			return ;*/
+		case 9:
+		default:
+			return ;
+	}
+	/*
+asm {
+    mov     ax, ss
+    mov     es, ax
+
+	mov si, regsi
 
     mov     cx, [si+0Eh]
     or      cx, cx
@@ -3202,35 +3237,7 @@ preRender_helper2:
     mov     bl, [si+12h]
     xor     bh, bh
     
-    cmp bx, 0
-    jne _noo0
-    jmp locret_31AA3
-_noo0:
-    cmp bx, 1
-    jne _noo1
-    jmp locret_31AA3
-_noo1:
-    cmp bx, 2
-    jne _noo2
-    jmp loc_31A96
-_noo2:
-    cmp bx, 3
-    jne _noo3
-    jmp loc_31AA4
-_noo3:
-    cmp bx, 4
-    jne _noo4
-    jmp loc_31AB3
-_noo4:
-    cmp bx, 5
-    jne _noo5
-    jmp loc_31AC2
-_noo5:
-    cmp bx, 6
-    jne _noo6
-    jmp loc_31AE1
-_noo6:
-    cmp bx, 7
+cmp bx, 7
     jne _noo7
     jmp loc_31B00
 _noo7:
@@ -3238,71 +3245,11 @@ _noo7:
     jne _noo8
     jmp loc_31B2C
 _noo8:
-    cmp bx, 9	    
-    
+    cmp bx, 9
     jmp locret_31AA3 // same as 0
-    
-loc_31A96:
-    mov     cx, [si+0Eh]
-    mov     ax, [si+2]
-loc_31A9C:
-    mov     [di+3C0h], ax
-    stosw
-    loop    loc_31A9C
-locret_31AA3:
-    //retn
-    jmp the_end
-loc_31AA4:
-    mov     cx, [si+0Eh]
-    mov     ax, [si+2]
-loc_31AAA:
-    mov     [di+3C0h], ax
-    stosw
-    dec     ax
-    loop    loc_31AAA
-    //retn
-    jmp the_end
-loc_31AB3:
-    mov     cx, [si+0Eh]
-    mov     ax, [si+2]
-loc_31AB9:
-    mov     [di+3C0h], ax
-    stosw
-    inc     ax
-    loop    loc_31AB9
-    //retn
-    jmp the_end
-loc_31AC2:
-    mov     cx, [si+0Eh]
-    mov     ax, [si+2]
-    mov     dx, [si]
-    add     dx, 8000h
-    adc     ax, 0
-    mov     bx, [si+0Ch]
-loc_31AD4:
-    mov     [di+3C0h], ax
-    stosw
-    sub     dx, bx
-    sbb     ax, 0
-    loop    loc_31AD4
-    //retn
-    jmp the_end
-loc_31AE1:
-    mov     cx, [si+0Eh]
-    mov     ax, [si+2]
-    mov     dx, [si]
-    add     dx, 8000h
-    adc     ax, 0
-    mov     bx, [si+0Ch]
-loc_31AF3:
-    mov     [di+3C0h], ax
-    stosw
-    add     dx, bx
-    adc     ax, 0
-    loop    loc_31AF3
-    //retn
-    jmp the_end
-loc_31B00:
+
+
+loc_31B00: // case 7
     mov     cx, [si+0Eh]
     mov     ax, [si+2]
     mov     bx, [si+0Ch]
@@ -3314,23 +3261,21 @@ loc_31B15:
     mov     [di+3C0h], ax
 loc_31B19:
     add     dx, bx
-    jnb     short loc_31B25
+    jnb     short loc_31B25 // jnb = Jump short if not below (CF=0) = jump if the adding operation overflowed
     stosw
     dec     ax
     loop    loc_31B15
     sub     di, 2
-    //retn
     jmp the_end
 
-loc_31B25:
+loc_31B25: 
     dec     ax
     loop    loc_31B19
     inc     ax
     mov     [di], ax
-    //retn
     jmp the_end
 
-loc_31B2C:
+loc_31B2C:  // case 8
     mov     cx, [si+0Eh]
     mov     ax, [si+2]
     mov     bx, [si+0Ch]
@@ -3348,7 +3293,6 @@ loc_31B43:
     inc     ax
     loop    loc_31B41
     sub     di, 2
-    //retn
     jmp the_end
 
 loc_31B55:
@@ -3356,17 +3300,18 @@ loc_31B55:
     loop    loc_31B43
     dec     ax
     mov     [di+3C0h], ax
-    //retn
     jmp the_end
     
     }
-the_end:
+locret_31AA3:
+the_end:*/
 }
 
 
 
 
-void preRender_helper3(unsigned regsi, unsigned var_A, unsigned var_C, unsigned var_18) {
+// aka preRender_helper3 in the IDB
+void preRender_default_impl_helper(int* regsi, unsigned var_A, unsigned var_C, int* var_18) {
 	unsigned sprite1_sprite_left2 = sprite1.sprite_left2;
 	unsigned sprite1_sprite_widthsum = sprite1.sprite_widthsum;
 	unsigned sprite1_sprite_top = sprite1.sprite_top;
@@ -3956,21 +3901,24 @@ locret_31F38:
 the_end:
 }
 
-
 extern unsigned far word_2F448; // seg012
 extern unsigned far off_2F44A[]; // seg012
 
-unsigned draw_line_related_impl(unsigned arg_startX, unsigned arg_startY, unsigned arg_endX, unsigned arg_endY, unsigned arg_8, unsigned var_4);
+unsigned draw_line_related_impl(unsigned arg_startX, unsigned arg_startY, unsigned arg_endX, unsigned arg_endY, int* arg_8, unsigned var_4);
 
-unsigned draw_line_related(unsigned arg_startX, unsigned arg_startY, unsigned arg_endX, unsigned arg_endY, unsigned arg_8) {
-	draw_line_related_impl(arg_startX, arg_startY, arg_endX, arg_endY, arg_8, 0);
+unsigned draw_line_related(unsigned arg_startX, unsigned arg_startY, unsigned arg_endX, unsigned arg_endY, int* arg_8) {
+	//return ported_draw_line_related_(arg_startX, arg_startY, arg_endX, arg_endY, arg_8);
+	return draw_line_related_impl(arg_startX, arg_startY, arg_endX, arg_endY, arg_8, 0);
 }
 
-unsigned draw_line_related_alt(unsigned arg_startX, unsigned arg_startY, unsigned arg_endX, unsigned arg_endY, unsigned arg_8) {
-	draw_line_related_impl(arg_startX, arg_startY, arg_endX, arg_endY, arg_8, 1);
+unsigned draw_line_related_alt(unsigned arg_startX, unsigned arg_startY, unsigned arg_endX, unsigned arg_endY, int* arg_8) {
+	//return ported_draw_line_related_alt_(arg_startX, arg_startY, arg_endX, arg_endY, arg_8);
+	return draw_line_related_impl(arg_startX, arg_startY, arg_endX, arg_endY, arg_8, 1);
 }
 
-unsigned draw_line_related_impl(unsigned arg_startX, unsigned arg_startY, unsigned arg_endX, unsigned arg_endY, unsigned arg_8, unsigned var_4) {
+
+
+unsigned draw_line_related_impl(unsigned arg_startX, unsigned arg_startY, unsigned arg_endX, unsigned arg_endY, int* arg_8, unsigned var_4) {
 
 	//unsigned var_4;
 	unsigned var_2;

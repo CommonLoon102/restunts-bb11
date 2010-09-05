@@ -173,11 +173,11 @@ seg012 segment byte public 'STUNTSC' use16
     extrn ported_preRender_wheel_helper4_:proc
     extrn loc_317FB
     extrn loc_3180A
-    extrn ported_preRender_helper_:proc
+    extrn preRender_helper:proc
     extrn preRender_helper2:proc
     extrn off_31A82:word
     extrn locret_31AA3
-    extrn ported_preRender_helper3_:proc
+    extrn preRender_helper3:proc
     extrn off_31B84:word
     extrn off_31CF7:word
     extrn nopsub_31F39:proc

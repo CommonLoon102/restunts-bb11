@@ -37,6 +37,7 @@ int polarAngle(int z, int y) {
 	
 	unsigned flag;
 	int temp, result;
+	unsigned long index;
 	
 	flag = 0;
 	
@@ -60,8 +61,10 @@ int polarAngle(int z, int y) {
 			y = temp;
 			flag |= 1;
 		}
-		
-		result = atantable[(((unsigned long)z << 16) / y) >> 8];
+		index = (((unsigned long)z << 16) / y);
+		if ((index & 0xFF) >= 0x80) // round upwards
+			index += 0x100;
+		result = atantable[index >> 8];
 	}
 	
 	switch (flag) {
@@ -292,6 +295,7 @@ struct MATRIX* mat_rot_zxy(int z, int x, int y, int unk) {
 		mat_rot_y(&mat_y_rot, y);
 		mat_y_rot_angle = y;
 	}*/
+	mat_y_rot_angle = y; // dont forget this!!
 	mat_rot_y(&mat_y_rot, y);
 	
 	if ((unk & 1) != 0) {
@@ -381,6 +385,8 @@ void vector_to_point(struct VECTOR* vec, struct POINT2D* outpt) {
 	// the original code checks for several overflows (in a strange way) - this code does not, but seems to do well anyway
 
 	long proj;
+	long comp;
+	
 	if (vec->z <= 0) {
 		outpt->px = 0x8000;
 		outpt->py = 0x8000;
@@ -389,18 +395,54 @@ void vector_to_point(struct VECTOR* vec, struct POINT2D* outpt) {
 	
 	if (vec->x < 0) {
 		proj = (long)-vec->x * projectiondata9;
-		outpt->px = -(proj / vec->z) + projectiondata5;
+		comp = (proj >> 16) << 1;
+		if (proj & 0xFFFF == 0) {
+			fatal_error("%li  %i", proj, comp);
+			comp++;
+		}
+
+		if (vec->z > comp) { 
+			outpt->px = -(proj / vec->z) + projectiondata5;
+		} else
+			outpt->px = -0x7D00;
 	} else {
 		proj = (long)vec->x * projectiondata9;
-		outpt->px = (proj / vec->z) + projectiondata5;
+		comp = (proj >> 16) << 1;
+		if (proj & 0xFFFF == 0) {
+			fatal_error("%l  %i", proj, comp);
+			comp++;
+		}
+
+		if (vec->z > comp) 
+			outpt->px = (proj / vec->z) + projectiondata5;
+		else
+			outpt->px = 0x7D00;
 	}
 
 	if (vec->y < 0) {
 		proj = (long)-vec->y * projectiondata10;
-		outpt->py = (proj / vec->z) + projectiondata8;
+		comp = (proj >> 16) << 1;
+		if (proj & 0xFFFF == 0) {
+			fatal_error("%l  %i", proj, comp);
+			comp++;
+		}
+
+		if (vec->z > comp) 
+			outpt->py = (proj / vec->z) + projectiondata8;
+		else
+			outpt->py = 0x7D00;
 	} else {
 		proj = (long)vec->y * projectiondata10;
-		outpt->py = -(proj / vec->z) + projectiondata8;
+		comp = (proj >> 16) << 1;
+		if (proj & 0xFFFF == 0) {
+			fatal_error("%l  %i", proj, comp);
+			comp++;
+		}
+
+		if (vec->z > comp) 
+			outpt->py = -(proj / vec->z) + projectiondata8;
+		else
+			outpt->py = -0x7D00;
 	}
 }
 
