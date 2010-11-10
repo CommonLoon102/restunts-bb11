@@ -7,16 +7,22 @@ const int MEMORY_SIZE = 0x100000; // 2^20
 const int PARAGRAPH_SIZE = 0x10;
 
 const int DOS_API = 0x21;
+
 const int DOS_FUNCTION_MEM_ALLOC = 0x48;
 const int DOS_FUNCTION_MEM_FREE = 0x49;
 const int DOS_FUNCTION_MEM_REALLOC = 0x4a;
 
-//FILE_OPEN
-//FILE_CLOSE
-//FILE_READ
-//FILE_WRITE
-//FILE_SEEK
-//FILE_UNLINK
+//TODO
+//const int DOS_FUNCTION_FILE_OPEN = 0x3d; // http://stanislavs.org/helppc/int_21-3d.html
+//const int DOS_FUNCTION_FILE_CLOSE = 0x3e; // http://stanislavs.org/helppc/int_21-3e.html
+//const int DOS_FUNCTION_FILE_READ = 0x3f; // http://stanislavs.org/helppc/int_21-3f.html
+//const int DOS_FUNCTION_FILE_WRITE = 0x40; // http://stanislavs.org/helppc/int_21-40.html
+//const int DOS_FUNCTION_FILE_SEEK = 0x42; // http://stanislavs.org/helppc/int_21-42.html
+//const int DOS_FUNCTION_FILE_UNLINK = 0x41; // http://stanislavs.org/helppc/int_21-41.html
+//
+//const int DOS_FUNCTION_SET_DTA = 0x1a; // http://stanislavs.org/helppc/int_21-1a.html
+//const int DOS_FUNCTION_FILE_FIND = 0x4e; // http://stanislavs.org/helppc/int_21-4e.html
+//const int DOS_FUNCTION_FILE_FIND_NEXT = 0x4f; // http://stanislavs.org/helppc/int_21-4f.html
 
 const int NOT_ENOUGH_MEMORY = 0x08;
 const int INVALID_MEMORY_BLOCK_ADDRESS = 0x09;
