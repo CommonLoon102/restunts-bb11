@@ -1,12 +1,14 @@
 #include "asm_16.h"
 
 #include "dos_mem.hpp"
+#include "dos_file.hpp"
 
 #include <cassert>
 
 static global_struct_t g_sys = { 0, 0 };
 
 static dos_mem g_dos_mem = dos_mem( DOS_SEG, MCGA_SEG - DOS_SEG );
+static dos_file g_dos_file= dos_file();
 
 #ifdef __cplusplus
 extern "C" {
@@ -172,6 +174,11 @@ extern "C" {
 		}
 	}
 
+	void dos_file_open()
+	{
+		//
+	}
+
 	ASM_16_API void doscall()
 	{
 		switch( g_sys.ah )
@@ -184,6 +191,9 @@ extern "C" {
 			break;
 		case DOS_FUNCTION_MEM_FREE:
 			dos_mem_free();
+			break;
+		case DOS_FUNCTION_FILE_OPEN:
+			dos_file_open();
 			break;
 		default: assert(false);
 		}
