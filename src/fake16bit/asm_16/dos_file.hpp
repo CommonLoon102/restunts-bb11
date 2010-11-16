@@ -26,6 +26,7 @@ private:
 
 public:
 	dos_file();
+	int create( std::string& p_filename, int p_attributes, int& p_handle );
 	int open( std::string& p_filename, int p_mode, int& p_handle );
 	int close( int p_handle );
 	int seek( int p_handle, int p_offset, int p_origin );

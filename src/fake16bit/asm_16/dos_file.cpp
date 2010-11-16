@@ -56,10 +56,25 @@ dos_file::dos_file()
 	fill_stack( 0xFFFF );
 }
 
+int create( std::string& p_filename, int p_attributes, int& p_handle )
+{
+	return 0;
+}
+
 int dos_file::open( std::string& p_filename, int p_mode, int& p_handle )
 {
-	if( p_mode ){}
-	std::string mode = "rw+";
+	//p_mode == 
+	//00  read only
+	//01  write only
+	//02  read/write
+	assert( p_mode == 0 || p_mode == 1 || p_mode == 2 );
+	std::string mode;
+	switch( p_mode )
+	{
+	case 0: mode = "r";
+	case 1: mode = "w";
+	case 2: mode = "rw";
+	}
 
 	FILE* fp = fopen( p_filename.c_str(), mode.c_str() );
 

@@ -13,6 +13,7 @@ const int DOS_FUNCTION_MEM_FREE = 0x49;
 const int DOS_FUNCTION_MEM_REALLOC = 0x4a;
 
 //TODO
+const int DOS_FUNCTION_FILE_CREATE = 0x3c; // http://stanislavs.org/helppc/int_21-3c.html
 const int DOS_FUNCTION_FILE_OPEN = 0x3d; // http://stanislavs.org/helppc/int_21-3d.html
 const int DOS_FUNCTION_FILE_CLOSE = 0x3e; // http://stanislavs.org/helppc/int_21-3e.html
 const int DOS_FUNCTION_FILE_READ = 0x3f; // http://stanislavs.org/helppc/int_21-3f.html
@@ -86,6 +87,7 @@ typedef struct global_struct_s
 	// TODO
 	byte cf;
 	byte ah;
+	byte al;
 
 } global_struct_t;
 

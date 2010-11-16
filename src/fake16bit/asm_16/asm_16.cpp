@@ -176,7 +176,13 @@ extern "C" {
 
 	void dos_file_open()
 	{
-		//
+		std::string file_name = (char*)ptr( g_sys.ds, g_sys.dx ); // ASCIZ in ds:dx
+		int mode = g_sys.al; // access mode in al
+		int handle = 0; // returned handle
+
+		int result = g_dos_file.open( file_name, mode, handle );
+
+		assert( result != 0 );
 	}
 
 	ASM_16_API void doscall()

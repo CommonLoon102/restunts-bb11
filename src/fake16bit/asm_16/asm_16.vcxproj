@@ -75,10 +75,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="asm_16.h" />
+    <ClInclude Include="dos_file.hpp" />
     <ClInclude Include="dos_mem.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="asm_16.cpp" />
+    <ClCompile Include="dos_file.cpp" />
     <ClCompile Include="dos_mem.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
