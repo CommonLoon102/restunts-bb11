@@ -109,6 +109,9 @@ int dos_file::seek( int p_handle, int p_offset, int p_origin )
 int dos_file::unlink( std::string& p_filename )
 {
 	//delete file
+	//does file exists
+
+	int result = remove( p_filename.c_str() );
 	
 	return 0;
 }

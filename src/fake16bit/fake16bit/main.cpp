@@ -30,6 +30,8 @@ proc sub_1234
   mov bx,10
   mov [word123],10
   cmp ax,0
+  mul bx
+  mul bh
   jnz lableX
   mov ax,bx
 lableX:
@@ -51,6 +53,8 @@ void sub_1234()
   bx = 10;
   *word123 = 10;
   cmp(ax,0);
+  mul16(bx); // dx:ax = ax * bx --> dxax() = ax * bx; set flags???
+  mul8(bh); // ax = al * bh; --> ax() = al() * bh(); set flags???
   if(jnz()) goto lableX;
   ax = bx;
 lableX:
@@ -61,6 +65,10 @@ lableX:
 benefit?
 
 you can mix 16bit asm semantic with 32bit C/C++ code :)
+
+mul bl                          ;8-Bit-Multiplication, Result in BX
+mul [MyWord]                    ;16-Bit-Multiplication, Result in DX:AX
+mul edx                         ;32-Bit-Multiplication, Result in EDX:EAX
 
 */
 

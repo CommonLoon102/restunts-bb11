@@ -127,6 +127,96 @@ ASM_16_API void initialize( void );
 // globals
 ASM_16_API global_struct_t* get_global( void );
 
+//http://unixwiz.net/techtips/x86-jumps.html
+//http://ref.x86asm.net/coder32.html
+//http://www.strchr.com/machine_code_redundancy
+
+//for segment override (0x26) or other prefixes
+//http://code.google.com/p/distorm/wiki/x86_x64_Machine_Code 
+
+/*
+    [lahf] => 1 http://www.fermi.mn.it/linux/quarta/x86/lahf.htm
+    [jno] => 1
+    [pushf] => 1 http://www.fermi.mn.it/linux/quarta/x86/pushf.htm // void pushf(){ pushw( flags ); }
+    [xlat] => 1 http://www.fermi.mn.it/linux/quarta/x86/xlat.htm
+    [nop] => 1 // void nop(){}
+    [std] => 2 // void std(){ flags.df = 1; }
+    [sahf] => 2
+    [cmps] => 3
+    [iret] => 3 // return;
+    [clc] => 5 // void clc(){ flags.cf = 0; }
+    [js] => 5  // bool js(){ return flags.sf == 1; }
+    [jcxz] => 7
+    [jo] => 7 // bool jo(){ return flags.of == 1; }
+    [stc] => 8 // void std(){ flags.cf = 1; }
+    [lds] => 8
+    [jns] => 10 // bool jns(){ return !js() }
+    [rol] => 10
+    [cli] => 15 // void cli(){}
+    [not] => 17
+    [sti] => 18 // void sti(){}
+    [in] => 19
+    [retn] => 27 // return;
+    [scas] => 28 // repne_scasb(){ cx,... }
+    [out] => 30
+    [idiv] => 36
+    [div] => 46
+    [sbb] => 47
+    [cld] => 54 // void cld(){ flags.df = 0; }
+    [ja] => 56 // bool ja(){ return ( ( flags.cf == 0 ) && ( flags.zf == 0 ) ); }
+    [mul] => 60
+    [rcl] => 69
+    [lods] => 71 http://www.fermi.mn.it/linux/quarta/x86/lods.htm
+    [int] => 75 void int(){ MAPPING }
+    [xchg] => 77
+    [jbe] => 81 bool jbe(){ return ( ( flags.cf == 1 ) || ( flags.zf == 1 ) ); }
+    [stos] => 101
+    [jnb] => 119
+    [loop] => 133
+    [jb] => 144 bool jb(){ return flags.cf == 1; }
+    [imul] => 145
+    [and] => 159
+    [adc] => 160
+    [shr] => 161
+    [rcr] => 171
+    [test] => 201
+    [neg] => 228
+    [sar] => 233
+    [jg] => 245
+    [cwd] => 294 void cwd(){ set_dxax( ax ); }
+    [xor] => 318
+    [jl] => 360
+    [jge] => 360
+    [movs] => 396
+    [jle] => 399
+    [les] => 411
+    [dec] => 478
+    [or] => 625
+    [cbw] => 676 // void cbw(){ regs.ax = regs.al; } (no eax in use)
+    [lea] => 678
+    [retf] => 691
+    [inc] => 827
+    [jnz] => 1413
+    [jz] => 1527
+    [shl] => 1539 ... shlw cl,r/m16 --> shl cl,ax --> shl_r16(cl,ax);
+    [pop] => 1796
+    [sub] => 2331
+    [jmp] => 2653
+    [call] => 3066
+    [cmp] => 3461
+    [add] => 4836
+    [push] => 9437
+    [mov] => 20408
+
+	cmp ax,0
+	jnz lableX
+	ret
+
+	cmp(ax,0);
+	if(jnz()) goto lableX;
+	return;
+*/
+
 #ifdef __cplusplus
 }
 #endif

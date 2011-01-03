@@ -144,6 +144,7 @@ extern "C" {
 		int segment = g_sys.es;
 		int useable_size = 0;
 
+		//invalid MEMORY_BLOCK_ADDRESS?
 		int result = g_dos_mem.reallocate( segment, new_size, useable_size );
 		if( result == 0 )
 		{
@@ -227,13 +228,16 @@ extern "C" {
 
 	ASM_16_API void initialize( void )
 	{
-		//create 1MB ram
 		//dos_allocate
 		//load game.exe (as an initialized data base)
 		//set cs,ds,es,etc.
 		//go
 
 		g_sys.memory = new byte[MEMORY_SIZE];
+
+		//set_psp
+		//set_dta
+		//(for commandline)
 	}
 
 	ASM_16_API global_struct_t* get_global( void )
