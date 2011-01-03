@@ -72,6 +72,7 @@ static main()
 	auto op_nr;
 	auto i;
 	auto first_byte;
+	auto cmd;
 
 	f = fopen("c:\\temp\\stunts.dis.txt", "w+");
 	f_mnem = fopen("c:\\temp\\stunts.dis.mnem.txt", "w+");
@@ -81,6 +82,12 @@ static main()
 	{
 		addr = FindCode(addr,SEARCH_DOWN);
 		if(addr == BADADDR) break;
+
+		//cmd = DecodeInstruction(addr);
+		//      if ( !cmd )
+		//        Message("Failed to decode!\n");
+		//      else
+		//        Message("cmd.itype=%d\n", cmd.itype);
 
 		mnem = GetMnem(addr);
 		disass = GetDisasm(addr);
@@ -101,6 +108,8 @@ static main()
 		{
 		  first_byte = Byte(addr+1);
 		}
+
+		//beware of prefixes like repne etc. 0x95...
 
 		fprintf(f,"code: 0x%02x b%08b\n",first_byte, first_byte);
 		fprintf(f,"dis: %s\n",disass);
