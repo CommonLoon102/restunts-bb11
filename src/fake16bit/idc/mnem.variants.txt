@@ -1,4 +1,4 @@
-push
+push - no flag changes
   0x55 532
   0x57 420
   0x56 525
@@ -11,7 +11,7 @@ push
   0x51 46
   0x53 38
   0x06 17
-mov
+mov - no flag changes
   0x8b 7779 (cs override,es override)
   0x89 3067 (cs override,es override,ss override)
   0xb8 2194
@@ -38,7 +38,7 @@ mov
   0xb7 1
   0xbd 2
   0xb5 1
-sub
+sub - change flags
   0x83 369
   0x2b 1294 (cs override,es override)
   0x2a 425
@@ -48,11 +48,11 @@ sub
   0x80 7
   0x2c 7
   0x28 1
-call
+call - (no flag changes in realmode...)
   0x9a 2481
   0xe8 514
   0xff 71 (cs override,ss override)
-add
+add - change flags
   0x83 2526
   0x80 53
   0x81 90
@@ -62,15 +62,15 @@ add
   0x00 11
   0x04 21
   0x02 22
-shl
+shl - change flags
   0xd1 1382
   0xd3 142
   0xd0 11
   0xd2 4
-imul
+imul - change flags
   0xf7 133 (es override)
   0xf6 12
-inc
+inc - change flags
   0x46 126
   0x47 98
   0xfe 159
@@ -80,7 +80,7 @@ inc
   0x43 48
   0x41 22
   0x45 6
-cmp
+cmp - change flags (works like sub without data result)
   0x83 829 (es override)
   0x81 196
   0x80 926 (es override)
@@ -90,16 +90,16 @@ cmp
   0x3c 113
   0x3b 391 (cs override,es override)
   0x3a 18
-jl
+jl - no flags changes
   0x7c 360
-cwd
+cwd - no flag changes
   0x99 294
-jmp
+jmp - (no flag changes in realmode...)
   0xe9 1438
   0xeb 1169
   0xff 30 (cs override,ss override)
   0xea 16
-or
+or - change flags
   0x0a 97
   0x0b 442
   0x80 31 (es override)
@@ -109,7 +109,7 @@ or
   0x83 5
   0x0d 4
   0x09 5 (es override)
-jnz
+jnz - no flag changes
   0x75 1412
 pop
   0x07 116
@@ -127,23 +127,23 @@ movs
   0xa4 26 (REP/REPE/REPZ,REPNE/REPNZ)
 les
   0xc4 411 (es override)
-jz
+jz - no flag changes
   0x74 1527
 idiv
   0xf7 35 (cs override)
   0xf6 1
 cbw
   0x98 676
-jge
+jge - no flag changes
   0x7d 360
 retf
   0xcb 679
   0xca 12
 lea
   0x8d 678
-jle
+jle - no flag changes
   0x7e 399
-jg
+jg - no flag changes
   0x7f 245
 dec
   0xfe 216 (es override)
@@ -154,9 +154,9 @@ dec
   0x4f 11
   0x4b 10
   0x4a 42
-ja
+ja - no flag changes
   0x77 56
-jbe
+jbe - no flag changes
   0x76 81
 shr
   0xd3 38
@@ -167,7 +167,7 @@ rcl
 neg
   0xf7 219
   0xf6 9
-jb
+jb - no flag changes
   0x72 144
 div
   0xf7 45
@@ -182,7 +182,7 @@ and
   0x20 13 (es override)
   0x21 6 (es override)
   0x22 3
-js
+js - no flag changes
   0x78 5
 xor
   0x80 14
@@ -200,14 +200,14 @@ xchg
   0x95 1
   0x87 22
   0x86 15
-test
+test (works like and without data result)
   0xf6 156 (es override)
   0xf7 19
   0xa8 20
   0x84 1
   0xa9 3
   0x85 2 (es override)
-jnb
+jnb - no flag changes
   0x73 119
 sar
   0xd1 199
@@ -219,7 +219,7 @@ adc
   0x11 26
   0x83 46
   0x15 13
-jns
+jns - no flag changes
   0x79 10
 sbb
   0x1b 17
@@ -274,21 +274,21 @@ sahf
   0x9e 2
 std
   0xfd 2
-in
-  0xec 9
-  0xe4 10
-jno
+in - no flag changes
+  0xec 9 --> inb dx,al --> inb( regs.dx, regs.al );
+  0xe4 10 --> inb imm8,al --> inb( 0ximm8, regs.al );
+jno - no flag changes
   0x71 1
-jo
+jo - no flag changes
   0x70 7
-out
-  0xee 11
-  0xe6 19
+out - no flag changes
+  0xee 11 --> outb al,dx --> outb( regs.al, regs.dx );
+  0xe6 19 --> outb al,imm8 --> outb( regs.al, 0ximm8 );
 pushf
   0x9c 1
 rol
   0xd3 6
   0xd2 2
   0xd0 2
-nop
+nop - no flag changes
   0x90 1
