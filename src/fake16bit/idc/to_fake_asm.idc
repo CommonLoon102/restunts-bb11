@@ -73,6 +73,7 @@ static main()
 	auto i;
 	auto first_byte;
 	auto cmd;
+	auto prefix;
 
 	f = fopen("c:\\temp\\stunts.dis.txt", "w+");
 	f_mnem = fopen("c:\\temp\\stunts.dis.mnem.txt", "w+");
@@ -97,25 +98,74 @@ static main()
 		//imul with 0x26 at start
 		//first_byte == 0x26 -> es segment override (what happens here?)
 
-		//<i>Segment Override</i> prefix is used in order to change the default segment for the instruction.
-		//Every general-purpose register has its default segment. For example SS for ESP, DS for BX, etc...
-		//If the instruction uses the memory indirection form and there is a segment override prefix set,
-		//then it will be displayed in front of the operand. If the instruction doesn't support operands,
-		//or in case the operands aren't in the memory indirection form, the prefix is dropped.
-		//In 64 bits decoding mode the CS, SS, DS and ES segment overrides are ignored and ineffective.
+		/*
+		- Lock and Repeat:
+			- 0xF0 - LOCK
+			- 0xF2 - REPNE/REPNZ
+			- 0xF3 - REP/REPE/REPZ
+		- Segment Override:
+			- 0x2E - CS
+			- 0x36 - SS
+			- 0x3E - DS
+			- 0x26 - ES
+			- 0x64 - FS
+			- 0x65 - GS
+		- Operand-Size Override: 0x66, switching to non-default size.
+		- Address-Size Override: 0x67, switching to non-default size.
+*/
 
+    prefix = "";
+		if( first_byte == 0xF0 )
+		{
+			prefix = "LOCK";
+		  first_byte = Byte(addr+1);
+		}
+		else
+		if( first_byte == 0xF2 )
+		{
+			prefix = "REPNE/REPNZ";
+		  first_byte = Byte(addr+1);
+		}
+		else
+		if( first_byte == 0xF3 )
+		{
+			prefix = "REP/REPE/REPZ";
+		  first_byte = Byte(addr+1);
+		}
+		else
+		if( first_byte == 0x2E )
+		{
+			prefix = "cs override";
+		  first_byte = Byte(addr+1);
+		}
+		else
+		if( first_byte == 0x36 )
+		{
+			//example: add ss:54AAh,dx ... [0x36] [ADD-Opcode] ... results in: *wptr(ss,0x54aa) += dx;
+			prefix = "ss override";
+		  first_byte = Byte(addr+1);
+		}
+		else
+		if( first_byte == 0x3E )
+		{
+			prefix = "ds override";
+		  first_byte = Byte(addr+1);
+		}
+		else
 		if( first_byte == 0x26 )
 		{
+			prefix = "es override";
 		  first_byte = Byte(addr+1);
 		}
 
-		//beware of prefixes like repne etc. 0x95...
+		//beware of prefixes like repne etc. 0x95,0xF2...
 
+		fprintf(f,"prefix: %s\n", prefix);
 		fprintf(f,"code: 0x%02x b%08b\n",first_byte, first_byte);
 		fprintf(f,"dis: %s\n",disass);
 		fprintf(f,"mnem: %s\n",mnem);
 
-		fprintf(f_mnem,"%s\t0x%02x\tb%08b\n",mnem,first_byte,first_byte);
+		fprintf(f_mnem,"%s\t0x%02x\t%s\n",mnem,first_byte,prefix);
 		//fprintf(f_mnem,"%08xl %s 0x%02x\n",addr,mnem,first_byte);
 
 		showoperands( f, addr );
