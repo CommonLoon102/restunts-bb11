@@ -240,6 +240,34 @@ ende:
 		}
 	}
 
+	ASM_16_API void rolw( word& p_op1, byte p_op2 )
+	{
+		__asm
+		{
+			_FLAG_PROLOG
+			mov edx,[p_op1]
+			mov ax,word ptr [edx]
+			mov cl,p_op2
+			rol ax,cl
+			mov word ptr [edx],ax
+			_FLAG_EPILOG
+		}
+	}
+
+	ASM_16_API void rolb( byte& p_op1, byte p_op2 )
+	{
+		__asm
+		{
+			_FLAG_PROLOG
+			mov edx,[p_op1]
+			mov al,byte ptr [edx]
+			mov cl,p_op2
+			rol al,cl
+			mov byte ptr [edx],al
+			_FLAG_EPILOG
+		}
+	}
+
 	//-----------------
 
 	void dos_mem_allocate()

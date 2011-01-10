@@ -143,6 +143,9 @@ ASM_16_API void subb( byte& p_op1, byte p_op2 );
 ASM_16_API void imulb( byte p_op );
 ASM_16_API void imulw( word p_op );
 
+ASM_16_API void rolw( word& p_op1, byte p_op2 ); // rolw( regs.dx, regs.cl );
+ASM_16_API void rolb( byte& p_op1, byte p_op2 ); // rolb( *byte_23dd, regs.cl );
+
 //ASM_16_API void outb( int p_port, byte p_value );
 //ASM_16_API void inb( int p_port, byte& p_value );
 // outb( regs.al, 0x22 );

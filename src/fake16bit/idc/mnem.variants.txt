@@ -68,8 +68,8 @@ shl - change flags
   0xd0 11
   0xd2 4
 imul - change flags
-  0xf7 133 (es override) --> imulw
-  0xf6 12                --> imulb
+  0xf7 133 (es override) --> imulw imulb r/m16 --> imulw(r/m16);
+  0xf6 12                --> imulb imulb r/m8 --> imulb(r/m8);
 inc - change flags
   0x46 126
   0x47 98
@@ -287,8 +287,8 @@ out - no flag changes
 pushf
   0x9c 1
 rol
-  0xd3 6
-  0xd2 2
-  0xd0 2
+  0xd3 6 --> rolw r/m16,cl --> rolw( r/m16, regs.cl );
+  0xd2 2 --> rolb r/m8,cl --> rolb( r/m8, regs.cl );
+  0xd0 2 --> rolb r/m8,1 --> rolb( r/m8, 1 );
 nop - no flag changes
-  0x90 1
+  0x90 1 --> nop();
