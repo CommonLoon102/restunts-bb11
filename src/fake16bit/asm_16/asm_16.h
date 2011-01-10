@@ -127,12 +127,16 @@ ASM_16_API dword popd();
 // inline assembler based mnemonics
 // to reduce the work needed: we use direct asm in the first shot :)
 // first shot/test
+
 ASM_16_API void cmpb( byte p_op1, byte p_op2 );
 ASM_16_API void cmpw( word p_op1, word p_op2 );
 
 ASM_16_API bool jc();
 ASM_16_API bool jg();
 
+//example:
+//can easy replace with "p_op1 -= p_op2" if flags don't play a role
+//or with an "emulation" - but we can check when everything is running
 ASM_16_API void subw( word& p_op1, word p_op2 );
 ASM_16_API void subb( byte& p_op1, byte p_op2 );
 

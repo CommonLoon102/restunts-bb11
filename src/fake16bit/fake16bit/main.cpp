@@ -78,6 +78,29 @@ int main( int argc, char* argv[] )
 
 	global_struct_t& x = *get_global();
 
+	x.ax = 100;
+	subw( x.ax, 20 );
+
+	x.bx = 1;
+	x.ah = DOS_FUNCTION_MEM_ALLOC;
+	intcall(DOS_API);
+	if( !x.cf )
+	{
+		int seg = x.ax;
+		word* yyy = wptr( seg, 0 );
+
+		*yyy=100;
+		subw( *yyy, 20 );
+		assert( *yyy == 80 );
+
+		int ddd=1;
+
+		x.ah = DOS_FUNCTION_MEM_FREE;
+		x.es = seg;
+		intcall(DOS_API);
+		assert( x.cf == 0 );
+	}
+
 	//dos mem test
 
 	x.bx = 0xFFFF;
