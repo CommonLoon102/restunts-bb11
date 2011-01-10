@@ -63,6 +63,10 @@ typedef unsigned int dword;
   //  unsigned char dl, dh;
   //};
 
+//byte& al = regs.h.al;
+//byte& cl = regs.h.cl;
+//word& ax = regs.x.ax;
+
 typedef struct global_struct_s
 {
     word ax;
@@ -88,6 +92,8 @@ typedef struct global_struct_s
 	byte cf;
 	byte ah;
 	byte al;
+
+	word flags;
 
 } global_struct_t;
 
@@ -118,6 +124,27 @@ ASM_16_API byte popb();
 ASM_16_API word popw();
 ASM_16_API dword popd();
 
+// inline assembler based mnemonics
+// to reduce the work needed: we use direct asm in the first shot :)
+// first shot/test
+ASM_16_API void cmpb( byte p_op1, byte p_op2 );
+ASM_16_API void cmpw( word p_op1, word p_op2 );
+
+ASM_16_API bool jc();
+ASM_16_API bool jg();
+
+ASM_16_API void subw( word& p_op1, word p_op2 );
+ASM_16_API void subb( byte& p_op1, byte p_op2 );
+
+ASM_16_API void imulb( byte p_op );
+ASM_16_API void imulw( word p_op );
+
+//ASM_16_API void outb( int p_port, byte p_value );
+//ASM_16_API void inb( int p_port, byte& p_value );
+// outb( regs.al, 0x22 );
+// outb( regs.al, regs.dx ); ...
+// inb( regs.dx, regs.al ); ...
+
 ASM_16_API void intcall( int p_nr ); // 10h, 16h, 21h
 
 ASM_16_API void doscall(); // 21h
@@ -127,12 +154,29 @@ ASM_16_API void initialize( void );
 // globals
 ASM_16_API global_struct_t* get_global( void );
 
+//http://siyobik.info/index.php?module=x86&id=306
 //http://unixwiz.net/techtips/x86-jumps.html
 //http://ref.x86asm.net/coder32.html
 //http://www.strchr.com/machine_code_redundancy
 
 //for segment override (0x26) or other prefixes
 //http://code.google.com/p/distorm/wiki/x86_x64_Machine_Code 
+
+/*
+ - Lock and Repeat:
+ 	- 0xF0 — LOCK
+ 	- 0xF2 — REPNE/REPNZ - do we need
+ 	- 0xF3 - REP/REPE/REPZ - do we need
+ - Segment Override:
+ 	- 0x2E - CS - do we need
+ 	- 0x36 - SS - do we need
+ 	- 0x3E - DS - do we need
+ 	- 0x26 - ES - do we need
+ 	- 0x64 - FS
+ 	- 0x65 - GS
+ - Operand-Size Override: 0x66, switching to non-default size.
+ - Address-Size Override: 0x67, switching to non-default size.
+*/
 
 /*
     [lahf] => 1 http://www.fermi.mn.it/linux/quarta/x86/lahf.htm
@@ -168,7 +212,7 @@ ASM_16_API global_struct_t* get_global( void );
     [rcl] => 69
     [lods] => 71 http://www.fermi.mn.it/linux/quarta/x86/lods.htm
     [int] => 75 void int(){ MAPPING }
-    [xchg] => 77
+    [xchg] => 77 ... sample opcode: 0x95 -> 0x90 + r
     [jbe] => 81 bool jbe(){ return ( ( flags.cf == 1 ) || ( flags.zf == 1 ) ); }
     [stos] => 101
     [jnb] => 119
@@ -209,11 +253,11 @@ ASM_16_API global_struct_t* get_global( void );
     [mov] => 20408
 
 	cmp ax,0
-	jnz lableX
+	ja lableX
 	ret
 
 	cmp(ax,0);
-	if(jnz()) goto lableX;
+	if(ja()) goto lableX;
 	return;
 */
 

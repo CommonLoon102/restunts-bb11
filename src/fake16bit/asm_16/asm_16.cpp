@@ -61,7 +61,7 @@ extern "C" {
 		*bptr(g_sys.ss,g_sys.sp)=p_value;
 
 		assert( ( g_sys.sp - size ) > 0  );
-		//do we need to adjust the ss here? (what if sp getting negative?)
+		//do we need to adjust the ss here? (what if sp getting negative?) - no! according to dosbox
 
 		g_sys.sp -= size;
 	}
@@ -73,7 +73,7 @@ extern "C" {
 		*wptr(g_sys.ss,g_sys.sp)=p_value;
 
 		assert( ( g_sys.sp - size ) > 0  );
-		//do we need to adjust the ss here? (what if sp getting negative?)
+		//do we need to adjust the ss here? (what if sp getting negative?) - no! according to dosbox
 
 		g_sys.sp -= size;
 	}
@@ -85,7 +85,7 @@ extern "C" {
 		*dptr(g_sys.ss,g_sys.sp)=p_value;
 
 		assert( ( g_sys.sp - size ) > 0  );
-		//do we need to adjust the ss here? (what if sp getting negative?)
+		//do we need to adjust the ss here? (what if sp getting negative?) - no! according to dosbox
 
 		g_sys.sp -= size;
 	}
@@ -116,7 +116,132 @@ extern "C" {
 		g_sys.sp += size;
 		return value;
 	}
-	
+
+	//-----------------
+	//asm code
+
+#define _FLAG_PROLOG __asm \
+	{                         \
+	__asm pushf            \
+	__asm mov bx,g_sys.flags \
+	__asm push bx          \
+	__asm popf             \
+	}
+
+#define _FLAG_EPILOG __asm \
+	{                         \
+	__asm pushf            \
+	__asm pop bx           \
+	__asm mov g_sys.flags,bx \
+	__asm popf             \
+	}
+
+	ASM_16_API void cmpw( word op1, word op2 )
+	{
+		__asm
+		{
+			_FLAG_PROLOG
+			mov ax,op1
+			mov bx,op2
+			cmp ax,bx
+			_FLAG_EPILOG
+		}
+	}
+
+	ASM_16_API void cmpb( byte op1, byte op2 )
+	{
+		__asm
+		{
+			_FLAG_PROLOG
+			mov al,op1
+			mov bl,op2
+			cmp al,bl
+			_FLAG_EPILOG
+		}
+	}
+
+	ASM_16_API bool jc()
+	{
+		__asm
+		{
+			_FLAG_PROLOG
+			mov eax,1
+			jc ende
+			mov eax,0
+ende:
+			_FLAG_EPILOG
+		}
+	}
+
+	ASM_16_API bool jg()
+	{
+		__asm
+		{
+			_FLAG_PROLOG
+			mov eax,1
+			jg ende
+			mov eax,0
+ende:
+			_FLAG_EPILOG
+		}
+	}
+
+	ASM_16_API void subw( word& p_op1, word p_op2 )
+	{
+		__asm
+		{
+			_FLAG_PROLOG
+			mov edx,[p_op1]
+			mov ax,word ptr [edx]
+			mov bx,p_op2
+			sub ax,bx
+			mov word ptr [edx],ax
+			_FLAG_EPILOG
+		}
+	}
+
+	ASM_16_API void subb( byte& p_op1, byte p_op2 )
+	{
+		__asm
+		{
+			_FLAG_PROLOG
+			mov edx,[p_op1]
+			mov al,byte ptr [edx]
+			mov bl,p_op2
+			sub al,bl
+			_FLAG_EPILOG
+		}
+	}
+
+	ASM_16_API void imulb( byte p_op )
+	{
+		__asm
+		{
+			_FLAG_PROLOG
+			mov al,g_sys.al
+			mov bl,p_op
+			imul bl
+			mov g_sys.ax,ax
+			_FLAG_EPILOG
+		}
+	}
+
+	ASM_16_API void imulw( word p_op )
+	{
+		__asm
+		{
+			_FLAG_PROLOG
+			mov ax,g_sys.ax
+			mov bx,p_op
+			imul bx
+			mov g_sys.ax,ax
+			mov g_sys.dx,dx
+			_FLAG_EPILOG
+		}
+	}
+
+	//-----------------
+
 	void dos_mem_allocate()
 	{
 		int needed_size = g_sys.bx;
