@@ -68,8 +68,8 @@ shl - change flags
   0xd0 11
   0xd2 4
 imul - change flags
-  0xf7 133 (es override)
-  0xf6 12
+  0xf7 133 (es override) --> imulw
+  0xf6 12                --> imulb
 inc - change flags
   0x46 126
   0x47 98
