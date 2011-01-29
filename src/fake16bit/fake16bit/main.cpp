@@ -72,12 +72,129 @@ mul edx                         ;32-Bit-Multiplication, Result in EDX:EAX
 
 */
 
+byte memory[0x100000];
+byte* global_test = memory;
+
+byte& wptr( int offset )
+{
+	return global_test[offset];
+}
+
 int main( int argc, char* argv[] )
 {
+	memory[0]=23;
+
+	byte& p0 = wptr( 0 );
+	byte& r0 = memory[0];
+
+	byte* p1 = &wptr( 0 );
+	byte* r2 = &memory[0];
+
+	//cmp( ds_b( 0 ), 0 ); // cmp byte ptr ds:[0],0h
+	//ds_w(10)=0x200; // mov_w( ds_w(10), 0x200 ); // mov word ptr ds:[10],200h
+
+	//g_line for debugging - find for example vga mem access -> which line is responsible?
+
+	//g_line=__LINE__; ds_w(10)=0x200;         
+	//g_line=__LINE__; ds_w(20)=0x200;         
+	//g_line=__LINE__; ds_w(30)=0x200;         
+	//g_line=__LINE__; cmp( ds_b( 0 ), 0 );
+	//g_line=__LINE__; mov_w( ds_w(10), 0x200 );
+	//ax = 0x200;
+	//mw( word* ptr, word p_value ) ---> mw( ds_w( 10 ), 0x1020 );
+
+	//wm( seg, offs ) set/get
+	//bm( seg, offs ) set/get
+
+	//static about read/write memory/data access...
+
+	/*
+	wmw( word* p_ptr, word p_value )
+	{
+		if( in_vga_mem( p_ptr ) )
+		{
+			//set 2. pixel with color p_value.lo and p_value.hi
+		}
+       *p_ptr = p_value;
+	}
+
+	// there is no need for an read routine because we use the fake vga mem (its in the right state)
+	rmw( word& p_value, word* p_ptr )
+	{
+        *p_ptr = p_value;
+	}
+	*/
+	
+	//for statistics or dead code detection
+	//g_used[__LINE__]++; g_line=__LINE__; mov_w( ds_w(10), 0x200 );
+
+	//g_used ~700kb in size one unsigned dword for each asm-code line
+
+	//before program end print g_used to file to see which code is used in run
+
+	/*
+	void* lptr()
+	{
+	  if( in_vga_mem( ptr ) )
+	  {
+	    fprintf( f, "access to vga in line: %d\n", g_line );
+	  }
+
+	  if( in_textmode_mem( ptr ) )
+	  {
+	    fprintf( f, "access to textmode in line: %d\n", g_line );
+	  }
+    }
+	*/
+
+	assert( p1 == r2 );
+
 	initialize();
 
 	global_struct_t& x = *get_global();
 
+	_REGS regs;
+	//for easy access
+	word& ax = regs.x.ax;
+	byte& ah = regs.h.ah;
+	byte& al = regs.h.al;
+	word& flags = regs.cflag;
+
+	ax = 0xAAFF;
+	byte aa = ah;
+	byte ff = al;
+
+	// how to sign extend from byte to word?
+	char sdx = -5;
+
+	byte xs = -5;
+	int xss = xs;
+	word sd = (short)(int)xs;
+	word sdd = -5;
+	short xyy = (short)sdd;
+
+	__asm
+	{
+		mov al,xs
+		cbw // AX = SignExtend(AL);
+		mov sd,ax
+
+		mov bx,100
+		mov al,0xfb
+		cbw
+		add bx,0xfffb
+
+		mov sd,bx
+	}
+
+	short xxxx = 0xfffb; // -5
+
+	ax = 100;
+	subw( ax, 5 );
+
+	ax = 100;
+	subw( ax, 20 ); // ax -= 20;
+		
 	x.ax = 100;
 	subw( x.ax, 20 );
 

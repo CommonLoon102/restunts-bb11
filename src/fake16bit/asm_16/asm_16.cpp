@@ -10,6 +10,14 @@ static global_struct_t g_sys = { 0, 0 };
 static dos_mem g_dos_mem = dos_mem( DOS_SEG, MCGA_SEG - DOS_SEG );
 static dos_file g_dos_file= dos_file();
 
+//wb,ww,wd( ptr, value );
+
+//typedef unsigned char byte;
+//typedef byte* pbyte;
+//wb( const pbyte& p_ptr, const byte& p_value ); // *p_ptr = p_value;
+
+//p_ptr in vga,text,itable,...
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -52,6 +60,18 @@ extern "C" {
 	{
 		return (dword*)ptr( p_segment, p_offset );
 	}
+	
+	//movw( ax, 0xFFFF );
+	//movb( *wptr(0xA000,0), 0xFF );
+	//movw( ax, 0xFFFF );
+
+	//m_w( ds, bx+4, 0x1234 ) // mov word ptr ds:[offset],1234h
+	//m_ds_w( bx+4, 0x1234 ) // mov word ptr ds:[offset],1234h
+
+	//m_es_w( bx+5, 0xFFFF );
+	
+	//m_vga_w( bx, 0x10 ); // 
+	//mov byte ptr 0xA000:[bx],10h
 
 	// stack access
 	ASM_16_API void pushb( byte p_value )
@@ -136,6 +156,7 @@ extern "C" {
 	__asm popf             \
 	}
 
+	//ASM_16_API void cmpw( const word& op1, const word& op2 )
 	ASM_16_API void cmpw( word op1, word op2 )
 	{
 		__asm
@@ -186,6 +207,7 @@ ende:
 		}
 	}
 
+	//ASM_16_API void subw( word* p_op1, word p_op2 ) --> subw( &ax, 0x20 ), subw( wp(ds,bx+4), 0x33 ), subw( &word123, 0x33 ); --> word123 -= 0x33;
 	ASM_16_API void subw( word& p_op1, word p_op2 )
 	{
 		__asm
@@ -269,6 +291,14 @@ ende:
 	}
 
 	//-----------------
+
+	ASM_16_API void outb( int p_port, byte p_value )
+	{
+	}
+
+	ASM_16_API void inb( int p_port, byte& p_value )
+	{
+	}
 
 	void dos_mem_allocate()
 	{

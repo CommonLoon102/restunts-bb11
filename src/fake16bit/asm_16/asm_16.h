@@ -25,6 +25,61 @@ const int DOS_FUNCTION_FILE_UNLINK = 0x41; // http://stanislavs.org/helppc/int_2
 //const int DOS_FUNCTION_FILE_FIND = 0x4e; // http://stanislavs.org/helppc/int_21-4e.html
 //const int DOS_FUNCTION_FILE_FIND_NEXT = 0x4f; // http://stanislavs.org/helppc/int_21-4f.html
 
+//from dosbox
+#define DOSERR_NONE 0
+#define DOSERR_FUNCTION_NUMBER_INVALID 1
+#define DOSERR_FILE_NOT_FOUND 2
+#define DOSERR_PATH_NOT_FOUND 3
+#define DOSERR_TOO_MANY_OPEN_FILES 4
+#define DOSERR_ACCESS_DENIED 5
+#define DOSERR_INVALID_HANDLE 6
+#define DOSERR_MCB_DESTROYED 7
+#define DOSERR_INSUFFICIENT_MEMORY 8
+#define DOSERR_MB_ADDRESS_INVALID 9
+#define DOSERR_ENVIRONMENT_INVALID 10
+#define DOSERR_FORMAT_INVALID 11
+#define DOSERR_ACCESS_CODE_INVALID 12
+#define DOSERR_DATA_INVALID 13
+#define DOSERR_RESERVED 14
+#define DOSERR_FIXUP_OVERFLOW 14
+#define DOSERR_INVALID_DRIVE 15
+#define DOSERR_REMOVE_CURRENT_DIRECTORY 16
+#define DOSERR_NOT_SAME_DEVICE 17
+#define DOSERR_NO_MORE_FILES 18
+#define DOSERR_FILE_ALREADY_EXISTS 80
+
+/*
+struct file_info_t
+
+typedef std::vector<file_info> found_files_t;
+
+found_files_t g_found_files;
+size_t g_last_found_file = 0;
+
+int find_file( ... )
+{
+  found_files_t tmp;
+
+  find files ... tmp.push( file_info );
+
+  g_last_found_file = 0;
+  g_found_files = tmp; // override global "found files list"
+  
+  return 2 (DOSERR_FILE_NOT_FOUND) /18
+
+  return g_last_found_file++;
+}
+
+int find_file_next
+{
+  if( g_last_found_file < g_found_files.size() )
+    return g_last_found_file++;
+
+  else
+    error return 18 (DOSERR_NO_MORE_FILES)
+}
+*/
+
 const int NOT_ENOUGH_MEMORY = 0x08;
 const int INVALID_MEMORY_BLOCK_ADDRESS = 0x09;
 
@@ -41,31 +96,35 @@ typedef unsigned char byte;
 typedef unsigned short word;
 typedef unsigned int dword;
 
-  //union _REGS {             
-  //  struct _WORDREGS x;     
-  //  struct _BYTEREGS h;     
-  //};
+struct _WORDREGS 
+{        
+	word ax;
+	word bx;
+	word cx;
+	word dx;
+};
 
-  //struct _WORDREGS {        
-  //  unsigned int ax;
-  //  unsigned int bx;
-  //  unsigned int cx;
-  //  unsigned int dx;
-  //  unsigned int si;
-  //  unsigned int di;
-  //  unsigned int cflag;
-  //};
+struct _BYTEREGS 
+{        
+	byte al, ah;
+	byte bl, bh;
+	byte cl, ch;
+	byte dl, dh;
+};
 
-  //struct _BYTEREGS {        
-  //  unsigned char al, ah;
-  //  unsigned char bl, bh;
-  //  unsigned char cl, ch;
-  //  unsigned char dl, dh;
-  //};
-
-//byte& al = regs.h.al;
-//byte& cl = regs.h.cl;
-//word& ax = regs.x.ax;
+union _REGS 
+{             
+	_WORDREGS x;     
+	_BYTEREGS h;     
+	word si;
+	word di;
+	word cs;
+	word es;
+	word ds;
+	word ss;
+	word sp;
+	word cflag;
+};
 
 typedef struct global_struct_s
 {
@@ -96,6 +155,14 @@ typedef struct global_struct_s
 	word flags;
 
 } global_struct_t;
+
+//!!! multiple STACK problems!!!!
+//beware of call stack "corruptions"
+//when we interchange the game-fake-stack and the real-stack for function calling
+//maybe there is something like an CALL_FRAME(); macro in each function need to 
+//bring the fake-stack to the right position
+
+//what about global out/inside-function gotos??? i hope there are just a few
 
 #ifdef __cplusplus
 extern "C" {
@@ -146,11 +213,8 @@ ASM_16_API void imulw( word p_op );
 ASM_16_API void rolw( word& p_op1, byte p_op2 ); // rolw( regs.dx, regs.cl );
 ASM_16_API void rolb( byte& p_op1, byte p_op2 ); // rolb( *byte_23dd, regs.cl );
 
-//ASM_16_API void outb( int p_port, byte p_value );
-//ASM_16_API void inb( int p_port, byte& p_value );
-// outb( regs.al, 0x22 );
-// outb( regs.al, regs.dx ); ...
-// inb( regs.dx, regs.al ); ...
+ASM_16_API void outb( int p_port, byte p_value );
+ASM_16_API void inb( int p_port, byte& p_value );
 
 ASM_16_API void intcall( int p_nr ); // 10h, 16h, 21h
 
