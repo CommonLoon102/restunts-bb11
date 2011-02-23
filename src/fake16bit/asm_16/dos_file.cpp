@@ -2,7 +2,7 @@
 
 #include <cassert>
 
-int dos_file::get_handle( int& p_handle )
+int dos_file_manager::get_handle( int& p_handle )
 {
 	assert( m_handles.size() > 0 );
 
@@ -12,14 +12,14 @@ int dos_file::get_handle( int& p_handle )
 	return 0;
 }
 
-int dos_file::free_handle(int p_handle)
+int dos_file_manager::free_handle(int p_handle)
 {
 	m_handles.push(p_handle);
 
 	return 0;
 }
 
-int dos_file::free_file( int p_handle )
+int dos_file_manager::free_file( int p_handle )
 {
 	assert( m_handle_map.find( p_handle ) != m_handle_map.end() );
 
@@ -29,18 +29,18 @@ int dos_file::free_file( int p_handle )
 	return 0;
 }
 
-FILE* dos_file::get_file( int p_handle )
+FILE* dos_file_manager::get_file( int p_handle )
 {
 	assert( m_handle_map.find( p_handle ) != m_handle_map.end() );
 	return m_handle_map[p_handle];
 }
 
-void dos_file::set_file( int p_handle, FILE* p_fp )
+void dos_file_manager::set_file( int p_handle, FILE* p_fp )
 {
 	m_handle_map[p_handle]=p_fp;
 }
 
-void dos_file::fill_stack( int p_stack_size )
+void dos_file_manager::fill_stack( int p_stack_size )
 {
 	m_stack_size = p_stack_size;
 	for(int i = 0; i < p_stack_size; ++i )
@@ -49,7 +49,7 @@ void dos_file::fill_stack( int p_stack_size )
 	}
 }
 
-dos_file::dos_file()
+dos_file_manager::dos_file_manager()
 {
 	m_current_handle = 0;
 
@@ -61,7 +61,7 @@ int create( std::string& p_filename, int p_attributes, int& p_handle )
 	return 0;
 }
 
-int dos_file::open( std::string& p_filename, int p_mode, int& p_handle )
+int dos_file_manager::open( std::string& p_filename, int p_mode, int& p_handle )
 {
 	//p_mode == 
 	//00  read only
@@ -85,7 +85,7 @@ int dos_file::open( std::string& p_filename, int p_mode, int& p_handle )
 	return 0;
 }
 
-int dos_file::close( int p_handle )
+int dos_file_manager::close( int p_handle )
 {
 	FILE* fp = get_file( p_handle );
 
@@ -97,7 +97,7 @@ int dos_file::close( int p_handle )
 	return 0;
 }
 
-int dos_file::seek( int p_handle, int p_offset, int p_origin )
+int dos_file_manager::seek( int p_handle, int p_offset, int p_origin )
 {
 	FILE* fp = m_handle_map[p_handle];
 
@@ -106,7 +106,7 @@ int dos_file::seek( int p_handle, int p_offset, int p_origin )
 	return 0;
 }
 
-int dos_file::unlink( std::string& p_filename )
+int dos_file_manager::unlink( std::string& p_filename )
 {
 	//delete file
 	//does file exists
@@ -116,7 +116,7 @@ int dos_file::unlink( std::string& p_filename )
 	return 0;
 }
 
-int dos_file::read( int p_handle /*buffer*/ )
+int dos_file_manager::read( int p_handle /*buffer*/ )
 {
 	FILE* fp = m_handle_map[p_handle];
 
@@ -125,7 +125,7 @@ int dos_file::read( int p_handle /*buffer*/ )
 	return 0;
 }
 
-int dos_file::write( int p_handle /*buffer*/ )
+int dos_file_manager::write( int p_handle /*buffer*/ )
 {
 	FILE* fp = m_handle_map[p_handle];
 

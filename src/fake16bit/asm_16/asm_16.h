@@ -49,6 +49,31 @@ const int DOS_FUNCTION_FILE_UNLINK = 0x41; // http://stanislavs.org/helppc/int_2
 #define DOSERR_FILE_ALREADY_EXISTS 80
 
 /*
+we need a memory access object for better readability
+
+class ptr<ValueType>
+{
+  ValueType& operator =( )
+  ...
+  ...
+}
+
+ptr<byte_t> byte;
+
+byte(seg,ofs)=0x200
+al=byte(seg,ofs);
+
+al=byte_ds(ofs);
+al=ptr<vector_t>( ds, bx );
+
+ptr<vector_t>(ds,bx).x = 102;
+
+vector_t& vec = ptr<vector_t>(ds,bx);
+
+vec.x = 102;
+*/
+
+/*
 struct file_info_t
 
 typedef std::vector<file_info> found_files_t;
@@ -63,7 +88,7 @@ int find_file( ... )
   find files ... tmp.push( file_info );
 
   g_last_found_file = 0;
-  g_found_files = tmp; // override global "found files list"
+  g_found_files = tmp; // overrides global "found files list" (we need only one for stunts)
   
   return 2 (DOSERR_FILE_NOT_FOUND) /18
 

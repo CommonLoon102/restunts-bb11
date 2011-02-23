@@ -12,7 +12,7 @@ push - no flag changes
   0x53 38
   0x06 17
 
-mov - no flag changes
+mov - no flag changes (but maybe access to vga-,textmode ,bios ram)
   0x8b 7779 (cs override,es override)
   0x89 3067 (cs override,es override,ss override)
   0xb8 2194
@@ -41,7 +41,7 @@ mov - no flag changes
   0xb5 1
 
 sub - change flags, subb, subw
-  0x2a 425 --> 	subb r/m8,r8 --> subb( r/m8, r8 );
+  0x2a 425 --> 	subb r/m8,r8 --> subb( r/m8, r8 ); ...
   0x2b 1294 (cs override,es override)  --> 	subw r/m16,r16 --> subw( r/m16, r16 );
   0x2c 7 --> subb al,imm8 --> subb(al,imm8);
   0x2d 97 --> subw imm16,ax --> subw(ax,imm16);
@@ -49,7 +49,10 @@ sub - change flags, subb, subw
   0x29 64 (cs override,es override) --> subw r/m16,r16 --> subw( r/m16, r16 );
   0x80 7 --> subb r/m8,imm8 --> subb( r/m8, imm8 );
   0x81 67 --> subw r/m16,imm16 --> subw( r/m16, imm16 );
-  0x83 369 --> subw r/m16,imm8 --> subw( r/m16, imm8 ); // sign-extended imm8 to imm16
+  0x83 369 --> subw r/m16,imm8 --> subw( r/m16, imm8 ); // sign-extended imm8 to imm16 ---> subw( ax, -5 );
+
+sub(byte,byte)
+sub(word,word)
 
 call - (no flag changes in realmode...)
   0x9a 2481
@@ -117,16 +120,19 @@ jmp - (no flag changes in realmode...)
   0xff 30 (cs override,ss override)
   0xea 16
 
-or - change flags
-  0x0a 97
-  0x0b 442
-  0x80 31 (es override)
-  0x0c 28
-  0x81 4
-  0x08 9 (es override)
-  0x83 5
-  0x0d 4
-  0x09 5 (es override)
+or - change flags (OF := 0, CF := 0; SF, ZF, and PF)
+  0x09 5 (es override) --> orw r/m16,r16
+  0x08 9 (es override) --> orb r/m8,r8
+  0x0a 97 --> orb r8,r/m8
+  0x0b 442 --> orw r16,r/m16
+  0x0c 28 --> orb al,imm8
+  0x0d 4 --> orw ax,imm16
+  0x80 31 (es override) --> orb r/m8,imm8
+  0x81 4 --> 	orw r/m16,imm16
+  0x83 5 --> orw r/m16,imm8 --> signe extended
+
+or(byte,byte)
+or(word,word)
 
 jnz - no flag changes
   0x75 1412
@@ -234,6 +240,9 @@ xor
   0x34 4 --> 	XORb AL,imm8
   0x80 14 --> XORb r/m8,imm8
 
+xor(byte,byte)
+xor(word,word)
+
 xchg - no flag changes
   0x86 15 --> xchgb r8,r/m8, xchgb r/m8,r8
   0x87 22 --> xchgw r16,r/m16, xchgw r/m16,r16
@@ -263,10 +272,12 @@ rcr
   0xd1 171 --> 	rcrw r/m16,1 --> rcrw( r/m16, 1 );
 
 adc
-  0x13 75 (es override)
-  0x11 26
-  0x83 46
-  0x15 13
+  0x13 75 (es override) --> ADC r16, r/m16
+  0x11 26 --> ADC r/m16, r16
+  0x15 13 --> ADC AX, imm16
+  0x83 46 --> ADC r/m16, imm8 ... Add with CF sign-extended imm8 to r/m16
+//Destination = Destination + Source + CF;
+//The OF, SF, ZF, AF, CF, and PF flags are set according to the result.
 
 jns - no flag changes
   0x79 10

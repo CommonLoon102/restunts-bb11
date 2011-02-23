@@ -45,18 +45,17 @@ word* word123 = (word*)ptrl( linear-ida-offset );
 
 void sub_1234()
 {
-  dx = seg31;
-  dx = ds;
-  *wptr(ds,bx+10)=23;
-  ax = *wptr(ds,bx+20);
-  ax = 0;
-  bx = 10;
-  *word123 = 10;
-  cmp(ax,0);
-  mul16(bx); // dx:ax = ax * bx --> dxax() = ax * bx; set flags???
-  mul8(bh); // ax = al * bh; --> ax() = al() * bh(); set flags???
-  if(jnz()) goto lableX;
-  ax = bx;
+  DX = seg31;
+  x = DS;
+  wptr(DS,BX+10)=23;
+  AX = wptr(DS,BX+20);
+  AX = 10;
+  word123 = 10;
+  CMP(ax,0);
+  MUL(BX); // dx:ax = ax * bx --> dxax() = ax * bx; set flags???
+  MUL(BH); // ax = al * bh; --> ax() = al() * bh(); set flags???
+  if(JNZ()) goto lableX;
+  AX = BX;
 lableX:
   sub_4321();
   return;
@@ -80,8 +79,26 @@ byte& wptr( int offset )
 	return global_test[offset];
 }
 
+void INT( const byte& p_nr )
+{
+}
+
+/*
+we SHOULD always use AX and DX in calcutation...not AX,BX...
+*/
+
 int main( int argc, char* argv[] )
 {
+	INT(0x21);
+
+	word flagss;
+	_asm
+	{
+		pushf
+		pop bx
+		mov flagss,bx
+	}
+
 	memory[0]=23;
 
 	byte& p0 = wptr( 0 );
@@ -267,4 +284,10 @@ int main( int argc, char* argv[] )
 	int brk = 1;
 
 	return 0;
+
+/*
+be as syntax near as possible, and fake the complete 16bit semanic
+everything in upper-case + _ in front to show how evil this code is and how fast it needs to be replaced :)
+*/
+
 }

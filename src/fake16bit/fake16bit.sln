@@ -8,6 +8,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "fake16bit", "fake16bit\fake
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "asm_16", "asm_16\asm_16.vcxproj", "{367EFA5E-1AE0-41AF-B8F6-B1868CACD601}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "emulator", "emulator\emulator.vcxproj", "{F0168251-80FB-4A9B-9583-4027DDAC1FA9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -22,6 +24,10 @@ Global
 		{367EFA5E-1AE0-41AF-B8F6-B1868CACD601}.Debug|Win32.Build.0 = Debug|Win32
 		{367EFA5E-1AE0-41AF-B8F6-B1868CACD601}.Release|Win32.ActiveCfg = Release|Win32
 		{367EFA5E-1AE0-41AF-B8F6-B1868CACD601}.Release|Win32.Build.0 = Release|Win32
+		{F0168251-80FB-4A9B-9583-4027DDAC1FA9}.Debug|Win32.ActiveCfg = Debug|Win32
+		{F0168251-80FB-4A9B-9583-4027DDAC1FA9}.Debug|Win32.Build.0 = Debug|Win32
+		{F0168251-80FB-4A9B-9583-4027DDAC1FA9}.Release|Win32.ActiveCfg = Release|Win32
+		{F0168251-80FB-4A9B-9583-4027DDAC1FA9}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

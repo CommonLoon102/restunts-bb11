@@ -8,7 +8,7 @@
 static global_struct_t g_sys = { 0, 0 };
 
 static dos_mem g_dos_mem = dos_mem( DOS_SEG, MCGA_SEG - DOS_SEG );
-static dos_file g_dos_file= dos_file();
+static dos_file_manager g_dos_file= dos_file_manager();
 
 //wb,ww,wd( ptr, value );
 
@@ -289,6 +289,41 @@ ende:
 			_FLAG_EPILOG
 		}
 	}
+
+	void MUL( const byte& p_value )
+	{
+		__asm
+		{
+			_FLAG_PROLOG
+			mov al,AL
+			//mov bl,[p_value]
+			mul bl
+			mov AX,ax
+			_FLAG_EPILOG
+		}
+	}
+
+	//word_reg_pair_t DXAX(DX,AX)
+	//DXAX = 0x10; // DX = 00, AX = 0x10
+	//DXAX = 0xFAAAA; // DX = 0xF, AX = 0xAAAA
+	//dword_t x = DXAX;
+	//int pos = (int)DXAX;
+
+	//byte_DS(offset) ... byteDS(BX) = 10; ... (byte*)DS(BX)
+
+	//void MUL( const word& p_value )
+	//{
+	//	__asm
+	//	{
+	//		_FLAG_PROLOG
+	//		mov ax,AX
+	//		mov bx,p_value
+	//		mul bx
+	//		mov DX,dx
+	//		mov AX,ax
+	//		_FLAG_EPILOG
+	//	}
+	//}
 
 	//-----------------
 
