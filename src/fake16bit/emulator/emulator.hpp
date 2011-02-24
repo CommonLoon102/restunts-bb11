@@ -4,11 +4,13 @@
 
 #include "word_pair.hpp"
 
+#include "on_access.hpp"
+
 // something like an cpu emulator for stunts only
 class emulator_t
 {
 public:
-	emulator_t();
+	emulator_t( pbyte_t p_memory, on_access_t& p_on_access );
 
 	// registers
 	word_t& AX;
@@ -207,15 +209,17 @@ private:
 	void write_word( const word_t p_seg, const word_t p_ofs, const word_t p_value ) const;
 	void write_dword( const word_t p_seg, const word_t p_ofs, const dword_t p_value ) const;
 
-	byte_t read_byte( const word_t p_seg, const word_t p_ofs ) const;
-	word_t read_word( const word_t p_seg, const word_t p_ofs ) const;
-	dword_t read_dword( const word_t p_seg, const word_t p_ofs ) const;
+	void read_byte( const word_t p_seg, const word_t p_ofs, byte_t& p_value ) const;
+	void read_word( const word_t p_seg, const word_t p_ofs, word_t& p_value ) const;
+	void read_dword( const word_t p_seg, const word_t p_ofs, dword_t& p_value) const;
 
 	void advance_with_DF( word_t& p_index_reg, const byte_t p_size );
 	void advance_with_DF_word( word_t& p_index_reg );
 	void advance_with_DF_byte( word_t& p_index_reg );
 
 	void load_farptr( word_t& p_seg_reg, word_t& p_index_reg, dword_t& p_op2 );
+
+	on_access_t& m_on_access;
 };
 
 /*

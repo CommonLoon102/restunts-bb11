@@ -77,13 +77,17 @@
     <ClCompile Include="emulator.cpp" />
     <ClCompile Include="emulator_test.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="on_access.cpp" />
     <ClCompile Include="stopwatch.cpp" />
+    <ClCompile Include="tools.cpp" />
     <ClCompile Include="word_pair.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="emulator.hpp" />
     <ClInclude Include="emulator_test.hpp" />
+    <ClInclude Include="on_access.hpp" />
     <ClInclude Include="stopwatch.hpp" />
+    <ClInclude Include="tools.hpp" />
     <ClInclude Include="types.hpp" />
     <ClInclude Include="word_pair.hpp" />
   </ItemGroup>

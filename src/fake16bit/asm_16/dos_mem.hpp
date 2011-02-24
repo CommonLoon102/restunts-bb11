@@ -10,7 +10,7 @@
 // -allocate( paragraph_count ) -> segment
 // -reallocate( segment, new_paragraph_count )
 // -free( segment )
-// something missing
+// something missing?
 class dos_mem
 {
 private:

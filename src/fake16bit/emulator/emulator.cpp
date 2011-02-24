@@ -2,7 +2,7 @@
 
 #include <cassert>
 
-emulator_t::emulator_t():
+emulator_t::emulator_t( pbyte_t p_memory, on_access_t& p_on_access ):
 	AX(m_regs.word.ax),
 	AH(m_regs.byte.ah),
 	AL(m_regs.byte.al),
@@ -24,7 +24,9 @@ emulator_t::emulator_t():
 	SP(m_sp),
 	FLAGS(m_flags),
 	DXAX(m_regs.word.dx,m_regs.word.ax),
-	AXDX(m_regs.word.ax,m_regs.word.dx)
+	AXDX(m_regs.word.ax,m_regs.word.dx),
+	m_memory( p_memory ),
+	m_on_access( p_on_access )
 {
 	AX = 0;
 	BX = 0;
@@ -38,6 +40,8 @@ emulator_t::emulator_t():
 	DI = 0;
 	SP = 0;
 	FLAGS = 0;
+
+	m_on_access.set_emulator( this );
 }
 
 #define _FLAGS_PROLOG(FLAGS) __asm\
@@ -358,36 +362,48 @@ void emulator_t::write_byte( const word_t p_seg, const word_t p_ofs, const byte_
 {
 	pbyte_t pbyte = (pbyte_t)ptr( p_seg, p_ofs );
 	*pbyte = p_value;
+
+	m_on_access.on_write_byte( p_seg, p_ofs, p_value );
 }
 
 void emulator_t::write_word( const word_t p_seg, const word_t p_ofs, const word_t p_value ) const
 {
 	pword_t pword = (pword_t)ptr( p_seg, p_ofs );
 	*pword = p_value;
+
+	m_on_access.on_write_word( p_seg, p_ofs, p_value );
 }
 
 void emulator_t::write_dword( const word_t p_seg, const word_t p_ofs, const dword_t p_value ) const
 {
 	pdword_t pdword = (pdword_t)ptr( p_seg, p_ofs );
 	*pdword = p_value;
+
+	m_on_access.on_write_dword( p_seg, p_ofs, p_value );
 }
 
-byte_t emulator_t::read_byte( const word_t p_seg, const word_t p_ofs ) const
+void emulator_t::read_byte( const word_t p_seg, const word_t p_ofs, byte_t& p_value ) const
 {
 	pbyte_t pbyte = (pbyte_t)ptr( p_seg, p_ofs );
-	return *pbyte;
+	p_value = *pbyte;
+
+	m_on_access.on_read_byte( p_seg, p_ofs, p_value );
 }
 
-word_t emulator_t::read_word( const word_t p_seg, const word_t p_ofs ) const
+void emulator_t::read_word( const word_t p_seg, const word_t p_ofs, word_t& p_value ) const
 {
 	pword_t pword = (pword_t)ptr( p_seg, p_ofs );
-	return *pword;
+	p_value = *pword;
+
+	m_on_access.on_read_word( p_seg, p_ofs, p_value );
 }
 
-dword_t emulator_t::read_dword( const word_t p_seg, const word_t p_ofs ) const
+void emulator_t::read_dword( const word_t p_seg, const word_t p_ofs, dword_t& p_value ) const
 {
 	pdword_t pdword = (pdword_t)ptr( p_seg, p_ofs );
-	return *pdword;
+	p_value = *pdword;
+
+	m_on_access.on_read_dword( p_seg, p_ofs, p_value );
 }
 
 void emulator_t::advance_with_DF( word_t& p_index_reg, const byte_t p_size )
@@ -434,19 +450,19 @@ void emulator_t::PUSH(const dword_t& p_op )
 
 void emulator_t::POP( byte_t& p_op )
 {
-	p_op = read_byte( SS, SP );
+	read_byte( SS, SP, p_op );
 	SP += sizeof( p_op );
 }
 
 void emulator_t::POP( word_t& p_op )
 {
-	p_op = read_word( SS, SP );
+	read_word( SS, SP, p_op );
 	SP += sizeof( p_op );
 }
 
 void emulator_t::POP( dword_t& p_op )
 {
-	p_op = read_dword( SS, SP );
+	read_dword( SS, SP, p_op );
 	SP += sizeof( p_op );
 }
 
@@ -1518,7 +1534,7 @@ void emulator_t::LODSW()
 	SI += ( esi_out - esi_in );
 	AX = ax_out;
 	
-	//AX = read_word( ES, SI );
+	//read_word( ES, SI, AX );
 	//advance_with_DF_word( SI );
 }
 
@@ -1526,7 +1542,7 @@ void emulator_t::LODSW()
 void emulator_t::XLAT()
 {
 	dword_t offset = BX + AL;
-	AL = read_byte( DS, offset );
+	read_byte( DS, offset, AL );
 }
 
 void emulator_t::CWD()
