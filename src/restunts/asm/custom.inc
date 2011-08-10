@@ -150,6 +150,11 @@ extrn kb_checking:proc
 extrn flush_stdin:proc
 extrn kb_check:proc
 
+extrn init_kevinrandom:proc
+extrn get_kevinrandom_seed:proc
+extrn get_kevinrandom:proc
+extrn get_super_random:proc
+
 extrn stuntsmain:proc
 
 ;extrn fatal_error:proc

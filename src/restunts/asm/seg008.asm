@@ -90,7 +90,7 @@ seg008 segment byte public 'STUNTSC' use16
     public font_set_fontdef2
     public font_set_fontdef
     public format_frame_as_string
-    public get_super_random
+    public ported_get_super_random_
     public ported_file_load_resource_
     public off_29A4E
     public sub_29A86
@@ -4504,7 +4504,7 @@ loc_29988:
     pop     bp
     retf
 format_frame_as_string endp
-get_super_random proc far
+ported_get_super_random_ proc far
     var_4 = word ptr -4
      s = byte ptr 0
      r = byte ptr 2
@@ -4541,7 +4541,7 @@ loc_299C2:
     mov     sp, bp
     pop     bp
     retf
-get_super_random endp
+ported_get_super_random_ endp
 ported_file_load_resource_ proc far
     var_4 = word ptr -4
     var_2 = word ptr -2

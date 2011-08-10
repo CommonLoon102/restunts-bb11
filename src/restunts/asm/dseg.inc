@@ -1369,12 +1369,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn simd_opponent:SIMD
     extrn word_45946:word
     extrn byte_45948:byte
-    extrn byte_4594A:byte
-    extrn byte_4594B:byte
-    extrn byte_4594C:byte
-    extrn byte_4594D:byte
-    extrn byte_4594E:byte
-    extrn byte_4594F:byte
+    extrn g_kevinrandom_seed:byte
     extrn byte_45950:byte
     extrn rect_unk3:word
     extrn rect_array_unk2:word

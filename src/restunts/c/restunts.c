@@ -70,7 +70,6 @@ extern char aMain[];
 extern char aFontdef_fnt[];
 extern char aFontn_fnt[];
 extern char aTrakdata[];
-extern char aKevin[];
 extern char aDefault_0[];
 extern char aCvx[];
 extern char aTedit__0[];
@@ -87,7 +86,6 @@ extern void init_polyinfo(void);
 extern void mouse_draw_opaque_check(void);
 extern void sub_22532(void);
 extern void input_do_checking(int unk);
-extern void init_kevinrandom(const char* seed);
 extern void set_default_car(void);
 extern void combine_file_path(const char* str1, const char* str2, const char* str3, const char* str4);
 extern void ensure_file_exists(int unk);
@@ -108,13 +106,54 @@ extern void run_opponent_menu(void);
 extern void check_input(void);
 extern void show_waiting(void);
 extern void run_car_menu(struct GAMEINFO* unk, char* unk2, char* unk3, unsigned int unk4);
-extern void get_super_random(void);
 extern void run_game(void);
 extern unsigned end_hiscore(void);
 extern unsigned run_option_menu(void);
 extern void init_game_state(unsigned short unk);
 extern void security_check(void);
 
+#define KEVINRANDOM_SEED_LEN 6
+void init_kevinrandom(const char* seed)
+{
+	int i;
+
+	for (i = 0; i < KEVINRANDOM_SEED_LEN; ++i) {
+		g_kevinrandom_seed[i] = seed[i];
+	}
+}
+
+void get_kevinrandom_seed(char* seed)
+{
+	int i;
+
+	for (i = 0; i < KEVINRANDOM_SEED_LEN; ++i) {
+		seed[i] = g_kevinrandom_seed[i];
+	}
+}
+
+int get_kevinrandom()
+{
+	g_kevinrandom_seed[4] += g_kevinrandom_seed[5];
+	g_kevinrandom_seed[3] += g_kevinrandom_seed[4];
+	g_kevinrandom_seed[2] += g_kevinrandom_seed[3];
+	g_kevinrandom_seed[1] += g_kevinrandom_seed[2];
+	g_kevinrandom_seed[0] += g_kevinrandom_seed[1];
+	
+	!++g_kevinrandom_seed[5] 
+	&& !++g_kevinrandom_seed[4]
+	&& !++g_kevinrandom_seed[3]
+	&& !++g_kevinrandom_seed[2]
+	&& !++g_kevinrandom_seed[1]
+	&& ++g_kevinrandom_seed[0];
+
+	return g_kevinrandom_seed[0];
+}
+
+int get_super_random()
+{
+	int val = rand() + get_kevinrandom() + timer_get_counter() + gState_game_frame;
+	return val ? val : -val;
+}
 
 void init_row_tables(void) {
 	int i;

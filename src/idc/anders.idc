@@ -706,6 +706,11 @@ static PortFuncName(labelname) {
 		labelname == "kb_checking" ||
 		labelname == "flush_stdin" ||
 		labelname == "kb_check" ||
+		
+		labelname == "init_kevinrandom" ||
+		labelname == "get_kevinrandom_seed" ||
+		labelname == "get_kevinrandom" ||
+		labelname == "get_super_random" ||
 
 		labelname == "stuntsmain"
 	)

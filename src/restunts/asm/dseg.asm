@@ -1417,12 +1417,7 @@ dseg segment byte public 'STUNTSD' use16
     public simd_opponent
     public word_45946
     public byte_45948
-    public byte_4594A
-    public byte_4594B
-    public byte_4594C
-    public byte_4594D
-    public byte_4594E
-    public byte_4594F
+    public g_kevinrandom_seed
     public byte_45950
     public rect_unk3
     public rect_array_unk2
@@ -39178,12 +39173,12 @@ simd_opponent     db 0
 word_45946     dw 0
 byte_45948     db 0
     db 0
-byte_4594A     db 0
-byte_4594B     db 0
-byte_4594C     db 0
-byte_4594D     db 0
-byte_4594E     db 0
-byte_4594F     db 0
+g_kevinrandom_seed     db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
 byte_45950     db 0
     db 0
 rect_unk3     dw 0

@@ -51,9 +51,9 @@ seg002 segment byte public 'STUNTSC' use16
     public nopsub_19DFF
     public nopsub_19E09
     public nopsub_19E13
-    public init_kevinrandom
-    public get_kevinrandom_seed
-    public get_kevinrandom
+    public ported_init_kevinrandom_
+    public ported_get_kevinrandom_seed_
+    public ported_get_kevinrandom_
     public intr0_handler
     public init_div0
     public byte_19F07
@@ -182,7 +182,7 @@ loc_19E1E:
     pop     bp
     retf
 nopsub_19E13 endp
-init_kevinrandom proc far
+ported_init_kevinrandom_ proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -193,26 +193,26 @@ init_kevinrandom proc far
     mov     bx, [bp+arg_0]
     mov     al, [bx]
 loc_19E2A:
-    mov     byte_4594A, al
+    mov     g_kevinrandom_seed, al
     mov     al, [bx+1]
 loc_19E30:
-    mov     byte_4594B, al
+    mov     g_kevinrandom_seed+1, al
 loc_19E33:
     mov     al, [bx+2]
 loc_19E36:
-    mov     byte_4594C, al
+    mov     g_kevinrandom_seed+2, al
     mov     al, [bx+3]
-    mov     byte_4594D, al
+    mov     g_kevinrandom_seed+3, al
     mov     al, [bx+4]
-    mov     byte_4594E, al
+    mov     g_kevinrandom_seed+4, al
     mov     al, [bx+5]
-    mov     byte_4594F, al
+    mov     g_kevinrandom_seed+5, al
     pop     bp
 loc_19E4C:
     pop     bp
     retf
-init_kevinrandom endp
-get_kevinrandom_seed proc far
+ported_init_kevinrandom_ endp
+ported_get_kevinrandom_seed_ proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -221,59 +221,59 @@ get_kevinrandom_seed proc far
     mov     bp, sp
     push    bp
     mov     bx, [bp+arg_0]
-    mov     al, byte_4594A
+    mov     al, g_kevinrandom_seed
     mov     [bx], al
-    mov     al, byte_4594B
+    mov     al, g_kevinrandom_seed+1
     mov     [bx+1], al
-    mov     al, byte_4594C
+    mov     al, g_kevinrandom_seed+2
     mov     [bx+2], al
-    mov     al, byte_4594D
+    mov     al, g_kevinrandom_seed+3
     mov     [bx+3], al
-    mov     al, byte_4594E
+    mov     al, g_kevinrandom_seed+4
     mov     [bx+4], al
 loc_19E72:
-    mov     al, byte_4594F
+    mov     al, g_kevinrandom_seed+5
     mov     [bx+5], al
     pop     bp
     pop     bp
     retf
-get_kevinrandom_seed endp
-get_kevinrandom proc far
+ported_get_kevinrandom_seed_ endp
+ported_get_kevinrandom_ proc far
 
-    mov     al, byte_4594F
+    mov     al, g_kevinrandom_seed+5
 loc_19E7E:
-    add     al, byte_4594E
+    add     al, g_kevinrandom_seed+4
 loc_19E82:
-    mov     byte_4594E, al
+    mov     g_kevinrandom_seed+4, al
 loc_19E85:
-    add     al, byte_4594D
+    add     al, g_kevinrandom_seed+3
 loc_19E89:
-    mov     byte_4594D, al
+    mov     g_kevinrandom_seed+3, al
 loc_19E8C:
-    add     al, byte_4594C
+    add     al, g_kevinrandom_seed+2
 loc_19E90:
-    mov     byte_4594C, al
-    add     al, byte_4594B
+    mov     g_kevinrandom_seed+2, al
+    add     al, g_kevinrandom_seed+1
 loc_19E97:
-    mov     byte_4594B, al
-    add     al, byte_4594A
-    mov     byte_4594A, al
-    inc     byte_4594F
+    mov     g_kevinrandom_seed+1, al
+    add     al, g_kevinrandom_seed
+    mov     g_kevinrandom_seed, al
+    inc     g_kevinrandom_seed+5
     jnz     short loc_19EC3
-    inc     byte_4594E
+    inc     g_kevinrandom_seed+4
     jnz     short loc_19EC3
-    inc     byte_4594D
+    inc     g_kevinrandom_seed+3
     jnz     short loc_19EC3
-    inc     byte_4594C
+    inc     g_kevinrandom_seed+2
     jnz     short loc_19EC3
-    inc     byte_4594B
+    inc     g_kevinrandom_seed+1
     jnz     short loc_19EC3
-    inc     byte_4594A
+    inc     g_kevinrandom_seed
 loc_19EC3:
-    mov     al, byte_4594A
+    mov     al, g_kevinrandom_seed
     xor     ah, ah
     retf
-get_kevinrandom endp
+ported_get_kevinrandom_ endp
 intr0_handler proc far
      s = byte ptr 0
      r = byte ptr 2

@@ -4,9 +4,9 @@ seg002 segment byte public 'STUNTSC' use16
     extrn nopsub_19DFF:proc
     extrn nopsub_19E09:proc
     extrn nopsub_19E13:proc
-    extrn init_kevinrandom:proc
-    extrn get_kevinrandom_seed:proc
-    extrn get_kevinrandom:proc
+    extrn ported_init_kevinrandom_:proc
+    extrn ported_get_kevinrandom_seed_:proc
+    extrn ported_get_kevinrandom_:proc
     extrn intr0_handler:proc
     extrn init_div0:proc
     extrn byte_19F07:byte
