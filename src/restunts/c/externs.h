@@ -17,6 +17,9 @@ extern struct MEMCHUNK* resendptr1;
 extern struct MEMCHUNK* resendptr2;
 extern unsigned short resmaxsize;
 
+extern unsigned long timer_callback_counter;
+extern unsigned long last_timer_callback_counter;
+
 extern unsigned char* g_kevinrandom_seed;
 extern const char* aReservememoryO;
 extern const char* aReservememoryOutOfMemory;
@@ -50,7 +53,7 @@ extern void fatal_error(const char*, ...);
 extern int do_dea_textres(void);
 extern unsigned long file_decomp_rle(void far* src, void far* dst, unsigned paras);
 extern int get_unflip_size(void far* memchunk);
-extern int timer_get_counter(void);
+extern unsigned long timer_get_counter(void);
 extern void* _memcpy(void*, const void*, unsigned);
 extern char* _strcpy(char* dest, const char* src);
 extern char* _strcat(char* dest, const char* src);

@@ -107,7 +107,7 @@ seg008 segment byte public 'STUNTSC' use16
     public do_dea_textres
     public ensure_file_exists
     public do_mer_restext
-    public timer_get_delta_alt
+    public ported_timer_get_delta_alt_
     public ported_file_load_3dres_
 sub_274B0 proc far
     var_40 = byte ptr -64
@@ -890,7 +890,7 @@ loc_27B92:
     jmp     short loc_27BCD
 loc_27B98:
     push    cs
-    call near ptr timer_get_delta_alt
+    call near ptr ported_timer_get_delta_alt_
     push    ax
     push    cs
     call near ptr input_checking
@@ -929,7 +929,7 @@ loc_27BD4:
     mov     [bp+var_1D4], al
     mov     [bp+var_1C0], 0FFh
     push    cs
-    call near ptr timer_get_delta_alt
+    call near ptr ported_timer_get_delta_alt_
     push    cs
     call near ptr mouse_draw_opaque_check
     cmp     [bp+var_140], 2
@@ -1082,7 +1082,7 @@ loc_27D65:
     mov     [bp+var_1C0], al
 loc_27D6D:
     push    cs
-    call near ptr timer_get_delta_alt
+    call near ptr ported_timer_get_delta_alt_
     push    ax
     push    cs
     call near ptr input_checking
@@ -1651,7 +1651,7 @@ loc_2824D:
     mov     [bp+var_6E4], 0FFh
     mov     [bp+var_718], 0FFh
     push    cs
-    call near ptr timer_get_delta_alt
+    call near ptr ported_timer_get_delta_alt_
     mov     [bp+var_2], 0
 loc_28269:
     mov     al, [bp+var_6E4]
@@ -1763,7 +1763,7 @@ loc_2836C:
     call near ptr mouse_draw_transparent_check
 loc_28370:
     push    cs
-    call near ptr timer_get_delta_alt
+    call near ptr ported_timer_get_delta_alt_
     push    ax
     push    cs
     call near ptr input_checking
@@ -2801,7 +2801,7 @@ loc_28BE2:
     jle     short loc_28C26
 loc_28BED:
     push    cs
-    call near ptr timer_get_delta_alt
+    call near ptr ported_timer_get_delta_alt_
     push    ax
     push    cs
     call near ptr input_checking
@@ -2830,7 +2830,7 @@ loc_28C26:
     mov     [bp+var_C], si
 loc_28C2E:
     push    cs
-    call near ptr timer_get_delta_alt
+    call near ptr ported_timer_get_delta_alt_
     push    ax
     push    cs
     call near ptr input_checking
@@ -3168,7 +3168,7 @@ loc_28EF3:
     db 144
 loc_28EFA:
     push    cs
-    call near ptr timer_get_delta_alt
+    call near ptr ported_timer_get_delta_alt_
     push    ax
     push    cs
     call near ptr input_checking
@@ -3191,7 +3191,7 @@ check_input endp
 nopsub_28F26 proc far
 
     push    cs
-    call near ptr timer_get_delta_alt
+    call near ptr ported_timer_get_delta_alt_
     push    ax
     push    cs
     call near ptr input_checking
@@ -3468,11 +3468,11 @@ input_repeat_check proc far
     push    si
     sub     di, di
     push    cs
-    call near ptr timer_get_delta_alt
+    call near ptr ported_timer_get_delta_alt_
     jmp     short loc_29161
 loc_2914A:
     push    cs
-    call near ptr timer_get_delta_alt
+    call near ptr ported_timer_get_delta_alt_
     mov     [bp+var_4], ax
     add     di, ax
     push    ax
@@ -4081,7 +4081,7 @@ loc_29670:
     cmp     si, 4
     jge     short loc_29648
     push    cs
-    call near ptr timer_get_delta_alt
+    call near ptr ported_timer_get_delta_alt_
     push    ax
     push    cs
     call near ptr input_do_checking
@@ -4259,7 +4259,7 @@ mouse_timer_sprite_unk proc far
     push    di
     push    si
     push    cs
-    call near ptr timer_get_delta_alt
+    call near ptr ported_timer_get_delta_alt_
     mov     si, ax
     add     word_45D1C, si
     jmp     short loc_2979F
@@ -5621,11 +5621,11 @@ do_mer_restext proc far
     ; align 2
     db 144
 do_mer_restext endp
-timer_get_delta_alt proc far
+ported_timer_get_delta_alt_ proc far
 
     call    timer_get_delta
     retf
-timer_get_delta_alt endp
+ported_timer_get_delta_alt_ endp
 ported_file_load_3dres_ proc far
     var_54 = byte ptr -84
     var_4 = word ptr -4

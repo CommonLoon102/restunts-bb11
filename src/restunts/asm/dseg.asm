@@ -934,8 +934,7 @@ dseg segment byte public 'STUNTSD' use16
     public currentvideomode
     public byte_403F3
     public sinetable
-    public word_405F6
-    public word_405F8
+    public timer_copy_unk
     public last_timer_callback_counter
     public word_405FE
     public fontdefseg
@@ -20645,8 +20644,7 @@ sinetable     dw 0
     dw 16383
     dw 16384
     dw 16384
-word_405F6     dw 0
-word_405F8     dw 0
+timer_copy_unk     dd 0
 last_timer_callback_counter     dd 0
 word_405FE     dw 0
 fontdefseg     dw seg seg039

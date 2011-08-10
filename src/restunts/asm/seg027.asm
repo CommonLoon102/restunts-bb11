@@ -1010,7 +1010,7 @@ loc_37796:
     mov     word_4063A, 0
     push    [bp+var_4]
     push    [bp+var_6]
-    call    timer_copy_counter
+    call    timer_copy_counter; Stores a copy of the timer counter with the given ticks added.
     add     sp, 4
     call    timer_wait_for_dx
     sub     si, 2
@@ -1042,7 +1042,7 @@ loc_377D3:
     mov     word_4063A, 0
     push    [bp+var_4]
     push    [bp+var_6]
-    call    timer_copy_counter
+    call    timer_copy_counter; Stores a copy of the timer counter with the given ticks added.
     add     sp, 4
     call    timer_wait_for_dx
     sub     si, 2
@@ -1059,7 +1059,7 @@ loc_37820:
     cwd
     push    dx
     push    ax
-    call    timer_copy_counter
+    call    timer_copy_counter; Stores a copy of the timer counter with the given ticks added.
     add     sp, 4
     call    timer_wait_for_dx
     mov     byte_40639, 64h ; 'd'

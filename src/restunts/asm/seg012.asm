@@ -256,10 +256,10 @@ seg012 segment byte public 'STUNTSC' use16
     public nopsub_32751
     public ported_transformed_shape_op_helper2_
     public nopsub_3276A
-    public timer_get_counter
-    public nopsub_32782
-    public timer_get_delta
-    public nopsub_327B7
+    public ported_timer_get_counter_
+    public ported_timer_custom_delta_
+    public ported_timer_get_delta_
+    public ported_timer_reset_
     public timer_copy_counter
     public timer_wait_for_dx
     public timer_compare_dx
@@ -4664,10 +4664,10 @@ nopsub_30A77 proc far
     cmp     ax, 0
     jnz     short locret_30A96
     call    timer_get_counter
-    cmp     dx, word_405F8
+    cmp     dx, word ptr timer_copy_unk+2
     jb      short near ptr nopsub_30A77
     ja      short loc_30A94
-    cmp     ax, word_405F6
+    cmp     ax, word ptr timer_copy_unk
     jb      short near ptr nopsub_30A77
 loc_30A94:
     xor     ax, ax
@@ -8729,24 +8729,24 @@ nopsub_3276A proc far
     pop     bp
     retf
 nopsub_3276A endp
-timer_get_counter proc far
+ported_timer_get_counter_ proc far
 
     cli
     mov     ax, word ptr timer_callback_counter
     mov     dx, word ptr timer_callback_counter+2
     sti
     retf
-timer_get_counter endp
-nopsub_32782 proc far
+ported_timer_get_counter_ endp
+ported_timer_custom_delta_ proc far
      s = byte ptr 0
      r = byte ptr 2
-    arg_0 = word ptr 6
-    arg_2 = word ptr 8
+    arg_ticksl = word ptr 6
+    arg_ticksh = word ptr 8
 
     push    bp
     mov     bp, sp
-    mov     bx, [bp+arg_0]
-    mov     cx, [bp+arg_2]
+    mov     bx, [bp+arg_ticksl]
+    mov     cx, [bp+arg_ticksh]
     cli
     mov     ax, word ptr timer_callback_counter
     mov     dx, word ptr timer_callback_counter+2
@@ -8755,8 +8755,8 @@ nopsub_32782 proc far
     sbb     dx, cx
     pop     bp
     retf
-nopsub_32782 endp
-timer_get_delta proc far
+ported_timer_custom_delta_ endp
+ported_timer_get_delta_ proc far
 
     mov     bx, word ptr last_timer_callback_counter
     mov     cx, word ptr last_timer_callback_counter+2
@@ -8769,37 +8769,37 @@ timer_get_delta proc far
     sub     ax, bx
     sbb     dx, cx
     retf
-timer_get_delta endp
-nopsub_327B7 proc far
+ported_timer_get_delta_ endp
+ported_timer_reset_ proc far
 
     xor     ax, ax
     mov     word ptr timer_callback_counter, ax
     mov     word ptr timer_callback_counter+2, ax
     retf
-nopsub_327B7 endp
+ported_timer_reset_ endp
 timer_copy_counter proc far
      s = byte ptr 0
      r = byte ptr 2
-    arg_0 = word ptr 6
-    arg_2 = word ptr 8
+    arg_ticksl = word ptr 6
+    arg_ticksh = word ptr 8
 
     push    bp
     mov     bp, sp
     call    timer_get_counter
-    add     ax, [bp+arg_0]
-    adc     dx, [bp+arg_2]
-    mov     word_405F6, ax
-    mov     word_405F8, dx
+    add     ax, [bp+arg_ticksl]
+    adc     dx, [bp+arg_ticksh]
+    mov     word ptr timer_copy_unk, ax
+    mov     word ptr timer_copy_unk+2, dx
     pop     bp
     retf
 timer_copy_counter endp
 timer_wait_for_dx proc far
 
     call    timer_get_counter
-    cmp     dx, word_405F8
+    cmp     dx, word ptr timer_copy_unk+2
     jb      short near ptr timer_wait_for_dx
     ja      short locret_327EA
-    cmp     ax, word_405F6
+    cmp     ax, word ptr timer_copy_unk
     jb      short near ptr timer_wait_for_dx
 locret_327EA:
     retf
@@ -8807,10 +8807,10 @@ timer_wait_for_dx endp
 timer_compare_dx proc far
 
     call    timer_get_counter
-    cmp     dx, word_405F8
+    cmp     dx, word ptr timer_copy_unk+2
     jb      short loc_32802
     ja      short loc_327FE
-    cmp     ax, word_405F6
+    cmp     ax, word ptr timer_copy_unk
     jb      short loc_32802
 loc_327FE:
     mov     ax, 1

@@ -112,6 +112,68 @@ extern unsigned run_option_menu(void);
 extern void init_game_state(unsigned short unk);
 extern void security_check(void);
 
+unsigned long timer_get_counter()
+{
+	/*
+	unsigned long val;
+
+	enable();
+	val = timer_callback_counter;
+	disable();
+
+	return val;
+	*/
+
+	// Compiler produces too sloppy code; stick to asm for now...
+	__asm {
+		cli
+		mov     ax, word ptr timer_callback_counter
+		mov     dx, word ptr timer_callback_counter+2
+		sti
+	}
+}
+
+unsigned long timer_get_delta()
+{
+    /*
+	unsigned long last = last_timer_callback_counter;
+	unsigned long curr = timer_get_counter();
+	
+	last_timer_callback_counter = curr;
+
+	return curr - last;
+	*/
+	
+	// Compiler produces too sloppy code; stick to asm for now...
+	__asm {
+		mov     bx, word ptr last_timer_callback_counter
+		mov     cx, word ptr last_timer_callback_counter+2
+		cli
+		mov     ax, word ptr timer_callback_counter
+		mov     dx, word ptr timer_callback_counter+2
+		sti
+		mov     word ptr last_timer_callback_counter, ax
+		mov     word ptr last_timer_callback_counter+2, dx
+		sub     ax, bx
+		sbb     dx, cx
+	}
+}
+
+unsigned long timer_get_delta_alt()
+{
+	return timer_get_delta();
+}
+
+unsigned long timer_custom_delta(unsigned long ticks)
+{
+	return timer_get_counter() - ticks;
+}
+
+void timer_reset()
+{
+	timer_callback_counter = 0;
+}
+
 #define KEVINRANDOM_SEED_LEN 6
 void init_kevinrandom(const char* seed)
 {

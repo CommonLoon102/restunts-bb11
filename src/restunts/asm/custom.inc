@@ -150,6 +150,12 @@ extrn kb_checking:proc
 extrn flush_stdin:proc
 extrn kb_check:proc
 
+extrn timer_get_counter:proc
+extrn timer_get_delta:proc
+extrn timer_get_delta_alt:proc
+extrn timer_custom_delta:proc
+extrn timer_reset:proc
+
 extrn init_kevinrandom:proc
 extrn get_kevinrandom_seed:proc
 extrn get_kevinrandom:proc

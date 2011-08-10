@@ -209,10 +209,10 @@ seg012 segment byte public 'STUNTSC' use16
     extrn nopsub_32751:proc
     extrn ported_transformed_shape_op_helper2_:proc
     extrn nopsub_3276A:proc
-    extrn timer_get_counter:proc
-    extrn nopsub_32782:proc
-    extrn timer_get_delta:proc
-    extrn nopsub_327B7:proc
+    extrn ported_timer_get_counter_:proc
+    extrn ported_timer_custom_delta_:proc
+    extrn ported_timer_get_delta_:proc
+    extrn ported_timer_reset_:proc
     extrn timer_copy_counter:proc
     extrn timer_wait_for_dx:proc
     extrn timer_compare_dx:proc

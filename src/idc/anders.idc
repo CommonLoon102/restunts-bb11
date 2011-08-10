@@ -707,6 +707,12 @@ static PortFuncName(labelname) {
 		labelname == "flush_stdin" ||
 		labelname == "kb_check" ||
 		
+		labelname == "timer_get_counter" ||
+		labelname == "timer_get_delta" ||
+		labelname == "timer_get_delta_alt" ||
+		labelname == "timer_custom_delta" ||
+		labelname == "timer_reset" ||
+
 		labelname == "init_kevinrandom" ||
 		labelname == "get_kevinrandom_seed" ||
 		labelname == "get_kevinrandom" ||
@@ -820,25 +826,30 @@ static GetAnterior(ea) {
 		if (strlen(str) == 0) continue;
 		result = result + str + "<br />";
 	}
+	
+	if (strlen(result) != 0)
+	{
+		result = result + "<br />"; // Doesn't work in IDA 6.1 for some reason...
+	}
+
 	return result;
 }
 
-// TODO: this should return 3 values: callercount, callcount and linecount
-static GetFunctionInfo(ea, funcend) {
+static GetFunctionInfo(ea, funcend, anterior, callercount, callcount, lines) {
 
-	auto result, xea, funcname, funcbody, xmnem, callcount, lines;
+	auto xea, funcname, funcbody, xmnem;
 
-	result = GetAnterior(ea);
-	if (result != "")
-		result = result + "<br />\n";
+	anterior = GetAnterior(ea);
+	//if (anterior != "")
+	//	anterior = anterior + "<br />";
 
-	callcount = 0;
+	callercount = 0;
 	for (xea = RfirstB(ea); xea != BADADDR; xea = RnextB(ea, xea)) {
 		//funcname = GetFunctionName(xea);
 		//result = result + "\n    <a href=\"#" + funcname + "\">" + funcname + "</a>";
-		callcount++;
+		callercount++;
 	}
-	result = result + "<small>" + form("%i", callcount) + " callers</small>, ";
+	//result = result + "<small>" + form("%i", callercount) + " callers</small>, ";
 	
 	funcbody = ea;
 	callcount = 0;
@@ -855,21 +866,24 @@ static GetFunctionInfo(ea, funcend) {
 		lines++;
 	}
 
-	result = result + "<small>" + form("%i", callcount) + " calls.</small> <small>" + form("%i", lines) + " lines of code.</small>";
+	//result = result + "<small>" + form("%i", callcount) + " calls.</small> <small>" + form("%i", lines) + " lines of code.</small>";
 
-	return result;
+	//return result;
 }
 
 static PrintReport() {
 
 	auto segea, nextseg, endseg;
 	auto funcea, nextfunc, endfunc, funcname, funccount, portfunccount, ignorefunccount, funcflags;
-	auto f, filename;
-	auto ported, ignorable, statustext;
+	auto f, filename, title;
+	auto ported, ignorable, statustext, statuscolor;
+	auto anterior, callercount, callcount, lines;
 
 	filename = form("%s\\%s", GetIdbDirectory(), "status.html");
 	f = fopen(filename, "w");
 
+	title = "restunts progress report";
+	fprintf(f, "<!DOCTYPE html>\n<html><head><title>%s</title></head>\n<body>\n<h1>%s</h1>\n", title, title);
 	fprintf(f, "<table border=\"1\">\n");
 
 	Message("Generating report...\n");
@@ -916,7 +930,8 @@ static PrintReport() {
 				statustext = "";
 				
 			fprintf(f, "<tr>\n");
-			fprintf(f, "    <td valign=\"top\"><a name=\"%s\"></a>%s</td><td valign=\"top\">%s</td><td valign=\"top\"><b>%s</b></td>\n", funcname, funcname, GetFunctionInfo(funcea, endfunc), statustext);
+			GetFunctionInfo(funcea, endfunc, &anterior, &callercount, &callcount, &lines);
+			fprintf(f, "    <td valign=\"top\"><a name=\"%s\"></a>%s</td><td valign=\"top\">%s<small>%i callers, %i calls, %i lines of code.</small></td><td valign=\"top\"><b>%s</b></td>\n", funcname, funcname, anterior, callercount, callcount, lines, statustext);
 			fprintf(f, "</tr>\n");
 		}
 
@@ -924,7 +939,7 @@ static PrintReport() {
 	fprintf(f, "<tr>\n");
 	fprintf(f, "    <td valign=\"top\" colspan=\"3\"><b>Total functions: %i / Ignored: %i / Ported: %i</b></td>\n", funccount, ignorefunccount, portfunccount);
 	fprintf(f, "</tr>\n");
-	fprintf(f, "</table>\n");
+	fprintf(f, "</table>\n<p style=\"font-size: x-small\">Generated <script type=\"text/javascript\">var d = new Date(%i * 1000);document.write(d.toUTCString());</script>.</p>\n</body>\n</html>", _time());
 
 	fclose(f);
 }

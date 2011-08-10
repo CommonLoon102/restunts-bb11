@@ -886,8 +886,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn currentvideomode:byte
     extrn byte_403F3:byte
     extrn sinetable:word
-    extrn word_405F6:word
-    extrn word_405F8:word
+    extrn timer_copy_unk:dword
     extrn last_timer_callback_counter:dword
     extrn word_405FE:word
     extrn fontdefseg:word

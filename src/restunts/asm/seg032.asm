@@ -149,7 +149,7 @@ loc_3A538:
     call near ptr read_line_helper
     push    [bp+arg_14]
     push    [bp+arg_12]
-    call    timer_copy_counter
+    call    timer_copy_counter; Stores a copy of the timer counter with the given ticks added.
     add     sp, 4
     mov     ax, 4
     cwd
@@ -231,7 +231,7 @@ loc_3A5E3:
 loc_3A5F0:
     push    [bp+arg_14]
     push    [bp+arg_12]
-    call    timer_copy_counter
+    call    timer_copy_counter; Stores a copy of the timer counter with the given ticks added.
     add     sp, 4
     cmp     [bp+var_8], 0Dh
     jz      short loc_3A5E3
