@@ -152,6 +152,7 @@ ported_mat_rot_z_ proc far
     mov     [bx+MATRIX._21], ax
     mov     [bx+MATRIX._31], 0
     neg     ax
+loc_3700C:
     mov     [bx+MATRIX._12], ax
     mov     ax, [bp+var_2]
 loc_37012:

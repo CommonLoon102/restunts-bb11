@@ -63,6 +63,7 @@ preRender_sphere_helper proc far
     lea     ax, [bp+var_80]
     push    ax
     push    [bp+arg_0]
+loc_36BCC:
     call    preRender_sphere_helper2
 loc_36BD1:
     add     sp, 4

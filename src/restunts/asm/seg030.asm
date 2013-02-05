@@ -203,6 +203,7 @@ loc_39DBF:
     mov     bx, cx
     xchg    di, si
     mov     cx, 0FFFFh
+loc_39DFE:
     repne scasb
     dec     di
 loc_39E01:

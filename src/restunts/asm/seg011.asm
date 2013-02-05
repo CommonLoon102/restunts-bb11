@@ -59,6 +59,7 @@ loc_2EA09:
     mov     bp, sp
 loc_2EA0B:
     mov     bx, [bp+arg_0]
+loc_2EA0E:
     push    word ptr [bx+4]
 loc_2EA11:
     push    word ptr [bx+2]

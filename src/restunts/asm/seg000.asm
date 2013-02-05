@@ -6811,6 +6811,7 @@ loc_1420F:
     jmp     loc_14337
 loc_14218:
     add     [bp+var_42], ax
+loc_1421B:
     cmp     [bp+var_42], 1Eh
     jl      short loc_14241
     sub     [bp+var_42], 1Eh
@@ -6822,6 +6823,7 @@ loc_14218:
     mov     es, [bp+var_58]
     cmp     byte ptr es:[bx], 0
     jnz     short loc_14241
+loc_1423C:
     mov     [bp+var_8E], 0
 loc_14241:
     mov     al, [bp+var_6C]

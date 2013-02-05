@@ -324,6 +324,7 @@ audioresource_copy_n_bytes proc far
 loc_39CA8:
     mov     al, [si]
     mov     es:[di], al
+loc_39CAD:
     mov     ax, si
     mov     dx, ds
     inc     si

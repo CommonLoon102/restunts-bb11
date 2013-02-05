@@ -404,6 +404,7 @@ loc_3677B:
     sub     ax, [si+2]
     mov     [si+42h], ax
     add     [si], di
+loc_3679C:
     mov     ax, [bx+2]
     add     [si+2], ax
 loc_367A2:

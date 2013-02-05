@@ -584,6 +584,7 @@ loc_3A916:
     les     bx, dword ptr word_405FE
     push    word ptr es:[bx+2]
     push    word ptr es:[bx+12h]
+loc_3A93E:
     push    ax
 loc_3A93F:
     push    word_42A1A

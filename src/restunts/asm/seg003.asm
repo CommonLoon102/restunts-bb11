@@ -7160,6 +7160,7 @@ loc_1E0AB:
     shl     ax, 1
     add     bx, ax
     mov     ax, [bp+var_3A.x2]
+loc_1E12C:
     mov     dx, [bp+var_3A.y2]
     mov     [bx], ax
     mov     [bx+2], dx
@@ -7172,6 +7173,7 @@ loc_1E0AB:
 loc_1E144:
     inc     word_3C1BE
     mov     ax, word_407CC
+loc_1E14B:
     cmp     word_3C1BE, ax
     jnz     short loc_1E157
     mov     word_3C1BE, 1

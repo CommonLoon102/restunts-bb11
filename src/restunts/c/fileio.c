@@ -14,6 +14,15 @@
 #define PAGE_GAP  0x400
 #define FILENAME_LEN 13
 
+#define RS_RLE_ESCLEN_MAX    0x10
+#define RS_RLE_ESCLOOKUP_LEN 0x100
+#define RS_RLE_ESCSEQ_POS    0x01
+
+#define RS_VLE_ESC_LEN   0x10
+#define RS_VLE_ALPH_LEN  0x100
+#define RS_VLE_ESC_WIDTH 0x40
+#define RS_VLE_NUM_SYMB  0x80
+
 struct compr_header {
 	union {
 		char passes;
@@ -23,8 +32,16 @@ struct compr_header {
 	unsigned char  sizeh;
 };
 
+struct compr_rle_header {
+	unsigned short srcsizel;
+	unsigned char  srcsizeh;
+	unsigned char  unk; // Always 0.
+	unsigned char  esclen;
+	unsigned char  esc[RS_VLE_ESC_LEN];
+};
+
 #ifdef RESTUNTS_DOS
-// Minimal stdio.h "support" untill we can link with a real CRT.
+// Minimal stdio.h "support" until we can link with a real CRT.
 #ifndef __STDIO_H
 #define __STDIO_H
 typedef unsigned size_t;
@@ -53,7 +70,7 @@ FILE* fopen(const char* path, const char* mode)
 			mov  g_errno, 1
 		create_ok:
 			mov  handle, ax
-			pop ds
+			pop  ds
 		}
 	}
 	else { // Open existing file for reading
@@ -69,7 +86,7 @@ FILE* fopen(const char* path, const char* mode)
 			mov  g_errno, 1
 		open_ok:
 			mov  handle, ax
-			pop ds
+			pop  ds
 		}
 	}
 
@@ -115,7 +132,7 @@ size_t fread(void far* dst, size_t size, size_t nmemb, FILE* file)
 		mov  g_errno, 1
 	read_ok:
 		mov  res, ax
-		pop ds
+		pop  ds
 	}
 	
 	return res;
@@ -142,7 +159,7 @@ size_t fwrite(const void far* src, size_t size, size_t nmemb, FILE* file)
 		mov  g_errno, 1
 	write_ok:
 		mov  res, ax
-		pop ds
+		pop  ds
 	}
 	
 	return res;
@@ -387,7 +404,7 @@ unsigned short file_decomp_paras_nofatal(const char* filename)
 	return file_decomp_paras(filename, 0);
 }
 
-// Read entire file to given destination. Optionally handle errors fatal.
+// Read entire file to given destination. Optionally handle errors as fatal.
 void far* file_read(const char* filename, void far* dst, int fatal)
 {
 	int readlen;
@@ -482,12 +499,152 @@ short file_write_nofatal(const char* filename, void far* src, unsigned long leng
 	return file_write(filename, src, length, 0);
 }
 
-#define RS_VLE_ESC_LEN   0x10
-#define RS_VLE_ALPH_LEN  0x100
-#define RS_VLE_ESC_WIDTH 0x40
-#define RS_VLE_NUM_SYMB  0x80
+// Sequential byte runs pass of run-length encoding.
+unsigned long file_decomp_rle_seq(unsigned char huge* src, unsigned char huge* dst, unsigned long srclen, unsigned char esc)
+{
+	unsigned char cur, rep;
+	unsigned char huge* seqstart, huge* seqend;
 
-// Decompress variable-length encoded sub-files.
+	unsigned char huge* srcend = src + srclen;
+	unsigned char huge* dststart = dst;
+
+	while (src < srcend) {
+		cur = *src++;
+
+		// Byte sequence start.
+		if (cur == esc) {
+			seqstart = src;
+
+			// Copy sequence.
+			while ((cur = *src++) != esc) {
+				*dst++ = cur;
+			}
+
+			 // Number of repetitions, already written once.
+			rep = (*src++) - 1;
+			seqend = src;
+
+			// Copy remaining repetitions.
+			while (rep--) {
+				src = seqstart;
+				while (src < seqend - 2) {
+					*dst++ = *src++;
+				}
+			}
+
+			src = seqend;
+		}
+		// No sequence.
+		else {
+			*dst++ = cur;
+		}
+	}
+
+	return dst - dststart;
+}
+
+// Single byte runs pass of run-length encoding.
+unsigned long file_decomp_rle_single(unsigned char huge* src, unsigned char huge* dst, unsigned long len, unsigned char* esclookup)
+{
+	unsigned char cur, rep;
+	unsigned short repw;
+
+	unsigned char huge* dststart = dst;
+	unsigned char huge* dstend = dst + len;
+
+	while (dst < dstend) {
+		cur = *src++;
+
+		if (esclookup[cur]) {
+			switch (esclookup[cur]) {
+				case 1:
+					rep = *src++;
+					cur = *src++;
+
+					while (rep--) {
+						*dst++ = cur;
+					}
+					break;
+
+				case 3:
+					repw = *src++;
+					repw |= *src++ << 8;
+					cur = *src++;
+
+					while (repw--) {
+						*dst++ = cur;
+					}
+					break;
+
+				default:
+					rep = esclookup[cur] - 1;
+					cur = *src++;
+
+					while (rep--) {
+						*dst++ = cur;
+					}
+					break;
+			}
+		}
+		else {
+			*dst++ = cur;
+		}
+	}
+
+	return dst - dststart;
+}
+
+// Decompress run-length encoded sub-file.
+unsigned long file_decomp_rle(unsigned char huge* src, unsigned char huge* dst, unsigned short decompparas)
+{
+	unsigned long len, srclen, passlen;
+	unsigned int skipseq, i;
+	unsigned char esclookup[RS_RLE_ESCLOOKUP_LEN];
+	unsigned char huge* origsrc;
+	unsigned short paras;
+	struct compr_header far* hdr;
+	struct compr_rle_header far* subhdr;
+
+	(void)decompparas;
+
+	// Get decompressed size from header.
+	hdr = (struct compr_header far*)src;
+	len = hdr->sizel | ((long)hdr->sizeh << 16);
+	origsrc = src += sizeof(*hdr);
+	
+	// Get source size and escape codes.
+	subhdr = (struct compr_rle_header far*)src;
+	srclen = subhdr->srcsizel | ((long)subhdr->srcsizeh << 16);
+	
+	skipseq = (subhdr->esclen & 0x80) == 0x80; // MSB denotes skipping the initial pass for byte sequence runs.
+	subhdr->esclen &= ~0x80;
+
+	// Set pos to after escape codes.
+	src = origsrc + 5 + subhdr->esclen;
+
+	// Escape code lookup.
+	for (i = 0; i < RS_RLE_ESCLOOKUP_LEN; ++i) {
+		esclookup[i] = 0;
+	}
+
+	for (i = 0; i < subhdr->esclen; ++i) {
+		esclookup[subhdr->esc[i]] = i + 1;		
+	}
+
+	if (!skipseq) {
+		passlen = file_decomp_rle_seq(src, dst, srclen, subhdr->esc[RS_RLE_ESCSEQ_POS]);
+
+		paras = (passlen >> 4) + (passlen & 0xF ? 1 : 0);
+
+		// In main decomp func:
+		src = MK_FP(decompparas - paras + FP_SEG(dst), FP_OFF(dst));
+		copy_paras_reverse(FP_SEG(dst), FP_SEG(src), paras);
+	}
+
+	return file_decomp_rle_single(src, dst, len, esclookup);
+}
+
+// Decompress variable-length encoded sub-file.
 unsigned long file_decomp_vle(unsigned char huge* src, unsigned char huge* dst, unsigned short decompparas)
 {
 	unsigned long len, lenleft;
@@ -518,8 +675,7 @@ unsigned long file_decomp_vle(unsigned char huge* src, unsigned char huge* dst, 
 	wdtpos = src;
 
 	// Generate escape codes.
-	for (i = 0, j = 0, alphlen = 0; i < esclen; ++i) {
-		j *= 2;
+	for (i = 0, j = 0, alphlen = 0; i < esclen; ++i, j *= 2) {
 		esc1[i] = alphlen - j;
 		tmp = *src++;
 		j += tmp;
@@ -647,6 +803,7 @@ void far* file_decomp(const char* filename, int fatal)
 	}
 
 	decompparas = file_decomp_paras(filename, fatal);
+
 	if (decompparas) {
 		// Allocate extra paragraphs for alphabet and escape tables
 		// overhead used during decompression.
@@ -660,7 +817,7 @@ void far* file_decomp(const char* filename, int fatal)
 			if (src) {
 				passes = *src;
 
-				// If the multi-pass flag is set the first byte contains the
+				// If the multi-pass flag is set, the first byte contains the
 				// number of compression passes and the next three bytes holds
 				// the final decompressed size.
 				if (passes & 0x80) {
@@ -676,6 +833,7 @@ void far* file_decomp(const char* filename, int fatal)
 				// Decode all compression passes.
 				while (!err && passes) {
 					type = *src;
+
 					switch (type) {
 						case 1:
 							passlen = file_decomp_rle(src, dst, decompparas);
@@ -859,4 +1017,3 @@ void file_load_audiores(const char* songfile, const char* voicefile, const char*
 	load_audio_finalize(audiores);
 	is_audioloaded = 1;
 }
-

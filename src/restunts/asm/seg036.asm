@@ -88,6 +88,7 @@ loc_3B0E7:
     mov     cl, 4
     shr     [bp+var_C], cl
     mov     ax, [bp+var_6]
+loc_3B10D:
     cmp     [bp+var_C], ax
     jbe     short loc_3B118
 loc_3B112:

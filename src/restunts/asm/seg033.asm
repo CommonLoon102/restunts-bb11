@@ -91,6 +91,7 @@ setup_mcgawnd2 proc far
     push    ax
     call    sprite_make_wnd
     add     sp, 6
+loc_3A9BD:
     mov     word ptr mcgawndsprite, ax
 loc_3A9C0:
     mov     word ptr mcgawndsprite+2, dx

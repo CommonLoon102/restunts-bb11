@@ -54,6 +54,7 @@ toupper proc far
 
     push    bp
     mov     bp, sp
+loc_370BD:
     cmp     [bp+arg_0], 61h ; 'a'
 loc_370C1:
     jl      short loc_370CD

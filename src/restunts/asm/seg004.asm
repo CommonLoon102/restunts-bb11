@@ -3364,6 +3364,7 @@ shape3d_load_car_shapes proc far
 loc_1FFEA:
     mov     ax, offset aCar1; "car1"
     push    ax
+loc_1FFEE:
     push    word ptr carresptr+2
     push    word ptr carresptr
     call    locate_shape_fatal

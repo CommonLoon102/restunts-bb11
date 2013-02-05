@@ -51,7 +51,6 @@ extern void far* init_audio_resources(void far* songptr, void far* voiceptr, con
 extern void load_audio_finalize(void far* audiores);
 extern void fatal_error(const char*, ...);
 extern int do_dea_textres(void);
-extern unsigned long file_decomp_rle(void far* src, void far* dst, unsigned paras);
 extern int get_unflip_size(void far* memchunk);
 extern unsigned long timer_get_counter(void);
 extern void* _memcpy(void*, const void*, unsigned);

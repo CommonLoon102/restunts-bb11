@@ -7312,6 +7312,7 @@ loc_18916:
 loc_18925:
     mov     al, byte_3BE02
     cmp     byte_454B8, al
+loc_1892C:
     jnz     short loc_18931
     jmp     loc_18CCC
 loc_18931:
@@ -7328,6 +7329,7 @@ loc_18943:
     rcr     ax, 1
     dec     cl
     jnz     short loc_18943
+loc_1894B:
     mov     [bp+var_1C], ax
     mov     ax, word ptr state.playerstate.car_posWorld2.ly
     mov     dx, word ptr state.playerstate.car_posWorld2.ly+2

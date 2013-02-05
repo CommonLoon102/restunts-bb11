@@ -180,9 +180,9 @@ seg012 segment byte public 'STUNTSC' use16
     public ported_file_read_
     public ported_file_read_nofatal_
     public ported_file_read_fatal_
-    public file_decomp_rle
-    public file_decomp_rle_b
-    public file_decomp_rle_a
+    public ported_file_decomp_rle_
+    public ported_file_decomp_rle_single_
+    public ported_file_decomp_rle_seq_
     public ported_file_load_binary_
     public ported_file_load_binary_nofatal_
     public ported_file_decomp_
@@ -4803,12 +4803,12 @@ fatal:
     push    ax
     call    far ptr fatal_error
 ported_file_read_fatal_ endp
-file_decomp_rle proc far
-    var_1A = word ptr -26
-    var_18 = word ptr -24
+ported_file_decomp_rle_ proc far
+    var_lenlo = word ptr -26
+    var_lenhi = word ptr -24
     var_16 = word ptr -22
     var_14 = word ptr -20
-    var_12 = word ptr -18
+    var_esclen = word ptr -18
      s = byte ptr 0
      r = byte ptr 2
     arg_srcoff = word ptr 6
@@ -4828,28 +4828,28 @@ file_decomp_rle proc far
     mov     si, [bp+arg_srcoff]
     mov     ds, [bp+arg_srcseg]
     mov     ax, [si+1]
-    mov     [bp+var_1A], ax
+    mov     [bp+var_lenlo], ax
     mov     al, [si+3]
     xor     ah, ah
-    mov     [bp+var_18], ax
-    add     si, 4
+    mov     [bp+var_lenhi], ax
+    add     si, 4           ; Skip header + unused byte
     mov     cx, 8
-    lea     di, [bp+var_16]
+    lea     di, [bp+var_16] ; Read 8 words
     rep movsw
-    mov     si, [bp+arg_srcoff]
+    mov     si, [bp+arg_srcoff]; Reset source pos
     add     si, 9
-    mov     dx, [bp+var_12]
+    mov     dx, [bp+var_esclen]
 smart
-    and     dx, 7Fh
+    and     dx, 7Fh         ; Escape codes length mask
 nosmart
     add     si, dx
-    mov     [bp+arg_srcoff], si
-    cmp     byte ptr [bp+var_12], 80h ; '€'
-    ja      short loc_30BE6
-    call near ptr file_decomp_rle_a
+    mov     [bp+arg_srcoff], si; Skip escape codes
+    cmp     byte ptr [bp+var_esclen], 80h ; '€'; Skip seq pass flag
+    ja      short skip_seq_pass
+    call near ptr ported_file_decomp_rle_seq_
     mov     [bp+var_16], ax
     mov     [bp+var_14], dx
-    mov     si, ax
+    mov     si, ax          ; paras = len / 16
     shr     dx, 1
     rcr     ax, 1
     shr     dx, 1
@@ -4859,10 +4859,10 @@ nosmart
     shr     dx, 1
     rcr     ax, 1
     test    si, 0Fh
-    jz      short loc_30BC9
+    jz      short no_remainder
     inc     ax
-loc_30BC9:
-    push    ax
+no_remainder:
+    push    ax              ; paras
     mov     bx, [bp+arg_dstseg]
     sub     bx, ax
     add     bx, [bp+arg_dstoff]
@@ -4873,18 +4873,18 @@ loc_30BC9:
     add     sp, 6
     xor     si, si
     mov     [bp+arg_srcoff], si
-loc_30BE6:
-    call near ptr file_decomp_rle_b
-    mov     ax, [bp+var_1A]
-    mov     dx, [bp+var_18]
+skip_seq_pass:
+    call near ptr ported_file_decomp_rle_single_
+    mov     ax, [bp+var_lenlo]; Return length
+    mov     dx, [bp+var_lenhi]
     add     sp, 116h
     pop     di
     pop     si
     pop     ds
     pop     bp
     retf
-file_decomp_rle endp
-file_decomp_rle_b proc near
+ported_file_decomp_rle_ endp
+ported_file_decomp_rle_single_ proc near
 
     mov     cx, 80h ; '€'
     lea     di, [bp-11Ch]
@@ -4993,16 +4993,16 @@ loc_30CC1:
     add     ax, 800h
     mov     es, ax
     jmp     loc_30C48
-file_decomp_rle_b endp
-file_decomp_rle_a proc near
+ported_file_decomp_rle_single_ endp
+ported_file_decomp_rle_seq_ proc near
 
-    cmp     byte ptr [bp-12h], 1
-    jnz     short loc_30CD6
+    cmp     byte ptr [bp-12h], 1; file_decomp_rle::var_esclen
+    jnz     short has_codes
     retn
-loc_30CD6:
-    mov     ds, word ptr [bp+8]
-    mov     si, [bp+6]
-    mov     es, word ptr [bp+0Ch]
+has_codes:
+    mov     ds, word ptr [bp+8]; file_decomp_rle::arg_srcseg
+    mov     si, [bp+6]      ; file_decomp_rle::arg_srcoff
+    mov     es, word ptr [bp+0Ch]; file_decomp_rle::var_dstoff
     xor     di, di
     mov     bx, [bp-16h]
     mov     ax, [bp-14h]
@@ -5085,7 +5085,7 @@ loc_30D5A:
     or      dx, bx
     jz      short loc_30D29
     jmp     loc_30CED
-file_decomp_rle_a endp
+ported_file_decomp_rle_seq_ endp
 ported_file_load_binary_ proc far
     var_fatal = word ptr -2
      s = byte ptr 0

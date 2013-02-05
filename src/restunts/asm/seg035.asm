@@ -523,6 +523,7 @@ sub_3B08C proc far
     les     bx, [bp+arg_0]
     mov     al, es:[bx]
     mov     [bp+var_4], al
+loc_3B09B:
     mov     [bp+var_2], 0
     jmp     short loc_3B0A5
 loc_3B0A2:

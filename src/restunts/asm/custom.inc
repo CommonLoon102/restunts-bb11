@@ -58,10 +58,13 @@ extrn file_read_fatal:proc
 extrn file_read_nofatal:proc
 extrn file_write_fatal:proc
 extrn file_write_nofatal:proc
-extrn file_decomp_vle:proc
 extrn file_decomp:proc
 extrn file_decomp_fatal:proc
 extrn file_decomp_nofatal:proc
+extrn file_decomp_rle:proc
+extrn file_decomp_rle_seq:proc
+extrn file_decomp_rle_single:proc
+extrn file_decomp_vle:proc
 extrn file_load_binary:proc
 extrn file_load_binary_fatal:proc
 extrn file_load_binary_nofatal:proc
