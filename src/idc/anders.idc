@@ -613,10 +613,13 @@ static PortFuncName(labelname) {
 		labelname == "file_read_nofatal" ||
 		labelname == "file_write_fatal" ||
 		labelname == "file_write_nofatal" ||
-		labelname == "file_decomp_vle" ||
 		labelname == "file_decomp" ||
 		labelname == "file_decomp_fatal" ||
 		labelname == "file_decomp_nofatal" ||
+		labelname == "file_decomp_rle" ||
+		labelname == "file_decomp_rle_seq" ||
+		labelname == "file_decomp_rle_single" ||
+		labelname == "file_decomp_vle" ||
 		labelname == "file_load_binary" ||
 		labelname == "file_load_binary_fatal" ||
 		labelname == "file_load_binary_nofatal" ||
@@ -824,15 +827,13 @@ static GetAnterior(ea) {
 	for (i = 0; i < 10; i++) {
 		str = LineA(ea, i);
 		if (strlen(str) == 0) continue;
-		result = result + str + "<br />";
-	}
-	
-	if (strlen(result) != 0)
-	{
-		result = result + "<br />"; // Doesn't work in IDA 6.1 for some reason...
+		result = result + str + "\n";
 	}
 
-	return result;
+	if (result == "")
+		return result;
+
+	return form("<code>%s</code>", result);
 }
 
 static GetFunctionInfo(ea, funcend, anterior, callercount, callcount, lines) {
@@ -840,8 +841,6 @@ static GetFunctionInfo(ea, funcend, anterior, callercount, callcount, lines) {
 	auto xea, funcname, funcbody, xmnem;
 
 	anterior = GetAnterior(ea);
-	//if (anterior != "")
-	//	anterior = anterior + "<br />";
 
 	callercount = 0;
 	for (xea = RfirstB(ea); xea != BADADDR; xea = RnextB(ea, xea)) {
@@ -876,15 +875,72 @@ static PrintReport() {
 	auto segea, nextseg, endseg;
 	auto funcea, nextfunc, endfunc, funcname, funccount, portfunccount, ignorefunccount, funcflags;
 	auto f, filename, title;
-	auto ported, ignorable, statustext, statuscolor;
+	auto ported, ignorable, statustext, statusclass;
 	auto anterior, callercount, callcount, lines;
 
 	filename = form("%s\\%s", GetIdbDirectory(), "status.html");
 	f = fopen(filename, "w");
 
 	title = "restunts progress report";
-	fprintf(f, "<!DOCTYPE html>\n<html><head><title>%s</title></head>\n<body>\n<h1>%s</h1>\n", title, title);
-	fprintf(f, "<table border=\"1\">\n");
+	fprintf(f,
+		"<!DOCTYPE html>\n" +
+		"<html>\n" +
+		"<head>\n" +
+		"<title>%s</title>\n" +
+		"<style type=\"text/css\">\n" +
+		"h1 {\n" +
+		"  margin-bottom: 0;\n" +
+		"}\n" +
+		"table {\n" +
+		"  border-collapse: collapse;\n" +
+		"  margin-top: 0;\n" +
+		"}\n" +
+		"table th, table td {\n" +
+		"  vertical-align: top;\n" +
+		"}\n" +
+		"table td {\n" +
+		"  border: 1px solid black;\n" +
+		"}\n" +
+		"table > tbody > tr:nth-child(even) {\n" +
+		"  background-color: #f0f0f0;\n" +
+		"}\n" +
+		"table th {\n" +
+		"  border: 0;\n" +
+		"  padding-top: 1em;\n" +
+		"  text-align: left;\n" +
+		"}\n" +
+		"table > thead > tr > th.status, table > tbody > tr > td.status {\n" +
+		"  font-weight: bold;\n" +
+		"  text-align: center;\n" +
+		"}\n" +
+		"table > tbody > tr > td.ported {\n" +
+		"  background-color: #6f6;\n" +
+		"}\n" +
+		"table > tbody > tr:nth-child(even) > td.ported {\n" +
+		"  background-color: #5d5;\n" +
+		"}\n" +
+		"table > tbody > tr > td.ignore {\n" +
+		"  background-color: #ccc;\n" +
+		"}\n" +
+		"table > tbody > tr:nth-child(even) > td.ignore {\n" +
+		"  background-color: #bbb;\n" +
+		"}\n" +
+		"table > tbody > tr > td.pending {\n" +
+		"  background-color: #f66;\n" +
+		"}\n" +
+		"table > tbody > tr:nth-child(even) > td.pending {\n" +
+		"  background-color: #d55;\n" +
+		"}\n" +
+		"code {\n" +
+		"  display: block;\n" +
+		"  margin-bottom: 1em;\n" +
+		"  white-space: pre;\n" +
+		"}\n" +
+		"</style>\n" +
+		"</head>\n" +
+		"<body>\n" +
+		"<h1>%s</h1>\n", title, title);
+	fprintf(f, "<table>\n");
 
 	Message("Generating report...\n");
 	
@@ -898,9 +954,13 @@ static PrintReport() {
 			endseg = SegEnd(segea); else
 			endseg = nextseg;
 
-		fprintf(f, "<tr>\n");
-		fprintf(f, "    <td valign=\"top\"><b>%s</b></td><td valign=\"top\">%s</td><td valign=\"top\"><b>%s</b></td>\n", SegName(segea), GetAnterior(funcea), "Status");
-		fprintf(f, "</tr>\n");
+		fprintf(f,
+			"  <thead>\n" +
+			"    <tr>\n" +
+			"      <th>%s</th><th>%s</th><th class=\"status\">%s</th>\n" +
+			"    </tr>\n" +
+			"  </thead>\n" +
+			"  <tbody>\n", SegName(segea), GetAnterior(funcea), "Status");
 
 		for (funcea = segea; funcea != BADADDR; funcea = nextfunc) {
 			nextfunc = NextFunction(funcea);
@@ -918,27 +978,33 @@ static PrintReport() {
 			ignorable = ((funcflags & (FUNC_LIB|FUNC_THUNK)) != 0) || substr(funcname, 0, 6) == "nopsub";
 			
 			funccount ++;
-			if (ported)
+			if (ported) {
 				portfunccount ++;
-			if (ignorable)
+				statustext = "PORTED";
+				statusclass = "ported";
+			}
+			else if (ignorable) {
 				ignorefunccount++;
-				
-			if (ported) 
-				statustext = "PORTED"; else 
-			if (ignorable)
-				statustext = "IGNORE"; else
+				statustext = "IGNORE";
+				statusclass = "ignore";
+			}
+			else {
 				statustext = "";
+				statusclass = "pending";
+			}
 				
 			fprintf(f, "<tr>\n");
 			GetFunctionInfo(funcea, endfunc, &anterior, &callercount, &callcount, &lines);
-			fprintf(f, "    <td valign=\"top\"><a name=\"%s\"></a>%s</td><td valign=\"top\">%s<small>%i callers, %i calls, %i lines of code.</small></td><td valign=\"top\"><b>%s</b></td>\n", funcname, funcname, anterior, callercount, callcount, lines, statustext);
+			fprintf(f, "    <td><a name=\"%s\"></a>%s</td><td>%s<small>%i callers, %i calls, %i lines of code.</small></td><td class=\"status %s\">%s</td>\n", funcname, funcname, anterior, callercount, callcount, lines, statusclass, statustext);
 			fprintf(f, "</tr>\n");
 		}
+		
+		fprintf(f, "  </tbody>\n");
 
 	}
-	fprintf(f, "<tr>\n");
-	fprintf(f, "    <td valign=\"top\" colspan=\"3\"><b>Total functions: %i / Ignored: %i / Ported: %i</b></td>\n", funccount, ignorefunccount, portfunccount);
-	fprintf(f, "</tr>\n");
+	fprintf(f, "<tfoot><tr>\n");
+	fprintf(f, "    <td colspan=\"3\"><strong>Total functions: %i / Ignored: %i / Ported: %i</strong></td>\n", funccount, ignorefunccount, portfunccount);
+	fprintf(f, "</tr></tfoot>\n");
 	fprintf(f, "</table>\n<p style=\"font-size: x-small\">Generated <script type=\"text/javascript\">var d = new Date(%i * 1000);document.write(d.toUTCString());</script>.</p>\n</body>\n</html>", _time());
 
 	fclose(f);
