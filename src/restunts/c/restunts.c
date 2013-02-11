@@ -6,23 +6,6 @@
 #include "shape3d.h"
 #include "shape2d.h"
 
-#pragma pack (push, 1)
-struct GAMEINFO {
-	char game_playercarid[4];
-	char game_playermaterial;
-	char game_playertransmission;
-	char game_opponenttype;
-	char game_opponentcarid[4];
-	char game_opponentmaterial;
-	char game_opponenttransmission;
-	char game_trackname[9];
-	unsigned short game_framespersec;
-	unsigned short game_recordedframes;
-};
-#pragma pack (pop)
-
-extern struct GAMEINFO gameconfig;
-extern struct GAMEINFO gameconfigcopy;
 extern void far* fontnptr;
 extern void far* fontdefptr;
 extern void far* mainresptr;
@@ -61,7 +44,6 @@ extern char far* trackdata23;
 extern char kbormouse;
 extern char passed_security;
 extern char byte_3B80C[];
-extern char track_full_path[];
 extern char byte_44AE2;
 extern unsigned short dialogarg2;
 extern char byte_3B85E[];
@@ -73,7 +55,6 @@ extern char aTrakdata[];
 extern char aDefault_0[];
 extern char aCvx[];
 extern char aTedit__0[];
-extern char a_trk[];
 extern char aSlct[];
 extern char aSkidms_0[];
 extern char aSkidslct[];
@@ -87,7 +68,6 @@ extern void mouse_draw_opaque_check(void);
 extern void sub_22532(void);
 extern void input_do_checking(int unk);
 extern void set_default_car(void);
-extern void combine_file_path(const char* str1, const char* str2, const char* str3, const char* str4);
 extern void ensure_file_exists(int unk);
 extern unsigned short run_intro_looped(void);
 extern void audio_stop_unk(void);
@@ -588,8 +568,8 @@ _do_intro:
 	ensure_file_exists(2);
 	
 	if (regsi != 0) {
-		combine_file_path(byte_3B80C, gameconfig.game_trackname, ".trk", track_full_path);
-		file_read_fatal(track_full_path, td14_elem_map_main);
+		file_build_path(byte_3B80C, gameconfig.game_trackname, ".trk", g_path_buf);
+		file_read_fatal(g_path_buf, td14_elem_map_main);
 	}
 	
 	byte_44AE2 = 0;

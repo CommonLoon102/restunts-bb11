@@ -93,7 +93,7 @@ loc_39E31:
 loc_39E34:
     push    word ptr [bp+arg_0]; char *
 loc_39E37:
-    call    combine_file_path
+    call    file_build_path
 loc_39E3C:
     add     sp, 8
 loc_39E3F:

@@ -335,6 +335,28 @@ const char* file_find_next()
 
 #endif // RESTUNTS_DOS
 
+void file_build_path(const char* dir, const char* name, const char* ext, char* dst)
+{
+	int dirlen;
+
+	if (dir) {
+		strcpy(dst, dir);
+		dirlen = strlen(dir);
+	}
+	else {
+		dst[0] = 0;
+		dirlen = 0;
+	}
+	
+	// Add directory separator if needed.
+	if (dirlen && dir[dirlen - 1] != ':' && dir[dirlen - 1] != '\\') {
+		strcat(dst, "\\");
+	}
+	
+	strcat(dst, name);
+	strcat(dst, ext);
+}
+
 // Get number of 16-byte blocks needed to store entire file.
 unsigned short file_paras(const char* filename, int fatal)
 {
@@ -1016,4 +1038,27 @@ void file_load_audiores(const char* songfile, const char* voicefile, const char*
 	audiores = init_audio_resources(songfileptr, voicefileptr, name);
 	load_audio_finalize(audiores);
 	is_audioloaded = 1;
+}
+
+void file_load_replay(const char* dir, const char* name)
+{
+	file_build_path(dir, name, ".rpl", g_path_buf);
+
+	g_is_busy = 1;
+	file_read_fatal(g_path_buf, td13_rpl_header);
+	gameconfig = *(struct GAMEINFO far*)td13_rpl_header;
+	g_is_busy = 0;
+}
+
+short file_write_replay(const char* filename)
+{
+	short ret;
+
+	*(struct GAMEINFO far*)td13_rpl_header = gameconfig;
+
+	g_is_busy = 1;
+	ret = file_write_fatal(filename, td13_rpl_header, sizeof(struct GAMEINFO) + gameconfig.game_recordedframes);
+	g_is_busy = 1;
+	
+	return ret;
 }

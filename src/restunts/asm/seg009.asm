@@ -2160,7 +2160,7 @@ loc_2B688:
     jmp     loc_2B766
 loc_2B6CE:
     mov     si, 1
-    mov     byte_3B8FB, 1
+    mov     g_is_busy, 1
     inc     [bp+var_32]
     mov     ax, offset aTrk_0; "trk"
     push    ax
@@ -2180,7 +2180,7 @@ loc_2B6CE:
     add     sp, 0Ah
     cbw
     mov     si, ax
-    mov     ax, offset track_full_path
+    mov     ax, offset g_path_buf
     push    ax              ; char *
     mov     ax, offset a_trk_3; ".trk"
     push    ax              ; int
@@ -2188,7 +2188,7 @@ loc_2B6CE:
     push    ax
     mov     ax, offset byte_3B80C
     push    ax              ; char *
-    call    combine_file_path
+    call    file_build_path
     add     sp, 8
     or      si, si
     jg      short loc_2B725
@@ -2217,7 +2217,7 @@ loc_2B75C:
     jmp     loc_2B8A4
 loc_2B766:
     mov     [bp+var_176], 0
-    mov     byte_3B8FB, 1
+    mov     g_is_busy, 1
     jmp     loc_2B891
     ; align 2
     db 144
@@ -2240,7 +2240,7 @@ loc_2B774:
     add     sp, 8
     or      al, al
     jz      short loc_2B80D
-    mov     ax, offset track_full_path
+    mov     ax, offset g_path_buf
     push    ax              ; char *
     mov     ax, offset a_trk_4; ".trk"
     push    ax              ; int
@@ -2248,10 +2248,10 @@ loc_2B774:
     push    ax
     mov     ax, offset byte_3B80C
     push    ax              ; char *
-    call    combine_file_path
+    call    file_build_path
     add     sp, 8
     mov     [bp+var_176], 1
-    mov     ax, offset track_full_path
+    mov     ax, offset g_path_buf
     push    ax
     call    file_find
     add     sp, 2
@@ -2292,7 +2292,7 @@ loc_2B812:
     push    ax
     push    word ptr td14_elem_map_main+2
     push    word ptr td14_elem_map_main
-    mov     ax, offset track_full_path
+    mov     ax, offset g_path_buf
     push    ax
     call    file_write_fatal
     add     sp, 0Ah
@@ -2343,7 +2343,7 @@ loc_2B891:
     jnz     short loc_2B89B
     jmp     loc_2B774
 loc_2B89B:
-    mov     byte_3B8FB, 0
+    mov     g_is_busy, 0
     jmp     loc_2B491
     ; align 2
     db 144

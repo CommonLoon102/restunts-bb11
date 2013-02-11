@@ -637,6 +637,9 @@ static PortFuncName(labelname) {
 		labelname == "file_unflip_shape2d" ||
 		labelname == "file_get_unflip_size" ||
 		labelname == "file_get_shape2d" ||
+		labelname == "file_build_path" ||
+		labelname == "file_load_replay" ||
+		labelname == "file_write_replay" ||
 
 		labelname == "mmgr_path_to_name" ||
 		labelname == "mmgr_alloc_pages" ||

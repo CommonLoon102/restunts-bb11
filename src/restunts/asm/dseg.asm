@@ -89,7 +89,7 @@ dseg segment byte public 'STUNTSD' use16
     public kbormouse
     public mouse_isdirty
     public timertestflag2
-    public byte_3B8FB
+    public g_is_busy
     public byte_3B8FC
     public aKevin
     public aOpp1
@@ -1351,7 +1351,7 @@ dseg segment byte public 'STUNTSD' use16
     public word_44D62
     public current_planptr_ax
     public current_planptr_dx
-    public track_full_path
+    public g_path_buf
     public planindex
     public video_flag2_is1
     public word_44DCA
@@ -1907,7 +1907,7 @@ byte_3B8F7     db 0
 kbormouse     db 0
 mouse_isdirty     db 0
 timertestflag2     db 0
-byte_3B8FB     db 0
+g_is_busy     db 0
 byte_3B8FC     db 0
     db 0
 aKevin     db 107
@@ -36207,7 +36207,7 @@ meter_needle_color     dw 0
 word_44D62     dw 0
 current_planptr_ax     dw 0
 current_planptr_dx     dw 0
-track_full_path     db 0
+g_path_buf     db 0
     db 0
     db 0
     db 0

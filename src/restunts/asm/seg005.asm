@@ -54,8 +54,8 @@ seg005 segment byte public 'STUNTSC' use16
     public frame_callback
     public replay_unk2
     public sub_2298C
-    public load_replay_file
-    public write_rpl
+    public ported_file_load_replay_
+    public ported_file_write_replay_
     public setup_car_shapes
     public setup_player_cars
     public free_player_cars
@@ -131,7 +131,7 @@ loc_21BCA:
     sub     ax, ax
     push    ax              ; char *
     push    cs
-    call near ptr load_replay_file
+    call near ptr ported_file_load_replay_
 loc_21BDA:
     add     sp, 4
     or      al, al
@@ -1954,7 +1954,7 @@ loc_22C8C:
     pop     bp
     retf
 sub_2298C endp
-load_replay_file proc far
+ported_file_load_replay_ proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = dword ptr 6
@@ -1963,18 +1963,18 @@ load_replay_file proc far
     mov     bp, sp
     push    di
     push    si
-    mov     ax, offset track_full_path
+    mov     ax, offset g_path_buf
     push    ax              ; char *
     mov     ax, offset a_rpl; ".rpl"
     push    ax              ; int
     push    word ptr [bp+arg_0+2]
     push    word ptr [bp+arg_0]; char *
-    call    combine_file_path
+    call    file_build_path
     add     sp, 8
-    mov     byte_3B8FB, 1
+    mov     g_is_busy, 1
     push    word ptr td13_rpl_header+2
     push    word ptr td13_rpl_header
-    mov     ax, offset track_full_path
+    mov     ax, offset g_path_buf
     push    ax
     call    file_read_fatal
     add     sp, 6
@@ -1989,14 +1989,14 @@ load_replay_file proc far
     mov     cx, 0Dh         ; copies 13 words from the rpl to gameconfig
     repne movsw
     pop     ds
-    mov     byte_3B8FB, 0
+    mov     g_is_busy, 0
     sub     ax, ax
     pop     si
     pop     di
     pop     bp
     retf
-load_replay_file endp
-write_rpl proc far
+ported_file_load_replay_ endp
+ported_file_write_replay_ proc far
     var_6 = word ptr -6
     var_4 = word ptr -4
      s = byte ptr 0
@@ -2011,7 +2011,7 @@ write_rpl proc far
     les     bx, td13_rpl_header
     push    si
     mov     di, bx
-    mov     si, 9234h
+    mov     si, offset gameconfig
     mov     cx, 0Dh
     repne movsw
     pop     si
@@ -2020,7 +2020,7 @@ write_rpl proc far
     cwd
     mov     [bp+var_6], ax
     mov     [bp+var_4], dx
-    mov     byte_3B8FB, 1
+    mov     g_is_busy, 1
     push    dx
     push    ax
     push    es
@@ -2028,7 +2028,7 @@ write_rpl proc far
     push    [bp+arg_filename]
     call    file_write_fatal
     add     sp, 0Ah
-    mov     byte_3B8FB, 0
+    mov     g_is_busy, 0
     cbw
     pop     si
     pop     di
@@ -2037,7 +2037,7 @@ write_rpl proc far
     retf
     ; align 2
     db 144
-write_rpl endp
+ported_file_write_replay_ endp
 setup_car_shapes proc far
     var_20 = word ptr -32
     var_1E = word ptr -30
@@ -4529,7 +4529,7 @@ loc_24548:
     mov     ax, 0EEh ; 'î'
     push    ax              ; char *
     push    cs
-    call near ptr load_replay_file
+    call near ptr ported_file_load_replay_
     add     sp, 4
     or      al, al
     jz      short loc_2458B
@@ -4634,7 +4634,7 @@ loc_24642:
     jnz     short loc_2466F
     jmp     loc_246F0
 loc_2466F:
-    mov     ax, offset track_full_path
+    mov     ax, offset g_path_buf
     push    ax              ; char *
     mov     ax, offset a_rpl_2; ".rpl"
     push    ax              ; int
@@ -4642,11 +4642,11 @@ loc_2466F:
     push    ax
     mov     ax, 0EEh ; 'î'
     push    ax              ; char *
-    call    combine_file_path
+    call    file_build_path
     add     sp, 8
     mov     [bp+var_1E], 1
-    mov     byte_3B8FB, 1
-    mov     ax, offset track_full_path
+    mov     g_is_busy, 1
+    mov     ax, offset g_path_buf
     push    ax
     call    file_find
     add     sp, 2
@@ -4685,7 +4685,7 @@ loc_246E0:
     jnz     short loc_246E8
     mov     [bp+var_1E], 0
 loc_246E8:
-    mov     byte_3B8FB, 0
+    mov     g_is_busy, 0
     jmp     short loc_246F4
     ; align 2
     db 144
@@ -4699,7 +4699,7 @@ loc_246FD:
     mov     ax, 95F8h
     push    ax
     push    cs
-    call near ptr write_rpl
+    call near ptr ported_file_write_replay_
     add     sp, 2
     mov     [bp+var_counter], al
     or      al, al

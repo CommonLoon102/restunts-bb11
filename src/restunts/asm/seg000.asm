@@ -463,7 +463,7 @@ _do_intro:
     add     sp, 2
     or      si, si
     jz      short loc_1042D
-    mov     ax, offset track_full_path
+    mov     ax, offset g_path_buf
     push    ax              ; char *
     mov     ax, offset a_trk; ".trk"
     push    ax              ; int
@@ -471,11 +471,11 @@ _do_intro:
     push    ax
     mov     ax, offset byte_3B80C
     push    ax              ; char *
-    call    combine_file_path
+    call    file_build_path
     add     sp, 8
     push    word ptr td14_elem_map_main+2
     push    word ptr td14_elem_map_main
-    mov     ax, offset track_full_path
+    mov     ax, offset g_path_buf
     push    ax
     call    file_read_fatal
     add     sp, 6
@@ -2162,7 +2162,7 @@ loc_114E2:
     add     sp, 0Ah
     cbw
     mov     si, ax
-    mov     ax, offset track_full_path
+    mov     ax, offset g_path_buf
     push    ax              ; char *
     mov     ax, offset a_trk_1; ".trk"
     push    ax              ; int
@@ -2170,7 +2170,7 @@ loc_114E2:
     push    ax
     mov     ax, 9Ch ; 'œ'
     push    ax              ; char *
-    call    combine_file_path
+    call    file_build_path
     add     sp, 8
     or      si, si
     jz      short loc_11552
@@ -2234,7 +2234,7 @@ loc_1159A:
     cmp     [bp+var_3A], 7
     jl      short loc_1159A
 loc_115AF:
-    mov     ax, offset track_full_path
+    mov     ax, offset g_path_buf
     push    ax              ; char *
     mov     ax, offset a_hig_0; ".hig"
     push    ax              ; int
@@ -2242,14 +2242,14 @@ loc_115AF:
     push    ax
     mov     ax, 9Ch ; 'œ'
     push    ax              ; char *
-    call    combine_file_path
+    call    file_build_path
     add     sp, 8
     cmp     [bp+arg_0], 0
     jnz     short loc_1160A
-    mov     byte_3B8FB, 1
+    mov     g_is_busy, 1
     push    word ptr td11_highscores+2
     push    word ptr td11_highscores
-    mov     ax, offset track_full_path
+    mov     ax, offset g_path_buf
     push    ax
     mov     ax, 0Ah
     push    ax
@@ -2257,7 +2257,7 @@ loc_115AF:
     add     sp, 8
     mov     [bp+var_4], ax
     mov     [bp+var_2], dx
-    mov     byte_3B8FB, 0
+    mov     g_is_busy, 0
     or      ax, dx
     jnz     short loc_11602
 loc_115F9:
@@ -2314,7 +2314,7 @@ loc_11648:
     push    ax
     push    word ptr td11_highscores+2
     push    word ptr td11_highscores
-    mov     ax, offset track_full_path
+    mov     ax, offset g_path_buf
     push    ax
     call    file_write_fatal
     add     sp, 0Ah
@@ -2935,7 +2935,7 @@ loc_11BC3:
     inc     [bp+var_16E]
     cmp     [bp+var_16E], 7
     jl      short loc_11BC3
-    mov     ax, offset track_full_path
+    mov     ax, offset g_path_buf
     push    ax              ; char *
     mov     ax, offset a_hig; ".hig"
     push    ax              ; int
@@ -2943,9 +2943,9 @@ loc_11BC3:
     push    ax
     mov     ax, 9Ch ; 'œ'
     push    ax              ; char *
-    call    combine_file_path
+    call    file_build_path
     add     sp, 8
-    mov     byte_3B8FB, 1
+    mov     g_is_busy, 1
     mov     ax, 16Ch
     cwd
     push    dx
@@ -2957,7 +2957,7 @@ loc_11BC3:
     push    ax
     call    file_write_fatal
     add     sp, 0Ah
-    mov     byte_3B8FB, 0
+    mov     g_is_busy, 0
     pop     si
     pop     di
     mov     sp, bp
@@ -5077,7 +5077,7 @@ loc_130E2:
     push    ax
     mov     ax, offset byte_3B85E
     push    ax              ; char *
-    call    load_replay_file
+    call    file_load_replay
     add     sp, 4
     mov     [bp+var_4], 1
     jmp     short loc_13163
@@ -5924,7 +5924,7 @@ nosmart
     mov     [bp+var_6A], 64h ; 'd'
 loc_138FF:
     mov     [bp+var_6E], 0
-    mov     ax, offset track_full_path
+    mov     ax, offset g_path_buf
     push    ax              ; char *
     mov     ax, offset a_trk_5; ".trk"
     push    ax              ; int
@@ -5932,9 +5932,9 @@ loc_138FF:
     push    ax
     mov     ax, offset byte_3B80C
     push    ax              ; char *
-    call    combine_file_path
+    call    file_build_path
     add     sp, 8
-    mov     ax, offset track_full_path
+    mov     ax, offset g_path_buf
     push    ax              ; char *
     mov     ax, 1
     push    ax              ; int
@@ -5967,7 +5967,7 @@ loc_1394E:
     add     sp, 12h
     or      ax, ax
     jz      short loc_1397F
-    mov     ax, offset track_full_path
+    mov     ax, offset g_path_buf
     push    ax              ; char *
     mov     ax, 1
     push    ax              ; int

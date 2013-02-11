@@ -50,7 +50,7 @@ seg008 segment byte public 'STUNTSC' use16
     public sub_275C6
     public show_dialog
     public do_fileselect_dialog
-    public combine_file_path
+    public ported_file_build_path_
     public do_savefile_dialog
     public parse_filepath_separators
     public input_checking
@@ -1320,9 +1320,9 @@ do_fileselect_dialog proc far
     pop     bp
     retf
 loc_27F1E:
-    mov     al, byte_3B8FB
+    mov     al, g_is_busy
     mov     [bp+var_18], al
-    mov     byte_3B8FB, 1
+    mov     g_is_busy, 1
     mov     ax, [bp+var_708]
     add     ax, 4
     mov     [bp+var_71C], ax
@@ -2013,7 +2013,7 @@ loc_285AC:
     push    cs
     call near ptr sub_275C6
     mov     al, [bp+var_18]
-    mov     byte_3B8FB, al
+    mov     g_is_busy, al
     mov     al, [bp+var_6A0]
     cbw
     pop     si
@@ -2024,7 +2024,7 @@ loc_285AC:
     ; align 2
     db 144
 do_fileselect_dialog endp
-combine_file_path proc far
+ported_file_build_path_ proc far
     var_2 = byte ptr -2
      s = byte ptr 0
      r = byte ptr 2
@@ -2081,7 +2081,7 @@ loc_28618:
     retf
     ; align 2
     db 144
-combine_file_path endp
+ported_file_build_path_ endp
 do_savefile_dialog proc far
     var_12 = word ptr -18
     var_10 = word ptr -16
@@ -5472,7 +5472,7 @@ do_dea_textres proc far
     sub     sp, 2
     push    cs
     call near ptr input_push_status
-    cmp     byte_3B8FB, 0
+    cmp     g_is_busy, 0
     jz      short loc_2A168
     sub     ax, ax
     push    ax

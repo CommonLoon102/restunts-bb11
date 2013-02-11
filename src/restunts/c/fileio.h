@@ -12,6 +12,8 @@ extern "C" {
 const char* file_find(const char* query);
 const char* file_find_next();
 
+void file_build_path(const char* dir, const char* name, const char* ext, char* dst);
+
 unsigned short file_paras(const char* filename, int fatal);
 unsigned short file_paras_fatal(const char* filename);
 unsigned short file_paras_nofatal(const char* filename);
@@ -36,6 +38,9 @@ void far* file_load_resfile(const char* filename);
 void far* file_load_resource(int type, const char* filename);
 void file_load_audiores(const char* songfile, const char* voicefile, const char* name);
 void far* file_load_3dres(const char* filename);
+
+void file_load_replay(const char* dir, const char* name);
+short file_write_replay(const char* filename);
 
 #ifdef __cplusplus
 }

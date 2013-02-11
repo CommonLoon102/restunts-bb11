@@ -141,6 +141,9 @@ extrn file_load_shape2d_res_nofatal:proc
 extrn file_unflip_shape2d:proc
 extrn file_get_unflip_size:proc
 extrn file_get_shape2d:proc
+extrn file_build_path:proc
+extrn file_load_replay:proc
+extrn file_write_replay:proc
 
 extrn kb_init_interrupt:proc
 extrn kb_exit_handler:proc

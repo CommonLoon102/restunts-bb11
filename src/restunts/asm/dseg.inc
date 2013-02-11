@@ -41,7 +41,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn kbormouse:byte
     extrn mouse_isdirty:byte
     extrn timertestflag2:byte
-    extrn byte_3B8FB:byte
+    extrn g_is_busy:byte
     extrn byte_3B8FC:byte
     extrn aKevin:byte
     extrn aOpp1:byte
@@ -1303,7 +1303,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn word_44D62:word
     extrn current_planptr_ax:word
     extrn current_planptr_dx:word
-    extrn track_full_path:byte
+    extrn g_path_buf:byte
     extrn planindex:word
     extrn video_flag2_is1:word
     extrn word_44DCA:word
