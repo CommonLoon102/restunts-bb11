@@ -282,7 +282,7 @@ const char* file_find(const char* query)
 	// Find failed.
 	if (retval) {
 		return  0;
-	}	
+	}
 
 	// Copy path from query.
 	chdst = g_find.dirdelim = g_find.path;
@@ -290,7 +290,7 @@ const char* file_find(const char* query)
 		*chdst = *chsrc;
 		
 		if (*chdst == ':' || *chdst == '\\') {
-			g_find.dirdelim = chdst;
+			g_find.dirdelim = chdst + 1;
 		}
 	}
 
