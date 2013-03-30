@@ -582,6 +582,7 @@ loc_3A916:
     or      ax, ax
     jle     short loc_3A953
     les     bx, dword ptr word_405FE
+loc_3A936:
     push    word ptr es:[bx+2]
     push    word ptr es:[bx+12h]
 loc_3A93E:
@@ -597,6 +598,7 @@ loc_3A950:
     add     sp, 0Ah
 loc_3A953:
     pop     si
+loc_3A954:
     mov     sp, bp
     pop     bp
     retf

@@ -53,6 +53,7 @@ toupper proc far
     arg_0 = word ptr 6
 
     push    bp
+loc_370BB:
     mov     bp, sp
 loc_370BD:
     cmp     [bp+arg_0], 61h ; 'a'

@@ -65,6 +65,7 @@ loc_36BEB:
     sub     sp, 8
 loc_36BEE:
     push    di
+loc_36BEF:
     push    si
 loc_36BF0:
     mov     ax, [bp+arg_0]

@@ -59,7 +59,9 @@ ported_file_get_unflip_size_ proc far
     arg_2 = word ptr 8
 
     push    bp
+loc_3B0BB:
     mov     bp, sp
+loc_3B0BD:
     sub     sp, 0Ch
     push    [bp+arg_2]
     push    [bp+arg_0]
@@ -86,6 +88,7 @@ loc_3B0E7:
     add     ax, 20h ; ' '
     mov     [bp+var_C], ax
     mov     cl, 4
+loc_3B107:
     shr     [bp+var_C], cl
     mov     ax, [bp+var_6]
 loc_3B10D:
@@ -100,7 +103,9 @@ loc_3B11B:
     mov     ax, [bp+var_A]
 loc_3B11E:
     cmp     [bp+var_8], ax
+loc_3B121:
     jl      short loc_3B0DE
+loc_3B123:
     mov     ax, [bp+var_6]
     mov     sp, bp
     pop     bp

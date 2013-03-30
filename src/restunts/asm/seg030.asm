@@ -61,6 +61,7 @@ audio_make_filename proc far
     arg_4 = word ptr 10
 
     push    bp
+loc_39CCF:
     mov     bp, sp
     sub     sp, 2
     push    di
@@ -200,6 +201,7 @@ loc_39DBF:
     repne scasb
     not     cx
     sub     di, cx
+loc_39DF7:
     mov     bx, cx
     xchg    di, si
     mov     cx, 0FFFFh
@@ -219,6 +221,7 @@ loc_39E0B:
     pop     di
 loc_39E10:
     mov     sp, bp
+loc_39E12:
     pop     bp
     retf
 audio_make_filename endp

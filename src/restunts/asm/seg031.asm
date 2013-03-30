@@ -66,7 +66,9 @@ ported_file_load_shape2d_nofatal2_ proc far
     push    bp
     mov     bp, sp
     push    [bp+arg_0]
+loc_39E1A:
     call    file_load_shape2d_nofatal_thunk
+loc_39E1F:
     add     sp, 2
     pop     bp
     retf
@@ -141,8 +143,8 @@ init_video proc far
     var_2 = byte ptr -2
      s = byte ptr 0
      r = byte ptr 2
-    arg_argv = word ptr 6
-    arg_argc = word ptr 8
+    arg_argc = word ptr 6
+    arg_argv = word ptr 8
 
     push    bp
     mov     bp, sp
@@ -242,11 +244,11 @@ loc_39F5E:
 loc_39F62:
     inc     si
 loc_39F63:
-    cmp     [bp+arg_argv], si
+    cmp     [bp+arg_argc], si
     jg      short loc_39F6B
     jmp     loc_3A07A
 loc_39F6B:
-    mov     bx, [bp+arg_argc]
+    mov     bx, [bp+arg_argv]
     mov     ax, si
     shl     ax, 1
     add     bx, ax
@@ -265,7 +267,7 @@ loc_39F6B:
 loc_39F91:
     cmp     ax, 73h ; 's'
     jnz     short loc_39F62
-    mov     bx, [bp+arg_argc]
+    mov     bx, [bp+arg_argv]
     mov     ax, si
     shl     ax, 1
     add     bx, ax
@@ -277,7 +279,7 @@ loc_39F91:
     mov     bx, ax
     test    byte_3EF9F[bx], 1
     jz      short loc_39FC8
-    mov     bx, [bp+arg_argc]
+    mov     bx, [bp+arg_argv]
     mov     ax, si
     shl     ax, 1
     add     bx, ax
@@ -289,7 +291,7 @@ loc_39F91:
     ; align 2
     db 144
 loc_39FC8:
-    mov     bx, [bp+arg_argc]
+    mov     bx, [bp+arg_argv]
     mov     ax, si
     shl     ax, 1
     add     bx, ax
@@ -305,7 +307,7 @@ loc_39FD7:
     mov     bx, ax
     test    byte_3EF9F[bx], 1
     jz      short loc_3A000
-    mov     bx, [bp+arg_argc]
+    mov     bx, [bp+arg_argv]
     mov     ax, si
     shl     ax, 1
     add     bx, ax
@@ -315,7 +317,7 @@ loc_39FD7:
     add     ax, 20h ; ' '
     jmp     short loc_3A00F
 loc_3A000:
-    mov     bx, [bp+arg_argc]
+    mov     bx, [bp+arg_argv]
     mov     ax, si
     shl     ax, 1
     add     bx, ax
@@ -331,7 +333,7 @@ loc_3A00F:
     ; align 2
     db 144
 loc_3A022:
-    mov     ax, [bp+arg_argc]
+    mov     ax, [bp+arg_argv]
     mov     cx, si
     shl     cx, 1
     add     ax, cx
@@ -346,7 +348,7 @@ loc_3A022:
     mov     audiodriverstring+1, al
     jmp     loc_39F62
 loc_3A046:
-    mov     bx, [bp+arg_argc]
+    mov     bx, [bp+arg_argv]
     mov     ax, si
     shl     ax, 1
     add     bx, ax
@@ -356,7 +358,7 @@ loc_3A046:
     mov     [bp+var_argnosound], 1
     jmp     loc_39F62
 loc_3A05E:
-    mov     bx, [bp+arg_argc]
+    mov     bx, [bp+arg_argv]
     mov     ax, si
     shl     ax, 1
     add     bx, ax

@@ -98,6 +98,7 @@ loc_1E1A6:
     push    si
 loc_1E1A8:
     mov     planindex, 0
+loc_1E1AE:
     mov     wallindex, 0FFFFh
 loc_1E1B4:
     mov     wallHeight, 0FFF4h

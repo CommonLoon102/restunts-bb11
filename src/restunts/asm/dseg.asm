@@ -1032,7 +1032,7 @@ dseg segment byte public 'STUNTSD' use16
     public a_esh_0
     public shapeextend
     public shapeexts
-    public shapenums
+    public palmap
     public a_pvs
     public aUnflip_0
     public a_xvs
@@ -21720,7 +21720,7 @@ shapeexts     dw offset a_pvs_0       ; ".PVS"
     dw offset a_pes_0       ; ".PES"
     dw offset a_esh_0       ; ".ESH"
     dw offset shapeextend
-shapenums     db 0
+palmap     db 0
     db 1
     db 2
     db 3

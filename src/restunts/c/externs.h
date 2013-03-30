@@ -112,7 +112,8 @@ extern short is_audioloaded;
 extern void far* songfileptr;
 extern void far* voicefileptr;
 extern char textresprefix; // = 'e'
-extern char* shapeexts;
+extern char* shapeexts[];
+extern unsigned char palmap[];
 
 extern void far* load_song_file(const char* filename);
 extern void far* load_voice_file(const char* filename);
@@ -125,12 +126,12 @@ extern void far* init_audio_resources(void far* songptr, void far* voiceptr, con
 extern void load_audio_finalize(void far* audiores);
 extern void fatal_error(const char*, ...);
 extern int do_dea_textres(void);
-extern int get_unflip_size(void far* memchunk);
 extern unsigned long timer_get_counter(void);
 extern void* _memcpy(void*, const void*, unsigned);
 extern char* _strcpy(char* dest, const char* src);
 extern char* _strcat(char* dest, const char* src);
 extern int _strcmp(const char* dest, const char* src);
+extern int _stricmp(const char* dest, const char* src);
 extern unsigned _strlen(const char* str);
 extern void far* __fmemcpy(void far*, const void far*, unsigned);
 extern unsigned _abs(unsigned);
@@ -144,6 +145,7 @@ extern void _srand(unsigned int);
 #define strlen _strlen
 #define fmemcpy __fmemcpy
 #define strcmp _strcmp
+#define stricmp _stricmp
 #define abs _abs
 #define printf _printf
 #define rand _rand

@@ -51,7 +51,9 @@ seg033 segment byte public 'STUNTSC' use16
 setup_mcgawnd1 proc far
 
     mov     ax, word ptr mcgawndsprite
+loc_3A95B:
     or      ax, word ptr mcgawndsprite+2
+loc_3A95F:
     jnz     short loc_3A97C
     mov     ax, 0Fh
     push    ax
@@ -89,6 +91,7 @@ setup_mcgawnd2 proc far
     push    ax
     mov     ax, 140h
     push    ax
+loc_3A9B5:
     call    sprite_make_wnd
     add     sp, 6
 loc_3A9BD:
@@ -101,7 +104,9 @@ loc_3A9C8:
     push    word ptr mcgawndsprite
 loc_3A9CC:
     call    sprite_set_1_from_argptr
+loc_3A9D1:
     add     sp, 4
+locret_3A9D4:
     retf
 setup_mcgawnd2 endp
 seg033 ends

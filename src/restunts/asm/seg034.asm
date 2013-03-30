@@ -49,7 +49,7 @@ seg034 segment byte public 'STUNTSC' use16
     public ported_file_load_shape2d_fatal_
     public ported_file_load_shape2d_nofatal_
     public ported_file_load_shape2d_
-    public file_load_shape2d_helper
+    public ported_file_load_shape2d_palmap_init_
 algn_3A9D5:
     ; align 2
     db 144
@@ -103,10 +103,10 @@ loc_3A9FA:
 ported_file_load_shape2d_nofatal_ endp
 ported_file_load_shape2d_ proc far
     var_strchar = byte ptr -128
-    var_7E = word ptr -126
+    var_expandedsize = word ptr -126
     var_str = byte ptr -124
-    var_18 = word ptr -24
-    var_16 = word ptr -22
+    var_mgaofs = word ptr -24
+    var_mgaseg = word ptr -22
     var_counter = word ptr -20
     var_oldstrptr = word ptr -18
     var_mempages = dword ptr -16
@@ -289,7 +289,7 @@ loc_3AB83:
     push    ax
     push    [bp+var_memchunkseg]
     push    [bp+var_memchunkofs]
-    call    file_load_shape2d_helper4
+    call    file_unflip_shape2d_pes
     add     sp, 8
     push    word ptr [bp+var_mempages+2]
     push    word ptr [bp+var_mempages]
@@ -298,28 +298,28 @@ loc_3AB83:
 loc_3ABB7:
     push    [bp+var_memchunkseg]
     push    [bp+var_memchunkofs]
-    call    file_load_shape2d_helper5
+    call    file_load_shape2d_expandedsize
     add     sp, 4
-    mov     [bp+var_7E], ax
+    mov     [bp+var_expandedsize], ax
     mov     ax, offset aMga ; "!MGA"
     push    ax
     push    [bp+var_memchunkseg]
     push    [bp+var_memchunkofs]
     call    locate_shape_nofatal
     add     sp, 6
-    mov     [bp+var_18], ax
-    mov     [bp+var_16], dx
+    mov     [bp+var_mgaofs], ax
+    mov     [bp+var_mgaseg], dx
     or      ax, dx
     jz      short loc_3ABF3
-    mov     ax, [bp+var_18]
+    mov     ax, [bp+var_mgaofs]
     add     ax, 10h
     push    dx
     push    ax
     push    cs
-    call near ptr file_load_shape2d_helper
+    call near ptr ported_file_load_shape2d_palmap_init_
     add     sp, 4
 loc_3ABF3:
-    push    [bp+var_7E]
+    push    [bp+var_expandedsize]
     lea     ax, [bp+var_str]
     push    ax
     call    mmgr_alloc_pages
@@ -327,7 +327,7 @@ loc_3ABF3:
     mov     word ptr [bp+var_mempages], ax
     mov     word ptr [bp+var_mempages+2], dx
     les     bx, [bp+var_mempages]
-    mov     ax, [bp+var_7E]
+    mov     ax, [bp+var_expandedsize]
     sub     dx, dx
     mov     cl, 4
 loc_3AC12:
@@ -375,7 +375,7 @@ loc_3AC60:
     push    word ptr [bp+var_mempages]
     push    [bp+var_memchunkseg]
     push    [bp+var_memchunkofs]
-    call    file_load_shape2d_helper2
+    call    file_load_shape2d_expand
     add     sp, 8
     push    [bp+var_memchunkseg]
     push    [bp+var_memchunkofs]
@@ -388,15 +388,15 @@ loc_3AC60:
 loc_3AC97:
     mov     [bp+var_memchunkofs], ax
     mov     [bp+var_memchunkseg], dx
-    mov     ax, offset shapenums
+    mov     ax, offset palmap
     push    ax
     push    dx
     push    [bp+var_memchunkofs]
-    call    file_load_shape2d_helper6
+    call    file_load_shape2d_palmap_apply
     add     sp, 6
     jmp     _end_load_2dshape
 ported_file_load_shape2d_ endp
-file_load_shape2d_helper proc far
+ported_file_load_shape2d_palmap_init_ proc far
     var_2 = word ptr -2
      s = byte ptr 0
      r = byte ptr 2
@@ -416,7 +416,7 @@ loc_3ACBF:
 loc_3ACC2:
     mov     al, es:[bx+si]
 loc_3ACC5:
-    mov     shapenums[bx], al
+    mov     palmap[bx], al
 loc_3ACC9:
     inc     [bp+var_2]
 loc_3ACCC:
@@ -431,6 +431,6 @@ loc_3ACD5:
     pop     bp
 locret_3ACD6:
     retf
-file_load_shape2d_helper endp
+ported_file_load_shape2d_palmap_init_ endp
 seg034 ends
 end

@@ -67,12 +67,16 @@ preRender_sphere_helper2 proc far
     arg_2 = word ptr 8
 
     push    bp
+loc_36413:
     mov     bp, sp
     sub     sp, 1Ah
     push    di
     push    si
+loc_3641A:
     mov     bx, [bp+arg_0]
+loc_3641D:
     mov     si, [bx]
+loc_3641F:
     mov     ax, [bx+4]
     sub     ax, si
     mov     bx, [bp+arg_2]
@@ -402,6 +406,7 @@ loc_3677B:
     mov     [si+40h], ax
     mov     ax, [bx+2]
     sub     ax, [si+2]
+loc_36797:
     mov     [si+42h], ax
     add     [si], di
 loc_3679C:

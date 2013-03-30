@@ -74,8 +74,11 @@ ported_init_polyinfo_ proc far
     cwd
     push    dx
     push    ax
+loc_24D6A:
     mov     ax, offset aPolyinfo; "polyinfo"
+loc_24D6D:
     push    ax
+loc_24D6E:
     call    mmgr_alloc_resbytes
     add     sp, 6
     mov     word ptr polyinfoptr, ax

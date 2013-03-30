@@ -9740,6 +9740,7 @@ loc_19DC1:
     mov     sp, bp
 loc_19DC3:
     pop     bp
+locret_19DC4:
     retf
 setup_aero_trackdata endp
 seg001 ends

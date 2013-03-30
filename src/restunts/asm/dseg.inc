@@ -984,7 +984,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn a_esh_0:byte
     extrn shapeextend:byte
     extrn shapeexts:word
-    extrn shapenums:byte
+    extrn palmap:byte
     extrn a_pvs:byte
     extrn aUnflip_0:byte
     extrn a_xvs:byte

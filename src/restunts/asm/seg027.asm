@@ -101,10 +101,13 @@ init_audio_resources proc far
     arg_8 = word ptr 14
 
     push    bp
+loc_370D3:
     mov     bp, sp
     sub     sp, 0Ch
     push    [bp+arg_8]      ; arg_8 is a string, e.g "TITL"
+loc_370DB:
     push    word ptr [bp+arg_songfileptr+2]
+loc_370DE:
     push    word ptr [bp+arg_songfileptr]
     call    audioresource_find; audio_find_resource?
     add     sp, 6

@@ -46,6 +46,7 @@ nosmart
 seg039 segment byte public 'STUNTSD' use16
     assume cs:seg039
     assume es:nothing, ss:nothing, ds:dseg
+    public word_3B1F0
     public word_3B1F2
     public word_3B1F4
     public unk_3B1F6
@@ -115,7 +116,7 @@ seg039 segment byte public 'STUNTSD' use16
     public unk_3B2BF
     public unk_3B2C2
     public unk_3B368
-    dw 3
+word_3B1F0     dw 3
 word_3B1F2     dw 0
 word_3B1F4     dw 0
 unk_3B1F6     db 0

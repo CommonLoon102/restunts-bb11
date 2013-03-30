@@ -90,6 +90,7 @@ loc_10008:
     push    word ptr [bp+p_argv]
 loc_1000B:
     push    [bp+p_argc]
+loc_1000E:
     call    init_video
     add     sp, 4
 loc_10016:

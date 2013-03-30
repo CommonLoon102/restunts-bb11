@@ -46,67 +46,69 @@ nosmart
 seg037 segment byte public 'STUNTSC' use16
     assume cs:seg037
     assume es:nothing, ss:nothing, ds:dseg
-    public file_load_shape2d_helper5
-file_load_shape2d_helper5 proc far
-    var_E = word ptr -14
-    var_C = word ptr -12
-    var_A = word ptr -10
-    var_8 = word ptr -8
+    public ported_file_load_shape2d_expandedsize_
+ported_file_load_shape2d_expandedsize_ proc far
+    var_sizelo = word ptr -14
+    var_sizehi = word ptr -12
+    var_shapecount = word ptr -10
+    var_counter = word ptr -8
     var_6 = word ptr -6
-    var_4 = dword ptr -4
+    var_memshape = dword ptr -4
      s = byte ptr 0
      r = byte ptr 2
-    arg_0 = word ptr 6
-    arg_2 = word ptr 8
+    arg_memchunkoff = word ptr 6
+    arg_memchunkseg = word ptr 8
 
     push    bp
+loc_3B12B:
     mov     bp, sp
+loc_3B12D:
     sub     sp, 0Eh
-    push    [bp+arg_2]
-    push    [bp+arg_0]
+    push    [bp+arg_memchunkseg]
+    push    [bp+arg_memchunkoff]
     call    file_get_res_shape_count
     add     sp, 4
-    mov     [bp+var_A], ax
+    mov     [bp+var_shapecount], ax
     mov     cl, 3
     shl     ax, cl
-    add     ax, 10h
+    add     ax, size SHAPE2D
     cwd
-    mov     [bp+var_E], ax
-    mov     [bp+var_C], dx
-    mov     [bp+var_8], 0
+    mov     [bp+var_sizelo], ax
+    mov     [bp+var_sizehi], dx
+    mov     [bp+var_counter], 0
     jmp     short loc_3B191
 loc_3B156:
-    push    [bp+var_8]
-    push    [bp+arg_2]
-    push    [bp+arg_0]
+    push    [bp+var_counter]
+    push    [bp+arg_memchunkseg]
+    push    [bp+arg_memchunkoff]
     call    file_get_shape2d
     add     sp, 6
-    mov     word ptr [bp+var_4], ax
-    mov     word ptr [bp+var_4+2], dx
-    les     bx, [bp+var_4]
-    mov     ax, es:[bx+2]
-    imul    word ptr es:[bx]
+    mov     word ptr [bp+var_memshape], ax
+    mov     word ptr [bp+var_memshape+2], dx
+    les     bx, [bp+var_memshape]
+    mov     ax, es:[bx+SHAPE2D.s2d_height]
+    imul    es:[bx+SHAPE2D.s2d_width]
     mov     cl, 3
     shl     ax, cl
     mov     [bp+var_6], ax
     sub     dx, dx
-    add     [bp+var_E], ax
-    adc     [bp+var_C], dx
-    add     [bp+var_E], 10h
-    adc     [bp+var_C], 0
-    inc     [bp+var_8]
+    add     [bp+var_sizelo], ax
+    adc     [bp+var_sizehi], dx
+    add     [bp+var_sizelo], size SHAPE2D
+    adc     [bp+var_sizehi], 0
+    inc     [bp+var_counter]
 loc_3B191:
-    mov     ax, [bp+var_A]
-    cmp     [bp+var_8], ax
+    mov     ax, [bp+var_shapecount]
+    cmp     [bp+var_counter], ax
     jl      short loc_3B156
-    add     [bp+var_E], 10h
-    adc     [bp+var_C], 0
+    add     [bp+var_sizelo], 10h
+    adc     [bp+var_sizehi], 0
     mov     al, 4
     push    ax
-    lea     ax, [bp+var_E]
+    lea     ax, [bp+var_sizelo]
     push    ax
     call    unknown_libname_4; MS Quick C v1.0/v2.01 & MSC v5.1 DOS run-time & graphic
-    mov     ax, [bp+var_E]
+    mov     ax, [bp+var_sizelo]
     mov     sp, bp
     pop     bp
     retf
@@ -123,6 +125,6 @@ loc_3B191:
     db 0
     db 0
     db 0
-file_load_shape2d_helper5 endp
+ported_file_load_shape2d_expandedsize_ endp
 seg037 ends
 end

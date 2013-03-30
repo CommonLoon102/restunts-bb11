@@ -138,9 +138,16 @@ extrn file_load_shape2d_nofatal2:proc
 extrn file_load_shape2d_res:proc
 extrn file_load_shape2d_res_fatal:proc
 extrn file_load_shape2d_res_nofatal:proc
+extrn file_load_shape2d_palmap_init:proc
+extrn file_load_shape2d_palmap_apply:proc
+extrn file_load_shape2d_expandedsize:proc
+extrn file_load_shape2d_expand:proc
 extrn file_unflip_shape2d:proc
+extrn file_unflip_shape2d_pes:proc
 extrn file_get_unflip_size:proc
+extrn file_load_shape2d_expandedsize:proc
 extrn file_get_shape2d:proc
+extrn file_get_res_shape_count:proc
 extrn file_build_path:proc
 extrn file_load_replay:proc
 extrn file_write_replay:proc

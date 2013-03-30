@@ -133,6 +133,7 @@ loc_274B8:
     mov     ax, video_flag1_is1
 loc_274BB:
     imul    video_flag4_is1
+loc_274BF:
     cwd
 loc_274C0:
     push    dx

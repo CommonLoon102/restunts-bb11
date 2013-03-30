@@ -72,6 +72,7 @@ loc_367B8:
     push    [bp+arg_4]
 loc_367BB:
     push    [bp+arg_2]
+loc_367BE:
     push    [bp+arg_0]
 loc_367C1:
     call    locate_shape_fatal

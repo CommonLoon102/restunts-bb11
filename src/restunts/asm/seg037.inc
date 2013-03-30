@@ -1,3 +1,3 @@
 seg037 segment byte public 'STUNTSC' use16
-    extrn file_load_shape2d_helper5:proc
+    extrn ported_file_load_shape2d_expandedsize_:proc
 seg037 ends

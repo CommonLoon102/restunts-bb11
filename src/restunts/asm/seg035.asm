@@ -522,6 +522,7 @@ sub_3B08C proc far
     sub     sp, 4
     les     bx, [bp+arg_0]
     mov     al, es:[bx]
+loc_3B098:
     mov     [bp+var_4], al
 loc_3B09B:
     mov     [bp+var_2], 0
@@ -535,7 +536,9 @@ loc_3B0A8:
     mov     al, [bp+var_4]
 loc_3B0AE:
     cmp     es:[bx], al
+loc_3B0B1:
     jz      short loc_3B0A2
+loc_3B0B3:
     mov     ax, [bp+var_2]
     mov     sp, bp
     pop     bp

@@ -58,9 +58,11 @@ preRender_sphere_helper proc far
     arg_2 = word ptr 8
 
     push    bp
+loc_36BBF:
     mov     bp, sp
     sub     sp, 80h
     lea     ax, [bp+var_80]
+loc_36BC8:
     push    ax
     push    [bp+arg_0]
 loc_36BCC:
@@ -75,6 +77,7 @@ loc_36BD8:
     push    [bp+arg_2]
 loc_36BDF:
     call    preRender_default_alt
+loc_36BE4:
     mov     sp, bp
     pop     bp
     retf

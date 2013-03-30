@@ -634,9 +634,16 @@ static PortFuncName(labelname) {
 		labelname == "file_load_shape2d_res" ||
 		labelname == "file_load_shape2d_res_fatal" ||
 		labelname == "file_load_shape2d_res_nofatal" ||
+		labelname == "file_load_shape2d_palmap_init" ||
+		labelname == "file_load_shape2d_palmap_apply" ||
+		labelname == "file_load_shape2d_expandedsize" ||
 		labelname == "file_unflip_shape2d" ||
+		labelname == "file_unflip_shape2d_pes" ||
 		labelname == "file_get_unflip_size" ||
+		labelname == "file_load_shape2d_expandedsize" ||
+		labelname == "file_load_shape2d_expand" ||
 		labelname == "file_get_shape2d" ||
+		labelname == "file_get_res_shape_count" ||
 		labelname == "file_build_path" ||
 		labelname == "file_load_replay" ||
 		labelname == "file_write_replay" ||

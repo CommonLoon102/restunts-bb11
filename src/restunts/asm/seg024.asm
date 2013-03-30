@@ -61,7 +61,9 @@ ported_mat_rot_x_ proc far
     arg_angleYZ = word ptr 8
 
     push    bp
+loc_36F2B:
     mov     bp, sp
+loc_36F2D:
     sub     sp, 4
     push    [bp+arg_angleYZ]
     call    cos_fast
@@ -150,6 +152,7 @@ ported_mat_rot_z_ proc far
     mov     [bx+MATRIX._11], ax
     mov     ax, [bp+var_4]
     mov     [bx+MATRIX._21], ax
+loc_37005:
     mov     [bx+MATRIX._31], 0
     neg     ax
 loc_3700C:
@@ -162,9 +165,11 @@ loc_3701A:
     mov     [bx+MATRIX._13], 0
 loc_3701F:
     mov     [bx+MATRIX._23], 0
+loc_37024:
     mov     [bx+MATRIX._33], 4000h
     mov     sp, bp
     pop     bp
+locret_3702C:
     retf
 ported_mat_rot_z_ endp
 seg024 ends

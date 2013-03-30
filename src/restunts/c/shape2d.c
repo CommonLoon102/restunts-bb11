@@ -214,6 +214,10 @@ struct SHAPE2D far* file_get_shape2d(unsigned char far* memchunk, int index) {
 	return (struct SHAPE2D far*)result;
 }
 
+unsigned short file_get_res_shape_count(void far* memchunk) {
+	return ((unsigned short far*)memchunk)[2];
+}
+
 void file_unflip_shape2d(unsigned char far* memchunk, char far* mempages) {
 
 	int shapecount, counter, width, height;
@@ -315,14 +319,127 @@ loc_32C08:
 
 }
 
+void file_unflip_shape2d_pes(unsigned char far* memchunk, char far* mempages) {
+	int shapecount, width, height, i, j, x, y;
+	unsigned char val;
+	unsigned char far* membitmapptr;
+	struct SHAPE2D far* memshape;
+
+	shapecount = file_get_res_shape_count(memchunk);
+
+	for (i = 0; i < shapecount; ++i) {
+		memshape = file_get_shape2d(memchunk, i);
+
+		if (!(memshape->s2d_unk6 & 0xF0)) {
+			val = (memshape->s2d_unk5 >> 4) & 0x0F;
+
+			if (val) {
+				width = memshape->s2d_width;
+				height = memshape->s2d_height;
+				membitmapptr = ((unsigned char far*)memshape) + sizeof(struct SHAPE2D);
+				
+				for (j = 0; j < 4; ++j) {
+					if (val & 0x01) {
+						for (y = 0; y < height; ++y) {
+							for (x = 0; x < width; ++x) {
+								mempages[y * width + x] = membitmapptr[x * height + y];
+							}
+						}
+						
+						// Copy flipped data from mempages -> subres
+						for (y = 0; y < height; ++y) {
+							for (x = 0; x < width; ++x) {
+								membitmapptr[y * width + x] = mempages[y * width + x];
+							}
+						}
+					}
+					membitmapptr += width * height;
+					val >>= 1;
+				}
+			}
+		}
+	}
+}
+
+void file_load_shape2d_expand(unsigned char far* memchunk, char far* mempages) {
+	int shapecount, length, i, j, k, l;
+	unsigned char far* memchunkptr, far* mempagesptr, px, pat;
+	unsigned long val;
+	unsigned long far* offsets, nextoffset;
+	struct SHAPE2D far* srcshape, far* dstshape;
+
+	shapecount = file_get_res_shape_count(memchunk);
+	
+	// Skip size.
+	memchunkptr = memchunk + 4;
+	mempagesptr = mempages + 4;
+	
+	// Copy count and ids.
+	for (i = 0; i < (shapecount * 2 + 1); ++i) {
+		*((unsigned short far*)mempagesptr)++ = *((unsigned short far*)memchunkptr)++;
+	}
+	
+	// Store pointer to offset table.
+	offsets = (unsigned long far*)mempagesptr;
+	nextoffset = 0;
+	
+	for (i = 0; i < shapecount; ++i) {
+		srcshape = file_get_shape2d(memchunk, i);
+		length = srcshape->s2d_width * srcshape->s2d_height;
+
+		offsets[i] = nextoffset;
+		nextoffset += sizeof(struct SHAPE2D) + length * 8;
+		
+		dstshape = file_get_shape2d(mempages, i);
+		*dstshape = *srcshape;
+		
+		dstshape->s2d_width *= 8;
+
+		if (length && length <= 8000) {
+			mempagesptr = (unsigned char far*)dstshape + sizeof(struct SHAPE2D);
+			
+			val = srcshape->s2d_unk4 >> 4;
+			val |= val << 8;
+
+			for (j = 0; j < length * 4; ++j) {
+				*((unsigned short far*)mempagesptr)++ = val;
+			}
+			memchunkptr = (unsigned char far*)srcshape + sizeof(struct SHAPE2D);
+			
+			for (j = 0; j < 4; ++j) {
+				pat = (&srcshape->s2d_unk3)[j] & 0x0F;
+
+				if (pat) {
+					mempagesptr = (unsigned char far*)dstshape + sizeof(struct SHAPE2D);
+					for (k = 0; k < length; ++k) {
+						px = *memchunkptr++;
+						for (l = 0; l < 8; ++l) {
+							if (px & 0x80) {
+								*mempagesptr |= pat;
+							}
+							px <<= 1;
+							mempagesptr++;
+						}
+					}
+				}
+				else {
+					break;
+				}
+			}
+		}
+	}
+	
+	// Final size.
+	*(unsigned long far*)mempages = 6 + (shapecount * 8) + nextoffset;
+}
+
 int file_get_unflip_size(char far* memchunk) {
 	int shapecount, size, maxsize;
 	int i;
 	struct SHAPE2D far* memshape;
 
-	shapecount = *(unsigned short far*)&memchunk[4];
+	shapecount = file_get_res_shape_count(memchunk);
 	maxsize = 0;
-	i = 0;
 	
 	for (i = 0; i < shapecount; i++) {
 		memshape = file_get_shape2d(memchunk, i);
@@ -332,10 +449,78 @@ int file_get_unflip_size(char far* memchunk) {
 	return maxsize;
 }
 
+unsigned short file_load_shape2d_expandedsize(void far* memchunk) {
+	unsigned short shapecount, i;
+	long size;
+	struct SHAPE2D far* memshape;
+	
+	shapecount = file_get_res_shape_count(memchunk);
+
+	size = (shapecount * 8) + sizeof(struct SHAPE2D);
+
+	for (i = 0; i < shapecount; ++i) {
+		memshape = file_get_shape2d(memchunk, i);
+		size += (memshape->s2d_width * memshape->s2d_height * 8) + sizeof(struct SHAPE2D);
+	}
+
+	return (size + sizeof(struct SHAPE2D)) >> 4;
+}
+
+void file_load_shape2d_palmap_init(unsigned char far* pal) {
+	int i;
+	
+	for (i = 0; i < 0x10; ++i) {
+		palmap[i] = pal[i];
+	}
+}
+
+void file_load_shape2d_palmap_apply(unsigned char far* memchunk, unsigned char palmap[]) {
+	unsigned short shapecount, length, i, j;
+	unsigned char far* memchunkptr;
+	struct SHAPE2D far* memshape;
+	
+	shapecount = file_get_res_shape_count(memchunk);
+	
+	for (i = 0; i < shapecount; ++i) {
+		memshape = file_get_shape2d(memchunk, i);
+		length = memshape->s2d_width * memshape->s2d_height;
+		
+		memchunkptr = (unsigned char far*)memshape + sizeof(struct SHAPE2D);
+		
+		for (j = 0; j < length; ++j) {
+			*memchunkptr++ = palmap[*memchunkptr];
+		}
+	}
+}
+
+void far* file_load_shape2d_esh(void far* memchunk, const char* str) {
+	unsigned short expandedsize;
+	void far* mempages;
+	void far* palmapres;
+
+	expandedsize = file_load_shape2d_expandedsize(memchunk);
+
+	palmapres = locate_shape_nofatal(memchunk, "!MGA");
+	
+	if (palmapres) {
+		file_load_shape2d_palmap_init(((unsigned char far*)palmapres) + sizeof(struct SHAPE2D));
+	}
+	
+	mempages = mmgr_alloc_pages(str, expandedsize);
+
+	*(long*)mempages = (long)expandedsize * 16;
+	
+	file_load_shape2d_expand(memchunk, mempages);
+	mmgr_release(memchunk);
+	memchunk = mmgr_op_unk(mempages);
+	file_load_shape2d_palmap_apply(memchunk, palmap);
+	
+	return memchunk;
+}
+
 void far* file_load_shape2d(char* shapename, int fatal) {
 	char str[100];
 	char* strptr;
-	char strchar;
 	int counter;
 	void far* memchunk;
 	void far* mempages;
@@ -352,27 +537,46 @@ void far* file_load_shape2d(char* shapename, int fatal) {
 		fatal_error("unhandled - load_2dshape has dot in the name");
 	}
 
-	counter = 0;
 	for (counter = 0; shapeexts[counter] != 0; counter++) {
 
-		strcpy(strptr, &shapeexts[counter]);
+		strcpy(strptr, shapeexts[counter]);
 		memchunk = mmgr_get_chunk_by_name(str);
 		if (memchunk) return memchunk; // return existing chunk with same name
 
 		if (file_find(str)) {
-			if (strcmp(strptr, ".PVS") == 0) {
+			if (stricmp(strptr, ".PVS") == 0) {
 				memchunk = file_decomp(str, fatal);
 				if (!memchunk) return MK_FP(0, 0);
 				
 				unflipsize = file_get_unflip_size(memchunk);
 				mempages = mmgr_alloc_pages("UNFLIP", unflipsize);
 				file_unflip_shape2d(memchunk, mempages);
-				//ported_file_unflip_2dshape_(memchunk, mempages);
 				mmgr_release(mempages);
 				
 				return memchunk;
 			}
-			// TODO: cases for XVS, PES, ESH
+			else if (stricmp(strptr, ".XVS") == 0) {
+				return file_decomp(str, fatal);
+			}
+			else if (stricmp(strptr, ".PES") == 0) {
+				memchunk = file_decomp(str, fatal);
+				if (!memchunk) return MK_FP(0, 0);
+				
+				mempages = mmgr_alloc_pages("UNFLIP", 1000);
+				file_unflip_shape2d_pes(memchunk, mempages);
+				mmgr_release(mempages);
+
+				return file_load_shape2d_esh(memchunk, str);
+			}
+			else if (stricmp(strptr, ".ESH") == 0) {
+				memchunk = file_load_binary(str, fatal);
+				if (!memchunk) return MK_FP(0, 0);
+
+				return file_load_shape2d_esh(memchunk, str);
+			}
+			else { // .VSH
+				return file_load_binary(str, fatal);
+			}
 		}
 	}
 	fatal_error("unhandled - cannot load %s", str);

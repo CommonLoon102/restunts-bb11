@@ -198,7 +198,7 @@ seg012 segment byte public 'STUNTSC' use16
     extrn video_on_exit:proc
     extrn ported_sprite_copy_both_to_arg_:proc
     extrn ported_sprite_copy_arg_to_both_:proc
-    extrn file_get_res_shape_count:proc
+    extrn ported_file_get_res_shape_count_:proc
     extrn ported_file_get_shape2d_:proc
     extrn nopsub_326BA:proc
     extrn ported_sin_fast_:proc
@@ -335,7 +335,7 @@ seg012 segment byte public 'STUNTSC' use16
     extrn sub_35DE6:proc
     extrn sub_35E08:proc
     extrn loc_35ED9
-    extrn file_load_shape2d_helper6:proc
-    extrn file_load_shape2d_helper2:proc
-    extrn file_load_shape2d_helper4:proc
+    extrn ported_file_load_shape2d_palmap_apply_:proc
+    extrn ported_file_load_shape2d_expand_:proc
+    extrn ported_file_unflip_shape2d_pes_:proc
 seg012 ends

@@ -70,6 +70,7 @@ audioresource_compare_chunknames proc far
     sub     sp, 2
     push    di
     push    si
+loc_39ADC:
     cmp     [bp+arg_num], 0
     jz      short loc_39B50
     mov     di, [bp+arg_casesensitive]
@@ -337,6 +338,7 @@ loc_39CB8:
     mov     ds, [bp+var_6]
 loc_39CBE:
     mov     word ptr [bp+arg_destptr], di; ??
+loc_39CC1:
     mov     word ptr [bp+arg_destptr+2], es; ??
 loc_39CC4:
     pop     si
