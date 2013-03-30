@@ -67,7 +67,6 @@ extern void init_polyinfo(void);
 extern void mouse_draw_opaque_check(void);
 extern void sub_22532(void);
 extern void input_do_checking(int unk);
-extern void set_default_car(void);
 extern void ensure_file_exists(int unk);
 extern unsigned short run_intro_looped(void);
 extern void audio_stop_unk(void);
@@ -212,7 +211,18 @@ void init_row_tables(void) {
 		trackpos2[i] = i << 10;
 		trackcenterpos2[i] = (i << 10) + 0x200;
 	}
+}
 
+void set_default_car(void) {
+	gameconfig.game_playercarid[0]     = 'C';
+	gameconfig.game_playercarid[1]     = 'O';
+	gameconfig.game_playercarid[2]     = 'U';
+	gameconfig.game_playercarid[3]     = 'N';
+	gameconfig.game_playermaterial     = 0;
+	gameconfig.game_playertransmission = 1;
+	gameconfig.game_opponenttype       = 0;
+	gameconfig.game_opponentmaterial   = 0;
+	gameconfig.game_opponentcarid[0]   = 0xFF;
 }
 
 void init_trackdata(void) {

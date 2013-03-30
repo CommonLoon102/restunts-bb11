@@ -274,11 +274,8 @@ seg012 segment byte public 'STUNTSC' use16
     public ported_mat_mul_vector_
     public ported_mat_multiply_
     public ported_mat_invert_
-    public off_32ADC
+    public fliphandlers
     public ported_file_unflip_shape2d_
-    public loc_32B78
-    public loc_32B93
-    public loc_32BDE
     public vle_esc1
     public vle_esc2
     public ported_file_decomp_vle_
@@ -9241,16 +9238,16 @@ loc_32AA3:
     retf
     ; align 2
     db 0
-off_32ADC     dw offset loc_32B78
-    dw offset loc_32B93
-    dw offset loc_32BDE
+fliphandlers     dw offset fliptype0
+    dw offset fliptype1
+    dw offset fliptype2
 ported_mat_invert_ endp
 ported_file_unflip_shape2d_ proc far
-    var_E = word ptr -14
-    var_C = word ptr -12
+    var_height = word ptr -14
+    var_width = word ptr -12
     var_A = word ptr -10
     var_8 = word ptr -8
-    var_6 = word ptr -6
+    var_numshapes = word ptr -6
     var_counter = word ptr -4
     var_2 = word ptr -2
      s = byte ptr 0
@@ -9286,7 +9283,7 @@ loc_32B0D:
     mov     ds, ax
     call    file_get_shape2d; get shape in binary at index
     add     sp, 6
-    mov     [bp+var_6], ax
+    mov     [bp+var_numshapes], ax
     mov     si, ax
     mov     ds, dx
     mov     di, [bp+var_8]
@@ -9322,75 +9319,75 @@ loc_32B58:
     retf
 loc_32B5F:
     mov     dx, [si+SHAPE2D.s2d_width]
-    mov     [bp+var_C], dx
+    mov     [bp+var_width], dx
     mov     dx, [si+SHAPE2D.s2d_height]
-    mov     [bp+var_E], dx
+    mov     [bp+var_height], dx
     xor     dx, dx
     xor     ah, ah
     mov     bx, ax
     dec     bx
     shl     bx, 1
-    jmp     cs:off_32ADC[bx]; jump to flip type handler
-loc_32B78:
+    jmp     cs:fliphandlers[bx]; jump to flip type handler
+fliptype0:
     mov     bx, si
     add     bx, 10h
     add     bx, dx
-    mov     cx, [bp+var_C]
+    mov     cx, [bp+var_width]
 loc_32B82:
     mov     al, [bx]
     stosb
-    add     bx, [bp+var_E]
+    add     bx, [bp+var_height]
     loop    loc_32B82
     inc     dx
-    cmp     dx, [bp+var_E]
-    jnz     short loc_32B78
+    cmp     dx, [bp+var_height]
+    jnz     short fliptype0
     jmp     loc_32C15
-loc_32B93:
+fliptype1:
     mov     bx, dx
     shr     bx, 1
     add     bx, 10h
     add     bx, si
-    mov     cx, [bp+var_C]
+    mov     cx, [bp+var_width]
 loc_32B9F:
     mov     al, [bx]
     stosb
-    add     bx, [bp+var_E]
+    add     bx, [bp+var_height]
     loop    loc_32B9F
-    add     di, [bp+var_C]
+    add     di, [bp+var_width]
     inc     dx
     inc     dx
-    cmp     dx, [bp+var_E]
-    jb      short loc_32B93
+    cmp     dx, [bp+var_height]
+    jb      short fliptype1
     mov     dx, 1
     mov     di, [bp+var_8]
-    add     di, [bp+var_C]
+    add     di, [bp+var_width]
 loc_32BBA:
     mov     bx, dx
-    add     bx, [bp+var_E]
+    add     bx, [bp+var_height]
     shr     bx, 1
     add     bx, 10h
     add     bx, si
-    mov     cx, [bp+var_C]
+    mov     cx, [bp+var_width]
 loc_32BC9:
     mov     al, [bx]
     stosb
-    add     bx, [bp+var_E]
+    add     bx, [bp+var_height]
     loop    loc_32BC9
-    add     di, [bp+var_C]
+    add     di, [bp+var_width]
     inc     dx
     inc     dx
-    cmp     dx, [bp+var_E]
+    cmp     dx, [bp+var_height]
     jb      short loc_32BBA
     jmp     short loc_32C15
     ; align 2
     db 144
-loc_32BDE:
+fliptype2:
     mov     bx, dx
     shr     bx, 1
     add     bx, 10h
-    add     bx, [bp+var_6]
-    mov     cx, [bp+var_C]
-    mov     si, [bp+var_E]
+    add     bx, [bp+var_numshapes]
+    mov     cx, [bp+var_width]
+    mov     si, [bp+var_height]
     shr     si, 1
     adc     si, 0
 loc_32BF3:
@@ -9399,10 +9396,10 @@ loc_32BF3:
     add     bx, si
     loop    loc_32BF3
     inc     dx
-    cmp     dx, [bp+var_E]
+    cmp     dx, [bp+var_height]
     jz      short loc_32C15
-    mov     cx, [bp+var_C]
-    mov     si, [bp+var_E]
+    mov     cx, [bp+var_width]
+    mov     si, [bp+var_height]
     shr     si, 1
 loc_32C08:
     mov     al, [bx]
@@ -9410,17 +9407,17 @@ loc_32C08:
     add     bx, si
     loop    loc_32C08
     inc     dx
-    cmp     dx, [bp+var_E]
-    jnz     short loc_32BDE
+    cmp     dx, [bp+var_height]
+    jnz     short fliptype2
 loc_32C15:
-    mov     di, [bp+var_6]
+    mov     di, [bp+var_numshapes]
     mov     ax, ds
     mov     es, ax
     add     di, 10h
     mov     si, [bp+var_8]
     mov     ds, [bp+var_A]
-    mov     ax, [bp+var_C]
-    mul     [bp+var_E]
+    mov     ax, [bp+var_width]
+    mul     [bp+var_height]
     mov     cx, ax
     shr     cx, 1
     jb      short loc_32C36

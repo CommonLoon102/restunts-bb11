@@ -708,6 +708,8 @@ static PortFuncName(labelname) {
 		labelname == "sprite_putimage" ||
 		labelname == "sprite_putimage_and" ||
 		labelname == "sprite_putimage_or" ||
+		labelname == "setup_mcgawnd1" ||
+		labelname == "setup_mcgawnd2" ||
 
 		labelname == "kb_init_interrupt" ||
 		labelname == "kb_exit_handler" ||
@@ -731,6 +733,7 @@ static PortFuncName(labelname) {
 		labelname == "get_kevinrandom" ||
 		labelname == "get_super_random" ||
 
+		labelname == "set_default_car" ||
 		labelname == "stuntsmain"
 	)
 		return "ported_" + labelname + "_";

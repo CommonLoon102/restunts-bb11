@@ -131,6 +131,8 @@ extrn sprite_clear_1_color:proc
 extrn sprite_putimage:proc
 extrn sprite_putimage_and:proc
 extrn sprite_putimage_or:proc
+extrn setup_mcgawnd1:proc
+extrn setup_mcgawnd2:proc
 extrn file_load_shape2d:proc
 extrn file_load_shape2d_fatal:proc
 extrn file_load_shape2d_nofatal:proc
@@ -174,6 +176,7 @@ extrn get_kevinrandom_seed:proc
 extrn get_kevinrandom:proc
 extrn get_super_random:proc
 
+extrn set_default_car:proc
 extrn stuntsmain:proc
 
 ;extrn fatal_error:proc

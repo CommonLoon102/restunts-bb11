@@ -46,9 +46,9 @@ nosmart
 seg033 segment byte public 'STUNTSC' use16
     assume cs:seg033
     assume es:nothing, ss:nothing, ds:dseg
-    public setup_mcgawnd1
-    public setup_mcgawnd2
-setup_mcgawnd1 proc far
+    public ported_setup_mcgawnd1_
+    public ported_setup_mcgawnd2_
+ported_setup_mcgawnd1_ proc far
 
     mov     ax, word ptr mcgawndsprite
 loc_3A95B:
@@ -57,9 +57,9 @@ loc_3A95F:
     jnz     short loc_3A97C
     mov     ax, 0Fh
     push    ax
-    mov     ax, 0C8h ; 'È'
+    mov     ax, 200
     push    ax
-    mov     ax, 140h
+    mov     ax, 320
     push    ax
     call    sprite_make_wnd
     add     sp, 6
@@ -74,22 +74,22 @@ loc_3A97C:
     add     sp, 4
     les     bx, mcgawndsprite
     push    word ptr es:[bx+2]
-    push    word ptr es:[bx]
+    push    word ptr es:[bx+SPRITE.sprite_bitmapptr]
 loc_3A997:
     call    sprite_putimage
     add     sp, 4
     retf
-setup_mcgawnd1 endp
-setup_mcgawnd2 proc far
+ported_setup_mcgawnd1_ endp
+ported_setup_mcgawnd2_ proc far
 
     mov     ax, word ptr mcgawndsprite
     or      ax, word ptr mcgawndsprite+2
     jnz     short loc_3A9C4
     mov     ax, 0Fh
     push    ax
-    mov     ax, 0C8h ; 'È'
+    mov     ax, 200
     push    ax
-    mov     ax, 140h
+    mov     ax, 320
     push    ax
 loc_3A9B5:
     call    sprite_make_wnd
@@ -108,6 +108,6 @@ loc_3A9D1:
     add     sp, 4
 locret_3A9D4:
     retf
-setup_mcgawnd2 endp
+ported_setup_mcgawnd2_ endp
 seg033 ends
 end

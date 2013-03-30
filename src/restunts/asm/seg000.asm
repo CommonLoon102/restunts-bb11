@@ -63,7 +63,7 @@ seg000 segment byte public 'STUNTSC' use16
     public off_1314A
     public end_hiscore
     public security_check
-    public set_default_car
+    public ported_set_default_car_
 ported_stuntsmain_ proc far
     var_12 = word ptr -18
     var_10 = word ptr -16
@@ -321,7 +321,7 @@ loc_10176:
     mov     kbormouse, 0
     mov     passed_security, 1; originally set to 0 - bypasses the copy protection
     push    cs
-    call near ptr set_default_car
+    call near ptr ported_set_default_car_
     mov     si, 1
     jmp     _do_intro
     nop
@@ -7320,7 +7320,7 @@ loc_146E2:
     pop     bp
     retf
 security_check endp
-set_default_car proc far
+ported_set_default_car_ proc far
 
     mov     gameconfig.game_playercarid, 43h ; 'C'
 loc_146E9:
@@ -7340,6 +7340,6 @@ loc_1470C:
     mov     gameconfig.game_opponentcarid, 0FFh
 locret_14711:
     retf
-set_default_car endp
+ported_set_default_car_ endp
 seg000 ends
 end

@@ -227,11 +227,8 @@ seg012 segment byte public 'STUNTSC' use16
     extrn ported_mat_mul_vector_:proc
     extrn ported_mat_multiply_:proc
     extrn ported_mat_invert_:proc
-    extrn off_32ADC:word
+    extrn fliphandlers:word
     extrn ported_file_unflip_shape2d_:proc
-    extrn loc_32B78
-    extrn loc_32B93
-    extrn loc_32BDE
     extrn vle_esc1:word
     extrn vle_esc2:byte
     extrn ported_file_decomp_vle_:proc

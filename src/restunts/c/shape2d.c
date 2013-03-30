@@ -21,6 +21,7 @@ extern unsigned char* far wnd_defs; // a reserved memory chunk of 0xE10 bytes in
 extern char* far next_wnd_def; // near pointer relative to seg012 to the current SPRITE in wnd_defs. cast to a far pointer for access to the contents in other segments
 extern struct SPRITE far sprite1; // seg012
 extern struct SPRITE far sprite2; // seg012
+extern struct SPRITE far* mcgawndsprite;
 
 extern void sprite_clear_1_color(unsigned char);	
 
@@ -197,6 +198,23 @@ void sprite_putimage_and(struct SHAPE2D far* shape, unsigned short a, unsigned s
 
 void sprite_putimage_or(struct SHAPE2D far* shape, unsigned short a, unsigned short b) {
 	ported_sprite_putimage_or_(shape, a, b);
+}
+
+void setup_mcgawnd1(void) {
+	if (!mcgawndsprite) {
+		mcgawndsprite = sprite_make_wnd(320, 200, 0x0F);
+	}
+
+	sprite_set_1_from_argptr(&sprite2);
+	sprite_putimage(mcgawndsprite->sprite_bitmapptr);
+}
+
+void setup_mcgawnd2(void) {
+	if (!mcgawndsprite) {
+		mcgawndsprite = sprite_make_wnd(320, 200, 0x0F);
+	}
+	
+	sprite_set_1_from_argptr(mcgawndsprite);
 }
 
 // like locate_resource_by_index()
