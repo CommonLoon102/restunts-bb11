@@ -1058,7 +1058,7 @@ short file_write_replay(const char* filename)
 
 	g_is_busy = 1;
 	ret = file_write_fatal(filename, td13_rpl_header, sizeof(struct GAMEINFO) + gameconfig.game_recordedframes);
-	g_is_busy = 1;
+	g_is_busy = 0;
 	
 	return ret;
 }
