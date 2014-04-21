@@ -96,9 +96,9 @@ unsigned long timer_get_counter()
 	/*
 	unsigned long val;
 
-	enable();
-	val = timer_callback_counter;
 	disable();
+	val = timer_callback_counter;
+	enable();
 
 	return val;
 	*/
@@ -115,8 +115,13 @@ unsigned long timer_get_counter()
 unsigned long timer_get_delta()
 {
     /*
-	unsigned long last = last_timer_callback_counter;
-	unsigned long curr = timer_get_counter();
+	unsigned long last, curr;
+	
+	last = last_timer_callback_counter;
+	
+	disable();
+	curr = timer_get_counter();
+	enable();
 	
 	last_timer_callback_counter = curr;
 
