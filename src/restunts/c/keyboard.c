@@ -1,5 +1,6 @@
 #ifdef RESTUNTS_DOS
 #include <dos.h>
+#include "keyboard.h"
 
 // need these since we are referncing external symbols without an underscore
 #define getvect _getvect
@@ -32,10 +33,7 @@ extern unsigned char keymap4[];
 extern unsigned char keymap5[];
 extern unsigned int kblastinput;
 
-void kb_exit_handler();
-int kb_read_char(void);
-
-void interrupt kb_int9_handler() {
+void interrupt kb_int9_handler(void) {
 	unsigned char kbc, kbp;
 	unsigned int kbval, kbdata;
 
@@ -151,7 +149,7 @@ void interrupt kb_int16_handler(unsigned bp, unsigned di, unsigned si,
 	//return 0;
 }
 
-void kb_init_interrupt() {
+void kb_init_interrupt(void) {
 	unsigned char irqmask;
 
 	irqmask = inp(0x21);
@@ -167,7 +165,7 @@ void kb_init_interrupt() {
 	add_exit_handler(kb_exit_handler);
 }
 
-void kb_exit_handler() {
+void kb_exit_handler(void) {
 	unsigned char irqmask;
 
 	irqmask = inp(0x21);
@@ -188,7 +186,7 @@ int kb_call_readchar_callback(void) {
 	return kb_read_char();
 }
 
-int kb_read_char() {
+int kb_read_char(void) {
 	// we could've called kb_int16_handler_c() directly
 	union REGS inregs;
 	union REGS outregs;
@@ -202,7 +200,7 @@ int kb_read_char() {
 	return outregs.h.al;
 }
 
-int kb_checking() {
+int kb_checking(void) {
 	union REGS inregs;
 	union REGS outregs;
 	
@@ -211,14 +209,14 @@ int kb_checking() {
 	return outregs.h.al;
 }
 
-void flush_stdin() {
+void flush_stdin(void) {
 	int result;
 	do {
 		result = kb_call_readchar_callback();
 	} while (result == 0);
 }
 
-void kb_check() {
+int kb_check(void) {
 	union REGS inregs;
 	union REGS outregs;
 	
