@@ -964,7 +964,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn material_pattern_list:word
     extrn material_pattern2_list:word
     extrn material_clrlist_ptr:word
-    extrn material_clrlist_ptr2:word
+    extrn material_clrlist2_ptr:word
     extrn material_patlist_ptr:word
     extrn material_patlist2_ptr:word
     extrn audiodriverstring:byte
@@ -1378,7 +1378,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn word_45988:word
     extrn byte_459D2:byte
     extrn word_459D4:word
-    extrn material_clrlist_ptr2_cpy:word
+    extrn material_clrlist2_ptr_cpy:word
     extrn byte_459D8:byte
     extrn td22_row_from_path:dword
     extrn byte_459E0:byte

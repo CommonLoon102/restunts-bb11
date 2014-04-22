@@ -47,7 +47,7 @@ seg006 segment byte public 'STUNTSC' use16
     assume cs:seg006
     assume es:nothing, ss:nothing, ds:dseg
     public ported_init_polyinfo_
-    public copy_material_list_pointers
+    public ported_copy_material_list_pointers_
     public ported_polyinfo_reset_
     public ported_select_cliprect_rotate_
     public ported_transformed_shape_op_
@@ -113,7 +113,7 @@ loc_24D6E:
     ; align 2
     db 144
 ported_init_polyinfo_ endp
-copy_material_list_pointers proc far
+ported_copy_material_list_pointers_ proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -128,7 +128,7 @@ copy_material_list_pointers proc far
     mov     material_clrlist_ptr_cpy, ax
 loc_24DCB:
     mov     ax, [bp+arg_2]
-    mov     material_clrlist_ptr2_cpy, ax
+    mov     material_clrlist2_ptr_cpy, ax
     mov     ax, [bp+arg_4]
 loc_24DD4:
     mov     material_patlist_ptr_cpy, ax
@@ -141,7 +141,7 @@ loc_24DD7:
     retf
     ; align 2
     db 144
-copy_material_list_pointers endp
+ported_copy_material_list_pointers_ endp
 ported_polyinfo_reset_ proc far
 
     mov     polyinfonumpolys, 0
@@ -2201,7 +2201,7 @@ _fill_unk:
     push    [bp+var_maxcount]
     push    [bp+var_matcolor]
     mov     bx, [bp+var_pattype2]
-    add     bx, material_clrlist_ptr2_cpy
+    add     bx, material_clrlist2_ptr_cpy
     push    word ptr [bx]
     mov     bx, [bp+var_pattype2]
     add     bx, material_patlist2_ptr_cpy

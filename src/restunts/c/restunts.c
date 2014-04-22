@@ -3,6 +3,7 @@
 #include "memmgr.h"
 #include "fileio.h"
 #include "externs.h"
+#include "keyboard.h"
 #include "shape3d.h"
 #include "shape2d.h"
 
@@ -60,7 +61,6 @@ extern char aSkidms_0[];
 extern char aSkidslct[];
 extern char aDos[];
 
-extern void init_video(int argc, char* argv);
 extern void init_div0(void);
 extern void font_set_fontdef(void);
 extern void init_polyinfo(void);
@@ -78,7 +78,6 @@ extern void far* locate_text_res(void far* ptr, const char* resname);
 extern unsigned short show_dialog(int unk1, int unk2, void far* textresptr, unsigned short unk3, unsigned short unk4, int arg, int unk5, int unk6);
 extern void audio_unload(void);
 extern char run_menu(void);
-extern void random_wait(void);
 extern char setup_track(void);
 extern void run_tracks_menu(int unk);
 extern void run_opponent_menu(void);
@@ -91,7 +90,12 @@ extern unsigned run_option_menu(void);
 extern void init_game_state(unsigned short unk);
 extern void security_check(void);
 
-unsigned long timer_get_counter()
+int get_0(void)
+{
+	return 0;
+}
+
+unsigned long timer_get_counter(void)
 {
 	/*
 	unsigned long val;
@@ -112,7 +116,7 @@ unsigned long timer_get_counter()
 	}
 }
 
-unsigned long timer_get_delta()
+unsigned long timer_get_delta(void)
 {
     /*
 	unsigned long last, curr;
@@ -143,7 +147,7 @@ unsigned long timer_get_delta()
 	}
 }
 
-unsigned long timer_get_delta_alt()
+unsigned long timer_get_delta_alt(void)
 {
 	return timer_get_delta();
 }
@@ -177,7 +181,7 @@ void get_kevinrandom_seed(char* seed)
 	}
 }
 
-int get_kevinrandom()
+int get_kevinrandom(void)
 {
 	g_kevinrandom_seed[4] += g_kevinrandom_seed[5];
 	g_kevinrandom_seed[3] += g_kevinrandom_seed[4];
@@ -195,10 +199,58 @@ int get_kevinrandom()
 	return g_kevinrandom_seed[0];
 }
 
-int get_super_random()
+int get_super_random(void)
 {
 	int val = rand() + get_kevinrandom() + timer_get_counter() + gState_game_frame;
-	return val ? val : -val;
+	return val < 0 ? -val : val;
+}
+
+int video_get_status(void)
+{
+	return inport(0x3DA) & 0x8;
+}
+
+int random_wait(void)
+{
+	int status1, i;
+	
+	status1 = video_get_status();
+	
+	for (i = 0; status1 == video_get_status() && i < 12000; ++i);
+	
+	if (i == 1024) {
+		i = *(char near*)0x46C; // TODO: Debug this bugger...
+	}
+	
+	while (1) {
+		if (!(--i)) {
+			break;
+		}
+		rand();
+		get_kevinrandom();
+	}
+	
+	i &= 0xFF;
+	
+	while (1) {
+		if (!(--i)) {
+			break;
+		}
+		
+		get_kevinrandom();
+		rand();
+	}
+	
+	return i;
+}
+
+char toupper(char* ch)
+{
+	if (*ch >= 'a' && *ch <= 'z') {
+		*ch -= ' ';
+	}
+	
+	return *ch;
 }
 
 void init_row_tables(void) {
@@ -331,10 +383,168 @@ extern struct RECTANGLE cliprect_unk;
 extern int polyinfonumpolys;
 extern unsigned char far* polyinfoptrs[]; // array size = 0x190 
 extern unsigned int word_40ED6[]; // array size = 0x190
-extern int* material_clrlist_ptr_cpy;
-extern int* material_patlist_ptr_cpy;
 
 extern void preRender_default(int color, int vertlinecount, int* vertlines);
+
+void copy_material_list_pointers(void* clrlist, void* clrlist2, void* patlist, void* patlist2, unsigned short videoConst)
+{
+	material_clrlist_ptr_cpy = clrlist;
+	material_clrlist2_ptr_cpy = clrlist2;
+	material_patlist_ptr_cpy = patlist;
+	material_patlist2_ptr_cpy = patlist2;
+	someZeroVideoConst = videoConst;
+}
+
+/*
+void init_main(int argc, char* argv[])
+{
+	//ported_init_main_(argc, argv);
+	unsigned char argmode4, argnosound, var2;
+	unsigned short timerdelta1, timerdelta2, timerdelta3, var4, var6, var8, varA, var18, var1A;
+
+	// Keyboard
+	kb_init_interrupt();
+	kb_shift_checking2();
+	kb_call_readchar_callback();
+
+	kb_reg_callback(0x0007, &do_mrl_textres);
+	kb_reg_callback(0x000A, &do_joy_restext);
+	kb_reg_callback(0x000B, &do_key_restext);
+	kb_reg_callback(0x3200, &do_mof_restext);
+	kb_reg_callback(0x0010, &do_pau_restext);
+	kb_reg_callback('p', &do_pau_restext);
+	kb_reg_callback(0x0011, &do_dos_restext);
+	kb_reg_callback(0x0013, &do_sonsof_restext);
+	kb_reg_callback(0x0018, &do_dos_restext);
+	
+	// Video
+	video_flag1_is1 = 1;
+	video_flag2_is1 = 1;
+	video_flag3_isFFFF = 0xFFFF;
+	video_flag4_is1 = 1;
+	
+	mmgr_alloc_a000();
+	
+	video_flag5_is0 = 0;
+	video_flag6_is1 = 1;
+	
+	textresprefix = 'e';
+	
+	argmode4 = 0;
+	argnosound = 0;
+	var2 = 0;
+	
+	// TODO: Loop?
+loc_39F63:
+	for (j = 1; argc > j; ++j) {
+		argcmd = argv[j];
+		
+		if (argcmd[0] == '/') {
+			if (argcmd[1] == 'h') {
+				argmode = 4;
+			}
+			else {
+				if (argcmd[1] == 'n' && argcmd[2] == 's') {
+					
+				}
+				else if (argcmd[1]) == 's' {
+				...
+				}
+				
+			}
+		}
+		// TODO: parse args...
+	}
+
+	{
+		video_set_mode_13h();
+		if (!argmode4) {
+			video_set_mode4();
+		}
+		timer_setup_interrupt();
+		sprite_copy_2_to_1_clear();
+		mouse_init(0x140, 0xC8);
+		
+		if (!audio_load_driver(audiodriverstring, 0, 0)) {
+			audio_stop_unk();
+			libsub_quit_to_dos_alt(1);
+		}
+		
+		if (!argnosound) {
+			audio_toggle_flag2();
+			audio_toggle_flag6();
+		}
+		
+		set_criterr_handler(&do_dea_textres);
+		
+		load_palandcursor();
+		
+		// Timing measures?
+		sprite_copy_1_to_1);
+		sprite_set_1_size(0, 0x140, 0, 0x78);
+
+		timer_get_delta_alt();
+		for (i = 0; i < 0xF; ++i) {
+			sprite_clear_1_color(0);
+		}
+		timerdelta1 = timer_get_delta_alt();
+		
+		sprite_set_1_size(0, 0x140, 0, 0x3C);
+	}
+
+	for (j = 0; j < 0xF; ++i) {
+		varA = 0;
+		var8 = 0;
+		var6 = 0;
+		var4 = 0;
+		
+		for (i = 0; i < 0x190; ++i) {
+			var18 = var1A = i; // TODO: Where is var18 used?
+			rect_adjust_from_point(&var1A, &varA);
+		}
+		
+		sprite_clear_1_color(0);
+	}
+	
+	timerdelta2 = timer_get_delta_alt();
+
+	for (j = 0; j < 0x92; ++j) {
+		for (i = 0; i < 0xff; ++i) {
+			rect_adjust_from_point(&var1A, &varA);
+		}
+	}
+	
+	timerdelta1 = timerdelta3 = timer_get_delta_alt();
+	
+	timertestflag = (timerdelta2 >= timerdelta1);
+	framespersec2 = (timerdelta3 >= 75) ? 10 : 20;
+
+	if (timerdelta3 < 35) {
+		timertestflag2 = 0;
+	}
+	else if (timerdelta3 < 55) {
+		timertestflag2 = 1;
+	}
+	else if (timerdelta3 < 67) {
+		timertestflag2 = 2;
+	}
+	else if (timerdelta3 < 100) {
+		timertestflag2 = 3;
+	}
+	else if (timertestflag) {
+		timertestflag2 = 4;
+	}
+	else {
+		timertestflag2 = 3;
+	}
+
+	framespersec = framespersec2;
+	timertestflag_copy = timertestflag;
+	
+	random_wait();
+	
+	copy_material_list_pointers(material_clrlist_ptr, material_clrlist2_ptr, material_patlist_ptr, material_patlist2_ptr, 0);
+}*/
 
 int stuntsmain2(int argc, char* argv) {
 	int result;
@@ -346,7 +556,7 @@ int stuntsmain2(int argc, char* argv) {
 	int shapeindex;
 
 	// initialization
-	init_video(argc, argv);
+	init_main(argc, argv);
 	init_div0();
 	init_row_tables();
 	
@@ -477,7 +687,7 @@ int stuntsmain(int argc, char* argv) {
 
 	//return ported_stuntsmain_(argc, argv);
 
-	init_video(argc, argv);
+	init_main(argc, argv);
 	init_div0();
 	init_row_tables();
 	

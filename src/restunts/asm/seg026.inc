@@ -1,3 +1,3 @@
 seg026 segment byte public 'STUNTSC' use16
-    extrn toupper:proc
+    extrn ported_toupper_:proc
 seg026 ends

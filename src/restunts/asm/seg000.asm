@@ -91,7 +91,7 @@ loc_10008:
 loc_1000B:
     push    [bp+p_argc]
 loc_1000E:
-    call    init_video
+    call    init_main
     add     sp, 4
 loc_10016:
     call    init_div0

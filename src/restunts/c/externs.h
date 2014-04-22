@@ -115,6 +115,16 @@ extern char textresprefix; // = 'e'
 extern char* shapeexts[];
 extern unsigned char palmap[];
 
+extern int* material_clrlist_ptr;
+extern int* material_clrlist_ptr_cpy;
+extern int* material_clrlist2_ptr;
+extern int* material_clrlist2_ptr_cpy;
+extern int* material_patlist_ptr;
+extern int* material_patlist_ptr_cpy;
+extern int* material_patlist2_ptr;
+extern int* material_patlist2_ptr_cpy;
+extern unsigned short someZeroVideoConst;
+
 extern void far* load_song_file(const char* filename);
 extern void far* load_voice_file(const char* filename);
 extern void far* load_sfx_file(const char* filename);

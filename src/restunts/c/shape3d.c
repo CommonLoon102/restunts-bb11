@@ -2678,9 +2678,6 @@ void init_polyinfo() {
 	calc_sincos80();
 }
 
-extern int* material_clrlist_ptr_cpy;
-extern int* material_patlist_ptr_cpy;
-
 void get_a_poly_info(void) {
 
 	int counter;

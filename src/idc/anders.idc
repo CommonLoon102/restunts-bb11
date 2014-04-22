@@ -732,8 +732,14 @@ static PortFuncName(labelname) {
 		labelname == "get_kevinrandom_seed" ||
 		labelname == "get_kevinrandom" ||
 		labelname == "get_super_random" ||
+		labelname == "get_0" ||
+		labelname == "video_get_status" ||
+		labelname == "random_wait" ||
+		labelname == "toupper" ||
 
+		labelname == "copy_material_list_pointers" ||
 		labelname == "set_default_car" ||
+		//labelname == "init_main" ||
 		labelname == "stuntsmain"
 	)
 		return "ported_" + labelname + "_";

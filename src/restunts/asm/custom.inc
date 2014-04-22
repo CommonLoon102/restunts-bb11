@@ -175,8 +175,14 @@ extrn init_kevinrandom:proc
 extrn get_kevinrandom_seed:proc
 extrn get_kevinrandom:proc
 extrn get_super_random:proc
+extrn get_0:proc
+extrn video_get_status:proc
+extrn random_wait:proc
+extrn toupper:proc
 
+extrn copy_material_list_pointers:proc
 extrn set_default_car:proc
+;extrn init_main:proc
 extrn stuntsmain:proc
 
 ;extrn fatal_error:proc

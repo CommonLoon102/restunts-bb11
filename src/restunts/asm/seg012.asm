@@ -280,7 +280,7 @@ seg012 segment byte public 'STUNTSC' use16
     public vle_esc2
     public ported_file_decomp_vle_
     public nopsub_32FEE
-    public video_get_status
+    public ported_video_get_status_
     public nopsub_33006
     public ported_vector_op_unk_
     public loc_3301F
@@ -10077,7 +10077,7 @@ loc_32FF6:
     jz      short loc_32FF6
     retf
 nopsub_32FEE endp
-video_get_status proc far
+ported_video_get_status_ proc far
 
     mov     dx, 3DAh
     in      al, dx          ; Video status bits:
@@ -10088,7 +10088,7 @@ nosmart
     retf
     ; align 2
     db 0
-video_get_status endp
+ported_video_get_status_ endp
 nopsub_33006 proc far
      s = byte ptr 0
      r = byte ptr 2

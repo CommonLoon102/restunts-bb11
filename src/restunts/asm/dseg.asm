@@ -1012,7 +1012,7 @@ dseg segment byte public 'STUNTSD' use16
     public material_pattern_list
     public material_pattern2_list
     public material_clrlist_ptr
-    public material_clrlist_ptr2
+    public material_clrlist2_ptr
     public material_patlist_ptr
     public material_patlist2_ptr
     public audiodriverstring
@@ -1426,7 +1426,7 @@ dseg segment byte public 'STUNTSD' use16
     public word_45988
     public byte_459D2
     public word_459D4
-    public material_clrlist_ptr2_cpy
+    public material_clrlist2_ptr_cpy
     public byte_459D8
     public td22_row_from_path
     public byte_459E0
@@ -21515,7 +21515,7 @@ material_pattern2_list     dw 65535
     dw 0
     dw 0
 material_clrlist_ptr     dw offset material_color_list
-material_clrlist_ptr2     dw offset material_color_list
+material_clrlist2_ptr     dw offset material_color_list
 material_patlist_ptr     dw offset material_pattern_list
 material_patlist2_ptr     dw offset material_pattern2_list
 audiodriverstring     db 112
@@ -39301,7 +39301,7 @@ word_45988     dw 0
 byte_459D2     db 0
     db 0
 word_459D4     dw 0
-material_clrlist_ptr2_cpy     dw 0
+material_clrlist2_ptr_cpy     dw 0
 byte_459D8     db 0
     db 0
 td22_row_from_path     dd 0

@@ -51,10 +51,10 @@ seg031 segment byte public 'STUNTSC' use16
     public file_find_next_alt
     public nullsub_1
     public nullsub_2
-    public init_video
-    public random_wait
+    public init_main
+    public ported_random_wait_
     public load_palandcursor
-    public get_0
+    public ported_get_0_
     public ported_mmgr_alloc_resbytes_
     public ported_mmgr_get_res_ofs_diff_scaled_
     public ported_mmgr_get_chunk_size_bytes_
@@ -127,7 +127,7 @@ nullsub_2 proc far
     ; align 2
     db 144
 nullsub_2 endp
-init_video proc far
+init_main proc far
     var_argcmd = word ptr -30
     var_timerdelta3 = word ptr -28
     var_1A = word ptr -26
@@ -553,12 +553,12 @@ loc_3A22B:
     mov     ax, timertestflag
     mov     timertestflag_copy, ax
     push    cs
-    call near ptr random_wait
+    call near ptr ported_random_wait_
     sub     ax, ax
     push    ax
     push    material_patlist2_ptr
     push    material_patlist_ptr
-    push    material_clrlist_ptr2
+    push    material_clrlist2_ptr
     push    material_clrlist_ptr
     call    copy_material_list_pointers
     add     sp, 0Ah
@@ -567,8 +567,8 @@ loc_3A22B:
     mov     sp, bp
     pop     bp
     retf
-init_video endp
-random_wait proc far
+init_main endp
+ported_random_wait_ proc far
      s = byte ptr 0
      r = byte ptr 2
 
@@ -584,7 +584,7 @@ random_wait proc far
     ; align 2
     db 144
 loc_3A270:
-    cmp     di, 2EE0h
+    cmp     di, 12000
     jge     short loc_3A280
     inc     di
 loc_3A277:
@@ -592,7 +592,7 @@ loc_3A277:
     cmp     ax, si
     jz      short loc_3A270
 loc_3A280:
-    cmp     di, 400h
+    cmp     di, 1024
     jnz     short loc_3A29A
     mov     bx, 46Ch
     mov     al, [bx]
@@ -628,7 +628,7 @@ loc_3A2B2:
     retf
     ; align 2
     db 144
-random_wait endp
+ported_random_wait_ endp
 load_palandcursor proc far
     var_312 = word ptr -786
     var_310 = dword ptr -784
@@ -784,13 +784,13 @@ loc_3A438:
     pop     bp
     retf
 load_palandcursor endp
-get_0 proc far
+ported_get_0_ proc far
 
     sub     ax, ax
     retf
     ; align 2
     db 144
-get_0 endp
+ported_get_0_ endp
 ported_mmgr_alloc_resbytes_ proc far
      s = byte ptr 0
      r = byte ptr 2
