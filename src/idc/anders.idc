@@ -599,6 +599,7 @@ static PortFuncName(labelname) {
 		labelname == "polyinfo_reset" || 
 		labelname == "init_polyinfo" || 
 		labelname == "calc_sincos80" ||
+		labelname == "multiply_and_scale" ||
 
 		labelname == "file_find" ||
 		labelname == "file_find_next" ||

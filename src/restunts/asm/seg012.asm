@@ -137,7 +137,7 @@ seg012 segment byte public 'STUNTSC' use16
     public ported_file_decomp_paras_fatal_
     public ported_file_find_
     public ported_file_find_next_
-    public multiply_and_scale
+    public ported_multiply_and_scale_
     public video_set_mode4
     public ported_polarRadius2D_
     public video_set_mode7
@@ -3307,7 +3307,7 @@ ported_file_find_next_ proc far
     ; align 2
     db 0
 ported_file_find_next_ endp
-multiply_and_scale proc far
+ported_multiply_and_scale_ proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -3326,7 +3326,7 @@ multiply_and_scale proc far
     mov     ax, dx
     pop     bp
     retf
-multiply_and_scale endp
+ported_multiply_and_scale_ endp
 video_set_mode4 proc far
      r = byte ptr 0
 

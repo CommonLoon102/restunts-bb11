@@ -90,7 +90,7 @@ seg012 segment byte public 'STUNTSC' use16
     extrn ported_file_decomp_paras_fatal_:proc
     extrn ported_file_find_:proc
     extrn ported_file_find_next_:proc
-    extrn multiply_and_scale:proc
+    extrn ported_multiply_and_scale_:proc
     extrn video_set_mode4:proc
     extrn ported_polarRadius2D_:proc
     extrn video_set_mode7:proc

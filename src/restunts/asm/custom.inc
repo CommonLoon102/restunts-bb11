@@ -44,6 +44,7 @@ extrn select_cliprect_rotate:proc
 extrn polyinfo_reset:proc
 extrn init_polyinfo:proc
 extrn calc_sincos80:proc
+extrn multiply_and_scale:proc
 
 extrn file_find:proc
 extrn file_find_next:proc

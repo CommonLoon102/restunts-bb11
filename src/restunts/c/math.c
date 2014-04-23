@@ -462,3 +462,9 @@ void vector_op_unk(struct VECTOR* vec1, struct VECTOR* vec2, struct VECTOR* outv
 	outvec->x = (vec1->x - vec2->x) * var_4 / var_2 + vec2->x;
 	outvec->y = (vec1->y - vec2->y) * var_4 / var_2 + vec2->y;
 }
+
+int multiply_and_scale(int a1, int a2)
+{
+	long mul = (long)a1 * (long)a2 * 4L;
+	return (mul >> 16) + ((mul & 0x8000) >> 15);
+}
