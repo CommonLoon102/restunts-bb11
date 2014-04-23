@@ -213,10 +213,10 @@ seg012 segment byte public 'STUNTSC' use16
     extrn ported_timer_custom_delta_:proc
     extrn ported_timer_get_delta_:proc
     extrn ported_timer_reset_:proc
-    extrn timer_copy_counter:proc
-    extrn timer_wait_for_dx:proc
-    extrn timer_compare_dx:proc
-    extrn timer_get_counter_unk:proc
+    extrn ported_timer_copy_counter_:proc
+    extrn ported_timer_wait_for_dx_:proc
+    extrn ported_timer_compare_dx_:proc
+    extrn ported_timer_get_counter_unk_:proc
     extrn font_op:proc
     extrn font_op2:proc
     extrn loc_3284A

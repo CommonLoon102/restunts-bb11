@@ -162,6 +162,39 @@ void timer_reset()
 	timer_callback_counter = 0;
 }
 
+unsigned long timer_copy_counter(unsigned long ticks)
+{
+	timer_copy_unk = timer_get_counter() + ticks;
+	return timer_copy_unk;
+}
+
+unsigned long timer_wait_for_dx(void)
+{
+	unsigned long res;
+	do {
+		res = timer_get_counter();
+	} while (res < timer_copy_unk);
+	
+	return res;
+}
+
+int timer_compare_dx(void)
+{
+	return timer_get_counter() >= timer_copy_unk;
+}
+
+unsigned long timer_get_counter_unk(unsigned long ticks)
+{
+	unsigned long target, res;
+	target = timer_get_counter() + ticks;
+	
+	do {
+		res = timer_get_counter();
+	} while (res < target);
+	
+	return res;
+}
+
 #define KEVINRANDOM_SEED_LEN 6
 void init_kevinrandom(const char* seed)
 {

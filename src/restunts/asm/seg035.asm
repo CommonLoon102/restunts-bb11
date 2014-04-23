@@ -533,6 +533,7 @@ loc_3B0A5:
     les     bx, [bp+arg_0]
 loc_3B0A8:
     inc     word ptr [bp+arg_0]
+loc_3B0AB:
     mov     al, [bp+var_4]
 loc_3B0AE:
     cmp     es:[bx], al

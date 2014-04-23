@@ -171,6 +171,10 @@ extrn timer_get_delta:proc
 extrn timer_get_delta_alt:proc
 extrn timer_custom_delta:proc
 extrn timer_reset:proc
+extrn timer_copy_counter:proc
+extrn timer_wait_for_dx:proc
+extrn timer_compare_dx:proc
+extrn timer_get_counter_unk:proc
 
 extrn init_kevinrandom:proc
 extrn get_kevinrandom_seed:proc

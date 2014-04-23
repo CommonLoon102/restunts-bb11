@@ -74,6 +74,7 @@ loc_36BD1:
 loc_36BD8:
     mov     ax, 20h ; ' '
     push    ax
+loc_36BDC:
     push    [bp+arg_2]
 loc_36BDF:
     call    preRender_default_alt

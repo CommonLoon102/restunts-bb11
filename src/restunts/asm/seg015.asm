@@ -418,6 +418,7 @@ loc_367A2:
 loc_367A9:
     jl      short loc_3677B
     pop     si
+loc_367AC:
     pop     di
     mov     sp, bp
     pop     bp

@@ -728,6 +728,10 @@ static PortFuncName(labelname) {
 		labelname == "timer_get_delta_alt" ||
 		labelname == "timer_custom_delta" ||
 		labelname == "timer_reset" ||
+		labelname == "timer_copy_counter" ||
+		labelname == "timer_wait_for_dx" ||
+		labelname == "timer_compare_dx" ||
+		labelname == "timer_get_counter_unk" ||
 
 		labelname == "init_kevinrandom" ||
 		labelname == "get_kevinrandom_seed" ||

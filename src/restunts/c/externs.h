@@ -93,6 +93,7 @@ extern unsigned short resmaxsize;
 
 extern unsigned long timer_callback_counter;
 extern unsigned long last_timer_callback_counter;
+extern unsigned long timer_copy_unk;
 
 extern unsigned char* g_kevinrandom_seed;
 extern const char* aReservememoryO;

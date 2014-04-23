@@ -593,6 +593,7 @@ loc_3A93F:
     add     ax, word_42A18
 loc_3A94A:
     push    ax
+loc_3A94B:
     call    sprite_1_unk2
 loc_3A950:
     add     sp, 0Ah

@@ -335,6 +335,7 @@ loc_39CB2:
     mov     word ptr [bp+arg_srcptr], si; ??
 loc_39CB8:
     mov     word ptr [bp+arg_srcptr+2], ds; ??
+loc_39CBB:
     mov     ds, [bp+var_6]
 loc_39CBE:
     mov     word ptr [bp+arg_destptr], di; ??

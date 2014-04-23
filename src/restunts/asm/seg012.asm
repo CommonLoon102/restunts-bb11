@@ -260,10 +260,10 @@ seg012 segment byte public 'STUNTSC' use16
     public ported_timer_custom_delta_
     public ported_timer_get_delta_
     public ported_timer_reset_
-    public timer_copy_counter
-    public timer_wait_for_dx
-    public timer_compare_dx
-    public timer_get_counter_unk
+    public ported_timer_copy_counter_
+    public ported_timer_wait_for_dx_
+    public ported_timer_compare_dx_
+    public ported_timer_get_counter_unk_
     public font_op
     public font_op2
     public loc_3284A
@@ -8774,7 +8774,7 @@ ported_timer_reset_ proc far
     mov     word ptr timer_callback_counter+2, ax
     retf
 ported_timer_reset_ endp
-timer_copy_counter proc far
+ported_timer_copy_counter_ proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_ticksl = word ptr 6
@@ -8789,19 +8789,19 @@ timer_copy_counter proc far
     mov     word ptr timer_copy_unk+2, dx
     pop     bp
     retf
-timer_copy_counter endp
-timer_wait_for_dx proc far
-
+ported_timer_copy_counter_ endp
+ported_timer_wait_for_dx_ proc far
+loc_timer_wait_for_dx:
     call    timer_get_counter
     cmp     dx, word ptr timer_copy_unk+2
-    jb      short near ptr timer_wait_for_dx
+    jb      short near ptr loc_timer_wait_for_dx
     ja      short locret_327EA
     cmp     ax, word ptr timer_copy_unk
-    jb      short near ptr timer_wait_for_dx
+    jb      short near ptr loc_timer_wait_for_dx
 locret_327EA:
     retf
-timer_wait_for_dx endp
-timer_compare_dx proc far
+ported_timer_wait_for_dx_ endp
+ported_timer_compare_dx_ proc far
 
     call    timer_get_counter
     cmp     dx, word ptr timer_copy_unk+2
@@ -8815,8 +8815,8 @@ loc_327FE:
 loc_32802:
     xor     ax, ax
     retf
-timer_compare_dx endp
-timer_get_counter_unk proc far
+ported_timer_compare_dx_ endp
+ported_timer_get_counter_unk_ proc far
     var_4 = word ptr -4
     var_2 = word ptr -2
      s = byte ptr 0
@@ -8845,7 +8845,7 @@ loc_3282D:
     retf
     ; align 2
     db 0
-timer_get_counter_unk endp
+ported_timer_get_counter_unk_ endp
 font_op proc far
      s = byte ptr 0
      r = byte ptr 2
