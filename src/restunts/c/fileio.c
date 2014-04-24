@@ -333,6 +333,11 @@ const char* file_find_next()
 	return g_find.path;
 }
 
+const char* file_find_next_alt()
+{
+	return file_find_next();
+}
+
 #endif // RESTUNTS_DOS
 
 void file_build_path(const char* dir, const char* name, const char* ext, char* dst)
@@ -355,6 +360,15 @@ void file_build_path(const char* dir, const char* name, const char* ext, char* d
 	
 	strcat(dst, name);
 	strcat(dst, ext);
+}
+
+const char* file_combine_and_find(const char* dir, const char* name, const char* ext)
+{
+	char* path;
+
+	file_build_path(dir, name, ext, path);
+	
+	return file_find(path);
 }
 
 // Get number of 16-byte blocks needed to store entire file.

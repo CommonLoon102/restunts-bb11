@@ -48,6 +48,7 @@ extrn multiply_and_scale:proc
 
 extrn file_find:proc
 extrn file_find_next:proc
+extrn file_find_next_alt:proc
 extrn file_paras:proc
 extrn file_paras_fatal:proc
 extrn file_paras_nofatal:proc
@@ -152,6 +153,7 @@ extrn file_load_shape2d_expandedsize:proc
 extrn file_get_shape2d:proc
 extrn file_get_res_shape_count:proc
 extrn file_build_path:proc
+extrn file_combine_and_find:proc
 extrn file_load_replay:proc
 extrn file_write_replay:proc
 

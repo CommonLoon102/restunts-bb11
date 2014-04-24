@@ -47,8 +47,8 @@ seg031 segment byte public 'STUNTSC' use16
     assume cs:seg031
     assume es:nothing, ss:nothing, ds:dseg
     public ported_file_load_shape2d_nofatal2_
-    public file_combine_and_find
-    public file_find_next_alt
+    public ported_file_combine_and_find_
+    public ported_file_find_next_alt_
     public nullsub_1
     public nullsub_2
     public init_main
@@ -73,7 +73,7 @@ loc_39E1F:
     pop     bp
     retf
 ported_file_load_shape2d_nofatal2_ endp
-file_combine_and_find proc far
+ported_file_combine_and_find_ proc far
     var_50 = byte ptr -80
      s = byte ptr 0
      r = byte ptr 2
@@ -109,12 +109,12 @@ loc_39E48:
 loc_39E4A:
     pop     bp
     retf
-file_combine_and_find endp
-file_find_next_alt proc far
+ported_file_combine_and_find_ endp
+ported_file_find_next_alt_ proc far
 
     call    file_find_next
     retf
-file_find_next_alt endp
+ported_file_find_next_alt_ endp
 nullsub_1 proc far
 
     retf

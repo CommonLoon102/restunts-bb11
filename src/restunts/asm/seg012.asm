@@ -8791,13 +8791,13 @@ ported_timer_copy_counter_ proc far
     retf
 ported_timer_copy_counter_ endp
 ported_timer_wait_for_dx_ proc far
-loc_timer_wait_for_dx:
+
     call    timer_get_counter
     cmp     dx, word ptr timer_copy_unk+2
-    jb      short near ptr loc_timer_wait_for_dx
+    jb      short near ptr ported_timer_wait_for_dx_
     ja      short locret_327EA
     cmp     ax, word ptr timer_copy_unk
-    jb      short near ptr loc_timer_wait_for_dx
+    jb      short near ptr ported_timer_wait_for_dx_
 locret_327EA:
     retf
 ported_timer_wait_for_dx_ endp

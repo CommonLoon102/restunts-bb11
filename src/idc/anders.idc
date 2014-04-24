@@ -603,6 +603,7 @@ static PortFuncName(labelname) {
 
 		labelname == "file_find" ||
 		labelname == "file_find_next" ||
+		labelname == "file_find_next_alt" ||
 		labelname == "file_paras" ||
 		labelname == "file_paras_fatal" ||
 		labelname == "file_paras_nofatal" ||
@@ -646,6 +647,7 @@ static PortFuncName(labelname) {
 		labelname == "file_get_shape2d" ||
 		labelname == "file_get_res_shape_count" ||
 		labelname == "file_build_path" ||
+		labelname == "file_combine_and_find" ||
 		labelname == "file_load_replay" ||
 		labelname == "file_write_replay" ||
 
