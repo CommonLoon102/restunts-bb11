@@ -87,6 +87,7 @@ loc_3B0E7:
     imul    es:[bx+SHAPE2D.s2d_width]
     add     ax, 20h ; ' '
     mov     [bp+var_C], ax
+loc_3B105:
     mov     cl, 4
 loc_3B107:
     shr     [bp+var_C], cl
@@ -96,6 +97,7 @@ loc_3B10D:
     jbe     short loc_3B118
 loc_3B112:
     mov     ax, [bp+var_C]
+loc_3B115:
     mov     [bp+var_6], ax
 loc_3B118:
     inc     [bp+var_8]

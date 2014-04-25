@@ -23,8 +23,6 @@ extern struct SPRITE far sprite1; // seg012
 extern struct SPRITE far sprite2; // seg012
 extern struct SPRITE far* mcgawndsprite;
 
-extern void sprite_clear_1_color(unsigned char);	
-
 struct SPRITE far* sprite_make_wnd(unsigned int width, unsigned int height, unsigned int unk) {
 	int pages, i;
 	char* wnd;
@@ -36,6 +34,8 @@ struct SPRITE far* sprite_make_wnd(unsigned int width, unsigned int height, unsi
 	unsigned int* lineofsptr;
 	unsigned int far* farlineofsptr;
 	unsigned short wnddefseg;
+	
+	(void)unk;
 
 	wnddefseg = FP_SEG(&wnd_defs);
 
@@ -99,24 +99,24 @@ void sprite_set_1_from_argptr(struct SPRITE far* argsprite) {
 	fmemcpy(&sprite1, argsprite, sizeof(struct SPRITE));
 }
 
-void sprite_copy_2_to_1() {
+void sprite_copy_2_to_1(void) {
 	sprite_set_1_from_argptr(&sprite2);
 }
 
-void sprite_copy_2_to_1_2() {
+void sprite_copy_2_to_1_2(void) {
 	sprite_set_1_from_argptr(&sprite2);
 }
 
-void sprite_copy_2_to_1_clear() {
+void sprite_copy_2_to_1_clear(void) {
 	sprite_set_1_from_argptr(&sprite2);
 	sprite_clear_1_color(0);
 }
 
-void sprite_copy_wnd_to_1() {
+void sprite_copy_wnd_to_1(void) {
 	sprite_set_1_from_argptr(wndsprite);
 }
 
-void sprite_copy_wnd_to_1_clear() {
+void sprite_copy_wnd_to_1_clear(void) {
 	sprite_set_1_from_argptr(wndsprite);
 	sprite_clear_1_color(0);
 }
@@ -451,9 +451,8 @@ void file_load_shape2d_expand(unsigned char far* memchunk, char far* mempages) {
 	*(unsigned long far*)mempages = 6 + (shapecount * 8) + nextoffset;
 }
 
-int file_get_unflip_size(char far* memchunk) {
-	int shapecount, size, maxsize;
-	int i;
+unsigned short file_get_unflip_size(char far* memchunk) {
+	unsigned short i, shapecount, size, maxsize;
 	struct SHAPE2D far* memshape;
 
 	shapecount = file_get_res_shape_count(memchunk);
@@ -642,5 +641,3 @@ void far* file_load_shape2d_res_fatal(char* resname) {
 void far* file_load_shape2d_res_nofatal(char* resname) {
 	return file_load_shape2d_res(resname, 0);
 }
-
-//#endif

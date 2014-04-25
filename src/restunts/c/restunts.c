@@ -1,11 +1,13 @@
 #include <dos.h>
 #include <stddef.h>
-#include "memmgr.h"
-#include "fileio.h"
+
 #include "externs.h"
+#include "fileio.h"
 #include "keyboard.h"
-#include "shape3d.h"
+#include "math.h"
+#include "memmgr.h"
 #include "shape2d.h"
+#include "shape3d.h"
 
 extern void far* fontnptr;
 extern void far* fontdefptr;
@@ -64,24 +66,13 @@ extern char aDos[];
 extern void init_div0(void);
 extern void font_set_fontdef(void);
 extern void init_polyinfo(void);
-extern void mouse_draw_opaque_check(void);
 extern void sub_22532(void);
-extern void input_do_checking(int unk);
-extern void ensure_file_exists(int unk);
 extern unsigned short run_intro_looped(void);
-extern void audio_stop_unk(void);
-extern void audiodrv_atexit(void);
-extern void kb_exit_handler(void);
-extern void kb_shift_checking1(void);
-extern void video_set_mode7(void);
-extern void far* locate_text_res(void far* ptr, const char* resname);
 extern unsigned short show_dialog(int unk1, int unk2, void far* textresptr, unsigned short unk3, unsigned short unk4, int arg, int unk5, int unk6);
-extern void audio_unload(void);
 extern char run_menu(void);
 extern char setup_track(void);
 extern void run_tracks_menu(int unk);
 extern void run_opponent_menu(void);
-extern void check_input(void);
 extern void show_waiting(void);
 extern void run_car_menu(struct GAMEINFO* unk, char* unk2, char* unk3, unsigned int unk4);
 extern void run_game(void);
@@ -89,6 +80,39 @@ extern unsigned end_hiscore(void);
 extern unsigned run_option_menu(void);
 extern void init_game_state(unsigned short unk);
 extern void security_check(void);
+
+// ASCII code properties map.
+#define RST_ASC_CHAR_UPPER 0x01
+#define RST_ASC_CHAR_LOWER 0x02
+#define RST_ASC_NUMBER     0x04
+#define RST_ASC_WHITESPACE 0x08
+#define RST_ASC_PUNCTATION 0x10
+#define RST_ASC_CONTROL    0x20
+#define RST_ASC_SPACE      0x40
+#define RST_ASC_HEX        0x80
+
+// Use the Stunts' data for now.
+extern unsigned const char* g_ascii_props;
+/*
+unsigned const char g_ascii_props[256] = {
+	0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x28, 0x28, 0x28, 0x28, 0x28, 0x20, 0x20,
+	0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20,
+	0x48, 0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x10, 0x10,
+	0x84, 0x84, 0x84, 0x84, 0x84, 0x84, 0x84, 0x84, 0x84, 0x84, 0x10, 0x10, 0x10, 0x10, 0x10, 0x10,
+	0x10, 0x81, 0x81, 0x81, 0x81, 0x81, 0x81, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
+	0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x10, 0x10, 0x10, 0x10, 0x10,
+	0x10, 0x82, 0x82, 0x82, 0x82, 0x82, 0x82, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02,
+	0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x10, 0x10, 0x10, 0x10, 0x20,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+};
+*/
 
 int get_0(void)
 {
@@ -392,11 +416,8 @@ void init_trackdata(void) {
 
 extern struct SHAPE3D game3dshapes[];
 
-//extern void shape3d_load_car_shapes(char* carid, char* oppcarid);
 extern unsigned select_cliprect_rotate(int angX, int angY, int angZ, struct RECTANGLE* cliprect, int unk);
 //extern void transformed_shape_op(struct TRANSFORMSHAPE3D* shape);
-
-extern void sprite_blit_to_video(struct SPRITE far* sprite);
 extern void sub_29772(void);
 extern void set_projection(int, int, int, int);
 
@@ -406,12 +427,10 @@ struct RECTANGLE cliprect = { 0, 0x140, 0, 0x5F };
 struct VECTOR carpos = { 0, 0x0FCB8, 0x0B40 }; // from the original
 //struct VECTOR carpos = { 0, 0, 320 };
 
-extern struct SPRITE far* sprite_make_wnd(int width, int height);
 extern struct SPRITE far* wndsprite;
 
 extern struct RECTANGLE cliprect_unk;
 //cliprect_unk    RECTANGLE <270Fh, 0FFFFh, 270Fh, 0FFFFh>
-
 
 extern int polyinfonumpolys;
 extern unsigned char far* polyinfoptrs[]; // array size = 0x190 
@@ -428,12 +447,13 @@ void copy_material_list_pointers(void* clrlist, void* clrlist2, void* patlist, v
 	someZeroVideoConst = videoConst;
 }
 
-/*
 void init_main(int argc, char* argv[])
 {
-	//ported_init_main_(argc, argv);
-	unsigned char argmode4, argnosound, var2;
-	unsigned short timerdelta1, timerdelta2, timerdelta3, var4, var6, var8, varA, var18, var1A;
+	unsigned int i, j;
+	unsigned char argmode4, argnosound, argnounknown;
+	unsigned long timerdelta1, timerdelta2, timerdelta3;
+	struct POINT2D tmppoint;
+	struct RECTANGLE tmprect;
 
 	// Keyboard
 	kb_init_interrupt();
@@ -453,9 +473,9 @@ void init_main(int argc, char* argv[])
 	// Video
 	video_flag1_is1 = 1;
 	video_flag2_is1 = 1;
-	video_flag3_isFFFF = 0xFFFF;
+	video_flag3_isFFFF = -1;
 	video_flag4_is1 = 1;
-	
+
 	mmgr_alloc_a000();
 	
 	video_flag5_is0 = 0;
@@ -463,77 +483,90 @@ void init_main(int argc, char* argv[])
 	
 	textresprefix = 'e';
 	
+	// Parse arguments.
 	argmode4 = 0;
 	argnosound = 0;
-	var2 = 0;
+	argnounknown = 0;
 	
-	// TODO: Loop?
-loc_39F63:
-	for (j = 1; argc > j; ++j) {
-		argcmd = argv[j];
-		
-		if (argcmd[0] == '/') {
-			if (argcmd[1] == 'h') {
-				argmode = 4;
-			}
-			else {
-				if (argcmd[1] == 'n' && argcmd[2] == 's') {
-					
-				}
-				else if (argcmd[1]) == 's' {
-				...
-				}
-				
+	for (i = 1; argc > i; ++i) {
+		if (argv[i][0] == '/') {
+			switch (argv[i][1]) {
+				case 'h':
+					argmode4 = 4;
+					break;
+
+				case 'n':
+					if (argv[i][2] == 's') {
+						argnosound = 1;
+					}
+					else if (argv[i][2] == 'd') {
+						argnounknown = 1;
+					}
+					break;
+
+				case 's':
+					if ((((g_ascii_props[argv[i][2]] & RST_ASC_CHAR_UPPER) ? (argv[i][2] + ' ') : (argv[i][2])) == 's')
+					 && (((g_ascii_props[argv[i][3]] & RST_ASC_CHAR_UPPER) ? (argv[i][3] + ' ') : (argv[i][3])) == 'b')) {
+						audiodriverstring[0] = argv[i][2];
+						audiodriverstring[1] = argv[i][3];
+					}
+					else {
+						audiodriverstring[0] = 'a';
+						audiodriverstring[1] = 'd';
+					}
+					break;
 			}
 		}
-		// TODO: parse args...
+	}
+	
+	// Unused "/nd" switch. Maybe used when loading other video drivers?
+	(void)argnounknown;
+
+	// Video mode.
+	video_set_mode_13h();
+	if (argmode4) {
+		video_set_mode4();
 	}
 
-	{
-		video_set_mode_13h();
-		if (!argmode4) {
-			video_set_mode4();
-		}
-		timer_setup_interrupt();
-		sprite_copy_2_to_1_clear();
-		mouse_init(0x140, 0xC8);
-		
-		if (!audio_load_driver(audiodriverstring, 0, 0)) {
-			audio_stop_unk();
-			libsub_quit_to_dos_alt(1);
-		}
-		
-		if (!argnosound) {
-			audio_toggle_flag2();
-			audio_toggle_flag6();
-		}
-		
-		set_criterr_handler(&do_dea_textres);
-		
-		load_palandcursor();
-		
-		// Timing measures?
-		sprite_copy_1_to_1);
-		sprite_set_1_size(0, 0x140, 0, 0x78);
+	timer_setup_interrupt();
 
-		timer_get_delta_alt();
-		for (i = 0; i < 0xF; ++i) {
-			sprite_clear_1_color(0);
-		}
-		timerdelta1 = timer_get_delta_alt();
-		
-		sprite_set_1_size(0, 0x140, 0, 0x3C);
+	sprite_copy_2_to_1_clear();
+
+	mouse_init(0x0140, 0x00C8);
+
+	// Audio driver.
+	if (audio_load_driver(&audiodriverstring, 0, 0)) {
+		audio_stop_unk();
+		libsub_quit_to_dos_alt(1);
 	}
+	
+	if (argnosound) {
+		audio_toggle_flag2();
+		audio_toggle_flag6();
+	}
+	
+	set_criterr_handler(&do_dea_textres);
+	
+	load_palandcursor();
+	
+	// Timing measures.
+	sprite_copy_2_to_1();
+	sprite_set_1_size(0, 320, 0, 120);
 
-	for (j = 0; j < 0xF; ++i) {
-		varA = 0;
-		var8 = 0;
-		var6 = 0;
-		var4 = 0;
+	timer_get_delta_alt();
+	for (i = 0; i < 15; ++i) {
+		sprite_clear_1_color(0);
+	}
+	timerdelta1 = timer_get_delta_alt();
+	
+	sprite_set_1_size(0, 320, 0, 60);
+
+	for (i = 0; i < 15; ++i) {
+		tmprect.x1 = tmprect.y1 = tmprect.x2 = tmprect.y2 = 0;
 		
-		for (i = 0; i < 0x190; ++i) {
-			var18 = var1A = i; // TODO: Where is var18 used?
-			rect_adjust_from_point(&var1A, &varA);
+		for (j = 0; j < 400; ++j) {
+			tmppoint.px = tmppoint.py = j;
+			rect_adjust_from_point(&tmppoint, &tmprect);
 		}
 		
 		sprite_clear_1_color(0);
@@ -541,15 +574,15 @@ loc_39F63:
 	
 	timerdelta2 = timer_get_delta_alt();
 
-	for (j = 0; j < 0x92; ++j) {
-		for (i = 0; i < 0xff; ++i) {
-			rect_adjust_from_point(&var1A, &varA);
+	for (i = 0; i < 146; ++i) {
+		for (j = 0; j < 255; ++j) {
+			rect_adjust_from_point(&tmppoint, &tmprect);
 		}
 	}
 	
-	timerdelta1 = timerdelta3 = timer_get_delta_alt();
+	timerdelta3 = timer_get_delta_alt();
 	
-	timertestflag = (timerdelta2 >= timerdelta1);
+	timertestflag = (timerdelta2 <= timerdelta1);
 	framespersec2 = (timerdelta3 >= 75) ? 10 : 20;
 
 	if (timerdelta3 < 35) {
@@ -558,7 +591,7 @@ loc_39F63:
 	else if (timerdelta3 < 55) {
 		timertestflag2 = 1;
 	}
-	else if (timerdelta3 < 67) {
+	else if (timerdelta3 < 75) {
 		timertestflag2 = 2;
 	}
 	else if (timerdelta3 < 100) {
@@ -577,9 +610,9 @@ loc_39F63:
 	random_wait();
 	
 	copy_material_list_pointers(material_clrlist_ptr, material_clrlist2_ptr, material_patlist_ptr, material_patlist2_ptr, 0);
-}*/
+}
 
-int stuntsmain2(int argc, char* argv) {
+int stuntsmain2(int argc, char* argv[]) {
 	int result;
 	char far* textresptr;
 	int carposangle;
@@ -619,7 +652,7 @@ int stuntsmain2(int argc, char* argv) {
 	sub_29772();
 	set_projection(0x24, 0x11, 0x140, 0x64);	// would at best draw just a pixel without this - camera projection??
 
-	wndsprite = sprite_make_wnd(320, 100);
+	wndsprite = sprite_make_wnd(320, 100, 0x0F);
 
 	//run_intro_looped();
 	
@@ -710,7 +743,7 @@ int stuntsmain2(int argc, char* argv) {
 }
 
 
-int stuntsmain(int argc, char* argv) {
+int stuntsmain(int argc, char* argv[]) {
 
 	int i, result;
 	int regax, regsi;

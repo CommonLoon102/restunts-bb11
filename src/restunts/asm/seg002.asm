@@ -312,6 +312,7 @@ loc_19EEB:
     int     21h             ; DOS - 2+ - GET INTERRUPT VECTOR
 loc_19EEF:
     mov     word ptr old_intr0_handler+2, es
+loc_19EF3:
     mov     word ptr old_intr0_handler, bx
 loc_19EF7:
     mov     dx, seg seg002

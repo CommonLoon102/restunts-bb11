@@ -6281,6 +6281,7 @@ loc_21B4B:
 loc_21B50:
     cmp     ax, 25h ; '%'
     jz      short loc_21B74
+loc_21B55:
     cmp     ax, 39h ; '9'
 loc_21B58:
     jz      short loc_21B74

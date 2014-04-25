@@ -3638,6 +3638,7 @@ loc_26B7C:
     cmp     ax, si
 loc_26B82:
     jg      short loc_26B5E
+loc_26B84:
     push    [bp+arg_4]
 loc_26B87:
     lea     ax, [bp+var_202]

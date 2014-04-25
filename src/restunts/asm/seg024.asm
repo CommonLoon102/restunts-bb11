@@ -160,6 +160,7 @@ loc_3700C:
     mov     ax, [bp+var_2]
 loc_37012:
     mov     [bx+MATRIX._22], ax
+loc_37015:
     mov     [bx+MATRIX._32], 0
 loc_3701A:
     mov     [bx+MATRIX._13], 0

@@ -90,18 +90,8 @@ void shape3d_init_shape(char far* shapeptr, struct SHAPE3D* gameshape) {
 	gameshape->shape3d_primitives = shapeptr + hdr->header_numprimitives * 8 + hdr->header_numverts * 6 + 4;
 }
 
-extern struct MATRIX* mat_rot_zxy(unsigned, unsigned, unsigned, unsigned);
-extern void mat_multiply(struct MATRIX*, struct MATRIX*, struct MATRIX*);
-extern void mat_mul_vector(struct VECTOR* vec, struct MATRIX*, struct VECTOR* result);
-extern void mat_invert(struct MATRIX*, struct MATRIX*);
-extern char vector_op_unk2(struct VECTOR*);
-extern void vector_to_point(struct VECTOR*, struct POINT2D*);
-extern unsigned rect_compare_point(struct POINT2D*);
+
 extern char transformed_shape_op_helper3(struct POINT2D far*);
-extern void vector_op_unk(struct VECTOR*, struct VECTOR*, struct VECTOR*, int);
-extern void rect_adjust_from_point(struct POINT2D*, struct RECTANGLE*);
-extern unsigned polarRadius2D(unsigned, unsigned);
-extern unsigned polarRadius3D(struct VECTOR*);
 extern unsigned transformed_shape_op_helper(unsigned, unsigned);
 extern unsigned transformed_shape_op_helper2(unsigned, int);
 extern void __aFuldiv();
@@ -2653,7 +2643,7 @@ unsigned select_cliprect_rotate(int angZ, int angX, int angY, struct RECTANGLE* 
 	return polarAngle(vec2.x, vec2.z) & 0x3FF;
 }
 
-void polyinfo_reset() {
+void polyinfo_reset(void) {
 	polyinfonumpolys = 0;
 	polyinfoptrnext = 0;
 	word_40ECE = 0;
@@ -2661,14 +2651,14 @@ void polyinfo_reset() {
 	word_443F2 = 0x190;
 }
 
-void calc_sincos80() {
+void calc_sincos80(void) {
 	sin80 = sin_fast(0x80);
 	cos80 = cos_fast(0x80);
 	sin80_2 = sin_fast(0x80);
 	cos80_2 = cos_fast(0x80);
 }
 
-void init_polyinfo() {
+void init_polyinfo(void) {
 	polyinfoptr = mmgr_alloc_resbytes("polyinfo", 0x28A0);
 	
 	mat_rot_y(&mat_y0, 0);

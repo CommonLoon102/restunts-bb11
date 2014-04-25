@@ -321,6 +321,7 @@ audioresource_copy_n_bytes proc far
     add     [bp+var_2], ax
     les     di, [bp+arg_destptr]
     mov     [bp+var_6], ds
+loc_39CA5:
     lds     si, [bp+arg_srcptr]
 loc_39CA8:
     mov     al, [si]
@@ -332,6 +333,7 @@ loc_39CAD:
 loc_39CB2:
     inc     di
     loop    loc_39CA8
+loc_39CB5:
     mov     word ptr [bp+arg_srcptr], si; ??
 loc_39CB8:
     mov     word ptr [bp+arg_srcptr+2], ds; ??

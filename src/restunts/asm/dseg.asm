@@ -762,7 +762,7 @@ dseg segment byte public 'STUNTSD' use16
     public off_3EF94
     public word_3EF98
     public word_3EF9A
-    public byte_3EF9F
+    public g_ascii_props
     public word_3F0A0
     public word_3F0A2
     public word_3F0A4
@@ -15398,7 +15398,7 @@ word_3EF9A     dw 0
     db 1
     db 0
     db 0
-byte_3EF9F     db 32
+g_ascii_props     db 32
     db 32
     db 32
     db 32

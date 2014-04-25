@@ -200,6 +200,7 @@ loc_39DBF:
     xor     ax, ax
     repne scasb
     not     cx
+loc_39DF5:
     sub     di, cx
 loc_39DF7:
     mov     bx, cx
@@ -211,12 +212,14 @@ loc_39DFE:
 loc_39E01:
     mov     cx, bx
     shr     cx, 1
+loc_39E05:
     repne movsw
     adc     cx, cx
 loc_39E09:
     repne movsb
 loc_39E0B:
     mov     ax, offset byte_42D2E
+loc_39E0E:
     pop     si
     pop     di
 loc_39E10:

@@ -7261,7 +7261,7 @@ loc_14664:
     mov     al, [bp+si+var_43E]
     cbw
     mov     bx, ax
-    mov     al, byte_3EF9F[bx]
+    mov     al, g_ascii_props[bx]
 smart
     and     al, 1
 nosmart
@@ -7327,6 +7327,7 @@ loc_146E9:
     mov     gameconfig.game_playercarid+1, 4Fh ; 'O'
 loc_146EE:
     mov     gameconfig.game_playercarid+2, 55h ; 'U'
+loc_146F3:
     mov     gameconfig.game_playercarid+3, 4Eh ; 'N'
 loc_146F8:
     mov     gameconfig.game_playermaterial, 0

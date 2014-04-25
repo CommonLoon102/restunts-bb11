@@ -18943,6 +18943,7 @@ loc_3618A:
 loc_36192:
     mov     al, [si]
     stosb
+loc_36195:
     add     si, bx
 loc_36197:
     loop    loc_36192

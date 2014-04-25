@@ -216,6 +216,7 @@ loc_3687C:
     push    [bp+arg_0]
 loc_3687F:
     call    locate_shape_nofatal
+loc_36884:
     add     sp, 6
 loc_36887:
     mov     bx, [bp+var_2]

@@ -405,6 +405,7 @@ loc_3677B:
     sub     ax, [si]
     mov     [si+40h], ax
     mov     ax, [bx+2]
+loc_36794:
     sub     ax, [si+2]
 loc_36797:
     mov     [si+42h], ax
@@ -414,12 +415,14 @@ loc_3679C:
     add     [si+2], ax
 loc_367A2:
     inc     [bp+var_E]
+loc_367A5:
     cmp     [bp+var_E], 10h
 loc_367A9:
     jl      short loc_3677B
     pop     si
 loc_367AC:
     pop     di
+loc_367AD:
     mov     sp, bp
     pop     bp
 locret_367B0:

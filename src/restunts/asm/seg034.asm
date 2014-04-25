@@ -406,6 +406,7 @@ ported_file_load_shape2d_palmap_init_ proc far
 loc_3ACB1:
     mov     bp, sp
     sub     sp, 2
+loc_3ACB6:
     push    si
 loc_3ACB7:
     mov     [bp+var_2], 0

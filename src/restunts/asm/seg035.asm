@@ -521,6 +521,7 @@ sub_3B08C proc far
     mov     bp, sp
     sub     sp, 4
     les     bx, [bp+arg_0]
+loc_3B095:
     mov     al, es:[bx]
 loc_3B098:
     mov     [bp+var_4], al

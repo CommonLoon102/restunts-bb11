@@ -10,8 +10,8 @@ extern "C" {
 #endif
 
 const char* file_find(const char* query);
-const char* file_find_next();
-const char* file_find_next_alt();
+const char* file_find_next(void);
+const char* file_find_next_alt(void);
 
 void file_build_path(const char* dir, const char* name, const char* ext, char* dst);
 const char* file_combine_and_find(const char* dir, const char* name, const char* ext);

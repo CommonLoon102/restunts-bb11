@@ -590,6 +590,7 @@ loc_3A93E:
 loc_3A93F:
     push    word_42A1A
     mov     ax, [bp+var_6]
+loc_3A946:
     add     ax, word_42A18
 loc_3A94A:
     push    ax

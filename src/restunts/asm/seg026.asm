@@ -59,6 +59,7 @@ loc_370BD:
     cmp     [bp+arg_0], 61h ; 'a'
 loc_370C1:
     jl      short loc_370CD
+loc_370C3:
     cmp     [bp+arg_0], 7Ah ; 'z'
     jg      short loc_370CD
 loc_370C9:

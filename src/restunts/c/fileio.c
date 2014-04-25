@@ -302,7 +302,7 @@ const char* file_find(const char* query)
 
 // Returns next found filename from file_find() query.
 // FIXME: DOS specific implementation.
-const char* file_find_next()
+const char* file_find_next(void)
 {
 	int retval;
 
@@ -333,7 +333,7 @@ const char* file_find_next()
 	return g_find.path;
 }
 
-const char* file_find_next_alt()
+const char* file_find_next_alt(void)
 {
 	return file_find_next();
 }

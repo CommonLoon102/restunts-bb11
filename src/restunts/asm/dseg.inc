@@ -714,7 +714,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn off_3EF94:dword
     extrn word_3EF98:word
     extrn word_3EF9A:word
-    extrn byte_3EF9F:byte
+    extrn g_ascii_props:byte
     extrn word_3F0A0:word
     extrn word_3F0A2:word
     extrn word_3F0A4:word

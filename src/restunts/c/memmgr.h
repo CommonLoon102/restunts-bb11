@@ -17,7 +17,7 @@ struct MEMCHUNK {
 const char* mmgr_path_to_name(const char* filename);
 void far* mmgr_alloc_pages(const char* arg_0, unsigned short arg_2);
 void mmgr_alloc_resmem(unsigned short arg_0);
-void mmgr_alloc_a000();
+void mmgr_alloc_a000(void);
 unsigned short mmgr_get_ofs_diff();
 void far* mmgr_free(char far* ptr);
 void mmgr_copy_paras(unsigned short srcseg, unsigned short destseg, short paras);

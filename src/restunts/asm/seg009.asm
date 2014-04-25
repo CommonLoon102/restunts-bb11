@@ -4471,6 +4471,7 @@ loc_2CC2C:
     add     bx, bp
 loc_2CC30:
     mov     byte ptr [bx-383h], 1
+loc_2CC35:
     jmp     loc_2CA79
 loc_2CC38:
     inc     [bp+var_38C]

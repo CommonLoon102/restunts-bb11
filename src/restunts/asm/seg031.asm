@@ -51,7 +51,7 @@ seg031 segment byte public 'STUNTSC' use16
     public ported_file_find_next_alt_
     public nullsub_1
     public nullsub_2
-    public init_main
+    public ported_init_main_
     public ported_random_wait_
     public load_palandcursor
     public ported_get_0_
@@ -127,7 +127,7 @@ nullsub_2 proc far
     ; align 2
     db 144
 nullsub_2 endp
-init_main proc far
+ported_init_main_ proc far
     var_argcmd = word ptr -30
     var_timerdelta3 = word ptr -28
     var_1A = word ptr -26
@@ -140,7 +140,7 @@ init_main proc far
     var_8 = word ptr -8
     var_6 = word ptr -6
     var_4 = word ptr -4
-    var_2 = byte ptr -2
+    var_argunknown = byte ptr -2
      s = byte ptr 0
      r = byte ptr 2
     arg_argc = word ptr 6
@@ -236,7 +236,7 @@ init_main proc far
     mov     textresprefix, 'e'
     mov     [bp+var_argmode4], 0
     mov     [bp+var_argnosound], 0
-    mov     [bp+var_2], 0
+    mov     [bp+var_argunknown], 0
     mov     si, 1
     jmp     short loc_39F63
 loc_39F5E:
@@ -277,7 +277,7 @@ loc_39F91:
     mov     al, [bx+2]
     cbw
     mov     bx, ax
-    test    byte_3EF9F[bx], 1
+    test    g_ascii_props[bx], 1
     jz      short loc_39FC8
     mov     bx, [bp+arg_argv]
     mov     ax, si
@@ -305,7 +305,7 @@ loc_39FD7:
     mov     al, [bx+3]
     cbw
     mov     bx, ax
-    test    byte_3EF9F[bx], 1
+    test    g_ascii_props[bx], 1
     jz      short loc_3A000
     mov     bx, [bp+arg_argv]
     mov     ax, si
@@ -367,7 +367,7 @@ loc_3A05E:
     jz      short loc_3A072
     jmp     loc_39F62
 loc_3A072:
-    mov     [bp+var_2], 1
+    mov     [bp+var_argunknown], 1
     jmp     loc_39F62
     ; align 2
     db 144
@@ -414,11 +414,11 @@ loc_3A0D9:
     push    cs
     call near ptr load_palandcursor
     call    sprite_copy_2_to_1
-    mov     ax, 78h ; 'x'
+    mov     ax, 120
     push    ax
     sub     ax, ax
     push    ax
-    mov     ax, 140h
+    mov     ax, 320
     push    ax
     sub     ax, ax
     push    ax
@@ -436,11 +436,11 @@ loc_3A10F:
     jl      short loc_3A10F
     call    timer_get_delta_alt
     mov     [bp+var_timerdelta1], ax
-    mov     ax, 3Ch ; '<'
+    mov     ax, 60
     push    ax
     sub     ax, ax
     push    ax
-    mov     ax, 140h
+    mov     ax, 320
     push    ax
     sub     ax, ax
     push    ax
@@ -567,7 +567,7 @@ loc_3A22B:
     mov     sp, bp
     pop     bp
     retf
-init_main endp
+ported_init_main_ endp
 ported_random_wait_ proc far
      s = byte ptr 0
      r = byte ptr 2

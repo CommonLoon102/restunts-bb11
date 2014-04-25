@@ -206,7 +206,7 @@ void mmgr_alloc_resmem(unsigned short arg_0) {
 	}
 }
 
-void mmgr_alloc_a000() {
+void mmgr_alloc_a000(void) {
 	mmgr_alloc_resmem(0xa000);
 }
 

@@ -2558,6 +2558,7 @@ loc_39AAC:
     imul    [bp+arg_0]
 loc_39AB2:
     mov     si, ax
+loc_39AB4:
     add     si, 8211h
 loc_39AB8:
     mov     cx, [bp+arg_2]

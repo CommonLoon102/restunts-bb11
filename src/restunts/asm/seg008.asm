@@ -946,9 +946,9 @@ loc_27BF5:
     cmp     ax, 20h ; ' '
     jz      short loc_27BF5
     mov     bx, ax
-    test    byte_3EF9F[bx], 1
+    test    g_ascii_props[bx], 1
     jz      short loc_27C2C
-    test    byte_3EF9F[bx], 1
+    test    g_ascii_props[bx], 1
     jz      short loc_27C26
     add     ax, 20h ; ' '
     jmp     short loc_27C28
@@ -970,9 +970,9 @@ loc_27C32:
     cmp     ax, 20h ; ' '
     jz      short loc_27C32
     mov     bx, ax
-    test    byte_3EF9F[bx], 1
+    test    g_ascii_props[bx], 1
     jz      short loc_27C68
-    test    byte_3EF9F[bx], 1
+    test    g_ascii_props[bx], 1
     jz      short loc_27C62
     add     ax, 20h ; ' '
     jmp     short loc_27C64
@@ -1124,9 +1124,9 @@ loc_27DBC:
     mov     ax, [bp+var_142]
     mov     [bp+var_1D2], ax
     mov     bx, ax
-    test    byte_3EF9F[bx], 1
+    test    g_ascii_props[bx], 1
     jz      short loc_27DEE
-    test    byte_3EF9F[bx], 1
+    test    g_ascii_props[bx], 1
     jz      short loc_27DE8
     add     ax, 20h ; ' '
     jmp     short loc_27DEA
@@ -1868,13 +1868,13 @@ loc_28452:
     cmp     ax, 5000h
     jz      short loc_284B6
     mov     bx, ax
-    test    byte_3EF9F[bx], 1
+    test    g_ascii_props[bx], 1
     jnz     short loc_2847F
-    test    byte_3EF9F[bx], 2
+    test    g_ascii_props[bx], 2
     jz      short loc_28496
 loc_2847F:
     mov     bx, [bp+var_6CC]
-    test    byte_3EF9F[bx], 1
+    test    g_ascii_props[bx], 1
     jz      short loc_284DA
     mov     al, byte ptr [bp+var_6CC]
     add     al, 20h ; ' '
@@ -1961,7 +1961,7 @@ loc_28523:
     mov     al, [bx-698h]
     cbw
     mov     bx, ax
-    test    byte_3EF9F[bx], 1
+    test    g_ascii_props[bx], 1
     jz      short loc_284EA
     mov     al, [bp+var_6EA]
     cbw
@@ -5686,6 +5686,7 @@ loc_2A28B:
 loc_2A290:
     add     sp, 4
     lea     ax, [bp+var_54]
+loc_2A296:
     push    ax              ; char *
 loc_2A297:
     mov     ax, 1

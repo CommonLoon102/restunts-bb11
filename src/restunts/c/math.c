@@ -1,5 +1,5 @@
 #include "externs.h"
-#include "shape3d.h"
+#include "math.h"
 
 extern struct RECTANGLE select_rect_rc;
 extern struct MATRIX mat_z_rot;
@@ -446,7 +446,7 @@ void vector_to_point(struct VECTOR* vec, struct POINT2D* outpt) {
 	}
 }
 
-void vector_op_unk(struct VECTOR* vec1, struct VECTOR* vec2, struct VECTOR* outvec, int i) {
+void vector_op_unk(struct VECTOR* vec1, struct VECTOR* vec2, struct VECTOR* outvec, short i) {
 	
 	long var_4, var_2;
 	
@@ -463,7 +463,7 @@ void vector_op_unk(struct VECTOR* vec1, struct VECTOR* vec2, struct VECTOR* outv
 	outvec->y = (vec1->y - vec2->y) * var_4 / var_2 + vec2->y;
 }
 
-int multiply_and_scale(int a1, int a2)
+short multiply_and_scale(short a1, short a2)
 {
 	long mul = (long)a1 * (long)a2 * 4L;
 	return (mul >> 16) + ((mul & 0x8000) >> 15);

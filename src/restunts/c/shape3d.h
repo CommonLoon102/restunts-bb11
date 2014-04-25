@@ -1,31 +1,9 @@
 #ifndef RESTUNTS_SHAPE3D_H
 #define RESTUNTS_SHAPE3D_H
 
+#include "math.h"
+
 #pragma pack (push, 1)
-
-struct RECTANGLE {
-	int x1, y1;
-	int x2, y2;
-};
-
-struct VECTOR {
-	short x, y, z;
-};
-
-struct POINT2D {
-	int px, py;
-};
-
-struct MATRIX {
-	union {
-		int vals[9];
-		struct {
-			int _11, _21, _31;
-			int _12, _22, _32;
-			int _13, _23, _33;
-		} m;
-	};
-};
 
 struct SHAPE3D {
 	unsigned short shape3d_numverts;
@@ -63,8 +41,8 @@ unsigned transformed_shape_op(struct TRANSFORMEDSHAPE3D* arg_transshapeptr);
 void set_projection(int i1, int i2, int i3, int i4);
 int polarAngle(int z, int y);
 unsigned select_cliprect_rotate(int angZ, int angX, int angY, struct RECTANGLE* cliprect, int unk);
-void init_polyinfo();
-void polyinfo_reset();
-void get_a_poly_info();
+void init_polyinfo(void);
+void polyinfo_reset(void);
+void get_a_poly_info(void);
 
 #endif

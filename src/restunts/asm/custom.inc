@@ -189,7 +189,7 @@ extrn toupper:proc
 
 extrn copy_material_list_pointers:proc
 extrn set_default_car:proc
-;extrn init_main:proc
+extrn init_main:proc
 extrn stuntsmain:proc
 
 ;extrn fatal_error:proc

@@ -746,7 +746,7 @@ static PortFuncName(labelname) {
 
 		labelname == "copy_material_list_pointers" ||
 		labelname == "set_default_car" ||
-		//labelname == "init_main" ||
+		labelname == "init_main" ||
 		labelname == "stuntsmain"
 	)
 		return "ported_" + labelname + "_";

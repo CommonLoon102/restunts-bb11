@@ -284,6 +284,7 @@ loc_363EB:
     mov     [si+20h], ax
 loc_363F2:
     mov     ax, [bx+2]
+loc_363F5:
     sub     ax, [si+2]
 loc_363F8:
     mov     [si+22h], ax
