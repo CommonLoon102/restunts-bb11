@@ -47,7 +47,7 @@ seg001 segment byte public 'STUNTSC' use16
     assume cs:seg001
     assume es:nothing, ss:nothing, ds:dseg
     public opponent_op
-    public mat_mul_vector2
+    public ported_mat_mul_vector2_
     public update_player_state
     public ported_init_carstate_from_simd_
     public ported_init_game_state_
@@ -843,14 +843,14 @@ loc_14D66:
     pop     bp
     retf
 opponent_op endp
-mat_mul_vector2 proc far
-    var_12 = byte ptr -18
+ported_mat_mul_vector2_ proc far
+    var_mat = byte ptr -18
      s = byte ptr 0
      r = byte ptr 2
-    arg_0 = word ptr 6
+    arg_invec = word ptr 6
     arg_2 = word ptr 8
     arg_4 = word ptr 10
-    arg_6 = word ptr 12
+    arg_outvec = word ptr 12
 
     push    bp
     mov     bp, sp
@@ -859,7 +859,7 @@ mat_mul_vector2 proc far
     push    si
     mov     ax, [bp+arg_2]
     mov     dx, [bp+arg_4]
-    lea     di, [bp+var_12]
+    lea     di, [bp+var_mat]
     mov     si, ax
     push    ss
     pop     es
@@ -868,10 +868,10 @@ mat_mul_vector2 proc far
     mov     cx, 9
     repne movsw
     pop     ds
-    push    [bp+arg_6]
-    lea     ax, [bp+var_12]
+    push    [bp+arg_outvec]
+    lea     ax, [bp+var_mat]
     push    ax
-    push    [bp+arg_0]
+    push    [bp+arg_invec]
     call    mat_mul_vector
     add     sp, 6
     pop     si
@@ -879,7 +879,7 @@ mat_mul_vector2 proc far
     mov     sp, bp
     pop     bp
     retf
-mat_mul_vector2 endp
+ported_mat_mul_vector2_ endp
 update_player_state proc far
     var_1E4 = VECTOR ptr -484
     var_1DE = VECTOR ptr -478
@@ -2417,7 +2417,7 @@ loc_15C75:
     lea     ax, [bp+var_1C6]
     push    ax
     push    cs
-    call near ptr mat_mul_vector2
+    call near ptr ported_mat_mul_vector2_
     add     sp, 8
     mov     ax, [bp+var_FC.vx]
     cwd
@@ -9059,7 +9059,7 @@ loc_19866:
 loc_19895:
     push    ax
     push    cs
-    call near ptr mat_mul_vector2
+    call near ptr ported_mat_mul_vector2_
     add     sp, 8
     pop     si
     pop     di

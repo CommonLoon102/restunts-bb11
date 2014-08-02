@@ -590,6 +590,7 @@ static PortFuncName(labelname) {
 		labelname == "set_projection" ||
 		labelname == "select_cliprect_rotate" ||
 		labelname == "mat_mul_vector" || 
+		labelname == "mat_mul_vector2" ||
 		labelname == "mat_multiply" || 
 		labelname == "mat_invert" || 
 		labelname == "mat_rot_x" || 

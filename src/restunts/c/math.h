@@ -43,6 +43,7 @@ int polarRadius3D(struct VECTOR* vec);
 unsigned rect_compare_point(struct POINT2D* pt);
 
 void mat_mul_vector(struct VECTOR* invec, struct MATRIX* mat, struct VECTOR* outvec);
+void mat_mul_vector2(struct VECTOR* invec, struct MATRIX far* mat, struct VECTOR* outvec);
 void mat_multiply(struct MATRIX* rmat, struct MATRIX* lmat, struct MATRIX* outmat);
 void mat_invert(struct MATRIX* inmat, struct MATRIX* outmat);
 void mat_rot_x(struct MATRIX* outmat, int angle);

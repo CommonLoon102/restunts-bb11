@@ -173,6 +173,13 @@ void mat_mul_vector(struct VECTOR* invec, struct MATRIX* mat, struct VECTOR* out
 
 }
 
+void mat_mul_vector2(struct VECTOR* invec, struct MATRIX far* mat, struct VECTOR* outvec)
+{
+	struct MATRIX tmpmat = *mat;
+	
+	mat_mul_vector(invec, &tmpmat, outvec);
+}
+
 void mat_multiply(struct MATRIX* rmat, struct MATRIX* lmat, struct MATRIX* outmat) {
 	int counter;
 	int* rmatvals = rmat->vals;

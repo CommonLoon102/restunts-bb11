@@ -30,6 +30,7 @@ extrn polarRadius2D:proc
 extrn rect_compare_point:proc
 extrn rect_adjust_from_point:proc
 extrn mat_mul_vector:proc
+extrn mat_mul_vector2:proc
 extrn mat_multiply:proc
 extrn mat_invert:proc
 extrn mat_rot_x:proc
