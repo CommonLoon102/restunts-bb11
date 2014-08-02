@@ -12,6 +12,10 @@ struct VECTOR {
 	short x, y, z;
 };
 
+struct VECTORLONG {
+	long lx, ly, lz;
+};
+
 struct POINT2D {
 	int px, py;
 };

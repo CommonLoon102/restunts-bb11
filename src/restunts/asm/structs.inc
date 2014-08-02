@@ -238,11 +238,11 @@ game_frames_per_sec dw ?
 game_travDist_ax dw ?
 game_travDist_dx dw ?
 game_frame dw ?
-field_142 dw ?
+game_total_finish dw ?
 field_144 dw ?
 game_pEndFrame dw ?
 game_oEndFrame dw ?
-game_fps_counter dw ?
+game_penalty dw ?
 game_impactSpeed dw ?
 game_topSpeed dw ?
 game_jumpCount dw ?

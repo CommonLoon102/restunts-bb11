@@ -41,6 +41,8 @@ seg039 segment byte public 'STUNTSD' use16
     extrn unk_3B23A:byte
     extrn unk_3B23C:byte
     extrn unk_3B244:byte
+    extrn unk_3B24C:byte
+    extrn unk_3B254:byte
     extrn unk_3B25C:byte
     extrn unk_3B264:byte
     extrn unk_3B266:byte

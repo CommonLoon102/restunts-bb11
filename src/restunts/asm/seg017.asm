@@ -120,9 +120,11 @@ loc_368EF:
     mov     ax, 921Ah
     push    ax
     push    ax              ; union REGS *
+loc_368FA:
     mov     ax, 33h         ; int 33,0 = mouse reset/get mouse installed
     push    ax              ; int
     call    _int86
+loc_36903:
     add     sp, 6
     mov     ax, word ptr regs_x86
     mov     [bp+var_2], ax

@@ -1,7 +1,7 @@
 seg005 segment byte public 'STUNTSC' use16
     extrn run_game:proc
     extrn handle_ingame_kb_shortcuts:proc
-    extrn sub_22532:proc
+    extrn ported_init_unknown_:proc
     extrn set_frame_callback:proc
     extrn remove_frame_callback:proc
     extrn frame_callback:proc

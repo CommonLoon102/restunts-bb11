@@ -122,9 +122,11 @@ loc_3628C:
 loc_36293:
     call    multiply_and_scale
     add     sp, 4
+loc_3629B:
     mov     bx, [bp+arg_2]
     mov     [bx+8], ax
     mov     ax, 2D41h
+loc_362A4:
     push    ax
     mov     ax, [bx+2]
     add     ax, [bx+12h]

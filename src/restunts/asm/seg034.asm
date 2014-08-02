@@ -135,17 +135,21 @@ ported_file_load_shape2d_ proc far
 loc_3AA1C:
     cmp     [bp+var_strchar], 2Eh ; '.'
     jz      short loc_3AA31
+loc_3AA22:
     inc     word ptr [bp+var_strptr]
 loc_3AA25:
     mov     bx, word ptr [bp+var_strptr]
     mov     al, [bx]
+loc_3AA2A:
     mov     [bp+var_strchar], al
     or      al, al
     jnz     short loc_3AA1C
 loc_3AA31:
     mov     bx, word ptr [bp+var_strptr]
+loc_3AA34:
     cmp     byte ptr [bx], 0
     jnz     short loc_3AA92
+loc_3AA39:
     mov     [bp+var_counter], 0
     jmp     short loc_3AA53
 loc_3AA40:
@@ -252,6 +256,7 @@ _try_load_xvs:
     call    file_decomp
 _do_end_load_2dshape:
     add     sp, 4
+loc_3AB47:
     mov     [bp+var_memchunkofs], ax
     mov     [bp+var_memchunkseg], dx
     jmp     _end_load_2dshape

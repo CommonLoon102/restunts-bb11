@@ -157,6 +157,7 @@ start proc near
     int     20h             ; DOS - PROGRAM TERMINATION
 loc_2CC6C:
     mov     di, seg dseg
+loc_2CC6F:
     ; begin hack the crt startup
     ; assume endseg is linked at the end of the program
     mov si, seg endseg
@@ -191,15 +192,19 @@ smart
     and     sp, 0FFFEh
 nosmart
     mov     ss:crtsp1, sp
+loc_2CCA4:
     mov     ss:crtsp2, sp
     mov     ax, si
+loc_2CCAB:
     mov     cl, 4
     shl     ax, cl
     dec     ax
     mov     ss:word_3ED74, ax; ax = (01000h << 4) - 1 = 0ffffh
+loc_2CCB4:
     add     si, di
     mov     ds:2, si        ; set memory size in psp?, si = 01000h + dseg
     mov     bx, es          ; es = pspseg on startup
+loc_2CCBC:
     sub     bx, si
     neg     bx              ; bx = -(pspseg - si) = -(pspseg - (1000h + dseg))
     mov     ah, 4Ah

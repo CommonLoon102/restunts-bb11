@@ -183,8 +183,10 @@ loc_2A304:
     mov     ax, offset aUcr0ucr1ucr2ucr3; "ucr0ucr1ucr2ucr3"
     push    ax
     push    [bp+var_28]
+loc_2A30C:
     push    [bp+var_2A]
     call    locate_many_resources
+loc_2A314:
     add     sp, 8
     mov     ax, 0Fh
     push    ax

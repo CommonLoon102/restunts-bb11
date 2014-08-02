@@ -61,6 +61,7 @@ loc_3A95F:
     push    ax
     mov     ax, 320
     push    ax
+loc_3A96D:
     call    sprite_make_wnd
     add     sp, 6
     mov     word ptr mcgawndsprite, ax
@@ -77,22 +78,27 @@ loc_3A97C:
     push    word ptr es:[bx+SPRITE.sprite_bitmapptr]
 loc_3A997:
     call    sprite_putimage
+loc_3A99C:
     add     sp, 4
     retf
 ported_setup_mcgawnd1_ endp
 ported_setup_mcgawnd2_ proc far
 
     mov     ax, word ptr mcgawndsprite
+loc_3A9A3:
     or      ax, word ptr mcgawndsprite+2
     jnz     short loc_3A9C4
     mov     ax, 0Fh
+loc_3A9AC:
     push    ax
     mov     ax, 200
     push    ax
     mov     ax, 320
+loc_3A9B4:
     push    ax
 loc_3A9B5:
     call    sprite_make_wnd
+loc_3A9BA:
     add     sp, 6
 loc_3A9BD:
     mov     word ptr mcgawndsprite, ax

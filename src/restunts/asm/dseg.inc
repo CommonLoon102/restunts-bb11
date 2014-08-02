@@ -1183,17 +1183,17 @@ dseg segment byte public 'STUNTSD' use16
     extrn crshres:dword
     extrn logoshape:SHAPE3D
     extrn byte_44346:byte
-    extrn gState_13C:word
-    extrn gState_13E:word
-    extrn gState_game_frame:word
-    extrn gState_142:word
+    extrn gState_travDist_ax:word
+    extrn gState_travDist_dx:word
+    extrn gState_frame:word
+    extrn gState_total_finish_time:word
     extrn gState_144:word
-    extrn gState_146:word
-    extrn gState_game_frame2:word
-    extrn gState_fps_counter:word
-    extrn gState_14C:word
-    extrn gState_14E:word
-    extrn gState_150:word
+    extrn gState_pEndFrame:word
+    extrn gState_oEndFrame:word
+    extrn gState_penalty:word
+    extrn gState_impactSpeed:word
+    extrn gState_topSpeed:word
+    extrn gState_jumpCount:word
     extrn pState_minusRotate_y_1:word
     extrn songfileptr:dword
     extrn mmouspriteptr:dword

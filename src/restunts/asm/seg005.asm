@@ -48,7 +48,7 @@ seg005 segment byte public 'STUNTSC' use16
     assume es:nothing, ss:nothing, ds:dseg
     public run_game
     public handle_ingame_kb_shortcuts
-    public sub_22532
+    public ported_init_unknown_
     public set_frame_callback
     public remove_frame_callback
     public frame_callback
@@ -128,6 +128,7 @@ loc_21BCA:
     mov     byte_45DB2, 2
     mov     ax, offset aDefault; "default"
     push    ax
+loc_21BD3:
     sub     ax, ax
     push    ax              ; char *
     push    cs
@@ -1074,7 +1075,7 @@ loc_22528:
 loc_22530:
     jmp     short loc_224C0
 handle_ingame_kb_shortcuts endp
-sub_22532 proc far
+ported_init_unknown_ proc far
      s = byte ptr 0
      r = byte ptr 2
 
@@ -1094,7 +1095,7 @@ sub_22532 proc far
     mov     sp, bp
     pop     bp
     retf
-sub_22532 endp
+ported_init_unknown_ endp
 set_frame_callback proc far
 
     mov     word_46468, 0

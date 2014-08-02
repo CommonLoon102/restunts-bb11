@@ -99,6 +99,7 @@ loc_1001B:
     sub     si, si
 loc_1001D:
     mov     ax, si
+loc_1001F:
     shl     ax, 1
     mov     [bp+var_C], ax
     mov     ax, 1Dh
@@ -123,14 +124,18 @@ loc_10041:
 loc_1004C:
     mov     [bp+var_10], ax
     mov     bx, [bp+var_C]
+loc_10052:
     mov     trackpos[bx], ax
     mov     bx, [bp+var_C]
     mov     ax, [bp+var_10]
+loc_1005C:
     add     ah, 2
     mov     trackcenterpos[bx], ax
+loc_10063:
     mov     ax, si
     shl     ax, cl
     mov     [bp+var_12], ax
+loc_1006A:
     mov     bx, [bp+var_C]
     mov     terrainpos[bx], ax
     mov     bx, [bp+var_C]
@@ -297,7 +302,7 @@ loc_10176:
     mov     word ptr trackdata23, ax
     mov     word ptr trackdata23+2, dx
     add     [bp+trkptr], 30h
-    call    sub_22532
+    call    init_unknown
     mov     ax, offset aKevin; "kevin"
     push    ax
     call    init_kevinrandom
@@ -5267,14 +5272,14 @@ loc_131FC:
     push    ax
     call    copy_string
     add     sp, 6
-    cmp     gState_142, 0
+    cmp     gState_total_finish_time, 0
     jnz     short loc_13281
     jmp     loc_13354
 loc_13281:
     mov     ax, 1
     push    ax              ; int
-    mov     ax, gState_142
-    sub     ax, gState_fps_counter
+    mov     ax, gState_total_finish_time
+    sub     ax, gState_penalty
     push    ax
     lea     ax, [bp+var_12]
     push    ax              ; char *
@@ -5320,7 +5325,7 @@ loc_132DC:
     call    hiscore_draw_text
     add     sp, 0Ah
     add     [bp+var_70], 0Ah
-    cmp     gState_fps_counter, 0
+    cmp     gState_penalty, 0
     jnz     short loc_1330D
     jmp     loc_133A7
 loc_1330D:
@@ -5338,7 +5343,7 @@ loc_1330D:
     add     sp, 6
     mov     ax, 1
     push    ax              ; int
-    push    gState_fps_counter
+    push    gState_penalty
     lea     ax, [bp+var_12]
     push    ax              ; char *
     call    format_frame_as_string
@@ -5424,9 +5429,9 @@ loc_133B5:
     ; align 2
     db 144
 loc_1340C:
-    cmp     gState_142, 0
+    cmp     gState_total_finish_time, 0
     jz      short loc_1341C
-    mov     ax, gState_142
+    mov     ax, gState_total_finish_time
     cmp     gState_144, ax
     jnb     short loc_13466
 loc_1341C:
@@ -5484,7 +5489,7 @@ loc_13466:
     call    _strcat
     add     sp, 4
 loc_134AA:
-    cmp     gState_142, 0
+    cmp     gState_total_finish_time, 0
     jz      short loc_134B5
     mov     [bp+var_18], 0
 loc_134B5:
@@ -5527,8 +5532,8 @@ loc_134FB:
     mov     [bp+var_16], al
     cmp     [bp+var_18], 2
     jnz     short loc_1351D
-    mov     ax, gState_146
-    cmp     gState_game_frame2, ax
+    mov     ax, gState_pEndFrame
+    cmp     gState_oEndFrame, ax
     jz      short loc_1351D
     mov     [bp+var_16], 0
 loc_1351D:
@@ -5544,16 +5549,16 @@ loc_1351D:
     push    ax
     call    copy_string
     add     sp, 6
-    mov     ax, gState_146
+    mov     ax, gState_pEndFrame
     add     ax, word_45A24
     jz      short loc_1356A
-    mov     ax, gState_146
+    mov     ax, gState_pEndFrame
     add     ax, word_45A24
     sub     cx, cx
     push    cx
     push    ax
-    push    gState_13E
-    push    gState_13C
+    push    gState_travDist_dx
+    push    gState_travDist_ax
     call    __aFuldiv
     mov     al, ah
     mov     ah, dl
@@ -5609,7 +5614,7 @@ loc_1356C:
     call    hiscore_draw_text
     add     sp, 0Ah
     add     [bp+var_70], 0Ah
-    cmp     gState_14C, 0
+    cmp     gState_impactSpeed, 0
     jnz     short loc_135ED
     jmp     loc_1368B
 loc_135ED:
@@ -5629,7 +5634,7 @@ loc_135ED:
     push    ax              ; int
     sub     ax, ax
     push    ax              ; int
-    mov     ax, gState_14C
+    mov     ax, gState_impactSpeed
     mov     cl, 8
     shr     ax, cl
     push    ax
@@ -5690,7 +5695,7 @@ loc_1368B:
     push    ax              ; int
     sub     ax, ax
     push    ax              ; int
-    mov     ax, gState_14E
+    mov     ax, gState_topSpeed
     mov     cl, 8
     shr     ax, cl
     push    ax
@@ -5734,7 +5739,7 @@ loc_1368B:
     call    hiscore_draw_text
     add     sp, 0Ah
     add     [bp+var_70], 0Ah
-    cmp     gState_150, 0
+    cmp     gState_jumpCount, 0
     jz      short loc_1379A
     mov     ax, offset aJum ; "jum"
     push    ax
@@ -5752,7 +5757,7 @@ loc_1368B:
     push    ax              ; int
     sub     ax, ax
     push    ax              ; int
-    push    gState_150
+    push    gState_jumpCount
     lea     ax, [bp+var_12]
     push    ax              ; char *
     call    print_int_as_string_maybe
@@ -5819,7 +5824,7 @@ loc_137E0:
 loc_13801:
     cmp     [bp+var_18], 1
     jnz     short loc_1382A
-    cmp     gState_142, 0
+    cmp     gState_total_finish_time, 0
     jz      short loc_1381E
     call    get_super_random
     cwd
@@ -5873,10 +5878,10 @@ loc_1384B:
     add     sp, 6
     mov     [bp+var_5A], ax
     mov     [bp+var_58], dx
-    cmp     gState_142, 0
+    cmp     gState_total_finish_time, 0
     jz      short loc_138A0
     call    get_kevinrandom
-    add     ax, gState_game_frame
+    add     ax, gState_frame
 smart
     and     ax, 1
 nosmart
@@ -5886,7 +5891,7 @@ nosmart
     db 144
 loc_138A0:
     call    get_kevinrandom
-    add     ax, gState_game_frame
+    add     ax, gState_frame
 smart
     and     ax, 1
 nosmart
@@ -5917,7 +5922,7 @@ loc_138B6:
     mov     [bp+var_5A], ax
     mov     [bp+var_58], dx
     call    get_kevinrandom
-    add     ax, gState_game_frame
+    add     ax, gState_frame
 smart
     and     ax, 3
 nosmart
@@ -6024,9 +6029,9 @@ loc_139BA:
 loc_139E1:
     cmp     [bp+var_6E], 0
     jnz     short loc_13A0F
-    cmp     gState_142, 0
+    cmp     gState_total_finish_time, 0
     jz      short loc_13A0F
-    mov     ax, gState_142
+    mov     ax, gState_total_finish_time
     mov     [bp+var_88], ax
     test    byte_43966, 6
     jnz     short loc_13A0F

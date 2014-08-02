@@ -72,7 +72,9 @@ ported_init_polyinfo_ proc far
 
     mov     ax, 28A0h       ; bytes to reserve
     cwd
+loc_24D68:
     push    dx
+loc_24D69:
     push    ax
 loc_24D6A:
     mov     ax, offset aPolyinfo; "polyinfo"
@@ -85,6 +87,7 @@ loc_24D6E:
     mov     word ptr polyinfoptr+2, dx
     sub     ax, ax
     push    ax
+loc_24D80:
     mov     ax, offset mat_y0
     push    ax
     call    mat_rot_y
@@ -101,12 +104,15 @@ loc_24D6E:
     push    ax
     call    mat_rot_y
     add     sp, 4
+loc_24DAC:
     mov     ax, 300h
     push    ax
     mov     ax, offset mat_y300
     push    ax
+loc_24DB4:
     call    mat_rot_y
     add     sp, 4
+loc_24DBC:
     push    cs
     call near ptr ported_calc_sincos80_
     retf
@@ -123,6 +129,7 @@ ported_copy_material_list_pointers_ proc far
     arg_8 = word ptr 14
 
     push    bp
+loc_24DC3:
     mov     bp, sp
     mov     ax, [bp+arg_0]
     mov     material_clrlist_ptr_cpy, ax
@@ -303,6 +310,7 @@ loc_24EB8:
     mov     dx, word ptr [bx+(SHAPE3D.shape3d_primitives+2)]
     mov     word ptr transshapeprimitives, ax
     mov     word ptr transshapeprimitives+2, dx
+loc_24ED6:
     mov     bx, [bp+arg_transshapeptr]
     mov     bx, [bx+TRANSFORMEDSHAPE.ts_shapeptr]
     mov     ax, word ptr [bx+SHAPE3D.shape3d_verts]

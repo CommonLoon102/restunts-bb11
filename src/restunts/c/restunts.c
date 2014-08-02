@@ -9,78 +9,6 @@
 #include "shape2d.h"
 #include "shape3d.h"
 
-extern void far* fontnptr;
-extern void far* fontdefptr;
-extern void far* mainresptr;
-extern void far* cvxptr;
-extern int trackrows[];
-extern int terrainrows[];
-extern int trackpos[];
-extern int trackcenterpos[];
-extern int terrainpos[];
-extern int terraincenterpos[];
-extern int trackpos2[];
-extern int trackcenterpos2[];
-extern char far* td01_track_file_cpy; //trackdata1;
-extern char far* td02_penalty_related; //trackdata2;
-extern char far* trackdata3;
-extern char far* td04_aerotable_pl; //trackdata4;
-extern char far* td05_aerotable_op; //trackdata5;
-extern char far* trackdata6;
-extern char far* trackdata7;
-extern char far* td08_direction_related; //trackdata8;
-extern char far* trackdata9;
-extern char far* td10_track_check_rel;// trackdata10;
-extern char far* td11_highscores; //trackdata11;
-extern char far* trackdata12;
-extern char far* td13_rpl_header; //trackdata13;
-extern char far* td14_elem_map_main; //trackdata14;
-extern char far* td15_terr_map_main; //trackdata15;
-extern char far* td16_rpl_buffer; //trackdata16;
-extern char far* td17_trk_elem_ordered; //trackdata17;
-extern char far* trackdata18;
-extern char far* trackdata19;
-extern char far* td20_trk_file_appnd; //trackdata20;
-extern char far* td21_col_from_path; //trackdata21;
-extern char far* td22_row_from_path; //trackdata22;
-extern char far* trackdata23;
-extern char kbormouse;
-extern char passed_security;
-extern char byte_3B80C[];
-extern char byte_44AE2;
-extern unsigned short dialogarg2;
-extern char byte_3B85E[];
-extern char byte_43966;
-extern char aMain[];
-extern char aFontdef_fnt[];
-extern char aFontn_fnt[];
-extern char aTrakdata[];
-extern char aDefault_0[];
-extern char aCvx[];
-extern char aTedit__0[];
-extern char aSlct[];
-extern char aSkidms_0[];
-extern char aSkidslct[];
-extern char aDos[];
-
-extern void init_div0(void);
-extern void font_set_fontdef(void);
-extern void init_polyinfo(void);
-extern void sub_22532(void);
-extern unsigned short run_intro_looped(void);
-extern unsigned short show_dialog(int unk1, int unk2, void far* textresptr, unsigned short unk3, unsigned short unk4, int arg, int unk5, int unk6);
-extern char run_menu(void);
-extern char setup_track(void);
-extern void run_tracks_menu(int unk);
-extern void run_opponent_menu(void);
-extern void show_waiting(void);
-extern void run_car_menu(struct GAMEINFO* unk, char* unk2, char* unk3, unsigned int unk4);
-extern void run_game(void);
-extern unsigned end_hiscore(void);
-extern unsigned run_option_menu(void);
-extern void init_game_state(unsigned short unk);
-extern void security_check(void);
-
 // ASCII code properties map.
 #define RST_ASC_CHAR_UPPER 0x01
 #define RST_ASC_CHAR_LOWER 0x02
@@ -258,7 +186,7 @@ int get_kevinrandom(void)
 
 int get_super_random(void)
 {
-	int val = rand() + get_kevinrandom() + timer_get_counter() + gState_game_frame;
+	int val = rand() + get_kevinrandom() + timer_get_counter() + gState_frame;
 	return val < 0 ? -val : val;
 }
 
@@ -276,29 +204,22 @@ int random_wait(void)
 	for (i = 0; status1 == video_get_status() && i < 12000; ++i);
 	
 	if (i == 1024) {
-		i = *(char near*)0x46C; // TODO: Debug this bugger...
+		i = aMisc_1[0];
 	}
 	
-	while (1) {
-		if (!(--i)) {
-			break;
-		}
+	while (i--) {
 		rand();
 		get_kevinrandom();
 	}
 	
 	i &= 0xFF;
 	
-	while (1) {
-		if (!(--i)) {
-			break;
-		}
-		
+	while (i--) {
 		get_kevinrandom();
 		rand();
 	}
 	
-	return i;
+	return 0;
 }
 
 char toupper(char* ch)
@@ -316,13 +237,10 @@ void init_row_tables(void) {
 		trackrows[i] = 30 * (29 - i);
 		terrainrows[i] = 30 * i;
 		trackpos[i] = (29 - i) << 10;
+		trackpos2[i] = i << 10;
 		trackcenterpos[i] = ((29 - i) << 10) + 0x200;
 		terrainpos[i] = i << 10;
 		terraincenterpos[i] = (i << 10) + 0x200;
-	}
-	
-	for (i = 0; i < 30; i++) {
-		trackpos2[i] = i << 10;
 		trackcenterpos2[i] = (i << 10) + 0x200;
 	}
 }
@@ -437,6 +355,253 @@ extern unsigned char far* polyinfoptrs[]; // array size = 0x190
 extern unsigned int word_40ED6[]; // array size = 0x190
 
 extern void preRender_default(int color, int vertlinecount, int* vertlines);
+
+void init_unknown(void)
+{
+	byte_44A8A = 1;
+	byte_4552F = 2;
+	word_42D02 = 0;
+	byte_449DA = 0;
+	byte_4393C = 0;
+}
+
+void init_carstate_from_simd(struct CARSTATE* playerstate, struct SIMD* simd, char transmission, long posX, long posY, long posZ, short track_angle)
+{
+	int i;
+	struct VECTOR whlPos;
+
+	playerstate->car_posWorld1.lx = posX;
+	playerstate->car_posWorld2.lx = posX;
+	playerstate->car_posWorld1.ly = posY + 512;
+	playerstate->car_posWorld2.ly = posY;
+	playerstate->car_posWorld1.lz = posZ;
+	playerstate->car_posWorld2.lz = posZ;
+	
+	playerstate->car_rotate.x = track_angle;
+	playerstate->car_rotate.y = 0;
+	playerstate->car_rotate.z = 0;
+	playerstate->car_36MwhlAngle = 0;
+	playerstate->car_pseudoGravity = 0;
+	playerstate->car_steeringAngle = 0;
+	playerstate->car_is_braking = 0;
+	playerstate->car_is_accelerating = 0;
+	playerstate->car_currpm = simd->idle_rpm;
+	playerstate->car_lastrpm = playerstate->car_currpm;
+	playerstate->car_idlerpm2 = playerstate->car_currpm;
+	playerstate->car_current_gear = 1;
+	playerstate->car_speeddiff = 0;
+	playerstate->car_speed = 0;
+	playerstate->car_speed2 = 0;
+	playerstate->car_lastspeed = 0;
+	playerstate->car_gearratio = simd->gear_ratios[1];
+	playerstate->car_gearratioshr8 = playerstate->car_gearratio >> 8;
+	playerstate->car_knob_x = simd->knob_points[1].px;
+	playerstate->car_knob_x2 = playerstate->car_knob_x;
+	playerstate->car_knob_y = simd->knob_points[1].py;
+	playerstate->car_knob_y2 = playerstate->car_knob_y;
+	playerstate->car_angle_z = 0;
+	playerstate->car_40MfrontWhlAngle = 0;
+	playerstate->field_42 = 0;
+	playerstate->field_48 = 0;
+	playerstate->car_trackdata3_index = 0;
+	playerstate->car_sumSurfFrontWheels = 2;
+	playerstate->car_sumSurfRearWheels = 2;
+	playerstate->car_sumSurfAllWheels = 4;
+	playerstate->car_demandedGrip = 0;
+	playerstate->car_surfacegrip_sum = 1000;
+
+	whlPos.x = posX / 64;
+	whlPos.y = posY / 64;
+	whlPos.z = posZ / 64;
+
+	for (i = 0; i < 4; ++i) {
+		playerstate->car_surfaceWhl[i] = 1;
+		playerstate->car_rc1[i] = 0;
+		playerstate->car_rc2[i] = 0;
+		playerstate->car_rc3[i] = 0;
+		playerstate->car_rc4[i] = 0;
+		playerstate->car_rc5[i] = 0;
+
+		playerstate->car_whlWorldCrds1[i] = whlPos;
+		playerstate->car_whlWorldCrds2[i] = whlPos;
+	}
+
+	playerstate->car_engineLimiterTimer = 0;
+	playerstate->car_slidingFlag = 0;
+	playerstate->field_C8 = 0;
+	playerstate->car_crashBmpFlag = 0;
+	playerstate->car_changing_gear = 0;
+	playerstate->car_fpsmul2 = 0;
+	playerstate->car_transmission = transmission;
+	playerstate->field_CD = 0;
+	playerstate->field_CE = 0;
+	playerstate->field_CF = 1;
+}
+
+void init_game_state(short arg)
+{
+	int i, tmpcol, tmprow;
+
+	if (arg == -1) {
+		word_45A24 = 0;
+
+		for (i = 0; i < 20; ++i) {
+			((struct GAMESTATE far*)cvxptr)[i].field_3F4 = 0;
+		}
+	}
+	
+	if (framespersec == 10) {
+		steerWhlRespTable_ptr = &steerWhlRespTable_10fps;
+	}
+	else {
+		steerWhlRespTable_ptr = &steerWhlRespTable_20fps;
+	}
+	
+	word_45A00 = framespersec * 30;
+	word_4499C = 100 / framespersec;
+
+	if (arg != -3) {
+		init_unknown();
+
+		state.field_3F4 = 1;
+		state.game_frames_per_sec = 1;
+		state.field_3F5 = 0;
+		state.game_3F6autoLoadEvalFlag = 0;
+		state.game_frame_in_sec = 0;
+		state.field_2F4 = 0;
+		state.field_3F7 = 0;
+		state.field_3F8 = 0;
+
+		for (i = 0; i < 48; ++i) {
+			state.field_3FA[i] = 0;
+		}
+				
+		for (i = 0; i < 24; ++i) {
+			state.field_38E[i] = 0;
+		}
+
+		state.game_vec1.x =
+			  multiply_and_scale(sin_fast(track_angle + 0x300),  512)
+			+ multiply_and_scale(sin_fast(track_angle + 0x200), 4096)
+			+ ((short)startcol2 << 10);
+
+		state.game_vec1.y = unk_3B8E8[hillFlag] + 960;
+
+		state.game_vec1.z =
+			  multiply_and_scale(cos_fast(track_angle + 0x300),  512)
+			+ multiply_and_scale(cos_fast(track_angle + 0x200), 4096)
+			+ trackpos[startrow2];
+
+		state.game_vec2 = state.game_vec1;
+		state.game_vec3 = state.game_vec1;
+		state.game_vec4 = state.game_vec1;
+		
+		state.game_travDist = 0;
+		state.game_frame = 0;
+		state.game_total_finish = 0;
+		state.field_144 = 0;
+		state.game_pEndFrame = 0;
+		state.game_oEndFrame = 0;
+		state.game_penalty = 0;
+		state.game_impactSpeed = 0;
+		state.game_topSpeed = 0;
+		state.game_jumpCount = 0;
+
+		// Init player car.
+		tmpcol =
+			  multiply_and_scale(sin_fast(track_angle + 0x200), 210)
+			+ multiply_and_scale(sin_fast(track_angle + 0x100),  36);
+		
+		tmprow =
+			  multiply_and_scale(cos_fast(track_angle + 0x200), 210)
+			+ multiply_and_scale(cos_fast(track_angle + 0x100),  36);
+
+		init_carstate_from_simd(
+			&state.playerstate,
+			&simd_player,
+			gameconfig.game_playertransmission,
+			(long)(trackcenterpos2[startcol2] + tmpcol) * 64L,
+			(long)unk_3B8E8[hillFlag] * 64L,
+			(long)(trackcenterpos[startrow2] + tmprow) * 64L,
+			-track_angle);
+
+		state.field_2F2 = 0;
+		state.field_45D = 0;
+		state.field_45E = 0;
+		state.field_45B = 0;
+		state.field_45C = 0;
+		
+		state.game_startcol  = startcol2;
+		state.game_startcol2 = startcol2;
+		state.game_startrow  = startrow2;
+		state.game_startrow2 = startrow2;
+
+		if (arg != -2) {
+			sub_18D60(
+				state.playerstate.car_trackdata3_index,
+				&state.playerstate.car_vec_unk3,
+				state.playerstate.field_CE,
+				0);
+			
+			state.playerstate.field_CE++;
+		}
+
+		// Init opponent car.
+		tmpcol =
+			  multiply_and_scale(sin_fast(track_angle + 0x200), 210)
+			+ multiply_and_scale(sin_fast(track_angle + 0x300),  36);
+		
+		tmprow =
+			  multiply_and_scale(cos_fast(track_angle + 0x200), 210)
+			+ multiply_and_scale(cos_fast(track_angle + 0x300),  36);
+
+		init_carstate_from_simd(
+			&state.opponentstate,
+			&simd_opponent,
+			1,
+			(long)(trackcenterpos2[startcol2] + tmpcol) * 64L,
+			(long)unk_3B8E8[hillFlag] * 64L,
+			(long)(trackcenterpos[startrow2] + tmprow) * 64L,
+			-track_angle);
+
+		if (gameconfig.game_opponenttype && arg != -2) {
+			sub_18D60(
+				trackdata3[state.opponentstate.car_trackdata3_index], // TODO: Verify
+				&state.opponentstate.car_vec_unk3,
+				state.opponentstate.field_CE,
+				&state.field_3F9); // TODO: Verify
+		
+			state.opponentstate.field_CE++;
+		}
+
+		state.field_42A = 0;
+	}
+}
+
+void init_div0(void)
+{
+	// Use original code until we can link with a libc for intdosx().
+	ported_init_div0_();
+
+	/*
+	union REGS inregs, outregs;
+	struct SREGS segregs;
+	
+	// Get current division by zero interrupt.
+	inregs.h.ah = 0x35;
+	inregs.h.al = 0;
+	intdosx(&inregs, &outregs, &segregs);
+	
+	old_intr0_handler = MK_FP(segregs.es, outregs.x.bx);
+	
+	// Set division by zero interrupt.
+	inregs.h.ah = 0x25;
+	inregs.h.al = 0;
+	segregs.ds  = FP_SEG(intr0_handler);
+	inregs.x.dx = FP_OFF(intr0_handler);
+	intdosx(&inregs, &outregs, &segregs);
+	*/
+}
 
 void copy_material_list_pointers(void* clrlist, void* clrlist2, void* patlist, void* patlist2, unsigned short videoConst)
 {
@@ -634,7 +799,7 @@ int stuntsmain2(int argc, char* argv[]) {
 	init_polyinfo();
 	init_trackdata();
 
-	sub_22532();
+	init_unknown();
 	
 	init_kevinrandom("kevin");
 
@@ -767,7 +932,7 @@ int stuntsmain(int argc, char* argv[]) {
 	
 	init_trackdata();
 
-	sub_22532();
+	init_unknown();
 	
 	init_kevinrandom("kevin");
 	
@@ -842,8 +1007,8 @@ _do_game1:
 _init_replay:
 	audio_unload();
 
-	cvxptr = mmgr_alloc_resbytes("cvx", 0x5780);
-	init_game_state(0xFFFF);
+	cvxptr = mmgr_alloc_resbytes("cvx", sizeof(struct GAMESTATE) * 20);
+	init_game_state(-1);
 	
 	if (var_A == 0) goto loc_104A6;
 	byte_43966 = 0;

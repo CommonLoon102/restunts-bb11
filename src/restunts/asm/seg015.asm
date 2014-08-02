@@ -69,8 +69,11 @@ preRender_sphere_helper2 proc far
     push    bp
 loc_36413:
     mov     bp, sp
+loc_36415:
     sub     sp, 1Ah
+loc_36418:
     push    di
+loc_36419:
     push    si
 loc_3641A:
     mov     bx, [bp+arg_0]
@@ -83,6 +86,7 @@ loc_3641F:
     mov     [bx], ax
     mov     bx, [bp+arg_0]
     mov     ax, [bx+6]
+loc_3642F:
     sub     ax, [bx+2]
     mov     bx, [bp+arg_2]
     mov     [bx+2], ax
@@ -99,17 +103,22 @@ loc_3641F:
     mov     ax, [bx]
     sar     ax, 1
     mov     [bp+var_2], ax
+loc_3645C:
     sar     ax, 1
     mov     [bp+var_A], ax
     mov     ax, [bp+var_2]
+loc_36464:
     add     ax, [bp+var_A]
     mov     [bp+var_6], ax
+loc_3646A:
     mov     ax, [bx+2]
     sar     ax, 1
     mov     [bp+var_4], ax
     sar     ax, 1
+loc_36474:
     mov     [bp+var_C], ax
     mov     ax, [bp+var_4]
+loc_3647A:
     add     ax, [bp+var_C]
     mov     [bp+var_8], ax
     mov     ax, [bx+20h]
@@ -208,6 +217,7 @@ loc_3641F:
     call    multiply_and_scale
     add     sp, 4
     mov     bx, [bp+arg_2]
+loc_36587:
     mov     [bx+1Ch], ax
     mov     ax, 3E17h
     push    ax

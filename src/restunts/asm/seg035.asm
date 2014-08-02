@@ -122,9 +122,11 @@ ported_file_load_shape2d_res_ proc far
     call    mmgr_get_chunk_by_name
     add     sp, 2
     mov     [bp+var_8], ax
+loc_3AD1B:
     mov     [bp+var_6], dx
     or      ax, dx
     jz      short loc_3AD2A
+loc_3AD22:
     mov     ax, [bp+var_8]
     mov     sp, bp
     pop     bp
@@ -134,9 +136,11 @@ ported_file_load_shape2d_res_ proc far
 loc_3AD2A:
     push    [bp+arg_fatal]
     push    [bp+arg_0]
+loc_3AD30:
     call    file_load_shape2d
     add     sp, 4
     mov     [bp+var_4], ax
+loc_3AD3B:
     mov     [bp+var_2], dx
     or      ax, dx
     jnz     short loc_3AD4A
@@ -542,8 +546,11 @@ loc_3B0B1:
     jz      short loc_3B0A2
 loc_3B0B3:
     mov     ax, [bp+var_2]
+loc_3B0B6:
     mov     sp, bp
+loc_3B0B8:
     pop     bp
+locret_3B0B9:
     retf
 sub_3B08C endp
 seg035 ends

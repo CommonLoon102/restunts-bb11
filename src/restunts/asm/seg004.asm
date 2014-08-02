@@ -104,6 +104,7 @@ loc_1E1B4:
     mov     wallHeight, 0FFF4h
 loc_1E1BA:
     mov     elRdWallRelated, 0FC18h; -1000
+loc_1E1C0:
     mov     corkFlag, 0
     mov     current_surf_type, grass; grass is the default surface
 loc_1E1CA:
@@ -129,10 +130,12 @@ loc_1E1EC:
 loc_1E1F4:
     cmp     [bp+var_trkCol], 0
     jge     short loc_1E1FD
+loc_1E1FA:
     jmp     loc_1F8CD
 loc_1E1FD:
     cmp     [bp+var_trkCol], 1Dh
     jle     short loc_1E206
+loc_1E203:
     jmp     loc_1F8CD
 loc_1E206:
     or      al, al

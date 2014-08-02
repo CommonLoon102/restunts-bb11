@@ -126,6 +126,7 @@ loc_36C35:
     mov     bx, [bp+var_8]
 loc_36C38:
     shl     bx, 1
+loc_36C3A:
     mov     si, [bp+arg_2]
 loc_36C3D:
     mov     ax, [bx+si]

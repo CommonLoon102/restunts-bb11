@@ -103,7 +103,9 @@ init_audio_resources proc far
     push    bp
 loc_370D3:
     mov     bp, sp
+loc_370D5:
     sub     sp, 0Ch
+loc_370D8:
     push    [bp+arg_8]      ; arg_8 is a string, e.g "TITL"
 loc_370DB:
     push    word ptr [bp+arg_songfileptr+2]
@@ -113,6 +115,7 @@ loc_370DE:
     add     sp, 6
     mov     word ptr [bp+var_titlptr], ax
     mov     word ptr [bp+var_titlptr+2], dx
+loc_370EF:
     or      dx, ax
     jnz     short loc_370FA
 loc_370F3:
@@ -133,18 +136,23 @@ loc_370FA:
     or      ax, dx
     jz      short loc_370F3
     les     bx, [bp+var_hdrptr]
+loc_37119:
     cmp     byte ptr es:[bx+5], 1; check header+5 if we already loaded this
     jz      short loc_37172
     push    word ptr [bp+arg_vcefileptr+2]
+loc_37123:
     push    word ptr [bp+arg_vcefileptr]
     push    word ptr [bp+var_titlptr+2]
     push    word ptr [bp+var_titlptr]
+loc_3712C:
     push    cs
     call near ptr audio_map_song_instruments
     add     sp, 8
+loc_37133:
     push    word ptr [bp+var_titlptr+2]
     push    word ptr [bp+var_titlptr]
     push    cs
+loc_3713A:
     call near ptr audio_map_song_tracks
     add     sp, 4
     les     bx, [bp+var_hdrptr]

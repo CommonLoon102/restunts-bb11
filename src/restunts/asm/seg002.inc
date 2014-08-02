@@ -8,6 +8,6 @@ seg002 segment byte public 'STUNTSC' use16
     extrn ported_get_kevinrandom_seed_:proc
     extrn ported_get_kevinrandom_:proc
     extrn intr0_handler:proc
-    extrn init_div0:proc
+    extrn ported_init_div0_:proc
     extrn byte_19F07:byte
 seg002 ends

@@ -32,7 +32,12 @@ void far* mmgr_alloc_resbytes(const char* name, long int size);
 unsigned long mmgr_get_res_ofs_diff_scaled();
 unsigned long mmgr_get_chunk_size_bytes();
 
+char far* locate_resource(char far* data, char* name, unsigned short fatal);
 char far* locate_shape_nofatal(char far* data, char* name);
 char far* locate_shape_fatal(char far* data, char* name);
+char far* locate_shape_alt(char far* data, char* name);
+char far* locate_sound_fatal(char far* data, char* name);
+void locate_many_resources(char far* data, char* names, char far** result);
+char far* locate_text_res(char far* data, char* name);
 
 #endif

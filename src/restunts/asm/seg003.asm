@@ -127,9 +127,11 @@ loc_19F62:
     mov     ax, word_45982
     cmp     word_45574, ax
     jnz     short loc_19F8B
+loc_19F6B:
     mov     ax, word_45984
     cmp     word_45576, ax
     jnz     short loc_19F8B
+loc_19F74:
     mov     ax, word_45986
     cmp     word_45578, ax
 loc_19F7B:

@@ -70,6 +70,7 @@ loc_39CCF:
     push    ds
     pop     es
     mov     di, word ptr [bp+arg_0]
+loc_39CDE:
     mov     cx, 0FFFFh
     xor     ax, ax
     repne scasb
@@ -89,9 +90,11 @@ loc_39CCF:
     mov     [bp+var_2], ax
     or      ax, ax
     jz      short loc_39D16
+loc_39D0A:
     inc     [bp+var_2]
     mov     bx, [bp+var_2]
     mov     byte ptr [bx], 0
+loc_39D13:
     jmp     short loc_39D1B
     ; align 2
     db 144
@@ -102,10 +105,12 @@ loc_39D1B:
     push    ds
     pop     es
     mov     di, [bp+arg_4]
+loc_39D23:
     mov     cx, 0FFFFh
     xor     ax, ax
     repne scasb
     not     cx
+loc_39D2C:
     sub     di, cx
     mov     bx, cx
     xchg    di, si

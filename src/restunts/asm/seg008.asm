@@ -195,10 +195,12 @@ locret_27504:
 loc_27506:
     push    cs
     call near ptr mouse_draw_opaque_check
+loc_2750A:
     mov     ax, 0Fh
     push    ax
     mov     ax, [bp+arg_6]
     sub     ax, [bp+arg_4]
+loc_27514:
     push    ax
     mov     ax, [bp+arg_2]
     sub     ax, [bp+arg_0]
@@ -4523,7 +4525,7 @@ ported_get_super_random_ proc far
     add     ax, [bp+var_4]
     add     ax, di
 loc_299AF:
-    add     ax, gState_game_frame
+    add     ax, gState_frame
     mov     si, ax
     or      si, si
     jge     short loc_299C2

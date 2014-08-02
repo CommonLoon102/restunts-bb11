@@ -126,6 +126,7 @@ loc_3A504:
 loc_3A50A:
     push    word ptr [bp+arg_2]; char *
     call    _strlen
+loc_3A512:
     add     sp, 2
     mov     [bp+var_6], ax
     jmp     short loc_3A526
@@ -602,6 +603,7 @@ loc_3A953:
     pop     si
 loc_3A954:
     mov     sp, bp
+loc_3A956:
     pop     bp
     retf
 read_line_helper2 endp

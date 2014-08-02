@@ -64,7 +64,9 @@ ported_file_load_shape2d_nofatal2_ proc far
     arg_0 = word ptr 6
 
     push    bp
+loc_39E15:
     mov     bp, sp
+loc_39E17:
     push    [bp+arg_0]
 loc_39E1A:
     call    file_load_shape2d_nofatal_thunk
@@ -149,17 +151,22 @@ ported_init_main_ proc far
     push    bp
     mov     bp, sp
     sub     sp, 1Eh
+loc_39E5C:
     push    di
     push    si
     call    kb_init_interrupt
+loc_39E63:
     call    kb_shift_checking2
+loc_39E68:
     call    kb_call_readchar_callback
     mov     ax, offset do_mrl_textres
     mov     dx, seg seg008
     push    dx
+loc_39E74:
     push    ax
     mov     ax, 7
     push    ax
+loc_39E79:
     call    kb_reg_callback
     add     sp, 6
     mov     ax, offset do_joy_restext
@@ -260,6 +267,7 @@ loc_39F6B:
     mov     al, [bx+1]
     cbw
     cmp     ax, 68h ; 'h'
+loc_39F87:
     jz      short loc_39F5E
     cmp     ax, 6Eh ; 'n'
     jnz     short loc_39F91

@@ -88,6 +88,8 @@ seg039 segment byte public 'STUNTSD' use16
     public unk_3B23A
     public unk_3B23C
     public unk_3B244
+    public unk_3B24C
+    public unk_3B254
     public unk_3B25C
     public unk_3B264
     public unk_3B266
@@ -200,7 +202,7 @@ unk_3B244     db 0
     db 2
     db 38
     db 2
-    db 46
+unk_3B24C     db 46
     db 2
     db 54
     db 2
@@ -208,7 +210,7 @@ unk_3B244     db 0
     db 2
     db 70
     db 2
-    db 78
+unk_3B254     db 78
     db 2
     db 86
     db 2

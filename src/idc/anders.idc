@@ -743,7 +743,12 @@ static PortFuncName(labelname) {
 		labelname == "video_get_status" ||
 		labelname == "random_wait" ||
 		labelname == "toupper" ||
+		
+		labelname == "init_carstate_from_simd" ||
+		labelname == "init_unknown" ||
+		labelname == "init_game_state" ||
 
+		labelname == "init_div0" ||
 		labelname == "copy_material_list_pointers" ||
 		labelname == "set_default_car" ||
 		labelname == "init_main" ||

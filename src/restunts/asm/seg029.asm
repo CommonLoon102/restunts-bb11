@@ -66,18 +66,23 @@ audioresource_compare_chunknames proc far
     arg_num = word ptr 16
 
     push    bp
+loc_39AD5:
     mov     bp, sp
+loc_39AD7:
     sub     sp, 2
+loc_39ADA:
     push    di
     push    si
 loc_39ADC:
     cmp     [bp+arg_num], 0
+loc_39AE0:
     jz      short loc_39B50
     mov     di, [bp+arg_casesensitive]
     mov     si, [bp+arg_num]
 loc_39AE8:
     les     bx, [bp+arg_chunkname]
     cmp     byte ptr es:[bx], 0
+loc_39AEF:
     jz      short loc_39B4D ; goto end
     les     bx, [bp+arg_foundname]
     cmp     byte ptr es:[bx], 0
@@ -101,18 +106,23 @@ byte_39B14     db 144
 loc_39B16:
     or      di, di
     jnz     short loc_39B44
+loc_39B1A:
     les     bx, [bp+arg_foundname]
     mov     al, es:[bx]
     sub     ah, ah
     push    ax
+loc_39B23:
     call    toupper
     add     sp, 2
+loc_39B2B:
     les     bx, [bp+arg_chunkname]
     mov     cl, es:[bx]
     sub     ch, ch
     push    cx
+loc_39B34:
     mov     [bp+var_2], ax
     call    toupper
+loc_39B3C:
     add     sp, 2
     cmp     ax, [bp+var_2]
     jnz     short loc_39B09
@@ -346,8 +356,11 @@ loc_39CC1:
 loc_39CC4:
     pop     si
     pop     di
+loc_39CC6:
     mov     sp, bp
+loc_39CC8:
     pop     bp
+locret_39CC9:
     retf
 audioresource_copy_n_bytes endp
 seg029 ends

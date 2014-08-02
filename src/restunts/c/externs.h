@@ -1,12 +1,15 @@
 #ifndef RESTUNTS_EXTERNS_H
 #define RESTUNTS_EXTERNS_H
 
+#include "math.h"
+
 #ifdef RESTUNTS_SDL
 #define far
 #define huge
 #endif
 
 #pragma pack (push, 1)
+
 struct GAMEINFO {
 	char game_playercarid[4];
 	char game_playermaterial;
@@ -19,10 +22,192 @@ struct GAMEINFO {
 	unsigned short game_framespersec;
 	unsigned short game_recordedframes;
 };
+
+struct CARSTATE {
+	struct VECTORLONG car_posWorld1;
+	struct VECTORLONG car_posWorld2;
+	struct VECTOR car_rotate; // applying the (x, y, z) vector notation to rotation
+                              // angles is a source of confusion.
+	short car_pseudoGravity;
+	short car_steeringAngle;
+	short car_currpm;
+	short car_lastrpm;
+	short car_idlerpm2;
+	short car_speeddiff; // former gripdiff
+	short car_speed;     // former trackgrip
+                         // value is 2^8*(mph value) and unsigned
+	short car_speed2;    // former trackgrip2
+                         // speed is the rev-coupled speed, while speed2 is
+                         // the actual car speed. They are different, for
+                         // instance, during jumps (where accelerating increases
+                         // revs without making the car go faster).
+	short car_lastspeed; // former lasttrackgrip
+	short car_gearratio;
+	short car_gearratioshr8;
+	short car_knob_x;
+	short car_36MwhlAngle;
+	short car_knob_y;
+	short car_knob_x2;
+	short car_knob_y2;
+	short car_angle_z;
+	short car_40MfrontWhlAngle;
+	short field_42;
+	short car_demandedGrip;
+	short car_surfacegrip_sum;
+	short field_48;
+	short car_trackdata3_index;
+	short car_rc1[4]; // four words, one for each wheel.
+	short car_rc2[4];
+	short car_rc3[4];
+	short car_rc4[4];
+	short car_rc5[4];
+	struct VECTOR car_whlWorldCrds1[4];
+	struct VECTOR car_whlWorldCrds2[4];
+	struct VECTOR car_vec_unk3;
+	struct VECTOR car_vec_unk4;
+	struct VECTOR car_vec_unk5;
+	short field_B6;
+	short field_B8;
+	short field_BA;
+	char car_is_braking;
+	char car_is_accelerating;
+	char car_current_gear;
+	char car_sumSurfFrontWheels;
+	char car_sumSurfRearWheels;
+	char car_sumSurfAllWheels; // used as jump flag.
+	char car_surfaceWhl[4];      // surface types for each of the wheels, it seems.
+	char car_engineLimiterTimer;
+	char car_slidingFlag;
+	char field_C8;
+	char car_crashBmpFlag;
+	char car_changing_gear;
+	char car_fpsmul2;
+	char car_transmission;
+	char field_CD;
+	char field_CE; // is added?
+	char field_CF; // is initialized?
+};
+
+struct GAMESTATE {
+	struct VECTORLONG game_longvecs1[8];
+	struct VECTORLONG game_longvecs2[8];
+	struct VECTORLONG game_longvecs3[8];
+	struct VECTOR game_vec1;
+	struct VECTOR game_vec2;
+	struct VECTOR game_vec3;
+	struct VECTOR game_vec4;
+	short game_frame_in_sec;
+	short game_frames_per_sec;
+	long  game_travDist;
+	short game_frame;
+	short game_total_finish; // finish time + penalty when crossed finish line
+	short field_144;
+	short game_pEndFrame;
+	short game_oEndFrame;   // former game_frame2
+	short game_penalty; // probably penalty counter
+	short game_impactSpeed;
+	short game_topSpeed;
+	short game_jumpCount;
+	struct CARSTATE playerstate;
+	struct CARSTATE opponentstate;
+	short field_2F2;
+	short field_2F4;
+	short game_startcol;
+	short game_startcol2;
+	short game_startrow;
+	short game_startrow2;
+	short field_2FE[24];
+	short field_32E[24];
+	short field_35E[24];
+	short field_38E[24];
+	char field_3BE[48];
+	char kevinseed[6];
+	char field_3F4;
+	char field_3F5;
+	char game_3F6autoLoadEvalFlag;
+	char field_3F7;
+	char field_3F8;
+	char field_3F9;
+	char field_3FA[48];
+	char field_42A;
+	char field_42B[24];
+	char field_443[24];
+	char field_45B;
+	char field_45C;
+	char field_45D;
+	char field_45E;
+	char field_45F;
+};
+
+struct SIMD {
+	char num_gears;
+	char simd_unk;
+	short car_mass;
+	short braking_eff;
+	short idle_rpm;
+	short downshift_rpm;
+	short upshift_rpm;
+	short max_rpm;
+	short gear_ratios[7];
+	struct POINT2D knob_points[7];
+	short aero_resistance;
+	char idle_torque;
+	char torque_curve[104];
+	char field_A3;
+	short grip;
+	short field_A6[7];
+	short sliding;
+	short surface_grip[4];
+	char simd_unk3[10];
+	struct POINT2D collide_points[2];
+	short car_height;
+	struct VECTOR wheel_coords[4];
+	char steeringdots[62];
+	struct POINT2D spdcenter;
+	short spdnumpoints;
+	char spdpoints[208];
+	struct POINT2D revcenter;
+	short revnumpoints;
+	char revpoints[256];
+	short aerorestable;
+};
+
+struct TRKOBJINFO {
+	char  si_noOfBlocks;      // How many shapeInfo pieces compose the element. Arbitrary for the first piece, 0 for the following ones.
+	char  si_entryPoint;      // Connectivity of the track element regarding tiles.
+	char  si_exitPoint;
+	char  si_entryType;        // Connectivity of the track element regarding element types.
+	char  si_exitType;
+	char  si_arrowType;        // Type of the element for determining penalty-arrow behaviour.
+	short si_arrowOrient;      // Orientation angle for penalty-arrow purposes
+	short* si_cameraDataOffset; // offset (0003B770)
+	char  si_opp1;             //Appears to affect how the opponent AI approaches an element.
+	char  si_opp2;
+	char  si_opp3;
+	char  si_oppSpedCode;
+};
+
+struct TRACKOBJECT {
+	struct TRKOBJINFO* ss_trkObjInfoPtr[]; // offset (0003B770)
+	short ss_rotY;           // Horizontal orientation of the element.
+	short ss_shapePtr;       // offset (0003B770)
+	short ss_loShapePtr;     // offset (0003B770)
+	char  ss_ssOvelay;       // Renders additional sceneShapes over the current one.
+	char  ss_surfaceType;    // Paintjob. FF will induce alternating paintjobs.
+	char  ss_ignoreZBias;    // Appears to be Z-bias override flag, mostly used for roads and corners.
+	char  ss_multiTileFlag;  // 0 = one-tile, 1 = two-tile vertical, 2 = two-tile horizontal, 3 = four-tile.
+	char  ss_physicalModel;  // sets the physical model in build_track_object
+	char  scene_unk5;        // always zero.
+};
+
 #pragma pack (pop)
 
 extern struct GAMEINFO gameconfig;
 extern struct GAMEINFO gameconfigcopy;
+
+extern struct GAMESTATE state;
+extern struct SIMD simd_player;
+extern struct SIMD simd_opponent;
 
 extern short video_flag1_is1;
 extern short video_flag2_is1;
@@ -30,6 +215,23 @@ extern short video_flag3_isFFFF;
 extern short video_flag4_is1;
 extern short video_flag5_is0;
 extern short video_flag6_is1;
+
+extern unsigned char byte_44A8A;
+extern unsigned char byte_4552F;
+extern unsigned short word_42D02;
+extern unsigned char byte_449DA;
+extern unsigned char byte_4393C;
+
+extern short word_45A24; // init state?
+extern short word_45A00; // fps * 30
+extern short word_4499C; // 100 / fps
+extern short track_angle;
+extern void* steerWhlRespTable_ptr;
+extern void* steerWhlRespTable_10fps;
+extern void* steerWhlRespTable_20fps;
+extern char startcol2, startrow2;
+extern char hillFlag;
+extern short unk_3B8E8[];
 
 extern void far* fontnptr;
 extern void far* fontdefptr;
@@ -76,6 +278,7 @@ extern unsigned short dialogarg2;
 extern char byte_3B85E[];
 extern char byte_43966;
 extern char aMain[];
+extern char aMisc_1[];
 extern char aFontdef_fnt[];
 extern char aFontn_fnt[];
 extern char aTrakdata[];
@@ -122,7 +325,7 @@ extern const char* aLocateshape4_4sShapeNotF;
 extern const char* aLocatesound4_4sSoundNotF;
 extern char* audiodriverstring;
 
-extern unsigned short gState_game_frame;
+extern unsigned short gState_frame;
 extern short is_audioloaded;
 extern void far* songfileptr;
 extern void far* voicefileptr;
@@ -139,6 +342,22 @@ extern int* material_patlist_ptr_cpy;
 extern int* material_patlist2_ptr;
 extern int* material_patlist2_ptr_cpy;
 extern unsigned short someZeroVideoConst;
+
+extern short sub_18D60(short car_trackdata3_index, struct VECTOR* car_vec_unk3, short field_CE, short* unk);
+extern void font_set_fontdef(void);
+extern void init_polyinfo(void);
+extern unsigned short run_intro_looped(void);
+extern unsigned short show_dialog(int unk1, int unk2, void far* textresptr, unsigned short unk3, unsigned short unk4, int arg, int unk5, int unk6);
+extern char run_menu(void);
+extern char setup_track(void);
+extern void run_tracks_menu(int unk);
+extern void run_opponent_menu(void);
+extern void show_waiting(void);
+extern void run_car_menu(struct GAMEINFO* unk, char* unk2, char* unk3, unsigned int unk4);
+extern void run_game(void);
+extern unsigned end_hiscore(void);
+extern unsigned run_option_menu(void);
+extern void security_check(void);
 
 extern void ensure_file_exists(int unk);
 
@@ -171,6 +390,7 @@ extern void do_mof_restext(void);
 extern void do_pau_restext(void);
 extern void do_dos_restext(void);
 extern void do_sonsof_restext(void);
+extern short get_kb_or_joy_flags(void);
 
 extern short mouse_init(short a1, short a2);
 extern void mouse_draw_opaque_check(void);
@@ -186,6 +406,8 @@ extern void sprite_set_1_size(unsigned short left, unsigned short right, unsigne
 extern void sprite_clear_1_color(unsigned char);
 extern void sprite_blit_to_video(struct SPRITE far* sprite);
 
+extern short intr0_handler(void);
+extern short (far* old_intr0_handler)(void);
 extern void timer_setup_interrupt(void);
 
 extern short set_criterr_handler(short (far* callback)(void));

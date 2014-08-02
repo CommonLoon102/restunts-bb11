@@ -126,10 +126,12 @@ loc_26BF3:
     mov     ax, offset audio_driver_timer
     mov     dx, seg seg007
     push    dx
+loc_26BFC:
     push    ax
     call    timer_remove_callback
     pop     bx
     pop     bx
+loc_26C04:
     pop     si
     retf
 audio_remove_driver_timer endp

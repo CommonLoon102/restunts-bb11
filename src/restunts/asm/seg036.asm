@@ -63,10 +63,12 @@ loc_3B0BB:
     mov     bp, sp
 loc_3B0BD:
     sub     sp, 0Ch
+loc_3B0C0:
     push    [bp+arg_2]
     push    [bp+arg_0]
     call    file_get_res_shape_count
     add     sp, 4
+loc_3B0CE:
     mov     [bp+var_A], ax
     mov     [bp+var_6], 0
     mov     [bp+var_8], 0
@@ -84,13 +86,16 @@ loc_3B0E7:
     mov     word ptr [bp+var_4+2], dx
     les     bx, [bp+var_4]
     mov     ax, es:[bx+SHAPE2D.s2d_height]
+loc_3B0FC:
     imul    es:[bx+SHAPE2D.s2d_width]
     add     ax, 20h ; ' '
+loc_3B102:
     mov     [bp+var_C], ax
 loc_3B105:
     mov     cl, 4
 loc_3B107:
     shr     [bp+var_C], cl
+loc_3B10A:
     mov     ax, [bp+var_6]
 loc_3B10D:
     cmp     [bp+var_C], ax
@@ -109,8 +114,11 @@ loc_3B121:
     jl      short loc_3B0DE
 loc_3B123:
     mov     ax, [bp+var_6]
+loc_3B126:
     mov     sp, bp
+loc_3B128:
     pop     bp
+locret_3B129:
     retf
 ported_file_get_unflip_size_ endp
 seg036 ends

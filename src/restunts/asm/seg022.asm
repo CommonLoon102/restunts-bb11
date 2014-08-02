@@ -118,8 +118,10 @@ loc_36CC4:
     mov     ax, 4
     push    ax
     push    [bp+arg_4]
+loc_36CCB:
     call    preRender_wheel_helper4
     add     sp, 14h
+loc_36CD3:
     add     [bp+var_2], 4
     inc     [bp+var_110]
 loc_36CDB:

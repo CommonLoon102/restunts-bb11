@@ -1231,17 +1231,17 @@ dseg segment byte public 'STUNTSD' use16
     public crshres
     public logoshape
     public byte_44346
-    public gState_13C
-    public gState_13E
-    public gState_game_frame
-    public gState_142
+    public gState_travDist_ax
+    public gState_travDist_dx
+    public gState_frame
+    public gState_total_finish_time
     public gState_144
-    public gState_146
-    public gState_game_frame2
-    public gState_fps_counter
-    public gState_14C
-    public gState_14E
-    public gState_150
+    public gState_pEndFrame
+    public gState_oEndFrame
+    public gState_penalty
+    public gState_impactSpeed
+    public gState_topSpeed
+    public gState_jumpCount
     public pState_minusRotate_y_1
     public songfileptr
     public mmouspriteptr
@@ -33815,17 +33815,17 @@ logoshape     db 0
     db 0
 byte_44346     db 0
     db 0
-gState_13C     dw 0
-gState_13E     dw 0
-gState_game_frame     dw 0
-gState_142     dw 0
+gState_travDist_ax     dw 0
+gState_travDist_dx     dw 0
+gState_frame     dw 0
+gState_total_finish_time     dw 0
 gState_144     dw 0
-gState_146     dw 0
-gState_game_frame2     dw 0
-gState_fps_counter     dw 0
-gState_14C     dw 0
-gState_14E     dw 0
-gState_150     dw 0
+gState_pEndFrame     dw 0
+gState_oEndFrame     dw 0
+gState_penalty     dw 0
+gState_impactSpeed     dw 0
+gState_topSpeed     dw 0
+gState_jumpCount     dw 0
 pState_minusRotate_y_1     dw 0
 songfileptr     dd 0
 mmouspriteptr     dd 0

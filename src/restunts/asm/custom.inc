@@ -187,6 +187,11 @@ extrn video_get_status:proc
 extrn random_wait:proc
 extrn toupper:proc
 
+extrn init_carstate_from_simd:proc
+extrn init_unknown:proc
+extrn init_game_state:proc
+
+extrn init_div0:proc
 extrn copy_material_list_pointers:proc
 extrn set_default_car:proc
 extrn init_main:proc

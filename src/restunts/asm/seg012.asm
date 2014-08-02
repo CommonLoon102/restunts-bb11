@@ -436,18 +436,22 @@ loc_2EA6C:
     jl      short loc_2EA77
     jz      short loc_2EA8F
     xchg    dx, cx
+loc_2EA74:
 smart
     or      di, 2
 nosmart
 loc_2EA77:
     xor     ax, ax
     div     cx
+loc_2EA7B:
     mov     bl, ah
     xor     bh, bh
     add     al, 80h ; '€'
     adc     bx, 0
+loc_2EA84:
     mov     al, atantable[bx]
     xor     ah, ah
+loc_2EA8A:
     jmp     cs:off_2EA9B[di]
 loc_2EA8F:
     or      dx, dx
@@ -617,6 +621,7 @@ loc_2EB62:
     mov     [si+2], cx
     mov     [si+6], ax
     mov     [si+8], dx
+loc_2EB96:
     mov     [si+0Ah], bx
     jmp     short loc_2EBA8
     ; align 2

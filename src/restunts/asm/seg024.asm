@@ -65,10 +65,12 @@ loc_36F2B:
     mov     bp, sp
 loc_36F2D:
     sub     sp, 4
+loc_36F30:
     push    [bp+arg_angleYZ]
     call    cos_fast
     add     sp, 2
     mov     [bp+var_2], ax
+loc_36F3E:
     push    [bp+arg_angleYZ]
     call    sin_fast
     mov     [bp+var_4], ax
@@ -81,11 +83,14 @@ loc_36F2D:
     mov     [bx+MATRIX._22], ax
     mov     ax, [bp+var_4]
     mov     [bx+MATRIX._32], ax
+loc_36F6B:
     mov     [bx+MATRIX._13], 0
     neg     ax
+loc_36F72:
     mov     [bx+MATRIX._23], ax
     mov     ax, [bp+var_2]
     mov     [bx+MATRIX._33], ax
+loc_36F7B:
     mov     sp, bp
     pop     bp
     retf
@@ -102,8 +107,10 @@ ported_mat_rot_y_ proc far
 
     push    bp
     mov     bp, sp
+loc_36F83:
     sub     sp, 4
     push    [bp+arg_angleXZ]
+loc_36F89:
     call    cos_fast
     add     sp, 2
     mov     [bp+var_2], ax
@@ -168,6 +175,7 @@ loc_3701F:
     mov     [bx+MATRIX._23], 0
 loc_37024:
     mov     [bx+MATRIX._33], 4000h
+loc_37029:
     mov     sp, bp
     pop     bp
 locret_3702C:

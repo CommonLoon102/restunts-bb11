@@ -82,6 +82,7 @@ loc_36BDF:
     call    preRender_default_alt
 loc_36BE4:
     mov     sp, bp
+loc_36BE6:
     pop     bp
     retf
 preRender_sphere_helper endp

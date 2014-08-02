@@ -82,6 +82,7 @@ loc_367C9:
     mov     bx, [bp+arg_6]
 loc_367CC:
     add     [bp+arg_6], 4
+loc_367D0:
     mov     [bx], ax
     mov     [bx+2], dx
     add     [bp+arg_4], 4
@@ -128,9 +129,11 @@ loc_36803:
     mov     bx, [bp+var_2]
     inc     [bp+var_2]
     shl     bx, 1
+loc_3680B:
     shl     bx, 1
     mov     si, [bp+arg_6]
     mov     [bx+si], ax
+loc_36812:
     mov     [bx+si+2], dx
     add     [bp+arg_4], 4
 loc_36819:

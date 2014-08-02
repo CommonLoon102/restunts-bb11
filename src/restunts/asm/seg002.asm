@@ -55,7 +55,7 @@ seg002 segment byte public 'STUNTSC' use16
     public ported_get_kevinrandom_seed_
     public ported_get_kevinrandom_
     public intr0_handler
-    public init_div0
+    public ported_init_div0_
     public byte_19F07
 algn_19DC5:
     ; align 2
@@ -175,6 +175,7 @@ loc_19E16:
     push    bp
     push    si
     mov     si, [bp+arg_0]
+loc_19E1B:
     int     62h             ; reserved for user interrupt
     pop     si
 loc_19E1E:
@@ -189,6 +190,7 @@ ported_init_kevinrandom_ proc far
 
     push    bp
     mov     bp, sp
+loc_19E24:
     push    bp
     mov     bx, [bp+arg_0]
     mov     al, [bx]
@@ -302,7 +304,7 @@ loc_19EE3:
     pop     bp
     iret
 intr0_handler endp
-init_div0 proc far
+ported_init_div0_ proc far
 
     push    ds
 loc_19EE9:
@@ -339,6 +341,6 @@ byte_19F07     db 30
     db 0
     db 205
     db 33
-init_div0 endp
+ported_init_div0_ endp
 seg002 ends
 end

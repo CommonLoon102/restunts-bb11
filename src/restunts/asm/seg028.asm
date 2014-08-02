@@ -130,10 +130,12 @@ sub_3868A proc far
      r = byte ptr 2
 
     push    bp
+loc_3868B:
     mov     bp, sp
     sub     sp, 2
     push    ds
     mov     ax, seg dseg
+loc_38694:
     mov     ds, ax
     add     word_44D48, 80h ; '€'
 loc_3869C:

@@ -49,8 +49,8 @@ seg001 segment byte public 'STUNTSC' use16
     public opponent_op
     public mat_mul_vector2
     public update_player_state
-    public init_carstate_from_simd
-    public init_game_state
+    public ported_init_carstate_from_simd_
+    public ported_init_game_state_
     public restore_gamestate
     public update_gamestate
     public player_op
@@ -162,11 +162,13 @@ loc_1475B:
 loc_14764:
     mov     ax, word ptr state.opponentstate.car_posWorld1.ly
     mov     dx, word ptr state.opponentstate.car_posWorld1.ly+2
+loc_1476B:
     mov     cl, 6
 loc_1476D:
     sar     dx, 1
     rcr     ax, 1
     dec     cl
+loc_14773:
     jnz     short loc_1476D
     mov     [bp+var_2A], ax
     mov     ax, word ptr state.opponentstate.car_posWorld1.lz
@@ -3616,7 +3618,7 @@ loc_16892:
     pop     bp
     retf
 update_player_state endp
-init_carstate_from_simd proc far
+ported_init_carstate_from_simd_ proc far
     var_E = word ptr -14
     var_C = word ptr -12
     var_initX = word ptr -10
@@ -3790,19 +3792,19 @@ loc_16A37:
     mov     [bp+var_C], ax
     mov     bx, [bp+arg_pState]
     add     bx, ax
-    mov     [bx+4Ch], si    ; .rc1
+    mov     [bx+CARSTATE.car_rc1], si; .rc1
     mov     bx, [bp+arg_pState]
     add     bx, [bp+var_C]
-    mov     [bx+54h], si    ; rc2
+    mov     [bx+CARSTATE.car_rc2], si; rc2
     mov     bx, [bp+arg_pState]
     add     bx, [bp+var_C]
-    mov     [bx+5Ch], si    ; rc3
+    mov     [bx+CARSTATE.car_rc3], si; rc3
     mov     bx, [bp+arg_pState]
     add     bx, [bp+var_C]
-    mov     [bx+64h], si    ; rc4
+    mov     [bx+CARSTATE.car_rc4], si; rc4
     mov     bx, [bp+arg_pState]
     add     bx, [bp+var_C]
-    mov     [bx+6Ch], si    ; rc5
+    mov     [bx+CARSTATE.car_rc5], si; rc5
     mov     ax, di
     mov     cx, ax
     shl     ax, 1
@@ -3866,8 +3868,8 @@ loc_16A37:
     retf
     ; align 2
     db 144
-init_carstate_from_simd endp
-init_game_state proc far
+ported_init_carstate_from_simd_ endp
+ported_init_game_state_ proc far
     var_A = word ptr -10
     var_8 = word ptr -8
     var_2 = word ptr -2
@@ -3886,7 +3888,7 @@ init_game_state proc far
     mov     word_45A24, si
     sub     di, di
 loc_16B18:
-    mov     ax, 460h
+    mov     ax, 1120        ; sizeof(struct GAMESTATE)
     cwd
     push    dx
     push    ax
@@ -3895,7 +3897,7 @@ loc_16B18:
     push    dx
     push    ax
     call    __aFlmul
-    add     ax, 3F4h
+    add     ax, GAMESTATE.field_3F4
     adc     dx, 0
     add     ax, word ptr cvxptr
     adc     dx, 0
@@ -3907,20 +3909,20 @@ loc_16B18:
     mov     ax, si
     mov     es:[bx], al
     inc     di
-    cmp     di, 14h
-    jl      short loc_16B18
+    cmp     di, 20
+    jl      short loc_16B18 ; sizeof(struct GAMESTATE)
 loc_16B4D:
-    cmp     framespersec, 0Ah
+    cmp     framespersec, 10
     jnz     short loc_16B5C
     mov     steerWhlRespTable_ptr, offset steerWhlRespTable_10fps
     jmp     short loc_16B62
 loc_16B5C:
     mov     steerWhlRespTable_ptr, offset steerWhlRespTable_20fps
 loc_16B62:
-    mov     ax, 1Eh
+    mov     ax, 30
     imul    framespersec
     mov     word_45A00, ax
-    mov     ax, 64h ; 'd'
+    mov     ax, 100
     cwd
     mov     cx, framespersec
     idiv    cx
@@ -3929,7 +3931,7 @@ loc_16B62:
     jnz     short loc_16B82
     jmp     loc_16F34
 loc_16B82:
-    call    sub_22532
+    call    init_unknown
     mov     state.field_3F4, 1
     mov     state.game_frames_per_sec, 1
     mov     ax, si
@@ -3946,7 +3948,7 @@ loc_16BAC:
     mov     state.field_3FA[di], al
     inc     di
 loc_16BB3:
-    cmp     di, 30h ; '0'
+    cmp     di, 48
     jl      short loc_16BAC
     mov     di, si
     jmp     short loc_16BC5
@@ -3956,7 +3958,7 @@ loc_16BBC:
     mov     word ptr state.field_38E[bx], si
     inc     di
 loc_16BC5:
-    cmp     di, 18h
+    cmp     di, 24
     jl      short loc_16BBC
     mov     ax, 200h
     push    ax
@@ -3993,7 +3995,7 @@ loc_16C0F:
     cbw
     mov     bx, ax
     shl     bx, 1
-    mov     ax, [bx+178h]
+    mov     ax, [bx+178h]   ; unk_3B8E8[bx]
     add     ax, 3C0h
     mov     state.game_vec1.vy, ax
     mov     ax, 200h
@@ -4058,11 +4060,11 @@ loc_16C0F:
     mov     state.game_travDist_dx, ax
     mov     state.game_travDist_ax, ax
     mov     state.game_frame, si
-    mov     state.field_142, si
+    mov     state.game_total_finish, si
     mov     state.field_144, si
     mov     state.game_pEndFrame, si
     mov     state.game_oEndFrame, si
-    mov     state.game_fps_counter, si
+    mov     state.game_penalty, si
     mov     state.game_impactSpeed, si
     mov     state.game_topSpeed, si
     mov     state.game_jumpCount, si
@@ -4167,7 +4169,7 @@ loc_16DA4:
     mov     ax, offset state.playerstate; dseg: state.playerstate
     push    ax
     push    cs
-    call near ptr init_carstate_from_simd
+    call near ptr ported_init_carstate_from_simd_
     add     sp, 14h
     mov     state.field_2F2, si
     mov     ax, si
@@ -4191,7 +4193,7 @@ loc_16DA4:
     inc     state.playerstate.field_CE
     sub     ah, ah
     push    ax
-    mov     ax, 8F1Ah
+    mov     ax, offset state.playerstate.car_vec_unk3
     push    ax
     push    state.playerstate.car_trackdata3_index
     push    cs
@@ -4251,7 +4253,7 @@ loc_16E0A:
     cbw
     mov     bx, ax
     shl     bx, 1
-    mov     ax, [bx-55EAh]
+    mov     ax, trackcenterpos[bx]
     add     ax, [bp+var_2]
     cwd
     mov     cl, 6
@@ -4298,7 +4300,7 @@ loc_16EDB:
     mov     ax, offset state.opponentstate
     push    ax
     push    cs
-    call near ptr init_carstate_from_simd
+    call near ptr ported_init_carstate_from_simd_
     add     sp, 14h
     cmp     gameconfig.game_opponenttype, 0
     jz      short loc_16F2F
@@ -4310,7 +4312,7 @@ loc_16EDB:
     inc     state.opponentstate.field_CE
     sub     ah, ah
     push    ax
-    mov     ax, 8FEAh
+    mov     ax, offset state.opponentstate.car_vec_unk3
     push    ax
     mov     bx, state.opponentstate.car_trackdata3_index
     shl     bx, 1
@@ -4329,7 +4331,7 @@ loc_16F34:
     mov     sp, bp
     pop     bp
     retf
-init_game_state endp
+ported_init_game_state_ endp
 restore_gamestate proc far
      s = byte ptr 0
      r = byte ptr 2
@@ -4347,7 +4349,7 @@ restore_gamestate proc far
     sub     ax, ax
     push    ax
     push    cs
-    call near ptr init_game_state
+    call near ptr ported_init_game_state_
     add     sp, 2
 loc_16F59:
     mov     ax, [bp+arg_0]
@@ -4854,7 +4856,7 @@ loc_1737B:
     shl     al, 1
     mov     byte_4499F, al
     mov     ax, word_461CA
-    add     state.game_fps_counter, ax
+    add     state.game_penalty, ax
 loc_173AD:
     mov     ax, [bp+var_2]
     mov     state.field_2F4, ax
@@ -7843,7 +7845,7 @@ nosmart
     mov     [bp+var_td18connStatus], al
     mov     al, [bp+var_tileElem]
     sub     ah, ah
-    mov     cx, ax
+    mov     cx, ax          ; * sizeof(struct TRACKOBJECT)
     shl     ax, 1
     add     ax, cx
     shl     ax, 1
@@ -7857,7 +7859,7 @@ nosmart
     mov     [bp+var_12], ds
     mov     al, [bp+var_td18subTOI]
     sub     ah, ah
-    mov     cx, ax
+    mov     cx, ax          ; * sizeof(struct TRKOBJINFO)
     shl     ax, 1
     add     ax, cx
     shl     ax, 1
@@ -7901,7 +7903,7 @@ nosmart
     mov     [bx], al
 loc_18E1A:
     les     bx, [bp+var_6]
-    cmp     word ptr es:[bx+0Ah], 0
+    cmp     word ptr es:[bx+TRKOBJINFO.si_opp1], 0
     jz      short loc_18E29
     mov     [bp+var_24], 1
 loc_18E29:
@@ -7909,7 +7911,7 @@ loc_18E29:
     jz      short loc_18E76
     cmp     [bp+var_24], 0
     jz      short loc_18E3C
-    mov     ax, es:[bx+0Ah]
+    mov     ax, word ptr es:[bx+TRKOBJINFO.si_opp1]
     jmp     short loc_18E7D
     ; align 2
     db 144
@@ -7944,7 +7946,7 @@ loc_18E3C:
     db 144
 loc_18E76:
     les     bx, [bp+var_6]
-    mov     ax, es:[bx+8]
+    mov     ax, es:[bx+TRKOBJINFO.si_cameraDataOffset]
 loc_18E7D:
     mov     [bp+var_2C], ax
     mov     [bp+var_2A], ds
@@ -8591,7 +8593,7 @@ init_plantrak proc far
     mov     ax, 0FFFDh
     push    ax
     push    cs
-    call near ptr init_game_state
+    call near ptr ported_init_game_state_
     add     sp, 2
     sub     si, si
     mov     state.field_3F5, 2
@@ -8710,7 +8712,7 @@ loc_1958C:
     mov     ax, offset state.opponentstate
     push    ax
     push    cs
-    call near ptr init_carstate_from_simd
+    call near ptr ported_init_carstate_from_simd_
     add     sp, 14h
     mov     ax, 911Dh
     push    ax
@@ -8897,9 +8899,9 @@ loc_19730:
     cmp     [bp+arg_MplayerFlag], 0
     jnz     short loc_19752
     mov     ax, state.game_frame
-    add     ax, state.game_fps_counter
+    add     ax, state.game_penalty
     add     ax, word_45A24
-    mov     state.field_142, ax
+    mov     state.game_total_finish, ax
     mov     ax, framespersec
     jmp     short loc_19729
     ; align 2
@@ -8924,7 +8926,7 @@ loc_19766:
 loc_19779:
     test    byte_43966, 4
     jnz     short loc_1978D
-    mov     di, offset gState_13C
+    mov     di, offset gState_travDist_ax
     mov     si, offset state.game_travDist_ax
     push    ds
     pop     es

@@ -64,10 +64,12 @@ loc_3B12B:
     mov     bp, sp
 loc_3B12D:
     sub     sp, 0Eh
+loc_3B130:
     push    [bp+arg_memchunkseg]
     push    [bp+arg_memchunkoff]
     call    file_get_res_shape_count
     add     sp, 4
+loc_3B13E:
     mov     [bp+var_shapecount], ax
     mov     cl, 3
     shl     ax, cl
@@ -84,17 +86,22 @@ loc_3B156:
     call    file_get_shape2d
     add     sp, 6
     mov     word ptr [bp+var_memshape], ax
+loc_3B16A:
     mov     word ptr [bp+var_memshape+2], dx
     les     bx, [bp+var_memshape]
     mov     ax, es:[bx+SHAPE2D.s2d_height]
+loc_3B174:
     imul    es:[bx+SHAPE2D.s2d_width]
     mov     cl, 3
     shl     ax, cl
+loc_3B17B:
     mov     [bp+var_6], ax
     sub     dx, dx
     add     [bp+var_sizelo], ax
+loc_3B183:
     adc     [bp+var_sizehi], dx
     add     [bp+var_sizelo], size SHAPE2D
+loc_3B18A:
     adc     [bp+var_sizehi], 0
     inc     [bp+var_counter]
 loc_3B191:
