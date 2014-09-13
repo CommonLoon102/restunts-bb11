@@ -9,6 +9,9 @@
 #include "shape2d.h"
 #include "shape3d.h"
 
+// Entries in the CVX gamestate buffer.
+#define RST_CVX_NUM 20
+
 // ASCII code properties map.
 #define RST_ASC_CHAR_UPPER 0x01
 #define RST_ASC_CHAR_LOWER 0x02
@@ -445,7 +448,7 @@ void init_game_state(short arg)
 	if (arg == -1) {
 		word_45A24 = 0;
 
-		for (i = 0; i < 20; ++i) {
+		for (i = 0; i < RST_CVX_NUM; ++i) {
 			((struct GAMESTATE far*)cvxptr)[i].field_3F4 = 0;
 		}
 	}
@@ -576,6 +579,41 @@ void init_game_state(short arg)
 
 		state.field_42A = 0;
 	}
+}
+
+void restore_gamestate(unsigned short frame)
+{
+	unsigned short curframe;
+
+	if (frame == 0 && word_45A24 == 0) {
+		init_game_state(0);
+	}
+	
+	curframe = frame / word_45A00;
+	
+	if (curframe == RST_CVX_NUM) {
+		curframe--;
+	}
+	
+	// Find last gamestate in cvx.
+	if (frame >= state.game_frame) {
+		while (1) {
+			if (curframe * word_45A00 <= state.game_frame) {
+				return;
+			}
+			else if (((struct GAMESTATE far*)cvxptr)[curframe].field_3F4 != 0) {
+				break;
+			}
+			
+			curframe--;
+		}
+	}
+	
+	// Copy last gamestate from cvx.
+	state = ((struct GAMESTATE far*)cvxptr)[curframe];
+
+	init_kevinrandom(state.kevinseed);
+	word_42D02 = state.game_frame;
 }
 
 void init_div0(void)
@@ -1007,7 +1045,7 @@ _do_game1:
 _init_replay:
 	audio_unload();
 
-	cvxptr = mmgr_alloc_resbytes("cvx", sizeof(struct GAMESTATE) * 20);
+	cvxptr = mmgr_alloc_resbytes("cvx", sizeof(struct GAMESTATE) * RST_CVX_NUM);
 	init_game_state(-1);
 	
 	if (var_A == 0) goto loc_104A6;

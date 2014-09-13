@@ -748,6 +748,7 @@ static PortFuncName(labelname) {
 		labelname == "init_carstate_from_simd" ||
 		labelname == "init_unknown" ||
 		labelname == "init_game_state" ||
+		labelname == "restore_gamestate" ||
 
 		labelname == "init_div0" ||
 		labelname == "copy_material_list_pointers" ||

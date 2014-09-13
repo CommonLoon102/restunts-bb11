@@ -51,7 +51,7 @@ seg001 segment byte public 'STUNTSC' use16
     public update_player_state
     public ported_init_carstate_from_simd_
     public ported_init_game_state_
-    public restore_gamestate
+    public ported_restore_gamestate_
     public update_gamestate
     public player_op
     public detect_penalty
@@ -4332,17 +4332,17 @@ loc_16F34:
     pop     bp
     retf
 ported_init_game_state_ endp
-restore_gamestate proc far
+ported_restore_gamestate_ proc far
      s = byte ptr 0
      r = byte ptr 2
-    arg_0 = word ptr 6
+    arg_frame = word ptr 6
 
     push    bp
     mov     bp, sp
     sub     sp, 2
     push    di
     push    si
-    cmp     [bp+arg_0], 0
+    cmp     [bp+arg_frame], 0
     jnz     short loc_16F59
     cmp     word_45A24, 0
     jnz     short loc_16F59
@@ -4352,7 +4352,7 @@ restore_gamestate proc far
     call near ptr ported_init_game_state_
     add     sp, 2
 loc_16F59:
-    mov     ax, [bp+arg_0]
+    mov     ax, [bp+arg_frame]
     cwd
     mov     cx, word_45A00
     idiv    cx
@@ -4362,7 +4362,7 @@ loc_16F59:
     dec     si
 loc_16F6B:
     mov     ax, state.game_frame
-    cmp     [bp+arg_0], ax
+    cmp     [bp+arg_frame], ax
     jb      short loc_16FB1
 loc_16F73:
     mov     ax, word_45A00
@@ -4380,7 +4380,7 @@ loc_16F81:
     push    dx
     push    ax
     call    __aFlmul
-    add     ax, 3F4h
+    add     ax, GAMESTATE.field_3F4
     adc     dx, 0
     add     ax, word ptr cvxptr
     adc     dx, 0
@@ -4417,7 +4417,7 @@ loc_16FB1:
     repne movsw
     pop     ds
     pop     si
-    mov     ax, 9112h
+    mov     ax, offset state.kevinseed
     push    ax
     call    init_kevinrandom
     add     sp, 2
@@ -4440,7 +4440,7 @@ loc_17002:
     mov     sp, bp
     pop     bp
     retf
-restore_gamestate endp
+ported_restore_gamestate_ endp
 update_gamestate proc far
     var_carInputByte = byte ptr -4
      s = byte ptr 0

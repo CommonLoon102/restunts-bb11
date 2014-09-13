@@ -222,7 +222,7 @@ extern unsigned short word_42D02;
 extern unsigned char byte_449DA;
 extern unsigned char byte_4393C;
 
-extern short word_45A24; // init state?
+extern short word_45A24; // current frame?
 extern short word_45A00; // fps * 30
 extern short word_4499C; // 100 / fps
 extern short track_angle;
