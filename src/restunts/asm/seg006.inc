@@ -13,12 +13,12 @@ seg006 segment byte public 'STUNTSC' use16
     extrn ported_vector_op_unk2_:proc
     extrn ported_calc_sincos80_:proc
     extrn nopsub_26552:proc
-    extrn sub_26572:proc
-    extrn sub_265EC:proc
-    extrn sub_26670:proc
-    extrn sub_2695E:proc
-    extrn sub_2699C:proc
-    extrn sub_269D0:proc
-    extrn sub_26A52:proc
-    extrn sub_26B4A:proc
+    extrn ported_rect_clip_op_:proc
+    extrn ported_rect_clip_op2_:proc
+    extrn rect_clip_op3:proc
+    extrn rect_clip_op3_helper2:proc
+    extrn rect_clip_op3_helper:proc
+    extrn rect_clip_op3_helper3:proc
+    extrn rect_clip_combined:proc
+    extrn rect_array_indexed_op:proc
 seg006 ends

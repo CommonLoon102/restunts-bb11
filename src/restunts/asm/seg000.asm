@@ -409,7 +409,7 @@ loc_10346:
     jl      short loc_10346
     cmp     byte_44AE2, 0
     jnz     short _find_tedit
-    call    setup_track
+    call    track_setup
     or      al, al
     jz      short _sec_check1
     mov     ax, 1
@@ -2205,7 +2205,7 @@ loc_1156A:
     call    check_input
     call    show_waiting
     mov     waitflag, 82h ; '‚'
-    call    setup_track
+    call    track_setup
     call    load_tracks_menu_shapes
     jmp     loc_110ED
     ; align 2
@@ -3253,7 +3253,7 @@ loc_11EA2:
     jnz     short loc_11EAB
     jmp     loc_11F4A
 loc_11EAB:
-    mov     stru_3BB56.rc_top, 0F0h ; 'ð'
+    mov     rect_unk16.rc_right, 0F0h ; 'ð'
     cmp     video_flag5_is0, 0
     jnz     short loc_11EBB
     jmp     loc_11F50
@@ -3309,7 +3309,7 @@ loc_11EBB:
     ; align 2
     db 144
 loc_11F4A:
-    mov     stru_3BB56.rc_top, 140h
+    mov     rect_unk16.rc_right, 140h
 loc_11F50:
     mov     [bp+var_prevcaridindex], 0FFh
     mov     [bp+var_rotation], 0
@@ -3754,8 +3754,8 @@ loc_123CB:
     call    timer_get_delta_alt
     mov     [bp+var_F2], 0FFh
     mov     [bp+var_104_rc.rc_left], 0
-    mov     [bp+var_104_rc.rc_top], 140h
-    mov     [bp+var_104_rc.rc_right], 0
+    mov     [bp+var_104_rc.rc_right], 140h
+    mov     [bp+var_104_rc.rc_top], 0
     mov     [bp+var_104_rc.rc_bottom], 0C8h ; 'È'
     mov     [bp+var_108], 0
     mov     [bp+var_6], 3
@@ -3827,18 +3827,18 @@ loc_1247A:
     mov     al, [bp+var_prevcaridindex]
     cmp     [bp+var_caridindex], al
     jnz     short loc_124A6
-    mov     stru_3BB56.rc_bottom, 5Fh ; '_'
+    mov     rect_unk16.rc_bottom, 5Fh ; '_'
     jmp     short loc_124AC
     ; align 2
     db 144
 loc_124A6:
-    mov     stru_3BB56.rc_bottom, 0C8h ; 'È'
+    mov     rect_unk16.rc_bottom, 0C8h ; 'È'
 loc_124AC:
-    mov     ax, offset stru_3BB56
+    mov     ax, offset rect_unk16
     push    ax
     lea     ax, [bp+var_10_rc]
     push    ax
-    call    sub_265EC
+    call    rect_clip_op2
     add     sp, 4
     lea     ax, [bp+var_1A_rc]
     push    ax
@@ -3846,7 +3846,7 @@ loc_124AC:
     push    ax
     lea     ax, [bp+var_10_rc]
     push    ax
-    call    sub_26572
+    call    rect_clip_op
     add     sp, 6
     cmp     [bp+var_6], 3
     jnz     short loc_124DA
@@ -3967,8 +3967,8 @@ loc_125FE:
     mov     [bp+var_108], 1
     call    sprite_copy_wnd_to_1
     push    [bp+var_1A_rc.rc_bottom]
-    push    [bp+var_1A_rc.rc_right]
     push    [bp+var_1A_rc.rc_top]
+    push    [bp+var_1A_rc.rc_right]
     push    [bp+var_1A_rc.rc_left]
     call    sprite_set_1_size
     add     sp, 8
@@ -3985,8 +3985,8 @@ loc_125FE:
     call    get_a_poly_info
     call    sprite_copy_wnd_to_1
     push    [bp+var_1A_rc.rc_bottom]
-    push    [bp+var_1A_rc.rc_right]
     push    [bp+var_1A_rc.rc_top]
+    push    [bp+var_1A_rc.rc_right]
     push    [bp+var_1A_rc.rc_left]
     call    sprite_set_1_size
     add     sp, 8
@@ -4041,8 +4041,8 @@ loc_126CE:
 loc_126D1:
     call    sprite_copy_2_to_1_2
     push    [bp+var_1A_rc.rc_bottom]
-    push    [bp+var_1A_rc.rc_right]
     push    [bp+var_1A_rc.rc_top]
+    push    [bp+var_1A_rc.rc_right]
     push    [bp+var_1A_rc.rc_left]
     call    sprite_set_1_size
     add     sp, 8
@@ -4929,6 +4929,7 @@ run_option_menu proc far
     push    ax
     call    intro_draw_text
     add     sp, 0Ah
+loc_12FBA:
     mov     ax, offset aGver; "gver"
     push    ax
     push    word ptr miscptr+2

@@ -77,69 +77,46 @@ run_game proc far
     var_12 = word ptr -18
     var_E = word ptr -14
     var_C = word ptr -12
-    var_A = word ptr -10
-    var_8 = word ptr -8
-    var_6 = word ptr -6
-    var_4 = word ptr -4
+    var_rect = RECTANGLE ptr -10
     var_2 = word ptr -2
      s = byte ptr 0
      r = byte ptr 2
 
     push    bp
-loc_21B7B:
     mov     bp, sp
-loc_21B7D:
     sub     sp, 16h
-loc_21B80:
     push    si
-loc_21B81:
     mov     [bp+var_C], 0FFFFh
-loc_21B86:
-    mov     rect_unk10.rc_left, 0
-loc_21B8C:
-    mov     rect_unk10.rc_top, 140h
-loc_21B92:
+    mov     rect_windshield.rc_left, 0
+    mov     rect_windshield.rc_right, 140h
     mov     [bp+var_2], 0FFFFh
-loc_21B97:
     mov     word_449EA, 0FFFFh
-loc_21B9D:
     call    get_kevinrandom
-loc_21BA2:
     mov     cl, 3
-loc_21BA4:
     shl     ax, cl
-loc_21BA6:
     mov     word_42D28, ax
-loc_21BA9:
     mov     replaybar_toggle, 1
-loc_21BAE:
     mov     byte_454B8, 0
-loc_21BB3:
     cmp     byte_44AE2, 0
-loc_21BB8:
     jz      short loc_21BEC
-loc_21BBA:
     inc     cameramode
     cmp     cameramode, 4
-loc_21BC3:
     jnz     short loc_21BCA
     mov     cameramode, 0
 loc_21BCA:
     mov     byte_45DB2, 2
     mov     ax, offset aDefault; "default"
     push    ax
-loc_21BD3:
     sub     ax, ax
     push    ax              ; char *
     push    cs
     call near ptr ported_file_load_replay_
-loc_21BDA:
     add     sp, 4
     or      al, al
     jz      short loc_21BE4
     jmp     loc_223F4
 loc_21BE4:
-    call    setup_track
+    call    track_setup
     jmp     short loc_21C0F
     ; align 2
     db 144
@@ -147,7 +124,6 @@ loc_21BEC:
     cmp     gameconfig.game_recordedframes, 0
     jnz     short loc_21C00
     mov     cameramode, 0
-loc_21BF8:
     mov     byte_45DB2, 1
     jmp     short loc_21C0F
     ; align 2
@@ -169,19 +145,12 @@ loc_21C0F:
     db 144
 loc_21C24:
     mov     kbormouse, 0
-loc_21C29:
     mov     byte_449E6, 0
-loc_21C2E:
     mov     byte_449DA, 1
-loc_21C33:
     push    cs
-loc_21C34:
     call near ptr set_frame_callback
-loc_21C37:
     mov     byte_461C8, 0FFh
-loc_21C3C:
     mov     byte_44346, 0
-loc_21C41:
     mov     byte_4432A, 0
     mov     byte_46467, 0
     mov     dashb_toggle, 0
@@ -240,7 +209,6 @@ loc_21CDC:
     dec     cl
     jnz     short loc_21CDC
     add     word ptr state.playerstate.car_posWorld1.lx, ax
-loc_21CE8:
     adc     word ptr state.playerstate.car_posWorld1.lx+2, dx
     mov     ax, 0FF10h      ; -240
     push    ax
@@ -468,9 +436,9 @@ loc_21F38:
     call    set_projection
     add     sp, 8
     mov     ax, roofbmpheight_copy
-    mov     rect_unk10.rc_right, ax
+    mov     rect_windshield.rc_top, ax
     mov     ax, dashbmp_y_copy
-    mov     rect_unk10.rc_bottom, ax
+    mov     rect_windshield.rc_bottom, ax
     mov     ax, roofbmpheight_copy
     mov     [bp+var_2], ax
     mov     ax, dashbmp_y_copy
@@ -570,7 +538,7 @@ loc_22052:
     mov     bx, ax
     mov     byte_449D8[bx], 0
 loc_22064:
-    mov     ax, offset rect_unk10
+    mov     ax, offset rect_windshield
     push    ax
     mov     al, byte_44346
     cbw
@@ -583,19 +551,19 @@ loc_22064:
     jz      short loc_220DB
     cmp     timertestflag_copy, 0
     jz      short loc_220BB
-    mov     [bp+var_A], 0
-    mov     [bp+var_8], 140h
+    mov     [bp+var_rect.rc_left], 0
+    mov     [bp+var_rect.rc_right], 140h
     mov     ax, dastbmp_y
-    mov     [bp+var_6], ax
+    mov     [bp+var_rect.rc_top], ax
     mov     ax, dashbmp_y_copy
-    mov     [bp+var_4], ax
+    mov     [bp+var_rect.rc_bottom], ax
     cmp     rectptr_unk, 0
     jz      short loc_220BB
     push    rectptr_unk
-    lea     ax, [bp+var_A]
+    lea     ax, [bp+var_rect]
     push    ax
     push    rectptr_unk
-    call    sub_26572
+    call    rect_clip_op
     add     sp, 6
 loc_220BB:
     push    word ptr dasmshapeptr+2
@@ -607,7 +575,7 @@ loc_220BB:
     call    shape2d_op_unk4
     add     sp, 4
 loc_220DB:
-    mov     ax, offset rect_unk10
+    mov     ax, offset rect_windshield
     push    ax
     call    sub_19F14
     add     sp, 2
@@ -1590,7 +1558,7 @@ sub_2298C proc far
     var_2A = word ptr -42
     var_28 = word ptr -40
     var_26 = word ptr -38
-    var_24 = word ptr -36
+    var_opponentstateptr = word ptr -36
     var_22 = word ptr -34
     var_20 = word ptr -32
     var_1E = word ptr -30
@@ -1621,11 +1589,11 @@ loc_229A5:
     sub     si, si
     jmp     loc_22C53
 loc_229AA:
-    mov     [bp+var_24], 8F46h
+    mov     [bp+var_opponentstateptr], offset state.opponentstate
 loc_229AF:
-    mov     bx, [bp+var_24]
-    mov     ax, [bx+4]
-    mov     dx, [bx+6]
+    mov     bx, [bp+var_opponentstateptr]
+    mov     ax, word ptr [bx+CARSTATE.car_posWorld1.ly]
+    mov     dx, word ptr [bx+(CARSTATE.car_posWorld1.ly+2)]
     mov     cl, 6
 loc_229BA:
     sar     dx, 1
@@ -1633,9 +1601,9 @@ loc_229BA:
     dec     cl
     jnz     short loc_229BA
     mov     [bp+var_1A], ax
-    mov     bx, [bp+var_24]
-    mov     ax, [bx]
-    mov     dx, [bx+2]
+    mov     bx, [bp+var_opponentstateptr]
+    mov     ax, word ptr [bx+CARSTATE.car_posWorld1.lx]
+    mov     dx, word ptr [bx+(CARSTATE.car_posWorld1.lx+2)]
     mov     cl, 6
 loc_229CF:
     sar     dx, 1
@@ -1643,9 +1611,9 @@ loc_229CF:
     dec     cl
     jnz     short loc_229CF
     mov     [bp+var_1C], ax
-    mov     bx, [bp+var_24]
-    mov     ax, [bx+8]
-    mov     dx, [bx+0Ah]
+    mov     bx, [bp+var_opponentstateptr]
+    mov     ax, word ptr [bx+CARSTATE.car_posWorld1.lz]
+    mov     dx, word ptr [bx+(CARSTATE.car_posWorld1.lz+2)]
     mov     cl, 6
 loc_229E5:
     sar     dx, 1
@@ -1653,11 +1621,11 @@ loc_229E5:
     dec     cl
     jnz     short loc_229E5
     mov     [bp+var_18], ax
-    mov     bx, [bp+var_24]
+    mov     bx, [bp+var_opponentstateptr]
     push    si
     push    di
     lea     di, [bp+var_6]
-    lea     si, [bx+0A4h]
+    lea     si, [bx+CARSTATE.car_vec_unk3]
     push    ss
     pop     es
     movsw
@@ -1665,8 +1633,8 @@ loc_229E5:
     movsw
     pop     di
     pop     si
-    mov     bx, [bp+var_24]
-    mov     ax, [bx+48h]
+    mov     bx, [bp+var_opponentstateptr]
+    mov     ax, [bx+CARSTATE.field_48]
     mov     [bp+var_E], ax
     or      si, si
     jnz     short loc_22A1E
@@ -1675,11 +1643,11 @@ loc_229E5:
     cmp     state.field_45C, 0
     jnz     short loc_22A40
 loc_22A1E:
-    cmp     word ptr [bx+0B6h], 0
+    cmp     [bx+CARSTATE.field_B6], 0
     jnz     short loc_22A40
-    cmp     byte ptr [bx+0C9h], 0
+    cmp     [bx+CARSTATE.car_crashBmpFlag], 0
     jnz     short loc_22A40
-    cmp     word ptr [bx+4Ah], 0FFFFh
+    cmp     [bx+CARSTATE.car_trackdata3_index], 0FFFFh
     jz      short loc_22A40
     cmp     [bp+var_E], 80h ; '€'
     jle     short loc_22A4D
@@ -1705,7 +1673,7 @@ loc_22A4D:
     shl     bx, 1
     add     bx, ax
     shl     bx, 1
-    mov     ax, [bx-71BAh]
+    mov     ax, state.game_vec1.vy[bx]
     sub     ax, [bp+var_14]
     mov     [bp+var_C], ax
     or      ax, ax
@@ -1727,7 +1695,7 @@ loc_22A88:
     shl     bx, 1
     add     bx, ax
     shl     bx, 1
-    sub     [bx-71BAh], di
+    sub     state.game_vec1.vy[bx], di
 loc_22A96:
     mov     ax, si
     mov     cx, ax
@@ -1737,10 +1705,10 @@ loc_22A96:
     mov     [bp+var_2E], ax
     mov     ax, [bp+var_2]
     mov     bx, [bp+var_2E]
-    sub     ax, [bx-71B8h]
+    sub     ax, state.game_vec1.vz[bx]
     push    ax
     mov     ax, [bp+var_6]
-    sub     ax, [bx-71BCh]
+    sub     ax, state.game_vec1.vx[bx]
     push    ax
     call    polarAngle
     add     sp, 4
@@ -1753,10 +1721,10 @@ loc_22A96:
     mov     [bp+var_30], ax
     mov     ax, [bp+var_18]
     mov     bx, [bp+var_30]
-    sub     ax, [bx-71B8h]
+    sub     ax, state.game_vec1.vz[bx]
     push    ax
     mov     ax, [bp+var_1C]
-    sub     ax, [bx-71BCh]
+    sub     ax, state.game_vec1.vx[bx]
     push    ax
     call    polarRadius2D
     add     sp, 4
@@ -1787,7 +1755,7 @@ loc_22B0D:
     shl     bx, 1
     add     bx, cx
     shl     bx, 1
-    add     [bx-71BCh], ax
+    add     state.game_vec1.vx[bx], ax
     push    [bp+var_10]
     call    cos_fast
     add     sp, 2
@@ -1800,7 +1768,7 @@ loc_22B0D:
     shl     bx, 1
     add     bx, cx
     shl     bx, 1
-    add     [bx-71B8h], ax
+    add     state.game_vec1.vz[bx], ax
 loc_22B53:
     mov     ax, state.game_frame
     sub     dx, dx
@@ -1864,7 +1832,7 @@ loc_22BBA:
     cmp     [bp+var_8], ax
     jge     short loc_22BE0
     mov     al, [bp+var_A]
-    mov     [si-6EE5h], al
+    mov     state.field_3F7[si], al
     mov     ax, [bp+var_8]
     mov     [bp+var_2C], ax
 loc_22BE0:
@@ -1929,11 +1897,11 @@ loc_22C53:
     shl     ax, 1
     mov     [bp+var_2E], ax
     mov     bx, ax
-    lea     ax, [bx-71BCh]
+    lea     ax, state.game_vec1.vx[bx]
     mov     bx, [bp+var_2E]
     push    si
     push    di
-    lea     di, [bx-71B0h]
+    lea     di, state.game_vec3.vx[bx]
     mov     si, ax
     push    ds
     pop     es
@@ -1946,7 +1914,7 @@ loc_22C53:
     jz      short loc_22C84
     jmp     loc_229AA
 loc_22C84:
-    mov     [bp+var_24], 8E76h
+    mov     [bp+var_opponentstateptr], offset state.playerstate
     jmp     loc_229AF
 loc_22C8C:
     pop     si
@@ -2884,7 +2852,7 @@ loc_235D2:
     mov     ax, [bp+var_4]
 loc_235D5:
     shl     ax, 1
-    add     ax, 0A7D4h
+    add     ax, offset simd_player.steeringdots
     mov     [bp+var_E], ax
     mov     bx, ax
     mov     al, [bx+1]
@@ -4537,7 +4505,7 @@ loc_24548:
     mov     gameconfig.game_recordedframes, 0
 loc_2458B:
     mov     dashb_toggle, 0
-    call    setup_track
+    call    track_setup
     sub     si, si
     les     bx, td14_elem_map_main
     mov     al, es:[bx+384h]
@@ -5009,7 +4977,7 @@ loc_249C3:
 loc_249C6:
     push    ax
     push    rectptr_unk2
-    call    sub_26572
+    call    rect_clip_op
     jmp     short loc_24A0D
 loc_249D2:
     sub     ax, ax
@@ -5157,6 +5125,7 @@ loc_24B23:
     cwd
     push    dx
     push    ax
+loc_24B29:
     push    [bp+var_22]
     push    [bp+var_24]
     call    __aFldiv
@@ -5212,7 +5181,7 @@ loc_24B9D:
     add     sp, 0Ah
     push    ax
     push    rectptr_unk2
-    call    sub_26572
+    call    rect_clip_op
     add     sp, 6
     jmp     short loc_24BD4
     ; align 2

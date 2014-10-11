@@ -4,8 +4,10 @@
 #pragma pack (push, 1)
 
 struct RECTANGLE {
-	int x1, y1;
-	int x2, y2;
+	int left, right;
+	int top, bottom;
+	//int x1, y1;
+	//int x2, y2;
 };
 
 struct VECTOR {

@@ -420,7 +420,7 @@ static PrintBody(f, funcstart, funcend, skipfirstlabel) {
 			 if (funcbody == 0x2cc6f) {
 				fprintf(f, "    ; begin hack the crt startup\n");
 				fprintf(f, "    ; assume endseg is linked at the end of the program\n");
-				fprintf(f, "    mov si, seg endseg\n");
+				fprintf(f, "    mov si, seg endseg + 1 ; +1 in case endseg is not aligned at 0\n");
 				fprintf(f, "    sub si, di\n");
 				for (i = 0; i < 10; i++) {
 					fprintf(f, "    nop\n");
@@ -515,7 +515,7 @@ static PrintFixedAsm(f, ea) {
 		}
 	}
 	
-	if ((mnem == "jz" || mnem == "jmp") && optype1 == o_near) {
+	if ((mnem == "jz" || mnem == "jmp" || mnem == "jb") && optype1 == o_near) {
 		// if jumping to ourselves AND this is a ported function, we need to jump to the original non-ported function
 		funcname = ExtractCallTarget(ea);
 		if (funcname == GetFunctionName(ea)) {
@@ -584,6 +584,9 @@ static PortFuncName(labelname) {
 		labelname == "polarRadius3D" || 
 		labelname == "rect_compare_point" || 
 		labelname == "rect_adjust_from_point" || 
+		labelname == "rect_clip_op" || 
+		labelname == "rect_clip_op2" || 
+		labelname == "heapsort_by_order" || 
 		labelname == "vector_op_unk" || 
 		labelname == "vector_op_unk2" || 
 		labelname == "vector_to_point" || 

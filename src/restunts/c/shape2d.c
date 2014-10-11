@@ -162,13 +162,16 @@ void sprite_clear_1_color(unsigned char color) {
 }
 
 void sprite_putimage(struct SHAPE2D far* shape) {
-	//ported_sprite_putimage_(shape);
 
 	int lines, widthdiff, i, j;
 	unsigned int ofs;
 	unsigned char far* destbitmapptr;
 	unsigned int far* destlineofs;
 	unsigned char far* srcbitmapptr;
+	ported_sprite_putimage_(shape);
+	return ;
+/*
+	this fails in the opponent car selector on the overlaid opponent bitmap:
 
 	destbitmapptr = (unsigned char far*)sprite1.sprite_bitmapptr;
 	destlineofs = MK_FP(FP_SEG(&sprite1), FP_OFF(sprite1.sprite_lineofs));
@@ -189,7 +192,7 @@ void sprite_putimage(struct SHAPE2D far* shape) {
 		}
 		ofs += widthdiff;
 	}
-	
+	*/
 }
 
 void sprite_putimage_and(struct SHAPE2D far* shape, unsigned short a, unsigned short b) {

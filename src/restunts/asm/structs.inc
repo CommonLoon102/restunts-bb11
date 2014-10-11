@@ -306,8 +306,8 @@ sprite_widthsum dw ?
 ends
 RECTANGLE struc
 rc_left dw ?
-rc_top dw ?
 rc_right dw ?
+rc_top dw ?
 rc_bottom dw ?
 ends
 ; enum enum_surface_type (-16772249)

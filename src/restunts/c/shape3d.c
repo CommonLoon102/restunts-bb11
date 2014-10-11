@@ -1542,20 +1542,20 @@ loc_25790:
 	var_polyvertY = var_polyvertsptr->py;
 	var_polyvertsptr++;
 	
-	if (var_polyvertX < transshaperectptr->x1) {
-		transshaperectptr->x1 = var_polyvertX;
+	if (var_polyvertX < transshaperectptr->left) {
+		transshaperectptr->left = var_polyvertX;
 	}
 	
-	if (transshaperectptr->y1 < var_polyvertX + 1) {
-		transshaperectptr->y1 = var_polyvertX + 1;
+	if (transshaperectptr->right < var_polyvertX + 1) {
+		transshaperectptr->right = var_polyvertX + 1;
 	}
 	
-	if (transshaperectptr->x2 > var_polyvertY) {
-		transshaperectptr->x2 = var_polyvertY;
+	if (transshaperectptr->top > var_polyvertY) {
+		transshaperectptr->top = var_polyvertY;
 	}
 	
-	if (transshaperectptr->y2 < var_polyvertY + 1) {
-		transshaperectptr->y2 = var_polyvertY + 1;
+	if (transshaperectptr->bottom < var_polyvertY + 1) {
+		transshaperectptr->bottom = var_polyvertY + 1;
 	}
 	
 	var_polyvertcounter++;

@@ -160,7 +160,7 @@ loc_2CC6C:
 loc_2CC6F:
     ; begin hack the crt startup
     ; assume endseg is linked at the end of the program
-    mov si, seg endseg
+    mov si, seg endseg + 1 ; +1 in case endseg is not aligned at 0
     sub si, di
     nop
     nop

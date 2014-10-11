@@ -140,7 +140,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn carmenu_buttons_x1:word
     extrn carmenu_buttons_x2:word
     extrn aLnam:byte
-    extrn stru_3BB56:RECTANGLE
+    extrn rect_unk16:RECTANGLE
     extrn carmenu_carpos:VECTOR
     extrn aMisc:byte
     extrn aSdosel:byte
@@ -252,7 +252,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn unk_3C071:byte
     extrn unk_3C072:byte
     extrn off_3C084:word
-    extrn rect_unk5:byte
+    extrn rect_unk5:RECTANGLE
     extrn byte_3C09C:byte
     extrn byte_3C0C6:byte
     extrn word_3C0D6:word
@@ -275,7 +275,9 @@ dseg segment byte public 'STUNTSD' use16
     extrn aOpp_0:byte
     extrn aPen:byte
     extrn aRpl_0:byte
-    extrn unk_3C152:byte
+    extrn rect_ingame_text2:RECTANGLE
+    extrn rect_ingame_text3:RECTANGLE
+    extrn rect_ingame_text4:RECTANGLE
     extrn aCrak:byte
     extrn aCinf:byte
     extrn aScensce2sce3sce4:byte
@@ -284,11 +286,8 @@ dseg segment byte public 'STUNTSD' use16
     extrn aTitle:byte
     extrn aLogolog2brav:byte
     extrn aCarcoun_0:byte
-    extrn intro_cliprect:word
-    extrn word_3C1B8:word
-    extrn word_3C1BA:word
-    extrn word_3C1BC:word
-    extrn word_3C1BE:word
+    extrn intro_cliprect:RECTANGLE
+    extrn intro_colorvalue:word
     extrn aBarn:byte
     extrn aZbrn:byte
     extrn aBrid:byte
@@ -1155,7 +1154,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn byte_4392C:byte
     extrn mcgawndsprite:dword
     extrn skybox_current:word
-    extrn rect_unk10:RECTANGLE
+    extrn rect_windshield:RECTANGLE
     extrn byte_4393C:byte
     extrn byte_4393D:byte
     extrn snarres:dword
@@ -1264,13 +1263,13 @@ dseg segment byte public 'STUNTSD' use16
     extrn word_449FC:word
     extrn word_449FE:word
     extrn opp_res:dword
-    extrn rect_unk:word
-    extrn rect_unk2:word
-    extrn rect_unk6:word
-    extrn word_44A2C:word
-    extrn word_44A2E:word
-    extrn word_44A30:word
-    extrn word_44A32:word
+    extrn rect_unk:RECTANGLE
+    extrn rect_unk2:RECTANGLE
+    extrn rect_unk6:RECTANGLE
+    extrn rect_unk12:RECTANGLE
+    extrn rect_unk15:RECTANGLE
+    extrn rect_skybox:RECTANGLE
+    extrn rect_unk11:RECTANGLE
     extrn rect_unk9:RECTANGLE
     extrn voicefileptr:dword
     extrn skybox_grd_color:word
@@ -1308,7 +1307,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn video_flag2_is1:word
     extrn word_44DCA:word
     extrn word_44DCC:word
-    extrn unk_44DCE:byte
+    extrn rect_array_unk3:RECTANGLE
     extrn vec_unk2:VECTOR
     extrn vec_planerotopresult:VECTOR
     extrn pState_minusRotate_z_2:word
@@ -1344,21 +1343,16 @@ dseg segment byte public 'STUNTSD' use16
     extrn skybox_ptr2:word
     extrn skybox_ptr3:word
     extrn skybox_ptr4:word
-    extrn byte_45520:byte
-    extrn byte_45525:byte
+    extrn rect_array_unk_indices:byte
     extrn byte_4552F:byte
     extrn gameconfigcopy:GAMEINFO
     extrn word_4554A:word
-    extrn rect_array_unk:word
-    extrn word_45574:word
-    extrn word_45576:word
-    extrn word_45578:word
-    extrn word_4557A:word
+    extrn rect_array_unk:RECTANGLE
     extrn mouseunkspriteptr:dword
     extrn miscptr:dword
     extrn skybox_sky_color:word
     extrn replaybar_toggle_copy:byte
-    extrn word_455D4:word
+    extrn rect_array_unk3_indices:word
     extrn td16_rpl_buffer:dword
     extrn material_clrlist_ptr_cpy:word
     extrn byte_45634:byte
@@ -1370,12 +1364,8 @@ dseg segment byte public 'STUNTSD' use16
     extrn byte_45948:byte
     extrn g_kevinrandom_seed:byte
     extrn byte_45950:byte
-    extrn rect_unk3:word
-    extrn rect_array_unk2:word
-    extrn word_45982:word
-    extrn word_45984:word
-    extrn word_45986:word
-    extrn word_45988:word
+    extrn rect_unk3:RECTANGLE
+    extrn rect_array_unk2:RECTANGLE
     extrn byte_459D2:byte
     extrn word_459D4:word
     extrn material_clrlist2_ptr_cpy:word
@@ -1427,7 +1417,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn simd_player:SIMD
     extrn word_46160:word
     extrn td13_rpl_header:dword
-    extrn byte_46166:byte
+    extrn rect_array_unk3_length:byte
     extrn byte_46167:byte
     extrn skybox_res_ofs:word
     extrn skybox_res_seg:word
@@ -1436,10 +1426,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn replaybar_toggle:byte
     extrn word_46170:word
     extrn word_46172:word
-    extrn word_4617E:word
-    extrn word_46180:word
-    extrn word_46182:word
-    extrn word_46184:word
+    extrn rect_ingame_text:RECTANGLE
     extrn trackcenterpos:word
     extrn dastbmp_y:word
     extrn game1ptr:dword
@@ -1460,7 +1447,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn resID_byte3:byte
     extrn resID_byte4:byte
     extrn unk_463EA:byte
-    extrn word_46434:word
+    extrn curtransshape_ptr:word
     extrn video_flag5_is0:byte
     extrn mat_rot_temp:MATRIX
     extrn dashb_toggle_copy:byte

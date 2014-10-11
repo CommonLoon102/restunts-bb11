@@ -1,3 +1,3 @@
 seg021 segment byte public 'STUNTSC' use16
-    extrn sub_36BE8:proc
+    extrn ported_heapsort_by_order_:proc
 seg021 ends

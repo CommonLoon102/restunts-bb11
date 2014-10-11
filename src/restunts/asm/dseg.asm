@@ -188,7 +188,7 @@ dseg segment byte public 'STUNTSD' use16
     public carmenu_buttons_x1
     public carmenu_buttons_x2
     public aLnam
-    public stru_3BB56
+    public rect_unk16
     public carmenu_carpos
     public aMisc
     public aSdosel
@@ -323,7 +323,9 @@ dseg segment byte public 'STUNTSD' use16
     public aOpp_0
     public aPen
     public aRpl_0
-    public unk_3C152
+    public rect_ingame_text2
+    public rect_ingame_text3
+    public rect_ingame_text4
     public aCrak
     public aCinf
     public aScensce2sce3sce4
@@ -333,10 +335,7 @@ dseg segment byte public 'STUNTSD' use16
     public aLogolog2brav
     public aCarcoun_0
     public intro_cliprect
-    public word_3C1B8
-    public word_3C1BA
-    public word_3C1BC
-    public word_3C1BE
+    public intro_colorvalue
     public aBarn
     public aZbrn
     public aBrid
@@ -1203,7 +1202,7 @@ dseg segment byte public 'STUNTSD' use16
     public byte_4392C
     public mcgawndsprite
     public skybox_current
-    public rect_unk10
+    public rect_windshield
     public byte_4393C
     public byte_4393D
     public snarres
@@ -1315,10 +1314,10 @@ dseg segment byte public 'STUNTSD' use16
     public rect_unk
     public rect_unk2
     public rect_unk6
-    public word_44A2C
-    public word_44A2E
-    public word_44A30
-    public word_44A32
+    public rect_unk12
+    public rect_unk15
+    public rect_skybox
+    public rect_unk11
     public rect_unk9
     public voicefileptr
     public skybox_grd_color
@@ -1356,7 +1355,7 @@ dseg segment byte public 'STUNTSD' use16
     public video_flag2_is1
     public word_44DCA
     public word_44DCC
-    public unk_44DCE
+    public rect_array_unk3
     public vec_unk2
     public vec_planerotopresult
     public pState_minusRotate_z_2
@@ -1392,21 +1391,16 @@ dseg segment byte public 'STUNTSD' use16
     public skybox_ptr2
     public skybox_ptr3
     public skybox_ptr4
-    public byte_45520
-    public byte_45525
+    public rect_array_unk_indices
     public byte_4552F
     public gameconfigcopy
     public word_4554A
     public rect_array_unk
-    public word_45574
-    public word_45576
-    public word_45578
-    public word_4557A
     public mouseunkspriteptr
     public miscptr
     public skybox_sky_color
     public replaybar_toggle_copy
-    public word_455D4
+    public rect_array_unk3_indices
     public td16_rpl_buffer
     public material_clrlist_ptr_cpy
     public byte_45634
@@ -1420,10 +1414,6 @@ dseg segment byte public 'STUNTSD' use16
     public byte_45950
     public rect_unk3
     public rect_array_unk2
-    public word_45982
-    public word_45984
-    public word_45986
-    public word_45988
     public byte_459D2
     public word_459D4
     public material_clrlist2_ptr_cpy
@@ -1475,7 +1465,7 @@ dseg segment byte public 'STUNTSD' use16
     public simd_player
     public word_46160
     public td13_rpl_header
-    public byte_46166
+    public rect_array_unk3_length
     public byte_46167
     public skybox_res_ofs
     public skybox_res_seg
@@ -1484,10 +1474,7 @@ dseg segment byte public 'STUNTSD' use16
     public replaybar_toggle
     public word_46170
     public word_46172
-    public word_4617E
-    public word_46180
-    public word_46182
-    public word_46184
+    public rect_ingame_text
     public trackcenterpos
     public dastbmp_y
     public game1ptr
@@ -1508,7 +1495,7 @@ dseg segment byte public 'STUNTSD' use16
     public resID_byte3
     public resID_byte4
     public unk_463EA
-    public word_46434
+    public curtransshape_ptr
     public video_flag5_is0
     public mat_rot_temp
     public dashb_toggle_copy
@@ -2458,7 +2445,7 @@ aLnam     db 108
     db 109
     db 0
     db 0
-stru_3BB56     db 0
+rect_unk16     db 0
     db 0
     db 64
     db 1
@@ -3905,7 +3892,7 @@ aRpl_0     db 114
     db 112
     db 108
     db 0
-    db 148
+rect_ingame_text2     db 148
     db 0
     db 172
     db 0
@@ -3913,7 +3900,7 @@ aRpl_0     db 114
     db 0
     db 108
     db 0
-unk_3C152     db 68
+rect_ingame_text3     db 68
     db 0
     db 92
     db 0
@@ -3921,7 +3908,7 @@ unk_3C152     db 68
     db 0
     db 128
     db 0
-    db 228
+rect_ingame_text4     db 228
     db 0
     db 252
     db 0
@@ -4013,11 +4000,15 @@ aCarcoun_0     db 99
     db 117
     db 110
     db 0
-intro_cliprect     dw 0
-word_3C1B8     dw 320
-word_3C1BA     dw 0
-word_3C1BC     dw 200
-word_3C1BE     dw 1
+intro_cliprect     db 0
+    db 0
+    db 64
+    db 1
+    db 0
+    db 0
+    db 200
+    db 0
+intro_colorvalue     dw 1
 aBarn     db 98
     db 97
     db 114
@@ -31253,7 +31244,7 @@ byte_4392C     db 0
     db 0
 mcgawndsprite     dd 0
 skybox_current     dw 0
-rect_unk10     db 0
+rect_windshield     db 0
     db 0
     db 0
     db 0
@@ -35422,18 +35413,7 @@ curshapeptr     dd 0
 word_449FC     dw 0
 word_449FE     dw 0
 opp_res     dd 0
-rect_unk     dw 0
-    dw 0
-    dw 0
-    dw 0
-rect_unk2     dw 0
-    dw 0
-    dw 0
-    dw 0
-rect_unk6     dw 0
-    dw 0
-    dw 0
-    dw 0
+rect_unk     db 0
     db 0
     db 0
     db 0
@@ -35441,6 +35421,7 @@ rect_unk6     dw 0
     db 0
     db 0
     db 0
+rect_unk2     db 0
     db 0
     db 0
     db 0
@@ -35448,13 +35429,39 @@ rect_unk6     dw 0
     db 0
     db 0
     db 0
+rect_unk6     db 0
     db 0
     db 0
-word_44A2C     dw 0
-word_44A2E     dw 0
-word_44A30     dw 0
-word_44A32     dw 0
     db 0
+    db 0
+    db 0
+    db 0
+    db 0
+rect_unk12     db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+rect_unk15     db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+rect_skybox     db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+rect_unk11     db 0
     db 0
     db 0
     db 0
@@ -36305,7 +36312,7 @@ planindex     dw 0
 video_flag2_is1     dw 0
 word_44DCA     dw 0
 word_44DCC     dw 0
-unk_44DCE     db 0
+rect_array_unk3     db 0
     db 0
     db 0
     db 0
@@ -38128,12 +38135,12 @@ skybox_ptr1     dw 0
 skybox_ptr2     dw 0
 skybox_ptr3     dw 0
 skybox_ptr4     dw 0
-byte_45520     db 0
+rect_array_unk_indices     db 0
     db 0
     db 0
     db 0
     db 0
-byte_45525     db 0
+    db 0
     db 0
     db 0
     db 0
@@ -38171,7 +38178,7 @@ gameconfigcopy     db 0
     db 0
     db 0
 word_4554A     dw 0
-rect_array_unk     dw 0
+rect_array_unk     db 0
     db 0
     db 0
     db 0
@@ -38210,10 +38217,15 @@ rect_array_unk     dw 0
     db 0
     db 0
     db 0
-word_45574     dw 0
-word_45576     dw 0
-word_45578     dw 0
-word_4557A     dw 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
     db 0
     db 0
     db 0
@@ -38295,95 +38307,51 @@ miscptr     dd 0
 skybox_sky_color     dw 0
 replaybar_toggle_copy     db 0
     db 0
-word_455D4     dw 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
+rect_array_unk3_indices     dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
+    dw 0
 td16_rpl_buffer     dd 0
 material_clrlist_ptr_cpy     dw 0
 byte_45634     db 0
@@ -39179,11 +39147,15 @@ g_kevinrandom_seed     db 0
     db 0
 byte_45950     db 0
     db 0
-rect_unk3     dw 0
-    dw 0
-    dw 0
-    dw 0
-rect_array_unk2     dw 0
+rect_unk3     db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+rect_array_unk2     db 0
     db 0
     db 0
     db 0
@@ -39222,10 +39194,15 @@ rect_array_unk2     dw 0
     db 0
     db 0
     db 0
-word_45982     dw 0
-word_45984     dw 0
-word_45986     dw 0
-word_45988     dw 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
     db 0
     db 0
     db 0
@@ -41101,7 +41078,7 @@ simd_player     db 0
     db 0
 word_46160     dw 0
 td13_rpl_header     dd 0
-byte_46166     db 0
+rect_array_unk3_length     db 0
 byte_46167     db 0
 skybox_res_ofs     dw 0
 skybox_res_seg     dw 0
@@ -41120,10 +41097,14 @@ word_46172     dw 0
     db 0
     db 0
     db 0
-word_4617E     dw 0
-word_46180     dw 0
-word_46182     dw 0
-word_46184     dw 0
+rect_ingame_text     db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
 trackcenterpos     dw 0
     dw 0
     dw 0
@@ -41761,7 +41742,7 @@ unk_463EA     db 0
     db 0
     db 0
     db 0
-word_46434     dw 0
+curtransshape_ptr     dw 0
 video_flag5_is0     db 0
     db 0
 mat_rot_temp     db 0

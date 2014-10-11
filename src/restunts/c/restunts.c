@@ -765,7 +765,7 @@ void init_main(int argc, char* argv[])
 	sprite_set_1_size(0, 320, 0, 60);
 
 	for (i = 0; i < 15; ++i) {
-		tmprect.x1 = tmprect.y1 = tmprect.x2 = tmprect.y2 = 0;
+		tmprect.left = tmprect.right = tmprect.top = tmprect.bottom = 0;
 		
 		for (j = 0; j < 400; ++j) {
 			tmppoint.px = tmppoint.py = j;
@@ -1030,7 +1030,8 @@ _do_game1:
 		if (file_find("tedit.*") != 0) goto _init_replay;
 		goto _prepare_intro;
 	}
-	result = setup_track();
+	result = track_setup();
+	//result = setup_track();
 	if (result != 0) {
 		regax = 1;
 		goto _tracks_menu_ax;

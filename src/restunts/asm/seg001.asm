@@ -5211,6 +5211,7 @@ loc_176C3:
     sar     dx, 1
     rcr     ax, 1
     dec     cl
+loc_176C9:
     jnz     short loc_176C3
     sub     [bp+var_28], ax
     cmp     [bp+var_26], 0FFFFh
@@ -9580,14 +9581,12 @@ setup_aero_trackdata proc far
     arg_4 = word ptr 10
 
     push    bp
-loc_19CA3:
     mov     bp, sp
     sub     sp, 2
     push    di
     push    si
     cmp     [bp+arg_4], 0
     jz      short loc_19CB3
-loc_19CB0:
     jmp     loc_19D36
 loc_19CB3:
     mov     ax, offset aSimd; "simd"
@@ -9597,13 +9596,11 @@ loc_19CB3:
     call    locate_shape_alt
     add     sp, 6
     push    si
-loc_19CC6:
     mov     di, offset simd_player
     mov     si, ax
     push    ds
     pop     es
     push    ds
-loc_19CCE:
     mov     ds, dx
     mov     cx, 184h
     repne movsw
@@ -9612,7 +9609,6 @@ loc_19CCE:
     mov     ax, word ptr td04_aerotable_pl
     mov     dx, word ptr td04_aerotable_pl+2
     mov     simd_player.aerorestable, ax
-loc_19CE1:
     mov     word_46160, dx
     sub     si, si
 loc_19CE7:
@@ -9661,7 +9657,6 @@ loc_19D36:
     push    [bp+arg_0]
     call    locate_shape_alt
     add     sp, 6
-loc_19D48:
     push    si
     mov     di, offset simd_opponent
     mov     si, ax
@@ -9686,7 +9681,6 @@ loc_19D6A:
     cwd
     push    dx
     push    ax
-loc_19D72:
     mov     ax, simd_opponent.aero_resistance
     cwd
     push    dx
@@ -9694,55 +9688,37 @@ loc_19D72:
     call    __aFlmul
     push    dx
     push    ax
-loc_19D7F:
     call    __aFlmul
-loc_19D84:
     mov     cl, 9
 loc_19D86:
     sar     dx, 1
-loc_19D88:
     rcr     ax, 1
     dec     cl
     jnz     short loc_19D86
-loc_19D8E:
     mov     bx, si
     shl     bx, 1
-loc_19D92:
     les     di, td05_aerotable_op
-loc_19D96:
     mov     es:[bx+di], ax
     inc     si
-loc_19D9A:
     cmp     si, 40h ; '@'
     jl      short loc_19D6A
     mov     ax, offset aGsna; "gsna"
-loc_19DA2:
     push    ax
     push    [bp+arg_2]
-loc_19DA6:
     push    [bp+arg_0]
-loc_19DA9:
     call    locate_shape_alt
-loc_19DAE:
     add     sp, 6
     push    dx
-loc_19DB2:
     push    ax
     mov     ax, offset carshortname
 loc_19DB6:
     push    ax
-loc_19DB7:
     call    copy_string
-loc_19DBC:
     add     sp, 6
     pop     si
-loc_19DC0:
     pop     di
-loc_19DC1:
     mov     sp, bp
-loc_19DC3:
     pop     bp
-locret_19DC4:
     retf
 setup_aero_trackdata endp
 seg001 ends

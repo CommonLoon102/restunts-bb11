@@ -20,7 +20,7 @@ CC2 = cl  /Zi /MD /c /I$(SDLPATH)\include /DRESTUNTS_SDL /Fo$(OBJDIR)\$?
 !endif
 
 
-all: $(OBJDIR)\fileio.obj $(OBJDIR)\math.obj $(OBJDIR)\memmgr.obj $(OBJDIR)\restunts.obj $(OBJDIR)\shape3d.obj $(OBJDIR)\shape2d.obj $(OBJDIR)\keyboard.obj 
+all: $(OBJDIR)\fileio.obj $(OBJDIR)\math.obj $(OBJDIR)\memmgr.obj $(OBJDIR)\restunts.obj $(OBJDIR)\shape3d.obj $(OBJDIR)\shape2d.obj $(OBJDIR)\keyboard.obj $(OBJDIR)\heapsort.obj 
 
 $(OBJDIR)\fileio.obj: fileio.c
 	$(CC) $?
@@ -43,6 +43,9 @@ $(OBJDIR)\shape2d.obj: shape2d.c
 $(OBJDIR)\keyboard.obj: keyboard.c
 	$(CC) $?
 
+$(OBJDIR)\heapsort.obj: heapsort.c
+	$(CC) $?
+
 clean:
 	del $(OBJDIR)\fileio.obj
 	del $(OBJDIR)\math.obj
@@ -50,3 +53,5 @@ clean:
 	del $(OBJDIR)\restunts.obj
 	del $(OBJDIR)\shape3d.obj
 	del $(OBJDIR)\shape2d.obj
+	del $(OBJDIR)\keyboard.obj
+	del $(OBJDIR)\heapsort.obj

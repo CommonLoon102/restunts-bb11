@@ -120,16 +120,16 @@ int polarRadius3D(struct VECTOR* vec) {
 
 unsigned rect_compare_point(struct POINT2D* pt) {
 	char flag;
-	if (pt->py < select_rect_rc.x2)
+	if (pt->py < select_rect_rc.top)
 		flag = 1;
-	else if (pt->py > select_rect_rc.y2)
+	else if (pt->py > select_rect_rc.bottom)
 		flag = 2; 
 	else
 		flag = 0;
 	
-	if (pt->px < select_rect_rc.x1)
+	if (pt->px < select_rect_rc.left)
 		flag |= 4;
-	else if (pt->px > select_rect_rc.y1)
+	else if (pt->px > select_rect_rc.right)
 		flag |= 8;
 	return flag;
 }
@@ -319,23 +319,89 @@ struct MATRIX* mat_rot_zxy(int z, int x, int y, int unk) {
 void rect_adjust_from_point(struct POINT2D* pt, struct RECTANGLE* rc) {
 	int temp;
 	
-	if (rc->x1 > pt->px) {
-		rc->x1 = pt->px;
+	if (rc->left > pt->px) {
+		rc->left = pt->px;
 	}
 	
 	temp = pt->px + 1;
-	if (rc->y1 < temp) {
-		rc->y1 = temp;
+	if (rc->right < temp) {
+		rc->right = temp;
 	}
 	
-	if (rc->x2 > pt->py) {
-		rc->x2 = pt->py;
+	if (rc->top > pt->py) {
+		rc->top = pt->py;
 	}
 	
 	temp = pt->py + 1;
-	if (rc->y2 < temp) {
-		rc->y2 = temp;
+	if (rc->bottom < temp) {
+		rc->bottom = temp;
 	}
+}
+
+void rect_clip_op(struct RECTANGLE* r1, struct RECTANGLE* r2, struct RECTANGLE* outrc) {
+	if (r1->left <= r2->left) {
+		outrc->left = r1->left;
+	} else {
+		outrc->left = r2->left;
+	}
+
+	if (r1->right >= r2->right) {
+		outrc->right = r1->right;
+	} else {
+		outrc->right = r2->right;
+	}
+	
+	if (r1->top <= r2->top) {
+		outrc->top = r1->top;
+	} else {
+		outrc->top = r2->top;
+	}
+
+	if (r1->bottom >= r2->bottom) {
+		outrc->bottom = r1->bottom;
+	} else {
+		outrc->bottom = r2->bottom;
+	}
+	
+	if (video_flag2_is1 == 1) {
+		return ;
+	}
+
+	fatal_error("rect_clip_op: unexpected code path");
+	/*
+	mov     bx, [bp+arg_outrectptr]
+	mov     si, bx
+	mov     ax, [si+RECTANGLE.rc_right]
+	add     ax, video_flag2_is1
+	dec     ax
+	and     ax, video_flag3_isFFFF
+	mov     [bx+RECTANGLE.rc_right], ax
+*/
+}
+
+int rect_clip_op2(struct RECTANGLE* r1, struct RECTANGLE* r2) {
+	if (r1->right <= r1->left) return 1;
+	if (r2->right <= r1->left) return 1;
+	if (r1->right <= r2->left) return 1;
+	if (r1->top >= r2->bottom) return 1;
+	if (r1->bottom <= r2->top) return 1;
+	
+	if (r1->left < r2->left) {
+		r1->left = r2->left;
+	}
+	
+	if (r1->right > r2->right) {
+		r1->right = r2->right;
+	}
+	
+	if (r1->top < r2->top) {
+		r1->top = r2->top;
+	}
+	
+	if (r1->bottom > r2->bottom) {
+		r1->bottom = r2->bottom;
+	}
+	return 0;
 }
 
 int vector_op_unk2(struct VECTOR* vec) {

@@ -8799,10 +8799,10 @@ ported_timer_wait_for_dx_ proc far
 
     call    timer_get_counter
     cmp     dx, word ptr timer_copy_unk+2
-    jb      short near ptr ported_timer_wait_for_dx_
+    jb short near ptr ported_timer_wait_for_dx_ ; (fixed jump to ported self)
     ja      short locret_327EA
     cmp     ax, word ptr timer_copy_unk
-    jb      short near ptr ported_timer_wait_for_dx_
+    jb short near ptr ported_timer_wait_for_dx_ ; (fixed jump to ported self)
 locret_327EA:
     retf
 ported_timer_wait_for_dx_ endp
@@ -11787,12 +11787,12 @@ sprite_putimage_and_alt proc far
 sprite_putimage_and_alt endp
 ported_sprite_putimage_ proc far
     var_E = word ptr -14
-    var_C = word ptr -12
+    var_bitmap = word ptr -12
     var_A = word ptr -10
     var_8 = word ptr -8
     var_6 = word ptr -6
-    var_4 = word ptr -4
-    var_2 = word ptr -2
+    shapey = word ptr -4
+    shapex = word ptr -2
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -11807,11 +11807,11 @@ ported_sprite_putimage_ proc far
     mov     ds, [bp+arg_2]
     mov     si, [bp+arg_0]
     mov     ax, [si+SHAPE2D.s2d_pos_x]
-    mov     [bp+var_2], ax
+    mov     [bp+shapex], ax
     mov     ax, [si+SHAPE2D.s2d_pos_y]
-    mov     [bp+var_4], ax
+    mov     [bp+shapey], ax
 loc_33BF5:
-    mov     bx, [bp+var_4]
+    mov     bx, [bp+shapey]
     mov     cx, [si+SHAPE2D.s2d_height]
     lea     dx, [si+(size SHAPE2D)]
     mov     ax, bx
@@ -11837,7 +11837,7 @@ loc_33C1B:
     xchg    ax, cx
     sub     ax, cx
     mov     [bp+var_8], dx
-    mul     word ptr [si]
+    mul     [si+SHAPE2D.s2d_width]
     mov     dx, [bp+var_8]
     add     dx, ax
     mov     ax, bx
@@ -11847,12 +11847,12 @@ loc_33C1B:
     sub     cx, ax
     jle     short loc_33C14
 loc_33C42:
-    mov     [bp+var_C], dx
+    mov     [bp+var_bitmap], dx
     mov     [bp+var_A], cx
-    mov     [bp+var_4], bx
-    mov     cx, [si]
+    mov     [bp+shapey], bx
+    mov     cx, [si+SHAPE2D.s2d_width]
     xor     dx, dx
-    mov     bx, [bp+var_2]
+    mov     bx, [bp+shapex]
     mov     ax, bx
     cmp     ax, cs:sprite1.sprite_left
     jl      short loc_33C6D
@@ -11871,7 +11871,7 @@ loc_33C6D:
     jle     short loc_33C14
     mov     si, cx
     sub     si, ax
-    add     [bp+var_C], si
+    add     [bp+var_bitmap], si
     mov     si, cs:sprite1.sprite_right
     sub     si, bx
     jle     short loc_33C14
@@ -11887,15 +11887,15 @@ loc_33C94:
     jle     short loc_33CD8
     mov     [bp+var_6], cx
     mov     [bp+var_8], dx
-    mov     [bp+var_2], bx
+    mov     [bp+shapex], bx
     cld
     mov     es, word ptr cs:sprite1.sprite_bitmapptr+2
-    mov     bx, [bp+var_4]
+    mov     bx, [bp+shapey]
     shl     bx, 1
     add     bx, cs:sprite1.sprite_lineofs
     mov     di, cs:[bx]
-    add     di, [bp+var_2]
-    mov     si, [bp+var_C]
+    add     di, [bp+shapex]
+    mov     si, [bp+var_bitmap]
     mov     dx, [bp+var_A]
     mov     bx, cs:sprite1.sprite_pitch
     sub     bx, [bp+var_6]

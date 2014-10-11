@@ -49,13 +49,13 @@ seg003 segment byte public 'STUNTSC' use16
     public sub_19F14
     public init_rect_arrays
     public update_frame
-    public sub_1C302
+    public skybox_op_helper2
     public skybox_op
     public sub_1CB80
     public draw_track_preview
     public draw_ingame_text
     public do_sinking
-    public sub_1D5B4
+    public init_crak
     public load_skybox
     public unload_skybox
     public load_sdgame2_shapes
@@ -67,134 +67,100 @@ loc_19F12:
 locret_19F13:
     retf
 sub_19F14 proc far
-    var_2 = word ptr -2
+    var_rectptr = word ptr -2
      s = byte ptr 0
      r = byte ptr 2
     arg_rectptr = word ptr 6
 
     push    bp
-loc_19F15:
     mov     bp, sp
-loc_19F17:
     sub     sp, 4
-loc_19F1A:
     push    di
     push    si
-loc_19F1C:
     cmp     video_flag5_is0, 0
-loc_19F21:
     jz      short loc_19F26
-loc_19F23:
     jmp     loc_1A090
 loc_19F26:
     call    sprite_copy_2_to_1_2
-loc_19F2B:
     cmp     byte_454A4, 0
-loc_19F30:
     jz      short loc_19F35
-loc_19F32:
     jmp     loc_1A046
 loc_19F35:
     cmp     timertestflag_copy, 0
-loc_19F3A:
     jnz     short loc_19F3F
-loc_19F3C:
     jmp     loc_1A030
 loc_19F3F:
     sub     si, si
 loc_19F41:
-    mov     byte_45520[si], 3
-loc_19F46:
+    mov     rect_array_unk_indices[si], 3
     inc     si
-loc_19F47:
     cmp     si, 0Fh
-loc_19F4A:
     jl      short loc_19F41
-loc_19F4C:
     cmp     timertestflag2, 4
-loc_19F51:
     jnz     short loc_19F59
-loc_19F53:
     mov     ax, word_463D6
-loc_19F56:
     mov     word_449FE, ax
 loc_19F59:
     mov     ax, word_463D6
-loc_19F5C:
     cmp     word_449FE, ax
     jnz     short loc_19F8B
-loc_19F62:
-    mov     ax, word_45982
-    cmp     word_45574, ax
+    mov     ax, rect_array_unk2.rc_left+28h
+    cmp     rect_array_unk.rc_left+28h, ax
     jnz     short loc_19F8B
-loc_19F6B:
-    mov     ax, word_45984
-    cmp     word_45576, ax
+    mov     ax, rect_array_unk2.rc_right+28h
+    cmp     rect_array_unk.rc_right+28h, ax
     jnz     short loc_19F8B
-loc_19F74:
-    mov     ax, word_45986
-    cmp     word_45578, ax
-loc_19F7B:
+    mov     ax, rect_array_unk2.rc_top+28h
+    cmp     rect_array_unk.rc_top+28h, ax
     jnz     short loc_19F8B
-    mov     ax, word_45988
-    cmp     word_4557A, ax
-loc_19F84:
+    mov     ax, rect_array_unk2.rc_bottom+28h
+    cmp     rect_array_unk.rc_bottom+28h, ax
     jnz     short loc_19F8B
-loc_19F86:
-    mov     byte_45525, 0
+    mov     rect_array_unk_indices+5, 0
 loc_19F8B:
-    mov     byte_46166, 0
-    mov     ax, offset unk_44DCE
+    mov     rect_array_unk3_length, 0
+    mov     ax, offset rect_array_unk3
     push    ax
-    mov     ax, offset byte_46166
+    mov     ax, offset rect_array_unk3_length
     push    ax
     push    [bp+arg_rectptr]
-loc_19F9B:
     mov     ax, offset rect_array_unk2
     push    ax
     mov     ax, offset rect_array_unk
     push    ax
-    mov     ax, offset byte_45520
+    mov     ax, offset rect_array_unk_indices
     push    ax
-    mov     ax, 0Fh
+    mov     ax, 0Fh         ; number of rects in the array
     push    ax
-    call    sub_26A52
+    call    rect_clip_combined
     add     sp, 0Eh
-    cmp     byte_46166, 0
+    cmp     rect_array_unk3_length, 0
     jz      short loc_1A01E
-    mov     ax, offset word_455D4
+    mov     ax, offset rect_array_unk3_indices
     push    ax
-    mov     ax, offset unk_44DCE
+    mov     ax, offset rect_array_unk3
     push    ax
-loc_19FC2:
-    mov     al, byte_46166
+    mov     al, rect_array_unk3_length
     cbw
     push    ax
-    call    sub_26B4A
-loc_19FCC:
+    call    rect_array_indexed_op
     add     sp, 6
-loc_19FCF:
     call    mouse_draw_opaque_check
-loc_19FD4:
     sub     si, si
-loc_19FD6:
     jmp     short loc_1A013
 loc_19FD8:
     mov     bx, si
-loc_19FDA:
     shl     bx, 1
-loc_19FDC:
-    mov     ax, word_455D4[bx]
+    mov     ax, rect_array_unk3_indices[bx]
     mov     cl, 3
-loc_19FE2:
     shl     ax, cl
-    add     ax, 965Eh
-    mov     [bp+var_2], ax
+    add     ax, offset rect_array_unk3
+    mov     [bp+var_rectptr], ax
     mov     bx, ax
-    push    word ptr [bx+6]
-    push    word ptr [bx+4]
-    push    word ptr [bx+2]
-    push    word ptr [bx]
+    push    [bx+RECTANGLE.rc_bottom]
+    push    [bx+RECTANGLE.rc_top]
+    push    [bx+RECTANGLE.rc_right]
+    push    [bx+RECTANGLE.rc_left]
     call    sprite_set_1_size
     add     sp, 8
     les     bx, wndsprite
@@ -204,7 +170,7 @@ loc_19FE2:
     add     sp, 4
     inc     si
 loc_1A013:
-    mov     al, byte_46166
+    mov     al, rect_array_unk3_length
     cbw
     cmp     ax, si
     jg      short loc_19FD8
@@ -213,8 +179,8 @@ loc_1A013:
     db 144
 loc_1A01E:
     mov     bx, [bp+arg_rectptr]
-    push    word ptr [bx+6]
-    push    word ptr [bx+4]
+    push    [bx+RECTANGLE.rc_bottom]
+    push    [bx+RECTANGLE.rc_top]
     mov     ax, 140h
     push    ax
     sub     ax, ax
@@ -222,10 +188,10 @@ loc_1A01E:
     jmp     short loc_1A03E
 loc_1A030:
     mov     bx, [bp+arg_rectptr]
-    push    word ptr [bx+6]
-    push    word ptr [bx+4]
-    push    word ptr [bx+2]
-    push    word ptr [bx]
+    push    [bx+RECTANGLE.rc_bottom]
+    push    [bx+RECTANGLE.rc_top]
+    push    [bx+RECTANGLE.rc_right]
+    push    [bx+RECTANGLE.rc_left]
 loc_1A03E:
     call    sprite_set_1_size
     add     sp, 8
@@ -249,8 +215,8 @@ loc_1A072:
     shl     di, cl
     push    si
     push    di
-    lea     si, rect_array_unk[di]
-    lea     di, rect_array_unk2[di]
+    lea     si, rect_array_unk.rc_left[di]
+    lea     di, rect_array_unk2.rc_left[di]
     push    ds
     pop     es
     movsw
@@ -306,7 +272,7 @@ loc_1A0C2:
     shl     di, cl
     push    si
     push    di
-    lea     di, rect_array_unk[di]
+    lea     di, rect_array_unk.rc_left[di]
     mov     si, offset cliprect_unk
     push    ds
     pop     es
@@ -318,7 +284,7 @@ loc_1A0C2:
     pop     si
     push    si
     push    di
-    lea     di, rect_array_unk2[di]
+    lea     di, rect_array_unk2.rc_left[di]
     mov     si, offset cliprect_unk
     movsw
     movsw
@@ -327,7 +293,7 @@ loc_1A0C2:
     pop     di
     pop     si
     inc     si
-    cmp     si, 0Fh
+    cmp     si, 0Fh         ; there are 15 rects in the array
     jl      short loc_1A0C2
 loc_1A0EE:
     pop     si
@@ -344,7 +310,7 @@ update_frame proc far
     var_134 = byte ptr -308
     var_132 = word ptr -306
     var_130 = byte ptr -304
-    var_12E = word ptr -302
+    var_trkobject_ptr = word ptr -302
     var_12C = byte ptr -300
     var_12A = word ptr -298
     var_vec7 = VECTOR ptr -296
@@ -354,7 +320,7 @@ update_frame proc far
     var_10C = byte ptr -268
     var_10A = byte ptr -266
     var_108 = dword ptr -264
-    var_104 = word ptr -260
+    var_stateptr = word ptr -260
     var_102 = byte ptr -258
     var_100 = byte ptr -256
     var_angZ = word ptr -254
@@ -367,7 +333,7 @@ update_frame proc far
     var_E4 = byte ptr -228
     var_E2 = byte ptr -226
     var_E0 = word ptr -224
-    var_DE = word ptr -222
+    var_material = word ptr -222
     var_DC = byte ptr -220
     var_DB = byte ptr -219
     var_DA = word ptr -218
@@ -378,11 +344,11 @@ update_frame proc far
     var_A4 = word ptr -164
     var_A2 = word ptr -162
     var_mat2 = MATRIX ptr -160
-    var_8E = byte ptr -142
+    var_rect2 = RECTANGLE ptr -142
     var_86 = byte ptr -134
     var_6E = byte ptr -110
     var_6C = word ptr -108
-    var_6A = byte ptr -106
+    var_rect = RECTANGLE ptr -106
     var_62 = byte ptr -98
     var_60 = byte ptr -96
     var_5E = word ptr -94
@@ -1138,7 +1104,7 @@ loc_1A877:
     shl     bx, 1
     mov     al, trkObjectList.ss_multiTileFlag[bx]
     cbw
-    mov     [bp+var_DE], ax
+    mov     [bp+var_material], ax
     or      ax, ax
     jnz     short loc_1A898
     jmp     loc_1A6FE
@@ -1149,7 +1115,7 @@ loc_1A898:
     mov     al, [bp+var_102]
     sub     al, [bp+var_134]
     mov     [bp+var_12C], al
-    mov     ax, [bp+var_DE]
+    mov     ax, [bp+var_material]
     cmp     ax, 1
     jz      short loc_1A8D2
     cmp     ax, 2
@@ -1317,14 +1283,14 @@ loc_1A9EC:
     call    mat_rot_zxy
     add     sp, 8
     mov     [bp+var_matptr], ax
-    mov     [bp+var_DE], 0FFFFh
+    mov     [bp+var_material], 0FFFFh
     mov     di, 0FFFFh
     mov     [bp+var_A2], 0
     jmp     short loc_1AA8C
 loc_1AA1E:
     dec     si
 loc_1AA1F:
-    cmp     [bp+var_DE], si
+    cmp     [bp+var_material], si
     jge     short loc_1AA88
     cmp     [bp+si+var_32], 2
     jz      short loc_1AA1E
@@ -1362,7 +1328,7 @@ loc_1AA1F:
     mov     [bp+var_3C], al
     mov     al, [bp+var_102]
     mov     [bp+var_60], al
-    mov     [bp+var_DE], si
+    mov     [bp+var_material], si
     mov     di, [bp+var_A2]
     jmp     short loc_1AA1E
     ; align 2
@@ -1482,14 +1448,14 @@ loc_1AB94:
     call    mat_rot_zxy
     add     sp, 8
     mov     [bp+var_matptr], ax
-    mov     [bp+var_DE], 0FFFFh
+    mov     [bp+var_material], 0FFFFh
     mov     di, 0FFFFh
     mov     [bp+var_A2], 0
     jmp     short loc_1AC34
 loc_1ABC6:
     dec     si
 loc_1ABC7:
-    cmp     [bp+var_DE], si
+    cmp     [bp+var_material], si
     jge     short loc_1AC30
     cmp     [bp+si+var_32], 2
     jz      short loc_1ABC6
@@ -1527,7 +1493,7 @@ loc_1ABC7:
     mov     [bp+var_4A], al
     mov     al, [bp+var_102]
     mov     [bp+var_6E], al
-    mov     [bp+var_DE], si
+    mov     [bp+var_material], si
     mov     di, [bp+var_A2]
     jmp     short loc_1ABC6
     ; align 2
@@ -1648,7 +1614,7 @@ loc_1AD4A:
 loc_1AD4F:
     mov     [bp+var_10E], 984h
 loc_1AD55:
-    mov     [bp+var_DE], 0
+    mov     [bp+var_material], 0
     jmp     loc_1AE7A
 loc_1AD5E:
     mov     al, [bp+var_100]
@@ -1780,12 +1746,12 @@ loc_1ADFC:
     jle     short loc_1AE76
     jmp     loc_1B03C
 loc_1AE76:
-    inc     [bp+var_DE]
+    inc     [bp+var_material]
 loc_1AE7A:
     mov     ax, [bp+var_counter]
-    cmp     [bp+var_DE], ax
+    cmp     [bp+var_material], ax
     jge     short loc_1AECC
-    mov     ax, [bp+var_DE]
+    mov     ax, [bp+var_material]
     shl     ax, 1
     add     ax, [bp+var_10E]
     mov     word ptr [bp+var_154], ax
@@ -1834,7 +1800,7 @@ loc_1AEEE:
     add     ax, cx
     shl     ax, 1
     add     ax, offset sceneshapes2
-    mov     [bp+var_12E], ax
+    mov     [bp+var_trkobject_ptr], ax
     mov     bx, ax
     mov     ax, [bx+4]
     mov     currenttransshape.ts_shapeptr, ax
@@ -1871,7 +1837,7 @@ loc_1AF50:
     jbe     short loc_1AF67
     jmp     loc_1AEE4
 loc_1AF67:
-    mov     [bp+var_DE], 0
+    mov     [bp+var_material], 0
     jmp     loc_1B0AC
 loc_1AF70:
     mov     al, [bp+var_F6]
@@ -1907,7 +1873,7 @@ loc_1AFB4:
     add     ax, cx
     shl     ax, 1
     add     ax, offset sceneshapes2
-    mov     [bp+var_12E], ax
+    mov     [bp+var_trkobject_ptr], ax
     mov     bx, ax
     mov     ax, [bx+4]
     mov     currenttransshape.ts_shapeptr, ax
@@ -1929,7 +1895,7 @@ loc_1AFB4:
     mov     currenttransshape.ts_flags, al
     mov     currenttransshape.ts_rotvec.vx, 0
     mov     currenttransshape.ts_rotvec.vy, 0
-    mov     bx, [bp+var_12E]
+    mov     bx, [bp+var_trkobject_ptr]
     mov     ax, [bx+2]
     mov     currenttransshape.ts_rotvec.vz, ax
     mov     currenttransshape.ts_unk, 400h
@@ -1991,13 +1957,13 @@ loc_1B0A0:
     inc     al
     jmp     short loc_1B092
 loc_1B0A8:
-    inc     [bp+var_DE]
+    inc     [bp+var_material]
 loc_1B0AC:
-    cmp     [bp+var_DE], 4
+    cmp     [bp+var_material], 4
     jl      short loc_1B0B6
     jmp     loc_1AEDF
 loc_1B0B6:
-    mov     ax, [bp+var_DE]
+    mov     ax, [bp+var_material]
     or      ax, ax
     jnz     short loc_1B0C1
     jmp     loc_1AF70
@@ -2019,7 +1985,7 @@ loc_1B0DA:
     mov     currenttransshape.ts_flags, al
     mov     currenttransshape.ts_rotvec.vx, 0
     mov     currenttransshape.ts_rotvec.vy, 0
-    mov     bx, [bp+var_12E]
+    mov     bx, [bp+var_trkobject_ptr]
     mov     ax, [bx+2]
     mov     currenttransshape.ts_rotvec.vz, ax
     mov     currenttransshape.ts_unk, 400h
@@ -2035,7 +2001,7 @@ loc_1B0DA:
     jmp     loc_1B03C
 loc_1B11C:
     mov     byte_45D7E, 0
-    mov     word_46434, offset currenttransshape
+    mov     curtransshape_ptr, offset currenttransshape
     cmp     [bp+var_62], 0
     jnz     short loc_1B130
     jmp     loc_1B71E
@@ -2049,7 +2015,7 @@ loc_1B130:
     add     ax, cx
     shl     ax, 1
     add     ax, offset trkObjectList
-    mov     [bp+var_12E], ax
+    mov     [bp+var_trkobject_ptr], ax
     mov     bx, ax
     test    byte ptr [bx+0Bh], 1
     jz      short loc_1B168
@@ -2072,7 +2038,7 @@ loc_1B168:
     mov     al, [bp+var_102]
 loc_1B17C:
     mov     [bp+var_12C], al
-    mov     bx, [bp+var_12E]
+    mov     bx, [bp+var_trkobject_ptr]
     test    byte ptr [bx+0Bh], 2
     jz      short loc_1B1A2
     mov     al, [bp+var_F6]
@@ -2107,7 +2073,7 @@ loc_1B1B6:
     jnz     short loc_1B1DE
     jmp     loc_1B2AE
 loc_1B1DE:
-    mov     bx, [bp+var_12E]
+    mov     bx, [bp+var_trkobject_ptr]
     mov     al, [bx+0Bh]
     cbw
     or      ax, ax
@@ -2125,7 +2091,7 @@ loc_1B1FC:
     mov     di, 1
     mov     [bp+var_DA], 932h
 loc_1B205:
-    mov     [bp+var_DE], 0
+    mov     [bp+var_material], 0
     jmp     short loc_1B236
     ; align 2
     db 144
@@ -2148,9 +2114,9 @@ loc_1B226:
     ; align 2
     db 144
 loc_1B232:
-    inc     [bp+var_DE]
+    inc     [bp+var_material]
 loc_1B236:
-    cmp     [bp+var_DE], di
+    cmp     [bp+var_material], di
     jge     short loc_1B2AE
     mov     bx, [bp+var_DA]
     add     [bp+var_DA], 2
@@ -2184,7 +2150,7 @@ loc_1B236:
     jle     short loc_1B232
     jmp     loc_1B03C
 loc_1B2AE:
-    mov     bx, [bp+var_12E]
+    mov     bx, [bp+var_trkobject_ptr]
     cmp     byte ptr [bx+8], 0
     jnz     short loc_1B2BB
     jmp     loc_1B374
@@ -2269,11 +2235,11 @@ loc_1B36A:
 loc_1B374:
     cmp     [bp+var_FC], 0
     jz      short loc_1B384
-    mov     bx, [bp+var_12E]
+    mov     bx, [bp+var_trkobject_ptr]
     mov     ax, [bx+6]
     jmp     short loc_1B38B
 loc_1B384:
-    mov     bx, [bp+var_12E]
+    mov     bx, [bp+var_trkobject_ptr]
     mov     ax, [bx+4]
 loc_1B38B:
     mov     currenttransshape.ts_shapeptr, ax
@@ -2422,7 +2388,7 @@ loc_1B4D4:
     add     ax, cx
     shl     ax, 1
     add     ax, offset sceneshapes3
-    mov     [bp+var_12E], ax
+    mov     [bp+var_trkobject_ptr], ax
     mov     ax, di
     shl     ax, 1
     shl     ax, 1
@@ -2447,8 +2413,8 @@ loc_1B503:
     mov     es, word ptr td10_track_check_rel+2
     add     cx, es:[bx]
     sub     cx, [bp+var_vec4.vx]
-    mov     bx, word_46434
-    mov     [bx], cx
+    mov     bx, curtransshape_ptr
+    mov     [bx+TRANSFORMEDSHAPE.ts_pos.vx], cx
     mov     bx, [bp+var_150]
     mov     ax, word ptr state.game_longvecs2.lx[bx]
     mov     dx, word ptr (state.game_longvecs2.lx+2)[bx]
@@ -2469,8 +2435,8 @@ loc_1B53B:
     mov     es, word ptr td10_track_check_rel+2
     add     cx, es:[bx+2]
     sub     cx, [bp+var_vec4.vy]
-    mov     bx, word_46434
-    mov     [bx+2], cx
+    mov     bx, curtransshape_ptr
+    mov     [bx+TRANSFORMEDSHAPE.ts_pos.vy], cx
     mov     bx, [bp+var_150]
     mov     ax, word ptr state.game_longvecs3.lx[bx]
     mov     dx, word ptr (state.game_longvecs3.lx+2)[bx]
@@ -2491,40 +2457,40 @@ loc_1B575:
     mov     es, word ptr td10_track_check_rel+2
     add     cx, es:[bx+4]
     sub     cx, [bp+var_vec4.vz]
-    mov     bx, word_46434
-    mov     [bx+4], cx
-    mov     bx, [bp+var_12E]
+    mov     bx, curtransshape_ptr
+    mov     [bx+TRANSFORMEDSHAPE.ts_pos.vz], cx
+    mov     bx, [bp+var_trkobject_ptr]
     mov     ax, [bx+4]
-    mov     bx, word_46434
-    mov     [bx+6], ax
-    mov     bx, word_46434
-    mov     word ptr [bx+8], 92A4h
-    mov     bx, word_46434
+    mov     bx, curtransshape_ptr
+    mov     [bx+TRANSFORMEDSHAPE.ts_shapeptr], ax
+    mov     bx, curtransshape_ptr
+    mov     [bx+TRANSFORMEDSHAPE.ts_rectptr], offset rect_unk6
+    mov     bx, curtransshape_ptr
     mov     al, [bp+var_122]
     or      al, 5
-    mov     [bx+12h], al
+    mov     [bx+TRANSFORMEDSHAPE.ts_flags], al
     mov     bx, word ptr [bp+var_154]
     mov     ax, state.field_2FE[bx]
     neg     ax
-    mov     bx, word_46434
-    mov     [bx+0Ah], ax
+    mov     bx, curtransshape_ptr
+    mov     [bx+TRANSFORMEDSHAPE.ts_rotvec.vx], ax
     mov     ax, di
     shl     ax, 1
     mov     word ptr [bp+var_154], ax
     mov     bx, ax
     mov     ax, state.field_32E[bx]
     neg     ax
-    mov     bx, word_46434
-    mov     [bx+0Ch], ax
+    mov     bx, curtransshape_ptr
+    mov     [bx+TRANSFORMEDSHAPE.ts_rotvec.vy], ax
     mov     bx, word ptr [bp+var_154]
     mov     ax, state.field_35E[bx]
     neg     ax
-    mov     bx, word_46434
-    mov     [bx+0Eh], ax
-    mov     bx, word_46434
-    mov     word ptr [bx+10h], 400h
-    mov     bx, word_46434
-    mov     byte ptr [bx+13h], 0
+    mov     bx, curtransshape_ptr
+    mov     [bx+TRANSFORMEDSHAPE.ts_rotvec.vz], ax
+    mov     bx, curtransshape_ptr
+    mov     [bx+TRANSFORMEDSHAPE.ts_unk], 400h
+    mov     bx, curtransshape_ptr
+    mov     [bx+TRANSFORMEDSHAPE.ts_material], 0
     sub     ax, ax
     push    ax
     push    ax
@@ -2553,7 +2519,7 @@ loc_1B626:
     add     ax, cx
     shl     ax, 1
     add     ax, 2C30h
-    mov     [bp+var_12E], ax
+    mov     [bp+var_trkobject_ptr], ax
     mov     al, [bp+var_4C]
     cbw
     mov     bx, ax
@@ -2564,7 +2530,7 @@ loc_1B626:
     mov     es, word ptr td10_track_check_rel+2
     mov     ax, es:[bx]
     sub     ax, [bp+var_vec4.vx]
-    mov     bx, word_46434
+    mov     bx, curtransshape_ptr
     mov     [bx], ax
     mov     al, [bp+var_4C]
     cbw
@@ -2576,8 +2542,8 @@ loc_1B626:
     mov     es, word ptr td10_track_check_rel+2
     mov     ax, es:[bx+2]
     sub     ax, [bp+var_vec4.vy]
-    mov     bx, word_46434
-    mov     [bx+2], ax
+    mov     bx, curtransshape_ptr
+    mov     [bx+TRANSFORMEDSHAPE.ts_pos.vy], ax
     mov     al, [bp+var_4C]
     cbw
     mov     bx, ax
@@ -2588,22 +2554,22 @@ loc_1B626:
     mov     es, word ptr td10_track_check_rel+2
     mov     ax, es:[bx+4]
     sub     ax, [bp+var_vec4.vz]
-    mov     bx, word_46434
-    mov     [bx+4], ax
-    mov     bx, [bp+var_12E]
+    mov     bx, curtransshape_ptr
+    mov     [bx+TRANSFORMEDSHAPE.ts_pos.vz], ax
+    mov     bx, [bp+var_trkobject_ptr]
     mov     ax, [bx+4]
-    mov     bx, word_46434
-    mov     [bx+6], ax
-    mov     bx, word_46434
-    mov     word ptr [bx+8], 92A4h
-    mov     bx, word_46434
+    mov     bx, curtransshape_ptr
+    mov     [bx+TRANSFORMEDSHAPE.ts_shapeptr], ax
+    mov     bx, curtransshape_ptr
+    mov     [bx+TRANSFORMEDSHAPE.ts_rectptr], offset rect_unk6
+    mov     bx, curtransshape_ptr
     mov     al, [bp+var_122]
     or      al, 4
-    mov     [bx+12h], al
-    mov     bx, word_46434
-    mov     word ptr [bx+0Ah], 0
-    mov     bx, word_46434
-    mov     word ptr [bx+0Ch], 0
+    mov     [bx+TRANSFORMEDSHAPE.ts_flags], al
+    mov     bx, curtransshape_ptr
+    mov     [bx+TRANSFORMEDSHAPE.ts_rotvec.vx], 0
+    mov     bx, curtransshape_ptr
+    mov     [bx+TRANSFORMEDSHAPE.ts_rotvec.vy], 0
     mov     al, [bp+var_4C]
     cbw
     mov     bx, ax
@@ -2611,12 +2577,12 @@ loc_1B626:
     add     bx, word ptr td08_direction_related
     mov     es, word ptr td08_direction_related+2
     mov     ax, es:[bx]
-    mov     bx, word_46434
-    mov     [bx+0Eh], ax
-    mov     bx, word_46434
-    mov     word ptr [bx+10h], 64h ; 'd'
-    mov     bx, word_46434
-    mov     byte ptr [bx+13h], 0
+    mov     bx, curtransshape_ptr
+    mov     [bx+TRANSFORMEDSHAPE.ts_rotvec.vz], ax
+    mov     bx, curtransshape_ptr
+    mov     [bx+TRANSFORMEDSHAPE.ts_unk], 64h ; 'd'
+    mov     bx, curtransshape_ptr
+    mov     [bx+TRANSFORMEDSHAPE.ts_material], 0
     sub     ax, ax
     push    ax
     push    ax
@@ -2673,7 +2639,7 @@ loc_1B782:
     add     ax, cx
     shl     ax, 1
     add     ax, offset sceneshapes3
-    mov     [bp+var_12E], ax
+    mov     [bp+var_trkobject_ptr], ax
     mov     ax, di
     shl     ax, 1
     shl     ax, 1
@@ -2690,8 +2656,8 @@ loc_1B7B9:
     dec     cl
     jnz     short loc_1B7B9
     sub     ax, [bp+var_vec4.vx]
-    mov     bx, word_46434
-    mov     [bx], ax
+    mov     bx, curtransshape_ptr
+    mov     [bx+TRANSFORMEDSHAPE.ts_pos.vx], ax
     mov     bx, [bp+var_150]
     mov     ax, word ptr state.game_longvecs2.lx[bx]
     mov     dx, word ptr (state.game_longvecs2.lx+2)[bx]
@@ -2704,8 +2670,8 @@ loc_1B7E0:
     dec     cl
     jnz     short loc_1B7E0
     sub     ax, [bp+var_vec4.vy]
-    mov     bx, word_46434
-    mov     [bx+2], ax
+    mov     bx, curtransshape_ptr
+    mov     [bx+TRANSFORMEDSHAPE.ts_pos.vy], ax
     mov     bx, [bp+var_150]
     mov     ax, word ptr state.game_longvecs3.lx[bx]
     mov     dx, word ptr (state.game_longvecs3.lx+2)[bx]
@@ -2718,38 +2684,38 @@ loc_1B808:
     dec     cl
     jnz     short loc_1B808
     sub     ax, [bp+var_vec4.vz]
-    mov     bx, word_46434
-    mov     [bx+4], ax
-    mov     bx, [bp+var_12E]
+    mov     bx, curtransshape_ptr
+    mov     [bx+TRANSFORMEDSHAPE.ts_pos.vz], ax
+    mov     bx, [bp+var_trkobject_ptr]
     mov     ax, [bx+4]
-    mov     bx, word_46434
-    mov     [bx+6], ax
-    mov     bx, word_46434
-    mov     word ptr [bx+8], 92A4h
-    mov     bx, word_46434
+    mov     bx, curtransshape_ptr
+    mov     [bx+TRANSFORMEDSHAPE.ts_shapeptr], ax
+    mov     bx, curtransshape_ptr
+    mov     [bx+TRANSFORMEDSHAPE.ts_rectptr], offset rect_unk6
+    mov     bx, curtransshape_ptr
     mov     al, [bp+var_122]
     or      al, 5
-    mov     [bx+12h], al
+    mov     [bx+TRANSFORMEDSHAPE.ts_flags], al
     mov     bx, word ptr [bp+var_154]
     mov     ax, state.field_2FE[bx]
     neg     ax
-    mov     bx, word_46434
-    mov     [bx+0Ah], ax
+    mov     bx, curtransshape_ptr
+    mov     [bx+TRANSFORMEDSHAPE.ts_rotvec.vx], ax
     mov     bx, word ptr [bp+var_154]
     mov     ax, state.field_32E[bx]
     neg     ax
-    mov     bx, word_46434
-    mov     [bx+0Ch], ax
+    mov     bx, curtransshape_ptr
+    mov     [bx+TRANSFORMEDSHAPE.ts_rotvec.vy], ax
     mov     bx, word ptr [bp+var_154]
     mov     ax, state.field_35E[bx]
     neg     ax
-    mov     bx, word_46434
-    mov     [bx+0Eh], ax
-    mov     bx, word_46434
-    mov     word ptr [bx+10h], 400h
-    mov     bx, word_46434
+    mov     bx, curtransshape_ptr
+    mov     [bx+TRANSFORMEDSHAPE.ts_rotvec.vz], ax
+    mov     bx, curtransshape_ptr
+    mov     [bx+TRANSFORMEDSHAPE.ts_unk], 400h
+    mov     bx, curtransshape_ptr
     mov     al, gameconfig.game_playermaterial
-    mov     [bx+13h], al
+    mov     [bx+TRANSFORMEDSHAPE.ts_material], al
     sub     ax, ax
     push    ax
     mov     ax, [bp+var_6C]
@@ -2764,8 +2730,8 @@ loc_1B896:
     jge     short loc_1B89F
     jmp     loc_1B764
 loc_1B89F:
-    mov     [bp+var_12E], 20B4h
-    mov     bx, word_46434
+    mov     [bp+var_trkobject_ptr], 20B4h
+    mov     bx, curtransshape_ptr
     mov     ax, word ptr state.playerstate.car_posWorld1.lx
     mov     dx, word ptr state.playerstate.car_posWorld1.lx+2
     mov     cl, 6
@@ -2775,8 +2741,8 @@ loc_1B8B2:
     dec     cl
     jnz     short loc_1B8B2
     sub     ax, [bp+var_vec4.vx]
-    mov     [bx], ax
-    mov     bx, word_46434
+    mov     [bx+TRANSFORMEDSHAPE.ts_pos.vx], ax
+    mov     bx, curtransshape_ptr
     mov     ax, word ptr state.playerstate.car_posWorld1.ly
     mov     dx, word ptr state.playerstate.car_posWorld1.ly+2
     mov     cl, 6
@@ -2786,8 +2752,8 @@ loc_1B8CC:
     dec     cl
     jnz     short loc_1B8CC
     sub     ax, [bp+var_vec4.vy]
-    mov     [bx+2], ax
-    mov     bx, word_46434
+    mov     [bx+TRANSFORMEDSHAPE.ts_pos.vy], ax
+    mov     bx, curtransshape_ptr
     mov     ax, word ptr state.playerstate.car_posWorld1.lz
     mov     dx, word ptr state.playerstate.car_posWorld1.lz+2
     mov     cl, 6
@@ -2797,24 +2763,24 @@ loc_1B8E7:
     dec     cl
     jnz     short loc_1B8E7
     sub     ax, [bp+var_vec4.vz]
-    mov     [bx+4], ax
+    mov     [bx+TRANSFORMEDSHAPE.ts_pos.vz], ax
     cmp     [bp+var_FC], 0
     jnz     short loc_1B903
     cmp     timertestflag2, 2
     jbe     short loc_1B914
 loc_1B903:
-    mov     bx, [bp+var_12E]
+    mov     bx, [bp+var_trkobject_ptr]
     mov     ax, [bx+6]
-    mov     bx, word_46434
-    mov     [bx+6], ax
+    mov     bx, curtransshape_ptr
+    mov     [bx+TRANSFORMEDSHAPE.ts_shapeptr], ax
     jmp     short loc_1B94A
     ; align 2
     db 144
 loc_1B914:
-    mov     bx, [bp+var_12E]
+    mov     bx, [bp+var_trkobject_ptr]
     mov     ax, [bx+4]
-    mov     bx, word_46434
-    mov     [bx+6], ax
+    mov     bx, curtransshape_ptr
+    mov     [bx+TRANSFORMEDSHAPE.ts_shapeptr], ax
     mov     ax, offset word_42CBA
     push    ax
     mov     ax, offset word_443FA
@@ -2834,18 +2800,18 @@ loc_1B914:
 loc_1B94A:
     cmp     timertestflag_copy, 0
     jz      short loc_1B964
-    mov     bx, word_46434
-    mov     word ptr [bx+8], 92ACh
+    mov     bx, curtransshape_ptr
+    mov     [bx+TRANSFORMEDSHAPE.ts_rectptr], offset rect_unk12
 loc_1B95A:
-    mov     bx, word_46434
-    mov     byte ptr [bx+12h], 0Ch
+    mov     bx, curtransshape_ptr
+    mov     [bx+TRANSFORMEDSHAPE.ts_flags], 0Ch
     jmp     short loc_1B990
 loc_1B964:
     cmp     state.playerstate.car_crashBmpFlag, 1
     jnz     short loc_1B988
     push    si
     push    di
-    lea     di, [bp+var_6A]
+    lea     di, [bp+var_rect]
     mov     si, offset cliprect_unk
     push    ss
     pop     es
@@ -2855,33 +2821,33 @@ loc_1B964:
     movsw
     pop     di
     pop     si
-    mov     bx, word_46434
-    lea     ax, [bp+var_6A]
-    mov     [bx+8], ax
+    mov     bx, curtransshape_ptr
+    lea     ax, [bp+var_rect]
+    mov     [bx+TRANSFORMEDSHAPE.ts_rectptr], ax
     jmp     short loc_1B95A
     ; align 2
     db 144
 loc_1B988:
-    mov     bx, word_46434
-    mov     byte ptr [bx+12h], 4
+    mov     bx, curtransshape_ptr
+    mov     [bx+TRANSFORMEDSHAPE.ts_flags], 4
 loc_1B990:
-    mov     bx, word_46434
+    mov     bx, curtransshape_ptr
     mov     ax, state.playerstate.car_rotate.vz
     neg     ax
-    mov     [bx+0Ah], ax
-    mov     bx, word_46434
+    mov     [bx+TRANSFORMEDSHAPE.ts_rotvec.vx], ax
+    mov     bx, curtransshape_ptr
     mov     ax, state.playerstate.car_rotate.vy
     neg     ax
-    mov     [bx+0Ch], ax
-    mov     bx, word_46434
+    mov     [bx+TRANSFORMEDSHAPE.ts_rotvec.vy], ax
+    mov     bx, curtransshape_ptr
     mov     ax, state.playerstate.car_rotate.vx
     neg     ax
-    mov     [bx+0Eh], ax
-    mov     bx, word_46434
-    mov     word ptr [bx+10h], 12Ch
-    mov     bx, word_46434
+    mov     [bx+TRANSFORMEDSHAPE.ts_rotvec.vz], ax
+    mov     bx, curtransshape_ptr
+    mov     [bx+TRANSFORMEDSHAPE.ts_unk], 12Ch
+    mov     bx, curtransshape_ptr
     mov     al, gameconfig.game_playermaterial
-    mov     [bx+13h], al
+    mov     [bx+TRANSFORMEDSHAPE.ts_material], al
     mov     ax, 2
     push    ax
     mov     ax, [bp+var_6C]
@@ -2934,7 +2900,7 @@ loc_1BA2E:
     add     ax, cx
     shl     ax, 1
     add     ax, offset sceneshapes3
-    mov     [bp+var_12E], ax
+    mov     [bp+var_trkobject_ptr], ax
     mov     ax, di
     shl     ax, 1
     shl     ax, 1
@@ -2951,8 +2917,8 @@ loc_1BA65:
     dec     cl
     jnz     short loc_1BA65
     sub     ax, [bp+var_vec4.vx]
-    mov     bx, word_46434
-    mov     [bx], ax
+    mov     bx, curtransshape_ptr
+    mov     [bx+TRANSFORMEDSHAPE.ts_pos.vx], ax
     mov     bx, [bp+var_150]
     mov     ax, word ptr state.game_longvecs2.lx[bx]
     mov     dx, word ptr (state.game_longvecs2.lx+2)[bx]
@@ -2965,8 +2931,8 @@ loc_1BA8C:
     dec     cl
     jnz     short loc_1BA8C
     sub     ax, [bp+var_vec4.vy]
-    mov     bx, word_46434
-    mov     [bx+2], ax
+    mov     bx, curtransshape_ptr
+    mov     [bx+TRANSFORMEDSHAPE.ts_pos.vy], ax
     mov     bx, [bp+var_150]
     mov     ax, word ptr state.game_longvecs3.lx[bx]
     mov     dx, word ptr (state.game_longvecs3.lx+2)[bx]
@@ -2979,38 +2945,38 @@ loc_1BAB4:
     dec     cl
     jnz     short loc_1BAB4
     sub     ax, [bp+var_vec4.vz]
-    mov     bx, word_46434
-    mov     [bx+4], ax
-    mov     bx, [bp+var_12E]
+    mov     bx, curtransshape_ptr
+    mov     [bx+TRANSFORMEDSHAPE.ts_pos.vz], ax
+    mov     bx, [bp+var_trkobject_ptr]
     mov     ax, [bx+4]
-    mov     bx, word_46434
-    mov     [bx+6], ax
-    mov     bx, word_46434
-    mov     word ptr [bx+8], 92A4h
-    mov     bx, word_46434
+    mov     bx, curtransshape_ptr
+    mov     [bx+TRANSFORMEDSHAPE.ts_shapeptr], ax
+    mov     bx, curtransshape_ptr
+    mov     [bx+TRANSFORMEDSHAPE.ts_rectptr], 92A4h
+    mov     bx, curtransshape_ptr
     mov     al, [bp+var_122]
     or      al, 5
-    mov     [bx+12h], al
+    mov     [bx+TRANSFORMEDSHAPE.ts_flags], al
     mov     bx, word ptr [bp+var_154]
     mov     ax, state.field_2FE[bx]
     neg     ax
-    mov     bx, word_46434
-    mov     [bx+0Ah], ax
+    mov     bx, curtransshape_ptr
+    mov     [bx+TRANSFORMEDSHAPE.ts_rotvec.vx], ax
     mov     bx, word ptr [bp+var_154]
     mov     ax, state.field_32E[bx]
     neg     ax
-    mov     bx, word_46434
-    mov     [bx+0Ch], ax
+    mov     bx, curtransshape_ptr
+    mov     [bx+TRANSFORMEDSHAPE.ts_rotvec.vy], ax
     mov     bx, word ptr [bp+var_154]
     mov     ax, state.field_35E[bx]
     neg     ax
-    mov     bx, word_46434
-    mov     [bx+0Eh], ax
-    mov     bx, word_46434
-    mov     word ptr [bx+10h], 400h
-    mov     bx, word_46434
+    mov     bx, curtransshape_ptr
+    mov     [bx+TRANSFORMEDSHAPE.ts_rotvec.vz], ax
+    mov     bx, curtransshape_ptr
+    mov     [bx+TRANSFORMEDSHAPE.ts_unk], 400h
+    mov     bx, curtransshape_ptr
     mov     al, gameconfig.game_opponentmaterial
-    mov     [bx+13h], al
+    mov     [bx+TRANSFORMEDSHAPE.ts_material], al
     sub     ax, ax
     push    ax
     mov     ax, [bp+var_A4]
@@ -3025,8 +2991,8 @@ loc_1BB43:
     jge     short loc_1BB4C
     jmp     loc_1BA10
 loc_1BB4C:
-    mov     [bp+var_12E], 20C2h
-    mov     bx, word_46434
+    mov     [bp+var_trkobject_ptr], 20C2h
+    mov     bx, curtransshape_ptr
     mov     ax, word ptr state.opponentstate.car_posWorld1.lx
     mov     dx, word ptr state.opponentstate.car_posWorld1.lx+2
     mov     cl, 6
@@ -3036,8 +3002,8 @@ loc_1BB5F:
     dec     cl
     jnz     short loc_1BB5F
     sub     ax, [bp+var_vec4.vx]
-    mov     [bx], ax
-    mov     bx, word_46434
+    mov     [bx+TRANSFORMEDSHAPE.ts_pos.vx], ax
+    mov     bx, curtransshape_ptr
     mov     ax, word ptr state.opponentstate.car_posWorld1.ly
     mov     dx, word ptr state.opponentstate.car_posWorld1.ly+2
     mov     cl, 6
@@ -3047,8 +3013,8 @@ loc_1BB79:
     dec     cl
     jnz     short loc_1BB79
     sub     ax, [bp+var_vec4.vy]
-    mov     [bx+2], ax
-    mov     bx, word_46434
+    mov     [bx+TRANSFORMEDSHAPE.ts_pos.vy], ax
+    mov     bx, curtransshape_ptr
     mov     ax, word ptr state.opponentstate.car_posWorld1.lz
     mov     dx, word ptr state.opponentstate.car_posWorld1.lz+2
     mov     cl, 6
@@ -3058,22 +3024,22 @@ loc_1BB94:
     dec     cl
     jnz     short loc_1BB94
     sub     ax, [bp+var_vec4.vz]
-    mov     [bx+4], ax
+    mov     [bx+TRANSFORMEDSHAPE.ts_pos.vz], ax
     cmp     [bp+var_FC], 0
     jnz     short loc_1BBB0
     cmp     timertestflag2, 2
     jbe     short loc_1BBC0
 loc_1BBB0:
-    mov     bx, [bp+var_12E]
+    mov     bx, [bp+var_trkobject_ptr]
     mov     ax, [bx+6]
-    mov     bx, word_46434
-    mov     [bx+6], ax
+    mov     bx, curtransshape_ptr
+    mov     [bx+TRANSFORMEDSHAPE.ts_shapeptr], ax
     jmp     short loc_1BBF6
 loc_1BBC0:
-    mov     bx, [bp+var_12E]
+    mov     bx, [bp+var_trkobject_ptr]
     mov     ax, [bx+4]
-    mov     bx, word_46434
-    mov     [bx+6], ax
+    mov     bx, curtransshape_ptr
+    mov     [bx+TRANSFORMEDSHAPE.ts_shapeptr], ax
     mov     ax, offset word_42D04
     push    ax
     mov     ax, offset word_448F4
@@ -3093,18 +3059,18 @@ loc_1BBC0:
 loc_1BBF6:
     cmp     timertestflag_copy, 0
     jz      short loc_1BC10
-    mov     bx, word_46434
-    mov     word ptr [bx+8], 92B4h
+    mov     bx, curtransshape_ptr
+    mov     [bx+TRANSFORMEDSHAPE.ts_rectptr], offset rect_unk15
 loc_1BC06:
-    mov     bx, word_46434
-    mov     byte ptr [bx+12h], 0Ch
+    mov     bx, curtransshape_ptr
+    mov     [bx+TRANSFORMEDSHAPE.ts_flags], 0Ch
     jmp     short loc_1BC3E
 loc_1BC10:
     cmp     state.opponentstate.car_crashBmpFlag, 1
     jnz     short loc_1BC36
     push    si
     push    di
-    lea     di, [bp+var_8E]
+    lea     di, [bp+var_rect2]
     mov     si, offset cliprect_unk
     push    ss
     pop     es
@@ -3114,33 +3080,33 @@ loc_1BC10:
     movsw
     pop     di
     pop     si
-    mov     bx, word_46434
-    lea     ax, [bp+var_8E]
-    mov     [bx+8], ax
+    mov     bx, curtransshape_ptr
+    lea     ax, [bp+var_rect2]
+    mov     [bx+TRANSFORMEDSHAPE.ts_rectptr], ax
     jmp     short loc_1BC06
     ; align 2
     db 144
 loc_1BC36:
-    mov     bx, word_46434
-    mov     byte ptr [bx+12h], 4
+    mov     bx, curtransshape_ptr
+    mov     [bx+TRANSFORMEDSHAPE.ts_flags], 4
 loc_1BC3E:
-    mov     bx, word_46434
+    mov     bx, curtransshape_ptr
     mov     ax, state.opponentstate.car_rotate.vz
     neg     ax
-    mov     [bx+0Ah], ax
-    mov     bx, word_46434
+    mov     [bx+TRANSFORMEDSHAPE.ts_rotvec.vx], ax
+    mov     bx, curtransshape_ptr
     mov     ax, state.opponentstate.car_rotate.vy
     neg     ax
-    mov     [bx+0Ch], ax
-    mov     bx, word_46434
+    mov     [bx+TRANSFORMEDSHAPE.ts_rotvec.vy], ax
+    mov     bx, curtransshape_ptr
     mov     ax, state.opponentstate.car_rotate.vx
     neg     ax
-    mov     [bx+0Eh], ax
-    mov     bx, word_46434
-    mov     word ptr [bx+10h], 12Ch
-    mov     bx, word_46434
+    mov     [bx+TRANSFORMEDSHAPE.ts_rotvec.vz], ax
+    mov     bx, curtransshape_ptr
+    mov     [bx+TRANSFORMEDSHAPE.ts_unk], 12Ch
+    mov     bx, curtransshape_ptr
     mov     al, gameconfig.game_opponentmaterial
-    mov     [bx+13h], al
+    mov     [bx+TRANSFORMEDSHAPE.ts_material], al
     mov     ax, 3
     push    ax
     mov     ax, [bp+var_A4]
@@ -3176,7 +3142,7 @@ loc_1BCB7:
     push    ax
     call    multiply_and_scale
     add     sp, 4
-    mov     [bp+var_DE], ax
+    mov     [bp+var_material], ax
     mov     ax, 24h ; '$'
     push    ax
     push    word_44DCA
@@ -3193,20 +3159,20 @@ loc_1BCB7:
     mov     word ptr [bp+var_108], ax
     mov     word ptr [bp+var_108+2], dx
     les     bx, [bp+var_108]
-    mov     ax, [bp+var_DE]
+    mov     ax, [bp+var_material]
     sub     ax, 24h ; '$'
     mov     es:[bx], ax
     les     bx, [bp+var_108]
-    mov     ax, [bp+var_DE]
+    mov     ax, [bp+var_material]
     sub     ax, 24h ; '$'
     mov     es:[bx+6], ax
     les     bx, [bp+var_108]
     mov     ax, 24h ; '$'
-    sub     ax, [bp+var_DE]
+    sub     ax, [bp+var_material]
     mov     es:[bx+0Ch], ax
     les     bx, [bp+var_108]
     mov     ax, 24h ; '$'
-    sub     ax, [bp+var_DE]
+    sub     ax, [bp+var_material]
     mov     es:[bx+12h], ax
     les     bx, [bp+var_108]
     mov     ax, [bp+var_counter]
@@ -3249,16 +3215,16 @@ loc_1BCB7:
     add     cx, trackcenterpos2[bx]
     add     cx, word ptr [bp+var_154]
     sub     cx, [bp+var_vec4.vx]
-    mov     bx, word_46434
-    mov     [bx], cx
+    mov     bx, curtransshape_ptr
+    mov     [bx+TRANSFORMEDSHAPE.ts_pos.vx], cx
     mov     al, hillFlag
     cbw
     mov     bx, ax
     shl     bx, 1
     mov     ax, [bx+178h]
     sub     ax, [bp+var_vec4.vy]
-    mov     bx, word_46434
-    mov     [bx+2], ax
+    mov     bx, curtransshape_ptr
+    mov     [bx+TRANSFORMEDSHAPE.ts_pos.vy], ax
     mov     ax, 24h ; '$'
     push    ax
     mov     ax, track_angle
@@ -3288,36 +3254,36 @@ loc_1BCB7:
     add     cx, trackcenterpos[bx]
     add     cx, word ptr [bp+var_154]
     sub     cx, [bp+var_vec4.vz]
-    mov     bx, word_46434
-    mov     [bx+4], cx
-    mov     bx, word_46434
-    mov     word ptr [bx+6], 7FD6h
-    mov     bx, word_46434
-    mov     word ptr [bx+8], offset rect_unk6
-    mov     bx, word_46434
+    mov     bx, curtransshape_ptr
+    mov     [bx+TRANSFORMEDSHAPE.ts_pos.vz], cx
+    mov     bx, curtransshape_ptr
+    mov     [bx+TRANSFORMEDSHAPE.ts_shapeptr], (offset game3dshapes.shape3d_numverts+98Ah)
+    mov     bx, curtransshape_ptr
+    mov     [bx+TRANSFORMEDSHAPE.ts_rectptr], offset rect_unk6
+    mov     bx, curtransshape_ptr
     mov     al, [bp+var_122]
     or      al, 4
-    mov     [bx+12h], al
-    mov     bx, word_46434
-    mov     word ptr [bx+0Ah], 0
-    mov     bx, word_46434
-    mov     word ptr [bx+0Ch], 0
-    mov     bx, word_46434
+    mov     [bx+TRANSFORMEDSHAPE.ts_flags], al
+    mov     bx, curtransshape_ptr
+    mov     [bx+TRANSFORMEDSHAPE.ts_rotvec.vx], 0
+    mov     bx, curtransshape_ptr
+    mov     [bx+TRANSFORMEDSHAPE.ts_rotvec.vy], 0
+    mov     bx, curtransshape_ptr
     mov     ax, track_angle
-    mov     [bx+0Eh], ax
-    mov     bx, word_46434
-    mov     word ptr [bx+10h], 400h
+    mov     [bx+TRANSFORMEDSHAPE.ts_rotvec.vz], ax
+    mov     bx, curtransshape_ptr
+    mov     [bx+TRANSFORMEDSHAPE.ts_unk], 400h
     mov     ax, word_44DCA
     mov     cl, 6
     sar     ax, cl
-    mov     [bp+var_DE], ax
+    mov     [bp+var_material], ax
     cmp     ax, 3
     jle     short loc_1BE8D
-    mov     [bp+var_DE], 3
+    mov     [bp+var_material], 3
 loc_1BE8D:
-    mov     bx, word_46434
-    mov     al, byte ptr [bp+var_DE]
-    mov     [bx+13h], al
+    mov     bx, curtransshape_ptr
+    mov     al, byte ptr [bp+var_material]
+    mov     [bx+TRANSFORMEDSHAPE.ts_material], al
     sub     ax, ax
     push    ax
     mov     ax, [bp+var_12A]
@@ -3335,17 +3301,17 @@ loc_1BEAA:
 loc_1BEB4:
     cmp     byte_45D7E, 1
     jle     short loc_1BED0
-    mov     ax, 0A6ACh
+    mov     ax, offset word_45E1C
     push    ax
-    mov     ax, 9D6Ah
+    mov     ax, offset word_454DA
     push    ax
     mov     al, byte_45D7E
     cbw
     push    ax
-    call    sub_36BE8
+    call    heapsort_by_order
     add     sp, 6
 loc_1BED0:
-    mov     [bp+var_DE], 0
+    mov     [bp+var_material], 0
     jmp     short loc_1BF38
 loc_1BED8:
     cmp     state.playerstate.car_is_braking, 0
@@ -3387,13 +3353,13 @@ loc_1BF28:
     jnz     short loc_1BF34
     mov     [bp+var_DC], 1
 loc_1BF34:
-    inc     [bp+var_DE]
+    inc     [bp+var_material]
 loc_1BF38:
     mov     al, byte_45D7E
     cbw
-    cmp     [bp+var_DE], ax
+    cmp     [bp+var_material], ax
     jge     short loc_1BF6C
-    mov     bx, [bp+var_DE]
+    mov     bx, [bp+var_material]
     shl     bx, 1
     mov     di, word_45E1C[bx]
     mov     al, byte_45A02[di]
@@ -3444,7 +3410,7 @@ loc_1BFB3:
     add     ax, cx
     shl     ax, 1
     add     ax, offset trkObjectList
-    mov     [bp+var_12E], ax
+    mov     [bp+var_trkobject_ptr], ax
     mov     bx, ax
     mov     al, [bx+0Bh]
     cbw
@@ -3466,57 +3432,57 @@ loc_1BFE5:
 loc_1BFED:
     jmp     loc_1AD55
 loc_1BFF0:
-    mov     [bp+var_rectptr], 92B4h
+    mov     [bp+var_rectptr], offset rect_unk15
     jmp     short loc_1C009
     ; align 2
     db 144
 loc_1BFF8:
     or      si, si
     jnz     short loc_1C002
-    lea     ax, [bp+var_6A]
+    lea     ax, [bp+var_rect]
     jmp     short loc_1C006
     ; align 2
     db 144
 loc_1C002:
-    lea     ax, [bp+var_8E]
+    lea     ax, [bp+var_rect2]
 loc_1C006:
     mov     [bp+var_rectptr], ax
 loc_1C009:
     push    [bp+arg_cliprectptr]
     push    [bp+var_rectptr]
-    call    sub_265EC
+    call    rect_clip_op2
     add     sp, 4
     or      al, al
     jz      short loc_1C01E
     jmp     loc_1C0C1
 loc_1C01E:
     mov     bx, [bp+var_rectptr]
-    push    word ptr [bx+6]
-    push    word ptr [bx+4]
-    push    word ptr [bx+2]
-    push    word ptr [bx]
+    push    [bx+RECTANGLE.rc_bottom]
+    push    [bx+RECTANGLE.rc_top]
+    push    [bx+RECTANGLE.rc_right]
+    push    [bx+RECTANGLE.rc_left]
     call    sprite_set_1_size
     add     sp, 8
     mov     bx, [bp+var_rectptr]
-    mov     ax, [bx+2]
-    add     ax, [bx]
+    mov     ax, [bx+RECTANGLE.rc_right]
+    add     ax, [bx+RECTANGLE.rc_left]
     sar     ax, 1
     mov     [bp+var_vec6.vx], ax
-    mov     ax, [bx+4]
-    add     ax, [bx+6]
+    mov     ax, [bx+RECTANGLE.rc_top]
+    add     ax, [bx+RECTANGLE.rc_bottom]
     sar     ax, 1
     mov     [bp+var_vec6.vy], ax
-    mov     ax, [bx+2]
-    sub     ax, [bx]
-    mov     [bp+var_DE], ax
-    mov     ax, [bx+6]
-    sub     ax, [bx+4]
+    mov     ax, [bx+RECTANGLE.rc_right]
+    sub     ax, [bx+RECTANGLE.rc_left]
+    mov     [bp+var_material], ax
+    mov     ax, [bx+RECTANGLE.rc_bottom]
+    sub     ax, [bx+RECTANGLE.rc_top]
     mov     [bp+var_counter], ax
-    mov     ax, [bp+var_DE]
+    mov     ax, [bp+var_material]
     cmp     [bp+var_counter], ax
     jle     short loc_1C070
     mov     ax, [bp+var_counter]
-    mov     [bp+var_DE], ax
+    mov     [bp+var_material], ax
 loc_1C070:
     mov     ax, state.game_frame
     shr     ax, 1
@@ -3531,7 +3497,7 @@ loc_1C070:
     cwd
     push    dx
     push    ax
-    mov     ax, [bp+var_DE]
+    mov     ax, [bp+var_material]
     cwd
     mov     dh, dl
     mov     dl, ah
@@ -3566,14 +3532,14 @@ loc_1C0D8:
     jz      short loc_1C0DF
     jmp     loc_1BFF0
 loc_1C0DF:
-    mov     [bp+var_rectptr], 92ACh
+    mov     [bp+var_rectptr], offset rect_unk12
     jmp     loc_1C009
     ; align 2
     db 144
 loc_1C0E8:
     mov     bx, [bp+arg_cliprectptr]
-    push    word ptr [bx+6]
-    push    word ptr [bx+4]
+    push    [bx+RECTANGLE.rc_bottom]
+    push    [bx+RECTANGLE.rc_top]
     mov     ax, 140h
     push    ax
     sub     ax, ax
@@ -3586,68 +3552,68 @@ loc_1C0E8:
 loc_1C10A:
     cmp     followOpponentFlag, 0
     jz      short loc_1C11E
-    mov     [bp+var_104], 8F46h
+    mov     [bp+var_stateptr], offset state.opponentstate
     mov     si, state.game_oEndFrame
     jmp     short loc_1C128
     ; align 2
     db 144
 loc_1C11E:
-    mov     [bp+var_104], 8E76h
+    mov     [bp+var_stateptr], offset state.playerstate
     mov     si, state.game_pEndFrame
 loc_1C128:
-    mov     bx, [bp+var_104]
-    cmp     byte ptr [bx+0C9h], 1
+    mov     bx, [bp+var_stateptr]
+    cmp     [bx+CARSTATE.car_crashBmpFlag], 1
     jnz     short loc_1C17C
     cmp     timertestflag_copy, 0
     jz      short loc_1C162
-    mov     ax, 9294h
+    mov     ax, offset rect_unk
     push    ax
     push    ax
     mov     bx, [bp+arg_cliprectptr]
-    mov     ax, [bx+6]
-    sub     ax, [bx+4]
+    mov     ax, [bx+RECTANGLE.rc_bottom]
+    sub     ax, [bx+RECTANGLE.rc_top]
     push    ax
-    push    word ptr [bx+4]
+    push    [bx+RECTANGLE.rc_top]
     mov     ax, state.game_frame
     sub     ax, si
     push    ax
     push    cs
-    call near ptr sub_1D5B4
+    call near ptr init_crak
 loc_1C156:
     add     sp, 6
     push    ax
-    call    sub_26572
+    call    rect_clip_op
     jmp     short loc_1C1C3
     ; align 2
     db 144
 loc_1C162:
     mov     bx, [bp+arg_cliprectptr]
-    mov     ax, [bx+6]
-    sub     ax, [bx+4]
+    mov     ax, [bx+RECTANGLE.rc_bottom]
+    sub     ax, [bx+RECTANGLE.rc_top]
     push    ax
-    push    word ptr [bx+4]
+    push    [bx+RECTANGLE.rc_top]
     mov     ax, state.game_frame
     sub     ax, si
     push    ax
     push    cs
-    call near ptr sub_1D5B4
+    call near ptr init_crak
     jmp     short loc_1C1C3
     ; align 2
     db 144
 loc_1C17C:
-    mov     bx, [bp+var_104]
-    cmp     byte ptr [bx+0C9h], 2
+    mov     bx, [bp+var_stateptr]
+    cmp     [bx+CARSTATE.car_crashBmpFlag], 2
     jnz     short loc_1C1C6
     cmp     timertestflag_copy, 0
     jz      short loc_1C1AC
-    mov     ax, 9294h
+    mov     ax, offset rect_unk
     push    ax
     push    ax
     mov     bx, [bp+arg_cliprectptr]
-    mov     ax, [bx+6]
-    sub     ax, [bx+4]
+    mov     ax, [bx+RECTANGLE.rc_bottom]
+    sub     ax, [bx+RECTANGLE.rc_top]
     push    ax
-    push    word ptr [bx+4]
+    push    [bx+RECTANGLE.rc_top]
     mov     ax, state.game_frame
     sub     ax, si
     push    ax
@@ -3656,10 +3622,10 @@ loc_1C17C:
     jmp     short loc_1C156
 loc_1C1AC:
     mov     bx, [bp+arg_cliprectptr]
-    mov     ax, [bx+6]
-    sub     ax, [bx+4]
+    mov     ax, [bx+RECTANGLE.rc_bottom]
+    sub     ax, [bx+RECTANGLE.rc_top]
     push    ax
-    push    word ptr [bx+4]
+    push    [bx+RECTANGLE.rc_top]
     mov     ax, state.game_frame
     sub     ax, si
     push    ax
@@ -3681,7 +3647,7 @@ loc_1C1DA:
     mov     ax, word_45A24
     add     ax, word_42D02
     push    ax
-    mov     ax, 0AC74h
+    mov     ax, offset resID_byte1
     push    ax              ; char *
     call    format_frame_as_string
     add     sp, 6
@@ -3691,7 +3657,7 @@ loc_1C1DA:
     add     sp, 4
     cmp     timertestflag_copy, 0
     jz      short loc_1C238
-    mov     ax, 92C4h
+    mov     ax, offset rect_unk11
     push    ax
     push    ax
     sub     ax, ax
@@ -3702,12 +3668,12 @@ loc_1C1DA:
     push    ax
     mov     ax, 8Ch ; 'Œ'
     push    ax
-    mov     ax, 0AC74h
+    mov     ax, offset resID_byte1
     push    ax
     call    intro_draw_text
     add     sp, 0Ah
     push    ax
-    call    sub_26572
+    call    rect_clip_op
     add     sp, 6
     jmp     short loc_1C256
     ; align 4
@@ -3722,7 +3688,7 @@ loc_1C238:
     push    ax
     mov     ax, 8Ch ; 'Œ'
     push    ax
-    mov     ax, 0AC74h
+    mov     ax, offset resID_byte1
     push    ax
     call    intro_draw_text
     add     sp, 0Ah
@@ -3733,20 +3699,20 @@ loc_1C25B:
     jnz     short loc_1C265
     jmp     loc_1C2F8
 loc_1C265:
-    mov     ax, 9294h
+    mov     ax, offset rect_unk
     push    ax
     push    ax
     push    cs
     call near ptr draw_ingame_text
     push    ax
-    call    sub_26572
+    call    rect_clip_op
     add     sp, 6
     cmp     [bp+var_132], 0
     jz      short loc_1C2AE
     mov     ax, [bp+arg_cliprectptr]
     push    si
     push    di
-    mov     di, 9294h
+    mov     di, offset rect_unk
     mov     si, ax
     push    ds
     pop     es
@@ -3763,7 +3729,7 @@ loc_1C293:
     shl     bx, cl
     push    si
     push    di
-    lea     di, rect_unk[bx]
+    lea     di, rect_unk.rc_left[bx]
     mov     si, offset cliprect_unk
     movsw
     movsw
@@ -3782,7 +3748,7 @@ loc_1C2B0:
     shl     ax, cl
     mov     word ptr [bp+var_154], ax
     mov     bx, ax
-    lea     ax, rect_unk[bx]
+    lea     ax, rect_unk.rc_left[bx]
     mov     bx, word ptr [bp+var_154]
     add     bx, rectptr_unk
     push    si
@@ -3824,10 +3790,10 @@ loc_1C2F8:
     pop     bp
     retf
 update_frame endp
-sub_1C302 proc far
+skybox_op_helper2 proc far
      s = byte ptr 0
      r = byte ptr 2
-    arg_0 = word ptr 6
+    arg_rectptr = word ptr 6
     arg_2 = word ptr 8
     arg_4 = word ptr 10
 
@@ -3839,30 +3805,30 @@ sub_1C302 proc far
     cmp     timertestflag2, 4
     jz      short loc_1C320
     mov     si, [bp+arg_4]
-    mov     bx, [bp+arg_0]
-    sub     si, [bx+4]
+    mov     bx, [bp+arg_rectptr]
+    sub     si, [bx+RECTANGLE.rc_top]
     sub     si, skybox_current
     jmp     short loc_1C329
 loc_1C320:
     mov     si, [bp+arg_4]
-    mov     bx, [bp+arg_0]
-    sub     si, [bx+4]
+    mov     bx, [bp+arg_rectptr]
+    sub     si, [bx+RECTANGLE.rc_top]
 loc_1C329:
-    mov     ax, [bx+6]
-    sub     ax, [bx+4]
+    mov     ax, [bx+RECTANGLE.rc_bottom]
+    sub     ax, [bx+RECTANGLE.rc_top]
     cmp     ax, si
     jge     short loc_1C339
-    mov     si, [bx+6]
-    sub     si, [bx+4]
+    mov     si, [bx+RECTANGLE.rc_bottom]
+    sub     si, [bx+RECTANGLE.rc_top]
 loc_1C339:
     or      si, si
     jle     short loc_1C35F
-    mov     ax, [bx+4]
+    mov     ax, [bx+RECTANGLE.rc_top]
     add     ax, si
     push    ax
-    push    word ptr [bx+4]
-    push    word ptr [bx+2]
-    push    word ptr [bx]
+    push    [bx+RECTANGLE.rc_top]
+    push    [bx+RECTANGLE.rc_right]
+    push    [bx+RECTANGLE.rc_left]
     call    sprite_set_1_size
     add     sp, 8
     push    skybox_sky_color
@@ -3879,21 +3845,21 @@ smart
     and     si, 3FFh
 nosmart
     sub     si, 400h
-    mov     bx, [bp+arg_0]
+    mov     bx, [bp+arg_rectptr]
     mov     ax, [bp+arg_4]
-    cmp     [bx+4], ax
+    cmp     [bx+RECTANGLE.rc_top], ax
     jl      short loc_1C386
     jmp     loc_1C432
 loc_1C386:
     sub     ax, word_454CE
-    cmp     ax, [bx+6]
+    cmp     ax, [bx+RECTANGLE.rc_bottom]
     jle     short loc_1C392
     jmp     loc_1C432
 loc_1C392:
-    push    word ptr [bx+6]
-    push    word ptr [bx+4]
-    push    word ptr [bx+2]
-    push    word ptr [bx]
+    push    [bx+RECTANGLE.rc_bottom]
+    push    [bx+RECTANGLE.rc_top]
+    push    [bx+RECTANGLE.rc_right]
+    push    [bx+RECTANGLE.rc_left]
     call    sprite_set_1_size
     add     sp, 8
     mov     ax, [bp+arg_4]
@@ -3941,16 +3907,16 @@ loc_1C392:
     call    sprite_putimage_and_alt
     add     sp, 8
 loc_1C432:
-    mov     bx, [bp+arg_0]
+    mov     bx, [bp+arg_rectptr]
     mov     ax, [bp+arg_4]
-    cmp     [bx+4], ax
+    cmp     [bx+RECTANGLE.rc_top], ax
     jle     short loc_1C442
-    mov     di, [bx+4]
+    mov     di, [bx+RECTANGLE.rc_top]
     jmp     short loc_1C445
 loc_1C442:
     mov     di, [bp+arg_4]
 loc_1C445:
-    mov     si, [bx+6]
+    mov     si, [bx+RECTANGLE.rc_bottom]
     sub     si, di
     or      si, si
     jle     short loc_1C46D
@@ -3958,8 +3924,8 @@ loc_1C445:
     add     ax, si
     push    ax
     push    di
-    push    word ptr [bx+2]
-    push    word ptr [bx]
+    push    [bx+RECTANGLE.rc_right]
+    push    [bx+RECTANGLE.rc_left]
     call    sprite_set_1_size
     add     sp, 8
     push    skybox_grd_color
@@ -3973,7 +3939,7 @@ loc_1C46D:
     retf
     ; align 2
     db 144
-sub_1C302 endp
+skybox_op_helper2 endp
 skybox_op proc far
     var_78 = byte ptr -120
     var_76 = word ptr -118
@@ -3984,27 +3950,24 @@ skybox_op proc far
     var_58 = word ptr -88
     var_56 = word ptr -86
     var_54 = word ptr -84
-    var_50 = word ptr -80
-    var_4E = POINT2D ptr -78
-    var_4A = POINT2D ptr -74
-    var_46 = POINT2D ptr -70
-    var_42 = POINT2D ptr -66
-    var_3E = POINT2D ptr -62
-    var_3A = POINT2D ptr -58
+    var_skyheight = word ptr -80
+    var_point = POINT2D ptr -78
+    var_point2 = POINT2D ptr -74
+    var_point3 = POINT2D ptr -70
+    var_point4 = POINT2D ptr -66
+    var_point5 = POINT2D ptr -62
+    var_point6 = POINT2D ptr -58
     var_34 = word ptr -52
     var_32 = word ptr -50
-    var_30 = word ptr -48
-    var_2E = word ptr -46
-    var_2C = word ptr -44
-    var_2A = word ptr -42
-    var_28 = word ptr -40
+    var_rect = RECTANGLE ptr -48
+    var_rectptr = word ptr -40
     var_26 = word ptr -38
     var_vec = VECTOR ptr -36
     var_vec2 = VECTOR ptr -30
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
-    arg_2 = word ptr 8
+    arg_rectptr = word ptr 8
     arg_4 = word ptr 10
     arg_6 = word ptr 12
     arg_8 = word ptr 14
@@ -4016,11 +3979,11 @@ skybox_op proc far
     sub     sp, 78h
     push    di
     push    si
-    mov     byte_46166, 0
+    mov     rect_array_unk3_length, 0
     mov     [bp+var_5C], 0
-    mov     bx, [bp+arg_2]
-    push    word ptr [bx+6]
-    push    word ptr [bx+4]
+    mov     bx, [bp+arg_rectptr]
+    push    [bx+RECTANGLE.rc_bottom]
+    push    [bx+RECTANGLE.rc_top]
     mov     ax, 140h
     push    ax
     sub     ax, ax
@@ -4064,9 +4027,9 @@ loc_1C4A7:
 loc_1C4FC:
     mov     di, skybox_sky_color
 loc_1C500:
-    mov     bx, [bp+arg_2]
-    push    word ptr [bx+6]
-    push    word ptr [bx+4]
+    mov     bx, [bp+arg_rectptr]
+    push    [bx+RECTANGLE.rc_bottom]
+    push    [bx+RECTANGLE.rc_top]
     mov     ax, 140h
     push    ax
     sub     ax, ax
@@ -4076,60 +4039,60 @@ loc_1C500:
     push    di
     jmp     loc_1CB6A
 loc_1C51C:
-    lea     ax, [bp+var_4E]
+    lea     ax, [bp+var_point]
     push    ax
     lea     ax, [bp+var_vec]
     push    ax
     call    vector_to_point
     add     sp, 4
-    lea     ax, [bp+var_4A]
+    lea     ax, [bp+var_point2]
     push    ax
     lea     ax, [bp+var_vec2]
     push    ax
     call    vector_to_point
     add     sp, 4
-    cmp     [bp+var_4E.x2], 140h
+    cmp     [bp+var_point.x2], 140h
     jle     short loc_1C558
-    cmp     [bp+var_4A.x2], 140h
+    cmp     [bp+var_point2.x2], 140h
     jle     short loc_1C558
-    mov     ax, [bp+var_4A.y2]
-    cmp     [bp+var_4E.y2], ax
+    mov     ax, [bp+var_point2.y2]
+    cmp     [bp+var_point.y2], ax
     jl      short loc_1C4FC
 loc_1C552:
     mov     di, skybox_grd_color
     jmp     short loc_1C500
 loc_1C558:
-    cmp     [bp+var_4E.x2], 0
+    cmp     [bp+var_point.x2], 0
     jge     short loc_1C56E
-    cmp     [bp+var_4A.x2], 0
+    cmp     [bp+var_point2.x2], 0
     jge     short loc_1C56E
-    mov     ax, [bp+var_4A.y2]
-    cmp     [bp+var_4E.y2], ax
+    mov     ax, [bp+var_point2.y2]
+    cmp     [bp+var_point.y2], ax
 loc_1C56A:
     jle     short loc_1C552
     jmp     short loc_1C4FC
 loc_1C56E:
-    mov     bx, [bp+arg_2]
-    mov     ax, [bp+var_4E.y2]
-    cmp     [bx+6], ax
+    mov     bx, [bp+arg_rectptr]
+    mov     ax, [bp+var_point.y2]
+    cmp     [bx+RECTANGLE.rc_bottom], ax
     jge     short loc_1C58A
-    mov     ax, [bp+var_4A.y2]
-    cmp     [bx+6], ax
+    mov     ax, [bp+var_point2.y2]
+    cmp     [bx+RECTANGLE.rc_bottom], ax
     jge     short loc_1C58A
-    mov     ax, [bp+var_4A.x2]
-    cmp     [bp+var_4E.x2], ax
+    mov     ax, [bp+var_point2.x2]
+    cmp     [bp+var_point.x2], ax
     jmp     short loc_1C56A
     ; align 2
     db 144
 loc_1C58A:
-    mov     ax, [bp+var_4E.y2]
-    cmp     [bx+4], ax
+    mov     ax, [bp+var_point.y2]
+    cmp     [bx+RECTANGLE.rc_top], ax
     jle     short loc_1C5A6
-    mov     ax, [bp+var_4A.y2]
-    cmp     [bx+4], ax
+    mov     ax, [bp+var_point2.y2]
+    cmp     [bx+RECTANGLE.rc_top], ax
     jle     short loc_1C5A6
-    mov     ax, [bp+var_4A.x2]
-    cmp     [bp+var_4E.x2], ax
+    mov     ax, [bp+var_point2.x2]
+    cmp     [bp+var_point.x2], ax
     jge     short loc_1C552
     jmp     loc_1C4FC
     ; align 2
@@ -4138,16 +4101,16 @@ loc_1C5A6:
     mov     [bp+var_5A], 0
     cmp     timertestflag2, 4
     jz      short loc_1C61D
-    cmp     [bp+var_4A.x2], 0
+    cmp     [bp+var_point2.x2], 0
     jge     short loc_1C61D
-    cmp     [bp+var_4E.x2], 140h
+    cmp     [bp+var_point.x2], 140h
     jle     short loc_1C61D
     lea     ax, [bp+var_78]
     push    ax
-    push    [bp+var_4E.y2]
-    push    [bp+var_4E.x2]
-    push    [bp+var_4A.y2]
-    push    [bp+var_4A.x2]
+    push    [bp+var_point.y2]
+    push    [bp+var_point.x2]
+    push    [bp+var_point2.y2]
+    push    [bp+var_point2.x2]
     call    draw_line_related
     add     sp, 0Ah
     or      ax, ax
@@ -4190,17 +4153,17 @@ loc_1C626:
     jnz     short loc_1C630
     jmp     loc_1C7B6
 loc_1C630:
-    mov     [bp+var_30], 0
-    mov     word_44A2C, 0
-    mov     [bp+var_2E], 140h
-    mov     word_44A2E, 140h
+    mov     [bp+var_rect.rc_left], 0
+    mov     rect_skybox.rc_left, 0
+    mov     [bp+var_rect.rc_right], 140h
+    mov     rect_skybox.rc_right, 140h
     cmp     byte_454A4, 0
     jz      short loc_1C660
-    mov     bx, [bp+arg_2]
-    mov     ax, [bx+4]
-    mov     word_44A30, ax
-    mov     ax, [bx+6]
-    mov     word_44A32, ax
+    mov     bx, [bp+arg_rectptr]
+    mov     ax, [bx+RECTANGLE.rc_top]
+    mov     rect_skybox.rc_top, ax
+    mov     ax, [bx+RECTANGLE.rc_bottom]
+    mov     rect_skybox.rc_bottom, ax
     jmp     loc_1C7AA
     ; align 2
     db 144
@@ -4212,12 +4175,12 @@ loc_1C660:
     mov     ax, [bp+var_32]
 loc_1C66E:
     sub     ax, word_454CE
-    mov     word_44A30, ax
-    mov     bx, [bp+arg_2]
-    cmp     [bx+4], ax
+    mov     rect_skybox.rc_top, ax
+    mov     bx, [bp+arg_rectptr]
+    cmp     [bx+RECTANGLE.rc_top], ax
     jle     short loc_1C683
-    mov     ax, [bx+4]
-    mov     word_44A30, ax
+    mov     ax, [bx+RECTANGLE.rc_top]
+    mov     rect_skybox.rc_top, ax
 loc_1C683:
     mov     ax, [bp+var_32]
     add     ax, [bp+var_26]
@@ -4225,39 +4188,39 @@ loc_1C683:
     jge     short loc_1C691
     mov     ax, [bp+var_32]
 loc_1C691:
-    mov     word_44A32, ax
+    mov     rect_skybox.rc_bottom, ax
     sub     si, si
 loc_1C696:
-    mov     byte_45520[si], 1
+    mov     rect_array_unk_indices[si], 1
     inc     si
     cmp     si, 0Fh
     jl      short loc_1C696
-    mov     byte_45525, 3
-    mov     [bp+var_2C], 0
-    mov     ax, word_44A30
-    mov     [bp+var_2A], ax
-    push    [bp+arg_2]
-    lea     ax, [bp+var_30]
+    mov     rect_array_unk_indices+5, 3
+    mov     [bp+var_rect.rc_top], 0
+    mov     ax, rect_skybox.rc_top
+    mov     [bp+var_rect.rc_bottom], ax
+    push    [bp+arg_rectptr]
+    lea     ax, [bp+var_rect]
     push    ax
-    call    sub_265EC
+    call    rect_clip_op2
     add     sp, 4
     or      al, al
     jnz     short loc_1C728
-    mov     byte_46166, 0
-    mov     ax, offset unk_44DCE
+    mov     rect_array_unk3_length, 0
+    mov     ax, offset rect_array_unk3
     push    ax
-    mov     ax, offset byte_46166
+    mov     ax, offset rect_array_unk3_length
     push    ax
-    lea     ax, [bp+var_30]
+    lea     ax, [bp+var_rect]
     push    ax
     mov     ax, offset rect_unk
     push    ax
     push    rectptr_unk
-    mov     ax, offset byte_45520
+    mov     ax, offset rect_array_unk_indices
     push    ax
-    mov     ax, 0Fh
+    mov     ax, 0Fh         ; number of rects
     push    ax
-    call    sub_26A52
+    call    rect_clip_combined
     add     sp, 0Eh
     sub     di, di
     jmp     short loc_1C720
@@ -4267,13 +4230,13 @@ loc_1C6F2:
     mov     ax, di
     mov     cl, 3
     shl     ax, cl
-    add     ax, offset unk_44DCE
-    mov     [bp+var_28], ax
+    add     ax, offset rect_array_unk3
+    mov     [bp+var_rectptr], ax
     mov     bx, ax
-    push    word ptr [bx+6]
-    push    word ptr [bx+4]
-    push    word ptr [bx+2]
-    push    word ptr [bx]
+    push    [bx+RECTANGLE.rc_bottom]
+    push    [bx+RECTANGLE.rc_top]
+    push    [bx+RECTANGLE.rc_right]
+    push    [bx+RECTANGLE.rc_left]
     call    sprite_set_1_size
     add     sp, 8
     push    skybox_sky_color
@@ -4281,36 +4244,36 @@ loc_1C6F2:
     add     sp, 2
     inc     di
 loc_1C720:
-    mov     al, byte_46166
+    mov     al, rect_array_unk3_length
     cbw
     cmp     ax, di
     jg      short loc_1C6F2
 loc_1C728:
-    mov     ax, word_44A32
-    mov     [bp+var_2C], ax
-    mov     [bp+var_2A], 0C8h ; 'È'
-    push    [bp+arg_2]
-    lea     ax, [bp+var_30]
+    mov     ax, rect_skybox.rc_bottom
+    mov     [bp+var_rect.rc_top], ax
+    mov     [bp+var_rect.rc_bottom], 0C8h ; 'È'
+    push    [bp+arg_rectptr]
+    lea     ax, [bp+var_rect]
     push    ax
-    call    sub_265EC
+    call    rect_clip_op2
     add     sp, 4
     or      al, al
     jnz     short loc_1C7AA
-    mov     byte_46166, 0
-    mov     ax, offset unk_44DCE
+    mov     rect_array_unk3_length, 0
+    mov     ax, offset rect_array_unk3
     push    ax
-    mov     ax, offset byte_46166
+    mov     ax, offset rect_array_unk3_length
     push    ax
-    lea     ax, [bp+var_30]
+    lea     ax, [bp+var_rect]
     push    ax
     mov     ax, offset rect_unk
     push    ax
     push    rectptr_unk
-    mov     ax, offset byte_45520
+    mov     ax, offset rect_array_unk_indices
     push    ax
-    mov     ax, 0Fh
+    mov     ax, 0Fh         ; number of rects
     push    ax
-    call    sub_26A52
+    call    rect_clip_combined
     add     sp, 0Eh
     sub     di, di
     jmp     short loc_1C7A2
@@ -4320,13 +4283,13 @@ loc_1C774:
     mov     ax, di
     mov     cl, 3
     shl     ax, cl
-    add     ax, offset unk_44DCE
-    mov     [bp+var_28], ax
+    add     ax, offset rect_array_unk3
+    mov     [bp+var_rectptr], ax
     mov     bx, ax
-    push    word ptr [bx+6]
-    push    word ptr [bx+4]
-    push    word ptr [bx+2]
-    push    word ptr [bx]
+    push    [bx+RECTANGLE.rc_bottom]
+    push    [bx+RECTANGLE.rc_top]
+    push    [bx+RECTANGLE.rc_right]
+    push    [bx+RECTANGLE.rc_left]
     call    sprite_set_1_size
     add     sp, 8
     push    skybox_grd_color
@@ -4334,30 +4297,30 @@ loc_1C774:
     add     sp, 2
     inc     di
 loc_1C7A2:
-    mov     al, byte_46166
+    mov     al, rect_array_unk3_length
     cbw
     cmp     ax, di
     jg      short loc_1C774
 loc_1C7AA:
-    mov     ax, word_44A30
-    mov     [bp+var_2C], ax
-    mov     ax, word_44A32
+    mov     ax, rect_skybox.rc_top
+    mov     [bp+var_rect.rc_top], ax
+    mov     ax, rect_skybox.rc_bottom
     jmp     short loc_1C7C2
     ; align 2
     db 144
 loc_1C7B6:
-    mov     bx, [bp+arg_2]
+    mov     bx, [bp+arg_rectptr]
     mov     ax, [bx+4]
-    mov     [bp+var_2C], ax
+    mov     [bp+var_rect.rc_top], ax
     mov     ax, [bx+6]
 loc_1C7C2:
-    mov     [bp+var_2A], ax
-    mov     [bp+var_30], 0
-    mov     [bp+var_2E], 140h
-    push    [bp+arg_2]
-    lea     ax, [bp+var_30]
+    mov     [bp+var_rect.rc_bottom], ax
+    mov     [bp+var_rect.rc_left], 0
+    mov     [bp+var_rect.rc_right], 140h
+    push    [bp+arg_rectptr]
+    lea     ax, [bp+var_rect]
     push    ax
-    call    sub_265EC
+    call    rect_clip_op2
     add     sp, 4
     or      al, al
     jz      short loc_1C7E5
@@ -4384,30 +4347,30 @@ loc_1C806:
     jmp     short loc_1C84B
 loc_1C80A:
     mov     ax, [bp+var_34]
-    mov     [bp+var_30], ax
+    mov     [bp+var_rect.rc_left], ax
     mov     ax, 140h
     imul    si
     add     ax, 140h
     cwd
     idiv    di
     and     ax, video_flag3_isFFFF
-    mov     [bp+var_2E], ax
-    cmp     [bp+var_30], ax
+    mov     [bp+var_rect.rc_right], ax
+    cmp     [bp+var_rect.rc_left], ax
     jz      short loc_1C84A
     mov     ax, [bp+var_26]
     imul    si
     cwd
     idiv    di
     add     ax, [bp+var_32]
-    mov     [bp+var_50], ax
+    mov     [bp+var_skyheight], ax
     push    ax
     push    [bp+arg_A]
-    lea     ax, [bp+var_30]
+    lea     ax, [bp+var_rect]
     push    ax
     push    cs
-    call near ptr sub_1C302
+    call near ptr skybox_op_helper2
     add     sp, 6
-    mov     ax, [bp+var_2E]
+    mov     ax, [bp+var_rect.rc_right]
     mov     [bp+var_34], ax
 loc_1C84A:
     inc     si
@@ -4416,11 +4379,11 @@ loc_1C84B:
     jl      short loc_1C80A
     jmp     loc_1CB77
 loc_1C852:
-    mov     ax, [bp+var_4E.y2]
-    sub     ax, [bp+var_4A.y2]
+    mov     ax, [bp+var_point.y2]
+    sub     ax, [bp+var_point2.y2]
     push    ax
-    mov     ax, [bp+var_4E.x2]
-    sub     ax, [bp+var_4A.x2]
+    mov     ax, [bp+var_point.x2]
+    sub     ax, [bp+var_point2.x2]
     push    ax
     call    polarAngle
     add     sp, 4
@@ -4492,27 +4455,27 @@ loc_1C8FF:
     sub     di, di
     jmp     loc_1C879
 loc_1C904:
-    push    [bp+var_46.y2]
-    push    [bp+var_46.x2]
-    push    [bp+var_42.y2]
-    push    [bp+var_42.x2]
-    push    [bp+var_4A.y2]
-    push    [bp+var_4A.x2]
-    push    [bp+var_4E.y2]
-    push    [bp+var_4E.x2]
+    push    [bp+var_point3.y2]
+    push    [bp+var_point3.x2]
+    push    [bp+var_point4.y2]
+    push    [bp+var_point4.x2]
+    push    [bp+var_point2.y2]
+    push    [bp+var_point2.x2]
+    push    [bp+var_point.y2]
+    push    [bp+var_point.x2]
     mov     ax, 4
     push    ax
     push    skybox_sky_color
     call    skybox_op_helper
     add     sp, 14h
-    push    [bp+var_3A.y2]
-    push    [bp+var_3A.x2]
-    push    [bp+var_3E.y2]
-    push    [bp+var_3E.x2]
-    push    [bp+var_4A.y2]
-    push    [bp+var_4A.x2]
-    push    [bp+var_4E.y2]
-    push    [bp+var_4E.x2]
+    push    [bp+var_point6.y2]
+    push    [bp+var_point6.x2]
+    push    [bp+var_point5.y2]
+    push    [bp+var_point5.x2]
+    push    [bp+var_point2.y2]
+    push    [bp+var_point2.x2]
+    push    [bp+var_point.y2]
+    push    [bp+var_point.x2]
     mov     ax, 4
     push    ax
     push    skybox_grd_color
@@ -4546,28 +4509,28 @@ loc_1C958:
     jmp     loc_1CB77
 loc_1C99D:
     mov     [bp+var_5C], 1
-    mov     word_44A2C, 0
-    mov     word_44A2E, 140h
-    mov     bx, [bp+arg_2]
-    mov     ax, [bx+4]
-    mov     word_44A30, ax
-    mov     ax, [bx+6]
-    mov     word_44A32, ax
+    mov     rect_skybox.rc_left, 0
+    mov     rect_skybox.rc_right, 140h
+    mov     bx, [bp+arg_rectptr]
+    mov     ax, [bx+RECTANGLE.rc_top]
+    mov     rect_skybox.rc_top, ax
+    mov     ax, [bx+RECTANGLE.rc_bottom]
+    mov     rect_skybox.rc_bottom, ax
     jmp     loc_1CB77
 loc_1C9C0:
-    lea     ax, [bp+var_4E]
+    lea     ax, [bp+var_point]
     push    ax
     lea     ax, [bp+var_vec]
     push    ax
     call    vector_to_point
     add     sp, 4
-    mov     ax, [bp+var_4E.y2]
-    mov     [bp+var_50], ax
-    mov     bx, [bp+arg_2]
-    cmp     [bx+4], ax
+    mov     ax, [bp+var_point.y2]
+    mov     [bp+var_skyheight], ax
+    mov     bx, [bp+arg_rectptr]
+    cmp     [bx+RECTANGLE.rc_top], ax
     jle     short loc_1C9E4
-    mov     ax, [bx+4]
-    mov     [bp+var_50], ax
+    mov     ax, [bx+RECTANGLE.rc_top]
+    mov     [bp+var_skyheight], ax
 loc_1C9E4:
     cmp     [bp+arg_4], 1
     jz      short loc_1C9ED
@@ -4577,42 +4540,42 @@ loc_1C9ED:
     jz      short loc_1CA25
     cmp     timertestflag2, 4
     jnz     short loc_1CA02
-    mov     ax, [bp+var_50]
+    mov     ax, [bp+var_skyheight]
     dec     ax
     jmp     short loc_1CA09
     ; align 2
     db 144
 loc_1CA02:
-    mov     ax, [bp+var_50]
+    mov     ax, [bp+var_skyheight]
     sub     ax, word_454CE
 loc_1CA09:
-    mov     word_44A30, ax
-    mov     word_44A2C, 0
-    mov     word_44A2E, 140h
-    mov     ax, [bp+var_50]
-    mov     word_44A32, ax
+    mov     rect_skybox.rc_top, ax
+    mov     rect_skybox.rc_left, 0
+    mov     rect_skybox.rc_right, 140h
+    mov     ax, [bp+var_skyheight]
+    mov     rect_skybox.rc_bottom, ax
     cmp     byte_454A4, 0
     jz      short loc_1CA52
 loc_1CA25:
-    mov     [bp+var_30], 0
-    mov     [bp+var_2E], 140h
-    mov     bx, [bp+arg_2]
-    mov     ax, [bx+4]
-    mov     [bp+var_2C], ax
-    mov     ax, [bx+6]
-    mov     [bp+var_2A], ax
-    push    [bp+var_50]
+    mov     [bp+var_rect.rc_left], 0
+    mov     [bp+var_rect.rc_right], 140h
+    mov     bx, [bp+arg_rectptr]
+    mov     ax, [bx+RECTANGLE.rc_top]
+    mov     [bp+var_rect.rc_top], ax
+    mov     ax, [bx+RECTANGLE.rc_bottom]
+    mov     [bp+var_rect.rc_bottom], ax
+    push    [bp+var_skyheight]
     push    [bp+arg_A]
-    lea     ax, [bp+var_30]
+    lea     ax, [bp+var_rect]
     push    ax
     push    cs
-    call near ptr sub_1C302
+    call near ptr skybox_op_helper2
     add     sp, 6
     jmp     loc_1CB77
 loc_1CA52:
     sub     si, si
 loc_1CA54:
-    mov     byte_45520[si], 1
+    mov     rect_array_unk_indices[si], 1
     inc     si
     cmp     si, 0Fh
     jl      short loc_1CA54
@@ -4629,79 +4592,79 @@ loc_1CA72:
     cmp     word_449FC[bx], ax
     jnz     short loc_1CAAC
     mov     bx, rectptr_unk
-    mov     ax, word_44A2C
+    mov     ax, rect_skybox.rc_left
     cmp     [bx+28h], ax
     jnz     short loc_1CAAC
-    mov     ax, word_44A2E
+    mov     ax, rect_skybox.rc_right
     cmp     [bx+2Ah], ax
     jnz     short loc_1CAAC
-    mov     ax, word_44A30
+    mov     ax, rect_skybox.rc_top
     cmp     [bx+2Ch], ax
     jnz     short loc_1CAAC
-    mov     ax, word_44A32
+    mov     ax, rect_skybox.rc_bottom
     cmp     [bx+2Eh], ax
     jnz     short loc_1CAAC
-    mov     byte_45525, 0
+    mov     rect_array_unk_indices+5, 0
     jmp     short loc_1CAB1
     ; align 2
     db 144
 loc_1CAAC:
-    mov     byte_45525, 3
+    mov     rect_array_unk_indices+5, 3
 loc_1CAB1:
-    mov     byte_46166, 0
-    mov     ax, offset unk_44DCE
+    mov     rect_array_unk3_length, 0
+    mov     ax, offset rect_array_unk3
     push    ax
-    mov     ax, offset byte_46166
+    mov     ax, offset rect_array_unk3_length
     push    ax
-    push    [bp+arg_2]
+    push    [bp+arg_rectptr]
     mov     ax, offset rect_unk
     push    ax
     push    rectptr_unk
-    mov     ax, offset byte_45520
+    mov     ax, offset rect_array_unk_indices
     push    ax
-    mov     ax, 0Fh
+    mov     ax, 0Fh         ; number of rects
     push    ax
-    call    sub_26A52
+    call    rect_clip_combined
     add     sp, 0Eh
     sub     di, di
     jmp     short loc_1CAF6
     ; align 2
     db 144
 loc_1CADE:
-    push    [bp+var_50]
+    push    [bp+var_skyheight]
     push    [bp+arg_A]
     mov     ax, di
     mov     cl, 3
     shl     ax, cl
-    add     ax, offset unk_44DCE
+    add     ax, offset rect_array_unk3
     push    ax
     push    cs
-    call near ptr sub_1C302
+    call near ptr skybox_op_helper2
     add     sp, 6
     inc     di
 loc_1CAF6:
-    mov     al, byte_46166
+    mov     al, rect_array_unk3_length
     cbw
     cmp     ax, di
     jg      short loc_1CADE
     jmp     short loc_1CB77
 loc_1CB00:
-    mov     si, [bp+var_50]
-    mov     bx, [bp+arg_2]
-    sub     si, [bx+4]
-    mov     ax, [bx+6]
-    sub     ax, [bx+4]
+    mov     si, [bp+var_skyheight]
+    mov     bx, [bp+arg_rectptr]
+    sub     si, [bx+RECTANGLE.rc_top]
+    mov     ax, [bx+RECTANGLE.rc_bottom]
+    sub     ax, [bx+RECTANGLE.rc_top]
     cmp     ax, si
     jge     short loc_1CB19
-    mov     si, [bx+6]
-    sub     si, [bx+4]
+    mov     si, [bx+RECTANGLE.rc_bottom]
+    sub     si, [bx+RECTANGLE.rc_top]
 loc_1CB19:
     or      si, si
     jle     short loc_1CB41
-    mov     ax, [bx+4]
+    mov     ax, [bx+RECTANGLE.rc_top]
     add     ax, si
     push    ax
-    push    word ptr [bx+4]
+    push    [bx+RECTANGLE.rc_top]
     mov     ax, 140h
     push    ax
     sub     ax, ax
@@ -4712,15 +4675,15 @@ loc_1CB19:
     call    sprite_clear_1_color
     add     sp, 2
 loc_1CB41:
-    mov     bx, [bp+arg_2]
-    mov     si, [bx+6]
-    sub     si, [bp+var_50]
+    mov     bx, [bp+arg_rectptr]
+    mov     si, [bx+RECTANGLE.rc_bottom]
+    sub     si, [bp+var_skyheight]
     or      si, si
     jle     short loc_1CB72
-    mov     ax, [bp+var_50]
+    mov     ax, [bp+var_skyheight]
     add     ax, si
     push    ax
-    push    [bp+var_50]
+    push    [bp+var_skyheight]
     mov     ax, 140h
     push    ax
     sub     ax, ax
@@ -4755,7 +4718,7 @@ sub_1CB80 proc far
     sub     sp, 0Ch
     push    di
     push    si
-    mov     ax, word_46434
+    mov     ax, curtransshape_ptr
     push    si
     push    di
     lea     di, [bp+var_6]
@@ -4787,7 +4750,7 @@ sub_1CB80 proc far
     mov     byte_45A02[si], al
     mov     word_45E1C[di], si
     inc     byte_45D7E
-    add     word_46434, 14h
+    add     curtransshape_ptr, 14h
     pop     si
     pop     di
     mov     sp, bp
@@ -5115,6 +5078,7 @@ loc_1CE2E:
     lea     ax, [bp+var_transshape]
     push    ax
     call    transformed_shape_op
+loc_1CECA:
     add     sp, 2
 loc_1CECD:
     inc     [bp+var_2A]
@@ -5406,7 +5370,7 @@ draw_ingame_text proc far
     push    di
     push    si
     push    si
-    mov     di, offset word_4617E
+    mov     di, offset rect_ingame_text
     mov     si, offset cliprect_unk
     push    ds
     pop     es
@@ -5431,7 +5395,7 @@ loc_1D14E:
     push    ax
     call    copy_string
     add     sp, 6
-    mov     ax, offset word_4617E
+    mov     ax, offset rect_ingame_text
     push    ax
     sub     ax, ax
     push    ax
@@ -5448,9 +5412,9 @@ loc_1D14E:
     call    intro_draw_text
     add     sp, 0Ah
     push    ax
-    mov     ax, offset word_4617E
+    mov     ax, offset rect_ingame_text
     push    ax
-    call    sub_26572
+    call    rect_clip_op
     add     sp, 6
     mov     ax, offset aDm2 ; on Closed Circuit
     push    ax
@@ -5464,7 +5428,7 @@ loc_1D14E:
     push    ax
     call    copy_string
     add     sp, 6
-    mov     ax, offset word_4617E
+    mov     ax, offset rect_ingame_text
     push    ax
     sub     ax, ax
     push    ax
@@ -5498,7 +5462,7 @@ loc_1D1F0:
     push    ax
     call    copy_string
     add     sp, 6
-    mov     ax, offset word_4617E
+    mov     ax, offset rect_ingame_text
     push    ax
     sub     ax, ax
     push    ax
@@ -5524,7 +5488,7 @@ loc_1D234:
     push    ax
     call    copy_string
     add     sp, 6
-    mov     ax, offset word_4617E
+    mov     ax, offset rect_ingame_text
     push    ax
     sub     ax, ax
     push    ax
@@ -5541,9 +5505,9 @@ loc_1D234:
     call    intro_draw_text
     add     sp, 0Ah
     push    ax
-    mov     ax, offset word_4617E
+    mov     ax, offset rect_ingame_text
     push    ax
-    call    sub_26572
+    call    rect_clip_op
     add     sp, 6
     mov     ax, offset aSe2 ; "Car's security system first"
     push    ax
@@ -5557,7 +5521,7 @@ loc_1D234:
     push    ax
     call    copy_string
     add     sp, 6
-    mov     ax, offset word_4617E
+    mov     ax, offset rect_ingame_text
     push    ax
     sub     ax, ax
     push    ax
@@ -5598,14 +5562,14 @@ loc_1D2F2:
 loc_1D302:
     call    sub_343B0
     add     sp, 8
-    mov     ax, offset word_4617E
+    mov     ax, offset rect_ingame_text
     push    ax
-    mov     ax, 9DAh
+    mov     ax, offset rect_ingame_text2
 loc_1D311:
     push    ax
-    mov     ax, offset word_4617E
+    mov     ax, offset rect_ingame_text
     push    ax
-    call    sub_26572
+    call    rect_clip_op
     add     sp, 6
 loc_1D31E:
     mov     resID_byte1, 0
@@ -5641,7 +5605,7 @@ loc_1D34A:
     push    ax
     call    copy_string
     add     sp, 6
-    mov     ax, offset word_4617E
+    mov     ax, offset rect_ingame_text
     push    ax
     sub     ax, ax
     push    ax
@@ -5669,13 +5633,13 @@ loc_1D398:
     push    word ptr sdgame2shapes+0Ch
     call    sub_343B0
     add     sp, 8
-    mov     ax, offset word_4617E
+    mov     ax, offset rect_ingame_text
     push    ax
-    mov     ax, offset unk_3C152
+    mov     ax, offset rect_ingame_text3
     push    ax
-    mov     ax, offset word_4617E
+    mov     ax, offset rect_ingame_text
     push    ax
-    call    sub_26572
+    call    rect_clip_op
     add     sp, 6
     mov     ax, offset aOpp ; "Opponent Near"
 loc_1D3C7:
@@ -5693,7 +5657,7 @@ loc_1D3C7:
 loc_1D3E6:
     cmp     resID_byte1, 0
     jz      short loc_1D422
-    mov     ax, offset word_4617E
+    mov     ax, offset rect_ingame_text
     push    ax
     sub     ax, ax
     push    ax
@@ -5710,9 +5674,9 @@ loc_1D3E6:
     call    intro_draw_text
     add     sp, 0Ah
     push    ax
-    mov     ax, offset word_4617E
+    mov     ax, offset rect_ingame_text
     push    ax
-    call    sub_26572
+    call    rect_clip_op
     add     sp, 6
 loc_1D422:
     cmp     byte_4499F, 0
@@ -5742,7 +5706,7 @@ loc_1D42C:
     push    ax              ; char *
     call    format_frame_as_string
     add     sp, 6
-    mov     ax, offset word_4617E
+    mov     ax, offset rect_ingame_text
     push    ax
     sub     ax, ax
     push    ax
@@ -5758,15 +5722,15 @@ loc_1D47E:
     push    word ptr sdgame2shapes+10h
     call    sub_343B0
     add     sp, 8
-    mov     ax, offset word_4617E
+    mov     ax, offset rect_ingame_text
     push    ax
-    mov     ax, 9EAh
+    mov     ax, offset rect_ingame_text4
     push    ax
-    mov     ax, offset word_4617E
+    mov     ax, offset rect_ingame_text
     push    ax
-    call    sub_26572
+    call    rect_clip_op
     add     sp, 6
-    mov     ax, 9CEh
+    mov     ax, offset aOpp_0; "opp"
     jmp     loc_1D3C7
 loc_1D4B0:
     cmp     byte_45DB2, 2
@@ -5791,7 +5755,7 @@ loc_1D4B0:
     push    ax
     call    copy_string
     add     sp, 6
-    mov     ax, offset word_4617E
+    mov     ax, offset rect_ingame_text
     push    ax
     sub     ax, ax
     push    ax
@@ -5813,12 +5777,12 @@ loc_1D511:
     call    intro_draw_text
     add     sp, 0Ah
     push    ax
-    mov     ax, offset word_4617E
+    mov     ax, offset rect_ingame_text
     push    ax
-    call    sub_26572
+    call    rect_clip_op
     add     sp, 6
 loc_1D52B:
-    mov     ax, offset word_4617E
+    mov     ax, offset rect_ingame_text
     pop     si
     pop     di
     mov     sp, bp
@@ -5863,14 +5827,14 @@ loc_1D54C:
     push    ax
     call    __aFldiv
     mov     si, ax
-    mov     word_4617E, 0
-    mov     word_46180, 140h
+    mov     rect_ingame_text.rc_left, 0
+    mov     rect_ingame_text.rc_right, 140h
     mov     di, [bp+arg_2]
     add     di, [bp+arg_4]
     mov     ax, di
     sub     ax, si
-    mov     word_46182, ax
-    mov     word_46184, di
+    mov     rect_ingame_text.rc_top, ax
+    mov     rect_ingame_text.rc_bottom, di
     push    di
     push    ax
     mov     ax, 140h
@@ -5891,7 +5855,7 @@ loc_1D54C:
     ; align 2
     db 144
 do_sinking endp
-sub_1D5B4 proc far
+init_crak proc far
     var_1A = word ptr -26
     var_18 = word ptr -24
     var_14 = word ptr -20
@@ -5951,7 +5915,7 @@ loc_1D614:
     mov     ax, es:[bx+di+2]
     mov     [bp+var_18], ax
     push    si
-    mov     di, offset word_4617E
+    mov     di, offset rect_ingame_text
     mov     si, offset cliprect_unk
     push    ds
     pop     es
@@ -6061,7 +6025,7 @@ loc_1D70F:
     add     ax, [bp+arg_2]
     dec     ax
     mov     [bp+var_A], ax
-    mov     ax, offset word_4617E
+    mov     ax, offset rect_ingame_text
     push    ax
     lea     ax, [bp+var_C]
     push    ax
@@ -6073,7 +6037,7 @@ loc_1D70F:
     add     ax, [bp+arg_2]
     inc     ax
     mov     [bp+var_A], ax
-    mov     ax, offset word_4617E
+    mov     ax, offset rect_ingame_text
     push    ax
     lea     ax, [bp+var_C]
     push    ax
@@ -6085,7 +6049,7 @@ loc_1D70F:
     add     ax, [bp+arg_2]
     inc     ax
     mov     [bp+var_A], ax
-    mov     ax, offset word_4617E
+    mov     ax, offset rect_ingame_text
     push    ax
     lea     ax, [bp+var_C]
     push    ax
@@ -6097,7 +6061,7 @@ loc_1D70F:
     add     ax, [bp+arg_2]
     dec     ax
     mov     [bp+var_A], ax
-    mov     ax, offset word_4617E
+    mov     ax, offset rect_ingame_text
     push    ax
     lea     ax, [bp+var_C]
     push    ax
@@ -6110,7 +6074,7 @@ loc_1D790:
     jle     short loc_1D798
     jmp     loc_1D636
 loc_1D798:
-    mov     ax, offset word_4617E
+    mov     ax, offset rect_ingame_text
     pop     si
     pop     di
     mov     sp, bp
@@ -6118,7 +6082,7 @@ loc_1D798:
     retf
     ; align 2
     db 144
-sub_1D5B4 endp
+init_crak endp
 load_skybox proc far
     var_4 = word ptr -4
      s = byte ptr 0
@@ -6309,8 +6273,8 @@ setup_intro proc far
     var_5D0 = byte ptr -1488
     var_440 = word ptr -1088
     var_43E = byte ptr -1086
-    var_2AE = word ptr -686
-    var_2AC = word ptr -684
+    var_title3dres_seg = word ptr -686
+    var_title3dres_ofs = word ptr -684
     var_2AA = word ptr -682
     var_2A8 = word ptr -680
     var_2A6 = word ptr -678
@@ -6328,20 +6292,17 @@ setup_intro proc far
     var_3C = word ptr -60
     var_3A = word ptr -58
     var_38 = byte ptr -56
-    var_36 = word ptr -54
-    var_34 = byte ptr -52
+    var_rectindex = word ptr -54
+    var_rect = RECTANGLE ptr -52
     var_2C = word ptr -44
-    var_2A = word ptr -42
-    var_28 = word ptr -40
-    var_26 = word ptr -38
-    var_24 = word ptr -36
+    var_rect2 = RECTANGLE ptr -42
     var_22 = word ptr -34
     var_20 = word ptr -32
     var_1E = word ptr -30
     var_1C = word ptr -28
     var_1A = word ptr -26
     var_18 = word ptr -24
-    var_16 = byte ptr -22
+    var_rect3 = RECTANGLE ptr -22
     var_E = word ptr -14
     var_C = word ptr -12
     var_A = word ptr -10
@@ -6362,14 +6323,14 @@ setup_intro proc far
     push    ax
     call    file_load_3dres
     add     sp, 2
-    mov     [bp+var_2AE], ax
-    mov     [bp+var_2AC], dx
+    mov     [bp+var_title3dres_seg], ax
+    mov     [bp+var_title3dres_ofs], dx
     lea     ax, [bp+var_22]
     push    ax
     mov     ax, offset aLogolog2brav; "logolog2brav"
     push    ax
     push    dx
-    push    [bp+var_2AE]
+    push    [bp+var_title3dres_seg]
     call    locate_many_resources
     add     sp, 8
     mov     ax, offset logoshape
@@ -6475,10 +6436,10 @@ loc_1D9CF:
     mov     [bp+var_440], 0
     mov     ax, timertestflag
     mov     timertestflag_copy, ax
-    mov     rect_unk, 0
-    mov     rect_unk+2, 140h
-    mov     rect_unk+4, 0
-    mov     rect_unk+6, 0C8h ; 'È'
+    mov     rect_unk.rc_left, 0
+    mov     rect_unk.rc_right, 140h
+    mov     rect_unk.rc_top, 0
+    mov     rect_unk.rc_bottom, 0C8h ; 'È'
     mov     di, offset rect_unk2
     mov     si, offset rect_unk
     push    ds
@@ -6493,7 +6454,7 @@ loc_1D9CF:
     movsw
     movsw
     movsw
-    mov     [bp+var_36], 0
+    mov     [bp+var_rectindex], 0
     mov     [bp+var_2A2], 1
 loc_1DADE:
     call    timer_get_delta
@@ -6696,7 +6657,7 @@ nosmart
 loc_1DCD1:
     cmp     timertestflag_copy, 0
     jz      short loc_1DCFC
-    cmp     [bp+var_36], 0
+    cmp     [bp+var_rectindex], 0
     jnz     short loc_1DCEC
     lea     ax, [bp+var_43E]
     mov     [bp+var_2A8], ax
@@ -6709,17 +6670,17 @@ loc_1DCEC:
 loc_1DCF8:
     mov     [bp+var_5D2], ax
 loc_1DCFC:
-    lea     ax, [bp+var_34]
+    lea     ax, [bp+var_rect]
     push    ax
-    lea     ax, [bp+var_16]
+    lea     ax, [bp+var_rect3]
     push    ax
-    mov     bx, [bp+var_36]
+    mov     bx, [bp+var_rectindex]
     mov     cl, 3
     shl     bx, cl
-    push    (rect_unk+6)[bx]
-    push    (rect_unk+4)[bx]
-    push    (rect_unk+2)[bx]
-    push    rect_unk[bx]
+    push    rect_unk.rc_bottom[bx]
+    push    rect_unk.rc_top[bx]
+    push    rect_unk.rc_right[bx]
+    push    word ptr rect_unk.rc_left[bx]
     push    [bp+var_5D2]
     push    [bp+var_2A8]
     lea     ax, [bp+var_29A]
@@ -6741,11 +6702,11 @@ loc_1DCFC:
     call    mouse_draw_transparent_check
     cmp     timertestflag_copy, 0
     jz      short loc_1DD77
-    mov     bx, [bp+var_36]
+    mov     bx, [bp+var_rectindex]
     mov     cl, 3
     shl     bx, cl
-    lea     di, rect_unk[bx]
-    lea     si, [bp+var_16]
+    lea     di, rect_unk.rc_left[bx]
+    lea     si, [bp+var_rect3]
     push    ds
     pop     es
     movsw
@@ -6753,32 +6714,32 @@ loc_1DCFC:
     movsw
     movsw
 loc_1DD77:
-    xor     byte ptr [bp+var_36], 1
+    xor     byte ptr [bp+var_rectindex], 1
     jmp     loc_1DE19
 loc_1DD7E:
     call    sprite_copy_2_to_1_2
     cmp     timertestflag_copy, 0
     jz      short loc_1DDFC
-    lea     ax, [bp+var_2A]
+    lea     ax, [bp+var_rect2]
     push    ax
     mov     ax, offset rect_unk6
     push    ax
-    lea     ax, [bp+var_34]
+    lea     ax, [bp+var_rect]
     push    ax
-    call    sub_26572
+    call    rect_clip_op
     add     sp, 6
-    mov     ax, 0A1E2h
+    mov     ax, offset rect_unk3
     push    ax
-    lea     ax, [bp+var_2A]
+    lea     ax, [bp+var_rect2]
     push    ax
-    call    sub_265EC
+    call    rect_clip_op2
     add     sp, 4
     or      al, al
     jnz     short loc_1DE19
-    push    [bp+var_24]
-    push    [bp+var_26]
-    push    [bp+var_28]
-    push    [bp+var_2A]
+    push    [bp+var_rect2.rc_bottom]
+    push    [bp+var_rect2.rc_top]
+    push    [bp+var_rect2.rc_right]
+    push    [bp+var_rect2.rc_left]
     call    sprite_set_1_size
     add     sp, 8
     call    mouse_draw_opaque_check
@@ -6788,8 +6749,8 @@ loc_1DD7E:
     call    sprite_putimage
     add     sp, 4
     call    mouse_draw_transparent_check
-    mov     di, 9294h
-    lea     si, [bp+var_16]
+    mov     di, offset rect_unk
+    lea     si, [bp+var_rect3]
     push    ds
     pop     es
     movsw
@@ -6797,7 +6758,7 @@ loc_1DD7E:
     movsw
     movsw
     mov     di, offset rect_unk6
-    lea     si, [bp+var_34]
+    lea     si, [bp+var_rect]
     movsw
     movsw
     movsw
@@ -6857,8 +6818,8 @@ loc_1DE7C:
     call    sprite_free_wnd
     add     sp, 4
 loc_1DE8C:
-    push    [bp+var_2AC]
-    push    [bp+var_2AE]
+    push    [bp+var_title3dres_ofs]
+    push    [bp+var_title3dres_seg]
     call    mmgr_free
     add     sp, 4
     mov     al, [bp+var_38]
@@ -6872,17 +6833,14 @@ setup_intro endp
 intro_op proc far
     var_42 = word ptr -66
     var_vec = VECTOR ptr -64
-    var_3A = POINT2D ptr -58
-    var_36 = word ptr -54
+    var_point = POINT2D ptr -58
+    var_vec2 = word ptr -54
     var_34 = word ptr -52
     var_32 = word ptr -50
-    var_2C = word ptr -44
-    var_2A = word ptr -42
-    var_28 = word ptr -40
-    var_26 = word ptr -38
-    var_24 = byte ptr -36
+    var_rect1 = RECTANGLE ptr -44
+    var_rect2 = byte ptr -36
     var_transshape = TRANSFORMEDSHAPE ptr -28
-    var_rc = byte ptr -8
+    var_rect3 = RECTANGLE ptr -8
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
@@ -6895,9 +6853,9 @@ intro_op proc far
     arg_E = word ptr 20
     arg_10 = word ptr 22
     arg_12 = word ptr 24
-    arg_14 = byte ptr 26
-    arg_1C = word ptr 34
-    arg_1E = word ptr 36
+    arg_rect = RECTANGLE ptr 26
+    arg_rectptr = word ptr 34
+    arg_rectptr2 = word ptr 36
 
     push    bp
     mov     bp, sp
@@ -6906,7 +6864,7 @@ intro_op proc far
     push    si
     push    si
     push    di
-    lea     di, [bp+var_rc]
+    lea     di, [bp+var_rect3]
     mov     si, offset cliprect_unk
     push    ss
     pop     es
@@ -6947,7 +6905,7 @@ loc_1DEE9:
     mov     [bp+var_transshape.ts_pos.vz], ax
     cmp     timertestflag_copy, 0
     jz      short loc_1DF16
-    lea     ax, [bp+var_rc]
+    lea     ax, [bp+var_rect3]
     mov     [bp+var_transshape.ts_rectptr], ax
     mov     [bp+var_transshape.ts_flags], 0Ch
     jmp     short loc_1DF1A
@@ -7000,7 +6958,7 @@ loc_1DF7E:
     mov     [bp+var_transshape.ts_shapeptr], offset bravshape
     cmp     timertestflag_copy, 0
     jz      short loc_1DFA4
-    lea     ax, [bp+var_rc]
+    lea     ax, [bp+var_rect3]
     mov     [bp+var_transshape.ts_rectptr], ax
     mov     [bp+var_transshape.ts_flags], 0Ch
     jmp     short loc_1DFA8
@@ -7038,12 +6996,12 @@ loc_1DFE6:
     add     bx, ax
     mov     ax, [bx]
     mov     dx, [bx+2]
-    mov     [bp+var_3A.x2], ax
-    mov     [bp+var_3A.y2], dx
+    mov     [bp+var_point.x2], ax
+    mov     [bp+var_point.y2], dx
     sub     ax, ax
     push    ax
     push    dx
-    push    [bp+var_3A.x2]
+    push    [bp+var_point.x2]
     call    putpixel_single_maybe
     add     sp, 6
     inc     si
@@ -7052,25 +7010,25 @@ loc_1E00C:
     cmp     [bx], si
     jg      short loc_1DFE6
 loc_1E013:
-    lea     ax, [bp+var_2C]
+    lea     ax, [bp+var_rect1]
     push    ax
-    lea     ax, [bp+arg_14]
+    lea     ax, [bp+arg_rect]
     push    ax
-    push    [bp+arg_1C]
-    call    sub_26572
+    push    [bp+arg_rectptr]
+    call    rect_clip_op
     add     sp, 6
-    mov     ax, 0A1E2h
+    mov     ax, offset rect_unk3
     push    ax
-    lea     ax, [bp+var_2C]
+    lea     ax, [bp+var_rect1]
     push    ax
-    call    sub_265EC
+    call    rect_clip_op2
     add     sp, 4
     or      al, al
     jnz     short loc_1E059
-    push    [bp+var_26]
-    push    [bp+var_28]
-    push    [bp+var_2A]
-    push    [bp+var_2C]
+    push    [bp+var_rect1.rc_bottom]
+    push    [bp+var_rect1.rc_top]
+    push    [bp+var_rect1.rc_right]
+    push    [bp+var_rect1.rc_left]
     call    sprite_set_1_size
     add     sp, 8
     sub     ax, ax
@@ -7080,8 +7038,8 @@ loc_1E013:
 loc_1E059:
     push    si
     push    di
-    lea     di, [bp+var_24]
-    lea     si, [bp+var_rc]
+    lea     di, [bp+var_rect2]
+    lea     si, [bp+var_rect3]
     push    ss
     pop     es
     movsw
@@ -7094,10 +7052,10 @@ loc_1E059:
     ; align 2
     db 144
 loc_1E06C:
-    push    word_3C1BC
-    push    word_3C1BA
-    push    word_3C1B8
-    push    intro_cliprect
+    push    intro_cliprect.rc_bottom
+    push    intro_cliprect.rc_top
+    push    intro_cliprect.rc_right
+    push    intro_cliprect.rc_left
     call    sprite_set_1_size
     add     sp, 8
     sub     ax, ax
@@ -7105,10 +7063,10 @@ loc_1E06C:
     call    sprite_clear_1_color
     add     sp, 2
 loc_1E08F:
-    push    word_3C1BC
-    push    word_3C1BA
-    push    word_3C1B8
-    push    intro_cliprect
+    push    intro_cliprect.rc_bottom
+    push    intro_cliprect.rc_top
+    push    intro_cliprect.rc_right
+    push    intro_cliprect.rc_left
     call    sprite_set_1_size
     add     sp, 8
     sub     di, di
@@ -7125,7 +7083,7 @@ loc_1E0AB:
     mov     bx, ax
     mov     ax, [bx]
     sub     ax, [bp+arg_0]
-    mov     [bp+var_36], ax
+    mov     [bp+var_vec2], ax
     mov     ax, [bx+2]
     sub     ax, [bp+arg_2]
     mov     [bp+var_34], ax
@@ -7136,21 +7094,21 @@ loc_1E0AB:
     push    ax
     mov     ax, offset mat_temp
     push    ax
-    lea     ax, [bp+var_36]
+    lea     ax, [bp+var_vec2]
     push    ax
     call    mat_mul_vector
     add     sp, 6
     cmp     [bp+var_vec.vz], 0C8h ; 'È'
     jle     short loc_1E157
-    lea     ax, [bp+var_3A]
+    lea     ax, [bp+var_point]
     push    ax
     lea     ax, [bp+var_vec]
     push    ax
     call    vector_to_point
     add     sp, 4
-    push    word_3C1BE
-    push    [bp+var_3A.y2]
-    push    [bp+var_3A.x2]
+    push    intro_colorvalue
+    push    [bp+var_point.y2]
+    push    [bp+var_point.x2]
     call    putpixel_single_maybe
     add     sp, 6
     cmp     timertestflag_copy, 0
@@ -7161,24 +7119,24 @@ loc_1E0AB:
     shl     ax, 1
     shl     ax, 1
     add     bx, ax
-    mov     ax, [bp+var_3A.x2]
+    mov     ax, [bp+var_point.x2]
 loc_1E12C:
-    mov     dx, [bp+var_3A.y2]
+    mov     dx, [bp+var_point.y2]
     mov     [bx], ax
     mov     [bx+2], dx
-    lea     ax, [bp+var_24]
+    lea     ax, [bp+var_rect2]
     push    ax
-    lea     ax, [bp+var_3A]
+    lea     ax, [bp+var_point]
     push    ax
     call    rect_adjust_from_point
     add     sp, 4
 loc_1E144:
-    inc     word_3C1BE
+    inc     intro_colorvalue
     mov     ax, word_407CC
 loc_1E14B:
-    cmp     word_3C1BE, ax
+    cmp     intro_colorvalue, ax
     jnz     short loc_1E157
-    mov     word_3C1BE, 1
+    mov     intro_colorvalue, 1
 loc_1E157:
     inc     si
     cmp     si, 64h ; 'd'
@@ -7193,11 +7151,11 @@ loc_1E16C:
     call    get_a_poly_info
     cmp     timertestflag_copy, 0
     jz      short loc_1E19A
-    mov     bx, [bp+arg_1C]
+    mov     bx, [bp+arg_rectptr]
     push    si
     push    di
     mov     di, bx
-    lea     si, [bp+var_rc]
+    lea     si, [bp+var_rect3]
     push    ds
     pop     es
     movsw
@@ -7206,11 +7164,11 @@ loc_1E16C:
     movsw
     pop     di
     pop     si
-    mov     bx, [bp+arg_1E]
+    mov     bx, [bp+arg_rectptr2]
     push    si
     push    di
     mov     di, bx
-    lea     si, [bp+var_24]
+    lea     si, [bp+var_rect2]
     movsw
     movsw
     movsw

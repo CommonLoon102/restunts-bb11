@@ -54,7 +54,7 @@ seg004 segment byte public 'STUNTSC' use16
     public shape3d_load_car_shapes
     public shape3d_free_car_shapes
     public sub_204AE
-    public setup_track
+    public track_setup
     public off_2147C
     public load_opponent_data
     public subst_hillroad_track
@@ -4105,15 +4105,15 @@ loc_206CE:
     pop     bp
     retf
 sub_204AE endp
-setup_track proc far
+track_setup proc far
     var_AF0 = dword ptr -2800
     var_AEC = word ptr -2796
     var_AEA = word ptr -2794
     var_AE8 = byte ptr -2792
     var_MprevTileElem = byte ptr -2790
     var_connCheckFlag = byte ptr -2788
-    var_AE2 = word ptr -2786
-    var_AE0 = word ptr -2784
+    var_tcompPtrL = word ptr -2786
+    var_tcompPtrH = word ptr -2784
     var_ADE = word ptr -2782
     var_ADC = word ptr -2780
     var_ADA = word ptr -2778
@@ -4122,8 +4122,8 @@ setup_track proc far
     var_AD4 = byte ptr -2772
     var_tileTerr = byte ptr -1870
     var_74C = byte ptr -1868
-    var_74A = word ptr -1866
-    var_748 = word ptr -1864
+    var_tcompPtr2L = word ptr -1866
+    var_tcompPtr2H = word ptr -1864
     var_746 = byte ptr -1862
     var_McurrExitPoint = byte ptr -1860
     var_subTOIBlock = byte ptr -1858
@@ -4169,8 +4169,8 @@ setup_track proc far
     push    ax
     call    mmgr_alloc_resbytes
     add     sp, 6
-    mov     [bp+var_AE2], ax
-    mov     [bp+var_AE0], dx
+    mov     [bp+var_tcompPtrL], ax
+    mov     [bp+var_tcompPtrH], dx
     or      ax, dx
     jnz     short loc_20704
     mov     ax, 2
@@ -4180,10 +4180,10 @@ setup_track proc far
     pop     bp
     retf
 loc_20704:
-    mov     ax, [bp+var_AE2]
-    mov     dx, [bp+var_AE0]
-    mov     [bp+var_74A], ax
-    mov     [bp+var_748], dx
+    mov     ax, [bp+var_tcompPtrL]
+    mov     dx, [bp+var_tcompPtrH]
+    mov     [bp+var_tcompPtr2L], ax
+    mov     [bp+var_tcompPtr2H], dx
     mov     [bp+var_sfCount], 0
     mov     [bp+var_4], 0
     mov     track_pieces_counter, 0
@@ -4488,8 +4488,8 @@ loc_20A16:
     shl     ax, 1
     add     ax, cx
     shl     ax, 1
-    add     ax, [bp+var_74A]
-    mov     dx, [bp+var_748]
+    add     ax, [bp+var_tcompPtr2L]
+    mov     dx, [bp+var_tcompPtr2H]
     mov     word ptr [bp+var_MinternalTOI1], ax
     mov     word ptr [bp+var_MinternalTOI1+2], dx
     les     bx, [bp+var_MinternalTOI1]
@@ -4835,8 +4835,8 @@ loc_20D7A:
     shl     ax, 1
     add     ax, cx
     shl     ax, 1
-    add     ax, [bp+var_74A]
-    mov     dx, [bp+var_748]
+    add     ax, [bp+var_tcompPtr2L]
+    mov     dx, [bp+var_tcompPtr2H]
     mov     word ptr [bp+var_MinternalTOI1], ax
     mov     word ptr [bp+var_MinternalTOI1+2], dx
     les     bx, [bp+var_MinternalTOI1]
@@ -5198,6 +5198,7 @@ loc_21129:
     jmp     short loc_21174
 loc_21156:
     mov     bx, [bp+var_ptrCurrTOInfo]
+loc_2115A:
     mov     al, [bx+TRKOBJINFO.si_arrowType]
     sub     ah, ah
     shl     ax, 1
@@ -5853,8 +5854,8 @@ loc_217A0:
     mov     al, [bp+var_trkRowIndex]
     mov     byte_45E16, al
 loc_217AE:
-    push    [bp+var_AE0]
-    push    [bp+var_AE2]
+    push    [bp+var_tcompPtrH]
+    push    [bp+var_tcompPtrL]
     call    mmgr_release
     add     sp, 4
 loc_217BE:
@@ -5868,7 +5869,7 @@ loc_217C2:
     retf
     ; align 2
     db 144
-setup_track endp
+track_setup endp
 load_opponent_data proc far
     var_F30 = word ptr -3888
     var_B2E = word ptr -2862
