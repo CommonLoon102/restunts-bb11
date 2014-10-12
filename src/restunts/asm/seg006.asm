@@ -67,7 +67,7 @@ seg006 segment byte public 'STUNTSC' use16
     public ported_rect_is_inside_
     public ported_rect_is_adjacent_
     public ported_rectlist_add_rects_
-    public rect_array_indexed_op
+    public ported_rect_array_sort_by_top_
 ported_init_polyinfo_ proc far
 
     mov     ax, 28A0h       ; bytes to reserve
@@ -3583,7 +3583,7 @@ loc_26B44:
     pop     bp
     retf
 ported_rectlist_add_rects_ endp
-rect_array_indexed_op proc far
+ported_rect_array_sort_by_top_ proc far
     var_intbuffer = word ptr -514
      s = byte ptr 0
      r = byte ptr 2
@@ -3611,7 +3611,7 @@ loc_26B5E:
     mov     cl, 3
     shl     ax, cl
     add     bx, ax
-    mov     ax, [bx+4]
+    mov     ax, [bx+RECTANGLE.rc_top]
     neg     ax
     mov     [bp+di+var_intbuffer], ax
     mov     bx, [bp+arg_array_indices]
@@ -3645,6 +3645,6 @@ loc_26BA0:
     mov     sp, bp
     pop     bp
     retf
-rect_array_indexed_op endp
+ported_rect_array_sort_by_top_ endp
 seg006 ends
 end

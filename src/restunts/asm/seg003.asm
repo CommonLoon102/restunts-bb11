@@ -143,7 +143,7 @@ loc_19F8B:
     mov     al, rect_array_unk3_length
     cbw
     push    ax
-    call    rect_array_indexed_op
+    call    rect_array_sort_by_top
     add     sp, 6
     call    mouse_draw_opaque_check
     sub     si, si

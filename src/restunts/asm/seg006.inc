@@ -20,5 +20,5 @@ seg006 segment byte public 'STUNTSC' use16
     extrn ported_rect_is_inside_:proc
     extrn ported_rect_is_adjacent_:proc
     extrn ported_rectlist_add_rects_:proc
-    extrn rect_array_indexed_op:proc
+    extrn ported_rect_array_sort_by_top_:proc
 seg006 ends

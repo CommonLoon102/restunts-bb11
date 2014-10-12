@@ -36,6 +36,7 @@ extrn rectlist_add_rects:proc
 extrn rect_is_overlapping:proc
 extrn rect_is_inside:proc
 extrn rect_is_adjacent:proc
+extrn rect_array_sort_by_top:proc
 extrn heapsort_by_order:proc
 extrn mat_mul_vector:proc
 extrn mat_mul_vector2:proc

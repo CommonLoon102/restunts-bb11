@@ -655,7 +655,20 @@ void rectlist_add_rects(char arg_rectcount, char* arg_rectarray_indices,
 
 }
 
-
+void rect_array_sort_by_top(char arg_array_length, struct RECTANGLE* arg_rect_array, int* arg_array_indices) {
+	int i;
+	int intbuffer[256];
+	//return ported_rect_array_indexed_op_(arg_array_length, arg_rect_array, arg_array_indices);
+	if (arg_array_length > 1) {
+		for (i = 0; i < arg_array_length; i++) {
+			intbuffer[i] = -arg_rect_array[i].top;
+			arg_array_indices[i] = i;
+		}
+		heapsort_by_order(arg_array_length, intbuffer, arg_array_indices);
+	} else {
+		arg_array_indices[0] = 0;
+	}
+}
 
 
 int vector_op_unk2(struct VECTOR* vec) {
