@@ -222,6 +222,8 @@ extern unsigned short elapsed_time1;
 extern unsigned short elapsed_time2;
 extern unsigned char byte_449DA;
 extern unsigned char byte_4393C;
+extern unsigned char game_replay_mode; // 0 = playing, 1 = paused, 2 = replay
+extern short word_44DCA;
 
 extern short word_45A24; // current frame?
 extern short word_45A00; // fps * 30
@@ -237,7 +239,7 @@ extern short hillHeightConsts[];
 extern void far* fontnptr;
 extern void far* fontdefptr;
 extern void far* mainresptr;
-extern void far* cvxptr;
+extern struct GAMESTATE far* cvxptr;
 extern int trackrows[];
 extern int terrainrows[];
 extern int trackpos[];

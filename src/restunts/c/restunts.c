@@ -616,6 +616,80 @@ void restore_gamestate(unsigned short frame)
 	elapsed_time2 = state.game_frame;
 }
 
+
+void update_gamestate() {
+	char var_carInputByte;
+	//return ported_update_gamestate_();
+
+	var_carInputByte = td16_rpl_buffer[state.game_frame];
+	if (var_carInputByte != 0) {
+		state.game_inputmode = 1;
+	}
+	
+	if ((state.game_frame % word_45A00) == 0) {
+		get_kevinrandom_seed(state.kevinseed);
+	
+		fmemcpy(&cvxptr[state.game_frame / word_45A00], MK_FP(FP_SEG(&state), FP_OFF(&state)), sizeof(struct GAMESTATE));
+	}
+
+	state.game_frame++;
+	if (state.game_3F6autoLoadEvalFlag != 0 && state.game_frame_in_sec < state.game_frames_per_sec) {
+		state.game_frame_in_sec++;
+		if (state.game_frame_in_sec == state.game_frames_per_sec && byte_449DA == 0) {
+			if (state.playerstate.car_crashBmpFlag == 1 && state.playerstate.car_speed2 == 0) {
+				state.game_frames_per_sec++;
+			} else if (game_replay_mode == 0) {
+				byte_449DA = 1;
+			}
+		}
+	}
+
+	if (state.game_inputmode != 0) {
+		
+		player_op(var_carInputByte);
+		
+		if (gameconfig.game_opponenttype != 0) {
+			opponent_op();
+		}
+
+		sub_2298C();
+		if (state.field_42A != 0) {
+			sub_19BA0();
+		}
+
+		audio_carstate();
+
+	} else if (game_replay_mode == 1) {
+		// if paused
+		audio_carstate();
+		if (byte_4393C != 0) {
+			if (word_44DCA < 0x1C2) {
+				word_44DCA += 8;
+			}
+
+			if (byte_4393C == 1 || word_44DCA > 0x180) {
+				byte_4393C++;
+			}
+
+			if (byte_4393C == 2) {
+				if (  multiply_and_scale(cos_fast(track_angle), trackcenterpos[startrow2] - (state.playerstate.car_posWorld1.lz >> 6)) 
+					+ multiply_and_scale(sin_fast(track_angle), trackcenterpos2[startcol2] - (state.playerstate.car_posWorld1.lx >> 6)) <= 0xE4) {
+					if (state.playerstate.car_speed != 0) {
+						player_op(2);
+					} else {
+						byte_4393C = 0;
+					}
+				} else 
+				if (state.playerstate.car_speed < 0x500) {
+					player_op(1);
+				} else {
+					player_op(0);
+				}
+			}
+		}
+	}
+}
+
 void init_div0(void)
 {
 	// Use original code until we can link with a libc for intdosx().

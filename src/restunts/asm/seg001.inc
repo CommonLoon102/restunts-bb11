@@ -5,7 +5,7 @@ seg001 segment byte public 'STUNTSC' use16
     extrn ported_init_carstate_from_simd_:proc
     extrn ported_init_game_state_:proc
     extrn ported_restore_gamestate_:proc
-    extrn update_gamestate:proc
+    extrn ported_update_gamestate_:proc
     extrn player_op:proc
     extrn detect_penalty:proc
     extrn update_car_speed:proc

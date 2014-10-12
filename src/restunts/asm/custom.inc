@@ -201,6 +201,7 @@ extrn init_carstate_from_simd:proc
 extrn init_unknown:proc
 extrn init_game_state:proc
 extrn restore_gamestate:proc
+extrn update_gamestate:proc
 
 extrn init_div0:proc
 extrn copy_material_list_pointers:proc

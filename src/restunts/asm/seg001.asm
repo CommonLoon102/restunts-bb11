@@ -52,7 +52,7 @@ seg001 segment byte public 'STUNTSC' use16
     public ported_init_carstate_from_simd_
     public ported_init_game_state_
     public ported_restore_gamestate_
-    public update_gamestate
+    public ported_update_gamestate_
     public player_op
     public detect_penalty
     public update_car_speed
@@ -4306,7 +4306,7 @@ loc_16EDB:
     jz      short loc_16F2F
     cmp     [bp+arg_0], 0FFFEh
     jz      short loc_16F2F
-    mov     ax, 911Dh
+    mov     ax, offset state.field_3F9
     push    ax
     mov     al, state.opponentstate.field_CE
     inc     state.opponentstate.field_CE
@@ -4441,7 +4441,7 @@ loc_17002:
     pop     bp
     retf
 ported_restore_gamestate_ endp
-update_gamestate proc far
+ported_update_gamestate_ proc far
     var_carInputByte = byte ptr -4
      s = byte ptr 0
      r = byte ptr 2
@@ -4649,7 +4649,7 @@ loc_171E1:
     retf
     ; align 2
     db 144
-update_gamestate endp
+ported_update_gamestate_ endp
 player_op proc far
     var_52 = word ptr -82
     var_4E = word ptr -78
