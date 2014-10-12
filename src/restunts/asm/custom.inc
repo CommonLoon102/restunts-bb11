@@ -29,8 +29,13 @@ extrn polarRadius3D:proc
 extrn polarRadius2D:proc
 extrn rect_compare_point:proc
 extrn rect_adjust_from_point:proc
-extrn rect_clip_op:proc
-extrn rect_clip_op2:proc
+extrn rect_union:proc
+extrn rect_intersect:proc
+extrn rectlist_add_rect:proc
+extrn rectlist_add_rects:proc
+extrn rect_is_overlapping:proc
+extrn rect_is_inside:proc
+extrn rect_is_adjacent:proc
 extrn heapsort_by_order:proc
 extrn mat_mul_vector:proc
 extrn mat_mul_vector2:proc

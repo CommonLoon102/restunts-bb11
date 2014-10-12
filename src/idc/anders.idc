@@ -584,8 +584,13 @@ static PortFuncName(labelname) {
 		labelname == "polarRadius3D" || 
 		labelname == "rect_compare_point" || 
 		labelname == "rect_adjust_from_point" || 
-		labelname == "rect_clip_op" || 
-		labelname == "rect_clip_op2" || 
+		labelname == "rect_union" || 
+		labelname == "rect_intersect" || 
+		labelname == "rectlist_add_rect" || 
+		labelname == "rectlist_add_rects" || 
+		labelname == "rect_is_overlapping" || 
+		labelname == "rect_is_inside" || 
+		labelname == "rect_is_adjacent" || 
 		labelname == "heapsort_by_order" || 
 		labelname == "vector_op_unk" || 
 		labelname == "vector_op_unk2" || 

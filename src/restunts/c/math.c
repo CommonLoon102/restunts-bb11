@@ -338,7 +338,7 @@ void rect_adjust_from_point(struct POINT2D* pt, struct RECTANGLE* rc) {
 	}
 }
 
-void rect_clip_op(struct RECTANGLE* r1, struct RECTANGLE* r2, struct RECTANGLE* outrc) {
+void rect_union(struct RECTANGLE* r1, struct RECTANGLE* r2, struct RECTANGLE* outrc) {
 	if (r1->left <= r2->left) {
 		outrc->left = r1->left;
 	} else {
@@ -367,7 +367,7 @@ void rect_clip_op(struct RECTANGLE* r1, struct RECTANGLE* r2, struct RECTANGLE* 
 		return ;
 	}
 
-	fatal_error("rect_clip_op: unexpected code path");
+	fatal_error("rect_union: unexpected code path");
 	/*
 	mov     bx, [bp+arg_outrectptr]
 	mov     si, bx
@@ -379,7 +379,7 @@ void rect_clip_op(struct RECTANGLE* r1, struct RECTANGLE* r2, struct RECTANGLE* 
 */
 }
 
-int rect_clip_op2(struct RECTANGLE* r1, struct RECTANGLE* r2) {
+int rect_intersect(struct RECTANGLE* r1, struct RECTANGLE* r2) {
 	if (r1->right <= r1->left) return 1;
 	if (r2->right <= r1->left) return 1;
 	if (r1->right <= r2->left) return 1;
@@ -403,6 +403,260 @@ int rect_clip_op2(struct RECTANGLE* r1, struct RECTANGLE* r2) {
 	}
 	return 0;
 }
+
+int rect_is_inside(struct RECTANGLE* r1, struct RECTANGLE* r2) {
+	if (r1->right > r2->right) {
+		return 0;
+	}
+	
+	if (r1->left < r2->left) {
+		return 0;
+	}
+	
+	if (r1->top < r2->top) {
+		return 0;
+	}
+	
+	if (r1->bottom > r2->bottom) {
+		return 0;
+	}
+	
+	return 1;
+}
+
+int rect_is_overlapping(struct RECTANGLE* r1, struct RECTANGLE* r2) {
+	if (r1->right <= r2->left) {
+		return 0;
+	}
+	
+	if (r2->right <= r1->left) {
+		return 0;
+	}
+	
+	if (r1->top >= r2->bottom) {
+		return 0;
+	}
+	
+	if (r1->bottom <= r2->top) {
+		return 0;
+	}
+	
+	return 1;
+}
+
+int rect_is_adjacent(struct RECTANGLE* r1, struct RECTANGLE* r2) {
+	if (r1->bottom == r2->top || r1->top == r2->bottom) {
+		if (r1->left == r2->left && r1->right == r2->right)
+			return 1;
+		return 0;
+	}
+
+	if (r1->right == r2->left || r2->right == r2->left) {
+		if (r1->top == r2->top && r1->bottom == r2->bottom)
+			return 1;
+	}
+	return 0;
+}
+
+void rectlist_add_rect(char* arg_rect_array_length_ptr, struct RECTANGLE* arg_rect_array_ptr, struct RECTANGLE* rect) {	
+	int var_counter;
+	struct RECTANGLE var_rect;
+	struct RECTANGLE var_rect2;
+	struct RECTANGLE var_rect3;
+	struct RECTANGLE* var_rectptr;
+	int var_22, var_18, var_12;
+
+	if (video_flag2_is1 != 1) {
+		fatal_error("rectlist_add_rect: unexpected code path");
+		/*
+		mov     bx, [bp+arg_rectptr]
+		mov     si, bx
+		mov     ax, [si+RECTANGLE.rc_right]
+		add     ax, video_flag2_is1
+		dec     ax
+		and     ax, video_flag3_isFFFF
+		mov     [bx+RECTANGLE.rc_right], ax*/
+	}
+	
+	for (var_counter = 0; var_counter < *arg_rect_array_length_ptr; var_counter++) {
+		var_rectptr = &arg_rect_array_ptr[var_counter];
+		if (rect_is_overlapping(rect, var_rectptr) == 0)
+			continue;
+		if (rect_is_inside(rect, var_rectptr) != 0)
+			return ;
+
+		if (rect_is_inside(var_rectptr, rect) != 0) {
+			var_12 = var_counter;
+
+			while (((*arg_rect_array_length_ptr) - 1) > var_12) {
+				arg_rect_array_ptr[var_12] = arg_rect_array_ptr[var_12 + 1];
+				var_12++;
+			}
+			(*arg_rect_array_length_ptr)--;
+			continue;
+		}
+
+		var_rect = *var_rectptr;
+		if (var_rectptr->top >= rect->top) {
+			if (rect->top < var_rectptr->top) {
+				var_rect2 = *rect;
+				var_rect2.bottom = var_rectptr->top;
+				var_18 = 1;
+			} else {
+				var_18 = 0;
+			}
+		} else {	
+			var_rect2 = *var_rectptr;
+			var_rect2.bottom = rect->top;
+			var_rect.top = rect->top;
+			var_18 = 1;
+		}
+
+		if (var_rectptr->bottom <= rect->bottom) {
+			if (rect->bottom > var_rectptr->bottom) {
+				var_rect3 = *rect;
+				var_rect3.top = var_rectptr->bottom;
+				var_22 = 1;
+			} else {
+				var_22 = 0;
+			}
+		} else {
+			var_rect3 = *var_rectptr;
+			var_rect3.top = rect->bottom;
+			var_rect.bottom = rect->bottom;
+			var_22 = 1;
+		}
+
+		if (rect->left <= var_rectptr->left)
+			var_rect.left = rect->left;
+		else
+			var_rect.left = var_rectptr->left;
+
+		if (rect->right >= var_rectptr->right)
+			var_rect.right = rect->right;
+		else
+			var_rect.right = var_rectptr->right;
+
+		var_12 = var_counter;
+
+		while (((*arg_rect_array_length_ptr) - 1) > var_12) {
+			arg_rect_array_ptr[var_12] = arg_rect_array_ptr[var_12 + 1];
+			var_12 ++;
+		}
+		(*arg_rect_array_length_ptr)--;
+		if (var_18 != 0) {
+			rectlist_add_rect(arg_rect_array_length_ptr, arg_rect_array_ptr, &var_rect2);
+		}
+
+		rectlist_add_rect(arg_rect_array_length_ptr, arg_rect_array_ptr, &var_rect);
+		if (var_22 != 0) {
+			rectlist_add_rect(arg_rect_array_length_ptr, arg_rect_array_ptr, &var_rect3);
+			return ;
+		}
+		return ;
+	}
+
+	for (var_counter = 0; var_counter < *arg_rect_array_length_ptr; var_counter++) {
+		var_rectptr = &arg_rect_array_ptr[var_counter];
+
+		if (rect_is_adjacent(var_rectptr, rect) == 0) {
+			continue;
+		}
+		if (var_rectptr->left <= rect->left)
+			var_rect.left = var_rectptr->left;
+		else
+			var_rect.left = rect->left;
+
+		if (var_rectptr->right >= rect->right)
+			var_rect.right = var_rectptr->right;
+		else
+			var_rect.right = rect->right;
+
+		if (var_rectptr->top <= rect->top)
+			var_rect.top = var_rectptr->top;
+		else
+			var_rect.top = rect->top;
+		
+		if (var_rectptr->bottom >= rect->bottom)
+			var_rect.bottom = var_rectptr->bottom;
+		else
+			var_rect.bottom = rect->bottom;
+
+		var_12 = var_counter;
+
+		while (((*arg_rect_array_length_ptr) - 1) > var_12) {
+			arg_rect_array_ptr[var_12] = arg_rect_array_ptr[var_12 + 1];
+			var_12 ++;
+		}
+		(*arg_rect_array_length_ptr)--;
+		rectlist_add_rect(arg_rect_array_length_ptr, arg_rect_array_ptr, &var_rect);
+		return ;
+	}
+
+	arg_rect_array_ptr[*arg_rect_array_length_ptr] = *rect;
+	(*arg_rect_array_length_ptr)++;
+}
+
+
+void rectlist_add_rects(char arg_rectcount, char* arg_rectarray_indices, 
+	struct RECTANGLE* arg_rectarray1, struct RECTANGLE* arg_rectarray2, 
+	struct RECTANGLE* arg_rectptr, char* arg_rect_array_length_ptr, struct RECTANGLE* arg_rect_array_ptr) 
+{
+	struct RECTANGLE* var_rectptr3;
+	struct RECTANGLE* var_rectptr;
+	struct RECTANGLE* var_rectptr2;
+	struct RECTANGLE var_rect;
+	struct RECTANGLE var_rect2;
+	int var_2, var_rectcounter;
+	int var_rectarray_index;
+	struct RECTANGLE* temprectptr;
+/*
+	return ported_rect_clip_combined_(
+		arg_rectcount, arg_rectarray_indices, arg_rectarray1, arg_rectarray2, arg_rectptr,
+		arg_rect_array_length_ptr, arg_rect_array_ptr);
+	*/
+	for (var_rectcounter = 0; var_rectcounter < arg_rectcount; var_rectcounter++) {
+
+		var_rectarray_index = arg_rectarray_indices[var_rectcounter];
+		if ((var_rectarray_index & 1) != 0) {
+			var_rectptr = &arg_rectarray1[var_rectcounter];
+		}
+
+		if ((var_rectarray_index & 2) != 0) {
+			var_rectptr3 = &arg_rectarray2[var_rectcounter];
+		}
+
+		if (((var_rectarray_index & 1) == 0) || var_rectptr->right <= var_rectptr->left) {
+			if (((var_rectarray_index & 2) == 0) || var_rectptr3->right <= var_rectptr3->left) {
+				var_2 = 0;
+			} else {
+				var_rectptr2 = var_rectptr3;
+				var_2 = 1;
+			}
+		} else if ((var_rectarray_index & 2) == 0) {
+			var_rectptr2 = var_rectptr;
+			var_2 = 1;
+		} else if (var_rectptr3->right <= var_rectptr3->left) {
+			var_rectptr2 = var_rectptr;
+			var_2 = 1;
+		} else {
+			rect_union(var_rectptr, var_rectptr3, &var_rect2);
+			var_rectptr2 = &var_rect2;
+			var_2 = 1;
+		}
+
+		if (var_2 != 0) {
+			var_rect = *var_rectptr2;
+			if (rect_intersect(&var_rect, arg_rectptr) == 0) {
+				rectlist_add_rect(arg_rect_array_length_ptr, arg_rect_array_ptr, &var_rect);
+			}
+		}
+	}
+
+}
+
+
+
 
 int vector_op_unk2(struct VECTOR* vec) {
 	long y;

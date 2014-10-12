@@ -60,13 +60,13 @@ seg006 segment byte public 'STUNTSC' use16
     public ported_vector_op_unk2_
     public ported_calc_sincos80_
     public nopsub_26552
-    public ported_rect_clip_op_
-    public ported_rect_clip_op2_
-    public rect_clip_op3
-    public rect_clip_op3_helper2
-    public rect_clip_op3_helper
-    public rect_clip_op3_helper3
-    public rect_clip_combined
+    public ported_rect_union_
+    public ported_rect_intersect_
+    public ported_rectlist_add_rect_
+    public ported_rect_is_overlapping_
+    public ported_rect_is_inside_
+    public ported_rect_is_adjacent_
+    public ported_rectlist_add_rects_
     public rect_array_indexed_op
 ported_init_polyinfo_ proc far
 
@@ -2756,7 +2756,7 @@ loc_2656A:
     pop     bp
     retf
 nopsub_26552 endp
-ported_rect_clip_op_ proc far
+ported_rect_union_ proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_rectptr1 = word ptr 6
@@ -2815,8 +2815,8 @@ loc_265E9:
     pop     si
     pop     bp
     retf
-ported_rect_clip_op_ endp
-ported_rect_clip_op2_ proc far
+ported_rect_union_ endp
+ported_rect_intersect_ proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_rectptr1 = word ptr 6
@@ -2884,25 +2884,20 @@ loc_2666B:
     pop     si
     pop     bp
     retf
-ported_rect_clip_op2_ endp
-rect_clip_op3 proc far
+ported_rect_intersect_ endp
+ported_rectlist_add_rect_ proc far
     var_22 = byte ptr -34
-    var_20 = byte ptr -32
-    var_1A = word ptr -26
+    var_rect2 = RECTANGLE ptr -32
     var_18 = byte ptr -24
     var_rectptr = word ptr -22
-    var_14 = byte ptr -20
+    var_counter = byte ptr -20
     var_12 = byte ptr -18
-    var_10 = word ptr -16
-    var_E = word ptr -14
-    var_C = word ptr -12
-    var_A = word ptr -10
-    var_8 = byte ptr -8
-    var_4 = word ptr -4
+    var_rect = RECTANGLE ptr -16
+    var_rect3 = RECTANGLE ptr -8
      s = byte ptr 0
      r = byte ptr 2
-    arg_0 = word ptr 6
-    arg_2 = word ptr 8
+    arg_rect_array_length_ptr = word ptr 6
+    arg_rect_array_ptr = word ptr 8
     arg_rectptr = word ptr 10
 
     push    bp
@@ -2920,7 +2915,7 @@ rect_clip_op3 proc far
     and     ax, video_flag3_isFFFF
     mov     [bx+RECTANGLE.rc_right], ax
 loc_26693:
-    mov     [bp+var_14], 0
+    mov     [bp+var_counter], 0
     jmp     short loc_266C9
     ; align 2
     db 144
@@ -2928,10 +2923,10 @@ loc_2669A:
     mov     di, si
     mov     cl, 3
     shl     di, cl
-    add     di, [bp+arg_2]
+    add     di, [bp+arg_rect_array_ptr]
     push    si
     push    di
-    lea     si, [di+8]
+    lea     si, [di+(size RECTANGLE)]
     push    ds
     pop     es
     movsw
@@ -2945,7 +2940,7 @@ loc_266B3:
     mov     al, [bp+var_12]
     cbw
     mov     si, ax
-    mov     bx, [bp+arg_0]
+    mov     bx, [bp+arg_rect_array_length_ptr]
     mov     al, [bx]
     cbw
     dec     ax
@@ -2953,10 +2948,10 @@ loc_266B3:
     jg      short loc_2669A
     dec     byte ptr [bx]
 loc_266C6:
-    inc     [bp+var_14]
+    inc     [bp+var_counter]
 loc_266C9:
-    mov     bx, [bp+arg_0]
-    mov     al, [bp+var_14]
+    mov     bx, [bp+arg_rect_array_length_ptr]
+    mov     al, [bp+var_counter]
     cmp     [bx], al
     jg      short loc_266D6
     jmp     loc_26880
@@ -2964,19 +2959,19 @@ loc_266D6:
     cbw
     mov     cl, 3
     shl     ax, cl
-    add     ax, [bp+arg_2]
+    add     ax, [bp+arg_rect_array_ptr]
     mov     [bp+var_rectptr], ax
     push    ax
     push    [bp+arg_rectptr]
     push    cs
-    call near ptr rect_clip_op3_helper2
+    call near ptr ported_rect_is_overlapping_
     add     sp, 4
     or      al, al
     jz      short loc_266C6
     push    [bp+var_rectptr]
     push    [bp+arg_rectptr]
     push    cs
-    call near ptr rect_clip_op3_helper
+    call near ptr ported_rect_is_inside_
     add     sp, 4
     or      al, al
     jz      short loc_26704
@@ -2985,18 +2980,18 @@ loc_26704:
     push    [bp+arg_rectptr]
     push    [bp+var_rectptr]
     push    cs
-    call near ptr rect_clip_op3_helper
+    call near ptr ported_rect_is_inside_
     add     sp, 4
     or      al, al
     jz      short loc_2671E
-    mov     al, [bp+var_14]
+    mov     al, [bp+var_counter]
     mov     [bp+var_12], al
     jmp     short loc_266B3
     ; align 2
     db 144
 loc_2671E:
     mov     ax, [bp+var_rectptr]
-    lea     di, [bp+var_10]
+    lea     di, [bp+var_rect]
     mov     si, ax
     push    ss
     pop     es
@@ -3010,7 +3005,7 @@ loc_2671E:
     cmp     [bx+RECTANGLE.rc_top], ax
     jge     short loc_2675A
     mov     ax, bx
-    lea     di, [bp+var_20]
+    lea     di, [bp+var_rect2]
     mov     si, ax
     movsw
     movsw
@@ -3018,9 +3013,9 @@ loc_2671E:
     movsw
     mov     bx, [bp+arg_rectptr]
     mov     ax, [bx+RECTANGLE.rc_top]
-    mov     [bp+var_1A], ax
+    mov     [bp+var_rect2.rc_bottom], ax
     mov     ax, [bx+RECTANGLE.rc_top]
-    mov     [bp+var_C], ax
+    mov     [bp+var_rect.rc_top], ax
 loc_26753:
     mov     [bp+var_18], 1
     jmp     short loc_26784
@@ -3033,7 +3028,7 @@ loc_2675A:
     cmp     [bx+RECTANGLE.rc_top], ax
     jge     short loc_26780
     mov     ax, bx
-    lea     di, [bp+var_20]
+    lea     di, [bp+var_rect2]
     mov     si, ax
     push    ss
     pop     es
@@ -3043,19 +3038,18 @@ loc_2675A:
     movsw
     mov     bx, [bp+var_rectptr]
     mov     ax, [bx+RECTANGLE.rc_top]
-    mov     [bp+var_1A], ax
+    mov     [bp+var_rect2.rc_bottom], ax
     jmp     short loc_26753
 loc_26780:
     mov     [bp+var_18], 0
 loc_26784:
     mov     bx, [bp+var_rectptr]
     mov     si, [bp+arg_rectptr]
-loc_2678A:
     mov     ax, [si+RECTANGLE.rc_bottom]
     cmp     [bx+RECTANGLE.rc_bottom], ax
     jle     short loc_267B4
     mov     ax, bx
-    lea     di, [bp+var_8]
+    lea     di, [bp+var_rect3]
     mov     si, ax
     push    ss
     pop     es
@@ -3065,9 +3059,9 @@ loc_2678A:
     movsw
     mov     bx, [bp+arg_rectptr]
     mov     ax, [bx+RECTANGLE.rc_bottom]
-    mov     [bp+var_4], ax
+    mov     [bp+var_rect3.rc_top], ax
     mov     ax, [bx+RECTANGLE.rc_bottom]
-    mov     [bp+var_A], ax
+    mov     [bp+var_rect.rc_bottom], ax
 loc_267AE:
     mov     [bp+var_22], 1
     jmp     short loc_267DE
@@ -3078,7 +3072,7 @@ loc_267B4:
     cmp     [bx+RECTANGLE.rc_bottom], ax
     jle     short loc_267DA
     mov     ax, bx
-    lea     di, [bp+var_8]
+    lea     di, [bp+var_rect3]
     mov     si, ax
     push    ss
     pop     es
@@ -3088,7 +3082,7 @@ loc_267B4:
     movsw
     mov     bx, [bp+var_rectptr]
     mov     ax, [bx+RECTANGLE.rc_bottom]
-    mov     [bp+var_4], ax
+    mov     [bp+var_rect3.rc_top], ax
     jmp     short loc_267AE
 loc_267DA:
     mov     [bp+var_22], 0
@@ -3100,21 +3094,16 @@ loc_267DE:
     jle     short loc_267EC
     mov     ax, [bx+RECTANGLE.rc_left]
 loc_267EC:
-    mov     [bp+var_10], ax
-loc_267EF:
+    mov     [bp+var_rect.rc_left], ax
     mov     bx, [bp+arg_rectptr]
-loc_267F2:
     mov     ax, [bx+RECTANGLE.rc_right]
     mov     bx, [bp+var_rectptr]
     cmp     ax, [bx+RECTANGLE.rc_right]
-loc_267FB:
     jge     short loc_26800
     mov     ax, [bx+RECTANGLE.rc_right]
 loc_26800:
-    mov     [bp+var_E], ax
-loc_26803:
-    mov     al, [bp+var_14]
-loc_26806:
+    mov     [bp+var_rect.rc_right], ax
+    mov     al, [bp+var_counter]
     mov     [bp+var_12], al
     jmp     short loc_26825
     ; align 2
@@ -3123,10 +3112,10 @@ loc_2680C:
     mov     di, si
     mov     cl, 3
     shl     di, cl
-    add     di, [bp+arg_2]
+    add     di, [bp+arg_rect_array_ptr]
     push    si
     push    di
-    lea     si, [di+8]
+    lea     si, [di+(size RECTANGLE)]
     push    ds
     pop     es
     movsw
@@ -3140,7 +3129,7 @@ loc_26825:
     mov     al, [bp+var_12]
     cbw
     mov     si, ax
-    mov     bx, [bp+arg_0]
+    mov     bx, [bp+arg_rect_array_length_ptr]
     mov     al, [bx]
     cbw
     dec     ax
@@ -3149,32 +3138,32 @@ loc_26825:
     dec     byte ptr [bx]
     cmp     [bp+var_18], 0
     jz      short loc_2684F
-    lea     ax, [bp+var_20]
+    lea     ax, [bp+var_rect2]
     push    ax
-    push    [bp+arg_2]
-    push    [bp+arg_0]
+    push    [bp+arg_rect_array_ptr]
+    push    [bp+arg_rect_array_length_ptr]
     push    cs
-    call near ptr rect_clip_op3
+    call near ptr ported_rectlist_add_rect_
     add     sp, 6
 loc_2684F:
-    lea     ax, [bp+var_10]
+    lea     ax, [bp+var_rect]
     push    ax
-    push    [bp+arg_2]
-    push    [bp+arg_0]
+    push    [bp+arg_rect_array_ptr]
+    push    [bp+arg_rect_array_length_ptr]
     push    cs
-    call near ptr rect_clip_op3
+    call near ptr ported_rectlist_add_rect_
     add     sp, 6
     cmp     [bp+var_22], 0
     jnz     short loc_26869
     jmp     loc_26957
 loc_26869:
-    lea     ax, [bp+var_8]
+    lea     ax, [bp+var_rect3]
 loc_2686C:
     push    ax
-    push    [bp+arg_2]
-    push    [bp+arg_0]
+    push    [bp+arg_rect_array_ptr]
+    push    [bp+arg_rect_array_length_ptr]
     push    cs
-    call near ptr rect_clip_op3
+    call near ptr ported_rectlist_add_rect_
     add     sp, 6
     pop     si
     pop     di
@@ -3182,16 +3171,16 @@ loc_2686C:
     pop     bp
     retf
 loc_26880:
-    mov     [bp+var_14], 0
+    mov     [bp+var_counter], 0
     jmp     short loc_268BB
 loc_26886:
     mov     di, si
     mov     cl, 3
     shl     di, cl
-    add     di, [bp+arg_2]
+    add     di, [bp+arg_rect_array_ptr]
     push    si
     push    di
-    lea     si, [di+8]
+    lea     si, [di+(size RECTANGLE)]
     push    ds
     pop     es
     movsw
@@ -3205,33 +3194,33 @@ loc_2689F:
     mov     al, [bp+var_12]
     cbw
     mov     si, ax
-    mov     bx, [bp+arg_0]
+    mov     bx, [bp+arg_rect_array_length_ptr]
     mov     al, [bx]
     cbw
     dec     ax
     cmp     ax, si
     jg      short loc_26886
     dec     byte ptr [bx]
-    lea     ax, [bp+var_10]
+    lea     ax, [bp+var_rect]
     jmp     short loc_2686C
     ; align 2
     db 144
 loc_268B8:
-    inc     [bp+var_14]
+    inc     [bp+var_counter]
 loc_268BB:
-    mov     bx, [bp+arg_0]
-    mov     al, [bp+var_14]
+    mov     bx, [bp+arg_rect_array_length_ptr]
+    mov     al, [bp+var_counter]
     cmp     [bx], al
     jle     short loc_26936
     cbw
     mov     cl, 3
     shl     ax, cl
-    add     ax, [bp+arg_2]
+    add     ax, [bp+arg_rect_array_ptr]
     mov     [bp+var_rectptr], ax
     push    [bp+arg_rectptr]
     push    ax
     push    cs
-    call near ptr rect_clip_op3_helper3
+    call near ptr ported_rect_is_adjacent_
     add     sp, 4
     or      al, al
     jz      short loc_268B8
@@ -3242,7 +3231,7 @@ loc_268BB:
     jle     short loc_268ED
     mov     ax, [bx+RECTANGLE.rc_left]
 loc_268ED:
-    mov     [bp+var_10], ax
+    mov     [bp+var_rect.rc_left], ax
     mov     bx, [bp+var_rectptr]
     mov     ax, [bx+RECTANGLE.rc_right]
     mov     bx, [bp+arg_rectptr]
@@ -3250,7 +3239,7 @@ loc_268ED:
     jge     short loc_26901
     mov     ax, [bx+RECTANGLE.rc_right]
 loc_26901:
-    mov     [bp+var_E], ax
+    mov     [bp+var_rect.rc_right], ax
     mov     bx, [bp+var_rectptr]
     mov     ax, [bx+RECTANGLE.rc_top]
     mov     bx, [bp+arg_rectptr]
@@ -3258,7 +3247,7 @@ loc_26901:
     jle     short loc_26915
     mov     ax, [bx+RECTANGLE.rc_top]
 loc_26915:
-    mov     [bp+var_C], ax
+    mov     [bp+var_rect.rc_top], ax
     mov     bx, [bp+var_rectptr]
     mov     ax, [bx+RECTANGLE.rc_bottom]
     mov     bx, [bp+arg_rectptr]
@@ -3266,20 +3255,20 @@ loc_26915:
     jge     short loc_26929
     mov     ax, [bx+RECTANGLE.rc_bottom]
 loc_26929:
-    mov     [bp+var_A], ax
-    mov     al, [bp+var_14]
+    mov     [bp+var_rect.rc_bottom], ax
+    mov     al, [bp+var_counter]
     mov     [bp+var_12], al
     jmp     loc_2689F
     ; align 2
     db 144
 loc_26936:
-    mov     bx, [bp+arg_0]
+    mov     bx, [bp+arg_rect_array_length_ptr]
     mov     al, [bx]
     cbw
     mov     bx, ax
     mov     cl, 3
     shl     bx, cl
-    mov     si, [bp+arg_2]
+    mov     si, [bp+arg_rect_array_ptr]
     mov     ax, [bp+arg_rectptr]
     lea     di, [bx+si]
     mov     si, ax
@@ -3289,7 +3278,7 @@ loc_26936:
     movsw
     movsw
     movsw
-    mov     bx, [bp+arg_0]
+    mov     bx, [bp+arg_rect_array_length_ptr]
     inc     byte ptr [bx]
 loc_26957:
     pop     si
@@ -3299,20 +3288,20 @@ loc_26957:
     retf
     ; align 2
     db 144
-rect_clip_op3 endp
-rect_clip_op3_helper2 proc far
+ported_rectlist_add_rect_ endp
+ported_rect_is_overlapping_ proc far
      s = byte ptr 0
      r = byte ptr 2
-    arg_0 = word ptr 6
-    arg_2 = word ptr 8
+    arg_rectptr1 = word ptr 6
+    arg_rectptr2 = word ptr 8
 
     push    bp
     mov     bp, sp
     push    si
-    mov     bx, [bp+arg_0]
-    mov     si, [bp+arg_2]
-    mov     ax, [si]
-    cmp     [bx+2], ax
+    mov     bx, [bp+arg_rectptr1]
+    mov     si, [bp+arg_rectptr2]
+    mov     ax, [si+RECTANGLE.rc_left]
+    cmp     [bx+RECTANGLE.rc_right], ax
     jg      short loc_26974
 loc_2696F:
     sub     ax, ax
@@ -3320,26 +3309,26 @@ loc_2696F:
     pop     bp
     retf
 loc_26974:
-    mov     bx, [bp+arg_2]
-    mov     si, [bp+arg_0]
-    mov     ax, [si]
-    cmp     [bx+2], ax
+    mov     bx, [bp+arg_rectptr2]
+    mov     si, [bp+arg_rectptr1]
+    mov     ax, [si+RECTANGLE.rc_left]
+    cmp     [bx+RECTANGLE.rc_right], ax
     jle     short loc_2696F
     mov     bx, si
-    mov     si, [bp+arg_2]
-    mov     ax, [si+6]
+    mov     si, [bp+arg_rectptr2]
+    mov     ax, [si+RECTANGLE.rc_bottom]
 loc_26989:
-    cmp     [bx+4], ax
+    cmp     [bx+RECTANGLE.rc_top], ax
     jge     short loc_2696F
-    mov     ax, [si+4]
-    cmp     [bx+6], ax
+    mov     ax, [si+RECTANGLE.rc_top]
+    cmp     [bx+RECTANGLE.rc_bottom], ax
     jle     short loc_2696F
     mov     ax, 1
     pop     si
     pop     bp
     retf
-rect_clip_op3_helper2 endp
-rect_clip_op3_helper proc far
+ported_rect_is_overlapping_ endp
+ported_rect_is_inside_ proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_rectptr1 = word ptr 6
@@ -3359,7 +3348,6 @@ rect_clip_op3_helper proc far
     mov     ax, [si+RECTANGLE.rc_top]
     cmp     [bx+RECTANGLE.rc_top], ax
     jl      short loc_269CA
-loc_269BC:
     mov     ax, [si+RECTANGLE.rc_bottom]
     cmp     [bx+RECTANGLE.rc_bottom], ax
     jg      short loc_269CA
@@ -3374,25 +3362,23 @@ loc_269CA:
     retf
     ; align 2
     db 144
-rect_clip_op3_helper endp
-rect_clip_op3_helper3 proc far
+ported_rect_is_inside_ endp
+ported_rect_is_adjacent_ proc far
      s = byte ptr 0
      r = byte ptr 2
-    arg_0 = word ptr 6
-    arg_2 = word ptr 8
+    arg_rectptr1 = word ptr 6
+    arg_rectptr2 = word ptr 8
 
     push    bp
     mov     bp, sp
     push    si
-    mov     bx, [bp+arg_0]
-    mov     si, [bp+arg_2]
-loc_269DA:
-    mov     ax, [si+4]
-loc_269DD:
-    cmp     [bx+6], ax
+    mov     bx, [bp+arg_rectptr1]
+    mov     si, [bp+arg_rectptr2]
+    mov     ax, [si+RECTANGLE.rc_top]
+    cmp     [bx+RECTANGLE.rc_bottom], ax
     jnz     short loc_26A02
-    mov     ax, [si]
-    cmp     [bx], ax
+    mov     ax, [si+RECTANGLE.rc_left]
+    cmp     [bx+RECTANGLE.rc_left], ax
     jz      short loc_269EE
 loc_269E8:
     sub     ax, ax
@@ -3402,10 +3388,10 @@ loc_269E8:
     ; align 2
     db 144
 loc_269EE:
-    mov     bx, [bp+arg_0]
-    mov     si, [bp+arg_2]
-    mov     ax, [si+2]
-    cmp     [bx+2], ax
+    mov     bx, [bp+arg_rectptr1]
+    mov     si, [bp+arg_rectptr2]
+    mov     ax, [si+RECTANGLE.rc_right]
+    cmp     [bx+RECTANGLE.rc_right], ax
     jnz     short loc_269E8
 loc_269FC:
     mov     ax, 1
@@ -3413,45 +3399,45 @@ loc_269FC:
     pop     bp
     retf
 loc_26A02:
-    mov     bx, [bp+arg_0]
-    mov     si, [bp+arg_2]
-    mov     ax, [si+6]
-    cmp     [bx+4], ax
+    mov     bx, [bp+arg_rectptr1]
+    mov     si, [bp+arg_rectptr2]
+    mov     ax, [si+RECTANGLE.rc_bottom]
+    cmp     [bx+RECTANGLE.rc_top], ax
     jnz     short loc_26A20
-    mov     ax, [si]
-    cmp     [bx], ax
+    mov     ax, [si+RECTANGLE.rc_left]
+    cmp     [bx+RECTANGLE.rc_left], ax
     jnz     short loc_269E8
-    mov     ax, [si+2]
-    cmp     [bx+2], ax
+    mov     ax, [si+RECTANGLE.rc_right]
+    cmp     [bx+RECTANGLE.rc_right], ax
 loc_26A1C:
     jz      short loc_269FC
     jmp     short loc_269E8
 loc_26A20:
-    mov     bx, [bp+arg_0]
-    mov     si, [bp+arg_2]
-    mov     ax, [si]
-    cmp     [bx+2], ax
+    mov     bx, [bp+arg_rectptr1]
+    mov     si, [bp+arg_rectptr2]
+    mov     ax, [si+RECTANGLE.rc_left]
+    cmp     [bx+RECTANGLE.rc_right], ax
     jnz     short loc_26A3E
 loc_26A2D:
-    mov     ax, [si+4]
-    cmp     [bx+4], ax
+    mov     ax, [si+RECTANGLE.rc_top]
+    cmp     [bx+RECTANGLE.rc_top], ax
     jnz     short loc_269E8
-    mov     ax, [si+6]
-    cmp     [bx+6], ax
+    mov     ax, [si+RECTANGLE.rc_bottom]
+    cmp     [bx+RECTANGLE.rc_bottom], ax
     jmp     short loc_26A1C
     ; align 2
     db 144
 loc_26A3E:
-    mov     bx, [bp+arg_2]
-    mov     si, [bp+arg_0]
-    mov     ax, [si]
-    cmp     [bx+2], ax
+    mov     bx, [bp+arg_rectptr2]
+    mov     si, [bp+arg_rectptr1]
+    mov     ax, [si+RECTANGLE.rc_left]
+    cmp     [bx+RECTANGLE.rc_right], ax
     jnz     short loc_269E8
     mov     bx, si
-    mov     si, [bp+arg_2]
+    mov     si, [bp+arg_rectptr2]
     jmp     short loc_26A2D
-rect_clip_op3_helper3 endp
-rect_clip_combined proc far
+ported_rect_is_adjacent_ endp
+ported_rectlist_add_rects_ proc far
     var_rectptr3 = word ptr -28
     var_rectptr = word ptr -26
     var_rectcounter = byte ptr -24
@@ -3467,8 +3453,8 @@ rect_clip_combined proc far
     arg_rectarray1 = word ptr 10
     arg_rectarray2 = word ptr 12
     arg_rectptr = word ptr 14
-    arg_A = word ptr 16
-    arg_C = word ptr 18
+    arg_rect_array_length_ptr = word ptr 16
+    arg_rect_array_ptr = word ptr 18
 
     push    bp
     mov     bp, sp
@@ -3476,7 +3462,6 @@ rect_clip_combined proc far
     push    di
     push    si
     mov     [bp+var_rectcounter], 0
-loc_26A5E:
     jmp     short loc_26AC0
 loc_26A60:
     mov     ax, [bp+var_rectptr]
@@ -3514,7 +3499,7 @@ loc_26A92:
     lea     ax, [bp+var_rect]
     push    ax
     push    cs
-    call near ptr ported_rect_clip_op2_
+    call near ptr ported_rect_intersect_
 loc_26AA5:
     add     sp, 4
     or      al, al
@@ -3522,10 +3507,10 @@ loc_26AA5:
 loc_26AAC:
     lea     ax, [bp+var_rect]
     push    ax
-    push    [bp+arg_C]
-    push    [bp+arg_A]
+    push    [bp+arg_rect_array_ptr]
+    push    [bp+arg_rect_array_length_ptr]
     push    cs
-    call near ptr rect_clip_op3
+    call near ptr ported_rectlist_add_rect_
     add     sp, 6
 loc_26ABD:
     inc     [bp+var_rectcounter]
@@ -3585,7 +3570,7 @@ loc_26B2E:
     push    bx
     push    [bp+var_rectptr]
     push    cs
-    call near ptr ported_rect_clip_op_
+    call near ptr ported_rect_union_
     add     sp, 6
     lea     ax, [bp+var_rect2]
     jmp     loc_26A63
@@ -3597,7 +3582,7 @@ loc_26B44:
     mov     sp, bp
     pop     bp
     retf
-rect_clip_combined endp
+ported_rectlist_add_rects_ endp
 rect_array_indexed_op proc far
     var_intbuffer = word ptr -514
      s = byte ptr 0

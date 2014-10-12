@@ -563,7 +563,7 @@ loc_22064:
     lea     ax, [bp+var_rect]
     push    ax
     push    rectptr_unk
-    call    rect_clip_op
+    call    rect_union
     add     sp, 6
 loc_220BB:
     push    word ptr dasmshapeptr+2
@@ -4977,7 +4977,7 @@ loc_249C3:
 loc_249C6:
     push    ax
     push    rectptr_unk2
-    call    rect_clip_op
+    call    rect_union
     jmp     short loc_24A0D
 loc_249D2:
     sub     ax, ax
@@ -5181,7 +5181,7 @@ loc_24B9D:
     add     sp, 0Ah
     push    ax
     push    rectptr_unk2
-    call    rect_clip_op
+    call    rect_union
     add     sp, 6
     jmp     short loc_24BD4
     ; align 2

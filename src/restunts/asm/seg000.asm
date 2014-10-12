@@ -3838,7 +3838,7 @@ loc_124AC:
     push    ax
     lea     ax, [bp+var_10_rc]
     push    ax
-    call    rect_clip_op2
+    call    rect_intersect
     add     sp, 4
     lea     ax, [bp+var_1A_rc]
     push    ax
@@ -3846,7 +3846,7 @@ loc_124AC:
     push    ax
     lea     ax, [bp+var_10_rc]
     push    ax
-    call    rect_clip_op
+    call    rect_union
     add     sp, 6
     cmp     [bp+var_6], 3
     jnz     short loc_124DA

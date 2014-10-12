@@ -13,12 +13,12 @@ seg006 segment byte public 'STUNTSC' use16
     extrn ported_vector_op_unk2_:proc
     extrn ported_calc_sincos80_:proc
     extrn nopsub_26552:proc
-    extrn ported_rect_clip_op_:proc
-    extrn ported_rect_clip_op2_:proc
-    extrn rect_clip_op3:proc
-    extrn rect_clip_op3_helper2:proc
-    extrn rect_clip_op3_helper:proc
-    extrn rect_clip_op3_helper3:proc
-    extrn rect_clip_combined:proc
+    extrn ported_rect_union_:proc
+    extrn ported_rect_intersect_:proc
+    extrn ported_rectlist_add_rect_:proc
+    extrn ported_rect_is_overlapping_:proc
+    extrn ported_rect_is_inside_:proc
+    extrn ported_rect_is_adjacent_:proc
+    extrn ported_rectlist_add_rects_:proc
     extrn rect_array_indexed_op:proc
 seg006 ends

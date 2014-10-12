@@ -132,7 +132,7 @@ loc_19F8B:
     push    ax
     mov     ax, 0Fh         ; number of rects in the array
     push    ax
-    call    rect_clip_combined
+    call    rectlist_add_rects
     add     sp, 0Eh
     cmp     rect_array_unk3_length, 0
     jz      short loc_1A01E
@@ -3450,7 +3450,7 @@ loc_1C006:
 loc_1C009:
     push    [bp+arg_cliprectptr]
     push    [bp+var_rectptr]
-    call    rect_clip_op2
+    call    rect_intersect
     add     sp, 4
     or      al, al
     jz      short loc_1C01E
@@ -3582,7 +3582,7 @@ loc_1C128:
 loc_1C156:
     add     sp, 6
     push    ax
-    call    rect_clip_op
+    call    rect_union
     jmp     short loc_1C1C3
     ; align 2
     db 144
@@ -3673,7 +3673,7 @@ loc_1C1DA:
     call    intro_draw_text
     add     sp, 0Ah
     push    ax
-    call    rect_clip_op
+    call    rect_union
     add     sp, 6
     jmp     short loc_1C256
     ; align 4
@@ -3705,7 +3705,7 @@ loc_1C265:
     push    cs
     call near ptr draw_ingame_text
     push    ax
-    call    rect_clip_op
+    call    rect_union
     add     sp, 6
     cmp     [bp+var_132], 0
     jz      short loc_1C2AE
@@ -4202,7 +4202,7 @@ loc_1C696:
     push    [bp+arg_rectptr]
     lea     ax, [bp+var_rect]
     push    ax
-    call    rect_clip_op2
+    call    rect_intersect
     add     sp, 4
     or      al, al
     jnz     short loc_1C728
@@ -4220,7 +4220,7 @@ loc_1C696:
     push    ax
     mov     ax, 0Fh         ; number of rects
     push    ax
-    call    rect_clip_combined
+    call    rectlist_add_rects
     add     sp, 0Eh
     sub     di, di
     jmp     short loc_1C720
@@ -4255,7 +4255,7 @@ loc_1C728:
     push    [bp+arg_rectptr]
     lea     ax, [bp+var_rect]
     push    ax
-    call    rect_clip_op2
+    call    rect_intersect
     add     sp, 4
     or      al, al
     jnz     short loc_1C7AA
@@ -4273,7 +4273,7 @@ loc_1C728:
     push    ax
     mov     ax, 0Fh         ; number of rects
     push    ax
-    call    rect_clip_combined
+    call    rectlist_add_rects
     add     sp, 0Eh
     sub     di, di
     jmp     short loc_1C7A2
@@ -4320,7 +4320,7 @@ loc_1C7C2:
     push    [bp+arg_rectptr]
     lea     ax, [bp+var_rect]
     push    ax
-    call    rect_clip_op2
+    call    rect_intersect
     add     sp, 4
     or      al, al
     jz      short loc_1C7E5
@@ -4624,7 +4624,7 @@ loc_1CAB1:
     push    ax
     mov     ax, 0Fh         ; number of rects
     push    ax
-    call    rect_clip_combined
+    call    rectlist_add_rects
     add     sp, 0Eh
     sub     di, di
     jmp     short loc_1CAF6
@@ -5414,7 +5414,7 @@ loc_1D14E:
     push    ax
     mov     ax, offset rect_ingame_text
     push    ax
-    call    rect_clip_op
+    call    rect_union
     add     sp, 6
     mov     ax, offset aDm2 ; on Closed Circuit
     push    ax
@@ -5507,7 +5507,7 @@ loc_1D234:
     push    ax
     mov     ax, offset rect_ingame_text
     push    ax
-    call    rect_clip_op
+    call    rect_union
     add     sp, 6
     mov     ax, offset aSe2 ; "Car's security system first"
     push    ax
@@ -5569,7 +5569,7 @@ loc_1D311:
     push    ax
     mov     ax, offset rect_ingame_text
     push    ax
-    call    rect_clip_op
+    call    rect_union
     add     sp, 6
 loc_1D31E:
     mov     resID_byte1, 0
@@ -5639,7 +5639,7 @@ loc_1D398:
     push    ax
     mov     ax, offset rect_ingame_text
     push    ax
-    call    rect_clip_op
+    call    rect_union
     add     sp, 6
     mov     ax, offset aOpp ; "Opponent Near"
 loc_1D3C7:
@@ -5676,7 +5676,7 @@ loc_1D3E6:
     push    ax
     mov     ax, offset rect_ingame_text
     push    ax
-    call    rect_clip_op
+    call    rect_union
     add     sp, 6
 loc_1D422:
     cmp     byte_4499F, 0
@@ -5728,7 +5728,7 @@ loc_1D47E:
     push    ax
     mov     ax, offset rect_ingame_text
     push    ax
-    call    rect_clip_op
+    call    rect_union
     add     sp, 6
     mov     ax, offset aOpp_0; "opp"
     jmp     loc_1D3C7
@@ -5779,7 +5779,7 @@ loc_1D511:
     push    ax
     mov     ax, offset rect_ingame_text
     push    ax
-    call    rect_clip_op
+    call    rect_union
     add     sp, 6
 loc_1D52B:
     mov     ax, offset rect_ingame_text
@@ -6726,13 +6726,13 @@ loc_1DD7E:
     push    ax
     lea     ax, [bp+var_rect]
     push    ax
-    call    rect_clip_op
+    call    rect_union
     add     sp, 6
     mov     ax, offset rect_unk3
     push    ax
     lea     ax, [bp+var_rect2]
     push    ax
-    call    rect_clip_op2
+    call    rect_intersect
     add     sp, 4
     or      al, al
     jnz     short loc_1DE19
@@ -7015,13 +7015,13 @@ loc_1E013:
     lea     ax, [bp+arg_rect]
     push    ax
     push    [bp+arg_rectptr]
-    call    rect_clip_op
+    call    rect_union
     add     sp, 6
     mov     ax, offset rect_unk3
     push    ax
     lea     ax, [bp+var_rect1]
     push    ax
-    call    rect_clip_op2
+    call    rect_intersect
     add     sp, 4
     or      al, al
     jnz     short loc_1E059
