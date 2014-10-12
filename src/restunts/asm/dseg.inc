@@ -27,8 +27,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn aAlpine:byte
     extrn aCity:byte
     extrn aCountry:byte
-    extrn unk_3B8E8:byte
-    extrn hillHeightConst:word
+    extrn hillHeightConsts:word
     extrn word_3B8EC:word
     extrn word_3B8EE:word
     extrn word_3B8F0:word
@@ -1133,19 +1132,19 @@ dseg segment byte public 'STUNTSD' use16
     extrn word_42CC0:word
     extrn word_42CC4:word
     extrn trackpos2:word
-    extrn word_42D02:word
+    extrn elapsed_time2:word
     extrn word_42D04:word
     extrn word_42D08:word
     extrn word_42D0A:word
     extrn word_42D0E:word
-    extrn dword_42D10:dword
+    extrn sprite_ptrs:dword
     extrn wallStartX:word
     extrn td01_track_file_cpy:dword
     extrn byte_42D26:byte
     extrn word_42D28:word
     extrn byte_42D2A:byte
     extrn wallStartZ:word
-    extrn byte_42D2E:byte
+    extrn audio_filetemp:byte
     extrn audiodriverstring2:byte
     extrn game3dshapes:SHAPE3D
     extrn td02_penalty_related:dword
@@ -1232,7 +1231,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn hillFlag:byte
     extrn word_4499C:word
     extrn startrow2:byte
-    extrn byte_4499F:byte
+    extrn show_penalty_counter:byte
     extrn gameresptr:dword
     extrn gameconfig:GAMEINFO
     extrn pState_lvec1_x_ax:word
@@ -1256,7 +1255,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn word_449EA:word
     extrn terrainHeight:word
     extrn trackdata12:dword
-    extrn word_449F2:word
+    extrn idle_counter:word
     extrn transshapenumvertscopy:byte
     extrn elem_zCenter:word
     extrn curshapeptr:dword
@@ -1277,7 +1276,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn wallHeight:word
     extrn terrainpos:word
     extrn byte_44ACA:byte
-    extrn byte_44AE2:byte
+    extrn idle_expired:byte
     extrn video_flag1_is1:word
     extrn td11_highscores:dword
     extrn timertestflag:word
@@ -1325,7 +1324,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn dashbmp_y_copy:word
     extrn car2resptr:dword
     extrn trackdata7:dword
-    extrn byte_454B8:byte
+    extrn is_in_replay:byte
     extrn word_454BA:word
     extrn td15_terr_map_main:dword
     extrn kbjoyflags:word
@@ -1337,7 +1336,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn video_flag3_isFFFF:word
     extrn trackdata18:dword
     extrn word_454DA:word
-    extrn byte_45514:byte
+    extrn backlights_paint_override:byte
     extrn track_angle:word
     extrn skybox_ptr1:word
     extrn skybox_ptr2:word
@@ -1357,7 +1356,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn material_clrlist_ptr_cpy:word
     extrn byte_45634:byte
     extrn byte_45635:byte
-    extrn word_45636:word
+    extrn sdgame2_widths:word
     extrn td21_col_from_path:dword
     extrn simd_opponent:SIMD
     extrn word_45946:word
@@ -1367,7 +1366,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn rect_unk3:RECTANGLE
     extrn rect_array_unk2:RECTANGLE
     extrn byte_459D2:byte
-    extrn word_459D4:word
+    extrn height_above_replaybar:word
     extrn material_clrlist2_ptr_cpy:word
     extrn byte_459D8:byte
     extrn td22_row_from_path:dword
@@ -1381,7 +1380,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn word_45A00:word
     extrn byte_45A02:byte
     extrn cvxptr:dword
-    extrn word_45A24:word
+    extrn elapsed_time1:word
     extrn unk_45A26:byte
     extrn word_45D06:word
     extrn sdgameresptr:dword
@@ -1401,7 +1400,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn wallOrientation:word
     extrn word_45D98:word
     extrn byte_45D9A:byte
-    extrn byte_45DB2:byte
+    extrn game_replay_mode:byte
     extrn td08_direction_related:dword
     extrn roofbmpheight_copy:word
     extrn dashbmp_y:word
@@ -1431,7 +1430,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn dastbmp_y:word
     extrn game1ptr:dword
     extrn byte_461C8:byte
-    extrn word_461CA:word
+    extrn penalty_time:word
     extrn roofbmpheight:word
     extrn mouse_ypos:word
     extrn video_flag4_is1:word
@@ -1459,6 +1458,6 @@ dseg segment byte public 'STUNTSD' use16
     extrn word_46468:word
     extrn word_4646A:word
     extrn mat_x_rot:MATRIX
-    extrn byte_46484:byte
+    extrn replaybar_enabled:byte
     extrn word_46486:word
 dseg ends

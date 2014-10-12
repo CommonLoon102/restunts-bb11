@@ -363,7 +363,7 @@ void init_unknown(void)
 {
 	byte_44A8A = 1;
 	byte_4552F = 2;
-	word_42D02 = 0;
+	elapsed_time2 = 0;
 	byte_449DA = 0;
 	byte_4393C = 0;
 }
@@ -446,7 +446,7 @@ void init_game_state(short arg)
 	int i, tmpcol, tmprow;
 
 	if (arg == -1) {
-		word_45A24 = 0;
+		elapsed_time1 = 0;
 
 		for (i = 0; i < RST_CVX_NUM; ++i) {
 			((struct GAMESTATE far*)cvxptr)[i].field_3F4 = 0;
@@ -468,7 +468,7 @@ void init_game_state(short arg)
 
 		state.field_3F4 = 1;
 		state.game_frames_per_sec = 1;
-		state.field_3F5 = 0;
+		state.game_inputmode = 0;
 		state.game_3F6autoLoadEvalFlag = 0;
 		state.game_frame_in_sec = 0;
 		state.field_2F4 = 0;
@@ -488,7 +488,7 @@ void init_game_state(short arg)
 			+ multiply_and_scale(sin_fast(track_angle + 0x200), 4096)
 			+ ((short)startcol2 << 10);
 
-		state.game_vec1.y = unk_3B8E8[hillFlag] + 960;
+		state.game_vec1.y = hillHeightConsts[hillFlag] + 960;
 
 		state.game_vec1.z =
 			  multiply_and_scale(cos_fast(track_angle + 0x300),  512)
@@ -524,7 +524,7 @@ void init_game_state(short arg)
 			&simd_player,
 			gameconfig.game_playertransmission,
 			(long)(trackcenterpos2[startcol2] + tmpcol) * 64L,
-			(long)unk_3B8E8[hillFlag] * 64L,
+			(long)hillHeightConsts[hillFlag] * 64L,
 			(long)(trackcenterpos[startrow2] + tmprow) * 64L,
 			-track_angle);
 
@@ -563,7 +563,7 @@ void init_game_state(short arg)
 			&simd_opponent,
 			1,
 			(long)(trackcenterpos2[startcol2] + tmpcol) * 64L,
-			(long)unk_3B8E8[hillFlag] * 64L,
+			(long)hillHeightConsts[hillFlag] * 64L,
 			(long)(trackcenterpos[startrow2] + tmprow) * 64L,
 			-track_angle);
 
@@ -585,7 +585,7 @@ void restore_gamestate(unsigned short frame)
 {
 	unsigned short curframe;
 
-	if (frame == 0 && word_45A24 == 0) {
+	if (frame == 0 && elapsed_time1 == 0) {
 		init_game_state(0);
 	}
 	
@@ -613,7 +613,7 @@ void restore_gamestate(unsigned short frame)
 	state = ((struct GAMESTATE far*)cvxptr)[curframe];
 
 	init_kevinrandom(state.kevinseed);
-	word_42D02 = state.game_frame;
+	elapsed_time2 = state.game_frame;
 }
 
 void init_div0(void)
@@ -953,7 +953,7 @@ int stuntsmain(int argc, char* argv[]) {
 	char var_A;
 	char far* trkptr;
 	char far* textresptr;
-
+	
 	//return ported_stuntsmain_(argc, argv);
 
 	init_main(argc, argv);
@@ -1026,7 +1026,7 @@ _do_game1:
 		td20_trk_file_appnd[i + 0x75B] = byte_3B85E[i];
 	}
 	
-	if (byte_44AE2 != 0) {
+	if (idle_expired != 0) {
 		if (file_find("tedit.*") != 0) goto _init_replay;
 		goto _prepare_intro;
 	}
@@ -1067,7 +1067,7 @@ _do_intro:
 		file_read_fatal(g_path_buf, td14_elem_map_main);
 	}
 	
-	byte_44AE2 = 0;
+	idle_expired = 0;
 	result = run_intro_looped();
 	if (result == 27) goto _ask_dos;
 
@@ -1098,7 +1098,7 @@ loc_104AC:
 	run_game();
 	//if (byte_44AE2 != 0) goto loc_104D2;
 	//if (byte_43966 == 0) goto loc_104D2;
-	if (byte_44AE2 == 0 && byte_43966 != 0) {
+	if (idle_expired == 0 && byte_43966 != 0) {
 		result = end_hiscore();
 		if (result == 0) {
 			byte_43966 = 4;
@@ -1118,7 +1118,7 @@ loc_104D2:
 	}
 	mmgr_release(cvxptr);
 	
-	if (byte_44AE2 != 0) goto _do_intro0;
+	if (idle_expired != 0) goto _do_intro0;
 	goto _show_menu;
 
 _ask_dos:

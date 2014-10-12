@@ -65,7 +65,7 @@ seg008 segment byte public 'STUNTSC' use16
     public mouse_draw_opaque_check
     public mouse_draw_opaque
     public mouse_draw_transparent
-    public mouse_op_unk
+    public mouse_multi_hittest
     public check_input
     public nopsub_28F26
     public ported_sprite_copy_2_to_1_2_
@@ -122,65 +122,38 @@ sub_274B0 proc far
     arg_6 = word ptr 12
 
     push    bp
-loc_274B1:
     mov     bp, sp
-loc_274B3:
     sub     sp, 40h
-loc_274B6:
     push    di
     push    si
-loc_274B8:
     mov     ax, video_flag1_is1
-loc_274BB:
     imul    video_flag4_is1
-loc_274BF:
     cwd
-loc_274C0:
     push    dx
     push    ax
-loc_274C2:
     mov     ax, [bp+arg_6]
-loc_274C5:
     sub     ax, [bp+arg_4]
-loc_274C8:
     cwd
     push    dx
-loc_274CA:
     push    ax
-loc_274CB:
     mov     ax, [bp+arg_2]
-loc_274CE:
     sub     ax, [bp+arg_0]
     cwd
-loc_274D2:
     push    dx
     push    ax
-loc_274D4:
     call    __aFlmul
     push    dx
-loc_274DA:
     push    ax
-loc_274DB:
     call    __aFldiv
-loc_274E0:
     add     ax, 12h
-loc_274E3:
     adc     dx, 0
-loc_274E6:
     mov     [bp+var_4], ax
-loc_274E9:
     mov     [bp+var_2], dx
-loc_274EC:
     call    mmgr_get_res_ofs_diff_scaled
-loc_274F1:
     cmp     dx, [bp+var_2]
-loc_274F4:
     jg      short loc_27506
-loc_274F6:
     jl      short loc_274FD
-loc_274F8:
     cmp     ax, [bp+var_4]
-loc_274FB:
     ja      short loc_27506
 loc_274FD:
     sub     ax, ax
@@ -188,37 +161,30 @@ loc_274FD:
     pop     di
     mov     sp, bp
     pop     bp
-locret_27504:
     retf
     ; align 2
     db 144
 loc_27506:
     push    cs
     call near ptr mouse_draw_opaque_check
-loc_2750A:
     mov     ax, 0Fh
     push    ax
     mov     ax, [bp+arg_6]
     sub     ax, [bp+arg_4]
-loc_27514:
     push    ax
     mov     ax, [bp+arg_2]
     sub     ax, [bp+arg_0]
     push    ax
-loc_2751C:
     call    sprite_make_wnd
     add     sp, 6
-loc_27524:
     mov     bl, byte_3B8FC
-loc_27528:
     sub     bh, bh
     shl     bx, 1
     shl     bx, 1
-    mov     word ptr dword_42D10[bx], ax
-    mov     word ptr (dword_42D10+2)[bx], dx
+    mov     word ptr sprite_ptrs[bx], ax
+    mov     word ptr (sprite_ptrs+2)[bx], dx
     mov     al, byte_3B8FC
     sub     ah, ah
-loc_2753B:
     mov     si, ax
     shl     si, 1
     mov     ax, [bp+arg_0]
@@ -232,30 +198,19 @@ loc_2753B:
     mov     al, 3Ch ; '<'
     mul     byte_3B8FC
     mov     bx, ax
-loc_27561:
     les     di, trackdata12
     push    si
     lea     di, [bx+di]
     lea     si, [bp+var_40]
-loc_2756B:
     mov     cx, 0Fh
-loc_2756E:
     repne movsw
-loc_27570:
     pop     si
-loc_27571:
     mov     al, byte_3B8FC
-loc_27574:
     sub     ah, ah
-loc_27576:
     shl     ax, 1
-loc_27578:
     mov     cx, 1Eh
-loc_2757B:
     mul     cx
-loc_2757D:
     mov     di, ax
-loc_2757F:
     les     bx, trackdata12
     push    si
     lea     di, [bx+di+1Eh]
@@ -270,7 +225,7 @@ loc_2757F:
     sub     bh, bh
     shl     bx, 1
     shl     bx, 1
-    les     bx, dword_42D10[bx]
+    les     bx, sprite_ptrs[bx]
     push    word ptr es:[bx+2]
     push    word ptr es:[bx]
     call    sprite_clear_shape_alt
@@ -313,7 +268,7 @@ loc_275D8:
     mov     bx, si
     shl     bx, 1
     shl     bx, 1
-    les     bx, dword_42D10[bx]
+    les     bx, sprite_ptrs[bx]
     push    word ptr es:[bx+2]
     push    word ptr es:[bx]
     call    sprite_shape_to_1
@@ -363,8 +318,8 @@ loc_27626:
     sub     bh, bh
     shl     bx, 1
     shl     bx, 1
-    push    word ptr (dword_42D10+2)[bx]
-    push    word ptr dword_42D10[bx]
+    push    word ptr (sprite_ptrs+2)[bx]
+    push    word ptr sprite_ptrs[bx]
     call    sprite_free_wnd
     add     sp, 4
     push    cs
@@ -1103,7 +1058,7 @@ loc_27D6D:
     cbw
     push    ax
     push    cs
-    call near ptr mouse_op_unk
+    call near ptr mouse_multi_hittest
     add     sp, 0Ah
     mov     [bp+var_1C4], al
     cmp     al, 0FFh
@@ -1783,7 +1738,7 @@ loc_28370:
     mov     ax, 0Ah
     push    ax
     push    cs
-    call near ptr mouse_op_unk
+    call near ptr mouse_multi_hittest
     add     sp, 0Ah
     mov     [bp+var_6EA], al
     cmp     al, 0FFh
@@ -3092,14 +3047,14 @@ mouse_draw_transparent proc far
     ; align 2
     db 144
 mouse_draw_transparent endp
-mouse_op_unk proc far
+mouse_multi_hittest proc far
      s = byte ptr 0
      r = byte ptr 2
-    arg_0 = word ptr 6
-    arg_2 = word ptr 8
-    arg_4 = word ptr 10
-    arg_6 = word ptr 12
-    arg_8 = word ptr 14
+    arg_count = word ptr 6
+    arg_x1_array = word ptr 8
+    arg_x2_array = word ptr 10
+    arg_y1_array = word ptr 12
+    arg_y2_array = word ptr 14
 
     push    bp
     mov     bp, sp
@@ -3115,22 +3070,22 @@ mouse_op_unk proc far
 loc_28EA4:
     inc     si
 loc_28EA5:
-    cmp     [bp+arg_0], si
+    cmp     [bp+arg_count], si
     jle     short loc_28EDA
     mov     di, si
     shl     di, 1
-    mov     bx, [bp+arg_2]
+    mov     bx, [bp+arg_x1_array]
     mov     ax, mouse_xpos
     cmp     [bx+di], ax
     jg      short loc_28EA4
-    mov     bx, [bp+arg_4]
+    mov     bx, [bp+arg_x2_array]
     cmp     [bx+di], ax
     jl      short loc_28EA4
-    mov     bx, [bp+arg_6]
+    mov     bx, [bp+arg_y1_array]
     mov     ax, mouse_ypos
     cmp     [bx+di], ax
     jg      short loc_28EA4
-    mov     bx, [bp+arg_8]
+    mov     bx, [bp+arg_y2_array]
     cmp     [bx+di], ax
     jl      short loc_28EA4
     mov     ax, si
@@ -3151,7 +3106,7 @@ loc_28EDA:
     retf
     ; align 2
     db 144
-mouse_op_unk endp
+mouse_multi_hittest endp
 check_input proc far
     var_2 = byte ptr -2
      s = byte ptr 0
@@ -4239,7 +4194,7 @@ sub_29772 proc far
 
     mov     word_45D1C, 0
     mov     word_45D06, 0
-    mov     word_449F2, 0
+    mov     idle_counter, 0
     retf
     ; align 2
     db 144

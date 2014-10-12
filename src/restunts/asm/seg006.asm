@@ -1713,10 +1713,10 @@ loc_25D3C:
     les     bx, transshapepolyinfo
     mov     al, [bp+var_primtype]
     mov     es:[bx+4], al   ; polyinfo+4 = primtype
-    cmp     transprimitivepaintjob, 2Dh ; '-'
+    cmp     transprimitivepaintjob, 2Dh ; '-'; if shape paintjob = 0x2d (back lights), use override
     jnz     short loc_25D66
     les     bx, transshapepolyinfo
-    mov     al, byte_45514
+    mov     al, backlights_paint_override
     jmp     short loc_25D6D
 loc_25D66:
     les     bx, transshapepolyinfo

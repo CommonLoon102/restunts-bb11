@@ -137,7 +137,7 @@ loc_14738:
 loc_1473D:
     jnz     short loc_14746
 loc_1473F:
-    cmp     state.field_3F5, 2
+    cmp     state.game_inputmode, 2
 loc_14744:
     jnz     short loc_1474C
 loc_14746:
@@ -311,7 +311,7 @@ loc_14886:
 loc_148AE:
     mov     state.opponentstate.field_CE, 0
 loc_148B3:
-    cmp     state.field_3F5, 2
+    cmp     state.game_inputmode, 2
     jnz     short loc_148EC
 loc_148BA:
     push    si
@@ -650,7 +650,7 @@ loc_14BB6:
     mov     ax, state.opponentstate.car_surfacegrip_sum
     cmp     state.opponentstate.car_demandedGrip, ax
     jg      short loc_14BF6
-    cmp     state.field_3F5, 2
+    cmp     state.game_inputmode, 2
     jnz     short loc_14BCE
     mov     [bp+var_12], 4000h
     jmp     short loc_14BD7
@@ -1386,7 +1386,7 @@ loc_15227:
     dec     cl
     jnz     short loc_15227
     mov     [bp+var_1C6.vz], ax
-    cmp     state.field_3F5, 2
+    cmp     state.game_inputmode, 2
     jnz     short loc_15240
     mov     ax, [bp+var_1C6.vy]
     jmp     short loc_15257
@@ -1840,7 +1840,7 @@ loc_156AF:
     dec     cl
     jnz     short loc_156AF
     mov     [bp+var_1C6.vy], ax
-    cmp     state.field_3F5, 2
+    cmp     state.game_inputmode, 2
     jz      short loc_156D6
     push    [bp+var_1C6.vz]
     push    ax
@@ -2509,7 +2509,7 @@ loc_15D7E:
     dec     cl
     jnz     short loc_15D7E
     mov     [bp+var_1C6.vz], ax
-    cmp     state.field_3F5, 2
+    cmp     state.game_inputmode, 2
     jz      short loc_15D94
     jmp     loc_151BA
 loc_15D94:
@@ -2939,11 +2939,11 @@ loc_1620A:
     mov     al, [di+CARSTATE.car_surfaceWhl3]
     add     al, [di+CARSTATE.car_surfaceWhl4]
     mov     [bx+CARSTATE.car_sumSurfRearWheels], al
-    cmp     state.field_3F5, 2
+    cmp     state.game_inputmode, 2
     jnz     short loc_16236
     jmp     loc_16840
 loc_16236:
-    cmp     byte_454B8, 0
+    cmp     is_in_replay, 0
     jnz     short loc_1625F
     cmp     [bp+arg_MplayerFlag], 0
     jz      short loc_1624A
@@ -3014,7 +3014,7 @@ loc_16288:
     call near ptr plane_origin_op
     add     sp, 8
     mov     [bp+var_138], ax
-    cmp     byte_45DB2, 1
+    cmp     game_replay_mode, 1
     jz      short loc_16309
     or      si, si
     jge     short loc_162EE
@@ -3885,7 +3885,7 @@ ported_init_game_state_ proc far
     sub     si, si
     cmp     [bp+arg_0], 0FFFFh
     jnz     short loc_16B4D
-    mov     word_45A24, si
+    mov     elapsed_time1, si
     sub     di, di
 loc_16B18:
     mov     ax, 1120        ; sizeof(struct GAMESTATE)
@@ -3935,7 +3935,7 @@ loc_16B82:
     mov     state.field_3F4, 1
     mov     state.game_frames_per_sec, 1
     mov     ax, si
-    mov     state.field_3F5, al
+    mov     state.game_inputmode, al
     mov     state.game_3F6autoLoadEvalFlag, al
     mov     state.game_frame_in_sec, si
     mov     state.field_2F4, si
@@ -3995,7 +3995,7 @@ loc_16C0F:
     cbw
     mov     bx, ax
     shl     bx, 1
-    mov     ax, [bx+178h]   ; unk_3B8E8[bx]
+    mov     ax, hillHeightConsts[bx]
     add     ax, 3C0h
     mov     state.game_vec1.vy, ax
     mov     ax, 200h
@@ -4344,7 +4344,7 @@ ported_restore_gamestate_ proc far
     push    si
     cmp     [bp+arg_frame], 0
     jnz     short loc_16F59
-    cmp     word_45A24, 0
+    cmp     elapsed_time1, 0
     jnz     short loc_16F59
     sub     ax, ax
     push    ax
@@ -4422,7 +4422,7 @@ loc_16FB1:
     call    init_kevinrandom
     add     sp, 2
     mov     ax, state.game_frame
-    mov     word_42D02, ax
+    mov     elapsed_time2, ax
     pop     si
     pop     di
     mov     sp, bp
@@ -4457,7 +4457,7 @@ update_gamestate proc far
     mov     [bp+var_carInputByte], al
     or      al, al
     jz      short loc_17027
-    mov     state.field_3F5, 1
+    mov     state.game_inputmode, 1
 loc_17027:
     mov     ax, bx
     sub     dx, dx
@@ -4468,7 +4468,7 @@ loc_17027:
     sub     dx, dx
     div     word_45A00
     mov     si, ax
-    mov     ax, 9112h
+    mov     ax, offset state.kevinseed
     push    ax
     call    get_kevinrandom_seed
     add     sp, 2
@@ -4513,11 +4513,11 @@ loc_17079:
     inc     state.game_frames_per_sec
     jmp     short loc_170BE
 loc_170B2:
-    cmp     byte_45DB2, 0
+    cmp     game_replay_mode, 0
     jnz     short loc_170BE
     mov     byte_449DA, 1
 loc_170BE:
-    cmp     state.field_3F5, 0
+    cmp     state.game_inputmode, 0
     jz      short loc_170F6
     mov     al, [bp+var_carInputByte]
     cbw
@@ -4544,7 +4544,7 @@ loc_170EC:
     pop     bp
     retf
 loc_170F6:
-    cmp     byte_45DB2, 1
+    cmp     game_replay_mode, 1
     jz      short loc_17100
     jmp     loc_171E1
 loc_17100:
@@ -4679,9 +4679,9 @@ player_op proc far
     sub     sp, 52h
     push    di
     push    si
-    cmp     byte_4499F, 0
+    cmp     show_penalty_counter, 0
     jz      short loc_171FB
-    dec     byte_4499F
+    dec     show_penalty_counter
 loc_171FB:
     mov     state.playerstate.field_CF, 1
     cmp     state.playerstate.car_crashBmpFlag, 0
@@ -4850,12 +4850,12 @@ loc_1737B:
     mov     cx, ax
     shl     ax, 1
     add     ax, cx
-    mov     word_461CA, ax
+    mov     penalty_time, ax
     mov     al, byte ptr framespersec
     shl     al, 1
     shl     al, 1
-    mov     byte_4499F, al
-    mov     ax, word_461CA
+    mov     show_penalty_counter, al
+    mov     ax, penalty_time
     add     state.game_penalty, ax
 loc_173AD:
     mov     ax, [bp+var_2]
@@ -7275,7 +7275,7 @@ audio_carstate proc far
     sub     sp, 34h
     push    di
     push    si
-    cmp     byte_454B8, 0
+    cmp     is_in_replay, 0
     jnz     short loc_188B6
     jmp     loc_1893A
 loc_188B6:
@@ -7314,7 +7314,7 @@ loc_18916:
     mov     byte_42D2A, 0
 loc_18925:
     mov     al, byte_3BE02
-    cmp     byte_454B8, al
+    cmp     is_in_replay, al
 loc_1892C:
     jnz     short loc_18931
     jmp     loc_18CCC
@@ -7722,7 +7722,7 @@ loc_18CB6:
     jnz     short loc_18CCC
     mov     word_449E4, 0
 loc_18CCC:
-    mov     al, byte_454B8
+    mov     al, is_in_replay
     mov     byte_3BE02, al
     pop     si
     pop     di
@@ -8027,7 +8027,7 @@ loc_18EFA:
     les     si, td15_terr_map_main
     cmp     byte ptr es:[bx+si], 6
     jnz     short loc_18F3B
-    mov     ax, hillHeightConst
+    mov     ax, hillHeightConsts+2
     add     [bp+var_A], ax
     add     [bp+var_20], ax
 loc_18F3B:
@@ -8597,7 +8597,7 @@ init_plantrak proc far
     call near ptr ported_init_game_state_
     add     sp, 2
     sub     si, si
-    mov     state.field_3F5, 2
+    mov     state.game_inputmode, 2
     mov     word ptr planptr, offset plan_memres
     mov     word ptr planptr+2, seg seg038
     mov     startcol2, 1
@@ -8843,7 +8843,7 @@ loc_19682:
     shl     ax, 1
     mov     state.game_frames_per_sec, ax
 loc_196B3:
-    cmp     byte_454B8, 0
+    cmp     is_in_replay, 0
     jnz     short loc_1964E
     cmp     byte_459D8, 0
     jz      short loc_1964E
@@ -8862,7 +8862,7 @@ loc_196D2:
     ; align 2
     db 144
 loc_196DE:
-    cmp     byte_454B8, 0
+    cmp     is_in_replay, 0
     jnz     short loc_19704
     cmp     byte_459D8, 0
     jz      short loc_19704
@@ -8901,7 +8901,7 @@ loc_19730:
     jnz     short loc_19752
     mov     ax, state.game_frame
     add     ax, state.game_penalty
-    add     ax, word_45A24
+    add     ax, elapsed_time1
     mov     state.game_total_finish, ax
     mov     ax, framespersec
     jmp     short loc_19729
@@ -8909,7 +8909,7 @@ loc_19730:
     db 144
 loc_19752:
     mov     ax, state.game_frame
-    add     ax, word_45A24
+    add     ax, elapsed_time1
     mov     state.field_144, ax
     jmp     loc_1964E
     ; align 2

@@ -123,7 +123,7 @@ struct GAMESTATE {
 	char field_3BE[48];
 	char kevinseed[6];
 	char field_3F4;
-	char field_3F5;
+	char game_inputmode; // 0 = waiting for input, 1 = input active, 2 = no input (during the intro)
 	char game_3F6autoLoadEvalFlag;
 	char field_3F7;
 	char field_3F8;
@@ -218,7 +218,8 @@ extern short video_flag6_is1;
 
 extern unsigned char byte_44A8A;
 extern unsigned char byte_4552F;
-extern unsigned short word_42D02;
+extern unsigned short elapsed_time1;
+extern unsigned short elapsed_time2;
 extern unsigned char byte_449DA;
 extern unsigned char byte_4393C;
 
@@ -231,7 +232,7 @@ extern void* steerWhlRespTable_10fps;
 extern void* steerWhlRespTable_20fps;
 extern char startcol2, startrow2;
 extern char hillFlag;
-extern short unk_3B8E8[];
+extern short hillHeightConsts[];
 
 extern void far* fontnptr;
 extern void far* fontdefptr;
@@ -273,7 +274,7 @@ extern char passed_security;
 extern char g_is_busy;
 extern char g_path_buf[];
 extern char byte_3B80C[];
-extern char byte_44AE2;
+extern char idle_expired;
 extern unsigned short dialogarg2;
 extern char byte_3B85E[];
 extern char byte_43966;

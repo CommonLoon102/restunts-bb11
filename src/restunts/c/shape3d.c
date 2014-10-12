@@ -125,7 +125,7 @@ extern int far* polyinfoptrs[];
 extern unsigned polyinfonumpolys;
 extern char transprimitivepaintjob;
 extern unsigned char far* transshapeprimindexptr;
-extern char byte_45514;
+extern char backlights_paint_override;
 
 // ASMVECTOR is used temporarily for the inline assembly since x and y are ambigous struct member names
 struct ASMVECTOR {
@@ -2333,7 +2333,7 @@ loc_25D3C:
 	transshapepolyinfo[3] = transshapenumvertscopy;
 	transshapepolyinfo[4] = var_primtype;
 	if (transprimitivepaintjob == 0x2D) {
-		transshapepolyinfo[2] = byte_45514;
+		transshapepolyinfo[2] = backlights_paint_override;
 	} else {
 		transshapepolyinfo[2] = transprimitivepaintjob;
 	}

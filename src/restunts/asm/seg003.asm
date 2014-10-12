@@ -1780,7 +1780,7 @@ loc_1AEC9:
 loc_1AECC:
     cmp     [bp+var_10C], 6
     jnz     short loc_1AF50
-    mov     ax, hillHeightConst
+    mov     ax, hillHeightConsts+2
     mov     [bp+var_48], ax
     cmp     [bp+var_62], 0
     jz      short loc_1AEE4
@@ -3116,7 +3116,7 @@ loc_1BC3E:
     call near ptr sub_1CB80
     add     sp, 4
 loc_1BC89:
-    cmp     state.field_3F5, 0
+    cmp     state.game_inputmode, 0
     jz      short loc_1BC93
     jmp     loc_1BEAA
 loc_1BC93:
@@ -3221,7 +3221,7 @@ loc_1BCB7:
     cbw
     mov     bx, ax
     shl     bx, 1
-    mov     ax, [bx+178h]
+    mov     ax, hillHeightConsts[bx]
     sub     ax, [bp+var_vec4.vy]
     mov     bx, curtransshape_ptr
     mov     [bx+TRANSFORMEDSHAPE.ts_pos.vy], ax
@@ -3317,7 +3317,7 @@ loc_1BED8:
     cmp     state.playerstate.car_is_braking, 0
     jnz     short loc_1BF09
 loc_1BEDF:
-    mov     byte_45514, 2Eh ; '.'
+    mov     backlights_paint_override, 2Eh ; '.'
 loc_1BEE4:
     mov     ax, 14h
     imul    di
@@ -3336,7 +3336,7 @@ loc_1BF02:
     cmp     state.opponentstate.car_is_braking, 0
     jz      short loc_1BEDF
 loc_1BF09:
-    mov     byte_45514, 2Fh ; '/'
+    mov     backlights_paint_override, 2Fh ; '/'
     jmp     short loc_1BEE4
 loc_1BF10:
     cmp     [bp+var_14E], 0
@@ -3493,7 +3493,7 @@ loc_1C070:
     mov     di, dx
     mov     bx, di
     shl     bx, 1
-    mov     ax, word_45636[bx]
+    mov     ax, sdgame2_widths[bx]; lookup width of explotion shape
     cwd
     push    dx
     push    ax
@@ -3513,9 +3513,9 @@ loc_1C070:
     shl     bx, 1
     shl     bx, 1
     push    word ptr (sdgame2shapes+2)[bx]
-    push    word ptr sdgame2shapes[bx]
+    push    word ptr sdgame2shapes[bx]; loops up one of the three explotion anim shapes
     push    ax
-    call    sub_347DC
+    call    shape_op_explosion
     add     sp, 0Ah
 loc_1C0C1:
     inc     si
@@ -3634,22 +3634,22 @@ loc_1C1AC:
 loc_1C1C3:
     add     sp, 6
 loc_1C1C6:
-    cmp     byte_45DB2, 0
+    cmp     game_replay_mode, 0
     jz      short loc_1C1D0
     jmp     loc_1C25B
 loc_1C1D0:
-    cmp     state.field_3F5, 0
+    cmp     state.game_inputmode, 0
     jnz     short loc_1C1DA
     jmp     loc_1C25B
 loc_1C1DA:
     sub     ax, ax
     push    ax              ; int
-    mov     ax, word_45A24
-    add     ax, word_42D02
+    mov     ax, elapsed_time1
+    add     ax, elapsed_time2
     push    ax
     mov     ax, offset resID_byte1
     push    ax              ; char *
-    call    format_frame_as_string
+    call    format_frame_as_string; prints elapsed time (unless in pause/replay, or some unknown state)
     add     sp, 6
     push    fontledresseg
     push    fontledresofs
@@ -4922,7 +4922,7 @@ loc_1CD3C:
     jz      short loc_1CD45
     jmp     loc_1CE04
 loc_1CD45:
-    mov     di, hillHeightConst
+    mov     di, hillHeightConsts+2
     cmp     [bp+var_10], 0
     jz      short loc_1CD53
 loc_1CD4F:
@@ -5379,7 +5379,7 @@ draw_ingame_text proc far
     movsw
     movsw
     pop     si
-    cmp     byte_44AE2, 0
+    cmp     idle_expired, 0
     jnz     short loc_1D14E
     jmp     loc_1D1E6
 loc_1D14E:
@@ -5444,11 +5444,11 @@ loc_1D1D5:
     ; align 2
     db 144
 loc_1D1E6:
-    cmp     byte_45DB2, 0
+    cmp     game_replay_mode, 0
     jz      short loc_1D1F0
     jmp     loc_1D4B0
 loc_1D1F0:
-    cmp     state.field_3F5, 0
+    cmp     state.game_inputmode, 0
     jnz     short loc_1D22A
     mov     ax, offset aPre ; Fasten Your Seatbelt
     push    ax
@@ -5557,10 +5557,10 @@ loc_1D2F2:
     push    ax
     mov     ax, 94h ; '”'
     push    ax
-    push    word ptr sdgame2shapes+0Eh
-    push    word ptr sdgame2shapes+0Ch
+    push    word ptr sdgame2shapes+0Eh; left arrow shape
+    push    word ptr sdgame2shapes+0Ch; left arrow shape
 loc_1D302:
-    call    sub_343B0
+    call    sprite_putimage_transparent
     add     sp, 8
     mov     ax, offset rect_ingame_text
     push    ax
@@ -5589,8 +5589,8 @@ loc_1D338:
     push    ax
     mov     ax, 94h ; '”'
     push    ax
-    push    word ptr sdgame2shapes+12h
-    push    word ptr sdgame2shapes+10h
+    push    word ptr sdgame2shapes+12h; right arrow shape
+    push    word ptr sdgame2shapes+10h; right arrow shape
     jmp     short loc_1D302
 loc_1D34A:
     mov     ax, offset aWww ; "Wrong Way"
@@ -5629,9 +5629,9 @@ loc_1D398:
     push    ax
     mov     ax, 44h ; 'D'
     push    ax
-    push    word ptr sdgame2shapes+0Eh
-    push    word ptr sdgame2shapes+0Ch
-    call    sub_343B0
+    push    word ptr sdgame2shapes+0Eh; left arrow shape
+    push    word ptr sdgame2shapes+0Ch; left arrow shape
+    call    sprite_putimage_transparent
     add     sp, 8
     mov     ax, offset rect_ingame_text
     push    ax
@@ -5679,7 +5679,7 @@ loc_1D3E6:
     call    rect_union
     add     sp, 6
 loc_1D422:
-    cmp     byte_4499F, 0
+    cmp     show_penalty_counter, 0
     jnz     short loc_1D42C
     jmp     loc_1D52B
 loc_1D42C:
@@ -5697,7 +5697,7 @@ loc_1D42C:
     add     sp, 6
     sub     ax, ax
     push    ax              ; int
-    push    word_461CA
+    push    penalty_time
     mov     ax, offset resID_byte1
     push    ax              ; char *
     call    _strlen
@@ -5718,9 +5718,9 @@ loc_1D47E:
     push    ax
     mov     ax, 0E4h ; 'ä'
     push    ax
-    push    word ptr sdgame2shapes+12h
-    push    word ptr sdgame2shapes+10h
-    call    sub_343B0
+    push    word ptr sdgame2shapes+12h; right arrow shape
+    push    word ptr sdgame2shapes+10h; right arrow shape
+    call    sprite_putimage_transparent
     add     sp, 8
     mov     ax, offset rect_ingame_text
     push    ax
@@ -5733,7 +5733,7 @@ loc_1D47E:
     mov     ax, offset aOpp_0; "opp"
     jmp     loc_1D3C7
 loc_1D4B0:
-    cmp     byte_45DB2, 2
+    cmp     game_replay_mode, 2
     jnz     short loc_1D52B
     mov     ax, state.game_frame
     sub     dx, dx
@@ -6244,8 +6244,8 @@ loc_1D908:
     shl     di, 1
     shl     di, 1
     les     di, sdgame2shapes[di]
-    mov     ax, es:[di]
-    mov     word_45636[bx], ax
+    mov     ax, es:[di+SHAPE2D.s2d_width]
+    mov     sdgame2_widths[bx], ax
     inc     si
     cmp     si, 3
     jl      short loc_1D908

@@ -195,7 +195,7 @@ loc_1E26B:
 loc_1E26E:
     jnz     short loc_1E276
 code_addHillHeight:
-    mov     ax, hillHeightConst
+    mov     ax, hillHeightConsts+2
     mov     terrainHeight, ax
 loc_1E276:
     mov     al, [bp+var_trkRow]
@@ -567,7 +567,7 @@ code_bto_root:
     ; align 2
     db 144
 code_bto_sfLine:
-    cmp     state.field_3F5, 0
+    cmp     state.game_inputmode, 0
     jnz     short code_bto_road
     cmp     [bp+var_posElemCrds.vx], 0
     jle     short code_bto_road
@@ -3051,7 +3051,7 @@ loc_1FD14:
     mov     [bp+var_10], al
     cmp     al, 6
     jnz     short loc_1FD3A
-    mov     ax, hillHeightConst
+    mov     ax, hillHeightConsts+2
     mov     [bp+var_A], ax
     jmp     short loc_1FD3F
 loc_1FD3A:

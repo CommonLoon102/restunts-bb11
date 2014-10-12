@@ -407,7 +407,7 @@ loc_10346:
     inc     si
     cmp     si, 51h ; 'Q'
     jl      short loc_10346
-    cmp     byte_44AE2, 0
+    cmp     idle_expired, 0
     jnz     short _find_tedit
     call    track_setup
     or      al, al
@@ -486,7 +486,7 @@ _do_intro:
     call    file_read_fatal
     add     sp, 6
 loc_1042D:
-    mov     byte_44AE2, 0
+    mov     idle_expired, 0
     push    cs
     call near ptr run_intro_looped
     mov     di, ax
@@ -547,7 +547,7 @@ loc_104A6:
 loc_104AC:
     call    show_waiting
     call    run_game
-    cmp     byte_44AE2, 0
+    cmp     idle_expired, 0
     jnz     short loc_104D2
     cmp     byte_43966, 0
     jz      short loc_104D2
@@ -593,7 +593,7 @@ loc_104FC:
     push    word ptr cvxptr
     call    mmgr_release
     add     sp, 4
-    cmp     byte_44AE2, 0
+    cmp     idle_expired, 0
     jnz     short loc_10536
     jmp     _show_menu
 loc_10536:
@@ -1568,11 +1568,11 @@ loc_10F34:
     retf
 load_intro_resources endp
 run_menu proc far
-    var_10 = byte ptr -16
-    var_E = byte ptr -14
+    var_selectedmenu = byte ptr -16
+    var_menuhit = byte ptr -14
     var_C = byte ptr -12
-    var_A = word ptr -10
-    var_8 = word ptr -8
+    var_keycode = word ptr -10
+    var_timedelta = word ptr -8
     var_6 = byte ptr -6
     var_4 = word ptr -4
     var_2 = word ptr -2
@@ -1583,7 +1583,7 @@ run_menu proc far
     mov     bp, sp
     sub     sp, 10h
     mov     [bp+var_6], 0FFh
-    mov     [bp+var_10], 0
+    mov     [bp+var_selectedmenu], 0
     mov     [bp+var_C], 0FFh
     call    show_waiting
     mov     waitflag, 0B4h ; '´'
@@ -1622,9 +1622,9 @@ run_menu proc far
     add     sp, 4
 loc_10FB9:
     mov     al, [bp+var_C]
-    cmp     [bp+var_10], al
+    cmp     [bp+var_selectedmenu], al
     jz      short loc_10FEF
-    mov     al, [bp+var_10]
+    mov     al, [bp+var_selectedmenu]
     mov     [bp+var_C], al
     call    sprite_copy_wnd_to_1
     mov     al, [bp+var_6]
@@ -1648,16 +1648,16 @@ loc_10FEF:
     push    ax
     mov     ax, offset menu_buttons_x1
     push    ax
-    mov     al, [bp+var_10]
+    mov     al, [bp+var_selectedmenu]
     cbw
     push    ax
     call    mouse_timer_sprite_unk
     add     sp, 0Eh
-    mov     [bp+var_8], ax
+    mov     [bp+var_timedelta], ax
     push    ax
     call    input_checking
     add     sp, 2
-    mov     [bp+var_A], ax
+    mov     [bp+var_keycode], ax
     mov     ax, offset menu_buttons_y2
     push    ax
     mov     ax, offset menu_buttons_y1
@@ -1668,62 +1668,62 @@ loc_10FEF:
     push    ax
     mov     ax, 5
     push    ax
-    call    mouse_op_unk
+    call    mouse_multi_hittest
     add     sp, 0Ah
-    mov     [bp+var_E], al
+    mov     [bp+var_menuhit], al
     cmp     al, 0FFh
     jz      short loc_11049
-    mov     [bp+var_10], al
+    mov     [bp+var_selectedmenu], al
 loc_11049:
-    mov     ax, [bp+var_8]
-    add     word_449F2, ax
-    cmp     word_449F2, 1770h
+    mov     ax, [bp+var_timedelta]
+    add     idle_counter, ax
+    cmp     idle_counter, 1770h
     jle     short loc_11062
-    mov     word_449F2, 0
-    inc     byte_44AE2
+    mov     idle_counter, 0
+    inc     idle_expired
 loc_11062:
-    cmp     byte_44AE2, 0
+    cmp     idle_expired, 0
     jz      short loc_11072
-    mov     [bp+var_10], 0
-    mov     [bp+var_A], 0Dh
+    mov     [bp+var_selectedmenu], 0; idle expired -> select menu 0 and keycode for enter
+    mov     [bp+var_keycode], 0Dh
 loc_11072:
-    cmp     [bp+var_A], 0
+    cmp     [bp+var_keycode], 0
     jnz     short loc_1107B
     jmp     loc_10FB9
 loc_1107B:
-    mov     ax, [bp+var_A]
-    cmp     ax, 0Dh
+    mov     ax, [bp+var_keycode]
+    cmp     ax, 0Dh         ; enter
     jz      short loc_110BA
-    cmp     ax, 1Bh
+    cmp     ax, 1Bh         ; esc
     jz      short loc_110B6
-    cmp     ax, 20h ; ' '
+    cmp     ax, 20h ; ' '   ; space
     jz      short loc_110BA
-    cmp     ax, 4B00h
+    cmp     ax, 4B00h       ; arrow
     jz      short loc_1109A
-    cmp     ax, 4D00h
+    cmp     ax, 4D00h       ; arrow opposite direction
     jz      short loc_110AA
     jmp     loc_10FB9
 loc_1109A:
-    mov     al, [bp+var_10]
+    mov     al, [bp+var_selectedmenu]
     cbw
     mov     bx, ax
     mov     al, [bx+280h]
 loc_110A4:
-    mov     [bp+var_10], al
+    mov     [bp+var_selectedmenu], al
     jmp     loc_10FB9
 loc_110AA:
-    mov     al, [bp+var_10]
+    mov     al, [bp+var_selectedmenu]
     cbw
     mov     bx, ax
     mov     al, [bx+286h]
     jmp     short loc_110A4
 loc_110B6:
-    mov     [bp+var_10], 0FFh
+    mov     [bp+var_selectedmenu], 0FFh
 loc_110BA:
     push    word ptr wndsprite+2
     push    word ptr wndsprite
     call    sprite_free_wnd
-    mov     al, [bp+var_10]
+    mov     al, [bp+var_selectedmenu]
     cbw
     mov     sp, bp
     pop     bp
@@ -2059,11 +2059,11 @@ loc_113E5:
     call    mouse_timer_sprite_unk
     add     sp, 0Eh
     mov     [bp+var_C], ax
-    add     word_449F2, ax
-    cmp     word_449F2, 1770h
+    add     idle_counter, ax
+    cmp     idle_counter, 1770h
     jle     short loc_11423
-    mov     word_449F2, 0
-    inc     byte_44AE2
+    mov     idle_counter, 0
+    inc     idle_expired
 loc_11423:
     push    [bp+var_C]
     call    input_checking
@@ -2079,14 +2079,14 @@ loc_11423:
     push    ax
     mov     ax, 3
     push    ax
-    call    mouse_op_unk
+    call    mouse_multi_hittest
     add     sp, 0Ah
     mov     [bp+var_14], al
     cmp     al, 0FFh
     jz      short loc_11457
     mov     [bp+var_16], al
 loc_11457:
-    cmp     byte_44AE2, 0
+    cmp     idle_expired, 0
     jz      short loc_11467
     mov     [bp+var_16], 2
     mov     [bp+var_E], 0Dh
@@ -3233,7 +3233,7 @@ loc_11E20:
 loc_11E68:
     mov     waitflag, 5Ah ; 'Z'
     mov     [bp+var_3E], 0FFh
-    mov     byte_45514, 2Dh ; '-'
+    mov     backlights_paint_override, 2Dh ; '-'; default backlights paintjob 2Dh
     mov     ax, offset aSdcsel; "sdcsel"
     push    ax
     call    file_load_shape2d_fatal_thunk
@@ -3295,7 +3295,7 @@ loc_11EBB:
     shl     bx, 1
     push    word ptr (oppresources+2)[bx]
     push    word ptr oppresources[bx]
-    call    sub_343B0
+    call    sprite_putimage_transparent
     add     sp, 8
     sub     ax, ax
     push    ax
@@ -3902,11 +3902,11 @@ loc_12541:
     call    mouse_timer_sprite_unk
     add     sp, 0Eh
     mov     [bp+var_rotationdelta], ax
-    add     word_449F2, ax
-    cmp     word_449F2, 2EE0h
+    add     idle_counter, ax
+    cmp     idle_counter, 2EE0h
     jle     short loc_12585
-    mov     word_449F2, 0
-    inc     byte_44AE2
+    mov     idle_counter, 0
+    inc     idle_expired
 loc_12585:
     push    [bp+var_rotationdelta]
     call    input_checking
@@ -3922,14 +3922,14 @@ loc_12585:
     push    ax
     mov     ax, 5
     push    ax
-    call    mouse_op_unk
+    call    mouse_multi_hittest
     add     sp, 0Ah
     mov     [bp+var_F6], al
     cmp     al, 0FFh
     jz      short loc_125BA
     mov     [bp+var_106], al
 loc_125BA:
-    cmp     byte_44AE2, 0
+    cmp     idle_expired, 0
     jz      short loc_125C9
     mov     [bp+var_106], 0
     mov     si, 0Dh
@@ -4025,7 +4025,7 @@ loc_125FE:
     shl     bx, 1
     push    word ptr (oppresources+2)[bx]
     push    word ptr oppresources[bx]
-    call    sub_343B0
+    call    sprite_putimage_transparent
     jmp     short loc_126CE
 loc_126B8:
     sub     ax, ax
@@ -4162,7 +4162,7 @@ loc_127BC:
     mov     al, [bp+di+var_carids+3]
     mov     bx, [bp+arg_caridptr]
     mov     [bx+3], al
-    mov     byte_44AE2, 0
+    mov     idle_expired, 0
     pop     si
     pop     di
     mov     sp, bp
@@ -4687,7 +4687,7 @@ loc_12D2C:
     push    ax
     mov     ax, 5
     push    ax
-    call    mouse_op_unk
+    call    mouse_multi_hittest
     add     sp, 0Ah
     mov     [bp+var_16], al
     cmp     al, 0FFh
@@ -5128,14 +5128,14 @@ end_hiscore proc far
     var_9C = word ptr -156
     var_9A = byte ptr -154
     var_98 = byte ptr -152
-    var_92 = byte ptr -146
+    var_selectedmenu = byte ptr -146
     var_90 = word ptr -144
     var_8E = byte ptr -142
     var_8C = word ptr -140
     var_8A = word ptr -138
     var_88 = word ptr -136
     var_86 = dword ptr -134
-    var_82 = byte ptr -130
+    var_menuhit = byte ptr -130
     var_80 = word ptr -128
     var_7E = word ptr -126
     var_7C = word ptr -124
@@ -5551,10 +5551,10 @@ loc_1351D:
     call    copy_string
     add     sp, 6
     mov     ax, gState_pEndFrame
-    add     ax, word_45A24
+    add     ax, elapsed_time1
     jz      short loc_1356A
     mov     ax, gState_pEndFrame
-    add     ax, word_45A24
+    add     ax, elapsed_time1
     sub     cx, cx
     push    cx
     push    ax
@@ -6055,7 +6055,7 @@ loc_13A1D:
     call    sprite_copy_wnd_to_1
     push    cs
     call near ptr highscore_text_unk
-    mov     [bp+var_92], 1
+    mov     [bp+var_selectedmenu], 1
     mov     [bp+var_14], 1
     jmp     loc_13FDA
 loc_13A42:
@@ -6601,7 +6601,7 @@ loc_13FD6:
 loc_13FD7:
     call near ptr highscore_text_unk
 loc_13FDA:
-    mov     [bp+var_92], 1
+    mov     [bp+var_selectedmenu], 1
     mov     [bp+var_78], 1
     call    sub_29772
     call    sprite_copy_wnd_to_1
@@ -6768,9 +6768,9 @@ loc_1416E:
     call    sprite_copy_2_to_1_2
 loc_14188:
     mov     al, [bp+var_78]
-    cmp     [bp+var_92], al
+    cmp     [bp+var_selectedmenu], al
     jz      short loc_141DC
-    mov     al, [bp+var_92]
+    mov     al, [bp+var_selectedmenu]
     mov     [bp+var_78], al
     call    sprite_copy_2_to_1_2
     mov     ax, hiscore_buttons_y2
@@ -6803,7 +6803,7 @@ loc_141DC:
     push    ax
     lea     ax, [bp+var_64]
     push    ax
-    mov     al, [bp+var_92]
+    mov     al, [bp+var_selectedmenu]
     cbw
     push    ax
     call    mouse_timer_sprite_unk
@@ -6931,10 +6931,10 @@ loc_14343:
     push    ax
     mov     ax, 3
     push    ax
-    call    mouse_op_unk
+    call    mouse_multi_hittest
     add     sp, 0Ah
 loc_14360:
-    mov     [bp+var_82], al
+    mov     [bp+var_menuhit], al
     cmp     al, 0FFh
     jz      short loc_14395
     inc     al
@@ -6951,13 +6951,13 @@ loc_14374:
     push    ax
     mov     ax, 4
     push    ax
-    call    mouse_op_unk
+    call    mouse_multi_hittest
     add     sp, 0Ah
-    mov     [bp+var_82], al
+    mov     [bp+var_menuhit], al
     cmp     al, 0FFh
     jz      short loc_14395
 loc_14391:
-    mov     [bp+var_92], al
+    mov     [bp+var_selectedmenu], al
 loc_14395:
     push    [bp+var_72]
     call    input_checking
@@ -6967,9 +6967,9 @@ loc_14395:
     jnz     short loc_143A9
     jmp     loc_14188
 loc_143A9:
-    cmp     ax, 0Dh
+    cmp     ax, 0Dh         ; enter
     jz      short loc_143C6
-    cmp     ax, 20h ; ' '
+    cmp     ax, 20h ; ' '   ; space
     jz      short loc_143C6
     cmp     ax, 4B00h
     jnz     short loc_143BB
@@ -6981,7 +6981,7 @@ loc_143BB:
 loc_143C3:
     jmp     loc_14188
 loc_143C6:
-    cmp     [bp+var_92], 0
+    cmp     [bp+var_selectedmenu], 0
     jnz     short loc_1440C
     call    sprite_copy_wnd_to_1
     sub     ax, ax
@@ -7040,7 +7040,7 @@ loc_1445F:
     push    [bp+var_4E]
     call    unload_resource
     add     sp, 4
-    mov     al, [bp+var_92]
+    mov     al, [bp+var_selectedmenu]
     cbw
     dec     ax
     pop     si
@@ -7056,23 +7056,23 @@ loc_1447A:
     cmp     [bp+var_6E], 0FFh
     jnz     short loc_14496
 loc_14486:
-    cmp     [bp+var_92], 1
+    cmp     [bp+var_selectedmenu], 1
     jg      short loc_1449D
 loc_1448D:
-    mov     [bp+var_92], 3
+    mov     [bp+var_selectedmenu], 3
     jmp     loc_14188
     ; align 2
     db 144
 loc_14496:
-    cmp     [bp+var_92], 0
+    cmp     [bp+var_selectedmenu], 0
     jz      short loc_1448D
 loc_1449D:
-    dec     [bp+var_92]
+    dec     [bp+var_selectedmenu]
     jmp     loc_14188
 loc_144A4:
-    cmp     [bp+var_92], 3
+    cmp     [bp+var_selectedmenu], 3
     jge     short loc_144B2
-    inc     [bp+var_92]
+    inc     [bp+var_selectedmenu]
     jmp     loc_14188
 loc_144B2:
     cmp     [bp+var_16], 0
@@ -7080,10 +7080,10 @@ loc_144B2:
     cmp     [bp+var_6E], 0FFh
     jnz     short loc_144C6
 loc_144BE:
-    mov     [bp+var_92], 1
+    mov     [bp+var_selectedmenu], 1
     jmp     loc_14188
 loc_144C6:
-    mov     [bp+var_92], 0
+    mov     [bp+var_selectedmenu], 0
     jmp     loc_14188
     pop     si
 end_hiscore endp

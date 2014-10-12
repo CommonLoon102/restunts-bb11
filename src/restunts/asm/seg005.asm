@@ -96,15 +96,15 @@ run_game proc far
     shl     ax, cl
     mov     word_42D28, ax
     mov     replaybar_toggle, 1
-    mov     byte_454B8, 0
-    cmp     byte_44AE2, 0
+    mov     is_in_replay, 0
+    cmp     idle_expired, 0
     jz      short loc_21BEC
     inc     cameramode
     cmp     cameramode, 4
     jnz     short loc_21BCA
     mov     cameramode, 0
 loc_21BCA:
-    mov     byte_45DB2, 2
+    mov     game_replay_mode, 2
     mov     ax, offset aDefault; "default"
     push    ax
     sub     ax, ax
@@ -124,14 +124,14 @@ loc_21BEC:
     cmp     gameconfig.game_recordedframes, 0
     jnz     short loc_21C00
     mov     cameramode, 0
-    mov     byte_45DB2, 1
+    mov     game_replay_mode, 1
     jmp     short loc_21C0F
     ; align 2
     db 144
 loc_21C00:
     mov     cameramode, 0
-    mov     byte_45DB2, 2
-    mov     byte_454B8, 1
+    mov     game_replay_mode, 2
+    mov     is_in_replay, 1
 loc_21C0F:
     push    cs
     call near ptr setup_player_cars
@@ -154,7 +154,7 @@ loc_21C24:
     mov     byte_4432A, 0
     mov     byte_46467, 0
     mov     dashb_toggle, 0
-    cmp     byte_44AE2, 0
+    cmp     idle_expired, 0
     jz      short loc_21C6E
     mov     al, byte ptr gameconfig.game_framespersec
     cbw
@@ -168,13 +168,13 @@ loc_21C5E:
     ; align 2
     db 144
 loc_21C6E:
-    cmp     byte_454B8, 0
+    cmp     is_in_replay, 0
     jz      short loc_21C78
     jmp     loc_21D2C
 loc_21C78:
     mov     cameramode, 0
     mov     dashb_toggle, 1
-    mov     byte_4499F, 0
+    mov     show_penalty_counter, 0
     mov     ax, framespersec2
     mov     framespersec, ax
     mov     al, byte ptr framespersec2
@@ -192,7 +192,7 @@ loc_21C78:
     push    cs
     call near ptr mouse_minmax_position
     add     sp, 2
-    mov     byte_45DB2, 1
+    mov     game_replay_mode, 1
     mov     ax, 0FF10h
     push    ax
     push    track_angle
@@ -236,7 +236,7 @@ loc_21D08:
     db 144
 loc_21D2C:
     mov     cameramode, 0
-    mov     byte_45DB2, 2
+    mov     game_replay_mode, 2
     mov     word_44DCA, 1F4h
     mov     al, byte ptr gameconfig.game_framespersec
     cbw
@@ -263,7 +263,7 @@ loc_21D72:
     jnz     short loc_21D5C
 loc_21D7B:
     mov     ax, gameconfig.game_recordedframes
-    mov     word_42D02, ax
+    mov     elapsed_time2, ax
     jmp     short loc_21DA2
     ; align 2
     db 144
@@ -273,32 +273,32 @@ loc_21D84:
     cmp     byte_3FE00, 0
     jz      short loc_21D9D
 loc_21D92:
-    cmp     byte_45DB2, 0
+    cmp     game_replay_mode, 0
     jnz     short loc_21D9D
     push    cs
     call near ptr replay_unk
 loc_21D9D:
     call    update_gamestate
 loc_21DA2:
-    mov     ax, word_42D02
+    mov     ax, elapsed_time2
     cmp     state.game_frame, ax
     jnz     short loc_21D84
-    cmp     byte_45DB2, 0
+    cmp     game_replay_mode, 0
     jnz     short loc_21DCB
     cmp     byte_449DA, 0
     jnz     short loc_21DCB
-    cmp     state.field_3F5, 0
+    cmp     state.game_inputmode, 0
     jz      short loc_21DCB
     mov     ax, state.game_frame
     cmp     [bp+var_C], ax
     jz      short loc_21DA2
     mov     [bp+var_C], ax
 loc_21DCB:
-    cmp     state.field_3F5, 0
+    cmp     state.game_inputmode, 0
     jnz     short loc_21DEB
-    cmp     byte_45DB2, 0
+    cmp     game_replay_mode, 0
     jnz     short loc_21DEB
-    mov     word_42D02, 0
+    mov     elapsed_time2, 0
     mov     gameconfig.game_recordedframes, 0
     mov     state.game_frame, 0
 loc_21DEB:
@@ -363,7 +363,7 @@ loc_21E8A:
     call    sprite_copy_wnd_to_1
 loc_21E8F:
     mov     al, byte_461C8
-    cmp     byte_45DB2, al
+    cmp     game_replay_mode, al
     jnz     short loc_21EBF
     mov     al, dashb_toggle_copy
     cmp     dashb_toggle, al
@@ -372,40 +372,40 @@ loc_21E8F:
     cmp     replaybar_toggle, al
     jnz     short loc_21EBF
     mov     al, byte_45634
-    cmp     byte_454B8, al
+    cmp     is_in_replay, al
     jnz     short loc_21EBF
     mov     al, followOpponentFlag_copy
     cmp     followOpponentFlag, al
     jnz     short loc_21EBF
     jmp     loc_21F7A
 loc_21EBF:
-    mov     al, byte_45DB2
+    mov     al, game_replay_mode
     mov     byte_461C8, al
     mov     al, dashb_toggle
     mov     dashb_toggle_copy, al
     mov     al, replaybar_toggle
     mov     replaybar_toggle_copy, al
-    mov     al, byte_454B8
+    mov     al, is_in_replay
     mov     byte_45634, al
     mov     al, followOpponentFlag
     mov     followOpponentFlag_copy, al
     mov     roofbmpheight_copy, 0
     mov     byte_449E2, 0
-    cmp     byte_45DB2, 2
+    cmp     game_replay_mode, 2
     jnz     short loc_21F0A
-    cmp     byte_44AE2, 0
+    cmp     idle_expired, 0
     jnz     short loc_21F0A
     cmp     replaybar_toggle, 0
     jz      short loc_21F00
     jmp     loc_21FEE
 loc_21F00:
-    cmp     byte_454B8, 0
+    cmp     is_in_replay, 0
     jz      short loc_21F0A
     jmp     loc_21FEE
 loc_21F0A:
-    mov     byte_46484, 0
+    mov     replaybar_enabled, 0
 loc_21F0F:
-    cmp     byte_44AE2, 0
+    cmp     idle_expired, 0
     jnz     short loc_21F19
     jmp     loc_21FF6
 loc_21F19:
@@ -417,7 +417,7 @@ loc_21F1F:
     mov     ax, word_449EA
     cmp     dashbmp_y_copy, ax
     jnz     short loc_21F38
-    mov     ax, word_459D4
+    mov     ax, height_above_replaybar
     cmp     [bp+var_E], ax
     jz      short loc_21F7A
 loc_21F38:
@@ -443,7 +443,7 @@ loc_21F38:
     mov     [bp+var_2], ax
     mov     ax, dashbmp_y_copy
     mov     word_449EA, ax
-    mov     ax, word_459D4
+    mov     ax, height_above_replaybar
     mov     [bp+var_E], ax
 loc_21F7A:
     cmp     byte_454A4, 0
@@ -456,7 +456,7 @@ loc_21F84:
     mov     byte_449D8[bx], 0
     cmp     byte_449E2, 0
     jz      short loc_21FB8
-    push    word_459D4
+    push    height_above_replaybar
     push    dashbmp_y_copy
     mov     ax, 140h
     push    ax
@@ -470,7 +470,7 @@ loc_21F84:
     call near ptr setup_car_shapes
     add     sp, 2
 loc_21FB8:
-    cmp     byte_46484, 0
+    cmp     replaybar_enabled, 0
     jnz     short loc_21FC2
     jmp     loc_22064
 loc_21FC2:
@@ -495,21 +495,21 @@ loc_21FC2:
     ; align 2
     db 144
 loc_21FEE:
-    mov     byte_46484, 1
+    mov     replaybar_enabled, 1
     jmp     loc_21F0F
 loc_21FF6:
     cmp     dashb_toggle, 0
     jz      short loc_22034
     cmp     followOpponentFlag, 0
     jnz     short loc_22034
-    cmp     byte_45DB2, 2
+    cmp     game_replay_mode, 2
     jnz     short loc_2201A
-    cmp     byte_46484, 0
+    cmp     replaybar_enabled, 0
     jz      short loc_2201A
-    mov     word_459D4, 97h ; '—'
+    mov     height_above_replaybar, 97h ; '—'; 151 = height of render area above the replay menu bar
     jmp     short loc_22020
 loc_2201A:
-    mov     word_459D4, 0C8h ; 'È'
+    mov     height_above_replaybar, 0C8h ; 'È'; 200 = height of render area without the replay menu bar
 loc_22020:
     mov     byte_449E2, 1
     mov     ax, roofbmpheight
@@ -518,11 +518,11 @@ loc_22020:
     mov     dashbmp_y_copy, ax
     jmp     loc_21F1F
 loc_22034:
-    cmp     byte_45DB2, 2
+    cmp     game_replay_mode, 2
     jz      short loc_2203E
     jmp     loc_21F19
 loc_2203E:
-    cmp     byte_46484, 0
+    cmp     replaybar_enabled, 0
     jnz     short loc_22048
     jmp     loc_21F19
 loc_22048:
@@ -531,7 +531,7 @@ loc_22048:
     ; align 2
     db 144
 loc_22052:
-    cmp     byte_46484, 0
+    cmp     replaybar_enabled, 0
     jnz     short loc_22064
     mov     al, byte_4432A
     cbw
@@ -581,7 +581,7 @@ loc_220DB:
     add     sp, 2
     cmp     byte_449E2, 0
     jz      short loc_22126
-    push    word_459D4
+    push    height_above_replaybar
     push    dashbmp_y_copy
     mov     ax, 140h
     push    ax
@@ -618,11 +618,11 @@ loc_22131:
     mov     byte_4432A, al
     call    mouse_draw_transparent_check
 loc_22152:
-    cmp     byte_45DB2, 1
+    cmp     game_replay_mode, 1
     jnz     short loc_2217D
     cmp     byte_4393C, 0
     jnz     short loc_2217D
-    mov     byte_45DB2, 0
+    mov     game_replay_mode, 0
     mov     ax, framespersec2
     mov     framespersec, ax
     mov     al, byte ptr framespersec2
@@ -633,7 +633,7 @@ loc_22171:
     call    init_game_state
     add     sp, 2
 loc_2217D:
-    cmp     byte_44AE2, 0
+    cmp     idle_expired, 0
     jz      short loc_221AA
     call    kb_get_char
     or      ax, ax
@@ -655,7 +655,7 @@ loc_221A6:
 loc_221AA:
     cmp     byte_449DA, 0
     jz      short loc_22208
-    cmp     byte_45DB2, 0
+    cmp     game_replay_mode, 0
     jnz     short loc_221C2
     cmp     state.game_3F6autoLoadEvalFlag, 4
     jz      short loc_221C2
@@ -666,7 +666,7 @@ loc_221C2:
     jmp     loc_22298
 loc_221CC:
     mov     byte_449DA, 0
-    mov     byte_45DB2, 2
+    mov     game_replay_mode, 2
     sub     ax, ax
     push    ax
     push    cs
@@ -688,11 +688,11 @@ loc_221CC:
     push    cs
     call near ptr loop_game
     add     sp, 6
-    mov     byte_454B8, 1
+    mov     is_in_replay, 1
 loc_22203:
     call    audio_carstate
 loc_22208:
-    cmp     byte_45DB2, 2
+    cmp     game_replay_mode, 2
     jnz     short loc_22222
     sub     ax, ax
     push    ax
@@ -724,7 +724,7 @@ loc_22236:
     jz      short loc_22222
     cmp     ax, 5000h
     jz      short loc_22222
-    cmp     byte_45DB2, 1
+    cmp     game_replay_mode, 1
     jz      short loc_22257
     jmp     loc_21DA2
 loc_22257:
@@ -743,7 +743,7 @@ loc_22257:
     jnz     short loc_2227E
     jmp     loc_21DA2
 loc_2227E:
-    mov     byte_45DB2, 0
+    mov     game_replay_mode, 0
     mov     byte_4393C, 0
     mov     ax, framespersec2
     mov     framespersec, ax
@@ -775,10 +775,10 @@ loc_22298:
     call    mouse_draw_transparent_check
 loc_222D3:
     call    sprite_copy_2_to_1_2
-    mov     byte_454B8, 1
+    mov     is_in_replay, 1
     call    audio_carstate
     call    audio_remove_driver_timer
-    cmp     byte_45DB2, 0
+    cmp     game_replay_mode, 0
     jz      short loc_222F1
     jmp     loc_223CD
 loc_222F1:
@@ -831,7 +831,7 @@ loc_22347:
     mov     ax, 1
     push    ax              ; int
     mov     ax, state.game_frame
-    add     ax, word_45A24
+    add     ax, elapsed_time1
     push    ax
     mov     ax, offset resID_byte1
     push    ax              ; char *
@@ -861,7 +861,7 @@ loc_2239F:
     mov     ax, 5DCh
     imul    framespersec
     mov     cx, state.game_frame
-    add     cx, word_45A24
+    add     cx, elapsed_time1
     cmp     ax, cx
     jz      short loc_223CD
     jmp     loc_22347
@@ -913,7 +913,7 @@ loc_22414:
     ; align 2
     db 144
 loc_22420:
-    cmp     byte_45DB2, 0
+    cmp     game_replay_mode, 0
     jnz     short loc_22436
     sub     ax, ax
     push    ax
@@ -958,7 +958,7 @@ loc_22478:
     ; align 2
     db 144
 loc_22480:
-    cmp     byte_45DB2, 1
+    cmp     game_replay_mode, 1
     jz      short loc_224E9
     inc     cameramode
     cmp     cameramode, 4
@@ -988,9 +988,9 @@ loc_224AC:
 loc_224BE:
     jz      short loc_22480
 loc_224C0:
-    cmp     byte_45DB2, 1
+    cmp     game_replay_mode, 1
     jnz     short loc_224A8
-    mov     byte_45DB2, 0
+    mov     game_replay_mode, 0
     mov     byte_4393C, 0
     mov     ax, framespersec2
     mov     framespersec, ax
@@ -1054,7 +1054,7 @@ ported_init_unknown_ proc far
     mov     byte_44A8A, 1
     mov     byte_4552F, 2
     sub     si, si
-    mov     word_42D02, si
+    mov     elapsed_time2, si
     sub     al, al
     mov     byte_449DA, al
     mov     byte_4393C, al
@@ -1138,17 +1138,17 @@ loc_22608:
     jz      short loc_22612
     jmp     loc_22692
 loc_22612:
-    cmp     byte_454B8, 0
+    cmp     is_in_replay, 0
     jz      short loc_22620
-    cmp     byte_45DB2, 2
+    cmp     game_replay_mode, 2
     jz      short loc_22692
 loc_22620:
-    cmp     byte_45DB2, 0
+    cmp     game_replay_mode, 0
     jnz     short loc_2263E
     mov     ax, state.game_frames_per_sec
     cmp     state.game_frame_in_sec, ax
     jl      short loc_2263E
-    mov     byte_454B8, 1
+    mov     is_in_replay, 1
     call    audio_carstate
     jmp     short loc_22692
     db 144
@@ -1159,7 +1159,7 @@ loc_2263E:
     mov     al, byte ptr word_4499C
     mov     byte_44A8A, al
     inc     word_46468
-    cmp     byte_45DB2, 2
+    cmp     game_replay_mode, 2
     jnz     short loc_22688
     mov     al, byte_449E6
     cbw
@@ -1222,12 +1222,12 @@ loc_226A6:
     ; align 2
     db 144
 loc_226AC:
-    cmp     byte_45DB2, 2
+    cmp     game_replay_mode, 2
     jnz     short loc_226E6
-    mov     ax, word_42D02
+    mov     ax, elapsed_time2
     cmp     gameconfig.game_recordedframes, ax
     jbe     short loc_226C6
-    inc     word_42D02
+    inc     elapsed_time2
     pop     si
     pop     di
     mov     sp, bp
@@ -1238,7 +1238,7 @@ loc_226C6:
     jz      short loc_226D0
     jmp     loc_22985
 loc_226D0:
-    mov     byte_454B8, 1
+    mov     is_in_replay, 1
     call    audio_carstate
 loc_226DA:
     mov     byte_449DA, 1
@@ -1254,7 +1254,7 @@ loc_226E6:
     jnz     short loc_226A6
     cmp     state.game_3F6autoLoadEvalFlag, 0
     jnz     short loc_226A6
-    cmp     byte_45DB2, 1
+    cmp     game_replay_mode, 1
     jz      short loc_226A6
     cmp     passed_security, 0
     jnz     short loc_22725
@@ -1352,7 +1352,7 @@ smart
     and     si, 33h
 nosmart
 loc_227D2:
-    mov     di, word_42D02
+    mov     di, elapsed_time2
 smart
     and     di, 3Fh
 nosmart
@@ -1390,8 +1390,8 @@ nosmart
 loc_22817:
     mov     ax, 5DCh
     imul    framespersec
-    mov     cx, word_42D02
-    add     cx, word_45A24
+    mov     cx, elapsed_time2
+    add     cx, elapsed_time1
     cmp     ax, cx
     ja      short loc_2283C
     sub     ax, ax
@@ -1402,11 +1402,11 @@ loc_22817:
     add     sp, 4
     jmp     loc_226DA
 loc_2283C:
-    cmp     word_42D02, 2EE0h
+    cmp     elapsed_time2, 2EE0h
     jz      short loc_22847
     jmp     loc_2296C
 loc_22847:
-    cmp     word_45A24, 0
+    cmp     elapsed_time1, 0
     jnz     short loc_22866
     cmp     byte ptr word_45D3E, 0
     jnz     short loc_22866
@@ -1529,13 +1529,13 @@ loc_2293E:
     mov     ax, 1Eh
     imul    framespersec
     mov     [bp+var_A], ax
-    sub     word_42D02, ax
+    sub     elapsed_time2, ax
     sub     gameconfig.game_recordedframes, ax
-    add     word_45A24, ax
+    add     elapsed_time1, ax
     sub     state.game_frame, ax
 loc_2296C:
-    mov     bx, word_42D02
-    inc     word_42D02
+    mov     bx, elapsed_time2
+    inc     elapsed_time2
     add     bx, word ptr td16_rpl_buffer
     mov     es, word ptr td16_rpl_buffer+2
     mov     ax, si
@@ -2317,7 +2317,7 @@ loc_23030:
     jnz     short loc_23057
     call    mouse_draw_opaque_check
 loc_23057:
-    push    word_459D4
+    push    height_above_replaybar
     sub     ax, ax
     push    ax
     mov     ax, 140h
@@ -2414,7 +2414,7 @@ loc_2315E:
     call    sprite_copy_2_to_1_2
     call    mouse_draw_opaque_check
 loc_23168:
-    push    word_459D4
+    push    height_above_replaybar
     sub     ax, ax
     push    ax
     mov     ax, 140h
@@ -2775,7 +2775,7 @@ loc_234EC:
 loc_23506:
     call    sprite_copy_2_to_1_2
 loc_2350B:
-    push    word_459D4
+    push    height_above_replaybar
     sub     ax, ax
     push    ax
     mov     ax, 140h
@@ -2810,7 +2810,7 @@ loc_23561:
     jnz     short loc_2356D
     call    mouse_draw_opaque_check
 loc_2356D:
-    push    word_459D4
+    push    height_above_replaybar
     sub     ax, ax
     push    ax
     mov     ax, 140h
@@ -3103,7 +3103,7 @@ loc_23870:
     mov     ax, timertestflag
     mov     timertestflag_copy, ax
     call    init_rect_arrays
-    cmp     byte_44AE2, 0
+    cmp     idle_expired, 0
     jnz     short loc_238B4
     sub     ax, ax
     push    ax
@@ -3111,7 +3111,7 @@ loc_23870:
     call near ptr setup_car_shapes
     add     sp, 2
 loc_238B4:
-    cmp     byte_44AE2, 0
+    cmp     idle_expired, 0
     jnz     short loc_238DE
     mov     ax, offset aSdgame; "sdgame"
     push    ax              ; char *
@@ -3231,7 +3231,7 @@ loc_239D4:
     push    word ptr gameresptr
     call    unload_resource
     add     sp, 4
-    cmp     byte_44AE2, 0
+    cmp     idle_expired, 0
     jnz     short loc_23A15
     push    word ptr sdgameresptr+2
     push    word ptr sdgameresptr
@@ -3504,7 +3504,7 @@ loc_23C10:
     mov     ax, 1
     push    ax              ; int
     mov     ax, gameconfig.game_recordedframes
-    add     ax, word_45A24
+    add     ax, elapsed_time1
     push    ax
     mov     ax, offset resID_byte1
     push    ax              ; char *
@@ -3530,7 +3530,7 @@ loc_23C10:
     call    font_set_fontdef
 loc_23C66:
     mov     ax, [bp+arg_4]
-    add     ax, word_45A24
+    add     ax, elapsed_time1
     mov     [bp+var_42], ax
     mov     al, byte_4432A
     cbw
@@ -3911,7 +3911,7 @@ loc_23FEE:
     cbw
     inc     ax
     push    ax
-    call    mouse_op_unk
+    call    mouse_multi_hittest
     add     sp, 0Ah
     mov     [bp+var_counter], al
     cmp     al, 0FFh
@@ -4003,7 +4003,7 @@ loc_240D8:
     push    ax
     mov     ax, 1
     push    ax
-    call    mouse_op_unk
+    call    mouse_multi_hittest
     add     sp, 0Ah
     mov     [bp+var_counter], al
     or      al, al
@@ -4027,11 +4027,11 @@ loc_2410C:
     jz      short loc_24129
     jmp     loc_24D5E
 loc_24129:
-    cmp     byte_454B8, 0
+    cmp     is_in_replay, 0
     jnz     short loc_2415A
     cmp     [bp+var_inputcode], 0
     jnz     short loc_2415A
-    cmp     byte_46484, 0
+    cmp     replaybar_enabled, 0
     jnz     short loc_24140
     jmp     loc_24D5E
 loc_24140:
@@ -4050,12 +4050,12 @@ loc_24140:
     ; align 2
     db 144
 loc_2415A:
-    cmp     byte_46484, 0
+    cmp     replaybar_enabled, 0
     jnz     short loc_2416C
     mov     byte_45634, 0FFh
     mov     word_449EA, 0FFFFh
 loc_2416C:
-    cmp     byte_454B8, 0
+    cmp     is_in_replay, 0
     jz      short loc_24193
     cmp     byte_40E6D, 0
     jnz     short loc_24181
@@ -4279,7 +4279,7 @@ loc_24334:
     ; align 2
     db 144
 loc_24346:
-    mov     byte_454B8, 1
+    mov     is_in_replay, 1
     call    audio_carstate
     sub     ax, ax
     push    ax
@@ -4312,7 +4312,7 @@ loc_24377:
 loc_24394:
     cmp     gameconfig.game_recordedframes, 0
     jz      short loc_243A2
-    cmp     word_45A24, 0
+    cmp     elapsed_time1, 0
     jz      short loc_243A7
 loc_243A2:
     mov     [bp+var_A], 1
@@ -4370,7 +4370,7 @@ loc_24416:
     push    ax
     call    init_game_state
     add     sp, 2
-    mov     word_42D02, 0
+    mov     elapsed_time2, 0
     mov     gameconfig.game_recordedframes, 0
     mov     byte ptr word_45D3E, 0
     mov     byte_43966, 1
@@ -4384,7 +4384,7 @@ loc_24453:
     mov     byte_43966, 3
     jmp     short loc_244A7
 loc_2445A:
-    mov     ax, word_42D02
+    mov     ax, elapsed_time2
     cmp     gameconfig.game_recordedframes, ax
     jz      short loc_244A2
     sub     ax, ax
@@ -4420,13 +4420,13 @@ loc_244A2:
     mov     byte_43966, 1
 loc_244A7:
     mov     ax, state.game_frame
-    mov     word_42D02, ax
+    mov     elapsed_time2, ax
     mov     gameconfig.game_recordedframes, ax
 loc_244B0:
     mov     dashb_toggle, 1
-    mov     byte_4499F, 0
+    mov     show_penalty_counter, 0
     mov     followOpponentFlag, 0
-    mov     byte_45DB2, 0
+    mov     game_replay_mode, 0
     mov     cameramode, 0
     mov     state.game_3F6autoLoadEvalFlag, 0
     mov     state.game_frame_in_sec, 0
@@ -4440,7 +4440,7 @@ loc_244B0:
     push    cs
     call near ptr loop_game
     add     sp, 6
-    mov     byte_454B8, 0
+    mov     is_in_replay, 0
     mov     al, byte_3B8F2
     cbw
     push    ax
@@ -4807,7 +4807,7 @@ loc_24828:
     call    check_input
     jmp     loc_24D5E
 loc_24830:
-    mov     byte_454B8, 1
+    mov     is_in_replay, 1
     call    audio_carstate
     sub     ax, ax
     push    ax
@@ -4845,7 +4845,7 @@ loc_2487A:
     add     [bp+var_24], ax
     adc     [bp+var_22], dx
     mov     ax, gameconfig.game_recordedframes
-    sub     ax, word_42D02
+    sub     ax, elapsed_time2
     mov     [bp+var_44], ax
     mov     ax, 14h
     cwd
@@ -4874,7 +4874,7 @@ loc_248C4:
     push    [bp+var_22]
     push    [bp+var_24]
     call    __aFldiv
-    add     ax, word_42D02
+    add     ax, elapsed_time2
     push    ax
     push    state.game_frame
     mov     ax, 1
@@ -4891,7 +4891,7 @@ loc_248F4:
     jmp     loc_2485C
 loc_248FE:
     mov     ax, gameconfig.game_recordedframes
-    sub     ax, word_42D02
+    sub     ax, elapsed_time2
     mov     [bp+var_44], ax
     mov     ax, 14h
     cwd
@@ -4921,7 +4921,7 @@ loc_24935:
     push    [bp+var_24]
     call    __aFldiv
     mov     si, ax
-    add     si, word_42D02
+    add     si, elapsed_time2
 loc_2494C:
     cmp     gameconfig.game_recordedframes, si
     jge     short loc_24956
@@ -4930,7 +4930,7 @@ loc_24956:
     push    si
     call    restore_gamestate
     add     sp, 2
-    mov     word_42D02, si
+    mov     elapsed_time2, si
     sub     ax, ax
     push    ax
     mov     ax, 4
@@ -4998,7 +4998,7 @@ loc_249DD:
     jmp     short loc_24A10
 loc_249F8:
     call    update_gamestate
-    push    word_42D02
+    push    elapsed_time2
     push    state.game_frame
     mov     ax, 1
     push    ax
@@ -5007,7 +5007,7 @@ loc_249F8:
 loc_24A0D:
     add     sp, 6
 loc_24A10:
-    mov     ax, word_42D02
+    mov     ax, elapsed_time2
     cmp     state.game_frame, ax
 loc_24A17:
     jnz     short loc_249F8
@@ -5018,7 +5018,7 @@ loc_24A19:
     add     sp, 2
     jmp     loc_24D5E
 loc_24A28:
-    mov     byte_454B8, 1
+    mov     is_in_replay, 1
     call    audio_carstate
     sub     ax, ax
     push    ax
@@ -5064,7 +5064,7 @@ loc_24A76:
     push    [bp+var_22]
     push    [bp+var_24]
     call    __aFldiv
-    cmp     ax, word_42D02
+    cmp     ax, elapsed_time2
     jbe     short loc_24AB8
     mov     ax, 14h
     cwd
@@ -5072,7 +5072,7 @@ loc_24A76:
     push    ax
     sub     ax, ax
     push    ax
-    push    word_42D02
+    push    elapsed_time2
     call    __aFlmul
     mov     [bp+var_24], ax
     mov     [bp+var_22], dx
@@ -5084,7 +5084,7 @@ loc_24AB8:
     push    [bp+var_22]
     push    [bp+var_24]
     call    __aFldiv
-    mov     cx, word_42D02
+    mov     cx, elapsed_time2
     sub     cx, ax
     push    cx
     push    state.game_frame
@@ -5108,7 +5108,7 @@ loc_24AF4:
     push    [bp+var_22]
     push    [bp+var_24]
     call    __aFldiv
-    cmp     ax, word_42D02
+    cmp     ax, elapsed_time2
     jbe     short loc_24B23
     mov     ax, 14h
     cwd
@@ -5116,7 +5116,7 @@ loc_24AF4:
     push    ax
     sub     ax, ax
     push    ax
-    push    word_42D02
+    push    elapsed_time2
     call    __aFlmul
     mov     [bp+var_24], ax
     mov     [bp+var_22], dx
@@ -5125,7 +5125,6 @@ loc_24B23:
     cwd
     push    dx
     push    ax
-loc_24B29:
     push    [bp+var_22]
     push    [bp+var_24]
     call    __aFldiv
@@ -5134,19 +5133,16 @@ loc_24B29:
     push    ax
     mov     ax, 4
     push    ax
-loc_24B3D:
     mov     ax, 2
     push    ax
     push    cs
     call near ptr loop_game
     add     sp, 6
     or      di, di
-loc_24B4A:
     jnz     short loc_24B4F
     jmp     loc_24C43
 loc_24B4F:
     mov     ax, offset aWai_1; "wai"
-loc_24B52:
     push    ax
     push    word ptr gameresptr+2
     push    word ptr gameresptr
@@ -5154,30 +5150,26 @@ loc_24B52:
     add     sp, 6
     push    dx
     push    ax
-loc_24B65:
-    mov     ax, 0AC74h
+    mov     ax, offset resID_byte1
     push    ax
     call    copy_string
     add     sp, 6
     cmp     timertestflag_copy, 0
     jz      short loc_24BB0
     push    rectptr_unk2
-loc_24B7C:
     sub     ax, ax
     push    ax
     push    dialog_fnt_colour
     mov     ax, 64h ; 'd'
     push    ax
-    mov     ax, 0AC74h
+    mov     ax, offset resID_byte1
     push    ax
     call    font_op2_alt
     add     sp, 2
     push    ax
     mov     ax, 0AC74h
     push    ax
-loc_24B98:
     call    intro_draw_text
-loc_24B9D:
     add     sp, 0Ah
     push    ax
     push    rectptr_unk2
@@ -5202,12 +5194,12 @@ loc_24BB0:
     call    intro_draw_text
     add     sp, 0Ah
 loc_24BD4:
-    mov     si, word_42D02
+    mov     si, elapsed_time2
     sub     si, di
     push    si
     call    restore_gamestate
     add     sp, 2
-    mov     word_42D02, si
+    mov     elapsed_time2, si
     mov     ax, si
     sub     ax, state.game_frame
     mov     [bp+var_4], ax
@@ -5218,7 +5210,7 @@ loc_24BD4:
 loc_24BF8:
     call    update_gamestate
     dec     si
-    push    word_42D02
+    push    elapsed_time2
     mov     ax, [bp+var_4]
     cwd
     push    dx
@@ -5235,8 +5227,7 @@ loc_24BF8:
     push    dx
     push    ax
     call    __aFldiv
-loc_24C1E:
-    add     ax, word_42D02
+    add     ax, elapsed_time2
     push    ax
     mov     ax, 1
     push    ax
@@ -5245,11 +5236,10 @@ loc_24C1E:
     add     sp, 6
     mov     ax, 1
     push    ax
-loc_24C32:
     call    input_do_checking
     add     sp, 2
 loc_24C3A:
-    mov     ax, word_42D02
+    mov     ax, elapsed_time2
     cmp     state.game_frame, ax
     jnz     short loc_24BF8
 loc_24C43:
@@ -5258,7 +5248,6 @@ loc_24C43:
     mov     ax, 1
     push    ax
     push    cs
-loc_24C50:
     call near ptr loop_game
     add     sp, 6
     jmp     loc_24A19
@@ -5270,20 +5259,17 @@ loc_24C5A:
     push    ax
     mov     ax, 3
     push    ax
-loc_24C66:
     mov     ax, 2
     push    ax
     push    cs
     call near ptr loop_game
-loc_24C6E:
     add     sp, 6
     jmp     loc_24D18
 loc_24C74:
-    mov     byte_454B8, 1
+    mov     is_in_replay, 1
     call    audio_carstate
     sub     ax, ax
     push    ax
-loc_24C81:
     mov     ax, 4
     push    ax
     mov     ax, 2
@@ -5300,7 +5286,7 @@ loc_24C81:
     add     sp, 6
     jmp     loc_242E7
 loc_24CA6:
-    mov     byte_454B8, 1
+    mov     is_in_replay, 1
     call    audio_carstate
     sub     ax, ax
     push    ax
@@ -5353,7 +5339,7 @@ loc_24D04:
 loc_24D13:
     mov     byte_449E6, 3
 loc_24D18:
-    mov     byte_454B8, 0
+    mov     is_in_replay, 0
     jmp     loc_242E7
 off_24D20     dw offset loc_24830
 off_24D22     dw offset loc_24A28

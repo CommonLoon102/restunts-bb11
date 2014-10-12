@@ -299,7 +299,7 @@ seg012 segment byte public 'STUNTSC' use16
     extrn loc_3424B
     extrn shape2d_op_unk4:proc
     extrn loc_34311
-    extrn sub_343B0:proc
+    extrn sprite_putimage_transparent:proc
     extrn loc_343E9
     extrn sub_34526:proc
     extrn loc_34541
@@ -312,7 +312,7 @@ seg012 segment byte public 'STUNTSC' use16
     extrn sprite_clear_shape_alt:proc
     extrn sprite_clear_shape:proc
     extrn loc_34799
-    extrn sub_347DC:proc
+    extrn shape_op_explosion:proc
     extrn sprite1:SPRITE
     extrn sprite2:SPRITE
     extrn lineoffsets:word

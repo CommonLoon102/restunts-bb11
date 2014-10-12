@@ -261,7 +261,7 @@ field_38E db 48 dup (?)
 field_3BE db 48 dup (?)
 kevinseed db 6 dup (?)
 field_3F4 db ?
-field_3F5 db ?
+game_inputmode db ?
 game_3F6autoLoadEvalFlag db ?
 field_3F7 db ?
 field_3F8 db ?

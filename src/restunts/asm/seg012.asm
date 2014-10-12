@@ -346,7 +346,7 @@ seg012 segment byte public 'STUNTSC' use16
     public loc_3424B
     public shape2d_op_unk4
     public loc_34311
-    public sub_343B0
+    public sprite_putimage_transparent
     public loc_343E9
     public sub_34526
     public loc_34541
@@ -359,7 +359,7 @@ seg012 segment byte public 'STUNTSC' use16
     public sprite_clear_shape_alt
     public sprite_clear_shape
     public loc_34799
-    public sub_347DC
+    public shape_op_explosion
     public sprite1
     public sprite2
     public lineoffsets
@@ -12947,17 +12947,16 @@ loc_34388:
     ; align 2
     db 144
 shape2d_op_unk4 endp
-sub_343B0 proc far
-    var_C = word ptr -12
+sprite_putimage_transparent proc far
+    var_bmpptr = word ptr -12
     var_A = word ptr -10
     var_8 = word ptr -8
     var_6 = word ptr -6
-    var_4 = word ptr -4
-    var_2 = word ptr -2
+    var_shapey = word ptr -4
+    var_shapex = word ptr -2
      s = byte ptr 0
      r = byte ptr 2
-    arg_0 = word ptr 6
-    arg_2 = word ptr 8
+    shapeptr = dword ptr 6
     arg_4 = word ptr 10
     arg_6 = word ptr 12
 
@@ -12967,12 +12966,12 @@ sub_343B0 proc far
     push    ds
     push    si
     push    di
-    mov     ds, [bp+arg_2]
-    mov     si, [bp+arg_0]
+    mov     ds, word ptr [bp+shapeptr+2]
+    mov     si, word ptr [bp+shapeptr]
     mov     ax, [bp+arg_4]
-    mov     [bp+var_2], ax
+    mov     [bp+var_shapex], ax
     mov     ax, [bp+arg_6]
-    mov     [bp+var_4], ax
+    mov     [bp+var_shapey], ax
     jmp     short loc_343E9
     ; align 2
     db 144
@@ -12982,16 +12981,16 @@ sub_343B0 proc far
     push    ds
     push    si
     push    di
-    mov     ds, [bp+arg_2]
-    mov     si, [bp+arg_0]
-    mov     ax, [si+8]
-    mov     [bp+var_2], ax
-    mov     ax, [si+0Ah]
-    mov     [bp+var_4], ax
+    mov     ds, word ptr [bp+shapeptr+2]
+    mov     si, word ptr [bp+shapeptr]
+    mov     ax, [si+SHAPE2D.s2d_pos_x]
+    mov     [bp+var_shapex], ax
+    mov     ax, [si+SHAPE2D.s2d_pos_y]
+    mov     [bp+var_shapey], ax
 loc_343E9:
-    mov     bx, [bp+var_4]
-    mov     cx, [si+2]
-    lea     dx, [si+10h]
+    mov     bx, [bp+var_shapey]
+    mov     cx, [si+SHAPE2D.s2d_height]
+    lea     dx, [si+(size SHAPE2D)]
     mov     ax, bx
     cmp     ax, cs:sprite1.sprite_top
     jl      short loc_3440F
@@ -13014,9 +13013,9 @@ loc_3440F:
     jle     short loc_34408
     xchg    ax, cx
     sub     ax, cx
-    mov     [bp+var_C], dx
-    mul     word ptr [si]
-    mov     dx, [bp+var_C]
+    mov     [bp+var_bmpptr], dx
+    mul     [si+SHAPE2D.s2d_width]
+    mov     dx, [bp+var_bmpptr]
     add     dx, ax
     mov     ax, bx
     add     ax, cx
@@ -13025,12 +13024,12 @@ loc_3440F:
     sub     cx, ax
     jle     short loc_34408
 loc_34436:
-    mov     [bp+var_C], dx
+    mov     [bp+var_bmpptr], dx
     mov     [bp+var_A], cx
-    mov     [bp+var_4], bx
-    mov     cx, [si]
+    mov     [bp+var_shapey], bx
+    mov     cx, [si+SHAPE2D.s2d_width]
     xor     dx, dx
-    mov     ax, [bp+var_2]
+    mov     ax, [bp+var_shapex]
     mov     bx, ax
     cmp     ax, cs:sprite1.sprite_left
     jl      short loc_34461
@@ -13049,7 +13048,7 @@ loc_34461:
     jle     short loc_34408
     mov     si, cx
     sub     si, ax
-    add     [bp+var_C], si
+    add     [bp+var_bmpptr], si
     mov     si, cs:sprite1.sprite_right
     sub     si, bx
     jle     short loc_34408
@@ -13065,16 +13064,16 @@ loc_34488:
     jle     short loc_344DC
     mov     [bp+var_6], cx
     mov     [bp+var_8], dx
-    mov     [bp+var_2], bx
+    mov     [bp+var_shapex], bx
     cld
     mov     es, word ptr cs:sprite1.sprite_bitmapptr+2
-    mov     bx, [bp+var_4]
+    mov     bx, [bp+var_shapey]
     shl     bx, 1
     add     bx, cs:sprite1.sprite_lineofs
     mov     di, cs:[bx]
 loc_344A8:
-    add     di, [bp+var_2]
-    mov     si, [bp+var_C]
+    add     di, [bp+var_shapex]
+    mov     si, [bp+var_bmpptr]
     mov     dx, cs:sprite1.sprite_pitch
     sub     dx, [bp+var_6]
     xor     bh, bh
@@ -13140,7 +13139,7 @@ loc_344DC:
     jmp     short loc_34541
     ; align 2
     db 144
-sub_343B0 endp
+sprite_putimage_transparent endp
 sub_34526 proc far
     var_8 = word ptr -8
     var_6 = word ptr -6
@@ -13554,7 +13553,7 @@ loc_347C0:
     pop     bp
     retf
 sprite_clear_shape endp
-sub_347DC proc far
+shape_op_explosion proc far
     var_14 = word ptr -20
     var_12 = word ptr -18
     var_10 = word ptr -16
@@ -13568,8 +13567,7 @@ sub_347DC proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
-    arg_2 = word ptr 8
-    arg_4 = word ptr 10
+    arg_shapeptr = dword ptr 8
     arg_6 = word ptr 12
     arg_8 = word ptr 14
 
@@ -13579,16 +13577,16 @@ sub_347DC proc far
     push    ds
     push    si
     push    di
-    mov     ds, [bp+arg_4]
-    mov     si, [bp+arg_2]
+    mov     ds, word ptr [bp+arg_shapeptr+2]
+    mov     si, word ptr [bp+arg_shapeptr]
     mov     cx, [bp+arg_6]
-    mov     ax, [si+4]
+    mov     ax, [si+SHAPE2D.s2d_unk1]
     imul    [bp+arg_0]
     sub     cl, ah
     sbb     ch, dl
     mov     [bp+var_2], cx
     mov     cx, [bp+arg_8]
-    mov     ax, [si+6]
+    mov     ax, [si+SHAPE2D.s2d_unk2]
     imul    [bp+arg_0]
     sub     cl, ah
     sbb     ch, dl
@@ -13602,8 +13600,8 @@ sub_347DC proc far
     push    ds
     push    si
     push    di
-    mov     ds, [bp+arg_4]
-    mov     si, [bp+arg_2]
+    mov     ds, word ptr [bp+arg_shapeptr+2]
+    mov     si, word ptr [bp+arg_shapeptr]
     mov     ax, [bp+arg_6]
     mov     [bp+var_2], ax
     mov     ax, [bp+arg_8]
@@ -13624,24 +13622,24 @@ loc_3482C:
     push    ds
     push    si
     push    di
-    mov     ds, [bp+arg_4]
-    mov     si, [bp+arg_2]
-    mov     ax, [si+8]
+    mov     ds, word ptr [bp+arg_shapeptr+2]
+    mov     si, word ptr [bp+arg_shapeptr]
+    mov     ax, [si+SHAPE2D.s2d_pos_x]
     mov     [bp+var_2], ax
-    mov     ax, [si+0Ah]
+    mov     ax, [si+SHAPE2D.s2d_pos_y]
     mov     [bp+var_4], ax
 loc_3484E:
     cmp     [bp+arg_0], 2
     jb      short loc_3482C
     cld
-    mov     ax, [si+2]
+    mov     ax, [si+SHAPE2D.s2d_height]
     mul     [bp+arg_0]
     mov     al, ah
     mov     ah, dl
     or      ax, ax
     jz      short loc_3482C
     mov     [bp+var_8], ax
-    mov     ax, [si]
+    mov     ax, [si+SHAPE2D.s2d_width]
     mov     [bp+var_A], ax
     mul     [bp+arg_0]
     mov     al, ah
@@ -13997,7 +13995,7 @@ lineoffsets     dw 0
     dw 63040
     dw 63360
     dw 63680
-sub_347DC endp
+shape_op_explosion endp
 font_set_unk proc far
      s = byte ptr 0
      r = byte ptr 2
@@ -18561,8 +18559,7 @@ loc_35ED3:
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
-    arg_2 = word ptr 8
-    arg_4 = word ptr 10
+    arg_shapeptr = dword ptr 8
     arg_6 = word ptr 12
     arg_8 = word ptr 14
 loc_35ED9:

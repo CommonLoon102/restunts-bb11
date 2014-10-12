@@ -50,7 +50,7 @@ seg035 segment byte public 'STUNTSC' use16
     public ported_file_load_shape2d_res_nofatal_
     public ported_file_load_shape2d_res_
     public parse_shape2d
-    public sub_3B08C
+    public parse_shape2d_helper3
     ; align 2
     db 144
 ported_file_load_shape2d_res_fatal_ proc far
@@ -265,14 +265,13 @@ loc_3AE2C:
     push    word ptr [bp+var_2E+2]
     push    word ptr [bp+var_2E]
     push    cs
-    call near ptr sub_3B08C
+    call near ptr parse_shape2d_helper3
     add     sp, 4
     mov     [bp+var_10], ax
     cmp     ax, 3
     jg      short loc_3AE4C
     mov     ax, [bp+var_1E]
     cmp     [bp+var_E], ax
-loc_3AE47:
     jnb     short loc_3AE4C
     jmp     loc_3AF3F
 loc_3AE4C:
@@ -329,7 +328,6 @@ loc_3AEC1:
     jl      short loc_3AEAC
 loc_3AEC9:
     mov     ax, [bp+var_1E]
-loc_3AECC:
     cmp     [bp+var_10], ax
     jbe     short loc_3AEFB
     mov     [bp+var_10], ax
@@ -340,10 +338,8 @@ loc_3AED6:
     les     bx, [bp+var_8]
     inc     word ptr [bp+var_8]
     mov     byte ptr es:[bx], 7Fh ; ''
-loc_3AEE8:
     les     bx, [bp+var_2E]
     mov     al, es:[bx]
-loc_3AEEE:
     les     bx, [bp+var_8]
     inc     word ptr [bp+var_8]
     mov     es:[bx], al
@@ -392,15 +388,12 @@ loc_3AF5B:
 loc_3AF66:
     push    [bp+var_counter]
     push    [bp+arg_memchunkseg]
-loc_3AF6C:
     push    [bp+arg_memchunkofs]
-loc_3AF6F:
     call    file_get_shape2d
     add     sp, 6
     mov     word ptr [bp+var_C], ax
     mov     word ptr [bp+var_C+2], dx
     push    word ptr [bp+var_8+2]
-loc_3AF80:
     push    word ptr [bp+var_8]
     call    parse_shape2d_helper
     add     sp, 4
@@ -408,30 +401,25 @@ loc_3AF80:
     mov     [bp+var_12], dx
     push    dx
     push    ax
-loc_3AF93:
     call    parse_shape2d_helper2
     add     sp, 4
     mov     word ptr [bp+var_8], ax
     mov     word ptr [bp+var_8+2], dx
-loc_3AFA1:
     push    [bp+var_24]
     push    [bp+var_26]
     call    parse_shape2d_helper
     add     sp, 4
     push    word ptr [bp+var_8+2]
     push    word ptr [bp+var_8]
-loc_3AFB5:
     mov     si, ax
     mov     di, dx
     call    parse_shape2d_helper
-loc_3AFBE:
     add     sp, 4
     sub     ax, si
     sbb     dx, di
     les     bx, [bp+var_pagescnt6ptr]
     add     word ptr [bp+var_pagescnt6ptr], 4
     mov     es:[bx], ax
-loc_3AFCF:
     mov     es:[bx+2], dx
     mov     ax, word ptr [bp+var_C]
     mov     dx, word ptr [bp+var_C+2]
@@ -467,7 +455,6 @@ loc_3B020:
     push    word ptr [bp+var_8]
     mov     si, ax
     mov     di, dx
-loc_3B038:
     call    parse_shape2d_helper
     add     sp, 4
     sub     ax, si
@@ -485,7 +472,6 @@ loc_3B052:
     add     ax, 1
     adc     dx, 0
     mov     [bp+var_34], ax
-loc_3B063:
     mov     [bp+var_32], dx
     jmp     short loc_3B074
 loc_3B068:
@@ -493,28 +479,22 @@ loc_3B068:
     push    ax
     lea     ax, [bp+var_34]
     push    ax
-loc_3B06F:
     call    unknown_libname_4; MS Quick C v1.0/v2.01 & MSC v5.1 DOS run-time & graphic
 loc_3B074:
     push    [bp+var_34]
-loc_3B077:
     push    [bp+arg_mempagesseg]
     push    [bp+arg_mempagesofs]
-loc_3B07D:
     call    mmgr_resize_memory
-loc_3B082:
     add     sp, 6
     pop     si
     pop     di
-loc_3B087:
     mov     sp, bp
     pop     bp
-locret_3B08A:
     retf
     ; align 2
     db 144
 parse_shape2d endp
-sub_3B08C proc far
+parse_shape2d_helper3 proc far
     var_4 = byte ptr -4
     var_2 = word ptr -2
      s = byte ptr 0
@@ -525,33 +505,22 @@ sub_3B08C proc far
     mov     bp, sp
     sub     sp, 4
     les     bx, [bp+arg_0]
-loc_3B095:
     mov     al, es:[bx]
-loc_3B098:
     mov     [bp+var_4], al
-loc_3B09B:
     mov     [bp+var_2], 0
     jmp     short loc_3B0A5
 loc_3B0A2:
     inc     [bp+var_2]
 loc_3B0A5:
     les     bx, [bp+arg_0]
-loc_3B0A8:
     inc     word ptr [bp+arg_0]
-loc_3B0AB:
     mov     al, [bp+var_4]
-loc_3B0AE:
     cmp     es:[bx], al
-loc_3B0B1:
     jz      short loc_3B0A2
-loc_3B0B3:
     mov     ax, [bp+var_2]
-loc_3B0B6:
     mov     sp, bp
-loc_3B0B8:
     pop     bp
-locret_3B0B9:
     retf
-sub_3B08C endp
+parse_shape2d_helper3 endp
 seg035 ends
 end

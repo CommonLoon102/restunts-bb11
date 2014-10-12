@@ -75,8 +75,7 @@ dseg segment byte public 'STUNTSD' use16
     public aAlpine
     public aCity
     public aCountry
-    public unk_3B8E8
-    public hillHeightConst
+    public hillHeightConsts
     public word_3B8EC
     public word_3B8EE
     public word_3B8F0
@@ -1181,19 +1180,19 @@ dseg segment byte public 'STUNTSD' use16
     public word_42CC0
     public word_42CC4
     public trackpos2
-    public word_42D02
+    public elapsed_time2
     public word_42D04
     public word_42D08
     public word_42D0A
     public word_42D0E
-    public dword_42D10
+    public sprite_ptrs
     public wallStartX
     public td01_track_file_cpy
     public byte_42D26
     public word_42D28
     public byte_42D2A
     public wallStartZ
-    public byte_42D2E
+    public audio_filetemp
     public audiodriverstring2
     public game3dshapes
     public td02_penalty_related
@@ -1280,7 +1279,7 @@ dseg segment byte public 'STUNTSD' use16
     public hillFlag
     public word_4499C
     public startrow2
-    public byte_4499F
+    public show_penalty_counter
     public gameresptr
     public gameconfig
     public pState_lvec1_x_ax
@@ -1304,7 +1303,7 @@ dseg segment byte public 'STUNTSD' use16
     public word_449EA
     public terrainHeight
     public trackdata12
-    public word_449F2
+    public idle_counter
     public transshapenumvertscopy
     public elem_zCenter
     public curshapeptr
@@ -1325,7 +1324,7 @@ dseg segment byte public 'STUNTSD' use16
     public wallHeight
     public terrainpos
     public byte_44ACA
-    public byte_44AE2
+    public idle_expired
     public video_flag1_is1
     public td11_highscores
     public timertestflag
@@ -1373,7 +1372,7 @@ dseg segment byte public 'STUNTSD' use16
     public dashbmp_y_copy
     public car2resptr
     public trackdata7
-    public byte_454B8
+    public is_in_replay
     public word_454BA
     public td15_terr_map_main
     public kbjoyflags
@@ -1385,7 +1384,7 @@ dseg segment byte public 'STUNTSD' use16
     public video_flag3_isFFFF
     public trackdata18
     public word_454DA
-    public byte_45514
+    public backlights_paint_override
     public track_angle
     public skybox_ptr1
     public skybox_ptr2
@@ -1405,7 +1404,7 @@ dseg segment byte public 'STUNTSD' use16
     public material_clrlist_ptr_cpy
     public byte_45634
     public byte_45635
-    public word_45636
+    public sdgame2_widths
     public td21_col_from_path
     public simd_opponent
     public word_45946
@@ -1415,7 +1414,7 @@ dseg segment byte public 'STUNTSD' use16
     public rect_unk3
     public rect_array_unk2
     public byte_459D2
-    public word_459D4
+    public height_above_replaybar
     public material_clrlist2_ptr_cpy
     public byte_459D8
     public td22_row_from_path
@@ -1429,7 +1428,7 @@ dseg segment byte public 'STUNTSD' use16
     public word_45A00
     public byte_45A02
     public cvxptr
-    public word_45A24
+    public elapsed_time1
     public unk_45A26
     public word_45D06
     public sdgameresptr
@@ -1449,7 +1448,7 @@ dseg segment byte public 'STUNTSD' use16
     public wallOrientation
     public word_45D98
     public byte_45D9A
-    public byte_45DB2
+    public game_replay_mode
     public td08_direction_related
     public roofbmpheight_copy
     public dashbmp_y
@@ -1479,7 +1478,7 @@ dseg segment byte public 'STUNTSD' use16
     public dastbmp_y
     public game1ptr
     public byte_461C8
-    public word_461CA
+    public penalty_time
     public roofbmpheight
     public mouse_ypos
     public video_flag4_is1
@@ -1507,7 +1506,7 @@ dseg segment byte public 'STUNTSD' use16
     public word_46468
     public word_4646A
     public mat_x_rot
-    public byte_46484
+    public replaybar_enabled
     public word_46486
 word_3B770     dw 0
 word_3B772     dw 0
@@ -1879,9 +1878,8 @@ aCountry     db 99
     db 0
     db 0
     db 0
-unk_3B8E8     db 0
-    db 0
-hillHeightConst     dw 450
+hillHeightConsts     dw 0
+    dw 450
 word_3B8EC     dw 210
 word_3B8EE     dw 464
 word_3B8F0     dw 80
@@ -28176,7 +28174,7 @@ trackpos2     dw 0
     dw 0
     dw 0
     dw 0
-word_42D02     dw 0
+elapsed_time2     dw 0
 word_42D04     dw 0
     db 0
     db 0
@@ -28185,19 +28183,10 @@ word_42D0A     dw 0
     db 0
     db 0
 word_42D0E     dw 0
-dword_42D10     dd 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 0
+sprite_ptrs     dd 0
+    dd 0
+    dd 0
+    dd 0
 wallStartX     dw 0
 td01_track_file_cpy     dd 0
 byte_42D26     db 0
@@ -28206,7 +28195,7 @@ word_42D28     dw 0
 byte_42D2A     db 0
     db 0
 wallStartZ     dw 0
-byte_42D2E     db 0
+audio_filetemp     db 0
     db 0
     db 0
     db 0
@@ -35349,7 +35338,7 @@ startcol2     db 0
 hillFlag     db 0
 word_4499C     dw 0
 startrow2     db 0
-byte_4499F     db 0
+show_penalty_counter     db 0
 gameresptr     dd 0
 gameconfig     db 0
     db 0
@@ -35405,7 +35394,7 @@ steerWhlRespTable_ptr     dw 0
 word_449EA     dw 0
 terrainHeight     dw 0
 trackdata12     dd 0
-word_449F2     dw 0
+idle_counter     dw 0
 transshapenumvertscopy     db 0
     db 0
 elem_zCenter     dw 0
@@ -35600,7 +35589,7 @@ byte_44ACA     db 0
     db 0
     db 0
     db 0
-byte_44AE2     db 0
+idle_expired     db 0
     db 0
 video_flag1_is1     dw 0
     db 0
@@ -38059,7 +38048,7 @@ carresptr     dd 0
 dashbmp_y_copy     dw 0
 car2resptr     dd 0
 trackdata7     dd 0
-byte_454B8     db 0
+is_in_replay     db 0
     db 0
 word_454BA     dw 0
 td15_terr_map_main     dd 0
@@ -38128,7 +38117,7 @@ word_454DA     dw 0
     db 0
     db 0
     db 0
-byte_45514     db 0
+backlights_paint_override     db 0
     db 0
 track_angle     dw 0
 skybox_ptr1     dw 0
@@ -38356,7 +38345,7 @@ td16_rpl_buffer     dd 0
 material_clrlist_ptr_cpy     dw 0
 byte_45634     db 0
 byte_45635     db 0
-word_45636     dw 0
+sdgame2_widths     dw 0
     db 0
     db 0
     db 0
@@ -39277,7 +39266,7 @@ rect_array_unk2     db 0
     db 0
 byte_459D2     db 0
     db 0
-word_459D4     dw 0
+height_above_replaybar     dw 0
 material_clrlist2_ptr_cpy     dw 0
 byte_459D8     db 0
     db 0
@@ -39343,7 +39332,7 @@ byte_45A02     db 0
     db 0
     db 0
 cvxptr     dd 0
-word_45A24     dw 0
+elapsed_time1     dw 0
 unk_45A26     db 0
     db 0
     db 0
@@ -40195,7 +40184,7 @@ byte_45D9A     db 0
     db 0
     db 0
     db 0
-byte_45DB2     db 0
+game_replay_mode     db 0
     db 0
 td08_direction_related     dd 0
 roofbmpheight_copy     dw 0
@@ -41139,7 +41128,7 @@ dastbmp_y     dw 0
 game1ptr     dd 0
 byte_461C8     db 0
     db 0
-word_461CA     dw 0
+penalty_time     dw 0
 roofbmpheight     dw 0
 mouse_ypos     dw 0
 video_flag4_is1     dw 0
@@ -41816,7 +41805,7 @@ mat_x_rot     db 0
     db 0
     db 0
     db 0
-byte_46484     db 0
+replaybar_enabled     db 0
     db 0
 word_46486     dw 0
     db 0

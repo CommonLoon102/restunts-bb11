@@ -66,7 +66,7 @@ loc_39CCF:
     sub     sp, 2
     push    di
     push    si
-    mov     si, offset byte_42D2E
+    mov     si, offset audio_filetemp
     push    ds
     pop     es
     mov     di, word ptr [bp+arg_0]
@@ -83,7 +83,7 @@ loc_39CDE:
     repne movsb
     mov     ax, 5Ch ; '\'
     push    ax
-    mov     ax, offset byte_42D2E
+    mov     ax, offset audio_filetemp
     push    ax              ; char *
     call    _strrchr
     add     sp, 4
@@ -99,9 +99,9 @@ loc_39D13:
     ; align 2
     db 144
 loc_39D16:
-    mov     byte_42D2E, 0
+    mov     audio_filetemp, 0
 loc_39D1B:
-    mov     si, offset byte_42D2E
+    mov     si, offset audio_filetemp
     push    ds
     pop     es
     mov     di, [bp+arg_4]
@@ -133,14 +133,14 @@ loc_39D2C:
     inc     [bp+var_2]
     mov     bx, [bp+var_2]
     mov     di, bx
-    mov     si, offset byte_42D2E
+    mov     si, offset audio_filetemp
     mov     ax, ds
     mov     es, ax
     jmp     short loc_39D72
     ; align 2
     db 144
 loc_39D6A:
-    mov     si, offset byte_42D2E
+    mov     si, offset audio_filetemp
     push    ds
     pop     es
     mov     di, word ptr [bp+arg_0]
@@ -160,7 +160,7 @@ loc_39D72:
     repne movsw
     adc     cx, cx
     repne movsb
-    mov     di, offset byte_42D2E
+    mov     di, offset audio_filetemp
     mov     ax, ds
     mov     es, ax
     mov     cx, 0FFFFh
@@ -171,7 +171,7 @@ loc_39D72:
     mov     bx, cx
     cmp     byte_42D2A[bx], 2Eh ; '.'
     jnz     short loc_39DBF
-    mov     di, offset byte_42D2E
+    mov     di, offset audio_filetemp
     mov     ax, ds
     mov     cx, 0FFFFh
     xor     ax, ax
@@ -182,7 +182,7 @@ loc_39D72:
     ja      short loc_39E0B
 loc_39DBF:
     mov     di, offset unk_407AC
-    mov     si, offset byte_42D2E
+    mov     si, offset audio_filetemp
     mov     ax, ds
     mov     cx, 0FFFFh
     xor     ax, ax
@@ -199,7 +199,7 @@ loc_39DBF:
     repne movsw
     adc     cx, cx
     repne movsb
-    mov     si, offset byte_42D2E
+    mov     si, offset audio_filetemp
     mov     di, word ptr [bp+arg_0+2]
     mov     cx, 0FFFFh
     xor     ax, ax
@@ -223,7 +223,7 @@ loc_39E05:
 loc_39E09:
     repne movsb
 loc_39E0B:
-    mov     ax, offset byte_42D2E
+    mov     ax, offset audio_filetemp
 loc_39E0E:
     pop     si
     pop     di

@@ -198,31 +198,23 @@ audio_init_engine proc far
 loc_26C4E:
     or      di, di
     jge     short loc_26C63
-loc_26C52:
     cmp     byte ptr [bx], 0
     jnz     short loc_26C59
     mov     di, dx
 loc_26C59:
     add     bx, 4Ch ; 'L'
-loc_26C5C:
     inc     dx
 loc_26C5D:
     cmp     bx, offset word_42240; end of audiotimer
-loc_26C61:
     jb      short loc_26C4E
 loc_26C63:
     or      di, di
-loc_26C65:
     jge     short loc_26C6A
-loc_26C67:
     jmp     loc_26EE4
 loc_26C6A:
     mov     ax, di
-loc_26C6C:
     mov     cx, 4Ch ; 'L'
-loc_26C6F:
     imul    cx
-loc_26C71:
     add     ax, offset audiotimers
     mov     [bp+var_14], ax
     add     ax, 1Ch
@@ -284,7 +276,6 @@ loc_26CCB:
     push    [bp+arg_A]
     call    init_audio_resources
     add     sp, 0Ah
-loc_26D17:
     mov     es, si
     mov     es:[di+10h], ax
     mov     es:[di+12h], dx
