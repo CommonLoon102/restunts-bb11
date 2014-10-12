@@ -42,8 +42,8 @@ struct CARSTATE {
                          // instance, during jumps (where accelerating increases
                          // revs without making the car go faster).
 	short car_lastspeed; // former lasttrackgrip
-	short car_gearratio;
-	short car_gearratioshr8;
+	unsigned short car_gearratio;
+	unsigned short car_gearratioshr8;
 	short car_knob_x;
 	short car_36MwhlAngle;
 	short car_knob_y;
@@ -148,7 +148,7 @@ struct SIMD {
 	short downshift_rpm;
 	short upshift_rpm;
 	short max_rpm;
-	short gear_ratios[7];
+	unsigned short gear_ratios[7];
 	struct POINT2D knob_points[7];
 	short aero_resistance;
 	char idle_torque;

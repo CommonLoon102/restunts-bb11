@@ -591,6 +591,7 @@ static PortFuncName(labelname) {
 		labelname == "rect_is_overlapping" || 
 		labelname == "rect_is_inside" || 
 		labelname == "rect_is_adjacent" || 
+		labelname == "rect_array_sort_by_top" ||
 		labelname == "heapsort_by_order" || 
 		labelname == "vector_op_unk" || 
 		labelname == "vector_op_unk2" || 
@@ -757,6 +758,7 @@ static PortFuncName(labelname) {
 		labelname == "init_unknown" ||
 		labelname == "init_game_state" ||
 		labelname == "restore_gamestate" ||
+		labelname == "update_gamestate" ||
 
 		labelname == "init_div0" ||
 		labelname == "copy_material_list_pointers" ||

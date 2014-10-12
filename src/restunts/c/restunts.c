@@ -366,6 +366,7 @@ void init_unknown(void)
 	elapsed_time2 = 0;
 	byte_449DA = 0;
 	byte_4393C = 0;
+	word_44DCA = 0;
 }
 
 void init_carstate_from_simd(struct CARSTATE* playerstate, struct SIMD* simd, char transmission, long posX, long posY, long posZ, short track_angle)
