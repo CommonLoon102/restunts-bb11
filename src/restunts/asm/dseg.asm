@@ -304,6 +304,10 @@ dseg segment byte public 'STUNTSD' use16
     public byte_3C0C6
     public word_3C0D6
     public fence_TrkObjCodes
+    public unk_3C0EE
+    public unk_3C0F0
+    public unk_3C0F4
+    public unk_3C0F8
     public word_3C108
     public word_3C10A
     public word_3C10C
@@ -1048,7 +1052,7 @@ dseg segment byte public 'STUNTSD' use16
     public word_40D3C
     public word_40D3E
     public word_40D40
-    public word_40D42
+    public end_hiscore_random
     public word_40D44
     public mat_unk2
     public unk_40D58
@@ -1189,7 +1193,7 @@ dseg segment byte public 'STUNTSD' use16
     public wallStartX
     public td01_track_file_cpy
     public byte_42D26
-    public word_42D28
+    public run_game_random
     public byte_42D2A
     public wallStartZ
     public audio_filetemp
@@ -1383,7 +1387,7 @@ dseg segment byte public 'STUNTSD' use16
     public trackdata6
     public video_flag3_isFFFF
     public trackdata18
-    public word_454DA
+    public transformedshape_zarray
     public backlights_paint_override
     public track_angle
     public skybox_ptr1
@@ -1426,7 +1430,7 @@ dseg segment byte public 'STUNTSD' use16
     public someZeroVideoConst
     public nextPosAndNormalIP
     public word_45A00
-    public byte_45A02
+    public transformedshape_arg2array
     public cvxptr
     public elapsed_time1
     public unk_45A26
@@ -1440,7 +1444,7 @@ dseg segment byte public 'STUNTSD' use16
     public word_45D3E
     public trackrows
     public word_45D7C
-    public byte_45D7E
+    public transformedshape_counter
     public skyboxes
     public byte_45D90
     public material_patlist2_ptr_cpy
@@ -1459,7 +1463,7 @@ dseg segment byte public 'STUNTSD' use16
     public tempdataptr
     public byte_45E16
     public passed_security
-    public word_45E1C
+    public transformedshape_indices
     public trackdata19
     public simd_player
     public word_46160
@@ -3804,17 +3808,17 @@ fence_TrkObjCodes     db 214
     db 215
     db 214
     db 215
+unk_3C0EE     db 0
     db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 1
+unk_3C0F0     db 0
     db 0
     db 0
     db 1
+unk_3C0F4     db 0
     db 0
+    db 1
     db 0
+unk_3C0F8     db 0
     db 0
     db 1
     db 0
@@ -22045,7 +22049,7 @@ word_40D3A     dw 0
 word_40D3C     dw 0
 word_40D3E     dw 0
 word_40D40     dw 0
-word_40D42     dw 0
+end_hiscore_random     dw 0
 word_40D44     dw 0
 mat_unk2     db 0
     db 0
@@ -28191,7 +28195,7 @@ wallStartX     dw 0
 td01_track_file_cpy     dd 0
 byte_42D26     db 0
     db 0
-word_42D28     dw 0
+run_game_random     dw 0
 byte_42D2A     db 0
     db 0
 wallStartZ     dw 0
@@ -38060,7 +38064,7 @@ word_454CE     dw 0
 trackdata6     dd 0
 video_flag3_isFFFF     dw 0
 trackdata18     dd 0
-word_454DA     dw 0
+transformedshape_zarray     dw 0
     db 0
     db 0
     db 0
@@ -39301,7 +39305,7 @@ fontledresseg     dw 0
 someZeroVideoConst     dw 0
 nextPosAndNormalIP     dw 0
 word_45A00     dw 0
-byte_45A02     db 0
+transformedshape_arg2array     db 0
     db 0
     db 0
     db 0
@@ -40148,7 +40152,7 @@ trackrows     dw 0
     dw 0
     dw 0
 word_45D7C     dw 0
-byte_45D7E     db 0
+transformedshape_counter     db 0
     db 0
 skyboxes     dd 0
     dd 0
@@ -40233,7 +40237,7 @@ byte_45E16     db 0
     db 0
 passed_security     db 0
     db 0
-word_45E1C     dw 0
+transformedshape_indices     dw 0
     db 0
     db 0
     db 0

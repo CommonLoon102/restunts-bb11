@@ -51,7 +51,7 @@ seg003 segment byte public 'STUNTSC' use16
     public update_frame
     public skybox_op_helper2
     public skybox_op
-    public sub_1CB80
+    public transformed_shape_add_for_sort
     public draw_track_preview
     public draw_ingame_text
     public do_sinking
@@ -303,53 +303,53 @@ loc_1A0EE:
     retf
 init_rect_arrays endp
 update_frame proc far
-    var_154 = dword ptr -340
-    var_150 = word ptr -336
-    var_14E = word ptr -334
+    var_lastpos2lookup = dword ptr -340
+    var_lastposlookupw = word ptr -336
+    var_transformresult = word ptr -334
     var_14C = byte ptr -332
-    var_134 = byte ptr -308
+    var_posadjust = byte ptr -308
     var_132 = word ptr -306
     var_130 = byte ptr -304
     var_trkobject_ptr = word ptr -302
-    var_12C = byte ptr -300
+    var_poslookupadjust = byte ptr -300
     var_12A = word ptr -298
     var_vec7 = VECTOR ptr -296
     var_122 = byte ptr -290
     var_mat = MATRIX ptr -288
     var_10E = word ptr -270
-    var_10C = byte ptr -268
-    var_10A = byte ptr -266
+    terr_map_value = byte ptr -268
+    var_pos2adjust = byte ptr -266
     var_108 = dword ptr -264
     var_stateptr = word ptr -260
-    var_102 = byte ptr -258
-    var_100 = byte ptr -256
+    var_poslookup = byte ptr -258
+    var_pos2lookupadjust = byte ptr -256
     var_angZ = word ptr -254
     var_FC = byte ptr -252
     var_angX = word ptr -250
-    var_F6 = byte ptr -246
+    var_pos2lookup = byte ptr -246
     var_angY2 = word ptr -244
     var_vec6 = VECTOR ptr -242
     var_vec5 = VECTOR ptr -236
     var_E4 = byte ptr -228
     var_E2 = byte ptr -226
     var_E0 = word ptr -224
-    var_material = word ptr -222
+    var_multitileflag = word ptr -222
     var_DC = byte ptr -220
     var_DB = byte ptr -219
     var_DA = word ptr -218
     var_D8 = byte ptr -216
     var_matptr = word ptr -214
-    var_D4 = byte ptr -212
+    var_postab = byte ptr -212
     var_BC = byte ptr -188
     var_A4 = word ptr -164
-    var_A2 = word ptr -162
+    var_counter2 = word ptr -162
     var_mat2 = MATRIX ptr -160
     var_rect2 = RECTANGLE ptr -142
-    var_86 = byte ptr -134
+    var_pos2tab = byte ptr -134
     var_6E = byte ptr -110
     var_6C = word ptr -108
     var_rect = RECTANGLE ptr -106
-    var_62 = byte ptr -98
+    elem_map_value = byte ptr -98
     var_60 = byte ptr -96
     var_5E = word ptr -94
     var_angY = word ptr -92
@@ -360,7 +360,7 @@ update_frame proc far
     var_4E = byte ptr -78
     var_4C = byte ptr -76
     var_4A = byte ptr -74
-    var_48 = word ptr -72
+    var_hillheight = word ptr -72
     var_angX2 = word ptr -70
     var_vec8 = VECTOR ptr -68
     var_rectptr = word ptr -62
@@ -368,7 +368,7 @@ update_frame proc far
     var_3A = word ptr -58
     var_38 = word ptr -56
     var_counter = word ptr -54
-    var_34 = word ptr -52
+    var_trkobjectptr = word ptr -52
     var_32 = byte ptr -50
     var_1A = byte ptr -26
     var_2 = word ptr -2
@@ -680,7 +680,7 @@ loc_1A40A:
     shl     ax, 1
     add     ax, cx
     shl     ax, 1
-    mov     [bp+var_150], ax
+    mov     [bp+var_lastposlookupw], ax
     mov     bx, ax
     mov     ax, state.game_vec1.vx[bx]
     mov     [bp+var_vec4.vx], ax
@@ -739,9 +739,9 @@ loc_1A48E:
     shl     ax, 1
     add     ax, word ptr trackdata9
     mov     dx, word ptr trackdata9+2
-    mov     word ptr [bp+var_154], ax
-    mov     word ptr [bp+var_154+2], dx
-    les     bx, [bp+var_154]
+    mov     word ptr [bp+var_lastpos2lookup], ax
+    mov     word ptr [bp+var_lastpos2lookup+2], dx
+    les     bx, [bp+var_lastpos2lookup]
     mov     ax, es:[bx]
     mov     [bp+var_vec4.vx], ax
     mov     ax, es:[bx+2]
@@ -842,7 +842,7 @@ loc_1A5BA:
     shl     bx, 1
     mov     si, word_3BE34[bx]
     add     si, [bp+var_angY]
-    add     si, word_42D28
+    add     si, run_game_random
 smart
     and     si, 3FFh
 nosmart
@@ -893,7 +893,7 @@ loc_1A5DD:
     call    transformed_shape_op
     add     sp, 2
     cbw
-    mov     [bp+var_14E], ax
+    mov     [bp+var_transformresult], ax
 loc_1A661:
     inc     [bp+var_counter]
     cmp     [bp+var_counter], 8
@@ -903,12 +903,12 @@ loc_1A66D:
     mov     ax, [bp+var_vec4.vx]
     mov     cl, 0Ah
     sar     ax, cl
-    mov     [bp+var_10A], al
+    mov     [bp+var_pos2adjust], al
     mov     ax, [bp+var_vec4.vz]
     sar     ax, cl
     sub     al, 1Dh
     neg     al
-    mov     [bp+var_134], al
+    mov     [bp+var_posadjust], al
     cmp     timertestflag2, 0
     jz      short loc_1A69D
     mov     al, byte ptr state.playerstate.car_posWorld1.lx+2
@@ -936,17 +936,17 @@ loc_1A6BC:
     shl     cx, 1
     add     cx, dx
     add     ax, cx
-    mov     word ptr [bp+var_154], ax
+    mov     word ptr [bp+var_lastpos2lookup], ax
     mov     bx, ax
     mov     al, [bx]
-    add     al, [bp+var_10A]
-    mov     [bp+var_F6], al
+    add     al, [bp+var_pos2adjust]
+    mov     [bp+var_pos2lookup], al
     mov     al, [bx+1]
-    add     al, [bp+var_134]
-    mov     [bp+var_102], al
-    cmp     [bp+var_F6], 0
+    add     al, [bp+var_posadjust]
+    mov     [bp+var_poslookup], al
+    cmp     [bp+var_pos2lookup], 0
     jl      short loc_1A6FA
-    cmp     [bp+var_F6], 1Dh
+    cmp     [bp+var_pos2lookup], 1Dh
     jg      short loc_1A6FA
     or      al, al
     jl      short loc_1A6FA
@@ -974,28 +974,28 @@ loc_1A706:
     jle     short loc_1A6BC
     jmp     short loc_1A6FA
 loc_1A724:
-    mov     al, [bp+var_F6]
+    mov     al, [bp+var_pos2lookup]
     cbw
-    mov     word ptr [bp+var_154], ax
-    mov     al, [bp+var_102]
+    mov     word ptr [bp+var_lastpos2lookup], ax
+    mov     al, [bp+var_poslookup]
     cbw
     shl     ax, 1
-    mov     [bp+var_150], ax
+    mov     [bp+var_lastposlookupw], ax
     mov     bx, ax
     mov     bx, trackrows[bx]
-    add     bx, word ptr [bp+var_154]
+    add     bx, word ptr [bp+var_lastpos2lookup]
     add     bx, word ptr td14_elem_map_main
     mov     es, word ptr td14_elem_map_main+2
     mov     al, es:[bx]
-    mov     [bp+var_62], al
-    mov     bx, [bp+var_150]
+    mov     [bp+elem_map_value], al
+    mov     bx, [bp+var_lastposlookupw]
     mov     bx, terrainrows[bx]
-    add     bx, word ptr [bp+var_154]
+    add     bx, word ptr [bp+var_lastpos2lookup]
     add     bx, word ptr td15_terr_map_main
     mov     es, word ptr td15_terr_map_main+2
     mov     al, es:[bx]
-    mov     [bp+var_10C], al
-    cmp     [bp+var_62], 0
+    mov     [bp+terr_map_value], al
+    cmp     [bp+elem_map_value], 0
     jnz     short loc_1A774
     jmp     loc_1A7FF
 loc_1A774:
@@ -1003,17 +1003,17 @@ loc_1A774:
     jb      short loc_1A797
     cmp     al, 0Bh
     jnb     short loc_1A797
-    mov     al, [bp+var_62]
+    mov     al, [bp+elem_map_value]
     sub     ah, ah
     push    ax
-    mov     al, [bp+var_10C]
+    mov     al, [bp+terr_map_value]
     push    ax
     call    subst_hillroad_track
     add     sp, 4
-    mov     [bp+var_62], al
-    mov     [bp+var_10C], 0
+    mov     [bp+elem_map_value], al
+    mov     [bp+terr_map_value], 0
 loc_1A797:
-    mov     al, [bp+var_62]
+    mov     al, [bp+elem_map_value]
     sub     ah, ah
     cmp     ax, 0FDh ; 'ý'
     jz      short loc_1A7B0
@@ -1025,33 +1025,33 @@ loc_1A797:
 loc_1A7AE:
     jmp     short loc_1A7FF
 loc_1A7B0:
-    dec     [bp+var_F6]
+    dec     [bp+var_pos2lookup]
 loc_1A7B4:
-    dec     [bp+var_102]
+    dec     [bp+var_poslookup]
 loc_1A7B8:
-    mov     al, [bp+var_F6]
+    mov     al, [bp+var_pos2lookup]
     cbw
-    mov     word ptr [bp+var_154], ax
-    mov     al, [bp+var_102]
+    mov     word ptr [bp+var_lastpos2lookup], ax
+    mov     al, [bp+var_poslookup]
     cbw
     shl     ax, 1
-    mov     [bp+var_150], ax
+    mov     [bp+var_lastposlookupw], ax
     mov     bx, ax
     mov     bx, trackrows[bx]
-    add     bx, word ptr [bp+var_154]
+    add     bx, word ptr [bp+var_lastpos2lookup]
     add     bx, word ptr td14_elem_map_main
     mov     es, word ptr td14_elem_map_main+2
     mov     al, es:[bx]
-    mov     [bp+var_62], al
-    mov     bx, [bp+var_150]
+    mov     [bp+elem_map_value], al
+    mov     bx, [bp+var_lastposlookupw]
     mov     bx, terrainrows[bx]
-    add     bx, word ptr [bp+var_154]
+    add     bx, word ptr [bp+var_lastpos2lookup]
     add     bx, word ptr td15_terr_map_main
     mov     es, word ptr td15_terr_map_main+2
     mov     al, es:[bx]
-    mov     [bp+var_10C], al
+    mov     [bp+terr_map_value], al
 loc_1A7FF:
-    mov     al, [bp+var_10C]
+    mov     al, [bp+terr_map_value]
     mov     [bp+si+var_1A], al
     mov     bx, [bp+var_50]
     mov     ax, si
@@ -1061,11 +1061,11 @@ loc_1A7FF:
     add     bx, ax
     mov     al, [bx+2]
     mov     [bp+si+var_BC], al
-    cmp     [bp+var_62], 0
+    cmp     [bp+elem_map_value], 0
     jz      short loc_1A857
     cmp     timertestflag2, 0
     jz      short loc_1A857
-    mov     al, [bp+var_62]
+    mov     al, [bp+elem_map_value]
     sub     ah, ah
     mov     bx, ax
     shl     bx, 1
@@ -1076,25 +1076,25 @@ loc_1A7FF:
     cmp     trkObjectList.ss_physicalModel[bx], 40h ; '@'
     jl      short loc_1A857
     mov     al, [bp+var_D8]
-    cmp     [bp+var_F6], al
+    cmp     [bp+var_pos2lookup], al
     jnz     short loc_1A853
     mov     al, [bp+var_E2]
-    cmp     [bp+var_102], al
+    cmp     [bp+var_poslookup], al
     jz      short loc_1A857
 loc_1A853:
-    mov     [bp+var_62], 0
+    mov     [bp+elem_map_value], 0
 loc_1A857:
-    mov     al, [bp+var_F6]
-    mov     [bp+si+var_86], al
-    mov     al, [bp+var_102]
-    mov     [bp+si+var_D4], al
-    mov     al, [bp+var_62]
+    mov     al, [bp+var_pos2lookup]
+    mov     [bp+si+var_pos2tab], al
+    mov     al, [bp+var_poslookup]
+    mov     [bp+si+var_postab], al
+    mov     al, [bp+elem_map_value]
     mov     [bp+si+var_14C], al
-    cmp     [bp+var_62], 0
+    cmp     [bp+elem_map_value], 0
     jnz     short loc_1A877
     jmp     loc_1A6FE
 loc_1A877:
-    mov     al, [bp+var_62]
+    mov     al, [bp+elem_map_value]
     sub     ah, ah
     mov     bx, ax
     shl     bx, 1
@@ -1104,18 +1104,18 @@ loc_1A877:
     shl     bx, 1
     mov     al, trkObjectList.ss_multiTileFlag[bx]
     cbw
-    mov     [bp+var_material], ax
+    mov     [bp+var_multitileflag], ax
     or      ax, ax
     jnz     short loc_1A898
     jmp     loc_1A6FE
 loc_1A898:
-    mov     al, [bp+var_F6]
-    sub     al, [bp+var_10A]
-    mov     [bp+var_100], al
-    mov     al, [bp+var_102]
-    sub     al, [bp+var_134]
-    mov     [bp+var_12C], al
-    mov     ax, [bp+var_material]
+    mov     al, [bp+var_pos2lookup]
+    sub     al, [bp+var_pos2adjust]
+    mov     [bp+var_pos2lookupadjust], al
+    mov     al, [bp+var_poslookup]
+    sub     al, [bp+var_posadjust]
+    mov     [bp+var_poslookupadjust], al
+    mov     ax, [bp+var_multitileflag]
     cmp     ax, 1
     jz      short loc_1A8D2
     cmp     ax, 2
@@ -1128,7 +1128,7 @@ loc_1A8C6:
     ; align 2
     db 144
 loc_1A8CA:
-    dec     [bp+var_F6]
+    dec     [bp+var_pos2lookup]
     jmp     loc_1A7B8
     ; align 2
     db 144
@@ -1148,12 +1148,12 @@ loc_1A8DE:
     shl     cx, 1
     add     cx, dx
     add     ax, cx
-    mov     word ptr [bp+var_154], ax
+    mov     word ptr [bp+var_lastpos2lookup], ax
     mov     bx, ax
-    mov     al, [bp+var_100]
+    mov     al, [bp+var_pos2lookupadjust]
     cmp     [bx], al
     jnz     short loc_1A8D6
-    mov     al, [bp+var_12C]
+    mov     al, [bp+var_poslookupadjust]
     cmp     [bx+1], al
     jz      short loc_1A90E
     cbw
@@ -1182,20 +1182,20 @@ loc_1A920:
     shl     cx, 1
     add     cx, dx
     add     ax, cx
-    mov     word ptr [bp+var_154], ax
+    mov     word ptr [bp+var_lastpos2lookup], ax
     mov     bx, ax
-    mov     al, [bp+var_12C]
+    mov     al, [bp+var_poslookupadjust]
     cmp     [bx+1], al
     jnz     short loc_1A918
     mov     al, [bx]
-    mov     byte ptr [bp+var_150], al
-    mov     al, [bp+var_100]
-    cmp     byte ptr [bp+var_150], al
+    mov     byte ptr [bp+var_lastposlookupw], al
+    mov     al, [bp+var_pos2lookupadjust]
+    cmp     byte ptr [bp+var_lastposlookupw], al
     jz      short loc_1A959
     cbw
     inc     ax
     mov     cx, ax
-    mov     al, byte ptr [bp+var_150]
+    mov     al, byte ptr [bp+var_lastposlookupw]
     cbw
     cmp     cx, ax
     jnz     short loc_1A918
@@ -1221,14 +1221,14 @@ loc_1A96C:
     add     ax, cx
     add     bx, ax
     mov     al, [bx]
-    mov     byte ptr [bp+var_154], al
-    mov     al, [bp+var_100]
-    cmp     byte ptr [bp+var_154], al
+    mov     byte ptr [bp+var_lastpos2lookup], al
+    mov     al, [bp+var_pos2lookupadjust]
+    cmp     byte ptr [bp+var_lastpos2lookup], al
     jz      short loc_1A996
     cbw
     inc     ax
     mov     cx, ax
-    mov     al, byte ptr [bp+var_154]
+    mov     al, byte ptr [bp+var_lastpos2lookup]
     cbw
     cmp     cx, ax
     jnz     short loc_1A964
@@ -1240,14 +1240,14 @@ loc_1A996:
     add     ax, cx
     add     bx, ax
     mov     al, [bx+1]
-    mov     byte ptr [bp+var_154], al
-    mov     al, [bp+var_12C]
-    cmp     byte ptr [bp+var_154], al
+    mov     byte ptr [bp+var_lastpos2lookup], al
+    mov     al, [bp+var_poslookupadjust]
+    cmp     byte ptr [bp+var_lastpos2lookup], al
     jz      short loc_1A9C1
     cbw
     inc     ax
     mov     cx, ax
-    mov     al, byte ptr [bp+var_154]
+    mov     al, byte ptr [bp+var_lastpos2lookup]
     cbw
     cmp     cx, ax
     jnz     short loc_1A964
@@ -1283,14 +1283,14 @@ loc_1A9EC:
     call    mat_rot_zxy
     add     sp, 8
     mov     [bp+var_matptr], ax
-    mov     [bp+var_material], 0FFFFh
+    mov     [bp+var_multitileflag], 0FFFFh
     mov     di, 0FFFFh
-    mov     [bp+var_A2], 0
+    mov     [bp+var_counter2], 0
     jmp     short loc_1AA8C
 loc_1AA1E:
     dec     si
 loc_1AA1F:
-    cmp     [bp+var_material], si
+    cmp     [bp+var_multitileflag], si
     jge     short loc_1AA88
     cmp     [bp+si+var_32], 2
     jz      short loc_1AA1E
@@ -1300,45 +1300,45 @@ loc_1AA1F:
     shl     cx, 1
     add     cx, dx
     add     ax, cx
-    mov     word ptr [bp+var_154], ax
-    mov     al, [bp+var_10A]
+    mov     word ptr [bp+var_lastpos2lookup], ax
+    mov     al, [bp+var_pos2adjust]
     cbw
-    mov     bx, word ptr [bp+var_154]
+    mov     bx, word ptr [bp+var_lastpos2lookup]
     mov     cx, ax
     mov     al, [bx]
     cbw
     add     ax, cx
     mov     cx, ax
-    mov     al, [bp+var_F6]
+    mov     al, [bp+var_pos2lookup]
     cbw
     cmp     cx, ax
     jnz     short loc_1AA1E
-    mov     al, [bp+var_134]
+    mov     al, [bp+var_posadjust]
     cbw
     mov     cx, ax
     mov     al, [bx+1]
     cbw
     add     ax, cx
     mov     cx, ax
-    mov     al, [bp+var_102]
+    mov     al, [bp+var_poslookup]
     cbw
     cmp     cx, ax
     jnz     short loc_1AA1E
-    mov     al, [bp+var_F6]
+    mov     al, [bp+var_pos2lookup]
     mov     [bp+var_3C], al
-    mov     al, [bp+var_102]
+    mov     al, [bp+var_poslookup]
     mov     [bp+var_60], al
-    mov     [bp+var_material], si
-    mov     di, [bp+var_A2]
+    mov     [bp+var_multitileflag], si
+    mov     di, [bp+var_counter2]
     jmp     short loc_1AA1E
     ; align 2
     db 144
 loc_1AA88:
-    inc     [bp+var_A2]
+    inc     [bp+var_counter2]
 loc_1AA8C:
-    cmp     [bp+var_A2], 4
+    cmp     [bp+var_counter2], 4
     jge     short loc_1AAF4
-    mov     bx, [bp+var_A2]
+    mov     bx, [bp+var_counter2]
     mov     ax, bx
     shl     bx, 1
     add     bx, ax
@@ -1366,7 +1366,7 @@ loc_1AA8C:
     add     ax, word ptr state.playerstate.car_posWorld1.lx
     adc     dx, word ptr state.playerstate.car_posWorld1.lx+2
     mov     ax, dx
-    mov     [bp+var_F6], al
+    mov     [bp+var_pos2lookup], al
     mov     ax, [bp+var_vec8.vz]
     cwd
     add     ax, word ptr state.playerstate.car_posWorld1.lz
@@ -1374,7 +1374,7 @@ loc_1AA8C:
     mov     ax, dx
     sub     al, 1Dh
     neg     al
-    mov     [bp+var_102], al
+    mov     [bp+var_poslookup], al
     mov     si, 16h
     jmp     loc_1AA1F
     ; align 2
@@ -1448,14 +1448,14 @@ loc_1AB94:
     call    mat_rot_zxy
     add     sp, 8
     mov     [bp+var_matptr], ax
-    mov     [bp+var_material], 0FFFFh
+    mov     [bp+var_multitileflag], 0FFFFh
     mov     di, 0FFFFh
-    mov     [bp+var_A2], 0
+    mov     [bp+var_counter2], 0
     jmp     short loc_1AC34
 loc_1ABC6:
     dec     si
 loc_1ABC7:
-    cmp     [bp+var_material], si
+    cmp     [bp+var_multitileflag], si
     jge     short loc_1AC30
     cmp     [bp+si+var_32], 2
     jz      short loc_1ABC6
@@ -1465,45 +1465,45 @@ loc_1ABC7:
     shl     cx, 1
     add     cx, dx
     add     ax, cx
-    mov     word ptr [bp+var_154], ax
-    mov     al, [bp+var_10A]
+    mov     word ptr [bp+var_lastpos2lookup], ax
+    mov     al, [bp+var_pos2adjust]
     cbw
-    mov     bx, word ptr [bp+var_154]
+    mov     bx, word ptr [bp+var_lastpos2lookup]
     mov     cx, ax
     mov     al, [bx]
     cbw
     add     ax, cx
     mov     cx, ax
-    mov     al, [bp+var_F6]
+    mov     al, [bp+var_pos2lookup]
     cbw
     cmp     cx, ax
     jnz     short loc_1ABC6
-    mov     al, [bp+var_134]
+    mov     al, [bp+var_posadjust]
     cbw
     mov     cx, ax
     mov     al, [bx+1]
     cbw
     add     ax, cx
     mov     cx, ax
-    mov     al, [bp+var_102]
+    mov     al, [bp+var_poslookup]
     cbw
     cmp     cx, ax
     jnz     short loc_1ABC6
-    mov     al, [bp+var_F6]
+    mov     al, [bp+var_pos2lookup]
     mov     [bp+var_4A], al
-    mov     al, [bp+var_102]
+    mov     al, [bp+var_poslookup]
     mov     [bp+var_6E], al
-    mov     [bp+var_material], si
-    mov     di, [bp+var_A2]
+    mov     [bp+var_multitileflag], si
+    mov     di, [bp+var_counter2]
     jmp     short loc_1ABC6
     ; align 2
     db 144
 loc_1AC30:
-    inc     [bp+var_A2]
+    inc     [bp+var_counter2]
 loc_1AC34:
-    cmp     [bp+var_A2], 4
+    cmp     [bp+var_counter2], 4
     jge     short loc_1AC9C
-    mov     bx, [bp+var_A2]
+    mov     bx, [bp+var_counter2]
     mov     ax, bx
     shl     bx, 1
     add     bx, ax
@@ -1531,7 +1531,7 @@ loc_1AC34:
     add     ax, word ptr state.opponentstate.car_posWorld1.lx
     adc     dx, word ptr state.opponentstate.car_posWorld1.lx+2
     mov     ax, dx
-    mov     [bp+var_F6], al
+    mov     [bp+var_pos2lookup], al
     mov     ax, [bp+var_vec8.vz]
     cwd
     add     ax, word ptr state.opponentstate.car_posWorld1.lz
@@ -1539,7 +1539,7 @@ loc_1AC34:
     mov     ax, dx
     sub     al, 1Dh
     neg     al
-    mov     [bp+var_102], al
+    mov     [bp+var_poslookup], al
     mov     si, 16h
     jmp     loc_1ABC7
     ; align 2
@@ -1588,13 +1588,13 @@ loc_1AD0E:
     db 144
 loc_1AD18:
     mov     [bp+var_counter], 1
-    mov     [bp+var_10E], 97Eh
+    mov     [bp+var_10E], offset unk_3C0EE
     jmp     short loc_1AD55
     ; align 2
     db 144
 loc_1AD26:
     mov     [bp+var_counter], 2
-    mov     [bp+var_10E], 980h
+    mov     [bp+var_10E], offset unk_3C0F0
     jmp     short loc_1AD55
     ; align 2
     db 144
@@ -1605,25 +1605,25 @@ loc_1AD34:
     db 144
 loc_1AD3C:
     mov     [bp+var_counter], 4
-    mov     [bp+var_10E], 988h
+    mov     [bp+var_10E], offset unk_3C0F8
     jmp     short loc_1AD55
     ; align 2
     db 144
 loc_1AD4A:
     mov     [bp+var_counter], 1
 loc_1AD4F:
-    mov     [bp+var_10E], 984h
+    mov     [bp+var_10E], offset unk_3C0F4
 loc_1AD55:
-    mov     [bp+var_material], 0
+    mov     [bp+var_multitileflag], 0
     jmp     loc_1AE7A
 loc_1AD5E:
-    mov     al, [bp+var_100]
+    mov     al, [bp+var_pos2lookupadjust]
     cbw
     or      ax, ax
     jz      short loc_1AD80
     cmp     ax, 1Dh
     jz      short loc_1ADCC
-    mov     al, [bp+var_12C]
+    mov     al, [bp+var_poslookupadjust]
     cbw
     or      ax, ax
     jz      short loc_1ADEC
@@ -1634,7 +1634,7 @@ loc_1AD5E:
     ; align 2
     db 144
 loc_1AD80:
-    mov     al, [bp+var_12C]
+    mov     al, [bp+var_poslookupadjust]
     cbw
     or      ax, ax
     jz      short loc_1AD94
@@ -1660,7 +1660,7 @@ loc_1AD9F:
     add     ax, cx
     shl     ax, 1
     add     ax, offset trkObjectList
-    mov     [bp+var_34], ax
+    mov     [bp+var_trkobjectptr], ax
     cmp     [bp+var_FC], 0
     jnz     short loc_1ADF6
     mov     bx, ax
@@ -1674,7 +1674,7 @@ loc_1ADC6:
     ; align 2
     db 144
 loc_1ADCC:
-    mov     al, [bp+var_12C]
+    mov     al, [bp+var_poslookupadjust]
     cbw
     or      ax, ax
     jz      short loc_1ADE0
@@ -1703,11 +1703,11 @@ loc_1ADF0:
     ; align 2
     db 144
 loc_1ADF6:
-    mov     bx, [bp+var_34]
+    mov     bx, [bp+var_trkobjectptr]
     mov     ax, [bx+TRACKOBJECT.ss_loShapePtr]
 loc_1ADFC:
     mov     currenttransshape.ts_shapeptr, ax
-    mov     al, [bp+var_100]
+    mov     al, [bp+var_pos2lookupadjust]
     cbw
     mov     bx, ax
     shl     bx, 1
@@ -1717,7 +1717,7 @@ loc_1ADFC:
     mov     ax, [bp+var_vec4.vy]
     neg     ax
     mov     currenttransshape.ts_pos.vy, ax
-    mov     al, [bp+var_12C]
+    mov     al, [bp+var_poslookupadjust]
     cbw
     mov     bx, ax
     shl     bx, 1
@@ -1741,36 +1741,36 @@ loc_1ADFC:
     call    transformed_shape_op
     add     sp, 2
     cbw
-    mov     [bp+var_14E], ax
+    mov     [bp+var_transformresult], ax
     or      ax, ax
     jle     short loc_1AE76
     jmp     loc_1B03C
 loc_1AE76:
-    inc     [bp+var_material]
+    inc     [bp+var_multitileflag]
 loc_1AE7A:
     mov     ax, [bp+var_counter]
-    cmp     [bp+var_material], ax
+    cmp     [bp+var_multitileflag], ax
     jge     short loc_1AECC
-    mov     ax, [bp+var_material]
+    mov     ax, [bp+var_multitileflag]
     shl     ax, 1
     add     ax, [bp+var_10E]
-    mov     word ptr [bp+var_154], ax
+    mov     word ptr [bp+var_lastpos2lookup], ax
     mov     bx, ax
     mov     al, [bx]
-    add     al, [bp+var_F6]
-    mov     [bp+var_100], al
+    add     al, [bp+var_pos2lookup]
+    mov     [bp+var_pos2lookupadjust], al
     mov     al, [bx+1]
-    add     al, [bp+var_102]
-    mov     [bp+var_12C], al
+    add     al, [bp+var_poslookup]
+    mov     [bp+var_poslookupadjust], al
     cmp     timertestflag2, 0
     jnz     short loc_1AEB2
     jmp     loc_1AD5E
 loc_1AEB2:
     mov     al, [bp+var_D8]
-    cmp     [bp+var_100], al
+    cmp     [bp+var_pos2lookupadjust], al
     jnz     short loc_1AE76
     mov     al, [bp+var_E2]
-    cmp     [bp+var_12C], al
+    cmp     [bp+var_poslookupadjust], al
     jnz     short loc_1AEC9
     jmp     loc_1AD5E
 loc_1AEC9:
@@ -1778,20 +1778,20 @@ loc_1AEC9:
     ; align 2
     db 144
 loc_1AECC:
-    cmp     [bp+var_10C], 6
+    cmp     [bp+terr_map_value], 6
     jnz     short loc_1AF50
     mov     ax, hillHeightConsts+2
-    mov     [bp+var_48], ax
-    cmp     [bp+var_62], 0
+    mov     [bp+var_hillheight], ax
+    cmp     [bp+elem_map_value], 0
     jz      short loc_1AEE4
 loc_1AEDF:
-    mov     [bp+var_10C], 0
+    mov     [bp+terr_map_value], 0
 loc_1AEE4:
-    cmp     [bp+var_10C], 0
+    cmp     [bp+terr_map_value], 0
     jnz     short loc_1AEEE
     jmp     loc_1B11C
 loc_1AEEE:
-    mov     al, [bp+var_10C]
+    mov     al, [bp+terr_map_value]
     sub     ah, ah
     mov     cx, ax
     shl     ax, 1
@@ -1802,34 +1802,34 @@ loc_1AEEE:
     add     ax, offset sceneshapes2
     mov     [bp+var_trkobject_ptr], ax
     mov     bx, ax
-    mov     ax, [bx+4]
+    mov     ax, [bx+TRACKOBJECT.ss_shapePtr]
     mov     currenttransshape.ts_shapeptr, ax
-    mov     al, [bp+var_F6]
+    mov     al, [bp+var_pos2lookup]
     cbw
     mov     bx, ax
     shl     bx, 1
     mov     ax, trackcenterpos2[bx]
     sub     ax, [bp+var_vec4.vx]
     mov     currenttransshape.ts_pos.vx, ax
-    mov     ax, [bp+var_48]
+    mov     ax, [bp+var_hillheight]
     sub     ax, [bp+var_vec4.vy]
     mov     currenttransshape.ts_pos.vy, ax
-    mov     al, [bp+var_102]
+    mov     al, [bp+var_poslookup]
     cbw
     mov     bx, ax
     shl     bx, 1
     mov     ax, trackcenterpos[bx]
     sub     ax, [bp+var_vec4.vz]
     mov     currenttransshape.ts_pos.vz, ax
-    cmp     [bp+var_48], 0
+    cmp     [bp+var_hillheight], 0
     jz      short loc_1AF47
     jmp     loc_1B0D4
 loc_1AF47:
     mov     currenttransshape.ts_rectptr, offset rect_unk2
     jmp     loc_1B0DA
 loc_1AF50:
-    mov     [bp+var_48], 0
-    mov     al, [bp+var_62]
+    mov     [bp+var_hillheight], 0
+    mov     al, [bp+elem_map_value]
     sub     ah, ah
     cmp     ax, 69h ; 'i'
     jb      short loc_1AEE4
@@ -1837,30 +1837,30 @@ loc_1AF50:
     jbe     short loc_1AF67
     jmp     loc_1AEE4
 loc_1AF67:
-    mov     [bp+var_material], 0
+    mov     [bp+var_multitileflag], 0
     jmp     loc_1B0AC
 loc_1AF70:
-    mov     al, [bp+var_F6]
+    mov     al, [bp+var_pos2lookup]
 loc_1AF74:
-    mov     [bp+var_100], al
-    mov     al, [bp+var_102]
+    mov     [bp+var_pos2lookupadjust], al
+    mov     al, [bp+var_poslookup]
 loc_1AF7C:
-    mov     [bp+var_12C], al
+    mov     [bp+var_poslookupadjust], al
 loc_1AF80:
-    mov     al, [bp+var_100]
+    mov     al, [bp+var_pos2lookupadjust]
     cbw
-    mov     word ptr [bp+var_154], ax
-    mov     al, [bp+var_12C]
+    mov     word ptr [bp+var_lastpos2lookup], ax
+    mov     al, [bp+var_poslookupadjust]
     cbw
     shl     ax, 1
-    mov     [bp+var_150], ax
+    mov     [bp+var_lastposlookupw], ax
     mov     bx, ax
     mov     bx, terrainrows[bx]
-    add     bx, word ptr [bp+var_154]
+    add     bx, word ptr [bp+var_lastpos2lookup]
     add     bx, word ptr td15_terr_map_main
     mov     es, word ptr td15_terr_map_main+2
     mov     al, es:[bx]
-    mov     [bp+var_10C], al
+    mov     [bp+terr_map_value], al
     or      al, al
     jnz     short loc_1AFB4
     jmp     loc_1B0A8
@@ -1877,7 +1877,7 @@ loc_1AFB4:
     mov     bx, ax
     mov     ax, [bx+4]
     mov     currenttransshape.ts_shapeptr, ax
-    mov     bx, word ptr [bp+var_154]
+    mov     bx, word ptr [bp+var_lastpos2lookup]
     shl     bx, 1
     mov     ax, trackcenterpos2[bx]
     sub     ax, [bp+var_vec4.vx]
@@ -1885,7 +1885,7 @@ loc_1AFB4:
     mov     ax, [bp+var_vec4.vy]
     neg     ax
     mov     currenttransshape.ts_pos.vy, ax
-    mov     bx, [bp+var_150]
+    mov     bx, [bp+var_lastposlookupw]
     mov     ax, trackcenterpos[bx]
     sub     ax, [bp+var_vec4.vz]
     mov     currenttransshape.ts_pos.vz, ax
@@ -1905,7 +1905,7 @@ loc_1AFB4:
     call    transformed_shape_op
     add     sp, 2
     cbw
-    mov     [bp+var_14E], ax
+    mov     [bp+var_transformresult], ax
     or      ax, ax
     jle     short loc_1B0A8
 loc_1B03C:
@@ -1938,32 +1938,32 @@ loc_1B03C:
     ; align 2
     db 144
 loc_1B084:
-    mov     al, [bp+var_F6]
+    mov     al, [bp+var_pos2lookup]
     inc     al
     jmp     loc_1AF74
     ; align 2
     db 144
 loc_1B08E:
-    mov     al, [bp+var_F6]
+    mov     al, [bp+var_pos2lookup]
 loc_1B092:
-    mov     [bp+var_100], al
-    mov     al, [bp+var_102]
+    mov     [bp+var_pos2lookupadjust], al
+    mov     al, [bp+var_poslookup]
     inc     al
     jmp     loc_1AF7C
     ; align 2
     db 144
 loc_1B0A0:
-    mov     al, [bp+var_F6]
+    mov     al, [bp+var_pos2lookup]
     inc     al
     jmp     short loc_1B092
 loc_1B0A8:
-    inc     [bp+var_material]
+    inc     [bp+var_multitileflag]
 loc_1B0AC:
-    cmp     [bp+var_material], 4
+    cmp     [bp+var_multitileflag], 4
     jl      short loc_1B0B6
     jmp     loc_1AEDF
 loc_1B0B6:
-    mov     ax, [bp+var_material]
+    mov     ax, [bp+var_multitileflag]
     or      ax, ax
     jnz     short loc_1B0C1
     jmp     loc_1AF70
@@ -1995,18 +1995,18 @@ loc_1B0DA:
     call    transformed_shape_op
     add     sp, 2
     cbw
-    mov     [bp+var_14E], ax
+    mov     [bp+var_transformresult], ax
     or      ax, ax
     jle     short loc_1B11C
     jmp     loc_1B03C
 loc_1B11C:
-    mov     byte_45D7E, 0
+    mov     transformedshape_counter, 0
     mov     curtransshape_ptr, offset currenttransshape
-    cmp     [bp+var_62], 0
+    cmp     [bp+elem_map_value], 0
     jnz     short loc_1B130
     jmp     loc_1B71E
 loc_1B130:
-    mov     al, [bp+var_62]
+    mov     al, [bp+elem_map_value]
     sub     ah, ah
     mov     cx, ax
     shl     ax, 1
@@ -2019,57 +2019,57 @@ loc_1B130:
     mov     bx, ax
     test    byte ptr [bx+0Bh], 1
     jz      short loc_1B168
-    mov     al, [bp+var_102]
+    mov     al, [bp+var_poslookup]
     cbw
     mov     bx, ax
     shl     bx, 1
     mov     ax, trackpos[bx]
     mov     [bp+var_5E], ax
-    mov     al, [bp+var_102]
+    mov     al, [bp+var_poslookup]
     inc     al
     jmp     short loc_1B17C
 loc_1B168:
-    mov     al, [bp+var_102]
+    mov     al, [bp+var_poslookup]
     cbw
     mov     bx, ax
     shl     bx, 1
     mov     ax, trackcenterpos[bx]
     mov     [bp+var_5E], ax
-    mov     al, [bp+var_102]
+    mov     al, [bp+var_poslookup]
 loc_1B17C:
-    mov     [bp+var_12C], al
+    mov     [bp+var_poslookupadjust], al
     mov     bx, [bp+var_trkobject_ptr]
     test    byte ptr [bx+0Bh], 2
     jz      short loc_1B1A2
-    mov     al, [bp+var_F6]
+    mov     al, [bp+var_pos2lookup]
     cbw
     mov     bx, ax
     shl     bx, 1
     mov     ax, (trackpos2+2)[bx]
     mov     [bp+var_3A], ax
-    mov     al, [bp+var_F6]
+    mov     al, [bp+var_pos2lookup]
     inc     al
     jmp     short loc_1B1B6
 loc_1B1A2:
-    mov     al, [bp+var_F6]
+    mov     al, [bp+var_pos2lookup]
     cbw
     mov     bx, ax
     shl     bx, 1
     mov     ax, trackcenterpos2[bx]
     mov     [bp+var_3A], ax
-    mov     al, [bp+var_F6]
+    mov     al, [bp+var_pos2lookup]
 loc_1B1B6:
-    mov     [bp+var_100], al
+    mov     [bp+var_pos2lookupadjust], al
     mov     ax, [bp+var_3A]
     sub     ax, [bp+var_vec4.vx]
     mov     [bp+var_vec8.vx], ax
-    mov     ax, [bp+var_48]
+    mov     ax, [bp+var_hillheight]
     sub     ax, [bp+var_vec4.vy]
     mov     [bp+var_vec8.vy], ax
     mov     ax, [bp+var_5E]
     sub     ax, [bp+var_vec4.vz]
     mov     [bp+var_vec8.vz], ax
-    cmp     [bp+var_48], 0
+    cmp     [bp+var_hillheight], 0
     jnz     short loc_1B1DE
     jmp     loc_1B2AE
 loc_1B1DE:
@@ -2091,7 +2091,7 @@ loc_1B1FC:
     mov     di, 1
     mov     [bp+var_DA], 932h
 loc_1B205:
-    mov     [bp+var_material], 0
+    mov     [bp+var_multitileflag], 0
     jmp     short loc_1B236
     ; align 2
     db 144
@@ -2114,9 +2114,9 @@ loc_1B226:
     ; align 2
     db 144
 loc_1B232:
-    inc     [bp+var_material]
+    inc     [bp+var_multitileflag]
 loc_1B236:
-    cmp     [bp+var_material], di
+    cmp     [bp+var_multitileflag], di
     jge     short loc_1B2AE
     mov     bx, [bp+var_DA]
     add     [bp+var_DA], 2
@@ -2145,7 +2145,7 @@ loc_1B236:
     call    transformed_shape_op
     add     sp, 2
     cbw
-    mov     [bp+var_14E], ax
+    mov     [bp+var_transformresult], ax
     or      ax, ax
     jle     short loc_1B232
     jmp     loc_1B03C
@@ -2164,15 +2164,15 @@ loc_1B2BB:
     add     ax, cx
     shl     ax, 1
     add     ax, offset trkObjectList
-    mov     [bp+var_34], ax
+    mov     [bp+var_trkobjectptr], ax
     cmp     [bp+var_FC], 0
     jz      short loc_1B2E0
     mov     bx, ax
     mov     ax, [bx+6]
     jmp     short loc_1B2E6
 loc_1B2E0:
-    mov     bx, [bp+var_34]
-    mov     ax, [bx+4]
+    mov     bx, [bp+var_trkobjectptr]
+    mov     ax, [bx+TRACKOBJECT.ss_shapePtr]
 loc_1B2E6:
     mov     transshapeunk.ts_shapeptr, ax
     or      ax, ax
@@ -2225,7 +2225,7 @@ loc_1B336:
     call    transformed_shape_op
     add     sp, 2
     cbw
-    mov     [bp+var_14E], ax
+    mov     [bp+var_transformresult], ax
     or      ax, ax
     jle     short loc_1B374
     jmp     loc_1B03C
@@ -2289,7 +2289,7 @@ loc_1B3E0:
     call    transformed_shape_op
     add     sp, 2
     cbw
-    mov     [bp+var_14E], ax
+    mov     [bp+var_transformresult], ax
     or      ax, ax
     jle     short loc_1B46A
     jmp     loc_1B03C
@@ -2301,7 +2301,7 @@ loc_1B408:
     push    ax
     push    ax
     push    cs
-    call near ptr sub_1CB80
+    call near ptr transformed_shape_add_for_sort
     add     sp, 4
     cmp     [bp+var_4E], 0
     jz      short loc_1B449
@@ -2311,7 +2311,7 @@ loc_1B408:
     mov     ax, 0F800h
     push    ax
     push    cs
-    call near ptr sub_1CB80
+    call near ptr transformed_shape_add_for_sort
     add     sp, 4
     cmp     [bp+var_6C], 0
     jz      short loc_1B43C
@@ -2322,10 +2322,10 @@ loc_1B43C:
     sub     [bp+var_A4], 400h
 loc_1B449:
     mov     al, startcol2
-    cmp     [bp+var_F6], al
+    cmp     [bp+var_pos2lookup], al
     jnz     short loc_1B464
     mov     al, startrow2
-    cmp     [bp+var_102], al
+    cmp     [bp+var_poslookup], al
     jnz     short loc_1B464
     mov     [bp+var_12A], 0
     jmp     short loc_1B46A
@@ -2334,12 +2334,12 @@ loc_1B449:
 loc_1B464:
     mov     [bp+var_12A], 0FFFFh
 loc_1B46A:
-    mov     al, [bp+var_102]
+    mov     al, [bp+var_poslookup]
     cbw
     mov     bx, ax
     shl     bx, 1
     mov     bx, trackrows[bx]
-    mov     al, [bp+var_F6]
+    mov     al, [bp+var_pos2lookup]
     cbw
     add     bx, ax
     add     bx, word ptr trackdata19
@@ -2364,7 +2364,7 @@ loc_1B4AA:
 loc_1B4AC:
     mov     ax, di
     shl     ax, 1
-    mov     word ptr [bp+var_154], ax
+    mov     word ptr [bp+var_lastpos2lookup], ax
     mov     bx, ax
     cmp     word ptr state.field_38E[bx], 0
     jnz     short loc_1B4C0
@@ -2392,7 +2392,7 @@ loc_1B4D4:
     mov     ax, di
     shl     ax, 1
     shl     ax, 1
-    mov     [bp+var_150], ax
+    mov     [bp+var_lastposlookupw], ax
     mov     bx, ax
     mov     ax, word ptr state.game_longvecs1.lx[bx]
     mov     dx, word ptr (state.game_longvecs1.lx+2)[bx]
@@ -2415,7 +2415,7 @@ loc_1B503:
     sub     cx, [bp+var_vec4.vx]
     mov     bx, curtransshape_ptr
     mov     [bx+TRANSFORMEDSHAPE.ts_pos.vx], cx
-    mov     bx, [bp+var_150]
+    mov     bx, [bp+var_lastposlookupw]
     mov     ax, word ptr state.game_longvecs2.lx[bx]
     mov     dx, word ptr (state.game_longvecs2.lx+2)[bx]
     mov     cl, 6
@@ -2437,7 +2437,7 @@ loc_1B53B:
     sub     cx, [bp+var_vec4.vy]
     mov     bx, curtransshape_ptr
     mov     [bx+TRANSFORMEDSHAPE.ts_pos.vy], cx
-    mov     bx, [bp+var_150]
+    mov     bx, [bp+var_lastposlookupw]
     mov     ax, word ptr state.game_longvecs3.lx[bx]
     mov     dx, word ptr (state.game_longvecs3.lx+2)[bx]
     mov     cl, 6
@@ -2469,20 +2469,20 @@ loc_1B575:
     mov     al, [bp+var_122]
     or      al, 5
     mov     [bx+TRANSFORMEDSHAPE.ts_flags], al
-    mov     bx, word ptr [bp+var_154]
+    mov     bx, word ptr [bp+var_lastpos2lookup]
     mov     ax, state.field_2FE[bx]
     neg     ax
     mov     bx, curtransshape_ptr
     mov     [bx+TRANSFORMEDSHAPE.ts_rotvec.vx], ax
     mov     ax, di
     shl     ax, 1
-    mov     word ptr [bp+var_154], ax
+    mov     word ptr [bp+var_lastpos2lookup], ax
     mov     bx, ax
     mov     ax, state.field_32E[bx]
     neg     ax
     mov     bx, curtransshape_ptr
     mov     [bx+TRANSFORMEDSHAPE.ts_rotvec.vy], ax
-    mov     bx, word ptr [bp+var_154]
+    mov     bx, word ptr [bp+var_lastpos2lookup]
     mov     ax, state.field_35E[bx]
     neg     ax
     mov     bx, curtransshape_ptr
@@ -2495,7 +2495,7 @@ loc_1B575:
     push    ax
     push    ax
     push    cs
-    call near ptr sub_1CB80
+    call near ptr transformed_shape_add_for_sort
     add     sp, 4
 loc_1B61A:
     inc     di
@@ -2587,27 +2587,27 @@ loc_1B626:
     push    ax
     push    ax
     push    cs
-    call near ptr sub_1CB80
+    call near ptr transformed_shape_add_for_sort
     add     sp, 4
     jmp     short loc_1B72E
 loc_1B71E:
-    mov     al, [bp+var_F6]
-    mov     [bp+var_100], al
-    mov     al, [bp+var_102]
-    mov     [bp+var_12C], al
+    mov     al, [bp+var_pos2lookup]
+    mov     [bp+var_pos2lookupadjust], al
+    mov     al, [bp+var_poslookup]
+    mov     [bp+var_poslookupadjust], al
 loc_1B72E:
-    mov     al, [bp+var_F6]
+    mov     al, [bp+var_pos2lookup]
     cmp     [bp+var_3C], al
     jz      short loc_1B743
-    mov     al, [bp+var_100]
+    mov     al, [bp+var_pos2lookupadjust]
     cmp     [bp+var_3C], al
     jz      short loc_1B743
     jmp     loc_1B9DA
 loc_1B743:
-    mov     al, [bp+var_102]
+    mov     al, [bp+var_poslookup]
     cmp     [bp+var_60], al
     jz      short loc_1B758
-    mov     al, [bp+var_12C]
+    mov     al, [bp+var_poslookupadjust]
     cmp     [bp+var_60], al
     jz      short loc_1B758
     jmp     loc_1B9DA
@@ -2620,7 +2620,7 @@ loc_1B762:
 loc_1B764:
     mov     ax, di
     shl     ax, 1
-    mov     word ptr [bp+var_154], ax
+    mov     word ptr [bp+var_lastpos2lookup], ax
     mov     bx, ax
     cmp     word ptr state.field_38E[bx], 0
     jnz     short loc_1B778
@@ -2643,7 +2643,7 @@ loc_1B782:
     mov     ax, di
     shl     ax, 1
     shl     ax, 1
-    mov     [bp+var_150], ax
+    mov     [bp+var_lastposlookupw], ax
     mov     bx, ax
     mov     ax, word ptr state.game_longvecs1.lx[bx]
     mov     dx, word ptr (state.game_longvecs1.lx+2)[bx]
@@ -2658,7 +2658,7 @@ loc_1B7B9:
     sub     ax, [bp+var_vec4.vx]
     mov     bx, curtransshape_ptr
     mov     [bx+TRANSFORMEDSHAPE.ts_pos.vx], ax
-    mov     bx, [bp+var_150]
+    mov     bx, [bp+var_lastposlookupw]
     mov     ax, word ptr state.game_longvecs2.lx[bx]
     mov     dx, word ptr (state.game_longvecs2.lx+2)[bx]
     add     ax, word ptr state.playerstate.car_posWorld1.ly
@@ -2672,7 +2672,7 @@ loc_1B7E0:
     sub     ax, [bp+var_vec4.vy]
     mov     bx, curtransshape_ptr
     mov     [bx+TRANSFORMEDSHAPE.ts_pos.vy], ax
-    mov     bx, [bp+var_150]
+    mov     bx, [bp+var_lastposlookupw]
     mov     ax, word ptr state.game_longvecs3.lx[bx]
     mov     dx, word ptr (state.game_longvecs3.lx+2)[bx]
     add     ax, word ptr state.playerstate.car_posWorld1.lz
@@ -2696,17 +2696,17 @@ loc_1B808:
     mov     al, [bp+var_122]
     or      al, 5
     mov     [bx+TRANSFORMEDSHAPE.ts_flags], al
-    mov     bx, word ptr [bp+var_154]
+    mov     bx, word ptr [bp+var_lastpos2lookup]
     mov     ax, state.field_2FE[bx]
     neg     ax
     mov     bx, curtransshape_ptr
     mov     [bx+TRANSFORMEDSHAPE.ts_rotvec.vx], ax
-    mov     bx, word ptr [bp+var_154]
+    mov     bx, word ptr [bp+var_lastpos2lookup]
     mov     ax, state.field_32E[bx]
     neg     ax
     mov     bx, curtransshape_ptr
     mov     [bx+TRANSFORMEDSHAPE.ts_rotvec.vy], ax
-    mov     bx, word ptr [bp+var_154]
+    mov     bx, word ptr [bp+var_lastpos2lookup]
     mov     ax, state.field_35E[bx]
     neg     ax
     mov     bx, curtransshape_ptr
@@ -2722,7 +2722,7 @@ loc_1B808:
     and     ax, [bp+var_12A]
     push    ax
     push    cs
-    call near ptr sub_1CB80
+    call near ptr transformed_shape_add_for_sort
     add     sp, 4
 loc_1B896:
     inc     di
@@ -2854,21 +2854,21 @@ loc_1B990:
     and     ax, [bp+var_12A]
     push    ax
     push    cs
-    call near ptr sub_1CB80
+    call near ptr transformed_shape_add_for_sort
     add     sp, 4
 loc_1B9DA:
-    mov     al, [bp+var_F6]
+    mov     al, [bp+var_pos2lookup]
     cmp     [bp+var_4A], al
     jz      short loc_1B9EF
-    mov     al, [bp+var_100]
+    mov     al, [bp+var_pos2lookupadjust]
     cmp     [bp+var_4A], al
     jz      short loc_1B9EF
     jmp     loc_1BC89
 loc_1B9EF:
-    mov     al, [bp+var_102]
+    mov     al, [bp+var_poslookup]
     cmp     [bp+var_6E], al
     jz      short loc_1BA04
-    mov     al, [bp+var_12C]
+    mov     al, [bp+var_poslookupadjust]
     cmp     [bp+var_6E], al
     jz      short loc_1BA04
     jmp     loc_1BC89
@@ -2881,7 +2881,7 @@ loc_1BA0E:
 loc_1BA10:
     mov     ax, di
     shl     ax, 1
-    mov     word ptr [bp+var_154], ax
+    mov     word ptr [bp+var_lastpos2lookup], ax
     mov     bx, ax
     cmp     word ptr state.field_38E[bx], 0
     jnz     short loc_1BA24
@@ -2904,7 +2904,7 @@ loc_1BA2E:
     mov     ax, di
     shl     ax, 1
     shl     ax, 1
-    mov     [bp+var_150], ax
+    mov     [bp+var_lastposlookupw], ax
     mov     bx, ax
     mov     ax, word ptr state.game_longvecs1.lx[bx]
     mov     dx, word ptr (state.game_longvecs1.lx+2)[bx]
@@ -2919,7 +2919,7 @@ loc_1BA65:
     sub     ax, [bp+var_vec4.vx]
     mov     bx, curtransshape_ptr
     mov     [bx+TRANSFORMEDSHAPE.ts_pos.vx], ax
-    mov     bx, [bp+var_150]
+    mov     bx, [bp+var_lastposlookupw]
     mov     ax, word ptr state.game_longvecs2.lx[bx]
     mov     dx, word ptr (state.game_longvecs2.lx+2)[bx]
     add     ax, word ptr state.opponentstate.car_posWorld1.ly
@@ -2933,7 +2933,7 @@ loc_1BA8C:
     sub     ax, [bp+var_vec4.vy]
     mov     bx, curtransshape_ptr
     mov     [bx+TRANSFORMEDSHAPE.ts_pos.vy], ax
-    mov     bx, [bp+var_150]
+    mov     bx, [bp+var_lastposlookupw]
     mov     ax, word ptr state.game_longvecs3.lx[bx]
     mov     dx, word ptr (state.game_longvecs3.lx+2)[bx]
     add     ax, word ptr state.opponentstate.car_posWorld1.lz
@@ -2957,17 +2957,17 @@ loc_1BAB4:
     mov     al, [bp+var_122]
     or      al, 5
     mov     [bx+TRANSFORMEDSHAPE.ts_flags], al
-    mov     bx, word ptr [bp+var_154]
+    mov     bx, word ptr [bp+var_lastpos2lookup]
     mov     ax, state.field_2FE[bx]
     neg     ax
     mov     bx, curtransshape_ptr
     mov     [bx+TRANSFORMEDSHAPE.ts_rotvec.vx], ax
-    mov     bx, word ptr [bp+var_154]
+    mov     bx, word ptr [bp+var_lastpos2lookup]
     mov     ax, state.field_32E[bx]
     neg     ax
     mov     bx, curtransshape_ptr
     mov     [bx+TRANSFORMEDSHAPE.ts_rotvec.vy], ax
-    mov     bx, word ptr [bp+var_154]
+    mov     bx, word ptr [bp+var_lastpos2lookup]
     mov     ax, state.field_35E[bx]
     neg     ax
     mov     bx, curtransshape_ptr
@@ -2983,7 +2983,7 @@ loc_1BAB4:
     and     ax, [bp+var_12A]
     push    ax
     push    cs
-    call near ptr sub_1CB80
+    call near ptr transformed_shape_add_for_sort
     add     sp, 4
 loc_1BB43:
     inc     di
@@ -3037,7 +3037,7 @@ loc_1BBB0:
     jmp     short loc_1BBF6
 loc_1BBC0:
     mov     bx, [bp+var_trkobject_ptr]
-    mov     ax, [bx+4]
+    mov     ax, [bx+TRACKOBJECT.ss_shapePtr]
     mov     bx, curtransshape_ptr
     mov     [bx+TRANSFORMEDSHAPE.ts_shapeptr], ax
     mov     ax, offset word_42D04
@@ -3113,7 +3113,7 @@ loc_1BC3E:
     and     ax, [bp+var_12A]
     push    ax
     push    cs
-    call near ptr sub_1CB80
+    call near ptr transformed_shape_add_for_sort
     add     sp, 4
 loc_1BC89:
     cmp     state.game_inputmode, 0
@@ -3121,16 +3121,16 @@ loc_1BC89:
     jmp     loc_1BEAA
 loc_1BC93:
     mov     al, startcol2
-    cmp     [bp+var_F6], al
+    cmp     [bp+var_pos2lookup], al
     jz      short loc_1BCA5
-    cmp     [bp+var_100], al
+    cmp     [bp+var_pos2lookupadjust], al
     jz      short loc_1BCA5
     jmp     loc_1BEAA
 loc_1BCA5:
     mov     al, startrow2
-    cmp     [bp+var_102], al
+    cmp     [bp+var_poslookup], al
     jz      short loc_1BCB7
-    cmp     [bp+var_12C], al
+    cmp     [bp+var_poslookupadjust], al
     jz      short loc_1BCB7
     jmp     loc_1BEAA
 loc_1BCB7:
@@ -3142,7 +3142,7 @@ loc_1BCB7:
     push    ax
     call    multiply_and_scale
     add     sp, 4
-    mov     [bp+var_material], ax
+    mov     [bp+var_multitileflag], ax
     mov     ax, 24h ; '$'
     push    ax
     push    word_44DCA
@@ -3159,20 +3159,20 @@ loc_1BCB7:
     mov     word ptr [bp+var_108], ax
     mov     word ptr [bp+var_108+2], dx
     les     bx, [bp+var_108]
-    mov     ax, [bp+var_material]
+    mov     ax, [bp+var_multitileflag]
     sub     ax, 24h ; '$'
     mov     es:[bx], ax
     les     bx, [bp+var_108]
-    mov     ax, [bp+var_material]
+    mov     ax, [bp+var_multitileflag]
     sub     ax, 24h ; '$'
     mov     es:[bx+6], ax
     les     bx, [bp+var_108]
     mov     ax, 24h ; '$'
-    sub     ax, [bp+var_material]
+    sub     ax, [bp+var_multitileflag]
     mov     es:[bx+0Ch], ax
     les     bx, [bp+var_108]
     mov     ax, 24h ; '$'
-    sub     ax, [bp+var_material]
+    sub     ax, [bp+var_multitileflag]
     mov     es:[bx+12h], ax
     les     bx, [bp+var_108]
     mov     ax, [bp+var_counter]
@@ -3201,7 +3201,7 @@ loc_1BCB7:
     mov     cx, track_angle
     add     ch, 2
     push    cx
-    mov     word ptr [bp+var_154], ax
+    mov     word ptr [bp+var_lastpos2lookup], ax
     call    sin_fast
     add     sp, 2
     push    ax
@@ -3213,7 +3213,7 @@ loc_1BCB7:
     mov     bx, ax
     shl     bx, 1
     add     cx, trackcenterpos2[bx]
-    add     cx, word ptr [bp+var_154]
+    add     cx, word ptr [bp+var_lastpos2lookup]
     sub     cx, [bp+var_vec4.vx]
     mov     bx, curtransshape_ptr
     mov     [bx+TRANSFORMEDSHAPE.ts_pos.vx], cx
@@ -3240,7 +3240,7 @@ loc_1BCB7:
     mov     cx, track_angle
     add     ch, 2
     push    cx
-    mov     word ptr [bp+var_154], ax
+    mov     word ptr [bp+var_lastpos2lookup], ax
     call    cos_fast
     add     sp, 2
     push    ax
@@ -3252,7 +3252,7 @@ loc_1BCB7:
     mov     bx, ax
     shl     bx, 1
     add     cx, trackcenterpos[bx]
-    add     cx, word ptr [bp+var_154]
+    add     cx, word ptr [bp+var_lastpos2lookup]
     sub     cx, [bp+var_vec4.vz]
     mov     bx, curtransshape_ptr
     mov     [bx+TRANSFORMEDSHAPE.ts_pos.vz], cx
@@ -3276,13 +3276,13 @@ loc_1BCB7:
     mov     ax, word_44DCA
     mov     cl, 6
     sar     ax, cl
-    mov     [bp+var_material], ax
+    mov     [bp+var_multitileflag], ax
     cmp     ax, 3
     jle     short loc_1BE8D
-    mov     [bp+var_material], 3
+    mov     [bp+var_multitileflag], 3
 loc_1BE8D:
     mov     bx, curtransshape_ptr
-    mov     al, byte ptr [bp+var_material]
+    mov     al, byte ptr [bp+var_multitileflag]
     mov     [bx+TRANSFORMEDSHAPE.ts_material], al
     sub     ax, ax
     push    ax
@@ -3292,26 +3292,26 @@ smart
 nosmart
     push    ax
     push    cs
-    call near ptr sub_1CB80
+    call near ptr transformed_shape_add_for_sort
     add     sp, 4
 loc_1BEAA:
-    cmp     byte_45D7E, 0
+    cmp     transformedshape_counter, 0
     jnz     short loc_1BEB4
     jmp     loc_1BF6C
 loc_1BEB4:
-    cmp     byte_45D7E, 1
+    cmp     transformedshape_counter, 1
     jle     short loc_1BED0
-    mov     ax, offset word_45E1C
+    mov     ax, offset transformedshape_indices
     push    ax
-    mov     ax, offset word_454DA
+    mov     ax, offset transformedshape_zarray
     push    ax
-    mov     al, byte_45D7E
+    mov     al, transformedshape_counter
     cbw
     push    ax
     call    heapsort_by_order
     add     sp, 6
 loc_1BED0:
-    mov     [bp+var_material], 0
+    mov     [bp+var_multitileflag], 0
     jmp     short loc_1BF38
 loc_1BED8:
     cmp     state.playerstate.car_is_braking, 0
@@ -3326,7 +3326,7 @@ loc_1BEE4:
     call    transformed_shape_op
     add     sp, 2
     cbw
-    mov     [bp+var_14E], ax
+    mov     [bp+var_transformresult], ax
     or      ax, ax
     jle     short loc_1BF10
     jmp     loc_1B03C
@@ -3339,9 +3339,9 @@ loc_1BF09:
     mov     backlights_paint_override, 2Fh ; '/'
     jmp     short loc_1BEE4
 loc_1BF10:
-    cmp     [bp+var_14E], 0
+    cmp     [bp+var_transformresult], 0
     jnz     short loc_1BF34
-    mov     al, byte_45A02[di]
+    mov     al, transformedshape_arg2array[di]
     cbw
     cmp     ax, 2
     jz      short loc_1BF28
@@ -3353,16 +3353,16 @@ loc_1BF28:
     jnz     short loc_1BF34
     mov     [bp+var_DC], 1
 loc_1BF34:
-    inc     [bp+var_material]
+    inc     [bp+var_multitileflag]
 loc_1BF38:
-    mov     al, byte_45D7E
+    mov     al, transformedshape_counter
     cbw
-    cmp     [bp+var_material], ax
+    cmp     [bp+var_multitileflag], ax
     jge     short loc_1BF6C
-    mov     bx, [bp+var_material]
+    mov     bx, [bp+var_multitileflag]
     shl     bx, 1
-    mov     di, word_45E1C[bx]
-    mov     al, byte_45A02[di]
+    mov     di, transformedshape_indices[bx]
+    mov     al, transformedshape_arg2array[di]
     cbw
     cmp     ax, 2
     jz      short loc_1BED8
@@ -3385,22 +3385,22 @@ loc_1BF6D:
 loc_1BF75:
     cmp     [bp+si+var_32], 0
     jnz     short loc_1BF6C
-    mov     al, [bp+si+var_86]
-    mov     [bp+var_F6], al
-    mov     al, [bp+si+var_D4]
-    mov     [bp+var_102], al
+    mov     al, [bp+si+var_pos2tab]
+    mov     [bp+var_pos2lookup], al
+    mov     al, [bp+si+var_postab]
+    mov     [bp+var_poslookup], al
     mov     al, [bp+si+var_14C]
-    mov     [bp+var_62], al
+    mov     [bp+elem_map_value], al
     mov     al, [bp+si+var_1A]
-    mov     [bp+var_10C], al
+    mov     [bp+terr_map_value], al
     mov     al, [bp+si+var_BC]
     mov     [bp+var_FC], al
     mov     [bp+var_12A], 0
-    cmp     [bp+var_62], 0
+    cmp     [bp+elem_map_value], 0
     jnz     short loc_1BFB0
     jmp     loc_1AD4A
 loc_1BFB0:
-    mov     al, [bp+var_62]
+    mov     al, [bp+elem_map_value]
 loc_1BFB3:
     sub     ah, ah
     mov     cx, ax
@@ -3474,15 +3474,15 @@ loc_1C01E:
     mov     [bp+var_vec6.vy], ax
     mov     ax, [bx+RECTANGLE.rc_right]
     sub     ax, [bx+RECTANGLE.rc_left]
-    mov     [bp+var_material], ax
+    mov     [bp+var_multitileflag], ax
     mov     ax, [bx+RECTANGLE.rc_bottom]
     sub     ax, [bx+RECTANGLE.rc_top]
     mov     [bp+var_counter], ax
-    mov     ax, [bp+var_material]
+    mov     ax, [bp+var_multitileflag]
     cmp     [bp+var_counter], ax
     jle     short loc_1C070
     mov     ax, [bp+var_counter]
-    mov     [bp+var_material], ax
+    mov     [bp+var_multitileflag], ax
 loc_1C070:
     mov     ax, state.game_frame
     shr     ax, 1
@@ -3497,7 +3497,7 @@ loc_1C070:
     cwd
     push    dx
     push    ax
-    mov     ax, [bp+var_material]
+    mov     ax, [bp+var_multitileflag]
     cwd
     mov     dh, dl
     mov     dl, ah
@@ -3746,10 +3746,10 @@ loc_1C2B0:
     mov     ax, si
     mov     cl, 3
     shl     ax, cl
-    mov     word ptr [bp+var_154], ax
+    mov     word ptr [bp+var_lastpos2lookup], ax
     mov     bx, ax
     lea     ax, rect_unk.rc_left[bx]
-    mov     bx, word ptr [bp+var_154]
+    mov     bx, word ptr [bp+var_lastpos2lookup]
     add     bx, rectptr_unk
     push    si
     push    di
@@ -4704,13 +4704,12 @@ loc_1CB77:
     pop     bp
     retf
 skybox_op endp
-sub_1CB80 proc far
-    var_C = byte ptr -12
-    var_8 = word ptr -8
-    var_6 = byte ptr -6
+transformed_shape_add_for_sort proc far
+    transformedpos = VECTOR ptr -12
+    shapepos = VECTOR ptr -6
      s = byte ptr 0
      r = byte ptr 2
-    arg_0 = word ptr 6
+    arg_zadjust = word ptr 6
     arg_2 = byte ptr 8
 
     push    bp
@@ -4721,8 +4720,8 @@ sub_1CB80 proc far
     mov     ax, curtransshape_ptr
     push    si
     push    di
-    lea     di, [bp+var_6]
-    mov     si, ax
+    lea     di, [bp+shapepos]
+    mov     si, ax          ; ax = offset to the first member of curtransshape_ptr, the pos vector
     push    ss
     pop     es
     movsw
@@ -4730,26 +4729,26 @@ sub_1CB80 proc far
     movsw
     pop     di
     pop     si
-    lea     ax, [bp+var_C]
+    lea     ax, [bp+transformedpos]
     push    ax
     mov     ax, offset mat_temp
     push    ax
-    lea     ax, [bp+var_6]
+    lea     ax, [bp+shapepos]
     push    ax
     call    mat_mul_vector
     add     sp, 6
-    mov     al, byte_45D7E
+    mov     al, transformedshape_counter
     cbw
     mov     si, ax
     mov     di, si
     shl     di, 1
-    mov     ax, [bp+var_8]
-    add     ax, [bp+arg_0]
-    mov     word_454DA[di], ax
+    mov     ax, [bp+transformedpos.vz]
+    add     ax, [bp+arg_zadjust]
+    mov     transformedshape_zarray[di], ax
     mov     al, [bp+arg_2]
-    mov     byte_45A02[si], al
-    mov     word_45E1C[di], si
-    inc     byte_45D7E
+    mov     transformedshape_arg2array[si], al
+    mov     transformedshape_indices[di], si
+    inc     transformedshape_counter
     add     curtransshape_ptr, 14h
     pop     si
     pop     di
@@ -4758,7 +4757,7 @@ sub_1CB80 proc far
     retf
     ; align 2
     db 144
-sub_1CB80 endp
+transformed_shape_add_for_sort endp
 draw_track_preview proc far
     var_42 = word ptr -66
     var_40 = word ptr -64

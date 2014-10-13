@@ -5793,7 +5793,7 @@ loc_137A3:
 loc_137AD:
     mov     ax, word_40D40
     mov     word_40D3A, ax
-    mov     ax, word_40D42
+    mov     ax, end_hiscore_random
     mov     word_40D3C, ax
     mov     ax, word_40D44
     mov     word_40D3E, ax
@@ -5849,14 +5849,14 @@ loc_1382A:
 loc_13833:
     idiv    cx
 loc_13835:
-    mov     word_40D42, dx
+    mov     end_hiscore_random, dx
     mov     ax, word_40D3C
     cmp     dx, ax
     jnz     short loc_1384B
     mov     bx, dx
     shl     bx, 1
     mov     ax, word_3BCE4[bx]
-    mov     word_40D42, ax
+    mov     end_hiscore_random, ax
 loc_1384B:
     cmp     [bp+var_18], 1
     jnz     short loc_138B6
@@ -5897,7 +5897,7 @@ smart
     and     ax, 1
 nosmart
 loc_138AC:
-    mov     word_40D42, ax
+    mov     end_hiscore_random, ax
     mov     [bp+var_6A], 76h ; 'v'
     jmp     short loc_138FF
     ; align 2
@@ -5927,7 +5927,7 @@ loc_138B6:
 smart
     and     ax, 3
 nosmart
-    mov     word_40D42, ax
+    mov     end_hiscore_random, ax
     mov     [bp+var_6A], 64h ; 'd'
 loc_138FF:
     mov     [bp+var_6E], 0
@@ -6206,7 +6206,7 @@ loc_13BD0:
     mov     al, [bp+var_6A]
     mov     [bp+var_12], al
     mov     [bp+var_11], 32h ; '2'
-    mov     al, byte ptr word_40D42
+    mov     al, byte ptr end_hiscore_random
     jmp     loc_13B4F
 loc_13BE0:
     mov     al, [bp+var_6A]

@@ -263,8 +263,7 @@ kevinseed db 6 dup (?)
 field_3F4 db ?
 game_inputmode db ?
 game_3F6autoLoadEvalFlag db ?
-field_3F7 db ?
-field_3F8 db ?
+field_3F7 db 2 dup (?)
 field_3F9 db ?
 field_3FA db 48 dup (?)
 field_42A db ?

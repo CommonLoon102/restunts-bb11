@@ -3940,7 +3940,7 @@ loc_16B82:
     mov     state.game_frame_in_sec, si
     mov     state.field_2F4, si
     mov     state.field_3F7, al
-    mov     state.field_3F8, al
+    mov     state.field_3F7+1, al
     mov     di, si
     jmp     short loc_16BB3
 loc_16BAC:

@@ -4,7 +4,7 @@ seg003 segment byte public 'STUNTSC' use16
     extrn update_frame:proc
     extrn skybox_op_helper2:proc
     extrn skybox_op:proc
-    extrn sub_1CB80:proc
+    extrn transformed_shape_add_for_sort:proc
     extrn draw_track_preview:proc
     extrn draw_ingame_text:proc
     extrn do_sinking:proc

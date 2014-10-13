@@ -94,7 +94,7 @@ run_game proc far
     call    get_kevinrandom
     mov     cl, 3
     shl     ax, cl
-    mov     word_42D28, ax
+    mov     run_game_random, ax
     mov     replaybar_toggle, 1
     mov     is_in_replay, 0
     cmp     idle_expired, 0
@@ -4181,11 +4181,8 @@ loc_24258:
 loc_2426E:
     cmp     cameramode, 3
     jnz     short loc_24288
-loc_24275:
     cmp     word_44D20, 0
-loc_2427A:
     jg      short loc_2427F
-loc_2427C:
     jmp     loc_241F9
 loc_2427F:
     sub     word_44D20, 1Eh

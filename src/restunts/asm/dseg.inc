@@ -256,6 +256,10 @@ dseg segment byte public 'STUNTSD' use16
     extrn byte_3C0C6:byte
     extrn word_3C0D6:word
     extrn fence_TrkObjCodes:byte
+    extrn unk_3C0EE:byte
+    extrn unk_3C0F0:byte
+    extrn unk_3C0F4:byte
+    extrn unk_3C0F8:byte
     extrn word_3C108:word
     extrn word_3C10A:word
     extrn word_3C10C:word
@@ -1000,7 +1004,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn word_40D3C:word
     extrn word_40D3E:word
     extrn word_40D40:word
-    extrn word_40D42:word
+    extrn end_hiscore_random:word
     extrn word_40D44:word
     extrn mat_unk2:MATRIX
     extrn unk_40D58:byte
@@ -1141,7 +1145,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn wallStartX:word
     extrn td01_track_file_cpy:dword
     extrn byte_42D26:byte
-    extrn word_42D28:word
+    extrn run_game_random:word
     extrn byte_42D2A:byte
     extrn wallStartZ:word
     extrn audio_filetemp:byte
@@ -1335,7 +1339,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn trackdata6:dword
     extrn video_flag3_isFFFF:word
     extrn trackdata18:dword
-    extrn word_454DA:word
+    extrn transformedshape_zarray:word
     extrn backlights_paint_override:byte
     extrn track_angle:word
     extrn skybox_ptr1:word
@@ -1378,7 +1382,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn someZeroVideoConst:word
     extrn nextPosAndNormalIP:word
     extrn word_45A00:word
-    extrn byte_45A02:byte
+    extrn transformedshape_arg2array:byte
     extrn cvxptr:dword
     extrn elapsed_time1:word
     extrn unk_45A26:byte
@@ -1392,7 +1396,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn word_45D3E:word
     extrn trackrows:word
     extrn word_45D7C:word
-    extrn byte_45D7E:byte
+    extrn transformedshape_counter:byte
     extrn skyboxes:dword
     extrn byte_45D90:byte
     extrn material_patlist2_ptr_cpy:word
@@ -1411,7 +1415,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn tempdataptr:dword
     extrn byte_45E16:byte
     extrn passed_security:byte
-    extrn word_45E1C:word
+    extrn transformedshape_indices:word
     extrn trackdata19:dword
     extrn simd_player:SIMD
     extrn word_46160:word
