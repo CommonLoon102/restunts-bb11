@@ -637,7 +637,7 @@ void update_gamestate() {
 	if (state.game_3F6autoLoadEvalFlag != 0 && state.game_frame_in_sec < state.game_frames_per_sec) {
 		state.game_frame_in_sec++;
 		if (state.game_frame_in_sec == state.game_frames_per_sec && byte_449DA == 0) {
-			if (state.playerstate.car_crashBmpFlag == 1 && state.playerstate.car_speed2 == 0) {
+			if (state.playerstate.car_crashBmpFlag == 1 && state.playerstate.car_speed2 != 0) {
 				state.game_frames_per_sec++;
 			} else if (game_replay_mode == 0) {
 				byte_449DA = 1;
@@ -1062,151 +1062,146 @@ int stuntsmain(int argc, char* argv[]) {
 	set_default_car();
 
 	regsi = 1;
-	goto _do_intro;
 
-_tracks_menu0:
-	regax = 0;
-_tracks_menu_ax:
-	run_tracks_menu(regax);
-	goto _show_menu;
-_do_opp_menu:
-	check_input();
-	show_waiting();
-	run_opponent_menu();
-	goto _show_menu;
-_do_option_menu:
-	check_input();
-	show_waiting();
-	result = run_option_menu();
-	if (result == 0) goto _show_menu;
-	// goto replay-mode if option-menu-result != 0
-_goto_game1:
-	var_A = 1;
-	goto _do_game1;
-_do_car_menu:
-	check_input();
-	show_waiting();
-	run_car_menu(&gameconfig, &gameconfig.game_playermaterial, &gameconfig.game_playertransmission, 0);
-	goto _show_menu;
+	while (1) {
 
-_do_game0:
-	var_A = 0;
-_do_game1:
-	_memcpy(&gameconfigcopy, &gameconfig, sizeof(struct GAMEINFO));
-	for (i = 0; i < 0x70A; i++) {
-		td20_trk_file_appnd[i] = td14_elem_map_main[i];
-	}
-	for (i = 0; i < 0x51; i++) {
-		td20_trk_file_appnd[i + 0x70A] = byte_3B80C[i];
-		td20_trk_file_appnd[i + 0x75B] = byte_3B85E[i];
-	}
-	
-	if (idle_expired != 0) {
-		if (file_find("tedit.*") != 0) goto _init_replay;
-		goto _prepare_intro;
-	}
-	result = track_setup();
-	//result = setup_track();
-	if (result != 0) {
-		regax = 1;
-		goto _tracks_menu_ax;
-	}
-	random_wait();
-	if (passed_security == 0) {
-		fatal_error("security check");
-		//get_super_random();
-		//security_check();
-	}
-
-_init_replay:
-	audio_unload();
-
-	cvxptr = mmgr_alloc_resbytes("cvx", sizeof(struct GAMESTATE) * RST_CVX_NUM);
-	init_game_state(-1);
-	
-	if (var_A == 0) goto loc_104A6;
-	byte_43966 = 0;
-	goto loc_104AC;
-	
-
-
-_prepare_intro:
-	audio_unload();
-_do_intro0:
-	regsi = 0;
-_do_intro:
-	ensure_file_exists(2);
-	
-	if (regsi != 0) {
-		file_build_path(byte_3B80C, gameconfig.game_trackname, ".trk", g_path_buf);
-		file_read_fatal(g_path_buf, td14_elem_map_main);
-	}
-	
-	idle_expired = 0;
-	result = run_intro_looped();
-	if (result == 27) goto _ask_dos;
-
-_show_menu:
-
-	ensure_file_exists(2);
-	if (is_audioloaded == 0) {
-		file_load_audiores("skidslct", "skidms", "SLCT");
-	}
-	result = run_menu();
-	if (result == -1) 
-		goto _prepare_intro; else
-	if (result == 0)
-		goto _do_game0; else
-	if (result == 1)
-		goto _do_car_menu; else
-	if (result == 2)
-		goto _do_opp_menu; else
-	if (result == 3)
-		goto _tracks_menu0; else
-	if (result == 4)
-		goto _do_option_menu; else
-		goto _show_menu;
-loc_104A6:
-	gameconfig.game_recordedframes = 0;
-loc_104AC:
-	show_waiting();
-	run_game();
-	//if (byte_44AE2 != 0) goto loc_104D2;
-	//if (byte_43966 == 0) goto loc_104D2;
-	if (idle_expired == 0 && byte_43966 != 0) {
-		result = end_hiscore();
-		if (result == 0) {
-			byte_43966 = 4;
-			goto loc_104AC;
+		ensure_file_exists(2);
+		
+		if (regsi != 0) {
+			file_build_path(byte_3B80C, gameconfig.game_trackname, ".trk", g_path_buf);
+			file_read_fatal(g_path_buf, td14_elem_map_main);
 		}
-		if (result == 1) goto loc_104A6;
-	}
+		
+		idle_expired = 0;
+		result = run_intro_looped();
+		if (result == 27) {
+			textresptr = locate_text_res(mainresptr, "dos");
+			result = show_dialog(2, 1, textresptr, 0xFFFF, 0xFFFF, dialogarg2, 0, 0);
+			if (result >= 1) {
+				mouse_draw_opaque_check();
+				audio_stop_unk();
+				audiodrv_atexit();
+				kb_exit_handler();
+				kb_shift_checking1();
+				video_set_mode7();
+				return result;
+			}
+			regsi = 0;
+			continue;
+		}
 
-loc_104D2:
-	_memcpy(&gameconfigcopy, &gameconfig, sizeof(struct GAMEINFO));
-	for (i = 0; i < 0x70A; i++) {
-		td14_elem_map_main[i] = td20_trk_file_appnd[i];
-	}
-	for (i = 0; i < 0x51; i++) {
-		byte_3B80C[i] = td20_trk_file_appnd[i + 0x70A];
-		byte_3B85E[i] = td20_trk_file_appnd[i + 0x75B];
-	}
-	mmgr_release(cvxptr);
+		while (1) {
+			ensure_file_exists(2);
+			if (is_audioloaded == 0) {
+				file_load_audiores("skidslct", "skidms", "SLCT");
+			}
+			result = run_menu();
+			if (result == -1)  {
+				audio_unload();
+				regsi = 0;
+				break;
+			} else if (result == 0) {
+				var_A = 0;
+			} else if (result == 1) {
+				check_input();
+				show_waiting();
+				run_car_menu(&gameconfig, &gameconfig.game_playermaterial, &gameconfig.game_playertransmission, 0);
+				continue;
+			} else if (result == 2) {
+				check_input();
+				show_waiting();
+				run_opponent_menu();
+				continue;
+			} else if (result == 3) {
+				run_tracks_menu(0);
+				continue;
+			} else if (result == 4) {
+				check_input();
+				show_waiting();
+				result = run_option_menu();
+				if (result == 0) {
+					continue;
+				} else {
+					// goto replay-mode if option-menu-result != 0
+					var_A = 1;
+				}
+			} else {
+				continue;
+			}
+
+			_memcpy(&gameconfigcopy, &gameconfig, sizeof(struct GAMEINFO));
+			for (i = 0; i < 0x70A; i++) {
+				td20_trk_file_appnd[i] = td14_elem_map_main[i];
+			}
+			for (i = 0; i < 0x51; i++) {
+				td20_trk_file_appnd[i + 0x70A] = byte_3B80C[i];
+				td20_trk_file_appnd[i + 0x75B] = byte_3B85E[i];
+			}
+			
+			if (idle_expired == 0) {
+				result = track_setup();
+				//result = setup_track();
+				if (result != 0) {
+					run_tracks_menu(1);
+					continue;
+				}
+				random_wait();
+				if (passed_security == 0) {
+					fatal_error("security check");
+					//get_super_random();
+					//security_check();
+				}
+			} else if (file_find("tedit.*") == 0) {
+				audio_unload();
+				regsi = 0;
+				break;
+			}
+
+			audio_unload();
+
+			cvxptr = mmgr_alloc_resbytes("cvx", sizeof(struct GAMESTATE) * RST_CVX_NUM);
+			init_game_state(-1);
+			
+			if (var_A != 0) {
+				byte_43966 = 0;
+			}
+
+			gameconfig.game_recordedframes = 0;
+
+			while (1) {
+				show_waiting();
+				run_game();
+				if (idle_expired == 0 && byte_43966 != 0) {
+					result = end_hiscore();
+					if (result == 0) {
+						// view replay
+						byte_43966 = 4;
+						continue;
+					} else if (result == 1) {
+						// drive
+						gameconfig.game_recordedframes = 0;
+						continue;
+					}
+				}
+				// main menu
+				break;
+			}
+
+			_memcpy(&gameconfigcopy, &gameconfig, sizeof(struct GAMEINFO));
+			for (i = 0; i < 0x70A; i++) {
+				td14_elem_map_main[i] = td20_trk_file_appnd[i];
+			}
+			for (i = 0; i < 0x51; i++) {
+				byte_3B80C[i] = td20_trk_file_appnd[i + 0x70A];
+				byte_3B85E[i] = td20_trk_file_appnd[i + 0x75B];
+			}
+			mmgr_release(cvxptr);
+			
+			if (idle_expired != 0) {
+				regsi = 0;
+				break;
+			}
+		}
 	
-	if (idle_expired != 0) goto _do_intro0;
-	goto _show_menu;
-
-_ask_dos:
-	textresptr = locate_text_res(mainresptr, "dos");
-	result = show_dialog(2, 1, textresptr, 0xFFFF, 0xFFFF, dialogarg2, 0, 0);
-	if (result >= 1) {
-		mouse_draw_opaque_check();
-		audio_stop_unk();
-		audiodrv_atexit();
-		kb_exit_handler();
-		kb_shift_checking1();
-		video_set_mode7();
-		return result;
 	}
-	goto _do_intro0;
 }
