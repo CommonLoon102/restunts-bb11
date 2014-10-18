@@ -1023,6 +1023,9 @@ void far* file_load_resfile(const char* filename) {
 	}
 }
 
+void unload_resource(void far* resptr) {
+	mmgr_free(resptr);
+}
 
 void far* file_load_3dres(const char* filename) {
 	char name[0x50];

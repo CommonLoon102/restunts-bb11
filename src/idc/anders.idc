@@ -643,6 +643,7 @@ static PortFuncName(labelname) {
 		labelname == "file_combine_and_find" ||
 		labelname == "file_load_replay" ||
 		labelname == "file_write_replay" ||
+		labelname == "unload_resource" ||
 
 		// memmgr.c:
 		labelname == "mmgr_path_to_name" ||

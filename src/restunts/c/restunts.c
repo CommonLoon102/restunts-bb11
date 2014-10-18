@@ -741,8 +741,6 @@ void setup_aero_trackdata(void far* carresptr, int is_opponent) {
 	}
 }
 
-
-extern void unload_resource(void far*);
 extern int audio_init_engine(int, void far*, void far*, void far*);
 
 int setup_player_cars(void) {
