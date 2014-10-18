@@ -692,6 +692,7 @@ static PortFuncName(labelname) {
 		labelname == "polyinfo_reset" || 
 		labelname == "init_polyinfo" || 
 		labelname == "calc_sincos80" ||
+		labelname == "shape3d_load_car_shapes" ||
 
 		// shape2d.c:
 		labelname == "sprite_make_wnd" ||

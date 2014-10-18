@@ -2781,9 +2781,9 @@ loc_1B914:
     mov     ax, [bx+4]
     mov     bx, curtransshape_ptr
     mov     [bx+TRANSFORMEDSHAPE.ts_shapeptr], ax
-    mov     ax, offset word_42CBA
+    mov     ax, offset carshapevec
     push    ax
-    mov     ax, offset word_443FA
+    mov     ax, offset carshapevecs
     push    ax
     mov     ax, offset word_443E8
     push    ax
@@ -3040,9 +3040,9 @@ loc_1BBC0:
     mov     ax, [bx+TRACKOBJECT.ss_shapePtr]
     mov     bx, curtransshape_ptr
     mov     [bx+TRANSFORMEDSHAPE.ts_shapeptr], ax
-    mov     ax, offset word_42D04
+    mov     ax, offset oppcarshapevec
     push    ax
-    mov     ax, offset word_448F4
+    mov     ax, offset oppcarshapevecs
     push    ax
     mov     ax, offset word_4448A
     push    ax

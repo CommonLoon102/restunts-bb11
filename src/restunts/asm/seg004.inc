@@ -4,7 +4,7 @@ seg004 segment byte public 'STUNTSC' use16
     extrn bto_auxiliary1:proc
     extrn ported_shape3d_load_all_:proc
     extrn ported_shape3d_free_all_:proc
-    extrn shape3d_load_car_shapes:proc
+    extrn ported_shape3d_load_car_shapes_:proc
     extrn shape3d_free_car_shapes:proc
     extrn sub_204AE:proc
     extrn track_setup:proc

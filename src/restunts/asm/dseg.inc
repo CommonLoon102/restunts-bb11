@@ -1131,16 +1131,12 @@ dseg segment byte public 'STUNTSD' use16
     extrn currenttransshape:TRANSFORMEDSHAPE
     extrn transshapeunk:TRANSFORMEDSHAPE
     extrn terraincenterpos:word
-    extrn word_42CBA:word
-    extrn word_42CBE:word
-    extrn word_42CC0:word
-    extrn word_42CC4:word
+    extrn carshapevec:VECTOR
+    extrn carshapevec2:VECTOR
     extrn trackpos2:word
     extrn elapsed_time2:word
-    extrn word_42D04:word
-    extrn word_42D08:word
-    extrn word_42D0A:word
-    extrn word_42D0E:word
+    extrn oppcarshapevec:VECTOR
+    extrn oppcarshapevec2:VECTOR
     extrn sprite_ptrs:dword
     extrn wallStartX:word
     extrn td01_track_file_cpy:dword
@@ -1208,24 +1204,16 @@ dseg segment byte public 'STUNTSD' use16
     extrn word_443F2:word
     extrn word_443F4:word
     extrn td20_trk_file_appnd:dword
-    extrn word_443FA:word
-    extrn word_443FC:word
-    extrn word_443FE:word
-    extrn word_4441E:word
-    extrn word_44420:word
-    extrn word_44422:word
-    extrn word_44442:word
-    extrn word_44466:word
+    extrn carshapevecs:VECTOR
+    extrn carshapevecs2:VECTOR
+    extrn carshapevecs3:VECTOR
+    extrn carshapevecs4:VECTOR
     extrn word_4448A:word
     extrn state:GAMESTATE
-    extrn word_448F4:word
-    extrn word_448F6:word
-    extrn word_448F8:word
-    extrn word_44918:word
-    extrn word_4491A:word
-    extrn word_4491C:word
-    extrn word_4493C:word
-    extrn word_44960:word
+    extrn oppcarshapevecs:VECTOR
+    extrn oppcarshapevecs2:VECTOR
+    extrn oppcarshapevecs3:VECTOR
+    extrn oppcarshapevecs4:VECTOR
     extrn timertestflag_copy:word
     extrn pState_minusRotate_x_1:word
     extrn elRdWallRelated:word

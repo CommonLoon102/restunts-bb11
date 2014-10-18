@@ -1179,16 +1179,12 @@ dseg segment byte public 'STUNTSD' use16
     public currenttransshape
     public transshapeunk
     public terraincenterpos
-    public word_42CBA
-    public word_42CBE
-    public word_42CC0
-    public word_42CC4
+    public carshapevec
+    public carshapevec2
     public trackpos2
     public elapsed_time2
-    public word_42D04
-    public word_42D08
-    public word_42D0A
-    public word_42D0E
+    public oppcarshapevec
+    public oppcarshapevec2
     public sprite_ptrs
     public wallStartX
     public td01_track_file_cpy
@@ -1256,24 +1252,16 @@ dseg segment byte public 'STUNTSD' use16
     public word_443F2
     public word_443F4
     public td20_trk_file_appnd
-    public word_443FA
-    public word_443FC
-    public word_443FE
-    public word_4441E
-    public word_44420
-    public word_44422
-    public word_44442
-    public word_44466
+    public carshapevecs
+    public carshapevecs2
+    public carshapevecs3
+    public carshapevecs4
     public word_4448A
     public state
-    public word_448F4
-    public word_448F6
-    public word_448F8
-    public word_44918
-    public word_4491A
-    public word_4491C
-    public word_4493C
-    public word_44960
+    public oppcarshapevecs
+    public oppcarshapevecs2
+    public oppcarshapevecs3
+    public oppcarshapevecs4
     public timertestflag_copy
     public pState_minusRotate_x_1
     public elRdWallRelated
@@ -28139,14 +28127,18 @@ terraincenterpos     dw 0
     dw 0
     dw 0
     dw 0
-word_42CBA     dw 0
+carshapevec     db 0
     db 0
     db 0
-word_42CBE     dw 0
-word_42CC0     dw 0
     db 0
     db 0
-word_42CC4     dw 0
+    db 0
+carshapevec2     db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
 trackpos2     dw 0
     dw 0
     dw 0
@@ -28178,14 +28170,18 @@ trackpos2     dw 0
     dw 0
     dw 0
 elapsed_time2     dw 0
-word_42D04     dw 0
+oppcarshapevec     db 0
     db 0
     db 0
-word_42D08     dw 0
-word_42D0A     dw 0
     db 0
     db 0
-word_42D0E     dw 0
+    db 0
+oppcarshapevec2     db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
 sprite_ptrs     dd 0
     dd 0
     dd 0
@@ -33918,9 +33914,7 @@ word_443E8     dw 0
 word_443F2     dw 0
 word_443F4     dw 0
 td20_trk_file_appnd     dd 0
-word_443FA     dw 0
-word_443FC     dw 0
-word_443FE     dw 0
+carshapevecs     db 0
     db 0
     db 0
     db 0
@@ -33951,14 +33945,12 @@ word_443FE     dw 0
     db 0
     db 0
     db 0
-word_4441E     dw 0
-word_44420     dw 0
-word_44422     dw 0
     db 0
     db 0
     db 0
     db 0
     db 0
+carshapevecs2     db 0
     db 0
     db 0
     db 0
@@ -33984,7 +33976,6 @@ word_44422     dw 0
     db 0
     db 0
     db 0
-word_44442     dw 0
     db 0
     db 0
     db 0
@@ -33995,6 +33986,7 @@ word_44442     dw 0
     db 0
     db 0
     db 0
+carshapevecs3     db 0
     db 0
     db 0
     db 0
@@ -34019,7 +34011,19 @@ word_44442     dw 0
     db 0
     db 0
     db 0
-word_44466     dw 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+carshapevecs4     db 0
+    db 0
     db 0
     db 0
     db 0
@@ -35183,9 +35187,7 @@ state     db 0
     db 0
     db 0
     db 0
-word_448F4     dw 0
-word_448F6     dw 0
-word_448F8     dw 0
+oppcarshapevecs     db 0
     db 0
     db 0
     db 0
@@ -35216,14 +35218,12 @@ word_448F8     dw 0
     db 0
     db 0
     db 0
-word_44918     dw 0
-word_4491A     dw 0
-word_4491C     dw 0
     db 0
     db 0
     db 0
     db 0
     db 0
+oppcarshapevecs2     db 0
     db 0
     db 0
     db 0
@@ -35249,7 +35249,6 @@ word_4491C     dw 0
     db 0
     db 0
     db 0
-word_4493C     dw 0
     db 0
     db 0
     db 0
@@ -35260,6 +35259,7 @@ word_4493C     dw 0
     db 0
     db 0
     db 0
+oppcarshapevecs3     db 0
     db 0
     db 0
     db 0
@@ -35284,7 +35284,19 @@ word_4493C     dw 0
     db 0
     db 0
     db 0
-word_44960     dw 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+    db 0
+oppcarshapevecs4     db 0
+    db 0
     db 0
     db 0
     db 0

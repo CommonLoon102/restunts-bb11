@@ -51,7 +51,7 @@ seg004 segment byte public 'STUNTSC' use16
     public bto_auxiliary1
     public ported_shape3d_load_all_
     public ported_shape3d_free_all_
-    public shape3d_load_car_shapes
+    public ported_shape3d_load_car_shapes_
     public shape3d_free_car_shapes
     public sub_204AE
     public track_setup
@@ -3319,13 +3319,11 @@ locret_1FF90:
     ; align 2
     db 144
 ported_shape3d_free_all_ endp
-shape3d_load_car_shapes proc far
+ported_shape3d_load_car_shapes_ proc far
     var_10 = byte ptr -16
     var_E = dword ptr -14
-    var_A = word ptr -10
-    var_8 = word ptr -8
-    var_6 = word ptr -6
-    var_4 = word ptr -4
+    var_A = dword ptr -10
+    var_6 = dword ptr -6
      s = byte ptr 0
      r = byte ptr 2
     arg_playercarid = word ptr 6
@@ -3383,18 +3381,18 @@ loc_1FFEE:
     mov     word ptr [bp+var_E], ax
     mov     word ptr [bp+var_E+2], dx
     les     bx, [bp+var_E]
-    mov     ax, es:[bx+4]
-    mov     word_42CBE, ax
-    mov     ax, es:[bx+12h]
-    add     ax, es:[bx]
+    mov     ax, es:[bx+VECTOR.vz]
+    mov     carshapevec.vz, ax
+    mov     ax, es:[bx+(VECTOR.vx+12h)]
+    add     ax, es:[bx+VECTOR.vx]
     sar     ax, 1
-    mov     word_42CBA, ax
-    mov     ax, es:[bx+28h]
-    mov     word_42CC4, ax
-    mov     ax, es:[bx+24h]
-    add     ax, es:[bx+36h]
+    mov     carshapevec.vx, ax
+    mov     ax, es:[bx+(VECTOR.vz+24h)]
+    mov     carshapevec2.vz, ax
+    mov     ax, es:[bx+(VECTOR.vx+24h)]
+    add     ax, es:[bx+(VECTOR.vx+36h)]
     sar     ax, 1
-    mov     word_42CC0, ax
+    mov     carshapevec2.vx, ax
     sub     si, si
 loc_20044:
     mov     ax, si
@@ -3403,33 +3401,33 @@ loc_20044:
     add     ax, cx
     shl     ax, 1
     mov     di, ax
-    mov     ax, word_42CBA
+    mov     ax, carshapevec.vx
     les     bx, [bp+var_E]
-    sub     ax, es:[bx+di]
-    mov     word_443FA[di], ax
+    sub     ax, es:[bx+di+VECTOR.vx]
+    mov     word ptr carshapevecs.vx[di], ax
     les     bx, [bp+var_E]
-    mov     ax, word_42CBE
-    sub     ax, es:[bx+di+4]
-    mov     word_443FE[di], ax
+    mov     ax, carshapevec.vz
+    sub     ax, es:[bx+di+VECTOR.vz]
+    mov     carshapevecs.vz[di], ax
     les     bx, [bp+var_E]
-    mov     ax, es:[bx+di+2]
-    mov     word_443FC[di], ax
+    mov     ax, es:[bx+di+VECTOR.vy]
+    mov     carshapevecs.vy[di], ax
     les     bx, [bp+var_E]
-    mov     ax, word_42CC0
-    sub     ax, es:[bx+di+24h]
-    mov     word_4441E[di], ax
+    mov     ax, carshapevec2.vx
+    sub     ax, es:[bx+di+(VECTOR.vx+24h)]
+    mov     word ptr carshapevecs2.vx[di], ax
     les     bx, [bp+var_E]
-    mov     ax, word_42CC4
-    sub     ax, es:[bx+di+28h]
-    mov     word_44422[di], ax
+    mov     ax, carshapevec2.vz
+    sub     ax, es:[bx+di+(VECTOR.vz+24h)]
+    mov     carshapevecs2.vz[di], ax
     les     bx, [bp+var_E]
-    mov     ax, es:[bx+di+26h]
-    mov     word_44420[di], ax
+    mov     ax, es:[bx+di+(VECTOR.vy+24h)]
+    mov     carshapevecs2.vy[di], ax
     les     bx, [bp+var_E]
     push    si
     push    di
-    lea     si, [bx+di+48h]
-    lea     di, word_44442[di]
+    lea     si, [bx+di+(VECTOR.vx+48h)]
+    lea     di, carshapevecs3.vx[di]
     push    ds
     push    ds
     push    es
@@ -3444,8 +3442,8 @@ loc_20044:
     les     bx, [bp+var_E]
     push    si
     push    di
-    lea     si, [bx+di+6Ch]
-    lea     di, word_44466[di]
+    lea     si, [bx+di+(VECTOR.vx+6Ch)]
+    lea     di, carshapevecs4.vx[di]
     push    ds
     push    ds
     push    es
@@ -3482,7 +3480,7 @@ loc_200D6:
     push    ax
     call    shape3d_init_shape
     add     sp, 6
-    mov     ax, 8044h
+    mov     ax, (offset game3dshapes.shape3d_numverts+9F8h)
     push    ax
     mov     ax, offset aExp0_0; "exp0"
     push    ax
@@ -3494,7 +3492,7 @@ loc_200D6:
     push    ax
     call    shape3d_init_shape
     add     sp, 6
-    mov     ax, 805Ah
+    mov     ax, (offset game3dshapes.shape3d_numverts+0A0Eh)
     push    ax
     mov     ax, offset aExp1_0; "exp1"
     push    ax
@@ -3556,8 +3554,8 @@ loc_201A9:
     push    word ptr carresptr
     call    mmgr_get_chunk_size_bytes
     add     sp, 4
-    mov     [bp+var_6], ax
-    mov     [bp+var_4], dx
+    mov     word ptr [bp+var_6], ax
+    mov     word ptr [bp+var_6+2], dx
     push    dx
     push    ax
     mov     ax, offset aCar2_0; "car2"
@@ -3567,26 +3565,26 @@ loc_201A9:
     mov     word ptr car2resptr, ax
     mov     word ptr car2resptr+2, dx
     sub     ax, ax
-    mov     [bp+var_8], ax
-    mov     [bp+var_A], ax
+    mov     word ptr [bp+var_A+2], ax
+    mov     word ptr [bp+var_A], ax
     jmp     short loc_20204
     ; align 4
     db 144
     db 144
     db 144
 loc_201FC:
-    add     [bp+var_A], 1
-    adc     [bp+var_8], 0
+    add     word ptr [bp+var_A], 1
+    adc     word ptr [bp+var_A+2], 0
 loc_20204:
-    mov     ax, [bp+var_6]
-    mov     dx, [bp+var_4]
-    cmp     [bp+var_8], dx
+    mov     ax, word ptr [bp+var_6]
+    mov     dx, word ptr [bp+var_6+2]
+    cmp     word ptr [bp+var_A+2], dx
     jg      short loc_20257
     jl      short loc_20216
-    cmp     [bp+var_A], ax
+    cmp     word ptr [bp+var_A], ax
     jnb     short loc_20257
 loc_20216:
-    mov     bx, [bp+var_A]
+    mov     bx, word ptr [bp+var_A]
     les     di, carresptr
     mov     al, es:[bx+di]
     les     di, car2resptr
@@ -3642,18 +3640,18 @@ loc_20257:
     mov     word ptr [bp+var_E], ax
     mov     word ptr [bp+var_E+2], dx
     les     bx, [bp+var_E]
-    mov     ax, es:[bx+4]
-    mov     word_42D08, ax
-    mov     ax, es:[bx+12h]
-    add     ax, es:[bx]
+    mov     ax, es:[bx+VECTOR.vz]
+    mov     oppcarshapevec.vz, ax
+    mov     ax, es:[bx+(VECTOR.vx+12h)]
+    add     ax, es:[bx+VECTOR.vx]
     sar     ax, 1
-    mov     word_42D04, ax
-    mov     ax, es:[bx+28h]
-    mov     word_42D0E, ax
-    mov     ax, es:[bx+24h]
-    add     ax, es:[bx+36h]
+    mov     oppcarshapevec.vx, ax
+    mov     ax, es:[bx+(VECTOR.vz+24h)]
+    mov     oppcarshapevec2.vz, ax
+    mov     ax, es:[bx+(VECTOR.vx+24h)]
+    add     ax, es:[bx+(VECTOR.vx+36h)]
     sar     ax, 1
-    mov     word_42D0A, ax
+    mov     oppcarshapevec2.vx, ax
     sub     si, si
 loc_202D7:
     mov     ax, si
@@ -3662,33 +3660,33 @@ loc_202D7:
     add     ax, cx
     shl     ax, 1
     mov     di, ax
-    mov     ax, word_42D04
+    mov     ax, oppcarshapevec.vx
     les     bx, [bp+var_E]
-    sub     ax, es:[bx+di]
-    mov     word_448F4[di], ax
+    sub     ax, es:[bx+di+VECTOR.vx]
+    mov     word ptr oppcarshapevecs.vx[di], ax
     les     bx, [bp+var_E]
-    mov     ax, word_42D08
-    sub     ax, es:[bx+di+4]
-    mov     word_448F8[di], ax
+    mov     ax, oppcarshapevec.vz
+    sub     ax, es:[bx+di+VECTOR.vz]
+    mov     oppcarshapevecs.vz[di], ax
     les     bx, [bp+var_E]
-    mov     ax, es:[bx+di+2]
-    mov     word_448F6[di], ax
+    mov     ax, es:[bx+di+VECTOR.vy]
+    mov     oppcarshapevecs.vy[di], ax
     les     bx, [bp+var_E]
-    mov     ax, word_42D0A
-    sub     ax, es:[bx+di+24h]
-    mov     word_44918[di], ax
+    mov     ax, oppcarshapevec2.vx
+    sub     ax, es:[bx+di+(VECTOR.vx+24h)]
+    mov     word ptr oppcarshapevecs2.vx[di], ax
     les     bx, [bp+var_E]
-    mov     ax, word_42D0E
-    sub     ax, es:[bx+di+28h]
-    mov     word_4491C[di], ax
+    mov     ax, oppcarshapevec2.vz
+    sub     ax, es:[bx+di+(VECTOR.vz+24h)]
+    mov     oppcarshapevecs2.vz[di], ax
     les     bx, [bp+var_E]
-    mov     ax, es:[bx+di+26h]
-    mov     word_4491A[di], ax
+    mov     ax, es:[bx+di+(VECTOR.vy+24h)]
+    mov     oppcarshapevecs2.vy[di], ax
     les     bx, [bp+var_E]
     push    si
     push    di
-    lea     si, [bx+di+48h]
-    lea     di, word_4493C[di]
+    lea     si, [bx+di+(VECTOR.vx+48h)]
+    lea     di, oppcarshapevecs3.vx[di]
     push    ds
     push    ds
     push    es
@@ -3703,8 +3701,8 @@ loc_202D7:
     les     bx, [bp+var_E]
     push    si
     push    di
-    lea     si, [bx+di+6Ch]
-    lea     di, word_44960[di]
+    lea     si, [bx+di+(VECTOR.vx+6Ch)]
+    lea     di, oppcarshapevecs4.vx[di]
     push    ds
     push    ds
     push    es
@@ -3729,7 +3727,7 @@ loc_20369:
     inc     si
     cmp     si, 5
     jl      short loc_20369
-    mov     ax, 8162h
+    mov     ax, (offset game3dshapes.shape3d_numverts+0B16h)
     push    ax
     mov     ax, offset aCar2_1; "car2"
     push    ax
@@ -3805,15 +3803,15 @@ loc_2042A:
     mov     sp, bp
     pop     bp
     retf
-shape3d_load_car_shapes endp
+ported_shape3d_load_car_shapes_ endp
 shape3d_free_car_shapes proc far
 
     mov     ax, word ptr car2resptr
     or      ax, word ptr car2resptr+2
     jz      short loc_20477
-    mov     ax, offset word_42D04
+    mov     ax, offset oppcarshapevec
     push    ax
-    mov     ax, offset word_448F4
+    mov     ax, offset oppcarshapevecs
     push    ax
     mov     ax, offset word_4448A
     push    ax
@@ -3834,9 +3832,9 @@ shape3d_free_car_shapes proc far
     call    mmgr_release
     add     sp, 4
 loc_20477:
-    mov     ax, offset word_42CBA
+    mov     ax, offset carshapevec
     push    ax
-    mov     ax, offset word_443FA
+    mov     ax, offset carshapevecs
     push    ax
     mov     ax, offset word_443E8
     push    ax

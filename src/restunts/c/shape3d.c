@@ -4888,3 +4888,112 @@ asm {
 }
 	return result;
 }
+
+
+
+extern char aStxxx[];
+extern short far* carresptr;
+extern short far* car2resptr;
+extern struct VECTOR carshapevec;
+extern struct VECTOR carshapevec2;
+extern struct VECTOR carshapevecs[];
+extern struct VECTOR carshapevecs2[];
+extern struct VECTOR carshapevecs3[];
+extern struct VECTOR carshapevecs4[];
+
+extern struct VECTOR oppcarshapevec;
+extern struct VECTOR oppcarshapevec2;
+extern struct VECTOR oppcarshapevecs[];
+extern struct VECTOR oppcarshapevecs2[];
+extern struct VECTOR oppcarshapevecs3[];
+extern struct VECTOR oppcarshapevecs4[];
+extern int word_443E8[];
+extern int word_4448A[];
+
+void shape3d_load_car_shapes(char arg_playercarid[], char arg_opponentcarid[]) {
+	int i;
+	struct VECTOR far* var_E;
+	unsigned long var_6;
+
+	aStxxx[2] = arg_playercarid[0];
+	aStxxx[3] = arg_playercarid[1];
+	aStxxx[4] = arg_playercarid[2];
+	aStxxx[5] = arg_playercarid[3];
+	carresptr = file_load_3dres(aStxxx);
+	shape3d_init_shape(locate_shape_fatal(carresptr, "car0"), &game3dshapes[124]);
+	shape3d_init_shape(locate_shape_fatal(carresptr, "car1"), &game3dshapes[126]);
+
+	var_E = &(game3dshapes[126].shape3d_verts[8]);
+	carshapevec.z = var_E[0].z;
+	carshapevec.x = (var_E[3].x + var_E[0].x)/2;
+	carshapevec2.z = var_E[6].z;
+	carshapevec2.x = (var_E[6].x + var_E[9].x) /2;
+	
+	for (i = 0; i < 6; i++) {
+		carshapevecs[i].x = carshapevec.x - var_E[i + 0].x;
+		carshapevecs[i].z = carshapevec.z - var_E[i + 0].z;
+		carshapevecs[i].y = var_E[i + 0].y;
+		carshapevecs2[i].x = carshapevec2.x - var_E[i + 6].x;
+		carshapevecs2[i].z = carshapevec2.z - var_E[i + 6].z;
+		carshapevecs2[i].y = var_E[i + 6].y;
+		carshapevecs3[i] = var_E[i + 11];
+		carshapevecs4[i] = var_E[i + 18];
+	}
+
+	for (i = 0; i < 5; i++) {
+		word_443E8[i] = 0;
+	}
+	shape3d_init_shape(locate_shape_fatal(carresptr, "car2"), &game3dshapes[128]);
+	shape3d_init_shape(locate_shape_fatal(carresptr, "exp0"), &game3dshapes[116]);
+	shape3d_init_shape(locate_shape_fatal(carresptr, "exp1"), &game3dshapes[117]);
+	shape3d_init_shape(locate_shape_fatal(carresptr, "exp2"), &game3dshapes[118]);
+	shape3d_init_shape(locate_shape_fatal(carresptr, "exp3"), &game3dshapes[119]);
+
+	if (arg_opponentcarid[0] != -1) {
+		if (arg_playercarid[0] == arg_opponentcarid[0] && arg_playercarid[1] == arg_opponentcarid[1] &&
+			arg_playercarid[2] == arg_opponentcarid[2] && arg_playercarid[3] == arg_opponentcarid[3])
+		{
+			var_6 = mmgr_get_chunk_size_bytes(carresptr);
+			car2resptr = mmgr_alloc_resbytes("car2", var_6);
+			
+			for (i = 0; i < var_6; i++) {
+				car2resptr[i] = carresptr[i];
+			}
+		} else {
+			aStxxx[2] = arg_opponentcarid[0];
+			aStxxx[3] = arg_opponentcarid[1];
+			aStxxx[4] = arg_opponentcarid[2];
+			aStxxx[5] = arg_opponentcarid[3];
+			car2resptr = file_load_3dres(aStxxx);
+		}
+
+		shape3d_init_shape(locate_shape_fatal(car2resptr, "car0"), &game3dshapes[125]);
+		shape3d_init_shape(locate_shape_fatal(car2resptr, "car1"), &game3dshapes[127]);
+		var_E = &(game3dshapes[126].shape3d_verts[8]);
+		oppcarshapevec.z = var_E[0].z;
+		oppcarshapevec.x = (var_E[3].x + var_E[0].x)/2;
+		oppcarshapevec2.z = var_E[6].z;
+		oppcarshapevec2.x = (var_E[6].x + var_E[9].x) /2;
+
+		for (i = 0; i < 6; i++) {
+			oppcarshapevecs[i].x = oppcarshapevec.x - var_E[i + 0].x;
+			oppcarshapevecs[i].z = oppcarshapevec.z - var_E[i + 0].z;
+			oppcarshapevecs[i].y = var_E[i + 0].y;
+			oppcarshapevecs2[i].x = oppcarshapevec2.x - var_E[i + 6].x;
+			oppcarshapevecs2[i].z = oppcarshapevec2.z - var_E[i + 6].z;
+			oppcarshapevecs2[i].y = var_E[i + 6].y;
+			oppcarshapevecs3[i] = var_E[i + 11];
+			oppcarshapevecs4[i] = var_E[i + 18];
+		}
+		for (i = 0; i < 5; i++) {
+			word_4448A[i] = 0;
+		}
+		shape3d_init_shape(locate_shape_fatal(car2resptr, "car2"), &game3dshapes[129]);
+		shape3d_init_shape(locate_shape_fatal(car2resptr, "exp0"), &game3dshapes[120]);
+		shape3d_init_shape(locate_shape_fatal(car2resptr, "exp1"), &game3dshapes[121]);
+		shape3d_init_shape(locate_shape_fatal(car2resptr, "exp2"), &game3dshapes[122]);
+		shape3d_init_shape(locate_shape_fatal(car2resptr, "exp3"), &game3dshapes[123]);
+	} else {
+		car2resptr = 0;
+	}
+}

@@ -147,6 +147,7 @@ extrn init_polyinfo:proc
 extrn calc_sincos80:proc
 extrn draw_line_related:proc
 extrn draw_line_related_alt:proc
+extrn shape3d_load_car_shapes:proc
 
 ; externs for implementations in shape2d.c
 
