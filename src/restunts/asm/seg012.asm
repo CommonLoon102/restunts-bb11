@@ -313,7 +313,7 @@ seg012 segment byte public 'STUNTSC' use16
     public file_load_shape2d_nofatal_thunk
     public file_load_shape2d_thunk
     public sprite_putimage_and_alt2
-    public ported_sprite_putimage_and_
+    public sprite_putimage_and
     public loc_338C9
     public nopsub_339FA
     public putpixel_iconMask
@@ -324,7 +324,7 @@ seg012 segment byte public 'STUNTSC' use16
     public loc_33B1D
     public nopsub_33B98
     public sprite_putimage_and_alt
-    public ported_sprite_putimage_
+    public sprite_putimage
     public loc_33BF5
     public nopsub_33D0C
     public sprite_shape_to_1
@@ -340,7 +340,7 @@ seg012 segment byte public 'STUNTSC' use16
     public shape2d_op_unk3
     public loc_33EED
     public sprite_putimage_or_alt
-    public ported_sprite_putimage_or_
+    public sprite_putimage_or
     public loc_340BD
     public putpixel_iconFillings
     public loc_3424B
@@ -5945,7 +5945,7 @@ loc_31388:
     mov     al, [bx+di]
     or      al, al
     jz      short loc_3139B
-    cmp     al, [bx+si]
+    cmp     al, byte ptr [bx+si+MEMCHUNK.resname]
     jnz     short loc_313A5
     inc     bx
     cmp     bx, 0Ch
@@ -5953,9 +5953,9 @@ loc_31388:
     jmp     short loc_313B6
     db 144
 loc_3139B:
-    cmp     byte ptr [bx+si], 2Eh ; '.'
+    cmp     byte ptr [bx+si+MEMCHUNK.resname], 2Eh ; '.'
     jz      short loc_313B6
-    cmp     byte ptr [bx+si], 0
+    cmp     byte ptr [bx+si+MEMCHUNK.resname], 0
     jz      short loc_313B6
 loc_313A5:
     add     si, 12h
@@ -11271,7 +11271,7 @@ sprite_putimage_and_alt2 proc far
     ; align 2
     db 144
 sprite_putimage_and_alt2 endp
-ported_sprite_putimage_and_ proc far
+sprite_putimage_and proc far
     var_E = word ptr -14
     var_C = word ptr -12
     var_A = word ptr -10
@@ -11462,7 +11462,7 @@ loc_339EC:
     jmp     loc_338E8
     ; align 2
     db 0
-ported_sprite_putimage_and_ endp
+sprite_putimage_and endp
 nopsub_339FA proc far
     var_4 = word ptr -4
     var_2 = word ptr -2
@@ -11785,7 +11785,7 @@ sprite_putimage_and_alt proc far
     ; align 2
     db 144
 sprite_putimage_and_alt endp
-ported_sprite_putimage_ proc far
+sprite_putimage proc far
     var_E = word ptr -14
     var_bitmap = word ptr -12
     var_A = word ptr -10
@@ -11938,7 +11938,7 @@ loc_33D02:
     dec     dx
     jg      short loc_33D02
     jmp     loc_33C14
-ported_sprite_putimage_ endp
+sprite_putimage endp
 nopsub_33D0C proc far
     var_4 = word ptr -4
     var_2 = word ptr -2
@@ -12502,7 +12502,7 @@ sprite_putimage_or_alt proc far
     ; align 2
     db 144
 sprite_putimage_or_alt endp
-ported_sprite_putimage_or_ proc far
+sprite_putimage_or proc far
     var_E = word ptr -14
     var_C = word ptr -12
     var_A = word ptr -10
@@ -12711,7 +12711,7 @@ loc_341E0:
     jmp     short loc_3424B
     ; align 2
     db 144
-ported_sprite_putimage_or_ endp
+sprite_putimage_or endp
 putpixel_iconFillings proc far
     var_6 = word ptr -6
     var_4 = word ptr -4

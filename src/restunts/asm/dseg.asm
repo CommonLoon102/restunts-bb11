@@ -1406,7 +1406,7 @@ dseg segment byte public 'STUNTSD' use16
     public rect_array_unk3_indices
     public td16_rpl_buffer
     public material_clrlist_ptr_cpy
-    public byte_45634
+    public is_in_replay_copy
     public byte_45635
     public sdgame2_widths
     public td21_col_from_path
@@ -1481,7 +1481,7 @@ dseg segment byte public 'STUNTSD' use16
     public trackcenterpos
     public dastbmp_y
     public game1ptr
-    public byte_461C8
+    public game_replay_mode_copy
     public penalty_time
     public roofbmpheight
     public mouse_ypos
@@ -38347,7 +38347,7 @@ rect_array_unk3_indices     dw 0
     dw 0
 td16_rpl_buffer     dd 0
 material_clrlist_ptr_cpy     dw 0
-byte_45634     db 0
+is_in_replay_copy     db 0
 byte_45635     db 0
 sdgame2_widths     dw 0
     db 0
@@ -41130,7 +41130,7 @@ trackcenterpos     dw 0
     dw 0
 dastbmp_y     dw 0
 game1ptr     dd 0
-byte_461C8     db 0
+game_replay_mode_copy     db 0
     db 0
 penalty_time     dw 0
 roofbmpheight     dw 0

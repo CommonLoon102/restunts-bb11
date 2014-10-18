@@ -2668,6 +2668,7 @@ void init_polyinfo(void) {
 	calc_sincos80();
 }
 
+#if 0
 void get_a_poly_info(void) {
 
 	int counter;
@@ -2737,6 +2738,8 @@ void get_a_poly_info(void) {
 	polyinfo_reset(); // polyinfo_reset();
 */
 }
+
+#endif
 
 extern void draw_filled_lines();
 extern void draw_patterned_lines();

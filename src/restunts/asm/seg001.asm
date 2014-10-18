@@ -5163,7 +5163,7 @@ loc_1764C:
     inc     state.playerstate.field_CE
     sub     ah, ah
     push    ax
-    mov     ax, 8F1Ah
+    mov     ax, offset state.playerstate.car_vec_unk3
     push    ax
     push    state.playerstate.car_trackdata3_index
     push    cs
@@ -5189,7 +5189,7 @@ loc_17694:
 loc_17699:
     push    si
     lea     di, [bp+var_28]
-    mov     si, 8F1Ah
+    mov     si, offset state.playerstate.car_vec_unk3
     push    ss
     pop     es
     movsw

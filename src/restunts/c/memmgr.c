@@ -366,67 +366,55 @@ void mmgr_find_free(void) {
 	popregs();
 }
 
+void far* ported_mmgr_get_chunk_by_name_(const char* name);
+
 void far* mmgr_get_chunk_by_name(const char* name) {
-	int i;
-	unsigned short regax, regbx, regcx, regdx;
-	const char* chunkname;
+	const char* pcdi;
+	int regbx, regax;
 	struct MEMCHUNK* ressi;
-	struct MEMCHUNK* resdi;
-
+	int found = 0;
+	
 	ressi = resendptr1;
-	chunkname = mmgr_path_to_name(name);
+	pcdi = mmgr_path_to_name(name);
 
-	for (ressi = resendptr1; ressi < resendptr2; ressi++) {
+	for (; ressi < resendptr2; ressi++) {
 		regbx = 0;
-		if (ressi->resunk == 0) return MK_FP(0, 0);
+		if (ressi->resunk == 0) {
+			return MK_FP(0, 0);
+		}
 
 		for (; regbx < 0xC; regbx++) {
-			if (chunkname[regbx] == 0) break;
-			if (chunkname[regbx] != ressi->resname[regbx]) break;
-		}
-
-		if (regbx == 0xC || ressi->resname[regbx] == '.' || ressi->resname[regbx] == 0) {
-			resdi = resptr2;
-			regdx = resdi->resofs;
-			regdx += resdi->ressize;
-			resdi++;
-			resptr2 = resdi;
-			regax = ressi->ressize;
-		
-			ressi->resunk = 0;
-			resdi->resofs = regdx;
-			resdi->ressize = regax;
-			resdi->resunk = 2;
-			regbx = 0;
-			for (i = 0; i < 0xC; i++) {
-				resdi->resname[i] = ressi->resname[i];
+			if (pcdi[regbx] == 0) {
+				if (ressi->resname[regbx] == '.' || ressi->resname[regbx] == 0) {
+					found = 1;
+				}
+				break;
 			}
-			
-			if (resdi == resendptr1) {
+			if (ressi->resname[regbx] != 0)
+				break;
+		}
+		if (regbx == 0xC || found == 1) {
+			ressi->resunk = 0;
+			resptr2->resofs = resptr2->resofs + resptr2->ressize;
+			resptr2->ressize = resptr2->ressize;
+			memcpy(resptr2->resname, ressi->resname, sizeof(char[12]));
+			if (resptr2 == resendptr1) {
 				resendptr1++;
 			}
-		
-			mmgr_copy_paras(ressi->resofs, regdx, ressi->ressize);
-			ressi = resendptr1;
-			resdi = resptr2;
-			regax = resdi->resofs;
-			regax += resdi->ressize;
-		
-			while (regax > ressi->resofs) {
-				ressi->resunk = 0;
-				ressi++;
-				resendptr1 = ressi;
+			mmgr_copy_paras(ressi->resofs, resptr2->resofs, resptr2->ressize);
+			regax = resptr2->resofs + resptr2->ressize;
+			while (regax > resendptr1->resofs) {
+				resendptr1->resunk = 0;
+				resendptr1++;
 			}
-		
 			mmgr_find_free();
-			regdx = resdi->resofs;
-			return MK_FP(regdx, 0);
+			return MK_FP(resptr2->resofs, 0);
 		}
+
 	}
 
 	return MK_FP(0, 0);
 }
-
 
 void mmgr_release(char far* ptr) {
 	int i;

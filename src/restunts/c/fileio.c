@@ -1054,7 +1054,7 @@ void file_load_audiores(const char* songfile, const char* voicefile, const char*
 	is_audioloaded = 1;
 }
 
-void file_load_replay(const char* dir, const char* name)
+short file_load_replay(const char* dir, const char* name)
 {
 	file_build_path(dir, name, ".rpl", g_path_buf);
 
@@ -1062,6 +1062,7 @@ void file_load_replay(const char* dir, const char* name)
 	file_read_fatal(g_path_buf, td13_rpl_header);
 	gameconfig = *(struct GAMEINFO far*)td13_rpl_header;
 	g_is_busy = 0;
+	return 0;
 }
 
 short file_write_replay(const char* filename)

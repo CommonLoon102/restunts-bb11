@@ -46,7 +46,7 @@ nosmart
 seg005 segment byte public 'STUNTSC' use16
     assume cs:seg005
     assume es:nothing, ss:nothing, ds:dseg
-    public run_game
+    public ported_run_game_
     public handle_ingame_kb_shortcuts
     public ported_init_unknown_
     public set_frame_callback
@@ -71,9 +71,8 @@ seg005 segment byte public 'STUNTSC' use16
 algn_21B79:
     ; align 2
     db 144
-run_game proc far
-    var_16 = byte ptr -22
-    var_14 = word ptr -20
+ported_run_game_ proc far
+    var_16 = dword ptr -22
     var_12 = word ptr -18
     var_E = word ptr -14
     var_C = word ptr -12
@@ -149,7 +148,7 @@ loc_21C24:
     mov     byte_449DA, 1
     push    cs
     call near ptr set_frame_callback
-    mov     byte_461C8, 0FFh
+    mov     game_replay_mode_copy, 0FFh
     mov     byte_44346, 0
     mov     byte_4432A, 0
     mov     byte_46467, 0
@@ -362,7 +361,7 @@ loc_21E76:
 loc_21E8A:
     call    sprite_copy_wnd_to_1
 loc_21E8F:
-    mov     al, byte_461C8
+    mov     al, game_replay_mode_copy
     cmp     game_replay_mode, al
     jnz     short loc_21EBF
     mov     al, dashb_toggle_copy
@@ -371,7 +370,7 @@ loc_21E8F:
     mov     al, replaybar_toggle_copy
     cmp     replaybar_toggle, al
     jnz     short loc_21EBF
-    mov     al, byte_45634
+    mov     al, is_in_replay_copy
     cmp     is_in_replay, al
     jnz     short loc_21EBF
     mov     al, followOpponentFlag_copy
@@ -380,13 +379,13 @@ loc_21E8F:
     jmp     loc_21F7A
 loc_21EBF:
     mov     al, game_replay_mode
-    mov     byte_461C8, al
+    mov     game_replay_mode_copy, al
     mov     al, dashb_toggle
     mov     dashb_toggle_copy, al
     mov     al, replaybar_toggle
     mov     replaybar_toggle_copy, al
     mov     al, is_in_replay
-    mov     byte_45634, al
+    mov     is_in_replay_copy, al
     mov     al, followOpponentFlag
     mov     followOpponentFlag_copy, al
     mov     roofbmpheight_copy, 0
@@ -838,7 +837,7 @@ loc_22347:
     call    format_frame_as_string
     add     sp, 6
     call    mouse_draw_opaque_check
-    push    [bp+var_14]
+    push    word ptr [bp+var_16+2]
     mov     ax, offset resID_byte1
     push    ax
     call    font_op2_alt
@@ -887,7 +886,7 @@ loc_223F4:
     retf
     ; align 2
     db 144
-run_game endp
+ported_run_game_ endp
 handle_ingame_kb_shortcuts proc far
      s = byte ptr 0
      r = byte ptr 2
@@ -3204,7 +3203,7 @@ loc_23988:
     mov     word ptr wndsprite+2, dx
 loc_239A3:
     mov     followOpponentFlag, 0
-    mov     byte_45634, 0FFh
+    mov     is_in_replay_copy, 0FFh
     sub     ax, ax
     mov     sp, bp
     pop     bp
@@ -4052,7 +4051,7 @@ loc_24140:
 loc_2415A:
     cmp     replaybar_enabled, 0
     jnz     short loc_2416C
-    mov     byte_45634, 0FFh
+    mov     is_in_replay_copy, 0FFh
     mov     word_449EA, 0FFFFh
 loc_2416C:
     cmp     is_in_replay, 0

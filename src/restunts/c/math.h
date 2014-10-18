@@ -61,4 +61,6 @@ void vector_op_unk(struct VECTOR* vec1, struct VECTOR* vec2, struct VECTOR* outv
 
 short multiply_and_scale(short a1, short a2);
 
+void rect_union(struct RECTANGLE* r1, struct RECTANGLE* r2, struct RECTANGLE* outrc);
+
 #endif

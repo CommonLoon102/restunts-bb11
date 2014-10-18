@@ -577,6 +577,8 @@ static PortFuncName(labelname) {
 //		labelname == "_abs" ||
 //		labelname == "_flushall" ||
 //		labelname == "_abort" ||
+
+		// math.c:
 		labelname == "sin_fast" ||
 		labelname == "cos_fast" ||
 		labelname == "polarAngle" || 
@@ -592,12 +594,9 @@ static PortFuncName(labelname) {
 		labelname == "rect_is_inside" || 
 		labelname == "rect_is_adjacent" || 
 		labelname == "rect_array_sort_by_top" ||
-		labelname == "heapsort_by_order" || 
 		labelname == "vector_op_unk" || 
 		labelname == "vector_op_unk2" || 
 		labelname == "vector_to_point" || 
-		labelname == "set_projection" ||
-		labelname == "select_cliprect_rotate" ||
 		labelname == "mat_mul_vector" || 
 		labelname == "mat_mul_vector2" ||
 		labelname == "mat_multiply" || 
@@ -606,11 +605,12 @@ static PortFuncName(labelname) {
 		labelname == "mat_rot_y" || 
 		labelname == "mat_rot_z" || 
 		labelname == "mat_rot_zxy" || 
-		labelname == "polyinfo_reset" || 
-		labelname == "init_polyinfo" || 
-		labelname == "calc_sincos80" ||
 		labelname == "multiply_and_scale" ||
 
+		// heapsort.c:
+		labelname == "heapsort_by_order" || 
+
+		// fileio.c:
 		labelname == "file_find" ||
 		labelname == "file_find_next" ||
 		labelname == "file_find_next_alt" ||
@@ -639,28 +639,12 @@ static PortFuncName(labelname) {
 		labelname == "file_load_resfile" ||
 		labelname == "file_load_3dres" ||
 		labelname == "file_load_audiores" ||
-		labelname == "file_load_shape2d" ||
-		labelname == "file_load_shape2d_fatal" ||
-		labelname == "file_load_shape2d_nofatal" ||
-		labelname == "file_load_shape2d_nofatal2" ||
-		labelname == "file_load_shape2d_res" ||
-		labelname == "file_load_shape2d_res_fatal" ||
-		labelname == "file_load_shape2d_res_nofatal" ||
-		labelname == "file_load_shape2d_palmap_init" ||
-		labelname == "file_load_shape2d_palmap_apply" ||
-		labelname == "file_load_shape2d_expandedsize" ||
-		labelname == "file_unflip_shape2d" ||
-		labelname == "file_unflip_shape2d_pes" ||
-		labelname == "file_get_unflip_size" ||
-		labelname == "file_load_shape2d_expandedsize" ||
-		labelname == "file_load_shape2d_expand" ||
-		labelname == "file_get_shape2d" ||
-		labelname == "file_get_res_shape_count" ||
 		labelname == "file_build_path" ||
 		labelname == "file_combine_and_find" ||
 		labelname == "file_load_replay" ||
 		labelname == "file_write_replay" ||
 
+		// memmgr.c:
 		labelname == "mmgr_path_to_name" ||
 		labelname == "mmgr_alloc_pages" ||
 		labelname == "mmgr_alloc_resmem" ||
@@ -678,7 +662,6 @@ static PortFuncName(labelname) {
 		labelname == "mmgr_alloc_resbytes" ||
 		labelname == "mmgr_get_res_ofs_diff_scaled" ||
 		labelname == "mmgr_get_chunk_size_bytes" ||
-
 		labelname == "locate_shape_nofatal" ||
 		labelname == "locate_shape_fatal" ||
 		labelname == "locate_shape_alt" ||
@@ -686,6 +669,7 @@ static PortFuncName(labelname) {
 		labelname == "locate_many_resources" ||
 		labelname == "locate_text_res" ||
 		
+		// shape3d.c:
 		labelname == "shape3d_load_all" ||
 		labelname == "shape3d_free_all" ||
 		labelname == "shape3d_init_shape" ||
@@ -693,20 +677,22 @@ static PortFuncName(labelname) {
 		labelname == "transformed_shape_op_helper" ||
 		labelname == "transformed_shape_op_helper2" ||
 		labelname == "transformed_shape_op_helper3" ||
-		labelname == "get_a_poly_info" ||
+		//labelname == "get_a_poly_info" ||
 		labelname == "preRender_default" ||
 		labelname == "preRender_default_alt" ||
 		labelname == "skybox_op_helper" ||
 		labelname == "preRender_wheel_helper4" ||
 		labelname == "preRender_unk" ||
 		labelname == "preRender_patterned" ||
-		//labelname == "preRender_helper" ||
-		//labelname == "preRender_helper2" ||
-		//labelname == "preRender_helper3" ||
-
 		labelname == "draw_line_related" ||
 		labelname == "draw_line_related_alt" ||
+		labelname == "set_projection" ||
+		labelname == "select_cliprect_rotate" ||
+		labelname == "polyinfo_reset" || 
+		labelname == "init_polyinfo" || 
+		labelname == "calc_sincos80" ||
 
+		// shape2d.c:
 		labelname == "sprite_make_wnd" ||
 		labelname == "sprite_free_wnd" ||
 		labelname == "sprite_set_1_from_argptr" ||
@@ -718,12 +704,30 @@ static PortFuncName(labelname) {
 		labelname == "sprite_copy_both_to_arg" ||
 		labelname == "sprite_copy_arg_to_both" ||
 		labelname == "sprite_clear_1_color" ||
-		labelname == "sprite_putimage" ||
-		labelname == "sprite_putimage_and" ||
-		labelname == "sprite_putimage_or" ||
+		//labelname == "sprite_putimage" ||
+		//labelname == "sprite_putimage_and" ||
+		//labelname == "sprite_putimage_or" ||
 		labelname == "setup_mcgawnd1" ||
 		labelname == "setup_mcgawnd2" ||
+		labelname == "file_load_shape2d" ||
+		labelname == "file_load_shape2d_fatal" ||
+		labelname == "file_load_shape2d_nofatal" ||
+		labelname == "file_load_shape2d_nofatal2" ||
+		labelname == "file_load_shape2d_res" ||
+		labelname == "file_load_shape2d_res_fatal" ||
+		labelname == "file_load_shape2d_res_nofatal" ||
+		labelname == "file_load_shape2d_palmap_init" ||
+		labelname == "file_load_shape2d_palmap_apply" ||
+		labelname == "file_load_shape2d_expandedsize" ||
+		labelname == "file_unflip_shape2d" ||
+		labelname == "file_unflip_shape2d_pes" ||
+		labelname == "file_get_unflip_size" ||
+		labelname == "file_load_shape2d_expandedsize" ||
+		labelname == "file_load_shape2d_expand" ||
+		labelname == "file_get_shape2d" ||
+		labelname == "file_get_res_shape_count" ||
 
+		// keyboard.c:
 		labelname == "kb_init_interrupt" ||
 		labelname == "kb_exit_handler" ||
 		labelname == "kb_int9_handler" ||
@@ -734,7 +738,8 @@ static PortFuncName(labelname) {
 		labelname == "kb_checking" ||
 		labelname == "flush_stdin" ||
 		labelname == "kb_check" ||
-		
+
+		// restunts.c:
 		labelname == "timer_get_counter" ||
 		labelname == "timer_get_delta" ||
 		labelname == "timer_get_delta_alt" ||
@@ -753,18 +758,21 @@ static PortFuncName(labelname) {
 		labelname == "video_get_status" ||
 		labelname == "random_wait" ||
 		labelname == "toupper" ||
-		
+
 		labelname == "init_carstate_from_simd" ||
 		labelname == "init_unknown" ||
 		labelname == "init_game_state" ||
 		labelname == "restore_gamestate" ||
 		labelname == "update_gamestate" ||
 
+		labelname == "run_game" ||
 		labelname == "init_div0" ||
 		labelname == "copy_material_list_pointers" ||
 		labelname == "set_default_car" ||
 		labelname == "init_main" ||
-		labelname == "stuntsmain"
+		labelname == "stuntsmain" ||
+
+		0
 	)
 		return "ported_" + labelname + "_";
 	return labelname;

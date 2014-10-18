@@ -4367,7 +4367,8 @@ format_frame_as_string proc far
     var_12 = byte ptr -18
      s = byte ptr 0
      r = byte ptr 2
-    arg_0 = dword ptr 6
+    arg_0 = word ptr 6
+    arg_2 = word ptr 8
     arg_4 = word ptr 10
 
     push    bp
@@ -4378,20 +4379,20 @@ format_frame_as_string proc far
     mov     ax, 3Ch ; '<'
     imul    framespersec
     mov     [bp+var_16], ax
-    mov     ax, word ptr [bp+arg_0+2]
+    mov     ax, [bp+arg_2]
     sub     dx, dx
     div     [bp+var_16]
     mov     si, ax
     mov     ax, [bp+var_16]
     imul    si
-    sub     word ptr [bp+arg_0+2], ax
-    mov     ax, word ptr [bp+arg_0+2]
+    sub     [bp+arg_2], ax
+    mov     ax, [bp+arg_2]
     sub     dx, dx
     div     framespersec
     mov     di, ax
     mov     ax, framespersec
     imul    di
-    sub     word ptr [bp+arg_0+2], ax
+    sub     [bp+arg_2], ax
     mov     ax, 2
     push    ax              ; int
     sub     ax, ax
@@ -4404,12 +4405,12 @@ format_frame_as_string proc far
     add     sp, 8
     lea     ax, [bp+var_12]
     push    ax
-    push    word ptr [bp+arg_0]; char *
+    push    [bp+arg_0]      ; char *
     call    _strcpy
     add     sp, 4
     mov     ax, offset asc_3EBD4; ":"
     push    ax
-    push    word ptr [bp+arg_0]; char *
+    push    [bp+arg_0]      ; char *
     call    _strcat
     add     sp, 4
     mov     ax, 2
@@ -4424,14 +4425,14 @@ format_frame_as_string proc far
     add     sp, 8
     lea     ax, [bp+var_12]
     push    ax
-    push    word ptr [bp+arg_0]; char *
+    push    [bp+arg_0]      ; char *
     call    _strcat
     add     sp, 4
     cmp     [bp+arg_4], 0
     jz      short loc_29988
     mov     ax, offset a_   ; "."
     push    ax
-    push    word ptr [bp+arg_0]; char *
+    push    [bp+arg_0]      ; char *
     call    _strcat
     add     sp, 4
     mov     ax, 2
@@ -4442,7 +4443,7 @@ format_frame_as_string proc far
     cwd
     mov     cx, framespersec
     idiv    cx
-    mul     word ptr [bp+arg_0+2]
+    mul     [bp+arg_2]
     push    ax
 loc_2996E:
     lea     ax, [bp+var_12]
@@ -4452,7 +4453,7 @@ loc_2996E:
     add     sp, 8
     lea     ax, [bp+var_12]
     push    ax
-    push    word ptr [bp+arg_0]; char *
+    push    [bp+arg_0]      ; char *
     call    _strcat
     add     sp, 4
 loc_29988:

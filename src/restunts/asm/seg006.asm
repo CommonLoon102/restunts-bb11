@@ -54,7 +54,7 @@ seg006 segment byte public 'STUNTSC' use16
     public ported_transformed_shape_op_helper_
     public ported_rect_compare_point_
     public ported_transformed_shape_op_helper3_
-    public ported_get_a_poly_info_
+    public get_a_poly_info
     public ported_mat_rot_zxy_
     public ported_rect_adjust_from_point_
     public ported_vector_op_unk2_
@@ -2059,7 +2059,7 @@ loc_25FEE:
     pop     bp
     retf
 ported_transformed_shape_op_helper3_ endp
-ported_get_a_poly_info_ proc far
+get_a_poly_info proc far
     var_pattype2 = word ptr -64
     var_polyinfoptrdata = dword ptr -62
     var_polyinfoptr = dword ptr -56
@@ -2289,7 +2289,7 @@ _get_a_poly_info_done:
     mov     sp, bp
     pop     bp
     retf
-ported_get_a_poly_info_ endp
+get_a_poly_info endp
 ported_mat_rot_zxy_ proc far
      s = byte ptr 0
      r = byte ptr 2

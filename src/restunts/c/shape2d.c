@@ -161,6 +161,7 @@ void sprite_clear_1_color(unsigned char color) {
 	}
 }
 
+#if 0
 void sprite_putimage(struct SHAPE2D far* shape) {
 
 	int lines, widthdiff, i, j;
@@ -202,6 +203,7 @@ void sprite_putimage_and(struct SHAPE2D far* shape, unsigned short a, unsigned s
 void sprite_putimage_or(struct SHAPE2D far* shape, unsigned short a, unsigned short b) {
 	ported_sprite_putimage_or_(shape, a, b);
 }
+#endif
 
 void setup_mcgawnd1(void) {
 	if (!mcgawndsprite) {

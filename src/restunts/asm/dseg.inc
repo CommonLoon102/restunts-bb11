@@ -1358,7 +1358,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn rect_array_unk3_indices:word
     extrn td16_rpl_buffer:dword
     extrn material_clrlist_ptr_cpy:word
-    extrn byte_45634:byte
+    extrn is_in_replay_copy:byte
     extrn byte_45635:byte
     extrn sdgame2_widths:word
     extrn td21_col_from_path:dword
@@ -1433,7 +1433,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn trackcenterpos:word
     extrn dastbmp_y:word
     extrn game1ptr:dword
-    extrn byte_461C8:byte
+    extrn game_replay_mode_copy:byte
     extrn penalty_time:word
     extrn roofbmpheight:word
     extrn mouse_ypos:word

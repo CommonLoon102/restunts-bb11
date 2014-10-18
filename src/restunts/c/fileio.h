@@ -45,7 +45,7 @@ void far* file_load_resource(int type, const char* filename);
 void file_load_audiores(const char* songfile, const char* voicefile, const char* name);
 void far* file_load_3dres(const char* filename);
 
-void file_load_replay(const char* dir, const char* name);
+short file_load_replay(const char* dir, const char* name);
 short file_write_replay(const char* filename);
 
 #ifdef __cplusplus
