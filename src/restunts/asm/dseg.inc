@@ -1168,7 +1168,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn mat_z_rot:MATRIX
     extrn word_43964:word
     extrn byte_43966:byte
-    extrn carshortname:byte
+    extrn gsna_string:byte
     extrn audiochunks_unk:byte
     extrn byte_43B34:byte
     extrn audiochunks_unk2:byte
@@ -1202,7 +1202,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn ohhtres:dword
     extrn logo2shape:SHAPE3D
     extrn waitflag:word
-    extrn unk_44384:byte
+    extrn gnam_string:byte
     extrn terrainrows:word
     extrn word_443E8:word
     extrn word_443F2:word

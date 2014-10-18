@@ -708,7 +708,40 @@ extern int word_44D1E;
 extern int word_449E4;
 extern int word_443F4;
 
-extern void setup_aero_trackdata(void far*, int);
+extern char gnam_string[]; // 40 bytes
+extern char gsna_string[]; // 5 bytes
+extern int word_46160;
+extern int word_45946;
+
+extern void copy_string(char*, char far*);
+
+void setup_aero_trackdata(void far* carresptr, int is_opponent) {
+	int i;
+	if (is_opponent == 0) {
+		fmemcpy(MK_FP(FP_SEG(&simd_player), FP_OFF(&simd_player)), locate_shape_alt(carresptr, "simd"), sizeof(struct SIMD));
+		simd_player.aerorestable = FP_OFF(td04_aerotable_pl);
+		word_46160 = FP_SEG(td04_aerotable_pl);
+		// Maximum speed is 40h
+		// Division by 2^9.
+		// 2^8 shifts one fullbyte, and it is known there is a 1/2 factor in FDrag.
+		for (i = 0; i < 0x40; i++) {
+			td04_aerotable_pl[i] = ((long)simd_player.aero_resistance * (long)i * (long)i) >> 9;
+		}
+
+		copy_string(gnam_string, locate_shape_alt(carresptr, "gnam"));
+	} else {
+		fmemcpy(MK_FP(FP_SEG(&simd_opponent), FP_OFF(&simd_opponent)), locate_shape_alt(carresptr, "simd"), sizeof(struct SIMD));
+		simd_opponent.aerorestable = FP_OFF(td05_aerotable_op);
+		word_45946 = FP_SEG(td05_aerotable_op);
+
+		for (i = 0; i < 0x40; i++) {
+			td05_aerotable_op[i] = ((long)simd_opponent.aero_resistance * (long)i * (long)i) >> 9;
+		}
+		copy_string(gsna_string, locate_shape_alt(carresptr, "gsna"));
+	}
+}
+
+
 extern void unload_resource(void far*);
 extern int audio_init_engine(int, void far*, void far*, void far*);
 
@@ -733,7 +766,7 @@ int setup_player_cars(void) {
 		aCarcoun[5] = gameconfig.game_opponentcarid[2];
 		aCarcoun[6] = gameconfig.game_opponentcarid[3];
 		carresptr = file_load_resfile(aCarcoun);
-		setup_aero_trackdata(carresptr, 0);
+		setup_aero_trackdata(carresptr, 1);
 		unload_resource(carresptr);
 		
 		ensure_file_exists(4);

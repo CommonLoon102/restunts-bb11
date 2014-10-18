@@ -2610,15 +2610,14 @@ copy_string proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_0 = word ptr 6
-    arg_2 = word ptr 8
-    arg_4 = word ptr 10
+    arg_2 = dword ptr 8
 
     push    bp
     mov     bp, sp
     sub     sp, 4
     push    si
-    mov     ax, [bp+arg_2]
-    mov     dx, [bp+arg_4]
+    mov     ax, word ptr [bp+arg_2]
+    mov     dx, word ptr [bp+arg_2+2]
     mov     word ptr [bp+var_4], ax
     mov     word ptr [bp+var_4+2], dx
 loc_28AE9:

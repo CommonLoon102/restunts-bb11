@@ -1216,7 +1216,7 @@ dseg segment byte public 'STUNTSD' use16
     public mat_z_rot
     public word_43964
     public byte_43966
-    public carshortname
+    public gsna_string
     public audiochunks_unk
     public byte_43B34
     public audiochunks_unk2
@@ -1250,7 +1250,7 @@ dseg segment byte public 'STUNTSD' use16
     public ohhtres
     public logo2shape
     public waitflag
-    public unk_44384
+    public gnam_string
     public terrainrows
     public word_443E8
     public word_443F2
@@ -31276,7 +31276,7 @@ mat_z_rot     db 0
     db 0
 word_43964     dw 0
 byte_43966     db 0
-carshortname     db 0
+gsna_string     db 0
     db 0
     db 0
     db 0
@@ -33836,7 +33836,7 @@ logo2shape     db 0
     db 0
     db 0
 waitflag     dw 0
-unk_44384     db 0
+gnam_string     db 0
     db 0
     db 0
     db 0

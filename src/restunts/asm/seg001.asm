@@ -73,7 +73,7 @@ seg001 segment byte public 'STUNTSC' use16
     public vec_normalInnerProduct
     public state_op_unk
     public sub_19BA0
-    public setup_aero_trackdata
+    public ported_setup_aero_trackdata_
 opponent_op proc far
     var_40 = word ptr -64
     var_3E = word ptr -62
@@ -9573,11 +9573,10 @@ loc_19C96:
     pop     bp
     retf
 sub_19BA0 endp
-setup_aero_trackdata proc far
+ported_setup_aero_trackdata_ proc far
      s = byte ptr 0
      r = byte ptr 2
-    arg_0 = word ptr 6
-    arg_2 = word ptr 8
+    arg_carresptr = dword ptr 6
     arg_4 = word ptr 10
 
     push    bp
@@ -9591,8 +9590,8 @@ setup_aero_trackdata proc far
 loc_19CB3:
     mov     ax, offset aSimd; "simd"
     push    ax
-    push    [bp+arg_2]
-    push    [bp+arg_0]
+    push    word ptr [bp+arg_carresptr+2]
+    push    word ptr [bp+arg_carresptr]
     call    locate_shape_alt
     add     sp, 6
     push    si
@@ -9642,19 +9641,19 @@ loc_19D03:
     jl      short loc_19CE7
     mov     ax, offset aGnam; "gnam"
     push    ax
-    push    [bp+arg_2]
-    push    [bp+arg_0]
+    push    word ptr [bp+arg_carresptr+2]
+    push    word ptr [bp+arg_carresptr]
     call    locate_shape_alt
     add     sp, 6
     push    dx
     push    ax
-    mov     ax, offset unk_44384
+    mov     ax, offset gnam_string
     jmp     loc_19DB6
 loc_19D36:
     mov     ax, offset aSimd_0; "simd"
     push    ax
-    push    [bp+arg_2]
-    push    [bp+arg_0]
+    push    word ptr [bp+arg_carresptr+2]
+    push    word ptr [bp+arg_carresptr]
     call    locate_shape_alt
     add     sp, 6
     push    si
@@ -9704,13 +9703,13 @@ loc_19D86:
     jl      short loc_19D6A
     mov     ax, offset aGsna; "gsna"
     push    ax
-    push    [bp+arg_2]
-    push    [bp+arg_0]
+    push    word ptr [bp+arg_carresptr+2]
+    push    word ptr [bp+arg_carresptr]
     call    locate_shape_alt
     add     sp, 6
     push    dx
     push    ax
-    mov     ax, offset carshortname
+    mov     ax, offset gsna_string
 loc_19DB6:
     push    ax
     call    copy_string
@@ -9720,6 +9719,6 @@ loc_19DB6:
     mov     sp, bp
     pop     bp
     retf
-setup_aero_trackdata endp
+ported_setup_aero_trackdata_ endp
 seg001 ends
 end

@@ -2800,7 +2800,7 @@ loc_11A8D:
     mov     ax, [bp+arg_0]
     mov     [bp+var_4], ax
     mov     [bp+var_36], 0
-    mov     ax, offset unk_44384
+    mov     ax, offset gnam_string
     push    ax
     lea     ax, [bp+var_25]
     push    ax              ; char *
@@ -2817,7 +2817,7 @@ loc_11A8D:
     call    _strcpy
     add     sp, 4
     mov     [bp+var_A], 2Fh ; '/'
-    mov     ax, 81F7h
+    mov     ax, offset gsna_string
     push    ax
     lea     ax, [bp+var_9]
     jmp     short loc_11AED
