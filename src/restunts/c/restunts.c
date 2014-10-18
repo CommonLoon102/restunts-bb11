@@ -690,7 +690,130 @@ void update_gamestate() {
 	}
 }
 
-void run_game() {
+extern char aCarcoun[];
+extern void far* engptr;
+extern void far* eng1ptr;
+extern void far* fontledresptr;
+extern void far* sdgameresptr;
+extern void far* wallptr;
+extern void far* planptr;
+extern int word_43964;
+extern char unk_3E7FC[];
+extern char byte_459D8;
+extern char byte_42D26;
+extern char byte_42D2A;
+extern int word_4408C;
+extern char unk_3E82C[];
+extern int word_44D1E;
+extern int word_449E4;
+extern int word_443F4;
+
+extern void setup_aero_trackdata(void far*, int);
+extern void unload_resource(void far*);
+extern int audio_init_engine(int, void far*, void far*, void far*);
+
+int setup_player_cars(void) {
+	void far* carresptr;
+	unsigned long var_8;
+
+	wndsprite = 0;
+	ensure_file_exists(2);
+	shape3d_load_car_shapes(gameconfig.game_playercarid, gameconfig.game_opponentcarid);
+	aCarcoun[3] = gameconfig.game_playercarid[0];
+	aCarcoun[4] = gameconfig.game_playercarid[1];
+	aCarcoun[5] = gameconfig.game_playercarid[2];
+	aCarcoun[6] = gameconfig.game_playercarid[3];
+	carresptr = file_load_resfile(aCarcoun);
+	setup_aero_trackdata(carresptr, 0);
+	unload_resource(carresptr);
+
+	if (gameconfig.game_opponenttype != 0) {
+		aCarcoun[3] = gameconfig.game_opponentcarid[0];
+		aCarcoun[4] = gameconfig.game_opponentcarid[1];
+		aCarcoun[5] = gameconfig.game_opponentcarid[2];
+		aCarcoun[6] = gameconfig.game_opponentcarid[3];
+		carresptr = file_load_resfile(aCarcoun);
+		setup_aero_trackdata(carresptr, 0);
+		unload_resource(carresptr);
+		
+		ensure_file_exists(4);
+		load_opponent_data();
+	}
+
+	ensure_file_exists(3);
+	eng1ptr = file_load_resource(5, "eng1");//aEng1); // "eng1"
+	engptr = file_load_resource(6, "eng");//aEng); // "eng"
+	audio_add_driver_timer();
+	word_43964 = audio_init_engine(0x21, &unk_3E7FC, eng1ptr, engptr);
+
+	byte_459D8 = 0;
+	byte_42D26 = 0;
+	byte_42D2A = 0;
+	if (gameconfig.game_opponenttype != 0) {
+		word_4408C = audio_init_engine(0x20, &unk_3E82C, eng1ptr, engptr);
+	}
+
+	word_44D1E = 0;
+	word_449E4 = 0;
+	word_443F4 = 0;
+	fontledresptr = file_load_resource(0, "fontled.fnt");//aFontled_fnt); // "fontled.fnt"
+	timertestflag_copy = timertestflag;
+	init_rect_arrays();
+	if (idle_expired == 0) {
+		setup_car_shapes(0);
+	}
+
+	if (idle_expired == 0) {
+		sdgameresptr = file_load_resource(3, "sdgame");//aSdgame); // "sdgame"
+		loop_game(0, 0, 0);
+	}
+
+	gameresptr = file_load_resfile("game");
+	planptr = locate_shape_alt(gameresptr, "plan");//aPlan); // "plan"
+	wallptr = locate_shape_alt(gameresptr, "wall");//aWall); // "wall"
+	load_sdgame2_shapes();
+	load_skybox(td14_elem_map_main[0x384]);
+	if (shape3d_load_all() != 0) {
+		return 1;
+	}
+
+	if (video_flag5_is0 == 0) {
+		
+		var_8 = 0xFA00 / (video_flag1_is1 * video_flag4_is1);
+		if (mmgr_get_res_ofs_diff_scaled() <= var_8) {
+			return 1;
+		}
+		wndsprite = sprite_make_wnd(0x140, 0xC8, 0x0F);
+	}
+
+	followOpponentFlag = 0;
+	is_in_replay_copy = -1;
+	return 0;
+}
+
+void free_player_cars(void) {
+	if (video_flag5_is0 == 0) {
+		if (wndsprite != 0) {
+			sprite_free_wnd(wndsprite);
+		}
+	}
+	shape3d_free_all();
+	unload_skybox();
+	free_sdgame2();
+	unload_resource(gameresptr);
+	if (idle_expired == 0) {
+		mmgr_free(sdgameresptr);
+		setup_car_shapes(3);
+	}
+
+	mmgr_free(fontledresptr);
+	audio_remove_driver_timer();
+	mmgr_free(engptr);
+	mmgr_free(eng1ptr);
+	shape3d_free_car_shapes();
+}
+
+void run_game(void) {
 	int var_16[2];
 	int var_12, var_E, var_C;
 	struct RECTANGLE var_rect;

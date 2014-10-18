@@ -1377,8 +1377,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn byte_459E0:byte
     extrn video_flag6_is1:byte
     extrn fontdef_unk_0E:word
-    extrn fontledresofs:word
-    extrn fontledresseg:word
+    extrn fontledresptr:dword
     extrn someZeroVideoConst:word
     extrn nextPosAndNormalIP:word
     extrn word_45A00:word

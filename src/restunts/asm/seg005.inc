@@ -10,8 +10,8 @@ seg005 segment byte public 'STUNTSC' use16
     extrn ported_file_load_replay_:proc
     extrn ported_file_write_replay_:proc
     extrn setup_car_shapes:proc
-    extrn setup_player_cars:proc
-    extrn free_player_cars:proc
+    extrn ported_setup_player_cars_:proc
+    extrn ported_free_player_cars_:proc
     extrn mouse_minmax_position:proc
     extrn replay_unk:proc
     extrn loop_game:proc

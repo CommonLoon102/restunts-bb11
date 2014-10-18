@@ -3651,8 +3651,8 @@ loc_1C1DA:
     push    ax              ; char *
     call    format_frame_as_string; prints elapsed time (unless in pause/replay, or some unknown state)
     add     sp, 6
-    push    fontledresseg
-    push    fontledresofs
+    push    word ptr fontledresptr+2
+    push    word ptr fontledresptr
     call    font_set_fontdef2
     add     sp, 4
     cmp     timertestflag_copy, 0

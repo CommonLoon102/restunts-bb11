@@ -57,8 +57,8 @@ seg005 segment byte public 'STUNTSC' use16
     public ported_file_load_replay_
     public ported_file_write_replay_
     public setup_car_shapes
-    public setup_player_cars
-    public free_player_cars
+    public ported_setup_player_cars_
+    public ported_free_player_cars_
     public mouse_minmax_position
     public replay_unk
     public loop_game
@@ -133,11 +133,11 @@ loc_21C00:
     mov     is_in_replay, 1
 loc_21C0F:
     push    cs
-    call near ptr setup_player_cars
+    call near ptr ported_setup_player_cars_
     or      ax, ax
     jz      short loc_21C24
     push    cs
-    call near ptr free_player_cars
+    call near ptr ported_free_player_cars_
     call    do_mer_restext
     jmp     loc_223E4
     ; align 2
@@ -874,7 +874,7 @@ loc_223CD:
     push    cs
     call near ptr remove_frame_callback
     push    cs
-    call near ptr free_player_cars
+    call near ptr ported_free_player_cars_
 loc_223E4:
     mov     waitflag, 64h ; 'd'
     call    check_input
@@ -2957,7 +2957,7 @@ loc_236AC:
     pop     bp
     retf
 setup_car_shapes endp
-setup_player_cars proc far
+ported_setup_player_cars_ proc far
     var_8 = word ptr -8
     var_6 = word ptr -6
     var_4 = word ptr -4
@@ -3097,8 +3097,8 @@ loc_23870:
     push    ax              ; int
     call    file_load_resource
     add     sp, 4
-    mov     fontledresofs, ax
-    mov     fontledresseg, dx
+    mov     word ptr fontledresptr, ax
+    mov     word ptr fontledresptr+2, dx
     mov     ax, timertestflag
     mov     timertestflag_copy, ax
     call    init_rect_arrays
@@ -3210,8 +3210,8 @@ loc_239A3:
     retf
     ; align 2
     db 144
-setup_player_cars endp
-free_player_cars proc far
+ported_setup_player_cars_ endp
+ported_free_player_cars_ proc far
 
     cmp     video_flag5_is0, 0
     jnz     short loc_239D4
@@ -3242,8 +3242,8 @@ loc_239D4:
     call near ptr setup_car_shapes
     add     sp, 2
 loc_23A15:
-    push    fontledresseg
-    push    fontledresofs
+    push    word ptr fontledresptr+2
+    push    word ptr fontledresptr
     call    mmgr_free
     add     sp, 4
     call    audio_remove_driver_timer
@@ -3257,7 +3257,7 @@ loc_23A15:
     add     sp, 4
     call    shape3d_free_car_shapes
     retf
-free_player_cars endp
+ported_free_player_cars_ endp
 mouse_minmax_position proc far
      s = byte ptr 0
      r = byte ptr 2
@@ -3514,8 +3514,8 @@ loc_23C10:
     push    dialog_fnt_colour
     call    font_set_unk
     add     sp, 4
-    push    fontledresseg
-    push    fontledresofs
+    push    word ptr fontledresptr+2
+    push    word ptr fontledresptr
     call    font_set_fontdef2
     add     sp, 4
     mov     ax, 0BBh ; '»'
@@ -3554,8 +3554,8 @@ loc_23C66:
     call    font_set_unk
     add     sp, 4
     call    mouse_draw_opaque_check
-    push    fontledresseg
-    push    fontledresofs
+    push    word ptr fontledresptr+2
+    push    word ptr fontledresptr
     call    font_set_fontdef2
     add     sp, 4
     mov     ax, 0BBh ; '»'
@@ -4554,9 +4554,9 @@ loc_2460D:
     or      si, si
     jz      short loc_24619
     push    cs
-    call near ptr free_player_cars
+    call near ptr ported_free_player_cars_
     push    cs
-    call near ptr setup_player_cars
+    call near ptr ported_setup_player_cars_
 loc_24619:
     mov     al, byte ptr gameconfig.game_framespersec
 loc_2461C:

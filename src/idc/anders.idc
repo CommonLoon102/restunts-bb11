@@ -764,6 +764,8 @@ static PortFuncName(labelname) {
 		labelname == "init_game_state" ||
 		labelname == "restore_gamestate" ||
 		labelname == "update_gamestate" ||
+		labelname == "setup_player_cars" ||
+		labelname == "free_player_cars" ||
 
 		labelname == "run_game" ||
 		labelname == "init_div0" ||

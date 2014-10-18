@@ -575,7 +575,7 @@ void far* mmgr_op_unk(char far* ptr) {
 	return MK_FP(resdi->resofs, 0);
 }
 
-unsigned long mmgr_get_res_ofs_diff_scaled() {
+unsigned long mmgr_get_res_ofs_diff_scaled(void) {
 	unsigned long result = mmgr_get_ofs_diff();
 	return result << 4;
 }

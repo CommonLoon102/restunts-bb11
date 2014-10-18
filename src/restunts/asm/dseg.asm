@@ -1425,8 +1425,7 @@ dseg segment byte public 'STUNTSD' use16
     public byte_459E0
     public video_flag6_is1
     public fontdef_unk_0E
-    public fontledresofs
-    public fontledresseg
+    public fontledresptr
     public someZeroVideoConst
     public nextPosAndNormalIP
     public word_45A00
@@ -39296,8 +39295,7 @@ byte_459E0     db 0
     db 0
 video_flag6_is1     db 0
 fontdef_unk_0E     dw 0
-fontledresofs     dw 0
-fontledresseg     dw 0
+fontledresptr     dd 0
     db 0
     db 0
     db 0
