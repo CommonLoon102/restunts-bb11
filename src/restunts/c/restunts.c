@@ -1669,9 +1669,10 @@ int stuntsmainimpl(int argc, char* argv[]) {
 			
 			if (var_A != 0) {
 				byte_43966 = 0;
-			}
+ 			} else {
 
-			gameconfig.game_recordedframes = 0;
+				gameconfig.game_recordedframes = 0;
+			}
 
 			while (1) {
 				show_waiting();
