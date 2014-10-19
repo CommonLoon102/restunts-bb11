@@ -4910,11 +4910,13 @@ extern struct VECTOR oppcarshapevecs4[];
 extern int word_443E8[];
 extern int word_4448A[];
 
+void sub_204AE(struct VECTOR far* arg_verts, int arg_4, short* arg_6, short* arg_8, struct VECTOR* arg_vecarray, struct VECTOR* arg_vecptr);
+void ported_sub_204AE_(struct VECTOR far* arg_verts, int arg_4, short* arg_6, short* arg_8, struct VECTOR* arg_vecarray, struct VECTOR* arg_vecptr);
+
 void shape3d_load_car_shapes(char arg_playercarid[], char arg_opponentcarid[]) {
 	int i;
 	struct VECTOR far* var_E;
 	unsigned long var_6;
-
 	aStxxx[2] = arg_playercarid[0];
 	aStxxx[3] = arg_playercarid[1];
 	aStxxx[4] = arg_playercarid[2];
@@ -4936,13 +4938,14 @@ void shape3d_load_car_shapes(char arg_playercarid[], char arg_opponentcarid[]) {
 		carshapevecs2[i].x = carshapevec2.x - var_E[i + 6].x;
 		carshapevecs2[i].z = carshapevec2.z - var_E[i + 6].z;
 		carshapevecs2[i].y = var_E[i + 6].y;
-		carshapevecs3[i] = var_E[i + 11];
+		carshapevecs3[i] = var_E[i + 12];
 		carshapevecs4[i] = var_E[i + 18];
 	}
 
 	for (i = 0; i < 5; i++) {
 		word_443E8[i] = 0;
 	}
+
 	shape3d_init_shape(locate_shape_fatal(carresptr, "car2"), &game3dshapes[128]);
 	shape3d_init_shape(locate_shape_fatal(carresptr, "exp0"), &game3dshapes[116]);
 	shape3d_init_shape(locate_shape_fatal(carresptr, "exp1"), &game3dshapes[117]);
@@ -4969,6 +4972,7 @@ void shape3d_load_car_shapes(char arg_playercarid[], char arg_opponentcarid[]) {
 
 		shape3d_init_shape(locate_shape_fatal(car2resptr, "car0"), &game3dshapes[125]);
 		shape3d_init_shape(locate_shape_fatal(car2resptr, "car1"), &game3dshapes[127]);
+
 		var_E = &(game3dshapes[126].shape3d_verts[8]);
 		oppcarshapevec.z = var_E[0].z;
 		oppcarshapevec.x = (var_E[3].x + var_E[0].x)/2;
@@ -4982,7 +4986,7 @@ void shape3d_load_car_shapes(char arg_playercarid[], char arg_opponentcarid[]) {
 			oppcarshapevecs2[i].x = oppcarshapevec2.x - var_E[i + 6].x;
 			oppcarshapevecs2[i].z = oppcarshapevec2.z - var_E[i + 6].z;
 			oppcarshapevecs2[i].y = var_E[i + 6].y;
-			oppcarshapevecs3[i] = var_E[i + 11];
+			oppcarshapevecs3[i] = var_E[i + 12];
 			oppcarshapevecs4[i] = var_E[i + 18];
 		}
 		for (i = 0; i < 5; i++) {
@@ -4996,4 +5000,61 @@ void shape3d_load_car_shapes(char arg_playercarid[], char arg_opponentcarid[]) {
 	} else {
 		car2resptr = 0;
 	}
+}
+
+void sub_204AE(struct VECTOR far* arg_verts, int arg_4, short* arg_6, short* arg_8, struct VECTOR* arg_vecarray, struct VECTOR* arg_vecptr) {
+	int i, j;
+	int var_C;
+	int var_2;
+	int var_14;
+	int var_10;
+	int var_8;
+	int var_4;
+	//return ported_sub_204AE_(arg_verts, arg_4, arg_6, arg_8, arg_vecarray, arg_vecptr);
+	if (arg_8[4] != 0) {
+		var_C = sin_fast(arg_4 / 2);
+		var_2 = cos_fast(arg_4 / 2);
+
+		for (i = 0; i < 6; i++) {
+			var_14 = multiply_and_scale(arg_vecarray[i].x, var_2);
+			arg_verts[i].x = multiply_and_scale(arg_vecarray[i].z, var_C) + arg_vecptr[0].x + var_14;
+			var_14 = multiply_and_scale(arg_vecarray[i].z, var_2);
+			arg_verts[i].z = multiply_and_scale(arg_vecarray[i].x, var_C) + arg_vecptr[0].z + var_14;
+		}
+		for (i = 6; i < 0xC; i++) {
+			var_10 = multiply_and_scale(arg_vecarray[i].x, var_2);
+			arg_verts[i].x = multiply_and_scale(arg_vecarray[i].z, var_C) + arg_vecptr[1].x + var_10;
+			var_10 = multiply_and_scale(arg_vecarray[i].z, var_2);
+			arg_verts[i].z = multiply_and_scale(arg_vecarray[i].x, var_C) + arg_vecptr[1].z + var_10;
+		}
+		arg_8[4] = arg_4;
+	}
+
+	for (j = 0; j < 4; j++) {
+		
+		var_8 = _labs(_labs(arg_6[j]) >> 6);
+		//var_8 = (arg_6[j]) >> 6;
+		if (arg_8[j] == var_8)
+			continue;
+		i = j * 6;
+		var_4 = (j * 6) + 6;
+
+		for (; i < var_4; i++) {
+			arg_verts[i].y = (arg_vecarray[i].y) - var_8;
+		}
+		arg_8[j] = var_8;
+	}
+
+	return ;
+}
+
+extern char unk_3E710[];
+
+void shape3d_free_car_shapes() {
+	if (car2resptr != 0) {
+		sub_204AE(&(game3dshapes[127].shape3d_verts[8]), 0, unk_3E710, word_4448A, oppcarshapevecs, &oppcarshapevec);
+		mmgr_release(car2resptr);
+	}
+	sub_204AE(&(game3dshapes[126].shape3d_verts[8]), 0, unk_3E710, word_443E8, carshapevecs, &carshapevec);
+	mmgr_free(carresptr);
 }

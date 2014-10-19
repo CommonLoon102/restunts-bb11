@@ -148,6 +148,8 @@ extrn calc_sincos80:proc
 extrn draw_line_related:proc
 extrn draw_line_related_alt:proc
 extrn shape3d_load_car_shapes:proc
+extrn shape3d_free_car_shapes:proc
+extrn sub_204AE:proc
 
 ; externs for implementations in shape2d.c
 

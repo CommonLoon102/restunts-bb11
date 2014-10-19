@@ -52,8 +52,8 @@ seg004 segment byte public 'STUNTSC' use16
     public ported_shape3d_load_all_
     public ported_shape3d_free_all_
     public ported_shape3d_load_car_shapes_
-    public shape3d_free_car_shapes
-    public sub_204AE
+    public ported_shape3d_free_car_shapes_
+    public ported_sub_204AE_
     public track_setup
     public off_2147C
     public load_opponent_data
@@ -3804,7 +3804,7 @@ loc_2042A:
     pop     bp
     retf
 ported_shape3d_load_car_shapes_ endp
-shape3d_free_car_shapes proc far
+ported_shape3d_free_car_shapes_ proc far
 
     mov     ax, word ptr car2resptr
     or      ax, word ptr car2resptr+2
@@ -3825,7 +3825,7 @@ shape3d_free_car_shapes proc far
     push    dx
     push    ax
     push    cs
-    call near ptr sub_204AE
+    call near ptr ported_sub_204AE_
     add     sp, 0Eh
     push    word ptr car2resptr+2
     push    word ptr car2resptr
@@ -3848,15 +3848,15 @@ loc_20477:
     push    dx
     push    ax
     push    cs
-    call near ptr sub_204AE
+    call near ptr ported_sub_204AE_
     add     sp, 0Eh
     push    word ptr carresptr+2
     push    word ptr carresptr
     call    mmgr_free
     add     sp, 4
     retf
-shape3d_free_car_shapes endp
-sub_204AE proc far
+ported_shape3d_free_car_shapes_ endp
+ported_sub_204AE_ proc far
     var_14 = word ptr -20
     var_12 = word ptr -18
     var_10 = word ptr -16
@@ -3867,12 +3867,12 @@ sub_204AE proc far
     var_2 = word ptr -2
      s = byte ptr 0
      r = byte ptr 2
-    arg_0 = dword ptr 6
+    arg_verts = dword ptr 6
     arg_4 = word ptr 10
     arg_6 = word ptr 12
     arg_8 = word ptr 14
-    arg_A = word ptr 16
-    arg_C = word ptr 18
+    arg_vecarray = word ptr 16
+    arg_vecptr = word ptr 18
 
     push    bp
     mov     bp, sp
@@ -3905,29 +3905,29 @@ loc_204E5:
     shl     ax, 1
     mov     [bp+var_10], ax
     push    [bp+var_2]
-    mov     bx, [bp+arg_A]
+    mov     bx, [bp+arg_vecarray]
     mov     ax, si
     shl     ax, 1
     add     ax, cx
     shl     ax, 1
     add     bx, ax
-    push    word ptr [bx]
+    push    [bx+VECTOR.vx]
     call    multiply_and_scale
     add     sp, 4
     push    [bp+var_C]
-    mov     bx, [bp+arg_A]
+    mov     bx, [bp+arg_vecarray]
     add     bx, [bp+var_10]
-    push    word ptr [bx+4]
+    push    [bx+VECTOR.vz]
     mov     [bp+var_14], ax
     call    multiply_and_scale
     add     sp, 4
-    mov     bx, [bp+arg_C]
-    mov     cx, [bx]
+    mov     bx, [bp+arg_vecptr]
+    mov     cx, [bx+VECTOR.vx]
     add     cx, ax
     add     cx, [bp+var_14]
-    les     bx, [bp+arg_0]
+    les     bx, [bp+arg_verts]
     add     bx, [bp+var_10]
-    mov     es:[bx], cx
+    mov     es:[bx+VECTOR.vx], cx
     mov     ax, si
     mov     cx, ax
     shl     ax, 1
@@ -3935,29 +3935,29 @@ loc_204E5:
     shl     ax, 1
     mov     [bp+var_12], ax
     push    [bp+var_2]
-    mov     bx, [bp+arg_A]
+    mov     bx, [bp+arg_vecarray]
     mov     ax, si
     shl     ax, 1
     add     ax, cx
     shl     ax, 1
     add     bx, ax
-    push    word ptr [bx+4]
+    push    [bx+VECTOR.vz]
     call    multiply_and_scale
     add     sp, 4
     push    [bp+var_C]
-    mov     bx, [bp+arg_A]
+    mov     bx, [bp+arg_vecarray]
     add     bx, [bp+var_12]
-    push    word ptr [bx]
+    push    [bx+VECTOR.vx]
     mov     [bp+var_14], ax
     call    multiply_and_scale
     add     sp, 4
-    mov     bx, [bp+arg_C]
-    mov     cx, [bx+4]
+    mov     bx, [bp+arg_vecptr]
+    mov     cx, [bx+VECTOR.vz]
     add     cx, ax
     add     cx, [bp+var_14]
-    les     bx, [bp+arg_0]
+    les     bx, [bp+arg_verts]
     add     bx, [bp+var_12]
-    mov     es:[bx+4], cx
+    mov     es:[bx+VECTOR.vz], cx
     inc     si
     cmp     si, 6
     jge     short loc_20592
@@ -3972,29 +3972,29 @@ loc_20595:
     shl     ax, 1
     mov     [bp+var_14], ax
     push    [bp+var_2]
-    mov     bx, [bp+arg_A]
+    mov     bx, [bp+arg_vecarray]
     mov     ax, si
     shl     ax, 1
     add     ax, cx
     shl     ax, 1
     add     bx, ax
-    push    word ptr [bx]
+    push    [bx+VECTOR.vx]
     call    multiply_and_scale
     add     sp, 4
     push    [bp+var_C]
-    mov     bx, [bp+arg_A]
+    mov     bx, [bp+arg_vecarray]
     add     bx, [bp+var_14]
-    push    word ptr [bx+4]
+    push    [bx+VECTOR.vz]
     mov     [bp+var_10], ax
     call    multiply_and_scale
     add     sp, 4
-    mov     bx, [bp+arg_C]
-    mov     cx, [bx+6]
+    mov     bx, [bp+arg_vecptr]
+    mov     cx, [bx+(size VECTOR)]
     add     cx, ax
     add     cx, [bp+var_10]
-    les     bx, [bp+arg_0]
+    les     bx, [bp+arg_verts]
     add     bx, [bp+var_14]
-    mov     es:[bx], cx
+    mov     es:[bx+VECTOR.vx], cx
     mov     ax, si
     mov     cx, ax
     shl     ax, 1
@@ -4002,29 +4002,29 @@ loc_20595:
     shl     ax, 1
     mov     [bp+var_12], ax
     push    [bp+var_2]
-    mov     bx, [bp+arg_A]
+    mov     bx, [bp+arg_vecarray]
     mov     ax, si
     shl     ax, 1
     add     ax, cx
     shl     ax, 1
     add     bx, ax
-    push    word ptr [bx+4]
+    push    [bx+VECTOR.vz]
     call    multiply_and_scale
     add     sp, 4
     push    [bp+var_C]
-    mov     bx, [bp+arg_A]
+    mov     bx, [bp+arg_vecarray]
     add     bx, [bp+var_12]
-    push    word ptr [bx]
+    push    [bx+VECTOR.vx]
     mov     [bp+var_10], ax
     call    multiply_and_scale
     add     sp, 4
-    mov     bx, [bp+arg_C]
-    mov     cx, [bx+0Ah]
+    mov     bx, [bp+arg_vecptr]
+    mov     cx, [bx+(VECTOR.vz+6)]
     add     cx, ax
     add     cx, [bp+var_10]
-    les     bx, [bp+arg_0]
+    les     bx, [bp+arg_verts]
     add     bx, [bp+var_12]
-    mov     es:[bx+4], cx
+    mov     es:[bx+VECTOR.vz], cx
     inc     si
     cmp     si, 0Ch
     jge     short loc_20643
@@ -4043,13 +4043,13 @@ loc_20650:
     add     ax, cx
     shl     ax, 1
     mov     [bp+var_14], ax
-    mov     bx, [bp+arg_A]
+    mov     bx, [bp+arg_vecarray]
     add     bx, ax
-    mov     ax, [bx+2]
+    mov     ax, [bx+VECTOR.vy]
     sub     ax, [bp+var_8]
-    les     bx, [bp+arg_0]
+    les     bx, [bp+arg_verts]
     add     bx, [bp+var_14]
-    mov     es:[bx+2], ax
+    mov     es:[bx+VECTOR.vy], ax
     inc     si
 loc_20673:
     cmp     [bp+var_4], si
@@ -4102,7 +4102,7 @@ loc_206CE:
     mov     sp, bp
     pop     bp
     retf
-sub_204AE endp
+ported_sub_204AE_ endp
 track_setup proc far
     var_AF0 = dword ptr -2800
     var_AEC = word ptr -2796
