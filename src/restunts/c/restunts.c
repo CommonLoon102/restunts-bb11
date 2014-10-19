@@ -224,14 +224,13 @@ int random_wait(void)
 	return 0;
 }
 
-// note: this is more like tolower
-char toupper(char* ch)
+int toupper(int ch)
 {
-	if (*ch < 'a' || *ch > 'z') {
-		*ch -= ' ';
+	if (ch >= 'a' && ch < 'z') {
+		ch -= ' ';
 	}
 	
-	return *ch;
+	return ch;
 }
 
 void init_row_tables(void) {
