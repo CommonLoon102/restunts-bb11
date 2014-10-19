@@ -1,7 +1,6 @@
 #include <dos.h>
 #include <stddef.h>
-
-#include "externs.h"
+#include "restunts.h"
 #include "fileio.h"
 #include "keyboard.h"
 #include "math.h"
@@ -1527,7 +1526,7 @@ int stuntsmain2(int argc, char* argv[]) {
 	return 0;
 }
 
-int stuntsmain(int argc, char* argv[]) {
+int stuntsmainimpl(int argc, char* argv[]) {
 
 	int i, result;
 	int regax, regsi;

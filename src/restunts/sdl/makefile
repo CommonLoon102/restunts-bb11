@@ -25,8 +25,5 @@ cfiles:
 
 clean:
 	del $(OBJDIR)\main.obj
-	cd ..\c
-	if exist makefile make /DTARGET=sdl clean
-	cd ..\sdl
 	del restunts-sdl.exe
 	del restunts-sdl.map

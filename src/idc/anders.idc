@@ -17,6 +17,11 @@ version 2:
 		- an .inc file to be included from all the other segments
 		- an .asm file w/all code and data on that segment
 
+version 3 - oct 19 2014:
+	- generates two versions of the output
+	- saves output with patched codepaths to idbdir/asm 
+	- saves output with original codepaths to idbdir/asmorig
+		
 */
 
 #include "idc.idc"
@@ -197,7 +202,7 @@ static IsPublicLabel(labelname) {
 	return 0;
 }
 
-static PrintExterns(f, segstart, segend, exceptstart, exceptend) {
+static PrintExterns(f, segstart, segend, exceptstart, exceptend, isport) {
 
 	auto funcea, flags, labelname;
 
@@ -216,7 +221,7 @@ static PrintExterns(f, segstart, segend, exceptstart, exceptend) {
 			if (isCode(flags)) {
 			
 				if (isFunction(flags)) {
-					fprintf(f, "    extrn %s:proc\n", PortFuncName(labelname));
+					fprintf(f, "    extrn %s:proc\n", PortFuncName(labelname, isport));
 				} else {
 					// only a fraction of the locs need be extrnalized, so use a hardcoded list of allowed labels
 					// allowing all labels gives out of memory error
@@ -229,7 +234,7 @@ static PrintExterns(f, segstart, segend, exceptstart, exceptend) {
 				if (labelname != "") {
 					fprintf(f, "    extrn %s:%s\n", labelname, GetTypeString(flags, funcea));
 				} else {
-					Message("extrns: label is blank and isAnyName is true!\n");
+					//Message("extrns: label is blank and isAnyName is true!\n");
 				}
 			}
 		}
@@ -238,7 +243,7 @@ static PrintExterns(f, segstart, segend, exceptstart, exceptend) {
 }
 
 
-static PrintPublics(f, segstart, segend) {
+static PrintPublics(f, segstart, segend, isport) {
 
 	auto funcea, flags, labelname;
 
@@ -257,7 +262,7 @@ static PrintPublics(f, segstart, segend) {
 			if (isCode(flags)) {
 			
 				if (isFunction(flags) || IsPublicLabel(labelname)) {
-					fprintf(f, "    public %s\n", PortFuncName(labelname));
+					fprintf(f, "    public %s\n", PortFuncName(labelname, isport));
 				} else {
 					//fprintf(f, "LABEL: %s\n", NameEx(BADADDR, funcea));
 				}
@@ -266,7 +271,7 @@ static PrintPublics(f, segstart, segend) {
 				if (labelname != "") {
 					fprintf(f, "    public %s\n", labelname);
 				} else {
-					Message("publics: label is blank and isAnyName is true!\n");
+					//Message("publics: label is blank and isAnyName is true!\n");
 				}
 			}
 		}
@@ -274,7 +279,7 @@ static PrintPublics(f, segstart, segend) {
 	}
 }
 
-static PrintAsmHeader(f, codestart, codeend) {
+static PrintAsmHeader(f, codestart, codeend, isport) {
 	auto segea, nextseg, segtype;
 	fprintf(f, ".model medium\n");
 	fprintf(f, "nosmart\n");
@@ -304,13 +309,13 @@ static PrintAsmHeader(f, codestart, codeend) {
 	fprintf(f, "    assume es:nothing, ss:nothing, ds:dseg\n");
 	
 	// place all segment includes here pls
-	PrintExterns(f, SegStart(codestart), SegEnd(codestart), codestart, codeend);
+	PrintExterns(f, SegStart(codestart), SegEnd(codestart), codestart, codeend, isport);
 
-	PrintPublics(f, codestart, codeend);
+	PrintPublics(f, codestart, codeend, isport);
 
 }
 
-static PrintFunction(f, funcstart, funcend) {
+static PrintFunction(f, funcstart, funcend, isport) {
 //	GenerateFile(OFILE_ASM, f, funcstart, funcend, 0);
 //	GenerateFile(OFILE_ASM, f, funcstart, funcend, GENFLG_ASMINC);
 
@@ -326,14 +331,14 @@ static PrintFunction(f, funcstart, funcend) {
 		funcspec = " far"; else
 		funcspec = " near";
 	
-	fprintf(f, "%s proc%s\n", PortFuncName(funcname), funcspec);
+	fprintf(f, "%s proc%s\n", PortFuncName(funcname, isport), funcspec);
 	PrintFrame(f, funcstart);
 	fprintf(f, "\n");
-	PrintBody(f, funcstart, funcend, 1);
-	fprintf(f, "%s endp\n", PortFuncName(funcname));
+	PrintBody(f, funcstart, funcend, 1, isport);
+	fprintf(f, "%s endp\n", PortFuncName(funcname, isport));
 }
 
-static PrintBody(f, funcstart, funcend, skipfirstlabel) {
+static PrintBody(f, funcstart, funcend, skipfirstlabel, isport) {
 	auto funcbody, bodyflags, locname;
 	auto i;
 	auto fchunkstart, fchunklast;
@@ -430,13 +435,13 @@ static PrintBody(f, funcstart, funcend, skipfirstlabel) {
 			 if (funcbody > 0x2cc6f && funcbody < 0x2cc7e) {
 				// skip this
 			 } else
-				PrintFixedAsm(f, funcbody);
+				PrintFixedAsm(f, funcbody, isport);
 			//fprintf(f, "    %s\n", GetDisasm(funcbody));
 		}
 	}
 }
 
-static PrintFixedAsm(f, ea) {
+static PrintFixedAsm(f, ea, isport) {
 
 	auto tempsmart, nooutput;
 
@@ -509,7 +514,7 @@ static PrintFixedAsm(f, ea) {
 		funcofs = Rfirst0(ea);
 		funcstart =  GetFchunkAttr(funcofs, FUNCATTR_START);
 		if (funcstart != funcofs) {
-			Message("Translated %s into jmp far ptr %s\n", GetDisasm(ea), ExtractCallTarget(ea));
+			//Message("Translated %s into jmp far ptr %s\n", GetDisasm(ea), ExtractCallTarget(ea));
 			fprintf(f, "    jmp far ptr %s\n", ExtractCallTarget(ea));
 			nooutput = 1;
 		}
@@ -519,7 +524,7 @@ static PrintFixedAsm(f, ea) {
 		// if jumping to ourselves AND this is a ported function, we need to jump to the original non-ported function
 		funcname = ExtractCallTarget(ea);
 		if (funcname == GetFunctionName(ea)) {
-			portfuncname = PortFuncName(funcname);
+			portfuncname = PortFuncName(funcname, isport);
 			if (portfuncname != funcname) {
 				fprintf(f, "    %s short near ptr %s ; (fixed jump to ported self)\n", mnem, portfuncname);
 				nooutput = 1;
@@ -528,13 +533,13 @@ static PrintFixedAsm(f, ea) {
 	}
 	
 	if (mnem == "call" && optype1 == o_near) {
-		funcname = PortFuncName(ExtractCallTarget(ea));
+		funcname = PortFuncName(ExtractCallTarget(ea), isport);
 		//Message("Translated %s into call near ptr %s\n", GetDisasm(ea), funcname);
 		fprintf(f, "    call near ptr %s\n", funcname);
 		nooutput = 1;
 	} else
 	if (mnem == "call") {
-		funcname = PortFuncName(ExtractCallTarget(ea));
+		funcname = PortFuncName(ExtractCallTarget(ea), isport);
 		if (funcname == "__setenvp") {
 			//Message("****** hello from SETENVP!\n");
 			fprintf(f, "    ;call %s    ; -- stunts does not need the environment, and this call trashes our injected code\n", funcname);
@@ -543,6 +548,10 @@ static PrintFixedAsm(f, ea) {
 			fprintf(f, "    nop\n");
 			fprintf(f, "    nop\n");
 			fprintf(f, "    nop\n");
+			nooutput = 1;
+		} else if (funcname == "stuntsmain") {
+			// ensure consistent entry point for ported/original exports
+			fprintf(f, "    call stuntsmain\n");
 			nooutput = 1;
 		}
 	}
@@ -560,8 +569,13 @@ static PrintFixedAsm(f, ea) {
 // PortFuncName returns an obscured version of the function name
 // to prevent name collisions.
 // functions must also be added as externals in custom.inc
-static PortFuncName(labelname) {
+static PortFuncName(labelname, isport) {
 //	return labelname;
+	if (isport == 0) {
+		if (labelname == "stuntsmain")
+			return "ported_stuntsmain_";
+		return labelname;
+	}
 
 	if (
 //		labelname == "_strcpy" ||
@@ -797,16 +811,16 @@ static PrintSegDecl(f, ea) {
 
 }
 
-static PrintSegInc(segstart, segend) {
+static PrintSegInc(segstart, segend, asmpath, isport) {
 	auto funcea, flags, f, filename;
 	auto segname;
 
 	segname = SegName(segstart);
-	filename = form("%s\\asm\\%s.inc", GetIdbDirectory(), segname);
+	filename = form("%s\\%s\\%s.inc", GetIdbDirectory(), asmpath, segname);
 	f = fopen(filename, "w");
 
 	PrintSegDecl(f, segstart);
-	PrintExterns(f, segstart, segend, BADADDR, BADADDR);
+	PrintExterns(f, segstart, segend, BADADDR, BADADDR, isport);
 	fprintf(f, "%s ends\n", segname);
 
 	fclose(f);
@@ -1032,7 +1046,7 @@ static PrintReport() {
 
 			funcname = GetFunctionName(funcea);
 			funcflags = GetFunctionFlags(funcea);
-			ported = PortFuncName(funcname) != funcname;
+			ported = PortFuncName(funcname, 1) != funcname;
 			ignorable = ((funcflags & (FUNC_LIB|FUNC_THUNK)) != 0) || substr(funcname, 0, 6) == "nopsub";
 			
 			funccount ++;
@@ -1068,7 +1082,7 @@ static PrintReport() {
 	fclose(f);
 }
 
-static main() {
+static GenerateAsmFiles(asmpath, isport) {
 	auto segea, funcea, nextseg, endseg, endfunc, nextfunc, segss, segtype;
 	auto maxfuncs, funccount, startseg;
 	auto i, j;
@@ -1078,16 +1092,15 @@ static main() {
 	maxfuncs = 5;
 	funccount = 0;
 
-	PrintReport();
-
 	Message("Generating segment includes...\n");
 	for (segea = FirstSeg(); segea != BADADDR; segea = nextseg) {
 		nextseg = NextSeg(segea);
-		PrintSegInc(segea, nextseg);
+		PrintSegInc(segea, nextseg, asmpath, isport);
 	}
 
 	Message("Generating structs...\n");
-	f = fopen(GetIdbDirectory() + "\\asm\\structs.inc", "w");
+	f = fopen(GetIdbDirectory() + "\\" + asmpath + "\\structs.inc", "w");
+	//f = fopen(GetIdbDirectory() + "\\asm\\structs.inc", "w");
 
 	for (i = GetFirstStrucIdx(); i != -1; i = GetNextStrucIdx(i)) {
 		PrintStruct(f, GetStrucId(i));
@@ -1122,13 +1135,14 @@ static main() {
 		
 		// TODO: should use names in alphabetical order to ensure correct linking order
 		// or generate a filelist for tlink @-syntax
-		filename = form("%s\\asm\\%s.asm", GetIdbDirectory(), SegName(segea));
+		filename = form("%s\\%s\\%s.asm", GetIdbDirectory(), asmpath, SegName(segea));
 		
-		Message("Segment %i, %s: %s\n", segea, SegName(segea), filename);
+		//Message("Segment %i, %s: %s\n", segea, SegName(segea), filename);
+		Message(".");
 	
 		f = fopen(filename, "w");
 		
-		PrintAsmHeader(f, segea, endseg);
+		PrintAsmHeader(f, segea, endseg, isport);
 
 		// the stack is generated with the .stack directive, so printing it would just add extra bytes to our image
 		segtype = GetSegmentAttr(segea, SEGATTR_TYPE);
@@ -1144,18 +1158,18 @@ static main() {
 				flags = GetFlags(funcea);
 				if (isFunction(flags) && GetFunctionName(funcea) != "") {
 					//Message("function %s at %i-%i\n", GetFunctionName(funcea), funcea, endfunc);
-					PrintFunction(f, funcea, endfunc);
+					PrintFunction(f, funcea, endfunc, isport);
 					if (GetFunctionName(funcea) == "start") {
 						startseg = 1;
 					}
 				} else 
 				if (isCode(flags)) {
-					PrintBody(f, funcea, endfunc, 0);
+					PrintBody(f, funcea, endfunc, 0, isport);
 					//Message("unhandlet code at %i-%i\n", funcea, endfunc);
 				} else
 				if (isData(flags) || hasValue(flags)) {
 					//Message("data at %i-%i\n", funcea, endfunc);
-					PrintBody(f, funcea, endfunc, 0);
+					PrintBody(f, funcea, endfunc, 0, isport);
 					//Message("unhandled data - should be at the beginning of a segment that doesnt start with a function!\n");
 				} else {
 					Message("unhandled flags: %i\n", flags);
@@ -1176,6 +1190,13 @@ static main() {
 		//break;
 	}
 
+	Message("\n");
 	Message("Anders rules\n");
 
+}
+
+static main() {
+	PrintReport();
+	GenerateAsmFiles("asm", 1);
+	GenerateAsmFiles("asmorig", 0);
 }

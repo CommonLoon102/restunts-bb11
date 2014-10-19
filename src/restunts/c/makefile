@@ -2,7 +2,7 @@
 TARGET=dos
 !endif
 
-OBJDIR = ..\$(TARGET)\build
+OBJDIR = build\$(TARGET)
 
 # Set up tools for DOS
 !if ($(TARGET)==dos)
