@@ -1403,7 +1403,7 @@ loc_1AB15:
     add     sp, 6
     lea     ax, [bp+var_vec6]
     push    ax
-    mov     ax, 0ACDCh
+    mov     ax, offset mat_temp
     push    ax
     lea     ax, [bp+var_vec8]
     push    ax
@@ -2230,7 +2230,7 @@ loc_1B336:
     jle     short loc_1B374
     jmp     loc_1B03C
 loc_1B36A:
-    mov     transshapeunk.ts_rectptr, 92A4h
+    mov     transshapeunk.ts_rectptr, offset rect_unk6
     mov     [bp+var_4E], 1
 loc_1B374:
     cmp     [bp+var_FC], 0
@@ -2730,7 +2730,7 @@ loc_1B896:
     jge     short loc_1B89F
     jmp     loc_1B764
 loc_1B89F:
-    mov     [bp+var_trkobject_ptr], 20B4h
+    mov     [bp+var_trkobject_ptr], (offset trkObjectList.ss_trkObjInfoPtr+1Ch)
     mov     bx, curtransshape_ptr
     mov     ax, word ptr state.playerstate.car_posWorld1.lx
     mov     dx, word ptr state.playerstate.car_posWorld1.lx+2
@@ -2952,7 +2952,7 @@ loc_1BAB4:
     mov     bx, curtransshape_ptr
     mov     [bx+TRANSFORMEDSHAPE.ts_shapeptr], ax
     mov     bx, curtransshape_ptr
-    mov     [bx+TRANSFORMEDSHAPE.ts_rectptr], 92A4h
+    mov     [bx+TRANSFORMEDSHAPE.ts_rectptr], offset rect_unk6
     mov     bx, curtransshape_ptr
     mov     al, [bp+var_122]
     or      al, 5
@@ -2991,7 +2991,7 @@ loc_1BB43:
     jge     short loc_1BB4C
     jmp     loc_1BA10
 loc_1BB4C:
-    mov     [bp+var_trkobject_ptr], 20C2h
+    mov     [bp+var_trkobject_ptr], (offset trkObjectList.ss_trkObjInfoPtr+2Ah)
     mov     bx, curtransshape_ptr
     mov     ax, word ptr state.opponentstate.car_posWorld1.lx
     mov     dx, word ptr state.opponentstate.car_posWorld1.lx+2

@@ -224,9 +224,10 @@ int random_wait(void)
 	return 0;
 }
 
+// note: this is more like tolower
 char toupper(char* ch)
 {
-	if (*ch >= 'a' && *ch <= 'z') {
+	if (*ch < 'a' || *ch > 'z') {
 		*ch -= ' ';
 	}
 	
@@ -1711,3 +1712,4 @@ int stuntsmainimpl(int argc, char* argv[]) {
 	
 	}
 }
+

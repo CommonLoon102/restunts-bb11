@@ -4559,14 +4559,10 @@ loc_2460D:
     call near ptr setup_player_cars
 loc_24619:
     mov     al, byte ptr gameconfig.game_framespersec
-loc_2461C:
     cbw
-loc_2461D:
     mov     framespersec, ax
-loc_24620:
     mov     ax, 0FFFFh
     push    ax
-loc_24624:
     call    init_game_state
     add     sp, 2
     jmp     loc_24828
@@ -4661,7 +4657,7 @@ loc_246F4:
     jz      short loc_246FD
     jmp     loc_24639
 loc_246FD:
-    mov     ax, 95F8h
+    mov     ax, offset g_path_buf
     push    ax
     push    cs
     call near ptr file_write_replay
@@ -4748,7 +4744,6 @@ loc_24795:
     push    ax
     sub     ax, ax
     push    ax
-loc_247BE:
     mov     ax, 2
     push    ax
     call    show_dialog
@@ -4918,7 +4913,6 @@ loc_24935:
     call    __aFldiv
     mov     si, ax
     add     si, elapsed_time2
-loc_2494C:
     cmp     gameconfig.game_recordedframes, si
     jge     short loc_24956
     mov     si, gameconfig.game_recordedframes
@@ -4944,11 +4938,10 @@ loc_24956:
     add     sp, 6
     push    dx
     push    ax
-    mov     ax, 0AC74h
+    mov     ax, offset resID_byte1
     push    ax
     call    copy_string
     add     sp, 6
-loc_24997:
     cmp     timertestflag_copy, 0
     jz      short loc_249D2
     push    rectptr_unk2
@@ -4957,20 +4950,15 @@ loc_24997:
     push    dialog_fnt_colour
     mov     ax, 64h ; 'd'
     push    ax
-    mov     ax, 0AC74h
-loc_249B0:
+    mov     ax, offset resID_byte1
     push    ax
-loc_249B1:
     call    font_op2_alt
     add     sp, 2
     push    ax
-loc_249BA:
-    mov     ax, 0AC74h
+    mov     ax, offset resID_byte1
     push    ax
     call    intro_draw_text
-loc_249C3:
     add     sp, 0Ah
-loc_249C6:
     push    ax
     push    rectptr_unk2
     call    rect_union
@@ -4981,13 +4969,12 @@ loc_249D2:
     push    dialog_fnt_colour
     mov     ax, 64h ; 'd'
     push    ax
-loc_249DD:
-    mov     ax, 0AC74h
+    mov     ax, offset resID_byte1
     push    ax
     call    font_op2_alt
     add     sp, 2
     push    ax
-    mov     ax, 0AC74h
+    mov     ax, offset resID_byte1
     push    ax
     call    intro_draw_text
     add     sp, 0Ah
@@ -5163,7 +5150,7 @@ loc_24B4F:
     call    font_op2_alt
     add     sp, 2
     push    ax
-    mov     ax, 0AC74h
+    mov     ax, offset resID_byte1
     push    ax
     call    intro_draw_text
     add     sp, 0Ah
@@ -5180,12 +5167,12 @@ loc_24BB0:
     push    dialog_fnt_colour
     mov     ax, 64h ; 'd'
     push    ax
-    mov     ax, 0AC74h
+    mov     ax, offset resID_byte1
     push    ax
     call    font_op2_alt
     add     sp, 2
     push    ax
-    mov     ax, 0AC74h
+    mov     ax, offset resID_byte1
     push    ax
     call    intro_draw_text
     add     sp, 0Ah
@@ -5308,7 +5295,6 @@ loc_24CA6:
     cwd
     push    dx
     push    ax
-loc_24CE6:
     call    timer_get_counter_unk
     add     sp, 4
     sub     ax, ax
@@ -5332,7 +5318,6 @@ loc_24D04:
     push    cs
     call near ptr loop_game
     add     sp, 6
-loc_24D13:
     mov     byte_449E6, 3
 loc_24D18:
     mov     is_in_replay, 0
@@ -5344,14 +5329,12 @@ off_24D26     dw offset loc_24C5A
 off_24D28     dw offset loc_24C74
     dw offset loc_24CA6
     dw offset loc_24346
-loc_24D2E:
     jmp     loc_242E7
     ; align 2
     db 144
 loc_24D32:
     cmp     ax, 2Dh ; '-'
     jnz     short loc_24D3A
-loc_24D37:
     jmp     loc_2426E
 loc_24D3A:
     cmp     ax, 4800h
@@ -5359,21 +5342,15 @@ loc_24D3A:
     jmp     loc_2430A
 loc_24D42:
     cmp     ax, 4B00h
-loc_24D45:
     jnz     short loc_24D4A
-loc_24D47:
     jmp     loc_242C8
 loc_24D4A:
     cmp     ax, 4D00h
-loc_24D4D:
     jnz     short loc_24D52
-loc_24D4F:
     jmp     loc_242FE
 loc_24D52:
     cmp     ax, 5000h
-loc_24D55:
     jnz     short loc_24D5A
-loc_24D57:
     jmp     loc_2431E
 loc_24D5A:
     jmp     loc_242E7
@@ -5382,11 +5359,8 @@ loc_24D5A:
 loc_24D5E:
     pop     si
     pop     di
-loc_24D60:
     mov     sp, bp
-loc_24D62:
     pop     bp
-locret_24D63:
     retf
 loop_game endp
 seg005 ends
