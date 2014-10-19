@@ -1,5 +1,4 @@
 #include <dos.h>
-//#include <stddef.h>
 #include <restunts.h>
 #include <memmgr.h>
 
@@ -190,6 +189,10 @@ void init_trackdata(void) {
 
 	trkptr += 0x30;
 }
+#else
+
+size_t fwrite(const void far* src, size_t size, size_t nmemb, FILE* file);
+
 #endif
 
 int stuntsmain(int argc, char* argv[]) {
@@ -283,7 +286,11 @@ int stuntsmain(int argc, char* argv[]) {
 	printf("OK\n");
 	
 	strcpy(outname, argv[1]);
+#ifdef RESTUNTS_ORIGINAL
 	strcat(outname, ".BIN");
+#else
+	strcat(outname, ".BNI");
+#endif
 	outname[12] = 0;
 	printf("Creating output file '%s'... ", outname);
 	
