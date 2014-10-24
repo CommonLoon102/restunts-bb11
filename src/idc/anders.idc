@@ -838,10 +838,10 @@ static PrintStruct(f, id) {
 			memberid = GetMemberStrId(id, i);
 			membername = GetStrucName(memberid);
 			if (membername == "") break;
-			fprintf(f, "  %s %s ?\n", GetMemberName(id, i), membername);
+			fprintf(f, "  %s %s <>\n", GetMemberName(id, i), membername);
 			i++;
 		}
-		fprintf(f, "ends\n", id);
+		fprintf(f, "%s ends\n", GetStrucName(id));
 		return ;
 	}
 
@@ -855,9 +855,9 @@ static PrintStruct(f, id) {
 			memberid = GetMemberStrId(id, memberofs);
 			membersize = GetMemberSize(id, memberofs) / GetStrucSize(memberid);
 			if (membersize == 1) {
-				fprintf(f, "%s %s ?\n", membername, GetStrucName(memberid));
+				fprintf(f, "%s %s <>\n", membername, GetStrucName(memberid));
 			} else {
-				fprintf(f, "%s %s %i dup (?)\n", membername, GetStrucName(memberid), membersize);
+				fprintf(f, "%s %s %i dup (<>)\n", membername, GetStrucName(memberid), membersize);
 			}
 		} else
 		if (isDwrd(memberflag)) {
@@ -889,8 +889,8 @@ static PrintStruct(f, id) {
 		//fprintf(f, "%s %s\n", membername, GetMemberTypeString(id, memberofs));
 	}
 
-	fprintf(f, "ends\n", id);
-}
+	fprintf(f, "%s ends\n", GetStrucName(id));
+
 
 static GetAnterior(ea) {
 	auto i, str, result;
