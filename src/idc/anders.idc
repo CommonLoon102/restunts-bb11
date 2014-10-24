@@ -226,7 +226,7 @@ static PrintExterns(f, segstart, segend, exceptstart, exceptend, isport) {
 					// only a fraction of the locs need be extrnalized, so use a hardcoded list of allowed labels
 					// allowing all labels gives out of memory error
 					if (IsPublicLabel(labelname)) {
-						fprintf(f, "    extrn %s\n", labelname);
+						fprintf(f, "    extrn %s:proc\n", labelname);
 					}
 				}
 			} else 
@@ -890,7 +890,7 @@ static PrintStruct(f, id) {
 	}
 
 	fprintf(f, "%s ends\n", GetStrucName(id));
-
+}
 
 static GetAnterior(ea) {
 	auto i, str, result;
