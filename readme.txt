@@ -1,5 +1,11 @@
 Restunts - The Stunts reverse engineering project
 
+Online
+  web: http://forum.stunts.hu/index.php?topic=2454.0
+  irc: irc://irc.efnet.org/stunts
+  svn: svn://anders-e.com/restunts/trunk/restunts
+  irc-log: http://batman.no/stuntslog.txt (no longer active)
+
 
 Repository contents:
 	docs
@@ -51,17 +57,17 @@ Contents of src\restunts:
 The build environment
 
 How to build restunts on Windows:
-	0) Double click tools\mount_stunts_to_s.bat (only needed once per reboot)
-	1) Start cmd.exe
-	4) S:
-	5) cd tools
-	6) setpath.bat
-	7) cd \src\restunts
-	8) make
+	1) Double click tools\mount_stunts_to_s.bat (only needed once per reboot)
+	2) Start cmd.exe and enter the following commands:
+		S:
+		cd tools
+		setpath.bat
+		cd \src\restunts
+		make
 
 If everything went fine, there should be a new s:\stunts\restunts.exe which can
 be run in DOSBox. Note that the drive letter S: is hardcoded many places in the
-makefiles.
+makefiles, and is also mounted inside DOSBox as a fixed point of reference.
 
 
 The toolchain
@@ -82,8 +88,26 @@ The 16-bit tools are:
 	tasmx.exe, invoked in DOSBox by tasmbox.bat
 	tlink.exe, invoked in DOSBox by tlinkbox.bat
 
+	
+Debugging restunts.exe
 
-Notes regarding make:
+Restunts can be debugged with Turbo Debugger inside DOSBox. The DOSBox
+debugging environment is an extension of the build environment described above:
+	1) Double click tools\mount_stunts_to_s.bat (only needed once per reboot)
+	2) Start DOSBox and enter the following commands:
+		mount S S:
+		S:
+		cd tools
+		setpath.bat
+		cd \stunts
+		td restunts.exe
+
+Turbo Debugger is preconfigured to automatically find and show the source code.
+Setting breakpoints, stepping etc works. The TD configuration file is stored in
+stunts\tdconfig.td.
+
+
+Notes regarding make
 
 Borland Make was chosen because the first makefile was written for the DOS
 version. Ultimately the DOS version ran into memory problems with the largest 
@@ -96,7 +120,7 @@ inline file as a parameter. As such make.exe was patched to use MAKEFILE.!!!
 as the temporary filename instead.
 
 
-Notes regarding the linker:
+Notes regarding the linker
 
 WLINK from the Open Watcom C/C++ compiler suite was originally chosen because
 it supports detailed control on how to order segment classes in the final
@@ -104,10 +128,8 @@ executable image.
 
 Our requirement is to put the original code and data first in the file, exactly
 as in the original game, only patching up function calls and data access. 
-TLINK and OPTLINK were originally used, but would insist on putting the CODE
-and DATA segment classes first in the executable, conflicting with the crt, and
-in particular the default segment class names. The final executable would then
-crash.
+TLINK and OPTLINK were tested in the early days, but after having difficulties
+with segment ordering and subsequent crashes, the project settled on WLINK.
 
 The problems with TLINK were revisited and fixed years later, after an urgent
 need to get debug information for the restunts executable. As WLINK is not able
@@ -116,6 +138,18 @@ replace either of them. After the initial attempts of using TLINK were
 successful, no further investigation were made into replacing TASM.  It should
 be noted that MASM seems a promising TASM replacement candidate: the syntax is
 close to TASM, and it produces CodeView debug format usable by WLINK.
+
+
+Notes regarding 16-bit tasmx, tlink and DOSBox
+
+The choice of reverting to TLINK was not easy either. Only the 16-bit version
+of TLINK can produce 16-bit executables such as restunts.exe, and it can only
+use object files produced by the 16-bit TASM. In order to use 16-bit tools on a
+64-bit Windows host, they need to be emulated. And so DOSBox became
+incorporated in the build process. Another problem is the regular 16-bit
+tasm.exe exceeds the available 640k of memory when compiling the largest
+restunts source files. This was overcome by using the DPMI-enabled tasmx.exe
+instead.
 
 
 Notes regarding the CRT (libc)
@@ -151,10 +185,4 @@ Porting a function from ASM to C
 5. Start make to see if it compiles + links
 
 6. Port to c!
-
-Online
-  irc: irc://irc.efnet.org/stunts
-  irc-log: http://batman.no/stuntslog.txt
-  web: http://cia.vc/stats/project/restunts
-  svn: svn://anders-e.com/restunts/trunk/restunts
 
