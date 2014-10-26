@@ -69,6 +69,23 @@ If everything went fine, there should be a new s:\stunts\restunts.exe which can
 be run in DOSBox. Note that the drive letter S: is hardcoded many places in the
 makefiles, and is also mounted inside DOSBox as a fixed point of reference.
 
+The makefile supports the following targets:
+
+	make restunts
+		The default restunts target builds an executable based on ported C code
+		and patched disassembly.
+		
+	make restunts-original
+		Builds an executable based on unpatched disassembly with the original
+		codepaths intact. Does not use any of the ported C code.
+
+	make repldump
+		Builds the replay dump tool using ported C code and patched
+		disassembly.
+		
+	make repldump-original
+		Builds the replay dump tool without ported C code.
+		
 
 The toolchain
 
@@ -82,13 +99,32 @@ Tools used:
 	- TASMX + TLINK (16 bit DOS, from Borland Turbo Assembler 4.0)
 	- Borland C++ 5.2 (Win32)
 	- Borland Make 5.2 (Win32, from Borland C++ 5.5, patched binary)
-	- IDA 6.1 (Win32)
 
 The 16-bit tools are:
 	tasmx.exe, invoked in DOSBox by tasmbox.bat
 	tlink.exe, invoked in DOSBox by tlinkbox.bat
 
-	
+
+Analysis in IDA and the development cycle
+
+Analysis happens continously in IDA 6.1 (Win32). Using a custom script in IDA,
+the entire disassembly is exported to compilable .asm and .inc files in 
+src\restunts\asm. This allows using latest analysis results in the build
+process. As code is ported manually to C, the custom script is updated and kept
+in sync, such that it generates patched assembly code calling into the ported C
+functions.
+
+The custom script also runs a second pass, where it exports a separate set of 
+.asm files to src\restunts\asmorig. These files are unpatched and produce code
+that behaves 100% identically to the original game.
+
+When doing analysis and (re)naming variables and functions, it is important to
+always check the ported C code if there are any references to the previous
+symbol names. All symbol references in the C code need to be kept in sync with
+the analysis manually. Obviously, the linker will complain about missing
+symbols in case a symbol was renamed in IDA, but not in the C files.
+
+
 Debugging restunts.exe
 
 Restunts can be debugged with Turbo Debugger inside DOSBox. The DOSBox
@@ -163,6 +199,46 @@ When the project used WLINK, it was able to link with cm.lib from Borland C++
 Before upgrading to Borland C++ 5.1, the makefile would link to single obj
 files from Borland 3.1's CRT. 
 
+The linker can complain about weird missing symbols f.ex at first time use of
+some compiler feature or CRT function. This can be fixed by extracting the
+object file from cm.lib, and adding it to the makefile.
+
+cm.lib is the medium model libc from Borland C++ 5.2. tlib.exe is a 16-bit
+Borland utility for manipulating lib files and has to be run via DOSBox.
+
+Using a binary file viewer with cm.lib it's possible to locate missing CRT
+symbol names and work out/guess the object file name by looking at strings in
+the binary data before it.
+
+To extract the object file
+	1) Double click tools\mount_stunts_to_s.bat (only needed once per reboot)
+	2) Start DOSBox and initialize the restunts development environment:
+		mount S S:
+		S:
+		cd tools
+		setpath.bat
+		cd \tools\lib
+	3) Run tlib to extract the object file, some examples:
+		tlib cm.lib * GETVECT
+		tlib cm.lib * LABS
+		tlib cm.lib * STRCPY
+		tlib cm.lib * MEMCPY
+		tlib cm.lib * FMEMCPY
+		tlib cm.lib * H_LDIV
+		tlib cm.lib * F_LXMUL
+		tlib cm.lib * F_SCOPY
+		tlib cm.lib * H_LRSH
+		tlib cm.lib * H_PADD
+		tlib cm.lib * H_PINA
+		tlib cm.lib * H_PADA
+		tlib cm.lib * N_PCMP
+		tlib cm.lib * F_PCMP
+		tlib cm.lib * H_LURSH
+		tlib cm.lib * H_PSBP
+		tlib cm.lib * H_LLSH
+	4) Add new CRT object files in dos\makefile - at the end of the line
+	   starting with CTARGETS =
+
 
 Porting a function from ASM to C
 
@@ -178,7 +254,7 @@ Porting a function from ASM to C
 3. Add a function stub to one of the existing .c files in src\restunts\c 
 3.1 If you want to add a new .c-file to the project, you need to 
 	- add a target for it in c\makefile
-	- add a reference to the obj in CTARGETS in dos\makefile
+	- add a reference to the obj in RESTUNTS_OBJFILES in dos\makefile
 
 4. Add an extrn for the c-function in asm\custom.inc
 
