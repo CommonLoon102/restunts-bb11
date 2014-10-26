@@ -13,7 +13,7 @@ seg028 segment byte public 'STUNTSC' use16
     extrn off_38E7E:word
     extrn sub_39050:proc
     extrn sub_39088:proc
-    extrn loc_390C8
+    extrn loc_390C8:proc
     extrn byte_3930E:byte
     extrn sub_3945A:proc
     extrn off_395A8:word

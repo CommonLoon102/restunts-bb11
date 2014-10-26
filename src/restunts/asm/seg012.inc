@@ -8,7 +8,7 @@ seg012 segment byte public 'STUNTSC' use16
     extrn sub_2EB1E:proc
     extrn ported_draw_line_related_alt_:proc
     extrn ported_draw_line_related_:proc
-    extrn loc_2EB62
+    extrn loc_2EB62:proc
     extrn off_2ECB9:word
     extrn word_2ECF8:word
     extrn word_2EDBD:word
@@ -96,7 +96,7 @@ seg012 segment byte public 'STUNTSC' use16
     extrn video_set_mode7:proc
     extrn nopsub_30180:proc
     extrn timer_setup_interrupt:proc
-    extrn loc_301FD
+    extrn loc_301FD:proc
     extrn audio_stop_unk:proc
     extrn timer_reg_callback:proc
     extrn timer_remove_callback:proc
@@ -145,7 +145,7 @@ seg012 segment byte public 'STUNTSC' use16
     extrn ported_locate_shape_fatal_:proc
     extrn ported_locate_sound_fatal_:proc
     extrn ported_mmgr_alloc_resmem_:proc
-    extrn loc_310CD
+    extrn loc_310CD:proc
     extrn ported_mmgr_alloc_a000_:proc
     extrn nopsub_310FE:proc
     extrn nopsub_3111D:proc
@@ -160,7 +160,7 @@ seg012 segment byte public 'STUNTSC' use16
     extrn ported_mmgr_get_chunk_by_name_:proc
     extrn nopsub_31429:proc
     extrn ported_mmgr_free_:proc
-    extrn loc_31498
+    extrn loc_31498:proc
     extrn nopsub_31525:proc
     extrn ported_mmgr_release_:proc
     extrn ported_mmgr_get_chunk_size_:proc
@@ -168,15 +168,15 @@ seg012 segment byte public 'STUNTSC' use16
     extrn ported_mmgr_op_unk_:proc
     extrn ported_preRender_default_:proc
     extrn ported_preRender_default_alt_:proc
-    extrn loc_317CE
+    extrn loc_317CE:proc
     extrn ported_skybox_op_helper_:proc
     extrn ported_preRender_wheel_helper4_:proc
-    extrn loc_317FB
-    extrn loc_3180A
+    extrn loc_317FB:proc
+    extrn loc_3180A:proc
     extrn preRender_helper:proc
     extrn preRender_helper2:proc
     extrn off_31A82:word
-    extrn locret_31AA3
+    extrn locret_31AA3:proc
     extrn preRender_helper3:proc
     extrn off_31B84:word
     extrn off_31CF7:word
@@ -189,7 +189,7 @@ seg012 segment byte public 'STUNTSC' use16
     extrn nopsub_322C0:proc
     extrn nopsub_322DF:proc
     extrn ported_set_projection_:proc
-    extrn loc_32334
+    extrn loc_32334:proc
     extrn ported_vector_to_point_:proc
     extrn ported_sprite_free_wnd_:proc
     extrn ported_file_write_nofatal_:proc
@@ -219,8 +219,8 @@ seg012 segment byte public 'STUNTSC' use16
     extrn ported_timer_get_counter_unk_:proc
     extrn font_op:proc
     extrn font_op2:proc
-    extrn loc_3284A
-    extrn loc_32882
+    extrn loc_3284A:proc
+    extrn loc_32882:proc
     extrn ported_preRender_patterned_:proc
     extrn nopsub_328C9:proc
     extrn nopsub_328DB:proc
@@ -236,7 +236,7 @@ seg012 segment byte public 'STUNTSC' use16
     extrn ported_video_get_status_:proc
     extrn nopsub_33006:proc
     extrn ported_vector_op_unk_:proc
-    extrn loc_3301F
+    extrn loc_3301F:proc
     extrn preRender_sphere:proc
     extrn nopsub_3320E:proc
     extrn sprite_set_1_size:proc
@@ -247,15 +247,15 @@ seg012 segment byte public 'STUNTSC' use16
     extrn putpixel_line1_maybe:proc
     extrn off_3340A:word
     extrn sprite_1_unk2:proc
-    extrn loc_335CF
+    extrn loc_335CF:proc
     extrn sprite_1_unk:proc
-    extrn loc_335D7
-    extrn loc_33622
+    extrn loc_335D7:proc
+    extrn loc_33622:proc
     extrn byte_33646:byte
     extrn byte_33652:byte
     extrn byte_33656:byte
     extrn sprite_1_unk3:proc
-    extrn loc_33697
+    extrn loc_33697:proc
     extrn font_draw_text:proc
     extrn video_set_mode_13h:proc
     extrn file_load_shape2d_res_fatal_thunk:proc
@@ -267,51 +267,51 @@ seg012 segment byte public 'STUNTSC' use16
     extrn file_load_shape2d_thunk:proc
     extrn sprite_putimage_and_alt2:proc
     extrn sprite_putimage_and:proc
-    extrn loc_338C9
+    extrn loc_338C9:proc
     extrn nopsub_339FA:proc
     extrn putpixel_iconMask:proc
-    extrn loc_33A57
+    extrn loc_33A57:proc
     extrn nopsub_33AC0:proc
     extrn nopsub_33AE4:proc
     extrn shape2d_render_bmp_as_mask:proc
-    extrn loc_33B1D
+    extrn loc_33B1D:proc
     extrn nopsub_33B98:proc
     extrn sprite_putimage_and_alt:proc
     extrn sprite_putimage:proc
-    extrn loc_33BF5
+    extrn loc_33BF5:proc
     extrn nopsub_33D0C:proc
     extrn sprite_shape_to_1:proc
     extrn sprite_shape_to_1_alt:proc
-    extrn loc_33D69
+    extrn loc_33D69:proc
     extrn nopsub_33DBE:proc
     extrn shape2d_op_unk5:proc
     extrn shape2d_op_unk:proc
-    extrn loc_33E1B
-    extrn loc_33E27
+    extrn loc_33E1B:proc
+    extrn loc_33E27:proc
     extrn nopsub_33E90:proc
     extrn shape2d_op_unk2:proc
     extrn shape2d_op_unk3:proc
-    extrn loc_33EED
+    extrn loc_33EED:proc
     extrn sprite_putimage_or_alt:proc
     extrn sprite_putimage_or:proc
-    extrn loc_340BD
+    extrn loc_340BD:proc
     extrn putpixel_iconFillings:proc
-    extrn loc_3424B
+    extrn loc_3424B:proc
     extrn shape2d_op_unk4:proc
-    extrn loc_34311
+    extrn loc_34311:proc
     extrn sprite_putimage_transparent:proc
-    extrn loc_343E9
+    extrn loc_343E9:proc
     extrn sub_34526:proc
-    extrn loc_34541
+    extrn loc_34541:proc
     extrn sub_345BC:proc
-    extrn loc_345E5
+    extrn loc_345E5:proc
     extrn video_set_palette:proc
-    extrn loc_346A8
+    extrn loc_346A8:proc
     extrn draw_filled_lines:proc
     extrn nopsub_34736:proc
     extrn sprite_clear_shape_alt:proc
     extrn sprite_clear_shape:proc
-    extrn loc_34799
+    extrn loc_34799:proc
     extrn shape_op_explosion:proc
     extrn sprite1:SPRITE
     extrn sprite2:SPRITE
@@ -331,7 +331,7 @@ seg012 segment byte public 'STUNTSC' use16
     extrn sub_35DC8:proc
     extrn sub_35DE6:proc
     extrn sub_35E08:proc
-    extrn loc_35ED9
+    extrn loc_35ED9:proc
     extrn ported_file_load_shape2d_palmap_apply_:proc
     extrn ported_file_load_shape2d_expand_:proc
     extrn ported_file_unflip_shape2d_pes_:proc

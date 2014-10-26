@@ -7,7 +7,7 @@ _cl db ?
 _ch db ?
 _dl db ?
 _dh db ?
-ends
+BYTEREGS ends
 WORDREGS struc
 _ax dw ?
 _bx dw ?
@@ -16,18 +16,18 @@ _dx dw ?
 _si dw ?
 _di dw ?
 cflag dw ?
-ends
+WORDREGS ends
 REGS union
-  x WORDREGS ?
-  h BYTEREGS ?
-ends
+  x WORDREGS <>
+  h BYTEREGS <>
+REGS ends
 FILE struc
 _ptr dd ?
 _cnt dw ?
 _base dd ?
 _flag db ?
 _file db ?
-ends
+FILE ends
 MATRIX struc
 _11 dw ?
 _21 dw ?
@@ -38,34 +38,34 @@ _32 dw ?
 _13 dw ?
 _23 dw ?
 _33 dw ?
-ends
+MATRIX ends
 VECTOR struc
 vx dw ?
 vy dw ?
 vz dw ?
-ends
+VECTOR ends
 MEMCHUNK struc
 resname db 12 dup (?)
 ressize dw ?
 resofs dw ?
 resunk dw ?
-ends
+MEMCHUNK ends
 VECTORLONG struc
 lx dd ?
 ly dd ?
 lz dd ?
-ends
+VECTORLONG ends
 PLANE struc
 plane_yz dw ?
 plane_xy dw ?
-plane_origin VECTOR ?
-plane_normal VECTOR ?
-plane_rotation MATRIX ?
-ends
+plane_origin VECTOR <>
+plane_normal VECTOR <>
+plane_rotation MATRIX <>
+PLANE ends
 POINT2D struc
 x2 dw ?
 y2 dw ?
-ends
+POINT2D ends
 SIMD struc
 num_gears db ?
 simd_unk db ?
@@ -76,7 +76,7 @@ downshift_rpm dw ?
 upshift_rpm dw ?
 max_rpm dw ?
 gear_ratios dw 7 dup (?)
-knob_points POINT2D 7 dup (?)
+knob_points POINT2D 7 dup (<>)
 aero_resistance dw ?
 idle_torque db ?
 torque_curve db 104 dup (?)
@@ -86,28 +86,28 @@ field_A6 dw 7 dup (?)
 sliding dw ?
 surface_grip dw 4 dup (?)
 simd_unk3 db 10 dup (?)
-collide_points POINT2D 2 dup (?)
+collide_points POINT2D 2 dup (<>)
 car_height dw ?
-wheel_coords VECTOR 4 dup (?)
+wheel_coords VECTOR 4 dup (<>)
 steeringdots db 62 dup (?)
-spdcenter POINT2D ?
+spdcenter POINT2D <>
 spdnumpoints dw ?
 spdpoints db 208 dup (?)
-revcenter POINT2D ?
+revcenter POINT2D <>
 revnumpoints dw ?
 revpoints db 256 dup (?)
 aerorestable dw ?
-ends
+SIMD ends
 SHAPE3DHEADER struc
 header_numverts db ?
 header_numprimitives db ?
 header_numpaints db ?
 header_reserved db ?
-ends
+SHAPE3DHEADER ends
 CARSTATE struc
-car_posWorld1 VECTORLONG ?
-car_posWorld2 VECTORLONG ?
-car_rotate VECTOR ?
+car_posWorld1 VECTORLONG <>
+car_posWorld2 VECTORLONG <>
+car_rotate VECTOR <>
 car_pseudoGravity dw ?
 car_steeringAngle dw ?
 car_currpm dw ?
@@ -136,11 +136,11 @@ car_rc2 dw 4 dup (?)
 car_rc3 dw 4 dup (?)
 car_rc4 dw 4 dup (?)
 car_rc5 dw 4 dup (?)
-car_whlWorldCrds1 VECTOR 4 dup (?)
-car_whlWorldCrds2 VECTOR 4 dup (?)
-car_vec_unk3 VECTOR ?
-car_vec_unk4 VECTOR ?
-car_vec_unk5 VECTOR ?
+car_whlWorldCrds1 VECTOR 4 dup (<>)
+car_whlWorldCrds2 VECTOR 4 dup (<>)
+car_vec_unk3 VECTOR <>
+car_vec_unk4 VECTOR <>
+car_vec_unk5 VECTOR <>
 field_B6 dw ?
 field_B8 dw ?
 field_BA dw ?
@@ -164,7 +164,7 @@ car_transmission db ?
 field_CD db ?
 field_CE db ?
 field_CF db ?
-ends
+CARSTATE ends
 SHAPE3D struc
 shape3d_numverts dw ?
 shape3d_verts dd ?
@@ -173,11 +173,11 @@ shape3d_numpaints dw ?
 shape3d_primitives dd ?
 shape3d_cull1 dd ?
 shape3d_cull2 dd ?
-ends
+SHAPE3D ends
 PRIMITIVE struc
 primitive_type db ?
 primitive_flags db ?
-ends
+PRIMITIVE ends
 TRACKOBJECT struc
 ss_trkObjInfoPtr dw ?
 ss_rotY dw ?
@@ -189,16 +189,16 @@ ss_ignoreZBias db ?
 ss_multiTileFlag db ?
 ss_physicalModel db ?
 scene_unk5 db ?
-ends
+TRACKOBJECT ends
 TRANSFORMEDSHAPE struc
-ts_pos VECTOR ?
+ts_pos VECTOR <>
 ts_shapeptr dw ?
 ts_rectptr dw ?
-ts_rotvec VECTOR ?
+ts_rotvec VECTOR <>
 ts_unk dw ?
 ts_flags db ?
 ts_material db ?
-ends
+TRANSFORMEDSHAPE ends
 TRKOBJINFO struc
 si_noOfBlocks db ?
 si_entryPoint db ?
@@ -212,7 +212,7 @@ si_opp1 db ?
 si_opp2 db ?
 si_opp3 db ?
 si_oppSpedCode db ?
-ends
+TRKOBJINFO ends
 SHAPE2D struc
 s2d_width dw ?
 s2d_height dw ?
@@ -224,15 +224,15 @@ s2d_unk3 db ?
 s2d_unk4 db ?
 s2d_unk5 db ?
 s2d_unk6 db ?
-ends
+SHAPE2D ends
 GAMESTATE struc
-game_longvecs1 VECTORLONG 8 dup (?)
-game_longvecs2 VECTORLONG 8 dup (?)
-game_longvecs3 VECTORLONG 8 dup (?)
-game_vec1 VECTOR ?
-game_vec2 VECTOR ?
-game_vec3 VECTOR ?
-game_vec4 VECTOR ?
+game_longvecs1 VECTORLONG 8 dup (<>)
+game_longvecs2 VECTORLONG 8 dup (<>)
+game_longvecs3 VECTORLONG 8 dup (<>)
+game_vec1 VECTOR <>
+game_vec2 VECTOR <>
+game_vec3 VECTOR <>
+game_vec4 VECTOR <>
 game_frame_in_sec dw ?
 game_frames_per_sec dw ?
 game_travDist_ax dw ?
@@ -246,8 +246,8 @@ game_penalty dw ?
 game_impactSpeed dw ?
 game_topSpeed dw ?
 game_jumpCount dw ?
-playerstate CARSTATE ?
-opponentstate CARSTATE ?
+playerstate CARSTATE <>
+opponentstate CARSTATE <>
 field_2F2 dw ?
 field_2F4 dw ?
 game_startcol dw ?
@@ -274,7 +274,7 @@ field_45C db ?
 field_45D db ?
 field_45E db ?
 field_45F db ?
-ends
+GAMESTATE ends
 GAMEINFO struc
 game_playercarid db 4 dup (?)
 game_playermaterial db ?
@@ -286,7 +286,7 @@ game_opponenttransmission db ?
 game_trackname db 9 dup (?)
 game_framespersec dw ?
 game_recordedframes dw ?
-ends
+GAMEINFO ends
 SPRITE struc
 sprite_bitmapptr dd ?
 sprite_unk1 dw ?
@@ -302,13 +302,13 @@ sprite_unk4 dw ?
 sprite_width2 dw ?
 sprite_left2 dw ?
 sprite_widthsum dw ?
-ends
+SPRITE ends
 RECTANGLE struc
 rc_left dw ?
 rc_right dw ?
 rc_top dw ?
 rc_bottom dw ?
-ends
+RECTANGLE ends
 ; enum enum_surface_type (-16772249)
 tarmac = 1
 dirt = 2

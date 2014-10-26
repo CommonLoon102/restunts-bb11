@@ -1,10 +1,10 @@
 seg010 segment byte public 'STUNTSC' use16
     extrn byte_2CC52:byte
     extrn start:proc
-    extrn __amsg_exit
+    extrn __amsg_exit:proc
     extrn libsub_quit_to_dos_alt:proc
     extrn libsub_quit_to_dos:proc
-    extrn loc_2CE06
+    extrn loc_2CE06:proc
     extrn sub_2CE4A:proc
     extrn sub_2CE77:proc
     extrn __FF_MSGBANNER:proc
@@ -16,7 +16,7 @@ seg010 segment byte public 'STUNTSC' use16
     extrn __NMSG_TEXT:proc
     extrn __NMSG_WRITE:proc
     extrn __myalloc:proc
-    extrn __dosretax
+    extrn __dosretax:proc
     extrn __maperror:proc
     extrn sub_2D1BC:proc
     extrn _flushall:proc
@@ -44,9 +44,9 @@ seg010 segment byte public 'STUNTSC' use16
     extrn _stackavail:proc
     extrn unknown_libname_1:proc
     extrn unknown_libname_2:proc
-    extrn loc_2E0BE
+    extrn loc_2E0BE:proc
     extrn __amalloc:proc
-    extrn loc_2E18F
+    extrn loc_2E18F:proc
     extrn __amexpand:proc
     extrn __amlink:proc
     extrn __amallocbrk:proc
@@ -63,14 +63,14 @@ seg010 segment byte public 'STUNTSC' use16
     extrn _int86:proc
     extrn _sprintf:proc
     extrn _stricmp:proc
-    extrn __cltoasub
-    extrn __cxtoa
+    extrn __cltoasub:proc
+    extrn __cxtoa:proc
     extrn _abs:proc
     extrn off_2E59E:word
     extrn _raise:proc
-    extrn loc_2E61E
-    extrn loc_2E626
-    extrn loc_2E635
+    extrn loc_2E61E:proc
+    extrn loc_2E626:proc
+    extrn loc_2E635:proc
     extrn _srand:proc
     extrn _rand:proc
     extrn _signal:proc

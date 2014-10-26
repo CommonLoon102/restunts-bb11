@@ -1,26 +1,11 @@
-; this empty segment is placed at the end of the executable.
-; it is used by the hacked crt to determine how large the image is
-endseg segment byte public 'ENDSEG' use16
-endseg ends
+; this file contains external references to functions implemented in c which 
+; replace an original asm implementation. the contents in this file has to be
+; kept in sync with the names of ported functions in PortFuncName in anders.idc
 
-;;extrn _abort:proc
-;;extrn _printf:proc
-;extrn__fputn:proc
-_TEXT segment byte public 'CODE' use16
-;;extrn _strcmp:proc
-;;extrn _strcpy:proc
-;;extrn _strcat:proc
-;;extrn _strlen:proc
-;;extrn _strrchr:proc
-;;extrn _stricmp:proc
-;;extrn _rand:proc
-;;extrn _srand:proc
-;;extrn _printf:proc
-;;extrn _sprintf:proc
-;;extrn _flushall:proc
-;;extrn _abort:proc
-;;extrn _abs:proc
-_TEXT ends
+; forward for crt hack in seg010.asm
+
+endseg segment byte private 'ENDSEG' use16
+endseg ends
 
 ; externs for implementations in math.c
 
