@@ -6145,7 +6145,6 @@ subst_hillroad_track proc far
     mov     bp, sp
     mov     al, [bp+arg_0]
     sub     ah, ah
-loc_21A62:
     cmp     ax, 7
     jz      short loc_21A80
     cmp     ax, 8
@@ -6159,7 +6158,6 @@ loc_21A74:
     jmp     loc_21B3C
 loc_21A7C:
     sub     ax, ax
-loc_21A7E:
     pop     bp
     retf
 loc_21A80:
@@ -6170,7 +6168,6 @@ loc_21A80:
     cmp     ax, 0Eh
     jz      short loc_21AAC
     cmp     ax, 18h
-loc_21A92:
     jz      short loc_21AB2
     cmp     ax, 27h ; '''
     jz      short loc_21AB8
@@ -6256,7 +6253,6 @@ loc_21B2A:
     db 144
 loc_21B30:
     mov     ax, 0C0h ; 'À'
-loc_21B33:
     jmp     short loc_21B77
     ; align 2
     db 144
@@ -6269,58 +6265,41 @@ loc_21B36:
 loc_21B3C:
     mov     al, [bp+arg_2]
     sub     ah, ah
-loc_21B41:
     cmp     ax, 5
-loc_21B44:
     jz      short loc_21B62
-loc_21B46:
     cmp     ax, 0Fh
-loc_21B49:
     jz      short loc_21B68
-loc_21B4B:
     cmp     ax, 19h
     jz      short loc_21B6E
-loc_21B50:
     cmp     ax, 25h ; '%'
     jz      short loc_21B74
-loc_21B55:
     cmp     ax, 39h ; '9'
-loc_21B58:
     jz      short loc_21B74
-loc_21B5A:
     cmp     ax, 60h ; '`'
-loc_21B5D:
     jz      short loc_21B74
-loc_21B5F:
     jmp     loc_21A7C
 loc_21B62:
     mov     ax, 0B9h ; '¹'
     pop     bp
-locret_21B66:
     retf
     ; align 2
     db 144
 loc_21B68:
     mov     ax, 0BDh ; '½'
     pop     bp
-locret_21B6C:
     retf
     ; align 2
     db 144
 loc_21B6E:
     mov     ax, 0C1h ; 'Á'
-loc_21B71:
     pop     bp
-locret_21B72:
     retf
-algn_21B73:
     ; align 2
     db 144
 loc_21B74:
     mov     ax, 0C5h ; 'Å'
 loc_21B77:
     pop     bp
-locret_21B78:
     retf
 subst_hillroad_track endp
 seg004 ends

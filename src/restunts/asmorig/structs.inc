@@ -226,9 +226,9 @@ s2d_unk5 db ?
 s2d_unk6 db ?
 SHAPE2D ends
 GAMESTATE struc
-game_longvecs1 VECTORLONG 8 dup (<>)
-game_longvecs2 VECTORLONG 8 dup (<>)
-game_longvecs3 VECTORLONG 8 dup (<>)
+game_longs1 dd 24 dup (?)
+game_longs2 dd 24 dup (?)
+game_longs3 dd 24 dup (?)
 game_vec1 VECTOR <>
 game_vec2 VECTOR <>
 game_vec3 VECTOR <>

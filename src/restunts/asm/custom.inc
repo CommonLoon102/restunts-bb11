@@ -185,6 +185,9 @@ extrn kb_checking:proc
 extrn flush_stdin:proc
 extrn kb_check:proc
 
+; externs for implementations in frame.c
+extrn update_frame:proc
+
 ; externs for implementations in restunts.c
 
 extrn timer_get_counter:proc

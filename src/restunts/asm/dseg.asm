@@ -301,6 +301,10 @@ dseg segment byte public 'STUNTSD' use16
     public off_3C084
     public rect_unk5
     public byte_3C09C
+    public unk_3C0A2
+    public unk_3C0A6
+    public unk_3C0AE
+    public unk_3C0B6
     public byte_3C0C6
     public word_3C0D6
     public fence_TrkObjCodes
@@ -1177,7 +1181,6 @@ dseg segment byte public 'STUNTSD' use16
     public basdres
     public followOpponentFlag_copy
     public currenttransshape
-    public transshapeunk
     public terraincenterpos
     public carshapevec
     public carshapevec2
@@ -3720,11 +3723,11 @@ byte_3C09C     db 2
     db 0
     db 0
     db 0
+unk_3C0A2     db 0
     db 0
     db 0
     db 0
-    db 0
-    db 0
+unk_3C0A6     db 0
     db 0
     db 0
     db 2
@@ -3732,7 +3735,7 @@ byte_3C09C     db 2
     db 0
     db 0
     db 254
-    db 0
+unk_3C0AE     db 0
     db 2
     db 0
     db 0
@@ -3740,7 +3743,7 @@ byte_3C09C     db 2
     db 254
     db 0
     db 0
-    db 0
+unk_3C0B6     db 0
     db 254
     db 0
     db 2
@@ -27537,7 +27540,7 @@ currenttransshape     db 0
     db 0
     db 0
     db 0
-transshapeunk     db 0
+    db 0
     db 0
     db 0
     db 0

@@ -44,5 +44,6 @@ unsigned select_cliprect_rotate(int angZ, int angX, int angY, struct RECTANGLE* 
 void init_polyinfo(void);
 void polyinfo_reset(void);
 void get_a_poly_info(void);
+void sub_204AE(struct VECTOR far* arg_verts, int arg_4, short* arg_6, short* arg_8, struct VECTOR* arg_vecarray, struct VECTOR* arg_vecptr);
 
 #endif

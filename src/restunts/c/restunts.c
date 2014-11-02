@@ -472,8 +472,8 @@ void init_game_state(short arg)
 		state.game_3F6autoLoadEvalFlag = 0;
 		state.game_frame_in_sec = 0;
 		state.field_2F4 = 0;
-		state.field_3F7 = 0;
-		state.field_3F8 = 0;
+		state.field_3F7[0] = 0;
+		state.field_3F7[1] = 0;
 
 		for (i = 0; i < 48; ++i) {
 			state.field_3FA[i] = 0;
@@ -483,21 +483,21 @@ void init_game_state(short arg)
 			state.field_38E[i] = 0;
 		}
 
-		state.game_vec1.x =
+		state.game_vec1[0].x =
 			  multiply_and_scale(sin_fast(track_angle + 0x300),  512)
 			+ multiply_and_scale(sin_fast(track_angle + 0x200), 4096)
 			+ ((short)startcol2 << 10);
 
-		state.game_vec1.y = hillHeightConsts[hillFlag] + 960;
+		state.game_vec1[0].y = hillHeightConsts[hillFlag] + 960;
 
-		state.game_vec1.z =
+		state.game_vec1[0].z =
 			  multiply_and_scale(cos_fast(track_angle + 0x300),  512)
 			+ multiply_and_scale(cos_fast(track_angle + 0x200), 4096)
 			+ trackpos[startrow2];
 
-		state.game_vec2 = state.game_vec1;
-		state.game_vec3 = state.game_vec1;
-		state.game_vec4 = state.game_vec1;
+		state.game_vec1[1] = state.game_vec1[0];
+		state.game_vec3 = state.game_vec1[0];
+		state.game_vec4 = state.game_vec1[0];
 		
 		state.game_travDist = 0;
 		state.game_frame = 0;
@@ -843,6 +843,8 @@ void free_player_cars(void) {
 	shape3d_free_car_shapes();
 }
 
+void shape2d_render_bmp_as_mask(void far* data);
+
 void run_game(void) {
 	int var_16[2];
 	int var_12, var_E, var_C;
@@ -1069,7 +1071,7 @@ void run_game(void) {
 				}
 
 				shape2d_render_bmp_as_mask(dasmshapeptr);
-				shape2d_op_unk4(dastseg, dastbmp_y2);
+				shape2d_op_unk4(dastbmp_y2, dastseg);
 			}
 
 			sub_19F14(&rect_windshield);
@@ -1339,7 +1341,7 @@ void init_main(int argc, char* argv[])
 
 	timer_get_delta_alt();
 	for (i = 0; i < 15; ++i) {
-		sprite_clear_1_color(0);
+		ported_sprite_clear_1_color_(0); // the c impl is too slow/wrong and produces faulty timing values
 	}
 	timerdelta1 = timer_get_delta_alt();
 	

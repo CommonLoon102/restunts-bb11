@@ -253,6 +253,10 @@ dseg segment byte public 'STUNTSD' use16
     extrn off_3C084:word
     extrn rect_unk5:RECTANGLE
     extrn byte_3C09C:byte
+    extrn unk_3C0A2:byte
+    extrn unk_3C0A6:byte
+    extrn unk_3C0AE:byte
+    extrn unk_3C0B6:byte
     extrn byte_3C0C6:byte
     extrn word_3C0D6:word
     extrn fence_TrkObjCodes:byte
@@ -1129,7 +1133,6 @@ dseg segment byte public 'STUNTSD' use16
     extrn basdres:dword
     extrn followOpponentFlag_copy:byte
     extrn currenttransshape:TRANSFORMEDSHAPE
-    extrn transshapeunk:TRANSFORMEDSHAPE
     extrn terraincenterpos:word
     extrn carshapevec:VECTOR
     extrn carshapevec2:VECTOR

@@ -757,6 +757,9 @@ static PortFuncName(labelname, isport) {
 		labelname == "flush_stdin" ||
 		labelname == "kb_check" ||
 
+		// frame.c
+		labelname == "update_frame" ||
+
 		// restunts.c:
 		labelname == "timer_get_counter" ||
 		labelname == "timer_get_delta" ||

@@ -9374,14 +9374,14 @@ nosmart
     mov     [bp+var_16], ax
     mov     bx, ax
     sub     ax, ax
-    mov     word ptr (state.game_longvecs1.lx+2)[bx], ax
-    mov     word ptr state.game_longvecs1.lx[bx], ax
+    mov     word ptr (state.game_longs1+2)[bx], ax
+    mov     word ptr state.game_longs1[bx], ax
     mov     bx, [bp+var_16]
-    mov     word ptr (state.game_longvecs2.lx+2)[bx], ax
-    mov     word ptr state.game_longvecs2.lx[bx], ax
+    mov     word ptr (state.game_longs2+2)[bx], ax
+    mov     word ptr state.game_longs2[bx], ax
     mov     bx, [bp+var_16]
-    mov     word ptr (state.game_longvecs3.lx+2)[bx], ax
-    mov     word ptr state.game_longvecs3.lx[bx], ax
+    mov     word ptr (state.game_longs3+2)[bx], ax
+    mov     word ptr state.game_longs3[bx], ax
     call    get_kevinrandom
     shl     ax, 1
     shl     ax, 1
@@ -9518,12 +9518,12 @@ loc_19BFB:
     shl     di, cl
     mov     ax, [bp+var_12]
     cwd
-    add     word ptr state.game_longvecs1.lx[di], ax
-    adc     word ptr (state.game_longvecs1.lx+2)[di], dx
+    add     word ptr state.game_longs1[di], ax
+    adc     word ptr (state.game_longs1+2)[di], dx
     mov     ax, [bp+var_E]
     cwd
-    add     word ptr state.game_longvecs3.lx[di], ax
-    adc     word ptr (state.game_longvecs3.lx+2)[di], dx
+    add     word ptr state.game_longs3[di], ax
+    adc     word ptr (state.game_longs3+2)[di], dx
     mov     ax, si
     shl     ax, 1
     add     ax, offset state.field_3BE
@@ -9533,8 +9533,8 @@ loc_19BFB:
     mov     bx, [bp+var_14]
     mov     ax, [bx]
     cwd
-    add     word ptr state.game_longvecs2.lx[di], ax
-    adc     word ptr (state.game_longvecs2.lx+2)[di], dx
+    add     word ptr state.game_longs2[di], ax
+    adc     word ptr (state.game_longs2+2)[di], dx
     cmp     framespersec, 0Ah
     jnz     short loc_19C6B
     mov     bx, [bp+var_14]
@@ -9542,14 +9542,14 @@ loc_19BFB:
     mov     bx, [bp+var_14]
     mov     ax, [bx]
     cwd
-    add     word ptr state.game_longvecs2.lx[di], ax
-    adc     word ptr (state.game_longvecs2.lx+2)[di], dx
+    add     word ptr state.game_longs2[di], ax
+    adc     word ptr (state.game_longs2+2)[di], dx
 loc_19C6B:
     mov     bx, si
     shl     bx, 1
     shl     bx, 1
-    mov     ax, word ptr state.game_longvecs2.lx[bx]
-    mov     dx, word ptr (state.game_longvecs2.lx+2)[bx]
+    mov     ax, word ptr state.game_longs2[bx]
+    mov     dx, word ptr (state.game_longs2+2)[bx]
     add     ax, word ptr state.playerstate.car_posWorld1.ly
 loc_19C7D:
     adc     dx, word ptr state.playerstate.car_posWorld1.ly+2

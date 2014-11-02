@@ -89,11 +89,10 @@ struct CARSTATE {
 };
 
 struct GAMESTATE {
-	struct VECTORLONG game_longvecs1[8];
-	struct VECTORLONG game_longvecs2[8];
-	struct VECTORLONG game_longvecs3[8];
-	struct VECTOR game_vec1;
-	struct VECTOR game_vec2;
+	long game_longs1[24]; // x
+	long game_longs2[24]; // y
+	long game_longs3[24]; // z
+	struct VECTOR game_vec1[2]; // 0 = player, 1 = opponent
 	struct VECTOR game_vec3;
 	struct VECTOR game_vec4;
 	short game_frame_in_sec;
@@ -125,8 +124,7 @@ struct GAMESTATE {
 	char field_3F4;
 	char game_inputmode; // 0 = waiting for input, 1 = input active, 2 = no input (during the intro)
 	char game_3F6autoLoadEvalFlag;
-	char field_3F7;
-	char field_3F8;
+	char field_3F7[2]; // 0 = player, 1 = opponent
 	char field_3F9;
 	char field_3FA[48];
 	char field_42A;
@@ -188,11 +186,11 @@ struct TRKOBJINFO {
 };
 
 struct TRACKOBJECT {
-	struct TRKOBJINFO* ss_trkObjInfoPtr[]; // offset (0003B770)
+	struct TRKOBJINFO* ss_trkObjInfoPtr; // offset (0003B770)
 	short ss_rotY;           // Horizontal orientation of the element.
-	short ss_shapePtr;       // offset (0003B770)
-	short ss_loShapePtr;     // offset (0003B770)
-	char  ss_ssOvelay;       // Renders additional sceneShapes over the current one.
+	struct SHAPE3D* ss_shapePtr;       // offset (0003B770)
+	struct SHAPE3D* ss_loShapePtr;     // offset (0003B770)
+	unsigned char  ss_ssOvelay;       // Renders additional sceneShapes over the current one.
 	char  ss_surfaceType;    // Paintjob. FF will induce alternating paintjobs.
 	char  ss_ignoreZBias;    // Appears to be Z-bias override flag, mostly used for roads and corners.
 	char  ss_multiTileFlag;  // 0 = one-tile, 1 = two-tile vertical, 2 = two-tile horizontal, 3 = four-tile.
@@ -279,7 +277,7 @@ extern void player_op(int);
 extern void opponent_op(void);
 extern void audio_carstate(void);
 extern void setup_car_shapes(int);
-extern void update_frame(int, struct RECTANGLE* rc);
+extern void update_frame(char, struct RECTANGLE* rc);
 extern void loop_game(int, int, int);
 extern void set_frame_callback(void);
 extern void mouse_minmax_position(int);
@@ -312,22 +310,22 @@ extern short far* td04_aerotable_pl; //trackdata4;
 extern short far* td05_aerotable_op; //trackdata5;
 extern char far* trackdata6;
 extern char far* trackdata7;
-extern char far* td08_direction_related; //trackdata8;
-extern char far* trackdata9;
-extern char far* td10_track_check_rel;// trackdata10;
+extern int far* td08_direction_related; //trackdata8;
+extern int far* trackdata9;
+extern int far* td10_track_check_rel;// trackdata10;
 extern char far* td11_highscores; //trackdata11;
 extern char far* trackdata12;
 extern char far* td13_rpl_header; //trackdata13;
-extern char far* td14_elem_map_main; //trackdata14;
-extern char far* td15_terr_map_main; //trackdata15;
+extern unsigned char far* td14_elem_map_main; //trackdata14;
+extern unsigned char far* td15_terr_map_main; //trackdata15;
 extern char far* td16_rpl_buffer; //trackdata16;
 extern char far* td17_trk_elem_ordered; //trackdata17;
 extern char far* trackdata18;
-extern char far* trackdata19;
+extern unsigned char far* trackdata19;
 extern char far* td20_trk_file_appnd; //trackdata20;
 extern char far* td21_col_from_path; //trackdata21;
 extern char far* td22_row_from_path; //trackdata22;
-extern char far* trackdata23;
+extern unsigned char far* trackdata23; // indexes into trkObjectList
 extern char kbormouse;
 extern char passed_security;
 extern char g_is_busy;

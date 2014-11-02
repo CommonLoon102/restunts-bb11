@@ -335,7 +335,6 @@ update_frame proc far
     var_E0 = word ptr -224
     var_multitileflag = word ptr -222
     var_DC = byte ptr -220
-    var_DB = byte ptr -219
     var_DA = word ptr -218
     var_D8 = byte ptr -216
     var_matptr = word ptr -214
@@ -383,7 +382,7 @@ update_frame proc far
     push    di
     push    si
     mov     [bp+var_DC], 0
-    mov     [bp+var_DB], 0
+    mov     [bp+var_DC+1], 0
     cmp     video_flag5_is0, 0
     jz      short loc_1A122
     cmp     [bp+arg_0], 0
@@ -1875,7 +1874,7 @@ loc_1AFB4:
     add     ax, offset sceneshapes2
     mov     [bp+var_trkobject_ptr], ax
     mov     bx, ax
-    mov     ax, [bx+4]
+    mov     ax, [bx+TRACKOBJECT.ss_shapePtr]
     mov     currenttransshape.ts_shapeptr, ax
     mov     bx, word ptr [bp+var_lastpos2lookup]
     shl     bx, 1
@@ -1896,7 +1895,7 @@ loc_1AFB4:
     mov     currenttransshape.ts_rotvec.vx, 0
     mov     currenttransshape.ts_rotvec.vy, 0
     mov     bx, [bp+var_trkobject_ptr]
-    mov     ax, [bx+2]
+    mov     ax, [bx+TRACKOBJECT.ss_rotY]
     mov     currenttransshape.ts_rotvec.vz, ax
     mov     currenttransshape.ts_unk, 400h
     mov     currenttransshape.ts_material, 0
@@ -1924,8 +1923,8 @@ loc_1B03C:
     add     sp, 0Eh
     mov     [bp+var_132], ax
     mov     bx, [bp+arg_cliprectptr]
-    push    word ptr [bx+6]
-    push    word ptr [bx+4]
+    push    [bx+RECTANGLE.rc_bottom]
+    push    [bx+RECTANGLE.rc_top]
     mov     ax, 140h
     push    ax
     sub     ax, ax
@@ -1986,7 +1985,7 @@ loc_1B0DA:
     mov     currenttransshape.ts_rotvec.vx, 0
     mov     currenttransshape.ts_rotvec.vy, 0
     mov     bx, [bp+var_trkobject_ptr]
-    mov     ax, [bx+2]
+    mov     ax, [bx+TRACKOBJECT.ss_rotY]
     mov     currenttransshape.ts_rotvec.vz, ax
     mov     currenttransshape.ts_unk, 400h
     mov     currenttransshape.ts_material, 0
@@ -2039,7 +2038,7 @@ loc_1B168:
 loc_1B17C:
     mov     [bp+var_poslookupadjust], al
     mov     bx, [bp+var_trkobject_ptr]
-    test    byte ptr [bx+0Bh], 2
+    test    [bx+TRACKOBJECT.ss_multiTileFlag], 2
     jz      short loc_1B1A2
     mov     al, [bp+var_pos2lookup]
     cbw
@@ -2074,7 +2073,7 @@ loc_1B1B6:
     jmp     loc_1B2AE
 loc_1B1DE:
     mov     bx, [bp+var_trkobject_ptr]
-    mov     al, [bx+0Bh]
+    mov     al, [bx+TRACKOBJECT.ss_multiTileFlag]
     cbw
     or      ax, ax
     jz      short loc_1B1FC
@@ -2089,7 +2088,7 @@ loc_1B1DE:
     db 144
 loc_1B1FC:
     mov     di, 1
-    mov     [bp+var_DA], 932h
+    mov     [bp+var_DA], offset unk_3C0A2
 loc_1B205:
     mov     [bp+var_multitileflag], 0
     jmp     short loc_1B236
@@ -2097,19 +2096,19 @@ loc_1B205:
     db 144
 loc_1B20E:
     mov     di, 2
-    mov     [bp+var_DA], 936h
+    mov     [bp+var_DA], offset unk_3C0A6
     jmp     short loc_1B205
     ; align 2
     db 144
 loc_1B21A:
     mov     di, 2
-    mov     [bp+var_DA], 93Eh
+    mov     [bp+var_DA], offset unk_3C0AE
     jmp     short loc_1B205
     ; align 2
     db 144
 loc_1B226:
     mov     di, 4
-    mov     [bp+var_DA], 946h
+    mov     [bp+var_DA], offset unk_3C0B6
     jmp     short loc_1B205
     ; align 2
     db 144
@@ -2151,11 +2150,11 @@ loc_1B236:
     jmp     loc_1B03C
 loc_1B2AE:
     mov     bx, [bp+var_trkobject_ptr]
-    cmp     byte ptr [bx+8], 0
+    cmp     [bx+TRACKOBJECT.ss_ssOvelay], 0
     jnz     short loc_1B2BB
     jmp     loc_1B374
 loc_1B2BB:
-    mov     al, [bx+8]
+    mov     al, [bx+TRACKOBJECT.ss_ssOvelay]
     sub     ah, ah
     mov     cx, ax
     shl     ax, 1
@@ -2168,20 +2167,20 @@ loc_1B2BB:
     cmp     [bp+var_FC], 0
     jz      short loc_1B2E0
     mov     bx, ax
-    mov     ax, [bx+6]
+    mov     ax, [bx+TRACKOBJECT.ss_loShapePtr]
     jmp     short loc_1B2E6
 loc_1B2E0:
     mov     bx, [bp+var_trkobjectptr]
     mov     ax, [bx+TRACKOBJECT.ss_shapePtr]
 loc_1B2E6:
-    mov     transshapeunk.ts_shapeptr, ax
+    mov     currenttransshape.ts_shapeptr+14h, ax
     or      ax, ax
     jnz     short loc_1B2F0
     jmp     loc_1B374
 loc_1B2F0:
     push    si
     push    di
-    mov     di, offset transshapeunk
+    mov     di, (offset currenttransshape.ts_pos.vy+12h)
     lea     si, [bp+var_vec8]
     push    ds
     pop     es
@@ -2190,37 +2189,37 @@ loc_1B2F0:
     movsw
     pop     di
     pop     si
-    mov     transshapeunk.ts_rotvec.vx, 0
-    mov     transshapeunk.ts_rotvec.vy, 0
-    mov     ax, [bx+2]
-    mov     transshapeunk.ts_rotvec.vz, ax
-    cmp     byte ptr [bx+0Bh], 0
+    mov     currenttransshape.ts_rotvec.vy+12h, 0
+    mov     currenttransshape.ts_rotvec.vz+12h, 0
+    mov     ax, [bx+TRACKOBJECT.ss_rotY]
+    mov     currenttransshape.ts_rotvec.vx+18h, ax
+    cmp     [bx+TRACKOBJECT.ss_multiTileFlag], 0
     jz      short loc_1B320
-    mov     transshapeunk.ts_unk, 400h
+    mov     currenttransshape.ts_unk+14h, 400h
     jmp     short loc_1B326
     ; align 2
     db 144
 loc_1B320:
-    mov     transshapeunk.ts_unk, 800h
+    mov     currenttransshape.ts_unk+14h, 800h
 loc_1B326:
-    cmp     byte ptr [bx+9], 0
+    cmp     [bx+TRACKOBJECT.ss_surfaceType], 0
     jl      short loc_1B332
-    mov     al, [bx+9]
+    mov     al, [bx+TRACKOBJECT.ss_surfaceType]
     jmp     short loc_1B336
     ; align 2
     db 144
 loc_1B332:
     mov     al, [bp+var_E4]
 loc_1B336:
-    mov     transshapeunk.ts_material, al
-    mov     al, [bx+0Ah]
+    mov     currenttransshape.ts_material+14h, al
+    mov     al, [bx+TRACKOBJECT.ss_ignoreZBias]
     or      al, [bp+var_122]
     or      al, 4
-    mov     transshapeunk.ts_flags, al
-    test    transshapeunk.ts_flags, 1
+    mov     currenttransshape.ts_flags+14h, al
+    test    currenttransshape.ts_flags+14h, 1
     jz      short loc_1B36A
-    mov     transshapeunk.ts_rectptr, offset rect_unk2
-    mov     ax, offset transshapeunk
+    mov     currenttransshape.ts_rectptr+14h, offset rect_unk2
+    mov     ax, (offset currenttransshape.ts_pos.vy+12h)
     push    ax
     call    transformed_shape_op
     add     sp, 2
@@ -2230,17 +2229,17 @@ loc_1B336:
     jle     short loc_1B374
     jmp     loc_1B03C
 loc_1B36A:
-    mov     transshapeunk.ts_rectptr, offset rect_unk6
+    mov     currenttransshape.ts_rectptr+14h, offset rect_unk6
     mov     [bp+var_4E], 1
 loc_1B374:
     cmp     [bp+var_FC], 0
     jz      short loc_1B384
     mov     bx, [bp+var_trkobject_ptr]
-    mov     ax, [bx+6]
+    mov     ax, [bx+TRACKOBJECT.ss_loShapePtr]
     jmp     short loc_1B38B
 loc_1B384:
     mov     bx, [bp+var_trkobject_ptr]
-    mov     ax, [bx+4]
+    mov     ax, [bx+TRACKOBJECT.ss_shapePtr]
 loc_1B38B:
     mov     currenttransshape.ts_shapeptr, ax
     push    si
@@ -2256,9 +2255,9 @@ loc_1B38B:
     pop     si
     mov     currenttransshape.ts_rotvec.vx, 0
     mov     currenttransshape.ts_rotvec.vy, 0
-    mov     ax, [bx+2]
+    mov     ax, [bx+TRACKOBJECT.ss_rotY]
     mov     currenttransshape.ts_rotvec.vz, ax
-    cmp     byte ptr [bx+0Bh], 0
+    cmp     [bx+TRACKOBJECT.ss_multiTileFlag], 0
     jz      short loc_1B3BE
     mov     currenttransshape.ts_unk, 400h
     jmp     short loc_1B3C4
@@ -2267,13 +2266,13 @@ loc_1B38B:
 loc_1B3BE:
     mov     currenttransshape.ts_unk, 800h
 loc_1B3C4:
-    mov     al, [bx+0Ah]
+    mov     al, [bx+TRACKOBJECT.ss_ignoreZBias]
     or      al, [bp+var_122]
     or      al, 4
     mov     currenttransshape.ts_flags, al
-    cmp     byte ptr [bx+9], 0
+    cmp     [bx+TRACKOBJECT.ss_surfaceType], 0
     jl      short loc_1B3DC
-    mov     al, [bx+9]
+    mov     al, [bx+TRACKOBJECT.ss_surfaceType]
     jmp     short loc_1B3E0
     ; align 2
     db 144
@@ -2281,7 +2280,7 @@ loc_1B3DC:
     mov     al, [bp+var_E4]
 loc_1B3E0:
     mov     currenttransshape.ts_material, al
-    test    byte ptr [bx+0Ah], 1
+    test    [bx+TRACKOBJECT.ss_ignoreZBias], 1
     jz      short loc_1B408
     mov     currenttransshape.ts_rectptr, offset rect_unk2
     mov     ax, offset currenttransshape
@@ -2394,8 +2393,8 @@ loc_1B4D4:
     shl     ax, 1
     mov     [bp+var_lastposlookupw], ax
     mov     bx, ax
-    mov     ax, word ptr state.game_longvecs1.lx[bx]
-    mov     dx, word ptr (state.game_longvecs1.lx+2)[bx]
+    mov     ax, word ptr state.game_longs1[bx]
+    mov     dx, word ptr (state.game_longs1+2)[bx]
     mov     cl, 6
 loc_1B503:
     sar     dx, 1
@@ -2416,8 +2415,8 @@ loc_1B503:
     mov     bx, curtransshape_ptr
     mov     [bx+TRANSFORMEDSHAPE.ts_pos.vx], cx
     mov     bx, [bp+var_lastposlookupw]
-    mov     ax, word ptr state.game_longvecs2.lx[bx]
-    mov     dx, word ptr (state.game_longvecs2.lx+2)[bx]
+    mov     ax, word ptr state.game_longs2[bx]
+    mov     dx, word ptr (state.game_longs2+2)[bx]
     mov     cl, 6
 loc_1B53B:
     sar     dx, 1
@@ -2438,8 +2437,8 @@ loc_1B53B:
     mov     bx, curtransshape_ptr
     mov     [bx+TRANSFORMEDSHAPE.ts_pos.vy], cx
     mov     bx, [bp+var_lastposlookupw]
-    mov     ax, word ptr state.game_longvecs3.lx[bx]
-    mov     dx, word ptr (state.game_longvecs3.lx+2)[bx]
+    mov     ax, word ptr state.game_longs3[bx]
+    mov     dx, word ptr (state.game_longs3+2)[bx]
     mov     cl, 6
 loc_1B575:
     sar     dx, 1
@@ -2460,7 +2459,7 @@ loc_1B575:
     mov     bx, curtransshape_ptr
     mov     [bx+TRANSFORMEDSHAPE.ts_pos.vz], cx
     mov     bx, [bp+var_trkobject_ptr]
-    mov     ax, [bx+4]
+    mov     ax, [bx+TRACKOBJECT.ss_shapePtr]
     mov     bx, curtransshape_ptr
     mov     [bx+TRANSFORMEDSHAPE.ts_shapeptr], ax
     mov     bx, curtransshape_ptr
@@ -2518,7 +2517,7 @@ loc_1B626:
     shl     ax, 1
     add     ax, cx
     shl     ax, 1
-    add     ax, 2C30h
+    add     ax, (offset trkObjectList.ss_trkObjInfoPtr+0B98h)
     mov     [bp+var_trkobject_ptr], ax
     mov     al, [bp+var_4C]
     cbw
@@ -2531,7 +2530,7 @@ loc_1B626:
     mov     ax, es:[bx]
     sub     ax, [bp+var_vec4.vx]
     mov     bx, curtransshape_ptr
-    mov     [bx], ax
+    mov     [bx+TRANSFORMEDSHAPE.ts_pos.vx], ax
     mov     al, [bp+var_4C]
     cbw
     mov     bx, ax
@@ -2557,7 +2556,7 @@ loc_1B626:
     mov     bx, curtransshape_ptr
     mov     [bx+TRANSFORMEDSHAPE.ts_pos.vz], ax
     mov     bx, [bp+var_trkobject_ptr]
-    mov     ax, [bx+4]
+    mov     ax, [bx+TRACKOBJECT.ss_shapePtr]
     mov     bx, curtransshape_ptr
     mov     [bx+TRANSFORMEDSHAPE.ts_shapeptr], ax
     mov     bx, curtransshape_ptr
@@ -2645,8 +2644,8 @@ loc_1B782:
     shl     ax, 1
     mov     [bp+var_lastposlookupw], ax
     mov     bx, ax
-    mov     ax, word ptr state.game_longvecs1.lx[bx]
-    mov     dx, word ptr (state.game_longvecs1.lx+2)[bx]
+    mov     ax, word ptr state.game_longs1[bx]
+    mov     dx, word ptr (state.game_longs1+2)[bx]
     add     ax, word ptr state.playerstate.car_posWorld1.lx
     adc     dx, word ptr state.playerstate.car_posWorld1.lx+2
     mov     cl, 6
@@ -2659,8 +2658,8 @@ loc_1B7B9:
     mov     bx, curtransshape_ptr
     mov     [bx+TRANSFORMEDSHAPE.ts_pos.vx], ax
     mov     bx, [bp+var_lastposlookupw]
-    mov     ax, word ptr state.game_longvecs2.lx[bx]
-    mov     dx, word ptr (state.game_longvecs2.lx+2)[bx]
+    mov     ax, word ptr state.game_longs2[bx]
+    mov     dx, word ptr (state.game_longs2+2)[bx]
     add     ax, word ptr state.playerstate.car_posWorld1.ly
     adc     dx, word ptr state.playerstate.car_posWorld1.ly+2
     mov     cl, 6
@@ -2673,8 +2672,8 @@ loc_1B7E0:
     mov     bx, curtransshape_ptr
     mov     [bx+TRANSFORMEDSHAPE.ts_pos.vy], ax
     mov     bx, [bp+var_lastposlookupw]
-    mov     ax, word ptr state.game_longvecs3.lx[bx]
-    mov     dx, word ptr (state.game_longvecs3.lx+2)[bx]
+    mov     ax, word ptr state.game_longs3[bx]
+    mov     dx, word ptr (state.game_longs3+2)[bx]
     add     ax, word ptr state.playerstate.car_posWorld1.lz
     adc     dx, word ptr state.playerstate.car_posWorld1.lz+2
     mov     cl, 6
@@ -2687,7 +2686,7 @@ loc_1B808:
     mov     bx, curtransshape_ptr
     mov     [bx+TRANSFORMEDSHAPE.ts_pos.vz], ax
     mov     bx, [bp+var_trkobject_ptr]
-    mov     ax, [bx+4]
+    mov     ax, [bx+TRACKOBJECT.ss_shapePtr]
     mov     bx, curtransshape_ptr
     mov     [bx+TRANSFORMEDSHAPE.ts_shapeptr], ax
     mov     bx, curtransshape_ptr
@@ -2770,7 +2769,7 @@ loc_1B8E7:
     jbe     short loc_1B914
 loc_1B903:
     mov     bx, [bp+var_trkobject_ptr]
-    mov     ax, [bx+6]
+    mov     ax, [bx+TRACKOBJECT.ss_loShapePtr]
     mov     bx, curtransshape_ptr
     mov     [bx+TRANSFORMEDSHAPE.ts_shapeptr], ax
     jmp     short loc_1B94A
@@ -2778,7 +2777,7 @@ loc_1B903:
     db 144
 loc_1B914:
     mov     bx, [bp+var_trkobject_ptr]
-    mov     ax, [bx+4]
+    mov     ax, [bx+TRACKOBJECT.ss_shapePtr]
     mov     bx, curtransshape_ptr
     mov     [bx+TRANSFORMEDSHAPE.ts_shapeptr], ax
     mov     ax, offset carshapevec
@@ -2906,8 +2905,8 @@ loc_1BA2E:
     shl     ax, 1
     mov     [bp+var_lastposlookupw], ax
     mov     bx, ax
-    mov     ax, word ptr state.game_longvecs1.lx[bx]
-    mov     dx, word ptr (state.game_longvecs1.lx+2)[bx]
+    mov     ax, word ptr state.game_longs1[bx]
+    mov     dx, word ptr (state.game_longs1+2)[bx]
     add     ax, word ptr state.opponentstate.car_posWorld1.lx
     adc     dx, word ptr state.opponentstate.car_posWorld1.lx+2
     mov     cl, 6
@@ -2920,8 +2919,8 @@ loc_1BA65:
     mov     bx, curtransshape_ptr
     mov     [bx+TRANSFORMEDSHAPE.ts_pos.vx], ax
     mov     bx, [bp+var_lastposlookupw]
-    mov     ax, word ptr state.game_longvecs2.lx[bx]
-    mov     dx, word ptr (state.game_longvecs2.lx+2)[bx]
+    mov     ax, word ptr state.game_longs2[bx]
+    mov     dx, word ptr (state.game_longs2+2)[bx]
     add     ax, word ptr state.opponentstate.car_posWorld1.ly
     adc     dx, word ptr state.opponentstate.car_posWorld1.ly+2
     mov     cl, 6
@@ -2934,8 +2933,8 @@ loc_1BA8C:
     mov     bx, curtransshape_ptr
     mov     [bx+TRANSFORMEDSHAPE.ts_pos.vy], ax
     mov     bx, [bp+var_lastposlookupw]
-    mov     ax, word ptr state.game_longvecs3.lx[bx]
-    mov     dx, word ptr (state.game_longvecs3.lx+2)[bx]
+    mov     ax, word ptr state.game_longs3[bx]
+    mov     dx, word ptr (state.game_longs3+2)[bx]
     add     ax, word ptr state.opponentstate.car_posWorld1.lz
     adc     dx, word ptr state.opponentstate.car_posWorld1.lz+2
     mov     cl, 6
@@ -3031,7 +3030,7 @@ loc_1BB94:
     jbe     short loc_1BBC0
 loc_1BBB0:
     mov     bx, [bp+var_trkobject_ptr]
-    mov     ax, [bx+6]
+    mov     ax, [bx+TRACKOBJECT.ss_loShapePtr]
     mov     bx, curtransshape_ptr
     mov     [bx+TRANSFORMEDSHAPE.ts_shapeptr], ax
     jmp     short loc_1BBF6
@@ -3374,7 +3373,7 @@ loc_1BF38:
 loc_1BF5E:
     cmp     state.opponentstate.car_crashBmpFlag, 1
     jnz     short loc_1BF34
-    mov     [bp+var_DB], 1
+    mov     [bp+var_DC+1], 1
     jmp     short loc_1BF34
 loc_1BF6C:
     inc     si
@@ -3412,7 +3411,7 @@ loc_1BFB3:
     add     ax, offset trkObjectList
     mov     [bp+var_trkobject_ptr], ax
     mov     bx, ax
-    mov     al, [bx+0Bh]
+    mov     al, [bx+TRACKOBJECT.ss_multiTileFlag]
     cbw
     or      ax, ax
     jnz     short loc_1BFD5

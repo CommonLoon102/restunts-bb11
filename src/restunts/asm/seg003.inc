@@ -1,7 +1,7 @@
 seg003 segment byte public 'STUNTSC' use16
     extrn sub_19F14:proc
     extrn init_rect_arrays:proc
-    extrn update_frame:proc
+    extrn ported_update_frame_:proc
     extrn skybox_op_helper2:proc
     extrn skybox_op:proc
     extrn transformed_shape_add_for_sort:proc
