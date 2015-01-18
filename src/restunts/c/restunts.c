@@ -976,7 +976,7 @@ void run_game(void) {
 				word_3F88E = 0;
 				input_pop_status();
 				if (regsi != 0) {
-					set_AV_event_triggers(4, 0);
+					update_crash_state(4, 0);
 					byte_449DA = 1;
 				}
 

@@ -42,9 +42,9 @@ extern void plane_rotate_op(void);
 int plane_origin_op(int planIndex, int b, int c, int d);
 
 extern void update_crash_state(int, int);
-extern char car_car_coll_detect_maybe(struct POINT2D*, struct VECTOR*, struct POINT2D*, struct VECTOR*);
+extern int car_car_coll_detect_maybe(struct POINT2D*, struct VECTOR*, struct POINT2D*, struct VECTOR*);
 
-extern char bto_auxiliary1(int, int, struct VECTOR*);
+extern int bto_auxiliary1(int, int, struct VECTOR*);
 
 void update_player_state(struct CARSTATE* arg_pState, struct SIMD* arg_pSimd, struct CARSTATE* arg_oState, struct SIMD* arg_oSimd, int arg_MplayerFlag) {
 /*
@@ -111,7 +111,7 @@ void update_player_state(struct CARSTATE* arg_pState, struct SIMD* arg_pSimd, st
 	struct VECTORLONG vecl_176[4];
 	int var_wheelIndex;
 	char var_2;
-	struct VECTOR vec_182, vec_1E4, vec_C, vec_1C, vec_17C, var_122, var_E4;
+	struct VECTOR vec_182, vec_1E4, vec_C, vec_1C, vec_17C, var_122;
 	struct VECTOR var_11ApStateWorldCrds[2], vec_18EoStateWorldCrds[2];
 	struct MATRIX mat_134;
 	char var_136;
@@ -126,8 +126,7 @@ void update_player_state(struct CARSTATE* arg_pState, struct SIMD* arg_pSimd, st
 	char var_11C;
 	struct VECTOR var_DC[32];
 	
-	// using original, this port has at least buggy collisions
-	return ported_update_player_state_(arg_pState, arg_pSimd, arg_oState, arg_oSimd, arg_MplayerFlag);
+	// return ported_update_player_state_(arg_pState, arg_pSimd, arg_oState, arg_oSimd, arg_MplayerFlag);
 /*
     push    bp
     mov     bp, sp
@@ -1632,9 +1631,9 @@ loc_15964:
     jl      short loc_1596E
     jmp     loc_15642*/
 loc_1596E:
-	var_DEptrTo1C0->lx += var_E4.x;
-	var_DEptrTo1C0->ly += var_E4.y;
-	var_DEptrTo1C0->lz += var_E4.z;
+	var_DEptrTo1C0->lx += vec_E4.x;
+	var_DEptrTo1C0->ly += vec_E4.y;
+	var_DEptrTo1C0->lz += vec_E4.z;
 	goto loc_156ED;
 /*    mov     ax, [bp+var_E4]
     cwd

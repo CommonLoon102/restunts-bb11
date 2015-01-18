@@ -1033,7 +1033,7 @@ loc_2AB98:
     cbw
     mov     bx, ax
     shl     bx, 1
-    mov     bx, word_45D3E[bx]
+    mov     bx, word_45D3E[bx]; is really trackrows[bx -1]
 loc_2ABA5:
     mov     al, [bp+var_18E]
     cbw
@@ -1050,7 +1050,7 @@ loc_2ABBC:
     cbw
     mov     bx, ax
     shl     bx, 1
-    mov     bx, word_45D3E[bx]
+    mov     bx, word_45D3E[bx]; is really trackrows[bx -1]
     mov     al, [bp+var_18E]
     cbw
     add     bx, ax
@@ -3295,7 +3295,7 @@ loc_2C169:
     sub     bh, bh
     add     bx, di
     shl     bx, 1
-    mov     bx, word_45D3E[bx]
+    mov     bx, word_45D3E[bx]; is really trackrows[bx -1]
     add     bx, si
     mov     al, [bp+arg_0]
     sub     ah, ah
@@ -3328,7 +3328,7 @@ loc_2C169:
     sub     bh, bh
     add     bx, di
     shl     bx, 1
-    mov     bx, word_45D3E[bx]
+    mov     bx, word_45D3E[bx]; is really trackrows[bx -1]
     add     bx, si
     mov     al, [bp+arg_0]
     sub     ah, ah
@@ -3410,7 +3410,7 @@ loc_2C235:
     sub     bh, bh
     add     bx, di
     shl     bx, 1
-    mov     bx, word_45D3E[bx]
+    mov     bx, word_45D3E[bx]; is really trackrows[bx -1]
     add     bx, si
     mov     al, [bp+arg_0]
     sub     ah, ah
@@ -3443,7 +3443,7 @@ loc_2C235:
     sub     bh, bh
     add     bx, di
     shl     bx, 1
-    mov     bx, word_45D3E[bx]
+    mov     bx, word_45D3E[bx]; is really trackrows[bx -1]
 loc_2C305:
     add     bx, si
     mov     al, [bp+arg_0]

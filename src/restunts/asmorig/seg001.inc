@@ -20,7 +20,7 @@ seg001 segment byte public 'STUNTSC' use16
     extrn car_car_coll_detect_maybe:proc
     extrn init_plantrak:proc
     extrn do_opponent_op:proc
-    extrn set_AV_event_triggers:proc
+    extrn update_crash_state:proc
     extrn plane_rotate_op:proc
     extrn plane_origin_op:proc
     extrn vec_normalInnerProduct:proc

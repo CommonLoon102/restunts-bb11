@@ -346,7 +346,7 @@ loc_21E49:
     push    ax
     mov     ax, 4
     push    ax
-    call    set_AV_event_triggers
+    call    update_crash_state
     add     sp, 4
     mov     byte_449DA, 1
 loc_21E71:
@@ -918,7 +918,7 @@ loc_22420:
     push    ax
     mov     ax, 4
     push    ax
-    call    set_AV_event_triggers
+    call    update_crash_state
     add     sp, 4
 loc_22436:
     mov     byte_449DA, 1
@@ -1268,7 +1268,7 @@ loc_226E6:
     push    ax
     mov     ax, 1
     push    ax
-    call    set_AV_event_triggers
+    call    update_crash_state
     add     sp, 4
 loc_22725:
     cmp     byte_3B8F2, 0
@@ -1397,7 +1397,7 @@ loc_22817:
     push    ax
     mov     ax, 4
     push    ax
-    call    set_AV_event_triggers
+    call    update_crash_state
     add     sp, 4
     jmp     loc_226DA
 loc_2283C:
@@ -4696,7 +4696,7 @@ loc_24748:
     push    ax
     mov     ax, 4
     push    ax
-    call    set_AV_event_triggers
+    call    update_crash_state
     add     sp, 4
 loc_24757:
     mov     byte_449DA, 2
@@ -4708,7 +4708,7 @@ loc_24760:
     push    ax
     mov     ax, 4
     push    ax
-    call    set_AV_event_triggers
+    call    update_crash_state
     add     sp, 4
     mov     byte_43966, 0
     jmp     short loc_24757

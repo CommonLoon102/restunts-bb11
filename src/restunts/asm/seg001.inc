@@ -1,12 +1,12 @@
 seg001 segment byte public 'STUNTSC' use16
     extrn opponent_op:proc
     extrn ported_mat_mul_vector2_:proc
-    extrn update_player_state:proc
+    extrn ported_update_player_state_:proc
     extrn ported_init_carstate_from_simd_:proc
     extrn ported_init_game_state_:proc
     extrn ported_restore_gamestate_:proc
     extrn ported_update_gamestate_:proc
-    extrn player_op:proc
+    extrn ported_player_op_:proc
     extrn detect_penalty:proc
     extrn update_car_speed:proc
     extrn update_grip:proc
@@ -20,7 +20,7 @@ seg001 segment byte public 'STUNTSC' use16
     extrn car_car_coll_detect_maybe:proc
     extrn init_plantrak:proc
     extrn do_opponent_op:proc
-    extrn set_AV_event_triggers:proc
+    extrn ported_update_crash_state_:proc
     extrn plane_rotate_op:proc
     extrn plane_origin_op:proc
     extrn vec_normalInnerProduct:proc

@@ -18,7 +18,7 @@ CC = cl  /Zi /MD /c /I$(SDLPATH)\include /DRESTUNTS_SDL /Fo$(OBJDIR)\$?
 !endif
 
 
-all: $(OBJDIR)\fileio.obj $(OBJDIR)\math.obj $(OBJDIR)\memmgr.obj $(OBJDIR)\restunts.obj $(OBJDIR)\shape3d.obj $(OBJDIR)\shape2d.obj $(OBJDIR)\keyboard.obj $(OBJDIR)\heapsort.obj $(OBJDIR)\frame.obj 
+all: $(OBJDIR)\fileio.obj $(OBJDIR)\math.obj $(OBJDIR)\memmgr.obj $(OBJDIR)\restunts.obj $(OBJDIR)\shape3d.obj $(OBJDIR)\shape2d.obj $(OBJDIR)\keyboard.obj $(OBJDIR)\heapsort.obj $(OBJDIR)\frame.obj $(OBJDIR)\state.obj $(OBJDIR)\stateply.obj $(OBJDIR)\statecrs.obj 
 
 $(OBJDIR)\fileio.obj: fileio.c
 	$(CC) $?
@@ -47,6 +47,15 @@ $(OBJDIR)\heapsort.obj: heapsort.c
 $(OBJDIR)\frame.obj: frame.c
 	$(CC) $?
 
+$(OBJDIR)\state.obj: state.c
+	$(CC) $?
+
+$(OBJDIR)\stateply.obj: stateply.c
+	$(CC) $?
+
+$(OBJDIR)\statecrs.obj: statecrs.c
+	$(CC) $?
+
 clean:
 	del $(OBJDIR)\fileio.obj
 	del $(OBJDIR)\math.obj
@@ -57,3 +66,6 @@ clean:
 	del $(OBJDIR)\keyboard.obj
 	del $(OBJDIR)\heapsort.obj
 	del $(OBJDIR)\frame.obj
+	del $(OBJDIR)\state.obj
+	del $(OBJDIR)\stateply.obj
+	del $(OBJDIR)\statecrs.obj

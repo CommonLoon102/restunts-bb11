@@ -188,6 +188,11 @@ extrn kb_check:proc
 ; externs for implementations in frame.c
 extrn update_frame:proc
 
+; externs for implementations in state.c
+extrn player_op:proc
+extrn update_player_state:proc
+extrn update_crash_state:proc
+
 ; externs for implementations in restunts.c
 
 extrn timer_get_counter:proc

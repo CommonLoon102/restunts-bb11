@@ -89,58 +89,40 @@ build_track_object proc far
     arg_nextPosWorldCrds = word ptr 8
 
     push    bp
-loc_1E1A1:
     mov     bp, sp
-loc_1E1A3:
     sub     sp, 40h
-loc_1E1A6:
     push    di
     push    si
-loc_1E1A8:
     mov     planindex, 0
-loc_1E1AE:
     mov     wallindex, 0FFFFh
-loc_1E1B4:
     mov     wallHeight, 0FFF4h
-loc_1E1BA:
     mov     elRdWallRelated, 0FC18h; -1000
-loc_1E1C0:
     mov     corkFlag, 0
     mov     current_surf_type, grass; grass is the default surface
-loc_1E1CA:
     mov     byte_4392C, 1
     sub     si, si
     mov     [bp+var_wallOrientMod], si
-loc_1E1D4:
     mov     [bp+var_elemOrient], si
-loc_1E1D7:
     mov     terrainHeight, si
     mov     bx, [bp+arg_posWorldCrds]
     mov     ax, [bx]
-loc_1E1E0:
     mov     cl, 0Ah
     sar     ax, cl          ; divide by 1024
-loc_1E1E4:
     mov     [bp+var_trkCol], al
     mov     ax, [bx+4]      ; 2D word vector... world xz coords?
     sar     ax, cl
-loc_1E1EC:
     mov     [bp+var_trkRow], al
     mov     [bp+var_physModel], 0FFFFh
-loc_1E1F4:
     cmp     [bp+var_trkCol], 0
     jge     short loc_1E1FD
-loc_1E1FA:
     jmp     loc_1F8CD
 loc_1E1FD:
     cmp     [bp+var_trkCol], 1Dh
     jle     short loc_1E206
-loc_1E203:
     jmp     loc_1F8CD
 loc_1E206:
     or      al, al
     jge     short loc_1E20D
-loc_1E20A:
     jmp     loc_1F8CD
 loc_1E20D:
     cmp     al, 1Dh
@@ -149,7 +131,6 @@ loc_1E20D:
 loc_1E214:
     mov     al, [bp+var_trkCol]
     cbw
-loc_1E218:
     mov     di, ax
     mov     bx, di
     shl     bx, 1
@@ -158,7 +139,6 @@ loc_1E218:
     mov     al, [bp+var_trkRow]
     cbw
     shl     ax, 1
-loc_1E22B:
     mov     [bp+var_misc3C], ax
     mov     bx, ax
     mov     ax, terraincenterpos[bx]
@@ -173,26 +153,17 @@ loc_1E22B:
     sub     ah, ah
     cmp     ax, 1
     jnz     short loc_1E257
-loc_1E254:
     jmp     loc_1E2FB
 loc_1E257:
     cmp     ax, 2           ; coast
     jz      short loc_1E29A
-loc_1E25C:
     cmp     ax, 3
-loc_1E25F:
     jz      short loc_1E2A0
-loc_1E261:
     cmp     ax, 4
-loc_1E264:
     jz      short loc_1E2A6
-loc_1E266:
     cmp     ax, 5
-loc_1E269:
     jz      short loc_1E2AC
-loc_1E26B:
     cmp     ax, 6
-loc_1E26E:
     jnz     short loc_1E276
 code_addHillHeight:
     mov     ax, hillHeightConsts+2
@@ -2638,8 +2609,8 @@ loc_1F992:
     imul    planindex
     add     ax, word ptr planptr
     mov     dx, word ptr planptr+2
-    mov     current_planptr_ax, ax
-    mov     current_planptr_dx, dx
+    mov     word ptr current_planptr, ax
+    mov     word ptr current_planptr+2, dx
     cmp     current_surf_type, 4
     jnz     short loc_1F9D4
     mov     bx, [bp+arg_posWorldCrds]
@@ -2850,7 +2821,7 @@ loc_1FB4E:
     shl     ax, 1
     mov     [bp+var_14], ax
     mov     bx, ax
-    mov     bx, word_45D3E[bx]
+    mov     bx, word_45D3E[bx]; is really trackrows[bx -1]
     add     bx, [bp+arg_0]
     add     bx, word ptr td14_elem_map_main
     mov     es, word ptr td14_elem_map_main+2
@@ -2891,7 +2862,7 @@ loc_1FBB4:
     shl     ax, 1
     mov     [bp+var_14], ax
     mov     bx, ax
-    mov     bx, word_45D3E[bx]
+    mov     bx, word_45D3E[bx]; is really trackrows[bx -1]
     add     bx, [bp+arg_0]
     add     bx, word ptr td14_elem_map_main
     mov     es, word ptr td14_elem_map_main+2

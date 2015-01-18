@@ -5558,8 +5558,8 @@ loc_1351D:
     sub     cx, cx
     push    cx
     push    ax
-    push    gState_travDist_dx
-    push    gState_travDist_ax
+    push    word ptr gState_travDist+2
+    push    word ptr gState_travDist
     call    __aFuldiv
     mov     al, ah
     mov     ah, dl

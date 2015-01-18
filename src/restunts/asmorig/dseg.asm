@@ -266,14 +266,14 @@ dseg segment byte public 'STUNTSD' use16
     public byte_3BD34
     public aQ00
     public aA00
-    public unk_3BD70
-    public unk_3BD71
+    public unk_3BD5A
+    public unk_3BD62
+    public unk_3BD6A
     public word_3BD72
     public steerWhlRespTable_20fps
     public steerWhlRespTable_10fps
     public grassDecelDivTab
     public byte_3BE02
-    public unk_3BE04
     public f36f40_whlData
     public word_3BE16
     public aSimd
@@ -1232,8 +1232,7 @@ dseg segment byte public 'STUNTSD' use16
     public crshres
     public logoshape
     public byte_44346
-    public gState_travDist_ax
-    public gState_travDist_dx
+    public gState_travDist
     public gState_frame
     public gState_total_finish_time
     public gState_144
@@ -1277,13 +1276,10 @@ dseg segment byte public 'STUNTSD' use16
     public show_penalty_counter
     public gameresptr
     public gameconfig
-    public pState_lvec1_x_ax
-    public pState_lvec1_x_dx
+    public pState_lvec1_x
     public smouspriteptr
-    public pState_lvec1_y_ax
-    public pState_lvec1_y_dx
-    public pState_lvec1_z_ax
-    public pState_lvec1_z_dx
+    public pState_lvec1_y
+    public pState_lvec1_z
     public byte_449CE
     public framespersec
     public td17_trk_elem_ordered
@@ -1342,8 +1338,7 @@ dseg segment byte public 'STUNTSD' use16
     public oppnentSped
     public meter_needle_color
     public word_44D62
-    public current_planptr_ax
-    public current_planptr_dx
+    public current_planptr
     public g_path_buf
     public planindex
     public video_flag2_is1
@@ -2916,7 +2911,7 @@ aA00     db 97
     db 0
     db 20
     db 0
-    db 5
+unk_3BD5A     db 5
     db 0
     db 40
     db 0
@@ -2924,7 +2919,7 @@ aA00     db 97
     db 0
     db 10
     db 0
-    db 6
+unk_3BD62     db 6
     db 0
     db 121
     db 0
@@ -2932,14 +2927,14 @@ aA00     db 97
     db 0
     db 9
     db 0
-    db 1
+unk_3BD6A     db 1
     db 0
     db 10
     db 0
     db 1
     db 0
-unk_3BD70     db 10
-unk_3BD71     db 0
+    db 10
+    db 0
 word_3BD72     dw 21
     dw 21
     dw 15
@@ -3077,7 +3072,7 @@ grassDecelDivTab     dw 255
     dw 64
 byte_3BE02     db 255
     db 0
-unk_3BE04     db 1
+    db 1
     db 0
     db 0
     db 0
@@ -33797,8 +33792,7 @@ logoshape     db 0
     db 0
 byte_44346     db 0
     db 0
-gState_travDist_ax     dw 0
-gState_travDist_dx     dw 0
+gState_travDist     dd 0
 gState_frame     dw 0
 gState_total_finish_time     dw 0
 gState_144     dw 0
@@ -35384,13 +35378,10 @@ gameconfig     db 0
     db 0
     db 0
     db 0
-pState_lvec1_x_ax     dw 0
-pState_lvec1_x_dx     dw 0
+pState_lvec1_x     dd 0
 smouspriteptr     dd 0
-pState_lvec1_y_ax     dw 0
-pState_lvec1_y_dx     dw 0
-pState_lvec1_z_ax     dw 0
-pState_lvec1_z_dx     dw 0
+pState_lvec1_y     dd 0
+pState_lvec1_z     dd 0
 byte_449CE     db 0
     db 0
 framespersec     dw 0
@@ -36219,8 +36210,7 @@ oppnentSped     db 0
     db 0
 meter_needle_color     dw 0
 word_44D62     dw 0
-current_planptr_ax     dw 0
-current_planptr_dx     dw 0
+current_planptr     dd 0
 g_path_buf     db 0
     db 0
     db 0

@@ -760,6 +760,11 @@ static PortFuncName(labelname, isport) {
 		// frame.c
 		labelname == "update_frame" ||
 
+		// state.c
+		labelname == "player_op" ||
+		labelname == "update_player_state" ||
+		labelname == "update_crash_state" || 
+
 		// restunts.c:
 		labelname == "timer_get_counter" ||
 		labelname == "timer_get_delta" ||

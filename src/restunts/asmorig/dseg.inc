@@ -218,14 +218,14 @@ dseg segment byte public 'STUNTSD' use16
     extrn byte_3BD34:byte
     extrn aQ00:byte
     extrn aA00:byte
-    extrn unk_3BD70:byte
-    extrn unk_3BD71:byte
+    extrn unk_3BD5A:byte
+    extrn unk_3BD62:byte
+    extrn unk_3BD6A:byte
     extrn word_3BD72:word
     extrn steerWhlRespTable_20fps:byte
     extrn steerWhlRespTable_10fps:byte
     extrn grassDecelDivTab:word
     extrn byte_3BE02:byte
-    extrn unk_3BE04:byte
     extrn f36f40_whlData:word
     extrn word_3BE16:word
     extrn aSimd:byte
@@ -1184,8 +1184,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn crshres:dword
     extrn logoshape:SHAPE3D
     extrn byte_44346:byte
-    extrn gState_travDist_ax:word
-    extrn gState_travDist_dx:word
+    extrn gState_travDist:dword
     extrn gState_frame:word
     extrn gState_total_finish_time:word
     extrn gState_144:word
@@ -1229,13 +1228,10 @@ dseg segment byte public 'STUNTSD' use16
     extrn show_penalty_counter:byte
     extrn gameresptr:dword
     extrn gameconfig:GAMEINFO
-    extrn pState_lvec1_x_ax:word
-    extrn pState_lvec1_x_dx:word
+    extrn pState_lvec1_x:dword
     extrn smouspriteptr:dword
-    extrn pState_lvec1_y_ax:word
-    extrn pState_lvec1_y_dx:word
-    extrn pState_lvec1_z_ax:word
-    extrn pState_lvec1_z_dx:word
+    extrn pState_lvec1_y:dword
+    extrn pState_lvec1_z:dword
     extrn byte_449CE:byte
     extrn framespersec:word
     extrn td17_trk_elem_ordered:dword
@@ -1294,8 +1290,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn oppnentSped:byte
     extrn meter_needle_color:word
     extrn word_44D62:word
-    extrn current_planptr_ax:word
-    extrn current_planptr_dx:word
+    extrn current_planptr:dword
     extrn g_path_buf:byte
     extrn planindex:word
     extrn video_flag2_is1:word

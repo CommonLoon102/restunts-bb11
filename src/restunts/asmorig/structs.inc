@@ -235,8 +235,7 @@ game_vec3 VECTOR <>
 game_vec4 VECTOR <>
 game_frame_in_sec dw ?
 game_frames_per_sec dw ?
-game_travDist_ax dw ?
-game_travDist_dx dw ?
+game_travDist dd ?
 game_frame dw ?
 game_total_finish dw ?
 field_144 dw ?

@@ -24,6 +24,8 @@ void player_op(char arg_carInputByte) {
 	int var_1EpenaltyCounter;
 	int si;
 
+	//return ported_player_op_(arg_carInputByte);
+
 	if (show_penalty_counter != 0) {
 		show_penalty_counter--;
 	}
@@ -310,6 +312,6 @@ loc_177AC:
 	
 	if (si >= 0)
 		goto loc_17810;
-	set_AV_event_triggers(3, 0);
+	update_crash_state(3, 0);
 loc_17810:
 }
