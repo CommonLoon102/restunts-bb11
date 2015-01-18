@@ -8,7 +8,7 @@ seg001 segment byte public 'STUNTSC' use16
     extrn ported_update_gamestate_:proc
     extrn ported_player_op_:proc
     extrn detect_penalty:proc
-    extrn update_car_speed:proc
+    extrn ported_update_car_speed_:proc
     extrn update_grip:proc
     extrn car_car_speed_adjust_maybe:proc
     extrn carState_rc_op:proc
@@ -22,8 +22,8 @@ seg001 segment byte public 'STUNTSC' use16
     extrn do_opponent_op:proc
     extrn ported_update_crash_state_:proc
     extrn plane_rotate_op:proc
-    extrn plane_origin_op:proc
-    extrn vec_normalInnerProduct:proc
+    extrn ported_plane_origin_op_:proc
+    extrn ported_vec_normalInnerProduct_:proc
     extrn state_op_unk:proc
     extrn sub_19BA0:proc
     extrn ported_setup_aero_trackdata_:proc

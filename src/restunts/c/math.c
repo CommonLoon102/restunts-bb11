@@ -808,3 +808,41 @@ short multiply_and_scale(short a1, short a2)
 	long mul = (long)a1 * (long)a2 * 4L;
 	return (mul >> 16) + ((mul & 0x8000) >> 15);
 }
+
+extern int planindex;
+extern struct PLANE far* planptr;
+extern struct PLANE far* current_planptr;
+extern int elem_xCenter;
+extern int elem_zCenter;
+extern int terrainHeight;
+
+int vec_normalInnerProduct(int x, int y, int z, struct VECTOR far* normal) {
+	return (
+		((long)normal->x * x) + 
+		((long)normal->z * z) +
+		((long)normal->y * y)) / 0x2000;
+}
+
+int plane_origin_op(int arg_planindex, int x, int y, int z) {
+	struct PLANE far* curplane;
+	struct VECTOR a;
+	struct VECTOR b;
+	
+	if (arg_planindex == planindex) {
+		curplane = current_planptr;
+	} else {
+		curplane = &planptr[arg_planindex];
+	}
+
+	b.y = curplane->plane_origin.y + terrainHeight;
+	a.y = y - b.y;
+	if (arg_planindex < 4) {
+		// NOTE: what is this
+		return a.y;
+	}
+	b.x = curplane->plane_origin.x + elem_xCenter;
+	b.z = curplane->plane_origin.z + elem_zCenter;
+	a.x = x - b.x;
+	a.z = z - b.z;
+	return vec_normalInnerProduct(a.x, a.y, a.z, &curplane->plane_normal);
+}

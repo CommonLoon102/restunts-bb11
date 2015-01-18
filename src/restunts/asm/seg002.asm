@@ -46,7 +46,7 @@ nosmart
 seg002 segment byte public 'STUNTSC' use16
     assume cs:seg002
     assume es:nothing, ss:nothing, ds:dseg
-    public update_rpm_from_speed
+    public ported_update_rpm_from_speed_
     public nopsub_19DE8
     public nopsub_19DFF
     public nopsub_19E09
@@ -60,7 +60,7 @@ seg002 segment byte public 'STUNTSC' use16
 algn_19DC5:
     ; align 2
     db 144
-update_rpm_from_speed proc far
+ported_update_rpm_from_speed_ proc far
      s = byte ptr 0
      r = byte ptr 2
     arg_currRpm = word ptr 6
@@ -70,35 +70,24 @@ update_rpm_from_speed proc far
     arg_idleRpm = word ptr 14
 
     push    bp
-loc_19DC7:
     mov     bp, sp
-loc_19DC9:
     push    bp
-loc_19DCA:
     mov     cx, [bp+arg_currRpm]
-loc_19DCD:
     mov     ax, [bp+arg_speed]
-loc_19DD0:
     cmp     [bp+arg_isChangingGear], 0
-loc_19DD4:
     jnz     short loc_19DDB
-loc_19DD6:
     mul     [bp+arg_gearRatio]
-loc_19DD9:
     mov     cx, dx
 loc_19DDB:
     cmp     cx, [bp+arg_idleRpm]
-loc_19DDE:
     jnb     short loc_19DE3
-loc_19DE0:
     mov     cx, [bp+arg_idleRpm]
 loc_19DE3:
     mov     ax, cx
     pop     bp
-loc_19DE6:
     pop     bp
     retf
-update_rpm_from_speed endp
+ported_update_rpm_from_speed_ endp
 nopsub_19DE8 proc far
      s = byte ptr 0
      r = byte ptr 2

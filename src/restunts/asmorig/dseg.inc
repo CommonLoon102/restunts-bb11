@@ -1349,7 +1349,6 @@ dseg segment byte public 'STUNTSD' use16
     extrn sdgame2_widths:word
     extrn td21_col_from_path:dword
     extrn simd_opponent:SIMD
-    extrn word_45946:word
     extrn byte_45948:byte
     extrn g_kevinrandom_seed:byte
     extrn byte_45950:byte
@@ -1403,7 +1402,6 @@ dseg segment byte public 'STUNTSD' use16
     extrn transformedshape_indices:word
     extrn trackdata19:dword
     extrn simd_player:SIMD
-    extrn word_46160:word
     extrn td13_rpl_header:dword
     extrn rect_array_unk3_length:byte
     extrn byte_46167:byte

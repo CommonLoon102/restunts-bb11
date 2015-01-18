@@ -96,7 +96,7 @@ spdpoints db 208 dup (?)
 revcenter POINT2D <>
 revnumpoints dw ?
 revpoints db 256 dup (?)
-aerorestable dw ?
+aerorestable dd ?
 SIMD ends
 SHAPE3DHEADER struc
 header_numverts db ?

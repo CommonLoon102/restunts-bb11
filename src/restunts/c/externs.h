@@ -34,14 +34,14 @@ struct CARSTATE {
 	short car_lastrpm;
 	short car_idlerpm2;
 	short car_speeddiff; // former gripdiff
-	short car_speed;     // former trackgrip
+	unsigned short car_speed;     // former trackgrip
                          // value is 2^8*(mph value) and unsigned
 	unsigned short car_speed2;    // former trackgrip2
                          // speed is the rev-coupled speed, while speed2 is
                          // the actual car speed. They are different, for
                          // instance, during jumps (where accelerating increases
                          // revs without making the car go faster).
-	short car_lastspeed; // former lasttrackgrip
+	unsigned short car_lastspeed; // former lasttrackgrip
 	unsigned short car_gearratio;
 	unsigned short car_gearratioshr8;
 	short car_knob_x;
@@ -104,8 +104,8 @@ struct GAMESTATE {
 	short game_pEndFrame;
 	short game_oEndFrame;   // former game_frame2
 	short game_penalty; // probably penalty counter
-	short game_impactSpeed;
-	short game_topSpeed;
+	unsigned short game_impactSpeed;
+	unsigned short game_topSpeed;
 	short game_jumpCount;
 	struct CARSTATE playerstate;
 	struct CARSTATE opponentstate;
@@ -167,7 +167,7 @@ struct SIMD {
 	struct POINT2D revcenter;
 	short revnumpoints;
 	char revpoints[256];
-	short aerorestable;
+	short far* aerorestable;
 };
 
 struct TRKOBJINFO {

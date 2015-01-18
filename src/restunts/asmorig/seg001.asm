@@ -5838,7 +5838,7 @@ loc_17CAC:
     shr     si, cl
     shl     si, 1           ; this is NOT part of the calculations *LOL*
     mov     bx, [bp+arg_simd]
-    les     bx, dword ptr [bx+SIMD.aerorestable]
+    les     bx, [bx+SIMD.aerorestable]
     mov     di, [bp+arg_carState]
     mov     ax, [di+CARSTATE.car_pseudoGravity]
     sub     ax, es:[bx+si]
@@ -9074,12 +9074,8 @@ loc_19917:
     retf
 plane_rotate_op endp
 plane_origin_op proc far
-    var_10 = word ptr -16
-    var_E = word ptr -14
-    var_C = word ptr -12
-    var_A = word ptr -10
-    var_8 = word ptr -8
-    var_6 = word ptr -6
+    var_10 = VECTOR ptr -16
+    var_A = VECTOR ptr -10
     var_4 = dword ptr -4
      s = byte ptr 0
      r = byte ptr 2
@@ -9110,34 +9106,33 @@ loc_1994C:
     les     bx, [bp+var_4]
     mov     ax, es:[bx+PLANE.plane_origin.vy]
     add     ax, terrainHeight
-    mov     [bp+var_E], ax
+    mov     [bp+var_10.vy], ax
     mov     ax, [bp+arg_4y]
-    sub     ax, [bp+var_E]
-    mov     [bp+var_8], ax  ; y
+    sub     ax, [bp+var_10.vy]
+    mov     [bp+var_A.vy], ax; y
     cmp     [bp+arg_planIndex], 4
     jl      short loc_199AE
     mov     ax, es:[bx+PLANE.plane_origin.vx]
     add     ax, elem_xCenter
-    mov     [bp+var_10], ax
+    mov     [bp+var_10.vx], ax
     mov     ax, es:[bx+PLANE.plane_origin.vz]
     add     ax, elem_zCenter
-    mov     [bp+var_C], ax
+    mov     [bp+var_10.vz], ax
     mov     ax, [bp+arg_2x]
-    sub     ax, [bp+var_10]
-    mov     [bp+var_A], ax  ; x
+    sub     ax, [bp+var_10.vx]
+    mov     [bp+var_A.vx], ax; x
     mov     ax, [bp+arg_6z]
-    sub     ax, [bp+var_C]
-    mov     [bp+var_6], ax  ; z
+    sub     ax, [bp+var_10.vz]
+    mov     [bp+var_A.vz], ax; z
     mov     ax, bx
     add     ax, PLANE.plane_normal
     push    dx
     push    ax
-    push    [bp+var_6]
-    push    [bp+var_8]
-    push    [bp+var_A]
+    push    [bp+var_A.vz]
+    push    [bp+var_A.vy]
+    push    [bp+var_A.vx]
     push    cs
     call near ptr vec_normalInnerProduct
-loc_199AB:
     add     sp, 0Ah
 loc_199AE:
     mov     sp, bp
@@ -9202,19 +9197,15 @@ vec_normalInnerProduct proc far
     cwd
     push    dx
     push    ax
-loc_19A0F:
     call    __aFlmul
     add     ax, [bp+var_4]
     adc     dx, [bp+var_2]
     add     ax, si
-loc_19A1C:
     adc     dx, di
     push    dx
     push    ax
-loc_19A20:
     call    __aFldiv        ; /2000h
     pop     si
-loc_19A26:
     pop     di
     mov     sp, bp
     pop     bp
@@ -9549,8 +9540,8 @@ loc_19CB3:
     pop     si
     mov     ax, word ptr td04_aerotable_pl
     mov     dx, word ptr td04_aerotable_pl+2
-    mov     simd_player.aerorestable, ax
-    mov     word_46160, dx
+    mov     word ptr simd_player.aerorestable, ax
+    mov     word ptr simd_player.aerorestable+2, dx
     sub     si, si
 loc_19CE7:
     mov     ax, si
@@ -9611,8 +9602,8 @@ loc_19D36:
     pop     si
     mov     ax, word ptr td05_aerotable_op
     mov     dx, word ptr td05_aerotable_op+2
-    mov     simd_opponent.aerorestable, ax
-    mov     word_45946, dx
+    mov     word ptr simd_opponent.aerorestable, ax
+    mov     word ptr simd_opponent.aerorestable+2, dx
     sub     si, si
 loc_19D6A:
     mov     ax, si

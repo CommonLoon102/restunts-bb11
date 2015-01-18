@@ -620,6 +620,8 @@ static PortFuncName(labelname, isport) {
 		labelname == "mat_rot_z" || 
 		labelname == "mat_rot_zxy" || 
 		labelname == "multiply_and_scale" ||
+		labelname == "plane_origin_op" ||
+		labelname == "vec_normalInnerProduct" ||
 
 		// heapsort.c:
 		labelname == "heapsort_by_order" || 
@@ -764,6 +766,8 @@ static PortFuncName(labelname, isport) {
 		labelname == "player_op" ||
 		labelname == "update_player_state" ||
 		labelname == "update_crash_state" || 
+		labelname == "update_car_speed" ||
+		labelname == "update_rpm_from_speed" ||
 
 		// restunts.c:
 		labelname == "timer_get_counter" ||

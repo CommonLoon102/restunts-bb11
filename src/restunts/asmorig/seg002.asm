@@ -70,32 +70,21 @@ update_rpm_from_speed proc far
     arg_idleRpm = word ptr 14
 
     push    bp
-loc_19DC7:
     mov     bp, sp
-loc_19DC9:
     push    bp
-loc_19DCA:
     mov     cx, [bp+arg_currRpm]
-loc_19DCD:
     mov     ax, [bp+arg_speed]
-loc_19DD0:
     cmp     [bp+arg_isChangingGear], 0
-loc_19DD4:
     jnz     short loc_19DDB
-loc_19DD6:
     mul     [bp+arg_gearRatio]
-loc_19DD9:
     mov     cx, dx
 loc_19DDB:
     cmp     cx, [bp+arg_idleRpm]
-loc_19DDE:
     jnb     short loc_19DE3
-loc_19DE0:
     mov     cx, [bp+arg_idleRpm]
 loc_19DE3:
     mov     ax, cx
     pop     bp
-loc_19DE6:
     pop     bp
     retf
 update_rpm_from_speed endp

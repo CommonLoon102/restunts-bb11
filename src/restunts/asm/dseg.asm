@@ -1397,7 +1397,6 @@ dseg segment byte public 'STUNTSD' use16
     public sdgame2_widths
     public td21_col_from_path
     public simd_opponent
-    public word_45946
     public byte_45948
     public g_kevinrandom_seed
     public byte_45950
@@ -1451,7 +1450,6 @@ dseg segment byte public 'STUNTSD' use16
     public transformedshape_indices
     public trackdata19
     public simd_player
-    public word_46160
     public td13_rpl_header
     public rect_array_unk3_length
     public byte_46167
@@ -39133,7 +39131,8 @@ simd_opponent     db 0
     db 0
     db 0
     db 0
-word_45946     dw 0
+    db 0
+    db 0
 byte_45948     db 0
     db 0
 g_kevinrandom_seed     db 0
@@ -41072,7 +41071,8 @@ simd_player     db 0
     db 0
     db 0
     db 0
-word_46160     dw 0
+    db 0
+    db 0
 td13_rpl_header     dd 0
 rect_array_unk3_length     db 0
 byte_46167     db 0

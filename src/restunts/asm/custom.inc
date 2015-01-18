@@ -36,6 +36,8 @@ extrn vector_op_unk:proc
 extrn vector_op_unk2:proc
 extrn vector_to_point:proc
 extrn multiply_and_scale:proc
+extrn plane_origin_op:proc
+extrn vec_normalInnerProduct:proc
 
 
 ; externs for implementations in heapsort.c
@@ -192,6 +194,8 @@ extrn update_frame:proc
 extrn player_op:proc
 extrn update_player_state:proc
 extrn update_crash_state:proc
+extrn update_car_speed:proc
+extrn update_rpm_from_speed:proc
 
 ; externs for implementations in restunts.c
 

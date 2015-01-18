@@ -1,5 +1,5 @@
 seg002 segment byte public 'STUNTSC' use16
-    extrn update_rpm_from_speed:proc
+    extrn ported_update_rpm_from_speed_:proc
     extrn nopsub_19DE8:proc
     extrn nopsub_19DFF:proc
     extrn nopsub_19E09:proc
