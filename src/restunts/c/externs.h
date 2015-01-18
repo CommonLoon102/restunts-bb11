@@ -36,7 +36,7 @@ struct CARSTATE {
 	short car_speeddiff; // former gripdiff
 	short car_speed;     // former trackgrip
                          // value is 2^8*(mph value) and unsigned
-	short car_speed2;    // former trackgrip2
+	unsigned short car_speed2;    // former trackgrip2
                          // speed is the rev-coupled speed, while speed2 is
                          // the actual car speed. They are different, for
                          // instance, during jumps (where accelerating increases

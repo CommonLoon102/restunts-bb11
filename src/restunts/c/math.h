@@ -33,6 +33,14 @@ struct MATRIX {
 	};
 };
 
+struct PLANE {
+	int plane_yz;
+	int plane_xy;
+	struct VECTOR plane_origin;
+	struct VECTOR plane_normal;
+	struct MATRIX plane_rotation;
+};
+
 #pragma pack (pop)
 
 short sin_fast(unsigned short s);

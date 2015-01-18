@@ -22,7 +22,7 @@ Repository contents:
 		Project directory containing disassembly, ported c and makefiles to
 		produce various executables based on the (re)stunts code.
 
-	src\stunts
+	stunts
 		Stunts 1.1 the game.
 
 	tools
