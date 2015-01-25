@@ -1287,9 +1287,10 @@ loc_156A3:
 	vec_1C6.y = var_DEptrTo1C0->ly >> 6;
 	if (state.game_inputmode == 2) {
 		nextPosAndNormalIP = vec_1C6.y;
-		goto loc_156D6;
+		//goto loc_156D6;
+	} else { 
+		nextPosAndNormalIP = plane_origin_op(planindex, vec_1C6.x, vec_1C6.y, vec_1C6.z);
 	}
-	nextPosAndNormalIP = plane_origin_op(planindex, vec_1C6.x, vec_1C6.y, vec_1C6.z);
 /*    mov     bx, [bp+var_DEptrTo1C0]
     mov     ax, word ptr [bx+VECTORLONG.ly]
     mov     dx, word ptr [bx+(VECTORLONG.ly+2)]
@@ -1668,6 +1669,7 @@ loc_159AD:
 	vec_unk2.x = 0;
 	vec_unk2.y = 0;
 	vec_unk2.z = var_pSpeed2Scaled;
+	planindex_copy = planindex;
 	pState_f36Mminf40sar2 = var_140someWhlData[var_wheelIndex];
 	plane_rotate_op();
 	var_DEptrTo1C0->lx = var_146ptrTo176->lx + vec_planerotopresult.x;
@@ -3262,6 +3264,7 @@ loc_165F0:
     mov     bx, [bp+arg_pState]
     sub     [bx+CARSTATE.car_36MwhlAngle], 200h*/
 loc_16648:
+	// crash with start/finish pole
 	update_crash_state(1, arg_MplayerFlag);
 	return ;
 /*    mov     al, [bp+arg_MplayerFlag]
@@ -3366,6 +3369,7 @@ loc_1667A:
     call near ptr state_op_unk
     add     sp, 6*/
 loc_16710:
+	// following looks like collision detection against right and left start/finish poles
 	if (vec_FC.x == startcol2)
 		goto loc_1671F;
 	goto loc_16840;
