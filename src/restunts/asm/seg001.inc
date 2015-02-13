@@ -21,7 +21,7 @@ seg001 segment byte public 'STUNTSC' use16
     extrn init_plantrak:proc
     extrn do_opponent_op:proc
     extrn ported_update_crash_state_:proc
-    extrn plane_rotate_op:proc
+    extrn ported_plane_rotate_op_:proc
     extrn ported_plane_origin_op_:proc
     extrn ported_vec_normalInnerProduct_:proc
     extrn state_op_unk:proc

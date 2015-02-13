@@ -622,6 +622,7 @@ static PortFuncName(labelname, isport) {
 		labelname == "multiply_and_scale" ||
 		labelname == "plane_origin_op" ||
 		labelname == "vec_normalInnerProduct" ||
+		labelname == "plane_rotate_op" ||
 
 		// heapsort.c:
 		labelname == "heapsort_by_order" || 

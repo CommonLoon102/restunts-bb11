@@ -274,6 +274,8 @@ dseg segment byte public 'STUNTSD' use16
     public steerWhlRespTable_10fps
     public grassDecelDivTab
     public byte_3BE02
+    public word_3BE04
+    public word_3BE0C
     public f36f40_whlData
     public word_3BE16
     public aSimd
@@ -1059,7 +1061,7 @@ dseg segment byte public 'STUNTSD' use16
     public end_hiscore_random
     public word_40D44
     public mat_unk2
-    public unk_40D58
+    public mat_planetmp
     public byte_40D6A
     public word_40D6C
     public word_40D70
@@ -3070,16 +3072,14 @@ grassDecelDivTab     dw 255
     dw 64
 byte_3BE02     db 255
     db 0
+word_3BE04     dw 1
+    db 0
+    db 0
+    db 0
+    db 0
     db 1
     db 0
-    db 0
-    db 0
-    db 0
-    db 0
-    db 1
-    db 0
-    db 0
-    db 0
+word_3BE0C     dw 0
     db 0
     db 0
     db 1
@@ -22052,7 +22052,7 @@ mat_unk2     db 0
     db 0
     db 0
     db 0
-unk_40D58     db 0
+mat_planetmp     db 0
     db 0
     db 0
     db 0

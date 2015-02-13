@@ -1381,13 +1381,13 @@ loc_1AA8C:
 loc_1AAF4:
     cmp     di, 0FFFFh
     jz      short loc_1AB65
-    cmp     state.playerstate.car_surfaceWhl1, 4
+    cmp     state.playerstate.car_surfaceWhl, 4
     jnz     short loc_1AB15
-    cmp     state.playerstate.car_surfaceWhl2, 4
+    cmp     state.playerstate.car_surfaceWhl+1, 4
     jnz     short loc_1AB15
-    cmp     state.playerstate.car_surfaceWhl3, 4
+    cmp     state.playerstate.car_surfaceWhl+2, 4
     jnz     short loc_1AB15
-    cmp     state.playerstate.car_surfaceWhl4, 4
+    cmp     state.playerstate.car_surfaceWhl+3, 4
     jz      short loc_1AB65
 loc_1AB15:
     mov     [bp+var_vec6.vx], 0
@@ -1546,13 +1546,13 @@ loc_1AC34:
 loc_1AC9C:
     cmp     di, 0FFFFh
     jz      short loc_1AD0E
-    cmp     state.opponentstate.car_surfaceWhl1, 4
+    cmp     state.opponentstate.car_surfaceWhl, 4
     jnz     short loc_1ACBD
-    cmp     state.opponentstate.car_surfaceWhl2, 4
+    cmp     state.opponentstate.car_surfaceWhl+1, 4
     jnz     short loc_1ACBD
-    cmp     state.opponentstate.car_surfaceWhl3, 4
+    cmp     state.opponentstate.car_surfaceWhl+2, 4
     jnz     short loc_1ACBD
-    cmp     state.opponentstate.car_surfaceWhl4, 4
+    cmp     state.opponentstate.car_surfaceWhl+3, 4
     jz      short loc_1AD0E
 loc_1ACBD:
     mov     [bp+var_vec6.vx], 0

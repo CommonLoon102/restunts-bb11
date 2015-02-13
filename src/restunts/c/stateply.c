@@ -38,64 +38,12 @@ extern int word_3BD72[4];
 extern int word_4408C;
 extern int word_43964;
 
-extern void plane_rotate_op(void);
-int plane_origin_op(int planIndex, int b, int c, int d);
-
 extern void update_crash_state(int, int);
 extern int car_car_coll_detect_maybe(struct POINT2D*, struct VECTOR*, struct POINT2D*, struct VECTOR*);
 
 extern int bto_auxiliary1(int, int, struct VECTOR*);
 
 void update_player_state(struct CARSTATE* arg_pState, struct SIMD* arg_pSimd, struct CARSTATE* arg_oState, struct SIMD* arg_oSimd, int arg_MplayerFlag) {
-/*
-    vec_1E4 = VECTOR ptr -484
-    vec_1DE = VECTOR ptr -478
-    vec_1C6 = VECTOR ptr -454
-    vecl_1C0 = VECTORLONG dup 4 ptr -448
-    var_190 = word ptr -400
-    vec_18EoStateWorldCrds = VECTOR<2> ptr -398
-    //var_188 = VECTOR ptr -392
-    vec_182 = VECTOR ptr -386
-    vec_17C = VECTOR ptr -380
-    vecl_176 = VECTORLONG 4 ptr -374
-    var_146ptrTo176 = word ptr -326
-    var_144 = word ptr -324
-    pState_f40_sar2 = word ptr -322
-    var_140someWhlData = word ptr -320
-    var_138 = word ptr -312
-    var_136 = byte ptr -310
-    mat_134 = MATRIX ptr -308
-    var_122 = VECTOR ptr -290
-    var_11C = byte ptr -284
-    var_11ApStateWorldCrds = VECTOR<2> ptr -282
-    //var_114 = VECTOR ptr -276
-    var_MmatFromAngleZ = MATRIX ptr -270
-    vec_FC = VECTOR ptr -252
-    var_F4 = word ptr -244
-    var_F2 = word ptr -242
-    var_F0 = word ptr -240
-    var_EE = word ptr -238
-    var_EC = byte ptr -236
-    var_EA = word ptr -234
-    var_wheelIndex = byte ptr -232
-    var_pSpeed2Scaled = word ptr -230
-    vec_E4 = VECTOR ptr -228
-    var_DEptrTo1C0 = word ptr -222
-    var_DC = byte ptr -220
-    vec_1C = VECTOR ptr -28
-    var_16 = word ptr -22
-    var_E = word ptr -14
-    vec_C = VECTOR ptr -12
-    var_6 = dword ptr -6
-    var_2 = byte ptr -2
-     s = byte ptr 0
-     r = byte ptr 2
-    arg_pState = word ptr 6
-    arg_pSimd = word ptr 8
-    arg_oState = word ptr 10
-    arg_oSimd = word ptr 12
-    arg_MplayerFlag = byte ptr 14
-*/
 	struct MATRIX var_MmatFromAngleZ;
 	int var_pSpeed2Scaled;
 	struct VECTOR vec_FC;
@@ -126,13 +74,8 @@ void update_player_state(struct CARSTATE* arg_pState, struct SIMD* arg_pSimd, st
 	char var_11C;
 	struct VECTOR var_DC[32];
 	
-	// return ported_update_player_state_(arg_pState, arg_pSimd, arg_oState, arg_oSimd, arg_MplayerFlag);
-/*
-    push    bp
-    mov     bp, sp
-    sub     sp, 1E4h
-    push    di
-    push    si*/
+	//return ported_update_player_state_(arg_pState, arg_pSimd, arg_oState, arg_oSimd, arg_MplayerFlag);
+
 	pState_lvec1_x = arg_pState->car_posWorld1.lx;
 	pState_lvec1_y = arg_pState->car_posWorld1.ly;
 	pState_lvec1_z = arg_pState->car_posWorld1.lz;
@@ -145,179 +88,37 @@ void update_player_state(struct CARSTATE* arg_pState, struct SIMD* arg_pSimd, st
 	pState_minusRotate_x_2 = arg_pState->car_rotate.y;
 	pState_minusRotate_y_1 = arg_pState->car_rotate.x;
 	pState_minusRotate_y_2 = arg_pState->car_rotate.x;
-/*
-    mov     bx, [bp+arg_pState]
-    mov     ax, word ptr [bx+CARSTATE.car_posWorld1.lx]
-    mov     dx, word ptr [bx+(CARSTATE.car_posWorld1.lx+2)]
-    mov     pState_lvec1_x_ax, ax
-    mov     pState_lvec1_x_dx, dx
-    mov     word ptr [bx+CARSTATE.car_posWorld2.lx], ax
-    mov     word ptr [bx+(CARSTATE.car_posWorld2.lx+2)], dx
-    mov     bx, [bp+arg_pState]
-    mov     ax, word ptr [bx+CARSTATE.car_posWorld1.ly]
-    mov     dx, word ptr [bx+(CARSTATE.car_posWorld1.ly+2)]
-    mov     pState_lvec1_y_ax, ax
-    mov     pState_lvec1_y_dx, dx
-    mov     word ptr [bx+CARSTATE.car_posWorld2.ly], ax
-    mov     word ptr [bx+(CARSTATE.car_posWorld2.ly+2)], dx
-    mov     bx, [bp+arg_pState]
-    mov     ax, word ptr [bx+CARSTATE.car_posWorld1.lz]
-    mov     dx, word ptr [bx+(CARSTATE.car_posWorld1.lz+2)]
-    mov     pState_lvec1_z_ax, ax
-    mov     pState_lvec1_z_dx, dx
-    mov     word ptr [bx+CARSTATE.car_posWorld2.lz], ax
-    mov     word ptr [bx+(CARSTATE.car_posWorld2.lz+2)], dx
-    mov     bx, [bp+arg_pState]
-    mov     ax, [bx+CARSTATE.car_rotate.vz]
-    mov     pState_minusRotate_z_1, ax
-    mov     pState_minusRotate_z_2, ax
-    mov     ax, [bx+CARSTATE.car_rotate.vy]
-    mov     pState_minusRotate_x_1, ax
-    mov     pState_minusRotate_x_2, ax
-    mov     ax, [bx+CARSTATE.car_rotate.vx]
-    mov     pState_minusRotate_y_1, ax
-    mov     pState_minusRotate_y_2, ax*/
-	if (arg_pState->car_sumSurfAllWheels == 0)
-		goto loc_14E1E;
-	pState_f40_sar2 = arg_pState->car_40MfrontWhlAngle >> 2;
-	goto loc_14E24;
-/*
-    cmp     [bx+CARSTATE.car_sumSurfAllWheels], 0
-    jz      short loc_14E1E
-    mov     ax, [bx+CARSTATE.car_40MfrontWhlAngle]
-    sar     ax, 1
-    sar     ax, 1
-    mov     [bp+pState_f40_sar2], ax
-    jmp     short loc_14E24*/
-loc_14E1E:
-//    mov     [bp+pState_f40_sar2], 0
-	pState_f40_sar2 = 0;
-loc_14E24:
-	if (framespersec != 0xA)
-		goto loc_14E30;
-	var_pSpeed2Scaled = ((long)arg_pState->car_speed2 * 0x580) / 0x1E00;
-	goto loc_14E33;
-/*
-    cmp     framespersec, 0Ah
-    jnz     short loc_14E30
-    mov     ax, 1E00h
-    jmp     short loc_14E33
-*/
-loc_14E30:
-    //mov     ax, 3C00h       ; full trk grid length/2
-	var_pSpeed2Scaled = ((long)arg_pState->car_speed2 * 0x580) / 0x3C00;
-loc_14E33:
+
+	if (arg_pState->car_sumSurfAllWheels != 0) {
+		pState_f40_sar2 = arg_pState->car_40MfrontWhlAngle >> 2;
+	} else {
+		pState_f40_sar2 = 0;
+	}
+
+	if (framespersec == 0xA) {
+		var_pSpeed2Scaled = ((long)arg_pState->car_speed2 * 0x580) / 0x1E00;
+	} else {
+		var_pSpeed2Scaled = ((long)arg_pState->car_speed2 * 0x580) / 0x3C00;
+	}
+
 	mat_unk = *mat_rot_zxy(-pState_minusRotate_z_1, -pState_minusRotate_x_1, -pState_minusRotate_y_1, 0);
-	if (pState_minusRotate_x_1 != 0)
-		goto loc_14E8F;
-	if (pState_minusRotate_z_1 == 0)
-		goto loc_14EC6;
-/*
-    sub     dx, dx
-    push    dx
-    push    ax
-    mov     ax, 580h        ; 11*128
-    cwd
-    push    dx
-    push    ax
-    mov     bx, [bp+arg_pState]
-    sub     ax, ax
-    push    ax
-    push    [bx+CARSTATE.car_speed2]
-    call    __aFlmul
-    push    dx
-    push    ax
-    call    __aFuldiv
-    mov     [bp+var_pSpeed2Scaled], ax
-    sub     ax, ax
-    push    ax
-    mov     ax, pState_minusRotate_y_1
-    neg     ax
-    push    ax
-    mov     ax, pState_minusRotate_x_1
-    neg     ax
-    push    ax
-    mov     ax, pState_minusRotate_z_1
-    neg     ax
-    push    ax
-    call    mat_rot_zxy
-    add     sp, 8
-    push    si
-    mov     di, offset mat_unk
-    mov     si, ax
-    push    ds
-    pop     es
-    mov     cx, 9
-    repne movsw
-    pop     si
-    cmp     pState_minusRotate_x_1, 0
-    jnz     short loc_14E8F
-    cmp     pState_minusRotate_z_1, 0
-    jz      short loc_14EC6*/
-loc_14E8F:
-	vec_1C6.x = 0;
-	vec_1C6.y = 0;
-	vec_1C6.z = 0x82;
-	mat_mul_vector(&vec_1C6, &mat_unk, &vec_FC);
-	arg_pState->car_pseudoGravity = -vec_FC.y;
-	goto loc_14ECE;
-/*    mov     [bp+vec_1C6.vx], 0
-    mov     [bp+vec_1C6.vy], 0
-    mov     [bp+vec_1C6.vz], 82h ; '‚'
-    lea     ax, [bp+vec_FC]
-    push    ax
-    mov     ax, offset mat_unk
-    push    ax
-    lea     ax, [bp+vec_1C6]
-    push    ax
-    call    mat_mul_vector
-    add     sp, 6
-    mov     bx, [bp+arg_pState]
-    mov     ax, [bp+vec_FC.vy]
-    neg     ax
-    mov     [bx+CARSTATE.car_pseudoGravity], ax
-    jmp     short loc_14ECE
-    ; align 2
-    db 144*/
-loc_14EC6:
-    //mov     bx, [bp+arg_pState]
-    //mov     [bx+CARSTATE.car_pseudoGravity], 0
-	arg_pState->car_pseudoGravity = 0;
-loc_14ECE:
-	if ((arg_pState->car_angle_z & 0x3FF) == 0)
-		goto loc_14F04;
-	var_EC = 1;
-	var_MmatFromAngleZ = *mat_rot_zxy(0, 0, -arg_pState->car_angle_z, 0);
-	goto loc_14F09;
-/*    mov     bx, [bp+arg_pState]
-    test    [bx+CARSTATE.car_angle_z], 3FFh
-    jz      short loc_14F04
-    mov     [bp+var_EC], 1
-    sub     ax, ax
-    push    ax
-    mov     ax, [bx+CARSTATE.car_angle_z]
-    neg     ax
-    push    ax
-    sub     ax, ax
-    push    ax
-    push    ax
-    call    mat_rot_zxy
-    add     sp, 8
-    push    si
-    lea     di, [bp+var_MmatFromAngleZ]
-    mov     si, ax
-    push    ss
-    pop     es
-    mov     cx, 9
-    repne movsw
-    pop     si
-    jmp     short loc_14F09
-    ; align 2
-    db 144*/
-loc_14F04:
-    //mov     [bp+var_EC], 0
-	var_EC = 0;
-loc_14F09:
+	if (pState_minusRotate_x_1 != 0 || pState_minusRotate_z_1 != 0) {
+		vec_1C6.x = 0;
+		vec_1C6.y = 0;
+		vec_1C6.z = 0x82;
+		mat_mul_vector(&vec_1C6, &mat_unk, &vec_FC);
+		arg_pState->car_pseudoGravity = -vec_FC.y;
+	} else {
+		arg_pState->car_pseudoGravity = 0;
+	}
+
+	if ((arg_pState->car_angle_z & 0x3FF) != 0) {
+		var_EC = 1;
+		var_MmatFromAngleZ = *mat_rot_zxy(0, 0, -arg_pState->car_angle_z, 0);
+	} else {
+		var_EC = 0;
+	}
+
 	vec_1C6.x = 0;
 	vec_1C6.y = 0x7530;
 	vec_1C6.z = 0;

@@ -226,6 +226,8 @@ dseg segment byte public 'STUNTSD' use16
     extrn steerWhlRespTable_10fps:byte
     extrn grassDecelDivTab:word
     extrn byte_3BE02:byte
+    extrn word_3BE04:word
+    extrn word_3BE0C:word
     extrn f36f40_whlData:word
     extrn word_3BE16:word
     extrn aSimd:byte
@@ -1011,7 +1013,7 @@ dseg segment byte public 'STUNTSD' use16
     extrn end_hiscore_random:word
     extrn word_40D44:word
     extrn mat_unk2:MATRIX
-    extrn unk_40D58:byte
+    extrn mat_planetmp:MATRIX
     extrn byte_40D6A:byte
     extrn word_40D6C:word
     extrn word_40D70:word

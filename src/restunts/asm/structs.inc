@@ -150,10 +150,7 @@ car_current_gear db ?
 car_sumSurfFrontWheels db ?
 car_sumSurfRearWheels db ?
 car_sumSurfAllWheels db ?
-car_surfaceWhl1 db ?
-car_surfaceWhl2 db ?
-car_surfaceWhl3 db ?
-car_surfaceWhl4 db ?
+car_surfaceWhl db 4 dup (?)
 car_engineLimiterTimer db ?
 car_slidingFlag db ?
 field_C8 db ?

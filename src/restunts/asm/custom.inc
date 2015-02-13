@@ -38,6 +38,7 @@ extrn vector_to_point:proc
 extrn multiply_and_scale:proc
 extrn plane_origin_op:proc
 extrn vec_normalInnerProduct:proc
+extrn plane_rotate_op:proc
 
 
 ; externs for implementations in heapsort.c

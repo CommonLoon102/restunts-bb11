@@ -72,4 +72,7 @@ short multiply_and_scale(short a1, short a2);
 void rect_union(struct RECTANGLE* r1, struct RECTANGLE* r2, struct RECTANGLE* outrc);
 int rect_intersect(struct RECTANGLE* r1, struct RECTANGLE* r2);
 
+void plane_rotate_op(void);
+int plane_origin_op(int index, int b, int c, int d);
+
 #endif

@@ -68,9 +68,7 @@ extern int dialog_fnt_colour;
 extern char transformedshape_counter;
 
 void build_track_object(struct VECTOR* a, struct VECTOR* b);
-int plane_origin_op(int planIndex, int b, int c, int d);
 void transformed_shape_add_for_sort(int a, int b);
-void plane_rotate_op(void);
 unsigned char subst_hillroad_track(unsigned char a, unsigned char b);
 int skybox_op(int a, struct RECTANGLE* rectptr, int c, struct MATRIX* matptr, int e, int f, int g);
 struct RECTANGLE* draw_ingame_text(void);
