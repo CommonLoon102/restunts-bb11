@@ -15,9 +15,9 @@ typedef int int32_t;
 
 static uint8_t NOP_opcode = 0x90;
 
-const std::string game_exe = "D:\\projects\\fun\\reversing\\re_stunts\\stunts_with_sound\\execombiner\\game_cracked.exe"; // result of execombiner + crack
-const std::string ad15_drv = "D:\\projects\\fun\\reversing\\re_stunts\\stunts_with_sound\\execombiner\\AD15.DRV"; // adlib/soundblaster driver
-const std::string exe_with_drv = "D:\\projects\\fun\\reversing\\re_stunts\\stunts_with_sound\\execombiner\\game_drv.exe"; // resulting file
+const std::string game_exe = "assets\\game_cracked.exe"; // result of execombiner + crack
+const std::string ad15_drv = "assets\\AD15.DRV"; // adlib/soundblaster driver
+const std::string exe_with_drv = "game_drv.exe"; // resulting file
 
 /*
 based on the unpacked (using clvns execombiner(w4kfus should also work)) stunts executable
