@@ -54,6 +54,12 @@ does not require Wine or DOSBox. Python 3.9 or newer is required for the
 `*-original` targets, which prepare assembler-compatible copies of the
 preserved original sources.
 
+Git is required for the ported game builds. The Options menu shows
+`Chocolate Stunts` and `Version <githash> (Mmm dd yyyy)`, using the first seven
+characters of the checkout's commit and the compilation date (for example,
+`Version d37a5c8 (Sep 18 2026)`). Incremental builds refresh both the commit
+and compilation date.
+
 ### On Windows
 
 1. Install the toolchain from PowerShell at the repository root (Windows 10/11
