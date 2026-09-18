@@ -73,7 +73,9 @@ footprint, preserving clear passages underneath and beside it. Surfaces at both
 ends of the movement are checked, including the surface a wheel just left when
 moving onto the ground or another segment. Car edges between the wheels are
 also checked against finite walls, catching impacts with the start of a ramp
-side wall that individual wheel paths can miss.
+side wall that individual wheel paths can miss. Slalom stones use their full
+finite bounds for these checks, including wheel movement that crosses an entire
+stone between frames. The car stops at the first contact.
 Renderer clipping retains its original arithmetic.
 
 The ported physics dump tool accepts the same switches after the replay name:

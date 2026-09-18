@@ -25,6 +25,9 @@ extern struct TRACK_WALL far *wallptr;
 void build_track_object(struct VECTOR *, struct VECTOR *);
 /* Segment queries preserve the currently selected collision state. */
 legacy_s16 track_wall_intersects_segment(struct VECTOR *first, struct VECTOR *second);
+/* Contact fractions use Q14; a segment already inside returns zero. */
+legacy_s16 track_solid_obstacle_contact(struct VECTOR *first, struct VECTOR *second,
+										legacy_s16 *fraction);
 legacy_s16 track_surface_contains_point(struct VECTOR *point);
 
 typedef legacy_s16 (*TRACK_SURFACE_SWEEP_TEST)(struct VECTOR *previous, struct VECTOR *current,

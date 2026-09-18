@@ -30,6 +30,9 @@ extern struct VECTOR slalom_collision_points[];
 legacy_s16 sweep_track_underside(struct VECTOR *previous, struct VECTOR *current,
 								 legacy_s16 *fraction);
 
+legacy_s16 sweep_track_solid_obstacle(struct VECTORLONG *previous, struct VECTORLONG *current,
+									  legacy_s16 *fraction);
+
 legacy_s16 sweep_track_wall_span(struct VECTORLONG *previous_first,
 								 struct VECTORLONG *previous_second,
 								 struct VECTORLONG *current_first,
