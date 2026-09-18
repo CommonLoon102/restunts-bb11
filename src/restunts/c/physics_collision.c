@@ -126,6 +126,61 @@ legacy_s16 sweep_track_underside(struct VECTOR *previous, struct VECTOR *current
 										  fraction);
 }
 
+static legacy_s16 sweep_fixed_coordinate(legacy_s32 previous, legacy_s32 current,
+										 legacy_s16 fraction)
+{
+	/* Match the fixed-position clipping applied to all wheels on impact. */
+	legacy_s16 offset = scale_position_delta(current, previous, fraction, TRIG_FIXED_ONE);
+	return position_to_word(LEGACY_S32_WRAP_ADD_S16(previous, offset));
+}
+
+static void sweep_position(struct VECTOR *result, struct VECTORLONG *previous,
+						   struct VECTORLONG *current, legacy_s16 fraction)
+{
+	result->x = sweep_fixed_coordinate(previous->lx, current->lx, fraction);
+	result->y = sweep_fixed_coordinate(previous->ly, current->ly, fraction);
+	result->z = sweep_fixed_coordinate(previous->lz, current->lz, fraction);
+}
+
+legacy_s16 sweep_track_wall_span(struct VECTORLONG *previous_first,
+								 struct VECTORLONG *previous_second,
+								 struct VECTORLONG *current_first,
+								 struct VECTORLONG *current_second, legacy_s16 *fraction)
+{
+	if (legacy_collision_enabled != 0) {
+		return 0;
+	}
+	struct VECTOR first;
+	struct VECTOR second;
+	sweep_position(&first, previous_first, current_first, TRIG_FIXED_ONE);
+	sweep_position(&second, previous_second, current_second, TRIG_FIXED_ONE);
+	if (!track_wall_intersects_segment(&first, &second)) {
+		return 0;
+	}
+	sweep_position(&first, previous_first, current_first, 0);
+	sweep_position(&second, previous_second, current_second, 0);
+	if (track_wall_intersects_segment(&first, &second)) {
+		return 0;
+	}
+
+	/* A finite wall can enter between two wheel paths at its leading edge.
+	 * Find the last clear car span, so stopping cannot finish beyond that edge. */
+	legacy_s16 clear_fraction = 0;
+	legacy_s16 contact_fraction = TRIG_FIXED_ONE;
+	while (contact_fraction - clear_fraction > 1) {
+		legacy_s16 midpoint = clear_fraction + (contact_fraction - clear_fraction) / 2;
+		sweep_position(&first, previous_first, current_first, midpoint);
+		sweep_position(&second, previous_second, current_second, midpoint);
+		if (track_wall_intersects_segment(&first, &second)) {
+			contact_fraction = midpoint;
+		} else {
+			clear_fraction = midpoint;
+		}
+	}
+	*fraction = clear_fraction;
+	return 1;
+}
+
 #define SPEED_TO_TRAVEL_NUMERATOR 1408UL
 #define COLLISION_MODEL_COUNT 5U
 #define PHYSICAL_MODEL_SCENERY_FIRST 71

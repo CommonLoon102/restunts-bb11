@@ -712,6 +712,21 @@ static void apply_wheel_landing(struct CARSTATE *carstate, legacy_s16 wheel_inde
 	carstate->car_wheel_vertical_speed[wheel_index] = 0;
 }
 
+static void stop_wheels_at_contact(struct PLAYER_WHEEL_MOTION *motion, legacy_s16 fraction,
+								   legacy_s16 car_index)
+{
+	/* Stop all four wheels at the first body contact, before resolving their
+	 * remaining ground contacts. Do not finish the tick beyond the obstacle. */
+	for (legacy_s16 i = 0; i < PLAYER_PHYSICS_WHEEL_COUNT; i++) {
+		struct VECTOR offset;
+		scale_wheel_displacement(&offset, &motion->current[i], &motion->previous[i], fraction,
+								 TRIG_FIXED_ONE);
+		physics_position_offset(&motion->current[i], &motion->previous[i], &offset);
+	}
+	motion->travel = (legacy_s16)((legacy_s32)motion->travel * fraction / TRIG_FIXED_ONE);
+	update_crash_state(CRASH_EVENT_IMMEDIATE_STOP, car_index);
+}
+
 static int stop_at_track_underside(struct CARSTATE *carstate, struct PLAYER_WHEEL_MOTION *motion,
 								   legacy_s16 wheel_index, legacy_s16 car_index)
 {
@@ -728,17 +743,34 @@ static int stop_at_track_underside(struct CARSTATE *carstate, struct PLAYER_WHEE
 		return 0;
 	}
 
-	/* Stop all four wheels at the first body contact, before resolving their
-	 * remaining ground contacts. Do not finish the tick beyond the obstacle. */
-	for (legacy_s16 i = 0; i < PLAYER_PHYSICS_WHEEL_COUNT; i++) {
-		struct VECTOR offset;
-		scale_wheel_displacement(&offset, &motion->current[i], &motion->previous[i], fraction,
-								 TRIG_FIXED_ONE);
-		physics_position_offset(&motion->current[i], &motion->previous[i], &offset);
-	}
-	motion->travel = (legacy_s16)((legacy_s32)motion->travel * fraction / TRIG_FIXED_ONE);
-	update_crash_state(CRASH_EVENT_IMMEDIATE_STOP, car_index);
+	stop_wheels_at_contact(motion, fraction, car_index);
 	return 1;
+}
+
+static int stop_at_track_wall_span(struct CARSTATE *carstate, struct PLAYER_WHEEL_MOTION *motion,
+								   legacy_s16 car_index)
+{
+	if (state.game_inputmode == GAME_INPUT_MODE_INTRO ||
+		carstate->car_crashBmpFlag != CRASH_EVENT_NONE) {
+		return 0;
+	}
+	legacy_s16 first_contact = TRIG_FIXED_ONE;
+	int hit = 0;
+	for (legacy_s16 i = 0; i < PLAYER_PHYSICS_WHEEL_COUNT; i++) {
+		legacy_s16 next = (i + 1) % PLAYER_PHYSICS_WHEEL_COUNT;
+		legacy_s16 fraction;
+		if (sweep_track_wall_span(&motion->previous[i], &motion->previous[next],
+								  &motion->current[i], &motion->current[next], &fraction)) {
+			if (fraction < first_contact) {
+				first_contact = fraction;
+			}
+			hit = 1;
+		}
+	}
+	if (hit) {
+		stop_wheels_at_contact(motion, first_contact, car_index);
+	}
+	return hit;
 }
 
 static int resolve_wheel_plane_contact(struct CARSTATE *carstate,
@@ -795,7 +827,9 @@ static int resolve_wheel_contact_pass(struct CARSTATE *carstate, struct PLAYER_W
 			return 0;
 		}
 	}
-	return 1;
+	/* Preserve ordinary wall sliding first; then catch a wall entering the car
+	 * between wheel paths, where no individual wheel crossed its plane. */
+	return !stop_at_track_wall_span(carstate, motion, car_index);
 }
 
 static void resolve_wheel_contacts(struct CARSTATE *carstate, struct PLAYER_WHEEL_MOTION *motion,

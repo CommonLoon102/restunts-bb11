@@ -71,7 +71,9 @@ clearance of elevated track surfaces, preventing fast cars from skipping the
 collision zone behind a loop. The impact is checked against the actual surface
 footprint, preserving clear passages underneath and beside it. Surfaces at both
 ends of the movement are checked, including the surface a wheel just left when
-moving onto the ground or another segment.
+moving onto the ground or another segment. Car edges between the wheels are
+also checked against finite walls, catching impacts with the start of a ramp
+side wall that individual wheel paths can miss.
 Renderer clipping retains its original arithmetic.
 
 The ported physics dump tool accepts the same switches after the replay name:

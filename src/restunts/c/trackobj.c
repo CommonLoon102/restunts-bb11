@@ -1542,6 +1542,108 @@ static void restore_track_collision(const struct TRACK_COLLISION_SNAPSHOT *saved
 	wallOrientation = saved->wall_orientation;
 }
 
+static legacy_s16 wall_intersection_coordinate(legacy_s16 first, legacy_s16 second,
+											   legacy_s16 first_depth, legacy_s16 second_depth)
+{
+	legacy_s32 difference = (legacy_s32)second - first;
+	legacy_s32 numerator = difference * -(legacy_s32)first_depth;
+	legacy_s32 denominator = (legacy_s32)second_depth - first_depth;
+	return LEGACY_S16_FROM_BITS((legacy_u16)((legacy_s32)first + numerator / denominator));
+}
+
+static legacy_s16 selected_wall_matches(const struct TRACK_COLLISION_SNAPSHOT *candidate)
+{
+	return wallindex == candidate->wall_index && wallStartX == candidate->wall_x &&
+		   wallStartZ == candidate->wall_z && wallOrientation == candidate->wall_orientation &&
+		   planindex == candidate->plane_index && terrainHeight == candidate->terrain_height &&
+		   elem_xCenter == candidate->element_x && elem_zCenter == candidate->element_z &&
+		   wallHeight == candidate->wall_height && elRdWallRelated == candidate->wall_lower_bound;
+}
+
+static legacy_s16 selected_wall_contains_point(struct VECTOR *point, struct MATRIX *rotation)
+{
+	struct TRACK_COLLISION_SNAPSHOT candidate;
+	capture_track_collision(&candidate);
+
+	/* Requery across the wall at the intersection, not at a segment endpoint.
+	 * This retains the finite extent and distinguishes a rail from the solid
+	 * side below it. Two world units keep the probes on opposite grid sides. */
+	legacy_s16 offset_x = (legacy_s16)((legacy_s32)rotation->m._31 * 2 / TRIG_FIXED_ONE);
+	legacy_s16 offset_z = (legacy_s16)((legacy_s32)rotation->m._33 * 2 / TRIG_FIXED_ONE);
+	struct VECTOR first = *point;
+	struct VECTOR second = *point;
+	first.x = LEGACY_S16_WRAP_ADD(first.x, offset_x);
+	first.z = LEGACY_S16_WRAP_ADD(first.z, offset_z);
+	second.x = LEGACY_S16_WRAP_SUB(second.x, offset_x);
+	second.z = LEGACY_S16_WRAP_SUB(second.z, offset_z);
+	build_track_object(&first, &second);
+	legacy_s16 contains = selected_wall_matches(&candidate);
+	if (!contains) {
+		build_track_object(&second, &first);
+		contains = selected_wall_matches(&candidate);
+	}
+	restore_track_collision(&candidate);
+	return contains;
+}
+
+static legacy_s16 selected_wall_intersects_segment(struct VECTOR *first, struct VECTOR *second)
+{
+	if (wallindex == TRACK_WALL_NONE) {
+		return 0;
+	}
+	struct MATRIX rotation;
+	mat_rot_y(&rotation,
+			  LEGACY_S16_WRAP_SUB(LEGACY_S16_WRAP_NEGATE(wallOrientation), ANGLE_QUARTER_TURN));
+	struct VECTOR relative;
+	relative.x = LEGACY_S16_WRAP_SUB(first->x, wallStartX);
+	relative.y = 0;
+	relative.z = LEGACY_S16_WRAP_SUB(first->z, wallStartZ);
+	struct VECTOR start;
+	mat_mul_vector(&relative, &rotation, &start);
+	relative.x = LEGACY_S16_WRAP_SUB(second->x, wallStartX);
+	relative.z = LEGACY_S16_WRAP_SUB(second->z, wallStartZ);
+	struct VECTOR end;
+	mat_mul_vector(&relative, &rotation, &end);
+	/* Endpoint touches belong to the existing wheel collision response. This
+	 * test only adds walls that pierce the car between two wheel paths. */
+	if ((start.z >= 0 && end.z >= 0) || (start.z <= 0 && end.z <= 0)) {
+		return 0;
+	}
+
+	struct VECTOR intersection;
+	intersection.x = wall_intersection_coordinate(first->x, second->x, start.z, end.z);
+	intersection.y = wall_intersection_coordinate(first->y, second->y, start.z, end.z);
+	intersection.z = wall_intersection_coordinate(first->z, second->z, start.z, end.z);
+	/* Interpolate signed distances before rounding the world intersection. On
+	 * an inclined plane, rounding its coordinates can hide a shallow impact.
+	 * Compare the ratio directly to retain the strict wall height limits. */
+	legacy_s16 first_height = plane_signed_distance(planindex, first->x, first->y, first->z);
+	legacy_s16 second_height = plane_signed_distance(planindex, second->x, second->y, second->z);
+	legacy_s32 numerator = (legacy_s32)first_height * end.z - (legacy_s32)second_height * start.z;
+	legacy_s32 denominator = (legacy_s32)end.z - start.z;
+	if (denominator < 0) {
+		numerator = -numerator;
+		denominator = -denominator;
+	}
+	return numerator > (legacy_s32)elRdWallRelated * denominator &&
+		   numerator < (legacy_s32)wallHeight * denominator &&
+		   selected_wall_contains_point(&intersection, &rotation);
+}
+
+legacy_s16 track_wall_intersects_segment(struct VECTOR *first, struct VECTOR *second)
+{
+	struct TRACK_COLLISION_SNAPSHOT saved;
+	capture_track_collision(&saved);
+	build_track_object(first, second);
+	legacy_s16 hit = selected_wall_intersects_segment(first, second);
+	if (!hit) {
+		build_track_object(second, first);
+		hit = selected_wall_intersects_segment(first, second);
+	}
+	restore_track_collision(&saved);
+	return hit;
+}
+
 legacy_s16 track_surface_contains_point(struct VECTOR *point)
 {
 	/* A footprint query must not replace the wheel's selected collision state. */
