@@ -70,6 +70,8 @@
 #define SIMD_KNOB_POINT_COUNT 7U
 #define SIMD_TORQUE_CURVE_SIZE 104U
 #define SIMD_RESERVED_HANDLING_COUNT 7U
+/* Red #5, at SIMD resource offset 0xAE: speed colour low, optional RPM colour high. */
+#define SIMD_NEEDLE_COLORS_INDEX 4U
 #define SIMD_SURFACE_GRIP_COUNT 4U
 #define SIMD_RESERVED_GRIP_SIZE 10U
 #define SIMD_COLLISION_POINT_COUNT 2U

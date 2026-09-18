@@ -376,6 +376,14 @@ static void dashboard_update_instruments(struct DASHBOARD_UPDATE *update)
 		dashboard_speed_index_cache[update->buffer_index] = (legacy_s16)update->speed_index;
 		dashboard_rpm_index_cache[update->buffer_index] = (legacy_s16)update->rpm_index;
 
+		legacy_u16 needle_colors =
+			(legacy_u16)simd_player.reserved_handling_words[SIMD_NEEDLE_COLORS_INDEX];
+		legacy_u8 speed_color = (legacy_u8)needle_colors;
+		legacy_u8 rpm_color = (legacy_u8)(needle_colors >> LEGACY_BYTE_BITS);
+		if (rpm_color == 0) {
+			rpm_color = speed_color;
+		}
+
 		if (update->gauge_mode == DASHBOARD_GAUGE_DIGITAL) {
 			dashboard_draw_digital_speed(update->speed_index);
 		} else if (update->gauge_mode == DASHBOARD_GAUGE_ANALOG) {
@@ -383,14 +391,14 @@ static void dashboard_update_instruments(struct DASHBOARD_UPDATE *update)
 			preRender_line(simd_player.spdcenter.px, simd_player.spdcenter.py,
 						   (legacy_u8)simd_player.spdpoints[dot_index],
 						   (legacy_u8)simd_player.spdpoints[dot_index + DASHBOARD_POINT_Y_OFFSET],
-						   meter_needle_color);
+						   speed_color);
 		}
 
 		dot_index = update->rpm_index * DASHBOARD_POINT_COORDINATE_STRIDE;
 		preRender_line(simd_player.revcenter.px, simd_player.revcenter.py,
 					   (legacy_u8)simd_player.revpoints[dot_index],
 					   (legacy_u8)simd_player.revpoints[dot_index + DASHBOARD_POINT_Y_OFFSET],
-					   meter_needle_color);
+					   rpm_color);
 		dashboard_draw_wheel_mask(update->wheel_state);
 		if (video_uses_page_flipping != 0) {
 			sprite_select_mcga_backbuffer();
