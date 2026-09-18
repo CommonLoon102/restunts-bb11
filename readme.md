@@ -54,6 +54,18 @@ Run `restunts.exe /nointro` to skip the startup intro and open the main menu
 immediately after initialization. The intro remains available when leaving the
 main menu. This switch can be combined with the existing startup options.
 
+Run `restunts.exe /pg:off` to correct the original power gear bug, including
+anti-power gear and the loss of aerodynamic deceleration while accelerating.
+Original physics remain the default for replay compatibility. `/pg:on` explicitly
+selects the original behavior. These switches are case-insensitive; if both are
+supplied, the last one wins. They can be combined with `/nointro` and other
+startup options.
+
+The ported physics dump tool accepts the same switch after the replay name:
+`repldump.exe 0681 /pg:off`. Replays do not store this option, so use the same
+physics setting for recording and playback. Original assembly executables and
+the renderer dump tools retain their existing interfaces.
+
 ### Needle colours
 
 The ported game includes the [needle colour mod](https://wiki.stunts.hu/wiki/Needle_colour_mod).
