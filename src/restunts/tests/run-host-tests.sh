@@ -62,7 +62,7 @@ run_host_test test-credits legacy.c \
     "$test_source_dir/full_data.c" "$test_source_dir/full_strings.c" \
     "$test_source_dir/headless_data.c" -Wno-pointer-sign -Wno-missing-field-initializers
 run_host_test test-dashboard dashboard.c \
-    "$test_source_dir/legacy.c" "$test_source_dir/full_data.c" \
+    "$test_source_dir/simd.c" "$test_source_dir/legacy.c" "$test_source_dir/full_data.c" \
     "$test_source_dir/full_strings.c" "$test_source_dir/headless_data.c" \
     -Wno-pointer-sign -Wno-missing-field-initializers
 run_host_test test-frame-render math.c \

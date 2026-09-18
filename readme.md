@@ -54,6 +54,17 @@ Run `restunts.exe /nointro` to skip the startup intro and open the main menu
 immediately after initialization. The intro remains available when leaving the
 main menu. This switch can be combined with the existing startup options.
 
+### Needle colours
+
+The ported game includes the [needle colour mod](https://wiki.stunts.hu/wiki/Needle_colour_mod).
+Each car selects its dashboard needle colours through the Red #5 word
+(labelled "needle colour" in CarWorks), at offset `0xAE` within its `simd`
+resource. The low byte sets the speedometer colour. The high byte sets the
+tachometer colour; when it is zero, the tachometer uses the low byte too.
+For example, `0x040F` selects palette index 15 for the speedometer and 4 for
+the tachometer. The stock value `0x0010` keeps both needles white, and
+`0x0000` makes both black. Digital speedometer digits are unaffected.
+
 
 ## How to build
 
