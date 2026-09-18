@@ -142,6 +142,8 @@ legacy_s8 *locate_shape_alt(legacy_s8 *data, const legacy_s8 *name)
 struct RECTANGLE *intro_draw_text(legacy_s8 *text, legacy_s16 x, legacy_s16 y, legacy_s16 color,
 								  legacy_s16 mode)
 {
+	assert(y == 6 || y == 16);
+	assert(_strcmp(text, y == 6 ? "Chocolate Stunts" : "Version 0123456 (Feb 12 1991)") == 0);
 	trace_word(2020);
 	trace_text(text);
 	trace_word(x);
@@ -262,7 +264,7 @@ int main(void)
 	test_calibration();
 	test_graphics();
 	test_options();
-	assert(trace_hash == UINT64_C(0x52549b0fa5c3a024));
+	assert(trace_hash == UINT64_C(0xb46dda37cecf437f));
 	printf("test-menu-options: passed\n");
 	return 0;
 }
