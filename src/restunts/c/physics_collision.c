@@ -142,6 +142,40 @@ static void sweep_position(struct VECTOR *result, struct VECTORLONG *previous,
 	result->z = sweep_fixed_coordinate(previous->lz, current->lz, fraction);
 }
 
+legacy_s16 sweep_track_solid_obstacle(struct VECTORLONG *previous, struct VECTORLONG *current,
+									  legacy_s16 *fraction)
+{
+	if (legacy_collision_enabled != 0) {
+		return 0;
+	}
+	struct VECTOR start;
+	struct VECTOR end;
+	sweep_position(&start, previous, current, 0);
+	sweep_position(&end, previous, current, TRIG_FIXED_ONE);
+	legacy_s16 contact;
+	if (!track_solid_obstacle_contact(&start, &end, &contact) ||
+		track_solid_obstacle_contact(&start, &start, &contact)) {
+		return 0;
+	}
+
+	/* Test the whole traveled prefix, not only its endpoint: a wheel can enter
+	 * and leave a thin obstacle in one tick. Use the same fixed-position
+	 * arithmetic as the eventual stop to retain the last clear position. */
+	legacy_s16 clear_fraction = 0;
+	legacy_s16 contact_fraction = TRIG_FIXED_ONE;
+	while (contact_fraction - clear_fraction > 1) {
+		legacy_s16 midpoint = clear_fraction + (contact_fraction - clear_fraction) / 2;
+		sweep_position(&end, previous, current, midpoint);
+		if (track_solid_obstacle_contact(&start, &end, &contact)) {
+			contact_fraction = midpoint;
+		} else {
+			clear_fraction = midpoint;
+		}
+	}
+	*fraction = clear_fraction;
+	return 1;
+}
+
 legacy_s16 sweep_track_wall_span(struct VECTORLONG *previous_first,
 								 struct VECTORLONG *previous_second,
 								 struct VECTORLONG *current_first,

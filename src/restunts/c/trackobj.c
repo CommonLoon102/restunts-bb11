@@ -1630,6 +1630,173 @@ static legacy_s16 selected_wall_intersects_segment(struct VECTOR *first, struct 
 		   selected_wall_contains_point(&intersection, &rotation);
 }
 
+struct TRACK_SOLID_BOX {
+	struct VECTOR minimum;
+	struct VECTOR maximum;
+};
+
+struct TRACK_CONTACT_RATIO {
+	legacy_u32 numerator;
+	legacy_u32 denominator;
+};
+
+struct TRACK_SOLID_INTERVAL {
+	struct TRACK_CONTACT_RATIO entry;
+	struct TRACK_CONTACT_RATIO exit;
+};
+
+static legacy_s16 solid_ratio_less(const struct TRACK_CONTACT_RATIO *first,
+								   const struct TRACK_CONTACT_RATIO *second)
+{
+	/* Word-coordinate differences are at most 65535. Unsigned products retain
+	 * the full comparison without overflow or premature fraction rounding. */
+	return first->numerator * second->denominator < second->numerator * first->denominator;
+}
+
+static legacy_s16 clip_solid_axis(legacy_s16 first, legacy_s16 second, legacy_s16 minimum,
+								  legacy_s16 maximum, struct TRACK_SOLID_INTERVAL *interval)
+{
+	legacy_s32 denominator = (legacy_s32)second - first;
+	if (denominator == 0) {
+		return first > minimum && first < maximum;
+	}
+	legacy_s32 entry = (legacy_s32)minimum - first;
+	legacy_s32 exit = (legacy_s32)maximum - first;
+	if (denominator < 0) {
+		legacy_s32 temporary = entry;
+		entry = -exit;
+		exit = -temporary;
+		denominator = -denominator;
+	}
+	if (entry >= denominator || exit <= 0) {
+		return 0;
+	}
+	struct TRACK_CONTACT_RATIO ratio;
+	ratio.denominator = (legacy_u32)denominator;
+	if (entry > 0) {
+		ratio.numerator = (legacy_u32)entry;
+		if (solid_ratio_less(&interval->entry, &ratio)) {
+			interval->entry = ratio;
+		}
+	}
+	if (exit < denominator) {
+		ratio.numerator = (legacy_u32)exit;
+		if (solid_ratio_less(&ratio, &interval->exit)) {
+			interval->exit = ratio;
+		}
+	}
+	return solid_ratio_less(&interval->entry, &interval->exit);
+}
+
+static legacy_s16 solid_box_contact(const struct VECTOR *first, const struct VECTOR *second,
+									const struct TRACK_SOLID_BOX *box, legacy_s16 *fraction)
+{
+	struct TRACK_SOLID_INTERVAL interval = {{0, 1}, {1, 1}};
+	if (!clip_solid_axis(first->x, second->x, box->minimum.x, box->maximum.x, &interval) ||
+		!clip_solid_axis(first->y, second->y, box->minimum.y, box->maximum.y, &interval) ||
+		!clip_solid_axis(first->z, second->z, box->minimum.z, box->maximum.z, &interval)) {
+		return 0;
+	}
+	*fraction =
+		(legacy_s16)(interval.entry.numerator * TRIG_FIXED_ONE / interval.entry.denominator);
+	return 1;
+}
+
+static void solid_world_bounds(struct TRACK_SOLID_BOX *world, const struct TRACK_SOLID_BOX *local,
+							   legacy_s16 orientation, legacy_s16 column, legacy_s16 row,
+							   legacy_s16 elevation)
+{
+	*world = *local;
+	legacy_s16 inverse_orientation =
+		LEGACY_S16_FROM_BITS((legacy_u16)LEGACY_S16_WRAP_NEGATE(orientation) & ANGLE_MASK);
+	track_rotate_local(&world->minimum, inverse_orientation);
+	track_rotate_local(&world->maximum, inverse_orientation);
+	if (world->minimum.x > world->maximum.x) {
+		legacy_s16 temporary = world->minimum.x;
+		world->minimum.x = world->maximum.x;
+		world->maximum.x = temporary;
+	}
+	if (world->minimum.z > world->maximum.z) {
+		legacy_s16 temporary = world->minimum.z;
+		world->minimum.z = world->maximum.z;
+		world->maximum.z = temporary;
+	}
+	world->minimum.x = LEGACY_S16_WRAP_ADD(world->minimum.x, track_column_centers[column]);
+	world->maximum.x = LEGACY_S16_WRAP_ADD(world->maximum.x, track_column_centers[column]);
+	world->minimum.y = LEGACY_S16_WRAP_ADD(world->minimum.y, elevation);
+	world->maximum.y = LEGACY_S16_WRAP_ADD(world->maximum.y, elevation);
+	world->minimum.z = LEGACY_S16_WRAP_ADD(world->minimum.z, terraincenterpos[row]);
+	world->maximum.z = LEGACY_S16_WRAP_ADD(world->maximum.z, terraincenterpos[row]);
+}
+
+legacy_s16 track_solid_obstacle_contact(struct VECTOR *first, struct VECTOR *second,
+										legacy_s16 *fraction)
+{
+	/* These finite solids use the existing wall clearance above the road, but
+	 * stop at their physical base rather than extending below a raised tile. */
+	static const struct TRACK_SOLID_BOX slalom_boxes[] = {
+		{{SLALOM_POLE_INNER_X, 0, -SLALOM_POLE_FAR_Z},
+		 {SLALOM_POLE_OUTER_X, NON_GRASS_HEIGHT_OFFSET + SLALOM_POLE_WALL_HEIGHT,
+		  -SLALOM_POLE_NEAR_Z}},
+		{{-SLALOM_POLE_OUTER_X, 0, SLALOM_POLE_NEAR_Z},
+		 {-SLALOM_POLE_INNER_X, NON_GRASS_HEIGHT_OFFSET + SLALOM_POLE_WALL_HEIGHT,
+		  SLALOM_POLE_FAR_Z}}};
+	legacy_s16 minimum_x = first->x < second->x ? first->x : second->x;
+	legacy_s16 maximum_x = first->x > second->x ? first->x : second->x;
+	legacy_s16 minimum_z = first->z < second->z ? first->z : second->z;
+	legacy_s16 maximum_z = first->z > second->z ? first->z : second->z;
+	legacy_s16 first_column = LEGACY_S16_SAR(minimum_x, TRACK_TILE_POSITION_SHIFT);
+	legacy_s16 last_column = LEGACY_S16_SAR(maximum_x, TRACK_TILE_POSITION_SHIFT);
+	legacy_s16 first_row = LEGACY_S16_SAR(minimum_z, TRACK_TILE_POSITION_SHIFT);
+	legacy_s16 last_row = LEGACY_S16_SAR(maximum_z, TRACK_TILE_POSITION_SHIFT);
+	if (first_column < 0) {
+		first_column = 0;
+	}
+	if (last_column > TRACK_GRID_LAST_INDEX) {
+		last_column = TRACK_GRID_LAST_INDEX;
+	}
+	if (first_row < 0) {
+		first_row = 0;
+	}
+	if (last_row > TRACK_GRID_LAST_INDEX) {
+		last_row = TRACK_GRID_LAST_INDEX;
+	}
+
+	/* Inspect every candidate tile, including solids between two outside
+	 * endpoints. This lookup does not alter the selected collision globals. */
+	legacy_s16 first_contact = TRIG_FIXED_ONE;
+	legacy_s16 hit = 0;
+	for (legacy_s16 row = first_row; row <= last_row; row++) {
+		for (legacy_s16 column = first_column; column <= last_column; column++) {
+			legacy_u8 tile = track_element_map[terrainrows[row] + column];
+			if (tile >= sizeof(trkObjectList) / sizeof(trkObjectList[0]) ||
+				trkObjectList[tile].ss_physicalModel != PHYSICAL_MODEL_SLALOM) {
+				continue;
+			}
+			legacy_s16 elevation = track_terrain_map[trackrows[row] + column] == TERRAIN_RAISED_TILE
+									   ? hillHeightConsts[TERRAIN_RAISED_HEIGHT_INDEX]
+									   : 0;
+			for (legacy_u16 index = 0; index < sizeof(slalom_boxes) / sizeof(slalom_boxes[0]);
+				 index++) {
+				struct TRACK_SOLID_BOX box;
+				solid_world_bounds(&box, &slalom_boxes[index], trkObjectList[tile].ss_rotY, column,
+								   row, elevation);
+				legacy_s16 contact;
+				if (solid_box_contact(first, second, &box, &contact)) {
+					if (!hit || contact < first_contact) {
+						first_contact = contact;
+					}
+					hit = 1;
+				}
+			}
+		}
+	}
+	if (hit) {
+		*fraction = first_contact;
+	}
+	return hit;
+}
+
 legacy_s16 track_wall_intersects_segment(struct VECTOR *first, struct VECTOR *second)
 {
 	struct TRACK_COLLISION_SNAPSHOT saved;
@@ -1641,6 +1808,10 @@ legacy_s16 track_wall_intersects_segment(struct VECTOR *first, struct VECTOR *se
 		hit = selected_wall_intersects_segment(first, second);
 	}
 	restore_track_collision(&saved);
+	if (!hit) {
+		legacy_s16 fraction;
+		hit = track_solid_obstacle_contact(first, second, &fraction);
+	}
 	return hit;
 }
 

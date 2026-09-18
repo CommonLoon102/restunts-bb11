@@ -747,8 +747,8 @@ static int stop_at_track_underside(struct CARSTATE *carstate, struct PLAYER_WHEE
 	return 1;
 }
 
-static int stop_at_track_wall_span(struct CARSTATE *carstate, struct PLAYER_WHEEL_MOTION *motion,
-								   legacy_s16 car_index)
+static int stop_at_track_wall_contact(struct CARSTATE *carstate, struct PLAYER_WHEEL_MOTION *motion,
+									  legacy_s16 car_index)
 {
 	if (state.game_inputmode == GAME_INPUT_MODE_INTRO ||
 		carstate->car_crashBmpFlag != CRASH_EVENT_NONE) {
@@ -759,6 +759,12 @@ static int stop_at_track_wall_span(struct CARSTATE *carstate, struct PLAYER_WHEE
 	for (legacy_s16 i = 0; i < PLAYER_PHYSICS_WHEEL_COUNT; i++) {
 		legacy_s16 next = (i + 1) % PLAYER_PHYSICS_WHEEL_COUNT;
 		legacy_s16 fraction;
+		if (sweep_track_solid_obstacle(&motion->previous[i], &motion->current[i], &fraction)) {
+			if (fraction < first_contact) {
+				first_contact = fraction;
+			}
+			hit = 1;
+		}
 		if (sweep_track_wall_span(&motion->previous[i], &motion->previous[next],
 								  &motion->current[i], &motion->current[next], &fraction)) {
 			if (fraction < first_contact) {
@@ -827,9 +833,9 @@ static int resolve_wheel_contact_pass(struct CARSTATE *carstate, struct PLAYER_W
 			return 0;
 		}
 	}
-	/* Preserve ordinary wall sliding first; then catch a wall entering the car
-	 * between wheel paths, where no individual wheel crossed its plane. */
-	return !stop_at_track_wall_span(carstate, motion, car_index);
+	/* Preserve ordinary wall sliding first; then catch walls between wheel
+	 * paths and thin solids crossed entirely within this tick. */
+	return !stop_at_track_wall_contact(carstate, motion, car_index);
 }
 
 static void resolve_wheel_contacts(struct CARSTATE *carstate, struct PLAYER_WHEEL_MOTION *motion,
