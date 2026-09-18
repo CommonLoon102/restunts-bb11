@@ -4,6 +4,7 @@
 #include "residue.h"
 #include "trackdata_layout.h"
 #include "track_objects.h"
+#include "track_collision.h"
 #include "externs.h"
 
 static legacy_s16 legacy_collision_enabled = 1;
@@ -52,6 +53,77 @@ void interpolate_collision_at_z(struct VECTOR *first, struct VECTOR *second, str
 	result->x = interpolate_collision_axis(first->x, second->x, depth_offset, depth_span);
 	result->y = interpolate_collision_axis(first->y, second->y, depth_offset, depth_span);
 	result->z = depth;
+}
+
+/* Plane normals use half the rotation matrix's fixed-point scale. */
+#define COLLISION_NORMAL_SCALE 8192L
+
+static legacy_s16 sweep_coordinate(legacy_s16 previous, legacy_s16 current, legacy_s16 fraction)
+{
+	legacy_s32 delta = (legacy_s32)current - (legacy_s32)previous;
+	legacy_s32 displacement = delta * fraction / TRIG_FIXED_ONE;
+	return LEGACY_S16_WRAP_ADD(previous, LEGACY_S16_FROM_BITS((legacy_u16)displacement));
+}
+
+static legacy_s16 project_contact_coordinate(legacy_s16 position, legacy_s16 distance,
+											 legacy_s16 normal)
+{
+	legacy_s32 offset = (legacy_s32)distance * normal / COLLISION_NORMAL_SCALE;
+	return LEGACY_S16_WRAP_SUB(position, LEGACY_S16_FROM_BITS((legacy_u16)offset));
+}
+
+static legacy_s16 sweep_selected_track_underside(struct VECTOR *previous, struct VECTOR *current,
+												 legacy_s16 *fraction)
+{
+	if (track_wall_collision_enabled != 0 || planindex < 4) {
+		return 0;
+	}
+
+	legacy_s16 start = plane_signed_distance(planindex, previous->x, previous->y, previous->z);
+	legacy_s16 end = plane_signed_distance(planindex, current->x, current->y, current->z);
+	if (start >= -PHYSICS_PLANE_CONTACT_TOLERANCE || end <= -PHYSICS_UNDERSIDE_CLEARANCE ||
+		end <= start) {
+		return 0;
+	}
+
+	/* Sweep the existing body clearance: a fast wheel can jump across the whole
+	 * underside contact band in one tick, including onto the front of a plane. */
+	legacy_s16 contact_fraction = 0;
+	if (start < -PHYSICS_UNDERSIDE_CLEARANCE) {
+		legacy_s32 distance = -(legacy_s32)PHYSICS_UNDERSIDE_CLEARANCE - start;
+		legacy_s32 travel = (legacy_s32)end - start;
+		contact_fraction = (legacy_s16)(distance * TRIG_FIXED_ONE / travel);
+	}
+	struct VECTOR contact;
+	contact.x = sweep_coordinate(previous->x, current->x, contact_fraction);
+	contact.y = sweep_coordinate(previous->y, current->y, contact_fraction);
+	contact.z = sweep_coordinate(previous->z, current->z, contact_fraction);
+
+	/* A selected plane extends beyond its actual track surface. Validate the
+	 * projected impact point so passing beside or beneath that surface is safe. */
+	legacy_s16 distance = plane_signed_distance(planindex, contact.x, contact.y, contact.z);
+	struct VECTOR normal = current_planptr->plane_normal;
+	contact.x = project_contact_coordinate(contact.x, distance, normal.x);
+	contact.y = project_contact_coordinate(contact.y, distance, normal.y);
+	contact.z = project_contact_coordinate(contact.z, distance, normal.z);
+	if (!track_surface_contains_point(&contact)) {
+		return 0;
+	}
+
+	*fraction = contact_fraction;
+	return 1;
+}
+
+legacy_s16 sweep_track_underside(struct VECTOR *previous, struct VECTOR *current,
+								 legacy_s16 *fraction)
+{
+	if (legacy_collision_enabled != 0) {
+		return 0;
+	}
+	/* The wheel can leave a surface's footprint before this tick's lookup.
+	 * Check both selected surfaces before accepting the new ground contact. */
+	return sweep_track_surface_candidates(previous, current, sweep_selected_track_underside,
+										  fraction);
 }
 
 #define SPEED_TO_TRAVEL_NUMERATOR 1408UL

@@ -24,6 +24,12 @@ extern struct VECTOR corkscrew_up_collision_points[];
 extern struct VECTOR corkscrew_down_collision_points[];
 extern struct VECTOR slalom_collision_points[];
 
+#define PHYSICS_PLANE_CONTACT_TOLERANCE 12
+#define PHYSICS_UNDERSIDE_CLEARANCE 24
+
+legacy_s16 sweep_track_underside(struct VECTOR *previous, struct VECTOR *current,
+								 legacy_s16 *fraction);
+
 void configure_legacy_collision(legacy_s16 argc, legacy_s8 *argv[]);
 void interpolate_collision_at_z(struct VECTOR *first, struct VECTOR *second, struct VECTOR *result,
 								legacy_s16 depth);

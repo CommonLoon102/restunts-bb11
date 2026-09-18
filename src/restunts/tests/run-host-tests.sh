@@ -182,6 +182,11 @@ run_host_test test-track-object trackobj.c \
     "$test_source_dir/headless_data.c" "$test_source_dir/headless_trackdata.c" \
     "$test_source_dir/math.c" "$test_source_dir/legacy.c" "$test_source_dir/trkutil.c" \
     -Wno-missing-braces
+run_host_test test-underside-collision physics_collision.c \
+    "$test_source_dir/trackobj.c" "$test_source_dir/headless_data.c" \
+    "$test_source_dir/headless_trackdata.c" "$test_source_dir/math.c" \
+    "$test_source_dir/legacy.c" "$test_source_dir/strlib.c" "$test_source_dir/trkutil.c" \
+    -Wno-missing-braces
 run_host_test test-track-collision-boundaries physics_collision.c \
     "$test_source_dir/headless_data.c" "$test_source_dir/headless_trackdata.c" \
     "$test_source_dir/trkutil.c" -Wno-missing-braces
