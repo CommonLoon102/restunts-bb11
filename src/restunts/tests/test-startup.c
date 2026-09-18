@@ -8,6 +8,7 @@
 #include "../c/restunts.c"
 #undef printf
 #undef strlen
+#undef strcmp
 #undef strcpy
 #undef memcpy
 static uint32_t trace_hash = UINT32_C(2166136261);
@@ -211,7 +212,13 @@ legacy_u16 _strlen(const legacy_s8 *text)
 	return (legacy_u16)strlen((const char *)text);
 }
 
+legacy_s16 _strcmp(const legacy_s8 *left, const legacy_s8 *right)
+{
+	return (legacy_s16)strcmp((const char *)left, (const char *)right);
+}
+
 static unsigned menu_scenario, menu_calls, intro_calls, game_calls, score_calls;
+static int expected_initial_intro_calls = -1;
 static legacy_u8 menu_track_data[REPLAY_TRACK_SIZE];
 static legacy_s8 backup_memory[REPLAY_TRACK_SIZE + 162];
 static legacy_s8 menu_resource[64];
@@ -309,6 +316,10 @@ legacy_s16 run_intro_looped(void)
 {
 	trace(44);
 	assert(intro_calls < 3);
+	if (expected_initial_intro_calls >= 0) {
+		intro_calls++;
+		return menu_calls == 0 ? 0 : 27;
+	}
 	return ++intro_calls == 1 ? 0 : 27;
 }
 legacy_s8 far *locate_text_res(legacy_s8 far *resource, const legacy_s8 *name)
@@ -361,6 +372,12 @@ legacy_s8 run_menu(void)
 	unsigned call = menu_calls++;
 	trace(52);
 	assert(menu_calls < 10);
+	if (expected_initial_intro_calls >= 0) {
+		assert(menu_calls == 1);
+		assert(intro_calls == (unsigned)expected_initial_intro_calls);
+		assert(is_audioloaded != 0);
+		return -1;
+	}
 	if (menu_scenario & 1) {
 		idle_expired = 1;
 	}
@@ -493,6 +510,37 @@ static void test_menu_lifecycle(void)
 	}
 }
 
+static void test_startup_intro_option(void)
+{
+	static legacy_s8 *arguments[][5] = {
+		{(legacy_s8 *)"game", (legacy_s8 *)"/nointro"},
+		{(legacy_s8 *)"game", (legacy_s8 *)"/ns", (legacy_s8 *)"/nointro", (legacy_s8 *)"/sSB"},
+		{(legacy_s8 *)"game", (legacy_s8 *)"/nointro", (legacy_s8 *)"/ns", (legacy_s8 *)"/nd"},
+		{(legacy_s8 *)"game", (legacy_s8 *)"/nointro", (legacy_s8 *)"/nointro"},
+		{(legacy_s8 *)"game", (legacy_s8 *)"/no"},
+		{(legacy_s8 *)"game", (legacy_s8 *)"/nointrox"},
+		{(legacy_s8 *)"game", (legacy_s8 *)"nointro"},
+		{(legacy_s8 *)"game"},
+	};
+	static const legacy_s16 counts[] = {2, 4, 4, 3, 2, 2, 2, 1};
+	for (unsigned scenario = 0; scenario < sizeof(counts) / sizeof(counts[0]); scenario++) {
+		expected_initial_intro_calls = scenario < 4 ? 0 : 1;
+		menu_calls = intro_calls = game_calls = score_calls = 0;
+		timer_calls = status_calls = 0;
+		audio_failure = 0;
+		is_audioloaded = 0;
+		track_element_map = menu_track_data;
+		geometry_ticks = 55;
+		clear_ticks = 15;
+		partial_ticks = 16;
+		assert(run_main_menu_loop(counts[scenario], arguments[scenario]) == 1);
+		assert(menu_calls == 1);
+		assert(intro_calls == (unsigned)expected_initial_intro_calls + 1);
+		assert(game_calls == 0);
+	}
+	expected_initial_intro_calls = -1;
+}
+
 int main(void)
 {
 	static legacy_s8 *arguments[][8] = {
@@ -538,5 +586,6 @@ int main(void)
 #else
 	assert(trace_hash == UINT32_C(0x00524607));
 #endif
+	test_startup_intro_option();
 	return 0;
 }
