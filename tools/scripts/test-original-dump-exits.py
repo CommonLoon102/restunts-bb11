@@ -75,6 +75,11 @@ def main():
 
     with tempfile.TemporaryDirectory(prefix="restunts-original-exits-") as temporary:
         game = Path(temporary)
+
+        def read(name):
+            path = game / name
+            return path.read_bytes() if path.is_file() else b""
+
         copy_assets(ROOT / "stunts", game)
         copy_assets(ROOT / "tools/scripts/cars", game)
         with zipfile.ZipFile(ROOT / "tools/scripts/rpls_golden/replays.zip") as archive:
@@ -104,7 +109,8 @@ def main():
                                        stdout=log, stderr=subprocess.STDOUT)
             try:
                 deadline = time.monotonic() + 60
-                while not (game / "DONE.TXT").exists():
+                # Redirection creates the file before echo writes its contents.
+                while read("DONE.TXT").strip() != b"DONE":
                     if process.poll() is not None or time.monotonic() >= deadline:
                         break
                     time.sleep(0.1)
@@ -112,10 +118,6 @@ def main():
                 if process.poll() is None:
                     process.kill()  # SIGKILL avoids DOSBox's confirmation dialog.
                 process.wait()
-
-        def read(name):
-            path = game / name
-            return path.read_bytes() if path.is_file() else b""
 
         before, after = read("BEFORE.BIN"), read("IRQCHK.BIN")
         dump = read("DUMP.LOG").decode(errors="replace")
