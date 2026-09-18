@@ -17,7 +17,12 @@
 
 #define JOYSTICK_BUTTON_MASK 48U
 #define OPTION_MENU_VERSION_TEXT_Y 16
+#define OPTION_MENU_GIT_HASH_LENGTH 7U
 #define REPLAY_LOAD_WAIT_TICKS 150
+
+#ifndef RESTUNTS_BUILD_DATE
+#define RESTUNTS_BUILD_DATE __DATE__
+#endif
 
 enum OPTION_MENU_FRAME_RATE_INDEX {
 	OPTION_MENU_LOW_FRAME_RATE_INDEX = 7,
@@ -319,10 +324,13 @@ legacy_u16 run_option_menu(void)
 	miscptr = file_load_resfile("misc");
 	sprite_select_screen_compat();
 	sprite_clear_target((legacy_u8)graphics_menu_background_color);
-	copy_string(&resID_byte1, locate_shape_alt(miscptr, "gstu"));
-	intro_draw_text(&resID_byte1, font_centered_text_x(&resID_byte1), 6, dialog_fnt_colour, 0);
-	copy_string(&resID_byte1, locate_shape_alt(miscptr, "gver"));
-	intro_draw_text(&resID_byte1, font_centered_text_x(&resID_byte1), OPTION_MENU_VERSION_TEXT_Y,
+	legacy_s8 title_text[] = "Chocolate Stunts";
+	intro_draw_text(title_text, font_centered_text_x(title_text), 6, dialog_fnt_colour, 0);
+	legacy_s8 version_text[] = "Version 0000000 (" RESTUNTS_BUILD_DATE ")";
+	for (legacy_u16 i = 0; i < OPTION_MENU_GIT_HASH_LENGTH; i++) {
+		version_text[sizeof("Version ") - 1U + i] = RESTUNTS_GIT_HASH[i];
+	}
+	intro_draw_text(version_text, font_centered_text_x(version_text), OPTION_MENU_VERSION_TEXT_Y,
 					dialog_fnt_colour, 0);
 
 	legacy_s8 far *prompt;

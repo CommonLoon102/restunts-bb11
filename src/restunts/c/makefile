@@ -27,12 +27,30 @@ endif
 
 OBJ_FILES = $(addprefix $(OBJDIR)/, $(C_FILES:.c=.obj)) $(DOS_STARTUP_OBJ)
 C_HEADERS = $(wildcard *.h)
+GIT_REVISION_HEADER = $(OBJDIR)/git_revision.h
+ifeq ($(OS),Windows_NT)
+  WRITE_GIT_REVISION_HEADER = echo \#define RESTUNTS_GIT_HASH "$(GIT_REVISION)"> "$(subst /,\,$@)"
+else
+  WRITE_GIT_REVISION_HEADER = printf '\#define RESTUNTS_GIT_HASH "%s"\r\n' "$(GIT_REVISION)" > "$@"
+endif
 
-.PHONY: all clean
+.PHONY: all clean force-git-revision
 all: $(OBJ_FILES)
 
 $(OBJDIR):
 	$(call MKDIR,$@)
+
+# Check HEAD on every build, updating the header only when the commit changes.
+force-git-revision:
+
+$(GIT_REVISION_HEADER): force-git-revision | $(OBJDIR)
+	$(eval GIT_REVISION := $(shell git rev-parse --verify HEAD))
+	$(if $(GIT_REVISION),,$(error Cannot determine the build commit; Git and a valid repository HEAD are required))
+	$(if $(findstring "$(GIT_REVISION)",$(file <$@)),,$(WRITE_GIT_REVISION_HEADER))
+
+# Refresh the compilation date even when the commit and sources are unchanged.
+$(OBJDIR)/menu_options.obj: $(GIT_REVISION_HEADER) force-git-revision
+$(OBJDIR)/menu_options.obj: CFLAGS += -fi=$(GIT_REVISION_HEADER)
 
 $(OBJDIR)/%.obj: %.c $(C_HEADERS) makefile ../watcom.mk $(WATCOM_STAMP) | $(OBJDIR)
 	$(CC) $(WATCOM_CFLAGS) $(CFLAGS) -fo=$@ $<
