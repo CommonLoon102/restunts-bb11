@@ -527,12 +527,14 @@ static void test_startup_intro_option(void)
 	expected_initial_intro_calls = -1;
 }
 
-static void test_startup_powergear_option(void)
+static void test_startup_physics_options(void)
 {
-	legacy_s8 *arguments[] = {(legacy_s8 *)"game", (legacy_s8 *)"/nointro", (legacy_s8 *)"/PG:OFF",
-							  (legacy_s8 *)"/pg:on"};
-	static const legacy_s16 counts[] = {2, 3, 4, 2};
-	static const legacy_u16 expected_speeds[] = {17757, 15573, 17757, 17757};
+	legacy_s8 *arguments[] = {(legacy_s8 *)"game",	  (legacy_s8 *)"/nointro",
+							  (legacy_s8 *)"/PG:OFF", (legacy_s8 *)"/LC:OFF",
+							  (legacy_s8 *)"/pg:on",  (legacy_s8 *)"/lc:on"};
+	static const legacy_s16 counts[] = {2, 3, 4, 5, 6, 2};
+	static const legacy_u16 expected_speeds[] = {17757, 15573, 15573, 17757, 17757, 17757};
+	static const legacy_s16 expected_crossings[] = {100, 100, 0, 0, 100, 100};
 	for (unsigned scenario = 0; scenario < sizeof(counts) / sizeof(counts[0]); scenario++) {
 		timer_calls = status_calls = 0;
 		audio_failure = 0;
@@ -559,6 +561,15 @@ static void test_startup_powergear_option(void)
 		framespersec = GAME_FRAME_RATE_NORMAL;
 		update_car_speed(INPUT_ACCELERATE_FLAG, PLAYER_CAR_INDEX, &car, &simd);
 		assert(car.car_actual_speed == expected_speeds[scenario]);
+
+		/* Collision mode must be configured independently of the power gear option. */
+		struct VECTOR first = {100, 200, -100};
+		struct VECTOR second = {-100, -200, 100};
+		struct VECTOR result;
+		interpolate_collision_at_z(&first, &second, &result, 0);
+		assert(result.x == expected_crossings[scenario]);
+		assert(result.y == expected_crossings[scenario] * 2);
+		assert(result.z == 0);
 	}
 }
 
@@ -608,6 +619,6 @@ int main(void)
 	assert(trace_hash == UINT32_C(0x00524607));
 #endif
 	test_startup_intro_option();
-	test_startup_powergear_option();
+	test_startup_physics_options();
 	return 0;
 }

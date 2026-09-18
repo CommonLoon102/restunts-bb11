@@ -3,6 +3,7 @@
 #include "audio.h"
 #include "dashboard.h"
 #include "car_speed.h"
+#include "physics_internal.h"
 #include "restunts.h"
 #include "fileio.h"
 #include "fatal.h"
@@ -308,6 +309,7 @@ void init_main(legacy_s16 argc, legacy_s8 *argv[])
 	textresprefix = 'e';
 
 	configure_powergear_bug(argc, argv);
+	configure_legacy_collision(argc, argv);
 	startup_parse_options(argc, argv, &startup_options);
 
 	// Unused "/nd" switch. Maybe used when loading other video drivers?

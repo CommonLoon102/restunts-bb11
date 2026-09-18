@@ -61,10 +61,17 @@ selects the original behavior. These switches are case-insensitive; if both are
 supplied, the last one wins. They can be combined with `/nointro` and other
 startup options.
 
-The ported physics dump tool accepts the same switch after the replay name:
-`repldump.exe 0681 /pg:off`. Replays do not store this option, so use the same
-physics setting for recording and playback. Original assembly executables and
-the renderer dump tools retain their existing interfaces.
+Run `restunts.exe /lc:off` to disable Legacy Collision and restore the earlier
+32-bit signed interpolation for wheel collisions with walls and track planes.
+Legacy collision behavior remains the default for replay compatibility; `/lc:on`
+explicitly selects it. These switches are case-insensitive, and the last one
+wins. They can be combined with `/pg:off`, `/nointro`, and other startup options.
+Renderer clipping retains its original arithmetic.
+
+The ported physics dump tool accepts the same switches after the replay name:
+`repldump.exe 0681 /pg:off /lc:off`. Replays do not store these options, so use
+the same physics settings for recording and playback. Original assembly
+executables and the renderer dump tools retain their existing interfaces.
 
 ### Needle colours
 

@@ -120,7 +120,7 @@ static void prepare_opponent_rear_wheel(struct VECTOR *wheel, struct VECTOR *rot
 static legacy_s16 scaled_vector_separation(struct VECTOR *first, struct VECTOR *second,
 										   struct VECTOR *intersection, struct VECTOR *delta)
 {
-	vector_interpolate_at_z(first, second, intersection, 0);
+	interpolate_collision_at_z(first, second, intersection, 0);
 	delta->x = LEGACY_S16_SHL(LEGACY_S16_WRAP_SUB(first->x, intersection->x),
 							  PLAYER_PHYSICS_POSITION_SCALE_SHIFT);
 	delta->y = LEGACY_S16_SHL(LEGACY_S16_WRAP_SUB(first->y, intersection->y),
