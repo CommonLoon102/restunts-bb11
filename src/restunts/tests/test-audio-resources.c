@@ -292,16 +292,16 @@ static void test_closed_hihat_offset_lifetime(void)
 	assert(audio_closed_hihat_resource == memory_bytes + 0x8123);
 	assert(legacy_closed_hihat_offset == 0x8123);
 
-	/* Reusing an already mapped song does not remap the percussion resources. */
+	/* Cached songs restore percussion without changing the historical physics offset. */
 	build_resource_reference(4096, "CHHT", 0x9234);
 	assert(init_audio_resources(memory_bytes + 8192, memory_bytes + 4096, "song") == header);
-	assert(audio_closed_hihat_resource == memory_bytes + 0x8123);
+	assert(audio_closed_hihat_resource == memory_bytes + 0x9234);
 	assert(legacy_closed_hihat_offset == 0x8123);
 
 	/* A missing song header leaves the previous instrument mapping intact. */
 	put_bytes(16384 + 6, "NONE", 4);
 	audio_map_song_instruments(memory_bytes + 16384, memory_bytes + 4096);
-	assert(audio_closed_hihat_resource == memory_bytes + 0x8123);
+	assert(audio_closed_hihat_resource == memory_bytes + 0x9234);
 	assert(legacy_closed_hihat_offset == 0x8123);
 	assert(init_audio_resources(memory_bytes + 8192, memory_bytes + 4096, "song") == 0);
 	assert(legacy_closed_hihat_offset == 0x8123);
@@ -319,6 +319,63 @@ static void test_closed_hihat_offset_lifetime(void)
 	assert(legacy_closed_hihat_offset == 0x9234);
 }
 
+static void build_percussion_bank(legacy_u16 base)
+{
+	static const char names[] = "BASDSNARTOMMRIDECRSHCHHTOHHT";
+	put_word((legacy_u16)(base + 4), 7);
+	put_bytes((legacy_u16)(base + 6), names, 28);
+	for (unsigned index = 0; index < 7; index++) {
+		put_length((legacy_u16)(base + 34 + index * 4), index * 64);
+	}
+}
+
+static void assert_percussion_bank(legacy_u16 base)
+{
+	assert(audio_bass_drum_resource == memory_bytes + base + 62);
+	assert(audio_snare_resource == memory_bytes + base + 126);
+	assert(audio_tom_resource == memory_bytes + base + 190);
+	assert(audio_ride_resource == memory_bytes + base + 254);
+	assert(audio_crash_resource == memory_bytes + base + 318);
+	assert(audio_closed_hihat_resource == memory_bytes + base + 382);
+	assert(audio_open_hihat_resource == memory_bytes + base + 446);
+}
+
+static void test_cached_music_after_sound_effects(void)
+{
+	reset_audio_fixture();
+	build_song(16384, AUDIO_SEQUENCE_COMMAND_BASE + AUDIO_SEQUENCE_COMMAND_CALL, 1);
+	build_resource_reference(8192, "song", 16384);
+	build_percussion_bank(4096);
+	void *header = init_audio_resources(memory_bytes + 8192, memory_bytes + 4096, "song");
+	assert(header != 0);
+	assert_percussion_bank(4096);
+	assert(legacy_closed_hihat_offset == 4478);
+	legacy_u8 mapped_song[2048];
+	memcpy(mapped_song, memory_bytes + 16384, sizeof(mapped_song));
+
+	/* Car sounds use the same mapper but have no percussion instruments. */
+	build_song(32768, AUDIO_SEQUENCE_COMMAND_BASE + AUDIO_SEQUENCE_COMMAND_STOP, 0);
+	build_resource_reference(12288, "sfx", 32768);
+	build_resource_reference(2048, "ENGI", 3072);
+	for (unsigned replay = 0; replay < 3; replay++) {
+		assert(init_audio_resources(memory_bytes + 12288, memory_bytes + 2048, "sfx") != 0);
+		assert(audio_bass_drum_resource == 0);
+		assert(audio_snare_resource == 0);
+		assert(audio_tom_resource == 0);
+		assert(audio_ride_resource == 0);
+		assert(audio_crash_resource == 0);
+		assert(audio_closed_hihat_resource == 0);
+		assert(audio_open_hihat_resource == 0);
+
+		/* Returning to cached music must restore every percussion instrument,
+		 * while keeping the already resolved melodic and track pointers intact. */
+		assert(init_audio_resources(memory_bytes + 8192, memory_bytes + 4096, "song") == header);
+		assert_percussion_bank(4096);
+		assert(legacy_closed_hihat_offset == 0);
+		assert(memcmp(mapped_song, memory_bytes + 16384, sizeof(mapped_song)) == 0);
+	}
+}
+
 int main(void)
 {
 	legacy_u32 driver = driver_fingerprint();
@@ -327,6 +384,7 @@ int main(void)
 	test_song_reference_mapping();
 	test_closed_hihat_offset_mapping();
 	test_closed_hihat_offset_lifetime();
+	test_cached_music_after_sound_effects();
 #ifdef AUDIO_RESOURCES_BASELINE
 	printf("%08lx %08lx %08lx\n", (unsigned long)driver, (unsigned long)mapping,
 		   (unsigned long)finalize);

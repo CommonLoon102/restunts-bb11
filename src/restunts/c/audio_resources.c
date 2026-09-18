@@ -402,6 +402,17 @@ void far *audioresource_find(void far *resource, const legacy_s8 *chunk_name)
 	return dos_memory_make_pointer(resource_segment, result_offset);
 }
 
+static void audio_map_percussion_instruments(void far *instruments)
+{
+	audio_bass_drum_resource = audioresource_find(instruments, "BASD");
+	audio_snare_resource = audioresource_find(instruments, "SNAR");
+	audio_tom_resource = audioresource_find(instruments, "TOMM");
+	audio_ride_resource = audioresource_find(instruments, "RIDE");
+	audio_crash_resource = audioresource_find(instruments, "CRSH");
+	audio_closed_hihat_resource = audioresource_find(instruments, "CHHT");
+	audio_open_hihat_resource = audioresource_find(instruments, "OHHT");
+}
+
 void audio_map_song_instruments(void far *song, void far *instruments)
 {
 	legacy_u8 far *header = (legacy_u8 far *)audioresource_find(song, "hdr1");
@@ -427,14 +438,8 @@ void audio_map_song_instruments(void far *song, void far *instruments)
 		header[name_offset + 3U] = (legacy_u8)(pointer_segment >> AUDIO_FAR_POINTER_WORD_SHIFT);
 	}
 
-	audio_bass_drum_resource = audioresource_find(instruments, "BASD");
-	audio_snare_resource = audioresource_find(instruments, "SNAR");
-	audio_tom_resource = audioresource_find(instruments, "TOMM");
-	audio_ride_resource = audioresource_find(instruments, "RIDE");
-	audio_crash_resource = audioresource_find(instruments, "CRSH");
-	audio_closed_hihat_resource = audioresource_find(instruments, "CHHT");
+	audio_map_percussion_instruments(instruments);
 	legacy_closed_hihat_offset = dos_memory_pointer_offset(audio_closed_hihat_resource);
-	audio_open_hihat_resource = audioresource_find(instruments, "OHHT");
 }
 
 static void audio_write_far_pointer_to_resource(legacy_u8 far *destination, legacy_u16 offset,
@@ -650,6 +655,10 @@ void far *init_audio_resources(void far *song, void far *instruments, const lega
 		void far *data =
 			dos_memory_make_pointer(dos_memory_pointer_segment(song_chunk), data_offset);
 		audio_write_far_pointer(header, data);
+	} else {
+		/* Other audio resources can replace these shared percussion bindings.
+		 * Keep the historical CHHT offset used by track-boundary physics unchanged. */
+		audio_map_percussion_instruments(instruments);
 	}
 
 	return header;
