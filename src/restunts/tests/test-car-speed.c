@@ -197,8 +197,156 @@ static void test_speed_wrap_and_stop(void)
 	assert(car.car_rev_speed == 33760);
 }
 
+static void configure_powergear_option(const char *option)
+{
+	legacy_s8 *argv[] = {(legacy_s8 *)"restunts", (legacy_s8 *)option};
+	configure_powergear_bug(2, argv);
+}
+
+static void prepare_powergear_car(legacy_s16 mass, legacy_s16 drag, legacy_s16 gravity)
+{
+	reset_car();
+	simd.car_mass = mass;
+	car.car_rev_speed = car.car_actual_speed = 59000;
+	aerodynamic_drag[59000 >> 10] = drag;
+	car.car_pseudoGravity = gravity;
+}
+
+static void test_powergear_initial_default(void)
+{
+	prepare_powergear_car(15, 544, 0);
+	update_car_speed(INPUT_ACCELERATE_FLAG, PLAYER_CAR_INDEX, &car, &simd);
+	assert(car.car_actual_speed == 60757);
+}
+
+static void test_powergear_stock_mass_classes(void)
+{
+	static const struct {
+		legacy_s16 mass;
+		legacy_u16 legacy_speed;
+		legacy_s16 corrected_delta;
+		legacy_s16 positive_delta;
+	} cases[] = {
+		/* All stock mass classes, including flexible/rigid PG, anti-PG and no PG.
+		 * Net force -512 gives -12800 / mass, truncated toward zero; the final
+		 * arithmetic right shift rounds negative odd quotients down. */
+		{15, 60757, -427, 26}, /* Indy */
+		{20, 59000, -320, 20}, /* Porsche 962 */
+		{21, 59000, -305, 19}, /* Jaguar */
+		{25, 62720, -256, 16}, /* Audi and Lancia */
+		{27, 62720, -237, 14}, /* Ferrari */
+		{31, 60907, -206, 12}, /* Acura */
+		{32, 58800, -200, 12}, /* Carrera */
+		{33, 56820, -194, 12}, /* Countach */
+		{35, 62720, -183, 11}, /* Corvette */
+		{55, 59000, -116, 7},  /* LM002 */
+	};
+	static const legacy_u16 frame_rates[] = {GAME_FRAME_RATE_NORMAL, GAME_FRAME_RATE_LOW};
+
+	for (unsigned index = 0; index < sizeof(cases) / sizeof(cases[0]); index++) {
+		configure_powergear_option("/pg:on");
+		prepare_powergear_car(cases[index].mass, 544, 0);
+		update_car_speed(INPUT_ACCELERATE_FLAG, PLAYER_CAR_INDEX, &car, &simd);
+		assert(car.car_actual_speed == cases[index].legacy_speed);
+
+		configure_powergear_option("/pg:off");
+		for (unsigned rate = 0; rate < sizeof(frame_rates) / sizeof(frame_rates[0]); rate++) {
+			for (legacy_s16 car_index = PLAYER_CAR_INDEX; car_index <= OPPONENT_CAR_INDEX;
+				 car_index++) {
+				for (unsigned gravity_case = 0; gravity_case < 2; gravity_case++) {
+					/* Drag and uphill pseudogravity must produce the same net force. */
+					prepare_powergear_car(cases[index].mass, gravity_case ? 0 : 544,
+										  gravity_case ? -544 : 0);
+					framespersec = frame_rates[rate];
+					oppnentSped[0] = 100;
+					legacy_s16 expected_delta = cases[index].corrected_delta;
+					if (car_index == OPPONENT_CAR_INDEX) {
+						expected_delta -= expected_delta / 4;
+					}
+					if (framespersec == GAME_FRAME_RATE_LOW) {
+						expected_delta *= 2;
+					}
+					update_car_speed(INPUT_ACCELERATE_FLAG, car_index, &car, &simd);
+					assert(car.car_actual_speed == 59000 + expected_delta);
+					assert(car.car_rev_speed == car.car_actual_speed);
+					assert(car.car_engineLimiterTimer == 0);
+				}
+			}
+		}
+
+		/* Positive force keeps its original acceleration in either mode. */
+		for (unsigned mode = 0; mode < 2; mode++) {
+			configure_powergear_option(mode ? "/pg:off" : "/pg:on");
+			prepare_powergear_car(cases[index].mass, 0, 0);
+			update_car_speed(INPUT_ACCELERATE_FLAG, PLAYER_CAR_INDEX, &car, &simd);
+			assert(car.car_actual_speed == 59000 + cases[index].positive_delta);
+		}
+	}
+}
+
+static void test_powergear_division_rounding(void)
+{
+	static const struct {
+		legacy_s16 mass;
+		legacy_s16 force;
+		legacy_s16 expected_delta;
+	} cases[] = {
+		{25, -3, -2}, {25, -1, -1}, {25, 0, 0}, {25, 1, 0},	  {25, 3, 1},
+		{32, -1, 0},  {32, -3, -1}, {32, 3, 1}, {15, -1, -1},
+	};
+
+	configure_powergear_option("/pg:off");
+	for (unsigned index = 0; index < sizeof(cases) / sizeof(cases[0]); index++) {
+		prepare_powergear_car(cases[index].mass, 32 - cases[index].force, 0);
+		update_car_speed(INPUT_ACCELERATE_FLAG, PLAYER_CAR_INDEX, &car, &simd);
+		assert(car.car_actual_speed == 59000 + cases[index].expected_delta);
+	}
+
+	/* A power-of-two mass still differs by one unit for fractional negatives:
+	 * unsigned division floors the negative equivalent; signed division does not. */
+	configure_powergear_option("/pg:on");
+	prepare_powergear_car(32, 33, 0);
+	update_car_speed(INPUT_ACCELERATE_FLAG, PLAYER_CAR_INDEX, &car, &simd);
+	assert(car.car_actual_speed == 58999);
+}
+
+static void test_powergear_options(void)
+{
+	static const struct {
+		const char *first;
+		const char *second;
+		legacy_u16 expected_speed;
+	} cases[] = {
+		{NULL, NULL, 60757},		  {"/pg:on", NULL, 60757},		 {"/pg:off", NULL, 58573},
+		{"/PG:OFF", NULL, 58573},	  {"/Pg:OfF", NULL, 58573},		 {"/pg", NULL, 60757},
+		{"pg:off", NULL, 60757},	  {"-pg:off", NULL, 60757},		 {"/pg:offx", NULL, 60757},
+		{"/pg:off ", NULL, 60757},	  {"/pg:", NULL, 60757},		 {"/pg:off", "/pG:On", 60757},
+		{"/PG:ON", "/pg:off", 58573}, {"/pg:off", "/pg:onx", 58573}, {"/pg:off", "/nointro", 58573},
+		{"/ns", "/pg:off", 58573},	  {"/pg:off", "/pg:off", 58573},
+	};
+
+	for (unsigned index = 0; index < sizeof(cases) / sizeof(cases[0]); index++) {
+		/* Each invocation must reset an earlier invocation's opt-in. */
+		configure_powergear_option("/pg:off");
+		legacy_s8 *argv[] = {(legacy_s8 *)"restunts", (legacy_s8 *)cases[index].first,
+							 (legacy_s8 *)cases[index].second};
+		legacy_s16 argc = cases[index].second ? 3 : cases[index].first ? 2 : 1;
+		configure_powergear_bug(argc, argv);
+		prepare_powergear_car(15, 544, 0);
+		update_car_speed(INPUT_ACCELERATE_FLAG, PLAYER_CAR_INDEX, &car, &simd);
+		assert(car.car_actual_speed == cases[index].expected_speed);
+	}
+
+	legacy_s8 *argv[] = {(legacy_s8 *)"/pg:off"};
+	configure_powergear_bug(1, argv);
+	prepare_powergear_car(15, 544, 0);
+	update_car_speed(INPUT_ACCELERATE_FLAG, PLAYER_CAR_INDEX, &car, &simd);
+	assert(car.car_actual_speed == 60757);
+}
+
 int main(void)
 {
+	test_powergear_initial_default();
 	test_shift_precedence_and_limits();
 	test_automatic_shift_contact_and_threshold();
 	test_shift_completion_and_delay();
@@ -206,5 +354,8 @@ int main(void)
 	test_overrev_preserves_pedal_state();
 	test_airborne_and_wheel_synchronization();
 	test_speed_wrap_and_stop();
+	test_powergear_stock_mass_classes();
+	test_powergear_division_rounding();
+	test_powergear_options();
 	return 0;
 }

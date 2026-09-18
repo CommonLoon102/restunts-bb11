@@ -207,16 +207,6 @@ legacy_s16 get_kevinrandom(void)
 	trace(26);
 	return 21;
 }
-legacy_u16 _strlen(const legacy_s8 *text)
-{
-	return (legacy_u16)strlen((const char *)text);
-}
-
-legacy_s16 _strcmp(const legacy_s8 *left, const legacy_s8 *right)
-{
-	return (legacy_s16)strcmp((const char *)left, (const char *)right);
-}
-
 static unsigned menu_scenario, menu_calls, intro_calls, game_calls, score_calls;
 static int expected_initial_intro_calls = -1;
 static legacy_u8 menu_track_data[REPLAY_TRACK_SIZE];
@@ -230,10 +220,6 @@ static void trace_text(const legacy_s8 *text)
 		trace((legacy_u8)*text++);
 	}
 	trace(0);
-}
-legacy_s8 *_strcpy(legacy_s8 *destination, const legacy_s8 *source)
-{
-	return (legacy_s8 *)strcpy((char *)destination, (const char *)source);
 }
 void *_memcpy(void *destination, const void *source, legacy_u16 count)
 {
@@ -541,6 +527,41 @@ static void test_startup_intro_option(void)
 	expected_initial_intro_calls = -1;
 }
 
+static void test_startup_powergear_option(void)
+{
+	legacy_s8 *arguments[] = {(legacy_s8 *)"game", (legacy_s8 *)"/nointro", (legacy_s8 *)"/PG:OFF",
+							  (legacy_s8 *)"/pg:on"};
+	static const legacy_s16 counts[] = {2, 3, 4, 2};
+	static const legacy_u16 expected_speeds[] = {17757, 15573, 17757, 17757};
+	for (unsigned scenario = 0; scenario < sizeof(counts) / sizeof(counts[0]); scenario++) {
+		timer_calls = status_calls = 0;
+		audio_failure = 0;
+		init_main(counts[scenario], arguments);
+
+		/* An Indy-mass car must decelerate under net drag only with /pg:off. */
+		struct SIMD simd = {0};
+		struct CARSTATE car = {0};
+		legacy_s16 drag[64] = {0};
+		drag[16000U >> 10] = 512;
+		simd.car_mass = 15;
+		simd.num_gears = 5;
+		simd.idle_rpm = 1000;
+		simd.max_rpm = 12000;
+		simd.aerorestable = drag;
+		car.car_transmission = TRANSMISSION_MANUAL;
+		car.car_current_gear = 1;
+		car.car_currpm = 1000;
+		car.car_gearratio = 4096;
+		car.car_gearratioshr8 = 16;
+		car.car_sumSurfRearWheels = 2;
+		car.car_sumSurfAllWheels = 4;
+		car.car_rev_speed = car.car_actual_speed = 16000;
+		framespersec = GAME_FRAME_RATE_NORMAL;
+		update_car_speed(INPUT_ACCELERATE_FLAG, PLAYER_CAR_INDEX, &car, &simd);
+		assert(car.car_actual_speed == expected_speeds[scenario]);
+	}
+}
+
 int main(void)
 {
 	static legacy_s8 *arguments[][8] = {
@@ -587,5 +608,6 @@ int main(void)
 	assert(trace_hash == UINT32_C(0x00524607));
 #endif
 	test_startup_intro_option();
+	test_startup_powergear_option();
 	return 0;
 }

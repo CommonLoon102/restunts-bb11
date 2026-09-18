@@ -3,6 +3,7 @@
 #include "memmgr.h"
 #include "platform.h"
 #include "fatal.h"
+#include "car_speed.h"
 
 extern void headless_exit(legacy_s16 result);
 
@@ -45,8 +46,7 @@ void init_div0(void)
 
 void init_main(legacy_s16 argc, legacy_s8 *argv[])
 {
-	(void)argc;
-	(void)argv;
+	configure_powergear_bug(argc, argv);
 	init_video_geometry_flags();
 	video_uses_page_flipping = 0;
 	video_page_count = 1;

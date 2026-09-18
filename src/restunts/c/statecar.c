@@ -52,11 +52,35 @@ enum CAR_GEAR_SHIFT_DIRECTION {
 #define GEAR_KNOB_DIRECTION_NEUTRAL 0
 #define CAR_SPEED_DELTA_STATIONARY 0
 
+static legacy_s16 powergear_bug_enabled = 1;
+
+void configure_powergear_bug(legacy_s16 argc, legacy_s8 *argv[])
+{
+	static const legacy_s8 off_option[] = "/pg:off";
+	static const legacy_s8 on_option[] = "/pg:on";
+	powergear_bug_enabled = 1;
+	for (legacy_s16 index = 1; index < argc; index++) {
+		if (stricmp(argv[index], off_option) == 0) {
+			powergear_bug_enabled = 0;
+		} else if (stricmp(argv[index], on_option) == 0) {
+			powergear_bug_enabled = 1;
+		}
+	}
+}
+
 static legacy_s16 scale_acceleration_by_mass(legacy_s16 acceleration, legacy_s16 mass)
 {
-	legacy_u32 product =
-		(legacy_u32)LEGACY_S32_WRAP_MUL((legacy_s32)acceleration, ACCELERATION_MASS_NUMERATOR);
-	legacy_u32 quotient = LEGACY_U32_DIV_OR_ZERO(product, (legacy_u16)mass);
+	legacy_s32 product = LEGACY_S32_WRAP_MUL((legacy_s32)acceleration, ACCELERATION_MASS_NUMERATOR);
+	legacy_s32 quotient;
+	if (powergear_bug_enabled != 0) {
+		/* Preserve the original unsigned divide for replay compatibility. A negative
+		 * force becomes a large positive dividend, causing power gear or anti-PG
+		 * after the quotient is truncated to its signed low word. */
+		quotient =
+			LEGACY_S32_FROM_BITS(LEGACY_U32_DIV_OR_ZERO((legacy_u32)product, (legacy_u16)mass));
+	} else {
+		quotient = LEGACY_S32_DIV_OR_ZERO(product, (legacy_s32)mass);
+	}
 	legacy_s16 low_word = LEGACY_S16_FROM_BITS((legacy_u16)quotient);
 	return LEGACY_S16_SAR(low_word, ACCELERATION_MASS_RESULT_SHIFT);
 }
