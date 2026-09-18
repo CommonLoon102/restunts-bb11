@@ -43,8 +43,8 @@ enum PLAYER_PHYSICS_POSE_VECTOR_INDEX {
 #define PLAYER_PHYSICS_WALL_SPEED_SHIFT 8U
 #define PLAYER_PHYSICS_WALL_SOUND_FLAG 16U
 #define PLAYER_PHYSICS_SUSPENSION_SOUND_FLAG 32U
-#define PLAYER_PHYSICS_CONTACT_DISTANCE_LIMIT 12
-#define PLAYER_PHYSICS_INVERTED_CONTACT_DISTANCE_LIMIT 24
+#define PLAYER_PHYSICS_CONTACT_DISTANCE_LIMIT PHYSICS_PLANE_CONTACT_TOLERANCE
+#define PLAYER_PHYSICS_INVERTED_CONTACT_DISTANCE_LIMIT PHYSICS_UNDERSIDE_CLEARANCE
 #define PLAYER_PHYSICS_PLANE_PENETRATION_BIAS 6
 #define PLAYER_PHYSICS_PLANE_RETRACE_DISTANCE 64
 #define PLAYER_PHYSICS_SUSPENSION_SOUND_THRESHOLD 250
@@ -712,14 +712,46 @@ static void apply_wheel_landing(struct CARSTATE *carstate, legacy_s16 wheel_inde
 	carstate->car_wheel_vertical_speed[wheel_index] = 0;
 }
 
-static void resolve_wheel_plane_contact(struct CARSTATE *carstate,
-										struct PLAYER_WHEEL_MOTION *motion, legacy_s16 wheel_index,
-										legacy_s16 car_index)
+static int stop_at_track_underside(struct CARSTATE *carstate, struct PLAYER_WHEEL_MOTION *motion,
+								   legacy_s16 wheel_index, legacy_s16 car_index)
+{
+	if (state.game_inputmode == GAME_INPUT_MODE_INTRO ||
+		carstate->car_crashBmpFlag != CRASH_EVENT_NONE) {
+		return 0;
+	}
+	struct VECTOR previous;
+	struct VECTOR current;
+	physics_position_to_vector(&previous, &motion->previous[wheel_index]);
+	physics_position_to_vector(&current, &motion->current[wheel_index]);
+	legacy_s16 fraction;
+	if (!sweep_track_underside(&previous, &current, &fraction)) {
+		return 0;
+	}
+
+	/* Stop all four wheels at the first body contact, before resolving their
+	 * remaining ground contacts. Do not finish the tick beyond the obstacle. */
+	for (legacy_s16 i = 0; i < PLAYER_PHYSICS_WHEEL_COUNT; i++) {
+		struct VECTOR offset;
+		scale_wheel_displacement(&offset, &motion->current[i], &motion->previous[i], fraction,
+								 TRIG_FIXED_ONE);
+		physics_position_offset(&motion->current[i], &motion->previous[i], &offset);
+	}
+	motion->travel = (legacy_s16)((legacy_s32)motion->travel * fraction / TRIG_FIXED_ONE);
+	update_crash_state(CRASH_EVENT_IMMEDIATE_STOP, car_index);
+	return 1;
+}
+
+static int resolve_wheel_plane_contact(struct CARSTATE *carstate,
+									   struct PLAYER_WHEEL_MOTION *motion, legacy_s16 wheel_index,
+									   legacy_s16 car_index)
 {
 	int resolved;
 
 	do {
 		move_airborne_wheel(carstate, motion, wheel_index);
+		if (stop_at_track_underside(carstate, motion, wheel_index, car_index)) {
+			return 0;
+		}
 		/* Suspension uses the distance before penetration correction. */
 		motion->contact_distances[wheel_index] = nextPosAndNormalIP;
 		resolved = nextPosAndNormalIP >= 0 ||
@@ -729,6 +761,7 @@ static void resolve_wheel_plane_contact(struct CARSTATE *carstate,
 	if (motion->contact_distances[wheel_index] <= 0) {
 		apply_wheel_landing(carstate, wheel_index, car_index);
 	}
+	return 1;
 }
 
 static void look_up_wheel_surface(struct CARSTATE *carstate, struct PLAYER_WHEEL_MOTION *motion,
@@ -758,7 +791,9 @@ static int resolve_wheel_contact_pass(struct CARSTATE *carstate, struct PLAYER_W
 		if (resolve_wheel_wall_collision(carstate, motion, i, car_index)) {
 			return 0;
 		}
-		resolve_wheel_plane_contact(carstate, motion, i, car_index);
+		if (!resolve_wheel_plane_contact(carstate, motion, i, car_index)) {
+			return 0;
+		}
 	}
 	return 1;
 }

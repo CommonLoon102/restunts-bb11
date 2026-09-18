@@ -66,6 +66,12 @@ Run `restunts.exe /lc:off` to disable Legacy Collision and restore the earlier
 Legacy collision behavior remains the default for replay compatibility; `/lc:on`
 explicitly selects it. These switches are case-insensitive, and the last one
 wins. They can be combined with `/pg:off`, `/nointro`, and other startup options.
+With `/lc:off`, collisions also check the wheel's movement through the underside
+clearance of elevated track surfaces, preventing fast cars from skipping the
+collision zone behind a loop. The impact is checked against the actual surface
+footprint, preserving clear passages underneath and beside it. Surfaces at both
+ends of the movement are checked, including the surface a wheel just left when
+moving onto the ground or another segment.
 Renderer clipping retains its original arithmetic.
 
 The ported physics dump tool accepts the same switches after the replay name:

@@ -1488,3 +1488,94 @@ void build_track_object(struct VECTOR *world_position, struct VECTOR *next_world
 	track_object_world_collision(world_position, element_orientation,
 								 sample.wall_orientation_modifier);
 }
+
+struct TRACK_COLLISION_SNAPSHOT {
+	legacy_s16 plane_index;
+	struct PLANE far *plane;
+	legacy_s16 wall_index;
+	legacy_s16 wall_height;
+	legacy_s16 wall_lower_bound;
+	legacy_u8 corkscrew;
+	legacy_s8 surface_type;
+	legacy_s8 wall_collision_enabled;
+	legacy_s16 terrain_height;
+	legacy_s16 element_x;
+	legacy_s16 element_z;
+	legacy_s16 wall_x;
+	legacy_s16 wall_z;
+	legacy_s16 wall_orientation;
+};
+
+static void capture_track_collision(struct TRACK_COLLISION_SNAPSHOT *saved)
+{
+	saved->plane_index = planindex;
+	saved->plane = current_planptr;
+	saved->wall_index = wallindex;
+	saved->wall_height = wallHeight;
+	saved->wall_lower_bound = elRdWallRelated;
+	saved->corkscrew = corkFlag;
+	saved->surface_type = current_surf_type;
+	saved->wall_collision_enabled = track_wall_collision_enabled;
+	saved->terrain_height = terrainHeight;
+	saved->element_x = elem_xCenter;
+	saved->element_z = elem_zCenter;
+	saved->wall_x = wallStartX;
+	saved->wall_z = wallStartZ;
+	saved->wall_orientation = wallOrientation;
+}
+
+static void restore_track_collision(const struct TRACK_COLLISION_SNAPSHOT *saved)
+{
+	planindex = saved->plane_index;
+	current_planptr = saved->plane;
+	wallindex = saved->wall_index;
+	wallHeight = saved->wall_height;
+	elRdWallRelated = saved->wall_lower_bound;
+	corkFlag = saved->corkscrew;
+	current_surf_type = saved->surface_type;
+	track_wall_collision_enabled = saved->wall_collision_enabled;
+	terrainHeight = saved->terrain_height;
+	elem_xCenter = saved->element_x;
+	elem_zCenter = saved->element_z;
+	wallStartX = saved->wall_x;
+	wallStartZ = saved->wall_z;
+	wallOrientation = saved->wall_orientation;
+}
+
+legacy_s16 track_surface_contains_point(struct VECTOR *point)
+{
+	/* A footprint query must not replace the wheel's selected collision state. */
+	struct TRACK_COLLISION_SNAPSHOT saved;
+	capture_track_collision(&saved);
+	build_track_object(point, point);
+	legacy_s16 contains = planindex == saved.plane_index && elem_xCenter == saved.element_x &&
+						  elem_zCenter == saved.element_z &&
+						  terrainHeight == saved.terrain_height &&
+						  track_wall_collision_enabled == 0;
+	restore_track_collision(&saved);
+	return contains;
+}
+
+legacy_s16 sweep_track_surface_candidates(struct VECTOR *previous, struct VECTOR *current,
+										  TRACK_SURFACE_SWEEP_TEST test, legacy_s16 *fraction)
+{
+	struct TRACK_COLLISION_SNAPSHOT saved;
+	capture_track_collision(&saved);
+	legacy_s16 first_fraction = 0;
+	legacy_s16 hit = test(previous, current, &first_fraction);
+
+	/* A fast wheel can leave the surface footprint before the next lookup. */
+	build_track_object(previous, current);
+	legacy_s16 previous_fraction = 0;
+	if (test(previous, current, &previous_fraction)) {
+		if (!hit || previous_fraction < first_fraction) {
+			first_fraction = previous_fraction;
+		}
+		hit = 1;
+	}
+	restore_track_collision(&saved);
+	if (hit) {
+		*fraction = first_fraction;
+	}
+	return hit;
+}
