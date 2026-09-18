@@ -6,6 +6,54 @@
 #include "track_objects.h"
 #include "externs.h"
 
+static legacy_s16 legacy_collision_enabled = 1;
+
+void configure_legacy_collision(legacy_s16 argc, legacy_s8 *argv[])
+{
+	static const legacy_s8 off_option[] = "/lc:off";
+	static const legacy_s8 on_option[] = "/lc:on";
+	legacy_collision_enabled = 1;
+	for (legacy_s16 index = 1; index < argc; index++) {
+		if (stricmp(argv[index], off_option) == 0) {
+			legacy_collision_enabled = 0;
+		} else if (stricmp(argv[index], on_option) == 0) {
+			legacy_collision_enabled = 1;
+		}
+	}
+}
+
+static legacy_s16 interpolate_collision_axis(legacy_s16 first, legacy_s16 second, legacy_s32 factor,
+											 legacy_s32 divisor)
+{
+	legacy_s32 difference = (legacy_s32)first - (legacy_s32)second;
+	legacy_s32 product = LEGACY_S32_WRAP_MUL(difference, factor);
+	legacy_s32 quotient = LEGACY_S32_DIV_OR_ZERO(product, divisor);
+	return LEGACY_S16_WRAP_ADD(LEGACY_S16_FROM_BITS((legacy_u16)quotient), second);
+}
+
+void interpolate_collision_at_z(struct VECTOR *first, struct VECTOR *second, struct VECTOR *result,
+								legacy_s16 depth)
+{
+	if (legacy_collision_enabled != 0) {
+		vector_interpolate_at_z(first, second, result, depth);
+		return;
+	}
+
+	/* Restore the earlier signed interpolation for physics. The shared math
+	 * helper keeps the original 16-bit behavior used by renderer clipping. */
+	legacy_s32 depth_offset = (legacy_s32)depth - (legacy_s32)second->z;
+	legacy_s32 depth_span = (legacy_s32)first->z - (legacy_s32)second->z;
+	if (depth_span < 0) {
+		/* Retain the earlier arithmetic shifts, including rounding of odd depths. */
+		depth_offset = LEGACY_S32_SAR(depth_offset, 1U);
+		depth_span = LEGACY_S32_SAR(depth_span, 1U);
+	}
+
+	result->x = interpolate_collision_axis(first->x, second->x, depth_offset, depth_span);
+	result->y = interpolate_collision_axis(first->y, second->y, depth_offset, depth_span);
+	result->z = depth;
+}
+
 #define SPEED_TO_TRAVEL_NUMERATOR 1408UL
 #define COLLISION_MODEL_COUNT 5U
 #define PHYSICAL_MODEL_SCENERY_FIRST 71
