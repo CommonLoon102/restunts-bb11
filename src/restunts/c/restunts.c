@@ -162,7 +162,10 @@ struct STARTUP_OPTIONS {
 	legacy_u8 mode4_requested;
 	legacy_u8 sound_disabled;
 	legacy_u8 unused_nd_option;
+	legacy_u8 skip_intro;
 };
+
+static struct STARTUP_OPTIONS startup_options;
 
 static void startup_install_keyboard_callbacks(void)
 {
@@ -203,6 +206,7 @@ static void startup_parse_options(legacy_s16 argc, legacy_s8 *argv[],
 	options->mode4_requested = 0;
 	options->sound_disabled = 0;
 	options->unused_nd_option = 0;
+	options->skip_intro = 0;
 	for (legacy_u16 i = 1; argc > i; ++i) {
 		if (argv[i][0] == '/') {
 			switch (argv[i][1]) {
@@ -215,6 +219,8 @@ static void startup_parse_options(legacy_s16 argc, legacy_s8 *argv[],
 						options->sound_disabled = 1;
 					} else if (argv[i][2] == 'd') {
 						options->unused_nd_option = 1;
+					} else if (strcmp(argv[i], "/nointro") == 0) {
+						options->skip_intro = 1;
 					}
 					break;
 
@@ -300,15 +306,14 @@ void init_main(legacy_s16 argc, legacy_s8 *argv[])
 
 	textresprefix = 'e';
 
-	struct STARTUP_OPTIONS options;
-	startup_parse_options(argc, argv, &options);
+	startup_parse_options(argc, argv, &startup_options);
 
 	// Unused "/nd" switch. Maybe used when loading other video drivers?
-	(void)options.unused_nd_option;
+	(void)startup_options.unused_nd_option;
 
 	// Video mode.
 	dos_video_set_mode_13h();
-	if (options.mode4_requested) {
+	if (startup_options.mode4_requested) {
 		dos_video_set_mode4();
 	}
 
@@ -324,7 +329,7 @@ void init_main(legacy_s16 argc, legacy_s8 *argv[])
 		dos_process_exit(1);
 	}
 
-	if (options.sound_disabled) {
+	if (startup_options.sound_disabled) {
 		audio_toggle_music();
 		audio_toggle_effects();
 	}
@@ -607,7 +612,12 @@ legacy_s16 run_main_menu_loop(legacy_s16 argc, legacy_s8 *argv[])
 		}
 
 		idle_expired = 0;
-		legacy_s16 result = run_intro_looped();
+		legacy_s16 result = 0;
+		if (startup_options.skip_intro != 0) {
+			startup_options.skip_intro = 0;
+		} else {
+			result = run_intro_looped();
+		}
 		if (result == 27) {
 			legacy_s8 far *textresptr = locate_text_res(mainresptr, "dos");
 			result =

@@ -43,6 +43,18 @@ Main repository: https://github.com/4d-stunts/restunts
 		and hashes the 320x200 camera framebuffer at frame 0 and every subsequent frame.
 
 
+## Running the game
+
+Run `restunts.exe` in DOSBox or DOSBox-X with `core=dynamic` and `cycles=max`.
+Mount `stunts/` directly as a DOS drive in the emulator.
+
+### Optional parameters
+
+Run `restunts.exe /nointro` to skip the startup intro and open the main menu
+immediately after initialization. The intro remains available when leaving the
+main menu. This switch can be combined with the existing startup options.
+
+
 ## How to build
 
 The DOS compiler, assembler, and linker are Open Watcom 2, pinned to the official
@@ -113,9 +125,7 @@ The makefiles use `python3` on Linux and `python` on Windows; override
 
 ### On both platforms
 
-Build outputs are copied to `stunts/`. Run `restunts.exe` in DOSBox or DOSBox-X
-with `core=dynamic` and `cycles=max`. Mount `stunts/` directly as a DOS drive
-in the emulator.
+Build outputs are copied to `stunts/`.
 
 The supported targets are:
 
