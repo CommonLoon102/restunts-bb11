@@ -76,6 +76,9 @@ also checked against finite walls, catching impacts with the start of a ramp
 side wall that individual wheel paths can miss. Slalom stones use their full
 finite bounds for these checks, including wheel movement that crosses an entire
 stone between frames. The car stops at the first contact.
+With `/lc:off`, collision-induced sideways heading offsets and opponent spin
+also decay fully to zero in either direction, preventing a permanent steering
+bias after contact. Legacy mode retains the original negative-rounding behavior.
 Renderer clipping retains its original arithmetic.
 
 The ported physics dump tool accepts the same switches after the replay name:

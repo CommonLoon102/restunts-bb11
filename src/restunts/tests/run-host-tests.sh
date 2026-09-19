@@ -96,6 +96,7 @@ run_host_test test-fatal-format legacy.c \
     "$test_source_dir/headless_data.c" -Wno-pointer-sign -Wno-missing-field-initializers
 run_host_test test-gamestate-serialization stateio.c
 run_host_test test-grip physics_grip.c \
+    "$test_source_dir/physics_collision.c" "$test_source_dir/strlib.c" \
     "$test_source_dir/math.c" "$test_source_dir/legacy.c" -Wno-sign-compare
 run_host_test test-legacy-semantics legacy.c
 run_host_test test-line-prepare shape3d_lines.c \
