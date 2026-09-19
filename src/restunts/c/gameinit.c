@@ -290,8 +290,10 @@ void init_game_state_with_frame_rate_byte(legacy_u16 frame_rate)
 
 void restore_gamestate(legacy_u16 frame)
 {
-	if (frame == 0 && elapsed_time1 == 0) {
+	if (frame == 0 && elapsed_time1 == 0 &&
+		cvxptr[0].game_checkpoint_valid == GAMESTATE_CHECKPOINT_INVALID) {
 		init_game_state(GAMESTATE_INIT_NORMAL);
+		return;
 	}
 
 	legacy_u16 curframe = LEGACY_U16_DIV_OR_ZERO(frame, checkpoint_frame_interval);
@@ -299,8 +301,9 @@ void restore_gamestate(legacy_u16 frame)
 		curframe = LEGACY_U16_WRAP_SUB(curframe, GAMESTATE_CHECKPOINT_INDEX_STEP);
 	}
 
-	/* Find the newest valid checkpoint preceding the requested frame. */
-	if (frame >= state.game_frame) {
+	/* Find the newest valid checkpoint preceding the requested frame. Frame zero
+	 * must restore its saved random seed even if the current frame is zero. */
+	if (frame != 0 && frame >= state.game_frame) {
 		while (1) {
 			if (LEGACY_U16_WRAP_MUL(curframe, checkpoint_frame_interval) <= state.game_frame) {
 				return;

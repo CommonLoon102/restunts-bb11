@@ -89,6 +89,7 @@ struct DASHBOARD_CASE {
 	legacy_s8 following_opponent;
 	legacy_s8 replay;
 	legacy_s8 replay_bar;
+	legacy_s8 rewind;
 	legacy_s16 expected_bottom;
 	legacy_s8 expected_dashboard;
 	legacy_s8 expected_bar;
@@ -97,13 +98,16 @@ struct DASHBOARD_CASE {
 static void test_dashboard_layout(void)
 {
 	static const struct DASHBOARD_CASE cases[] = {
-		{REPLAY_MODE_LIVE, 0, 1, 0, 0, 1, 140, 1, 0},
-		{REPLAY_MODE_LIVE, 0, 1, 1, 0, 1, 200, 0, 0},
-		{REPLAY_MODE_PLAYBACK, 0, 0, 0, 1, 1, 151, 0, 1},
-		{REPLAY_MODE_PLAYBACK, 0, 0, 0, 0, 0, 200, 0, 0},
-		{REPLAY_MODE_PLAYBACK, 0, 1, 0, 1, 1, 140, 1, 1},
-		{REPLAY_MODE_PLAYBACK, 0, 1, 0, 0, 0, 140, 1, 0},
-		{REPLAY_MODE_PLAYBACK, 1, 1, 0, 1, 1, 200, 0, 0},
+		{REPLAY_MODE_LIVE, 0, 1, 0, 0, 1, 0, 140, 1, 0},
+		{REPLAY_MODE_LIVE, 0, 1, 1, 0, 1, 0, 200, 0, 0},
+		{REPLAY_MODE_PLAYBACK, 0, 0, 0, 1, 1, 0, 151, 0, 1},
+		{REPLAY_MODE_PLAYBACK, 0, 0, 0, 0, 0, 0, 200, 0, 0},
+		{REPLAY_MODE_PLAYBACK, 0, 1, 0, 1, 1, 0, 140, 1, 1},
+		{REPLAY_MODE_PLAYBACK, 0, 1, 0, 0, 0, 0, 140, 1, 0},
+		{REPLAY_MODE_PLAYBACK, 1, 1, 0, 1, 1, 0, 200, 0, 0},
+		{REPLAY_MODE_PLAYBACK, 0, 0, 0, 1, 1, 1, 200, 0, 0},
+		{REPLAY_MODE_PLAYBACK, 0, 1, 0, 1, 1, 1, 140, 1, 0},
+		{REPLAY_MODE_PLAYBACK, 0, 1, 1, 1, 1, 1, 200, 0, 0},
 	};
 
 	for (unsigned index = 0; index < sizeof(cases) / sizeof(cases[0]); index++) {
@@ -116,7 +120,7 @@ static void test_dashboard_layout(void)
 		dashbmp_y = 140;
 		roofbmpheight = 13;
 		height_above_replaybar = 777;
-		race_update_dashboard_layout();
+		race_update_dashboard_layout(cases[index].rewind);
 		assert(dashbmp_y_copy == cases[index].expected_bottom);
 		assert(dashboard_visible == cases[index].expected_dashboard);
 		assert(replaybar_enabled == cases[index].expected_bar);

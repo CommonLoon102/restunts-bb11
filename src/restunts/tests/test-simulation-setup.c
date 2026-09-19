@@ -23,6 +23,9 @@ static struct GAMESTATE checkpoints[GAMESTATE_CHECKPOINT_COUNT];
 static struct VECTOR cameras[4] = {{0, 0, 0}, {500, 0, 500}, {-500, 0, -500}, {500, 0, 500}};
 static legacy_s8 inputs[64];
 static legacy_u8 speed_data[OPPONENT_SPEED_COUNT];
+static legacy_s8 restored_random_seed[GAMESTATE_RANDOM_SEED_SIZE];
+static unsigned int random_restore_count;
+static unsigned int loop_reset_count;
 
 static void trace_bytes(const void *source, unsigned int count)
 {
@@ -42,6 +45,7 @@ static void trace_event(legacy_u16 event)
 
 void reset_race_loop_state(void)
 {
+	loop_reset_count++;
 	trace_event(1);
 }
 
@@ -65,6 +69,12 @@ void opponent_route_advance(legacy_s16 point)
 	state.opponentstate.car_route_target.x = -400;
 	state.opponentstate.car_route_target.y = 30;
 	state.opponentstate.car_route_target.z = 600;
+}
+
+void init_kevinrandom(const legacy_s8 *seed)
+{
+	memcpy(restored_random_seed, seed, sizeof(restored_random_seed));
+	random_restore_count++;
 }
 
 void get_kevinrandom_seed(legacy_s8 *seed)
@@ -181,6 +191,61 @@ static void test_initialization(void)
 	}
 }
 
+static void test_restore_initial_checkpoint(void)
+{
+	configure_simulation(2);
+	init_game_state(GAMESTATE_INIT_RESET_CHECKPOINTS);
+	memset(inputs, 0, sizeof(inputs));
+	replay_input_buffer = inputs;
+	inputs[0] = INPUT_ACCELERATE_FLAG;
+	game_replay_mode = REPLAY_MODE_LIVE;
+	race_start_sequence_state = RACE_START_SEQUENCE_INACTIVE;
+	update_gamestate();
+	struct GAMESTATE initial_state = checkpoints[0];
+	unsigned int resets_before_restore = loop_reset_count;
+
+	for (unsigned int scenario = 0; scenario < 3U; scenario++) {
+		memset(&state, 0x45, sizeof(state));
+		state.game_frame = scenario == 1U ? 0 : 29;
+		elapsed_time1 = scenario == 2U ? 600 : 0;
+		elapsed_time2 = 31;
+		memset(restored_random_seed, 0, sizeof(restored_random_seed));
+		unsigned int restores_before = random_restore_count;
+
+		restore_gamestate(0);
+
+		assert(memcmp(&state, &initial_state, sizeof(state)) == 0);
+		assert(memcmp(restored_random_seed, initial_state.kevinseed,
+					  sizeof(restored_random_seed)) == 0);
+		assert(random_restore_count == restores_before + 1U);
+		assert(loop_reset_count == resets_before_restore);
+		assert(elapsed_time2 == 0);
+		assert(elapsed_time1 == (scenario == 2U ? 600 : 0));
+	}
+}
+
+static void test_restore_without_initial_checkpoint(void)
+{
+	configure_simulation(2);
+	init_game_state(GAMESTATE_INIT_RESET_CHECKPOINTS);
+	state.game_frame = 29;
+	state.game_inputmode = GAME_INPUT_MODE_ACTIVE;
+	state.game_end_event = 1;
+	state.playerstate.car_position.lx = -12345;
+	unsigned int restores_before = random_restore_count;
+	unsigned int resets_before = loop_reset_count;
+
+	restore_gamestate(0);
+
+	assert(state.game_frame == 0);
+	assert(state.game_inputmode == GAME_INPUT_MODE_WAITING);
+	assert(state.game_end_event == 0);
+	assert(state.playerstate.car_position.lx != -12345);
+	assert(checkpoints[0].game_checkpoint_valid == 0);
+	assert(random_restore_count == restores_before);
+	assert(loop_reset_count == resets_before + 1U);
+}
+
 static void configure_cameras(unsigned int scenario)
 {
 	memset(&state, 0, sizeof(state));
@@ -277,6 +342,8 @@ int main(void)
 	/* Captured before extraction: initialization modes, camera boundaries, frame callbacks,
 	 * checkpoints, and opponent routes with branches, dead ends and cycles. */
 	assert(trace_hash == UINT64_C(0x88796a1f55e594e4));
-	puts("Simulation setup snapshots passed (176 scenarios).");
+	test_restore_initial_checkpoint();
+	test_restore_without_initial_checkpoint();
+	puts("Simulation setup snapshots and initial checkpoint restoration passed (180 scenarios).");
 	return 0;
 }

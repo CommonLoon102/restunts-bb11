@@ -10,6 +10,7 @@
 
 static uint32_t trace_hash = UINT32_C(2166136261);
 static unsigned scenario, frames, keys;
+static unsigned scripted_rewind;
 static struct RECTANGLE dirty_rect;
 static legacy_s8 text_resource[8];
 static void trace(legacy_u32 value)
@@ -25,6 +26,31 @@ static void trace_rect(const struct RECTANGLE *rect)
 	trace(rect->right);
 	trace(rect->top);
 	trace(rect->bottom);
+}
+/* Q-up polling and rewind-only dependencies must not alter the legacy trace. */
+legacy_s16 kb_get_key_state(legacy_s16 scan_code)
+{
+	assert(scan_code == RACE_REWIND_SCAN_CODE);
+	return scripted_rewind != 0 && frames < 2;
+}
+void dos_interrupts_disable(void)
+{
+	assert(scripted_rewind != 0);
+}
+void dos_interrupts_enable(void)
+{
+	assert(scripted_rewind != 0);
+}
+legacy_u32 timer_get_delta_alt(void)
+{
+	assert(scripted_rewind != 0);
+	return 20;
+}
+void restore_gamestate(legacy_u16 target)
+{
+	assert(scripted_rewind != 0);
+	state.game_frame = target;
+	elapsed_time2 = target;
 }
 legacy_u8 dos_joystick_is_enabled(void)
 {
@@ -124,6 +150,7 @@ void setup_car_shapes(legacy_s16 operation)
 }
 void loop_game(legacy_s16 operation, legacy_s16 recorded, legacy_s16 current)
 {
+	assert(scripted_rewind == 0);
 	trace(18);
 	trace(operation);
 	trace(recorded);
@@ -137,6 +164,17 @@ void update_frame(legacy_s8 buffer, struct RECTANGLE *rect)
 	trace(state.game_frame);
 	trace(gameconfig.game_recordedframes);
 	assert(++frames <= 3);
+	if (scripted_rewind != 0) {
+		assert(replaybar_enabled == 0);
+		assert(keys == 0);
+		if (frames == 3) {
+			assert(game_replay_mode == REPLAY_MODE_LIVE);
+			race_exit_request = REPLAY_EXIT_REQUESTED;
+		} else {
+			assert(game_replay_mode == REPLAY_MODE_PLAYBACK);
+		}
+		return;
+	}
 	elapsed_time2 = ++state.game_frame;
 	if (frames == 3) {
 		race_exit_request = REPLAY_EXIT_REQUESTED;
@@ -219,6 +257,37 @@ legacy_s16 get_kb_or_joy_flags(void)
 	return scenario & 2 ? INPUT_ACTION_BUTTON_MASK : 0;
 }
 
+static void test_rewind_frame_loop(void)
+{
+	struct RACE_VIEWPORT_CACHE cache = {-1, -1};
+	memset(&state, 0, sizeof(state));
+	memset(&gameconfig, 0, sizeof(gameconfig));
+	scripted_rewind = 1;
+	frames = keys = 0;
+	state.game_frame = elapsed_time2 = 10;
+	state.game_inputmode = GAME_INPUT_MODE_ACTIVE;
+	state.game_frames_per_sec = 40;
+	gameconfig.game_recordedframes = 10;
+	game_replay_mode = REPLAY_MODE_LIVE;
+	game_replay_mode_copy = -1;
+	race_exit_request = 0;
+	race_start_sequence_state = RACE_START_SEQUENCE_INACTIVE;
+	idle_expired = video_uses_page_flipping = recording_limit_warning_requested = 0;
+	slow_video_mgmt_copy = slow_video_mgmt = 0;
+	frame_buffer_index = dashboard_buffer_index = 0;
+	dashb_toggle = is_in_replay = followOpponentFlag = 0;
+	replaybar_toggle = 1;
+	full_redraw_frames_remaining = 1;
+	height_above_replaybar = 200;
+	viewport_bottom_cache = -1;
+	timer_ticks_per_frame = 5;
+	race_run_frames(&cache);
+	assert(frames == 3 && keys == 0);
+	assert(state.game_frame == 7 && elapsed_time2 == 7);
+	assert(gameconfig.game_recordedframes == 7);
+	assert(game_replay_mode == REPLAY_MODE_LIVE && is_in_replay == 0);
+}
+
 int main(void)
 {
 	struct RACE_VIEWPORT_CACHE cache;
@@ -281,5 +350,6 @@ int main(void)
 #else
 	assert(trace_hash == UINT32_C(0xe6335ceb));
 #endif
+	test_rewind_frame_loop();
 	return 0;
 }

@@ -45,6 +45,9 @@ run_host_test test-audio-resources legacy.c "$test_source_dir/resource.c" -Wno-p
 run_host_test test-race-flow legacy.c \
     "$test_source_dir/headless_data.c" "$test_source_dir/full_data.c" \
     -Wno-pointer-sign -Wno-missing-field-initializers
+run_host_test test-race-rewind legacy.c \
+    "$test_source_dir/headless_data.c" "$test_source_dir/full_data.c" \
+    -Wno-pointer-sign -Wno-missing-field-initializers
 run_host_test test-race-frames legacy.c \
     "$test_source_dir/headless_data.c" "$test_source_dir/full_data.c" \
     -Wno-pointer-sign -Wno-missing-field-initializers
