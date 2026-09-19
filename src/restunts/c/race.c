@@ -87,6 +87,7 @@ static void race_initialize_state(void)
 		init_game_state(GAMESTATE_INIT_RESET_CHECKPOINTS);
 	} else {
 		if (is_in_replay == 0) {
+			replay_filename[0] = 0;
 			cameramode = CAMERA_MODE_COCKPIT;
 			dashb_toggle = 1;
 			show_penalty_counter = 0;

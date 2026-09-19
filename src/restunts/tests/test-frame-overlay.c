@@ -10,9 +10,14 @@
 #include "../c/residue.h"
 #include "../c/platform.h"
 #include "../c/ui_text.h"
+#include "../c/memmgr.h"
+#include "../c/camera.h"
+#include "../c/video_frame.h"
+#include "../c/fatal.h"
 
 #undef strcmp
 #undef memcpy
+#undef strlen
 
 struct LEGACY_EXECUTION_RESIDUE legacy_execution_residue;
 legacy_s16 legacy_render_player_headings_active;
@@ -24,6 +29,79 @@ static legacy_u16 last_line[DRAW_LINE_WORD_COUNT];
 static unsigned drawn_lines;
 static legacy_s16 player[LEGACY_RESIDUE_WORD_COUNT];
 static legacy_s16 opponent[LEGACY_RESIDUE_WORD_COUNT];
+
+struct TEXT_DRAW {
+	char text[REPLAY_FILENAME_SIZE];
+	legacy_s16 x;
+	legacy_s16 y;
+	legacy_s16 color;
+	legacy_s16 shadow_color;
+};
+
+static struct TEXT_DRAW text_draws[5];
+static unsigned text_draw_count;
+static struct RECTANGLE text_bounds;
+
+void fatal_error(const legacy_s8 *format, ...)
+{
+	(void)format;
+	assert(0 && "Unexpected fatal error");
+}
+
+legacy_s8 far *locate_text_res(legacy_s8 far *resource, const legacy_s8 *name)
+{
+	assert(resource == gameresptr);
+	if (strcmp((const char *)name, "rpl") == 0) {
+		return (legacy_s8 *)"Replay";
+	}
+	if (strcmp((const char *)name, "dm1") == 0) {
+		return (legacy_s8 *)"Demo";
+	}
+	assert(strcmp((const char *)name, "dm2") == 0);
+	return (legacy_s8 *)"Press a key";
+}
+
+struct RECTANGLE *intro_draw_text(legacy_s8 *text, legacy_s16 x, legacy_s16 y, legacy_s16 color,
+								  legacy_s16 shadow_color)
+{
+	size_t length = strlen((const char *)text);
+	assert(text_draw_count < sizeof(text_draws) / sizeof(text_draws[0]));
+	struct TEXT_DRAW *draw = &text_draws[text_draw_count++];
+	assert(length < sizeof(draw->text));
+	memcpy(draw->text, text, length + 1);
+	draw->x = x;
+	draw->y = y;
+	draw->color = color;
+	draw->shadow_color = shadow_color;
+	/* Match the 8-pixel font and the shadow's extra pixel in the real renderer. */
+	text_bounds.left = x;
+	text_bounds.right = x + length * 8 + 1;
+	text_bounds.top = y;
+	text_bounds.bottom = y + 9;
+	return &text_bounds;
+}
+
+legacy_s16 font_centered_text_x(const legacy_s8 *text)
+{
+	return (320 - strlen((const char *)text) * 8) / 2;
+}
+
+void format_frame_as_string(legacy_s8 *destination, legacy_s16 frame_count,
+							legacy_s16 include_hundredths)
+{
+	(void)destination;
+	(void)frame_count;
+	(void)include_hundredths;
+	assert(0 && "Unexpected penalty text");
+}
+
+void sprite_putimage_transparent(struct SHAPE2D far *shape, legacy_s16 x, legacy_s16 y)
+{
+	(void)shape;
+	(void)x;
+	(void)y;
+	assert(0 && "Unexpected route icon");
+}
 
 legacy_s8 far *locate_shape_alt(legacy_s8 far *resource, const legacy_s8 *name)
 {
@@ -167,11 +245,166 @@ static void test_explicit_crack_context(void)
 	assert_words(opponent, 200, 201, 202, 203);
 }
 
+static void reset_ingame_text(const char *filename)
+{
+	reset_overlay(1);
+	video_x_alignment = 1;
+	memset(&state, 0, sizeof(state));
+	assert(strlen(filename) < sizeof(replay_filename));
+	memcpy(replay_filename, filename, strlen(filename) + 1);
+	game_replay_mode = REPLAY_MODE_PLAYBACK;
+	idle_expired = 0;
+	passed_security = 1;
+	cameramode = CAMERA_MODE_TRACKSIDE;
+	text_draw_count = 0;
+}
+
+static void assert_text(unsigned index, const char *text, legacy_s16 x, legacy_s16 y)
+{
+	assert(index < text_draw_count);
+	assert(strcmp(text_draws[index].text, text) == 0);
+	assert(text_draws[index].x == x && text_draws[index].y == y);
+	assert(text_draws[index].color == dialog_fnt_colour);
+	assert(text_draws[index].shadow_color == 0);
+}
+
+static void test_replay_filename_survives_blink(void)
+{
+	static const char *filenames[] = {"A", "DEFAULT", "RACE2026", "MOUNTAINRUN2026",
+									  "ABCDEFGHIJKLMNOPQRSTUVWXYZ12345"};
+	for (unsigned name = 0; name < sizeof(filenames) / sizeof(filenames[0]); name++) {
+		for (unsigned frame_rate = 10; frame_rate <= 20; frame_rate += 10) {
+			reset_ingame_text(filenames[name]);
+			dialog_fnt_colour = 9 + name;
+			framespersec = frame_rate;
+			legacy_s16 filename_x = 312 - strlen(filenames[name]) * 8;
+			for (unsigned frame = 0; frame < frame_rate * 2; frame++) {
+				state.game_frame = frame;
+				text_draw_count = 0;
+				struct RECTANGLE *bounds = draw_ingame_text();
+				assert_text(0, filenames[name], filename_x, 3);
+				assert(bounds->top == 3 && bounds->right == 313);
+				if (frame % frame_rate < frame_rate / 2) {
+					assert(text_draw_count == 2);
+					assert_text(1, "Replay", 264, 15);
+					assert(bounds->left == (filename_x < 264 ? filename_x : 264));
+					assert(bounds->bottom == 24);
+				} else {
+					assert(text_draw_count == 1);
+					/* Incremental redraw must still copy the nonblinking filename. */
+					assert(bounds->left == filename_x && bounds->bottom == 12);
+				}
+			}
+		}
+	}
+}
+
+static void test_wrapped_replay_filename(void)
+{
+	static const struct {
+		unsigned length;
+		unsigned lines;
+	} cases[] = {{38, 1}, {39, 2}, {76, 2}, {127, 4}};
+	for (unsigned name = 0; name < sizeof(cases) / sizeof(cases[0]); name++) {
+		char filename[REPLAY_FILENAME_SIZE];
+		for (unsigned character = 0; character < cases[name].length; character++) {
+			filename[character] = 'A' + character % 26;
+		}
+		filename[cases[name].length] = 0;
+		for (unsigned phase = 0; phase < 3; phase++) {
+			reset_ingame_text(filename);
+			if (phase == 1) {
+				state.game_frame = framespersec / 2;
+			} else if (phase == 2) {
+				game_replay_mode = REPLAY_MODE_PAUSED;
+			}
+			struct RECTANGLE *bounds = draw_ingame_text();
+			unsigned line_count = cases[name].lines;
+			assert(text_draw_count == line_count + (phase == 0));
+			char reconstructed[REPLAY_FILENAME_SIZE];
+			unsigned copied = 0;
+			for (unsigned line = 0; line < line_count; line++) {
+				unsigned length = line + 1 == line_count ? cases[name].length - copied : 38;
+				char expected[39];
+				memcpy(expected, filename + copied, length);
+				expected[length] = 0;
+				assert_text(line, expected, 312 - length * 8, 3 + line * 12);
+				memcpy(reconstructed + copied, text_draws[line].text, length);
+				copied += length;
+			}
+			reconstructed[copied] = 0;
+			assert(strcmp(reconstructed, filename) == 0);
+			assert(strcmp((const char *)replay_filename, filename) == 0);
+			assert(bounds->left == 8 && bounds->right == 313);
+			assert(bounds->top == 3);
+			if (phase == 0) {
+				assert_text(line_count, "Replay", 264, 3 + line_count * 12);
+				assert(bounds->bottom == (legacy_s16)((line_count + 1) * 12));
+			} else {
+				assert(bounds->bottom == (legacy_s16)(line_count * 12));
+			}
+		}
+	}
+}
+
+static void test_replay_filename_when_paused(void)
+{
+	reset_ingame_text("RACE2026");
+	game_replay_mode = REPLAY_MODE_PAUSED;
+	struct RECTANGLE *bounds = draw_ingame_text();
+	assert(text_draw_count == 1);
+	assert_text(0, "RACE2026", 248, 3);
+	assert(bounds->left == 248 && bounds->right == 313);
+	assert(bounds->top == 3 && bounds->bottom == 12);
+}
+
+static void test_unnamed_replay_overlay(void)
+{
+	reset_ingame_text("");
+	struct RECTANGLE *bounds = draw_ingame_text();
+	assert(text_draw_count == 1);
+	assert_text(0, "Replay", 264, 15);
+	assert(bounds->top == 15 && bounds->bottom == 24);
+	state.game_frame = 10;
+	text_draw_count = 0;
+	bounds = draw_ingame_text();
+	assert(text_draw_count == 0);
+	assert(memcmp(bounds, &empty_rect, sizeof(*bounds)) == 0);
+
+	game_replay_mode = REPLAY_MODE_PAUSED;
+	bounds = draw_ingame_text();
+	assert(text_draw_count == 0);
+	assert(memcmp(bounds, &empty_rect, sizeof(*bounds)) == 0);
+}
+
+static void test_filename_hidden_in_live_race_and_demo(void)
+{
+	reset_ingame_text("DEFAULT");
+	game_replay_mode = REPLAY_MODE_LIVE;
+	state.game_inputmode = GAME_INPUT_MODE_ACTIVE;
+	struct RECTANGLE *bounds = draw_ingame_text();
+	assert(text_draw_count == 0);
+	assert(memcmp(bounds, &empty_rect, sizeof(*bounds)) == 0);
+
+	game_replay_mode = REPLAY_MODE_PLAYBACK;
+	idle_expired = 1;
+	bounds = draw_ingame_text();
+	assert(text_draw_count == 2);
+	assert_text(0, "Demo", 144, 170);
+	assert_text(1, "Press a key", 116, 182);
+	assert(bounds->top == 170 && bounds->bottom == 191);
+}
+
 int main(void)
 {
 	test_incremental_crack_overlay();
 	test_rejected_crack_lines();
 	test_direct_redraw_stack();
 	test_explicit_crack_context();
+	test_replay_filename_survives_blink();
+	test_wrapped_replay_filename();
+	test_replay_filename_when_paused();
+	test_unnamed_replay_overlay();
+	test_filename_hidden_in_live_race_and_demo();
 	return 0;
 }

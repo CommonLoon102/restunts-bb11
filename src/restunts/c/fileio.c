@@ -959,6 +959,27 @@ void file_load_audiores(const legacy_s8 *songfile, const legacy_s8 *voicefile,
 }
 #endif
 
+static void file_set_replay_filename(const legacy_s8 *path)
+{
+	const legacy_s8 *name = path;
+	const legacy_s8 *extension = 0;
+	for (const legacy_s8 *character = path; *character != 0; character++) {
+		if (*character == '\\' || *character == '/' || *character == ':') {
+			name = character + 1;
+			extension = 0;
+		} else if (*character == '.') {
+			extension = character;
+		}
+	}
+
+	legacy_u16 length = 0;
+	while (length + 1U < REPLAY_FILENAME_SIZE && name[length] != 0 && name + length != extension) {
+		replay_filename[length] = name[length];
+		length++;
+	}
+	replay_filename[length] = 0;
+}
+
 legacy_s16 file_load_replay(const legacy_s8 *dir, const legacy_s8 *name)
 {
 	file_build_path(dir, name, ".rpl", g_path_buf);
@@ -966,6 +987,7 @@ legacy_s16 file_load_replay(const legacy_s8 *dir, const legacy_s8 *name)
 	g_is_busy = 1;
 	file_read_fatal(g_path_buf, replay_header_buffer);
 	replay_gameinfo_decode(&gameconfig, (const legacy_u8 far *)replay_header_buffer);
+	file_set_replay_filename(g_path_buf);
 	g_is_busy = 0;
 	return 0;
 }
@@ -977,6 +999,9 @@ legacy_s16 file_write_replay(const legacy_s8 *filename)
 	g_is_busy = 1;
 	legacy_s16 ret = file_write_fatal(filename, replay_header_buffer,
 									  replay_file_size(gameconfig.game_recordedframes));
+	if (ret == 0) {
+		file_set_replay_filename(filename);
+	}
 	g_is_busy = 0;
 
 	return ret;

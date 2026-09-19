@@ -338,6 +338,7 @@ static legacy_s16 replay_continue_recording(void)
 
 static void replay_resume_live(void)
 {
+	replay_filename[0] = 0;
 	dashb_toggle = 1;
 	show_penalty_counter = 0;
 	followOpponentFlag = 0;
