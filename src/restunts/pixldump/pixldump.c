@@ -530,6 +530,10 @@ static legacy_s16 PIXLDUMP_LEGACY_FRAME pixldump_process_replay(
 	if (file_load_replay("", replay_name) != 0) {
 		return 1;
 	}
+#ifndef RESTUNTS_ORIGINAL
+	/* Keep the new filename overlay out of renderer oracle comparisons. */
+	replay_filename[0] = 0;
+#endif
 	if (target != 0 && gameconfig.game_opponenttype == 0) {
 		pixldump_write_stdout("Replay does not contain an opponent.\r\n");
 		return 1;

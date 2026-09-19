@@ -25,9 +25,14 @@
 #define CRACK_END_Y_OFFSET 6U
 #define DEMO_TEXT_FIRST_Y 170
 #define DEMO_TEXT_SECOND_Y 182
+#define REPLAY_TEXT_LEFT_X 8
 #define REPLAY_TEXT_RIGHT_X 312
 #define REPLAY_TEXT_CHARACTER_WIDTH 8U
 #define REPLAY_TEXT_Y 15
+#define REPLAY_FILENAME_Y 3
+#define REPLAY_TEXT_LINE_HEIGHT (REPLAY_TEXT_Y - REPLAY_FILENAME_Y)
+#define REPLAY_TEXT_MAX_CHARACTERS                                                                 \
+	((REPLAY_TEXT_RIGHT_X - REPLAY_TEXT_LEFT_X) / REPLAY_TEXT_CHARACTER_WIDTH)
 #define PREPARE_TEXT_Y 90
 #define SECURITY_TEXT_FIRST_Y 93
 #define SECURITY_TEXT_SECOND_Y 105
@@ -181,6 +186,31 @@ static void draw_ingame_route_information(void)
 	}
 }
 
+static void draw_replay_text(legacy_s8 *text, legacy_s16 y)
+{
+	legacy_s16 x = LEGACY_S16_WRAP_SUB(
+		REPLAY_TEXT_RIGHT_X, LEGACY_U16_WRAP_MUL(strlen(text), REPLAY_TEXT_CHARACTER_WIDTH));
+	rect_union(&rect_ingame_text, intro_draw_text(text, x, y, dialog_fnt_colour, 0),
+			   &rect_ingame_text);
+}
+
+static legacy_s16 draw_replay_filename(void)
+{
+	const legacy_s8 *filename = replay_filename;
+	legacy_s16 y = REPLAY_FILENAME_Y;
+	while (*filename != 0) {
+		legacy_s8 line[REPLAY_TEXT_MAX_CHARACTERS + 1U];
+		legacy_u16 length = 0;
+		while (length < REPLAY_TEXT_MAX_CHARACTERS && *filename != 0) {
+			line[length++] = *filename++;
+		}
+		line[length] = 0;
+		draw_replay_text(line, y);
+		y = LEGACY_S16_WRAP_ADD(y, REPLAY_TEXT_LINE_HEIGHT);
+	}
+	return y;
+}
+
 struct RECTANGLE *draw_ingame_text(void)
 {
 	rect_ingame_text = empty_rect;
@@ -191,6 +221,10 @@ struct RECTANGLE *draw_ingame_text(void)
 	}
 
 	if (game_replay_mode != REPLAY_MODE_LIVE) {
+		legacy_s16 replay_y = REPLAY_TEXT_Y;
+		if (replay_filename[0] != 0) {
+			replay_y = draw_replay_filename();
+		}
 		if (game_replay_mode != REPLAY_MODE_PLAYBACK) {
 			return &rect_ingame_text;
 		}
@@ -199,12 +233,7 @@ struct RECTANGLE *draw_ingame_text(void)
 			return &rect_ingame_text;
 		}
 		copy_string(&resID_byte1, locate_text_res(gameresptr, "rpl"));
-		legacy_s16 replay_x = LEGACY_S16_WRAP_SUB(
-			REPLAY_TEXT_RIGHT_X,
-			LEGACY_U16_WRAP_MUL(strlen(&resID_byte1), REPLAY_TEXT_CHARACTER_WIDTH));
-		rect_union(&rect_ingame_text,
-				   intro_draw_text(&resID_byte1, replay_x, REPLAY_TEXT_Y, dialog_fnt_colour, 0),
-				   &rect_ingame_text);
+		draw_replay_text(&resID_byte1, replay_y);
 		return &rect_ingame_text;
 	}
 

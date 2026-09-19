@@ -33,6 +33,7 @@ legacy_u16 elapsed_time2;
 legacy_u8 race_exit_request;
 legacy_u8 race_start_sequence_state;
 legacy_u8 game_replay_mode;
+legacy_s8 replay_filename[REPLAY_FILENAME_SIZE];
 legacy_s16 start_flag_animation;
 legacy_s16 checkpoint_frame_interval;
 legacy_s16 timer_ticks_per_frame;
