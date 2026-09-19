@@ -1,4 +1,5 @@
 #include "state_internal.h"
+#include "physics_internal.h"
 #include "trackdata_layout.h"
 #include "track_objects.h"
 #include "externs.h"
@@ -48,8 +49,6 @@ enum PENALTY_DETECTION_RESULT { PENALTY_NOT_DETECTED = 0, PENALTY_DETECTED = 1 }
 #define DEMANDED_GRIP_SPEED_SQUARE_SHIFT 6U
 #define COMBINED_GRIP_PRODUCT_SHIFT 10U
 #define FRONT_WHEEL_ANGLE_SHIFT 2U
-#define ROTATION_DAMPING_NUMERATOR 15
-#define ROTATION_DAMPING_SHIFT 4U
 #define ROTATION_OFFSET_NONE 0
 #define ROTATION_RECENTER_THRESHOLD 8
 #define ROTATION_RECENTER_STEP 1
@@ -507,9 +506,8 @@ static void grip_player_yaw(struct CARSTATE *carstate, legacy_s16 initial_angle,
 static void grip_heading_offset(struct CARSTATE *carstate)
 {
 	if (carstate->car_velocity_heading_offset != 0 && carstate->car_slide_yaw_delta == 0) {
-		carstate->car_velocity_heading_offset = LEGACY_S16_SAR(
-			LEGACY_S16_WRAP_MUL(carstate->car_velocity_heading_offset, ROTATION_DAMPING_NUMERATOR),
-			ROTATION_DAMPING_SHIFT);
+		carstate->car_velocity_heading_offset =
+			damp_collision_angle(carstate->car_velocity_heading_offset);
 	}
 	if (carstate->car_slide_yaw_delta != 0) {
 		carstate->car_velocity_heading_offset = LEGACY_S16_WRAP_SUB(
@@ -586,9 +584,7 @@ void update_grip(struct CARSTATE *carstate, struct SIMD *simd, legacy_s16 grip_b
 		carstate->car_front_wheel_response_angle =
 			LEGACY_S16_SHL(carstate->car_steeringAngle, FRONT_WHEEL_ANGLE_SHIFT);
 		if (carstate->car_slide_yaw_delta != 0) {
-			carstate->car_slide_yaw_delta = LEGACY_S16_SAR(
-				LEGACY_S16_WRAP_MUL(carstate->car_slide_yaw_delta, ROTATION_DAMPING_NUMERATOR),
-				ROTATION_DAMPING_SHIFT);
+			carstate->car_slide_yaw_delta = damp_collision_angle(carstate->car_slide_yaw_delta);
 		}
 	}
 	if (grip_behavior == GRIP_BEHAVIOR_PLAYER) {

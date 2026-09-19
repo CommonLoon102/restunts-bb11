@@ -4,10 +4,10 @@
 
 #include "../c/externs.h"
 #include "../c/state_internal.h"
+#include "../c/physics_internal.h"
 #include "../c/residue.h"
 #include "../c/crash_state.h"
 
-struct LEGACY_EXECUTION_RESIDUE legacy_execution_residue;
 legacy_s16 grassDecelDivTab[5] = {255, 256, 192, 128, 64};
 legacy_s16 terrainrows[30];
 legacy_u8 far *track_element_map;
@@ -126,6 +126,89 @@ static void test_recenter_and_banking(void)
 	assert(car.car_velocity_heading_offset == -15);
 }
 
+static void configure_collision_option(const char *option)
+{
+	legacy_s8 *argv[] = {(legacy_s8 *)"restunts", (legacy_s8 *)option};
+	configure_legacy_collision(option ? 2 : 1, argv);
+}
+
+static void test_legacy_collision_recovery(void)
+{
+	static const char *options[] = {NULL, "/lc:on"};
+	for (unsigned int index = 0; index < sizeof(options) / sizeof(options[0]); index++) {
+		configure_collision_option(options[index]);
+		reset_car();
+		car.car_velocity_heading_offset = -46;
+		for (int frame = 0; frame < 128; frame++) {
+			run_grip(GRIP_BEHAVIOR_PLAYER);
+		}
+		assert(car.car_steeringAngle == CAR_STEERING_CENTERED);
+		assert(car.car_velocity_heading_offset == -15);
+		assert(car.car_front_wheel_response_angle == -15);
+		reset_car();
+		car.car_slide_yaw_delta = -15;
+		run_grip(GRIP_BEHAVIOR_OPPONENT);
+		assert(car.car_slide_yaw_delta == -15);
+		assert(car.car_velocity_heading_offset == 15);
+	}
+}
+
+static void assert_collision_recovery(legacy_s16 angle, legacy_s16 behavior, legacy_u16 speed)
+{
+	reset_car();
+	car.car_actual_speed = speed;
+	car.car_rev_speed = speed;
+	if (behavior == GRIP_BEHAVIOR_PLAYER) {
+		car.car_velocity_heading_offset = angle;
+	} else {
+		car.car_slide_yaw_delta = angle;
+	}
+	for (int frame = 0; frame < 512; frame++) {
+		legacy_s16 before = behavior == GRIP_BEHAVIOR_PLAYER ? car.car_velocity_heading_offset
+															 : car.car_slide_yaw_delta;
+		update_grip(&car, &simd, behavior);
+		legacy_s16 after = behavior == GRIP_BEHAVIOR_PLAYER ? car.car_velocity_heading_offset
+															: car.car_slide_yaw_delta;
+		if (before < 0) {
+			assert(after > before && after <= 0);
+		} else if (before > 0) {
+			assert(after < before && after >= 0);
+		} else {
+			assert(after == 0);
+		}
+		assert(car.car_steeringAngle == CAR_STEERING_CENTERED);
+	}
+	assert(car.car_velocity_heading_offset == 0);
+	assert(car.car_slide_yaw_delta == 0);
+	assert(car.car_front_wheel_response_angle == 0);
+	assert(car.car_actual_speed == speed);
+	assert(car.car_rev_speed == speed);
+}
+
+static void test_corrected_collision_recovery(void)
+{
+	static const struct {
+		legacy_s16 angle;
+		legacy_s16 damped;
+	} cases[] = {
+		{-32768, -30720}, {-4096, -3840}, {-46, -43}, {-16, -15},	{-15, -14},		{0, 0},
+		{15, 14},		  {16, 15},		  {46, 43},	  {4096, 3840}, {32767, 30719},
+	};
+	configure_collision_option("/lc:off");
+	/* Include every formerly stuck negative remainder and the replay's -46 offset. */
+	for (legacy_s16 angle = -64; angle <= 64; angle++) {
+		assert_collision_recovery(angle, GRIP_BEHAVIOR_PLAYER, 16000);
+		assert_collision_recovery(angle, GRIP_BEHAVIOR_OPPONENT, 16000);
+		assert(damp_collision_angle(angle) == -damp_collision_angle(-angle));
+	}
+	for (unsigned int index = 0; index < sizeof(cases) / sizeof(cases[0]); index++) {
+		assert(damp_collision_angle(cases[index].angle) == cases[index].damped);
+		/* Low speed keeps large heading offsets within the available tire grip. */
+		assert_collision_recovery(cases[index].angle, GRIP_BEHAVIOR_PLAYER, 256);
+		assert_collision_recovery(cases[index].angle, GRIP_BEHAVIOR_OPPONENT, 256);
+	}
+}
+
 /* Inputs stay inside the track and use the six valid contact coefficients.
  * Signed edge values stress the explicitly wrapped 16-bit grip arithmetic. */
 static void test_wrapped_grip_sweep(void)
@@ -180,5 +263,7 @@ int main(void)
 	test_contact_and_grass();
 	test_recenter_and_banking();
 	test_wrapped_grip_sweep();
+	test_legacy_collision_recovery();
+	test_corrected_collision_recovery();
 	return 0;
 }

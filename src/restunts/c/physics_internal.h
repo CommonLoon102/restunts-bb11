@@ -39,6 +39,7 @@ legacy_s16 sweep_track_wall_span(struct VECTORLONG *previous_first,
 								 struct VECTORLONG *current_second, legacy_s16 *fraction);
 
 void configure_legacy_collision(legacy_s16 argc, legacy_s8 *argv[]);
+legacy_s16 damp_collision_angle(legacy_s16 angle);
 void interpolate_collision_at_z(struct VECTOR *first, struct VECTOR *second, struct VECTOR *result,
 								legacy_s16 depth);
 

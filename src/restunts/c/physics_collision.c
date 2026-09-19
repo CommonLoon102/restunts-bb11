@@ -7,6 +7,10 @@
 #include "track_collision.h"
 #include "externs.h"
 
+#define COLLISION_ANGLE_DAMPING_NUMERATOR 15
+#define COLLISION_ANGLE_DAMPING_SHIFT 4U
+#define COLLISION_ANGLE_DAMPING_DIVISOR 16L
+
 static legacy_s16 legacy_collision_enabled = 1;
 
 void configure_legacy_collision(legacy_s16 argc, legacy_s8 *argv[])
@@ -21,6 +25,19 @@ void configure_legacy_collision(legacy_s16 argc, legacy_s8 *argv[])
 			legacy_collision_enabled = 1;
 		}
 	}
+}
+
+legacy_s16 damp_collision_angle(legacy_s16 angle)
+{
+	if (legacy_collision_enabled != 0) {
+		return LEGACY_S16_SAR(LEGACY_S16_WRAP_MUL(angle, COLLISION_ANGLE_DAMPING_NUMERATOR),
+							  COLLISION_ANGLE_DAMPING_SHIFT);
+	}
+
+	/* Round toward zero so negative offsets cannot retain a permanent turn.
+	 * Widen before multiplying to keep recovery monotonic at large angles. */
+	return (legacy_s16)((legacy_s32)angle * COLLISION_ANGLE_DAMPING_NUMERATOR /
+						COLLISION_ANGLE_DAMPING_DIVISOR);
 }
 
 static legacy_s16 interpolate_collision_axis(legacy_s16 first, legacy_s16 second, legacy_s32 factor,
