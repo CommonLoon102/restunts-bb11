@@ -20,6 +20,7 @@
 #include "audio_control.h"
 #include "externs.h"
 #include "keyboard.h"
+#include "timing.h"
 
 #define RACE_SCREEN_WIDTH 320
 #define RACE_SCREEN_HEIGHT 200
@@ -36,11 +37,120 @@
 #define RACE_START_POSITION_DISTANCE (-240)
 #define RACE_START_POSITION_SCALE_SHIFT 6U
 #define RACE_RANDOM_VALUE_SHIFT 3U
+#define RACE_REWIND_SCAN_CODE 0x10
+/* Match the replay scrub units; the 100 Hz timer doubles speed after ten seconds. */
+#define RACE_REWIND_UNITS_PER_FRAME 20UL
+#define RACE_REWIND_BASE_SPEED 3UL
+#define RACE_REWIND_DOUBLE_SPEED 6UL
+#define RACE_REWIND_DOUBLE_AFTER_TICKS 1000UL
 
 struct RACE_VIEWPORT_CACHE {
 	legacy_s16 roof_height;
 	legacy_s16 dashboard_bottom;
 };
+
+struct RACE_REWIND_STATE {
+	legacy_s16 active;
+	legacy_u16 origin_frame;
+	legacy_u32 held_ticks;
+	legacy_u32 accumulated;
+};
+
+static void race_rewind_accumulate(struct RACE_REWIND_STATE *rewind, legacy_u32 ticks,
+								   legacy_u32 speed)
+{
+	legacy_u32 limit = (legacy_u32)rewind->origin_frame * RACE_REWIND_UNITS_PER_FRAME;
+	legacy_u32 remaining = limit - rewind->accumulated;
+	if (ticks > remaining / speed) {
+		rewind->accumulated = limit;
+	} else {
+		rewind->accumulated += ticks * speed;
+	}
+}
+
+static void race_rewind_seek(struct RACE_REWIND_STATE *rewind)
+{
+	legacy_u32 delta = timer_get_delta_alt();
+	legacy_u32 base_ticks = RACE_REWIND_DOUBLE_AFTER_TICKS - rewind->held_ticks;
+	if (base_ticks > delta) {
+		base_ticks = delta;
+	}
+	rewind->held_ticks += base_ticks;
+	race_rewind_accumulate(rewind, base_ticks, RACE_REWIND_BASE_SPEED);
+	race_rewind_accumulate(rewind, delta - base_ticks, RACE_REWIND_DOUBLE_SPEED);
+	legacy_u16 target =
+		rewind->origin_frame - (legacy_u16)(rewind->accumulated / RACE_REWIND_UNITS_PER_FRAME);
+	if (target != (legacy_u16)state.game_frame) {
+		restore_gamestate(target);
+		elapsed_time2 = target;
+		while ((legacy_u16)state.game_frame != target) {
+			update_gamestate();
+		}
+	}
+}
+
+static void race_rewind_resume(struct RACE_REWIND_STATE *rewind)
+{
+	/* The next timer tick records new input at the selected frame. Keep the
+	 * restored crash/finish state so releasing Q cannot revive a wrecked car. */
+	dos_interrupts_disable();
+	if (recording_limit_warning_requested != 0 && elapsed_time1 == 0 &&
+		(legacy_u16)state.game_frame < gameconfig.game_recordedframes) {
+		recording_limit_warning_requested = 0;
+		replay_overflow_acknowledged_word = LEGACY_S16_FROM_BITS(
+			LEGACY_U16_REPLACE_LOW_BYTE(replay_overflow_acknowledged_word, 0U));
+	}
+	gameconfig.game_recordedframes = (legacy_u16)state.game_frame;
+	elapsed_time2 = (legacy_u16)state.game_frame;
+	replay_recording_flags = REPLAY_RECORDING_ACTIVE_FLAG | REPLAY_RECORDING_MODIFIED_FLAG;
+	replay_playback_speed = REPLAY_PLAYBACK_NORMAL;
+	frame_callback_countdown = (legacy_u8)timer_ticks_per_frame;
+	race_exit_request = state.game_end_event != CRASH_EVENT_NONE &&
+						state.game_frame_in_sec >= state.game_frames_per_sec;
+	game_replay_mode = REPLAY_MODE_LIVE;
+	is_in_replay = 0;
+	dos_interrupts_enable();
+	rewind->active = 0;
+	kbormouse = 0;
+	audio_carstate();
+}
+
+static void race_update_rewind(struct RACE_REWIND_STATE *rewind)
+{
+	if (rewind->active != 0) {
+		if (kb_get_key_state(RACE_REWIND_SCAN_CODE) != 0) {
+			race_rewind_seek(rewind);
+		} else {
+			race_rewind_resume(rewind);
+		}
+		return;
+	}
+
+	if (idle_expired != 0 || game_replay_mode != REPLAY_MODE_LIVE ||
+		state.game_inputmode == GAME_INPUT_MODE_WAITING ||
+		state.game_end_event == CRASH_EVENT_EXIT ||
+		(race_exit_request != 0 && (race_exit_request == REPLAY_EXIT_REQUESTED ||
+									state.game_end_event == CRASH_EVENT_NONE)) ||
+		kb_get_key_state(RACE_REWIND_SCAN_CODE) == 0) {
+		return;
+	}
+
+	/* Freeze both recording and playback before touching the saved timeline.
+	 * Pending timer input beyond the displayed frame is discarded on release. */
+	dos_interrupts_disable();
+	rewind->origin_frame = (legacy_u16)state.game_frame;
+	elapsed_time2 = rewind->origin_frame;
+	game_replay_mode = REPLAY_MODE_PLAYBACK;
+	is_in_replay = 1;
+	race_exit_request = 0;
+	dos_interrupts_enable();
+	rewind->accumulated = 0;
+	rewind->held_ticks = 0;
+	rewind->active = 1;
+	replay_playback_speed = REPLAY_PLAYBACK_NORMAL;
+	audio_carstate();
+	(void)timer_get_delta_alt();
+}
 
 static legacy_u16 race_prepare_mode(void)
 {
@@ -156,7 +266,7 @@ static void race_check_recording_limit(void)
 	}
 }
 
-static void race_update_dashboard_layout(void)
+static void race_update_dashboard_layout(legacy_s16 rewind_active)
 {
 	game_replay_mode_copy = game_replay_mode;
 	dashb_toggle_copy = dashb_toggle;
@@ -166,7 +276,7 @@ static void race_update_dashboard_layout(void)
 	roofbmpheight_copy = 0;
 	dashboard_visible = 0;
 
-	if (game_replay_mode != REPLAY_MODE_PLAYBACK || idle_expired != 0 ||
+	if (game_replay_mode != REPLAY_MODE_PLAYBACK || idle_expired != 0 || rewind_active != 0 ||
 		(replaybar_toggle == 0 && is_in_replay == 0)) {
 		replaybar_enabled = 0;
 	} else {
@@ -198,12 +308,12 @@ static void race_update_dashboard_layout(void)
 	}
 }
 
-static void race_update_viewport(struct RACE_VIEWPORT_CACHE *cache)
+static void race_update_viewport(struct RACE_VIEWPORT_CACHE *cache, legacy_s16 rewind_active)
 {
 	if (game_replay_mode != game_replay_mode_copy || dashb_toggle != dashb_toggle_copy ||
 		replaybar_toggle != replaybar_toggle_copy || is_in_replay != is_in_replay_copy ||
 		followOpponentFlag != followOpponentFlag_copy) {
-		race_update_dashboard_layout();
+		race_update_dashboard_layout(rewind_active);
 		if (cache->roof_height != roofbmpheight_copy || dashbmp_y_copy != viewport_bottom_cache ||
 			cache->dashboard_bottom != height_above_replaybar) {
 			full_redraw_frames_remaining = video_page_count;
@@ -369,8 +479,14 @@ static legacy_s16 race_process_frame_input(void)
 static void race_run_frames(struct RACE_VIEWPORT_CACHE *cache)
 {
 	legacy_s16 last_processed_frame = -1;
+	struct RACE_REWIND_STATE rewind = {0};
 
 	while (1) {
+		legacy_s16 was_rewinding = rewind.active;
+		race_update_rewind(&rewind);
+		if (was_rewinding != 0 && rewind.active == 0) {
+			last_processed_frame = -1;
+		}
 		if (race_frame_is_ready(&last_processed_frame) == 0) {
 			continue;
 		}
@@ -386,7 +502,9 @@ static void race_run_frames(struct RACE_VIEWPORT_CACHE *cache)
 			init_rect_arrays();
 		}
 
-		race_check_recording_limit();
+		if (rewind.active == 0) {
+			race_check_recording_limit();
+		}
 		if (video_uses_page_flipping != 0) {
 			sprite_select_mcga_backbuffer();
 			dashboard_buffer_index = frame_buffer_index;
@@ -394,7 +512,7 @@ static void race_run_frames(struct RACE_VIEWPORT_CACHE *cache)
 			sprite_select_render_window();
 		}
 
-		race_update_viewport(cache);
+		race_update_viewport(cache, rewind.active);
 		race_draw_frame();
 		if (game_replay_mode == REPLAY_MODE_PAUSED &&
 			race_start_sequence_state == RACE_START_SEQUENCE_INACTIVE) {
@@ -402,7 +520,7 @@ static void race_run_frames(struct RACE_VIEWPORT_CACHE *cache)
 			init_game_state_with_frame_rate(configured_frame_rate);
 		}
 
-		if (race_process_frame_input() != 0) {
+		if (rewind.active == 0 && race_process_frame_input() != 0) {
 			break;
 		}
 	}

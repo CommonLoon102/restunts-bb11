@@ -48,6 +48,15 @@ Main repository: https://github.com/4d-stunts/restunts
 Run `restunts.exe` in DOSBox or DOSBox-X with `core=dynamic` and `cycles=max`.
 Mount `stunts/` directly as a DOS drive in the emulator.
 
+### Rewind while driving
+
+Hold **Q** during a race to rewind, then release it to continue driving from
+that point. The race stays visible without opening the replay controls or a
+menu. Rewind speed doubles after holding Q for ten seconds and stops at the
+start of the available recording. Releasing Q replaces the later recording
+with your new driving; the run is marked as modified, like continuing from a
+replay, and does not qualify for the normal high-score table.
+
 ### Optional parameters
 
 Run `restunts.exe /nointro` to skip the startup intro and open the main menu
