@@ -21,6 +21,18 @@ struct CARSTATE *ghost_car_state(void)
 }
 
 static legacy_u32 trace_hash, random_state = 1;
+static unsigned fps_reset_count;
+static unsigned supersight_reset_count;
+
+void frame_supersight_reset(void)
+{
+	supersight_reset_count++;
+}
+
+void frame_fps_reset(void)
+{
+	fps_reset_count++;
+}
 static legacy_u16 keyboard_char, joystick_flags;
 static legacy_s16 key_states[128], mouse_samples[4][3], joystick_axis;
 static unsigned mouse_sample_index;
@@ -167,6 +179,10 @@ static void reset_inputs(void)
 	memset(key_states, 0, sizeof(key_states));
 	memset(mouse_samples, 0, sizeof(mouse_samples));
 	keyboard_char = joystick_flags = 0;
+	supersight_enabled = fps_display_enabled = 0;
+	fps_reset_count = supersight_reset_count = 0;
+	video_page_count = 2;
+	full_redraw_frames_remaining = 0;
 	mouse_sample_index = 0;
 	joystick_axis = 0;
 	joystick_enabled = 0;
@@ -471,6 +487,42 @@ static void test_ghost_view_shortcut(void)
 	ghost_fixture_active = 0;
 }
 
+static void test_display_shortcuts(void)
+{
+	assert((legacy_u16)KEY_F11 == 0x8500U);
+	assert((legacy_u16)KEY_F12 == 0x8600U);
+	for (legacy_u8 mode = REPLAY_MODE_LIVE; mode <= REPLAY_MODE_PAUSED; mode++) {
+		for (legacy_u16 camera = CAMERA_MODE_COCKPIT; camera < CAMERA_MODE_COUNT; camera++) {
+			reset_inputs();
+			game_replay_mode = mode;
+			cameramode = camera;
+			followOpponentFlag = 1;
+			assert(supersight_enabled == 0 && fps_display_enabled == 0);
+			assert(handle_ingame_kb_shortcuts(KEY_F11) == 1);
+			assert(fps_display_enabled == 1 && supersight_enabled == 0);
+			assert(fps_reset_count == 1);
+			assert(full_redraw_frames_remaining == video_page_count);
+			full_redraw_frames_remaining = 0;
+			assert(handle_ingame_kb_shortcuts(KEY_F12) == 1);
+			assert(fps_display_enabled == 1 && supersight_enabled == 1);
+			assert(supersight_reset_count == 1);
+			assert(full_redraw_frames_remaining == video_page_count);
+			assert(game_replay_mode == mode && cameramode == camera);
+			assert(followOpponentFlag == 1);
+			/* Camera changes and live/replay transitions retain the session toggles. */
+			assert(handle_ingame_kb_shortcuts(KEY_F2) == 1);
+			game_replay_mode = REPLAY_MODE_PLAYBACK;
+			assert(fps_display_enabled == 1 && supersight_enabled == 1);
+			assert(handle_ingame_kb_shortcuts(KEY_F11) == 1);
+			assert(fps_display_enabled == 0 && supersight_enabled == 1);
+			assert(fps_reset_count == 2);
+			assert(handle_ingame_kb_shortcuts(KEY_F12) == 1);
+			assert(fps_display_enabled == 0 && supersight_enabled == 0);
+			assert(supersight_reset_count == 2);
+		}
+	}
+}
+
 int main(void)
 {
 	legacy_u32 input_hash = input_fingerprint();
@@ -481,6 +533,7 @@ int main(void)
 	test_event_priority();
 	test_recording_input_modes();
 	test_ghost_view_shortcut();
+	test_display_shortcuts();
 #ifdef INPUT_RECORD_BASELINE
 	fprintf(stdout, "%08lx %08lx %08lx %08lx %08lx\n", (unsigned long)input_hash,
 			(unsigned long)scrollbar_hash, (unsigned long)record_hash, (unsigned long)callback_hash,
@@ -490,7 +543,8 @@ int main(void)
 	assert(scrollbar_hash == 0x207b3fe7UL);
 	assert(record_hash == 0x0fac5847UL);
 	assert(callback_hash == 0x9bd7fd3eUL);
-	assert(shortcut_hash == 0xd2825d76UL);
+	/* F11/F12 are now handled without triggering the paused-race fallback. */
+	assert(shortcut_hash == 0xab8a7016UL);
 #endif
 	return 0;
 }

@@ -112,11 +112,17 @@ static legacy_u16 queued_ghost_primitives;
 #define SHAPE3D_PRIMITIVE_ALWAYS_VISIBLE_FLAG 1U
 #define SHAPE3D_PRIMITIVE_SKIP_DEPTH_SORT_FLAG 2U
 
-#define POLYINFO_LIST_CAPACITY 400U
 #define POLYINFO_LIST_SENTINEL LEGACY_U16_MAX
-#define POLYINFO_DATA_LAST_VALID_OFFSET 10354U
-#define POLYINFO_DATA_ALLOCATION_SIZE 10400U
-#define POLYINFO_MAX_RENDER_POINTS 13U
+#define POLYINFO_LEGACY_LAST_VALID_OFFSET 10354U
+/* A ten-vertex polygon can gain five vertices at the near plane. Reserve
+ * a full record before beginning another primitive, including clipped ones. */
+#define POLYINFO_MAX_RENDER_POINTS 15U
+#define POLYINFO_MAX_RECORD_SIZE (6U + 4U * POLYINFO_MAX_RENDER_POINTS)
+#define POLYINFO_SUPERSIGHT_LAST_VALID_OFFSET                                                      \
+	(POLYINFO_SUPERSIGHT_DATA_SIZE - POLYINFO_MAX_RECORD_SIZE)
+
+static legacy_u16 polyinfo_primitive_capacity = POLYINFO_LEGACY_PRIMITIVE_CAPACITY;
+static legacy_u16 polyinfo_last_valid_offset = POLYINFO_LEGACY_LAST_VALID_OFFSET;
 
 #define PROJECTION_EXTENT_SCALE 2048L
 #define PROJECTION_EXTENT_DIVISOR 360L
@@ -824,10 +830,10 @@ extern legacy_u16 polygon_insert_newest(legacy_u16 depth, legacy_u16 sort_by_dep
 		polyinfoptrnext,
 		LEGACY_U16_WRAP_ADD(LEGACY_U16_WRAP_MUL(transshapenumvertscopy, sizeof(struct POINT2D)),
 							6U));
-	if (polyinfonumpolys == POLYINFO_LIST_CAPACITY) {
+	if (polyinfonumpolys == polyinfo_primitive_capacity) {
 		return 1;
 	}
-	if (polyinfoptrnext <= POLYINFO_DATA_LAST_VALID_OFFSET) {
+	if (polyinfoptrnext <= polyinfo_last_valid_offset) {
 		return 0;
 	}
 	return 1;
@@ -927,8 +933,20 @@ void polyinfo_reset(void)
 	polyinfonumpolys = 0;
 	polyinfoptrnext = 0;
 	polygon_buffer_full = 0;
-	polygon_next_index[POLYINFO_LIST_CAPACITY] = POLYINFO_LIST_SENTINEL;
-	polygon_list_tail = POLYINFO_LIST_CAPACITY;
+	polygon_next_index[polyinfo_primitive_capacity] = POLYINFO_LIST_SENTINEL;
+	polygon_list_tail = polyinfo_primitive_capacity;
+}
+
+void polyinfo_set_supersight(legacy_u8 enabled)
+{
+	legacy_u16 capacity =
+		enabled != 0U ? POLYINFO_SUPERSIGHT_PRIMITIVE_CAPACITY : POLYINFO_LEGACY_PRIMITIVE_CAPACITY;
+	if (polyinfo_primitive_capacity != capacity) {
+		polyinfo_primitive_capacity = capacity;
+		polyinfo_last_valid_offset = enabled != 0U ? POLYINFO_SUPERSIGHT_LAST_VALID_OFFSET
+												   : POLYINFO_LEGACY_LAST_VALID_OFFSET;
+		polyinfo_reset();
+	}
 }
 
 void init_direction_sector_thresholds(void)
@@ -941,7 +959,7 @@ void init_direction_sector_thresholds(void)
 
 void init_polyinfo(void)
 {
-	polyinfoptr = mmgr_alloc_resbytes("polyinfo", POLYINFO_DATA_ALLOCATION_SIZE);
+	polyinfoptr = mmgr_alloc_resbytes("polyinfo", POLYINFO_SUPERSIGHT_DATA_SIZE);
 
 	mat_rot_y(&mat_y0, 0);
 	mat_rot_y(&mat_y100, ANGLE_QUARTER_TURN);
@@ -1253,7 +1271,7 @@ static legacy_u16 shape3d_legacy_record_index(legacy_u16 record_index)
 
 void shape3d_render_queued_primitives(void)
 {
-	legacy_u16 record_index = POLYINFO_LIST_CAPACITY;
+	legacy_u16 record_index = polyinfo_primitive_capacity;
 	legacy_u16 rendered_ghost_primitives = 0;
 	struct POINT2D points[POLYINFO_MAX_RENDER_POINTS];
 	for (legacy_u16 primitive_index = 0; primitive_index < polyinfonumpolys; primitive_index++) {

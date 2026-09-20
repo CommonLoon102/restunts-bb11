@@ -72,6 +72,11 @@ extern struct RECTANGLE trackpreview_cliprect;
 struct TRACKOBJECT *frame_track_object_from_legacy_index(legacy_u8 index);
 void transformed_shape_add_for_sort(legacy_s16 z_adjust, legacy_s16 type);
 
+void frame_supersight_reset(void);
+void frame_fps_reset(void);
+legacy_s16 frame_fps_expire_idle(void);
+void frame_fps_record_presented(void);
+void frame_fps_present_roof(void);
 struct RECTANGLE *draw_ingame_text(void);
 struct RECTANGLE *init_crak(legacy_s16 frame, legacy_s16 top, legacy_s16 height);
 struct RECTANGLE *do_sinking(legacy_s16 frame, legacy_s16 top, legacy_s16 height);

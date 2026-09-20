@@ -48,6 +48,27 @@ Main repository: https://github.com/4d-stunts/restunts
 Run `restunts.exe` in DOSBox or DOSBox-X with `core=dynamic` and `cycles=max`.
 Mount `stunts/` directly as a DOS drive in the emulator.
 
+### SuperSight and FPS display
+
+Press **F12** while driving or viewing a replay to toggle SuperSight. It extends
+visibility from the original 23 candidate tiles to 110 and uses detailed models
+where capacity permits. Crowded scenes reduce distant detail and then draw
+fewer distant tiles. Nearby frames reuse the last suitable quality level, with
+periodic full-detail checks and fresh checks after camera changes or replay seeks.
+SuperSight allows up to 592 primitives with a 13 KiB
+rendering buffer and respects the graphics menu's scenery setting. Switching
+it off restores the original draw distance, detail policy, and rendering limits.
+The enhancement is based on Alberto Marnetto's
+[SuperSight](https://marnetto.net/2025/02/20/broderbund-stunts-1).
+
+Press **F11** to toggle a frame-rate counter in the top-left corner. It measures
+presented frames over approximately one second and rounds down, for example
+`20 FPS`. Values below 20 are red; values of 20 or higher are green.
+
+Both features start off and retain their selected state until toggled again or
+the game exits. They work in all driving and replay cameras, including opponent
+and ghost views and paused replays. Holding either key toggles only once.
+
 ### Race against a ghost
 
 In **Opponent**, choose **Clock**, then **Ghost** to select a replay. The game

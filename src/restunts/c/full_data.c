@@ -51,8 +51,8 @@ struct SHAPE3D game3dshapes[130];
 struct TRANSFORMEDSHAPE3D currenttransshape[29];
 struct TRANSFORMEDSHAPE3D *curtransshape_ptr;
 
-legacy_s16 polygon_next_index[401];
-legacy_u8 far *polyinfoptrs[400];
+legacy_s16 polygon_next_index[POLYINFO_SUPERSIGHT_PRIMITIVE_CAPACITY + 1U];
+legacy_u8 far *polyinfoptrs[POLYINFO_SUPERSIGHT_PRIMITIVE_CAPACITY];
 
 struct RECTANGLE frame_layer_rects[15];
 struct RECTANGLE intro_redraw_cliprect;

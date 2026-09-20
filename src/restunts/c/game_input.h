@@ -57,5 +57,7 @@ legacy_s16 input_repeat_check(legacy_s16 duration);
 void mouse_minmax_position(legacy_s16 inset);
 
 extern legacy_s16 input_combined_flags;
+extern legacy_u8 supersight_enabled;
+extern legacy_u8 fps_display_enabled;
 
 #endif

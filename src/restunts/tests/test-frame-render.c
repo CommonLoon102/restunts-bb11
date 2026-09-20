@@ -11,11 +11,15 @@
 
 struct TRACKOBJECT trkObjectList[215];
 legacy_s16 camera_track_height_offset;
+legacy_u8 supersight_enabled;
 
 static uint64_t trace_hash = UINT64_C(1469598103934665603);
 static legacy_s16 fixture_plane_distance;
 static legacy_s16 transform_stop_at;
 static legacy_s16 transform_count;
+static legacy_s16 transform_capacity;
+static legacy_s16 queue_resets;
+static legacy_s16 check_retry_brake_paint;
 static legacy_s16 rejected_shape;
 static struct VECTOR flag_vertices[4];
 static legacy_u8 terrain_map[900];
@@ -156,7 +160,14 @@ legacy_u16 shape3d_transform_and_queue(struct TRANSFORMEDSHAPE3D *shape)
 	trace_shape(shape);
 	trace_word(backlights_paint_override);
 	transform_count++;
-	if (transform_count == transform_stop_at) {
+	if (check_retry_brake_paint != 0 && transform_count == 1) {
+		assert(backlights_paint_override == BACKLIGHT_PAINT_DEFAULT);
+	}
+	if (transform_count == transform_stop_at ||
+		(transform_capacity != 0 && transform_count > transform_capacity)) {
+		if (check_retry_brake_paint != 0) {
+			backlights_paint_override = BACKLIGHT_PAINT_BRAKING;
+		}
 		return 1;
 	}
 	return transform_count == rejected_shape ? 65535U : 0;
@@ -185,6 +196,12 @@ legacy_u8 subst_hillroad_track(legacy_u8 terrain, legacy_u8 element)
 	trace_word(terrain);
 	trace_word(element);
 	return element;
+}
+
+void polyinfo_reset(void)
+{
+	transform_count = 0;
+	queue_resets++;
 }
 
 static void test_camera_modes(void)
@@ -466,6 +483,7 @@ static void test_ghost_uses_independent_visual_state(void)
 	lookahead[0].east = 10;
 	lookahead[0].south = 9;
 	tiles.lookahead = lookahead;
+	tiles.count = FRAME_LOOKAHEAD_TILE_COUNT;
 	for (unsigned index = 1; index < FRAME_LOOKAHEAD_TILE_COUNT; index++) {
 		tiles.markers[index] = FRAME_TILE_UNAVAILABLE_MARKER;
 	}
@@ -566,6 +584,128 @@ static void test_ghost_camera_modes(void)
 	followOpponentFlag = 0;
 }
 
+static void test_supersight_selection(void)
+{
+	/* The eight original headings select four cardinal rotations and their
+	 * mirrored painter order. Every one must cover the same 110 unique cells. */
+	static const struct FRAME_LOOKAHEAD_TILE headings[] = {{2, -4, 2}, {-2, -4, 2}, {4, -2, 2},
+														   {4, 2, 2},  {-2, 4, 2},	{2, 4, 2},
+														   {-4, 2, 2}, {-4, -2, 2}};
+	struct FRAME_CAMERA camera = {0};
+	camera.position.x = 15 * 1024;
+	camera.position.z = 14 * 1024;
+	supersight_enabled = 1;
+	for (unsigned heading = 0; heading < 8; heading++) {
+		for (detail_level = 0; detail_level < 5; detail_level++) {
+			struct FRAME_TILE_SELECTION tiles = {0};
+			configure_track();
+			tiles.lookahead = &headings[heading];
+			frame_select_tiles(&tiles, &camera);
+			assert(tiles.count == FRAME_SUPERSIGHT_TILE_COUNT);
+			for (unsigned i = 0; i < FRAME_SUPERSIGHT_TILE_COUNT; i++) {
+				assert(tiles.markers[i] == FRAME_TILE_DRAW_MARKER);
+				assert(tiles.lookahead[i].detail == supersight_tiles[i].priority);
+				for (unsigned j = 0; j < i; j++) {
+					assert(tiles.east[i] != tiles.east[j] || tiles.south[i] != tiles.south[j]);
+				}
+			}
+			assert(tiles.east[109] == 15 && tiles.south[109] == 15);
+		}
+	}
+	/* Expanded view still respects the scenery option and map boundaries. */
+	for (unsigned corner = 0; corner < 4; corner++) {
+		struct FRAME_TILE_SELECTION tiles = {0};
+		camera.position.x = corner & 1 ? 29 * 1024 : 0;
+		camera.position.z = corner & 2 ? 29 * 1024 : 0;
+		tiles.lookahead = &headings[corner * 2];
+		frame_select_tiles(&tiles, &camera);
+		for (unsigned i = 0; i < FRAME_SUPERSIGHT_TILE_COUNT; i++) {
+			if (tiles.markers[i] == FRAME_TILE_DRAW_MARKER) {
+				assert(tiles.east[i] >= 0 && tiles.east[i] <= 29);
+				assert(tiles.south[i] >= 0 && tiles.south[i] <= 29);
+			}
+		}
+	}
+	camera.position.x = 15 * 1024;
+	camera.position.z = 14 * 1024;
+	for (detail_level = 0; detail_level < 5; detail_level++) {
+		struct FRAME_TILE_SELECTION tiles = {0};
+		configure_track();
+		element_map[15 + 14 * 30] = 1;
+		trkObjectList[1].ss_multiTileFlag = 0;
+		trkObjectList[1].ss_physicalModel = FRAME_SCENERY_PHYSICAL_MODEL_FIRST;
+		state.playerstate.car_position.lx = 15L * 65536L;
+		state.playerstate.car_position.lz = 14L * 65536L;
+		tiles.lookahead = &headings[0];
+		frame_select_tiles(&tiles, &camera);
+		assert(tiles.elements[107] == (detail_level == 0 ? 1 : 0));
+	}
+	supersight_enabled = 0;
+}
+
+static void test_supersight_capacity_retries(void)
+{
+	struct FRAME_CAMERA camera = {0};
+	struct FRAME_TILE_SELECTION tiles = {0};
+	struct FRAME_CAR_RENDER cars[2] = {{0}};
+	static const struct FRAME_LOOKAHEAD_TILE north = {2, -4, 2};
+	configure_track();
+	reset_shapes();
+	memset(terrain_map, 1, sizeof(terrain_map));
+	memset(&state, 0, sizeof(state));
+	camera.position.x = 15 * 1024;
+	camera.position.z = 14 * 1024;
+	tiles.lookahead = &north;
+	detail_level = 1;
+	cameramode = CAMERA_MODE_COCKPIT;
+	followOpponentFlag = 0;
+	gameconfig.game_opponenttype = 0;
+	supersight_enabled = 1;
+	frame_select_tiles(&tiles, &camera);
+	check_retry_brake_paint = 1;
+	frame_supersight_reset();
+	transform_capacity = 35;
+	queue_resets = 0;
+	frame_draw_supersight(&tiles, &camera, cars, 0, 0, 0);
+	assert(queue_resets == 5);
+	assert(tiles.first == 80);
+	assert(transform_count == 30);
+	/* Same-view frames skip failed levels, including paused frame zero. A full
+	 * probe recovers quality within sixteen presented frames without relying
+	 * on advancing simulation time. */
+	transform_capacity = 200;
+	for (unsigned frame = 1; frame <= FRAME_SUPERSIGHT_PROBE_INTERVAL; frame++) {
+		polyinfo_reset();
+		legacy_s16 resets = queue_resets;
+		tiles.lookahead = &north;
+		frame_select_tiles(&tiles, &camera);
+		frame_draw_supersight(&tiles, &camera, cars, 0, 0, 0);
+		assert(queue_resets == resets);
+		assert(tiles.first == (frame < FRAME_SUPERSIGHT_PROBE_INTERVAL ? 80 : 0));
+	}
+	assert(transform_count == 110);
+	/* Camera changes and explicit replay seeks recover on their very next frame. */
+	supersight_attempt_hint = 5;
+	camera.yaw = 128;
+	assert(frame_supersight_first_attempt(&tiles, &camera) == 0);
+	supersight_attempt_hint = 5;
+	select_rect_rc.right++;
+	assert(frame_supersight_first_attempt(&tiles, &camera) == 0);
+	supersight_attempt_hint = 5;
+	frame_supersight_reset();
+	assert(frame_supersight_first_attempt(&tiles, &camera) == 0);
+	transform_capacity = 1;
+	polyinfo_reset();
+	tiles.lookahead = &north;
+	frame_select_tiles(&tiles, &camera);
+	frame_draw_supersight(&tiles, &camera, cars, 0, 0, 0);
+	assert(tiles.first == 106);
+	assert(transform_count == 2);
+	supersight_enabled = 0;
+	transform_capacity = 0;
+	check_retry_brake_paint = 0;
+}
+
 int main(void)
 {
 	test_camera_modes();
@@ -579,6 +719,8 @@ int main(void)
 	assert(trace_hash == UINT64_C(0xcf35ecd7319fcd5c));
 	test_ghost_uses_independent_visual_state();
 	test_ghost_camera_modes();
-	puts("Frame rendering snapshots and ghost isolation passed.");
+	test_supersight_selection();
+	test_supersight_capacity_retries();
+	puts("Frame rendering snapshots, ghost isolation and SuperSight passed.");
 	return 0;
 }

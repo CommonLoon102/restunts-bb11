@@ -12,6 +12,83 @@
 static struct CARSTATE ghost_fixture;
 static legacy_s16 ghost_fixture_active;
 static legacy_s16 opponent_view_disabled;
+static legacy_u8 supersight_reset_pending;
+static unsigned input_polls, input_exit_poll, fps_expire_poll, fps_expiry_checks;
+
+legacy_s16 frame_fps_expire_idle(void)
+{
+	fps_expiry_checks++;
+	if (fps_expire_poll != 0 && input_polls >= fps_expire_poll) {
+		fps_expire_poll = 0;
+		return 1;
+	}
+	return 0;
+}
+
+legacy_s16 input_checking(legacy_s16 delta)
+{
+	assert(delta == 1);
+	assert(++input_polls <= input_exit_poll);
+	return input_polls == input_exit_poll ? KEY_F2 : 0;
+}
+
+legacy_s16 handle_ingame_kb_shortcuts(legacy_s16 key)
+{
+	assert(key == KEY_F2);
+	return 1;
+}
+
+legacy_s16 mouse_multi_hittest(legacy_s16 count, const struct BUTTON_AREA *buttons)
+{
+	(void)count;
+	(void)buttons;
+	return REPLAY_NO_SELECTION;
+}
+
+legacy_s16 kb_get_key_state(legacy_s16 scancode)
+{
+	assert(scancode == REPLAY_CUSTOM_CAMERA_MODIFIER_SCAN_CODE);
+	return 0;
+}
+
+legacy_u32 timer_get_delta_alt(void)
+{
+	return 1;
+}
+
+void sprite_select_screen(void)
+{
+}
+
+legacy_s16 input_do_checking(legacy_s16 delta)
+{
+	(void)delta;
+	assert(0 && "Unexpected replay seek");
+	return 0;
+}
+
+void restore_gamestate(legacy_u16 target)
+{
+	(void)target;
+	assert(0 && "Unexpected replay restore");
+}
+
+void update_gamestate(void)
+{
+	assert(0 && "Unexpected replay update");
+}
+
+legacy_u32 timer_wait_ticks(legacy_u32 ticks)
+{
+	(void)ticks;
+	assert(0 && "Unexpected replay restart");
+	return 0;
+}
+
+void frame_supersight_reset(void)
+{
+	supersight_reset_pending = 1;
+}
 
 struct CARSTATE *ghost_car_state(void)
 {
@@ -124,6 +201,8 @@ void mouse_minmax_position(legacy_s16 enabled)
 }
 void init_game_state_with_frame_rate_byte(legacy_u16 rate)
 {
+	assert(supersight_reset_pending != 0);
+	supersight_reset_pending = 0;
 	event(14);
 	hash_word(rate);
 	state.game_frame = 0;
@@ -262,6 +341,8 @@ legacy_s16 setup_player_cars(void)
 }
 void init_game_state(legacy_s16 mode)
 {
+	assert(supersight_reset_pending != 0);
+	supersight_reset_pending = 0;
 	event(30);
 	hash_word(mode);
 	hash_word(framespersec);
@@ -273,6 +354,7 @@ void show_graphic_levels_menu(void)
 
 static void reset_viewer(void)
 {
+	supersight_reset_pending = 0;
 	memset(&state, 0, sizeof(state));
 	memset(&gameconfig, 0, sizeof(gameconfig));
 	memset(replay_controls_drawn, 0, 2 * sizeof(replay_controls_drawn[0]));
@@ -469,6 +551,26 @@ static void test_ghost_view_display_option(void)
 	assert(opponent_view_disabled == 1 && followOpponentFlag == 0);
 }
 
+static void test_paused_replay_fps_refresh(void)
+{
+	reset_viewer();
+	game_replay_mode = REPLAY_MODE_PLAYBACK;
+	is_in_replay = 1;
+	input_polls = fps_expiry_checks = 0;
+	input_exit_poll = 10;
+	fps_expire_poll = 3;
+	replay_handle_input();
+	assert(input_polls == 3 && fps_expiry_checks == 3);
+	/* Once the value is zero, remain in the input loop until real camera input. */
+	replay_handle_input();
+	assert(input_polls == 10 && fps_expiry_checks == 9);
+	/* Playing replays already return to present another camera frame. */
+	is_in_replay = 0;
+	input_polls = fps_expiry_checks = 0;
+	replay_handle_input();
+	assert(input_polls == 1 && fps_expiry_checks == 0);
+}
+
 int main(void)
 {
 	legacy_u32 menu = menu_fingerprint();
@@ -476,6 +578,7 @@ int main(void)
 	test_pause_cleanup();
 	test_save_cleanup();
 	test_ghost_view_display_option();
+	test_paused_replay_fps_refresh();
 #ifdef REPLAY_MENU_BASELINE
 	printf("%08lx %08lx\n", (unsigned long)menu, (unsigned long)draw);
 #else

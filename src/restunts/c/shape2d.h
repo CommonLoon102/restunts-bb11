@@ -74,8 +74,10 @@ void sprite_select_screen_and_clear(void);
 void sprite_select_render_window(void);
 void sprite_select_render_window_and_clear(void);
 
-void sprite_save_context(struct SPRITE *saved_context);
-void sprite_restore_context(struct SPRITE *saved_context);
+/* A context includes both drawing and screen sprites. Callers allocate both. */
+#define SPRITE_STATE_COUNT 2U
+void sprite_save_context(struct SPRITE saved_context[SPRITE_STATE_COUNT]);
+void sprite_restore_context(struct SPRITE saved_context[SPRITE_STATE_COUNT]);
 
 legacy_s16 sprite_push_background(legacy_s16 left, legacy_s16 right, legacy_s16 top,
 								  legacy_s16 bottom);

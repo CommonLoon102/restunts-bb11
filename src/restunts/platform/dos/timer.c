@@ -33,6 +33,7 @@ enum DOS_TIMER_CALLBACK_EXECUTION_STATE {
 };
 
 static legacy_u32 dos_timer_counter;
+static legacy_u32 dos_timer_realtime_counter;
 static legacy_s16 dos_timer_callbacks_suspended;
 void(far *dos_timer_callbacks[DOS_TIMER_CALLBACK_CAPACITY])(void);
 
@@ -122,6 +123,7 @@ static void interrupt dos_timer_interrupt(void)
 	/* Match the original IRQ0 handler: allow nested interrupts after the
 	 * compiler's interrupt prologue has saved the interrupted registers. */
 	_enable();
+	dos_timer_increment_counter(&dos_timer_realtime_counter);
 	dos_timer_divider = (legacy_u16)(dos_timer_divider - 1U);
 	if (LEGACY_S16_FROM_BITS(dos_timer_divider) <= 0) {
 		dos_timer_slow_low = (legacy_u16)(dos_timer_slow_low + 1U);
@@ -242,6 +244,21 @@ void dos_timer_setup_interrupt(void)
 	outp(DOS_TIMER_PIT_COUNTER_PORT, DOS_TIMER_PIT_DIVISOR_LOW_BYTE);
 	outp(DOS_TIMER_PIT_COUNTER_PORT, DOS_TIMER_PIT_DIVISOR_HIGH_BYTE);
 	add_exit_handler(dos_timer_shutdown);
+}
+
+legacy_u32 dos_timer_get_realtime_counter(void)
+{
+	legacy_u32 result;
+	__asm {
+		pushf
+		cli
+		mov ax, word ptr dos_timer_realtime_counter
+		mov dx, word ptr dos_timer_realtime_counter+DOS_TIMER_DWORD_HIGH_WORD_OFFSET
+		popf
+		mov word ptr result, ax
+		mov word ptr result+DOS_TIMER_DWORD_HIGH_WORD_OFFSET, dx
+	}
+	return result;
 }
 
 legacy_u32 timer_get_counter(void)

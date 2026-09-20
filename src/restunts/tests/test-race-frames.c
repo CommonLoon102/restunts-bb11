@@ -11,6 +11,26 @@
 static uint32_t trace_hash = UINT32_C(2166136261);
 static unsigned scenario, frames, keys;
 static unsigned scripted_rewind;
+static unsigned presented_frames;
+
+void frame_supersight_reset(void)
+{
+}
+
+void frame_fps_reset(void)
+{
+	presented_frames = 0;
+}
+
+void frame_fps_present_roof(void)
+{
+}
+
+void frame_fps_record_presented(void)
+{
+	presented_frames++;
+	assert(presented_frames == frames);
+}
 void ghost_update(legacy_u32 frame, legacy_u16 frame_rate)
 {
 	assert(frame == (game_replay_mode == REPLAY_MODE_PAUSED

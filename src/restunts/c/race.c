@@ -22,6 +22,7 @@
 #include "externs.h"
 #include "keyboard.h"
 #include "timing.h"
+#include "frame_internal.h"
 
 #define RACE_SCREEN_WIDTH 320
 #define RACE_SCREEN_HEIGHT 200
@@ -82,6 +83,7 @@ static void race_rewind_seek(struct RACE_REWIND_STATE *rewind)
 	legacy_u16 target =
 		rewind->origin_frame - (legacy_u16)(rewind->accumulated / RACE_REWIND_UNITS_PER_FRAME);
 	if (target != (legacy_u16)state.game_frame) {
+		frame_supersight_reset();
 		restore_gamestate(target);
 		elapsed_time2 = target;
 		while ((legacy_u16)state.game_frame != target) {
@@ -264,6 +266,7 @@ static void race_check_recording_limit(void)
 		}
 
 		recording_limit_warning_requested = 0;
+		frame_fps_reset();
 	}
 }
 
@@ -368,6 +371,7 @@ static void race_draw_frame(void)
 	}
 
 	frame_present(&rect_windshield);
+	frame_fps_present_roof();
 	if (dashboard_visible != 0) {
 		sprite_set_target_clip_bounds(0, RACE_SCREEN_WIDTH, dashbmp_y_copy, height_above_replaybar);
 		setup_car_shapes(DASHBOARD_OPERATION_UPDATE);
@@ -385,6 +389,7 @@ static void race_draw_frame(void)
 		dashboard_buffer_index = frame_buffer_index;
 		mouse_draw_transparent_check();
 	}
+	frame_fps_record_presented();
 }
 
 static void race_handle_driving_input(void)
@@ -481,6 +486,8 @@ static void race_run_frames(struct RACE_VIEWPORT_CACHE *cache)
 {
 	legacy_s16 last_processed_frame = -1;
 	struct RACE_REWIND_STATE rewind = {0};
+	frame_supersight_reset();
+	frame_fps_reset();
 
 	while (1) {
 		legacy_s16 was_rewinding = rewind.active;

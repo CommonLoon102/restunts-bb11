@@ -76,6 +76,8 @@ legacy_u16 select_cliprect_rotate(legacy_s16 angZ, legacy_s16 angX, legacy_s16 a
 								  struct RECTANGLE *cliprect, legacy_s16 half_scale);
 void init_polyinfo(void);
 void polyinfo_reset(void);
+/* Changing capacity discards queued primitives; select the mode before drawing a frame. */
+void polyinfo_set_supersight(legacy_u8 enabled);
 void shape3d_render_queued_primitives(void);
 /* Logical original addresses are independent of the host's allocation layout. */
 struct SHAPE3D_LEGACY_OPPONENT_RENDER_CONTEXT {
