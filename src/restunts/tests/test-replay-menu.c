@@ -9,6 +9,15 @@
 #undef memcpy
 #undef printf
 
+static struct CARSTATE ghost_fixture;
+static legacy_s16 ghost_fixture_active;
+static legacy_s16 opponent_view_disabled;
+
+struct CARSTATE *ghost_car_state(void)
+{
+	return ghost_fixture_active != 0 ? &ghost_fixture : 0;
+}
+
 void ghost_end_race(void)
 {
 }
@@ -148,6 +157,9 @@ legacy_u16 show_dialog(legacy_s16 type, legacy_s16 save, void far *text, legacy_
 	hash_word(color);
 	hash_word(initial);
 	if (disabled != 0) {
+		if (text == replay_mode_options_dialog_id) {
+			opponent_view_disabled = disabled[REPLAY_MODE_ACTION_FOLLOW_OPPONENT];
+		}
 		for (unsigned index = 0; index < count; index++) {
 			hash_word(disabled[index]);
 		}
@@ -439,12 +451,31 @@ static void test_save_cleanup(void)
 	assert(save_count == 2 && write_count == 1 && dialog_count == 3 && g_is_busy == 0);
 }
 
+static void test_ghost_view_display_option(void)
+{
+	reset_viewer();
+	menu_action = REPLAY_PAUSE_ACTION_DISPLAY_OPTIONS;
+	scenario = REPLAY_MODE_ACTION_FOLLOW_OPPONENT + 1;
+	gameconfig.game_opponenttype = 0;
+	ghost_fixture_active = 1;
+	followOpponentFlag = 0;
+	replay_display_options();
+	assert(opponent_view_disabled == 0 && followOpponentFlag == 1);
+	replay_display_options();
+	assert(opponent_view_disabled == 0 && followOpponentFlag == 0);
+	ghost_fixture_active = 0;
+	scenario = 0;
+	replay_display_options();
+	assert(opponent_view_disabled == 1 && followOpponentFlag == 0);
+}
+
 int main(void)
 {
 	legacy_u32 menu = menu_fingerprint();
 	legacy_u32 draw = draw_fingerprint();
 	test_pause_cleanup();
 	test_save_cleanup();
+	test_ghost_view_display_option();
 #ifdef REPLAY_MENU_BASELINE
 	printf("%08lx %08lx\n", (unsigned long)menu, (unsigned long)draw);
 #else

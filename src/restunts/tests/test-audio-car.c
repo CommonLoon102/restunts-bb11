@@ -14,35 +14,67 @@ struct AUDIO_CAR_STATE *audio_car_state_records;
 static uint64_t trace_hash = UINT64_C(1469598103934665603);
 static struct AUDIO_CAR_STATE records[AUDIO_CAR_STATE_RECORD_COUNT];
 static struct VECTOR cameras[2];
+static struct CARSTATE test_ghost_car;
+static struct GHOST_CAMERA_STATE test_ghost_camera;
+static legacy_s16 test_ghost_active;
+static unsigned audio_channel_calls[2];
+static unsigned ghost_motion_calls;
+static legacy_s16 freeze_ghost_motion;
+
+struct CARSTATE *ghost_car_state(void)
+{
+	return test_ghost_active != 0 && gameconfig.game_opponenttype == 0 ? &test_ghost_car : 0;
+}
+
+const struct GHOST_CAMERA_STATE *ghost_camera_state(void)
+{
+	return test_ghost_active != 0 && gameconfig.game_opponenttype == 0 ? &test_ghost_camera : 0;
+}
+
+void ghost_adjust_camera_motion(struct VECTOR *previous, const struct VECTOR *current)
+{
+	assert(test_ghost_active != 0);
+	ghost_motion_calls++;
+	if (freeze_ghost_motion != 0) {
+		*previous = *current;
+	}
+}
+
 static void trace_word(legacy_u16 value)
 {
 	trace_hash = (trace_hash ^ (value & 255U)) * UINT64_C(1099511628211);
 	trace_hash = (trace_hash ^ (value >> 8)) * UINT64_C(1099511628211);
 }
+static void trace_audio_channel(legacy_s16 channel)
+{
+	assert(channel == audio_player_engine_channel || channel == audio_opponent_engine_channel);
+	audio_channel_calls[channel == audio_opponent_engine_channel]++;
+	trace_word(channel);
+}
 void audio_start_engine(legacy_s16 channel)
 {
 	trace_word(1);
-	trace_word(channel);
+	trace_audio_channel(channel);
 }
 void audio_stop_engine(legacy_s16 channel)
 {
 	trace_word(2);
-	trace_word(channel);
+	trace_audio_channel(channel);
 }
 void audio_play_paved_skid(legacy_s16 channel)
 {
 	trace_word(3);
-	trace_word(channel);
+	trace_audio_channel(channel);
 }
 void audio_play_offroad_skid(legacy_s16 channel)
 {
 	trace_word(4);
-	trace_word(channel);
+	trace_audio_channel(channel);
 }
 void audio_stop_skid_sound(legacy_s16 channel)
 {
 	trace_word(5);
-	trace_word(channel);
+	trace_audio_channel(channel);
 }
 void audio_reset_channels(void)
 {
@@ -63,6 +95,9 @@ static void record_result(void)
 }
 static void reset_audio_car(unsigned index)
 {
+	test_ghost_active = 0;
+	ghost_motion_calls = 0;
+	memset(audio_channel_calls, 0, sizeof(audio_channel_calls));
 	memset(&state, 0, sizeof(state));
 	memset(records, 0x5a, sizeof(records));
 	audio_car_state_records = records;
@@ -149,11 +184,90 @@ static void test_replay_shutdown(void)
 		}
 	}
 }
+static void assert_audio_vector(const struct VECTOR *actual, const struct VECTOR *expected)
+{
+	assert(actual->x == expected->x);
+	assert(actual->y == expected->y);
+	assert(actual->z == expected->z);
+}
+
+static void test_ghost_camera_audio(void)
+{
+	static const struct VECTOR ghost_previous[CAMERA_MODE_COUNT] = {
+		{3, 3, 3}, {39, 43, 52}, {3, 3, 3}, {99, 308, 297}};
+	static const struct VECTOR ghost_current[CAMERA_MODE_COUNT] = {
+		{5, 5, 5}, {48, 57, 66}, {5, 5, 5}, {98, 307, 296}};
+	static const struct VECTOR player_previous[CAMERA_MODE_COUNT] = {
+		{0, 0, 0}, {9, 13, 22}, {0, 0, 0}, {299, 508, 497}};
+	static const struct VECTOR player_current[CAMERA_MODE_COUNT] = {
+		{0, 0, 0}, {18, 27, 36}, {0, 0, 0}, {298, 507, 496}};
+	static const struct VECTOR untouched = {0x5a5a, 0x5a5a, 0x5a5a};
+
+	for (unsigned mode = 0; mode < CAMERA_MODE_COUNT; mode++) {
+		/* Also cover returning to the player and losing the cached ghost while
+		 * the view flag is still set: neither may use the empty opponent state. */
+		for (unsigned view = 0; view < 3; view++) {
+			for (freeze_ghost_motion = 0; freeze_ghost_motion < 2; freeze_ghost_motion++) {
+				reset_audio_car(0);
+				memset(&test_ghost_car, 0, sizeof(test_ghost_car));
+				memset(&test_ghost_camera, 0, sizeof(test_ghost_camera));
+				gameconfig.game_opponenttype = 0;
+				is_in_replay = 0;
+				cameramode = mode;
+				followOpponentFlag = view != 1;
+				test_ghost_active = view != 2;
+				audio_player_car_flags = 0;
+				audio_opponent_car_flags = 0;
+				state.playerstate.car_sound_flags = CAR_SOUND_ENGINE_ACTIVE_FLAG;
+				test_ghost_car.car_sound_flags =
+					CAR_SOUND_ENGINE_ACTIVE_FLAG | CAR_SOUND_SKID_PAVED_FLAG;
+				state.playerstate.car_previous_position = (struct VECTORLONG){64, 128, 192};
+				state.playerstate.car_position = (struct VECTORLONG){128, 192, 256};
+				test_ghost_car.car_previous_position = (struct VECTORLONG){256, 320, 384};
+				test_ghost_car.car_position = (struct VECTORLONG){448, 512, 576};
+				state.game_follow_camera_position[0] = (struct VECTOR){20, 30, 40};
+				state.game_player_camera_previous = (struct VECTOR){10, 15, 25};
+				test_ghost_camera.follow_position = (struct VECTOR){50, 60, 70};
+				test_ghost_camera.previous_position = (struct VECTOR){40, 45, 55};
+				test_ghost_camera.trackside_index = 1;
+				cameras[0] = (struct VECTOR){300, 400, 500};
+				cameras[1] = (struct VECTOR){100, 200, 300};
+				camera_track_height_offset = 20;
+				audio_carstate();
+
+				const struct AUDIO_CAR_STATE *record = &records[39];
+				struct VECTOR expected_previous =
+					view == 0 ? ghost_previous[mode] : player_previous[mode];
+				if (view == 0 && freeze_ghost_motion != 0) {
+					expected_previous = ghost_current[mode];
+					/* The player moved one coordinate unit on each axis this tick. */
+					expected_previous.x++;
+					expected_previous.y++;
+					expected_previous.z++;
+				}
+				assert_audio_vector(&record->player_previous, &expected_previous);
+				assert_audio_vector(&record->player_current,
+									view == 0 ? &ghost_current[mode] : &player_current[mode]);
+				assert(record->player_rpm == state.playerstate.car_currpm);
+				assert_audio_vector(&record->opponent_previous, &untouched);
+				assert_audio_vector(&record->opponent_current, &untouched);
+				assert(record->opponent_rpm == 0x5a5a);
+				assert(audio_channel_calls[0] == 1);
+				assert(audio_channel_calls[1] == 0);
+				assert(audio_opponent_car_flags == 0);
+				assert(audio_car_state_write_index == 0);
+				assert(ghost_motion_calls == (view == 0 ? 1U : 0U));
+			}
+		}
+	}
+}
+
 int main(void)
 {
 	test_recording_modes();
 	test_replay_shutdown();
 	assert(trace_hash == UINT64_C(0xafadd350106660b7));
+	test_ghost_camera_audio();
 	printf("test-audio-car: passed\n");
 	return 0;
 }

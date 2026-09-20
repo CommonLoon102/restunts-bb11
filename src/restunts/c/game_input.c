@@ -10,6 +10,7 @@
 #include "crash_state.h"
 #include "camera.h"
 #include "externs.h"
+#include "ghost.h"
 
 #define INPUT_DIRECTION_COUNT 16U
 #define INPUT_KEY_COUNT 10U
@@ -287,7 +288,8 @@ legacy_s16 handle_ingame_kb_shortcuts(legacy_s16 key)
 			return 1;
 
 		case 't':
-			if (gameconfig.game_opponenttype != 0) {
+			if (followOpponentFlag != 0 || gameconfig.game_opponenttype != 0 ||
+				ghost_car_state() != 0) {
 				followOpponentFlag ^= 1;
 			}
 			return 1;

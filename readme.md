@@ -56,7 +56,8 @@ Your car and transmission stay selected, and you can change them before driving.
 The recorded player's car follows the replay as a silent, black grille ghost;
 it cannot collide with your car or change the track. At the end of the replay,
 it stays in its final position. Restarting or rewinding keeps it synchronized
-with your race time.
+with your race time. Press **T** to switch between your view and the ghost's
+view; **F1** through **F4** select the camera mode for either car.
 
 Choose **Clock** again to remove the ghost. Loading a different track, changing
 its layout in the editor, or selecting an AI opponent also clears the ghost.
