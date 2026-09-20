@@ -12,6 +12,7 @@
 #include "resource.h"
 #include "crash_state.h"
 #include "platform.h"
+#include "dashboard.h"
 
 #define OVERLAY_SCREEN_WIDTH 320
 #define OVERLAY_REFERENCE_HEIGHT 200L
@@ -33,6 +34,14 @@
 #define REPLAY_TEXT_LINE_HEIGHT (REPLAY_TEXT_Y - REPLAY_FILENAME_Y)
 #define REPLAY_TEXT_MAX_CHARACTERS                                                                 \
 	((REPLAY_TEXT_RIGHT_X - REPLAY_TEXT_LEFT_X) / REPLAY_TEXT_CHARACTER_WIDTH)
+#define FPS_TEXT_RED 4
+#define FPS_TEXT_GREEN 2
+#define FPS_TEXT_TARGET 20U
+#define FPS_TEXT_MAX_DIGITS 5U
+#define FPS_TEXT_SUFFIX_LENGTH 4U
+#define FPS_TEXT_BUFFER_SIZE (FPS_TEXT_MAX_DIGITS + FPS_TEXT_SUFFIX_LENGTH + 1U)
+#define FPS_TEXT_RIGHT_X                                                                           \
+	(REPLAY_TEXT_LEFT_X + (FPS_TEXT_BUFFER_SIZE - 1U) * REPLAY_TEXT_CHARACTER_WIDTH + 1U)
 #define PREPARE_TEXT_Y 90
 #define SECURITY_TEXT_FIRST_Y 93
 #define SECURITY_TEXT_SECOND_Y 105
@@ -44,6 +53,130 @@
 #define OPPONENT_ICON_Y 113
 #define OPPONENT_TEXT_Y 116
 #define PENALTY_TEXT_Y 102
+
+static legacy_u32 fps_sample_start;
+static legacy_u32 fps_last_presented;
+static legacy_u16 fps_sample_frames;
+static legacy_u16 fps_sample_value;
+static legacy_u8 fps_sample_started;
+
+void frame_fps_reset(void)
+{
+	fps_sample_frames = 0;
+	fps_sample_value = 0;
+	fps_sample_started = 0;
+}
+
+legacy_s16 frame_fps_expire_idle(void)
+{
+	if (fps_display_enabled == 0 || fps_sample_value == 0 || fps_sample_started == 0) {
+		return 0;
+	}
+	legacy_u32 elapsed = LEGACY_U32_WRAP_SUB(dos_timer_get_realtime_counter(), fps_last_presented);
+	if (elapsed < DOS_TIMER_REALTIME_TICKS_PER_SECOND) {
+		return 0;
+	}
+	/* Ask the waiting replay loop to repaint the expired value only once. */
+	frame_fps_reset();
+	return 1;
+}
+
+void frame_fps_record_presented(void)
+{
+	if (fps_display_enabled == 0) {
+		frame_fps_reset();
+		return;
+	}
+
+	legacy_u32 now = dos_timer_get_realtime_counter();
+	fps_last_presented = now;
+	if (fps_sample_started == 0) {
+		fps_sample_start = now;
+		fps_sample_started = 1;
+		return;
+	}
+	if (fps_sample_frames != LEGACY_U16_MAX) {
+		fps_sample_frames++;
+	}
+	legacy_u32 elapsed = LEGACY_U32_WRAP_SUB(now, fps_sample_start);
+	if (elapsed >= DOS_TIMER_REALTIME_TICKS_PER_SECOND) {
+		/* Count presented intervals, rather than simulation updates or render calls. */
+		legacy_u32 value =
+			(legacy_u32)fps_sample_frames * DOS_TIMER_REALTIME_TICKS_PER_SECOND / elapsed;
+		fps_sample_value = value > LEGACY_U16_MAX ? LEGACY_U16_MAX : (legacy_u16)value;
+		fps_sample_start = now;
+		fps_sample_frames = 0;
+	}
+}
+
+static legacy_s16 frame_fps_roof_bottom(void)
+{
+	legacy_s16 bottom = REPLAY_FILENAME_Y + font_glyph_height + 1;
+	return roofbmpheight_copy < bottom ? roofbmpheight_copy : bottom;
+}
+
+static void frame_fps_restore_roof(void)
+{
+	legacy_s16 bottom = frame_fps_roof_bottom();
+	if (bottom <= REPLAY_FILENAME_Y || dashboard_visible == 0) {
+		return;
+	}
+	struct SHAPE2D far *roof =
+		(struct SHAPE2D far *)locate_shape_nofatal(stdaresptr, dashboard_roof_shape_id);
+	if (roof != 0) {
+		struct SPRITE saved_context[SPRITE_STATE_COUNT];
+		sprite_save_context(saved_context);
+		sprite_set_target_clip_bounds(REPLAY_TEXT_LEFT_X, FPS_TEXT_RIGHT_X, REPLAY_FILENAME_Y,
+									  bottom);
+		shape2d_rle_copy_position_clipped(roof);
+		sprite_restore_context(saved_context);
+	}
+}
+
+void frame_fps_present_roof(void)
+{
+	legacy_s16 bottom = frame_fps_roof_bottom();
+	if (fps_display_enabled == 0 || video_uses_page_flipping != 0 || dashboard_visible == 0 ||
+		bottom <= REPLAY_FILENAME_Y) {
+		return;
+	}
+	/* The normal camera copy excludes the static cockpit roof. */
+	struct SPRITE saved_context[SPRITE_STATE_COUNT];
+	sprite_save_context(saved_context);
+	sprite_set_target_clip_bounds(REPLAY_TEXT_LEFT_X, FPS_TEXT_RIGHT_X, REPLAY_FILENAME_Y, bottom);
+	mouse_draw_opaque_check();
+	sprite_putimage(render_window_sprite->sprite_bitmapptr);
+	mouse_draw_transparent_check();
+	sprite_restore_context(saved_context);
+}
+
+static legacy_u16 draw_fps_text(void)
+{
+	if (fps_display_enabled == 0) {
+		return 0;
+	}
+
+	/* Only the roof lies outside the scene that was redrawn this frame. */
+	frame_fps_restore_roof();
+	legacy_s8 text[FPS_TEXT_BUFFER_SIZE];
+	legacy_s8 digits[FPS_TEXT_MAX_DIGITS];
+	legacy_u16 value = fps_sample_value;
+	legacy_u16 count = 0;
+	do {
+		digits[count++] = (legacy_s8)('0' + value % 10U);
+		value /= 10U;
+	} while (value != 0);
+	for (legacy_u16 i = 0; i < count; i++) {
+		text[i] = digits[count - i - 1U];
+	}
+	copy_string(text + count, " FPS");
+	legacy_s16 color = fps_sample_value < FPS_TEXT_TARGET ? FPS_TEXT_RED : FPS_TEXT_GREEN;
+	rect_union(&rect_ingame_text,
+			   intro_draw_text(text, REPLAY_TEXT_LEFT_X, REPLAY_FILENAME_Y, color, 0),
+			   &rect_ingame_text);
+	/* Reserve the maximum width so changing FPS digits never rewraps the filename. */
+	return FPS_TEXT_BUFFER_SIZE;
+}
 
 enum DIRECTION_ICON_SHAPE_INDEX { DIRECTION_ICON_LEFT_SHAPE = 3, DIRECTION_ICON_RIGHT_SHAPE = 4 };
 
@@ -194,14 +327,16 @@ static void draw_replay_text(legacy_s8 *text, legacy_s16 y)
 			   &rect_ingame_text);
 }
 
-static legacy_s16 draw_replay_filename(void)
+static legacy_s16 draw_replay_filename(legacy_u16 reserved_characters)
 {
 	const legacy_s8 *filename = replay_filename;
 	legacy_s16 y = REPLAY_FILENAME_Y;
 	while (*filename != 0) {
+		legacy_u16 line_limit = REPLAY_TEXT_MAX_CHARACTERS - reserved_characters;
+		reserved_characters = 0;
 		legacy_s8 line[REPLAY_TEXT_MAX_CHARACTERS + 1U];
 		legacy_u16 length = 0;
-		while (length < REPLAY_TEXT_MAX_CHARACTERS && *filename != 0) {
+		while (length < line_limit && *filename != 0) {
 			line[length++] = *filename++;
 		}
 		line[length] = 0;
@@ -214,6 +349,7 @@ static legacy_s16 draw_replay_filename(void)
 struct RECTANGLE *draw_ingame_text(void)
 {
 	rect_ingame_text = empty_rect;
+	legacy_u16 fps_characters = draw_fps_text();
 	if (idle_expired != 0) {
 		draw_centered_ingame_resource("dm1", DEMO_TEXT_FIRST_Y);
 		draw_centered_ingame_resource("dm2", DEMO_TEXT_SECOND_Y);
@@ -223,7 +359,7 @@ struct RECTANGLE *draw_ingame_text(void)
 	if (game_replay_mode != REPLAY_MODE_LIVE) {
 		legacy_s16 replay_y = REPLAY_TEXT_Y;
 		if (replay_filename[0] != 0) {
-			replay_y = draw_replay_filename();
+			replay_y = draw_replay_filename(fps_characters);
 		}
 		if (game_replay_mode != REPLAY_MODE_PLAYBACK) {
 			return &rect_ingame_text;

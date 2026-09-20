@@ -14,6 +14,8 @@
 #include "../c/camera.h"
 #include "../c/video_frame.h"
 #include "../c/fatal.h"
+#include "../c/game_input.h"
+#include "../c/dashboard.h"
 
 #undef strcmp
 #undef memcpy
@@ -21,6 +23,13 @@
 
 struct LEGACY_EXECUTION_RESIDUE legacy_execution_residue;
 legacy_s16 legacy_render_player_headings_active;
+legacy_u8 fps_display_enabled;
+static legacy_u32 realtime_ticks;
+
+legacy_u32 dos_timer_get_realtime_counter(void)
+{
+	return realtime_ticks;
+}
 
 static legacy_u8 crack_lines[16];
 static legacy_u8 crack_info[6];
@@ -38,9 +47,74 @@ struct TEXT_DRAW {
 	legacy_s16 shadow_color;
 };
 
-static struct TEXT_DRAW text_draws[5];
+static struct TEXT_DRAW text_draws[6];
 static unsigned text_draw_count;
 static struct RECTANGLE text_bounds;
+static struct RECTANGLE restored_roof_bounds;
+static struct RECTANGLE copied_roof_bounds;
+static unsigned restored_roof_count;
+static unsigned copied_roof_count;
+static struct SHAPE2D roof_shape;
+static struct SHAPE2D frame_shape;
+static struct SPRITE frame_sprite;
+struct SPRITE far *render_window_sprite;
+legacy_s8 dashboard_roof_shape_id[] = "roof";
+
+void sprite_save_context(struct SPRITE context[SPRITE_STATE_COUNT])
+{
+	context[0] = drawing_sprite;
+	context[1] = screen_sprite;
+}
+
+void sprite_restore_context(struct SPRITE context[SPRITE_STATE_COUNT])
+{
+	drawing_sprite = context[0];
+	screen_sprite = context[1];
+}
+
+void sprite_set_target_clip_bounds(legacy_u16 left, legacy_u16 right, legacy_u16 top,
+								   legacy_u16 bottom)
+{
+	drawing_sprite.sprite_raster_left = left;
+	drawing_sprite.sprite_raster_right = right;
+	drawing_sprite.sprite_top = top;
+	drawing_sprite.sprite_bottom = bottom;
+}
+
+legacy_s8 far *locate_shape_nofatal(legacy_s8 far *resource, const legacy_s8 *name)
+{
+	assert(resource == stdaresptr);
+	assert(name == dashboard_roof_shape_id);
+	return (legacy_s8 far *)&roof_shape;
+}
+
+void shape2d_rle_copy_position_clipped(struct SHAPE2D far *shape)
+{
+	assert(shape == &roof_shape);
+	restored_roof_bounds.left = drawing_sprite.sprite_raster_left;
+	restored_roof_bounds.right = drawing_sprite.sprite_raster_right;
+	restored_roof_bounds.top = drawing_sprite.sprite_top;
+	restored_roof_bounds.bottom = drawing_sprite.sprite_bottom;
+	restored_roof_count++;
+}
+
+void sprite_putimage(struct SHAPE2D far *shape)
+{
+	assert(shape == &frame_shape);
+	copied_roof_bounds.left = drawing_sprite.sprite_raster_left;
+	copied_roof_bounds.right = drawing_sprite.sprite_raster_right;
+	copied_roof_bounds.top = drawing_sprite.sprite_top;
+	copied_roof_bounds.bottom = drawing_sprite.sprite_bottom;
+	copied_roof_count++;
+}
+
+void mouse_draw_opaque_check(void)
+{
+}
+
+void mouse_draw_transparent_check(void)
+{
+}
 
 void fatal_error(const legacy_s8 *format, ...)
 {
@@ -265,6 +339,16 @@ static void reset_ingame_text(const char *filename)
 	passed_security = 1;
 	cameramode = CAMERA_MODE_TRACKSIDE;
 	text_draw_count = 0;
+	fps_display_enabled = 0;
+	frame_fps_reset();
+	realtime_ticks = 0;
+	roofbmpheight_copy = 0;
+	dashboard_visible = 0;
+	font_glyph_height = 8;
+	video_uses_page_flipping = 0;
+	restored_roof_count = copied_roof_count = 0;
+	frame_sprite.sprite_bitmapptr = &frame_shape;
+	render_window_sprite = &frame_sprite;
 }
 
 static void assert_text(unsigned index, const char *text, legacy_s16 x, legacy_s16 y)
@@ -403,6 +487,182 @@ static void test_filename_hidden_in_live_race_and_demo(void)
 	assert(bounds->top == 170 && bounds->bottom == 191);
 }
 
+static void assert_fps(const char *expected, legacy_s16 color)
+{
+	text_draw_count = 0;
+	struct RECTANGLE *bounds = draw_ingame_text();
+	assert(strcmp(text_draws[0].text, expected) == 0);
+	assert(text_draws[0].x == 8 && text_draws[0].y == 3);
+	assert(text_draws[0].color == color && text_draws[0].shadow_color == 0);
+	assert(bounds->left == 8 && bounds->top == 3);
+	assert(bounds->right >= (legacy_s16)(8 + strlen(expected) * 8 + 1));
+}
+
+static void present_frames(unsigned frames, legacy_u32 ticks)
+{
+	legacy_u32 start = realtime_ticks;
+	for (unsigned frame = 1; frame <= frames; frame++) {
+		realtime_ticks = LEGACY_U32_WRAP_ADD(start, ticks * frame / frames);
+		frame_fps_record_presented();
+	}
+}
+
+static void test_fps_sampling(void)
+{
+	reset_ingame_text("");
+	fps_display_enabled = 1;
+	frame_fps_record_presented();
+	assert_fps("0 FPS", 4);
+	present_frames(20, 100);
+	assert_fps("20 FPS", 2);
+	/* More than twenty and fractional rates retain floor semantics. */
+	present_frames(24, 100);
+	assert_fps("24 FPS", 2);
+	present_frames(19, 100);
+	assert_fps("19 FPS", 4);
+	present_frames(20, 101);
+	assert_fps("19 FPS", 4);
+	/* Rendering without presenting must not change the sample. */
+	for (unsigned frame = 0; frame < 50; frame++) {
+		assert_fps("19 FPS", 4);
+	}
+	present_frames(1, 300);
+	assert_fps("0 FPS", 4);
+	present_frames(20, 100);
+	assert_fps("20 FPS", 2);
+	fps_display_enabled = 0;
+	text_draw_count = 0;
+	game_replay_mode = REPLAY_MODE_PAUSED;
+	struct RECTANGLE *bounds = draw_ingame_text();
+	assert(text_draw_count == 0);
+	assert(memcmp(bounds, &empty_rect, sizeof(*bounds)) == 0);
+	frame_fps_record_presented();
+	fps_display_enabled = 1;
+	frame_fps_record_presented();
+	assert_fps("0 FPS", 4);
+	present_frames(20, 100);
+	assert_fps("20 FPS", 2);
+	/* Unsigned time differences continue across a 32-bit tick wrap. */
+	frame_fps_reset();
+	realtime_ticks = LEGACY_U32_MAX - 49UL;
+	frame_fps_record_presented();
+	present_frames(20, 100);
+	assert_fps("20 FPS", 2);
+}
+
+static void test_fps_idle_expiry(void)
+{
+	reset_ingame_text("");
+	fps_display_enabled = 1;
+	frame_fps_record_presented();
+	present_frames(20, 100);
+	assert_fps("20 FPS", 2);
+	/* Expiry is measured from the latest presentation, not the sample window. */
+	present_frames(10, 50);
+	realtime_ticks += 99;
+	assert(frame_fps_expire_idle() == 0);
+	assert_fps("20 FPS", 2);
+	realtime_ticks++;
+	assert(frame_fps_expire_idle() == 1);
+	assert_fps("0 FPS", 4);
+	assert(frame_fps_expire_idle() == 0);
+	frame_fps_record_presented();
+	realtime_ticks += 200;
+	assert(frame_fps_expire_idle() == 0);
+	assert_fps("0 FPS", 4);
+	/* Resuming rendering starts a fresh sample and can expire again. */
+	frame_fps_reset();
+	realtime_ticks = LEGACY_U32_MAX - 149UL;
+	frame_fps_record_presented();
+	present_frames(20, 100);
+	assert_fps("20 FPS", 2);
+	realtime_ticks = LEGACY_U32_WRAP_ADD(realtime_ticks, 100);
+	fps_display_enabled = 0;
+	assert(frame_fps_expire_idle() == 0);
+	fps_display_enabled = 1;
+	assert(frame_fps_expire_idle() == 1);
+	assert_fps("0 FPS", 4);
+}
+
+static void test_fps_camera_modes(void)
+{
+	for (legacy_u8 mode = REPLAY_MODE_LIVE; mode <= REPLAY_MODE_PAUSED; mode++) {
+		for (legacy_u16 camera = CAMERA_MODE_COCKPIT; camera < CAMERA_MODE_COUNT; camera++) {
+			reset_ingame_text("TEST");
+			fps_display_enabled = 1;
+			game_replay_mode = mode;
+			cameramode = camera;
+			state.game_inputmode = GAME_INPUT_MODE_ACTIVE;
+			followOpponentFlag = 1;
+			assert_fps("0 FPS", 4);
+		}
+	}
+}
+
+static void test_fps_and_long_replay_filename(void)
+{
+	char filename[REPLAY_FILENAME_SIZE];
+	memset(filename, 'R', sizeof(filename) - 1);
+	filename[sizeof(filename) - 1] = 0;
+	reset_ingame_text(filename);
+	fps_display_enabled = 1;
+	frame_fps_record_presented();
+	present_frames(20, 100);
+	assert_fps("20 FPS", 2);
+	assert(text_draw_count == 6);
+	assert(text_draws[1].y == 3);
+	assert(text_draws[1].x > text_draws[0].x + (legacy_s16)strlen(text_draws[0].text) * 8);
+	char reconstructed[REPLAY_FILENAME_SIZE];
+	unsigned copied = 0;
+	for (unsigned line = 1; line < text_draw_count - 1; line++) {
+		unsigned length = strlen(text_draws[line].text);
+		memcpy(reconstructed + copied, text_draws[line].text, length);
+		copied += length;
+	}
+	reconstructed[copied] = 0;
+	assert(strcmp(reconstructed, filename) == 0);
+	assert_text(text_draw_count - 1, "Replay", 264, 51);
+}
+
+static void test_fps_on_cockpit_roof(void)
+{
+	for (legacy_s16 roof_height = 0; roof_height <= 20; roof_height++) {
+		for (legacy_s16 page_flipping = 0; page_flipping <= 1; page_flipping++) {
+			reset_ingame_text("");
+			fps_display_enabled = 1;
+			dashboard_visible = 1;
+			roofbmpheight_copy = roof_height;
+			video_uses_page_flipping = page_flipping;
+			sprite_set_target_clip_bounds(0, 320, roof_height, 200);
+			struct SPRITE original_context[SPRITE_STATE_COUNT];
+			sprite_save_context(original_context);
+			assert_fps("0 FPS", 4);
+			assert(memcmp(&drawing_sprite, original_context, sizeof(drawing_sprite)) == 0);
+			assert(memcmp(&screen_sprite, original_context + 1, sizeof(screen_sprite)) == 0);
+			frame_fps_present_roof();
+			assert(memcmp(&drawing_sprite, original_context, sizeof(drawing_sprite)) == 0);
+			assert(memcmp(&screen_sprite, original_context + 1, sizeof(screen_sprite)) == 0);
+			assert(restored_roof_count == (unsigned)(roof_height > 3));
+			assert(copied_roof_count == (unsigned)(roof_height > 3 && page_flipping == 0));
+			if (roof_height > 3) {
+				assert(restored_roof_bounds.left == 8 && restored_roof_bounds.right == 81);
+				assert(restored_roof_bounds.top == 3);
+				assert(restored_roof_bounds.bottom == (roof_height < 12 ? roof_height : 12));
+				if (page_flipping == 0) {
+					assert(memcmp(&copied_roof_bounds, &restored_roof_bounds,
+								  sizeof(copied_roof_bounds)) == 0);
+				}
+			}
+			/* Hidden dashboards and disabled FPS never touch the roof. */
+			dashboard_visible = 0;
+			assert_fps("0 FPS", 4);
+			frame_fps_present_roof();
+			assert(restored_roof_count == (unsigned)(roof_height > 3));
+			assert(copied_roof_count == (unsigned)(roof_height > 3 && page_flipping == 0));
+		}
+	}
+}
+
 int main(void)
 {
 	test_incremental_crack_overlay();
@@ -414,5 +674,10 @@ int main(void)
 	test_replay_filename_when_paused();
 	test_unnamed_replay_overlay();
 	test_filename_hidden_in_live_race_and_demo();
+	test_fps_sampling();
+	test_fps_idle_expiry();
+	test_fps_camera_modes();
+	test_fps_and_long_replay_filename();
+	test_fps_on_cockpit_roof();
 	return 0;
 }

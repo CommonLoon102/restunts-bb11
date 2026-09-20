@@ -11,13 +11,14 @@
 #include "camera.h"
 #include "externs.h"
 #include "ghost.h"
+#include "frame_internal.h"
 
 #define INPUT_DIRECTION_COUNT 16U
 #define INPUT_KEY_COUNT 10U
 #define INPUT_CALLBACK_COUNT 64U
 #define INPUT_ASCII_KEY_COUNT 128U
-#define INPUT_EXTENDED_KEY_COUNT 133U
-#define INPUT_EXTENDED_KEY_MAX_INDEX 132U
+#define INPUT_EXTENDED_KEY_COUNT 135U
+#define INPUT_EXTENDED_KEY_MAX_INDEX 134U
 #define INPUT_ASCII_BYTE_MASK 255U
 #define INPUT_ASCII_INDEX_MASK 127U
 #define INPUT_MODE_STACK_LIMIT 8U
@@ -51,6 +52,8 @@ struct SPRITE far *mouse_background_sprite;
 legacy_s8 mouse_background_dirty;
 static legacy_s8 mouse_transparent_mode;
 static legacy_u8 h_key_toggle;
+legacy_u8 supersight_enabled;
+legacy_u8 fps_display_enabled;
 static legacy_s16 input_elapsed_frames;
 
 /* A control that has not changed still fires again once the configured repeat
@@ -221,6 +224,18 @@ void load_palandcursor(void)
 static legacy_s16 input_handle_display_shortcut(legacy_s16 key)
 {
 	switch (key) {
+		case KEY_F11:
+			fps_display_enabled ^= 1U;
+			frame_fps_reset();
+			full_redraw_frames_remaining = (legacy_s8)video_page_count;
+			return 1;
+
+		case KEY_F12:
+			supersight_enabled ^= 1U;
+			frame_supersight_reset();
+			full_redraw_frames_remaining = (legacy_s8)video_page_count;
+			return 1;
+
 		case 'D':
 		case 'd':
 			dashb_toggle ^= 1;

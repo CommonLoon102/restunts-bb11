@@ -24,6 +24,8 @@ static voidinterruptfunctype old_kb_int16_handler;
 #define DOS_KB_LEFT_SHIFT_SCANCODE 42U
 #define DOS_KB_RIGHT_SHIFT_SCANCODE 54U
 #define DOS_KB_CAPS_LOCK_SCANCODE 58U
+#define DOS_KB_F11_SCANCODE 87U
+#define DOS_KB_F12_SCANCODE 88U
 #define DOS_KB_EXTENDED_KEY_FLAG 128U
 #define DOS_KB_EXTENDED_KEY_NORMALIZE_MIN 133U
 #define DOS_KB_ASCII_BYTE_SHIFT LEGACY_BYTE_BITS
@@ -107,10 +109,20 @@ void interrupt kb_int9_handler(void)
 			kbc = 0;
 		}
 		dos_kb_last_input = kbc;
+		legacy_u8 was_pressed = dos_kb_input[kbc];
 		dos_kb_input[kbc] = 1;
 
 		legacy_u16 kbval;
-		if (dos_kb_input[DOS_KB_ALT_SCANCODE] == 1) {
+		if (kbc == DOS_KB_F11_SCANCODE || kbc == DOS_KB_F12_SCANCODE) {
+			/* Toggle once per physical press; modifiers do not select this shortcut. */
+			if (was_pressed != 0 || dos_kb_input[DOS_KB_ALT_SCANCODE] != 0 ||
+				dos_kb_input[DOS_KB_CONTROL_SCANCODE] != 0 ||
+				dos_kb_input[DOS_KB_LEFT_SHIFT_SCANCODE] != 0 ||
+				dos_kb_input[DOS_KB_RIGHT_SHIFT_SCANCODE] != 0) {
+				goto acknowledge_interrupt;
+			}
+			kbval = (legacy_u16)(kbc == DOS_KB_F11_SCANCODE ? KEY_F11 : KEY_F12);
+		} else if (dos_kb_input[DOS_KB_ALT_SCANCODE] == 1) {
 			kbval = dos_kb_keymap5[kbc];
 		} else if (dos_kb_input[DOS_KB_CONTROL_SCANCODE] == 1) {
 			kbval = dos_kb_keymap4[kbc];
@@ -157,6 +169,7 @@ void interrupt kb_int9_handler(void)
 		dos_kb_input[kbc] = 0;
 	}
 
+acknowledge_interrupt:
 	outp(DOS_PIC_COMMAND_PORT, DOS_PIC_END_OF_INTERRUPT);
 }
 

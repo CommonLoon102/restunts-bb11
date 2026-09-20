@@ -76,6 +76,9 @@ legacy_s16 dos_timer_register_callback(void(far *callback)(void));
 void dos_timer_unregister_callback(void(far *callback)(void));
 void dos_timer_reset_counter(void);
 void dos_timer_set_callbacks_suspended(legacy_s16 suspended);
+/* Monotonic 100 Hz ticks, including time with game callbacks suspended. */
+#define DOS_TIMER_REALTIME_TICKS_PER_SECOND 100UL
+legacy_u32 dos_timer_get_realtime_counter(void);
 legacy_u32 timer_get_counter(void);
 legacy_u32 timer_get_delta(void);
 legacy_u32 timer_get_slow_counter(void);

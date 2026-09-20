@@ -21,6 +21,7 @@
 #include "car_audio.h"
 #include "externs.h"
 #include "keyboard.h"
+#include "frame_internal.h"
 
 #define REPLAY_PLAYER_COUNT 2U
 #define REPLAY_CONTROL_COUNT 9U
@@ -308,6 +309,7 @@ static legacy_s8 replay_choose_pause_action(void)
 static void replay_restart_recording(void)
 {
 	check_input();
+	frame_supersight_reset();
 	init_game_state_with_frame_rate_byte(configured_frame_rate);
 	elapsed_time2 = 0;
 	gameconfig.game_recordedframes = 0;
@@ -407,6 +409,7 @@ static void replay_load_recording(void)
 	replay_reload_changed_resources(&saved_config, saved_track);
 	framespersec =
 		(legacy_s16)LEGACY_S8_FROM_BITS(LEGACY_U16_LOW_BYTE(gameconfig.game_framespersec));
+	frame_supersight_reset();
 	init_game_state(GAMESTATE_INIT_RESET_CHECKPOINTS);
 }
 
@@ -585,6 +588,7 @@ static void replay_fast_forward(void)
 	if (LEGACY_S16_FROM_BITS(target) > LEGACY_S16_FROM_BITS(gameconfig.game_recordedframes)) {
 		target = gameconfig.game_recordedframes;
 	}
+	frame_supersight_reset();
 	restore_gamestate(target);
 	elapsed_time2 = target;
 	replay_controls_select(REPLAY_CONTROL_PAUSE);
@@ -620,6 +624,7 @@ static void replay_rewind(void)
 	if (amount != 0) {
 		replay_draw_waiting();
 		legacy_u16 target = LEGACY_U16_WRAP_SUB(elapsed_time2, amount);
+		frame_supersight_reset();
 		restore_gamestate(target);
 		elapsed_time2 = target;
 		legacy_s16 frames_to_catch_up =
@@ -801,6 +806,7 @@ static legacy_u16 replay_activate_selected_control(void)
 			audio_carstate();
 			replay_controls_select(REPLAY_CONTROL_RESTART);
 			replay_controls_draw(state.game_frame, state.game_frame);
+			frame_supersight_reset();
 			restore_gamestate(REPLAY_FIRST_FRAME);
 			(void)timer_wait_ticks(REPLAY_RESTART_WAIT_TICKS);
 			replay_controls_select(REPLAY_CONTROL_PAUSE);
@@ -927,6 +933,9 @@ static void replay_handle_input(void)
 		}
 
 		if (replay_handle_control_input(input) != 0) {
+			return;
+		}
+		if (is_in_replay != 0 && frame_fps_expire_idle() != 0) {
 			return;
 		}
 

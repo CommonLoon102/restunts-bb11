@@ -71,6 +71,10 @@ extern void (*spritefunc)(legacy_s16 *, legacy_s16 *, legacy_u16, legacy_u16, le
 extern void (*imagefunc)(legacy_u16, legacy_u16, legacy_u16, legacy_u16, legacy_u16);
 extern legacy_u8 *sphere_radius_rows[];
 
+#define POLYINFO_LEGACY_PRIMITIVE_CAPACITY 400U
+#define POLYINFO_SUPERSIGHT_PRIMITIVE_CAPACITY 592U
+#define POLYINFO_SUPERSIGHT_DATA_SIZE 13312U
+
 extern legacy_s16 polygon_next_index[];
 extern legacy_u16 polyinfonumpolys;
 extern legacy_u8 far *polyinfoptr;

@@ -16,7 +16,6 @@
 #define MCGA_WINDOW_HEIGHT 200U
 #define DOS_PARAGRAPH_SHIFT 4U
 #define DOS_WINDOW_EXTRA_PARAGRAPH_COUNT 1U
-#define SPRITE_STATE_COUNT 2U
 
 struct SHAPE2D_CLIP {
 	legacy_u16 source;
@@ -265,12 +264,12 @@ void sprite_select_render_window_and_clear(void)
 	sprite_clear_target(0);
 }
 
-void sprite_save_context(struct SPRITE *saved_context)
+void sprite_save_context(struct SPRITE saved_context[SPRITE_STATE_COUNT])
 {
 	fmemcpy(saved_context, &drawing_sprite, sizeof(struct SPRITE) * SPRITE_STATE_COUNT);
 }
 
-void sprite_restore_context(struct SPRITE *saved_context)
+void sprite_restore_context(struct SPRITE saved_context[SPRITE_STATE_COUNT])
 {
 	fmemcpy(&drawing_sprite, saved_context, sizeof(struct SPRITE) * SPRITE_STATE_COUNT);
 }
