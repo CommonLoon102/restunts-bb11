@@ -124,7 +124,7 @@ const legacy_s8 *file_find(const legacy_s8 *query)
 	for (legacy_s8 const *chsrc = query; *chsrc; ++chsrc, ++chdst) {
 		*chdst = *chsrc;
 
-		if (*chdst == ':' || *chdst == '\\') {
+		if (*chdst == ':' || *chdst == '\\' || *chdst == '/') {
 			g_find.dirdelim = chdst + 1;
 		}
 	}
@@ -169,7 +169,7 @@ void file_build_path(const legacy_s8 *dir, const legacy_s8 *name, const legacy_s
 	}
 
 	// Add directory separator if needed.
-	if (dirlen && dir[dirlen - 1] != ':' && dir[dirlen - 1] != '\\') {
+	if (dirlen && dir[dirlen - 1] != ':' && dir[dirlen - 1] != '\\' && dir[dirlen - 1] != '/') {
 		strcat(dst, "\\");
 	}
 
@@ -268,6 +268,29 @@ void far *file_read(const legacy_s8 *filename, void far *dst, legacy_s16 fatal)
 	legacy_s16 readlen;
 	fileio_handle file;
 	if ((file = fileio_open(filename, DOS_FILE_OPEN_EXISTING)) != FILEIO_INVALID_HANDLE) {
+#ifdef RESTUNTS_SDL3
+		/* The caller allocates the file's actual size. Windows can reject an
+		 * oversized read request that crosses the end of a small stack object,
+		 * even if EOF would otherwise limit the number of transferred bytes. */
+		legacy_s32 remaining = -1;
+		if (fileio_seek(file, 0, DOS_FILE_SEEK_END) == 0) {
+			remaining = fileio_tell(file);
+		}
+		if (remaining >= 0 && fileio_seek(file, 0, DOS_FILE_SEEK_BEGIN) == 0) {
+			while (remaining != 0) {
+				legacy_u16 count = remaining > FILE_IO_PAGE_SIZE ? FILE_IO_PAGE_SIZE : remaining;
+				readlen = fileio_read(curdst, count, 1, file);
+				remaining -= readlen;
+				if (readlen != count) {
+					break;
+				}
+				/* Native stack/heap segments are identifiers, not paragraph bases. */
+				if (remaining != 0) {
+					curdst = (legacy_u8 *)curdst + readlen;
+				}
+			}
+		}
+#else
 		// Read one page at a time.
 		do {
 			readlen = fileio_read(curdst, FILE_IO_PAGE_SIZE, 1, file);
@@ -275,6 +298,7 @@ void far *file_read(const legacy_s8 *filename, void far *dst, legacy_s16 fatal)
 												 FILE_IO_PAGE_SEGMENT_GAP,
 											 dos_memory_pointer_offset(dst));
 		} while (readlen == FILE_IO_PAGE_SIZE);
+#endif
 
 		fileio_close(file);
 
@@ -327,9 +351,15 @@ legacy_s16 file_write(const legacy_s8 *filename, void far *src, legacy_u32 lengt
 				break;
 			}
 			length -= wrtlen;
+#ifdef RESTUNTS_SDL3
+			if (length != 0) {
+				src = (legacy_u8 *)src + wrtlen;
+			}
+#else
 			src =
 				dos_memory_make_pointer(dos_memory_pointer_segment(src) + FILE_IO_PAGE_SEGMENT_GAP,
 										dos_memory_pointer_offset(src));
+#endif
 		}
 
 		fileio_close(file);

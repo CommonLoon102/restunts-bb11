@@ -153,6 +153,21 @@ void audio_remove_driver_timer(void)
 static void audio_copy_engine_definition(struct AUDIO_ENGINE_DEFINITION *engine_definition,
 										 void far *source_pointer)
 {
+#ifdef RESTUNTS_SDL3
+	/* Full-game definitions contain native C pointers. Encode them into the
+	 * sequencer's fixed four-byte pointer format instead of copying addresses. */
+	const struct FULL_AUDIO_ENGINE_DEFINITION *source = source_pointer;
+	engine_definition->sample_count = source->sample_count;
+	for (legacy_u16 index = 0; index < AUDIO_ENGINE_RESERVED_PARAMETER_SIZE; ++index) {
+		engine_definition->reserved_parameters[index] = source->reserved_parameters[index];
+	}
+	engine_definition->initialized = source->initialized;
+	engine_definition->reserved_initialization_byte = source->reserved_initialization_byte;
+	for (legacy_u16 index = 0; index < AUDIO_ENGINE_RESOURCE_COUNT; ++index) {
+		audio_write_far_pointer((legacy_u8 *)&engine_definition->resources[index],
+								source->resource_ids[index]);
+	}
+#else
 	legacy_u16 source_offset = (legacy_u16)dos_memory_pointer_offset(source_pointer);
 	legacy_u16 source_segment = (legacy_u16)dos_memory_pointer_segment(source_pointer);
 	for (legacy_u16 field = 0; field < AUDIO_ENGINE_DEFINITION_SIZE; field++) {
@@ -164,6 +179,7 @@ static void audio_copy_engine_definition(struct AUDIO_ENGINE_DEFINITION *engine_
 			source_segment = LEGACY_U16_WRAP_ADD(source_segment, DOS_SEGMENT_WRAP_PARAGRAPHS);
 		}
 	}
+#endif
 }
 
 static void audio_resolve_engine_definition(struct AUDIO_ENGINE_DEFINITION *engine_definition,
@@ -548,8 +564,12 @@ legacy_s16 audio_effect_channel_idle(legacy_s16 channel)
 
 void audio_set_finish_callback(legacy_s16 channel, void far *value)
 {
+#ifdef RESTUNTS_SDL3
+	audio_write_far_pointer((legacy_u8 *)&audio_channels[channel].finish_callback, value);
+#else
 	void far **field = (void far **)&audio_channels[channel].finish_callback;
 	*field = value;
+#endif
 }
 
 void audio_init_channel_range(legacy_s16 first_channel, legacy_s16 last_channel, void far *resource,
@@ -751,11 +771,16 @@ static void audio_reclaim_driver_context(legacy_s16 selected, struct AUDIO_CHANN
 	struct AUDIO_CONTEXT *context = &dos_audio_contexts[selected];
 	struct AUDIO_CHANNEL *old_timer;
 	if (dos_audio_uses_direct_channels == 0 && restrict_to_timer == 0) {
+#ifdef RESTUNTS_SDL3
+		/* Native globals need not share one DOS data segment. */
+		old_timer = &audio_channels[context->channel];
+#else
 		/* Recover the old record using its stored data-segment offset. */
 		old_timer =
 			(struct AUDIO_CHANNEL *)((legacy_u8 *)audio_timers +
 									 LEGACY_U16_WRAP_SUB(context->timer_offset,
 														 dos_memory_pointer_offset(audio_timers)));
+#endif
 		if (old_timer != timer) {
 			old_timer->active_notes--;
 			timer->active_notes++;

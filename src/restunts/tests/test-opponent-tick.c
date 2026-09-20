@@ -243,8 +243,8 @@ static void test_tick_sweep(void)
 #ifdef OPPONENT_RECORD_BASELINE
 	fprintf(stdout, "%08lx\n", (unsigned long)hash);
 #else
-	/* Original opponent state and dependency-call sequence fingerprint. */
-	assert(hash == 0x2a58ad0dUL);
+	/* Opponent state and dependency calls with one random draw per input field. */
+	assert(hash == 0x20da6be0UL);
 #endif
 }
 

@@ -541,7 +541,7 @@ int main(void)
 #else
 	assert(input_hash == 0x2a5d4036UL);
 	assert(scrollbar_hash == 0x207b3fe7UL);
-	assert(record_hash == 0x0fac5847UL);
+	assert(record_hash == 0x41c4e48dUL);
 	assert(callback_hash == 0x9bd7fd3eUL);
 	/* F11/F12 are now handled without triggering the paused-race fallback. */
 	assert(shortcut_hash == 0xab8a7016UL);

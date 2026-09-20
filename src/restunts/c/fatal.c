@@ -5,6 +5,10 @@
 #include "shape2d.h"
 #include "keyboard.h"
 
+#ifdef RESTUNTS_SDL3
+extern int sdl3_batch_mode;
+#endif
+
 #define FATAL_OUTPUT_BUFFER_SIZE 96U
 #define FATAL_NUMBER_SCRATCH_SIZE 12U
 
@@ -230,7 +234,7 @@ static void fatal_vprintf(const legacy_s8 *format, va_list arguments)
 				fatal_emit_character(&output, '%');
 				break;
 			case 'c':
-				value = va_arg(arguments, legacy_s16);
+				value = (legacy_s16)va_arg(arguments, int);
 				fatal_emit_field_character(&output, &field, (legacy_s8)value);
 				break;
 			case 's':
@@ -240,14 +244,14 @@ static void fatal_vprintf(const legacy_s8 *format, va_list arguments)
 			case 'd':
 			case 'i':
 				long_signed_value = field.long_value ? va_arg(arguments, legacy_s32)
-													 : va_arg(arguments, legacy_s16);
+													 : (legacy_s16)va_arg(arguments, int);
 				fatal_emit_signed_field(&output, &field, long_signed_value);
 				break;
 			case 'u':
 			case 'x':
 			case 'X':
 				unsigned_value = field.long_value ? va_arg(arguments, legacy_u32)
-												  : (legacy_u16)va_arg(arguments, legacy_u16);
+												  : (legacy_u16)va_arg(arguments, unsigned int);
 				fatal_emit_unsigned_field(&output, &field, unsigned_value);
 				break;
 			default:
@@ -265,7 +269,13 @@ void fatal_error(const legacy_s8 *format, ...)
 	va_start(arguments, format);
 	fatal_vprintf(format, arguments);
 	va_end(arguments);
+#ifdef RESTUNTS_SDL3
+	if (!sdl3_batch_mode) {
+		flush_stdin();
+	}
+#else
 	flush_stdin();
+#endif
 	call_exitlist();
 	va_start(arguments, format);
 	fatal_vprintf(format, arguments);

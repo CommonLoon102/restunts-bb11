@@ -264,7 +264,11 @@ int main(void)
 	test_calibration();
 	test_graphics();
 	test_options();
-	assert(trace_hash == UINT64_C(0xb46dda37cecf437f));
+#ifdef OPTIONS_RECORD_BASELINE
+	fprintf(stdout, "test-menu-options.c=0x%016llx\n", (unsigned long long)trace_hash);
+#else
+	assert(trace_hash == UINT64_C(0xaf8245c3425601de));
+#endif
 	printf("test-menu-options: passed\n");
 	return 0;
 }

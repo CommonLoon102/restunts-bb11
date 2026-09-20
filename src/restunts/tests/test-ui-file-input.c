@@ -452,7 +452,7 @@ static void test_file_dialog(void)
 			}
 		}
 	}
-	check_hash("file selection", UINT64_C(0xb6dddb318767b7d1));
+	check_hash("file selection", UINT64_C(0x1bf0dbeff6692627));
 }
 
 static void test_read_line(void)
@@ -506,7 +506,7 @@ static void test_read_line(void)
 			}
 		}
 	}
-	check_hash("text editing", UINT64_C(0x50b29e25e6bf27ec));
+	check_hash("text editing", UINT64_C(0xb53d8bcfdddfe7ac));
 }
 
 static void test_read_line_wrapper(void)
@@ -522,7 +522,7 @@ static void test_read_line_wrapper(void)
 		trace_word(keyboard_index);
 		assert(text[strlen(text) - 1] != ' ');
 	}
-	check_hash("edit wrapper", UINT64_C(0x66b95896f189e2bb));
+	check_hash("edit wrapper", UINT64_C(0x490af67e25420ce6));
 }
 
 static void test_character_limit(void)

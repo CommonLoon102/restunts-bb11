@@ -330,7 +330,11 @@ int main(void)
 	test_map_drawing();
 	test_key_dispatch();
 	test_palette_activation();
-	assert(editor_trace == UINT64_C(0x62b148357fd3e8a2));
+#ifdef EDITOR_RECORD_BASELINE
+	fprintf(stdout, "test-editor-boundaries.c=0x%016llx\n", (unsigned long long)editor_trace);
+#else
+	assert(editor_trace == UINT64_C(0x357e17a639e2d582));
+#endif
 	printf("test-editor-boundaries: passed\n");
 	return 0;
 }

@@ -25,8 +25,12 @@
 #include "../platform/dos/dump_timer.h"
 #endif
 
+#ifdef RESTUNTS_SDL3
+#define REPLDUMP_OUTPUT_NAME_SIZE REPLAY_FILENAME_SIZE
+#else
 #define REPLDUMP_OUTPUT_NAME_SIZE 13U
-#define REPLDUMP_OUTPUT_NAME_LAST_INDEX 12U
+#endif
+#define REPLDUMP_OUTPUT_NAME_LAST_INDEX (REPLDUMP_OUTPUT_NAME_SIZE - 1U)
 #define REPLDUMP_CAR_ID_SIZE 4U
 #define REPLDUMP_CAR_ID_BUFFER_SIZE 5U
 #define REPLDUMP_REPLAY_EXTENSION_SIZE 4U
@@ -276,7 +280,7 @@ static void repldump_strip_replay_extension(legacy_s8 *name)
 	}
 }
 
-/* Keep the replay stem and both output extensions within the DOS 8.3 buffer. */
+/* Keep the replay stem and both output extensions within the output buffer. */
 static legacy_s16 repldump_output_name(legacy_s8 *output, const legacy_s8 *stem,
 									   const legacy_s8 *extension)
 {

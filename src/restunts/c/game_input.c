@@ -87,7 +87,7 @@ void kb_reg_callback(legacy_s16 code, void(far *callback)(void))
 		if (input_callbacks[callback_index] == callback) {
 			break;
 		}
-		if (dos_memory_pointer_segment(input_callbacks[callback_index]) == 0U) {
+		if (input_callbacks[callback_index] == 0) {
 			input_callbacks[callback_index] = callback;
 			break;
 		}

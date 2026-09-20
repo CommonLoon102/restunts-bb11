@@ -1,4 +1,7 @@
 #include <stddef.h>
+#ifdef RESTUNTS_SDL3
+#include "../platform/sdl3/sdl3.h"
+#endif
 #include "externs.h"
 #include "fatal.h"
 #include "legacy.h"
@@ -8,6 +11,9 @@
 #include "shape2d_internal.h"
 #include "game_input.h"
 #include "video_pages.h"
+#ifdef RESTUNTS_SDL3
+static struct SPRITE sdl3_background_contexts[4][SPRITE_STATE_COUNT];
+#endif
 
 #define WINDOW_DEFINITION_TABLE_BYTES 3600U
 #define WINDOW_ALLOCATION_OVERHEAD 18L
@@ -84,13 +90,10 @@ static void shape2d_render_rle(struct SHAPE2D far *shape, legacy_u16 x, legacy_u
 	legacy_u16 shape_segment = dos_memory_pointer_segment(shape);
 	legacy_u16 source = LEGACY_U16_WRAP_ADD(dos_memory_pointer_offset(shape), SHAPE2D_HEADER_SIZE);
 	legacy_u16 width = shape2d_get_width(shape);
-	legacy_u16 line_entry =
-		LEGACY_U16_WRAP_ADD(dos_memory_pointer_offset(drawing_sprite.sprite_lineofs),
-							LEGACY_U16_WRAP_MUL(y, LEGACY_WORD_BYTES));
+	legacy_u16 line_entry = LEGACY_U16_WRAP_ADD(shape2d_line_base(&drawing_sprite),
+												LEGACY_U16_WRAP_MUL(y, LEGACY_WORD_BYTES));
 	legacy_u16 destination =
-		LEGACY_U16_WRAP_ADD(shape2d_get_word((legacy_u8 far *)dos_memory_make_pointer(
-								dos_memory_pointer_segment(&drawing_sprite), line_entry)),
-							x);
+		LEGACY_U16_WRAP_ADD(shape2d_get_word(shape2d_line_pointer(&drawing_sprite, line_entry)), x);
 	legacy_u8 far *bitmap = (legacy_u8 far *)dos_memory_make_pointer(
 		dos_memory_pointer_segment(drawing_sprite.sprite_bitmapptr), 0);
 	legacy_u16 remaining = width;
@@ -141,9 +144,7 @@ static void shape2d_render_rle(struct SHAPE2D far *shape, legacy_u16 x, legacy_u
 			if (old_remaining == LEGACY_U16_SIGN_BIT || LEGACY_S16_FROM_BITS(remaining) <= 0) {
 				line_entry = LEGACY_U16_WRAP_ADD(line_entry, LEGACY_WORD_BYTES);
 				destination = LEGACY_U16_WRAP_ADD(
-					shape2d_get_word((legacy_u8 far *)dos_memory_make_pointer(
-						dos_memory_pointer_segment(&drawing_sprite), line_entry)),
-					x);
+					shape2d_get_word(shape2d_line_pointer(&drawing_sprite, line_entry)), x);
 				remaining = width;
 			}
 			count = LEGACY_U16_WRAP_SUB(count, span);
@@ -205,7 +206,9 @@ struct SPRITE far *sprite_make_wnd(legacy_u16 width, legacy_u16 height, legacy_u
 {
 	(void)unused_flags;
 
+#ifndef RESTUNTS_SDL3
 	legacy_u16 wnddefseg = dos_memory_pointer_segment(&wnd_defs);
+#endif
 
 	legacy_s16 pages = ((width * height + SHAPE2D_HEADER_SIZE) >> DOS_PARAGRAPH_SHIFT) +
 					   DOS_WINDOW_EXTRA_PARAGRAPH_COUNT;
@@ -223,14 +226,22 @@ struct SPRITE far *sprite_make_wnd(legacy_u16 width, legacy_u16 height, legacy_u
 	// it is safe to read/write the pointers to next_wnd_def/wnd_defs, but not the contents
 	legacy_s8 *wnd = next_wnd_def;
 	legacy_s8 *nextwnd = next_wnd_def + sizeof(struct SPRITE) + height * sizeof(legacy_u16);
+#ifdef RESTUNTS_SDL3
+	if (nextwnd > (legacy_s8 *)wnd_defs + WINDOW_DEFINITION_TABLE_BYTES) {
+#else
 	if (dos_memory_pointer_offset(nextwnd) >=
 		dos_memory_pointer_offset(&wnd_defs) + WINDOW_DEFINITION_TABLE_BYTES) {
+#endif
 		fatal_error(window_row_table_overflow_message);
 	}
 	next_wnd_def = nextwnd;
 
 	// get a writable far pointer to the render_window_sprite
+#ifdef RESTUNTS_SDL3
+	struct SPRITE *farwnd = (struct SPRITE *)wnd;
+#else
 	struct SPRITE far *farwnd = dos_memory_make_pointer(wnddefseg, dos_memory_pointer_offset(wnd));
+#endif
 
 	legacy_u8 *lineofsptr = (legacy_u8 *)(wnd + sizeof(struct SPRITE));
 	farwnd->sprite_bitmapptr = header;
@@ -245,8 +256,12 @@ struct SPRITE far *sprite_make_wnd(legacy_u16 width, legacy_u16 height, legacy_u
 	farwnd->sprite_raster_right = width;
 
 	// create a writable far pointer to the line offsets
+#ifdef RESTUNTS_SDL3
+	legacy_u8 *farlineofsptr = lineofsptr;
+#else
 	legacy_u8 far *farlineofsptr =
 		(legacy_u8 far *)dos_memory_make_pointer(wnddefseg, dos_memory_pointer_offset(lineofsptr));
+#endif
 	legacy_u16 lineofs = SHAPE2D_HEADER_SIZE;
 	// One of several counted loops where the original uses `loop`, which runs
 	// 65536 times on a count of zero while this runs none. Reaching it needs a
@@ -271,8 +286,12 @@ void sprite_free_wnd(struct SPRITE far *render_window_sprite)
 	legacy_u16 spritesize =
 		sizeof(struct SPRITE) +
 		shape2d_get_height(render_window_sprite->sprite_bitmapptr) * sizeof(legacy_u16);
+#ifdef RESTUNTS_SDL3
+	if ((legacy_s8 *)render_window_sprite + spritesize != next_wnd_def) {
+#else
 	if (dos_memory_pointer_offset(render_window_sprite) + spritesize !=
 		dos_memory_pointer_offset(next_wnd_def)) {
+#endif
 		fatal_error(window_release_order_message);
 	}
 	next_wnd_def = next_wnd_def - spritesize;
@@ -313,12 +332,22 @@ void sprite_select_render_window_and_clear(void)
 
 void sprite_save_context(struct SPRITE saved_context[SPRITE_STATE_COUNT])
 {
+#ifdef RESTUNTS_SDL3
+	saved_context[0] = drawing_sprite;
+	saved_context[1] = screen_sprite;
+#else
 	fmemcpy(saved_context, &drawing_sprite, sizeof(struct SPRITE) * SPRITE_STATE_COUNT);
+#endif
 }
 
 void sprite_restore_context(struct SPRITE saved_context[SPRITE_STATE_COUNT])
 {
+#ifdef RESTUNTS_SDL3
+	drawing_sprite = saved_context[0];
+	screen_sprite = saved_context[1];
+#else
 	fmemcpy(&drawing_sprite, saved_context, sizeof(struct SPRITE) * SPRITE_STATE_COUNT);
+#endif
 }
 
 legacy_s16 sprite_push_background(legacy_s16 left, legacy_s16 right, legacy_s16 top,
@@ -342,8 +371,12 @@ legacy_s16 sprite_push_background(legacy_s16 left, legacy_s16 right, legacy_s16 
 	sprite_background_saved_y[index] = top;
 	struct SPRITE saved_sprites[SPRITE_STATE_COUNT];
 	sprite_save_context(saved_sprites);
+#ifdef RESTUNTS_SDL3
+	fmemcpy(sdl3_background_contexts[index], saved_sprites, sizeof(saved_sprites));
+#else
 	fmemcpy(sprite_background_state_stack + index * sizeof(saved_sprites), saved_sprites,
 			sizeof(saved_sprites));
+#endif
 	sprite_select_screen();
 	sprite_clear_shape_alt(window->sprite_bitmapptr, left, top);
 	sprite_background_stack_depth++;
@@ -361,8 +394,12 @@ void sprite_pop_background(void)
 	sprite_shape_to_1(sprite_ptrs[index]->sprite_bitmapptr, sprite_background_saved_x[index],
 					  sprite_background_saved_y[index]);
 	struct SPRITE saved_sprites[SPRITE_STATE_COUNT];
+#ifdef RESTUNTS_SDL3
+	fmemcpy(saved_sprites, sdl3_background_contexts[index], sizeof(saved_sprites));
+#else
 	fmemcpy(saved_sprites, sprite_background_state_stack + index * sizeof(saved_sprites),
 			sizeof(saved_sprites));
+#endif
 	sprite_restore_context(saved_sprites);
 	sprite_free_wnd(sprite_ptrs[index]);
 	mouse_draw_transparent_check();
@@ -779,6 +816,9 @@ void sprite_present_mcga_backbuffer(void)
 
 	sprite_select_target(&screen_sprite);
 	sprite_putimage(mcga_backbuffer_sprite->sprite_bitmapptr);
+#ifdef RESTUNTS_SDL3
+	sdl3_video_present();
+#endif
 }
 
 void sprite_select_mcga_backbuffer(void)

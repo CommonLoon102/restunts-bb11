@@ -163,6 +163,31 @@ static void audio_load_driver_bank(void)
 legacy_s16 audio_load_dos_driver(const legacy_s8 *driver, legacy_s16 unused, legacy_s16 mode)
 {
 	(void)unused;
+#ifdef RESTUNTS_SDL3
+	/* Native builds implement the AdLib driver in C; executable DOS drivers
+	 * cannot run in their flat address space. Always select its instruments. */
+	(void)driver;
+	(void)mode;
+	if (dos_audio_driver_binary != 0) {
+		dos_audio_shutdown();
+	} else {
+		add_exit_handler(dos_audio_shutdown);
+	}
+	audio_driver_prefix[0] = 'a';
+	audio_driver_prefix[1] = 'd';
+	audio_driver_prefix[2] = 0;
+	dos_audio_special_mode = 0;
+	dos_audio_uses_direct_channels = 0;
+	audio_music_rate = AUDIO_DEFAULT_RATE;
+	audio_effect_rate = AUDIO_DEFAULT_RATE;
+	legacy_u8 channel_count = dos_audio_driver_initialize();
+	dos_audio_context_count = channel_count;
+	if (channel_count == 0 || channel_count > AUDIO_CONTEXT_COUNT) {
+		return AUDIO_DRIVER_LOAD_FAILURE;
+	}
+	/* This is an initialization marker only, never an executable allocation. */
+	dos_audio_driver_binary = audio_driver_prefix;
+#else
 	if (mode == AUDIO_SPECIAL_DRIVER_MODE) {
 		dos_audio_special_mode = 1;
 	}
@@ -211,6 +236,7 @@ legacy_s16 audio_load_dos_driver(const legacy_s8 *driver, legacy_s16 unused, leg
 		dos_audio_special_mode = 0;
 	}
 
+#endif
 	audio_reset_channels();
 	timer_reg_callback(audio_sequence_timer);
 	audio_load_driver_bank();
@@ -309,15 +335,24 @@ legacy_s16 audioresource_compare_chunknames(legacy_s16 case_sensitive,
 	if (remaining == 0) {
 		return 1;
 	}
+#ifndef RESTUNTS_SDL3
 	legacy_u16 first_offset = (legacy_u16)dos_memory_pointer_offset(first_name);
 	legacy_u16 first_segment = (legacy_u16)dos_memory_pointer_segment(first_name);
 	legacy_u16 second_offset = (legacy_u16)dos_memory_pointer_offset(second_name);
 	legacy_u16 second_segment = (legacy_u16)dos_memory_pointer_segment(second_name);
+#endif
 	do {
+#ifdef RESTUNTS_SDL3
+		/* Host objects may straddle a registered 64 KiB page. Advance the
+		 * pointers themselves, not offsets inside one DOS segment alias. */
+		legacy_u8 first = (legacy_u8)*first_name++;
+		legacy_u8 second = (legacy_u8)*second_name++;
+#else
 		legacy_u8 first =
 			*(const legacy_u8 far *)dos_memory_make_pointer(first_segment, first_offset);
 		legacy_u8 second =
 			*(const legacy_u8 far *)dos_memory_make_pointer(second_segment, second_offset);
+#endif
 		if (first == 0 || second == 0) {
 			return 1;
 		}
@@ -328,8 +363,10 @@ legacy_s16 audioresource_compare_chunknames(legacy_s16 case_sensitive,
 		} else if (legacy_toupper(second) != legacy_toupper(first)) {
 			return 0;
 		}
+#ifndef RESTUNTS_SDL3
 		first_offset = LEGACY_U16_WRAP_ADD(first_offset, 1U);
 		second_offset = LEGACY_U16_WRAP_ADD(second_offset, 1U);
+#endif
 		remaining--;
 	} while (remaining != 0);
 	return 1;
@@ -343,25 +380,39 @@ legacy_s16 audioresource_get_chunk_index(legacy_s16 extra_name_stride, legacy_s1
 	if (count <= 0) {
 		return -1;
 	}
+#ifdef RESTUNTS_SDL3
+	const legacy_s8 *requested_name_far = requested_name;
+	const legacy_u8 *candidate = chunk_names;
+#else
 	const legacy_s8 far *requested_name_far = (const legacy_s8 far *)dos_memory_make_pointer(
 		dos_memory_pointer_segment(requested_name), dos_memory_pointer_offset(requested_name));
 	legacy_u16 names_offset = (legacy_u16)dos_memory_pointer_offset(chunk_names);
 	legacy_u16 names_segment = (legacy_u16)dos_memory_pointer_segment(chunk_names);
+#endif
 	for (legacy_s16 index = 0; index < count; index = LEGACY_S16_WRAP_ADD(index, 1)) {
+#ifndef RESTUNTS_SDL3
 		const legacy_u8 far *candidate =
 			(const legacy_u8 far *)dos_memory_make_pointer(names_segment, names_offset);
+#endif
 		if (audioresource_compare_chunknames(0, (const legacy_s8 far *)candidate,
 											 requested_name_far, AUDIO_RESOURCE_ID_LENGTH)) {
 			return index;
 		}
+#ifdef RESTUNTS_SDL3
+		candidate += LEGACY_U16_WRAP_ADD(AUDIO_RESOURCE_ID_LENGTH, extra_name_stride);
+#else
 		names_offset = LEGACY_U16_WRAP_ADD(
 			names_offset, LEGACY_U16_WRAP_ADD(AUDIO_RESOURCE_ID_LENGTH, extra_name_stride));
+#endif
 	}
 	return -1;
 }
 
 static void far *audio_far_pointer_add_normalized(void far *pointer, legacy_u16 increment)
 {
+#ifdef RESTUNTS_SDL3
+	return (legacy_u8 *)pointer + increment;
+#else
 	legacy_u16 old_offset = (legacy_u16)dos_memory_pointer_offset(pointer);
 	legacy_u16 segment = (legacy_u16)dos_memory_pointer_segment(pointer);
 	legacy_u16 new_offset = LEGACY_U16_WRAP_ADD(old_offset, increment);
@@ -369,13 +420,16 @@ static void far *audio_far_pointer_add_normalized(void far *pointer, legacy_u16 
 		segment = LEGACY_U16_WRAP_ADD(segment, DOS_SEGMENT_WRAP_PARAGRAPHS);
 	}
 	return dos_memory_make_pointer(segment, new_offset);
+#endif
 }
 
 void far *audioresource_find(void far *resource, const legacy_s8 *chunk_name)
 {
 	legacy_u8 far *bytes = (legacy_u8 far *)resource;
+#ifndef RESTUNTS_SDL3
 	legacy_u16 resource_offset = (legacy_u16)dos_memory_pointer_offset(resource);
 	legacy_u16 resource_segment = (legacy_u16)dos_memory_pointer_segment(resource);
+#endif
 	legacy_u16 chunk_count =
 		resource_read_u16le((const legacy_u8 far *)audio_far_pointer_add_normalized(
 			bytes, AUDIO_RESOURCE_CHUNK_COUNT_OFFSET));
@@ -387,6 +441,14 @@ void far *audioresource_find(void far *resource, const legacy_s8 *chunk_name)
 		return 0;
 	}
 
+#ifdef RESTUNTS_SDL3
+	const legacy_u8 *offset_entry = bytes + AUDIO_RESOURCE_TABLE_OFFSET +
+									(legacy_u32)chunk_count * AUDIO_RESOURCE_ID_LENGTH +
+									(legacy_u32)chunk_index * AUDIO_RESOURCE_OFFSET_ENTRY_SIZE;
+	legacy_u16 relative_offset = (legacy_u16)resource_read_u32le(offset_entry);
+	return bytes + AUDIO_RESOURCE_TABLE_OFFSET +
+		   (legacy_u32)chunk_count * AUDIO_RESOURCE_DIRECTORY_ENTRY_SIZE + relative_offset;
+#else
 	legacy_u16 table_offset = LEGACY_U16_WRAP_ADD(
 		resource_offset, LEGACY_U16_WRAP_MUL(chunk_count, AUDIO_RESOURCE_ID_LENGTH));
 	table_offset = LEGACY_U16_WRAP_ADD(
@@ -400,6 +462,7 @@ void far *audioresource_find(void far *resource, const legacy_s8 *chunk_name)
 	result_offset = LEGACY_U16_WRAP_ADD(result_offset, relative_offset);
 	result_offset = LEGACY_U16_WRAP_ADD(result_offset, AUDIO_RESOURCE_TABLE_OFFSET);
 	return dos_memory_make_pointer(resource_segment, result_offset);
+#endif
 }
 
 static void audio_map_percussion_instruments(void far *instruments)
@@ -439,7 +502,17 @@ void audio_map_song_instruments(void far *song, void far *instruments)
 	}
 
 	audio_map_percussion_instruments(instruments);
+#ifdef RESTUNTS_SDL3
+	/* The original lookup retained the bank's segment, so its offset includes
+	 * the chunk's displacement. Native pointer normalization loses that alias. */
+	legacy_closed_hihat_offset =
+		audio_closed_hihat_resource == 0
+			? 0
+			: (legacy_u16)((legacy_u8 *)audio_closed_hihat_resource - (legacy_u8 *)instruments +
+						   dos_memory_pointer_offset(instruments));
+#else
 	legacy_closed_hihat_offset = dos_memory_pointer_offset(audio_closed_hihat_resource);
+#endif
 }
 
 static void audio_write_far_pointer_to_resource(legacy_u8 far *destination, legacy_u16 offset,
@@ -695,6 +768,12 @@ void audioresource_copy_n_bytes(const legacy_u8 far *source, legacy_u8 far *dest
 	if (remaining <= 0) {
 		return;
 	}
+#ifdef RESTUNTS_SDL3
+	do {
+		*destination++ = *source++;
+		remaining--;
+	} while (remaining != 0);
+#else
 	legacy_u16 source_offset = (legacy_u16)dos_memory_pointer_offset(source);
 	legacy_u16 source_segment = (legacy_u16)dos_memory_pointer_segment(source);
 	legacy_u16 destination_offset = (legacy_u16)dos_memory_pointer_offset(destination);
@@ -706,6 +785,7 @@ void audioresource_copy_n_bytes(const legacy_u8 far *source, legacy_u8 far *dest
 		destination_offset = LEGACY_U16_WRAP_ADD(destination_offset, 1U);
 		remaining = LEGACY_S16_WRAP_SUB(remaining, 1);
 	} while (remaining != 0);
+#endif
 }
 
 void audio_set_missing_file_fatal(legacy_s16 value)

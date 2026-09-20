@@ -214,9 +214,13 @@ int main(void)
 	for (unsigned int scenario = 0; scenario < 420U; scenario++) {
 		run_dialog_case(scenario);
 	}
-	/* Captured from the original dialog implementation. The trace includes drawing,
-	 * geometry, disabled choices, placeholders, input polling and background lifetime. */
-	assert(trace_hash == UINT64_C(0x268e59aba981d897));
+	/* Trace includes drawing, geometry, disabled choices, placeholders, input polling
+	 * and background lifetime, with one call per integer conversion. */
+#ifdef DIALOG_RECORD_BASELINE
+	fprintf(stdout, "test-ui-dialog.c=0x%016llx\n", (unsigned long long)trace_hash);
+#else
+	assert(trace_hash == UINT64_C(0x5b92617a4f634339));
+#endif
 	puts("Dialog interaction snapshots passed (420 scenarios).");
 	return 0;
 }

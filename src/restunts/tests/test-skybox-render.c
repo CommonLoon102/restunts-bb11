@@ -1,5 +1,6 @@
 #include <assert.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 
 #include "../c/externs.h"
@@ -335,14 +336,19 @@ int main(void)
 	/* Geometry and rectangle merging use the real implementations. Raster
 	 * callbacks fingerprint their arguments and order without a video device.
 	 * Rolled-view baselines include the original long-line slope rounding and
-	 * full-redraw return flag for whole-viewport fills. */
-	static const legacy_u32 expected[] = {1958318220UL, 2563688993UL, 1150680283UL, 1407887372UL};
+	 * full-redraw return flag for whole-viewport fills. Each random camera
+	 * coordinate now uses a single draw before signed conversion. */
+	static const legacy_u32 expected[] = {0xd50e9f01UL, 0x119b140bUL, 0xef627bc6UL, 0xd202c0d0UL};
 
 	test_level_horizon();
 	test_rolled_full_viewport_redraw();
 	test_legacy_skybox_handoff();
 	for (unsigned i = 0; i < 4; i++) {
+#ifdef SKYBOX_RECORD_BASELINE
+		fprintf(stdout, "skybox%u=%08lx\n", i, (unsigned long)skybox_fingerprint(i & 1U, i >> 1U));
+#else
 		assert(skybox_fingerprint(i & 1U, i >> 1U) == expected[i]);
+#endif
 	}
 	return 0;
 }

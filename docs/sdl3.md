@@ -1,0 +1,194 @@
+# SDL3 builds
+
+The SDL3 platform in `src/restunts/platform/sdl3/` builds the game (`restunts`),
+physics replay dumper (`repldump`), and renderer dumper (`pixldump`) for Windows,
+Linux, and 32-bit DOS. The existing Open Watcom 16-bit DOS build remains available
+through `make -C src/restunts restunts repldump pixldump`; its platform code stays
+under `src/restunts/platform/dos/`.
+
+## Dependencies and supported build targets
+
+CMake 3.25+, a C99 GCC-compatible compiler (plus MinGW C++ on Windows), a build
+tool, Git, and network access are required. CMake fetches and verifies SDL3 upstream commit
+[`015489c672f24feed28c2aa2cdd6176df95329f3`](https://github.com/libsdl-org/SDL/tree/015489c672f24feed28c2aa2cdd6176df95329f3).
+That revision includes SDL's DOS backend and the gameport/Sound Blaster timing fix
+used by the [reference DOS port](https://github.com/murphy666/stuntsengine/pull/3).
+All three platforms use the same revision; no separate SDL fork is required.
+
+| Target | Compiler and baseline |
+| --- | --- |
+| Linux x64 | GCC, Debian 12 build baseline. |
+| Linux x86 | GCC multilib or an i386 environment, Debian 12 build baseline. |
+| Windows x64 and x86 | MinGW-w64; Windows 7 API target (`_WIN32_WINNT=0x0601`). |
+| DOS | DJGPP GCC 12.2.0, 32-bit DPMI executable; VGA and a DPMI host. |
+
+The baseline describes build settings. Successful builds and automated tests do
+not establish runtime compatibility with every old OS or CPU. Windows 7, older
+non-SSE2 processors, and physical DOS hardware need testing on those systems.
+SDL's DOS minimum is i386 with 4 MB RAM; the game's actual memory and performance
+requirements can be higher. See [SDL's DOS notes](https://github.com/libsdl-org/SDL/blob/015489c672f24feed28c2aa2cdd6176df95329f3/docs/README-dos.md).
+
+## Linux
+
+On Debian 12 x64, install the compiler, build tools, and common desktop drivers:
+
+```sh
+sudo apt-get update
+sudo apt-get install build-essential cmake ninja-build git curl ca-certificates pkg-config \
+    libasound2-dev libpulse-dev libx11-dev libxext-dev libxrandr-dev libxcursor-dev \
+    libxi-dev libxfixes-dev libxss-dev libxtst-dev libwayland-dev libxkbcommon-dev libudev-dev \
+    libdrm-dev libgbm-dev libegl1-mesa-dev libgl1-mesa-dev
+cmake -S . -B out/sdl3-linux-x64 -G Ninja -DCMAKE_BUILD_TYPE=Release
+cmake --build out/sdl3-linux-x64
+ctest --test-dir out/sdl3-linux-x64 --output-on-failure
+```
+
+For x86 on an x64 Debian host, enable i386 packages and install `gcc-multilib`
+and the corresponding `:i386` development libraries. Use a separate build tree:
+
+```sh
+cmake -S . -B out/sdl3-linux-x86 -G Ninja -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_TOOLCHAIN_FILE=cmake/toolchains/linux-x86.cmake
+cmake --build out/sdl3-linux-x86
+```
+
+Append `-DRESTUNTS_SSE2=OFF` for a 32-bit x86 build without SSE/SSE2/AVX code in
+the game or bundled SDL. Use another fresh build tree when changing CPU options.
+The same option is available for Windows x86; x64 requires SSE2. A build without
+SSE2 still uses the toolchain's x86 instruction-set baseline and system runtime;
+it is not an 8086 executable. The DOS toolchain selects i386 and disables SSE2
+by default.
+
+`-DRESTUNTS_SYSTEM_SDL=ON` uses an installed SDL3 CMake package instead of the
+pinned source. This option is incompatible with `RESTUNTS_SSE2=OFF`, because
+CMake cannot control the instruction set of a prebuilt SDL library.
+
+## Windows with MinGW-w64
+
+Cross-compile from Linux after installing `mingw-w64`. SDL is built statically,
+so the bundled-SDL build does not require a separate `SDL3.dll`:
+
+```sh
+cmake -S . -B out/sdl3-windows-x64 -G Ninja -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_TOOLCHAIN_FILE=cmake/toolchains/mingw-x64.cmake
+cmake --build out/sdl3-windows-x64
+cmake -S . -B out/sdl3-windows-x86 -G Ninja -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_TOOLCHAIN_FILE=cmake/toolchains/mingw-x86.cmake
+cmake --build out/sdl3-windows-x86
+```
+
+The outputs are `restunts.exe`, `repldump.exe`, and `pixldump.exe` in their build
+directory. Native Windows builds can use a MinGW-w64 environment with CMake and
+Ninja; select its GCC compiler directly instead of a Linux cross toolchain file.
+MSVC is not a supported compiler for this port.
+
+## DOS with DJGPP
+
+The pinned Linux x64 cross-toolchain is
+[build-djgpp v3.4 / GCC 12.2.0](https://github.com/andrewwutw/build-djgpp/releases/download/v3.4/djgpp-linux64-gcc1220.tar.bz2).
+On Linux, install `libfl2` as well (DJGPP binutils uses `libfl.so.2`).
+Download and verify it before extracting:
+
+```sh
+mkdir -p out/toolchains/djgpp
+curl -fL https://github.com/andrewwutw/build-djgpp/releases/download/v3.4/djgpp-linux64-gcc1220.tar.bz2 \
+    -o out/toolchains/djgpp-linux64-gcc1220.tar.bz2
+printf '%s  %s\n' 8464f17017d6ab1b2bb2df4ed82357b5bf692e6e2b7fee37e315638f3d505f00 \
+    out/toolchains/djgpp-linux64-gcc1220.tar.bz2 | sha256sum -c -
+tar -xjf out/toolchains/djgpp-linux64-gcc1220.tar.bz2 -C out/toolchains/djgpp --strip-components=1
+export PATH="$PWD/out/toolchains/djgpp/bin:$PATH"
+cmake -S . -B out/sdl3-dos -G Ninja -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_TOOLCHAIN_FILE=cmake/toolchains/djgpp.cmake -DRESTUNTS_BUILD_TESTS=OFF
+cmake --build out/sdl3-dos
+```
+
+This creates 32-bit DOS `.exe` files. Place a compatible DPMI host such as
+[`CWSDPMI.EXE`](https://sandmann.dotster.com/cwsdpmi/) alongside them when the
+DOS environment does not supply one. CI artifacts do not bundle CWSDPMI or the
+game's data files.
+
+The DOS video path uses indexed VGA 320x200 directly. Audio writes the real
+AdLib-compatible OPL2 chip at port `388h`, which DOSBox also emulates. An AdLib
+or compatible Sound Blaster FM device is needed for sound. If audio initialization
+fails, the native game reports a warning and continues silently. Desktop builds
+synthesize the same FM registers through the vendored MIT-licensed
+[emu8950](../third_party/emu8950/README.md) and send PCM to SDL.
+
+In DOSBox/DOSBox-X use `core=dynamic`, `cycles=max`, and `aspect=true`. Aspect
+correction displays 320x200 VGA pixels at their intended 4:3 shape. Mount a
+directory containing the executable, data, and DPMI host, then run `RESTUNTS.EXE`. Stop an
+automated DOSBox process with SIGKILL; graceful termination can open a modal
+confirmation dialog. Real gameport joystick behavior requires hardware or a
+configured DOSBox joystick; the reference port did not establish that coverage.
+
+## Running and controls
+
+The source checkout contains only a placeholder under `stunts/`; building does
+not fetch game data. Copy Broderbund Stunts 1.1 resources into `stunts/`, or extract
+the [BB11 archive used by the existing DOS CI](https://github.com/CommonLoon102/restunts4d-oracles/releases/download/v1.0.1/BB11.zip)
+there before running the game or the audio regression. The archive must place
+files such as `GAME.RES`, `ADSKIDMS.VCE`, and `DEFAULT.RPL` directly in that folder.
+
+Resources are read from the current directory, or from `--data-dir` when it is
+the first argument. Existing game and dump parameters follow it unchanged:
+
+```sh
+out/sdl3-linux-x64/restunts --data-dir stunts /nointro
+out/sdl3-linux-x64/repldump --data-dir stunts DEFAULT.RPL
+out/sdl3-linux-x64/pixldump --data-dir stunts DEFAULT.RPL 2 0 5
+```
+
+Windows uses the corresponding `.exe` names. Dump outputs and saved game data
+are written in the selected data directory, so it must be writable. Keep the
+original game resources and replay/car additions together there.
+
+Desktop windows apply the VGA vertical 6:5 pixel-aspect correction: the original
+320x200 framebuffer fills a 4:3 image. Nearest-neighbour scaling preserves sharp
+pixel edges, and resizing adds black borders to retain that aspect. Renderer dump
+images retain the original 320x200 pixel data for parity checks. Menus support
+keyboard, mouse, and an SDL joystick. Existing driving and replay controls remain
+available:
+
+- **Up/Down** accelerate and brake; **Left/Right** steer.
+- **F1–F4** select cockpit, follow, custom, and trackside cameras.
+- **F11** toggles the frame-rate counter; **F12** toggles SuperSight.
+- Hold **Q** to rewind a live race; release it to resume from that point.
+- **T** switches between the player and opponent or selected ghost view.
+- **Escape** leaves driving or replay playback; closing the desktop window exits
+  the game and removes its temporary ghost cache.
+
+See the [gameplay notes](../readme.md#supersight-and-fps-display) for SuperSight,
+ghost selection, and rewind behavior.
+
+The SDL3 build supports AdLib music and effects. Other original executable DOS
+sound drivers (MT-32, PC speaker, and Sound Blaster sampled-speech paths) are not
+ported. Original DOS16 builds retain their existing driver selection. Native
+sequencing remains on the main thread; SDL only consumes generated PCM, so an
+audio callback cannot race resource loading or freeing.
+
+## Validation and CI
+
+The `SDL3 builds` workflow builds the game and both dump tools on all targets,
+using Debian 12 for the Linux release baseline. Its Linux matrix includes x86
+with SSE2 disabled. Linux tests cover the platform layer and AdLib synthesis
+from a shipped instrument, plus existing host regressions. Audio tests check
+audible PCM, pitch, engine frequency, volume, modulation, key-off, native
+engine-definition pointers, unavailable-device fallback, and batch-mode cleanup.
+Windows CI runs platform, file I/O, input, audio, and dump regressions on Windows
+Server 2022; Windows 7 runtime compatibility still needs verification on that OS.
+A small Linux x64 replay sample is compared byte for byte with the archived
+DOS physics and renderer oracles:
+
+```sh
+python3 tools/scripts/validate-native.py --build-directory out/sdl3-linux-x64 \
+    --output out/native-validation --count 3
+```
+
+This requires DOSBox and a fresh output directory. It checks preserved oracle
+checksums, uses `core=dynamic` and `cycles=max`, and kills DOSBox after each
+capture. Full replay-corpus validation and physical hardware checks are separate
+from the build matrix; a successful sample is not evidence that all replays,
+controllers, or sound hardware have been exercised.
+
+CI archives contain the three executables and dependency license notices.
+They are build artifacts, not automatic GitHub Releases or deployments.
