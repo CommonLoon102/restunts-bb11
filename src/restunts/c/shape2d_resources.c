@@ -760,7 +760,7 @@ void far *file_load_shape2d_res(const legacy_s8 *resname, legacy_s16 fatal)
 			copy_paras_reverse(rawseg, rawseg + margin, chunksize);
 			parse_shape2d(dos_memory_make_pointer(rawseg + margin, 0),
 						  dos_memory_make_pointer(rawseg, 0));
-			mmgr_resize_memory(0, rawseg, chunksize);
+			/* parse_shape2d has already trimmed the chunk to the parsed size. */
 			mmgr_rename_chunk(dos_memory_make_pointer(rawseg, 0), resname);
 			return dos_memory_make_pointer(rawseg, 0);
 		}

@@ -146,6 +146,11 @@ run_host_test test-replay-controls legacy.c \
     -Wno-pointer-sign -Wno-missing-field-initializers
 run_host_test test-replay-serialization replay.c
 run_host_test test-resource-lookup resource.c
+run_host_test test-shape2d-memory shape2d_resources.c \
+    "$test_source_dir/memmgr.c" "$test_source_dir/resource.c" "$test_source_dir/shape2d.c" \
+    "$test_source_dir/headless_data.c" \
+    "$test_source_dir/legacy.c" "$test_source_dir/strlib.c" \
+    -Wno-pointer-sign -Wno-missing-braces -Wno-missing-field-initializers -Wno-unused-variable
 run_host_test test-shape2d-render shape2d.c \
     "$test_source_dir/shape2d_blit.c" "$test_source_dir/shape2d_resources.c" \
     "$test_source_dir/full_data.c" "$test_source_dir/resource.c" "$test_source_dir/legacy.c" \
