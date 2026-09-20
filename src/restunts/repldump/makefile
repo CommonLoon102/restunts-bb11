@@ -8,7 +8,7 @@ endif
 RESTUNTS_OBJ_FILES = fileio.obj legacy.obj resource.obj math.obj memmgr.obj strlib.obj numlib.obj \
                      kevinrnd.obj replinit.obj gameinit.obj gamestep.obj \
                      simd.obj carsetup.obj trkutil.obj trackres.obj headless.obj dosstart.obj headless_data.obj headless_trackdata.obj state.obj physics_grip.obj opponent.obj track_setup.obj stateply.obj physics_collision.obj \
-                     statecrs.obj statecar.obj trackobj.obj replay.obj stateio.obj
+                     statecrs.obj statecar.obj trackobj.obj owoot.obj owoot_wheels.obj owoot_road.obj owoot_route.obj replay.obj stateio.obj
 
 PLATFORM_DIR = ../platform/dos/build/watcom/$(CONFIG)
 PLATFORM_ASM_DIR = $(PLATFORM_DIR)/wasm
@@ -37,6 +37,7 @@ C_DIR = ../c/build/watcom/$(CONFIG)/dosheadless
 PLATFORM_NAMES = runtime memory file divide
 OBJ_FILES = $(PLATFORM_ASM_DIR)/dosbss.obj $(addprefix $(C_DIR)/,$(RESTUNTS_OBJ_FILES)) $(OBJDIR)/repldump.obj $(PLATFORM_OBJECTS) $(PLATFORM_ASM_DIR)/dosstack.obj
 START_OPTION = option START=_headless_start
+LINK_ORDER = $(WATCOM_PORTED_LINK_ORDER)
 CFLAGS = -dRESTUNTS_HEADLESS
 WRAPPER_CFLAGS = $(WATCOM_CFLAGS)
 endif

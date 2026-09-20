@@ -9,6 +9,7 @@
 #include "camera.h"
 #include "car_model.h"
 #include "car_resources.h"
+#include "owoot.h"
 
 extern legacy_s8 opponent_name_text_id[];
 extern legacy_s8 opponent_path_resource_id[];
@@ -272,6 +273,8 @@ legacy_s16 setup_player_cars_without_dashboard(void)
 		unload_resource(car_resource);
 		load_opponent_data();
 	}
+
+	owoot_load_player_wheels();
 
 	/* These GAME resources are collision geometry, not renderer state. */
 	load_track_collision_resources();

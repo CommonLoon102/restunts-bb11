@@ -3,6 +3,7 @@
 #include "shape3d.h"
 #include "car_model.h"
 #include "scene_resources.h"
+#include "owoot.h"
 
 #define CAR_RESOURCE_ID_OFFSET 2U
 #define CAR_ID_LENGTH 4
@@ -78,6 +79,8 @@ void shape3d_load_car_shapes(legacy_s8 player_car_id[], legacy_s8 opponent_car_i
 	shape3d_init_shape(locate_shape_fatal(carresptr, "car0"), &game3dshapes[PLAYER_CAR_LOW_SHAPE]);
 	shape3d_init_shape(locate_shape_fatal(carresptr, "car1"),
 					   &game3dshapes[PLAYER_CAR_WHEEL_SHAPE]);
+
+	owoot_read_wheel_shape((const legacy_u8 far *)locate_shape_fatal(carresptr, "car1"));
 
 	shape3d_init_car_wheel_vertices(&game3dshapes[PLAYER_CAR_WHEEL_SHAPE],
 									player_front_wheel_centers, player_base_wheel_vertices);

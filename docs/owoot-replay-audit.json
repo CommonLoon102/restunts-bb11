@@ -1,0 +1,423 @@
+{
+  "audit_timestamp_utc": "2026-09-19T22:27:20+00:00",
+  "archive": "tools/scripts/rpls_golden/replays.zip",
+  "archive_sha256": "1424322864468584210cda8dbba034b5a68157758b55a2db6e7b889e8938c888",
+  "oracle": "tools/oracles/borland/repldumo.exe",
+  "oracle_sha256": "02cc076b2e62c97cea59bc12fe7c45967f054aa7d12cedfaadfc629b6effc45f",
+  "replay_count": 1591,
+  "unique_tracks": 90,
+  "state_count": 3761045,
+  "no_additional_violation_detected_count": 1194,
+  "rejected_replay_count": 397,
+  "replays_with_route_rejection": 238,
+  "replays_with_road_rejection": 288,
+  "original_final_events": {
+    "collision": 2,
+    "finish": 1587,
+    "unfinished": 2
+  },
+  "original_nonfinish_replays": {
+    "unfinished": [
+      "R0367.RPL",
+      "R1091.RPL"
+    ],
+    "collision": [
+      "R0933.RPL",
+      "R1095.RPL"
+    ]
+  },
+  "process_error_count": 0,
+  "all_replays_present": true,
+  "source_hashes_match_after_scan": true,
+  "source_hash_mismatches": [],
+  "source_sha256": {
+    "src/restunts/c/owoot.h": "8587bc60195fe9507e7e104c922ccb49a2c70bb06fa29d8e4453fdbd9165ecbf",
+    "src/restunts/c/owoot_road_data.h": "cb6fea9cef100f978a32e028b5d8aaf80a2646c427eb1f9c26c93597c4bfecc2",
+    "src/restunts/c/owoot_road.h": "aaf39ed15204552a8c17f1f1737dd0ccd8ec8b888ed82f901cd1dc224470388c",
+    "src/restunts/c/owoot_wheels.c": "b7bb83d66ead1d0c86233d11913543edbfff8fed57cb96683a5122024ae1ef36",
+    "src/restunts/c/owoot_route.c": "17e90bb039bdde0115e7dd8f51b8689e626bc3d970382f69da18323137d4ba58",
+    "src/restunts/c/owoot.c": "8a970ae0dcb6833e9875ca3d7f8ba8f22e4ce3c33b0b57f8983adff7e72de30f",
+    "src/restunts/c/owoot_road.c": "422adbcbedf3443e8dc81494c5657e6bfd348b3a1696276f5daa2a69baff7452",
+    "src/restunts/c/owoot_route.h": "6047166e29b4a9dd0acffb8ec07bf1c597328c7861913619fbf4bb21b4a2d212"
+  },
+  "host_runner_sha256": "1dfe5784ca00d86ef04723fdd79b6cec9dbf14614c8206b9a9763b1453f3bb96",
+  "host_harness_sha256": "c2fba0f25825ed8d90d4b40e9dd9ac73b973349062f076ceb51955b8df8e193b",
+  "host_executable_sha256": "aa31dcf539f129d17fc2b0bb15f168cf96d3a2a5f74771d9855505f1a331df00",
+  "first_rejection_breakdown": [
+    {
+      "reason": "no wheel on or above road",
+      "active_model": -99,
+      "active_model_name": "none",
+      "count": 143
+    },
+    {
+      "reason": "no wheel on or above road",
+      "active_model": 23,
+      "active_model_name": "banked entrance",
+      "count": 2
+    },
+    {
+      "reason": "no wheel on or above road",
+      "active_model": 25,
+      "active_model_name": "banked road",
+      "count": 1
+    },
+    {
+      "reason": "no wheel on or above road",
+      "active_model": 26,
+      "active_model_name": "banked corner",
+      "count": 9
+    },
+    {
+      "reason": "no wheel on or above road",
+      "active_model": 27,
+      "active_model_name": "loop",
+      "count": 11
+    },
+    {
+      "reason": "no wheel on or above road",
+      "active_model": 29,
+      "active_model_name": "pipe entrance",
+      "count": 1
+    },
+    {
+      "reason": "no wheel on or above road",
+      "active_model": 31,
+      "active_model_name": "halfpipe",
+      "count": 38
+    },
+    {
+      "reason": "no wheel on or above road",
+      "active_model": 33,
+      "active_model_name": "corkscrew up/down",
+      "count": 1
+    },
+    {
+      "reason": "no wheel on or above road",
+      "active_model": 35,
+      "active_model_name": "corkscrew left/right",
+      "count": 33
+    },
+    {
+      "reason": "stunt route incomplete",
+      "active_model": 27,
+      "active_model_name": "loop",
+      "count": 6
+    },
+    {
+      "reason": "stunt route incomplete",
+      "active_model": 28,
+      "active_model_name": "tunnel",
+      "count": 41
+    },
+    {
+      "reason": "stunt route incomplete",
+      "active_model": 32,
+      "active_model_name": "corkscrew up/down",
+      "count": 7
+    },
+    {
+      "reason": "stunt route incomplete",
+      "active_model": 34,
+      "active_model_name": "slalom",
+      "count": 103
+    },
+    {
+      "reason": "stunt route incomplete",
+      "active_model": 35,
+      "active_model_name": "corkscrew left/right",
+      "count": 1
+    }
+  ],
+  "gap_inventory": {
+    "unique_track_layouts": 90,
+    "directed_connected_elevated_gaps": 212,
+    "gap_boundary_distance_world_units": 1024,
+    "longer_connected_gaps": 0,
+    "gap_exception_lateral_half_width_world_units": 512
+  },
+  "notes": [
+    "All archived frames were inspected; independent route and road checks continue after the first hypothetical OWOOT rejection.",
+    "The first original finish frame is evaluated before its finish event; original collision frames and later finished frames do not receive OWOOT checks.",
+    "Replays were captured using the independent archived Borland original, then audited using the compiled current OWOOT geometry and route logic.",
+    "Route/road rejection counts may overlap; first_rejection_breakdown groups each rejected replay exactly once.",
+    "World tile coordinates in the flight notes mean floor(world X/1024), floor(world Z/1024); they are not logical editor row numbers.",
+    "Uninvestigated rejections are review candidates, not a claim that every flagged replay is invalid."
+  ],
+  "multi_nonroad_tile_flights": [
+    {
+      "replay": "R0539.RPL",
+      "last_paved_contact_frame": 276,
+      "first_landing_frame": 315,
+      "landing_surfaces": [
+        "grass",
+        "grass",
+        "grass",
+        "grass"
+      ],
+      "landing_world_tile": [
+        14,
+        20
+      ],
+      "note": "Leaves a continuous ramp/elevated-straight/descending-ramp bridge; lands on the grass base of scenery tile99 after veering off the bridge."
+    },
+    {
+      "replay": "R0541.RPL",
+      "last_paved_contact_frame": 162,
+      "first_landing_frame": 190,
+      "landing_surfaces": [
+        "grass",
+        "grass",
+        "grass",
+        "air"
+      ],
+      "landing_world_tile": [
+        13,
+        10
+      ],
+      "note": "Misses the connected receiving ramp in world tile12,10; all four wheels contact grass on the following frame."
+    },
+    {
+      "replay": "R0547.RPL",
+      "last_paved_contact_frame": 154,
+      "first_landing_frame": 191,
+      "landing_surfaces": [
+        "grass",
+        "grass",
+        "grass",
+        "air"
+      ],
+      "landing_world_tile": [
+        13,
+        11
+      ],
+      "note": "Misses the connected receiving ramp in world tile12,10; all four wheels contact grass on the following frame."
+    },
+    {
+      "replay": "R0548.RPL",
+      "last_paved_contact_frame": 162,
+      "first_landing_frame": 190,
+      "landing_surfaces": [
+        "grass",
+        "grass",
+        "grass",
+        "air"
+      ],
+      "landing_world_tile": [
+        13,
+        10
+      ],
+      "note": "Misses the connected receiving ramp in world tile12,10; all four wheels contact grass on the following frame."
+    }
+  ],
+  "expected_dos_crosscheck_results": [
+    {
+      "replay": "R0000.RPL",
+      "expected_first_owoot_rejection_frame": null
+    },
+    {
+      "replay": "R0019.RPL",
+      "expected_first_owoot_rejection_frame": 474
+    },
+    {
+      "replay": "R0153.RPL",
+      "expected_first_owoot_rejection_frame": 1872
+    },
+    {
+      "replay": "R0187.RPL",
+      "expected_first_owoot_rejection_frame": null
+    },
+    {
+      "replay": "R0224.RPL",
+      "expected_first_owoot_rejection_frame": 352
+    },
+    {
+      "replay": "R0249.RPL",
+      "expected_first_owoot_rejection_frame": null
+    },
+    {
+      "replay": "R0262.RPL",
+      "expected_first_owoot_rejection_frame": null
+    },
+    {
+      "replay": "R0377.RPL",
+      "expected_first_owoot_rejection_frame": null
+    },
+    {
+      "replay": "R0448.RPL",
+      "expected_first_owoot_rejection_frame": 664
+    },
+    {
+      "replay": "R0546.RPL",
+      "expected_first_owoot_rejection_frame": 153
+    },
+    {
+      "replay": "R0768.RPL",
+      "expected_first_owoot_rejection_frame": 1017
+    },
+    {
+      "replay": "R1105.RPL",
+      "expected_first_owoot_rejection_frame": null
+    },
+    {
+      "replay": "R1250.RPL",
+      "expected_first_owoot_rejection_frame": null
+    },
+    {
+      "replay": "R1362.RPL",
+      "expected_first_owoot_rejection_frame": 911
+    },
+    {
+      "replay": "R1411.RPL",
+      "expected_first_owoot_rejection_frame": 915
+    },
+    {
+      "replay": "R1509.RPL",
+      "expected_first_owoot_rejection_frame": null
+    },
+    {
+      "replay": "R1561.RPL",
+      "expected_first_owoot_rejection_frame": 1950
+    }
+  ],
+  "actual_dos_crosscheck_results": [
+    {
+      "replay": "R0000",
+      "default_identical": true,
+      "frames": 1472,
+      "owoot_crash": null,
+      "unrelated_change_before_crash": null
+    },
+    {
+      "replay": "R0187",
+      "default_identical": true,
+      "frames": 1779,
+      "owoot_crash": null,
+      "unrelated_change_before_crash": null
+    },
+    {
+      "replay": "R0377",
+      "default_identical": true,
+      "frames": 1340,
+      "owoot_crash": null,
+      "unrelated_change_before_crash": null
+    },
+    {
+      "replay": "R0249",
+      "default_identical": true,
+      "frames": 1496,
+      "owoot_crash": null,
+      "unrelated_change_before_crash": null
+    },
+    {
+      "replay": "R0262",
+      "default_identical": true,
+      "frames": 1424,
+      "owoot_crash": null,
+      "unrelated_change_before_crash": null
+    },
+    {
+      "replay": "R1105",
+      "default_identical": true,
+      "frames": 1693,
+      "owoot_crash": null,
+      "unrelated_change_before_crash": null
+    },
+    {
+      "replay": "R1509",
+      "default_identical": true,
+      "frames": 2363,
+      "owoot_crash": null,
+      "unrelated_change_before_crash": null
+    },
+    {
+      "replay": "R0019",
+      "default_identical": true,
+      "frames": 1921,
+      "owoot_crash": 474,
+      "unrelated_change_before_crash": null
+    },
+    {
+      "replay": "R0546",
+      "default_identical": true,
+      "frames": 630,
+      "owoot_crash": 153,
+      "unrelated_change_before_crash": null
+    },
+    {
+      "replay": "R1362",
+      "default_identical": true,
+      "frames": 2980,
+      "owoot_crash": 911,
+      "unrelated_change_before_crash": null
+    },
+    {
+      "replay": "R1561",
+      "default_identical": true,
+      "frames": 2091,
+      "owoot_crash": 1950,
+      "unrelated_change_before_crash": null
+    },
+    {
+      "replay": "R0448",
+      "default_identical": true,
+      "frames": 1817,
+      "owoot_crash": 664,
+      "unrelated_change_before_crash": null
+    },
+    {
+      "replay": "R0224",
+      "default_identical": true,
+      "frames": 2306,
+      "owoot_crash": 352,
+      "unrelated_change_before_crash": null
+    },
+    {
+      "replay": "R1411",
+      "default_identical": true,
+      "frames": 5558,
+      "owoot_crash": 915,
+      "unrelated_change_before_crash": null
+    },
+    {
+      "replay": "R0768",
+      "default_identical": true,
+      "frames": 2027,
+      "owoot_crash": 1017,
+      "unrelated_change_before_crash": null
+    },
+    {
+      "replay": "R0153",
+      "default_identical": true,
+      "frames": 1982,
+      "owoot_crash": 1872,
+      "unrelated_change_before_crash": null
+    },
+    {
+      "replay": "R1250",
+      "default_identical": true,
+      "frames": 2125,
+      "owoot_crash": null,
+      "unrelated_change_before_crash": null
+    }
+  ],
+  "dos_executable_sha256": {
+    "stunts/restunts.exe": "c8fad98714726ad026a9e27678663e612b34d2156bfedad70c7165ee8c960443",
+    "stunts/repldump.exe": "92c549dfb5932e70cdbab9ffc652cc24ee4b0903a2a523e17936d63cfd837050",
+    "stunts/pixldump.exe": "87f2b61c657d570a1ca329b908a054207e83a2e55dec9b6933a9adf5b113d48e"
+  },
+  "validation_completed_utc": "2026-09-19T22:28:39+00:00",
+  "host_regression_test_count": 66,
+  "host_regression_tests_passed": true,
+  "focused_sanitizers_passed": [
+    "AddressSanitizer",
+    "UndefinedBehaviorSanitizer"
+  ],
+  "default_renderer_crosscheck": {
+    "replay": "R0019.RPL",
+    "camera": 3,
+    "frame": 474,
+    "byte_identical": true,
+    "bmp_sha256": "8d4028107d143ab9bd8f2571d913185933a645c6108007ae8d9c25883e235e27"
+  }
+}

@@ -59,7 +59,7 @@ run_host_test test-car-speed statecar.c \
     "$test_source_dir/math.c" "$test_source_dir/legacy.c" "$test_source_dir/strlib.c"
 run_host_test test-collision-interpolation physics_collision.c \
     "$test_source_dir/math.c" "$test_source_dir/legacy.c" "$test_source_dir/strlib.c"
-run_host_test test-startup math.c \
+run_host_test test-startup math.c "$test_source_dir/owoot.c" \
     "$test_source_dir/statecar.c" "$test_source_dir/strlib.c" \
     "$test_source_dir/physics_collision.c" \
     "$test_source_dir/full_data.c" "$test_source_dir/full_strings.c" \
@@ -108,7 +108,7 @@ run_host_test test-line-prepare shape3d_lines.c \
 run_host_test test-matrix-semantics math.c
 run_host_test test-math-boundaries math.c \
     "$test_source_dir/headless_data.c" "$test_source_dir/legacy.c"
-run_host_test test-simulation-setup gameinit.c \
+run_host_test test-simulation-setup gameinit.c "$test_source_dir/owoot.c" \
     "$test_source_dir/gamestep.c" "$test_source_dir/carsetup.c" \
     "$test_source_dir/math.c" "$test_source_dir/headless_data.c" \
     "$test_source_dir/legacy.c" -Wno-pointer-sign -Wno-sign-compare
@@ -153,6 +153,7 @@ run_host_test test-shape3d-queue shape3d.c \
 run_host_test test-shape3d-vertices shape3d.c \
     -Wno-pointer-sign -Wno-unused-variable
 run_host_test test-car-shape-lifetime shape3d_car.c \
+    "$test_source_dir/owoot.c" "$test_source_dir/owoot_wheels.c" \
     "$test_source_dir/shape3d_resources.c" "$test_source_dir/shape3d.c" \
     "$test_source_dir/full_data.c" "$test_source_dir/math.c" "$test_source_dir/legacy.c" \
     -Wno-pointer-sign -Wno-unused-variable -Wno-missing-field-initializers
@@ -229,5 +230,15 @@ run_host_test test-shape3d-render-residue shape3d.c \
     "$test_source_dir/full_data.c" "$test_source_dir/headless_data.c" \
     "$test_source_dir/physics_collision.c" "$test_source_dir/math.c" "$test_source_dir/legacy.c" \
     -Wno-pointer-sign -Wno-missing-field-initializers
+
+run_host_test test-owoot math.c \
+    "$test_source_dir/legacy.c" "$test_source_dir/strlib.c" \
+    "$test_source_dir/headless_data.c" -Wno-pointer-sign -Wno-missing-field-initializers
+
+run_host_test test-owoot-road legacy.c
+run_host_test test-owoot-route owoot_route.c "$test_source_dir/owoot_road.c"
+
+run_host_test test-repldump-owoot legacy.c "$test_source_dir/strlib.c" \
+    -I"$test_source_dir" -Wno-pointer-sign -Wno-sign-compare
 
 echo "All host regression tests passed."
