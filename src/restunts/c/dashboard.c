@@ -120,35 +120,68 @@ static void dashboard_load_resources(void)
 	}
 }
 
+static legacy_u16 dashboard_panel_width(struct SHAPE2D far *shape)
+{
+	return LEGACY_U16_WRAP_MUL(shape2d_get_width(shape), (legacy_u16)video_shape_width_scale);
+}
+
 static void dashboard_create_sprites(void)
 {
-	dashboard_instrument_sprite = sprite_make_wnd(
-		LEGACY_U16_WRAP_MUL(shape2d_get_width(whlshapes[DASHBOARD_INSTRUMENT_PANEL_SHAPE]),
-							(legacy_u16)video_shape_width_scale),
-		shape2d_get_height(whlshapes[DASHBOARD_INSTRUMENT_PANEL_SHAPE]),
-		DASHBOARD_SPRITE_WINDOW_LEGACY_ARGUMENT);
-	dashboard_gearbox_sprite =
-		sprite_make_wnd(LEGACY_U16_WRAP_MUL(shape2d_get_width(whlshapes[DASHBOARD_GEARBOX_SHAPE]),
-											(legacy_u16)video_shape_width_scale),
-						shape2d_get_height(whlshapes[DASHBOARD_GEARBOX_SHAPE]),
-						DASHBOARD_SPRITE_WINDOW_LEGACY_ARGUMENT);
-	dashboard_gearbox_background_sprite =
-		sprite_make_wnd(LEGACY_U16_WRAP_MUL(shape2d_get_width(whlshapes[DASHBOARD_GEARBOX_SHAPE]),
-											(legacy_u16)video_shape_width_scale),
-						shape2d_get_height(whlshapes[DASHBOARD_GEARBOX_SHAPE]),
-						DASHBOARD_SPRITE_WINDOW_LEGACY_ARGUMENT);
+	struct SHAPE2D far *instrument_shape = whlshapes[DASHBOARD_INSTRUMENT_PANEL_SHAPE];
+	struct SHAPE2D far *gearbox_shape = whlshapes[DASHBOARD_GEARBOX_SHAPE];
+	legacy_u16 instrument_width = dashboard_panel_width(instrument_shape);
+	legacy_u16 instrument_height = shape2d_get_height(instrument_shape);
+	legacy_u16 gearbox_width = dashboard_panel_width(gearbox_shape);
+	legacy_u16 gearbox_height = shape2d_get_height(gearbox_shape);
+	legacy_u16 scratch_width = instrument_width;
+	legacy_u16 scratch_height = instrument_height;
+	if (gearbox_width >= instrument_width && gearbox_height >= instrument_height) {
+		scratch_width = gearbox_width;
+		scratch_height = gearbox_height;
+	}
+	dashboard_instrument_sprite =
+		sprite_make_wnd(scratch_width, scratch_height, DASHBOARD_SPRITE_WINDOW_LEGACY_ARGUMENT);
+	/* Both panels are rebuilt before use. Share scratch storage when one fits
+	 * inside the other, without increasing its pitch or row-table allocation. */
+	if (scratch_width >= gearbox_width && scratch_height >= gearbox_height) {
+		dashboard_gearbox_sprite = dashboard_instrument_sprite;
+	} else {
+		dashboard_gearbox_sprite =
+			sprite_make_wnd(gearbox_width, gearbox_height, DASHBOARD_SPRITE_WINDOW_LEGACY_ARGUMENT);
+	}
 
 	struct SHAPE2D far *dashboard_shape =
 		(struct SHAPE2D far *)locate_shape_fatal(stdaresptr, dashboard_background_shape_id);
-	struct SHAPE2D far *gearbox_shape = whlshapes[DASHBOARD_GEARBOX_SHAPE];
-	sprite_select_target(dashboard_gearbox_background_sprite);
-	shape2d_rle_copy_clipped(dashboard_shape,
-							 LEGACY_S16_WRAP_SUB((legacy_s16)shape2d_get_pos_x(dashboard_shape),
-												 (legacy_s16)shape2d_get_pos_x(gearbox_shape)),
-							 LEGACY_S16_WRAP_SUB((legacy_s16)shape2d_get_pos_y(dashboard_shape),
-												 (legacy_s16)shape2d_get_pos_y(gearbox_shape)));
 	sprite_select_screen();
 	dashbmp_y = shape2d_get_pos_y(dashboard_shape);
+}
+
+static void dashboard_select_panel_target(struct SPRITE far *sprite, struct SHAPE2D far *shape)
+{
+	sprite_select_target(sprite);
+	sprite_set_target_clip_bounds(0, dashboard_panel_width(shape), 0, shape2d_get_height(shape));
+}
+
+static void dashboard_copy_panel(struct SPRITE far *sprite, struct SHAPE2D far *shape)
+{
+	legacy_s16 x = (legacy_s16)shape2d_get_pos_x(shape);
+	legacy_s16 y = (legacy_s16)shape2d_get_pos_y(shape);
+	legacy_s16 left = x < 0 ? 0 : x;
+	legacy_s16 top = y < 0 ? 0 : y;
+	legacy_s32 right = (legacy_s32)x + dashboard_panel_width(shape);
+	legacy_s32 bottom = (legacy_s32)y + shape2d_get_height(shape);
+	if (right > DASHBOARD_VIEWPORT_WIDTH) {
+		right = DASHBOARD_VIEWPORT_WIDTH;
+	}
+	if (bottom > height_above_replaybar) {
+		bottom = height_above_replaybar;
+	}
+	if (left < right && top < bottom) {
+		/* Keep the shared bitmap's physical stride, but copy only this panel. */
+		sprite_set_target_clip_bounds(left, (legacy_u16)right, top, (legacy_u16)bottom);
+		sprite_copy_image_at(sprite->sprite_bitmapptr, x, y);
+	}
+	dashboard_set_viewport();
 }
 
 static void dashboard_load_optional_shapes(void)
@@ -208,8 +241,9 @@ static void dashboard_redraw_static(void)
 
 static void dashboard_unload(void)
 {
-	sprite_free_wnd(dashboard_gearbox_background_sprite);
-	sprite_free_wnd(dashboard_gearbox_sprite);
+	if (dashboard_gearbox_sprite != dashboard_instrument_sprite) {
+		sprite_free_wnd(dashboard_gearbox_sprite);
+	}
 	sprite_free_wnd(dashboard_instrument_sprite);
 	mmgr_free(stdbresptr);
 	mmgr_free(stdaresptr);
@@ -227,6 +261,25 @@ struct DASHBOARD_UPDATE {
 	legacy_u8 gauge_mode;
 };
 
+static void dashboard_rebuild_gearbox_background(void)
+{
+	struct SPRITE saved_context[SPRITE_STATE_COUNT];
+	sprite_save_context(saved_context);
+	dashboard_select_panel_target(dashboard_gearbox_sprite, whlshapes[DASHBOARD_GEARBOX_SHAPE]);
+	/* A custom gearbox may extend beyond the dashboard image. Do not retain
+	 * the previous knob in any part the clipped background does not cover. */
+	sprite_clear_target(0);
+	struct SHAPE2D far *dashboard_shape =
+		(struct SHAPE2D far *)locate_shape_fatal(stdaresptr, dashboard_background_shape_id);
+	struct SHAPE2D far *gearbox_shape = whlshapes[DASHBOARD_GEARBOX_SHAPE];
+	shape2d_rle_copy_clipped(dashboard_shape,
+							 LEGACY_S16_WRAP_SUB((legacy_s16)shape2d_get_pos_x(dashboard_shape),
+												 (legacy_s16)shape2d_get_pos_x(gearbox_shape)),
+							 LEGACY_S16_WRAP_SUB((legacy_s16)shape2d_get_pos_y(dashboard_shape),
+												 (legacy_s16)shape2d_get_pos_y(gearbox_shape)));
+	sprite_restore_context(saved_context);
+}
+
 static void dashboard_update_gear(legacy_u16 buffer_index)
 {
 	if (state.playerstate.car_gear_change_delay == GEAR_CHANGE_DELAY_EXPIRED &&
@@ -235,10 +288,8 @@ static void dashboard_update_gear(legacy_u16 buffer_index)
 		if (video_uses_page_flipping == 0) {
 			mouse_draw_opaque_check();
 		}
-		dashboard_set_viewport();
-		sprite_copy_image_at(dashboard_gearbox_background_sprite->sprite_bitmapptr,
-							 shape2d_get_pos_x(whlshapes[DASHBOARD_GEARBOX_SHAPE]),
-							 shape2d_get_pos_y(whlshapes[DASHBOARD_GEARBOX_SHAPE]));
+		dashboard_rebuild_gearbox_background();
+		dashboard_copy_panel(dashboard_gearbox_sprite, whlshapes[DASHBOARD_GEARBOX_SHAPE]);
 		dashboard_gear_knob_visible_cache[buffer_index] = 0;
 	} else if (dashboard_gear_knob_visible_cache[buffer_index] !=
 				   (legacy_u8)state.playerstate.car_changing_gear ||
@@ -246,7 +297,7 @@ static void dashboard_update_gear(legacy_u16 buffer_index)
 			   dashboard_gear_knob_y_cache[buffer_index] != state.playerstate.car_knob_y ||
 			   (state.playerstate.car_gear_change_delay != GEAR_CHANGE_DELAY_EXPIRED &&
 				dashboard_gear_knob_visible_cache[buffer_index] == 0)) {
-		sprite_select_target(dashboard_gearbox_sprite);
+		dashboard_select_panel_target(dashboard_gearbox_sprite, whlshapes[DASHBOARD_GEARBOX_SHAPE]);
 		dashboard_gear_knob_visible_cache[buffer_index] = 1;
 		shape2d_rle_copy_clipped(whlshapes[DASHBOARD_GEARBOX_SHAPE], 0, 0);
 		dashboard_gear_knob_x_cache[buffer_index] = state.playerstate.car_knob_x;
@@ -261,10 +312,7 @@ static void dashboard_update_gear(legacy_u16 buffer_index)
 			sprite_select_screen_compat();
 			mouse_draw_opaque_check();
 		}
-		dashboard_set_viewport();
-		sprite_copy_image_at(dashboard_gearbox_sprite->sprite_bitmapptr,
-							 shape2d_get_pos_x(whlshapes[DASHBOARD_GEARBOX_SHAPE]),
-							 shape2d_get_pos_y(whlshapes[DASHBOARD_GEARBOX_SHAPE]));
+		dashboard_copy_panel(dashboard_gearbox_sprite, whlshapes[DASHBOARD_GEARBOX_SHAPE]);
 	}
 }
 
@@ -371,7 +419,8 @@ static void dashboard_update_instruments(struct DASHBOARD_UPDATE *update)
 		if (dashboard_clear_steering_dot(update->buffer_index) != 0) {
 			update->steering_dot_cleared = 1;
 		}
-		sprite_select_target(dashboard_instrument_sprite);
+		dashboard_select_panel_target(dashboard_instrument_sprite,
+									  whlshapes[DASHBOARD_INSTRUMENT_PANEL_SHAPE]);
 		shape2d_rle_copy(whlshapes[DASHBOARD_INSTRUMENT_PANEL_SHAPE], 0, 0);
 		dashboard_speed_index_cache[update->buffer_index] = (legacy_s16)update->speed_index;
 		dashboard_rpm_index_cache[update->buffer_index] = (legacy_s16)update->rpm_index;
@@ -405,10 +454,8 @@ static void dashboard_update_instruments(struct DASHBOARD_UPDATE *update)
 		} else {
 			sprite_select_screen_compat();
 		}
-		dashboard_set_viewport();
-		sprite_copy_image_at(dashboard_instrument_sprite->sprite_bitmapptr,
-							 shape2d_get_pos_x(whlshapes[DASHBOARD_INSTRUMENT_PANEL_SHAPE]),
-							 shape2d_get_pos_y(whlshapes[DASHBOARD_INSTRUMENT_PANEL_SHAPE]));
+		dashboard_copy_panel(dashboard_instrument_sprite,
+							 whlshapes[DASHBOARD_INSTRUMENT_PANEL_SHAPE]);
 	}
 }
 

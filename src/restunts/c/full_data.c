@@ -52,7 +52,7 @@ struct TRANSFORMEDSHAPE3D currenttransshape[29];
 struct TRANSFORMEDSHAPE3D *curtransshape_ptr;
 
 legacy_s16 polygon_next_index[POLYINFO_SUPERSIGHT_PRIMITIVE_CAPACITY + 1U];
-legacy_u8 far *polyinfoptrs[POLYINFO_SUPERSIGHT_PRIMITIVE_CAPACITY];
+legacy_u16 polygon_record_offsets[POLYINFO_SUPERSIGHT_PRIMITIVE_CAPACITY];
 
 struct RECTANGLE frame_layer_rects[15];
 struct RECTANGLE intro_redraw_cliprect;
@@ -358,7 +358,6 @@ struct SHAPE2D far *track_editor_tile_shapes[186];
 struct SHAPE2D far *track_editor_tile_masks[186];
 struct SPRITE far *dashboard_instrument_sprite;
 struct SPRITE far *dashboard_gearbox_sprite;
-struct SPRITE far *dashboard_gearbox_background_sprite;
 legacy_s8 far *stdaresptr;
 legacy_s8 far *stdbresptr;
 void far *miscptr;

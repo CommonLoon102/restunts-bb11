@@ -705,7 +705,7 @@ legacy_u16 shape3d_transform_and_queue(struct TRANSFORMEDSHAPE3D *instance)
 			transshapenumvertscopy = primidxcounttab[transshapeprimitives[0]];
 			primitive_type = primtypetab[transshapeprimitives[0]];
 			transshapepolyinfo = polyinfoptr + polyinfoptrnext;
-			polyinfoptrs[polyinfonumpolys] = transshapepolyinfo;
+			polygon_record_offsets[polyinfonumpolys] = polyinfoptrnext;
 			transprimitivepaintjob = transshapeprimitives[2 + transshapematerial];
 			transshapeprimitives += 2 + transshapenumpaints;
 			if (shape3d_prepare_primitive_vertices(instance->shapeptr, &context,
@@ -810,7 +810,8 @@ extern legacy_u16 polygon_insert_newest(legacy_u16 depth, legacy_u16 sort_by_dep
 			if (previous_remaining_count == 0) {
 				break;
 			}
-			if (LEGACY_READ_S16_LE(polyinfoptrs[next_polygon]) < (legacy_s16)depth) {
+			if (LEGACY_READ_S16_LE(polyinfoptr + polygon_record_offsets[next_polygon]) <
+				(legacy_s16)depth) {
 				break;
 			}
 			polygon_insertion_cursor = next_polygon;
@@ -1261,7 +1262,8 @@ static legacy_u16 shape3d_legacy_record_index(legacy_u16 record_index)
 	legacy_u16 result = record_index;
 	if (queued_ghost_primitives != 0U) {
 		for (legacy_u16 index = 0; index < record_index; index++) {
-			if ((polyinfoptrs[index][4] & RENDER_PRIMITIVE_GHOST_FLAG) != 0U) {
+			if ((polyinfoptr[polygon_record_offsets[index] + 4U] & RENDER_PRIMITIVE_GHOST_FLAG) !=
+				0U) {
 				result--;
 			}
 		}
@@ -1276,7 +1278,7 @@ void shape3d_render_queued_primitives(void)
 	struct POINT2D points[POLYINFO_MAX_RENDER_POINTS];
 	for (legacy_u16 primitive_index = 0; primitive_index < polyinfonumpolys; primitive_index++) {
 		record_index = (legacy_u16)polygon_next_index[record_index];
-		legacy_u8 far *record = polyinfoptrs[record_index];
+		legacy_u8 far *record = polyinfoptr + polygon_record_offsets[record_index];
 		if ((record[4] & RENDER_PRIMITIVE_GHOST_FLAG) != 0U) {
 			shape3d_render_ghost(record, points);
 			rendered_ghost_primitives++;

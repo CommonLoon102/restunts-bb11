@@ -43,3 +43,25 @@ $(OUTFILE): $(OBJ_FILES) makefile ../watcom.mk force-link | platform
 
 clean:
 	$(call RMDIR,build/watcom)
+
+# This test retains the complete game's objects and replaces only its entry module.
+# Its extra test code therefore makes the memory budget slightly stricter.
+include ../dos/full-game-objects.mk
+FULL_GAME_DIR = ../c/build/watcom/$(CONFIG)/dosfull
+RACE_MEMORY_OUTFILE = $(OBJDIR)/RACEMEM.EXE
+RACE_MEMORY_PLATFORM_NAMES = timer runtime memory file keyboard divide joystick mouse video audio critical
+RACE_MEMORY_OBJECTS = $(PLATFORM_ASM_DIR)/dosbss.obj $(subst $(FULL_GAME_DIR)/restunts.obj,$(OBJDIR)/test-race-memory.obj,$(addprefix $(FULL_GAME_DIR)/,$(RESTUNTS_OBJ_FILES))) $(addprefix $(PLATFORM_DIR)/,$(addsuffix .obj,$(RACE_MEMORY_PLATFORM_NAMES))) $(PLATFORM_ASM_DIR)/dosstack.obj
+
+.PHONY: race-memory
+race-memory: $(RACE_MEMORY_OUTFILE)
+
+$(OBJDIR)/test-race-memory.obj: test-race-memory.c ../c/restunts.c $(C_HEADERS) makefile ../watcom.mk $(WATCOM_STAMP) | $(OBJDIR)
+	$(CC) $(WATCOM_CFLAGS) -dRESTUNTS_FULL -i=../c -fo=$@ $<
+
+$(RACE_MEMORY_OUTFILE): $(RACE_MEMORY_OBJECTS) ../dos/full-game-objects.mk makefile ../watcom.mk force-link
+	$(file >$(OBJDIR)/race-memory.lnk,name $(RACE_MEMORY_OUTFILE))
+	$(file >>$(OBJDIR)/race-memory.lnk,format dos $(WATCOM_LFLAGS) option START=_headless_start option MAP=$(OBJDIR)/racemem.map)
+	$(file >>$(OBJDIR)/race-memory.lnk,$(WATCOM_PORTED_LINK_ORDER))
+	$(file >>$(OBJDIR)/race-memory.lnk,$(WATCOM_LIBPATH))
+	$(file >>$(OBJDIR)/race-memory.lnk,file $(subst $(SPACE),$(COMMA),$(RACE_MEMORY_OBJECTS)))
+	$(WLINK) @$(OBJDIR)/race-memory.lnk
