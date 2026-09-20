@@ -18,6 +18,7 @@
 #include "race.h"
 #include "race_resources.h"
 #include "replay.h"
+#include "ghost.h"
 #include "replay_record.h"
 #include "replay_viewer.h"
 #include "replay_viewer_internal.h"
@@ -72,6 +73,7 @@ legacy_s16 video_backbuffer_copy_required(void)
 
 static void shutdown_dos_game(void)
 {
+	ghost_clear();
 	mouse_draw_opaque_check();
 	dos_timer_shutdown();
 	dos_audio_shutdown();

@@ -4,6 +4,7 @@
 #include "memmgr.h"
 #include "platform.h"
 #include "race.h"
+#include "ghost.h"
 #include "race_resources.h"
 #include "replay.h"
 #include "replay_record.h"
@@ -513,6 +514,10 @@ static void race_run_frames(struct RACE_VIEWPORT_CACHE *cache)
 		}
 
 		race_update_viewport(cache, rewind.active);
+		legacy_u32 ghost_frame = game_replay_mode == REPLAY_MODE_PAUSED
+									 ? 0
+									 : (legacy_u32)(legacy_u16)state.game_frame + elapsed_time1;
+		ghost_update(ghost_frame, framespersec);
 		race_draw_frame();
 		if (game_replay_mode == REPLAY_MODE_PAUSED &&
 			race_start_sequence_state == RACE_START_SEQUENCE_INACTIVE) {
@@ -602,6 +607,13 @@ void run_game(void)
 	if (race_prepare_mode() == 0) {
 		return;
 	}
+	if (idle_expired == 0 && gameconfig.game_recordedframes == 0 && ghost_prepare_race() != 0) {
+		replay_recording_flags = 0;
+		ghost_end_race();
+		show_dialog(DIALOG_TYPE_MESSAGE, DIALOG_NO_BACKGROUND_SAVE,
+					"Unable to prepare ghost replay.", -1, -1, dialog_border_color, 0, 0);
+		return;
+	}
 	if (setup_player_cars() != 0) {
 		free_player_cars();
 		show_insufficient_memory_dialog();
@@ -610,6 +622,7 @@ void run_game(void)
 		race_run_frames(&cache);
 		race_release_resources();
 	}
+	ghost_end_race();
 	waitflag = RACE_FINAL_WAIT_TICKS;
 	check_input();
 	show_waiting();

@@ -12,6 +12,7 @@
 #undef menu_update_idle_counter
 #include "../c/highscore.h"
 #include "../c/skybox.h"
+#include "../c/ghost.h"
 
 legacy_s16 ranking_entry_order[HIGHSCORE_ENTRY_COUNT];
 
@@ -25,6 +26,51 @@ static legacy_s16 menu_hits[16];
 static unsigned int active_menu;
 static legacy_u8 menu_track_map[1802];
 static struct HIGHSCORE_ENTRY menu_scores[8];
+static legacy_s16 menu_ghost_selected;
+static legacy_u8 change_track, ghost_track_tile;
+static unsigned ghost_track_checks;
+
+legacy_s16 ghost_is_selected(void)
+{
+	return menu_ghost_selected;
+}
+
+void ghost_clear(void)
+{
+	menu_ghost_selected = 0;
+}
+
+void ghost_check_track(void)
+{
+	ghost_track_checks++;
+	if (menu_track_map[20] != ghost_track_tile) {
+		ghost_clear();
+	}
+}
+
+legacy_s16 ghost_select_replay(const legacy_s8 *directory, const legacy_s8 *name)
+{
+	assert(directory == replay_directory);
+	(void)name;
+	menu_ghost_selected = 1;
+	return 0;
+}
+
+legacy_u16 show_dialog(legacy_s16 dialog_type, legacy_s16 save_background, void *text, legacy_u16 x,
+					   legacy_u16 y, legacy_s16 border_color, legacy_s16 *disabled_choices,
+					   legacy_s16 initial_choice)
+{
+	(void)dialog_type;
+	(void)save_background;
+	(void)text;
+	(void)x;
+	(void)y;
+	(void)border_color;
+	(void)disabled_choices;
+	(void)initial_choice;
+	assert(!"Unexpected replay selection failure");
+	return 0;
+}
 
 legacy_s16 input_checking(legacy_s16 delta)
 {
@@ -137,11 +183,15 @@ legacy_s16 font_centered_text_x(const legacy_s8 *text)
 legacy_s16 track_setup(void)
 {
 	trace_word(2013);
+	if (menu_track_map[20] >= 182 && menu_track_map[20] <= 252) {
+		menu_track_map[20] = 4;
+	}
 	return 0;
 }
 void load_tracks_menu_shapes(void)
 {
 	trace_word(2014);
+	menu_track_map[20] = change_track;
 }
 void load_skybox(legacy_s8 index)
 {
@@ -208,6 +258,7 @@ void *file_read_fatal(const legacy_s8 *name, void *destination)
 	trace_word(2024);
 	trace_text(name);
 	assert(destination == menu_track_map);
+	menu_track_map[20] = change_track;
 	return destination;
 }
 
@@ -217,6 +268,9 @@ static void reset_menu_case(unsigned int index, unsigned int kind)
 	active_menu = kind;
 	frame_index = allocation_index = sprite_index = 0;
 	idle_expired = 0;
+	menu_ghost_selected = change_track = ghost_track_tile = 0;
+	ghost_track_checks = 0;
+	menu_track_map[20] = 0;
 	video_uses_page_flipping = index % 2U;
 	fontnptr = (legacy_s8 *)resource_bytes[62];
 	font_glyph_height = 5 + index % 4U;
@@ -333,11 +387,40 @@ static void test_track_navigation(void)
 	}
 }
 
+static void test_ghost_track_changes(void)
+{
+	for (unsigned action = 0; action < 3; action++) {
+		for (legacy_u8 changed = 0; changed < 2; changed++) {
+			/* Even scenarios cancel Load; odd scenarios accept it. */
+			reset_menu_case(action == 0 ? 102 : 103, 1);
+			gameconfig.game_opponenttype = 0;
+			menu_ghost_selected = 1;
+			change_track = changed;
+			menu_hits[0] = action == 2 ? 1 : 0;
+			run_tracks_menu(0);
+			assert(ghost_track_checks == (action != 0));
+			assert(menu_ghost_selected == (action == 0 || changed == 0));
+			assert(gameconfig.game_opponenttype == 0);
+		}
+	}
+	/* Loading the same track must compare its canonical elements to the ghost. */
+	reset_menu_case(103, 1);
+	gameconfig.game_opponenttype = 0;
+	menu_ghost_selected = 1;
+	ghost_track_tile = menu_track_map[20] = 4;
+	change_track = 182;
+	menu_hits[0] = 0;
+	run_tracks_menu(0);
+	assert(ghost_track_checks == 1);
+	assert(menu_track_map[20] == 4 && menu_ghost_selected == 1);
+}
+
 int main(void)
 {
 	test_opponent_navigation();
 	test_track_navigation();
-	assert(trace_hash == UINT64_C(0x8a70343f496ab350));
+	assert(trace_hash == UINT64_C(0xf466790d466a90a8));
+	test_ghost_track_changes();
 	printf("test-menu-navigation: passed\n");
 	return 0;
 }

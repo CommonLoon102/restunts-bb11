@@ -9,6 +9,13 @@
 #undef memcpy
 #undef printf
 
+void ghost_end_race(void)
+{
+}
+void ghost_check_track(void)
+{
+}
+
 static legacy_u32 trace_hash;
 static unsigned scenario, dialog_count, save_count, write_count, check_count;
 static legacy_s16 menu_action;

@@ -18,6 +18,7 @@
 #include "math.h"
 #include "externs.h"
 #include "crash_state.h"
+#include "ghost.h"
 
 #define TRACK_OBJECT_COUNT 215U
 #define TRACK_GRID_LAST_COORDINATE 29
@@ -407,7 +408,7 @@ static void frame_add_car(struct CARSTATE *carstate, legacy_s8 debris_owner, leg
 						  legacy_s8 flags, legacy_s16 material, legacy_s16 z_adjust)
 {
 	struct TRACKOBJECT *track_object;
-	if (state.game_particles_active != 0) {
+	if (state.game_particles_active != 0 && (flags & SHAPE3D_GHOST_FLAG) == 0U) {
 		for (legacy_s16 index = 0; index < FRAME_DEBRIS_SLOT_COUNT; index++) {
 			if (state.game_particle_forward_speed[index] != 0 &&
 				state.game_particle_owner[index] == debris_owner) {
@@ -453,6 +454,7 @@ static void frame_add_car(struct CARSTATE *carstate, legacy_s8 debris_owner, leg
 		curtransshape_ptr->ts_flags = FRAME_TRANSFORM_FLAGS_CLIPPED;
 	}
 
+	curtransshape_ptr->ts_flags |= flags & SHAPE3D_GHOST_FLAG;
 	curtransshape_ptr->rotvec.x = LEGACY_S16_WRAP_NEGATE(carstate->car_rotate.z);
 	curtransshape_ptr->rotvec.y = LEGACY_S16_WRAP_NEGATE(carstate->car_rotate.y);
 	curtransshape_ptr->rotvec.z = LEGACY_S16_WRAP_NEGATE(carstate->car_rotate.x);
@@ -935,6 +937,13 @@ static void frame_select_tiles(struct FRAME_TILE_SELECTION *tiles,
 	}
 }
 
+/* Clock races can use the spare opponent draw slot without adding a second
+ * simulated car, collision body, camera target or sound source. */
+static struct CARSTATE *frame_second_car_state(void)
+{
+	return gameconfig.game_opponenttype != 0 ? &state.opponentstate : ghost_car_state();
+}
+
 static void frame_place_cars(const struct FRAME_TILE_SELECTION *tiles,
 							 struct FRAME_CAR_RENDER *cars)
 {
@@ -953,12 +962,15 @@ static void frame_place_cars(const struct FRAME_TILE_SELECTION *tiles,
 	// Locate the opponent in the same draw order.
 	cars[OPPONENT_CAR_INDEX].east = -1;
 	cars[OPPONENT_CAR_INDEX].depth_adjustment = 0;
-	if (gameconfig.game_opponenttype != 0) {
+	struct CARSTATE *second_car = frame_second_car_state();
+	if (second_car != 0) {
 		if (cameramode != CAMERA_MODE_COCKPIT || followOpponentFlag == 0) {
-			if (state.opponentstate.car_crashBmpFlag != CRASH_EVENT_WATER) {
+			if (second_car->car_crashBmpFlag != CRASH_EVENT_WATER) {
+				const struct SIMD *second_simd =
+					gameconfig.game_opponenttype != 0 ? &simd_opponent : ghost_car_simd();
 				cars[OPPONENT_CAR_INDEX].depth_adjustment = frame_find_car_wheel(
-					&state.opponentstate, &simd_opponent, tiles->markers, tiles->lookahead,
-					tiles->camera_east, tiles->camera_south, &cars[OPPONENT_CAR_INDEX].east,
+					second_car, second_simd, tiles->markers, tiles->lookahead, tiles->camera_east,
+					tiles->camera_south, &cars[OPPONENT_CAR_INDEX].east,
 					&cars[OPPONENT_CAR_INDEX].south);
 			}
 		}
@@ -1413,7 +1425,8 @@ static void frame_draw_sorted_shapes(struct FRAME_CAR_RENDER *cars)
 						cars[PLAYER_CAR_INDEX].explosion_visible = 1;
 					}
 				} else if (transformed_shape_sort_types[shape_index] == FRAME_OPPONENT_SORT_ID) {
-					if (state.opponentstate.car_crashBmpFlag == CRASH_EVENT_COLLISION) {
+					if ((currenttransshape[shape_index].ts_flags & SHAPE3D_GHOST_FLAG) == 0U &&
+						state.opponentstate.car_crashBmpFlag == CRASH_EVENT_COLLISION) {
 						cars[OPPONENT_CAR_INDEX].explosion_visible = 1;
 					}
 				}
@@ -1547,13 +1560,19 @@ static void frame_add_tile_cars(const struct FRAME_TILE *tile, const struct FRAM
 		(cars[OPPONENT_CAR_INDEX].east == tile->last_east)) {
 		if ((cars[OPPONENT_CAR_INDEX].south == tile->south) ||
 			(cars[OPPONENT_CAR_INDEX].south == tile->last_south)) {
+			struct CARSTATE *second_car = frame_second_car_state();
+			if (second_car == 0) {
+				return;
+			}
+			legacy_s8 ghost_flag = gameconfig.game_opponenttype == 0 ? SHAPE3D_GHOST_FLAG : 0;
 			frame_add_car(
-				&state.opponentstate, OPPONENT_CAR_INDEX, FRAME_OPPONENT_SORT_ID,
+				second_car, OPPONENT_CAR_INDEX, FRAME_OPPONENT_SORT_ID,
 				&game3dshapes[FRAME_OPPONENT_SHAPE_RESOURCE_OFFSET / sizeof(struct SHAPE3D)],
 				opponent_wheel_vertex_state, opponent_base_wheel_vertices,
 				opponent_front_wheel_centers, &frame_opponent_car_rect,
 				&cars[OPPONENT_CAR_INDEX].crash_rect, &camera->position, tile->detail,
-				redraw_transform_flags, gameconfig.game_opponentmaterial,
+				redraw_transform_flags | ghost_flag,
+				ghost_flag != 0 ? ghost_car_material() : gameconfig.game_opponentmaterial,
 				cars[OPPONENT_CAR_INDEX].depth_adjustment & tile->depth_mask);
 		}
 	}

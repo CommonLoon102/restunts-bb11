@@ -313,6 +313,23 @@ static void test_queue_limits(void)
 	assert(polyinfonumpolys == 0);
 }
 
+static void test_ghost_override_is_per_instance(void)
+{
+	reset_scene();
+	static const legacy_u8 triangle[] = {3, 1, 119, 0, 1, 2, 0, 0};
+	memcpy(primitives, triangle, sizeof(triangle));
+	instance.ts_flags |= SHAPE3D_GHOST_FLAG;
+	assert(shape3d_transform_and_queue(&instance) == 0);
+	assert(polyinfonumpolys == 1);
+	assert(polyinfo[2] == 119);
+	assert(polyinfo[4] == (RENDER_PRIMITIVE_POLYGON | RENDER_PRIMITIVE_GHOST_FLAG));
+	assert(memcmp(primitives, triangle, sizeof(triangle)) == 0);
+	instance.ts_flags &= ~SHAPE3D_GHOST_FLAG;
+	assert(shape3d_transform_and_queue(&instance) == 0);
+	assert(polyinfoptrs[1][2] == 119);
+	assert(polyinfoptrs[1][4] == RENDER_PRIMITIVE_POLYGON);
+}
+
 int main(void)
 {
 	test_primitive_records();
@@ -323,5 +340,6 @@ int main(void)
 	test_clipped_depth_signedness();
 	test_backface_and_material_override();
 	test_queue_limits();
+	test_ghost_override_is_per_instance();
 	return 0;
 }

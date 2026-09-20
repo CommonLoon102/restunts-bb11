@@ -16,6 +16,7 @@
 #include "menu_common.h"
 #include "externs.h"
 #include "keyboard.h"
+#include "ghost.h"
 
 #define TRACK_EDITOR_RESOURCE_FILE_INDEX 3
 #define TRACK_MENU_BUTTON_COUNT 3
@@ -180,6 +181,7 @@ void run_tracks_menu(legacy_s16 reload_track)
 			waitflag = TRACK_MENU_SETUP_WAIT_TICKS;
 			track_setup();
 			load_tracks_menu_shapes();
+			ghost_check_track();
 			needs_track_setup = 0;
 		}
 
@@ -211,6 +213,8 @@ void run_tracks_menu(legacy_s16 reload_track)
 				file_build_path(track_directory, gameconfig.game_trackname, ".trk", g_path_buf);
 				if (chosen != 0) {
 					file_read_fatal(g_path_buf, track_element_map);
+					track_setup();
+					ghost_check_track();
 					sprite_free_wnd(render_window_sprite);
 					break;
 				}

@@ -12,6 +12,9 @@
 #define SHAPE3D_VERTEX_Y_OFFSET 2U
 #define SHAPE3D_VERTEX_Z_OFFSET 4U
 
+/* Per-instance visual override; resource paint and geometry remain unchanged. */
+#define SHAPE3D_GHOST_FLAG 16U
+
 enum BACKLIGHT_PAINT {
 	BACKLIGHT_PAINT_DEFAULT = 45,
 	BACKLIGHT_PAINT_NORMAL = 46,

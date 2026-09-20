@@ -11,6 +11,10 @@
 #undef strcmp
 #undef strcpy
 #undef memcpy
+void ghost_clear(void)
+{
+}
+
 static uint32_t trace_hash = UINT32_C(2166136261);
 static unsigned timer_calls, status_calls;
 static legacy_u32 geometry_ticks, clear_ticks, partial_ticks;

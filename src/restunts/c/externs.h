@@ -384,6 +384,8 @@ extern void init_game_state_with_frame_rate(legacy_u16 frame_rate);
 extern void init_game_state_with_frame_rate_byte(legacy_u16 frame_rate);
 extern void restore_gamestate(legacy_u16 frame);
 extern void update_gamestate(void);
+/* Forward replay reconstruction; omit audio snapshots and checkpoint writes. */
+extern void update_gamestate_silent(void);
 /* Supply the original caller register when a tool uses a different replay loop. */
 extern void update_gamestate_with_legacy_si(legacy_s16 caller_si);
 extern void init_rect_arrays(void);

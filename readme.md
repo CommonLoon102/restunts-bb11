@@ -48,6 +48,27 @@ Main repository: https://github.com/4d-stunts/restunts
 Run `restunts.exe` in DOSBox or DOSBox-X with `core=dynamic` and `cycles=max`.
 Mount `stunts/` directly as a DOS drive in the emulator.
 
+### Race against a ghost
+
+In **Opponent**, choose **Clock**, then **Ghost** to select a replay. The game
+uses the replay's track and changes the description to **Race against a Ghost.**
+Your car and transmission stay selected, and you can change them before driving.
+The recorded player's car follows the replay as a silent, black grille ghost;
+it cannot collide with your car or change the track. At the end of the replay,
+it stays in its final position. Restarting or rewinding keeps it synchronized
+with your race time.
+
+Choose **Clock** again to remove the ghost. Loading a different track, changing
+its layout in the editor, or selecting an AI opponent also clears the ghost.
+Canceling the replay picker keeps the previous selection. The ghost selection
+lasts for the current game session; saved replays retain the ordinary replay
+format and do not include the ghost.
+
+Preparing the ghost reconstructs the selected replay before driving and caches
+its positions in a temporary `GHxxxxxx.TMP` file in the game directory. The game
+removes this file when the selection is cleared or the game exits normally.
+As with ordinary replay playback, use the physics switches used to record it.
+
 ### Rewind while driving
 
 Hold **Q** during a race to rewind, then release it to continue driving from

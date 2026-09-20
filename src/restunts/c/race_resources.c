@@ -2,6 +2,7 @@
 #include "fileio.h"
 #include "memmgr.h"
 #include "race_resources.h"
+#include "ghost.h"
 #include "race_resources_internal.h"
 #include "replay_viewer.h"
 #include "shape2d.h"
@@ -120,12 +121,8 @@ static void setup_car_engine_resources(void)
 	audio_car_state_interval = 0;
 }
 
-static legacy_s16 setup_player_cars_impl(legacy_s16 load_dashboard_shapes)
+static void setup_car_physics_resources(void)
 {
-	setup_legacy_penalty_route_word();
-	render_window_sprite = 0;
-	ensure_file_exists(2);
-	shape3d_load_car_shapes(gameconfig.game_playercarid, gameconfig.game_opponentcarid);
 	car_resource_name[3] = gameconfig.game_playercarid[0];
 	car_resource_name[4] = gameconfig.game_playercarid[1];
 	car_resource_name[5] = gameconfig.game_playercarid[2];
@@ -146,6 +143,31 @@ static legacy_s16 setup_player_cars_impl(legacy_s16 load_dashboard_shapes)
 		ensure_file_exists(4);
 		load_opponent_data();
 	}
+}
+
+void ghost_load_simulation_resources(void)
+{
+	setup_legacy_penalty_route_word();
+	shape3d_load_car_shapes(gameconfig.game_playercarid, gameconfig.game_opponentcarid);
+	setup_car_physics_resources();
+	load_track_collision_resources();
+}
+
+void ghost_free_simulation_resources(void)
+{
+	unload_resource(gameresptr);
+	shape3d_free_car_shapes();
+}
+
+static legacy_s16 setup_player_cars_impl(legacy_s16 load_dashboard_shapes)
+{
+	setup_legacy_penalty_route_word();
+	render_window_sprite = 0;
+	ensure_file_exists(2);
+	shape3d_load_car_shapes(gameconfig.game_playercarid, ghost_is_active()
+															 ? (legacy_s8 *)ghost_car_id()
+															 : gameconfig.game_opponentcarid);
+	setup_car_physics_resources();
 
 	setup_car_engine_resources();
 	fontledresptr = file_load_resource(FILE_RESOURCE_BINARY_FATAL, "fontled.fnt");

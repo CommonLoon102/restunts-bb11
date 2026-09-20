@@ -98,6 +98,8 @@ extern legacy_u8 far *transshapeprimindexptr;
 /* 14-bit fixed point: the inner radius is 37/64 of the outer radius. */
 #define WHEEL_INNER_RADIUS_SCALE 9472U
 
+static legacy_u16 queued_ghost_primitives;
+
 #define SHAPE3D_VERTEX_CAPACITY 255U
 #define SHAPE3D_VERTEX_FLAG_CAPACITY 256U
 #define SHAPE3D_VERTEX_UNTRANSFORMED LEGACY_U8_MAX
@@ -639,6 +641,10 @@ static legacy_u16 shape3d_insert_primitive(legacy_u8 primitive_type, legacy_u16 
 {
 	transshapepolyinfo[3] = transshapenumvertscopy;
 	transshapepolyinfo[4] = primitive_type;
+	if ((transshapeflags & SHAPE3D_GHOST_FLAG) != 0U) {
+		transshapepolyinfo[4] |= RENDER_PRIMITIVE_GHOST_FLAG;
+		queued_ghost_primitives++;
+	}
 	if (transprimitivepaintjob == BACKLIGHT_PAINT_DEFAULT) {
 		transshapepolyinfo[2] = backlights_paint_override;
 	} else {
@@ -917,6 +923,7 @@ legacy_u16 select_cliprect_rotate(legacy_s16 angZ, legacy_s16 angX, legacy_s16 a
 
 void polyinfo_reset(void)
 {
+	queued_ghost_primitives = 0;
 	polyinfonumpolys = 0;
 	polyinfoptrnext = 0;
 	polygon_buffer_full = 0;
@@ -1200,13 +1207,63 @@ static void shape3d_retain_sphere_stack(legacy_u16 size)
 	shape3d_retain_render_local(first, SHAPE3D_LEGACY_SPHERE_RETURN_IP);
 }
 
+/* Keep ghost drawing out of the legacy renderer stack handoff: its appearance
+ * must not become an input to either car's physics. */
+static void shape3d_render_ghost(const legacy_u8 far *record, struct POINT2D *points)
+{
+	legacy_u16 primitive_type = record[4] & ~RENDER_PRIMITIVE_GHOST_FLAG;
+	if (primitive_type == RENDER_PRIMITIVE_POLYGON) {
+		legacy_u16 material = record[2];
+		if (material_patlist_ptr_cpy[material] == 1 && material_patlist2_ptr_cpy[material] == 0) {
+			return;
+		}
+		polyinfo_read_points(record, points, record[3]);
+		preRender_default(PRERENDER_GHOST_COLOR, record[3], points);
+	} else if (primitive_type == RENDER_PRIMITIVE_WHEEL) {
+		polyinfo_read_points(record, points, 4U);
+		preRender_wheel(points, WHEEL_INNER_RADIUS_SCALE, PRERENDER_GHOST_COLOR,
+						PRERENDER_GHOST_COLOR, PRERENDER_GHOST_COLOR);
+	} else if (primitive_type == RENDER_PRIMITIVE_SPHERE) {
+		preRender_sphere(LEGACY_S16_FROM_BITS(polyinfo_read_word(record, 3U)),
+						 LEGACY_S16_FROM_BITS(polyinfo_read_word(record, 4U)),
+						 polyinfo_read_word(record, 5U), PRERENDER_GHOST_COLOR);
+	} else if (primitive_type == RENDER_PRIMITIVE_LINE ||
+			   primitive_type == RENDER_PRIMITIVE_POINT) {
+		legacy_u16 x = polyinfo_read_word(record, 3U);
+		legacy_u16 y = polyinfo_read_word(record, 4U);
+		preRender_line(
+			x, y, primitive_type == RENDER_PRIMITIVE_POINT ? x : polyinfo_read_word(record, 5U),
+			primitive_type == RENDER_PRIMITIVE_POINT ? y : polyinfo_read_word(record, 6U),
+			PRERENDER_GHOST_COLOR);
+	}
+}
+
+static legacy_u16 shape3d_legacy_record_index(legacy_u16 record_index)
+{
+	legacy_u16 result = record_index;
+	if (queued_ghost_primitives != 0U) {
+		for (legacy_u16 index = 0; index < record_index; index++) {
+			if ((polyinfoptrs[index][4] & RENDER_PRIMITIVE_GHOST_FLAG) != 0U) {
+				result--;
+			}
+		}
+	}
+	return result;
+}
+
 void shape3d_render_queued_primitives(void)
 {
 	legacy_u16 record_index = POLYINFO_LIST_CAPACITY;
+	legacy_u16 rendered_ghost_primitives = 0;
 	struct POINT2D points[POLYINFO_MAX_RENDER_POINTS];
 	for (legacy_u16 primitive_index = 0; primitive_index < polyinfonumpolys; primitive_index++) {
 		record_index = (legacy_u16)polygon_next_index[record_index];
 		legacy_u8 far *record = polyinfoptrs[record_index];
+		if ((record[4] & RENDER_PRIMITIVE_GHOST_FLAG) != 0U) {
+			shape3d_render_ghost(record, points);
+			rendered_ghost_primitives++;
+			continue;
+		}
 		legacy_u16 material_type = record[2];
 		legacy_u16 material_color = (legacy_u16)material_clrlist_ptr_cpy[material_type];
 		legacy_u16 primitive_type = record[4];
@@ -1263,7 +1320,8 @@ void shape3d_render_queued_primitives(void)
 							(legacy_u16)material_clrlist_ptr_cpy[material_type + 1U],
 							(legacy_u16)material_clrlist_ptr_cpy[material_type + 2U]);
 		} else if (primitive_type == RENDER_PRIMITIVE_POINT) {
-			shape3d_retain_render_local_pair(record_index, primitive_index,
+			shape3d_retain_render_local_pair(shape3d_legacy_record_index(record_index),
+											 primitive_index - rendered_ghost_primitives,
 											 SHAPE3D_LEGACY_POINT_RETURN_IP);
 			sprite_putpixel_clipped(LEGACY_S16_FROM_BITS(polyinfo_read_word(record, 3U)),
 									LEGACY_S16_FROM_BITS(polyinfo_read_word(record, 4U)),
