@@ -14,6 +14,7 @@
 #include "menu_common.h"
 #include "externs.h"
 #include "keyboard.h"
+#include "ghost.h"
 
 #define OPPONENT_RESOURCE_FILE_INDEX 4
 #define OPPONENT_NONE 0U
@@ -49,6 +50,7 @@ struct OPPONENT_MENU_STATE {
 	legacy_u8 selected;
 	legacy_u8 previous_selection;
 	legacy_u8 displayed_opponent;
+	legacy_u8 displayed_ghost;
 	legacy_u8 blit_mode;
 	legacy_u8 resource_loaded;
 };
@@ -58,6 +60,8 @@ static void opponent_menu_draw_description(struct OPPONENT_MENU_STATE *menu)
 	legacy_s8 far *description;
 	if ((legacy_u8)gameconfig.game_opponenttype != OPPONENT_NONE) {
 		description = locate_text_res(menu->opponent_resource, opponent_description_id);
+	} else if (ghost_is_selected() != 0) {
+		description = "Race against a Ghost.]";
 	} else {
 		description = locate_text_res((legacy_s8 far *)miscptr, opponent_racing_car_label_id);
 	}
@@ -101,7 +105,12 @@ static void opponent_menu_draw_background(void)
 		(struct SHAPE2D far *)locate_shape_fatal(opp_res, opponent_menu_background_id);
 	sprite_draw_palette_mapped(shape);
 	for (legacy_u16 index = 0; index < OPPONENT_MENU_BUTTON_COUNT; index++) {
-		draw_button(locate_text_res((legacy_s8 far *)miscptr, button_resource_ids[index]),
+		legacy_s8 far *label =
+			index == OPPONENT_MENU_CAR_BUTTON &&
+					(legacy_u8)gameconfig.game_opponenttype == OPPONENT_NONE
+				? (legacy_s8 far *)"Ghost"
+				: locate_text_res((legacy_s8 far *)miscptr, button_resource_ids[index]);
+		draw_button(label,
 					LEGACY_S16_WRAP_ADD(OPPONENT_MENU_BUTTON_FIRST_X,
 										LEGACY_U16_WRAP_MUL(index, OPPONENT_MENU_BUTTON_SPACING)),
 					opponentmenu_buttons[0].y1 + 1, OPPONENT_MENU_BUTTON_WIDTH,
@@ -121,7 +130,9 @@ static void opponent_menu_draw_background(void)
 
 static void opponent_menu_refresh(struct OPPONENT_MENU_STATE *menu)
 {
-	if (menu->displayed_opponent != (legacy_u8)gameconfig.game_opponenttype) {
+	legacy_u8 selected_ghost = (legacy_u8)(ghost_is_selected() != 0);
+	if (menu->displayed_opponent != (legacy_u8)gameconfig.game_opponenttype ||
+		menu->displayed_ghost != selected_ghost) {
 		if (menu->displayed_opponent != OPPONENT_MENU_NO_SELECTION) {
 			sprite_free_wnd(render_window_sprite);
 			if (menu->resource_loaded != 0) {
@@ -143,6 +154,7 @@ static void opponent_menu_refresh(struct OPPONENT_MENU_STATE *menu)
 			sprite_make_wnd(OPPONENT_MENU_SCREEN_WIDTH, OPPONENT_MENU_SCREEN_HEIGHT,
 							OPPONENT_MENU_TRANSPARENT_COLOR);
 		menu->displayed_opponent = (legacy_u8)gameconfig.game_opponenttype;
+		menu->displayed_ghost = selected_ghost;
 		menu->previous_selection = OPPONENT_MENU_NO_SELECTION;
 		opponent_menu_draw_background();
 
@@ -166,8 +178,7 @@ static legacy_u16 opponent_menu_poll_input(struct OPPONENT_MENU_STATE *menu)
 	legacy_u16 key = (legacy_u16)input_checking(LEGACY_S16_FROM_BITS(elapsed));
 	legacy_s16 hit =
 		(legacy_s16)mouse_multi_hittest(OPPONENT_MENU_BUTTON_COUNT, opponentmenu_buttons);
-	if (hit != -1 && !((legacy_u8)gameconfig.game_opponenttype == OPPONENT_NONE &&
-					   hit == OPPONENT_MENU_CAR_BUTTON)) {
+	if (hit != -1) {
 		menu->selected = (legacy_u8)hit;
 	}
 	return key;
@@ -182,20 +193,12 @@ static legacy_u8 opponent_menu_activate_key(struct OPPONENT_MENU_STATE *menu, le
 		menu->selected = menu->selected == OPPONENT_MENU_PREVIOUS_BUTTON
 							 ? OPPONENT_MENU_DONE_BUTTON
 							 : (legacy_u8)(menu->selected - 1U);
-		if ((legacy_u8)gameconfig.game_opponenttype == OPPONENT_NONE &&
-			menu->selected == OPPONENT_MENU_CAR_BUTTON) {
-			menu->selected--;
-		}
 		return 0;
 	}
 	if (key == KEY_RIGHT) {
 		menu->selected = menu->selected < OPPONENT_MENU_DONE_BUTTON
 							 ? (legacy_u8)(menu->selected + 1U)
 							 : OPPONENT_MENU_PREVIOUS_BUTTON;
-		if ((legacy_u8)gameconfig.game_opponenttype == OPPONENT_NONE &&
-			menu->selected == OPPONENT_MENU_CAR_BUTTON) {
-			menu->selected++;
-		}
 		return 0;
 	}
 	if (key != KEY_ENTER && key != KEY_ESCAPE && key != KEY_SPACE) {
@@ -207,6 +210,7 @@ static legacy_u8 opponent_menu_activate_key(struct OPPONENT_MENU_STATE *menu, le
 static legacy_u8 opponent_menu_activate_selection(struct OPPONENT_MENU_STATE *menu)
 {
 	if (menu->selected == OPPONENT_MENU_PREVIOUS_BUTTON) {
+		ghost_clear();
 		gameconfig.game_opponenttype = LEGACY_S8_WRAP_SUB(gameconfig.game_opponenttype, 1U);
 		/* Preserve the signed comparison: Clock (0) decrements to -1 before wrapping. */
 		if (LEGACY_S8_FROM_BITS((legacy_u8)gameconfig.game_opponenttype) <
@@ -216,6 +220,7 @@ static legacy_u8 opponent_menu_activate_selection(struct OPPONENT_MENU_STATE *me
 		return 0;
 	}
 	if (menu->selected == OPPONENT_MENU_NEXT_BUTTON) {
+		ghost_clear();
 		gameconfig.game_opponenttype = (legacy_s8)((legacy_u8)gameconfig.game_opponenttype + 1U);
 		if ((legacy_u8)gameconfig.game_opponenttype == OPPONENT_AFTER_LAST) {
 			gameconfig.game_opponenttype = OPPONENT_FIRST;
@@ -223,11 +228,24 @@ static legacy_u8 opponent_menu_activate_selection(struct OPPONENT_MENU_STATE *me
 		return 0;
 	}
 	if (menu->selected == OPPONENT_MENU_NONE_BUTTON) {
+		ghost_clear();
 		gameconfig.game_opponenttype = OPPONENT_NONE;
 		return 0;
 	}
 	if (menu->selected == OPPONENT_MENU_CAR_BUTTON) {
 		if ((legacy_u8)gameconfig.game_opponenttype == OPPONENT_NONE) {
+			legacy_s8 filename[13];
+			filename[0] = 0;
+			check_input();
+			if (do_fileselect_dialog(replay_directory, filename, ".rpl",
+									 locate_text_res(mainresptr, "rep")) != 0) {
+				if (ghost_select_replay(replay_directory, filename) != 0) {
+					show_dialog(DIALOG_TYPE_ACKNOWLEDGEMENT, DIALOG_SAVE_BACKGROUND,
+								"Unable to load ghost replay.]", DIALOG_AUTO_POSITION,
+								DIALOG_AUTO_POSITION, dialog_border_color, 0, 0);
+				}
+			}
+			menu->previous_selection = OPPONENT_MENU_NO_SELECTION;
 			return 0;
 		}
 		check_input();
@@ -280,9 +298,12 @@ void run_opponent_menu(void)
 	opp_res = (legacy_s8 far *)file_load_resource(FILE_RESOURCE_SHAPE2D_ALTERNATE,
 												  opponent_menu_shapes_name);
 	locate_many_resources(opp_res, opponent_portrait_shape_ids, oppresources);
+	menu->opponent_resource = 0;
 	menu->selected = OPPONENT_MENU_PREVIOUS_BUTTON;
+	menu->previous_selection = OPPONENT_MENU_NO_SELECTION;
 	menu->resource_loaded = 0;
 	menu->displayed_opponent = OPPONENT_MENU_NO_SELECTION;
+	menu->displayed_ghost = 0;
 	menu->blit_mode = MENU_BLIT_MODE_INITIAL;
 	menu_reset_animation_timers();
 	mouse_draw_transparent_check();

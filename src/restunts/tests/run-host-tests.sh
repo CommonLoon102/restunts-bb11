@@ -98,6 +98,9 @@ run_host_test test-fatal-format legacy.c \
     "$test_source_dir/full_data.c" "$test_source_dir/full_strings.c" \
     "$test_source_dir/headless_data.c" -Wno-pointer-sign -Wno-missing-field-initializers
 run_host_test test-gamestate-serialization stateio.c
+run_host_test test-ghost ghost.c \
+    "$test_source_dir/replay.c" "$test_source_dir/strlib.c" \
+    "$test_source_dir/legacy.c" -Wno-pointer-sign
 run_host_test test-grip physics_grip.c \
     "$test_source_dir/physics_collision.c" "$test_source_dir/strlib.c" \
     "$test_source_dir/math.c" "$test_source_dir/legacy.c" -Wno-sign-compare
@@ -117,6 +120,9 @@ run_host_test test-wheel-suspension physics_collision.c
 run_host_test test-route-points opponent.c "$test_source_dir/trkutil.c" -Wno-missing-braces
 run_host_test test-memmgr-cache memmgr.c \
     -Wno-pointer-sign -Wno-unused-variable -Wno-missing-braces -Wno-missing-field-initializers
+run_host_test test-opponent-route carsetup.c \
+    "$test_source_dir/resource.c" "$test_source_dir/strlib.c" \
+    "$test_source_dir/legacy.c" -Wno-pointer-sign
 run_host_test test-opponent-tick opponent.c \
     "$test_source_dir/headless_data.c" "$test_source_dir/headless_trackdata.c" \
     "$test_source_dir/trkutil.c" "$test_source_dir/math.c" "$test_source_dir/legacy.c" \
@@ -221,7 +227,7 @@ run_host_test test-gameplay-residue gamestep.c \
     "$test_source_dir/state.c" "$test_source_dir/physics_grip.c" \
     "$test_source_dir/physics_collision.c" "$test_source_dir/headless_data.c" \
     "$test_source_dir/headless_trackdata.c" "$test_source_dir/math.c" \
-    "$test_source_dir/legacy.c" -DRESTUNTS_HEADLESS \
+    "$test_source_dir/legacy.c" \
     -Wno-pointer-sign -Wno-sign-compare -Wno-missing-braces
 
 run_host_test test-pixldump-legacy-context ../pixldump/legacy_context.c

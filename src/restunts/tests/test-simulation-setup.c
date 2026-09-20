@@ -23,7 +23,9 @@ static uint64_t trace_hash = UINT64_C(1469598103934665603);
 static struct GAMESTATE checkpoints[GAMESTATE_CHECKPOINT_COUNT];
 static struct VECTOR cameras[4] = {{0, 0, 0}, {500, 0, 500}, {-500, 0, -500}, {500, 0, 500}};
 static legacy_s8 inputs[64];
-static legacy_u8 speed_data[OPPONENT_SPEED_COUNT];
+#define TEST_OPPONENT_RESOURCE_HEADER_SIZE 14U
+static legacy_u8 opponent_resource[TEST_OPPONENT_RESOURCE_HEADER_SIZE + OPPONENT_SPEED_COUNT];
+static legacy_u8 *speed_data = opponent_resource + TEST_OPPONENT_RESOURCE_HEADER_SIZE;
 static legacy_s8 restored_random_seed[GAMESTATE_RANDOM_SEED_SIZE];
 static unsigned int random_restore_count;
 static unsigned int loop_reset_count;
@@ -118,25 +120,29 @@ void far *file_load_resfile(const legacy_s8 *filename)
 {
 	trace_event(10);
 	trace_bytes(filename, 4);
-	return speed_data;
+	LEGACY_WRITE_U32_LE(opponent_resource + RESOURCE_FILE_SIZE_OFFSET, sizeof(opponent_resource));
+	LEGACY_WRITE_U16_LE(opponent_resource + RESOURCE_FILE_COUNT_OFFSET, 1);
+	memcpy(opponent_resource + RESOURCE_FILE_DIRECTORY_OFFSET, "sped", 4);
+	LEGACY_WRITE_U32_LE(opponent_resource + RESOURCE_FILE_DIRECTORY_OFFSET + 4, 0);
+	return opponent_resource;
 }
 
 void unload_resource(void far *resource)
 {
-	assert(resource == speed_data);
+	assert(resource == opponent_resource);
 	trace_event(11);
 }
 
 legacy_s8 far *locate_shape_alt(legacy_s8 far *resource, const legacy_s8 *name)
 {
-	assert(resource == (legacy_s8 *)speed_data);
+	assert(resource == (legacy_s8 *)opponent_resource);
 	trace_bytes(name, 4);
 	return (legacy_s8 *)speed_data;
 }
 
 legacy_s8 far *locate_text_res(void far *resource, const legacy_s8 *name)
 {
-	assert(resource == speed_data);
+	assert(resource == opponent_resource);
 	trace_bytes(name, 3);
 	return (legacy_s8 *)"OP";
 }

@@ -6,6 +6,7 @@
 #include "../c/shape2d_internal.h"
 #include "../c/shape3d.h"
 #include "../c/shape3d_internal.h"
+#include "../c/projection.h"
 
 /* Exercise the stopped-wheel handoff without exporting its private geometry helpers. */
 #include "../c/stateply.c"
@@ -13,6 +14,8 @@
 #undef memcpy
 
 static unsigned solid_calls;
+static unsigned ghost_calls;
+static unsigned checking_ghost;
 static legacy_s16 colors[4] = {7, 8, 9, 10};
 static legacy_s16 patterns[3];
 static legacy_s16 secondary_patterns[3];
@@ -21,8 +24,14 @@ static legacy_u8 polygon_record[22] = {0, 0, 0, 3, RENDER_PRIMITIVE_POLYGON, 0};
 
 void preRender_default(legacy_u16 color, legacy_u16 count, const struct POINT2D *points)
 {
-	assert(color == 7 && count == 3 && points != 0);
-	solid_calls++;
+	assert(count == 3 && points != 0);
+	if (checking_ghost != 0U) {
+		assert(color == PRERENDER_GHOST_COLOR);
+		ghost_calls++;
+	} else {
+		assert(color == 7);
+		solid_calls++;
+	}
 }
 
 void preRender_patterned(legacy_u16 pattern, legacy_u16 color, legacy_u16 count,
@@ -46,6 +55,10 @@ void preRender_two_color(legacy_u16 pattern, legacy_u16 color, legacy_u16 altern
 
 void preRender_line(legacy_u16 x1, legacy_u16 y1, legacy_u16 x2, legacy_u16 y2, legacy_u16 color)
 {
+	if (checking_ghost != 0U) {
+		assert(color == PRERENDER_GHOST_COLOR);
+		ghost_calls++;
+	}
 	(void)x1;
 	(void)y1;
 	(void)x2;
@@ -55,6 +68,10 @@ void preRender_line(legacy_u16 x1, legacy_u16 y1, legacy_u16 x2, legacy_u16 y2, 
 
 void preRender_sphere(legacy_s16 x, legacy_s16 y, legacy_u16 size, legacy_u16 color)
 {
+	if (checking_ghost != 0U) {
+		assert(color == PRERENDER_GHOST_COLOR);
+		ghost_calls++;
+	}
 	(void)x;
 	(void)y;
 	(void)size;
@@ -64,6 +81,11 @@ void preRender_sphere(legacy_s16 x, legacy_s16 y, legacy_u16 size, legacy_u16 co
 void preRender_wheel(const struct POINT2D *points, legacy_u16 scale, legacy_u16 outer_color,
 					 legacy_u16 inner_color, legacy_u16 hub_color)
 {
+	if (checking_ghost != 0U) {
+		assert(outer_color == PRERENDER_GHOST_COLOR && inner_color == PRERENDER_GHOST_COLOR &&
+			   hub_color == PRERENDER_GHOST_COLOR);
+		ghost_calls++;
+	}
 	(void)points;
 	(void)scale;
 	(void)outer_color;
@@ -291,6 +313,76 @@ static void test_view_rotation_stopped_wheel_handoff(void)
 	assert(headings[3] == 17);
 }
 
+static void test_ghost_material_and_physics_isolation(void)
+{
+	legacy_s16 player[4] = {11, 22, 33, 44};
+	legacy_s16 opponent[4] = {55, 66, 77, 88};
+	struct SHAPE3D_LEGACY_OPPONENT_RENDER_CONTEXT context = {opponent, 100, 200, 300};
+	shape3d_set_legacy_render_stack(player, 400, 500, &context);
+	checking_ghost = 1;
+	static const legacy_u8 types[] = {RENDER_PRIMITIVE_POLYGON, RENDER_PRIMITIVE_LINE,
+									  RENDER_PRIMITIVE_SPHERE, RENDER_PRIMITIVE_WHEEL,
+									  RENDER_PRIMITIVE_POINT};
+	for (unsigned index = 0; index < sizeof(types); index++) {
+		queue_polygon(0);
+		polygon_record[4] = types[index] | RENDER_PRIMITIVE_GHOST_FLAG;
+		shape3d_render_queued_primitives();
+		assert(ghost_calls == index + 1);
+		assert_headings(player, 11, 22, 33, 44);
+		assert_headings(opponent, 55, 66, 77, 88);
+	}
+	queue_polygon(1);
+	secondary_patterns[0] = 0;
+	polygon_record[4] |= RENDER_PRIMITIVE_GHOST_FLAG;
+	shape3d_render_queued_primitives();
+	assert(ghost_calls == 5);
+	checking_ghost = 0;
+	shape3d_set_legacy_render_stack(0, 0, 0, 0);
+}
+
+static void test_ghost_preserves_normal_point_indices(void)
+{
+	legacy_u8 vertex_bytes[8U * SHAPE3D_VERTEX_SIZE] = {0};
+	legacy_u8 primitive[] = {1, 1, 0, 0, 0, 0};
+	legacy_u8 masks[4] = {255, 255, 255, 255};
+	legacy_u8 queue[128] = {0};
+	struct SHAPE3D shape = {0};
+	shape.shape3d_numverts = 8;
+	shape.shape3d_numprimitives = 1;
+	shape.shape3d_numpaints = 1;
+	shape.shape3d_vertex_bytes = vertex_bytes;
+	shape.shape3d_primitives = primitive;
+	shape.shape3d_visibility_masks = masks;
+	shape.shape3d_front_facing_masks = masks;
+	struct VECTOR position = {0, 0, 100};
+	for (unsigned index = 0; index < 8; index++) {
+		shape3d_vertex_write(&shape, index, &position);
+	}
+	struct TRANSFORMEDSHAPE3D instance = {0};
+	instance.shapeptr = &shape;
+	instance.culling_distance = 1024;
+	projection_focal_length_x = projection_focal_length_y = 256;
+	select_rect_rc.left = select_rect_rc.top = 0;
+	select_rect_rc.right = 320;
+	select_rect_rc.bottom = 200;
+	mat_temp = *mat_rot_zxy(0, 0, 0, MATRIX_ROTATION_ORDER_ZXY);
+	legacy_s16 player[4] = {11, 22, 33, 44};
+	shape3d_set_legacy_render_stack(player, 400, 500, 0);
+	checking_ghost = 1;
+	for (unsigned first_is_ghost = 0; first_is_ghost < 2; first_is_ghost++) {
+		polyinfo_reset();
+		polyinfoptr = queue;
+		instance.ts_flags = 2U | (first_is_ghost ? SHAPE3D_GHOST_FLAG : 0U);
+		assert(shape3d_transform_and_queue(&instance) == 0);
+		instance.ts_flags ^= SHAPE3D_GHOST_FLAG;
+		assert(shape3d_transform_and_queue(&instance) == 0);
+		shape3d_render_queued_primitives();
+		assert_headings(player, 0, 0, 400, 5261);
+	}
+	checking_ghost = 0;
+	shape3d_set_legacy_render_stack(0, 0, 0, 0);
+}
+
 int main(void)
 {
 	drawing_sprite.sprite_raster_left = 13;
@@ -385,5 +477,7 @@ int main(void)
 	test_opponent_render_handoff();
 	test_view_rotation_stopped_wheel_handoff();
 	test_rendered_player_crash_transition();
+	test_ghost_material_and_physics_isolation();
+	test_ghost_preserves_normal_point_indices();
 	return 0;
 }

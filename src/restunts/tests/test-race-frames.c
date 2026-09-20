@@ -11,6 +11,13 @@
 static uint32_t trace_hash = UINT32_C(2166136261);
 static unsigned scenario, frames, keys;
 static unsigned scripted_rewind;
+void ghost_update(legacy_u32 frame, legacy_u16 frame_rate)
+{
+	assert(frame == (game_replay_mode == REPLAY_MODE_PAUSED
+						 ? 0
+						 : (legacy_u32)(legacy_u16)state.game_frame + elapsed_time1));
+	assert(frame_rate == (legacy_u16)framespersec);
+}
 static struct RECTANGLE dirty_rect;
 static legacy_s8 text_resource[8];
 static void trace(legacy_u32 value)

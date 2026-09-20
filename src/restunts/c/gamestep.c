@@ -198,13 +198,12 @@ static void update_race_start_sequence(void)
 	}
 }
 
-void update_gamestate(void)
+static void update_gamestate_impl(legacy_s16 caller_si, legacy_s16 update_audio,
+								  legacy_s16 store_checkpoints)
 {
-	update_gamestate_with_legacy_si(LEGACY_DEFAULT_PLAYER_TICK_SI);
-}
-
-void update_gamestate_with_legacy_si(legacy_s16 caller_si)
-{
+#ifdef RESTUNTS_HEADLESS
+	(void)update_audio;
+#endif
 	legacy_s8 car_input = replay_input_buffer[(legacy_u16)state.game_frame];
 	if (car_input != INPUT_NONE) {
 		state.game_inputmode = GAME_INPUT_MODE_ACTIVE;
@@ -217,7 +216,9 @@ void update_gamestate_with_legacy_si(legacy_s16 caller_si)
 			LEGACY_U16_DIV_OR_ZERO(state.game_frame, checkpoint_frame_interval);
 		/* The original checkpoint copy retains its index in SI until this tick returns. */
 		caller_si = LEGACY_S16_FROM_BITS(checkpoint_index);
-		fmemcpy(&cvxptr[checkpoint_index], &state, sizeof(struct GAMESTATE));
+		if (store_checkpoints != 0) {
+			fmemcpy(&cvxptr[checkpoint_index], &state, sizeof(struct GAMESTATE));
+		}
 	}
 
 	state.game_frame = LEGACY_S16_WRAP_ADD(state.game_frame, 1);
@@ -233,12 +234,31 @@ void update_gamestate_with_legacy_si(legacy_s16 caller_si)
 			update_crash_particles();
 		}
 #ifndef RESTUNTS_HEADLESS
-		audio_carstate();
+		if (update_audio != 0) {
+			audio_carstate();
+		}
 #endif
 	} else if (game_replay_mode == REPLAY_MODE_PAUSED) {
 #ifndef RESTUNTS_HEADLESS
-		audio_carstate();
+		if (update_audio != 0) {
+			audio_carstate();
+		}
 #endif
 		update_race_start_sequence();
 	}
+}
+
+void update_gamestate(void)
+{
+	update_gamestate_impl(LEGACY_DEFAULT_PLAYER_TICK_SI, 1, 1);
+}
+
+void update_gamestate_with_legacy_si(legacy_s16 caller_si)
+{
+	update_gamestate_impl(caller_si, 1, 1);
+}
+
+void update_gamestate_silent(void)
+{
+	update_gamestate_impl(LEGACY_DEFAULT_PLAYER_TICK_SI, 0, 0);
 }

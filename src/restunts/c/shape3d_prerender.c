@@ -55,9 +55,79 @@ static legacy_s16 prerender_line(legacy_u16 start_x, legacy_u16 start_y, legacy_
 	return 0;
 }
 
+static void prerender_grille_pixel(legacy_u16 x, legacy_u16 y)
+{
+	legacy_u16 row_shift = (y & 1U) == 0U ? LEGACY_BYTE_BITS : 0U;
+	legacy_u16 bit = row_shift + 7U - (x & 7U);
+	if ((PRERENDER_BLACK_GRILLE_PATTERN & (1U << bit)) != 0U) {
+		sprite_putpixel_clipped(LEGACY_S16_FROM_BITS(x), LEGACY_S16_FROM_BITS(y), 0);
+	}
+}
+
+/* Walk the normal clipped line setup so thin trim and collapsed polygons use
+ * the same screen-aligned grille as the filled body and wheel surfaces. */
+static void prerender_grille_line(legacy_u16 start_x, legacy_u16 start_y, legacy_u16 end_x,
+								  legacy_u16 end_y, legacy_u16 color)
+{
+	legacy_u16 line[DRAW_LINE_WORD_COUNT] = {0};
+	(void)color;
+	if (line_prepare_clipped(start_x, start_y, end_x, end_y, line) != 0) {
+		return;
+	}
+	legacy_u16 mode = line[DRAW_LINE_MODE_AND_CLIP_INDEX] & DRAW_LINE_MODE_MASK;
+	legacy_u16 x = line[DRAW_LINE_START_X_INDEX];
+	legacy_u16 y = line[DRAW_LINE_START_Y_INDEX];
+	legacy_u16 fraction_x = line[DRAW_LINE_START_X_FRACTION_INDEX];
+	legacy_u16 fraction_y = line[DRAW_LINE_START_Y_FRACTION_INDEX];
+	if (fraction_x >= DRAW_LINE_FIXED_ROUNDING) {
+		x++;
+	}
+	fraction_x = LEGACY_U16_WRAP_ADD(fraction_x, DRAW_LINE_FIXED_ROUNDING);
+	if ((mode < DRAW_LINE_MODE_VERTICAL || mode > DRAW_LINE_MODE_Y_MAJOR_RIGHT) &&
+		fraction_y >= DRAW_LINE_FIXED_ROUNDING) {
+		y++;
+	}
+	fraction_y = LEGACY_U16_WRAP_ADD(fraction_y, DRAW_LINE_FIXED_ROUNDING);
+	legacy_u16 step = line[DRAW_LINE_STEP_INDEX];
+	for (legacy_s16 remaining = LEGACY_S16_FROM_BITS(line[DRAW_LINE_PIXEL_COUNT_INDEX]);
+		 remaining > 0; remaining--) {
+		prerender_grille_pixel(x, y);
+		if (mode == DRAW_LINE_MODE_Y_MAJOR_LEFT) {
+			legacy_u16 previous = fraction_x;
+			fraction_x = LEGACY_U16_WRAP_SUB(fraction_x, step);
+			if (previous < step) {
+				x--;
+			}
+		} else if (mode == DRAW_LINE_MODE_Y_MAJOR_RIGHT) {
+			legacy_u16 previous = fraction_x;
+			fraction_x = LEGACY_U16_WRAP_ADD(fraction_x, step);
+			if (fraction_x < previous) {
+				x++;
+			}
+		} else if (mode == DRAW_LINE_MODE_DIAGONAL_LEFT || mode == DRAW_LINE_MODE_X_MAJOR_LEFT) {
+			x--;
+		} else if (mode != DRAW_LINE_MODE_VERTICAL) {
+			x++;
+		}
+		if (mode >= DRAW_LINE_MODE_VERTICAL && mode <= DRAW_LINE_MODE_Y_MAJOR_RIGHT) {
+			y++;
+		} else if (mode == DRAW_LINE_MODE_X_MAJOR_LEFT || mode == DRAW_LINE_MODE_X_MAJOR_RIGHT) {
+			legacy_u16 previous = fraction_y;
+			fraction_y = LEGACY_U16_WRAP_ADD(fraction_y, step);
+			if (fraction_y < previous) {
+				y++;
+			}
+		}
+	}
+}
+
 void preRender_line(legacy_u16 start_x, legacy_u16 start_y, legacy_u16 end_x, legacy_u16 end_y,
 					legacy_u16 color)
 {
+	if (color == PRERENDER_GHOST_COLOR) {
+		prerender_grille_line(start_x, start_y, end_x, end_y, 0);
+		return;
+	}
 	legacy_u16 line[DRAW_LINE_WORD_COUNT];
 
 	prerender_line(start_x, start_y, end_x, end_y, color, line);
@@ -109,8 +179,15 @@ void preRender_default_alt(legacy_u16 color, legacy_u16 vertex_count,
 {
 	//return ported_preRender_default_alt_(color, vertex_count, vertices);
 
-	spritefunc = &draw_filled_lines;
-	imagefunc = &preRender_line;
+	if (color == PRERENDER_GHOST_COLOR) {
+		spritefunc = &draw_patterned_lines;
+		imagefunc = &prerender_grille_line;
+		raster_fill_pattern = PRERENDER_BLACK_GRILLE_PATTERN;
+		color = 0;
+	} else {
+		spritefunc = &draw_filled_lines;
+		imagefunc = &preRender_line;
+	}
 	polygon_rasterize(color, vertex_count, vertices, 0);
 }
 
@@ -118,8 +195,15 @@ void preRender_default(legacy_u16 color, legacy_u16 vertex_count, const struct P
 {
 	//return ported_preRender_default_(color, vertex_count, vertices);
 
-	spritefunc = &draw_filled_lines;
-	imagefunc = &preRender_line;
+	if (color == PRERENDER_GHOST_COLOR) {
+		spritefunc = &draw_patterned_lines;
+		imagefunc = &prerender_grille_line;
+		raster_fill_pattern = PRERENDER_BLACK_GRILLE_PATTERN;
+		color = 0;
+	} else {
+		spritefunc = &draw_filled_lines;
+		imagefunc = &preRender_line;
+	}
 	polygon_rasterize(color, vertex_count, vertices, 1);
 }
 
@@ -441,8 +525,14 @@ static void sphere_draw_spans(struct SPHERE_RASTER *sphere, legacy_s16 *left_edg
 	if (clip_delta > 0) {
 		sphere->line_count = LEGACY_U16_WRAP_SUB(sphere->line_count, clip_delta);
 	}
-	draw_filled_lines(&left_edges[skip_lines], &right_edges[skip_lines], sphere->top,
-					  sphere->line_count, color);
+	if (color == PRERENDER_GHOST_COLOR) {
+		raster_fill_pattern = PRERENDER_BLACK_GRILLE_PATTERN;
+		draw_patterned_lines(&left_edges[skip_lines], &right_edges[skip_lines], sphere->top,
+							 sphere->line_count, 0);
+	} else {
+		draw_filled_lines(&left_edges[skip_lines], &right_edges[skip_lines], sphere->top,
+						  sphere->line_count, color);
+	}
 }
 
 void preRender_sphere(legacy_s16 x, legacy_s16 y, legacy_u16 size, legacy_u16 color)
@@ -461,8 +551,12 @@ void preRender_sphere(legacy_s16 x, legacy_s16 y, legacy_u16 size, legacy_u16 co
 
 	sphere.half_height = (legacy_u16)(sphere.effective_height >> 1);
 	if (sphere.half_height == 0) {
-		sprite_putpixel_clipped(LEGACY_S16_FROM_BITS(sphere.x_bits),
-								LEGACY_S16_FROM_BITS(sphere.y_bits), color);
+		if (color == PRERENDER_GHOST_COLOR) {
+			prerender_grille_pixel(sphere.x_bits, sphere.y_bits);
+		} else {
+			sprite_putpixel_clipped(LEGACY_S16_FROM_BITS(sphere.x_bits),
+									LEGACY_S16_FROM_BITS(sphere.y_bits), color);
+		}
 		return;
 	}
 	sphere.half_width = LEGACY_U16_WRAP_SUB(sphere.effective_height, sphere.half_height);

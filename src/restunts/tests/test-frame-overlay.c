@@ -95,6 +95,14 @@ void format_frame_as_string(legacy_s8 *destination, legacy_s16 frame_count,
 	assert(0 && "Unexpected penalty text");
 }
 
+void sprite_putpixel_clipped(legacy_s16 x, legacy_s16 y, legacy_s16 color)
+{
+	(void)x;
+	(void)y;
+	(void)color;
+	assert(0 && "Unexpected ghost pixel");
+}
+
 void sprite_putimage_transparent(struct SHAPE2D far *shape, legacy_s16 x, legacy_s16 y)
 {
 	(void)shape;

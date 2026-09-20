@@ -17,6 +17,12 @@ static struct GAMESTATE checkpoints[GAMESTATE_CHECKPOINT_COUNT];
 static legacy_s8 inputs[256];
 static legacy_s8 last_input;
 static unsigned int player_steps;
+static unsigned int audio_updates;
+
+void audio_carstate(void)
+{
+	audio_updates++;
+}
 
 void update_car_speed(legacy_s8 input, legacy_s16 car_index, struct CARSTATE *carstate,
 					  struct SIMD *simd)
@@ -183,8 +189,34 @@ static void test_start_sequence_uses_start_line_distance(void)
 	}
 }
 
+static void test_silent_playback_preserves_physics(void)
+{
+	prepare_tick(169);
+	audio_updates = 0;
+	update_gamestate();
+	struct GAMESTATE expected = state;
+	assert(audio_updates == 1);
+	prepare_tick(169);
+	audio_updates = 0;
+	update_gamestate_silent();
+	assert(audio_updates == 0);
+	assert(memcmp(&state, &expected, sizeof(state)) == 0);
+	prepare_tick(160);
+	cvxptr = 0;
+	audio_updates = 0;
+	update_gamestate_silent();
+	assert(audio_updates == 0);
+	assert_suspension(264);
+	/* Long low-rate source recordings can outlast the live checkpoint array. */
+	prepare_tick(11999);
+	cvxptr = 0;
+	update_gamestate_silent();
+	assert(state.game_frame == 12000);
+}
+
 int main(void)
 {
+	test_silent_playback_preserves_physics();
 	test_caller_context_and_default();
 	test_checkpoint_context_is_local();
 	test_start_sequence_uses_start_line_distance();

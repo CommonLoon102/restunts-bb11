@@ -11,6 +11,8 @@
 #define mmgr_free car_fixture_mmgr_free
 #define sprite_make_wnd car_fixture_sprite_make_wnd
 #define sprite_free_wnd car_fixture_sprite_free_wnd
+#define draw_button car_fixture_draw_button
+#define font_draw_text car_fixture_font_draw_text
 #include "test-car-menu.c"
 #undef main
 #undef input_checking
@@ -21,6 +23,9 @@
 #undef mmgr_free
 #undef sprite_make_wnd
 #undef sprite_free_wnd
+#undef draw_button
+#undef font_draw_text
+#include "../c/ghost.h"
 #undef memcpy
 
 #define OPPONENT_TEST_EVENT_CAPACITY 32U
@@ -29,6 +34,7 @@
 static const legacy_u8 previous_opponent[7] = {6, 6, 1, 2, 3, 4, 5};
 static const legacy_u8 next_opponent[7] = {1, 2, 3, 4, 5, 6, 1};
 static legacy_u16 opponent_keys[OPPONENT_TEST_EVENT_CAPACITY];
+static legacy_s16 opponent_hits[OPPONENT_TEST_EVENT_CAPACITY];
 static legacy_u8 expected_opponents[OPPONENT_TEST_EVENT_CAPACITY];
 static legacy_u8 expected_loads[OPPONENT_TEST_EVENT_CAPACITY];
 static legacy_u8 resource_live[OPPONENT_TEST_RESOURCE_COUNT];
@@ -36,6 +42,90 @@ static unsigned event_count, event_index, expected_load_count, load_count;
 static unsigned resource_allocations, resource_releases, window_allocations, window_releases;
 static unsigned case_count, transition_count;
 static legacy_u8 window_live;
+static legacy_s16 ghost_selected, ghost_selection_result;
+static legacy_s8 file_dialog_result;
+static unsigned ghost_dialogs, ghost_selections, ghost_button_draws, ghost_descriptions;
+static unsigned clock_descriptions, car_menu_calls, error_dialogs;
+
+legacy_s16 ghost_is_selected(void)
+{
+	return ghost_selected;
+}
+
+void ghost_clear(void)
+{
+	ghost_selected = 0;
+}
+
+legacy_s16 ghost_select_replay(const legacy_s8 *directory, const legacy_s8 *name)
+{
+	assert(directory == replay_directory);
+	assert(_strcmp(name, (legacy_s8 *)"GHOST") == 0);
+	assert(gameconfig.game_opponenttype == 0);
+	ghost_selections++;
+	if (ghost_selection_result == 0) {
+		ghost_selected = 1;
+	}
+	return ghost_selection_result;
+}
+
+legacy_s8 do_fileselect_dialog(legacy_s8 *directory, legacy_s8 *name, legacy_s8 *extension,
+							   legacy_s8 *prompt)
+{
+	assert(directory == replay_directory);
+	assert(_strcmp(extension, (legacy_s8 *)".rpl") == 0);
+	assert(_strcmp(prompt, (legacy_s8 *)"Load Replay") == 0);
+	assert(gameconfig.game_opponenttype == 0);
+	assert(window_live != 0);
+	ghost_dialogs++;
+	if (file_dialog_result != 0) {
+		_strcpy(name, (legacy_s8 *)"GHOST");
+	}
+	return file_dialog_result;
+}
+
+legacy_u16 show_dialog(legacy_s16 dialog_type, legacy_s16 save_background, void *text, legacy_u16 x,
+					   legacy_u16 y, legacy_s16 border_color, legacy_s16 *disabled_choices,
+					   legacy_s16 initial_choice)
+{
+	assert(dialog_type == DIALOG_TYPE_ACKNOWLEDGEMENT);
+	assert(save_background == DIALOG_SAVE_BACKGROUND);
+	assert(_strcmp(text, (legacy_s8 *)"Unable to load ghost replay.]") == 0);
+	assert(x == DIALOG_AUTO_POSITION && y == DIALOG_AUTO_POSITION);
+	assert(border_color == dialog_border_color);
+	assert(disabled_choices == 0 && initial_choice == 0);
+	error_dialogs++;
+	return 0;
+}
+
+void draw_button(legacy_s8 *text, legacy_s16 x, legacy_s16 y, legacy_s16 width, legacy_s16 height,
+				 legacy_s16 top_color, legacy_s16 bottom_color, legacy_s16 fill_color,
+				 legacy_s16 font_color)
+{
+	if (x == 21 + 3 * 56) {
+		assert(_strcmp(text, gameconfig.game_opponenttype == 0 ? (legacy_s8 *)"Ghost"
+															   : opponent_car_button_id) == 0);
+		if (gameconfig.game_opponenttype == 0) {
+			ghost_button_draws++;
+		}
+	}
+	car_fixture_draw_button(text, x, y, width, height, top_color, bottom_color, fill_color,
+							font_color);
+}
+
+void font_draw_text(const legacy_s8 *text, legacy_s16 x, legacy_s16 y)
+{
+	if (gameconfig.game_opponenttype == 0) {
+		assert(_strcmp(text, ghost_selected != 0 ? (legacy_s8 *)"Race against a Ghost."
+												 : (legacy_s8 *)"Race against the Clock.") == 0);
+		if (ghost_selected != 0) {
+			ghost_descriptions++;
+		} else {
+			clock_descriptions++;
+		}
+	}
+	car_fixture_font_draw_text(text, x, y);
+}
 
 legacy_s16 input_checking(legacy_s16 elapsed)
 {
@@ -49,9 +139,7 @@ legacy_s16 mouse_multi_hittest(legacy_s16 count, const struct BUTTON_AREA *butto
 {
 	assert(count == 5 && buttons == opponentmenu_buttons);
 	assert(event_index < event_count);
-	event_index++;
-	/* No hover overrides: Enter really activates the initially selected Last. */
-	return -1;
+	return opponent_hits[event_index++];
 }
 
 static void *allocate_resource(unsigned index)
@@ -130,13 +218,18 @@ void sprite_free_wnd(struct SPRITE *window)
 
 legacy_s8 *locate_text_res(legacy_s8 *resource, const legacy_s8 *name)
 {
+	if (_strcmp(name, (legacy_s8 *)"rep") == 0) {
+		assert(resource == mainresptr);
+		return (legacy_s8 *)"Load Replay";
+	}
 	if (_strcmp(name, opponent_description_id) == 0) {
 		assert(resource == (legacy_s8 *)resource_bytes[2] && resource_live[2] != 0);
 		return (legacy_s8 *)"Opponent]";
 	}
 	assert(resource == (legacy_s8 *)resource_bytes[0] && resource_live[0] != 0);
-	return _strcmp(name, opponent_racing_car_label_id) == 0 ? (legacy_s8 *)"Clock]"
-															: (legacy_s8 *)name;
+	return _strcmp(name, opponent_racing_car_label_id) == 0
+			   ? (legacy_s8 *)"Race against the Clock.]"
+			   : (legacy_s8 *)name;
 }
 
 void locate_many_resources(legacy_s8 *resource, const legacy_s8 *names, legacy_s8 **pointers)
@@ -164,11 +257,15 @@ void show_waiting(void)
 
 void run_car_menu(legacy_s8 *id, legacy_s8 *material, legacy_s8 *transmission, legacy_u16 opponent)
 {
-	(void)id;
-	(void)material;
-	(void)transmission;
-	(void)opponent;
-	assert(!"Navigation unexpectedly entered the car menu");
+	assert(id == gameconfig.game_opponentcarid);
+	assert(material == &gameconfig.game_opponentmaterial);
+	assert(transmission == &gameconfig.game_opponenttransmission);
+	assert(opponent != 0 && opponent == (legacy_u8)gameconfig.game_opponenttype);
+	assert(window_live == 0 && resource_live[2] == 0);
+	memcpy(id, "VETT", 4);
+	*material = 2;
+	*transmission = TRANSMISSION_AUTOMATIC;
+	car_menu_calls++;
 }
 
 static void expect_load(legacy_u8 opponent)
@@ -183,6 +280,7 @@ static void add_event(legacy_u16 key, legacy_u8 opponent)
 {
 	assert(event_count < OPPONENT_TEST_EVENT_CAPACITY);
 	opponent_keys[event_count] = key;
+	opponent_hits[event_count] = -1;
 	expected_opponents[event_count++] = opponent;
 }
 
@@ -198,6 +296,10 @@ static void begin_case(legacy_u8 opponent, legacy_u8 page_flipping)
 	video_uses_page_flipping = page_flipping;
 	fontnptr = (legacy_s8 *)resource_bytes[62];
 	font_glyph_height = 8;
+	ghost_selected = ghost_selection_result = 0;
+	file_dialog_result = 1;
+	ghost_dialogs = ghost_selections = ghost_button_draws = ghost_descriptions = 0;
+	clock_descriptions = car_menu_calls = error_dialogs = 0;
 	event_count = event_index = expected_load_count = load_count = 0;
 	resource_allocations = resource_releases = window_allocations = window_releases = 0;
 	expect_load(opponent);
@@ -215,9 +317,11 @@ static void finish_case(legacy_u8 opponent, unsigned refresh_count)
 		assert(resource_live[index] == 0);
 	}
 	if (opponent != 0) {
-		assert(memcmp(gameconfig.game_opponentcarid, "COUN", 4) == 0);
-		assert(gameconfig.game_opponentmaterial == 0);
-		assert(gameconfig.game_opponenttransmission == TRANSMISSION_MANUAL);
+		assert(memcmp(gameconfig.game_opponentcarid, car_menu_calls != 0 ? "VETT" : "COUN", 4) ==
+			   0);
+		assert(gameconfig.game_opponentmaterial == (car_menu_calls != 0 ? 2 : 0));
+		assert(gameconfig.game_opponenttransmission ==
+			   (car_menu_calls != 0 ? TRANSMISSION_AUTOMATIC : TRANSMISSION_MANUAL));
 	} else {
 		assert(gameconfig.game_opponentcarid[0] == -1);
 	}
@@ -260,10 +364,68 @@ static void test_return_to_clock(legacy_u8 page_flipping)
 	add_event(KEY_RIGHT, 6);
 	add_event(KEY_RIGHT, 6);
 	add_event(KEY_ENTER, 6);
-	add_event(KEY_RIGHT, 0); /* Disabled Car is skipped on the way to Done. */
+	add_event(KEY_RIGHT, 0); /* Clock -> Ghost -> Done. */
+	add_event(KEY_RIGHT, 0);
 	add_event(KEY_ENTER, 0);
 	finish_case(0, 4);
 	transition_count += 3;
+}
+
+static void test_ghost_selection(legacy_u8 page_flipping, legacy_u8 already_selected,
+								 legacy_u8 use_mouse, legacy_u8 result)
+{
+	begin_case(0, page_flipping);
+	ghost_selected = already_selected;
+	file_dialog_result = result != 1;
+	ghost_selection_result = result == 2;
+	if (use_mouse != 0) {
+		add_event(KEY_ENTER, 0);
+		opponent_hits[event_count - 1] = 3;
+	} else {
+		add_event(KEY_LEFT, 0); /* Last -> Done -> Ghost. */
+		add_event(KEY_LEFT, 0);
+		add_event(KEY_ENTER, 0);
+	}
+	add_event(KEY_RIGHT, 0);
+	add_event(KEY_ENTER, 0);
+	finish_case(0, already_selected == 0 && result == 0 ? 2 : 1);
+	assert(ghost_dialogs == 1 && ghost_selections == (result != 1));
+	assert(error_dialogs == (result == 2));
+	assert(ghost_selected == (already_selected != 0 || result == 0));
+	assert(ghost_descriptions == (already_selected != 0 || result == 0));
+	assert(clock_descriptions == (already_selected == 0));
+	assert(ghost_button_draws == window_allocations);
+	assert(car_menu_calls == 0);
+	assert(memcmp(gameconfig.game_playercarid, "COUN", 4) == 0);
+	assert(gameconfig.game_playermaterial == 3);
+}
+
+static void test_clear_ghost(legacy_u8 page_flipping, legacy_u8 selection)
+{
+	begin_case(0, page_flipping);
+	ghost_selected = 1;
+	add_event(KEY_ENTER, 0);
+	opponent_hits[event_count - 1] = selection;
+	legacy_u8 opponent = selection == 0 ? 6 : (selection == 1 ? 1 : 0);
+	expect_load(opponent);
+	add_event(KEY_ENTER, opponent);
+	opponent_hits[event_count - 1] = 4;
+	finish_case(opponent, 2);
+	assert(ghost_selected == 0 && ghost_descriptions == 1);
+	assert(clock_descriptions == (selection == 2));
+	assert(ghost_dialogs == 0);
+}
+
+static void test_opponent_car(legacy_u8 page_flipping)
+{
+	begin_case(3, page_flipping);
+	add_event(KEY_ENTER, 3);
+	opponent_hits[event_count - 1] = 3;
+	expect_load(3);
+	add_event(KEY_RIGHT, 3);
+	add_event(KEY_ENTER, 3);
+	finish_case(3, 2);
+	assert(car_menu_calls == 1 && ghost_dialogs == 0 && ghost_button_draws == 0);
 }
 
 int main(void)
@@ -276,6 +438,17 @@ int main(void)
 			}
 		}
 		test_return_to_clock(page_flipping);
+		for (legacy_u8 already_selected = 0; already_selected < 2; already_selected++) {
+			for (legacy_u8 use_mouse = 0; use_mouse < 2; use_mouse++) {
+				for (legacy_u8 result = 0; result < 3; result++) {
+					test_ghost_selection(page_flipping, already_selected, use_mouse, result);
+				}
+			}
+		}
+		for (legacy_u8 selection = 0; selection < 3; selection++) {
+			test_clear_ghost(page_flipping, selection);
+		}
+		test_opponent_car(page_flipping);
 	}
 	printf("test-opponent-menu: passed %u sessions, %u transitions\n", case_count,
 		   transition_count);

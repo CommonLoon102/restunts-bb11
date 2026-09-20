@@ -22,6 +22,41 @@ static legacy_u8 terrain_map[900];
 static legacy_u8 element_map[900];
 static legacy_u8 sign_map[900];
 
+static struct CARSTATE ghost_fixture;
+static struct SIMD ghost_simd_fixture;
+static legacy_s16 ghost_fixture_active;
+static legacy_s16 ghost_wheel_updates;
+
+struct CARSTATE *ghost_car_state(void)
+{
+	return ghost_fixture_active != 0 ? &ghost_fixture : 0;
+}
+
+const struct SIMD *ghost_car_simd(void)
+{
+	return &ghost_simd_fixture;
+}
+
+legacy_u8 ghost_car_material(void)
+{
+	return 2;
+}
+
+void shape3d_update_car_wheel_vertices(struct SHAPE3D *shape, legacy_u16 first_vertex,
+									   legacy_s16 steering_angle, legacy_s16 *suspension_offsets,
+									   legacy_s16 *cached_wheel_state, struct VECTOR *base_vertices,
+									   struct VECTOR *front_wheel_centers)
+{
+	assert(shape == &game3dshapes[FRAME_OPPONENT_SHAPE_RESOURCE_OFFSET / sizeof(struct SHAPE3D)]);
+	assert(first_vertex == FRAME_STEERED_WHEEL_FIRST_VERTEX);
+	assert(steering_angle == ghost_fixture.car_steeringAngle);
+	assert(suspension_offsets == ghost_fixture.car_suspension_deflection);
+	assert(cached_wheel_state == opponent_wheel_vertex_state);
+	assert(base_vertices == opponent_base_wheel_vertices);
+	assert(front_wheel_centers == opponent_front_wheel_centers);
+	ghost_wheel_updates++;
+}
+
 static void trace_word(legacy_u16 value)
 {
 	trace_hash = (trace_hash ^ (value & 255U)) * UINT64_C(1099511628211);
@@ -371,6 +406,55 @@ static void test_track_elements_and_flags(void)
 	}
 }
 
+static void test_ghost_uses_independent_visual_state(void)
+{
+	struct FRAME_LOOKAHEAD_TILE lookahead[FRAME_LOOKAHEAD_TILE_COUNT] = {{0}};
+	struct FRAME_TILE_SELECTION tiles = {0};
+	struct FRAME_CAR_RENDER cars[2] = {{0}};
+	struct FRAME_CAMERA camera = {0};
+	struct FRAME_TILE tile = {0};
+	struct GAMESTATE original_state = state;
+	gameconfig.game_opponenttype = 0;
+	ghost_fixture_active = 1;
+	ghost_fixture.car_position.lx = 10L * 65536L;
+	ghost_fixture.car_position.lz = 20L * 65536L;
+	ghost_fixture.car_steeringAngle = 29;
+	ghost_fixture.car_is_braking = 1;
+	ghost_fixture.car_crashBmpFlag = CRASH_EVENT_COLLISION;
+	cameramode = CAMERA_MODE_COCKPIT;
+	followOpponentFlag = 0;
+	detail_level = 0;
+	slow_video_mgmt_copy = 0;
+	lookahead[0].east = 10;
+	lookahead[0].south = 9;
+	tiles.lookahead = lookahead;
+	for (unsigned index = 1; index < FRAME_LOOKAHEAD_TILE_COUNT; index++) {
+		tiles.markers[index] = FRAME_TILE_UNAVAILABLE_MARKER;
+	}
+	reset_shapes();
+	frame_place_cars(&tiles, cars);
+	assert(cars[PLAYER_CAR_INDEX].east == -1);
+	assert(cars[OPPONENT_CAR_INDEX].east == 10);
+	assert(cars[OPPONENT_CAR_INDEX].south == 9);
+	tile.east = tile.last_east = 10;
+	tile.south = tile.last_south = 9;
+	trkObjectList[FRAME_OPPONENT_SORT_ID].ss_shapePtr = &game3dshapes[OPPONENT_CAR_HIGH_SHAPE];
+	trkObjectList[FRAME_OPPONENT_SORT_ID].ss_loShapePtr = &game3dshapes[OPPONENT_CAR_LOW_SHAPE];
+	frame_add_tile_cars(&tile, &camera, cars, 0);
+	assert(transformedshape_counter == 1);
+	assert(ghost_wheel_updates == 1);
+	assert(currenttransshape[0].shapeptr == &game3dshapes[OPPONENT_CAR_HIGH_SHAPE]);
+	assert((currenttransshape[0].ts_flags & SHAPE3D_GHOST_FLAG) != 0U);
+	assert(currenttransshape[0].pos.x == position_to_word(ghost_fixture.car_position.lx));
+	frame_draw_sorted_shapes(cars);
+	assert(cars[OPPONENT_CAR_INDEX].explosion_visible == 0);
+	assert(memcmp(&state, &original_state, sizeof(state)) == 0);
+	assert(gameconfig.game_opponenttype == 0);
+	ghost_fixture_active = 0;
+	frame_place_cars(&tiles, cars);
+	assert(cars[OPPONENT_CAR_INDEX].east == -1);
+}
+
 int main(void)
 {
 	test_camera_modes();
@@ -382,6 +466,7 @@ int main(void)
 	/* Captured before extraction: camera modes, tile selection, queue exhaustion,
 	 * sorted brake paint, component geometry and animated start-flag vertices. */
 	assert(trace_hash == UINT64_C(0xcf35ecd7319fcd5c));
-	puts("Frame rendering snapshots passed (311 scenarios).");
+	test_ghost_uses_independent_visual_state();
+	puts("Frame rendering snapshots and ghost isolation passed.");
 	return 0;
 }

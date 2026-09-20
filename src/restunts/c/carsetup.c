@@ -10,6 +10,7 @@
 #include "car_model.h"
 #include "car_resources.h"
 #include "owoot.h"
+#include "resource.h"
 
 extern legacy_s8 opponent_name_text_id[];
 extern legacy_s8 opponent_path_resource_id[];
@@ -29,6 +30,7 @@ extern legacy_s8 opponent_speed_resource_id[];
 #define OPPONENT_ROUTE_BRANCH_CAPACITY 258U
 #define OPPONENT_ROUTE_DISTANCE_CAPACITY 259U
 #define OPPONENT_ROUTE_DISTANCE_LIMIT 999999UL
+#define OPPONENT_ROUTE_COST_COUNT 256U
 
 static void legacy_car_filename(legacy_s8 *destination, const legacy_s8 car_id[CAR_ID_LENGTH],
 								const legacy_s8 extension[CAR_RESOURCE_EXTENSION_LENGTH])
@@ -166,7 +168,42 @@ void setup_aero_trackdata(void far *carresptr, legacy_s16 is_opponent)
 	}
 }
 
-static void far *load_opponent_speed_data(legacy_u8 far **speed_data)
+/* Route selection historically indexes sped with a tile ID, including bytes
+ * in later resources such as win/lose. Preserve those aliases, but never let
+ * allocation padding or a cached neighbour choose a different replay route. */
+static legacy_u16 opponent_route_cost_count(const legacy_u8 far *resource)
+{
+	legacy_u16 count = LEGACY_READ_U16_LE(resource + RESOURCE_FILE_COUNT_OFFSET);
+	legacy_u32 length = LEGACY_READ_U32_LE(resource + RESOURCE_FILE_SIZE_OFFSET);
+	for (legacy_u16 index = 0; index < count; index++) {
+		const legacy_u8 far *identifier =
+			resource + RESOURCE_FILE_DIRECTORY_OFFSET + index * RESOURCE_FILE_IDENTIFIER_SIZE;
+		legacy_u16 character = 0;
+		while (character < RESOURCE_FILE_IDENTIFIER_SIZE &&
+			   identifier[character] == (legacy_u8)opponent_speed_resource_id[character]) {
+			character++;
+		}
+		if (character != RESOURCE_FILE_IDENTIFIER_SIZE) {
+			continue;
+		}
+		const legacy_u8 far *offset_bytes = resource + RESOURCE_FILE_DIRECTORY_OFFSET +
+											count * RESOURCE_FILE_IDENTIFIER_SIZE +
+											index * RESOURCE_FILE_OFFSET_SIZE;
+		legacy_u32 offset =
+			(legacy_u32)RESOURCE_FILE_DIRECTORY_OFFSET +
+			(legacy_u32)count * (RESOURCE_FILE_IDENTIFIER_SIZE + RESOURCE_FILE_OFFSET_SIZE) +
+			LEGACY_READ_U32_LE(offset_bytes);
+		if (offset >= length) {
+			return 0;
+		}
+		legacy_u32 available = length - offset;
+		return available > OPPONENT_ROUTE_COST_COUNT ? OPPONENT_ROUTE_COST_COUNT
+													 : (legacy_u16)available;
+	}
+	return 0;
+}
+
+static void far *load_opponent_speed_data(legacy_u8 far **speed_data, legacy_u16 *cost_count)
 {
 	opponent_resource_name[3] = (legacy_s8)((legacy_u8)gameconfig.game_opponenttype + '0');
 	void far *resource = file_load_resfile(opponent_resource_name);
@@ -175,8 +212,9 @@ static void far *load_opponent_speed_data(legacy_u8 far **speed_data)
 	(void)locate_shape_alt((legacy_s8 far *)resource, opponent_path_resource_id);
 	*speed_data =
 		(legacy_u8 far *)locate_shape_alt((legacy_s8 far *)resource, opponent_speed_resource_id);
+	*cost_count = opponent_route_cost_count((const legacy_u8 far *)resource);
 	for (legacy_u16 index = 0; index < OPPONENT_SPEED_COUNT; index++) {
-		oppnentSped[index] = (*speed_data)[index];
+		oppnentSped[index] = index < *cost_count ? (*speed_data)[index] : 0;
 	}
 
 	return resource;
@@ -199,7 +237,8 @@ static legacy_s16 opponent_route_is_terminal(const legacy_u16 *path, legacy_u16 
 void load_opponent_data(void)
 {
 	legacy_u8 far *speed_data;
-	void far *resource = load_opponent_speed_data(&speed_data);
+	legacy_u16 cost_count;
+	void far *resource = load_opponent_speed_data(&speed_data, &cost_count);
 
 	legacy_u32 best_distance = OPPONENT_ROUTE_DISTANCE_LIMIT;
 	legacy_u32 pending_distance[OPPONENT_ROUTE_DISTANCE_CAPACITY];
@@ -218,7 +257,8 @@ void load_opponent_data(void)
 		path[path_count] = track_index;
 		path_count++;
 		legacy_u8 speed_index = (legacy_u8)track_route_element_ids[track_index];
-		distance += (legacy_u32)speed_data[speed_index] + 1UL;
+		legacy_u8 route_cost = speed_index < cost_count ? speed_data[speed_index] : 0;
+		distance += (legacy_u32)route_cost + 1UL;
 		if (!terminal) {
 			legacy_u16 alternate_track = (legacy_u16)track_alternate_route_links[track_index];
 			if (alternate_track != LEGACY_U16_MAX) {

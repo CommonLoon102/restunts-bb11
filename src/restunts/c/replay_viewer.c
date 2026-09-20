@@ -5,6 +5,7 @@
 #include "race_resources.h"
 #include "replay.h"
 #include "replay_viewer.h"
+#include "ghost.h"
 #include "replay_viewer_internal.h"
 #include "resource.h"
 #include "shape2d.h"
@@ -401,6 +402,8 @@ static void replay_load_recording(void)
 	}
 	dashb_toggle = 0;
 	track_setup();
+	ghost_end_race();
+	ghost_check_track();
 	replay_reload_changed_resources(&saved_config, saved_track);
 	framespersec =
 		(legacy_s16)LEGACY_S8_FROM_BITS(LEGACY_U16_LOW_BYTE(gameconfig.game_framespersec));

@@ -11,6 +11,7 @@
 static legacy_u32 callback_hash;
 static unsigned span_calls, line_calls, point_calls;
 static legacy_u16 last_top, last_count;
+static unsigned checking_ghost;
 
 static void hash_word(legacy_u16 value)
 {
@@ -21,6 +22,10 @@ static void record_spans(legacy_s16 *left, legacy_s16 *right, legacy_u16 top, le
 						 legacy_u16 color, legacy_u16 kind)
 {
 	assert(top < 480 && count <= 480 - top);
+	if (checking_ghost != 0U) {
+		assert(kind == 3 && color == 0);
+		assert(raster_fill_pattern == PRERENDER_BLACK_GRILLE_PATTERN);
+	}
 	span_calls++;
 	last_top = top;
 	last_count = count;
@@ -78,6 +83,13 @@ void sprite_draw_line_from_setup(const legacy_u16 *line)
 
 void sprite_putpixel_clipped(legacy_s16 x, legacy_s16 y, legacy_s16 color)
 {
+	if (checking_ghost != 0U) {
+		assert(color == 0);
+		assert(x >= drawing_sprite.sprite_raster_left && x < drawing_sprite.sprite_raster_right);
+		assert(y >= drawing_sprite.sprite_top && y < drawing_sprite.sprite_bottom);
+		assert((PRERENDER_BLACK_GRILLE_PATTERN &
+				(1U << (((y & 1) == 0 ? 8U : 0U) + 7U - ((legacy_u16)x & 7U)))) != 0U);
+	}
 	point_calls++;
 	hash_word(5);
 	hash_word((legacy_u16)x);
@@ -188,9 +200,39 @@ static legacy_u32 perimeter_fingerprint(void)
 	return callback_hash;
 }
 
+static void test_ghost_grille_covers_every_primitive(void)
+{
+	reset_raster();
+	checking_ghost = 1;
+	struct POINT2D body[] = {{100, 60}, {180, 60}, {180, 130}, {100, 130}};
+	preRender_default(PRERENDER_GHOST_COLOR, 4, body);
+	assert(span_calls == 1 && line_calls == 0);
+	struct POINT2D wheel[] = {{140, 100}, {140, 80}, {160, 100}, {145, 105}};
+	preRender_wheel(wheel, 9472U, PRERENDER_GHOST_COLOR, PRERENDER_GHOST_COLOR,
+					PRERENDER_GHOST_COLOR);
+	assert(span_calls > 16 && line_calls == 0);
+	unsigned before_spheres = span_calls;
+	preRender_sphere(140, 100, 30, PRERENDER_GHOST_COLOR);
+	preRender_sphere(140, 100, 120, PRERENDER_GHOST_COLOR);
+	preRender_sphere(140, 100, 1, PRERENDER_GHOST_COLOR);
+	assert(span_calls == before_spheres + 2 && line_calls == 0);
+	static const struct POINT2D endpoints[] = {
+		{140, 100}, {140, 20},	{140, 180}, {10, 100},	{310, 100},	 {100, 60}, {180, 60},
+		{100, 140}, {180, 140}, {-100, 90}, {400, 110}, {130, -100}, {150, 300}};
+	unsigned before_lines = point_calls;
+	for (unsigned index = 0; index < sizeof(endpoints) / sizeof(endpoints[0]); index++) {
+		preRender_line(140, 100, endpoints[index].px, endpoints[index].py, PRERENDER_GHOST_COLOR);
+		preRender_line(endpoints[index].px, endpoints[index].py, 140, 100, PRERENDER_GHOST_COLOR);
+	}
+	preRender_default(PRERENDER_GHOST_COLOR, 1, body);
+	assert(point_calls > before_lines && line_calls == 0);
+	checking_ghost = 0;
+}
+
 int main(void)
 {
 	test_raster_boundaries();
+	test_ghost_grille_covers_every_primitive();
 	legacy_u32 polygon_hash = polygon_fingerprint();
 	legacy_u32 sphere_hash = sphere_fingerprint();
 	legacy_u32 perimeter_hash = perimeter_fingerprint();
