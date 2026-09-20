@@ -161,6 +161,122 @@ void dos_video_set_mode_13h(void)
 	dos_video_fill(DOS_VIDEO_GRAPHICS_SEGMENT, 0, DOS_VIDEO_GRAPHICS_CLEAR_WORDS);
 }
 
+#define DOS_VIDEO_VGA_CRTC_PORT 0x3D4U
+#define DOS_VIDEO_SEQUENCER_PORT 0x3C4U
+#define DOS_VIDEO_GRAPHICS_PORT 0x3CEU
+#define DOS_VIDEO_PAGE_PLANE_BYTES 16384U
+#define DOS_VIDEO_ALL_PLANES 15U
+#define DOS_VIDEO_PROBE_REGISTER_COUNT 11U
+#define DOS_VIDEO_PACKED_SCREEN_WORDS 32000U
+
+struct DOS_VIDEO_PROBE_REGISTER {
+	legacy_u16 port;
+	legacy_u8 index;
+};
+
+static const struct DOS_VIDEO_PROBE_REGISTER probe_registers[DOS_VIDEO_PROBE_REGISTER_COUNT] = {
+	{DOS_VIDEO_SEQUENCER_PORT, 2U},	  {DOS_VIDEO_SEQUENCER_PORT, 4U},
+	{DOS_VIDEO_GRAPHICS_PORT, 1U},	  {DOS_VIDEO_GRAPHICS_PORT, 3U},
+	{DOS_VIDEO_GRAPHICS_PORT, 4U},	  {DOS_VIDEO_GRAPHICS_PORT, 5U},
+	{DOS_VIDEO_GRAPHICS_PORT, 6U},	  {DOS_VIDEO_GRAPHICS_PORT, 8U},
+	{DOS_VIDEO_VGA_CRTC_PORT, 0x13U}, {DOS_VIDEO_VGA_CRTC_PORT, 0x14U},
+	{DOS_VIDEO_VGA_CRTC_PORT, 0x17U}};
+
+static legacy_u8 video_write_mask = 255U;
+static legacy_u8 video_read_plane = 255U;
+
+void dos_video_set_write_planes(legacy_u8 mask)
+{
+	if (video_write_mask != mask) {
+		outpw(DOS_VIDEO_SEQUENCER_PORT, ((legacy_u16)mask << 8) | 2U);
+		video_write_mask = mask;
+	}
+}
+
+void dos_video_set_read_plane(legacy_u8 plane)
+{
+	if (video_read_plane != plane) {
+		outpw(DOS_VIDEO_GRAPHICS_PORT, ((legacy_u16)plane << 8) | 4U);
+		video_read_plane = plane;
+	}
+}
+
+legacy_u8 dos_video_enable_planar_pages(void)
+{
+	union REGS registers;
+	registers.x.ax = 0x1A00U;
+	registers.x.bx = 0;
+	int86(DOS_VIDEO_BIOS_INTERRUPT, &registers, &registers);
+	/* MCGA supports mode 13h but not the VGA plane/address registers. */
+	if (registers.h.al != 0x1AU || (registers.h.bl != 7U && registers.h.bl != 8U)) {
+		return 0;
+	}
+
+	legacy_u8 saved_registers[DOS_VIDEO_PROBE_REGISTER_COUNT];
+	for (legacy_u16 index = 0; index < DOS_VIDEO_PROBE_REGISTER_COUNT; index++) {
+		outp(probe_registers[index].port, probe_registers[index].index);
+		saved_registers[index] = (legacy_u8)inp(probe_registers[index].port + 1U);
+	}
+
+	/* Keep the BIOS 320x200 timing and palette. Unchain CPU accesses and use
+	 * byte-addressed CRTC scanout: 80 bytes per row in each of four planes.
+	 * Register definitions: https://www.scs.stanford.edu/10wi-cs140/pintos/
+	 * specs/freevga/vga/{seqreg,graphreg,crtcreg}.htm */
+	outpw(DOS_VIDEO_SEQUENCER_PORT, 0x0604U);
+	outpw(DOS_VIDEO_GRAPHICS_PORT, 0x0001U);
+	outpw(DOS_VIDEO_GRAPHICS_PORT, 0x0003U);
+	outpw(DOS_VIDEO_GRAPHICS_PORT, 0x4005U);
+	outpw(DOS_VIDEO_GRAPHICS_PORT, 0x0506U);
+	outpw(DOS_VIDEO_GRAPHICS_PORT, 0xFF08U);
+	outpw(DOS_VIDEO_VGA_CRTC_PORT, 0x0014U);
+	outpw(DOS_VIDEO_VGA_CRTC_PORT, 0xE317U);
+	outpw(DOS_VIDEO_VGA_CRTC_PORT, 0x2800U | 0x13U);
+	video_write_mask = 255U;
+	video_read_plane = 255U;
+
+	volatile legacy_u8 far *memory = (volatile legacy_u8 far *)MK_FP(DOS_VIDEO_GRAPHICS_SEGMENT, 0);
+	for (legacy_u8 plane = 0; plane < 4U; plane++) {
+		dos_video_set_write_planes((legacy_u8)(1U << plane));
+		memory[0] = (legacy_u8)(17U + plane);
+		memory[DOS_VIDEO_PAGE_PLANE_BYTES] = (legacy_u8)(33U + plane);
+	}
+	legacy_u8 supported = 1;
+	for (legacy_u8 plane = 0; plane < 4U; plane++) {
+		dos_video_set_read_plane(plane);
+		if (memory[0] != (legacy_u8)(17U + plane) ||
+			memory[DOS_VIDEO_PAGE_PLANE_BYTES] != (legacy_u8)(33U + plane)) {
+			supported = 0;
+		}
+	}
+	if (supported == 0) {
+		/* A BIOS mode reset would replace the game palette loaded at startup.
+		 * Restore only the registers touched by the probe, then erase its pixels. */
+		for (legacy_u16 index = 0; index < DOS_VIDEO_PROBE_REGISTER_COUNT; index++) {
+			outpw(probe_registers[index].port,
+				  ((legacy_u16)saved_registers[index] << 8) | probe_registers[index].index);
+		}
+		dos_video_fill(DOS_VIDEO_GRAPHICS_SEGMENT, 0, DOS_VIDEO_PACKED_SCREEN_WORDS);
+		video_write_mask = 255U;
+		video_read_plane = 255U;
+		return 0;
+	}
+	dos_video_set_write_planes(DOS_VIDEO_ALL_PLANES);
+	dos_video_fill(DOS_VIDEO_GRAPHICS_SEGMENT, 0, 32768U);
+	return 1;
+}
+
+void dos_video_show_page(legacy_u16 address)
+{
+	/* Start-address writes are latched at retrace. Wait for a fresh blanking
+	 * interval so the old visible page is safe to reuse when this returns. */
+	while ((inp(DOS_VIDEO_STATUS_PORT) & DOS_VIDEO_RETRACE_STATUS_BIT) != 0) {
+	}
+	outpw(DOS_VIDEO_VGA_CRTC_PORT, (address & 0xFF00U) | 0x0CU);
+	outpw(DOS_VIDEO_VGA_CRTC_PORT, (address << 8) | 0x0DU);
+	while ((inp(DOS_VIDEO_STATUS_PORT) & DOS_VIDEO_RETRACE_STATUS_BIT) == 0) {
+	}
+}
+
 void dos_video_set_mode4(void)
 {
 	mode4_active = 1U;

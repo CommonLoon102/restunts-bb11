@@ -6,6 +6,7 @@
 #include "physics_internal.h"
 #include "owoot.h"
 #include "restunts.h"
+#include "video_pages.h"
 #include "fileio.h"
 #include "fatal.h"
 #include "game_input.h"
@@ -357,6 +358,13 @@ void init_main(legacy_s16 argc, legacy_s8 *argv[])
 static void init_full_game(legacy_s16 argc, legacy_s8 *argv[])
 {
 	init_main(argc, argv);
+#ifdef RESTUNTS_HAS_VGA_PAGES
+	/* Dump tools call init_main and hash the packed mode-13h screen. */
+	if (startup_options.mode4_requested == 0) {
+		mouse_draw_opaque_check();
+		video_pages_initialize();
+	}
+#endif
 	init_div0();
 	init_row_tables();
 

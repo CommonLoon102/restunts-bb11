@@ -88,6 +88,10 @@ void dos_timer_shutdown(void);
 legacy_s16 dos_video_get_status(void);
 void dos_video_set_palette(legacy_u16 start, legacy_u16 count, legacy_u8 *palette);
 void dos_video_set_mode_13h(void);
+legacy_u8 dos_video_enable_planar_pages(void);
+void dos_video_set_write_planes(legacy_u8 mask);
+void dos_video_set_read_plane(legacy_u8 plane);
+void dos_video_show_page(legacy_u16 address);
 void dos_video_set_mode4(void);
 void dos_video_set_mode7(void);
 

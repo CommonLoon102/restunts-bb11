@@ -68,6 +68,9 @@ run_host_test test-startup math.c "$test_source_dir/owoot.c" \
 run_host_test test-credits legacy.c \
     "$test_source_dir/full_data.c" "$test_source_dir/full_strings.c" \
     "$test_source_dir/headless_data.c" -Wno-pointer-sign -Wno-missing-field-initializers
+run_host_test test-modal-dialogs menu_options.c \
+    "$test_source_dir/ui_dialog.c" "$test_source_dir/legacy.c" \
+    -DRESTUNTS_GIT_HASH='"0123456"' -Wno-pointer-sign
 run_host_test test-dashboard dashboard.c \
     "$test_source_dir/simd.c" "$test_source_dir/legacy.c" "$test_source_dir/full_data.c" \
     "$test_source_dir/full_strings.c" "$test_source_dir/headless_data.c" \
@@ -155,6 +158,12 @@ run_host_test test-shape2d-render shape2d.c \
     "$test_source_dir/shape2d_blit.c" "$test_source_dir/shape2d_resources.c" \
     "$test_source_dir/full_data.c" "$test_source_dir/resource.c" "$test_source_dir/legacy.c" \
     -Wno-pointer-sign -Wno-missing-braces -Wno-missing-field-initializers -Wno-unused-variable
+run_host_test test-video-pages video_pages.c -DRESTUNTS_VGA_TEST
+run_host_test test-shape2d-planar shape2d.c \
+    "$test_source_dir/shape2d_blit.c" "$test_source_dir/shape2d_resources.c" \
+    "$test_source_dir/full_data.c" "$test_source_dir/resource.c" "$test_source_dir/legacy.c" \
+    -DRESTUNTS_VGA_TEST -Wno-pointer-sign -Wno-missing-braces \
+    -Wno-missing-field-initializers -Wno-unused-variable
 run_host_test test-shape3d-raster shape3d_prerender.c \
     "$test_source_dir/shape3d_lines.c" "$test_source_dir/full_data.c" \
     "$test_source_dir/full_tables.c" "$test_source_dir/math.c" "$test_source_dir/legacy.c" \

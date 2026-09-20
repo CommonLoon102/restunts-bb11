@@ -18,6 +18,7 @@
 #include "audio_control.h"
 #include "car_resources.h"
 #include "externs.h"
+#include "video_pages.h"
 
 #define SKYBOX_RESOURCE_COUNT 5
 #define SKYBOX_RESOURCE_NAME_BYTES 9
@@ -163,6 +164,10 @@ static legacy_s16 setup_player_cars_impl(legacy_s16 load_dashboard_shapes)
 {
 	setup_legacy_penalty_route_word();
 	render_window_sprite = 0;
+	/* Dump tools retain their linear buffer and original resource layout. */
+	if (load_dashboard_shapes != 0) {
+		video_pages_begin_race();
+	}
 	ensure_file_exists(2);
 	shape3d_load_car_shapes(gameconfig.game_playercarid, ghost_is_active()
 															 ? (legacy_s8 *)ghost_car_id()
@@ -241,4 +246,5 @@ void free_player_cars(void)
 	mmgr_free(engptr);
 	mmgr_free(eng1ptr);
 	shape3d_free_car_shapes();
+	video_pages_end_race();
 }
