@@ -23,6 +23,7 @@ static unsigned int file_length, file_position;
 static unsigned int open_calls, close_calls, read_calls, resize_calls, copy_calls, fatal_calls;
 static unsigned int fail_open, fail_read, cached;
 static unsigned int allocated_paragraphs, resized_paragraphs;
+static unsigned int lookup_calls, release_calls, resource_file_kind, fail_read_after;
 static uint64_t trace_hash = UINT64_C(1469598103934665603);
 
 static void trace_word(unsigned int value)
@@ -84,6 +85,7 @@ void far *mmgr_get_chunk_by_name(const legacy_s8 *name)
 {
 	(void)name;
 	trace_word(2);
+	lookup_calls++;
 	return cached ? memory + 0x20000 : 0;
 }
 void far *mmgr_alloc_pages(const legacy_s8 *name, legacy_u16 paragraphs)
@@ -93,6 +95,11 @@ void far *mmgr_alloc_pages(const legacy_s8 *name, legacy_u16 paragraphs)
 	trace_word(paragraphs);
 	allocated_paragraphs = paragraphs;
 	return memory + 0x20000;
+}
+void mmgr_release(void far *pointer)
+{
+	assert(pointer == memory + 0x20000);
+	release_calls++;
 }
 legacy_u16 mmgr_resize_memory(legacy_u16 offset, legacy_u16 segment, legacy_u16 paragraphs)
 {
@@ -111,6 +118,12 @@ legacy_u16 dos_file_open(const legacy_s8 *name, legacy_s16 create)
 	trace_word(create);
 	open_calls++;
 	file_position = 0;
+	if (resource_file_kind == 1 && strstr((const char *)name, ".res") != 0) {
+		return 0;
+	}
+	if (resource_file_kind == 2 && strstr((const char *)name, ".pre") != 0) {
+		return 0;
+	}
 	return fail_open ? 0 : 1;
 }
 legacy_s16 dos_file_close(legacy_u16 handle)
@@ -153,7 +166,7 @@ legacy_s32 dos_file_tell(legacy_u16 handle)
 legacy_s16 dos_file_error(void)
 {
 	trace_word(10);
-	return fail_read;
+	return fail_read || (fail_read_after && read_calls >= fail_read_after);
 }
 void fatal_error(const legacy_s8 *format, ...)
 {
@@ -306,6 +319,10 @@ static void reset_file(void)
 	cached = 0;
 	allocated_paragraphs = 0;
 	resized_paragraphs = 0;
+	lookup_calls = 0;
+	release_calls = 0;
+	resource_file_kind = 0;
+	fail_read_after = 0;
 }
 
 static void test_file_passes(void)
@@ -511,6 +528,146 @@ static void test_rle_passes(void)
 	check_hash("RLE passes", UINT64_C(0x861032445c2d38b5));
 }
 
+/* Model the original workspace positions independently of the decoder. The
+ * loaded snapshot retains these bytes even when the extra storage is larger
+ * than the original four workspace paragraphs. */
+static unsigned int prepare_tail_model(unsigned int result_size, unsigned int tail_bytes)
+{
+	unsigned int rounded_size = (result_size + 15) / 16 * 16;
+	unsigned int original_workspace = rounded_size + 64;
+	unsigned int retained_size = rounded_size + (tail_bytes + 15) / 16 * 16;
+	unsigned int source = original_workspace - (file_length + 15) / 16 * 16;
+	memset(stage, 0, retained_size);
+	memcpy(stage + source, file_bytes, file_length);
+	return retained_size;
+}
+
+static void check_tail_snapshot(unsigned int retained_size)
+{
+	resource_file_kind = 1;
+	cached = 1;
+	unsigned int prior_lookups = lookup_calls;
+	legacy_u8 *result = file_load_resfile_with_tail("SNAPSHOT", 256);
+	assert(result == memory + 0x20000);
+	assert(lookup_calls == prior_lookups);
+	assert(allocated_paragraphs * 16 == retained_size);
+	assert(resized_paragraphs * 16 == retained_size);
+	assert(memcmp(result, stage, retained_size) == 0);
+	assert(result[retained_size] == 0xa5);
+	mmgr_release(result);
+	assert(release_calls == 1);
+}
+
+static void test_vle_resource_tail(void)
+{
+	legacy_u8 counts[1] = {2};
+	static const unsigned int lengths[] = {65, 65537};
+	for (unsigned int i = 0; i < sizeof(lengths) / sizeof(lengths[0]); i++) {
+		reset_file();
+		unsigned int length = lengths[i];
+		file_length = make_vle(file_bytes, counts, 1, length, 0, 1);
+		unsigned int retained_size = prepare_tail_model(length, 256);
+		memcpy(stage, expected, length + 1);
+		/* Leave a trimmed ordinary resource in the cache first. */
+		assert(file_decomp("SNAPSHOT.pre", 0) == memory + 0x20000);
+		assert(resized_paragraphs == (length + 15) / 16);
+		memset(memory + 0x20000, 0xa5, retained_size + 1);
+		check_tail_snapshot(retained_size);
+		assert(memory[0x20000 + length] == expected[length]);
+		assert(memory[0x20000 + length] != 0);
+		/* A second load must not inherit poison from the previous allocation. */
+		memset(memory + 0x20000, 0x3c, retained_size);
+		release_calls = 0;
+		check_tail_snapshot(retained_size);
+	}
+}
+
+static void test_rle_resource_tail(void)
+{
+	reset_file();
+	static const legacy_u8 encoded[] = {1, 5, 0, 0, 3, 0, 0, 0, 129, 0xe0, 0xe0, 7, 'Z'};
+	memcpy(file_bytes, encoded, sizeof(encoded));
+	file_length = sizeof(encoded);
+	unsigned int retained_size = prepare_tail_model(5, 256);
+	/* A final run deliberately writes beyond the declared output size. */
+	memset(stage, 'Z', 7);
+	check_tail_snapshot(retained_size);
+
+	reset_file();
+	static const legacy_u8 sequence[] = {1, 5, 0, 0, 4, 0, 0, 0, 2, 0xe0, 0xe1, 0xe1, 'A', 0xe1, 5};
+	memcpy(file_bytes, sequence, sizeof(sequence));
+	file_length = sizeof(sequence);
+	retained_size = prepare_tail_model(5, 256);
+	memset(stage, 'A', 5);
+	memmove(stage + 64, stage, 16);
+	check_tail_snapshot(retained_size);
+	assert(copy_calls == 1);
+}
+
+static void test_multipass_resource_tail(void)
+{
+	reset_file();
+	for (unsigned int i = 0; i < 16; i++) {
+		expected[i] = (legacy_u8)(31 + i * 7);
+	}
+	unsigned int inner_size = make_rle_literals(packed, expected, 16);
+	file_bytes[0] = 130;
+	write_size(file_bytes + 1, 16);
+	file_length = 4 + make_rle_literals(file_bytes + 4, packed, inner_size);
+	unsigned int retained_size = prepare_tail_model(16, 256);
+	memcpy(stage, packed, inner_size);
+	memmove(stage + 48, stage, 32);
+	memcpy(stage, expected, 16);
+	check_tail_snapshot(retained_size);
+	assert(copy_calls == 1);
+}
+
+static void test_binary_resource_tail(void)
+{
+	reset_file();
+	resource_file_kind = 2;
+	cached = 1;
+	file_length = 17;
+	for (unsigned int i = 0; i < file_length; i++) {
+		file_bytes[i] = (legacy_u8)(i * 3);
+	}
+	legacy_u8 *result = file_load_resfile_with_tail("SNAPSHOT", 256);
+	assert(result == memory + 0x20000);
+	assert(lookup_calls == 0 && allocated_paragraphs == 18);
+	assert(resize_calls == 0 && copy_calls == 0);
+	assert(memcmp(result, file_bytes, file_length) == 0);
+	for (unsigned int i = file_length; i < 288; i++) {
+		assert(result[i] == 0);
+	}
+	assert(result[288] == 0xa5);
+	mmgr_release(result);
+	assert(release_calls == 1);
+}
+
+static void test_resource_tail_errors(void)
+{
+	reset_file();
+	resource_file_kind = 1;
+	file_length = 16;
+	memset(file_bytes, 0, file_length);
+	file_bytes[0] = 3;
+	write_size(file_bytes + 1, 16);
+	assert(file_load_resfile_with_tail("INVALID", 256) == 0);
+	assert(release_calls == 1 && fatal_calls == 1);
+
+	for (unsigned int kind = 1; kind <= 2; kind++) {
+		reset_file();
+		resource_file_kind = kind;
+		file_length = 16;
+		memset(file_bytes, 0, file_length);
+		write_size(file_bytes + 1, 16);
+		/* Compressed files read the header before allocating their workspace. */
+		fail_read_after = kind == 1 ? 2 : 1;
+		assert(file_load_resfile_with_tail("UNREAD", 256) == 0);
+		assert(release_calls == 1 && fatal_calls == 1);
+	}
+}
+
 int main(void)
 {
 	test_vle();
@@ -518,6 +675,11 @@ int main(void)
 	test_file_vle();
 	test_mixed_passes();
 	test_rle_passes();
+	test_vle_resource_tail();
+	test_rle_resource_tail();
+	test_multipass_resource_tail();
+	test_binary_resource_tail();
+	test_resource_tail_errors();
 	puts("File decompression regression checks passed.");
 	return 0;
 }
