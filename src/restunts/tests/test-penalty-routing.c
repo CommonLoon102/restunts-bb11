@@ -150,8 +150,8 @@ int main(void)
 #ifdef PHYSICS_RECORD_BASELINE
 	fprintf(stdout, "%08lx\n", (unsigned long)hash);
 #else
-	/* Fingerprints captured from the pre-refactor implementation. */
-	assert(hash == 0xaca23d6bUL);
+	/* Deterministic inputs draw each random word once before signed conversion. */
+	assert(hash == 0xbfbfb6ddUL);
 #endif
 	return 0;
 }

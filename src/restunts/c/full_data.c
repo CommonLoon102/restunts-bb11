@@ -553,8 +553,12 @@ static void full_initialize_screen_sprite(struct SPRITE far *sprite)
 	sprite->sprite_reserved_word1 = 0;
 	sprite->sprite_reserved_word2 = 0;
 	sprite->sprite_reserved_word3 = 0;
+#ifdef RESTUNTS_SDL3
+	sprite->sprite_lineofs = (legacy_u8 *)full_screen_line_offsets;
+#else
 	sprite->sprite_lineofs = (legacy_u8 *)dos_memory_make_near_pointer(
 		dos_memory_pointer_offset(full_screen_line_offsets));
+#endif
 	sprite->sprite_left = 0;
 	sprite->sprite_right = 320;
 	sprite->sprite_top = 0;
@@ -574,7 +578,11 @@ void full_data_initialize(void)
 	for (legacy_u16 index = 0; index < WINDOW_DEFINITION_BUFFER_SIZE; index++) {
 		wnd_defs[index] = 0;
 	}
+#ifdef RESTUNTS_SDL3
+	next_wnd_def = (legacy_s8 *)wnd_defs;
+#else
 	next_wnd_def = (legacy_s8 *)dos_memory_make_near_pointer(dos_memory_pointer_offset(wnd_defs));
+#endif
 	full_initialize_screen_sprite(&drawing_sprite);
 	full_initialize_screen_sprite(&screen_sprite);
 }

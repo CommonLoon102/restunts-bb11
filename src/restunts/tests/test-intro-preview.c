@@ -295,6 +295,7 @@ static legacy_s8 title_data[3];
 static struct SPRITE intro_sprite;
 static unsigned input_polls, cancel_after, copy_backbuffer;
 static legacy_u16 random_value;
+static unsigned random_calls, timer_reads;
 
 void *file_load_3dres(const legacy_s8 *name)
 {
@@ -333,6 +334,7 @@ void sprite_free_wnd(struct SPRITE *sprite)
 }
 legacy_s16 get_kevinrandom(void)
 {
+	random_calls++;
 	random_value = (legacy_u16)(random_value * 25173U + 13849U);
 	record_word(25);
 	record_word(random_value & 255U);
@@ -375,6 +377,7 @@ void init_plantrak(void)
 }
 legacy_u32 timer_get_delta(void)
 {
+	timer_reads++;
 	record_word(32);
 	return 2;
 }
@@ -455,12 +458,17 @@ static void lifecycle_case(unsigned scenario)
 	cancel_after = cancellations[(scenario >> 2) & 3];
 	input_polls = 0;
 	random_value = 1;
+	random_calls = timer_reads = 0;
 	state.opponentstate.car_position.lx = 64000;
 	state.opponentstate.car_position.ly = 1280;
 	state.opponentstate.car_position.lz = 64000;
 	legacy_s8 interrupted = setup_intro();
 	assert(interrupted == (cancel_after != 0));
 	assert(input_polls > 0);
+	/* One RNG draw per axis of each of the 100 stars, and one elapsed-time
+	 * read per frame after the initial timer reset. */
+	assert(random_calls == 300U);
+	assert(timer_reads == input_polls + 1U);
 	record_word(interrupted);
 	record_word(input_polls);
 	record_word(random_value);
@@ -495,7 +503,8 @@ int main(void)
 	/* Captured from unmodified production at 43fba20d. */
 	assert(intro_hash == 0xcdcdbe61UL);
 	assert(preview_hash == 0x8ae71f07UL);
-	assert(lifecycle_hash == 0x89b10059UL);
+	/* Lifecycle now evaluates each RNG and timer operation exactly once. */
+	assert(lifecycle_hash == 0xa3183e31UL);
 #endif
 	return 0;
 }

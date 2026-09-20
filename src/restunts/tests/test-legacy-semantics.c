@@ -153,8 +153,28 @@ static void test_little_endian_access(void)
 		   TEST_SIGN_EXTENDED_LOW_WORD);
 }
 
+static void test_conversion_evaluates_once(void)
+{
+	legacy_u8 byte = LEGACY_U8_SIGN_BIT;
+	assert(LEGACY_S8_FROM_BITS(byte++) == -128);
+	assert(byte == LEGACY_U8_SIGN_BIT + 1U);
+	legacy_u16 word = LEGACY_U16_SIGN_BIT;
+	assert(LEGACY_S16_FROM_BITS(word++) == -32768);
+	assert(word == LEGACY_U16_SIGN_BIT + 1U);
+	legacy_u32 dword = LEGACY_U32_SIGN_BIT;
+	assert(LEGACY_S32_FROM_BITS(dword++) == (-2147483647L - 1L));
+	assert(dword == LEGACY_U32_SIGN_BIT + 1UL);
+
+	/* Replay startup shifts the next RNG byte; conversions must not draw a
+	 * second value when nested in arithmetic helpers. */
+	word = 29U;
+	assert(LEGACY_S16_SHL(word++, 3U) == 232);
+	assert(word == 30U);
+}
+
 int main(void)
 {
+	test_conversion_evaluates_once();
 	test_word_shifts_and_rotates();
 	test_dword_shifts_and_rotates();
 	test_multiply_and_divide();

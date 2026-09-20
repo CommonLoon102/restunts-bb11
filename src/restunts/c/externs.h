@@ -1,6 +1,12 @@
 #ifndef RESTUNTS_EXTERNS_H
 #define RESTUNTS_EXTERNS_H
 
+#ifdef RESTUNTS_SDL3
+/* Declare the host CRT before the legacy spelling aliases below. */
+#include <string.h>
+#include <stdlib.h>
+#endif
+
 /* The original timer shutdown restores INT 8 and the BIOS PIT divisor. */
 #ifdef RESTUNTS_ORIGINAL
 #define legacy_timer_shutdown audio_stop_unk
@@ -431,6 +437,11 @@ extern void sprite_set_target_clip_bounds(legacy_u16 left, legacy_u16 right, leg
 struct SPRITE;
 
 extern void timer_setup_interrupt(void);
+
+#ifdef RESTUNTS_SDL3
+/* MinGW's CRT exports _stricmp with a different return type and ABI. */
+#define _stricmp restunts_stricmp
+#endif
 
 extern void *_memcpy(void *, const void *, legacy_u16);
 extern legacy_s8 *_strcpy(legacy_s8 *dest, const legacy_s8 *src);

@@ -60,7 +60,7 @@
 #define STARTUP_PROJECTION_X 36
 #define STARTUP_PROJECTION_Y 17
 #define STARTUP_SHAPE_COUNT 116
-#define STARTUP_CAR_POSITION_Y_BITS 64696U
+#define STARTUP_CAR_POSITION_Y (-840)
 #define STARTUP_CAR_POSITION_Z 2880
 
 #define TRACK_PATH_STORAGE_SIZE 81
@@ -142,8 +142,7 @@ void set_default_car(void)
 struct RECTANGLE shaperect = {0, GAME_SCREEN_WIDTH, 0, GAME_SCREEN_HEIGHT};
 struct TRANSFORMEDSHAPE3D transshape;
 struct RECTANGLE cliprect = {0, GAME_SCREEN_WIDTH, 0, GAME_INITIAL_CLIP_BOTTOM};
-struct VECTOR carpos = {0, LEGACY_S16_FROM_BITS(STARTUP_CAR_POSITION_Y_BITS),
-						STARTUP_CAR_POSITION_Z}; // from the original
+struct VECTOR carpos = {0, STARTUP_CAR_POSITION_Y, STARTUP_CAR_POSITION_Z}; // from the original
 //struct VECTOR carpos = { 0, 0, GAME_SCREEN_WIDTH };
 
 struct SPRITE far *render_window_sprite;

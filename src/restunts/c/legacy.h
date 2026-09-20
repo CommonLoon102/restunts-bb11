@@ -68,14 +68,23 @@ legacy_s32 legacy_s32_div_or_zero(legacy_s32 numerator, legacy_s32 denominator);
 #define LEGACY_S8_FROM_BITS(value) ((legacy_s8)(legacy_u8)(value))
 #define LEGACY_S16_FROM_BITS(value) ((legacy_s16)(legacy_u16)(value))
 #else
-#define LEGACY_S8_FROM_BITS(value)                                                                 \
-	((legacy_u8)(value) <= LEGACY_S8_MAX                                                           \
-		 ? (legacy_s8)(legacy_u8)(value)                                                           \
-		 : (legacy_s8)(-1 - (legacy_s8)(LEGACY_U8_MAX - (legacy_u8)(value))))
-#define LEGACY_S16_FROM_BITS(value)                                                                \
-	((legacy_u16)(value) <= LEGACY_S16_MAX                                                         \
-		 ? (legacy_s16)(legacy_u16)(value)                                                         \
-		 : (legacy_s16)(-1 - (legacy_s16)(LEGACY_U16_MAX - (legacy_u16)(value))))
+/* Calls can carry stateful expressions such as get_kevinrandom(). Decode
+ * each value once; repeated macro evaluation changes replay simulation on
+ * flat-memory hosts even when the resulting integer is otherwise identical. */
+static inline legacy_s8 legacy_s8_from_bits(legacy_u8 value)
+{
+	return value <= LEGACY_S8_MAX ? (legacy_s8)value
+								  : (legacy_s8)(-1 - (legacy_s8)(LEGACY_U8_MAX - value));
+}
+
+static inline legacy_s16 legacy_s16_from_bits(legacy_u16 value)
+{
+	return value <= LEGACY_S16_MAX ? (legacy_s16)value
+								   : (legacy_s16)(-1 - (legacy_s16)(LEGACY_U16_MAX - value));
+}
+
+#define LEGACY_S8_FROM_BITS(value) legacy_s8_from_bits((legacy_u8)(value))
+#define LEGACY_S16_FROM_BITS(value) legacy_s16_from_bits((legacy_u16)(value))
 #endif
 
 #define LEGACY_U8_WRAP_ADD(left, right) ((legacy_u8)((legacy_u8)(left) + (legacy_u8)(right)))
@@ -172,10 +181,14 @@ legacy_s32 legacy_s32_div_or_zero(legacy_s32 numerator, legacy_s32 denominator);
 #if defined(RESTUNTS_DOS16)
 #define LEGACY_S32_FROM_BITS(value) ((legacy_s32)(legacy_u32)(value))
 #else
-#define LEGACY_S32_FROM_BITS(value)                                                                \
-	((legacy_u32)(value) <= (legacy_u32)LEGACY_S32_MAX                                             \
-		 ? (legacy_s32)(legacy_u32)(value)                                                         \
-		 : (legacy_s32)(-1 - (legacy_s32)((legacy_u32)LEGACY_U32_MAX - (legacy_u32)(value))))
+static inline legacy_s32 legacy_s32_from_bits(legacy_u32 value)
+{
+	return value <= (legacy_u32)LEGACY_S32_MAX
+			   ? (legacy_s32)value
+			   : (legacy_s32)(-1 - (legacy_s32)((legacy_u32)LEGACY_U32_MAX - value));
+}
+
+#define LEGACY_S32_FROM_BITS(value) legacy_s32_from_bits((legacy_u32)(value))
 #endif
 
 #define LEGACY_U32_SIGN_EXTEND_S16(value)                                                          \

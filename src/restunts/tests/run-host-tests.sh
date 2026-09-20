@@ -246,6 +246,7 @@ run_host_test test-gameplay-residue gamestep.c \
     -Wno-pointer-sign -Wno-sign-compare -Wno-missing-braces
 
 run_host_test test-pixldump-legacy-context ../pixldump/legacy_context.c
+run_host_test test-pixldump-native-context legacy.c
 
 run_host_test test-shape3d-render-residue shape3d.c \
     "$test_source_dir/full_data.c" "$test_source_dir/headless_data.c" \

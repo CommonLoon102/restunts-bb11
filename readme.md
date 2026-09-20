@@ -205,6 +205,11 @@ the tachometer. The stock value `0x0010` keeps both needles white, and
 
 ## How to build
 
+For the SDL3 game and both dump tools on **Windows, Linux, and 32-bit DOS**, see
+[the SDL3 build guide](docs/sdl3.md). It covers MinGW-w64, Linux x86/x64,
+optional builds without SSE2, and DJGPP/DPMI DOS. The instructions below retain
+the original Open Watcom 16-bit DOS build.
+
 The DOS compiler, assembler, and linker are Open Watcom 2, pinned to the official
 [2026-09-01 build](https://github.com/open-watcom/open-watcom-v2/releases/tag/2026-09-01-Build).
 The setup scripts verify its SHA256 and install into ignored `tools/watcom/`.

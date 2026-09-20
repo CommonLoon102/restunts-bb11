@@ -167,22 +167,27 @@ static legacy_u32 first_edge_fingerprint(legacy_s16 clipping_mode)
 int main(void)
 {
 	/* Baseline fingerprints cover all modes, fractional carry boundaries,
-	 * wrapping x positions, initial spans, side selection, and clip padding. */
-	static const legacy_u32 expected[4] = {3952767847UL, 3776761818UL, 2277527079UL, 3172452562UL};
+	 * wrapping x positions, initial spans, side selection, and clip padding.
+	 * Each random input is evaluated once when converted to its signed value. */
+	static const legacy_u32 expected[4] = {0x34eedc0bUL, 0x345f7697UL, 0x086138edUL, 0xded71e9cUL};
 
 	test_row_selection();
 	test_final_x_major_carry();
 	test_clip_padding();
 	for (unsigned i = 0; i < 4; i++) {
+#ifdef PRERENDER_RECORD_BASELINE
+		fprintf(stdout, "edge%u=%08lx\n", i, (unsigned long)edge_fingerprint(i & 1U, i >> 1U));
+#else
 		assert(edge_fingerprint(i & 1U, i >> 1U) == expected[i]);
+#endif
 	}
 #ifdef PRERENDER_RECORD_BASELINE
 	fprintf(stdout, "%08lx %08lx\n", (unsigned long)first_edge_fingerprint(0),
 			(unsigned long)first_edge_fingerprint(1));
 #else
-	/* Pre-refactor first-edge baselines include untouched rows and clipping padding. */
-	assert(first_edge_fingerprint(0) == 0x8ca17529UL);
-	assert(first_edge_fingerprint(1) == 0xee8ca9ecUL);
+	/* First-edge baselines include untouched rows and clipping padding. */
+	assert(first_edge_fingerprint(0) == 0xa0fcb7b7UL);
+	assert(first_edge_fingerprint(1) == 0x169f0188UL);
 #endif
 	return 0;
 }

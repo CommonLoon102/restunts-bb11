@@ -70,7 +70,7 @@
 #define FRAME_HILL_FILL_COUNT_ROW 2
 #define FRAME_HILL_FILL_COUNT_COLUMN 2
 #define FRAME_HILL_FILL_COUNT_BOTH 4
-#define FRAME_HILL_FILL_SHAPE_RESOURCE_OFFSET 946U
+#define FRAME_HILL_FILL_SHAPE_INDEX 43U
 #define FRAME_SINGLE_TILE_TRANSFORM_DISTANCE 2048
 #define FRAME_NO_DEPTH_SORT_FLAG 1U
 #define FRAME_WHEEL_SORT_ADJUSTMENT 1024
@@ -78,9 +78,7 @@
 #define FRAME_CHECKPOINT_TRACK_OBJECT_BASE 212U
 #define FRAME_CHECKPOINT_OWNER_OFFSET 2
 #define FRAME_CHECKPOINT_TRANSFORM_DISTANCE 100
-#define FRAME_PLAYER_SHAPE_RESOURCE_OFFSET 2772U
-#define FRAME_OPPONENT_SHAPE_RESOURCE_OFFSET 2794U
-#define FRAME_START_FLAG_RESOURCE_OFFSET 2442U
+#define FRAME_START_FLAG_SHAPE_INDEX 111U
 #define FRAME_START_FLAG_RADIUS 36
 #define FRAME_START_FLAG_CENTER_Z 56
 #define FRAME_START_FLAG_FAR_OFFSET 438
@@ -1236,8 +1234,7 @@ static legacy_s16 frame_draw_hill_fill(const struct FRAME_TILE *tile,
 			currenttransshape->pos.y = tile->position.y;
 			currenttransshape->pos.z = LEGACY_S16_WRAP_ADD(*hill_fill_offsets, tile->position.z);
 			hill_fill_offsets++;
-			currenttransshape->shapeptr =
-				&game3dshapes[FRAME_HILL_FILL_SHAPE_RESOURCE_OFFSET / sizeof(struct SHAPE3D)];
+			currenttransshape->shapeptr = &game3dshapes[FRAME_HILL_FILL_SHAPE_INDEX];
 			currenttransshape->rectptr = &frame_sorted_shapes_rect;
 			currenttransshape->ts_flags =
 				redraw_transform_flags | FRAME_TRANSFORM_FLAGS_NO_DEPTH_SORT;
@@ -1368,10 +1365,9 @@ static void frame_animate_start_flag(void)
 	struct VECTOR start_flag_vertices[FRAME_START_FLAG_VERTEX_COUNT];
 	for (legacy_u16 vertex_index = 0; vertex_index < FRAME_START_FLAG_VERTEX_COUNT;
 		 vertex_index++) {
-		shape3d_vertex_read(
-			&game3dshapes[FRAME_START_FLAG_RESOURCE_OFFSET / sizeof(struct SHAPE3D)],
-			LEGACY_U16_WRAP_ADD(FRAME_START_FLAG_FIRST_VERTEX, vertex_index),
-			&start_flag_vertices[vertex_index]);
+		shape3d_vertex_read(&game3dshapes[FRAME_START_FLAG_SHAPE_INDEX],
+							LEGACY_U16_WRAP_ADD(FRAME_START_FLAG_FIRST_VERTEX, vertex_index),
+							&start_flag_vertices[vertex_index]);
 	}
 	start_flag_vertices[FRAME_START_FLAG_VERTEX_LEFT_NEAR].x =
 		LEGACY_S16_WRAP_SUB(flag_x, FRAME_START_FLAG_RADIUS);
@@ -1388,10 +1384,9 @@ static void frame_animate_start_flag(void)
 	start_flag_vertices[FRAME_START_FLAG_VERTEX_RIGHT_FAR].z = flag_z;
 	for (legacy_u16 vertex_index = 0; vertex_index < FRAME_START_FLAG_VERTEX_COUNT;
 		 vertex_index++) {
-		shape3d_vertex_write(
-			&game3dshapes[FRAME_START_FLAG_RESOURCE_OFFSET / sizeof(struct SHAPE3D)],
-			LEGACY_U16_WRAP_ADD(FRAME_START_FLAG_FIRST_VERTEX, vertex_index),
-			&start_flag_vertices[vertex_index]);
+		shape3d_vertex_write(&game3dshapes[FRAME_START_FLAG_SHAPE_INDEX],
+							 LEGACY_U16_WRAP_ADD(FRAME_START_FLAG_FIRST_VERTEX, vertex_index),
+							 &start_flag_vertices[vertex_index]);
 	}
 }
 
@@ -1426,8 +1421,7 @@ static void frame_add_start_flag(const struct FRAME_TILE *tile, const struct FRA
 					track_row_centers[start_finish_row]),
 				camera->position.z);
 
-			curtransshape_ptr->shapeptr =
-				&game3dshapes[FRAME_START_FLAG_RESOURCE_OFFSET / sizeof(struct SHAPE3D)];
+			curtransshape_ptr->shapeptr = &game3dshapes[FRAME_START_FLAG_SHAPE_INDEX];
 			curtransshape_ptr->rectptr = &frame_sorted_shapes_rect;
 			curtransshape_ptr->ts_flags = redraw_transform_flags | FRAME_TRANSFORM_FLAGS_DEFAULT;
 			curtransshape_ptr->rotvec.x = 0;
@@ -1617,11 +1611,10 @@ static void frame_add_tile_cars(const struct FRAME_TILE *tile, const struct FRAM
 		(cars[PLAYER_CAR_INDEX].south == tile->south ||
 		 cars[PLAYER_CAR_INDEX].south == tile->last_south)) {
 		frame_add_car(&state.playerstate, PLAYER_CAR_INDEX, FRAME_PLAYER_SORT_ID,
-					  &game3dshapes[FRAME_PLAYER_SHAPE_RESOURCE_OFFSET / sizeof(struct SHAPE3D)],
-					  player_wheel_vertex_state, player_base_wheel_vertices,
-					  player_front_wheel_centers, &frame_player_car_rect,
-					  &cars[PLAYER_CAR_INDEX].crash_rect, &camera->position, tile->detail,
-					  redraw_transform_flags, gameconfig.game_playermaterial,
+					  &game3dshapes[PLAYER_CAR_WHEEL_SHAPE], player_wheel_vertex_state,
+					  player_base_wheel_vertices, player_front_wheel_centers,
+					  &frame_player_car_rect, &cars[PLAYER_CAR_INDEX].crash_rect, &camera->position,
+					  tile->detail, redraw_transform_flags, gameconfig.game_playermaterial,
 					  cars[PLAYER_CAR_INDEX].depth_adjustment & tile->depth_mask);
 	}
 
@@ -1634,15 +1627,13 @@ static void frame_add_tile_cars(const struct FRAME_TILE *tile, const struct FRAM
 				return;
 			}
 			legacy_s8 ghost_flag = gameconfig.game_opponenttype == 0 ? SHAPE3D_GHOST_FLAG : 0;
-			frame_add_car(
-				second_car, OPPONENT_CAR_INDEX, FRAME_OPPONENT_SORT_ID,
-				&game3dshapes[FRAME_OPPONENT_SHAPE_RESOURCE_OFFSET / sizeof(struct SHAPE3D)],
-				opponent_wheel_vertex_state, opponent_base_wheel_vertices,
-				opponent_front_wheel_centers, &frame_opponent_car_rect,
-				&cars[OPPONENT_CAR_INDEX].crash_rect, &camera->position, tile->detail,
-				redraw_transform_flags | ghost_flag,
-				ghost_flag != 0 ? ghost_car_material() : gameconfig.game_opponentmaterial,
-				cars[OPPONENT_CAR_INDEX].depth_adjustment & tile->depth_mask);
+			frame_add_car(second_car, OPPONENT_CAR_INDEX, FRAME_OPPONENT_SORT_ID,
+						  &game3dshapes[OPPONENT_CAR_WHEEL_SHAPE], opponent_wheel_vertex_state,
+						  opponent_base_wheel_vertices, opponent_front_wheel_centers,
+						  &frame_opponent_car_rect, &cars[OPPONENT_CAR_INDEX].crash_rect,
+						  &camera->position, tile->detail, redraw_transform_flags | ghost_flag,
+						  ghost_flag != 0 ? ghost_car_material() : gameconfig.game_opponentmaterial,
+						  cars[OPPONENT_CAR_INDEX].depth_adjustment & tile->depth_mask);
 		}
 	}
 }

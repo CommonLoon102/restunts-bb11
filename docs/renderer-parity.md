@@ -152,6 +152,26 @@ caller parameters carry these values through the C simulation.
 
 ## Caller and address calculation
 
+The SDL3 dump tool uses a logical DOS context independent of native pointers,
+ASLR, executable paths and 32/64-bit builds. Its default PSP is `0x028e`, and
+its logical program path is `C:\PIXLDUMP.EXE`, matching the archived ABI trace.
+The native validation script measures the PSP of its DOSBox environment
+automatically. When comparing with a reference launched elsewhere, set `RESTUNTS_ORACLE_PSP_SEGMENT` (decimal or
+`0x` hexadecimal) and `RESTUNTS_ORACLE_PROGRAM_PATH` to that reference's
+values. Replay arguments still contribute their actual lengths. Resource
+sizes continue to determine the logical polygon-buffer segment.
+
+Native file handles reserve DOS handles 0 through 4, so the first opened
+output file has handle 5, preserving the dump loop's SI residue. Native
+signed-bit conversions evaluate their argument once, including nested
+arithmetic: drawing another random byte or reading another input event while
+converting a value changes gameplay even if the final word has the same type.
+
+Runtime shape records contain native pointers and grow on 64-bit hosts. Scene
+selection therefore uses resource indices, including the hill filler, animated
+start flag and car wheels; it never divides DOS byte offsets by the native
+record size. Packed resource data still uses its explicit DOS field widths.
+
 `pixldump/legacy_context.c` describes the original Borland executable's ABI, not a
 particular replay. It derives the load segment from the DOS PSP and calculates
 original stack placement from the executable path and decoded argument lengths.

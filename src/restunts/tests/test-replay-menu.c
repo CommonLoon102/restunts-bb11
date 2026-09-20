@@ -525,12 +525,13 @@ static void test_save_cleanup(void)
 	menu_action = REPLAY_PAUSE_ACTION_SAVE;
 	scenario = 3;
 	replay_pause_menu();
-	assert(save_count == 1 && write_count == 0 && dialog_count == 4 && g_is_busy == 0);
+	/* The pause menu and overwrite question are each displayed once. */
+	assert(save_count == 1 && write_count == 0 && dialog_count == 2 && g_is_busy == 0);
 	reset_viewer();
 	menu_action = REPLAY_PAUSE_ACTION_SAVE;
 	scenario = 5;
 	replay_pause_menu();
-	assert(save_count == 2 && write_count == 1 && dialog_count == 3 && g_is_busy == 0);
+	assert(save_count == 2 && write_count == 1 && dialog_count == 2 && g_is_busy == 0);
 }
 
 static void test_ghost_view_display_option(void)
@@ -582,7 +583,7 @@ int main(void)
 #ifdef REPLAY_MENU_BASELINE
 	printf("%08lx %08lx\n", (unsigned long)menu, (unsigned long)draw);
 #else
-	assert(menu == 0x393def8eUL);
+	assert(menu == 0xd57320a8UL);
 	assert(draw == 0x9b2a836aUL);
 #endif
 	return 0;

@@ -1,0 +1,253 @@
+name: SDL3 builds
+
+on:
+  pull_request:
+  push:
+    branches: [master, main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  desktop:
+    name: ${{ matrix.name }}
+    runs-on: ubuntu-24.04
+    container: debian:12
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: linux-x64
+            os: linux
+            arch: amd64
+            toolchain: ''
+            sse2: 'ON'
+          - name: linux-x86
+            os: linux
+            arch: i386
+            toolchain: linux-x86
+            sse2: 'ON'
+          - name: linux-x86-no-sse2
+            os: linux
+            arch: i386
+            toolchain: linux-x86
+            sse2: 'OFF'
+          - name: windows-x64
+            os: windows
+            toolchain: mingw-x64
+            sse2: 'ON'
+          - name: windows-x86
+            os: windows
+            toolchain: mingw-x86
+            sse2: 'ON'
+          - name: windows-x86-no-sse2
+            os: windows
+            toolchain: mingw-x86
+            sse2: 'OFF'
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Install Debian 12 build tools
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends build-essential cmake ninja-build \
+            git curl ca-certificates pkg-config python3 unzip
+      - uses: actions/checkout@v7
+      - name: Fetch the game assets used by existing DOS CI
+        if: matrix.os == 'linux'
+        run: |
+          curl --fail --location --retry 3 \
+            https://github.com/CommonLoon102/restunts4d-oracles/releases/download/v1.0.1/BB11.zip \
+            -o /tmp/BB11.zip
+          unzip -oq /tmp/BB11.zip -d stunts
+      - name: Install Linux driver development libraries
+        if: matrix.os == 'linux'
+        env:
+          TARGET_ARCH: ${{ matrix.arch }}
+        run: |
+          if [ "$TARGET_ARCH" = i386 ]; then
+            dpkg --add-architecture i386
+            apt-get update
+            apt-get install -y --no-install-recommends gcc-multilib
+          fi
+          apt-get install -y --no-install-recommends \
+            "libasound2-dev:$TARGET_ARCH" "libpulse-dev:$TARGET_ARCH" \
+            "libx11-dev:$TARGET_ARCH" "libxext-dev:$TARGET_ARCH" \
+            "libxrandr-dev:$TARGET_ARCH" "libxcursor-dev:$TARGET_ARCH" \
+            "libxi-dev:$TARGET_ARCH" "libxfixes-dev:$TARGET_ARCH" \
+            "libxss-dev:$TARGET_ARCH" "libxtst-dev:$TARGET_ARCH" "libwayland-dev:$TARGET_ARCH" \
+            "libxkbcommon-dev:$TARGET_ARCH" "libudev-dev:$TARGET_ARCH" \
+            "libdrm-dev:$TARGET_ARCH" "libgbm-dev:$TARGET_ARCH" \
+            "libegl1-mesa-dev:$TARGET_ARCH" "libgl1-mesa-dev:$TARGET_ARCH"
+      - name: Install MinGW-w64
+        if: matrix.os == 'windows'
+        run: apt-get install -y --no-install-recommends mingw-w64
+      - name: Configure
+        env:
+          TARGET_TOOLCHAIN: ${{ matrix.toolchain }}
+          TARGET_SSE2: ${{ matrix.sse2 }}
+        run: |
+          toolchain_args=()
+          if [ -n "$TARGET_TOOLCHAIN" ]; then
+            toolchain_args+=("-DCMAKE_TOOLCHAIN_FILE=cmake/toolchains/$TARGET_TOOLCHAIN.cmake")
+          fi
+          cmake -S . -B build/sdl3 -G Ninja -DCMAKE_BUILD_TYPE=Release \
+            -DRESTUNTS_BUILD_TESTS=ON -DRESTUNTS_SSE2="$TARGET_SSE2" "${toolchain_args[@]}"
+      - name: Build game and both dump tools
+        run: cmake --build build/sdl3 --parallel 2
+      - name: Run native regressions
+        if: matrix.os == 'linux'
+        env:
+          SDL_VIDEODRIVER: dummy
+          SDL_AUDIODRIVER: dummy
+        run: ctest --test-dir build/sdl3 --output-on-failure
+      - name: Compare a replay sample with archived DOS oracles
+        if: matrix.name == 'linux-x64'
+        run: |
+          apt-get install -y --no-install-recommends dosbox
+          python3 tools/scripts/validate-native.py --build-directory build/sdl3 \
+            --output out/sdl3-oracle-sample --count 3
+      - name: Collect binaries and licenses
+        env:
+          TARGET_OS: ${{ matrix.os }}
+        run: |
+          mkdir -p artifacts/licenses
+          extension=''
+          if [ "$TARGET_OS" = windows ]; then
+            extension='.exe'
+          fi
+          for program in restunts repldump pixldump; do
+            cp "build/sdl3/$program$extension" artifacts/
+          done
+          cp third_party/emu8950/LICENSE artifacts/licenses/emu8950-LICENSE
+          cp build/sdl3/_deps/sdl3-src/LICENSE.txt artifacts/licenses/SDL-LICENSE.txt
+          cp docs/sdl3.md artifacts/BUILD-AND-RUN.md
+      - uses: actions/upload-artifact@v7
+        with:
+          name: restunts-sdl3-${{ matrix.name }}
+          path: artifacts/
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v7
+        if: matrix.os == 'windows'
+        with:
+          name: restunts-sdl3-tests-${{ matrix.name }}
+          path: build/sdl3/test-sdl3-*.exe
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v7
+        if: always() && matrix.name == 'linux-x64'
+        with:
+          name: sdl3-oracle-sample
+          path: |
+            out/sdl3-oracle-sample/*.json
+            out/sdl3-oracle-sample/*.log
+            out/sdl3-oracle-sample/*.txt
+            out/sdl3-oracle-sample/game/*.BIN
+            out/sdl3-oracle-sample/game/*.BNI
+            out/sdl3-oracle-sample/game/*.PDO
+            out/sdl3-oracle-sample/game/*.PDD
+          if-no-files-found: ignore
+
+  windows-smoke:
+    name: Windows ${{ matrix.arch }} native regressions
+    needs: desktop
+    runs-on: windows-2022
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [x64, x86, x86-no-sse2]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/download-artifact@v8
+        with:
+          name: restunts-sdl3-windows-${{ matrix.arch }}
+          path: native
+      - uses: actions/download-artifact@v8
+        with:
+          name: restunts-sdl3-tests-windows-${{ matrix.arch }}
+          path: native-tests
+      - name: Fetch the game assets used by existing DOS CI
+        shell: pwsh
+        run: |
+          $archive = Join-Path $env:RUNNER_TEMP 'BB11.zip'
+          Invoke-WebRequest `
+            -Uri 'https://github.com/CommonLoon102/restunts4d-oracles/releases/download/v1.0.1/BB11.zip' `
+            -OutFile $archive
+          Expand-Archive -Path $archive -DestinationPath stunts -Force
+      - name: Run platform, file I/O, input and audio regressions on Windows
+        shell: pwsh
+        env:
+          SDL_VIDEODRIVER: dummy
+          SDL_AUDIODRIVER: dummy
+        run: |
+          $root = (Get-Location).Path
+          New-Item -ItemType Directory -Path fixture -Force | Out-Null
+          Push-Location fixture
+          try {
+            foreach ($test in @('platform', 'fileio', 'input')) {
+              & "$root/native-tests/test-sdl3-$test.exe"
+              if ($LASTEXITCODE -ne 0) { throw "$test failed: $LASTEXITCODE" }
+            }
+            & "$root/native-tests/test-sdl3-audio.exe" "$root/stunts/ADSKIDMS.VCE"
+            if ($LASTEXITCODE -ne 0) { throw "audio failed: $LASTEXITCODE" }
+          } finally {
+            Pop-Location
+          }
+      - name: Run physics and renderer tools on Windows
+        shell: pwsh
+        env:
+          SDL_VIDEODRIVER: dummy
+          SDL_AUDIODRIVER: dummy
+        run: |
+          & ./native/repldump.exe --data-dir stunts DEFAULT.RPL
+          if ($LASTEXITCODE -ne 0) { throw "repldump failed: $LASTEXITCODE" }
+          & ./native/pixldump.exe --data-dir stunts DEFAULT.RPL 2 0 5
+          if ($LASTEXITCODE -ne 0) { throw "pixldump failed: $LASTEXITCODE" }
+          if (-not (Test-Path stunts/DEFAULT.2.0.5.PDD.bmp)) { throw 'Missing renderer BMP' }
+
+  dos:
+    name: DOS DJGPP
+    runs-on: ubuntu-24.04
+    container: debian:12
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Install build tools
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends build-essential cmake ninja-build \
+            git curl ca-certificates bzip2 libfl2
+      - uses: actions/checkout@v7
+      - name: Install pinned DJGPP GCC 12.2.0
+        run: |
+          curl --fail --location --retry 3 \
+            https://github.com/andrewwutw/build-djgpp/releases/download/v3.4/djgpp-linux64-gcc1220.tar.bz2 \
+            -o /tmp/djgpp.tar.bz2
+          printf '%s  %s\n' 8464f17017d6ab1b2bb2df4ed82357b5bf692e6e2b7fee37e315638f3d505f00 \
+            /tmp/djgpp.tar.bz2 | sha256sum -c -
+          mkdir -p /opt/djgpp
+          tar -xjf /tmp/djgpp.tar.bz2 -C /opt/djgpp --strip-components=1
+          echo /opt/djgpp/bin >> "$GITHUB_PATH"
+      - name: Configure and build all DOS tools
+        run: |
+          cmake -S . -B build/sdl3-dos -G Ninja -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_TOOLCHAIN_FILE=cmake/toolchains/djgpp.cmake -DRESTUNTS_BUILD_TESTS=OFF
+          cmake --build build/sdl3-dos --parallel 2
+      - name: Collect DOS executables and SDL license
+        run: |
+          mkdir -p artifacts/licenses
+          for program in restunts repldump pixldump; do
+            cp "build/sdl3-dos/$program.exe" artifacts/
+          done
+          cp build/sdl3-dos/_deps/sdl3-src/LICENSE.txt artifacts/licenses/SDL-LICENSE.txt
+          cp docs/sdl3.md artifacts/BUILD-AND-RUN.md
+      - uses: actions/upload-artifact@v7
+        with:
+          name: restunts-sdl3-dos
+          path: artifacts/
+          if-no-files-found: error

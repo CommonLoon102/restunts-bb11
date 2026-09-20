@@ -5,15 +5,6 @@
 #include <setjmp.h>
 #include <stdarg.h>
 #include "../c/legacy.h"
-/* DOS int is 16 bits. Promote short va_arg reads in this host-only fixture
- * so the unchanged DOS implementation can be compared with default-promoted
- * host arguments. Both baseline and refactored implementations use this shim. */
-#undef va_arg
-#define va_arg(arguments, type)                                                                    \
-	((type) __builtin_va_arg(arguments, __typeof__(__builtin_choose_expr(                          \
-											__builtin_types_compatible_p(type, legacy_s16) ||      \
-												__builtin_types_compatible_p(type, legacy_u16),    \
-											(int)0, (type)0))))
 #include "../c/fatal.c"
 #undef printf
 #undef memcpy

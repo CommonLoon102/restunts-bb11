@@ -88,7 +88,7 @@ void shape3d_update_car_wheel_vertices(struct SHAPE3D *shape, legacy_u16 first_v
 									   legacy_s16 *cached_wheel_state, struct VECTOR *base_vertices,
 									   struct VECTOR *front_wheel_centers)
 {
-	assert(shape == &game3dshapes[FRAME_OPPONENT_SHAPE_RESOURCE_OFFSET / sizeof(struct SHAPE3D)]);
+	assert(shape == &game3dshapes[127]);
 	assert(first_vertex == FRAME_STEERED_WHEEL_FIRST_VERTEX);
 	assert(steering_angle == ghost_fixture.car_steeringAngle);
 	assert(suspension_offsets == ghost_fixture.car_suspension_deflection);
@@ -175,7 +175,7 @@ legacy_u16 shape3d_transform_and_queue(struct TRANSFORMEDSHAPE3D *shape)
 
 void shape3d_vertex_read(const struct SHAPE3D *shape, legacy_u16 index, struct VECTOR *destination)
 {
-	assert(shape == &game3dshapes[FRAME_START_FLAG_RESOURCE_OFFSET / sizeof(struct SHAPE3D)]);
+	assert(shape == &game3dshapes[111]);
 	trace_word(5);
 	trace_word(index);
 	*destination = flag_vertices[index - FRAME_START_FLAG_FIRST_VERTEX];
@@ -183,7 +183,7 @@ void shape3d_vertex_read(const struct SHAPE3D *shape, legacy_u16 index, struct V
 
 void shape3d_vertex_write(struct SHAPE3D *shape, legacy_u16 index, const struct VECTOR *source)
 {
-	assert(shape == &game3dshapes[FRAME_START_FLAG_RESOURCE_OFFSET / sizeof(struct SHAPE3D)]);
+	assert(shape == &game3dshapes[111]);
 	trace_word(6);
 	trace_word(index);
 	trace_vector(source);
@@ -714,9 +714,14 @@ int main(void)
 	test_terrain_exhaustion();
 	test_sorted_shapes();
 	test_track_elements_and_flags();
-	/* Captured before extraction: camera modes, tile selection, queue exhaustion,
-	 * sorted brake paint, component geometry and animated start-flag vertices. */
-	assert(trace_hash == UINT64_C(0xcf35ecd7319fcd5c));
+	/* The model indices match the DOS resource table independently of native
+	 * pointer width: camera modes, tile selection, queue exhaustion, sorted
+	 * brake paint, component geometry and animated start-flag vertices. */
+#ifdef FRAME_RECORD_BASELINE
+	printf("Frame rendering fingerprint: %016llx\n", (unsigned long long)trace_hash);
+#else
+	assert(trace_hash == UINT64_C(0x1f0a24dd55dcfc37));
+#endif
 	test_ghost_uses_independent_visual_state();
 	test_ghost_camera_modes();
 	test_supersight_selection();

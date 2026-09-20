@@ -1,3 +1,7 @@
+#ifdef RESTUNTS_SDL3
+#include <stdlib.h>
+#endif
+
 #include "legacy_context.h"
 #include "../c/platform.h"
 #include "../c/externs.h"
@@ -18,12 +22,34 @@
 #define PIXLDUMP_LEGACY_IMAGE_PARAGRAPHS 14822U
 #define PIXLDUMP_DOS_MCB_PARAGRAPHS 1U
 
+#ifdef RESTUNTS_SDL3
+/* The archived oracle runs at the root of the mounted DOS drive. Native
+ * addresses cannot reproduce its stack and resource-segment residue. Keep
+ * that logical DOS context independent of host ASLR, argv[0], and bitness.
+ * The overrides permit comparison with an oracle launched under another
+ * DOS environment without changing the renderer or replay. */
+#define PIXLDUMP_NATIVE_ORACLE_PSP_SEGMENT 654U
+#define PIXLDUMP_NATIVE_ORACLE_PROGRAM_PATH "C:\\PIXLDUMP.EXE"
+#endif
+
 static legacy_u16 pixldump_dos_psp_segment(void)
 {
+#ifdef RESTUNTS_SDL3
+	const char *setting = getenv("RESTUNTS_ORACLE_PSP_SEGMENT");
+	if (setting != 0 && setting[0] != 0) {
+		char *end;
+		unsigned long value = strtoul(setting, &end, 0);
+		if (*end == 0 && value > 0 && value <= LEGACY_U16_MAX) {
+			return (legacy_u16)value;
+		}
+	}
+	return PIXLDUMP_NATIVE_ORACLE_PSP_SEGMENT;
+#else
 	/* This project's DOS adapter returns DS:PSP-segment, following the original
 	 * mmgr interface. The offset word, rather than the pointer, identifies PSP. */
 	void far *psp_reference = dos_memory_get_psp();
 	return psp_reference == 0 ? 0 : dos_memory_pointer_offset(psp_reference);
+#endif
 }
 
 legacy_u16 pixldump_legacy_load_segment(void)
@@ -86,6 +112,13 @@ static legacy_u16 pixldump_argument_length(const legacy_s8 *argument)
 
 static legacy_u16 pixldump_dos_program_path_length(void)
 {
+#ifdef RESTUNTS_SDL3
+	const char *setting = getenv("RESTUNTS_ORACLE_PROGRAM_PATH");
+	if (setting == 0 || setting[0] == 0) {
+		setting = PIXLDUMP_NATIVE_ORACLE_PROGRAM_PATH;
+	}
+	return pixldump_argument_length((const legacy_s8 *)setting);
+#else
 	legacy_u16 psp_segment = pixldump_dos_psp_segment();
 	if (psp_segment == 0) {
 		return 0;
@@ -131,6 +164,7 @@ static legacy_u16 pixldump_dos_program_path_length(void)
 		}
 	}
 	return 0;
+#endif
 }
 
 legacy_s16 pixldump_legacy_argv_si(legacy_s16 argc, legacy_s8 *argv[])

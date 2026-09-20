@@ -94,7 +94,7 @@ const legacy_s8 *mmgr_path_to_name(const legacy_s8 *filename)
 {
 	const legacy_s8 *result = filename;
 	for (const legacy_s8 *c = filename; *c; c++) {
-		if (*c == ':' || *c == '\\') {
+		if (*c == ':' || *c == '\\' || *c == '/') {
 			result = c + 1;
 		}
 	}

@@ -1,3 +1,6 @@
+#ifdef RESTUNTS_SDL3
+#include "../platform/sdl3/sdl3.h"
+#endif
 #include "dashboard.h"
 #include "fileio.h"
 #include "game_input.h"
@@ -335,6 +338,9 @@ static void race_update_viewport(struct RACE_VIEWPORT_CACHE *cache, legacy_s16 r
 
 static void race_draw_frame(void)
 {
+#ifdef RESTUNTS_SDL3
+	sdl3_video_begin_frame();
+#endif
 	if (full_redraw_frames_remaining != 0) {
 		replay_controls_drawn[dashboard_buffer_index] = 0;
 		if (dashboard_visible != 0) {
@@ -390,6 +396,9 @@ static void race_draw_frame(void)
 		mouse_draw_transparent_check();
 	}
 	frame_fps_record_presented();
+#ifdef RESTUNTS_SDL3
+	sdl3_video_end_frame();
+#endif
 }
 
 static void race_handle_driving_input(void)
@@ -451,6 +460,12 @@ static legacy_u16 race_frame_is_ready(legacy_s16 *last_processed_frame)
 	if (game_replay_mode == REPLAY_MODE_LIVE && race_exit_request == 0 &&
 		state.game_inputmode != GAME_INPUT_MODE_WAITING) {
 		if (*last_processed_frame == state.game_frame) {
+#ifdef RESTUNTS_SDL3
+			/* Timer callbacks are dispatched on this thread. Yield while waiting
+			 * for the next input sample, then deliver elapsed 100 Hz ticks. */
+			SDL_Delay(1);
+			sdl3_platform_pump();
+#endif
 			return 0;
 		}
 		*last_processed_frame = state.game_frame;

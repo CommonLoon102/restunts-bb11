@@ -16,7 +16,11 @@ extern legacy_s8 window_row_table_overflow_message[];
 extern legacy_s8 video_window_resource_name[];
 extern legacy_s8 window_release_order_message[];
 /* Reserved seg012 storage: SPRITE structs followed by line offsets. */
+#ifdef RESTUNTS_SDL3
+extern legacy_u8 wnd_defs[];
+#else
 extern legacy_u8 *far wnd_defs;
+#endif
 /* Near pointer relative to seg012 for the current SPRITE in wnd_defs. */
 extern legacy_s8 *far next_wnd_def;
 extern struct SPRITE far drawing_sprite;
@@ -37,5 +41,11 @@ extern legacy_u16 raster_alternate_color;
 legacy_u16 shape2d_get_word(const legacy_u8 far *source);
 void shape2d_put_word(legacy_u8 far *destination, legacy_u16 value);
 legacy_u16 shape2d_get_line_offset(legacy_u16 sprite_segment, legacy_u16 y);
+legacy_u8 far *shape2d_line_pointer(const struct SPRITE far *sprite, legacy_u16 offset);
+#ifdef RESTUNTS_SDL3
+#define shape2d_line_base(sprite) 0U
+#else
+#define shape2d_line_base(sprite) dos_memory_pointer_offset((sprite)->sprite_lineofs)
+#endif
 
 #endif
