@@ -48,6 +48,25 @@ Main repository: https://github.com/4d-stunts/restunts
 Run `restunts.exe` in DOSBox or DOSBox-X with `core=dynamic` and `cycles=max`.
 Mount `stunts/` directly as a DOS drive in the emulator.
 
+For DOSBox-X, use these recommended settings in the `[dos]` section of your
+configuration file:
+
+```ini
+[dos]
+# DOS version (DOSBox-X only)
+ver=7.1
+
+# Put the shell into upper memory (DOSBox-X only)
+shellhigh=true
+
+# Enable long file name support (DOSBox-X only)
+lfn=true
+
+# Disable DOSBox-X's low-memory padding to free conventional memory.
+# Original dump tools need this space when loading large custom dashboards.
+minimum mcb free=1
+```
+
 ### SuperSight and FPS display
 
 Press **F12** while driving or viewing a replay to toggle SuperSight. It extends
@@ -612,7 +631,7 @@ python3 tools/scripts/run-dos-platform-test.py
 ```
 
 Check the conventional-memory budget with a complete race, including the
-player dashboard and a 320x200 rendering buffer:
+player dashboard and both 320x200 VGA render pages:
 
 ```bash
 make -C src/restunts test-race-memory
@@ -622,9 +641,10 @@ python3 tools/scripts/run-race-memory-test.py --dosbox dosbox-x
 
 This regression loads DIA3 for the player and CSIL for the opponent on
 `DEFAULT.TRK`, draws with SuperSight off, on, then off again, and reports the
-remaining conventional memory. It changes gears and gauges and reloads the race
-to check dashboard drawing and resource release. Run it in both DOSBox and
-DOSBox-X; the latter has a smaller conventional-memory budget. The bundled game
+remaining conventional memory. It checks page isolation and presentation, changes
+gears and gauges, and reloads the race to check drawing and resource release.
+It also requires that the conventional-memory race framebuffer is absent. Run it
+in both DOSBox and DOSBox-X; the latter has a smaller conventional-memory budget. The bundled game
 and custom car resources are copied to an isolated directory. The test links
 all normal game objects; its small test entry makes its memory budget slightly
 stricter than the game.

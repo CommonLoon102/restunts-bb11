@@ -3,7 +3,7 @@
 
 Build with `make -C src/restunts test-race-memory`. This test links the full
 normal game, including its menus, and uses actual dashboard, opponent, track,
-and full 320x200 framebuffer allocations. Run with --dosbox dosbox and
+and two full 320x200 VGA pages without a conventional-memory framebuffer. Run with --dosbox dosbox and
 --dosbox dosbox-x to check both emulators. Its small test entry adds code,
 so its memory budget is slightly stricter than the game.
 """

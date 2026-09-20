@@ -21,7 +21,7 @@ ifeq ($(TARGET),dosheadless)
 endif
 
 ifeq ($(TARGET),dosfull)
-  C_FILES += headless_data.c headless_trackdata.c full_data.c full_strings.c full_tables.c
+  C_FILES += video_pages.c headless_data.c headless_trackdata.c full_data.c full_strings.c full_tables.c
   DOS_STARTUP_OBJ = $(OBJDIR)/dosstart.obj
 endif
 
