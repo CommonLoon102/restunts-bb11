@@ -459,7 +459,7 @@ static void replay_display_options(void)
 	for (legacy_u16 index = 0; index < REPLAY_MODE_OPTION_COUNT; index++) {
 		mode_options[index] = 0;
 	}
-	if (gameconfig.game_opponenttype == 0) {
+	if (gameconfig.game_opponenttype == 0 && ghost_car_state() == 0) {
 		mode_options[REPLAY_MODE_ACTION_FOLLOW_OPPONENT] = 1;
 	}
 	legacy_s8 menu_result = LEGACY_S8_FROM_BITS(show_dialog(

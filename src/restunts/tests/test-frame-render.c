@@ -24,12 +24,49 @@ static legacy_u8 sign_map[900];
 
 static struct CARSTATE ghost_fixture;
 static struct SIMD ghost_simd_fixture;
+static struct GHOST_CAMERA_STATE ghost_camera_fixture;
+static legacy_s16 cockpit_effect_frame;
+static legacy_s16 cockpit_effect_kind;
 static legacy_s16 ghost_fixture_active;
 static legacy_s16 ghost_wheel_updates;
 
 struct CARSTATE *ghost_car_state(void)
 {
 	return ghost_fixture_active != 0 ? &ghost_fixture : 0;
+}
+
+const struct GHOST_CAMERA_STATE *ghost_camera_state(void)
+{
+	return ghost_fixture_active != 0 ? &ghost_camera_fixture : 0;
+}
+
+void fatal_error(const legacy_s8 *format, ...)
+{
+	(void)format;
+	assert(0);
+}
+
+void sprite_set_target_clip_bounds(legacy_u16 left, legacy_u16 right, legacy_u16 top,
+								   legacy_u16 bottom)
+{
+	assert(left == 0 && right == FRAME_SCREEN_WIDTH);
+	assert(top == 0 && bottom == 200);
+}
+
+struct RECTANGLE *init_crak(legacy_s16 frame, legacy_s16 top, legacy_s16 height)
+{
+	static struct RECTANGLE rect;
+	assert(top == 0 && height == 200);
+	cockpit_effect_frame = frame;
+	cockpit_effect_kind = CRASH_EVENT_COLLISION;
+	return &rect;
+}
+
+struct RECTANGLE *do_sinking(legacy_s16 frame, legacy_s16 top, legacy_s16 height)
+{
+	struct RECTANGLE *rect = init_crak(frame, top, height);
+	cockpit_effect_kind = CRASH_EVENT_WATER;
+	return rect;
 }
 
 const struct SIMD *ghost_car_simd(void)
@@ -152,6 +189,7 @@ legacy_u8 subst_hillroad_track(legacy_u8 terrain, legacy_u8 element)
 
 static void test_camera_modes(void)
 {
+	gameconfig.game_opponenttype = 1;
 	memset(&state, 0, sizeof(state));
 	state.playerstate.car_position.lx = -80000;
 	state.playerstate.car_position.ly = 1280;
@@ -455,6 +493,79 @@ static void test_ghost_uses_independent_visual_state(void)
 	assert(cars[OPPONENT_CAR_INDEX].east == -1);
 }
 
+static void test_ghost_camera_modes(void)
+{
+	struct GAMESTATE live_state = {0};
+	struct VECTOR track_cameras[] = {{500, 10, -800}, {2500, 60, 3400}};
+	trackside_camera_positions = track_cameras;
+	live_state.playerstate.car_position.lx = -100000;
+	live_state.playerstate.car_position.lz = -60000;
+	live_state.opponentstate.car_position.lx = 900000;
+	live_state.opponentstate.car_position.lz = 800000;
+	live_state.game_follow_camera_position[0] = track_cameras[0];
+	live_state.game_follow_camera_position[1] = track_cameras[0];
+	live_state.game_frame = 2000;
+	ghost_fixture_active = 1;
+	ghost_fixture.car_position.lx = 320000;
+	ghost_fixture.car_position.ly = 6400;
+	ghost_fixture.car_position.lz = 480000;
+	ghost_fixture.car_rotate.x = 190;
+	ghost_fixture.car_rotate.y = 17;
+	ghost_fixture.car_rotate.z = 9;
+	ghost_camera_fixture.follow_position = track_cameras[1];
+	ghost_camera_fixture.trackside_index = 1;
+	ghost_camera_fixture.frame = 120;
+	ghost_camera_fixture.crash_frame = 100;
+	ghost_simd_fixture.car_height = 82;
+	custom_camera.distance = 1100;
+	custom_camera.azimuth_angle = 30;
+	custom_camera.elevation_angle = 70;
+	terrainHeight = -1000;
+	track_wall_collision_enabled = 0;
+	camera_track_height_offset = 20;
+	for (cameramode = CAMERA_MODE_COCKPIT; cameramode < CAMERA_MODE_COUNT; cameramode++) {
+		struct FRAME_CAMERA expected = {0};
+		struct FRAME_CAMERA actual = {0};
+		/* The ghost view must match an opponent at the recorded pose and camera,
+		 * regardless of the live player's or unused opponent's positions. */
+		state = live_state;
+		state.opponentstate = ghost_fixture;
+		state.game_follow_camera_position[1] = ghost_camera_fixture.follow_position;
+		state.game_trackside_camera_index[1] = ghost_camera_fixture.trackside_index;
+		gameconfig.game_opponenttype = 1;
+		followOpponentFlag = 1;
+		simd_player.car_height = ghost_simd_fixture.car_height;
+		frame_setup_camera(&expected);
+		state = live_state;
+		gameconfig.game_opponenttype = 0;
+		simd_player.car_height = 40;
+		frame_setup_camera(&actual);
+		assert(memcmp(&actual, &expected, sizeof(actual)) == 0);
+		assert(memcmp(&state, &live_state, sizeof(state)) == 0);
+		/* T back to the player uses the live camera, and a missing ghost
+		 * also falls back to that camera instead of the unused AI state. */
+		followOpponentFlag = 0;
+		frame_setup_camera(&expected);
+		ghost_fixture_active = 0;
+		followOpponentFlag = 1;
+		frame_setup_camera(&actual);
+		assert(memcmp(&actual, &expected, sizeof(actual)) == 0);
+		ghost_fixture_active = 1;
+	}
+	cameramode = CAMERA_MODE_COCKPIT;
+	slow_video_mgmt_copy = 0;
+	struct RECTANGLE cliprect = {0, 320, 0, 200};
+	ghost_fixture.car_crashBmpFlag = CRASH_EVENT_COLLISION;
+	frame_draw_cockpit_effects(&cliprect);
+	assert(cockpit_effect_kind == CRASH_EVENT_COLLISION && cockpit_effect_frame == 20);
+	ghost_fixture.car_crashBmpFlag = CRASH_EVENT_WATER;
+	frame_draw_cockpit_effects(&cliprect);
+	assert(cockpit_effect_kind == CRASH_EVENT_WATER && cockpit_effect_frame == 20);
+	assert(memcmp(&state, &live_state, sizeof(state)) == 0);
+	ghost_fixture_active = 0;
+	followOpponentFlag = 0;
+}
+
 int main(void)
 {
 	test_camera_modes();
@@ -467,6 +578,7 @@ int main(void)
 	 * sorted brake paint, component geometry and animated start-flag vertices. */
 	assert(trace_hash == UINT64_C(0xcf35ecd7319fcd5c));
 	test_ghost_uses_independent_visual_state();
+	test_ghost_camera_modes();
 	puts("Frame rendering snapshots and ghost isolation passed.");
 	return 0;
 }

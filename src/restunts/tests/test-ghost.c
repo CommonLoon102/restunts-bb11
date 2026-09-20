@@ -24,6 +24,7 @@ struct LEGACY_EXECUTION_RESIDUE legacy_execution_residue;
 legacy_s16 legacy_render_player_headings_active;
 legacy_u16 framespersec;
 legacy_u8 game_replay_mode;
+legacy_s8 followOpponentFlag;
 legacy_s8 is_in_replay;
 legacy_s8 replay_recording_flags;
 legacy_u16 elapsed_time1;
@@ -176,6 +177,49 @@ void ghost_free_simulation_resources(void)
 	simulation_frees++;
 }
 
+static void set_recorded_camera(legacy_s16 frame)
+{
+	state.game_follow_camera_position[PLAYER_CAR_INDEX].x = 100 + frame;
+	state.game_follow_camera_position[PLAYER_CAR_INDEX].y = 200 + frame;
+	state.game_follow_camera_position[PLAYER_CAR_INDEX].z = 300 + frame;
+	state.game_player_camera_previous.x = 99 + frame;
+	state.game_player_camera_previous.y = 199 + frame;
+	state.game_player_camera_previous.z = 299 + frame;
+	state.game_trackside_camera_index[PLAYER_CAR_INDEX] = (legacy_s8)(frame % 8);
+	state.game_pEndFrame = frame >= 2 ? 2 : 0;
+}
+
+static void assert_camera_at_frame(legacy_s16 frame)
+{
+	const struct GHOST_CAMERA_STATE *camera = ghost_camera_state();
+	assert(camera != 0);
+	assert(camera->follow_position.x == 100 + frame);
+	assert(camera->follow_position.y == 200 + frame);
+	assert(camera->follow_position.z == 300 + frame);
+	assert(camera->previous_position.x == 99 + frame);
+	assert(camera->previous_position.y == 199 + frame);
+	assert(camera->previous_position.z == 299 + frame);
+	assert(camera->trackside_index == frame % 8);
+	assert(camera->frame == frame);
+	assert(camera->crash_frame == (frame >= 2 ? 2 : 0));
+}
+
+static void assert_camera_motion(legacy_s16 x, legacy_s16 y, legacy_s16 z)
+{
+	struct VECTOR previous = {90, 220, 270};
+	const struct VECTOR current = {100, 200, 300};
+	const struct GHOST_CAMERA_STATE *camera = ghost_camera_state();
+	struct GHOST_CAMERA_STATE before;
+	if (camera != 0) {
+		before = *camera;
+	}
+	ghost_adjust_camera_motion(&previous, &current);
+	assert(previous.x == x && previous.y == y && previous.z == z);
+	if (camera != 0) {
+		assert(memcmp(&before, camera, sizeof(before)) == 0);
+	}
+}
+
 void init_game_state(legacy_s16 mode)
 {
 	assert(mode == GAMESTATE_INIT_RESET_CHECKPOINTS);
@@ -184,6 +228,7 @@ void init_game_state(legacy_s16 mode)
 	checkpoint_frame_interval = (legacy_s16)(framespersec * 30);
 	timer_ticks_per_frame = (legacy_s16)(100 / framespersec);
 	memset(&state, 0, sizeof(state));
+	set_recorded_camera(0);
 }
 
 void update_gamestate_silent(void)
@@ -197,6 +242,7 @@ void update_gamestate_silent(void)
 	state.playerstate.car_steeringAngle = state.game_frame;
 	state.playerstate.car_sound_flags = CAR_SOUND_ENGINE_ACTIVE_FLAG;
 	state.game_frame++;
+	set_recorded_camera(state.game_frame);
 	legacy_execution_residue.penalty_route_word++;
 	legacy_render_player_headings_active = 1;
 	random_seed[0]++;
@@ -239,6 +285,7 @@ static void test_selection_is_separate(void)
 	assert(ghost_is_selected());
 	assert(!ghost_is_active());
 	assert(ghost_car_state() == 0);
+	assert(ghost_camera_state() == 0);
 	assert(memcmp(gameconfig.game_playercarid, "COUN", REPLAY_CAR_ID_SIZE) == 0);
 	assert(gameconfig.game_playertransmission == TRANSMISSION_AUTOMATIC);
 	assert(gameconfig.game_recordedframes == 17);
@@ -273,6 +320,10 @@ static void test_playback_timing_and_isolation(void)
 	timer_ticks_per_frame = 11;
 	state.playerstate.car_position.lx = 987654;
 	state.game_frame = 21;
+	state.game_follow_camera_position[PLAYER_CAR_INDEX].x = 30001;
+	state.game_player_camera_previous.y = 30002;
+	state.game_trackside_camera_index[PLAYER_CAR_INDEX] = 13;
+	state.game_pEndFrame = 14;
 	game_replay_mode = REPLAY_MODE_PAUSED;
 	is_in_replay = 0;
 	replay_recording_flags = REPLAY_RECORDING_ACTIVE_FLAG;
@@ -297,31 +348,60 @@ static void test_playback_timing_and_isolation(void)
 	assert(simulation_steps == TEST_RECORDING_FRAMES);
 	assert(ghost_car_simd()->car_height == 47);
 	assert(ghost_car_state()->car_position.lx == 0);
+	assert_camera_at_frame(0);
+	assert_camera_motion(100, 200, 300);
 	ghost_update(6, GAME_FRAME_RATE_NORMAL);
 	assert(ghost_car_state()->car_position.lx == 6);
 	assert(ghost_car_state()->car_position.lz == 9);
+	assert_camera_at_frame(3);
+	assert_camera_motion(95, 210, 285);
 	assert(ghost_car_state()->car_sound_flags == CAR_SOUND_NONE);
 	ghost_update(16, GAME_FRAME_RATE_NORMAL);
 	assert(ghost_car_state()->car_position.lx == 36);
+	assert_camera_at_frame(8);
+	assert_camera_motion(95, 210, 285);
+	/* The next live tick holds the same pose but must stop listener motion. */
+	ghost_update(17, GAME_FRAME_RATE_NORMAL);
+	assert_camera_at_frame(8);
+	assert_camera_motion(100, 200, 300);
 	ghost_update(200000UL, GAME_FRAME_RATE_NORMAL);
 	assert(ghost_car_state()->car_position.lx == 36);
+	assert_camera_at_frame(8);
+	assert_camera_motion(100, 200, 300);
 	ghost_update(2, GAME_FRAME_RATE_NORMAL);
 	assert(ghost_car_state()->car_position.lx == 1);
+	assert_camera_at_frame(1);
+	assert_camera_motion(95, 210, 285);
+	/* A frame-rate change can reuse a pose while changing its audio delta. */
+	ghost_update(1, GAME_FRAME_RATE_LOW);
+	assert_camera_at_frame(1);
+	assert_camera_motion(90, 220, 270);
 	assert(memcmp(&state, &before, sizeof(state)) == 0);
+	followOpponentFlag = 1;
 	ghost_end_race();
+	assert(followOpponentFlag == 0);
+	assert_camera_motion(90, 220, 270);
 	assert(ghost_is_selected() && !ghost_is_active());
+	assert(ghost_camera_state() == 0);
 	assert(ghost_prepare_race() == 0);
 	assert(ghost_car_state()->car_position.lx == 0);
+	assert_camera_at_frame(0);
 	gameconfig.game_opponenttype = 1;
+	followOpponentFlag = 1;
 	assert(!ghost_is_active() && ghost_car_state() == 0);
+	assert(ghost_camera_state() == 0);
 	assert(ghost_prepare_race() == 0);
 	assert(simulation_loads == 2);
+	assert(followOpponentFlag == 1);
 	gameconfig.game_opponenttype = 0;
 	assert(ghost_prepare_race() == 0);
+	followOpponentFlag = 1;
 	fail_read = 1;
 	ghost_update(4, GAME_FRAME_RATE_NORMAL);
 	fail_read = 0;
+	assert(followOpponentFlag == 0);
 	assert(!ghost_is_active());
+	assert(ghost_camera_state() == 0);
 	assert(ghost_is_selected());
 }
 
@@ -335,6 +415,7 @@ static void test_long_recording_and_preparation_failure(void)
 	assert(ghost_prepare_race() != 0);
 	fail_write = 0;
 	assert(ghost_is_selected() && !ghost_is_active());
+	assert(ghost_camera_state() == 0);
 	assert(memcmp(&state, &before, sizeof(state)) == 0);
 	assert(memcmp(&gameconfig, &config, sizeof(config)) == 0);
 	assert(ghost_prepare_race() == 0);
@@ -347,20 +428,27 @@ static void test_long_recording_and_preparation_failure(void)
 	}
 	assert(ghost_car_state()->car_position.lx == expected);
 	assert(ghost_car_state()->car_position.lz == 3000);
+	assert_camera_at_frame(1000);
+	assert_camera_motion(80, 240, 240);
 	ghost_update(6000, GAME_FRAME_RATE_LOW);
 	assert(ghost_car_state()->car_position.lz == 36000);
+	assert_camera_at_frame(TRACKDATA_REPLAY_INPUT_BUFFER_SIZE);
 	ghost_update(65536UL, GAME_FRAME_RATE_NORMAL);
 	assert(ghost_car_state()->car_position.lz == 36000);
+	assert_camera_at_frame(TRACKDATA_REPLAY_INPUT_BUFFER_SIZE);
 	ghost_update(0, GAME_FRAME_RATE_NORMAL);
 	assert(ghost_car_state()->car_position.lx == 0);
+	assert_camera_at_frame(0);
 	assert(ghost_car_state()->car_position.lz == 0);
 	make_replay("slowmax.rpl", GAME_FRAME_RATE_LOW, TRACKDATA_REPLAY_INPUT_BUFFER_SIZE, 0);
 	assert(ghost_select_replay(0, (const legacy_s8 *)"slowmax") == 0);
 	assert(ghost_prepare_race() == 0);
 	ghost_update(24000UL, GAME_FRAME_RATE_NORMAL);
 	assert(ghost_car_state()->car_position.lz == 36000);
+	assert_camera_at_frame(TRACKDATA_REPLAY_INPUT_BUFFER_SIZE);
 	ghost_update(1, GAME_FRAME_RATE_NORMAL);
 	assert(ghost_car_state()->car_position.lz == 0);
+	assert_camera_at_frame(0);
 }
 
 static void test_track_changes_and_cleanup(void)

@@ -2,6 +2,7 @@
 #include "audio_internal.h"
 #include "externs.h"
 #include "game_input.h"
+#include "ghost.h"
 #include "legacy.h"
 #include "math.h"
 #include "platform.h"
@@ -127,17 +128,26 @@ static void audio_carstate_read_positions(struct CARSTATE *carstate, struct VECT
 	current->z = audio_carstate_position((legacy_s32)carstate->car_position.lz);
 }
 
-static void audio_carstate_camera_positions(struct AUDIO_CAR_POSITIONS *positions)
+static void audio_carstate_camera_positions(struct AUDIO_CAR_POSITIONS *positions,
+											const struct GHOST_CAMERA_STATE *ghost_camera)
 {
+	legacy_u8 follow =
+		followOpponentFlag != 0 && (gameconfig.game_opponenttype != 0 || ghost_camera != 0);
 	if (cameramode == CAMERA_MODE_FOLLOW) {
-		positions->camera_current =
-			state.game_follow_camera_position[(legacy_u8)followOpponentFlag];
-		positions->camera_previous = followOpponentFlag != 0 ? state.game_opponent_camera_previous
-															 : state.game_player_camera_previous;
+		if (follow != 0 && ghost_camera != 0) {
+			positions->camera_current = ghost_camera->follow_position;
+			positions->camera_previous = ghost_camera->previous_position;
+		} else {
+			positions->camera_current = state.game_follow_camera_position[follow];
+			positions->camera_previous = follow != 0 ? state.game_opponent_camera_previous
+													 : state.game_player_camera_previous;
+		}
 	} else if (cameramode == CAMERA_MODE_TRACKSIDE) {
-		legacy_s16 track_index = LEGACY_S16_FROM_BITS(
-			(legacy_u16)(legacy_s8)
-				state.game_trackside_camera_index[(legacy_u8)followOpponentFlag]);
+		legacy_s16 track_index =
+			follow != 0 && ghost_camera != 0
+				? ghost_camera->trackside_index
+				: LEGACY_S16_FROM_BITS(
+					  (legacy_u16)(legacy_s8)state.game_trackside_camera_index[follow]);
 		positions->camera_current.x = trackside_camera_positions[track_index].x;
 		positions->camera_current.y =
 			LEGACY_S16_WRAP_ADD(LEGACY_S16_WRAP_ADD(trackside_camera_positions[track_index].y,
@@ -145,7 +155,7 @@ static void audio_carstate_camera_positions(struct AUDIO_CAR_POSITIONS *position
 								AUDIO_TRACK_CAMERA_VERTICAL_OFFSET);
 		positions->camera_current.z = trackside_camera_positions[track_index].z;
 		positions->camera_previous = positions->camera_current;
-	} else if (followOpponentFlag != 0) {
+	} else if (follow != 0) {
 		positions->camera_current = positions->opponent_current;
 		positions->camera_previous = positions->opponent_previous;
 	} else {
@@ -208,12 +218,25 @@ void audio_carstate(void)
 	audio_carstate_read_positions(&state.playerstate, &positions.player_previous,
 								  &positions.player_current);
 
+	const struct GHOST_CAMERA_STATE *ghost_camera = 0;
 	if (gameconfig.game_opponenttype != 0) {
 		audio_carstate_read_positions(&state.opponentstate, &positions.opponent_previous,
 									  &positions.opponent_current);
+	} else if (followOpponentFlag != 0) {
+		/* The timer also calls this function: use the last rendered ghost snapshot,
+		 * never refresh its on-disk trajectory from the audio callback. */
+		struct CARSTATE *ghost = ghost_car_state();
+		if (ghost != 0) {
+			ghost_camera = ghost_camera_state();
+			audio_carstate_read_positions(ghost, &positions.opponent_previous,
+										  &positions.opponent_current);
+		}
 	}
 
-	audio_carstate_camera_positions(&positions);
+	audio_carstate_camera_positions(&positions, ghost_camera);
+	if (ghost_camera != 0) {
+		ghost_adjust_camera_motion(&positions.camera_previous, &positions.camera_current);
+	}
 
 	legacy_s16 car_count = audio_carstate_write_record(&positions);
 

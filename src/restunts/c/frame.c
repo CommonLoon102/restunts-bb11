@@ -554,15 +554,38 @@ static legacy_s8 frame_begin(legacy_s8 buffer_index)
 	return redraw_transform_flags;
 }
 
+/* Ghosts share the opponent drawing and camera slot without adding a
+ * simulated car, collision body or sound source. */
+static struct CARSTATE *frame_second_car_state(void)
+{
+	return gameconfig.game_opponenttype != 0 ? &state.opponentstate : ghost_car_state();
+}
+
+static struct CARSTATE *frame_viewed_car_state(void)
+{
+	struct CARSTATE *second_car = followOpponentFlag != 0 ? frame_second_car_state() : 0;
+	return second_car != 0 ? second_car : &state.playerstate;
+}
+
+static const struct GHOST_CAMERA_STATE *frame_viewed_ghost_camera(void)
+{
+	return followOpponentFlag != 0 && gameconfig.game_opponenttype == 0 ? ghost_camera_state() : 0;
+}
+
 static legacy_s16 frame_position_camera(struct FRAME_CAMERA *camera, const struct VECTOR *car_pos,
 										legacy_s16 car_rot_x, legacy_s16 car_rot_y,
-										legacy_s16 car_rot_z)
+										legacy_s16 car_rot_z,
+										const struct GHOST_CAMERA_STATE *ghost_camera)
 {
 	// Set camera position, based on the car position and the camera mode
 	struct MATRIX *car_rot_matrix;
 	struct VECTOR car_to_cam_rotated;
 	legacy_s16 camera_roll = 0;
 	struct VECTOR offset_vector;
+	legacy_u8 car_index =
+		followOpponentFlag != 0 && (gameconfig.game_opponenttype != 0 || ghost_camera != 0)
+			? OPPONENT_CAR_INDEX
+			: PLAYER_CAR_INDEX;
 	if (cameramode == CAMERA_MODE_COCKPIT) {
 		camera->yaw = car_rot_x & ANGLE_MASK;
 		camera->pitch = car_rot_y & ANGLE_MASK;
@@ -570,17 +593,17 @@ static legacy_s16 frame_position_camera(struct FRAME_CAMERA *camera, const struc
 		car_rot_matrix = frame_car_rotation(car_rot_x, car_rot_y, car_rot_z);
 		offset_vector.x = 0;
 		offset_vector.z = 0;
-		offset_vector.y =
-			LEGACY_S16_WRAP_SUB(simd_player.car_height, FRAME_COCKPIT_HEIGHT_CLEARANCE);
+		offset_vector.y = LEGACY_S16_WRAP_SUB(ghost_camera != 0 ? ghost_car_simd()->car_height
+																: simd_player.car_height,
+											  FRAME_COCKPIT_HEIGHT_CLEARANCE);
 
 		mat_mul_vector(&offset_vector, car_rot_matrix, &car_to_cam_rotated);
 		camera->position.x = LEGACY_S16_WRAP_ADD(car_pos->x, car_to_cam_rotated.x);
 		camera->position.y = LEGACY_S16_WRAP_ADD(car_pos->y, car_to_cam_rotated.y);
 		camera->position.z = LEGACY_S16_WRAP_ADD(car_pos->z, car_to_cam_rotated.z);
 	} else if (cameramode == CAMERA_MODE_FOLLOW) {
-		camera->position.x = state.game_follow_camera_position[followOpponentFlag].x;
-		camera->position.z = state.game_follow_camera_position[followOpponentFlag].z;
-		camera->position.y = state.game_follow_camera_position[followOpponentFlag].y;
+		camera->position = ghost_camera != 0 ? ghost_camera->follow_position
+											 : state.game_follow_camera_position[car_index];
 	} else if (cameramode == CAMERA_MODE_CUSTOM) {
 		offset_vector.x = 0;
 		offset_vector.y = 0;
@@ -602,15 +625,14 @@ static legacy_s16 frame_position_camera(struct FRAME_CAMERA *camera, const struc
 		camera->position.y = LEGACY_S16_WRAP_ADD(car_pos->y, car_to_cam_rotated.y);
 		camera->position.z = LEGACY_S16_WRAP_ADD(car_pos->z, car_to_cam_rotated.z);
 	} else if (cameramode == CAMERA_MODE_TRACKSIDE) {
-		camera->position.x =
-			trackside_camera_positions[state.game_trackside_camera_index[followOpponentFlag]].x;
-		camera->position.y = LEGACY_S16_WRAP_ADD(
-			LEGACY_S16_WRAP_ADD(
-				trackside_camera_positions[state.game_trackside_camera_index[followOpponentFlag]].y,
-				camera_track_height_offset),
-			FRAME_TRACK_CAMERA_HEIGHT_OFFSET);
-		camera->position.z =
-			trackside_camera_positions[state.game_trackside_camera_index[followOpponentFlag]].z;
+		legacy_s16 track_index = ghost_camera != 0 ? ghost_camera->trackside_index
+												   : state.game_trackside_camera_index[car_index];
+		camera->position.x = trackside_camera_positions[track_index].x;
+		camera->position.y =
+			LEGACY_S16_WRAP_ADD(LEGACY_S16_WRAP_ADD(trackside_camera_positions[track_index].y,
+													camera_track_height_offset),
+								FRAME_TRACK_CAMERA_HEIGHT_OFFSET);
+		camera->position.z = trackside_camera_positions[track_index].z;
 	}
 
 	return camera_roll;
@@ -659,31 +681,16 @@ static void frame_aim_external_camera(struct FRAME_CAMERA *camera, const struct 
 
 static void frame_setup_camera(struct FRAME_CAMERA *camera)
 {
-	// Set car position (own or opponent's)
+	struct CARSTATE *viewed_car = frame_viewed_car_state();
+	const struct GHOST_CAMERA_STATE *ghost_camera = frame_viewed_ghost_camera();
 	struct VECTOR car_pos;
-	legacy_s16 car_rot_z;
-	legacy_s16 car_rot_y;
-	legacy_s16 car_rot_x;
-	if (followOpponentFlag == 0) {
-		car_pos.x = position_to_word(state.playerstate.car_position.lx);
-		car_pos.y = position_to_word(state.playerstate.car_position.ly);
-		car_pos.z = position_to_word(state.playerstate.car_position.lz);
-		car_rot_y = state.playerstate.car_rotate.y;
-		car_rot_z = state.playerstate.car_rotate.z;
-		car_rot_x = state.playerstate.car_rotate.x;
-	} else {
-		car_pos.x = position_to_word(state.opponentstate.car_position.lx);
-		car_pos.y = position_to_word(state.opponentstate.car_position.ly);
-		car_pos.z = position_to_word(state.opponentstate.car_position.lz);
-		car_rot_y = state.opponentstate.car_rotate.y;
-		car_rot_z = state.opponentstate.car_rotate.z;
-		car_rot_x = state.opponentstate.car_rotate.x;
-	}
-
+	car_pos.x = position_to_word(viewed_car->car_position.lx);
+	car_pos.y = position_to_word(viewed_car->car_position.ly);
+	car_pos.z = position_to_word(viewed_car->car_position.lz);
 	camera->yaw = -1;
-
 	legacy_s16 camera_roll =
-		frame_position_camera(camera, &car_pos, car_rot_x, car_rot_y, car_rot_z);
+		frame_position_camera(camera, &car_pos, viewed_car->car_rotate.x, viewed_car->car_rotate.y,
+							  viewed_car->car_rotate.z, ghost_camera);
 
 	// Keep external cameras above the track and aim them at the followed car.
 	if (camera->yaw == -1) {
@@ -935,13 +942,6 @@ static void frame_select_tiles(struct FRAME_TILE_SELECTION *tiles,
 			tiles->markers[tile_index] = FRAME_TILE_UNAVAILABLE_MARKER;
 		}
 	}
-}
-
-/* Clock races can use the spare opponent draw slot without adding a second
- * simulated car, collision body, camera target or sound source. */
-static struct CARSTATE *frame_second_car_state(void)
-{
-	return gameconfig.game_opponenttype != 0 ? &state.opponentstate : ghost_car_state();
 }
 
 static void frame_place_cars(const struct FRAME_TILE_SELECTION *tiles,
@@ -1674,34 +1674,33 @@ static void frame_draw_cockpit_effects(struct RECTANGLE *cliprect)
 {
 	// Depict windscreen cracking after a crash
 	sprite_set_target_clip_bounds(0, FRAME_SCREEN_WIDTH, cliprect->top, cliprect->bottom);
-	struct CARSTATE *viewed_carstate;
 	if (cameramode == CAMERA_MODE_COCKPIT) {
-		legacy_s16 crash_frame;
-		if (followOpponentFlag != 0) {
-			viewed_carstate = &state.opponentstate;
+		struct CARSTATE *viewed_carstate = frame_viewed_car_state();
+		const struct GHOST_CAMERA_STATE *ghost_camera = frame_viewed_ghost_camera();
+		legacy_s16 frame = state.game_frame;
+		legacy_s16 crash_frame = state.game_pEndFrame;
+		if (ghost_camera != 0) {
+			frame = ghost_camera->frame;
+			crash_frame = ghost_camera->crash_frame;
+		} else if (viewed_carstate == &state.opponentstate) {
 			crash_frame = state.game_oEndFrame;
-		} else {
-			viewed_carstate = &state.playerstate;
-			crash_frame = state.game_pEndFrame;
 		}
 
 		if (viewed_carstate->car_crashBmpFlag == CRASH_EVENT_COLLISION) {
 			if (slow_video_mgmt_copy != 0) {
-				rect_union(init_crak(state.game_frame - crash_frame, cliprect->top,
-									 cliprect->bottom - cliprect->top),
-						   frame_layer_rects, frame_layer_rects);
+				rect_union(
+					init_crak(frame - crash_frame, cliprect->top, cliprect->bottom - cliprect->top),
+					frame_layer_rects, frame_layer_rects);
 			} else {
-				init_crak(state.game_frame - crash_frame, cliprect->top,
-						  cliprect->bottom - cliprect->top);
+				init_crak(frame - crash_frame, cliprect->top, cliprect->bottom - cliprect->top);
 			}
 		} else if (viewed_carstate->car_crashBmpFlag == CRASH_EVENT_WATER) {
 			if (slow_video_mgmt_copy != 0) {
-				rect_union(do_sinking(state.game_frame - crash_frame, cliprect->top,
+				rect_union(do_sinking(frame - crash_frame, cliprect->top,
 									  cliprect->bottom - cliprect->top),
 						   frame_layer_rects, frame_layer_rects);
 			} else {
-				do_sinking(state.game_frame - crash_frame, cliprect->top,
-						   cliprect->bottom - cliprect->top);
+				do_sinking(frame - crash_frame, cliprect->top, cliprect->bottom - cliprect->top);
 			}
 		}
 	}

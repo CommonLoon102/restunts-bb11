@@ -12,6 +12,14 @@
 #include RECORD_SOURCE
 #undef memcpy
 
+static struct CARSTATE ghost_fixture;
+static legacy_s16 ghost_fixture_active;
+
+struct CARSTATE *ghost_car_state(void)
+{
+	return ghost_fixture_active != 0 ? &ghost_fixture : 0;
+}
+
 static legacy_u32 trace_hash, random_state = 1;
 static legacy_u16 keyboard_char, joystick_flags;
 static legacy_s16 key_states[128], mouse_samples[4][3], joystick_axis;
@@ -438,6 +446,31 @@ static void test_recording_input_modes(void)
 	assert(elapsed_time2 == 2 && gameconfig.game_recordedframes == 6 && replay_bytes[1] == 0);
 }
 
+static void test_ghost_view_shortcut(void)
+{
+	for (legacy_u8 mode = REPLAY_MODE_LIVE; mode <= REPLAY_MODE_PLAYBACK; mode++) {
+		reset_inputs();
+		game_replay_mode = mode;
+		gameconfig.game_opponenttype = 0;
+		followOpponentFlag = 0;
+		ghost_fixture_active = 0;
+		assert(handle_ingame_kb_shortcuts('t') == 1);
+		assert(followOpponentFlag == 0);
+		ghost_fixture_active = 1;
+		assert(handle_ingame_kb_shortcuts('t') == 1);
+		assert(followOpponentFlag == 1);
+		assert(handle_ingame_kb_shortcuts('t') == 1);
+		assert(followOpponentFlag == 0);
+		assert(gameconfig.game_opponenttype == 0 && game_replay_mode == mode);
+		assert(handle_ingame_kb_shortcuts('t') == 1);
+		assert(followOpponentFlag == 1);
+		ghost_fixture_active = 0;
+		assert(handle_ingame_kb_shortcuts('t') == 1);
+		assert(followOpponentFlag == 0);
+	}
+	ghost_fixture_active = 0;
+}
+
 int main(void)
 {
 	legacy_u32 input_hash = input_fingerprint();
@@ -447,6 +480,7 @@ int main(void)
 	legacy_u32 shortcut_hash = shortcut_fingerprint();
 	test_event_priority();
 	test_recording_input_modes();
+	test_ghost_view_shortcut();
 #ifdef INPUT_RECORD_BASELINE
 	fprintf(stdout, "%08lx %08lx %08lx %08lx %08lx\n", (unsigned long)input_hash,
 			(unsigned long)scrollbar_hash, (unsigned long)record_hash, (unsigned long)callback_hash,

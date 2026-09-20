@@ -513,11 +513,11 @@ static void race_run_frames(struct RACE_VIEWPORT_CACHE *cache)
 			sprite_select_render_window();
 		}
 
-		race_update_viewport(cache, rewind.active);
 		legacy_u32 ghost_frame = game_replay_mode == REPLAY_MODE_PAUSED
 									 ? 0
 									 : (legacy_u32)(legacy_u16)state.game_frame + elapsed_time1;
 		ghost_update(ghost_frame, framespersec);
+		race_update_viewport(cache, rewind.active);
 		race_draw_frame();
 		if (game_replay_mode == REPLAY_MODE_PAUSED &&
 			race_start_sequence_state == RACE_START_SEQUENCE_INACTIVE) {

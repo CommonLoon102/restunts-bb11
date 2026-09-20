@@ -1,4 +1,5 @@
 #include "ghost.h"
+#include "camera.h"
 #include "externs.h"
 #include "fatal.h"
 #include "fileio.h"
@@ -13,8 +14,13 @@
 #define GHOST_COPY_BUFFER_SIZE 256U
 #define GHOST_MAX_OPPONENT_TYPE 6
 
+struct GHOST_POSE {
+	struct CARSTATE car;
+	struct GHOST_CAMERA_STATE camera;
+};
+
 static struct GAMEINFO ghost_config;
-static struct CARSTATE ghost_state;
+static struct GHOST_POSE ghost_pose;
 static struct SIMD ghost_simd;
 static legacy_u16 ghost_file;
 static legacy_s8 ghost_temp_name[GHOST_TEMP_NAME_SIZE];
@@ -22,6 +28,8 @@ static legacy_s16 ghost_active;
 static legacy_s16 ghost_cleanup_registered;
 static legacy_s16 ghost_pose_valid;
 static legacy_u16 ghost_pose_frame;
+static legacy_u32 ghost_live_frame;
+static legacy_u16 ghost_live_frame_rate;
 
 static legacy_s16 ghost_seek(legacy_u16 file, legacy_s32 offset)
 {
@@ -32,6 +40,9 @@ static legacy_s16 ghost_seek(legacy_u16 file, legacy_s32 offset)
 
 void ghost_end_race(void)
 {
+	if (ghost_active != 0 && gameconfig.game_opponenttype == 0) {
+		followOpponentFlag = 0;
+	}
 	ghost_active = 0;
 	ghost_pose_valid = 0;
 }
@@ -66,7 +77,35 @@ legacy_s16 ghost_is_active(void)
 
 struct CARSTATE *ghost_car_state(void)
 {
-	return ghost_is_active() && ghost_pose_valid ? &ghost_state : 0;
+	return ghost_is_active() && ghost_pose_valid ? &ghost_pose.car : 0;
+}
+
+const struct GHOST_CAMERA_STATE *ghost_camera_state(void)
+{
+	return ghost_is_active() && ghost_pose_valid ? &ghost_pose.camera : 0;
+}
+
+static legacy_s16 ghost_previous_camera_coordinate(legacy_s16 previous, legacy_s16 current)
+{
+	legacy_s32 delta = LEGACY_S16_WRAP_SUB(current, previous);
+	delta = delta * ghost_config.game_framespersec / ghost_live_frame_rate;
+	return LEGACY_S16_WRAP_SUB(current, LEGACY_S16_FROM_BITS((legacy_u16)delta));
+}
+
+void ghost_adjust_camera_motion(struct VECTOR *previous, const struct VECTOR *current)
+{
+	if (!ghost_is_active() || !ghost_pose_valid || ghost_live_frame_rate == 0) {
+		return;
+	}
+	if (ghost_pose_frame == 0 ||
+		ghost_live_frame * ghost_config.game_framespersec >
+			(legacy_u32)ghost_config.game_recordedframes * ghost_live_frame_rate) {
+		*previous = *current;
+		return;
+	}
+	previous->x = ghost_previous_camera_coordinate(previous->x, current->x);
+	previous->y = ghost_previous_camera_coordinate(previous->y, current->y);
+	previous->z = ghost_previous_camera_coordinate(previous->z, current->z);
 }
 
 const struct SIMD *ghost_car_simd(void)
@@ -308,8 +347,13 @@ legacy_s16 ghost_prepare_race(void)
 		if (frame != 0) {
 			update_gamestate_silent();
 		}
-		if (dos_file_write(ghost_file, &state.playerstate, sizeof(state.playerstate)) !=
-			sizeof(state.playerstate)) {
+		ghost_pose.car = state.playerstate;
+		ghost_pose.camera.follow_position = state.game_follow_camera_position[PLAYER_CAR_INDEX];
+		ghost_pose.camera.previous_position = state.game_player_camera_previous;
+		ghost_pose.camera.trackside_index = state.game_trackside_camera_index[PLAYER_CAR_INDEX];
+		ghost_pose.camera.frame = state.game_frame;
+		ghost_pose.camera.crash_frame = state.game_pEndFrame;
+		if (dos_file_write(ghost_file, &ghost_pose, sizeof(ghost_pose)) != sizeof(ghost_pose)) {
 			succeeded = 0;
 			break;
 		}
@@ -352,16 +396,20 @@ void ghost_update(legacy_u32 frame, legacy_u16 live_frame_rate)
 		target = ghost_config.game_recordedframes;
 	}
 	if (ghost_pose_valid && target == ghost_pose_frame) {
+		ghost_live_frame = frame;
+		ghost_live_frame_rate = live_frame_rate;
 		return;
 	}
 	legacy_u32 offset =
-		replay_file_size(ghost_config.game_recordedframes) + target * sizeof(struct CARSTATE);
+		replay_file_size(ghost_config.game_recordedframes) + target * sizeof(struct GHOST_POSE);
 	if (!ghost_seek(ghost_file, (legacy_s32)offset) ||
-		dos_file_read(ghost_file, &ghost_state, sizeof(ghost_state)) != sizeof(ghost_state)) {
+		dos_file_read(ghost_file, &ghost_pose, sizeof(ghost_pose)) != sizeof(ghost_pose)) {
 		ghost_end_race();
 		return;
 	}
-	ghost_state.car_sound_flags = CAR_SOUND_NONE;
+	ghost_pose.car.car_sound_flags = CAR_SOUND_NONE;
 	ghost_pose_frame = (legacy_u16)target;
 	ghost_pose_valid = 1;
+	ghost_live_frame = frame;
+	ghost_live_frame_rate = live_frame_rate;
 }
