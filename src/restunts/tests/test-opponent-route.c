@@ -16,6 +16,7 @@
 #define TEST_OUTSIDE_COST_INDEX 200U
 #define TEST_ROUTE_PIECES 5U
 #define TEST_ROUTE_WORDS 8U
+#define TEST_TAIL_SIZE 256U
 
 struct GAMEINFO gameconfig;
 legacy_s8 opponent_resource_name[] = "opp1";
@@ -32,6 +33,7 @@ const legacy_s8 missing_shape_error_format[] = "shape";
 const legacy_s8 missing_sound_error_format[] = "sound";
 
 static legacy_u8 arena[512];
+static legacy_u8 decompression_tail[TEST_TAIL_SIZE];
 static legacy_s16 primary[TEST_ROUTE_PIECES] = {1, 2, 0, 4, 0};
 static legacy_s16 alternate[TEST_ROUTE_PIECES] = {3, -1, -1, -1, -1};
 static legacy_s8 elements[TEST_ROUTE_PIECES];
@@ -39,14 +41,17 @@ static legacy_u8 selected_route[TEST_ROUTE_WORDS * LEGACY_WORD_BYTES];
 static legacy_u16 resource_loads;
 static legacy_u16 resource_unloads;
 
-void far *file_load_resfile(const legacy_s8 *name)
+void far *file_load_resfile_with_tail(const legacy_s8 *name, legacy_u16 tail_bytes)
 {
 	assert(name[0] == 'o' && name[3] == '6');
+	assert(tail_bytes == TEST_TAIL_SIZE);
+	legacy_u16 end = resource_file_data_start(TEST_RESOURCE_COUNT) + TEST_RESOURCE_DATA_SIZE;
+	memcpy(arena + end, decompression_tail, tail_bytes);
 	resource_loads++;
 	return arena;
 }
 
-void unload_resource(void far *resource)
+void mmgr_release(void far *resource)
 {
 	assert(resource == arena);
 	resource_unloads++;
@@ -67,6 +72,7 @@ void fatal_error(const legacy_s8 *format, ...)
 static void initialize(legacy_u8 poison)
 {
 	memset(arena, poison, sizeof(arena));
+	memset(decompression_tail, 0, sizeof(decompression_tail));
 	legacy_u16 data_start = resource_file_data_start(TEST_RESOURCE_COUNT);
 	memset(arena, 0, data_start + TEST_RESOURCE_DATA_SIZE);
 	resource_file_set_size(arena, data_start + TEST_RESOURCE_DATA_SIZE);
@@ -124,16 +130,36 @@ static void test_valid_following_resource_costs_are_preserved(void)
 	arena[speed_offset + TEST_TRAILER_COST_INDEX] = 30;
 	load_opponent_data();
 	assert_selected_route(3, 4);
-	/* The first byte beyond the logical resource must never count as a
-	 * route cost, even when the allocator rounded its block upward. */
+	/* Unwritten bytes past the resource remain zero, independent of
+	 * the surrounding arena contents. */
 	elements[1] = TEST_RESOURCE_DATA_SIZE - TEST_SPEED_OFFSET;
 	load_opponent_data();
 	assert_selected_route(1, 2);
+}
+
+static void test_decompression_tail_costs_choose_route(void)
+{
+	static const legacy_u8 poisons[] = {0, 1, 127, 255};
+	for (legacy_u16 index = 0; index < sizeof(poisons); index++) {
+		initialize(poisons[index]);
+		/* A tile indexes a byte left by decompression beyond the resource's
+		 * declared size. It still participates in the original route score. */
+		legacy_u16 tail_index =
+			TEST_SPEED_OFFSET + TEST_OUTSIDE_COST_INDEX - TEST_RESOURCE_DATA_SIZE;
+		decompression_tail[tail_index] = 30;
+		load_opponent_data();
+		assert_selected_route(3, 4);
+		legacy_u16 end = resource_file_data_start(TEST_RESOURCE_COUNT) + TEST_RESOURCE_DATA_SIZE;
+		memset(arena + end, (legacy_u8)~poisons[index], sizeof(arena) - end);
+		load_opponent_data();
+		assert_selected_route(3, 4);
+	}
 }
 
 int main(void)
 {
 	test_allocator_contents_do_not_change_route();
 	test_valid_following_resource_costs_are_preserved();
+	test_decompression_tail_costs_choose_route();
 	return 0;
 }

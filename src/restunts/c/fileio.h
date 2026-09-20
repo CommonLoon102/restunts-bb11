@@ -54,6 +54,11 @@ void far *file_load_binary_nofatal(const legacy_s8 *filename);
 void far *file_load_binary_fatal(const legacy_s8 *filename);
 
 void far *file_load_resfile(const legacy_s8 *filename);
+/* With a nonzero tail, load a fresh snapshot whose allocation retains at least
+ * tail_bytes after the rounded resource length, including legacy decoder
+ * residue. Unwritten storage is zero. Release with mmgr_release, not caching
+ * unload_resource; ordinary cached resources do not preserve this tail. */
+void far *file_load_resfile_with_tail(const legacy_s8 *filename, legacy_u16 tail_bytes);
 void far *file_load_resource(legacy_s16 resource_type, const legacy_s8 *filename);
 void unload_resource(void far *resptr);
 void file_load_audiores(const legacy_s8 *songfile, const legacy_s8 *voicefile,

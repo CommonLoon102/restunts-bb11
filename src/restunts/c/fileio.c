@@ -706,11 +706,27 @@ static legacy_s16 file_decomp_pass(legacy_u8 far *source, legacy_u8 far *destina
 	return 0;
 }
 
-// Decompress file. Returns pointer to result, NULL or raises fatal error.
-void far *file_decomp(const legacy_s8 *filename, legacy_s16 fatal)
+/* Tail snapshots own their storage. Initialize even the workspace before placing
+ * compressed input at its historical offset, so unwritten bytes are stable. */
+static void far *file_alloc_tail_pages(const legacy_s8 *filename, legacy_u16 paragraphs,
+									   legacy_u16 tail_bytes)
 {
-	// Check if resource archive is already loaded.
-	legacy_u8 far *dst = mmgr_get_chunk_by_name(filename);
+	legacy_u8 huge *result = mmgr_alloc_pages(filename, paragraphs);
+	if (tail_bytes) {
+		legacy_u32 length = (legacy_u32)paragraphs << DOS_PARAGRAPH_SHIFT;
+		for (legacy_u32 index = 0; index < length; index++) {
+			result[index] = 0;
+		}
+	}
+	return result;
+}
+
+// Decompress file. Returns pointer to result, NULL or raises fatal error.
+static void far *file_decomp_internal(const legacy_s8 *filename, legacy_s16 fatal,
+									  legacy_u16 tail_bytes)
+{
+	// Ordinary cached resources have already discarded the decompression tail.
+	legacy_u8 far *dst = tail_bytes ? 0 : mmgr_get_chunk_by_name(filename);
 	if (dst) {
 		return dst;
 	}
@@ -722,8 +738,13 @@ void far *file_decomp(const legacy_s8 *filename, legacy_s16 fatal)
 	if (decompparas) {
 		// Allocate extra paragraphs for alphabet and escape tables
 		// overhead used during decompression.
+		legacy_u16 retained_paragraphs = decompparas + file_bytes_to_paras(tail_bytes);
 		decompparas += COMPRESSION_WORKSPACE_PARAGRAPHS;
-		dst = mmgr_alloc_pages(filename, decompparas);
+		legacy_u16 allocated_paragraphs =
+			retained_paragraphs > decompparas ? retained_paragraphs : decompparas;
+		dst = file_alloc_tail_pages(filename, allocated_paragraphs, tail_bytes);
+		/* Extra retained storage must not move the compressed source or any
+		 * intermediate pass: those offsets determine the legacy tail bytes. */
 
 		legacy_u16 paras = file_paras(filename, fatal);
 		if (paras) {
@@ -761,9 +782,8 @@ void far *file_decomp(const legacy_s8 *filename, legacy_s16 fatal)
 
 				// Free unneeded overhead.
 				if (!err) {
-					decompparas -= COMPRESSION_WORKSPACE_PARAGRAPHS;
 					mmgr_resize_memory(dos_memory_pointer_offset(dst),
-									   dos_memory_pointer_segment(dst), decompparas);
+									   dos_memory_pointer_segment(dst), retained_paragraphs);
 
 					return dst;
 				}
@@ -771,11 +791,19 @@ void far *file_decomp(const legacy_s8 *filename, legacy_s16 fatal)
 		}
 	}
 
+	if (tail_bytes && dst) {
+		mmgr_release(dst);
+	}
 	if (fatal) {
 		fatal_error(invalid_pack_type_error_format, filename);
 	}
 
 	return 0;
+}
+
+void far *file_decomp(const legacy_s8 *filename, legacy_s16 fatal)
+{
+	return file_decomp_internal(filename, fatal, 0);
 }
 
 void far *file_decomp_fatal(const legacy_s8 *filename)
@@ -789,10 +817,11 @@ void far *file_decomp_nofatal(const legacy_s8 *filename)
 }
 
 // Allocates, reads and returns a pointer to the contents of a binary file
-void far *file_load_binary(const legacy_s8 *filename, legacy_s16 fatal)
+static void far *file_load_binary_internal(const legacy_s8 *filename, legacy_s16 fatal,
+										   legacy_u16 tail_bytes)
 {
-	void far *memptr = mmgr_get_chunk_by_name(filename);
-	if (dos_memory_pointer_segment(memptr) != 0) {
+	void far *memptr = tail_bytes ? 0 : mmgr_get_chunk_by_name(filename);
+	if (!tail_bytes && dos_memory_pointer_segment(memptr) != 0) {
 		return memptr;
 	}
 
@@ -800,8 +829,18 @@ void far *file_load_binary(const legacy_s8 *filename, legacy_s16 fatal)
 	if (numparas == 0) {
 		return 0;
 	}
-	memptr = mmgr_alloc_pages(filename, numparas);
-	return file_read(filename, memptr, fatal);
+	numparas += file_bytes_to_paras(tail_bytes);
+	memptr = file_alloc_tail_pages(filename, (legacy_u16)numparas, tail_bytes);
+	void far *result = file_read(filename, memptr, fatal);
+	if (tail_bytes && result == 0) {
+		mmgr_release(memptr);
+	}
+	return result;
+}
+
+void far *file_load_binary(const legacy_s8 *filename, legacy_s16 fatal)
+{
+	return file_load_binary_internal(filename, fatal, 0);
 }
 
 void far *file_load_binary_nofatal(const legacy_s8 *filename)
@@ -921,6 +960,34 @@ void far *file_load_resfile(const legacy_s8 *filename)
 		show_disk_error_dialog();
 	}
 #endif
+}
+
+void far *file_load_resfile_with_tail(const legacy_s8 *filename, legacy_u16 tail_bytes)
+{
+	if (tail_bytes == 0) {
+		return file_load_resfile(filename);
+	}
+	legacy_s8 name[RESOURCE_NAME_BUFFER_SIZE];
+	for (;;) {
+		strcpy(name, filename);
+		strcat(name, ".res");
+		void far *result = file_load_binary_internal(name, 0, tail_bytes);
+		if (result != 0) {
+			return result;
+		}
+		strcpy(name, filename);
+		strcat(name, ".pre");
+		result = file_decomp_internal(name, 0, tail_bytes);
+		if (result != 0) {
+			return result;
+		}
+#ifdef RESTUNTS_HEADLESS
+		fatal_error(headless_file_error, filename);
+		return 0;
+#else
+		show_disk_error_dialog();
+#endif
+	}
 }
 
 void unload_resource(void far *resptr)

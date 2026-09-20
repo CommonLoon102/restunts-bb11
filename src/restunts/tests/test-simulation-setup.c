@@ -127,10 +127,21 @@ void far *file_load_resfile(const legacy_s8 *filename)
 	return opponent_resource;
 }
 
+void far *file_load_resfile_with_tail(const legacy_s8 *filename, legacy_u16 tail_bytes)
+{
+	assert(tail_bytes == 256U);
+	return file_load_resfile(filename);
+}
+
 void unload_resource(void far *resource)
 {
 	assert(resource == opponent_resource);
 	trace_event(11);
+}
+
+void mmgr_release(void far *resource)
+{
+	unload_resource(resource);
 }
 
 legacy_s8 far *locate_shape_alt(legacy_s8 far *resource, const legacy_s8 *name)

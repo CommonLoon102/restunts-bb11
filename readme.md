@@ -341,6 +341,18 @@ even when near-plane clipping retains a negative depth sum. This can put a grill
 behind opaque surfaces, as in `0027.rpl`, camera 2, player, frame 665. Preserve
 this behavior in the C port; the original engine in `asmorig` remains the oracle.
 
+Opponent route selection also preserves original resource overreads. Track tile
+IDs index the opponent's `sped` data beyond its 16 speed entries, into following
+resource chunks and bytes left by decompression. The route loader reconstructs
+these bytes in a fresh, zero-initialized allocation, retaining the original
+compressed-source placement and enough owned tail storage for every byte-sized
+index. Ordinary cached resources have discarded this tail and cannot supply it.
+Clamping costs at the declared resource size changes route choices: in
+`0034.rpl`, it selects the alternate branch and first diverges at frame 943.
+Do not replace the reconstruction with either zero costs or reads from adjacent
+allocations. Host tests cover decoder residue and poisoned memory; the golden
+replays cover the resulting opponent behavior.
+
 The C renderer also preserves the original sphere bounding-box writes used by
 crash explosions and the renderer stack values reused by stopped-wheel physics.
 The pixel-dump wrapper supplies the archived caller context, deriving addresses
