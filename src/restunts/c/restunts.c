@@ -4,6 +4,7 @@
 #include "dashboard.h"
 #include "car_speed.h"
 #include "physics_internal.h"
+#include "owoot.h"
 #include "restunts.h"
 #include "fileio.h"
 #include "fatal.h"
@@ -310,6 +311,7 @@ void init_main(legacy_s16 argc, legacy_s8 *argv[])
 
 	configure_powergear_bug(argc, argv);
 	configure_legacy_collision(argc, argv);
+	configure_owoot(argc, argv);
 	startup_parse_options(argc, argv, &startup_options);
 
 	// Unused "/nd" switch. Maybe used when loading other video drivers?

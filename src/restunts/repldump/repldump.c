@@ -1,4 +1,6 @@
+#ifdef RESTUNTS_ORIGINAL
 #include <dos.h>
+#endif
 #include <externs.h>
 #include <restunts.h>
 #include <fileio.h>
@@ -15,6 +17,10 @@
 #include "../c/track_objects.h"
 #include "../c/camera.h"
 #include "../c/audio_control.h"
+#ifndef RESTUNTS_ORIGINAL
+#include "../c/owoot.h"
+#include "../c/crash_state.h"
+#endif
 #ifdef RESTUNTS_ORIGINAL
 #include "../platform/dos/dump_timer.h"
 #endif
@@ -245,9 +251,9 @@ static legacy_u16 repldump_output_write(REPLDUMP_OUTPUT output, const void far *
 	return dos_file_write(output, source, length);
 }
 
-static void repldump_output_close(REPLDUMP_OUTPUT output)
+static legacy_s16 repldump_output_close(REPLDUMP_OUTPUT output)
 {
-	(void)dos_file_close(output);
+	return dos_file_close(output);
 }
 
 #endif
@@ -260,6 +266,60 @@ typedef FILE *REPLDUMP_OUTPUT;
 #endif
 
 #ifndef RESTUNTS_ORIGINAL
+
+static void repldump_strip_replay_extension(legacy_s8 *name)
+{
+	legacy_u16 length = strlen(name);
+	if (length >= REPLDUMP_REPLAY_EXTENSION_SIZE &&
+		stricmp(name + length - REPLDUMP_REPLAY_EXTENSION_SIZE, ".rpl") == 0) {
+		name[length - REPLDUMP_REPLAY_EXTENSION_SIZE] = '\0';
+	}
+}
+
+/* Keep the replay stem and both output extensions within the DOS 8.3 buffer. */
+static legacy_s16 repldump_output_name(legacy_s8 *output, const legacy_s8 *stem,
+									   const legacy_s8 *extension)
+{
+	if (stem[0] == 0 ||
+		strlen(stem) + REPLDUMP_REPLAY_EXTENSION_SIZE >= REPLDUMP_OUTPUT_NAME_SIZE) {
+		return 0;
+	}
+	strcpy(output, stem);
+	strcat(output, extension);
+	return 1;
+}
+
+static legacy_s16 repldump_write_owoot_result(const legacy_s8 *stem, legacy_s16 passed)
+{
+	if (!owoot_enabled) {
+		return 1;
+	}
+	legacy_s8 name[REPLDUMP_OUTPUT_NAME_SIZE];
+	if (!repldump_output_name(name, stem, ".owo")) {
+		return 0;
+	}
+	/* Discard a previous verdict before attempting a replacement. */
+	(void)dos_file_remove(name);
+	REPLDUMP_OUTPUT output = repldump_output_open(name);
+	if (output == 0) {
+		return 0;
+	}
+	legacy_u16 written = repldump_output_write(output, passed ? "pass" : "fail", 4U);
+	legacy_s16 closed = repldump_output_close(output);
+	if (written != 4U || closed != 0) {
+		(void)dos_file_remove(name);
+		return 0;
+	}
+	return 1;
+}
+
+static legacy_s16 repldump_complete_owoot_result(const legacy_s8 *stem)
+{
+	/* OWOOT violations use the normal crash event. The first terminal event
+	 * is latched by update_crash_state, so a crashed run cannot become FINISH. */
+	return repldump_write_owoot_result(stem,
+									   state.playerstate.car_crashBmpFlag == CRASH_EVENT_FINISH);
+}
 
 static legacy_u8 far *serialized_gamestate;
 static const legacy_s8 serialized_state_chunk_name[REPLDUMP_SERIALIZED_CHUNK_NAME_SIZE] = {
@@ -288,12 +348,23 @@ legacy_s16 stuntsmain(legacy_s16 argc, legacy_s8 *argv[])
 		return 1;
 	}
 
+#ifdef RESTUNTS_ORIGINAL
 	legacy_s16 len = strlen(argv[1]);
 	if (len >= REPLDUMP_REPLAY_EXTENSION_SIZE &&
 		((strcmp(argv[1] + len - REPLDUMP_REPLAY_EXTENSION_SIZE, ".rpl") == 0) ||
 		 strcmp(argv[1] + len - REPLDUMP_REPLAY_EXTENSION_SIZE, ".RPL") == 0)) {
 		argv[1][len - REPLDUMP_REPLAY_EXTENSION_SIZE] = '\0';
 	}
+
+#else
+	repldump_strip_replay_extension(argv[1]);
+	configure_owoot(argc, argv);
+	/* Start with fail before loading resources: aborted runs must not retain
+	 * a successful verdict from an earlier invocation. */
+	if (!repldump_write_owoot_result(argv[1], 0)) {
+		return 1;
+	}
+#endif
 
 	init_main(argc, argv);
 #ifdef RESTUNTS_ORIGINAL
@@ -407,13 +478,15 @@ legacy_s16 stuntsmain(legacy_s16 argc, legacy_s8 *argv[])
 	printf("OK\n");
 
 	legacy_s8 outname[REPLDUMP_OUTPUT_NAME_SIZE];
-	strcpy(outname, argv[1]);
 #ifdef RESTUNTS_ORIGINAL
+	strcpy(outname, argv[1]);
 	strcat(outname, ".BIN");
-#else
-	strcat(outname, ".BNI");
-#endif
 	outname[REPLDUMP_OUTPUT_NAME_LAST_INDEX] = 0;
+#else
+	if (!repldump_output_name(outname, argv[1], ".BNI")) {
+		return 1;
+	}
+#endif
 	printf("Creating output file '%s'... ", outname);
 
 	REPLDUMP_OUTPUT fout = repldump_output_open(outname);
@@ -430,7 +503,11 @@ legacy_s16 stuntsmain(legacy_s16 argc, legacy_s8 *argv[])
 	repldump_output_write(fout, &gameconfig.game_recordedframes, sizeof(legacy_u16));
 #else
 	LEGACY_WRITE_U16_LE(serialized_gamestate, gameconfig.game_recordedframes);
-	repldump_output_write(fout, serialized_gamestate, sizeof(legacy_u16));
+	if (repldump_output_write(fout, serialized_gamestate, sizeof(legacy_u16)) !=
+		sizeof(legacy_u16)) {
+		repldump_output_close(fout);
+		return 1;
+	}
 #endif
 
 	printf("Processing %d frames... ", gameconfig.game_recordedframes);
@@ -443,17 +520,23 @@ legacy_s16 stuntsmain(legacy_s16 argc, legacy_s8 *argv[])
 #ifdef RESTUNTS_ORIGINAL
 		repldump_output_write(fout, &state, sizeof(struct GAMESTATE));
 #else
-		repldump_output_write(fout, serialized_gamestate,
-							  gamestate_serialize(serialized_gamestate, &state));
+		legacy_u16 length = gamestate_serialize(serialized_gamestate, &state);
+		if (repldump_output_write(fout, serialized_gamestate, length) != length) {
+			repldump_output_close(fout);
+			return 1;
+		}
 #endif
 		//printf("Current frame %d\n", state.frame);
 	}
 
 	printf("OK\n");
 
+#ifndef RESTUNTS_ORIGINAL
+	if (repldump_output_close(fout) != 0 || !repldump_complete_owoot_result(argv[1])) {
+		return 1;
+	}
+#else
 	repldump_output_close(fout);
-
-#ifdef RESTUNTS_ORIGINAL
 	if (argc == 2) {
 		input_do_checking(1);
 		fatal_error("\nDone.\n");

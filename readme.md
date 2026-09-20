@@ -95,6 +95,40 @@ The ported physics dump tool accepts the same switches after the replay name:
 the same physics settings for recording and playback. Original assembly
 executables and the renderer dump tools retain their existing interfaces.
 
+### OWOOT driving rules
+
+Run `restunts.exe /owoot` to require at least part of one player wheel to remain
+on or above the road. The check uses the car model's tire geometry, including
+steering, suspension, pitch, and roll, and is independent of camera position,
+zoom, and detail level. Red-white rumble strips on large corners count as grass.
+Driving beneath an elevated road does not count as being above it.
+
+Stunts must be followed along their intended route: the switch also checks
+ordered progress through loops, corkscrews, slaloms, and other stunt elements.
+An airborne car may cross the single off-road tile between aligned ramps or
+bridges. The whole gap tile is exempt. The exception requires a launch from
+the connected approach and ends at the receiving road; it does not permit
+arbitrary flights over grass. The
+`r*` OWOOT replay corpus contains only single-tile gaps between connected
+elevated road ends, including gaps occupied by scenery. Flight may continue
+over the receiving road for additional tiles.
+
+A violation triggers the normal crash immediately. Only the player is checked,
+including during replay playback. Rewinding restores the OWOOT progress along
+with the car state. The switch is case-insensitive and can be combined with
+`/pg:off`, `/lc:off`, and `/nointro`; it is disabled by default.
+
+The physics dump tool also accepts `repldump.exe <replay> /owoot`. Replays do not
+store the switch, so launch with the same settings for recording and playback.
+See [OWOOT validation notes](docs/owoot-validation.md) for replay audit findings.
+
+With `/owoot`, `repldump.exe R0019.RPL /owoot` also writes `R0019.owo`, containing
+exactly `pass` or `fail`. Passing requires finishing the race without an OWOOT
+violation; ordinary crashes and unfinished replays fail too. The result starts
+as `fail` and changes to `pass` only after successful processing. File-writing
+or replay-loading errors return a nonzero exit code; check that code as well
+when validating a batch. Without `/owoot`, no `.owo` file is created or updated.
+
 ### Needle colours
 
 The ported game includes the [needle colour mod](https://wiki.stunts.hu/wiki/Needle_colour_mod).

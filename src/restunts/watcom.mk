@@ -55,6 +55,9 @@ else
 endif
 WATCOM_LIBPATH = libpath $(WATCOM)/lib286 libpath $(WATCOM)/lib286/dos library clibm
 
+# Keep far geometry outside the span from near data to the DGROUP stack.
+WATCOM_PORTED_LINK_ORDER = order clname CODE clname FAR_DATA clname DATA clname BSS clname STACK
+
 # Watcom 2's optimizer can tail-merge bytes inside inline-assembly blocks,
 # corrupting local jump targets (observed in dos_file_write). Keep all DOS
 # platform/startup code unoptimized; portable game code retains -os.

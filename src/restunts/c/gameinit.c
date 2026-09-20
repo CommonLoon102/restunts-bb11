@@ -2,6 +2,7 @@
 #include "opponent.h"
 #include "externs.h"
 #include "crash_state.h"
+#include "owoot.h"
 
 #define CAR_START_LONGITUDINAL_OFFSET 210
 #define CAR_START_LATERAL_OFFSET 36
@@ -133,6 +134,10 @@ void init_carstate_from_simd(struct CARSTATE *playerstate, struct SIMD *simd,
 	playerstate->car_surfacegrip_sum = CAR_INITIAL_SURFACE_GRIP;
 
 	init_car_wheels(playerstate, posX, posY, posZ);
+	if (owoot_enabled) {
+		playerstate->car_reserved_route_word1 = 0;
+		playerstate->car_reserved_route_word2 = 0;
+	}
 
 	playerstate->car_engineLimiterTimer = 0;
 	playerstate->car_slidingFlag = CAR_SLIDING_INACTIVE;

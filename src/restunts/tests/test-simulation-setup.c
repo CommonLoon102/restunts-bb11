@@ -12,6 +12,7 @@
 #include "../c/track_objects.h"
 #include "../c/car_speed.h"
 #include "../c/state_internal.h"
+#include "../c/owoot.h"
 
 extern void update_follow_cameras(void);
 
@@ -246,6 +247,42 @@ static void test_restore_without_initial_checkpoint(void)
 	assert(loop_reset_count == resets_before + 1U);
 }
 
+static void test_owoot_checkpoint_progress(void)
+{
+	owoot_enabled = 1;
+	configure_simulation(2);
+	init_game_state(GAMESTATE_INIT_RESET_CHECKPOINTS);
+	assert(state.playerstate.car_reserved_route_word1 == 0);
+	assert(state.playerstate.car_reserved_route_word2 == 0);
+	for (unsigned int index = 0; index < CARSTATE_WHEEL_COUNT; index++) {
+		assert(state.playerstate.car_reserved_wheel_state[index] == 0);
+		state.playerstate.car_reserved_wheel_state[index] = (legacy_s16)(index + 7);
+	}
+	state.playerstate.car_reserved_route_word1 = 12;
+	state.playerstate.car_reserved_route_word2 = 4;
+	memset(inputs, 0, sizeof(inputs));
+	replay_input_buffer = inputs;
+	game_replay_mode = REPLAY_MODE_LIVE;
+	race_start_sequence_state = RACE_START_SEQUENCE_INACTIVE;
+	update_gamestate();
+	assert(checkpoints[0].game_checkpoint_valid);
+	state.game_frame = 29;
+	state.playerstate.car_reserved_route_word1 = 24;
+	state.playerstate.car_reserved_route_word2 = 1;
+	memset(state.playerstate.car_reserved_wheel_state, 0,
+		   sizeof(state.playerstate.car_reserved_wheel_state));
+	restore_gamestate(0);
+	assert(state.playerstate.car_reserved_route_word1 == 12);
+	assert(state.playerstate.car_reserved_route_word2 == 4);
+	for (unsigned int index = 0; index < CARSTATE_WHEEL_COUNT; index++) {
+		assert(state.playerstate.car_reserved_wheel_state[index] == (legacy_s16)(index + 7));
+	}
+	init_game_state(GAMESTATE_INIT_RESET_CHECKPOINTS);
+	assert(state.playerstate.car_reserved_route_word1 == 0);
+	assert(state.playerstate.car_reserved_route_word2 == 0);
+	owoot_enabled = 0;
+}
+
 static void configure_cameras(unsigned int scenario)
 {
 	memset(&state, 0, sizeof(state));
@@ -344,6 +381,7 @@ int main(void)
 	assert(trace_hash == UINT64_C(0x88796a1f55e594e4));
 	test_restore_initial_checkpoint();
 	test_restore_without_initial_checkpoint();
+	test_owoot_checkpoint_progress();
 	puts("Simulation setup snapshots and initial checkpoint restoration passed (180 scenarios).");
 	return 0;
 }

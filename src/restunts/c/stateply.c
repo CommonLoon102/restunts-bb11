@@ -6,6 +6,7 @@
 #include "crash_state.h"
 #include "track_collision.h"
 #include "wheel_transform.h"
+#include "owoot.h"
 #include "car_audio.h"
 #include "externs.h"
 
@@ -1268,4 +1269,5 @@ void update_player_state(struct CARSTATE *carstate, struct SIMD *simd,
 		}
 	}
 	commit_working_car_pose(carstate);
+	owoot_update_player(carstate, car_index);
 }
