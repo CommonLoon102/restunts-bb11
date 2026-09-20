@@ -18,7 +18,6 @@ extern struct SHAPE2D far *gnobshapes[];
 extern struct SHAPE2D far *digshapes[];
 extern struct SPRITE far *dashboard_instrument_sprite;
 extern struct SPRITE far *dashboard_gearbox_sprite;
-extern struct SPRITE far *dashboard_gearbox_background_sprite;
 extern legacy_s16 dashboard_rpm_index_cache[];
 extern legacy_s16 dashboard_gear_knob_x_cache[];
 extern legacy_s16 dashboard_gear_knob_y_cache[];

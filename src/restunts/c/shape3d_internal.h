@@ -78,6 +78,7 @@ extern legacy_u8 *sphere_radius_rows[];
 extern legacy_s16 polygon_next_index[];
 extern legacy_u16 polyinfonumpolys;
 extern legacy_u8 far *polyinfoptr;
-extern legacy_u8 far *polyinfoptrs[];
+/* Offsets are relative to polyinfoptr, whose whole allocation fits in 16 bits. */
+extern legacy_u16 polygon_record_offsets[];
 
 #endif

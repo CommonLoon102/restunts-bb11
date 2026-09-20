@@ -115,7 +115,8 @@ static void queue_polygon(legacy_s16 pattern)
 	polyinfo_reset();
 	polyinfonumpolys = 1;
 	polygon_next_index[400] = 0;
-	polyinfoptrs[0] = polygon_record;
+	polyinfoptr = polygon_record;
+	polygon_record_offsets[0] = 0;
 }
 
 static void assert_headings(const legacy_s16 *headings, legacy_s16 a, legacy_s16 b, legacy_s16 c,
@@ -132,7 +133,7 @@ static void queue_opponent_primitive(legacy_u8 primitive, legacy_s16 pattern)
 	memcpy(opponent_polyinfo + 24, polygon_record, sizeof(polygon_record));
 	opponent_polyinfo[24 + 4] = primitive;
 	polyinfoptr = opponent_polyinfo;
-	polyinfoptrs[0] = opponent_polyinfo + 24;
+	polygon_record_offsets[0] = 24;
 }
 
 static void assert_stopped_opponent_travel(legacy_s16 expected_x, legacy_s16 expected_z)
@@ -390,6 +391,7 @@ static void test_ghost_preserves_normal_point_indices(void)
 static void test_supersight_render_capacity(void)
 {
 	shape3d_set_legacy_render_stack(0, 0, 0, 0);
+	static legacy_u8 queue[32U + POLYINFO_SUPERSIGHT_DATA_SIZE];
 	static legacy_u8 clipped_record[66] = {0, 0, 0, 15, RENDER_PRIMITIVE_POLYGON, 0};
 	LEGACY_WRITE_U16_LE(clipped_record + 62, 123);
 	LEGACY_WRITE_U16_LE(clipped_record + 64, 45);
@@ -400,11 +402,15 @@ static void test_supersight_render_capacity(void)
 		legacy_u16 capacity = modes[test] != 0U ? 592U : 400U;
 		legacy_u8 *record = modes[test] != 0U ? clipped_record : polygon_record;
 		expected_polygon_vertices = record[3];
+		polyinfoptr = queue + 32;
+		legacy_u16 offset = modes[test] != 0U ? POLYINFO_SUPERSIGHT_DATA_SIZE - 66U : 0U;
+		memcpy(polyinfoptr, record, modes[test] != 0U ? 66U : sizeof(polygon_record));
+		memcpy(polyinfoptr + offset, record, modes[test] != 0U ? 66U : sizeof(polygon_record));
 		polyinfonumpolys = capacity;
 		polygon_next_index[capacity] = capacity - 1U;
 		for (legacy_u16 index = 0; index < capacity; index++) {
 			polygon_next_index[index] = (legacy_s16)index - 1;
-			polyinfoptrs[index] = record;
+			polygon_record_offsets[index] = index != 0U ? offset : 0U;
 		}
 		unsigned calls_before = solid_calls;
 		shape3d_render_queued_primitives();
@@ -473,8 +479,8 @@ int main(void)
 	polyinfonumpolys = 2;
 	polygon_next_index[400] = 7;
 	polygon_next_index[7] = 3;
-	polyinfoptrs[7] = polygon_record;
-	polyinfoptrs[3] = polygon_record;
+	polygon_record_offsets[7] = 0;
+	polygon_record_offsets[3] = 0;
 	shape3d_render_queued_primitives();
 	assert_headings(headings, 3, 1, 32767, 5261);
 

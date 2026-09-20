@@ -267,6 +267,7 @@ The supported targets are:
 | `repldump-original` | Builds `repldumo.exe` from the original assembly and physics dump wrapper. |
 | `pixldump-original` | Builds `pixldumo.exe` from the original assembly and renderer dump wrapper. |
 | `test-dos-platform` | Builds the DOS platform ABI test, `tests/build/watcom/<configuration>/DOSPLAT.EXE`. |
+| `test-race-memory` | Builds the full-game race memory test, `tests/build/watcom/<configuration>/RACEMEM.EXE`. |
 | `clean` | Removes generated build objects and candidate executables. |
 
 The `*-original` dump targets assemble the original game code with WASM,
@@ -609,6 +610,25 @@ and cache options. Run the platform ABI check separately:
 make -C src/restunts test-dos-platform
 python3 tools/scripts/run-dos-platform-test.py
 ```
+
+Check the conventional-memory budget with a complete race, including the
+player dashboard and a 320x200 rendering buffer:
+
+```bash
+make -C src/restunts test-race-memory
+python3 tools/scripts/run-race-memory-test.py --dosbox dosbox
+python3 tools/scripts/run-race-memory-test.py --dosbox dosbox-x
+```
+
+This regression loads DIA3 for the player and CSIL for the opponent on
+`DEFAULT.TRK`, draws with SuperSight off, on, then off again, and reports the
+remaining conventional memory. It changes gears and gauges and reloads the race
+to check dashboard drawing and resource release. Run it in both DOSBox and
+DOSBox-X; the latter has a smaller conventional-memory budget. The bundled game
+and custom car resources are copied to an isolated directory. The test links
+all normal game objects; its small test entry makes its memory budget slightly
+stricter than the game.
+
 
 ## Build options
 

@@ -15,8 +15,12 @@
 
 static legacy_u32 trace;
 static struct SHAPE2D shapes[40];
-static struct SPRITE sprites[3];
+static struct SPRITE sprites[2];
 static legacy_u16 sprite_count;
+static legacy_u16 live_sprite_count;
+static struct SPRITE drawing_context[SPRITE_STATE_COUNT];
+static int capture_pixels;
+static legacy_u8 pixel_buffers[4][320 * 200];
 static int optional_shapes;
 static legacy_s8 resources[2];
 static int capture_needle_lines;
@@ -33,6 +37,57 @@ static void record(legacy_u16 value)
 static legacy_u16 shape_id(const struct SHAPE2D *shape)
 {
 	return shape->width;
+}
+static legacy_u8 *pixels_for_shape(const struct SHAPE2D *shape)
+{
+	if (shape == &shapes[35] || shape == &shapes[36]) {
+		return pixel_buffers[shape - &shapes[35]];
+	}
+	assert(shape == &shapes[38] || shape == &shapes[39]);
+	return pixel_buffers[2 + shape - &shapes[38]];
+}
+static legacy_u8 background_pixel(legacy_u16 x, legacy_u16 y)
+{
+	return (legacy_u8)(1 + (x * 5 + y * 17) % 250);
+}
+static legacy_u8 instrument_pixel(legacy_u16 x, legacy_u16 y)
+{
+	return (legacy_u8)(1 + (x * 11 + y * 7) % 200);
+}
+static void draw_pixels(struct SHAPE2D *shape, legacy_s16 x, legacy_s16 y, int raw_bitmap)
+{
+	if (capture_pixels == 0) {
+		return;
+	}
+	struct SPRITE *target = &drawing_context[0];
+	legacy_u8 *pixels = pixels_for_shape(target->sprite_bitmapptr);
+	legacy_u8 *source = raw_bitmap ? pixels_for_shape(shape) : NULL;
+	for (legacy_s16 row = 0; row < shape->height; row++) {
+		legacy_s16 target_y = y + row;
+		if (target_y < target->sprite_top || target_y >= target->sprite_bottom) {
+			continue;
+		}
+		for (legacy_s16 column = 0; column < shape->width; column++) {
+			legacy_s16 target_x = x + column;
+			if (target_x < target->sprite_left || target_x >= target->sprite_right) {
+				continue;
+			}
+			pixels[target_y * target->sprite_pitch + target_x] =
+				raw_bitmap			   ? source[row * shape->width + column]
+				: shape == &shapes[3]  ? instrument_pixel(column, row)
+				: shape == &shapes[30] ? background_pixel(column, row)
+									   : 251;
+		}
+	}
+}
+static void select_pixels(struct SHAPE2D *shape)
+{
+	drawing_context[0].sprite_bitmapptr = shape;
+	drawing_context[0].sprite_left = 0;
+	drawing_context[0].sprite_top = 0;
+	drawing_context[0].sprite_right = shape->width;
+	drawing_context[0].sprite_bottom = shape->height;
+	drawing_context[0].sprite_pitch = shape->width;
 }
 legacy_u16 shape2d_get_width(const struct SHAPE2D *shape)
 {
@@ -68,14 +123,17 @@ void mouse_draw_transparent_check(void)
 }
 void sprite_select_screen(void)
 {
+	select_pixels(&shapes[38]);
 	record(3);
 }
 void sprite_select_screen_compat(void)
 {
+	select_pixels(&shapes[38]);
 	record(4);
 }
 void sprite_select_mcga_backbuffer(void)
 {
+	select_pixels(&shapes[39]);
 	record(5);
 }
 void shape2d_rle_copy_at_position(struct SHAPE2D *shape)
@@ -95,6 +153,7 @@ void shape2d_render_bmp_as_mask(struct SHAPE2D *shape)
 }
 void shape2d_rle_copy(struct SHAPE2D *shape, legacy_s16 x, legacy_s16 y)
 {
+	draw_pixels(shape, x, y, 0);
 	record(20);
 	record(shape_id(shape));
 	record((legacy_u16)x);
@@ -102,6 +161,7 @@ void shape2d_rle_copy(struct SHAPE2D *shape, legacy_s16 x, legacy_s16 y)
 }
 void shape2d_rle_copy_clipped(struct SHAPE2D *shape, legacy_s16 x, legacy_s16 y)
 {
+	draw_pixels(shape, x, y, 0);
 	record(21);
 	record(shape_id(shape));
 	record((legacy_u16)x);
@@ -109,6 +169,10 @@ void shape2d_rle_copy_clipped(struct SHAPE2D *shape, legacy_s16 x, legacy_s16 y)
 }
 void sprite_copy_image_at(struct SHAPE2D *shape, legacy_s16 x, legacy_s16 y)
 {
+	if (shape == dashboard_gearbox_sprite->sprite_bitmapptr ||
+		shape == dashboard_instrument_sprite->sprite_bitmapptr) {
+		draw_pixels(shape, x, y, 1);
+	}
 	record(22);
 	record(shape_id(shape));
 	record((legacy_u16)x);
@@ -146,6 +210,10 @@ void sprite_putimage_or(struct SHAPE2D *shape, legacy_u16 x, legacy_u16 y)
 void sprite_set_target_clip_bounds(legacy_u16 left, legacy_u16 right, legacy_u16 top,
 								   legacy_u16 bottom)
 {
+	drawing_context[0].sprite_left = left;
+	drawing_context[0].sprite_right = right;
+	drawing_context[0].sprite_top = top;
+	drawing_context[0].sprite_bottom = bottom;
 	record(30);
 	record(left);
 	record(right);
@@ -186,24 +254,55 @@ legacy_u16 dos_memory_pointer_segment(const void *pointer)
 }
 struct SPRITE *sprite_make_wnd(legacy_u16 width, legacy_u16 height, legacy_u16 flags)
 {
-	assert(sprite_count < 3);
+	assert(sprite_count < 2);
+	live_sprite_count++;
 	record(33);
 	record(width);
 	record(height);
 	record(flags);
 	struct SPRITE *result = &sprites[sprite_count];
 	result->sprite_bitmapptr = &shapes[35 + sprite_count++];
+	if (capture_pixels != 0) {
+		result->sprite_bitmapptr->width = width;
+		result->sprite_bitmapptr->height = height;
+	}
 	return result;
 }
 void sprite_free_wnd(struct SPRITE *sprite)
 {
+	assert(live_sprite_count != 0);
+	assert(sprite == &sprites[--live_sprite_count]);
 	record(34);
 	record(shape_id(sprite->sprite_bitmapptr));
 }
 void sprite_select_target(struct SPRITE *sprite)
 {
+	select_pixels(sprite->sprite_bitmapptr);
 	record(35);
 	record(shape_id(sprite->sprite_bitmapptr));
+}
+void sprite_save_context(struct SPRITE saved_context[SPRITE_STATE_COUNT])
+{
+	memcpy(saved_context, drawing_context, sizeof(drawing_context));
+	record(41);
+}
+void sprite_restore_context(struct SPRITE saved_context[SPRITE_STATE_COUNT])
+{
+	memcpy(drawing_context, saved_context, sizeof(drawing_context));
+	record(42);
+}
+void sprite_clear_target(legacy_u8 color)
+{
+	if (capture_pixels != 0) {
+		struct SPRITE *target = &drawing_context[0];
+		legacy_u8 *pixels = pixels_for_shape(target->sprite_bitmapptr);
+		for (legacy_s16 y = target->sprite_top; y < target->sprite_bottom; y++) {
+			memset(pixels + y * target->sprite_pitch + target->sprite_left, color,
+				   target->sprite_right - target->sprite_left);
+		}
+	}
+	record(43);
+	record(color);
 }
 void *file_load_resource(legacy_s16 type, const legacy_s8 *name)
 {
@@ -267,6 +366,7 @@ static void initialize_scenario(unsigned int scenario)
 	memset(&state, 0, sizeof(state));
 	memset(&simd_player, 0, sizeof(simd_player));
 	memset(sprites, 0, sizeof(sprites));
+	memset(drawing_context, 0, sizeof(drawing_context));
 	for (unsigned int i = 0; i < 40; i++) {
 		shapes[i].width = i + 1;
 		shapes[i].height = i + 2;
@@ -300,6 +400,8 @@ static void initialize_scenario(unsigned int scenario)
 	meter_needle_color = 15;
 	memcpy(gameconfig.game_playercarid, "PMIN", 4);
 	sprite_count = 0;
+	live_sprite_count = 0;
+	full_redraw_frames_remaining = 0;
 }
 /* Full-entry traces cover resource lifetime, both buffers, mouse ordering,
  * cache invalidation, wheel movement, and the 99/100/199/200 digit boundaries. */
@@ -326,6 +428,106 @@ static void run_scenario(unsigned int scenario)
 	}
 	setup_car_shapes(DASHBOARD_OPERATION_UNLOAD);
 	setup_car_shapes(-1);
+}
+/* Alternating compositions must copy only their own rectangle, even when the
+ * physical scratch bitmap is larger. Check both containment directions and
+ * crossed dimensions requiring separate buffers, plus screen/replay clipping. */
+static void test_dashboard_scratch_pixels(void)
+{
+	static const struct {
+		legacy_s16 dash_x, dash_y;
+		legacy_u16 dash_width, dash_height;
+		legacy_s16 gear_x, gear_y;
+		legacy_u16 gear_width, gear_height;
+		legacy_u16 instrument_width, instrument_height;
+		legacy_u16 window_count;
+	} cases[] = {
+		{0, 100, 320, 100, 238, 143, 64, 56, 188, 75, 1},
+		{11, 87, 300, 113, 211, 130, 91, 46, 40, 30, 1},
+		{50, 120, 240, 60, 38, 110, 80, 83, 120, 40, 2},
+		{0, 100, 320, 100, 309, 174, 31, 24, 60, 48, 1},
+		{0, 100, 320, 100, -5, 150, 60, 50, 70, 60, 1},
+		{0, 100, 320, 100, 220, 130, 60, 50, 80, 40, 2},
+	};
+	for (unsigned int mode = 0; mode < 2; mode++) {
+		for (unsigned int index = 0; index < sizeof(cases) / sizeof(cases[0]); index++) {
+			initialize_scenario(mode * 6);
+			capture_pixels = 1;
+			shapes[30].position_x = cases[index].dash_x;
+			shapes[30].position_y = cases[index].dash_y;
+			shapes[30].width = cases[index].dash_width;
+			shapes[30].height = cases[index].dash_height;
+			shapes[4].position_x = cases[index].gear_x;
+			shapes[4].position_y = cases[index].gear_y;
+			shapes[4].width = cases[index].gear_width;
+			shapes[4].height = cases[index].gear_height;
+			shapes[3].position_x = 20;
+			shapes[3].position_y = 104;
+			shapes[3].width = cases[index].instrument_width;
+			shapes[3].height = cases[index].instrument_height;
+			shapes[38].width = shapes[39].width = 320;
+			shapes[38].height = shapes[39].height = 200;
+			setup_car_shapes(DASHBOARD_OPERATION_LOAD);
+			assert(sprite_count == cases[index].window_count);
+			assert(dashbmp_y == cases[index].dash_y);
+			setup_car_shapes(DASHBOARD_OPERATION_REDRAW_STATIC);
+			struct SPRITE second_context = drawing_context[1];
+			for (unsigned int pass = 0; pass < 4; pass++) {
+				/* Pass 1 only changes gauges, pass 2 only hides the knob;
+				 * the other passes compose both panels in sequence. */
+				int draw_gear = pass != 1;
+				int draw_instruments = pass != 2;
+				state.playerstate.car_changing_gear = pass == 2 ? 0 : 1;
+				state.playerstate.car_gear_change_delay = pass == 2 ? 0 : 1;
+				if (draw_instruments) {
+					state.playerstate.car_currpm = (pass + 1) * 600;
+				}
+				memset(pixel_buffers[0], 255, sizeof(pixel_buffers[0]));
+				memset(pixel_buffers[1], 255, sizeof(pixel_buffers[1]));
+				memset(pixel_buffers[2], 253, sizeof(pixel_buffers[2]));
+				memset(pixel_buffers[3], 254, sizeof(pixel_buffers[3]));
+				setup_car_shapes(DASHBOARD_OPERATION_UPDATE);
+				assert(dashboard_gear_knob_visible_cache[0] == (pass != 2));
+				assert(drawing_context[0].sprite_bitmapptr == &shapes[38 + mode]);
+				assert(drawing_context[0].sprite_left == 0);
+				assert(drawing_context[0].sprite_right == 320);
+				assert(drawing_context[0].sprite_top == 0);
+				assert(drawing_context[0].sprite_bottom == height_above_replaybar);
+				assert(memcmp(&second_context, &drawing_context[1], sizeof(second_context)) == 0);
+				for (unsigned int page = 0; page < 2; page++) {
+					for (legacy_s16 y = 0; y < 200; y++) {
+						for (legacy_s16 x = 0; x < 320; x++) {
+							legacy_u8 expected = (legacy_u8)(253 + page);
+							if (page == mode && y < height_above_replaybar) {
+								if (draw_gear && x >= cases[index].gear_x &&
+									y >= cases[index].gear_y &&
+									x < cases[index].gear_x + cases[index].gear_width &&
+									y < cases[index].gear_y + cases[index].gear_height) {
+									expected = pass == 2 ? 0 : 251;
+									if (pass == 2 && x >= cases[index].dash_x &&
+										y >= cases[index].dash_y &&
+										x < cases[index].dash_x + cases[index].dash_width &&
+										y < cases[index].dash_y + cases[index].dash_height) {
+										expected = background_pixel(x - cases[index].dash_x,
+																	y - cases[index].dash_y);
+									}
+								}
+								if (draw_instruments && x >= 20 && y >= 104 &&
+									x < 20 + cases[index].instrument_width &&
+									y < 104 + cases[index].instrument_height) {
+									expected = instrument_pixel(x - 20, y - 104);
+								}
+							}
+							assert(pixel_buffers[2 + page][y * 320 + x] == expected);
+						}
+					}
+				}
+			}
+			setup_car_shapes(DASHBOARD_OPERATION_UNLOAD);
+			assert(live_sprite_count == 0);
+			capture_pixels = 0;
+		}
+	}
 }
 static void test_needle_colors(void)
 {
@@ -385,8 +587,9 @@ int main(void)
 	for (unsigned int scenario = 0; scenario < 48; scenario++) {
 		run_scenario(scenario);
 	}
-	assert(trace == 0x21c8a2f5UL);
+	assert(trace == 0x62cfc3d5UL);
 	test_needle_colors();
-	puts("Dashboard snapshots (48 scenarios) and needle colors passed.");
+	test_dashboard_scratch_pixels();
+	puts("Dashboard snapshots, needle colors, and shared scratch pixels passed.");
 	return 0;
 }

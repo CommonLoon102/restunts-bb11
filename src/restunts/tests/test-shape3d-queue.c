@@ -182,7 +182,7 @@ static void test_shared_clipped_vertices(void)
 	memcpy(primitives, records, sizeof(records));
 	assert(shape3d_transform_and_queue(&instance) == 0);
 	assert(polyinfonumpolys == 2);
-	const legacy_u8 *polygon = polyinfoptrs[1];
+	const legacy_u8 *polygon = polyinfoptr + polygon_record_offsets[1];
 	/* The intersection at the center equals vertex 7 and must not be duplicated. */
 	assert(polygon[3] == 3);
 	assert(LEGACY_READ_U16_LE(polygon) == 66);
@@ -216,9 +216,18 @@ static void test_depth_order_and_attached_primitive(void)
 		0, 0};
 
 	reset_scene();
+	/* Record offsets remain relative when the allocation starts at a nonzero offset. */
+	memset(polyinfo, 255, 17);
+	polyinfoptr = polyinfo + 17;
 	memcpy(primitives, records, sizeof(records));
 	assert(shape3d_transform_and_queue(&instance) == 0);
 	assert(polyinfonumpolys == 3);
+	assert(polygon_record_offsets[0] == 0);
+	assert(polygon_record_offsets[1] == 10);
+	assert(polygon_record_offsets[2] == 20);
+	for (unsigned index = 0; index < 17; index++) {
+		assert(polyinfo[index] == 255);
+	}
 	assert(polygon_next_index[400] == 1);
 	assert(polygon_next_index[1] == 2);
 	assert(polygon_next_index[2] == 0);
@@ -257,13 +266,13 @@ static void test_clipped_depth_signedness(void)
 
 		assert(shape3d_transform_and_queue(&instance) == 0);
 		assert(polyinfonumpolys == 2);
-		assert(polyinfoptrs[0][3] == cases[i].output_count);
+		assert(polyinfoptr[polygon_record_offsets[0] + 3U] == cases[i].output_count);
 		/* Preserve the original's mixed signedness: negative depth sums use
 		 * unsigned division for counts 3 and 5, but signed shifts for count 4.
 		 * The resulting low word determines the signed painter-order key,
 		 * even when this puts a near-clipped polygon behind a farther one. */
-		assert(LEGACY_READ_S16_LE(polyinfoptrs[0]) == cases[i].average);
-		assert(LEGACY_READ_S16_LE(polyinfoptrs[1]) == 150);
+		assert(LEGACY_READ_S16_LE(polyinfoptr + polygon_record_offsets[0]) == cases[i].average);
+		assert(LEGACY_READ_S16_LE(polyinfoptr + polygon_record_offsets[1]) == 150);
 		assert(polygon_next_index[400] == cases[i].first_index);
 		assert(polygon_next_index[cases[i].first_index] == (legacy_s16)(1U - cases[i].first_index));
 		assert(polygon_next_index[1U - cases[i].first_index] == -1);
@@ -318,8 +327,8 @@ static void check_queue_chain(legacy_u16 capacity, legacy_u16 count)
 	legacy_s16 index = polygon_next_index[capacity];
 	for (legacy_u16 expected = 0; expected < count; expected++) {
 		assert(index == (legacy_s16)expected);
-		assert(polyinfoptrs[index] >= polyinfo);
-		assert(polyinfoptrs[index] < polyinfo + POLYINFO_SUPERSIGHT_DATA_SIZE);
+		assert(polygon_record_offsets[index] < POLYINFO_SUPERSIGHT_DATA_SIZE);
+		assert(polygon_record_offsets[index] < polyinfoptrnext);
 		index = polygon_next_index[index];
 	}
 	assert(index == -1);
@@ -389,7 +398,8 @@ static void test_supersight_clipped_record_boundary(void)
 	static const legacy_u8 clipped[] = {10, 1, 7, 0, 3, 1, 3, 2, 3, 4, 3, 5, 3, 0, 0};
 	memcpy(primitives, clipped, sizeof(clipped));
 	assert(shape3d_transform_and_queue(&instance) == 1);
-	assert(polyinfoptrs[291][3] == 15);
+	assert(polygon_record_offsets[291] == 13246);
+	assert(polyinfoptr[polygon_record_offsets[291] + 3U] == 15);
 	assert(polyinfoptrnext == POLYINFO_SUPERSIGHT_DATA_SIZE);
 	assert(polygon_buffer_full == 1);
 	assert(shape3d_transform_and_queue(0) == 1);
@@ -412,8 +422,8 @@ static void test_ghost_override_is_per_instance(void)
 	assert(memcmp(primitives, triangle, sizeof(triangle)) == 0);
 	instance.ts_flags &= ~SHAPE3D_GHOST_FLAG;
 	assert(shape3d_transform_and_queue(&instance) == 0);
-	assert(polyinfoptrs[1][2] == 119);
-	assert(polyinfoptrs[1][4] == RENDER_PRIMITIVE_POLYGON);
+	assert(polyinfoptr[polygon_record_offsets[1] + 2U] == 119);
+	assert(polyinfoptr[polygon_record_offsets[1] + 4U] == RENDER_PRIMITIVE_POLYGON);
 }
 
 int main(void)
