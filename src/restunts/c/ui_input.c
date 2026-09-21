@@ -44,11 +44,10 @@ legacy_s16 call_read_line(legacy_s8 *text, legacy_s16 max_characters, legacy_s16
 	mouse_draw_transparent_check();
 
 	legacy_u16 length = (legacy_u16)strlen(text);
-	legacy_u16 trim_index = LEGACY_U16_WRAP_SUB(length, 1U);
-	while (text[trim_index] == ' ') {
-		trim_index = LEGACY_U16_WRAP_SUB(trim_index, 1U);
+	while (length != 0 && text[length - 1U] == ' ') {
+		length--;
 	}
-	text[LEGACY_U16_WRAP_ADD(trim_index, 1U)] = 0;
+	text[length] = 0;
 	return result;
 }
 
