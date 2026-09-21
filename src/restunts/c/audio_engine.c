@@ -707,6 +707,10 @@ void audio_release_channel_range(legacy_s16 first_channel, legacy_s16 last_chann
 
 static void far *audio_select_sample_resource(void far *original_resource, legacy_u8 note)
 {
+	/* An instrument may be absent from the selected driver's sound bank. */
+	if (original_resource == 0) {
+		return 0;
+	}
 	if (((legacy_u8 far *)original_resource)[AUDIO_PERCUSSION_TYPE_OFFSET] !=
 		AUDIO_PERCUSSION_TYPE) {
 		return original_resource;

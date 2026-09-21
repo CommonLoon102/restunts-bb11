@@ -180,7 +180,7 @@ jobs:
           New-Item -ItemType Directory -Path fixture -Force | Out-Null
           Push-Location fixture
           try {
-            foreach ($test in @('platform', 'fileio', 'input')) {
+            foreach ($test in @('platform', 'fileio', 'input', 'audio-sequence')) {
               & "$root/native-tests/bin/test-sdl3-$test.exe"
               if ($LASTEXITCODE -ne 0) { throw "$test failed: $LASTEXITCODE" }
             }
