@@ -1226,6 +1226,24 @@ static void shape3d_retain_sphere_stack(legacy_u16 size)
 	shape3d_retain_render_local(first, SHAPE3D_LEGACY_SPHERE_RETURN_IP);
 }
 
+static legacy_u16 shape3d_material_value(const legacy_s16 *table, legacy_u16 index)
+{
+	/* Resource materials use a byte, and wheel colors read two entries further.
+	 * The original maps are adjacent: color, pattern type, then pattern bits.
+	 * Model those reads without relying on the host's global-variable layout.
+	 * Extended pattern types never select a secondary-pattern lookup. */
+	if (index >= SHAPE3D_MATERIAL_COUNT) {
+		if (table == material_color_list) {
+			table = material_pattern_list;
+			index -= SHAPE3D_MATERIAL_COUNT;
+		} else if (table == material_pattern_list) {
+			table = material_pattern2_list;
+			index -= SHAPE3D_MATERIAL_COUNT;
+		}
+	}
+	return (legacy_u16)table[index];
+}
+
 /* Keep ghost drawing out of the legacy renderer stack handoff: its appearance
  * must not become an input to either car's physics. */
 static void shape3d_render_ghost(const legacy_u8 far *record, struct POINT2D *points)
@@ -1233,7 +1251,10 @@ static void shape3d_render_ghost(const legacy_u8 far *record, struct POINT2D *po
 	legacy_u16 primitive_type = record[4] & ~RENDER_PRIMITIVE_GHOST_FLAG;
 	if (primitive_type == RENDER_PRIMITIVE_POLYGON) {
 		legacy_u16 material = record[2];
-		if (material_patlist_ptr_cpy[material] == 1 && material_patlist2_ptr_cpy[material] == 0) {
+		legacy_u16 pattern_type = shape3d_material_value(material_patlist_ptr_cpy, material);
+		if (pattern_type > 2U ||
+			(pattern_type == 1U &&
+			 shape3d_material_value(material_patlist2_ptr_cpy, material) == 0U)) {
 			return;
 		}
 		polyinfo_read_points(record, points, record[3]);
@@ -1285,21 +1306,22 @@ void shape3d_render_queued_primitives(void)
 			continue;
 		}
 		legacy_u16 material_type = record[2];
-		legacy_u16 material_color = (legacy_u16)material_clrlist_ptr_cpy[material_type];
+		legacy_u16 material_color = shape3d_material_value(material_clrlist_ptr_cpy, material_type);
 		legacy_u16 primitive_type = record[4];
 
 		if (primitive_type == RENDER_PRIMITIVE_POLYGON) {
 			legacy_u16 vertex_count = record[3];
 			polyinfo_read_points(record, points, vertex_count);
 			shape3d_retain_opponent_polygon_pointer(record, vertex_count);
-			legacy_u16 pattern_type = (legacy_u16)material_patlist_ptr_cpy[material_type];
+			legacy_u16 pattern_type =
+				shape3d_material_value(material_patlist_ptr_cpy, material_type);
 			if (pattern_type == 0U) {
 				shape3d_retain_render_local_pair(
 					LEGACY_U16_WRAP_SUB(drawing_sprite.sprite_raster_right, 1U),
 					drawing_sprite.sprite_raster_left, SHAPE3D_LEGACY_SOLID_POLYGON_RETURN_IP);
 				preRender_default(material_color, vertex_count, points);
 			} else if (pattern_type == 1U) {
-				pattern_type = (legacy_u16)material_patlist2_ptr_cpy[material_type];
+				pattern_type = shape3d_material_value(material_patlist2_ptr_cpy, material_type);
 				shape3d_retain_opponent_pattern(pattern_type);
 				if (pattern_type != 0U) {
 					shape3d_retain_render_local(drawing_sprite.sprite_raster_left,
@@ -1311,10 +1333,11 @@ void shape3d_render_queued_primitives(void)
 				/* preRender_unk replaces its first argument with the secondary color. */
 				shape3d_retain_render_argument(
 					SHAPE3D_LEGACY_TWO_COLOR_POLYGON_RETURN_IP,
-					(legacy_u16)material_clrlist2_ptr_cpy[material_type]);
-				preRender_two_color((legacy_u16)material_patlist2_ptr_cpy[material_type],
-									(legacy_u16)material_clrlist2_ptr_cpy[material_type],
-									material_color, vertex_count, points);
+					shape3d_material_value(material_clrlist2_ptr_cpy, material_type));
+				preRender_two_color(
+					shape3d_material_value(material_patlist2_ptr_cpy, material_type),
+					shape3d_material_value(material_clrlist2_ptr_cpy, material_type),
+					material_color, vertex_count, points);
 			}
 		} else if (primitive_type == RENDER_PRIMITIVE_LINE) {
 			shape3d_retain_render_argument(SHAPE3D_LEGACY_LINE_RETURN_IP,
@@ -1337,8 +1360,8 @@ void shape3d_render_queued_primitives(void)
 									SHAPE3D_LEGACY_POLYGON_POINTS_STACK_OFFSET));
 			polyinfo_read_points(record, points, 4U);
 			preRender_wheel(points, WHEEL_INNER_RADIUS_SCALE, material_color,
-							(legacy_u16)material_clrlist_ptr_cpy[material_type + 1U],
-							(legacy_u16)material_clrlist_ptr_cpy[material_type + 2U]);
+							shape3d_material_value(material_clrlist_ptr_cpy, material_type + 1U),
+							shape3d_material_value(material_clrlist_ptr_cpy, material_type + 2U));
 		} else if (primitive_type == RENDER_PRIMITIVE_POINT) {
 			shape3d_retain_render_local_pair(shape3d_legacy_record_index(record_index),
 											 primitive_index - rendered_ghost_primitives,

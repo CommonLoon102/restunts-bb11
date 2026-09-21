@@ -73,6 +73,22 @@ from this rectangle, so their placement and size differed even with identical
 simulation state and source pixels. `shape3d_adjust_sphere_bounds` reproduces
 these writes; wheel bounds retain their distinct original calculation.
 
+## Material indices beyond the declared tables
+
+The original material color, fill-type, and pattern tables each contain 129
+words and are adjacent in `asmorig/dseg.asm`. Shape primitives store an unsigned
+byte material index, and wheel rendering also reads the following two colors.
+Indices beyond 128 therefore read the next original table. These reads must use
+explicit table boundaries in the C port, without depending on the compiler's
+placement of separate arrays or clamping every high material index.
+
+The custom 50CI car uses material 129. Its fill type comes from the first word
+of the following pattern table, `0xFFFF`, so the original renderer skips that
+polygon. Native array padding instead supplied zero, selecting a solid black
+polygon over the car's rear spoiler. In `r1443.rpl`, camera 2, this changed eight
+pixels at frame 369 and caused hash mismatches through frame 382. Other replays
+using the same car exposed the same defect on different tracks.
+
 ## Renderer values consumed by physics
 
 The original `get_a_poly_info` calls leave saved frame pointers, far return
