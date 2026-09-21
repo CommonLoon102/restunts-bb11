@@ -33,6 +33,19 @@ SDL_Window *sdl3_video_window(void)
 	return window;
 }
 
+void sdl3_video_toggle_fullscreen(void)
+{
+	/* DOS already uses the native fullscreen VGA mode. SDL saves and restores
+	 * the desktop window's size and position; the logical 4:3 viewport persists. */
+	if (window == NULL || indexed_output) {
+		return;
+	}
+	bool fullscreen = (SDL_GetWindowFlags(window) & SDL_WINDOW_FULLSCREEN) != 0;
+	if (!SDL_SetWindowFullscreen(window, !fullscreen)) {
+		SDL_LogWarn(SDL_LOG_CATEGORY_VIDEO, "Cannot change fullscreen mode: %s", SDL_GetError());
+	}
+}
+
 void sdl3_video_window_to_game(float window_x, float window_y, float *x, float *y)
 {
 	*x = window_x;

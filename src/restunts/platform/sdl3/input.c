@@ -8,6 +8,7 @@
 #define KEY_BUFFER_CAPACITY 64U
 
 static bool keys[SDL_SCANCODE_COUNT];
+static bool consumed_keys[SDL_SCANCODE_COUNT];
 static legacy_u16 key_buffer[KEY_BUFFER_CAPACITY];
 static unsigned int key_read;
 static unsigned int key_count;
@@ -206,6 +207,22 @@ static void input_key(const SDL_KeyboardEvent *event)
 	bool was_pressed = keys[event->scancode];
 	keys[event->scancode] = event->down;
 	if (!event->down) {
+		consumed_keys[event->scancode] = false;
+		return;
+	}
+	if (!was_pressed && !event->repeat) {
+		consumed_keys[event->scancode] = false;
+	}
+	if (consumed_keys[event->scancode]) {
+		return;
+	}
+	if ((event->scancode == SDL_SCANCODE_RETURN || event->scancode == SDL_SCANCODE_KP_ENTER) &&
+		(event->mod & SDL_KMOD_ALT) != 0) {
+		/* Keep Enter consumed until release, even if Alt is released first. */
+		consumed_keys[event->scancode] = true;
+		if (!was_pressed && !event->repeat) {
+			sdl3_video_toggle_fullscreen();
+		}
 		return;
 	}
 	unsigned int scan = legacy_scancode(event->scancode);
@@ -312,6 +329,8 @@ void sdl3_platform_pump(void)
 				input_key(&event.key);
 				break;
 			case SDL_EVENT_WINDOW_FOCUS_LOST:
+				/* A fullscreen transition can change focus while Enter is held.
+				 * Keep consumed shortcuts latched until release or a fresh press. */
 				memset(keys, 0, sizeof(keys));
 				key_count = 0;
 				mouse_buttons = 0;
@@ -380,6 +399,7 @@ void sdl3_input_shutdown(void)
 	joystick = NULL;
 	joystick_initialized = false;
 	memset(keys, 0, sizeof(keys));
+	memset(consumed_keys, 0, sizeof(consumed_keys));
 	key_count = 0;
 	mouse_available = false;
 	mouse_transition_count = 0;
@@ -398,6 +418,7 @@ void sdl3_platform_shutdown(void)
 void kb_init_interrupt(void)
 {
 	memset(keys, 0, sizeof(keys));
+	memset(consumed_keys, 0, sizeof(consumed_keys));
 	key_count = 0;
 	key_read = 0;
 }
@@ -405,6 +426,7 @@ void kb_init_interrupt(void)
 void kb_exit_handler(void)
 {
 	memset(keys, 0, sizeof(keys));
+	memset(consumed_keys, 0, sizeof(consumed_keys));
 	key_count = 0;
 }
 
@@ -414,12 +436,13 @@ legacy_s16 kb_get_key_state(legacy_s16 key)
 	if (key <= 0 || (unsigned int)key >= SDL_arraysize(scancodes)) {
 		return 0;
 	}
-	if (keys[scancodes[key]]) {
+	if (keys[scancodes[key]] && !consumed_keys[scancodes[key]]) {
 		return 1;
 	}
 	/* Distinct SDL keys share the original XT scancode (keypad, right modifiers). */
 	for (unsigned int code = 1; code < SDL_SCANCODE_COUNT; code++) {
-		if (keys[code] && legacy_scancode((SDL_Scancode)code) == (unsigned int)key) {
+		if (keys[code] && !consumed_keys[code] &&
+			legacy_scancode((SDL_Scancode)code) == (unsigned int)key) {
 			return 1;
 		}
 	}
