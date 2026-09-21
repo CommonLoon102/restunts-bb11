@@ -1,6 +1,7 @@
 #include <assert.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include "../c/ui_input.h"
 #include "../c/externs.h"
@@ -525,6 +526,43 @@ static void test_read_line_wrapper(void)
 	check_hash("edit wrapper", UINT64_C(0x490af67e25420ce6));
 }
 
+static void test_read_line_empty_fields(void)
+{
+	static const legacy_u16 endings[] = {KEY_ENTER, KEY_ESCAPE, KEY_UP, KEY_DOWN, KEY_TAB};
+	for (unsigned int ending = 0; ending < sizeof(endings) / sizeof(endings[0]); ending++) {
+		for (unsigned int scenario = 0; scenario < 6; scenario++) {
+			reset_case();
+			legacy_s16 capacity = scenario == 5 ? 0 : 8;
+			legacy_s8 *text = malloc((size_t)capacity + 1U);
+			assert(text != NULL);
+			strcpy(text, scenario == 0 || scenario == 5 ? "" : scenario == 1 ? "        " : "Name");
+			unsigned int key_count = 0;
+			if (scenario == 2) {
+				for (unsigned int index = 0; index < 4; index++) {
+					keyboard_keys[key_count++] = KEY_DELETE;
+				}
+			} else if (scenario == 3) {
+				for (unsigned int index = 0; index < 4; index++) {
+					keyboard_keys[key_count++] = KEY_RIGHT;
+				}
+				for (unsigned int index = 0; index < 4; index++) {
+					keyboard_keys[key_count++] = KEY_BACKSPACE;
+				}
+			} else if (scenario == 4) {
+				keyboard_keys[key_count++] = KEY_SPACE;
+			}
+			keyboard_keys[key_count++] = endings[ending];
+			keyboard_count = key_count;
+			legacy_s16 result = call_read_line(text, capacity, 4, 5, 0);
+			assert((legacy_u16)result == endings[ending]);
+			assert(keyboard_index == key_count);
+			assert(strcmp(text, "") == 0);
+			free(text);
+		}
+	}
+	trace_hash = UINT64_C(1469598103934665603);
+}
+
 static void test_character_limit(void)
 {
 	static legacy_s8 text[65536];
@@ -562,6 +600,7 @@ int main(void)
 	test_file_dialog();
 	test_read_line();
 	test_read_line_wrapper();
+	test_read_line_empty_fields();
 	test_character_limit();
 	puts("UI file-selection and text-editing regression checks passed.");
 	return 0;
