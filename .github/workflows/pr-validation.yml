@@ -4,7 +4,7 @@ name: PR validation
 # validation fails, or sampled renderer output differs from pixldumo.
 on:
   push:
-    branches: [c-port32-skip-ci]
+    branches: [cl102/sdl3-init-x]
   pull_request:
     branches: [master]
   workflow_dispatch:

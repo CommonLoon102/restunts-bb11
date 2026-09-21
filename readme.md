@@ -205,10 +205,272 @@ the tachometer. The stock value `0x0010` keeps both needles white, and
 
 ## How to build
 
-For the SDL3 game and both dump tools on **Windows, Linux, and 32-bit DOS**, see
-[the SDL3 build guide](docs/sdl3.md). It covers MinGW-w64, Linux x86/x64,
-optional builds without SSE2, and DJGPP/DPMI DOS. The instructions below retain
-the original Open Watcom 16-bit DOS build.
+### SDL3 builds: Linux, Windows, and 32-bit DOS
+
+The CMake build produces the game (`restunts`), physics dumper (`repldump`),
+and renderer dumper (`pixldump`) for all three backends. Run the commands below
+from the repository root. Use a separate build directory for each target,
+architecture, compiler, and host; do not reuse a native Windows build directory
+from WSL, or vice versa.
+
+CMake caches absolute source and build paths. If a checkout was moved, copied,
+or opened through a different shared-folder mount, an existing build tree can
+report that its cache or source directory does not match. Regenerate it from
+your current repository path with `--fresh`, then build:
+
+```sh
+cmake --fresh -S . -B out/sdl3-linux-x64 -G Ninja -DCMAKE_BUILD_TYPE=Release
+cmake --build out/sdl3-linux-x64 --parallel 2
+```
+
+For other targets, use their build directory and repeat the toolchain and CPU
+options from the corresponding recipe. `--fresh` clears previously cached
+configuration options, so include any custom options you want to retain.
+
+| Build host | Linux backend | Windows backend | DOS backend |
+| --- | --- | --- | --- |
+| Linux x64 | Native GCC, x64 or x86 multilib | MinGW-w64 cross-compiler, x64 or x86 | DJGPP cross-compiler, 32-bit DPMI |
+| Windows x64 | GCC inside WSL2 | Native MSYS2 UCRT64 for x64; MinGW-w64 inside WSL2 for x86 | Native DJGPP in MSYS2, or DJGPP inside WSL2 |
+
+CMake 3.25 or newer, Ninja, Git, and the selected compiler must be on `PATH`.
+CMake downloads and verifies the pinned SDL3 source automatically, so the
+first configure needs network access. SDL3 is linked statically by default;
+no separate SDL installation is required. Desktop builds also produce the
+required Nuked OPL2 shared library. MSVC is not supported by this project.
+
+Building does not download game assets. Before running the game or the audio
+tests, place the Broderbund Stunts 1.1 files in `stunts/`. `ADSKIDMS.VCE` and `DEFAULT.RPL` must be directly inside `stunts/`.
+
+#### Linux host: prerequisites
+
+These Bash commands target Debian 12 or Ubuntu 24.04 on x64. They also apply
+inside an x64 WSL2 distribution; Windows setup is described below.
+
+```sh
+sudo apt-get update
+sudo apt-get install build-essential cmake ninja-build git curl ca-certificates \
+    pkg-config python3 unzip bzip2
+```
+
+#### Linux host: Linux backend
+
+Install the desktop driver development libraries, then configure and build:
+
+```sh
+sudo apt-get install libasound2-dev libpulse-dev libx11-dev libxext-dev \
+    libxrandr-dev libxcursor-dev libxi-dev libxfixes-dev libxss-dev libxtst-dev \
+    libwayland-dev libxkbcommon-dev libudev-dev libdrm-dev libgbm-dev \
+    libegl1-mesa-dev libgl1-mesa-dev
+cmake -S . -B out/sdl3-linux-x64 -G Ninja -DCMAKE_BUILD_TYPE=Release
+cmake --build out/sdl3-linux-x64 --parallel 2
+```
+
+For **32-bit Linux** on the same x64 host, install multilib and the i386
+versions of the driver libraries, then use the Linux x86 toolchain:
+
+```sh
+sudo dpkg --add-architecture i386
+sudo apt-get update
+sudo apt-get install gcc-multilib libasound2-dev:i386 libpulse-dev:i386 \
+    libx11-dev:i386 libxext-dev:i386 libxrandr-dev:i386 libxcursor-dev:i386 \
+    libxi-dev:i386 libxfixes-dev:i386 libxss-dev:i386 libxtst-dev:i386 \
+    libwayland-dev:i386 libxkbcommon-dev:i386 libudev-dev:i386 libdrm-dev:i386 \
+    libgbm-dev:i386 libegl1-mesa-dev:i386 libgl1-mesa-dev:i386
+cmake -S . -B out/sdl3-linux-x86 -G Ninja -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_TOOLCHAIN_FILE=cmake/toolchains/linux-x86.cmake
+cmake --build out/sdl3-linux-x86 --parallel 2
+```
+
+The build directory contains `restunts`, `repldump`, `pixldump`, and
+`libnuked-opl2.so`. After adding the game assets, test and run the x64 build:
+
+```sh
+SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy \
+    ctest --test-dir out/sdl3-linux-x64 --output-on-failure
+out/sdl3-linux-x64/restunts --data-dir stunts /nointro
+```
+
+Use `out/sdl3-linux-x86` instead for the x86 build.
+
+#### Linux host: Windows backend
+
+Install MinGW-w64 and build each desired Windows architecture in its own tree:
+
+```sh
+sudo apt-get install mingw-w64
+cmake -S . -B out/sdl3-windows-x64 -G Ninja -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_TOOLCHAIN_FILE=cmake/toolchains/mingw-x64.cmake
+cmake --build out/sdl3-windows-x64 --parallel 2
+cmake -S . -B out/sdl3-windows-x86 -G Ninja -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_TOOLCHAIN_FILE=cmake/toolchains/mingw-x86.cmake
+cmake --build out/sdl3-windows-x86 --parallel 2
+```
+
+Each directory contains `restunts.exe`, `repldump.exe`, `pixldump.exe`, and
+`nuked-opl2.dll`. Run the executables and test binaries on Windows. For a
+complete transferable package, use the packaging commands below.
+
+#### Linux host: DOS backend
+
+Install the pinned [DJGPP GCC 12.2.0 cross-toolchain](https://github.com/andrewwutw/build-djgpp/releases/tag/v3.4).
+Its Linux binaries require `libfl2`. Download and check the archive before
+extracting it:
+
+```sh
+sudo apt-get install libfl2
+mkdir -p out/toolchains/djgpp-linux
+curl --fail --location --retry 3 \
+    https://github.com/andrewwutw/build-djgpp/releases/download/v3.4/djgpp-linux64-gcc1220.tar.bz2 \
+    --output out/toolchains/djgpp-linux64-gcc1220.tar.bz2
+printf '%s  %s\n' 8464f17017d6ab1b2bb2df4ed82357b5bf692e6e2b7fee37e315638f3d505f00 \
+    out/toolchains/djgpp-linux64-gcc1220.tar.bz2 | sha256sum -c -
+tar -xjf out/toolchains/djgpp-linux64-gcc1220.tar.bz2 \
+    -C out/toolchains/djgpp-linux --strip-components=1
+export PATH="$PWD/out/toolchains/djgpp-linux/bin:$PATH"
+cmake -S . -B out/sdl3-dos -G Ninja -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_TOOLCHAIN_FILE=cmake/toolchains/djgpp.cmake -DRESTUNTS_BUILD_TESTS=OFF
+cmake --build out/sdl3-dos --parallel 2
+```
+
+The outputs are `out/sdl3-dos/restunts.exe`, `repldump.exe`, and `pixldump.exe`.
+These are 32-bit DOS/DPMI programs. They do not use the desktop Nuked library.
+See the DOS runtime instructions below for game data and the DPMI host.
+
+#### Windows host: Windows backend
+
+Install [MSYS2](https://www.msys2.org/) and open its **UCRT64** terminal.
+Update MSYS2 first; if the updater asks you to close the terminal, reopen
+UCRT64 and run the update again. Then install the native Windows tools:
+
+```sh
+pacman -Syu
+pacman -S --needed git mingw-w64-ucrt-x86_64-gcc \
+    mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-ninja
+```
+
+Change to the repository root in that terminal (for example,
+`cd /c/src/restunts-bb11` for a checkout at `C:\src\restunts-bb11`). Select
+UCRT64's native GCC directly; the MinGW toolchain files above are for Linux
+cross-compilation:
+
+```sh
+cmake -S . -B out/sdl3-windows-x64-msys2 -G Ninja -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++
+cmake --build out/sdl3-windows-x64-msys2 --parallel 2
+```
+
+After adding game assets, run the native tests and game in the same terminal:
+
+```sh
+SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy \
+    ctest --test-dir out/sdl3-windows-x64-msys2 --output-on-failure
+./out/sdl3-windows-x64-msys2/restunts.exe --data-dir stunts
+```
+
+Keep `nuked-opl2.dll` beside the three `.exe` files. For **Windows x86** from a
+Windows host, use WSL2 and the Linux-host Windows x86 recipe above. UCRT64 is
+a 64-bit toolchain; use the separate i686 MinGW-w64 compiler for x86.
+
+#### Windows host: Linux backend with WSL2
+
+Install an x64 Linux environment with
+[Windows Subsystem for Linux](https://learn.microsoft.com/en-us/windows/wsl/install).
+In an **Administrator PowerShell** window, run:
+
+```powershell
+wsl --install -d Ubuntu-24.04
+```
+
+Restart Windows if requested and complete Ubuntu's first-run username/password
+setup. Open the distribution from PowerShell:
+
+```powershell
+wsl -d Ubuntu-24.04
+```
+
+The resulting shell is **Linux Bash**. Open your checkout there, or clone the
+branch you want to build into the Linux filesystem. A Windows checkout such as
+`C:\src\restunts-bb11` is accessible with `cd /mnt/c/src/restunts-bb11`, but a
+checkout under your WSL home directory avoids cross-filesystem build overhead.
+
+Run **Linux host: prerequisites** and **Linux host: Linux backend** above for
+Linux x64 or x86 executables. The same WSL shell can also run **Linux host:
+Windows backend** for Windows x64/x86 and **Linux host: DOS backend** for DOS.
+All three recipes use Linux tools inside WSL; their target executables retain
+the selected backend's format. Use fresh build directories if the checkout has
+already been built with native Windows tools. The pinned `linux64` DJGPP archive
+requires an x64 Linux environment, not an ARM64 WSL distribution.
+
+#### Windows host: DOS backend
+
+In the **MSYS2 UCRT64** terminal configured above, install download/extraction
+tools and get the standalone Windows DJGPP toolchain. This archive includes
+its required Windows DLLs:
+
+```sh
+pacman -S --needed curl unzip
+mkdir -p out/toolchains/djgpp-windows
+curl --fail --location --retry 3 \
+    https://github.com/andrewwutw/build-djgpp/releases/download/v3.4/djgpp-mingw-gcc1220-standalone.zip \
+    --output out/toolchains/djgpp-mingw-gcc1220-standalone.zip
+printf '%s  %s\n' 6f88b531d216f4d92668c960b5cde9a829b5611e06d2c3e431041e33f01c1a52 \
+    out/toolchains/djgpp-mingw-gcc1220-standalone.zip | sha256sum -c -
+unzip -q out/toolchains/djgpp-mingw-gcc1220-standalone.zip \
+    -d out/toolchains/djgpp-windows
+export PATH="$PWD/out/toolchains/djgpp-windows/djgpp/bin:$PATH"
+cmake -S . -B out/sdl3-dos-windows -G Ninja -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_TOOLCHAIN_FILE=cmake/toolchains/djgpp.cmake -DRESTUNTS_BUILD_TESTS=OFF
+cmake --build out/sdl3-dos-windows --parallel 2
+```
+
+The same three DOS executables are created in `out/sdl3-dos-windows/`.
+The WSL2 route above is also available and uses the same Linux DJGPP toolchain
+as CI. DOS tests are disabled in these builds because DOS executables cannot
+be run directly by the host's CTest process.
+
+#### SDL3 build options, packages, and DOS runtime
+
+Desktop regression binaries are built by default. Add
+`-DRESTUNTS_BUILD_TESTS=OFF` at configure time if you only need the game and
+dump tools. Run CTest in the native build environment. For cross-builds, run
+the test binaries on the target OS; generated CTest files refer to the original
+build and source paths.
+
+For a **32-bit Linux or Windows build without SSE2**, add
+`-DRESTUNTS_SSE2=OFF` to its configure command and choose another build tree
+(for example, `out/sdl3-linux-x86-nosse2`). This disables SSE/SSE2/AVX in the
+game, Nuked, and bundled SDL. x64 requires SSE2; DOS uses the i386 baseline
+and disables SSE2 by default. `-DRESTUNTS_SYSTEM_SDL=ON` can use an installed
+SDL3 CMake package instead of the pinned source, but cannot be combined with
+`RESTUNTS_SSE2=OFF`.
+
+Install a complete runtime package from the build directory you used:
+
+```sh
+cmake --install out/sdl3-linux-x64 --prefix out/package-linux-x64 --component Runtime
+cmake --install out/sdl3-windows-x64 --prefix out/package-windows-x64 --component Runtime
+cmake --install out/sdl3-dos --prefix out/package-dos --component Runtime
+```
+
+Run only the install commands for targets you built. For native Windows
+builds, substitute `out/sdl3-windows-x64-msys2` or `out/sdl3-dos-windows` as
+the build directory. Packages contain `bin/` executables, the desktop Nuked
+library in Linux `lib/` or Windows `bin/`, and dependency sources/notices under
+`share/`. Keep the complete package together when moving or distributing it.
+Game data is separate; desktop programs accept `--data-dir stunts` as their
+first option when launched from the repository root.
+
+For DOS, copy the three executables from the package's `bin/` into a separate
+DOS game directory with the Stunts resources. Add a compatible DPMI host such
+as [CWSDPMI.EXE](https://sandmann.dotster.com/cwsdpmi/) if the DOS environment
+does not provide one. Mount that directory in DOSBox/DOSBox-X, set
+`core=dynamic`, `cycles=max`, and `aspect=true`, then run `RESTUNTS.EXE`.
+Stop automated DOSBox runs with SIGKILL to avoid the shutdown confirmation.
+
+See [the SDL3 guide](docs/sdl3.md) for controls, audio details, package contents,
+and native replay validation.
+
+### Original 16-bit DOS builds with Open Watcom
 
 The DOS compiler, assembler, and linker are Open Watcom 2, pinned to the official
 [2026-09-01 build](https://github.com/open-watcom/open-watcom-v2/releases/tag/2026-09-01-Build).
@@ -225,7 +487,7 @@ characters of the checkout's commit and the compilation date (for example,
 `Version d37a5c8 (Sep 18 2026)`). Incremental builds refresh both the commit
 and compilation date.
 
-### On Windows
+#### On Windows
 
 1. Install the toolchain from PowerShell at the repository root (Windows 10/11
    `tar.exe` and PowerShell are required):
@@ -250,7 +512,7 @@ and compilation date.
    make restunts-original repldump-original pixldump-original
    ```
 
-### On Linux (x86-64)
+#### On Linux (x86-64)
 
 1. Install GNU Make 4.3 or newer, Bash, curl, tar, xz, and
    coreutils. Run the setup script from the repository root:
@@ -276,7 +538,7 @@ and compilation date.
 The makefiles use `python3` on Linux and `python` on Windows; override
 `PYTHON` if needed.
 
-### On both platforms
+#### On both platforms
 
 Build outputs are copied to `stunts/`.
 
