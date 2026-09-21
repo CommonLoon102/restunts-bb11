@@ -47,8 +47,10 @@ struct ADLIB_VOICE {
 	const legacy_u8 *resource;
 	struct AUDIO_CHANNEL *channel;
 	legacy_u16 base_pitch;
+	legacy_u16 current_pitch;
 	legacy_u8 note;
 	legacy_u8 velocity;
+	legacy_u8 doubled_multipliers;
 };
 
 static struct ADLIB_VOICE adlib_voices[ADLIB_VOICES];
@@ -56,8 +58,11 @@ static legacy_u8 adlib_registers[256];
 static legacy_u8 adlib_register_valid[256];
 static int adlib_ready;
 static const legacy_u8 adlib_slots[ADLIB_VOICES] = {0, 1, 2, 8, 9, 10, 16, 17, 18};
-static const legacy_u16 adlib_frequencies[12] = {86,  91,  96,	102, 108, 114,
-												 121, 128, 136, 144, 153, 162};
+static const legacy_u16 adlib_frequencies[60] = {
+	21,	 23,  24,  25,	27,	 29,  30,  32,	34,	 36,  38,  40,	43,	 45,  48,
+	51,	 54,  57,  61,	64,	 68,  72,  76,	81,	 86,  91,  96,	102, 108, 114,
+	121, 128, 136, 144, 153, 162, 171, 182, 192, 204, 216, 229, 242, 257, 272,
+	288, 306, 324, 343, 363, 385, 408, 432, 458, 485, 514, 544, 577, 611, 647};
 #ifndef __DJGPP__
 static OPL *adlib_chip;
 static SDL_AudioStream *adlib_stream;
@@ -97,19 +102,87 @@ static int adlib_voice_index(legacy_s16 driver_channel)
 static legacy_u16 adlib_note_pitch(unsigned int note)
 {
 	note &= 255U;
-	return (legacy_u16)((((note / 12U) & 7U) << 10U) | adlib_frequencies[note % 12U]);
+	return (legacy_u16)((((note / 12U) & 7U) << 10U) | adlib_frequencies[24U + note % 12U]);
+}
+
+/* AD15 bends within an extended F-number table while retaining the note's
+ * block. Interpolating packed pitches across octaves also changes the block. */
+static legacy_u16 adlib_bend_target(unsigned int note, int semitones)
+{
+	note &= 255U;
+	int index = 24 + (int)(note % 12U) + semitones;
+	if (index < 0) {
+		index = 0;
+	} else if (index >= (int)(sizeof(adlib_frequencies) / sizeof(adlib_frequencies[0]))) {
+		index = (int)(sizeof(adlib_frequencies) / sizeof(adlib_frequencies[0])) - 1;
+	}
+	return (legacy_u16)((((note / 12U) & 7U) << 10U) | adlib_frequencies[index]);
+}
+
+/* A half-rate carrier rounds its phase increment independently from the
+ * modulator. Low pitches can therefore leave a different relative phase
+ * after returning to the same RPM. Integer multipliers retain the ratio.
+ * Only normalize sustained, continuously pitched FM voices whose steady
+ * level and key scaling permit lowering the pitch block. */
+static unsigned int adlib_continuous_multiplier(const struct ADLIB_VOICE *state)
+{
+	static const legacy_u8 doubled[7] = {0, 2, 4, 6, 8, 10, 12};
+	static const legacy_u8 selectors[6] = {22, 23, 24, 25, 40, 53};
+	const legacy_u8 *resource = state->resource;
+	if (state->note != 255U || !resource || resource[68] != 0 || resource[53] == 0x91U) {
+		return 0;
+	}
+	const legacy_u8 *modulator = resource + ADLIB_OPERATOR_OFFSET;
+	const legacy_u8 *carrier = modulator + ADLIB_OPERATOR_SIZE;
+	if (carrier[6] != 0 || modulator[6] == 0 || modulator[6] >= sizeof(doubled)) {
+		return 0;
+	}
+	for (unsigned int index = 0; index < sizeof(selectors); ++index) {
+		unsigned int selector = resource[selectors[index]];
+		if (selector == 0x81U || selector == 0x82U) {
+			return 0;
+		}
+	}
+	for (unsigned int index = 0; index < 2; ++index) {
+		const legacy_u8 *op = modulator + index * ADLIB_OPERATOR_SIZE;
+		if (op[0] != 15 || op[2] != 0 || op[3] != 15 || op[5] != 0 || op[7] != 0 || op[8] != 1 ||
+			op[9] != 0) {
+			return 0;
+		}
+	}
+	return doubled[modulator[6]];
 }
 
 static void adlib_write_pitch(int voice, legacy_u16 pitch, int key_on)
 {
+	struct ADLIB_VOICE *state = &adlib_voices[voice];
+	state->current_pitch = pitch;
+	unsigned int multiplier = adlib_continuous_multiplier(state);
+	if (multiplier != 0 || state->doubled_multipliers) {
+		unsigned int slot = adlib_slots[voice];
+		const legacy_u8 *modulator = state->resource + ADLIB_OPERATOR_OFFSET;
+		const legacy_u8 *carrier = modulator + ADLIB_OPERATOR_SIZE;
+		adlib_write(0x20U + slot, (adlib_registers[0x20U + slot] & 0xf0U) |
+									  (multiplier != 0 ? multiplier : modulator[6]));
+		adlib_write(0x23U + slot,
+					(adlib_registers[0x23U + slot] & 0xf0U) | (multiplier != 0 ? 1U : carrier[6]));
+	}
+	state->doubled_multipliers = multiplier != 0;
+	if (multiplier != 0) {
+		/* Doubling both multipliers and halving the base pitch preserves the
+		 * carrier's exact phase increment, including its low-pitch rounding.
+		 * Every intermediate A0/B0 write also retains the integer ratio. */
+		pitch &= 0x1fffU;
+		pitch = (pitch & 0x1c00U) != 0 ? pitch - 0x400U : pitch >> 1U;
+	}
 	adlib_write(0xa0U + voice, pitch & 255U);
 	adlib_write(0xb0U + voice, ((pitch >> 8U) & 31U) | (key_on ? 32U : 0U));
 }
 
-static void adlib_program_operator(unsigned int slot, const legacy_u8 *op)
+static void adlib_program_operator(unsigned int slot, const legacy_u8 *op, unsigned int multiplier)
 {
 	adlib_write(0x20U + slot,
-				(op[10] << 7U) | (op[9] << 6U) | (op[8] << 5U) | (op[7] << 4U) | op[6]);
+				(op[10] << 7U) | (op[9] << 6U) | (op[8] << 5U) | (op[7] << 4U) | multiplier);
 	adlib_write(0x40U + slot, (op[5] << 6U) | op[4]);
 	adlib_write(0x60U + slot, (op[0] << 4U) | op[1]);
 	adlib_write(0x80U + slot, (op[2] << 4U) | op[3]);
@@ -255,13 +328,23 @@ void dos_audio_driver_prepare_context(legacy_s16 driver_channel, struct AUDIO_CO
 		return;
 	}
 	struct ADLIB_VOICE *state = &adlib_voices[voice];
+	int was_doubled = state->doubled_multipliers;
 	state->resource = resource;
 	state->channel = (struct AUDIO_CHANNEL *)timer;
+	unsigned int multiplier = adlib_continuous_multiplier(state);
+	state->doubled_multipliers = multiplier != 0;
 	const legacy_u8 *bytes = resource;
+	const legacy_u8 *modulator = bytes + ADLIB_OPERATOR_OFFSET;
+	const legacy_u8 *carrier = modulator + ADLIB_OPERATOR_SIZE;
 	adlib_write(0xc0U + voice, (bytes[69] << 1U) | bytes[68]);
-	adlib_program_operator(adlib_slots[voice], bytes + ADLIB_OPERATOR_OFFSET);
-	adlib_program_operator(adlib_slots[voice] + 3U,
-						   bytes + ADLIB_OPERATOR_OFFSET + ADLIB_OPERATOR_SIZE);
+	adlib_program_operator(adlib_slots[voice], modulator,
+						   multiplier != 0 ? multiplier : modulator[6]);
+	adlib_program_operator(adlib_slots[voice] + 3U, carrier, multiplier != 0 ? 1U : carrier[6]);
+	if (was_doubled != state->doubled_multipliers) {
+		/* Resource rebinding may happen while a voice is sounding. Keep its
+		 * last pitch in the same units as the newly programmed multipliers. */
+		adlib_write_pitch(voice, state->current_pitch, adlib_registers[0xb0U + voice] & 32U);
+	}
 	if (state->channel) {
 		adlib_control(voice, bytes[22], state->channel->driver_private_state[0]);
 		adlib_control(voice, bytes[23], state->channel->driver_private_state[2]);
@@ -373,9 +456,11 @@ void dos_audio_driver_suspend_context(legacy_s16 driver_channel, struct AUDIO_CO
 	}
 	legacy_s16 bend = state->channel ? LEGACY_S16_FROM_BITS(state->channel->pitch) : 0;
 	if (bend != 0) {
-		unsigned int target_note = (legacy_u8)(state->note + (bend > 0 ? bytes[18] : -bytes[18]));
-		legacy_s32 difference = (legacy_s32)adlib_note_pitch(target_note) - pitch;
-		pitch = LEGACY_U16_WRAP_ADD(pitch, (difference * (bend > 0 ? bend : -bend)) / 8192L);
+		int semitones = bend > 0 ? bytes[18] : -(int)bytes[18];
+		legacy_s32 difference = (legacy_s32)adlib_bend_target(state->note, semitones) - pitch;
+		/* AD15 shifts signed products, then subtracts for downward bends. */
+		legacy_s32 delta = LEGACY_S32_SAR(difference * bend, 13U);
+		pitch = LEGACY_U16_WRAP_ADD(pitch, bend > 0 ? delta : -delta);
 	}
 	pitch = LEGACY_U16_WRAP_ADD(pitch, (legacy_s8)bytes[17]);
 	adlib_write_pitch(voice, pitch, context->state == AUDIO_CONTEXT_STATE_PLAYING);
