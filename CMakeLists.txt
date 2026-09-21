@@ -208,6 +208,11 @@ if(RESTUNTS_BUILD_TESTS AND TARGET restunts_opl)
     add_test(NAME sdl3-audio COMMAND test-sdl3-audio "${CMAKE_SOURCE_DIR}/stunts/ADSKIDMS.VCE")
     # Regression runs must not overwrite a live capture inherited from the shell.
     set_tests_properties(sdl3-audio PROPERTIES ENVIRONMENT "RESTUNTS_AUDIO_TRACE=")
+    add_executable(test-sdl3-audio-sequence src/restunts/tests/test-sdl3-audio-sequence.c)
+    target_link_libraries(test-sdl3-audio-sequence PRIVATE restunts_game)
+    target_compile_options(test-sdl3-audio-sequence PRIVATE -UNDEBUG)
+    add_test(NAME sdl3-audio-sequence COMMAND test-sdl3-audio-sequence)
+    set_tests_properties(sdl3-audio-sequence PROPERTIES ENVIRONMENT "RESTUNTS_AUDIO_TRACE=")
     if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
         # This fixture includes the sequencer to reach its private marshaling
         # helper. ELF section GC isolates that helper from the rest of the game;
@@ -242,7 +247,7 @@ if(RESTUNTS_BUILD_TESTS AND TARGET nuked_opl2)
     install(TARGETS nuked_opl2
         RUNTIME DESTINATION bin COMPONENT Tests EXCLUDE_FROM_ALL
         LIBRARY DESTINATION lib COMPONENT Tests EXCLUDE_FROM_ALL)
-    foreach(test platform audio audio-trace audio-definition input fileio)
+    foreach(test platform audio audio-trace audio-definition audio-sequence input fileio)
         if(TARGET test-sdl3-${test})
             install(TARGETS test-sdl3-${test}
                 RUNTIME DESTINATION bin COMPONENT Tests EXCLUDE_FROM_ALL)

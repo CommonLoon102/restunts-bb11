@@ -141,7 +141,7 @@ static void audio_sequence_bind_instrument(legacy_s16 channel, struct AUDIO_CHAN
 {
 	void far *resource = audio_sequence_instrument(chunk, instrument);
 	audio_write_far_pointer((legacy_u8 *)&chunk->resource, resource);
-	if (dos_audio_uses_direct_channels == 0) {
+	if (resource == 0 || dos_audio_uses_direct_channels == 0) {
 		return;
 	}
 
