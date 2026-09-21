@@ -1,0 +1,40 @@
+Restunts SDL3 desktop packages - third-party notices
+===================================================
+
+Nuked OPL2 Lite
+--------------
+Copyright (C) 2026 Nuke.YKT.
+https://github.com/nukeykt/Nuked-OPL2-Lite
+Upstream revision: f3209b087da9117a5cd0e6db2fb8bea4df4e181a (0.9 beta).
+
+The desktop game, renderer dumper, and audio regression use this library under
+GNU Lesser General Public License version 2.1 or, at your option, any later
+version. It is provided WITHOUT ANY WARRANTY; without even the implied warranty
+of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the complete license
+in share/licenses/restunts/Nuked-OPL2-LICENSE (or LICENSE beside its source).
+
+The library is dynamically linked. You may modify this application for your own
+use and reverse engineer it for debugging modifications to the LGPL-covered
+library. No restriction in these distribution terms limits those permissions.
+This notice does not change the licenses of unrelated code or game assets.
+
+The complete corresponding library source, dated local modification notices,
+and standalone build script are in share/restunts/nuked-opl2-lite/. Its README.md
+explains how to rebuild and replace the library without rebuilding the game;
+nuked-build-info.txt records the distributed build's compiler and options.
+The build-context/ directory preserves the parent project's build-control files.
+Keep these source files, notices and license with any redistributed package,
+and follow the LGPL for any further changes or redistribution.
+
+On Linux, replace lib/libnuked-opl2.so. On Windows, replace bin/nuked-opl2.dll.
+Use the same CPU architecture and compatible public API and structure layouts.
+The game does not check library signatures or prohibit modified replacements.
+
+SDL3
+----
+Bundled SDL3 builds include SDL's zlib license in
+share/licenses/restunts/SDL-LICENSE.txt. Builds using a system SDL3 installation
+use that installation's library and accompanying license instead.
+
+DOS builds write the hardware AdLib chip and do not include Nuked OPL2 Lite.
+Original game resources are supplied separately and retain their own terms.

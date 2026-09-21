@@ -1,0 +1,17 @@
+Nuked OPL2 Lite build information
+Upstream: f3209b087da9117a5cd0e6db2fb8bea4df4e181a (0.9 beta)
+Library license: LGPL-2.1-or-later
+Build type: @CMAKE_BUILD_TYPE@
+System: @CMAKE_SYSTEM_NAME@ @CMAKE_SYSTEM_PROCESSOR@
+Pointer size in bytes: @CMAKE_SIZEOF_VOID_P@
+Compiler: @CMAKE_C_COMPILER_ID@ @CMAKE_C_COMPILER_VERSION@
+Compiler executable: @CMAKE_C_COMPILER@
+Toolchain: @CMAKE_TOOLCHAIN_FILE@
+C flags: @CMAKE_C_FLAGS@
+Release flags: @CMAKE_C_FLAGS_RELEASE@
+RelWithDebInfo flags: @CMAKE_C_FLAGS_RELWITHDEBINFO@
+Shared linker flags: @CMAKE_SHARED_LINKER_FLAGS@
+NUKED_OPL2_SSE2: @NUKED_OPL2_SSE2@
+
+This directory contains the exact library source and standalone build script.
+See README.md for rebuilding and replacing the shared library.

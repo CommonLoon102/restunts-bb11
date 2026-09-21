@@ -53,7 +53,7 @@ cmake --build out/sdl3-linux-x86
 ```
 
 Append `-DRESTUNTS_SSE2=OFF` for a 32-bit x86 build without SSE/SSE2/AVX code in
-the game or bundled SDL. Use another fresh build tree when changing CPU options.
+the game, Nuked OPL2 Lite, or bundled SDL. Use another fresh build tree when changing CPU options.
 The same option is available for Windows x86; x64 requires SSE2. A build without
 SSE2 still uses the toolchain's x86 instruction-set baseline and system runtime;
 it is not an 8086 executable. The DOS toolchain selects i386 and disables SSE2
@@ -78,7 +78,7 @@ cmake --build out/sdl3-windows-x86
 ```
 
 The outputs are `restunts.exe`, `repldump.exe`, and `pixldump.exe` in their build
-directory. Native Windows builds can use a MinGW-w64 environment with CMake and
+directory, together with the required `nuked-opl2.dll`. Native Windows builds can use a MinGW-w64 environment with CMake and
 Ninja; select its GCC compiler directly instead of a Linux cross toolchain file.
 MSVC is not a supported compiler for this port.
 
@@ -111,15 +111,18 @@ The DOS video path uses indexed VGA 320x200 directly. Audio writes the real
 AdLib-compatible OPL2 chip at port `388h`, which DOSBox also emulates. An AdLib
 or compatible Sound Blaster FM device is needed for sound. If audio initialization
 fails, the native game reports a warning and continues silently. Desktop builds
-synthesize the same FM registers through the vendored MIT-licensed
-[emu8950](../third_party/emu8950/README.md) and send PCM to SDL. The driver retains
-AD15's octave-crossing pitch-bend table and signed rounding. Sustained engine
+synthesize the same FM registers through
+[Nuked OPL2 Lite](https://github.com/nukeykt/Nuked-OPL2-Lite), licensed under
+LGPL-2.1-or-later, and send PCM to SDL. The library is dynamically linked and
+replaceable. The driver retains AD15's octave-crossing pitch-bend table and
+signed rounding. Sustained engine
 voices with a half-rate carrier use equivalent integer operator multipliers
 and a halved base pitch. This preserves the carrier frequency while preventing
 low-RPM rounding from permanently changing the oscillators' relative phase.
 The adjustment applies only to compatible continuous FM instruments; musical
 notes and instruments with pitch-dependent envelopes, vibrato, key scaling or
-multiplier controllers retain their original setup.
+multiplier controllers retain their original setup. Nuked runtime writes are
+buffered to preserve same-tick key-off/key-on transitions.
 
 In DOSBox/DOSBox-X use `core=dynamic`, `cycles=max`, and `aspect=true`. Aspect
 correction displays 320x200 VGA pixels at their intended 4:3 shape. Mount a
@@ -134,7 +137,7 @@ The source checkout contains only a placeholder under `stunts/`; building does
 not fetch game data. Copy Broderbund Stunts 1.1 resources into `stunts/`, or extract
 the [BB11 archive used by the existing DOS CI](https://github.com/CommonLoon102/restunts4d-oracles/releases/download/v1.0.1/BB11.zip)
 there before running the game or the audio regression. The archive must place
-files such as `GAME.RES`, `ADSKIDMS.VCE`, and `DEFAULT.RPL` directly in that folder.
+files such as `ADSKIDMS.VCE` and `DEFAULT.RPL` directly in that folder.
 
 Resources are read from the current directory, or from `--data-dir` when it is
 the first argument. Existing game and dump parameters follow it unchanged:
@@ -199,5 +202,78 @@ capture. Full replay-corpus validation and physical hardware checks are separate
 from the build matrix; a successful sample is not evidence that all replays,
 controllers, or sound hardware have been exercised.
 
-CI archives contain the three executables and dependency license notices.
-They are build artifacts, not automatic GitHub Releases or deployments.
+CI archives contain an installed package: executables in `bin/`, Nuked's shared
+library in `lib/` on Linux or `bin/` on Windows, dependency license notices, and
+the exact Nuked source and rebuild instructions. Windows test archives carry
+the same library, source and notices. DOS packages omit Nuked. These are build
+artifacts, not automatic GitHub Releases or deployments.
+
+## Packaging and Nuked's license
+
+Create a redistributable directory from a completed build:
+
+```sh
+cmake --install out/sdl3-linux-x64 --prefix out/package-linux-x64 --component Runtime
+out/package-linux-x64/bin/restunts --data-dir "$PWD/stunts" /nointro
+```
+
+Distribute the complete directory, including `THIRD-PARTY-NOTICES.txt` and
+`share/`. Linux executables find the library relative to their installed location,
+so the package can be moved; Windows loads the DLL beside the executable.
+Do not distribute a desktop executable alone. `--component Tests` installs a
+separate test package with the same license and source material.
+
+Nuked's full LGPL-2.1 license is in
+`share/licenses/restunts/Nuked-OPL2-LICENSE`; its grant allows later versions too.
+The exact library sources, local modification notices, standalone build script,
+build settings, and parent build-control snapshots are in
+`share/restunts/nuked-opl2-lite/`. The `README.md` there explains how to rebuild
+and substitute the shared library without relinking the application.
+`THIRD-PARTY-NOTICES.txt` in the package root includes the required permission
+for own-use modification and reverse engineering to debug library modifications.
+These terms do not relicense unrelated code or game assets.
+
+The desktop game's second intro screen acknowledges Nuked, and
+`restunts --licenses` prints the notice and package locations without needing
+game resources or a display. The package regression verifies relocation and
+replacement with a modified library built solely from the shipped source:
+
+```sh
+python3 tools/scripts/test-nuked-package.py --build-directory out/sdl3-linux-x64
+```
+
+## Capturing a live audio problem
+
+Desktop builds can record the complete OPL register stream independently of
+race replays. This captures synthesis history that an `.rpl` file does not
+contain, including engine starts, RPM changes and the restart on replay seeking.
+Tracing is off unless `RESTUNTS_AUDIO_TRACE` names an output file. Each game
+launch overwrites that file; choose a new name to preserve an earlier recording.
+
+From the repository root on Linux:
+
+```sh
+RESTUNTS_AUDIO_TRACE="$PWD/engine.trace" \
+  ./out/sdl3-linux-x64/restunts --data-dir ./stunts /nointro
+```
+
+In PowerShell, set `$env:RESTUNTS_AUDIO_TRACE = "$PWD\engine.trace"` before
+launching the game. Reproduce the changed engine tone, then use replay seeking
+to restore it and let the restored sound play briefly. Note the approximate
+race times of both events, quit normally, and retain the `.trace` file.
+Unset the variable afterward to disable recording. Recording flushes once per
+second; normal shutdown writes the final sample position. A disk error disables
+tracing while the game keeps running.
+
+Render the recorded synthesizer output without the game or SDL:
+
+```sh
+python3 tools/scripts/render-opl-trace.py engine.trace engine.wav
+```
+
+The renderer needs Python 3.9+ and a C compiler (`cc` by default, or `--cc`). It
+builds a temporary helper from the vendored Nuked sources and replays the
+recorded write timing. The WAV contains all generated PCM; SDL queue clears are
+recorded as markers but are not cut from the WAV. Device latency, resampling by
+the audio device and hardware playback faults are outside the trace. Keep the
+original trace so it can be re-rendered after changes to the audio driver.
