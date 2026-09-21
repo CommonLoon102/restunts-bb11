@@ -9,9 +9,17 @@ on:
         type: string
         required: true
       exe-artifact:
-        description: Artifact holding the built executables.
+        description: Artifact holding built DOS candidates, required when testing DOS.
         type: string
-        required: true
+        default: ''
+      candidate-platform:
+        description: Candidate dump tools to execute (dos or sdl3).
+        type: string
+        default: dos
+      native-artifact:
+        description: Artifact holding sdl3-runtime.tar.gz when testing SDL3.
+        type: string
+        default: ''
       shard-matrix:
         description: JSON array of shard indices from the validated plan.
         type: string
@@ -62,6 +70,18 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      - name: Validate candidate platform
+        env:
+          CANDIDATE_PLATFORM: ${{ inputs.candidate-platform }}
+          DOS_ARTIFACT: ${{ inputs.exe-artifact }}
+          NATIVE_ARTIFACT: ${{ inputs.native-artifact }}
+        run: |
+          case "$CANDIDATE_PLATFORM" in
+            dos) test -n "$DOS_ARTIFACT" ;;
+            sdl3) test -n "$NATIVE_ARTIFACT" ;;
+            *) echo "::error::candidate-platform must be dos or sdl3"; exit 1 ;;
+          esac
+
       - name: Validate camera and target
         run: |
           if [[ ! "$CAMERA" =~ ^[1-4]$ ]]; then
@@ -98,13 +118,30 @@ jobs:
               -c "mount c $RUNNER_TEMP" -c "c:" -c "exit"
 
       - uses: actions/download-artifact@v8
+        if: inputs.candidate-platform == 'dos'
         with:
           name: ${{ inputs.exe-artifact }}
           path: exes
 
+      - name: Download the SDL3 runtime
+        if: inputs.candidate-platform == 'sdl3'
+        uses: actions/download-artifact@v8
+        with:
+          name: ${{ inputs.native-artifact }}
+          path: native-package
+
+      - name: Restore the SDL3 runtime
+        if: inputs.candidate-platform == 'sdl3'
+        run: |
+          mkdir -p "$RUNNER_TEMP/sdl3"
+          tar -xzf native-package/sdl3-runtime.tar.gz -C "$RUNNER_TEMP/sdl3"
+          test -x "$RUNNER_TEMP/sdl3/bin/repldump"
+          test -x "$RUNNER_TEMP/sdl3/bin/pixldump"
+
       - name: Assemble the game directory
         env:
           STUNTS_URL: https://github.com/CommonLoon102/restunts4d-oracles/releases/download/v1.0.1/BB11.zip
+          CANDIDATE_PLATFORM: ${{ inputs.candidate-platform }}
         run: |
           set -eu
           game_dir="$RUNNER_TEMP/gamedir"
@@ -118,7 +155,9 @@ jobs:
           cp -R tools/scripts/cars/. "$game_dir/"
           # The archived golden corpus is the complete replay set for CI.
           find "$game_dir" -maxdepth 1 -type f -iname '*.rpl' -delete
-          cp exes/*.exe "$game_dir/"
+          if [[ "$CANDIDATE_PLATFORM" == dos ]]; then
+              cp exes/*.exe "$game_dir/"
+          fi
           # Use the archived Borland built oracle on cache-miss
           (cd tools/oracles/borland && sha256sum --check SHA256SUMS)
           cp tools/oracles/borland/repldumo.exe tools/oracles/borland/pixldumo.exe "$game_dir/"
@@ -166,10 +205,16 @@ jobs:
           REPLAY_TIMEOUT_SECONDS: ${{ inputs.replay-timeout-seconds }}
           RENDERER_TEST_PERCENTAGE: ${{ inputs.renderer-test-percentage }}
           RENDERER_TIMEOUT_SECONDS: ${{ inputs.renderer-timeout-seconds }}
+          CANDIDATE_PLATFORM: ${{ inputs.candidate-platform }}
         run: |
+          native_args=()
+          if [[ "$CANDIDATE_PLATFORM" == sdl3 ]]; then
+              native_args+=(-NativeDirectory "$RUNNER_TEMP/sdl3/bin")
+          fi
           dotnet "$RUNNER_TEMP/dumpsrv/dumpsrv.dll" run \
               -GameDirectory "$GAME_DIR" \
               -OutputDirectory partitions \
+              -CandidatePlatform "$CANDIDATE_PLATFORM" "${native_args[@]}" \
               -DosBoxConfigPath tools/scripts/dosbox.proc.conf \
               -PartitionCount "$PARTITIONS_PER_SHARD" \
               -PhysicsTests "$PHYSICS_TESTS" -RendererTests "$RENDERER_TESTS" \
@@ -183,7 +228,7 @@ jobs:
       - uses: actions/upload-artifact@v7
         if: always()
         with:
-          name: ${{ inputs.phase }}-partitions-cam${{ inputs.camera }}-target${{ inputs.target }}-${{ matrix.shard }}
+          name: ${{ inputs.candidate-platform == 'sdl3' && 'sdl3-' || '' }}${{ inputs.phase }}-partitions-cam${{ inputs.camera }}-target${{ inputs.target }}-${{ matrix.shard }}
           path: partitions/*.json
           # Missing shards are diagnosed by the shared merge command.
           if-no-files-found: warn
@@ -193,7 +238,7 @@ jobs:
         uses: actions/upload-artifact@v7
         if: ${{ always() && inputs.phase == 'renderer' }}
         with:
-          name: renderer-pdo-cam${{ inputs.camera }}-target${{ inputs.target }}-${{ matrix.shard }}
+          name: ${{ inputs.candidate-platform == 'sdl3' && 'sdl3-' || '' }}renderer-pdo-cam${{ inputs.camera }}-target${{ inputs.target }}-${{ matrix.shard }}
           path: ${{ runner.temp }}/gamedir/**/*.[pP][dD][oO]
           include-hidden-files: true
           # A shard may have no replays in the renderer sample.
@@ -225,7 +270,7 @@ jobs:
       - uses: actions/download-artifact@v8
         continue-on-error: true
         with:
-          pattern: ${{ inputs.phase }}-partitions-cam${{ inputs.camera }}-target${{ inputs.target }}-*
+          pattern: ${{ inputs.candidate-platform == 'sdl3' && 'sdl3-' || '' }}${{ inputs.phase }}-partitions-cam${{ inputs.camera }}-target${{ inputs.target }}-*
           merge-multiple: true
           path: partitions
 
@@ -233,11 +278,13 @@ jobs:
         env:
           SHARDS: ${{ inputs.shards }}
           RENDERER_TEST_PERCENTAGE: ${{ inputs.renderer-test-percentage }}
+          CANDIDATE_PLATFORM: ${{ inputs.candidate-platform }}
         run: |
           mkdir -p partitions "$RUNNER_TEMP/replays"
           unzip -q tools/scripts/rpls_golden/replays.zip -d "$RUNNER_TEMP/replays"
           dotnet "$RUNNER_TEMP/dumpsrv/dumpsrv.dll" merge \
               -ReplayDirectory "$RUNNER_TEMP/replays" \
+              -CandidatePlatform "$CANDIDATE_PLATFORM" \
               -ResultsDirectory partitions -ShardCount "$SHARDS" \
               -ShardPlan shard-plan/shard-plan.json \
               -PhysicsTests "$PHYSICS_TESTS" -RendererTests "$RENDERER_TESTS" \
@@ -249,7 +296,7 @@ jobs:
       - uses: actions/upload-artifact@v7
         if: always()
         with:
-          name: ${{ inputs.phase }}-cam${{ inputs.camera }}-target${{ inputs.target }}-report
+          name: ${{ inputs.candidate-platform == 'sdl3' && 'sdl3-' || '' }}${{ inputs.phase }}-cam${{ inputs.camera }}-target${{ inputs.target }}-report
           path: partitions_all.txt
           if-no-files-found: warn
           retention-days: 14
@@ -258,8 +305,8 @@ jobs:
         uses: actions/upload-artifact/merge@v7
         if: ${{ always() && inputs.phase == 'renderer' }}
         with:
-          name: renderer-pdo-cam${{ inputs.camera }}-target${{ inputs.target }}
-          pattern: renderer-pdo-cam${{ inputs.camera }}-target${{ inputs.target }}-*
+          name: ${{ inputs.candidate-platform == 'sdl3' && 'sdl3-' || '' }}renderer-pdo-cam${{ inputs.camera }}-target${{ inputs.target }}
+          pattern: ${{ inputs.candidate-platform == 'sdl3' && 'sdl3-' || '' }}renderer-pdo-cam${{ inputs.camera }}-target${{ inputs.target }}-*
           include-hidden-files: true
           retention-days: 14
 

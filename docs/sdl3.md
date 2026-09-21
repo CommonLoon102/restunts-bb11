@@ -188,8 +188,27 @@ audible PCM, pitch, engine frequency, volume, modulation, key-off, native
 engine-definition pointers, unavailable-device fallback, and batch-mode cleanup.
 Windows CI runs platform, file I/O, input, audio, and dump regressions on Windows
 Server 2022; Windows 7 runtime compatibility still needs verification on that OS.
-A small Linux x64 replay sample is compared byte for byte with the archived
-DOS physics and renderer oracles:
+The shared **PR validation** and **Release** workflows run the complete physics
+corpus and configurable renderer coverage for the selected platforms. Their
+`platforms` input is a nonempty JSON array of unique names from `dos` and
+`sdl3`, defaulting to `["dos","sdl3"]`. Use `platforms: '["sdl3"]'` for Linux
+x64 SDL3 only, `platforms: '["dos"]'` for DOS only, or
+`platforms: '["dos","sdl3"]'` for both. Like `cameras`, this input is available
+in the manual workflows and the reusable **Build and validate** workflow.
+Tests and reports run only for selected platforms. Unselected builds are
+skipped, except **Release** always builds the DOS executables it publishes.
+
+Both platforms use identical shard plans and archived Borland references. The
+`cameras`, `target`, and `renderer-test-percentage` inputs apply to both; setting
+the percentage to 100 tests every eligible renderer replay. SDL3 shard results
+and reports have an `sdl3-` artifact prefix and fail on mismatches, execution
+errors, or incomplete coverage. These dump comparisons exercise physics and
+framebuffer rendering; interactive display, input, and audio have separate
+platform regressions.
+
+The separate **SDL3 builds** workflow also retains a small Linux x64 sample.
+For an isolated local comparison against freshly generated DOS physics and
+renderer oracles, run:
 
 ```sh
 python3 tools/scripts/validate-native.py --build-directory out/sdl3-linux-x64 \

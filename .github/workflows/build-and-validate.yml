@@ -6,6 +6,14 @@ name: Build and validate
 on:
   workflow_call:
     inputs:
+      platforms:
+        description: Nonempty JSON array of unique candidate platforms (dos, sdl3).
+        type: string
+        default: '["dos","sdl3"]'
+      build-dos-artifact:
+        description: Build DOS release executables even when DOS replay tests are not selected.
+        type: boolean
+        default: false
       shards:
         description: >-
           Number of parallel replay jobs. A public repository on the free
@@ -43,7 +51,7 @@ on:
         default: 980
     outputs:
       exe-artifact:
-        description: Artifact holding the six built executables.
+        description: Artifact holding the six DOS executables, when a DOS build is requested.
         value: ${{ jobs.build.outputs.exe-artifact }}
 
 env:
@@ -102,9 +110,26 @@ jobs:
     timeout-minutes: 5
     outputs:
       shards: ${{ steps.plan.outputs.shards }}
+      platforms: ${{ steps.platforms.outputs.platforms }}
       cameras: ${{ steps.cameras.outputs.cameras }}
     steps:
       - uses: actions/checkout@v7
+
+      - name: Validate candidate platforms
+        id: platforms
+        env:
+          PLATFORMS: ${{ inputs.platforms }}
+        run: |
+          if ! platforms=$(jq -ces '
+              select(length == 1) | .[0] |
+              select(type == "array" and length > 0) |
+              select(all(.[]; . == "dos" or . == "sdl3")) |
+              select(length == (unique | length))
+          ' <<< "$PLATFORMS"); then
+              echo '::error::platforms must be a nonempty JSON array of unique values: dos, sdl3'
+              exit 1
+          fi
+          echo "platforms=$platforms" >> "$GITHUB_OUTPUT"
 
       - name: Validate renderer cameras
         id: cameras
@@ -163,8 +188,9 @@ jobs:
           retention-days: 14
 
   build:
-    name: Build executables
+    name: Build DOS executables
     needs: [formatting, dumpsrv-tests, host-tests, plan]
+    if: inputs.build-dos-artifact || contains(fromJSON(needs.plan.outputs.platforms), 'dos')
     runs-on: ubuntu-24.04
     timeout-minutes: 60
     outputs:
@@ -230,35 +256,105 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
+  build-sdl3:
+    name: Build SDL3 executables (Linux x64)
+    needs: [formatting, dumpsrv-tests, host-tests, plan]
+    if: contains(fromJSON(needs.plan.outputs.platforms), 'sdl3')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install native build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends cmake ninja-build pkg-config \
+            libasound2-dev libpulse-dev libx11-dev libxext-dev libxrandr-dev \
+            libxcursor-dev libxi-dev libxfixes-dev libxss-dev libxtst-dev \
+            libwayland-dev libxkbcommon-dev libudev-dev libdrm-dev libgbm-dev \
+            libegl1-mesa-dev libgl1-mesa-dev
+
+      - name: Download and extract the game assets
+        run: |
+          curl --fail --location --silent --show-error --retry 3 \
+            https://github.com/CommonLoon102/restunts4d-oracles/releases/download/v1.0.1/BB11.zip \
+            --output "$RUNNER_TEMP/BB11.zip"
+          unzip -oq "$RUNNER_TEMP/BB11.zip" -d stunts
+
+      - name: Build the SDL3 game and dump tools
+        run: |
+          cmake -S . -B build/sdl3 -G Ninja -DCMAKE_BUILD_TYPE=Release \
+            -DRESTUNTS_BUILD_TESTS=ON
+          cmake --build build/sdl3 --parallel 2
+
+      - name: Run SDL3 platform regressions
+        env:
+          SDL_VIDEODRIVER: dummy
+          SDL_AUDIODRIVER: dummy
+        run: ctest --test-dir build/sdl3 --output-on-failure
+
+      - name: Package the SDL3 runtime with executable permissions
+        run: |
+          cmake --install build/sdl3 --prefix "$RUNNER_TEMP/sdl3" --component Runtime
+          tar -C "$RUNNER_TEMP/sdl3" -czf sdl3-runtime.tar.gz .
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: restunts-sdl3-replay-exes
+          path: sdl3-runtime.tar.gz
+          if-no-files-found: error
+          retention-days: 14
+
   physics:
-    name: Physics replays
-    needs: [build, plan]
+    name: Physics replays (${{ matrix.platform }})
+    needs: [build, build-sdl3, plan]
+    # An unselected build is intentionally skipped; selected builds must pass.
+    if: >-
+      ${{ !cancelled() && needs.plan.result == 'success' &&
+          (needs.build.result == 'success' ||
+           (needs.build.result == 'skipped' && !inputs.build-dos-artifact &&
+            !contains(fromJSON(needs.plan.outputs.platforms), 'dos'))) &&
+          (needs.build-sdl3.result == 'success' ||
+           (needs.build-sdl3.result == 'skipped' &&
+            !contains(fromJSON(needs.plan.outputs.platforms), 'sdl3'))) }}
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: ${{ fromJSON(needs.plan.outputs.platforms) }}
     uses: ./.github/workflows/replay-tests.yml
     with:
       phase: physics
+      candidate-platform: ${{ matrix.platform }}
       exe-artifact: ${{ needs.build.outputs.exe-artifact }}
+      native-artifact: restunts-sdl3-replay-exes
       shard-matrix: ${{ needs.plan.outputs.shards }}
       shard-plan-artifact: replay-shard-plan
       shards: ${{ inputs.shards }}
       partitions-per-shard: ${{ inputs.partitions-per-shard }}
       replay-timeout-seconds: ${{ inputs.replay-timeout-seconds }}
-      # Physics runs once; the first camera is used only for report metadata.
+      # Physics runs once per platform; the first camera is only report metadata.
       camera: ${{ fromJSON(needs.plan.outputs.cameras)[0] }}
       target: ${{ inputs.target }}
       renderer-test-percentage: ${{ inputs.renderer-test-percentage }}
       renderer-timeout-seconds: ${{ inputs.renderer-timeout-seconds }}
 
   renderer:
-    name: Renderer replays (camera ${{ matrix.camera }})
+    name: Renderer replays (${{ matrix.platform }}, camera ${{ matrix.camera }})
     needs: [build, plan, physics]
+    if: >-
+      ${{ !cancelled() && needs.plan.result == 'success' &&
+          needs.physics.result == 'success' }}
     strategy:
       fail-fast: false
       matrix:
+        platform: ${{ fromJSON(needs.plan.outputs.platforms) }}
         camera: ${{ fromJSON(needs.plan.outputs.cameras) }}
     uses: ./.github/workflows/replay-tests.yml
     with:
       phase: renderer
+      candidate-platform: ${{ matrix.platform }}
       exe-artifact: ${{ needs.build.outputs.exe-artifact }}
+      native-artifact: restunts-sdl3-replay-exes
       shard-matrix: ${{ needs.plan.outputs.shards }}
       shard-plan-artifact: replay-shard-plan
       shards: ${{ inputs.shards }}
@@ -270,25 +366,29 @@ jobs:
       renderer-timeout-seconds: ${{ inputs.renderer-timeout-seconds }}
 
   report:
-    name: Replay report (camera ${{ matrix.camera }})
+    name: Replay report (${{ matrix.platform }}, camera ${{ matrix.camera }})
     needs: [plan, physics, renderer]
+    if: >-
+      ${{ !cancelled() && needs.plan.result == 'success' &&
+          needs.physics.result == 'success' && needs.renderer.result == 'success' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     strategy:
       fail-fast: false
       matrix:
+        platform: ${{ fromJSON(needs.plan.outputs.platforms) }}
         camera: ${{ fromJSON(needs.plan.outputs.cameras) }}
     steps:
       - name: Download the shared physics report
         uses: actions/download-artifact@v8
         with:
-          name: physics-cam${{ fromJSON(needs.plan.outputs.cameras)[0] }}-target${{ inputs.target }}-report
+          name: ${{ matrix.platform == 'sdl3' && 'sdl3-' || '' }}physics-cam${{ fromJSON(needs.plan.outputs.cameras)[0] }}-target${{ inputs.target }}-report
           path: reports/physics
 
       - name: Download this camera's renderer report
         uses: actions/download-artifact@v8
         with:
-          name: renderer-cam${{ matrix.camera }}-target${{ inputs.target }}-report
+          name: ${{ matrix.platform == 'sdl3' && 'sdl3-' || '' }}renderer-cam${{ matrix.camera }}-target${{ inputs.target }}-report
           path: reports/renderer
 
       - name: Combine physics and renderer diagnostics
@@ -299,7 +399,7 @@ jobs:
       - uses: actions/upload-artifact@v7
         if: always()
         with:
-          name: partitions_all-cam${{ matrix.camera }}-target${{ inputs.target }}
+          name: ${{ matrix.platform == 'sdl3' && 'sdl3-' || '' }}partitions_all-cam${{ matrix.camera }}-target${{ inputs.target }}
           path: partitions_all.txt
           if-no-files-found: warn
           retention-days: 14

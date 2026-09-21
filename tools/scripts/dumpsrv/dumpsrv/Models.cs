@@ -2,8 +2,26 @@ using System.Text.Json.Serialization;
 
 namespace DumpSrv;
 
+public static class CandidatePlatforms
+{
+    public const string Dos = "dos";
+    public const string Sdl3 = "sdl3";
+
+    public static string Validate(string platform)
+    {
+        if (platform is not Dos and not Sdl3)
+        {
+            throw new ArgumentException("CandidatePlatform must be dos or sdl3.");
+        }
+        return platform;
+    }
+}
+
 public sealed record RunOptions
 {
+    public string CandidatePlatform { get; init; } = CandidatePlatforms.Dos;
+    public string? NativeDirectory { get; init; }
+    public int? OraclePspSegment { get; init; }
     public required string GameDirectory { get; init; }
     public required string OutputDirectory { get; init; }
     public string DosBoxConfigPath { get; init; } = Path.Combine(AppContext.BaseDirectory, "dosbox.proc.conf");
@@ -35,6 +53,9 @@ public sealed record ServiceOptions
 
 public sealed class ShardResult
 {
+    [JsonRequired]
+    public string CandidatePlatform { get; set; } = CandidatePlatforms.Dos;
+    public int? OraclePspSegment { get; set; }
     [JsonRequired]
     public int Version { get; set; } = 1;
     [JsonRequired]

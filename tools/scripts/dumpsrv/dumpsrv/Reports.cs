@@ -22,7 +22,7 @@ public static class ReportFormatter
     public static string RunSummary(ShardResult result) =>
         $"Shard {result.ShardIndex}: {result.PhysicsCompleted.Count} physics, " +
         $"{result.RendererCompleted.Count} renderer replays " +
-        $"(camera {result.Camera}, target {result.Target}); " +
+        $"({result.CandidatePlatform}, camera {result.Camera}, target {result.Target}); " +
         $"{result.Diagnostics.Count} diagnostic(s); " +
         (result.Completed ? "complete." : $"incomplete: {result.Failure}");
 
@@ -82,6 +82,7 @@ public static class ResultFiles
 
 public sealed record MergeOptions
 {
+    public string CandidatePlatform { get; init; } = CandidatePlatforms.Dos;
     public required string ReplayDirectory { get; init; }
     public required string ResultsDirectory { get; init; }
     public required string OutputFile { get; init; }
@@ -101,6 +102,7 @@ public static class ResultMerger
 {
     public static async Task<MergeResult> MergeAsync(MergeOptions options, CancellationToken cancellation = default)
     {
+        CandidatePlatforms.Validate(options.CandidatePlatform);
         ArgumentOutOfRangeException.ThrowIfLessThan(options.Camera, 1);
         ArgumentOutOfRangeException.ThrowIfGreaterThan(options.Camera, 4);
         ArgumentOutOfRangeException.ThrowIfLessThan(options.Target, 0);
@@ -170,7 +172,14 @@ public static class ResultMerger
                     continue;
                 }
                 diagnostics.AddRange(ReportFormatter.Diagnostics(result));
-                if (result.ShardCount != options.ShardCount || result.PartitionCount is < 1 or > 64 ||
+                if (result.CandidatePlatform != options.CandidatePlatform ||
+                    result.OraclePspSegment is < 1 or > 65535 ||
+                    (result.CandidatePlatform == CandidatePlatforms.Sdl3 &&
+                        result.OraclePspSegment is null) ||
+                    (result.CandidatePlatform == CandidatePlatforms.Dos &&
+                        result.OraclePspSegment is not null) ||
+                    result.ShardCount != options.ShardCount ||
+                    result.PartitionCount is < 1 or > 64 ||
                     result.DosBoxTimeoutSeconds is < 1 or > 2147483 ||
                     result.RendererTimeoutSeconds is < 1 or > 2147483 ||
                     result.PhysicsTests != options.PhysicsTests || result.RendererTests != options.RendererTests ||
@@ -201,9 +210,10 @@ public static class ResultMerger
             }
         }
         if (results.Values.Select(result => (result.PartitionCount, result.DosBoxTimeoutSeconds,
-            result.RendererTimeoutSeconds)).Distinct().Skip(1).Any())
+            result.RendererTimeoutSeconds, result.OraclePspSegment)).Distinct().Skip(1).Any())
         {
-            diagnostics.Add("ERROR|type=inconsistent_shard|message=Partition counts or executable timeouts differ.");
+            diagnostics.Add("ERROR|type=inconsistent_shard|" +
+                "message=Partition counts, executable timeouts, or oracle contexts differ.");
         }
 
         var lines = ReportFormatter.Lines(diagnostics);
@@ -228,6 +238,7 @@ public static class ResultMerger
         if (options.SummaryFile is not null)
         {
             var markdown = new StringBuilder("## Replay validation\n\n| | |\n|---|---|\n")
+                .AppendLine($"| Candidate platform | {options.CandidatePlatform} |")
                 .AppendLine($"| Replays in the golden set | {corpus.Count} |");
             if (options.PhysicsTests)
             {

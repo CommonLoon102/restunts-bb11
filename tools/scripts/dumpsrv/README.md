@@ -2,7 +2,8 @@
 
 `tools/scripts/dumpsrv` is one C# application for Linux, Windows, and GitHub Actions.
 Its HTTP service and direct runner share replay discovery, sampling, task
-scheduling, DOSBox execution, oracle caching, comparisons, and reporting.
+scheduling, DOSBox and native SDL3 execution, oracle caching, comparisons, and
+reporting.
 The shell client continues to use the same HTTP endpoint and report format.
 
 ## Build and deployment
@@ -256,6 +257,34 @@ dotnet out/dumpsrv/dumpsrv.dll run \
     -RendererTimeoutSeconds 120 -RendererTestPercentage 5 -Camera 2 -Target 0
 ```
 
+To test the SDL3 port, point the same runner at an installed native `bin`
+directory (or a native build directory). The game directory still contains the
+assets, replays, and archived `repldumo.exe` / `pixldumo.exe` DOS oracles:
+
+```sh
+dotnet out/dumpsrv/dumpsrv.dll run \
+    -GameDirectory stunts -OutputDirectory out/sdl3-results -PartitionCount 5 \
+    -CandidatePlatform sdl3 -NativeDirectory out/package-linux-x64/bin \
+    -DosBoxConfigPath tools/scripts/dosbox.proc.conf \
+    -DosBoxTimeoutSeconds 120 -RendererTimeoutSeconds 980 \
+    -RendererTestPercentage 5 -Camera 2 -Target 0
+```
+
+`CandidatePlatform` is `dos` by default; `sdl3` requires `NativeDirectory` and
+executes its `repldump` and `pixldump` directly, with dummy SDL video and audio
+drivers. Oracles always run in DOSBox-X when the cache is missing or invalid.
+Native tools must exist; there is no fallback to DOS candidates. The same
+selection, sampling, sharding, output validation, comparisons, and timeouts apply
+to both platforms. `DosBoxTimeoutSeconds` also limits native physics executions.
+Use `-CandidatePlatform sdl3` with `merge` too: coverage checks reject results
+from another candidate platform.
+
+The native renderer uses logical DOS PSP segment 654 (`0x028e`) and program
+path `C:\PIXLDUMP.EXE`, matching the archived renderer ABI and the supplied
+DOSBox-X configuration. For references generated in another DOS environment,
+`run -OraclePspSegment N` overrides the SDL candidate's logical PSP segment;
+use references generated under that same environment.
+
 `Camera` accepts integers from `1` through `4` and defaults to `2`. `Target`
 accepts `0` (player, the default) or `1` (opponent). These settings are passed
 to both renderer executables; physics output is independent of them.
@@ -303,12 +332,24 @@ errors or incomplete coverage. Optional `-SummaryFile PATH` writes the Markdown
 summary used by GitHub Actions.
 
 CI first runs formatting, service and host tests, and shard planning in
-parallel, then builds the DOS executables after all four jobs pass. The planning
-job publishes `shard-plan.json` in the `replay-shard-plan` artifact and reports
-each phase's tick balance in its job summary. Replay jobs and coverage checks
-download that artifact. Physics replays run once after the build. A separate
-renderer job runs for each requested camera after every physics shard and its
-coverage check pass. All cameras share the same plan and renderer sample.
+parallel, then builds the selected platforms after all four jobs pass. The
+`platforms` workflow input is a nonempty JSON array of unique names from `dos`
+and `sdl3`, defaulting to `["dos","sdl3"]`. Use `platforms: '["dos"]'` for DOS
+only, `platforms: '["sdl3"]'` for Linux x64 SDL3 only, or
+`platforms: '["dos","sdl3"]'` for both. Like `cameras`, it is available in the
+manual **PR validation** and **Release** workflows and the reusable
+**Build and validate** workflow. Unselected builds are skipped, except
+**Release** always builds the DOS executables it publishes, even for SDL3-only
+replay tests.
+
+The planning job publishes `shard-plan.json` in the `replay-shard-plan` artifact
+and reports each phase's tick balance in its job summary. Replay jobs and
+coverage checks download that artifact. Physics runs once per selected
+platform after the builds. A separate renderer job runs for each selected
+platform and requested camera after every physics shard and its coverage
+check pass. Both platforms and all cameras share the same plan and renderer
+sample. Camera, target, renderer percentage, shard, worker, and timeout inputs
+configure both platforms. Tests and reports run only for selected platforms.
 Each shard's JSON is uploaded as
 `<phase>-partitions-cam<camera>-target<target>-<index>`. Renderer oracle files
 are uploaded as `renderer-pdo-cam<camera>-target<target>-<index>` and combined
@@ -316,10 +357,13 @@ into `renderer-pdo-cam<camera>-target<target>`. Phase reports are uploaded as
 `<phase>-cam<camera>-target<target>-report`, including diagnostics when
 validation fails. The physics report uses the first requested camera in its
 metadata; physics results do not depend on the camera. The final Replay report
-jobs run once per camera after all cameras pass renderer validation. Each job
-combines the shared physics diagnostics with only its camera's renderer
-diagnostics and publishes `partitions_all-cam<camera>-target<target>`, containing
+jobs run once per selected platform and camera after all renderer validation
+passes. Each job combines that platform's physics diagnostics with only its
+camera's renderer diagnostics and publishes `partitions_all-cam<camera>-target<target>`, containing
 `partitions_all.txt`. Renderer diagnostics from different cameras stay separate.
+SDL3 artifacts use the same names with an `sdl3-` prefix. Native executables
+and their shared OPL library travel together in `restunts-sdl3-replay-exes`;
+the tar archive preserves executable permissions and the installed layout.
 The summaries show physics and renderer coverage separately, errors grouped by
 type, and up to the first 200 diagnostic lines. The DOS executable build and
 `restunts-exes` artifact remain separate from the C# regression runner.

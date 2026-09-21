@@ -38,8 +38,36 @@ public static class CommandLine
                     return 0;
                 case "run":
                     var timeout = arguments.Timeout("DosBoxTimeoutSeconds", 60);
+                    var candidatePlatform = CandidatePlatforms.Validate(
+                        arguments.String("CandidatePlatform", CandidatePlatforms.Dos));
+                    var nativeDirectory = arguments.Optional("NativeDirectory");
+                    var oraclePsp = arguments.Optional("OraclePspSegment");
+                    if (oraclePsp is not null && (!int.TryParse(oraclePsp, NumberStyles.None,
+                        CultureInfo.InvariantCulture, out var segment) ||
+                        segment is < 1 or > 65535))
+                    {
+                        throw new ArgumentException(
+                            "OraclePspSegment must be an integer from 1 through 65535.");
+                    }
+                    if (candidatePlatform == CandidatePlatforms.Sdl3 &&
+                        string.IsNullOrWhiteSpace(nativeDirectory))
+                    {
+                        throw new ArgumentException(
+                            "NativeDirectory is required for SDL3 candidates.");
+                    }
+                    if (candidatePlatform == CandidatePlatforms.Dos &&
+                        (nativeDirectory is not null || oraclePsp is not null))
+                    {
+                        throw new ArgumentException(
+                            "NativeDirectory and OraclePspSegment require CandidatePlatform sdl3.");
+                    }
                     var run = new RunOptions
                     {
+                        CandidatePlatform = candidatePlatform,
+                        NativeDirectory = nativeDirectory is null
+                            ? null : Path.GetFullPath(nativeDirectory),
+                        OraclePspSegment = oraclePsp is null ? null : int.Parse(oraclePsp,
+                            CultureInfo.InvariantCulture),
                         GameDirectory = Path.GetFullPath(arguments.String("GameDirectory")),
                         OutputDirectory = Path.GetFullPath(arguments.String("OutputDirectory")),
                         DosBoxConfigPath = Path.GetFullPath(arguments.String("DosBoxConfigPath",
@@ -87,6 +115,8 @@ public static class CommandLine
                 case "merge":
                     var merge = new MergeOptions
                     {
+                        CandidatePlatform = CandidatePlatforms.Validate(
+                            arguments.String("CandidatePlatform", CandidatePlatforms.Dos)),
                         ReplayDirectory = Path.GetFullPath(arguments.String("ReplayDirectory")),
                         ResultsDirectory = Path.GetFullPath(arguments.String("ResultsDirectory")),
                         ShardPlanPath = arguments.Optional("ShardPlan"),
@@ -214,9 +244,12 @@ public static class CommandLine
         run:   -ShardIndex 0, -ShardCount 1, -PhysicsTests true, -RendererTests true,
                -RendererTestPercentage 100, -DosBoxTimeoutSeconds 60,
                -RendererTimeoutSeconds N (defaults to DosBoxTimeoutSeconds), -DosBoxConfigPath FILE.
+               -CandidatePlatform dos|sdl3 (default dos), -NativeDirectory DIR (required for sdl3),
+               -OraclePspSegment N (SDL3 renderer DOS context; defaults to 654).
         extract-oracles: -Renderer false, -RendererTestPercentage 100, -ShardIndex 0, -ShardCount 1.
         merge: -ShardCount 1, -PhysicsTests true, -RendererTests true,
-               -RendererTestPercentage 100, -OutputFile partitions_all.txt, -SummaryFile FILE.
+               -RendererTestPercentage 100, -OutputFile partitions_all.txt, -SummaryFile FILE,
+               -CandidatePlatform dos|sdl3 (default dos).
 
         All commands: -Camera 2 (1-4), -Target 0 (0 = player, 1 = opponent).
         serve accepts Camera and Target at startup only.
