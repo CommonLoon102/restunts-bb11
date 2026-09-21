@@ -9,6 +9,10 @@ on:
     branches: [master]
   workflow_dispatch:
     inputs:
+      platforms:
+        description: Nonempty JSON array of unique candidate platforms (dos, sdl3).
+        type: string
+        default: '["dos","sdl3"]'
       cameras:
         description: Nonempty JSON array of unique renderer camera IDs (integers 1-4).
         type: string
@@ -34,6 +38,7 @@ jobs:
     name: Golden replays
     uses: ./.github/workflows/build-and-validate.yml
     with:
-      cameras: ${{ github.event.inputs.cameras || '[2]' }}
+      platforms: ${{ github.event.inputs.platforms || '["sdl3"]' }}
+      cameras: ${{ github.event.inputs.cameras || '[1,2]' }}
       target: ${{ fromJSON(github.event.inputs.target || '0') }}
       renderer-test-percentage: ${{ fromJSON(github.event.inputs.renderer-test-percentage || '100') }}

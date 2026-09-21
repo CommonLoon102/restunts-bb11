@@ -21,7 +21,7 @@ public sealed class EngineTests
             clock.Advance(TimeSpan.FromSeconds(invocation.Executable.StartsWith("repl",
                 StringComparison.Ordinal) ? 11 : 23));
             WriteOutput(invocation);
-            return Task.FromResult(new DosBoxResult(0));
+            return Task.FromResult(new ProcessResult(0));
         });
         var result = await new RegressionEngine(runner, _ => { }, clock).RunAsync(
             Options(directory) with { PhysicsTests = physics, RendererTests = renderer },
@@ -50,7 +50,7 @@ public sealed class EngineTests
                 token.ThrowIfCancellationRequested();
             }
             WriteOutput(invocation);
-            return Task.FromResult(new DosBoxResult(0));
+            return Task.FromResult(new ProcessResult(0));
         });
         var result = await new RegressionEngine(runner, _ => { }, clock).RunAsync(
             Options(directory), cancellation.Token);
@@ -82,7 +82,7 @@ public sealed class EngineTests
         {
             calls.Enqueue(invocation);
             WriteOutput(invocation);
-            return Task.FromResult(new DosBoxResult(0));
+            return Task.FromResult(new ProcessResult(0));
         });
         var result = await new RegressionEngine(runner, _ => { }).RunAsync(
             Options(directory) with { Camera = camera, Target = target },
@@ -131,7 +131,7 @@ public sealed class EngineTests
         {
             calls.Add(invocation.Executable);
             WriteOutput(invocation);
-            return Task.FromResult(new DosBoxResult(0));
+            return Task.FromResult(new ProcessResult(0));
         }), _ => { });
         var options = Options(directory) with { PhysicsTests = false };
         for (var run = 0; run < 2; run++)
@@ -190,7 +190,7 @@ public sealed class EngineTests
                 Assert.True(File.Exists(DosFiles.Resolve(directory.Path, "track.BIN.pending")));
             }
             WriteOutput(invocation);
-            return Task.FromResult(new DosBoxResult(0));
+            return Task.FromResult(new ProcessResult(0));
         });
         var result = await new RegressionEngine(runner, _ => { }).RunAsync(
             Options(directory) with { RendererTests = false }, TestContext.Current.CancellationToken);
@@ -208,18 +208,18 @@ public sealed class EngineTests
         {
             if (invocation.Executable == "repldumo.exe" && invocation.ReplayBaseName == "timeout")
             {
-                return Task.FromResult(new DosBoxResult(TimedOut: true));
+                return Task.FromResult(new ProcessResult(TimedOut: true));
             }
             if (invocation.Executable == "repldumo.exe" && invocation.ReplayBaseName == "failed")
             {
-                return Task.FromResult(new DosBoxResult(ExitCode: 7));
+                return Task.FromResult(new ProcessResult(ExitCode: 7));
             }
             if (!(invocation.Executable == "repldump.exe" && invocation.ReplayBaseName == "missing"))
             {
                 WriteOutput(invocation, invocation.Executable == "repldump.exe" &&
                     invocation.ReplayBaseName == "mismatch");
             }
-            return Task.FromResult(new DosBoxResult(0));
+            return Task.FromResult(new ProcessResult(0));
         });
         var result = await new RegressionEngine(runner, _ => { }).RunAsync(Options(directory), TestContext.Current.CancellationToken);
         Assert.True(result.Completed);
@@ -251,7 +251,7 @@ public sealed class EngineTests
             try
             {
                 await Task.Delay(Timeout.Infinite, token);
-                return new DosBoxResult(0);
+                return new ProcessResult(0);
             }
             finally
             {
@@ -281,7 +281,7 @@ public sealed class EngineTests
         var runner = new FakeRunner((invocation, _) =>
         {
             WriteOutput(invocation, invocation.Executable == "repldump.exe");
-            return Task.FromResult(new DosBoxResult(0));
+            return Task.FromResult(new ProcessResult(0));
         });
         var result = await new RegressionEngine(runner, _ => { }).RunAsync(
             Options(directory) with { RendererTests = false }, TestContext.Current.CancellationToken);
@@ -358,7 +358,7 @@ public sealed class EngineTests
         var engine = new RegressionEngine(new FakeRunner((invocation, _) =>
         {
             WriteOutput(invocation);
-            return Task.FromResult(new DosBoxResult(0));
+            return Task.FromResult(new ProcessResult(0));
         }), _ => { });
         for (var index = 0; index < assignments.Length; index++)
         {
@@ -408,7 +408,7 @@ public sealed class EngineTests
         {
             calls.Enqueue(invocation);
             WriteOutput(invocation);
-            return Task.FromResult(new DosBoxResult(0));
+            return Task.FromResult(new ProcessResult(0));
         }), _ => { });
         var results = new List<ShardResult>();
         for (var index = 0; index < options.ShardCount; index++)
@@ -476,6 +476,181 @@ public sealed class EngineTests
         Assert.Contains("0/0 renderer", merged.Summary);
     }
 
+    [Theory]
+    [InlineData(1, 0, false)]
+    [InlineData(2, 0, false)]
+    [InlineData(3, 0, false)]
+    [InlineData(4, 0, false)]
+    [InlineData(1, 1, true)]
+    [InlineData(2, 1, true)]
+    [InlineData(3, 1, true)]
+    [InlineData(4, 1, true)]
+    public async Task NativeCandidatesUseSharedOracleComparison(int camera, int target, bool cached)
+    {
+        using var directory = CreateGame("mix.RpL", "other.rpl");
+        var options = NativeOptions(directory) with { Camera = camera, Target = target };
+        File.Delete(Path.Combine(directory.Path, "repldump.exe"));
+        File.Delete(Path.Combine(directory.Path, "pixldump.exe"));
+        if (cached)
+        {
+            foreach (var basename in new[] { "mix", "other" })
+            {
+                File.WriteAllBytes(Path.Combine(directory.Path, basename + ".BIN"),
+                    DumpBytes(false, 6));
+                File.WriteAllBytes(Path.Combine(directory.Path, basename + ".PDO"),
+                    DumpBytes(true, 6));
+                directory.Write(basename + ".PDO.settings", $"{camera} {target}");
+            }
+        }
+        var oracleCalls = new ConcurrentQueue<DosBoxInvocation>();
+        var nativeCalls = new ConcurrentQueue<NativeInvocation>();
+        var engine = new RegressionEngine(new FakeRunner((invocation, _) =>
+        {
+            oracleCalls.Enqueue(invocation);
+            Assert.EndsWith("o.exe", invocation.Executable);
+            WriteOutput(invocation);
+            return Task.FromResult(new ProcessResult(0));
+        }), _ => { }, nativeRunner: new FakeNativeRunner((invocation, _) =>
+        {
+            nativeCalls.Enqueue(invocation);
+            WriteNativeOutput(invocation);
+            return Task.FromResult(new ProcessResult(0));
+        }));
+        var result = await engine.RunAsync(options, TestContext.Current.CancellationToken);
+        Assert.True(result.Completed);
+        Assert.Empty(result.Diagnostics);
+        Assert.Equal("sdl3", result.CandidatePlatform);
+        Assert.Equal(654, result.OraclePspSegment);
+        Assert.Equal(new[] { "mix.RpL", "other.rpl" }, result.PhysicsCompleted);
+        Assert.Equal(result.PhysicsCompleted, result.RendererCompleted);
+        Assert.Equal(cached ? 0 : 4, oracleCalls.Count);
+        Assert.Equal(4, nativeCalls.Count);
+        Assert.All(nativeCalls, invocation =>
+        {
+            Assert.Equal(options.NativeDirectory, Path.GetDirectoryName(invocation.Executable));
+            Assert.Equal(invocation.Executable.Contains("pixldump", StringComparison.Ordinal)
+                ? $"{camera} {target}" : "1", invocation.Arguments);
+            Assert.DoesNotContain('.', invocation.ReplayBaseName);
+        });
+    }
+
+    [Theory]
+    [InlineData("missing", "missing_output")]
+    [InlineData("truncated", "invalid_output")]
+    [InlineData("mismatch", "file_mismatch")]
+    [InlineData("exit", "native_failure")]
+    [InlineData("timeout", "timeout")]
+    public async Task NativeCandidateFailuresCannotPass(string failure, string expectedType)
+    {
+        using var directory = CreateGame("race.rpl");
+        var native = new FakeNativeRunner((invocation, _) =>
+        {
+            if (failure == "exit")
+            {
+                return Task.FromResult(new ProcessResult(ExitCode: 7));
+            }
+            if (failure == "timeout")
+            {
+                return Task.FromResult(new ProcessResult(TimedOut: true));
+            }
+            if (failure != "missing")
+            {
+                WriteNativeOutput(invocation, different: failure == "mismatch");
+                if (failure == "truncated")
+                {
+                    directory.Write("RACE.BNI", "incomplete");
+                }
+            }
+            return Task.FromResult(new ProcessResult(0));
+        });
+        var engine = new RegressionEngine(new FakeRunner((invocation, _) =>
+        {
+            WriteOutput(invocation);
+            return Task.FromResult(new ProcessResult(0));
+        }), _ => { }, nativeRunner: native);
+        var result = await engine.RunAsync(NativeOptions(directory) with { RendererTests = false },
+            TestContext.Current.CancellationToken);
+        Assert.Contains(result.Diagnostics, line => line.Contains($"type={expectedType}|",
+            StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task MissingNativeExecutableNeverFallsBackToDosCandidate()
+    {
+        using var directory = CreateGame("race.rpl");
+        var options = NativeOptions(directory) with { RendererTests = false };
+        File.Delete(Path.Combine(options.NativeDirectory!, "repldump" +
+            (OperatingSystem.IsWindows() ? ".exe" : "")));
+        var engine = new RegressionEngine(new FakeRunner((_, _) =>
+            throw new InvalidOperationException("DOS must not start.")), _ => { },
+            nativeRunner: new FakeNativeRunner((_, _) =>
+                throw new InvalidOperationException("Native must not start.")));
+        var result = await engine.RunAsync(options, TestContext.Current.CancellationToken);
+        Assert.False(result.Completed);
+        Assert.Contains("Candidate executable not found", result.Failure);
+        Assert.Empty(result.PhysicsCompleted);
+    }
+
+    [Theory]
+    [InlineData(null, "654")]
+    [InlineData(700, "700")]
+    public void NativeArgumentsUseExactExecutableAndHeadlessOracleContext(int? psp, string expected)
+    {
+        var directory = Path.Combine(Path.GetTempPath(), "game with spaces");
+        var executable = Path.Combine(directory, "native tools", "pixldump");
+        var info = NativeRunner.CreateStartInfo(new NativeInvocation(directory, executable,
+            "r$()'", "4 1", 60, psp));
+        Assert.Equal(executable, info.FileName);
+        Assert.Equal(directory, info.WorkingDirectory);
+        Assert.Equal(new[] { "r$()'", "4", "1" }, info.ArgumentList);
+        Assert.Equal("dummy", info.Environment["SDL_VIDEODRIVER"]);
+        Assert.Equal("dummy", info.Environment["SDL_AUDIODRIVER"]);
+        Assert.Equal(expected, info.Environment["RESTUNTS_ORACLE_PSP_SEGMENT"]);
+        Assert.Equal(@"C:\PIXLDUMP.EXE", info.Environment["RESTUNTS_ORACLE_PROGRAM_PATH"]);
+        Assert.True(info.RedirectStandardOutput);
+        Assert.True(info.RedirectStandardError);
+        Assert.False(info.UseShellExecute);
+    }
+
+    [Fact]
+    public async Task NativeRunCommandExecutesBothCandidatesAndProducesIdentifiedReport()
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            return;
+        }
+        using var directory = CreateGame("race.rpl");
+        var options = NativeOptions(directory);
+        File.WriteAllBytes(Path.Combine(directory.Path, "race.BIN"), DumpBytes(false, 6));
+        File.WriteAllBytes(Path.Combine(directory.Path, "race.PDO"), DumpBytes(true, 6));
+        directory.Write("race.PDO.settings", "3 1");
+        foreach (var (executable, source, output) in new[]
+            { ("repldump", "BIN", "BNI"), ("pixldump", "PDO", "PDD") })
+        {
+            var path = Path.Combine(options.NativeDirectory!, executable);
+            File.WriteAllText(path, "#!/bin/sh\n" +
+                "test \"$SDL_VIDEODRIVER\" = dummy || exit 2\n" +
+                "test \"$SDL_AUDIODRIVER\" = dummy || exit 3\n" +
+                "test \"$RESTUNTS_ORACLE_PSP_SEGMENT\" = 700 || exit 4\n" +
+                $"cp \"$1.{source}\" \"$1.{output}\"\n");
+            File.SetUnixFileMode(path, UnixFileMode.UserRead | UnixFileMode.UserWrite |
+                UnixFileMode.UserExecute);
+        }
+        var exitCode = await CommandLine.ExecuteAsync(["run", "-GameDirectory", directory.Path,
+            "-OutputDirectory", options.OutputDirectory, "-PartitionCount", "1",
+            "-DosBoxConfigPath", options.DosBoxConfigPath, "-CandidatePlatform", "sdl3",
+            "-NativeDirectory", options.NativeDirectory!, "-OraclePspSegment", "700",
+            "-Camera", "3", "-Target", "1"], TestContext.Current.CancellationToken);
+        Assert.Equal(0, exitCode);
+        var result = System.Text.Json.JsonSerializer.Deserialize<ShardResult>(
+            await File.ReadAllTextAsync(Path.Combine(options.OutputDirectory, "shard-0.json"),
+                TestContext.Current.CancellationToken))!;
+        Assert.Equal("sdl3", result.CandidatePlatform);
+        Assert.Equal(700, result.OraclePspSegment);
+        Assert.Equal(new[] { "race.rpl" }, result.PhysicsCompleted);
+        Assert.Equal(result.PhysicsCompleted, result.RendererCompleted);
+    }
+
     [Fact]
     public void DosBoxArgumentsMountOnlyGameDataAndForceFastCpu()
     {
@@ -495,9 +670,11 @@ public sealed class EngineTests
     }
 
     [Theory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task RealProcessTimeoutAndCancellationKillParentAndChild(bool cancel)
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public async Task RealProcessTimeoutAndCancellationKillParentAndChild(bool cancel, bool native)
     {
         if (OperatingSystem.IsWindows())
         {
@@ -508,8 +685,11 @@ public sealed class EngineTests
         directory.Write("fake-dosbox", "#!/bin/sh\nsleep 120 &\necho $! > child.pid\necho $$ > parent.pid\nwait\n");
         File.SetUnixFileMode(script, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
         using var cancellation = new CancellationTokenSource();
-        var execution = new DosBoxRunner(script).RunAsync(new DosBoxInvocation(directory.Path,
-            "unused.conf", "repldump.exe", "track", "1", cancel ? 30 : 1), cancellation.Token);
+        var execution = native
+            ? new NativeRunner().RunAsync(new NativeInvocation(directory.Path, script,
+                "track", "1", cancel ? 30 : 1), cancellation.Token)
+            : new DosBoxRunner(script).RunAsync(new DosBoxInvocation(directory.Path,
+                "unused.conf", "repldump.exe", "track", "1", cancel ? 30 : 1), cancellation.Token);
         await WaitForFileAsync(System.IO.Path.Combine(directory.Path, "parent.pid"));
         var parent = int.Parse(await File.ReadAllTextAsync(System.IO.Path.Combine(directory.Path, "parent.pid"), TestContext.Current.CancellationToken));
         var child = int.Parse(await File.ReadAllTextAsync(System.IO.Path.Combine(directory.Path, "child.pid"), TestContext.Current.CancellationToken));
@@ -607,7 +787,7 @@ public sealed class EngineTests
         {
             calls.Add(invocation.Executable);
             WriteOutput(invocation);
-            return Task.FromResult(new DosBoxResult(0));
+            return Task.FromResult(new ProcessResult(0));
         });
         var result = await new RegressionEngine(runner, _ => { }).RunAsync(
             Options(directory) with
@@ -646,7 +826,7 @@ public sealed class EngineTests
                 var bytes = File.ReadAllBytes(path);
                 File.WriteAllBytes(path, empty ? [] : bytes[..^1]);
             }
-            return Task.FromResult(new DosBoxResult(0));
+            return Task.FromResult(new ProcessResult(0));
         });
         var options = Options(directory) with
         { PhysicsTests = !renderer, RendererTests = renderer };
@@ -666,7 +846,7 @@ public sealed class EngineTests
         var retry = await new RegressionEngine(new FakeRunner((invocation, _) =>
         {
             WriteOutput(invocation);
-            return Task.FromResult(new DosBoxResult(0));
+            return Task.FromResult(new ProcessResult(0));
         }), _ => { }).RunAsync(options, TestContext.Current.CancellationToken);
         Assert.Empty(retry.Diagnostics);
     }
@@ -691,7 +871,7 @@ public sealed class EngineTests
             };
             var path = System.IO.Path.Combine(directory.Path, $"TRACK.{extension}");
             File.WriteAllBytes(path, File.ReadAllBytes(path)[..^1]);
-            return Task.FromResult(new DosBoxResult(0));
+            return Task.FromResult(new ProcessResult(0));
         }), _ => { }).RunAsync(
             Options(directory) with { PhysicsTests = !renderer, RendererTests = renderer },
             TestContext.Current.CancellationToken);
@@ -714,7 +894,7 @@ public sealed class EngineTests
         var result = await new RegressionEngine(new FakeRunner((invocation, _) =>
         {
             WriteOutput(invocation);
-            return Task.FromResult(new DosBoxResult(0));
+            return Task.FromResult(new ProcessResult(0));
         }), _ => { }).RunAsync(Options(directory), TestContext.Current.CancellationToken);
         Assert.True(result.Completed);
         Assert.Empty(result.Diagnostics);
@@ -770,6 +950,27 @@ public sealed class EngineTests
         PartitionCount = 2
     };
 
+    private static RunOptions NativeOptions(EngineDirectory directory)
+    {
+        var nativeDirectory = Path.Combine(directory.Path, "native tools");
+        Directory.CreateDirectory(nativeDirectory);
+        foreach (var name in new[] { "repldump", "pixldump" })
+        {
+            File.WriteAllText(Path.Combine(nativeDirectory, name +
+                (OperatingSystem.IsWindows() ? ".exe" : "")), "");
+        }
+        return Options(directory) with
+        {
+            CandidatePlatform = CandidatePlatforms.Sdl3,
+            NativeDirectory = nativeDirectory
+        };
+    }
+
+    private static void WriteNativeOutput(NativeInvocation invocation, bool different = false) =>
+        WriteOutput(new DosBoxInvocation(invocation.GameDirectory, "unused.conf",
+            Path.GetFileNameWithoutExtension(invocation.Executable) + ".exe",
+            invocation.ReplayBaseName, invocation.Arguments, invocation.TimeoutSeconds), different);
+
     private static void WriteOutput(DosBoxInvocation invocation, bool different = false)
     {
         var extension = invocation.Executable switch
@@ -796,9 +997,18 @@ public sealed class EngineTests
         public void Advance(TimeSpan elapsed) => Interlocked.Add(ref timestamp, elapsed.Ticks);
     }
 
-    private sealed class FakeRunner(Func<DosBoxInvocation, CancellationToken, Task<DosBoxResult>> run) : IDosBoxRunner
+    private sealed class FakeNativeRunner(
+        Func<NativeInvocation, CancellationToken, Task<ProcessResult>> run) : INativeRunner
     {
-        public Task<DosBoxResult> RunAsync(DosBoxInvocation invocation, CancellationToken cancellationToken) =>
+        public Task<ProcessResult> RunAsync(NativeInvocation invocation,
+            CancellationToken cancellationToken) => run(invocation, cancellationToken);
+    }
+
+    private sealed class FakeRunner(
+        Func<DosBoxInvocation, CancellationToken, Task<ProcessResult>> run) : IDosBoxRunner
+    {
+        public Task<ProcessResult> RunAsync(DosBoxInvocation invocation,
+            CancellationToken cancellationToken) =>
             run(invocation, cancellationToken);
     }
 }

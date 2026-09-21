@@ -32,6 +32,22 @@ public sealed class CommandLineTests
     }
 
     [Theory]
+    [InlineData("-CandidatePlatform", "native")]
+    [InlineData("-CandidatePlatform", "sdl3")]
+    [InlineData("-NativeDirectory", "native")]
+    [InlineData("-OraclePspSegment", "654")]
+    [InlineData("-OraclePspSegment", "0")]
+    [InlineData("-OraclePspSegment", "65536")]
+    [InlineData("-OraclePspSegment", "invalid")]
+    public async Task RunRejectsInvalidNativeOptions(string option, string value)
+    {
+        using var directory = new EngineDirectory();
+        Assert.Equal(2, await CommandLine.ExecuteAsync(["run", "-GameDirectory", directory.Path,
+            "-OutputDirectory", directory.Path, "-PartitionCount", "1", option, value],
+            TestContext.Current.CancellationToken));
+    }
+
+    [Theory]
     [InlineData(0, 0)]
     [InlineData(5, 0)]
     [InlineData(2, -1)]

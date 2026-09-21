@@ -5,6 +5,10 @@ name: Release
 on:
   workflow_dispatch:
     inputs:
+      platforms:
+        description: Nonempty JSON array of unique candidate platforms to test (dos, sdl3).
+        type: string
+        default: '["dos","sdl3"]'
       cameras:
         description: Nonempty JSON array of unique renderer camera IDs (integers 1-4).
         type: string
@@ -72,6 +76,9 @@ jobs:
     needs: check-tag
     uses: ./.github/workflows/build-and-validate.yml
     with:
+      platforms: ${{ inputs.platforms }}
+      # This workflow publishes DOS executables regardless of the test selection.
+      build-dos-artifact: true
       cameras: ${{ inputs.cameras }}
       target: ${{ inputs.target }}
       renderer-test-percentage: ${{ inputs.renderer-test-percentage }}
@@ -96,6 +103,7 @@ jobs:
           TITLE: ${{ inputs.title }}
           DRAFT: ${{ inputs.draft }}
           PRERELEASE: ${{ inputs.prerelease }}
+          PLATFORMS: ${{ inputs.platforms }}
         run: |
           set -u
           flags=()
@@ -108,7 +116,8 @@ jobs:
           notes=$(printf '%s\n' \
               "Built from $GITHUB_REF_NAME at commit $GITHUB_SHA." \
               "" \
-              "The golden replay set was validated against these executables before this release was created.")
+              "This release packages the DOS executables." \
+              "Golden replay validation passed for candidate platforms: $PLATFORMS.")
           gh release create "$TAG" \
               --repo "$GITHUB_REPOSITORY" \
               --target "$GITHUB_SHA" \

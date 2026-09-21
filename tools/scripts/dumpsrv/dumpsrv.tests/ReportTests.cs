@@ -43,6 +43,10 @@ public sealed class ReportTests : IDisposable
     [InlineData("null_diagnostics", "invalid_result")]
     [InlineData("incomplete", "incomplete_run")]
     [InlineData("wrong_settings", "inconsistent_shard")]
+    [InlineData("wrong_platform", "inconsistent_shard")]
+    [InlineData("invalid_platform", "inconsistent_shard")]
+    [InlineData("missing_platform", "invalid_result")]
+    [InlineData("dos_psp", "inconsistent_shard")]
     [InlineData("wrong_timeout", "inconsistent_shard")]
     [InlineData("wrong_camera", "inconsistent_shard")]
     [InlineData("wrong_target", "inconsistent_shard")]
@@ -68,6 +72,7 @@ public sealed class ReportTests : IDisposable
                 await File.WriteAllTextAsync(path, "{", TestContext.Current.CancellationToken);
                 break;
             case "missing_camera":
+            case "missing_platform":
             case "missing_target":
             case "missing_diagnostics":
             case "null_diagnostics":
@@ -77,6 +82,7 @@ public sealed class ReportTests : IDisposable
                     var property = mutation switch
                     {
                         "missing_camera" => "Camera",
+                        "missing_platform" => "CandidatePlatform",
                         "missing_target" => "Target",
                         _ => "Diagnostics"
                     };
@@ -99,6 +105,9 @@ public sealed class ReportTests : IDisposable
                 {
                     case "incomplete": shard.Completed = false; break;
                     case "wrong_settings": shard.RendererTestPercentage = 100; break;
+                    case "wrong_platform": shard.CandidatePlatform = "sdl3"; break;
+                    case "invalid_platform": shard.CandidatePlatform = "unknown"; break;
+                    case "dos_psp": shard.OraclePspSegment = 654; break;
                     case "wrong_timeout": shard.DosBoxTimeoutSeconds = 120; break;
                     case "wrong_camera": shard.Camera = 4; break;
                     case "wrong_target": shard.Target = 1; break;
@@ -115,6 +124,41 @@ public sealed class ReportTests : IDisposable
         Assert.Contains(result.Diagnostics, line => line.Contains($"type={expectedType}|", StringComparison.Ordinal) ||
             line.EndsWith($"type={expectedType}", StringComparison.Ordinal));
         Assert.NotEmpty(await File.ReadAllTextAsync(Options().OutputFile, TestContext.Current.CancellationToken));
+    }
+
+    [Theory]
+    [InlineData("consistent")]
+    [InlineData("different")]
+    [InlineData("missing")]
+    public async Task NativeMergeRequiresMatchingPlatformAndOracleContext(string context)
+    {
+        var shards = await WriteShards();
+        foreach (var shard in shards)
+        {
+            shard.CandidatePlatform = CandidatePlatforms.Sdl3;
+            shard.OraclePspSegment = context == "missing" ? null :
+                context == "different" && shard.ShardIndex == 1 ? 700 : 654;
+            await File.WriteAllTextAsync(Path.Combine(directory, "results",
+                $"arbitrary-{(char)('a' + shard.ShardIndex)}.json"),
+                JsonSerializer.Serialize(shard),
+                TestContext.Current.CancellationToken);
+        }
+        var options = Options();
+        var result = await ResultMerger.MergeAsync(options with
+        {
+            CandidatePlatform = CandidatePlatforms.Sdl3
+        }, TestContext.Current.CancellationToken);
+        Assert.Equal(context == "consistent", result.Success);
+        var exitCode = await CommandLine.ExecuteAsync(["merge", "-CandidatePlatform", "sdl3",
+            "-ReplayDirectory", options.ReplayDirectory,
+            "-ResultsDirectory", options.ResultsDirectory,
+            "-OutputFile", options.OutputFile, "-ShardPlan", options.ShardPlanPath!,
+            "-ShardCount", "3", "-RendererTestPercentage", "40"],
+            TestContext.Current.CancellationToken);
+        Assert.Equal(context == "consistent" ? 0 : 1, exitCode);
+        var wrongPlatform = await ResultMerger.MergeAsync(options,
+            TestContext.Current.CancellationToken);
+        Assert.False(wrongPlatform.Success);
     }
 
     [Fact]

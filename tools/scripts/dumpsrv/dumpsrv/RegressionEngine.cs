@@ -1,9 +1,10 @@
 namespace DumpSrv;
 
 public class RegressionEngine(IDosBoxRunner? runner = null, Action<string>? log = null,
-    TimeProvider? timeProvider = null)
+    TimeProvider? timeProvider = null, INativeRunner? nativeRunner = null)
 {
     private readonly IDosBoxRunner runner = runner ?? new DosBoxRunner();
+    private readonly INativeRunner nativeRunner = nativeRunner ?? new NativeRunner();
     private readonly Action<string> log = log ?? Console.WriteLine;
 
     private sealed record Phase(bool Renderer, string Oracle, string Candidate, string OracleExtension,
@@ -13,6 +14,9 @@ public class RegressionEngine(IDosBoxRunner? runner = null, Action<string>? log 
     {
         var result = new ShardResult
         {
+            CandidatePlatform = options.CandidatePlatform,
+            OraclePspSegment = options.CandidatePlatform == CandidatePlatforms.Sdl3
+                ? options.OraclePspSegment ?? 654 : null,
             ShardIndex = options.ShardIndex,
             ShardCount = options.ShardCount,
             PartitionCount = options.PartitionCount,
@@ -60,11 +64,17 @@ public class RegressionEngine(IDosBoxRunner? runner = null, Action<string>? log 
                 phases.Add(new Phase(true, "pixldumo.exe", "pixldump.exe", "PDO", "PDD",
                     $"{options.Camera} {options.Target}", options.RendererTimeoutSeconds));
             }
-            foreach (var executable in phases.SelectMany(phase => new[] { phase.Oracle, phase.Candidate }))
+            foreach (var phase in phases)
             {
-                if (!File.Exists(DosFiles.Resolve(options.GameDirectory, executable)))
+                var oracle = DosFiles.Resolve(options.GameDirectory, phase.Oracle);
+                var candidate = CandidatePath(options, phase.Candidate);
+                if (!File.Exists(oracle))
                 {
-                    throw new FileNotFoundException($"DOS executable not found: {executable}");
+                    throw new FileNotFoundException($"DOS oracle executable not found: {oracle}");
+                }
+                if (!File.Exists(candidate))
+                {
+                    throw new FileNotFoundException($"Candidate executable not found: {candidate}");
                 }
             }
             Directory.CreateDirectory(options.OutputDirectory);
@@ -212,8 +222,15 @@ public class RegressionEngine(IDosBoxRunner? runner = null, Action<string>? log 
 
         async Task<bool> ExecuteAsync(string executable)
         {
-            var outcome = await runner.RunAsync(new DosBoxInvocation(options.GameDirectory,
-                options.DosBoxConfigPath, executable, basename, phase.Arguments, phase.TimeoutSeconds), cancellationToken);
+            var native = executable == phase.Candidate &&
+                options.CandidatePlatform == CandidatePlatforms.Sdl3;
+            var outcome = native
+                ? await nativeRunner.RunAsync(new NativeInvocation(options.GameDirectory,
+                    CandidatePath(options, executable), basename, phase.Arguments,
+                    phase.TimeoutSeconds, options.OraclePspSegment), cancellationToken)
+                : await runner.RunAsync(new DosBoxInvocation(options.GameDirectory,
+                    options.DosBoxConfigPath, executable, basename, phase.Arguments,
+                    phase.TimeoutSeconds), cancellationToken);
             if (outcome.TimedOut)
             {
                 diagnostic($"ERROR|type=timeout|exe={executable}|input={replay}|timeout_seconds={phase.TimeoutSeconds}");
@@ -221,8 +238,9 @@ public class RegressionEngine(IDosBoxRunner? runner = null, Action<string>? log 
             else if (!outcome.Success)
             {
                 var detail = outcome.ExitCode.HasValue ? $"exit_code={outcome.ExitCode}" :
-                    $"message={ReportFormatter.Safe(outcome.Failure ?? "DOSBox-X failed.")}";
-                diagnostic($"ERROR|type=dosbox_failure|exe={executable}|input={replay}|{detail}");
+                    $"message={ReportFormatter.Safe(outcome.Failure ?? "Executable failed.")}";
+                var failureType = native ? "native_failure" : "dosbox_failure";
+                diagnostic($"ERROR|type={failureType}|exe={executable}|input={replay}|{detail}");
             }
             // Track partially written candidates too, including different DOS host casing.
             own(Resolve(phase.CandidateExtension));
@@ -274,8 +292,32 @@ public class RegressionEngine(IDosBoxRunner? runner = null, Action<string>? log 
         }
     }
 
+    private static string CandidatePath(RunOptions options, string executable) =>
+        options.CandidatePlatform == CandidatePlatforms.Sdl3
+            ? Path.Combine(options.NativeDirectory!, Path.GetFileNameWithoutExtension(executable) +
+                (OperatingSystem.IsWindows() ? ".exe" : ""))
+            : DosFiles.Resolve(options.GameDirectory, executable);
+
     private static void Validate(RunOptions options)
     {
+        CandidatePlatforms.Validate(options.CandidatePlatform);
+        if (options.CandidatePlatform == CandidatePlatforms.Sdl3 &&
+            (string.IsNullOrWhiteSpace(options.NativeDirectory) ||
+                !Path.IsPathFullyQualified(options.NativeDirectory)))
+        {
+            throw new ArgumentException(
+                "NativeDirectory must be an absolute path for SDL3 candidates.");
+        }
+        if (options.CandidatePlatform == CandidatePlatforms.Dos &&
+            (options.NativeDirectory is not null || options.OraclePspSegment is not null))
+        {
+            throw new ArgumentException(
+                "NativeDirectory and OraclePspSegment require SDL3 candidates.");
+        }
+        if (options.OraclePspSegment is < 1 or > 65535)
+        {
+            throw new ArgumentOutOfRangeException(nameof(options.OraclePspSegment));
+        }
         ArgumentOutOfRangeException.ThrowIfLessThan(options.Camera, 1);
         ArgumentOutOfRangeException.ThrowIfGreaterThan(options.Camera, 4);
         ArgumentOutOfRangeException.ThrowIfLessThan(options.Target, 0);
