@@ -112,7 +112,14 @@ AdLib-compatible OPL2 chip at port `388h`, which DOSBox also emulates. An AdLib
 or compatible Sound Blaster FM device is needed for sound. If audio initialization
 fails, the native game reports a warning and continues silently. Desktop builds
 synthesize the same FM registers through the vendored MIT-licensed
-[emu8950](../third_party/emu8950/README.md) and send PCM to SDL.
+[emu8950](../third_party/emu8950/README.md) and send PCM to SDL. The driver retains
+AD15's octave-crossing pitch-bend table and signed rounding. Sustained engine
+voices with a half-rate carrier use equivalent integer operator multipliers
+and a halved base pitch. This preserves the carrier frequency while preventing
+low-RPM rounding from permanently changing the oscillators' relative phase.
+The adjustment applies only to compatible continuous FM instruments; musical
+notes and instruments with pitch-dependent envelopes, vibrato, key scaling or
+multiplier controllers retain their original setup.
 
 In DOSBox/DOSBox-X use `core=dynamic`, `cycles=max`, and `aspect=true`. Aspect
 correction displays 320x200 VGA pixels at their intended 4:3 shape. Mount a
