@@ -14,6 +14,11 @@ enum RENDER_PRIMITIVE_TYPE {
 	RENDER_PRIMITIVE_POINT = 5
 };
 
+#define SHAPE3D_MATERIAL_COUNT 129U
+extern legacy_s16 material_color_list[SHAPE3D_MATERIAL_COUNT];
+extern legacy_s16 material_pattern_list[SHAPE3D_MATERIAL_COUNT];
+extern legacy_s16 material_pattern2_list[SHAPE3D_MATERIAL_COUNT];
+
 /* Ghost primitives retain their source material for visibility decisions. */
 #define RENDER_PRIMITIVE_GHOST_FLAG 128U
 #define PRERENDER_GHOST_COLOR 256U
