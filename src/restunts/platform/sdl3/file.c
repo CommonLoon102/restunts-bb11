@@ -12,7 +12,10 @@
 #define FILE_PATH_SIZE 1024U
 #define FILE_NAME_SIZE 13U
 
+enum FILE_IO_DIRECTION { FILE_IO_NONE, FILE_IO_READ, FILE_IO_WRITE };
+
 static FILE *files[FILE_HANDLE_COUNT];
+static enum FILE_IO_DIRECTION file_directions[FILE_HANDLE_COUNT];
 static legacy_s16 file_error;
 static char **matches;
 static size_t match_count;
@@ -114,6 +117,23 @@ static FILE *get_file(legacy_u16 handle)
 	return files[handle];
 }
 
+/* DOS handles allow reads and writes in any order. C update streams require a
+ * positioning operation between them, even when the logical offset is unchanged. */
+static FILE *get_file_for_io(legacy_u16 handle, enum FILE_IO_DIRECTION direction)
+{
+	FILE *file = get_file(handle);
+	if (file == NULL) {
+		return NULL;
+	}
+	if (file_directions[handle] != FILE_IO_NONE && file_directions[handle] != direction &&
+		fseek(file, 0, SEEK_CUR) != 0) {
+		file_error = 1;
+		return NULL;
+	}
+	file_directions[handle] = direction;
+	return file;
+}
+
 legacy_u16 dos_file_open(const legacy_s8 *path, legacy_s16 create)
 {
 	char resolved[FILE_PATH_SIZE];
@@ -125,6 +145,7 @@ legacy_u16 dos_file_open(const legacy_s8 *path, legacy_s16 create)
 		if (files[handle] == NULL) {
 			files[handle] = fopen(resolved, create == DOS_FILE_OPEN_EXISTING ? "rb" : "wb+");
 			if (files[handle] != NULL) {
+				file_directions[handle] = FILE_IO_NONE;
 				return handle;
 			}
 			break;
@@ -150,7 +171,7 @@ legacy_s16 dos_file_close(legacy_u16 handle)
 
 legacy_u16 dos_file_read(legacy_u16 handle, void *destination, legacy_u16 length)
 {
-	FILE *file = get_file(handle);
+	FILE *file = get_file_for_io(handle, FILE_IO_READ);
 	if (file == NULL) {
 		return 0;
 	}
@@ -163,7 +184,7 @@ legacy_u16 dos_file_read(legacy_u16 handle, void *destination, legacy_u16 length
 
 legacy_u16 dos_file_write(legacy_u16 handle, const void *source, legacy_u16 length)
 {
-	FILE *file = get_file(handle);
+	FILE *file = get_file_for_io(handle, FILE_IO_WRITE);
 	if (file == NULL) {
 		return 0;
 	}
@@ -182,6 +203,7 @@ legacy_s16 dos_file_seek(legacy_u16 handle, legacy_s32 offset, legacy_s16 origin
 		file_error = 1;
 		return -1;
 	}
+	file_directions[handle] = FILE_IO_NONE;
 	return 0;
 }
 

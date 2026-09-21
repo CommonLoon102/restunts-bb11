@@ -5,6 +5,58 @@
 
 static legacy_u8 external_data[32];
 
+static void test_update_streams(void)
+{
+	static const legacy_s8 *names[] = {(const legacy_s8 *)"UPDATE0.TST",
+									   (const legacy_s8 *)"UPDATE1.TST"};
+	legacy_u16 handles[2];
+	char contents[16];
+	for (unsigned int index = 0; index < 2; index++) {
+		handles[index] = dos_file_open(names[index], DOS_FILE_CREATE);
+		assert(handles[index] != 0);
+		assert(dos_file_write(handles[index], "0123456789", 10) == 10);
+	}
+	assert(handles[0] != handles[1]);
+	for (unsigned int index = 0; index < 2; index++) {
+		assert(dos_file_read(handles[index], contents, 1) == 0);
+		assert(dos_file_tell(handles[index]) == 10);
+		assert(dos_file_error() == 0);
+		assert(dos_file_seek(handles[index], 0, DOS_FILE_SEEK_BEGIN) == 0);
+		assert(dos_file_read(handles[index], contents, 3) == 3);
+		assert(memcmp(contents, "012", 3) == 0);
+	}
+	/* DOS handles allow direction changes at the current position. Exercise
+	 * each transition on both files before the next to check independent state. */
+	for (unsigned int index = 0; index < 2; index++) {
+		assert(dos_file_write(handles[index], "XY", 2) == 2);
+		assert(dos_file_tell(handles[index]) == 5);
+	}
+	for (unsigned int index = 0; index < 2; index++) {
+		assert(dos_file_read(handles[index], contents, 5) == 5);
+		assert(memcmp(contents, "56789", 5) == 0);
+		assert(dos_file_tell(handles[index]) == 10);
+	}
+	/* Reading exactly to the end need not set the stream's EOF indicator. */
+	for (unsigned int index = 0; index < 2; index++) {
+		assert(dos_file_write(handles[index], "END", 3) == 3);
+		assert(dos_file_tell(handles[index]) == 13);
+	}
+	for (unsigned int index = 0; index < 2; index++) {
+		assert(dos_file_read(handles[index], contents, 1) == 0);
+		assert(dos_file_error() == 0);
+		assert(dos_file_close(handles[index]) == 0);
+	}
+	for (unsigned int index = 0; index < 2; index++) {
+		legacy_u16 handle = dos_file_open(names[index], DOS_FILE_OPEN_EXISTING);
+		assert(handle != 0);
+		assert(dos_file_read(handle, contents, sizeof(contents)) == 13);
+		assert(memcmp(contents, "012XY56789END", 13) == 0);
+		assert(dos_file_error() == 0);
+		assert(dos_file_close(handle) == 0);
+		assert(dos_file_remove(names[index]) == 0);
+	}
+}
+
 int main(void)
 {
 	legacy_u16 segment = dos_memory_allocate(100);
@@ -58,6 +110,7 @@ int main(void)
 	assert(dos_file_remove((const legacy_s8 *)"CASE.tst") == 0);
 	assert(dos_file_open(name, DOS_FILE_OPEN_EXISTING) == 0);
 	assert(dos_file_error() != 0);
+	test_update_streams();
 	puts("SDL3 memory and file regression tests passed");
 	return 0;
 }
