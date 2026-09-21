@@ -151,6 +151,8 @@ available:
 
 - **Up/Down** accelerate and brake; **Left/Right** steer.
 - **F1–F4** select cockpit, follow, custom, and trackside cameras.
+- **Alt+Enter** toggles desktop fullscreen, preserving the 4:3 image and restoring
+  the previous window size when leaving fullscreen. Keypad Enter also works.
 - **F11** toggles the frame-rate counter; **F12** toggles SuperSight.
 - Hold **Q** to rewind a live race; release it to resume from that point.
 - **T** switches between the player and opponent or selected ghost view.

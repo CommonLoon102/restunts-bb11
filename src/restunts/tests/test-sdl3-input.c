@@ -230,6 +230,93 @@ static void test_video_and_mouse(void)
 	assert(buttons == 0);
 }
 
+static void check_fullscreen(bool expected)
+{
+	assert(SDL_SyncWindow(sdl3_video_window()));
+	sdl3_platform_pump();
+	assert(((SDL_GetWindowFlags(sdl3_video_window()) & SDL_WINDOW_FULLSCREEN) != 0) == expected);
+	SDL_Renderer *renderer = SDL_GetRenderer(sdl3_video_window());
+	int width;
+	int height;
+	assert(SDL_GetRenderOutputSize(renderer, &width, &height));
+	float expected_width = (float)width;
+	float expected_height = expected_width * 3.0f / 4.0f;
+	if (expected_height > height) {
+		expected_height = (float)height;
+		expected_width = expected_height * 4.0f / 3.0f;
+	}
+	SDL_FRect bounds;
+	assert(SDL_GetRenderLogicalPresentationRect(renderer, &bounds));
+	assert_coordinate(bounds.x, ((float)width - expected_width) / 2.0f);
+	assert_coordinate(bounds.y, ((float)height - expected_height) / 2.0f);
+	assert_coordinate(bounds.w, expected_width);
+	assert_coordinate(bounds.h, expected_height);
+	float x;
+	float y;
+	sdl3_video_game_to_window(160, 100, &x, &y);
+	assert_coordinate(x, width / 2.0f);
+	assert_coordinate(y, height / 2.0f);
+	sdl3_video_window_to_game(x, y, &x, &y);
+	assert_coordinate(x, 160.0f);
+	assert_coordinate(y, 100.0f);
+}
+
+static void test_fullscreen_shortcut(void)
+{
+	kb_init_interrupt();
+	check_video_aspect(1100, 720, 70.0f, 0.0f);
+	int original_x;
+	int original_y;
+	assert(SDL_GetWindowPosition(sdl3_video_window(), &original_x, &original_y));
+	send_key(SDL_SCANCODE_LALT, SDL_KMOD_LALT, true, false);
+	send_key(SDL_SCANCODE_RETURN, SDL_KMOD_LALT, true, false);
+	assert(kb_read_char() == 0);
+	check_fullscreen(true);
+	assert(kb_get_key_state(28) == 0);
+	assert(kb_get_key_state(56) == 1);
+	/* Neither auto-repeat nor duplicate key-down events toggle a held shortcut. */
+	send_key(SDL_SCANCODE_RETURN, SDL_KMOD_LALT, true, true);
+	send_key(SDL_SCANCODE_RETURN, SDL_KMOD_LALT, true, false);
+	assert(kb_read_char() == 0);
+	check_fullscreen(true);
+	SDL_Event focus_lost;
+	SDL_zero(focus_lost);
+	focus_lost.type = SDL_EVENT_WINDOW_FOCUS_LOST;
+	assert(SDL_PushEvent(&focus_lost));
+	send_key(SDL_SCANCODE_LALT, SDL_KMOD_NONE, false, false);
+	send_key(SDL_SCANCODE_RETURN, SDL_KMOD_NONE, true, true);
+	assert(kb_read_char() == 0);
+	assert(kb_get_key_state(28) == 0);
+	assert(kb_get_key_state(56) == 0);
+	send_key(SDL_SCANCODE_RETURN, SDL_KMOD_NONE, false, false);
+	send_key(SDL_SCANCODE_RALT, SDL_KMOD_RALT, true, false);
+	send_key(SDL_SCANCODE_KP_ENTER, SDL_KMOD_RALT, true, false);
+	assert(kb_read_char() == 0);
+	check_fullscreen(false);
+	assert(kb_get_key_state(28) == 0);
+	send_key(SDL_SCANCODE_KP_ENTER, SDL_KMOD_NONE, false, false);
+	send_key(SDL_SCANCODE_RALT, SDL_KMOD_NONE, false, false);
+	assert(kb_read_char() == 0);
+	int width;
+	int height;
+	int restored_x;
+	int restored_y;
+	assert(SDL_GetWindowSize(sdl3_video_window(), &width, &height));
+	assert(width == 1100 && height == 720);
+	assert(SDL_GetWindowPosition(sdl3_video_window(), &restored_x, &restored_y));
+	assert(restored_x == original_x && restored_y == original_y);
+	/* Consuming the shortcut must not suppress the next ordinary Enter. */
+	send_key(SDL_SCANCODE_RETURN, SDL_KMOD_NONE, true, false);
+	assert(kb_read_char() == KEY_ENTER);
+	assert(kb_get_key_state(28) == 1);
+	send_key(SDL_SCANCODE_RETURN, SDL_KMOD_NONE, false, false);
+	assert(kb_get_key_state(28) == 0);
+	send_key(SDL_SCANCODE_KP_ENTER, SDL_KMOD_NONE, true, false);
+	assert(kb_read_char() == KEY_ENTER);
+	send_key(SDL_SCANCODE_KP_ENTER, SDL_KMOD_NONE, false, false);
+	assert(kb_get_key_state(28) == 0);
+}
+
 static void test_joystick(void)
 {
 	assert(SDL_InitSubSystem(SDL_INIT_JOYSTICK));
@@ -284,6 +371,7 @@ int main(void)
 	test_keyboard();
 	test_timer();
 	test_video_and_mouse();
+	test_fullscreen_shortcut();
 	test_joystick();
 	SDL_Event quit;
 	SDL_zero(quit);
