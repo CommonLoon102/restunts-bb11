@@ -63,6 +63,31 @@ enum CREDITS_LINE_TYPE { CREDITS_LINE_SHAPE = 0, CREDITS_LINE_TEXT = 1 };
 
 static void far *ui_temp_resource;
 
+#if defined(RESTUNTS_SDL3) && !defined(__DJGPP__)
+static void intro_draw_native_audio_notice(void)
+{
+	static legacy_s8 lines[][32] = {"Nuked OPL2 Lite", "Copyright (C) 2026 Nuke.YKT.",
+									"LGPL-2.1-or-later", "See share/licenses/restunts/",
+									"Nuked-OPL2-LICENSE"};
+	const legacy_s16 notice_x = 8;
+	const legacy_s16 title_text_color = 77;
+	legacy_s16 notice_y = 132;
+	const legacy_s16 line_height = 8;
+	legacy_u8 far *saved_font = active_font_definition;
+	legacy_u8 far *notice_font = (legacy_u8 far *)fontnptr;
+	legacy_s16 saved_color = LEGACY_S16_FROM_BITS(LEGACY_READ_U16_LE(notice_font));
+	legacy_s16 saved_background = LEGACY_S16_FROM_BITS(LEGACY_READ_U16_LE(notice_font + 2));
+	font_set_fontdef2(notice_font);
+	/* The narrow font fits beside the title's car and above its copyright. */
+	for (unsigned int line = 0; line < sizeof(lines) / sizeof(lines[0]); ++line) {
+		intro_draw_text(lines[line], notice_x, notice_y, title_text_color, 0);
+		notice_y += line_height;
+	}
+	font_set_colors(saved_color, saved_background);
+	font_set_fontdef2(saved_font);
+}
+#endif
+
 legacy_s16 run_intro(void)
 {
 	mouse_draw_opaque_check();
@@ -87,6 +112,9 @@ legacy_s16 run_intro(void)
 		waitflag = INTRO_DEFAULT_PAGE_WAIT;
 		shape = (struct SHAPE2D far *)locate_shape_fatal((legacy_s8 far *)ui_temp_resource, "titl");
 		sprite_shape_to_1_alt(shape);
+#if defined(RESTUNTS_SDL3) && !defined(__DJGPP__)
+		intro_draw_native_audio_notice();
+#endif
 		result = sprite_blit_to_video(render_window_sprite, -1);
 		if (result == 0) {
 			result = input_repeat_check(INTRO_PAGE_INPUT_DELAY);

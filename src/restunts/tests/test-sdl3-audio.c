@@ -52,7 +52,9 @@ static void load_first_instrument(const char *path, legacy_u8 *instrument)
 
 static int16_t generate_sample(void)
 {
-	return OPL_calc(adlib_chip);
+	int16_t sample;
+	adlib_generate_samples(&sample, 1);
+	return sample;
 }
 
 static unsigned long long pcm_energy(void)
@@ -116,14 +118,14 @@ static void check_sample_rate_and_retrigger(struct AUDIO_CHANNEL *channel,
 
 	dos_audio_driver_activate_context(1, context, (legacy_u8 *)channel, 72, 127, instrument);
 	generate_samples(1000);
-	uint32_t previous_phase = adlib_chip->slot[1].pg_phase;
+	uint32_t previous_phase = adlib_chip->slot[3].pg_phase;
 	assert(previous_phase > 1000U);
-	/* Both key transitions must restart the carrier without an intervening sample. */
+	/* Buffered writes must preserve both transitions and restart the carrier. */
 	dos_audio_driver_activate_context(1, context, (legacy_u8 *)channel, 72, 127, instrument);
 	int restarted = 0;
 	for (unsigned int index = 0; index < 64U; ++index) {
 		generate_samples(1);
-		uint32_t phase = adlib_chip->slot[1].pg_phase;
+		uint32_t phase = adlib_chip->slot[3].pg_phase;
 		if (phase < previous_phase) {
 			restarted = 1;
 		}
@@ -132,7 +134,7 @@ static void check_sample_rate_and_retrigger(struct AUDIO_CHANNEL *channel,
 	assert(restarted);
 
 	dos_audio_driver_release_channel(1);
-	printf("%s: %uHz sine, same-tick note retrigger passed\n", "emu8950", crossings);
+	printf("%s: %uHz sine, same-tick note retrigger passed\n", ADLIB_EMULATOR, crossings);
 }
 
 static void check_octave_crossing_bends(struct AUDIO_CHANNEL *channel,
@@ -199,22 +201,26 @@ static unsigned int programmed_pitch(void)
 static unsigned int half_rate_increment(unsigned int pitch)
 {
 	unsigned int frequency = (pitch & 1023U) << (pitch >> 10U);
-	return frequency >> 1U;
+	return frequency >> 2U;
 }
 
 static uint32_t carrier_phase(void)
 {
-	return adlib_chip->slot[1].pg_phase;
+	return adlib_chip->slot[3].pg_phase;
 }
 
 static uint32_t phase_mask(void)
 {
-	return (1U << 20U) - 1U;
+	return (1U << 19U) - 1U;
 }
 
-static uint32_t relative_phase(void)
+static uint32_t relative_phase(unsigned int logical_pitch)
 {
-	return (adlib_chip->slot[0].pg_phase - 6U * carrier_phase()) & phase_mask();
+	uint32_t relative = adlib_chip->slot[0].pg_phase - 6U * carrier_phase();
+	/* Nuked applies a channel update after its modulator and before its
+	 * carrier. Account for that fixed one-sample pipeline difference. */
+	relative += 6U * half_rate_increment(logical_pitch);
+	return relative & phase_mask();
 }
 
 static void check_continuous_pitch_history(struct AUDIO_CHANNEL *channel,
@@ -248,6 +254,7 @@ static void check_continuous_pitch_history(struct AUDIO_CHANNEL *channel,
 			/* With multiplier one, the carrier advances twice as fast as
 			 * a half-rate carrier at this programmed base frequency. */
 			unsigned int integer_increment = (actual & 1023U) << (actual >> 10U);
+			integer_increment >>= 1U;
 			assert(integer_increment == half_rate_increment(pitch));
 			for (unsigned int sample = 0; sample < 16; ++sample) {
 				uint32_t before = carrier_phase();
@@ -258,9 +265,9 @@ static void check_continuous_pitch_history(struct AUDIO_CHANNEL *channel,
 					   2U * half_rate_increment(8191U));
 			}
 			if (direction == 0 && index == 0) {
-				reference_phase = relative_phase();
+				reference_phase = relative_phase(pitch);
 			}
-			assert(relative_phase() == reference_phase);
+			assert(relative_phase(pitch) == reference_phase);
 		}
 	}
 	/* Rebinding an active instrument must never temporarily restore its old
@@ -269,7 +276,7 @@ static void check_continuous_pitch_history(struct AUDIO_CHANNEL *channel,
 	adlib_voices[0].base_pitch = 462;
 	dos_audio_driver_suspend_context(1, context, 0, instrument);
 	generate_samples(64);
-	reference_phase = relative_phase();
+	reference_phase = relative_phase(457);
 	unsigned int continuous_pitch = programmed_pitch();
 	dos_audio_driver_prepare_context(1, context, (legacy_u8 *)channel, instrument);
 	assert(adlib_voices[0].doubled_multipliers);
@@ -277,7 +284,7 @@ static void check_continuous_pitch_history(struct AUDIO_CHANNEL *channel,
 	assert((adlib_registers[0x20] & 15U) == 6U);
 	assert((adlib_registers[0x23] & 15U) == 1U);
 	generate_samples(64);
-	assert(relative_phase() == reference_phase);
+	assert(relative_phase(457) == reference_phase);
 	/* Changing eligibility during a rebind must restore the unhalved pitch
 	 * immediately; the next sequencer update may be a full tick away. */
 	instrument[79] = 1;

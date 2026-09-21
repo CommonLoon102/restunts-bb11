@@ -104,27 +104,20 @@ jobs:
           SDL_VIDEODRIVER: dummy
           SDL_AUDIODRIVER: dummy
         run: ctest --test-dir build/sdl3 --output-on-failure
+      - name: Verify relocated packages and user-rebuilt Nuked replacement
+        if: matrix.name == 'linux-x64'
+        run: python3 tools/scripts/test-nuked-package.py --build-directory build/sdl3
       - name: Compare a replay sample with archived DOS oracles
         if: matrix.name == 'linux-x64'
         run: |
           apt-get install -y --no-install-recommends dosbox
           python3 tools/scripts/validate-native.py --build-directory build/sdl3 \
             --output out/sdl3-oracle-sample --count 3
-      - name: Collect binaries and licenses
-        env:
-          TARGET_OS: ${{ matrix.os }}
-        run: |
-          mkdir -p artifacts/licenses
-          extension=''
-          if [ "$TARGET_OS" = windows ]; then
-            extension='.exe'
-          fi
-          for program in restunts repldump pixldump; do
-            cp "build/sdl3/$program$extension" artifacts/
-          done
-          cp third_party/emu8950/LICENSE artifacts/licenses/emu8950-LICENSE
-          cp build/sdl3/_deps/sdl3-src/LICENSE.txt artifacts/licenses/SDL-LICENSE.txt
-          cp docs/sdl3.md artifacts/BUILD-AND-RUN.md
+      - name: Install the runtime package
+        run: cmake --install build/sdl3 --prefix artifacts --component Runtime
+      - name: Install the Windows regression package
+        if: matrix.os == 'windows'
+        run: cmake --install build/sdl3 --prefix artifacts-tests --component Tests
       - uses: actions/upload-artifact@v7
         with:
           name: restunts-sdl3-${{ matrix.name }}
@@ -134,7 +127,7 @@ jobs:
         if: matrix.os == 'windows'
         with:
           name: restunts-sdl3-tests-${{ matrix.name }}
-          path: build/sdl3/test-sdl3-*.exe
+          path: artifacts-tests/
           if-no-files-found: error
       - uses: actions/upload-artifact@v7
         if: always() && matrix.name == 'linux-x64'
@@ -188,10 +181,10 @@ jobs:
           Push-Location fixture
           try {
             foreach ($test in @('platform', 'fileio', 'input')) {
-              & "$root/native-tests/test-sdl3-$test.exe"
+              & "$root/native-tests/bin/test-sdl3-$test.exe"
               if ($LASTEXITCODE -ne 0) { throw "$test failed: $LASTEXITCODE" }
             }
-            & "$root/native-tests/test-sdl3-audio.exe" "$root/stunts/ADSKIDMS.VCE"
+            & "$root/native-tests/bin/test-sdl3-audio.exe" "$root/stunts/ADSKIDMS.VCE"
             if ($LASTEXITCODE -ne 0) { throw "audio failed: $LASTEXITCODE" }
           } finally {
             Pop-Location
@@ -202,9 +195,9 @@ jobs:
           SDL_VIDEODRIVER: dummy
           SDL_AUDIODRIVER: dummy
         run: |
-          & ./native/repldump.exe --data-dir stunts DEFAULT.RPL
+          & ./native/bin/repldump.exe --data-dir stunts DEFAULT.RPL
           if ($LASTEXITCODE -ne 0) { throw "repldump failed: $LASTEXITCODE" }
-          & ./native/pixldump.exe --data-dir stunts DEFAULT.RPL 2 0 5
+          & ./native/bin/pixldump.exe --data-dir stunts DEFAULT.RPL 2 0 5
           if ($LASTEXITCODE -ne 0) { throw "pixldump failed: $LASTEXITCODE" }
           if (-not (Test-Path stunts/DEFAULT.2.0.5.PDD.bmp)) { throw 'Missing renderer BMP' }
 
@@ -238,14 +231,8 @@ jobs:
           cmake -S . -B build/sdl3-dos -G Ninja -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_TOOLCHAIN_FILE=cmake/toolchains/djgpp.cmake -DRESTUNTS_BUILD_TESTS=OFF
           cmake --build build/sdl3-dos --parallel 2
-      - name: Collect DOS executables and SDL license
-        run: |
-          mkdir -p artifacts/licenses
-          for program in restunts repldump pixldump; do
-            cp "build/sdl3-dos/$program.exe" artifacts/
-          done
-          cp build/sdl3-dos/_deps/sdl3-src/LICENSE.txt artifacts/licenses/SDL-LICENSE.txt
-          cp docs/sdl3.md artifacts/BUILD-AND-RUN.md
+      - name: Install the DOS runtime package
+        run: cmake --install build/sdl3-dos --prefix artifacts --component Runtime
       - uses: actions/upload-artifact@v7
         with:
           name: restunts-sdl3-dos

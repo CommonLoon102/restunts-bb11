@@ -6,6 +6,11 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 # SDL's DOS/POSIX backends need the platform declarations hidden by strict ANSI.
 set(CMAKE_C_EXTENSIONS ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+# Both build-tree and installed binaries must accept a user-rebuilt OPL library.
+set(CMAKE_BUILD_RPATH_USE_ORIGIN ON)
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    set(CMAKE_INSTALL_RPATH "$ORIGIN/../lib")
+endif()
 
 option(RESTUNTS_SYSTEM_SDL "Use an installed SDL3 instead of the pinned source" OFF)
 option(RESTUNTS_BUILD_TESTS "Build native platform regressions" ON)
@@ -45,8 +50,8 @@ if(RESTUNTS_SYSTEM_SDL)
     find_package(SDL3 3.2 REQUIRED CONFIG)
 else()
     include(FetchContent)
-    set(SDL_SHARED OFF CACHE BOOL "Build self-contained executables")
-    set(SDL_STATIC ON CACHE BOOL "Build self-contained executables")
+    set(SDL_SHARED OFF CACHE BOOL "Bundle SDL statically")
+    set(SDL_STATIC ON CACHE BOOL "Bundle SDL statically")
     set(SDL_TEST_LIBRARY OFF CACHE BOOL "Disable SDL tests")
     set(SDL_TESTS OFF CACHE BOOL "Disable SDL tests")
     set(SDL_EXAMPLES OFF CACHE BOOL "Disable SDL examples")
@@ -100,9 +105,9 @@ endif()
 target_link_libraries(restunts_options INTERFACE SDL3::SDL3 m)
 
 if(NOT CMAKE_SYSTEM_NAME STREQUAL "DOS")
-    add_library(restunts_opl STATIC third_party/emu8950/emu8950.c third_party/emu8950/emuadpcm.c)
-    target_include_directories(restunts_opl PUBLIC third_party/emu8950)
-    target_link_libraries(restunts_opl PRIVATE m)
+    set(NUKED_OPL2_SSE2 ${RESTUNTS_SSE2} CACHE BOOL "Match the game's x86 instruction set" FORCE)
+    add_subdirectory(third_party/nuked-opl2-lite)
+    add_library(restunts_opl ALIAS nuked_opl2)
 endif()
 
 add_library(restunts_game STATIC ${common_sources} ${game_sources} ${platform_common} ${platform_game})
@@ -126,12 +131,51 @@ add_executable(pixldump ${platform}/main.c src/restunts/pixldump/pixldump.c
 target_compile_definitions(pixldump PRIVATE RESTUNTS_PIXLDUMP)
 target_link_libraries(pixldump PRIVATE restunts_game)
 
-install(TARGETS restunts repldump pixldump RUNTIME DESTINATION bin)
-if(TARGET restunts_opl)
-    install(FILES third_party/emu8950/LICENSE DESTINATION share/licenses/restunts RENAME emu8950-LICENSE)
+install(TARGETS restunts repldump pixldump RUNTIME DESTINATION bin COMPONENT Runtime)
+install(FILES docs/sdl3.md DESTINATION share/docs/restunts COMPONENT Runtime)
+if(TARGET nuked_opl2)
+    install(TARGETS nuked_opl2
+        RUNTIME DESTINATION bin COMPONENT Runtime
+        LIBRARY DESTINATION lib COMPONENT Runtime)
+    configure_file(cmake/nuked-build-info.txt.in "${CMAKE_CURRENT_BINARY_DIR}/nuked-build-info.txt" @ONLY)
+    foreach(component Runtime Tests)
+        set(exclude_from_default)
+        if(component STREQUAL "Tests")
+            set(exclude_from_default EXCLUDE_FROM_ALL)
+        endif()
+        install(FILES third_party/nuked-opl2-lite/LICENSE
+            DESTINATION share/licenses/restunts RENAME Nuked-OPL2-LICENSE
+            COMPONENT ${component} ${exclude_from_default})
+        install(FILES THIRD-PARTY-NOTICES.txt
+            DESTINATION . COMPONENT ${component} ${exclude_from_default})
+        install(FILES third_party/nuked-opl2-lite/opl2.c third_party/nuked-opl2-lite/opl2.h
+            third_party/nuked-opl2-lite/CMakeLists.txt third_party/nuked-opl2-lite/LICENSE
+            third_party/nuked-opl2-lite/README.md "${CMAKE_CURRENT_BINARY_DIR}/nuked-build-info.txt"
+            DESTINATION share/restunts/nuked-opl2-lite COMPONENT ${component} ${exclude_from_default})
+        # Preserve the parent build controls as source context, alongside the
+        # standalone library build that recipients can use without the game.
+        install(FILES CMakeLists.txt
+            DESTINATION share/restunts/nuked-opl2-lite/build-context
+            COMPONENT ${component} ${exclude_from_default})
+        install(FILES cmake/nuked-build-info.txt.in
+            DESTINATION share/restunts/nuked-opl2-lite/build-context/cmake
+            COMPONENT ${component} ${exclude_from_default})
+        install(FILES cmake/toolchains/linux-x86.cmake cmake/toolchains/mingw-x86.cmake
+            cmake/toolchains/mingw-x64.cmake
+            DESTINATION share/restunts/nuked-opl2-lite/build-context/cmake/toolchains
+            COMPONENT ${component} ${exclude_from_default})
+    endforeach()
 endif()
 if(NOT RESTUNTS_SYSTEM_SDL)
-    install(FILES "${SDL3_SOURCE_DIR}/LICENSE.txt" DESTINATION share/licenses/restunts RENAME SDL-LICENSE.txt)
+    foreach(component Runtime Tests)
+        set(exclude_from_default)
+        if(component STREQUAL "Tests")
+            set(exclude_from_default EXCLUDE_FROM_ALL)
+        endif()
+        install(FILES "${SDL3_SOURCE_DIR}/LICENSE.txt"
+            DESTINATION share/licenses/restunts RENAME SDL-LICENSE.txt
+            COMPONENT ${component} ${exclude_from_default})
+    endforeach()
 endif()
 
 if(RESTUNTS_BUILD_TESTS)
@@ -144,16 +188,26 @@ if(RESTUNTS_BUILD_TESTS)
     set_tests_properties(sdl3-platform PROPERTIES WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/platform-test")
     if(UNIX AND NOT CMAKE_CROSSCOMPILING)
         add_test(NAME host-regressions COMMAND bash ${CMAKE_SOURCE_DIR}/src/restunts/tests/run-host-tests.sh)
+        find_package(Python3 COMPONENTS Interpreter QUIET)
+        if(Python3_Interpreter_FOUND)
+            add_test(NAME opl-trace-renderer COMMAND "${Python3_EXECUTABLE}"
+                "${CMAKE_SOURCE_DIR}/tools/scripts/test-render-opl-trace.py")
+        endif()
     endif()
 endif()
 
 if(RESTUNTS_BUILD_TESTS AND TARGET restunts_opl)
+    add_executable(test-sdl3-audio-trace src/restunts/tests/test-sdl3-audio-trace.c)
+    target_compile_options(test-sdl3-audio-trace PRIVATE -UNDEBUG)
+    add_test(NAME sdl3-audio-trace COMMAND test-sdl3-audio-trace)
     add_executable(test-sdl3-audio src/restunts/tests/test-sdl3-audio.c)
     target_link_libraries(test-sdl3-audio PRIVATE restunts_options restunts_opl)
     # Exercise real synthesis and SDL's dummy audio device, plus initialization
     # failure and batch-mode cleanup, without requiring host sound hardware.
     target_compile_options(test-sdl3-audio PRIVATE -UNDEBUG)
     add_test(NAME sdl3-audio COMMAND test-sdl3-audio "${CMAKE_SOURCE_DIR}/stunts/ADSKIDMS.VCE")
+    # Regression runs must not overwrite a live capture inherited from the shell.
+    set_tests_properties(sdl3-audio PROPERTIES ENVIRONMENT "RESTUNTS_AUDIO_TRACE=")
     if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
         # This fixture includes the sequencer to reach its private marshaling
         # helper. ELF section GC isolates that helper from the rest of the game;
@@ -182,4 +236,16 @@ if(RESTUNTS_BUILD_TESTS)
     file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/fileio-test")
     add_test(NAME sdl3-fileio COMMAND test-sdl3-fileio)
     set_tests_properties(sdl3-fileio PROPERTIES WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/fileio-test")
+endif()
+
+if(RESTUNTS_BUILD_TESTS AND TARGET nuked_opl2)
+    install(TARGETS nuked_opl2
+        RUNTIME DESTINATION bin COMPONENT Tests EXCLUDE_FROM_ALL
+        LIBRARY DESTINATION lib COMPONENT Tests EXCLUDE_FROM_ALL)
+    foreach(test platform audio audio-trace audio-definition input fileio)
+        if(TARGET test-sdl3-${test})
+            install(TARGETS test-sdl3-${test}
+                RUNTIME DESTINATION bin COMPONENT Tests EXCLUDE_FROM_ALL)
+        endif()
+    endforeach()
 endif()

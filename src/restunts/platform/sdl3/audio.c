@@ -13,7 +13,9 @@
 #ifdef __DJGPP__
 #include <inlines/pc.h>
 #else
-#include "../../../../third_party/emu8950/emu8950.h"
+#include "audio_trace.h"
+#include "opl2.h"
+#define ADLIB_EMULATOR "nuked"
 #endif
 
 extern int sdl3_batch_mode;
@@ -64,8 +66,21 @@ static const legacy_u16 adlib_frequencies[60] = {
 	121, 128, 136, 144, 153, 162, 171, 182, 192, 204, 216, 229, 242, 257, 272,
 	288, 306, 324, 343, 363, 385, 408, 432, 458, 485, 514, 544, 577, 611, 647};
 #ifndef __DJGPP__
-static OPL *adlib_chip;
+static opl2_chip *adlib_chip;
+static int adlib_initializing;
 static SDL_AudioStream *adlib_stream;
+
+static void adlib_delete_chip(void)
+{
+	free(adlib_chip);
+	adlib_chip = NULL;
+}
+
+static void adlib_generate_samples(Sint16 *samples, unsigned int count)
+{
+	OPL2_GenerateStream(adlib_chip, samples, count);
+	adlib_trace_advance(count);
+}
 #endif
 
 static void adlib_write(unsigned int reg, unsigned int value)
@@ -89,7 +104,14 @@ static void adlib_write(unsigned int reg, unsigned int value)
 		(void)inportb(0x388);
 	}
 #else
-	OPL_writeReg(adlib_chip, reg, byte);
+	/* Buffer runtime writes so same-tick key-off/key-on transitions survive. */
+	int buffered = !adlib_initializing;
+	if (buffered) {
+		OPL2_WriteRegBuffered(adlib_chip, (legacy_u8)reg, byte);
+	} else {
+		OPL2_WriteReg(adlib_chip, (legacy_u8)reg, byte);
+	}
+	adlib_trace_write(reg, byte, buffered);
 #endif
 }
 
@@ -265,17 +287,15 @@ legacy_u8 dos_audio_driver_initialize(void)
 		return ADLIB_CONTEXTS;
 	}
 #else
-	adlib_chip = OPL_new(3579545, ADLIB_SAMPLE_RATE);
+	adlib_chip = calloc(1, sizeof(*adlib_chip));
 	if (!adlib_chip) {
 		fputs("Audio unavailable: cannot allocate OPL synthesizer; continuing silently.\n", stderr);
 		return ADLIB_CONTEXTS;
 	}
-	OPL_setChipType(adlib_chip, 2);
-	OPL_reset(adlib_chip);
+	OPL2_Reset(adlib_chip, ADLIB_SAMPLE_RATE);
 	if (!SDL_InitSubSystem(SDL_INIT_AUDIO)) {
 		fprintf(stderr, "Audio unavailable: %s; continuing silently.\n", SDL_GetError());
-		OPL_delete(adlib_chip);
-		adlib_chip = NULL;
+		adlib_delete_chip();
 		return ADLIB_CONTEXTS;
 	}
 	SDL_AudioSpec spec = {SDL_AUDIO_S16, 1, ADLIB_SAMPLE_RATE};
@@ -284,18 +304,22 @@ legacy_u8 dos_audio_driver_initialize(void)
 		fprintf(stderr, "Audio unavailable: %s; continuing silently.\n", SDL_GetError());
 		SDL_DestroyAudioStream(adlib_stream);
 		adlib_stream = NULL;
-		OPL_delete(adlib_chip);
-		adlib_chip = NULL;
+		adlib_delete_chip();
 		SDL_QuitSubSystem(SDL_INIT_AUDIO);
 		return ADLIB_CONTEXTS;
 	}
 	adlib_ready = 1;
+	adlib_initializing = 1;
+	adlib_trace_open(ADLIB_EMULATOR, 3579545, ADLIB_SAMPLE_RATE);
 #endif
 	for (unsigned int reg = 0; reg < 256; ++reg) {
 		adlib_write(reg, 0);
 	}
 	adlib_write(1, 0x20);
 	adlib_write(8, 0x40);
+#ifndef __DJGPP__
+	adlib_initializing = 0;
+#endif
 	return ADLIB_CONTEXTS;
 }
 
@@ -309,12 +333,11 @@ void sdl3_audio_update(void)
 	}
 	/* Bound latency after a debugger stop or a catch-up burst. */
 	if (SDL_GetAudioStreamQueued(adlib_stream) > (int)(ADLIB_SAMPLE_RATE / 5U)) {
+		adlib_trace_clear();
 		SDL_ClearAudioStream(adlib_stream);
 	}
 	Sint16 samples[ADLIB_TICK_SAMPLES];
-	for (unsigned int index = 0; index < ADLIB_TICK_SAMPLES; ++index) {
-		samples[index] = OPL_calc(adlib_chip);
-	}
+	adlib_generate_samples(samples, ADLIB_TICK_SAMPLES);
 	SDL_PutAudioStreamData(adlib_stream, samples, sizeof(samples));
 #endif
 }
@@ -566,14 +589,14 @@ void dos_audio_shutdown(void)
 	dos_audio_driver_start();
 	adlib_ready = 0;
 #ifndef __DJGPP__
+	adlib_trace_close();
 	if (adlib_stream) {
 		SDL_DestroyAudioStream(adlib_stream);
 		adlib_stream = NULL;
 		SDL_QuitSubSystem(SDL_INIT_AUDIO);
 	}
 	if (adlib_chip) {
-		OPL_delete(adlib_chip);
-		adlib_chip = NULL;
+		adlib_delete_chip();
 	}
 #endif
 	dos_audio_driver_binary = NULL;
