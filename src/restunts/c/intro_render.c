@@ -10,6 +10,9 @@
 #include "externs.h"
 #include "fileio.h"
 #include "memmgr.h"
+#ifdef RESTUNTS_SDL3
+#include "keyboard.h"
+#endif
 
 #define TRACK_OBJECT_COUNT 215U
 #define INTRO_SCREEN_WIDTH 320U
@@ -209,6 +212,20 @@ struct INTRO_SESSION {
 	legacy_s16 needs_render;
 	legacy_u16 rect_index;
 };
+
+#ifdef RESTUNTS_SDL3
+static void intro_request_full_redraw(struct INTRO_SESSION *intro)
+{
+	/* Refresh both pages when changing resolution, including an otherwise idle frame. */
+	for (legacy_u16 i = 0; i < INTRO_POINT_BUFFER_COUNT; i++) {
+		frame_layer_rects[i] = intro_redraw_cliprect;
+	}
+	frame_sorted_shapes_rect = intro_redraw_cliprect;
+	intro->shape_rect = intro_redraw_cliprect;
+	intro->combined_rect = intro_redraw_cliprect;
+	intro->needs_render = 1;
+}
+#endif
 
 static void intro_load_title(struct INTRO_SESSION *intro)
 {
@@ -419,6 +436,9 @@ legacy_s8 setup_intro(void)
 	intro_load_title(&intro);
 	intro_create_stars(intro.stars);
 	intro_prepare_session(&intro);
+#ifdef RESTUNTS_SDL3
+	intro_request_full_redraw(&intro);
+#endif
 	legacy_s8 interrupted = 0;
 	for (;;) {
 		legacy_s16 delta = LEGACY_S16_FROM_BITS((legacy_u16)timer_get_delta());
@@ -426,7 +446,15 @@ legacy_s8 setup_intro(void)
 		if (intro.needs_render != 0) {
 			intro_render_session(&intro);
 		}
-		if (input_do_checking(delta) != 0) {
+		legacy_s16 key = input_do_checking(delta);
+#ifdef RESTUNTS_SDL3
+		if (key == KEY_F12) {
+			handle_ingame_kb_shortcuts(key);
+			intro_request_full_redraw(&intro);
+			key = 0;
+		}
+#endif
+		if (key != 0) {
 			interrupted = 1;
 			break;
 		}

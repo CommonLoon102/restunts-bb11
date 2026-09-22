@@ -2,6 +2,9 @@
 #define RESTUNTS_VIDEO_PAGES_H
 
 #include "legacy.h"
+#ifdef RESTUNTS_SDL3
+#include "hires.h"
+#endif
 
 /* Page sprites retain chunky 320-byte rows. Only the raster helpers translate
  * those logical offsets into VGA planes; resource bitmaps remain ordinary RAM. */
@@ -60,13 +63,16 @@ static inline legacy_u8 video_pages_read_pixel(const legacy_u8 far *bitmap, lega
 static inline void video_pages_write_pixel(legacy_u8 far *bitmap, legacy_u16 offset,
 										   legacy_u8 color)
 {
+#ifdef RESTUNTS_SDL3
+	hires_write(bitmap, offset, color);
+#endif
 	bitmap[offset] = color;
 }
 static inline void video_pages_fill_span(legacy_u8 far *bitmap, legacy_u16 offset, legacy_u16 count,
 										 legacy_u8 color)
 {
 	while (count-- != 0) {
-		bitmap[offset++] = color;
+		video_pages_write_pixel(bitmap, offset++, color);
 	}
 }
 static inline void video_pages_raster_span(legacy_u8 far *destination,
@@ -75,6 +81,9 @@ static inline void video_pages_raster_span(legacy_u8 far *destination,
 										   legacy_u16 count, legacy_s16 operation,
 										   const legacy_u8 far *palette)
 {
+#ifdef RESTUNTS_SDL3
+	hires_raster(destination, destination_offset, source, source_offset, count, operation, palette);
+#endif
 	while (count-- != 0) {
 		legacy_u8 value = source[source_offset++];
 		if (operation == 0) {
@@ -105,13 +114,25 @@ static inline void video_pages_pattern_span(legacy_u8 far *bitmap, legacy_u16 of
 	while (count-- != 0) {
 		pattern = (legacy_u8)((pattern << 1) | (pattern >> 7));
 		if ((pattern & 1U) != 0) {
-			bitmap[offset] = two_colors != 0 ? alternate_color : color;
+			video_pages_write_pixel(bitmap, offset, two_colors != 0 ? alternate_color : color);
 		} else if (two_colors != 0) {
-			bitmap[offset] = color;
+			video_pages_write_pixel(bitmap, offset, color);
 		}
 		offset++;
 	}
 }
 #endif
+
+/* SDL companion pixels share the span path with planar VGA. The underlying
+ * byte framebuffer remains packed, including when high resolution is disabled. */
+static inline legacy_u8 video_pages_uses_raster_hooks(const void far *bitmap)
+{
+#ifdef RESTUNTS_SDL3
+	(void)bitmap;
+	return 1;
+#else
+	return video_pages_is_target(bitmap);
+#endif
+}
 
 #endif

@@ -44,6 +44,10 @@ struct SHAPE2D_RLE_CURSOR {
 static void shape2d_write_raster(legacy_u8 far *bitmap, legacy_u16 destination, legacy_u8 value,
 								 legacy_s16 operation, legacy_u8 planar)
 {
+#ifdef RESTUNTS_SDL3
+	hires_raster(bitmap, destination, &value, 0, 1, operation, NULL);
+	planar = 0;
+#endif
 	if (planar != 0) {
 		if (operation == SHAPE2D_RASTER_OR) {
 			value |= video_pages_read_pixel(bitmap, destination);
@@ -97,7 +101,7 @@ static void shape2d_render_rle(struct SHAPE2D far *shape, legacy_u16 x, legacy_u
 	legacy_u8 far *bitmap = (legacy_u8 far *)dos_memory_make_pointer(
 		dos_memory_pointer_segment(drawing_sprite.sprite_bitmapptr), 0);
 	legacy_u16 remaining = width;
-	legacy_u8 planar = video_pages_is_target(bitmap);
+	legacy_u8 planar = video_pages_uses_raster_hooks(bitmap);
 	legacy_u8 value = 0;
 	for (;;) {
 		legacy_u8 far *source_ptr = (legacy_u8 far *)dos_memory_make_pointer(shape_segment, source);
@@ -295,6 +299,10 @@ void sprite_free_wnd(struct SPRITE far *render_window_sprite)
 		fatal_error(window_release_order_message);
 	}
 	next_wnd_def = next_wnd_def - spritesize;
+#ifdef RESTUNTS_SDL3
+	hires_forget(dos_memory_make_pointer(
+		dos_memory_pointer_segment(render_window_sprite->sprite_bitmapptr), 0));
+#endif
 	mmgr_release((void far *)render_window_sprite->sprite_bitmapptr);
 }
 
@@ -453,7 +461,7 @@ void sprite_clear_target(legacy_u8 color)
 
 	legacy_s16 widthdiff = pitch - width;
 
-	if (video_pages_is_target(bitmapptr) != 0) {
+	if (video_pages_uses_raster_hooks(bitmapptr) != 0) {
 		for (legacy_s16 i = 0; i < lines; i++) {
 			video_pages_fill_span(bitmapptr, ofs, (legacy_u16)width, color);
 			ofs = LEGACY_U16_WRAP_ADD(ofs, pitch);
@@ -660,7 +668,7 @@ static void shape2d_render_rle_clipped(struct SHAPE2D far *shape, legacy_u16 x, 
 		dos_memory_pointer_segment(drawing_sprite.sprite_bitmapptr), 0);
 	legacy_u16 destination = clip.destination;
 	legacy_u16 rows = clip.rows;
-	legacy_u8 planar = video_pages_is_target(bitmap);
+	legacy_u8 planar = video_pages_uses_raster_hooks(bitmap);
 	legacy_u8 value;
 	do {
 		if (planar != 0) {
@@ -718,7 +726,7 @@ static void sprite_putimage_at(struct SHAPE2D far *shape, legacy_u16 x, legacy_u
 		dos_memory_pointer_segment(drawing_sprite.sprite_bitmapptr), 0);
 	legacy_u16 row_count = clip.rows;
 	legacy_u16 old_row_count;
-	legacy_u8 planar = video_pages_is_target(bitmap);
+	legacy_u8 planar = video_pages_uses_raster_hooks(bitmap);
 	legacy_u8 far *source_bitmap = (legacy_u8 far *)dos_memory_make_pointer(shape_segment, 0);
 	do {
 		if (planar != 0) {

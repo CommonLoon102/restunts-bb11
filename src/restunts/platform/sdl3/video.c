@@ -1,6 +1,7 @@
 #include "sdl3.h"
 #include "../../c/platform.h"
 #include "../../c/fatal.h"
+#include "../../c/hires.h"
 #include <string.h>
 #include <stdio.h>
 
@@ -13,11 +14,16 @@
 static SDL_Window *window;
 static SDL_Renderer *renderer;
 static SDL_Texture *texture;
-static bool indexed_output;
+static SDL_Surface *frame_surface;
+static int texture_width;
+static int texture_height;
+static bool surface_output;
+static bool high_resolution_output;
+static SDL_Rect surface_viewport;
 static SDL_Color palette_colors[256];
 static Uint32 palette_pixels[256];
-static Uint32 converted_pixels[SCREEN_BYTES];
 static unsigned char previous_pixels[SCREEN_BYTES];
+static unsigned long previous_generation;
 static Uint64 last_present;
 static bool palette_changed = true;
 static bool drawing_frame;
@@ -28,6 +34,102 @@ static void video_fail(const char *operation)
 	dos_process_exit(1);
 }
 
+#ifdef __DJGPP__
+static int mode_viewport_width(const SDL_DisplayMode *mode)
+{
+	/* The legacy VGA mode has nonsquare pixels; VESA modes use a 4:3 viewport. */
+	if (mode->w == SCREEN_WIDTH && mode->h == SCREEN_HEIGHT) {
+		return SCREEN_WIDTH;
+	}
+	return SDL_min(mode->w, mode->h * 4 / 3);
+}
+
+static bool mode_is_better(const SDL_DisplayMode *candidate, const SDL_DisplayMode *current)
+{
+	if (current == NULL) {
+		return true;
+	}
+	int candidate_width = mode_viewport_width(candidate);
+	int current_width = mode_viewport_width(current);
+	bool candidate_fits = candidate_width >= HIRES_WIDTH;
+	bool current_fits = current_width >= HIRES_WIDTH;
+	if (candidate_fits != current_fits) {
+		return candidate_fits;
+	}
+	if (candidate_width != current_width) {
+		return candidate_fits ? candidate_width < current_width : candidate_width > current_width;
+	}
+	int candidate_area = candidate->w * candidate->h;
+	int current_area = current->w * current->h;
+	if (candidate_area != current_area) {
+		return candidate_area < current_area;
+	}
+	return SDL_BITSPERPIXEL(candidate->format) < SDL_BITSPERPIXEL(current->format);
+}
+
+static void select_dos_video_mode(bool high_resolution)
+{
+	int mode_count;
+	SDL_DisplayMode **modes = SDL_GetFullscreenDisplayModes(SDL_GetPrimaryDisplay(), &mode_count);
+	bool selected = false;
+	int selected_width = 0;
+	if (modes != NULL) {
+		for (int attempt = 0; attempt < mode_count && !selected; attempt++) {
+			int best = -1;
+			for (int index = 0; index < mode_count; index++) {
+				const SDL_DisplayMode *mode = modes[index];
+				if (mode == NULL || (SDL_ISPIXELFORMAT_INDEXED(mode->format) &&
+									 mode->format != SDL_PIXELFORMAT_INDEX8)) {
+					continue;
+				}
+				if (!high_resolution && (mode->w != SCREEN_WIDTH || mode->h != SCREEN_HEIGHT ||
+										 mode->format != SDL_PIXELFORMAT_INDEX8)) {
+					continue;
+				}
+				if (best < 0 || mode_is_better(mode, modes[best])) {
+					best = index;
+				}
+			}
+			if (best < 0) {
+				break;
+			}
+			SDL_DestroyWindowSurface(window);
+			selected = SDL_SetWindowFullscreenMode(window, modes[best]) && SDL_SyncWindow(window);
+			selected_width = mode_viewport_width(modes[best]);
+			modes[best] = NULL;
+		}
+		SDL_free(modes);
+	}
+	if (!selected) {
+		video_fail("Select DOS video mode");
+	}
+	SDL_Surface *surface = SDL_GetWindowSurface(window);
+	if (surface == NULL) {
+		video_fail("Create DOS framebuffer");
+	}
+	surface_viewport.x = 0;
+	surface_viewport.y = 0;
+	surface_viewport.w = surface->w;
+	surface_viewport.h = surface->h;
+	if (surface->w != SCREEN_WIDTH || surface->h != SCREEN_HEIGHT) {
+		if (surface->w * 3 > surface->h * 4) {
+			surface_viewport.w = surface->h * 4 / 3;
+		} else {
+			surface_viewport.h = surface->w * 3 / 4;
+		}
+		surface_viewport.x = (surface->w - surface_viewport.w) / 2;
+		surface_viewport.y = (surface->h - surface_viewport.h) / 2;
+	}
+	if (high_resolution && selected_width < HIRES_WIDTH) {
+		SDL_LogWarn(SDL_LOG_CATEGORY_VIDEO,
+					"No VESA mode can display the full 1280x800 render at 4:3; scaling to %dx%d",
+					surface_viewport.w, surface_viewport.h);
+	}
+	high_resolution_output = high_resolution;
+	palette_changed = true;
+}
+#endif
+
 SDL_Window *sdl3_video_window(void)
 {
 	return window;
@@ -35,9 +137,9 @@ SDL_Window *sdl3_video_window(void)
 
 void sdl3_video_toggle_fullscreen(void)
 {
-	/* DOS already uses the native fullscreen VGA mode. SDL saves and restores
-	 * the desktop window's size and position; the logical 4:3 viewport persists. */
-	if (window == NULL || indexed_output) {
+	/* DOS already uses native fullscreen modes. SDL saves and restores the
+	 * desktop window's size and position; the logical 4:3 viewport persists. */
+	if (window == NULL || surface_output) {
 		return;
 	}
 	bool fullscreen = (SDL_GetWindowFlags(window) & SDL_WINDOW_FULLSCREEN) != 0;
@@ -53,6 +155,9 @@ void sdl3_video_window_to_game(float window_x, float window_y, float *x, float *
 	if (renderer != NULL) {
 		SDL_RenderCoordinatesFromWindow(renderer, window_x, window_y, x, y);
 		*y *= 200.0f / 240.0f;
+	} else if (surface_output) {
+		*x = (window_x - surface_viewport.x) * SCREEN_WIDTH / surface_viewport.w;
+		*y = (window_y - surface_viewport.y) * SCREEN_HEIGHT / surface_viewport.h;
 	}
 }
 
@@ -62,6 +167,76 @@ void sdl3_video_game_to_window(float x, float y, float *window_x, float *window_
 	*window_y = y;
 	if (renderer != NULL) {
 		SDL_RenderCoordinatesToWindow(renderer, x, y * (240.0f / 200.0f), window_x, window_y);
+	} else if (surface_output) {
+		*window_x = surface_viewport.x + x * surface_viewport.w / SCREEN_WIDTH;
+		*window_y = surface_viewport.y + y * surface_viewport.h / SCREEN_HEIGHT;
+	}
+}
+
+static void present_surface(const unsigned char *pixels, int width, int height)
+{
+	SDL_Surface *surface = SDL_GetWindowSurface(window);
+	if (surface == NULL) {
+		video_fail("Get video surface");
+	}
+	bool new_frame_surface = frame_surface == NULL || frame_surface->pixels != pixels ||
+							 frame_surface->w != width || frame_surface->h != height;
+	if (new_frame_surface) {
+		SDL_DestroySurface(frame_surface);
+		frame_surface =
+			SDL_CreateSurfaceFrom(width, height, SDL_PIXELFORMAT_INDEX8, (void *)pixels, width);
+		if (frame_surface == NULL || SDL_CreateSurfacePalette(frame_surface) == NULL) {
+			video_fail("Create presentation surface");
+		}
+	}
+	SDL_Palette *palette = SDL_GetSurfacePalette(frame_surface);
+	if ((palette_changed || new_frame_surface) &&
+		!SDL_SetPaletteColors(palette, palette_colors, 0, 256)) {
+		video_fail("Set video palette");
+	}
+	if (surface->format == SDL_PIXELFORMAT_INDEX8 && SDL_GetSurfacePalette(surface) != palette &&
+		!SDL_SetSurfacePalette(surface, palette)) {
+		video_fail("Set framebuffer palette");
+	}
+	if ((surface_viewport.w != surface->w || surface_viewport.h != surface->h) &&
+		!SDL_FillSurfaceRect(surface, NULL, SDL_MapSurfaceRGB(surface, 0, 0, 0))) {
+		video_fail("Clear video borders");
+	}
+	if (!SDL_BlitSurfaceScaled(frame_surface, NULL, surface, &surface_viewport,
+							   SDL_SCALEMODE_NEAREST) ||
+		!SDL_UpdateWindowSurface(window)) {
+		video_fail("Present video surface");
+	}
+}
+
+static void present_texture(const unsigned char *pixels, int width, int height)
+{
+	if (texture == NULL || texture_width != width || texture_height != height) {
+		SDL_DestroyTexture(texture);
+		texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING,
+									width, height);
+		if (texture == NULL || !SDL_SetTextureScaleMode(texture, SDL_SCALEMODE_NEAREST)) {
+			video_fail("Create presentation texture");
+		}
+		texture_width = width;
+		texture_height = height;
+	}
+	void *texture_pixels;
+	int pitch;
+	if (!SDL_LockTexture(texture, NULL, &texture_pixels, &pitch)) {
+		video_fail("Lock video texture");
+	}
+	for (int row = 0; row < height; row++) {
+		Uint32 *destination = (Uint32 *)((unsigned char *)texture_pixels + row * pitch);
+		const unsigned char *source = pixels + row * width;
+		for (int column = 0; column < width; column++) {
+			destination[column] = palette_pixels[source[column]];
+		}
+	}
+	SDL_UnlockTexture(texture);
+	if (!SDL_RenderClear(renderer) || !SDL_RenderTexture(renderer, texture, NULL, NULL) ||
+		!SDL_RenderPresent(renderer)) {
+		video_fail("Present video");
 	}
 }
 
@@ -70,40 +245,22 @@ void sdl3_video_present(void)
 	if (window == NULL || drawing_frame) {
 		return;
 	}
-	const unsigned char *pixels = dos_memory_make_pointer(VGA_MEMORY_SEGMENT, 0);
-	if (indexed_output) {
-		SDL_Surface *surface = SDL_GetWindowSurface(window);
-		if (surface == NULL || surface->format != SDL_PIXELFORMAT_INDEX8) {
-			video_fail("Get indexed video surface");
-		}
-		if (palette_changed &&
-			!SDL_SetPaletteColors(SDL_GetSurfacePalette(surface), palette_colors, 0, 256)) {
-			video_fail("Set video palette");
-		}
-		if (SDL_MUSTLOCK(surface) && !SDL_LockSurface(surface)) {
-			video_fail("Lock video surface");
-		}
-		for (unsigned int row = 0; row < SCREEN_HEIGHT; row++) {
-			memcpy((unsigned char *)surface->pixels + row * surface->pitch,
-				   pixels + row * SCREEN_WIDTH, SCREEN_WIDTH);
-		}
-		if (SDL_MUSTLOCK(surface)) {
-			SDL_UnlockSurface(surface);
-		}
-		if (!SDL_UpdateWindowSurface(window)) {
-			video_fail("Present indexed video");
-		}
-	} else {
-		for (unsigned int index = 0; index < SCREEN_BYTES; index++) {
-			converted_pixels[index] = palette_pixels[pixels[index]];
-		}
-		if (!SDL_UpdateTexture(texture, NULL, converted_pixels, SCREEN_WIDTH * sizeof(Uint32)) ||
-			!SDL_RenderClear(renderer) || !SDL_RenderTexture(renderer, texture, NULL, NULL) ||
-			!SDL_RenderPresent(renderer)) {
-			video_fail("Present video");
-		}
+#ifdef __DJGPP__
+	if (high_resolution_output != (hires_enabled() != 0)) {
+		select_dos_video_mode(hires_enabled() != 0);
 	}
-	memcpy(previous_pixels, pixels, SCREEN_BYTES);
+#endif
+	const unsigned char *legacy_pixels = dos_memory_make_pointer(VGA_MEMORY_SEGMENT, 0);
+	int width;
+	int height;
+	const unsigned char *pixels = hires_framebuffer(legacy_pixels, &width, &height);
+	if (surface_output) {
+		present_surface(pixels, width, height);
+	} else {
+		present_texture(pixels, width, height);
+	}
+	memcpy(previous_pixels, legacy_pixels, SCREEN_BYTES);
+	previous_generation = hires_generation();
 	palette_changed = false;
 	last_present = SDL_GetTicks();
 }
@@ -123,7 +280,8 @@ void sdl3_video_refresh(void)
 {
 	if (window != NULL && !drawing_frame && SDL_GetTicks() - last_present >= PRESENT_INTERVAL_MS) {
 		const unsigned char *pixels = dos_memory_make_pointer(VGA_MEMORY_SEGMENT, 0);
-		if (palette_changed || memcmp(pixels, previous_pixels, SCREEN_BYTES) != 0) {
+		if (palette_changed || hires_generation() != previous_generation ||
+			memcmp(pixels, previous_pixels, SCREEN_BYTES) != 0) {
 			sdl3_video_present();
 		}
 		/* Also throttle unchanged screens, including idle menus. */
@@ -133,12 +291,17 @@ void sdl3_video_refresh(void)
 
 void sdl3_video_shutdown(void)
 {
+	SDL_DestroySurface(frame_surface);
 	SDL_DestroyTexture(texture);
 	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(window);
-	indexed_output = false;
+	surface_output = false;
+	high_resolution_output = false;
 	drawing_frame = false;
+	frame_surface = NULL;
 	texture = NULL;
+	texture_width = 0;
+	texture_height = 0;
 	renderer = NULL;
 	window = NULL;
 }
@@ -146,6 +309,7 @@ void sdl3_video_shutdown(void)
 void dos_video_set_mode_13h(void)
 {
 	if (sdl3_batch_mode) {
+		hires_forget(dos_memory_make_pointer(VGA_MEMORY_SEGMENT, 0));
 		memset(dos_memory_make_pointer(VGA_MEMORY_SEGMENT, 0), 0, SCREEN_BYTES);
 		return;
 	}
@@ -154,7 +318,7 @@ void dos_video_set_mode_13h(void)
 		video_fail("Initialize video");
 	}
 #ifdef __DJGPP__
-	/* DOS Mode 13h displays 320x200 with the VGA's native 4:3 pixel aspect. */
+	/* The direct framebuffer supports indexed and truecolour VESA modes. */
 	SDL_SetHint(SDL_HINT_DOS_ALLOW_DIRECT_FRAMEBUFFER, "1");
 	window =
 		SDL_CreateWindow("Chocolate Stunts", SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_FULLSCREEN);
@@ -164,41 +328,17 @@ void dos_video_set_mode_13h(void)
 	if (window == NULL) {
 		video_fail("Create game window");
 	}
+	hires_forget(dos_memory_make_pointer(VGA_MEMORY_SEGMENT, 0));
 	memset(dos_memory_make_pointer(VGA_MEMORY_SEGMENT, 0), 0, SCREEN_BYTES);
 #ifdef __DJGPP__
-	/* The DOS surface format follows the selected display mode. Pin indexed
-	 * Mode 13h explicitly; the default desktop mode can be true colour. */
-	int mode_count;
-	SDL_DisplayMode **modes = SDL_GetFullscreenDisplayModes(SDL_GetPrimaryDisplay(), &mode_count);
-	bool selected = false;
-	if (modes != NULL) {
-		for (int index = 0; index < mode_count; index++) {
-			if (modes[index]->w == SCREEN_WIDTH && modes[index]->h == SCREEN_HEIGHT &&
-				modes[index]->format == SDL_PIXELFORMAT_INDEX8) {
-				selected = SDL_SetWindowFullscreenMode(window, modes[index]);
-				break;
-			}
-		}
-		SDL_free(modes);
-	}
-	if (!selected || !SDL_SyncWindow(window)) {
-		video_fail("Select VGA Mode 13h");
-	}
-	SDL_Surface *surface = SDL_GetWindowSurface(window);
-	if (surface == NULL || surface->format != SDL_PIXELFORMAT_INDEX8 ||
-		(SDL_GetSurfacePalette(surface) == NULL && SDL_CreateSurfacePalette(surface) == NULL)) {
-		video_fail("Create indexed framebuffer");
-	}
-	indexed_output = true;
+	select_dos_video_mode(hires_enabled() != 0);
+	surface_output = true;
 #else
 	renderer = SDL_CreateRenderer(window, NULL);
 	if (renderer == NULL) {
 		video_fail("Create renderer");
 	}
-	texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING,
-								SCREEN_WIDTH, SCREEN_HEIGHT);
-	if (texture == NULL || !SDL_SetTextureScaleMode(texture, SDL_SCALEMODE_NEAREST) ||
-		!SDL_SetRenderLogicalPresentation(renderer, SCREEN_WIDTH, 240,
+	if (!SDL_SetRenderLogicalPresentation(renderer, SCREEN_WIDTH, 240,
 										  SDL_LOGICAL_PRESENTATION_LETTERBOX)) {
 		video_fail("Configure framebuffer scaling");
 	}
