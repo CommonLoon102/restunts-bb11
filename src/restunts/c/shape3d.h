@@ -133,7 +133,8 @@ void draw_three_color_beveled_border(legacy_s16 x, legacy_s16 y, legacy_s16 widt
 									 legacy_s16 height, legacy_s16 outer_color,
 									 legacy_s16 inner_color, legacy_s16 opposite_color);
 void shape3d_update_car_wheel_vertices(struct SHAPE3D *shape, legacy_u16 first_vertex,
-									   legacy_s16 steering_angle, legacy_s16 *suspension_offsets,
+									   legacy_s16 steering_angle,
+									   const legacy_s16 *suspension_offsets,
 									   legacy_s16 *cached_wheel_state, struct VECTOR *base_vertices,
 									   struct VECTOR *front_wheel_centers);
 

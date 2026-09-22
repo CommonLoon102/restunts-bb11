@@ -18,6 +18,9 @@
 #include "menu_common.h"
 #include "externs.h"
 #include "keyboard.h"
+#ifdef RESTUNTS_SDL3
+#include "presentation.h"
+#endif
 
 #define GAME_RESOURCE_FILE_INDEX 2
 #define CAR_MENU_PLAYER_MODE 0U
@@ -107,6 +110,12 @@ struct CAR_MENU_STATE {
 	legacy_s8 *material;
 	legacy_s8 *transmission;
 	legacy_u16 opponent_type;
+#ifdef RESTUNTS_SDL3
+	struct PRESENTATION_CLOCK presentation_clock;
+	legacy_u64 rotation_time;
+	legacy_u64 input_time;
+	legacy_s16 input_delta;
+#endif
 };
 
 static legacy_s16 car_menu_find_cars(struct CAR_MENU_STATE *menu, legacy_s8 *car_id)
@@ -187,6 +196,12 @@ static void car_menu_initialize(struct CAR_MENU_STATE *menu)
 
 	menu->previous_car_index = CAR_MENU_NO_SELECTION;
 	menu->rotation = 0;
+#ifdef RESTUNTS_SDL3
+	menu->rotation_time = presentation_now();
+	menu->input_time = menu->rotation_time;
+	menu->input_delta = 0;
+	presentation_reset(&menu->presentation_clock, menu->rotation_time);
+#endif
 	menu->selected = CAR_MENU_DONE_BUTTON;
 	menu_reset_animation_timers();
 	menu->rotation_delta = 0;
@@ -301,6 +316,10 @@ static void car_menu_load_car(struct CAR_MENU_STATE *menu)
 	car_menu_draw_description(menu);
 
 	(void)timer_get_delta_alt();
+#ifdef RESTUNTS_SDL3
+	menu->rotation_time = presentation_now();
+	presentation_reset(&menu->presentation_clock, menu->rotation_time);
+#endif
 	menu->previous_selected = CAR_MENU_NO_SELECTION;
 	menu->previous_rect.left = 0;
 	menu->previous_rect.right = CAR_MENU_SCREEN_WIDTH;
@@ -313,6 +332,22 @@ static void car_menu_load_car(struct CAR_MENU_STATE *menu)
 static void car_menu_prepare_preview(struct CAR_MENU_STATE *menu)
 {
 	menu->rotation = LEGACY_S16_WRAP_ADD(menu->rotation, menu->rotation_delta);
+	legacy_s16 visual_rotation = menu->rotation;
+#ifdef RESTUNTS_SDL3
+	if (supersight_enabled != 0) {
+		legacy_u64 now = presentation_now();
+		if (!presentation_due(&menu->presentation_clock, now) &&
+			menu->render_phase != CAR_RENDER_START_PHASE) {
+			return;
+		}
+		/* The preview turns at one angle unit per 100 Hz timer tick. Continue
+		 * that known motion without reading another input or changing its timer. */
+		visual_rotation =
+			LEGACY_S16_WRAP_ADD(menu->rotation, (legacy_u16)((now - menu->rotation_time) *
+															 DOS_TIMER_REALTIME_TICKS_PER_SECOND /
+															 PRESENTATION_SECOND_NS));
+	}
+#endif
 	if (menu->render_phase == CAR_RENDER_IDLE_PHASE ||
 		menu->render_phase == CAR_RENDER_START_PHASE) {
 		legacy_s16 car_position_angle = (legacy_s16)polarAngle(carmenu_carpos.y, carmenu_carpos.z);
@@ -322,7 +357,7 @@ static void car_menu_prepare_preview(struct CAR_MENU_STATE *menu)
 			(legacy_s8)(legacy_u8)game3dshapes[PLAYER_CAR_LOW_SHAPE].shape3d_numpaints) {
 			*menu->material = 0;
 		}
-		menu->transformed.rotvec.z = menu->rotation;
+		menu->transformed.rotvec.z = visual_rotation;
 		menu->transformed.material = (legacy_u8)*menu->material;
 		shape3d_transform_and_queue(&menu->transformed);
 		car_menu_redraw_cliprect.bottom = menu->previous_car_index == menu->car_index
@@ -333,6 +368,11 @@ static void car_menu_prepare_preview(struct CAR_MENU_STATE *menu)
 		if (menu->render_phase != CAR_RENDER_START_PHASE) {
 			menu->render_phase = CAR_RENDER_DRAW_PHASE;
 			menu->render_deferred = 1;
+#ifdef RESTUNTS_SDL3
+			if (supersight_enabled != 0) {
+				menu->render_deferred = 0;
+			}
+#endif
 		}
 	}
 }
@@ -409,8 +449,25 @@ static legacy_u16 car_menu_read_input(struct CAR_MENU_STATE *menu)
 	sprite_select_screen_compat();
 	menu->rotation_delta = (legacy_s16)menu_animate_button_highlight(
 		menu->selected, carmenu_buttons, menu_highlight_second_color, menu_highlight_first_color);
+#ifdef RESTUNTS_SDL3
+	menu->rotation_time = presentation_now();
+#endif
 	menu_update_idle_counter((legacy_u16)menu->rotation_delta, CAR_MENU_IDLE_LIMIT_TICKS);
-	legacy_u16 input = (legacy_u16)input_checking(menu->rotation_delta);
+	legacy_s16 input_delta = menu->rotation_delta;
+#ifdef RESTUNTS_SDL3
+	if (supersight_enabled != 0) {
+		menu->input_delta = LEGACY_S16_WRAP_ADD(menu->input_delta, menu->rotation_delta);
+		/* Render deadlines do not create additional device samples. */
+		if (menu->rotation_time - menu->input_time <
+			PRESENTATION_SECOND_NS / DOS_TIMER_REALTIME_TICKS_PER_SECOND) {
+			return 0;
+		}
+		input_delta = menu->input_delta;
+	}
+	menu->input_delta = 0;
+	menu->input_time = menu->rotation_time;
+#endif
+	legacy_u16 input = (legacy_u16)input_checking(input_delta);
 	legacy_s16 mouse_hit = (legacy_s16)mouse_multi_hittest(CAR_MENU_BUTTON_COUNT, carmenu_buttons);
 	if (mouse_hit != -1) {
 		menu->selected = (legacy_u8)mouse_hit;
@@ -466,6 +523,7 @@ static legacy_s16 car_menu_handle_input(struct CAR_MENU_STATE *menu, legacy_u16 
 #ifdef RESTUNTS_SDL3
 	if (input == (legacy_u16)KEY_F12) {
 		handle_ingame_kb_shortcuts(KEY_F12);
+		presentation_reset(&menu->presentation_clock, presentation_now());
 		menu->render_phase = CAR_RENDER_START_PHASE;
 		return 0;
 	}

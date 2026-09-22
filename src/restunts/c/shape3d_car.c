@@ -187,7 +187,8 @@ static void shape3d_steer_car_wheel_vertices(struct SHAPE3D *shape, legacy_u16 f
 }
 
 void shape3d_update_car_wheel_vertices(struct SHAPE3D *shape, legacy_u16 first_vertex,
-									   legacy_s16 steering_angle, legacy_s16 *suspension_offsets,
+									   legacy_s16 steering_angle,
+									   const legacy_s16 *suspension_offsets,
 									   legacy_s16 *cached_wheel_state, struct VECTOR *base_vertices,
 									   struct VECTOR *front_wheel_centers)
 {

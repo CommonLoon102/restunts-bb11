@@ -12,6 +12,7 @@
 #include "memmgr.h"
 #ifdef RESTUNTS_SDL3
 #include "keyboard.h"
+#include "presentation.h"
 #endif
 
 #define TRACK_OBJECT_COUNT 215U
@@ -48,6 +49,9 @@
 #define INTRO_CAR_PHASE_SECONDS 6
 #define INTRO_LOGO_PHASE_SECONDS 11
 #define INTRO_TOTAL_SECONDS 23
+#ifdef RESTUNTS_SDL3
+#define INTRO_TIMER_TICK_NS (PRESENTATION_SECOND_NS / DOS_TIMER_REALTIME_TICKS_PER_SECOND)
+#endif
 
 /*
  * In the original dseg, terrain_scene_objects immediately follows trkObjectList.
@@ -111,7 +115,8 @@ static void intro_draw_stars(legacy_s16 camera_x, legacy_s16 camera_y, legacy_s1
 
 static void intro_render_scene_impl(legacy_s16 camera_x, legacy_s16 camera_y, legacy_s16 camera_z,
 									legacy_s16 rotate_y, legacy_s16 rotate_x, legacy_s16 draw_car,
-									legacy_s16 primary_logo, struct VECTOR *stars,
+									legacy_s16 primary_logo, const struct VECTOR *car_position,
+									legacy_s16 car_rotation, struct VECTOR *stars,
 									struct POINT2D *previous_points,
 									legacy_s16 *previous_point_count,
 									struct RECTANGLE *previous_rect, struct RECTANGLE *shape_rect,
@@ -127,15 +132,12 @@ static void intro_render_scene_impl(legacy_s16 camera_x, legacy_s16 camera_y, le
 	intro_draw_transformed_shape(&transformed, &current_shape_rect, 0);
 
 	if (draw_car != 0) {
-		transformed.pos.x = intro_shift_position((legacy_s32)state.opponentstate.car_position.lx,
-												 (legacy_s16)camera_x);
-		transformed.pos.y = intro_shift_position((legacy_s32)state.opponentstate.car_position.ly,
-												 (legacy_s16)camera_y);
-		transformed.pos.z = intro_shift_position((legacy_s32)state.opponentstate.car_position.lz,
-												 (legacy_s16)camera_z);
+		transformed.pos.x = LEGACY_S16_WRAP_SUB(car_position->x, camera_x);
+		transformed.pos.y = LEGACY_S16_WRAP_SUB(car_position->y, camera_y);
+		transformed.pos.z = LEGACY_S16_WRAP_SUB(car_position->z, camera_z);
 		transformed.shapeptr = &bravshape;
 		intro_draw_transformed_shape(&transformed, &current_shape_rect,
-									 LEGACY_S16_WRAP_NEGATE(state.opponentstate.car_rotate.x));
+									 LEGACY_S16_WRAP_NEGATE(car_rotation));
 	}
 
 	struct RECTANGLE redraw_rect;
@@ -177,9 +179,14 @@ void intro_render_scene(legacy_s16 camera_x, legacy_s16 camera_y, legacy_s16 cam
 						struct RECTANGLE previous_rect, struct RECTANGLE *shape_rect,
 						struct RECTANGLE *combined_rect)
 {
+	struct VECTOR car_position;
+	car_position.x = intro_shift_position(state.opponentstate.car_position.lx, 0);
+	car_position.y = intro_shift_position(state.opponentstate.car_position.ly, 0);
+	car_position.z = intro_shift_position(state.opponentstate.car_position.lz, 0);
 	intro_render_scene_impl(camera_x, camera_y, camera_z, rotate_y, rotate_x, draw_car,
-							primary_logo, stars, previous_points, previous_point_count,
-							&previous_rect, shape_rect, combined_rect);
+							primary_logo, &car_position, state.opponentstate.car_rotate.x, stars,
+							previous_points, previous_point_count, &previous_rect, shape_rect,
+							combined_rect);
 }
 
 /* Creep one unit towards the wanted value, and stop once it is reached. */
@@ -193,6 +200,16 @@ static legacy_s16 intro_step_towards(legacy_s16 value, legacy_s16 target)
 	}
 	return value;
 }
+
+struct INTRO_VIEW {
+	struct VECTOR camera;
+	struct VECTOR car_position;
+	legacy_s16 car_rotation;
+	legacy_s16 horizontal_angle;
+	legacy_s16 vertical_angle;
+	legacy_s16 draw_car;
+	legacy_s16 primary_logo;
+};
 
 struct INTRO_SESSION {
 	legacy_s8 far *title_resource;
@@ -211,6 +228,15 @@ struct INTRO_SESSION {
 	legacy_s16 logo_changed;
 	legacy_s16 needs_render;
 	legacy_u16 rect_index;
+#ifdef RESTUNTS_SDL3
+	struct PRESENTATION_CLOCK presentation_clock;
+	struct INTRO_VIEW previous_view;
+	struct INTRO_VIEW current_view;
+	legacy_u64 view_time;
+	legacy_u64 view_interval;
+	legacy_s16 view_frame;
+	legacy_u8 view_valid;
+#endif
 };
 
 #ifdef RESTUNTS_SDL3
@@ -224,6 +250,8 @@ static void intro_request_full_redraw(struct INTRO_SESSION *intro)
 	intro->shape_rect = intro_redraw_cliprect;
 	intro->combined_rect = intro_redraw_cliprect;
 	intro->needs_render = 1;
+	intro->view_valid = 0;
+	presentation_reset(&intro->presentation_clock, presentation_now());
 }
 #endif
 
@@ -359,6 +387,88 @@ static void intro_aim_camera(struct INTRO_SESSION *intro, legacy_s16 *horizontal
 	}
 }
 
+static void intro_capture_view(struct INTRO_SESSION *intro, struct INTRO_VIEW *view)
+{
+	intro_aim_camera(intro, &view->horizontal_angle, &view->vertical_angle, &view->draw_car);
+	view->camera.x = intro->camera_x;
+	view->camera.y = intro->camera_y;
+	view->camera.z = intro->camera_z;
+	view->car_position.x = intro_shift_position(state.opponentstate.car_position.lx, 0);
+	view->car_position.y = intro_shift_position(state.opponentstate.car_position.ly, 0);
+	view->car_position.z = intro_shift_position(state.opponentstate.car_position.lz, 0);
+	view->car_rotation = state.opponentstate.car_rotate.x;
+	view->primary_logo = intro->logo_changed;
+}
+
+#ifdef RESTUNTS_SDL3
+static legacy_s16 intro_predict_coordinate(legacy_s16 previous, legacy_s16 current,
+										   legacy_u64 elapsed, legacy_u64 interval, legacy_u8 angle)
+{
+	legacy_s16 change = LEGACY_S16_WRAP_SUB(current, previous);
+	if (angle != 0) {
+		change =
+			(legacy_s16)(((legacy_u16)change + ANGLE_HALF_TURN) & ANGLE_MASK) - ANGLE_HALF_TURN;
+	}
+	legacy_s32 offset =
+		(legacy_s32)((legacy_s64)change * (legacy_s64)elapsed / (legacy_s64)interval);
+	return LEGACY_S16_WRAP_ADD(current, offset);
+}
+
+static void intro_predict_view(const struct INTRO_SESSION *intro, legacy_u64 now,
+							   struct INTRO_VIEW *view)
+{
+	*view = intro->current_view;
+	if (intro->view_interval == 0) {
+		return;
+	}
+	legacy_u64 elapsed = now - intro->view_time;
+	legacy_u64 maximum = (legacy_u64)(legacy_u16)timer_ticks_per_frame * INTRO_TIMER_TICK_NS;
+	if (elapsed > maximum) {
+		elapsed = maximum;
+	}
+	const struct INTRO_VIEW *previous = &intro->previous_view;
+	view->camera.x = intro_predict_coordinate(previous->camera.x, view->camera.x, elapsed,
+											  intro->view_interval, 0);
+	view->camera.y = intro_predict_coordinate(previous->camera.y, view->camera.y, elapsed,
+											  intro->view_interval, 0);
+	view->camera.z = intro_predict_coordinate(previous->camera.z, view->camera.z, elapsed,
+											  intro->view_interval, 0);
+	view->car_position.x = intro_predict_coordinate(previous->car_position.x, view->car_position.x,
+													elapsed, intro->view_interval, 0);
+	view->car_position.y = intro_predict_coordinate(previous->car_position.y, view->car_position.y,
+													elapsed, intro->view_interval, 0);
+	view->car_position.z = intro_predict_coordinate(previous->car_position.z, view->car_position.z,
+													elapsed, intro->view_interval, 0);
+	view->car_rotation = intro_predict_coordinate(previous->car_rotation, view->car_rotation,
+												  elapsed, intro->view_interval, 1);
+	view->horizontal_angle = intro_predict_coordinate(
+		previous->horizontal_angle, view->horizontal_angle, elapsed, intro->view_interval, 1);
+	view->vertical_angle = intro_predict_coordinate(previous->vertical_angle, view->vertical_angle,
+													elapsed, intro->view_interval, 1);
+}
+
+static void intro_update_view(struct INTRO_SESSION *intro, legacy_u64 now)
+{
+	struct INTRO_VIEW current;
+	intro_capture_view(intro, &current);
+	/* A scene cut has no continuous motion to predict. The real animation and
+	 * car state advance only in intro_advance_session at their original rate. */
+	intro->view_interval = 0;
+	if (intro->view_valid != 0 && current.draw_car == intro->current_view.draw_car &&
+		current.primary_logo == intro->current_view.primary_logo &&
+		intro->frame_count > intro->view_frame) {
+		intro->previous_view = intro->current_view;
+		intro->view_interval = (legacy_u64)(intro->frame_count - intro->view_frame) *
+							   (legacy_u16)timer_ticks_per_frame * INTRO_TIMER_TICK_NS;
+	}
+	intro->current_view = current;
+	intro->view_valid = 1;
+	intro->view_frame = intro->frame_count;
+	intro->view_time = now;
+	intro->needs_render = 0;
+}
+#endif
+
 static void intro_present_session(struct INTRO_SESSION *intro)
 {
 	struct RECTANGLE redraw_rect;
@@ -392,7 +502,7 @@ static void intro_present_session(struct INTRO_SESSION *intro)
 	}
 }
 
-static void intro_render_session(struct INTRO_SESSION *intro)
+static void intro_render_session(struct INTRO_SESSION *intro, const struct INTRO_VIEW *view)
 {
 	intro->needs_render = 0;
 	if (video_uses_page_flipping != 0) {
@@ -400,16 +510,13 @@ static void intro_render_session(struct INTRO_SESSION *intro)
 	} else {
 		sprite_select_render_window();
 	}
-	legacy_s16 draw_car;
-	legacy_s16 horizontal_angle;
-	legacy_s16 vertical_angle;
-	intro_aim_camera(intro, &horizontal_angle, &vertical_angle, &draw_car);
 	struct POINT2D *active_points = intro->point_buffers[intro->rect_index];
 	legacy_s16 *active_point_count = &intro->point_counts[intro->rect_index];
-	intro_render_scene_impl(
-		intro->camera_x, intro->camera_y, intro->camera_z, horizontal_angle, vertical_angle,
-		draw_car, intro->logo_changed, intro->stars, active_points, active_point_count,
-		&frame_layer_rects[intro->rect_index], &intro->shape_rect, &intro->combined_rect);
+	intro_render_scene_impl(view->camera.x, view->camera.y, view->camera.z, view->horizontal_angle,
+							view->vertical_angle, view->draw_car, view->primary_logo,
+							&view->car_position, view->car_rotation, intro->stars, active_points,
+							active_point_count, &frame_layer_rects[intro->rect_index],
+							&intro->shape_rect, &intro->combined_rect);
 
 #ifdef RESTUNTS_SDL3
 	if (fps_display_enabled != 0) {
@@ -452,15 +559,54 @@ legacy_s8 setup_intro(void)
 #ifdef RESTUNTS_SDL3
 	frame_fps_reset();
 	intro_request_full_redraw(&intro);
+	legacy_u64 input_time = presentation_now();
+	legacy_s16 input_delta = 0;
 #endif
 	legacy_s8 interrupted = 0;
 	for (;;) {
 		legacy_s16 delta = LEGACY_S16_FROM_BITS((legacy_u16)timer_get_delta());
 		intro_advance_session(&intro, delta);
-		if (intro.needs_render != 0) {
-			intro_render_session(&intro);
+#ifdef RESTUNTS_SDL3
+		legacy_u64 now = presentation_now();
+		legacy_s16 keyframe = intro.needs_render;
+		if (keyframe != 0) {
+			intro_update_view(&intro, now);
 		}
-		legacy_s16 key = input_do_checking(delta);
+		if (supersight_enabled != 0) {
+			if (presentation_due(&intro.presentation_clock, now)) {
+				struct INTRO_VIEW view;
+				intro_predict_view(&intro, now, &view);
+				intro_render_session(&intro, &view);
+			}
+		} else if (keyframe != 0) {
+			intro_render_session(&intro, &intro.current_view);
+		}
+#else
+		if (intro.needs_render != 0) {
+			struct INTRO_VIEW view;
+			intro_capture_view(&intro, &view);
+			intro_render_session(&intro, &view);
+		}
+#endif
+		legacy_s16 key = 0;
+#ifdef RESTUNTS_SDL3
+		legacy_u64 input_now = presentation_now();
+		if (supersight_enabled != 0) {
+			input_delta = LEGACY_S16_WRAP_ADD(input_delta, delta);
+			/* Presentation-only loops cannot sample devices between timer ticks. */
+			if (input_now - input_time >= INTRO_TIMER_TICK_NS) {
+				key = input_do_checking(input_delta);
+				input_delta = 0;
+				input_time = input_now;
+			}
+		} else {
+			key = input_do_checking(delta);
+			input_delta = 0;
+			input_time = input_now;
+		}
+#else
+		key = input_do_checking(delta);
+#endif
 #ifdef RESTUNTS_SDL3
 		if (key == KEY_F11 || key == KEY_F12) {
 			handle_ingame_kb_shortcuts(key);

@@ -87,6 +87,15 @@ screens. Menus, dashboard artwork, and replay controls retain their original
 pixel detail and size. Switching SuperSight off restores 320x200 rendering.
 The Open Watcom 16-bit DOS version retains its existing renderer.
 
+SuperSight also targets **60 FPS** in SDL3 driving, replay playback, the nighttime
+intro, and rotating car previews. Between simulation updates, the renderer
+extrapolates car and camera motion from the latest completed poses. Each actual
+update corrects that visual prediction, so collisions or abrupt direction changes
+can produce a small correction. This adds no deliberate simulation-tick delay.
+Input recording and physics retain their original 10 or 20 Hz schedule. Predicted
+poses never enter game state or replay data; toggling F12 during a replay does not
+change its simulated result. Seeking, pausing, and camera changes reset prediction.
+
 Press **F11** to toggle a frame-rate counter in the top-left corner. It measures
 presented frames over approximately one second and rounds down, for example
 `20 FPS`. Values below 20 are red; values of 20 or higher are green.
@@ -300,6 +309,11 @@ out/sdl3-linux-x64/restunts --data-dir stunts /nointro
 ```
 
 Use `out/sdl3-linux-x86` instead for the x86 build.
+
+The native `frame-prediction` and `sdl3-race-frames` tests check visual prediction,
+60 Hz pacing, and unchanged input/physics counts. `render-replay` compares every
+serialized state in its replay fixtures with SuperSight disabled, enabled, and
+repeatedly toggled, including intermediate predicted renders.
 
 #### Linux host: Windows backend
 

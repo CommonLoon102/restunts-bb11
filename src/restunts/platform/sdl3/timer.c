@@ -1,5 +1,6 @@
 #include "sdl3.h"
 #include "../../c/platform.h"
+#include "../../c/presentation.h"
 #include <string.h>
 
 #define TIMER_CALLBACK_CAPACITY 5U
@@ -15,6 +16,11 @@ static legacy_u32 slow_divider;
 static legacy_u8 initialized;
 static legacy_u8 suspended;
 static legacy_u8 dispatching;
+
+legacy_u64 presentation_now(void)
+{
+	return SDL_GetTicksNS();
+}
 
 void sdl3_timer_pump(void)
 {

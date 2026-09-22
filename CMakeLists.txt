@@ -80,7 +80,7 @@ set(game_sources
     menu_track.c menu_track_editor.c menu_opponent.c menu_car.c audio_engine.c
     audio_resources.c audio_car.c audio_sequence.c shape3d.c shape3d_resources.c
     shape3d_car.c shape3d_prerender.c shape3d_lines.c shape2d.c shape2d_blit.c
-    video_pages.c hires.c shape3d_hires.c shape2d_resources.c heapsort.c frame.c skybox.c frame_overlay.c
+    video_pages.c hires.c frame_prediction.c shape3d_hires.c shape2d_resources.c heapsort.c frame.c skybox.c frame_overlay.c
     intro_render.c track_preview.c full_data.c full_strings.c full_tables.c)
 list(TRANSFORM common_sources PREPEND "${core}/")
 list(TRANSFORM game_sources PREPEND "${core}/")
@@ -235,6 +235,27 @@ if(RESTUNTS_BUILD_TESTS AND NOT CMAKE_SYSTEM_NAME STREQUAL "DOS")
 endif()
 
 if(RESTUNTS_BUILD_TESTS)
+    add_executable(test-frame-prediction src/restunts/tests/test-frame-prediction.c ${core}/frame_prediction.c)
+    target_link_libraries(test-frame-prediction PRIVATE restunts_options)
+    target_compile_options(test-frame-prediction PRIVATE -UNDEBUG)
+    add_test(NAME frame-prediction COMMAND test-frame-prediction)
+    if(UNIX AND NOT CMAKE_CROSSCOMPILING)
+        add_executable(test-sdl3-race-frames src/restunts/tests/test-race-frames.c
+            ${core}/legacy.c ${core}/full_data.c ${core}/headless_data.c ${core}/frame_prediction.c)
+        target_link_libraries(test-sdl3-race-frames PRIVATE restunts_options)
+        target_compile_options(test-sdl3-race-frames PRIVATE -UNDEBUG -ffunction-sections -fdata-sections)
+        target_link_options(test-sdl3-race-frames PRIVATE -Wl,--gc-sections)
+        add_test(NAME sdl3-race-frames COMMAND test-sdl3-race-frames)
+    endif()
+    if(UNIX AND NOT CMAKE_CROSSCOMPILING AND Python3_Interpreter_FOUND)
+        add_executable(test-render-replay ${platform}/main.c src/restunts/tests/test-render-replay.c)
+        target_compile_definitions(test-render-replay PRIVATE RESTUNTS_PIXLDUMP)
+        target_link_libraries(test-render-replay PRIVATE restunts_game)
+        target_compile_options(test-render-replay PRIVATE -UNDEBUG)
+        add_test(NAME render-replay COMMAND "${Python3_EXECUTABLE}"
+            "${CMAKE_SOURCE_DIR}/tools/scripts/test-render-replay.py"
+            "$<TARGET_FILE:test-render-replay>" "${CMAKE_SOURCE_DIR}/stunts")
+    endif()
     add_executable(test-shape3d-hires src/restunts/tests/test-shape3d-hires.c)
     target_link_libraries(test-shape3d-hires PRIVATE restunts_game)
     target_compile_options(test-shape3d-hires PRIVATE -UNDEBUG)

@@ -55,6 +55,10 @@ run_host_test test-car-menu menu_car.c \
     "$test_source_dir/legacy.c" "$test_source_dir/full_data.c" \
     "$test_source_dir/full_strings.c" "$test_source_dir/headless_data.c" \
     -Wno-pointer-sign -Wno-missing-field-initializers
+run_host_test test-car-menu menu_car.c \
+    "$test_source_dir/legacy.c" "$test_source_dir/full_data.c" \
+    "$test_source_dir/full_strings.c" "$test_source_dir/headless_data.c" \
+    -DRESTUNTS_SDL3 -Wno-pointer-sign -Wno-missing-field-initializers
 run_host_test test-car-speed statecar.c \
     "$test_source_dir/math.c" "$test_source_dir/legacy.c" "$test_source_dir/strlib.c"
 run_host_test test-collision-interpolation physics_collision.c \
@@ -86,6 +90,7 @@ run_host_test test-frame-overlay frame_overlay.c \
     "$test_source_dir/shape3d_lines.c" "$test_source_dir/math.c" "$test_source_dir/legacy.c" \
     "$test_source_dir/full_data.c" "$test_source_dir/headless_data.c" \
     -Wno-pointer-sign -Wno-missing-field-initializers -Wno-unused-variable
+run_host_test test-frame-prediction frame_prediction.c
 run_host_test test-intro-preview intro_render.c \
     "$test_source_dir/track_preview.c" "$test_source_dir/full_data.c" \
     "$test_source_dir/headless_data.c" "$test_source_dir/headless_trackdata.c" \
