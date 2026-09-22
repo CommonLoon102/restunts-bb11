@@ -107,7 +107,16 @@ This creates 32-bit DOS `.exe` files. Place a compatible DPMI host such as
 DOS environment does not supply one. CI artifacts do not bundle CWSDPMI or the
 game's data files.
 
-The DOS video path uses indexed VGA 320x200 directly. Audio writes the real
+The DOS video path uses indexed VGA 320x200 with SuperSight off. Enabling
+SuperSight with F12 renders the 3D scene at 1280x800 and selects a VESA mode
+that can display it with the original 4:3 aspect ratio (normally 1280x1024,
+with a 1280x960 image and black borders). Indexed modes are preferred; true-colour
+VESA modes are supported too. If no sufficiently large mode is available, SDL
+scales the 1280x800 rendering to the largest available viewport and logs a warning.
+Disabling SuperSight restores Mode 13h. High-resolution rendering requires more
+RAM and processing power than the original mode.
+
+Audio writes the real
 AdLib-compatible OPL2 chip at port `388h`, which DOSBox also emulates. An AdLib
 or compatible Sound Blaster FM device is needed for sound. If audio initialization
 fails, the native game reports a warning and continues silently. Desktop builds
@@ -155,7 +164,11 @@ original game resources and replay/car additions together there.
 Desktop windows apply the VGA vertical 6:5 pixel-aspect correction: the original
 320x200 framebuffer fills a 4:3 image. Nearest-neighbour scaling preserves sharp
 pixel edges, and resizing adds black borders to retain that aspect. Renderer dump
-images retain the original 320x200 pixel data for parity checks. Menus support
+images retain the original 320x200 pixel data for parity checks. With SuperSight
+on, the 3D scene and both car-selection previews render at 1280x800. Their geometry
+is projected and rasterized at the higher resolution; menu artwork, dashboard,
+and replay controls keep their original pixel detail. F12 works in both car
+selection screens as well as driving and replay views. Menus support
 keyboard, mouse, and an SDL joystick. Existing driving and replay controls remain
 available:
 

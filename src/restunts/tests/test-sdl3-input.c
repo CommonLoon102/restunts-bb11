@@ -8,13 +8,44 @@
 #include "../platform/sdl3/sdl3.h"
 #include "../c/platform.h"
 #include "../c/keyboard.h"
+#include "../c/hires.h"
 
 int sdl3_batch_mode;
 static legacy_u8 framebuffer[65536];
+static unsigned char high_resolution_framebuffer[1280 * 800];
+static bool high_resolution_active;
+static unsigned long frame_generation;
 static unsigned int first_callbacks;
 static unsigned int second_callbacks;
 static unsigned int audio_ticks;
 static bool quit_cleaned_up;
+
+const unsigned char *hires_framebuffer(const unsigned char *legacy, int *width, int *height)
+{
+	*width = high_resolution_active ? 1280 : 320;
+	*height = high_resolution_active ? 800 : 200;
+	return high_resolution_active ? high_resolution_framebuffer : legacy;
+}
+
+unsigned long hires_generation(void)
+{
+	return frame_generation;
+}
+
+int hires_enabled(void)
+{
+	return high_resolution_active;
+}
+
+void hires_forget(const void *base)
+{
+	assert(base == framebuffer);
+}
+
+void hires_shutdown(void)
+{
+	high_resolution_active = false;
+}
 
 void *dos_memory_make_pointer(legacy_u16 segment, legacy_u16 offset)
 {
@@ -230,6 +261,65 @@ static void test_video_and_mouse(void)
 	assert(buttons == 0);
 }
 
+static void assert_presented_color(int x, int y, Uint8 red, Uint8 green, Uint8 blue)
+{
+	SDL_Surface *surface = SDL_RenderReadPixels(SDL_GetRenderer(sdl3_video_window()), NULL);
+	assert(surface != NULL);
+	Uint8 actual_red;
+	Uint8 actual_green;
+	Uint8 actual_blue;
+	assert(SDL_ReadSurfacePixel(surface, x, y, &actual_red, &actual_green, &actual_blue, NULL));
+	assert(actual_red == red && actual_green == green && actual_blue == blue);
+	SDL_DestroySurface(surface);
+}
+
+static void test_high_resolution_video(void)
+{
+	legacy_u8 colors[] = {63, 0, 0, 0, 0, 63, 0, 63, 0};
+	dos_video_set_palette(3, 3, colors);
+	memset(framebuffer, 3, 64000);
+	memset(high_resolution_framebuffer, 3, sizeof(high_resolution_framebuffer));
+	for (int row = 0; row < 800; row++) {
+		high_resolution_framebuffer[row * 1280 + 101] = 4;
+	}
+	high_resolution_active = true;
+	frame_generation++;
+	check_video_aspect(1100, 720, 70.0f, 0.0f);
+	check_video_aspect(960, 800, 0.0f, 40.0f);
+	assert(SDL_SetWindowSize(sdl3_video_window(), 1280, 960));
+	assert(SDL_SyncWindow(sdl3_video_window()));
+	SDL_PumpEvents();
+	sdl3_video_present();
+	/* Adjacent output pixels must retain detail smaller than one legacy pixel. */
+	assert_presented_color(100, 120, 255, 0, 0);
+	assert_presented_color(101, 120, 0, 0, 255);
+	assert_presented_color(102, 120, 255, 0, 0);
+	for (int row = 0; row < 800; row++) {
+		high_resolution_framebuffer[row * 1280 + 101] = 5;
+	}
+	frame_generation++;
+	SDL_Delay(11);
+	sdl3_video_refresh();
+	assert_presented_color(101, 120, 0, 255, 0);
+	sdl3_video_begin_frame();
+	for (int row = 0; row < 800; row++) {
+		high_resolution_framebuffer[row * 1280 + 102] = 4;
+	}
+	frame_generation++;
+	SDL_Delay(11);
+	sdl3_video_refresh();
+	assert_presented_color(102, 120, 255, 0, 0);
+	sdl3_video_end_frame();
+	assert_presented_color(102, 120, 0, 0, 255);
+	high_resolution_active = false;
+	frame_generation++;
+	SDL_Delay(11);
+	sdl3_video_refresh();
+	assert_presented_color(101, 120, 255, 0, 0);
+	assert_presented_color(102, 120, 255, 0, 0);
+	check_video_aspect(960, 720, 0.0f, 0.0f);
+}
+
 static void check_fullscreen(bool expected)
 {
 	assert(SDL_SyncWindow(sdl3_video_window()));
@@ -371,6 +461,7 @@ int main(void)
 	test_keyboard();
 	test_timer();
 	test_video_and_mouse();
+	test_high_resolution_video();
 	test_fullscreen_shortcut();
 	test_joystick();
 	SDL_Event quit;

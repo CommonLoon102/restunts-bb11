@@ -149,7 +149,7 @@ void sprite_fill_rect(legacy_s16 x, legacy_s16 y, legacy_s16 width, legacy_s16 h
 		(legacy_u16)x);
 	legacy_u16 row_count = (legacy_u16)height;
 	legacy_u16 column_count = (legacy_u16)width;
-	legacy_u8 planar = video_pages_is_target(bitmap);
+	legacy_u8 planar = video_pages_uses_raster_hooks(bitmap);
 	for (legacy_u16 row = 0; row < row_count; row++) {
 		if (planar != 0) {
 			video_pages_fill_span(bitmap, offset, column_count, (legacy_u8)color);
@@ -332,7 +332,7 @@ void draw_filled_lines(legacy_s16 *x1arr, legacy_s16 *x2arr, legacy_u16 y, legac
 	}
 	legacy_u8 far *bitmap = (legacy_u8 far *)dos_memory_make_pointer(
 		dos_memory_pointer_segment(drawing_sprite.sprite_bitmapptr), 0);
-	legacy_u8 planar = video_pages_is_target(bitmap);
+	legacy_u8 planar = video_pages_uses_raster_hooks(bitmap);
 	legacy_u16 current_y = (legacy_u16)y;
 	legacy_u16 old_line_count;
 	do {
@@ -377,7 +377,7 @@ static void draw_pattern_lines(legacy_s16 *x1arr, legacy_s16 *x2arr, legacy_u16 
 	}
 	legacy_u8 far *bitmap = (legacy_u8 far *)dos_memory_make_pointer(
 		dos_memory_pointer_segment(drawing_sprite.sprite_bitmapptr), 0);
-	legacy_u8 planar = video_pages_is_target(bitmap);
+	legacy_u8 planar = video_pages_uses_raster_hooks(bitmap);
 	legacy_u16 line_entry =
 		LEGACY_U16_WRAP_ADD(shape2d_line_base(&drawing_sprite), (legacy_u16)((legacy_u16)y << 1));
 	legacy_u16 line_count = (legacy_u16)numlines;
@@ -544,7 +544,7 @@ void sprite_draw_line_from_setup(const legacy_u16 *line)
 			destination = LEGACY_U16_WRAP_ADD(
 				shape2d_get_line_offset(draw.sprite_segment, draw.y_high), draw.x_high);
 			remaining = draw.count;
-			if (video_pages_is_target(draw.bitmap) != 0) {
+			if (video_pages_uses_raster_hooks(draw.bitmap) != 0) {
 				video_pages_fill_span(draw.bitmap, destination, remaining, draw.color);
 				break;
 			}
@@ -590,8 +590,13 @@ static void sprite_draw_dissolve_row(legacy_u16 shape_segment, legacy_u8 far *bi
 		remaining = LEGACY_U16_WRAP_SUB(remaining, skip);
 		source = LEGACY_U16_WRAP_ADD(source, skip);
 		destination = LEGACY_U16_WRAP_ADD(destination, skip);
-		legacy_u8 far *source_ptr = (legacy_u8 far *)dos_memory_make_pointer(shape_segment, source);
+#ifdef RESTUNTS_SDL3
+		video_pages_copy_span(bitmap, destination, dos_memory_make_pointer(shape_segment, 0),
+							  source, 1);
+#else
+		legacy_u8 far *source_ptr = dos_memory_make_pointer(shape_segment, source);
 		video_pages_write_pixel(bitmap, destination, *source_ptr);
+#endif
 		legacy_u16 advance = advance_count[pattern];
 		source = LEGACY_U16_WRAP_ADD(source, advance);
 		destination = LEGACY_U16_WRAP_ADD(destination, advance);
@@ -648,7 +653,7 @@ void sprite_draw_palette_mapped(struct SHAPE2D far *shape)
 							shape2d_get_pos_x(shape));
 	legacy_u16 destination_advance = LEGACY_U16_WRAP_SUB(drawing_sprite.sprite_pitch, width);
 	legacy_u16 source = LEGACY_U16_WRAP_ADD(dos_memory_pointer_offset(shape), SHAPE2D_HEADER_SIZE);
-	legacy_u8 planar = video_pages_is_target(bitmap);
+	legacy_u8 planar = video_pages_uses_raster_hooks(bitmap);
 	legacy_u16 old_row_count;
 	do {
 		legacy_u16 column_count = width;
@@ -691,7 +696,7 @@ static void sprite_clear_shape_impl(struct SHAPE2D far *shape, legacy_u16 x, leg
 	legacy_u16 width = shape2d_get_word((legacy_u8 far *)shape);
 	legacy_u16 row_count =
 		shape2d_get_word((legacy_u8 far *)shape + offsetof(struct SHAPE2D, height));
-	legacy_u8 planar = video_pages_is_target(bitmap);
+	legacy_u8 planar = video_pages_uses_raster_hooks(bitmap);
 	legacy_u16 old_row_count;
 	do {
 		legacy_u8 far *line_entry_ptr = shape2d_line_pointer(&drawing_sprite, line_entry);
@@ -919,7 +924,7 @@ static void sprite_shape_to_1_impl(struct SHAPE2D far *shape, legacy_u16 x, lega
 		shape2d_get_line_offset(dos_memory_pointer_segment(&drawing_sprite), y), x);
 	legacy_u16 width = shape2d_get_width(shape);
 	legacy_u16 row_count = shape2d_get_height(shape);
-	legacy_u8 planar = video_pages_is_target(bitmap);
+	legacy_u8 planar = video_pages_uses_raster_hooks(bitmap);
 	legacy_u16 old_row_count;
 	do {
 		legacy_u32 pixel_count;
@@ -1086,8 +1091,8 @@ void sprite_copy_rect_shifted(legacy_s16 source_x, legacy_s16 source_y, legacy_s
 		dos_memory_pointer_segment(screen_sprite.sprite_bitmapptr), 0);
 	legacy_u8 far *destination_bitmap = (legacy_u8 far *)dos_memory_make_pointer(
 		dos_memory_pointer_segment(drawing_sprite.sprite_bitmapptr), 0);
-	legacy_u8 planar =
-		video_pages_is_target(source_bitmap) || video_pages_is_target(destination_bitmap);
+	legacy_u8 planar = video_pages_uses_raster_hooks(source_bitmap) ||
+					   video_pages_uses_raster_hooks(destination_bitmap);
 	legacy_u16 row_count = (legacy_u16)height;
 	legacy_u16 old_row_count;
 	do {

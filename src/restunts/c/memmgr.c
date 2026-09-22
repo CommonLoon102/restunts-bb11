@@ -2,6 +2,9 @@
 #include "memmgr.h"
 #include "platform.h"
 #include "fatal.h"
+#if defined(RESTUNTS_SDL3) && !defined(RESTUNTS_HEADLESS)
+#include "hires.h"
+#endif
 
 #define MMGR_RESOURCE_SENTINEL_INDEX 49
 
@@ -151,6 +154,10 @@ void far *mmgr_alloc_pages(const legacy_s8 *name, legacy_u16 paragraphs)
 		}
 	}
 
+#if defined(RESTUNTS_SDL3) && !defined(RESTUNTS_HEADLESS)
+	hires_forget_range(dos_memory_make_pointer(start_segment, 0),
+					   (legacy_u32)(paragraphs) << DOS_BYTES_PER_PARAGRAPH_SHIFT);
+#endif
 	return dos_memory_make_pointer(start_segment, 0);
 }
 
@@ -177,6 +184,11 @@ void mmgr_alloc_resmem(legacy_u16 end_segment)
 		mmgr_arena_end_segment = mmgr_cache_sentinel->resofs;
 		//fatal_error("%u\n", mmgr_arena_end_segment - mmgr_arena_start_segment);
 	}
+#if defined(RESTUNTS_SDL3) && !defined(RESTUNTS_HEADLESS)
+	hires_forget_range(dos_memory_make_pointer(mmgr_arena_start_segment, 0),
+					   (legacy_u32)(mmgr_arena_end_segment - mmgr_arena_start_segment)
+						   << DOS_BYTES_PER_PARAGRAPH_SHIFT);
+#endif
 	mmgr_first_cached_chunk = mmgr_cache_sentinel;
 	mmgr_last_live_chunk = mmgr_live_sentinel;
 
@@ -230,6 +242,11 @@ void far *mmgr_free(legacy_s8 far *ptr)
 
 	MMGR_FIND_ARENA_CHUNK(chunk, ptrseg);
 
+#if defined(RESTUNTS_SDL3) && !defined(RESTUNTS_HEADLESS)
+	hires_forget_range(dos_memory_make_pointer(chunk->resofs, 0),
+					   (legacy_u32)(chunk->ressize) << DOS_BYTES_PER_PARAGRAPH_SHIFT);
+#endif
+
 	ptrseg = 0;
 	chunk->resstate = MMGR_RESOURCE_STATE_FREE;
 	legacy_u16 free_paragraphs = mmgr_first_cached_chunk->resofs - mmgr_last_live_chunk->resofs -
@@ -271,6 +288,11 @@ void far *mmgr_free(legacy_s8 far *ptr)
 // asks either copier for that much at once.
 void mmgr_copy_paras(legacy_u16 srcseg, legacy_u16 destseg, legacy_s16 paras)
 {
+#if defined(RESTUNTS_SDL3) && !defined(RESTUNTS_HEADLESS)
+	hires_forget_range(dos_memory_make_pointer(destseg, 0), (legacy_u32)((legacy_u16)paras)
+																<< DOS_BYTES_PER_PARAGRAPH_SHIFT);
+#endif
+
 	legacy_u16 count; // number of words to copy
 
 	while (paras != 0) {
@@ -299,6 +321,11 @@ void mmgr_copy_paras(legacy_u16 srcseg, legacy_u16 destseg, legacy_s16 paras)
 // subtracts 4096 paragraphs and uses an unsigned no-borrow branch.
 void copy_paras_reverse(legacy_u16 srcseg, legacy_u16 destseg, legacy_s16 paras)
 {
+#if defined(RESTUNTS_SDL3) && !defined(RESTUNTS_HEADLESS)
+	hires_forget_range(dos_memory_make_pointer(destseg, 0), (legacy_u32)((legacy_u16)paras)
+																<< DOS_BYTES_PER_PARAGRAPH_SHIFT);
+#endif
+
 	srcseg += paras;
 	destseg += paras;
 
@@ -455,6 +482,11 @@ void mmgr_release(void far *ptr)
 
 	MMGR_FIND_ARENA_CHUNK(chunk, segment);
 
+#if defined(RESTUNTS_SDL3) && !defined(RESTUNTS_HEADLESS)
+	hires_forget_range(dos_memory_make_pointer(chunk->resofs, 0),
+					   (legacy_u32)(chunk->ressize) << DOS_BYTES_PER_PARAGRAPH_SHIFT);
+#endif
+
 	chunk->resstate = MMGR_RESOURCE_STATE_FREE;
 	if (chunk == mmgr_last_live_chunk) {
 		do {
@@ -496,6 +528,15 @@ legacy_u16 mmgr_resize_memory(legacy_u16 unused_offset, legacy_u16 segment, lega
 
 	MMGR_FIND_ARENA_CHUNK(chunk, segment);
 
+#if defined(RESTUNTS_SDL3) && !defined(RESTUNTS_HEADLESS)
+	if (paragraphs != chunk->ressize) {
+		legacy_u16 retained = paragraphs < chunk->ressize ? paragraphs : chunk->ressize;
+		legacy_u16 changed =
+			paragraphs < chunk->ressize ? chunk->ressize - paragraphs : paragraphs - chunk->ressize;
+		hires_forget_range(dos_memory_make_pointer(chunk->resofs + retained, 0),
+						   (legacy_u32)changed << DOS_BYTES_PER_PARAGRAPH_SHIFT);
+	}
+#endif
 	size_or_end_segment = paragraphs;
 	if (size_or_end_segment <= chunk->ressize) {
 		chunk->ressize = size_or_end_segment;
@@ -562,6 +603,10 @@ void far *mmgr_compact_live_chunk(legacy_s8 far *ptr)
 		for (legacy_s16 name_index = 0; name_index < MMGR_RESOURCE_NAME_LENGTH; name_index++) {
 			destination_chunk->resname[name_index] = source_chunk->resname[name_index];
 		}
+#if defined(RESTUNTS_SDL3) && !defined(RESTUNTS_HEADLESS)
+		hires_forget_range(dos_memory_make_pointer(source_chunk->resofs, 0),
+						   (legacy_u32)(source_chunk->ressize) << DOS_BYTES_PER_PARAGRAPH_SHIFT);
+#endif
 		mmgr_copy_paras(source_chunk->resofs, destination_segment, source_chunk->ressize);
 
 	} else {

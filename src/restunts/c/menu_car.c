@@ -463,6 +463,13 @@ static legacy_s16 car_menu_activate_selection(struct CAR_MENU_STATE *menu)
 
 static legacy_s16 car_menu_handle_input(struct CAR_MENU_STATE *menu, legacy_u16 input)
 {
+#ifdef RESTUNTS_SDL3
+	if (input == (legacy_u16)KEY_F12) {
+		handle_ingame_kb_shortcuts(KEY_F12);
+		menu->render_phase = CAR_RENDER_START_PHASE;
+		return 0;
+	}
+#endif
 	if (input == 0) {
 		return 0;
 	}

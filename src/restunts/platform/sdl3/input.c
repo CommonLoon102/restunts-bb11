@@ -3,6 +3,7 @@
 #include "../../c/keyboard.h"
 #include "../../c/game_input.h"
 #include "../../c/fatal.h"
+#include "../../c/hires.h"
 #include <string.h>
 
 #define KEY_BUFFER_CAPACITY 64U
@@ -412,6 +413,7 @@ void sdl3_platform_shutdown(void)
 	dos_audio_shutdown();
 	sdl3_input_shutdown();
 	sdl3_video_shutdown();
+	hires_shutdown();
 	SDL_Quit();
 }
 

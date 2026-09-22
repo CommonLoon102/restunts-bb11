@@ -80,6 +80,13 @@ it off restores the original draw distance, detail policy, and rendering limits.
 The enhancement is based on Alberto Marnetto's
 [SuperSight](https://marnetto.net/2025/02/20/broderbund-stunts-1).
 
+In SDL3 builds (Windows, Linux, and 32-bit DOS), SuperSight also renders 3D
+at **1280x800**, four times the original width and height. Player and opponent
+car-selection previews use the same higher resolution; F12 also works in those
+screens. Menus, dashboard artwork, and replay controls retain their original
+pixel detail and size. Switching SuperSight off restores 320x200 rendering.
+The Open Watcom 16-bit DOS version retains its existing renderer.
+
 Press **F11** to toggle a frame-rate counter in the top-left corner. It measures
 presented frames over approximately one second and rounds down, for example
 `20 FPS`. Values below 20 are red; values of 20 or higher are green.

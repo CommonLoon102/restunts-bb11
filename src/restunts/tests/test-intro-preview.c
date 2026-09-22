@@ -17,6 +17,9 @@
 #include "../c/game_input.h"
 #include "../c/video_frame.h"
 #include "../c/shape3d.h"
+#ifdef RESTUNTS_SDL3
+#include "../c/keyboard.h"
+#endif
 
 #undef strcmp
 
@@ -29,6 +32,22 @@ static legacy_u32 trace_hash;
 static unsigned queued_count, flush_count, pixel_count;
 static struct SHAPE2D sky_images[4];
 static legacy_u8 elements[900], terrain[900];
+
+#ifdef RESTUNTS_SDL3
+legacy_u8 supersight_enabled;
+static unsigned scripted_input, shortcut_count, opponent_updates;
+static struct RECTANGLE target_clip;
+static struct RECTANGLE cleared_rects[8];
+static legacy_u8 rendered_modes[8];
+
+legacy_s16 handle_ingame_kb_shortcuts(legacy_s16 key)
+{
+	assert(key == KEY_F12);
+	supersight_enabled ^= 1U;
+	shortcut_count++;
+	return 1;
+}
+#endif
 
 static void record_word(legacy_u16 value)
 {
@@ -79,12 +98,23 @@ void sprite_set_target_clip_bounds(legacy_u16 left, legacy_u16 right, legacy_u16
 	record_word(right);
 	record_word(top);
 	record_word(bottom);
+#ifdef RESTUNTS_SDL3
+	target_clip.left = left;
+	target_clip.right = right;
+	target_clip.top = top;
+	target_clip.bottom = bottom;
+#endif
 }
 
 void sprite_clear_target(legacy_u8 color)
 {
 	record_word(2);
 	record_word(color);
+#ifdef RESTUNTS_SDL3
+	if (scripted_input == 1 && flush_count < 8) {
+		cleared_rects[flush_count] = target_clip;
+	}
+#endif
 }
 
 void sprite_copy_image_at(struct SHAPE2D far *shape, legacy_s16 x, legacy_s16 y)
@@ -150,6 +180,11 @@ legacy_u16 shape3d_transform_and_queue(struct TRANSFORMEDSHAPE3D *shape)
 void shape3d_render_queued_primitives(void)
 {
 	record_word(7);
+#ifdef RESTUNTS_SDL3
+	if (scripted_input == 1 && flush_count < 8) {
+		rendered_modes[flush_count] = supersight_enabled;
+	}
+#endif
 	flush_count++;
 }
 
@@ -379,10 +414,20 @@ legacy_u32 timer_get_delta(void)
 {
 	timer_reads++;
 	record_word(32);
+#ifdef RESTUNTS_SDL3
+	/* Pause simulation on the first poll after each display toggle. The
+	 * renderer still has to refresh immediately at the new resolution. */
+	if (scripted_input == 1 && (timer_reads == 3 || timer_reads == 5)) {
+		return 0;
+	}
+#endif
 	return 2;
 }
 void update_opponent(void)
 {
+#ifdef RESTUNTS_SDL3
+	opponent_updates++;
+#endif
 	record_word(33);
 	state.opponentstate.car_position.lx += 128;
 	state.opponentstate.car_position.lz += 64;
@@ -393,6 +438,17 @@ legacy_s16 input_do_checking(legacy_s16 delta)
 	record_word(34);
 	record_word(delta);
 	input_polls++;
+#ifdef RESTUNTS_SDL3
+	if (scripted_input != 0) {
+		if (input_polls == 1 || (scripted_input == 1 && input_polls == 3)) {
+			return KEY_F12;
+		}
+		if (scripted_input == 1 && input_polls >= 5) {
+			return KEY_ESCAPE;
+		}
+		return 0;
+	}
+#endif
 	return cancel_after != 0 && input_polls >= cancel_after;
 }
 void sprite_select_mcga_backbuffer(void)
@@ -476,6 +532,79 @@ static void lifecycle_case(unsigned scenario)
 	record_word(intro_colorvalue);
 }
 
+#ifdef RESTUNTS_SDL3
+static void assert_full_clear(unsigned index)
+{
+	assert(cleared_rects[index].left == intro_cliprect.left);
+	assert(cleared_rects[index].right == intro_cliprect.right);
+	assert(cleared_rects[index].top == intro_cliprect.top);
+	assert(cleared_rects[index].bottom == intro_cliprect.bottom);
+}
+
+static void display_toggle_case(unsigned scenario)
+{
+	reset_projection();
+	memset(&state, 0, sizeof(state));
+	memset(cleared_rects, 0, sizeof(cleared_rects));
+	memset(rendered_modes, 0, sizeof(rendered_modes));
+	framespersec = 20;
+	timer_ticks_per_frame = 1;
+	intro_elapsed_ticks = 0;
+	intro_colorvalue = 1;
+	intro_palette_color_count = 16;
+	video_uses_page_flipping = scenario & 1;
+	slow_video_mgmt = (scenario >> 1) & 1;
+	legacy_u8 initial_mode = (scenario >> 2) & 1;
+	supersight_enabled = initial_mode;
+	copy_backbuffer = 0;
+	cancel_after = 0;
+	input_polls = timer_reads = shortcut_count = opponent_updates = 0;
+	random_value = 1;
+	scripted_input = 1;
+	assert(setup_intro() == 1);
+	assert(input_polls == 5);
+	assert(shortcut_count == 2);
+	assert(supersight_enabled == initial_mode);
+	assert(opponent_updates == 5);
+	assert(flush_count == 5);
+	assert(rendered_modes[0] == initial_mode);
+	assert(rendered_modes[1] == !initial_mode);
+	assert(rendered_modes[2] == !initial_mode);
+	assert(rendered_modes[3] == initial_mode);
+	assert(rendered_modes[4] == initial_mode);
+	/* The first frame and each toggle must clear old 3D pixels throughout
+	 * the viewport. Page flipping must also clear its other stale page. */
+	assert_full_clear(0);
+	assert_full_clear(1);
+	assert_full_clear(3);
+	if (video_uses_page_flipping != 0) {
+		assert_full_clear(2);
+		assert_full_clear(4);
+	}
+	scripted_input = 0;
+}
+
+static void display_toggle_completion_case(void)
+{
+	reset_projection();
+	framespersec = 20;
+	timer_ticks_per_frame = 1;
+	intro_elapsed_ticks = 0;
+	intro_colorvalue = 1;
+	intro_palette_color_count = 16;
+	slow_video_mgmt = video_uses_page_flipping = 0;
+	supersight_enabled = 0;
+	input_polls = timer_reads = shortcut_count = 0;
+	copy_backbuffer = cancel_after = 0;
+	scripted_input = 2;
+	assert(setup_intro() == 0);
+	assert(input_polls > 1);
+	assert(shortcut_count == 1);
+	assert(supersight_enabled == 1);
+	scripted_input = 0;
+}
+#endif
+
 int main(void)
 {
 	trace_hash = 2166136261UL;
@@ -505,6 +634,12 @@ int main(void)
 	assert(preview_hash == 0x8ae71f07UL);
 	/* Lifecycle now evaluates each RNG and timer operation exactly once. */
 	assert(lifecycle_hash == 0xa3183e31UL);
+#endif
+#ifdef RESTUNTS_SDL3
+	for (unsigned scenario = 0; scenario < 8; scenario++) {
+		display_toggle_case(scenario);
+	}
+	display_toggle_completion_case();
 #endif
 	return 0;
 }

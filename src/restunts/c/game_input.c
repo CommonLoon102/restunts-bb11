@@ -12,6 +12,9 @@
 #include "externs.h"
 #include "ghost.h"
 #include "frame_internal.h"
+#ifdef RESTUNTS_SDL3
+#include "hires.h"
+#endif
 
 #define INPUT_DIRECTION_COUNT 16U
 #define INPUT_KEY_COUNT 10U
@@ -232,6 +235,9 @@ static legacy_s16 input_handle_display_shortcut(legacy_s16 key)
 
 		case KEY_F12:
 			supersight_enabled ^= 1U;
+#ifdef RESTUNTS_SDL3
+			hires_set_enabled(supersight_enabled);
+#endif
 			frame_supersight_reset();
 			full_redraw_frames_remaining = (legacy_s8)video_page_count;
 			return 1;
