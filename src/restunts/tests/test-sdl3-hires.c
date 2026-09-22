@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <float.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -269,6 +270,117 @@ static void test_lifetime(struct TEST_SURFACE *screen, struct TEST_SURFACE *wind
 	assert_block(screen, 30, 40, 3);
 }
 
+static void depth_pixel(int x, int y, double inverse_z, legacy_u16 family, int attached,
+						legacy_u8 color)
+{
+	if (hires_depth_test(x, y, inverse_z, family, attached)) {
+		hires_pixel(x, y, color);
+	}
+}
+
+static void test_crossing_depths(struct TEST_SURFACE *screen)
+{
+	for (unsigned int reverse = 0; reverse < 2; reverse++) {
+		assert(hires_begin(&screen->sprite));
+		hires_depth_begin(100, 121, 100, 101);
+		for (unsigned int pass = 0; pass < 2; pass++) {
+			unsigned int surface = pass ^ reverse;
+			for (int x = 100; x < 121; x++) {
+				double depth = (surface == 0 ? x - 90 : 130 - x) / 1000.0;
+				depth_pixel(x, 100, depth, (legacy_u16)(surface + 1), 0, (legacy_u8)(surface + 40));
+			}
+		}
+		hires_end();
+		const legacy_u8 *pixels = get_framebuffer(screen);
+		for (int x = 100; x < 121; x++) {
+			if (x != 110) {
+				assert(pixels[100 * TEST_HIRES_WIDTH + x] == (x < 110 ? 41 : 40));
+			}
+		}
+		/* At equal depth the later submitted surface keeps painter order. */
+		assert(pixels[100 * TEST_HIRES_WIDTH + 110] == (reverse ? 40 : 41));
+	}
+}
+
+static void test_depth_overlay_families(struct TEST_SURFACE *screen)
+{
+	assert(hires_begin(&screen->sprite));
+	hires_depth_begin(200, 203, 200, 201);
+	depth_pixel(200, 200, 0.02, 1, 0, 50);
+	depth_pixel(200, 200, 0.01, 1, 1, 51);
+	depth_pixel(200, 200, 0.015, 2, 0, 52);
+	/* The decal is visible and retains the parent's nearer occlusion depth. */
+	assert(get_framebuffer(screen)[200 * TEST_HIRES_WIDTH + 200] == 51);
+
+	depth_pixel(201, 200, 0.02, 1, 0, 50);
+	depth_pixel(201, 200, 0.03, 2, 0, 52);
+	depth_pixel(201, 200, 0.01, 1, 1, 51);
+	assert(get_framebuffer(screen)[200 * TEST_HIRES_WIDTH + 201] == 52);
+
+	assert(hires_depth_test(202, 200, 0.02, 1, 0));
+	assert(hires_depth_test(202, 200, 0.02 * (1 - FLT_EPSILON), 2, 0));
+	assert(!hires_depth_test(202, 200, 0.02 * (1 - 16 * FLT_EPSILON), 3, 0));
+	assert(!hires_depth_test(202, 200, 0, 1, 0));
+	assert(!hires_depth_test(202, 200, -1, 1, 0));
+	assert(!hires_depth_test(202, 200, 1, 0, 0));
+	hires_end();
+}
+
+static void test_depth_shape_bounds(struct TEST_SURFACE *screen)
+{
+	struct SPRITE clipped = screen->sprite;
+	clipped.sprite_raster_left = 50;
+	clipped.sprite_raster_right = 51;
+	clipped.sprite_top = 60;
+	clipped.sprite_bottom = 61;
+	assert(hires_begin(&clipped));
+	hires_depth_begin(-100, TEST_HIRES_WIDTH + 100, -100, TEST_HIRES_HEIGHT + 100);
+	assert(!hires_depth_test(199, 240, 1, 1, 0));
+	assert(!hires_depth_test(204, 240, 1, 1, 0));
+	assert(!hires_depth_test(200, 239, 1, 1, 0));
+	assert(!hires_depth_test(200, 244, 1, 1, 0));
+	assert(hires_depth_test(200, 240, 1, 1, 0));
+	assert(hires_depth_test(201, 241, 1, 1, 0));
+
+	/* A new shape starts its own depth order while leaving other bounds alone. */
+	hires_depth_begin(201, 202, 241, 242);
+	assert(hires_depth_test(201, 241, 0.001, 2, 0));
+	assert(!hires_depth_test(200, 240, 2, 2, 0));
+	hires_depth_begin(200, 201, 240, 241);
+	assert(hires_depth_test(200, 240, 0.001, 2, 0));
+	hires_depth_begin(205, 206, 240, 241);
+	assert(!hires_depth_test(200, 240, 2, 2, 0));
+	assert(!hires_depth_test(205, 240, 2, 2, 0));
+	hires_end();
+}
+
+static void test_depth_lifetime(struct TEST_SURFACE *screen)
+{
+	hires_depth_begin(0, TEST_HIRES_WIDTH, 0, TEST_HIRES_HEIGHT);
+	assert(!hires_depth_test(0, 0, 1, 1, 0));
+	assert(hires_begin(&screen->sprite));
+	assert(!hires_depth_test(0, 0, 1, 1, 0));
+	hires_depth_begin(0, 1, 0, 1);
+	assert(hires_depth_test(0, 0, 1, 1, 0));
+	hires_end();
+	assert(!hires_depth_test(0, 0, 1, 1, 0));
+	assert(hires_begin(&screen->sprite));
+	assert(!hires_depth_test(0, 0, 1, 1, 0));
+	hires_depth_begin(0, 1, 0, 1);
+	assert(hires_depth_test(0, 0, 0.001, 2, 0));
+	hires_set_enabled(0);
+	assert(!hires_depth_test(0, 0, 1, 1, 0));
+	hires_depth_begin(0, 1, 0, 1);
+	assert(!hires_begin(&screen->sprite));
+	hires_set_enabled(1);
+	assert(hires_begin(&screen->sprite));
+	assert(!hires_depth_test(0, 0, 1, 1, 0));
+	hires_depth_begin(0, 1, 0, 1);
+	assert(hires_depth_test(0, 0, 0.001, 2, 0));
+	hires_shutdown();
+	assert(!hires_depth_test(0, 0, 1, 1, 0));
+}
+
 int main(void)
 {
 	struct TEST_SURFACE screen;
@@ -285,6 +397,10 @@ int main(void)
 	test_clipping(&screen);
 	test_resource_ranges(&screen, &window);
 	test_lifetime(&screen, &window);
+	test_crossing_depths(&screen);
+	test_depth_overlay_families(&screen);
+	test_depth_shape_bounds(&screen);
+	test_depth_lifetime(&screen);
 	hires_shutdown();
 	puts("SDL3 high-resolution composition tests passed.");
 	return 0;

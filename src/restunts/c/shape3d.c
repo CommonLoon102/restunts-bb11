@@ -301,6 +301,17 @@ static void shape3d_cache_vertex(const struct SHAPE3D *shape,
 	}
 }
 
+static legacy_u8 shape3d_vertex_rect_flags(struct SHAPE3D_TRANSFORM_CONTEXT *context,
+										   legacy_u16 index)
+{
+#if defined(RESTUNTS_SDL3)
+	if (hires_enabled()) {
+		return shape3d_hires_clip_flags(&context->view_vertices[index]);
+	}
+#endif
+	return (legacy_u8)rect_compare_point(&context->projected_vertices[index]);
+}
+
 static legacy_u16 shape3d_bounds_are_clipped(struct TRANSFORMEDSHAPE3D *instance,
 											 struct SHAPE3D_TRANSFORM_CONTEXT *context)
 {
@@ -332,7 +343,7 @@ static legacy_u16 shape3d_bounds_are_clipped(struct TRANSFORMEDSHAPE3D *instance
 		}
 		all_vertices_behind = 0;
 		if (common_clip_flags != 0) {
-			common_clip_flags &= rect_compare_point(polyvertpointptrtab[i]);
+			common_clip_flags &= shape3d_vertex_rect_flags(context, i);
 		}
 		if (common_clip_flags == 0) {
 			break;
@@ -362,7 +373,7 @@ static legacy_u16 shape3d_prepare_primitive_vertices(const struct SHAPE3D *shape
 		if (context->vertex_clip_flags[vertex_index] == 0) {
 			all_vertices_behind = 0;
 			if (common_clip_flags != 0) {
-				common_clip_flags &= rect_compare_point(polyvertpointptrtab[vertex_count]);
+				common_clip_flags &= shape3d_vertex_rect_flags(context, vertex_index);
 			}
 		} else if (context->vertex_clip_flags[vertex_index] == 1) {
 			*any_vertex_behind = 1;
@@ -471,13 +482,21 @@ static legacy_u16 shape3d_prepare_polygon(struct SHAPE3D_TRANSFORM_CONTEXT *cont
 										  legacy_s32 *depth_sum)
 {
 	legacy_u8 common_clip_flags = shape3d_emit_polygon(context, any_vertex_behind, depth_sum);
-	if (transshapenumvertscopy == 0 || common_clip_flags != 0) {
-		return 0;
-	}
-	if ((primitive_flags & SHAPE3D_PRIMITIVE_ALWAYS_VISIBLE_FLAG) == 0 &&
-		((legacy_u32)context->front_facing_mask & LEGACY_READ_U32_LE(front_facing_masks)) == 0UL &&
-		polyinfo_is_facing_camera(transshapepolyinfo) == 0) {
-		return 0;
+	legacy_u16 cull_backface =
+		(primitive_flags & SHAPE3D_PRIMITIVE_ALWAYS_VISIBLE_FLAG) == 0 &&
+		((legacy_u32)context->front_facing_mask & LEGACY_READ_U32_LE(front_facing_masks)) == 0UL;
+#if defined(RESTUNTS_SDL3)
+	if (hires_enabled()) {
+		if (!shape3d_hires_polygon_visible(polyinfonumpolys, cull_backface)) {
+			return 0;
+		}
+	} else
+#endif
+	{
+		if (transshapenumvertscopy == 0 || common_clip_flags != 0 ||
+			(cull_backface != 0 && polyinfo_is_facing_camera(transshapepolyinfo) == 0)) {
+			return 0;
+		}
 	}
 	if ((transshapeflags & SHAPE3D_USE_BOUNDING_RECT_FLAG) != 0) {
 		shape3d_adjust_polygon_bounds();
@@ -538,7 +557,13 @@ static legacy_u16 shape3d_prepare_wheel(struct SHAPE3D_TRANSFORM_CONTEXT *contex
 		points[i] = *polyvertpointptrtab[i];
 		polyinfo_write_point(transshapepolyinfo, i, &points[i]);
 	}
-	if (is_facing_camera(points) != 0) {
+	legacy_s16 first_face = is_facing_camera(points);
+#if defined(RESTUNTS_SDL3)
+	if (hires_enabled()) {
+		first_face = shape3d_hires_wheel_face(polyinfonumpolys) == 0;
+	}
+#endif
+	if (first_face != 0) {
 		*depth_sum =
 			LEGACY_S32_SHL((legacy_s32)context->view_vertices[transshapeprimitives[0]].z, 2U);
 	} else {
@@ -695,6 +720,10 @@ legacy_u16 shape3d_transform_and_queue(struct TRANSFORMEDSHAPE3D *instance)
 		return (legacy_u16)-1;
 	}
 	transshapeprimitives = instance->shapeptr->shape3d_primitives;
+#if defined(RESTUNTS_SDL3)
+	shape3d_hires_begin_shape(polyinfonumpolys,
+							  (transshapeflags & SHAPE3D_NO_DEPTH_SORT_FLAG) == 0);
+#endif
 
 	legacy_s32 depth_sum;
 	legacy_u16 queued_primitive_count = 0;
@@ -715,16 +744,15 @@ legacy_u16 shape3d_transform_and_queue(struct TRANSFORMEDSHAPE3D *instance)
 			if (shape3d_prepare_primitive_vertices(instance->shapeptr, &context,
 												   &any_vertex_behind) != 0) {
 #if defined(RESTUNTS_SDL3)
-				legacy_u16 source_vertex_count = transshapenumvertscopy;
+				/* Visibility must use the same fractional projection as rasterization. */
+				shape3d_hires_queue(polyinfonumpolys, primitive_type, transshapenumvertscopy,
+									transshapeprimitives, context.view_vertices, primitive_flags);
 #endif
 				primitive_visible =
 					shape3d_prepare_primitive(&context, primitive_type, any_vertex_behind,
 											  primitive_flags, front_facing_masks, &depth_sum);
 #if defined(RESTUNTS_SDL3)
 				if (primitive_visible != 0) {
-					shape3d_hires_queue(polyinfonumpolys, primitive_type, source_vertex_count,
-										transshapeprimitives, context.view_vertices,
-										context.projected_vertices);
 					if ((transshapeflags & SHAPE3D_USE_BOUNDING_RECT_FLAG) != 0) {
 						shape3d_hires_update_bounds(polyinfonumpolys, primitive_type,
 													transshaperectptr);
