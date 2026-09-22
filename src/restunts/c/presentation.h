@@ -3,7 +3,7 @@
 
 #include "legacy.h"
 
-#define PRESENTATION_RATE 60U
+#define PRESENTATION_RATE 40U
 #define PRESENTATION_SECOND_NS 1000000000ULL
 
 /* This clock never polls devices or dispatches game timer callbacks. */

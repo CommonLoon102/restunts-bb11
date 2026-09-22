@@ -22,10 +22,34 @@ static legacy_u64 scheduled_time;
 static legacy_u32 scheduled_physics;
 static legacy_u32 scheduled_ghosts;
 static legacy_u32 scheduled_predictions;
+static legacy_u32 scheduled_phantom_steps;
 static legacy_u32 scheduled_farthest_prediction;
 static legacy_u8 scheduled_ghost_active;
 static struct CARSTATE scheduled_ghost;
 static struct GHOST_CAMERA_STATE scheduled_ghost_camera;
+static legacy_s8 scheduled_input[256];
+
+void phantom_physics_reset(struct PHANTOM_PHYSICS *phantom, const struct GAMESTATE *keyframe,
+						   legacy_s8 input_flags)
+{
+	phantom->state = *keyframe;
+	phantom->elapsed20 = 0;
+	phantom->input_flags = input_flags;
+}
+
+void phantom_physics_advance(struct PHANTOM_PHYSICS *phantom, legacy_u32 elapsed20)
+{
+	assert(supersight_enabled != 0);
+	assert(phantom->state.game_frame == state.game_frame);
+	assert(elapsed20 >= phantom->elapsed20);
+	scheduled_phantom_steps++;
+	/* A constant-speed branch isolates scheduling from the real contact tests. */
+	phantom->state.playerstate.car_position.lx =
+		state.playerstate.car_position.lx +
+		(legacy_s32)((legacy_u64)elapsed20 * 60U * framespersec /
+					 (PHANTOM_PHYSICS_ONE * GAME_FRAME_RATE_NORMAL));
+	phantom->elapsed20 = elapsed20;
+}
 
 legacy_u64 presentation_now(void)
 {
@@ -439,7 +463,7 @@ static void prepare_presentation_test(legacy_u16 rate, legacy_u16 mode)
 	scheduled_mode = 1;
 	scheduled_toggle = mode == 2;
 	scheduled_time = 0;
-	scheduled_physics = scheduled_ghosts = scheduled_predictions = 0;
+	scheduled_physics = scheduled_ghosts = scheduled_predictions = scheduled_phantom_steps = 0;
 	scheduled_farthest_prediction = 0;
 	scripted_rewind = 0;
 	supersight_enabled = mode == 1;
@@ -479,7 +503,11 @@ static void test_presentation_rate(void)
 			} else {
 				assert(memcmp(&baseline, &state, sizeof(state)) == 0);
 				assert(scheduled_predictions != 0);
-				assert(mode == 1 ? frames == 61U : frames > rate + 1U && frames < 61U);
+				assert(mode == 1 ? frames == 41U : frames > rate + 1U && frames < 41U);
+				if (mode == 1) {
+					/* No prediction is available until the first keyframe advances. */
+					assert(scheduled_phantom_steps == (rate - 1U) * (40U / rate - 1U));
+				}
 			}
 		}
 	}
@@ -503,10 +531,14 @@ static void test_replay_presentation_rate(void)
 			assert(scheduled_ghosts == control_samples + 1U);
 			assert((legacy_u16)state.game_frame == physics_steps);
 			assert(state.playerstate.car_position.lx == physics_steps * 60L);
-			assert(frames == 61U);
-			/* Fast replay predicts the full two-tick interval without freezing
-			 * halfway to the next authoritative controller sample. */
-			assert(scheduled_farthest_prediction > (speed == 2 ? 60U : 30U));
+			assert(frames == 41U);
+			/* Predict every presentation deadline before the next controller sample.
+			 * Fast replay spans two physics ticks per controller sample. */
+			legacy_u16 presentations_per_sample = 40U / control_samples;
+			legacy_u16 distance_per_sample = speed == 2 ? 120U : 60U;
+			assert(scheduled_farthest_prediction == distance_per_sample *
+														(presentations_per_sample - 1U) /
+														presentations_per_sample);
 		}
 	}
 }
@@ -562,6 +594,9 @@ static void test_ghost_prediction_rate(void)
 
 int main(void)
 {
+#ifdef RESTUNTS_SDL3
+	replay_input_buffer = scheduled_input;
+#endif
 	struct RACE_VIEWPORT_CACHE cache;
 	for (scenario = 0; scenario < 192; scenario++) {
 		trace(scenario);

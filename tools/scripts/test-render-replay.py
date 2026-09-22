@@ -1,11 +1,16 @@
 #!/usr/bin/env python3
-"""Compare every serialized replay tick across renderer toggle histories."""
+"""Compare every replay tick and RNG seed across renderer toggle histories."""
 
 import os
 from pathlib import Path
 import subprocess
 import sys
 import tempfile
+
+
+GAMESTATE_SIZE = 1120
+RANDOM_SEED_SIZE = 6
+RECORD_SIZE = GAMESTATE_SIZE + RANDOM_SEED_SIZE
 
 
 def main():
@@ -15,33 +20,44 @@ def main():
     data_directory = data_directory.resolve()
     environment = dict(os.environ, SDL_VIDEODRIVER="dummy", SDL_AUDIODRIVER="dummy",
                        RESTUNTS_AUDIO_TRACE="")
-    # The normal intro replay runs at 10 Hz; the short crash replay exercises
-    # 20 Hz, collisions and debris. The opponent fixture covers both targets.
-    fixtures = [("DEFAULT", 240)]
-    for replay, limit in [("DEFCRSH", 0), ("0A0A", 240)]:
-        if (data_directory / f"{replay}.RPL").exists():
-            fixtures.append((replay, limit))
+    available = {path.stem.upper(): path.stem for path in data_directory.iterdir()
+                 if path.suffix.upper() == ".RPL"}
+    # Cover 10 Hz, 20 Hz collisions/debris, both cars, and the hard landing at
+    # 16.00-16.50 seconds, plus the loop exit after 40 seconds in SHAKING.
+    # HARDLAND's old second phantom at 16.30s was below ground.
+    fixtures = [(available["DEFAULT"], 240, 0, 0)]
+    for replay, limit, first, last in [("DEFCRSH", 0, 0, 0), ("0A0A", 240, 0, 0),
+                                      ("HARDLAND", 0, 320, 330), ("SHAKING", 0, 0, 0)]:
+        if replay in available:
+            fixtures.append((available[replay], limit, first, last))
     if full_replays:
-        fixtures = [(replay, 0) for replay, _ in fixtures]
+        fixtures = [(replay, 0, first, last) for replay, _, first, last in fixtures]
     with tempfile.TemporaryDirectory(prefix="restunts-render-replay-") as directory:
-        for replay, limit in fixtures:
+        for replay, limit, first, last in fixtures:
+            settling = ("800", "900") if replay.upper() == "SHAKING" else ("0", "0")
             baseline = None
             for mode in range(3):
                 output = Path(directory) / f"{replay}-{mode}.bin"
                 subprocess.run([str(executable), "--data-dir", str(data_directory),
-                                replay, str(output), str(mode), str(limit)],
-                               env=environment, check=True, timeout=300 if full_replays else 120)
+                                replay, str(output), str(mode), str(limit),
+                                str(first), str(last), *settling],
+                               env=environment, check=True,
+                               timeout=300 if full_replays else 120)
                 actual = output.read_bytes()
-                assert actual and len(actual) % 1120 == 0
+                assert actual and len(actual) % RECORD_SIZE == 0
                 if baseline is None:
                     baseline = actual
                 elif actual != baseline:
                     offset = next((index for index, pair in enumerate(zip(actual, baseline))
                                    if pair[0] != pair[1]), min(len(actual), len(baseline)))
-                    raise AssertionError(f"{replay}, mode {mode}: gamestate differs at "
-                                         f"tick {offset // 1120}, byte {offset % 1120}")
-            print(f"{replay}: {len(baseline) // 1120} identical gamestates with "
-                  "F12 off, on and repeatedly toggled", flush=True)
+                    field_offset = offset % RECORD_SIZE
+                    field = "gamestate" if field_offset < GAMESTATE_SIZE else "RNG seed"
+                    if field == "RNG seed":
+                        field_offset -= GAMESTATE_SIZE
+                    raise AssertionError(f"{replay}, mode {mode}: {field} differs at "
+                                         f"tick {offset // RECORD_SIZE}, byte {field_offset}")
+            print(f"{replay}: {len(baseline) // RECORD_SIZE} identical gamestates and RNG seeds "
+                  "with F12 off, on and repeatedly toggled", flush=True)
 
 
 if __name__ == "__main__":

@@ -585,6 +585,125 @@ static void test_ghost_camera_modes(void)
 	followOpponentFlag = 0;
 }
 
+/* Speculative collision or water flags must not start irreversible effects.
+ * Confirmed events must still be visible on every intervening presentation. */
+static void test_prediction_uses_authoritative_events(void)
+{
+	struct FRAME_LOOKAHEAD_TILE lookahead = {11, 9, 0};
+	struct FRAME_TILE_SELECTION tiles = {0};
+	struct FRAME_CAMERA camera = {0};
+	struct FRAME_TILE tile = {0};
+	struct RECTANGLE cliprect = {0, 320, 0, 200};
+	tiles.lookahead = &lookahead;
+	tiles.count = 1;
+	tile.east = tile.last_east = 11;
+	tile.south = tile.last_south = 9;
+	tile.detail = 1;
+	memset(&simd_player, 0, sizeof(simd_player));
+	memset(&simd_opponent, 0, sizeof(simd_opponent));
+	memset(&ghost_simd_fixture, 0, sizeof(ghost_simd_fixture));
+	trkObjectList[FRAME_PLAYER_SORT_ID].ss_loShapePtr = &game3dshapes[PLAYER_CAR_LOW_SHAPE];
+	trkObjectList[FRAME_OPPONENT_SORT_ID].ss_loShapePtr = &game3dshapes[OPPONENT_CAR_LOW_SHAPE];
+	slow_video_mgmt_copy = 0;
+	for (legacy_s16 viewed = 0; viewed < 3; viewed++) {
+		for (legacy_s16 real_event = CRASH_EVENT_NONE; real_event <= CRASH_EVENT_WATER;
+			 real_event++) {
+			for (legacy_s16 phantom_event = CRASH_EVENT_NONE; phantom_event <= CRASH_EVENT_WATER;
+				 phantom_event++) {
+				memset(&state, 0, sizeof(state));
+				memset(&ghost_fixture, 0, sizeof(ghost_fixture));
+				state.game_frame = 2000;
+				state.game_pEndFrame = 1980;
+				state.game_oEndFrame = 1960;
+				ghost_camera_fixture.frame = 120;
+				ghost_camera_fixture.crash_frame = 100;
+				gameconfig.game_opponenttype = viewed == 1;
+				ghost_fixture_active = viewed == 2;
+				followOpponentFlag = viewed != 0;
+				legacy_s16 car_index = viewed == 0 ? PLAYER_CAR_INDEX : OPPONENT_CAR_INDEX;
+				struct CARSTATE *real_car = viewed == 0	  ? &state.playerstate
+											: viewed == 1 ? &state.opponentstate
+														  : &ghost_fixture;
+				real_car->car_crashBmpFlag = real_event;
+				real_car->car_position.lx = 10L * 65536L;
+				real_car->car_position.lz = 20L * 65536L;
+				struct GAMESTATE real_state = state;
+				struct CARSTATE real_ghost = ghost_fixture;
+				struct GHOST_CAMERA_STATE real_ghost_camera = ghost_camera_fixture;
+				struct GAMESTATE phantom = state;
+				struct CARSTATE phantom_ghost = ghost_fixture;
+				struct GHOST_CAMERA_STATE phantom_ghost_camera = ghost_camera_fixture;
+				phantom.game_pEndFrame = phantom.game_oEndFrame = 1999;
+				phantom_ghost_camera.frame = 999;
+				phantom_ghost_camera.crash_frame = 119;
+				struct CARSTATE *phantom_car = viewed == 0	 ? &phantom.playerstate
+											   : viewed == 1 ? &phantom.opponentstate
+															 : &phantom_ghost;
+				phantom_car->car_crashBmpFlag = phantom_event;
+				phantom_car->car_position.lx = 11L * 65536L;
+				struct GAMESTATE presentation = phantom;
+				struct CARSTATE presentation_ghost = phantom_ghost;
+				struct GHOST_CAMERA_STATE presentation_ghost_camera = phantom_ghost_camera;
+				frame_preserve_authoritative_events(&presentation, &presentation_ghost,
+													&presentation_ghost_camera);
+				frame_state = &presentation;
+				frame_ghost = ghost_fixture_active != 0 ? &presentation_ghost : 0;
+				frame_ghost_camera = ghost_fixture_active != 0 ? &presentation_ghost_camera : 0;
+				frame_uses_snapshot = 1;
+
+				cameramode = CAMERA_MODE_COCKPIT;
+				cockpit_effect_kind = cockpit_effect_frame = -1;
+				frame_draw_cockpit_effects(&cliprect);
+				if (real_event == CRASH_EVENT_NONE) {
+					assert(cockpit_effect_kind == -1 && cockpit_effect_frame == -1);
+				} else {
+					assert(cockpit_effect_kind == real_event);
+					assert(cockpit_effect_frame == (viewed == 1 ? 40 : 20));
+				}
+
+				cameramode = CAMERA_MODE_FOLLOW;
+				struct FRAME_CAR_RENDER cars[2] = {{0}};
+				reset_shapes();
+				frame_place_cars(&tiles, cars);
+				if (real_event == CRASH_EVENT_WATER) {
+					assert(cars[car_index].east == -1);
+				} else {
+					assert(cars[car_index].east == 11 && cars[car_index].south == 9);
+					cars[1 - car_index].east = -1;
+					frame_add_tile_cars(&tile, &camera, cars, 0);
+					assert(transformedshape_counter == 1);
+					assert(currenttransshape[0].pos.x ==
+						   position_to_word(phantom_car->car_position.lx));
+					legacy_s8 expected_flags = real_event == CRASH_EVENT_COLLISION
+												   ? FRAME_TRANSFORM_FLAGS_CLIPPED
+												   : FRAME_TRANSFORM_FLAGS_DEFAULT;
+					if (viewed == 2) {
+						expected_flags |= SHAPE3D_GHOST_FLAG;
+					}
+					assert(currenttransshape[0].ts_flags == expected_flags);
+					frame_draw_sorted_shapes(cars);
+					assert(cars[car_index].explosion_visible ==
+						   (real_event == CRASH_EVENT_COLLISION && viewed != 2));
+				}
+				assert(memcmp(&state, &real_state, sizeof(state)) == 0);
+				assert(memcmp(&ghost_fixture, &real_ghost, sizeof(ghost_fixture)) == 0);
+				assert(memcmp(&ghost_camera_fixture, &real_ghost_camera,
+							  sizeof(ghost_camera_fixture)) == 0);
+				assert(phantom_car->car_crashBmpFlag == phantom_event);
+				assert(phantom.game_pEndFrame == 1999 && phantom.game_oEndFrame == 1999);
+				assert(phantom_ghost_camera.frame == 999 &&
+					   phantom_ghost_camera.crash_frame == 119);
+				frame_uses_snapshot = 0;
+				frame_state = &state;
+				frame_ghost = 0;
+				frame_ghost_camera = 0;
+			}
+		}
+	}
+	ghost_fixture_active = 0;
+	followOpponentFlag = 0;
+}
+
 static void test_supersight_selection(void)
 {
 	/* The eight original headings select four cardinal rotations and their
@@ -725,6 +844,7 @@ int main(void)
 #endif
 	test_ghost_uses_independent_visual_state();
 	test_ghost_camera_modes();
+	test_prediction_uses_authoritative_events();
 	test_supersight_selection();
 	test_supersight_capacity_retries();
 	puts("Frame rendering snapshots, ghost isolation and SuperSight passed.");

@@ -1,6 +1,7 @@
 #ifdef RESTUNTS_SDL3
 #include "../platform/sdl3/sdl3.h"
 #include "frame_prediction.h"
+#include "phantom_physics.h"
 #include "presentation.h"
 #endif
 #include "dashboard.h"
@@ -344,6 +345,7 @@ struct RACE_PRESENTATION {
 	struct GAMESTATE previous;
 	struct GAMESTATE current;
 	struct GAMESTATE predicted;
+	struct PHANTOM_PHYSICS phantom;
 	struct CARSTATE ghost_previous;
 	struct CARSTATE ghost_current;
 	struct CARSTATE ghost_predicted;
@@ -365,6 +367,15 @@ struct RACE_PRESENTATION {
 };
 
 static struct RACE_PRESENTATION race_presentation;
+
+static void race_presentation_reset_phantom(void)
+{
+	legacy_s8 input = INPUT_NONE;
+	if (state.game_frame > 0) {
+		input = replay_input_buffer[(legacy_u16)state.game_frame - 1U];
+	}
+	phantom_physics_reset(&race_presentation.phantom, &state, input);
+}
 
 static void race_presentation_sync(legacy_s16 rewinding)
 {
@@ -396,6 +407,7 @@ static void race_presentation_sync(legacy_s16 rewinding)
 		race_presentation.control_time = 0;
 		race_presentation.ghost_valid = 0;
 		race_presentation.started = 0;
+		race_presentation_reset_phantom();
 		presentation_reset(&race_presentation.clock, presentation_now());
 	}
 }
@@ -414,6 +426,7 @@ static void race_presentation_capture(void)
 	race_presentation.current = state;
 	race_presentation.sample_frame = state.game_frame;
 	race_presentation.sample_time = presentation_now();
+	race_presentation_reset_phantom();
 }
 
 static void race_presentation_capture_ghost(void)
@@ -580,6 +593,17 @@ static void race_draw_visual(void)
 	}
 	frame_predict_state(&race_presentation.predicted, &state, &race_presentation.previous,
 						fraction);
+	if (fraction != 0) {
+		legacy_u32 elapsed20 = (legacy_u32)((legacy_u64)fraction * race_presentation.sample_span *
+											GAME_FRAME_RATE_NORMAL / (legacy_u16)framespersec);
+		phantom_physics_advance(&race_presentation.phantom, elapsed20);
+		race_presentation.predicted.playerstate = race_presentation.phantom.state.playerstate;
+		race_presentation.predicted.opponentstate = race_presentation.phantom.state.opponentstate;
+		for (legacy_u16 car = 0; car < GAMESTATE_CAR_VECTOR_COUNT; car++) {
+			race_presentation.predicted.game_follow_camera_position[car] =
+				race_presentation.phantom.state.game_follow_camera_position[car];
+		}
+	}
 	race_presentation_predict_ghost(fraction);
 
 	if (video_uses_page_flipping != 0) {
@@ -595,8 +619,8 @@ static void race_draw_visual(void)
 
 static void race_present_prediction(void)
 {
-	/* Extra presentations never advance the replay, ghost cache, controls, or
-	 * simulation. Timer callbacks continue to see only authoritative state. */
+	/* Extra presentations advance only the disposable collision-aware branch.
+	 * Replay, controls and timer callbacks retain authoritative state. */
 	if (supersight_enabled == 0 || race_presentation.started == 0 ||
 		state.game_frame != elapsed_time2 || state.game_inputmode == GAME_INPUT_MODE_WAITING ||
 		(game_replay_mode == REPLAY_MODE_PLAYBACK && is_in_replay != 0) || race_exit_request != 0) {
