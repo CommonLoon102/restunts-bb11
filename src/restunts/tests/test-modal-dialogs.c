@@ -25,7 +25,7 @@ legacy_s16 dialog_background_color;
 legacy_s16 performGraphColor;
 legacy_u16 dialog_border_color = 4;
 
-static unsigned background_depth, input_depth, polls, releases, restored;
+static legacy_u32 background_depth, input_depth, polls, releases, restored;
 static legacy_s16 timer_suspended, audio_suspended, save_succeeds, dismiss_key, is_pause;
 
 void input_push_status(void)
@@ -172,7 +172,7 @@ int main(void)
 {
 	static const legacy_s16 keys[] = {KEY_SPACE, KEY_ENTER, KEY_ESCAPE};
 	for (is_pause = 0; is_pause <= 1; is_pause++) {
-		for (unsigned pass = 0; pass < 6; pass++) {
+		for (legacy_u32 pass = 0; pass < 6; pass++) {
 			dismiss_key = keys[pass % 3];
 			save_succeeds = pass < 3;
 			polls = releases = restored = 0;
@@ -184,7 +184,7 @@ int main(void)
 			assert(background_depth == 0 && input_depth == 0);
 			assert(timer_suspended == 0 && audio_suspended == 0);
 			assert(polls == (save_succeeds != 0 ? 3U : 0U));
-			assert(releases == (unsigned)save_succeeds && restored == (unsigned)save_succeeds);
+			assert(releases == (legacy_u32)save_succeeds && restored == (legacy_u32)save_succeeds);
 		}
 	}
 	puts("Modal dialogs wait and restore saved backgrounds (12 scenarios).");

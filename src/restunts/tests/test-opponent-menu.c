@@ -38,14 +38,14 @@ static legacy_s16 opponent_hits[OPPONENT_TEST_EVENT_CAPACITY];
 static legacy_u8 expected_opponents[OPPONENT_TEST_EVENT_CAPACITY];
 static legacy_u8 expected_loads[OPPONENT_TEST_EVENT_CAPACITY];
 static legacy_u8 resource_live[OPPONENT_TEST_RESOURCE_COUNT];
-static unsigned event_count, event_index, expected_load_count, load_count;
-static unsigned resource_allocations, resource_releases, window_allocations, window_releases;
-static unsigned case_count, transition_count;
+static legacy_u32 event_count, event_index, expected_load_count, load_count;
+static legacy_u32 resource_allocations, resource_releases, window_allocations, window_releases;
+static legacy_u32 case_count, transition_count;
 static legacy_u8 window_live;
 static legacy_s16 ghost_selected, ghost_selection_result;
 static legacy_s8 file_dialog_result;
-static unsigned ghost_dialogs, ghost_selections, ghost_button_draws, ghost_descriptions;
-static unsigned clock_descriptions, car_menu_calls, error_dialogs;
+static legacy_u32 ghost_dialogs, ghost_selections, ghost_button_draws, ghost_descriptions;
+static legacy_u32 clock_descriptions, car_menu_calls, error_dialogs;
 
 legacy_s16 ghost_is_selected(void)
 {
@@ -142,7 +142,7 @@ legacy_s16 mouse_multi_hittest(legacy_s16 count, const struct BUTTON_AREA *butto
 	return opponent_hits[event_index++];
 }
 
-static void *allocate_resource(unsigned index)
+static void *allocate_resource(legacy_u32 index)
 {
 	assert(index < OPPONENT_TEST_RESOURCE_COUNT && resource_live[index] == 0);
 	resource_live[index] = 1;
@@ -152,7 +152,7 @@ static void *allocate_resource(unsigned index)
 
 static void release_resource(void *resource)
 {
-	for (unsigned index = 0; index < OPPONENT_TEST_RESOURCE_COUNT; index++) {
+	for (legacy_u32 index = 0; index < OPPONENT_TEST_RESOURCE_COUNT; index++) {
 		if (resource == resource_bytes[index]) {
 			assert(resource_live[index] != 0);
 			resource_live[index] = 0;
@@ -236,7 +236,7 @@ void locate_many_resources(legacy_s8 *resource, const legacy_s8 *names, legacy_s
 {
 	assert(resource == (legacy_s8 *)resource_bytes[1]);
 	assert(names == opponent_portrait_shape_ids);
-	for (unsigned index = 0; index < 7; index++) {
+	for (legacy_u32 index = 0; index < 7; index++) {
 		pointers[index] = (legacy_s8 *)&fixture_shapes[1];
 	}
 }
@@ -305,7 +305,7 @@ static void begin_case(legacy_u8 opponent, legacy_u8 page_flipping)
 	expect_load(opponent);
 }
 
-static void finish_case(legacy_u8 opponent, unsigned refresh_count)
+static void finish_case(legacy_u8 opponent, legacy_u32 refresh_count)
 {
 	run_opponent_menu();
 	assert(event_index == event_count && load_count == expected_load_count);
@@ -313,7 +313,7 @@ static void finish_case(legacy_u8 opponent, unsigned refresh_count)
 	assert(resource_allocations == resource_releases && window_allocations == window_releases);
 	assert(resource_allocations == expected_load_count + 2 && window_allocations == refresh_count);
 	assert(window_live == 0);
-	for (unsigned index = 0; index < OPPONENT_TEST_RESOURCE_COUNT; index++) {
+	for (legacy_u32 index = 0; index < OPPONENT_TEST_RESOURCE_COUNT; index++) {
 		assert(resource_live[index] == 0);
 	}
 	if (opponent != 0) {
@@ -328,7 +328,7 @@ static void finish_case(legacy_u8 opponent, unsigned refresh_count)
 	case_count++;
 }
 
-static void test_direction(legacy_u8 initial, legacy_u8 direction, unsigned repeats,
+static void test_direction(legacy_u8 initial, legacy_u8 direction, legacy_u32 repeats,
 						   legacy_u8 page_flipping)
 {
 	legacy_u8 opponent = initial;
@@ -336,7 +336,7 @@ static void test_direction(legacy_u8 initial, legacy_u8 direction, unsigned repe
 	if (direction != 0) {
 		add_event(KEY_RIGHT, opponent);
 	}
-	for (unsigned index = 0; index < repeats; index++) {
+	for (legacy_u32 index = 0; index < repeats; index++) {
 		add_event(KEY_ENTER, opponent);
 		opponent = direction != 0 ? next_opponent[opponent] : previous_opponent[opponent];
 		expect_load(opponent);
@@ -450,7 +450,8 @@ int main(void)
 		}
 		test_opponent_car(page_flipping);
 	}
-	printf("test-opponent-menu: passed %u sessions, %u transitions\n", case_count,
-		   transition_count);
+	printf("test-opponent-menu: passed %" LEGACY_PRIu32 " sessions, %" LEGACY_PRIu32
+		   " transitions\n",
+		   case_count, transition_count);
 	return 0;
 }

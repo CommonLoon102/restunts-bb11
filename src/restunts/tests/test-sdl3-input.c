@@ -10,29 +10,29 @@
 #include "../c/keyboard.h"
 #include "../c/hires.h"
 
-int sdl3_batch_mode;
+legacy_s32 sdl3_batch_mode;
 static legacy_u8 framebuffer[65536];
-static unsigned char high_resolution_framebuffer[1280 * 800];
-static bool high_resolution_active;
-static unsigned long frame_generation;
-static unsigned int first_callbacks;
-static unsigned int second_callbacks;
-static unsigned int audio_ticks;
-static bool quit_cleaned_up;
+static legacy_u8 high_resolution_framebuffer[1280 * 800];
+static legacy_u8 high_resolution_active;
+static legacy_u32 frame_generation;
+static legacy_u32 first_callbacks;
+static legacy_u32 second_callbacks;
+static legacy_u32 audio_ticks;
+static legacy_u8 quit_cleaned_up;
 
-const unsigned char *hires_framebuffer(const unsigned char *legacy, int *width, int *height)
+const legacy_u8 *hires_framebuffer(const legacy_u8 *legacy, legacy_s32 *width, legacy_s32 *height)
 {
 	*width = high_resolution_active ? 1280 : 320;
 	*height = high_resolution_active ? 800 : 200;
 	return high_resolution_active ? high_resolution_framebuffer : legacy;
 }
 
-unsigned long hires_generation(void)
+legacy_u32 hires_generation(void)
 {
 	return frame_generation;
 }
 
-int hires_enabled(void)
+legacy_s32 hires_enabled(void)
 {
 	return high_resolution_active;
 }
@@ -91,7 +91,7 @@ static void second_callback(void)
 	second_callbacks++;
 }
 
-static void send_key(SDL_Scancode scan, SDL_Keymod modifiers, bool down, bool repeat)
+static void send_key(SDL_Scancode scan, SDL_Keymod modifiers, legacy_u8 down, legacy_u8 repeat)
 {
 	SDL_Event event;
 	SDL_zero(event);
@@ -151,7 +151,7 @@ static void test_timer(void)
 	dos_timer_set_callbacks_suspended(1);
 	legacy_u32 paused = timer_get_counter();
 	legacy_u32 realtime = dos_timer_get_realtime_counter();
-	unsigned int callbacks_at_pause = first_callbacks;
+	legacy_u32 callbacks_at_pause = first_callbacks;
 	SDL_Delay(25);
 	assert(timer_get_counter() == paused);
 	assert(first_callbacks == callbacks_at_pause);
@@ -172,12 +172,12 @@ static void test_timer(void)
 	dos_timer_shutdown();
 }
 
-static void assert_coordinate(float actual, float expected)
+static void assert_coordinate(legacy_f32 actual, legacy_f32 expected)
 {
 	assert(actual > expected - 0.1f && actual < expected + 0.1f);
 }
 
-static void check_video_aspect(int width, int height, float left, float top)
+static void check_video_aspect(legacy_s32 width, legacy_s32 height, legacy_f32 left, legacy_f32 top)
 {
 	assert(SDL_SetWindowSize(sdl3_video_window(), width, height));
 	assert(SDL_SyncWindow(sdl3_video_window()));
@@ -189,8 +189,8 @@ static void check_video_aspect(int width, int height, float left, float top)
 	assert_coordinate(bounds.y, top);
 	assert_coordinate(bounds.w, 960.0f);
 	assert_coordinate(bounds.h, 720.0f);
-	float x;
-	float y;
+	legacy_f32 x;
+	legacy_f32 y;
 	sdl3_video_game_to_window(0, 0, &x, &y);
 	assert_coordinate(x, left);
 	assert_coordinate(y, top);
@@ -215,10 +215,10 @@ static void test_video_and_mouse(void)
 	check_video_aspect(1100, 720, 70.0f, 0.0f);
 	check_video_aspect(960, 800, 0.0f, 40.0f);
 	check_video_aspect(960, 720, 0.0f, 0.0f);
-	float x;
-	float y;
-	float window_x;
-	float window_y;
+	legacy_f32 x;
+	legacy_f32 y;
+	legacy_f32 window_x;
+	legacy_f32 window_y;
 	sdl3_video_game_to_window(160, 100, &window_x, &window_y);
 	sdl3_video_window_to_game(window_x, window_y, &x, &y);
 	assert(x > 159.9f && x < 160.1f);
@@ -261,7 +261,7 @@ static void test_video_and_mouse(void)
 	assert(buttons == 0);
 }
 
-static void assert_presented_color(int x, int y, Uint8 red, Uint8 green, Uint8 blue)
+static void assert_presented_color(legacy_s32 x, legacy_s32 y, Uint8 red, Uint8 green, Uint8 blue)
 {
 	SDL_Surface *surface = SDL_RenderReadPixels(SDL_GetRenderer(sdl3_video_window()), NULL);
 	assert(surface != NULL);
@@ -279,7 +279,7 @@ static void test_high_resolution_video(void)
 	dos_video_set_palette(3, 3, colors);
 	memset(framebuffer, 3, 64000);
 	memset(high_resolution_framebuffer, 3, sizeof(high_resolution_framebuffer));
-	for (int row = 0; row < 800; row++) {
+	for (legacy_s32 row = 0; row < 800; row++) {
 		high_resolution_framebuffer[row * 1280 + 101] = 4;
 	}
 	high_resolution_active = true;
@@ -294,7 +294,7 @@ static void test_high_resolution_video(void)
 	assert_presented_color(100, 120, 255, 0, 0);
 	assert_presented_color(101, 120, 0, 0, 255);
 	assert_presented_color(102, 120, 255, 0, 0);
-	for (int row = 0; row < 800; row++) {
+	for (legacy_s32 row = 0; row < 800; row++) {
 		high_resolution_framebuffer[row * 1280 + 101] = 5;
 	}
 	frame_generation++;
@@ -302,7 +302,7 @@ static void test_high_resolution_video(void)
 	sdl3_video_refresh();
 	assert_presented_color(101, 120, 0, 255, 0);
 	sdl3_video_begin_frame();
-	for (int row = 0; row < 800; row++) {
+	for (legacy_s32 row = 0; row < 800; row++) {
 		high_resolution_framebuffer[row * 1280 + 102] = 4;
 	}
 	frame_generation++;
@@ -320,29 +320,30 @@ static void test_high_resolution_video(void)
 	check_video_aspect(960, 720, 0.0f, 0.0f);
 }
 
-static void check_fullscreen(bool expected)
+static void check_fullscreen(legacy_u8 expected)
 {
 	assert(SDL_SyncWindow(sdl3_video_window()));
 	sdl3_platform_pump();
 	assert(((SDL_GetWindowFlags(sdl3_video_window()) & SDL_WINDOW_FULLSCREEN) != 0) == expected);
 	SDL_Renderer *renderer = SDL_GetRenderer(sdl3_video_window());
+	/* SDL output pointers require the library's native int type. */
 	int width;
 	int height;
 	assert(SDL_GetRenderOutputSize(renderer, &width, &height));
-	float expected_width = (float)width;
-	float expected_height = expected_width * 3.0f / 4.0f;
+	legacy_f32 expected_width = (legacy_f32)width;
+	legacy_f32 expected_height = expected_width * 3.0f / 4.0f;
 	if (expected_height > height) {
-		expected_height = (float)height;
+		expected_height = (legacy_f32)height;
 		expected_width = expected_height * 4.0f / 3.0f;
 	}
 	SDL_FRect bounds;
 	assert(SDL_GetRenderLogicalPresentationRect(renderer, &bounds));
-	assert_coordinate(bounds.x, ((float)width - expected_width) / 2.0f);
-	assert_coordinate(bounds.y, ((float)height - expected_height) / 2.0f);
+	assert_coordinate(bounds.x, ((legacy_f32)width - expected_width) / 2.0f);
+	assert_coordinate(bounds.y, ((legacy_f32)height - expected_height) / 2.0f);
 	assert_coordinate(bounds.w, expected_width);
 	assert_coordinate(bounds.h, expected_height);
-	float x;
-	float y;
+	legacy_f32 x;
+	legacy_f32 y;
 	sdl3_video_game_to_window(160, 100, &x, &y);
 	assert_coordinate(x, width / 2.0f);
 	assert_coordinate(y, height / 2.0f);
@@ -355,6 +356,7 @@ static void test_fullscreen_shortcut(void)
 {
 	kb_init_interrupt();
 	check_video_aspect(1100, 720, 70.0f, 0.0f);
+	/* SDL reads and writes window coordinates through native int pointers. */
 	int original_x;
 	int original_y;
 	assert(SDL_GetWindowPosition(sdl3_video_window(), &original_x, &original_y));

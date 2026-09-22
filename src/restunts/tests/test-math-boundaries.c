@@ -10,7 +10,7 @@
 extern void rectlist_add_rect(legacy_s8 *rectangle_count, struct RECTANGLE *rectangles,
 							  struct RECTANGLE *rect);
 
-static uint64_t trace_hash = UINT64_C(1469598103934665603);
+static legacy_u64 trace_hash = UINT64_C(1469598103934665603);
 
 void fatal_error(const legacy_s8 *format, ...)
 {
@@ -33,8 +33,8 @@ static void test_polar_boundaries(void)
 	assert(polarAngle(-32768, -32768) == -384);
 	static const legacy_s16 coordinates[] = {-32767, -1025, -1024, -129, -128, -1,	 0,
 											 1,		 128,	129,   1024, 1025, 32767};
-	for (unsigned int x = 0; x < sizeof(coordinates) / sizeof(coordinates[0]); x++) {
-		for (unsigned int y = 0; y < sizeof(coordinates) / sizeof(coordinates[0]); y++) {
+	for (legacy_u32 x = 0; x < sizeof(coordinates) / sizeof(coordinates[0]); x++) {
+		for (legacy_u32 y = 0; y < sizeof(coordinates) / sizeof(coordinates[0]); y++) {
 			trace_word(polarAngle(coordinates[x], coordinates[y]));
 		}
 	}
@@ -50,9 +50,9 @@ static void test_rectangle_splits(void)
 											  {-10, 0, 0, 10}, {0, 10, -10, 0}, {30, 40, 30, 40}};
 	struct RECTANGLE rectangles[64];
 	struct RECTANGLE next;
-	for (unsigned int first = 0; first < 12U; first++) {
-		for (unsigned int second = 0; second < 12U; second++) {
-			for (unsigned int third = 0; third < 12U; third++) {
+	for (legacy_u32 first = 0; first < 12U; first++) {
+		for (legacy_u32 second = 0; second < 12U; second++) {
+			for (legacy_u32 third = 0; third < 12U; third++) {
 				count = 0;
 				next = inputs[first];
 				rectlist_add_rect(&count, rectangles, &next);
@@ -61,7 +61,7 @@ static void test_rectangle_splits(void)
 				next = inputs[third];
 				rectlist_add_rect(&count, rectangles, &next);
 				trace_word(count);
-				for (unsigned int index = 0; index < (unsigned int)count; index++) {
+				for (legacy_u32 index = 0; index < (legacy_u32)count; index++) {
 					trace_word(rectangles[index].left);
 					trace_word(rectangles[index].right);
 					trace_word(rectangles[index].top);

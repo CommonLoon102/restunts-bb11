@@ -60,7 +60,7 @@ static void test_pan_quadrants(void)
 	pressed_key = KEY_SPACE;
 	replay_pan_button_top = replay_pan_button_left = 90;
 	replay_pan_button_bottom = replay_pan_button_right = 110;
-	for (unsigned index = 0; index < sizeof(positions) / sizeof(positions[0]); index++) {
+	for (legacy_u32 index = 0; index < sizeof(positions) / sizeof(positions[0]); index++) {
 		mouse_xpos = positions[index][0];
 		mouse_ypos = positions[index][1];
 		assert(replay_read_control_input(3) == positions[index][2]);

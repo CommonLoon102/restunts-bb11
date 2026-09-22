@@ -15,18 +15,18 @@ static SDL_Window *window;
 static SDL_Renderer *renderer;
 static SDL_Texture *texture;
 static SDL_Surface *frame_surface;
-static int texture_width;
-static int texture_height;
-static bool surface_output;
-static bool high_resolution_output;
+static legacy_s32 texture_width;
+static legacy_s32 texture_height;
+static legacy_u8 surface_output;
+static legacy_u8 high_resolution_output;
 static SDL_Rect surface_viewport;
 static SDL_Color palette_colors[256];
-static Uint32 palette_pixels[256];
-static unsigned char previous_pixels[SCREEN_BYTES];
-static unsigned long previous_generation;
-static Uint64 last_present;
-static bool palette_changed = true;
-static bool drawing_frame;
+static legacy_u32 palette_pixels[256];
+static legacy_u8 previous_pixels[SCREEN_BYTES];
+static legacy_u32 previous_generation;
+static legacy_u64 last_present;
+static legacy_u8 palette_changed = true;
+static legacy_u8 drawing_frame;
 
 static void video_fail(const char *operation)
 {
@@ -35,7 +35,7 @@ static void video_fail(const char *operation)
 }
 
 #ifdef __DJGPP__
-static int mode_viewport_width(const SDL_DisplayMode *mode)
+static legacy_s32 mode_viewport_width(const SDL_DisplayMode *mode)
 {
 	/* The legacy VGA mode has nonsquare pixels; VESA modes use a 4:3 viewport. */
 	if (mode->w == SCREEN_WIDTH && mode->h == SCREEN_HEIGHT) {
@@ -44,39 +44,40 @@ static int mode_viewport_width(const SDL_DisplayMode *mode)
 	return SDL_min(mode->w, mode->h * 4 / 3);
 }
 
-static bool mode_is_better(const SDL_DisplayMode *candidate, const SDL_DisplayMode *current)
+static legacy_u8 mode_is_better(const SDL_DisplayMode *candidate, const SDL_DisplayMode *current)
 {
 	if (current == NULL) {
 		return true;
 	}
-	int candidate_width = mode_viewport_width(candidate);
-	int current_width = mode_viewport_width(current);
-	bool candidate_fits = candidate_width >= HIRES_WIDTH;
-	bool current_fits = current_width >= HIRES_WIDTH;
+	legacy_s32 candidate_width = mode_viewport_width(candidate);
+	legacy_s32 current_width = mode_viewport_width(current);
+	legacy_u8 candidate_fits = candidate_width >= HIRES_WIDTH;
+	legacy_u8 current_fits = current_width >= HIRES_WIDTH;
 	if (candidate_fits != current_fits) {
 		return candidate_fits;
 	}
 	if (candidate_width != current_width) {
 		return candidate_fits ? candidate_width < current_width : candidate_width > current_width;
 	}
-	int candidate_area = candidate->w * candidate->h;
-	int current_area = current->w * current->h;
+	legacy_s32 candidate_area = candidate->w * candidate->h;
+	legacy_s32 current_area = current->w * current->h;
 	if (candidate_area != current_area) {
 		return candidate_area < current_area;
 	}
 	return SDL_BITSPERPIXEL(candidate->format) < SDL_BITSPERPIXEL(current->format);
 }
 
-static void select_dos_video_mode(bool high_resolution)
+static void select_dos_video_mode(legacy_u8 high_resolution)
 {
+	/* SDL writes a native int through this output pointer. */
 	int mode_count;
 	SDL_DisplayMode **modes = SDL_GetFullscreenDisplayModes(SDL_GetPrimaryDisplay(), &mode_count);
-	bool selected = false;
-	int selected_width = 0;
+	legacy_u8 selected = false;
+	legacy_s32 selected_width = 0;
 	if (modes != NULL) {
-		for (int attempt = 0; attempt < mode_count && !selected; attempt++) {
-			int best = -1;
-			for (int index = 0; index < mode_count; index++) {
+		for (legacy_s32 attempt = 0; attempt < mode_count && !selected; attempt++) {
+			legacy_s32 best = -1;
+			for (legacy_s32 index = 0; index < mode_count; index++) {
 				const SDL_DisplayMode *mode = modes[index];
 				if (mode == NULL || (SDL_ISPIXELFORMAT_INDEXED(mode->format) &&
 									 mode->format != SDL_PIXELFORMAT_INDEX8)) {
@@ -142,13 +143,14 @@ void sdl3_video_toggle_fullscreen(void)
 	if (window == NULL || surface_output) {
 		return;
 	}
-	bool fullscreen = (SDL_GetWindowFlags(window) & SDL_WINDOW_FULLSCREEN) != 0;
+	legacy_u8 fullscreen = (SDL_GetWindowFlags(window) & SDL_WINDOW_FULLSCREEN) != 0;
 	if (!SDL_SetWindowFullscreen(window, !fullscreen)) {
 		SDL_LogWarn(SDL_LOG_CATEGORY_VIDEO, "Cannot change fullscreen mode: %s", SDL_GetError());
 	}
 }
 
-void sdl3_video_window_to_game(float window_x, float window_y, float *x, float *y)
+void sdl3_video_window_to_game(legacy_f32 window_x, legacy_f32 window_y, legacy_f32 *x,
+							   legacy_f32 *y)
 {
 	*x = window_x;
 	*y = window_y;
@@ -161,7 +163,8 @@ void sdl3_video_window_to_game(float window_x, float window_y, float *x, float *
 	}
 }
 
-void sdl3_video_game_to_window(float x, float y, float *window_x, float *window_y)
+void sdl3_video_game_to_window(legacy_f32 x, legacy_f32 y, legacy_f32 *window_x,
+							   legacy_f32 *window_y)
 {
 	*window_x = x;
 	*window_y = y;
@@ -173,14 +176,14 @@ void sdl3_video_game_to_window(float x, float y, float *window_x, float *window_
 	}
 }
 
-static void present_surface(const unsigned char *pixels, int width, int height)
+static void present_surface(const legacy_u8 *pixels, legacy_s32 width, legacy_s32 height)
 {
 	SDL_Surface *surface = SDL_GetWindowSurface(window);
 	if (surface == NULL) {
 		video_fail("Get video surface");
 	}
-	bool new_frame_surface = frame_surface == NULL || frame_surface->pixels != pixels ||
-							 frame_surface->w != width || frame_surface->h != height;
+	legacy_u8 new_frame_surface = frame_surface == NULL || frame_surface->pixels != pixels ||
+								  frame_surface->w != width || frame_surface->h != height;
 	if (new_frame_surface) {
 		SDL_DestroySurface(frame_surface);
 		frame_surface =
@@ -209,7 +212,7 @@ static void present_surface(const unsigned char *pixels, int width, int height)
 	}
 }
 
-static void present_texture(const unsigned char *pixels, int width, int height)
+static void present_texture(const legacy_u8 *pixels, legacy_s32 width, legacy_s32 height)
 {
 	if (texture == NULL || texture_width != width || texture_height != height) {
 		SDL_DestroyTexture(texture);
@@ -222,14 +225,15 @@ static void present_texture(const unsigned char *pixels, int width, int height)
 		texture_height = height;
 	}
 	void *texture_pixels;
+	/* SDL writes a native int through this output pointer. */
 	int pitch;
 	if (!SDL_LockTexture(texture, NULL, &texture_pixels, &pitch)) {
 		video_fail("Lock video texture");
 	}
-	for (int row = 0; row < height; row++) {
-		Uint32 *destination = (Uint32 *)((unsigned char *)texture_pixels + row * pitch);
-		const unsigned char *source = pixels + row * width;
-		for (int column = 0; column < width; column++) {
+	for (legacy_s32 row = 0; row < height; row++) {
+		legacy_u32 *destination = (legacy_u32 *)((legacy_u8 *)texture_pixels + row * pitch);
+		const legacy_u8 *source = pixels + row * width;
+		for (legacy_s32 column = 0; column < width; column++) {
 			destination[column] = palette_pixels[source[column]];
 		}
 	}
@@ -250,10 +254,10 @@ void sdl3_video_present(void)
 		select_dos_video_mode(hires_enabled() != 0);
 	}
 #endif
-	const unsigned char *legacy_pixels = dos_memory_make_pointer(VGA_MEMORY_SEGMENT, 0);
-	int width;
-	int height;
-	const unsigned char *pixels = hires_framebuffer(legacy_pixels, &width, &height);
+	const legacy_u8 *legacy_pixels = dos_memory_make_pointer(VGA_MEMORY_SEGMENT, 0);
+	legacy_s32 width;
+	legacy_s32 height;
+	const legacy_u8 *pixels = hires_framebuffer(legacy_pixels, &width, &height);
 	if (surface_output) {
 		present_surface(pixels, width, height);
 	} else {
@@ -279,7 +283,7 @@ void sdl3_video_end_frame(void)
 void sdl3_video_refresh(void)
 {
 	if (window != NULL && !drawing_frame && SDL_GetTicks() - last_present >= PRESENT_INTERVAL_MS) {
-		const unsigned char *pixels = dos_memory_make_pointer(VGA_MEMORY_SEGMENT, 0);
+		const legacy_u8 *pixels = dos_memory_make_pointer(VGA_MEMORY_SEGMENT, 0);
 		if (palette_changed || hires_generation() != previous_generation ||
 			memcmp(pixels, previous_pixels, SCREEN_BYTES) != 0) {
 			sdl3_video_present();
@@ -363,14 +367,14 @@ legacy_s16 video_get_status(void)
 
 void dos_video_set_palette(legacy_u16 start, legacy_u16 count, legacy_u8 *palette)
 {
-	for (unsigned int index = start; index < 256U && index < (unsigned int)start + count; index++) {
+	for (legacy_u32 index = start; index < 256U && index < (legacy_u32)start + count; index++) {
 		SDL_Color *color = &palette_colors[index];
-		color->r = (Uint8)((palette[0] & 63U) * 255U / 63U);
-		color->g = (Uint8)((palette[1] & 63U) * 255U / 63U);
-		color->b = (Uint8)((palette[2] & 63U) * 255U / 63U);
+		color->r = (legacy_u8)((palette[0] & 63U) * 255U / 63U);
+		color->g = (legacy_u8)((palette[1] & 63U) * 255U / 63U);
+		color->b = (legacy_u8)((palette[2] & 63U) * 255U / 63U);
 		color->a = 255;
 		palette_pixels[index] =
-			0xFF000000U | ((Uint32)color->r << 16) | ((Uint32)color->g << 8) | color->b;
+			0xFF000000U | ((legacy_u32)color->r << 16) | ((legacy_u32)color->g << 8) | color->b;
 		palette += 3;
 	}
 	palette_changed = true;

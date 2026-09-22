@@ -13,7 +13,7 @@ static struct CARSTATE ghost_fixture;
 static legacy_s16 ghost_fixture_active;
 static legacy_s16 opponent_view_disabled;
 static legacy_u8 supersight_reset_pending;
-static unsigned input_polls, input_exit_poll, fps_expire_poll, fps_expiry_checks;
+static legacy_u32 input_polls, input_exit_poll, fps_expire_poll, fps_expiry_checks;
 
 legacy_s16 frame_fps_expire_idle(void)
 {
@@ -103,7 +103,7 @@ void ghost_check_track(void)
 }
 
 static legacy_u32 trace_hash;
-static unsigned scenario, dialog_count, save_count, write_count, check_count;
+static legacy_u32 scenario, dialog_count, save_count, write_count, check_count;
 static legacy_s16 menu_action;
 static struct SHAPE2D shapes[23];
 static legacy_u8 track_bytes[901];
@@ -226,7 +226,7 @@ legacy_s8 far *locate_text_res(legacy_s8 far *resource, const legacy_s8 *name)
 legacy_u16 show_dialog(legacy_s16 type, legacy_s16 save, void far *text, legacy_u16 x, legacy_u16 y,
 					   legacy_s16 color, legacy_s16 *disabled, legacy_s16 initial)
 {
-	unsigned count = text == replay_pause_menu_id ? 8 : 5;
+	legacy_u32 count = text == replay_pause_menu_id ? 8 : 5;
 	(void)text;
 	event(17);
 	hash_word(type);
@@ -239,7 +239,7 @@ legacy_u16 show_dialog(legacy_s16 type, legacy_s16 save, void far *text, legacy_
 		if (text == replay_mode_options_dialog_id) {
 			opponent_view_disabled = disabled[REPLAY_MODE_ACTION_FOLLOW_OPPONENT];
 		}
-		for (unsigned index = 0; index < count; index++) {
+		for (legacy_u32 index = 0; index < count; index++) {
 			hash_word(disabled[index]);
 		}
 	}
@@ -365,7 +365,7 @@ static void reset_viewer(void)
 	memset(replay_displayed_time_cache, 0, sizeof(replay_displayed_time_cache));
 	memset(replay_recorded_position_cache, 0, sizeof(replay_recorded_position_cache));
 	memset(replay_current_position_cache, 0, sizeof(replay_current_position_cache));
-	for (unsigned index = 0; index < 23; index++) {
+	for (legacy_u32 index = 0; index < 23; index++) {
 		rplyshapes[index] = &shapes[index];
 	}
 	dialog_count = save_count = write_count = check_count = 0;
@@ -423,7 +423,7 @@ static void hash_viewer_state(void)
 	hash_word(write_count);
 	hash_word(replaybar_toggle);
 	hash_word(replay_selected_control);
-	for (unsigned index = 0; index < 2; index++) {
+	for (legacy_u32 index = 0; index < 2; index++) {
 		hash_word(replay_controls_drawn[index]);
 		hash_word(replay_camera_mode_cache[index]);
 		hash_word(replay_selection_cache[index]);
@@ -431,10 +431,10 @@ static void hash_viewer_state(void)
 		hash_word(replay_recorded_position_cache[index]);
 		hash_word(replay_current_position_cache[index]);
 	}
-	for (unsigned index = 0; index < 18; index++) {
+	for (legacy_u32 index = 0; index < 18; index++) {
 		hash_word(replay_control_active_cache[index]);
 	}
-	for (unsigned index = 0; index < 9; index++) {
+	for (legacy_u32 index = 0; index < 9; index++) {
 		hash_word(replay_control_active[index]);
 	}
 }
@@ -462,11 +462,11 @@ static legacy_u32 menu_fingerprint(void)
 static legacy_u32 draw_fingerprint(void)
 {
 	trace_hash = 2166136261UL;
-	for (unsigned index = 0; index < 256; index++) {
+	for (legacy_u32 index = 0; index < 256; index++) {
 		reset_viewer();
 		gameconfig.game_recordedframes = index % 3 ? 65535 : 0;
 		elapsed_time1 = index * 257;
-		for (unsigned tick = 0; tick < 8; tick++) {
+		for (legacy_u32 tick = 0; tick < 8; tick++) {
 			dashboard_buffer_index = tick & 1;
 			cameramode = (index + tick / 2) & 3;
 			replay_selected_control = tick % 3 ? tick % 9 : REPLAY_NO_SELECTION;
@@ -581,7 +581,7 @@ int main(void)
 	test_ghost_view_display_option();
 	test_paused_replay_fps_refresh();
 #ifdef REPLAY_MENU_BASELINE
-	printf("%08lx %08lx\n", (unsigned long)menu, (unsigned long)draw);
+	printf("%08" LEGACY_PRIx32 " %08" LEGACY_PRIx32 "\n", menu, draw);
 #else
 	assert(menu == 0xd57320a8UL);
 	assert(draw == 0x9b2a836aUL);

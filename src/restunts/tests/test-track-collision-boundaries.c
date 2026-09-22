@@ -18,7 +18,7 @@ static void reset_collision_track(void)
 	track_terrain_map = terrain;
 	legacy_closed_hihat_offset = 0;
 	elapsed_time2 = 0;
-	for (unsigned index = 0; index < 30; index++) {
+	for (legacy_u32 index = 0; index < 30; index++) {
 		trackrows[index] = terrainrows[index] = index * 30;
 		track_row_positions[index] = (30 - index) * 1024;
 		track_row_centers[index] = (30 - index) * 1024 - 512;
@@ -31,13 +31,13 @@ static void reset_collision_track(void)
 static void test_coordinate_aliases(void)
 {
 	reset_collision_track();
-	for (unsigned index = 0; index < 30; index++) {
+	for (legacy_u32 index = 0; index < 30; index++) {
 		assert(track_row_position(index) == (legacy_s16)((30 - index) * 1024));
 		assert(track_column_position(index) == (legacy_s16)(index * 1024));
 	}
 	static const legacy_s16 signed_words[] = {0, 1234, -32768, -292, -1};
 	static const legacy_u16 words[] = {0, 1234, 0x8000, 0xfedc, 0xffff};
-	for (unsigned index = 0; index < sizeof(words) / sizeof(words[0]); index++) {
+	for (legacy_u32 index = 0; index < sizeof(words) / sizeof(words[0]); index++) {
 		legacy_closed_hihat_offset = words[index];
 		elapsed_time2 = words[4 - index];
 		assert(track_row_position(30) == signed_words[index]);
@@ -83,7 +83,7 @@ static void test_collision_continuations(void)
 
 	const struct BOUNDARY_CASE *sample;
 	struct VECTOR result[8];
-	for (unsigned index = 0; index < sizeof(cases) / sizeof(cases[0]); index++) {
+	for (legacy_u32 index = 0; index < sizeof(cases) / sizeof(cases[0]); index++) {
 		reset_collision_track();
 		sample = &cases[index];
 		elements[sample->anchor_row * 30 + sample->anchor_column] = 1;

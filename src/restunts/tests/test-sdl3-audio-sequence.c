@@ -43,7 +43,7 @@ static void make_instrument(legacy_u8 *resource)
 	resource[90] = 1;
 }
 
-static struct sequence_fixture make_fixture(enum missing_note_kind kind, legacy_u8 volume)
+static struct sequence_fixture make_fixture(legacy_u8 kind, legacy_u8 volume)
 {
 	legacy_u16 segment = dos_memory_allocate(TEST_BANK_BYTES * 2U / 16U);
 	assert(segment != 0);
@@ -106,7 +106,7 @@ static struct sequence_fixture make_fixture(enum missing_note_kind kind, legacy_
 	return fixture;
 }
 
-static void check_missing_note(enum missing_note_kind kind, legacy_u8 volume, int direct)
+static void check_missing_note(legacy_u8 kind, legacy_u8 volume, legacy_s32 direct)
 {
 	dos_audio_uses_direct_channels = (legacy_u8)direct;
 	audio_reset_channels();
@@ -139,8 +139,8 @@ static void check_missing_note(enum missing_note_kind kind, legacy_u8 volume, in
 	assert(channel->active_notes == (direct ? 0 : 1));
 	assert(channel->volume == 127);
 	assert(audio_read_far_pointer((legacy_u8 *)&channel->resource) == fixture.instrument);
-	unsigned int playing = 0;
-	for (unsigned int index = 0; index < AUDIO_CONTEXT_COUNT; ++index) {
+	legacy_u32 playing = 0;
+	for (legacy_u32 index = 0; index < AUDIO_CONTEXT_COUNT; ++index) {
 		struct AUDIO_CONTEXT *context = &dos_audio_contexts[index];
 		if (context->state == AUDIO_CONTEXT_STATE_PLAYING) {
 			assert(context->channel == TEST_CHANNEL);
@@ -155,7 +155,7 @@ static void check_missing_note(enum missing_note_kind kind, legacy_u8 volume, in
 	audio_sequence_timer();
 	assert(audio_read_far_pointer((legacy_u8 *)&channel->cursor) == NULL);
 	assert(channel->active_notes == 0);
-	for (unsigned int index = 0; index < AUDIO_CONTEXT_COUNT; ++index) {
+	for (legacy_u32 index = 0; index < AUDIO_CONTEXT_COUNT; ++index) {
 		assert(dos_audio_contexts[index].state == AUDIO_CONTEXT_STATE_FREE);
 	}
 }
@@ -169,7 +169,7 @@ int main(void)
 	assert(strcmp(SDL_GetCurrentAudioDriver(), "dummy") == 0);
 	audio_music_enabled = AUDIO_STATE_DISABLED;
 	audio_music_active = AUDIO_STATE_DISABLED;
-	for (int direct = 0; direct <= 1; ++direct) {
+	for (legacy_s32 direct = 0; direct <= 1; ++direct) {
 		check_missing_note(MISSING_INSTRUMENT, 0, direct);
 		check_missing_note(MISSING_INSTRUMENT, 127, direct);
 		check_missing_note(UNBOUND_INSTRUMENT, 127, direct);

@@ -13,10 +13,10 @@
 
 #undef memcpy
 
-static unsigned solid_calls;
+static legacy_u32 solid_calls;
 static legacy_u16 expected_polygon_vertices = 3;
-static unsigned ghost_calls;
-static unsigned checking_ghost;
+static legacy_u32 ghost_calls;
+static legacy_u32 checking_ghost;
 static legacy_s16 colors[4] = {7, 8, 9, 10};
 static legacy_s16 patterns[3];
 static legacy_s16 secondary_patterns[3];
@@ -328,7 +328,7 @@ static void test_ghost_material_and_physics_isolation(void)
 	static const legacy_u8 types[] = {RENDER_PRIMITIVE_POLYGON, RENDER_PRIMITIVE_LINE,
 									  RENDER_PRIMITIVE_SPHERE, RENDER_PRIMITIVE_WHEEL,
 									  RENDER_PRIMITIVE_POINT};
-	for (unsigned index = 0; index < sizeof(types); index++) {
+	for (legacy_u32 index = 0; index < sizeof(types); index++) {
 		queue_polygon(0);
 		polygon_record[4] = types[index] | RENDER_PRIMITIVE_GHOST_FLAG;
 		shape3d_render_queued_primitives();
@@ -360,7 +360,7 @@ static void test_ghost_preserves_normal_point_indices(void)
 	shape.shape3d_visibility_masks = masks;
 	shape.shape3d_front_facing_masks = masks;
 	struct VECTOR position = {0, 0, 100};
-	for (unsigned index = 0; index < 8; index++) {
+	for (legacy_u32 index = 0; index < 8; index++) {
 		shape3d_vertex_write(&shape, index, &position);
 	}
 	struct TRANSFORMEDSHAPE3D instance = {0};
@@ -374,7 +374,7 @@ static void test_ghost_preserves_normal_point_indices(void)
 	legacy_s16 player[4] = {11, 22, 33, 44};
 	shape3d_set_legacy_render_stack(player, 400, 500, 0);
 	checking_ghost = 1;
-	for (unsigned first_is_ghost = 0; first_is_ghost < 2; first_is_ghost++) {
+	for (legacy_u32 first_is_ghost = 0; first_is_ghost < 2; first_is_ghost++) {
 		polyinfo_reset();
 		polyinfoptr = queue;
 		instance.ts_flags = 2U | (first_is_ghost ? SHAPE3D_GHOST_FLAG : 0U);
@@ -396,7 +396,7 @@ static void test_supersight_render_capacity(void)
 	LEGACY_WRITE_U16_LE(clipped_record + 62, 123);
 	LEGACY_WRITE_U16_LE(clipped_record + 64, 45);
 	static const legacy_u8 modes[] = {1, 0};
-	for (unsigned test = 0; test < sizeof(modes) / sizeof(modes[0]); test++) {
+	for (legacy_u32 test = 0; test < sizeof(modes) / sizeof(modes[0]); test++) {
 		polyinfo_set_supersight(modes[test]);
 		queue_polygon(0);
 		legacy_u16 capacity = modes[test] != 0U ? 592U : 400U;
@@ -412,7 +412,7 @@ static void test_supersight_render_capacity(void)
 			polygon_next_index[index] = (legacy_s16)index - 1;
 			polygon_record_offsets[index] = index != 0U ? offset : 0U;
 		}
-		unsigned calls_before = solid_calls;
+		legacy_u32 calls_before = solid_calls;
 		shape3d_render_queued_primitives();
 		assert(solid_calls == calls_before + capacity);
 		assert(polyinfonumpolys == 0);

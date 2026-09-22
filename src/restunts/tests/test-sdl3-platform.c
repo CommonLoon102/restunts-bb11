@@ -11,13 +11,13 @@ static void test_update_streams(void)
 									   (const legacy_s8 *)"UPDATE1.TST"};
 	legacy_u16 handles[2];
 	char contents[16];
-	for (unsigned int index = 0; index < 2; index++) {
+	for (legacy_u32 index = 0; index < 2; index++) {
 		handles[index] = dos_file_open(names[index], DOS_FILE_CREATE);
 		assert(handles[index] != 0);
 		assert(dos_file_write(handles[index], "0123456789", 10) == 10);
 	}
 	assert(handles[0] != handles[1]);
-	for (unsigned int index = 0; index < 2; index++) {
+	for (legacy_u32 index = 0; index < 2; index++) {
 		assert(dos_file_read(handles[index], contents, 1) == 0);
 		assert(dos_file_tell(handles[index]) == 10);
 		assert(dos_file_error() == 0);
@@ -27,26 +27,26 @@ static void test_update_streams(void)
 	}
 	/* DOS handles allow direction changes at the current position. Exercise
 	 * each transition on both files before the next to check independent state. */
-	for (unsigned int index = 0; index < 2; index++) {
+	for (legacy_u32 index = 0; index < 2; index++) {
 		assert(dos_file_write(handles[index], "XY", 2) == 2);
 		assert(dos_file_tell(handles[index]) == 5);
 	}
-	for (unsigned int index = 0; index < 2; index++) {
+	for (legacy_u32 index = 0; index < 2; index++) {
 		assert(dos_file_read(handles[index], contents, 5) == 5);
 		assert(memcmp(contents, "56789", 5) == 0);
 		assert(dos_file_tell(handles[index]) == 10);
 	}
 	/* Reading exactly to the end need not set the stream's EOF indicator. */
-	for (unsigned int index = 0; index < 2; index++) {
+	for (legacy_u32 index = 0; index < 2; index++) {
 		assert(dos_file_write(handles[index], "END", 3) == 3);
 		assert(dos_file_tell(handles[index]) == 13);
 	}
-	for (unsigned int index = 0; index < 2; index++) {
+	for (legacy_u32 index = 0; index < 2; index++) {
 		assert(dos_file_read(handles[index], contents, 1) == 0);
 		assert(dos_file_error() == 0);
 		assert(dos_file_close(handles[index]) == 0);
 	}
-	for (unsigned int index = 0; index < 2; index++) {
+	for (legacy_u32 index = 0; index < 2; index++) {
 		legacy_u16 handle = dos_file_open(names[index], DOS_FILE_OPEN_EXISTING);
 		assert(handle != 0);
 		assert(dos_file_read(handle, contents, sizeof(contents)) == 13);
@@ -65,7 +65,7 @@ int main(void)
 	legacy_u8 *crossing = arena + 65530;
 	memset(crossing, 0x73, 32);
 	assert(*(legacy_u8 *)dos_memory_make_pointer(segment + 4096, 0) == 0x73);
-	for (unsigned int index = 0; index < 32; index++) {
+	for (legacy_u32 index = 0; index < 32; index++) {
 		void *address = crossing + index;
 		assert(dos_memory_make_pointer(dos_memory_pointer_segment(address),
 									   dos_memory_pointer_offset(address)) == address);

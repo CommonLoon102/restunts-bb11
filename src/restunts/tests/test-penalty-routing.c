@@ -48,7 +48,7 @@ static void reset_route(legacy_s16 column, legacy_s16 row)
 	track_and_directory_backup = backup;
 	track_pieces_counter = 12;
 	legacy_execution_residue.penalty_route_word = -1;
-	for (unsigned i = 0; i < 904; i++) {
+	for (legacy_u32 i = 0; i < 904; i++) {
 		primary[i] = -1;
 		alternate[i] = -1;
 	}
@@ -111,11 +111,11 @@ static legacy_u32 route_fingerprint(void)
 	legacy_s16 penalty;
 	legacy_u32 hash = 2166136261UL;
 	legacy_s16 current;
-	for (unsigned sample = 0; sample < 8192; sample++) {
+	for (legacy_u32 sample = 0; sample < 8192; sample++) {
 		legacy_s16 column = random_word() % 34 - 2;
 		legacy_s16 row = random_word() % 34 - 2;
 		reset_route(column, row);
-		for (unsigned i = 0; i < 12; i++) {
+		for (legacy_u32 i = 0; i < 12; i++) {
 			primary[i] = random_word() % 15 - 2;
 			alternate[i] = random_word() % 13 - 1;
 			columns[i] = random_word() % 30;
@@ -148,7 +148,7 @@ int main(void)
 	test_branch_and_finish();
 	legacy_u32 hash = route_fingerprint();
 #ifdef PHYSICS_RECORD_BASELINE
-	fprintf(stdout, "%08lx\n", (unsigned long)hash);
+	fprintf(stdout, "%08" LEGACY_PRIx32 "\n", hash);
 #else
 	/* Deterministic inputs draw each random word once before signed conversion. */
 	assert(hash == 0xbfbfb6ddUL);

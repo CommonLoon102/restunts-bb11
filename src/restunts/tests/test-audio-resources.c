@@ -7,7 +7,7 @@
 #undef memcpy
 #undef strlen
 #undef printf
-static unsigned load_count, driver_variant;
+static legacy_u32 load_count, driver_variant;
 static legacy_u8 driver_channels;
 void dos_audio_shutdown(void)
 {
@@ -84,9 +84,9 @@ static legacy_u32 driver_fingerprint(void)
 	trace_hash = 2166136261UL;
 	static const legacy_u8 counts[] = {0, 1, 16, 127, 128, 254, 255};
 	static const char *names[] = {"adlib", "c:adlib", "c:\\snd\\mt32.drv", "pc", "xx\\snd"};
-	for (unsigned variant = 0; variant < 32; variant++) {
-		for (unsigned name = 0; name < 5; name++) {
-			for (unsigned count = 0; count < 7; count++) {
+	for (legacy_u32 variant = 0; variant < 32; variant++) {
+		for (legacy_u32 name = 0; name < 5; name++) {
+			for (legacy_u32 count = 0; count < 7; count++) {
 				reset_audio_fixture();
 				load_count = 0;
 				driver_variant = variant;
@@ -121,10 +121,10 @@ static void put_byte(legacy_u16 *offset, legacy_u8 value)
 	memory_bytes[*offset] = value;
 	*offset = (legacy_u16)(*offset + 1);
 }
-static void put_bytes(legacy_u16 offset, const void *source, unsigned length)
+static void put_bytes(legacy_u16 offset, const void *source, legacy_u32 length)
 {
 	const legacy_u8 *bytes = source;
-	for (unsigned index = 0; index < length; index++) {
+	for (legacy_u32 index = 0; index < length; index++) {
 		put_byte(&offset, bytes[index]);
 	}
 }
@@ -138,9 +138,9 @@ static void put_length(legacy_u16 offset, legacy_u16 value)
 	put_word(offset, value);
 	put_word((legacy_u16)(offset + 2), 0);
 }
-static unsigned sequence_bytes(legacy_u8 *buffer, unsigned command, unsigned variant)
+static legacy_u32 sequence_bytes(legacy_u8 *buffer, legacy_u32 command, legacy_u32 variant)
 {
-	unsigned size = 0;
+	legacy_u32 size = 0;
 	if (variant & 1) {
 		buffer[size++] = 0x81;
 	}
@@ -172,14 +172,14 @@ static unsigned sequence_bytes(legacy_u8 *buffer, unsigned command, unsigned var
 		case AUDIO_SEQUENCE_COMMAND_SKIP_PAYLOAD:
 		case AUDIO_SEQUENCE_COMMAND_SEND_DRIVER_DATA:
 			buffer[size++] = variant & 3;
-			for (unsigned index = 0; index < (variant & 3); index++) {
+			for (legacy_u32 index = 0; index < (variant & 3); index++) {
 				buffer[size++] = index + 17;
 			}
 			break;
 	}
 	return size;
 }
-static void build_song(legacy_u16 base, unsigned command, unsigned variant)
+static void build_song(legacy_u16 base, legacy_u32 command, legacy_u32 variant)
 {
 	put_word((legacy_u16)(base + 4), 3);
 	put_bytes((legacy_u16)(base + 6), variant & 4 ? "NONEtrk1trk2" : "hdr1trk1trk2", 12);
@@ -190,7 +190,7 @@ static void build_song(legacy_u16 base, unsigned command, unsigned variant)
 	put_length(header, 32);
 	legacy_u16 offset = (legacy_u16)(header + 6);
 	put_byte(&offset, variant % 3);
-	for (unsigned index = 0; index < variant % 3; index++) {
+	for (legacy_u32 index = 0; index < variant % 3; index++) {
 		put_bytes(offset, "SNAR", 4);
 		offset = (legacy_u16)(offset + 4);
 	}
@@ -203,7 +203,7 @@ static void build_song(legacy_u16 base, unsigned command, unsigned variant)
 	}
 	legacy_u16 track = (legacy_u16)(base + 30 + 768);
 	legacy_u8 bytes[32];
-	unsigned length = sequence_bytes(bytes, command, variant);
+	legacy_u32 length = sequence_bytes(bytes, command, variant);
 	put_length(track, 4 + length);
 	put_bytes((legacy_u16)(track + 4), bytes, length);
 	legacy_u16 end = (legacy_u16)(base + 30 + 1536);
@@ -215,8 +215,8 @@ static legacy_u32 mapping_fingerprint(void)
 {
 	trace_hash = 2166136261UL;
 	static const legacy_u16 offsets[] = {0, 1, 32768, 65500};
-	for (unsigned command = 0; command < 256; command++) {
-		for (unsigned variant = 0; variant < 8; variant++) {
+	for (legacy_u32 command = 0; command < 256; command++) {
+		for (legacy_u32 variant = 0; variant < 8; variant++) {
 			reset_audio_fixture();
 			build_song(offsets[variant & 3], command, variant);
 			audio_map_song_tracks(memory_bytes + offsets[variant & 3]);
@@ -228,7 +228,7 @@ static legacy_u32 mapping_fingerprint(void)
 static legacy_u32 finalize_fingerprint(void)
 {
 	trace_hash = 2166136261UL;
-	for (unsigned sample = 0; sample < 256; sample++) {
+	for (legacy_u32 sample = 0; sample < 256; sample++) {
 		reset_audio_fixture();
 		memory_bytes[4] = sample & 1;
 		memory_bytes[5] = (sample >> 1) & 1;
@@ -269,7 +269,7 @@ static void build_resource_reference(legacy_u16 base, const char *name, legacy_u
 static void test_closed_hihat_offset_mapping(void)
 {
 	static const legacy_u16 offsets[] = {0, 1, 0x1234, 0x8000, 0xabcd, 0xffff};
-	for (unsigned index = 0; index < sizeof(offsets) / sizeof(offsets[0]); index++) {
+	for (legacy_u32 index = 0; index < sizeof(offsets) / sizeof(offsets[0]); index++) {
 		reset_audio_fixture();
 		build_song(16384, AUDIO_SEQUENCE_COMMAND_BASE + AUDIO_SEQUENCE_COMMAND_STOP, 0);
 		build_resource_reference(4096, "CHHT", offsets[index]);
@@ -324,7 +324,7 @@ static void build_percussion_bank(legacy_u16 base)
 	static const char names[] = "BASDSNARTOMMRIDECRSHCHHTOHHT";
 	put_word((legacy_u16)(base + 4), 7);
 	put_bytes((legacy_u16)(base + 6), names, 28);
-	for (unsigned index = 0; index < 7; index++) {
+	for (legacy_u32 index = 0; index < 7; index++) {
 		put_length((legacy_u16)(base + 34 + index * 4), index * 64);
 	}
 }
@@ -357,7 +357,7 @@ static void test_cached_music_after_sound_effects(void)
 	build_song(32768, AUDIO_SEQUENCE_COMMAND_BASE + AUDIO_SEQUENCE_COMMAND_STOP, 0);
 	build_resource_reference(12288, "sfx", 32768);
 	build_resource_reference(2048, "ENGI", 3072);
-	for (unsigned replay = 0; replay < 3; replay++) {
+	for (legacy_u32 replay = 0; replay < 3; replay++) {
 		assert(init_audio_resources(memory_bytes + 12288, memory_bytes + 2048, "sfx") != 0);
 		assert(audio_bass_drum_resource == 0);
 		assert(audio_snare_resource == 0);
@@ -386,8 +386,8 @@ int main(void)
 	test_closed_hihat_offset_lifetime();
 	test_cached_music_after_sound_effects();
 #ifdef AUDIO_RESOURCES_BASELINE
-	printf("%08lx %08lx %08lx\n", (unsigned long)driver, (unsigned long)mapping,
-		   (unsigned long)finalize);
+	printf("%08" LEGACY_PRIx32 " %08" LEGACY_PRIx32 " %08" LEGACY_PRIx32 "\n", driver, mapping,
+		   finalize);
 #else
 	assert(driver == 0x1bed120dUL);
 	assert(mapping == 0xe9f082d5UL);

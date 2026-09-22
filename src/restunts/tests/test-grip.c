@@ -35,12 +35,12 @@ static void reset_car(void)
 	memset(&simd, 0, sizeof(simd));
 	memset(&legacy_execution_residue, 0, sizeof(legacy_execution_residue));
 	memset(elements, 0, sizeof(elements));
-	for (int index = 0; index < 30; index++) {
+	for (legacy_s32 index = 0; index < 30; index++) {
 		terrainrows[index] = index * 30;
 	}
 	track_element_map = elements;
 	car.car_sumSurfAllWheels = 4;
-	for (int index = 0; index < 4; index++) {
+	for (legacy_s32 index = 0; index < 4; index++) {
 		car.car_surfaceWhl[index] = CAR_SURFACE_PAVED;
 	}
 	car.car_actual_speed = 16000;
@@ -49,7 +49,7 @@ static void reset_car(void)
 	car.car_position.lz = 10L << 16;
 	simd.grip = 500;
 	simd.sliding = 256;
-	for (int index = 0; index < SIMD_SURFACE_GRIP_COUNT; index++) {
+	for (legacy_s32 index = 0; index < SIMD_SURFACE_GRIP_COUNT; index++) {
 		simd.surface_grip[index] = 256;
 	}
 }
@@ -88,9 +88,9 @@ static void test_contact_and_grass(void)
 	assert(car.car_actual_speed == 16000);
 	assert(car.car_slip_angle == 100);
 	assert(legacy_execution_residue.grip_stack_words[3] == 80);
-	for (int grass_count = 1; grass_count <= 4; grass_count++) {
+	for (legacy_s32 grass_count = 1; grass_count <= 4; grass_count++) {
 		reset_car();
-		for (int index = 0; index < grass_count; index++) {
+		for (legacy_s32 index = 0; index < grass_count; index++) {
 			car.car_surfaceWhl[index] = CAR_SURFACE_GRASS;
 		}
 		run_grip(GRIP_BEHAVIOR_PLAYER);
@@ -105,7 +105,7 @@ static void test_recenter_and_banking(void)
 {
 	static const legacy_s16 expected[] = {-8, -6, 0, 0, 0, 6, 8};
 	static const legacy_s16 input[] = {-8, -7, -1, 0, 1, 7, 8};
-	for (int rotation = 0; rotation < 7; rotation++) {
+	for (legacy_s32 rotation = 0; rotation < 7; rotation++) {
 		reset_car();
 		car.car_rotate.x = input[rotation];
 		run_grip(GRIP_BEHAVIOR_PLAYER);
@@ -135,11 +135,11 @@ static void configure_collision_option(const char *option)
 static void test_legacy_collision_recovery(void)
 {
 	static const char *options[] = {NULL, "/lc:on"};
-	for (unsigned int index = 0; index < sizeof(options) / sizeof(options[0]); index++) {
+	for (legacy_u32 index = 0; index < sizeof(options) / sizeof(options[0]); index++) {
 		configure_collision_option(options[index]);
 		reset_car();
 		car.car_velocity_heading_offset = -46;
-		for (int frame = 0; frame < 128; frame++) {
+		for (legacy_s32 frame = 0; frame < 128; frame++) {
 			run_grip(GRIP_BEHAVIOR_PLAYER);
 		}
 		assert(car.car_steeringAngle == CAR_STEERING_CENTERED);
@@ -163,7 +163,7 @@ static void assert_collision_recovery(legacy_s16 angle, legacy_s16 behavior, leg
 	} else {
 		car.car_slide_yaw_delta = angle;
 	}
-	for (int frame = 0; frame < 512; frame++) {
+	for (legacy_s32 frame = 0; frame < 512; frame++) {
 		legacy_s16 before = behavior == GRIP_BEHAVIOR_PLAYER ? car.car_velocity_heading_offset
 															 : car.car_slide_yaw_delta;
 		update_grip(&car, &simd, behavior);
@@ -201,7 +201,7 @@ static void test_corrected_collision_recovery(void)
 		assert_collision_recovery(angle, GRIP_BEHAVIOR_OPPONENT, 16000);
 		assert(damp_collision_angle(angle) == -damp_collision_angle(-angle));
 	}
-	for (unsigned int index = 0; index < sizeof(cases) / sizeof(cases[0]); index++) {
+	for (legacy_u32 index = 0; index < sizeof(cases) / sizeof(cases[0]); index++) {
 		assert(damp_collision_angle(cases[index].angle) == cases[index].damped);
 		/* Low speed keeps large heading offsets within the available tire grip. */
 		assert_collision_recovery(cases[index].angle, GRIP_BEHAVIOR_PLAYER, 256);
@@ -218,7 +218,7 @@ static void test_wrapped_grip_sweep(void)
 	static const legacy_s16 grips[] = {-32768, -1, 0, 1, 256, 500, 16384, 32767};
 	static const legacy_u16 speeds[] = {0, 1, 255, 256, 257, 32767, 32768, 65535};
 	legacy_u32 hash = 2166136261UL;
-	for (unsigned int sample = 0; sample < 200000; sample++) {
+	for (legacy_u32 sample = 0; sample < 200000; sample++) {
 		reset_car();
 		car.car_steeringAngle = angles[random_word() % 13];
 		car.car_velocity_heading_offset = angles[random_word() % 13];
@@ -231,27 +231,27 @@ static void test_wrapped_grip_sweep(void)
 		car.car_slidingFlag = random_word() % 2;
 		car.car_crashBmpFlag = random_word() % 3;
 		car.car_sumSurfAllWheels = random_word() % 5;
-		for (unsigned int index = 0; index < 4; index++) {
+		for (legacy_u32 index = 0; index < 4; index++) {
 			car.car_surfaceWhl[index] = random_word() % 6;
 		}
 		simd.grip = grips[random_word() % 8];
 		simd.sliding = grips[random_word() % 8];
-		for (unsigned int index = 0; index < SIMD_SURFACE_GRIP_COUNT; index++) {
+		for (legacy_u32 index = 0; index < SIMD_SURFACE_GRIP_COUNT; index++) {
 			simd.surface_grip[index] = grips[random_word() % 8];
 		}
 		elements[terrainrows[10] + 10] = 51 + random_word() % 6;
 		run_grip((legacy_s16)(sample % 3));
-		const unsigned char *bytes = (const unsigned char *)&car;
-		for (unsigned int index = 0; index < sizeof(car); index++) {
+		const legacy_u8 *bytes = (const legacy_u8 *)&car;
+		for (legacy_u32 index = 0; index < sizeof(car); index++) {
 			hash = (hash ^ bytes[index]) * 16777619UL;
 		}
-		bytes = (const unsigned char *)&legacy_execution_residue;
-		for (unsigned int index = 0; index < sizeof(legacy_execution_residue); index++) {
+		bytes = (const legacy_u8 *)&legacy_execution_residue;
+		for (legacy_u32 index = 0; index < sizeof(legacy_execution_residue); index++) {
 			hash = (hash ^ bytes[index]) * 16777619UL;
 		}
 	}
 #ifdef GRIP_RECORD_BASELINE
-	fprintf(stdout, "%08lx\n", (unsigned long)hash);
+	fprintf(stdout, "%08" LEGACY_PRIx32 "\n", hash);
 #else
 	/* Captured from the original update_grip and explicit stack-residue model. */
 	assert(hash == 0x216e96a0UL);

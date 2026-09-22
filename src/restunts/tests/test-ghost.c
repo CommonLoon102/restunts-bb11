@@ -43,11 +43,11 @@ legacy_u8 *track_element_map = test_track;
 legacy_s8 *replay_input_buffer = test_inputs;
 static legacy_s8 random_seed[GAMESTATE_RANDOM_SEED_SIZE];
 static void (*cleanup_handler)(void);
-static int simulation_loads;
-static int simulation_steps;
-static int simulation_frees;
-static int fail_write;
-static int fail_read;
+static legacy_s32 simulation_loads;
+static legacy_s32 simulation_steps;
+static legacy_s32 simulation_frees;
+static legacy_s32 fail_write;
+static legacy_s32 fail_read;
 
 struct TEST_FILE {
 	legacy_s8 name[REPLAY_FILENAME_SIZE];

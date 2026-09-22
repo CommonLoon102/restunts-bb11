@@ -26,9 +26,9 @@
 
 struct SPRITE *render_window_sprite;
 
-static uint64_t trace_hash = UINT64_C(1469598103934665603);
-static unsigned int scenario, frame_index, file_index, allocation_index, sprite_index;
-static unsigned int acceleration_step;
+static legacy_u64 trace_hash = UINT64_C(1469598103934665603);
+static legacy_u32 scenario, frame_index, file_index, allocation_index, sprite_index;
+static legacy_u32 acceleration_step;
 static legacy_u8 resource_bytes[64][32];
 static struct SHAPE2D fixture_shapes[4];
 static struct SPRITE fixture_sprites[4];
@@ -60,13 +60,13 @@ static void trace_pointer(const void *pointer)
 		trace_word(0);
 		return;
 	}
-	for (unsigned int i = 0; i < 64U; i++) {
+	for (legacy_u32 i = 0; i < 64U; i++) {
 		if (pointer == resource_bytes[i]) {
 			trace_word(100U + i);
 			return;
 		}
 	}
-	for (unsigned int i = 0; i < 4U; i++) {
+	for (legacy_u32 i = 0; i < 4U; i++) {
 		if (pointer == &fixture_sprites[i]) {
 			trace_word(200U + i);
 			return;
@@ -282,7 +282,7 @@ legacy_s16 mouse_multi_hittest(legacy_s16 count, const struct BUTTON_AREA *butto
 	trace_word(1022);
 	trace_word((legacy_u16)count);
 	trace_pointer(buttons);
-	for (unsigned int i = 0; i < (unsigned int)count; i++) {
+	for (legacy_u32 i = 0; i < (legacy_u32)count; i++) {
 		trace_word(buttons[i].x1);
 		trace_word(buttons[i].x2);
 		trace_word(buttons[i].y1);
@@ -542,7 +542,7 @@ void update_car_speed(legacy_s8 input, legacy_s16 car_index, struct CARSTATE *ca
 		(legacy_s16)((scenario % 3U == 0U ? acceleration_step % 64U : acceleration_step) * 256U);
 }
 
-static void run_car_case(unsigned int index)
+static void run_car_case(legacy_u32 index)
 {
 	legacy_s8 material = index % 6U;
 	legacy_s8 transmission = index % 2U;
@@ -559,7 +559,7 @@ static void run_car_case(unsigned int index)
 	fontnptr = (legacy_s8 *)resource_bytes[62];
 	font_glyph_height = 8;
 	game3dshapes[PLAYER_CAR_LOW_SHAPE].shape3d_numpaints = 3;
-	for (unsigned int i = 0; i < 7U; i++) {
+	for (legacy_u32 i = 0; i < 7U; i++) {
 		oppresources[i] = (legacy_s8 *)&fixture_shapes[1];
 	}
 	trace_word(index);
@@ -575,7 +575,7 @@ static void run_car_case(unsigned int index)
 
 int main(void)
 {
-	for (unsigned int index = 0; index < 102U; index++) {
+	for (legacy_u32 index = 0; index < 102U; index++) {
 		run_car_case(index);
 	}
 	/* Original implementation trace: car discovery and sorting, car changes,

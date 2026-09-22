@@ -15,21 +15,21 @@
  * Keeping these attached to byte offsets lets ordinary clipped sprite copies,
  * saved backgrounds, and dashboard masks carry their detail with them. */
 struct HIRES_SURFACE {
-	const unsigned char *base;
-	unsigned char *pixels;
-	unsigned char valid[HIRES_ADDRESS_COUNT];
+	const legacy_u8 *base;
+	legacy_u8 *pixels;
+	legacy_u8 valid[HIRES_ADDRESS_COUNT];
 	struct HIRES_SURFACE *next;
 };
 
 static struct HIRES_SURFACE *surfaces;
 static struct HIRES_SURFACE *active;
 static struct SPRITE active_sprite;
-static int enabled;
-static unsigned long generation;
-static unsigned char *framebuffer;
-static float *inverse_depth;
+static legacy_s32 enabled;
+static legacy_u32 generation;
+static legacy_u8 *framebuffer;
+static legacy_f32 *inverse_depth;
 static legacy_u16 *depth_family;
-static int depth_left, depth_right, depth_top, depth_bottom;
+static legacy_s32 depth_left, depth_right, depth_top, depth_bottom;
 
 static void *hires_allocate(size_t size)
 {
@@ -41,7 +41,7 @@ static void *hires_allocate(size_t size)
 	return result;
 }
 
-static struct HIRES_SURFACE *hires_find(const unsigned char *base)
+static struct HIRES_SURFACE *hires_find(const legacy_u8 *base)
 {
 	for (struct HIRES_SURFACE *surface = surfaces; surface != NULL; surface = surface->next) {
 		if (surface->base == base) {
@@ -51,7 +51,7 @@ static struct HIRES_SURFACE *hires_find(const unsigned char *base)
 	return NULL;
 }
 
-static struct HIRES_SURFACE *hires_create(const unsigned char *base)
+static struct HIRES_SURFACE *hires_create(const legacy_u8 *base)
 {
 	struct HIRES_SURFACE *surface = hires_find(base);
 	if (surface == NULL) {
@@ -64,9 +64,9 @@ static struct HIRES_SURFACE *hires_create(const unsigned char *base)
 	return surface;
 }
 
-static unsigned char *hires_cell(struct HIRES_SURFACE *surface, legacy_u16 offset)
+static legacy_u8 *hires_cell(struct HIRES_SURFACE *surface, legacy_u16 offset)
 {
-	unsigned char *cell = surface->pixels + (size_t)offset * HIRES_CELL_PIXELS;
+	legacy_u8 *cell = surface->pixels + (size_t)offset * HIRES_CELL_PIXELS;
 	if (!surface->valid[offset]) {
 		memset(cell, surface->base[offset], HIRES_CELL_PIXELS);
 		surface->valid[offset] = 1;
@@ -99,7 +99,7 @@ void hires_shutdown(void)
 	generation++;
 }
 
-void hires_set_enabled(int value)
+void hires_set_enabled(legacy_s32 value)
 {
 	value = value != 0;
 	if (value == enabled) {
@@ -109,31 +109,31 @@ void hires_set_enabled(int value)
 	enabled = value;
 }
 
-int hires_enabled(void)
+legacy_s32 hires_enabled(void)
 {
 	return enabled;
 }
 
-unsigned long hires_generation(void)
+legacy_u32 hires_generation(void)
 {
 	return generation;
 }
 
-int hires_begin(const struct SPRITE *target)
+legacy_s32 hires_begin(const struct SPRITE *target)
 {
 	if (!enabled || active != NULL) {
 		return 0;
 	}
-	const unsigned char *base =
+	const legacy_u8 *base =
 		dos_memory_make_pointer(dos_memory_pointer_segment(target->sprite_bitmapptr), 0);
 	active = hires_create(base);
 	active_sprite = *target;
 	hires_depth_reset();
 	/* Seed the background before the legacy 3D pass overwrites its pixels. */
-	for (unsigned int y = target->sprite_top; y < target->sprite_bottom && y < 200; y++) {
+	for (legacy_u32 y = target->sprite_top; y < target->sprite_bottom && y < 200; y++) {
 		legacy_u16 row = LEGACY_READ_U16_LE(target->sprite_lineofs + y * 2);
-		for (unsigned int x = target->sprite_raster_left;
-			 x < target->sprite_raster_right && x < 320; x++) {
+		for (legacy_u32 x = target->sprite_raster_left; x < target->sprite_raster_right && x < 320;
+			 x++) {
 			hires_cell(active, (legacy_u16)(row + x));
 		}
 	}
@@ -152,16 +152,16 @@ void hires_end(void)
 /* Every shape keeps the existing scene painter order, but resolves its own
  * overlapping surfaces by depth. Clear only the current projected bounds;
  * family zero invalidates an old depth without clearing another float array. */
-void hires_depth_begin(int left, int right, int top, int bottom)
+void hires_depth_begin(legacy_s32 left, legacy_s32 right, legacy_s32 top, legacy_s32 bottom)
 {
 	hires_depth_reset();
 	if (active == NULL) {
 		return;
 	}
-	int clip_left = active_sprite.sprite_raster_left * HIRES_SCALE;
-	int clip_right = active_sprite.sprite_raster_right * HIRES_SCALE;
-	int clip_top = active_sprite.sprite_top * HIRES_SCALE;
-	int clip_bottom = active_sprite.sprite_bottom * HIRES_SCALE;
+	legacy_s32 clip_left = active_sprite.sprite_raster_left * HIRES_SCALE;
+	legacy_s32 clip_right = active_sprite.sprite_raster_right * HIRES_SCALE;
+	legacy_s32 clip_top = active_sprite.sprite_top * HIRES_SCALE;
+	legacy_s32 clip_bottom = active_sprite.sprite_bottom * HIRES_SCALE;
 	if (clip_left < 0) {
 		clip_left = 0;
 	}
@@ -197,13 +197,14 @@ void hires_depth_begin(int left, int right, int top, int bottom)
 	depth_right = right;
 	depth_top = top;
 	depth_bottom = bottom;
-	for (int y = top; y < bottom; y++) {
+	for (legacy_s32 y = top; y < bottom; y++) {
 		memset(depth_family + (size_t)y * HIRES_WIDTH + left, 0,
 			   (size_t)(right - left) * sizeof(*depth_family));
 	}
 }
 
-int hires_depth_test(int x, int y, double inverse_z, legacy_u16 family, int attached)
+legacy_s32 hires_depth_test(legacy_s32 x, legacy_s32 y, legacy_f64 inverse_z, legacy_u16 family,
+							legacy_s32 attached)
 {
 	if (active == NULL || x < depth_left || x >= depth_right || y < depth_top ||
 		y >= depth_bottom || !(inverse_z > 0) || inverse_z > FLT_MAX || family == 0) {
@@ -215,7 +216,7 @@ int hires_depth_test(int x, int y, double inverse_z, legacy_u16 family, int atta
 		 * parent's occlusion depth while allowing its authored paint order. */
 		return 1;
 	}
-	float depth = (float)inverse_z;
+	legacy_f32 depth = (legacy_f32)inverse_z;
 	if (depth_family[index] != 0 &&
 		depth + 4 * FLT_EPSILON * inverse_depth[index] < inverse_depth[index]) {
 		return 0;
@@ -225,7 +226,7 @@ int hires_depth_test(int x, int y, double inverse_z, legacy_u16 family, int atta
 	return 1;
 }
 
-void hires_pixel(int x, int y, unsigned char color)
+void hires_pixel(legacy_s32 x, legacy_s32 y, legacy_u8 color)
 {
 	if (active == NULL || x < 0 || y < 0 || x >= HIRES_WIDTH || y >= HIRES_HEIGHT ||
 		x < active_sprite.sprite_raster_left * HIRES_SCALE ||
@@ -235,11 +236,11 @@ void hires_pixel(int x, int y, unsigned char color)
 		return;
 	}
 	legacy_u16 row = LEGACY_READ_U16_LE(active_sprite.sprite_lineofs + (y / HIRES_SCALE) * 2);
-	unsigned char *cell = hires_cell(active, (legacy_u16)(row + x / HIRES_SCALE));
+	legacy_u8 *cell = hires_cell(active, (legacy_u16)(row + x / HIRES_SCALE));
 	cell[(y % HIRES_SCALE) * HIRES_SCALE + x % HIRES_SCALE] = color;
 }
 
-void hires_write(const unsigned char *base, legacy_u16 offset, unsigned char color)
+void hires_write(const legacy_u8 *base, legacy_u16 offset, legacy_u8 color)
 {
 	(void)color;
 	if (!enabled || active != NULL) {
@@ -253,9 +254,9 @@ void hires_write(const unsigned char *base, legacy_u16 offset, unsigned char col
 	}
 }
 
-void hires_raster(const unsigned char *destination, legacy_u16 destination_offset,
-				  const unsigned char *source, legacy_u16 source_offset, legacy_u16 count,
-				  legacy_s16 operation, const unsigned char *palette)
+void hires_raster(const legacy_u8 *destination, legacy_u16 destination_offset,
+				  const legacy_u8 *source, legacy_u16 source_offset, legacy_u16 count,
+				  legacy_s16 operation, const legacy_u8 *palette)
 {
 	if (!enabled || active != NULL || count == 0) {
 		return;
@@ -268,20 +269,20 @@ void hires_raster(const unsigned char *destination, legacy_u16 destination_offse
 	if (dst == NULL) {
 		dst = hires_create(destination);
 	}
-	for (unsigned int index = 0; index < count; index++) {
+	for (legacy_u32 index = 0; index < count; index++) {
 		legacy_u16 so = (legacy_u16)(source_offset + index);
 		legacy_u16 dest = (legacy_u16)(destination_offset + index);
-		unsigned char source_color = source[so];
-		unsigned char *cell = hires_cell(dst, dest);
+		legacy_u8 source_color = source[so];
+		legacy_u8 *cell = hires_cell(dst, dest);
 		/* Match the game's forward traversal, including overlapping copies. */
-		unsigned char samples[HIRES_CELL_PIXELS];
+		legacy_u8 samples[HIRES_CELL_PIXELS];
 		if (src != NULL && src->valid[so]) {
 			memcpy(samples, src->pixels + (size_t)so * HIRES_CELL_PIXELS, sizeof(samples));
 		} else {
 			memset(samples, source_color, sizeof(samples));
 		}
-		for (int sample = 0; sample < HIRES_CELL_PIXELS; sample++) {
-			unsigned char value = samples[sample];
+		for (legacy_s32 sample = 0; sample < HIRES_CELL_PIXELS; sample++) {
+			legacy_u8 value = samples[sample];
 			if (operation == SHAPE2D_RASTER_AND) {
 				cell[sample] &= value;
 			} else if (operation == SHAPE2D_RASTER_OR) {
@@ -354,7 +355,7 @@ void hires_forget_range(const void *base, legacy_u32 size)
 	}
 }
 
-const unsigned char *hires_framebuffer(const unsigned char *legacy, int *width, int *height)
+const legacy_u8 *hires_framebuffer(const legacy_u8 *legacy, legacy_s32 *width, legacy_s32 *height)
 {
 	*width = enabled ? HIRES_WIDTH : 320;
 	*height = enabled ? HIRES_HEIGHT : 200;
@@ -365,14 +366,14 @@ const unsigned char *hires_framebuffer(const unsigned char *legacy, int *width, 
 		framebuffer = hires_allocate(HIRES_WIDTH * HIRES_HEIGHT);
 	}
 	struct HIRES_SURFACE *surface = hires_find(legacy);
-	for (int y = 0; y < 200; y++) {
-		for (int x = 0; x < 320; x++) {
-			unsigned int offset = y * 320 + x;
-			const unsigned char *cell = surface != NULL && surface->valid[offset]
-											? surface->pixels + offset * HIRES_CELL_PIXELS
-											: NULL;
-			for (int row = 0; row < HIRES_SCALE; row++) {
-				unsigned char *out =
+	for (legacy_s32 y = 0; y < 200; y++) {
+		for (legacy_s32 x = 0; x < 320; x++) {
+			legacy_u32 offset = y * 320 + x;
+			const legacy_u8 *cell = surface != NULL && surface->valid[offset]
+										? surface->pixels + offset * HIRES_CELL_PIXELS
+										: NULL;
+			for (legacy_s32 row = 0; row < HIRES_SCALE; row++) {
+				legacy_u8 *out =
 					framebuffer + (y * HIRES_SCALE + row) * HIRES_WIDTH + x * HIRES_SCALE;
 				if (cell != NULL) {
 					memcpy(out, cell + row * HIRES_SCALE, HIRES_SCALE);

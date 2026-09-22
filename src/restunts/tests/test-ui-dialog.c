@@ -14,11 +14,11 @@ legacy_s16 dialog_fnt_colour;
 legacy_s16 dialog_background_color;
 legacy_s16 performGraphColor;
 
-static uint64_t trace_hash = UINT64_C(1469598103934665603);
+static legacy_u64 trace_hash = UINT64_C(1469598103934665603);
 static legacy_u16 scripted_keys[16];
 static legacy_s16 scripted_hits[16];
-static unsigned int input_index;
-static unsigned int timer_calls;
+static legacy_u32 input_index;
+static legacy_u32 timer_calls;
 static legacy_s16 save_succeeds;
 
 static void trace_word(legacy_u16 value)
@@ -146,14 +146,14 @@ legacy_s16 mouse_multi_hittest(legacy_s16 count, const struct BUTTON_AREA *butto
 	return scripted_hits[input_index - 1U];
 }
 
-static void configure_input(unsigned int scenario, legacy_s16 choice_count)
+static void configure_input(legacy_u32 scenario, legacy_s16 choice_count)
 {
 	static const legacy_u16 navigation[] = {0, KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT, 'X'};
-	for (unsigned int i = 0; i < 16U; i++) {
+	for (legacy_u32 i = 0; i < 16U; i++) {
 		scripted_keys[i] = KEY_ENTER;
 		scripted_hits[i] = -1;
 	}
-	for (unsigned int i = 0; i < 6U; i++) {
+	for (legacy_u32 i = 0; i < 6U; i++) {
 		scripted_keys[i] = navigation[(scenario + i) % 6U];
 		if ((scenario + i) % 3U == 0U) {
 			scripted_hits[i] = (scenario + i) % choice_count;
@@ -175,7 +175,7 @@ static void configure_input(unsigned int scenario, legacy_s16 choice_count)
 	timer_calls = 0;
 }
 
-static void run_dialog_case(unsigned int scenario)
+static void run_dialog_case(legacy_u32 scenario)
 {
 	static const legacy_s8 *texts[] = {(const legacy_s8 *)"Heading]Text @ here}@[ Alpha][ Beta]",
 									   (const legacy_s8 *)"Heading]Text} [ Alpha] [ Beta] [ Gamma]",
@@ -184,7 +184,7 @@ static void run_dialog_case(unsigned int scenario)
 	legacy_s16 type = scenario % 7U;
 	legacy_s16 count = scenario % 2U == 0U ? 2 : 3;
 	legacy_s16 choices[40];
-	for (unsigned int i = 0; i < 40U; i++) {
+	for (legacy_u32 i = 0; i < 40U; i++) {
 		choices[i] = 0;
 	}
 	if (scenario % 5U == 0U) {
@@ -203,7 +203,7 @@ static void run_dialog_case(unsigned int scenario)
 		scenario % 3U == 1U ? DIALOG_AUTO_POSITION : (legacy_u16)(scenario % 250U), 3,
 		scenario % 3U == 0U && type != DIALOG_TYPE_PLACEHOLDERS ? 0 : choices, scenario % count);
 	trace_word(result);
-	for (unsigned int i = 0; i < 40U; i++) {
+	for (legacy_u32 i = 0; i < 40U; i++) {
 		trace_word(choices[i]);
 	}
 	trace_word(dialog_background_color);
@@ -211,13 +211,13 @@ static void run_dialog_case(unsigned int scenario)
 
 int main(void)
 {
-	for (unsigned int scenario = 0; scenario < 420U; scenario++) {
+	for (legacy_u32 scenario = 0; scenario < 420U; scenario++) {
 		run_dialog_case(scenario);
 	}
 	/* Trace includes drawing, geometry, disabled choices, placeholders, input polling
 	 * and background lifetime, with one call per integer conversion. */
 #ifdef DIALOG_RECORD_BASELINE
-	fprintf(stdout, "test-ui-dialog.c=0x%016llx\n", (unsigned long long)trace_hash);
+	fprintf(stdout, "test-ui-dialog.c=0x%016" LEGACY_PRIx64 "\n", trace_hash);
 #else
 	assert(trace_hash == UINT64_C(0x5b92617a4f634339));
 #endif

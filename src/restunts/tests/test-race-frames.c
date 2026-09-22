@@ -8,10 +8,10 @@
 #undef printf
 #undef memset
 
-static uint32_t trace_hash = UINT32_C(2166136261);
-static unsigned scenario, frames, keys;
-static unsigned scripted_rewind;
-static unsigned presented_frames;
+static legacy_u32 trace_hash = UINT32_C(2166136261);
+static legacy_u32 scenario, frames, keys;
+static legacy_u32 scripted_rewind;
+static legacy_u32 presented_frames;
 
 void frame_supersight_reset(void)
 {
@@ -42,7 +42,7 @@ static struct RECTANGLE dirty_rect;
 static legacy_s8 text_resource[8];
 static void trace(legacy_u32 value)
 {
-	for (unsigned i = 0; i < 4; i++) {
+	for (legacy_u32 i = 0; i < 4; i++) {
 		trace_hash = (trace_hash ^ (value & 255U)) * UINT32_C(16777619);
 		value >>= 8;
 	}
@@ -373,7 +373,7 @@ int main(void)
 		trace(is_in_replay);
 	}
 #ifdef RACE_FRAMES_RECORD_BASELINE
-	printf("Race frame fingerprint: %08x\n", (unsigned)trace_hash);
+	printf("Race frame fingerprint: %08" LEGACY_PRIx32 "\n", trace_hash);
 #else
 	assert(trace_hash == UINT32_C(0xe6335ceb));
 #endif

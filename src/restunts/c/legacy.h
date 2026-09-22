@@ -1,6 +1,7 @@
 #ifndef RESTUNTS_LEGACY_H
 #define RESTUNTS_LEGACY_H
 
+#include <float.h>
 #include <limits.h>
 
 /* Preserve segmented pointers for the Open Watcom 16-bit DOS build. */
@@ -16,11 +17,22 @@
 #define huge
 #endif
 
-/* Exact-width integers for behavior inherited from the 16-bit executable. */
+/* Keep native numeric types at compiler/library boundaries. Game state and
+ * arithmetic use these checked widths, independent of the host data model. */
+#if CHAR_BIT != 8 || SCHAR_MAX != 127 || SCHAR_MIN != (-127 - 1)
+#error Restunts requires exact 8-bit bytes
+#endif
 typedef signed char legacy_s8;
 typedef unsigned char legacy_u8;
+#if SHRT_MAX == 32767 && USHRT_MAX == 65535U
 typedef signed short legacy_s16;
 typedef unsigned short legacy_u16;
+#elif INT_MAX == 32767 && UINT_MAX == 65535U
+typedef signed int legacy_s16;
+typedef unsigned int legacy_u16;
+#else
+#error Restunts requires an exact 16-bit integer type
+#endif
 
 #define LEGACY_BYTE_BITS 8U
 #define LEGACY_WORD_BITS 16U
@@ -42,21 +54,70 @@ typedef unsigned short legacy_u16;
 #define LEGACY_X86_ROTATE16_COUNT_MASK 15U
 #define LEGACY_X86_SHIFT_COUNT_MASK 31U
 
-#if UINT_MAX == 4294967295UL
+/* printf fragments follow the selected types, including default promotions. */
+#if INT_MAX == 2147483647L && UINT_MAX == 4294967295UL
 typedef signed int legacy_s32;
 typedef unsigned int legacy_u32;
-#elif ULONG_MAX == 4294967295UL
+#define LEGACY_PRId32 "d"
+#define LEGACY_PRIu32 "u"
+#define LEGACY_PRIx32 "x"
+#define LEGACY_PRIX32 "X"
+#elif LONG_MAX == 2147483647L && ULONG_MAX == 4294967295UL
 typedef signed long legacy_s32;
 typedef unsigned long legacy_u32;
+#define LEGACY_PRId32 "ld"
+#define LEGACY_PRIu32 "lu"
+#define LEGACY_PRIx32 "lx"
+#define LEGACY_PRIX32 "lX"
+#elif SHRT_MAX == 2147483647L && USHRT_MAX == 4294967295UL
+typedef signed short legacy_s32;
+typedef unsigned short legacy_u32;
+#define LEGACY_PRId32 "hd"
+#define LEGACY_PRIu32 "hu"
+#define LEGACY_PRIx32 "hx"
+#define LEGACY_PRIX32 "hX"
 #else
 #error Restunts requires an exact 32-bit integer type
 #endif
+
+/* Wider intermediates are needed by road clipping and platform timers. */
+#if LLONG_MAX == 9223372036854775807LL && ULLONG_MAX == 18446744073709551615ULL
+typedef signed long long legacy_s64;
+typedef unsigned long long legacy_u64;
+#define LEGACY_PRId64 "lld"
+#define LEGACY_PRIu64 "llu"
+#define LEGACY_PRIx64 "llx"
+#define LEGACY_PRIX64 "llX"
+#elif LONG_MAX == 9223372036854775807LL && ULONG_MAX == 18446744073709551615ULL
+typedef signed long legacy_s64;
+typedef unsigned long legacy_u64;
+#define LEGACY_PRId64 "ld"
+#define LEGACY_PRIu64 "lu"
+#define LEGACY_PRIx64 "lx"
+#define LEGACY_PRIX64 "lX"
+#else
+#error Restunts requires an exact 64-bit integer type
+#endif
+
+/* The high-resolution renderer requires binary32 storage and binary64 math. */
+#if FLT_RADIX != 2 || FLT_MANT_DIG != 24 || FLT_MIN_EXP != -125 || FLT_MAX_EXP != 128
+#error Restunts requires a 32-bit binary floating-point type
+#endif
+#if DBL_MANT_DIG != 53 || DBL_MIN_EXP != -1021 || DBL_MAX_EXP != 1024
+#error Restunts requires a 64-bit binary floating-point type
+#endif
+typedef float legacy_f32;
+typedef double legacy_f64;
 
 typedef char legacy_byte_must_be_8_bits[(CHAR_BIT == 8) ? 1 : -1];
 typedef char legacy_s16_must_be_2_bytes[(sizeof(legacy_s16) == 2) ? 1 : -1];
 typedef char legacy_u16_must_be_2_bytes[(sizeof(legacy_u16) == 2) ? 1 : -1];
 typedef char legacy_s32_must_be_4_bytes[(sizeof(legacy_s32) == 4) ? 1 : -1];
 typedef char legacy_u32_must_be_4_bytes[(sizeof(legacy_u32) == 4) ? 1 : -1];
+typedef char legacy_s64_must_be_8_bytes[(sizeof(legacy_s64) == 8) ? 1 : -1];
+typedef char legacy_u64_must_be_8_bytes[(sizeof(legacy_u64) == 8) ? 1 : -1];
+typedef char legacy_f32_must_be_4_bytes[(sizeof(legacy_f32) == 4) ? 1 : -1];
+typedef char legacy_f64_must_be_8_bytes[(sizeof(legacy_f64) == 8) ? 1 : -1];
 
 legacy_u16 legacy_u16_div_or_zero(legacy_u16 numerator, legacy_u16 denominator);
 legacy_s16 legacy_s16_div_or_zero(legacy_s16 numerator, legacy_s16 denominator);

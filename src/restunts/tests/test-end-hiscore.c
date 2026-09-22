@@ -25,9 +25,9 @@
 #undef printf
 
 struct SPRITE *render_window_sprite;
-static uint64_t trace_hash = UINT64_C(1469598103934665603);
-static unsigned int scenario, input_index, mouse_index, track_attempts;
-static unsigned int allocation_index, sprite_index, random_index;
+static legacy_u64 trace_hash = UINT64_C(1469598103934665603);
+static legacy_u32 scenario, input_index, mouse_index, track_attempts;
+static legacy_u32 allocation_index, sprite_index, random_index;
 static legacy_u8 resource_bytes[16][32];
 static legacy_u8 fixture_track[1802];
 static legacy_u8 fixture_map[1802];
@@ -72,13 +72,13 @@ static void trace_pointer(const void *pointer)
 		trace_word(4);
 		return;
 	}
-	for (unsigned int i = 0; i < 16U; i++) {
+	for (legacy_u32 i = 0; i < 16U; i++) {
 		if (pointer == resource_bytes[i]) {
 			trace_word(100U + i);
 			return;
 		}
 	}
-	for (unsigned int i = 0; i < 4U; i++) {
+	for (legacy_u32 i = 0; i < 4U; i++) {
 		if (pointer == &fixture_sprites[i]) {
 			trace_word(200U + i);
 			return;
@@ -401,7 +401,7 @@ legacy_s16 mouse_multi_hittest(legacy_s16 count, const struct BUTTON_AREA *butto
 	trace_word(1035);
 	trace_word((legacy_u16)count);
 	trace_pointer(buttons);
-	for (unsigned int i = 0; i < (unsigned int)count; i++) {
+	for (legacy_u32 i = 0; i < (legacy_u32)count; i++) {
 		trace_word(buttons[i].x1);
 		trace_word(buttons[i].x2);
 		trace_word(buttons[i].y1);
@@ -553,19 +553,19 @@ void unload_resource(void *resptr)
 	trace_pointer(resptr);
 }
 
-static void initialize_score_fixture(unsigned int index)
+static void initialize_score_fixture(legacy_u32 index)
 {
 	legacy_u8 *bytes = (legacy_u8 *)fixture_scores;
-	for (unsigned int i = 0; i < sizeof(fixture_scores); i++) {
+	for (legacy_u32 i = 0; i < sizeof(fixture_scores); i++) {
 		bytes[i] = 0;
 	}
-	for (unsigned int i = 0; i < HIGHSCORE_ENTRY_COUNT; i++) {
+	for (legacy_u32 i = 0; i < HIGHSCORE_ENTRY_COUNT; i++) {
 		_strcpy(fixture_scores[i].player_name, (const legacy_s8 *)"Player");
 		_strcpy(fixture_scores[i].car_name, (const legacy_s8 *)"Car");
 		_strcpy(fixture_scores[i].opponent, (const legacy_s8 *)"Opp");
 		fixture_scores[i].time = 1000U + 20U * i;
 	}
-	for (unsigned int i = 0; i < 1802U; i++) {
+	for (legacy_u32 i = 0; i < 1802U; i++) {
 		fixture_track[i] = fixture_map[i] = i % 256U;
 	}
 	if (index % 5U == 3U) {
@@ -575,7 +575,7 @@ static void initialize_score_fixture(unsigned int index)
 	track_element_map = fixture_map;
 }
 
-static void initialize_end_screen(unsigned int index)
+static void initialize_end_screen(legacy_u32 index)
 {
 	initialize_score_fixture(index);
 	scenario = index;
@@ -613,7 +613,7 @@ static void initialize_end_screen(unsigned int index)
 	end_outcome_variant = index % 4U;
 }
 
-static void run_end_screen_case(unsigned int index)
+static void run_end_screen_case(legacy_u32 index)
 {
 	initialize_end_screen(index);
 	trace_word(index);
@@ -625,24 +625,24 @@ static void run_end_screen_case(unsigned int index)
 	trace_word(previous_end_opening_variant);
 	trace_word(previous_end_closing_variant);
 	trace_word(previous_end_outcome_variant);
-	for (unsigned int i = 0; i < sizeof(fixture_scores); i++) {
+	for (legacy_u32 i = 0; i < sizeof(fixture_scores); i++) {
 		trace_word(((legacy_u8 *)fixture_scores)[i]);
 	}
-	for (unsigned int i = 0; i < HIGHSCORE_ENTRY_COUNT; i++) {
+	for (legacy_u32 i = 0; i < HIGHSCORE_ENTRY_COUNT; i++) {
 		trace_word(ranking_entry_order[i]);
 	}
 }
 
 int main(void)
 {
-	for (unsigned int index = 0; index < 360U; index++) {
+	for (legacy_u32 index = 0; index < 360U; index++) {
 		run_end_screen_case(index);
 	}
 	/* Full-entry trace includes race outcomes, score eligibility, disk retry/cancel,
 	 * text variants, animations, table entry, menu toggles and cleanup. Native
 	 * integer conversions evaluate font and shape metric calls only once. */
 #ifdef HIGHSCORE_RECORD_BASELINE
-	fprintf(stdout, "highscore=0x%016llx\n", (unsigned long long)trace_hash);
+	fprintf(stdout, "highscore=0x%016" LEGACY_PRIx64 "\n", trace_hash);
 #else
 	assert(trace_hash == UINT64_C(0x0294efe4d2efdda5));
 #endif

@@ -9,7 +9,7 @@
 #undef memset
 
 static legacy_u8 record[22] = {0, 0, 0, 4, RENDER_PRIMITIVE_POLYGON, 0};
-static unsigned draw_calls;
+static legacy_u32 draw_calls;
 static legacy_u16 drawn_colors[3];
 static legacy_u16 drawn_pattern;
 
@@ -122,7 +122,7 @@ static void test_original_material_table_boundaries(void)
 		static const legacy_u8 colored_primitives[] = {
 			RENDER_PRIMITIVE_LINE, RENDER_PRIMITIVE_SPHERE, RENDER_PRIMITIVE_POINT,
 			RENDER_PRIMITIVE_WHEEL};
-		for (unsigned primitive = 0; primitive < sizeof(colored_primitives); primitive++) {
+		for (legacy_u32 primitive = 0; primitive < sizeof(colored_primitives); primitive++) {
 			render_material(material, colored_primitives[primitive]);
 			assert(draw_calls == 1);
 			assert(drawn_colors[0] == original_extended_color(material));

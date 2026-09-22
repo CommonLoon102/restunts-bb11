@@ -8,11 +8,11 @@
 
 #define KEY_BUFFER_CAPACITY 64U
 
-static bool keys[SDL_SCANCODE_COUNT];
-static bool consumed_keys[SDL_SCANCODE_COUNT];
+static legacy_u8 keys[SDL_SCANCODE_COUNT];
+static legacy_u8 consumed_keys[SDL_SCANCODE_COUNT];
 static legacy_u16 key_buffer[KEY_BUFFER_CAPACITY];
-static unsigned int key_read;
-static unsigned int key_count;
+static legacy_u32 key_read;
+static legacy_u32 key_count;
 static legacy_s16 mouse_x;
 static legacy_s16 mouse_y;
 static legacy_s16 mouse_buttons;
@@ -20,20 +20,20 @@ static legacy_s16 mouse_min_x;
 static legacy_s16 mouse_min_y;
 static legacy_s16 mouse_max_x = 319;
 static legacy_s16 mouse_max_y = 199;
-static bool mouse_available;
+static legacy_u8 mouse_available;
 struct MOUSE_TRANSITION {
 	legacy_s16 buttons;
 	legacy_s16 x;
 	legacy_s16 y;
 };
 static struct MOUSE_TRANSITION mouse_transitions[KEY_BUFFER_CAPACITY];
-static unsigned int mouse_transition_read;
-static unsigned int mouse_transition_count;
-static bool joystick_initialized;
+static legacy_u32 mouse_transition_read;
+static legacy_u32 mouse_transition_count;
+static legacy_u8 joystick_initialized;
 static legacy_u8 joystick_enabled;
 static SDL_Joystick *joystick;
-static bool pumping;
-static Uint64 last_event_poll;
+static legacy_u8 pumping;
+static legacy_u64 last_event_poll;
 
 static const legacy_u8 dos_kb_keymap1[91] = {
 	0,	 27,  49,  50,	51,	 52,  53,  54,	55,	 56,  57,  48,	45,	 61,  8,   9,	113, 119, 101,
@@ -70,97 +70,97 @@ static const legacy_u8 dos_kb_keymap5[92] = {
 	32,	 0,	  248, 249, 250, 251, 252, 253, 254, 255, 128, 129, 0,	 0,	  199, 200, 201, 45,  203,
 	204, 205, 43,  207, 208, 209, 210, 211, 0,	 0,	  0,   0,	0,	 0,	  0,   0};
 
-static const SDL_Scancode scancodes[] = {SDL_SCANCODE_UNKNOWN,
-										 SDL_SCANCODE_ESCAPE,
-										 SDL_SCANCODE_1,
-										 SDL_SCANCODE_2,
-										 SDL_SCANCODE_3,
-										 SDL_SCANCODE_4,
-										 SDL_SCANCODE_5,
-										 SDL_SCANCODE_6,
-										 SDL_SCANCODE_7,
-										 SDL_SCANCODE_8,
-										 SDL_SCANCODE_9,
-										 SDL_SCANCODE_0,
-										 SDL_SCANCODE_MINUS,
-										 SDL_SCANCODE_EQUALS,
-										 SDL_SCANCODE_BACKSPACE,
-										 SDL_SCANCODE_TAB,
-										 SDL_SCANCODE_Q,
-										 SDL_SCANCODE_W,
-										 SDL_SCANCODE_E,
-										 SDL_SCANCODE_R,
-										 SDL_SCANCODE_T,
-										 SDL_SCANCODE_Y,
-										 SDL_SCANCODE_U,
-										 SDL_SCANCODE_I,
-										 SDL_SCANCODE_O,
-										 SDL_SCANCODE_P,
-										 SDL_SCANCODE_LEFTBRACKET,
-										 SDL_SCANCODE_RIGHTBRACKET,
-										 SDL_SCANCODE_RETURN,
-										 SDL_SCANCODE_LCTRL,
-										 SDL_SCANCODE_A,
-										 SDL_SCANCODE_S,
-										 SDL_SCANCODE_D,
-										 SDL_SCANCODE_F,
-										 SDL_SCANCODE_G,
-										 SDL_SCANCODE_H,
-										 SDL_SCANCODE_J,
-										 SDL_SCANCODE_K,
-										 SDL_SCANCODE_L,
-										 SDL_SCANCODE_SEMICOLON,
-										 SDL_SCANCODE_APOSTROPHE,
-										 SDL_SCANCODE_GRAVE,
-										 SDL_SCANCODE_LSHIFT,
-										 SDL_SCANCODE_BACKSLASH,
-										 SDL_SCANCODE_Z,
-										 SDL_SCANCODE_X,
-										 SDL_SCANCODE_C,
-										 SDL_SCANCODE_V,
-										 SDL_SCANCODE_B,
-										 SDL_SCANCODE_N,
-										 SDL_SCANCODE_M,
-										 SDL_SCANCODE_COMMA,
-										 SDL_SCANCODE_PERIOD,
-										 SDL_SCANCODE_SLASH,
-										 SDL_SCANCODE_RSHIFT,
-										 SDL_SCANCODE_KP_MULTIPLY,
-										 SDL_SCANCODE_LALT,
-										 SDL_SCANCODE_SPACE,
-										 SDL_SCANCODE_CAPSLOCK,
-										 SDL_SCANCODE_F1,
-										 SDL_SCANCODE_F2,
-										 SDL_SCANCODE_F3,
-										 SDL_SCANCODE_F4,
-										 SDL_SCANCODE_F5,
-										 SDL_SCANCODE_F6,
-										 SDL_SCANCODE_F7,
-										 SDL_SCANCODE_F8,
-										 SDL_SCANCODE_F9,
-										 SDL_SCANCODE_F10,
-										 SDL_SCANCODE_NUMLOCKCLEAR,
-										 SDL_SCANCODE_SCROLLLOCK,
-										 SDL_SCANCODE_HOME,
-										 SDL_SCANCODE_UP,
-										 SDL_SCANCODE_PAGEUP,
-										 SDL_SCANCODE_KP_MINUS,
-										 SDL_SCANCODE_LEFT,
-										 SDL_SCANCODE_KP_5,
-										 SDL_SCANCODE_RIGHT,
-										 SDL_SCANCODE_KP_PLUS,
-										 SDL_SCANCODE_END,
-										 SDL_SCANCODE_DOWN,
-										 SDL_SCANCODE_PAGEDOWN,
-										 SDL_SCANCODE_INSERT,
-										 SDL_SCANCODE_DELETE,
-										 SDL_SCANCODE_UNKNOWN,
-										 SDL_SCANCODE_UNKNOWN,
-										 SDL_SCANCODE_NONUSBACKSLASH,
-										 SDL_SCANCODE_F11,
-										 SDL_SCANCODE_F12};
+static const legacy_u32 scancodes[] = {SDL_SCANCODE_UNKNOWN,
+									   SDL_SCANCODE_ESCAPE,
+									   SDL_SCANCODE_1,
+									   SDL_SCANCODE_2,
+									   SDL_SCANCODE_3,
+									   SDL_SCANCODE_4,
+									   SDL_SCANCODE_5,
+									   SDL_SCANCODE_6,
+									   SDL_SCANCODE_7,
+									   SDL_SCANCODE_8,
+									   SDL_SCANCODE_9,
+									   SDL_SCANCODE_0,
+									   SDL_SCANCODE_MINUS,
+									   SDL_SCANCODE_EQUALS,
+									   SDL_SCANCODE_BACKSPACE,
+									   SDL_SCANCODE_TAB,
+									   SDL_SCANCODE_Q,
+									   SDL_SCANCODE_W,
+									   SDL_SCANCODE_E,
+									   SDL_SCANCODE_R,
+									   SDL_SCANCODE_T,
+									   SDL_SCANCODE_Y,
+									   SDL_SCANCODE_U,
+									   SDL_SCANCODE_I,
+									   SDL_SCANCODE_O,
+									   SDL_SCANCODE_P,
+									   SDL_SCANCODE_LEFTBRACKET,
+									   SDL_SCANCODE_RIGHTBRACKET,
+									   SDL_SCANCODE_RETURN,
+									   SDL_SCANCODE_LCTRL,
+									   SDL_SCANCODE_A,
+									   SDL_SCANCODE_S,
+									   SDL_SCANCODE_D,
+									   SDL_SCANCODE_F,
+									   SDL_SCANCODE_G,
+									   SDL_SCANCODE_H,
+									   SDL_SCANCODE_J,
+									   SDL_SCANCODE_K,
+									   SDL_SCANCODE_L,
+									   SDL_SCANCODE_SEMICOLON,
+									   SDL_SCANCODE_APOSTROPHE,
+									   SDL_SCANCODE_GRAVE,
+									   SDL_SCANCODE_LSHIFT,
+									   SDL_SCANCODE_BACKSLASH,
+									   SDL_SCANCODE_Z,
+									   SDL_SCANCODE_X,
+									   SDL_SCANCODE_C,
+									   SDL_SCANCODE_V,
+									   SDL_SCANCODE_B,
+									   SDL_SCANCODE_N,
+									   SDL_SCANCODE_M,
+									   SDL_SCANCODE_COMMA,
+									   SDL_SCANCODE_PERIOD,
+									   SDL_SCANCODE_SLASH,
+									   SDL_SCANCODE_RSHIFT,
+									   SDL_SCANCODE_KP_MULTIPLY,
+									   SDL_SCANCODE_LALT,
+									   SDL_SCANCODE_SPACE,
+									   SDL_SCANCODE_CAPSLOCK,
+									   SDL_SCANCODE_F1,
+									   SDL_SCANCODE_F2,
+									   SDL_SCANCODE_F3,
+									   SDL_SCANCODE_F4,
+									   SDL_SCANCODE_F5,
+									   SDL_SCANCODE_F6,
+									   SDL_SCANCODE_F7,
+									   SDL_SCANCODE_F8,
+									   SDL_SCANCODE_F9,
+									   SDL_SCANCODE_F10,
+									   SDL_SCANCODE_NUMLOCKCLEAR,
+									   SDL_SCANCODE_SCROLLLOCK,
+									   SDL_SCANCODE_HOME,
+									   SDL_SCANCODE_UP,
+									   SDL_SCANCODE_PAGEUP,
+									   SDL_SCANCODE_KP_MINUS,
+									   SDL_SCANCODE_LEFT,
+									   SDL_SCANCODE_KP_5,
+									   SDL_SCANCODE_RIGHT,
+									   SDL_SCANCODE_KP_PLUS,
+									   SDL_SCANCODE_END,
+									   SDL_SCANCODE_DOWN,
+									   SDL_SCANCODE_PAGEDOWN,
+									   SDL_SCANCODE_INSERT,
+									   SDL_SCANCODE_DELETE,
+									   SDL_SCANCODE_UNKNOWN,
+									   SDL_SCANCODE_UNKNOWN,
+									   SDL_SCANCODE_NONUSBACKSLASH,
+									   SDL_SCANCODE_F11,
+									   SDL_SCANCODE_F12};
 
-static unsigned int legacy_scancode(SDL_Scancode code)
+static legacy_u32 legacy_scancode(legacy_u32 code)
 {
 	switch (code) {
 		case SDL_SCANCODE_RCTRL:
@@ -192,7 +192,7 @@ static unsigned int legacy_scancode(SDL_Scancode code)
 		default:
 			break;
 	}
-	for (unsigned int index = 1; index < SDL_arraysize(scancodes); index++) {
+	for (legacy_u32 index = 1; index < SDL_arraysize(scancodes); index++) {
 		if (scancodes[index] == code) {
 			return index;
 		}
@@ -202,10 +202,10 @@ static unsigned int legacy_scancode(SDL_Scancode code)
 
 static void input_key(const SDL_KeyboardEvent *event)
 {
-	if ((unsigned int)event->scancode >= SDL_SCANCODE_COUNT) {
+	if ((legacy_u32)event->scancode >= SDL_SCANCODE_COUNT) {
 		return;
 	}
-	bool was_pressed = keys[event->scancode];
+	legacy_u8 was_pressed = keys[event->scancode];
 	keys[event->scancode] = event->down;
 	if (!event->down) {
 		consumed_keys[event->scancode] = false;
@@ -226,7 +226,7 @@ static void input_key(const SDL_KeyboardEvent *event)
 		}
 		return;
 	}
-	unsigned int scan = legacy_scancode(event->scancode);
+	legacy_u32 scan = legacy_scancode(event->scancode);
 	if (scan == 0) {
 		return;
 	}
@@ -266,7 +266,7 @@ static void input_key(const SDL_KeyboardEvent *event)
 	key_buffer[(key_read + key_count++) % KEY_BUFFER_CAPACITY] = value;
 }
 
-static legacy_s16 clamp_mouse(float coordinate, legacy_s16 minimum, legacy_s16 maximum)
+static legacy_s16 clamp_mouse(legacy_f32 coordinate, legacy_s16 minimum, legacy_s16 maximum)
 {
 	if (coordinate < minimum) {
 		return minimum;
@@ -277,10 +277,10 @@ static legacy_s16 clamp_mouse(float coordinate, legacy_s16 minimum, legacy_s16 m
 	return (legacy_s16)coordinate;
 }
 
-static void input_mouse_position(float window_x, float window_y)
+static void input_mouse_position(legacy_f32 window_x, legacy_f32 window_y)
 {
-	float x;
-	float y;
+	legacy_f32 x;
+	legacy_f32 y;
 	sdl3_video_window_to_game(window_x, window_y, &x, &y);
 	mouse_x = clamp_mouse(x, mouse_min_x, mouse_max_x);
 	mouse_y = clamp_mouse(y, mouse_min_y, mouse_max_y);
@@ -297,9 +297,10 @@ static void open_joystick(void)
 			return;
 		}
 	}
+	/* SDL writes a native int through this output pointer. */
 	int count;
 	SDL_JoystickID *ids = SDL_GetJoysticks(&count);
-	for (int index = 0; index < count && joystick == NULL; index++) {
+	for (legacy_s32 index = 0; index < count && joystick == NULL; index++) {
 		joystick = SDL_OpenJoystick(ids[index]);
 	}
 	SDL_free(ids);
@@ -316,7 +317,7 @@ void sdl3_platform_pump(void)
 	}
 	pumping = true;
 	SDL_Event event;
-	bool poll_events =
+	legacy_u8 poll_events =
 		SDL_GetTicks() != last_event_poll || SDL_HasEvents(SDL_EVENT_FIRST, SDL_EVENT_LAST);
 	while (poll_events && SDL_PollEvent(&event)) {
 		switch (event.type) {
@@ -435,16 +436,15 @@ void kb_exit_handler(void)
 legacy_s16 kb_get_key_state(legacy_s16 key)
 {
 	sdl3_platform_pump();
-	if (key <= 0 || (unsigned int)key >= SDL_arraysize(scancodes)) {
+	if (key <= 0 || (legacy_u32)key >= SDL_arraysize(scancodes)) {
 		return 0;
 	}
 	if (keys[scancodes[key]] && !consumed_keys[scancodes[key]]) {
 		return 1;
 	}
 	/* Distinct SDL keys share the original XT scancode (keypad, right modifiers). */
-	for (unsigned int code = 1; code < SDL_SCANCODE_COUNT; code++) {
-		if (keys[code] && !consumed_keys[code] &&
-			legacy_scancode((SDL_Scancode)code) == (unsigned int)key) {
+	for (legacy_u32 code = 1; code < SDL_SCANCODE_COUNT; code++) {
+		if (keys[code] && !consumed_keys[code] && legacy_scancode(code) == (legacy_u32)key) {
 			return 1;
 		}
 	}
@@ -526,8 +526,8 @@ void dos_mouse_set_position(legacy_s16 x, legacy_s16 y)
 	mouse_x = clamp_mouse(x, mouse_min_x, mouse_max_x);
 	mouse_y = clamp_mouse(y, mouse_min_y, mouse_max_y);
 	if (sdl3_video_window() != NULL) {
-		float window_x;
-		float window_y;
+		legacy_f32 window_x;
+		legacy_f32 window_y;
 		sdl3_video_game_to_window(mouse_x, mouse_y, &window_x, &window_y);
 		SDL_WarpMouseInWindow(sdl3_video_window(), window_x, window_y);
 	}
@@ -593,8 +593,8 @@ legacy_s16 dos_get_joy_flags(void)
 		return 0;
 	}
 	legacy_s16 flags = 0;
-	Sint16 x = SDL_GetJoystickAxis(joystick, 0);
-	Sint16 y = SDL_GetJoystickAxis(joystick, 1);
+	legacy_s16 x = SDL_GetJoystickAxis(joystick, 0);
+	legacy_s16 y = SDL_GetJoystickAxis(joystick, 1);
 	if (x < -16384) {
 		flags |= 8;
 	} else if (x >= 16384) {
@@ -606,7 +606,7 @@ legacy_s16 dos_get_joy_flags(void)
 		flags |= 2;
 	}
 	if (SDL_GetNumJoystickHats(joystick) > 0) {
-		Uint8 hat = SDL_GetJoystickHat(joystick, 0);
+		legacy_u8 hat = SDL_GetJoystickHat(joystick, 0);
 		if (hat & SDL_HAT_UP) {
 			flags |= 1;
 		}

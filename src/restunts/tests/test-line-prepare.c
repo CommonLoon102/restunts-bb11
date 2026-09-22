@@ -32,7 +32,7 @@ static void test_line_modes(void)
 
 	reset_clip();
 	legacy_u16 line[DRAW_LINE_WORD_COUNT];
-	for (unsigned i = 0; i < sizeof(cases) / sizeof(cases[0]); i++) {
+	for (legacy_u32 i = 0; i < sizeof(cases) / sizeof(cases[0]); i++) {
 		memset(line, 0, sizeof(line));
 		line[DRAW_LINE_COLOR_INDEX] = 37;
 		assert(line_prepare_clipped(100, 100, 100 + cases[i].dx, 100 + cases[i].dy, line) == 0);
@@ -59,7 +59,7 @@ static void test_step_rounding(void)
 
 	reset_clip();
 	legacy_u16 line[DRAW_LINE_WORD_COUNT];
-	for (unsigned i = 0; i < sizeof(cases) / sizeof(cases[0]); i++) {
+	for (legacy_u32 i = 0; i < sizeof(cases) / sizeof(cases[0]); i++) {
 		for (legacy_u16 mode = DRAW_LINE_MODE_Y_MAJOR_LEFT; mode <= DRAW_LINE_MODE_X_MAJOR_RIGHT;
 			 mode++) {
 			legacy_s16 dx = mode < DRAW_LINE_MODE_X_MAJOR_LEFT ? cases[i].minor : cases[i].major;
@@ -67,7 +67,7 @@ static void test_step_rounding(void)
 			if (mode == DRAW_LINE_MODE_Y_MAJOR_LEFT || mode == DRAW_LINE_MODE_X_MAJOR_LEFT) {
 				dx = -dx;
 			}
-			for (unsigned reverse = 0; reverse < 2; reverse++) {
+			for (legacy_u32 reverse = 0; reverse < 2; reverse++) {
 				memset(line, 0, sizeof(line));
 				assert(line_prepare_unclipped(reverse ? 160 + dx : 160, reverse ? 25 + dy : 25,
 											  reverse ? 160 : 160 + dx, reverse ? 25 : 25 + dy,
@@ -121,8 +121,8 @@ static legacy_u32 line_fingerprint(legacy_u16 unclipped, legacy_u16 wide_coordin
 	legacy_u16 coordinates[4];
 	legacy_u32 seed = 271828UL;
 	legacy_u32 hash = 2166136261UL;
-	for (unsigned iteration = 0; iteration < 50000; iteration++) {
-		for (unsigned i = 0; i < 4; i++) {
+	for (legacy_u32 iteration = 0; iteration < 50000; iteration++) {
+		for (legacy_u32 i = 0; i < 4; i++) {
 			coordinates[i] = random_word(&seed);
 			if (wide_coordinates == 0) {
 				coordinates[i] = (legacy_u16)(coordinates[i] % 1000 - 300);
@@ -136,7 +136,7 @@ static legacy_u32 line_fingerprint(legacy_u16 unclipped, legacy_u16 wide_coordin
 			coordinates[0] %= 320;
 			coordinates[2] %= 320;
 		}
-		for (unsigned i = 0; i < DRAW_LINE_WORD_COUNT; i++) {
+		for (legacy_u32 i = 0; i < DRAW_LINE_WORD_COUNT; i++) {
 			line[i] = random_word(&seed);
 		}
 		legacy_u16 result;
@@ -148,7 +148,7 @@ static legacy_u32 line_fingerprint(legacy_u16 unclipped, legacy_u16 wide_coordin
 										  coordinates[3], line);
 		}
 		hash = (hash ^ result) * 16777619UL;
-		for (unsigned i = 0; i < DRAW_LINE_WORD_COUNT; i++) {
+		for (legacy_u32 i = 0; i < DRAW_LINE_WORD_COUNT; i++) {
 			hash = (hash ^ line[i]) * 16777619UL;
 		}
 	}
@@ -164,7 +164,7 @@ int main(void)
 	test_line_modes();
 	test_step_rounding();
 	test_clipped_endpoints();
-	for (unsigned i = 0; i < 4; i++) {
+	for (legacy_u32 i = 0; i < 4; i++) {
 		assert(line_fingerprint(i & 1U, i >> 1U) == expected[i]);
 	}
 	return 0;

@@ -13,7 +13,7 @@ struct TRACKOBJECT trkObjectList[215];
 legacy_s16 camera_track_height_offset;
 legacy_u8 supersight_enabled;
 
-static uint64_t trace_hash = UINT64_C(1469598103934665603);
+static legacy_u64 trace_hash = UINT64_C(1469598103934665603);
 static legacy_s16 fixture_plane_distance;
 static legacy_s16 transform_stop_at;
 static legacy_s16 transform_count;
@@ -225,7 +225,7 @@ static void test_camera_modes(void)
 	camera_track_height_offset = 25;
 	planindex = 2;
 	struct FRAME_CAMERA camera;
-	for (unsigned int scenario = 0; scenario < 64U; scenario++) {
+	for (legacy_u32 scenario = 0; scenario < 64U; scenario++) {
 		memset(&camera, 0, sizeof(camera));
 		followOpponentFlag = (scenario / 4U) % 2U;
 		cameramode = scenario % 4U;
@@ -256,23 +256,23 @@ static void test_covered_tiles(void)
 	static const legacy_s8 offsets[] = {-128, -1, 0, 126, 127};
 	struct FRAME_LOOKAHEAD_TILE lookahead[24];
 	struct FRAME_TILE_SELECTION tiles;
-	for (unsigned int flag = 0; flag < 5U; flag++) {
+	for (legacy_u32 flag = 0; flag < 5U; flag++) {
 		trkObjectList[1].ss_multiTileFlag = flag;
-		for (unsigned int east = 0; east < 5U; east++) {
-			for (unsigned int south = 0; south < 5U; south++) {
+		for (legacy_u32 east = 0; east < 5U; east++) {
+			for (legacy_u32 south = 0; south < 5U; south++) {
 				memset(&tiles, 0, sizeof(tiles));
 				tiles.lookahead = lookahead;
 				tile.element = 1;
 				tile.east = offsets[east];
 				tile.south = offsets[south];
-				for (unsigned int index = 0; index < 24U; index++) {
+				for (legacy_u32 index = 0; index < 24U; index++) {
 					lookahead[index].east = LEGACY_S8_WRAP_ADD(offsets[east], (index % 3U) - 1U);
 					lookahead[index].south =
 						LEGACY_S8_WRAP_ADD(offsets[south], (index / 3U) % 3U - 1U);
 					tiles.markers[index] = index % 3U;
 				}
 				frame_mark_covered_tiles(&tiles, &tile, 22);
-				for (unsigned int index = 0; index < 24U; index++) {
+				for (legacy_u32 index = 0; index < 24U; index++) {
 					trace_word(tiles.markers[index]);
 				}
 			}
@@ -301,7 +301,7 @@ static void configure_track(void)
 	track_terrain_map = terrain_map;
 	track_element_map = element_map;
 	roadside_sign_indices_by_tile = sign_map;
-	for (unsigned int index = 0; index < 30U; index++) {
+	for (legacy_u32 index = 0; index < 30U; index++) {
 		terrainrows[index] = trackrows[index] = index * 30U;
 		track_column_centers[index] = index * 1024U + 512U;
 		track_row_centers[index] = 30000 - index * 1024U;
@@ -315,7 +315,7 @@ static void test_tile_selection(void)
 	struct FRAME_LOOKAHEAD_TILE lookahead[24];
 	struct FRAME_CAMERA camera;
 	struct FRAME_TILE_SELECTION tiles;
-	for (unsigned int scenario = 0; scenario < 30U; scenario++) {
+	for (legacy_u32 scenario = 0; scenario < 30U; scenario++) {
 		memset(&camera, 0, sizeof(camera));
 		memset(&tiles, 0x35, sizeof(tiles));
 		configure_track();
@@ -325,7 +325,7 @@ static void test_tile_selection(void)
 		state.playerstate.car_position.lx = 10L * 65536L;
 		state.playerstate.car_position.lz = 19L * 65536L;
 		tiles.lookahead = lookahead;
-		for (unsigned int index = 0; index < 24U; index++) {
+		for (legacy_u32 index = 0; index < 24U; index++) {
 			lookahead[index].east = (legacy_s8)(index % 5U - 2U);
 			lookahead[index].south = (legacy_s8)(index / 5U - 2U);
 			lookahead[index].detail = index % 3U;
@@ -338,7 +338,7 @@ static void test_tile_selection(void)
 		element_map[11 + 11 * 30] = TRACK_TILE_CONTINUATION_SOUTHEAST;
 		terrain_map[10 + 10 * 30] = scenario % 3U == 0 ? 7 : 0;
 		frame_select_tiles(&tiles, &camera);
-		for (unsigned int index = 0; index < 24U; index++) {
+		for (legacy_u32 index = 0; index < 24U; index++) {
 			trace_word(tiles.markers[index]);
 			trace_word(tiles.east[index]);
 			trace_word(tiles.south[index]);
@@ -357,7 +357,7 @@ static void test_terrain_exhaustion(void)
 	camera.position.y = 250;
 	camera.position.z = 400;
 	struct FRAME_TILE tile;
-	for (unsigned int scenario = 0; scenario < 24U; scenario++) {
+	for (legacy_u32 scenario = 0; scenario < 24U; scenario++) {
 		configure_track();
 		reset_shapes();
 		memset(&tile, 0, sizeof(tile));
@@ -381,7 +381,7 @@ static void test_terrain_exhaustion(void)
 static void test_sorted_shapes(void)
 {
 	struct FRAME_CAR_RENDER cars[2];
-	for (unsigned int scenario = 0; scenario < 36U; scenario++) {
+	for (legacy_u32 scenario = 0; scenario < 36U; scenario++) {
 		reset_shapes();
 		memset(cars, 0, sizeof(cars));
 		state.playerstate.car_is_braking = scenario % 2U;
@@ -389,7 +389,7 @@ static void test_sorted_shapes(void)
 		state.playerstate.car_crashBmpFlag = CRASH_EVENT_COLLISION;
 		state.opponentstate.car_crashBmpFlag = scenario % 2U == 0 ? CRASH_EVENT_COLLISION : 0;
 		transformedshape_counter = scenario % 5U;
-		for (unsigned int index = 0; index < 5U; index++) {
+		for (legacy_u32 index = 0; index < 5U; index++) {
 			currenttransshape[index].shapeptr = &game3dshapes[index];
 			transformed_shape_sort_types[index] = index % 4U;
 			transformedshape_indices[index] = index;
@@ -413,7 +413,7 @@ static void test_track_elements_and_flags(void)
 	struct FRAME_TILE tile;
 	struct FRAME_CAR_RENDER cars[2];
 	legacy_s8 overlay;
-	for (unsigned int scenario = 0; scenario < 32U; scenario++) {
+	for (legacy_u32 scenario = 0; scenario < 32U; scenario++) {
 		configure_track();
 		reset_shapes();
 		memset(&tile, 0, sizeof(tile));
@@ -447,14 +447,14 @@ static void test_track_elements_and_flags(void)
 		start_flag_animation = scenario * 33U;
 		track_angle = scenario * 17U;
 		hillFlag = scenario % 2U;
-		for (unsigned int index = 0; index < 4U; index++) {
+		for (legacy_u32 index = 0; index < 4U; index++) {
 			flag_vertices[index].x = index;
 			flag_vertices[index].y = index * 30U;
 			flag_vertices[index].z = -10;
 		}
 		frame_add_start_flag(&tile, &camera, 8);
 		trace_word(transformedshape_counter);
-		for (unsigned int index = 0; index < (unsigned int)transformedshape_counter; index++) {
+		for (legacy_u32 index = 0; index < (legacy_u32)transformedshape_counter; index++) {
 			trace_shape(&currenttransshape[index]);
 			trace_word(transformedshape_zarray[index]);
 		}
@@ -484,7 +484,7 @@ static void test_ghost_uses_independent_visual_state(void)
 	lookahead[0].south = 9;
 	tiles.lookahead = lookahead;
 	tiles.count = FRAME_LOOKAHEAD_TILE_COUNT;
-	for (unsigned index = 1; index < FRAME_LOOKAHEAD_TILE_COUNT; index++) {
+	for (legacy_u32 index = 1; index < FRAME_LOOKAHEAD_TILE_COUNT; index++) {
 		tiles.markers[index] = FRAME_TILE_UNAVAILABLE_MARKER;
 	}
 	reset_shapes();
@@ -595,17 +595,17 @@ static void test_supersight_selection(void)
 	camera.position.x = 15 * 1024;
 	camera.position.z = 14 * 1024;
 	supersight_enabled = 1;
-	for (unsigned heading = 0; heading < 8; heading++) {
+	for (legacy_u32 heading = 0; heading < 8; heading++) {
 		for (detail_level = 0; detail_level < 5; detail_level++) {
 			struct FRAME_TILE_SELECTION tiles = {0};
 			configure_track();
 			tiles.lookahead = &headings[heading];
 			frame_select_tiles(&tiles, &camera);
 			assert(tiles.count == FRAME_SUPERSIGHT_TILE_COUNT);
-			for (unsigned i = 0; i < FRAME_SUPERSIGHT_TILE_COUNT; i++) {
+			for (legacy_u32 i = 0; i < FRAME_SUPERSIGHT_TILE_COUNT; i++) {
 				assert(tiles.markers[i] == FRAME_TILE_DRAW_MARKER);
 				assert(tiles.lookahead[i].detail == supersight_tiles[i].priority);
-				for (unsigned j = 0; j < i; j++) {
+				for (legacy_u32 j = 0; j < i; j++) {
 					assert(tiles.east[i] != tiles.east[j] || tiles.south[i] != tiles.south[j]);
 				}
 			}
@@ -613,13 +613,13 @@ static void test_supersight_selection(void)
 		}
 	}
 	/* Expanded view still respects the scenery option and map boundaries. */
-	for (unsigned corner = 0; corner < 4; corner++) {
+	for (legacy_u32 corner = 0; corner < 4; corner++) {
 		struct FRAME_TILE_SELECTION tiles = {0};
 		camera.position.x = corner & 1 ? 29 * 1024 : 0;
 		camera.position.z = corner & 2 ? 29 * 1024 : 0;
 		tiles.lookahead = &headings[corner * 2];
 		frame_select_tiles(&tiles, &camera);
-		for (unsigned i = 0; i < FRAME_SUPERSIGHT_TILE_COUNT; i++) {
+		for (legacy_u32 i = 0; i < FRAME_SUPERSIGHT_TILE_COUNT; i++) {
 			if (tiles.markers[i] == FRAME_TILE_DRAW_MARKER) {
 				assert(tiles.east[i] >= 0 && tiles.east[i] <= 29);
 				assert(tiles.south[i] >= 0 && tiles.south[i] <= 29);
@@ -674,7 +674,7 @@ static void test_supersight_capacity_retries(void)
 	 * probe recovers quality within sixteen presented frames without relying
 	 * on advancing simulation time. */
 	transform_capacity = 200;
-	for (unsigned frame = 1; frame <= FRAME_SUPERSIGHT_PROBE_INTERVAL; frame++) {
+	for (legacy_u32 frame = 1; frame <= FRAME_SUPERSIGHT_PROBE_INTERVAL; frame++) {
 		polyinfo_reset();
 		legacy_s16 resets = queue_resets;
 		tiles.lookahead = &north;
@@ -718,7 +718,7 @@ int main(void)
 	 * pointer width: camera modes, tile selection, queue exhaustion, sorted
 	 * brake paint, component geometry and animated start-flag vertices. */
 #ifdef FRAME_RECORD_BASELINE
-	printf("Frame rendering fingerprint: %016llx\n", (unsigned long long)trace_hash);
+	printf("Frame rendering fingerprint: %016" LEGACY_PRIx64 "\n", trace_hash);
 #else
 	assert(trace_hash == UINT64_C(0x1f0a24dd55dcfc37));
 #endif

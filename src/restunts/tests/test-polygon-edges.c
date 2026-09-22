@@ -23,7 +23,7 @@ static legacy_u32 random_word(legacy_u32 *seed)
 static void test_row_selection(void)
 {
 	legacy_s16 edges[EDGE_ROWS * 2U];
-	for (unsigned i = 0; i < EDGE_ROWS; i++) {
+	for (legacy_u32 i = 0; i < EDGE_ROWS; i++) {
 		edges[i] = 10;
 		edges[EDGE_ROWS + i] = 20;
 	}
@@ -59,7 +59,7 @@ static void test_final_x_major_carry(void)
 	legacy_s16 edges[EDGE_ROWS * 2U];
 	for (legacy_u16 mode = DRAW_LINE_MODE_X_MAJOR_LEFT; mode <= DRAW_LINE_MODE_X_MAJOR_RIGHT;
 		 mode++) {
-		for (unsigned i = 0; i < EDGE_ROWS * 2U; i++) {
+		for (legacy_u32 i = 0; i < EDGE_ROWS * 2U; i++) {
 			edges[i] = 99;
 		}
 		line[DRAW_LINE_MODE_AND_CLIP_INDEX] = mode;
@@ -107,7 +107,7 @@ static legacy_u32 edge_fingerprint(legacy_u16 choose_edge_per_row, legacy_u16 ne
 	legacy_s16 edges[EDGE_ROWS * 2U];
 	legacy_u32 seed = 314159UL;
 	legacy_u32 hash = 2166136261UL;
-	for (unsigned iteration = 0; iteration < 8192; iteration++) {
+	for (legacy_u32 iteration = 0; iteration < 8192; iteration++) {
 		memset(line, 0, sizeof(line));
 		line[DRAW_LINE_MODE_AND_CLIP_INDEX] = iteration % 11;
 		line[DRAW_LINE_START_X_INDEX] = random_word(&seed);
@@ -117,14 +117,14 @@ static legacy_u32 edge_fingerprint(legacy_u16 choose_edge_per_row, legacy_u16 ne
 		line[DRAW_LINE_END_Y_INDEX] = 350;
 		line[DRAW_LINE_PIXEL_COUNT_INDEX] = random_word(&seed) % 100;
 		line[DRAW_LINE_STEP_INDEX] = random_word(&seed);
-		for (unsigned i = DRAW_LINE_START_LEFT_CLIP_COUNT_INDEX; i < DRAW_LINE_WORD_COUNT; i++) {
+		for (legacy_u32 i = DRAW_LINE_START_LEFT_CLIP_COUNT_INDEX; i < DRAW_LINE_WORD_COUNT; i++) {
 			line[i] = random_word(&seed) % 8;
 		}
-		for (unsigned i = 0; i < EDGE_ROWS * 2U; i++) {
+		for (legacy_u32 i = 0; i < EDGE_ROWS * 2U; i++) {
 			edges[i] = LEGACY_S16_FROM_BITS((legacy_u16)random_word(&seed));
 		}
 		polygon_merge_second_edge(line, choose_edge_per_row, needs_clipping, edges);
-		for (unsigned i = 0; i < EDGE_ROWS * 2U; i++) {
+		for (legacy_u32 i = 0; i < EDGE_ROWS * 2U; i++) {
 			hash = (hash ^ (legacy_u16)edges[i]) * 16777619UL;
 		}
 	}
@@ -140,7 +140,7 @@ static legacy_u32 first_edge_fingerprint(legacy_s16 clipping_mode)
 	legacy_s16 edges[EDGE_ROWS * 2U];
 	legacy_u32 seed = 161803UL;
 	legacy_u32 hash = 2166136261UL;
-	for (unsigned iteration = 0; iteration < 8192; iteration++) {
+	for (legacy_u32 iteration = 0; iteration < 8192; iteration++) {
 		memset(line, 0, sizeof(line));
 		line[DRAW_LINE_MODE_AND_CLIP_INDEX] = iteration % 11;
 		line[DRAW_LINE_START_X_INDEX] = random_word(&seed);
@@ -150,14 +150,14 @@ static legacy_u32 first_edge_fingerprint(legacy_s16 clipping_mode)
 		line[DRAW_LINE_END_Y_INDEX] = 350;
 		line[DRAW_LINE_PIXEL_COUNT_INDEX] = random_word(&seed) % 100;
 		line[DRAW_LINE_STEP_INDEX] = random_word(&seed);
-		for (unsigned i = DRAW_LINE_START_LEFT_CLIP_COUNT_INDEX; i < DRAW_LINE_WORD_COUNT; i++) {
+		for (legacy_u32 i = DRAW_LINE_START_LEFT_CLIP_COUNT_INDEX; i < DRAW_LINE_WORD_COUNT; i++) {
 			line[i] = random_word(&seed) % 8;
 		}
-		for (unsigned i = 0; i < EDGE_ROWS * 2U; i++) {
+		for (legacy_u32 i = 0; i < EDGE_ROWS * 2U; i++) {
 			edges[i] = LEGACY_S16_FROM_BITS((legacy_u16)random_word(&seed));
 		}
 		generate_poly_edges(edges, line, clipping_mode);
-		for (unsigned i = 0; i < EDGE_ROWS * 2U; i++) {
+		for (legacy_u32 i = 0; i < EDGE_ROWS * 2U; i++) {
 			hash = (hash ^ (legacy_u16)edges[i]) * 16777619UL;
 		}
 	}
@@ -174,16 +174,17 @@ int main(void)
 	test_row_selection();
 	test_final_x_major_carry();
 	test_clip_padding();
-	for (unsigned i = 0; i < 4; i++) {
+	for (legacy_u32 i = 0; i < 4; i++) {
 #ifdef PRERENDER_RECORD_BASELINE
-		fprintf(stdout, "edge%u=%08lx\n", i, (unsigned long)edge_fingerprint(i & 1U, i >> 1U));
+		fprintf(stdout, "edge%" LEGACY_PRIu32 "=%08" LEGACY_PRIx32 "\n", i,
+				edge_fingerprint(i & 1U, i >> 1U));
 #else
 		assert(edge_fingerprint(i & 1U, i >> 1U) == expected[i]);
 #endif
 	}
 #ifdef PRERENDER_RECORD_BASELINE
-	fprintf(stdout, "%08lx %08lx\n", (unsigned long)first_edge_fingerprint(0),
-			(unsigned long)first_edge_fingerprint(1));
+	fprintf(stdout, "%08" LEGACY_PRIx32 " %08" LEGACY_PRIx32 "\n", first_edge_fingerprint(0),
+			first_edge_fingerprint(1));
 #else
 	/* First-edge baselines include untouched rows and clipping padding. */
 	assert(first_edge_fingerprint(0) == 0xa0fcb7b7UL);

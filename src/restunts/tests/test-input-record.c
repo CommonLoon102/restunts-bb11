@@ -21,8 +21,8 @@ struct CARSTATE *ghost_car_state(void)
 }
 
 static legacy_u32 trace_hash, random_state = 1;
-static unsigned fps_reset_count;
-static unsigned supersight_reset_count;
+static legacy_u32 fps_reset_count;
+static legacy_u32 supersight_reset_count;
 
 void frame_supersight_reset(void)
 {
@@ -35,7 +35,7 @@ void frame_fps_reset(void)
 }
 static legacy_u16 keyboard_char, joystick_flags;
 static legacy_s16 key_states[128], mouse_samples[4][3], joystick_axis;
-static unsigned mouse_sample_index;
+static legacy_u32 mouse_sample_index;
 static legacy_u8 joystick_enabled, segments_match, nested_callback;
 static legacy_s8 replay_bytes[12000], response_table[256];
 static struct GAMESTATE snapshots[41];
@@ -88,7 +88,7 @@ legacy_s16 dos_data_stack_segments_match(void)
 }
 void dos_mouse_get_state(legacy_s16 *buttons, legacy_s16 *x, legacy_s16 *y)
 {
-	unsigned index = mouse_sample_index;
+	legacy_u32 index = mouse_sample_index;
 	hash_word(5);
 	*buttons = mouse_samples[index][0];
 	*x = mouse_samples[index][1];
@@ -244,17 +244,17 @@ static legacy_u32 input_fingerprint(void)
 {
 	trace_hash = 2166136261UL;
 	static const legacy_s16 deltas[] = {-32768, -1, 0, 1, 20, 21, 500, 501, 10000, 20001, 32767};
-	for (unsigned sample = 0; sample < 2048; sample++) {
+	for (legacy_u32 sample = 0; sample < 2048; sample++) {
 		reset_inputs();
 		input_elapsed_frames = deltas[sample % 11];
 		input_mouse_repeat_at = deltas[(sample / 11) % 11];
 		input_joystick_repeat_at = deltas[(sample / 121) % 11];
 		mouse_transparent_mode = sample & 1;
 		mouse_background_dirty = (sample >> 1) & 1;
-		for (unsigned step = 0; step < 4; step++) {
+		for (legacy_u32 step = 0; step < 4; step++) {
 			keyboard_char = random_word() % 3 == 0 ? KEY_ESCAPE : 0;
 			joystick_flags = random_word() & 63;
-			for (unsigned i = 0; i < 10; i++) {
+			for (legacy_u32 i = 0; i < 10; i++) {
 				key_states[input_key_scancodes[i]] = random_word() % 8 == 0;
 			}
 			mouse_samples[step][0] = random_word() & 3;
@@ -269,10 +269,10 @@ static legacy_u32 input_fingerprint(void)
 static legacy_u32 scrollbar_fingerprint(void)
 {
 	trace_hash = 2166136261UL;
-	for (unsigned horizontal = 0; horizontal < 2; horizontal++) {
-		for (unsigned operation = 0; operation < 3; operation++) {
-			for (unsigned position = 0; position < 8; position++) {
-				for (unsigned drag = 0; drag < 3; drag++) {
+	for (legacy_u32 horizontal = 0; horizontal < 2; horizontal++) {
+		for (legacy_u32 operation = 0; operation < 3; operation++) {
+			for (legacy_u32 position = 0; position < 8; position++) {
+				for (legacy_u32 drag = 0; drag < 3; drag++) {
 					reset_inputs();
 					legacy_s16 x = 20;
 					mouse_xpos = x + (horizontal ? position * 15 : 2);
@@ -281,9 +281,9 @@ static legacy_u32 scrollbar_fingerprint(void)
 					mouse_samples[0][0] = 1;
 					mouse_samples[1][0] = 0;
 					mouse_samples[0][1] = mouse_samples[1][1] =
-						mouse_xpos + (horizontal ? (int)drag * 70 - 70 : 0);
+						mouse_xpos + (horizontal ? (legacy_s32)drag * 70 - 70 : 0);
 					mouse_samples[0][2] = mouse_samples[1][2] =
-						mouse_ypos + (horizontal ? 0 : (int)drag * 70 - 70);
+						mouse_ypos + (horizontal ? 0 : (legacy_s32)drag * 70 - 70);
 					legacy_s16 result = scrollbar_update(operation, x, horizontal ? 120 : 6, y,
 														 horizontal ? 6 : 120, 3, 2, 10);
 					hash_input_state(result);
@@ -294,7 +294,7 @@ static legacy_u32 scrollbar_fingerprint(void)
 	return trace_hash;
 }
 
-static void configure_record_sample(unsigned sample)
+static void configure_record_sample(legacy_u32 sample)
 {
 	reset_inputs();
 	framespersec = sample & 1 ? 10 : 20;
@@ -314,10 +314,10 @@ static void configure_record_sample(unsigned sample)
 	key_states[KEY_SCAN_GEAR_DOWN] = sample & 2;
 	mouse_samples[0][0] = sample % 4;
 	mouse_samples[0][1] = sample % 321;
-	for (unsigned i = 0; i < 12000; i++) {
+	for (legacy_u32 i = 0; i < 12000; i++) {
 		replay_bytes[i] = (legacy_s8)(i * 31 + sample);
 	}
-	for (unsigned i = 0; i < 41; i++) {
+	for (legacy_u32 i = 0; i < 41; i++) {
 		memset(&snapshots[i], 0x5a, sizeof(snapshots[i]));
 		snapshots[i].game_frame = i * 300;
 	}
@@ -340,13 +340,13 @@ static void hash_record_state(void)
 	hash_word(audio_car_state_interval);
 	hash_word(audio_car_state_read_index);
 	hash_word(frame_callback_active);
-	for (unsigned i = 0; i < 12000; i++) {
+	for (legacy_u32 i = 0; i < 12000; i++) {
 		hash_word((legacy_u8)replay_bytes[i]);
 	}
-	for (unsigned i = 0; i < 41; i++) {
+	for (legacy_u32 i = 0; i < 41; i++) {
 		hash_word(snapshots[i].game_frame);
 	}
-	for (unsigned i = 0; i < 64; i++) {
+	for (legacy_u32 i = 0; i < 64; i++) {
 		hash_word(input_steering_history[i]);
 		hash_word(input_steering_history_valid[i]);
 	}
@@ -355,7 +355,7 @@ static void hash_record_state(void)
 static legacy_u32 record_fingerprint(void)
 {
 	trace_hash = 2166136261UL;
-	for (unsigned sample = 0; sample < 2048; sample++) {
+	for (legacy_u32 sample = 0; sample < 2048; sample++) {
 		configure_record_sample(sample);
 		replay_update_input_tick(sample % 7 == 0);
 		hash_record_state();
@@ -366,7 +366,7 @@ static legacy_u32 record_fingerprint(void)
 static legacy_u32 callback_fingerprint(void)
 {
 	trace_hash = 2166136261UL;
-	for (unsigned sample = 0; sample < 512; sample++) {
+	for (legacy_u32 sample = 0; sample < 512; sample++) {
 		configure_record_sample(sample);
 		elapsed_time1 = 0;
 		elapsed_time2 = 20;
@@ -380,7 +380,7 @@ static legacy_u32 callback_fingerprint(void)
 		segments_match = (sample >> 2) & 1;
 		nested_callback = (sample >> 3) & 1;
 		is_in_replay = (sample >> 4) & 1;
-		for (unsigned tick = 0; tick < 8; tick++) {
+		for (legacy_u32 tick = 0; tick < 8; tick++) {
 			frame_callback();
 		}
 		hash_record_state();
@@ -392,7 +392,7 @@ static legacy_u32 callback_fingerprint(void)
 static legacy_u32 shortcut_fingerprint(void)
 {
 	trace_hash = 2166136261UL;
-	for (unsigned mode = 0; mode < 3; mode++) {
+	for (legacy_u32 mode = 0; mode < 3; mode++) {
 		for (legacy_u32 key = 0; key < 65536UL; key++) {
 			reset_inputs();
 			game_replay_mode = mode;
@@ -419,7 +419,7 @@ static void test_event_priority(void)
 	reset_inputs();
 	keyboard_char = 'a';
 	joystick_flags = 63;
-	for (unsigned index = 0; index < 4; index++) {
+	for (legacy_u32 index = 0; index < 4; index++) {
 		mouse_samples[index][0] = 3;
 	}
 	assert(input_checking(0) == 'a');
@@ -442,7 +442,7 @@ static void test_recording_input_modes(void)
 {
 	static const legacy_s8 steering[] = {-1, 0, 0, 0, 0, 0, 1};
 	static const legacy_s16 positions[] = {141, 142, 143, 160, 177, 178, 179};
-	for (unsigned index = 0; index < 7; index++) {
+	for (legacy_u32 index = 0; index < 7; index++) {
 		reset_inputs();
 		mouse_driving_enabled = joystick_enabled = 1;
 		mouse_samples[0][0] = 3;
@@ -535,9 +535,10 @@ int main(void)
 	test_ghost_view_shortcut();
 	test_display_shortcuts();
 #ifdef INPUT_RECORD_BASELINE
-	fprintf(stdout, "%08lx %08lx %08lx %08lx %08lx\n", (unsigned long)input_hash,
-			(unsigned long)scrollbar_hash, (unsigned long)record_hash, (unsigned long)callback_hash,
-			(unsigned long)shortcut_hash);
+	fprintf(stdout,
+			"%08" LEGACY_PRIx32 " %08" LEGACY_PRIx32 " %08" LEGACY_PRIx32 " %08" LEGACY_PRIx32
+			" %08" LEGACY_PRIx32 "\n",
+			input_hash, scrollbar_hash, record_hash, callback_hash, shortcut_hash);
 #else
 	assert(input_hash == 0x2a5d4036UL);
 	assert(scrollbar_hash == 0x207b3fe7UL);

@@ -84,18 +84,18 @@ static void reset_arena(void)
 	assert(mmgr_first_cached_chunk == mmgr_cache_sentinel);
 }
 
-static void make_name(legacy_s8 name[MMGR_RESOURCE_NAME_LENGTH + 1], unsigned int resource_id)
+static void make_name(legacy_s8 name[MMGR_RESOURCE_NAME_LENGTH + 1], legacy_u32 resource_id)
 {
 	memset(name, 0, MMGR_RESOURCE_NAME_LENGTH + 1);
-	snprintf((char *)name, MMGR_RESOURCE_NAME_LENGTH + 1, "RES%08u", resource_id);
+	snprintf((char *)name, MMGR_RESOURCE_NAME_LENGTH + 1, "RES%08" LEGACY_PRIu32, resource_id);
 }
 
-static legacy_u8 payload_byte(unsigned int resource_id, size_t offset)
+static legacy_u8 payload_byte(legacy_u32 resource_id, size_t offset)
 {
 	return (legacy_u8)(resource_id * 37U + offset * 13U + 1U);
 }
 
-static void write_payload(void *pointer, legacy_u16 paragraphs, unsigned int resource_id)
+static void write_payload(void *pointer, legacy_u16 paragraphs, legacy_u32 resource_id)
 {
 	legacy_u8 *bytes = (legacy_u8 *)pointer;
 	for (size_t i = 0; i < (size_t)paragraphs * TEST_PARAGRAPH_BYTES; i++) {
@@ -103,17 +103,16 @@ static void write_payload(void *pointer, legacy_u16 paragraphs, unsigned int res
 	}
 }
 
-static void check_payload(const void *pointer, legacy_u16 paragraphs, unsigned int resource_id)
+static void check_payload(const void *pointer, legacy_u16 paragraphs, legacy_u32 resource_id)
 {
 	const legacy_u8 *bytes = (const legacy_u8 *)pointer;
 	assert(pointer != NULL);
 	for (size_t i = 0; i < (size_t)paragraphs * TEST_PARAGRAPH_BYTES; i++) {
 		if (bytes[i] != payload_byte(resource_id, i)) {
 			fprintf(stderr,
-					"Cached resource %u corrupted at byte %lu: "
-					"expected %u, got %u\n",
-					resource_id, (unsigned long)i, (unsigned int)payload_byte(resource_id, i),
-					(unsigned int)bytes[i]);
+					"Cached resource %" LEGACY_PRIu32 " corrupted at byte %zu: "
+					"expected %" LEGACY_PRIu32 ", got %" LEGACY_PRIu32 "\n",
+					resource_id, i, (legacy_u32)payload_byte(resource_id, i), (legacy_u32)bytes[i]);
 			abort();
 		}
 	}
@@ -125,7 +124,7 @@ static void test_free_last_resource_with_full_table(void)
 
 	reset_arena();
 	legacy_s8 name[MMGR_RESOURCE_NAME_LENGTH + 1];
-	for (unsigned int i = 0; i < TEST_RESOURCE_SLOTS; i++) {
+	for (legacy_u32 i = 0; i < TEST_RESOURCE_SLOTS; i++) {
 		make_name(name, i);
 		last_resource = mmgr_alloc_pages(name, 2U);
 		write_payload(last_resource, 2U, i);
@@ -152,7 +151,7 @@ static void test_free_non_last_resource_with_full_table(void)
 	write_payload(last_resource, 3U, 901U);
 	void *cached_resource;
 	legacy_s8 name[MMGR_RESOURCE_NAME_LENGTH + 1];
-	for (unsigned int i = 0; i < TEST_RESOURCE_SLOTS - 2U; i++) {
+	for (legacy_u32 i = 0; i < TEST_RESOURCE_SLOTS - 2U; i++) {
 		make_name(name, i);
 		void *resource = mmgr_alloc_pages(name, 1U);
 		write_payload(resource, 1U, i);
@@ -191,10 +190,10 @@ static void test_repeated_cache_churn(void)
 	legacy_s8 pinned_name[MMGR_RESOURCE_NAME_LENGTH + 1] = "PINNED";
 	void *pinned_resource = mmgr_alloc_pages(pinned_name, 7U);
 	write_payload(pinned_resource, 7U, 999U);
-	unsigned int cache_hits = 0;
+	legacy_u32 cache_hits = 0;
 	legacy_s8 name[MMGR_RESOURCE_NAME_LENGTH + 1];
-	for (unsigned int iteration = 0; iteration < TEST_CHURN_COUNT; iteration++) {
-		unsigned int resource_id = iteration % TEST_CHURN_RESOURCE_COUNT;
+	for (legacy_u32 iteration = 0; iteration < TEST_CHURN_COUNT; iteration++) {
+		legacy_u32 resource_id = iteration % TEST_CHURN_RESOURCE_COUNT;
 		legacy_u16 paragraphs = (legacy_u16)(1U + resource_id % 5U);
 
 		make_name(name, resource_id);

@@ -11,14 +11,14 @@ legacy_s16 audio_car_state_read_index, audio_car_state_write_index;
 legacy_s16 camera_track_height_offset;
 legacy_u8 audio_previous_replay_mode;
 struct AUDIO_CAR_STATE *audio_car_state_records;
-static uint64_t trace_hash = UINT64_C(1469598103934665603);
+static legacy_u64 trace_hash = UINT64_C(1469598103934665603);
 static struct AUDIO_CAR_STATE records[AUDIO_CAR_STATE_RECORD_COUNT];
 static struct VECTOR cameras[2];
 static struct CARSTATE test_ghost_car;
 static struct GHOST_CAMERA_STATE test_ghost_camera;
 static legacy_s16 test_ghost_active;
-static unsigned audio_channel_calls[2];
-static unsigned ghost_motion_calls;
+static legacy_u32 audio_channel_calls[2];
+static legacy_u32 ghost_motion_calls;
 static legacy_s16 freeze_ghost_motion;
 
 struct CARSTATE *ghost_car_state(void)
@@ -89,11 +89,11 @@ static void record_result(void)
 	trace_word(audio_car_state_read_index);
 	trace_word(audio_car_state_write_index);
 	trace_word(audio_previous_replay_mode);
-	for (unsigned i = 0; i < sizeof(records); i++) {
+	for (legacy_u32 i = 0; i < sizeof(records); i++) {
 		trace_word(bytes[i]);
 	}
 }
-static void reset_audio_car(unsigned index)
+static void reset_audio_car(legacy_u32 index)
 {
 	test_ghost_active = 0;
 	ghost_motion_calls = 0;
@@ -139,11 +139,11 @@ static void reset_audio_car(unsigned index)
 }
 static void test_recording_modes(void)
 {
-	unsigned index = 0;
-	for (unsigned mode = 0; mode < 6U; mode++) {
-		for (unsigned opponent = 0; opponent < 2U; opponent++) {
-			for (unsigned follow = 0; follow <= opponent; follow++) {
-				for (unsigned flags = 0; flags < 16U; flags++) {
+	legacy_u32 index = 0;
+	for (legacy_u32 mode = 0; mode < 6U; mode++) {
+		for (legacy_u32 opponent = 0; opponent < 2U; opponent++) {
+			for (legacy_u32 follow = 0; follow <= opponent; follow++) {
+				for (legacy_u32 flags = 0; flags < 16U; flags++) {
 					reset_audio_car(index++);
 					gameconfig.game_opponenttype = opponent;
 					followOpponentFlag = follow;
@@ -164,11 +164,11 @@ static void test_recording_modes(void)
 }
 static void test_replay_shutdown(void)
 {
-	unsigned index = 400;
-	for (unsigned replay = 1; replay <= 2U; replay++) {
-		for (unsigned opponent = 0; opponent < 2U; opponent++) {
-			for (unsigned flags = 0; flags < 16U; flags++) {
-				for (unsigned ready = 0; ready < 2U; ready++) {
+	legacy_u32 index = 400;
+	for (legacy_u32 replay = 1; replay <= 2U; replay++) {
+		for (legacy_u32 opponent = 0; opponent < 2U; opponent++) {
+			for (legacy_u32 flags = 0; flags < 16U; flags++) {
+				for (legacy_u32 ready = 0; ready < 2U; ready++) {
 					reset_audio_car(index++);
 					gameconfig.game_opponenttype = opponent;
 					is_in_replay = replay;
@@ -203,10 +203,10 @@ static void test_ghost_camera_audio(void)
 		{0, 0, 0}, {18, 27, 36}, {0, 0, 0}, {298, 507, 496}};
 	static const struct VECTOR untouched = {0x5a5a, 0x5a5a, 0x5a5a};
 
-	for (unsigned mode = 0; mode < CAMERA_MODE_COUNT; mode++) {
+	for (legacy_u32 mode = 0; mode < CAMERA_MODE_COUNT; mode++) {
 		/* Also cover returning to the player and losing the cached ghost while
 		 * the view flag is still set: neither may use the empty opponent state. */
-		for (unsigned view = 0; view < 3; view++) {
+		for (legacy_u32 view = 0; view < 3; view++) {
 			for (freeze_ghost_motion = 0; freeze_ghost_motion < 2; freeze_ghost_motion++) {
 				reset_audio_car(0);
 				memset(&test_ghost_car, 0, sizeof(test_ghost_car));

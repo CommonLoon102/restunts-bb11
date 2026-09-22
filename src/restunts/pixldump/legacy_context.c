@@ -38,6 +38,7 @@ static legacy_u16 pixldump_dos_psp_segment(void)
 	const char *setting = getenv("RESTUNTS_ORACLE_PSP_SEGMENT");
 	if (setting != 0 && setting[0] != 0) {
 		char *end;
+		/* Validate the complete host result before narrowing to a DOS segment. */
 		unsigned long value = strtoul(setting, &end, 0);
 		if (*end == 0 && value > 0 && value <= LEGACY_U16_MAX) {
 			return (legacy_u16)value;

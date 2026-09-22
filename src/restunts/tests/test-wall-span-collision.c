@@ -25,7 +25,7 @@ static void configure_option(const char *option)
 	configure_legacy_collision(option == NULL ? 1 : 2, argv);
 }
 
-static struct VECTOR rotate_from_local(struct VECTOR point, unsigned rotation)
+static struct VECTOR rotate_from_local(struct VECTOR point, legacy_u32 rotation)
 {
 	legacy_s16 old_x = point.x;
 	switch (rotation) {
@@ -45,8 +45,8 @@ static struct VECTOR rotate_from_local(struct VECTOR point, unsigned rotation)
 	return point;
 }
 
-static struct VECTOR world_point(struct VECTOR point, unsigned rotation, legacy_s16 elevation,
-								 int side)
+static struct VECTOR world_point(struct VECTOR point, legacy_u32 rotation, legacy_s16 elevation,
+								 legacy_s32 side)
 {
 	point.x *= side;
 	point = rotate_from_local(point, rotation);
@@ -56,7 +56,7 @@ static struct VECTOR world_point(struct VECTOR point, unsigned rotation, legacy_
 	return point;
 }
 
-static void initialize_ramp(unsigned rotation, legacy_s16 elevation)
+static void initialize_ramp(legacy_u32 rotation, legacy_s16 elevation)
 {
 	static const legacy_s16 plane_offsets[] = {0, 3, 2, 1};
 	memset(elements, 0, sizeof(elements));
@@ -67,7 +67,7 @@ static void initialize_ramp(unsigned rotation, legacy_s16 elevation)
 	track_terrain_map = terrain;
 	planptr = planes;
 	wallptr = walls;
-	for (int index = 0; index < TRACK_GRID_SIZE; index++) {
+	for (legacy_s32 index = 0; index < TRACK_GRID_SIZE; index++) {
 		trackrows[index] = index * TRACK_GRID_SIZE;
 		terrainrows[index] = (TRACK_GRID_LAST_INDEX - index) * TRACK_GRID_SIZE;
 		track_column_centers[index] = index * 1024 + 512;
@@ -165,7 +165,7 @@ static void assert_span(struct VECTOR points[4], legacy_s16 expected_hit,
 						legacy_s16 expected_fraction, legacy_s16 tolerance)
 {
 	struct VECTORLONG fixed_points[4];
-	for (unsigned index = 0; index < 4; index++) {
+	for (legacy_u32 index = 0; index < 4; index++) {
 		fixed_points[index] = fixed_point(points[index]);
 	}
 	assert_fixed_span(fixed_points, expected_hit, expected_fraction, tolerance);
@@ -186,14 +186,14 @@ static struct VECTOR retained_position(struct VECTORLONG *previous, struct VECTO
 	return result;
 }
 
-static void test_fractional_motion(unsigned rotation, legacy_s16 elevation, int side)
+static void test_fractional_motion(legacy_u32 rotation, legacy_s16 elevation, legacy_s32 side)
 {
 	initialize_ramp(rotation, elevation);
 	configure_option("/lc:off");
 	struct VECTOR points[] = {{100, 220, -32}, {140, 220, -32}, {100, 248, 32}, {140, 248, 32}};
 	struct VECTOR offsets[] = {{55, 11, 63}, {55, 11, 63}, {7, 57, 3}, {7, 57, 3}};
 	struct VECTORLONG fixed_points[4];
-	for (unsigned index = 0; index < 4; index++) {
+	for (legacy_u32 index = 0; index < 4; index++) {
 		fixed_points[index] = fixed_point(world_point(points[index], rotation, elevation, side));
 		offsets[index].x *= side;
 		struct VECTOR offset = rotate_from_local(offsets[index], rotation);
@@ -211,7 +211,8 @@ static void test_fractional_motion(unsigned rotation, legacy_s16 elevation, int 
 	assert(track_wall_intersects_segment(&first, &second));
 }
 
-static void test_inclined_intersection_rounding(unsigned rotation, legacy_s16 elevation, int side)
+static void test_inclined_intersection_rounding(legacy_u32 rotation, legacy_s16 elevation,
+												legacy_s32 side)
 {
 	initialize_ramp(rotation, elevation);
 	static const struct {
@@ -234,7 +235,7 @@ static void test_inclined_intersection_rounding(unsigned rotation, legacy_s16 el
 		{{{100, 268, 128}, {140, 270, 128}}, 0},
 		{{{100, 330, 128}, {140, 331, 128}}, 0},
 	};
-	for (unsigned index = 0; index < sizeof(cases) / sizeof(cases[0]); index++) {
+	for (legacy_u32 index = 0; index < sizeof(cases) / sizeof(cases[0]); index++) {
 		struct VECTOR first = world_point(cases[index].points[0], rotation, elevation, side);
 		struct VECTOR second = world_point(cases[index].points[1], rotation, elevation, side);
 		struct VECTOR saved_first = first;
@@ -257,7 +258,7 @@ static void test_mode_gate(void)
 {
 	initialize_ramp(0, 0);
 	struct VECTOR points[] = {{100, 220, -32}, {140, 220, -32}, {100, 248, 32}, {140, 248, 32}};
-	for (unsigned index = 0; index < 4; index++) {
+	for (legacy_u32 index = 0; index < 4; index++) {
 		points[index] = world_point(points[index], 0, 0, 1);
 	}
 	/* Startup, explicit legacy mode, and resetting to defaults retain old physics. */
@@ -270,7 +271,7 @@ static void test_mode_gate(void)
 	assert_span(points, 0, 0, 0);
 }
 
-static void test_wall_geometry(unsigned rotation, legacy_s16 elevation, int side)
+static void test_wall_geometry(legacy_u32 rotation, legacy_s16 elevation, legacy_s32 side)
 {
 	static const struct {
 		struct VECTOR points[4];
@@ -320,9 +321,9 @@ static void test_wall_geometry(unsigned rotation, legacy_s16 elevation, int side
 	};
 	initialize_ramp(rotation, elevation);
 	configure_option("/lc:off");
-	for (unsigned index = 0; index < sizeof(cases) / sizeof(cases[0]); index++) {
+	for (legacy_u32 index = 0; index < sizeof(cases) / sizeof(cases[0]); index++) {
 		struct VECTOR points[4];
-		for (unsigned point = 0; point < 4; point++) {
+		for (legacy_u32 point = 0; point < 4; point++) {
 			points[point] = world_point(cases[index].points[point], rotation, elevation, side);
 		}
 		assert_span(points, cases[index].hit, cases[index].fraction, cases[index].tolerance);
@@ -335,8 +336,8 @@ static void test_wall_geometry(unsigned rotation, legacy_s16 elevation, int side
 int main(void)
 {
 	test_mode_gate();
-	for (unsigned rotation = 0; rotation < 4; rotation++) {
-		for (int side = -1; side <= 1; side += 2) {
+	for (legacy_u32 rotation = 0; rotation < 4; rotation++) {
+		for (legacy_s32 side = -1; side <= 1; side += 2) {
 			test_wall_geometry(rotation, 0, side);
 			test_wall_geometry(rotation, 450, side);
 			test_fractional_motion(rotation, 0, side);

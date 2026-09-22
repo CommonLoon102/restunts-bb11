@@ -1,5 +1,7 @@
 #include <assert.h>
 #include <stddef.h>
+#include <stdio.h>
+#include <string.h>
 
 #include "../c/legacy.h"
 
@@ -23,6 +25,46 @@
 #define TEST_PATTERN_LOW_WORD 52719U
 #define TEST_PATTERN_HIGH_WORD 35243U
 #define TEST_SIGN_EXTENDED_LOW_WORD 2147549183UL
+
+static void test_extended_numeric_widths(void)
+{
+	/* Exercise values beyond a dword, including the signed high half. */
+	legacy_u64 high_word = (legacy_u64)1 << 32;
+	legacy_u64 top_bit = (legacy_u64)1 << 63;
+	assert(high_word == 4294967296ULL);
+	assert(top_bit + top_bit == 0);
+	legacy_s64 product = (legacy_s64)-65536 * 65536;
+	assert(product == -4294967296LL);
+	assert(product / 65536 == -65536);
+
+	/* These are the storage precisions used for depth and projection. */
+	volatile legacy_f32 depth = 16777216.0f;
+	volatile legacy_f32 rounded_depth = depth + 1.0f;
+	volatile legacy_f64 coordinate = 16777216.0;
+	assert(rounded_depth == depth);
+	assert(coordinate + 1.0 == 16777217.0);
+}
+
+static void test_numeric_formatting(void)
+{
+	char output[128];
+	legacy_s32 minimum32 = LEGACY_S32_FROM_BITS(LEGACY_U32_SIGN_BIT);
+	legacy_u32 maximum32 = LEGACY_U32_MAX;
+	legacy_u32 pattern32 = TEST_DWORD_PATTERN;
+	snprintf(output, sizeof(output),
+			 "%" LEGACY_PRId32 " %" LEGACY_PRIu32 " %08" LEGACY_PRIx32 " %08" LEGACY_PRIX32,
+			 minimum32, maximum32, pattern32, pattern32);
+	assert(strcmp(output, "-2147483648 4294967295 89abcdef 89ABCDEF") == 0);
+
+	legacy_s64 minimum64 = -9223372036854775807LL - 1;
+	legacy_u64 maximum64 = ~(legacy_u64)0;
+	legacy_u64 pattern64 = 0xFEDCBA9876543210ULL;
+	snprintf(output, sizeof(output),
+			 "%" LEGACY_PRId64 " %" LEGACY_PRIu64 " %016" LEGACY_PRIx64 " %016" LEGACY_PRIX64,
+			 minimum64, maximum64, pattern64, pattern64);
+	assert(strcmp(output, "-9223372036854775808 18446744073709551615 "
+						  "fedcba9876543210 FEDCBA9876543210") == 0);
+}
 
 static legacy_u16 reference_sar16(legacy_u16 bits, legacy_u16 count)
 {
@@ -174,6 +216,8 @@ static void test_conversion_evaluates_once(void)
 
 int main(void)
 {
+	test_extended_numeric_widths();
+	test_numeric_formatting();
 	test_conversion_evaluates_once();
 	test_word_shifts_and_rotates();
 	test_dword_shifts_and_rotates();

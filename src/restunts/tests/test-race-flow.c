@@ -4,8 +4,8 @@
 /* Exercise the frame scheduler and viewport policy without a DOS display. */
 #include "../c/race.c"
 
-static unsigned updates;
-static unsigned analog_updates;
+static legacy_u32 updates;
+static legacy_u32 analog_updates;
 static legacy_u8 joystick_enabled;
 
 legacy_u8 dos_joystick_is_enabled(void)
@@ -110,7 +110,7 @@ static void test_dashboard_layout(void)
 		{REPLAY_MODE_PLAYBACK, 0, 1, 1, 1, 1, 1, 200, 0, 0},
 	};
 
-	for (unsigned index = 0; index < sizeof(cases) / sizeof(cases[0]); index++) {
+	for (legacy_u32 index = 0; index < sizeof(cases) / sizeof(cases[0]); index++) {
 		game_replay_mode = cases[index].mode;
 		idle_expired = cases[index].idle;
 		dashb_toggle = cases[index].dashboard;

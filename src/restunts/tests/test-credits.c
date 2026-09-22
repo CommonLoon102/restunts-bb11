@@ -9,18 +9,18 @@
 #undef strcpy
 #undef memcpy
 
-static uint32_t trace_hash = UINT32_C(2166136261);
+static legacy_u32 trace_hash = UINT32_C(2166136261);
 static struct SHAPE2D shapes[11];
 static struct SPRITE window;
 struct SPRITE *render_window_sprite;
-static unsigned poll_count, cancel_poll, blit_count, cancel_blit;
+static legacy_u32 poll_count, cancel_poll, blit_count, cancel_blit;
 static legacy_u32 elapsed;
 static legacy_s16 repeat_result;
 static legacy_s8 resource[16];
 
 static void trace(legacy_u32 value)
 {
-	for (unsigned i = 0; i < 4; i++) {
+	for (legacy_u32 i = 0; i < 4; i++) {
 		trace_hash = (trace_hash ^ (value & 255U)) * UINT32_C(16777619);
 		value >>= 8;
 	}
@@ -43,7 +43,7 @@ void locate_many_resources(legacy_s8 far *chunk, const legacy_s8 *ids, legacy_s8
 	assert(chunk == resource);
 	trace(2);
 	trace_text(ids);
-	for (unsigned i = 0; i < 11; i++) {
+	for (legacy_u32 i = 0; i < 11; i++) {
 		legacy_s8 *shape = (legacy_s8 *)&shapes[i];
 		memcpy(result + i, &shape, sizeof(shape));
 	}
@@ -192,10 +192,10 @@ legacy_s16 input_repeat_check(legacy_s16 ticks)
 
 int main(void)
 {
-	for (unsigned scenario = 0; scenario < 32; scenario++) {
+	for (legacy_u32 scenario = 0; scenario < 32; scenario++) {
 		trace(scenario);
 		memset(shapes, 0, sizeof(shapes));
-		for (unsigned i = 0; i < 11; i++) {
+		for (legacy_u32 i = 0; i < 11; i++) {
 			shapes[i].position_x = 200;
 			shapes[i].position_y = 130 + i;
 			shapes[i].width = 20;
@@ -216,7 +216,7 @@ int main(void)
 		trace(waitflag);
 	}
 #ifdef CREDITS_RECORD_BASELINE
-	printf("Credits fingerprint: %08x\n", (unsigned)trace_hash);
+	printf("Credits fingerprint: %08" LEGACY_PRIx32 "\n", trace_hash);
 #else
 	assert(trace_hash == UINT32_C(0x47365795));
 #endif

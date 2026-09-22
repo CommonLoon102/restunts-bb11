@@ -30,7 +30,7 @@ static void reset_car(void)
 	simd.max_rpm = 12000;
 	simd.idle_torque = 32;
 	simd.aerorestable = aerodynamic_drag;
-	for (unsigned index = 0; index < SIMD_GEAR_RATIO_COUNT; index++) {
+	for (legacy_u32 index = 0; index < SIMD_GEAR_RATIO_COUNT; index++) {
 		simd.gear_ratios[index] = 4096;
 		simd.knob_points[index].px = (legacy_s16)(index * 12);
 		simd.knob_points[index].py = 12;
@@ -243,17 +243,17 @@ static void test_powergear_stock_mass_classes(void)
 	};
 	static const legacy_u16 frame_rates[] = {GAME_FRAME_RATE_NORMAL, GAME_FRAME_RATE_LOW};
 
-	for (unsigned index = 0; index < sizeof(cases) / sizeof(cases[0]); index++) {
+	for (legacy_u32 index = 0; index < sizeof(cases) / sizeof(cases[0]); index++) {
 		configure_powergear_option("/pg:on");
 		prepare_powergear_car(cases[index].mass, 544, 0);
 		update_car_speed(INPUT_ACCELERATE_FLAG, PLAYER_CAR_INDEX, &car, &simd);
 		assert(car.car_actual_speed == cases[index].legacy_speed);
 
 		configure_powergear_option("/pg:off");
-		for (unsigned rate = 0; rate < sizeof(frame_rates) / sizeof(frame_rates[0]); rate++) {
+		for (legacy_u32 rate = 0; rate < sizeof(frame_rates) / sizeof(frame_rates[0]); rate++) {
 			for (legacy_s16 car_index = PLAYER_CAR_INDEX; car_index <= OPPONENT_CAR_INDEX;
 				 car_index++) {
-				for (unsigned gravity_case = 0; gravity_case < 2; gravity_case++) {
+				for (legacy_u32 gravity_case = 0; gravity_case < 2; gravity_case++) {
 					/* Drag and uphill pseudogravity must produce the same net force. */
 					prepare_powergear_car(cases[index].mass, gravity_case ? 0 : 544,
 										  gravity_case ? -544 : 0);
@@ -275,7 +275,7 @@ static void test_powergear_stock_mass_classes(void)
 		}
 
 		/* Positive force keeps its original acceleration in either mode. */
-		for (unsigned mode = 0; mode < 2; mode++) {
+		for (legacy_u32 mode = 0; mode < 2; mode++) {
 			configure_powergear_option(mode ? "/pg:off" : "/pg:on");
 			prepare_powergear_car(cases[index].mass, 0, 0);
 			update_car_speed(INPUT_ACCELERATE_FLAG, PLAYER_CAR_INDEX, &car, &simd);
@@ -296,7 +296,7 @@ static void test_powergear_division_rounding(void)
 	};
 
 	configure_powergear_option("/pg:off");
-	for (unsigned index = 0; index < sizeof(cases) / sizeof(cases[0]); index++) {
+	for (legacy_u32 index = 0; index < sizeof(cases) / sizeof(cases[0]); index++) {
 		prepare_powergear_car(cases[index].mass, 32 - cases[index].force, 0);
 		update_car_speed(INPUT_ACCELERATE_FLAG, PLAYER_CAR_INDEX, &car, &simd);
 		assert(car.car_actual_speed == 59000 + cases[index].expected_delta);
@@ -325,7 +325,7 @@ static void test_powergear_options(void)
 		{"/ns", "/pg:off", 58573},	  {"/pg:off", "/pg:off", 58573},
 	};
 
-	for (unsigned index = 0; index < sizeof(cases) / sizeof(cases[0]); index++) {
+	for (legacy_u32 index = 0; index < sizeof(cases) / sizeof(cases[0]); index++) {
 		/* Each invocation must reset an earlier invocation's opt-in. */
 		configure_powergear_option("/pg:off");
 		legacy_s8 *argv[] = {(legacy_s8 *)"restunts", (legacy_s8 *)cases[index].first,

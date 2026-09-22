@@ -25,7 +25,7 @@ static void configure_option(const char *option)
 	configure_legacy_collision(option == NULL ? 1 : 2, argv);
 }
 
-static struct VECTOR rotate_from_local(struct VECTOR point, unsigned rotation)
+static struct VECTOR rotate_from_local(struct VECTOR point, legacy_u32 rotation)
 {
 	legacy_s16 old_x = point.x;
 	switch (rotation) {
@@ -45,8 +45,8 @@ static struct VECTOR rotate_from_local(struct VECTOR point, unsigned rotation)
 	return point;
 }
 
-static struct VECTOR world_point(legacy_s16 x, legacy_s16 y, legacy_s16 z, unsigned rotation,
-								 legacy_s16 elevation, unsigned rear)
+static struct VECTOR world_point(legacy_s16 x, legacy_s16 y, legacy_s16 z, legacy_u32 rotation,
+								 legacy_s16 elevation, legacy_u32 rear)
 {
 	struct VECTOR point = {x, y, z};
 	if (rear != 0) {
@@ -60,7 +60,7 @@ static struct VECTOR world_point(legacy_s16 x, legacy_s16 y, legacy_s16 z, unsig
 	return point;
 }
 
-static void initialize_loop(unsigned rotation, legacy_s16 elevation, unsigned rear)
+static void initialize_loop(legacy_u32 rotation, legacy_s16 elevation, legacy_u32 rear)
 {
 	static const legacy_s16 plane_offsets[] = {0, 3, 2, 1};
 	memset(elements, 0, sizeof(elements));
@@ -70,7 +70,7 @@ static void initialize_loop(unsigned rotation, legacy_s16 elevation, unsigned re
 	track_terrain_map = terrain;
 	planptr = planes;
 	wallptr = walls;
-	for (int index = 0; index < TRACK_GRID_SIZE; index++) {
+	for (legacy_s32 index = 0; index < TRACK_GRID_SIZE; index++) {
 		trackrows[index] = index * TRACK_GRID_SIZE;
 		terrainrows[index] = (TRACK_GRID_LAST_INDEX - index) * TRACK_GRID_SIZE;
 		track_column_centers[index] = index * 1024 + 512;
@@ -91,8 +91,8 @@ static void initialize_loop(unsigned rotation, legacy_s16 elevation, unsigned re
 	static const struct VECTOR normals[] = {{0, 7016, -4228},  {0, 5810, -5774},
 											{0, 2110, -7915},  {0, -2110, -7915},
 											{0, -5774, -5810}, {0, -7906, -2143}};
-	for (unsigned half = 0; half < 2; half++) {
-		for (unsigned index = 0; index < 6; index++) {
+	for (legacy_u32 half = 0; half < 2; half++) {
+		for (legacy_u32 index = 0; index < 6; index++) {
 			struct VECTOR origin = origins[index];
 			struct VECTOR normal = normals[index];
 			if (half != 0) {
@@ -162,7 +162,7 @@ static void assert_sweep(struct VECTOR previous, struct VECTOR current, legacy_s
 	assert(memcmp(&current, &saved_current, sizeof(current)) == 0);
 }
 
-static void test_swept_geometry(unsigned rotation, legacy_s16 elevation, unsigned rear)
+static void test_swept_geometry(legacy_u32 rotation, legacy_s16 elevation, legacy_u32 rear)
 {
 	static const struct {
 		legacy_s16 previous_height;
@@ -193,7 +193,7 @@ static void test_swept_geometry(unsigned rotation, legacy_s16 elevation, unsigne
 
 	initialize_loop(rotation, elevation, rear);
 	configure_option("/lc:off");
-	for (unsigned index = 0; index < sizeof(cases) / sizeof(cases[0]); index++) {
+	for (legacy_u32 index = 0; index < sizeof(cases) / sizeof(cases[0]); index++) {
 		struct VECTOR previous =
 			world_point(-200, cases[index].previous_height, 100, rotation, elevation, rear);
 		struct VECTOR current =
@@ -239,7 +239,7 @@ static void test_opt_in_and_surface_eligibility(void)
 	assert_sweep(previous, current, 0, 0);
 }
 
-static void test_surface_transitions(unsigned rotation, legacy_s16 elevation, unsigned rear)
+static void test_surface_transitions(legacy_u32 rotation, legacy_s16 elevation, legacy_u32 rear)
 {
 	static const legacy_s16 plane_offsets[] = {0, 3, 2, 1};
 	static const struct {
@@ -264,7 +264,7 @@ static void test_surface_transitions(unsigned rotation, legacy_s16 elevation, un
 		{{-200, 2, 400}, {-200, 2, 300}, -1, 1, 0, 0},
 	};
 	initialize_loop(rotation, elevation, rear);
-	for (unsigned index = 0; index < sizeof(cases) / sizeof(cases[0]); index++) {
+	for (legacy_u32 index = 0; index < sizeof(cases) / sizeof(cases[0]); index++) {
 		struct VECTOR previous = world_point(cases[index].previous.x, cases[index].previous.y,
 											 cases[index].previous.z, rotation, elevation, rear);
 		struct VECTOR current = world_point(cases[index].current.x, cases[index].current.y,
@@ -289,8 +289,8 @@ static void test_surface_transitions(unsigned rotation, legacy_s16 elevation, un
 int main(void)
 {
 	test_opt_in_and_surface_eligibility();
-	for (unsigned rear = 0; rear < 2; rear++) {
-		for (unsigned rotation = 0; rotation < 4; rotation++) {
+	for (legacy_u32 rear = 0; rear < 2; rear++) {
+		for (legacy_u32 rotation = 0; rotation < 4; rotation++) {
 			test_swept_geometry(rotation, 0, rear);
 			test_swept_geometry(rotation, 450, rear);
 			test_surface_transitions(rotation, 0, rear);

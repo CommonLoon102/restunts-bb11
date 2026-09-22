@@ -10,8 +10,8 @@ static legacy_s8 recorded_inputs[12000], original_inputs[12000];
 static struct GAMESTATE checkpoints[21];
 static legacy_s16 held_q, live_input, interrupts_disabled;
 static legacy_u32 pending_ticks;
-static unsigned timer_reads, audio_updates, restores, simulation_updates;
-static unsigned supersight_resets;
+static legacy_u32 timer_reads, audio_updates, restores, simulation_updates;
+static legacy_u32 supersight_resets;
 
 void frame_supersight_reset(void)
 {
@@ -144,14 +144,14 @@ static void reset_race(legacy_u16 frame, legacy_u16 end_frame, legacy_s8 end_eve
 	timer_reads = audio_updates = restores = simulation_updates = supersight_resets = 0;
 	event_frame = end_frame;
 	event_kind = end_event;
-	for (unsigned i = 0; i < sizeof(recorded_inputs); i++) {
+	for (legacy_u32 i = 0; i < sizeof(recorded_inputs); i++) {
 		recorded_inputs[i] = i % 7 == 0 ? INPUT_BRAKE_FLAG : INPUT_ACCELERATE_FLAG;
 	}
 	memcpy(original_inputs, recorded_inputs, sizeof(recorded_inputs));
 	state.game_inputmode = GAME_INPUT_MODE_ACTIVE;
 	state.game_frames_per_sec = 40;
 	checkpoints[0] = state;
-	for (unsigned i = 0; i < 11999; i++) {
+	for (legacy_u32 i = 0; i < 11999; i++) {
 		simulate_frame(&state);
 		if (state.game_frame % 600 == 0) {
 			checkpoints[state.game_frame / 600] = state;
@@ -209,7 +209,7 @@ static void test_freeze_exact_seek_and_new_branch(void)
 	assert(gameconfig.game_recordedframes == 1802);
 	assert(timer_reads == 1 && restores == 0 && simulation_updates == 0);
 	assert(audio_updates == 1);
-	for (unsigned i = 0; i < 30; i++) {
+	for (legacy_u32 i = 0; i < 30; i++) {
 		frame_callback();
 	}
 	assert(elapsed_time2 == 1800 && gameconfig.game_recordedframes == 1802);
@@ -225,7 +225,7 @@ static void test_freeze_exact_seek_and_new_branch(void)
 	release_q(&rewind);
 	assert(audio_updates == 2 && race_exit_request == 0);
 	live_input = INPUT_BRAKE_FLAG;
-	for (unsigned i = 0; i < 4; i++) {
+	for (legacy_u32 i = 0; i < 4; i++) {
 		frame_callback();
 	}
 	assert(elapsed_time2 == 1797 && gameconfig.game_recordedframes == 1797);
@@ -265,7 +265,7 @@ static void test_acceleration_and_start_saturation(void)
 }
 static void test_recording_limit_warning(void)
 {
-	for (unsigned move = 0; move < 2; move++) {
+	for (legacy_u32 move = 0; move < 2; move++) {
 		struct RACE_REWIND_STATE rewind = {0};
 		reset_race(11999, 0, CRASH_EVENT_NONE);
 		simulate_frame(&state);
@@ -284,7 +284,7 @@ static void test_recording_limit_warning(void)
 }
 static void test_rewind_gates(void)
 {
-	for (unsigned which = 0; which < 8; which++) {
+	for (legacy_u32 which = 0; which < 8; which++) {
 		struct RACE_REWIND_STATE rewind = {0};
 		reset_race(1800, 0, CRASH_EVENT_NONE);
 		switch (which) {
@@ -323,7 +323,7 @@ static void test_crash_and_finish_lifecycle(void)
 {
 	static const legacy_s8 events[] = {CRASH_EVENT_COLLISION, CRASH_EVENT_WATER,
 									   CRASH_EVENT_FINISH};
-	for (unsigned i = 0; i < sizeof(events) / sizeof(events[0]); i++) {
+	for (legacy_u32 i = 0; i < sizeof(events) / sizeof(events[0]); i++) {
 		struct RACE_REWIND_STATE rewind = {0};
 		reset_race(1800, 1700, events[i]);
 		race_exit_request = 1;

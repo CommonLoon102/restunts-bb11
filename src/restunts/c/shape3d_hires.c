@@ -13,12 +13,12 @@
 
 struct HIRES_PRIMITIVE {
 	struct SHAPE3D_HIRES_POINT points[HIRES_MAX_POLYGON_POINTS];
-	unsigned int count;
-	unsigned int wheel_face;
+	legacy_u32 count;
+	legacy_u32 wheel_face;
 	legacy_u16 shape;
 	legacy_u16 family;
-	int attached;
-	double size;
+	legacy_s32 attached;
+	legacy_f64 size;
 };
 
 struct HIRES_PAINT {
@@ -26,14 +26,14 @@ struct HIRES_PAINT {
 	legacy_u16 alternate;
 	legacy_u16 pattern;
 	legacy_u16 mode;
-	int depth_test;
+	legacy_s32 depth_test;
 	legacy_u16 family;
-	int attached;
+	legacy_s32 attached;
 };
 
 struct HIRES_SHAPE {
 	struct RECTANGLE bounds;
-	int depth_test;
+	legacy_s32 depth_test;
 };
 
 static struct HIRES_PRIMITIVE primitives[POLYINFO_SUPERSIGHT_PRIMITIVE_CAPACITY];
@@ -41,9 +41,10 @@ static struct HIRES_SHAPE shapes[POLYINFO_SUPERSIGHT_PRIMITIVE_CAPACITY];
 static legacy_u16 current_shape;
 static legacy_u16 current_family;
 static legacy_u16 rendered_shape = LEGACY_U16_MAX;
-static unsigned long rendered_generation;
+static legacy_u32 rendered_generation;
 
-static void project_coordinates(double x, double y, double z, struct SHAPE3D_HIRES_POINT *point)
+static void project_coordinates(legacy_f64 x, legacy_f64 y, legacy_f64 z,
+								struct SHAPE3D_HIRES_POINT *point)
 {
 	point->x = (legacy_s16)projection_center_x * HIRES_SCALE +
 			   x * projection_focal_length_x * HIRES_SCALE / z;
@@ -80,19 +81,19 @@ legacy_u8 shape3d_hires_clip_flags(const struct VECTOR *vector)
 	return point_clip_flags(&point);
 }
 
-static int polygon_faces_camera(const struct SHAPE3D_HIRES_POINT *points, unsigned int count)
+static legacy_s32 polygon_faces_camera(const struct SHAPE3D_HIRES_POINT *points, legacy_u32 count)
 {
 	/* Use every edge: the first three vertices can be collinear even when
 	 * the complete polygon covers visible pixels at the higher resolution. */
-	double area = 0;
-	for (unsigned int index = 1; index + 1 < count; index++) {
+	legacy_f64 area = 0;
+	for (legacy_u32 index = 1; index + 1 < count; index++) {
 		area += (points[index].x - points[0].x) * (points[index + 1].y - points[0].y) -
 				(points[index].y - points[0].y) * (points[index + 1].x - points[0].x);
 	}
 	return area > 0;
 }
 
-int shape3d_hires_polygon_visible(legacy_u16 index, int cull_backface)
+legacy_s32 shape3d_hires_polygon_visible(legacy_u16 index, legacy_s32 cull_backface)
 {
 	if (index >= POLYINFO_SUPERSIGHT_PRIMITIVE_CAPACITY) {
 		return 0;
@@ -102,19 +103,19 @@ int shape3d_hires_polygon_visible(legacy_u16 index, int cull_backface)
 		return 0;
 	}
 	legacy_u8 flags = 15;
-	for (unsigned int point = 0; point < primitive->count; point++) {
+	for (legacy_u32 point = 0; point < primitive->count; point++) {
 		flags &= point_clip_flags(&primitive->points[point]);
 	}
 	return flags == 0 &&
 		   (!cull_backface || polygon_faces_camera(primitive->points, primitive->count));
 }
 
-unsigned int shape3d_hires_wheel_face(legacy_u16 index)
+legacy_u32 shape3d_hires_wheel_face(legacy_u16 index)
 {
 	return index < POLYINFO_SUPERSIGHT_PRIMITIVE_CAPACITY ? primitives[index].wheel_face : 0;
 }
 
-void shape3d_hires_begin_shape(legacy_u16 index, int depth_test)
+void shape3d_hires_begin_shape(legacy_u16 index, legacy_s32 depth_test)
 {
 	if (index >= POLYINFO_SUPERSIGHT_PRIMITIVE_CAPACITY) {
 		return;
@@ -132,7 +133,7 @@ void shape3d_hires_reset(void)
 {
 	shape3d_hires_begin_shape(0, 1);
 	rendered_shape = LEGACY_U16_MAX;
-	for (unsigned int index = 0; index < POLYINFO_SUPERSIGHT_PRIMITIVE_CAPACITY; index++) {
+	for (legacy_u32 index = 0; index < POLYINFO_SUPERSIGHT_PRIMITIVE_CAPACITY; index++) {
 		primitives[index].count = 0;
 	}
 }
@@ -142,16 +143,16 @@ static void project_intersection(const struct VECTOR *first, const struct VECTOR
 {
 	/* Near-plane intersections need the same subpixel precision as ordinary
 	 * vertices; rounding back into a legacy VECTOR would discard it. */
-	double fraction = (HIRES_NEAR_CLIP_Z - first->z) / (double)(second->z - first->z);
+	legacy_f64 fraction = (HIRES_NEAR_CLIP_Z - first->z) / (legacy_f64)(second->z - first->z);
 	project_coordinates(first->x + (second->x - first->x) * fraction,
 						first->y + (second->y - first->y) * fraction, HIRES_NEAR_CLIP_Z, point);
 }
 
-static void queue_polygon(struct HIRES_PRIMITIVE *primitive, unsigned int count,
+static void queue_polygon(struct HIRES_PRIMITIVE *primitive, legacy_u32 count,
 						  const legacy_u8 *indices, const struct VECTOR *vertices)
 {
 	const struct VECTOR *previous = &vertices[indices[count - 1]];
-	for (unsigned int index = 0; index < count; index++) {
+	for (legacy_u32 index = 0; index < count; index++) {
 		const struct VECTOR *current = &vertices[indices[index]];
 		if ((previous->z < HIRES_NEAR_CLIP_Z) != (current->z < HIRES_NEAR_CLIP_Z)) {
 			project_intersection(previous, current, &primitive->points[primitive->count++]);
@@ -180,19 +181,19 @@ static void queue_primitive(legacy_u16 index, legacy_u8 type, legacy_u16 vertex_
 	}
 	if (type == RENDER_PRIMITIVE_WHEEL) {
 		struct SHAPE3D_HIRES_POINT face[3];
-		for (unsigned int vertex = 0; vertex < 3; vertex++) {
+		for (legacy_u32 vertex = 0; vertex < 3; vertex++) {
 			shape3d_hires_project(&vertices[indices[vertex]], &face[vertex]);
 		}
-		unsigned int start = polygon_faces_camera(face, 3) ? 0 : 3;
+		legacy_u32 start = polygon_faces_camera(face, 3) ? 0 : 3;
 		primitive->wheel_face = start;
-		for (unsigned int vertex = 0; vertex < 4; vertex++) {
+		for (legacy_u32 vertex = 0; vertex < 4; vertex++) {
 			shape3d_hires_project(&vertices[indices[(start + vertex) % 6]],
 								  &primitive->points[vertex]);
 		}
 		primitive->count = 4;
 		return;
 	}
-	for (unsigned int vertex = 0; vertex < vertex_count; vertex++) {
+	for (legacy_u32 vertex = 0; vertex < vertex_count; vertex++) {
 		const struct VECTOR *current = &vertices[indices[vertex]];
 		if (type == RENDER_PRIMITIVE_LINE && current->z < HIRES_NEAR_CLIP_Z) {
 			project_intersection(current, &vertices[indices[1 - vertex]],
@@ -209,8 +210,8 @@ static void queue_primitive(legacy_u16 index, legacy_u8 type, legacy_u16 vertex_
 		radius.x = LEGACY_S16_WRAP_SUB(center->x, endpoint->x);
 		radius.y = LEGACY_S16_WRAP_SUB(center->y, endpoint->y);
 		radius.z = LEGACY_S16_WRAP_SUB(center->z, endpoint->z);
-		primitive->size =
-			(double)projection_focal_length_x * polarRadius3D(&radius) * HIRES_SCALE / center->z;
+		primitive->size = (legacy_f64)projection_focal_length_x * polarRadius3D(&radius) *
+						  HIRES_SCALE / center->z;
 	}
 }
 
@@ -231,13 +232,13 @@ void shape3d_hires_queue(legacy_u16 index, legacy_u8 type, legacy_u16 vertex_cou
 	shape3d_hires_update_bounds(index, type, &shapes[current_shape].bounds);
 }
 
-static int ceil_coordinate(double coordinate)
+static legacy_s32 ceil_coordinate(legacy_f64 coordinate)
 {
-	int result = (int)coordinate;
+	legacy_s32 result = (legacy_s32)coordinate;
 	return result < coordinate ? result + 1 : result;
 }
 
-static double absolute_coordinate(double value)
+static legacy_f64 absolute_coordinate(legacy_f64 value)
 {
 	return value < 0 ? -value : value;
 }
@@ -248,10 +249,10 @@ void shape3d_hires_update_bounds(legacy_u16 index, legacy_u8 type, struct RECTAN
 		return;
 	}
 	const struct HIRES_PRIMITIVE *primitive = &primitives[index];
-	double minimum_x = primitive->points[0].x;
-	double maximum_x = minimum_x;
-	double minimum_y = primitive->points[0].y;
-	double maximum_y = minimum_y;
+	legacy_f64 minimum_x = primitive->points[0].x;
+	legacy_f64 maximum_x = minimum_x;
+	legacy_f64 minimum_y = primitive->points[0].y;
+	legacy_f64 maximum_y = minimum_y;
 	if (type == RENDER_PRIMITIVE_SPHERE) {
 		minimum_x -= primitive->size * 0.5;
 		maximum_x += primitive->size * 0.5;
@@ -260,10 +261,10 @@ void shape3d_hires_update_bounds(legacy_u16 index, legacy_u8 type, struct RECTAN
 	} else if (type == RENDER_PRIMITIVE_WHEEL) {
 		/* The sum of the two axis magnitudes bounds every perimeter point,
 		 * including tilted ellipses and the far edge of the tread. */
-		double width = absolute_coordinate(primitive->points[1].x - minimum_x) +
-					   absolute_coordinate(primitive->points[2].x - minimum_x);
-		double height = absolute_coordinate(primitive->points[1].y - minimum_y) +
-						absolute_coordinate(primitive->points[2].y - minimum_y);
+		legacy_f64 width = absolute_coordinate(primitive->points[1].x - minimum_x) +
+						   absolute_coordinate(primitive->points[2].x - minimum_x);
+		legacy_f64 height = absolute_coordinate(primitive->points[1].y - minimum_y) +
+							absolute_coordinate(primitive->points[2].y - minimum_y);
 		if (primitive->points[3].x < minimum_x) {
 			minimum_x = primitive->points[3].x;
 		} else {
@@ -279,7 +280,7 @@ void shape3d_hires_update_bounds(legacy_u16 index, legacy_u8 type, struct RECTAN
 		minimum_y -= height;
 		maximum_y += height;
 	} else {
-		for (unsigned int point = 1; point < primitive->count; point++) {
+		for (legacy_u32 point = 1; point < primitive->count; point++) {
 			if (primitive->points[point].x < minimum_x) {
 				minimum_x = primitive->points[point].x;
 			}
@@ -297,14 +298,14 @@ void shape3d_hires_update_bounds(legacy_u16 index, legacy_u8 type, struct RECTAN
 	if (maximum_x < 0 || minimum_x >= HIRES_WIDTH || maximum_y < 0 || minimum_y >= HIRES_HEIGHT) {
 		return;
 	}
-	int left = minimum_x <= 0 ? 0 : (int)(minimum_x / HIRES_SCALE);
-	int top = minimum_y <= 0 ? 0 : (int)(minimum_y / HIRES_SCALE);
-	int right = maximum_x >= HIRES_WIDTH - HIRES_SCALE
-					? HIRES_WIDTH / HIRES_SCALE
-					: ceil_coordinate(maximum_x / HIRES_SCALE) + 1;
-	int bottom = maximum_y >= HIRES_HEIGHT - HIRES_SCALE
-					 ? HIRES_HEIGHT / HIRES_SCALE
-					 : ceil_coordinate(maximum_y / HIRES_SCALE) + 1;
+	legacy_s32 left = minimum_x <= 0 ? 0 : (legacy_s32)(minimum_x / HIRES_SCALE);
+	legacy_s32 top = minimum_y <= 0 ? 0 : (legacy_s32)(minimum_y / HIRES_SCALE);
+	legacy_s32 right = maximum_x >= HIRES_WIDTH - HIRES_SCALE
+						   ? HIRES_WIDTH / HIRES_SCALE
+						   : ceil_coordinate(maximum_x / HIRES_SCALE) + 1;
+	legacy_s32 bottom = maximum_y >= HIRES_HEIGHT - HIRES_SCALE
+							? HIRES_HEIGHT / HIRES_SCALE
+							: ceil_coordinate(maximum_y / HIRES_SCALE) + 1;
 	if (left < rectangle->left) {
 		rectangle->left = (legacy_s16)left;
 	}
@@ -319,11 +320,12 @@ void shape3d_hires_update_bounds(legacy_u16 index, legacy_u8 type, struct RECTAN
 	}
 }
 
-static void paint_pixel(int x, int y, double inverse_z, const struct HIRES_PAINT *paint)
+static void paint_pixel(legacy_s32 x, legacy_s32 y, legacy_f64 inverse_z,
+						const struct HIRES_PAINT *paint)
 {
 	legacy_u16 color = paint->color;
 	if (paint->mode != 0) {
-		unsigned int bit = ((y & 1) == 0 ? 8U : 0U) + 7U - (x & 7);
+		legacy_u32 bit = ((y & 1) == 0 ? 8U : 0U) + 7U - (x & 7);
 		if ((paint->pattern & (1U << bit)) != 0) {
 			color = paint->mode == 2 ? paint->alternate : paint->color;
 		} else if (paint->mode != 2) {
@@ -331,16 +333,17 @@ static void paint_pixel(int x, int y, double inverse_z, const struct HIRES_PAINT
 		}
 	}
 	if (!paint->depth_test || hires_depth_test(x, y, inverse_z, paint->family, paint->attached)) {
-		hires_pixel(x, y, (unsigned char)color);
+		hires_pixel(x, y, (legacy_u8)color);
 	}
 }
 
-static int clip_line_edge(double direction, double distance, double *first, double *last)
+static legacy_s32 clip_line_edge(legacy_f64 direction, legacy_f64 distance, legacy_f64 *first,
+								 legacy_f64 *last)
 {
 	if (direction == 0) {
 		return distance >= 0;
 	}
-	double ratio = distance / direction;
+	legacy_f64 ratio = distance / direction;
 	if (direction < 0) {
 		if (ratio > *last) {
 			return 0;
@@ -362,28 +365,28 @@ static int clip_line_edge(double direction, double distance, double *first, doub
 static void draw_line(const struct SHAPE3D_HIRES_POINT *first,
 					  const struct SHAPE3D_HIRES_POINT *last, const struct HIRES_PAINT *paint)
 {
-	double delta_x = last->x - first->x;
-	double delta_y = last->y - first->y;
-	double start = 0;
-	double end = 1;
+	legacy_f64 delta_x = last->x - first->x;
+	legacy_f64 delta_y = last->y - first->y;
+	legacy_f64 start = 0;
+	legacy_f64 end = 1;
 	if (!clip_line_edge(-delta_x, first->x, &start, &end) ||
 		!clip_line_edge(delta_x, HIRES_WIDTH - 1 - first->x, &start, &end) ||
 		!clip_line_edge(-delta_y, first->y, &start, &end) ||
 		!clip_line_edge(delta_y, HIRES_HEIGHT - 1 - first->y, &start, &end)) {
 		return;
 	}
-	int x = (int)(first->x + delta_x * start + 0.5);
-	int y = (int)(first->y + delta_y * start + 0.5);
-	int end_x = (int)(first->x + delta_x * end + 0.5);
-	int end_y = (int)(first->y + delta_y * end + 0.5);
-	int step_x = x < end_x ? 1 : -1;
-	int step_y = y < end_y ? 1 : -1;
-	int width = x < end_x ? end_x - x : x - end_x;
-	int height = y < end_y ? y - end_y : end_y - y;
-	int error = width + height;
-	int steps = width > -height ? width : -height;
-	double inverse_z = first->inverse_z + (last->inverse_z - first->inverse_z) * start;
-	double depth_step =
+	legacy_s32 x = (legacy_s32)(first->x + delta_x * start + 0.5);
+	legacy_s32 y = (legacy_s32)(first->y + delta_y * start + 0.5);
+	legacy_s32 end_x = (legacy_s32)(first->x + delta_x * end + 0.5);
+	legacy_s32 end_y = (legacy_s32)(first->y + delta_y * end + 0.5);
+	legacy_s32 step_x = x < end_x ? 1 : -1;
+	legacy_s32 step_y = y < end_y ? 1 : -1;
+	legacy_s32 width = x < end_x ? end_x - x : x - end_x;
+	legacy_s32 height = y < end_y ? y - end_y : end_y - y;
+	legacy_s32 error = width + height;
+	legacy_s32 steps = width > -height ? width : -height;
+	legacy_f64 inverse_z = first->inverse_z + (last->inverse_z - first->inverse_z) * start;
+	legacy_f64 depth_step =
 		steps == 0 ? 0 : (last->inverse_z - first->inverse_z) * (end - start) / steps;
 	for (;;) {
 		paint_pixel(x, y, inverse_z, paint);
@@ -391,7 +394,7 @@ static void draw_line(const struct SHAPE3D_HIRES_POINT *first,
 		if (x == end_x && y == end_y) {
 			break;
 		}
-		int twice_error = error * 2;
+		legacy_s32 twice_error = error * 2;
 		if (twice_error >= height) {
 			error += height;
 			x += step_x;
@@ -403,7 +406,7 @@ static void draw_line(const struct SHAPE3D_HIRES_POINT *first,
 	}
 }
 
-static void draw_polygon(const struct SHAPE3D_HIRES_POINT *points, unsigned int count,
+static void draw_polygon(const struct SHAPE3D_HIRES_POINT *points, legacy_u32 count,
 						 const struct HIRES_PAINT *paint)
 {
 	if (count == 0) {
@@ -413,9 +416,9 @@ static void draw_polygon(const struct SHAPE3D_HIRES_POINT *points, unsigned int 
 		draw_line(&points[0], &points[count - 1], paint);
 		return;
 	}
-	double minimum_y = points[0].y;
-	double maximum_y = minimum_y;
-	for (unsigned int index = 1; index < count; index++) {
+	legacy_f64 minimum_y = points[0].y;
+	legacy_f64 maximum_y = minimum_y;
+	for (legacy_u32 index = 1; index < count; index++) {
 		if (points[index].y < minimum_y) {
 			minimum_y = points[index].y;
 		}
@@ -426,24 +429,24 @@ static void draw_polygon(const struct SHAPE3D_HIRES_POINT *points, unsigned int 
 	if (maximum_y < 0 || minimum_y >= HIRES_HEIGHT) {
 		return;
 	}
-	int top = minimum_y < 0 ? 0 : ceil_coordinate(minimum_y - 0.5);
-	int bottom = maximum_y >= HIRES_HEIGHT ? HIRES_HEIGHT : ceil_coordinate(maximum_y - 0.5);
-	for (int y = top; y < bottom; y++) {
+	legacy_s32 top = minimum_y < 0 ? 0 : ceil_coordinate(minimum_y - 0.5);
+	legacy_s32 bottom = maximum_y >= HIRES_HEIGHT ? HIRES_HEIGHT : ceil_coordinate(maximum_y - 0.5);
+	for (legacy_s32 y = top; y < bottom; y++) {
 		struct SHAPE3D_HIRES_POINT intersections[HIRES_ROUND_POINTS];
-		unsigned int intersection_count = 0;
-		double sample_y = y + 0.5;
+		legacy_u32 intersection_count = 0;
+		legacy_f64 sample_y = y + 0.5;
 		const struct SHAPE3D_HIRES_POINT *previous = &points[count - 1];
-		for (unsigned int index = 0; index < count; index++) {
+		for (legacy_u32 index = 0; index < count; index++) {
 			const struct SHAPE3D_HIRES_POINT *current = &points[index];
 			if ((previous->y <= sample_y && current->y > sample_y) ||
 				(current->y <= sample_y && previous->y > sample_y)) {
-				double fraction = (sample_y - previous->y) / (current->y - previous->y);
+				legacy_f64 fraction = (sample_y - previous->y) / (current->y - previous->y);
 				struct SHAPE3D_HIRES_POINT intersection;
 				intersection.x = previous->x + fraction * (current->x - previous->x);
 				intersection.y = sample_y;
 				intersection.inverse_z =
 					previous->inverse_z + fraction * (current->inverse_z - previous->inverse_z);
-				unsigned int position = intersection_count++;
+				legacy_u32 position = intersection_count++;
 				while (position != 0 && intersections[position - 1].x > intersection.x) {
 					intersections[position] = intersections[position - 1];
 					position--;
@@ -452,17 +455,18 @@ static void draw_polygon(const struct SHAPE3D_HIRES_POINT *points, unsigned int 
 			}
 			previous = current;
 		}
-		for (unsigned int index = 0; index + 1 < intersection_count; index += 2) {
+		for (legacy_u32 index = 0; index + 1 < intersection_count; index += 2) {
 			const struct SHAPE3D_HIRES_POINT *first = &intersections[index];
 			const struct SHAPE3D_HIRES_POINT *last = &intersections[index + 1];
 			if (last->x < 0 || first->x >= HIRES_WIDTH || last->x <= first->x) {
 				continue;
 			}
-			int left = first->x < 0 ? 0 : ceil_coordinate(first->x - 0.5);
-			int right = last->x >= HIRES_WIDTH ? HIRES_WIDTH : ceil_coordinate(last->x - 0.5);
-			double depth_step = (last->inverse_z - first->inverse_z) / (last->x - first->x);
-			double inverse_z = first->inverse_z + (left + 0.5 - first->x) * depth_step;
-			for (int x = left; x < right; x++) {
+			legacy_s32 left = first->x < 0 ? 0 : ceil_coordinate(first->x - 0.5);
+			legacy_s32 right =
+				last->x >= HIRES_WIDTH ? HIRES_WIDTH : ceil_coordinate(last->x - 0.5);
+			legacy_f64 depth_step = (last->inverse_z - first->inverse_z) / (last->x - first->x);
+			legacy_f64 inverse_z = first->inverse_z + (left + 0.5 - first->x) * depth_step;
+			for (legacy_s32 x = left; x < right; x++) {
 				paint_pixel(x, y, inverse_z, paint);
 				inverse_z += depth_step;
 			}
@@ -472,13 +476,13 @@ static void draw_polygon(const struct SHAPE3D_HIRES_POINT *points, unsigned int 
 
 static void build_perimeter(const struct SHAPE3D_HIRES_POINT *center,
 							const struct SHAPE3D_HIRES_POINT *first_axis,
-							const struct SHAPE3D_HIRES_POINT *second_axis, double scale,
+							const struct SHAPE3D_HIRES_POINT *second_axis, legacy_f64 scale,
 							struct SHAPE3D_HIRES_POINT *points)
 {
-	for (unsigned int index = 0; index < HIRES_ROUND_POINTS; index++) {
+	for (legacy_u32 index = 0; index < HIRES_ROUND_POINTS; index++) {
 		legacy_s16 angle = (legacy_s16)(index * ANGLE_FULL_TURN / HIRES_ROUND_POINTS);
-		double cosine = cos_fast(angle) * scale / TRIG_FIXED_ONE;
-		double sine = sin_fast(angle) * scale / TRIG_FIXED_ONE;
+		legacy_f64 cosine = cos_fast(angle) * scale / TRIG_FIXED_ONE;
+		legacy_f64 sine = sin_fast(angle) * scale / TRIG_FIXED_ONE;
 		points[index].x =
 			center->x + (first_axis->x - center->x) * cosine + (second_axis->x - center->x) * sine;
 		points[index].y =
@@ -508,11 +512,11 @@ static void draw_wheel(const struct HIRES_PRIMITIVE *primitive, struct HIRES_PAI
 	build_perimeter(&primitive->points[0], &primitive->points[1], &primitive->points[2], 1, outer);
 	build_perimeter(&primitive->points[0], &primitive->points[1], &primitive->points[2],
 					HIRES_WHEEL_INNER_SCALE, inner);
-	double depth_x = primitive->points[3].x - primitive->points[0].x;
-	double depth_y = primitive->points[3].y - primitive->points[0].y;
-	double depth_z = primitive->points[3].inverse_z - primitive->points[0].inverse_z;
-	for (unsigned int index = 0; index < HIRES_ROUND_POINTS; index++) {
-		unsigned int next = (index + 1) % HIRES_ROUND_POINTS;
+	legacy_f64 depth_x = primitive->points[3].x - primitive->points[0].x;
+	legacy_f64 depth_y = primitive->points[3].y - primitive->points[0].y;
+	legacy_f64 depth_z = primitive->points[3].inverse_z - primitive->points[0].inverse_z;
+	for (legacy_u32 index = 0; index < HIRES_ROUND_POINTS; index++) {
+		legacy_u32 next = (index + 1) % HIRES_ROUND_POINTS;
 		struct SHAPE3D_HIRES_POINT side[4] = {outer[index], outer[next], outer[next], outer[index]};
 		side[2].x += depth_x;
 		side[2].y += depth_y;
@@ -523,8 +527,8 @@ static void draw_wheel(const struct HIRES_PRIMITIVE *primitive, struct HIRES_PAI
 		draw_polygon(side, 4, &paint);
 	}
 	paint.color = side_color;
-	for (unsigned int index = 0; index < HIRES_ROUND_POINTS; index++) {
-		unsigned int next = (index + 1) % HIRES_ROUND_POINTS;
+	for (legacy_u32 index = 0; index < HIRES_ROUND_POINTS; index++) {
+		legacy_u32 next = (index + 1) % HIRES_ROUND_POINTS;
 		struct SHAPE3D_HIRES_POINT rim[4] = {outer[index], outer[next], inner[next], inner[index]};
 		draw_polygon(rim, 4, &paint);
 	}

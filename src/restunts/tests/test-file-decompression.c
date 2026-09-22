@@ -19,33 +19,33 @@ static legacy_u8 packed[200000];
 static legacy_u8 expected[70000];
 static legacy_u8 stage[200000];
 static legacy_u8 file_bytes[200000];
-static unsigned int file_length, file_position;
-static unsigned int open_calls, close_calls, read_calls, resize_calls, copy_calls, fatal_calls;
-static unsigned int fail_open, fail_read, cached;
-static unsigned int allocated_paragraphs, resized_paragraphs;
-static unsigned int lookup_calls, release_calls, resource_file_kind, fail_read_after;
-static uint64_t trace_hash = UINT64_C(1469598103934665603);
+static legacy_u32 file_length, file_position;
+static legacy_u32 open_calls, close_calls, read_calls, resize_calls, copy_calls, fatal_calls;
+static legacy_u32 fail_open, fail_read, cached;
+static legacy_u32 allocated_paragraphs, resized_paragraphs;
+static legacy_u32 lookup_calls, release_calls, resource_file_kind, fail_read_after;
+static legacy_u64 trace_hash = UINT64_C(1469598103934665603);
 
-static void trace_word(unsigned int value)
+static void trace_word(legacy_u32 value)
 {
 	trace_hash = (trace_hash ^ (value & 255U)) * UINT64_C(1099511628211);
 	trace_hash = (trace_hash ^ ((value >> 8) & 255U)) * UINT64_C(1099511628211);
 }
-static void trace_bytes(const legacy_u8 *bytes, unsigned int count)
+static void trace_bytes(const legacy_u8 *bytes, legacy_u32 count)
 {
-	for (unsigned int i = 0; i < count; i++) {
+	for (legacy_u32 i = 0; i < count; i++) {
 		trace_hash = (trace_hash ^ bytes[i]) * UINT64_C(1099511628211);
 	}
 }
-static void check_hash(const char *name, uint64_t expected_hash)
+static void check_hash(const char *name, legacy_u64 expected_hash)
 {
 #ifdef FILE_RECORD_BASELINE
-	printf("%s %016llx\n", name, (unsigned long long)trace_hash);
+	printf("%s %016" LEGACY_PRIx64 "\n", name, trace_hash);
 	(void)expected_hash;
 #else
 	if (trace_hash != expected_hash) {
-		fprintf(stderr, "%s: got %016llx expected %016llx\n", name, (unsigned long long)trace_hash,
-				(unsigned long long)expected_hash);
+		fprintf(stderr, "%s: got %016" LEGACY_PRIx64 " expected %016" LEGACY_PRIx64 "\n", name,
+				trace_hash, expected_hash);
 		assert(trace_hash == expected_hash);
 	}
 #endif
@@ -54,7 +54,7 @@ static void check_hash(const char *name, uint64_t expected_hash)
 
 void far *dos_memory_make_pointer(legacy_u16 segment, legacy_u16 offset)
 {
-	unsigned int address = (unsigned int)segment * 16U + offset;
+	legacy_u32 address = (legacy_u32)segment * 16U + offset;
 	assert(address < sizeof(memory));
 	return memory + address;
 }
@@ -78,8 +78,8 @@ void copy_paras_reverse(legacy_u16 source, legacy_u16 destination, legacy_s16 pa
 	trace_word(paragraphs);
 	copy_calls++;
 	assert(paragraphs >= 0);
-	memmove(memory + (unsigned int)destination * 16U, memory + (unsigned int)source * 16U,
-			(unsigned int)paragraphs * 16U);
+	memmove(memory + (legacy_u32)destination * 16U, memory + (legacy_u32)source * 16U,
+			(legacy_u32)paragraphs * 16U);
 }
 void far *mmgr_get_chunk_by_name(const legacy_s8 *name)
 {
@@ -135,7 +135,7 @@ legacy_s16 dos_file_close(legacy_u16 handle)
 }
 legacy_u16 dos_file_read(legacy_u16 handle, void far *destination, legacy_u16 length)
 {
-	unsigned int count = length;
+	legacy_u32 count = length;
 	trace_word(7);
 	trace_word(handle);
 	trace_word(length);
@@ -175,7 +175,7 @@ void fatal_error(const legacy_s8 *format, ...)
 	fatal_calls++;
 }
 
-static void write_size(legacy_u8 *bytes, unsigned int length)
+static void write_size(legacy_u8 *bytes, legacy_u32 length)
 {
 	bytes[0] = length;
 	bytes[1] = length >> 8;
@@ -183,20 +183,20 @@ static void write_size(legacy_u8 *bytes, unsigned int length)
 }
 
 /* Encode canonical prefix codes independently of the production lookup tables. */
-static unsigned int make_vle(legacy_u8 *destination, const legacy_u8 *counts, unsigned int depth,
-							 unsigned int length, unsigned int additive, unsigned int scenario)
+static legacy_u32 make_vle(legacy_u8 *destination, const legacy_u8 *counts, legacy_u32 depth,
+						   legacy_u32 length, legacy_u32 additive, legacy_u32 scenario)
 {
 	destination[0] = 2;
 	write_size(destination + 1, length);
 	destination[4] = depth | (additive ? 128 : 0);
 	legacy_u8 alphabet[256];
-	unsigned int codes[256];
-	unsigned int widths[256];
-	unsigned int alphabet_length = 0;
-	unsigned int code = 0;
-	for (unsigned int width = 1; width <= depth; width++) {
+	legacy_u32 codes[256];
+	legacy_u32 widths[256];
+	legacy_u32 alphabet_length = 0;
+	legacy_u32 code = 0;
+	for (legacy_u32 width = 1; width <= depth; width++) {
 		destination[4 + width] = counts[width - 1];
-		for (unsigned int i = 0; i < counts[width - 1]; i++) {
+		for (legacy_u32 i = 0; i < counts[width - 1]; i++) {
 			codes[alphabet_length] = code++;
 			widths[alphabet_length] = width;
 			alphabet[alphabet_length] = (legacy_u8)(alphabet_length * 19U + scenario * 17U + 123U);
@@ -205,20 +205,20 @@ static unsigned int make_vle(legacy_u8 *destination, const legacy_u8 *counts, un
 		code *= 2;
 	}
 	memcpy(destination + 5 + depth, alphabet, alphabet_length);
-	unsigned int data_offset = 5 + depth + alphabet_length;
+	legacy_u32 data_offset = 5 + depth + alphabet_length;
 	memset(destination + data_offset, 0, (length + 1) * 2 + 4);
 	legacy_u8 value = 0;
-	unsigned int bit_count = 0;
-	for (unsigned int i = 0; i <= length; i++) {
-		unsigned int symbol = (i * 47U + scenario) % alphabet_length;
+	legacy_u32 bit_count = 0;
+	for (legacy_u32 i = 0; i <= length; i++) {
+		legacy_u32 symbol = (i * 47U + scenario) % alphabet_length;
 		if (additive) {
 			value = (legacy_u8)(value + alphabet[symbol]);
 		} else {
 			value = alphabet[symbol];
 		}
 		expected[i] = value;
-		for (unsigned int j = widths[symbol]; j > 0; j--) {
-			unsigned int bit = (codes[symbol] >> (j - 1)) & 1U;
+		for (legacy_u32 j = widths[symbol]; j > 0; j--) {
+			legacy_u32 bit = (codes[symbol] >> (j - 1)) & 1U;
 			destination[data_offset + bit_count / 8] |= bit << (7 - bit_count % 8);
 			bit_count++;
 		}
@@ -228,14 +228,14 @@ static unsigned int make_vle(legacy_u8 *destination, const legacy_u8 *counts, un
 
 static void test_vle(void)
 {
-	static const unsigned int lengths[] = {0, 1, 7, 15, 31, 257, 65537};
+	static const legacy_u32 lengths[] = {0, 1, 7, 15, 31, 257, 65537};
 	legacy_u8 counts[16];
-	for (unsigned int layout = 0; layout < 5; layout++) {
+	for (legacy_u32 layout = 0; layout < 5; layout++) {
 		memset(counts, 0, sizeof(counts));
 		if (layout == 0) {
 			counts[0] = 2;
 		}
-		unsigned int depth = 1;
+		legacy_u32 depth = 1;
 		if (layout == 1) {
 			depth = 4;
 			counts[0] = 1;
@@ -245,14 +245,14 @@ static void test_vle(void)
 		}
 		if (layout == 2) {
 			depth = 9;
-			for (unsigned int i = 0; i < 8; i++) {
+			for (legacy_u32 i = 0; i < 8; i++) {
 				counts[i] = 1;
 			}
 			counts[8] = 2;
 		}
 		if (layout == 3) {
 			depth = 16;
-			for (unsigned int i = 0; i < 16; i++) {
+			for (legacy_u32 i = 0; i < 16; i++) {
 				counts[i] = 1;
 			}
 		}
@@ -261,15 +261,15 @@ static void test_vle(void)
 			counts[7] = 254;
 			counts[8] = 2;
 		}
-		for (unsigned int l = 0; l < sizeof(lengths) / sizeof(lengths[0]); l++) {
-			for (unsigned int additive = 0; additive < 2; additive++) {
-				for (unsigned int scenario = 0; scenario < 3; scenario++) {
+		for (legacy_u32 l = 0; l < sizeof(lengths) / sizeof(lengths[0]); l++) {
+			for (legacy_u32 additive = 0; additive < 2; additive++) {
+				for (legacy_u32 scenario = 0; scenario < 3; scenario++) {
 					trace_word(layout);
 					trace_word(lengths[l]);
 					trace_word(lengths[l] >> 16);
 					trace_word(additive);
 					trace_word(scenario);
-					unsigned int size =
+					legacy_u32 size =
 						make_vle(packed, counts, depth, lengths[l], additive, scenario);
 					memset(memory, 0xa5, sizeof(memory));
 					memcpy(memory + 0x5fffb, packed, size);
@@ -285,16 +285,16 @@ static void test_vle(void)
 	check_hash("VLE", UINT64_C(0xf04d3106ec426067));
 }
 
-static unsigned int make_rle_literals(legacy_u8 *destination, const legacy_u8 *source,
-									  unsigned int length)
+static legacy_u32 make_rle_literals(legacy_u8 *destination, const legacy_u8 *source,
+									legacy_u32 length)
 {
 	destination[0] = 1;
 	write_size(destination + 1, length);
 	destination[7] = 0;
 	destination[8] = 129;
 	destination[9] = 0xe0;
-	unsigned int cursor = 10;
-	for (unsigned int i = 0; i < length; i++) {
+	legacy_u32 cursor = 10;
+	for (legacy_u32 i = 0; i < length; i++) {
 		if (source[i] == 0xe0) {
 			destination[cursor++] = 0xe0;
 			destination[cursor++] = 1;
@@ -327,15 +327,15 @@ static void reset_file(void)
 
 static void test_file_passes(void)
 {
-	for (unsigned int passes = 1; passes <= 3; passes++) {
-		for (unsigned int scenario = 0; scenario < 8; scenario++) {
+	for (legacy_u32 passes = 1; passes <= 3; passes++) {
+		for (legacy_u32 scenario = 0; scenario < 8; scenario++) {
 			reset_file();
-			unsigned int result_size = scenario % 2 ? 33 : 16;
-			for (unsigned int i = 0; i < result_size; i++) {
+			legacy_u32 result_size = scenario % 2 ? 33 : 16;
+			for (legacy_u32 i = 0; i < result_size; i++) {
 				expected[i] = (legacy_u8)(scenario + i * 7U);
 			}
-			unsigned int size = make_rle_literals(packed, expected, result_size);
-			for (unsigned int i = 1; i < passes; i++) {
+			legacy_u32 size = make_rle_literals(packed, expected, result_size);
+			for (legacy_u32 i = 1; i < passes; i++) {
 				memcpy(stage, packed, size);
 				size = make_rle_literals(packed, stage, size);
 			}
@@ -399,9 +399,9 @@ static void test_file_passes(void)
 static void test_file_vle(void)
 {
 	legacy_u8 counts[1] = {2};
-	static const unsigned int lengths[] = {1, 15, 257, 65537};
-	for (unsigned int i = 0; i < sizeof(lengths) / sizeof(lengths[0]); i++) {
-		for (unsigned int additive = 0; additive < 2; additive++) {
+	static const legacy_u32 lengths[] = {1, 15, 257, 65537};
+	for (legacy_u32 i = 0; i < sizeof(lengths) / sizeof(lengths[0]); i++) {
+		for (legacy_u32 additive = 0; additive < 2; additive++) {
 			reset_file();
 			file_length = make_vle(file_bytes, counts, 1, lengths[i], additive, i);
 			trace_word(lengths[i]);
@@ -417,16 +417,16 @@ static void test_file_vle(void)
 	check_hash("VLE files", UINT64_C(0x91345b9f2b17be5c));
 }
 
-static unsigned int make_vle_bytes(legacy_u8 *destination, const legacy_u8 *source,
-								   unsigned int length, unsigned int additive)
+static legacy_u32 make_vle_bytes(legacy_u8 *destination, const legacy_u8 *source, legacy_u32 length,
+								 legacy_u32 additive)
 {
 	legacy_u8 deltas[256];
 	assert(length <= sizeof(deltas));
-	unsigned int j;
+	legacy_u32 j;
 	legacy_u8 alphabet[256];
 	legacy_u8 previous = 0;
-	unsigned int alphabet_length = 0;
-	for (unsigned int i = 0; i < length; i++) {
+	legacy_u32 alphabet_length = 0;
+	for (legacy_u32 i = 0; i < length; i++) {
 		legacy_u8 value = additive ? (legacy_u8)(source[i] - previous) : source[i];
 		previous = source[i];
 		for (j = 0; j < alphabet_length && alphabet[j] != value; j++) {
@@ -450,13 +450,13 @@ static unsigned int make_vle_bytes(legacy_u8 *destination, const legacy_u8 *sour
 
 static void test_mixed_passes(void)
 {
-	for (unsigned int order = 0; order < 2; order++) {
-		for (unsigned int additive = 0; additive < 2; additive++) {
+	for (legacy_u32 order = 0; order < 2; order++) {
+		for (legacy_u32 additive = 0; additive < 2; additive++) {
 			reset_file();
-			for (unsigned int i = 0; i < 16; i++) {
+			for (legacy_u32 i = 0; i < 16; i++) {
 				expected[i] = (legacy_u8)(i * 17 + additive * 13);
 			}
-			unsigned int size;
+			legacy_u32 size;
 			if (order == 0) {
 				size = make_rle_literals(stage, expected, 16);
 				size = make_vle_bytes(packed, stage, size, additive);
@@ -483,12 +483,12 @@ static void test_mixed_passes(void)
 static void test_rle_passes(void)
 {
 	static const legacy_u8 escape_flags[] = {2, 3, 128, 129, 131};
-	for (unsigned int i = 0; i < sizeof(escape_flags); i++) {
-		for (unsigned int scenario = 0; scenario < 3; scenario++) {
+	for (legacy_u32 i = 0; i < sizeof(escape_flags); i++) {
+		for (legacy_u32 scenario = 0; scenario < 3; scenario++) {
 			reset_file();
 			memset(packed, 0, sizeof(packed));
 			packed[0] = 1;
-			unsigned int length = 5;
+			legacy_u32 length = 5;
 			write_size(packed + 1, length);
 			packed[8] = escape_flags[i];
 			packed[9] = 0xe0;
@@ -503,14 +503,14 @@ static void test_rle_passes(void)
 				packed[13] = 4;
 				write_size(packed + 4, 5);
 			} else if (escape_flags[i] <= 3) {
-				unsigned int start = 9 + escape_flags[i];
+				legacy_u32 start = 9 + escape_flags[i];
 				packed[start] = 0xe1;
 				packed[start + 1] = 'A';
 				packed[start + 2] = 0xe1;
 				packed[start + 3] = 5;
 				write_size(packed + 4, 4);
 			} else {
-				unsigned int start = 9 + (escape_flags[i] & 127);
+				legacy_u32 start = 9 + (escape_flags[i] & 127);
 				packed[start] = 0xe0;
 				packed[start + 1] = 5 + scenario;
 				packed[start + 2] = 'Z';
@@ -531,22 +531,22 @@ static void test_rle_passes(void)
 /* Model the original workspace positions independently of the decoder. The
  * loaded snapshot retains these bytes even when the extra storage is larger
  * than the original four workspace paragraphs. */
-static unsigned int prepare_tail_model(unsigned int result_size, unsigned int tail_bytes)
+static legacy_u32 prepare_tail_model(legacy_u32 result_size, legacy_u32 tail_bytes)
 {
-	unsigned int rounded_size = (result_size + 15) / 16 * 16;
-	unsigned int original_workspace = rounded_size + 64;
-	unsigned int retained_size = rounded_size + (tail_bytes + 15) / 16 * 16;
-	unsigned int source = original_workspace - (file_length + 15) / 16 * 16;
+	legacy_u32 rounded_size = (result_size + 15) / 16 * 16;
+	legacy_u32 original_workspace = rounded_size + 64;
+	legacy_u32 retained_size = rounded_size + (tail_bytes + 15) / 16 * 16;
+	legacy_u32 source = original_workspace - (file_length + 15) / 16 * 16;
 	memset(stage, 0, retained_size);
 	memcpy(stage + source, file_bytes, file_length);
 	return retained_size;
 }
 
-static void check_tail_snapshot(unsigned int retained_size)
+static void check_tail_snapshot(legacy_u32 retained_size)
 {
 	resource_file_kind = 1;
 	cached = 1;
-	unsigned int prior_lookups = lookup_calls;
+	legacy_u32 prior_lookups = lookup_calls;
 	legacy_u8 *result = file_load_resfile_with_tail("SNAPSHOT", 256);
 	assert(result == memory + 0x20000);
 	assert(lookup_calls == prior_lookups);
@@ -561,12 +561,12 @@ static void check_tail_snapshot(unsigned int retained_size)
 static void test_vle_resource_tail(void)
 {
 	legacy_u8 counts[1] = {2};
-	static const unsigned int lengths[] = {65, 65537};
-	for (unsigned int i = 0; i < sizeof(lengths) / sizeof(lengths[0]); i++) {
+	static const legacy_u32 lengths[] = {65, 65537};
+	for (legacy_u32 i = 0; i < sizeof(lengths) / sizeof(lengths[0]); i++) {
 		reset_file();
-		unsigned int length = lengths[i];
+		legacy_u32 length = lengths[i];
 		file_length = make_vle(file_bytes, counts, 1, length, 0, 1);
-		unsigned int retained_size = prepare_tail_model(length, 256);
+		legacy_u32 retained_size = prepare_tail_model(length, 256);
 		memcpy(stage, expected, length + 1);
 		/* Leave a trimmed ordinary resource in the cache first. */
 		assert(file_decomp("SNAPSHOT.pre", 0) == memory + 0x20000);
@@ -588,7 +588,7 @@ static void test_rle_resource_tail(void)
 	static const legacy_u8 encoded[] = {1, 5, 0, 0, 3, 0, 0, 0, 129, 0xe0, 0xe0, 7, 'Z'};
 	memcpy(file_bytes, encoded, sizeof(encoded));
 	file_length = sizeof(encoded);
-	unsigned int retained_size = prepare_tail_model(5, 256);
+	legacy_u32 retained_size = prepare_tail_model(5, 256);
 	/* A final run deliberately writes beyond the declared output size. */
 	memset(stage, 'Z', 7);
 	check_tail_snapshot(retained_size);
@@ -607,14 +607,14 @@ static void test_rle_resource_tail(void)
 static void test_multipass_resource_tail(void)
 {
 	reset_file();
-	for (unsigned int i = 0; i < 16; i++) {
+	for (legacy_u32 i = 0; i < 16; i++) {
 		expected[i] = (legacy_u8)(31 + i * 7);
 	}
-	unsigned int inner_size = make_rle_literals(packed, expected, 16);
+	legacy_u32 inner_size = make_rle_literals(packed, expected, 16);
 	file_bytes[0] = 130;
 	write_size(file_bytes + 1, 16);
 	file_length = 4 + make_rle_literals(file_bytes + 4, packed, inner_size);
-	unsigned int retained_size = prepare_tail_model(16, 256);
+	legacy_u32 retained_size = prepare_tail_model(16, 256);
 	memcpy(stage, packed, inner_size);
 	memmove(stage + 48, stage, 32);
 	memcpy(stage, expected, 16);
@@ -628,7 +628,7 @@ static void test_binary_resource_tail(void)
 	resource_file_kind = 2;
 	cached = 1;
 	file_length = 17;
-	for (unsigned int i = 0; i < file_length; i++) {
+	for (legacy_u32 i = 0; i < file_length; i++) {
 		file_bytes[i] = (legacy_u8)(i * 3);
 	}
 	legacy_u8 *result = file_load_resfile_with_tail("SNAPSHOT", 256);
@@ -636,7 +636,7 @@ static void test_binary_resource_tail(void)
 	assert(lookup_calls == 0 && allocated_paragraphs == 18);
 	assert(resize_calls == 0 && copy_calls == 0);
 	assert(memcmp(result, file_bytes, file_length) == 0);
-	for (unsigned int i = file_length; i < 288; i++) {
+	for (legacy_u32 i = file_length; i < 288; i++) {
 		assert(result[i] == 0);
 	}
 	assert(result[288] == 0xa5);
@@ -655,7 +655,7 @@ static void test_resource_tail_errors(void)
 	assert(file_load_resfile_with_tail("INVALID", 256) == 0);
 	assert(release_calls == 1 && fatal_calls == 1);
 
-	for (unsigned int kind = 1; kind <= 2; kind++) {
+	for (legacy_u32 kind = 1; kind <= 2; kind++) {
 		reset_file();
 		resource_file_kind = kind;
 		file_length = 16;

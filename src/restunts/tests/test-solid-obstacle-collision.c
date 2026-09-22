@@ -25,7 +25,7 @@ static void configure_option(const char *option)
 	configure_legacy_collision(option == NULL ? 1 : 2, argv);
 }
 
-static struct VECTOR rotate_from_local(struct VECTOR point, unsigned rotation)
+static struct VECTOR rotate_from_local(struct VECTOR point, legacy_u32 rotation)
 {
 	legacy_s16 old_x = point.x;
 	switch (rotation) {
@@ -45,8 +45,8 @@ static struct VECTOR rotate_from_local(struct VECTOR point, unsigned rotation)
 	return point;
 }
 
-static struct VECTOR world_point(struct VECTOR point, unsigned rotation, legacy_s16 elevation,
-								 int stone)
+static struct VECTOR world_point(struct VECTOR point, legacy_u32 rotation, legacy_s16 elevation,
+								 legacy_s32 stone)
 {
 	point.x *= stone;
 	point.z *= stone;
@@ -78,7 +78,7 @@ static struct VECTOR retained_position(struct VECTORLONG *previous, struct VECTO
 	return result;
 }
 
-static void initialize_slalom(unsigned rotation, legacy_s16 elevation)
+static void initialize_slalom(legacy_u32 rotation, legacy_s16 elevation)
 {
 	memset(elements, 0, sizeof(elements));
 	memset(terrain, 0, sizeof(terrain));
@@ -88,7 +88,7 @@ static void initialize_slalom(unsigned rotation, legacy_s16 elevation)
 	track_terrain_map = terrain;
 	planptr = planes;
 	wallptr = walls;
-	for (int index = 0; index < TRACK_GRID_SIZE; index++) {
+	for (legacy_s32 index = 0; index < TRACK_GRID_SIZE; index++) {
 		trackrows[index] = index * TRACK_GRID_SIZE;
 		terrainrows[index] = (TRACK_GRID_LAST_INDEX - index) * TRACK_GRID_SIZE;
 		track_column_centers[index] = index * 1024 + 512;
@@ -105,7 +105,7 @@ static void initialize_slalom(unsigned rotation, legacy_s16 elevation)
 	static const struct TRACK_WALL fixture[] = {{256, -97, 271}, {768, -23, 241}, {0, -23, 271},
 												{512, -97, 241}, {768, 97, -271}, {256, 23, -241},
 												{0, 97, -241},	 {512, 23, -271}};
-	for (unsigned index = 0; index < sizeof(fixture) / sizeof(fixture[0]); index++) {
+	for (legacy_u32 index = 0; index < sizeof(fixture) / sizeof(fixture[0]); index++) {
 		walls[141 + index] = fixture[index];
 	}
 
@@ -214,7 +214,7 @@ static void test_mode_gate(void)
 	assert_sweep(previous, current, 0);
 }
 
-static void test_solid_geometry(unsigned rotation, legacy_s16 elevation, int stone)
+static void test_solid_geometry(legacy_u32 rotation, legacy_s16 elevation, legacy_s32 stone)
 {
 	static const struct {
 		struct VECTOR first;
@@ -250,7 +250,7 @@ static void test_solid_geometry(unsigned rotation, legacy_s16 elevation, int sto
 	};
 	initialize_slalom(rotation, elevation);
 	configure_option("/lc:off");
-	for (unsigned index = 0; index < sizeof(cases) / sizeof(cases[0]); index++) {
+	for (legacy_u32 index = 0; index < sizeof(cases) / sizeof(cases[0]); index++) {
 		struct VECTOR first = world_point(cases[index].first, rotation, elevation, stone);
 		struct VECTOR second = world_point(cases[index].second, rotation, elevation, stone);
 		assert_contact(first, second, cases[index].hit, -1);
@@ -317,8 +317,8 @@ static void test_solid_geometry(unsigned rotation, legacy_s16 elevation, int sto
 int main(void)
 {
 	test_mode_gate();
-	for (unsigned rotation = 0; rotation < 4; rotation++) {
-		for (int stone = -1; stone <= 1; stone += 2) {
+	for (legacy_u32 rotation = 0; rotation < 4; rotation++) {
+		for (legacy_s32 stone = -1; stone <= 1; stone += 2) {
 			test_solid_geometry(rotation, 0, stone);
 			test_solid_geometry(rotation, 450, stone);
 		}

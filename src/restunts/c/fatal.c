@@ -6,7 +6,7 @@
 #include "keyboard.h"
 
 #ifdef RESTUNTS_SDL3
-extern int sdl3_batch_mode;
+extern legacy_s32 sdl3_batch_mode;
 #endif
 
 #define FATAL_OUTPUT_BUFFER_SIZE 96U
@@ -215,6 +215,7 @@ static void fatal_emit_unknown_field(struct FATAL_OUTPUT_STATE *output, legacy_s
 	}
 }
 
+/* Word arguments undergo the C default promotions at this variadic boundary. */
 static void fatal_vprintf(const legacy_s8 *format, va_list arguments)
 {
 	struct FATAL_OUTPUT_STATE output;
