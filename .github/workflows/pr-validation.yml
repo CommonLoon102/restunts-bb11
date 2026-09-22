@@ -4,7 +4,7 @@ name: PR validation
 # validation fails, or sampled renderer output differs from pixldumo.
 on:
   push:
-    branches: [cl102/sdl3-init-x]
+    branches: [cl102/hi-res-t4]
   pull_request:
     branches: [master]
   workflow_dispatch:
@@ -39,6 +39,6 @@ jobs:
     uses: ./.github/workflows/build-and-validate.yml
     with:
       platforms: ${{ github.event.inputs.platforms || '["sdl3"]' }}
-      cameras: ${{ github.event.inputs.cameras || '[1,2]' }}
+      cameras: ${{ github.event.inputs.cameras || '[1,2,3,4]' }}
       target: ${{ fromJSON(github.event.inputs.target || '0') }}
       renderer-test-percentage: ${{ fromJSON(github.event.inputs.renderer-test-percentage || '100') }}
