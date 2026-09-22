@@ -39,6 +39,6 @@ jobs:
     uses: ./.github/workflows/build-and-validate.yml
     with:
       platforms: ${{ github.event.inputs.platforms || '["sdl3"]' }}
-      cameras: ${{ github.event.inputs.cameras || '[1,2]' }}
+      cameras: ${{ github.event.inputs.cameras || '[1,2,3,4]' }}
       target: ${{ fromJSON(github.event.inputs.target || '0') }}
       renderer-test-percentage: ${{ fromJSON(github.event.inputs.renderer-test-percentage || '100') }}
