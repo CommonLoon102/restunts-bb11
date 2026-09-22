@@ -35,17 +35,43 @@ static legacy_u8 elements[900], terrain[900];
 
 #ifdef RESTUNTS_SDL3
 legacy_u8 supersight_enabled;
+legacy_u8 fps_display_enabled;
 static unsigned scripted_input, shortcut_count, opponent_updates;
+static unsigned fps_draw_count, fps_presented_count, fps_reset_count;
+static legacy_s16 scripted_key;
+static struct RECTANGLE fps_bounds = {8, 81, 3, 12};
 static struct RECTANGLE target_clip;
 static struct RECTANGLE cleared_rects[8];
-static legacy_u8 rendered_modes[8];
+static legacy_u8 rendered_modes[8], rendered_fps[8];
 
 legacy_s16 handle_ingame_kb_shortcuts(legacy_s16 key)
 {
-	assert(key == KEY_F12);
-	supersight_enabled ^= 1U;
+	assert(key == KEY_F11 || key == KEY_F12);
+	if (key == KEY_F11) {
+		fps_display_enabled ^= 1U;
+		frame_fps_reset();
+	} else {
+		supersight_enabled ^= 1U;
+	}
 	shortcut_count++;
 	return 1;
+}
+
+void frame_fps_reset(void)
+{
+	fps_reset_count++;
+}
+
+void frame_fps_record_presented(void)
+{
+	fps_presented_count++;
+}
+
+struct RECTANGLE *frame_fps_draw_text(void)
+{
+	assert(fps_display_enabled != 0);
+	fps_draw_count++;
+	return &fps_bounds;
 }
 #endif
 
@@ -183,6 +209,7 @@ void shape3d_render_queued_primitives(void)
 #ifdef RESTUNTS_SDL3
 	if (scripted_input == 1 && flush_count < 8) {
 		rendered_modes[flush_count] = supersight_enabled;
+		rendered_fps[flush_count] = fps_display_enabled;
 	}
 #endif
 	flush_count++;
@@ -441,7 +468,7 @@ legacy_s16 input_do_checking(legacy_s16 delta)
 #ifdef RESTUNTS_SDL3
 	if (scripted_input != 0) {
 		if (input_polls == 1 || (scripted_input == 1 && input_polls == 3)) {
-			return KEY_F12;
+			return scripted_key;
 		}
 		if (scripted_input == 1 && input_polls >= 5) {
 			return KEY_ESCAPE;
@@ -547,6 +574,7 @@ static void display_toggle_case(unsigned scenario)
 	memset(&state, 0, sizeof(state));
 	memset(cleared_rects, 0, sizeof(cleared_rects));
 	memset(rendered_modes, 0, sizeof(rendered_modes));
+	memset(rendered_fps, 0, sizeof(rendered_fps));
 	framespersec = 20;
 	timer_ticks_per_frame = 1;
 	intro_elapsed_ticks = 0;
@@ -555,23 +583,44 @@ static void display_toggle_case(unsigned scenario)
 	video_uses_page_flipping = scenario & 1;
 	slow_video_mgmt = (scenario >> 1) & 1;
 	legacy_u8 initial_mode = (scenario >> 2) & 1;
+	legacy_u8 initial_fps = (scenario >> 3) & 1;
+	scripted_key = (scenario & 16) != 0 ? KEY_F11 : KEY_F12;
 	supersight_enabled = initial_mode;
+	fps_display_enabled = initial_fps;
 	copy_backbuffer = 0;
 	cancel_after = 0;
 	input_polls = timer_reads = shortcut_count = opponent_updates = 0;
+	fps_draw_count = fps_presented_count = fps_reset_count = 0;
 	random_value = 1;
 	scripted_input = 1;
 	assert(setup_intro() == 1);
 	assert(input_polls == 5);
 	assert(shortcut_count == 2);
 	assert(supersight_enabled == initial_mode);
+	assert(fps_display_enabled == initial_fps);
 	assert(opponent_updates == 5);
 	assert(flush_count == 5);
-	assert(rendered_modes[0] == initial_mode);
-	assert(rendered_modes[1] == !initial_mode);
-	assert(rendered_modes[2] == !initial_mode);
-	assert(rendered_modes[3] == initial_mode);
-	assert(rendered_modes[4] == initial_mode);
+	unsigned expected_fps_draws = 0;
+	for (unsigned frame = 0; frame < flush_count; frame++) {
+		legacy_u8 toggled = frame == 1 || frame == 2;
+		legacy_u8 expected_mode = initial_mode ^ (toggled && scripted_key == KEY_F12);
+		legacy_u8 expected_fps = initial_fps ^ (toggled && scripted_key == KEY_F11);
+		assert(rendered_modes[frame] == expected_mode);
+		assert(rendered_fps[frame] == expected_fps);
+		expected_fps_draws += expected_fps;
+		/* Dirty rendering must clear the previous FPS text on the same page,
+		 * including when F12 leaves the counter enabled throughout. */
+		unsigned page_age = video_uses_page_flipping != 0 ? 2 : 1;
+		if (slow_video_mgmt != 0 && frame >= page_age && rendered_fps[frame - page_age]) {
+			assert(cleared_rects[frame].left <= fps_bounds.left);
+			assert(cleared_rects[frame].right >= fps_bounds.right);
+			assert(cleared_rects[frame].top <= fps_bounds.top);
+			assert(cleared_rects[frame].bottom >= fps_bounds.bottom);
+		}
+	}
+	assert(fps_draw_count == expected_fps_draws);
+	assert(fps_presented_count == flush_count);
+	assert(fps_reset_count == (scripted_key == KEY_F11 ? 4U : 2U));
 	/* The first frame and each toggle must clear old 3D pixels throughout
 	 * the viewport. Page flipping must also clear its other stale page. */
 	assert_full_clear(0);
@@ -584,7 +633,7 @@ static void display_toggle_case(unsigned scenario)
 	scripted_input = 0;
 }
 
-static void display_toggle_completion_case(void)
+static void display_toggle_completion_case(legacy_s16 key)
 {
 	reset_projection();
 	framespersec = 20;
@@ -593,14 +642,20 @@ static void display_toggle_completion_case(void)
 	intro_colorvalue = 1;
 	intro_palette_color_count = 16;
 	slow_video_mgmt = video_uses_page_flipping = 0;
-	supersight_enabled = 0;
+	supersight_enabled = fps_display_enabled = 0;
 	input_polls = timer_reads = shortcut_count = 0;
+	fps_draw_count = fps_presented_count = fps_reset_count = 0;
 	copy_backbuffer = cancel_after = 0;
+	scripted_key = key;
 	scripted_input = 2;
 	assert(setup_intro() == 0);
 	assert(input_polls > 1);
 	assert(shortcut_count == 1);
-	assert(supersight_enabled == 1);
+	assert(supersight_enabled == (key == KEY_F12));
+	assert(fps_display_enabled == (key == KEY_F11));
+	assert(fps_draw_count == (key == KEY_F11 ? flush_count - 1U : 0U));
+	assert(fps_presented_count == flush_count);
+	assert(fps_reset_count == (key == KEY_F11 ? 3U : 2U));
 	scripted_input = 0;
 }
 #endif
@@ -636,10 +691,11 @@ int main(void)
 	assert(lifecycle_hash == 0xa3183e31UL);
 #endif
 #ifdef RESTUNTS_SDL3
-	for (unsigned scenario = 0; scenario < 8; scenario++) {
+	for (unsigned scenario = 0; scenario < 32; scenario++) {
 		display_toggle_case(scenario);
 	}
-	display_toggle_completion_case();
+	display_toggle_completion_case(KEY_F12);
+	display_toggle_completion_case(KEY_F11);
 #endif
 	return 0;
 }
