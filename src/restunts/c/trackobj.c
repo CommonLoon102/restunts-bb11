@@ -1489,24 +1489,7 @@ void build_track_object(struct VECTOR *world_position, struct VECTOR *next_world
 								 sample.wall_orientation_modifier);
 }
 
-struct TRACK_COLLISION_SNAPSHOT {
-	legacy_s16 plane_index;
-	struct PLANE far *plane;
-	legacy_s16 wall_index;
-	legacy_s16 wall_height;
-	legacy_s16 wall_lower_bound;
-	legacy_u8 corkscrew;
-	legacy_s8 surface_type;
-	legacy_s8 wall_collision_enabled;
-	legacy_s16 terrain_height;
-	legacy_s16 element_x;
-	legacy_s16 element_z;
-	legacy_s16 wall_x;
-	legacy_s16 wall_z;
-	legacy_s16 wall_orientation;
-};
-
-static void capture_track_collision(struct TRACK_COLLISION_SNAPSHOT *saved)
+void track_collision_capture(struct TRACK_COLLISION_SNAPSHOT *saved)
 {
 	saved->plane_index = planindex;
 	saved->plane = current_planptr;
@@ -1524,7 +1507,7 @@ static void capture_track_collision(struct TRACK_COLLISION_SNAPSHOT *saved)
 	saved->wall_orientation = wallOrientation;
 }
 
-static void restore_track_collision(const struct TRACK_COLLISION_SNAPSHOT *saved)
+void track_collision_restore(const struct TRACK_COLLISION_SNAPSHOT *saved)
 {
 	planindex = saved->plane_index;
 	current_planptr = saved->plane;
@@ -1563,7 +1546,7 @@ static legacy_s16 selected_wall_matches(const struct TRACK_COLLISION_SNAPSHOT *c
 static legacy_s16 selected_wall_contains_point(struct VECTOR *point, struct MATRIX *rotation)
 {
 	struct TRACK_COLLISION_SNAPSHOT candidate;
-	capture_track_collision(&candidate);
+	track_collision_capture(&candidate);
 
 	/* Requery across the wall at the intersection, not at a segment endpoint.
 	 * This retains the finite extent and distinguishes a rail from the solid
@@ -1582,7 +1565,7 @@ static legacy_s16 selected_wall_contains_point(struct VECTOR *point, struct MATR
 		build_track_object(&second, &first);
 		contains = selected_wall_matches(&candidate);
 	}
-	restore_track_collision(&candidate);
+	track_collision_restore(&candidate);
 	return contains;
 }
 
@@ -1800,14 +1783,14 @@ legacy_s16 track_solid_obstacle_contact(struct VECTOR *first, struct VECTOR *sec
 legacy_s16 track_wall_intersects_segment(struct VECTOR *first, struct VECTOR *second)
 {
 	struct TRACK_COLLISION_SNAPSHOT saved;
-	capture_track_collision(&saved);
+	track_collision_capture(&saved);
 	build_track_object(first, second);
 	legacy_s16 hit = selected_wall_intersects_segment(first, second);
 	if (!hit) {
 		build_track_object(second, first);
 		hit = selected_wall_intersects_segment(first, second);
 	}
-	restore_track_collision(&saved);
+	track_collision_restore(&saved);
 	if (!hit) {
 		legacy_s16 fraction;
 		hit = track_solid_obstacle_contact(first, second, &fraction);
@@ -1819,13 +1802,13 @@ legacy_s16 track_surface_contains_point(struct VECTOR *point)
 {
 	/* A footprint query must not replace the wheel's selected collision state. */
 	struct TRACK_COLLISION_SNAPSHOT saved;
-	capture_track_collision(&saved);
+	track_collision_capture(&saved);
 	build_track_object(point, point);
 	legacy_s16 contains = planindex == saved.plane_index && elem_xCenter == saved.element_x &&
 						  elem_zCenter == saved.element_z &&
 						  terrainHeight == saved.terrain_height &&
 						  track_wall_collision_enabled == 0;
-	restore_track_collision(&saved);
+	track_collision_restore(&saved);
 	return contains;
 }
 
@@ -1833,7 +1816,7 @@ legacy_s16 sweep_track_surface_candidates(struct VECTOR *previous, struct VECTOR
 										  TRACK_SURFACE_SWEEP_TEST test, legacy_s16 *fraction)
 {
 	struct TRACK_COLLISION_SNAPSHOT saved;
-	capture_track_collision(&saved);
+	track_collision_capture(&saved);
 	legacy_s16 first_fraction = 0;
 	legacy_s16 hit = test(previous, current, &first_fraction);
 
@@ -1846,7 +1829,7 @@ legacy_s16 sweep_track_surface_candidates(struct VECTOR *previous, struct VECTOR
 		}
 		hit = 1;
 	}
-	restore_track_collision(&saved);
+	track_collision_restore(&saved);
 	if (hit) {
 		*fraction = first_fraction;
 	}

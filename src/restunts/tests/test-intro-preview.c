@@ -39,6 +39,14 @@ legacy_u8 fps_display_enabled;
 static legacy_u32 scripted_input, shortcut_count, opponent_updates;
 static legacy_u32 fps_draw_count, fps_presented_count, fps_reset_count;
 static legacy_s16 scripted_key;
+static legacy_u64 scripted_now;
+static legacy_u64 previous_input_time;
+static legacy_u32 predicted_transforms;
+
+legacy_u64 presentation_now(void)
+{
+	return scripted_now;
+}
 static struct RECTANGLE fps_bounds = {8, 81, 3, 12};
 static struct RECTANGLE target_clip;
 static struct RECTANGLE cleared_rects[8];
@@ -176,6 +184,13 @@ legacy_u16 select_cliprect_rotate(legacy_s16 z, legacy_s16 x, legacy_s16 y, stru
 legacy_u16 shape3d_transform_and_queue(struct TRANSFORMEDSHAPE3D *shape)
 {
 	legacy_u16 id = shape_id(shape->shapeptr);
+#ifdef RESTUNTS_SDL3
+	if (scripted_input == 3 && id == 132 &&
+		shape->pos.x !=
+			LEGACY_S16_WRAP_SUB(1024, position_to_word(state.opponentstate.car_position.lx))) {
+		predicted_transforms++;
+	}
+#endif
 
 	record_word(6);
 	record_word(id);
@@ -442,6 +457,11 @@ legacy_u32 timer_get_delta(void)
 	timer_reads++;
 	record_word(32);
 #ifdef RESTUNTS_SDL3
+	if (scripted_input == 3) {
+		scripted_now += 1000000ULL;
+		return scripted_now % 10000000ULL == 0;
+	}
+	scripted_now += 20000000ULL;
 	/* Pause simulation on the first poll after each display toggle. The
 	 * renderer still has to refresh immediately at the new resolution. */
 	if (scripted_input == 1 && (timer_reads == 3 || timer_reads == 5)) {
@@ -466,6 +486,17 @@ legacy_s16 input_do_checking(legacy_s16 delta)
 	record_word(delta);
 	input_polls++;
 #ifdef RESTUNTS_SDL3
+	if (scripted_input == 3) {
+		if (supersight_enabled != 0) {
+			assert(scripted_now - previous_input_time >= 10000000ULL);
+		}
+		previous_input_time = scripted_now;
+		if (scripted_key == KEY_F12 && ((shortcut_count == 0 && scripted_now >= 400000000ULL) ||
+										(shortcut_count == 1 && scripted_now >= 650000000ULL))) {
+			return KEY_F12;
+		}
+		return scripted_now >= 1000000000ULL ? KEY_ESCAPE : 0;
+	}
 	if (scripted_input != 0) {
 		if (input_polls == 1 || (scripted_input == 1 && input_polls == 3)) {
 			return scripted_key;
@@ -633,6 +664,53 @@ static void display_toggle_case(legacy_u32 scenario)
 	scripted_input = 0;
 }
 
+static void predictive_presentation_case(void)
+{
+	struct GAMESTATE reference;
+	legacy_u32 reference_polls = 0;
+	for (legacy_u16 mode = 0; mode < 3; mode++) {
+		reset_projection();
+		memset(&state, 0, sizeof(state));
+		framespersec = 20;
+		timer_ticks_per_frame = 5;
+		intro_elapsed_ticks = 0;
+		intro_colorvalue = 1;
+		intro_palette_color_count = 16;
+		slow_video_mgmt = video_uses_page_flipping = 0;
+		supersight_enabled = mode == 1;
+		fps_display_enabled = 0;
+		input_polls = timer_reads = shortcut_count = opponent_updates = 0;
+		fps_draw_count = fps_presented_count = fps_reset_count = 0;
+		predicted_transforms = 0;
+		scripted_now = previous_input_time = 0;
+		scripted_input = 3;
+		scripted_key = mode == 2 ? KEY_F12 : 0;
+		copy_backbuffer = cancel_after = 0;
+		random_value = 1;
+		assert(setup_intro() == 1);
+		assert(timer_reads >= 1000 && timer_reads <= 1010);
+		assert(opponent_updates == 19);
+		if (mode == 0) {
+			reference = state;
+			reference_polls = input_polls;
+			assert(reference_polls == 999);
+			assert(flush_count == 20);
+			assert(predicted_transforms == 0);
+		} else {
+			assert(memcmp(&reference, &state, sizeof(state)) == 0);
+			assert(input_polls <= reference_polls);
+			assert(predicted_transforms > 0);
+			assert(flush_count > 20);
+		}
+		if (mode == 1) {
+			assert(input_polls == 100);
+			/* Include the initial presentation and the deadline at one second. */
+			assert(flush_count == 61);
+		}
+	}
+	scripted_input = 0;
+}
+
 static void display_toggle_completion_case(legacy_s16 key)
 {
 	reset_projection();
@@ -698,6 +776,7 @@ int main(void)
 	}
 	display_toggle_completion_case(KEY_F12);
 	display_toggle_completion_case(KEY_F11);
+	predictive_presentation_case();
 #endif
 	return 0;
 }

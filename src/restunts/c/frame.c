@@ -19,6 +19,14 @@
 #include "externs.h"
 #include "crash_state.h"
 #include "ghost.h"
+#include "residue.h"
+
+/* Presentations read their own immutable pose. Timer callbacks continue to see
+ * the authoritative state, even when a rendering helper pumps platform events. */
+static const struct GAMESTATE *frame_state = &state;
+static const struct CARSTATE *frame_ghost;
+static const struct GHOST_CAMERA_STATE *frame_ghost_camera;
+static legacy_u8 frame_uses_snapshot;
 
 #define TRACK_OBJECT_COUNT 215U
 #define TRACK_GRID_LAST_COORDINATE 29
@@ -304,10 +312,11 @@ static void frame_add_dynamic_shape(struct TRACKOBJECT *track_object, legacy_s16
 	curtransshape_ptr->rectptr = &frame_sorted_shapes_rect;
 	curtransshape_ptr->ts_flags = flags;
 	curtransshape_ptr->rotvec.x =
-		LEGACY_S16_WRAP_NEGATE(state.game_particle_rotation_x[state_index]);
+		LEGACY_S16_WRAP_NEGATE(frame_state->game_particle_rotation_x[state_index]);
 	curtransshape_ptr->rotvec.y =
-		LEGACY_S16_WRAP_NEGATE(state.game_particle_rotation_y[state_index]);
-	curtransshape_ptr->rotvec.z = LEGACY_S16_WRAP_NEGATE(state.game_particle_heading[state_index]);
+		LEGACY_S16_WRAP_NEGATE(frame_state->game_particle_rotation_y[state_index]);
+	curtransshape_ptr->rotvec.z =
+		LEGACY_S16_WRAP_NEGATE(frame_state->game_particle_heading[state_index]);
 	curtransshape_ptr->culling_distance = FRAME_DEFAULT_TRANSFORM_DISTANCE;
 	curtransshape_ptr->material = material;
 	transformed_shape_add_for_sort(z_adjust, 0);
@@ -428,25 +437,30 @@ void frame_present(struct RECTANGLE *cliprect)
 /* The player and the opponent are drawn identically: first the debris
  * attached to that car, then the car body itself with its wheels, clip
  * rectangle and rotation. Only the shapes, buffers and material differ. */
-static void frame_add_car(struct CARSTATE *carstate, legacy_s8 debris_owner, legacy_u16 car_object,
-						  struct SHAPE3D *wheel_shape, legacy_s16 *wheel_angles,
-						  struct VECTOR *wheel_vectors, struct VECTOR *wheel_vector,
-						  struct RECTANGLE *slow_rect, struct RECTANGLE *crash_rect,
-						  const struct VECTOR *camera_position, legacy_s8 tile_detail,
-						  legacy_s8 flags, legacy_s16 material, legacy_s16 z_adjust)
+static void frame_add_car(const struct CARSTATE *carstate, legacy_s8 debris_owner,
+						  legacy_u16 car_object, struct SHAPE3D *wheel_shape,
+						  legacy_s16 *wheel_angles, struct VECTOR *wheel_vectors,
+						  struct VECTOR *wheel_vector, struct RECTANGLE *slow_rect,
+						  struct RECTANGLE *crash_rect, const struct VECTOR *camera_position,
+						  legacy_s8 tile_detail, legacy_s8 flags, legacy_s16 material,
+						  legacy_s16 z_adjust)
 {
 	struct TRACKOBJECT *track_object;
-	if (state.game_particles_active != 0 && (flags & SHAPE3D_GHOST_FLAG) == 0U) {
+	if (frame_state->game_particles_active != 0 && (flags & SHAPE3D_GHOST_FLAG) == 0U) {
 		for (legacy_s16 index = 0; index < FRAME_DEBRIS_SLOT_COUNT; index++) {
-			if (state.game_particle_forward_speed[index] != 0 &&
-				state.game_particle_owner[index] == debris_owner) {
-				track_object = &particle_scene_objects[state.game_particle_shape_index[index]];
-				curtransshape_ptr->pos.x = frame_relative_position_sum(
-					state.game_particle_x[index], carstate->car_position.lx, camera_position->x);
-				curtransshape_ptr->pos.y = frame_relative_position_sum(
-					state.game_particle_y[index], carstate->car_position.ly, camera_position->y);
-				curtransshape_ptr->pos.z = frame_relative_position_sum(
-					state.game_particle_z[index], carstate->car_position.lz, camera_position->z);
+			if (frame_state->game_particle_forward_speed[index] != 0 &&
+				frame_state->game_particle_owner[index] == debris_owner) {
+				track_object =
+					&particle_scene_objects[frame_state->game_particle_shape_index[index]];
+				curtransshape_ptr->pos.x =
+					frame_relative_position_sum(frame_state->game_particle_x[index],
+												carstate->car_position.lx, camera_position->x);
+				curtransshape_ptr->pos.y =
+					frame_relative_position_sum(frame_state->game_particle_y[index],
+												carstate->car_position.ly, camera_position->y);
+				curtransshape_ptr->pos.z =
+					frame_relative_position_sum(frame_state->game_particle_z[index],
+												carstate->car_position.lz, camera_position->z);
 				frame_add_dynamic_shape(track_object, index,
 										flags | FRAME_TRANSFORM_FLAGS_NO_DEPTH_SORT, material,
 										z_adjust);
@@ -588,20 +602,24 @@ static legacy_s8 frame_begin(legacy_s8 buffer_index)
 
 /* Ghosts share the opponent drawing and camera slot without adding a
  * simulated car, collision body or sound source. */
-static struct CARSTATE *frame_second_car_state(void)
+static const struct CARSTATE *frame_second_car_state(void)
 {
-	return gameconfig.game_opponenttype != 0 ? &state.opponentstate : ghost_car_state();
+	return gameconfig.game_opponenttype != 0
+			   ? &frame_state->opponentstate
+			   : (frame_uses_snapshot != 0 ? frame_ghost : ghost_car_state());
 }
 
-static struct CARSTATE *frame_viewed_car_state(void)
+static const struct CARSTATE *frame_viewed_car_state(void)
 {
-	struct CARSTATE *second_car = followOpponentFlag != 0 ? frame_second_car_state() : 0;
-	return second_car != 0 ? second_car : &state.playerstate;
+	const struct CARSTATE *second_car = followOpponentFlag != 0 ? frame_second_car_state() : 0;
+	return second_car != 0 ? second_car : &frame_state->playerstate;
 }
 
 static const struct GHOST_CAMERA_STATE *frame_viewed_ghost_camera(void)
 {
-	return followOpponentFlag != 0 && gameconfig.game_opponenttype == 0 ? ghost_camera_state() : 0;
+	return followOpponentFlag != 0 && gameconfig.game_opponenttype == 0
+			   ? (frame_uses_snapshot != 0 ? frame_ghost_camera : ghost_camera_state())
+			   : 0;
 }
 
 static legacy_s16 frame_position_camera(struct FRAME_CAMERA *camera, const struct VECTOR *car_pos,
@@ -635,7 +653,7 @@ static legacy_s16 frame_position_camera(struct FRAME_CAMERA *camera, const struc
 		camera->position.z = LEGACY_S16_WRAP_ADD(car_pos->z, car_to_cam_rotated.z);
 	} else if (cameramode == CAMERA_MODE_FOLLOW) {
 		camera->position = ghost_camera != 0 ? ghost_camera->follow_position
-											 : state.game_follow_camera_position[car_index];
+											 : frame_state->game_follow_camera_position[car_index];
 	} else if (cameramode == CAMERA_MODE_CUSTOM) {
 		offset_vector.x = 0;
 		offset_vector.y = 0;
@@ -657,8 +675,9 @@ static legacy_s16 frame_position_camera(struct FRAME_CAMERA *camera, const struc
 		camera->position.y = LEGACY_S16_WRAP_ADD(car_pos->y, car_to_cam_rotated.y);
 		camera->position.z = LEGACY_S16_WRAP_ADD(car_pos->z, car_to_cam_rotated.z);
 	} else if (cameramode == CAMERA_MODE_TRACKSIDE) {
-		legacy_s16 track_index = ghost_camera != 0 ? ghost_camera->trackside_index
-												   : state.game_trackside_camera_index[car_index];
+		legacy_s16 track_index = ghost_camera != 0
+									 ? ghost_camera->trackside_index
+									 : frame_state->game_trackside_camera_index[car_index];
 		camera->position.x = trackside_camera_positions[track_index].x;
 		camera->position.y =
 			LEGACY_S16_WRAP_ADD(LEGACY_S16_WRAP_ADD(trackside_camera_positions[track_index].y,
@@ -713,7 +732,7 @@ static void frame_aim_external_camera(struct FRAME_CAMERA *camera, const struct 
 
 static void frame_setup_camera(struct FRAME_CAMERA *camera)
 {
-	struct CARSTATE *viewed_car = frame_viewed_car_state();
+	const struct CARSTATE *viewed_car = frame_viewed_car_state();
 	const struct GHOST_CAMERA_STATE *ghost_camera = frame_viewed_ghost_camera();
 	struct VECTOR car_pos;
 	car_pos.x = position_to_word(viewed_car->car_position.lx);
@@ -740,11 +759,12 @@ static legacy_s8 frame_animated_material(void)
 {
 	legacy_s8 animated_material;
 
-	if (state.game_frame == 0) {
+	if (frame_state->game_frame == 0) {
 		animated_material =
 			track_material_animation[frame_callback_count & FRAME_ANIMATION_PHASE_MASK];
 	} else {
-		animated_material = track_material_animation[state.game_frame & FRAME_ANIMATION_PHASE_MASK];
+		animated_material =
+			track_material_animation[frame_state->game_frame & FRAME_ANIMATION_PHASE_MASK];
 	}
 
 	return animated_material;
@@ -959,8 +979,8 @@ static void frame_select_tiles(struct FRAME_TILE_SELECTION *tiles,
 	tiles->camera_south = LEGACY_S8_WRAP_SUB(
 		TRACK_GRID_LAST_COORDINATE, LEGACY_S16_SAR(camera->position.z, FRAME_CAMERA_TILE_SHIFT));
 	if (detail_level != FRAME_DETAIL_FULL) {
-		tiles->player_east = frame_tile_from_world(state.playerstate.car_position.lx);
-		tiles->player_south = frame_south_tile_from_world(state.playerstate.car_position.lz);
+		tiles->player_east = frame_tile_from_world(frame_state->playerstate.car_position.lx);
+		tiles->player_south = frame_south_tile_from_world(frame_state->playerstate.car_position.lz);
 	}
 
 	for (legacy_s16 tile_index = 0; tile_index < tiles->count; tile_index++) {
@@ -1007,10 +1027,10 @@ static void frame_place_cars(const struct FRAME_TILE_SELECTION *tiles,
 	cars[PLAYER_CAR_INDEX].east = -1;
 	cars[PLAYER_CAR_INDEX].depth_adjustment = 0;
 	if (cameramode != CAMERA_MODE_COCKPIT || followOpponentFlag != 0) {
-		if (state.playerstate.car_crashBmpFlag != CRASH_EVENT_WATER) {
+		if (frame_state->playerstate.car_crashBmpFlag != CRASH_EVENT_WATER) {
 			cars[PLAYER_CAR_INDEX].depth_adjustment = frame_find_car_wheel(
-				&state.playerstate, &simd_player, tiles->markers, tiles->lookahead, tiles->count,
-				tiles->camera_east, tiles->camera_south, &cars[PLAYER_CAR_INDEX].east,
+				&frame_state->playerstate, &simd_player, tiles->markers, tiles->lookahead,
+				tiles->count, tiles->camera_east, tiles->camera_south, &cars[PLAYER_CAR_INDEX].east,
 				&cars[PLAYER_CAR_INDEX].south);
 		}
 	}
@@ -1018,7 +1038,7 @@ static void frame_place_cars(const struct FRAME_TILE_SELECTION *tiles,
 	// Locate the opponent in the same draw order.
 	cars[OPPONENT_CAR_INDEX].east = -1;
 	cars[OPPONENT_CAR_INDEX].depth_adjustment = 0;
-	struct CARSTATE *second_car = frame_second_car_state();
+	const struct CARSTATE *second_car = frame_second_car_state();
 	if (second_car != 0) {
 		if (cameramode != CAMERA_MODE_COCKPIT || followOpponentFlag == 0) {
 			if (second_car->car_crashBmpFlag != CRASH_EVENT_WATER) {
@@ -1311,7 +1331,7 @@ static void frame_add_roadside_sign(const struct FRAME_TILE *tile,
 		roadside_sign_indices_by_tile[tile->east + trackrows[tile->south]];
 	struct TRACKOBJECT *track_object;
 	if (breakable_object_index != FRAME_CHECKPOINT_NONE) {
-		if (state.game_object_destroyed[breakable_object_index] == 0) {
+		if (frame_state->game_object_destroyed[breakable_object_index] == 0) {
 			track_object = &trkObjectList[FRAME_CHECKPOINT_TRACK_OBJECT_BASE +
 										  roadside_sign_shape_indices[breakable_object_index]];
 			curtransshape_ptr->pos.x = LEGACY_S16_WRAP_SUB(
@@ -1329,22 +1349,23 @@ static void frame_add_roadside_sign(const struct FRAME_TILE *tile,
 			curtransshape_ptr->culling_distance = FRAME_CHECKPOINT_TRANSFORM_DISTANCE;
 			curtransshape_ptr->material = 0;
 			transformed_shape_add_for_sort(0, 0);
-		} else if (state.game_particles_active != 0) {
+		} else if (frame_state->game_particles_active != 0) {
 			for (legacy_s16 particle_index = 0; particle_index < FRAME_DEBRIS_SLOT_COUNT;
 				 particle_index++) {
-				if (state.game_particle_forward_speed[particle_index] != 0 &&
+				if (frame_state->game_particle_forward_speed[particle_index] != 0 &&
 					breakable_object_index + FRAME_CHECKPOINT_OWNER_OFFSET ==
-						state.game_particle_owner[particle_index]) {
+						frame_state->game_particle_owner[particle_index]) {
 					track_object =
-						&particle_scene_objects[state.game_particle_shape_index[particle_index]];
+						&particle_scene_objects[frame_state
+													->game_particle_shape_index[particle_index]];
 					curtransshape_ptr->pos.x = frame_relative_track_position(
-						state.game_particle_x[particle_index],
+						frame_state->game_particle_x[particle_index],
 						roadside_sign_positions[breakable_object_index].x, camera->position.x);
 					curtransshape_ptr->pos.y = frame_relative_track_position(
-						state.game_particle_y[particle_index],
+						frame_state->game_particle_y[particle_index],
 						roadside_sign_positions[breakable_object_index].y, camera->position.y);
 					curtransshape_ptr->pos.z = frame_relative_track_position(
-						state.game_particle_z[particle_index],
+						frame_state->game_particle_z[particle_index],
 						roadside_sign_positions[breakable_object_index].z, camera->position.z);
 					frame_add_dynamic_shape(
 						track_object, particle_index,
@@ -1393,7 +1414,7 @@ static void frame_animate_start_flag(void)
 static void frame_add_start_flag(const struct FRAME_TILE *tile, const struct FRAME_CAMERA *camera,
 								 legacy_s8 redraw_transform_flags)
 {
-	if (state.game_inputmode == GAME_INPUT_MODE_WAITING) {
+	if (frame_state->game_inputmode == GAME_INPUT_MODE_WAITING) {
 		if ((tile->east == start_finish_column || tile->last_east == start_finish_column) &&
 			(tile->south == start_finish_row || tile->last_south == start_finish_row)) {
 			frame_animate_start_flag();
@@ -1445,13 +1466,13 @@ static void frame_add_start_flag(const struct FRAME_TILE *tile, const struct FRA
 static void frame_select_brake_paint(legacy_s16 shape_index)
 {
 	if (transformed_shape_sort_types[shape_index] == FRAME_PLAYER_SORT_ID) {
-		if (state.playerstate.car_is_braking != 0) {
+		if (frame_state->playerstate.car_is_braking != 0) {
 			backlights_paint_override = BACKLIGHT_PAINT_BRAKING;
 		} else {
 			backlights_paint_override = BACKLIGHT_PAINT_NORMAL;
 		}
 	} else if (transformed_shape_sort_types[shape_index] == FRAME_OPPONENT_SORT_ID) {
-		if (state.opponentstate.car_is_braking == 0) {
+		if (frame_state->opponentstate.car_is_braking == 0) {
 			backlights_paint_override = BACKLIGHT_PAINT_NORMAL;
 		} else {
 			backlights_paint_override = BACKLIGHT_PAINT_BRAKING;
@@ -1480,12 +1501,12 @@ static legacy_s16 frame_draw_sorted_shapes(struct FRAME_CAR_RENDER *cars)
 
 			if (transform_result == 0) {
 				if (transformed_shape_sort_types[shape_index] == FRAME_PLAYER_SORT_ID) {
-					if (state.playerstate.car_crashBmpFlag == CRASH_EVENT_COLLISION) {
+					if (frame_state->playerstate.car_crashBmpFlag == CRASH_EVENT_COLLISION) {
 						cars[PLAYER_CAR_INDEX].explosion_visible = 1;
 					}
 				} else if (transformed_shape_sort_types[shape_index] == FRAME_OPPONENT_SORT_ID) {
 					if ((currenttransshape[shape_index].ts_flags & SHAPE3D_GHOST_FLAG) == 0U &&
-						state.opponentstate.car_crashBmpFlag == CRASH_EVENT_COLLISION) {
+						frame_state->opponentstate.car_crashBmpFlag == CRASH_EVENT_COLLISION) {
 						cars[OPPONENT_CAR_INDEX].explosion_visible = 1;
 					}
 				}
@@ -1610,7 +1631,7 @@ static void frame_add_tile_cars(const struct FRAME_TILE *tile, const struct FRAM
 		 cars[PLAYER_CAR_INDEX].east == tile->last_east) &&
 		(cars[PLAYER_CAR_INDEX].south == tile->south ||
 		 cars[PLAYER_CAR_INDEX].south == tile->last_south)) {
-		frame_add_car(&state.playerstate, PLAYER_CAR_INDEX, FRAME_PLAYER_SORT_ID,
+		frame_add_car(&frame_state->playerstate, PLAYER_CAR_INDEX, FRAME_PLAYER_SORT_ID,
 					  &game3dshapes[PLAYER_CAR_WHEEL_SHAPE], player_wheel_vertex_state,
 					  player_base_wheel_vertices, player_front_wheel_centers,
 					  &frame_player_car_rect, &cars[PLAYER_CAR_INDEX].crash_rect, &camera->position,
@@ -1622,7 +1643,7 @@ static void frame_add_tile_cars(const struct FRAME_TILE *tile, const struct FRAM
 		(cars[OPPONENT_CAR_INDEX].east == tile->last_east)) {
 		if ((cars[OPPONENT_CAR_INDEX].south == tile->south) ||
 			(cars[OPPONENT_CAR_INDEX].south == tile->last_south)) {
-			struct CARSTATE *second_car = frame_second_car_state();
+			const struct CARSTATE *second_car = frame_second_car_state();
 			if (second_car == 0) {
 				return;
 			}
@@ -1823,7 +1844,7 @@ static void frame_draw_explosions(struct FRAME_CAR_RENDER *cars, struct RECTANGL
 			}
 
 			legacy_s16 explosion_index =
-				LEGACY_S16_SAR(state.game_frame, FRAME_EXPLOSION_FRAME_SHIFT) %
+				LEGACY_S16_SAR(frame_state->game_frame, FRAME_EXPLOSION_FRAME_SHIFT) %
 				FRAME_EXPLOSION_VARIANT_COUNT;
 			height_or_scale = LEGACY_S16_FROM_BITS((legacy_u16)LEGACY_S32_DIV_OR_ZERO(
 				LEGACY_S32_WRAP_MUL((legacy_s32)extent, FRAME_EXPLOSION_FIXED_SCALE),
@@ -1839,15 +1860,15 @@ static void frame_draw_cockpit_effects(struct RECTANGLE *cliprect)
 	// Depict windscreen cracking after a crash
 	sprite_set_target_clip_bounds(0, FRAME_SCREEN_WIDTH, cliprect->top, cliprect->bottom);
 	if (cameramode == CAMERA_MODE_COCKPIT) {
-		struct CARSTATE *viewed_carstate = frame_viewed_car_state();
+		const struct CARSTATE *viewed_carstate = frame_viewed_car_state();
 		const struct GHOST_CAMERA_STATE *ghost_camera = frame_viewed_ghost_camera();
-		legacy_s16 frame = state.game_frame;
-		legacy_s16 crash_frame = state.game_pEndFrame;
+		legacy_s16 frame = frame_state->game_frame;
+		legacy_s16 crash_frame = frame_state->game_pEndFrame;
 		if (ghost_camera != 0) {
 			frame = ghost_camera->frame;
 			crash_frame = ghost_camera->crash_frame;
-		} else if (viewed_carstate == &state.opponentstate) {
-			crash_frame = state.game_oEndFrame;
+		} else if (viewed_carstate == &frame_state->opponentstate) {
+			crash_frame = frame_state->game_oEndFrame;
 		}
 
 		if (viewed_carstate->car_crashBmpFlag == CRASH_EVENT_COLLISION) {
@@ -1874,7 +1895,7 @@ static void frame_draw_elapsed_time(void)
 {
 	// Show elapsed time
 	if (game_replay_mode == REPLAY_MODE_LIVE) {
-		if (state.game_inputmode != GAME_INPUT_MODE_WAITING) {
+		if (frame_state->game_inputmode != GAME_INPUT_MODE_WAITING) {
 			format_frame_as_string(&resID_byte1, elapsed_time1 + elapsed_time2, 0);
 			font_set_fontdef2(fontledresptr);
 			if (slow_video_mgmt_copy != 0) {
@@ -1950,4 +1971,45 @@ void update_frame(legacy_s8 buffer_index, struct RECTANGLE *cliprect)
 	frame_draw_elapsed_time();
 	frame_finish(buffer_index, cliprect, skybox_requires_full_redraw, camera.yaw);
 	polyinfo_set_supersight(0);
+}
+
+void update_frame_predicted(legacy_s8 buffer_index, struct RECTANGLE *cliprect,
+							const struct GAMESTATE *render_state,
+							const struct CARSTATE *render_ghost,
+							const struct GHOST_CAMERA_STATE *render_ghost_camera)
+{
+	/* External-camera clearance borrows the collision and wheel-travel scratch.
+	 * Extra presentations must not leave their predicted geometry for physics. */
+	struct TRACK_COLLISION_SNAPSHOT saved_collision;
+	track_collision_capture(&saved_collision);
+	legacy_s16 saved_plane = planindex_copy;
+	legacy_s16 saved_heading = wheel_heading_offset;
+	legacy_s16 saved_pitch = car_initial_pitch;
+	legacy_s16 saved_roll = car_initial_roll;
+	legacy_s16 saved_yaw = car_initial_yaw;
+	struct VECTOR saved_forward_travel = wheel_forward_travel;
+	struct VECTOR saved_world_travel = wheel_world_travel;
+	struct LEGACY_EXECUTION_RESIDUE saved_residue = legacy_execution_residue;
+	legacy_s16 saved_render_headings = legacy_render_player_headings_active;
+
+	frame_state = render_state;
+	frame_ghost = render_ghost;
+	frame_ghost_camera = render_ghost_camera;
+	frame_uses_snapshot = 1;
+	update_frame(buffer_index, cliprect);
+	frame_uses_snapshot = 0;
+	frame_state = &state;
+	frame_ghost = 0;
+	frame_ghost_camera = 0;
+
+	track_collision_restore(&saved_collision);
+	planindex_copy = saved_plane;
+	wheel_heading_offset = saved_heading;
+	car_initial_pitch = saved_pitch;
+	car_initial_roll = saved_roll;
+	car_initial_yaw = saved_yaw;
+	wheel_forward_travel = saved_forward_travel;
+	wheel_world_travel = saved_world_travel;
+	legacy_execution_residue = saved_residue;
+	legacy_render_player_headings_active = saved_render_headings;
 }

@@ -36,6 +36,27 @@ static const legacy_s8 *fixture_files[] = {(const legacy_s8 *)"CARVETT.RES",
 										   (const legacy_s8 *)"CARANSX.RES",
 										   (const legacy_s8 *)"CARCOUN.RES"};
 
+#ifdef RESTUNTS_SDL3
+legacy_u8 supersight_enabled;
+static legacy_u8 predictive_preview_test;
+static legacy_u32 preview_present_count;
+static legacy_s16 preview_last_rotation;
+static legacy_u32 preview_physics_steps, preview_toggle_count;
+static legacy_u64 preview_now, preview_previous_input_time;
+
+legacy_u64 presentation_now(void)
+{
+	return preview_now;
+}
+
+legacy_s16 handle_ingame_kb_shortcuts(legacy_s16 key)
+{
+	assert(key == KEY_F12);
+	supersight_enabled ^= 1U;
+	return 1;
+}
+#endif
+
 static void trace_word(legacy_u16 value)
 {
 	trace_hash = (trace_hash ^ (value & 255U)) * UINT64_C(1099511628211);
@@ -205,6 +226,21 @@ legacy_s16 input_checking(legacy_s16 frame_delta)
 {
 	trace_word(1013);
 	trace_word((legacy_u16)frame_delta);
+#ifdef RESTUNTS_SDL3
+	if (predictive_preview_test != 0) {
+		if (supersight_enabled != 0) {
+			assert(preview_now - preview_previous_input_time >= 10000000ULL);
+		}
+		preview_previous_input_time = preview_now;
+		if (predictive_preview_test == 2 &&
+			((preview_toggle_count == 0 && preview_now >= 250000000ULL) ||
+			 (preview_toggle_count == 1 && preview_now >= 750000000ULL))) {
+			preview_toggle_count++;
+			return KEY_F12;
+		}
+		return preview_now >= 1000000000ULL ? KEY_ENTER : 0;
+	}
+#endif
 	static const legacy_u16 keys[] = {0,		 KEY_DOWN, KEY_ENTER, KEY_ENTER, KEY_DOWN,
 									  KEY_ENTER, KEY_DOWN, KEY_ENTER, KEY_DOWN,	 KEY_ENTER,
 									  KEY_UP,	 KEY_UP,   KEY_UP,	  KEY_UP,	 KEY_ENTER};
@@ -242,6 +278,13 @@ legacy_s16 menu_animate_button_highlight(legacy_s16 item_index, const struct BUT
 	trace_pointer(buttons);
 	trace_word((legacy_u16)second_color);
 	trace_word((legacy_u16)first_color);
+#ifdef RESTUNTS_SDL3
+	if (predictive_preview_test != 0) {
+		preview_now += 1000000ULL;
+		return preview_now % 10000000ULL == 0;
+	}
+	preview_now += 20000000ULL;
+#endif
 	return (legacy_s16)(1U + frame_index % 3U);
 }
 
@@ -281,6 +324,12 @@ legacy_s16 mouse_multi_hittest(legacy_s16 count, const struct BUTTON_AREA *butto
 {
 	trace_word(1022);
 	trace_word((legacy_u16)count);
+#ifdef RESTUNTS_SDL3
+	if (predictive_preview_test != 0) {
+		frame_index++;
+		return 0;
+	}
+#endif
 	trace_pointer(buttons);
 	for (legacy_u32 i = 0; i < (legacy_u32)count; i++) {
 		trace_word(buttons[i].x1);
@@ -388,11 +437,22 @@ void shape3d_load_car_shapes(legacy_s8 *carid, legacy_s8 *opponent_carid)
 
 void shape3d_render_queued_primitives(void)
 {
+#ifdef RESTUNTS_SDL3
+	if (predictive_preview_test != 0) {
+		preview_present_count++;
+	}
+#endif
 	trace_word(1033);
 }
 
 legacy_u16 shape3d_transform_and_queue(struct TRANSFORMEDSHAPE3D *instance)
 {
+#ifdef RESTUNTS_SDL3
+	if (predictive_preview_test != 0) {
+		assert(instance->rotvec.z >= preview_last_rotation);
+		preview_last_rotation = instance->rotvec.z;
+	}
+#endif
 	trace_word(1034);
 	trace_pointer(instance);
 	trace_word(instance->rotvec.z);
@@ -538,6 +598,11 @@ void update_car_speed(legacy_s8 input, legacy_s16 car_index, struct CARSTATE *ca
 	trace_pointer(simd);
 	trace_word(carstate->car_transmission);
 	acceleration_step++;
+#ifdef RESTUNTS_SDL3
+	if (predictive_preview_test != 0) {
+		preview_physics_steps++;
+	}
+#endif
 	carstate->car_rev_speed =
 		(legacy_s16)((scenario % 3U == 0U ? acceleration_step % 64U : acceleration_step) * 256U);
 }
@@ -548,6 +613,9 @@ static void run_car_case(legacy_u32 index)
 	legacy_s8 transmission = index % 2U;
 	scenario = index;
 	frame_index = 0;
+#ifdef RESTUNTS_SDL3
+	preview_now = preview_previous_input_time = 0;
+#endif
 	file_index = 0;
 	allocation_index = 0;
 	sprite_index = 0;
@@ -581,6 +649,30 @@ int main(void)
 	/* Original implementation trace: car discovery and sorting, car changes,
 	 * graph rendering, animation phases, navigation, idle exit and resource cleanup. */
 	assert(trace_hash == UINT64_C(0x25191d328ccaebd8));
+#ifdef RESTUNTS_SDL3
+	legacy_u32 reference_physics_steps = 0;
+	legacy_u32 reference_polls = 0;
+	for (legacy_u8 mode = 0; mode < 3; mode++) {
+		supersight_enabled = mode == 1;
+		predictive_preview_test = mode == 2 ? 2 : 1;
+		preview_present_count = preview_physics_steps = preview_toggle_count = 0;
+		preview_last_rotation = 0;
+		run_car_case(1);
+		assert(preview_last_rotation >= 98 && preview_last_rotation <= 100);
+		if (mode == 0) {
+			reference_physics_steps = preview_physics_steps;
+			reference_polls = frame_index;
+			assert(reference_polls == 1000);
+		} else {
+			assert(preview_physics_steps == reference_physics_steps);
+			assert(frame_index <= reference_polls);
+		}
+		if (mode == 1) {
+			assert(frame_index == 100);
+			assert(preview_present_count == 60);
+		}
+	}
+#endif
 	puts("Car menu interaction snapshots passed (102 scenarios).");
 	return 0;
 }

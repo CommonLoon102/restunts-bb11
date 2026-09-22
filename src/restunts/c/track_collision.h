@@ -22,6 +22,27 @@ extern legacy_s16 terrainHeight;
 extern legacy_s8 track_wall_collision_enabled;
 extern struct TRACK_WALL far *wallptr;
 
+struct TRACK_COLLISION_SNAPSHOT {
+	legacy_s16 plane_index;
+	struct PLANE far *plane;
+	legacy_s16 wall_index;
+	legacy_s16 wall_height;
+	legacy_s16 wall_lower_bound;
+	legacy_u8 corkscrew;
+	legacy_s8 surface_type;
+	legacy_s8 wall_collision_enabled;
+	legacy_s16 terrain_height;
+	legacy_s16 element_x;
+	legacy_s16 element_z;
+	legacy_s16 wall_x;
+	legacy_s16 wall_z;
+	legacy_s16 wall_orientation;
+};
+
+/* Preserve collision selection around renderer-only camera queries. */
+void track_collision_capture(struct TRACK_COLLISION_SNAPSHOT *saved);
+void track_collision_restore(const struct TRACK_COLLISION_SNAPSHOT *saved);
+
 void build_track_object(struct VECTOR *, struct VECTOR *);
 /* Segment queries preserve the currently selected collision state. */
 legacy_s16 track_wall_intersects_segment(struct VECTOR *first, struct VECTOR *second);

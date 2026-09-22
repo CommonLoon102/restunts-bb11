@@ -1,5 +1,7 @@
 #ifdef RESTUNTS_SDL3
 #include "../platform/sdl3/sdl3.h"
+#include "frame_prediction.h"
+#include "presentation.h"
 #endif
 #include "dashboard.h"
 #include "fileio.h"
@@ -336,6 +338,152 @@ static void race_update_viewport(struct RACE_VIEWPORT_CACHE *cache, legacy_s16 r
 	}
 }
 
+#ifdef RESTUNTS_SDL3
+struct RACE_PRESENTATION {
+	struct PRESENTATION_CLOCK clock;
+	struct GAMESTATE previous;
+	struct GAMESTATE current;
+	struct GAMESTATE predicted;
+	struct CARSTATE ghost_previous;
+	struct CARSTATE ghost_current;
+	struct CARSTATE ghost_predicted;
+	struct GHOST_CAMERA_STATE ghost_camera_previous;
+	struct GHOST_CAMERA_STATE ghost_camera_current;
+	struct GHOST_CAMERA_STATE ghost_camera_predicted;
+	legacy_u64 sample_time;
+	legacy_u64 control_time;
+	legacy_u16 sample_span;
+	legacy_s16 sample_frame;
+	legacy_s16 ghost_frame;
+	legacy_s16 ghost_live_frame;
+	legacy_u16 ghost_sample_span;
+	legacy_s16 view[13];
+	legacy_u8 history_valid;
+	legacy_u8 ghost_valid;
+	legacy_u8 started;
+	legacy_u8 predicting;
+};
+
+static struct RACE_PRESENTATION race_presentation;
+
+static void race_presentation_sync(legacy_s16 rewinding)
+{
+	legacy_s16 view[] = {supersight_enabled,
+						 cameramode,
+						 followOpponentFlag,
+						 game_replay_mode,
+						 is_in_replay,
+						 replay_playback_speed,
+						 framespersec,
+						 rewinding,
+						 elapsed_time1,
+						 custom_camera.distance,
+						 custom_camera.elevation_angle,
+						 custom_camera.azimuth_angle,
+						 camera_track_height_offset};
+	legacy_u8 changed = 0;
+	for (legacy_u16 index = 0; index < sizeof(view) / sizeof(view[0]); index++) {
+		if (race_presentation.view[index] != view[index]) {
+			changed = 1;
+			race_presentation.view[index] = view[index];
+		}
+	}
+	if (changed != 0) {
+		race_presentation.history_valid = 0;
+		race_presentation.current = state;
+		race_presentation.sample_frame = state.game_frame;
+		race_presentation.sample_time = presentation_now();
+		race_presentation.control_time = 0;
+		race_presentation.ghost_valid = 0;
+		race_presentation.started = 0;
+		presentation_reset(&race_presentation.clock, presentation_now());
+	}
+}
+
+static void race_presentation_capture(void)
+{
+	if (race_presentation.sample_frame == state.game_frame) {
+		return;
+	}
+	legacy_s16 span = LEGACY_S16_WRAP_SUB(state.game_frame, race_presentation.sample_frame);
+	race_presentation.history_valid =
+		span == 1 || (span == 2 && game_replay_mode == REPLAY_MODE_PLAYBACK &&
+					  replay_playback_speed == REPLAY_PLAYBACK_FAST);
+	race_presentation.sample_span = race_presentation.history_valid != 0 ? (legacy_u16)span : 1;
+	race_presentation.previous = race_presentation.current;
+	race_presentation.current = state;
+	race_presentation.sample_frame = state.game_frame;
+	race_presentation.sample_time = presentation_now();
+}
+
+static void race_presentation_capture_ghost(void)
+{
+	const struct CARSTATE *car = ghost_car_state();
+	const struct GHOST_CAMERA_STATE *camera = ghost_camera_state();
+	if (car == 0 || camera == 0) {
+		race_presentation.ghost_valid = 0;
+		return;
+	}
+	legacy_s16 live_span =
+		LEGACY_S16_WRAP_SUB(state.game_frame, race_presentation.ghost_live_frame);
+	if (race_presentation.ghost_valid != 0 && race_presentation.ghost_frame == camera->frame &&
+		live_span >= 0) {
+		/* A lower-rate ghost repeats poses between source samples. Retain the
+		 * last distinct pair; only a sample overdue by a full source interval
+		 * indicates that the recorded ghost has stopped advancing. */
+		if (race_presentation.ghost_valid == 2 &&
+			(legacy_u16)live_span >= race_presentation.ghost_sample_span) {
+			race_presentation.ghost_valid = 1;
+		}
+		return;
+	}
+	legacy_s16 source_span = LEGACY_S16_WRAP_SUB(camera->frame, race_presentation.ghost_frame);
+	race_presentation.ghost_previous = race_presentation.ghost_current;
+	race_presentation.ghost_camera_previous = race_presentation.ghost_camera_current;
+	race_presentation.ghost_valid = race_presentation.ghost_valid != 0 && live_span > 0 &&
+											source_span > 0 &&
+											(legacy_s32)source_span <= (legacy_s32)live_span * 2 &&
+											(legacy_s32)source_span * 2 >= live_span
+										? 2
+										: 1;
+	race_presentation.ghost_sample_span = live_span > 0 ? (legacy_u16)live_span : 1U;
+	race_presentation.ghost_current = *car;
+	race_presentation.ghost_camera_current = *camera;
+	race_presentation.ghost_frame = camera->frame;
+	race_presentation.ghost_live_frame = state.game_frame;
+}
+
+static void race_presentation_predict_ghost(legacy_u32 fraction)
+{
+	if (race_presentation.ghost_valid == 0) {
+		return;
+	}
+	legacy_u32 ghost_fraction = 0;
+	legacy_s16 sample_age =
+		LEGACY_S16_WRAP_SUB(state.game_frame, race_presentation.ghost_live_frame);
+	if (race_presentation.ghost_valid == 2 && sample_age >= 0) {
+		/* The source pose can predate the current live tick. Include that age
+		 * even on its authoritative presentation, where fraction is zero. */
+		legacy_u64 elapsed = (legacy_u64)(legacy_u16)sample_age * FRAME_PREDICTION_ONE +
+							 (legacy_u64)fraction * race_presentation.sample_span;
+		legacy_u64 source_fraction = elapsed / race_presentation.ghost_sample_span;
+		ghost_fraction = source_fraction > FRAME_PREDICTION_ONE ? FRAME_PREDICTION_ONE
+																: (legacy_u32)source_fraction;
+	}
+	frame_predict_car(&race_presentation.ghost_predicted, &race_presentation.ghost_current,
+					  &race_presentation.ghost_previous, ghost_fraction);
+	race_presentation.ghost_camera_predicted = race_presentation.ghost_camera_current;
+	if (race_presentation.ghost_camera_current.trackside_index ==
+		race_presentation.ghost_camera_previous.trackside_index) {
+		frame_predict_vector(&race_presentation.ghost_camera_predicted.follow_position,
+							 &race_presentation.ghost_camera_current.follow_position,
+							 &race_presentation.ghost_camera_previous.follow_position,
+							 ghost_fraction);
+	}
+}
+
+#endif
+
 static void race_draw_frame(void)
 {
 #ifdef RESTUNTS_SDL3
@@ -359,7 +507,17 @@ static void race_draw_frame(void)
 		}
 	}
 
-	update_frame(frame_buffer_index, &rect_windshield);
+#ifdef RESTUNTS_SDL3
+	if (race_presentation.predicting != 0) {
+		update_frame_predicted(
+			frame_buffer_index, &rect_windshield, &race_presentation.predicted,
+			race_presentation.ghost_valid != 0 ? &race_presentation.ghost_predicted : 0,
+			race_presentation.ghost_valid != 0 ? &race_presentation.ghost_camera_predicted : 0);
+	} else
+#endif
+	{
+		update_frame(frame_buffer_index, &rect_windshield);
+	}
 	struct RECTANGLE dashboard_mask_rect;
 	if (dastbmp_y != 0 && dashboard_visible != 0) {
 		if (slow_video_mgmt_copy != 0) {
@@ -400,6 +558,55 @@ static void race_draw_frame(void)
 	sdl3_video_end_frame();
 #endif
 }
+
+#ifdef RESTUNTS_SDL3
+static void race_draw_visual(void)
+{
+	legacy_u64 now = presentation_now();
+	legacy_u32 fraction = 0;
+	if (race_presentation.history_valid != 0 &&
+		race_presentation.sample_frame == state.game_frame && framespersec > 0) {
+		legacy_u64 interval = PRESENTATION_SECOND_NS / (legacy_u16)framespersec;
+		if (game_replay_mode == REPLAY_MODE_PLAYBACK) {
+			if (replay_playback_speed == REPLAY_PLAYBACK_SLOW) {
+				interval *= 2;
+			}
+		}
+		legacy_u64 age = now - race_presentation.sample_time;
+		if (age > interval) {
+			age = interval;
+		}
+		fraction = (legacy_u32)(age * FRAME_PREDICTION_ONE / interval);
+	}
+	frame_predict_state(&race_presentation.predicted, &state, &race_presentation.previous,
+						fraction);
+	race_presentation_predict_ghost(fraction);
+
+	if (video_uses_page_flipping != 0) {
+		sprite_select_mcga_backbuffer();
+		dashboard_buffer_index = frame_buffer_index;
+	} else {
+		sprite_select_render_window();
+	}
+	race_presentation.predicting = 1;
+	race_draw_frame();
+	race_presentation.predicting = 0;
+}
+
+static void race_present_prediction(void)
+{
+	/* Extra presentations never advance the replay, ghost cache, controls, or
+	 * simulation. Timer callbacks continue to see only authoritative state. */
+	if (supersight_enabled == 0 || race_presentation.started == 0 ||
+		state.game_frame != elapsed_time2 || state.game_inputmode == GAME_INPUT_MODE_WAITING ||
+		(game_replay_mode == REPLAY_MODE_PLAYBACK && is_in_replay != 0) || race_exit_request != 0) {
+		return;
+	}
+	if (presentation_due(&race_presentation.clock, presentation_now()) != 0) {
+		race_draw_visual();
+	}
+}
+#endif
 
 static void race_handle_driving_input(void)
 {
@@ -457,7 +664,26 @@ static legacy_u16 race_frame_is_ready(legacy_s16 *last_processed_frame)
 		return 0;
 	}
 
-	if (game_replay_mode == REPLAY_MODE_LIVE && race_exit_request == 0 &&
+	legacy_s16 wait_for_sample = game_replay_mode == REPLAY_MODE_LIVE;
+#ifdef RESTUNTS_SDL3
+	if (supersight_enabled != 0 && (game_replay_mode == REPLAY_MODE_PAUSED ||
+									state.game_inputmode == GAME_INPUT_MODE_WAITING)) {
+		legacy_u64 now = presentation_now();
+		if (now < race_presentation.control_time) {
+			SDL_Delay(1);
+			sdl3_platform_pump();
+			return 0;
+		}
+		legacy_u16 rate = framespersec > 0 ? (legacy_u16)framespersec : GAME_FRAME_RATE_NORMAL;
+		race_presentation.control_time = now + PRESENTATION_SECOND_NS / rate;
+		*last_processed_frame = state.game_frame;
+		return 1;
+	}
+	if (supersight_enabled != 0 && game_replay_mode == REPLAY_MODE_PLAYBACK && is_in_replay == 0) {
+		wait_for_sample = 1;
+	}
+#endif
+	if (wait_for_sample != 0 && race_exit_request == 0 &&
 		state.game_inputmode != GAME_INPUT_MODE_WAITING) {
 		if (*last_processed_frame == state.game_frame) {
 #ifdef RESTUNTS_SDL3
@@ -503,6 +729,10 @@ static void race_run_frames(struct RACE_VIEWPORT_CACHE *cache)
 	struct RACE_REWIND_STATE rewind = {0};
 	frame_supersight_reset();
 	frame_fps_reset();
+#ifdef RESTUNTS_SDL3
+	race_presentation = (struct RACE_PRESENTATION){0};
+	presentation_reset(&race_presentation.clock, presentation_now());
+#endif
 
 	while (1) {
 		legacy_s16 was_rewinding = rewind.active;
@@ -510,7 +740,15 @@ static void race_run_frames(struct RACE_VIEWPORT_CACHE *cache)
 		if (was_rewinding != 0 && rewind.active == 0) {
 			last_processed_frame = -1;
 		}
+#ifdef RESTUNTS_SDL3
+		race_presentation_sync(rewind.active);
+#endif
 		if (race_frame_is_ready(&last_processed_frame) == 0) {
+#ifdef RESTUNTS_SDL3
+			if (rewind.active == 0 && state.game_frame == last_processed_frame) {
+				race_present_prediction();
+			}
+#endif
 			continue;
 		}
 		if (state.game_inputmode == GAME_INPUT_MODE_WAITING &&
@@ -540,7 +778,22 @@ static void race_run_frames(struct RACE_VIEWPORT_CACHE *cache)
 									 : (legacy_u32)(legacy_u16)state.game_frame + elapsed_time1;
 		ghost_update(ghost_frame, framespersec);
 		race_update_viewport(cache, rewind.active);
+#ifdef RESTUNTS_SDL3
+		race_presentation_capture();
+		race_presentation_capture_ghost();
+		if (supersight_enabled == 0 || rewind.active != 0 ||
+			(game_replay_mode == REPLAY_MODE_PLAYBACK && is_in_replay != 0) ||
+			presentation_due(&race_presentation.clock, presentation_now()) != 0) {
+			if (supersight_enabled != 0) {
+				race_draw_visual();
+			} else {
+				race_draw_frame();
+			}
+			race_presentation.started = 1;
+		}
+#else
 		race_draw_frame();
+#endif
 		if (game_replay_mode == REPLAY_MODE_PAUSED &&
 			race_start_sequence_state == RACE_START_SEQUENCE_INACTIVE) {
 			game_replay_mode = REPLAY_MODE_LIVE;
