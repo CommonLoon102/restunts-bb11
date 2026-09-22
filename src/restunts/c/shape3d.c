@@ -1370,7 +1370,7 @@ static void shape3d_render_hires_primitive(legacy_u16 record_index, const legacy
 void shape3d_render_queued_primitives(void)
 {
 #if defined(RESTUNTS_SDL3)
-	int high_resolution = hires_begin(&drawing_sprite);
+	legacy_s16 high_resolution = hires_begin(&drawing_sprite);
 #endif
 	legacy_u16 record_index = polyinfo_primitive_capacity;
 	legacy_u16 rendered_ghost_primitives = 0;

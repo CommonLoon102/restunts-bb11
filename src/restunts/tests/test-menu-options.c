@@ -10,7 +10,7 @@
 #include "../c/replay_viewer_internal.h"
 
 static legacy_s16 dialog_answers[24];
-static unsigned dialog_index, joystick_index, joystick_limit;
+static legacy_u32 dialog_index, joystick_index, joystick_limit;
 static legacy_u8 joystick_enabled;
 static legacy_s16 keyboard_stop;
 static legacy_s8 graphics_text[] = "[ ]0[ ]1[ ]2[ ]3[ ]4[ ]5[ ]6[ ]7[ ]8";
@@ -117,7 +117,7 @@ legacy_u16 show_dialog(legacy_s16 type, legacy_s16 save, void *text, legacy_u16 
 	trace_word(border);
 	trace_word(selected);
 	if (positions != 0) {
-		for (unsigned i = 0; i < 15U; i++) {
+		for (legacy_u32 i = 0; i < 15U; i++) {
 			positions[i] = LEGACY_S16_FROM_BITS(32750U + i * 43U);
 		}
 	}
@@ -180,7 +180,7 @@ legacy_s16 file_load_replay(const legacy_s8 *dir, const legacy_s8 *name)
 	return 0;
 }
 
-static void reset_options(unsigned index)
+static void reset_options(legacy_u32 index)
 {
 	scenario = index;
 	allocation_index = 0;
@@ -202,7 +202,7 @@ static void reset_options(unsigned index)
 	waitflag = 65530;
 	replay_directory[0] = 0;
 	replay_filename_input[0] = 0;
-	for (unsigned i = 0; i < 24U; i++) {
+	for (legacy_u32 i = 0; i < 24U; i++) {
 		dialog_answers[i] = -1;
 	}
 	trace_word(index);
@@ -218,7 +218,7 @@ static void record_options(void)
 }
 static void test_calibration(void)
 {
-	for (unsigned i = 0; i < 6U; i++) {
+	for (legacy_u32 i = 0; i < 6U; i++) {
 		reset_options(i);
 		dialog_answers[0] = i < 2U ? (legacy_s16)i - 1 : 1;
 		joystick_limit = i == 2U ? 0 : i == 3U ? 16 : 18;
@@ -229,9 +229,9 @@ static void test_calibration(void)
 }
 static void test_graphics(void)
 {
-	for (unsigned i = 0; i < 10U; i++) {
+	for (legacy_u32 i = 0; i < 10U; i++) {
 		reset_options(i + 10U);
-		for (unsigned j = 0; j < 9U; j++) {
+		for (legacy_u32 j = 0; j < 9U; j++) {
 			dialog_answers[j] = (legacy_s16)((i + j) % 9U);
 		}
 		dialog_answers[9] = i % 2U ? 9 : -1;
@@ -241,7 +241,7 @@ static void test_graphics(void)
 }
 static void test_options(void)
 {
-	for (unsigned i = 0; i < 16U; i++) {
+	for (legacy_u32 i = 0; i < 16U; i++) {
 		reset_options(i + 20U);
 		dialog_answers[0] = (legacy_s16)(i / 2U) - 1;
 		if (dialog_answers[0] == 0) {
@@ -265,7 +265,7 @@ int main(void)
 	test_graphics();
 	test_options();
 #ifdef OPTIONS_RECORD_BASELINE
-	fprintf(stdout, "test-menu-options.c=0x%016llx\n", (unsigned long long)trace_hash);
+	fprintf(stdout, "test-menu-options.c=0x%016" LEGACY_PRIx64 "\n", trace_hash);
 #else
 	assert(trace_hash == UINT64_C(0xaf8245c3425601de));
 #endif

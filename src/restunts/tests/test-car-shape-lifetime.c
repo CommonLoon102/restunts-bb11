@@ -22,10 +22,10 @@ legacy_u8 vector_saved_z_low;
 legacy_u8 vector_saved_z_high;
 
 static void *allocated[2];
-static unsigned allocation_count;
-static unsigned file_load_count;
-static unsigned cached_release_count;
-static unsigned discarded_release_count;
+static legacy_u32 allocation_count;
+static legacy_u32 file_load_count;
+static legacy_u32 cached_release_count;
+static legacy_u32 discarded_release_count;
 
 void fatal_error(const legacy_s8 *format, ...)
 {
@@ -54,12 +54,12 @@ void far *file_load_3dres(const legacy_s8 *name)
 {
 	file_load_count++;
 	legacy_u8 *resource = mmgr_alloc_resbytes(name, TEST_RESOURCE_BYTES);
-	for (unsigned shape_index = 0; shape_index < TEST_SHAPE_COUNT; shape_index++) {
+	for (legacy_u32 shape_index = 0; shape_index < TEST_SHAPE_COUNT; shape_index++) {
 		legacy_u8 *shape = resource + shape_index * TEST_SHAPE_BYTES;
 		shape[SHAPE3D_VERTEX_COUNT_OFFSET] = TEST_VERTEX_COUNT;
 		shape[SHAPE3D_PRIMITIVE_COUNT_OFFSET] = 1U;
 		shape[SHAPE3D_PAINT_COUNT_OFFSET] = 1U;
-		for (unsigned vertex_index = 0; vertex_index < TEST_VERTEX_COUNT; vertex_index++) {
+		for (legacy_u32 vertex_index = 0; vertex_index < TEST_VERTEX_COUNT; vertex_index++) {
 			LEGACY_WRITE_U16_LE(shape + SHAPE3D_HEADER_SIZE + vertex_index * SHAPE3D_VERTEX_SIZE,
 								vertex_index + 100U * shape_index);
 		}
@@ -69,13 +69,13 @@ void far *file_load_3dres(const legacy_s8 *name)
 
 legacy_s8 far *locate_shape_fatal(legacy_s8 far *resource, const legacy_s8 *name)
 {
-	unsigned shape_index;
+	legacy_u32 shape_index;
 
 	if (memcmp(name, "car", 3U) == 0) {
-		shape_index = (unsigned)(name[3] - '0');
+		shape_index = (legacy_u32)(name[3] - '0');
 	} else {
 		assert(memcmp(name, "exp", 3U) == 0);
-		shape_index = (unsigned)(name[3] - '0') + 3U;
+		shape_index = (legacy_u32)(name[3] - '0') + 3U;
 	}
 	assert(shape_index < TEST_SHAPE_COUNT);
 	return resource + shape_index * TEST_SHAPE_BYTES;
@@ -108,7 +108,7 @@ static void check_released_shapes(void)
 	struct TRANSFORMEDSHAPE3D instance = {0};
 	instance.culling_distance = 1024U;
 	polyinfo_reset();
-	for (unsigned index = TEST_FIRST_CAR_SHAPE; index <= OPPONENT_CAR_HIGH_SHAPE; index++) {
+	for (legacy_u32 index = TEST_FIRST_CAR_SHAPE; index <= OPPONENT_CAR_HIGH_SHAPE; index++) {
 		instance.shapeptr = &game3dshapes[index];
 		assert(instance.shapeptr->shape3d_numverts == 0U);
 		assert(instance.shapeptr->shape3d_numprimitives == 0U);
@@ -125,11 +125,12 @@ static void check_released_shapes(void)
 	assert(allocation_count == 0U);
 }
 
-static void check_cycle(legacy_s8 *opponent, unsigned expected_loads, unsigned expected_discards)
+static void check_cycle(legacy_s8 *opponent, legacy_u32 expected_loads,
+						legacy_u32 expected_discards)
 {
-	unsigned previous_loads = file_load_count;
-	unsigned previous_discards = discarded_release_count;
-	unsigned previous_cached = cached_release_count;
+	legacy_u32 previous_loads = file_load_count;
+	legacy_u32 previous_discards = discarded_release_count;
+	legacy_u32 previous_cached = cached_release_count;
 
 	legacy_s8 player[] = "TEST";
 	shape3d_load_car_shapes(player, opponent);
@@ -165,15 +166,15 @@ static legacy_u32 wheel_vertex_fingerprint(void)
 	struct VECTOR vertex;
 	struct VECTOR previous[TEST_VERTEX_COUNT];
 	legacy_u32 hash = 2166136261UL;
-	for (unsigned sample = 0; sample < 4096; sample++) {
-		for (unsigned wheel = 0; wheel < 4; wheel++) {
+	for (legacy_u32 sample = 0; sample < 4096; sample++) {
+		for (legacy_u32 wheel = 0; wheel < 4; wheel++) {
 			suspension[wheel] = offsets[(sample + wheel * 3) % 11];
 		}
-		for (unsigned repeated = 0; repeated < 2; repeated++) {
+		for (legacy_u32 repeated = 0; repeated < 2; repeated++) {
 			shape3d_update_car_wheel_vertices(
 				&game3dshapes[PLAYER_CAR_WHEEL_SHAPE], 8, angles[sample % 13], suspension,
 				player_wheel_vertex_state, player_base_wheel_vertices, player_front_wheel_centers);
-			for (unsigned index = 0; index < TEST_VERTEX_COUNT; index++) {
+			for (legacy_u32 index = 0; index < TEST_VERTEX_COUNT; index++) {
 				shape3d_vertex_read(&game3dshapes[PLAYER_CAR_WHEEL_SHAPE], index, &vertex);
 				if (repeated != 0) {
 					assert(vertex.x == previous[index].x);
@@ -187,7 +188,7 @@ static legacy_u32 wheel_vertex_fingerprint(void)
 				}
 			}
 		}
-		for (unsigned index = 0; index < 5; index++) {
+		for (legacy_u32 index = 0; index < 5; index++) {
 			hash = (hash ^ (legacy_u16)player_wheel_vertex_state[index]) * 16777619UL;
 		}
 	}
@@ -202,13 +203,13 @@ int main(void)
 	legacy_s8 different_opponent[] = "DIFF";
 	legacy_s8 no_opponent[] = {-1, 0, 0, 0};
 	legacy_s8 same_opponent[] = "TEST";
-	for (unsigned cycle = 0; cycle < 20U; cycle++) {
+	for (legacy_u32 cycle = 0; cycle < 20U; cycle++) {
 		check_cycle(same_opponent, 1U, 1U);
 		check_cycle(no_opponent, 1U, 0U);
 		check_cycle(different_opponent, 2U, 1U);
 	}
 #ifdef PRERENDER_RECORD_BASELINE
-	fprintf(stdout, "%08lx\n", (unsigned long)wheel_vertex_fingerprint());
+	fprintf(stdout, "%08" LEGACY_PRIx32 "\n", wheel_vertex_fingerprint());
 #else
 	/* Pre-refactor geometry and cache state across steering and suspension boundaries. */
 	assert(wheel_vertex_fingerprint() == 0x12e2833dUL);

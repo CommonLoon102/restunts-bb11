@@ -26,15 +26,14 @@ struct OWOOT_PROJECTED_POINT {
 /* Products in the height clipping step exceed 32 bits even though every
  * resource/world coordinate is a signed word. Watcom implements these C99
  * integer operations on 8086 as well as native host compilers. */
-typedef long long owoot_wide;
 
 #include "owoot_road_data.h"
 
-static owoot_wide road_cross(const struct OWOOT_PROJECTED_POINT *a,
+static legacy_s64 road_cross(const struct OWOOT_PROJECTED_POINT *a,
 							 const struct OWOOT_PROJECTED_POINT *b,
 							 const struct OWOOT_PROJECTED_POINT *c)
 {
-	return (owoot_wide)(b->x - a->x) * (c->z - a->z) - (owoot_wide)(b->z - a->z) * (c->x - a->x);
+	return (legacy_s64)(b->x - a->x) * (c->z - a->z) - (legacy_s64)(b->z - a->z) * (c->x - a->x);
 }
 
 static legacy_s16 point_precedes(const struct OWOOT_PROJECTED_POINT *a,
@@ -96,10 +95,10 @@ static legacy_s16 road_separating_edges(const struct OWOOT_PROJECTED_POINT *firs
 		if (a->x == b->x && a->z == b->z) {
 			continue;
 		}
-		owoot_wide first_min = 0;
-		owoot_wide first_max = 0;
+		legacy_s64 first_min = 0;
+		legacy_s64 first_max = 0;
 		for (legacy_u16 i = 0; i < first_count; i++) {
-			owoot_wide side = road_cross(a, b, &first[i]);
+			legacy_s64 side = road_cross(a, b, &first[i]);
 			if (side < first_min) {
 				first_min = side;
 			}
@@ -107,10 +106,10 @@ static legacy_s16 road_separating_edges(const struct OWOOT_PROJECTED_POINT *firs
 				first_max = side;
 			}
 		}
-		owoot_wide second_min = road_cross(a, b, &second[0]);
-		owoot_wide second_max = second_min;
+		legacy_s64 second_min = road_cross(a, b, &second[0]);
+		legacy_s64 second_max = second_min;
 		for (legacy_u16 i = 1; i < second_count; i++) {
-			owoot_wide side = road_cross(a, b, &second[i]);
+			legacy_s64 side = road_cross(a, b, &second[i]);
 			if (side < second_min) {
 				second_min = side;
 			}
@@ -253,10 +252,10 @@ static legacy_s16 road_swept_axis_separates(const struct OWOOT_PROJECTED_POINT *
 	if (a->x == b->x && a->z == b->z) {
 		return 0;
 	}
-	owoot_wide barrier_min = road_cross(a, b, &barrier[0]);
-	owoot_wide barrier_max = barrier_min;
+	legacy_s64 barrier_min = road_cross(a, b, &barrier[0]);
+	legacy_s64 barrier_max = barrier_min;
 	for (legacy_u16 index = 1; index < 4U; index++) {
-		owoot_wide value = road_cross(a, b, &barrier[index]);
+		legacy_s64 value = road_cross(a, b, &barrier[index]);
 		if (value < barrier_min) {
 			barrier_min = value;
 		}
@@ -264,10 +263,10 @@ static legacy_s16 road_swept_axis_separates(const struct OWOOT_PROJECTED_POINT *
 			barrier_max = value;
 		}
 	}
-	owoot_wide tire_min = road_cross(a, b, &hull[0]);
-	owoot_wide tire_max = tire_min;
+	legacy_s64 tire_min = road_cross(a, b, &hull[0]);
+	legacy_s64 tire_max = tire_min;
 	for (legacy_u16 index = 1; index < count; index++) {
-		owoot_wide value = road_cross(a, b, &hull[index]);
+		legacy_s64 value = road_cross(a, b, &hull[index]);
 		if (value < tire_min) {
 			tire_min = value;
 		}
@@ -275,8 +274,8 @@ static legacy_s16 road_swept_axis_separates(const struct OWOOT_PROJECTED_POINT *
 			tire_max = value;
 		}
 	}
-	owoot_wide sweep =
-		(owoot_wide)(b->x - a->x) * motion->z - (owoot_wide)(b->z - a->z) * motion->x;
+	legacy_s64 sweep =
+		(legacy_s64)(b->x - a->x) * motion->z - (legacy_s64)(b->z - a->z) * motion->x;
 	if (sweep > 0) {
 		tire_max += sweep;
 	} else {
@@ -374,18 +373,18 @@ track_slalom_wheel_envelope_crosses_barrier(const struct VECTOR vertices[4][OWOO
 }
 
 static void road_append_crossing(struct OWOOT_PROJECTED_POINT *points, legacy_u16 *count,
-								 const struct VECTOR *vertices, const owoot_wide *distances,
+								 const struct VECTOR *vertices, const legacy_s64 *distances,
 								 legacy_u16 first, legacy_u16 second)
 {
-	owoot_wide start = distances[first];
-	owoot_wide end = distances[second];
+	legacy_s64 start = distances[first];
+	legacy_s64 end = distances[second];
 	if ((start < 0 && end > 0) || (start > 0 && end < 0)) {
 		struct OWOOT_PROJECTED_POINT *point = &points[(*count)++];
 		point->x = (legacy_s32)vertices[first].x * OWOOT_PROJECTION_SCALE +
-				   (legacy_s32)((owoot_wide)(vertices[second].x - vertices[first].x) *
+				   (legacy_s32)((legacy_s64)(vertices[second].x - vertices[first].x) *
 								OWOOT_PROJECTION_SCALE * start / (start - end));
 		point->z = (legacy_s32)vertices[first].z * OWOOT_PROJECTION_SCALE +
-				   (legacy_s32)((owoot_wide)(vertices[second].z - vertices[first].z) *
+				   (legacy_s32)((legacy_s64)(vertices[second].z - vertices[first].z) *
 								OWOOT_PROJECTION_SCALE * start / (start - end));
 	}
 }
@@ -457,13 +456,13 @@ static legacy_s16 road_triangle_overlaps_wheel(const struct OWOOT_ROAD_TRIANGLE 
 		road[i].z = (legacy_s32)triangle->vertex[i].z * OWOOT_PROJECTION_SCALE;
 	}
 	struct OWOOT_PROJECTED_POINT points[OWOOT_CLIPPED_VERTEX_MAX];
-	owoot_wide distances[OWOOT_WHEEL_VERTEX_MAX];
+	legacy_s64 distances[OWOOT_WHEEL_VERTEX_MAX];
 	legacy_u16 count = 0;
 	for (legacy_u16 i = 0; i < ring_count * 2U; i++) {
 		distances[i] =
-			(owoot_wide)normal_x * (vertices[i].x - a.x) +
-			(owoot_wide)normal_y * ((legacy_s32)vertices[i].y - a.y + contact_tolerance) +
-			(owoot_wide)normal_z * (vertices[i].z - a.z);
+			(legacy_s64)normal_x * (vertices[i].x - a.x) +
+			(legacy_s64)normal_y * ((legacy_s32)vertices[i].y - a.y + contact_tolerance) +
+			(legacy_s64)normal_z * (vertices[i].z - a.z);
 		if (distances[i] >= 0) {
 			points[count].x = (legacy_s32)vertices[i].x * OWOOT_PROJECTION_SCALE;
 			points[count++].z = (legacy_s32)vertices[i].z * OWOOT_PROJECTION_SCALE;

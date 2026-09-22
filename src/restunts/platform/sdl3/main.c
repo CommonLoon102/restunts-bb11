@@ -10,6 +10,7 @@
 extern void full_data_initialize(void);
 extern legacy_s16 stuntsmain(legacy_s16 argc, legacy_s8 *argv[]);
 
+/* The C runtime requires native int parameters and return type. */
 int main(int argc, char **argv)
 {
 #if !defined(__DJGPP__) && !defined(RESTUNTS_HEADLESS)
@@ -37,7 +38,7 @@ int main(int argc, char **argv)
 			fputs("Cannot open --data-dir directory\n", stderr);
 			return 1;
 		}
-		for (int index = 1; index + 2 <= argc; index++) {
+		for (legacy_s32 index = 1; index + 2 <= argc; index++) {
 			argv[index] = argv[index + 2];
 		}
 		argc -= 2;

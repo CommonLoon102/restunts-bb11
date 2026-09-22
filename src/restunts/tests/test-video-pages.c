@@ -26,9 +26,9 @@ static legacy_u8 reference_pages[2][65536];
 static legacy_u8 reference_ram[65536];
 static legacy_u8 palette[256];
 static legacy_u8 write_mask, read_plane, hardware_supported;
-static unsigned write_register_changes, read_register_changes, vram_writes;
+static legacy_u32 write_register_changes, read_register_changes, vram_writes;
 static legacy_u16 shown_address;
-static unsigned present_count;
+static legacy_u32 present_count;
 
 struct SPRITE far screen_sprite, drawing_sprite;
 struct SPRITE far *mcga_backbuffer_sprite;
@@ -120,7 +120,7 @@ legacy_u8 video_pages_test_read(legacy_u16 address)
 
 void video_pages_test_write(legacy_u16 address, legacy_u8 value)
 {
-	for (unsigned plane = 0; plane < 4U; plane++) {
+	for (legacy_u32 plane = 0; plane < 4U; plane++) {
 		if ((write_mask & (1U << plane)) != 0) {
 			planes[plane][address] = value;
 		}
@@ -128,7 +128,7 @@ void video_pages_test_write(legacy_u16 address, legacy_u8 value)
 	vram_writes++;
 }
 
-static legacy_u8 *page_pointer(unsigned page)
+static legacy_u8 *page_pointer(legacy_u32 page)
 {
 	return dos_memory_make_pointer(page == 0 ? TEST_FIRST_PAGE_SEGMENT : TEST_SECOND_PAGE_SEGMENT,
 								   0);
@@ -147,7 +147,7 @@ static legacy_u8 *destination_pointer(void)
 static void reset_fixture(void)
 {
 	memset(planes, 0xD7, sizeof(planes));
-	for (unsigned page = 0; page < 2U; page++) {
+	for (legacy_u32 page = 0; page < 2U; page++) {
 		for (legacy_u32 pixel = 0; pixel < TEST_PAGE_PIXELS; pixel++) {
 			legacy_u8 value = (legacy_u8)(pixel * 37UL + pixel / 13UL + page * 113U);
 			reference_pages[page][pixel] = value;
@@ -164,13 +164,13 @@ static void reset_fixture(void)
 
 static void assert_pages_match(void)
 {
-	for (unsigned page = 0; page < 2U; page++) {
+	for (legacy_u32 page = 0; page < 2U; page++) {
 		for (legacy_u32 pixel = 0; pixel < TEST_PAGE_PIXELS; pixel++) {
 			assert(planes[pixel & 3U][page * TEST_PAGE_PLANE_BYTES + pixel / 4U] ==
 				   reference_pages[page][pixel]);
 		}
 	}
-	for (unsigned plane = 0; plane < 4U; plane++) {
+	for (legacy_u32 plane = 0; plane < 4U; plane++) {
 		for (legacy_u32 address = 2UL * TEST_PAGE_PLANE_BYTES; address < 65536UL; address++) {
 			assert(planes[plane][address] == 0xD7U);
 		}
@@ -203,9 +203,9 @@ static void test_pixels_and_fills(void)
 {
 	static const legacy_u16 offsets[] = {0, 1, 2, 3, 319, 320, 63999, 64000, 65534, 65535};
 	static const legacy_u16 counts[] = {0, 1, 2, 3, 4, 5, 9, 320, 64000, 65535};
-	for (unsigned page = 0; page < 2U; page++) {
+	for (legacy_u32 page = 0; page < 2U; page++) {
 		reset_fixture();
-		for (unsigned index = 0; index < sizeof(offsets) / sizeof(offsets[0]); index++) {
+		for (legacy_u32 index = 0; index < sizeof(offsets) / sizeof(offsets[0]); index++) {
 			legacy_u16 offset = offsets[index];
 			legacy_u8 value = (legacy_u8)(index * 9U + 3U);
 			video_pages_write_pixel(page_pointer(page), offset, value);
@@ -221,7 +221,7 @@ static void test_pixels_and_fills(void)
 		}
 		assert_pages_match();
 		for (legacy_u16 alignment = 0; alignment < 4U; alignment++) {
-			for (unsigned index = 0; index < sizeof(counts) / sizeof(counts[0]); index++) {
+			for (legacy_u32 index = 0; index < sizeof(counts) / sizeof(counts[0]); index++) {
 				reset_fixture();
 				legacy_u16 start = (legacy_u16)(65533U + alignment);
 				video_pages_fill_span(page_pointer(page), start, counts[index], 0xACU);
@@ -243,7 +243,7 @@ static void test_raster_spans(void)
 			 destination_alignment++) {
 			for (legacy_s16 operation = SHAPE2D_RASTER_AND; operation <= SHAPE2D_RASTER_MAP;
 				 operation++) {
-				for (unsigned directions = 0; directions < 4U; directions++) {
+				for (legacy_u32 directions = 0; directions < 4U; directions++) {
 					reset_fixture();
 					legacy_u16 source_offset = (legacy_u16)(65533U + source_alignment);
 					legacy_u16 destination_offset = (legacy_u16)(65533U + destination_alignment);
@@ -289,7 +289,7 @@ static void test_overlapping_copies(void)
 {
 	static const legacy_u16 offsets[][2] = {{0, 1},		{1, 0},		{65534, 65535}, {65535, 65534},
 											{65530, 0}, {0, 65530}, {0, 0},			{0, 4}};
-	for (unsigned index = 0; index < sizeof(offsets) / sizeof(offsets[0]); index++) {
+	for (legacy_u32 index = 0; index < sizeof(offsets) / sizeof(offsets[0]); index++) {
 		reset_fixture();
 		video_pages_copy_span(page_pointer(0), offsets[index][1], page_pointer(0),
 							  offsets[index][0], 19U);
@@ -304,9 +304,9 @@ static void test_pattern_spans(void)
 	static const legacy_u8 patterns[] = {0, 255, 0x81, 0x69};
 	static const legacy_u16 counts[] = {0, 1, 3, 4, 9, 321};
 	for (legacy_u16 alignment = 0; alignment < 4U; alignment++) {
-		for (unsigned pattern_index = 0; pattern_index < sizeof(patterns); pattern_index++) {
+		for (legacy_u32 pattern_index = 0; pattern_index < sizeof(patterns); pattern_index++) {
 			for (legacy_s16 two_colors = 0; two_colors <= 1; two_colors++) {
-				for (unsigned index = 0; index < sizeof(counts) / sizeof(counts[0]); index++) {
+				for (legacy_u32 index = 0; index < sizeof(counts) / sizeof(counts[0]); index++) {
 					reset_fixture();
 					legacy_u16 start = (legacy_u16)(65533U + alignment);
 					legacy_u8 pattern = patterns[pattern_index];
@@ -377,7 +377,7 @@ static void test_unsupported_fallback(void)
 	video_pages_end_race();
 	assert(video_uses_page_flipping == 0 && video_page_count == 1);
 	struct SHAPE2D *previous_target = drawing_sprite.sprite_bitmapptr;
-	unsigned previous_present_count = present_count;
+	legacy_u32 previous_present_count = present_count;
 	video_pages_select_backbuffer();
 	video_pages_present();
 	assert(drawing_sprite.sprite_bitmapptr == previous_target);
@@ -405,7 +405,7 @@ int main(void)
 	screen_sprite.sprite_pitch = screen_sprite.sprite_right = 320;
 	screen_sprite.sprite_bottom = 200;
 	video_page_count = 1;
-	for (unsigned index = 0; index < sizeof(palette); index++) {
+	for (legacy_u32 index = 0; index < sizeof(palette); index++) {
 		palette[index] = index % 7U == 0 ? 255U : (legacy_u8)(index ^ 0x55U);
 	}
 	video_pages_initialize();

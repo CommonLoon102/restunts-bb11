@@ -25,24 +25,24 @@ static void reset_target(void)
 	assert(hires_begin(&target));
 }
 
-static const unsigned char *pixels(void)
+static const legacy_u8 *pixels(void)
 {
-	int width;
-	int height;
-	const unsigned char *result = hires_framebuffer(screen, &width, &height);
+	legacy_s32 width;
+	legacy_s32 height;
+	const legacy_u8 *result = hires_framebuffer(screen, &width, &height);
 	assert(width == HIRES_WIDTH && height == HIRES_HEIGHT);
 	return result;
 }
 
-static unsigned int count_color(unsigned char color)
+static legacy_u32 count_color(legacy_u8 color)
 {
-	const unsigned char *image = pixels();
-	unsigned int count = 0;
-	for (unsigned int index = 0; index < HIRES_WIDTH * HIRES_HEIGHT; index++) {
+	const legacy_u8 *image = pixels();
+	legacy_u32 count = 0;
+	for (legacy_u32 index = 0; index < HIRES_WIDTH * HIRES_HEIGHT; index++) {
 		count += image[index] == color;
 		if (image[index] == color) {
-			int x = (index % HIRES_WIDTH) / HIRES_SCALE;
-			int y = (index / HIRES_WIDTH) / HIRES_SCALE;
+			legacy_s32 x = (index % HIRES_WIDTH) / HIRES_SCALE;
+			legacy_s32 y = (index / HIRES_WIDTH) / HIRES_SCALE;
 			assert(x >= bounds.left && x < bounds.right);
 			assert(y >= bounds.top && y < bounds.bottom);
 		}
@@ -50,11 +50,11 @@ static unsigned int count_color(unsigned char color)
 	return count;
 }
 
-static void queue(legacy_u8 type, unsigned int count, const struct VECTOR *vertices)
+static void queue(legacy_u8 type, legacy_u32 count, const struct VECTOR *vertices)
 {
 	legacy_u8 indices[10];
 	assert(count <= sizeof(indices));
-	for (unsigned int index = 0; index < count; index++) {
+	for (legacy_u32 index = 0; index < count; index++) {
 		indices[index] = (legacy_u8)index;
 	}
 	shape3d_hires_queue(0, type, count, indices, vertices, 0);
@@ -78,13 +78,13 @@ static void test_projection_and_subpixel_edges(void)
 	shape3d_hires_render(0, RENDER_PRIMITIVE_POLYGON, 7, 0, 0, 0, 0);
 	hires_end();
 	assert(count_color(7) > 40000);
-	const unsigned char *image = pixels();
-	unsigned int partial_blocks = 0;
-	for (int y = 0; y < HIRES_HEIGHT; y += HIRES_SCALE) {
-		for (int x = 0; x < HIRES_WIDTH; x += HIRES_SCALE) {
-			unsigned int colored = 0;
-			for (int row = 0; row < HIRES_SCALE; row++) {
-				for (int column = 0; column < HIRES_SCALE; column++) {
+	const legacy_u8 *image = pixels();
+	legacy_u32 partial_blocks = 0;
+	for (legacy_s32 y = 0; y < HIRES_HEIGHT; y += HIRES_SCALE) {
+		for (legacy_s32 x = 0; x < HIRES_WIDTH; x += HIRES_SCALE) {
+			legacy_u32 colored = 0;
+			for (legacy_s32 row = 0; row < HIRES_SCALE; row++) {
+				for (legacy_s32 column = 0; column < HIRES_SCALE; column++) {
 					colored += image[(y + row) * HIRES_WIDTH + x + column] == 7;
 				}
 			}
@@ -93,7 +93,7 @@ static void test_projection_and_subpixel_edges(void)
 	}
 	assert(partial_blocks > 100);
 	/* The detailed pass leaves the legacy image available for compatibility. */
-	for (unsigned int index = 0; index < 320 * 200; index++) {
+	for (legacy_u32 index = 0; index < 320 * 200; index++) {
 		assert(screen[index] == 3);
 	}
 }
@@ -188,9 +188,9 @@ static legacy_s16 scene_patterns[4];
 static struct SHAPE3D scene_shape;
 static struct TRANSFORMEDSHAPE3D scene_instance;
 
-static void prepare_scene(const struct VECTOR *vertices, unsigned int count,
-						  const legacy_u8 *primitives, unsigned int primitive_size,
-						  int high_resolution)
+static void prepare_scene(const struct VECTOR *vertices, legacy_u32 count,
+						  const legacy_u8 *primitives, legacy_u32 primitive_size,
+						  legacy_s32 high_resolution)
 {
 	hires_shutdown();
 	memset(screen, 3, 320 * 200);
@@ -207,7 +207,7 @@ static void prepare_scene(const struct VECTOR *vertices, unsigned int count,
 	scene_shape.shape3d_primitives = scene_primitives;
 	scene_shape.shape3d_visibility_masks = scene_visibility;
 	scene_shape.shape3d_front_facing_masks = scene_front_facing;
-	for (unsigned int index = 0; index < count; index++) {
+	for (legacy_u32 index = 0; index < count; index++) {
 		shape3d_vertex_write(&scene_shape, (legacy_u16)index, &vertices[index]);
 	}
 	scene_instance.shapeptr = &scene_shape;
@@ -309,7 +309,7 @@ static void test_crossing_surfaces_use_pixel_depth(void)
 									{-60, -30, 300}, {-60, 30, 300}, {60, 30, 100}, {60, -30, 100}};
 	const legacy_u8 forward[] = {4, 0, 0, 0, 1, 2, 3, 4, 0, 1, 4, 5, 6, 7, 0, 0};
 	const legacy_u8 reverse[] = {4, 0, 1, 4, 5, 6, 7, 4, 0, 0, 0, 1, 2, 3, 0, 0};
-	for (unsigned int order = 0; order < 2; order++) {
+	for (legacy_u32 order = 0; order < 2; order++) {
 		prepare_scene(panels, 8, order == 0 ? forward : reverse, sizeof(forward), 1);
 		assert(shape3d_transform_and_queue(&scene_instance) == 0);
 		assert(polyinfonumpolys == 2);
@@ -349,7 +349,7 @@ int main(void)
 	target.sprite_pitch = 320;
 	target.sprite_buffer_width = 320;
 	target.sprite_raster_right = 320;
-	for (unsigned int row = 0; row < 200; row++) {
+	for (legacy_u32 row = 0; row < 200; row++) {
 		LEGACY_WRITE_U16_LE(rows + row * 2, row * 320);
 	}
 	projection_center_x = 160;

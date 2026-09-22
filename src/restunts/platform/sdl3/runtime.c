@@ -3,7 +3,7 @@
 #include <string.h>
 #include "../../c/platform.h"
 
-int sdl3_batch_mode;
+legacy_s32 sdl3_batch_mode;
 
 void *_memcpy(void *destination, const void *source, legacy_u16 length)
 {

@@ -19,7 +19,7 @@ extern void update_follow_cameras(void);
 #undef memcpy
 #undef printf
 
-static uint64_t trace_hash = UINT64_C(1469598103934665603);
+static legacy_u64 trace_hash = UINT64_C(1469598103934665603);
 static struct GAMESTATE checkpoints[GAMESTATE_CHECKPOINT_COUNT];
 static struct VECTOR cameras[4] = {{0, 0, 0}, {500, 0, 500}, {-500, 0, -500}, {500, 0, 500}};
 static legacy_s8 inputs[64];
@@ -27,22 +27,22 @@ static legacy_s8 inputs[64];
 static legacy_u8 opponent_resource[TEST_OPPONENT_RESOURCE_HEADER_SIZE + OPPONENT_SPEED_COUNT];
 static legacy_u8 *speed_data = opponent_resource + TEST_OPPONENT_RESOURCE_HEADER_SIZE;
 static legacy_s8 restored_random_seed[GAMESTATE_RANDOM_SEED_SIZE];
-static unsigned int random_restore_count;
-static unsigned int loop_reset_count;
+static legacy_u32 random_restore_count;
+static legacy_u32 loop_reset_count;
 
-static void trace_bytes(const void *source, unsigned int count)
+static void trace_bytes(const void *source, legacy_u32 count)
 {
-	const unsigned char *bytes = source;
-	for (unsigned int index = 0; index < count; index++) {
+	const legacy_u8 *bytes = source;
+	for (legacy_u32 index = 0; index < count; index++) {
 		trace_hash = (trace_hash ^ bytes[index]) * UINT64_C(1099511628211);
 	}
 }
 
 static void trace_event(legacy_u16 event)
 {
-	unsigned char bytes[2];
-	bytes[0] = (unsigned char)event;
-	bytes[1] = (unsigned char)(event >> 8);
+	legacy_u8 bytes[2];
+	bytes[0] = (legacy_u8)event;
+	bytes[1] = (legacy_u8)(event >> 8);
 	trace_bytes(bytes, 2);
 }
 
@@ -165,7 +165,7 @@ void copy_string(legacy_s8 *destination, legacy_s8 far *source)
 	} while (*source++ != 0);
 }
 
-static void configure_simulation(unsigned int scenario)
+static void configure_simulation(legacy_u32 scenario)
 {
 	memset(&state, 0x25, sizeof(state));
 	memset(&gameconfig, 0, sizeof(gameconfig));
@@ -186,7 +186,7 @@ static void configure_simulation(unsigned int scenario)
 	gameconfig.game_playertransmission = scenario % 2U;
 	simd_player.idle_rpm = 800;
 	simd_opponent.idle_rpm = 1000;
-	for (unsigned int index = 0; index < SIMD_GEAR_RATIO_COUNT; index++) {
+	for (legacy_u32 index = 0; index < SIMD_GEAR_RATIO_COUNT; index++) {
 		simd_player.gear_ratios[index] = (legacy_u16)(index * 1093U);
 		simd_opponent.gear_ratios[index] = (legacy_u16)(index * 2087U);
 	}
@@ -196,7 +196,7 @@ static void configure_simulation(unsigned int scenario)
 
 static void test_initialization(void)
 {
-	for (unsigned int scenario = 0; scenario < 48U; scenario++) {
+	for (legacy_u32 scenario = 0; scenario < 48U; scenario++) {
 		configure_simulation(scenario);
 		init_game_state((legacy_s16)(scenario % 4U));
 		trace_bytes(&state, sizeof(state));
@@ -220,15 +220,15 @@ static void test_restore_initial_checkpoint(void)
 	race_start_sequence_state = RACE_START_SEQUENCE_INACTIVE;
 	update_gamestate();
 	struct GAMESTATE initial_state = checkpoints[0];
-	unsigned int resets_before_restore = loop_reset_count;
+	legacy_u32 resets_before_restore = loop_reset_count;
 
-	for (unsigned int scenario = 0; scenario < 3U; scenario++) {
+	for (legacy_u32 scenario = 0; scenario < 3U; scenario++) {
 		memset(&state, 0x45, sizeof(state));
 		state.game_frame = scenario == 1U ? 0 : 29;
 		elapsed_time1 = scenario == 2U ? 600 : 0;
 		elapsed_time2 = 31;
 		memset(restored_random_seed, 0, sizeof(restored_random_seed));
-		unsigned int restores_before = random_restore_count;
+		legacy_u32 restores_before = random_restore_count;
 
 		restore_gamestate(0);
 
@@ -250,8 +250,8 @@ static void test_restore_without_initial_checkpoint(void)
 	state.game_inputmode = GAME_INPUT_MODE_ACTIVE;
 	state.game_end_event = 1;
 	state.playerstate.car_position.lx = -12345;
-	unsigned int restores_before = random_restore_count;
-	unsigned int resets_before = loop_reset_count;
+	legacy_u32 restores_before = random_restore_count;
+	legacy_u32 resets_before = loop_reset_count;
 
 	restore_gamestate(0);
 
@@ -271,7 +271,7 @@ static void test_owoot_checkpoint_progress(void)
 	init_game_state(GAMESTATE_INIT_RESET_CHECKPOINTS);
 	assert(state.playerstate.car_reserved_route_word1 == 0);
 	assert(state.playerstate.car_reserved_route_word2 == 0);
-	for (unsigned int index = 0; index < CARSTATE_WHEEL_COUNT; index++) {
+	for (legacy_u32 index = 0; index < CARSTATE_WHEEL_COUNT; index++) {
 		assert(state.playerstate.car_reserved_wheel_state[index] == 0);
 		state.playerstate.car_reserved_wheel_state[index] = (legacy_s16)(index + 7);
 	}
@@ -291,7 +291,7 @@ static void test_owoot_checkpoint_progress(void)
 	restore_gamestate(0);
 	assert(state.playerstate.car_reserved_route_word1 == 12);
 	assert(state.playerstate.car_reserved_route_word2 == 4);
-	for (unsigned int index = 0; index < CARSTATE_WHEEL_COUNT; index++) {
+	for (legacy_u32 index = 0; index < CARSTATE_WHEEL_COUNT; index++) {
 		assert(state.playerstate.car_reserved_wheel_state[index] == (legacy_s16)(index + 7));
 	}
 	init_game_state(GAMESTATE_INIT_RESET_CHECKPOINTS);
@@ -300,7 +300,7 @@ static void test_owoot_checkpoint_progress(void)
 	owoot_enabled = 0;
 }
 
-static void configure_cameras(unsigned int scenario)
+static void configure_cameras(legacy_u32 scenario)
 {
 	memset(&state, 0, sizeof(state));
 	gameconfig.game_opponenttype = scenario % 2U;
@@ -312,7 +312,7 @@ static void configure_cameras(unsigned int scenario)
 	trackside_camera_count = scenario % 13U == 0 ? 128U : 4U;
 	static const legacy_s16 errors[] = {0, 128, 129, 895, 896};
 	struct CARSTATE *car;
-	for (unsigned int index = 0; index < 2U; index++) {
+	for (legacy_u32 index = 0; index < 2U; index++) {
 		car = index == 0 ? &state.playerstate : &state.opponentstate;
 		car->car_position.lx = ((legacy_s32)scenario * 17 - 1200) * 64;
 		car->car_position.ly = ((legacy_s32)scenario - 50) * 64;
@@ -332,7 +332,7 @@ static void configure_cameras(unsigned int scenario)
 
 static void test_frame_updates(void)
 {
-	for (unsigned int scenario = 0; scenario < 120U; scenario++) {
+	for (legacy_u32 scenario = 0; scenario < 120U; scenario++) {
 		configure_cameras(scenario);
 		update_follow_cameras();
 		trace_bytes(&state, sizeof(state));
@@ -375,11 +375,11 @@ static void test_opponent_routes(void)
 	track_route_element_ids = elements;
 	static legacy_s8 route[64];
 	opponent_route_track_indices = route;
-	for (unsigned int scenario = 0; scenario < 8U; scenario++) {
+	for (legacy_u32 scenario = 0; scenario < 8U; scenario++) {
 		memset(route, 0x66, sizeof(route));
 		gameconfig.game_opponenttype = scenario;
 		primary[4] = scenario % 3U == 0 ? -1 : (scenario % 3U == 1 ? 3 : 0);
-		for (unsigned int index = 0; index < OPPONENT_SPEED_COUNT; index++) {
+		for (legacy_u32 index = 0; index < OPPONENT_SPEED_COUNT; index++) {
 			speed_data[index] = (legacy_u8)(index * (scenario + 1U));
 		}
 		load_opponent_data();

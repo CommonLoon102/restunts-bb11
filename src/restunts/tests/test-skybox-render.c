@@ -18,7 +18,7 @@ legacy_s16 video_x_alignment_mask = -1;
 
 static struct SHAPE2D images[4];
 static legacy_u32 call_hash;
-static unsigned clear_count, image_count, polygon_count;
+static legacy_u32 clear_count, image_count, polygon_count;
 static legacy_u8 clear_color;
 static struct POINT2D first_polygon[4];
 
@@ -69,7 +69,7 @@ void skybox_fill_polygon(legacy_u16 color, legacy_u16 count, struct POINT2D *poi
 	record_word(4);
 	record_word(color);
 	record_word(count);
-	for (unsigned i = 0; i < count; i++) {
+	for (legacy_u32 i = 0; i < count; i++) {
 		if (polygon_count == 0 && i < 4U) {
 			first_polygon[i] = points[i];
 		}
@@ -94,11 +94,11 @@ static void reset_scene(void)
 	skybox.maximum_height = 40;
 	skybox.sky_color = 3;
 	skybox.ground_color = 6;
-	for (unsigned i = 0; i < 4; i++) {
+	for (legacy_u32 i = 0; i < 4; i++) {
 		skybox.heights[i] = 20 + i * 5;
 		skyboxes[i] = &images[i];
 	}
-	for (unsigned i = 0; i < 15; i++) {
+	for (legacy_u32 i = 0; i < 15; i++) {
 		frame_rects_page0[i].left = i * 20;
 		frame_rects_page0[i].right = i * 20 + 20;
 		frame_rects_page0[i].top = 30 + i * 3;
@@ -152,7 +152,7 @@ static void test_rolled_full_viewport_redraw(void)
 	 * right, left, bottom and top edges. Every whole-viewport fill must tell
 	 * frame_finish to retain the full clip for presentation and the next frame.
 	 * Otherwise a following level view can leave old ground in the sky. */
-	for (unsigned index = 0; index < sizeof(cases) / sizeof(cases[0]); index++) {
+	for (legacy_u32 index = 0; index < sizeof(cases) / sizeof(cases[0]); index++) {
 		for (legacy_s16 slow_copy = 0; slow_copy <= 1; slow_copy++) {
 			for (legacy_s16 detail = 0; detail <= 4; detail++) {
 				reset_scene();
@@ -283,7 +283,7 @@ static legacy_u32 skybox_fingerprint(legacy_s16 rolled, legacy_s16 slow_copy)
 	struct MATRIX rotation;
 	struct RECTANGLE clip;
 	legacy_u32 seed = 161803UL;
-	for (unsigned iteration = 0; iteration < 8192; iteration++) {
+	for (legacy_u32 iteration = 0; iteration < 8192; iteration++) {
 		reset_scene();
 		clip.left = 0;
 		clip.right = 320;
@@ -311,14 +311,14 @@ static legacy_u32 skybox_fingerprint(legacy_s16 rolled, legacy_s16 slow_copy)
 			skybox_render(iteration % 2, &clip, direction, &rotation, rolled, angle, camera_y);
 		record_word((legacy_u16)result);
 		record_word((legacy_u16)redraw_rect_count);
-		for (unsigned i = 0; i < 15; i++) {
+		for (legacy_u32 i = 0; i < 15; i++) {
 			record_word((legacy_u16)frame_rect_change_flags[i]);
 			record_word((legacy_u16)frame_layer_rects[i].left);
 			record_word((legacy_u16)frame_layer_rects[i].right);
 			record_word((legacy_u16)frame_layer_rects[i].top);
 			record_word((legacy_u16)frame_layer_rects[i].bottom);
 		}
-		for (unsigned i = 0; i < (unsigned)redraw_rect_count; i++) {
+		for (legacy_u32 i = 0; i < (legacy_u32)redraw_rect_count; i++) {
 			record_word((legacy_u16)merged_redraw_rects[i].left);
 			record_word((legacy_u16)merged_redraw_rects[i].right);
 			record_word((legacy_u16)merged_redraw_rects[i].top);
@@ -343,9 +343,10 @@ int main(void)
 	test_level_horizon();
 	test_rolled_full_viewport_redraw();
 	test_legacy_skybox_handoff();
-	for (unsigned i = 0; i < 4; i++) {
+	for (legacy_u32 i = 0; i < 4; i++) {
 #ifdef SKYBOX_RECORD_BASELINE
-		fprintf(stdout, "skybox%u=%08lx\n", i, (unsigned long)skybox_fingerprint(i & 1U, i >> 1U));
+		fprintf(stdout, "skybox%" LEGACY_PRIu32 "=%08" LEGACY_PRIx32 "\n", i,
+				skybox_fingerprint(i & 1U, i >> 1U));
 #else
 		assert(skybox_fingerprint(i & 1U, i >> 1U) == expected[i]);
 #endif

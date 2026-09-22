@@ -18,7 +18,7 @@
 #define ADLIB_EMULATOR "nuked"
 #endif
 
-extern int sdl3_batch_mode;
+extern legacy_s32 sdl3_batch_mode;
 
 #define ADLIB_VOICES 9U
 /* The original context mask reserves bit zero for its sampled-sound path.
@@ -58,7 +58,7 @@ struct ADLIB_VOICE {
 static struct ADLIB_VOICE adlib_voices[ADLIB_VOICES];
 static legacy_u8 adlib_registers[256];
 static legacy_u8 adlib_register_valid[256];
-static int adlib_ready;
+static legacy_s32 adlib_ready;
 static const legacy_u8 adlib_slots[ADLIB_VOICES] = {0, 1, 2, 8, 9, 10, 16, 17, 18};
 static const legacy_u16 adlib_frequencies[60] = {
 	21,	 23,  24,  25,	27,	 29,  30,  32,	34,	 36,  38,  40,	43,	 45,  48,
@@ -67,7 +67,7 @@ static const legacy_u16 adlib_frequencies[60] = {
 	288, 306, 324, 343, 363, 385, 408, 432, 458, 485, 514, 544, 577, 611, 647};
 #ifndef __DJGPP__
 static opl2_chip *adlib_chip;
-static int adlib_initializing;
+static legacy_s32 adlib_initializing;
 static SDL_AudioStream *adlib_stream;
 
 static void adlib_delete_chip(void)
@@ -76,14 +76,14 @@ static void adlib_delete_chip(void)
 	adlib_chip = NULL;
 }
 
-static void adlib_generate_samples(Sint16 *samples, unsigned int count)
+static void adlib_generate_samples(legacy_s16 *samples, legacy_u32 count)
 {
 	OPL2_GenerateStream(adlib_chip, samples, count);
 	adlib_trace_advance(count);
 }
 #endif
 
-static void adlib_write(unsigned int reg, unsigned int value)
+static void adlib_write(legacy_u32 reg, legacy_u32 value)
 {
 	legacy_u8 byte = (legacy_u8)value;
 	if (!adlib_ready || reg >= sizeof(adlib_registers)) {
@@ -96,16 +96,16 @@ static void adlib_write(unsigned int reg, unsigned int value)
 	adlib_register_valid[reg] = 1;
 #ifdef __DJGPP__
 	outportb(0x388, reg);
-	for (int delay = 0; delay < 6; ++delay) {
+	for (legacy_s32 delay = 0; delay < 6; ++delay) {
 		(void)inportb(0x388);
 	}
 	outportb(0x389, byte);
-	for (int delay = 0; delay < 35; ++delay) {
+	for (legacy_s32 delay = 0; delay < 35; ++delay) {
 		(void)inportb(0x388);
 	}
 #else
 	/* Buffer runtime writes so same-tick key-off/key-on transitions survive. */
-	int buffered = !adlib_initializing;
+	legacy_s32 buffered = !adlib_initializing;
 	if (buffered) {
 		OPL2_WriteRegBuffered(adlib_chip, (legacy_u8)reg, byte);
 	} else {
@@ -115,13 +115,13 @@ static void adlib_write(unsigned int reg, unsigned int value)
 #endif
 }
 
-static int adlib_voice_index(legacy_s16 driver_channel)
+static legacy_s32 adlib_voice_index(legacy_s16 driver_channel)
 {
 	return driver_channel > 0 && (legacy_u16)driver_channel <= ADLIB_VOICES ? driver_channel - 1
 																			: -1;
 }
 
-static legacy_u16 adlib_note_pitch(unsigned int note)
+static legacy_u16 adlib_note_pitch(legacy_u32 note)
 {
 	note &= 255U;
 	return (legacy_u16)((((note / 12U) & 7U) << 10U) | adlib_frequencies[24U + note % 12U]);
@@ -129,14 +129,14 @@ static legacy_u16 adlib_note_pitch(unsigned int note)
 
 /* AD15 bends within an extended F-number table while retaining the note's
  * block. Interpolating packed pitches across octaves also changes the block. */
-static legacy_u16 adlib_bend_target(unsigned int note, int semitones)
+static legacy_u16 adlib_bend_target(legacy_u32 note, legacy_s32 semitones)
 {
 	note &= 255U;
-	int index = 24 + (int)(note % 12U) + semitones;
+	legacy_s32 index = 24 + (legacy_s32)(note % 12U) + semitones;
 	if (index < 0) {
 		index = 0;
-	} else if (index >= (int)(sizeof(adlib_frequencies) / sizeof(adlib_frequencies[0]))) {
-		index = (int)(sizeof(adlib_frequencies) / sizeof(adlib_frequencies[0])) - 1;
+	} else if (index >= (legacy_s32)(sizeof(adlib_frequencies) / sizeof(adlib_frequencies[0]))) {
+		index = (legacy_s32)(sizeof(adlib_frequencies) / sizeof(adlib_frequencies[0])) - 1;
 	}
 	return (legacy_u16)((((note / 12U) & 7U) << 10U) | adlib_frequencies[index]);
 }
@@ -146,7 +146,7 @@ static legacy_u16 adlib_bend_target(unsigned int note, int semitones)
  * after returning to the same RPM. Integer multipliers retain the ratio.
  * Only normalize sustained, continuously pitched FM voices whose steady
  * level and key scaling permit lowering the pitch block. */
-static unsigned int adlib_continuous_multiplier(const struct ADLIB_VOICE *state)
+static legacy_u32 adlib_continuous_multiplier(const struct ADLIB_VOICE *state)
 {
 	static const legacy_u8 doubled[7] = {0, 2, 4, 6, 8, 10, 12};
 	static const legacy_u8 selectors[6] = {22, 23, 24, 25, 40, 53};
@@ -159,13 +159,13 @@ static unsigned int adlib_continuous_multiplier(const struct ADLIB_VOICE *state)
 	if (carrier[6] != 0 || modulator[6] == 0 || modulator[6] >= sizeof(doubled)) {
 		return 0;
 	}
-	for (unsigned int index = 0; index < sizeof(selectors); ++index) {
-		unsigned int selector = resource[selectors[index]];
+	for (legacy_u32 index = 0; index < sizeof(selectors); ++index) {
+		legacy_u32 selector = resource[selectors[index]];
 		if (selector == 0x81U || selector == 0x82U) {
 			return 0;
 		}
 	}
-	for (unsigned int index = 0; index < 2; ++index) {
+	for (legacy_u32 index = 0; index < 2; ++index) {
 		const legacy_u8 *op = modulator + index * ADLIB_OPERATOR_SIZE;
 		if (op[0] != 15 || op[2] != 0 || op[3] != 15 || op[5] != 0 || op[7] != 0 || op[8] != 1 ||
 			op[9] != 0) {
@@ -175,13 +175,13 @@ static unsigned int adlib_continuous_multiplier(const struct ADLIB_VOICE *state)
 	return doubled[modulator[6]];
 }
 
-static void adlib_write_pitch(int voice, legacy_u16 pitch, int key_on)
+static void adlib_write_pitch(legacy_s32 voice, legacy_u16 pitch, legacy_s32 key_on)
 {
 	struct ADLIB_VOICE *state = &adlib_voices[voice];
 	state->current_pitch = pitch;
-	unsigned int multiplier = adlib_continuous_multiplier(state);
+	legacy_u32 multiplier = adlib_continuous_multiplier(state);
 	if (multiplier != 0 || state->doubled_multipliers) {
-		unsigned int slot = adlib_slots[voice];
+		legacy_u32 slot = adlib_slots[voice];
 		const legacy_u8 *modulator = state->resource + ADLIB_OPERATOR_OFFSET;
 		const legacy_u8 *carrier = modulator + ADLIB_OPERATOR_SIZE;
 		adlib_write(0x20U + slot, (adlib_registers[0x20U + slot] & 0xf0U) |
@@ -201,7 +201,7 @@ static void adlib_write_pitch(int voice, legacy_u16 pitch, int key_on)
 	adlib_write(0xb0U + voice, ((pitch >> 8U) & 31U) | (key_on ? 32U : 0U));
 }
 
-static void adlib_program_operator(unsigned int slot, const legacy_u8 *op, unsigned int multiplier)
+static void adlib_program_operator(legacy_u32 slot, const legacy_u8 *op, legacy_u32 multiplier)
 {
 	adlib_write(0x20U + slot,
 				(op[10] << 7U) | (op[9] << 6U) | (op[8] << 5U) | (op[7] << 4U) | multiplier);
@@ -211,7 +211,7 @@ static void adlib_program_operator(unsigned int slot, const legacy_u8 *op, unsig
 	adlib_write(0xe0U + slot, op[11] & 3U);
 }
 
-static void adlib_volume(int voice, unsigned int volume)
+static void adlib_volume(legacy_s32 voice, legacy_u32 volume)
 {
 	const struct ADLIB_VOICE *state = &adlib_voices[voice];
 	const legacy_u8 *resource = state->resource;
@@ -222,12 +222,12 @@ static void adlib_volume(int voice, unsigned int volume)
 		volume = 127U;
 	}
 	/* AD15 rounds two products independently, with a denominator of 128. */
-	unsigned int scale = (((volume * state->velocity) >> 6U) + 1U) >> 1U;
-	for (unsigned int op_index = 0; op_index < 2; ++op_index) {
+	legacy_u32 scale = (((volume * state->velocity) >> 6U) + 1U) >> 1U;
+	for (legacy_u32 op_index = 0; op_index < 2; ++op_index) {
 		const legacy_u8 *op = resource + ADLIB_OPERATOR_OFFSET + op_index * ADLIB_OPERATOR_SIZE;
-		unsigned int level = op[4] & 63U;
+		legacy_u32 level = op[4] & 63U;
 		if (op_index != 0 || resource[68] == 1) {
-			unsigned int gain = ((((63U - level) * scale) >> 6U) + 1U) >> 1U;
+			legacy_u32 gain = ((((63U - level) * scale) >> 6U) + 1U) >> 1U;
 			level = 63U - (gain & 63U);
 		}
 		adlib_write(0x40U + adlib_slots[voice] + op_index * 3U, (op[5] << 6U) | level);
@@ -235,7 +235,7 @@ static void adlib_volume(int voice, unsigned int volume)
 }
 
 /* The voice resource selects which OPL property a controller/envelope drives. */
-static void adlib_control(int voice, unsigned int selector, unsigned int value)
+static void adlib_control(legacy_s32 voice, legacy_u32 selector, legacy_u32 value)
 {
 	const legacy_u8 *resource = adlib_voices[voice].resource;
 	if (!resource || selector < 0x81U || selector > 0x85U) {
@@ -245,8 +245,8 @@ static void adlib_control(int voice, unsigned int selector, unsigned int value)
 		adlib_write(0xc0U + voice, (((value >> 4U) & 7U) << 1U) | resource[68]);
 		return;
 	}
-	unsigned int operator_index = (selector - 0x81U) & 1U;
-	unsigned int slot = adlib_slots[voice] + operator_index * 3U;
+	legacy_u32 operator_index = (selector - 0x81U) & 1U;
+	legacy_u32 slot = adlib_slots[voice] + operator_index * 3U;
 	const legacy_u8 *op = resource + ADLIB_OPERATOR_OFFSET + operator_index * ADLIB_OPERATOR_SIZE;
 	if (selector < 0x83U) {
 		adlib_write(0x20U + slot, (op[10] << 7U) | (op[9] << 6U) | (op[8] << 5U) | (op[7] << 4U) |
@@ -271,13 +271,13 @@ legacy_u8 dos_audio_driver_initialize(void)
 	adlib_ready = 1;
 	adlib_write(4, 0x60);
 	adlib_write(4, 0x80);
-	unsigned int initial = inportb(0x388);
+	legacy_u32 initial = inportb(0x388);
 	adlib_write(2, 0xff);
 	adlib_write(4, 0x21);
-	for (int delay = 0; delay < 400; ++delay) {
+	for (legacy_s32 delay = 0; delay < 400; ++delay) {
 		(void)inportb(0x388);
 	}
-	unsigned int running = inportb(0x388);
+	legacy_u32 running = inportb(0x388);
 	adlib_write(4, 0x60);
 	adlib_write(4, 0x80);
 	if ((initial & 0xe0U) != 0 || (running & 0xe0U) != 0xc0U) {
@@ -312,7 +312,7 @@ legacy_u8 dos_audio_driver_initialize(void)
 	adlib_initializing = 1;
 	adlib_trace_open(ADLIB_EMULATOR, 3579545, ADLIB_SAMPLE_RATE);
 #endif
-	for (unsigned int reg = 0; reg < 256; ++reg) {
+	for (legacy_u32 reg = 0; reg < 256; ++reg) {
 		adlib_write(reg, 0);
 	}
 	adlib_write(1, 0x20);
@@ -332,11 +332,11 @@ void sdl3_audio_update(void)
 		return;
 	}
 	/* Bound latency after a debugger stop or a catch-up burst. */
-	if (SDL_GetAudioStreamQueued(adlib_stream) > (int)(ADLIB_SAMPLE_RATE / 5U)) {
+	if (SDL_GetAudioStreamQueued(adlib_stream) > (legacy_s32)(ADLIB_SAMPLE_RATE / 5U)) {
 		adlib_trace_clear();
 		SDL_ClearAudioStream(adlib_stream);
 	}
-	Sint16 samples[ADLIB_TICK_SAMPLES];
+	legacy_s16 samples[ADLIB_TICK_SAMPLES];
 	adlib_generate_samples(samples, ADLIB_TICK_SAMPLES);
 	SDL_PutAudioStreamData(adlib_stream, samples, sizeof(samples));
 #endif
@@ -346,15 +346,15 @@ void dos_audio_driver_prepare_context(legacy_s16 driver_channel, struct AUDIO_CO
 									  legacy_u8 *timer, void *resource)
 {
 	(void)context;
-	int voice = adlib_voice_index(driver_channel);
+	legacy_s32 voice = adlib_voice_index(driver_channel);
 	if (voice < 0 || !resource || resource_read_u32le(resource) < ADLIB_RESOURCE_SIZE) {
 		return;
 	}
 	struct ADLIB_VOICE *state = &adlib_voices[voice];
-	int was_doubled = state->doubled_multipliers;
+	legacy_s32 was_doubled = state->doubled_multipliers;
 	state->resource = resource;
 	state->channel = (struct AUDIO_CHANNEL *)timer;
-	unsigned int multiplier = adlib_continuous_multiplier(state);
+	legacy_u32 multiplier = adlib_continuous_multiplier(state);
 	state->doubled_multipliers = multiplier != 0;
 	const legacy_u8 *bytes = resource;
 	const legacy_u8 *modulator = bytes + ADLIB_OPERATOR_OFFSET;
@@ -379,13 +379,13 @@ void dos_audio_driver_set_context_value(legacy_s16 driver_channel, struct AUDIO_
 										legacy_u16 value)
 {
 	(void)context;
-	int voice = adlib_voice_index(driver_channel);
+	legacy_s32 voice = adlib_voice_index(driver_channel);
 	if (voice < 0) {
 		return;
 	}
 	/* The engine supplies Hz. AD15 normalizes to its 50 kHz OPL clock. */
 	legacy_u32 numerator = (legacy_u32)value << 16U;
-	unsigned int block = 0;
+	legacy_u32 block = 0;
 	while (numerator > 25550000UL && block < 7U) {
 		numerator >>= 1U;
 		++block;
@@ -397,7 +397,7 @@ void dos_audio_driver_activate_context(legacy_s16 driver_channel, struct AUDIO_C
 									   legacy_u8 *timer, legacy_s16 pitch, legacy_u16 parameter,
 									   void *resource)
 {
-	int voice = adlib_voice_index(driver_channel);
+	legacy_s32 voice = adlib_voice_index(driver_channel);
 	if (voice < 0 || !resource) {
 		return;
 	}
@@ -422,7 +422,7 @@ void dos_audio_driver_activate_context(legacy_s16 driver_channel, struct AUDIO_C
 void dos_audio_driver_start_context(legacy_s16 driver_channel, struct AUDIO_CONTEXT *context)
 {
 	(void)context;
-	int voice = adlib_voice_index(driver_channel);
+	legacy_s32 voice = adlib_voice_index(driver_channel);
 	if (voice >= 0) {
 		adlib_write(0xb0U + voice, adlib_registers[0xb0U + voice] & ~32U);
 	}
@@ -431,7 +431,7 @@ void dos_audio_driver_start_context(legacy_s16 driver_channel, struct AUDIO_CONT
 void dos_audio_driver_end_context(legacy_s16 driver_channel, struct AUDIO_CONTEXT *context)
 {
 	dos_audio_driver_start_context(driver_channel, context);
-	int voice = adlib_voice_index(driver_channel);
+	legacy_s32 voice = adlib_voice_index(driver_channel);
 	if (voice >= 0) {
 		adlib_write(0x40U + adlib_slots[voice], 63U);
 		adlib_write(0x43U + adlib_slots[voice], 63U);
@@ -441,7 +441,7 @@ void dos_audio_driver_end_context(legacy_s16 driver_channel, struct AUDIO_CONTEX
 void dos_audio_driver_release_channel(legacy_s16 driver_channel)
 {
 	dos_audio_driver_end_context(driver_channel, NULL);
-	int voice = adlib_voice_index(driver_channel);
+	legacy_s32 voice = adlib_voice_index(driver_channel);
 	if (voice >= 0) {
 		memset(&adlib_voices[voice], 0, sizeof(adlib_voices[voice]));
 	}
@@ -458,7 +458,7 @@ void dos_audio_driver_suspend_context(legacy_s16 driver_channel, struct AUDIO_CO
 									  legacy_u16 value, void *resource)
 {
 	(void)value;
-	int voice = adlib_voice_index(driver_channel);
+	legacy_s32 voice = adlib_voice_index(driver_channel);
 	if (voice < 0 || !context || !context->state || !resource) {
 		return;
 	}
@@ -479,7 +479,7 @@ void dos_audio_driver_suspend_context(legacy_s16 driver_channel, struct AUDIO_CO
 	}
 	legacy_s16 bend = state->channel ? LEGACY_S16_FROM_BITS(state->channel->pitch) : 0;
 	if (bend != 0) {
-		int semitones = bend > 0 ? bytes[18] : -(int)bytes[18];
+		legacy_s32 semitones = bend > 0 ? bytes[18] : -(legacy_s32)bytes[18];
 		legacy_s32 difference = (legacy_s32)adlib_bend_target(state->note, semitones) - pitch;
 		/* AD15 shifts signed products, then subtracts for downward bends. */
 		legacy_s32 delta = LEGACY_S32_SAR(difference * bend, 13U);
@@ -498,7 +498,7 @@ void dos_audio_set_channel_volume(legacy_s16 channel, legacy_s16 volume)
 		return;
 	}
 	audio_channels[channel].volume = (legacy_u8)volume;
-	for (unsigned int voice = 0; voice < ADLIB_VOICES; ++voice) {
+	for (legacy_u32 voice = 0; voice < ADLIB_VOICES; ++voice) {
 		if (dos_audio_contexts[voice + 1U].channel == channel) {
 			adlib_volume(voice, (legacy_u8)volume);
 		}
@@ -534,7 +534,7 @@ void dos_audio_set_context_pitch(legacy_s16 context_index, legacy_s16 pitch)
 void dos_audio_driver_set_control(legacy_s16 driver_channel, struct AUDIO_CONTEXT *context,
 								  legacy_u16 control, legacy_u16 value)
 {
-	int voice = adlib_voice_index(driver_channel);
+	legacy_s32 voice = adlib_voice_index(driver_channel);
 	if (voice < 0 || !context || !context->state || !adlib_voices[voice].resource) {
 		return;
 	}
@@ -542,7 +542,7 @@ void dos_audio_driver_set_control(legacy_s16 driver_channel, struct AUDIO_CONTEX
 	if (control == 7U) {
 		adlib_volume(voice, value);
 	} else if (control == 1U || control == 11U || control == 12U) {
-		unsigned int offset = control == 1U ? 22U : control == 11U ? 23U : 24U;
+		legacy_u32 offset = control == 1U ? 22U : control == 11U ? 23U : 24U;
 		adlib_control(voice, resource[offset], value);
 	}
 }

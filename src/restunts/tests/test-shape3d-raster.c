@@ -9,9 +9,9 @@
 #include "../c/shape3d_internal.h"
 
 static legacy_u32 callback_hash;
-static unsigned span_calls, line_calls, point_calls;
+static legacy_u32 span_calls, line_calls, point_calls;
 static legacy_u16 last_top, last_count;
-static unsigned checking_ghost;
+static legacy_u32 checking_ghost;
 
 static void hash_word(legacy_u16 value)
 {
@@ -33,7 +33,7 @@ static void record_spans(legacy_s16 *left, legacy_s16 *right, legacy_u16 top, le
 	hash_word(top);
 	hash_word(count);
 	hash_word(color);
-	for (unsigned i = 0; i < count; i++) {
+	for (legacy_u32 i = 0; i < count; i++) {
 		hash_word((legacy_u16)left[i]);
 		hash_word((legacy_u16)right[i]);
 	}
@@ -137,9 +137,9 @@ static legacy_u32 polygon_fingerprint(void)
 	static const legacy_s16 xs[] = {-50, 9, 10, 11, 160, 308, 309, 310, 350};
 	static const legacy_s16 ys[] = {-50, 19, 20, 21, 100, 178, 179, 180, 230};
 	struct POINT2D vertices[4];
-	for (unsigned x = 0; x < sizeof(xs) / sizeof(xs[0]); x++) {
-		for (unsigned y = 0; y < sizeof(ys) / sizeof(ys[0]); y++) {
-			for (unsigned shape = 0; shape < 4; shape++) {
+	for (legacy_u32 x = 0; x < sizeof(xs) / sizeof(xs[0]); x++) {
+		for (legacy_u32 y = 0; y < sizeof(ys) / sizeof(ys[0]); y++) {
+			for (legacy_u32 shape = 0; shape < 4; shape++) {
 				vertices[0].px = xs[x];
 				vertices[0].py = ys[y];
 				vertices[1].px = xs[x] + 30;
@@ -149,9 +149,9 @@ static legacy_u32 polygon_fingerprint(void)
 				vertices[3].px = xs[x];
 				vertices[3].py = ys[y] + 40;
 				legacy_u16 count = shape == 3 ? 3 : 4;
-				for (unsigned reverse = 0; reverse < 2; reverse++) {
-					for (unsigned start = 0; start < count; start++) {
-						for (unsigned i = 0; i < count; i++) {
+				for (legacy_u32 reverse = 0; reverse < 2; reverse++) {
+					for (legacy_u32 start = 0; start < count; start++) {
+						for (legacy_u32 i = 0; i < count; i++) {
 							ordered[i] = vertices[(start + (reverse ? count - i : i)) % count];
 						}
 						preRender_default(37, count, ordered);
@@ -171,9 +171,9 @@ static legacy_u32 sphere_fingerprint(void)
 	reset_raster();
 	static const legacy_s16 ys[] = {-100, 19, 20, 21, 100, 178, 179, 180, 300};
 	static const legacy_s16 xs[] = {-100, 9, 10, 11, 160, 308, 309, 310, 400};
-	for (unsigned x = 0; x < sizeof(xs) / sizeof(xs[0]); x++) {
-		for (unsigned y = 0; y < sizeof(ys) / sizeof(ys[0]); y++) {
-			for (unsigned size = 0; size <= 160; size++) {
+	for (legacy_u32 x = 0; x < sizeof(xs) / sizeof(xs[0]); x++) {
+		for (legacy_u32 y = 0; y < sizeof(ys) / sizeof(ys[0]); y++) {
+			for (legacy_u32 size = 0; size <= 160; size++) {
 				preRender_sphere(xs[x], ys[y], size, 37);
 			}
 		}
@@ -187,13 +187,13 @@ static legacy_u32 perimeter_fingerprint(void)
 	legacy_u16 source[6];
 	legacy_u16 destination[64];
 	legacy_u32 seed = 314159UL;
-	for (unsigned sample = 0; sample < 8192; sample++) {
-		for (unsigned i = 0; i < 6; i++) {
+	for (legacy_u32 sample = 0; sample < 8192; sample++) {
+		for (legacy_u32 i = 0; i < 6; i++) {
 			seed = seed * 1664525UL + 1013904223UL;
 			source[i] = (legacy_u16)(seed >> 16);
 		}
 		sphere_build_perimeter(source, destination);
-		for (unsigned i = 0; i < 64; i++) {
+		for (legacy_u32 i = 0; i < 64; i++) {
 			hash_word(destination[i]);
 		}
 	}
@@ -211,7 +211,7 @@ static void test_ghost_grille_covers_every_primitive(void)
 	preRender_wheel(wheel, 9472U, PRERENDER_GHOST_COLOR, PRERENDER_GHOST_COLOR,
 					PRERENDER_GHOST_COLOR);
 	assert(span_calls > 16 && line_calls == 0);
-	unsigned before_spheres = span_calls;
+	legacy_u32 before_spheres = span_calls;
 	preRender_sphere(140, 100, 30, PRERENDER_GHOST_COLOR);
 	preRender_sphere(140, 100, 120, PRERENDER_GHOST_COLOR);
 	preRender_sphere(140, 100, 1, PRERENDER_GHOST_COLOR);
@@ -219,8 +219,8 @@ static void test_ghost_grille_covers_every_primitive(void)
 	static const struct POINT2D endpoints[] = {
 		{140, 100}, {140, 20},	{140, 180}, {10, 100},	{310, 100},	 {100, 60}, {180, 60},
 		{100, 140}, {180, 140}, {-100, 90}, {400, 110}, {130, -100}, {150, 300}};
-	unsigned before_lines = point_calls;
-	for (unsigned index = 0; index < sizeof(endpoints) / sizeof(endpoints[0]); index++) {
+	legacy_u32 before_lines = point_calls;
+	for (legacy_u32 index = 0; index < sizeof(endpoints) / sizeof(endpoints[0]); index++) {
 		preRender_line(140, 100, endpoints[index].px, endpoints[index].py, PRERENDER_GHOST_COLOR);
 		preRender_line(endpoints[index].px, endpoints[index].py, 140, 100, PRERENDER_GHOST_COLOR);
 	}
@@ -237,8 +237,8 @@ int main(void)
 	legacy_u32 sphere_hash = sphere_fingerprint();
 	legacy_u32 perimeter_hash = perimeter_fingerprint();
 #ifdef PRERENDER_RECORD_BASELINE
-	fprintf(stdout, "%08lx %08lx %08lx\n", (unsigned long)polygon_hash, (unsigned long)sphere_hash,
-			(unsigned long)perimeter_hash);
+	fprintf(stdout, "%08" LEGACY_PRIx32 " %08" LEGACY_PRIx32 " %08" LEGACY_PRIx32 "\n",
+			polygon_hash, sphere_hash, perimeter_hash);
 #else
 	/* Captured from the original implementation with both -O0 and -O2. */
 	assert(polygon_hash == 0x1322835bUL);

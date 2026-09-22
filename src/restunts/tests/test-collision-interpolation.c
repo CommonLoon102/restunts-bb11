@@ -55,7 +55,7 @@ static void test_interpolation_geometry(void)
 		{{100, 200, -100}, {-100, -200, 100}, 100, {-100, -200, 100}},
 	};
 
-	for (unsigned index = 0; index < sizeof(cases) / sizeof(cases[0]); index++) {
+	for (legacy_u32 index = 0; index < sizeof(cases) / sizeof(cases[0]); index++) {
 		struct VECTOR first = cases[index].first;
 		struct VECTOR second = cases[index].second;
 		struct VECTOR original;
@@ -93,7 +93,7 @@ static void test_collision_options(void)
 		{"/lc:off", "/pg:on", 0},
 	};
 
-	for (unsigned index = 0; index < sizeof(cases) / sizeof(cases[0]); index++) {
+	for (legacy_u32 index = 0; index < sizeof(cases) / sizeof(cases[0]); index++) {
 		/* A new invocation must reset the preceding invocation's opt-in. */
 		configure_collision_option("/lc:off");
 		legacy_s8 *argv[] = {(legacy_s8 *)"restunts", (legacy_s8 *)cases[index].first,

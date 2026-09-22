@@ -35,7 +35,7 @@ static legacy_u8 crack_lines[16];
 static legacy_u8 crack_info[6];
 static legacy_u16 crack_offset;
 static legacy_u16 last_line[DRAW_LINE_WORD_COUNT];
-static unsigned drawn_lines;
+static legacy_u32 drawn_lines;
 static legacy_s16 player[LEGACY_RESIDUE_WORD_COUNT];
 static legacy_s16 opponent[LEGACY_RESIDUE_WORD_COUNT];
 
@@ -48,12 +48,12 @@ struct TEXT_DRAW {
 };
 
 static struct TEXT_DRAW text_draws[6];
-static unsigned text_draw_count;
+static legacy_u32 text_draw_count;
 static struct RECTANGLE text_bounds;
 static struct RECTANGLE restored_roof_bounds;
 static struct RECTANGLE copied_roof_bounds;
-static unsigned restored_roof_count;
-static unsigned copied_roof_count;
+static legacy_u32 restored_roof_count;
+static legacy_u32 copied_roof_count;
 static struct SHAPE2D roof_shape;
 static struct SHAPE2D frame_shape;
 static struct SPRITE frame_sprite;
@@ -213,7 +213,7 @@ static void assert_words(const legacy_s16 *words, legacy_s16 a, legacy_s16 b, le
 	assert(words[0] == a && words[1] == b && words[2] == c && words[3] == d);
 }
 
-static void set_line(unsigned index, legacy_s16 x1, legacy_s16 y1, legacy_s16 x2, legacy_s16 y2)
+static void set_line(legacy_u32 index, legacy_s16 x1, legacy_s16 y1, legacy_s16 x2, legacy_s16 y2)
 {
 	LEGACY_WRITE_U16_LE(crack_lines + index * 8, x1);
 	LEGACY_WRITE_U16_LE(crack_lines + index * 8 + 2, y1);
@@ -224,7 +224,7 @@ static void set_line(unsigned index, legacy_s16 x1, legacy_s16 y1, legacy_s16 x2
 static void reset_overlay(legacy_s16 dirty_rects)
 {
 	struct SHAPE3D_LEGACY_OPPONENT_RENDER_CONTEXT context;
-	unsigned i;
+	legacy_u32 i;
 
 	memset(&context, 0, sizeof(context));
 	context.wheel_headings = opponent;
@@ -351,7 +351,7 @@ static void reset_ingame_text(const char *filename)
 	render_window_sprite = &frame_sprite;
 }
 
-static void assert_text(unsigned index, const char *text, legacy_s16 x, legacy_s16 y)
+static void assert_text(legacy_u32 index, const char *text, legacy_s16 x, legacy_s16 y)
 {
 	assert(index < text_draw_count);
 	assert(strcmp(text_draws[index].text, text) == 0);
@@ -364,13 +364,13 @@ static void test_replay_filename_survives_blink(void)
 {
 	static const char *filenames[] = {"A", "DEFAULT", "RACE2026", "MOUNTAINRUN2026",
 									  "ABCDEFGHIJKLMNOPQRSTUVWXYZ12345"};
-	for (unsigned name = 0; name < sizeof(filenames) / sizeof(filenames[0]); name++) {
-		for (unsigned frame_rate = 10; frame_rate <= 20; frame_rate += 10) {
+	for (legacy_u32 name = 0; name < sizeof(filenames) / sizeof(filenames[0]); name++) {
+		for (legacy_u32 frame_rate = 10; frame_rate <= 20; frame_rate += 10) {
 			reset_ingame_text(filenames[name]);
 			dialog_fnt_colour = 9 + name;
 			framespersec = frame_rate;
 			legacy_s16 filename_x = 312 - strlen(filenames[name]) * 8;
-			for (unsigned frame = 0; frame < frame_rate * 2; frame++) {
+			for (legacy_u32 frame = 0; frame < frame_rate * 2; frame++) {
 				state.game_frame = frame;
 				text_draw_count = 0;
 				struct RECTANGLE *bounds = draw_ingame_text();
@@ -394,16 +394,16 @@ static void test_replay_filename_survives_blink(void)
 static void test_wrapped_replay_filename(void)
 {
 	static const struct {
-		unsigned length;
-		unsigned lines;
+		legacy_u32 length;
+		legacy_u32 lines;
 	} cases[] = {{38, 1}, {39, 2}, {76, 2}, {127, 4}};
-	for (unsigned name = 0; name < sizeof(cases) / sizeof(cases[0]); name++) {
+	for (legacy_u32 name = 0; name < sizeof(cases) / sizeof(cases[0]); name++) {
 		char filename[REPLAY_FILENAME_SIZE];
-		for (unsigned character = 0; character < cases[name].length; character++) {
+		for (legacy_u32 character = 0; character < cases[name].length; character++) {
 			filename[character] = 'A' + character % 26;
 		}
 		filename[cases[name].length] = 0;
-		for (unsigned phase = 0; phase < 3; phase++) {
+		for (legacy_u32 phase = 0; phase < 3; phase++) {
 			reset_ingame_text(filename);
 			if (phase == 1) {
 				state.game_frame = framespersec / 2;
@@ -411,12 +411,12 @@ static void test_wrapped_replay_filename(void)
 				game_replay_mode = REPLAY_MODE_PAUSED;
 			}
 			struct RECTANGLE *bounds = draw_ingame_text();
-			unsigned line_count = cases[name].lines;
+			legacy_u32 line_count = cases[name].lines;
 			assert(text_draw_count == line_count + (phase == 0));
 			char reconstructed[REPLAY_FILENAME_SIZE];
-			unsigned copied = 0;
-			for (unsigned line = 0; line < line_count; line++) {
-				unsigned length = line + 1 == line_count ? cases[name].length - copied : 38;
+			legacy_u32 copied = 0;
+			for (legacy_u32 line = 0; line < line_count; line++) {
+				legacy_u32 length = line + 1 == line_count ? cases[name].length - copied : 38;
 				char expected[39];
 				memcpy(expected, filename + copied, length);
 				expected[length] = 0;
@@ -498,10 +498,10 @@ static void assert_fps(const char *expected, legacy_s16 color)
 	assert(bounds->right >= (legacy_s16)(8 + strlen(expected) * 8 + 1));
 }
 
-static void present_frames(unsigned frames, legacy_u32 ticks)
+static void present_frames(legacy_u32 frames, legacy_u32 ticks)
 {
 	legacy_u32 start = realtime_ticks;
-	for (unsigned frame = 1; frame <= frames; frame++) {
+	for (legacy_u32 frame = 1; frame <= frames; frame++) {
 		realtime_ticks = LEGACY_U32_WRAP_ADD(start, ticks * frame / frames);
 		frame_fps_record_presented();
 	}
@@ -523,7 +523,7 @@ static void test_fps_sampling(void)
 	present_frames(20, 101);
 	assert_fps("19 FPS", 4);
 	/* Rendering without presenting must not change the sample. */
-	for (unsigned frame = 0; frame < 50; frame++) {
+	for (legacy_u32 frame = 0; frame < 50; frame++) {
 		assert_fps("19 FPS", 4);
 	}
 	present_frames(1, 300);
@@ -638,9 +638,9 @@ static void test_fps_and_long_replay_filename(void)
 	assert(text_draws[1].y == 3);
 	assert(text_draws[1].x > text_draws[0].x + (legacy_s16)strlen(text_draws[0].text) * 8);
 	char reconstructed[REPLAY_FILENAME_SIZE];
-	unsigned copied = 0;
-	for (unsigned line = 1; line < text_draw_count - 1; line++) {
-		unsigned length = strlen(text_draws[line].text);
+	legacy_u32 copied = 0;
+	for (legacy_u32 line = 1; line < text_draw_count - 1; line++) {
+		legacy_u32 length = strlen(text_draws[line].text);
 		memcpy(reconstructed + copied, text_draws[line].text, length);
 		copied += length;
 	}
@@ -667,8 +667,8 @@ static void test_fps_on_cockpit_roof(void)
 			frame_fps_present_roof();
 			assert(memcmp(&drawing_sprite, original_context, sizeof(drawing_sprite)) == 0);
 			assert(memcmp(&screen_sprite, original_context + 1, sizeof(screen_sprite)) == 0);
-			assert(restored_roof_count == (unsigned)(roof_height > 3));
-			assert(copied_roof_count == (unsigned)(roof_height > 3 && page_flipping == 0));
+			assert(restored_roof_count == (legacy_u32)(roof_height > 3));
+			assert(copied_roof_count == (legacy_u32)(roof_height > 3 && page_flipping == 0));
 			if (roof_height > 3) {
 				assert(restored_roof_bounds.left == 8 && restored_roof_bounds.right == 81);
 				assert(restored_roof_bounds.top == 3);
@@ -682,8 +682,8 @@ static void test_fps_on_cockpit_roof(void)
 			dashboard_visible = 0;
 			assert_fps("0 FPS", 4);
 			frame_fps_present_roof();
-			assert(restored_roof_count == (unsigned)(roof_height > 3));
-			assert(copied_roof_count == (unsigned)(roof_height > 3 && page_flipping == 0));
+			assert(restored_roof_count == (legacy_u32)(roof_height > 3));
+			assert(copied_roof_count == (legacy_u32)(roof_height > 3 && page_flipping == 0));
 		}
 	}
 }

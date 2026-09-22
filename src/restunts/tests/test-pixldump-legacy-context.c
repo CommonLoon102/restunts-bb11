@@ -14,7 +14,7 @@
 
 static legacy_u8 test_psp[256];
 static legacy_u8 test_environment[TEST_ENVIRONMENT_SIZE];
-static int test_psp_available;
+static legacy_s32 test_psp_available;
 static legacy_u16 test_psp_segment;
 static legacy_u8 test_psp_reference;
 static struct SHAPE2D test_shapes[3];

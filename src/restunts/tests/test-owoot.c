@@ -9,11 +9,11 @@
 static legacy_s16 route_valid = 1;
 static legacy_s16 jump_valid = 0;
 static legacy_s16 road_wheel = -1;
-static unsigned road_queries;
-static unsigned expected_contact_mask;
-static unsigned route_queries;
-static unsigned jump_queries;
-static unsigned crashes;
+static legacy_u32 road_queries;
+static legacy_u32 expected_contact_mask;
+static legacy_u32 route_queries;
+static legacy_u32 jump_queries;
+static legacy_u32 crashes;
 
 legacy_s16 owoot_route_is_valid(struct CARSTATE *car, legacy_s16 allowed_jump)
 {
@@ -35,7 +35,7 @@ legacy_s16 track_road_overlaps_wheel(const struct VECTOR *vertices, legacy_u16 r
 {
 	(void)vertices;
 	assert(ring_count == 16);
-	assert((unsigned)road_contact == ((expected_contact_mask >> (road_queries % 4U)) & 1U));
+	assert((legacy_u32)road_contact == ((expected_contact_mask >> (road_queries % 4U)) & 1U));
 	return (legacy_s16)road_queries++ == road_wheel;
 }
 
@@ -116,10 +116,10 @@ static void load_test_wheels(void)
 {
 	legacy_u8 shape[SHAPE3D_HEADER_SIZE + 32 * SHAPE3D_VERTEX_SIZE] = {0};
 	shape[0] = 32;
-	for (unsigned wheel = 0; wheel < 4; wheel++) {
-		for (unsigned side = 0; side < 2; side++) {
-			for (unsigned point = 0; point < 3; point++) {
-				unsigned index = 8 + wheel * 6 + side * 3 + point;
+	for (legacy_u32 wheel = 0; wheel < 4; wheel++) {
+		for (legacy_u32 side = 0; side < 2; side++) {
+			for (legacy_u32 point = 0; point < 3; point++) {
+				legacy_u32 index = 8 + wheel * 6 + side * 3 + point;
 				legacy_u8 *vertex = shape + SHAPE3D_HEADER_SIZE + index * SHAPE3D_VERTEX_SIZE;
 				legacy_s16 x = (wheel % 2 ? 40 : -40) + (side ? 4 : -4);
 				legacy_s16 y = point == 1 ? 16 : 8;
@@ -136,7 +136,7 @@ static void load_test_wheels(void)
 static void bounds(const struct VECTOR *points, legacy_s16 *minimum, legacy_s16 *maximum)
 {
 	*minimum = *maximum = points[0].x;
-	for (unsigned i = 1; i < 32; i++) {
+	for (legacy_u32 i = 1; i < 32; i++) {
 		if (points[i].x < *minimum) {
 			*minimum = points[i].x;
 		}
@@ -164,7 +164,7 @@ static void test_model_wheel_projection(void)
 	wheel_controls[0][4].y = 0;
 	wheel_controls[0][5].z = 52;
 	owoot_wheel_footprint(car, 0, points);
-	for (unsigned i = 0; i < 16; i++) {
+	for (legacy_u32 i = 0; i < 16; i++) {
 		assert(points[i + 16].x - points[i].x == 8);
 		assert(points[i + 16].y == points[i].y);
 		assert(points[i + 16].z == points[i].z);

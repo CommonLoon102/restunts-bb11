@@ -15,8 +15,8 @@ legacy_s8 full_redraw_frames_remaining;
 static legacy_u8 framebuffer[64000];
 static legacy_u8 output_bytes[65535];
 static legacy_u8 palette_resource[SHAPE2D_HEADER_SIZE + 768];
-static unsigned output_length, render_count, present_count, close_count;
-static int render_stack_enabled;
+static legacy_u32 output_length, render_count, present_count, close_count;
+static legacy_s32 render_stack_enabled;
 static legacy_s16 expected_bmp_mode;
 
 void far *dos_memory_make_pointer(legacy_u16 segment, legacy_u16 offset)
@@ -56,7 +56,7 @@ void update_frame(legacy_s8 index, struct RECTANGLE *clip)
 {
 	assert(index == 0 && clip == &rect_windshield);
 	assert(render_stack_enabled);
-	assert(render_count == (unsigned)state.game_frame);
+	assert(render_count == (legacy_u32)state.game_frame);
 	assert(full_redraw_frames_remaining == (render_count == 0));
 	/* Each frame changes one pixel using its previous contents. Skipping an
 	 * intermediate render therefore changes the eventual hash and BMP too. */
@@ -77,7 +77,7 @@ void mouse_draw_opaque_check(void)
 void update_gamestate_with_legacy_si(legacy_s16 caller_si)
 {
 	assert(caller_si == pixldump_caller_si);
-	assert(render_count == (unsigned)state.game_frame + 1);
+	assert(render_count == (legacy_u32)state.game_frame + 1);
 	state.game_frame++;
 }
 
@@ -174,7 +174,7 @@ static void test_bmp_capture(void)
 		assert(output_bytes[0] == 'B' && output_bytes[1] == 'M');
 		/* The BMP stores the top scanline last. */
 		assert(output_bytes[1078 + 199 * 320] == (frame + 1) * (frame + 2) / 2);
-		assert(render_count == (unsigned)frame + 1 && present_count == render_count);
+		assert(render_count == (legacy_u32)frame + 1 && present_count == render_count);
 		assert(close_count == 1 && !render_stack_enabled);
 		assert(full_redraw_frames_remaining == 0);
 	}

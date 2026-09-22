@@ -10,10 +10,10 @@
 struct GAMESTATE state;
 legacy_s16 owoot_enabled;
 
-static unsigned open_count, write_count, close_count, remove_count;
-static unsigned output_length;
+static legacy_u32 open_count, write_count, close_count, remove_count;
+static legacy_u32 output_length;
 static legacy_u8 output_bytes[8];
-static int output_exists, create_fails, write_is_short, close_fails;
+static legacy_s32 output_exists, create_fails, write_is_short, close_fails;
 static const char *expected_name;
 
 legacy_u16 dos_file_open(const legacy_s8 *path, legacy_s16 create)
@@ -77,7 +77,7 @@ static void assert_result(const char *result)
 static void test_replay_extensions(void)
 {
 	static const char *names[] = {"R0000.rpl", "R0000.RPL", "R0000.RpL", "R0000"};
-	for (unsigned index = 0; index < sizeof(names) / sizeof(names[0]); index++) {
+	for (legacy_u32 index = 0; index < sizeof(names) / sizeof(names[0]); index++) {
 		legacy_s8 name[REPLDUMP_OUTPUT_NAME_SIZE];
 		strcpy(name, names[index]);
 		repldump_strip_replay_extension(name);
@@ -103,7 +103,7 @@ static void test_output_names(void)
 	assert(strcmp((const char *)output.name, "R0000.BNI") == 0);
 	memset(output.name, 0xcc, sizeof(output.name));
 	assert(!repldump_output_name(output.name, "123456789", ".owo"));
-	for (unsigned index = 0; index < sizeof(output.name); index++) {
+	for (legacy_u32 index = 0; index < sizeof(output.name); index++) {
 		assert((legacy_u8)output.name[index] == 0xcc);
 	}
 	assert(output.before == 0xcc && output.after == 0xcc);
@@ -131,7 +131,7 @@ static void test_completion_requires_finish(void)
 	static const legacy_s8 events[] = {CRASH_EVENT_NONE,  CRASH_EVENT_COLLISION,
 									   CRASH_EVENT_WATER, CRASH_EVENT_FINISH,
 									   CRASH_EVENT_EXIT,  CRASH_EVENT_IMMEDIATE_STOP};
-	for (unsigned index = 0; index < sizeof(events) / sizeof(events[0]); index++) {
+	for (legacy_u32 index = 0; index < sizeof(events) / sizeof(events[0]); index++) {
 		reset_output("R0000.owo");
 		state.playerstate.car_crashBmpFlag = events[index];
 		assert(repldump_complete_owoot_result("R0000"));

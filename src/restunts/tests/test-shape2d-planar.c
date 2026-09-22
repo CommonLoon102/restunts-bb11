@@ -10,11 +10,11 @@
 static legacy_u8 planar_enabled;
 static legacy_u8 planar_pixels[65536];
 static legacy_u8 expected_pixels[65536];
-static unsigned raster_spans[4];
-static unsigned fill_spans;
-static unsigned pixel_writes;
+static legacy_u32 raster_spans[4];
+static legacy_u32 fill_spans;
+static legacy_u32 pixel_writes;
 static legacy_u8 last_read_plane, last_write_plane;
-static unsigned read_plane_changes, write_plane_changes;
+static legacy_u32 read_plane_changes, write_plane_changes;
 
 legacy_u8 video_pages_is_target(const void far *bitmap)
 {
@@ -98,12 +98,12 @@ static void reset_planar_bitmap(void)
 	memset(planar_pixels, 0x5a, sizeof(planar_pixels));
 }
 
-static void draw_rle_case(unsigned scenario)
+static void draw_rle_case(legacy_u32 scenario)
 {
 	static const legacy_u8 stream[] = {252, 0, 1, 255, 63, 5, 72, 253, 9, 0, 11, 0};
 	static const legacy_s16 positions[] = {-32768, -6, -1, 0, 1, 60, 64, 32767};
 	static const legacy_u16 widths[] = {0, 1, 6, 0x8000};
-	unsigned unclipped = scenario / 128;
+	legacy_u32 unclipped = scenario / 128;
 	scenario %= 128;
 	reset_planar_bitmap();
 	struct SHAPE2D *shape = make_shape(widths[scenario % 4], 6, scenario & 1 ? 0xfff0 : 16);
@@ -127,7 +127,7 @@ static void draw_rle_case(unsigned scenario)
 	}
 }
 
-static void draw_rle_mask_case(unsigned scenario)
+static void draw_rle_mask_case(legacy_u32 scenario)
 {
 	static const legacy_u8 values[] = {0, 255, 0x33, 0x80};
 	static const legacy_u16 widths[] = {1, 3, 7, 64, 127};
@@ -140,7 +140,7 @@ static void draw_rle_mask_case(unsigned scenario)
 	struct SHAPE2D *shape = make_shape(widths[(scenario / 4) % 5], 128, scenario & 1 ? 0xffe0 : 16);
 	if (literal != 0) {
 		stream[0] = 128;
-		for (unsigned index = 0; index < 128; index++) {
+		for (legacy_u32 index = 0; index < 128; index++) {
 			stream[index + 1] = (legacy_u8)(value + index * 13);
 		}
 		stream[129] = 0;
@@ -153,7 +153,7 @@ static void draw_rle_mask_case(unsigned scenario)
 	}
 	shape->position_x = positions[(scenario / 20) % 5];
 	shape->position_y = 2;
-	unsigned previous_writes = pixel_writes;
+	legacy_u32 previous_writes = pixel_writes;
 	if (use_or != 0) {
 		shape2d_rle_or_far_pointer(shape_offset, TEST_SOURCE_SEGMENT);
 	} else {
@@ -168,7 +168,7 @@ static void test_repeated_mask_plane_switches(void)
 {
 	static const legacy_u8 stream[] = {127, 0x33, 0};
 	planar_enabled = 1;
-	for (unsigned use_or = 0; use_or < 2; use_or++) {
+	for (legacy_u32 use_or = 0; use_or < 2; use_or++) {
 		reset_planar_bitmap();
 		struct SHAPE2D *shape = make_shape(127, 1, 16);
 		write_rle(shape_offset, stream, sizeof(stream));
@@ -183,7 +183,7 @@ static void test_repeated_mask_plane_switches(void)
 	}
 }
 
-static void draw_raw_case(unsigned scenario)
+static void draw_raw_case(legacy_u32 scenario)
 {
 	static const legacy_s16 positions[] = {-32768, -6, -1, 0, 1, 59, 64, 32767};
 	static const legacy_u16 widths[] = {0, 1, 6, 64, 67};
@@ -207,7 +207,7 @@ static void draw_raw_case(unsigned scenario)
 	}
 }
 
-static void draw_clear_case(unsigned scenario)
+static void draw_clear_case(legacy_u32 scenario)
 {
 	reset_planar_bitmap();
 	sprite_set_target_clip_bounds(scenario % 5, 60 - scenario % 7, scenario % 9,
@@ -215,17 +215,17 @@ static void draw_clear_case(unsigned scenario)
 	sprite_clear_target((legacy_u8)(scenario * 17));
 }
 
-static void compare_targets(unsigned cases, void (*draw_case)(unsigned))
+static void compare_targets(legacy_u32 cases, void (*draw_case)(legacy_u32))
 {
 	legacy_u8 *bitmap = dos_memory_make_pointer(TEST_BITMAP_SEGMENT, 0);
-	for (unsigned scenario = 0; scenario < cases; scenario++) {
+	for (legacy_u32 scenario = 0; scenario < cases; scenario++) {
 		planar_enabled = 0;
 		draw_case(scenario);
 		memmove(expected_pixels, bitmap, sizeof(expected_pixels));
 		planar_enabled = 1;
 		draw_case(scenario);
 		assert(memcmp(expected_pixels, planar_pixels, sizeof(expected_pixels)) == 0);
-		for (unsigned offset = 0; offset < sizeof(expected_pixels); offset++) {
+		for (legacy_u32 offset = 0; offset < sizeof(expected_pixels); offset++) {
 			assert(bitmap[offset] == 0x5a);
 		}
 	}
@@ -238,12 +238,12 @@ int main(void)
 	compare_targets(256, draw_rle_case);
 	compare_targets(400, draw_rle_mask_case);
 	test_repeated_mask_plane_switches();
-	for (unsigned index = 0; index < 256; index++) {
+	for (legacy_u32 index = 0; index < 256; index++) {
 		sprite_palette_map[index] = (legacy_u8)(index % 3 == 0 ? 255 : index + 17);
 	}
 	compare_targets(1280, draw_raw_case);
 	compare_targets(100, draw_clear_case);
-	for (unsigned operation = 0; operation < 4; operation++) {
+	for (legacy_u32 operation = 0; operation < 4; operation++) {
 		assert(raster_spans[operation] != 0);
 	}
 	assert(fill_spans != 0);

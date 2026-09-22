@@ -17,7 +17,7 @@ static void reset_editor(void)
 	track_element_map = element_tiles;
 	track_terrain_map = terrain_tiles;
 	progress_box_shape = palette;
-	for (unsigned row = 0; row < 30; row++) {
+	for (legacy_u32 row = 0; row < 30; row++) {
 		trackrows[row] = (legacy_s16)(row * 30);
 		terrainrows[row] = (legacy_s16)((29 - row) * 30);
 	}
@@ -34,8 +34,8 @@ static void test_multitile_placement(void)
 {
 	struct TRACKOBJECT saved = trkObjectList[1];
 
-	unsigned index = 10 * 30 + 10;
-	for (unsigned flags = 0; flags < 4; flags++) {
+	legacy_u32 index = 10 * 30 + 10;
+	for (legacy_u32 flags = 0; flags < 4; flags++) {
 		reset_editor();
 		trkObjectList[1].ss_multiTileFlag = (legacy_s8)flags;
 		track_editor_place_element(&editor);
@@ -53,9 +53,9 @@ static void test_invalid_edge_placement(void)
 {
 	struct TRACKOBJECT saved = trkObjectList[1];
 
-	for (unsigned flags = 1; flags < 4; flags++) {
-		for (unsigned row = 28; row <= 29; row++) {
-			for (unsigned column = 28; column <= 29; column++) {
+	for (legacy_u32 flags = 1; flags < 4; flags++) {
+		for (legacy_u32 row = 28; row <= 29; row++) {
+			for (legacy_u32 column = 28; column <= 29; column++) {
 				reset_editor();
 				trkObjectList[1].ss_multiTileFlag = (legacy_s8)flags;
 				editor.selection_row[0] = (legacy_u8)row;

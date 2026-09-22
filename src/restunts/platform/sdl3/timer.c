@@ -6,15 +6,15 @@
 #define TIMER_TICK_MS 10U
 
 static void (*callbacks[TIMER_CALLBACK_CAPACITY])(void);
-static Uint64 last_tick;
+static legacy_u64 last_tick;
 static legacy_u32 game_counter;
 static legacy_u32 realtime_counter;
 static legacy_u32 last_counter;
 static legacy_u32 slow_counter;
-static unsigned int slow_divider;
-static bool initialized;
-static bool suspended;
-static bool dispatching;
+static legacy_u32 slow_divider;
+static legacy_u8 initialized;
+static legacy_u8 suspended;
+static legacy_u8 dispatching;
 
 void sdl3_timer_pump(void)
 {
@@ -22,7 +22,7 @@ void sdl3_timer_pump(void)
 		return;
 	}
 	dispatching = true;
-	Uint64 now = SDL_GetTicks();
+	legacy_u64 now = SDL_GetTicks();
 	while (now - last_tick >= TIMER_TICK_MS) {
 		last_tick += TIMER_TICK_MS;
 		realtime_counter++;
@@ -35,7 +35,7 @@ void sdl3_timer_pump(void)
 			/* Snapshot: callbacks can unregister themselves during dispatch. */
 			void (*pending[TIMER_CALLBACK_CAPACITY])(void);
 			memcpy(pending, callbacks, sizeof(pending));
-			for (unsigned int index = 0; index < TIMER_CALLBACK_CAPACITY; index++) {
+			for (legacy_u32 index = 0; index < TIMER_CALLBACK_CAPACITY; index++) {
 				if (pending[index] != NULL) {
 					pending[index]();
 				}
@@ -48,7 +48,7 @@ void sdl3_timer_pump(void)
 
 legacy_s16 dos_timer_register_callback(void (*callback)(void))
 {
-	for (unsigned int index = 0; index < TIMER_CALLBACK_CAPACITY; index++) {
+	for (legacy_u32 index = 0; index < TIMER_CALLBACK_CAPACITY; index++) {
 		if (callbacks[index] == NULL) {
 			callbacks[index] = callback;
 			return DOS_TIMER_CALLBACK_REGISTRATION_SUCCEEDED;
@@ -59,7 +59,7 @@ legacy_s16 dos_timer_register_callback(void (*callback)(void))
 
 void dos_timer_unregister_callback(void (*callback)(void))
 {
-	for (unsigned int index = 0; index < TIMER_CALLBACK_CAPACITY; index++) {
+	for (legacy_u32 index = 0; index < TIMER_CALLBACK_CAPACITY; index++) {
 		if (callbacks[index] == callback) {
 			memmove(callbacks + index, callbacks + index + 1U,
 					(TIMER_CALLBACK_CAPACITY - index - 1U) * sizeof(callbacks[0]));

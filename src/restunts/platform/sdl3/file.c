@@ -15,29 +15,29 @@
 enum FILE_IO_DIRECTION { FILE_IO_NONE, FILE_IO_READ, FILE_IO_WRITE };
 
 static FILE *files[FILE_HANDLE_COUNT];
-static enum FILE_IO_DIRECTION file_directions[FILE_HANDLE_COUNT];
+static legacy_u8 file_directions[FILE_HANDLE_COUNT];
 static legacy_s16 file_error;
 static char **matches;
 static size_t match_count;
 static size_t match_index;
 
-static unsigned char lower_ascii(unsigned char value)
+static legacy_u8 lower_ascii(legacy_u8 value)
 {
 	return value >= 'A' && value <= 'Z' ? value + ('a' - 'A') : value;
 }
 
-static int compare_names(const char *left, const char *right)
+static legacy_s32 compare_names(const char *left, const char *right)
 {
 	while (*left != 0 && lower_ascii(*left) == lower_ascii(*right)) {
 		left++;
 		right++;
 	}
-	return (int)lower_ascii(*left) - (int)lower_ascii(*right);
+	return (legacy_s32)lower_ascii(*left) - (legacy_s32)lower_ascii(*right);
 }
 
 /* Resolve each component case-insensitively, retaining an exact match when
  * available. Original resources and saved configurations mix DOS casing. */
-static int resolve_path(const char *source, char result[FILE_PATH_SIZE])
+static legacy_s32 resolve_path(const char *source, char result[FILE_PATH_SIZE])
 {
 	char path[FILE_PATH_SIZE];
 	size_t length = strlen(source);
@@ -76,7 +76,7 @@ static int resolve_path(const char *source, char result[FILE_PATH_SIZE])
 		DIR *directory = opendir(result[0] != 0 ? result : ".");
 		if (directory != NULL) {
 			struct dirent *entry;
-			int found = 0;
+			legacy_s32 found = 0;
 			while ((entry = readdir(directory)) != NULL) {
 				if (compare_names(component, entry->d_name) == 0 &&
 					(!found || strcmp(entry->d_name, selected) < 0 ||
@@ -91,7 +91,8 @@ static int resolve_path(const char *source, char result[FILE_PATH_SIZE])
 			closedir(directory);
 		}
 		size_t used = strlen(result);
-		int needs_separator = used != 0 && result[used - 1] != '/' && result[used - 1] != ':';
+		legacy_s32 needs_separator =
+			used != 0 && result[used - 1] != '/' && result[used - 1] != ':';
 		if (used + needs_separator + strlen(selected) >= FILE_PATH_SIZE) {
 			file_error = 1;
 			return 0;
@@ -119,7 +120,7 @@ static FILE *get_file(legacy_u16 handle)
 
 /* DOS handles allow reads and writes in any order. C update streams require a
  * positioning operation between them, even when the logical offset is unchanged. */
-static FILE *get_file_for_io(legacy_u16 handle, enum FILE_IO_DIRECTION direction)
+static FILE *get_file_for_io(legacy_u16 handle, legacy_u8 direction)
 {
 	FILE *file = get_file(handle);
 	if (file == NULL) {
@@ -198,7 +199,7 @@ legacy_u16 dos_file_write(legacy_u16 handle, const void *source, legacy_u16 leng
 legacy_s16 dos_file_seek(legacy_u16 handle, legacy_s32 offset, legacy_s16 origin)
 {
 	FILE *file = get_file(handle);
-	int origins[] = {SEEK_SET, SEEK_CUR, SEEK_END};
+	legacy_s32 origins[] = {SEEK_SET, SEEK_CUR, SEEK_END};
 	if (file == NULL || origin < 0 || origin > 2 || fseek(file, offset, origins[origin]) != 0) {
 		file_error = 1;
 		return -1;
@@ -210,6 +211,7 @@ legacy_s16 dos_file_seek(legacy_u16 handle, legacy_s32 offset, legacy_s16 origin
 legacy_s32 dos_file_tell(legacy_u16 handle)
 {
 	FILE *file = get_file(handle);
+	/* Preserve the full ftell result until its legacy-range check. */
 	long position = file != NULL ? ftell(file) : -1;
 	if (position < 0 || position > 2147483647L) {
 		file_error = 1;
@@ -235,7 +237,7 @@ legacy_s16 dos_file_remove(const legacy_s8 *path)
 	return 0;
 }
 
-static int wildcard_matches(const char *pattern, const char *name)
+static legacy_s32 wildcard_matches(const char *pattern, const char *name)
 {
 	const char *star = NULL;
 	const char *retry = NULL;
@@ -262,11 +264,12 @@ static int wildcard_matches(const char *pattern, const char *name)
 	return *pattern == 0;
 }
 
+/* qsort requires a comparator returning the host C int type. */
 static int sort_names(const void *left, const void *right)
 {
 	const char *a = *(const char *const *)left;
 	const char *b = *(const char *const *)right;
-	int result = compare_names(a, b);
+	legacy_s32 result = compare_names(a, b);
 	return result != 0 ? result : strcmp(a, b);
 }
 
@@ -308,7 +311,7 @@ const legacy_s8 *dos_file_find_first(const legacy_s8 *query)
 		char full_path[FILE_PATH_SIZE];
 		struct stat info;
 		if (snprintf(full_path, sizeof(full_path), "%s/%s", directory_name, entry->d_name) >=
-				(int)sizeof(full_path) ||
+				(legacy_s32)sizeof(full_path) ||
 			stat(full_path, &info) != 0 || !S_ISREG(info.st_mode)) {
 			continue;
 		}

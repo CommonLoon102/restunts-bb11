@@ -40,7 +40,7 @@ static void setup_surface(struct TEST_SURFACE *surface, legacy_u16 segment, lega
 	surface->sprite.sprite_pitch = TEST_WIDTH;
 	surface->sprite.sprite_buffer_width = TEST_WIDTH;
 	surface->sprite.sprite_raster_right = TEST_WIDTH;
-	for (unsigned int y = 0; y < TEST_HEIGHT; y++) {
+	for (legacy_u32 y = 0; y < TEST_HEIGHT; y++) {
 		legacy_u16 offset = first_pixel + y * TEST_WIDTH;
 		LEGACY_WRITE_U16_LE(surface->lines + y * 2U, offset);
 	}
@@ -50,23 +50,21 @@ static void setup_surface(struct TEST_SURFACE *surface, legacy_u16 segment, lega
 	}
 }
 
-static legacy_u16 pixel_offset(const struct TEST_SURFACE *surface, unsigned int x, unsigned int y)
+static legacy_u16 pixel_offset(const struct TEST_SURFACE *surface, legacy_u32 x, legacy_u32 y)
 {
 	return surface->first_pixel + y * TEST_WIDTH + x;
 }
 
-static void write_pixel(struct TEST_SURFACE *surface, unsigned int x, unsigned int y,
-						legacy_u8 color)
+static void write_pixel(struct TEST_SURFACE *surface, legacy_u32 x, legacy_u32 y, legacy_u8 color)
 {
 	legacy_u16 offset = pixel_offset(surface, x, y);
 	hires_write(surface->base, offset, color);
 	surface->base[offset] = color;
 }
 
-static void raster_pixel(struct TEST_SURFACE *destination, unsigned int destination_x,
-						 unsigned int destination_y, struct TEST_SURFACE *source,
-						 unsigned int source_x, unsigned int source_y, legacy_s16 operation,
-						 const legacy_u8 *palette)
+static void raster_pixel(struct TEST_SURFACE *destination, legacy_u32 destination_x,
+						 legacy_u32 destination_y, struct TEST_SURFACE *source, legacy_u32 source_x,
+						 legacy_u32 source_y, legacy_s16 operation, const legacy_u8 *palette)
 {
 	legacy_u16 destination_offset = pixel_offset(destination, destination_x, destination_y);
 	legacy_u16 source_offset = pixel_offset(source, source_x, source_y);
@@ -88,8 +86,8 @@ static void raster_pixel(struct TEST_SURFACE *destination, unsigned int destinat
 
 static const legacy_u8 *get_framebuffer(const struct TEST_SURFACE *screen)
 {
-	int width = 0;
-	int height = 0;
+	legacy_s32 width = 0;
+	legacy_s32 height = 0;
 	const legacy_u8 *pixels = hires_framebuffer(screen->base, &width, &height);
 	assert(pixels != NULL);
 	assert(width == TEST_HIRES_WIDTH);
@@ -97,26 +95,26 @@ static const legacy_u8 *get_framebuffer(const struct TEST_SURFACE *screen)
 	return pixels;
 }
 
-static void assert_block(const struct TEST_SURFACE *screen, unsigned int x, unsigned int y,
+static void assert_block(const struct TEST_SURFACE *screen, legacy_u32 x, legacy_u32 y,
 						 legacy_u8 color)
 {
 	const legacy_u8 *pixels = get_framebuffer(screen);
-	for (unsigned int row = 0; row < TEST_SCALE; row++) {
-		for (unsigned int column = 0; column < TEST_SCALE; column++) {
+	for (legacy_u32 row = 0; row < TEST_SCALE; row++) {
+		for (legacy_u32 column = 0; column < TEST_SCALE; column++) {
 			assert(pixels[(y * TEST_SCALE + row) * TEST_HIRES_WIDTH + x * TEST_SCALE + column] ==
 				   color);
 		}
 	}
 }
 
-static void draw_detail(struct TEST_SURFACE *surface, unsigned int x, unsigned int y)
+static void draw_detail(struct TEST_SURFACE *surface, legacy_u32 x, legacy_u32 y)
 {
 	hires_begin(&surface->sprite);
 	/* Ordinary legacy rendering writes a fallback pixel while the new renderer
 	 * retains sixteen individually rasterized samples for presentation. */
 	write_pixel(surface, x, y, 3);
-	for (unsigned int row = 0; row < TEST_SCALE; row++) {
-		for (unsigned int column = 0; column < TEST_SCALE; column++) {
+	for (legacy_u32 row = 0; row < TEST_SCALE; row++) {
+		for (legacy_u32 column = 0; column < TEST_SCALE; column++) {
 			hires_pixel(x * TEST_SCALE + column, y * TEST_SCALE + row,
 						(legacy_u8)(16U + row * TEST_SCALE + column));
 		}
@@ -124,12 +122,12 @@ static void draw_detail(struct TEST_SURFACE *surface, unsigned int x, unsigned i
 	hires_end();
 }
 
-static void assert_detail(const struct TEST_SURFACE *screen, unsigned int x, unsigned int y,
+static void assert_detail(const struct TEST_SURFACE *screen, legacy_u32 x, legacy_u32 y,
 						  legacy_u8 mask, legacy_u8 addition)
 {
 	const legacy_u8 *pixels = get_framebuffer(screen);
-	for (unsigned int row = 0; row < TEST_SCALE; row++) {
-		for (unsigned int column = 0; column < TEST_SCALE; column++) {
+	for (legacy_u32 row = 0; row < TEST_SCALE; row++) {
+		for (legacy_u32 column = 0; column < TEST_SCALE; column++) {
 			legacy_u8 expected = ((16U + row * TEST_SCALE + column) & mask) | addition;
 			assert(pixels[(y * TEST_SCALE + row) * TEST_HIRES_WIDTH + x * TEST_SCALE + column] ==
 				   expected);
@@ -156,7 +154,7 @@ static void test_detail_and_overlays(struct TEST_SURFACE *screen, struct TEST_SU
 	assert_detail(screen, 30, 40, 15, 128);
 
 	legacy_u8 palette[256];
-	for (unsigned int index = 0; index < sizeof(palette); index++) {
+	for (legacy_u32 index = 0; index < sizeof(palette); index++) {
 		palette[index] = (legacy_u8)index;
 	}
 	palette[128] = 255;
@@ -179,14 +177,14 @@ static void test_saved_background(struct TEST_SURFACE *screen, struct TEST_SURFA
 	/* Transparent palette mappings apply to each detailed sample, including
 	 * copies whose ordinary 320x200 fallback uses a different palette index. */
 	legacy_u8 palette[256];
-	for (unsigned int index = 0; index < sizeof(palette); index++) {
+	for (legacy_u32 index = 0; index < sizeof(palette); index++) {
 		palette[index] = index % 2U == 0 ? 255U : (legacy_u8)index;
 	}
 	write_pixel(screen, 30, 40, 7);
 	raster_pixel(screen, 30, 40, window, 15, 25, SHAPE2D_RASTER_MAP, palette);
 	const legacy_u8 *pixels = get_framebuffer(screen);
-	for (unsigned int row = 0; row < TEST_SCALE; row++) {
-		for (unsigned int column = 0; column < TEST_SCALE; column++) {
+	for (legacy_u32 row = 0; row < TEST_SCALE; row++) {
+		for (legacy_u32 column = 0; column < TEST_SCALE; column++) {
 			legacy_u8 expected = column % 2U == 0 ? 7U : 16U + row * TEST_SCALE + column;
 			assert(
 				pixels[(40U * TEST_SCALE + row) * TEST_HIRES_WIDTH + 30U * TEST_SCALE + column] ==
@@ -259,8 +257,8 @@ static void test_lifetime(struct TEST_SURFACE *screen, struct TEST_SURFACE *wind
 	assert_detail(screen, 30, 40, 255, 0);
 	hires_set_enabled(0);
 	assert(!hires_enabled());
-	int width = 0;
-	int height = 0;
+	legacy_s32 width = 0;
+	legacy_s32 height = 0;
 	const legacy_u8 *pixels = hires_framebuffer(screen->base, &width, &height);
 	assert(pixels == screen->base);
 	assert(width == TEST_WIDTH);
@@ -270,8 +268,8 @@ static void test_lifetime(struct TEST_SURFACE *screen, struct TEST_SURFACE *wind
 	assert_block(screen, 30, 40, 3);
 }
 
-static void depth_pixel(int x, int y, double inverse_z, legacy_u16 family, int attached,
-						legacy_u8 color)
+static void depth_pixel(legacy_s32 x, legacy_s32 y, legacy_f64 inverse_z, legacy_u16 family,
+						legacy_s32 attached, legacy_u8 color)
 {
 	if (hires_depth_test(x, y, inverse_z, family, attached)) {
 		hires_pixel(x, y, color);
@@ -280,19 +278,19 @@ static void depth_pixel(int x, int y, double inverse_z, legacy_u16 family, int a
 
 static void test_crossing_depths(struct TEST_SURFACE *screen)
 {
-	for (unsigned int reverse = 0; reverse < 2; reverse++) {
+	for (legacy_u32 reverse = 0; reverse < 2; reverse++) {
 		assert(hires_begin(&screen->sprite));
 		hires_depth_begin(100, 121, 100, 101);
-		for (unsigned int pass = 0; pass < 2; pass++) {
-			unsigned int surface = pass ^ reverse;
-			for (int x = 100; x < 121; x++) {
-				double depth = (surface == 0 ? x - 90 : 130 - x) / 1000.0;
+		for (legacy_u32 pass = 0; pass < 2; pass++) {
+			legacy_u32 surface = pass ^ reverse;
+			for (legacy_s32 x = 100; x < 121; x++) {
+				legacy_f64 depth = (surface == 0 ? x - 90 : 130 - x) / 1000.0;
 				depth_pixel(x, 100, depth, (legacy_u16)(surface + 1), 0, (legacy_u8)(surface + 40));
 			}
 		}
 		hires_end();
 		const legacy_u8 *pixels = get_framebuffer(screen);
-		for (int x = 100; x < 121; x++) {
+		for (legacy_s32 x = 100; x < 121; x++) {
 			if (x != 110) {
 				assert(pixels[100 * TEST_HIRES_WIDTH + x] == (x < 110 ? 41 : 40));
 			}
@@ -390,7 +388,7 @@ int main(void)
 	assert(!hires_enabled());
 	hires_set_enabled(1);
 	assert(hires_enabled());
-	unsigned long generation = hires_generation();
+	legacy_u32 generation = hires_generation();
 	test_detail_and_overlays(&screen, &window);
 	assert(hires_generation() != generation);
 	test_saved_background(&screen, &window);

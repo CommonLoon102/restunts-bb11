@@ -47,19 +47,19 @@ static void reset_route_points(void)
 	flags[0] = 0;
 	columns[0] = rows[0] = 5;
 	trkObjectList[1].ss_trkObjInfoPtr = route_info;
-	for (unsigned i = 0; i < 2; i++) {
+	for (legacy_u32 i = 0; i < 2; i++) {
 		route_info[i].route_vectors = forward_vectors;
 		route_info[i].route_point_count = 3;
 		route_info[i].opponent_speed_code = 3;
 	}
-	for (unsigned i = 0; i < 30; i++) {
+	for (legacy_u32 i = 0; i < 30; i++) {
 		terrainrows[i] = i * 30;
 		track_row_positions[i] = track_column_positions[i] = i * 1024;
 		track_row_centers[i] = track_column_centers[i] = i * 1024 + 512;
 	}
 	elapsed_time2 = 30720;
 	legacy_closed_hihat_offset = 0;
-	for (unsigned i = 0; i < 256; i++) {
+	for (legacy_u32 i = 0; i < 256; i++) {
 		forward_vectors[i].x = LEGACY_S16_FROM_BITS((legacy_u16)(i * 997));
 		forward_vectors[i].y = i % 3 == 0 ? -1 : (legacy_s16)(i * 13);
 		forward_vectors[i].z = LEGACY_S16_FROM_BITS((legacy_u16)(i * 619));
@@ -67,7 +67,7 @@ static void reset_route_points(void)
 		reverse_vectors[i].y = forward_vectors[i].y;
 		reverse_vectors[i].z = forward_vectors[i].x;
 	}
-	for (unsigned i = 0; i < 16; i++) {
+	for (legacy_u32 i = 0; i < 16; i++) {
 		oppnentSped[i] = i * 11;
 	}
 }
@@ -133,7 +133,7 @@ static legacy_u32 route_point_fingerprint(void)
 	static const legacy_u8 counts[] = {0, 1, 3, 127, 128, 255};
 	struct VECTOR result[4];
 	legacy_s8 speed;
-	for (unsigned sample = 0; sample < 240; sample++) {
+	for (legacy_u32 sample = 0; sample < 240; sample++) {
 		flags[0] = (sample & 1) | ((sample & 2) ? 16 : 0);
 		route_info[sample & 1].route_orientation = orientations[sample % 5];
 		route_info[sample & 1].route_point_count = (legacy_s8)counts[sample % 6];
@@ -142,14 +142,14 @@ static legacy_u32 route_point_fingerprint(void)
 		trkObjectList[1].ss_multiTileFlag = (sample >> 3) & 3;
 		trkObjectList[1].ss_surfaceType = sample & 32 ? -1 : 2;
 		terrain[terrainrows[5] + 5] = sample & 64 ? 6 : 0;
-		for (unsigned route = 0; route < 256; route++) {
+		for (legacy_u32 route = 0; route < 256; route++) {
 			memset(result, 0x5a, sizeof(result));
 			speed = 99;
 			legacy_s16 last = get_track_route_point(0, result, route, route & 1 ? &speed : 0);
 			hash = (hash ^ (legacy_u16)last) * 16777619UL;
 			hash = (hash ^ (legacy_u8)speed) * 16777619UL;
 			const legacy_u8 *bytes = (const legacy_u8 *)result;
-			for (unsigned i = 0; i < sizeof(result); i++) {
+			for (legacy_u32 i = 0; i < sizeof(result); i++) {
 				hash = (hash ^ bytes[i]) * 16777619UL;
 			}
 		}
@@ -160,16 +160,16 @@ static legacy_u32 route_point_fingerprint(void)
 static legacy_u32 steering_fingerprint(void)
 {
 	steerWhlRespTable_ptr = steering;
-	for (unsigned i = 0; i < 256; i++) {
+	for (legacy_u32 i = 0; i < 256; i++) {
 		steering[i] = i % 4 == 0 ? 0 : LEGACY_S8_FROM_BITS((legacy_u8)(i * 17));
 	}
 	legacy_u32 hash = 2166136261UL;
 	static const legacy_s16 angles[] = {-32768, -241, -240, -8,	 -2,  -1,	0,
 										1,		2,	  8,	240, 241, 32767};
-	for (unsigned speed = 0; speed < 64; speed++) {
-		for (unsigned angle = 0; angle < sizeof(angles) / sizeof(angles[0]); angle++) {
-			for (unsigned input = 0; input < 4; input++) {
-				for (unsigned rate = 0; rate < 2; rate++) {
+	for (legacy_u32 speed = 0; speed < 64; speed++) {
+		for (legacy_u32 angle = 0; angle < sizeof(angles) / sizeof(angles[0]); angle++) {
+			for (legacy_u32 input = 0; input < 4; input++) {
+				for (legacy_u32 rate = 0; rate < 2; rate++) {
 					state.playerstate.car_steeringAngle = angles[angle];
 					state.playerstate.car_actual_speed = speed * 1024;
 					framespersec = rate ? 10 : 20;
@@ -189,7 +189,7 @@ int main(void)
 	legacy_u32 route_hash = route_point_fingerprint();
 	legacy_u32 steering_hash = steering_fingerprint();
 #ifdef PHYSICS_RECORD_BASELINE
-	fprintf(stdout, "%08lx %08lx\n", (unsigned long)route_hash, (unsigned long)steering_hash);
+	fprintf(stdout, "%08" LEGACY_PRIx32 " %08" LEGACY_PRIx32 "\n", route_hash, steering_hash);
 #else
 	/* Fingerprints captured from the pre-refactor implementation. */
 	assert(route_hash == 0xdc6e8189UL);

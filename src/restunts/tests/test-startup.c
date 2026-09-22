@@ -15,15 +15,15 @@ void ghost_clear(void)
 {
 }
 
-static uint32_t trace_hash = UINT32_C(2166136261);
-static unsigned timer_calls, status_calls;
+static legacy_u32 trace_hash = UINT32_C(2166136261);
+static legacy_u32 timer_calls, status_calls;
 static legacy_u32 geometry_ticks, clear_ticks, partial_ticks;
 static legacy_s16 audio_failure;
 static jmp_buf exit_jump;
 
 static void trace(legacy_u32 value)
 {
-	for (unsigned i = 0; i < 4; i++) {
+	for (legacy_u32 i = 0; i < 4; i++) {
 		trace_hash = (trace_hash ^ (value & 255U)) * UINT32_C(16777619);
 		value >>= 8;
 	}
@@ -49,7 +49,7 @@ void kb_reg_callback(legacy_s16 code, void(far *callback)(void))
 								 toggle_effects_with_dialog};
 	trace(4);
 	trace(code);
-	for (unsigned i = 0; i < 7; i++) {
+	for (legacy_u32 i = 0; i < 7; i++) {
 		if (callback == callbacks[i]) {
 			trace(i);
 			return;
@@ -211,8 +211,8 @@ legacy_s16 get_kevinrandom(void)
 	trace(26);
 	return 21;
 }
-static unsigned menu_scenario, menu_calls, intro_calls, game_calls, score_calls;
-static int expected_initial_intro_calls = -1;
+static legacy_u32 menu_scenario, menu_calls, intro_calls, game_calls, score_calls;
+static legacy_s32 expected_initial_intro_calls = -1;
 static legacy_u8 menu_track_data[REPLAY_TRACK_SIZE];
 static legacy_s8 backup_memory[REPLAY_TRACK_SIZE + 162];
 static legacy_s8 menu_resource[64];
@@ -359,12 +359,12 @@ void file_load_audiores(const legacy_s8 *song, const legacy_s8 *voice, const leg
 }
 legacy_s8 run_menu(void)
 {
-	unsigned call = menu_calls++;
+	legacy_u32 call = menu_calls++;
 	trace(52);
 	assert(menu_calls < 10);
 	if (expected_initial_intro_calls >= 0) {
 		assert(menu_calls == 1);
-		assert(intro_calls == (unsigned)expected_initial_intro_calls);
+		assert(intro_calls == (legacy_u32)expected_initial_intro_calls);
 		assert(is_audioloaded != 0);
 		return -1;
 	}
@@ -468,7 +468,7 @@ static void test_menu_lifecycle(void)
 	for (menu_scenario = 0; menu_scenario < 16; menu_scenario++) {
 		trace(1000 + menu_scenario);
 		memset(&gameconfig, 0, sizeof(gameconfig));
-		for (unsigned i = 0; i < REPLAY_TRACK_SIZE; i++) {
+		for (legacy_u32 i = 0; i < REPLAY_TRACK_SIZE; i++) {
 			menu_track_data[i] = (legacy_u8)i;
 		}
 		track_element_map = menu_track_data;
@@ -490,7 +490,7 @@ static void test_menu_lifecycle(void)
 		trace(intro_calls);
 		trace(game_calls);
 		trace(score_calls);
-		for (unsigned i = 0; i < REPLAY_TRACK_SIZE; i++) {
+		for (legacy_u32 i = 0; i < REPLAY_TRACK_SIZE; i++) {
 			trace(menu_track_data[i]);
 		}
 		trace(track_directory[0]);
@@ -513,7 +513,7 @@ static void test_startup_intro_option(void)
 		{(legacy_s8 *)"game"},
 	};
 	static const legacy_s16 counts[] = {2, 4, 4, 3, 2, 2, 2, 1};
-	for (unsigned scenario = 0; scenario < sizeof(counts) / sizeof(counts[0]); scenario++) {
+	for (legacy_u32 scenario = 0; scenario < sizeof(counts) / sizeof(counts[0]); scenario++) {
 		expected_initial_intro_calls = scenario < 4 ? 0 : 1;
 		menu_calls = intro_calls = game_calls = score_calls = 0;
 		timer_calls = status_calls = 0;
@@ -525,7 +525,7 @@ static void test_startup_intro_option(void)
 		partial_ticks = 16;
 		assert(run_main_menu_loop(counts[scenario], arguments[scenario]) == 1);
 		assert(menu_calls == 1);
-		assert(intro_calls == (unsigned)expected_initial_intro_calls + 1);
+		assert(intro_calls == (legacy_u32)expected_initial_intro_calls + 1);
 		assert(game_calls == 0);
 	}
 	expected_initial_intro_calls = -1;
@@ -539,7 +539,7 @@ static void test_startup_physics_options(void)
 	static const legacy_s16 counts[] = {2, 3, 4, 5, 6, 2};
 	static const legacy_u16 expected_speeds[] = {17757, 15573, 15573, 17757, 17757, 17757};
 	static const legacy_s16 expected_crossings[] = {100, 100, 0, 0, 100, 100};
-	for (unsigned scenario = 0; scenario < sizeof(counts) / sizeof(counts[0]); scenario++) {
+	for (legacy_u32 scenario = 0; scenario < sizeof(counts) / sizeof(counts[0]); scenario++) {
 		timer_calls = status_calls = 0;
 		audio_failure = 0;
 		init_main(counts[scenario], arguments);
@@ -587,7 +587,7 @@ int main(void)
 		{(legacy_s8 *)"game", (legacy_s8 *)"/sxy", (legacy_s8 *)"/sSb", (legacy_s8 *)"ignore"},
 	};
 	static legacy_u32 boundaries[] = {0, 34, 35, 54, 55, 74, 75, 99, 100, 65535};
-	static unsigned scenario;
+	static legacy_u32 scenario;
 	static legacy_s16 counts[] = {1, 4, 3, 4, 4};
 	for (scenario = 0; scenario < 110; scenario++) {
 		trace(scenario);
@@ -618,7 +618,7 @@ int main(void)
 	}
 	test_menu_lifecycle();
 #ifdef STARTUP_RECORD_BASELINE
-	printf("Startup fingerprint: %08x\n", (unsigned)trace_hash);
+	printf("Startup fingerprint: %08" LEGACY_PRIx32 "\n", trace_hash);
 #else
 	assert(trace_hash == UINT32_C(0x00524607));
 #endif

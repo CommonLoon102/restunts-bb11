@@ -111,9 +111,9 @@ int main(void)
 {
 	sdl3_batch_mode = 1;
 #ifdef _WIN32
-	int result = _mkdir("CaSeDir");
+	legacy_s32 result = _mkdir("CaSeDir");
 #else
-	int result = mkdir("CaSeDir", 0700);
+	legacy_s32 result = mkdir("CaSeDir", 0700);
 #endif
 	assert(result == 0 || errno == EEXIST);
 	test_highscore_stack_buffers();

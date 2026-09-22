@@ -79,7 +79,7 @@ static void intro_draw_native_audio_notice(void)
 	legacy_s16 saved_background = LEGACY_S16_FROM_BITS(LEGACY_READ_U16_LE(notice_font + 2));
 	font_set_fontdef2(notice_font);
 	/* The narrow font fits beside the title's car and above its copyright. */
-	for (unsigned int line = 0; line < sizeof(lines) / sizeof(lines[0]); ++line) {
+	for (legacy_u16 line = 0; line < sizeof(lines) / sizeof(lines[0]); ++line) {
 		intro_draw_text(lines[line], notice_x, notice_y, title_text_color, 0);
 		notice_y += line_height;
 	}

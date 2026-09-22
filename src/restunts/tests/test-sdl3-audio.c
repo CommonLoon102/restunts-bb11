@@ -7,8 +7,8 @@
 #include <SDL3/SDL_main.h>
 #include "../platform/sdl3/audio.c"
 
-int sdl3_batch_mode;
-static unsigned int removed_callbacks;
+legacy_s32 sdl3_batch_mode;
+static legacy_u32 removed_callbacks;
 
 void audio_sequence_timer(void)
 {
@@ -40,7 +40,7 @@ static void load_first_instrument(const char *path, legacy_u8 *instrument)
 	assert(file != NULL);
 	legacy_u8 header[6];
 	assert(fread(header, 1, sizeof(header), file) == sizeof(header));
-	unsigned int count = LEGACY_READ_U16_LE(header + 4);
+	legacy_u32 count = LEGACY_READ_U16_LE(header + 4);
 	assert(count > 0 && count < 256);
 	assert(fseek(file, 6L + count * 4L, SEEK_SET) == 0);
 	legacy_u8 offset[4];
@@ -50,19 +50,19 @@ static void load_first_instrument(const char *path, legacy_u8 *instrument)
 	fclose(file);
 }
 
-static int16_t generate_sample(void)
+static legacy_s16 generate_sample(void)
 {
-	int16_t sample;
+	legacy_s16 sample;
 	adlib_generate_samples(&sample, 1);
 	return sample;
 }
 
-static unsigned long long pcm_energy(void)
+static legacy_u64 pcm_energy(void)
 {
-	unsigned long long energy = 0;
-	for (unsigned int frame = 0; frame < ADLIB_SAMPLE_RATE / 4; ++frame) {
-		int16_t sample = generate_sample();
-		energy += (unsigned int)(sample * sample);
+	legacy_u64 energy = 0;
+	for (legacy_u32 frame = 0; frame < ADLIB_SAMPLE_RATE / 4; ++frame) {
+		legacy_s16 sample = generate_sample();
+		energy += (legacy_u32)((legacy_s32)sample * sample);
 	}
 	return energy;
 }
@@ -82,7 +82,7 @@ static void make_sine_instrument(legacy_u8 instrument[ADLIB_RESOURCE_SIZE])
 	instrument[90] = 1;
 }
 
-static void generate_samples(unsigned int count)
+static void generate_samples(legacy_u32 count)
 {
 	while (count-- != 0) {
 		(void)generate_sample();
@@ -102,15 +102,15 @@ static void check_sample_rate_and_retrigger(struct AUDIO_CHANNEL *channel,
 	 * the unresampled generator at 44100 Hz instead would produce about 390 Hz. */
 	adlib_write_pitch(0, (4U << 10U) | 580U, 1);
 	generate_samples(ADLIB_SAMPLE_RATE / 10U);
-	unsigned int crossings = 0;
-	unsigned long long energy = 0;
-	int16_t previous = 0;
-	for (unsigned int index = 0; index < ADLIB_SAMPLE_RATE; ++index) {
-		int16_t sample = generate_sample();
+	legacy_u32 crossings = 0;
+	legacy_u64 energy = 0;
+	legacy_s16 previous = 0;
+	for (legacy_u32 index = 0; index < ADLIB_SAMPLE_RATE; ++index) {
+		legacy_s16 sample = generate_sample();
 		if (previous <= 0 && sample > 0) {
 			crossings++;
 		}
-		energy += (unsigned int)((int)sample * sample);
+		energy += (legacy_u32)((legacy_s32)sample * sample);
 		previous = sample;
 	}
 	assert(energy > 1000000);
@@ -118,14 +118,14 @@ static void check_sample_rate_and_retrigger(struct AUDIO_CHANNEL *channel,
 
 	dos_audio_driver_activate_context(1, context, (legacy_u8 *)channel, 72, 127, instrument);
 	generate_samples(1000);
-	uint32_t previous_phase = adlib_chip->slot[3].pg_phase;
+	legacy_u32 previous_phase = adlib_chip->slot[3].pg_phase;
 	assert(previous_phase > 1000U);
 	/* Buffered writes must preserve both transitions and restart the carrier. */
 	dos_audio_driver_activate_context(1, context, (legacy_u8 *)channel, 72, 127, instrument);
-	int restarted = 0;
-	for (unsigned int index = 0; index < 64U; ++index) {
+	legacy_s32 restarted = 0;
+	for (legacy_u32 index = 0; index < 64U; ++index) {
 		generate_samples(1);
-		uint32_t phase = adlib_chip->slot[3].pg_phase;
+		legacy_u32 phase = adlib_chip->slot[3].pg_phase;
 		if (phase < previous_phase) {
 			restarted = 1;
 		}
@@ -134,7 +134,8 @@ static void check_sample_rate_and_retrigger(struct AUDIO_CHANNEL *channel,
 	assert(restarted);
 
 	dos_audio_driver_release_channel(1);
-	printf("%s: %uHz sine, same-tick note retrigger passed\n", ADLIB_EMULATOR, crossings);
+	printf("%s: %" LEGACY_PRIu32 "Hz sine, same-tick note retrigger passed\n", ADLIB_EMULATOR,
+		   crossings);
 }
 
 static void check_octave_crossing_bends(struct AUDIO_CHANNEL *channel,
@@ -153,7 +154,7 @@ static void check_octave_crossing_bends(struct AUDIO_CHANNEL *channel,
 	instrument[40] = 0x90;
 	context->level = 0;
 	context->sequence_value = 0;
-	for (unsigned int index = 0; index < sizeof(cases) / sizeof(cases[0]); ++index) {
+	for (legacy_u32 index = 0; index < sizeof(cases) / sizeof(cases[0]); ++index) {
 		channel->pitch = (legacy_u16)cases[index].bend;
 		context->modulation = cases[index].modulation;
 		dos_audio_driver_prepare_context(1, context, (legacy_u8 *)channel, instrument);
@@ -181,7 +182,7 @@ static void make_continuous_instrument(legacy_u8 instrument[ADLIB_RESOURCE_SIZE]
 	instrument[17] = (legacy_u8)-5;
 	instrument[40] = 0x90;
 	instrument[69] = 7;
-	for (unsigned int index = 0; index < 2; ++index) {
+	for (legacy_u32 index = 0; index < 2; ++index) {
 		legacy_u8 *op = instrument + ADLIB_OPERATOR_OFFSET + index * ADLIB_OPERATOR_SIZE;
 		op[0] = 15;
 		op[3] = 15;
@@ -193,30 +194,30 @@ static void make_continuous_instrument(legacy_u8 instrument[ADLIB_RESOURCE_SIZE]
 	instrument[93] = 3;
 }
 
-static unsigned int programmed_pitch(void)
+static legacy_u32 programmed_pitch(void)
 {
 	return adlib_registers[0xa0] | ((adlib_registers[0xb0] & 31U) << 8U);
 }
 
-static unsigned int half_rate_increment(unsigned int pitch)
+static legacy_u32 half_rate_increment(legacy_u32 pitch)
 {
-	unsigned int frequency = (pitch & 1023U) << (pitch >> 10U);
+	legacy_u32 frequency = (pitch & 1023U) << (pitch >> 10U);
 	return frequency >> 2U;
 }
 
-static uint32_t carrier_phase(void)
+static legacy_u32 carrier_phase(void)
 {
 	return adlib_chip->slot[3].pg_phase;
 }
 
-static uint32_t phase_mask(void)
+static legacy_u32 phase_mask(void)
 {
 	return (1U << 19U) - 1U;
 }
 
-static uint32_t relative_phase(unsigned int logical_pitch)
+static legacy_u32 relative_phase(legacy_u32 logical_pitch)
 {
-	uint32_t relative = adlib_chip->slot[0].pg_phase - 6U * carrier_phase();
+	legacy_u32 relative = adlib_chip->slot[0].pg_phase - 6U * carrier_phase();
 	/* Nuked applies a channel update after its modulator and before its
 	 * carrier. Account for that fixed one-sample pipeline difference. */
 	relative += 6U * half_rate_increment(logical_pitch);
@@ -237,27 +238,26 @@ static void check_continuous_pitch_history(struct AUDIO_CHANNEL *channel,
 	dos_audio_driver_set_context_value(1, context, 100);
 	dos_audio_driver_activate_context(1, context, (legacy_u8 *)channel, 255, 127, instrument);
 	generate_samples(64);
-	uint32_t reference_phase = 0;
-	for (unsigned int direction = 0; direction < 2; ++direction) {
-		for (unsigned int index = 0; index < 8192; ++index) {
-			unsigned int pitch = direction == 0 ? index : 8191U - index;
+	legacy_u32 reference_phase = 0;
+	for (legacy_u32 direction = 0; direction < 2; ++direction) {
+		for (legacy_u32 index = 0; index < 8192; ++index) {
+			legacy_u32 pitch = direction == 0 ? index : 8191U - index;
 			context->modulation = index % 3U == 0 ? 11 : 0;
 			/* Cover every final packed pitch while independently exercising
 			 * modulation, signed detune, block transitions, and word wrap. */
-			adlib_voices[0].base_pitch =
-				(legacy_u16)(pitch + 5U - (unsigned int)context->modulation);
+			adlib_voices[0].base_pitch = (legacy_u16)(pitch + 5U - (legacy_u32)context->modulation);
 			dos_audio_driver_suspend_context(1, context, 0, instrument);
 			assert((adlib_registers[0xb0] & 32U) != 0);
 			assert((adlib_registers[0x20] & 15U) == 6U);
 			assert((adlib_registers[0x23] & 15U) == 1U);
-			unsigned int actual = programmed_pitch();
+			legacy_u32 actual = programmed_pitch();
 			/* With multiplier one, the carrier advances twice as fast as
 			 * a half-rate carrier at this programmed base frequency. */
-			unsigned int integer_increment = (actual & 1023U) << (actual >> 10U);
+			legacy_u32 integer_increment = (actual & 1023U) << (actual >> 10U);
 			integer_increment >>= 1U;
 			assert(integer_increment == half_rate_increment(pitch));
-			for (unsigned int sample = 0; sample < 16; ++sample) {
-				uint32_t before = carrier_phase();
+			for (legacy_u32 sample = 0; sample < 16; ++sample) {
+				legacy_u32 before = carrier_phase();
 				generate_samples(1);
 				/* One output sample advances at most two chip samples. A
 				 * hidden key-off/key-on would reset phase instead. */
@@ -277,7 +277,7 @@ static void check_continuous_pitch_history(struct AUDIO_CHANNEL *channel,
 	dos_audio_driver_suspend_context(1, context, 0, instrument);
 	generate_samples(64);
 	reference_phase = relative_phase(457);
-	unsigned int continuous_pitch = programmed_pitch();
+	legacy_u32 continuous_pitch = programmed_pitch();
 	dos_audio_driver_prepare_context(1, context, (legacy_u8 *)channel, instrument);
 	assert(adlib_voices[0].doubled_multipliers);
 	assert(programmed_pitch() == continuous_pitch);
@@ -316,7 +316,7 @@ static void check_continuous_eligibility(struct AUDIO_CHANNEL *channel,
 										 struct AUDIO_CONTEXT *context)
 {
 	static const struct {
-		unsigned int offset;
+		legacy_u32 offset;
 		legacy_u8 value;
 	} rejected[] = {{68, 1},	{76, 0},	{76, 7},	{88, 1},	{70, 14},	{82, 14},
 					{72, 1},	{84, 1},	{73, 14},	{85, 14},	{75, 1},	{87, 1},
@@ -325,7 +325,7 @@ static void check_continuous_eligibility(struct AUDIO_CHANNEL *channel,
 					{53, 0x81}, {22, 0x82}, {23, 0x82}, {24, 0x82}, {25, 0x82}, {40, 0x82},
 					{53, 0x82}};
 	legacy_u8 instrument[ADLIB_RESOURCE_SIZE];
-	for (unsigned int index = 0; index < sizeof(rejected) / sizeof(rejected[0]); ++index) {
+	for (legacy_u32 index = 0; index < sizeof(rejected) / sizeof(rejected[0]); ++index) {
 		make_continuous_instrument(instrument);
 		instrument[rejected[index].offset] = rejected[index].value;
 		dos_audio_driver_prepare_context(1, context, (legacy_u8 *)channel, instrument);
@@ -337,8 +337,8 @@ static void check_continuous_eligibility(struct AUDIO_CHANNEL *channel,
 		generate_samples(64);
 		dos_audio_driver_release_channel(1);
 	}
-	static const unsigned int doubled[] = {2, 4, 6, 8, 10, 12};
-	for (unsigned int multiplier = 1; multiplier <= 6; ++multiplier) {
+	static const legacy_u32 doubled[] = {2, 4, 6, 8, 10, 12};
+	for (legacy_u32 multiplier = 1; multiplier <= 6; ++multiplier) {
 		make_continuous_instrument(instrument);
 		instrument[76] = (legacy_u8)multiplier;
 		/* Tremolo changes amplitude only, so it remains compatible. */

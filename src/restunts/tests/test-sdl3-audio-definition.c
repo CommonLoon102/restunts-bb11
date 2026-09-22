@@ -77,7 +77,7 @@ static void check_resource_boundaries(void)
 
 	/* Move the bank so the header, name table and offset table each cross a
 	 * host-page edge. Lookup must return the same chunk in all three cases. */
-	for (unsigned int shift = 4; shift <= 20; shift += 4) {
+	for (legacy_u32 shift = 4; shift <= 20; shift += 4) {
 		legacy_u8 *bank = page + 65536U - shift;
 		LEGACY_WRITE_U32_LE(bank, 30);
 		LEGACY_WRITE_U16_LE(bank + 4, 2);

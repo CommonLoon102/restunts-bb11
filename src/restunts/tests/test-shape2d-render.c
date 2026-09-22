@@ -92,9 +92,9 @@ static void hash_word(legacy_u16 value)
 	fingerprint = (fingerprint ^ value) * 16777619UL;
 }
 
-static void hash_bytes(const legacy_u8 *data, unsigned count)
+static void hash_bytes(const legacy_u8 *data, legacy_u32 count)
 {
-	for (unsigned index = 0; index < count; index++) {
+	for (legacy_u32 index = 0; index < count; index++) {
 		hash_word(data[index]);
 	}
 }
@@ -114,7 +114,7 @@ static void reset_bitmap(void)
 	sprite_set_target_clip_bounds(0, 64, 0, 48);
 	memset(drawing_sprite.sprite_bitmapptr, 0x5a, 65536);
 	legacy_u8 *lines = dos_memory_make_pointer(TEST_SPRITE_SEGMENT, TEST_LINE_OFFSET);
-	for (unsigned index = 0; index < 32768; index++) {
+	for (legacy_u32 index = 0; index < 32768; index++) {
 		LEGACY_WRITE_U16_LE(lines + index * 2, (legacy_u16)(index * 64));
 	}
 	resized_offset = resized_segment = resized_paragraphs = 0;
@@ -124,7 +124,7 @@ static struct SHAPE2D *make_shape(legacy_u16 width, legacy_u16 height, legacy_u1
 {
 	legacy_u8 *source = dos_memory_make_pointer(TEST_SOURCE_SEGMENT, 0);
 
-	for (unsigned index = 0; index < 65536; index++) {
+	for (legacy_u32 index = 0; index < 65536; index++) {
 		source[index] = (legacy_u8)(index % 7 == 0 ? 255 : index * 37 + 11);
 	}
 	struct SHAPE2D *shape = dos_memory_make_pointer(TEST_SOURCE_SEGMENT, offset);
@@ -142,8 +142,8 @@ static void test_lines(void)
 {
 	legacy_u16 line[10];
 	static const legacy_u16 fractions[] = {0, 0x7fff, 0x8000, 0xffff};
-	for (unsigned mode = 0; mode <= 10; mode++) {
-		for (unsigned phase = 0; phase < 8; phase++) {
+	for (legacy_u32 mode = 0; mode <= 10; mode++) {
+		for (legacy_u32 phase = 0; phase < 8; phase++) {
 			reset_bitmap();
 			memset(line, 0, sizeof(line));
 			line[0] = fractions[phase % 4];
@@ -164,7 +164,7 @@ static void test_font(void)
 {
 	static const legacy_u8 byte_counts[] = {0, 1, 2, 0x80, 0xff};
 	static const legacy_u16 counts[] = {0, 1, 3, 0x8000, 0xffff};
-	for (unsigned scenario = 0; scenario < 100; scenario++) {
+	for (legacy_u32 scenario = 0; scenario < 100; scenario++) {
 		reset_bitmap();
 		legacy_u8 *font = dos_memory_make_pointer(0x1000, 0);
 		memset(font, 0, 2048);
@@ -179,7 +179,7 @@ static void test_font(void)
 		font[20] = (scenario / 25) & 1;
 		shape2d_put_word(font + 22 + 'A' * 2, 600);
 		shape2d_put_word(font + 22 + 'B' * 2, 700);
-		for (unsigned index = 600; index < 900; index++) {
+		for (legacy_u32 index = 600; index < 900; index++) {
 			font[index] = (legacy_u8)(index * 17 + scenario);
 		}
 		if (font[20]) {
@@ -199,7 +199,7 @@ static void test_font(void)
 static void test_dissolve(void)
 {
 	struct SHAPE2D *shape;
-	for (unsigned scenario = 0; scenario < 64; scenario++) {
+	for (legacy_u32 scenario = 0; scenario < 64; scenario++) {
 		reset_bitmap();
 		shape = make_shape(scenario % 8, 1 + scenario % 25, scenario & 1 ? 0xffe0 : 16);
 		shape->position_x = scenario & 2 ? 0xfffe : 7;
@@ -214,9 +214,9 @@ static void test_scaled(void)
 	struct SHAPE2D *shape;
 	static const legacy_u16 scales[] = {0, 1, 2, 127, 128, 255, 256, 257, 511, 512, 32768, 65535};
 	static const legacy_s16 positions[] = {-32768, -8, -1, 0, 60, 64, 32767};
-	for (unsigned scale = 0; scale < 12; scale++) {
-		for (unsigned position = 0; position < 7; position++) {
-			for (unsigned clipped = 0; clipped < 2; clipped++) {
+	for (legacy_u32 scale = 0; scale < 12; scale++) {
+		for (legacy_u32 position = 0; position < 7; position++) {
+			for (legacy_u32 clipped = 0; clipped < 2; clipped++) {
 				reset_bitmap();
 				shape = make_shape(4, scale == 10 ? 256 : 5, position & 1 ? 0xffe0 : 16);
 				shape->centre_x = (legacy_u16)(position - 3);
@@ -234,11 +234,11 @@ static void test_scaled(void)
 	}
 }
 
-static void write_rle(legacy_u16 offset, const legacy_u8 *bytes, unsigned length)
+static void write_rle(legacy_u16 offset, const legacy_u8 *bytes, legacy_u32 length)
 {
 	legacy_u8 *source = dos_memory_make_pointer(TEST_SOURCE_SEGMENT, 0);
 
-	for (unsigned index = 0; index < length; index++) {
+	for (legacy_u32 index = 0; index < length; index++) {
 		source[(legacy_u16)(offset + SHAPE2D_HEADER_SIZE + index)] = bytes[index];
 	}
 }
@@ -249,7 +249,7 @@ static void test_rle(void)
 	static const legacy_u8 stream[] = {252, 0, 1, 255, 63, 5, 72, 253, 9, 0, 11, 0};
 	static const legacy_s16 positions[] = {-32768, -6, -1, 0, 1, 60, 64, 32767};
 	static const legacy_u16 widths[] = {0, 1, 6, 0x8000};
-	for (unsigned scenario = 0; scenario < 128; scenario++) {
+	for (legacy_u32 scenario = 0; scenario < 128; scenario++) {
 		reset_bitmap();
 		shape = make_shape(widths[scenario % 4], 6, scenario & 1 ? 0xfff0 : 16);
 		write_rle(shape_offset, stream, sizeof(stream));
@@ -286,14 +286,14 @@ static legacy_u8 *make_resource(legacy_u16 width, legacy_u16 height, legacy_u8 f
 	resource_file_set_size(resource, 4096);
 	LEGACY_WRITE_U16_LE(resource + 4, count);
 	struct SHAPE2D *shape;
-	for (unsigned shape_index = 0; shape_index < count; shape_index++) {
+	for (legacy_u32 shape_index = 0; shape_index < count; shape_index++) {
 		memcpy(resource + 6 + shape_index * 4, "TEST", 4);
 		resource_file_set_offset(resource, count, shape_index, shape_index * stride);
 		shape = file_get_shape2d(resource, shape_index);
 		shape->width = width;
 		shape->height = height;
 		shape->plane_flags[2] = flag;
-		for (unsigned index = 0; index < (unsigned)width * height; index++) {
+		for (legacy_u32 index = 0; index < (legacy_u32)width * height; index++) {
 			((legacy_u8 *)shape)[SHAPE2D_HEADER_SIZE + index] = (legacy_u8)(index * 23);
 		}
 	}
@@ -305,9 +305,9 @@ static void test_unflip(void)
 	legacy_u8 *workspace = dos_memory_make_pointer(0x4000, 0);
 
 	struct SHAPE2D *shape;
-	for (unsigned width = 0; width < 5; width++) {
-		for (unsigned height = 0; height < 8; height++) {
-			for (unsigned flag = 0; flag < 6; flag++) {
+	for (legacy_u32 width = 0; width < 5; width++) {
+		for (legacy_u32 height = 0; height < 8; height++) {
+			for (legacy_u32 flag = 0; flag < 6; flag++) {
 				legacy_u8 *resource =
 					make_resource(width, height, (legacy_u8)((flag % 5) << 4), flag == 4 ? 2 : 1);
 				shape = file_get_shape2d(resource, 0);
@@ -329,13 +329,13 @@ static void test_parse(void)
 	legacy_u8 *output = dos_memory_make_pointer(0x4000, 6);
 
 	static const legacy_u16 lengths[] = {0, 1, 3, 4, 126, 127, 128, 129, 254, 260};
-	for (unsigned length = 0; length < 10; length++) {
-		for (unsigned pattern = 0; pattern < 4; pattern++) {
+	for (legacy_u32 length = 0; length < 10; length++) {
+		for (legacy_u32 pattern = 0; pattern < 4; pattern++) {
 			legacy_u8 *resource = make_resource(lengths[length], 1, 0, pattern % 3 + 1);
-			for (unsigned shape_index = 0; shape_index < pattern % 3 + 1; shape_index++) {
+			for (legacy_u32 shape_index = 0; shape_index < pattern % 3 + 1; shape_index++) {
 				legacy_u8 *pixels =
 					(legacy_u8 *)file_get_shape2d(resource, shape_index) + SHAPE2D_HEADER_SIZE;
-				for (unsigned index = 0; index < lengths[length]; index++) {
+				for (legacy_u32 index = 0; index < lengths[length]; index++) {
 					pixels[index] =
 						(legacy_u8)(pattern == 0
 										? index
@@ -360,11 +360,11 @@ static void check_fingerprint(const char *name, legacy_u32 expected, void (*test
 	test();
 #ifdef SHAPE2D_RECORD_BASELINE
 	(void)expected;
-	fprintf(stdout, "%s=0x%08lxUL\n", name, (unsigned long)fingerprint);
+	fprintf(stdout, "%s=0x%08" LEGACY_PRIx32 "UL\n", name, fingerprint);
 #else
 	if (fingerprint != expected) {
-		fprintf(stderr, "%s: got %08lx, expected %08lx\n", name, (unsigned long)fingerprint,
-				(unsigned long)expected);
+		fprintf(stderr, "%s: got %08" LEGACY_PRIx32 ", expected %08" LEGACY_PRIx32 "\n", name,
+				fingerprint, expected);
 		assert(0);
 	}
 #endif

@@ -29,15 +29,15 @@ struct SPRITE *render_window_sprite;
  * and rectangle math use production code; rendering, resource and timer endpoints are stubbed.
  * Lifecycle cases also cover timing, camera phases, cancellation and cleanup. */
 static legacy_u32 trace_hash;
-static unsigned queued_count, flush_count, pixel_count;
+static legacy_u32 queued_count, flush_count, pixel_count;
 static struct SHAPE2D sky_images[4];
 static legacy_u8 elements[900], terrain[900];
 
 #ifdef RESTUNTS_SDL3
 legacy_u8 supersight_enabled;
 legacy_u8 fps_display_enabled;
-static unsigned scripted_input, shortcut_count, opponent_updates;
-static unsigned fps_draw_count, fps_presented_count, fps_reset_count;
+static legacy_u32 scripted_input, shortcut_count, opponent_updates;
+static legacy_u32 fps_draw_count, fps_presented_count, fps_reset_count;
 static legacy_s16 scripted_key;
 static struct RECTANGLE fps_bounds = {8, 81, 3, 12};
 static struct RECTANGLE target_clip;
@@ -102,7 +102,7 @@ static legacy_u16 shape_id(const struct SHAPE3D *shape)
 	if (shape == &bravshape) {
 		return 133;
 	}
-	for (unsigned index = 0; index < 130; index++) {
+	for (legacy_u32 index = 0; index < 130; index++) {
 		if (shape == &game3dshapes[index]) {
 			return index + 1;
 		}
@@ -239,13 +239,13 @@ static void reset_projection(void)
 	projection_center_y = 100;
 }
 
-static void intro_case(unsigned scenario)
+static void intro_case(legacy_u32 scenario)
 {
 	reset_projection();
 	slow_video_mgmt_copy = scenario & 1;
-	unsigned draw_car = (scenario >> 1) & 1;
-	unsigned logo = (scenario >> 2) & 1;
-	unsigned rotation = (scenario >> 3) % 4;
+	legacy_u32 draw_car = (scenario >> 1) & 1;
+	legacy_u32 logo = (scenario >> 2) & 1;
+	legacy_u32 rotation = (scenario >> 3) % 4;
 	static const legacy_s16 offsets[] = {0, 200, -200, 32767, -32768};
 	legacy_s16 camera_x = offsets[(scenario >> 5) % 5];
 	legacy_s16 camera_y = offsets[((scenario >> 5) + 1) % 5];
@@ -267,7 +267,7 @@ static void intro_case(unsigned scenario)
 	state.opponentstate.car_rotate.x = (legacy_s16)(scenario * 97);
 	struct VECTOR stars[100];
 	struct POINT2D previous_points[100];
-	for (unsigned index = 0; index < 100; index++) {
+	for (legacy_u32 index = 0; index < 100; index++) {
 		stars[index].x = LEGACY_S16_WRAP_ADD(camera_x, (legacy_s16)(index * 173 - 8000));
 		stars[index].y = LEGACY_S16_WRAP_ADD(camera_y, (legacy_s16)(index * 113 - 5000));
 		stars[index].z = LEGACY_S16_WRAP_ADD(camera_z, (legacy_s16)(index * 73 - 2400));
@@ -284,7 +284,7 @@ static void intro_case(unsigned scenario)
 	assert(flush_count == 1);
 	assert(count >= 0 && count <= 100);
 	if (slow_video_mgmt_copy != 0) {
-		assert(pixel_count == (unsigned)(old_count + count));
+		assert(pixel_count == (legacy_u32)(old_count + count));
 	} else {
 		assert(count == old_count);
 	}
@@ -292,17 +292,17 @@ static void intro_case(unsigned scenario)
 	record_word(intro_colorvalue);
 	record_rect(&shape_rect);
 	record_rect(&combined_rect);
-	for (unsigned index = 0; index < 100; index++) {
+	for (legacy_u32 index = 0; index < 100; index++) {
 		record_word(previous_points[index].px);
 		record_word(previous_points[index].py);
 	}
 }
 
-static void preview_map(unsigned variant)
+static void preview_map(legacy_u32 variant)
 {
 	track_element_map = elements;
 	track_terrain_map = terrain;
-	for (unsigned row = 0; row < 30; row++) {
+	for (legacy_u32 row = 0; row < 30; row++) {
 		trackrows[row] = row * 30;
 		terrainrows[row] = (29 - row) * 30;
 		track_column_positions[row] = row * 1024;
@@ -310,9 +310,9 @@ static void preview_map(unsigned variant)
 		track_row_positions[row] = (30 - row) * 1024;
 		track_row_centers[row] = (29 - row) * 1024 + 512;
 	}
-	for (unsigned row = 0; row < 30; row++) {
-		for (unsigned column = 0; column < 30; column++) {
-			unsigned tile = (row * 30 + column + variant * 43) % 215;
+	for (legacy_u32 row = 0; row < 30; row++) {
+		for (legacy_u32 column = 0; column < 30; column++) {
+			legacy_u32 tile = (row * 30 + column + variant * 43) % 215;
 			if ((column == 29 && (trkObjectList[tile].ss_multiTileFlag & 2) != 0) ||
 				(row == 29 && tile >= 105 && tile <= 108)) {
 				tile = 0;
@@ -327,7 +327,7 @@ static void preview_map(unsigned variant)
 	}
 }
 
-static void preview_case(unsigned scenario)
+static void preview_case(legacy_u32 scenario)
 {
 	reset_projection();
 	preview_map(scenario % 4);
@@ -343,7 +343,7 @@ static void preview_case(unsigned scenario)
 	skybox.minimum_height = 20;
 	skybox.sky_color = 3;
 	skybox.ground_color = 6;
-	for (unsigned index = 0; index < 4; index++) {
+	for (legacy_u32 index = 0; index < 4; index++) {
 		skybox.heights[index] = 20 + index * 5;
 		skyboxes[index] = &sky_images[index];
 	}
@@ -355,9 +355,9 @@ static void preview_case(unsigned scenario)
 
 static legacy_s8 title_data[3];
 static struct SPRITE intro_sprite;
-static unsigned input_polls, cancel_after, copy_backbuffer;
+static legacy_u32 input_polls, cancel_after, copy_backbuffer;
 static legacy_u16 random_value;
-static unsigned random_calls, timer_reads;
+static legacy_u32 random_calls, timer_reads;
 
 void *file_load_3dres(const legacy_s8 *name)
 {
@@ -370,7 +370,7 @@ void locate_many_resources(legacy_s8 *data, const legacy_s8 *names, legacy_s8 **
 	assert(data == title_data);
 	assert(strcmp((const char *)names, "logolog2brav") == 0);
 	record_word(21);
-	for (unsigned index = 0; index < 3; index++) {
+	for (legacy_u32 index = 0; index < 3; index++) {
 		result[index] = &title_data[index];
 	}
 }
@@ -525,7 +525,7 @@ void sprite_copy_rect_shifted(legacy_s16 x, legacy_s16 y, legacy_s16 width, lega
 /* Full lifecycle uses full redraw: the original setup routine leaves its first
  * dirty rectangle uninitialized. Standalone scene cases cover dirty rectangles
  * with explicit previous-frame inputs instead. */
-static void lifecycle_case(unsigned scenario)
+static void lifecycle_case(legacy_u32 scenario)
 {
 	reset_projection();
 	memset(&state, 0, sizeof(state));
@@ -537,7 +537,7 @@ static void lifecycle_case(unsigned scenario)
 	slow_video_mgmt = 0;
 	video_uses_page_flipping = scenario & 1;
 	copy_backbuffer = (scenario >> 1) & 1;
-	static const unsigned cancellations[] = {0, 1, 80, 160};
+	static const legacy_u32 cancellations[] = {0, 1, 80, 160};
 	cancel_after = cancellations[(scenario >> 2) & 3];
 	input_polls = 0;
 	random_value = 1;
@@ -560,7 +560,7 @@ static void lifecycle_case(unsigned scenario)
 }
 
 #ifdef RESTUNTS_SDL3
-static void assert_full_clear(unsigned index)
+static void assert_full_clear(legacy_u32 index)
 {
 	assert(cleared_rects[index].left == intro_cliprect.left);
 	assert(cleared_rects[index].right == intro_cliprect.right);
@@ -568,7 +568,7 @@ static void assert_full_clear(unsigned index)
 	assert(cleared_rects[index].bottom == intro_cliprect.bottom);
 }
 
-static void display_toggle_case(unsigned scenario)
+static void display_toggle_case(legacy_u32 scenario)
 {
 	reset_projection();
 	memset(&state, 0, sizeof(state));
@@ -600,8 +600,8 @@ static void display_toggle_case(unsigned scenario)
 	assert(fps_display_enabled == initial_fps);
 	assert(opponent_updates == 5);
 	assert(flush_count == 5);
-	unsigned expected_fps_draws = 0;
-	for (unsigned frame = 0; frame < flush_count; frame++) {
+	legacy_u32 expected_fps_draws = 0;
+	for (legacy_u32 frame = 0; frame < flush_count; frame++) {
 		legacy_u8 toggled = frame == 1 || frame == 2;
 		legacy_u8 expected_mode = initial_mode ^ (toggled && scripted_key == KEY_F12);
 		legacy_u8 expected_fps = initial_fps ^ (toggled && scripted_key == KEY_F11);
@@ -610,7 +610,7 @@ static void display_toggle_case(unsigned scenario)
 		expected_fps_draws += expected_fps;
 		/* Dirty rendering must clear the previous FPS text on the same page,
 		 * including when F12 leaves the counter enabled throughout. */
-		unsigned page_age = video_uses_page_flipping != 0 ? 2 : 1;
+		legacy_u32 page_age = video_uses_page_flipping != 0 ? 2 : 1;
 		if (slow_video_mgmt != 0 && frame >= page_age && rendered_fps[frame - page_age]) {
 			assert(cleared_rects[frame].left <= fps_bounds.left);
 			assert(cleared_rects[frame].right >= fps_bounds.right);
@@ -663,26 +663,28 @@ static void display_toggle_completion_case(legacy_s16 key)
 int main(void)
 {
 	trace_hash = 2166136261UL;
-	for (unsigned scenario = 0; scenario < 480; scenario++) {
+	for (legacy_u32 scenario = 0; scenario < 480; scenario++) {
 		record_word(scenario);
 		intro_case(scenario);
 	}
 	legacy_u32 intro_hash = trace_hash;
 	trace_hash = 2166136261UL;
-	for (unsigned scenario = 0; scenario < 32; scenario++) {
+	for (legacy_u32 scenario = 0; scenario < 32; scenario++) {
 		record_word(scenario);
 		preview_case(scenario);
 	}
 	legacy_u32 preview_hash = trace_hash;
 	trace_hash = 2166136261UL;
-	for (unsigned scenario = 0; scenario < 16; scenario++) {
+	for (legacy_u32 scenario = 0; scenario < 16; scenario++) {
 		record_word(scenario);
 		lifecycle_case(scenario);
 	}
 	legacy_u32 lifecycle_hash = trace_hash;
 #ifdef INTRO_PREVIEW_RECORD_BASELINE
-	fprintf(stdout, "intro=0x%08lx preview=0x%08lx lifecycle=0x%08lx\n", (unsigned long)intro_hash,
-			(unsigned long)preview_hash, (unsigned long)lifecycle_hash);
+	fprintf(stdout,
+			"intro=0x%08" LEGACY_PRIx32 " preview=0x%08" LEGACY_PRIx32
+			" lifecycle=0x%08" LEGACY_PRIx32 "\n",
+			intro_hash, preview_hash, lifecycle_hash);
 #else
 	/* Captured from unmodified production at 43fba20d. */
 	assert(intro_hash == 0xcdcdbe61UL);
@@ -691,7 +693,7 @@ int main(void)
 	assert(lifecycle_hash == 0xa3183e31UL);
 #endif
 #ifdef RESTUNTS_SDL3
-	for (unsigned scenario = 0; scenario < 32; scenario++) {
+	for (legacy_u32 scenario = 0; scenario < 32; scenario++) {
 		display_toggle_case(scenario);
 	}
 	display_toggle_completion_case(KEY_F12);

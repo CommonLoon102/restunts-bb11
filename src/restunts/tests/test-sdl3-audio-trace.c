@@ -5,16 +5,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "../c/legacy.h"
 
 static const char *trace_path;
-static unsigned int open_count;
-static unsigned int close_count;
-static unsigned int flush_count;
-static unsigned int error_count;
-static int fail_open;
-static int fail_write;
-static int fail_flush;
-static int fail_close;
+static legacy_u32 open_count;
+static legacy_u32 close_count;
+static legacy_u32 flush_count;
+static legacy_u32 error_count;
+static legacy_s32 fail_open;
+static legacy_s32 fail_write;
+static legacy_s32 fail_flush;
+static legacy_s32 fail_close;
 static char captured_trace[2048];
 
 static char *trace_test_getenv(const char *name)
@@ -36,6 +37,7 @@ static FILE *trace_test_fopen(const char *path, const char *mode)
 	return file;
 }
 
+/* These wrappers preserve the native stdio return types. */
 static int trace_test_fprintf(FILE *file, const char *format, ...)
 {
 	if (file == stderr) {
@@ -135,12 +137,25 @@ static void test_order_and_timestamps(void)
 	assert(strcmp(captured_trace, "RESTUNTS_OPL_TRACE 1 nuked 3579545 44100\n0 E\n") == 0);
 }
 
+static void test_full_width_fields(void)
+{
+	adlib_trace_open("nuked", LEGACY_U32_MAX, LEGACY_U32_MAX);
+	adlib_trace_frames = ~(legacy_u64)0;
+	adlib_trace_write(LEGACY_U32_MAX, LEGACY_U32_MAX, -1);
+	adlib_trace_clear();
+	adlib_trace_close();
+	assert(strcmp(captured_trace, "RESTUNTS_OPL_TRACE 1 nuked 4294967295 4294967295\n"
+								  "18446744073709551615 W FFFFFFFF FFFFFFFF 1\n"
+								  "18446744073709551615 C\n"
+								  "18446744073709551615 E\n") == 0);
+}
+
 static void assert_failed_trace_is_disabled(void)
 {
 	assert(adlib_trace_file == NULL);
 	assert(error_count == 1);
-	unsigned int closes = close_count;
-	unsigned int flushes = flush_count;
+	legacy_u32 closes = close_count;
+	legacy_u32 flushes = flush_count;
 	adlib_trace_write(0x20, 0xFF, 0);
 	adlib_trace_clear();
 	adlib_trace_advance(44100);
@@ -201,6 +216,7 @@ int main(void)
 {
 	test_disabled();
 	test_order_and_timestamps();
+	test_full_width_fields();
 	test_io_failures();
 	puts("SDL3 audio trace tests passed");
 	return 0;

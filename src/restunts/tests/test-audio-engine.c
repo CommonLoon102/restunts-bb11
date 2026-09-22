@@ -13,22 +13,22 @@ legacy_u8 dos_audio_context_count, dos_audio_uses_direct_channels;
 legacy_s8 audio_effects_enabled;
 static legacy_u8 memory[1048576];
 static legacy_u8 segments_match;
-static uint64_t trace_hash = UINT64_C(1469598103934665603);
+static legacy_u64 trace_hash = UINT64_C(1469598103934665603);
 static void trace_word(legacy_u16 value)
 {
 	trace_hash = (trace_hash ^ (value & 255U)) * UINT64_C(1099511628211);
 	trace_hash = (trace_hash ^ (value >> 8)) * UINT64_C(1099511628211);
 }
-static void trace_bytes(const void *data, unsigned count)
+static void trace_bytes(const void *data, legacy_u32 count)
 {
 	const legacy_u8 *p = data;
-	for (unsigned i = 0; i < count; i++) {
+	for (legacy_u32 i = 0; i < count; i++) {
 		trace_word(p[i]);
 	}
 }
 void *dos_memory_make_pointer(legacy_u16 segment, legacy_u16 offset)
 {
-	return memory + (((unsigned)segment << 4) + offset) % sizeof(memory);
+	return memory + (((legacy_u32)segment << 4) + offset) % sizeof(memory);
 }
 legacy_u16 dos_memory_pointer_offset(const void *pointer)
 {
@@ -58,7 +58,7 @@ legacy_s16 dos_data_stack_segments_match(void)
 	trace_word(1);
 	return segments_match;
 }
-static void trace_context(unsigned call, legacy_s16 channel, struct AUDIO_CONTEXT *context)
+static void trace_context(legacy_u32 call, legacy_s16 channel, struct AUDIO_CONTEXT *context)
 {
 	trace_word(call);
 	trace_word(channel);
@@ -164,7 +164,7 @@ legacy_u32 resource_read_u32le(const legacy_u8 *p)
 {
 	return (legacy_u32)LEGACY_READ_U16_LE(p) | ((legacy_u32)LEGACY_READ_U16_LE(p + 2) << 16);
 }
-static void reset_engine(unsigned index)
+static void reset_engine(legacy_u32 index)
 {
 	memset(audio_timers, 0, sizeof(audio_timers));
 	memset(audio_channels, 0, sizeof(audio_channels));
@@ -185,7 +185,7 @@ static void test_envelopes(void)
 	legacy_u8 *r = memory + 0x50000;
 	struct AUDIO_CONTEXT *c = &dos_audio_contexts[0];
 	static const legacy_s16 levels[] = {0, 1, 127, 32760, -32760, -1};
-	for (unsigned i = 0; i < 192U; i++) {
+	for (legacy_u32 i = 0; i < 192U; i++) {
 		reset_engine(i);
 		dos_audio_context_count = 1;
 		c->state = i % 16U == 0 ? 0 : 1;
@@ -220,10 +220,10 @@ static void test_envelopes(void)
 		r[52] = i % 4U;
 		r[53] = i % 7U != 0;
 		r[58] = 1;
-		for (unsigned tick = 0; tick < 8U; tick++) {
+		for (legacy_u32 tick = 0; tick < 8U; tick++) {
 			r[59 + tick] = (legacy_u8)(17U * tick);
 		}
-		for (unsigned tick = 0; tick < 4U; tick++) {
+		for (legacy_u32 tick = 0; tick < 4U; tick++) {
 			audio_update_driver_contexts();
 			trace_bytes(c, sizeof(*c));
 			trace_word(audio_channels[c->channel].active_notes);
@@ -249,7 +249,7 @@ static void test_context_selection(void)
 	legacy_u8 *r = memory + 0x50000;
 	struct AUDIO_CHANNEL *timer;
 	struct AUDIO_CHANNEL *old;
-	for (unsigned i = 0; i < 128U; i++) {
+	for (legacy_u32 i = 0; i < 128U; i++) {
 		reset_engine(300U + i);
 		timer = (struct AUDIO_CHANNEL *)((legacy_u8 *)audio_timers + 76);
 		old = (struct AUDIO_CHANNEL *)audio_timers;
@@ -264,7 +264,7 @@ static void test_context_selection(void)
 									: i % 5U == 1 ? 1
 									: i % 5U == 2 ? 0xaaaa
 												  : 65535);
-		for (unsigned j = 0; j < 16U; j++) {
+		for (legacy_u32 j = 0; j < 16U; j++) {
 			dos_audio_contexts[j].channel = j % 3U ? 17 : 18;
 			dos_audio_contexts[j].state = (i + j) % 7U == 0 ? 0 : (j % 2U) + 1U;
 			dos_audio_contexts[j].priority = j % 3U;
@@ -280,7 +280,7 @@ static void test_context_selection(void)
 static void test_engine_initialization(void)
 {
 	struct AUDIO_ENGINE_DEFINITION *source = (struct AUDIO_ENGINE_DEFINITION *)(memory + 0x2fff0);
-	for (unsigned i = 0; i < 4U; i++) {
+	for (legacy_u32 i = 0; i < 4U; i++) {
 		reset_engine(500U + i);
 		memset(source, 0, sizeof(*source));
 		source->sample_count = i % 2U ? 65535 : 127;
@@ -289,7 +289,7 @@ static void test_engine_initialization(void)
 		memory[0x5000e] = i % 2U;
 		memory[0x5000f] = 255;
 		if (i == 3U) {
-			for (unsigned j = 0; j < AUDIO_TIMER_COUNT; j++) {
+			for (legacy_u32 j = 0; j < AUDIO_TIMER_COUNT; j++) {
 				audio_timers[j].active = 1;
 			}
 		}
@@ -300,7 +300,7 @@ static void test_engine_initialization(void)
 static void test_driver_timer(void)
 {
 	struct AUDIO_TIMER *timer = &audio_timers[0];
-	for (unsigned i = 0; i < 64U; i++) {
+	for (legacy_u32 i = 0; i < 64U; i++) {
 		reset_engine(600U + i);
 		audio_driver_timer_divider = i % 3U;
 		dos_audio_uses_direct_channels = i % 2U;
@@ -324,7 +324,7 @@ static void test_driver_timer(void)
 		memory[0x5000e] = 2;
 		LEGACY_WRITE_U16_LE(memory + 0x5000c, 65535);
 		audio_write_far_pointer((legacy_u8 *)&timer->definition.resources[0], memory + 0x50000);
-		for (unsigned j = 0; j < 3U; j++) {
+		for (legacy_u32 j = 0; j < 3U; j++) {
 			audio_driver_timer();
 			trace_bytes(timer, sizeof(*timer));
 			trace_word(audio_driver_timer_divider);

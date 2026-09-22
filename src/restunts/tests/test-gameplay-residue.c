@@ -16,8 +16,8 @@
 static struct GAMESTATE checkpoints[GAMESTATE_CHECKPOINT_COUNT];
 static legacy_s8 inputs[256];
 static legacy_s8 last_input;
-static unsigned int player_steps;
-static unsigned int audio_updates;
+static legacy_u32 player_steps;
+static legacy_u32 audio_updates;
 
 void audio_carstate(void)
 {
@@ -171,7 +171,7 @@ static void test_start_sequence_uses_start_line_distance(void)
 
 	static const legacy_u16 speeds[] = {1, 1, 1280};
 	static const legacy_s16 distances[] = {5, 256, 256};
-	for (unsigned int index = 0; index < 3; index++) {
+	for (legacy_u32 index = 0; index < 3; index++) {
 		prepare_tick(160);
 		state.game_inputmode = GAME_INPUT_MODE_WAITING;
 		state.playerstate.car_rev_speed = speeds[index];

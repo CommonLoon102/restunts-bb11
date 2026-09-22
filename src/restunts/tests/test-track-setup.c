@@ -39,12 +39,12 @@ struct SETUP_OUTPUT {
 	legacy_s16 sign_count;
 	legacy_s16 camera_count;
 	legacy_s16 hill;
-	int allocations;
-	int releases;
+	legacy_s32 allocations;
+	legacy_s32 releases;
 };
 
 static struct SETUP_OUTPUT output;
-static int allocation_fails;
+static legacy_s32 allocation_fails;
 
 void far *mmgr_alloc_resbytes(const legacy_s8 *name, legacy_s32 size)
 {
@@ -88,7 +88,7 @@ static void initialize(void)
 	roadside_sign_count = 0;
 	trackside_camera_count = 0;
 	hillFlag = 0;
-	for (int index = 0; index < 30; index++) {
+	for (legacy_s32 index = 0; index < 30; index++) {
 		trackrows[index] = index * 30;
 		terrainrows[index] = (29 - index) * 30;
 		track_column_positions[index] = index * 1024;
@@ -138,22 +138,22 @@ static legacy_s16 run_setup(void)
 	return output.status;
 }
 
-static void put_tile(int column, int row, legacy_u8 tile)
+static void put_tile(legacy_s32 column, legacy_s32 row, legacy_u8 tile)
 {
 	output.elements[trackrows[row] + column] = tile;
 }
 
-static void rectangle(int width, int height, int start_side)
+static void rectangle(legacy_s32 width, legacy_s32 height, legacy_s32 start_side)
 {
-	int right = width + 4;
-	int bottom = height + 4;
+	legacy_s32 right = width + 4;
+	legacy_s32 bottom = height + 4;
 
 	initialize();
-	for (int index = 6; index < right; index++) {
+	for (legacy_s32 index = 6; index < right; index++) {
 		put_tile(index, 5, 5);
 		put_tile(index, bottom, 5);
 	}
-	for (int index = 6; index < bottom; index++) {
+	for (legacy_s32 index = 6; index < bottom; index++) {
 		put_tile(5, index, 4);
 		put_tile(right, index, 4);
 	}
@@ -179,22 +179,22 @@ static void rectangle(int width, int height, int start_side)
 
 static void test_closed_routes(void)
 {
-	for (int width = 3; width <= 20; width++) {
-		for (int height = 3; height <= 20; height++) {
-			for (int side = 0; side < 4; side++) {
-				for (int raised = 0; raised <= 1; raised++) {
+	for (legacy_s32 width = 3; width <= 20; width++) {
+		for (legacy_s32 height = 3; height <= 20; height++) {
+			for (legacy_s32 side = 0; side < 4; side++) {
+				for (legacy_s32 raised = 0; raised <= 1; raised++) {
 					rectangle(width, height, side);
 					memset(output.terrain, raised * 6, sizeof(output.terrain));
 					assert(run_setup() == 0);
-					int expected_pieces = 2 * (width + height) - 4;
+					legacy_s32 expected_pieces = 2 * (width + height) - 4;
 					assert(track_pieces_counter == expected_pieces);
 					assert(trackside_camera_count == expected_pieces / 3);
 					assert(track_angle == side * 256);
-					for (int index = 0; index < expected_pieces; index++) {
+					for (legacy_s32 index = 0; index < expected_pieces; index++) {
 						assert(output.primary[index] == (index + 1) % expected_pieces);
 						assert(output.alternate[index] == -1);
 					}
-					for (int index = 0; index < trackside_camera_count; index++) {
+					for (legacy_s32 index = 0; index < trackside_camera_count; index++) {
 						assert(output.camera_height[index] == raised * 450);
 						assert(output.camera_reserved[index] == 0);
 					}
@@ -220,9 +220,9 @@ static void test_deferred_branch(void)
 	put_tile(5, 7, 2);
 	assert(run_setup() == 0);
 	assert(track_pieces_counter == 29);
-	int second_split = -1;
-	int first_split = -1;
-	for (int index = 0; index < track_pieces_counter; index++) {
+	legacy_s32 second_split = -1;
+	legacy_s32 first_split = -1;
+	for (legacy_s32 index = 0; index < track_pieces_counter; index++) {
 		if (output.element_ids[index] == 2) {
 			if (output.traversal[index] == 0) {
 				first_split = index;
@@ -283,7 +283,7 @@ int main(int argc, char **argv)
 	test_closed_routes();
 	test_deferred_branch();
 	test_failures();
-	for (int index = 1; index < argc; index++) {
+	for (legacy_s32 index = 1; index < argc; index++) {
 		test_replay(argv[index]);
 	}
 	return 0;

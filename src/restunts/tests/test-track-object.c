@@ -31,7 +31,7 @@ static void initialize_track(void)
 	track_terrain_map = terrain;
 	planptr = planes;
 	wallptr = walls;
-	for (int index = 0; index < TRACK_GRID_SIZE; index++) {
+	for (legacy_s32 index = 0; index < TRACK_GRID_SIZE; index++) {
 		trackrows[index] = index * TRACK_GRID_SIZE;
 		terrainrows[index] = (TRACK_GRID_LAST_INDEX - index) * TRACK_GRID_SIZE;
 		track_column_centers[index] = index * 1024 + 512;
@@ -39,7 +39,7 @@ static void initialize_track(void)
 		track_column_positions[index] = index * 1024;
 		terrainpos[index] = index * 1024;
 	}
-	for (int index = 0; index < (int)TRACK_WALL_RESOURCE_COUNT; index++) {
+	for (legacy_s32 index = 0; index < (legacy_s32)TRACK_WALL_RESOURCE_COUNT; index++) {
 		walls[index].x = (legacy_s16)(index * 11 - 1024);
 		walls[index].z = (legacy_s16)(index * 7 - 900);
 		walls[index].orientation = (legacy_s16)(index * 19);
@@ -91,13 +91,14 @@ static legacy_u32 probe(legacy_u32 hash, struct VECTOR *position, struct VECTOR 
 		fprintf(stderr, "Track object mismatch: model %d, rotation %d, position %d/%d/%d\n",
 				trkObjectList[1].ss_physicalModel, trkObjectList[1].ss_rotY, position->x,
 				position->y, position->z);
-		for (int index = 0; index < RESULT_COUNT; index++) {
-			fprintf(stderr, "  output %d: %d != %d\n", index, reference[index], result[index]);
+		for (legacy_s32 index = 0; index < RESULT_COUNT; index++) {
+			fprintf(stderr, "  output %" LEGACY_PRId32 ": %d != %d\n", index, reference[index],
+					result[index]);
 		}
 		assert(0);
 	}
 #endif
-	for (int index = 0; index < RESULT_COUNT; index++) {
+	for (legacy_s32 index = 0; index < RESULT_COUNT; index++) {
 		hash = (hash ^ ((legacy_u16)result[index] & 255U)) * 16777619UL;
 		hash = (hash ^ ((legacy_u16)result[index] >> 8)) * 16777619UL;
 	}
@@ -108,7 +109,7 @@ static legacy_u32 probe(legacy_u32 hash, struct VECTOR *position, struct VECTOR 
  * mirrored pieces, all four rotations, both height layers and wall crossings.
  * Query-local centres let large elements use their full local coordinate range
  * without redirecting the query to another tile. */
-static legacy_u32 probe_model(int model)
+static legacy_u32 probe_model(legacy_s32 model)
 {
 	trkObjectList[1].ss_physicalModel = (legacy_s8)model;
 	trkObjectList[1].ss_multiTileFlag = 0;
@@ -135,18 +136,17 @@ static legacy_u32 probe_model(int model)
 		-32768, -1,	 0,	  87,  88,	89,	 99,  100, 101, 143, 144, 145, 150, 151, 152, 170,	171,
 		172,	264, 265, 266, 349, 350, 351, 389, 390, 391, 450, 523, 524, 525, 975, 32767};
 	struct VECTOR next_position;
-	for (int rotation = 0; rotation < 4; rotation++) {
+	for (legacy_s32 rotation = 0; rotation < 4; rotation++) {
 		trkObjectList[1].ss_rotY = (legacy_s16)(rotation * 256);
-		for (unsigned int x_index = 0; x_index < sizeof(x_values) / sizeof(x_values[0]);
-			 x_index++) {
-			for (unsigned int z_index = 0; z_index < sizeof(z_values) / sizeof(z_values[0]);
+		for (legacy_u32 x_index = 0; x_index < sizeof(x_values) / sizeof(x_values[0]); x_index++) {
+			for (legacy_u32 z_index = 0; z_index < sizeof(z_values) / sizeof(z_values[0]);
 				 z_index++) {
 				/* Cycle through every height at each x and z boundary while
 				 * keeping the full regression fast enough for the host suite. */
-				unsigned int height_index =
+				legacy_u32 height_index =
 					(x_index + z_index + rotation) % (sizeof(heights) / sizeof(heights[0]));
 				position.y = heights[height_index];
-				int delta = (int)((x_index + z_index) % 3) - 1;
+				legacy_s32 delta = (legacy_s32)((x_index + z_index) % 3) - 1;
 				next_position.x = (legacy_s16)(position.x + delta * 130);
 				next_position.z = (legacy_s16)(position.z - delta * 180);
 				next_position.y = LEGACY_S16_WRAP_ADD(position.y, 1);
@@ -176,10 +176,10 @@ static legacy_u32 probe_layouts(void)
 	static const legacy_s16 heights[] = {-32768, 0, 143, 151, 265, 390, 524};
 	struct VECTOR position;
 	struct VECTOR next_position;
-	for (int tile = 0; tile < 215; tile++) {
-		for (unsigned int continuation_index = 0; continuation_index < 4; continuation_index++) {
+	for (legacy_s32 tile = 0; tile < 215; tile++) {
+		for (legacy_u32 continuation_index = 0; continuation_index < 4; continuation_index++) {
 			initialize_track();
-			int current_index = terrainrows[TEST_ROW] + TEST_COLUMN;
+			legacy_s32 current_index = terrainrows[TEST_ROW] + TEST_COLUMN;
 			elements[current_index] = (legacy_u8)tile;
 			if (continuation_index != 0) {
 				elements[current_index] = continuations[continuation_index];
@@ -187,10 +187,10 @@ static legacy_u32 probe_layouts(void)
 				elements[terrainrows[TEST_ROW + 1] + TEST_COLUMN] = (legacy_u8)tile;
 				elements[terrainrows[TEST_ROW] + TEST_COLUMN - 1] = (legacy_u8)tile;
 			}
-			for (int terrain_tile = 0; terrain_tile < 20; terrain_tile++) {
+			for (legacy_s32 terrain_tile = 0; terrain_tile < 20; terrain_tile++) {
 				terrain[trackrows[TEST_ROW] + TEST_COLUMN] = (legacy_u8)terrain_tile;
-				for (unsigned int x_index = 0; x_index < 7; x_index++) {
-					for (unsigned int z_index = 0; z_index < 7; z_index++) {
+				for (legacy_u32 x_index = 0; x_index < 7; x_index++) {
+					for (legacy_u32 z_index = 0; z_index < 7; z_index++) {
 						position.x = TEST_ORIGIN + offsets[x_index];
 						position.z = TEST_ORIGIN + offsets[z_index];
 						position.y = heights[(x_index + z_index) % 7];
@@ -234,7 +234,7 @@ static void test_outside_track(void)
 	struct VECTOR next_position = {0, 0, 0};
 	static const legacy_s16 coordinates[] = {-32768, -1, 30720, 32767};
 	struct VECTOR position = {0, 0, 0};
-	for (unsigned int index = 0; index < sizeof(coordinates) / sizeof(coordinates[0]); index++) {
+	for (legacy_u32 index = 0; index < sizeof(coordinates) / sizeof(coordinates[0]); index++) {
 		position.x = coordinates[index];
 		probe(0, &position, &next_position);
 		assert(planindex == 0);
@@ -269,14 +269,16 @@ int main(void)
 	initialize_track();
 	struct TRACKOBJECT saved_object = trkObjectList[1];
 	legacy_u32 hash;
-	for (int model = -1; model <= 75; model++) {
+	for (legacy_s32 model = -1; model <= 75; model++) {
 		hash = probe_model(model);
 #ifdef TRACK_OBJECT_RECORD_BASELINE
-		fprintf(stdout, "0x%08lxUL,%s", (unsigned long)hash, (model + 2) % 5 ? " " : "\n");
+		fprintf(stdout, "0x%08" LEGACY_PRIx32 "UL,%s", hash, (model + 2) % 5 ? " " : "\n");
 #else
 		if (hash != model_hashes[model + 1]) {
-			fprintf(stderr, "Track object model %d: got %08lx, expected %08lx\n", model,
-					(unsigned long)hash, (unsigned long)model_hashes[model + 1]);
+			fprintf(stderr,
+					"Track object model %" LEGACY_PRId32 ": got %08" LEGACY_PRIx32
+					", expected %08" LEGACY_PRIx32 "\n",
+					model, hash, model_hashes[model + 1]);
 			assert(0);
 		}
 #endif
@@ -284,7 +286,7 @@ int main(void)
 	trkObjectList[1] = saved_object;
 	hash = probe_layouts();
 #ifdef TRACK_OBJECT_RECORD_BASELINE
-	fprintf(stdout, "\nlayout=0x%08lxUL\n", (unsigned long)hash);
+	fprintf(stdout, "\nlayout=0x%08" LEGACY_PRIx32 "UL\n", hash);
 #else
 	assert(hash == 0x49fa168bUL);
 #endif

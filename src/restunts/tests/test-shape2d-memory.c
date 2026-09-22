@@ -30,7 +30,7 @@ static union {
 } test_memory;
 static legacy_u8 resource_fixture[TEST_RESOURCE_BYTES];
 static legacy_u8 expected_resource[TEST_RESOURCE_BYTES];
-static unsigned load_count;
+static legacy_u32 load_count;
 
 void fatal_error(const legacy_s8 *format, ...)
 {
@@ -114,7 +114,7 @@ static void make_fixture(void)
 {
 	resource_file_set_size(resource_fixture, TEST_RESOURCE_BYTES);
 	LEGACY_WRITE_U16_LE(resource_fixture + 4U, TEST_SHAPE_COUNT);
-	for (unsigned shape_index = 0; shape_index < TEST_SHAPE_COUNT; shape_index++) {
+	for (legacy_u32 shape_index = 0; shape_index < TEST_SHAPE_COUNT; shape_index++) {
 		legacy_u8 *identifier = resource_fixture + 6U + shape_index * 4U;
 		memcpy(identifier, "SH00", 4U);
 		identifier[3] += shape_index;
@@ -124,7 +124,7 @@ static void make_fixture(void)
 		shape->width = TEST_SHAPE_WIDTH;
 		shape->height = TEST_SHAPE_HEIGHT;
 		legacy_u8 *pixels = (legacy_u8 *)shape + SHAPE2D_HEADER_SIZE;
-		for (unsigned index = 0; index < TEST_SHAPE_WIDTH * TEST_SHAPE_HEIGHT; index++) {
+		for (legacy_u32 index = 0; index < TEST_SHAPE_WIDTH * TEST_SHAPE_HEIGHT; index++) {
 			pixels[index] = (legacy_u8)(index % 128U < 24U ? index : shape_index + 16U);
 		}
 	}
@@ -147,7 +147,7 @@ static size_t check_parsed_resource(legacy_u8 *resource)
 {
 	legacy_u8 *end = resource;
 	assert(resource_file_count(resource) == TEST_SHAPE_COUNT);
-	for (unsigned shape_index = 0; shape_index < TEST_SHAPE_COUNT; shape_index++) {
+	for (legacy_u32 shape_index = 0; shape_index < TEST_SHAPE_COUNT; shape_index++) {
 		legacy_u8 *shape = resource_file_data(resource, shape_index);
 		legacy_u8 *source = resource_file_data(resource_fixture, shape_index);
 		assert(memcmp(shape, source, SHAPE2D_HEADER_SIZE) == 0);
@@ -155,16 +155,16 @@ static size_t check_parsed_resource(legacy_u8 *resource)
 					  resource_file_identifier(resource_fixture, shape_index), 4U) == 0);
 		legacy_u8 *encoded = shape + SHAPE2D_HEADER_SIZE;
 		legacy_u8 *pixels = source + SHAPE2D_HEADER_SIZE;
-		unsigned decoded = 0;
+		legacy_u32 decoded = 0;
 		for (;;) {
 			legacy_u8 control_byte = *encoded++;
 			legacy_s8 control = LEGACY_S8_FROM_BITS(control_byte);
 			if (control == 0) {
 				break;
 			}
-			unsigned count = control < 0 ? -control : control;
+			legacy_u32 count = control < 0 ? -control : control;
 			assert(decoded + count <= TEST_SHAPE_WIDTH * TEST_SHAPE_HEIGHT);
-			for (unsigned index = 0; index < count; index++) {
+			for (legacy_u32 index = 0; index < count; index++) {
 				assert(pixels[decoded++] == (control < 0 ? *encoded++ : *encoded));
 			}
 			if (control > 0) {
@@ -191,7 +191,7 @@ int main(void)
  * exercises the reduced overlap margin selected from available space. */
 	static const legacy_u16 available[] = {TEST_RESOURCE_PARAGRAPHS * 15U / 8U,
 										   TEST_RESOURCE_PARAGRAPHS * 8U / 5U};
-	for (unsigned scenario = 0; scenario < sizeof(available) / sizeof(available[0]); scenario++) {
+	for (legacy_u32 scenario = 0; scenario < sizeof(available) / sizeof(available[0]); scenario++) {
 		resource = load_with_available_space(available[scenario]);
 		assert(check_parsed_resource(resource) == parsed_bytes);
 		assert(memcmp(resource, expected_resource, parsed_bytes) == 0);

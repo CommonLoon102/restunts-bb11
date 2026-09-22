@@ -19,12 +19,12 @@ static struct SPRITE sprites[2];
 static legacy_u16 sprite_count;
 static legacy_u16 live_sprite_count;
 static struct SPRITE drawing_context[SPRITE_STATE_COUNT];
-static int capture_pixels;
+static legacy_s32 capture_pixels;
 static legacy_u8 pixel_buffers[4][320 * 200];
-static int optional_shapes;
+static legacy_s32 optional_shapes;
 static legacy_s8 resources[2];
-static int capture_needle_lines;
-static unsigned int needle_line_count;
+static legacy_s32 capture_needle_lines;
+static legacy_u32 needle_line_count;
 static struct NEEDLE_LINE {
 	legacy_u16 x, y, x2, y2, color;
 } needle_lines[2];
@@ -54,7 +54,7 @@ static legacy_u8 instrument_pixel(legacy_u16 x, legacy_u16 y)
 {
 	return (legacy_u8)(1 + (x * 11 + y * 7) % 200);
 }
-static void draw_pixels(struct SHAPE2D *shape, legacy_s16 x, legacy_s16 y, int raw_bitmap)
+static void draw_pixels(struct SHAPE2D *shape, legacy_s16 x, legacy_s16 y, legacy_s32 raw_bitmap)
 {
 	if (capture_pixels == 0) {
 		return;
@@ -320,20 +320,20 @@ void *mmgr_free(legacy_s8 *pointer)
 void locate_many_resources(legacy_s8 *data, const legacy_s8 *names, legacy_s8 **result)
 {
 	(void)data;
-	unsigned int first = names == dashboard_wheel_and_instrument_ids ? 0
-						 : names == dashboard_gear_and_dot_shape_ids ? 10
-																	 : 20;
-	unsigned int count = first == 0 ? 9 : first == 10 ? 6 : 10;
+	legacy_u32 first = names == dashboard_wheel_and_instrument_ids ? 0
+					   : names == dashboard_gear_and_dot_shape_ids ? 10
+																   : 20;
+	legacy_u32 count = first == 0 ? 9 : first == 10 ? 6 : 10;
 	record(38);
 	record(first);
-	for (unsigned int i = 0; i < count; i++) {
+	for (legacy_u32 i = 0; i < count; i++) {
 		result[i] = (legacy_s8 *)&shapes[first + i];
 	}
 }
 legacy_s8 *locate_shape_nofatal(legacy_s8 *data, const legacy_s8 *name)
 {
 	(void)data;
-	unsigned int index = name == dashboard_roof_shape_id ? 31 : 32;
+	legacy_u32 index = name == dashboard_roof_shape_id ? 31 : 32;
 	record(39);
 	record(index);
 	return optional_shapes ? (legacy_s8 *)&shapes[index] : 0;
@@ -341,15 +341,15 @@ legacy_s8 *locate_shape_nofatal(legacy_s8 *data, const legacy_s8 *name)
 legacy_s8 *locate_shape_fatal(legacy_s8 *data, const legacy_s8 *name)
 {
 	(void)data;
-	unsigned int index = name == dashboard_background_shape_id ? 30
-						 : name == dashboard_roof_shape_id	   ? 31
-						 : name == dashboard_top_shape_id	   ? 32
-															   : 33;
+	legacy_u32 index = name == dashboard_background_shape_id ? 30
+					   : name == dashboard_roof_shape_id	 ? 31
+					   : name == dashboard_top_shape_id		 ? 32
+															 : 33;
 	record(40);
 	record(index);
 	return (legacy_s8 *)&shapes[index];
 }
-static void capture_cache(unsigned int buffer)
+static void capture_cache(legacy_u32 buffer)
 {
 	record(dashboard_gear_knob_visible_cache[buffer]);
 	record(dashboard_gear_knob_x_cache[buffer]);
@@ -361,13 +361,13 @@ static void capture_cache(unsigned int buffer)
 	record(dashboard_speed_index_cache[buffer]);
 	record(dashboard_rpm_index_cache[buffer]);
 }
-static void initialize_scenario(unsigned int scenario)
+static void initialize_scenario(legacy_u32 scenario)
 {
 	memset(&state, 0, sizeof(state));
 	memset(&simd_player, 0, sizeof(simd_player));
 	memset(sprites, 0, sizeof(sprites));
 	memset(drawing_context, 0, sizeof(drawing_context));
-	for (unsigned int i = 0; i < 40; i++) {
+	for (legacy_u32 i = 0; i < 40; i++) {
 		shapes[i].width = i + 1;
 		shapes[i].height = i + 2;
 		shapes[i].centre_x = 3;
@@ -375,13 +375,13 @@ static void initialize_scenario(unsigned int scenario)
 		shapes[i].position_x = 20 + i;
 		shapes[i].position_y = 50 + i;
 	}
-	for (unsigned int i = 0; i < sizeof(simd_player.steeringdots); i++) {
+	for (legacy_u32 i = 0; i < sizeof(simd_player.steeringdots); i++) {
 		simd_player.steeringdots[i] = 40 + (i % 50);
 	}
-	for (unsigned int i = 0; i < sizeof(simd_player.spdpoints); i++) {
+	for (legacy_u32 i = 0; i < sizeof(simd_player.spdpoints); i++) {
 		simd_player.spdpoints[i] = 10 + (i % 50);
 	}
-	for (unsigned int i = 0; i < sizeof(simd_player.revpoints); i++) {
+	for (legacy_u32 i = 0; i < sizeof(simd_player.revpoints); i++) {
 		simd_player.revpoints[i] = 20 + (i % 50);
 	}
 	simd_player.reserved_handling_words[SIMD_NEEDLE_COLORS_INDEX] = 15;
@@ -405,14 +405,14 @@ static void initialize_scenario(unsigned int scenario)
 }
 /* Full-entry traces cover resource lifetime, both buffers, mouse ordering,
  * cache invalidation, wheel movement, and the 99/100/199/200 digit boundaries. */
-static void run_scenario(unsigned int scenario)
+static void run_scenario(legacy_u32 scenario)
 {
 	initialize_scenario(scenario);
 	setup_car_shapes(DASHBOARD_OPERATION_LOAD);
 	setup_car_shapes(DASHBOARD_OPERATION_REDRAW_STATIC);
 	static const legacy_s16 steering[] = {-88, -80, 0, 80, 88, 0};
 	static const legacy_u16 speeds[] = {0, 99, 100, 199, 200, 255};
-	for (unsigned int i = 0; i < 6; i++) {
+	for (legacy_u32 i = 0; i < 6; i++) {
 		state.playerstate.car_steeringAngle = steering[i];
 		state.playerstate.car_rev_speed = speeds[i] << 8;
 		state.playerstate.car_currpm = i * 600;
@@ -449,8 +449,8 @@ static void test_dashboard_scratch_pixels(void)
 		{0, 100, 320, 100, -5, 150, 60, 50, 70, 60, 1},
 		{0, 100, 320, 100, 220, 130, 60, 50, 80, 40, 2},
 	};
-	for (unsigned int mode = 0; mode < 2; mode++) {
-		for (unsigned int index = 0; index < sizeof(cases) / sizeof(cases[0]); index++) {
+	for (legacy_u32 mode = 0; mode < 2; mode++) {
+		for (legacy_u32 index = 0; index < sizeof(cases) / sizeof(cases[0]); index++) {
 			initialize_scenario(mode * 6);
 			capture_pixels = 1;
 			shapes[30].position_x = cases[index].dash_x;
@@ -472,11 +472,11 @@ static void test_dashboard_scratch_pixels(void)
 			assert(dashbmp_y == cases[index].dash_y);
 			setup_car_shapes(DASHBOARD_OPERATION_REDRAW_STATIC);
 			struct SPRITE second_context = drawing_context[1];
-			for (unsigned int pass = 0; pass < 4; pass++) {
+			for (legacy_u32 pass = 0; pass < 4; pass++) {
 				/* Pass 1 only changes gauges, pass 2 only hides the knob;
 				 * the other passes compose both panels in sequence. */
-				int draw_gear = pass != 1;
-				int draw_instruments = pass != 2;
+				legacy_s32 draw_gear = pass != 1;
+				legacy_s32 draw_instruments = pass != 2;
 				state.playerstate.car_changing_gear = pass == 2 ? 0 : 1;
 				state.playerstate.car_gear_change_delay = pass == 2 ? 0 : 1;
 				if (draw_instruments) {
@@ -494,7 +494,7 @@ static void test_dashboard_scratch_pixels(void)
 				assert(drawing_context[0].sprite_top == 0);
 				assert(drawing_context[0].sprite_bottom == height_above_replaybar);
 				assert(memcmp(&second_context, &drawing_context[1], sizeof(second_context)) == 0);
-				for (unsigned int page = 0; page < 2; page++) {
+				for (legacy_u32 page = 0; page < 2; page++) {
 					for (legacy_s16 y = 0; y < 200; y++) {
 						for (legacy_s16 x = 0; x < 320; x++) {
 							legacy_u8 expected = (legacy_u8)(253 + page);
@@ -540,7 +540,7 @@ static void test_needle_colors(void)
 		{0x0000, 0, 0},	  {0x005F, 95, 95},	  {0x0080, 128, 128}, {0x00FF, 255, 255},
 		{0x0F04, 4, 15},  {0xFF80, 128, 255}, {0x80FF, 255, 128}, {0x8000, 0, 128},
 	};
-	for (unsigned int i = 0; i < sizeof(cases) / sizeof(cases[0]); i++) {
+	for (legacy_u32 i = 0; i < sizeof(cases) / sizeof(cases[0]); i++) {
 		for (legacy_s16 speed_center_y = -1; speed_center_y <= 1; speed_center_y++) {
 			initialize_scenario(0);
 			legacy_u8 resource[SIMD_RESOURCE_SIZE] = {0};
@@ -564,7 +564,7 @@ static void test_needle_colors(void)
 			capture_needle_lines = 1;
 			setup_car_shapes(DASHBOARD_OPERATION_UPDATE);
 			capture_needle_lines = 0;
-			unsigned int rpm_line_index = 0;
+			legacy_u32 rpm_line_index = 0;
 			if (speed_center_y == 1) {
 				assert(needle_line_count == 2);
 				assert(needle_lines[0].x == 10 && needle_lines[0].y == 1);
@@ -584,7 +584,7 @@ static void test_needle_colors(void)
 int main(void)
 {
 	trace = 2166136261UL;
-	for (unsigned int scenario = 0; scenario < 48; scenario++) {
+	for (legacy_u32 scenario = 0; scenario < 48; scenario++) {
 		run_scenario(scenario);
 	}
 	assert(trace == 0x62cfc3d5UL);

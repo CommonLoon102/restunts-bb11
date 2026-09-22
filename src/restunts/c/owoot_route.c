@@ -45,7 +45,7 @@ enum OWOOT_GATE_KIND {
 struct OWOOT_GATE {
 	struct OWOOT_POINT center, tangent, edge, normal;
 	legacy_s32 lateral_limit, normal_limit;
-	enum OWOOT_GATE_KIND kind;
+	legacy_u16 kind;
 };
 
 static legacy_s32 route_abs(legacy_s32 value)
