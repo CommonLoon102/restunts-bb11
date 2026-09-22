@@ -550,6 +550,31 @@ static void test_fps_sampling(void)
 	assert_fps("20 FPS", 2);
 }
 
+static void test_fps_outside_race(void)
+{
+	reset_ingame_text("REPLAY");
+	/* Intro rendering must ignore cockpit and replay state left by a previous race. */
+	dashboard_visible = 1;
+	roofbmpheight_copy = 20;
+	rect_ingame_text = (struct RECTANGLE){100, 200, 150, 190};
+	struct RECTANGLE saved_text_rect = rect_ingame_text;
+	struct RECTANGLE *bounds = frame_fps_draw_text();
+	assert(memcmp(bounds, &empty_rect, sizeof(*bounds)) == 0);
+	assert(text_draw_count == 0);
+	fps_display_enabled = 1;
+	frame_fps_record_presented();
+	present_frames(20, DOS_TIMER_REALTIME_TICKS_PER_SECOND);
+	bounds = frame_fps_draw_text();
+	assert(text_draw_count == 1);
+	assert(strcmp(text_draws[0].text, "20 FPS") == 0);
+	assert(text_draws[0].x == 8 && text_draws[0].y == 3);
+	assert(text_draws[0].color == 2 && text_draws[0].shadow_color == 0);
+	assert(bounds->left == 8 && bounds->right == 57);
+	assert(bounds->top == 3 && bounds->bottom == 12);
+	assert(restored_roof_count == 0 && copied_roof_count == 0);
+	assert(memcmp(&rect_ingame_text, &saved_text_rect, sizeof(rect_ingame_text)) == 0);
+}
+
 static void test_fps_idle_expiry(void)
 {
 	reset_ingame_text("");
@@ -675,6 +700,7 @@ int main(void)
 	test_unnamed_replay_overlay();
 	test_filename_hidden_in_live_race_and_demo();
 	test_fps_sampling();
+	test_fps_outside_race();
 	test_fps_idle_expiry();
 	test_fps_camera_modes();
 	test_fps_and_long_replay_filename();

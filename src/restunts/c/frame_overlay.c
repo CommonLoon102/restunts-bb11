@@ -150,14 +150,12 @@ void frame_fps_present_roof(void)
 	sprite_restore_context(saved_context);
 }
 
-static legacy_u16 draw_fps_text(void)
+struct RECTANGLE *frame_fps_draw_text(void)
 {
 	if (fps_display_enabled == 0) {
-		return 0;
+		return &empty_rect;
 	}
 
-	/* Only the roof lies outside the scene that was redrawn this frame. */
-	frame_fps_restore_roof();
 	legacy_s8 text[FPS_TEXT_BUFFER_SIZE];
 	legacy_s8 digits[FPS_TEXT_MAX_DIGITS];
 	legacy_u16 value = fps_sample_value;
@@ -171,9 +169,18 @@ static legacy_u16 draw_fps_text(void)
 	}
 	copy_string(text + count, " FPS");
 	legacy_s16 color = fps_sample_value < FPS_TEXT_TARGET ? FPS_TEXT_RED : FPS_TEXT_GREEN;
-	rect_union(&rect_ingame_text,
-			   intro_draw_text(text, REPLAY_TEXT_LEFT_X, REPLAY_FILENAME_Y, color, 0),
-			   &rect_ingame_text);
+	return intro_draw_text(text, REPLAY_TEXT_LEFT_X, REPLAY_FILENAME_Y, color, 0);
+}
+
+static legacy_u16 draw_fps_text(void)
+{
+	if (fps_display_enabled == 0) {
+		return 0;
+	}
+
+	/* Only the roof lies outside the scene that was redrawn this frame. */
+	frame_fps_restore_roof();
+	rect_union(&rect_ingame_text, frame_fps_draw_text(), &rect_ingame_text);
 	/* Reserve the maximum width so changing FPS digits never rewraps the filename. */
 	return FPS_TEXT_BUFFER_SIZE;
 }

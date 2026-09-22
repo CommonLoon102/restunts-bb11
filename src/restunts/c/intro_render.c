@@ -216,7 +216,7 @@ struct INTRO_SESSION {
 #ifdef RESTUNTS_SDL3
 static void intro_request_full_redraw(struct INTRO_SESSION *intro)
 {
-	/* Refresh both pages when changing resolution, including an otherwise idle frame. */
+	/* Refresh both pages after display changes, including an otherwise idle frame. */
 	for (legacy_u16 i = 0; i < INTRO_POINT_BUFFER_COUNT; i++) {
 		frame_layer_rects[i] = intro_redraw_cliprect;
 	}
@@ -411,7 +411,20 @@ static void intro_render_session(struct INTRO_SESSION *intro)
 		draw_car, intro->logo_changed, intro->stars, active_points, active_point_count,
 		&frame_layer_rects[intro->rect_index], &intro->shape_rect, &intro->combined_rect);
 
+#ifdef RESTUNTS_SDL3
+	if (fps_display_enabled != 0) {
+		struct RECTANGLE *fps_rect = frame_fps_draw_text();
+		if (slow_video_mgmt_copy != 0) {
+			/* Erase the previous digits and include the counter in the screen copy. */
+			rect_union(&intro->shape_rect, fps_rect, &intro->shape_rect);
+			rect_union(&intro->combined_rect, fps_rect, &intro->combined_rect);
+		}
+	}
+#endif
 	intro_present_session(intro);
+#ifdef RESTUNTS_SDL3
+	frame_fps_record_presented();
+#endif
 }
 
 static void intro_finish_session(struct INTRO_SESSION *intro)
@@ -437,6 +450,7 @@ legacy_s8 setup_intro(void)
 	intro_create_stars(intro.stars);
 	intro_prepare_session(&intro);
 #ifdef RESTUNTS_SDL3
+	frame_fps_reset();
 	intro_request_full_redraw(&intro);
 #endif
 	legacy_s8 interrupted = 0;
@@ -448,7 +462,7 @@ legacy_s8 setup_intro(void)
 		}
 		legacy_s16 key = input_do_checking(delta);
 #ifdef RESTUNTS_SDL3
-		if (key == KEY_F12) {
+		if (key == KEY_F11 || key == KEY_F12) {
 			handle_ingame_kb_shortcuts(key);
 			intro_request_full_redraw(&intro);
 			key = 0;
@@ -464,5 +478,8 @@ legacy_s8 setup_intro(void)
 		}
 	}
 	intro_finish_session(&intro);
+#ifdef RESTUNTS_SDL3
+	frame_fps_reset();
+#endif
 	return interrupted;
 }
