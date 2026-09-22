@@ -1,6 +1,7 @@
 #include "legacy.h"
 #include "math.h"
 #include "physics_internal.h"
+#include "phantom_physics.h"
 #include "residue.h"
 #include "trackdata_layout.h"
 #include "track_objects.h"
@@ -429,17 +430,18 @@ legacy_s16 get_track_collision_points(legacy_s16 column_arg, legacy_s16 row_arg,
 struct LEGACY_EXECUTION_RESIDUE legacy_execution_residue;
 legacy_s16 legacy_render_player_headings_active;
 
-static legacy_s16 decay_suspension_target(struct CARSTATE *carstate, legacy_s16 wheel_index)
+static legacy_s16 decay_suspension_target(struct CARSTATE *carstate, legacy_s16 wheel_index,
+										  legacy_s16 decay)
 {
-	/* Decay the per-wheel target by four toward zero each frame. */
+	/* Decay the per-wheel target toward zero at the requested tick rate. */
 	legacy_s16 target = (legacy_s16)carstate->car_suspension_target[wheel_index];
 	if (target < 0) {
-		target = LEGACY_S16_WRAP_ADD(target, SUSPENSION_TARGET_DECAY);
+		target = LEGACY_S16_WRAP_ADD(target, decay);
 		if (target > 0) {
 			target = 0;
 		}
 	} else if (target > 0) {
-		target = LEGACY_S16_WRAP_SUB(target, SUSPENSION_TARGET_DECAY);
+		target = LEGACY_S16_WRAP_SUB(target, decay);
 		if (target < 0) {
 			target = 0;
 		}
@@ -449,21 +451,22 @@ static legacy_s16 decay_suspension_target(struct CARSTATE *carstate, legacy_s16 
 }
 
 static legacy_s16 return_wheel_suspension(struct CARSTATE *carstate, legacy_s16 wheel_index,
-										  legacy_s16 target, legacy_s16 previous_deflection)
+										  legacy_s16 target, legacy_s16 previous_deflection,
+										  legacy_s16 return_step)
 {
 	legacy_s16 adjustment = 0;
 
 	if ((legacy_s16)carstate->car_suspension_deflection[wheel_index] > target) {
-		carstate->car_suspension_deflection[wheel_index] = LEGACY_S16_WRAP_SUB(
-			carstate->car_suspension_deflection[wheel_index], SUSPENSION_RETURN_STEP);
+		carstate->car_suspension_deflection[wheel_index] =
+			LEGACY_S16_WRAP_SUB(carstate->car_suspension_deflection[wheel_index], return_step);
 		if ((legacy_s16)carstate->car_suspension_deflection[wheel_index] < target) {
 			carstate->car_suspension_deflection[wheel_index] = target;
 		}
 		adjustment = LEGACY_S16_WRAP_SUB(previous_deflection,
 										 carstate->car_suspension_deflection[wheel_index]);
 	} else if ((legacy_s16)carstate->car_suspension_deflection[wheel_index] < target) {
-		carstate->car_suspension_deflection[wheel_index] = LEGACY_S16_WRAP_ADD(
-			carstate->car_suspension_deflection[wheel_index], SUSPENSION_RETURN_STEP);
+		carstate->car_suspension_deflection[wheel_index] =
+			LEGACY_S16_WRAP_ADD(carstate->car_suspension_deflection[wheel_index], return_step);
 		if ((legacy_s16)carstate->car_suspension_deflection[wheel_index] > target) {
 			carstate->car_suspension_deflection[wheel_index] = target;
 		}
@@ -471,13 +474,14 @@ static legacy_s16 return_wheel_suspension(struct CARSTATE *carstate, legacy_s16 
 	return adjustment;
 }
 
-legacy_s16 update_wheel_suspension(struct CARSTATE *carstate, legacy_s16 contact_delta_arg,
-								   legacy_s16 wheel_index)
+static legacy_s16 update_wheel_suspension_step(struct CARSTATE *carstate,
+											   legacy_s16 contact_delta_arg, legacy_s16 wheel_index,
+											   legacy_s16 target_decay, legacy_s16 return_step)
 {
 	legacy_s16 previous_deflection = (legacy_s16)carstate->car_suspension_deflection[wheel_index];
 	legacy_s16 contact_delta = (legacy_s16)contact_delta_arg;
 
-	legacy_s16 target = decay_suspension_target(carstate, wheel_index);
+	legacy_s16 target = decay_suspension_target(carstate, wheel_index, target_decay);
 
 	if (contact_delta < 0 && (legacy_s16)carstate->car_suspension_deflection[wheel_index] >
 								 LEGACY_S16_WRAP_NEGATE(contact_delta)) {
@@ -486,7 +490,8 @@ legacy_s16 update_wheel_suspension(struct CARSTATE *carstate, legacy_s16 contact
 
 	legacy_s16 adjustment = 0;
 	if (contact_delta == 0) {
-		adjustment = return_wheel_suspension(carstate, wheel_index, target, previous_deflection);
+		adjustment = return_wheel_suspension(carstate, wheel_index, target, previous_deflection,
+											 return_step);
 	} else if (contact_delta > 0) {
 		if (contact_delta > CONTACT_DELTA_LIMIT) {
 			contact_delta = CONTACT_DELTA_LIMIT;
@@ -520,6 +525,32 @@ legacy_s16 update_wheel_suspension(struct CARSTATE *carstate, legacy_s16 contact
 	}
 
 	return LEGACY_S16_WRAP_ADD(previous_deflection, adjustment);
+}
+
+legacy_s16 update_wheel_suspension(struct CARSTATE *carstate, legacy_s16 contact_delta,
+								   legacy_s16 wheel_index)
+{
+	return update_wheel_suspension_step(carstate, contact_delta, wheel_index,
+										SUSPENSION_TARGET_DECAY, SUSPENSION_RETURN_STEP);
+}
+
+legacy_s16 update_wheel_suspension_fraction(struct CARSTATE *carstate, legacy_s16 contact_delta,
+											legacy_s16 wheel_index, legacy_u32 fraction20)
+{
+	if (fraction20 == 0) {
+		return carstate->car_suspension_deflection[wheel_index];
+	}
+	if (fraction20 > 65536UL) {
+		fraction20 = 65536UL;
+	}
+	/* Contact distances are geometric constraints; only spring recovery and
+	 * target decay are rates. Scaling penetration would leave wheels in ground. */
+	legacy_s16 target_decay =
+		(legacy_s16)((SUSPENSION_TARGET_DECAY * fraction20 + 32768UL) / 65536UL);
+	legacy_s16 return_step =
+		(legacy_s16)((SUSPENSION_RETURN_STEP * fraction20 + 32768UL) / 65536UL);
+	return update_wheel_suspension_step(carstate, contact_delta, wheel_index, target_decay,
+										return_step);
 }
 
 legacy_s16 resolve_car_collision_speeds(struct CARSTATE *first_state, struct CARSTATE *second_state)

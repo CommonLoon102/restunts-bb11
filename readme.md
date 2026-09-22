@@ -87,13 +87,20 @@ screens. Menus, dashboard artwork, and replay controls retain their original
 pixel detail and size. Switching SuperSight off restores 320x200 rendering.
 The Open Watcom 16-bit DOS version retains its existing renderer.
 
-SuperSight also targets **60 FPS** in SDL3 driving, replay playback, the nighttime
-intro, and rotating car previews. Between simulation updates, the renderer
-extrapolates car and camera motion from the latest completed poses. Each actual
-update corrects that visual prediction, so collisions or abrupt direction changes
-can produce a small correction. This adds no deliberate simulation-tick delay.
-Input recording and physics retain their original 10 or 20 Hz schedule. Predicted
-poses never enter game state or replay data; toggling F12 during a replay does not
+SuperSight also targets **40 FPS** in SDL3 driving, replay playback, the nighttime
+intro, and rotating car previews. Between real simulation updates, driving and
+replay playback advance a disposable copy of the car physics in steps no longer
+than 1/40 second. At the normal 20 Hz simulation rate, one phantom frame appears
+between each pair of real updates. Each phantom frame uses the preceding state's
+motion, collision, and suspension, with the last sampled controls held constant.
+The next real update discards that branch and continues from the previous real
+state. This prevents visual predictions from carrying a landing through the ground
+without adding a deliberate simulation-tick delay. Short steps can still differ
+slightly from the next real update and produce a small correction.
+Input sampling, recording, and authoritative physics retain their original 10 or
+20 Hz schedule. Phantom crashes produce no sounds or gameplay events. Cracked
+glass, sinking, and explosions appear only after a real update confirms the event.
+Phantom state never enters replay data; toggling F12 during a replay does not
 change its simulated result. Seeking, pausing, and camera changes reset prediction.
 
 Press **F11** to toggle a frame-rate counter in the top-left corner. It measures
@@ -311,9 +318,14 @@ out/sdl3-linux-x64/restunts --data-dir stunts /nointro
 Use `out/sdl3-linux-x86` instead for the x86 build.
 
 The native `frame-prediction` and `sdl3-race-frames` tests check visual prediction,
-60 Hz pacing, and unchanged input/physics counts. `render-replay` compares every
-serialized state in its replay fixtures with SuperSight disabled, enabled, and
-repeatedly toggled, including intermediate predicted renders.
+40 Hz pacing, and unchanged input and authoritative physics counts. `render-replay`
+compares every serialized state and RNG seed with SuperSight disabled, enabled,
+and repeatedly toggled, including intermediate phantom physics and renders. It
+also checks that phantom steps preserve simulation scratch data and checkpoints.
+When `hardland.rpl` is available, its 16.00–16.50 second landing is covered.
+When `shaking.rpl` is available, its 40–45 second loop exit checks that a tiny
+phantom step cannot abruptly change cockpit rotation. Rendering checks also
+cover speculative and confirmed cracking, sinking, and explosions.
 
 #### Linux host: Windows backend
 

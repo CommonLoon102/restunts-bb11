@@ -705,7 +705,7 @@ static void predictive_presentation_case(void)
 		if (mode == 1) {
 			assert(input_polls == 100);
 			/* Include the initial presentation and the deadline at one second. */
-			assert(flush_count == 61);
+			assert(flush_count == 41);
 		}
 	}
 	scripted_input = 0;

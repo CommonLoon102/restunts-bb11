@@ -658,7 +658,7 @@ int main(void)
 		preview_present_count = preview_physics_steps = preview_toggle_count = 0;
 		preview_last_rotation = 0;
 		run_car_case(1);
-		assert(preview_last_rotation >= 98 && preview_last_rotation <= 100);
+		assert(preview_last_rotation >= 97 && preview_last_rotation <= 100);
 		if (mode == 0) {
 			reference_physics_steps = preview_physics_steps;
 			reference_polls = frame_index;
@@ -669,7 +669,9 @@ int main(void)
 		}
 		if (mode == 1) {
 			assert(frame_index == 100);
-			assert(preview_present_count == 60);
+			assert(preview_present_count == 40);
+			/* The final 40 Hz presentation is at 975 ms of a 100-unit rotation. */
+			assert(preview_last_rotation == 97);
 		}
 	}
 #endif
