@@ -14,6 +14,10 @@ void hires_set_enabled(int enabled);
 int hires_enabled(void);
 int hires_begin(const struct SPRITE *target);
 void hires_end(void);
+/* Bounds use high-resolution pixels with exclusive right/bottom edges.
+ * Family zero is reserved; attached fragments may overlay their own parent. */
+void hires_depth_begin(int left, int right, int top, int bottom);
+int hires_depth_test(int x, int y, double inverse_z, legacy_u16 family, int attached);
 void hires_pixel(int x, int y, unsigned char color);
 void hires_write(const unsigned char *base, legacy_u16 offset, unsigned char color);
 void hires_raster(const unsigned char *destination, legacy_u16 destination_offset,

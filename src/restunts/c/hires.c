@@ -6,6 +6,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdint.h>
+#include <float.h>
 
 #define HIRES_ADDRESS_COUNT 65536UL
 #define HIRES_CELL_PIXELS (HIRES_SCALE * HIRES_SCALE)
@@ -26,6 +27,9 @@ static struct SPRITE active_sprite;
 static int enabled;
 static unsigned long generation;
 static unsigned char *framebuffer;
+static float *inverse_depth;
+static legacy_u16 *depth_family;
+static int depth_left, depth_right, depth_top, depth_bottom;
 
 static void *hires_allocate(size_t size)
 {
@@ -70,6 +74,11 @@ static unsigned char *hires_cell(struct HIRES_SURFACE *surface, legacy_u16 offse
 	return cell;
 }
 
+static void hires_depth_reset(void)
+{
+	depth_left = depth_right = depth_top = depth_bottom = 0;
+}
+
 void hires_shutdown(void)
 {
 	while (surfaces != NULL) {
@@ -80,6 +89,11 @@ void hires_shutdown(void)
 	}
 	free(framebuffer);
 	framebuffer = NULL;
+	free(inverse_depth);
+	free(depth_family);
+	inverse_depth = NULL;
+	depth_family = NULL;
+	hires_depth_reset();
 	active = NULL;
 	enabled = 0;
 	generation++;
@@ -114,6 +128,7 @@ int hires_begin(const struct SPRITE *target)
 		dos_memory_make_pointer(dos_memory_pointer_segment(target->sprite_bitmapptr), 0);
 	active = hires_create(base);
 	active_sprite = *target;
+	hires_depth_reset();
 	/* Seed the background before the legacy 3D pass overwrites its pixels. */
 	for (unsigned int y = target->sprite_top; y < target->sprite_bottom && y < 200; y++) {
 		legacy_u16 row = LEGACY_READ_U16_LE(target->sprite_lineofs + y * 2);
@@ -127,10 +142,87 @@ int hires_begin(const struct SPRITE *target)
 
 void hires_end(void)
 {
+	hires_depth_reset();
 	if (active != NULL) {
 		active = NULL;
 		generation++;
 	}
+}
+
+/* Every shape keeps the existing scene painter order, but resolves its own
+ * overlapping surfaces by depth. Clear only the current projected bounds;
+ * family zero invalidates an old depth without clearing another float array. */
+void hires_depth_begin(int left, int right, int top, int bottom)
+{
+	hires_depth_reset();
+	if (active == NULL) {
+		return;
+	}
+	int clip_left = active_sprite.sprite_raster_left * HIRES_SCALE;
+	int clip_right = active_sprite.sprite_raster_right * HIRES_SCALE;
+	int clip_top = active_sprite.sprite_top * HIRES_SCALE;
+	int clip_bottom = active_sprite.sprite_bottom * HIRES_SCALE;
+	if (clip_left < 0) {
+		clip_left = 0;
+	}
+	if (clip_right > HIRES_WIDTH) {
+		clip_right = HIRES_WIDTH;
+	}
+	if (clip_top < 0) {
+		clip_top = 0;
+	}
+	if (clip_bottom > HIRES_HEIGHT) {
+		clip_bottom = HIRES_HEIGHT;
+	}
+	if (left < clip_left) {
+		left = clip_left;
+	}
+	if (right > clip_right) {
+		right = clip_right;
+	}
+	if (top < clip_top) {
+		top = clip_top;
+	}
+	if (bottom > clip_bottom) {
+		bottom = clip_bottom;
+	}
+	if (left >= right || top >= bottom) {
+		return;
+	}
+	if (inverse_depth == NULL) {
+		inverse_depth = hires_allocate((size_t)HIRES_WIDTH * HIRES_HEIGHT * sizeof(*inverse_depth));
+		depth_family = hires_allocate((size_t)HIRES_WIDTH * HIRES_HEIGHT * sizeof(*depth_family));
+	}
+	depth_left = left;
+	depth_right = right;
+	depth_top = top;
+	depth_bottom = bottom;
+	for (int y = top; y < bottom; y++) {
+		memset(depth_family + (size_t)y * HIRES_WIDTH + left, 0,
+			   (size_t)(right - left) * sizeof(*depth_family));
+	}
+}
+
+int hires_depth_test(int x, int y, double inverse_z, legacy_u16 family, int attached)
+{
+	if (active == NULL || x < depth_left || x >= depth_right || y < depth_top ||
+		y >= depth_bottom || !(inverse_z > 0) || inverse_z > FLT_MAX || family == 0) {
+		return 0;
+	}
+	size_t index = (size_t)y * HIRES_WIDTH + x;
+	if (attached && depth_family[index] == family) {
+		/* Resource overlays may sit slightly behind their parent. Keep the
+		 * parent's occlusion depth while allowing its authored paint order. */
+		return 1;
+	}
+	float depth = (float)inverse_z;
+	if (depth_family[index] != 0 &&
+		depth + 4 * FLT_EPSILON * inverse_depth[index] < inverse_depth[index]) {
+		return 0;
+	}
+	inverse_depth[index] = depth;
+	depth_family[index] = family;
+	return 1;
 }
 
 void hires_pixel(int x, int y, unsigned char color)

@@ -1,12 +1,15 @@
 #include <assert.h>
 #include <stdio.h>
 #include <string.h>
+#include "../c/externs.h"
 #include "../c/hires.h"
 #include "../c/platform.h"
 #include "../c/projection.h"
 #include "../c/shape2d.h"
 #include "../c/shape3d_hires.h"
 #include "../c/shape3d_internal.h"
+
+#undef memcpy
 
 static struct SPRITE target;
 static legacy_u8 rows[200 * 2];
@@ -50,16 +53,11 @@ static unsigned int count_color(unsigned char color)
 static void queue(legacy_u8 type, unsigned int count, const struct VECTOR *vertices)
 {
 	legacy_u8 indices[10];
-	struct POINT2D projected[10];
 	assert(count <= sizeof(indices));
 	for (unsigned int index = 0; index < count; index++) {
 		indices[index] = (legacy_u8)index;
-		struct SHAPE3D_HIRES_POINT point;
-		shape3d_hires_project(&vertices[index], &point);
-		projected[index].px = (legacy_s16)(point.x / HIRES_SCALE);
-		projected[index].py = (legacy_s16)(point.y / HIRES_SCALE);
 	}
-	shape3d_hires_queue(0, type, count, indices, vertices, projected);
+	shape3d_hires_queue(0, type, count, indices, vertices, 0);
 	bounds.left = 320;
 	bounds.top = 200;
 	bounds.right = 0;
@@ -177,6 +175,170 @@ static void test_disabled_and_reset(void)
 	assert(count_color(17) == 0);
 }
 
+/* Exercise the production transform and culling gates, which the direct raster
+ * tests above intentionally bypass. Thin road and body panels must survive
+ * until their fractional coordinates reach the high-resolution rasterizer. */
+static legacy_u8 scene_vertices[10U * SHAPE3D_VERTEX_SIZE];
+static legacy_u8 scene_primitives[64];
+static legacy_u8 scene_visibility[16];
+static legacy_u8 scene_front_facing[16];
+static legacy_u8 scene_polyinfo[POLYINFO_SUPERSIGHT_DATA_SIZE];
+static legacy_s16 scene_colors[] = {7, 8, 9, 10};
+static legacy_s16 scene_patterns[4];
+static struct SHAPE3D scene_shape;
+static struct TRANSFORMEDSHAPE3D scene_instance;
+
+static void prepare_scene(const struct VECTOR *vertices, unsigned int count,
+						  const legacy_u8 *primitives, unsigned int primitive_size,
+						  int high_resolution)
+{
+	hires_shutdown();
+	memset(screen, 3, 320 * 200);
+	hires_set_enabled(high_resolution);
+	sprite_select_target(&target);
+	memset(&scene_shape, 0, sizeof(scene_shape));
+	memset(&scene_instance, 0, sizeof(scene_instance));
+	memset(scene_primitives, 0, sizeof(scene_primitives));
+	memset(scene_visibility, 255, sizeof(scene_visibility));
+	memcpy(scene_primitives, primitives, primitive_size);
+	scene_shape.shape3d_numverts = (legacy_u16)count;
+	scene_shape.shape3d_vertex_bytes = scene_vertices;
+	scene_shape.shape3d_numpaints = 1;
+	scene_shape.shape3d_primitives = scene_primitives;
+	scene_shape.shape3d_visibility_masks = scene_visibility;
+	scene_shape.shape3d_front_facing_masks = scene_front_facing;
+	for (unsigned int index = 0; index < count; index++) {
+		shape3d_vertex_write(&scene_shape, (legacy_u16)index, &vertices[index]);
+	}
+	scene_instance.shapeptr = &scene_shape;
+	scene_instance.rectptr = &bounds;
+	scene_instance.ts_flags = 10; /* Pretransformed translation and bounding rectangle. */
+	scene_instance.culling_distance = 1024;
+	bounds.left = 320;
+	bounds.top = 200;
+	bounds.right = bounds.bottom = 0;
+	polyinfoptr = scene_polyinfo;
+	struct RECTANGLE clip = {0, 320, 0, 200};
+	select_cliprect_rotate(0, 0, 0, &clip, 0);
+	material_clrlist_ptr_cpy = scene_colors;
+	material_clrlist2_ptr_cpy = scene_colors;
+	material_patlist_ptr_cpy = scene_patterns;
+	material_patlist2_ptr_cpy = scene_patterns;
+}
+
+static void test_thin_polygon_and_attached_detail(void)
+{
+	const struct VECTOR road[] = {
+		{-100, -10, 2000}, {-100, -10, 4000}, {100, -10, 4000}, {100, -10, 2000}};
+	/* The line is a dependent primitive: rejecting the road also discards it. */
+	const legacy_u8 primitives[] = {4, 0, 0, 0, 1, 2, 3, 2, 2, 1, 0, 3, 0, 0};
+	prepare_scene(road, 4, primitives, sizeof(primitives), 0);
+	assert(shape3d_transform_and_queue(&scene_instance) == LEGACY_U16_MAX);
+	assert(polyinfonumpolys == 0);
+
+	prepare_scene(road, 4, primitives, sizeof(primitives), 1);
+	assert(shape3d_transform_and_queue(&scene_instance) == 0);
+	assert(polyinfonumpolys == 2);
+	shape3d_render_queued_primitives();
+	assert(count_color(7) > 40);
+	assert(count_color(8) > 40);
+	assert(pixels()[402 * HIRES_WIDTH + 640] == 7);
+}
+
+static void test_full_polygon_winding(void)
+{
+	const struct VECTOR panel[] = {
+		{-30, -20, 200}, {-30, 0, 200}, {-30, 20, 200}, {30, 20, 200}, {30, -20, 200}};
+	const legacy_u8 forward[] = {5, 0, 0, 0, 1, 2, 3, 4, 0, 0};
+	const legacy_u8 reverse[] = {5, 0, 0, 4, 3, 2, 1, 0, 0, 0};
+	prepare_scene(panel, 5, forward, sizeof(forward), 0);
+	assert(shape3d_transform_and_queue(&scene_instance) == LEGACY_U16_MAX);
+	assert(polyinfonumpolys == 0);
+
+	prepare_scene(panel, 5, forward, sizeof(forward), 1);
+	assert(shape3d_transform_and_queue(&scene_instance) == 0);
+	assert(polyinfonumpolys == 1);
+	shape3d_render_queued_primitives();
+	assert(count_color(7) > 20000);
+	assert(pixels()[400 * HIRES_WIDTH + 640] == 7);
+
+	prepare_scene(panel, 5, reverse, sizeof(reverse), 1);
+	assert(shape3d_transform_and_queue(&scene_instance) == LEGACY_U16_MAX);
+	assert(polyinfonumpolys == 0);
+	shape3d_render_queued_primitives();
+	assert(count_color(7) == 0);
+}
+
+static void test_clipped_polygon_visibility(void)
+{
+	const struct VECTOR triangle[] = {{-10, -10, 1}, {0, 50, 100}, {50, -30, 100}};
+	const legacy_u8 forward[] = {3, 0, 0, 0, 1, 2, 0, 0};
+	const legacy_u8 reverse[] = {3, 0, 0, 2, 1, 0, 0, 0};
+	prepare_scene(triangle, 3, forward, sizeof(forward), 1);
+	assert(shape3d_transform_and_queue(&scene_instance) == 0);
+	assert(polyinfonumpolys == 1);
+	shape3d_render_queued_primitives();
+	assert(count_color(7) > 100000);
+
+	prepare_scene(triangle, 3, reverse, sizeof(reverse), 1);
+	assert(shape3d_transform_and_queue(&scene_instance) == LEGACY_U16_MAX);
+	assert(polyinfonumpolys == 0);
+}
+
+static void test_wheel_face_and_sort_depth(void)
+{
+	const struct VECTOR wheel[] = {{0, -1, 400}, {-20, -1, 400}, {0, 0, 400},
+								   {5, -1, 420}, {-15, -1, 420}, {5, 0, 420}};
+	const legacy_u8 primitive[] = {12, 0, 0, 0, 1, 2, 3, 4, 5, 0, 0};
+	prepare_scene(wheel, 6, primitive, sizeof(primitive), 0);
+	assert(shape3d_transform_and_queue(&scene_instance) == 0);
+	assert(polyinfonumpolys == 1);
+	assert(LEGACY_READ_U16_LE(scene_polyinfo) == 420);
+
+	prepare_scene(wheel, 6, primitive, sizeof(primitive), 1);
+	assert(shape3d_transform_and_queue(&scene_instance) == 0);
+	assert(polyinfonumpolys == 1);
+	assert(LEGACY_READ_U16_LE(scene_polyinfo) == 400);
+	shape3d_render_queued_primitives();
+	assert(count_color(7) + count_color(8) + count_color(9) != 0);
+}
+
+static void test_crossing_surfaces_use_pixel_depth(void)
+{
+	const struct VECTOR panels[] = {{-60, -30, 100}, {-60, 30, 100}, {60, 30, 300}, {60, -30, 300},
+									{-60, -30, 300}, {-60, 30, 300}, {60, 30, 100}, {60, -30, 100}};
+	const legacy_u8 forward[] = {4, 0, 0, 0, 1, 2, 3, 4, 0, 1, 4, 5, 6, 7, 0, 0};
+	const legacy_u8 reverse[] = {4, 0, 1, 4, 5, 6, 7, 4, 0, 0, 0, 1, 2, 3, 0, 0};
+	for (unsigned int order = 0; order < 2; order++) {
+		prepare_scene(panels, 8, order == 0 ? forward : reverse, sizeof(forward), 1);
+		assert(shape3d_transform_and_queue(&scene_instance) == 0);
+		assert(polyinfonumpolys == 2);
+		shape3d_render_queued_primitives();
+		/* The equal average depths cannot order these intersecting panels:
+		 * each is nearer on a different side of the image. */
+		assert(pixels()[400 * HIRES_WIDTH + 600] == 7);
+		assert(pixels()[400 * HIRES_WIDTH + 680] == 8);
+	}
+}
+
+static void test_body_panel_occludes_wheel(void)
+{
+	const struct VECTOR model[] = {
+		{-100, -50, 500}, {-100, 50, 500}, {100, 50, 200}, {100, -50, 200}, {50, 0, 349},
+		{30, 0, 349},	  {50, 20, 349},   {50, 0, 365},   {30, 0, 365},	{50, 20, 365}};
+	const legacy_u8 primitives[] = {4, 0, 0, 0, 1, 2, 3, 12, 0, 1, 4, 5, 6, 7, 8, 9, 0, 0};
+	prepare_scene(model, 10, primitives, sizeof(primitives), 1);
+	assert(shape3d_transform_and_queue(&scene_instance) == 0);
+	assert(polyinfonumpolys == 2);
+	/* The body averages350 while the wheel is349. At the wheel's screen
+	 * position the sloping body is actually nearer, at approximately288. */
+	assert(LEGACY_READ_U16_LE(scene_polyinfo) == 350);
+	assert(LEGACY_READ_U16_LE(scene_polyinfo + polygon_record_offsets[1]) == 349);
+	shape3d_render_queued_primitives();
+	assert(pixels()[400 * HIRES_WIDTH + 732] == 7);
+	assert(count_color(8) + count_color(9) + count_color(10) == 0);
+}
+
 int main(void)
 {
 	screen = dos_memory_make_pointer(0xA000, 0);
@@ -198,6 +360,12 @@ int main(void)
 	test_near_plane_and_screen_clipping();
 	test_materials_and_rounded_primitives();
 	test_disabled_and_reset();
+	test_thin_polygon_and_attached_detail();
+	test_full_polygon_winding();
+	test_clipped_polygon_visibility();
+	test_wheel_face_and_sort_depth();
+	test_crossing_surfaces_use_pixel_depth();
+	test_body_panel_occludes_wheel();
 	hires_shutdown();
 	puts("High-resolution 3D projection and raster tests passed.");
 	return 0;
