@@ -190,6 +190,9 @@ static void trace_rect(const struct RECTANGLE *rect)
 /* Q-up polling and rewind-only dependencies must not alter the legacy trace. */
 legacy_s16 kb_get_key_state(legacy_s16 scan_code)
 {
+	if (scan_code == RACE_CONTROL_SCAN_CODE) {
+		return 0;
+	}
 	assert(scan_code == RACE_REWIND_SCAN_CODE);
 	return scripted_rewind != 0 && frames < 2;
 }
