@@ -60,17 +60,17 @@ void shape3d_hires_project(const struct SHAPE3D_HIRES_VECTOR *vector,
 	project_coordinates(vector->x, vector->y, vector->z > 0 ? vector->z : 1, point);
 }
 
-static legacy_u8 point_clip_flags(const struct SHAPE3D_HIRES_POINT *point)
+static legacy_u8 point_clip_flags(const struct SHAPE3D_HIRES_POINT *point, legacy_f64 padding)
 {
 	legacy_u8 flags = 0;
-	if (point->y < select_rect_rc.top * HIRES_SCALE) {
+	if (point->y < select_rect_rc.top * HIRES_SCALE - padding) {
 		flags |= 1;
-	} else if (point->y >= (select_rect_rc.bottom + 1) * HIRES_SCALE) {
+	} else if (point->y >= (select_rect_rc.bottom + 1) * HIRES_SCALE + padding) {
 		flags |= 2;
 	}
-	if (point->x < select_rect_rc.left * HIRES_SCALE) {
+	if (point->x < select_rect_rc.left * HIRES_SCALE - padding) {
 		flags |= 4;
-	} else if (point->x >= (select_rect_rc.right + 1) * HIRES_SCALE) {
+	} else if (point->x >= (select_rect_rc.right + 1) * HIRES_SCALE + padding) {
 		flags |= 8;
 	}
 	return flags;
@@ -80,7 +80,9 @@ legacy_u8 shape3d_hires_clip_flags(const struct SHAPE3D_HIRES_VECTOR *vector)
 {
 	struct SHAPE3D_HIRES_POINT point;
 	shape3d_hires_project(vector, &point);
-	return point_clip_flags(&point);
+	/* The shared early cull must retain lines whose wider stroke reaches
+	 * into the viewport even when their centerline is just outside it. */
+	return point_clip_flags(&point, HIRES_SCALE / 2.0 + 0.5);
 }
 
 static legacy_s32 polygon_faces_camera(const struct SHAPE3D_HIRES_POINT *points, legacy_u32 count)
@@ -106,7 +108,7 @@ legacy_s32 shape3d_hires_polygon_visible(legacy_u16 index, legacy_s32 cull_backf
 	}
 	legacy_u8 flags = 15;
 	for (legacy_u32 point = 0; point < primitive->count; point++) {
-		flags &= point_clip_flags(&primitive->points[point]);
+		flags &= point_clip_flags(&primitive->points[point], 0);
 	}
 	return flags == 0 &&
 		   (!cull_backface || polygon_faces_camera(primitive->points, primitive->count));
@@ -306,6 +308,15 @@ void shape3d_hires_update_bounds(legacy_u16 index, legacy_u8 type, struct RECTAN
 			}
 		}
 	}
+	if (type == RENDER_PRIMITIVE_LINE) {
+		/* Include the square stroke and rounding to its nearest sample in both
+		 * the sprite copy rectangle and the per-shape depth buffer bounds. */
+		legacy_f64 padding = HIRES_SCALE / 2.0 + 0.5;
+		minimum_x -= padding;
+		maximum_x += padding;
+		minimum_y -= padding;
+		maximum_y += padding;
+	}
 	if (maximum_x < 0 || minimum_x >= HIRES_WIDTH || maximum_y < 0 || minimum_y >= HIRES_HEIGHT) {
 		return;
 	}
@@ -374,22 +385,25 @@ static legacy_s32 clip_line_edge(legacy_f64 direction, legacy_f64 distance, lega
 }
 
 static void draw_line(const struct SHAPE3D_HIRES_POINT *first,
-					  const struct SHAPE3D_HIRES_POINT *last, const struct HIRES_PAINT *paint)
+					  const struct SHAPE3D_HIRES_POINT *last, legacy_s32 thickness,
+					  const struct HIRES_PAINT *paint)
 {
+	legacy_s32 before = (thickness - 1) / 2;
+	legacy_s32 after = thickness / 2;
 	legacy_f64 delta_x = last->x - first->x;
 	legacy_f64 delta_y = last->y - first->y;
 	legacy_f64 start = 0;
 	legacy_f64 end = 1;
-	if (!clip_line_edge(-delta_x, first->x, &start, &end) ||
-		!clip_line_edge(delta_x, HIRES_WIDTH - 1 - first->x, &start, &end) ||
-		!clip_line_edge(-delta_y, first->y, &start, &end) ||
-		!clip_line_edge(delta_y, HIRES_HEIGHT - 1 - first->y, &start, &end)) {
+	if (!clip_line_edge(-delta_x, first->x + after + 0.5, &start, &end) ||
+		!clip_line_edge(delta_x, HIRES_WIDTH - 1 + before + 0.5 - first->x, &start, &end) ||
+		!clip_line_edge(-delta_y, first->y + after + 0.5, &start, &end) ||
+		!clip_line_edge(delta_y, HIRES_HEIGHT - 1 + before + 0.5 - first->y, &start, &end)) {
 		return;
 	}
-	legacy_s32 x = (legacy_s32)(first->x + delta_x * start + 0.5);
-	legacy_s32 y = (legacy_s32)(first->y + delta_y * start + 0.5);
-	legacy_s32 end_x = (legacy_s32)(first->x + delta_x * end + 0.5);
-	legacy_s32 end_y = (legacy_s32)(first->y + delta_y * end + 0.5);
+	legacy_s32 x = (legacy_s32)SDL_floor(first->x + delta_x * start + 0.5);
+	legacy_s32 y = (legacy_s32)SDL_floor(first->y + delta_y * start + 0.5);
+	legacy_s32 end_x = (legacy_s32)SDL_floor(first->x + delta_x * end + 0.5);
+	legacy_s32 end_y = (legacy_s32)SDL_floor(first->y + delta_y * end + 0.5);
 	legacy_s32 step_x = x < end_x ? 1 : -1;
 	legacy_s32 step_y = y < end_y ? 1 : -1;
 	legacy_s32 width = x < end_x ? end_x - x : x - end_x;
@@ -400,7 +414,13 @@ static void draw_line(const struct SHAPE3D_HIRES_POINT *first,
 	legacy_f64 depth_step =
 		steps == 0 ? 0 : (last->inverse_z - first->inverse_z) * (end - start) / steps;
 	for (;;) {
-		paint_pixel(x, y, inverse_z, paint);
+		/* One legacy line pixel occupies a square at the output scale. Sweep
+		 * that footprint along the high-resolution path to retain its weight. */
+		for (legacy_s32 row = y - before; row <= y + after; row++) {
+			for (legacy_s32 column = x - before; column <= x + after; column++) {
+				paint_pixel(column, row, inverse_z, paint);
+			}
+		}
 		inverse_z += depth_step;
 		if (x == end_x && y == end_y) {
 			break;
@@ -424,7 +444,7 @@ static void draw_polygon(const struct SHAPE3D_HIRES_POINT *points, legacy_u32 co
 		return;
 	}
 	if (count < 3) {
-		draw_line(&points[0], &points[count - 1], paint);
+		draw_line(&points[0], &points[count - 1], 1, paint);
 		return;
 	}
 	legacy_f64 minimum_y = points[0].y;
@@ -594,9 +614,9 @@ void shape3d_hires_render(legacy_u16 index, legacy_u8 type, legacy_u16 color,
 	if (type == RENDER_PRIMITIVE_POLYGON) {
 		draw_polygon(primitive->points, primitive->count, &paint);
 	} else if (type == RENDER_PRIMITIVE_LINE) {
-		draw_line(&primitive->points[0], &primitive->points[1], &paint);
+		draw_line(&primitive->points[0], &primitive->points[1], HIRES_SCALE, &paint);
 	} else if (type == RENDER_PRIMITIVE_POINT) {
-		draw_line(&primitive->points[0], &primitive->points[0], &paint);
+		draw_line(&primitive->points[0], &primitive->points[0], 1, &paint);
 	} else if (type == RENDER_PRIMITIVE_SPHERE) {
 		draw_sphere(primitive, &paint);
 	} else if (type == RENDER_PRIMITIVE_WHEEL) {
