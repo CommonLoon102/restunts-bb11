@@ -14,6 +14,7 @@
 #include "frame_internal.h"
 #ifdef RESTUNTS_SDL3
 #include "hires.h"
+#include "skybox_hires.h"
 #endif
 
 #define INPUT_DIRECTION_COUNT 16U
@@ -199,6 +200,9 @@ void load_palandcursor(void)
 		palette[i] = ((legacy_u8 far *)mouse_shape)[SHAPE2D_HEADER_SIZE + i];
 	}
 	dos_video_set_palette(0, VGA_PALETTE_COLOR_COUNT, palette);
+#ifdef RESTUNTS_SDL3
+	skybox_hires_set_palette(palette);
+#endif
 
 	mouse_shape = (struct SHAPE2D far *)locate_shape_fatal(resource, "smou");
 	legacy_u16 mouse_width = (legacy_u16)(shape2d_get_width(mouse_shape) * video_x_alignment);

@@ -1,0 +1,26 @@
+City chimney repair
+
+Mode: built-in imagegen, no fallback CLI or API key.
+
+The selected repair replaces the two oversized pine trees with a black factory chimney and replaces the crane with smoke. Generated pixels were composited only through a small local mask. Foreground roofs and all pixels outside that mask remain exact. The generated shaft is continued behind the original foreground building, preserving its occlusion. The city panorama and its sce4 strip contain the same patch.
+
+Primary accepted prompt
+
+Use case: precise-object-edit.
+Asset type: localized repair of a remastered Stunts game city skybox.
+Image 1 is the EDIT TARGET (enhanced city crop). Image 2 is the original pixel-art REFERENCE to identify a misinterpreted feature.
+
+Important correction: The TWO OVERSIZED DARK PINE TREES immediately right of the church and left of the crane mast are actually supposed to be ONE BLACK FACTORY CHIMNEY. The orange crane higher and to their right is supposed to be SMOKE FROM THAT CHIMNEY.
+Replace BOTH tall pine trees with a single upright near-black cylindrical industrial smokestack, at the pine trees' position, LEFT of the crane mast. Remove both giant pine silhouettes completely, reconstructing the blue-green mountain where needed. The stack is a modest distant industrial shaft, with subtle dark cylindrical shading and a dark opening at the top, standing behind the existing white buildings that occlude its base. Its center is about 38% of the image width, its width about 5% of image width, its top about 25% of image height, its base disappears behind the buildings around 54% height.
+Completely remove the crane's horizontal orange boom, support cables, and vertical mast. Restore flat cyan sky/mountain under the removed crane, and replace the crane with a continuous plume of medium-grey smoke emerging DIRECTLY from the chimney's top, curling upward and to the right through the former crane boom area. Several compact irregular billowing curls, not a straight line. Let the smoke dissipate near 64% image width, leaving at least 5% of the image height as completely clear cyan above it. Reference the original's left chimney/right drifting smoke placement.
+
+Change ONLY the pine-tree/chimney/crane/smoke region. Preserve absolutely all surrounding buildings and their roofs, including the white buildings occluding the chimney base, church to the left, orange observation tower to the right, mountain shapes outside the replaced trees/crane, lake, foreground trees, bottom rows, sky outside smoke, framing and outer edges. Do not put the chimney at the old crane mast location or on top of the silver building to its right. Do not replace the orange observation tower. No pine trees left behind the chimney.
+Match the existing refined hand-painted game scenery with distant scale and fine shading, without imitating coarse pixel blocks from reference 2. Flat opaque sky RGB(93,255,255); no sky gradient, additional clouds, new structures, labels, text, borders, transparency, camera changes, or crop.
+Return the same crop composition/aspect ratio, with only this localized correction.
+
+Placement refinement prompt
+
+Use case: precise-object-edit.
+This is an enlarged localized crop of the enhanced city skybox. Make one precise placement correction: move the black factory chimney AND its connected grey smoke plume approximately one and a half chimney-widths to the LEFT (3.5 percent of the image width), leaving their vertical height and overall size the same. The chimney should occupy the location of the former oversized pines: its center must be around 38.5% of the image width instead of the current 42%. Keep its lower shaft continuing down until it disappears naturally BEHIND the unchanged foreground white buildings; do not move, add, or reshape any building or roof to meet it.
+Restore blue-green mountain behind the chimney's former position. Keep the chimney near-black with subtle cylindrical shading. Keep the compact irregular grey smoke visibly connected to its top and drifting up-right, with a naturally dissipating end rather than an isolated square/dot. Keep clear sky above.
+Change only the chimney/smoke footprint and the mountain immediately behind their old/new positions. Preserve all other existing pixels, buildings and rooftops, orange observation tower, church, smaller low trees, forest, water, skyline outside the footprint, bottom rows, aspect ratio and framing. The gigantic pines and crane must remain absent. Keep the same tiny-scale refined hand-painted game style and perfectly flat opaque cyan sky RGB(93,255,255). No other clouds, objects, text, borders, or transparency.
