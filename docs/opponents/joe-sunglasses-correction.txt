@@ -1,0 +1,32 @@
+Smokin' Joe Stallin sunglasses correction
+
+Built-in imagegen edited the existing photorealistic opp3.png using the
+original SDOSEL.PVS:opp3 portrait as the eyewear silhouette reference.
+The correction restores straighter top edges and angular upper corners.
+
+Exact correction prompt:
+
+Use case: precise-object-edit.
+Input image 1 is the EDIT TARGET: photorealistic Smokin' Joe Stallin opponent profile. Input image 2 is the ORIGINAL GAME REFERENCE, specifically the authoritative guide for the sunglasses silhouette.
+Correct ONLY the sunglasses so their geometry matches the original. The current aviator-like lenses are too round, especially their upper corners. Replace that rounded silhouette with black, angular, broadly rectangular/trapezoidal sunglasses: noticeably straighter upper edges and sharply defined upper outside corners where the straight brow meets the sloping outer side. Both upper corners must read as corners, not broad curves. Follow the original reference's black frame silhouette, lens width, bridge, position and tilt on his face. The lower edges may retain modest natural curvature like the original, but the glasses must not be oval, round, or teardrop aviators. Avoid exaggerated pointed cat-eye tips, novelty glasses, or a wraparound visor. Dark black tinted lenses with restrained realistic reflections.
+Everything outside the eyewear is locked: preserve the same exact face, skin texture, short hair, head shape, expression, pose, white crew-neck T-shirt, lime-green background, lighting, photographic realism and framing. Do not reinterpret or beautify the man. Keep the sunglasses at the same overall scale and location, changing their shape to follow the original. Preserve 1122x1402 image dimensions. No numbers, text, border or watermark baked into the photo; the game overlays the original number and frame separately.
+Output one corrected photorealistic portrait, same canvas and composition.
+
+Heavy frame, sharp corners, and single bridge follow-up
+
+The final photo replaces the thin double-bridge sunglasses with a thick
+black frame, markedly angular upper corners, and one bulky central bridge.
+Built-in imagegen used the previous photo and original pixel art as inputs.
+
+Exact follow-up prompt:
+
+Use case: precise-object-edit.
+Input 1: edit target, the current photorealistic Smokin' Joe Stallin portrait.
+Input 2: original game portrait, a supporting reference for the bold angular sunglasses style.
+Replace ONLY the sunglasses. The current thin metal frame with two bridges is WRONG. Make the requested change emphatic and unambiguous:
+1. A HEAVY, THICK, SOLID BLACK ACETATE FRAME around both lenses, with chunky temples. The rims should be several times thicker than the current thin wire rims, unmistakably bold even at thumbnail size. Classic angular black wayfarer-like geometry, not metal aviators.
+2. MUCH SHARPER, EDGIER UPPER CORNERS. Use straight top rim segments meeting straight outer side segments at crisp, hard angular vertices, with essentially no visible rounded radius at the upper outside corners. Both upper outside corners should be strongly defined and slightly assertive. Do not soften them into arcs. Use broadly trapezoidal, angular lenses; lower corners can be modestly beveled, but the top corners must be distinctly sharp.
+3. EXACTLY ONE BULKY CENTRAL CONNECTOR between the two lens frames. It must be a single thick solid molded-black nose bridge integrated with the heavy frame. Completely remove the current thin upper crossbar AND thin lower wire bridge, replacing both with that ONE substantial connector. There must be NO second bridge, NO parallel bars, NO gap or slot between two bridge pieces, NO metal wire, and NO aviator brow bar.
+Keep dark opaque lenses with realistic restrained reflections, the same overall eyewear placement and scale, and the original portrait's slight head tilt. These are realistic wearable sunglasses, not a visor or a costume.
+LOCK EVERYTHING ELSE: same man's exact identity, face, skin, hair, expression, head and shoulders, pose, white crew-neck T-shirt, lime-green studio backdrop, lighting, composition, and 1122x1402 canvas. Do not restyle the portrait or change the face. Edit only the eyewear and the tiny occluded skin areas required by its new outline. Preserve photorealistic detail.
+No baked-in text, numbers, borders or watermarks; the game separately preserves its original number and frame.

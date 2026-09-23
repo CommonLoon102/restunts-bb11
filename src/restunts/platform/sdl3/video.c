@@ -176,30 +176,48 @@ void sdl3_video_game_to_window(legacy_f32 x, legacy_f32 y, legacy_f32 *window_x,
 	}
 }
 
-static void present_surface(const legacy_u8 *pixels, legacy_s32 width, legacy_s32 height)
+static void present_surface(const legacy_u8 *pixels, const legacy_u32 *argb, legacy_s32 width,
+							legacy_s32 height)
 {
 	SDL_Surface *surface = SDL_GetWindowSurface(window);
 	if (surface == NULL) {
 		video_fail("Get video surface");
 	}
-	legacy_u8 new_frame_surface = frame_surface == NULL || frame_surface->pixels != pixels ||
-								  frame_surface->w != width || frame_surface->h != height;
+	const void *frame_pixels = argb != NULL ? (const void *)argb : pixels;
+	SDL_PixelFormat format = argb != NULL ? SDL_PIXELFORMAT_ARGB8888 : SDL_PIXELFORMAT_INDEX8;
+	legacy_u8 new_frame_surface = frame_surface == NULL || frame_surface->pixels != frame_pixels ||
+								  frame_surface->format != format || frame_surface->w != width ||
+								  frame_surface->h != height;
 	if (new_frame_surface) {
 		SDL_DestroySurface(frame_surface);
-		frame_surface =
-			SDL_CreateSurfaceFrom(width, height, SDL_PIXELFORMAT_INDEX8, (void *)pixels, width);
-		if (frame_surface == NULL || SDL_CreateSurfacePalette(frame_surface) == NULL) {
+		frame_surface = SDL_CreateSurfaceFrom(width, height, format, (void *)frame_pixels,
+											  width * (argb != NULL ? 4 : 1));
+		if (frame_surface == NULL ||
+			(argb == NULL && SDL_CreateSurfacePalette(frame_surface) == NULL)) {
 			video_fail("Create presentation surface");
 		}
 	}
 	SDL_Palette *palette = SDL_GetSurfacePalette(frame_surface);
-	if ((palette_changed || new_frame_surface) &&
+	if (palette != NULL && (palette_changed || new_frame_surface) &&
 		!SDL_SetPaletteColors(palette, palette_colors, 0, 256)) {
 		video_fail("Set video palette");
 	}
-	if (surface->format == SDL_PIXELFORMAT_INDEX8 && SDL_GetSurfacePalette(surface) != palette &&
-		!SDL_SetSurfacePalette(surface, palette)) {
-		video_fail("Set framebuffer palette");
+	if (surface->format == SDL_PIXELFORMAT_INDEX8) {
+		if (palette != NULL) {
+			if (SDL_GetSurfacePalette(surface) != palette &&
+				!SDL_SetSurfacePalette(surface, palette)) {
+				video_fail("Set framebuffer palette");
+			}
+		} else {
+			SDL_Palette *output_palette = SDL_GetSurfacePalette(surface);
+			if (output_palette == NULL) {
+				output_palette = SDL_CreateSurfacePalette(surface);
+			}
+			if (output_palette == NULL ||
+				!SDL_SetPaletteColors(output_palette, palette_colors, 0, 256)) {
+				video_fail("Set framebuffer palette");
+			}
+		}
 	}
 	if ((surface_viewport.w != surface->w || surface_viewport.h != surface->h) &&
 		!SDL_FillSurfaceRect(surface, NULL, SDL_MapSurfaceRGB(surface, 0, 0, 0))) {
@@ -212,7 +230,8 @@ static void present_surface(const legacy_u8 *pixels, legacy_s32 width, legacy_s3
 	}
 }
 
-static void present_texture(const legacy_u8 *pixels, legacy_s32 width, legacy_s32 height)
+static void present_texture(const legacy_u8 *pixels, const legacy_u32 *argb, legacy_s32 width,
+							legacy_s32 height)
 {
 	if (texture == NULL || texture_width != width || texture_height != height) {
 		SDL_DestroyTexture(texture);
@@ -232,6 +251,10 @@ static void present_texture(const legacy_u8 *pixels, legacy_s32 width, legacy_s3
 	}
 	for (legacy_s32 row = 0; row < height; row++) {
 		legacy_u32 *destination = (legacy_u32 *)((legacy_u8 *)texture_pixels + row * pitch);
+		if (argb != NULL) {
+			memcpy(destination, argb + row * width, (size_t)width * sizeof(*destination));
+			continue;
+		}
 		const legacy_u8 *source = pixels + row * width;
 		for (legacy_s32 column = 0; column < width; column++) {
 			destination[column] = palette_pixels[source[column]];
@@ -258,10 +281,11 @@ void sdl3_video_present(void)
 	legacy_s32 width;
 	legacy_s32 height;
 	const legacy_u8 *pixels = hires_framebuffer(legacy_pixels, &width, &height);
+	const legacy_u32 *argb = hires_framebuffer_argb(legacy_pixels, palette_pixels);
 	if (surface_output) {
-		present_surface(pixels, width, height);
+		present_surface(pixels, argb, width, height);
 	} else {
-		present_texture(pixels, width, height);
+		present_texture(pixels, argb, width, height);
 	}
 	memcpy(previous_pixels, legacy_pixels, SCREEN_BYTES);
 	previous_generation = hires_generation();

@@ -379,6 +379,62 @@ static void test_depth_lifetime(struct TEST_SURFACE *screen)
 	assert(!hires_depth_test(0, 0, 1, 1, 0));
 }
 
+static void test_argb_composition(struct TEST_SURFACE *screen, struct TEST_SURFACE *window)
+{
+	legacy_u32 palette[256];
+	legacy_u8 mapping[256];
+	for (legacy_u32 index = 0; index < 256; index++) {
+		palette[index] = 0xFF000000U | index * 0x010101U;
+		mapping[index] = (legacy_u8)index;
+	}
+	palette[15] = 0xFFFFFFFFU;
+	assert(hires_begin_argb(&window->sprite));
+	hires_argb_pixel(40, 80, 0xFF123456U);
+	hires_argb_pixel(41, 80, 0x80FF0000U);
+	hires_end();
+	raster_pixel(screen, 30, 40, window, 10, 20, SHAPE2D_RASTER_COPY, NULL);
+	legacy_u32 offset = 160 * TEST_HIRES_WIDTH + 120;
+	const legacy_u32 *pixels = hires_framebuffer_argb(screen->base, palette);
+	assert(pixels != NULL && pixels[offset] == 0xFF123456U);
+	assert(pixels[offset + 1] == 0xFF810101U);
+	assert(pixels[offset + 2] == palette[3]);
+	/* Mouse save/restore and forward overlapping copies preserve all samples. */
+	raster_pixel(window, 15, 25, screen, 30, 40, SHAPE2D_RASTER_COPY, NULL);
+	write_pixel(screen, 30, 40, 3);
+	assert(hires_framebuffer_argb(screen->base, palette) == NULL);
+	raster_pixel(screen, 30, 40, window, 15, 25, SHAPE2D_RASTER_COPY, NULL);
+	hires_raster(screen->base, 40 * 320 + 31, screen->base, 40 * 320 + 30, 2, SHAPE2D_RASTER_COPY,
+				 NULL);
+	pixels = hires_framebuffer_argb(screen->base, palette);
+	assert(pixels[offset] == pixels[offset + 4] && pixels[offset] == pixels[offset + 8]);
+	mapping[3] = 255;
+	raster_pixel(screen, 30, 40, window, 15, 25, SHAPE2D_RASTER_MAP, mapping);
+	assert(hires_framebuffer_argb(screen->base, palette)[offset] == 0xFF123456U);
+	mapping[3] = 3;
+	raster_pixel(screen, 30, 40, window, 15, 25, SHAPE2D_RASTER_MAP, mapping);
+	assert(hires_framebuffer_argb(screen->base, palette)[offset] == 0xFF123456U);
+	write_pixel(window, 11, 20, 255);
+	raster_pixel(screen, 30, 40, window, 11, 20, SHAPE2D_RASTER_AND, NULL);
+	write_pixel(window, 11, 20, 0);
+	raster_pixel(screen, 30, 40, window, 11, 20, SHAPE2D_RASTER_OR, NULL);
+	assert(hires_framebuffer_argb(screen->base, palette)[offset] == 0xFF123456U);
+	mapping[3] = 42;
+	raster_pixel(screen, 30, 40, window, 15, 25, SHAPE2D_RASTER_MAP, mapping);
+	assert(hires_framebuffer_argb(screen->base, palette)[offset] == palette[42]);
+	/* Indexed high-resolution replacement affects just one full-color sample. */
+	assert(hires_begin(&screen->sprite));
+	hires_pixel(124, 160, 42);
+	hires_end();
+	pixels = hires_framebuffer_argb(screen->base, palette);
+	assert(pixels[offset + 4] == palette[42]);
+	assert(pixels[offset + 5] == 0xFF810101U);
+	palette[15] = 0xFF000000U;
+	assert(hires_framebuffer_argb(screen->base, palette)[offset + 8] == 0xFF000000U);
+	palette[15] = 0xFFFFFFFFU;
+	hires_forget_range(screen->base + 40 * 320 + 31, 2);
+	assert(hires_framebuffer_argb(screen->base, palette) == NULL);
+}
+
 int main(void)
 {
 	struct TEST_SURFACE screen;
@@ -398,6 +454,7 @@ int main(void)
 	test_crossing_depths(&screen);
 	test_depth_overlay_families(&screen);
 	test_depth_shape_bounds(&screen);
+	test_argb_composition(&screen, &window);
 	test_depth_lifetime(&screen);
 	hires_shutdown();
 	puts("SDL3 high-resolution composition tests passed.");
