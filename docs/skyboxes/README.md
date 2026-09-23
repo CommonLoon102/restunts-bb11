@@ -57,6 +57,12 @@ SuperSight is active. F12 off and the 16-bit Open Watcom renderer retain the
 original art. Missing, unreadable, or incorrectly sized enhanced
 images fall back to their original strips. Scenery detail settings still apply.
 
+During driving, SuperSight rotates the panorama continuously with the camera,
+including sideways and upside-down views. It preserves the original level
+panorama scale and projects the horizon with the same camera as the road.
+Missing enhanced strips use the original artwork with the same rotation.
+The original renderer retains its historical banking cutoff.
+
 PNG colors are mapped once to the original VGA palette when loaded. This
 preserves the game's palette fades and indexed rendering, while retaining
 the new spatial detail. The flat sky color is RGB (93, 255, 255), palette
