@@ -26,6 +26,27 @@
 #undef draw_button
 #undef font_draw_text
 #include "../c/ghost.h"
+#ifdef RESTUNTS_SDL3
+#include "../c/opponent_portrait.h"
+#include "../c/shape2d_internal.h"
+static legacy_u32 portrait_draws, enhanced_portrait_draws, portrait_unloads;
+
+void opponent_portrait_draw(const struct SPRITE *target, const struct SHAPE2D *original,
+							legacy_u8 opponent)
+{
+	assert(target == &drawing_sprite && original == &fixture_shapes[1]);
+	assert(opponent == (legacy_u8)gameconfig.game_opponenttype);
+	portrait_draws++;
+	if (supersight_enabled != 0 && opponent != 0) {
+		enhanced_portrait_draws++;
+	}
+}
+
+void opponent_portrait_unload(void)
+{
+	portrait_unloads++;
+}
+#endif
 #undef memcpy
 
 #define OPPONENT_TEST_EVENT_CAPACITY 32U
@@ -303,6 +324,10 @@ static void begin_case(legacy_u8 opponent, legacy_u8 page_flipping)
 	event_count = event_index = expected_load_count = load_count = 0;
 	resource_allocations = resource_releases = window_allocations = window_releases = 0;
 	expect_load(opponent);
+#ifdef RESTUNTS_SDL3
+	supersight_enabled = 0;
+	portrait_draws = enhanced_portrait_draws = portrait_unloads = 0;
+#endif
 }
 
 static void finish_case(legacy_u8 opponent, legacy_u32 refresh_count)
@@ -325,6 +350,9 @@ static void finish_case(legacy_u8 opponent, legacy_u32 refresh_count)
 	} else {
 		assert(gameconfig.game_opponentcarid[0] == -1);
 	}
+#ifdef RESTUNTS_SDL3
+	assert(portrait_unloads == 1);
+#endif
 	case_count++;
 }
 
@@ -428,6 +456,20 @@ static void test_opponent_car(legacy_u8 page_flipping)
 	assert(car_menu_calls == 1 && ghost_dialogs == 0 && ghost_button_draws == 0);
 }
 
+#ifdef RESTUNTS_SDL3
+static void test_portrait_toggle(legacy_u8 page_flipping)
+{
+	begin_case(3, page_flipping);
+	add_event(KEY_F12, 3);
+	add_event(KEY_F12, 3);
+	add_event(KEY_ENTER, 3);
+	opponent_hits[event_count - 1] = 4;
+	finish_case(3, 1);
+	assert(supersight_enabled == 0);
+	assert(portrait_draws == 3 && enhanced_portrait_draws == 1);
+}
+#endif
+
 int main(void)
 {
 	for (legacy_u8 page_flipping = 0; page_flipping < 2; page_flipping++) {
@@ -449,6 +491,9 @@ int main(void)
 			test_clear_ghost(page_flipping, selection);
 		}
 		test_opponent_car(page_flipping);
+#ifdef RESTUNTS_SDL3
+		test_portrait_toggle(page_flipping);
+#endif
 	}
 	printf("test-opponent-menu: passed %" LEGACY_PRIu32 " sessions, %" LEGACY_PRIu32
 		   " transitions\n",

@@ -1,0 +1,167 @@
+{
+  "description": "Lossless preserved game2 sources, working tiles and earlier correction alternatives",
+  "prompts": "../game2-generation-prompts.json",
+  "final_game_assets": "../../../assets/opponents/game2",
+  "images": [
+    {
+      "file": "full-resolution/opp1.png",
+      "opponent": 1,
+      "role": "selected full-resolution source",
+      "width": 1215,
+      "height": 1295,
+      "bytes": 1789585,
+      "sha256": "1568a59156c9b74996c47f31383861a395d2ef07e9c37dbceb25352ea4468d7b",
+      "source": "/home/user/.codex/generated_images/01a0cdb5-ee75-7973-adc8-dfc8434df5b6/exec-64b69ba3-82ad-46c4-b2bb-c26254a29c08.png"
+    },
+    {
+      "file": "working-4x/opp1.png",
+      "opponent": 1,
+      "role": "4x working tile used before final reduction",
+      "width": 320,
+      "height": 332,
+      "bytes": 85299,
+      "sha256": "97478f172d8d14670ec5a9820ecd02d88c9cf9030efc0ce47a30f941c1bc1fb9",
+      "source": "/media/sf_ubi24/restunts-bb11/out/opponents/game2-rebuilt/4x/opp1.png"
+    },
+    {
+      "file": "history/opp1-before-corrections.png",
+      "opponent": 1,
+      "role": "original full-resolution reconstruction before corrections",
+      "width": 1214,
+      "height": 1296,
+      "bytes": 1769019,
+      "sha256": "08b36f54574a1cb6a0655c045b41c418b938cfba38c72506dbd3dbbc4ad3cc73",
+      "source": "/home/user/.codex/generated_images/01a0cdb5-ee75-7973-adc8-dfc8434df5b6/exec-5f19262e-4752-4bc8-9cd3-df4f85fd98d6.png"
+    },
+    {
+      "file": "full-resolution/opp2.png",
+      "opponent": 2,
+      "role": "selected full-resolution source",
+      "width": 1215,
+      "height": 1295,
+      "bytes": 1778415,
+      "sha256": "2bf85aa691fb7e87e723fc86c09a1172226c073f6243940880ac0a3e028c42d2",
+      "source": "/home/user/.codex/generated_images/01a0cdb3-98b5-7151-a9b0-1b3d7f16170c/exec-8c2d9b45-9a8c-4018-b345-0e9731664e75.png"
+    },
+    {
+      "file": "working-4x/opp2.png",
+      "opponent": 2,
+      "role": "4x working tile used before final reduction",
+      "width": 320,
+      "height": 332,
+      "bytes": 87518,
+      "sha256": "ad2b44df8a8c8a81b14bb3be430315bfe51f8134554c64540cc30526f022f70c",
+      "source": "/media/sf_ubi24/restunts-bb11/out/opponents/game2-rebuilt/4x/opp2.png"
+    },
+    {
+      "file": "history/opp2-before-corrections.png",
+      "opponent": 2,
+      "role": "original full-resolution reconstruction before corrections",
+      "width": 1214,
+      "height": 1296,
+      "bytes": 1914856,
+      "sha256": "2a630ba3987d4a43142b91cf3f1210a8101b4ebc1fda3e9c62c480ef034da54f",
+      "source": "/home/user/.codex/generated_images/01a0cdb5-ee75-7973-adc8-dfc8434df5b6/exec-9f8d2e47-b361-4fe0-9ead-e38a2a1572a4.png"
+    },
+    {
+      "file": "history/opp2-branched-cord.png",
+      "opponent": 2,
+      "role": "earlier alternative with branched cord",
+      "width": 1214,
+      "height": 1295,
+      "bytes": 1842577,
+      "sha256": "53c5dab7941075e5f3050b72f6e84fed191810e8113cf9a9f4b708ce69d272e1",
+      "source": "/home/user/.codex/generated_images/01a0cdb3-98b5-7151-a9b0-1b3d7f16170c/exec-9351ee6e-12b0-4344-b65f-1ab53fc71222.png"
+    },
+    {
+      "file": "history/opp2-vertical-cord.png",
+      "opponent": 2,
+      "role": "earlier alternative with vertical-only cord",
+      "width": 1215,
+      "height": 1295,
+      "bytes": 1806205,
+      "sha256": "09e8afa728ecac9fbecf9a250adfac40d7c3b3139b1b601fd8e47c04baa58c8f",
+      "source": "/home/user/.codex/generated_images/01a0cdb3-98b5-7151-a9b0-1b3d7f16170c/exec-2b01e111-d373-4ac7-b280-bcd509e75090.png"
+    },
+    {
+      "file": "full-resolution/opp3.png",
+      "opponent": 3,
+      "role": "selected full-resolution source",
+      "width": 1214,
+      "height": 1296,
+      "bytes": 1732036,
+      "sha256": "e0119c999174d8e073a8ef28d24192ac2adacafbb22d1a817b22d46ca8f32cef",
+      "source": "/home/user/.codex/generated_images/01a0cdb5-ee75-7973-adc8-dfc8434df5b6/exec-f497456f-7bbd-4844-8a1d-66a5d4505d38.png"
+    },
+    {
+      "file": "working-4x/opp3.png",
+      "opponent": 3,
+      "role": "4x working tile used before final reduction",
+      "width": 320,
+      "height": 332,
+      "bytes": 76990,
+      "sha256": "801cfa01b8a7bd8a6f0d21caa1af252d82320064ecfd26a631029818a41be97a",
+      "source": "/media/sf_ubi24/restunts-bb11/out/opponents/game2-rebuilt/4x/opp3.png"
+    },
+    {
+      "file": "full-resolution/opp4.png",
+      "opponent": 4,
+      "role": "selected full-resolution source",
+      "width": 1214,
+      "height": 1296,
+      "bytes": 2230703,
+      "sha256": "19c5b949087d5e2c883ebdc322b1af766d212209348d48124901682d232018f6",
+      "source": "/home/user/.codex/generated_images/01a0cdb3-98b5-7151-a9b0-1b3d7f16170c/exec-a097e9c9-b0ee-4f35-b589-f94a1444aabb.png"
+    },
+    {
+      "file": "working-4x/opp4.png",
+      "opponent": 4,
+      "role": "4x working tile used before final reduction",
+      "width": 320,
+      "height": 332,
+      "bytes": 108898,
+      "sha256": "a1b4c59c461917cf0fc0465012b3902391913b61dfd2c19dec1d86009357fa5a",
+      "source": "/media/sf_ubi24/restunts-bb11/out/opponents/game2-rebuilt/4x/opp4.png"
+    },
+    {
+      "file": "full-resolution/opp5.png",
+      "opponent": 5,
+      "role": "selected full-resolution source",
+      "width": 1214,
+      "height": 1296,
+      "bytes": 2365181,
+      "sha256": "48ca98b3382064c8420863d8d268eeebf428933bb68e5999a7a75a7a9c9203d4",
+      "source": "/home/user/.codex/generated_images/01a0cdb3-98b5-7151-a9b0-1b3d7f16170c/exec-671c3269-0016-4632-bac1-293b0e295169.png"
+    },
+    {
+      "file": "working-4x/opp5.png",
+      "opponent": 5,
+      "role": "4x working tile used before final reduction",
+      "width": 320,
+      "height": 332,
+      "bytes": 126678,
+      "sha256": "b4e5a164721c673a0c0c345def57a59312eb8e929427b9c908220c1fffef1108",
+      "source": "/media/sf_ubi24/restunts-bb11/out/opponents/game2-rebuilt/4x/opp5.png"
+    },
+    {
+      "file": "full-resolution/opp6.png",
+      "opponent": 6,
+      "role": "selected full-resolution source",
+      "width": 1214,
+      "height": 1296,
+      "bytes": 2196678,
+      "sha256": "32a396d7a7ddcbf3024e38b3a41281a7c17d8e554782f07bf4b841826fd1c39c",
+      "source": "/home/user/.codex/generated_images/01a0cdb3-98b5-7151-a9b0-1b3d7f16170c/exec-17c1fa67-2fe1-4b78-be13-47a3d32646c1.png"
+    },
+    {
+      "file": "working-4x/opp6.png",
+      "opponent": 6,
+      "role": "4x working tile used before final reduction",
+      "width": 320,
+      "height": 332,
+      "bytes": 96812,
+      "sha256": "eb7bdbdb0cad8f330908f2f2aaa1bf9ba505b5b3ca7a8959569440b8ca41effc",
+      "source": "/media/sf_ubi24/restunts-bb11/out/opponents/game2-rebuilt/4x/opp6.png"
+    }
+  ]
+}

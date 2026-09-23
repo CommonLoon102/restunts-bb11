@@ -215,6 +215,10 @@ run_host_test test-opponent-menu menu_opponent.c \
     "$test_source_dir/legacy.c" "$test_source_dir/full_data.c" \
     "$test_source_dir/full_strings.c" "$test_source_dir/headless_data.c" \
     -Wno-pointer-sign -Wno-missing-field-initializers
+run_host_test test-opponent-menu menu_opponent.c \
+    "$test_source_dir/legacy.c" "$test_source_dir/full_data.c" \
+    "$test_source_dir/full_strings.c" "$test_source_dir/headless_data.c" \
+    -DRESTUNTS_SDL3 -Wno-pointer-sign -Wno-missing-field-initializers
 run_host_test test-track-editor legacy.c \
     "$test_source_dir/headless_data.c" "$test_source_dir/headless_trackdata.c" \
     "$test_source_dir/full_data.c" \

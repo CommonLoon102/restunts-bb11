@@ -77,7 +77,7 @@ set(game_sources
     restunts.c fatal.c timing.c game_input.c ui_text.c ui_input.c ui_dialog.c
     intro.c highscore.c replay_record.c replay_viewer.c race.c ghost.c
     race_resources.c dashboard.c menu_common.c menu_main.c menu_options.c
-    menu_track.c menu_track_editor.c menu_opponent.c menu_car.c audio_engine.c
+    menu_track.c menu_track_editor.c menu_opponent.c opponent_portrait.c menu_car.c audio_engine.c
     audio_resources.c audio_car.c audio_sequence.c shape3d.c shape3d_resources.c
     shape3d_car.c shape3d_prerender.c shape3d_lines.c shape2d.c shape2d_blit.c
     video_pages.c hires.c frame_prediction.c phantom_physics.c shape3d_hires.c shape2d_resources.c heapsort.c frame.c skybox.c skybox_hires.c frame_overlay.c
@@ -112,7 +112,8 @@ endif()
 
 add_library(restunts_game STATIC ${common_sources} ${game_sources} ${platform_common} ${platform_game})
 target_compile_definitions(restunts_game PRIVATE RESTUNTS_FULL
-    RESTUNTS_SKYBOX_DIRECTORY="${CMAKE_SOURCE_DIR}/assets/skyboxes")
+    RESTUNTS_SKYBOX_DIRECTORY="${CMAKE_SOURCE_DIR}/assets/skyboxes"
+    RESTUNTS_OPPONENT_DIRECTORY="${CMAKE_SOURCE_DIR}/assets/opponents")
 target_link_libraries(restunts_game PUBLIC restunts_options)
 if(TARGET restunts_opl)
     target_link_libraries(restunts_game PRIVATE restunts_opl)
@@ -134,6 +135,14 @@ target_link_libraries(pixldump PRIVATE restunts_game)
 
 install(TARGETS restunts repldump pixldump RUNTIME DESTINATION bin COMPONENT Runtime)
 install(FILES docs/sdl3.md DESTINATION share/docs/restunts COMPONENT Runtime)
+foreach(opponent RANGE 1 6)
+    install(FILES "assets/opponents/opp${opponent}.png"
+        DESTINATION bin/opponents COMPONENT Runtime OPTIONAL)
+    install(FILES "assets/opponents/game/opp${opponent}.png"
+        DESTINATION bin/opponents/game COMPONENT Runtime OPTIONAL)
+    install(FILES "assets/opponents/game2/opp${opponent}.png"
+        DESTINATION bin/opponents/game2 COMPONENT Runtime OPTIONAL)
+endforeach()
 set(skybox_themes desert tropical alpine city country)
 set(skybox_images scen sce2 sce3 sce4)
 foreach(theme RANGE 0 4)
@@ -288,6 +297,14 @@ if(RESTUNTS_BUILD_TESTS)
     add_test(NAME track-preview-skybox COMMAND test-track-preview-skybox)
     set_tests_properties(track-preview-skybox PROPERTIES
         WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/track-preview-test")
+    add_executable(test-opponent-portrait src/restunts/tests/test-opponent-portrait.c
+        ${core}/opponent_portrait.c ${core}/hires.c ${platform}/memory.c)
+    target_link_libraries(test-opponent-portrait PRIVATE restunts_options)
+    target_compile_options(test-opponent-portrait PRIVATE -UNDEBUG)
+    file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/opponent-test")
+    add_test(NAME opponent-portrait COMMAND test-opponent-portrait)
+    set_tests_properties(opponent-portrait PROPERTIES
+        WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/opponent-test")
     add_executable(test-sdl3-hires src/restunts/tests/test-sdl3-hires.c ${core}/hires.c ${platform}/memory.c)
     target_link_libraries(test-sdl3-hires PRIVATE restunts_options)
     target_compile_options(test-sdl3-hires PRIVATE -UNDEBUG)

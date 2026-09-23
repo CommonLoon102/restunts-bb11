@@ -83,12 +83,21 @@ The enhancement is based on Alberto Marnetto's
 In SDL3 builds (Windows, Linux, and 32-bit DOS), SuperSight also renders 3D
 at **1280x800**, four times the original width and height. Player and opponent
 car-selection previews use the same higher resolution; F12 also works in those
-screens. Menus, dashboard artwork, and replay controls retain their original
-pixel detail and size. Switching SuperSight off restores 320x200 rendering.
+screens. Dashboard artwork, replay controls, and the surrounding menu UI retain
+their original pixel detail and size. Switching SuperSight off restores 320x200
+rendering.
 SuperSight also uses [AI-refined skybox artwork](docs/skyboxes/README.md), with
 each horizon image at four times its original width and height. Switching it
 off restores the original skybox artwork. Missing enhanced PNGs fall back to
 the original strips. The Open Watcom 16-bit DOS version retains its existing renderer.
+
+The opponent-selection screen also uses [enhanced portraits](docs/opponents/README.md)
+while SuperSight is on. It now prefers original-faithful 2x upscales in
+`assets/opponents/game2/`: 160 x 166 tiles with the exact game palette and solid
+backgrounds. The palette-matched photos in `assets/opponents/game/` and the
+full-resolution masters remain fallback sets for comparison. F12 switches
+portraits in the menu; missing or unreadable replacements fall back individually
+to the originals. Original numbered labels and the clipboard frame are preserved.
 
 SuperSight also targets **40 FPS** in SDL3 driving, replay playback, the nighttime
 intro, and rotating car previews. Between real simulation updates, driving and

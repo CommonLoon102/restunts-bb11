@@ -14,11 +14,20 @@ legacy_s32 sdl3_batch_mode;
 static legacy_u8 framebuffer[65536];
 static legacy_u8 high_resolution_framebuffer[1280 * 800];
 static legacy_u8 high_resolution_active;
+static legacy_u32 argb_framebuffer[1280 * 800];
+static legacy_u8 argb_active;
 static legacy_u32 frame_generation;
 static legacy_u32 first_callbacks;
 static legacy_u32 second_callbacks;
 static legacy_u32 audio_ticks;
 static legacy_u8 quit_cleaned_up;
+
+const legacy_u32 *hires_framebuffer_argb(const legacy_u8 *legacy, const legacy_u32 *palette)
+{
+	(void)legacy;
+	(void)palette;
+	return argb_active ? argb_framebuffer : NULL;
+}
 
 const legacy_u8 *hires_framebuffer(const legacy_u8 *legacy, legacy_s32 *width, legacy_s32 *height)
 {
@@ -311,6 +320,15 @@ static void test_high_resolution_video(void)
 	assert_presented_color(102, 120, 255, 0, 0);
 	sdl3_video_end_frame();
 	assert_presented_color(102, 120, 0, 0, 255);
+	for (legacy_u32 pixel = 0; pixel < 1280 * 800; pixel++) {
+		argb_framebuffer[pixel] = 0xFF123456U;
+	}
+	argb_active = true;
+	frame_generation++;
+	SDL_Delay(11);
+	sdl3_video_refresh();
+	assert_presented_color(101, 120, 18, 52, 86);
+	argb_active = false;
 	high_resolution_active = false;
 	frame_generation++;
 	SDL_Delay(11);

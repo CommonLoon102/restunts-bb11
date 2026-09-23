@@ -15,6 +15,10 @@
 #include "externs.h"
 #include "keyboard.h"
 #include "ghost.h"
+#ifdef RESTUNTS_SDL3
+#include "opponent_portrait.h"
+#include "shape2d_internal.h"
+#endif
 
 #define OPPONENT_RESOURCE_FILE_INDEX 4
 #define OPPONENT_NONE 0U
@@ -118,8 +122,11 @@ static void opponent_menu_draw_background(void)
 					button_fill_color, 0);
 	}
 
-	sprite_draw_palette_mapped(
-		(struct SHAPE2D far *)oppresources[(legacy_u8)gameconfig.game_opponenttype]);
+	shape = (struct SHAPE2D far *)oppresources[(legacy_u8)gameconfig.game_opponenttype];
+	sprite_draw_palette_mapped(shape);
+#ifdef RESTUNTS_SDL3
+	opponent_portrait_draw(&drawing_sprite, shape, (legacy_u8)gameconfig.game_opponenttype);
+#endif
 	shape = (struct SHAPE2D far *)locate_shape_fatal(opp_res, opponent_portrait_clip_id);
 	sprite_draw_palette_mapped(shape);
 	if (video_uses_page_flipping != 0) {
@@ -186,6 +193,17 @@ static legacy_u16 opponent_menu_poll_input(struct OPPONENT_MENU_STATE *menu)
 
 static legacy_u8 opponent_menu_activate_key(struct OPPONENT_MENU_STATE *menu, legacy_u16 key)
 {
+#ifdef RESTUNTS_SDL3
+	if (key == (legacy_u16)KEY_F12) {
+		mouse_draw_opaque_check();
+		handle_ingame_kb_shortcuts(KEY_F12);
+		opponent_menu_draw_background();
+		opponent_menu_draw_description(menu);
+		menu->previous_selection = OPPONENT_MENU_NO_SELECTION;
+		mouse_draw_transparent_check();
+		return 0;
+	}
+#endif
 	if (key == 0) {
 		return 0;
 	}
@@ -283,6 +301,9 @@ static void opponent_menu_release(struct OPPONENT_MENU_STATE *menu)
 	if (menu->resource_loaded != 0) {
 		unload_resource(menu->opponent_resource);
 	}
+#ifdef RESTUNTS_SDL3
+	opponent_portrait_unload();
+#endif
 	mmgr_free(opp_res);
 	unload_resource(miscptr);
 	mouse_draw_opaque_check();

@@ -1,0 +1,61 @@
+Skid Vicious fresh regeneration from the original
+
+Mode: built-in imagegen, new photorealistic interpretation.
+Sole visual reference: out/opponents/original/opp6.png (SDOSEL.PVS:opp6).
+No previously generated image was supplied as a reference.
+The approved eyewear and expression changes were consolidated into text.
+
+Exact prompt:
+
+Use case: photorealistic-natural.
+Asset: Skid Vicious, opponent 6, a fresh high-resolution photorealistic game portrait.
+Input image 1 is the ONLY visual reference: the ORIGINAL pixel-art game portrait. Create the photographic interpretation afresh directly from this original, not an enhancement of any previous AI-generated version. Rebuild clean natural details from scratch in a single coherent photograph.
+
+Match the original man's recognizable design, facial proportions, head angle, shoulder crop, swept-up thick dark-brown hair with volume at the top and longer hair behind the ears, angular face and prominent cheekbones. He is a 34-year-old man with natural lightly weathered skin. Preserve the black leather jacket worn open over a bright yellow crew-neck T-shirt and solid vivid cyan background. Compose the same head-and-shoulders portrait, with the face centered and same approximate placement and scale as the original. Full-bleed 1122x1402 portrait photograph, about 4:5, accounting for the original game's vertically stretched pixels.
+
+Carry these approved details into this NEW rendering:
+SUNGLASSES: lightweight THIN BLACK rounded rectangular rims and lightweight thin lenses with a DARK BROWN tint, not black lenses. Faintly visible eyes through the brown tint. Thin black temples attach to the OUTER SIDES of BOTH lens rims at their VERTICAL MIDPOINT, halfway between the top and bottom edges. In particular, the arm visible on image-right begins at the middle of the lens's outer side, then runs backward/upward to the ear; not at the top corner. Slender bridge and fine upper connecting bar like the original's light metal construction. Softly rounded corners, not sharp wayfarer corners; no chunky frames or thick arms. Keep the original scale, shape and slight tilt of the eyewear.
+
+EXPRESSION: intensely vicious, wild and crazy, like a reckless, malicious rival enjoying a challenge. Sharply tense, slightly asymmetric brows, a strong furrow between the brows, alert somewhat widened eyes, high prominent cheekbones and tense cheeks. His MOUTH is OPEN with visible separated upper and lower teeth and a dark gap inside. His LOWER LIP is pulled WIDE horizontally, taut with a broad flatter lower edge, almost as wide as the upper teeth row; not a narrow rounded U. A charged, unhinged, cruel open-mouthed grin, not friendly happiness or surprised shouting. No clenched teeth, curled upper-lip snarl or scrunched nose. Keep the anatomy credible and photographic.
+
+GAZE: almost forward, with a SMALL glance to the man's anatomical RIGHT = the VIEWER'S LEFT. Eyes look together toward a point just beside the camera on image-left. Irises remain near the middle of the visible eye openings, only slightly offset toward image-left. No extreme side-eye, no looking toward image-right, no crossed eyes.
+
+QUALITY IS THE PRIORITY: a crisp professionally photographed real person, sharply resolved clean eyes, brows, eyelashes, lips, teeth, and individual hair strands; natural subtle pores and real skin texture. Clean believable leather grain and fine shirt weave. Balanced studio light and realistic warm skin colors. Face and clothing in sharp focus. Avoid blur, waxy/plastic or melted skin, embossed or swirly AI texture, exaggerated pores, excessive sharpening halos, painterly rendering, pixelation, compression artifacts and invented aged wrinkles. Do not imitate the low-resolution pixel texture of the source.
+
+The red numeral and white border in the reference belong to the game's existing interface and are preserved separately by the renderer. Generate ONLY the full-bleed photo: no numeral, text, border, clipboard or watermark. No extra accessories or changes to clothing, backdrop, pose or framing.
+
+Selected output
+
+The first fresh regeneration was retained at the user's explicit request.
+Saved asset: assets/opponents/opp6.png
+Dimensions: 1059 x 1485 RGB PNG
+Generated source: exec-3f4a95a4-d14d-4b39-9661-8b3fef3f726b.png
+The original red number 6 and frame remain separate game UI overlays.
+
+Rounder, bottom-rimless sunglasses correction
+
+Mode: built-in imagegen, localized eyewear edit of the selected fresh photo.
+Input 1: selected fresh assets/opponents/opp6.png.
+Input 2: out/opponents/original/opp6.png, supporting eyewear shape reference.
+The lens shape is rounder/narrower with a deeper lower half, and the black
+rim exists only above the temple attachments. Lower lens edges are rimless.
+Saved asset: assets/opponents/opp6.png
+Generated source: exec-c188d538-d6d0-40e0-a625-a17b4b08db0a.png
+
+Exact edit prompt:
+
+Use case: precise-object-edit.
+Input image 1 is the EDIT TARGET: the final approved sharp photographic portrait of Skid Vicious.
+Input image 2 is the ORIGINAL GAME PORTRAIT: supporting reference only for the sunglasses' rounder shape.
+Make a tightly localized SUNGLASSES-ONLY correction. Preserve the approved photograph everywhere else.
+
+LENS SHAPE: the current lenses are too wide and rectangular. Make each lens noticeably NARROWER horizontally and DEEPER vertically, especially by extending its LOWER HALF farther down. Use a smoothly ROUNDED oval/near-round outline with a generously curved, deeper bottom. Not a wide flattened rectangle and not sharp corners. Keep practical sunglass size and the existing perspective and face tilt. The frame's top should stay around its current position while the lenses become more rounded and descend lower toward the cheeks. Both lenses have the same coherent new design.
+
+SEMI-RIMLESS CONSTRUCTION IS CRITICAL:
+There is a thin BLACK frame ONLY ABOVE THE LEVEL WHERE THE TEMPLE ARMS ATTACH. Retain a thin black upper brow rim curving over the top of each lens and continuing down the upper sides only until the side arm/hinge attachment. The hinges attach around mid-height of each lens's outer side, with thin arms going back to the ears.
+BELOW those arm attachments the lower halves of BOTH lenses are COMPLETELY RIMLESS. Remove the existing black bottom rim and black lower-side rims entirely. The lower curved boundaries should be only the bare transparent/tinted lens edge, perhaps a subtle optical glint, with NO black line, NO wire, NO colored frame around the bottom or lower sides. This is an upper-framed / bottom-rimless pair of sunglasses. Do not outline the lower lens edge in black.
+Preserve the DARK BROWN tint and comparable translucency, lightweight thin lenses, thin black upper frame/arms, slender bridge and upper connecting bar. Do not turn the lenses black or opaque.
+
+LOCK ALL ELSE: exact face identity and proportions, current eyes/gaze, eyebrows, forehead, mouth and expression, teeth, cheekbones, skin, hair, head pose, leather jacket, yellow shirt, vivid cyan backdrop, crop and lighting. Do not improve or reinterpret the expression. Keep the full current 1059x1485 canvas.
+Preserve the crisp photographic fidelity of the input: fine natural pores/stubble, individual clean hair strands, leather grain and cotton weave. No re-texturing, blur, waxy/plastic skin or embossed/swirl artifacts. Keep all non-eyewear areas as unchanged as possible.
+No text, number, border or watermark; those UI overlays are handled separately by the game.

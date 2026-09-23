@@ -1,0 +1,72 @@
+Photorealistic opponent portraits
+
+Generated using the built-in imagegen tool from SDOSEL.PVS:opp1 through opp6,
+exported with the SDMAIN.PVS:!pal VGA palette. No fallback CLI or API key.
+Each prompt used its matching original PNG as the sole reference image.
+The game preserves the original numbered label and border over these photos.
+
+opp1.png
+========================================================================
+Use case: sketch-to-render.
+Asset type: photorealistic enhanced opponent profile for the 1990 Stunts racing game.
+Input image: original 80x83 pixel-art opponent portrait, the sole source reference and identity/composition guide.
+Primary request: recreate THIS SAME fictional person as a convincing high-resolution studio photograph. Faithfully preserve the reference's face structure, apparent age, hairstyle, expression, clothing, accessories, shoulder crop, head angle, hand gesture if present, and solid backdrop color.
+Style: natural photographic detail, believable skin pores and individual hairs, realistic cloth and eyewear, subtle studio lighting. Keep the period styling.
+Composition: one head-and-shoulders portrait, matching the reference. The original pixels are vertically compressed for old VGA display; correct that compression to natural human proportions. Output a 4:5 vertical portrait, at least 1024x1280 pixels.
+Remove the small number in the upper-right corner and the thin white border. Full-bleed solid-colored background. No text, digits, frame, watermark, new objects, extra people, or redesign.
+Subject details: Squealin' Bernie Rubber: young adult man with a narrow face, short brown hair combed to the side, black rectangular glasses, slight bashful closed-mouth smile, green checked shirt open over a light undershirt, bright yellow studio backdrop.
+
+opp2.png
+========================================================================
+Use case: sketch-to-render.
+Asset type: photorealistic enhanced opponent profile for the 1990 Stunts racing game.
+Input image: original 80x83 pixel-art opponent portrait, the sole source reference and identity/composition guide.
+Primary request: recreate THIS SAME fictional person as a convincing high-resolution studio photograph. Faithfully preserve the reference's face structure, apparent age, hairstyle, expression, clothing, accessories, shoulder crop, head angle, hand gesture if present, and solid backdrop color.
+Style: natural photographic detail, believable skin pores and individual hairs, realistic cloth and eyewear, subtle studio lighting. Keep the period styling.
+Composition: one head-and-shoulders portrait, matching the reference. The original pixels are vertically compressed for old VGA display; correct that compression to natural human proportions. Output a 4:5 vertical portrait, at least 1024x1280 pixels.
+Remove the small number in the upper-right corner and the thin white border. Full-bleed solid-colored background. No text, digits, frame, watermark, new objects, extra people, or redesign.
+Subject details: Herr Otto Partz: middle-aged man, receding short brown hair, prominent thick brown moustache, round wire-frame glasses, holding the viewer-left side of the glasses with his raised right hand, dark checkered collared shirt, reserved amused expression, vivid purple studio backdrop.
+
+opp3.png
+========================================================================
+Use case: sketch-to-render.
+Asset type: photorealistic enhanced opponent profile for the 1990 Stunts racing game.
+Input image: original 80x83 pixel-art opponent portrait, the sole source reference and identity/composition guide.
+Primary request: recreate THIS SAME fictional person as a convincing high-resolution studio photograph. Faithfully preserve the reference's face structure, apparent age, hairstyle, expression, clothing, accessories, shoulder crop, head angle, hand gesture if present, and solid backdrop color.
+Style: natural photographic detail, believable skin pores and individual hairs, realistic cloth and eyewear, subtle studio lighting. Keep the period styling.
+Composition: one head-and-shoulders portrait, matching the reference. The original pixels are vertically compressed for old VGA display; correct that compression to natural human proportions. Output a 4:5 vertical portrait, at least 1024x1280 pixels.
+Remove the small number in the upper-right corner and the thin white border. Full-bleed solid-colored background. No text, digits, frame, watermark, new objects, extra people, or redesign.
+Subject details: Smokin' Joe Stallin: adult man with short light brown crew-cut hair, black aviator sunglasses, clean-shaven broad face, white crew-neck T-shirt, relaxed stern expression, yellow-green studio backdrop.
+
+opp4.png
+========================================================================
+Use case: sketch-to-render.
+Asset type: photorealistic enhanced opponent profile for the 1990 Stunts racing game.
+Input image: original 80x83 pixel-art opponent portrait, the sole source reference and identity/composition guide.
+Primary request: recreate THIS SAME fictional person as a convincing high-resolution studio photograph. Faithfully preserve the reference's face structure, apparent age, hairstyle, expression, clothing, accessories, shoulder crop, head angle, hand gesture if present, and solid backdrop color.
+Style: natural photographic detail, believable skin pores and individual hairs, realistic cloth and eyewear, subtle studio lighting. Keep the period styling.
+Composition: one head-and-shoulders portrait, matching the reference. The original pixels are vertically compressed for old VGA display; correct that compression to natural human proportions. Output a 4:5 vertical portrait, at least 1024x1280 pixels.
+Remove the small number in the upper-right corner and the thin white border. Full-bleed solid-colored background. No text, digits, frame, watermark, new objects, extra people, or redesign.
+Subject details: Cherry Chassis: young adult woman turned in three-quarter profile toward the viewer's left, dark hair swept up and tied in a ponytail with a large patterned white-and-dark bow, bright pink collared top, warm smile showing teeth, coral-pink studio backdrop.
+
+opp5.png
+========================================================================
+Use case: sketch-to-render.
+Asset type: photorealistic enhanced opponent profile for the 1990 Stunts racing game.
+Input image: original 80x83 pixel-art opponent portrait, the sole source reference and identity/composition guide.
+Primary request: recreate THIS SAME fictional person as a convincing high-resolution studio photograph. Faithfully preserve the reference's face structure, apparent age, hairstyle, expression, clothing, accessories, shoulder crop, head angle, hand gesture if present, and solid backdrop color.
+Style: natural photographic detail, believable skin pores and individual hairs, realistic cloth and eyewear, subtle studio lighting. Keep the period styling.
+Composition: one head-and-shoulders portrait, matching the reference. The original pixels are vertically compressed for old VGA display; correct that compression to natural human proportions. Output a 4:5 vertical portrait, at least 1024x1280 pixels.
+Remove the small number in the upper-right corner and the thin white border. Full-bleed solid-colored background. No text, digits, frame, watermark, new objects, extra people, or redesign.
+Subject details: Helen Wheels: young adult woman facing camera, long voluminous curly light-brown hair, broad warm smile showing teeth, white collared blouse, pale pink studio backdrop.
+
+opp6.png
+========================================================================
+Use case: sketch-to-render.
+Asset type: photorealistic enhanced opponent profile for the 1990 Stunts racing game.
+Input image: original 80x83 pixel-art opponent portrait, the sole source reference and identity/composition guide.
+Primary request: recreate THIS SAME fictional person as a convincing high-resolution studio photograph. Faithfully preserve the reference's face structure, apparent age, hairstyle, expression, clothing, accessories, shoulder crop, head angle, hand gesture if present, and solid backdrop color.
+Style: natural photographic detail, believable skin pores and individual hairs, realistic cloth and eyewear, subtle studio lighting. Keep the period styling.
+Composition: one head-and-shoulders portrait, matching the reference. The original pixels are vertically compressed for old VGA display; correct that compression to natural human proportions. Output a 4:5 vertical portrait, at least 1024x1280 pixels.
+Remove the small number in the upper-right corner and the thin white border. Full-bleed solid-colored background. No text, digits, frame, watermark, new objects, extra people, or redesign.
+Subject details: Skid Vicious: adult man with thick swept-up dark brown hair, black wayfarer sunglasses, mischievous open smile showing teeth, black leather jacket over a dark top, vivid cyan studio backdrop.

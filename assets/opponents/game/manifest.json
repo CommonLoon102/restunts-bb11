@@ -1,0 +1,86 @@
+{
+  "generator": "tools/scripts/prepare-opponent-portraits.py",
+  "pillow_version": "10.2.0",
+  "palette_source": "SDMAIN.PVS:!pal",
+  "palette_source_sha256": "a33b54cff282fed2d68134fcf334f4e44917f906a6556013e0f6c6dd546cdd3b",
+  "palette_vga_sha256": "5e8dc3e868d0c6c25856455bef24acf291686b2b6ab2c7efd7b359188ed2bd9c",
+  "palette_rgb_sha256": "0fc80b406c5fbb11d58c243acba08afc7af7c290eb090997d3751694dc1640c9",
+  "palette_conversion": "(component & 63) * 255 // 63",
+  "width": 296,
+  "height": 316,
+  "pixel_block_size": 2,
+  "processing": [
+    "RGB bilinear downscale to 296 x 316 renderer samples",
+    "RGB bilinear reduction to 148 x 158 for subtle pixelation",
+    "Quantize to the original 256-entry game palette without dithering",
+    "Nearest-neighbor expansion to 296 x 316 (2 x 2 sample blocks)"
+  ],
+  "images": [
+    {
+      "file": "opp1.png",
+      "opponent": 1,
+      "source": "../opp1.png",
+      "source_width": 1122,
+      "source_height": 1402,
+      "source_sha256": "525f13c44887678e45cf64688dbf05fafdfe6a5abfe2bfe737b5f42ff3633a99",
+      "sha256": "230b99b5082cc8e382287a45fa892a06bd7502f7a21efd5b942fe7860bd3ee1c",
+      "pixels_sha256": "99b22871a9e2af079d143d1845fdaaff57dabe0e73ac9b2478d34a15ecf02dbf",
+      "palette_colors_used": 116
+    },
+    {
+      "file": "opp2.png",
+      "opponent": 2,
+      "source": "../opp2.png",
+      "source_width": 1122,
+      "source_height": 1402,
+      "source_sha256": "2f604035f1c7a0c4408bc6bbb62ed0603192f9dcedf1f675efcb2cf9381fcdfc",
+      "sha256": "02c69f0018a7a8d12d425c8f3a4fd46ae09e0a0bb6d6e30c71e08630145e2da2",
+      "pixels_sha256": "1a2f7e4ced656fd504cd9a3eb262d2cae6edcb57255c9dace6394b6e32ba59f0",
+      "palette_colors_used": 83
+    },
+    {
+      "file": "opp3.png",
+      "opponent": 3,
+      "source": "../opp3.png",
+      "source_width": 1122,
+      "source_height": 1402,
+      "source_sha256": "ffdde03390a8cb46c7093fbcd224a38345a2bbda27def6f7b9da6685edf78670",
+      "sha256": "3db756eaa15ee0948769e63cc352f8098a673a3cb52efa91e927d9590e3afadf",
+      "pixels_sha256": "3ae4d9bfb29e84db833913e9afa1c0e4185c63992036143b098bed64f75446e4",
+      "palette_colors_used": 87
+    },
+    {
+      "file": "opp4.png",
+      "opponent": 4,
+      "source": "../opp4.png",
+      "source_width": 1122,
+      "source_height": 1402,
+      "source_sha256": "c2bf428c13be80e3d63bab3369e07c40d22289410f2265af93788e53e415ecae",
+      "sha256": "eccbfd356d53f2445a68c13e7e2aedd961d5c094ef8aac794e6416adade4cffd",
+      "pixels_sha256": "2e01f529f99521b51747fd5cf6d9cae6f5307e35afdf265bf2cfd2a3db74ce7e",
+      "palette_colors_used": 80
+    },
+    {
+      "file": "opp5.png",
+      "opponent": 5,
+      "source": "../opp5.png",
+      "source_width": 1122,
+      "source_height": 1402,
+      "source_sha256": "f136f071b8173c2f44f098db60444cb36bc742a18f58d5ce25d551b88c880c65",
+      "sha256": "454196df94e545be7923d07c8a163897e41fedf45960156a5ee54a6c718b7157",
+      "pixels_sha256": "4288f4c122e6bf68e64598287b651feb655ad0cd5224c8b98404bfb82ad014b7",
+      "palette_colors_used": 82
+    },
+    {
+      "file": "opp6.png",
+      "opponent": 6,
+      "source": "../opp6.png",
+      "source_width": 1059,
+      "source_height": 1485,
+      "source_sha256": "75d48646dba467f8aa016847d4a96dd64d9494938fe82e12080d29f2c705e17e",
+      "sha256": "5b9ace9ae9af6f6ce7266f1963e80718a19520fa5c2900f6b06939c5a9ac7ff7",
+      "pixels_sha256": "3006903ab4e4c0d1e01dba72c0d7147f67ddd4df0441120e77e8b376e8b1fdc0",
+      "palette_colors_used": 94
+    }
+  ]
+}

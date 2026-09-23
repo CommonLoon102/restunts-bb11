@@ -1,0 +1,142 @@
+{
+  "source": "SDOSEL.PVS",
+  "palette": "SDMAIN.PVS:!pal",
+  "generation": "Built-in imagegen; exact prompts in docs/opponents/generation-prompts.txt",
+  "images": [
+    {
+      "file": "opp1.png",
+      "opponent": 1,
+      "name": "Squealin' Bernie Rubber",
+      "width": 1122,
+      "height": 1402,
+      "sha256": "525f13c44887678e45cf64688dbf05fafdfe6a5abfe2bfe737b5f42ff3633a99",
+      "original": {
+        "resource": "opp1",
+        "width": 80,
+        "height": 83,
+        "position_x": 112,
+        "position_y": 6,
+        "header_hex": "5000530018001b007000060001021408",
+        "shape_sha256": "1675ec9d321e44f26328058744fc8cefaaeff39edef5091d61e1d41dfe45ea8f",
+        "pixels_sha256": "13ea648f7fd5eb4a1f34ace5cae102a7bb67a8b5b5c7cb576552b299d570a627",
+        "png_sha256": "ef1baf6b3d444b58ba838d53fe9a71506651482e4f25aa58cceb28d2c427209c"
+      }
+    },
+    {
+      "file": "opp2.png",
+      "opponent": 2,
+      "name": "Herr Otto Partz",
+      "width": 1122,
+      "height": 1402,
+      "sha256": "2f604035f1c7a0c4408bc6bbb62ed0603192f9dcedf1f675efcb2cf9381fcdfc",
+      "original": {
+        "resource": "opp2",
+        "width": 80,
+        "height": 83,
+        "position_x": 112,
+        "position_y": 6,
+        "header_hex": "50005300160048007000060001020408",
+        "shape_sha256": "34ec7dc8f9246638f476e9ee58f549057f7c0a4b8190c6c862b6b9d26dd4ab10",
+        "pixels_sha256": "c3f39069c078768d4a55bb644b39d1a81d8d77446875ab7f89170147aee65f23",
+        "png_sha256": "2fc7300a22b07b4740018b02de86d1386589e88a98a0205f26994994c4b8dd97"
+      },
+      "correction": "docs/opponents/otto-monocle-correction.txt"
+    },
+    {
+      "file": "opp3.png",
+      "opponent": 3,
+      "name": "Smokin' Joe Stallin",
+      "width": 1122,
+      "height": 1402,
+      "sha256": "ffdde03390a8cb46c7093fbcd224a38345a2bbda27def6f7b9da6685edf78670",
+      "original": {
+        "resource": "opp3",
+        "width": 80,
+        "height": 83,
+        "position_x": 112,
+        "position_y": 6,
+        "header_hex": "500053000a0027007000060001021408",
+        "shape_sha256": "e7bb2c85ca6a9d87f4d4ddc99bea7447e390346aa66fb917286048de4c1f9dd8",
+        "pixels_sha256": "7432fe920fb06cf3f2e6aabccfdfd9c021d6fb1b09e185f6370f8651ff8c766f",
+        "png_sha256": "9df67dd6773111404236583cb784c009077cf2227524d545168b4cadb5da2994"
+      },
+      "correction": "docs/opponents/joe-sunglasses-correction.txt"
+    },
+    {
+      "file": "opp4.png",
+      "opponent": 4,
+      "name": "Cherry Chassis",
+      "width": 1122,
+      "height": 1402,
+      "sha256": "c2bf428c13be80e3d63bab3369e07c40d22289410f2265af93788e53e415ecae",
+      "original": {
+        "resource": "opp4",
+        "width": 80,
+        "height": 83,
+        "position_x": 112,
+        "position_y": 6,
+        "header_hex": "50005300040026007000060001021408",
+        "shape_sha256": "241b4ac76e6535d8ba00b21d4983a76da252d096c69c139befa6fe0f549b4b30",
+        "pixels_sha256": "816146eb44c88bc14944443569c58bd138071bf6eb01609f3afd676919df3002",
+        "png_sha256": "7210ef9baf332e7133e7d31c4d1b5f95c4032c88352d08d21d64080133162937"
+      }
+    },
+    {
+      "file": "opp5.png",
+      "opponent": 5,
+      "name": "Helen Wheels",
+      "width": 1122,
+      "height": 1402,
+      "sha256": "f136f071b8173c2f44f098db60444cb36bc742a18f58d5ce25d551b88c880c65",
+      "original": {
+        "resource": "opp5",
+        "width": 80,
+        "height": 83,
+        "position_x": 112,
+        "position_y": 6,
+        "header_hex": "5000530004001d007000060001021408",
+        "shape_sha256": "3ee8b2446bec0122c15c4c00d4d245e216ec7eda09a8e0fb3e2ecb9a8277a8d5",
+        "pixels_sha256": "fa174108eb4f7469af1c77de9a5bd523d4cf3ff3328997165967b499171665d9",
+        "png_sha256": "f51451123e2e3e1f582168757ff7e47272de1d017475edea086f11c96ab8d86d"
+      }
+    },
+    {
+      "file": "opp6.png",
+      "opponent": 6,
+      "name": "Skid Vicious",
+      "width": 1059,
+      "height": 1485,
+      "sha256": "75d48646dba467f8aa016847d4a96dd64d9494938fe82e12080d29f2c705e17e",
+      "original": {
+        "resource": "opp6",
+        "width": 80,
+        "height": 83,
+        "position_x": 112,
+        "position_y": 6,
+        "header_hex": "50005300f4ff17007000060001021408",
+        "shape_sha256": "410f8bc2e5cb9aded4c13572e8539fd4464d6f23fe3ecba166516240bbb741af",
+        "pixels_sha256": "4b8270258f0fb81d44e30584fb3922658c379c76ed6d7c9649ec7c35c439fd66",
+        "png_sha256": "e8026a25b3b58f6fc89310b46fb16c0742caf8a5901885921b49767fd1fb3d83"
+      },
+      "correction": "docs/opponents/skid-original-regeneration.txt"
+    }
+  ],
+  "source_sha256": "43dc5b1ef38b2d345ce0674c5e1d8b13f8961024fdb5ef510d2ed945c2c2ba7d",
+  "palette_source_sha256": "a33b54cff282fed2d68134fcf334f4e44917f906a6556013e0f6c6dd546cdd3b",
+  "palette_vga_sha256": "5e8dc3e868d0c6c25856455bef24acf291686b2b6ab2c7efd7b359188ed2bd9c",
+  "palette_rgb_sha256": "0fc80b406c5fbb11d58c243acba08afc7af7c290eb090997d3751694dc1640c9",
+  "palette_conversion": "(component & 63) * 255 // 63",
+  "photo_interior": {
+    "x": 2,
+    "y": 2,
+    "width": 74,
+    "height": 79
+  },
+  "digit_search_rectangle": {
+    "x": 66,
+    "y": 4,
+    "width": 6,
+    "height": 9
+  },
+  "digit_palette_index": 39
+}
