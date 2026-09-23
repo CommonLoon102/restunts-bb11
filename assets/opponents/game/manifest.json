@@ -108,8 +108,8 @@
       "opponent": 4,
       "original": "SDOSEL.PVS:opp4",
       "original_png_sha256": "7210ef9baf332e7133e7d31c4d1b5f95c4032c88352d08d21d64080133162937",
-      "generated_restoration_sha256": "19c5b949087d5e2c883ebdc322b1af766d212209348d48124901682d232018f6",
-      "working_png_sha256": "a1b4c59c461917cf0fc0465012b3902391913b61dfd2c19dec1d86009357fa5a",
+      "generated_restoration_sha256": "1e97ebd3425874e6720196f77ec59962f6ebb60e429af43487e113169e93ca91",
+      "working_png_sha256": "0683ca6b4914e6739a7f01fd92e778b684c4c93aaaaa6c6c3265661e1e00a667",
       "background_palette_index": 35,
       "background_rgb": [
         255,
@@ -121,11 +121,11 @@
         125,
         123
       ],
-      "working_background_pixels": 15775,
+      "working_background_pixels": 15634,
       "working_enclosed_background_pixels": 0,
-      "final_solid_background_pixels": 3655,
-      "sha256": "d718b0591d55d43c43d32e7fa153ff655a7fd3fa8da8ea0a40c56c17c74cfa4f",
-      "pixels_sha256": "731277b9052d34b0b9782bed488aa388eadb75a2cc6b291166303e5065cbc498"
+      "final_solid_background_pixels": 3607,
+      "sha256": "d365773ddf08cafd071cf1bd8fb9870e3b234bde414488f4b94d8f83c0fcc6bf",
+      "pixels_sha256": "89b35b546cfd88c0efc46a4ac8d2908dc663ecf10ab08133c0b86a3c3db28a61"
     },
     {
       "file": "opp5.png",

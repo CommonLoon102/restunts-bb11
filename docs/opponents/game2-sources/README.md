@@ -12,7 +12,10 @@ local generated-image storage.
   reduction and game-palette conversion.
 
 Otto's selected source has the cord curving over his shoulder, as requested.
-Bernie's selected source has the corrected green shirt collars.
+Bernie's selected source has the corrected green shirt collars. Cherry's source
+also restores the far-side triangular earring visible in the original portrait,
+with a longer pointed tip. The committed photograph supplies every pixel outside
+the localized earring patch, preserving its original detail and sharpness.
 
 ## Selected full-resolution images
 
@@ -51,3 +54,11 @@ When selecting a new source, update the [archive manifest](manifest.json) and
 dimensions and SHA-256 hashes so the preserved files can be checked exactly.
 Historical prompt text and generated source paths remain in the generation
 records; `preserved_*` fields refer only to images retained in this archive.
+
+Cherry's [RGBA earring patch](patches/opp4-right-earring.png) and
+[composition record](patches/opp4-right-earring.json) preserve the localized edit.
+The record identifies the committed base photograph, staged donor, patch placement,
+and hashes. To reconstruct the full-resolution image with Pillow, load the base
+from the recorded Git commit as RGB and the patch as RGBA, then use
+`base.paste(patch, (179, 691), patch)`. Only 2,778 pixels change; every pixel outside
+the earring patch remains identical to the committed photograph.

@@ -84,7 +84,39 @@
     "prompt": "Use case: identity-preserve.\nInput image is the ORIGINAL Stunts game portrait crop (74x79 pixels). Reconstruct this SAME portrait as a clean coherent REALISTIC PHOTOGRAPH, with plausible new detail filling the missing resolution. It is intended for a 4x restoration pass (photo interior 296x316 pixels), then will be reduced to half size and converted to game-palette pixel art. You may render larger for quality, but keep the same 74:79 canvas proportions and precise original composition.\n\nUse imagination to resolve real facial anatomy, clear eyes, lip/tooth structure, hair strands, clothing folds and accessory construction from the original, while retaining ALL identifying details. Keep the SAME exact head angle, gaze, facial expression, face shape, hair silhouette, clothing, jewelry/eyewear and their placements, shoulder crop and subject scale. No new accessories or invented costume; no beauty makeover, expression change or camera repositioning. This should feel like recovering the original photograph behind the digitized game portrait.\n\nCrucial quality: smooth coherent natural photographic forms and believable detail, not interpolated blocks or sharpened source noise. Render real skin with subtle pores and natural shading, clean hair strands and cloth texture. Do NOT render pixel art yet. NO dithering, grid, mosaic, pixel clusters, random texture, artificial grain, skin speckles, crispy edge halos or original-pixel anchoring. The palette/pixel-art conversion is a separate later step.\n\nMatch the original crop edge for edge, preserve flat even portrait lighting and original overall skin/clothing colors. Background must be perfectly uniform SOLID specified color, no gradients, shadows, vignette, halo, texture, noise, patterns or objects. No text, numeral, frame, border, clipboard or watermark; the original game border/number will be restored separately.\n\n\nOpponent 4, Cherry: young woman in the original three-quarter pose facing viewer-left, same small open smile and gaze. Dark high ponytail sweeps toward viewer-right with the large white patterned bow at upper-right. Long pale triangular earring beside her visible ear. Pink collared/lapelled blouse, with precisely the original neckline and shoulders. Background RGB (255,125,125), uniformly solid salmon pink. Preserve the original distinctive face and expression, not a generic model.\n\nRestoration cleanup: remove stray pixel noise, compression/digitization speckles and isolated accidental colored dots in the original. Do not reproduce those artifacts as skin spots or cloth grain. Keep intentional patterned fabric, hair, eyebrows and defining facial features.",
     "preserved_source": "docs/opponents/game2-sources/full-resolution/opp4.png",
     "preserved_working_image": "docs/opponents/game2-sources/working-4x/opp4.png",
-    "preserved_initial_source": "docs/opponents/game2-sources/full-resolution/opp4.png"
+    "edits": [
+      {
+        "opponent": 4,
+        "tool": "built-in image_gen.imagegen",
+        "edit_target": "/home/user/.codex/generated_images/01a0cdb3-98b5-7151-a9b0-1b3d7f16170c/exec-78c1d068-edf5-482f-85ec-299795bce611.png",
+        "generated_source": "/home/user/.codex/generated_images/01a0cdb3-98b5-7151-a9b0-1b3d7f16170c/exec-1e5bbdfc-18dc-4046-acfb-a4fa16cb66e6.png",
+        "prompt": "Use case: precise-object-edit.\nMake just one tiny shape adjustment to this finished Cherry portrait: make the small far-side earring on the VIEWER'S LEFT (her anatomical right ear) a little longer.\nThe pendant currently peeks out from behind her jaw at roughly x16-18% of the image and its tip ends near y63%. Keep its top/attachment, width, bright neutral ivory-white face, thin shaded edge, angle, and partial occlusion behind the cheek exactly where they are. Extend ONLY its lower taper and point downward by about 20% of the currently visible pendant length, roughly 20-25 pixels at this image size. This should be a subtle length increase, with the pointed tip hanging slightly farther below the jaw. Do not widen it or move it sideways.\nDo NOT change the existing larger earring on the VIEWER'S RIGHT. Preserve all other details exactly: face, closed smile shape and teeth, gaze, head angle, hair, ponytail, bow, neck, blouse, salmon-pink solid background, lighting, framing and full-resolution detail. No new accessories, no blur, no pixel art, no general regeneration or beautification, no number/text/border. Only extend the little viewer-left ivory pendant's bottom tip.",
+        "status": "superseded: user requested a more noticeable length increase"
+      },
+      {
+        "opponent": 4,
+        "tool": "built-in image_gen.imagegen",
+        "edit_target": "/home/user/.codex/generated_images/01a0cdb3-98b5-7151-a9b0-1b3d7f16170c/exec-1e5bbdfc-18dc-4046-acfb-a4fa16cb66e6.png",
+        "generated_source": "/home/user/.codex/generated_images/01a0cdb3-98b5-7151-a9b0-1b3d7f16170c/exec-9f0e5051-626f-4e1c-9a4a-5eabfd3e07c9.png",
+        "prompt": "Use case: precise-object-edit.\nThe user says the small VIEWER-LEFT earring is STILL NOT LONG ENOUGH. Make a clearly visible length increase in that one pendant only.\nOn this1214x1296 portrait, the little ivory pendant emerging from behind the far jaw has its current bottom tip at approximately x212,y820. Extend its taper so the new bottom point reaches approximately x212,y875 (about y67.5% of the canvas). That means adding about55 pixels BELOW the existing point, not just a few pixels. The extension should be easy to see at small game-portrait size. Keep the pendant's top where it disappears behind the jaw fixed. Keep the same maximum width and slender triangular dagger silhouette; smoothly lengthen the taper to the new lower point, still bright neutral ivory-white with its slim shaded side edge. Do not widen it, rotate it, shift it sideways, or move its attachment.\nThis instruction refers ONLY to the small earring on VIEWER'S LEFT / her right ear. Leave the large existing earring on VIEWER'S RIGHT exactly unchanged. Preserve all other image details as closely as possible: face, smile/teeth, gaze, pose, hair, ponytail, bow, skin, neck, pink blouse, solid salmon backdrop, lighting, crop and photographic clarity. No additional jewellery, no blur, no broad facial re-render, no text/number/frame. Only extend the viewer-left white earring tip downward to the specified lower endpoint.",
+        "status": "Earring donor only; the final portrait restores the committed photograph outside the localized patch."
+      }
+    ],
+    "final_composition": {
+      "method": "Pillow masked copy; no image generation or whole-image resampling",
+      "base_commit": "e68076c971de68f7c1bcf4866395c5d2d0d7823e",
+      "base_file": "docs/opponents/game2-sources/full-resolution/opp4.png",
+      "patch": "docs/opponents/game2-sources/patches/opp4-right-earring.png",
+      "provenance": "docs/opponents/game2-sources/patches/opp4-right-earring.json",
+      "changed_pixel_count": 2778,
+      "changed_rectangle": [
+        181,
+        694,
+        220,
+        844
+      ],
+      "output_png_sha256": "1e97ebd3425874e6720196f77ec59962f6ebb60e429af43487e113169e93ca91"
+    }
   },
   {
     "opponent": 5,
