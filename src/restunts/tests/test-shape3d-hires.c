@@ -50,7 +50,7 @@ static legacy_u32 count_color(legacy_u8 color)
 	return count;
 }
 
-static void queue(legacy_u8 type, legacy_u32 count, const struct VECTOR *vertices)
+static void queue(legacy_u8 type, legacy_u32 count, const struct SHAPE3D_HIRES_VECTOR *vertices)
 {
 	legacy_u8 indices[10];
 	assert(count <= sizeof(indices));
@@ -67,12 +67,13 @@ static void queue(legacy_u8 type, legacy_u32 count, const struct VECTOR *vertice
 
 static void test_projection_and_subpixel_edges(void)
 {
-	struct VECTOR vector = {1, 1, 300};
+	struct SHAPE3D_HIRES_VECTOR vector = {1, 1, 300};
 	struct SHAPE3D_HIRES_POINT point;
 	shape3d_hires_project(&vector, &point);
 	assert(point.x > 642 && point.x < 643);
 	assert(point.y > 397 && point.y < 398);
-	const struct VECTOR triangle[] = {{-100, -60, 300}, {100, -60, 300}, {-100, 60, 300}};
+	const struct SHAPE3D_HIRES_VECTOR triangle[] = {
+		{-100, -60, 300}, {100, -60, 300}, {-100, 60, 300}};
 	reset_target();
 	queue(RENDER_PRIMITIVE_POLYGON, 3, triangle);
 	shape3d_hires_render(0, RENDER_PRIMITIVE_POLYGON, 7, 0, 0, 0, 0);
@@ -100,14 +101,14 @@ static void test_projection_and_subpixel_edges(void)
 
 static void test_near_plane_and_screen_clipping(void)
 {
-	const struct VECTOR triangle[] = {{-10, -10, 1}, {50, -30, 100}, {0, 50, 100}};
+	const struct SHAPE3D_HIRES_VECTOR triangle[] = {{-10, -10, 1}, {50, -30, 100}, {0, 50, 100}};
 	reset_target();
 	queue(RENDER_PRIMITIVE_POLYGON, 3, triangle);
 	shape3d_hires_render(0, RENDER_PRIMITIVE_POLYGON, 9, 0, 0, 0, 0);
 	hires_end();
 	assert(count_color(9) > 100000);
 
-	const struct VECTOR line[] = {{-32768, 0, 12}, {32767, 0, 12}};
+	const struct SHAPE3D_HIRES_VECTOR line[] = {{-32768, 0, 12}, {32767, 0, 12}};
 	reset_target();
 	queue(RENDER_PRIMITIVE_LINE, 2, line);
 	shape3d_hires_render(0, RENDER_PRIMITIVE_LINE, 10, 0, 0, 0, 0);
@@ -119,7 +120,7 @@ static void test_near_plane_and_screen_clipping(void)
 
 static void test_materials_and_rounded_primitives(void)
 {
-	const struct VECTOR rectangle[] = {
+	const struct SHAPE3D_HIRES_VECTOR rectangle[] = {
 		{-50, -50, 200}, {50, -50, 200}, {50, 50, 200}, {-50, 50, 200}};
 	reset_target();
 	queue(RENDER_PRIMITIVE_POLYGON, 4, rectangle);
@@ -137,7 +138,7 @@ static void test_materials_and_rounded_primitives(void)
 	assert(count_color(0) == 51200);
 	assert(count_color(5) == 0);
 
-	const struct VECTOR sphere[] = {{0, 0, 300}, {20, 0, 300}};
+	const struct SHAPE3D_HIRES_VECTOR sphere[] = {{0, 0, 300}, {20, 0, 300}};
 	reset_target();
 	queue(RENDER_PRIMITIVE_SPHERE, 2, sphere);
 	shape3d_hires_render(0, RENDER_PRIMITIVE_SPHERE, 11, 0, 0, 0, 0);
@@ -146,8 +147,8 @@ static void test_materials_and_rounded_primitives(void)
 	assert(pixels()[400 * HIRES_WIDTH + 640] == 11);
 	assert(pixels()[380 * HIRES_WIDTH + 640] == 3);
 
-	const struct VECTOR wheel[] = {{-20, 0, 400}, {0, 0, 400},	{-20, 20, 400},
-								   {0, 0, 420},	  {20, 0, 420}, {0, 20, 420}};
+	const struct SHAPE3D_HIRES_VECTOR wheel[] = {{-20, 0, 400}, {0, 0, 400},  {-20, 20, 400},
+												 {0, 0, 420},	{20, 0, 420}, {0, 20, 420}};
 	reset_target();
 	queue(RENDER_PRIMITIVE_WHEEL, 6, wheel);
 	shape3d_hires_render(0, RENDER_PRIMITIVE_WHEEL, 11, 12, 13, 0, 0);
@@ -159,7 +160,7 @@ static void test_materials_and_rounded_primitives(void)
 
 static void test_disabled_and_reset(void)
 {
-	const struct VECTOR point[] = {{0, 0, 100}};
+	const struct SHAPE3D_HIRES_VECTOR point[] = {{0, 0, 100}};
 	reset_target();
 	queue(RENDER_PRIMITIVE_POINT, 1, point);
 	shape3d_hires_reset();
@@ -339,6 +340,140 @@ static void test_body_panel_occludes_wheel(void)
 	assert(count_color(8) + count_color(9) + count_color(10) == 0);
 }
 
+/* A road split into tiles must retain its continuous interior, even when the
+ * tiles use different origins and model orientations. */
+static void draw_joined_road(legacy_s32 split, legacy_s16 roll, legacy_s16 pitch, legacy_s16 yaw,
+							 legacy_s16 depth, legacy_s16 half_scale, legacy_s16 reverse_order,
+							 legacy_s16 turn)
+{
+	const struct VECTOR road[] = {
+		{-200, 0, -1024}, {-200, 0, 1024}, {200, 0, 1024}, {200, 0, -1024}};
+	const legacy_u8 primitive[] = {4, 1, 0, 0, 1, 2, 3, 0, 0};
+	prepare_scene(road, 4, primitive, sizeof(primitive), 1);
+	struct RECTANGLE clip = {0, 320, 0, 200};
+	select_cliprect_rotate(roll, pitch, yaw, &clip, half_scale);
+	scene_instance.ts_flags = 8;
+	scene_instance.pos = (struct VECTOR){17, -233, depth};
+	if (!split) {
+		assert(shape3d_transform_and_queue(&scene_instance) == 0);
+	} else {
+		for (legacy_s16 index = 0; index < 2; index++) {
+			legacy_s16 tile = reverse_order ? 1 - index : index;
+			legacy_s16 rotation = tile ? turn : 0;
+			struct MATRIX inverse;
+			mat_rot_y(&inverse, -rotation);
+			for (legacy_u16 vertex = 0; vertex < 4; vertex++) {
+				struct VECTOR local = road[vertex];
+				local.z /= 2;
+				struct VECTOR rotated;
+				mat_mul_vector(&local, &inverse, &rotated);
+				shape3d_vertex_write(&scene_shape, vertex, &rotated);
+			}
+			scene_instance.rotvec.z = rotation;
+			scene_instance.pos.z = depth + (tile ? 512 : -512) / (half_scale ? 2 : 1);
+			assert(shape3d_transform_and_queue(&scene_instance) == 0);
+		}
+	}
+	shape3d_render_queued_primitives();
+	assert(count_color(7) > 1000);
+}
+
+static void test_joined_track_surfaces(void)
+{
+	static legacy_u8 continuous[HIRES_WIDTH * HIRES_HEIGHT];
+	static legacy_u8 interior[HIRES_WIDTH * HIRES_HEIGHT];
+	static legacy_u8 tiled[HIRES_WIDTH * HIRES_HEIGHT];
+	static const legacy_s16 views[][4] = {
+		{0, 0, 0, 1600}, {11, 17, 37, 1600}, {-19, -13, -71, 1600}, {7, 23, 9, 650}};
+	for (legacy_u32 view = 0; view < sizeof(views) / sizeof(views[0]); view++) {
+		for (legacy_s16 half_scale = 0; half_scale < 2; half_scale++) {
+			draw_joined_road(0, views[view][0], views[view][1], views[view][2], views[view][3],
+							 half_scale, 0, 0);
+			memcpy(continuous, pixels(), sizeof(continuous));
+			/* Splitting an outer edge can move an exact pixel-center tie by a
+			 * rounding bit. Check the uniform interior on both sides of the
+			 * silhouette; every tile join within the road must stay covered. */
+			memset(interior, 0, sizeof(interior));
+			for (legacy_s32 y = 1; y < HIRES_HEIGHT - 1; y++) {
+				for (legacy_s32 x = 1; x < HIRES_WIDTH - 1; x++) {
+					legacy_s32 offset = y * HIRES_WIDTH + x;
+					legacy_u8 color = continuous[offset];
+					legacy_s32 uniform = 1;
+					for (legacy_s32 row = -1; row <= 1; row++) {
+						for (legacy_s32 column = -1; column <= 1; column++) {
+							uniform &= continuous[offset + row * HIRES_WIDTH + column] == color;
+						}
+					}
+					interior[offset] = uniform ? color : 0;
+				}
+			}
+			for (legacy_s16 turn = 0; turn < ANGLE_FULL_TURN; turn += ANGLE_QUARTER_TURN) {
+				for (legacy_s16 order = 0; order < 2; order++) {
+					draw_joined_road(1, views[view][0], views[view][1], views[view][2],
+									 views[view][3], half_scale, order, turn);
+					const legacy_u8 *image = pixels();
+					if (turn == 0 && order == 0) {
+						memcpy(tiled, image, sizeof(tiled));
+					} else {
+						assert(memcmp(tiled, image, sizeof(tiled)) == 0);
+					}
+					for (legacy_u32 pixel = 0; pixel < sizeof(interior); pixel++) {
+						assert(interior[pixel] == 0 || image[pixel] == interior[pixel]);
+					}
+				}
+			}
+		}
+	}
+}
+
+static void shared_edge_queue(const struct SHAPE3D_HIRES_VECTOR *vertices, const legacy_u8 *indices,
+							  legacy_u16 index)
+{
+	shape3d_hires_queue(index, RENDER_PRIMITIVE_POLYGON, 3, indices, vertices, 0);
+}
+
+static void test_shared_edge_pixel_coverage(void)
+{
+	/* The diagonal projects through pixel centers; its two traversal
+	 * directions previously rounded to different columns on some rows. */
+	const struct SHAPE3D_HIRES_VECTOR rectangle[] = {
+		{-455, 200, 640}, {315, 46, 640}, {-455, 46, 640}, {315, 200, 640}};
+	const legacy_u8 forward[][3] = {{0, 1, 2}, {1, 0, 3}};
+	const legacy_u8 reverse[][3] = {{2, 1, 0}, {3, 0, 1}};
+	for (legacy_u32 winding = 0; winding < 2; winding++) {
+		reset_target();
+		shape3d_hires_begin_shape(0, 0);
+		const legacy_u8(*indices)[3] = winding == 0 ? forward : reverse;
+		shared_edge_queue(rectangle, indices[0], 0);
+		shared_edge_queue(rectangle, indices[1], 1);
+		shape3d_hires_render(0, RENDER_PRIMITIVE_POLYGON, 7, 0, 0, 0, 0);
+		shape3d_hires_render(1, RENDER_PRIMITIVE_POLYGON, 7, 0, 0, 0, 0);
+		hires_end();
+		const legacy_u8 *image = pixels();
+		for (legacy_s32 y = 200; y < 354; y++) {
+			for (legacy_s32 x = 185; x < 955; x++) {
+				assert(image[y * HIRES_WIDTH + x] == 7);
+			}
+		}
+	}
+}
+
+static void test_shared_edge_near_clipping(void)
+{
+	/* The clipped corner projects exactly to (113.5, 168.5). Reversing
+	 * the near-plane crossing must preserve that covered pixel. */
+	const struct SHAPE3D_HIRES_VECTOR triangle[] = {{-6, 0, 11}, {-4962, 5556, 1291}, {2, 0, 757}};
+	const legacy_u8 indices[][3] = {{0, 1, 2}, {2, 1, 0}};
+	for (legacy_u32 winding = 0; winding < 2; winding++) {
+		reset_target();
+		shape3d_hires_begin_shape(0, 0);
+		shared_edge_queue(triangle, indices[winding], 0);
+		shape3d_hires_render(0, RENDER_PRIMITIVE_POLYGON, 7, 0, 0, 0, 0);
+		hires_end();
+		assert(pixels()[168 * HIRES_WIDTH + 113] == 7);
+	}
+}
+
 int main(void)
 {
 	screen = dos_memory_make_pointer(0xA000, 0);
@@ -366,6 +501,9 @@ int main(void)
 	test_wheel_face_and_sort_depth();
 	test_crossing_surfaces_use_pixel_depth();
 	test_body_panel_occludes_wheel();
+	test_joined_track_surfaces();
+	test_shared_edge_pixel_coverage();
+	test_shared_edge_near_clipping();
 	hires_shutdown();
 	puts("High-resolution 3D projection and raster tests passed.");
 	return 0;

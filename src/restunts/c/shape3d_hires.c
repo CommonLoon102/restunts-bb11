@@ -2,6 +2,7 @@
 
 #if defined(RESTUNTS_SDL3)
 
+#include <SDL3/SDL_stdinc.h>
 #include "hires.h"
 #include "projection.h"
 #include "shape3d_internal.h"
@@ -53,7 +54,8 @@ static void project_coordinates(legacy_f64 x, legacy_f64 y, legacy_f64 z,
 	point->inverse_z = 1.0 / z;
 }
 
-void shape3d_hires_project(const struct VECTOR *vector, struct SHAPE3D_HIRES_POINT *point)
+void shape3d_hires_project(const struct SHAPE3D_HIRES_VECTOR *vector,
+						   struct SHAPE3D_HIRES_POINT *point)
 {
 	project_coordinates(vector->x, vector->y, vector->z > 0 ? vector->z : 1, point);
 }
@@ -74,7 +76,7 @@ static legacy_u8 point_clip_flags(const struct SHAPE3D_HIRES_POINT *point)
 	return flags;
 }
 
-legacy_u8 shape3d_hires_clip_flags(const struct VECTOR *vector)
+legacy_u8 shape3d_hires_clip_flags(const struct SHAPE3D_HIRES_VECTOR *vector)
 {
 	struct SHAPE3D_HIRES_POINT point;
 	shape3d_hires_project(vector, &point);
@@ -138,9 +140,17 @@ void shape3d_hires_reset(void)
 	}
 }
 
-static void project_intersection(const struct VECTOR *first, const struct VECTOR *second,
+static void project_intersection(const struct SHAPE3D_HIRES_VECTOR *first,
+								 const struct SHAPE3D_HIRES_VECTOR *second,
 								 struct SHAPE3D_HIRES_POINT *point)
 {
+	/* Evaluate shared edges in the same direction so clipping neighboring
+	 * polygons cannot round the same intersection to opposite pixel sides. */
+	if (first->z > second->z) {
+		const struct SHAPE3D_HIRES_VECTOR *temporary = first;
+		first = second;
+		second = temporary;
+	}
 	/* Near-plane intersections need the same subpixel precision as ordinary
 	 * vertices; rounding back into a legacy VECTOR would discard it. */
 	legacy_f64 fraction = (HIRES_NEAR_CLIP_Z - first->z) / (legacy_f64)(second->z - first->z);
@@ -149,11 +159,11 @@ static void project_intersection(const struct VECTOR *first, const struct VECTOR
 }
 
 static void queue_polygon(struct HIRES_PRIMITIVE *primitive, legacy_u32 count,
-						  const legacy_u8 *indices, const struct VECTOR *vertices)
+						  const legacy_u8 *indices, const struct SHAPE3D_HIRES_VECTOR *vertices)
 {
-	const struct VECTOR *previous = &vertices[indices[count - 1]];
+	const struct SHAPE3D_HIRES_VECTOR *previous = &vertices[indices[count - 1]];
 	for (legacy_u32 index = 0; index < count; index++) {
-		const struct VECTOR *current = &vertices[indices[index]];
+		const struct SHAPE3D_HIRES_VECTOR *current = &vertices[indices[index]];
 		if ((previous->z < HIRES_NEAR_CLIP_Z) != (current->z < HIRES_NEAR_CLIP_Z)) {
 			project_intersection(previous, current, &primitive->points[primitive->count++]);
 		}
@@ -165,7 +175,7 @@ static void queue_polygon(struct HIRES_PRIMITIVE *primitive, legacy_u32 count,
 }
 
 static void queue_primitive(legacy_u16 index, legacy_u8 type, legacy_u16 vertex_count,
-							const legacy_u8 *indices, const struct VECTOR *vertices)
+							const legacy_u8 *indices, const struct SHAPE3D_HIRES_VECTOR *vertices)
 {
 	if (index >= POLYINFO_SUPERSIGHT_PRIMITIVE_CAPACITY) {
 		return;
@@ -194,7 +204,7 @@ static void queue_primitive(legacy_u16 index, legacy_u8 type, legacy_u16 vertex_
 		return;
 	}
 	for (legacy_u32 vertex = 0; vertex < vertex_count; vertex++) {
-		const struct VECTOR *current = &vertices[indices[vertex]];
+		const struct SHAPE3D_HIRES_VECTOR *current = &vertices[indices[vertex]];
 		if (type == RENDER_PRIMITIVE_LINE && current->z < HIRES_NEAR_CLIP_Z) {
 			project_intersection(current, &vertices[indices[1 - vertex]],
 								 &primitive->points[vertex]);
@@ -204,19 +214,20 @@ static void queue_primitive(legacy_u16 index, legacy_u8 type, legacy_u16 vertex_
 	}
 	primitive->count = vertex_count;
 	if (type == RENDER_PRIMITIVE_SPHERE) {
-		const struct VECTOR *center = &vertices[indices[0]];
-		const struct VECTOR *endpoint = &vertices[indices[1]];
-		struct VECTOR radius;
-		radius.x = LEGACY_S16_WRAP_SUB(center->x, endpoint->x);
-		radius.y = LEGACY_S16_WRAP_SUB(center->y, endpoint->y);
-		radius.z = LEGACY_S16_WRAP_SUB(center->z, endpoint->z);
-		primitive->size = (legacy_f64)projection_focal_length_x * polarRadius3D(&radius) *
-						  HIRES_SCALE / center->z;
+		const struct SHAPE3D_HIRES_VECTOR *center = &vertices[indices[0]];
+		const struct SHAPE3D_HIRES_VECTOR *endpoint = &vertices[indices[1]];
+		legacy_f64 radius_x = center->x - endpoint->x;
+		legacy_f64 radius_y = center->y - endpoint->y;
+		legacy_f64 radius_z = center->z - endpoint->z;
+		legacy_f64 radius =
+			SDL_sqrt(radius_x * radius_x + radius_y * radius_y + radius_z * radius_z);
+		primitive->size = projection_focal_length_x * radius * HIRES_SCALE / center->z;
 	}
 }
 
 void shape3d_hires_queue(legacy_u16 index, legacy_u8 type, legacy_u16 vertex_count,
-						 const legacy_u8 *indices, const struct VECTOR *vertices, legacy_u16 flags)
+						 const legacy_u8 *indices, const struct SHAPE3D_HIRES_VECTOR *vertices,
+						 legacy_u16 flags)
 {
 	queue_primitive(index, type, vertex_count, indices, vertices);
 	if (index >= POLYINFO_SUPERSIGHT_PRIMITIVE_CAPACITY || primitives[index].count == 0) {
@@ -440,12 +451,18 @@ static void draw_polygon(const struct SHAPE3D_HIRES_POINT *points, legacy_u32 co
 			const struct SHAPE3D_HIRES_POINT *current = &points[index];
 			if ((previous->y <= sample_y && current->y > sample_y) ||
 				(current->y <= sample_y && previous->y > sample_y)) {
-				legacy_f64 fraction = (sample_y - previous->y) / (current->y - previous->y);
+				/* Opposite polygon windings must produce bit-identical shared
+				 * edges before pixel-center coverage rounds the intersection. */
+				const struct SHAPE3D_HIRES_POINT *lower =
+					previous->y < current->y ? previous : current;
+				const struct SHAPE3D_HIRES_POINT *upper =
+					previous->y < current->y ? current : previous;
+				legacy_f64 fraction = (sample_y - lower->y) / (upper->y - lower->y);
 				struct SHAPE3D_HIRES_POINT intersection;
-				intersection.x = previous->x + fraction * (current->x - previous->x);
+				intersection.x = lower->x + fraction * (upper->x - lower->x);
 				intersection.y = sample_y;
 				intersection.inverse_z =
-					previous->inverse_z + fraction * (current->inverse_z - previous->inverse_z);
+					lower->inverse_z + fraction * (upper->inverse_z - lower->inverse_z);
 				legacy_u32 position = intersection_count++;
 				while (position != 0 && intersections[position - 1].x > intersection.x) {
 					intersections[position] = intersections[position - 1];
