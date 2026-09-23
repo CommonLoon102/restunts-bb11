@@ -234,9 +234,56 @@ struct SHAPE3D_TRANSFORM_CONTEXT {
 	struct VECTOR view_translation;
 	struct VECTOR view_vertices[SHAPE3D_VERTEX_CAPACITY];
 	struct POINT2D projected_vertices[SHAPE3D_VERTEX_CAPACITY];
+#if defined(RESTUNTS_SDL3)
+	struct MATRIX object_to_world_rotation;
+	struct VECTOR object_translation;
+	struct SHAPE3D_HIRES_VECTOR hires_vertices[SHAPE3D_VERTEX_CAPACITY];
+#endif
 	legacy_s32 visibility_mask;
 	legacy_s32 front_facing_mask;
 };
+
+#if defined(RESTUNTS_SDL3)
+static void shape3d_hires_rotate(const struct SHAPE3D_HIRES_VECTOR *source,
+								 const struct MATRIX *matrix, struct SHAPE3D_HIRES_VECTOR *result)
+{
+	result->x =
+		(source->x * matrix->m._11 + source->y * matrix->m._12 + source->z * matrix->m._13) /
+		TRIG_FIXED_ONE;
+	result->y =
+		(source->x * matrix->m._21 + source->y * matrix->m._22 + source->z * matrix->m._23) /
+		TRIG_FIXED_ONE;
+	result->z =
+		(source->x * matrix->m._31 + source->y * matrix->m._32 + source->z * matrix->m._33) /
+		TRIG_FIXED_ONE;
+}
+
+static void shape3d_hires_transform_vertex(const struct SHAPE3D *shape, legacy_u16 index,
+										   struct SHAPE3D_TRANSFORM_CONTEXT *context)
+{
+	struct VECTOR vertex;
+	shape3d_vertex_read(shape, index, &vertex);
+	legacy_f64 scale = shape_half_scale != 0 ? 0.5 : 1.0;
+	struct SHAPE3D_HIRES_VECTOR source = {vertex.x * scale, vertex.y * scale, vertex.z * scale};
+	struct SHAPE3D_HIRES_VECTOR world;
+	shape3d_hires_rotate(&source, &context->object_to_world_rotation, &world);
+	struct SHAPE3D_HIRES_VECTOR *view = &context->hires_vertices[index];
+	if ((transshapeflags & SHAPE3D_PRETRANSFORMED_FLAG) != 0) {
+		shape3d_hires_rotate(&world, &mat_temp, view);
+		view->x += context->object_translation.x;
+		view->y += context->object_translation.y;
+		view->z += context->object_translation.z;
+	} else {
+		/* Adjacent shapes can express one world vertex using different local
+		 * coordinates. Combine position before the camera transform so both
+		 * reach exactly the same screen position, without per-shape rounding. */
+		world.x += context->object_translation.x;
+		world.y += context->object_translation.y;
+		world.z += context->object_translation.z;
+		shape3d_hires_rotate(&world, &mat_temp, view);
+	}
+}
+#endif
 
 static void shape3d_prepare_instance(struct TRANSFORMEDSHAPE3D *instance,
 									 struct SHAPE3D_TRANSFORM_CONTEXT *context)
@@ -259,6 +306,10 @@ static void shape3d_prepare_instance(struct TRANSFORMEDSHAPE3D *instance,
 	context->front_facing_mask = 0;
 	struct MATRIX *object_rotation = mat_rot_zxy(instance->rotvec.x, instance->rotvec.y,
 												 instance->rotvec.z, MATRIX_ROTATION_ORDER_ZXY);
+#if defined(RESTUNTS_SDL3)
+	context->object_to_world_rotation = *object_rotation;
+	context->object_translation = instance->pos;
+#endif
 	if ((transshapeflags & SHAPE3D_PRETRANSFORMED_FLAG) != 0) {
 		mat_multiply(object_rotation, &mat_temp, &context->object_to_view_rotation);
 		context->view_translation = instance->pos;
@@ -293,7 +344,14 @@ static void shape3d_cache_vertex(const struct SHAPE3D *shape,
 	shape3d_transform_vertex(shape, index, shape_half_scale, &context->object_to_view_rotation,
 							 &context->view_translation, &transformed);
 	context->view_vertices[index] = transformed;
-	if (transformed.z < SHAPE3D_NEAR_CLIP_Z) {
+	legacy_s32 behind = transformed.z < SHAPE3D_NEAR_CLIP_Z;
+#if defined(RESTUNTS_SDL3)
+	if (hires_enabled()) {
+		shape3d_hires_transform_vertex(shape, index, context);
+		behind = context->hires_vertices[index].z < SHAPE3D_NEAR_CLIP_Z;
+	}
+#endif
+	if (behind) {
 		context->vertex_clip_flags[index] = 1;
 	} else {
 		context->vertex_clip_flags[index] = 0;
@@ -306,7 +364,7 @@ static legacy_u8 shape3d_vertex_rect_flags(struct SHAPE3D_TRANSFORM_CONTEXT *con
 {
 #if defined(RESTUNTS_SDL3)
 	if (hires_enabled()) {
-		return shape3d_hires_clip_flags(&context->view_vertices[index]);
+		return shape3d_hires_clip_flags(&context->hires_vertices[index]);
 	}
 #endif
 	return (legacy_u8)rect_compare_point(&context->projected_vertices[index]);
@@ -746,7 +804,7 @@ legacy_u16 shape3d_transform_and_queue(struct TRANSFORMEDSHAPE3D *instance)
 #if defined(RESTUNTS_SDL3)
 				/* Visibility must use the same fractional projection as rasterization. */
 				shape3d_hires_queue(polyinfonumpolys, primitive_type, transshapenumvertscopy,
-									transshapeprimitives, context.view_vertices, primitive_flags);
+									transshapeprimitives, context.hires_vertices, primitive_flags);
 #endif
 				primitive_visible =
 					shape3d_prepare_primitive(&context, primitive_type, any_vertex_behind,
