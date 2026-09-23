@@ -25,6 +25,8 @@ legacy_s32 hires_begin_argb(const struct SPRITE *target);
 void hires_argb_pixel(legacy_s32 x, legacy_s32 y, legacy_u32 color);
 const legacy_u32 *hires_framebuffer_argb(const legacy_u8 *legacy, const legacy_u32 *palette);
 void hires_pixel(legacy_s32 x, legacy_s32 y, legacy_u8 color);
+/* Fill all companion samples at logical 320x200 coordinates without changing the legacy byte. */
+void hires_fill_pixel(legacy_s32 x, legacy_s32 y, legacy_u8 color);
 void hires_write(const legacy_u8 *base, legacy_u16 offset, legacy_u8 color);
 void hires_raster(const legacy_u8 *destination, legacy_u16 destination_offset,
 				  const legacy_u8 *source, legacy_u16 source_offset, legacy_u16 count,

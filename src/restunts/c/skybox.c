@@ -425,9 +425,9 @@ static legacy_s16 skybox_render_reversed_horizon(struct RECTANGLE *clip, legacy_
 	return 1;
 }
 
-legacy_s16 skybox_render(legacy_s16 view_index, struct RECTANGLE *clip, legacy_s16 direction,
-						 struct MATRIX *rotation, legacy_s16 roll, legacy_s16 angle,
-						 legacy_s16 camera_y)
+static legacy_s16 skybox_render_legacy(legacy_s16 view_index, struct RECTANGLE *clip,
+									   legacy_s16 direction, struct MATRIX *rotation,
+									   legacy_s16 roll, legacy_s16 angle, legacy_s16 camera_y)
 {
 	redraw_rect_count = 0;
 	sprite_set_target_clip_bounds(0, SKYBOX_SCREEN_WIDTH, clip->top, clip->bottom);
@@ -462,4 +462,27 @@ legacy_s16 skybox_render(legacy_s16 view_index, struct RECTANGLE *clip, legacy_s
 		return skybox_render_forward_horizon(view_index, clip, angle, horizon);
 	}
 	return skybox_render_reversed_horizon(clip, horizon);
+}
+
+legacy_s16 skybox_render(legacy_s16 view_index, struct RECTANGLE *clip, legacy_s16 direction,
+						 struct MATRIX *rotation, legacy_s16 roll, legacy_s16 angle,
+						 legacy_s16 camera_y)
+{
+	legacy_s16 full_redraw =
+		skybox_render_legacy(view_index, clip, direction, rotation, roll, angle, camera_y);
+#ifdef RESTUNTS_SDL3
+	struct SPRITE target = drawing_sprite;
+	target.sprite_raster_left = clip->left;
+	target.sprite_raster_right = clip->right;
+	target.sprite_top = clip->top;
+	target.sprite_bottom = clip->bottom;
+	if (skybox_hires_render(&target, &skybox, skyboxes, loaded_skybox_index, rotation, direction,
+							angle, camera_y, detail_level)) {
+		/* Presentation must copy all companion pixels, including transitions
+		 * back from inverted views to the legacy dirty-rectangle path. */
+		rect_skybox = *clip;
+		return 1;
+	}
+#endif
+	return full_redraw;
 }
