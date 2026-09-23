@@ -59,7 +59,7 @@ SSE2 still uses the toolchain's x86 instruction-set baseline and system runtime;
 it is not an 8086 executable. The DOS toolchain selects i386 and disables SSE2
 by default.
 
-`-DRESTUNTS_SYSTEM_SDL=ON` uses an installed SDL3 CMake package instead of the
+`-DRESTUNTS_SYSTEM_SDL=ON` uses an installed SDL 3.4+ CMake package instead of the
 pinned source. This option is incompatible with `RESTUNTS_SSE2=OFF`, because
 CMake cannot control the instruction set of a prebuilt SDL library.
 
@@ -168,7 +168,12 @@ images retain the original 320x200 pixel data for parity checks. With SuperSight
 on, the 3D scene and both car-selection previews render at 1280x800. Their geometry
 is projected and rasterized at the higher resolution; menu artwork, dashboard,
 and replay controls keep their original pixel detail. F12 works in both car
-selection screens as well as driving and replay views. Menus support
+selection screens as well as driving and replay views. Enhanced driving and
+replay scenes use [AI-refined skybox PNGs](skyboxes/README.md) at four times
+the original width and height. Track selector previews use these same PNGs
+when SuperSight is active. Runtime installs include the required
+`bin/skyboxes/` directory; retain it beside the executable when packaging.
+Missing or invalid textures fall back to the original artwork. Menus support
 keyboard, mouse, and an SDL joystick. Existing driving and replay controls remain
 available:
 

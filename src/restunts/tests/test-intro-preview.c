@@ -159,6 +159,11 @@ void sprite_copy_image_at(struct SHAPE2D far *shape, legacy_s16 x, legacy_s16 y)
 	record_word(y);
 }
 
+void skybox_copy_image(legacy_s16 image, legacy_s16 x, legacy_s16 y)
+{
+	sprite_copy_image_at(skyboxes[image], x, y);
+}
+
 void sprite_putpixel_clipped(legacy_s16 x, legacy_s16 y, legacy_s16 color)
 {
 	record_word(4);

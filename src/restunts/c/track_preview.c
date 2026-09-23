@@ -86,10 +86,10 @@ static void track_preview_prepare(const struct VECTOR *camera)
 								  LEGACY_S16_WRAP_SUB(horizon, skybox.minimum_height));
 	sprite_clear_target((legacy_u8)skybox.sky_color);
 	sprite_set_target_clip_bounds(0, TRACK_PREVIEW_SCREEN_WIDTH, 0, TRACK_PREVIEW_SKYBOX_HEIGHT);
-	sprite_copy_image_at(skyboxes[TRACK_PREVIEW_SKYBOX_LEFT], 0,
-						 LEGACY_S16_WRAP_SUB(horizon, skybox.heights[TRACK_PREVIEW_SKYBOX_LEFT]));
-	sprite_copy_image_at(skyboxes[TRACK_PREVIEW_SKYBOX_RIGHT], TRACK_PREVIEW_SCREEN_WIDTH,
-						 LEGACY_S16_WRAP_SUB(horizon, skybox.heights[TRACK_PREVIEW_SKYBOX_RIGHT]));
+	skybox_copy_image(TRACK_PREVIEW_SKYBOX_LEFT, 0,
+					  LEGACY_S16_WRAP_SUB(horizon, skybox.heights[TRACK_PREVIEW_SKYBOX_LEFT]));
+	skybox_copy_image(TRACK_PREVIEW_SKYBOX_RIGHT, TRACK_PREVIEW_SCREEN_WIDTH,
+					  LEGACY_S16_WRAP_SUB(horizon, skybox.heights[TRACK_PREVIEW_SKYBOX_RIGHT]));
 	sprite_set_target_clip_bounds(0, TRACK_PREVIEW_SCREEN_WIDTH, horizon,
 								  TRACK_PREVIEW_SCREEN_HEIGHT);
 	sprite_clear_target((legacy_u8)skybox.ground_color);

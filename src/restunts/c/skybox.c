@@ -2,6 +2,10 @@
 #include "shape2d.h"
 #include "skybox.h"
 #include "externs.h"
+#ifdef RESTUNTS_SDL3
+#include "skybox_hires.h"
+#include "shape2d_internal.h"
+#endif
 
 #define SKYBOX_IMAGE_COUNT 4
 #define SKYBOX_IMAGE_WIDTH 320U
@@ -33,6 +37,16 @@
 #define SKYBOX_LINE_DATA_WORD_COUNT 14
 #define SKYBOX_FORWARD_DIRECTION 1
 
+void skybox_copy_image(legacy_s16 image, legacy_s16 x, legacy_s16 y)
+{
+	sprite_copy_image_at(skyboxes[image], x, y);
+#ifdef RESTUNTS_SDL3
+	skybox_hires_draw(&drawing_sprite, loaded_skybox_index, image,
+					  shape2d_get_width(skyboxes[image]), shape2d_get_height(skyboxes[image]), x,
+					  y);
+#endif
+}
+
 void skybox_render_level_rect(struct RECTANGLE *rect, legacy_s16 angle, legacy_s16 horizon)
 {
 	legacy_u16 top = (legacy_u16)rect->top;
@@ -60,20 +74,18 @@ void skybox_render_level_rect(struct RECTANGLE *rect, legacy_s16 angle, legacy_s
 		sprite_set_target_clip_bounds(left, right, top, bottom);
 		legacy_u16 image_x = LEGACY_U16_WRAP_SUB(
 			LEGACY_U16_WRAP_ADD(angle, ANGLE_HALF_TURN) & ANGLE_MASK, SKYBOX_IMAGE_FULL_WRAP);
-		sprite_copy_image_at(skyboxes[0], LEGACY_S16_FROM_BITS(image_x),
-							 LEGACY_S16_WRAP_SUB(horizon_bits, skybox.heights[0]));
-		sprite_copy_image_at(skyboxes[1],
-							 LEGACY_S16_FROM_BITS(LEGACY_U16_WRAP_ADD(image_x, SKYBOX_IMAGE_WIDTH)),
-							 LEGACY_S16_WRAP_SUB(horizon_bits, skybox.heights[1]));
-		sprite_copy_image_at(
-			skyboxes[2], LEGACY_S16_FROM_BITS(LEGACY_U16_WRAP_ADD(image_x, SKYBOX_IMAGE_HALF_WRAP)),
+		skybox_copy_image(0, LEGACY_S16_FROM_BITS(image_x),
+						  LEGACY_S16_WRAP_SUB(horizon_bits, skybox.heights[0]));
+		skybox_copy_image(1, LEGACY_S16_FROM_BITS(LEGACY_U16_WRAP_ADD(image_x, SKYBOX_IMAGE_WIDTH)),
+						  LEGACY_S16_WRAP_SUB(horizon_bits, skybox.heights[1]));
+		skybox_copy_image(
+			2, LEGACY_S16_FROM_BITS(LEGACY_U16_WRAP_ADD(image_x, SKYBOX_IMAGE_HALF_WRAP)),
 			LEGACY_S16_WRAP_SUB(horizon_bits, skybox.heights[2]));
-		sprite_copy_image_at(
-			skyboxes[3],
-			LEGACY_S16_FROM_BITS(LEGACY_U16_WRAP_ADD(image_x, SKYBOX_IMAGE_ONE_AND_HALF_WIDTH)),
+		skybox_copy_image(
+			3, LEGACY_S16_FROM_BITS(LEGACY_U16_WRAP_ADD(image_x, SKYBOX_IMAGE_ONE_AND_HALF_WIDTH)),
 			LEGACY_S16_WRAP_SUB(horizon_bits, skybox.heights[3]));
-		sprite_copy_image_at(
-			skyboxes[0], LEGACY_S16_FROM_BITS(LEGACY_U16_WRAP_ADD(image_x, SKYBOX_IMAGE_FULL_WRAP)),
+		skybox_copy_image(
+			0, LEGACY_S16_FROM_BITS(LEGACY_U16_WRAP_ADD(image_x, SKYBOX_IMAGE_FULL_WRAP)),
 			LEGACY_S16_WRAP_SUB(horizon_bits, skybox.heights[0]));
 	}
 

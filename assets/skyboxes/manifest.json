@@ -1,0 +1,316 @@
+{
+  "palette_source": "SDMAIN.PVS:!pal",
+  "palette_source_sha256": "a33b54cff282fed2d68134fcf334f4e44917f906a6556013e0f6c6dd546cdd3b",
+  "palette_vga_sha256": "5e8dc3e868d0c6c25856455bef24acf291686b2b6ab2c7efd7b359188ed2bd9c",
+  "palette_rgb_sha256": "0fc80b406c5fbb11d58c243acba08afc7af7c290eb090997d3751694dc1640c9",
+  "palette_conversion": "(component & 63) * 255 // 63",
+  "sky_palette_index": 116,
+  "panorama_width": 1024,
+  "scenes": [
+    {
+      "name": "desert",
+      "selector": 0,
+      "source": "DESERT.PVS",
+      "source_sha256": "10be89e39069512fb5f7574e1069fa53ed7e3e01012127297ebdd46779a0bb7c",
+      "panorama": "desert.png",
+      "width": 1024,
+      "height": 24,
+      "images": [
+        {
+          "resource": "scen",
+          "file": "desert-scen.png",
+          "width": 320,
+          "height": 13,
+          "panorama_x": 0,
+          "panorama_y": 11,
+          "header_hex": "40010d005801f8ff00001d0001020408",
+          "pixels_sha256": "c68f3f7ba872e1951b1c678e2eff883fdacd6aa24ea8e30d51b27a2b06ae607a",
+          "png_sha256": "7685b018b135cbefdcf1a6ee5098ca457f2991b27f9d9384cfba7c4045f2f56d",
+          "scenery_pixels": 4160
+        },
+        {
+          "resource": "sce2",
+          "file": "desert-sce2.png",
+          "width": 192,
+          "height": 19,
+          "panorama_x": 320,
+          "panorama_y": 5,
+          "header_hex": "c00013005801feff00009f0001020408",
+          "pixels_sha256": "769868560f0eb23aafb833288ab63f52c7412cfed901ed362ba50c6836f91cd3",
+          "png_sha256": "7625c85e0e067ac4c391ca5e9a5480b52f970cdd48bad1fecf6949c3f4cbf593",
+          "scenery_pixels": 3648
+        },
+        {
+          "resource": "sce3",
+          "file": "desert-sce3.png",
+          "width": 320,
+          "height": 10,
+          "panorama_x": 512,
+          "panorama_y": 14,
+          "header_hex": "40010a006801f5ff0000380001020408",
+          "pixels_sha256": "6b2f87aca169225861bcea3126b1b4b041cdbc1484688d2e7905f1d638659b2e",
+          "png_sha256": "04ac6bddb7f075c4788ef476d03e9badaa4901005a3cf14f07661111e9ec4317",
+          "scenery_pixels": 3200
+        },
+        {
+          "resource": "sce4",
+          "file": "desert-sce4.png",
+          "width": 192,
+          "height": 24,
+          "panorama_x": 832,
+          "panorama_y": 0,
+          "header_hex": "c0001800300103000000590001020408",
+          "pixels_sha256": "362562ba04c5ecc4c7ce7f10d7d157e16d6805b9a1ffe5ee5b89acf074feb8ec",
+          "png_sha256": "bd23cf1def97be2ccbe37fb4cb96319aebf811046b3c8b52266e2468ec774894",
+          "scenery_pixels": 4608
+        }
+      ],
+      "panorama_pixels_sha256": "d5116e32fd35c64c2fe3bc3222caf9cfba965c1cb1c68087edb4baefa7f64b8f",
+      "panorama_png_sha256": "7ee1f555153692bee55a2a7f884c84c83141a00875104cbc0a01c88bb61bd141"
+    },
+    {
+      "name": "tropical",
+      "selector": 1,
+      "source": "TROPICAL.PVS",
+      "source_sha256": "0a96c09128ed94eb148c47988f3b719e065330835372a936a68c08555d757f58",
+      "panorama": "tropical.png",
+      "width": 1024,
+      "height": 29,
+      "images": [
+        {
+          "resource": "scen",
+          "file": "tropical-scen.png",
+          "width": 320,
+          "height": 11,
+          "panorama_x": 0,
+          "panorama_y": 18,
+          "header_hex": "40010b00000008000000430001020408",
+          "pixels_sha256": "ed460633e946980502ebf097525921eebe0d9c60008ea0143bb2e1d586975fce",
+          "png_sha256": "26848133d3b6035c1ffbc0e3aead9535222d6f72db66c50cf8bb315ceb30e6db",
+          "scenery_pixels": 3520
+        },
+        {
+          "resource": "sce2",
+          "file": "tropical-sce2.png",
+          "width": 192,
+          "height": 11,
+          "panorama_x": 320,
+          "panorama_y": 18,
+          "header_hex": "c0000b00000010000000300001020408",
+          "pixels_sha256": "e2ff026bfb61a50b29382b4af06b5c773c3c6e8042fb6be6e446f0d34771e31c",
+          "png_sha256": "9a5fc543e312dbfd8d3eab2a8fc0590a877729d9de2da8e3caba3ec86853a8a5",
+          "scenery_pixels": 2112
+        },
+        {
+          "resource": "sce3",
+          "file": "tropical-sce3.png",
+          "width": 320,
+          "height": 19,
+          "panorama_x": 512,
+          "panorama_y": 10,
+          "header_hex": "40011300000012000000140001020408",
+          "pixels_sha256": "eee9aae21d01b3cd86b9ee2908bd0d531d4eb9c2b88cfc449c5163ac887c98c2",
+          "png_sha256": "c4def4ef80ce0d8ca0a3f5da48649ebbd92b1f18ca373b3537af6bbbd220c2f9",
+          "scenery_pixels": 6080
+        },
+        {
+          "resource": "sce4",
+          "file": "tropical-sce4.png",
+          "width": 192,
+          "height": 29,
+          "panorama_x": 832,
+          "panorama_y": 0,
+          "header_hex": "c0001d000000200000005b0001020408",
+          "pixels_sha256": "843e89918ca2432477e46e1297599874e113b8b4c72f50d00d565e91ed09ca91",
+          "png_sha256": "d3c3d237e302dea98e4a80664f30c2b8d90dd18c7769cd1a6e5d50a865b0cf24",
+          "scenery_pixels": 5568
+        }
+      ],
+      "panorama_pixels_sha256": "1aa6bbd1d316f00ad5870bddb2e128fa5d0fffb1a5b033e24a48ba911b466fe7",
+      "panorama_png_sha256": "8cf387af84023af31995190ddb44703288a4017a8b5ad070f1d5204b45b13e9b"
+    },
+    {
+      "name": "alpine",
+      "selector": 2,
+      "source": "ALPINE.PVS",
+      "source_sha256": "fe3ccb7836e52fdf1bcef031aaf29f7c184de5b6209ec38909ddca2fedd711ae",
+      "panorama": "alpine.png",
+      "width": 1024,
+      "height": 30,
+      "images": [
+        {
+          "resource": "scen",
+          "file": "alpine-scen.png",
+          "width": 320,
+          "height": 14,
+          "panorama_x": 0,
+          "panorama_y": 16,
+          "header_hex": "40010e0000000c000000340001020408",
+          "pixels_sha256": "bd78d8e31be70ba9e9f5273d560b39c118be234d5e939c27094568177ecba1c5",
+          "png_sha256": "02fe2fe9580fdfda29ee456f995a81db8b8ea9bbc4e77c9943bb061fde3ad567",
+          "scenery_pixels": 4480
+        },
+        {
+          "resource": "sce2",
+          "file": "alpine-sce2.png",
+          "width": 192,
+          "height": 26,
+          "panorama_x": 320,
+          "panorama_y": 4,
+          "header_hex": "c0001a00000016000000530001020408",
+          "pixels_sha256": "7e90b41ce5a04a40f33ce910117b1ff2f2a6b4bbfc0b0f880bb24da3b01f8844",
+          "png_sha256": "20425cdd8319a10f5539af8b7833f1e9ba3eb3411f1c505e77c2e0e8ce80ad17",
+          "scenery_pixels": 4992
+        },
+        {
+          "resource": "sce3",
+          "file": "alpine-sce3.png",
+          "width": 320,
+          "height": 16,
+          "panorama_x": 512,
+          "panorama_y": 14,
+          "header_hex": "4001100000000f0000001a0001020408",
+          "pixels_sha256": "4ea418bf777dcedf5a07d5bafa8aa61d64f76afc3cba41b40950ee7222e6b75a",
+          "png_sha256": "0ac21e2baf16cb773496dc65689107dc5e50c1d0da91b2ec37f0250ef77819db",
+          "scenery_pixels": 5120
+        },
+        {
+          "resource": "sce4",
+          "file": "alpine-sce4.png",
+          "width": 192,
+          "height": 30,
+          "panorama_x": 832,
+          "panorama_y": 0,
+          "header_hex": "c0001e0000001a000000940001020408",
+          "pixels_sha256": "08f31be8ce0dc7d65cd9bbf5eae5db9e7e07ff0d38ac3506319b8d3cffab539d",
+          "png_sha256": "145915b4a49909a4b89581d92075192e0e34c3bff2a4983fc8d40078523e7b6d",
+          "scenery_pixels": 5760
+        }
+      ],
+      "panorama_pixels_sha256": "e8b7968cc179c9e170819b027a53fd72c0c0b4ce376166cfef1414dd26ee90cc",
+      "panorama_png_sha256": "b703a65ebf2c372030be101efacb5168b2642c1bde8fa41689a0b38f4b8a45f7"
+    },
+    {
+      "name": "city",
+      "selector": 3,
+      "source": "CITY.PVS",
+      "source_sha256": "2d2bc4c0da18073ba0c4fe3e2b09f46826a0cf4369a7cbd0b26228e775aad94d",
+      "panorama": "city.png",
+      "width": 1024,
+      "height": 20,
+      "images": [
+        {
+          "resource": "scen",
+          "file": "city-scen.png",
+          "width": 320,
+          "height": 15,
+          "panorama_x": 0,
+          "panorama_y": 5,
+          "header_hex": "40010f005000ebff00001b0001020408",
+          "pixels_sha256": "f481a784ef01a7ee448c6f3bab0cc6d1d9f03413d0bb2a5982d9117ba2333b20",
+          "png_sha256": "63605b735ba3e376f922b889db22fee2dcff300819aac8f09656302e0e48de14",
+          "scenery_pixels": 4800
+        },
+        {
+          "resource": "sce2",
+          "file": "city-sce2.png",
+          "width": 192,
+          "height": 15,
+          "panorama_x": 320,
+          "panorama_y": 5,
+          "header_hex": "c0000f005000edff0000a30001020408",
+          "pixels_sha256": "165d7cc0b2e0dd95e13ba3ac2b52c40e78b34973d6d6c00659e360f028d101f2",
+          "png_sha256": "4bd6cb8561b2f247b3e2791b76427f1ca475f2463ff914735ceb6604af8a1e10",
+          "scenery_pixels": 2871
+        },
+        {
+          "resource": "sce3",
+          "file": "city-sce3.png",
+          "width": 320,
+          "height": 17,
+          "panorama_x": 512,
+          "panorama_y": 3,
+          "header_hex": "400111005000f0ff0000310001020408",
+          "pixels_sha256": "ba975d52071a8adfb612144c517e3eb84ab68f152bb0bf5db9fac197b32cae21",
+          "png_sha256": "1cd85469d1c5ab0a23a99e352263b9762e490760bd951643f76d2e97f5d6b6a2",
+          "scenery_pixels": 5439
+        },
+        {
+          "resource": "sce4",
+          "file": "city-sce4.png",
+          "width": 192,
+          "height": 20,
+          "panorama_x": 832,
+          "panorama_y": 0,
+          "header_hex": "c00014001800f7ff0000470001020408",
+          "pixels_sha256": "895dc3d65bc031fd8f2469d54960e32611c7b57348f8b486c6c550e957078660",
+          "png_sha256": "5c371070431175bdccb0c3914e34b3b8c47dab3bd745f28e9e5ce156fbba4341",
+          "scenery_pixels": 3830
+        }
+      ],
+      "panorama_pixels_sha256": "6b3c03e1df54cbc7f3857154839cbf81536f30381aa1e0190b5bb5d9077443e9",
+      "panorama_png_sha256": "d3f30f1a9c3b0a2b1f0ad7105e8f7f738aac192a79f273d02b2e98c6b6047ec2"
+    },
+    {
+      "name": "country",
+      "selector": 4,
+      "source": "COUNTRY.PVS",
+      "source_sha256": "8ecc889173d2e0f7f995b2d026d5fcccb8d0717a37decbdc06fea19d98ab03b0",
+      "panorama": "country.png",
+      "width": 1024,
+      "height": 16,
+      "images": [
+        {
+          "resource": "scen",
+          "file": "country-scen.png",
+          "width": 320,
+          "height": 16,
+          "panorama_x": 0,
+          "panorama_y": 0,
+          "header_hex": "4001100050000d0000001a0001020408",
+          "pixels_sha256": "27320f806cad8e840f8d4e1263d6627a8c1be7cdab53ae8067852cb7be3bb4ef",
+          "png_sha256": "78fc21b6f1485504d6b7f1488b30305a7170a7635a34266d7cd6f6e914edc5d6",
+          "scenery_pixels": 5120
+        },
+        {
+          "resource": "sce2",
+          "file": "country-sce2.png",
+          "width": 192,
+          "height": 14,
+          "panorama_x": 320,
+          "panorama_y": 2,
+          "header_hex": "c0000e0018000b0000005b0001020408",
+          "pixels_sha256": "e2f107ba14b0ef86aae024ed69ac0a5ff9bee9de3f6a90c29f7eb977925cde40",
+          "png_sha256": "65b84e1aee895b35f6f08347cede7855cd6347547a9b108e64ae4725b1de0e96",
+          "scenery_pixels": 2688
+        },
+        {
+          "resource": "sce3",
+          "file": "country-sce3.png",
+          "width": 320,
+          "height": 15,
+          "panorama_x": 512,
+          "panorama_y": 1,
+          "header_hex": "40010f0058000e000000330001020408",
+          "pixels_sha256": "dd260254dc85cdad5a5bd418ad99e452f2940236013e65892f08c50d02e77e53",
+          "png_sha256": "861635f205c95141fb31acbf11e88190e407fb6a15bbd0a9bb3605b37373c82b",
+          "scenery_pixels": 4800
+        },
+        {
+          "resource": "sce4",
+          "file": "country-sce4.png",
+          "width": 192,
+          "height": 14,
+          "panorama_x": 832,
+          "panorama_y": 2,
+          "header_hex": "c0000e0020000e0000005b0001020408",
+          "pixels_sha256": "e2f107ba14b0ef86aae024ed69ac0a5ff9bee9de3f6a90c29f7eb977925cde40",
+          "png_sha256": "65b84e1aee895b35f6f08347cede7855cd6347547a9b108e64ae4725b1de0e96",
+          "scenery_pixels": 2688
+        }
+      ],
+      "panorama_pixels_sha256": "a916efe72c4f816d6f953ab8729f244c4db05db9f106b738fcc47cb57556c245",
+      "panorama_png_sha256": "b30a8d8db661419eb60a23e214e8218cb78f2bb0ca6f87ba095cc61670aee850"
+    }
+  ]
+}

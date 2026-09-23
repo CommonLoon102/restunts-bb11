@@ -85,7 +85,10 @@ at **1280x800**, four times the original width and height. Player and opponent
 car-selection previews use the same higher resolution; F12 also works in those
 screens. Menus, dashboard artwork, and replay controls retain their original
 pixel detail and size. Switching SuperSight off restores 320x200 rendering.
-The Open Watcom 16-bit DOS version retains its existing renderer.
+SuperSight also uses [AI-refined skybox artwork](docs/skyboxes/README.md), with
+each horizon image at four times its original width and height. Switching it
+off restores the original skybox artwork. Missing enhanced PNGs fall back to
+the original strips. The Open Watcom 16-bit DOS version retains its existing renderer.
 
 SuperSight also targets **40 FPS** in SDL3 driving, replay playback, the nighttime
 intro, and rotating car previews. Between real simulation updates, driving and

@@ -47,7 +47,7 @@ if(WIN32)
 endif()
 
 if(RESTUNTS_SYSTEM_SDL)
-    find_package(SDL3 3.2 REQUIRED CONFIG)
+    find_package(SDL3 3.4 REQUIRED CONFIG)
 else()
     include(FetchContent)
     set(SDL_SHARED OFF CACHE BOOL "Bundle SDL statically")
@@ -80,7 +80,7 @@ set(game_sources
     menu_track.c menu_track_editor.c menu_opponent.c menu_car.c audio_engine.c
     audio_resources.c audio_car.c audio_sequence.c shape3d.c shape3d_resources.c
     shape3d_car.c shape3d_prerender.c shape3d_lines.c shape2d.c shape2d_blit.c
-    video_pages.c hires.c frame_prediction.c phantom_physics.c shape3d_hires.c shape2d_resources.c heapsort.c frame.c skybox.c frame_overlay.c
+    video_pages.c hires.c frame_prediction.c phantom_physics.c shape3d_hires.c shape2d_resources.c heapsort.c frame.c skybox.c skybox_hires.c frame_overlay.c
     intro_render.c track_preview.c full_data.c full_strings.c full_tables.c)
 list(TRANSFORM common_sources PREPEND "${core}/")
 list(TRANSFORM game_sources PREPEND "${core}/")
@@ -111,7 +111,8 @@ if(NOT CMAKE_SYSTEM_NAME STREQUAL "DOS")
 endif()
 
 add_library(restunts_game STATIC ${common_sources} ${game_sources} ${platform_common} ${platform_game})
-target_compile_definitions(restunts_game PRIVATE RESTUNTS_FULL)
+target_compile_definitions(restunts_game PRIVATE RESTUNTS_FULL
+    RESTUNTS_SKYBOX_DIRECTORY="${CMAKE_SOURCE_DIR}/assets/skyboxes")
 target_link_libraries(restunts_game PUBLIC restunts_options)
 if(TARGET restunts_opl)
     target_link_libraries(restunts_game PRIVATE restunts_opl)
@@ -133,6 +134,16 @@ target_link_libraries(pixldump PRIVATE restunts_game)
 
 install(TARGETS restunts repldump pixldump RUNTIME DESTINATION bin COMPONENT Runtime)
 install(FILES docs/sdl3.md DESTINATION share/docs/restunts COMPONENT Runtime)
+set(skybox_themes desert tropical alpine city country)
+set(skybox_images scen sce2 sce3 sce4)
+foreach(theme RANGE 0 4)
+    list(GET skybox_themes ${theme} theme_name)
+    foreach(image RANGE 0 3)
+        list(GET skybox_images ${image} image_name)
+        install(FILES "assets/skyboxes/${theme_name}-${image_name}.png"
+            DESTINATION bin/skyboxes RENAME "sky${theme}-${image}.png" COMPONENT Runtime)
+    endforeach()
+endforeach()
 if(TARGET nuked_opl2)
     install(TARGETS nuked_opl2
         RUNTIME DESTINATION bin COMPONENT Runtime
@@ -192,6 +203,8 @@ if(RESTUNTS_BUILD_TESTS)
         if(Python3_Interpreter_FOUND)
             add_test(NAME opl-trace-renderer COMMAND "${Python3_EXECUTABLE}"
                 "${CMAKE_SOURCE_DIR}/tools/scripts/test-render-opl-trace.py")
+            add_test(NAME skybox-assets COMMAND "${Python3_EXECUTABLE}"
+                "${CMAKE_SOURCE_DIR}/tools/scripts/check-skyboxes.py")
         endif()
     endif()
 endif()
@@ -260,6 +273,21 @@ if(RESTUNTS_BUILD_TESTS)
     target_link_libraries(test-shape3d-hires PRIVATE restunts_game)
     target_compile_options(test-shape3d-hires PRIVATE -UNDEBUG)
     add_test(NAME shape3d-hires COMMAND test-shape3d-hires)
+    add_executable(test-skybox-hires src/restunts/tests/test-skybox-hires.c
+        ${core}/skybox_hires.c ${core}/hires.c ${platform}/memory.c)
+    target_link_libraries(test-skybox-hires PRIVATE restunts_options)
+    target_compile_options(test-skybox-hires PRIVATE -UNDEBUG)
+    file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/skybox-test")
+    add_test(NAME skybox-hires COMMAND test-skybox-hires)
+    set_tests_properties(skybox-hires PROPERTIES
+        WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/skybox-test")
+    add_executable(test-track-preview-skybox src/restunts/tests/test-track-preview-skybox.c)
+    target_link_libraries(test-track-preview-skybox PRIVATE restunts_game)
+    target_compile_options(test-track-preview-skybox PRIVATE -UNDEBUG)
+    file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/track-preview-test")
+    add_test(NAME track-preview-skybox COMMAND test-track-preview-skybox)
+    set_tests_properties(track-preview-skybox PROPERTIES
+        WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/track-preview-test")
     add_executable(test-sdl3-hires src/restunts/tests/test-sdl3-hires.c ${core}/hires.c ${platform}/memory.c)
     target_link_libraries(test-sdl3-hires PRIVATE restunts_options)
     target_compile_options(test-sdl3-hires PRIVATE -UNDEBUG)
@@ -276,7 +304,7 @@ if(RESTUNTS_BUILD_TESTS AND TARGET nuked_opl2)
     install(TARGETS nuked_opl2
         RUNTIME DESTINATION bin COMPONENT Tests EXCLUDE_FROM_ALL
         LIBRARY DESTINATION lib COMPONENT Tests EXCLUDE_FROM_ALL)
-    install(TARGETS test-shape3d-hires
+    install(TARGETS test-shape3d-hires test-skybox-hires test-track-preview-skybox
         RUNTIME DESTINATION bin COMPONENT Tests EXCLUDE_FROM_ALL)
     foreach(test platform audio audio-trace audio-definition audio-sequence input fileio hires)
         if(TARGET test-sdl3-${test})

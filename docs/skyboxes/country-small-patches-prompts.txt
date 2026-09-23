@@ -1,0 +1,37 @@
+Country small flower patch regeneration
+
+Mode: built-in imagegen. No fallback CLI or API key.
+
+Source: original COUNTRY.PVS artwork, extracted only into the ignored work directory. The reference atlas uses four panorama quarters with 64-pixel wrapped overlaps at both ends. Each band includes ten expendable bottom rows. Generated artwork is registered to the smooth original green hill silhouette and blended through the overlapping ends. Sky is normalized to RGB(93,255,255); pink-violet generated flower details use the requested purple hue. The assembled generated panorama is 4096x74, then exactly ten rows are removed with Sharp.extract. Each bottom-aligned runtime strip also has an explicit 10-row-taller intermediate, cropped by Sharp to its original dimensions. Panorama, internal joins, wrap, bottom rows, and runtime placement are verified. Only the five country images are replaced.
+
+Exact generation prompt
+
+Use case: style-transfer.
+Asset type: faithful enhanced country skybox for the 1990 racing game Stunts.
+Input image is the ORIGINAL pixel-art composition reference, arranged as FOUR separate horizontal rows with overlapping ends. Regenerate this ORIGINAL as fine, naturally shaded hand-painted game scenery. Do not use any previous enhanced country artwork.
+
+MOST IMPORTANT: the coloured marks are TINY SCATTERED PATCHES OF FLOWERS, not broad flower fields. Keep each patch about the size of its tiny source colour cluster: typically only 1–3 ORIGINAL pixels, or about 4–12 pixels across at the supplied 1152px reference width; occasional 16px clusters maximum. Each patch is a distant little irregular smudge of many unresolved flowers. Keep ample green grass separating patches; NEVER merge nearby spots into ribbons, large meadows of colour, oval flower beds or broad swathes. The landscape must overwhelmingly remain GREEN. Do not enlarge the source coloured footprints. There should be a sparse scattering of small, separate yellow, red and purple patches near the original marks. Colourful flower area should occupy only about 2–4 percent of the retained landscape. Tiny source yellow dots mean small yellow patches; source red marks mean small rich RED patches; source pink/magenta marks mean small violet/PURPLE patches, not pink or peach. Keep all three colours distinct. Preserve the small-scale impression from the original, without individually visible flowers, petals, stems, clumps, trees, or bushes.
+
+LANDSCAPE: retain the original low, rolling green hill contours and valleys, relative heights, slope lighting and placements. Smooth coarse staircase edges and provide fine natural meadow texture; distant terrain with subtle irregular grass tonal detail. No new tall hills, mountain range, forest, autumn trees, farm buildings, paths, fences, water, clouds, or new objects. Match original fresh grass greens and three flower colours, with refined detail, not coarse pixel blocks or dither.
+
+LOCKED FOUR-ROW LAYOUT: image reference is 1152x512, split into four equal 128px-high rows. Preserve the exact four-row layout and canvas aspect ratio. In each row the original terrain ends at local y=117, and local y=118..127 is a TEN-PIXEL expendable bottom extension. Generate real matching ground detail into those ten rows, continuing the grass seamlessly downward; those ten rows will later be cut off with an image tool. Keep the original baseline at local y=117 and do not push the flower patches down into only the disposable extension. Keep the sky above the hills clear. Retained output in each row is local y=54..117; all peaks must fit inside that with two or more clear cyan rows above them. The source hills occupy roughly y=58..117. Do not make taller scenery or increase its scale.
+
+CONTINUITY: each row contains 64px of overlap at both ends around a 1024px core. Core row1 continues core row2, then row3, then row4, then wraps back to row1. The repeated end context is the SAME location, so match its exact hill silhouette, green colour, lighting, grass texture and small flower spots. Preserve this one continuous repeating panorama. No hard vertical lighting, skyline or colour changes.
+
+All sky and row gaps must be perfectly flat opaque RGB(93,255,255). No gradients, clouds, sky texture, frames, labels, lettering, separator lines or transparency. Return the four-row artwork with natural ten-row bottom extensions, with the same framing and arrangement.
+
+The continuous bright magenta strip across the last ten rows of EACH band is an OUTPAINTING PLACEHOLDER, not a flower field. Replace it completely with ordinary matching green ground continuation. Only the tiny isolated colored dots within the original green terrain are flower references.
+
+Localized vertical-mark repair
+
+The built-in imagegen tool repaired two stretched grass columns at panorama x397-399 and x404-405. The generated correction was registered and colour-matched, then composited through a narrow feathered mask bounded by x393-410, y27-52. Only 430 pixels changed in country-scen.png and the matching country.png panorama. Sky, skyline, flower details, bottom rows, and every pixel outside the mask remain unchanged. All other skybox PNGs are untouched. No fallback CLI or API key was used.
+
+Exact repair prompt
+
+Use case: precise-object-edit.
+Asset type: tiny localized repair in a hand-painted Stunts country skybox.
+This input is the EDIT TARGET, an enlarged crop of the current game background.
+In the middle of the green hillside are TWO UNNATURAL NARROW VERTICAL BANDS, approximately at 47% and 54% of image width. They start at the hill skyline and run downward through the upper grass, like pale vertical ribs or stretched columns.
+Remove only these two vertical marks and the unnatural texture between them. Restore natural continuous gently rolling grass, with irregular fine meadow texture and shading that follows the slope, blending seamlessly into the grass immediately left and right. There must be no straight vertical highlights, upright streaks, columns, cuts or artificial seams left in this small central patch.
+Strictly preserve the exact hill silhouette, its height, perfectly flat cyan sky RGB(93,255,255), all tiny yellow flower patches, foreground/bottom grass, overall palette, existing distant scale, framing and outer edges. Keep every area outside the small central repair unchanged. Do not add flowers, trees, bushes, lines, paths, objects, text, borders, blur, or new hills. Match the surrounding art's existing softness and subtle fine texture without creating sharper detail.
+Return the same crop composition and aspect ratio with only this tiny central grass correction.
