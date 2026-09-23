@@ -49,7 +49,7 @@ python3 tools/scripts/prepare-original-opponent-upscales.py --check
 The script reads `full-resolution/`, prepares `working-4x/`, and writes the final
 indexed tiles into `assets/opponents/game/`. `--check` verifies without writing.
 When selecting a new source, update the [archive manifest](manifest.json) and
-[generation records](../game2-generation-prompts.json). The manifest records
+[generation records](../game-regeneration-prompts.json). The manifest records
 dimensions and SHA-256 hashes so the preserved files can be checked exactly.
 Historical prompt text and generated source paths remain in the generation
 records; `preserved_*` fields refer only to images retained in this archive.

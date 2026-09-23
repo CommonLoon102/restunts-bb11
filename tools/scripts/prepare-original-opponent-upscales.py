@@ -127,7 +127,7 @@ def generate(repository, game_directory, generated_directory):
     manifest = {
         "generator": "tools/scripts/prepare-original-opponent-upscales.py",
         "detail_generation": "built-in imagegen, fresh photographs from original photo crops only",
-        "prompts": "docs/opponents/game2-generation-prompts.json",
+        "prompts": "docs/opponents/game-regeneration-prompts.json",
         "pillow_version": PILLOW_VERSION,
         "width": 160,
         "height": 166,
