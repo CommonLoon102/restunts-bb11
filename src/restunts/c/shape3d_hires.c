@@ -3,6 +3,9 @@
 #if defined(RESTUNTS_SDL3)
 
 #include <SDL3/SDL_stdinc.h>
+#include <stdlib.h>
+#include <string.h>
+#include "fatal.h"
 #include "hires.h"
 #include "projection.h"
 #include "shape3d_internal.h"
@@ -21,10 +24,11 @@ struct HIRES_PRIMITIVE {
 	struct SHAPE3D_HIRES_POINT points[HIRES_MAX_POLYGON_POINTS];
 	legacy_u32 count;
 	legacy_u32 wheel_face;
-	legacy_u16 shape;
-	legacy_u16 family;
+	legacy_u32 shape;
+	legacy_u32 family;
 	legacy_s32 attached;
 	legacy_f64 size;
+	legacy_f64 depth;
 };
 
 struct HIRES_PAINT {
@@ -33,7 +37,7 @@ struct HIRES_PAINT {
 	legacy_u16 pattern;
 	legacy_u16 mode;
 	legacy_s32 depth_test;
-	legacy_u16 family;
+	legacy_u32 family;
 	legacy_s32 attached;
 };
 
@@ -42,13 +46,50 @@ struct HIRES_SHAPE {
 	legacy_s32 depth_test;
 };
 
-static struct HIRES_PRIMITIVE primitives[POLYINFO_SUPERSIGHT_PRIMITIVE_CAPACITY];
-static struct HIRES_SHAPE shapes[POLYINFO_SUPERSIGHT_PRIMITIVE_CAPACITY];
-static legacy_u16 current_shape;
-static legacy_u16 current_family;
-static legacy_u16 rendered_shape = LEGACY_U16_MAX;
+static struct HIRES_PRIMITIVE *primitives;
+static struct HIRES_SHAPE *shapes;
+static legacy_u32 primitive_capacity;
+static legacy_u32 primitive_count;
+static legacy_u32 current_shape;
+static legacy_u32 current_family;
+static legacy_u32 rendered_shape = LEGACY_U32_MAX;
 static legacy_u32 rendered_generation;
 static legacy_f64 model_scale = 1;
+
+static void reserve_primitives(legacy_u32 index)
+{
+	if (index < primitive_capacity) {
+		return;
+	}
+	size_t capacity =
+		primitive_capacity != 0 ? primitive_capacity : POLYINFO_SUPERSIGHT_PRIMITIVE_CAPACITY;
+	while (capacity <= index) {
+		if (capacity > 0x3FFFFFFFUL) {
+			fatal_error("SuperSight scene has too many primitives");
+			return;
+		}
+		capacity *= 2U;
+	}
+	if (capacity > (size_t)-1 / sizeof(*primitives) || capacity > (size_t)-1 / sizeof(*shapes)) {
+		fatal_error("SuperSight scene exceeds addressable memory");
+		return;
+	}
+	struct HIRES_PRIMITIVE *new_primitives = calloc(capacity, sizeof(*new_primitives));
+	struct HIRES_SHAPE *new_shapes = calloc(capacity, sizeof(*new_shapes));
+	if (new_primitives == NULL || new_shapes == NULL) {
+		fatal_error("Cannot allocate SuperSight scene geometry");
+		return;
+	}
+	if (primitive_capacity != 0) {
+		memcpy(new_primitives, primitives, (size_t)primitive_capacity * sizeof(*new_primitives));
+		memcpy(new_shapes, shapes, (size_t)primitive_capacity * sizeof(*new_shapes));
+	}
+	free(primitives);
+	free(shapes);
+	primitives = new_primitives;
+	shapes = new_shapes;
+	primitive_capacity = (legacy_u32)capacity;
+}
 
 static void project_coordinates(legacy_f64 x, legacy_f64 y, legacy_f64 z,
 								struct SHAPE3D_HIRES_POINT *point)
@@ -178,9 +219,9 @@ static legacy_f64 polygon_padding(const struct SHAPE3D_HIRES_POINT *points, lega
 	return expansion > 0 ? expansion * 0.5 : 0;
 }
 
-legacy_s32 shape3d_hires_polygon_visible(legacy_u16 index, legacy_s32 cull_backface)
+legacy_s32 shape3d_hires_polygon_visible(legacy_u32 index, legacy_s32 cull_backface)
 {
-	if (index >= POLYINFO_SUPERSIGHT_PRIMITIVE_CAPACITY) {
+	if (index >= primitive_capacity) {
 		return 0;
 	}
 	const struct HIRES_PRIMITIVE *primitive = &primitives[index];
@@ -195,16 +236,19 @@ legacy_s32 shape3d_hires_polygon_visible(legacy_u16 index, legacy_s32 cull_backf
 		   (!cull_backface || polygon_faces_camera(primitive->points, primitive->count));
 }
 
-legacy_u32 shape3d_hires_wheel_face(legacy_u16 index)
+legacy_u32 shape3d_hires_wheel_face(legacy_u32 index)
 {
-	return index < POLYINFO_SUPERSIGHT_PRIMITIVE_CAPACITY ? primitives[index].wheel_face : 0;
+	return index < primitive_capacity ? primitives[index].wheel_face : 0;
 }
 
-void shape3d_hires_begin_shape(legacy_u16 index, legacy_s32 depth_test)
+legacy_f64 shape3d_hires_depth(legacy_u32 index)
 {
-	if (index >= POLYINFO_SUPERSIGHT_PRIMITIVE_CAPACITY) {
-		return;
-	}
+	return index < primitive_capacity ? primitives[index].depth : 0;
+}
+
+void shape3d_hires_begin_shape(legacy_u32 index, legacy_s32 depth_test)
+{
+	reserve_primitives(index);
 	current_shape = index;
 	current_family = index + 1;
 	shapes[index].bounds.left = HIRES_WIDTH / HIRES_SCALE;
@@ -223,10 +267,11 @@ void shape3d_hires_reset(void)
 {
 	model_scale = 1;
 	shape3d_hires_begin_shape(0, 1);
-	rendered_shape = LEGACY_U16_MAX;
-	for (legacy_u32 index = 0; index < POLYINFO_SUPERSIGHT_PRIMITIVE_CAPACITY; index++) {
+	rendered_shape = LEGACY_U32_MAX;
+	for (legacy_u32 index = 0; index < primitive_count; index++) {
 		primitives[index].count = 0;
 	}
+	primitive_count = 0;
 }
 
 static void project_intersection(const struct SHAPE3D_HIRES_VECTOR *first,
@@ -263,11 +308,12 @@ static void queue_polygon(struct HIRES_PRIMITIVE *primitive, legacy_u32 count,
 	}
 }
 
-static void queue_primitive(legacy_u16 index, legacy_u8 type, legacy_u16 vertex_count,
+static void queue_primitive(legacy_u32 index, legacy_u8 type, legacy_u16 vertex_count,
 							const legacy_u8 *indices, const struct SHAPE3D_HIRES_VECTOR *vertices)
 {
-	if (index >= POLYINFO_SUPERSIGHT_PRIMITIVE_CAPACITY) {
-		return;
+	reserve_primitives(index);
+	if (primitive_count <= index) {
+		primitive_count = index + 1U;
 	}
 	struct HIRES_PRIMITIVE *primitive = &primitives[index];
 	primitive->count = 0;
@@ -275,6 +321,13 @@ static void queue_primitive(legacy_u16 index, legacy_u8 type, legacy_u16 vertex_
 	if (!hires_enabled() || vertex_count == 0 || vertex_count > HIRES_MAX_POLYGON_POINTS / 2) {
 		return;
 	}
+	/* Keep scene sorting independent of the serialized 16-bit depth word.
+	 * Track corners can be farther than 32767 units from the camera. */
+	primitive->depth = 0;
+	for (legacy_u32 vertex = 0; vertex < vertex_count; vertex++) {
+		primitive->depth += vertices[indices[vertex]].z;
+	}
+	primitive->depth /= vertex_count;
 	if (type == RENDER_PRIMITIVE_POLYGON) {
 		queue_polygon(primitive, vertex_count, indices, vertices);
 		return;
@@ -286,6 +339,7 @@ static void queue_primitive(legacy_u16 index, legacy_u8 type, legacy_u16 vertex_
 		}
 		legacy_u32 start = polygon_faces_camera(face, 3) ? 0 : 3;
 		primitive->wheel_face = start;
+		primitive->depth = vertices[indices[start]].z;
 		for (legacy_u32 vertex = 0; vertex < 4; vertex++) {
 			shape3d_hires_project(&vertices[indices[(start + vertex) % 6]],
 								  &primitive->points[vertex]);
@@ -320,12 +374,12 @@ static void queue_primitive(legacy_u16 index, legacy_u8 type, legacy_u16 vertex_
 	}
 }
 
-void shape3d_hires_queue(legacy_u16 index, legacy_u8 type, legacy_u16 vertex_count,
+void shape3d_hires_queue(legacy_u32 index, legacy_u8 type, legacy_u16 vertex_count,
 						 const legacy_u8 *indices, const struct SHAPE3D_HIRES_VECTOR *vertices,
 						 legacy_u16 flags)
 {
 	queue_primitive(index, type, vertex_count, indices, vertices);
-	if (index >= POLYINFO_SUPERSIGHT_PRIMITIVE_CAPACITY || primitives[index].count == 0) {
+	if (index >= primitive_capacity || primitives[index].count == 0) {
 		return;
 	}
 	struct HIRES_PRIMITIVE *primitive = &primitives[index];
@@ -352,9 +406,9 @@ static legacy_f64 absolute_coordinate(legacy_f64 value)
 	return value < 0 ? -value : value;
 }
 
-void shape3d_hires_update_bounds(legacy_u16 index, legacy_u8 type, struct RECTANGLE *rectangle)
+void shape3d_hires_update_bounds(legacy_u32 index, legacy_u8 type, struct RECTANGLE *rectangle)
 {
-	if (index >= POLYINFO_SUPERSIGHT_PRIMITIVE_CAPACITY || primitives[index].count == 0) {
+	if (index >= primitive_capacity || primitives[index].count == 0) {
 		return;
 	}
 	const struct HIRES_PRIMITIVE *primitive = &primitives[index];
@@ -804,11 +858,11 @@ static void draw_wheel(const struct HIRES_PRIMITIVE *primitive, struct HIRES_PAI
 	draw_polygon(inner, HIRES_ROUND_POINTS, 0, &paint);
 }
 
-void shape3d_hires_render(legacy_u16 index, legacy_u8 type, legacy_u16 color,
+void shape3d_hires_render(legacy_u32 index, legacy_u8 type, legacy_u16 color,
 						  legacy_u16 second_color, legacy_u16 third_color, legacy_u16 pattern_type,
 						  legacy_u16 pattern)
 {
-	if (index >= POLYINFO_SUPERSIGHT_PRIMITIVE_CAPACITY || primitives[index].count == 0) {
+	if (index >= primitive_capacity || primitives[index].count == 0) {
 		return;
 	}
 	struct HIRES_PRIMITIVE *primitive = &primitives[index];

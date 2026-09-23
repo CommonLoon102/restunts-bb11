@@ -1,5 +1,9 @@
 #include <stddef.h>
 #include <limits.h>
+#if defined(RESTUNTS_SDL3)
+#include <stdlib.h>
+#include <string.h>
+#endif
 #include "externs.h"
 #include "fileio.h"
 #include "legacy.h"
@@ -13,6 +17,8 @@
 #include "projection.h"
 #include "residue.h"
 #if defined(RESTUNTS_SDL3)
+#undef memcpy
+#include "fatal.h"
 #include "hires.h"
 #include "shape3d_hires.h"
 #endif
@@ -80,13 +86,13 @@ extern legacy_u8 shape_view_direction_sector;
 
 // Track the current shape's portion of the depth-sorted polygon list.
 // Polygon immediately preceding this shape's first polygon.
-extern legacy_u16 shape_polygon_predecessor;
+extern polyinfo_index shape_polygon_predecessor;
 // Last polygon in the full list, or its sentinel when empty.
-extern legacy_u16 polygon_list_tail;
+extern polyinfo_index polygon_list_tail;
 // Number of polygons queued for the current shape.
-extern legacy_u16 shape_polygon_count;
+extern polyinfo_index shape_polygon_count;
 // After insertion, contains the index of the newly inserted primitive
-extern legacy_u16 polygon_insertion_cursor;
+extern polyinfo_index polygon_insertion_cursor;
 
 extern legacy_u8 transshapenumvertscopy;
 extern struct POINT2D *polyvertpointptrtab[];
@@ -94,7 +100,6 @@ extern legacy_u16 shape_half_scale;
 extern legacy_u8 primidxcounttab[];
 extern legacy_u8 primtypetab[];
 extern legacy_u8 far *transshapeprimptr;
-extern legacy_u16 polyinfoptrnext;
 extern legacy_u8 far *transshapepolyinfo;
 extern legacy_s8 transprimitivepaintjob;
 extern legacy_u8 far *transshapeprimindexptr;
@@ -102,7 +107,7 @@ extern legacy_u8 far *transshapeprimindexptr;
 /* 14-bit fixed point: the inner radius is 37/64 of the outer radius. */
 #define WHEEL_INNER_RADIUS_SCALE 9472U
 
-static legacy_u16 queued_ghost_primitives;
+static polyinfo_index queued_ghost_primitives;
 
 #define SHAPE3D_VERTEX_CAPACITY 255U
 #define SHAPE3D_VERTEX_FLAG_CAPACITY 256U
@@ -116,7 +121,7 @@ static legacy_u16 queued_ghost_primitives;
 #define SHAPE3D_PRIMITIVE_ALWAYS_VISIBLE_FLAG 1U
 #define SHAPE3D_PRIMITIVE_SKIP_DEPTH_SORT_FLAG 2U
 
-#define POLYINFO_LIST_SENTINEL LEGACY_U16_MAX
+#define POLYINFO_LIST_SENTINEL (-1)
 #define POLYINFO_LEGACY_LAST_VALID_OFFSET 10354U
 /* A ten-vertex polygon can gain five vertices at the near plane. Reserve
  * a full record before beginning another primitive, including clipped ones. */
@@ -125,8 +130,96 @@ static legacy_u16 queued_ghost_primitives;
 #define POLYINFO_SUPERSIGHT_LAST_VALID_OFFSET                                                      \
 	(POLYINFO_SUPERSIGHT_DATA_SIZE - POLYINFO_MAX_RECORD_SIZE)
 
-static legacy_u16 polyinfo_primitive_capacity = POLYINFO_LEGACY_PRIMITIVE_CAPACITY;
-static legacy_u16 polyinfo_last_valid_offset = POLYINFO_LEGACY_LAST_VALID_OFFSET;
+static polyinfo_index polyinfo_primitive_capacity = POLYINFO_LEGACY_PRIMITIVE_CAPACITY;
+static polyinfo_offset polyinfo_last_valid_offset = POLYINFO_LEGACY_LAST_VALID_OFFSET;
+
+#if defined(RESTUNTS_SDL3)
+static legacy_u8 polyinfo_supersight_enabled;
+static polyinfo_index native_primitive_capacity = POLYINFO_SUPERSIGHT_PRIMITIVE_CAPACITY;
+static polyinfo_offset native_data_capacity;
+static polyinfo_link *native_polygon_links;
+static polyinfo_offset *native_polygon_offsets;
+static legacy_u8 *native_polyinfo;
+
+static void *polyinfo_allocate(size_t count, size_t size)
+{
+	if (count > (size_t)-1 / size) {
+		fatal_error("SuperSight scene exceeds addressable memory");
+		return NULL;
+	}
+	void *result = malloc(count * size);
+	if (result == NULL) {
+		fatal_error("Cannot allocate SuperSight scene queue");
+	}
+	return result;
+}
+
+static void polyinfo_reserve(void)
+{
+	if (!polyinfo_supersight_enabled) {
+		return;
+	}
+	if (polyinfonumpolys >= polyinfo_primitive_capacity) {
+		polyinfo_index previous_capacity = polyinfo_primitive_capacity;
+		/* Links use a signed index so that -1 remains the end marker. */
+		if (previous_capacity > 0x3FFFFFFFUL) {
+			fatal_error("SuperSight scene has too many primitives");
+			return;
+		}
+		polyinfo_index capacity = previous_capacity * 2U;
+		polyinfo_link *links = polyinfo_allocate((size_t)capacity + 1U, sizeof(*links));
+		polyinfo_offset *offsets = polyinfo_allocate(capacity, sizeof(*offsets));
+		memcpy(links, polygon_next_index, ((size_t)previous_capacity + 1U) * sizeof(*links));
+		memcpy(offsets, polygon_record_offsets, (size_t)previous_capacity * sizeof(*offsets));
+		/* The head sentinel lives after all primitive slots. Move it before
+		 * its former slot becomes the next primitive, including mid-shape growth. */
+		links[capacity] = links[previous_capacity];
+		if (shape_polygon_predecessor == previous_capacity) {
+			shape_polygon_predecessor = capacity;
+		}
+		if (polygon_insertion_cursor == previous_capacity) {
+			polygon_insertion_cursor = capacity;
+		}
+		if (polygon_list_tail == previous_capacity) {
+			polygon_list_tail = capacity;
+		}
+		free(native_polygon_links);
+		free(native_polygon_offsets);
+		polygon_next_index = native_polygon_links = links;
+		polygon_record_offsets = native_polygon_offsets = offsets;
+		polyinfo_primitive_capacity = native_primitive_capacity = capacity;
+	}
+	if (polyinfoptrnext > LEGACY_U32_MAX - POLYINFO_MAX_RECORD_SIZE) {
+		fatal_error("SuperSight scene data exceeds addressable memory");
+		return;
+	}
+	polyinfo_offset required = polyinfoptrnext + POLYINFO_MAX_RECORD_SIZE;
+	if (required > native_data_capacity) {
+		polyinfo_offset capacity = native_data_capacity;
+		if (capacity == 0) {
+			capacity = POLYINFO_SUPERSIGHT_DATA_SIZE;
+		}
+		while (capacity < required) {
+			capacity = capacity <= LEGACY_U32_MAX / 2U ? capacity * 2U : required;
+		}
+		legacy_u8 *data = polyinfo_allocate(capacity, sizeof(*data));
+		if (polyinfoptrnext != 0) {
+			memcpy(data, polyinfoptr, polyinfoptrnext);
+		}
+		free(native_polyinfo);
+		polyinfoptr = native_polyinfo = data;
+		native_data_capacity = capacity;
+	} else if (polyinfoptr != native_polyinfo) {
+		/* init_polyinfo and isolated render targets can supply a fresh legacy
+		 * buffer. Reuse native storage without taking ownership of that buffer. */
+		if (polyinfoptrnext != 0) {
+			memcpy(native_polyinfo, polyinfoptr, polyinfoptrnext);
+		}
+		polyinfoptr = native_polyinfo;
+	}
+	polyinfo_last_valid_offset = native_data_capacity - POLYINFO_MAX_RECORD_SIZE;
+}
+#endif
 
 #define PROJECTION_EXTENT_SCALE 2048L
 #define PROJECTION_EXTENT_DIVISOR 360L
@@ -761,6 +854,9 @@ legacy_u16 shape3d_transform_and_queue(struct TRANSFORMEDSHAPE3D *instance)
 	if (polygon_buffer_full != 0) {
 		return 1;
 	}
+#if defined(RESTUNTS_SDL3)
+	polyinfo_reserve();
+#endif
 	transshapenumverts = instance->shapeptr->shape3d_numverts;
 	/* Shape files store this count in one byte. Reject a damaged descriptor
 	 * before it can overrun the fixed-size transformation work arrays. */
@@ -795,6 +891,9 @@ legacy_u16 shape3d_transform_and_queue(struct TRANSFORMEDSHAPE3D *instance)
 		if ((LEGACY_READ_U32_LE(visibility_masks) & (legacy_u32)context.visibility_mask) != 0UL) {
 			transshapenumvertscopy = primidxcounttab[transshapeprimitives[0]];
 			primitive_type = primtypetab[transshapeprimitives[0]];
+#if defined(RESTUNTS_SDL3)
+			polyinfo_reserve();
+#endif
 			transshapepolyinfo = polyinfoptr + polyinfoptrnext;
 			polygon_record_offsets[polyinfonumpolys] = polyinfoptrnext;
 			transprimitivepaintjob = transshapeprimitives[2 + transshapematerial];
@@ -900,23 +999,32 @@ extern legacy_u16 polygon_insert_newest(legacy_u16 depth, legacy_u16 sort_by_dep
 {
 	//return ported_insert_newest_poly_in_poly_linked_list_40ED6_(depth, sort_by_depth);
 
-	legacy_s16 next_polygon;
+	polyinfo_link next_polygon;
 	if (sort_by_depth == 0) {
 		next_polygon = polygon_next_index[polygon_insertion_cursor];
 	} else {
 		polygon_insertion_cursor = shape_polygon_predecessor;
 		next_polygon = polygon_next_index[shape_polygon_predecessor];
-		legacy_s16 remaining_polygons = shape_polygon_count;
+		polyinfo_index remaining_polygons = shape_polygon_count;
 
 		while (next_polygon >= 0) {
-			legacy_s16 previous_remaining_count = remaining_polygons;
+			polyinfo_index previous_remaining_count = remaining_polygons;
 			remaining_polygons--;
 			if (previous_remaining_count == 0) {
 				break;
 			}
-			if (LEGACY_READ_S16_LE(polyinfoptr + polygon_record_offsets[next_polygon]) <
-				(legacy_s16)depth) {
-				break;
+#if defined(RESTUNTS_SDL3)
+			if (hires_enabled()) {
+				if (shape3d_hires_depth(next_polygon) < shape3d_hires_depth(polyinfonumpolys)) {
+					break;
+				}
+			} else
+#endif
+			{
+				if (LEGACY_READ_S16_LE(polyinfoptr + polygon_record_offsets[next_polygon]) <
+					(legacy_s16)depth) {
+					break;
+				}
 			}
 			polygon_insertion_cursor = next_polygon;
 			next_polygon = polygon_next_index[next_polygon];
@@ -925,16 +1033,18 @@ extern legacy_u16 polygon_insert_newest(legacy_u16 depth, legacy_u16 sort_by_dep
 
 	polygon_next_index[polyinfonumpolys] = next_polygon;
 	polygon_next_index[polygon_insertion_cursor] = polyinfonumpolys;
-	shape_polygon_count = LEGACY_U16_WRAP_ADD(shape_polygon_count, 1U);
+	shape_polygon_count++;
 	if (next_polygon < 0) {
 		polygon_list_tail = polyinfonumpolys;
 	}
 	polygon_insertion_cursor = polygon_next_index[polygon_insertion_cursor];
-	polyinfonumpolys = LEGACY_U16_WRAP_ADD(polyinfonumpolys, 1U);
-	polyinfoptrnext = LEGACY_U16_WRAP_ADD(
-		polyinfoptrnext,
-		LEGACY_U16_WRAP_ADD(LEGACY_U16_WRAP_MUL(transshapenumvertscopy, sizeof(struct POINT2D)),
-							6U));
+	polyinfonumpolys++;
+	polyinfoptrnext += transshapenumvertscopy * sizeof(struct POINT2D) + 6U;
+#if defined(RESTUNTS_SDL3)
+	if (polyinfo_supersight_enabled) {
+		return 0;
+	}
+#endif
 	if (polyinfonumpolys == polyinfo_primitive_capacity) {
 		return 1;
 	}
@@ -1050,8 +1160,14 @@ void polyinfo_reset(void)
 
 void polyinfo_set_supersight(legacy_u8 enabled)
 {
-	legacy_u16 capacity =
+	polyinfo_index capacity =
 		enabled != 0U ? POLYINFO_SUPERSIGHT_PRIMITIVE_CAPACITY : POLYINFO_LEGACY_PRIMITIVE_CAPACITY;
+#if defined(RESTUNTS_SDL3)
+	polyinfo_supersight_enabled = enabled != 0U;
+	if (polyinfo_supersight_enabled) {
+		capacity = native_primitive_capacity;
+	}
+#endif
 	if (polyinfo_primitive_capacity != capacity) {
 		polyinfo_primitive_capacity = capacity;
 		polyinfo_last_valid_offset = enabled != 0U ? POLYINFO_SUPERSIGHT_LAST_VALID_OFFSET
@@ -1388,11 +1504,11 @@ static void shape3d_render_ghost(const legacy_u8 far *record, struct POINT2D *po
 	}
 }
 
-static legacy_u16 shape3d_legacy_record_index(legacy_u16 record_index)
+static legacy_u16 shape3d_legacy_record_index(polyinfo_index record_index)
 {
-	legacy_u16 result = record_index;
+	polyinfo_index result = record_index;
 	if (queued_ghost_primitives != 0U) {
-		for (legacy_u16 index = 0; index < record_index; index++) {
+		for (polyinfo_index index = 0; index < record_index; index++) {
 			if ((polyinfoptr[polygon_record_offsets[index] + 4U] & RENDER_PRIMITIVE_GHOST_FLAG) !=
 				0U) {
 				result--;
@@ -1403,7 +1519,7 @@ static legacy_u16 shape3d_legacy_record_index(legacy_u16 record_index)
 }
 
 #if defined(RESTUNTS_SDL3)
-static void shape3d_render_hires_primitive(legacy_u16 record_index, const legacy_u8 *record)
+static void shape3d_render_hires_primitive(polyinfo_index record_index, const legacy_u8 *record)
 {
 	legacy_u16 material = record[2];
 	legacy_u16 type = record[4] & ~RENDER_PRIMITIVE_GHOST_FLAG;
@@ -1433,11 +1549,12 @@ void shape3d_render_queued_primitives(void)
 #if defined(RESTUNTS_SDL3)
 	legacy_s16 high_resolution = hires_begin(&drawing_sprite);
 #endif
-	legacy_u16 record_index = polyinfo_primitive_capacity;
-	legacy_u16 rendered_ghost_primitives = 0;
+	polyinfo_index record_index = polyinfo_primitive_capacity;
+	polyinfo_index rendered_ghost_primitives = 0;
 	struct POINT2D points[POLYINFO_MAX_RENDER_POINTS];
-	for (legacy_u16 primitive_index = 0; primitive_index < polyinfonumpolys; primitive_index++) {
-		record_index = (legacy_u16)polygon_next_index[record_index];
+	for (polyinfo_index primitive_index = 0; primitive_index < polyinfonumpolys;
+		 primitive_index++) {
+		record_index = (polyinfo_index)polygon_next_index[record_index];
 		legacy_u8 far *record = polyinfoptr + polygon_record_offsets[record_index];
 #if defined(RESTUNTS_SDL3)
 		if (high_resolution != 0) {

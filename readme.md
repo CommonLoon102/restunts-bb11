@@ -69,16 +69,19 @@ minimum mcb free=1
 
 ### SuperSight and FPS display
 
-Press **F12** while driving or viewing a replay to toggle SuperSight. It extends
-visibility from the original 23 candidate tiles to 110 and uses detailed models
-where capacity permits. Crowded scenes reduce distant detail and then draw
-fewer distant tiles. Nearby frames reuse the last suitable quality level, with
-periodic full-detail checks and fresh checks after camera changes or replay seeks.
-SuperSight allows up to 592 primitives with a 13 KiB
-rendering buffer and respects the graphics menu's scenery setting. Switching
-it off restores the original draw distance, detail policy, and rendering limits.
+Press **F12** while driving or viewing a replay to toggle SuperSight. In SDL3
+builds (Windows, Linux, and 32-bit DOS), it considers the entire 30 x 30 track
+and renders all geometry within the camera's view, with no distance cutoff.
+Detailed models remain enabled across the track, and rendering buffers grow
+to fit crowded scenes instead of dropping distant tiles. The graphics menu's
+scenery setting still applies. Switching SuperSight off restores the original
+23-tile draw distance, detail policy, and rendering limits.
 The enhancement is based on Alberto Marnetto's
 [SuperSight](https://marnetto.net/2025/02/20/broderbund-stunts-1).
+
+The Open Watcom 16-bit DOS build retains its 110-tile SuperSight mode, with
+up to 592 primitives in a 13 KiB rendering buffer and reduced distant detail
+or visibility when crowded scenes exceed that capacity.
 
 In SDL3 builds (Windows, Linux, and 32-bit DOS), SuperSight also renders 3D
 at **1280x800**, four times the original width and height. Player and opponent

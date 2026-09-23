@@ -22,17 +22,18 @@ struct SHAPE3D_HIRES_POINT {
 void shape3d_hires_project(const struct SHAPE3D_HIRES_VECTOR *vector,
 						   struct SHAPE3D_HIRES_POINT *point);
 legacy_u8 shape3d_hires_clip_flags(const struct SHAPE3D_HIRES_VECTOR *vector);
-legacy_s32 shape3d_hires_polygon_visible(legacy_u16 index, legacy_s32 cull_backface);
-legacy_u32 shape3d_hires_wheel_face(legacy_u16 index);
+legacy_s32 shape3d_hires_polygon_visible(legacy_u32 index, legacy_s32 cull_backface);
+legacy_u32 shape3d_hires_wheel_face(legacy_u32 index);
+legacy_f64 shape3d_hires_depth(legacy_u32 index);
 void shape3d_hires_reset(void);
 /* Scale the stroke with model size; captured per queued primitive. */
 void shape3d_hires_set_model_scale(legacy_f64 scale);
-void shape3d_hires_begin_shape(legacy_u16 index, legacy_s32 depth_test);
-void shape3d_hires_queue(legacy_u16 index, legacy_u8 type, legacy_u16 vertex_count,
+void shape3d_hires_begin_shape(legacy_u32 index, legacy_s32 depth_test);
+void shape3d_hires_queue(legacy_u32 index, legacy_u8 type, legacy_u16 vertex_count,
 						 const legacy_u8 *indices, const struct SHAPE3D_HIRES_VECTOR *vertices,
 						 legacy_u16 flags);
-void shape3d_hires_update_bounds(legacy_u16 index, legacy_u8 type, struct RECTANGLE *rectangle);
-void shape3d_hires_render(legacy_u16 index, legacy_u8 type, legacy_u16 color,
+void shape3d_hires_update_bounds(legacy_u32 index, legacy_u8 type, struct RECTANGLE *rectangle);
+void shape3d_hires_render(legacy_u32 index, legacy_u8 type, legacy_u16 color,
 						  legacy_u16 second_color, legacy_u16 third_color, legacy_u16 pattern_type,
 						  legacy_u16 pattern);
 

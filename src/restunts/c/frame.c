@@ -21,6 +21,10 @@
 #include "ghost.h"
 #include "residue.h"
 
+#if defined(RESTUNTS_SDL3)
+#include <stdlib.h>
+#endif
+
 /* Presentations read their own immutable pose. Timer callbacks continue to see
  * the authoritative state, even when a rendering helper pumps platform events. */
 static const struct GAMESTATE *frame_state = &state;
@@ -34,6 +38,11 @@ static legacy_u8 frame_uses_snapshot;
 #define FRAME_CAR_WHEEL_COUNT 4
 #define FRAME_LOOKAHEAD_TILE_COUNT 23
 #define FRAME_SUPERSIGHT_TILE_COUNT 110
+#if defined(RESTUNTS_SDL3)
+#define FRAME_MAXIMUM_TILE_COUNT 900
+#else
+#define FRAME_MAXIMUM_TILE_COUNT FRAME_SUPERSIGHT_TILE_COUNT
+#endif
 #define FRAME_SUPERSIGHT_DISCARD_BATCH 20
 #define FRAME_SUPERSIGHT_MINIMUM_TILES 4
 #define FRAME_SUPERSIGHT_PROBE_INTERVAL 16
@@ -161,12 +170,26 @@ struct TRACKOBJECT *frame_track_object_from_legacy_index(legacy_u8 index)
 	return &terrain_scene_objects[(legacy_u16)index - TRACK_OBJECT_COUNT];
 }
 
+#if defined(RESTUNTS_SDL3)
+static legacy_s32 supersight_shape_depths[sizeof(currenttransshape) / sizeof(currenttransshape[0])];
+#endif
+
 void transformed_shape_add_for_sort(legacy_s16 z_adjust, legacy_s16 type)
 {
 	struct VECTOR transformed_position;
 	mat_mul_vector(&curtransshape_ptr->pos, &mat_temp, &transformed_position);
 	legacy_s16 index = LEGACY_S8_FROM_BITS((legacy_u8)transformedshape_counter);
 	transformedshape_zarray[index] = LEGACY_S16_WRAP_ADD(transformed_position.z, z_adjust);
+#if defined(RESTUNTS_SDL3)
+	if (supersight_enabled != 0) {
+		const struct VECTOR *position = &curtransshape_ptr->pos;
+		supersight_shape_depths[index] = (legacy_s32)(((legacy_s64)position->x * mat_temp.m._31 +
+													   (legacy_s64)position->y * mat_temp.m._32 +
+													   (legacy_s64)position->z * mat_temp.m._33) /
+													  TRIG_FIXED_ONE) +
+										 z_adjust;
+	}
+#endif
 	transformed_shape_sort_types[index] = (legacy_s8)(legacy_u8)type;
 	transformedshape_indices[index] = index;
 	transformedshape_counter = LEGACY_S8_WRAP_ADD(transformedshape_counter, 1);
@@ -181,6 +204,7 @@ struct FRAME_LOOKAHEAD_TILE {
 	legacy_s8 detail;
 };
 
+#if !defined(RESTUNTS_SDL3)
 /* Camera-relative candidates from Alberto Marnetto's SuperSight. Keep the
  * far-to-near painter order; priority governs which models can lose detail. */
 struct FRAME_SUPERSIGHT_TILE {
@@ -207,6 +231,7 @@ static const struct FRAME_SUPERSIGHT_TILE supersight_tiles[FRAME_SUPERSIGHT_TILE
 };
 
 static const legacy_s8 supersight_detail_thresholds[] = {99, 20, 18, 16, 14, 12, 10};
+#endif
 
 static legacy_s16 frame_relative_position(legacy_s32 position, legacy_s16 camera_position)
 {
@@ -544,17 +569,17 @@ struct FRAME_CAMERA {
 
 struct FRAME_TILE_SELECTION {
 	const struct FRAME_LOOKAHEAD_TILE *lookahead;
-	struct FRAME_LOOKAHEAD_TILE extended_lookahead[FRAME_SUPERSIGHT_TILE_COUNT];
+	struct FRAME_LOOKAHEAD_TILE extended_lookahead[FRAME_MAXIMUM_TILE_COUNT];
 	legacy_s16 count, first;
 	legacy_s8 detail_threshold;
 	legacy_s8 camera_east, camera_south;
 	legacy_s8 player_east, player_south;
-	legacy_s8 markers[FRAME_SUPERSIGHT_TILE_COUNT];
-	legacy_s8 east[FRAME_SUPERSIGHT_TILE_COUNT];
-	legacy_s8 south[FRAME_SUPERSIGHT_TILE_COUNT];
-	legacy_s8 detail[FRAME_SUPERSIGHT_TILE_COUNT];
-	legacy_u8 elements[FRAME_SUPERSIGHT_TILE_COUNT];
-	legacy_u8 terrain[FRAME_SUPERSIGHT_TILE_COUNT];
+	legacy_s8 markers[FRAME_MAXIMUM_TILE_COUNT];
+	legacy_s8 east[FRAME_MAXIMUM_TILE_COUNT];
+	legacy_s8 south[FRAME_MAXIMUM_TILE_COUNT];
+	legacy_s8 detail[FRAME_MAXIMUM_TILE_COUNT];
+	legacy_u8 elements[FRAME_MAXIMUM_TILE_COUNT];
+	legacy_u8 terrain[FRAME_MAXIMUM_TILE_COUNT];
 };
 
 struct FRAME_CAR_RENDER {
@@ -947,8 +972,58 @@ static void frame_select_track_tile(struct FRAME_TILE_SELECTION *tiles, struct F
 	frame_mark_covered_tiles(tiles, tile, tile_index);
 }
 
-static void frame_extend_lookahead(struct FRAME_TILE_SELECTION *tiles)
+#if defined(RESTUNTS_SDL3)
+struct FRAME_WORLD_TILE {
+	struct FRAME_LOOKAHEAD_TILE offset;
+	legacy_s32 depth;
+};
+
+static int frame_compare_world_tiles(const void *first, const void *second)
 {
+	const struct FRAME_WORLD_TILE *left = first;
+	const struct FRAME_WORLD_TILE *right = second;
+	if (left->depth != right->depth) {
+		return left->depth > right->depth ? -1 : 1;
+	}
+	if (left->offset.south != right->offset.south) {
+		return left->offset.south - right->offset.south;
+	}
+	return left->offset.east - right->offset.east;
+}
+
+static void frame_extend_lookahead(struct FRAME_TILE_SELECTION *tiles,
+								   const struct FRAME_CAMERA *camera)
+{
+	/* Submit the complete map. Shape bounds and primitive clipping decide
+	 * visibility, including objects extending into the view from another tile.
+	 * Sorting in camera space also covers rolled and downward-facing cameras. */
+	struct FRAME_WORLD_TILE candidates[FRAME_MAXIMUM_TILE_COUNT];
+	legacy_s16 index = 0;
+	for (legacy_s16 south = 0; south <= TRACK_GRID_LAST_COORDINATE; south++) {
+		for (legacy_s16 east = 0; east <= TRACK_GRID_LAST_COORDINATE; east++) {
+			struct FRAME_WORLD_TILE *tile = &candidates[index++];
+			tile->offset.east = east - tiles->camera_east;
+			tile->offset.south = south - tiles->camera_south;
+			tile->offset.detail = FRAME_TILE_DETAIL_FULL;
+			legacy_s32 x = (legacy_s32)track_column_centers[east] - camera->position.x;
+			legacy_s32 z = (legacy_s32)track_row_centers[south] - camera->position.z;
+			tile->depth =
+				(legacy_s32)(((legacy_s64)x * mat_temp.m._31 + (legacy_s64)z * mat_temp.m._33) /
+							 TRIG_FIXED_ONE);
+		}
+	}
+	qsort(candidates, FRAME_MAXIMUM_TILE_COUNT, sizeof(candidates[0]), frame_compare_world_tiles);
+	for (index = 0; index < FRAME_MAXIMUM_TILE_COUNT; index++) {
+		tiles->extended_lookahead[index] = candidates[index].offset;
+	}
+	tiles->lookahead = tiles->extended_lookahead;
+	tiles->count = FRAME_MAXIMUM_TILE_COUNT;
+}
+#else
+static void frame_extend_lookahead(struct FRAME_TILE_SELECTION *tiles,
+								   const struct FRAME_CAMERA *camera)
+{
+	(void)camera;
 	legacy_s8 east = tiles->lookahead[0].east;
 	legacy_s8 south = tiles->lookahead[0].south;
 	legacy_s8 depth_east = east == 4 ? 1 : east == -4 ? -1 : 0;
@@ -966,18 +1041,20 @@ static void frame_extend_lookahead(struct FRAME_TILE_SELECTION *tiles)
 	tiles->count = FRAME_SUPERSIGHT_TILE_COUNT;
 }
 
+#endif
+
 static void frame_select_tiles(struct FRAME_TILE_SELECTION *tiles,
 							   const struct FRAME_CAMERA *camera)
 {
 	tiles->count = FRAME_LOOKAHEAD_TILE_COUNT;
 	tiles->first = 0;
-	if (supersight_enabled != 0) {
-		frame_extend_lookahead(tiles);
-	}
 	tiles->camera_east =
 		LEGACY_S8_FROM_BITS((legacy_u8)LEGACY_S16_SAR(camera->position.x, FRAME_CAMERA_TILE_SHIFT));
 	tiles->camera_south = LEGACY_S8_WRAP_SUB(
 		TRACK_GRID_LAST_COORDINATE, LEGACY_S16_SAR(camera->position.z, FRAME_CAMERA_TILE_SHIFT));
+	if (supersight_enabled != 0) {
+		frame_extend_lookahead(tiles, camera);
+	}
 	if (detail_level != FRAME_DETAIL_FULL) {
 		tiles->player_east = frame_tile_from_world(frame_state->playerstate.car_position.lx);
 		tiles->player_south = frame_south_tile_from_world(frame_state->playerstate.car_position.lz);
@@ -1484,8 +1561,26 @@ static legacy_s16 frame_draw_sorted_shapes(struct FRAME_CAR_RENDER *cars)
 {
 	if (transformedshape_counter != 0) {
 		if (transformedshape_counter >= FRAME_SORT_MINIMUM_SHAPE_COUNT) {
-			heapsort_by_order(transformedshape_counter, transformedshape_zarray,
-							  transformedshape_indices);
+#if defined(RESTUNTS_SDL3)
+			if (supersight_enabled != 0) {
+				/* Local shape groups are small. Retain their full camera-space
+				 * depth across the track diagonal and overlay depth adjustments. */
+				for (legacy_s16 i = 1; i < transformedshape_counter; i++) {
+					legacy_s16 shape = transformedshape_indices[i];
+					legacy_s16 j = i;
+					while (j > 0 && supersight_shape_depths[shape] >
+										supersight_shape_depths[transformedshape_indices[j - 1]]) {
+						transformedshape_indices[j] = transformedshape_indices[j - 1];
+						j--;
+					}
+					transformedshape_indices[j] = shape;
+				}
+			} else
+#endif
+			{
+				heapsort_by_order(transformedshape_counter, transformedshape_zarray,
+								  transformedshape_indices);
+			}
 		}
 
 		// Draw red overlights on the brake lights on own and opponent's car
@@ -1709,6 +1804,23 @@ static legacy_s16 frame_draw_tiles(const struct FRAME_TILE_SELECTION *tiles,
 	return 0;
 }
 
+#if defined(RESTUNTS_SDL3)
+void frame_supersight_reset(void)
+{
+}
+
+static void frame_draw_supersight(struct FRAME_TILE_SELECTION *tiles, struct FRAME_CAMERA *camera,
+								  struct FRAME_CAR_RENDER *cars, legacy_s8 buffer_index,
+								  legacy_s8 redraw_transform_flags, legacy_s8 animated_material)
+{
+	(void)buffer_index;
+	/* The native queue grows to fit the scene, so every selected tile keeps
+	 * its full model even on crowded tracks. */
+	tiles->detail_threshold = 1;
+	frame_place_cars(tiles, cars);
+	frame_draw_tiles(tiles, camera, cars, redraw_transform_flags, animated_material);
+}
+#else
 static legacy_s16 supersight_attempt_hint;
 static legacy_u8 supersight_probe_frames;
 static legacy_u8 supersight_view_valid;
@@ -1804,6 +1916,8 @@ static void frame_draw_supersight(struct FRAME_TILE_SELECTION *tiles, struct FRA
 		frame_draw_clouds(camera, redraw_transform_flags);
 	}
 }
+
+#endif
 
 static void frame_draw_explosions(struct FRAME_CAR_RENDER *cars, struct RECTANGLE *cliprect)
 {
