@@ -120,8 +120,8 @@ change its simulated result. Seeking, pausing, and camera changes reset predicti
 Press **F11** to toggle a frame-rate counter in the top-left corner. It measures
 presented frames over approximately one second and rounds down, for example
 `20 FPS`. Values below 20 are red; values of 20 or higher are green.
-In SDL3 builds, F11 and F12 also work during the nighttime driving intro
-without skipping the animation.
+In SDL3 builds, F11 and F12 also work in both car-selection screens and during
+the nighttime driving intro without skipping the animation.
 
 Both features start off and retain their selected state until toggled again or
 the game exits. They work in all driving and replay cameras, including opponent
