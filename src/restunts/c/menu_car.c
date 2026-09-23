@@ -21,6 +21,7 @@
 #ifdef RESTUNTS_SDL3
 #include "frame_internal.h"
 #include "presentation.h"
+#include "shape3d_hires.h"
 #endif
 
 #define GAME_RESOURCE_FILE_INDEX 2
@@ -355,6 +356,10 @@ static void car_menu_prepare_preview(struct CAR_MENU_STATE *menu)
 		legacy_s16 car_position_angle = (legacy_s16)polarAngle(carmenu_carpos.y, carmenu_carpos.z);
 		menu->current_rect = slow_video_mgmt_copy != 0 ? empty_rect : carmenu_cliprect;
 		select_cliprect_rotate(0, car_position_angle, 0, &carmenu_cliprect, 0);
+#ifdef RESTUNTS_SDL3
+		/* The car0 showroom model is authored at twenty times the racing scale. */
+		shape3d_hires_set_model_scale(20);
+#endif
 		if ((legacy_s8)(legacy_u8)*menu->material >=
 			(legacy_s8)(legacy_u8)game3dshapes[PLAYER_CAR_LOW_SHAPE].shape3d_numpaints) {
 			*menu->material = 0;

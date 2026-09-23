@@ -1020,6 +1020,9 @@ legacy_u16 select_cliprect_rotate(legacy_s16 angZ, legacy_s16 angX, legacy_s16 a
 	polyinfo_reset();
 	select_rect_rc = *cliprect;
 	shape_half_scale = half_scale;
+#if defined(RESTUNTS_SDL3)
+	shape3d_hires_set_model_scale(half_scale != 0 ? 0.5 : 1);
+#endif
 	struct MATRIX *inverse_view_rotation =
 		mat_rot_zxy(-angZ, -angX, -angY, MATRIX_ROTATION_ORDER_ZXY);
 	shape3d_retain_legacy_view_rotation(angZ, angX, angY);

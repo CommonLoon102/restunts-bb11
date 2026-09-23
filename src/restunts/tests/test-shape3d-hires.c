@@ -118,15 +118,25 @@ static void test_near_plane_and_screen_clipping(void)
 	assert(pixels()[400 * HIRES_WIDTH + HIRES_WIDTH - 1] == 10);
 }
 
-/* A model line keeps the weight of one legacy pixel in every direction,
- * while its centerline still moves in high-resolution increments. */
+static legacy_u32 colored_column(legacy_s32 x, legacy_u8 color)
+{
+	const legacy_u8 *image = pixels();
+	legacy_u32 count = 0;
+	for (legacy_s32 y = 0; y < HIRES_HEIGHT; y++) {
+		count += image[y * HIRES_WIDTH + x] == color;
+	}
+	return count;
+}
+
+/* Nearby model lines keep their weight in every direction, while their
+ * centerlines still move in high-resolution increments. */
 static void test_line_weight(void)
 {
 	static legacy_u8 forward[HIRES_WIDTH * HIRES_HEIGHT];
-	const struct SHAPE3D_HIRES_VECTOR lines[][2] = {{{-40, 0, 640}, {40, 0, 640}},
-													{{0, -40, 640}, {0, 40, 640}},
-													{{-40, -40, 640}, {40, 40, 640}},
-													{{0, 0, 640}, {0, 0, 640}}};
+	const struct SHAPE3D_HIRES_VECTOR lines[][2] = {{{-5, 0, 80}, {5, 0, 80}},
+													{{0, -5, 80}, {0, 5, 80}},
+													{{-5, -5, 80}, {5, 5, 80}},
+													{{0, 0, 80}, {0, 0, 80}}};
 	for (legacy_u32 direction = 0; direction < 4; direction++) {
 		for (legacy_u32 reverse = 0; reverse < 2; reverse++) {
 			const struct SHAPE3D_HIRES_VECTOR line[] = {lines[direction][reverse],
@@ -136,18 +146,15 @@ static void test_line_weight(void)
 			shape3d_hires_render(0, RENDER_PRIMITIVE_LINE, 10, 0, 0, 0, 0);
 			hires_end();
 			const legacy_u8 *image = pixels();
-			for (legacy_s32 y = 399; y < 403; y++) {
-				for (legacy_s32 x = 639; x < 643; x++) {
-					assert(image[y * HIRES_WIDTH + x] == 10);
-				}
-			}
+			assert(image[400 * HIRES_WIDTH + 640] == 10);
+			legacy_u32 coverage = count_color(10);
 			if (direction < 2) {
-				assert(count_color(10) == (80 + HIRES_SCALE) * HIRES_SCALE);
+				assert(coverage > 80 * 3 && coverage < 90 * HIRES_SCALE);
 			} else if (direction == 2) {
-				assert(count_color(10) > 80 * HIRES_SCALE);
+				assert(coverage > 80 * HIRES_SCALE);
 				assert(image[400 * HIRES_WIDTH + 645] == 3);
 			} else {
-				assert(count_color(10) == HIRES_SCALE * HIRES_SCALE);
+				assert(coverage > 1 && coverage <= HIRES_SCALE * HIRES_SCALE);
 			}
 			if (reverse == 0) {
 				memcpy(forward, image, sizeof(forward));
@@ -168,23 +175,139 @@ static void test_line_weight(void)
 	}
 }
 
+static void test_line_weight_follows_projection(void)
+{
+	static legacy_u8 close[HIRES_WIDTH * HIRES_HEIGHT];
+	static legacy_u8 middle[HIRES_WIDTH * HIRES_HEIGHT];
+	const legacy_f64 depths[] = {100, 600, 1600, 6400};
+	legacy_u32 widths[4];
+	for (legacy_u32 distance = 0; distance < 4; distance++) {
+		/* Keep the projected endpoints fixed while moving the line away. */
+		legacy_f64 depth = depths[distance];
+		const struct SHAPE3D_HIRES_VECTOR line[] = {{-depth / 16, 0, depth},
+													{depth / 16, 0, depth}};
+		reset_target();
+		queue(RENDER_PRIMITIVE_LINE, 2, line);
+		shape3d_hires_render(0, RENDER_PRIMITIVE_LINE, 10, 0, 0, 0, 0);
+		hires_end();
+		assert(count_color(10) != 0);
+		widths[distance] = colored_column(640, 10);
+		if (distance == 0) {
+			memcpy(close, pixels(), sizeof(close));
+		} else if (distance == 1) {
+			/* Close and medium-close lines retain the same full-weight stroke. */
+			assert(memcmp(close, pixels(), sizeof(close)) == 0);
+		} else if (distance == 2) {
+			memcpy(middle, pixels(), sizeof(middle));
+		}
+	}
+	assert(widths[0] == HIRES_SCALE);
+	assert(widths[1] == HIRES_SCALE);
+	assert(widths[1] > widths[2] && widths[2] > widths[3]);
+	assert(widths[3] == 1);
+
+	/* Equal focal-length/depth ratios must preserve both geometry and weight. */
+	const struct SHAPE3D_HIRES_VECTOR equivalent[] = {{-100, 0, 3200}, {100, 0, 3200}};
+	projection_focal_length_x = projection_focal_length_y = 320;
+	reset_target();
+	queue(RENDER_PRIMITIVE_LINE, 2, equivalent);
+	/* Projection belongs to the queued shape, even if a later view changes it. */
+	projection_focal_length_x = projection_focal_length_y = 160;
+	shape3d_hires_render(0, RENDER_PRIMITIVE_LINE, 10, 0, 0, 0, 0);
+	hires_end();
+	assert(memcmp(middle, pixels(), sizeof(middle)) == 0);
+
+	/* Equivalent authored model sizes must not change their displayed weight. */
+	const legacy_f64 scales[] = {20, 0.5};
+	for (legacy_u32 model = 0; model < 2; model++) {
+		legacy_f64 scale = scales[model];
+		const struct SHAPE3D_HIRES_VECTOR line[] = {{-100 * scale, 0, 1600 * scale},
+													{100 * scale, 0, 1600 * scale}};
+		reset_target();
+		shape3d_hires_set_model_scale(scale);
+		queue(RENDER_PRIMITIVE_LINE, 2, line);
+		shape3d_hires_set_model_scale(1);
+		shape3d_hires_render(0, RENDER_PRIMITIVE_LINE, 10, 0, 0, 0, 0);
+		hires_end();
+		assert(memcmp(middle, pixels(), sizeof(middle)) == 0);
+	}
+}
+
+static void test_line_weight_varies_along_depth(void)
+{
+	const struct SHAPE3D_HIRES_VECTOR sloping[] = {{-78.125, 0, 500}, {1000, 0, 6400}};
+	for (legacy_u32 reverse = 0; reverse < 2; reverse++) {
+		const struct SHAPE3D_HIRES_VECTOR line[] = {sloping[reverse], sloping[1 - reverse]};
+		reset_target();
+		queue(RENDER_PRIMITIVE_LINE, 2, line);
+		shape3d_hires_render(0, RENDER_PRIMITIVE_LINE, 10, 0, 0, 0, 0);
+		hires_end();
+		assert(count_color(10) != 0);
+		legacy_u32 near_width = colored_column(550, 10);
+		legacy_u32 middle_width = colored_column(660, 10);
+		legacy_u32 far_width = colored_column(730, 10);
+		assert(near_width == HIRES_SCALE);
+		assert(near_width > middle_width && middle_width > far_width);
+		assert(far_width == 1);
+	}
+}
+
+static void test_line_weight_after_clipping(void)
+{
+	const struct SHAPE3D_HIRES_VECTOR far_line[] = {{-6410, -400, 6400}, {-6410, 400, 6400}};
+	reset_target();
+	queue(RENDER_PRIMITIVE_LINE, 2, far_line);
+	shape3d_hires_render(0, RENDER_PRIMITIVE_LINE, 10, 0, 0, 0, 0);
+	hires_end();
+	/* A distant centerline outside the image must not inherit the near width. */
+	assert(count_color(10) == 0);
+
+	const struct SHAPE3D_HIRES_VECTOR crossing[] = {{-2, 0, 1}, {1000, 0, 6400}};
+	for (legacy_u32 reverse = 0; reverse < 2; reverse++) {
+		const struct SHAPE3D_HIRES_VECTOR line[] = {crossing[reverse], crossing[1 - reverse]};
+		reset_target();
+		queue(RENDER_PRIMITIVE_LINE, 2, line);
+		shape3d_hires_render(0, RENDER_PRIMITIVE_LINE, 10, 0, 0, 0, 0);
+		hires_end();
+		assert(count_color(10) != 0);
+		assert(colored_column(640, 10) == HIRES_SCALE);
+		assert(colored_column(740, 10) == 1);
+	}
+}
+
+static void test_steep_line_stroke_has_no_holes(void)
+{
+	/* The rounded centerline can wander from the exact projected segment.
+	 * This interior stroke pixel must survive in both endpoint orders. */
+	const struct SHAPE3D_HIRES_VECTOR steep[] = {{0.4625, -3.525, 80}, {0.6875, 0.11875, 80}};
+	for (legacy_u32 reverse = 0; reverse < 2; reverse++) {
+		const struct SHAPE3D_HIRES_VECTOR line[] = {steep[reverse], steep[1 - reverse]};
+		reset_target();
+		queue(RENDER_PRIMITIVE_LINE, 2, line);
+		shape3d_hires_render(0, RENDER_PRIMITIVE_LINE, 10, 0, 0, 0, 0);
+		hires_end();
+		assert(count_color(10) != 0);
+		assert(pixels()[416 * HIRES_WIDTH + 642] == 10);
+	}
+}
+
 static void test_line_stroke_clipping(void)
 {
-	const struct SHAPE3D_HIRES_VECTOR edges[][2] = {{{-641, -40, 640}, {-641, 40, 640}},
-													{{640, -40, 640}, {640, 40, 640}},
-													{{-40, 401, 640}, {40, 401, 640}},
-													{{-40, -400, 640}, {40, -400, 640}}};
+	const struct SHAPE3D_HIRES_VECTOR edges[][2] = {{{-80.125, -5, 80}, {-80.125, 5, 80}},
+													{{80, -5, 80}, {80, 5, 80}},
+													{{-5, 50.125, 80}, {5, 50.125, 80}},
+													{{-5, -50, 80}, {5, -50, 80}}};
 	for (legacy_u32 edge = 0; edge < 4; edge++) {
 		reset_target();
 		queue(RENDER_PRIMITIVE_LINE, 2, edges[edge]);
 		shape3d_hires_render(0, RENDER_PRIMITIVE_LINE, 10, 0, 0, 0, 0);
 		hires_end();
 		/* The centerline is outside the image; its stroke still reaches in. */
-		assert(count_color(10) == (80 + HIRES_SCALE) * (edge % 2 == 0 ? 2 : 1));
+		assert(count_color(10) > 0 && count_color(10) < 80 * HIRES_SCALE);
 	}
 
-	const struct SHAPE3D_HIRES_VECTOR clipped[][2] = {{{-41, -60, 640}, {-41, 60, 640}},
-													  {{-60, 41, 640}, {60, 41, 640}}};
+	const struct SHAPE3D_HIRES_VECTOR clipped[][2] = {{{-5.125, -7.5, 80}, {-5.125, 7.5, 80}},
+													  {{-7.5, 5.125, 80}, {7.5, 5.125, 80}}};
 	target.sprite_raster_left = 150;
 	target.sprite_raster_right = 170;
 	target.sprite_top = 90;
@@ -194,7 +317,7 @@ static void test_line_stroke_clipping(void)
 		queue(RENDER_PRIMITIVE_LINE, 2, clipped[direction]);
 		shape3d_hires_render(0, RENDER_PRIMITIVE_LINE, 10, 0, 0, 0, 0);
 		hires_end();
-		assert(count_color(10) == 20 * HIRES_SCALE * 2);
+		assert(count_color(10) > 0 && count_color(10) < 20 * HIRES_SCALE * HIRES_SCALE);
 		const legacy_u8 *image = pixels();
 		for (legacy_s32 y = 0; y < HIRES_HEIGHT; y++) {
 			for (legacy_s32 x = 0; x < HIRES_WIDTH; x++) {
@@ -213,8 +336,8 @@ static void test_line_stroke_clipping(void)
 static void test_line_stroke_occlusion(void)
 {
 	const struct SHAPE3D_HIRES_VECTOR panel[] = {
-		{-30, -10, 320}, {0, -10, 320}, {0, 10, 320}, {-30, 10, 320}};
-	const struct SHAPE3D_HIRES_VECTOR line[] = {{-20, 0, 640}, {20, 0, 640}};
+		{-3.75, -1.25, 40}, {0, -1.25, 40}, {0, 1.25, 40}, {-3.75, 1.25, 40}};
+	const struct SHAPE3D_HIRES_VECTOR line[] = {{-2.5, 0, 80}, {2.5, 0, 80}};
 	const legacy_u8 indices[] = {0, 1};
 	for (legacy_u32 order = 0; order < 2; order++) {
 		reset_target();
@@ -229,11 +352,12 @@ static void test_line_stroke_occlusion(void)
 			shape3d_hires_render(0, RENDER_PRIMITIVE_POLYGON, 7, 0, 0, 0, 0);
 		}
 		hires_end();
-		for (legacy_s32 y = 399; y < 403; y++) {
+		for (legacy_s32 y = 398; y < 402; y++) {
 			assert(pixels()[y * HIRES_WIDTH + 639] == 7);
 			assert(pixels()[y * HIRES_WIDTH + 640] == 8);
 		}
-		assert(count_color(8) == 23 * HIRES_SCALE);
+		assert(count_color(8) > 0);
+		assert(colored_column(650, 8) == HIRES_SCALE);
 	}
 }
 
@@ -348,16 +472,39 @@ static void prepare_scene(const struct VECTOR *vertices, legacy_u32 count,
 
 static void test_visible_line_overhang_survives_culling(void)
 {
-	const struct VECTOR lines[][2] = {{{-642, -40, 640}, {-642, 40, 640}},
-									  {{-40, 402, 640}, {40, 402, 640}}};
+	/* These centerlines project just outside the left and top viewport edges. */
+	const struct VECTOR lines[][2] = {{{-121, -10, 120}, {-121, 10, 120}},
+									  {{-10, 75, 119}, {10, 75, 119}}};
 	const legacy_u8 primitive[] = {2, 0, 0, 0, 1, 0, 0};
+	projection_focal_length_x = projection_focal_length_y = 159;
 	for (legacy_u32 edge = 0; edge < 2; edge++) {
 		prepare_scene(lines[edge], 2, primitive, sizeof(primitive), 1);
 		assert(shape3d_transform_and_queue(&scene_instance) == 0);
 		assert(polyinfonumpolys == 1);
 		shape3d_render_queued_primitives();
-		assert(count_color(7) == 80 + HIRES_SCALE);
+		assert(count_color(7) != 0);
 		assert(pixels()[edge == 0 ? 400 * HIRES_WIDTH : 640] == 7);
+	}
+	projection_focal_length_x = projection_focal_length_y = 160;
+}
+
+static void test_line_weight_in_half_scale_view(void)
+{
+	static legacy_u8 full_scale[HIRES_WIDTH * HIRES_HEIGHT];
+	const struct VECTOR line[] = {{-100, 0, 1600}, {100, 0, 1600}};
+	const legacy_u8 primitive[] = {2, 0, 0, 0, 1, 0, 0};
+	for (legacy_s16 half_scale = 0; half_scale < 2; half_scale++) {
+		prepare_scene(line, 2, primitive, sizeof(primitive), 1);
+		struct RECTANGLE clip = {0, 320, 0, 200};
+		select_cliprect_rotate(0, 0, 0, &clip, half_scale);
+		assert(shape3d_transform_and_queue(&scene_instance) == 0);
+		shape3d_render_queued_primitives();
+		assert(count_color(7) != 0);
+		if (half_scale == 0) {
+			memcpy(full_scale, pixels(), sizeof(full_scale));
+		} else {
+			assert(memcmp(full_scale, pixels(), sizeof(full_scale)) == 0);
+		}
 	}
 }
 
@@ -377,7 +524,7 @@ static void test_thin_polygon_and_attached_detail(void)
 	assert(polyinfonumpolys == 2);
 	shape3d_render_queued_primitives();
 	assert(count_color(7) > 0);
-	assert(count_color(8) > 40);
+	assert(count_color(8) > 0);
 	assert(pixels()[402 * HIRES_WIDTH + 640] == 7);
 }
 
@@ -627,13 +774,18 @@ int main(void)
 	projection_focal_length_x = 160;
 	projection_focal_length_y = 160;
 	test_projection_and_subpixel_edges();
+	test_line_weight_follows_projection();
+	test_line_weight_varies_along_depth();
+	test_line_weight_after_clipping();
 	test_line_weight();
 	test_near_plane_and_screen_clipping();
+	test_steep_line_stroke_has_no_holes();
 	test_line_stroke_clipping();
 	test_line_stroke_occlusion();
 	test_materials_and_rounded_primitives();
 	test_disabled_and_reset();
 	test_visible_line_overhang_survives_culling();
+	test_line_weight_in_half_scale_view();
 	test_thin_polygon_and_attached_detail();
 	test_full_polygon_winding();
 	test_clipped_polygon_visibility();

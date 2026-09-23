@@ -8,6 +8,9 @@
 #include "shape3d_internal.h"
 
 #define HIRES_NEAR_CLIP_Z 12
+/* Keep the original displayed pixel width through medium-close views,
+ * then let perspective narrow the stroke at greater distances. */
+#define HIRES_LINE_DIAMETER 4.0
 #define HIRES_MAX_POLYGON_POINTS 20
 #define HIRES_ROUND_POINTS 64
 #define HIRES_WHEEL_INNER_SCALE (9472.0 / TRIG_FIXED_ONE)
@@ -43,6 +46,7 @@ static legacy_u16 current_shape;
 static legacy_u16 current_family;
 static legacy_u16 rendered_shape = LEGACY_U16_MAX;
 static legacy_u32 rendered_generation;
+static legacy_f64 model_scale = 1;
 
 static void project_coordinates(legacy_f64 x, legacy_f64 y, legacy_f64 z,
 								struct SHAPE3D_HIRES_POINT *point)
@@ -133,8 +137,14 @@ void shape3d_hires_begin_shape(legacy_u16 index, legacy_s32 depth_test)
 	shapes[index].depth_test = depth_test;
 }
 
+void shape3d_hires_set_model_scale(legacy_f64 scale)
+{
+	model_scale = scale;
+}
+
 void shape3d_hires_reset(void)
 {
+	model_scale = 1;
 	shape3d_hires_begin_shape(0, 1);
 	rendered_shape = LEGACY_U16_MAX;
 	for (legacy_u32 index = 0; index < POLYINFO_SUPERSIGHT_PRIMITIVE_CAPACITY; index++) {
@@ -215,6 +225,11 @@ static void queue_primitive(legacy_u16 index, legacy_u8 type, legacy_u16 vertex_
 		}
 	}
 	primitive->count = vertex_count;
+	if (type == RENDER_PRIMITIVE_LINE) {
+		/* Capture projection and authored model units with the queued geometry. */
+		primitive->size =
+			HIRES_LINE_DIAMETER * model_scale * projection_focal_length_x * HIRES_SCALE;
+	}
 	if (type == RENDER_PRIMITIVE_SPHERE) {
 		const struct SHAPE3D_HIRES_VECTOR *center = &vertices[indices[0]];
 		const struct SHAPE3D_HIRES_VECTOR *endpoint = &vertices[indices[1]];
@@ -309,7 +324,7 @@ void shape3d_hires_update_bounds(legacy_u16 index, legacy_u8 type, struct RECTAN
 		}
 	}
 	if (type == RENDER_PRIMITIVE_LINE) {
-		/* Include the square stroke and rounding to its nearest sample in both
+		/* Include the maximum stroke and rounding to its nearest sample in both
 		 * the sprite copy rectangle and the per-shape depth buffer bounds. */
 		legacy_f64 padding = HIRES_SCALE / 2.0 + 0.5;
 		minimum_x -= padding;
@@ -384,20 +399,61 @@ static legacy_s32 clip_line_edge(legacy_f64 direction, legacy_f64 distance, lega
 	return 1;
 }
 
+static void paint_line_stroke(legacy_s32 x, legacy_s32 y, const struct SHAPE3D_HIRES_POINT *first,
+							  const struct SHAPE3D_HIRES_POINT *last, legacy_f64 projected_width,
+							  legacy_f64 inverse_length_squared, const struct HIRES_PAINT *paint)
+{
+	legacy_f64 delta_x = last->x - first->x;
+	legacy_f64 delta_y = last->y - first->y;
+	/* Endpoint rounding can shift the Bresenham path by almost one sample
+	 * from the fractional segment; include that in the candidate search. */
+	legacy_s32 extent = HIRES_SCALE / 2 + 1;
+	for (legacy_s32 row = y - extent; row <= y + extent; row++) {
+		for (legacy_s32 column = x - extent; column <= x + extent; column++) {
+			legacy_f64 offset_x = column + 0.5 - first->x;
+			legacy_f64 offset_y = row + 0.5 - first->y;
+			legacy_f64 fraction =
+				inverse_length_squared == 0
+					? (first->inverse_z < last->inverse_z ? 1 : 0)
+					: (offset_x * delta_x + offset_y * delta_y) * inverse_length_squared;
+			if (fraction < 0) {
+				fraction = 0;
+			} else if (fraction > 1) {
+				fraction = 1;
+			}
+			legacy_f64 inverse_z =
+				first->inverse_z + (last->inverse_z - first->inverse_z) * fraction;
+			legacy_f64 width = projected_width * inverse_z;
+			if (width <= 1) {
+				continue;
+			}
+			if (width > HIRES_SCALE) {
+				width = HIRES_SCALE;
+			}
+			offset_x -= delta_x * fraction;
+			offset_y -= delta_y * fraction;
+			/* Fractional coverage gives a round stroke that tapers with depth,
+			 * without rounding the entire primitive to an integer brush size. */
+			if (offset_x * offset_x + offset_y * offset_y < width * width * 0.25) {
+				paint_pixel(column, row, inverse_z, paint);
+			}
+		}
+	}
+}
+
 static void draw_line(const struct SHAPE3D_HIRES_POINT *first,
-					  const struct SHAPE3D_HIRES_POINT *last, legacy_s32 thickness,
+					  const struct SHAPE3D_HIRES_POINT *last, legacy_f64 projected_width,
 					  const struct HIRES_PAINT *paint)
 {
-	legacy_s32 before = (thickness - 1) / 2;
-	legacy_s32 after = thickness / 2;
+	legacy_f64 padding = (projected_width > 0 ? HIRES_SCALE / 2.0 : 0) + 0.5;
 	legacy_f64 delta_x = last->x - first->x;
 	legacy_f64 delta_y = last->y - first->y;
 	legacy_f64 start = 0;
 	legacy_f64 end = 1;
-	if (!clip_line_edge(-delta_x, first->x + after + 0.5, &start, &end) ||
-		!clip_line_edge(delta_x, HIRES_WIDTH - 1 + before + 0.5 - first->x, &start, &end) ||
-		!clip_line_edge(-delta_y, first->y + after + 0.5, &start, &end) ||
-		!clip_line_edge(delta_y, HIRES_HEIGHT - 1 + before + 0.5 - first->y, &start, &end)) {
+	if (!clip_line_edge(-delta_x, first->x + padding, &start, &end) ||
+		!clip_line_edge(delta_x, HIRES_WIDTH - 1 + padding - first->x, &start, &end) ||
+		!clip_line_edge(-delta_y, first->y + padding, &start, &end) ||
+		!clip_line_edge(delta_y, HIRES_HEIGHT - 1 + padding - first->y, &start, &end)) {
 		return;
 	}
 	legacy_s32 x = (legacy_s32)SDL_floor(first->x + delta_x * start + 0.5);
@@ -413,13 +469,18 @@ static void draw_line(const struct SHAPE3D_HIRES_POINT *first,
 	legacy_f64 inverse_z = first->inverse_z + (last->inverse_z - first->inverse_z) * start;
 	legacy_f64 depth_step =
 		steps == 0 ? 0 : (last->inverse_z - first->inverse_z) * (end - start) / steps;
+	legacy_f64 length_squared = delta_x * delta_x + delta_y * delta_y;
+	legacy_f64 inverse_length_squared = length_squared == 0 ? 0 : 1 / length_squared;
+	legacy_f64 nearest_depth =
+		first->inverse_z > last->inverse_z ? first->inverse_z : last->inverse_z;
+	if (steps == 0) {
+		inverse_z = nearest_depth;
+	}
 	for (;;) {
-		/* One legacy line pixel occupies a square at the output scale. Sweep
-		 * that footprint along the high-resolution path to retain its weight. */
-		for (legacy_s32 row = y - before; row <= y + after; row++) {
-			for (legacy_s32 column = x - before; column <= x + after; column++) {
-				paint_pixel(column, row, inverse_z, paint);
-			}
+		/* Retain a continuous one-pixel spine for distant or edge-on details. */
+		paint_pixel(x, y, inverse_z, paint);
+		if (projected_width * nearest_depth > 1) {
+			paint_line_stroke(x, y, first, last, projected_width, inverse_length_squared, paint);
 		}
 		inverse_z += depth_step;
 		if (x == end_x && y == end_y) {
@@ -444,7 +505,7 @@ static void draw_polygon(const struct SHAPE3D_HIRES_POINT *points, legacy_u32 co
 		return;
 	}
 	if (count < 3) {
-		draw_line(&points[0], &points[count - 1], 1, paint);
+		draw_line(&points[0], &points[count - 1], 0, paint);
 		return;
 	}
 	legacy_f64 minimum_y = points[0].y;
@@ -614,9 +675,9 @@ void shape3d_hires_render(legacy_u16 index, legacy_u8 type, legacy_u16 color,
 	if (type == RENDER_PRIMITIVE_POLYGON) {
 		draw_polygon(primitive->points, primitive->count, &paint);
 	} else if (type == RENDER_PRIMITIVE_LINE) {
-		draw_line(&primitive->points[0], &primitive->points[1], HIRES_SCALE, &paint);
+		draw_line(&primitive->points[0], &primitive->points[1], primitive->size, &paint);
 	} else if (type == RENDER_PRIMITIVE_POINT) {
-		draw_line(&primitive->points[0], &primitive->points[0], 1, &paint);
+		draw_line(&primitive->points[0], &primitive->points[0], 0, &paint);
 	} else if (type == RENDER_PRIMITIVE_SPHERE) {
 		draw_sphere(primitive, &paint);
 	} else if (type == RENDER_PRIMITIVE_WHEEL) {
