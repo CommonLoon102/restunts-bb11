@@ -23,6 +23,7 @@
 #include "../c/keyboard.h"
 #ifdef RESTUNTS_SDL3
 #include "../c/frame_internal.h"
+#include "../c/shape3d_hires.h"
 #endif
 
 #undef printf
@@ -40,6 +41,11 @@ static const legacy_s8 *fixture_files[] = {(const legacy_s8 *)"CARVETT.RES",
 										   (const legacy_s8 *)"CARCOUN.RES"};
 
 #ifdef RESTUNTS_SDL3
+void shape3d_hires_set_model_scale(legacy_f64 scale)
+{
+	assert(scale == 20);
+}
+
 legacy_u8 supersight_enabled;
 legacy_u8 fps_display_enabled;
 static legacy_u8 display_toggle_test, display_scenario, display_target, display_pending;

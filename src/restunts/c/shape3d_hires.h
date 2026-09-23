@@ -25,6 +25,8 @@ legacy_u8 shape3d_hires_clip_flags(const struct SHAPE3D_HIRES_VECTOR *vector);
 legacy_s32 shape3d_hires_polygon_visible(legacy_u16 index, legacy_s32 cull_backface);
 legacy_u32 shape3d_hires_wheel_face(legacy_u16 index);
 void shape3d_hires_reset(void);
+/* Scale the stroke with model size; captured per queued primitive. */
+void shape3d_hires_set_model_scale(legacy_f64 scale);
 void shape3d_hires_begin_shape(legacy_u16 index, legacy_s32 depth_test);
 void shape3d_hires_queue(legacy_u16 index, legacy_u8 type, legacy_u16 vertex_count,
 						 const legacy_u8 *indices, const struct SHAPE3D_HIRES_VECTOR *vertices,
