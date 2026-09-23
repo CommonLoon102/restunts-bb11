@@ -113,9 +113,128 @@ static void test_near_plane_and_screen_clipping(void)
 	queue(RENDER_PRIMITIVE_LINE, 2, line);
 	shape3d_hires_render(0, RENDER_PRIMITIVE_LINE, 10, 0, 0, 0, 0);
 	hires_end();
-	assert(count_color(10) == HIRES_WIDTH);
+	assert(count_color(10) == HIRES_WIDTH * HIRES_SCALE);
 	assert(pixels()[400 * HIRES_WIDTH] == 10);
 	assert(pixels()[400 * HIRES_WIDTH + HIRES_WIDTH - 1] == 10);
+}
+
+/* A model line keeps the weight of one legacy pixel in every direction,
+ * while its centerline still moves in high-resolution increments. */
+static void test_line_weight(void)
+{
+	static legacy_u8 forward[HIRES_WIDTH * HIRES_HEIGHT];
+	const struct SHAPE3D_HIRES_VECTOR lines[][2] = {{{-40, 0, 640}, {40, 0, 640}},
+													{{0, -40, 640}, {0, 40, 640}},
+													{{-40, -40, 640}, {40, 40, 640}},
+													{{0, 0, 640}, {0, 0, 640}}};
+	for (legacy_u32 direction = 0; direction < 4; direction++) {
+		for (legacy_u32 reverse = 0; reverse < 2; reverse++) {
+			const struct SHAPE3D_HIRES_VECTOR line[] = {lines[direction][reverse],
+														lines[direction][1 - reverse]};
+			reset_target();
+			queue(RENDER_PRIMITIVE_LINE, 2, line);
+			shape3d_hires_render(0, RENDER_PRIMITIVE_LINE, 10, 0, 0, 0, 0);
+			hires_end();
+			const legacy_u8 *image = pixels();
+			for (legacy_s32 y = 399; y < 403; y++) {
+				for (legacy_s32 x = 639; x < 643; x++) {
+					assert(image[y * HIRES_WIDTH + x] == 10);
+				}
+			}
+			if (direction < 2) {
+				assert(count_color(10) == (80 + HIRES_SCALE) * HIRES_SCALE);
+			} else if (direction == 2) {
+				assert(count_color(10) > 80 * HIRES_SCALE);
+				assert(image[400 * HIRES_WIDTH + 645] == 3);
+			} else {
+				assert(count_color(10) == HIRES_SCALE * HIRES_SCALE);
+			}
+			if (reverse == 0) {
+				memcpy(forward, image, sizeof(forward));
+			} else {
+				assert(memcmp(forward, image, sizeof(forward)) == 0);
+			}
+		}
+	}
+
+	/* Points and collapsed polygon edges retain their subpixel detail. */
+	for (legacy_u32 type = 0; type < 2; type++) {
+		legacy_u8 primitive = type == 0 ? RENDER_PRIMITIVE_POINT : RENDER_PRIMITIVE_POLYGON;
+		reset_target();
+		queue(primitive, type == 0 ? 1 : 2, lines[3]);
+		shape3d_hires_render(0, primitive, 10, 0, 0, 0, 0);
+		hires_end();
+		assert(count_color(10) == 1);
+	}
+}
+
+static void test_line_stroke_clipping(void)
+{
+	const struct SHAPE3D_HIRES_VECTOR edges[][2] = {{{-641, -40, 640}, {-641, 40, 640}},
+													{{640, -40, 640}, {640, 40, 640}},
+													{{-40, 401, 640}, {40, 401, 640}},
+													{{-40, -400, 640}, {40, -400, 640}}};
+	for (legacy_u32 edge = 0; edge < 4; edge++) {
+		reset_target();
+		queue(RENDER_PRIMITIVE_LINE, 2, edges[edge]);
+		shape3d_hires_render(0, RENDER_PRIMITIVE_LINE, 10, 0, 0, 0, 0);
+		hires_end();
+		/* The centerline is outside the image; its stroke still reaches in. */
+		assert(count_color(10) == (80 + HIRES_SCALE) * (edge % 2 == 0 ? 2 : 1));
+	}
+
+	const struct SHAPE3D_HIRES_VECTOR clipped[][2] = {{{-41, -60, 640}, {-41, 60, 640}},
+													  {{-60, 41, 640}, {60, 41, 640}}};
+	target.sprite_raster_left = 150;
+	target.sprite_raster_right = 170;
+	target.sprite_top = 90;
+	target.sprite_bottom = 110;
+	for (legacy_u32 direction = 0; direction < 2; direction++) {
+		reset_target();
+		queue(RENDER_PRIMITIVE_LINE, 2, clipped[direction]);
+		shape3d_hires_render(0, RENDER_PRIMITIVE_LINE, 10, 0, 0, 0, 0);
+		hires_end();
+		assert(count_color(10) == 20 * HIRES_SCALE * 2);
+		const legacy_u8 *image = pixels();
+		for (legacy_s32 y = 0; y < HIRES_HEIGHT; y++) {
+			for (legacy_s32 x = 0; x < HIRES_WIDTH; x++) {
+				if (x < 600 || x >= 680 || y < 360 || y >= 440) {
+					assert(image[y * HIRES_WIDTH + x] == 3);
+				}
+			}
+		}
+	}
+	target.sprite_raster_left = 0;
+	target.sprite_raster_right = 320;
+	target.sprite_top = 0;
+	target.sprite_bottom = 200;
+}
+
+static void test_line_stroke_occlusion(void)
+{
+	const struct SHAPE3D_HIRES_VECTOR panel[] = {
+		{-30, -10, 320}, {0, -10, 320}, {0, 10, 320}, {-30, 10, 320}};
+	const struct SHAPE3D_HIRES_VECTOR line[] = {{-20, 0, 640}, {20, 0, 640}};
+	const legacy_u8 indices[] = {0, 1};
+	for (legacy_u32 order = 0; order < 2; order++) {
+		reset_target();
+		queue(RENDER_PRIMITIVE_POLYGON, 4, panel);
+		shape3d_hires_queue(1, RENDER_PRIMITIVE_LINE, 2, indices, line, 0);
+		shape3d_hires_update_bounds(1, RENDER_PRIMITIVE_LINE, &bounds);
+		if (order == 0) {
+			shape3d_hires_render(0, RENDER_PRIMITIVE_POLYGON, 7, 0, 0, 0, 0);
+		}
+		shape3d_hires_render(1, RENDER_PRIMITIVE_LINE, 8, 0, 0, 0, 0);
+		if (order != 0) {
+			shape3d_hires_render(0, RENDER_PRIMITIVE_POLYGON, 7, 0, 0, 0, 0);
+		}
+		hires_end();
+		for (legacy_s32 y = 399; y < 403; y++) {
+			assert(pixels()[y * HIRES_WIDTH + 639] == 7);
+			assert(pixels()[y * HIRES_WIDTH + 640] == 8);
+		}
+		assert(count_color(8) == 23 * HIRES_SCALE);
+	}
 }
 
 static void test_materials_and_rounded_primitives(void)
@@ -227,12 +346,28 @@ static void prepare_scene(const struct VECTOR *vertices, legacy_u32 count,
 	material_patlist2_ptr_cpy = scene_patterns;
 }
 
+static void test_visible_line_overhang_survives_culling(void)
+{
+	const struct VECTOR lines[][2] = {{{-642, -40, 640}, {-642, 40, 640}},
+									  {{-40, 402, 640}, {40, 402, 640}}};
+	const legacy_u8 primitive[] = {2, 0, 0, 0, 1, 0, 0};
+	for (legacy_u32 edge = 0; edge < 2; edge++) {
+		prepare_scene(lines[edge], 2, primitive, sizeof(primitive), 1);
+		assert(shape3d_transform_and_queue(&scene_instance) == 0);
+		assert(polyinfonumpolys == 1);
+		shape3d_render_queued_primitives();
+		assert(count_color(7) == 80 + HIRES_SCALE);
+		assert(pixels()[edge == 0 ? 400 * HIRES_WIDTH : 640] == 7);
+	}
+}
+
 static void test_thin_polygon_and_attached_detail(void)
 {
 	const struct VECTOR road[] = {
 		{-100, -10, 2000}, {-100, -10, 4000}, {100, -10, 4000}, {100, -10, 2000}};
-	/* The line is a dependent primitive: rejecting the road also discards it. */
-	const legacy_u8 primitives[] = {4, 0, 0, 0, 1, 2, 3, 2, 2, 1, 0, 3, 0, 0};
+	/* Rejecting the road must also discard its dependent line. Place the line
+	 * along a side edge so its thicker stroke leaves some road visible. */
+	const legacy_u8 primitives[] = {4, 0, 0, 0, 1, 2, 3, 2, 2, 1, 0, 1, 0, 0};
 	prepare_scene(road, 4, primitives, sizeof(primitives), 0);
 	assert(shape3d_transform_and_queue(&scene_instance) == LEGACY_U16_MAX);
 	assert(polyinfonumpolys == 0);
@@ -241,7 +376,7 @@ static void test_thin_polygon_and_attached_detail(void)
 	assert(shape3d_transform_and_queue(&scene_instance) == 0);
 	assert(polyinfonumpolys == 2);
 	shape3d_render_queued_primitives();
-	assert(count_color(7) > 40);
+	assert(count_color(7) > 0);
 	assert(count_color(8) > 40);
 	assert(pixels()[402 * HIRES_WIDTH + 640] == 7);
 }
@@ -492,9 +627,13 @@ int main(void)
 	projection_focal_length_x = 160;
 	projection_focal_length_y = 160;
 	test_projection_and_subpixel_edges();
+	test_line_weight();
 	test_near_plane_and_screen_clipping();
+	test_line_stroke_clipping();
+	test_line_stroke_occlusion();
 	test_materials_and_rounded_primitives();
 	test_disabled_and_reset();
+	test_visible_line_overhang_survives_culling();
 	test_thin_polygon_and_attached_detail();
 	test_full_polygon_winding();
 	test_clipped_polygon_visibility();
