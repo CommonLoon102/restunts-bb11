@@ -1,0 +1,129 @@
+Skid Vicious sunglasses and expression correction
+
+Built-in imagegen edited the existing photorealistic opp6.png, using the
+original SDOSEL.PVS:opp6 portrait as an additional reference. The requested
+revision uses dark-brown lenses in thin black frames with rounded edges,
+mid-height temple attachments, a more open mouth, and prominent cheekbones
+for a vicious expression without a snarl.
+
+Exact correction prompt:
+
+Use case: precise-object-edit.
+Input image 1 is the EDIT TARGET: the current photorealistic opponent-six portrait, Skid Vicious.
+Input image 2 is the ORIGINAL GAME PORTRAIT: supporting reference for his eyewear and vicious expression.
+Make precisely these changes to eyewear and facial expression, faithfully preserving the man's identity and the rest of the image:
+
+SUNGLASSES:
+Replace the current heavy black wayfarers with LIGHTWEIGHT, THIN black frames and thin lenses, with softly ROUNDED corners/edges. The lenses must have a clearly perceptible DARK BROWN tint, not black. Keep the dark brown lenses translucent enough for a faint suggestion of eyes while remaining dark sunglasses. Only the narrow frame/rims are black. Reflections must not conceal the brown lens color.
+Critical construction detail: on BOTH sides, the slender temple arms attach to the OUTER SIDE of each lens frame at its VERTICAL MIDPOINT, halfway between the TOP and BOTTOM edges of the lens. Put the hinges at this halfway height. The arms must visibly originate there and travel backward toward his ears; do NOT join them at the upper corners or along the top brow. The viewer-right arm is especially visible and must clearly connect at the middle of the outer lens edge. Keep the original slight eyewear/head tilt and approximate scale. Avoid thick rims, bulky plastic temples, sharp wayfarer corners, and black opaque lenses.
+
+EXPRESSION:
+Open his mouth noticeably wider by lowering the jaw slightly, leaving a visible gap between upper and lower teeth and a dark mouth interior. Give him a vicious, coldly confident, taunting open-mouthed grin, like the intimidating rival in the original. Emphasize prominent high cheekbones and slightly hollow cheeks while preserving his recognizable face and age.
+Remove the current snarling cues: NO clenched/gritted teeth, NO curled or lifted upper lip, NO wrinkled nose or scrunched muzzle, NO animal-like snarl. His upper lip should follow a natural grin. The result must still look vicious and confrontational, not friendly, surprised, shouting, or cartoonishly angry.
+
+LOCK EVERYTHING ELSE: exact person/identity, swept-up dark hair, head angle, black leather jacket and yellow T-shirt, vivid cyan backdrop, shoulder framing, photographic lighting, natural skin detail and image composition. Change only the eyewear and requested expression/cheekbone emphasis. Keep 1122x1402 canvas and photorealistic quality. No text, numbers, border or watermark baked into the photograph; the game preserves the original number and frame separately.
+
+Hinge placement and expression refinement
+
+The first candidate still placed the visible hinge above mid-height and
+retained an upper-lip snarl. A second built-in imagegen edit targeted
+those two details using the first candidate as its sole edit target.
+
+Exact refinement prompt:
+
+Use case: precise-object-edit.
+Edit this already revised Skid Vicious portrait with TWO tightly localized corrections. Keep its dark-brown translucent lenses, thin black rounded rims, identity, hair, clothing, cyan backdrop and composition.
+
+1. MOVE BOTH SUNGLASSES HINGES DOWN to the exact VERTICAL MIDPOINT of the lens sides.
+The existing hinge on the VIEWER'S RIGHT is still near the upper third: this is incorrect. On this 1122x1402 canvas, place the viewer-right hinge approximately at (710,560), on the halfway point of the OUTER black rim between its top and bottom. Move the viewer-left hinge approximately to (238,588), likewise halfway down its outer rim. These coordinates are a geometry guide: the attachment must visually divide each lens's outer side height into equal halves. The slim arms should begin at those lowered halfway points and run upward/backward toward the ears. Remove the OLD high attachments entirely; there is only ONE attachment per side. Both arms must visibly join the SIDE MIDPOINT, not the top corner and not the upper third. Do not change the lens shapes, frame thickness, or rich brown tint.
+
+2. REMOVE THE SNARL while retaining viciousness and the open mouth.
+The current upper lip is still curled and the nose/upper cheek is scrunched. Smooth the upper lip into a natural continuous curve; relax the nose and nostrils and remove the lifted snarl fold beside the nose. Keep the mouth open with a clear dark gap between upper and lower teeth. Pull the mouth corners subtly outward into a cruel, taunting open-mouthed grin. This is a cold, cocky, malicious rival enjoying a challenge, not someone snarling or shouting. Keep an intense hard gaze/brow through the lenses and pronounced high cheekbones with slightly hollow cheeks. Do not clench the teeth, expose gums, wrinkle the nose, lift one side of the upper lip, or make him look friendly/surprised. Preserve exact person/face identity except the requested expression and cheekbone emphasis.
+
+Keep everything else unchanged and photorealistic. Same 1122x1402 canvas, framing, leather jacket, yellow shirt, dark swept-up hair and vivid cyan background. No text, numbers, border or watermark.
+
+Lower lip and gaze correction
+
+Built-in imagegen edited the approved sunglasses portrait as its sole reference.
+The lower lip is stretched wider and both eyes turn toward the subject's right
+(the viewer's left). The approved eyewear is preserved.
+Saved asset: assets/opponents/opp6.png
+
+Exact correction prompt:
+
+Use case: precise-object-edit.
+Edit this current Skid Vicious portrait with ONLY TWO facial adjustments:
+
+1. LOWER LIP STRETCHED WIDE. His mouth stays open and taunting, but pull the LOWER lip and lower mouth corners much farther outward horizontally. Make the lower lip visibly taut, wide and flatter across the bottom teeth, rather than the current narrow rounded U shape. Broaden the lower part of the mouth so the lower lip spans nearly the same width as the upper tooth row. Keep the dark mouth opening and separated upper/lower teeth. Preserve the existing upper lip and upper teeth as closely as anatomy allows. Retain the vicious, cocky expression and pronounced cheekbones; do not turn this into a friendly smile or a curled-lip snarl.
+
+2. GAZE TO HIS RIGHT, WHICH IS THE VIEWER'S LEFT. Move BOTH irises/pupils together clearly toward the LEFT SIDE OF THE IMAGE, looking sideways off-camera toward the viewer-left edge. This is the man's anatomical RIGHT. The current gaze toward the opposite side is wrong. Make a deliberate coherent sidelong glance to IMAGE LEFT, not straight at the viewer and not cross-eyed. Change the eyeballs/iris placement behind the lenses, without moving the head, eyebrows or sunglasses. The eyes should remain faintly visible through the existing brown tint, with this new gaze readable.
+
+CRITICAL: THE SUNGLASSES ARE ALREADY PERFECT. Lock their exact geometry, rounded corners, thin black rims, dark-brown lens tint/density, lens transparency and reflections, bridge, mid-side hinges and thin arms. Do not redesign, move, resize, recolor or lighten them. The only change visible through the lenses is the direction of the underlying eyes.
+Lock everything else: exact man's identity, head angle, hair, skin, cheekbones, nose, black leather jacket, yellow T-shirt, vivid cyan backdrop, lighting, shoulder crop and 1122x1402 composition. Preserve photographic realism. No text, number, border or watermark.
+
+Reduced sidelong gaze and wilder expression
+
+Built-in imagegen edit using the prior approved portrait as its sole edit target.
+The request reduces the excessive gaze toward his right while increasing
+wild, vicious facial intensity, preserving the eyewear and wide lower lip.
+
+Exact correction prompt:
+
+Use case: precise-object-edit.
+Input image 1 is the EDIT TARGET: the latest Skid Vicious opponent portrait.
+Primary request: dial BACK the excessive sideways gaze, and make his whole facial expression look more mad, wild and crazy.
+
+GAZE: The current eyes look too far to the man's RIGHT (the VIEWER'S LEFT). Move BOTH irises about HALFWAY back toward a centered position relative to their eye openings. Retain only a subtle glance toward his right / image-left, approximately 10 degrees off-camera. Do not leave the pupils at the far-left edges of the eye openings. Do not reverse toward image-right and do not cross his eyes. The reduced sidelong gaze must be natural, coherent and visible through the unchanged brown lenses.
+
+EXPRESSION: Make this same man look noticeably more wild, crazed, vicious and confrontational across his WHOLE face. Give him a charged, almost unhinged taunting expression: eyes more intensely alert with slightly widened lids, a stronger furrow between his brows and slightly asymmetric tense brows, prominent cheekbones and tighter cheek muscles, and a more intense open-mouthed wicked grin. Keep the already approved WIDE, laterally stretched lower lip with its broad flatter lower edge, visible lower teeth and a dark open gap beneath the upper teeth. Increase malicious, unpredictable energy without turning it into a friendly smile, blank surprise, or a nose-scrunched curled-lip snarl. Keep facial anatomy and skin texture completely photographic and believable; no cartoon exaggeration, no injury or added props.
+
+LOCK the approved SUNGLASSES: identical thin black rounded rims, exact lens shapes and size, dark-brown tint, density/transparency, bridge, mid-height side hinges, thin arms, position and reflections. Do not redesign, move, recolor, resize or lighten them. Only the eyes behind the lenses and requested facial expression change.
+Preserve the exact identity, age, head pose/angle, face proportions, swept-up dark hair, black leather jacket, yellow T-shirt, vivid cyan backdrop, lighting and shoulder framing. Same 1122x1402 composition, full photorealism. No text, number, border or watermark.
+
+First gaze refinement
+
+This candidate kept the stronger expression but moved the eyes farther than
+requested. The next edit refines the balance between the two candidate gazes.
+
+Exact prompt:
+
+Use case: precise-object-edit.
+Input image 1 is the edit target. Make ONE extremely localized correction: adjust the iris/pupil positions behind the sunglasses slightly toward IMAGE LEFT, while keeping this exact new wild facial expression.
+
+The current pupils are approximately at (395,548) and (609,532) on this 1122x1402 canvas. Shift each iris/pupil ONLY about 20 pixels horizontally to IMAGE LEFT, to approximate centers (375,548) and (588,532). Keep the same vertical positions and iris sizes. This produces a SMALL glance to the man's anatomical RIGHT (VIEWER'S LEFT), much less than an extreme far-side glance. Both eyes must look together coherently. Do not push them to the corners of the eyes. Think of this as a tiny horizontal eyeball rotation, not any movement of the face or glasses.
+
+Preserve ALL other pixels/appearance as closely as possible: the intense widened eyes and current eyelid shapes, strong asymmetric tense brows and forehead, crazy vicious open-mouthed expression, wide taut stretched lower lip, open gap and teeth, prominent cheekbones, nose, identity, skin texture, head pose, hair, jacket, yellow shirt and cyan backdrop. The approved sunglasses must stay EXACTLY the same: thin rounded black frame, dark-brown lenses with same tint and transparency, bridges, mid-height hinges, arms, position, reflections and size. Only the two irises/pupils move subtly behind the lenses; do not lighten the lenses, redesign anything, or change the expression. Same photographic 1122x1402 composition. No text, numbers, border or watermark.
+
+Two-reference gaze refinement
+
+Built-in imagegen used the first expression candidate as its edit target and
+the stronger side-glance candidate as a supporting gaze reference.
+
+Exact prompt:
+
+Use case: precise-object-edit.
+Image 1 is the EDIT TARGET. Image 2 is a supporting GAZE REFERENCE of the same man.
+Both depict the same approved mad, wild facial expression and approved sunglasses. Keep that expression and all other appearance.
+
+Change ONLY where the eyes look. Set both iris/pupil positions precisely MIDWAY BETWEEN the directions shown in these two input images.
+Image 1: his pupils are a little too far toward the viewer's RIGHT.
+Image 2: his pupils are too far toward the viewer's LEFT.
+We need the natural IN-BETWEEN gaze: almost forward, with just a SMALL sidelong glance toward the viewer's LEFT, which is the man's right. Neither extreme shown in the references is the desired final gaze. Place the new pupil centers halfway between each pair of reference positions, with identical vertical height. Both eyes should coherently watch the same point just beside the camera, not stare far off to either side.
+
+Do not alter the eyelids, eye size, eyebrows, the intense furrowed wide-eyed crazy expression, mouth, wide stretched lowerlip, teeth, cheekbones, identity or head pose. Preserve EXACT approved sunglasses (thin rounded black rims, brown lens tint and transparency, reflections, bridge, hinges at mid-side, thin arms) without any movement or redesign. Preserve hair, black leather jacket, yellow shirt, cyan backdrop, lighting and 1122x1402 composition. Tiny eye-direction correction only. Real photographic anatomy. No text, border, number or watermark.
+
+Final gentle-gaze refinement
+
+Built-in imagegen edited the stronger side-glance expression candidate using
+only that image as its reference. The final gaze is nearer forward with a
+small glance toward the subject's right (image-left).
+Saved asset: assets/opponents/opp6.png
+Generated source: exec-8eb41400-278d-462a-9b13-6ecf765a140d.png
+
+Exact final prompt:
+
+Edit the supplied portrait. Keep absolutely everything about the portrait unchanged EXCEPT the direction of his eyes.
+
+His eyes currently glance too far sideways. Relax that extreme side-eye: he should stare intensely at a point JUST BESIDE THE CAMERA on the left side of the image, almost looking at the camera but with a very slight glance to image-left. This is a subtle, restrained sidelong gaze. The pupils should sit comfortably near the MIDDLE of each visible eye opening instead of hugging the left sides of the eye openings. The slight glance must remain to image-left, never toward image-right. Keep both eyes aligned and natural.
+
+Keep the same crazed, angry, intense expression, wide alert eyelids, asymmetric tense eyebrows, mouth, wide stretched lower lip, and all other facial features. Do not change eye size or iris size. Leave the approved thin black sunglasses and their dark brown lenses, reflections, shape, bridges, hinges and arms exactly as they are. Do not lighten the lenses. Everything else stays unchanged: head pose, hair, cyan background, leather jacket, yellow shirt, lighting, composition, 1122x1402 image. Photorealistic. No added text or graphics.

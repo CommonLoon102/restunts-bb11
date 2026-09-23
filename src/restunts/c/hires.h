@@ -19,6 +19,11 @@ void hires_end(void);
 void hires_depth_begin(legacy_s32 left, legacy_s32 right, legacy_s32 top, legacy_s32 bottom);
 legacy_s32 hires_depth_test(legacy_s32 x, legacy_s32 y, legacy_f64 inverse_z, legacy_u16 family,
 							legacy_s32 attached);
+/* Optional full-color artwork uses the same clipping and sprite-copy lifetime.
+ * Allocation failure leaves the indexed fallback intact. */
+legacy_s32 hires_begin_argb(const struct SPRITE *target);
+void hires_argb_pixel(legacy_s32 x, legacy_s32 y, legacy_u32 color);
+const legacy_u32 *hires_framebuffer_argb(const legacy_u8 *legacy, const legacy_u32 *palette);
 void hires_pixel(legacy_s32 x, legacy_s32 y, legacy_u8 color);
 void hires_write(const legacy_u8 *base, legacy_u16 offset, legacy_u8 color);
 void hires_raster(const legacy_u8 *destination, legacy_u16 destination_offset,

@@ -1,0 +1,39 @@
+Otto Partz monocle correction
+
+The final opp2.png replaces the incorrect spectacle interpretation in the
+first generation. Built-in imagegen edited that first photo, using the
+original SDOSEL.PVS:opp2 image as the supporting reference.
+
+Exact correction prompt:
+
+Use case: precise-object-edit.
+Input image 1 is the edit target: photorealistic portrait of Herr Otto Partz.
+Input image 2 is the original game reference for his correct eyewear and hand gesture.
+Correct ONLY the eyewear: he wears a MONOCLE, a SINGLE round clear lens with a thin gold rim over his RIGHT eye (on the VIEWER'S LEFT), held at the outer rim by his raised right hand. Retain the existing lens on the viewer's left as that monocle. Completely remove the second lens/rim over the viewer's RIGHT eye, the bridge across the nose, all temple arms, and the nose pads; reconstruct the natural unobscured eye and skin in those areas. The other eye has NO eyewear whatsoever. No spectacle bridge, no second eyepiece, no glasses, no pince-nez. Keep the hand in its existing position touching the single monocle rim, matching the original reference. No extra chain unless clearly present in the original.
+Everything else must remain unchanged: the same man's identity, face, moustache, receding hair, expression, pose, raised hand, dark checkered shirt, bright purple backdrop, crop, lighting, photographic realism. Preserve the full image dimensions and composition (1122x1402 portrait). No numbers or border baked into photo; the game overlays the original number and frame.
+
+Retaining cord follow-up
+
+The final photo also adds the requested retaining string connecting the
+monocle rim to Otto's shirt. The already corrected photo was the edit target.
+Exact follow-up prompt:
+
+Use case: precise-object-edit.
+Edit this photorealistic portrait of Herr Otto Partz. Make ONE localized correction: add the monocle's missing RETAINING CORD.
+A clearly visible thin dark silk cord must attach to a small eyelet on the LOWER OUTER edge of the single gold monocle rim over his RIGHT eye (VIEWER'S LEFT), then hang naturally under gravity beside his cheek and down to a visible discreet attachment on his SHIRT near the upper chest. Show a continuous, believable cord from eyepiece to clothing, with a relaxed curved drape and a subtle highlight so its route remains legible over the dark checkered shirt. It is a retaining string for a monocle, not an eyeglass temple, not a second lens, and not a chain necklace. Make the cord visually clear even when the image is shown as a small game profile, but physically thin and realistic.
+Keep absolutely everything else unchanged: the SINGLE monocle and its gold rim, the uncovered other eye, exact face identity, moustache, receding hair, expression, raised hand holding the rim, pose, dark checkered shirt, purple backdrop, lighting, crop, 1122x1402 canvas, and photorealism. Add no glasses bridge or extra eyewear. No text, digits, frame or watermark; the game preserves its original number and frame as an overlay.
+
+Jacket and cord endpoint follow-up
+
+The final photo uses the requested open lightweight zip-front jacket over a
+nearly black purple T-shirt. The monocle retaining cord disappears underneath
+the jacket. The previous photo and original pixel art were the two inputs.
+Exact follow-up prompt:
+
+Use case: precise-object-edit.
+Input image 1 is the current photorealistic Otto Partz portrait to edit. Input image 2 is the original pixel-art reference for the clothing.
+Change ONLY the clothing and the lower endpoint of the monocle retaining cord:
+Replace the buttoned plaid shirt with a DARK LIGHTWEIGHT ZIP-FRONT JACKET, worn UNZIPPED, matching the dark blue/charcoal outer garment in the original reference. Use thin, softly draping fabric, a simple soft collar, and clearly readable open zipper tracks along both front edges. Preserve the original's subdued dark cloth appearance; do not use bright plaid, leather, a bulky winter coat, a suit, or a buttoned shirt.
+Under the open jacket show a plain DARK PURPLE, ALMOST BLACK, crew-neck T-SHIRT. Its very dark purple color should be subtly distinguishable from the jacket. The jacket is open enough to make both the zipper and underlying T-shirt unmistakable in a small profile image.
+Keep the existing monocle's dark retaining string attached to the same rim eyelet and hanging beside his cheek, but change its LOWER end: it must pass UNDER the open jacket near the chest and disappear behind the jacket fabric. There must be NO visible attachment button, clip, or end on the outer jacket or T-shirt. The string's hidden end goes inside the jacket.
+Everything above the clothing must remain unchanged: exact face and identity, single gold-rim monocle over his RIGHT eye (viewer-left), uncovered other eye, raised hand holding monocle, moustache, receding hair, expression, pose, skin, purple backdrop, lighting and crop. Update the sleeve on his raised arm to match the lightweight jacket. Preserve 1122x1402 image dimensions and photographic quality. No extra eyewear, text, digits, border or watermark; the game overlays its original number and frame.
