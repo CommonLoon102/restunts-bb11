@@ -1,0 +1,100 @@
+{
+  "method": "Pillow masked copy; no image generation or whole-image resampling",
+  "base_commit": "e68076c971de68f7c1bcf4866395c5d2d0d7823e",
+  "base_file": "docs/opponents/game2-sources/full-resolution/opp4.png",
+  "base_png_sha256": "19c5b949087d5e2c883ebdc322b1af766d212209348d48124901682d232018f6",
+  "donor": "Git staged version of the same file at correction time",
+  "donor_png_sha256": "4bb6eb338330f0672e080dd52818e1b0e2c3b8ab9e643a936442de768f610893",
+  "donor_generated_source": "/home/user/.codex/generated_images/01a0cdb3-98b5-7151-a9b0-1b3d7f16170c/exec-9f0e5051-626f-4e1c-9a4a-5eabfd3e07c9.png",
+  "source_rectangle": [
+    184,
+    691,
+    228,
+    845
+  ],
+  "translation": [
+    -5,
+    0
+  ],
+  "destination": [
+    179,
+    691
+  ],
+  "mask_polygon": [
+    [
+      188,
+      695
+    ],
+    [
+      194,
+      705
+    ],
+    [
+      204,
+      722
+    ],
+    [
+      217,
+      739
+    ],
+    [
+      224,
+      746
+    ],
+    [
+      218,
+      779
+    ],
+    [
+      212,
+      816
+    ],
+    [
+      209,
+      835
+    ],
+    [
+      206,
+      842
+    ],
+    [
+      204,
+      836
+    ],
+    [
+      199,
+      806
+    ],
+    [
+      195,
+      773
+    ],
+    [
+      191,
+      739
+    ],
+    [
+      187,
+      704
+    ]
+  ],
+  "mask_feather_radius": 0.65,
+  "face_occlusion": "Retain committed foreground using original backdrop color distance in the patch",
+  "changed_pixel_count": 2778,
+  "changed_rectangle": [
+    181,
+    694,
+    220,
+    844
+  ],
+  "unchanged_pixel_count": 1570566,
+  "output_png_sha256": "1e97ebd3425874e6720196f77ec59962f6ebb60e429af43487e113169e93ca91",
+  "patch_file": "opp4-right-earring.png",
+  "patch_sha256": "aec5bbe9efdbb7c69f1538f430b0d678d815366ffc6ecf1f87211c9557ebb473",
+  "patch_mode": "RGBA",
+  "patch_dimensions": [
+    44,
+    154
+  ],
+  "reconstruction": "Load base_file from base_commit as RGB; load patch_file as RGBA; base.paste(patch, tuple(destination), patch); save as PNG. The stored alpha includes feathering and foreground occlusion."
+}
