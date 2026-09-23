@@ -50,7 +50,7 @@ Each base photograph was generated using only its matching original 74 x 79
 photo crop as the visual reference, preserving its pose, expression, clothes
 and accessories while resolving missing detail. The number was removed from
 the reference and restored exactly afterward. The
-[exact prompts and source paths](game2-generation-prompts.json) record all six
+[exact prompts and source paths](game-regeneration-prompts.json) record all six
 initial calls and subsequent full-resolution corrections. Original pixel
 speckles and digitization noise are excluded from the restoration. Requested
 corrections edit the retained full-resolution photographs before reduction.
@@ -117,7 +117,7 @@ The earlier [generation prompts](generation-prompts.txt),
 [Otto correction](otto-monocle-correction.txt),
 [Joe correction](joe-sunglasses-correction.txt), and
 [Skid regeneration](skid-original-regeneration.txt) describe the earlier master
-set. The [current generation records](game2-generation-prompts.json) retain exact
+set. The [current generation records](game-regeneration-prompts.json) retain exact
 historical prompts and generated source paths; their `preserved_*` fields link
 only images retained in the selected source archive.
 
