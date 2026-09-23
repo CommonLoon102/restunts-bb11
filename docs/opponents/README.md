@@ -75,10 +75,10 @@ Preparation follows the requested larger-to-smaller workflow:
 
 The [final asset manifest](../../assets/opponents/game/manifest.json) records
 source, working-image and final hashes, background colors, dimensions and
-processing. The [preserved source gallery](game2-sources/README.md) links the six
-selected full-resolution photographs and six 4x working tiles. The archive keeps
-its historical `docs/opponents/game2-sources/` name; the runtime asset directory
-is `assets/opponents/game/`.
+processing. The [preserved source gallery](game-sources/README.md) links the six
+selected full-resolution photographs and six 4x working tiles in
+`docs/opponents/game-sources/`; the runtime asset directory is
+`assets/opponents/game/`.
 
 With Pillow and original game data, rebuild or verify the final copies using:
 
@@ -88,13 +88,12 @@ python3 tools/scripts/prepare-original-opponent-upscales.py
 python3 tools/scripts/prepare-original-opponent-upscales.py --check
 ```
 
-The script reads `docs/opponents/game2-sources/full-resolution/`, prepares the
-4x RGB tiles in `docs/opponents/game2-sources/working-4x/`, and writes the final
+The script reads `docs/opponents/game-sources/full-resolution/`, prepares the
+4x RGB tiles in `docs/opponents/game-sources/working-4x/`, and writes the final
 indexed tiles to `assets/opponents/game/`. `--check` compares the regenerated
-bytes without writing. The preserved source images match their selected
-generated files byte for byte; their hashes and source paths are recorded
-alongside them. Normal builds and the installed game need only the final six
-indexed PNGs, without Pillow or imagegen access.
+bytes without writing. The preserved source images retain their hashes and
+source or composition records alongside them. Normal builds and the installed
+game need only the final six indexed PNGs, without Pillow or imagegen access.
 
 ## Historical conversion tools and records
 
@@ -110,7 +109,7 @@ directory containing six `oppN.png` photos and a separate output directory:
 
 ```sh
 python3 tools/scripts/prepare-opponent-portraits.py \
-    --source-directory docs/opponents/game2-sources/full-resolution \
+    --source-directory docs/opponents/game-sources/full-resolution \
     --output-directory out/opponents/legacy-photo-conversion
 ```
 

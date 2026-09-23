@@ -16,12 +16,12 @@
         "output": "/media/sf_ubi24/restunts-bb11/out/opponents/game2-rebuilt/opp1-collar-edit.png",
         "prompt": "Use case: precise-object-edit.\nInput image 1 is the full-resolution photographic edit target. Input image 2 is the small original game portrait, used ONLY as a supporting color reference for the shirt collar.\nChange ONLY the color of the TWO FOLDED COLLAR PANELS of his checked shirt (the left and right collar/lapel immediately beside and below his neck) to an unmistakable rich medium GREEN like the collar in the original game image. Make these two collar panels visibly green rather than muted brown/olive. Preserve their exact shapes, folded cloth shading, seams, woven fabric texture and existing subtle check pattern.\nStrict invariants: leave ALL pixels/appearance outside those two collar panels unchanged as closely as possible. In particular keep the rest of the shirt body and shoulders with its existing brown-green checked colors, white undershirt, face, glasses, eyes, hair, skin, expression, gaze, pose, proportions, crop, framing, lighting, sharpness and solid yellow background exactly as input image 1. Do not recolor the whole shirt, do not add anything, and do not redesign or re-render the person. This is a tiny localized collar color edit only. Return the same full-resolution composition, no text, no border.",
         "review": "Both collar panels are visibly richer green with fold shading and check texture. Face, glasses, expression, pose, framing, yellow backdrop, and rest of shirt visually preserved.",
-        "preserved_source": "docs/opponents/game2-sources/full-resolution/opp1.png"
+        "preserved_source": "docs/opponents/game-sources/full-resolution/opp1.png"
       }
     ],
     "final_generated_source": "/home/user/.codex/generated_images/01a0cdb5-ee75-7973-adc8-dfc8434df5b6/exec-64b69ba3-82ad-46c4-b2bb-c26254a29c08.png",
-    "preserved_source": "docs/opponents/game2-sources/full-resolution/opp1.png",
-    "preserved_working_image": "docs/opponents/game2-sources/working-4x/opp1.png"
+    "preserved_source": "docs/opponents/game-sources/full-resolution/opp1.png",
+    "preserved_working_image": "docs/opponents/game-sources/working-4x/opp1.png"
   },
   {
     "opponent": 2,
@@ -48,7 +48,7 @@
         "output": "/media/sf_ubi24/restunts-bb11/out/opponents/game2-rebuilt/opp2-monocle-edit-final.png",
         "prompt": "Use case: precise-object-edit.\nEdit only the monocle retaining cord in this otherwise finished photograph. Keep everything else exactly unchanged, including the gold monocle, all face/hand/moustache detail, puckered CLOSED kiss lips, black shirt, open lightweight dark zip jacket, purple background, crop and photographic sharpness.\nThe cord currently incorrectly forks near shoulder level into TWO paths, with an extra loose dangling vertical tail continuing down the front beside the neck. REMOVE THAT EXTRA LOWER FRONT TAIL. There must be just ONE continuous unbranched fine golden-brown cord: attached to the monocle ring, hanging vertically straight down alongside the cheek, then turning in one gentle curve across the visible shoulder on the same side as the raised hand and disappearing BEHIND the neck at the rear collar. Retain the visible upper vertical segment and shoulder curve; erase the redundant vertical segment below the point where the shoulder curve branches away. No fork, no second string, no loose front end, no new jewellery. The shoulder curve must look natural under gravity, with a continuous ring-to-shoulder-to-behind-neck route.\nDo not regenerate the portrait or change any unrelated pixel. Return the same full-resolution image.",
         "status": "selected final: user explicitly chose the version with the cord curving over the shoulder",
-        "preserved_source": "docs/opponents/game2-sources/full-resolution/opp2.png"
+        "preserved_source": "docs/opponents/game-sources/full-resolution/opp2.png"
       },
       {
         "opponent": 2,
@@ -61,8 +61,8 @@
       }
     ],
     "final_generated_source": "/home/user/.codex/generated_images/01a0cdb3-98b5-7151-a9b0-1b3d7f16170c/exec-8c2d9b45-9a8c-4018-b345-0e9731664e75.png",
-    "preserved_source": "docs/opponents/game2-sources/full-resolution/opp2.png",
-    "preserved_working_image": "docs/opponents/game2-sources/working-4x/opp2.png"
+    "preserved_source": "docs/opponents/game-sources/full-resolution/opp2.png",
+    "preserved_working_image": "docs/opponents/game-sources/working-4x/opp2.png"
   },
   {
     "opponent": 3,
@@ -71,9 +71,9 @@
     "generated_source": "/home/user/.codex/generated_images/01a0cdb5-ee75-7973-adc8-dfc8434df5b6/exec-f497456f-7bbd-4844-8a1d-66a5d4505d38.png",
     "output": "/media/sf_ubi24/restunts-bb11/out/opponents/game2-rebuilt/opp3.png",
     "prompt": "Use case: identity-preserve.\nAsset type: photorealistic reconstruction of an original VGA game opponent portrait, intended for a 4x working image before final game-palette reduction.\nInput image: the attached original 74x79 portrait crop is the SOLE edit target and visual reference. Reconstruct this actual person from the original portrait.\nPrimary request: produce a clean, cohesive, believable real-person photographic portrait with plausible facial and material detail. Recover natural eyes, skin, hair, fabric and accessory details while staying close to the original face geometry, head shape, proportions, silhouette, pose, expression, gaze, clothing, framing, and lighting direction.\nStyle: natural photographic realism, modest soft studio lighting and clear readable small-scale detail. Ordinary real person, preserving distinctive imperfect/asymmetric features. Fully resolve the source into a photograph. Do not preserve or reproduce original pixel grids, pixel clusters, dithering, mosaic patches, rough low-resolution texture, or blocky edges. No painted style, grit, excessive skin pores, sharpening halos, beauty retouching, glamorous redesign, exaggerated expressions, or illustration.\nComposition: full-bleed portrait ONLY, proportional 74:79 width:height crop, EXACT same framing and placement as the original source; same amount of shoulders and same silhouette. Do NOT impose a 4:5/VGA display correction on this file. Intended working size about296x316 photo pixels (inside a320x332 original-game tile), but a larger clear source photograph is acceptable.\nConstraints: no UI, no border, no original top-right number, no text, no watermark. No props or accessories beyond what is specified in the original. Do not use any earlier generated image as a reference.\nSubject: Joe, as shown in the original: original short light-brown hair, original dark sunglasses with their darker thick frame and the same lens shape and size, broad original face geometry, original serious closed-mouth expression and direct straight-on pose, plain white shirt with the same neckline. Preserve the source's sunglass frame design and proportions, without converting it to thin-wire aviators or changing the face.\nBackdrop: completely flat, uniform, solid RGB(117,182,0), #75B600. Precisely that same color everywhere outside the subject, with NO gradient, glow, noise, texture, shadows, lighting variation or vignette.",
-    "preserved_source": "docs/opponents/game2-sources/full-resolution/opp3.png",
-    "preserved_working_image": "docs/opponents/game2-sources/working-4x/opp3.png",
-    "preserved_initial_source": "docs/opponents/game2-sources/full-resolution/opp3.png"
+    "preserved_source": "docs/opponents/game-sources/full-resolution/opp3.png",
+    "preserved_working_image": "docs/opponents/game-sources/working-4x/opp3.png",
+    "preserved_initial_source": "docs/opponents/game-sources/full-resolution/opp3.png"
   },
   {
     "opponent": 4,
@@ -82,8 +82,8 @@
     "generated_source": "/home/user/.codex/generated_images/01a0cdb3-98b5-7151-a9b0-1b3d7f16170c/exec-a097e9c9-b0ee-4f35-b589-f94a1444aabb.png",
     "output": "/media/sf_ubi24/restunts-bb11/out/opponents/game2-rebuilt/opp4.png",
     "prompt": "Use case: identity-preserve.\nInput image is the ORIGINAL Stunts game portrait crop (74x79 pixels). Reconstruct this SAME portrait as a clean coherent REALISTIC PHOTOGRAPH, with plausible new detail filling the missing resolution. It is intended for a 4x restoration pass (photo interior 296x316 pixels), then will be reduced to half size and converted to game-palette pixel art. You may render larger for quality, but keep the same 74:79 canvas proportions and precise original composition.\n\nUse imagination to resolve real facial anatomy, clear eyes, lip/tooth structure, hair strands, clothing folds and accessory construction from the original, while retaining ALL identifying details. Keep the SAME exact head angle, gaze, facial expression, face shape, hair silhouette, clothing, jewelry/eyewear and their placements, shoulder crop and subject scale. No new accessories or invented costume; no beauty makeover, expression change or camera repositioning. This should feel like recovering the original photograph behind the digitized game portrait.\n\nCrucial quality: smooth coherent natural photographic forms and believable detail, not interpolated blocks or sharpened source noise. Render real skin with subtle pores and natural shading, clean hair strands and cloth texture. Do NOT render pixel art yet. NO dithering, grid, mosaic, pixel clusters, random texture, artificial grain, skin speckles, crispy edge halos or original-pixel anchoring. The palette/pixel-art conversion is a separate later step.\n\nMatch the original crop edge for edge, preserve flat even portrait lighting and original overall skin/clothing colors. Background must be perfectly uniform SOLID specified color, no gradients, shadows, vignette, halo, texture, noise, patterns or objects. No text, numeral, frame, border, clipboard or watermark; the original game border/number will be restored separately.\n\n\nOpponent 4, Cherry: young woman in the original three-quarter pose facing viewer-left, same small open smile and gaze. Dark high ponytail sweeps toward viewer-right with the large white patterned bow at upper-right. Long pale triangular earring beside her visible ear. Pink collared/lapelled blouse, with precisely the original neckline and shoulders. Background RGB (255,125,125), uniformly solid salmon pink. Preserve the original distinctive face and expression, not a generic model.\n\nRestoration cleanup: remove stray pixel noise, compression/digitization speckles and isolated accidental colored dots in the original. Do not reproduce those artifacts as skin spots or cloth grain. Keep intentional patterned fabric, hair, eyebrows and defining facial features.",
-    "preserved_source": "docs/opponents/game2-sources/full-resolution/opp4.png",
-    "preserved_working_image": "docs/opponents/game2-sources/working-4x/opp4.png",
+    "preserved_source": "docs/opponents/game-sources/full-resolution/opp4.png",
+    "preserved_working_image": "docs/opponents/game-sources/working-4x/opp4.png",
     "edits": [
       {
         "opponent": 4,
@@ -105,9 +105,8 @@
     "final_composition": {
       "method": "Pillow masked copy; no image generation or whole-image resampling",
       "base_commit": "e68076c971de68f7c1bcf4866395c5d2d0d7823e",
-      "base_file": "docs/opponents/game2-sources/full-resolution/opp4.png",
-      "patch": "docs/opponents/game2-sources/patches/opp4-right-earring.png",
-      "provenance": "docs/opponents/game2-sources/patches/opp4-right-earring.json",
+      "patch": "docs/opponents/game-sources/patches/opp4-right-earring.png",
+      "provenance": "docs/opponents/game-sources/patches/opp4-right-earring.json",
       "changed_pixel_count": 2778,
       "changed_rectangle": [
         181,
@@ -115,7 +114,9 @@
         220,
         844
       ],
-      "output_png_sha256": "1e97ebd3425874e6720196f77ec59962f6ebb60e429af43487e113169e93ca91"
+      "output_png_sha256": "1e97ebd3425874e6720196f77ec59962f6ebb60e429af43487e113169e93ca91",
+      "output_file": "docs/opponents/game-sources/full-resolution/opp4.png",
+      "base_blob": "f7897a32928528c79f82383a8478e7e370b4cff6"
     }
   },
   {
@@ -125,9 +126,9 @@
     "generated_source": "/home/user/.codex/generated_images/01a0cdb3-98b5-7151-a9b0-1b3d7f16170c/exec-671c3269-0016-4632-bac1-293b0e295169.png",
     "output": "/media/sf_ubi24/restunts-bb11/out/opponents/game2-rebuilt/opp5.png",
     "prompt": "Use case: identity-preserve.\nInput image is the ORIGINAL Stunts game portrait crop (74x79 pixels). Reconstruct this SAME portrait as a clean coherent REALISTIC PHOTOGRAPH, with plausible new detail filling the missing resolution. It is intended for a 4x restoration pass (photo interior 296x316 pixels), then will be reduced to half size and converted to game-palette pixel art. You may render larger for quality, but keep the same 74:79 canvas proportions and precise original composition.\n\nUse imagination to resolve real facial anatomy, clear eyes, lip/tooth structure, hair strands, clothing folds and accessory construction from the original, while retaining ALL identifying details. Keep the SAME exact head angle, gaze, facial expression, face shape, hair silhouette, clothing, jewelry/eyewear and their placements, shoulder crop and subject scale. No new accessories or invented costume; no beauty makeover, expression change or camera repositioning. This should feel like recovering the original photograph behind the digitized game portrait.\n\nCrucial quality: smooth coherent natural photographic forms and believable detail, not interpolated blocks or sharpened source noise. Render real skin with subtle pores and natural shading, clean hair strands and cloth texture. Do NOT render pixel art yet. NO dithering, grid, mosaic, pixel clusters, random texture, artificial grain, skin speckles, crispy edge halos or original-pixel anchoring. The palette/pixel-art conversion is a separate later step.\n\nMatch the original crop edge for edge, preserve flat even portrait lighting and original overall skin/clothing colors. Background must be perfectly uniform SOLID specified color, no gradients, shadows, vignette, halo, texture, noise, patterns or objects. No text, numeral, frame, border, clipboard or watermark; the original game border/number will be restored separately.\n\n\nOpponent 5, Helen: front-facing woman with long, very voluminous golden blonde curls framing both sides, same broad open toothy smile and direct gaze. White collared blouse, same shoulder/neckline crop and original face shape. Background RGB (255,186,255), uniformly solid light pink. Preserve the original distinctive face and expression, not a generic model.\n\nRestoration cleanup: remove stray pixel noise, compression/digitization speckles and isolated accidental colored dots in the original. Do not reproduce those artifacts as skin spots or cloth grain. Keep intentional patterned fabric, hair, eyebrows and defining facial features.",
-    "preserved_source": "docs/opponents/game2-sources/full-resolution/opp5.png",
-    "preserved_working_image": "docs/opponents/game2-sources/working-4x/opp5.png",
-    "preserved_initial_source": "docs/opponents/game2-sources/full-resolution/opp5.png"
+    "preserved_source": "docs/opponents/game-sources/full-resolution/opp5.png",
+    "preserved_working_image": "docs/opponents/game-sources/working-4x/opp5.png",
+    "preserved_initial_source": "docs/opponents/game-sources/full-resolution/opp5.png"
   },
   {
     "opponent": 6,
@@ -136,8 +137,8 @@
     "generated_source": "/home/user/.codex/generated_images/01a0cdb3-98b5-7151-a9b0-1b3d7f16170c/exec-17c1fa67-2fe1-4b78-be13-47a3d32646c1.png",
     "output": "/media/sf_ubi24/restunts-bb11/out/opponents/game2-rebuilt/opp6.png",
     "prompt": "Use case: identity-preserve.\nInput image is the ORIGINAL Stunts game portrait crop (74x79 pixels). Reconstruct this SAME portrait as a clean coherent REALISTIC PHOTOGRAPH, with plausible new detail filling the missing resolution. It is intended for a 4x restoration pass (photo interior 296x316 pixels), then will be reduced to half size and converted to game-palette pixel art. You may render larger for quality, but keep the same 74:79 canvas proportions and precise original composition.\n\nUse imagination to resolve real facial anatomy, clear eyes, lip/tooth structure, hair strands, clothing folds and accessory construction from the original, while retaining ALL identifying details. Keep the SAME exact head angle, gaze, facial expression, face shape, hair silhouette, clothing, jewelry/eyewear and their placements, shoulder crop and subject scale. No new accessories or invented costume; no beauty makeover, expression change or camera repositioning. This should feel like recovering the original photograph behind the digitized game portrait.\n\nCrucial quality: smooth coherent natural photographic forms and believable detail, not interpolated blocks or sharpened source noise. Render real skin with subtle pores and natural shading, clean hair strands and cloth texture. Do NOT render pixel art yet. NO dithering, grid, mosaic, pixel clusters, random texture, artificial grain, skin speckles, crispy edge halos or original-pixel anchoring. The palette/pixel-art conversion is a separate later step.\n\nMatch the original crop edge for edge, preserve flat even portrait lighting and original overall skin/clothing colors. Background must be perfectly uniform SOLID specified color, no gradients, shadows, vignette, halo, texture, noise, patterns or objects. No text, numeral, frame, border, clipboard or watermark; the original game border/number will be restored separately.\n\n\nOpponent 6, Skid: man with swept-back dark mullet, prominent angular cheekbones, original asymmetrically open mouth with upper teeth visible and intense wild expression. Reconstruct exactly the original pose, head tilt and gaze. The thin black sunglasses have dark brown tinted lenses, rounded deeper lens shapes (not wide rectangular shapes), with arms connected around the vertical middle of the lenses, black framing only above the arms and rimless lower halves. Black leather jacket over a yellow t-shirt. Match original face geometry, upper-teeth mouth, eyebrows, hairline, neck and shoulders. Background RGB (0,230,230), uniformly solid cyan.\n\nRestoration cleanup: remove stray pixel noise, compression/digitization speckles and isolated accidental colored dots in the original. Do not reproduce those artifacts as skin spots or cloth grain. Keep intentional patterned fabric, hair, eyebrows and defining facial features.",
-    "preserved_source": "docs/opponents/game2-sources/full-resolution/opp6.png",
-    "preserved_working_image": "docs/opponents/game2-sources/working-4x/opp6.png",
-    "preserved_initial_source": "docs/opponents/game2-sources/full-resolution/opp6.png"
+    "preserved_source": "docs/opponents/game-sources/full-resolution/opp6.png",
+    "preserved_working_image": "docs/opponents/game-sources/working-4x/opp6.png",
+    "preserved_initial_source": "docs/opponents/game-sources/full-resolution/opp6.png"
   }
 ]
