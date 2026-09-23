@@ -136,12 +136,8 @@ target_link_libraries(pixldump PRIVATE restunts_game)
 install(TARGETS restunts repldump pixldump RUNTIME DESTINATION bin COMPONENT Runtime)
 install(FILES docs/sdl3.md DESTINATION share/docs/restunts COMPONENT Runtime)
 foreach(opponent RANGE 1 6)
-    install(FILES "assets/opponents/opp${opponent}.png"
-        DESTINATION bin/opponents COMPONENT Runtime OPTIONAL)
     install(FILES "assets/opponents/game/opp${opponent}.png"
         DESTINATION bin/opponents/game COMPONENT Runtime OPTIONAL)
-    install(FILES "assets/opponents/game2/opp${opponent}.png"
-        DESTINATION bin/opponents/game2 COMPONENT Runtime OPTIONAL)
 endforeach()
 set(skybox_themes desert tropical alpine city country)
 set(skybox_images scen sce2 sce3 sce4)
