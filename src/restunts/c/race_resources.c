@@ -19,6 +19,9 @@
 #include "car_resources.h"
 #include "externs.h"
 #include "video_pages.h"
+#ifdef RESTUNTS_SDL3
+#include "skybox_hires.h"
+#endif
 
 #define SKYBOX_RESOURCE_COUNT 5
 #define SKYBOX_RESOURCE_NAME_BYTES 9
@@ -42,6 +45,9 @@ static legacy_s8 skybox_resource_names[SKYBOX_RESOURCE_COUNT][SKYBOX_RESOURCE_NA
 
 void unload_skybox(void)
 {
+#ifdef RESTUNTS_SDL3
+	skybox_hires_unload();
+#endif
 	if (skybox_resources_loaded != 0) {
 		mmgr_free(skybox_res_ofs);
 	}

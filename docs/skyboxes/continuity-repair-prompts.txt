@@ -1,0 +1,52 @@
+Localized skybox continuity repairs
+Built-in image_gen tool; no API key or fallback CLI.
+
+COUNTRY (panorama x0,1024,2048,3072)
+
+Use case: precise-object-edit. Edit the supplied FOUR-ROW countryside texture repair atlas. Each row is one independent horizontal crop with a visible vertical stitching defect at its exact center x=512. Repair those FOUR center seams only: make the green hill surfaces, shading and fine pink/yellow/red field carpets flow naturally across the middle, with no straight vertical lighting lines or cut-off ridge. In row 3 bridge the small skyline step at the center with a natural shallow valley. In row 2 remove the small blue hill/green field join line in the middle. IMPORTANT: preserve all four rows, their order, exact terrain scale and bottom baselines at 25%,50%,75%,100% of image height. No padding below the last row, no new composition, no enlarged hills, no merged rows. Work only within the middle 25% of each row's width, preserving outer 37.5% left and right as closely as possible. Preserve local grain and very fine distant aggregate flower fields, not individual blossoms or grass. Do not add details or objects. Every sky region flat opaque exact RGB(93,255,255). Keep skyline unchanged except the tiny center joins. Same square atlas. No text, labels, lines, borders, transparency or blur.
+
+CITY (panorama x2048)
+
+Use case: precise-object-edit. Edit this city skybox crop: remove ONLY the abrupt vertical cut in the distant BLUE BACKGROUND MOUNTAIN at the exact horizontal center of the image. Smoothly continue that small blue ridge into the neighboring mountain so no vertical cutoff remains. Paint a natural continuous mountain slope and match existing blue shading/textural grain across the center. Preserve the foreground trees, every house, all other terrain, exact skyline placement except the small cut-off, and large perfectly flat cyan sky. Work only in a narrow central region about x=440..580, y=800..940 of the 1024x1024 reference. Keep the entire rest of the image unchanged. This is a square texture reference with scenery confined to its bottom quarter: preserve that exact framing, distance scale, bottom baseline and aspect ratio. Sky opaque exact RGB(93,255,255). Do not add clouds, new objects, padding, border, text, detail or blur. Return same square image.
+
+DESERT (panorama x0,1280,2048,3072,3328)
+
+Use case: precise-object-edit. Asset type: five repair patches for one desert game skybox, arranged as an atlas. Edit this exact 1024x2048 atlas preserving its five independent horizontal desert strips. Preserve every strip's placement, dimensions, crop, mountains and painterly pixel texture. The strips begin at y=64,448,832,1216,1600 and each is 384 pixels high. Solid background sky must stay flat RGB(93,255,255), not natural sky. In EACH strip repair ONLY the narrow central vertical join at x=512, limited to x=350..674. Keep the outer 350 pixels at left and right unchanged. Row 1: connect discontinuous foreground lighting/rock ridges across center into one natural ridge. Row 2: round the tiny artificial vertical cliff at center into a natural steep but continuous sloping ridge. Row 3: the mountain is chopped abruptly at center: extend its right flank down gently to meet the existing range, preserving the peak height and other mountains. Row 4: smooth the central terrain texture join, preserving the existing silhouette. Row 5: fix the abrupt vertical rise into the central peak, connecting its left slope naturally to the lower neighboring mountains; preserve peak height. Keep crisp richly textured orange rock, directional highlights, brown shadows; absolutely no blur, haze, objects or new large peaks. Retain identical atlas arrangement and dark 64px top and bottom margins. No labels. Changes only in the small central areas needed to remove unnatural joins. Output same 1024x2048 image.
+
+TROPICAL (panorama x0,2048,3072)
+
+Use case: precise-object-edit.
+Asset type: localized texture repair for an existing pixel-art tropical game panorama.
+Input image 1 is the EDIT TARGET: a 1024 x 864 contact sheet of THREE separate panorama crops, labeled A/B/C. Each has a 32-pixel dark title bar followed by a 1024 x 256 pixel-art landscape. Preserve the canvas dimensions, every row position, labels, scale, style, colors, and all landmarks.
+Primary request: repair ONLY the narrow vertical join at x=512 in each landscape row. Make each crop look like one continuous natural landscape. Keep the existing art outside the central x=352..672 column EXACTLY unchanged.
+A (first row): smooth the small rectangular ocean horizon step at center into a continuous low, nearly horizontal blue sea horizon. Connect the palm foliage at the vertical join naturally; retain the surrounding palms and hills.
+B (second row): smooth the tiny ocean horizon step at center and connect the foreground foliage texture so there is no vertical splice. Keep the sea low and visible.
+C (third row): the left forest presently ends as a vertical wall at center. Repaint only the center so the forest slopes gently down toward the lower bushes and open ocean on the right. Preserve the offshore rock, right sandy shoreline, and all landscape outside the central join.
+Style: original detailed vintage game pixel art; keep the same pixel scale and sharpness, no rescaling, no blur or smoothing of the artwork, no extra palm trunks or scenery. Sky must remain perfectly flat exact RGB (93,255,255), no gradient, clouds, halos, outlines, glow, or antialiasing fringes. No additional text.
+Critical: maintain all 3 rows and original rectangular layout exactly. This is an edit, not a new drawing; only join repair.
+
+ALPINE (panorama x0,2048,1024)
+
+Use case: precise-object-edit.
+Asset type: tiny high-resolution retro racing-game alpine horizon seam repair.
+Input image 1 is the EDIT TARGET: an enlarged 320-pixel-wide crop around the join where a snowy alpine panorama wraps. The original crop is 320x120; the reference is enlarged 4x to 1280x480 only for visibility.
+Repair ONLY the subtle hard vertical transition at the exact horizontal middle, around x=640 of this reference. The large snowy mountain slope on the left abruptly meets a differently scaled small ridge and foreground green hill at the center. Continue the snow/rock and green forest naturally through that join so it reads as one continuous distant landscape, with a natural sloping skyline and coherent terrain texture.
+Keep every existing major mountain, peak and green forest hill in exactly the same place and at the same scale. Do not redesign the landscape. All artwork outside the middle quarter of the image must remain unchanged; outermost left/right edges and bottom edge stay in place. Match the original restrained painterly fine distant detail and existing colors, not photo realism and not coarse pixel blocks. This is a precise local repair, not a repaint.
+Keep the sky perfectly flat opaque exact RGB(93,255,255), with no clouds or gradient. Preserve the 1280x480 composition/aspect ratio with no crop, zoom, padding, text or borders. Output only the repaired horizontal crop.
+
+--- SEAM 2048 ---
+
+Use case: precise-object-edit.
+Asset type: tiny high-resolution retro racing-game alpine horizon seam repair.
+Input image 1 is the EDIT TARGET: an enlarged 320-pixel-wide crop around a snowy alpine panorama join. The original crop is 320x120; the reference is enlarged 4x to 1280x480 only for visibility.
+Repair ONLY the hard vertical transition at the exact horizontal middle, around x=640 of this reference. A snowy gray mountain ridge and its green tree line have a sharp vertical join at center. Make the existing snowy/rocky slopes and forest edge flow continuously through the middle, retaining natural ridge silhouettes and texture, removing any vertical cut, ledge or rectangular tonal step.
+Keep all existing mountain peaks, valleys, tree-line placement, size and lighting. Do not redesign the landscape. All artwork outside the middle quarter of the image must remain unchanged; outermost left/right edges and bottom edge stay in place. Match the original restrained painterly fine distant detail and existing colors, not photo realism and not coarse pixel blocks. This is a precise local repair, not a repaint.
+Keep the sky perfectly flat opaque exact RGB(93,255,255), with no clouds or gradient. Preserve the 1280x480 composition/aspect ratio with no crop, zoom, padding, text or borders. Output only the repaired horizontal crop.
+
+--- INTERIOR SEAM 1024 ---
+
+Use case: precise-object-edit.
+Asset type: tiny retro racing-game alpine skybox, localized seam correction.
+The attached image is the EDIT TARGET, a 4x enlarged 320x120-pixel landscape crop. It shows a small snow-capped mountain peak exactly at the horizontal middle of the image. Its right flank terminates in an unnatural straight vertical wall at x=640 on this 1280x480 reference, then suddenly steps down into a different snowy saddle. This vertical wall is a stitching defect.
+Repair ONLY that short vertical wall and its immediate surroundings. Make a naturally angled, jagged descending rock-and-snow slope connecting the existing peak to its existing saddle on the right. Keep the tip of the peak at exactly its present location and height; retain all other mountains, forest, colors, scale, texture and lighting. Change only a narrow center region roughly x=580 through x=720 of the reference. Keep the forest and lower foreground unchanged. Outside that narrow repair region, preserve the image exactly.
+The result must remain a distant finely textured painterly game background. Keep sky flat opaque exact RGB(93,255,255). No added peaks, clouds, haze, objects, text, borders, crop or zoom. Same aspect ratio and composition. Output only the repaired landscape crop.
