@@ -275,6 +275,51 @@ static void test_rle(void)
 	}
 }
 
+static const legacy_s16 clipped_mask_positions[] = {-4, -1, 1, 3, 5, 7, 9, 12};
+
+static void draw_rle_clipped_mask(legacy_u32 scenario)
+{
+	/* Both kinds of run cross rows, and the aliased source can wrap its segment. */
+	static const legacy_u8 stream[] = {252, 255, 15, 0,	  240, 5, 51, 253, 128, 0,
+									   255, 7,	 85, 251, 1,   2, 4,  8,   16,	0};
+	reset_bitmap();
+	struct SHAPE2D *shape = make_shape(6, 4, (scenario & 128U) != 0 ? 0xffe0 : 16);
+	write_rle(shape_offset, stream, sizeof(stream));
+	shape->position_x = (legacy_u16)clipped_mask_positions[scenario % 8];
+	shape->position_y = (legacy_u16)clipped_mask_positions[(scenario / 8) % 8];
+	sprite_set_target_clip_bounds(2, 9, 2, 7);
+	if ((scenario & 64U) != 0) {
+		shape2d_rle_or_position_clipped(shape);
+	} else {
+		shape2d_rle_mask_position_clipped(shape);
+	}
+}
+
+static void test_rle_clipped_masks(void)
+{
+	static const legacy_u8 pixels[] = {255, 15, 0,	240, 51, 51, 51, 51, 51, 128, 0, 255,
+									   85,	85, 85, 85,	 85, 85, 85, 1,	 2,	 4,	  8, 16};
+	for (legacy_u32 scenario = 0; scenario < 256; scenario++) {
+		draw_rle_clipped_mask(scenario);
+		legacy_u8 *bitmap = dos_memory_make_pointer(TEST_BITMAP_SEGMENT, 0);
+		legacy_s16 x = clipped_mask_positions[scenario % 8];
+		legacy_s16 y = clipped_mask_positions[(scenario / 8) % 8];
+		for (legacy_u32 offset = 0; offset < 65536; offset++) {
+			legacy_s32 column = offset % 64;
+			legacy_s32 row = offset / 64;
+			legacy_s32 source_x = column - x;
+			legacy_s32 source_y = row - y;
+			legacy_u8 expected = 0x5a;
+			if (column >= 2 && column < 9 && row >= 2 && row < 7 && source_x >= 0 && source_x < 6 &&
+				source_y >= 0 && source_y < 4) {
+				legacy_u8 value = pixels[source_y * 6 + source_x];
+				expected = (scenario & 64U) != 0 ? expected | value : expected & value;
+			}
+			assert(bitmap[offset] == expected);
+		}
+	}
+}
+
 static legacy_u8 *make_resource(legacy_u16 width, legacy_u16 height, legacy_u8 flag,
 								legacy_u16 count)
 {
@@ -377,6 +422,7 @@ int main(void)
 	check_fingerprint("dissolve", 0x6fa2152dUL, test_dissolve);
 	check_fingerprint("scaled", 0x8c1dc1abUL, test_scaled);
 	check_fingerprint("rle", 0x45b9c13cUL, test_rle);
+	test_rle_clipped_masks();
 	check_fingerprint("unflip", 0x76403759UL, test_unflip);
 	check_fingerprint("parse", 0x5b517e11UL, test_parse);
 	return 0;

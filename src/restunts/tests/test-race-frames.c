@@ -13,8 +13,27 @@ static legacy_u32 scenario, frames, keys;
 static legacy_u32 scripted_rewind;
 static legacy_u32 presented_frames;
 
-#ifdef RESTUNTS_SDL3
+static struct {
+	legacy_u8 active;
+	legacy_u8 target;
+	legacy_u16 masks[2];
+	legacy_u16 overlays[2];
+	legacy_u16 static_draws;
+	legacy_u16 updates;
+	legacy_u16 controls;
+	struct RECTANGLE clip;
+	struct SHAPE2D shapes[2];
+} replay_render;
+
+enum REPLAY_TEST_TARGET {
+	REPLAY_TEST_RENDER_TARGET,
+	REPLAY_TEST_PAGE_TARGET,
+	REPLAY_TEST_SCREEN_TARGET
+};
+
 legacy_u8 supersight_enabled;
+
+#ifdef RESTUNTS_SDL3
 legacy_s16 camera_track_height_offset;
 static legacy_u8 scheduled_mode;
 static legacy_u8 scheduled_toggle;
@@ -153,6 +172,9 @@ static struct RECTANGLE dirty_rect;
 static legacy_s8 text_resource[8];
 static void trace(legacy_u32 value)
 {
+	if (replay_render.active != 0) {
+		return;
+	}
 	for (legacy_u32 i = 0; i < 4; i++) {
 		trace_hash = (trace_hash ^ (value & 255U)) * UINT32_C(16777619);
 		value >>= 8;
@@ -264,10 +286,12 @@ void update_crash_state(legacy_s16 event, legacy_s16 car)
 }
 void sprite_select_mcga_backbuffer(void)
 {
+	replay_render.target = REPLAY_TEST_PAGE_TARGET;
 	trace(13);
 }
 void sprite_select_render_window(void)
 {
+	replay_render.target = REPLAY_TEST_RENDER_TARGET;
 	trace(14);
 }
 void set_projection(legacy_s16 x, legacy_s16 y, legacy_s16 width, legacy_s16 height)
@@ -281,6 +305,7 @@ void set_projection(legacy_s16 x, legacy_s16 y, legacy_s16 width, legacy_s16 hei
 void sprite_set_target_clip_bounds(legacy_u16 left, legacy_u16 right, legacy_u16 top,
 								   legacy_u16 bottom)
 {
+	replay_render.clip = (struct RECTANGLE){left, right, top, bottom};
 	trace(16);
 	trace(left);
 	trace(right);
@@ -289,11 +314,27 @@ void sprite_set_target_clip_bounds(legacy_u16 left, legacy_u16 right, legacy_u16
 }
 void setup_car_shapes(legacy_s16 operation)
 {
+	if (replay_render.active != 0) {
+		if (operation == DASHBOARD_OPERATION_REDRAW_STATIC) {
+			replay_render.static_draws++;
+		} else {
+			assert(operation == DASHBOARD_OPERATION_UPDATE);
+			assert(replay_render.target == (video_uses_page_flipping != 0
+												? REPLAY_TEST_PAGE_TARGET
+												: REPLAY_TEST_SCREEN_TARGET));
+			replay_render.updates++;
+		}
+	}
 	trace(17);
 	trace(operation);
 }
 void loop_game(legacy_s16 operation, legacy_s16 recorded, legacy_s16 current)
 {
+	if (replay_render.active != 0) {
+		assert(operation == REPLAY_LOOP_DRAW_CONTROLS);
+		replay_render.controls++;
+		return;
+	}
 #ifdef RESTUNTS_SDL3
 	if (scheduled_mode != 0) {
 		if (operation == REPLAY_LOOP_HANDLE_INPUT) {
@@ -310,6 +351,12 @@ void loop_game(legacy_s16 operation, legacy_s16 recorded, legacy_s16 current)
 }
 void update_frame(legacy_s8 buffer, struct RECTANGLE *rect)
 {
+	if (replay_render.active != 0) {
+		assert(rect == &rect_windshield);
+		assert(rect->bottom == (supersight_enabled != 0 && replaybar_enabled != 0 ? 151 : 165));
+		frames++;
+		return;
+	}
 #ifdef RESTUNTS_SDL3
 	if (scheduled_mode != 0) {
 		frames++;
@@ -345,19 +392,60 @@ void rect_union(struct RECTANGLE *first, struct RECTANGLE *second, struct RECTAN
 	trace_rect(first);
 	trace_rect(second);
 }
+static void record_dashboard_mask(legacy_u8 clipped, legacy_u8 overlay)
+{
+	if (replay_render.active == 0) {
+		return;
+	}
+	assert(replay_render.target ==
+		   (video_uses_page_flipping != 0 ? REPLAY_TEST_PAGE_TARGET : REPLAY_TEST_RENDER_TARGET));
+	assert(clipped == (supersight_enabled != 0 && replaybar_enabled != 0));
+	if (clipped != 0) {
+		assert(replay_render.clip.left == 0 && replay_render.clip.right == 320);
+		assert(replay_render.clip.top == 0 && replay_render.clip.bottom == 151);
+	}
+	if (overlay != 0) {
+		replay_render.overlays[clipped]++;
+	} else {
+		replay_render.masks[clipped]++;
+	}
+}
+
 void shape2d_render_bmp_as_mask(struct SHAPE2D far *shape)
 {
+	record_dashboard_mask(0, 0);
 	(void)shape;
 	trace(21);
 }
 void shape2d_rle_or_far_pointer(legacy_u16 offset, legacy_u16 segment)
 {
+	record_dashboard_mask(0, 1);
 	trace(22);
 	trace(offset);
 	trace(segment);
 }
+void shape2d_rle_mask_position_clipped(struct SHAPE2D far *shape)
+{
+	record_dashboard_mask(1, 0);
+	assert(shape == dasmshapeptr);
+	assert(supersight_enabled != 0 && replaybar_enabled != 0);
+}
+void shape2d_rle_or_position_clipped(struct SHAPE2D far *shape)
+{
+	record_dashboard_mask(1, 1);
+	assert(shape == (replay_render.active != 0 ? &replay_render.shapes[1] : NULL));
+	assert(supersight_enabled != 0 && replaybar_enabled != 0);
+}
+void far *dos_memory_make_pointer(legacy_u16 segment, legacy_u16 offset)
+{
+	assert(segment == dastseg && offset == dastbmp_y2);
+	return replay_render.active != 0 ? &replay_render.shapes[1] : NULL;
+}
 void frame_present(struct RECTANGLE *rect)
 {
+	if (replay_render.active != 0 && video_uses_page_flipping == 0) {
+		replay_render.target = REPLAY_TEST_SCREEN_TARGET;
+	}
 	trace(23);
 	trace_rect(rect);
 }
@@ -424,9 +512,58 @@ legacy_s16 get_kb_or_joy_flags(void)
 	return scenario & 2 ? INPUT_ACTION_BUTTON_MASK : 0;
 }
 
+static void test_replay_dashboard_rendering(void)
+{
+	legacy_u32 previous_trace = trace_hash;
+	for (legacy_u16 mode = 0; mode < 16; mode++) {
+		memset(&replay_render, 0, sizeof(replay_render));
+		replay_render.active = 1;
+		supersight_enabled = mode & 1;
+		replaybar_toggle = (mode >> 1) & 1;
+		video_uses_page_flipping = (mode >> 2) & 1;
+		legacy_u8 full_redraw = (mode >> 3) & 1;
+		struct RACE_VIEWPORT_CACHE cache = {-1, -1, 0};
+		game_replay_mode = REPLAY_MODE_PLAYBACK;
+		game_replay_mode_copy = RACE_REPLAY_MODE_UNINITIALIZED;
+		idle_expired = followOpponentFlag = is_in_replay = 0;
+		dashb_toggle = 1;
+		dashbmp_y = 165;
+		dastbmp_y = 130;
+		roofbmpheight = 0;
+		dasmshapeptr = &replay_render.shapes[0];
+		viewport_bottom_cache = -1;
+		video_page_count = video_uses_page_flipping != 0 ? 2 : 1;
+		frame_buffer_index = dashboard_buffer_index = 0;
+		slow_video_mgmt_copy = 0;
+		frames = presented_frames = 0;
+		race_update_viewport(&cache, 0);
+		legacy_u8 clipped = supersight_enabled != 0 && replaybar_enabled != 0;
+		assert(rect_windshield.bottom == (clipped != 0 ? 151 : 165));
+		assert(dashboard_visible != 0);
+		full_redraw_frames_remaining = full_redraw;
+		if (video_uses_page_flipping != 0) {
+			sprite_select_mcga_backbuffer();
+		} else {
+			sprite_select_render_window();
+		}
+		race_draw_frame();
+		assert(replay_render.masks[clipped] == 1 && replay_render.overlays[clipped] == 1);
+		assert(replay_render.masks[!clipped] == 0 && replay_render.overlays[!clipped] == 0);
+		assert(replay_render.static_draws == full_redraw && replay_render.updates == 1);
+		assert(replay_render.controls == (full_redraw != 0 && replaybar_enabled != 0));
+		assert(replay_render.clip.left == 0 && replay_render.clip.right == 320);
+		assert(replay_render.clip.top == 0 && replay_render.clip.bottom == 200);
+		assert(frame_buffer_index == (video_uses_page_flipping != 0 ? 1 : 0));
+		assert(full_redraw_frames_remaining == 0 && presented_frames == 1);
+	}
+	replay_render.active = 0;
+	supersight_enabled = 0;
+	assert(trace_hash == previous_trace);
+}
+
 static void test_rewind_frame_loop(void)
 {
-	struct RACE_VIEWPORT_CACHE cache = {-1, -1};
+	struct RACE_VIEWPORT_CACHE cache = {-1, -1, 0};
 	memset(&state, 0, sizeof(state));
 	memset(&gameconfig, 0, sizeof(gameconfig));
 	scripted_rewind = 1;
@@ -490,7 +627,7 @@ static void test_presentation_rate(void)
 	for (legacy_u16 rate = 10; rate <= 20; rate += 10) {
 		struct GAMESTATE baseline;
 		for (legacy_u16 mode = 0; mode < 3; mode++) {
-			struct RACE_VIEWPORT_CACHE cache = {-1, -1};
+			struct RACE_VIEWPORT_CACHE cache = {-1, -1, 0};
 			prepare_presentation_test(rate, mode);
 			race_run_frames(&cache);
 			assert(scheduled_physics == rate);
@@ -519,7 +656,7 @@ static void test_replay_presentation_rate(void)
 										REPLAY_PLAYBACK_FAST};
 	for (legacy_u16 rate = 10; rate <= 20; rate += 10) {
 		for (legacy_u16 speed = 0; speed < 3; speed++) {
-			struct RACE_VIEWPORT_CACHE cache = {-1, -1};
+			struct RACE_VIEWPORT_CACHE cache = {-1, -1, 0};
 			prepare_presentation_test(rate, 1);
 			game_replay_mode = REPLAY_MODE_PLAYBACK;
 			replay_playback_speed = speeds[speed];
@@ -605,6 +742,7 @@ int main(void)
 		memset(&rect_windshield, 0, sizeof(rect_windshield));
 		memset(&dirty_rect, 0, sizeof(dirty_rect));
 		cache.roof_height = cache.dashboard_bottom = -1;
+		cache.supersight = 0;
 		frames = keys = 0;
 		state.game_frame = 10;
 		elapsed_time2 = (scenario & 1) ? 11 : 10;
@@ -658,6 +796,7 @@ int main(void)
 	assert(trace_hash == UINT32_C(0xe6335ceb));
 #endif
 	test_rewind_frame_loop();
+	test_replay_dashboard_rendering();
 #ifdef RESTUNTS_SDL3
 	test_presentation_rate();
 	test_replay_presentation_rate();

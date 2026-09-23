@@ -127,6 +127,12 @@ static void draw_rle_case(legacy_u32 scenario)
 	}
 }
 
+static void draw_rle_clipped_mask_case(legacy_u32 scenario)
+{
+	reset_planar_bitmap();
+	draw_rle_clipped_mask(scenario);
+}
+
 static void draw_rle_mask_case(legacy_u32 scenario)
 {
 	static const legacy_u8 values[] = {0, 255, 0x33, 0x80};
@@ -236,6 +242,7 @@ int main(void)
 	planar_enabled = 0;
 	check_fingerprint("RAM RLE", 0x45b9c13cUL, test_rle);
 	compare_targets(256, draw_rle_case);
+	compare_targets(256, draw_rle_clipped_mask_case);
 	compare_targets(400, draw_rle_mask_case);
 	test_repeated_mask_plane_switches();
 	for (legacy_u32 index = 0; index < 256; index++) {
