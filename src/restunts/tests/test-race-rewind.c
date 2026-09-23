@@ -8,7 +8,7 @@
 
 static legacy_s8 recorded_inputs[12000], original_inputs[12000];
 static struct GAMESTATE checkpoints[21];
-static legacy_s16 held_q, live_input, interrupts_disabled;
+static legacy_s16 held_q, held_control, live_input, interrupts_disabled;
 static legacy_u32 pending_ticks;
 static legacy_u32 timer_reads, audio_updates, restores, simulation_updates;
 static legacy_u32 supersight_resets;
@@ -22,6 +22,9 @@ static legacy_s8 event_kind;
 
 legacy_s16 kb_get_key_state(legacy_s16 scan_code)
 {
+	if (scan_code == 0x1D) {
+		return held_control;
+	}
 	return scan_code == RACE_REWIND_SCAN_CODE ? held_q : 0;
 }
 legacy_u32 timer_get_delta_alt(void)
@@ -138,6 +141,7 @@ static void reset_race(legacy_u16 frame, legacy_u16 end_frame, legacy_s8 end_eve
 	memset(&gameconfig, 0, sizeof(gameconfig));
 	memset(input_steering_history_valid, 0, sizeof(input_steering_history_valid));
 	held_q = 1;
+	held_control = 0;
 	live_input = INPUT_ACCELERATE_FLAG;
 	interrupts_disabled = 0;
 	pending_ticks = 987654;
@@ -284,7 +288,7 @@ static void test_recording_limit_warning(void)
 }
 static void test_rewind_gates(void)
 {
-	for (legacy_u32 which = 0; which < 8; which++) {
+	for (legacy_u32 which = 0; which < 9; which++) {
 		struct RACE_REWIND_STATE rewind = {0};
 		reset_race(1800, 0, CRASH_EVENT_NONE);
 		switch (which) {
@@ -312,12 +316,43 @@ static void test_rewind_gates(void)
 			case 7:
 				race_exit_request = 1;
 				break;
+			case 8:
+				held_control = 1;
+				break;
 		}
 		race_update_rewind(&rewind);
 		assert(rewind.active == 0 && state.game_frame == 1800);
 		assert(timer_reads == 0 && audio_updates == 0 && restores == 0);
 		assert(gameconfig.game_recordedframes == 1802 && elapsed_time2 == 1802);
 	}
+}
+static void test_control_stops_rewind(void)
+{
+	struct RACE_REWIND_STATE rewind = {0};
+	reset_race(1800, 0, CRASH_EVENT_NONE);
+	race_update_rewind(&rewind);
+	hold_for(&rewind, 20);
+	assert_reconstructed(1797);
+
+	held_control = 1;
+	hold_for(&rewind, 20);
+	assert(rewind.active == 0);
+	assert(game_replay_mode == REPLAY_MODE_LIVE && is_in_replay == 0);
+	assert_reconstructed(1797);
+	assert(gameconfig.game_recordedframes == 1797);
+	assert(timer_reads == 2 && restores == 1 && audio_updates == 2);
+
+	hold_for(&rewind, 20);
+	assert(rewind.active == 0);
+	assert_reconstructed(1797);
+	assert(timer_reads == 2 && restores == 1 && audio_updates == 2);
+
+	held_control = 0;
+	race_update_rewind(&rewind);
+	assert(rewind.active == 1);
+	hold_for(&rewind, 20);
+	assert_reconstructed(1794);
+	release_q(&rewind);
 }
 static void test_crash_and_finish_lifecycle(void)
 {
@@ -360,6 +395,7 @@ int main(void)
 	test_acceleration_and_start_saturation();
 	test_recording_limit_warning();
 	test_rewind_gates();
+	test_control_stops_rewind();
 	test_crash_and_finish_lifecycle();
 	return 0;
 }

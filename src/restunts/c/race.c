@@ -46,6 +46,7 @@
 #define RACE_START_POSITION_SCALE_SHIFT 6U
 #define RACE_RANDOM_VALUE_SHIFT 3U
 #define RACE_REWIND_SCAN_CODE 0x10
+#define RACE_CONTROL_SCAN_CODE 0x1D
 /* Match the replay scrub units; the 100 Hz timer doubles speed after ten seconds. */
 #define RACE_REWIND_UNITS_PER_FRAME 20UL
 #define RACE_REWIND_BASE_SPEED 3UL
@@ -125,10 +126,17 @@ static void race_rewind_resume(struct RACE_REWIND_STATE *rewind)
 	audio_carstate();
 }
 
+static legacy_s16 race_rewind_key_held(void)
+{
+	/* Control-Q belongs to the quit shortcut, including during an active rewind. */
+	return kb_get_key_state(RACE_REWIND_SCAN_CODE) != 0 &&
+		   kb_get_key_state(RACE_CONTROL_SCAN_CODE) == 0;
+}
+
 static void race_update_rewind(struct RACE_REWIND_STATE *rewind)
 {
 	if (rewind->active != 0) {
-		if (kb_get_key_state(RACE_REWIND_SCAN_CODE) != 0) {
+		if (race_rewind_key_held() != 0) {
 			race_rewind_seek(rewind);
 		} else {
 			race_rewind_resume(rewind);
@@ -141,7 +149,7 @@ static void race_update_rewind(struct RACE_REWIND_STATE *rewind)
 		state.game_end_event == CRASH_EVENT_EXIT ||
 		(race_exit_request != 0 && (race_exit_request == REPLAY_EXIT_REQUESTED ||
 									state.game_end_event == CRASH_EVENT_NONE)) ||
-		kb_get_key_state(RACE_REWIND_SCAN_CODE) == 0) {
+		race_rewind_key_held() == 0) {
 		return;
 	}
 
