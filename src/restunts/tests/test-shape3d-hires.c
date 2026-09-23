@@ -132,17 +132,17 @@ static void test_attached_polygon_weight(void)
 
 static void test_attached_polygon_midrange_weight(void)
 {
-	/* Keep the projected dash length and subpixel phase fixed. Mid-range
-	 * coverage should fall faster while the near and far weights stay intact. */
-	const legacy_f64 depths[] = {600, 850, 1000, 6400};
-	const legacy_u32 expected_widths[] = {4, 2, 1, 1};
-	for (legacy_u32 distance = 0; distance < 4; distance++) {
+	/* Keep the projected dash length and subpixel phase fixed. These distances
+	 * cover the near cap, mid-range falloff, and distant visibility floor. */
+	const legacy_f64 depths[] = {200, 250, 300, 400, 1000, 6400};
+	const legacy_u32 expected_widths[] = {4, 3, 2, 1, 1, 1};
+	for (legacy_u32 distance = 0; distance < sizeof(depths) / sizeof(depths[0]); distance++) {
 		legacy_f64 depth = depths[distance];
 		legacy_f64 shift = depth * 0.375 / 640;
-		const struct SHAPE3D_HIRES_VECTOR marking[] = {{-depth / 16 + shift, -0.5 - shift, depth},
-													   {depth / 16 + shift, -0.5 - shift, depth},
-													   {depth / 16 + shift, 0.5 - shift, depth},
-													   {-depth / 16 + shift, 0.5 - shift, depth}};
+		const struct SHAPE3D_HIRES_VECTOR marking[] = {{-depth / 16 + shift, -0.25 - shift, depth},
+													   {depth / 16 + shift, -0.25 - shift, depth},
+													   {depth / 16 + shift, 0.25 - shift, depth},
+													   {-depth / 16 + shift, 0.25 - shift, depth}};
 		reset_target();
 		queue_flagged(RENDER_PRIMITIVE_POLYGON, 4, marking, 3);
 		shape3d_hires_render(0, RENDER_PRIMITIVE_POLYGON, 8, 0, 0, 0, 0);
@@ -164,10 +164,10 @@ static void test_attached_polygon_weight_follows_projection(void)
 	static legacy_u8 reference[HIRES_WIDTH * HIRES_HEIGHT];
 	/* A fractional translation distinguishes this medium-distance stroke
 	 * from both the full near width and the minimum distant width. */
-	const struct SHAPE3D_HIRES_VECTOR marking[] = {{-52.626953125, -0.998046875, 850},
-												   {53.623046875, -0.998046875, 850},
-												   {53.623046875, 0.001953125, 850},
-												   {-52.626953125, 0.001953125, 850}};
+	const struct SHAPE3D_HIRES_VECTOR marking[] = {{-18.57421875, -0.42578125, 300},
+												   {18.92578125, -0.42578125, 300},
+												   {18.92578125, 0.07421875, 300},
+												   {-18.57421875, 0.07421875, 300}};
 	reset_target();
 	queue_flagged(RENDER_PRIMITIVE_POLYGON, 4, marking, 3);
 	shape3d_hires_render(0, RENDER_PRIMITIVE_POLYGON, 8, 0, 0, 0, 0);
@@ -480,7 +480,7 @@ static void test_line_weight_follows_projection(void)
 {
 	static legacy_u8 close[HIRES_WIDTH * HIRES_HEIGHT];
 	static legacy_u8 middle[HIRES_WIDTH * HIRES_HEIGHT];
-	const legacy_f64 depths[] = {100, 600, 1600, 6400};
+	const legacy_f64 depths[] = {100, 200, 600, 6400};
 	legacy_u32 widths[4];
 	for (legacy_u32 distance = 0; distance < 4; distance++) {
 		/* Keep the projected endpoints fixed while moving the line away. */
@@ -508,7 +508,7 @@ static void test_line_weight_follows_projection(void)
 	assert(widths[3] == 1);
 
 	/* Equal focal-length/depth ratios must preserve both geometry and weight. */
-	const struct SHAPE3D_HIRES_VECTOR equivalent[] = {{-100, 0, 3200}, {100, 0, 3200}};
+	const struct SHAPE3D_HIRES_VECTOR equivalent[] = {{-37.5, 0, 1200}, {37.5, 0, 1200}};
 	projection_focal_length_x = projection_focal_length_y = 320;
 	reset_target();
 	queue(RENDER_PRIMITIVE_LINE, 2, equivalent);
@@ -522,8 +522,8 @@ static void test_line_weight_follows_projection(void)
 	const legacy_f64 scales[] = {20, 0.5};
 	for (legacy_u32 model = 0; model < 2; model++) {
 		legacy_f64 scale = scales[model];
-		const struct SHAPE3D_HIRES_VECTOR line[] = {{-100 * scale, 0, 1600 * scale},
-													{100 * scale, 0, 1600 * scale}};
+		const struct SHAPE3D_HIRES_VECTOR line[] = {{-37.5 * scale, 0, 600 * scale},
+													{37.5 * scale, 0, 600 * scale}};
 		reset_target();
 		shape3d_hires_set_model_scale(scale);
 		queue(RENDER_PRIMITIVE_LINE, 2, line);
@@ -536,7 +536,7 @@ static void test_line_weight_follows_projection(void)
 
 static void test_line_weight_varies_along_depth(void)
 {
-	const struct SHAPE3D_HIRES_VECTOR sloping[] = {{-78.125, 0, 500}, {1000, 0, 6400}};
+	const struct SHAPE3D_HIRES_VECTOR sloping[] = {{-29.296875, 0, 187.5}, {375, 0, 2400}};
 	for (legacy_u32 reverse = 0; reverse < 2; reverse++) {
 		const struct SHAPE3D_HIRES_VECTOR line[] = {sloping[reverse], sloping[1 - reverse]};
 		reset_target();
