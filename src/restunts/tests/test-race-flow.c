@@ -4,6 +4,18 @@
 /* Exercise the frame scheduler and viewport policy without a DOS display. */
 #include "../c/race.c"
 
+legacy_u8 supersight_enabled;
+static legacy_u32 projection_updates;
+
+void set_projection(legacy_s16 x, legacy_s16 y, legacy_s16 width, legacy_s16 height)
+{
+	assert(x == RACE_PROJECTION_HORIZONTAL_SCALE);
+	assert(y == height / RACE_PROJECTION_VERTICAL_DIVISOR);
+	assert(width == RACE_SCREEN_WIDTH);
+	assert(height == dashbmp_y_copy);
+	projection_updates++;
+}
+
 static legacy_u32 updates;
 static legacy_u32 analog_updates;
 static legacy_u8 joystick_enabled;
@@ -135,10 +147,55 @@ static void test_dashboard_layout(void)
 	}
 }
 
+static void test_replay_viewport_toggle(void)
+{
+	/* Cover dashboard boundaries on both sides of the toolbar, including ZMP4. */
+	static const legacy_s16 dashboard_tops[] = {140, 151, 165, 180};
+	for (legacy_u16 index = 0; index < sizeof(dashboard_tops) / sizeof(dashboard_tops[0]);
+		 index++) {
+		struct RACE_VIEWPORT_CACHE cache = {-1, -1, 0};
+		game_replay_mode = REPLAY_MODE_PLAYBACK;
+		game_replay_mode_copy = RACE_REPLAY_MODE_UNINITIALIZED;
+		idle_expired = followOpponentFlag = 0;
+		dashb_toggle = replaybar_toggle = 1;
+		is_in_replay = 0;
+		dashbmp_y = dashboard_tops[index];
+		roofbmpheight = 13;
+		viewport_bottom_cache = -1;
+		video_page_count = 2;
+		projection_updates = 0;
+		legacy_s16 enhanced_bottom = dashbmp_y > 151 ? 151 : dashbmp_y;
+		for (legacy_u16 pass = 0; pass < 3; pass++) {
+			supersight_enabled = pass == 1;
+			full_redraw_frames_remaining = 0;
+			race_update_viewport(&cache, 0);
+			legacy_s16 expected_bottom = supersight_enabled ? enhanced_bottom : dashbmp_y;
+			assert(dashbmp_y_copy == expected_bottom);
+			assert(rect_windshield.bottom == expected_bottom);
+			assert(height_above_replaybar == 151);
+			assert(dashboard_visible == 1 && replaybar_enabled == 1);
+			assert(cache.supersight == supersight_enabled);
+			assert(full_redraw_frames_remaining == (pass == 0 || dashbmp_y > 151 ? 2 : 0));
+		}
+		assert(projection_updates == (dashbmp_y > 151 ? 3 : 1));
+
+		supersight_enabled = 1;
+		replaybar_toggle = 0;
+		race_update_viewport(&cache, 0);
+		assert(replaybar_enabled == 0 && height_above_replaybar == 200);
+		assert(rect_windshield.bottom == dashbmp_y);
+		replaybar_toggle = 1;
+		race_update_viewport(&cache, 0);
+		assert(replaybar_enabled == 1 && rect_windshield.bottom == enhanced_bottom);
+	}
+	supersight_enabled = 0;
+}
+
 int main(void)
 {
 	test_frame_scheduling();
 	test_frame_catchup();
 	test_dashboard_layout();
+	test_replay_viewport_toggle();
 	return 0;
 }

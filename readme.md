@@ -84,8 +84,9 @@ In SDL3 builds (Windows, Linux, and 32-bit DOS), SuperSight also renders 3D
 at **1280x800**, four times the original width and height. Player and opponent
 car-selection previews use the same higher resolution; F12 also works in those
 screens. Dashboard artwork, replay controls, and the surrounding menu UI retain
-their original pixel detail and size. Switching SuperSight off restores 320x200
-rendering.
+their original pixel detail and size. SuperSight clips custom dashboards and the
+3D view above visible replay controls so they remain unobstructed. Switching
+SuperSight off restores 320x200 rendering and the original dashboard layout.
 SuperSight also uses [AI-refined skybox artwork](docs/skyboxes/README.md), with
 each horizon image at four times its original width and height. Switching it
 off restores the original skybox artwork. Missing enhanced PNGs fall back to

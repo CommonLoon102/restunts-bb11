@@ -611,8 +611,9 @@ static legacy_s16 shape2d_rle_skip(struct SHAPE2D_RLE_CURSOR *cursor, legacy_u16
 
 /* Decode a clipped row in runs so changing VGA planes costs once per run,
  * rather than once per pixel. The cursor may start partway through a run. */
-static legacy_s16 shape2d_rle_copy_span(struct SHAPE2D_RLE_CURSOR *cursor, legacy_u8 far *bitmap,
-										legacy_u16 destination, legacy_u16 count)
+static legacy_s16 shape2d_rle_raster_span(struct SHAPE2D_RLE_CURSOR *cursor, legacy_u8 far *bitmap,
+										  legacy_u16 destination, legacy_u16 count,
+										  legacy_s16 operation)
 {
 	while (count != 0U) {
 		legacy_u8 value;
@@ -624,13 +625,13 @@ static legacy_s16 shape2d_rle_copy_span(struct SHAPE2D_RLE_CURSOR *cursor, legac
 			span = count;
 		}
 		if (cursor->literal != 0) {
-			video_pages_copy_span(
+			video_pages_raster_span(
 				bitmap, destination,
 				(legacy_u8 far *)dos_memory_make_pointer(cursor->shape_segment, 0),
-				LEGACY_U16_WRAP_SUB(cursor->source, 1U), span);
+				LEGACY_U16_WRAP_SUB(cursor->source, 1U), span, operation, NULL);
 			cursor->source = LEGACY_U16_WRAP_ADD(cursor->source, span - 1U);
 		} else {
-			video_pages_fill_span(bitmap, destination, span, value);
+			shape2d_apply_planar_run(bitmap, destination, span, value, operation);
 		}
 		cursor->remaining -= span - 1U;
 		destination = LEGACY_U16_WRAP_ADD(destination, span);
@@ -639,7 +640,8 @@ static legacy_s16 shape2d_rle_copy_span(struct SHAPE2D_RLE_CURSOR *cursor, legac
 	return 1;
 }
 
-static void shape2d_render_rle_clipped(struct SHAPE2D far *shape, legacy_u16 x, legacy_u16 y)
+static void shape2d_render_rle_clipped(struct SHAPE2D far *shape, legacy_u16 x, legacy_u16 y,
+									   legacy_s16 operation)
 {
 	struct SHAPE2D_CLIP clip;
 	if (!shape2d_clip_blit(shape, x, y, &clip)) {
@@ -651,7 +653,7 @@ static void shape2d_render_rle_clipped(struct SHAPE2D far *shape, legacy_u16 x, 
 		LEGACY_U16_WRAP_ADD(dos_memory_pointer_offset(shape), SHAPE2D_HEADER_SIZE);
 	if (clip.source == data_start && clip.source_advance == 0 && clip.width == width &&
 		clip.rows == height) {
-		shape2d_render_rle(shape, x, y, SHAPE2D_RASTER_COPY);
+		shape2d_render_rle(shape, x, y, operation);
 		return;
 	}
 	struct SHAPE2D_RLE_CURSOR cursor;
@@ -672,7 +674,7 @@ static void shape2d_render_rle_clipped(struct SHAPE2D far *shape, legacy_u16 x, 
 	legacy_u8 value;
 	do {
 		if (planar != 0) {
-			if (!shape2d_rle_copy_span(&cursor, bitmap, destination, clip.width)) {
+			if (!shape2d_rle_raster_span(&cursor, bitmap, destination, clip.width, operation)) {
 				return;
 			}
 			destination = LEGACY_U16_WRAP_ADD(destination, clip.width);
@@ -682,7 +684,7 @@ static void shape2d_render_rle_clipped(struct SHAPE2D far *shape, legacy_u16 x, 
 				if (!shape2d_rle_next(&cursor, &value)) {
 					return;
 				}
-				bitmap[destination] = value;
+				shape2d_write_raster(bitmap, destination, value, operation, 0);
 				destination++;
 				count--;
 			} while (count != 0);
@@ -701,17 +703,31 @@ static void shape2d_render_rle_clipped(struct SHAPE2D far *shape, legacy_u16 x, 
 
 void shape2d_rle_copy_clipped(struct SHAPE2D far *shape, legacy_s16 x, legacy_s16 y)
 {
-	shape2d_render_rle_clipped(shape, (legacy_u16)x, (legacy_u16)y);
+	shape2d_render_rle_clipped(shape, (legacy_u16)x, (legacy_u16)y, SHAPE2D_RASTER_COPY);
 }
 
 void shape2d_rle_copy_position_clipped(struct SHAPE2D far *shape)
 {
-	shape2d_render_rle_clipped(shape, shape2d_get_pos_x(shape), shape2d_get_pos_y(shape));
+	shape2d_render_rle_clipped(shape, shape2d_get_pos_x(shape), shape2d_get_pos_y(shape),
+							   SHAPE2D_RASTER_COPY);
+}
+
+void shape2d_rle_mask_position_clipped(struct SHAPE2D far *shape)
+{
+	shape2d_render_rle_clipped(shape, shape2d_get_pos_x(shape), shape2d_get_pos_y(shape),
+							   SHAPE2D_RASTER_AND);
+}
+
+void shape2d_rle_or_position_clipped(struct SHAPE2D far *shape)
+{
+	shape2d_render_rle_clipped(shape, shape2d_get_pos_x(shape), shape2d_get_pos_y(shape),
+							   SHAPE2D_RASTER_OR);
 }
 
 void shape2d_rle_copy_anchor_clipped(struct SHAPE2D far *shape, legacy_s16 x, legacy_s16 y)
 {
-	shape2d_render_rle_clipped(shape, shape2d_anchored_x(shape, x), shape2d_anchored_y(shape, y));
+	shape2d_render_rle_clipped(shape, shape2d_anchored_x(shape, x), shape2d_anchored_y(shape, y),
+							   SHAPE2D_RASTER_COPY);
 }
 
 static void sprite_putimage_at(struct SHAPE2D far *shape, legacy_u16 x, legacy_u16 y,

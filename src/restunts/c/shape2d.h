@@ -120,6 +120,8 @@ void font_draw_text_opaque(const legacy_s8 *text, legacy_s16 x, legacy_s16 y);
 void shape2d_rle_copy_at_position(struct SHAPE2D far *shape);
 void shape2d_rle_copy_clipped(struct SHAPE2D far *shape, legacy_s16 x, legacy_s16 y);
 void shape2d_rle_copy_position_clipped(struct SHAPE2D far *shape);
+void shape2d_rle_mask_position_clipped(struct SHAPE2D far *shape);
+void shape2d_rle_or_position_clipped(struct SHAPE2D far *shape);
 void shape2d_rle_or_far_pointer(legacy_u16 offset, legacy_u16 segment);
 void shape2d_rle_copy(struct SHAPE2D far *shape, legacy_s16 x, legacy_s16 y);
 void shape2d_render_bmp_as_mask(struct SHAPE2D far *shape);
