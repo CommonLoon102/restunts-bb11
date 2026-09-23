@@ -194,7 +194,7 @@ def main():
     parser.add_argument("--check", action="store_true", help="Recompute and compare without writing")
     args = parser.parse_args()
     game = args.game_directory or args.repository_root / "stunts"
-    sources = args.repository_root / "docs/opponents/game2-sources"
+    sources = args.repository_root / "docs/opponents/game-sources"
     generated = args.generated_directory or sources / "full-resolution"
     destination = args.output_directory or args.repository_root / "assets/opponents/game"
     working = args.working_directory or (

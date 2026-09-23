@@ -97,7 +97,7 @@ while SuperSight is on. The final set in `assets/opponents/game/` contains
 and solid backgrounds. F12 switches portraits in the menu; missing or unreadable
 replacements fall back individually to the originals. Original numbered labels
 and the clipboard frame are preserved. The selected full-resolution sources and
-4x working tiles are archived in `docs/opponents/game2-sources/` for regeneration.
+4x working tiles are archived in `docs/opponents/game-sources/` for regeneration.
 
 SuperSight also targets **40 FPS** in SDL3 driving, replay playback, the nighttime
 intro, and rotating car previews. Between real simulation updates, driving and

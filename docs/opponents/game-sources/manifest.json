@@ -71,7 +71,7 @@
       "height": 1296,
       "bytes": 2210478,
       "sha256": "1e97ebd3425874e6720196f77ec59962f6ebb60e429af43487e113169e93ca91",
-      "source": "git:e68076c971de68f7c1bcf4866395c5d2d0d7823e:docs/opponents/game2-sources/full-resolution/opp4.png",
+      "source": "git:f7897a32928528c79f82383a8478e7e370b4cff6",
       "composition": "patches/opp4-right-earring.json"
     },
     {
@@ -82,7 +82,7 @@
       "height": 332,
       "bytes": 109207,
       "sha256": "0683ca6b4914e6739a7f01fd92e778b684c4c93aaaaa6c6c3265661e1e00a667",
-      "source": "/media/sf_ubi24/restunts-bb11/docs/opponents/game2-sources/full-resolution/opp4.png"
+      "source": "/media/sf_ubi24/restunts-bb11/docs/opponents/game-sources/full-resolution/opp4.png"
     },
     {
       "file": "full-resolution/opp5.png",

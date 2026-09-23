@@ -1,10 +1,9 @@
 # Preserved opponent portrait sources
 
 These are lossless copies of the selected images used to prepare the final
-portraits in `assets/opponents/game/`. The archive keeps its historical
-`game2-sources` name and contains the six selected photographs and six 4x working
-tiles for future edits and reference, independently of ignored build output and
-local generated-image storage.
+portraits in `assets/opponents/game/`. The `game-sources` archive contains the six
+selected photographs and six 4x working tiles for future edits and reference,
+independently of ignored build output and local generated-image storage.
 
 - `full-resolution/`: the six selected photographic sources, before resizing.
 - `working-4x/`: 320 x 332 RGB tiles, four times the original width and height.
@@ -59,6 +58,7 @@ Cherry's [RGBA earring patch](patches/opp4-right-earring.png) and
 [composition record](patches/opp4-right-earring.json) preserve the localized edit.
 The record identifies the committed base photograph, staged donor, patch placement,
 and hashes. To reconstruct the full-resolution image with Pillow, load the base
-from the recorded Git commit as RGB and the patch as RGBA, then use
+with `git cat-file blob <base_blob>` using the recorded object ID, load it as RGB,
+and load the patch as RGBA, then use
 `base.paste(patch, (179, 691), patch)`. Only 2,778 pixels change; every pixel outside
 the earring patch remains identical to the committed photograph.

@@ -1,7 +1,6 @@
 {
   "method": "Pillow masked copy; no image generation or whole-image resampling",
   "base_commit": "e68076c971de68f7c1bcf4866395c5d2d0d7823e",
-  "base_file": "docs/opponents/game2-sources/full-resolution/opp4.png",
   "base_png_sha256": "19c5b949087d5e2c883ebdc322b1af766d212209348d48124901682d232018f6",
   "donor": "Git staged version of the same file at correction time",
   "donor_png_sha256": "4bb6eb338330f0672e080dd52818e1b0e2c3b8ab9e643a936442de768f610893",
@@ -96,5 +95,7 @@
     44,
     154
   ],
-  "reconstruction": "Load base_file from base_commit as RGB; load patch_file as RGBA; base.paste(patch, tuple(destination), patch); save as PNG. The stored alpha includes feathering and foreground occlusion."
+  "reconstruction": "Read the committed base with git cat-file blob <base_blob>, then load those bytes as RGB; load patch_file as RGBA; base.paste(patch, tuple(destination), patch); save as PNG. The stored alpha includes feathering and foreground occlusion.",
+  "output_file": "docs/opponents/game-sources/full-resolution/opp4.png",
+  "base_blob": "f7897a32928528c79f82383a8478e7e370b4cff6"
 }
