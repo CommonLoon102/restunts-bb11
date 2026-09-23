@@ -10,7 +10,9 @@
 #define HIRES_NEAR_CLIP_Z 12
 /* Keep the original displayed pixel width through medium-close views,
  * then let perspective narrow the stroke at greater distances. */
-#define HIRES_LINE_DIAMETER 4.0
+#define HIRES_LINE_DIAMETER 1.5
+/* A subpixel decal still needs coverage across diagonal sample gaps. */
+#define HIRES_MIN_DECAL_WIDTH 1.5
 #define HIRES_MAX_POLYGON_POINTS 20
 #define HIRES_ROUND_POINTS 64
 #define HIRES_WHEEL_INNER_SCALE (9472.0 / TRIG_FIXED_ONE)
@@ -101,6 +103,81 @@ static legacy_s32 polygon_faces_camera(const struct SHAPE3D_HIRES_POINT *points,
 	return area > 0;
 }
 
+static legacy_f64 decal_width(legacy_f64 inverse_z)
+{
+	legacy_f64 width =
+		HIRES_LINE_DIAMETER * model_scale * projection_focal_length_x * HIRES_SCALE * inverse_z;
+	if (width >= HIRES_SCALE) {
+		return HIRES_SCALE;
+	}
+	if (width <= HIRES_MIN_DECAL_WIDTH) {
+		return HIRES_MIN_DECAL_WIDTH;
+	}
+	/* Reduce mid-range coverage while preserving the near cap and distant visibility floor. */
+	legacy_f64 excess = width - HIRES_MIN_DECAL_WIDTH;
+	legacy_f64 reduction = excess - excess * excess / (HIRES_SCALE - HIRES_MIN_DECAL_WIDTH);
+	width -= 2 * reduction;
+	return width > HIRES_MIN_DECAL_WIDTH ? width : HIRES_MIN_DECAL_WIDTH;
+}
+
+/* Measure the complete projected polygon across each edge normal. The coverage
+ * target follows perspective, with a small floor to keep distant decals solid. */
+static legacy_f64 polygon_padding(const struct SHAPE3D_HIRES_POINT *points, legacy_u32 count)
+{
+	legacy_f64 minimum_width = 0;
+	legacy_s32 has_edge = 0;
+	legacy_f64 nearest = points[0].inverse_z;
+	legacy_f64 farthest = nearest;
+	for (legacy_u32 edge = 0; edge < count; edge++) {
+		const struct SHAPE3D_HIRES_POINT *first = &points[edge];
+		const struct SHAPE3D_HIRES_POINT *last = &points[(edge + 1) % count];
+		if (first->inverse_z > nearest) {
+			nearest = first->inverse_z;
+		}
+		if (first->inverse_z < farthest) {
+			farthest = first->inverse_z;
+		}
+		legacy_f64 dx = last->x - first->x;
+		legacy_f64 dy = last->y - first->y;
+		legacy_f64 length = SDL_sqrt(dx * dx + dy * dy);
+		if (length == 0) {
+			continue;
+		}
+		legacy_f64 minimum = 0;
+		legacy_f64 maximum = 0;
+		for (legacy_u32 point = 0; point < count; point++) {
+			legacy_f64 distance =
+				(points[point].x - first->x) * dy - (points[point].y - first->y) * dx;
+			if (distance < minimum) {
+				minimum = distance;
+			}
+			if (distance > maximum) {
+				maximum = distance;
+			}
+		}
+		legacy_f64 width = (maximum - minimum) / length;
+		if (!has_edge || width < minimum_width) {
+			minimum_width = width;
+		}
+		has_edge = 1;
+	}
+	if (minimum_width >= HIRES_SCALE) {
+		return 0;
+	}
+	legacy_f64 expansion = decal_width(nearest) - minimum_width;
+	/* A sloping dash can taper below a sample at its far end even when its
+	 * near end is wide enough. Account for that narrowing before adding a border. */
+	legacy_f64 far_expansion = decal_width(farthest) - minimum_width * farthest / nearest;
+	if (far_expansion > expansion) {
+		expansion = far_expansion;
+	}
+	/* Keep the original nearby weight and a smooth transition to unexpanded surfaces. */
+	if (expansion > HIRES_SCALE - minimum_width) {
+		expansion = HIRES_SCALE - minimum_width;
+	}
+	return expansion > 0 ? expansion * 0.5 : 0;
+}
+
 legacy_s32 shape3d_hires_polygon_visible(legacy_u16 index, legacy_s32 cull_backface)
 {
 	if (index >= POLYINFO_SUPERSIGHT_PRIMITIVE_CAPACITY) {
@@ -112,7 +189,7 @@ legacy_s32 shape3d_hires_polygon_visible(legacy_u16 index, legacy_s32 cull_backf
 	}
 	legacy_u8 flags = 15;
 	for (legacy_u32 point = 0; point < primitive->count; point++) {
-		flags &= point_clip_flags(&primitive->points[point], 0);
+		flags &= point_clip_flags(&primitive->points[point], primitive->size);
 	}
 	return flags == 0 &&
 		   (!cull_backface || polygon_faces_camera(primitive->points, primitive->count));
@@ -194,6 +271,7 @@ static void queue_primitive(legacy_u16 index, legacy_u8 type, legacy_u16 vertex_
 	}
 	struct HIRES_PRIMITIVE *primitive = &primitives[index];
 	primitive->count = 0;
+	primitive->size = 0;
 	if (!hires_enabled() || vertex_count == 0 || vertex_count > HIRES_MAX_POLYGON_POINTS / 2) {
 		return;
 	}
@@ -253,6 +331,9 @@ void shape3d_hires_queue(legacy_u16 index, legacy_u8 type, legacy_u16 vertex_cou
 	struct HIRES_PRIMITIVE *primitive = &primitives[index];
 	primitive->shape = current_shape;
 	primitive->attached = (flags & 2U) != 0;
+	if (type == RENDER_PRIMITIVE_POLYGON && primitive->attached) {
+		primitive->size = polygon_padding(primitive->points, primitive->count);
+	}
 	if (!primitive->attached) {
 		current_family = index + 1;
 	}
@@ -323,10 +404,11 @@ void shape3d_hires_update_bounds(legacy_u16 index, legacy_u8 type, struct RECTAN
 			}
 		}
 	}
-	if (type == RENDER_PRIMITIVE_LINE) {
+	if (type == RENDER_PRIMITIVE_LINE || type == RENDER_PRIMITIVE_POLYGON) {
 		/* Include the maximum stroke and rounding to its nearest sample in both
 		 * the sprite copy rectangle and the per-shape depth buffer bounds. */
-		legacy_f64 padding = HIRES_SCALE / 2.0 + 0.5;
+		legacy_f64 padding =
+			type == RENDER_PRIMITIVE_LINE ? HIRES_SCALE / 2.0 + 0.5 : primitive->size;
 		minimum_x -= padding;
 		maximum_x += padding;
 		minimum_y -= padding;
@@ -355,6 +437,27 @@ void shape3d_hires_update_bounds(legacy_u16 index, legacy_u8 type, struct RECTAN
 	if (bottom > rectangle->bottom) {
 		rectangle->bottom = (legacy_s16)bottom;
 	}
+}
+
+static legacy_s32 polygon_covers_sample(const struct SHAPE3D_HIRES_POINT *points, legacy_u32 count,
+										legacy_f64 x, legacy_f64 y)
+{
+	legacy_s32 inside = 0;
+	const struct SHAPE3D_HIRES_POINT *previous = &points[count - 1];
+	for (legacy_u32 index = 0; index < count; index++) {
+		const struct SHAPE3D_HIRES_POINT *current = &points[index];
+		if ((previous->y <= y && current->y > y) || (current->y <= y && previous->y > y)) {
+			/* Match the fill's half-open spans and shared-edge arithmetic exactly. */
+			const struct SHAPE3D_HIRES_POINT *lower = previous->y < current->y ? previous : current;
+			const struct SHAPE3D_HIRES_POINT *upper = previous->y < current->y ? current : previous;
+			legacy_f64 fraction = (y - lower->y) / (upper->y - lower->y);
+			if (lower->x + fraction * (upper->x - lower->x) <= x) {
+				inside = !inside;
+			}
+		}
+		previous = current;
+	}
+	return inside;
 }
 
 static void paint_pixel(legacy_s32 x, legacy_s32 y, legacy_f64 inverse_z,
@@ -498,7 +601,7 @@ static void draw_line(const struct SHAPE3D_HIRES_POINT *first,
 	}
 }
 
-static void draw_polygon(const struct SHAPE3D_HIRES_POINT *points, legacy_u32 count,
+static void fill_polygon(const struct SHAPE3D_HIRES_POINT *points, legacy_u32 count,
 						 const struct HIRES_PAINT *paint)
 {
 	if (count == 0) {
@@ -572,6 +675,73 @@ static void draw_polygon(const struct SHAPE3D_HIRES_POINT *points, legacy_u32 co
 	}
 }
 
+static void draw_polygon_border(const struct SHAPE3D_HIRES_POINT *points, legacy_u32 count,
+								legacy_u32 edge, legacy_f64 radius, const struct HIRES_PAINT *paint)
+{
+	const struct SHAPE3D_HIRES_POINT *first = &points[edge];
+	const struct SHAPE3D_HIRES_POINT *last = &points[(edge + 1) % count];
+	legacy_f64 dx = last->x - first->x;
+	legacy_f64 dy = last->y - first->y;
+	legacy_f64 minimum_y = (dy < 0 ? last->y : first->y) - radius;
+	legacy_f64 maximum_y = (dy < 0 ? first->y : last->y) + radius;
+	if (maximum_y < 0 || minimum_y >= HIRES_HEIGHT) {
+		return;
+	}
+	legacy_s32 top = minimum_y < 0 ? 0 : ceil_coordinate(minimum_y - 0.5);
+	legacy_s32 bottom = maximum_y >= HIRES_HEIGHT ? HIRES_HEIGHT : ceil_coordinate(maximum_y - 0.5);
+	legacy_f64 length_squared = dx * dx + dy * dy;
+	for (legacy_s32 y = top; y < bottom; y++) {
+		legacy_f64 sample_y = y + 0.5;
+		legacy_f64 start = 0;
+		legacy_f64 end = 1;
+		/* Restrict each row to the part of the edge within one radius. Unlike
+		 * stamping a brush along the edge, this visits each candidate only once. */
+		if (!clip_line_edge(-dy, first->y - sample_y + radius, &start, &end) ||
+			!clip_line_edge(dy, sample_y + radius - first->y, &start, &end)) {
+			continue;
+		}
+		legacy_f64 minimum_x = first->x + dx * (dx < 0 ? end : start) - radius;
+		legacy_f64 maximum_x = first->x + dx * (dx < 0 ? start : end) + radius;
+		if (maximum_x < 0 || minimum_x >= HIRES_WIDTH) {
+			continue;
+		}
+		legacy_s32 left = minimum_x < 0 ? 0 : ceil_coordinate(minimum_x - 0.5);
+		legacy_s32 right =
+			maximum_x >= HIRES_WIDTH ? HIRES_WIDTH : ceil_coordinate(maximum_x - 0.5);
+		for (legacy_s32 x = left; x < right; x++) {
+			legacy_f64 offset_x = x + 0.5 - first->x;
+			legacy_f64 offset_y = sample_y - first->y;
+			legacy_f64 fraction = length_squared == 0
+									  ? (first->inverse_z < last->inverse_z ? 1 : 0)
+									  : (offset_x * dx + offset_y * dy) / length_squared;
+			if (fraction < 0) {
+				fraction = 0;
+			} else if (fraction > 1) {
+				fraction = 1;
+			}
+			offset_x -= dx * fraction;
+			offset_y -= dy * fraction;
+			if (offset_x * offset_x + offset_y * offset_y < radius * radius &&
+				!polygon_covers_sample(points, count, x + 0.5, sample_y)) {
+				legacy_f64 inverse_z =
+					first->inverse_z + (last->inverse_z - first->inverse_z) * fraction;
+				paint_pixel(x, y, inverse_z, paint);
+			}
+		}
+	}
+}
+
+static void draw_polygon(const struct SHAPE3D_HIRES_POINT *points, legacy_u32 count,
+						 legacy_f64 padding, const struct HIRES_PAINT *paint)
+{
+	fill_polygon(points, count, paint);
+	/* Only add coverage outside the original polygon. Interior samples must
+	 * keep their exact fill depth, including when another surface occludes them. */
+	for (legacy_u32 edge = 0; padding > 0 && edge < count; edge++) {
+		draw_polygon_border(points, count, edge, padding, paint);
+	}
+}
+
 static void build_perimeter(const struct SHAPE3D_HIRES_POINT *center,
 							const struct SHAPE3D_HIRES_POINT *first_axis,
 							const struct SHAPE3D_HIRES_POINT *second_axis, legacy_f64 scale,
@@ -599,7 +769,7 @@ static void draw_sphere(const struct HIRES_PRIMITIVE *primitive, const struct HI
 	horizontal.x += primitive->size * 0.5;
 	vertical.y += primitive->size * (13.0 / 32.0);
 	build_perimeter(&primitive->points[0], &horizontal, &vertical, 1, points);
-	draw_polygon(points, HIRES_ROUND_POINTS, paint);
+	draw_polygon(points, HIRES_ROUND_POINTS, 0, paint);
 }
 
 static void draw_wheel(const struct HIRES_PRIMITIVE *primitive, struct HIRES_PAINT paint,
@@ -622,16 +792,16 @@ static void draw_wheel(const struct HIRES_PRIMITIVE *primitive, struct HIRES_PAI
 		side[3].x += depth_x;
 		side[3].y += depth_y;
 		side[3].inverse_z += depth_z;
-		draw_polygon(side, 4, &paint);
+		draw_polygon(side, 4, 0, &paint);
 	}
 	paint.color = side_color;
 	for (legacy_u32 index = 0; index < HIRES_ROUND_POINTS; index++) {
 		legacy_u32 next = (index + 1) % HIRES_ROUND_POINTS;
 		struct SHAPE3D_HIRES_POINT rim[4] = {outer[index], outer[next], inner[next], inner[index]};
-		draw_polygon(rim, 4, &paint);
+		draw_polygon(rim, 4, 0, &paint);
 	}
 	paint.color = inner_color;
-	draw_polygon(inner, HIRES_ROUND_POINTS, &paint);
+	draw_polygon(inner, HIRES_ROUND_POINTS, 0, &paint);
 }
 
 void shape3d_hires_render(legacy_u16 index, legacy_u8 type, legacy_u16 color,
@@ -673,7 +843,7 @@ void shape3d_hires_render(legacy_u16 index, legacy_u8 type, legacy_u16 color,
 		third_color = 0;
 	}
 	if (type == RENDER_PRIMITIVE_POLYGON) {
-		draw_polygon(primitive->points, primitive->count, &paint);
+		draw_polygon(primitive->points, primitive->count, primitive->size, &paint);
 	} else if (type == RENDER_PRIMITIVE_LINE) {
 		draw_line(&primitive->points[0], &primitive->points[1], primitive->size, &paint);
 	} else if (type == RENDER_PRIMITIVE_POINT) {

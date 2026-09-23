@@ -50,19 +50,320 @@ static legacy_u32 count_color(legacy_u8 color)
 	return count;
 }
 
-static void queue(legacy_u8 type, legacy_u32 count, const struct SHAPE3D_HIRES_VECTOR *vertices)
+static void queue_flagged(legacy_u8 type, legacy_u32 count,
+						  const struct SHAPE3D_HIRES_VECTOR *vertices, legacy_u16 flags)
 {
 	legacy_u8 indices[10];
 	assert(count <= sizeof(indices));
 	for (legacy_u32 index = 0; index < count; index++) {
 		indices[index] = (legacy_u8)index;
 	}
-	shape3d_hires_queue(0, type, count, indices, vertices, 0);
+	shape3d_hires_queue(0, type, count, indices, vertices, flags);
 	bounds.left = 320;
 	bounds.top = 200;
 	bounds.right = 0;
 	bounds.bottom = 0;
 	shape3d_hires_update_bounds(0, type, &bounds);
+}
+
+static void queue(legacy_u8 type, legacy_u32 count, const struct SHAPE3D_HIRES_VECTOR *vertices)
+{
+	queue_flagged(type, count, vertices, 0);
+}
+
+/* Road dashes are attached polygons, not line primitives. Nearby markings
+ * retain their weight; distant markings become finer without losing coverage. */
+static void test_attached_polygon_weight(void)
+{
+	const legacy_f64 directions[][2] = {{1, 0}, {0, 1}, {0.8, 0.6}};
+	const legacy_f64 depths[] = {600, 1000, 6400};
+	legacy_u32 near_coverage[4][2];
+	legacy_u32 distance_coverage[3] = {0};
+	for (legacy_u32 direction = 0; direction < 3; direction++) {
+		for (legacy_u32 distance = 0; distance < 3; distance++) {
+			for (legacy_u32 translation = 0; translation < 4; translation++) {
+				legacy_f64 depth = depths[distance];
+				legacy_f64 shift = translation / 4.0;
+				legacy_f64 tangent_x = directions[direction][0];
+				legacy_f64 tangent_y = directions[direction][1];
+				struct SHAPE3D_HIRES_VECTOR marking[4];
+				for (legacy_u32 vertex = 0; vertex < 4; vertex++) {
+					legacy_f64 along = (vertex < 2 ? -1 : 1) * depth / 16;
+					legacy_f64 across = (vertex == 0 || vertex == 3 ? -1 : 1) * 1.5;
+					marking[vertex].x =
+						tangent_x * along - tangent_y * across + shift * depth / 640;
+					marking[vertex].y =
+						-(tangent_y * along + tangent_x * across + shift * depth / 640);
+					marking[vertex].z = depth;
+				}
+				for (legacy_u32 winding = 0; winding < 2; winding++) {
+					struct SHAPE3D_HIRES_VECTOR ordered[4];
+					for (legacy_u32 vertex = 0; vertex < 4; vertex++) {
+						ordered[vertex] = marking[winding ? 3 - vertex : vertex];
+					}
+					reset_target();
+					queue_flagged(RENDER_PRIMITIVE_POLYGON, 4, ordered, 3);
+					shape3d_hires_render(0, RENDER_PRIMITIVE_POLYGON, 8, 0, 0, 0, 0);
+					hires_end();
+					const legacy_u8 *image = pixels();
+					legacy_u32 coverage = count_color(8);
+					distance_coverage[distance] += coverage;
+					assert(coverage >= 80);
+					assert(coverage <= 84 * (HIRES_SCALE + 1));
+					if (distance == 0) {
+						assert(coverage >= 80 * (HIRES_SCALE - 1));
+						near_coverage[translation][winding] = coverage;
+					} else if (distance == 2) {
+						assert(coverage <= 84 * 2);
+						assert(coverage < near_coverage[translation][winding]);
+					}
+					for (legacy_s32 along = -30; along <= 30; along++) {
+						legacy_s32 x = (legacy_s32)(640 + tangent_x * along + shift);
+						legacy_s32 y = (legacy_s32)(400 + tangent_y * along + shift);
+						assert(image[y * HIRES_WIDTH + x] == 8);
+					}
+				}
+			}
+		}
+	}
+	assert(distance_coverage[0] > distance_coverage[1]);
+	assert(distance_coverage[1] > distance_coverage[2]);
+}
+
+static void test_attached_polygon_midrange_weight(void)
+{
+	/* Keep the projected dash length and subpixel phase fixed. Mid-range
+	 * coverage should fall faster while the near and far weights stay intact. */
+	const legacy_f64 depths[] = {600, 850, 1000, 6400};
+	const legacy_u32 expected_widths[] = {4, 2, 1, 1};
+	for (legacy_u32 distance = 0; distance < 4; distance++) {
+		legacy_f64 depth = depths[distance];
+		legacy_f64 shift = depth * 0.375 / 640;
+		const struct SHAPE3D_HIRES_VECTOR marking[] = {{-depth / 16 + shift, -0.5 - shift, depth},
+													   {depth / 16 + shift, -0.5 - shift, depth},
+													   {depth / 16 + shift, 0.5 - shift, depth},
+													   {-depth / 16 + shift, 0.5 - shift, depth}};
+		reset_target();
+		queue_flagged(RENDER_PRIMITIVE_POLYGON, 4, marking, 3);
+		shape3d_hires_render(0, RENDER_PRIMITIVE_POLYGON, 8, 0, 0, 0, 0);
+		hires_end();
+		const legacy_u8 *image = pixels();
+		for (legacy_s32 x = 610; x <= 670; x++) {
+			legacy_u32 coverage = 0;
+			for (legacy_s32 y = 395; y <= 405; y++) {
+				coverage += image[y * HIRES_WIDTH + x] == 8;
+			}
+			assert(coverage == expected_widths[distance]);
+			assert(image[400 * HIRES_WIDTH + x] == 8);
+		}
+	}
+}
+
+static void test_attached_polygon_weight_follows_projection(void)
+{
+	static legacy_u8 reference[HIRES_WIDTH * HIRES_HEIGHT];
+	/* A fractional translation distinguishes this medium-distance stroke
+	 * from both the full near width and the minimum distant width. */
+	const struct SHAPE3D_HIRES_VECTOR marking[] = {{-52.626953125, -0.998046875, 850},
+												   {53.623046875, -0.998046875, 850},
+												   {53.623046875, 0.001953125, 850},
+												   {-52.626953125, 0.001953125, 850}};
+	reset_target();
+	queue_flagged(RENDER_PRIMITIVE_POLYGON, 4, marking, 3);
+	shape3d_hires_render(0, RENDER_PRIMITIVE_POLYGON, 8, 0, 0, 0, 0);
+	hires_end();
+	assert(count_color(8) >= 160 && count_color(8) < 200);
+	memcpy(reference, pixels(), sizeof(reference));
+
+	/* Equal focal-length/depth ratios preserve both geometry and weight. */
+	struct SHAPE3D_HIRES_VECTOR equivalent[4];
+	for (legacy_u32 vertex = 0; vertex < 4; vertex++) {
+		equivalent[vertex] = marking[vertex];
+		equivalent[vertex].z *= 2;
+	}
+	projection_focal_length_x = projection_focal_length_y = 320;
+	reset_target();
+	queue_flagged(RENDER_PRIMITIVE_POLYGON, 4, equivalent, 3);
+	/* Width must use the projection captured when the primitive was queued. */
+	projection_focal_length_x = projection_focal_length_y = 160;
+	shape3d_hires_render(0, RENDER_PRIMITIVE_POLYGON, 8, 0, 0, 0, 0);
+	hires_end();
+	assert(memcmp(reference, pixels(), sizeof(reference)) == 0);
+
+	/* Equivalent authored model sizes retain the same displayed weight. */
+	const legacy_f64 scales[] = {20, 0.5};
+	for (legacy_u32 model = 0; model < 2; model++) {
+		legacy_f64 scale = scales[model];
+		for (legacy_u32 vertex = 0; vertex < 4; vertex++) {
+			equivalent[vertex].x = marking[vertex].x * scale;
+			equivalent[vertex].y = marking[vertex].y * scale;
+			equivalent[vertex].z = marking[vertex].z * scale;
+		}
+		reset_target();
+		shape3d_hires_set_model_scale(scale);
+		queue_flagged(RENDER_PRIMITIVE_POLYGON, 4, equivalent, 3);
+		shape3d_hires_set_model_scale(1);
+		shape3d_hires_render(0, RENDER_PRIMITIVE_POLYGON, 8, 0, 0, 0, 0);
+		hires_end();
+		assert(memcmp(reference, pixels(), sizeof(reference)) == 0);
+	}
+}
+
+static void test_attached_polygon_varies_along_depth(void)
+{
+	/* Perspective narrows the far end of a dash on a sloping road. */
+	const struct SHAPE3D_HIRES_VECTOR marking[] = {
+		{-100, -1.5, 1600}, {-100, 1.5, 1600}, {400, 1.5, 6400}, {400, -1.5, 6400}};
+	reset_target();
+	queue_flagged(RENDER_PRIMITIVE_POLYGON, 4, marking, 3);
+	shape3d_hires_render(0, RENDER_PRIMITIVE_POLYGON, 8, 0, 0, 0, 0);
+	hires_end();
+	const legacy_u8 *image = pixels();
+	assert(count_color(8) >= 80);
+	for (legacy_s32 x = 605; x <= 675; x++) {
+		legacy_u32 coverage = 0;
+		for (legacy_s32 y = 397; y <= 403; y++) {
+			coverage += image[y * HIRES_WIDTH + x] == 8;
+		}
+		assert(coverage >= 1);
+		assert(image[400 * HIRES_WIDTH + x] == 8);
+	}
+}
+
+static void test_polygon_weight_preserves_surfaces(void)
+{
+	static legacy_u8 original[HIRES_WIDTH * HIRES_HEIGHT];
+	const struct SHAPE3D_HIRES_VECTOR panel[] = {
+		{-50, -20, 200}, {50, -20, 200}, {50, 20, 200}, {-50, 20, 200}};
+	for (legacy_u16 attached = 0; attached < 2; attached++) {
+		reset_target();
+		queue_flagged(RENDER_PRIMITIVE_POLYGON, 4, panel, attached ? 3 : 0);
+		shape3d_hires_render(0, RENDER_PRIMITIVE_POLYGON, 8, 0, 0, 0, 0);
+		hires_end();
+		assert(count_color(8) != 0);
+		if (!attached) {
+			memcpy(original, pixels(), sizeof(original));
+		} else {
+			assert(memcmp(original, pixels(), sizeof(original)) == 0);
+		}
+	}
+
+	/* Unattached, subpixel road surfaces must not turn into thick strokes. */
+	const struct SHAPE3D_HIRES_VECTOR thin[] = {
+		{-400, -1.5, 6400}, {400, -1.5, 6400}, {400, 1.5, 6400}, {-400, 1.5, 6400}};
+	reset_target();
+	queue(RENDER_PRIMITIVE_POLYGON, 4, thin);
+	shape3d_hires_render(0, RENDER_PRIMITIVE_POLYGON, 8, 0, 0, 0, 0);
+	hires_end();
+	assert(count_color(8) == 0);
+}
+
+static void test_attached_polygon_clipping(void)
+{
+	const struct SHAPE3D_HIRES_VECTOR marking[] = {
+		{-7000, -1.5, 6400}, {7000, -1.5, 6400}, {7000, 1.5, 6400}, {-7000, 1.5, 6400}};
+	reset_target();
+	queue_flagged(RENDER_PRIMITIVE_POLYGON, 4, marking, 3);
+	shape3d_hires_render(0, RENDER_PRIMITIVE_POLYGON, 8, 0, 0, 0, 0);
+	hires_end();
+	const legacy_u8 *image = pixels();
+	assert(count_color(8) == HIRES_WIDTH * 2);
+	for (legacy_s32 y = 399; y < 401; y++) {
+		assert(image[y * HIRES_WIDTH] == 8);
+		assert(image[y * HIRES_WIDTH + HIRES_WIDTH - 1] == 8);
+	}
+
+	target.sprite_raster_left = 150;
+	target.sprite_raster_right = 170;
+	target.sprite_top = 100;
+	target.sprite_bottom = 110;
+	reset_target();
+	queue_flagged(RENDER_PRIMITIVE_POLYGON, 4, marking, 3);
+	shape3d_hires_render(0, RENDER_PRIMITIVE_POLYGON, 8, 0, 0, 0, 0);
+	hires_end();
+	image = pixels();
+	assert(count_color(8) == 80);
+	for (legacy_s32 y = 0; y < HIRES_HEIGHT; y++) {
+		for (legacy_s32 x = 0; x < HIRES_WIDTH; x++) {
+			if (x < 600 || x >= 680 || y < 400 || y >= 440) {
+				assert(image[y * HIRES_WIDTH + x] == 3);
+			}
+		}
+	}
+	target.sprite_raster_left = 0;
+	target.sprite_raster_right = 320;
+	target.sprite_top = 0;
+	target.sprite_bottom = 200;
+}
+
+static void test_attached_polygon_occlusion(void)
+{
+	const struct SHAPE3D_HIRES_VECTOR parent[] = {
+		{-5, -2.5, 80}, {5, -2.5, 80}, {5, 2.5, 80}, {-5, 2.5, 80}};
+	/* Attached paint can be authored slightly behind its supporting surface. */
+	const struct SHAPE3D_HIRES_VECTOR marking[] = {
+		{-5, -0.025, 80.5}, {5, -0.025, 80.5}, {5, 0.025, 80.5}, {-5, 0.025, 80.5}};
+	const struct SHAPE3D_HIRES_VECTOR nearer[] = {
+		{-3.75, -1.25, 40}, {0, -1.25, 40}, {0, 1.25, 40}, {-3.75, 1.25, 40}};
+	const legacy_u8 indices[] = {0, 1, 2, 3};
+	for (legacy_u32 order = 0; order < 2; order++) {
+		reset_target();
+		queue(RENDER_PRIMITIVE_POLYGON, 4, parent);
+		shape3d_hires_queue(1, RENDER_PRIMITIVE_POLYGON, 4, indices, marking, 3);
+		shape3d_hires_update_bounds(1, RENDER_PRIMITIVE_POLYGON, &bounds);
+		shape3d_hires_queue(2, RENDER_PRIMITIVE_POLYGON, 4, indices, nearer, 0);
+		shape3d_hires_update_bounds(2, RENDER_PRIMITIVE_POLYGON, &bounds);
+		if (order == 0) {
+			shape3d_hires_render(2, RENDER_PRIMITIVE_POLYGON, 9, 0, 0, 0, 0);
+		}
+		shape3d_hires_render(0, RENDER_PRIMITIVE_POLYGON, 7, 0, 0, 0, 0);
+		shape3d_hires_render(1, RENDER_PRIMITIVE_POLYGON, 8, 0, 0, 0, 0);
+		if (order != 0) {
+			shape3d_hires_render(2, RENDER_PRIMITIVE_POLYGON, 9, 0, 0, 0, 0);
+		}
+		hires_end();
+		const legacy_u8 *image = pixels();
+		assert(count_color(8) != 0);
+		for (legacy_s32 y = 398; y < 402; y++) {
+			assert(image[y * HIRES_WIDTH + 639] == 9);
+			assert(image[y * HIRES_WIDTH + 640] == 8);
+			assert(image[y * HIRES_WIDTH + 660] == 8);
+		}
+	}
+}
+
+static void test_attached_polygon_preserves_interior_depth(void)
+{
+	/* This sloping dash projects to x 639.8..640.8. Its true inverse depth at
+	 * pixel center 640.5 is 0.0093, behind the independent panel at 0.0095. */
+	const struct SHAPE3D_HIRES_VECTOR marking[] = {{-0.2 / 6.4, -20 / 6.4, 100},
+												   {0.8 / 5.76, -20 / 5.76, 1 / 0.009},
+												   {0.8 / 5.76, 20 / 5.76, 1 / 0.009},
+												   {-0.2 / 6.4, 20 / 6.4, 100}};
+	const struct SHAPE3D_HIRES_VECTOR nearer[] = {{-2 / 6.08, -20 / 6.08, 1 / 0.0095},
+												  {2 / 6.08, -20 / 6.08, 1 / 0.0095},
+												  {2 / 6.08, 20 / 6.08, 1 / 0.0095},
+												  {-2 / 6.08, 20 / 6.08, 1 / 0.0095}};
+	const legacy_u8 indices[] = {0, 1, 2, 3};
+	for (legacy_u32 order = 0; order < 2; order++) {
+		reset_target();
+		queue_flagged(RENDER_PRIMITIVE_POLYGON, 4, marking, 3);
+		shape3d_hires_queue(1, RENDER_PRIMITIVE_POLYGON, 4, indices, nearer, 0);
+		shape3d_hires_update_bounds(1, RENDER_PRIMITIVE_POLYGON, &bounds);
+		if (order == 0) {
+			shape3d_hires_render(1, RENDER_PRIMITIVE_POLYGON, 9, 0, 0, 0, 0);
+		}
+		shape3d_hires_render(0, RENDER_PRIMITIVE_POLYGON, 8, 0, 0, 0, 0);
+		if (order != 0) {
+			shape3d_hires_render(1, RENDER_PRIMITIVE_POLYGON, 9, 0, 0, 0, 0);
+		}
+		hires_end();
+		const legacy_u8 *image = pixels();
+		assert(count_color(9) != 0);
+		for (legacy_s32 y = 385; y < 415; y++) {
+			assert(image[y * HIRES_WIDTH + 640] == 9);
+		}
+	}
 }
 
 static void test_projection_and_subpixel_edges(void)
@@ -774,6 +1075,14 @@ int main(void)
 	projection_focal_length_x = 160;
 	projection_focal_length_y = 160;
 	test_projection_and_subpixel_edges();
+	test_attached_polygon_weight();
+	test_attached_polygon_midrange_weight();
+	test_attached_polygon_weight_follows_projection();
+	test_attached_polygon_varies_along_depth();
+	test_polygon_weight_preserves_surfaces();
+	test_attached_polygon_clipping();
+	test_attached_polygon_occlusion();
+	test_attached_polygon_preserves_interior_depth();
 	test_line_weight_follows_projection();
 	test_line_weight_varies_along_depth();
 	test_line_weight_after_clipping();
