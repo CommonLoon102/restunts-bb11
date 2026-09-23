@@ -1,86 +1,179 @@
 {
-  "generator": "tools/scripts/prepare-opponent-portraits.py",
+  "generator": "tools/scripts/prepare-original-opponent-upscales.py",
+  "detail_generation": "built-in imagegen, fresh photographs from original photo crops only",
+  "prompts": "docs/opponents/game2-generation-prompts.json",
   "pillow_version": "10.2.0",
+  "width": 160,
+  "height": 166,
+  "original_width": 80,
+  "original_height": 83,
+  "working_width": 320,
+  "working_height": 332,
+  "working_scale": 4,
+  "scale": 2,
+  "photo_rectangle": {
+    "x": 4,
+    "y": 4,
+    "width": 148,
+    "height": 158
+  },
   "palette_source": "SDMAIN.PVS:!pal",
   "palette_source_sha256": "a33b54cff282fed2d68134fcf334f4e44917f906a6556013e0f6c6dd546cdd3b",
-  "palette_vga_sha256": "5e8dc3e868d0c6c25856455bef24acf291686b2b6ab2c7efd7b359188ed2bd9c",
   "palette_rgb_sha256": "0fc80b406c5fbb11d58c243acba08afc7af7c290eb090997d3751694dc1640c9",
   "palette_conversion": "(component & 63) * 255 // 63",
-  "width": 296,
-  "height": 316,
-  "pixel_block_size": 2,
+  "background_max_channel_distance": 16,
   "processing": [
-    "RGB bilinear downscale to 296 x 316 renderer samples",
-    "RGB bilinear reduction to 148 x 158 for subtle pixelation",
-    "Quantize to the original 256-entry game palette without dithering",
-    "Nearest-neighbor expansion to 296 x 316 (2 x 2 sample blocks)"
+    "Bilinear resize fresh original-only photographic restorations to 296 x 316",
+    "Apply a gentle 3 x 3 median at 4x scale to remove isolated pixel noise",
+    "Normalize connected flat backdrops and verified near-exact enclosed color holes",
+    "Bilinear reduce the cleaned 4x photo to half size, 148 x 158",
+    "Quantize to the exact original game palette without dithering or added grain",
+    "Preserve the original frame and entire number rectangle by exact 2x duplication"
   ],
   "images": [
     {
       "file": "opp1.png",
       "opponent": 1,
-      "source": "../opp1.png",
-      "source_width": 1122,
-      "source_height": 1402,
-      "source_sha256": "525f13c44887678e45cf64688dbf05fafdfe6a5abfe2bfe737b5f42ff3633a99",
-      "sha256": "230b99b5082cc8e382287a45fa892a06bd7502f7a21efd5b942fe7860bd3ee1c",
-      "pixels_sha256": "99b22871a9e2af079d143d1845fdaaff57dabe0e73ac9b2478d34a15ecf02dbf",
-      "palette_colors_used": 116
+      "original": "SDOSEL.PVS:opp1",
+      "original_png_sha256": "ef1baf6b3d444b58ba838d53fe9a71506651482e4f25aa58cceb28d2c427209c",
+      "generated_restoration_sha256": "1568a59156c9b74996c47f31383861a395d2ef07e9c37dbceb25352ea4468d7b",
+      "working_png_sha256": "97478f172d8d14670ec5a9820ecd02d88c9cf9030efc0ce47a30f941c1bc1fb9",
+      "background_palette_index": 71,
+      "background_rgb": [
+        255,
+        246,
+        0
+      ],
+      "estimated_generated_background_rgb": [
+        254,
+        251,
+        4
+      ],
+      "working_background_pixels": 41990,
+      "working_enclosed_background_pixels": 0,
+      "final_solid_background_pixels": 10128,
+      "sha256": "d936319e52a7f40219b9f1c3ee3a895a662b9988b94664ce745c984ad34c35b7",
+      "pixels_sha256": "483a58760ba74b46f360b0ec965e7f5c9833ab34f324edf81c89fa14f0b3b5b8"
     },
     {
       "file": "opp2.png",
       "opponent": 2,
-      "source": "../opp2.png",
-      "source_width": 1122,
-      "source_height": 1402,
-      "source_sha256": "2f604035f1c7a0c4408bc6bbb62ed0603192f9dcedf1f675efcb2cf9381fcdfc",
-      "sha256": "02c69f0018a7a8d12d425c8f3a4fd46ae09e0a0bb6d6e30c71e08630145e2da2",
-      "pixels_sha256": "1a2f7e4ced656fd504cd9a3eb262d2cae6edcb57255c9dace6394b6e32ba59f0",
-      "palette_colors_used": 83
+      "original": "SDOSEL.PVS:opp2",
+      "original_png_sha256": "2fc7300a22b07b4740018b02de86d1386589e88a98a0205f26994994c4b8dd97",
+      "generated_restoration_sha256": "2bf85aa691fb7e87e723fc86c09a1172226c073f6243940880ac0a3e028c42d2",
+      "working_png_sha256": "ad2b44df8a8c8a81b14bb3be430315bfe51f8134554c64540cc30526f022f70c",
+      "background_palette_index": 166,
+      "background_rgb": [
+        182,
+        32,
+        255
+      ],
+      "estimated_generated_background_rgb": [
+        173,
+        41,
+        251
+      ],
+      "working_background_pixels": 27340,
+      "working_enclosed_background_pixels": 3536,
+      "final_solid_background_pixels": 6468,
+      "sha256": "061d813d1a4e734a3273af004694f5a8c310e8c4c41a9e6803772ebde2539290",
+      "pixels_sha256": "a8d737ca86b0f376ae9f45c10464070ceb930e2b6b4539fc43904366de3a9d68"
     },
     {
       "file": "opp3.png",
       "opponent": 3,
-      "source": "../opp3.png",
-      "source_width": 1122,
-      "source_height": 1402,
-      "source_sha256": "ffdde03390a8cb46c7093fbcd224a38345a2bbda27def6f7b9da6685edf78670",
-      "sha256": "3db756eaa15ee0948769e63cc352f8098a673a3cb52efa91e927d9590e3afadf",
-      "pixels_sha256": "3ae4d9bfb29e84db833913e9afa1c0e4185c63992036143b098bed64f75446e4",
-      "palette_colors_used": 87
+      "original": "SDOSEL.PVS:opp3",
+      "original_png_sha256": "9df67dd6773111404236583cb784c009077cf2227524d545168b4cadb5da2994",
+      "generated_restoration_sha256": "e0119c999174d8e073a8ef28d24192ac2adacafbb22d1a817b22d46ca8f32cef",
+      "working_png_sha256": "801cfa01b8a7bd8a6f0d21caa1af252d82320064ecfd26a631029818a41be97a",
+      "background_palette_index": 90,
+      "background_rgb": [
+        117,
+        182,
+        0
+      ],
+      "estimated_generated_background_rgb": [
+        118,
+        179,
+        3
+      ],
+      "working_background_pixels": 36074,
+      "working_enclosed_background_pixels": 0,
+      "final_solid_background_pixels": 8675,
+      "sha256": "32d1450a1a29e7f4023d3b7954658e5d70a5386d52ad2ff2e6a1d4f21fad79bb",
+      "pixels_sha256": "237c568f69b411cea370bd0638d2cb308c7428b405f5f1f89b759ea6bf333968"
     },
     {
       "file": "opp4.png",
       "opponent": 4,
-      "source": "../opp4.png",
-      "source_width": 1122,
-      "source_height": 1402,
-      "source_sha256": "c2bf428c13be80e3d63bab3369e07c40d22289410f2265af93788e53e415ecae",
-      "sha256": "eccbfd356d53f2445a68c13e7e2aedd961d5c094ef8aac794e6416adade4cffd",
-      "pixels_sha256": "2e01f529f99521b51747fd5cf6d9cae6f5307e35afdf265bf2cfd2a3db74ce7e",
-      "palette_colors_used": 80
+      "original": "SDOSEL.PVS:opp4",
+      "original_png_sha256": "7210ef9baf332e7133e7d31c4d1b5f95c4032c88352d08d21d64080133162937",
+      "generated_restoration_sha256": "19c5b949087d5e2c883ebdc322b1af766d212209348d48124901682d232018f6",
+      "working_png_sha256": "a1b4c59c461917cf0fc0465012b3902391913b61dfd2c19dec1d86009357fa5a",
+      "background_palette_index": 35,
+      "background_rgb": [
+        255,
+        125,
+        125
+      ],
+      "estimated_generated_background_rgb": [
+        253,
+        125,
+        123
+      ],
+      "working_background_pixels": 15775,
+      "working_enclosed_background_pixels": 0,
+      "final_solid_background_pixels": 3655,
+      "sha256": "d718b0591d55d43c43d32e7fa153ff655a7fd3fa8da8ea0a40c56c17c74cfa4f",
+      "pixels_sha256": "731277b9052d34b0b9782bed488aa388eadb75a2cc6b291166303e5065cbc498"
     },
     {
       "file": "opp5.png",
       "opponent": 5,
-      "source": "../opp5.png",
-      "source_width": 1122,
-      "source_height": 1402,
-      "source_sha256": "f136f071b8173c2f44f098db60444cb36bc742a18f58d5ce25d551b88c880c65",
-      "sha256": "454196df94e545be7923d07c8a163897e41fedf45960156a5ee54a6c718b7157",
-      "pixels_sha256": "4288f4c122e6bf68e64598287b651feb655ad0cd5224c8b98404bfb82ad014b7",
-      "palette_colors_used": 82
+      "original": "SDOSEL.PVS:opp5",
+      "original_png_sha256": "f51451123e2e3e1f582168757ff7e47272de1d017475edea086f11c96ab8d86d",
+      "generated_restoration_sha256": "48ca98b3382064c8420863d8d268eeebf428933bb68e5999a7a75a7a9c9203d4",
+      "working_png_sha256": "b4e5a164721c673a0c0c345def57a59312eb8e929427b9c908220c1fffef1108",
+      "background_palette_index": 177,
+      "background_rgb": [
+        255,
+        186,
+        255
+      ],
+      "estimated_generated_background_rgb": [
+        251,
+        178,
+        252
+      ],
+      "working_background_pixels": 18526,
+      "working_enclosed_background_pixels": 0,
+      "final_solid_background_pixels": 4349,
+      "sha256": "58ab45b3fc9c86559862117b18f9c7da15d43fba400ee747b8d670574ebe3eb7",
+      "pixels_sha256": "60eebd5e467c057e94cfa80a3c08a692a04e6ab12d24800825b42fa3ace8d77d"
     },
     {
       "file": "opp6.png",
       "opponent": 6,
-      "source": "../opp6.png",
-      "source_width": 1059,
-      "source_height": 1485,
-      "source_sha256": "75d48646dba467f8aa016847d4a96dd64d9494938fe82e12080d29f2c705e17e",
-      "sha256": "5b9ace9ae9af6f6ce7266f1963e80718a19520fa5c2900f6b06939c5a9ac7ff7",
-      "pixels_sha256": "3006903ab4e4c0d1e01dba72c0d7147f67ddd4df0441120e77e8b376e8b1fdc0",
-      "palette_colors_used": 94
+      "original": "SDOSEL.PVS:opp6",
+      "original_png_sha256": "e8026a25b3b58f6fc89310b46fb16c0742caf8a5901885921b49767fd1fb3d83",
+      "generated_restoration_sha256": "32a396d7a7ddcbf3024e38b3a41281a7c17d8e554782f07bf4b841826fd1c39c",
+      "working_png_sha256": "eb7bdbdb0cad8f330908f2f2aaa1bf9ba505b5b3ca7a8959569440b8ca41effc",
+      "background_palette_index": 120,
+      "background_rgb": [
+        0,
+        230,
+        230
+      ],
+      "estimated_generated_background_rgb": [
+        2,
+        238,
+        240
+      ],
+      "working_background_pixels": 31162,
+      "working_enclosed_background_pixels": 0,
+      "final_solid_background_pixels": 7423,
+      "sha256": "a6844ad28c3cb97001be696bb6fcafb53daa728784ee5056c5d7447ff961bc5d",
+      "pixels_sha256": "5ed86de6155411c5b41515fd91fafc72d22f1fad4d7580921f9fee9ca8aa10dc"
     }
   ]
 }

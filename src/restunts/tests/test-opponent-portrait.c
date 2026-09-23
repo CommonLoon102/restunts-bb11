@@ -46,11 +46,12 @@ static void reset(void)
 	target.sprite_bottom = 200;
 }
 
-static void write_fixture(const char *path)
+static void write_solid_fixture(const char *path, legacy_s32 width, legacy_s32 height,
+								legacy_u32 color)
 {
-	SDL_Surface *source = SDL_CreateSurface(19, 23, SDL_PIXELFORMAT_ARGB8888);
+	SDL_Surface *source = SDL_CreateSurface(width, height, SDL_PIXELFORMAT_ARGB8888);
 	assert(source != NULL);
-	assert(SDL_FillSurfaceRect(source, NULL, 0xFF123456U));
+	assert(SDL_FillSurfaceRect(source, NULL, color));
 	assert(SDL_SavePNG(source, path));
 	SDL_DestroySurface(source);
 }
@@ -81,8 +82,8 @@ static void test_prepared(struct SHAPE2D *shape)
 	opponent_portrait_draw(&target, shape, 1);
 	const legacy_u32 *pixels = hires_framebuffer_argb(screen, palette);
 	assert(pixels != NULL);
-	/* A master is also present: every prepared sample must win without filtering,
-	 * except the original digit's exact pixel contour. */
+	/* A master and a stale game2 tile are also present. The legacy 296x316
+	 * interior must win without filtering, except the original digit contour. */
 	for (legacy_s32 y = 0; y < 316; y++) {
 		for (legacy_s32 x = 0; x < 296; x++) {
 			const SDL_Color *color = &prepared_colors[(x / 2 + y / 2) % 2];
@@ -157,15 +158,14 @@ static void assert_first_portrait_pixel(struct SHAPE2D *shape, legacy_u8 opponen
 
 static void test_original_upscale(struct SHAPE2D *shape)
 {
-	write_prepared_fixture("opponents/game/opp1.png");
-	write_original_upscale_fixture("opponents/game2/opp1.png", 160, 166);
+	write_original_upscale_fixture("opponents/game/opp1.png", 160, 166);
 	reset();
 	hires_set_enabled(1);
 	opponent_portrait_draw(&target, shape, 1);
 	const legacy_u32 *pixels = hires_framebuffer_argb(screen, palette);
 	assert(pixels != NULL);
-	/* game and master portraits are both present. Every cropped game2 pixel
-	 * must win and expand to exactly 2x2 samples with no new colors. */
+	/* A master and a stale game2 tile are also present. Every cropped game
+	 * pixel must win and expand to exactly 2x2 samples with no new colors. */
 	for (legacy_s32 y = 0; y < 316; y++) {
 		for (legacy_s32 x = 0; x < 296; x++) {
 			legacy_u32 expected = original_upscale_color(x / 2 + 4, y / 2 + 4);
@@ -182,27 +182,32 @@ static void test_original_upscale(struct SHAPE2D *shape)
 	hires_set_enabled(0);
 	opponent_portrait_draw(&target, shape, 1);
 	assert(hires_framebuffer_argb(screen, palette) == NULL);
-	/* Wrong dimensions and corrupt PNGs must fall through to game, not stretch. */
-	write_original_upscale_fixture("opponents/game2/opp1.png", 159, 166);
-	assert_first_portrait_pixel(shape, 1, 0xFFCC3300U);
-	write_original_upscale_fixture("opponents/game2/opp1.png", 160, 165);
-	assert_first_portrait_pixel(shape, 1, 0xFFCC3300U);
-	FILE *invalid = fopen("opponents/game2/opp1.png", "wb");
+	/* Wrong dimensions and corrupt PNGs use the master, never the stale folder. */
+	write_original_upscale_fixture("opponents/game/opp1.png", 159, 166);
+	assert_first_portrait_pixel(shape, 1, 0xFF123456U);
+	write_original_upscale_fixture("opponents/game/opp1.png", 160, 165);
+	assert_first_portrait_pixel(shape, 1, 0xFF123456U);
+	write_original_upscale_fixture("opponents/game/opp1.png", 295, 316);
+	assert_first_portrait_pixel(shape, 1, 0xFF123456U);
+	write_original_upscale_fixture("opponents/game/opp1.png", 296, 315);
+	assert_first_portrait_pixel(shape, 1, 0xFF123456U);
+	FILE *invalid = fopen("opponents/game/opp1.png", "wb");
 	assert(invalid != NULL && fputs("not a PNG", invalid) >= 0);
 	assert(fclose(invalid) == 0);
-	assert_first_portrait_pixel(shape, 1, 0xFFCC3300U);
+	assert_first_portrait_pixel(shape, 1, 0xFF123456U);
 	assert(remove("opponents/game/opp1.png") == 0);
 	assert_first_portrait_pixel(shape, 1, 0xFF123456U);
-	assert(remove("opponents/game2/opp1.png") == 0);
-	assert_first_portrait_pixel(shape, 1, 0xFF123456U);
-	/* game2 also works alone; removing the only artwork restores the original. */
-	write_original_upscale_fixture("opponents/game2/opp2.png", 160, 166);
+	/* A full tile works alone; removing it restores the original even when a
+	 * valid tile remains in the former game2 installation directory. */
+	write_solid_fixture("opponents/game2/opp2.png", 160, 166, 0xFFFF00FFU);
+	write_original_upscale_fixture("opponents/game/opp2.png", 160, 166);
 	assert_first_portrait_pixel(shape, 2, original_upscale_color(4, 4));
-	assert(remove("opponents/game2/opp2.png") == 0);
+	assert(remove("opponents/game/opp2.png") == 0);
 	reset();
 	hires_set_enabled(1);
 	opponent_portrait_draw(&target, shape, 2);
 	assert(hires_framebuffer_argb(screen, palette) == NULL);
+	assert(remove("opponents/game2/opp2.png") == 0);
 }
 
 static void test_fallback(struct SHAPE2D *shape)
@@ -259,7 +264,8 @@ int main(void)
 	assert(SDL_CreateDirectory("opponents"));
 	assert(SDL_CreateDirectory("opponents/game"));
 	assert(SDL_CreateDirectory("opponents/game2"));
-	write_fixture("opponents/opp1.png");
+	write_solid_fixture("opponents/opp1.png", 19, 23, 0xFF123456U);
+	write_solid_fixture("opponents/game2/opp1.png", 160, 166, 0xFFFF00FFU);
 	FILE *invalid = fopen("opponents/opp3.png", "wb");
 	assert(invalid != NULL && fputs("not a PNG", invalid) >= 0);
 	assert(fclose(invalid) == 0);
@@ -301,6 +307,7 @@ int main(void)
 	assert(remove("opponents/opp1.png") == 0);
 	assert(remove("opponents/opp3.png") == 0);
 	assert(remove("opponents/opp4.png") == 0);
+	assert(remove("opponents/game2/opp1.png") == 0);
 	assert(rmdir("opponents/game2") == 0);
 	assert(rmdir("opponents/game") == 0);
 	assert(rmdir("opponents") == 0);

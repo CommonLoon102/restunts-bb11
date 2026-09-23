@@ -1,7 +1,7 @@
 {
-  "description": "Lossless preserved game2 sources, working tiles and earlier correction alternatives",
+  "description": "Lossless preserved sources for the final opponent portraits: six selected photographs and six 4x working tiles",
   "prompts": "../game2-generation-prompts.json",
-  "final_game_assets": "../../../assets/opponents/game2",
+  "final_game_assets": "../../../assets/opponents/game",
   "images": [
     {
       "file": "full-resolution/opp1.png",
@@ -24,16 +24,6 @@
       "source": "/media/sf_ubi24/restunts-bb11/out/opponents/game2-rebuilt/4x/opp1.png"
     },
     {
-      "file": "history/opp1-before-corrections.png",
-      "opponent": 1,
-      "role": "original full-resolution reconstruction before corrections",
-      "width": 1214,
-      "height": 1296,
-      "bytes": 1769019,
-      "sha256": "08b36f54574a1cb6a0655c045b41c418b938cfba38c72506dbd3dbbc4ad3cc73",
-      "source": "/home/user/.codex/generated_images/01a0cdb5-ee75-7973-adc8-dfc8434df5b6/exec-5f19262e-4752-4bc8-9cd3-df4f85fd98d6.png"
-    },
-    {
       "file": "full-resolution/opp2.png",
       "opponent": 2,
       "role": "selected full-resolution source",
@@ -52,36 +42,6 @@
       "bytes": 87518,
       "sha256": "ad2b44df8a8c8a81b14bb3be430315bfe51f8134554c64540cc30526f022f70c",
       "source": "/media/sf_ubi24/restunts-bb11/out/opponents/game2-rebuilt/4x/opp2.png"
-    },
-    {
-      "file": "history/opp2-before-corrections.png",
-      "opponent": 2,
-      "role": "original full-resolution reconstruction before corrections",
-      "width": 1214,
-      "height": 1296,
-      "bytes": 1914856,
-      "sha256": "2a630ba3987d4a43142b91cf3f1210a8101b4ebc1fda3e9c62c480ef034da54f",
-      "source": "/home/user/.codex/generated_images/01a0cdb5-ee75-7973-adc8-dfc8434df5b6/exec-9f8d2e47-b361-4fe0-9ead-e38a2a1572a4.png"
-    },
-    {
-      "file": "history/opp2-branched-cord.png",
-      "opponent": 2,
-      "role": "earlier alternative with branched cord",
-      "width": 1214,
-      "height": 1295,
-      "bytes": 1842577,
-      "sha256": "53c5dab7941075e5f3050b72f6e84fed191810e8113cf9a9f4b708ce69d272e1",
-      "source": "/home/user/.codex/generated_images/01a0cdb3-98b5-7151-a9b0-1b3d7f16170c/exec-9351ee6e-12b0-4344-b65f-1ab53fc71222.png"
-    },
-    {
-      "file": "history/opp2-vertical-cord.png",
-      "opponent": 2,
-      "role": "earlier alternative with vertical-only cord",
-      "width": 1215,
-      "height": 1295,
-      "bytes": 1806205,
-      "sha256": "09e8afa728ecac9fbecf9a250adfac40d7c3b3139b1b601fd8e47c04baa58c8f",
-      "source": "/home/user/.codex/generated_images/01a0cdb3-98b5-7151-a9b0-1b3d7f16170c/exec-2b01e111-d373-4ac7-b280-bcd509e75090.png"
     },
     {
       "file": "full-resolution/opp3.png",
