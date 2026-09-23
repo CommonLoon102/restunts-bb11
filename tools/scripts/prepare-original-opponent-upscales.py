@@ -196,7 +196,7 @@ def main():
     game = args.game_directory or args.repository_root / "stunts"
     sources = args.repository_root / "docs/opponents/game2-sources"
     generated = args.generated_directory or sources / "full-resolution"
-    destination = args.output_directory or args.repository_root / "assets/opponents/game2"
+    destination = args.output_directory or args.repository_root / "assets/opponents/game"
     working = args.working_directory or (
         generated / "4x" if args.generated_directory is not None else sources / "working-4x")
     try:

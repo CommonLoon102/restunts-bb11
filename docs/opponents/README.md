@@ -1,14 +1,12 @@
 # Opponent portraits
 
-The six photorealistic opponent photos are stored in
-[`assets/opponents/`](../../assets/opponents/). They were generated with the
-built-in imagegen tool from the corresponding original `SDOSEL.PVS` portraits,
-using the `SDMAIN.PVS:!pal` palette. These full-resolution RGB PNGs are the
-masters. The game now prefers the restored 2x comparison set in
-[`assets/opponents/game2/`](../../assets/opponents/game2/). The palette-matched
-photo set in [`assets/opponents/game/`](../../assets/opponents/game/) remains
-available as a fallback for comparison. The original game resources remain
-unchanged. Each asset folder has a manifest recording its dimensions and hashes.
+The six finalized opponent portraits are stored in
+[`assets/opponents/game/`](../../assets/opponents/game/). Each **160 x 166**
+indexed PNG is twice the original tile's width and height, with the exact
+`SDMAIN.PVS:!pal` palette, a solid backdrop, and the original frame and numbered
+label. The portraits were reconstructed as photographs with the built-in imagegen
+tool from the corresponding original `SDOSEL.PVS` portraits, then reduced to the
+game's palette. The original game resources remain unchanged.
 
 | File | Opponent | Original shape |
 | --- | --- | --- |
@@ -25,29 +23,11 @@ individual replacement cannot be loaded, that opponent keeps the original
 portrait. Turning SuperSight off restores the original artwork for all six.
 Clock and Ghost retain their original illustration.
 
-The original portraits occupy 80 x 83 VGA pixels. The replacement photos are displayed
-in the original portrait frame with approximately 4:5 proportions, accounting
-for the game's vertical VGA pixel correction. The original white
-border, numbered labels, and clipboard artwork remain part of the game UI;
-the master and `game` files contain full-bleed photographs. The `game2`
-files also preserve the original tile border and number, which the loader crops
-out before displaying the photo interior beneath the original UI overlays.
-
-The [generation prompts](generation-prompts.txt) record the exact request for
-each photo. Each generation used only its matching original portrait as the
-reference. Otto's final photo uses a [monocle correction](otto-monocle-correction.txt)
-to restore the single eyepiece held by his raised hand, its retaining cord,
-and his open lightweight jacket over a nearly black purple T-shirt. The
-cord disappears under the jacket. Joe's [sunglasses correction](joe-sunglasses-correction.txt)
-uses sharply squared upper corners, a heavy black frame, and one bulky
-central bridge. Skid's [fresh regeneration](skid-original-regeneration.txt)
-uses only his original game portrait as its visual reference, with the eyewear
-and expression requests consolidated into the prompt. This replaces the earlier
-sequence of edits to recover clean photographic detail. The first fresh
-regeneration was retained at the user's request, then received a localized
-eyewear correction: rounder, deeper brown lenses with a thin black upper rim
-and no rim below the temple attachments.
-No fallback CLI or API key was used.
+The original portraits occupy 80 x 83 VGA pixels. The final tile's photo interior
+is 148 x 158 at `(4,4)`. The loader crops this interior and displays it beneath
+the original white border, numbered label and clipboard artwork. The game's
+vertical VGA pixel correction gives the displayed portrait approximately 4:5
+proportions; no display aspect correction is baked into the PNGs.
 
 ## Original reference extraction
 
@@ -64,28 +44,23 @@ writes to `out/opponents/original/`. It does not overwrite the enhanced photos.
 The export manifest includes shape headers, original pixel hashes, and the
 exact number masks used to verify preservation.
 
-## Restored original comparison set (`game2`)
+## Preparing the final portraits
 
-Each `game2/oppN.png` is **160 x 166** pixels, exactly twice the width and height
-of the original 80 x 83 tile (four times as many pixels). The photo interior is
-148 x 158 at `(4,4)`. This set uses fresh reconstructions from the original game
-portraits; the full-resolution masters and the `game` set remain unchanged.
-
-One built-in imagegen call per opponent reconstructs a coherent photograph from
-only that opponent's original 74 x 79 photo crop, preserving its pose, expression,
-clothes and accessories while resolving missing detail. The number is removed
-from the reference and restored exactly afterward. The
+Each base photograph was generated using only its matching original 74 x 79
+photo crop as the visual reference, preserving its pose, expression, clothes
+and accessories while resolving missing detail. The number was removed from
+the reference and restored exactly afterward. The
 [exact prompts and source paths](game2-generation-prompts.json) record all six
 initial calls and subsequent full-resolution corrections. Original pixel
-speckles and digitization noise are excluded from the restoration. The base
-photographs use only original game portraits as references; requested corrections
-edit those retained full-resolution photographs before the same reduction.
+speckles and digitization noise are excluded from the restoration. Requested
+corrections edit the retained full-resolution photographs before reduction.
 Bernie's folded shirt collars are green. Otto has a gold monocle with a visible
 single cord hanging vertically beside his cheek and curving over his shoulder,
-an unzipped lightweight jacket over a black T-shirt, and closed puckered kiss lips.
+an unzipped lightweight jacket over a black T-shirt, and closed puckered lips.
 The user selected this shoulder-cord version as the final portrait.
+No fallback CLI or API key was used.
 
-Preparation then follows the requested larger-to-smaller workflow:
+Preparation follows the requested larger-to-smaller workflow:
 
 1. Bilinear resize the reconstructed photograph into a 320 x 332 working tile,
    four times the original width and height, with a 296 x 316 photo interior.
@@ -98,68 +73,70 @@ Preparation then follows the requested larger-to-smaller workflow:
    without dithering, added grain or sharpening.
 5. Restore the original border and complete number rectangle as exact 2x copies.
 
-The [game2 manifest](../../assets/opponents/game2/manifest.json) records source,
-working-image and final hashes, background colors, dimensions and processing.
-The [preserved source gallery](game2-sources/README.md) links all six selected
-full-resolution photographs, 4x working tiles, and earlier correction variants.
-These files are stored under `docs/opponents/game2-sources/` for future reference.
+The [final asset manifest](../../assets/opponents/game/manifest.json) records
+source, working-image and final hashes, background colors, dimensions and
+processing. The [preserved source gallery](game2-sources/README.md) links the six
+selected full-resolution photographs and six 4x working tiles. The archive keeps
+its historical `docs/opponents/game2-sources/` name; the runtime asset directory
+is `assets/opponents/game/`.
+
 With Pillow and original game data, rebuild or verify the final copies using:
 
 ```sh
+python3 -m pip install Pillow
 python3 tools/scripts/prepare-original-opponent-upscales.py
 python3 tools/scripts/prepare-original-opponent-upscales.py --check
 ```
 
-The script reads `docs/opponents/game2-sources/full-resolution/` and prepares
-the 4x RGB tiles in `docs/opponents/game2-sources/working-4x/`. The preserved
-images match their original generated files byte for byte; their hashes and
-source paths are recorded alongside them. The build and installed game need
-only the final six indexed PNGs, without Pillow or imagegen access.
+The script reads `docs/opponents/game2-sources/full-resolution/`, prepares the
+4x RGB tiles in `docs/opponents/game2-sources/working-4x/`, and writes the final
+indexed tiles to `assets/opponents/game/`. `--check` compares the regenerated
+bytes without writing. The preserved source images match their selected
+generated files byte for byte; their hashes and source paths are recorded
+alongside them. Normal builds and the installed game need only the final six
+indexed PNGs, without Pillow or imagegen access.
 
-## Game-ready photo copies (`game`)
+## Historical conversion tools and records
 
-The renderer uses a 74 x 79 VGA-pixel photo interior at four samples per axis,
-so each prepared PNG is exactly **296 x 316** pixels. Preparation uses Pillow
-(tested with 10.2.0) and the existing original-resource decoder:
+`prepare-opponent-portraits.py` is the earlier conversion tool for 296 x 316
+full-bleed photo interiors. It bilinearly reduces a source to 296 x 316 and then
+148 x 158, quantizes to the exact game palette without dithering, and expands
+by nearest neighbor into 2 x 2 sample blocks. Those comparison assets and their
+root-level masters are no longer included in `assets/opponents/`.
+The finalized tiles use `prepare-original-opponent-upscales.py` instead.
 
-1. Bilinear downscale the RGB master to 296 x 316.
-2. Bilinear reduce to 148 x 158 for a light pixel treatment.
-3. Map to the exact 256-entry `SDMAIN.PVS:!pal` palette without dithering.
-4. Expand by nearest neighbor to 296 x 316, forming 2 x 2 sample blocks.
-
-The blocks are half the width and height of an original VGA pixel in the
-enhanced renderer. This keeps facial detail while matching the game's palette
-and pixel style. The PNGs are indexed and fully opaque; the original number,
-white border and clipboard remain separate overlays. No vertical aspect
-correction is baked in: the game's final display handles it.
-
-After changing a master photo, regenerate and verify all six copies with:
+For a separate experiment with the historical conversion, provide a source
+directory containing six `oppN.png` photos and a separate output directory:
 
 ```sh
-python3 -m pip install Pillow
-python3 tools/scripts/prepare-opponent-portraits.py
-python3 tools/scripts/prepare-opponent-portraits.py --check
+python3 tools/scripts/prepare-opponent-portraits.py \
+    --source-directory docs/opponents/game2-sources/full-resolution \
+    --output-directory out/opponents/legacy-photo-conversion
 ```
 
-The script reads `stunts/SDMAIN.PVS` and leaves the masters unchanged. `--check`
-compares regenerated bytes and provenance with the saved copies without writing.
-The manifest records the Pillow version and exact processing steps. Normal game
-builds and runtime do not require Pillow.
+The earlier [generation prompts](generation-prompts.txt),
+[Otto correction](otto-monocle-correction.txt),
+[Joe correction](joe-sunglasses-correction.txt), and
+[Skid regeneration](skid-original-regeneration.txt) describe the earlier master
+set. The [current generation records](game2-generation-prompts.json) retain exact
+historical prompts and generated source paths; their `preserved_*` fields link
+only images retained in the selected source archive.
 
 ## Runtime paths
 
-The loader searches these artwork tiers in order: `game2/oppN.png`,
-`game/oppN.png`, then full-resolution `oppN.png`. Within each tier it checks
+The loader first searches for `game/oppN.png`, then accepts a root-level
+`oppN.png` as an optional compatibility fallback. Within each tier it checks
 `opponents/` in the game data directory, beside the executable, then this
 checkout's `assets/opponents/` directory. Missing, invalid or incorrectly sized
-files fall through to the next usable tier; if none exists, the original game
-portrait remains visible. F12 still gates all replacements.
+prepared files fall through to the next usable replacement; if none exists,
+the original game portrait remains visible. F12 gates all replacements.
 
-`game2` tiles must be 160 x 166. Their `(4,4,148,158)` interior is expanded by
-nearest neighbor into the 296 x 316 enhanced photo area, preserving every palette
-color. `game` files must be 296 x 316 and are used without resizing. The menu
-continues to draw its original number, border and clipboard over either set.
+The prepared `game` tier accepts the final 160 x 166 tile format and the earlier
+296 x 316 photo-interior format. For a final tile, the `(4,4,148,158)` interior is
+expanded by nearest neighbor into the 296 x 316 enhanced photo area, preserving
+every palette color. Legacy 296 x 316 files are used without resizing. The menu
+continues to draw its original number, border and clipboard over the photograph.
 
-CMake runtime installation copies both prepared sets to `bin/opponents/game2/`
-and `bin/opponents/game/`, and masters to `bin/opponents/`. All are optional;
-no extra original game resource files are required.
+CMake runtime installation copies only the final six prepared PNGs to
+`bin/opponents/game/`. The archived photographs and working tiles are for future
+edits and regeneration. No extra original game resource files are required.
