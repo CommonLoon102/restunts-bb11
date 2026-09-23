@@ -1,6 +1,6 @@
 {
   "description": "Lossless preserved sources for the final opponent portraits: six selected photographs and six 4x working tiles",
-  "prompts": "../game2-generation-prompts.json",
+  "prompts": "../game-regeneration-prompts.json",
   "final_game_assets": "../../../assets/opponents/game",
   "images": [
     {
