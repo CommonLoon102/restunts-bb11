@@ -55,6 +55,7 @@
 struct RACE_VIEWPORT_CACHE {
 	legacy_s16 roof_height;
 	legacy_s16 dashboard_bottom;
+	legacy_u8 supersight;
 };
 
 struct RACE_REWIND_STATE {
@@ -315,6 +316,9 @@ static void race_update_dashboard_layout(legacy_s16 rewind_active)
 		dashboard_visible = 1;
 		roofbmpheight_copy = roofbmpheight;
 		dashbmp_y_copy = dashbmp_y;
+		if (supersight_enabled != 0 && dashbmp_y_copy > height_above_replaybar) {
+			dashbmp_y_copy = height_above_replaybar;
+		}
 	}
 }
 
@@ -322,7 +326,8 @@ static void race_update_viewport(struct RACE_VIEWPORT_CACHE *cache, legacy_s16 r
 {
 	if (game_replay_mode != game_replay_mode_copy || dashb_toggle != dashb_toggle_copy ||
 		replaybar_toggle != replaybar_toggle_copy || is_in_replay != is_in_replay_copy ||
-		followOpponentFlag != followOpponentFlag_copy) {
+		followOpponentFlag != followOpponentFlag_copy || cache->supersight != supersight_enabled) {
+		cache->supersight = supersight_enabled;
 		race_update_dashboard_layout(rewind_active);
 		if (cache->roof_height != roofbmpheight_copy || dashbmp_y_copy != viewport_bottom_cache ||
 			cache->dashboard_bottom != height_above_replaybar) {
@@ -543,8 +548,16 @@ static void race_draw_frame(void)
 			}
 		}
 
-		shape2d_render_bmp_as_mask(dasmshapeptr);
-		shape2d_rle_or_far_pointer(dastbmp_y2, dastseg);
+		if (supersight_enabled != 0 && replaybar_enabled != 0) {
+			/* Custom dashboard tops can extend below the replay toolbar boundary. */
+			sprite_set_target_clip_bounds(0, RACE_SCREEN_WIDTH, 0, height_above_replaybar);
+			shape2d_rle_mask_position_clipped(dasmshapeptr);
+			shape2d_rle_or_position_clipped(
+				(struct SHAPE2D far *)dos_memory_make_pointer(dastseg, dastbmp_y2));
+		} else {
+			shape2d_render_bmp_as_mask(dasmshapeptr);
+			shape2d_rle_or_far_pointer(dastbmp_y2, dastseg);
+		}
 	}
 
 	frame_present(&rect_windshield);
@@ -899,6 +912,7 @@ void run_game(void)
 	struct RACE_VIEWPORT_CACHE cache;
 	cache.roof_height = -1;
 	cache.dashboard_bottom = -1;
+	cache.supersight = supersight_enabled;
 	viewport_bottom_cache = -1;
 	run_game_random = LEGACY_S16_SHL(get_kevinrandom(), RACE_RANDOM_VALUE_SHIFT);
 	replaybar_toggle = 1;
