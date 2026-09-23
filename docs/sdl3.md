@@ -168,9 +168,9 @@ images retain the original 320x200 pixel data for parity checks. With SuperSight
 on, the 3D scene and both car-selection previews render at 1280x800. Their geometry
 is projected and rasterized at the higher resolution; menu artwork, dashboard,
 and replay controls keep their original pixel detail. F12 works in both car
-selection screens as well as driving and replay views. Enhanced driving and
-replay scenes use [AI-refined skybox PNGs](skyboxes/README.md) at four times
-the original width and height. Track selector previews use these same PNGs
+selection screens and the track preview as well as driving and replay views.
+Enhanced driving and replay scenes use [AI-refined skybox PNGs](skyboxes/README.md)
+at four times the original width and height. Track selector previews use these same PNGs
 when SuperSight is active. Runtime installs include the required
 `bin/skyboxes/` directory; retain it beside the executable when packaging.
 Missing or invalid textures fall back to the original artwork. Menus support
