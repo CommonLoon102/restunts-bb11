@@ -84,6 +84,11 @@ run_host_test test-frame-render math.c \
     "$test_source_dir/legacy.c" "$test_source_dir/heapsort.c" "$test_source_dir/trkutil.c" \
     -Wno-pointer-sign -Wno-sign-compare -Wno-missing-field-initializers -Wno-maybe-uninitialized \
     -Wno-missing-braces
+run_host_test test-frame-render math.c -DRESTUNTS_SDL3 \
+    "$test_source_dir/full_data.c" "$test_source_dir/headless_data.c" \
+    "$test_source_dir/legacy.c" "$test_source_dir/heapsort.c" "$test_source_dir/trkutil.c" \
+    -Wno-pointer-sign -Wno-sign-compare -Wno-missing-field-initializers -Wno-maybe-uninitialized \
+    -Wno-missing-braces
 run_host_test test-frame-overlay frame_overlay.c \
     "$test_source_dir/strlib.c" \
     "$test_source_dir/shape3d.c" "$test_source_dir/shape3d_prerender.c" \

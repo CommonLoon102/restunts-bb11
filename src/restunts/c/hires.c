@@ -31,7 +31,7 @@ static legacy_u32 generation;
 static legacy_u8 *framebuffer;
 static legacy_u32 *argb_framebuffer;
 static legacy_f32 *inverse_depth;
-static legacy_u16 *depth_family;
+static legacy_u32 *depth_family;
 static legacy_s32 depth_left, depth_right, depth_top, depth_bottom;
 
 static void *hires_allocate(size_t size)
@@ -246,7 +246,7 @@ void hires_depth_begin(legacy_s32 left, legacy_s32 right, legacy_s32 top, legacy
 	}
 }
 
-legacy_s32 hires_depth_test(legacy_s32 x, legacy_s32 y, legacy_f64 inverse_z, legacy_u16 family,
+legacy_s32 hires_depth_test(legacy_s32 x, legacy_s32 y, legacy_f64 inverse_z, legacy_u32 family,
 							legacy_s32 attached)
 {
 	if (active == NULL || x < depth_left || x >= depth_right || y < depth_top ||

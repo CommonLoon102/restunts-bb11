@@ -17,7 +17,7 @@ void hires_end(void);
 /* Bounds use high-resolution pixels with exclusive right/bottom edges.
  * Family zero is reserved; attached fragments may overlay their own parent. */
 void hires_depth_begin(legacy_s32 left, legacy_s32 right, legacy_s32 top, legacy_s32 bottom);
-legacy_s32 hires_depth_test(legacy_s32 x, legacy_s32 y, legacy_f64 inverse_z, legacy_u16 family,
+legacy_s32 hires_depth_test(legacy_s32 x, legacy_s32 y, legacy_f64 inverse_z, legacy_u32 family,
 							legacy_s32 attached);
 /* Optional full-color artwork uses the same clipping and sprite-copy lifetime.
  * Allocation failure leaves the indexed fallback intact. */

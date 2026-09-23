@@ -704,6 +704,7 @@ static void test_prediction_uses_authoritative_events(void)
 	followOpponentFlag = 0;
 }
 
+#if !defined(RESTUNTS_SDL3)
 static void test_supersight_selection(void)
 {
 	/* The eight original headings select four cardinal rotations and their
@@ -825,6 +826,115 @@ static void test_supersight_capacity_retries(void)
 	transform_capacity = 0;
 	check_retry_brake_paint = 0;
 }
+
+#else
+static void test_supersight_selection(void)
+{
+	struct FRAME_CAMERA camera = {0};
+	supersight_enabled = 1;
+	for (legacy_s16 pose = 0; pose < 24; pose++) {
+		configure_track();
+		camera.position.x = pose & 1 ? 0 : 29 * 1024;
+		camera.position.z = pose & 2 ? 0 : 29 * 1024;
+		camera.position.y = 2000;
+		mat_temp = *mat_rot_zxy(pose * 43, pose * 73, pose * 127, MATRIX_ROTATION_ORDER_ZXY);
+		for (detail_level = 0; detail_level < 5; detail_level++) {
+			struct FRAME_TILE_SELECTION tiles = {0};
+			legacy_u8 seen[900] = {0};
+			frame_select_tiles(&tiles, &camera);
+			assert(tiles.count == 900 && tiles.first == 0);
+			legacy_s32 previous_depth = INT32_MAX;
+			for (legacy_s16 i = 0; i < tiles.count; i++) {
+				assert(tiles.markers[i] == FRAME_TILE_DRAW_MARKER);
+				assert(tiles.detail[i] == FRAME_TILE_DETAIL_FULL);
+				assert(tiles.east[i] >= 0 && tiles.east[i] < 30);
+				assert(tiles.south[i] >= 0 && tiles.south[i] < 30);
+				assert(seen[tiles.south[i] * 30 + tiles.east[i]]++ == 0);
+				legacy_s32 x = (legacy_s32)track_column_centers[tiles.east[i]] - camera.position.x;
+				legacy_s32 z = (legacy_s32)track_row_centers[tiles.south[i]] - camera.position.z;
+				legacy_s32 depth =
+					(legacy_s32)(((legacy_s64)x * mat_temp.m._31 + (legacy_s64)z * mat_temp.m._33) /
+								 TRIG_FIXED_ONE);
+				assert(depth <= previous_depth);
+				previous_depth = depth;
+			}
+		}
+	}
+	/* A distant multi-tile object is resolved once, even when a continuation
+	 * is closer than its owner. Scenery remains an explicit graphics option. */
+	for (detail_level = 0; detail_level < 5; detail_level++) {
+		configure_track();
+		struct FRAME_TILE_SELECTION tiles = {0};
+		element_map[0] = 1;
+		element_map[1] = TRACK_TILE_CONTINUATION_EAST;
+		element_map[30] = TRACK_TILE_CONTINUATION_SOUTH;
+		element_map[31] = TRACK_TILE_CONTINUATION_SOUTHEAST;
+		trkObjectList[1].ss_multiTileFlag = FRAME_MULTITILE_BOTH;
+		trkObjectList[1].ss_physicalModel = 0;
+		element_map[29] = 2;
+		trkObjectList[2].ss_multiTileFlag = 0;
+		trkObjectList[2].ss_physicalModel = FRAME_SCENERY_PHYSICAL_MODEL_FIRST;
+		state.playerstate.car_position.lx = 15L * 65536;
+		state.playerstate.car_position.lz = 15L * 65536;
+		frame_select_tiles(&tiles, &camera);
+		legacy_s16 objects = 0, covered = 0, scenery = 0;
+		for (legacy_s16 i = 0; i < tiles.count; i++) {
+			if (tiles.markers[i] == FRAME_TILE_MULTITILE_COVERED_MARKER) {
+				covered++;
+			} else if (tiles.markers[i] == FRAME_TILE_DRAW_MARKER) {
+				objects += tiles.elements[i] == 1;
+				scenery += tiles.elements[i] == 2;
+			}
+		}
+		assert(objects == 1 && covered == 3);
+		assert(scenery == (detail_level == 0));
+	}
+	supersight_enabled = 0;
+}
+
+static void test_supersight_capacity_retries(void)
+{
+	struct FRAME_CAMERA camera = {0};
+	struct FRAME_TILE_SELECTION tiles = {0};
+	struct FRAME_CAR_RENDER cars[2] = {{0}};
+	configure_track();
+	reset_shapes();
+	memset(terrain_map, 1, sizeof(terrain_map));
+	memset(&state, 0, sizeof(state));
+	state.playerstate.car_position.lx = 15L * 65536;
+	state.playerstate.car_position.lz = 15L * 65536;
+	detail_level = 1;
+	cameramode = CAMERA_MODE_COCKPIT;
+	followOpponentFlag = 0;
+	gameconfig.game_opponenttype = 0;
+	start_finish_column = -1;
+	supersight_enabled = 1;
+	frame_select_tiles(&tiles, &camera);
+	transform_capacity = 0;
+	queue_resets = 0;
+	frame_draw_supersight(&tiles, &camera, cars, 0, 0, 0);
+	assert(queue_resets == 0 && tiles.first == 0);
+	assert(transform_count == 900);
+	/* Full diagonal depths and signed biases must preserve far-to-near order. */
+	reset_shapes();
+	mat_temp = *mat_rot_zxy(0, 0, 128, MATRIX_ROTATION_ORDER_ZXY);
+	curtransshape_ptr = currenttransshape;
+	for (legacy_s16 i = 0; i < 3; i++) {
+		curtransshape_ptr->pos.x = -29000 + i * 1000;
+		curtransshape_ptr->pos.y = 0;
+		curtransshape_ptr->pos.z = 29000 - i * 1000;
+		curtransshape_ptr->shapeptr = &game3dshapes[0];
+		transformed_shape_add_for_sort(i == 0 ? -2048 : 0, 0);
+	}
+	assert(supersight_shape_depths[1] > 32767);
+	frame_draw_sorted_shapes(cars);
+	for (legacy_s16 i = 1; i < 3; i++) {
+		assert(supersight_shape_depths[transformedshape_indices[i - 1]] >=
+			   supersight_shape_depths[transformedshape_indices[i]]);
+	}
+	supersight_enabled = 0;
+}
+#endif
 
 int main(void)
 {
