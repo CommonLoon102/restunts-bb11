@@ -19,6 +19,7 @@
 #include "externs.h"
 #include "keyboard.h"
 #ifdef RESTUNTS_SDL3
+#include "frame_internal.h"
 #include "presentation.h"
 #endif
 
@@ -317,6 +318,7 @@ static void car_menu_load_car(struct CAR_MENU_STATE *menu)
 
 	(void)timer_get_delta_alt();
 #ifdef RESTUNTS_SDL3
+	frame_fps_reset();
 	menu->rotation_time = presentation_now();
 	presentation_reset(&menu->presentation_clock, menu->rotation_time);
 #endif
@@ -390,6 +392,15 @@ static void car_menu_render_preview(struct CAR_MENU_STATE *menu)
 																 car_preview_top_shape_id));
 		shape3d_render_queued_primitives();
 		sprite_select_render_window();
+#ifdef RESTUNTS_SDL3
+		if (fps_display_enabled != 0) {
+			sprite_set_target_clip_bounds(0, CAR_MENU_SCREEN_WIDTH, 0, CAR_MENU_CAR_CLIP_BOTTOM);
+			struct RECTANGLE *fps_rect = frame_fps_draw_text();
+			/* Include the counter in this copy and the next frame's background restore. */
+			rect_union(&menu->current_rect, fps_rect, &menu->current_rect);
+			rect_union(&menu->union_rect, fps_rect, &menu->union_rect);
+		}
+#endif
 		sprite_set_target_clip_bounds(menu->union_rect.left, menu->union_rect.right,
 									  menu->union_rect.top, menu->union_rect.bottom);
 		menu->previous_rect = menu->current_rect;
@@ -418,6 +429,9 @@ static void car_menu_render_preview(struct CAR_MENU_STATE *menu)
 			sprite_putimage(render_window_sprite->sprite_bitmapptr);
 		}
 		mouse_draw_transparent_check();
+#ifdef RESTUNTS_SDL3
+		frame_fps_record_presented();
+#endif
 		menu->previous_car_index = menu->car_index;
 	}
 }
@@ -521,8 +535,8 @@ static legacy_s16 car_menu_activate_selection(struct CAR_MENU_STATE *menu)
 static legacy_s16 car_menu_handle_input(struct CAR_MENU_STATE *menu, legacy_u16 input)
 {
 #ifdef RESTUNTS_SDL3
-	if (input == (legacy_u16)KEY_F12) {
-		handle_ingame_kb_shortcuts(KEY_F12);
+	if (input == (legacy_u16)KEY_F11 || input == (legacy_u16)KEY_F12) {
+		handle_ingame_kb_shortcuts(LEGACY_S16_FROM_BITS(input));
 		presentation_reset(&menu->presentation_clock, presentation_now());
 		menu->render_phase = CAR_RENDER_START_PHASE;
 		return 0;
@@ -607,4 +621,7 @@ void run_car_menu(legacy_s8 *car_id, legacy_s8 *material, legacy_s8 *transmissio
 		}
 	}
 	car_menu_release(menu, car_id);
+#ifdef RESTUNTS_SDL3
+	frame_fps_reset();
+#endif
 }

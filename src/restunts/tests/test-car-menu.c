@@ -21,6 +21,9 @@
 #include "../c/menu_common.h"
 #include "../c/externs.h"
 #include "../c/keyboard.h"
+#ifdef RESTUNTS_SDL3
+#include "../c/frame_internal.h"
+#endif
 
 #undef printf
 
@@ -38,6 +41,69 @@ static const legacy_s8 *fixture_files[] = {(const legacy_s8 *)"CARVETT.RES",
 
 #ifdef RESTUNTS_SDL3
 legacy_u8 supersight_enabled;
+legacy_u8 fps_display_enabled;
+static legacy_u8 display_toggle_test, display_scenario, display_target, display_pending;
+static legacy_u8 display_fps_drawn, display_previous_fps, display_refresh_pending;
+static legacy_u32 display_present_count, display_fps_draw_count, display_record_count;
+static legacy_u32 display_reset_count, display_shortcut_count, display_sprite_free_count;
+static struct RECTANGLE display_clip, display_fps_bounds, display_previous_fps_bounds;
+
+static void assert_contains(const struct RECTANGLE *outer, const struct RECTANGLE *inner)
+{
+	assert(outer->left <= inner->left && outer->right >= inner->right);
+	assert(outer->top <= inner->top && outer->bottom >= inner->bottom);
+}
+
+static void record_preview_copy(void)
+{
+	if (display_toggle_test == 0 || display_pending == 0) {
+		return;
+	}
+	assert(display_target == 0);
+	assert(display_fps_drawn == fps_display_enabled);
+	assert(display_reset_count != 0);
+	if (display_fps_drawn != 0) {
+		assert_contains(&display_clip, &display_fps_bounds);
+	}
+	if (display_previous_fps != 0) {
+		assert_contains(&display_clip, &display_previous_fps_bounds);
+	}
+	display_previous_fps = display_fps_drawn;
+	display_previous_fps_bounds = display_fps_bounds;
+	display_fps_drawn = display_pending = display_refresh_pending = 0;
+	display_present_count++;
+	assert(display_record_count + 1U == display_present_count);
+}
+
+void frame_fps_reset(void)
+{
+	display_reset_count++;
+}
+
+void frame_fps_record_presented(void)
+{
+	if (display_toggle_test != 0) {
+		display_record_count++;
+		assert(display_record_count == display_present_count);
+	}
+}
+
+struct RECTANGLE *frame_fps_draw_text(void)
+{
+	assert(fps_display_enabled != 0);
+	if (display_toggle_test != 0) {
+		assert(display_target == 1 && display_pending != 0);
+		assert(display_fps_drawn == 0);
+		display_fps_bounds.left = 8;
+		display_fps_bounds.right = display_fps_draw_count % 2U == 0U ? 81 : 41;
+		display_fps_bounds.top = 3;
+		display_fps_bounds.bottom = 12;
+		assert_contains(&display_clip, &display_fps_bounds);
+		display_fps_drawn = 1;
+		display_fps_draw_count++;
+	}
+	return &display_fps_bounds;
+}
 static legacy_u8 predictive_preview_test;
 static legacy_u32 preview_present_count;
 static legacy_s16 preview_last_rotation;
@@ -51,8 +117,15 @@ legacy_u64 presentation_now(void)
 
 legacy_s16 handle_ingame_kb_shortcuts(legacy_s16 key)
 {
-	assert(key == KEY_F12);
-	supersight_enabled ^= 1U;
+	assert(key == KEY_F11 || key == KEY_F12);
+	if (key == KEY_F11) {
+		fps_display_enabled ^= 1U;
+		frame_fps_reset();
+	} else {
+		supersight_enabled ^= 1U;
+	}
+	display_shortcut_count++;
+	display_refresh_pending = display_toggle_test;
 	return 1;
 }
 #endif
@@ -227,6 +300,14 @@ legacy_s16 input_checking(legacy_s16 frame_delta)
 	trace_word(1013);
 	trace_word((legacy_u16)frame_delta);
 #ifdef RESTUNTS_SDL3
+	if (display_toggle_test != 0) {
+		assert(display_refresh_pending == 0);
+		static const legacy_u16 keys[] = {KEY_DOWN,	 KEY_DOWN, KEY_DOWN, KEY_F11, 0,		KEY_F12,
+										  0,		 KEY_F11,  KEY_F11,	 0,		  KEY_F12,	KEY_F11,
+										  KEY_ENTER, KEY_UP,   KEY_UP,	 KEY_UP,  KEY_ENTER};
+		assert(frame_index < sizeof(keys) / sizeof(keys[0]));
+		return keys[frame_index];
+	}
 	if (predictive_preview_test != 0) {
 		if (supersight_enabled != 0) {
 			assert(preview_now - preview_previous_input_time >= 10000000ULL);
@@ -325,6 +406,10 @@ legacy_s16 mouse_multi_hittest(legacy_s16 count, const struct BUTTON_AREA *butto
 	trace_word(1022);
 	trace_word((legacy_u16)count);
 #ifdef RESTUNTS_SDL3
+	if (display_toggle_test != 0) {
+		frame_index++;
+		return -1;
+	}
 	if (predictive_preview_test != 0) {
 		frame_index++;
 		return 0;
@@ -361,6 +446,23 @@ legacy_s16 rect_intersect(struct RECTANGLE *r1, struct RECTANGLE *r2)
 	trace_word(1024);
 	trace_rect(r1);
 	trace_rect(r2);
+#ifdef RESTUNTS_SDL3
+	if (display_toggle_test != 0) {
+		if (r1->left < r2->left) {
+			r1->left = r2->left;
+		}
+		if (r1->right > r2->right) {
+			r1->right = r2->right;
+		}
+		if (r1->top < r2->top) {
+			r1->top = r2->top;
+		}
+		if (r1->bottom > r2->bottom) {
+			r1->bottom = r2->bottom;
+		}
+		return 1;
+	}
+#endif
 	r1->left = r2->left;
 	r1->right = r2->right;
 	r1->top = r2->top;
@@ -375,6 +477,19 @@ void rect_union(struct RECTANGLE *r1, struct RECTANGLE *r2, struct RECTANGLE *ou
 	trace_rect(r2);
 
 	*outrc = *r1;
+#ifdef RESTUNTS_SDL3
+	if (display_toggle_test != 0) {
+		if (r2->left < outrc->left) {
+			outrc->left = r2->left;
+		}
+		if (r2->right > outrc->right) {
+			outrc->right = r2->right;
+		}
+		if (r2->top < outrc->top) {
+			outrc->top = r2->top;
+		}
+	}
+#endif
 	if (r2->bottom > outrc->bottom) {
 		outrc->bottom = r2->bottom;
 	}
@@ -438,6 +553,10 @@ void shape3d_load_car_shapes(legacy_s8 *carid, legacy_s8 *opponent_carid)
 void shape3d_render_queued_primitives(void)
 {
 #ifdef RESTUNTS_SDL3
+	if (display_toggle_test != 0) {
+		assert(display_pending == 0);
+		display_pending = 1;
+	}
 	if (predictive_preview_test != 0) {
 		preview_present_count++;
 	}
@@ -466,6 +585,15 @@ legacy_u16 shape3d_transform_and_queue(struct TRANSFORMEDSHAPE3D *instance)
 		instance->rectptr->right = 128;
 		instance->rectptr->top = 7;
 		instance->rectptr->bottom = 88;
+#ifdef RESTUNTS_SDL3
+		if (display_toggle_test != 0) {
+			/* Keep the car disjoint from the counter to expose missing FPS dirt. */
+			instance->rectptr->left = 100;
+			instance->rectptr->right = 180;
+			instance->rectptr->top = 30;
+			instance->rectptr->bottom = 80;
+		}
+#endif
 	}
 	return 0;
 }
@@ -475,6 +603,12 @@ legacy_s16 sprite_blit_to_video(struct SPRITE *sprite, legacy_s16 mode)
 	trace_word(1035);
 	trace_pointer(sprite);
 	trace_word((legacy_u16)mode);
+#ifdef RESTUNTS_SDL3
+	if (display_toggle_test != 0) {
+		assert(sprite == render_window_sprite);
+		record_preview_copy();
+	}
+#endif
 	return 0;
 }
 
@@ -502,6 +636,11 @@ void sprite_copy_image_at(struct SHAPE2D *shape, legacy_s16 x, legacy_s16 y)
 
 void sprite_free_wnd(struct SPRITE *wndsprite)
 {
+#ifdef RESTUNTS_SDL3
+	if (display_toggle_test != 0) {
+		display_sprite_free_count++;
+	}
+#endif
 	trace_word(1039);
 	trace_pointer(wndsprite);
 }
@@ -519,6 +658,17 @@ struct SPRITE *sprite_make_wnd(legacy_u16 width, legacy_u16 height, legacy_u16 c
 
 void sprite_putimage(struct SHAPE2D *shape)
 {
+#ifdef RESTUNTS_SDL3
+	if (display_toggle_test != 0) {
+		if (display_target == 1 && display_previous_fps != 0) {
+			/* The background copy must erase old digits even after F11 turns off. */
+			assert_contains(&display_clip, &display_previous_fps_bounds);
+		} else if (display_target == 0) {
+			assert(shape == render_window_sprite->sprite_bitmapptr);
+			record_preview_copy();
+		}
+	}
+#endif
 	trace_word(1041);
 	trace_pointer(shape);
 }
@@ -541,27 +691,45 @@ void sprite_putpixel_clipped(legacy_s16 x, legacy_s16 y, legacy_s16 color)
 
 void sprite_select_mcga_backbuffer(void)
 {
+#ifdef RESTUNTS_SDL3
+	display_target = 2;
+#endif
 	trace_word(1044);
 }
 
 void sprite_select_render_window(void)
 {
+#ifdef RESTUNTS_SDL3
+	display_target = 1;
+#endif
 	trace_word(1045);
 }
 
 void sprite_select_render_window_and_clear(void)
 {
+#ifdef RESTUNTS_SDL3
+	display_target = 1;
+#endif
 	trace_word(1046);
 }
 
 void sprite_select_screen_compat(void)
 {
+#ifdef RESTUNTS_SDL3
+	display_target = 0;
+#endif
 	trace_word(1047);
 }
 
 void sprite_set_target_clip_bounds(legacy_u16 left, legacy_u16 right, legacy_u16 top,
 								   legacy_u16 bottom)
 {
+#ifdef RESTUNTS_SDL3
+	display_clip.left = left;
+	display_clip.right = right;
+	display_clip.top = top;
+	display_clip.bottom = bottom;
+#endif
 	trace_word(1048);
 	trace_word((legacy_u16)left);
 	trace_word((legacy_u16)right);
@@ -622,6 +790,12 @@ static void run_car_case(legacy_u32 index)
 	idle_expired = 0;
 	video_uses_page_flipping = index % 2U;
 	slow_video_mgmt = index % 3U == 0U;
+#ifdef RESTUNTS_SDL3
+	if (display_toggle_test != 0) {
+		video_uses_page_flipping = display_scenario & 1U;
+		slow_video_mgmt = (display_scenario >> 1) & 1U;
+	}
+#endif
 	framespersec = 10 + index % 3U;
 	miscptr = (legacy_s8 *)resource_bytes[63];
 	fontnptr = (legacy_s8 *)resource_bytes[62];
@@ -632,7 +806,19 @@ static void run_car_case(legacy_u32 index)
 	}
 	trace_word(index);
 	legacy_s8 car_id[5] = "COUN";
-	run_car_menu(car_id, &material, &transmission, index % 3U == 0U ? 2U : 0U);
+	legacy_u16 opponent_type = index % 3U == 0U ? 2U : 0U;
+#ifdef RESTUNTS_SDL3
+	if (display_toggle_test != 0) {
+		opponent_type = (display_scenario & 4U) != 0 ? 2U : 0U;
+	}
+#endif
+	run_car_menu(car_id, &material, &transmission, opponent_type);
+#ifdef RESTUNTS_SDL3
+	if (display_toggle_test != 0) {
+		assert(_strcmp(car_id, (const legacy_s8 *)"COUN") == 0);
+		assert(material == 1 && transmission == 0);
+	}
+#endif
 	trace_text(car_id);
 	trace_word((legacy_u8)material);
 	trace_word((legacy_u8)transmission);
@@ -640,6 +826,34 @@ static void run_car_case(legacy_u32 index)
 	trace_word(idle_expired);
 	trace_word(waitflag);
 }
+
+#ifdef RESTUNTS_SDL3
+static void test_display_toggles(void)
+{
+	predictive_preview_test = 0;
+	display_toggle_test = 1;
+	for (display_scenario = 0; display_scenario < 32; display_scenario++) {
+		legacy_u8 initial_supersight = (display_scenario >> 3) & 1U;
+		legacy_u8 initial_fps = (display_scenario >> 4) & 1U;
+		supersight_enabled = initial_supersight;
+		fps_display_enabled = initial_fps;
+		display_pending = display_fps_drawn = display_previous_fps = display_refresh_pending = 0;
+		display_present_count = display_fps_draw_count = display_record_count = 0;
+		display_reset_count = display_shortcut_count = display_sprite_free_count = 0;
+		run_car_case(1);
+		assert(frame_index == 17);
+		assert(supersight_enabled == initial_supersight && fps_display_enabled == initial_fps);
+		assert(display_shortcut_count == 6);
+		assert(display_reset_count == 6);
+		assert(display_fps_draw_count > 0 && display_fps_draw_count < display_present_count);
+		assert(display_present_count == display_record_count);
+		assert(display_pending == 0);
+		assert(display_sprite_free_count == sprite_index);
+	}
+	display_toggle_test = 0;
+	puts("Car menu FPS toggles passed (32 scenarios).");
+}
+#endif
 
 int main(void)
 {
@@ -674,6 +888,7 @@ int main(void)
 			assert(preview_last_rotation == 97);
 		}
 	}
+	test_display_toggles();
 #endif
 	puts("Car menu interaction snapshots passed (102 scenarios).");
 	return 0;
