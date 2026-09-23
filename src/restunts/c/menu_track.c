@@ -119,6 +119,20 @@ static void track_menu_draw_buttons(void)
 	unload_resource(text_resource);
 }
 
+static void track_menu_draw_background(void)
+{
+	track_menu_draw_preview();
+	sprite_select_render_window();
+	strcpy(&resID_byte1, "'");
+	strcat(&resID_byte1, gameconfig.game_trackname);
+	strcat(&resID_byte1, "'");
+	intro_draw_text(&resID_byte1, font_centered_text_x(&resID_byte1), TRACK_MENU_NAME_Y,
+					dialog_fnt_colour, 0);
+	track_menu_draw_highscore();
+
+	track_menu_draw_buttons();
+}
+
 static legacy_u16 track_menu_poll_input(struct TRACK_MENU_STATE *menu)
 {
 	if (menu->selected != menu->previous) {
@@ -146,6 +160,17 @@ static legacy_u16 track_menu_poll_input(struct TRACK_MENU_STATE *menu)
 
 static legacy_u8 track_menu_activate_key(struct TRACK_MENU_STATE *menu, legacy_u16 key)
 {
+#ifdef RESTUNTS_SDL3
+	if (key == (legacy_u16)KEY_F12) {
+		mouse_draw_opaque_check();
+		handle_ingame_kb_shortcuts(KEY_F12);
+		sprite_free_wnd(render_window_sprite);
+		track_menu_draw_background();
+		menu->previous = TRACK_MENU_NO_SELECTION;
+		mouse_draw_transparent_check();
+		return 0;
+	}
+#endif
 	if (key == 0) {
 		return 0;
 	}
@@ -188,16 +213,7 @@ void run_tracks_menu(legacy_s16 reload_track)
 		menu.selected = 0;
 		menu.previous = TRACK_MENU_NO_SELECTION;
 		menu.blit_mode = MENU_BLIT_MODE_INITIAL;
-		track_menu_draw_preview();
-		sprite_select_render_window();
-		strcpy(&resID_byte1, "'");
-		strcat(&resID_byte1, gameconfig.game_trackname);
-		strcat(&resID_byte1, "'");
-		intro_draw_text(&resID_byte1, font_centered_text_x(&resID_byte1), TRACK_MENU_NAME_Y,
-						dialog_fnt_colour, 0);
-		track_menu_draw_highscore();
-
-		track_menu_draw_buttons();
+		track_menu_draw_background();
 
 		for (;;) {
 			legacy_u16 key = track_menu_poll_input(&menu);
