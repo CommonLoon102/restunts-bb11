@@ -296,6 +296,20 @@ void hires_pixel(legacy_s32 x, legacy_s32 y, legacy_u8 color)
 	}
 }
 
+void hires_fill_pixel(legacy_s32 x, legacy_s32 y, legacy_u8 color)
+{
+	if (active == NULL || x < 0 || y < 0 || x >= HIRES_WIDTH / HIRES_SCALE ||
+		y >= HIRES_HEIGHT / HIRES_SCALE || x < active_sprite.sprite_raster_left ||
+		x >= active_sprite.sprite_raster_right || y < active_sprite.sprite_top ||
+		y >= active_sprite.sprite_bottom) {
+		return;
+	}
+	legacy_u16 row = LEGACY_READ_U16_LE(active_sprite.sprite_lineofs + y * 2);
+	legacy_u16 offset = (legacy_u16)(row + x);
+	memset(hires_cell(active, offset), color, HIRES_CELL_PIXELS);
+	hires_clear_argb(active, offset);
+}
+
 void hires_argb_pixel(legacy_s32 x, legacy_s32 y, legacy_u32 color)
 {
 	if (active == NULL || active->argb == NULL || x < 0 || y < 0 || x >= HIRES_WIDTH ||

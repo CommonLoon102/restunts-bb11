@@ -435,6 +435,82 @@ static void test_argb_composition(struct TEST_SURFACE *screen, struct TEST_SURFA
 	assert(hires_framebuffer_argb(screen->base, palette) == NULL);
 }
 
+static void test_logical_pixel_fill(void)
+{
+	struct TEST_SURFACE screen;
+	struct TEST_SURFACE window;
+	setup_surface(&screen, 0x5000, 0);
+	setup_surface(&window, 0x6000, SHAPE2D_HEADER_SIZE);
+	write_pixel(&window, 40, 60, 9);
+	legacy_u32 palette[256];
+	for (legacy_u32 index = 0; index < 256; index++) {
+		palette[index] = 0xFF000000U | index * 0x010101U;
+	}
+	palette[15] = 0xFFFFFFFFU;
+	assert(hires_begin_argb(&window.sprite));
+	for (legacy_s32 y = 240; y < 244; y++) {
+		for (legacy_s32 x = 160; x < 164; x++) {
+			hires_argb_pixel(x, y, 0xFF123456U);
+		}
+	}
+	hires_argb_pixel(164, 240, 0xFF654321U);
+	hires_end();
+	raster_pixel(&screen, 50, 60, &window, 40, 60, SHAPE2D_RASTER_COPY, NULL);
+	raster_pixel(&screen, 51, 60, &window, 41, 60, SHAPE2D_RASTER_COPY, NULL);
+	legacy_u32 offset = 240 * TEST_HIRES_WIDTH + 200;
+	assert(hires_framebuffer_argb(screen.base, palette)[offset] == 0xFF123456U);
+	/* Logical fills obey the active clip and do nothing outside a drawing pass. */
+	hires_fill_pixel(40, 60, 99);
+	struct SPRITE clipped = window.sprite;
+	clipped.sprite_raster_left = 40;
+	clipped.sprite_raster_right = 41;
+	clipped.sprite_top = 60;
+	clipped.sprite_bottom = 61;
+	assert(hires_begin(&clipped));
+	hires_fill_pixel(39, 60, 99);
+	hires_fill_pixel(41, 60, 99);
+	hires_fill_pixel(40, 59, 99);
+	hires_fill_pixel(40, 61, 99);
+	hires_fill_pixel(-1, -1, 99);
+	hires_fill_pixel(TEST_WIDTH, TEST_HEIGHT, 99);
+	hires_fill_pixel(40, 60, 77);
+	hires_end();
+	hires_fill_pixel(40, 60, 99);
+	raster_pixel(&screen, 50, 60, &window, 40, 60, SHAPE2D_RASTER_COPY, NULL);
+	raster_pixel(&screen, 51, 60, &window, 41, 60, SHAPE2D_RASTER_COPY, NULL);
+	assert_block(&screen, 50, 60, 77);
+	raster_pixel(&screen, 49, 60, &window, 39, 60, SHAPE2D_RASTER_COPY, NULL);
+	raster_pixel(&screen, 50, 59, &window, 40, 59, SHAPE2D_RASTER_COPY, NULL);
+	raster_pixel(&screen, 50, 61, &window, 40, 61, SHAPE2D_RASTER_COPY, NULL);
+	assert_block(&screen, 49, 60, 3);
+	assert_block(&screen, 50, 59, 3);
+	assert_block(&screen, 50, 61, 3);
+	const legacy_u32 *pixels = hires_framebuffer_argb(screen.base, palette);
+	assert(pixels != NULL);
+	for (legacy_u32 row = 0; row < TEST_SCALE; row++) {
+		for (legacy_u32 column = 0; column < TEST_SCALE; column++) {
+			assert(pixels[offset + row * TEST_HIRES_WIDTH + column] == palette[77]);
+		}
+	}
+	assert(pixels[offset + TEST_SCALE] == 0xFF654321U);
+	/* Removing the last overlay retires ARGB composition. The nonzero shape
+	 * header offset and ordinary sprite copies retain the filled samples. */
+	assert(hires_begin(&window.sprite));
+	hires_fill_pixel(41, 60, 78);
+	hires_fill_pixel(41, 60, 78);
+	hires_end();
+	assert(hires_framebuffer_argb(window.base, palette) == NULL);
+	raster_pixel(&screen, 51, 60, &window, 41, 60, SHAPE2D_RASTER_COPY, NULL);
+	assert(hires_framebuffer_argb(screen.base, palette) == NULL);
+	assert_block(&screen, 51, 60, 78);
+	for (legacy_u32 index = 0; index < TEST_BYTES; index++) {
+		assert(window.base[window.first_pixel + index] == (index == 60 * TEST_WIDTH + 40 ? 9 : 3));
+	}
+	assert(screen.base[pixel_offset(&screen, 50, 60)] == 9);
+	hires_forget(screen.base);
+	hires_forget(window.base);
+}
+
 int main(void)
 {
 	struct TEST_SURFACE screen;
@@ -455,6 +531,7 @@ int main(void)
 	test_depth_overlay_families(&screen);
 	test_depth_shape_bounds(&screen);
 	test_argb_composition(&screen, &window);
+	test_logical_pixel_fill();
 	test_depth_lifetime(&screen);
 	hires_shutdown();
 	puts("SDL3 high-resolution composition tests passed.");
