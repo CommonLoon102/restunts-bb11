@@ -905,6 +905,54 @@ static void test_crossing_surfaces_use_pixel_depth(void)
 	}
 }
 
+/* Opposite map corners are more than 32767 units apart after a diagonal
+ * camera rotation, even though each world coordinate fits in a signed word. */
+static void test_far_diagonal_geometry(void)
+{
+	const struct VECTOR panels[] = {
+		{-2000, -1000, -1200}, {-2000, 1000, -1200}, {2000, 1000, 1200},  {2000, -1000, 1200},
+		{-2000, -1000, 1200},  {-2000, 1000, 1200},	 {2000, 1000, -1200}, {2000, -1000, -1200}};
+	const legacy_u8 forward[] = {4, 0, 0, 0, 1, 2, 3, 4, 0, 1, 4, 5, 6, 7, 0, 0};
+	const legacy_u8 reverse[] = {4, 0, 1, 4, 5, 6, 7, 4, 0, 0, 0, 1, 2, 3, 0, 0};
+	for (legacy_u32 order = 0; order < 2; order++) {
+		prepare_scene(panels, 8, order == 0 ? forward : reverse, sizeof(forward), 1);
+		struct RECTANGLE clip = {0, 320, 0, 200};
+		select_cliprect_rotate(0, 0, -128, &clip, 0);
+		scene_instance.ts_flags = 8;
+		scene_instance.pos = (struct VECTOR){30000, 0, 30000};
+		scene_instance.rotvec.z = 128;
+		assert(shape3d_transform_and_queue(&scene_instance) == 0);
+		assert(polyinfonumpolys == 2);
+		shape3d_render_queued_primitives();
+		assert(pixels()[400 * HIRES_WIDTH + 620] == 7);
+		assert(pixels()[400 * HIRES_WIDTH + 660] == 8);
+	}
+}
+
+static void test_far_primitive_sort_depth(void)
+{
+	const struct VECTOR panels[] = {
+		{-2000, -1000, 1200},  {-2000, 1000, 1200},	 {2000, 1000, 1200},  {2000, -1000, 1200},
+		{-2000, -1000, -1200}, {-2000, 1000, -1200}, {2000, 1000, -1200}, {2000, -1000, -1200}};
+	const legacy_u8 forward[] = {4, 0, 0, 0, 1, 2, 3, 4, 0, 1, 4, 5, 6, 7, 0, 0};
+	const legacy_u8 reverse[] = {4, 0, 1, 4, 5, 6, 7, 4, 0, 0, 0, 1, 2, 3, 0, 0};
+	for (legacy_u32 order = 0; order < 2; order++) {
+		prepare_scene(panels, 8, order == 0 ? forward : reverse, sizeof(forward), 1);
+		struct RECTANGLE clip = {0, 320, 0, 200};
+		select_cliprect_rotate(0, 0, -128, &clip, 0);
+		scene_instance.ts_flags = 8;
+		scene_instance.pos = (struct VECTOR){23000, 0, 23000};
+		scene_instance.rotvec.z = 128;
+		assert(shape3d_transform_and_queue(&scene_instance) == 0);
+		assert(polyinfonumpolys == 2);
+		/* Their depths straddle the signed 16-bit boundary. The far panel must
+		 * precede the near panel regardless of the shape's authored order. */
+		assert(polygon_next_index[order] == (legacy_s32)(1 - order));
+		shape3d_render_queued_primitives();
+		assert(pixels()[400 * HIRES_WIDTH + 640] == 8);
+	}
+}
+
 static void test_body_panel_occludes_wheel(void)
 {
 	const struct VECTOR model[] = {
@@ -1057,6 +1105,76 @@ static void test_shared_edge_near_clipping(void)
 	}
 }
 
+static void test_supersight_full_scene_queue(void)
+{
+	/* A dense scene exceeds both the old byte buffer and every 16-bit index.
+	 * Three out-of-order points per shape also grow the queue mid-shape. */
+	const struct VECTOR vertices[] = {{0, 0, 1000}, {0, 0, 2000}, {0, 0, 1500}};
+	const legacy_u8 primitives[] = {1, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 2, 0, 0};
+	const legacy_u32 shape_count = 23334;
+	const legacy_u32 count = shape_count * 3U;
+	prepare_scene(vertices, 3, primitives, sizeof(primitives), 1);
+	polyinfo_set_supersight(1);
+	for (legacy_u32 index = 0; index < shape_count; index++) {
+		scene_instance.pos.x = index == 0 ? -200 : index + 1U == shape_count ? 200 : 0;
+		if (index + 1U == shape_count) {
+			scene_primitives[2] = scene_primitives[6] = scene_primitives[10] = 1;
+		}
+		assert(shape3d_transform_and_queue(&scene_instance) == 0);
+	}
+	assert(polyinfonumpolys == count);
+	assert(polyinfoptrnext == count * 10U);
+	assert(polygon_record_offsets[count - 1U] > LEGACY_U16_MAX);
+	polyinfo_link link = 1;
+	for (legacy_u32 index = 0; index < count; index++) {
+		legacy_u32 expected = index / 3U * 3U + (index % 3U + 1U) % 3U;
+		assert(link == (polyinfo_link)expected);
+		assert(polygon_record_offsets[link] == expected * 10U);
+		assert(polyinfoptr[polygon_record_offsets[link] + 4U] == RENDER_PRIMITIVE_POINT);
+		link = polygon_next_index[link];
+	}
+	assert(link == -1);
+	shape3d_render_queued_primitives();
+	assert(polyinfonumpolys == 0);
+	assert(count_color(7) != 0);
+	assert(count_color(8) != 0);
+
+	/* Family 65536 must stay distinct from the zero/empty depth marker. */
+	reset_target();
+	const struct SHAPE3D_HIRES_VECTOR wide_point[] = {{100, 100, 1000}};
+	const legacy_u8 wide_indices[] = {0};
+	shape3d_hires_begin_shape(LEGACY_U16_MAX, 1);
+	shape3d_hires_queue(LEGACY_U16_MAX, RENDER_PRIMITIVE_POINT, 1, wide_indices, wide_point, 0);
+	bounds.left = 320;
+	bounds.top = 200;
+	bounds.right = bounds.bottom = 0;
+	shape3d_hires_update_bounds(LEGACY_U16_MAX, RENDER_PRIMITIVE_POINT, &bounds);
+	shape3d_hires_render(LEGACY_U16_MAX, RENDER_PRIMITIVE_POINT, 9, 0, 0, 0, 0);
+	hires_end();
+	assert(count_color(9) != 0);
+
+	/* F12 restores the exact legacy limit even after native queues have grown.
+	 * A new target buffer must also be safe when reusing the cached allocation. */
+	polyinfo_set_supersight(0);
+	const legacy_u8 point[] = {1, 0, 0, 0, 0, 0};
+	prepare_scene(vertices, 1, point, sizeof(point), 0);
+	for (legacy_u32 index = 1; index < POLYINFO_LEGACY_PRIMITIVE_CAPACITY; index++) {
+		assert(shape3d_transform_and_queue(&scene_instance) == 0);
+	}
+	assert(shape3d_transform_and_queue(&scene_instance) == 1);
+	assert(polyinfonumpolys == POLYINFO_LEGACY_PRIMITIVE_CAPACITY);
+	prepare_scene(vertices, 1, point, sizeof(point), 1);
+	polyinfo_set_supersight(1);
+	for (legacy_u32 index = 0; index < 2000; index++) {
+		assert(shape3d_transform_and_queue(&scene_instance) == 0);
+	}
+	assert(polyinfonumpolys == 2000);
+	assert(polyinfoptrnext == 20000);
+	shape3d_render_queued_primitives();
+	assert(count_color(7) != 0);
+	polyinfo_set_supersight(0);
+}
+
 int main(void)
 {
 	screen = dos_memory_make_pointer(0xA000, 0);
@@ -1100,6 +1218,9 @@ int main(void)
 	test_clipped_polygon_visibility();
 	test_wheel_face_and_sort_depth();
 	test_crossing_surfaces_use_pixel_depth();
+	test_far_diagonal_geometry();
+	test_far_primitive_sort_depth();
+	test_supersight_full_scene_queue();
 	test_body_panel_occludes_wheel();
 	test_joined_track_surfaces();
 	test_shared_edge_pixel_coverage();

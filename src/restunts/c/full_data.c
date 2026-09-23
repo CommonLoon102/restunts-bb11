@@ -51,8 +51,15 @@ struct SHAPE3D game3dshapes[130];
 struct TRANSFORMEDSHAPE3D currenttransshape[29];
 struct TRANSFORMEDSHAPE3D *curtransshape_ptr;
 
-legacy_s16 polygon_next_index[POLYINFO_SUPERSIGHT_PRIMITIVE_CAPACITY + 1U];
-legacy_u16 polygon_record_offsets[POLYINFO_SUPERSIGHT_PRIMITIVE_CAPACITY];
+#if defined(RESTUNTS_SDL3)
+static polyinfo_link initial_polygon_next_index[POLYINFO_SUPERSIGHT_PRIMITIVE_CAPACITY + 1U];
+static polyinfo_offset initial_polygon_record_offsets[POLYINFO_SUPERSIGHT_PRIMITIVE_CAPACITY];
+polyinfo_link *polygon_next_index = initial_polygon_next_index;
+polyinfo_offset *polygon_record_offsets = initial_polygon_record_offsets;
+#else
+polyinfo_link polygon_next_index[POLYINFO_SUPERSIGHT_PRIMITIVE_CAPACITY + 1U];
+polyinfo_offset polygon_record_offsets[POLYINFO_SUPERSIGHT_PRIMITIVE_CAPACITY];
+#endif
 
 struct RECTANGLE frame_layer_rects[15];
 struct RECTANGLE intro_redraw_cliprect;
@@ -202,17 +209,17 @@ legacy_u16 projection_focal_length_y;
 
 legacy_u16 shape_half_scale;
 struct RECTANGLE select_rect_rc;
-legacy_u16 polyinfoptrnext;
+polyinfo_offset polyinfoptrnext;
 legacy_u8 far *polyinfoptr;
 legacy_u8 far *transshapepolyinfo;
 legacy_u8 far *transshapeprimptr;
 legacy_u8 far *transshapeprimindexptr;
 legacy_s8 transprimitivepaintjob;
-legacy_u16 polyinfonumpolys;
-legacy_u16 shape_polygon_predecessor;
-legacy_u16 polygon_list_tail;
-legacy_u16 shape_polygon_count;
-legacy_u16 polygon_insertion_cursor;
+polyinfo_index polyinfonumpolys;
+polyinfo_index shape_polygon_predecessor;
+polyinfo_index polygon_list_tail;
+polyinfo_index shape_polygon_count;
+polyinfo_index polygon_insertion_cursor;
 legacy_u16 polygon_buffer_full;
 struct POINT2D *polyvertpointptrtab[11];
 
