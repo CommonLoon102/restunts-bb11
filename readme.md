@@ -126,6 +126,21 @@ follow confirmed gameplay events. Interpolated state never enters replay data;
 toggling F12 during a replay does not change its simulated result. Seeking,
 pausing, rewinding, and camera changes reset interpolation history.
 
+On Windows and Linux, SuperSight can draw separate screen regions concurrently.
+The game detects the logical CPU count at runtime and uses up to `n - 1`
+background workers, capped at seven; the main thread also draws, for at most
+eight rendering threads in total. Small scenes stay serial to avoid scheduling
+overhead. Drawing order and pixel coverage are preserved, and physics retains
+its original schedule. DOS continues to use the serial renderer.
+
+Set the `RESTUNTS_RENDER_WORKERS` environment variable to override the background
+worker count (`0` disables workers; `1` through `7` selects a count). For example,
+on Linux run `RESTUNTS_RENDER_WORKERS=1 ./out/sdl3-linux-x64/restunts --data-dir stunts`.
+Leaving it unset selects the automatic count. The limit bounds overhead for the
+1280x800 target; more threads are not always faster, especially on CPUs sharing
+execution resources or in busy virtual machines. If thread creation fails, the
+game uses the workers available or falls back to serial drawing.
+
 Press **F11** to toggle a frame-rate counter in the top-left corner. It measures
 presented frames over approximately one second and rounds down, for example
 `20 FPS`. Values below 20 are red; values of 20 or higher are green.

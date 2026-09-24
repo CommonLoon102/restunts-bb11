@@ -1,6 +1,7 @@
 #include <assert.h>
 #include <stdio.h>
 #include <string.h>
+#include <SDL3/SDL_stdinc.h>
 #include "../c/externs.h"
 #include "../c/hires.h"
 #include "../c/platform.h"
@@ -1361,6 +1362,146 @@ static void test_supersight_full_scene_queue(void)
 	polyinfo_set_supersight(0);
 }
 
+/* Every primitive is queued before recording the immutable batch. The wide
+ * surfaces provide enough work to exercise workers, while crossing depths,
+ * authored overlays and patterned holes expose ordering or band-edge errors. */
+static legacy_s32 draw_batch_scene(legacy_s32 batched, legacy_s32 ordered)
+{
+	static const struct SHAPE3D_HIRES_VECTOR vertices[][6] = {
+		{{-2000, -1300, 2000}, {2000, -1300, 2000}, {2000, 1300, 2000}, {-2000, 1300, 2000}},
+		{{-100, -60, 100}, {-100, 60, 100}, {100, 60, 300}, {100, -60, 300}},
+		{{-100, -60, 300}, {-100, 60, 300}, {100, 60, 100}, {100, -60, 100}},
+		{{-45, -40, 80}, {45, -40, 80}, {45, 40, 80}, {-45, 40, 80}},
+		{{-43, 9.9, 80.5}, {43, 9.9, 80.5}, {43, 10.1, 80.5}, {-43, 10.1, 80.5}},
+		{{10, -25, 60}, {40, -25, 60}, {40, 25, 60}, {10, 25, 60}},
+		{{-20, -10, 40}, {-10, -10, 40}, {-20, 0, 40}, {-10, -10, 42}, {0, -10, 42}, {-10, 0, 42}},
+		{{15, 10, 40}, {19, 10, 40}},
+		{{-70, -45, 70}, {70, 45, 140}},
+		{{-2, 1, 3}, {30, 20, 60}},
+		{{-20, -0.1, 30}, {20, -0.1, 30}, {20, 0.1, 30}, {-20, 0.1, 30}},
+		{{0.025, 0.016, 20}},
+		/* These round inward from just beyond the left and top screen edges. */
+		{{-100.0390625, 46.875, 100}},
+		{{-84.375, 62.5390625, 100}, {-81.25, 62.5390625, 100}}};
+	static const legacy_u8 types[] = {
+		RENDER_PRIMITIVE_POLYGON, RENDER_PRIMITIVE_POLYGON,
+		RENDER_PRIMITIVE_POLYGON, RENDER_PRIMITIVE_POLYGON,
+		RENDER_PRIMITIVE_POLYGON, RENDER_PRIMITIVE_POLYGON | RENDER_PRIMITIVE_GHOST_FLAG,
+		RENDER_PRIMITIVE_WHEEL,	  RENDER_PRIMITIVE_SPHERE,
+		RENDER_PRIMITIVE_LINE,	  RENDER_PRIMITIVE_LINE,
+		RENDER_PRIMITIVE_POLYGON, RENDER_PRIMITIVE_POINT,
+		RENDER_PRIMITIVE_POINT,	  RENDER_PRIMITIVE_POLYGON};
+	static const legacy_u8 counts[] = {4, 4, 4, 4, 4, 4, 6, 2, 2, 2, 4, 1, 1, 2};
+	static const legacy_u16 paints[][5] = {
+		{4, 0, 0, 0, 0},  {5, 6, 0, 2, 0xAA55}, {7, 0, 0, 0, 0},	{8, 0, 0, 0, 0},
+		{9, 0, 0, 0, 0},  {0, 0, 0, 0, 0},		{10, 11, 12, 0, 0}, {13, 0, 0, 0, 0},
+		{14, 0, 0, 0, 0}, {15, 0, 0, 0, 0},		{16, 0, 0, 0, 0},	{17, 0, 0, 0, 0},
+		{18, 0, 0, 0, 0}, {19, 0, 0, 0, 0}};
+	const legacy_u8 indices[] = {0, 1, 2, 3, 4, 5};
+	shape3d_hires_reset();
+	for (legacy_u32 index = 0; index < sizeof(counts); index++) {
+		legacy_s32 mode = index == 0			  ? SHAPE3D_HIRES_DEPTH_BACKGROUND
+						  : index == 3 && ordered ? SHAPE3D_HIRES_DEPTH_ORDERED
+												  : SHAPE3D_HIRES_DEPTH_SORTED;
+		if (index != 4) {
+			shape3d_hires_begin_shape(index, mode);
+		}
+		legacy_u16 flags = index == 4 ? (ordered ? 0 : 2) : index == 10 ? 3 : 0;
+		shape3d_hires_queue(index, types[index] & ~RENDER_PRIMITIVE_GHOST_FLAG, counts[index],
+							indices, vertices[index], flags);
+	}
+	if (batched) {
+		shape3d_hires_batch_begin();
+	}
+	for (legacy_u32 pass = 0; pass < sizeof(counts); pass++) {
+		/* Reverse the intersecting surfaces without moving decals before
+		 * their supporting geometry. Each order has its own serial oracle. */
+		legacy_u32 index = !ordered && (pass == 1 || pass == 2) ? 3 - pass : pass;
+		const legacy_u16 *paint = paints[index];
+		shape3d_hires_render(index, types[index], paint[0], paint[1], paint[2], paint[3], paint[4]);
+	}
+	return batched ? shape3d_hires_batch_end() : 0;
+}
+
+static void test_parallel_batches_match_serial(void)
+{
+	static legacy_u8 reference[HIRES_WIDTH * HIRES_HEIGHT];
+	const char *settings[] = {"0", "1", "2"};
+	const char *original_setting = SDL_getenv("RESTUNTS_RENDER_WORKERS");
+	char *saved_setting = original_setting != NULL ? SDL_strdup(original_setting) : NULL;
+	assert(original_setting == NULL || saved_setting != NULL);
+	projection_center_x = 160;
+	projection_center_y = 100;
+	projection_focal_length_x = projection_focal_length_y = 160;
+	for (legacy_s32 clipped = 0; clipped < 2; clipped++) {
+		target.sprite_raster_left = clipped ? 13 : 0;
+		target.sprite_raster_right = clipped ? 307 : 320;
+		target.sprite_top = clipped ? 7 : 0;
+		target.sprite_bottom = clipped ? 193 : 200;
+		bounds = (struct RECTANGLE){target.sprite_raster_left, target.sprite_raster_right,
+									target.sprite_top, target.sprite_bottom};
+		reset_target();
+		assert(draw_batch_scene(0, !clipped) == 0);
+		hires_end();
+		/* Require coverage from the pattern, ghost and every primitive kind;
+		 * otherwise an empty or fully occluded fixture could compare equal. */
+		assert(count_color(0) != 0);
+		for (legacy_u8 color = 4; color <= 17; color++) {
+			assert(count_color(color) != 0);
+		}
+		if (!clipped) {
+			assert(pixels()[100 * HIRES_WIDTH] == 18);
+			assert(pixels()[100] == 19);
+		}
+		memcpy(reference, pixels(), sizeof(reference));
+		for (legacy_s32 workers = 0; workers < 3; workers++) {
+			assert(SDL_SetEnvironmentVariable(SDL_GetEnvironment(), "RESTUNTS_RENDER_WORKERS",
+											  settings[workers], true));
+			reset_target();
+			for (legacy_s32 iteration = 0; iteration < 3; iteration++) {
+				if (iteration != 0) {
+					if (iteration == 2) {
+						/* F12 releases surfaces and workers, then both must be
+						 * ready again when SuperSight is enabled. */
+						hires_set_enabled(0);
+						hires_set_enabled(1);
+					}
+					assert(hires_begin(&target));
+				}
+#if defined(__DJGPP__)
+				assert(draw_batch_scene(1, !clipped) == 0);
+#else
+				assert(draw_batch_scene(1, !clipped) == workers);
+#endif
+				hires_end();
+				assert(memcmp(reference, pixels(), sizeof(reference)) == 0);
+			}
+		}
+	}
+	target.sprite_raster_left = target.sprite_top = 0;
+	target.sprite_raster_right = 320;
+	target.sprite_bottom = 200;
+	reset_target();
+	shape3d_hires_batch_begin();
+	assert(shape3d_hires_batch_end() == 0);
+	const struct SHAPE3D_HIRES_VECTOR point[] = {{0, 0, 100}};
+	queue(RENDER_PRIMITIVE_POINT, 1, point);
+	shape3d_hires_batch_begin();
+	shape3d_hires_render(0, RENDER_PRIMITIVE_POINT, 17, 0, 0, 0, 0);
+	/* Tiny previews should bypass worker synchronization even when enabled. */
+	assert(shape3d_hires_batch_end() == 0);
+	hires_end();
+	assert(count_color(17) != 0);
+	hires_shutdown();
+	if (saved_setting != NULL) {
+		assert(SDL_SetEnvironmentVariable(SDL_GetEnvironment(), "RESTUNTS_RENDER_WORKERS",
+										  saved_setting, true));
+		SDL_free(saved_setting);
+	} else {
+		assert(SDL_UnsetEnvironmentVariable(SDL_GetEnvironment(), "RESTUNTS_RENDER_WORKERS"));
+	}
+}
+
 int main(void)
 {
 	screen = dos_memory_make_pointer(0xA000, 0);
@@ -1417,6 +1558,7 @@ int main(void)
 	test_joined_track_surfaces();
 	test_shared_edge_pixel_coverage();
 	test_shared_edge_near_clipping();
+	test_parallel_batches_match_serial();
 	hires_shutdown();
 	puts("High-resolution 3D projection and raster tests passed.");
 	return 0;

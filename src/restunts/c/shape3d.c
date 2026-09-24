@@ -1553,6 +1553,9 @@ void shape3d_render_queued_primitives(void)
 {
 #if defined(RESTUNTS_SDL3)
 	legacy_s16 high_resolution = hires_begin(&drawing_sprite);
+	if (high_resolution != 0) {
+		shape3d_hires_batch_begin();
+	}
 #endif
 	polyinfo_index record_index = polyinfo_primitive_capacity;
 	polyinfo_index rendered_ghost_primitives = 0;
@@ -1639,6 +1642,7 @@ void shape3d_render_queued_primitives(void)
 	}
 #if defined(RESTUNTS_SDL3)
 	if (high_resolution != 0) {
+		shape3d_hires_batch_end();
 		hires_end();
 	}
 #endif

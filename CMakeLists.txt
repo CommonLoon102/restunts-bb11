@@ -80,7 +80,7 @@ set(game_sources
     menu_track.c menu_track_editor.c menu_opponent.c opponent_portrait.c menu_car.c audio_engine.c
     audio_resources.c audio_car.c audio_sequence.c shape3d.c shape3d_resources.c
     shape3d_car.c shape3d_prerender.c shape3d_lines.c shape2d.c shape2d_blit.c
-    video_pages.c hires.c frame_interpolation.c phantom_physics.c shape3d_hires.c shape2d_resources.c heapsort.c frame.c skybox.c skybox_hires.c frame_overlay.c
+    video_pages.c hires.c render_workers.c frame_interpolation.c phantom_physics.c shape3d_hires.c shape2d_resources.c heapsort.c frame.c skybox.c skybox_hires.c frame_overlay.c
     intro_render.c track_preview.c full_data.c full_strings.c full_tables.c)
 list(TRANSFORM common_sources PREPEND "${core}/")
 list(TRANSFORM game_sources PREPEND "${core}/")
@@ -245,6 +245,10 @@ if(RESTUNTS_BUILD_TESTS AND TARGET restunts_opl)
 endif()
 
 if(RESTUNTS_BUILD_TESTS AND NOT CMAKE_SYSTEM_NAME STREQUAL "DOS")
+    add_executable(test-render-workers src/restunts/tests/test-render-workers.c)
+    target_link_libraries(test-render-workers PRIVATE restunts_options)
+    target_compile_options(test-render-workers PRIVATE -UNDEBUG)
+    add_test(NAME render-workers COMMAND test-render-workers)
     add_executable(test-sdl3-input src/restunts/tests/test-sdl3-input.c
         ${platform}/input.c ${platform}/video.c ${platform}/timer.c)
     target_link_libraries(test-sdl3-input PRIVATE restunts_options)
@@ -279,7 +283,7 @@ if(RESTUNTS_BUILD_TESTS)
     target_compile_options(test-shape3d-hires PRIVATE -UNDEBUG)
     add_test(NAME shape3d-hires COMMAND test-shape3d-hires)
     add_executable(test-skybox-hires src/restunts/tests/test-skybox-hires.c
-        ${core}/skybox_hires.c ${core}/hires.c ${platform}/memory.c)
+        ${core}/skybox_hires.c ${core}/hires.c ${core}/render_workers.c ${platform}/memory.c)
     target_link_libraries(test-skybox-hires PRIVATE restunts_options)
     target_compile_options(test-skybox-hires PRIVATE -UNDEBUG)
     file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/skybox-test")
@@ -294,14 +298,14 @@ if(RESTUNTS_BUILD_TESTS)
     set_tests_properties(track-preview-skybox PROPERTIES
         WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/track-preview-test")
     add_executable(test-opponent-portrait src/restunts/tests/test-opponent-portrait.c
-        ${core}/opponent_portrait.c ${core}/hires.c ${platform}/memory.c)
+        ${core}/opponent_portrait.c ${core}/hires.c ${core}/render_workers.c ${platform}/memory.c)
     target_link_libraries(test-opponent-portrait PRIVATE restunts_options)
     target_compile_options(test-opponent-portrait PRIVATE -UNDEBUG)
     file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/opponent-test")
     add_test(NAME opponent-portrait COMMAND test-opponent-portrait)
     set_tests_properties(opponent-portrait PROPERTIES
         WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/opponent-test")
-    add_executable(test-sdl3-hires src/restunts/tests/test-sdl3-hires.c ${core}/hires.c ${platform}/memory.c)
+    add_executable(test-sdl3-hires src/restunts/tests/test-sdl3-hires.c ${core}/hires.c ${core}/render_workers.c ${platform}/memory.c)
     target_link_libraries(test-sdl3-hires PRIVATE restunts_options)
     target_compile_options(test-sdl3-hires PRIVATE -UNDEBUG)
     add_test(NAME sdl3-hires COMMAND test-sdl3-hires)

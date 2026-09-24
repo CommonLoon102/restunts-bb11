@@ -1,4 +1,5 @@
 #include "hires.h"
+#include "render_workers.h"
 #include "platform.h"
 #include "shape2d.h"
 #include "shape2d_internal.h"
@@ -108,6 +109,7 @@ static void hires_depth_reset(void)
 
 void hires_shutdown(void)
 {
+	render_workers_shutdown();
 	while (surfaces != NULL) {
 		struct HIRES_SURFACE *next = surfaces->next;
 		free(surfaces->pixels);
@@ -246,6 +248,28 @@ void hires_depth_begin(legacy_s32 left, legacy_s32 right, legacy_s32 top, legacy
 	}
 }
 
+static legacy_s32 hires_test_depth(legacy_f32 *depths, legacy_u32 *families, size_t index,
+								   legacy_f64 inverse_z, legacy_u32 family, legacy_s32 mode)
+{
+	if (mode != HIRES_DEPTH_SURFACE && families[index] == family) {
+		/* Resource overlays may sit behind their supporting surface. Keep
+		 * that surface's occlusion depth while honoring authored paint order.
+		 * Unsorted shapes share a family, so nearer surfaces must also advance
+		 * its depth before other shapes are tested against it. */
+		if (mode == HIRES_DEPTH_ORDERED && inverse_z > depths[index]) {
+			depths[index] = (legacy_f32)inverse_z;
+		}
+		return 1;
+	}
+	legacy_f32 depth = (legacy_f32)inverse_z;
+	if (families[index] != 0 && depth + 4 * FLT_EPSILON * depths[index] < depths[index]) {
+		return 0;
+	}
+	depths[index] = depth;
+	families[index] = family;
+	return 1;
+}
+
 legacy_s32 hires_depth_test(legacy_s32 x, legacy_s32 y, legacy_f64 inverse_z, legacy_u32 family,
 							legacy_s32 mode)
 {
@@ -253,25 +277,30 @@ legacy_s32 hires_depth_test(legacy_s32 x, legacy_s32 y, legacy_f64 inverse_z, le
 		y >= depth_bottom || !(inverse_z > 0) || inverse_z > FLT_MAX || family == 0) {
 		return 0;
 	}
-	size_t index = (size_t)y * HIRES_WIDTH + x;
-	if (mode != HIRES_DEPTH_SURFACE && depth_family[index] == family) {
-		/* Resource overlays may sit behind their supporting surface. Keep
-		 * that surface's occlusion depth while honoring authored paint order.
-		 * Unsorted shapes share a family, so nearer surfaces must also advance
-		 * its depth before other shapes are tested against it. */
-		if (mode == HIRES_DEPTH_ORDERED && inverse_z > inverse_depth[index]) {
-			inverse_depth[index] = (legacy_f32)inverse_z;
+	return hires_test_depth(inverse_depth, depth_family, (size_t)y * HIRES_WIDTH + x, inverse_z,
+							family, mode);
+}
+
+/* The caller owns the whole legacy cell and accounts for cleared ARGB cells.
+ * Raster workers accumulate locally instead of changing the surface counter. */
+static legacy_u32 hires_paint_sample(struct HIRES_SURFACE *surface, legacy_u16 offset,
+									 legacy_u32 sample, legacy_u8 color)
+{
+	legacy_u8 *cell = surface->pixels + (size_t)offset * HIRES_CELL_PIXELS;
+	cell[sample] = color;
+	if (surface->valid[offset] == 2) {
+		legacy_u32 *argb = surface->argb + (size_t)offset * HIRES_CELL_PIXELS;
+		argb[sample] = 0;
+		legacy_u32 remaining = 0;
+		for (legacy_s32 index = 0; index < HIRES_CELL_PIXELS; index++) {
+			remaining |= argb[index];
 		}
-		return 1;
+		if (remaining == 0) {
+			surface->valid[offset] = 1;
+			return 1;
+		}
 	}
-	legacy_f32 depth = (legacy_f32)inverse_z;
-	if (depth_family[index] != 0 &&
-		depth + 4 * FLT_EPSILON * inverse_depth[index] < inverse_depth[index]) {
-		return 0;
-	}
-	inverse_depth[index] = depth;
-	depth_family[index] = family;
-	return 1;
+	return 0;
 }
 
 void hires_pixel(legacy_s32 x, legacy_s32 y, legacy_u8 color)
@@ -284,21 +313,120 @@ void hires_pixel(legacy_s32 x, legacy_s32 y, legacy_u8 color)
 		return;
 	}
 	legacy_u16 row = LEGACY_READ_U16_LE(active_sprite.sprite_lineofs + (y / HIRES_SCALE) * 2);
-	legacy_u8 *cell = hires_cell(active, (legacy_u16)(row + x / HIRES_SCALE));
-	legacy_u32 sample = (y % HIRES_SCALE) * HIRES_SCALE + x % HIRES_SCALE;
-	cell[sample] = color;
 	legacy_u16 offset = (legacy_u16)(row + x / HIRES_SCALE);
-	if (active->valid[offset] == 2) {
-		legacy_u32 *argb = active->argb + (size_t)offset * HIRES_CELL_PIXELS;
-		argb[sample] = 0;
-		legacy_u32 remaining = 0;
-		for (legacy_s32 index = 0; index < HIRES_CELL_PIXELS; index++) {
-			remaining |= argb[index];
+	hires_cell(active, offset);
+	legacy_u32 sample = (y % HIRES_SCALE) * HIRES_SCALE + x % HIRES_SCALE;
+	if (hires_paint_sample(active, offset, sample, color) != 0) {
+		active->argb_cells--;
+	}
+}
+
+static legacy_s32 hires_raster_rows_disjoint(const struct HIRES_RASTER_TARGET *target)
+{
+	/* Ordinary framebuffers have ascending, nonoverlapping rows. Avoid a
+	 * full address bitmap walk for this common case. */
+	legacy_u32 previous_end = 0;
+	legacy_s32 ascending = 1;
+	for (legacy_s32 y = target->top / HIRES_SCALE; y < target->bottom / HIRES_SCALE; y++) {
+		legacy_u32 start = target->rows[y] + target->left / HIRES_SCALE;
+		legacy_u32 end = target->rows[y] + target->right / HIRES_SCALE;
+		if (start < previous_end || end > HIRES_ADDRESS_COUNT) {
+			ascending = 0;
+			break;
 		}
-		if (remaining == 0) {
-			hires_clear_argb(active, offset);
+		previous_end = end;
+	}
+	if (ascending) {
+		return 1;
+	}
+	/* Row offsets can wrap at 64 KiB or arrive in arbitrary order. Two
+	 * screen rows must never share any legacy cell, even partially. */
+	legacy_u8 occupied[HIRES_ADDRESS_COUNT / 8] = {0};
+	for (legacy_s32 y = target->top / HIRES_SCALE; y < target->bottom / HIRES_SCALE; y++) {
+		for (legacy_s32 x = target->left / HIRES_SCALE; x < target->right / HIRES_SCALE; x++) {
+			legacy_u16 offset = (legacy_u16)(target->rows[y] + x);
+			legacy_u8 mask = (legacy_u8)(1U << (offset % 8));
+			if ((occupied[offset / 8] & mask) != 0) {
+				return 0;
+			}
+			occupied[offset / 8] |= mask;
 		}
 	}
+	return 1;
+}
+
+legacy_s32 hires_raster_prepare(struct HIRES_RASTER_TARGET *target)
+{
+	memset(target, 0, sizeof(*target));
+	if (active == NULL) {
+		return 0;
+	}
+	target->left = active_sprite.sprite_raster_left * HIRES_SCALE;
+	target->right = active_sprite.sprite_raster_right * HIRES_SCALE;
+	target->top = active_sprite.sprite_top * HIRES_SCALE;
+	target->bottom = active_sprite.sprite_bottom * HIRES_SCALE;
+	if (target->left < 0) {
+		target->left = 0;
+	}
+	if (target->right > HIRES_WIDTH) {
+		target->right = HIRES_WIDTH;
+	}
+	if (target->top < 0) {
+		target->top = 0;
+	}
+	if (target->bottom > HIRES_HEIGHT) {
+		target->bottom = HIRES_HEIGHT;
+	}
+	if (target->left >= target->right || target->top >= target->bottom) {
+		return 0;
+	}
+	for (legacy_s32 y = target->top / HIRES_SCALE; y < target->bottom / HIRES_SCALE; y++) {
+		target->rows[y] = LEGACY_READ_U16_LE(active_sprite.sprite_lineofs + y * 2);
+	}
+	if (!hires_raster_rows_disjoint(target)) {
+		return 0;
+	}
+	target->surface = active;
+	target->inverse_depth = inverse_depth;
+	target->depth_family = depth_family;
+	target->depth_left = depth_left;
+	target->depth_right = depth_right;
+	target->depth_top = depth_top;
+	target->depth_bottom = depth_bottom;
+	return 1;
+}
+
+legacy_s32 hires_raster_depth_test(struct HIRES_RASTER_CONTEXT *context, legacy_s32 x, legacy_s32 y,
+								   legacy_f64 inverse_z, legacy_u32 family, legacy_s32 mode)
+{
+	const struct HIRES_RASTER_TARGET *target = context->target;
+	if (x < target->depth_left || x >= target->depth_right || y < target->depth_top ||
+		y >= target->depth_bottom || y < context->top || y >= context->bottom || !(inverse_z > 0) ||
+		inverse_z > FLT_MAX || family == 0) {
+		return 0;
+	}
+	return hires_test_depth(target->inverse_depth, target->depth_family,
+							(size_t)y * HIRES_WIDTH + x, inverse_z, family, mode);
+}
+
+void hires_raster_pixel(struct HIRES_RASTER_CONTEXT *context, legacy_s32 x, legacy_s32 y,
+						legacy_u8 color)
+{
+	const struct HIRES_RASTER_TARGET *target = context->target;
+	if (x < target->left || x >= target->right || y < target->top || y >= target->bottom ||
+		y < context->top || y >= context->bottom) {
+		return;
+	}
+	legacy_u16 offset = (legacy_u16)(target->rows[y / HIRES_SCALE] + x / HIRES_SCALE);
+	legacy_u32 sample = (y % HIRES_SCALE) * HIRES_SCALE + x % HIRES_SCALE;
+	if (hires_paint_sample(target->surface, offset, sample, color) != 0) {
+		context->cleared_argb_cells++;
+	}
+}
+
+void hires_raster_finish(const struct HIRES_RASTER_TARGET *target, legacy_u32 cleared_argb_cells)
+{
+	target->surface->argb_cells -= cleared_argb_cells;
 }
 
 void hires_fill_pixel(legacy_s32 x, legacy_s32 y, legacy_u8 color)
