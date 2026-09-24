@@ -192,9 +192,9 @@ void hires_end(void)
 	}
 }
 
-/* Every shape keeps the existing scene painter order, but resolves its own
- * overlapping surfaces by depth. Clear only the current projected bounds;
- * family zero invalidates an old depth without clearing another float array. */
+/* Keep depth across the scene so overlapping tiles cannot paint through one
+ * another. Family zero invalidates old depth without clearing the float array.
+ * Bounds are clipped to the active drawing target. */
 void hires_depth_begin(legacy_s32 left, legacy_s32 right, legacy_s32 top, legacy_s32 bottom)
 {
 	hires_depth_reset();
@@ -247,16 +247,21 @@ void hires_depth_begin(legacy_s32 left, legacy_s32 right, legacy_s32 top, legacy
 }
 
 legacy_s32 hires_depth_test(legacy_s32 x, legacy_s32 y, legacy_f64 inverse_z, legacy_u32 family,
-							legacy_s32 attached)
+							legacy_s32 mode)
 {
 	if (active == NULL || x < depth_left || x >= depth_right || y < depth_top ||
 		y >= depth_bottom || !(inverse_z > 0) || inverse_z > FLT_MAX || family == 0) {
 		return 0;
 	}
 	size_t index = (size_t)y * HIRES_WIDTH + x;
-	if (attached && depth_family[index] == family) {
-		/* Resource overlays may sit slightly behind their parent. Keep the
-		 * parent's occlusion depth while allowing its authored paint order. */
+	if (mode != HIRES_DEPTH_SURFACE && depth_family[index] == family) {
+		/* Resource overlays may sit behind their supporting surface. Keep
+		 * that surface's occlusion depth while honoring authored paint order.
+		 * Unsorted shapes share a family, so nearer surfaces must also advance
+		 * its depth before other shapes are tested against it. */
+		if (mode == HIRES_DEPTH_ORDERED && inverse_z > inverse_depth[index]) {
+			inverse_depth[index] = (legacy_f32)inverse_z;
+		}
 		return 1;
 	}
 	legacy_f32 depth = (legacy_f32)inverse_z;

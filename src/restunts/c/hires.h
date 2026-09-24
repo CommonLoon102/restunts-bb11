@@ -14,11 +14,14 @@ void hires_set_enabled(legacy_s32 enabled);
 legacy_s32 hires_enabled(void);
 legacy_s32 hires_begin(const struct SPRITE *target);
 void hires_end(void);
+enum HIRES_DEPTH_MODE { HIRES_DEPTH_SURFACE, HIRES_DEPTH_ATTACHED, HIRES_DEPTH_ORDERED };
+
 /* Bounds use high-resolution pixels with exclusive right/bottom edges.
- * Family zero is reserved; attached fragments may overlay their own parent. */
+ * Family zero is reserved. Attached decals retain their parent's depth;
+ * ordered shapes share a family and retain their nearest supporting depth. */
 void hires_depth_begin(legacy_s32 left, legacy_s32 right, legacy_s32 top, legacy_s32 bottom);
 legacy_s32 hires_depth_test(legacy_s32 x, legacy_s32 y, legacy_f64 inverse_z, legacy_u32 family,
-							legacy_s32 attached);
+							legacy_s32 mode);
 /* Optional full-color artwork uses the same clipping and sprite-copy lifetime.
  * Allocation failure leaves the indexed fallback intact. */
 legacy_s32 hires_begin_argb(const struct SPRITE *target);

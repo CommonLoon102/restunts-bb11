@@ -38,12 +38,11 @@ struct HIRES_PAINT {
 	legacy_u16 mode;
 	legacy_s32 depth_test;
 	legacy_u32 family;
-	legacy_s32 attached;
+	legacy_s32 depth_mode;
 };
 
 struct HIRES_SHAPE {
-	struct RECTANGLE bounds;
-	legacy_s32 depth_test;
+	legacy_s32 depth_mode;
 };
 
 static struct HIRES_PRIMITIVE *primitives;
@@ -52,7 +51,7 @@ static legacy_u32 primitive_capacity;
 static legacy_u32 primitive_count;
 static legacy_u32 current_shape;
 static legacy_u32 current_family;
-static legacy_u32 rendered_shape = LEGACY_U32_MAX;
+static legacy_s32 rendered_depth_valid;
 static legacy_u32 rendered_generation;
 static legacy_f64 model_scale = 1;
 
@@ -246,16 +245,12 @@ legacy_f64 shape3d_hires_depth(legacy_u32 index)
 	return index < primitive_capacity ? primitives[index].depth : 0;
 }
 
-void shape3d_hires_begin_shape(legacy_u32 index, legacy_s32 depth_test)
+void shape3d_hires_begin_shape(legacy_u32 index, legacy_s32 depth_mode)
 {
 	reserve_primitives(index);
 	current_shape = index;
 	current_family = index + 1;
-	shapes[index].bounds.left = HIRES_WIDTH / HIRES_SCALE;
-	shapes[index].bounds.right = 0;
-	shapes[index].bounds.top = HIRES_HEIGHT / HIRES_SCALE;
-	shapes[index].bounds.bottom = 0;
-	shapes[index].depth_test = depth_test;
+	shapes[index].depth_mode = depth_mode;
 }
 
 void shape3d_hires_set_model_scale(legacy_f64 scale)
@@ -266,8 +261,8 @@ void shape3d_hires_set_model_scale(legacy_f64 scale)
 void shape3d_hires_reset(void)
 {
 	model_scale = 1;
-	shape3d_hires_begin_shape(0, 1);
-	rendered_shape = LEGACY_U32_MAX;
+	shape3d_hires_begin_shape(0, SHAPE3D_HIRES_DEPTH_SORTED);
+	rendered_depth_valid = 0;
 	for (legacy_u32 index = 0; index < primitive_count; index++) {
 		primitives[index].count = 0;
 	}
@@ -392,7 +387,6 @@ void shape3d_hires_queue(legacy_u32 index, legacy_u8 type, legacy_u16 vertex_cou
 		current_family = index + 1;
 	}
 	primitive->family = current_family;
-	shape3d_hires_update_bounds(index, type, &shapes[current_shape].bounds);
 }
 
 static legacy_s32 ceil_coordinate(legacy_f64 coordinate)
@@ -459,8 +453,8 @@ void shape3d_hires_update_bounds(legacy_u32 index, legacy_u8 type, struct RECTAN
 		}
 	}
 	if (type == RENDER_PRIMITIVE_LINE || type == RENDER_PRIMITIVE_POLYGON) {
-		/* Include the maximum stroke and rounding to its nearest sample in both
-		 * the sprite copy rectangle and the per-shape depth buffer bounds. */
+		/* Include the maximum stroke and rounding to its nearest sample
+		 * in the sprite copy rectangle. */
 		legacy_f64 padding =
 			type == RENDER_PRIMITIVE_LINE ? HIRES_SCALE / 2.0 + 0.5 : primitive->size;
 		minimum_x -= padding;
@@ -526,7 +520,7 @@ static void paint_pixel(legacy_s32 x, legacy_s32 y, legacy_f64 inverse_z,
 			return;
 		}
 	}
-	if (!paint->depth_test || hires_depth_test(x, y, inverse_z, paint->family, paint->attached)) {
+	if (!paint->depth_test || hires_depth_test(x, y, inverse_z, paint->family, paint->depth_mode)) {
 		hires_pixel(x, y, (legacy_u8)color);
 	}
 }
@@ -867,21 +861,20 @@ void shape3d_hires_render(legacy_u32 index, legacy_u8 type, legacy_u16 color,
 	}
 	struct HIRES_PRIMITIVE *primitive = &primitives[index];
 	const struct HIRES_SHAPE *shape = &shapes[primitive->shape];
-	if (rendered_shape != primitive->shape || rendered_generation != hires_generation()) {
-		if (shape->depth_test) {
-			hires_depth_begin(shape->bounds.left * HIRES_SCALE, shape->bounds.right * HIRES_SCALE,
-							  shape->bounds.top * HIRES_SCALE, shape->bounds.bottom * HIRES_SCALE);
-		}
-		rendered_shape = primitive->shape;
+	if (!rendered_depth_valid || rendered_generation != hires_generation()) {
+		hires_depth_begin(0, HIRES_WIDTH, 0, HIRES_HEIGHT);
+		rendered_depth_valid = 1;
 		rendered_generation = hires_generation();
 	}
+	legacy_s32 ordered = shape->depth_mode == SHAPE3D_HIRES_DEPTH_ORDERED;
 	struct HIRES_PAINT paint = {color,
 								second_color,
 								pattern,
 								pattern_type,
-								shape->depth_test,
-								primitive->family,
-								primitive->attached};
+								shape->depth_mode != SHAPE3D_HIRES_DEPTH_BACKGROUND,
+								ordered ? primitive->shape + 1 : primitive->family,
+								ordered && !primitive->attached ? HIRES_DEPTH_ORDERED
+																: primitive->attached};
 	if (pattern_type == 2) {
 		/* The legacy two-color helper receives the secondary material first;
 		 * set pattern bits still select the primary material color. */

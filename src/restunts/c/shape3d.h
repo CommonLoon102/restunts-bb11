@@ -14,6 +14,8 @@
 
 /* Per-instance visual override; resource paint and geometry remain unchanged. */
 #define SHAPE3D_GHOST_FLAG 16U
+/* Camera-relative scenery is painted behind all world geometry in SuperSight. */
+#define SHAPE3D_BACKGROUND_FLAG 32U
 
 enum BACKLIGHT_PAINT {
 	BACKLIGHT_PAINT_DEFAULT = 45,
