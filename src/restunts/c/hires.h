@@ -8,6 +8,26 @@
 #define HIRES_HEIGHT 800
 
 struct SPRITE;
+struct HIRES_SURFACE;
+
+/* Immutable for one joined raster pass. Screen rows must map to disjoint
+ * legacy cells; preparation rejects targets that cannot be split safely. */
+struct HIRES_RASTER_TARGET {
+	struct HIRES_SURFACE *surface;
+	legacy_u16 rows[HIRES_HEIGHT / HIRES_SCALE];
+	legacy_s32 left, right, top, bottom;
+	legacy_f32 *inverse_depth;
+	legacy_u32 *depth_family;
+	legacy_s32 depth_left, depth_right, depth_top, depth_bottom;
+};
+
+/* Each job owns complete legacy rows: top/bottom are multiples of HIRES_SCALE.
+ * Contexts must not overlap, and their counters start at zero. */
+struct HIRES_RASTER_CONTEXT {
+	const struct HIRES_RASTER_TARGET *target;
+	legacy_s32 top, bottom;
+	legacy_u32 cleared_argb_cells;
+};
 
 /* SDL3-only companion pixels. Legacy sprite offsets and resources stay 16-bit. */
 void hires_set_enabled(legacy_s32 enabled);
@@ -22,6 +42,15 @@ enum HIRES_DEPTH_MODE { HIRES_DEPTH_SURFACE, HIRES_DEPTH_ATTACHED, HIRES_DEPTH_O
 void hires_depth_begin(legacy_s32 left, legacy_s32 right, legacy_s32 top, legacy_s32 bottom);
 legacy_s32 hires_depth_test(legacy_s32 x, legacy_s32 y, legacy_f64 inverse_z, legacy_u32 family,
 							legacy_s32 mode);
+/* Prepare after hires_begin/hires_depth_begin. Keep the target immutable and
+ * its buffers alive; no other drawing may overlap these jobs. After joining,
+ * finish once on the main thread with all job counters summed, before hires_end. */
+legacy_s32 hires_raster_prepare(struct HIRES_RASTER_TARGET *target);
+legacy_s32 hires_raster_depth_test(struct HIRES_RASTER_CONTEXT *context, legacy_s32 x, legacy_s32 y,
+								   legacy_f64 inverse_z, legacy_u32 family, legacy_s32 mode);
+void hires_raster_pixel(struct HIRES_RASTER_CONTEXT *context, legacy_s32 x, legacy_s32 y,
+						legacy_u8 color);
+void hires_raster_finish(const struct HIRES_RASTER_TARGET *target, legacy_u32 cleared_argb_cells);
 /* Optional full-color artwork uses the same clipping and sprite-copy lifetime.
  * Allocation failure leaves the indexed fallback intact. */
 legacy_s32 hires_begin_argb(const struct SPRITE *target);

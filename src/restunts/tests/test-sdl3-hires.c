@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "../c/hires.h"
+#include "../c/render_workers.h"
 #include "../c/platform.h"
 #include "../c/shape2d.h"
 #include "../c/shape2d_internal.h"
@@ -511,6 +512,124 @@ static void test_logical_pixel_fill(void)
 	hires_forget(window.base);
 }
 
+static void test_raster_target_aliases(void)
+{
+	struct TEST_SURFACE screen;
+	setup_surface(&screen, 0x7000, 0);
+	screen.sprite.sprite_raster_right = 2;
+	screen.sprite.sprite_bottom = 2;
+	struct HIRES_RASTER_TARGET target;
+	assert(!hires_raster_prepare(&target));
+	/* Distinct rows remain safe when a row wraps across the 64 KiB boundary. */
+	LEGACY_WRITE_U16_LE(screen.lines, 65535U);
+	LEGACY_WRITE_U16_LE(screen.lines + 2, 100U);
+	assert(hires_begin(&screen.sprite));
+	assert(hires_raster_prepare(&target));
+	hires_end();
+	/* Both complete aliases and partial overlaps through wrapping are unsafe. */
+	LEGACY_WRITE_U16_LE(screen.lines + 2, 0U);
+	assert(hires_begin(&screen.sprite));
+	assert(!hires_raster_prepare(&target));
+	hires_end();
+	LEGACY_WRITE_U16_LE(screen.lines + 2, 65535U);
+	assert(hires_begin(&screen.sprite));
+	assert(!hires_raster_prepare(&target));
+	hires_end();
+	/* A reversed row table does not imply aliasing. */
+	LEGACY_WRITE_U16_LE(screen.lines, 100U);
+	LEGACY_WRITE_U16_LE(screen.lines + 2, 0U);
+	assert(hires_begin(&screen.sprite));
+	assert(hires_raster_prepare(&target));
+	hires_end();
+	hires_forget(screen.base);
+}
+
+static void raster_band_job(void *opaque, legacy_s32 job)
+{
+	struct HIRES_RASTER_CONTEXT *context = (struct HIRES_RASTER_CONTEXT *)opaque + job;
+	/* Deliberately visit outside both clip and job bounds. Every write must
+	 * still belong to exactly one complete legacy cell in this job. */
+	for (legacy_s32 y = 239; y <= 248; y++) {
+		for (legacy_s32 x = 159; x <= 176; x++) {
+			hires_raster_pixel(context, x, y, 9);
+			if (!hires_raster_depth_test(context, x, y, 0.02, 1, HIRES_DEPTH_SURFACE)) {
+				continue;
+			}
+			hires_raster_pixel(context, x, y, 10);
+			assert(hires_raster_depth_test(context, x, y, 0.01, 1, HIRES_DEPTH_ATTACHED));
+			hires_raster_pixel(context, x, y, 11);
+			assert(!hires_raster_depth_test(context, x, y, 0.015, 2, HIRES_DEPTH_SURFACE));
+			assert(hires_raster_depth_test(context, x, y, 0.04, 1, HIRES_DEPTH_ORDERED));
+			hires_raster_pixel(context, x, y, 12);
+			assert(!hires_raster_depth_test(context, x, y, 0.03, 2, HIRES_DEPTH_SURFACE));
+			assert(hires_raster_depth_test(context, x, y, 0.04, 3, HIRES_DEPTH_SURFACE));
+			hires_raster_pixel(context, x, y, 13);
+			assert(!hires_raster_depth_test(context, x, y, 0, 3, HIRES_DEPTH_SURFACE));
+			assert(!hires_raster_depth_test(context, x, y, 1, 0, HIRES_DEPTH_SURFACE));
+		}
+	}
+}
+
+static void test_raster_bands(void)
+{
+	struct TEST_SURFACE screen;
+	setup_surface(&screen, 0x7000, 0);
+	legacy_u32 palette[256];
+	for (legacy_u32 index = 0; index < 256; index++) {
+		palette[index] = 0xFF000000U | index * 0x010101U;
+	}
+	palette[15] = 0xFFFFFFFFU;
+	assert(hires_begin_argb(&screen.sprite));
+	for (legacy_s32 y = 240; y < 248; y++) {
+		for (legacy_s32 x = 160; x < 176; x++) {
+			hires_argb_pixel(x, y, 0xFF123456U);
+		}
+	}
+	/* A partial cell must retain its other ARGB samples until overwritten. */
+	hires_argb_pixel(176, 240, 0xFF654321U);
+	hires_argb_pixel(177, 240, 0xFF654321U);
+	hires_end();
+	struct SPRITE clipped = screen.sprite;
+	clipped.sprite_raster_left = 40;
+	clipped.sprite_raster_right = 44;
+	clipped.sprite_top = 60;
+	clipped.sprite_bottom = 62;
+	assert(hires_begin(&clipped));
+	hires_depth_begin(0, HIRES_WIDTH, 0, HIRES_HEIGHT);
+	struct HIRES_RASTER_TARGET target;
+	assert(hires_raster_prepare(&target));
+	struct HIRES_RASTER_CONTEXT contexts[2] = {{&target, 240, 244, 0}, {&target, 244, 248, 0}};
+	render_workers_run(2, raster_band_job, contexts);
+	assert(contexts[0].cleared_argb_cells == 4);
+	assert(contexts[1].cleared_argb_cells == 4);
+	hires_raster_finish(&target, contexts[0].cleared_argb_cells + contexts[1].cleared_argb_cells);
+	hires_end();
+	for (legacy_u32 y = 60; y < 62; y++) {
+		for (legacy_u32 x = 40; x < 44; x++) {
+			assert_block(&screen, x, y, 13);
+		}
+	}
+	assert_block(&screen, 39, 60, 3);
+	assert_block(&screen, 40, 59, 3);
+	assert_block(&screen, 40, 62, 3);
+	legacy_u32 sample = 240 * HIRES_WIDTH + 176;
+	const legacy_u32 *pixels = hires_framebuffer_argb(screen.base, palette);
+	assert(pixels != NULL && pixels[sample] == 0xFF654321U);
+	assert(hires_begin(&screen.sprite));
+	hires_depth_begin(0, HIRES_WIDTH, 0, HIRES_HEIGHT);
+	assert(hires_raster_prepare(&target));
+	struct HIRES_RASTER_CONTEXT context = {&target, 240, 244, 0};
+	hires_raster_pixel(&context, 176, 240, 42);
+	assert(context.cleared_argb_cells == 0);
+	hires_raster_pixel(&context, 177, 240, 43);
+	hires_raster_pixel(&context, 177, 240, 43);
+	assert(context.cleared_argb_cells == 1);
+	hires_raster_finish(&target, context.cleared_argb_cells);
+	hires_end();
+	assert(hires_framebuffer_argb(screen.base, palette) == NULL);
+	hires_forget(screen.base);
+}
+
 int main(void)
 {
 	struct TEST_SURFACE screen;
@@ -532,6 +651,8 @@ int main(void)
 	test_depth_shape_bounds(&screen);
 	test_argb_composition(&screen, &window);
 	test_logical_pixel_fill();
+	test_raster_target_aliases();
+	test_raster_bands();
 	test_depth_lifetime(&screen);
 	hires_shutdown();
 	puts("SDL3 high-resolution composition tests passed.");
