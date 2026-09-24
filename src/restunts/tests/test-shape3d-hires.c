@@ -2,10 +2,12 @@
 #include <stdio.h>
 #include <string.h>
 #include <SDL3/SDL_stdinc.h>
+#include <SDL3/SDL_init.h>
 #include "../c/externs.h"
 #include "../c/hires.h"
 #include "../c/platform.h"
 #include "../c/projection.h"
+#include "../c/render_vulkan.h"
 #include "../c/shape2d.h"
 #include "../c/shape3d_hires.h"
 #include "../c/shape3d_shadows.h"
@@ -1633,7 +1635,8 @@ static void test_animated_scenery_capture_excludes_static_surfaces(void)
 	material_patlist2_ptr_cpy = scene_patterns;
 }
 
-static legacy_s32 draw_shadow_scene(legacy_s16 camera_angle, legacy_s32 baked)
+static legacy_s32 draw_shadow_scene(legacy_s16 camera_angle, legacy_s32 baked, legacy_s32 animated,
+									legacy_s32 reuse_cache)
 {
 	const struct SHAPE3D_HIRES_VECTOR surfaces[][4] = {
 		{{-1000, -200, 200}, {1000, -200, 200}, {1000, -200, 2000}, {-1000, -200, 2000}},
@@ -1642,8 +1645,10 @@ static legacy_s32 draw_shadow_scene(legacy_s16 camera_angle, legacy_s32 baked)
 	select_cliprect_rotate(0, camera_angle / 2, camera_angle, &clip, 0);
 	reset_target();
 	const struct VECTOR camera = {1024, 200, 1024};
-	shape3d_shadows_invalidate();
-	if (baked) {
+	if (!reuse_cache) {
+		shape3d_shadows_invalidate();
+	}
+	if (baked && !reuse_cache) {
 		assert(shape3d_shadows_bake_begin());
 		for (legacy_u32 index = 0; index < 2; index++) {
 			struct SHAPE3D_HIRES_VECTOR world[4];
@@ -1657,6 +1662,11 @@ static legacy_s32 draw_shadow_scene(legacy_s16 camera_angle, legacy_s32 baked)
 		shape3d_shadows_bake_end();
 	}
 	shape3d_shadows_begin(&camera);
+	if (animated) {
+		const struct SHAPE3D_HIRES_VECTOR sail[] = {
+			{-240, -40, 900}, {-120, -40, 900}, {-120, -40, 1150}, {-240, -40, 1150}};
+		shape3d_shadows_add_polygon(sail, 4, 0);
+	}
 	for (legacy_u32 index = 0; index < 2; index++) {
 		if (!baked) {
 			shape3d_shadows_add_polygon(surfaces[index], 4, 0);
@@ -1732,7 +1742,7 @@ static void test_shadow_receivers_and_parallel_batches(void)
 		for (legacy_s32 setting = 0; setting < 2; setting++) {
 			assert(SDL_SetEnvironmentVariable(SDL_GetEnvironment(), "RESTUNTS_RENDER_WORKERS",
 											  settings[setting], true));
-			legacy_s32 workers = draw_shadow_scene((orientation & 1) * 64, orientation >= 2);
+			legacy_s32 workers = draw_shadow_scene((orientation & 1) * 64, orientation >= 2, 0, 0);
 #if defined(__DJGPP__)
 			assert(workers == 0);
 #else
@@ -1776,6 +1786,171 @@ static void test_shadow_receivers_and_parallel_batches(void)
 	}
 }
 
+static void test_shadow_disable_preserves_geometry_and_resume(void)
+{
+	static legacy_u8 reference_indexed[HIRES_WIDTH * HIRES_HEIGHT];
+	static legacy_u32 reference_argb[HIRES_WIDTH * HIRES_HEIGHT];
+	legacy_u32 palette[256];
+	for (legacy_u32 color = 0; color < 256; color++) {
+		palette[color] = 0xFFFFFFFFU;
+	}
+	palette[3] = 0xFF6080A0U;
+	palette[7] = 0xFFE0D0C0U;
+	palette[8] = 0xFFA08060U;
+	const char *original_setting = SDL_getenv("RESTUNTS_RENDER_WORKERS");
+	char *saved_setting = original_setting != NULL ? SDL_strdup(original_setting) : NULL;
+	assert(original_setting == NULL || saved_setting != NULL);
+	const char *settings[] = {"0", "2"};
+	for (legacy_s32 setting = 0; setting < 2; setting++) {
+		assert(SDL_SetEnvironmentVariable(SDL_GetEnvironment(), "RESTUNTS_RENDER_WORKERS",
+										  settings[setting], true));
+		for (legacy_s16 rotation = 0; rotation < 2; rotation++) {
+			shape3d_shadows_set_enabled(1);
+			draw_shadow_scene(rotation * 64, 1, 1, 0);
+			legacy_u32 baked_bytes = shape3d_shadows_baked_bytes();
+			assert(baked_bytes != 0);
+			memcpy(reference_indexed, pixels(), sizeof(reference_indexed));
+			const legacy_u32 *image = hires_framebuffer_argb(screen, palette);
+			assert(image != NULL);
+			memcpy(reference_argb, image, sizeof(reference_argb));
+			legacy_u32 shaded = 0;
+			for (legacy_u32 pixel = 0; pixel < HIRES_WIDTH * HIRES_HEIGHT; pixel++) {
+				shaded += image[pixel] != palette[reference_indexed[pixel]];
+			}
+			assert(shaded > 500);
+
+			/* Both worker paths must keep the same surfaces and coverage with
+			 * lighting disabled, without promoting pixels to the ARGB path. */
+			shape3d_shadows_set_enabled(0);
+			legacy_s32 workers = draw_shadow_scene(rotation * 64, 1, 1, 1);
+#if defined(__DJGPP__)
+			assert(workers == 0);
+#else
+			assert(workers == setting * 2);
+#endif
+			assert(!shape3d_shadows_active());
+			assert(shape3d_shadows_baked() && shape3d_shadows_baked_bytes() == baked_bytes);
+			assert(memcmp(reference_indexed, pixels(), sizeof(reference_indexed)) == 0);
+			assert(hires_framebuffer_argb(screen, palette) == NULL);
+
+			/* Re-enable the retained bake and current animated caster. No
+			 * rebake is allowed, and all shaded output must return exactly. */
+			shape3d_shadows_set_enabled(1);
+			draw_shadow_scene(rotation * 64, 1, 1, 1);
+			assert(shape3d_shadows_baked_bytes() == baked_bytes);
+			assert(memcmp(reference_indexed, pixels(), sizeof(reference_indexed)) == 0);
+			image = hires_framebuffer_argb(screen, palette);
+			assert(image != NULL);
+			assert(memcmp(reference_argb, image, sizeof(reference_argb)) == 0);
+		}
+	}
+	hires_shutdown();
+	shape3d_shadows_invalidate();
+	if (saved_setting != NULL) {
+		assert(SDL_SetEnvironmentVariable(SDL_GetEnvironment(), "RESTUNTS_RENDER_WORKERS",
+										  saved_setting, true));
+		SDL_free(saved_setting);
+	} else {
+		assert(SDL_UnsetEnvironmentVariable(SDL_GetEnvironment(), "RESTUNTS_RENDER_WORKERS"));
+	}
+}
+
+/* Opt in so ordinary hosts and DOS keep their deterministic CPU suite.
+ * The successful-submission counter prevents a silent CPU fallback from
+ * making these Vulkan comparisons pass without exercising the GPU. */
+static void test_vulkan_geometry(void)
+{
+	static legacy_u8 reference[HIRES_WIDTH * HIRES_HEIGHT];
+	static legacy_f32 reference_depth[HIRES_WIDTH * HIRES_HEIGHT];
+	static legacy_u32 reference_family[HIRES_WIDTH * HIRES_HEIGHT];
+	shape3d_shadows_invalidate();
+	for (legacy_s32 clipped = 0; clipped < 2; clipped++) {
+		target.sprite_raster_left = clipped ? 13 : 0;
+		target.sprite_raster_right = clipped ? 307 : 320;
+		target.sprite_top = clipped ? 7 : 0;
+		target.sprite_bottom = clipped ? 193 : 200;
+		for (legacy_s32 ordered = 0; ordered < 2; ordered++) {
+			render_vulkan_set_enabled(0);
+			reset_target();
+			assert(draw_batch_scene(0, ordered) == 0);
+			struct HIRES_RASTER_TARGET raster;
+			assert(hires_raster_prepare(&raster));
+			memcpy(reference_depth, raster.inverse_depth, sizeof(reference_depth));
+			memcpy(reference_family, raster.depth_family, sizeof(reference_family));
+			hires_end();
+			memcpy(reference, pixels(), sizeof(reference));
+			reset_target();
+			render_vulkan_set_enabled(1);
+			legacy_u32 submissions = render_vulkan_submission_count();
+			assert(draw_batch_scene(1, ordered) == 0);
+			assert(render_vulkan_submission_count() == submissions + 1);
+			assert(hires_raster_prepare(&raster));
+			for (legacy_s32 y = raster.depth_top; y < raster.depth_bottom; y++) {
+				for (legacy_s32 x = raster.depth_left; x < raster.depth_right; x++) {
+					size_t sample = (size_t)y * HIRES_WIDTH + x;
+					assert(reference_family[sample] == raster.depth_family[sample]);
+					if (reference_family[sample] != 0) {
+						/* Float shader interpolation can round differently from
+						 * the CPU's double intermediates, within the same depth tolerance. */
+						legacy_f64 error =
+							SDL_fabs(reference_depth[sample] - raster.inverse_depth[sample]);
+						assert(error <= 4 * FLT_EPSILON * reference_depth[sample]);
+					}
+				}
+			}
+			hires_end();
+			assert(memcmp(reference, pixels(), sizeof(reference)) == 0);
+		}
+	}
+	target.sprite_raster_left = target.sprite_top = 0;
+	target.sprite_raster_right = 320;
+	target.sprite_bottom = 200;
+	render_vulkan_set_enabled(0);
+}
+
+static void test_vulkan_shadows(void)
+{
+	static legacy_u8 reference_indexed[HIRES_WIDTH * HIRES_HEIGHT];
+	static legacy_u32 reference_argb[HIRES_WIDTH * HIRES_HEIGHT];
+	legacy_u32 palette[256];
+	for (legacy_u32 color = 0; color < 256; color++) {
+		palette[color] = 0xFFFFFFFFU;
+	}
+	palette[3] = 0xFF6080A0U;
+	palette[7] = 0xFFE0D0C0U;
+	palette[8] = 0xFFA08060U;
+	for (legacy_s16 rotated = 0; rotated < 2; rotated++) {
+		for (legacy_s32 animated = 0; animated < 2; animated++) {
+			render_vulkan_set_enabled(0);
+			draw_shadow_scene(rotated * 64, 1, animated, 0);
+			memcpy(reference_indexed, pixels(), sizeof(reference_indexed));
+			const legacy_u32 *image = hires_framebuffer_argb(screen, palette);
+			assert(image != NULL);
+			memcpy(reference_argb, image, sizeof(reference_argb));
+			render_vulkan_set_enabled(1);
+			legacy_u32 submissions = render_vulkan_submission_count();
+			assert(draw_shadow_scene(rotated * 64, 1, animated, 0) == 0);
+			assert(render_vulkan_submission_count() == submissions + 1);
+			assert(memcmp(reference_indexed, pixels(), sizeof(reference_indexed)) == 0);
+			image = hires_framebuffer_argb(screen, palette);
+			assert(image != NULL);
+			legacy_u32 shaded = 0;
+			for (legacy_u32 pixel = 0; pixel < HIRES_WIDTH * HIRES_HEIGHT; pixel++) {
+				shaded += image[pixel] != palette[reference_indexed[pixel]];
+				for (legacy_u32 channel = 0; channel < 32; channel += 8) {
+					legacy_s32 expected = (reference_argb[pixel] >> channel) & 255U;
+					legacy_s32 actual = (image[pixel] >> channel) & 255U;
+					/* Cached byte lightmaps must retain their filtering and
+					 * opacity; allow only one channel step from float rounding. */
+					assert(actual >= expected - 1 && actual <= expected + 1);
+				}
+			}
+			assert(shaded > 500);
+		}
+	}
+	render_vulkan_set_enabled(0);
+}
+
 int main(void)
 {
 	screen = dos_memory_make_pointer(0xA000, 0);
@@ -1793,6 +1968,23 @@ int main(void)
 	projection_center_y = 100;
 	projection_focal_length_x = 160;
 	projection_focal_length_y = 160;
+	const char *vulkan_test = SDL_getenv("RESTUNTS_TEST_VULKAN");
+	if (vulkan_test != NULL && SDL_strcmp(vulkan_test, "1") == 0) {
+		assert(SDL_Init(SDL_INIT_VIDEO));
+		render_vulkan_initialize();
+		if (!render_vulkan_available()) {
+			puts("Vulkan raster tests skipped: no compatible GPU device.");
+			SDL_Quit();
+			return 77;
+		}
+		test_vulkan_geometry();
+		test_vulkan_shadows();
+		hires_shutdown();
+		render_vulkan_shutdown();
+		SDL_Quit();
+		puts("Vulkan geometry, depth, clipping and shadow comparisons passed.");
+		return 0;
+	}
 	test_projection_and_subpixel_edges();
 	test_attached_polygon_weight();
 	test_attached_polygon_midrange_weight();
@@ -1837,6 +2029,7 @@ int main(void)
 	test_rendered_shapes_do_not_cast_automatically();
 	test_animated_scenery_capture_excludes_static_surfaces();
 	test_shadow_receivers_and_parallel_batches();
+	test_shadow_disable_preserves_geometry_and_resume();
 	test_offscreen_caster_shades_plain_ground();
 	hires_shutdown();
 	puts("High-resolution 3D projection and raster tests passed.");

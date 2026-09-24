@@ -54,6 +54,7 @@ static legacy_u8 display_toggle_test, display_scenario, display_target, display_
 static legacy_u8 display_fps_drawn, display_previous_fps, display_refresh_pending;
 static legacy_u32 display_present_count, display_fps_draw_count, display_record_count;
 static legacy_u32 display_reset_count, display_shortcut_count, display_sprite_free_count;
+static legacy_s16 display_last_renderer_key;
 static struct RECTANGLE display_clip, display_fps_bounds, display_previous_fps_bounds;
 static const struct RECTANGLE display_portrait_bounds = {240, 320, 0, 83};
 static legacy_u8 display_portrait_pending, display_portrait_mode, display_portrait_legacy_drawn;
@@ -149,15 +150,23 @@ legacy_u64 presentation_now(void)
 	return preview_now;
 }
 
+static legacy_s32 vulkan_fixture_available = 1;
+
+legacy_s32 render_vulkan_available(void)
+{
+	return vulkan_fixture_available;
+}
+
 legacy_s16 handle_ingame_kb_shortcuts(legacy_s16 key)
 {
-	assert(key == KEY_F11 || key == KEY_F12);
+	assert(key == KEY_F10 || key == KEY_F11 || key == KEY_F12 || key == KEY_SHIFT_F12);
 	if (key == KEY_F11) {
 		fps_display_enabled ^= 1U;
 		frame_fps_reset();
 	} else {
 		supersight_enabled ^= 1U;
-		/* F12 discards all enhanced sprite surfaces in the real renderer. */
+		display_last_renderer_key = key;
+		/* Renderer changes discard all enhanced sprite surfaces. */
 		display_portrait_mode = 255;
 	}
 	display_shortcut_count++;
@@ -342,7 +351,16 @@ legacy_s16 input_checking(legacy_s16 frame_delta)
 										  0,		 KEY_F11,  KEY_F11,	 0,		  KEY_F12,	KEY_F11,
 										  KEY_ENTER, KEY_UP,   KEY_UP,	 KEY_UP,  KEY_ENTER};
 		assert(frame_index < sizeof(keys) / sizeof(keys[0]));
-		return keys[frame_index];
+		legacy_u16 key = keys[frame_index];
+		if (key == (legacy_u16)KEY_F12) {
+			if (display_scenario >= 96) {
+				return (legacy_u16)KEY_SHIFT_F12;
+			}
+			if ((display_scenario & 96U) != 0) {
+				return (legacy_u16)KEY_F10;
+			}
+		}
+		return key;
 	}
 	if (predictive_preview_test != 0) {
 		if (supersight_enabled != 0) {
@@ -888,7 +906,8 @@ static void test_display_toggles(void)
 {
 	predictive_preview_test = 0;
 	display_toggle_test = 1;
-	for (display_scenario = 0; display_scenario < 32; display_scenario++) {
+	for (display_scenario = 0; display_scenario < 128; display_scenario++) {
+		vulkan_fixture_available = display_scenario < 64 || display_scenario >= 96;
 		legacy_u8 initial_supersight = (display_scenario >> 3) & 1U;
 		legacy_u8 initial_fps = (display_scenario >> 4) & 1U;
 		supersight_enabled = initial_supersight;
@@ -896,28 +915,35 @@ static void test_display_toggles(void)
 		display_pending = display_fps_drawn = display_previous_fps = display_refresh_pending = 0;
 		display_present_count = display_fps_draw_count = display_record_count = 0;
 		display_reset_count = display_shortcut_count = display_sprite_free_count = 0;
+		display_last_renderer_key = 0;
 		display_portrait_pending = display_portrait_legacy_drawn = 0;
 		display_portrait_mode = 255;
 		display_portrait_draws = display_enhanced_portrait_draws = 0;
 		run_car_case(1);
 		assert(frame_index == 17);
 		assert(supersight_enabled == initial_supersight && fps_display_enabled == initial_fps);
-		assert(display_shortcut_count == 6);
+		assert(display_shortcut_count == (vulkan_fixture_available ? 6U : 4U));
+		assert(display_last_renderer_key == (display_scenario >= 96	  ? KEY_SHIFT_F12
+											 : display_scenario >= 64 ? 0
+											 : display_scenario >= 32 ? KEY_F10
+																	  : KEY_F12));
 		assert(display_reset_count == 6);
 		assert(display_fps_draw_count > 0 && display_fps_draw_count < display_present_count);
 		assert(display_present_count == display_record_count);
 		assert(display_pending == 0);
 		assert(display_sprite_free_count == sprite_index);
 		if ((display_scenario & 4U) != 0) {
-			assert(display_portrait_draws == 3);
-			assert(display_enhanced_portrait_draws == 1U + initial_supersight);
+			assert(display_portrait_draws == (vulkan_fixture_available ? 3U : 1U));
+			assert(display_enhanced_portrait_draws ==
+				   (vulkan_fixture_available ? 1U + initial_supersight : initial_supersight));
 		} else {
 			assert(display_portrait_draws == 0);
 		}
 		assert(display_portrait_pending == 0 && display_portrait_legacy_drawn == 0);
 	}
 	display_toggle_test = 0;
-	puts("Car menu FPS and portrait toggles passed (32 scenarios).");
+	vulkan_fixture_available = 1;
+	puts("Car menu FPS and portrait toggles passed (128 scenarios).");
 }
 #endif
 

@@ -1,0 +1,78 @@
+#version 450
+
+/* Four independent 32-pixel lists per group keep several warps resident on
+ * older GPUs without requiring shared memory or workgroup barriers. */
+layout(local_size_x = 128, local_size_y = 1, local_size_z = 1) in;
+
+struct Span {
+    int left, right, y;
+    uint family;
+    float inverse_z, depth_step;
+    uint depth_mode, depth_test;
+    uint color, alternate, pattern, paint_mode;
+};
+struct Pixel {
+    uint color;
+    float inverse_depth;
+    uint family;
+};
+layout(std430, set = 0, binding = 0) readonly buffer Spans { Span spans[]; };
+layout(std430, set = 0, binding = 1) readonly buffer Tiles { uint tiles[]; };
+layout(std430, set = 1, binding = 0) buffer Pixels { Pixel pixels[]; };
+layout(std140, set = 2, binding = 0) uniform Parameters {
+    ivec4 bounds;
+    vec4 inverse_view[3];
+    vec4 projection;
+    float footprint_scale, ground;
+    uint shadow_active, shadow_baked;
+};
+
+void main()
+{
+    int x = int(gl_GlobalInvocationID.x);
+    int y = int(gl_GlobalInvocationID.y) + bounds.y;
+    if (x < bounds.x || x >= bounds.z || y >= bounds.w) {
+        return;
+    }
+    uint tile = uint(y) * 40u + uint(x) / 32u;
+    uint first = tiles[tile * 2u];
+    uint count = tiles[tile * 2u + 1u];
+    Pixel pixel = Pixel(0u, 0.0, 0u);
+    for (uint i = 0u; i < count; ++i) {
+        Span span = spans[tiles[first + i]];
+        if (x < span.left || x >= span.right) {
+            continue;
+        }
+        uint color = span.color;
+        if (span.paint_mode != 0u) {
+            uint bit = ((y & 1) == 0 ? 8u : 0u) + 7u - uint(x & 7);
+            if ((span.pattern & (1u << bit)) != 0u) {
+                if (span.paint_mode == 2u) {
+                    color = span.alternate;
+                }
+            } else if (span.paint_mode != 2u) {
+                continue;
+            }
+        }
+        if (span.depth_test != 0u) {
+            precise float depth = span.inverse_z + float(x - span.left) * span.depth_step;
+            if (!(depth > 0.0) || isinf(depth)) {
+                continue;
+            }
+            if (span.depth_mode != 0u && pixel.family == span.family) {
+                if (span.depth_mode == 2u && depth > pixel.inverse_depth) {
+                    pixel.inverse_depth = depth;
+                }
+            } else {
+                precise float limit = depth + 4.76837158203125e-7 * pixel.inverse_depth;
+                if (pixel.family != 0u && limit < pixel.inverse_depth) {
+                    continue;
+                }
+                pixel.inverse_depth = depth;
+                pixel.family = span.family;
+            }
+        }
+        pixel.color = color | 256u;
+    }
+    pixels[uint(y - bounds.y) * 1280u + uint(x)] = pixel;
+}

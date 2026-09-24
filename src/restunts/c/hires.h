@@ -29,6 +29,20 @@ struct HIRES_RASTER_CONTEXT {
 	legacy_u32 cleared_argb_cells;
 };
 
+/* GPU readback uses a tightly packed 12-byte sample. Paint bit 8 indicates
+ * a replacement palette index in bits 0..7; bits 24..31 hold shadow opacity.
+ * Unpainted samples retain the existing skybox/artwork and sprite semantics. */
+struct HIRES_RASTER_SAMPLE {
+	legacy_u32 paint;
+	legacy_f32 inverse_depth;
+	legacy_u32 family;
+};
+/* Requires a prepared target with depth buffers and complete 4x4 cells.
+ * Rows start at target->top, have HIRES_WIDTH samples, and retain screen x.
+ * Allocation failure returns zero before changing any pixel or depth value. */
+legacy_s32 hires_raster_import(const struct HIRES_RASTER_TARGET *target,
+							   const struct HIRES_RASTER_SAMPLE *samples, legacy_s32 shadows);
+
 /* SDL3-only companion pixels. Legacy sprite offsets and resources stay 16-bit. */
 void hires_set_enabled(legacy_s32 enabled);
 legacy_s32 hires_enabled(void);

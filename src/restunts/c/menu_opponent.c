@@ -20,6 +20,10 @@
 #include "shape2d_internal.h"
 #endif
 
+#if defined(RESTUNTS_SDL3) && !defined(__DJGPP__)
+#include "render_vulkan.h"
+#endif
+
 #define OPPONENT_RESOURCE_FILE_INDEX 4
 #define OPPONENT_NONE 0U
 #define OPPONENT_FIRST 1U
@@ -194,9 +198,18 @@ static legacy_u16 opponent_menu_poll_input(struct OPPONENT_MENU_STATE *menu)
 static legacy_u8 opponent_menu_activate_key(struct OPPONENT_MENU_STATE *menu, legacy_u16 key)
 {
 #ifdef RESTUNTS_SDL3
-	if (key == (legacy_u16)KEY_F12) {
+	if (key == (legacy_u16)KEY_F12 || key == (legacy_u16)KEY_SHIFT_F12
+#ifndef __DJGPP__
+		|| key == (legacy_u16)KEY_F10
+#endif
+	) {
+#ifndef __DJGPP__
+		if (key == (legacy_u16)KEY_F10 && !render_vulkan_available()) {
+			return 0;
+		}
+#endif
 		mouse_draw_opaque_check();
-		handle_ingame_kb_shortcuts(KEY_F12);
+		handle_ingame_kb_shortcuts(LEGACY_S16_FROM_BITS(key));
 		opponent_menu_draw_background();
 		opponent_menu_draw_description(menu);
 		menu->previous_selection = OPPONENT_MENU_NO_SELECTION;

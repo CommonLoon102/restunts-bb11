@@ -457,16 +457,22 @@ static void test_opponent_car(legacy_u8 page_flipping)
 }
 
 #ifdef RESTUNTS_SDL3
-static void test_portrait_toggle(legacy_u8 page_flipping)
+static void test_portrait_toggle(legacy_u8 page_flipping, legacy_s16 key, legacy_s32 available)
 {
+	vulkan_fixture_available = available;
 	begin_case(3, page_flipping);
-	add_event(KEY_F12, 3);
-	add_event(KEY_F12, 3);
+	add_event((legacy_u16)key, 3);
+	add_event((legacy_u16)key, 3);
 	add_event(KEY_ENTER, 3);
 	opponent_hits[event_count - 1] = 4;
 	finish_case(3, 1);
 	assert(supersight_enabled == 0);
-	assert(portrait_draws == 3 && enhanced_portrait_draws == 1);
+	assert(portrait_draws == (available ? 3U : 1U));
+	assert(enhanced_portrait_draws == (available ? 1U : 0U));
+	if (available) {
+		assert(display_last_renderer_key == key);
+	}
+	vulkan_fixture_available = 1;
 }
 #endif
 
@@ -492,7 +498,10 @@ int main(void)
 		}
 		test_opponent_car(page_flipping);
 #ifdef RESTUNTS_SDL3
-		test_portrait_toggle(page_flipping);
+		test_portrait_toggle(page_flipping, KEY_F10, 1);
+		test_portrait_toggle(page_flipping, KEY_F10, 0);
+		test_portrait_toggle(page_flipping, KEY_F12, 1);
+		test_portrait_toggle(page_flipping, KEY_SHIFT_F12, 1);
 #endif
 	}
 	printf("test-opponent-menu: passed %" LEGACY_PRIu32 " sessions, %" LEGACY_PRIu32

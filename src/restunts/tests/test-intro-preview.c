@@ -52,9 +52,17 @@ static struct RECTANGLE target_clip;
 static struct RECTANGLE cleared_rects[8];
 static legacy_u8 rendered_modes[8], rendered_fps[8];
 
+static legacy_s32 vulkan_fixture_available = 1;
+
+legacy_s32 render_vulkan_available(void)
+{
+	return vulkan_fixture_available;
+}
+
 legacy_s16 handle_ingame_kb_shortcuts(legacy_s16 key)
 {
-	assert(key == KEY_F11 || key == KEY_F12);
+	assert(key == KEY_F10 || key == KEY_F11 || key == KEY_F12 || key == KEY_SHIFT_F12);
+	assert(key == scripted_key);
 	if (key == KEY_F11) {
 		fps_display_enabled ^= 1U;
 		frame_fps_reset();
@@ -620,7 +628,10 @@ static void display_toggle_case(legacy_u32 scenario)
 	slow_video_mgmt = (scenario >> 1) & 1;
 	legacy_u8 initial_mode = (scenario >> 2) & 1;
 	legacy_u8 initial_fps = (scenario >> 3) & 1;
-	scripted_key = (scenario & 16) != 0 ? KEY_F11 : KEY_F12;
+	scripted_key = (scenario & 64) != 0	  ? KEY_SHIFT_F12
+				   : (scenario & 32) != 0 ? KEY_F10
+				   : (scenario & 16) != 0 ? KEY_F11
+										  : KEY_F12;
 	supersight_enabled = initial_mode;
 	fps_display_enabled = initial_fps;
 	copy_backbuffer = 0;
@@ -639,7 +650,7 @@ static void display_toggle_case(legacy_u32 scenario)
 	legacy_u32 expected_fps_draws = 0;
 	for (legacy_u32 frame = 0; frame < flush_count; frame++) {
 		legacy_u8 toggled = frame == 1 || frame == 2;
-		legacy_u8 expected_mode = initial_mode ^ (toggled && scripted_key == KEY_F12);
+		legacy_u8 expected_mode = initial_mode ^ (toggled && scripted_key != KEY_F11);
 		legacy_u8 expected_fps = initial_fps ^ (toggled && scripted_key == KEY_F11);
 		assert(rendered_modes[frame] == expected_mode);
 		assert(rendered_fps[frame] == expected_fps);
@@ -716,8 +727,13 @@ static void predictive_presentation_case(void)
 	scripted_input = 0;
 }
 
-static void display_toggle_completion_case(legacy_s16 key)
+static void display_toggle_completion_case(legacy_s16 key, legacy_s32 available)
 {
+	vulkan_fixture_available = available;
+	legacy_u8 accepted =
+		key == KEY_F11 || key == KEY_F12 || key == KEY_SHIFT_F12 || (key == KEY_F10 && available);
+	memset(&state, 0, sizeof(state));
+	random_value = 1;
 	reset_projection();
 	framespersec = 20;
 	timer_ticks_per_frame = 1;
@@ -733,8 +749,8 @@ static void display_toggle_completion_case(legacy_s16 key)
 	scripted_input = 2;
 	assert(setup_intro() == 0);
 	assert(input_polls > 1);
-	assert(shortcut_count == 1);
-	assert(supersight_enabled == (key == KEY_F12));
+	assert(shortcut_count == accepted);
+	assert(supersight_enabled == (accepted && key != KEY_F11));
 	assert(fps_display_enabled == (key == KEY_F11));
 	assert(fps_draw_count == (key == KEY_F11 ? flush_count - 1U : 0U));
 	assert(fps_presented_count == flush_count);
@@ -776,11 +792,20 @@ int main(void)
 	assert(lifecycle_hash == 0xa3183e31UL);
 #endif
 #ifdef RESTUNTS_SDL3
-	for (legacy_u32 scenario = 0; scenario < 32; scenario++) {
+	for (legacy_u32 scenario = 0; scenario < 80; scenario++) {
 		display_toggle_case(scenario);
 	}
-	display_toggle_completion_case(KEY_F12);
-	display_toggle_completion_case(KEY_F11);
+	display_toggle_completion_case(KEY_F10, 1);
+	display_toggle_completion_case(KEY_F12, 1);
+	display_toggle_completion_case(KEY_SHIFT_F12, 1);
+	display_toggle_completion_case(KEY_F11, 1);
+	trace_hash = 2166136261UL;
+	display_toggle_completion_case(KEY_F10, 0);
+	legacy_u32 unsupported_intro_hash = trace_hash;
+	trace_hash = 2166136261UL;
+	display_toggle_completion_case(0, 0);
+	assert(trace_hash == unsupported_intro_hash);
+	vulkan_fixture_available = 1;
 	predictive_presentation_case();
 #endif
 	return 0;

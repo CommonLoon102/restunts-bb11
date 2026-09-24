@@ -1075,6 +1075,125 @@ static void test_shadow_block(legacy_s32 size,
 	free(expected);
 }
 
+/* Import must compose exactly like ordered indexed drawing followed by
+ * shadows, preserving holes in both palette artwork and full-color artwork.
+ * Reversed sprite rows also exercise the separation of screen depth from
+ * legacy memory addressing with a clipped viewport away from the origin. */
+static void test_raster_import(void)
+{
+	static legacy_u8 expected_indexed[HIRES_WIDTH * HIRES_HEIGHT];
+	static legacy_u32 expected_argb[HIRES_WIDTH * HIRES_HEIGHT];
+	struct HIRES_RASTER_SAMPLE *samples = calloc(16 * HIRES_WIDTH, sizeof(*samples));
+	assert(samples != NULL);
+	legacy_u32 palette[256];
+	for (legacy_u32 index = 0; index < 256; index++) {
+		palette[index] = 0xFF000000U | index * 0x010101U;
+	}
+	struct TEST_SURFACE screen;
+	setup_surface(&screen, 0x7000, 0);
+	screen.sprite.sprite_raster_left = 40;
+	screen.sprite.sprite_raster_right = 46;
+	screen.sprite.sprite_top = 60;
+	screen.sprite.sprite_bottom = 64;
+	for (legacy_s32 reversed = 0; reversed < 2; reversed++) {
+		for (legacy_s32 y = 60; y < 64; y++) {
+			LEGACY_WRITE_U16_LE(screen.lines + y * 2, (reversed ? 123 - y : y) * TEST_WIDTH);
+		}
+		for (legacy_s32 shadows = 0; shadows < 2; shadows++) {
+			for (legacy_s32 imported = 0; imported < 2; imported++) {
+				hires_forget(screen.base);
+				assert(hires_begin_argb(&screen.sprite));
+				hires_depth_begin(0, HIRES_WIDTH, 0, HIRES_HEIGHT);
+				for (legacy_s32 y = 240; y < 256; y++) {
+					for (legacy_s32 x = 160; x < 184; x++) {
+						hires_pixel(x, y, (legacy_u8)(17 + ((x + y) & 15)));
+						legacy_s32 cell = (x - 160) / HIRES_SCALE;
+						if ((cell == 1 || cell == 2 || cell == 3 || cell == 5) &&
+							((x + y) & 3) != 0) {
+							hires_argb_pixel(x, y, 0x83123456U);
+						}
+					}
+				}
+				struct HIRES_RASTER_TARGET target;
+				assert(hires_raster_prepare(&target));
+				if (!imported) {
+					memset(samples, 0, 16 * HIRES_WIDTH * sizeof(*samples));
+					struct HIRES_RASTER_CONTEXT context = {&target, target.top, target.bottom, 0};
+					for (legacy_s32 y = 240; y < 256; y++) {
+						for (legacy_s32 x = 160; x < 184; x++) {
+							legacy_s32 cell = (x - 160) / HIRES_SCALE;
+							if (cell != 2 && !(cell == 3 && ((x + y) & 1)) &&
+								!(cell == 5 && (y & 3) < 2)) {
+								continue;
+							}
+							legacy_u8 color = (legacy_u8)(70 + ((x + y) & 7));
+							assert(hires_raster_depth_test(&context, x, y, 0.01 + x * 0.00001,
+														   1 + cell, HIRES_DEPTH_SURFACE));
+							hires_raster_pixel(&context, x, y, color);
+							samples[(y - 240) * HIRES_WIDTH + x].paint = color | 256U;
+						}
+					}
+					hires_raster_finish(&target, context.cleared_argb_cells);
+					legacy_u32 added = 0;
+					for (legacy_s32 y = 240; y < 256; y++) {
+						for (legacy_s32 x = 160; x < 184; x++) {
+							struct HIRES_RASTER_SAMPLE *sample =
+								&samples[(y - 240) * HIRES_WIDTH + x];
+							size_t depth = (size_t)y * HIRES_WIDTH + x;
+							sample->family = target.depth_family[depth];
+							if (sample->family != 0) {
+								sample->inverse_depth = target.inverse_depth[depth];
+							}
+							if (shadows && x >= 176 && (x + y) % 3 != 0) {
+								legacy_u8 opacity = (legacy_u8)(48 + ((x * 3 + y) & 63));
+								added += hires_raster_shadow(&context, x, y, opacity);
+								sample->paint |= (legacy_u32)opacity << 24;
+							}
+						}
+					}
+					hires_raster_shadow_finish(&target, added);
+				} else {
+					assert(hires_raster_import(&target, samples, shadows));
+					for (legacy_s32 y = 240; y < 256; y++) {
+						for (legacy_s32 x = 160; x < 184; x++) {
+							const struct HIRES_RASTER_SAMPLE *sample =
+								&samples[(y - 240) * HIRES_WIDTH + x];
+							size_t depth = (size_t)y * HIRES_WIDTH + x;
+							assert(target.depth_family[depth] == sample->family);
+							if (sample->family != 0) {
+								assert(target.inverse_depth[depth] == sample->inverse_depth);
+							}
+						}
+					}
+				}
+				hires_end();
+				const legacy_u8 *indexed = get_framebuffer(&screen);
+				const legacy_u32 *argb = hires_framebuffer_argb(screen.base, palette);
+				assert(argb != NULL);
+				if (!imported) {
+					memcpy(expected_indexed, indexed, sizeof(expected_indexed));
+					memcpy(expected_argb, argb, sizeof(expected_argb));
+				} else {
+					assert(memcmp(expected_indexed, indexed, sizeof(expected_indexed)) == 0);
+					assert(memcmp(expected_argb, argb, sizeof(expected_argb)) == 0);
+				}
+				/* Removing the last artwork/shadow sample must release ARGB;
+				 * this checks promotion and demotion counters after import too. */
+				assert(hires_begin(&screen.sprite));
+				for (legacy_s32 y = 240; y < 256; y++) {
+					for (legacy_s32 x = 160; x < 184; x++) {
+						hires_pixel(x, y, 3);
+					}
+				}
+				hires_end();
+				assert(hires_framebuffer_argb(screen.base, palette) == NULL);
+			}
+		}
+	}
+	hires_forget(screen.base);
+	free(samples);
+}
+
 int main(void)
 {
 	struct TEST_SURFACE screen;
@@ -1101,6 +1220,7 @@ int main(void)
 	test_raster_target_aliases();
 	test_raster_bands();
 	test_raster_spans();
+	test_raster_import();
 	test_shadow_raster_bands();
 	test_shadow_block(2, hires_raster_shadow_block2);
 	test_shadow_block(4, hires_raster_shadow_block4);

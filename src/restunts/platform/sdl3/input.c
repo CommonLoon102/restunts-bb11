@@ -4,9 +4,51 @@
 #include "../../c/game_input.h"
 #include "../../c/fatal.h"
 #include "../../c/hires.h"
+#ifndef __DJGPP__
+#include "../../c/render_vulkan.h"
+#endif
 #include <string.h>
 
 #define KEY_BUFFER_CAPACITY 64U
+#define KEY_WAIT_POLL_MS 1U
+#define DOS_KB_PRIMARY_KEYMAP_SIZE 91U
+#define DOS_KB_ALT_KEYMAP_SIZE 92U
+#define DOS_KB_EXTENDED_KEY_FLAG LEGACY_U8_SIGN_BIT
+#define DOS_KB_SCANCODE_MASK LEGACY_S8_MAX
+#define DOS_KB_EXTENDED_KEY_NORMALIZE_MIN 133U
+#define MOUSE_SCREEN_WIDTH 320
+#define MOUSE_SCREEN_HEIGHT 200
+#define MOUSE_LEFT_BUTTON 1
+#define MOUSE_RIGHT_BUTTON 2
+#define MOUSE_MIDDLE_BUTTON 4
+#define MOUSE_BUTTON_COUNT 3
+#define JOYSTICK_AXIS_X 0
+#define JOYSTICK_AXIS_Y 1
+#define JOYSTICK_AXIS_COUNT 2U
+#define JOYSTICK_PRIMARY_HAT 0
+#define JOYSTICK_PRIMARY_BUTTON 0
+#define JOYSTICK_SECONDARY_BUTTON 1
+#define JOYSTICK_GAME_AXIS_SCALE 32
+#define JOYSTICK_DIRECTION_THRESHOLD 16384
+
+/* XT make codes used by the legacy key-state API, distinct from SDL scancodes
+ * and the BIOS key words in keyboard.h. */
+enum DOS_SCANCODE {
+	DOS_SCANCODE_NONE = 0,
+	DOS_SCANCODE_ENTER = 28,
+	DOS_SCANCODE_CONTROL = 29,
+	DOS_SCANCODE_ALT = 56,
+	DOS_SCANCODE_HOME = 71,
+	DOS_SCANCODE_UP = 72,
+	DOS_SCANCODE_PAGE_UP = 73,
+	DOS_SCANCODE_LEFT = 75,
+	DOS_SCANCODE_RIGHT = 77,
+	DOS_SCANCODE_END = 79,
+	DOS_SCANCODE_DOWN = 80,
+	DOS_SCANCODE_PAGE_DOWN = 81,
+	DOS_SCANCODE_INSERT = 82,
+	DOS_SCANCODE_DELETE = 83
+};
 
 static legacy_u8 keys[SDL_SCANCODE_COUNT];
 static legacy_u8 consumed_keys[SDL_SCANCODE_COUNT];
@@ -18,8 +60,8 @@ static legacy_s16 mouse_y;
 static legacy_s16 mouse_buttons;
 static legacy_s16 mouse_min_x;
 static legacy_s16 mouse_min_y;
-static legacy_s16 mouse_max_x = 319;
-static legacy_s16 mouse_max_y = 199;
+static legacy_s16 mouse_max_x = MOUSE_SCREEN_WIDTH - 1;
+static legacy_s16 mouse_max_y = MOUSE_SCREEN_HEIGHT - 1;
 static legacy_u8 mouse_available;
 struct MOUSE_TRANSITION {
 	legacy_s16 buttons;
@@ -35,35 +77,39 @@ static SDL_Joystick *joystick;
 static legacy_u8 pumping;
 static legacy_u64 last_event_poll;
 
-static const legacy_u8 dos_kb_keymap1[91] = {
+/* Original DOS translation data, indexed by XT make code. Values below the
+ * high-bit flag are character bytes; flagged values encode BIOS scan bytes.
+ * The normalization threshold intentionally preserves high BIOS scans used by
+ * Alt+F9 and Alt+F10. Modifier precedence and historical table quirks matter. */
+static const legacy_u8 dos_kb_keymap_plain[DOS_KB_PRIMARY_KEYMAP_SIZE] = {
 	0,	 27,  49,  50,	51,	 52,  53,  54,	55,	 56,  57,  48,	45,	 61,  8,   9,	113, 119, 101,
 	114, 116, 121, 117, 105, 111, 112, 91,	93,	 13,  0,   97,	115, 100, 102, 103, 104, 106, 107,
 	108, 59,  39,  96,	0,	 92,  122, 120, 99,	 118, 98,  110, 109, 44,  46,  47,	0,	 42,  0,
 	32,	 0,	  187, 188, 189, 190, 191, 192, 193, 194, 195, 196, 0,	 0,	  199, 200, 201, 45,  203,
 	204, 205, 43,  207, 208, 209, 210, 211, 0,	 0,	  0,   0,	0,	 0,	  0};
 
-static const legacy_u8 dos_kb_keymap2[91] = {
+static const legacy_u8 dos_kb_keymap_shift[DOS_KB_PRIMARY_KEYMAP_SIZE] = {
 	0,	 27,  33,  64,	35,	 36,  37,  94,	38,	 42,  40,  41,	95, 43, 8,	 143, 81,  87, 69,
 	82,	 84,  89,  85,	73,	 79,  80,  123, 125, 13,  0,   65,	83, 68, 70,	 71,  72,  74, 75,
 	76,	 58,  34,  126, 0,	 124, 90,  88,	67,	 86,  66,  78,	77, 60, 62,	 63,  0,   0,  0,
 	32,	 0,	  212, 213, 214, 215, 216, 217, 218, 219, 220, 221, 0,	0,	199, 200, 201, 45, 203,
 	204, 205, 43,  207, 208, 209, 210, 211, 0,	 0,	  0,   0,	0,	0,	0};
 
-static const legacy_u8 dos_kb_keymap3[91] = {
+static const legacy_u8 dos_kb_keymap_caps[DOS_KB_PRIMARY_KEYMAP_SIZE] = {
 	0,	 27,  49,  50,	51,	 52,  53,  54,	55,	 56,  57,  48,	45, 61, 8,	 143, 81,  87, 69,
 	82,	 84,  89,  85,	73,	 79,  80,  91,	93,	 13,  0,   65,	83, 68, 70,	 71,  72,  74, 75,
 	76,	 59,  39,  96,	0,	 92,  90,  88,	67,	 86,  66,  78,	77, 44, 46,	 47,  0,   0,  0,
 	32,	 0,	  212, 213, 214, 215, 216, 217, 218, 219, 220, 221, 0,	0,	199, 200, 201, 45, 203,
 	204, 205, 43,  207, 208, 209, 210, 211, 0,	 0,	  0,   0,	0,	0,	0};
 
-static const legacy_u8 dos_kb_keymap4[91] = {
+static const legacy_u8 dos_kb_keymap_control[DOS_KB_PRIMARY_KEYMAP_SIZE] = {
 	0,	 27,  33,  0,	35,	 36,  37,  30,	38,	 42,  40,  41,	31,	 43, 127, 9,   17,	23, 5,
 	18,	 20,  25,  21,	9,	 15,  16,  27,	29,	 13,  0,   1,	19,	 4,	 6,	  7,   8,	10, 11,
 	12,	 59,  44,  96,	0,	 28,  26,  24,	3,	 22,  2,   14,	178, 60, 62,  63,  0,	0,	0,
 	32,	 0,	  222, 223, 224, 225, 226, 227, 228, 229, 230, 231, 0,	 0,	 199, 200, 201, 45, 203,
 	204, 205, 43,  207, 208, 209, 210, 211, 0,	 0,	  0,   0,	0,	 0,	 0};
 
-static const legacy_u8 dos_kb_keymap5[92] = {
+static const legacy_u8 dos_kb_keymap_alt[DOS_KB_ALT_KEYMAP_SIZE] = {
 	0,	 27,  33,  64,	35,	 36,  37,  94,	38,	 42,  40,  41,	95,	 43,  8,   143, 144, 145, 146,
 	147, 148, 149, 150, 151, 152, 153, 123, 125, 13,  0,   158, 159, 160, 161, 162, 163, 164, 165,
 	166, 58,  34,  126, 0,	 124, 172, 173, 174, 175, 176, 177, 178, 60,  62,  63,	0,	 0,	  0,
@@ -164,31 +210,31 @@ static legacy_u32 legacy_scancode(legacy_u32 code)
 {
 	switch (code) {
 		case SDL_SCANCODE_RCTRL:
-			return 29;
+			return DOS_SCANCODE_CONTROL;
 		case SDL_SCANCODE_RALT:
-			return 56;
+			return DOS_SCANCODE_ALT;
 		case SDL_SCANCODE_KP_ENTER:
-			return 28;
+			return DOS_SCANCODE_ENTER;
 		case SDL_SCANCODE_KP_7:
-			return 71;
+			return DOS_SCANCODE_HOME;
 		case SDL_SCANCODE_KP_8:
-			return 72;
+			return DOS_SCANCODE_UP;
 		case SDL_SCANCODE_KP_9:
-			return 73;
+			return DOS_SCANCODE_PAGE_UP;
 		case SDL_SCANCODE_KP_4:
-			return 75;
+			return DOS_SCANCODE_LEFT;
 		case SDL_SCANCODE_KP_6:
-			return 77;
+			return DOS_SCANCODE_RIGHT;
 		case SDL_SCANCODE_KP_1:
-			return 79;
+			return DOS_SCANCODE_END;
 		case SDL_SCANCODE_KP_2:
-			return 80;
+			return DOS_SCANCODE_DOWN;
 		case SDL_SCANCODE_KP_3:
-			return 81;
+			return DOS_SCANCODE_PAGE_DOWN;
 		case SDL_SCANCODE_KP_0:
-			return 82;
+			return DOS_SCANCODE_INSERT;
 		case SDL_SCANCODE_KP_PERIOD:
-			return 83;
+			return DOS_SCANCODE_DELETE;
 		default:
 			break;
 	}
@@ -197,7 +243,7 @@ static legacy_u32 legacy_scancode(legacy_u32 code)
 			return index;
 		}
 	}
-	return 0;
+	return DOS_SCANCODE_NONE;
 }
 
 static void input_key(const SDL_KeyboardEvent *event)
@@ -227,33 +273,41 @@ static void input_key(const SDL_KeyboardEvent *event)
 		return;
 	}
 	legacy_u32 scan = legacy_scancode(event->scancode);
-	if (scan == 0) {
+	if (scan == DOS_SCANCODE_NONE) {
 		return;
 	}
+#ifndef __DJGPP__
+	/* F10 selects a renderer or an editor category once per physical press. */
+	if (event->scancode == SDL_SCANCODE_F10 && (was_pressed || event->repeat)) {
+		return;
+	}
+#endif
 	legacy_u16 value;
-	if (scan == 87 || scan == 88) {
-		if (was_pressed || event->repeat ||
-			(event->mod & (SDL_KMOD_SHIFT | SDL_KMOD_CTRL | SDL_KMOD_ALT))) {
+	if (event->scancode == SDL_SCANCODE_F11 || event->scancode == SDL_SCANCODE_F12) {
+		if (was_pressed || event->repeat || (event->mod & (SDL_KMOD_CTRL | SDL_KMOD_ALT)) ||
+			(event->scancode == SDL_SCANCODE_F11 && (event->mod & SDL_KMOD_SHIFT))) {
 			return;
 		}
-		value = (legacy_u16)(scan == 87 ? KEY_F11 : KEY_F12);
+		value = (legacy_u16)(event->scancode == SDL_SCANCODE_F11 ? KEY_F11
+							 : (event->mod & SDL_KMOD_SHIFT)	 ? KEY_SHIFT_F12
+																 : KEY_F12);
 	} else {
 		if ((event->mod & SDL_KMOD_ALT) != 0) {
-			value = dos_kb_keymap5[scan];
+			value = dos_kb_keymap_alt[scan];
 		} else if ((event->mod & SDL_KMOD_CTRL) != 0) {
-			value = dos_kb_keymap4[scan];
+			value = dos_kb_keymap_control[scan];
 		} else if ((event->mod & SDL_KMOD_SHIFT) != 0) {
-			value = dos_kb_keymap2[scan];
+			value = dos_kb_keymap_shift[scan];
 		} else if ((event->mod & SDL_KMOD_CAPS) != 0) {
-			value = dos_kb_keymap3[scan];
+			value = dos_kb_keymap_caps[scan];
 		} else {
-			value = dos_kb_keymap1[scan];
+			value = dos_kb_keymap_plain[scan];
 		}
-		if ((value & 128U) != 0) {
-			if (value >= 133U) {
-				value &= 127U;
+		if ((value & DOS_KB_EXTENDED_KEY_FLAG) != 0) {
+			if (value >= DOS_KB_EXTENDED_KEY_NORMALIZE_MIN) {
+				value &= DOS_KB_SCANCODE_MASK;
 			}
-			value <<= 8;
+			value <<= LEGACY_BYTE_BITS;
 		}
 	}
 	if (value == 0) {
@@ -347,9 +401,9 @@ void sdl3_platform_pump(void)
 				break;
 			case SDL_EVENT_MOUSE_BUTTON_DOWN:
 			case SDL_EVENT_MOUSE_BUTTON_UP: {
-				legacy_s16 flag = event.button.button == SDL_BUTTON_LEFT	 ? 1
-								  : event.button.button == SDL_BUTTON_RIGHT	 ? 2
-								  : event.button.button == SDL_BUTTON_MIDDLE ? 4
+				legacy_s16 flag = event.button.button == SDL_BUTTON_LEFT	 ? MOUSE_LEFT_BUTTON
+								  : event.button.button == SDL_BUTTON_RIGHT	 ? MOUSE_RIGHT_BUTTON
+								  : event.button.button == SDL_BUTTON_MIDDLE ? MOUSE_MIDDLE_BUTTON
 																			 : 0;
 				if (event.button.down) {
 					mouse_buttons |= flag;
@@ -415,6 +469,10 @@ void sdl3_platform_shutdown(void)
 	sdl3_input_shutdown();
 	sdl3_video_shutdown();
 	hires_shutdown();
+
+#ifndef __DJGPP__
+	render_vulkan_shutdown();
+#endif
 	SDL_Quit();
 }
 
@@ -436,7 +494,7 @@ void kb_exit_handler(void)
 legacy_s16 kb_get_key_state(legacy_s16 key)
 {
 	sdl3_platform_pump();
-	if (key <= 0 || (legacy_u32)key >= SDL_arraysize(scancodes)) {
+	if (key <= DOS_SCANCODE_NONE || (legacy_u32)key >= SDL_arraysize(scancodes)) {
 		return 0;
 	}
 	if (keys[scancodes[key]] && !consumed_keys[scancodes[key]]) {
@@ -489,7 +547,7 @@ legacy_s16 kb_check(void)
 void flush_stdin(void)
 {
 	while (kb_read_char() == 0) {
-		SDL_Delay(1);
+		SDL_Delay(KEY_WAIT_POLL_MS);
 	}
 }
 
@@ -515,8 +573,8 @@ void dos_mouse_set_minmax(legacy_s16 minimum_x, legacy_s16 minimum_y, legacy_s16
 {
 	mouse_min_x = minimum_x;
 	mouse_min_y = minimum_y;
-	mouse_max_x = maximum_x > 319 ? 319 : maximum_x;
-	mouse_max_y = maximum_y > 199 ? 199 : maximum_y;
+	mouse_max_x = maximum_x >= MOUSE_SCREEN_WIDTH ? MOUSE_SCREEN_WIDTH - 1 : maximum_x;
+	mouse_max_y = maximum_y >= MOUSE_SCREEN_HEIGHT ? MOUSE_SCREEN_HEIGHT - 1 : maximum_y;
 	mouse_x = clamp_mouse(mouse_x, mouse_min_x, mouse_max_x);
 	mouse_y = clamp_mouse(mouse_y, mouse_min_y, mouse_max_y);
 }
@@ -554,7 +612,7 @@ void dos_mouse_get_state(legacy_s16 *buttons, legacy_s16 *x, legacy_s16 *y)
 
 legacy_u16 dos_mouse_get_button_count(void)
 {
-	return mouse_available ? 3 : 0;
+	return mouse_available ? MOUSE_BUTTON_COUNT : 0;
 }
 
 void dos_joystick_reset_calibration(void)
@@ -579,11 +637,13 @@ legacy_u8 dos_joystick_is_enabled(void)
 legacy_s16 dos_joystick_get_scaled_axis(legacy_u16 axis_index)
 {
 	sdl3_platform_pump();
-	if (joystick_enabled == 0 || joystick == NULL || axis_index >= 2) {
+	if (joystick_enabled == 0 || joystick == NULL || axis_index >= JOYSTICK_AXIS_COUNT) {
 		return 0;
 	}
-	/* The game's analogue steering expects approximately -31 .. +32. */
-	return (legacy_s16)(((legacy_s32)SDL_GetJoystickAxis(joystick, axis_index) * 32) / 32768);
+	/* Preserve the game's analogue range of -32 .. +31 and signed truncation. */
+	return (legacy_s16)(((legacy_s32)SDL_GetJoystickAxis(joystick, axis_index) *
+						 JOYSTICK_GAME_AXIS_SCALE) /
+						(-SDL_JOYSTICK_AXIS_MIN));
 }
 
 legacy_s16 dos_get_joy_flags(void)
@@ -593,38 +653,38 @@ legacy_s16 dos_get_joy_flags(void)
 		return 0;
 	}
 	legacy_s16 flags = 0;
-	legacy_s16 x = SDL_GetJoystickAxis(joystick, 0);
-	legacy_s16 y = SDL_GetJoystickAxis(joystick, 1);
-	if (x < -16384) {
-		flags |= 8;
-	} else if (x >= 16384) {
-		flags |= 4;
+	legacy_s16 x = SDL_GetJoystickAxis(joystick, JOYSTICK_AXIS_X);
+	legacy_s16 y = SDL_GetJoystickAxis(joystick, JOYSTICK_AXIS_Y);
+	if (x < -JOYSTICK_DIRECTION_THRESHOLD) {
+		flags |= INPUT_STEER_LEFT_FLAG;
+	} else if (x >= JOYSTICK_DIRECTION_THRESHOLD) {
+		flags |= INPUT_STEER_RIGHT_FLAG;
 	}
-	if (y < -16384) {
-		flags |= 1;
-	} else if (y >= 16384) {
-		flags |= 2;
+	if (y < -JOYSTICK_DIRECTION_THRESHOLD) {
+		flags |= INPUT_ACCELERATE_FLAG;
+	} else if (y >= JOYSTICK_DIRECTION_THRESHOLD) {
+		flags |= INPUT_BRAKE_FLAG;
 	}
 	if (SDL_GetNumJoystickHats(joystick) > 0) {
-		legacy_u8 hat = SDL_GetJoystickHat(joystick, 0);
+		legacy_u8 hat = SDL_GetJoystickHat(joystick, JOYSTICK_PRIMARY_HAT);
 		if (hat & SDL_HAT_UP) {
-			flags |= 1;
+			flags |= INPUT_ACCELERATE_FLAG;
 		}
 		if (hat & SDL_HAT_DOWN) {
-			flags |= 2;
+			flags |= INPUT_BRAKE_FLAG;
 		}
 		if (hat & SDL_HAT_LEFT) {
-			flags |= 8;
+			flags |= INPUT_STEER_LEFT_FLAG;
 		}
 		if (hat & SDL_HAT_RIGHT) {
-			flags |= 4;
+			flags |= INPUT_STEER_RIGHT_FLAG;
 		}
 	}
-	if (SDL_GetJoystickButton(joystick, 0)) {
-		flags |= 16;
+	if (SDL_GetJoystickButton(joystick, JOYSTICK_PRIMARY_BUTTON)) {
+		flags |= INPUT_PRIMARY_ACTION_FLAG;
 	}
-	if (SDL_GetJoystickButton(joystick, 1)) {
-		flags |= 32;
+	if (SDL_GetJoystickButton(joystick, JOYSTICK_SECONDARY_BUTTON)) {
+		flags |= INPUT_SECONDARY_ACTION_FLAG;
 	}
 	return flags;
 }

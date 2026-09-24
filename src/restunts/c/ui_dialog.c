@@ -10,12 +10,15 @@
 #include "ui_input.h"
 #include "game_input.h"
 #include "ui_dialog_internal.h"
+#ifdef RESTUNTS_SDL3
+/* Native CRT declarations must precede externs.h's legacy library aliases. */
+#include "../platform/sdl3/sdl3.h"
+#endif
 #include "externs.h"
 #include "keyboard.h"
 #include "shape3d.h"
 #ifdef RESTUNTS_SDL3
 #include "shape2d_internal.h"
-#include "../platform/sdl3/sdl3.h"
 #endif
 
 #define RST_ASC_CHAR_UPPER 1

@@ -19,6 +19,7 @@
 #endif
 #include <stdlib.h>
 #include <string.h>
+#include <lz4.h>
 
 #define SHADOW_MAP_SIZE 512
 #define SHADOW_TEXEL_SIZE 8.0F
@@ -57,9 +58,14 @@ static struct SHADOW_CONTACT contact_tiles[SHADOW_CONTACT_TILE_COUNT * SHADOW_CO
 static struct VECTOR camera;
 static legacy_f64 map_left, map_top;
 static legacy_s32 active;
+static legacy_s32 shadow_enabled = 1;
 
 static legacy_s32 cache_collecting, cache_ready;
 static legacy_u32 dynamic_polygons;
+static legacy_u32 *gpu_shadow_static, *gpu_shadow_frame;
+static legacy_u32 gpu_shadow_static_bytes, gpu_shadow_frame_capacity;
+static legacy_u32 gpu_shadow_revision = 1;
+static void gpu_shadow_discard_static(void);
 static legacy_f64 dynamic_light_low[2], dynamic_light_high[2];
 static legacy_f64 dynamic_contact_low[3], dynamic_contact_high[3];
 static void cache_add_polygon(const struct SHAPE3D_HIRES_VECTOR *vertices, legacy_u32 count,
@@ -74,6 +80,22 @@ static legacy_s32 shadow_floor(legacy_f64 value)
 {
 	legacy_s32 result = (legacy_s32)value;
 	return result > value ? result - 1 : result;
+}
+
+void shape3d_shadows_set_enabled(legacy_s32 enabled)
+{
+	shadow_enabled = enabled != 0;
+	if (!shadow_enabled) {
+		/* Static lighting and its GPU revision survive renderer switches.
+		 * Transient casters must be recaptured before shadows resume. */
+		active = 0;
+		dynamic_polygons = 0;
+	}
+}
+
+legacy_s32 shape3d_shadows_enabled(void)
+{
+	return shadow_enabled;
 }
 
 void shape3d_shadows_reset(void)
@@ -99,6 +121,9 @@ void shape3d_shadows_shutdown(void)
 {
 	shape3d_shadows_invalidate();
 	shadow_release_dynamic();
+	free(gpu_shadow_frame);
+	gpu_shadow_frame = NULL;
+	gpu_shadow_frame_capacity = 0;
 }
 
 static void shadow_begin_map(const struct VECTOR *camera_origin)
@@ -155,6 +180,11 @@ static void shadow_begin_map(const struct VECTOR *camera_origin)
 
 void shape3d_shadows_begin(const struct VECTOR *camera_origin)
 {
+	active = 0;
+	dynamic_polygons = 0;
+	if (!shadow_enabled || camera_origin == NULL) {
+		return;
+	}
 	for (legacy_s32 axis = 0; axis < 2; axis++) {
 		dynamic_light_low[axis] = FLT_MAX;
 		dynamic_light_high[axis] = -FLT_MAX;
@@ -162,11 +192,6 @@ void shape3d_shadows_begin(const struct VECTOR *camera_origin)
 	for (legacy_s32 axis = 0; axis < 3; axis++) {
 		dynamic_contact_low[axis] = FLT_MAX;
 		dynamic_contact_high[axis] = -FLT_MAX;
-	}
-	dynamic_polygons = 0;
-	active = 0;
-	if (camera_origin == NULL) {
-		return;
 	}
 	camera = *camera_origin;
 	if (cache_ready) {
@@ -178,7 +203,9 @@ void shape3d_shadows_begin(const struct VECTOR *camera_origin)
 
 legacy_s32 shape3d_shadows_active(void)
 {
-	return active;
+	/* Explicit preloading still captures static geometry while presentation
+	 * shadows are disabled. Runtime samples independently check the setting. */
+	return cache_collecting || (shadow_enabled && active);
 }
 
 legacy_f64 shape3d_shadows_ground_height(void)
@@ -394,7 +421,8 @@ static void contact_triangle(struct SHADOW_VERTEX a, struct SHADOW_VERTEX b, str
 void shape3d_shadows_add_polygon(const struct SHAPE3D_HIRES_VECTOR *vertices, legacy_u32 count,
 								 legacy_s32 grille)
 {
-	if (!active || vertices == NULL || count < 3 || count > 20) {
+	if ((!cache_collecting && (!shadow_enabled || !active)) || vertices == NULL || count < 3 ||
+		count > 20) {
 		return;
 	}
 	if (cache_collecting) {
@@ -544,7 +572,7 @@ legacy_u8 shape3d_shadows_sample_plane(legacy_f64 world_x, legacy_f64 world_y, l
 									   legacy_f64 normal_x, legacy_f64 normal_y,
 									   legacy_f64 normal_z)
 {
-	if (!active || (cache_ready && dynamic_polygons == 0)) {
+	if (!shadow_enabled || !active || (cache_ready && dynamic_polygons == 0)) {
 		return 0;
 	}
 	legacy_f32 x = (legacy_f32)(world_x + camera.x);
@@ -667,6 +695,7 @@ static legacy_u32 cache_hash(legacy_s32 x, legacy_s32 z)
 }
 static void cache_discard_lighting(void)
 {
+	gpu_shadow_discard_static();
 	free(cache_edges);
 	cache_edges = NULL;
 	cache_edge_count = 0;
@@ -891,7 +920,7 @@ static legacy_s32 cache_ray_box(const struct CACHE_NODE *node, const legacy_f64 
 								const legacy_f64 *direction, const legacy_f64 *inverse,
 								legacy_f64 maximum)
 {
-	legacy_f64 near = SHADOW_DEPTH_BIAS;
+	legacy_f64 near_distance = SHADOW_DEPTH_BIAS;
 	for (legacy_s32 axis = 0; axis < 3; axis++) {
 		if (shadow_absolute(direction[axis]) < 0.00001) {
 			if (point[axis] < node->low[axis] || point[axis] > node->high[axis]) {
@@ -905,13 +934,13 @@ static legacy_s32 cache_ray_box(const struct CACHE_NODE *node, const legacy_f64 
 				a = b;
 				b = temporary;
 			}
-			if (a > near) {
-				near = a;
+			if (a > near_distance) {
+				near_distance = a;
 			}
 			if (b < maximum) {
 				maximum = b;
 			}
-			if (near > maximum) {
+			if (near_distance > maximum) {
 				return 0;
 			}
 		}
@@ -1745,6 +1774,7 @@ static void cache_prepare_texture(struct CACHE_TEXTURE *texture)
 }
 static void cache_prepare_runtime(void)
 {
+	gpu_shadow_discard_static();
 	legacy_u32 maximum_edges = CACHE_EDGE_BYTES / sizeof(*cache_edges);
 	for (legacy_u32 index = 0; index < cache_face_count; index++) {
 		struct CACHE_FACE *face = &cache_faces[index];
@@ -1822,10 +1852,11 @@ void shape3d_shadows_bake_end(void)
 	cache_prepare_runtime();
 	cache_ready = 1;
 }
-/* The disk cache is a versioned byte format, never a dump of native structs.
- * Bump the version when lighting or filtering algorithms change. Geometry is
- * rebuilt from trusted track resources; only its matching textures are read. */
-#define CACHE_DISK_VERSION 1U
+/* Container changes must not invalidate identical baked lighting. Geometry is
+ * rebuilt from trusted track resources; only its matching textures are read.
+ * Bump the lighting version when lighting or filtering algorithms change. */
+#define CACHE_LIGHTING_VERSION 1U
+#define CACHE_DISK_VERSION 2U
 #define CACHE_HASH_OFFSET 14695981039346656037ULL
 #define CACHE_HASH_PRIME 1099511628211ULL
 #define CACHE_MAX_DISK_BYTES (CACHE_MAX_BYTES + 8U * 1024U * 1024U)
@@ -1835,6 +1866,9 @@ struct CACHE_STREAM {
 	legacy_u64 checksum;
 	size_t remaining;
 	legacy_s32 failed;
+	legacy_u32 version;
+	legacy_u8 *scratch;
+	size_t scratch_capacity;
 };
 static legacy_u64 cache_hash_bytes(legacy_u64 hash, const void *buffer, size_t count)
 {
@@ -1854,7 +1888,7 @@ static legacy_u64 cache_hash_integer(legacy_u64 hash, legacy_u64 value, legacy_u
 }
 static legacy_u64 cache_geometry_fingerprint(void)
 {
-	legacy_u64 hash = cache_hash_integer(CACHE_HASH_OFFSET, CACHE_DISK_VERSION, 4);
+	legacy_u64 hash = cache_hash_integer(CACHE_HASH_OFFSET, CACHE_LIGHTING_VERSION, 4);
 	const legacy_f64 settings[] = {SHADOW_LIGHT_X,	   SHADOW_LIGHT_Z,			SHADOW_DEPTH_BIAS,
 								   SHADOW_MAX_OPACITY, SHADOW_AMBIENT_OPACITY,	CACHE_TEXEL,
 								   CACHE_COARSE_TEXEL, CACHE_GRILLE_PERIOD,		CACHE_GRILLE_BAR,
@@ -1921,6 +1955,25 @@ static void cache_write_integer(struct CACHE_STREAM *stream, legacy_u64 value, l
 	}
 	cache_write_bytes(stream, bytes, count);
 }
+/* Reuse one temporary buffer for every texture; never allocate a whole-file
+ * compressed or decompressed copy. Valid texture dimensions bound this to 8 MiB. */
+static legacy_s32 cache_reserve_scratch(struct CACHE_STREAM *stream, size_t bytes)
+{
+	if (bytes <= stream->scratch_capacity) {
+		return 1;
+	}
+	size_t capacity = stream->scratch_capacity != 0 ? stream->scratch_capacity : 4096;
+	while (capacity < bytes) {
+		capacity *= 2;
+	}
+	legacy_u8 *scratch = realloc(stream->scratch, capacity);
+	if (scratch == NULL) {
+		return 0;
+	}
+	stream->scratch = scratch;
+	stream->scratch_capacity = capacity;
+	return 1;
+}
 static legacy_u32 cache_texture_bytes(const struct CACHE_TEXTURE *texture)
 {
 	legacy_u32 level = texture->levels - 1;
@@ -1978,10 +2031,26 @@ static legacy_s32 cache_read_texture(struct CACHE_STREAM *stream, struct CACHE_T
 		w = (w + 1) / 2;
 		h = (h + 1) / 2;
 	}
-	if (bytes > stream->remaining || !cache_texture_allocate(texture, width, height, u, v, texel)) {
+	/* Version 1 stores raw texels. Version 2 adds the encoded length: equal
+	 * lengths mean raw data; a smaller length is an independent LZ4 block. */
+	legacy_u32 stored = stream->version >= 2 ? (legacy_u32)cache_read_integer(stream, 4) : bytes;
+	if (stream->failed || stored == 0 || stored > bytes || stored > stream->remaining ||
+		!cache_texture_allocate(texture, width, height, u, v, texel)) {
 		return 0;
 	}
-	cache_read_bytes(stream, texture->pixels, bytes);
+	if (stored == bytes) {
+		cache_read_bytes(stream, texture->pixels, bytes);
+	} else {
+		if (!cache_reserve_scratch(stream, stored)) {
+			return 0;
+		}
+		cache_read_bytes(stream, stream->scratch, stored);
+		if (stream->failed ||
+			LZ4_decompress_safe((const char *)stream->scratch, (char *)texture->pixels,
+								(legacy_s32)stored, (legacy_s32)bytes) != (legacy_s32)bytes) {
+			return 0;
+		}
+	}
 	return !stream->failed;
 }
 static void cache_write_texture(struct CACHE_STREAM *stream, const struct CACHE_TEXTURE *texture)
@@ -1998,7 +2067,19 @@ static void cache_write_texture(struct CACHE_STREAM *stream, const struct CACHE_
 	cache_write_integer(stream, (legacy_u32)texture->texel, 4);
 	cache_write_integer(stream, u_bits, 4);
 	cache_write_integer(stream, v_bits, 4);
-	cache_write_bytes(stream, texture->pixels, cache_texture_bytes(texture));
+	legacy_u32 bytes = cache_texture_bytes(texture);
+	legacy_s32 bound = LZ4_compressBound((legacy_s32)bytes);
+	legacy_s32 compressed = 0;
+	if (!stream->failed && bound > 0 && cache_reserve_scratch(stream, (size_t)bound)) {
+		compressed = LZ4_compress_default((const char *)texture->pixels, (char *)stream->scratch,
+										  (legacy_s32)bytes, bound);
+	}
+	/* Incompressible/tiny blocks and scratch allocation failures keep a raw
+	 * representation. Compression never changes texels or prevents a save. */
+	legacy_u32 stored =
+		compressed > 0 && (legacy_u32)compressed < bytes ? (legacy_u32)compressed : bytes;
+	cache_write_integer(stream, stored, 4);
+	cache_write_bytes(stream, stored < bytes ? stream->scratch : texture->pixels, stored);
 }
 static legacy_s32 cache_load_file(const char *path, const legacy_u8 track_md5[16],
 								  legacy_u64 geometry)
@@ -2012,8 +2093,8 @@ static legacy_s32 cache_load_file(const char *path, const legacy_u8 track_md5[16
 		fclose(file);
 		return 0;
 	}
-	long length = ftell(file);
-	if (length < 52 || length > CACHE_MAX_DISK_BYTES || fseek(file, 0, SEEK_SET) != 0) {
+	legacy_s64 length = ftell(file);
+	if (length < 52 || length > (legacy_s64)CACHE_MAX_DISK_BYTES || fseek(file, 0, SEEK_SET) != 0) {
 		fclose(file);
 		return 0;
 	}
@@ -2021,13 +2102,15 @@ static legacy_s32 cache_load_file(const char *path, const legacy_u8 track_md5[16
 	legacy_u8 magic[8] = {0}, md5[16] = {0};
 	cache_read_bytes(&stream, magic, sizeof(magic));
 	legacy_u32 version = (legacy_u32)cache_read_integer(&stream, 4);
+	stream.version = version;
 	cache_read_bytes(&stream, md5, sizeof(md5));
 	legacy_u64 fingerprint = cache_read_integer(&stream, 8);
 	legacy_u32 faces = (legacy_u32)cache_read_integer(&stream, 4);
 	legacy_u32 pages = (legacy_u32)cache_read_integer(&stream, 4);
-	if (stream.failed || memcmp(magic, "RSLMAP01", 8) != 0 || version != CACHE_DISK_VERSION ||
-		memcmp(md5, track_md5, 16) != 0 || fingerprint != geometry || faces != cache_face_count ||
-		pages > 16384) {
+	legacy_s32 supported = (version == 1 && memcmp(magic, "RSLMAP01", 8) == 0) ||
+						   (version == CACHE_DISK_VERSION && memcmp(magic, "RSLMAP02", 8) == 0);
+	if (stream.failed || !supported || memcmp(md5, track_md5, 16) != 0 || fingerprint != geometry ||
+		faces != cache_face_count || pages > 16384) {
 		goto finished;
 	}
 	for (legacy_u32 i = 0; i < faces; i++) {
@@ -2067,6 +2150,7 @@ static legacy_s32 cache_load_file(const char *path, const legacy_u8 track_md5[16
 	}
 	valid = checksum == stream.checksum;
 finished:
+	free(stream.scratch);
 	if (fclose(file) != 0) {
 		valid = 0;
 	}
@@ -2078,7 +2162,7 @@ finished:
 	cache_prepare_runtime();
 	cache_ready = 1;
 	active = 0;
-	return 1;
+	return (legacy_s32)version;
 }
 static FILE *cache_create_temporary(const char *path, char **temporary)
 {
@@ -2093,16 +2177,17 @@ static FILE *cache_create_temporary(const char *path, char **temporary)
 	}
 	for (legacy_u32 attempt = 0; attempt < 16; attempt++) {
 #if defined(_WIN32)
-		unsigned long process = GetCurrentProcessId();
+		legacy_u32 process = GetCurrentProcessId();
 #else
-		unsigned long process = (unsigned long)getpid();
+		legacy_u32 process = (legacy_u32)getpid();
 #endif
-		snprintf(name, length + 64, "%s.tmp-%lu-%lu", path, process, (unsigned long)++sequence);
+		snprintf(name, length + 64, "%s.tmp-%" LEGACY_PRIu32 "-%" LEGACY_PRIu32, path, process,
+				 ++sequence);
 #if defined(_WIN32)
-		int descriptor = _open(name, _O_BINARY | _O_WRONLY | _O_CREAT | _O_EXCL | _O_NOINHERIT,
-							   _S_IREAD | _S_IWRITE);
+		legacy_s32 descriptor = _open(
+			name, _O_BINARY | _O_WRONLY | _O_CREAT | _O_EXCL | _O_NOINHERIT, _S_IREAD | _S_IWRITE);
 #else
-		int descriptor = open(name, O_WRONLY | O_CREAT | O_EXCL, 0600);
+		legacy_s32 descriptor = open(name, O_WRONLY | O_CREAT | O_EXCL, 0600);
 #endif
 		if (descriptor < 0) {
 			if (errno == EEXIST) {
@@ -2138,7 +2223,7 @@ static void cache_save_file(const char *path, const legacy_u8 track_md5[16], leg
 		return;
 	}
 	struct CACHE_STREAM stream = {file, CACHE_HASH_OFFSET, 0, 0};
-	cache_write_bytes(&stream, "RSLMAP01", 8);
+	cache_write_bytes(&stream, "RSLMAP02", 8);
 	cache_write_integer(&stream, CACHE_DISK_VERSION, 4);
 	cache_write_bytes(&stream, track_md5, 16);
 	cache_write_integer(&stream, geometry, 8);
@@ -2157,6 +2242,7 @@ static void cache_save_file(const char *path, const legacy_u8 track_md5[16], leg
 	legacy_u64 checksum = stream.checksum;
 	cache_write_integer(&stream, checksum, 8);
 	legacy_s32 valid = !stream.failed;
+	free(stream.scratch);
 	if (fflush(file) != 0) {
 		valid = 0;
 	}
@@ -2187,7 +2273,13 @@ legacy_s32 shape3d_shadows_bake_end_cached(const char *path, const legacy_u8 tra
 		return 0;
 	}
 	legacy_u64 geometry = cache_geometry_fingerprint();
-	if (cache_load_file(path, track_md5, geometry)) {
+	legacy_s32 version = cache_load_file(path, track_md5, geometry);
+	if (version != 0) {
+		/* A validated old cache already contains the right lighting. Upgrade
+		 * it atomically without a bake; a read-only path still remains a hit. */
+		if ((legacy_u32)version < CACHE_DISK_VERSION) {
+			cache_save_file(path, track_md5, geometry);
+		}
 		return 1;
 	}
 	shape3d_shadows_bake_end();
@@ -2395,7 +2487,7 @@ static const struct CACHE_PAGE *cache_ground_page(legacy_f64 x, legacy_f64 z, le
 static legacy_u8 cache_sample(legacy_f64 x, legacy_f64 y, legacy_f64 z, legacy_f64 footprint,
 							  legacy_u32 *hint, legacy_f64 fade)
 {
-	if (!active || !cache_ready) {
+	if (!shadow_enabled || !active || !cache_ready) {
 		return 0;
 	}
 	legacy_f64 point[3] = {x + camera.x, y + camera.y, z + camera.z};
@@ -2457,6 +2549,9 @@ legacy_u8 shape3d_shadows_sample_cached(legacy_f64 x, legacy_f64 y, legacy_f64 z
 legacy_u8 shape3d_shadows_sample_cached_view(legacy_f64 x, legacy_f64 y, legacy_f64 z,
 											 legacy_f64 footprint, legacy_u32 *hint)
 {
+	if (!shadow_enabled || !active || !cache_ready) {
+		return 0;
+	}
 	/* Keep the existing view range while retaining the entire track's bake.
 	 * Reject distant receivers before looking up pages or walking the BSP. */
 	legacy_f64 dx = shadow_absolute(x + SHADOW_LIGHT_X * y);
@@ -2470,6 +2565,273 @@ legacy_u8 shape3d_shadows_sample_cached_view(legacy_f64 x, legacy_f64 y, legacy_
 			? 1
 			: (SHADOW_MAP_HALF_EXTENT - distance) / (SHADOW_MAP_HALF_EXTENT - SHADOW_FADE_START);
 	return cache_sample(x, y, z, footprint, hint, fade);
+}
+
+/* The GPU cache is an explicitly packed array of 32-bit words. No host struct
+ * padding, pointer values or fp64 support enter the shader ABI. Keep these
+ * strides and the field layout in shaders/shadows.glsl in sync. */
+#define GPU_SHADOW_HEADER_WORDS 16U
+#define GPU_SHADOW_FACE_WORDS 20U
+#define GPU_SHADOW_NODE_WORDS 12U
+#define GPU_SHADOW_PAGE_WORDS 4U
+#define GPU_SHADOW_EDGE_WORDS 5U
+#define GPU_SHADOW_TEXTURE_WORDS 28U
+#define GPU_SHADOW_FRAME_WORDS 32U
+#define GPU_SHADOW_MAX_BYTES (256U * 1024U * 1024U)
+
+static legacy_u32 gpu_shadow_float(legacy_f64 value)
+{
+	legacy_f32 converted = (legacy_f32)value;
+	legacy_u32 bits;
+	memcpy(&bits, &converted, sizeof(bits));
+	return bits;
+}
+
+static void gpu_shadow_discard_static(void)
+{
+	free(gpu_shadow_static);
+	gpu_shadow_static = NULL;
+	gpu_shadow_static_bytes = 0;
+	if (++gpu_shadow_revision == 0) {
+		gpu_shadow_revision = 1;
+	}
+}
+
+static size_t gpu_shadow_texture_words(const struct CACHE_TEXTURE *texture)
+{
+	return GPU_SHADOW_TEXTURE_WORDS +
+		   (texture->pixels != NULL ? (cache_texture_bytes(texture) + 3U) / 4U : 0);
+}
+
+static legacy_u32 gpu_shadow_write_texture(legacy_u32 *words, legacy_u32 *cursor,
+										   const struct CACHE_TEXTURE *texture)
+{
+	legacy_u32 start = *cursor;
+	legacy_u32 *target = words + start;
+	*cursor += GPU_SHADOW_TEXTURE_WORDS;
+	if (texture->pixels == NULL) {
+		return start;
+	}
+	target[0] = texture->width;
+	target[1] = texture->height;
+	target[2] = texture->levels;
+	target[3] = (legacy_u32)texture->uniform;
+	target[4] = gpu_shadow_float(texture->u);
+	target[5] = gpu_shadow_float(texture->v);
+	target[6] = gpu_shadow_float(texture->texel);
+	target[7] = gpu_shadow_float(texture->inverse_texel);
+	target[8] = *cursor;
+	for (legacy_u32 i = 0; i < texture->levels; i++) {
+		target[9 + i] = texture->offsets[i];
+	}
+	legacy_u32 bytes = cache_texture_bytes(texture);
+	/* Pack byte significance explicitly instead of assuming host endianness. */
+	for (legacy_u32 i = 0; i < bytes; i++) {
+		words[*cursor + i / 4] |= (legacy_u32)texture->pixels[i] << ((i & 3U) * 8);
+	}
+	*cursor += (bytes + 3U) / 4U;
+	return start;
+}
+
+static legacy_s32 gpu_shadow_build_static(void)
+{
+	size_t edge_count = 0;
+	size_t words = GPU_SHADOW_HEADER_WORDS + (size_t)cache_face_count * GPU_SHADOW_FACE_WORDS +
+				   (size_t)cache_node_count * GPU_SHADOW_NODE_WORDS + cache_face_count +
+				   (size_t)cache_page_count * GPU_SHADOW_PAGE_WORDS + cache_hash_capacity;
+	for (legacy_u32 i = 0; i < cache_face_count; i++) {
+		const struct CACHE_FACE *face = &cache_faces[i];
+		edge_count += face->rectangular ? 0 : face->count;
+		words += gpu_shadow_texture_words(&face->texture);
+	}
+	words += edge_count * GPU_SHADOW_EDGE_WORDS;
+	for (legacy_u32 i = 0; i < cache_page_count; i++) {
+		words += gpu_shadow_texture_words(&cache_pages[i].texture);
+	}
+	if (words > GPU_SHADOW_MAX_BYTES / sizeof(legacy_u32)) {
+		return 0;
+	}
+	legacy_u32 *data = calloc(words, sizeof(*data));
+	if (data == NULL) {
+		return 0;
+	}
+	legacy_u32 cursor = GPU_SHADOW_HEADER_WORDS;
+	data[0] = cursor;
+	data[1] = cache_face_count;
+	cursor += cache_face_count * GPU_SHADOW_FACE_WORDS;
+	data[2] = cursor;
+	data[3] = cache_node_count;
+	cursor += cache_node_count * GPU_SHADOW_NODE_WORDS;
+	data[4] = cursor;
+	cursor += cache_face_count;
+	data[5] = cursor;
+	data[6] = cache_page_count;
+	cursor += cache_page_count * GPU_SHADOW_PAGE_WORDS;
+	data[7] = cursor;
+	data[8] = cache_hash_capacity;
+	cursor += cache_hash_capacity;
+	data[9] = cursor;
+	cursor += (legacy_u32)edge_count * GPU_SHADOW_EDGE_WORDS;
+	legacy_u32 edge_cursor = data[9];
+	for (legacy_u32 i = 0; i < cache_face_count; i++) {
+		const struct CACHE_FACE *face = &cache_faces[i];
+		legacy_u32 *target = data + data[0] + i * GPU_SHADOW_FACE_WORDS;
+		for (legacy_u32 axis = 0; axis < 3; axis++) {
+			target[axis] = gpu_shadow_float(face->normal[axis]);
+			target[4 + axis] = gpu_shadow_float(face->low[axis]);
+			target[7 + axis] = gpu_shadow_float(face->high[axis]);
+		}
+		target[3] = gpu_shadow_float(face->plane);
+		target[10] = (legacy_u32)face->u_axis;
+		target[11] = (legacy_u32)face->v_axis;
+		target[12] = (legacy_u32)face->axis;
+		target[13] = (legacy_u32)face->axial;
+		target[14] = (legacy_u32)face->rectangular;
+		target[15] = edge_cursor;
+		target[16] = face->count;
+		target[17] = gpu_shadow_write_texture(data, &cursor, &face->texture);
+		if (!face->rectangular) {
+			for (legacy_u32 vertex = 0; vertex < face->count; vertex++) {
+				const struct SHADOW_VERTEX *a = &face->vertices[vertex];
+				const struct SHADOW_VERTEX *b = &face->vertices[(vertex + 1) % face->count];
+				legacy_f64 u = cache_component(a, face->u_axis);
+				legacy_f64 v = cache_component(a, face->v_axis);
+				legacy_f64 du = cache_component(b, face->u_axis) - u;
+				legacy_f64 dv = cache_component(b, face->v_axis) - v;
+				data[edge_cursor++] = gpu_shadow_float(u);
+				data[edge_cursor++] = gpu_shadow_float(v);
+				data[edge_cursor++] = gpu_shadow_float(du);
+				data[edge_cursor++] = gpu_shadow_float(dv);
+				data[edge_cursor++] = gpu_shadow_float(CACHE_RECEIVER_TOLERANCE *
+													   (shadow_absolute(du) + shadow_absolute(dv)));
+			}
+		}
+	}
+	for (legacy_u32 i = 0; i < cache_node_count; i++) {
+		const struct CACHE_NODE *node = &cache_nodes[i];
+		legacy_u32 *target = data + data[2] + i * GPU_SHADOW_NODE_WORDS;
+		for (legacy_u32 axis = 0; axis < 3; axis++) {
+			target[axis] = gpu_shadow_float(node->low[axis]);
+			target[3 + axis] = gpu_shadow_float(node->high[axis]);
+		}
+		target[6] = gpu_shadow_float(node->split);
+		target[7] = node->first;
+		target[8] = node->count;
+		target[9] = node->left;
+		target[10] = node->right;
+		target[11] = (legacy_u32)node->axis;
+	}
+	if (cache_face_count != 0) {
+		memcpy(data + data[4], cache_indices, (size_t)cache_face_count * sizeof(*data));
+	}
+	for (legacy_u32 i = 0; i < cache_page_count; i++) {
+		const struct CACHE_PAGE *page = &cache_pages[i];
+		legacy_u32 *target = data + data[5] + i * GPU_SHADOW_PAGE_WORDS;
+		target[0] = (legacy_u32)page->x;
+		target[1] = (legacy_u32)page->z;
+		target[2] = gpu_shadow_write_texture(data, &cursor, &page->texture);
+	}
+	if (cache_hash_capacity != 0) {
+		memcpy(data + data[7], cache_page_hash, (size_t)cache_hash_capacity * sizeof(*data));
+	}
+	gpu_shadow_static = data;
+	gpu_shadow_static_bytes = (legacy_u32)(words * sizeof(*data));
+	return 1;
+}
+
+static void gpu_shadow_rectangle(legacy_f64 low_x, legacy_f64 low_z, legacy_f64 high_x,
+								 legacy_f64 high_z, legacy_u32 *target)
+{
+	legacy_f64 left = (low_x - map_left) / SHADOW_TEXEL_SIZE;
+	legacy_f64 top = (low_z - map_top) / SHADOW_TEXEL_SIZE;
+	legacy_f64 right = (high_x - map_left) / SHADOW_TEXEL_SIZE;
+	legacy_f64 bottom = (high_z - map_top) / SHADOW_TEXEL_SIZE;
+	if (right < 0 || bottom < 0 || left >= SHADOW_MAP_SIZE || top >= SHADOW_MAP_SIZE) {
+		return;
+	}
+	legacy_s32 x0 = left > 1 ? shadow_floor(left) - 1 : 0;
+	legacy_s32 y0 = top > 1 ? shadow_floor(top) - 1 : 0;
+	legacy_s32 x1 = right < SHADOW_MAP_SIZE - 2 ? shadow_floor(right) + 1 : SHADOW_MAP_SIZE - 1;
+	legacy_s32 y1 = bottom < SHADOW_MAP_SIZE - 2 ? shadow_floor(bottom) + 1 : SHADOW_MAP_SIZE - 1;
+	target[0] = (legacy_u32)x0;
+	target[1] = (legacy_u32)y0;
+	target[2] = (legacy_u32)(x1 - x0 + 1);
+	target[3] = (legacy_u32)(y1 - y0 + 1);
+}
+
+legacy_s32 shape3d_shadows_gpu_export(struct SHAPE3D_SHADOWS_GPU_DATA *output)
+{
+	static const legacy_u32 empty_static[GPU_SHADOW_HEADER_WORDS] = {0};
+	if (output == NULL) {
+		return 0;
+	}
+	memset(output, 0, sizeof(*output));
+	if ((shadow_enabled && active && !cache_ready) || sizeof(legacy_f32) != 4 ||
+		sizeof(legacy_u32) != 4) {
+		return 0;
+	}
+	if (cache_ready && gpu_shadow_static == NULL && !gpu_shadow_build_static()) {
+		return 0;
+	}
+	legacy_u32 frame[GPU_SHADOW_FRAME_WORDS] = {0};
+	frame[0] = shadow_enabled && active && cache_ready;
+	frame[1] = frame[0] && dynamic_polygons != 0;
+	frame[2] = gpu_shadow_float(camera.x);
+	frame[3] = gpu_shadow_float(camera.y);
+	frame[4] = gpu_shadow_float(camera.z);
+	frame[5] = gpu_shadow_float(map_left);
+	frame[6] = gpu_shadow_float(map_top);
+	legacy_u32 words = GPU_SHADOW_FRAME_WORDS;
+	if (frame[1]) {
+		for (legacy_u32 axis = 0; axis < 2; axis++) {
+			frame[7 + axis] = gpu_shadow_float(dynamic_light_low[axis]);
+			frame[9 + axis] = gpu_shadow_float(dynamic_light_high[axis]);
+		}
+		for (legacy_u32 axis = 0; axis < 3; axis++) {
+			frame[11 + axis] = gpu_shadow_float(dynamic_contact_low[axis]);
+			frame[14 + axis] = gpu_shadow_float(dynamic_contact_high[axis]);
+		}
+		gpu_shadow_rectangle(dynamic_light_low[0], dynamic_light_low[1], dynamic_light_high[0],
+							 dynamic_light_high[1], frame + 17);
+		frame[21] = words;
+		words += frame[19] * frame[20];
+		gpu_shadow_rectangle(dynamic_contact_low[0], dynamic_contact_low[2],
+							 dynamic_contact_high[0], dynamic_contact_high[2], frame + 22);
+		frame[26] = words;
+		words += frame[24] * frame[25] * 2;
+	}
+	if (words > gpu_shadow_frame_capacity) {
+		legacy_u32 *replacement = realloc(gpu_shadow_frame, (size_t)words * sizeof(*replacement));
+		if (replacement == NULL) {
+			return 0;
+		}
+		gpu_shadow_frame = replacement;
+		gpu_shadow_frame_capacity = words;
+	}
+	memcpy(gpu_shadow_frame, frame, sizeof(frame));
+	for (legacy_u32 y = 0; y < frame[20]; y++) {
+		for (legacy_u32 x = 0; x < frame[19]; x++) {
+			legacy_u32 index = (frame[18] + y) * SHADOW_MAP_SIZE + frame[17] + x;
+			gpu_shadow_frame[frame[21] + y * frame[19] + x] = gpu_shadow_float(
+				light_generations[index] == generation ? light_map[index].height : -FLT_MAX);
+		}
+	}
+	for (legacy_u32 y = 0; y < frame[25]; y++) {
+		for (legacy_u32 x = 0; x < frame[24]; x++) {
+			legacy_u32 index = (frame[23] + y) * SHADOW_MAP_SIZE + frame[22] + x;
+			legacy_u32 target = frame[26] + (y * frame[24] + x) * 2;
+			legacy_s32 valid = contact_generations[index] == generation;
+			gpu_shadow_frame[target] = gpu_shadow_float(valid ? contact_map[index].low : FLT_MAX);
+			gpu_shadow_frame[target + 1] =
+				gpu_shadow_float(valid ? contact_map[index].high : -FLT_MAX);
+		}
+	}
+	output->static_words = cache_ready ? gpu_shadow_static : empty_static;
+	output->static_bytes = cache_ready ? gpu_shadow_static_bytes : sizeof(empty_static);
+	output->static_revision = gpu_shadow_revision;
+	output->frame_words = gpu_shadow_frame;
+	output->frame_bytes = words * sizeof(*gpu_shadow_frame);
+	return 1;
 }
 
 #endif

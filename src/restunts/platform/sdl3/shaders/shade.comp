@@ -1,0 +1,160 @@
+#version 450
+#extension GL_GOOGLE_include_directive : require
+
+layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
+
+layout(std430, set = 0, binding = 0) readonly buffer StaticLighting {
+	uint shadowStatic[];
+};
+layout(std430, set = 0, binding = 1) readonly buffer FrameLighting {
+	uint shadowFrame[];
+};
+
+struct Pixel {
+	uint color;
+	float inverse_depth;
+	uint family;
+};
+layout(std430, set = 1, binding = 0) buffer RasterPixels {
+	Pixel pixels[];
+};
+layout(std140, set = 2, binding = 0) uniform Parameters {
+	ivec4 bounds;
+	vec4 inverseView[3];
+	vec4 projection;
+	float footprintScale;
+	float ground;
+	uint shadowActive;
+	uint shadowBaked;
+};
+
+#include "shadows.glsl"
+
+uint pixelOffset(ivec2 position)
+{
+	return uint(position.y - bounds.y) * 1280u + uint(position.x);
+}
+
+vec3 receiverRay(vec2 position)
+{
+	vec3 view = vec3((position - projection.zw) * projection.xy, 1.0);
+	return vec3(dot(inverseView[0].xyz, view), dot(inverseView[1].xyz, view),
+				dot(inverseView[2].xyz, view));
+}
+
+uint shadeReceiver(vec3 ray, float inverseDepth, float depthVariation, float sampleScale)
+{
+	if (inverseDepth > 0.0) {
+		float depth = 1.0 / inverseDepth;
+		float footprint = depth * (footprintScale * sampleScale + depthVariation * depth);
+		return sampleCachedView(ray * depth, footprint);
+	}
+	if (ground >= 0.0 || ray.y >= -0.0001) {
+		return 0u;
+	}
+	float depth = ground / ray.y;
+	float footprint = depth * footprintScale * sampleScale;
+	float rayStepY = inverseView[1].y * projection.y;
+	footprint += depth * abs(rayStepY / ray.y) * 2.0 * sampleScale;
+	return sampleCachedView(ray * depth, footprint);
+}
+
+void shadowPixel(ivec2 position, uint opacity)
+{
+	if (opacity != 0u) {
+		uint offset = pixelOffset(position);
+		pixels[offset].color = (pixels[offset].color & 0x00ffffffu) | (opacity << 24u);
+	}
+}
+
+/* Share filtered samples only within one continuous receiver. This is the
+ * same 4x4 -> 2x2 -> pixel refinement used by the CPU shadow pass. */
+bool sharedReceiver(ivec2 position, int size, float tolerance,
+					out float average, out float variation)
+{
+	average = 0.0;
+	variation = 0.0;
+	if (position.x + size > bounds.z || position.y + size > bounds.w) {
+		return false;
+	}
+	uint offset = pixelOffset(position);
+	uint family = pixels[offset].family;
+	float minimum = pixels[offset].inverse_depth;
+	float maximum = minimum;
+	for (int y = 0; y < size; y++) {
+		for (int x = 0; x < size; x++) {
+			uint sampleOffset = offset + uint(y) * 1280u + uint(x);
+			if (pixels[sampleOffset].family != family) {
+				return false;
+			}
+			if (family != 0u) {
+				float depth = pixels[sampleOffset].inverse_depth;
+				average += depth;
+				minimum = min(minimum, depth);
+				maximum = max(maximum, depth);
+			}
+		}
+	}
+	if (family == 0u) {
+		return true;
+	}
+	average /= float(size * size);
+	variation = maximum - minimum;
+	return variation <= minimum * tolerance;
+}
+
+void shadowBlock(ivec2 position, int size, uint opacity)
+{
+	if (opacity == 0u) {
+		return;
+	}
+	for (int y = 0; y < size; y++) {
+		for (int x = 0; x < size; x++) {
+			shadowPixel(position + ivec2(x, y), opacity);
+		}
+	}
+}
+
+void shadeBlock2(ivec2 position)
+{
+	float average, variation;
+	if (sharedReceiver(position, 2, 0.01, average, variation)) {
+		uint opacity = shadeReceiver(receiverRay(vec2(position) + vec2(1.0)),
+									 average, variation, 1.0);
+		shadowBlock(position, 2, opacity);
+		return;
+	}
+	for (int y = 0; y < 2; y++) {
+		for (int x = 0; x < 2; x++) {
+			ivec2 samplePosition = position + ivec2(x, y);
+			if (samplePosition.x >= bounds.z || samplePosition.y >= bounds.w) {
+				continue;
+			}
+			uint offset = pixelOffset(samplePosition);
+			float depth = pixels[offset].family != 0u ? pixels[offset].inverse_depth : 0.0;
+			uint opacity = shadeReceiver(receiverRay(vec2(samplePosition) + vec2(0.5)),
+										 depth, 0.0, 1.0);
+			shadowPixel(samplePosition, opacity);
+		}
+	}
+}
+
+void main()
+{
+	ivec2 position = bounds.xy + ivec2(gl_GlobalInvocationID.xy) * 4;
+	if (position.x >= bounds.z || position.y >= bounds.w || shadowActive == 0u) {
+		return;
+	}
+	float average, variation;
+	if (sharedReceiver(position, 4, 0.03, average, variation)) {
+		uint opacity = shadeReceiver(receiverRay(vec2(position) + vec2(2.0)),
+									 average, variation, 2.0);
+		shadowBlock(position, 4, opacity);
+		return;
+	}
+	for (int y = 0; y < 4 && position.y + y < bounds.w; y += 2) {
+		for (int x = 0; x < 4 && position.x + x < bounds.z; x += 2) {
+			shadeBlock2(position + ivec2(x, y));
+		}
+	}
+}

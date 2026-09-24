@@ -214,7 +214,7 @@ static void destroy_panorama_fixtures(void)
 
 static struct MATRIX roll_matrix(legacy_s32 angle)
 {
-	double radians = angle * (2.0 * SDL_PI_D / 1024.0);
+	legacy_f64 radians = angle * (2.0 * SDL_PI_D / 1024.0);
 	legacy_s16 cosine = SDL_lround(SDL_cos(radians) * TRIG_FIXED_ONE);
 	legacy_s16 sine = SDL_lround(SDL_sin(radians) * TRIG_FIXED_ONE);
 	struct MATRIX rotation = {0};

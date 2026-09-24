@@ -30,6 +30,17 @@ On Linux, replace lib/libnuked-opl2.so. On Windows, replace bin/nuked-opl2.dll.
 Use the same CPU architecture and compatible public API and structure layouts.
 The game does not check library signatures or prohibit modified replacements.
 
+LZ4
+---
+Copyright (c) 2011-2023, Yann Collet.
+https://github.com/lz4/lz4
+Upstream version: v1.10.0.
+
+The game, renderer dumper, and shadow-cache regression statically link LZ4's
+block codec to compress and read lossless lighting caches. The codec uses the
+BSD 2-Clause license; see share/licenses/restunts/LZ4-LICENSE (or LICENSE beside
+its source). No separate LZ4 shared library is needed at runtime.
+
 SDL3
 ----
 Bundled SDL3 builds include SDL's zlib license in

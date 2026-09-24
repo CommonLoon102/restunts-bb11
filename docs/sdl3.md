@@ -167,8 +167,19 @@ pixel edges, and resizing adds black borders to retain that aspect. Renderer dum
 images retain the original 320x200 pixel data for parity checks. With SuperSight
 on, the 3D scene and both car-selection previews render at 1280x800. Their geometry
 is projected and rasterized at the higher resolution; menu artwork, dashboard,
-and replay controls keep their original pixel detail. F12 works in both car
-selection screens and the track preview as well as driving and replay views.
+and replay controls keep their original pixel detail. F12 and Shift+F12 work in
+both car-selection screens and the track preview as well as driving and replay
+views. F12 selects CPU SuperSight without shadows; Shift+F12 selects it with shadows.
+Press the current CPU mode's shortcut again to return to the classic renderer, or
+the other shortcut to switch shadow mode. Static lighting stays cached while
+shadows are off, and per-frame shadow capture and shading are skipped.
+On Windows and Linux, F10 selects Vulkan with the same enhanced quality settings.
+Pressing F10 again restores the original renderer; F12 or Shift+F12 switches
+directly to the corresponding CPU mode. Vulkan always includes shadows. The
+backend is probed once at startup, and unsupported graphics devices or drivers
+make F10 a no-op. F10 also works in the nighttime intro and opponent menu; in the track editor
+it retains its original category-selection meaning. See the
+[Vulkan renderer guide](vulkan.md) for implementation details and diagnostics.
 Enhanced driving and replay scenes use [AI-refined skybox PNGs](skyboxes/README.md)
 at four times the original width and height. Track selector previews use these same PNGs
 when SuperSight is active. Runtime installs include the required
@@ -182,7 +193,9 @@ available:
 - **Alt+Enter** toggles desktop fullscreen, preserving the 4:3 image and restoring
   the previous window size when leaving fullscreen. Keypad Enter also works.
 - **F11** toggles the frame-rate counter, including in both car-selection
-  screens; **F12** toggles SuperSight.
+  screens; **F12** toggles CPU SuperSight without shadows and **Shift+F12**
+  toggles CPU SuperSight with shadows. On Windows and Linux, **F10** toggles
+  Vulkan, preserving SuperSight's resolution, shadows, and draw distance.
 - Hold **Q** to rewind a live race; release it to resume from that point.
 - **T** switches between the player and opponent or selected ghost view.
 - **Escape** leaves driving or replay playback; closing the desktop window exits

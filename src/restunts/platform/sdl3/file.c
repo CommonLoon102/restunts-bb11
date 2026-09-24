@@ -393,7 +393,7 @@ legacy_s32 dos_file_tell(legacy_u16 handle)
 {
 	FILE *file = get_file(handle);
 	/* Preserve the full ftell result until its legacy-range check. */
-	long position = file != NULL ? ftell(file) : -1;
+	legacy_s64 position = file != NULL ? ftell(file) : -1;
 	if (position < 0 || position > 2147483647L) {
 		file_error = 1;
 		return -1;

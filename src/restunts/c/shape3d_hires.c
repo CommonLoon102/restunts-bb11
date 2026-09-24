@@ -9,6 +9,8 @@
 #include "hires.h"
 #include "projection.h"
 #include "render_workers.h"
+#include "render_vulkan.h"
+#include "render_vulkan_scene.h"
 #include "shape3d_internal.h"
 #include "shape3d_shadows.h"
 
@@ -73,6 +75,8 @@ static size_t command_capacity;
 static size_t command_count;
 static legacy_u32 command_area;
 static legacy_s32 batching;
+/* Capture runs on the main thread before any raster workers are scheduled. */
+static legacy_s32 vulkan_capture;
 
 static void reserve_primitives(legacy_u32 index)
 {
@@ -535,6 +539,12 @@ static void paint_pixel(legacy_s32 x, legacy_s32 y, legacy_f64 inverse_z,
 	if (context != NULL && (y < context->top || y >= context->bottom)) {
 		return;
 	}
+	if (vulkan_capture) {
+		render_vulkan_scene_span(x, x + 1, y, inverse_z, 0, paint->family, paint->depth_mode,
+								 paint->color, paint->alternate, paint->pattern, paint->mode,
+								 paint->depth_test);
+		return;
+	}
 	legacy_u16 color = paint->color;
 	if (paint->mode != 0) {
 		legacy_u32 bit = ((y & 1) == 0 ? 8U : 0U) + 7U - (x & 7);
@@ -763,7 +773,11 @@ static void fill_polygon(const struct SHAPE3D_HIRES_POINT *points, legacy_u32 co
 				last->x >= HIRES_WIDTH ? HIRES_WIDTH : ceil_coordinate(last->x - 0.5);
 			legacy_f64 depth_step = (last->inverse_z - first->inverse_z) / (last->x - first->x);
 			legacy_f64 inverse_z = first->inverse_z + (left + 0.5 - first->x) * depth_step;
-			if (paint->context != NULL) {
+			if (vulkan_capture) {
+				render_vulkan_scene_span(left, right, y, inverse_z, depth_step, paint->family,
+										 paint->depth_mode, paint->color, paint->alternate,
+										 paint->pattern, paint->mode, paint->depth_test);
+			} else if (paint->context != NULL) {
 				hires_raster_span(paint->context, left, right, y, inverse_z, depth_step,
 								  paint->family, paint->depth_mode, paint->color, paint->alternate,
 								  paint->pattern, paint->mode, paint->depth_test);
@@ -1333,20 +1347,8 @@ static void shade_band(void *argument, legacy_s32 band)
 	batch->added[band] = added;
 }
 
-static legacy_s32 prepare_shadow_batch(struct HIRES_SHADOW_BATCH *batch)
+static legacy_s32 prepare_shadow_view(struct HIRES_SHADOW_BATCH *batch)
 {
-	if (!shape3d_shadows_active() || projection_focal_length_x == 0 ||
-		projection_focal_length_y == 0 || !hires_shadow_prepare()) {
-		return 0;
-	}
-	if (!rendered_depth_valid || rendered_generation != hires_generation()) {
-		hires_depth_begin(0, HIRES_WIDTH, 0, HIRES_HEIGHT);
-		rendered_depth_valid = 1;
-		rendered_generation = hires_generation();
-	}
-	if (!hires_raster_prepare(&batch->target)) {
-		return 0;
-	}
 	/* Invert the actual fixed-point view matrix, including its rounding.
 	 * A transpose alone drifts far enough to cause acne on distant slopes. */
 	legacy_f64 view[3][3];
@@ -1384,6 +1386,23 @@ static legacy_s32 prepare_shadow_batch(struct HIRES_SHADOW_BATCH *batch)
 	return 1;
 }
 
+static legacy_s32 prepare_shadow_batch(struct HIRES_SHADOW_BATCH *batch)
+{
+	if (!shape3d_shadows_active() || projection_focal_length_x == 0 ||
+		projection_focal_length_y == 0 || !hires_shadow_prepare()) {
+		return 0;
+	}
+	if (!rendered_depth_valid || rendered_generation != hires_generation()) {
+		hires_depth_begin(0, HIRES_WIDTH, 0, HIRES_HEIGHT);
+		rendered_depth_valid = 1;
+		rendered_generation = hires_generation();
+	}
+	if (!hires_raster_prepare(&batch->target)) {
+		return 0;
+	}
+	return prepare_shadow_view(batch);
+}
+
 static void finish_shadow_batch(struct HIRES_SHADOW_BATCH *batch)
 {
 	legacy_u32 added = 0;
@@ -1417,6 +1436,49 @@ static void render_shaded_band(void *argument, legacy_s32 band)
 	shade_band(batch->lighting, band);
 }
 
+/* Only coverage generation remains on the CPU. Vulkan consumes the same
+ * ordered spans and sample locations, including round lines, decals and wheels.
+ * A failed capture or submission leaves this target untouched for CPU replay. */
+static legacy_s32 render_vulkan_batch(const struct HIRES_RASTER_TARGET *target)
+{
+	if (!render_vulkan_enabled()) {
+		return 0;
+	}
+	struct RENDER_VULKAN_VIEW view = {0};
+	view.shadow_active = shape3d_shadows_active();
+	view.shadow_baked = shape3d_shadows_baked();
+	if (view.shadow_active) {
+		struct HIRES_SHADOW_BATCH lighting;
+		if (!view.shadow_baked || projection_focal_length_x == 0 ||
+			projection_focal_length_y == 0 || !prepare_shadow_view(&lighting)) {
+			return 0;
+		}
+		for (legacy_s32 row = 0; row < 3; row++) {
+			for (legacy_s32 column = 0; column < 3; column++) {
+				view.inverse_view[row][column] = (legacy_f32)lighting.inverse_view[row][column];
+			}
+		}
+		view.step_x = 1.0f / (projection_focal_length_x * HIRES_SCALE);
+		view.step_y = -1.0f / (projection_focal_length_y * HIRES_SCALE);
+		view.center_x = (legacy_s16)projection_center_x * HIRES_SCALE;
+		view.center_y = (legacy_s16)projection_center_y * HIRES_SCALE;
+		view.footprint_scale = (legacy_f32)lighting.footprint_scale;
+		view.ground = (legacy_f32)shape3d_shadows_ground_height();
+	}
+	if (!render_vulkan_scene_begin(target)) {
+		return 0;
+	}
+	struct HIRES_RASTER_CONTEXT context = {target, target->top, target->bottom, 0};
+	vulkan_capture = 1;
+	for (size_t index = 0; index < command_count; index++) {
+		const struct HIRES_COMMAND *entry = &commands[index];
+		render_primitive(entry->index, entry->type, entry->color, entry->second_color,
+						 entry->third_color, entry->pattern_type, entry->pattern, &context);
+	}
+	vulkan_capture = 0;
+	return render_vulkan_scene_end(&view);
+}
+
 legacy_s32 shape3d_hires_batch_end(void)
 {
 	batching = 0;
@@ -1432,6 +1494,11 @@ legacy_s32 shape3d_hires_batch_end(void)
 		rendered_generation = hires_generation();
 	}
 	if (hires_raster_prepare(&batch.target)) {
+		if (render_vulkan_batch(&batch.target)) {
+			command_count = 0;
+			command_area = 0;
+			return 0;
+		}
 		legacy_u32 cleared = 0;
 		if (command_area >= HIRES_PARALLEL_MIN_AREA && render_workers_count() != 0) {
 			for (legacy_s32 index = 0; index < HIRES_BAND_COUNT; index++) {

@@ -15,6 +15,10 @@
 #include "presentation.h"
 #endif
 
+#if defined(RESTUNTS_SDL3) && !defined(__DJGPP__)
+#include "render_vulkan.h"
+#endif
+
 #define TRACK_OBJECT_COUNT 215U
 #define INTRO_SCREEN_WIDTH 320U
 #define INTRO_SCREEN_HEIGHT 200U
@@ -608,9 +612,19 @@ legacy_s8 setup_intro(void)
 		key = input_do_checking(delta);
 #endif
 #ifdef RESTUNTS_SDL3
-		if (key == KEY_F11 || key == KEY_F12) {
-			handle_ingame_kb_shortcuts(key);
-			intro_request_full_redraw(&intro);
+		if (key == KEY_F11 || key == KEY_F12 || key == KEY_SHIFT_F12
+#ifndef __DJGPP__
+			|| key == KEY_F10
+#endif
+		) {
+#ifndef __DJGPP__
+			if (key != KEY_F10 || render_vulkan_available()) {
+#endif
+				handle_ingame_kb_shortcuts(key);
+				intro_request_full_redraw(&intro);
+#ifndef __DJGPP__
+			}
+#endif
 			key = 0;
 		}
 #endif

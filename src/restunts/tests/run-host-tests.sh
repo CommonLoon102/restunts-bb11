@@ -161,6 +161,9 @@ run_host_test test-polygon-edges shape3d_prerender.c \
 run_host_test test-input-record legacy.c \
     "$test_source_dir/headless_data.c" "$test_source_dir/full_data.c" \
     -Wno-pointer-sign -Wno-missing-field-initializers -Wno-maybe-uninitialized
+run_host_test test-input-record legacy.c \
+    "$test_source_dir/headless_data.c" "$test_source_dir/full_data.c" \
+    -DRESTUNTS_SDL3 -Wno-pointer-sign -Wno-missing-field-initializers -Wno-maybe-uninitialized
 run_host_test test-replay-menu replay.c \
     "$test_source_dir/legacy.c" "$test_source_dir/headless_data.c" \
     "$test_source_dir/full_data.c" "$test_source_dir/full_strings.c" \

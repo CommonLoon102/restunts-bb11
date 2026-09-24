@@ -15,6 +15,12 @@ endif()
 option(RESTUNTS_SYSTEM_SDL "Use an installed SDL3 instead of the pinned source" OFF)
 option(RESTUNTS_BUILD_TESTS "Build native platform regressions" ON)
 if(CMAKE_SYSTEM_NAME STREQUAL "DOS")
+    set(restunts_vulkan_default OFF)
+else()
+    set(restunts_vulkan_default ON)
+endif()
+option(RESTUNTS_VULKAN "Build optional SDL GPU Vulkan scene rendering" ${restunts_vulkan_default})
+if(CMAKE_SYSTEM_NAME STREQUAL "DOS")
     set(restunts_sse2_default OFF)
 else()
     set(restunts_sse2_default ON)
@@ -85,7 +91,8 @@ set(game_sources
 list(TRANSFORM common_sources PREPEND "${core}/")
 list(TRANSFORM game_sources PREPEND "${core}/")
 set(platform_common ${platform}/memory.c ${platform}/file.c ${platform}/runtime.c)
-set(platform_game ${platform}/video.c ${platform}/input.c ${platform}/timer.c ${platform}/audio.c)
+set(platform_game ${platform}/video.c ${platform}/input.c ${platform}/timer.c ${platform}/audio.c
+    ${platform}/render_vulkan.c)
 
 execute_process(COMMAND git -c safe.directory=${CMAKE_SOURCE_DIR} rev-parse HEAD
     WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}" OUTPUT_VARIABLE RESTUNTS_GIT_HASH
@@ -110,11 +117,18 @@ if(NOT CMAKE_SYSTEM_NAME STREQUAL "DOS")
     add_library(restunts_opl ALIAS nuked_opl2)
 endif()
 
+add_library(restunts_lz4 STATIC third_party/lz4/lz4.c)
+target_include_directories(restunts_lz4 PUBLIC "${CMAKE_SOURCE_DIR}/third_party/lz4")
+
 add_library(restunts_game STATIC ${common_sources} ${game_sources} ${platform_common} ${platform_game})
+if(RESTUNTS_VULKAN AND NOT CMAKE_SYSTEM_NAME STREQUAL "DOS")
+    target_compile_definitions(restunts_game PRIVATE RESTUNTS_VULKAN)
+endif()
 target_compile_definitions(restunts_game PRIVATE RESTUNTS_FULL
     RESTUNTS_SKYBOX_DIRECTORY="${CMAKE_SOURCE_DIR}/assets/skyboxes"
     RESTUNTS_OPPONENT_DIRECTORY="${CMAKE_SOURCE_DIR}/assets/opponents")
 target_link_libraries(restunts_game PUBLIC restunts_options)
+target_link_libraries(restunts_game PRIVATE restunts_lz4)
 if(TARGET restunts_opl)
     target_link_libraries(restunts_game PRIVATE restunts_opl)
 endif()
@@ -134,7 +148,7 @@ target_compile_definitions(pixldump PRIVATE RESTUNTS_PIXLDUMP)
 target_link_libraries(pixldump PRIVATE restunts_game)
 
 install(TARGETS restunts repldump pixldump RUNTIME DESTINATION bin COMPONENT Runtime)
-install(FILES docs/sdl3.md DESTINATION share/docs/restunts COMPONENT Runtime)
+install(FILES docs/sdl3.md docs/vulkan.md DESTINATION share/docs/restunts COMPONENT Runtime)
 # Keep ordinary builds relocatable too. Run copy_if_different on every build
 # so updated artwork and missing output files do not require relinking.
 set(runtime_asset_commands
@@ -190,8 +204,6 @@ if(TARGET nuked_opl2)
         install(FILES third_party/nuked-opl2-lite/LICENSE
             DESTINATION share/licenses/restunts RENAME Nuked-OPL2-LICENSE
             COMPONENT ${component} ${exclude_from_default})
-        install(FILES THIRD-PARTY-NOTICES.txt
-            DESTINATION . COMPONENT ${component} ${exclude_from_default})
         install(FILES third_party/nuked-opl2-lite/opl2.c third_party/nuked-opl2-lite/opl2.h
             third_party/nuked-opl2-lite/CMakeLists.txt third_party/nuked-opl2-lite/LICENSE
             third_party/nuked-opl2-lite/README.md "${CMAKE_CURRENT_BINARY_DIR}/nuked-build-info.txt"
@@ -210,6 +222,17 @@ if(TARGET nuked_opl2)
             COMPONENT ${component} ${exclude_from_default})
     endforeach()
 endif()
+foreach(component Runtime Tests)
+    set(exclude_from_default)
+    if(component STREQUAL "Tests")
+        set(exclude_from_default EXCLUDE_FROM_ALL)
+    endif()
+    install(FILES third_party/lz4/LICENSE
+        DESTINATION share/licenses/restunts RENAME LZ4-LICENSE
+        COMPONENT ${component} ${exclude_from_default})
+    install(FILES THIRD-PARTY-NOTICES.txt
+        DESTINATION . COMPONENT ${component} ${exclude_from_default})
+endforeach()
 if(NOT RESTUNTS_SYSTEM_SDL)
     foreach(component Runtime Tests)
         set(exclude_from_default)
@@ -308,13 +331,19 @@ if(RESTUNTS_BUILD_TESTS)
     endif()
     add_executable(test-shape3d-shadows src/restunts/tests/test-shape3d-shadows.c
         ${core}/shape3d_shadows.c)
-    target_link_libraries(test-shape3d-shadows PRIVATE restunts_options)
+    target_link_libraries(test-shape3d-shadows PRIVATE restunts_options restunts_lz4)
     target_compile_options(test-shape3d-shadows PRIVATE -UNDEBUG)
     add_test(NAME shape3d-shadows COMMAND test-shape3d-shadows)
     add_executable(test-shape3d-hires src/restunts/tests/test-shape3d-hires.c)
     target_link_libraries(test-shape3d-hires PRIVATE restunts_game)
     target_compile_options(test-shape3d-hires PRIVATE -UNDEBUG)
     add_test(NAME shape3d-hires COMMAND test-shape3d-hires)
+    if(RESTUNTS_VULKAN)
+        add_test(NAME shape3d-vulkan COMMAND test-shape3d-hires)
+        set_tests_properties(shape3d-vulkan PROPERTIES
+            ENVIRONMENT "RESTUNTS_TEST_VULKAN=1"
+            SKIP_RETURN_CODE 77)
+    endif()
     add_executable(test-skybox-hires src/restunts/tests/test-skybox-hires.c
         ${core}/skybox_hires.c ${core}/hires.c ${core}/render_workers.c ${platform}/memory.c)
     target_link_libraries(test-skybox-hires PRIVATE restunts_options)
@@ -334,6 +363,9 @@ if(RESTUNTS_BUILD_TESTS)
         ${core}/opponent_portrait.c ${core}/hires.c ${core}/render_workers.c ${platform}/memory.c)
     target_link_libraries(test-opponent-portrait PRIVATE restunts_options)
     target_compile_options(test-opponent-portrait PRIVATE -UNDEBUG)
+    # Keep SDL_GetBasePath fallback inside the fixture, away from game artwork.
+    set_target_properties(test-opponent-portrait PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/opponent-test")
     file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/opponent-test")
     add_test(NAME opponent-portrait COMMAND test-opponent-portrait)
     set_tests_properties(opponent-portrait PROPERTIES

@@ -26,6 +26,10 @@
 #include "shape2d_internal.h"
 #endif
 
+#if defined(RESTUNTS_SDL3) && !defined(__DJGPP__)
+#include "render_vulkan.h"
+#endif
+
 #define GAME_RESOURCE_FILE_INDEX 2
 #define CAR_MENU_PLAYER_MODE 0U
 #define CAR_MENU_MAXIMUM_CARS 120U
@@ -561,9 +565,19 @@ static legacy_s16 car_menu_activate_selection(struct CAR_MENU_STATE *menu)
 static legacy_s16 car_menu_handle_input(struct CAR_MENU_STATE *menu, legacy_u16 input)
 {
 #ifdef RESTUNTS_SDL3
-	if (input == (legacy_u16)KEY_F11 || input == (legacy_u16)KEY_F12) {
+	if (input == (legacy_u16)KEY_F11 || input == (legacy_u16)KEY_F12 ||
+		input == (legacy_u16)KEY_SHIFT_F12
+#ifndef __DJGPP__
+		|| input == (legacy_u16)KEY_F10
+#endif
+	) {
+#ifndef __DJGPP__
+		if (input == (legacy_u16)KEY_F10 && !render_vulkan_available()) {
+			return 0;
+		}
+#endif
 		handle_ingame_kb_shortcuts(LEGACY_S16_FROM_BITS(input));
-		if (input == (legacy_u16)KEY_F12 && menu->opponent_type != CAR_MENU_PLAYER_MODE) {
+		if (input != (legacy_u16)KEY_F11 && menu->opponent_type != CAR_MENU_PLAYER_MODE) {
 			menu->portrait_dirty = 1;
 		}
 		presentation_reset(&menu->presentation_clock, presentation_now());

@@ -14,15 +14,25 @@
 #include "frame_internal.h"
 #ifdef RESTUNTS_SDL3
 #include "hires.h"
+#include "shape3d_shadows.h"
 #include "skybox_hires.h"
+#ifndef __DJGPP__
+#include "render_vulkan.h"
+#endif
 #endif
 
 #define INPUT_DIRECTION_COUNT 16U
 #define INPUT_KEY_COUNT 10U
 #define INPUT_CALLBACK_COUNT 64U
 #define INPUT_ASCII_KEY_COUNT 128U
+#ifdef RESTUNTS_SDL3
+/* Preserve every BIOS scan byte, including modifier-specific function keys. */
+#define INPUT_EXTENDED_KEY_COUNT 256U
+#define INPUT_EXTENDED_KEY_MAX_INDEX 255U
+#else
 #define INPUT_EXTENDED_KEY_COUNT 135U
 #define INPUT_EXTENDED_KEY_MAX_INDEX 134U
+#endif
 #define INPUT_ASCII_BYTE_MASK 255U
 #define INPUT_ASCII_INDEX_MASK 127U
 #define INPUT_MODE_STACK_LIMIT 8U
@@ -228,6 +238,17 @@ void load_palandcursor(void)
 	sprite_select_screen_compat();
 }
 
+static void input_reset_renderer(void)
+{
+#ifdef RESTUNTS_SDL3
+	/* Switching between enhanced backends also invalidates retained surfaces. */
+	hires_set_enabled(0);
+	hires_set_enabled(supersight_enabled);
+#endif
+	frame_supersight_reset();
+	full_redraw_frames_remaining = (legacy_s8)video_page_count;
+}
+
 static legacy_s16 input_handle_display_shortcut(legacy_s16 key)
 {
 	switch (key) {
@@ -237,14 +258,38 @@ static legacy_s16 input_handle_display_shortcut(legacy_s16 key)
 			full_redraw_frames_remaining = (legacy_s8)video_page_count;
 			return 1;
 
-		case KEY_F12:
-			supersight_enabled ^= 1U;
-#ifdef RESTUNTS_SDL3
-			hires_set_enabled(supersight_enabled);
-#endif
-			frame_supersight_reset();
-			full_redraw_frames_remaining = (legacy_s8)video_page_count;
+#if defined(RESTUNTS_SDL3) && !defined(__DJGPP__)
+		case KEY_F10:
+			if (render_vulkan_available()) {
+				supersight_enabled = (legacy_u8)!render_vulkan_enabled();
+				render_vulkan_set_enabled(supersight_enabled);
+				shape3d_shadows_set_enabled(supersight_enabled);
+				input_reset_renderer();
+			}
+			/* An unavailable backend must not resume a paused replay. */
 			return 1;
+#endif
+
+		case KEY_F12:
+#ifdef RESTUNTS_SDL3
+		case KEY_SHIFT_F12: {
+			legacy_s32 shadows = key == KEY_SHIFT_F12;
+			legacy_s32 same_renderer =
+				supersight_enabled != 0 && (shape3d_shadows_enabled() != 0) == shadows;
+#ifndef __DJGPP__
+			same_renderer = same_renderer && !render_vulkan_enabled();
+			render_vulkan_set_enabled(0);
+#endif
+			supersight_enabled = (legacy_u8)!same_renderer;
+			shape3d_shadows_set_enabled(supersight_enabled != 0 && shadows);
+			input_reset_renderer();
+			return 1;
+		}
+#else
+			supersight_enabled ^= 1U;
+			input_reset_renderer();
+			return 1;
+#endif
 
 		case 'D':
 		case 'd':

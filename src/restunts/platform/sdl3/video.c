@@ -2,6 +2,7 @@
 #include "../../c/platform.h"
 #include "../../c/fatal.h"
 #include "../../c/hires.h"
+#include "../../c/render_vulkan.h"
 #include <string.h>
 #include <stdio.h>
 
@@ -364,6 +365,7 @@ void dos_video_set_mode_13h(void)
 	if (SDL_WasInit(SDL_INIT_VIDEO) == 0 && !SDL_InitSubSystem(SDL_INIT_VIDEO)) {
 		video_fail("Initialize video");
 	}
+	render_vulkan_initialize();
 #ifdef __DJGPP__
 	/* The direct framebuffer supports indexed and truecolour VESA modes. */
 	SDL_SetHint(SDL_HINT_DOS_ALLOW_DIRECT_FRAMEBUFFER, "1");

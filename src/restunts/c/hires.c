@@ -648,6 +648,56 @@ void hires_raster_shadow_finish(const struct HIRES_RASTER_TARGET *target, legacy
 	target->surface->argb_cells += added_cells;
 }
 
+legacy_s32 hires_raster_import(const struct HIRES_RASTER_TARGET *target,
+							   const struct HIRES_RASTER_SAMPLE *samples, legacy_s32 shadows)
+{
+	struct HIRES_SURFACE *surface = target->surface;
+	if (shadows && !hires_allocate_argb(surface)) {
+		return 0;
+	}
+	for (legacy_s32 y = target->top; y < target->bottom; y += HIRES_SCALE) {
+		for (legacy_s32 x = target->left; x < target->right; x += HIRES_SCALE) {
+			legacy_u16 offset = (legacy_u16)(target->rows[y / HIRES_SCALE] + x / HIRES_SCALE);
+			legacy_u8 *cell = surface->pixels + (size_t)offset * HIRES_CELL_PIXELS;
+			legacy_s32 had_argb = surface->valid[offset] == 2;
+			legacy_u32 *argb =
+				surface->argb != NULL ? surface->argb + (size_t)offset * HIRES_CELL_PIXELS : NULL;
+			legacy_u32 remaining = 0;
+			for (legacy_s32 row = 0; row < HIRES_SCALE; row++) {
+				const struct HIRES_RASTER_SAMPLE *source =
+					samples + (size_t)(y + row - target->top) * HIRES_WIDTH + x;
+				size_t depth_offset = (size_t)(y + row) * HIRES_WIDTH + x;
+				for (legacy_s32 column = 0; column < HIRES_SCALE; column++) {
+					legacy_s32 index = row * HIRES_SCALE + column;
+					legacy_u32 paint = source[column].paint;
+					legacy_u32 color = had_argb ? argb[index] : 0;
+					if ((paint & 256U) != 0) {
+						cell[index] = (legacy_u8)paint;
+						color = 0;
+					}
+					if (shadows && (paint >> 24) != 0) {
+						color = paint & 0xFF000000U;
+					}
+					if (argb != NULL) {
+						argb[index] = color;
+					}
+					remaining |= color;
+					target->inverse_depth[depth_offset + column] = source[column].inverse_depth;
+					target->depth_family[depth_offset + column] = source[column].family;
+				}
+			}
+			legacy_s32 has_argb = remaining != 0;
+			surface->valid[offset] = has_argb ? 2 : 1;
+			if (has_argb && !had_argb) {
+				surface->argb_cells++;
+			} else if (had_argb && !has_argb) {
+				surface->argb_cells--;
+			}
+		}
+	}
+	return 1;
+}
+
 void hires_fill_pixel(legacy_s32 x, legacy_s32 y, legacy_u8 color)
 {
 	if (active == NULL || x < 0 || y < 0 || x >= HIRES_WIDTH / HIRES_SCALE ||

@@ -19,9 +19,10 @@ enum KEY_CODE {
 	KEY_F8 = 16896,
 	KEY_F9 = 17152,
 	KEY_F10 = 17408,
-	/* BIOS extended codes 0x8500 and 0x8600 as signed 16-bit words. */
+	/* BIOS extended codes 0x8500, 0x8600 and 0x8800 as signed 16-bit words. */
 	KEY_F11 = -31488,
 	KEY_F12 = -31232,
+	KEY_SHIFT_F12 = -30720,
 	KEY_HOME = 18176,
 	KEY_UP = 18432,
 	KEY_LEFT = 19200,

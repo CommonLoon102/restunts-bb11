@@ -29,7 +29,7 @@ static void *job_context;
 static void run_jobs(void)
 {
 	for (;;) {
-		int index = SDL_AddAtomicInt(&next_job, 1);
+		legacy_s32 index = SDL_AddAtomicInt(&next_job, 1);
 		if (index >= job_count) {
 			return;
 		}
@@ -56,13 +56,13 @@ static void initialize_workers(void)
 		return;
 	}
 	initialized = 1;
-	int requested = SDL_GetNumLogicalCPUCores() - 1;
+	legacy_s32 requested = SDL_GetNumLogicalCPUCores() - 1;
 	const char *setting = SDL_getenv("RESTUNTS_RENDER_WORKERS");
 	if (setting != NULL && *setting != 0) {
 		char *end;
-		long value = strtol(setting, &end, 10);
+		legacy_s64 value = strtol(setting, &end, 10);
 		if (*end == 0 && value >= 0) {
-			requested = value > RENDER_MAX_WORKERS ? RENDER_MAX_WORKERS : (int)value;
+			requested = value > RENDER_MAX_WORKERS ? RENDER_MAX_WORKERS : (legacy_s32)value;
 		}
 	}
 	if (requested > RENDER_MAX_WORKERS) {
@@ -75,7 +75,7 @@ static void initialize_workers(void)
 	if (completed == NULL) {
 		return;
 	}
-	for (int index = 0; index < requested; index++) {
+	for (legacy_s32 index = 0; index < requested; index++) {
 		struct RENDER_WORKER *worker = &workers[index];
 		worker->start = SDL_CreateSemaphore(0);
 		if (worker->start == NULL) {
@@ -109,8 +109,11 @@ void render_workers_shutdown(void)
 		workers[index].thread = NULL;
 		workers[index].start = NULL;
 	}
-	SDL_DestroySemaphore(completed);
-	completed = NULL;
+	/* Some semaphore backends initialize their dispatch table on first creation. */
+	if (completed != NULL) {
+		SDL_DestroySemaphore(completed);
+		completed = NULL;
+	}
 	worker_count = 0;
 	initialized = 0;
 	stopping = 0;

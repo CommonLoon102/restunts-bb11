@@ -9,6 +9,7 @@
 #include "../c/platform.h"
 #include "../c/keyboard.h"
 #include "../c/hires.h"
+#include "../c/render_vulkan.h"
 
 legacy_s32 sdl3_batch_mode;
 static legacy_u8 framebuffer[65536];
@@ -21,6 +22,18 @@ static legacy_u32 first_callbacks;
 static legacy_u32 second_callbacks;
 static legacy_u32 audio_ticks;
 static legacy_u8 quit_cleaned_up;
+static legacy_u32 vulkan_initializations;
+static legacy_u32 vulkan_shutdowns;
+
+void render_vulkan_initialize(void)
+{
+	vulkan_initializations++;
+}
+
+void render_vulkan_shutdown(void)
+{
+	vulkan_shutdowns++;
+}
 
 const legacy_u32 *hires_framebuffer_argb(const legacy_u8 *legacy, const legacy_u32 *palette)
 {
@@ -128,14 +141,57 @@ static void test_keyboard(void)
 	send_key(SDL_SCANCODE_F1, SDL_KMOD_SHIFT, true, false);
 	assert(kb_read_char() == KEY_SHIFT_F1);
 	send_key(SDL_SCANCODE_F1, SDL_KMOD_NONE, false, false);
+	send_key(SDL_SCANCODE_F10, SDL_KMOD_NONE, true, false);
+	send_key(SDL_SCANCODE_F10, SDL_KMOD_NONE, true, true);
+	send_key(SDL_SCANCODE_F10, SDL_KMOD_NONE, true, false);
+	assert(kb_read_char() == KEY_F10);
+	assert(kb_read_char() == 0);
+	send_key(SDL_SCANCODE_F10, SDL_KMOD_NONE, false, false);
+	send_key(SDL_SCANCODE_F10, SDL_KMOD_NONE, true, false);
+	assert(kb_read_char() == KEY_F10);
+	send_key(SDL_SCANCODE_F10, SDL_KMOD_NONE, false, false);
 	send_key(SDL_SCANCODE_F11, SDL_KMOD_NONE, true, false);
 	send_key(SDL_SCANCODE_F11, SDL_KMOD_NONE, true, true);
 	assert(kb_read_char() == KEY_F11);
 	assert(kb_read_char() == 0);
 	send_key(SDL_SCANCODE_F11, SDL_KMOD_NONE, false, false);
-	send_key(SDL_SCANCODE_F12, SDL_KMOD_CTRL, true, false);
-	assert(kb_read_char() == 0);
-	send_key(SDL_SCANCODE_F12, SDL_KMOD_NONE, false, false);
+	static const struct {
+		SDL_Scancode scan;
+		SDL_Keymod modifiers;
+	} ignored_shortcuts[] = {{SDL_SCANCODE_F11, SDL_KMOD_SHIFT},
+							 {SDL_SCANCODE_F11, SDL_KMOD_CTRL},
+							 {SDL_SCANCODE_F11, SDL_KMOD_ALT},
+							 {SDL_SCANCODE_F12, SDL_KMOD_CTRL},
+							 {SDL_SCANCODE_F12, SDL_KMOD_ALT},
+							 {SDL_SCANCODE_F12, SDL_KMOD_SHIFT | SDL_KMOD_CTRL},
+							 {SDL_SCANCODE_F12, SDL_KMOD_SHIFT | SDL_KMOD_ALT}};
+	for (legacy_u32 i = 0; i < sizeof(ignored_shortcuts) / sizeof(ignored_shortcuts[0]); i++) {
+		SDL_Scancode scan = ignored_shortcuts[i].scan;
+		send_key(scan, ignored_shortcuts[i].modifiers, true, false);
+		/* Releasing modifiers while holding the function key is not a new press. */
+		send_key(scan, SDL_KMOD_NONE, true, false);
+		assert(kb_read_char() == 0);
+		send_key(scan, SDL_KMOD_NONE, false, false);
+	}
+	static const SDL_Keymod renderer_modifiers[] = {SDL_KMOD_NONE, SDL_KMOD_LSHIFT,
+													SDL_KMOD_RSHIFT};
+	for (legacy_u32 i = 0; i < sizeof(renderer_modifiers) / sizeof(renderer_modifiers[0]); i++) {
+		SDL_Keymod modifiers = renderer_modifiers[i];
+		send_key(SDL_SCANCODE_F12, modifiers, true, false);
+		assert(kb_get_key_state(88) == 1);
+		assert(kb_read_char() == (modifiers ? KEY_SHIFT_F12 : KEY_F12));
+		send_key(SDL_SCANCODE_F12, modifiers, true, true);
+		send_key(SDL_SCANCODE_F12, modifiers, true, false);
+		/* Changing Shift while F12 stays held must not select another mode. */
+		send_key(SDL_SCANCODE_F12, modifiers ? SDL_KMOD_NONE : SDL_KMOD_SHIFT, true, false);
+		assert(kb_read_char() == 0);
+		send_key(SDL_SCANCODE_F12, SDL_KMOD_NONE, false, false);
+		assert(kb_get_key_state(88) == 0);
+		/* A repeated event without an initial press must not toggle either mode. */
+		send_key(SDL_SCANCODE_F12, modifiers, true, true);
+		assert(kb_read_char() == 0);
+		send_key(SDL_SCANCODE_F12, SDL_KMOD_NONE, false, false);
+	}
 	send_key(SDL_SCANCODE_F12, SDL_KMOD_NONE, true, false);
 	assert(kb_read_char() == KEY_F12);
 	SDL_Event event;
@@ -491,6 +547,7 @@ int main(void)
 	sdl3_platform_pump();
 	assert(quit_cleaned_up);
 	sdl3_platform_shutdown();
+	assert(vulkan_initializations == 1 && vulkan_shutdowns == 1);
 	puts("SDL3 keyboard, timer, video coordinates, mouse and joystick passed.");
 	return 0;
 }

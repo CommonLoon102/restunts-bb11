@@ -2277,7 +2277,7 @@ void update_frame(legacy_s8 buffer_index, struct RECTANGLE *cliprect)
 	struct FRAME_TILE_SELECTION tiles;
 	tiles.lookahead = frame_setup_projection(&camera, cliprect);
 #if defined(RESTUNTS_SDL3)
-	if (hires_enabled()) {
+	if (hires_enabled() && shape3d_shadows_enabled()) {
 		shape3d_shadows_begin(&camera.position);
 		frame_capture_windmill_shadows(&camera, animated_material);
 	}

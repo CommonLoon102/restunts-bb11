@@ -69,7 +69,24 @@ minimum mcb free=1
 
 ### SuperSight and FPS display
 
-Press **F12** while driving or viewing a replay to toggle SuperSight. In SDL3
+On Windows and Linux, press **F10** to select the Vulkan renderer, retaining
+SuperSight's 1280x800 resolution, full draw distance, shadows, and enhanced artwork.
+Press **F12** to select CPU SuperSight without shadows, or **Shift+F12** to select
+CPU SuperSight with shadows. Pressing the current mode's shortcut again restores
+the original classic renderer; another renderer shortcut switches directly to
+that mode. All enhanced modes target 60 FPS while keeping the original physics
+timing. Vulkan support is checked at startup; F10 has no effect when the graphics
+device or driver cannot initialize the backend.
+The original renderer is selected when the game starts. See the
+[Vulkan renderer guide](docs/vulkan.md) for hardware requirements, diagnostics,
+and performance considerations.
+
+F10 is available in driving, replays, the nighttime intro, both car-selection
+screens, the opponent menu, and the track preview. The track editor retains its
+existing F10 category shortcut. The 16-bit DOS build retains its F12 SuperSight
+behavior; SDL3 builds, including 32-bit DOS, support both CPU shadow modes.
+
+Press **F12** while driving or viewing a replay to select SuperSight. In SDL3
 builds (Windows, Linux, and 32-bit DOS), it considers the entire 30 x 30 track
 and renders all geometry within the camera's view, with no distance cutoff.
 Detailed models remain enabled across the track, and rendering buffers grow
@@ -85,7 +102,7 @@ or visibility when crowded scenes exceed that capacity.
 
 In SDL3 builds (Windows, Linux, and 32-bit DOS), SuperSight also renders 3D
 at **1280x800**, four times the original width and height. Player and opponent
-car-selection previews use the same higher resolution; F12 also works in those
+car-selection previews use the same higher resolution; F12 and Shift+F12 work in those
 screens and in the track preview. Dashboard artwork, replay controls, and the
 surrounding menu UI retain their original pixel detail and size. SuperSight clips
 custom dashboards and the 3D view above visible replay controls so they remain
@@ -141,15 +158,18 @@ Leaving it unset selects the automatic count. The limit bounds overhead for the
 execution resources or in busy virtual machines. If thread creation fails, the
 game uses the workers available or falls back to serial drawing.
 
-SuperSight adds shadows and soft contact shading around scenery, bridge walls
-and slalom stones. Track loading bakes static lighting into in-memory lightmaps;
+Shift+F12 CPU SuperSight and F10 Vulkan add shadows and soft contact shading
+around scenery, bridge walls and slalom stones. F12 CPU SuperSight skips shadow
+capture and shading while preserving resolution, draw distance, and enhanced
+artwork. Track loading bakes static lighting into in-memory lightmaps;
 drawing a frame samples those cached values instead of rebuilding static shadows.
 Soft shading shares filtered samples within small, continuous surface regions,
 with finer sampling at silhouettes and depth breaks. Geometry retains its full
 1280x800 detail. Worker bands draw geometry and cached shading together, and the
 framebuffer is converted once for presentation.
 Cars do not cast shadows. Only animated windmill sails update their shadows while
-playing. The cache survives camera changes and F12 toggles and is freed when
+playing. The cache survives camera changes and renderer or shadow-mode switches,
+so re-enabling shadows does not require rebaking. It is freed when
 the track resources unload. Reduced-scenery graphics modes keep track shadows
 but omit scenery and fence shadows; changing that setting rebuilds the cache once.
 
@@ -157,6 +177,11 @@ The bake is also saved beside the track as a binary `.LMP` file, for example
 `DEFAULT.LMP` for `DEFAULT.TRK`. Later loads reuse it after checking the original
 track file's MD5, the collected geometry and the lighting format version. Changed
 tracks, resources or settings invalidate the cache; damaged caches are rebuilt.
+Lightmap textures use fast, lossless LZ4 compression on disk, retaining every
+texel and mip level. Textures that do not compress well are stored raw. Valid
+older uncompressed caches are upgraded on their next load without rebaking;
+read-only caches remain usable. Compression runs only when saving the cache,
+and decompression runs only when loading it, with no extra per-frame work.
 Renaming both files preserves reuse. If the directory is read-only, lighting stays
 in memory. Replays only use a disk cache when the matching track file exists and
 agrees with their embedded track.
@@ -166,18 +191,19 @@ Grille decks cast a dense, world-aligned pattern with the bridge material's
 filtered lightmaps keep distant grille patterns from flickering. Shadows retain
 their fade between one and a half and two track tiles from the camera. A binary space
 partition tree accelerates baking and receiver lookup. These effects only apply
-to driving and replays in SuperSight; the original renderer and simulation are
-unchanged.
+to driving and replays when shadows are enabled; the original renderer and
+simulation are unchanged.
 
 Press **F11** to toggle a frame-rate counter in the top-left corner. It measures
 presented frames over approximately one second and rounds down, for example
 `20 FPS`. Values below 20 are red; values of 20 or higher are green.
-In SDL3 builds, F11 and F12 also work in both car-selection screens and during
+In SDL3 builds, F11, F12, and Shift+F12 work in both car-selection screens and during
 the nighttime driving intro without skipping the animation.
 
-Both features start off and retain their selected state until toggled again or
-the game exits. They work in all driving and replay cameras, including opponent
-and ghost views and paused replays. Holding either key toggles only once.
+The FPS counter starts off, and renderer and counter selections last until changed
+or the game exits. They work in all driving and replay cameras, including opponent
+and ghost views and paused replays. Holding F10, F11, F12, or Shift+F12 toggles
+only once; release F12 before pressing it again to change CPU shadow mode.
 
 ### Race against a ghost
 
@@ -827,6 +853,12 @@ Declare local variables close to their first use, combining the declaration
 and first assignment when possible. Keep declarations in the enclosing scope
 when values are shared across branches or loops, and preserve initialization
 order and object lifetime.
+
+Use the `legacy_s*`, `legacy_u*`, and `legacy_f*` types from `legacy.h` for game
+and renderer values, with `LEGACY_PRI*` macros for formatted output. Keep native
+types only where compiler or library interfaces require them, such as `main`,
+callbacks, output pointers, `size_t` allocation sizes, and `char` strings. GLSL
+shader code uses its own built-in types.
 
 Two standard tools check the style directly:
 

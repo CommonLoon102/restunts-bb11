@@ -561,8 +561,9 @@ static void test_ghost_track_changes(void)
 }
 
 #ifdef RESTUNTS_SDL3
-static void test_track_supersight_toggle(void)
+static void test_track_supersight_toggle(legacy_s16 key, legacy_s32 available)
 {
+	vulkan_fixture_available = available;
 	for (legacy_u8 page_flipping = 0; page_flipping < 2; page_flipping++) {
 		for (legacy_u8 initial_mode = 0; initial_mode < 2; initial_mode++) {
 			reset_menu_case(1, 1);
@@ -573,7 +574,7 @@ static void test_track_supersight_toggle(void)
 			track_preview_draws = track_title_draws = track_button_draws = 0;
 			track_highscore_draws = track_highscore_entries = track_setup_calls = 0;
 			menu_keys[0] = menu_keys[3] = KEY_RIGHT;
-			menu_keys[1] = menu_keys[2] = (legacy_u16)KEY_F12;
+			menu_keys[1] = menu_keys[2] = (legacy_u16)key;
 			menu_keys[4] = KEY_ENTER;
 			for (legacy_u32 index = 0; index < 5; index++) {
 				menu_hits[index] = -1;
@@ -581,11 +582,16 @@ static void test_track_supersight_toggle(void)
 			track_toggle_test = 1;
 			run_tracks_menu(0);
 			track_toggle_test = 0;
-			assert(frame_index == 5 && track_presentations == 5);
-			assert(track_preview_draws == 3 && supersight_enabled == initial_mode);
-			assert(track_window_allocations == 3 && track_window_releases == 3);
+			assert(frame_index == 5 && track_presentations == (available ? 5U : 3U));
+			assert(track_preview_draws == (available ? 3U : 1U) &&
+				   supersight_enabled == initial_mode);
+			assert(track_window_allocations == (available ? 3U : 1U));
+			assert(track_window_releases == track_window_allocations);
 			assert(track_window_live == 0 && track_skybox_live == 0 && track_shapes_live == 0);
 			assert(track_setup_calls == 0 && ghost_track_checks == 0);
+			if (available) {
+				assert(display_last_renderer_key == key);
+			}
 		}
 	}
 }
@@ -598,7 +604,10 @@ int main(void)
 	assert(trace_hash == UINT64_C(0xf466790d466a90a8));
 	test_ghost_track_changes();
 #ifdef RESTUNTS_SDL3
-	test_track_supersight_toggle();
+	test_track_supersight_toggle(KEY_F10, 1);
+	test_track_supersight_toggle(KEY_F10, 0);
+	test_track_supersight_toggle(KEY_F12, 1);
+	test_track_supersight_toggle(KEY_SHIFT_F12, 1);
 #endif
 	printf("test-menu-navigation: passed\n");
 	return 0;

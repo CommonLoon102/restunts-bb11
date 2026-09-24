@@ -468,8 +468,8 @@ legacy_s16 stuntsmain(legacy_s16 argc, legacy_s8 *argv[])
 	if (mode == 1 && settling_end != 0) {
 		assert(settling_interpolations != 0);
 	}
-	printf("mode %d: %lu interpolated extra frames (%u landing, %u loop exit)\n", mode,
-		   (unsigned long)extra_frames, landing_interpolations, settling_interpolations);
+	printf("mode %d: %" LEGACY_PRIu32 " interpolated extra frames (%u landing, %u loop exit)\n",
+		   mode, extra_frames, landing_interpolations, settling_interpolations);
 	assert(fclose(output) == 0);
 	free(recording);
 	/* Match pixldump shutdown: this fixture never loaded dashboard resources. */

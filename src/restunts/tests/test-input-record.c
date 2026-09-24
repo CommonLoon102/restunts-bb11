@@ -23,6 +23,48 @@ struct CARSTATE *ghost_car_state(void)
 static legacy_u32 trace_hash, random_state = 1;
 static legacy_u32 fps_reset_count;
 static legacy_u32 supersight_reset_count;
+#ifdef RESTUNTS_SDL3
+static legacy_s32 hires_fixture_enabled;
+static legacy_u32 hires_reset_count;
+static legacy_s32 shadows_fixture_enabled;
+
+void shape3d_shadows_set_enabled(legacy_s32 enabled)
+{
+	shadows_fixture_enabled = enabled != 0;
+}
+
+legacy_s32 shape3d_shadows_enabled(void)
+{
+	return shadows_fixture_enabled;
+}
+
+void hires_set_enabled(legacy_s32 enabled)
+{
+	if (hires_fixture_enabled != 0 && enabled == 0) {
+		hires_reset_count++;
+	}
+	hires_fixture_enabled = enabled;
+}
+#ifndef __DJGPP__
+static legacy_s32 vulkan_fixture_available, vulkan_fixture_enabled;
+
+legacy_s32 render_vulkan_available(void)
+{
+	return vulkan_fixture_available;
+}
+
+legacy_s32 render_vulkan_enabled(void)
+{
+	return vulkan_fixture_enabled;
+}
+
+void render_vulkan_set_enabled(legacy_s32 enabled)
+{
+	assert(enabled == 0 || vulkan_fixture_available != 0);
+	vulkan_fixture_enabled = enabled;
+}
+#endif
+#endif
 
 void frame_supersight_reset(void)
 {
@@ -181,6 +223,14 @@ static void reset_inputs(void)
 	keyboard_char = joystick_flags = 0;
 	supersight_enabled = fps_display_enabled = 0;
 	fps_reset_count = supersight_reset_count = 0;
+#ifdef RESTUNTS_SDL3
+	hires_fixture_enabled = 0;
+	shadows_fixture_enabled = 1;
+	hires_reset_count = 0;
+#ifndef __DJGPP__
+	vulkan_fixture_available = vulkan_fixture_enabled = 0;
+#endif
+#endif
 	video_page_count = 2;
 	full_redraw_frames_remaining = 0;
 	mouse_sample_index = 0;
@@ -523,6 +573,138 @@ static void test_display_shortcuts(void)
 	}
 }
 
+#ifdef RESTUNTS_SDL3
+void dos_interrupts_disable(void)
+{
+}
+
+void dos_interrupts_enable(void)
+{
+}
+
+static legacy_u32 plain_callback_count, shifted_callback_count;
+
+static void plain_key_callback(void)
+{
+	plain_callback_count++;
+}
+
+static void shifted_key_callback(void)
+{
+	shifted_callback_count++;
+}
+
+static void test_shifted_key_callbacks(void)
+{
+	assert((legacy_u16)KEY_SHIFT_F12 == 0x8800U);
+	kb_reg_callback(KEY_F12, plain_key_callback);
+	assert(kb_parse_key(KEY_SHIFT_F12) == KEY_SHIFT_F12);
+	assert(plain_callback_count == 0);
+	kb_reg_callback(KEY_SHIFT_F12, shifted_key_callback);
+	assert(kb_parse_key(KEY_F12) == 0);
+	assert(plain_callback_count == 1 && shifted_callback_count == 0);
+	assert(kb_parse_key(KEY_SHIFT_F12) == 0);
+	assert(plain_callback_count == 1 && shifted_callback_count == 1);
+	/* Unregistered scan bytes must never alias a registered function key. */
+	for (legacy_u16 scan = 0x89U; scan <= 0xffU; scan++) {
+		legacy_s16 key = LEGACY_S16_FROM_BITS(scan << LEGACY_BYTE_BITS);
+		assert(kb_parse_key(key) == key);
+	}
+	assert(plain_callback_count == 1 && shifted_callback_count == 1);
+	kb_remove_callback(KEY_SHIFT_F12);
+	assert(kb_parse_key(KEY_SHIFT_F12) == KEY_SHIFT_F12);
+	assert(kb_parse_key(KEY_F12) == 0 && plain_callback_count == 2);
+	kb_remove_callback(KEY_F12);
+	assert(kb_parse_key(KEY_F12) == KEY_F12);
+}
+
+static void test_cpu_renderer_shortcuts(void)
+{
+	/* Classic, CPU without shadows, CPU with shadows. */
+	static const legacy_u8 expected_modes[3][2] = {{1, 2}, {0, 2}, {1, 0}};
+	static const legacy_s16 keys[] = {KEY_F12, KEY_SHIFT_F12};
+	for (legacy_u8 mode = REPLAY_MODE_LIVE; mode <= REPLAY_MODE_PAUSED; mode++) {
+		for (legacy_u8 initial = 0; initial < 3; initial++) {
+			for (legacy_u8 shortcut = 0; shortcut < 2; shortcut++) {
+				reset_inputs();
+				game_replay_mode = mode;
+				supersight_enabled = initial != 0;
+				hires_fixture_enabled = supersight_enabled;
+				shadows_fixture_enabled = initial == 2;
+				assert(handle_ingame_kb_shortcuts(keys[shortcut]) == 1);
+				legacy_u8 expected = expected_modes[initial][shortcut];
+				assert(supersight_enabled == (expected != 0));
+				assert(shadows_fixture_enabled == (expected == 2));
+				assert(hires_fixture_enabled == supersight_enabled);
+				assert(hires_reset_count == (initial != 0));
+				assert(supersight_reset_count == 1);
+				assert(full_redraw_frames_remaining == video_page_count);
+				assert(game_replay_mode == mode && fps_display_enabled == 0);
+			}
+		}
+	}
+}
+
+#ifndef __DJGPP__
+static void test_renderer_shortcuts(void)
+{
+	/* Classic, CPU without shadows, CPU with shadows, Vulkan with shadows. */
+	static const legacy_u8 expected_modes[4][3] = {{3, 1, 2}, {3, 0, 2}, {3, 1, 0}, {0, 1, 2}};
+	static const legacy_s16 keys[] = {KEY_F10, KEY_F12, KEY_SHIFT_F12};
+	for (legacy_u8 mode = REPLAY_MODE_LIVE; mode <= REPLAY_MODE_PAUSED; mode++) {
+		for (legacy_u8 initial = 0; initial < 4; initial++) {
+			for (legacy_u8 shortcut = 0; shortcut < 3; shortcut++) {
+				reset_inputs();
+				game_replay_mode = mode;
+				vulkan_fixture_available = 1;
+				vulkan_fixture_enabled = initial == 3;
+				supersight_enabled = initial != 0;
+				hires_fixture_enabled = supersight_enabled;
+				shadows_fixture_enabled = initial >= 2;
+				assert(handle_ingame_kb_shortcuts(keys[shortcut]) == 1);
+				legacy_u8 expected = expected_modes[initial][shortcut];
+				assert(vulkan_fixture_enabled == (expected == 3));
+				assert(supersight_enabled == (expected != 0));
+				assert(shadows_fixture_enabled == (expected >= 2));
+				assert(hires_fixture_enabled == supersight_enabled);
+				assert(hires_reset_count == (initial != 0));
+				assert(supersight_reset_count == 1);
+				assert(full_redraw_frames_remaining == video_page_count);
+				assert(game_replay_mode == mode && fps_display_enabled == 0);
+			}
+		}
+		for (legacy_u8 initial = 0; initial < 3; initial++) {
+			reset_inputs();
+			game_replay_mode = mode;
+			supersight_enabled = initial != 0;
+			hires_fixture_enabled = supersight_enabled;
+			shadows_fixture_enabled = initial == 2;
+			assert(handle_ingame_kb_shortcuts(KEY_F10) == 1);
+			assert(supersight_enabled == (initial != 0));
+			assert(hires_fixture_enabled == supersight_enabled);
+			assert(shadows_fixture_enabled == (initial == 2));
+			assert(vulkan_fixture_enabled == 0);
+			assert(hires_reset_count == 0 && supersight_reset_count == 0);
+			assert(full_redraw_frames_remaining == 0 && game_replay_mode == mode);
+		}
+	}
+	reset_inputs();
+	vulkan_fixture_available = 1;
+	static const legacy_s16 sequence[] = {
+		KEY_F12, KEY_F12,		KEY_F12, KEY_SHIFT_F12, KEY_F12, KEY_SHIFT_F12, KEY_SHIFT_F12,
+		KEY_F10, KEY_SHIFT_F12, KEY_F10, KEY_F12,		KEY_F10, KEY_F10};
+	static const legacy_u8 expected_sequence[] = {1, 0, 1, 2, 1, 2, 0, 3, 2, 3, 1, 3, 0};
+	for (legacy_u32 index = 0; index < sizeof(sequence) / sizeof(sequence[0]); index++) {
+		assert(handle_ingame_kb_shortcuts(sequence[index]) == 1);
+		assert(supersight_enabled == (expected_sequence[index] != 0));
+		assert(vulkan_fixture_enabled == (expected_sequence[index] == 3));
+		assert(shadows_fixture_enabled == (expected_sequence[index] >= 2));
+	}
+	assert(supersight_reset_count == sizeof(sequence) / sizeof(sequence[0]));
+}
+#endif
+#endif
+
 int main(void)
 {
 	legacy_u32 input_hash = input_fingerprint();
@@ -534,6 +716,13 @@ int main(void)
 	test_recording_input_modes();
 	test_ghost_view_shortcut();
 	test_display_shortcuts();
+#ifdef RESTUNTS_SDL3
+	test_shifted_key_callbacks();
+	test_cpu_renderer_shortcuts();
+#endif
+#if defined(RESTUNTS_SDL3) && !defined(__DJGPP__)
+	test_renderer_shortcuts();
+#endif
 #ifdef INPUT_RECORD_BASELINE
 	fprintf(stdout,
 			"%08" LEGACY_PRIx32 " %08" LEGACY_PRIx32 " %08" LEGACY_PRIx32 " %08" LEGACY_PRIx32
@@ -544,8 +733,14 @@ int main(void)
 	assert(scrollbar_hash == 0x207b3fe7UL);
 	assert(record_hash == 0x41c4e48dUL);
 	assert(callback_hash == 0x9bd7fd3eUL);
-	/* F11/F12 are now handled without triggering the paused-race fallback. */
+	/* Display shortcuts, including Shift+F12 on SDL3, must not resume a paused race. */
+#if defined(RESTUNTS_SDL3) && !defined(__DJGPP__)
+	assert(shortcut_hash == 0x31d093b6UL);
+#elif defined(RESTUNTS_SDL3)
+	assert(shortcut_hash == 0xdecf17b2UL);
+#else
 	assert(shortcut_hash == 0xab8a7016UL);
+#endif
 #endif
 	return 0;
 }
