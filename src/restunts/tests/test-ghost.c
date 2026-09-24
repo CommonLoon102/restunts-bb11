@@ -514,15 +514,21 @@ static void test_render_sampling(void)
 	render_fixture = 1;
 	assert(ghost_select_replay(0, (const legacy_s8 *)"source") == 0);
 	assert(ghost_prepare_race() == 0);
-	/* A 10 Hz recorded ghost moves every 25 ms alongside a 20 Hz live car,
+	/* A 10 Hz recorded ghost moves in 60 Hz slots alongside a 20 Hz live car,
 	 * even when the authoritative ghost repeats its last recorded pose. */
 	ghost_update(1, GAME_FRAME_RATE_NORMAL);
 	legacy_u32 reads = read_calls;
-	assert_render_sample(1, GAME_FRAME_RATE_NORMAL, FRAME_INTERPOLATION_ONE / 2U, 25);
+	assert_render_sample(1, GAME_FRAME_RATE_NORMAL,
+						 FRAME_INTERPOLATION_ONE - FRAME_INTERPOLATION_ONE / 3U, 16);
 	assert(read_calls <= reads + 2U);
 	reads = read_calls;
+	assert_render_sample(1, GAME_FRAME_RATE_NORMAL,
+						 FRAME_INTERPOLATION_ONE - FRAME_INTERPOLATION_ONE * 2U / 3U, 33);
 	assert_render_sample(1, GAME_FRAME_RATE_NORMAL, 0, 50);
-	assert_render_sample(2, GAME_FRAME_RATE_NORMAL, FRAME_INTERPOLATION_ONE / 2U, 75);
+	assert_render_sample(2, GAME_FRAME_RATE_NORMAL,
+						 FRAME_INTERPOLATION_ONE - FRAME_INTERPOLATION_ONE / 3U, 66);
+	assert_render_sample(2, GAME_FRAME_RATE_NORMAL,
+						 FRAME_INTERPOLATION_ONE - FRAME_INTERPOLATION_ONE * 2U / 3U, 83);
 	assert(read_calls == reads);
 	ghost_update(2, GAME_FRAME_RATE_NORMAL);
 	assert_render_sample(2, GAME_FRAME_RATE_NORMAL, 0, 100);
@@ -556,9 +562,15 @@ static void test_render_sampling(void)
 	assert(ghost_select_replay(0, (const legacy_s8 *)"render") == 0);
 	assert(ghost_prepare_race() == 0);
 	ghost_update(1, GAME_FRAME_RATE_LOW);
-	assert_render_sample(1, GAME_FRAME_RATE_LOW, FRAME_INTERPOLATION_ONE * 3U / 4U, 50);
+	assert_render_sample(1, GAME_FRAME_RATE_LOW,
+						 FRAME_INTERPOLATION_ONE - FRAME_INTERPOLATION_ONE / 6U, 33);
+	assert_render_sample(1, GAME_FRAME_RATE_LOW,
+						 FRAME_INTERPOLATION_ONE - FRAME_INTERPOLATION_ONE * 2U / 6U, 66);
 	assert_render_sample(1, GAME_FRAME_RATE_LOW, FRAME_INTERPOLATION_ONE / 2U, 100);
-	assert_render_sample(1, GAME_FRAME_RATE_LOW, FRAME_INTERPOLATION_ONE / 4U, 150);
+	assert_render_sample(1, GAME_FRAME_RATE_LOW,
+						 FRAME_INTERPOLATION_ONE - FRAME_INTERPOLATION_ONE * 4U / 6U, 133);
+	assert_render_sample(1, GAME_FRAME_RATE_LOW,
+						 FRAME_INTERPOLATION_ONE - FRAME_INTERPOLATION_ONE * 5U / 6U, 166);
 	assert_render_sample(1, GAME_FRAME_RATE_LOW, 0, 200);
 	ghost_end_race();
 	assert(!ghost_sample_render_pose(1, GAME_FRAME_RATE_LOW, 0, &rendered, &camera));

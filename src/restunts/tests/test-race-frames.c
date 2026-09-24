@@ -644,19 +644,23 @@ static void prepare_presentation_test(legacy_u16 rate, legacy_u16 mode)
 static void assert_presentation_timestamps(legacy_u16 samples_per_second,
 										   legacy_u16 distance_per_sample)
 {
-	assert(frames == 41U && scheduled_snapshots == frames);
+	assert(frames == 61U && scheduled_snapshots == frames);
 	legacy_u64 interval = PRESENTATION_SECOND_NS / samples_per_second;
-	const legacy_u64 visual_interval = PRESENTATION_SECOND_NS / PRESENTATION_RATE;
+	const legacy_u16 slots_per_sample = PRESENTATION_RATE / samples_per_second;
 	for (legacy_u32 index = 0; index < frames; index++) {
 		legacy_u64 time = scheduled_renders[index].time;
-		assert(time == index * visual_interval);
+		/* The frame loop sleeps in whole milliseconds. It must never present
+		 * before the exact rational 60 Hz deadline. */
+		assert(time == (index * 1000U + PRESENTATION_RATE - 1U) / PRESENTATION_RATE * 1000000ULL);
 		legacy_u32 sample = (legacy_u32)(time / interval);
 		legacy_s32 expected = 0;
 		if (sample != 0) {
 			/* Display evenly spaced points in the completed authoritative interval,
 			 * ending at its newest state one visual slot before the next sample. */
+			legacy_u32 fraction =
+				(index % slots_per_sample + 1U) * FRAME_INTERPOLATION_ONE / slots_per_sample;
 			expected = (sample - 1U) * distance_per_sample +
-					   distance_per_sample * (time % interval + visual_interval) / interval;
+					   distance_per_sample * fraction / FRAME_INTERPOLATION_ONE;
 		}
 		assert(scheduled_renders[index].position == expected);
 		assert(scheduled_renders[index].authoritative_position ==
@@ -687,7 +691,7 @@ static void test_presentation_rate(void)
 				if (mode == 1) {
 					assert_presentation_timestamps(rate, 60);
 				} else {
-					assert(frames > rate + 1U && frames < 41U);
+					assert(frames > rate + 1U && frames < 61U);
 				}
 			}
 		}
@@ -741,26 +745,73 @@ static void assert_visual_position(legacy_s32 position)
 	assert(scheduled_physics == physics && keys == input_samples);
 }
 
+static void test_interpolation_slot_boundaries(void)
+{
+	for (legacy_u16 rate = 10; rate <= 20; rate += 10) {
+		for (legacy_u16 slow = 0; slow < 2; slow++) {
+			prepare_interpolation_pair();
+			framespersec = rate;
+			game_replay_mode = REPLAY_MODE_PLAYBACK;
+			replay_playback_speed = slow != 0 ? REPLAY_PLAYBACK_SLOW : REPLAY_PLAYBACK_NORMAL;
+			legacy_u16 slots = PRESENTATION_RATE / rate * (slow != 0 ? 2U : 1U);
+			legacy_u64 origin = scheduled_time;
+			struct GAMESTATE authoritative = state;
+			race_present_interpolation();
+			assert(frames == 1);
+			assert(race_presentation_fraction(scheduled_time) == FRAME_INTERPOLATION_ONE / slots);
+			for (legacy_u16 slot = 1; slot < slots; slot++) {
+				legacy_u64 deadline =
+					origin + ((legacy_u64)slot * PRESENTATION_SECOND_NS + PRESENTATION_RATE - 1U) /
+								 PRESENTATION_RATE;
+				scheduled_time = deadline - 1U;
+				assert(race_presentation_fraction(scheduled_time) ==
+					   slot * FRAME_INTERPOLATION_ONE / slots);
+				race_present_interpolation();
+				assert(frames == slot);
+				scheduled_time = deadline;
+				legacy_u32 fraction = (slot + 1U) * FRAME_INTERPOLATION_ONE / slots;
+				assert(race_presentation_fraction(scheduled_time) == fraction);
+				race_present_interpolation();
+				assert(frames == slot + 1U);
+				assert(scheduled_renders[slot].position ==
+					   (legacy_s32)(60U * fraction / FRAME_INTERPOLATION_ONE));
+			}
+			assert(race_presentation_fraction(scheduled_time) == FRAME_INTERPOLATION_ONE);
+			assert(scheduled_renders[frames - 1U].position == 60);
+			assert(memcmp(&authoritative, &state, sizeof(state)) == 0);
+			assert(scheduled_physics == 0 && keys == 0);
+		}
+	}
+}
+
 static void test_interpolation_slots_and_stalls(void)
 {
 	prepare_interpolation_pair();
-	assert_visual_position(30);
-	scheduled_time = 74999999U;
-	assert_visual_position(30);
-	scheduled_time = 75000000U;
+	assert_visual_position(19);
+	scheduled_time = 66666666U;
+	assert_visual_position(19);
+	scheduled_time = 66666667U;
+	assert_visual_position(39);
+	scheduled_time = 83333333U;
+	assert_visual_position(39);
+	scheduled_time = 83333334U;
 	assert_visual_position(60);
 	scheduled_time = 500000000U;
 	assert_visual_position(60);
 
 	prepare_interpolation_pair();
 	race_present_interpolation();
-	assert(frames == 1 && scheduled_renders[0].position == 30);
-	scheduled_time = 174000000U;
+	assert(frames == 1 && scheduled_renders[0].position == 19);
+	/* A late frame skips missed slots without drawing a catch-up burst. */
+	scheduled_time = 181000000U;
 	race_present_interpolation();
 	assert(frames == 2 && scheduled_renders[1].position == 60);
 	race_present_interpolation();
 	assert(frames == 2);
-	scheduled_time = 175000000U;
+	scheduled_time = 183333333U;
+	race_present_interpolation();
+	assert(frames == 2);
+	scheduled_time = 183333334U;
 	race_present_interpolation();
 	assert(frames == 3 && scheduled_renders[2].position == 60);
 }
@@ -769,7 +820,7 @@ static void test_interpolation_resets(void)
 {
 	for (legacy_u16 reset = 0; reset < 6; reset++) {
 		prepare_interpolation_pair();
-		assert_visual_position(30);
+		assert_visual_position(19);
 		if (reset == 0) {
 			cameramode++;
 		} else if (reset == 1) {
@@ -802,7 +853,7 @@ static void test_interpolation_resets(void)
 		scheduled_time += 50000000U;
 		race_presentation_capture();
 		assert(race_presentation.history_valid != 0);
-		assert_visual_position(state.playerstate.car_position.lx - 30);
+		assert_visual_position(state.playerstate.car_position.lx - 41);
 	}
 }
 
@@ -925,6 +976,7 @@ int main(void)
 #ifdef RESTUNTS_SDL3
 	test_presentation_rate();
 	test_replay_presentation_rate();
+	test_interpolation_slot_boundaries();
 	test_interpolation_slots_and_stalls();
 	test_interpolation_resets();
 	test_ghost_interpolation_timestamps();
