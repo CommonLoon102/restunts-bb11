@@ -1,7 +1,6 @@
 #ifdef RESTUNTS_SDL3
 #include "../platform/sdl3/sdl3.h"
-#include "frame_prediction.h"
-#include "phantom_physics.h"
+#include "frame_interpolation.h"
 #include "presentation.h"
 #endif
 #include "dashboard.h"
@@ -357,37 +356,48 @@ struct RACE_PRESENTATION {
 	struct PRESENTATION_CLOCK clock;
 	struct GAMESTATE previous;
 	struct GAMESTATE current;
-	struct GAMESTATE predicted;
-	struct PHANTOM_PHYSICS phantom;
-	struct CARSTATE ghost_previous;
-	struct CARSTATE ghost_current;
-	struct CARSTATE ghost_predicted;
-	struct GHOST_CAMERA_STATE ghost_camera_previous;
-	struct GHOST_CAMERA_STATE ghost_camera_current;
-	struct GHOST_CAMERA_STATE ghost_camera_predicted;
+	struct GAMESTATE interpolated;
+	struct CARSTATE ghost_interpolated;
+	struct GHOST_CAMERA_STATE ghost_camera_interpolated;
 	legacy_u64 sample_time;
 	legacy_u64 control_time;
 	legacy_u16 sample_span;
 	legacy_s16 sample_frame;
-	legacy_s16 ghost_frame;
-	legacy_s16 ghost_live_frame;
-	legacy_u16 ghost_sample_span;
 	legacy_s16 view[13];
 	legacy_u8 history_valid;
 	legacy_u8 ghost_valid;
 	legacy_u8 started;
-	legacy_u8 predicting;
+	legacy_u8 interpolating;
 };
 
 static struct RACE_PRESENTATION race_presentation;
 
-static void race_presentation_reset_phantom(void)
+/* Replay speed changes the interval between captured keyframes, not the visual rate. */
+static legacy_u64 race_presentation_interval(void)
 {
-	legacy_s8 input = INPUT_NONE;
-	if (state.game_frame > 0) {
-		input = replay_input_buffer[(legacy_u16)state.game_frame - 1U];
+	legacy_u16 rate = framespersec > 0 ? (legacy_u16)framespersec : GAME_FRAME_RATE_NORMAL;
+	legacy_u64 interval = PRESENTATION_SECOND_NS / rate;
+	if (game_replay_mode == REPLAY_MODE_PLAYBACK && replay_playback_speed == REPLAY_PLAYBACK_SLOW) {
+		interval *= 2;
 	}
-	phantom_physics_reset(&race_presentation.phantom, &state, input);
+	return interval;
+}
+
+static legacy_u32 race_presentation_fraction(legacy_u64 now)
+{
+	if (race_presentation.history_valid == 0 ||
+		race_presentation.sample_frame != state.game_frame) {
+		return FRAME_INTERPOLATION_ONE;
+	}
+	const legacy_u64 period = PRESENTATION_SECOND_NS / PRESENTATION_RATE;
+	legacy_u64 age = now > race_presentation.sample_time ? now - race_presentation.sample_time : 0;
+	/* A new pair starts at its first 40 Hz interior sample: halfway at 20 Hz.
+	 * The next slot reaches the current keyframe. Quantize late draws to the
+	 * latest due slot, and hold the endpoint if no new keyframe is available. */
+	legacy_u64 elapsed = (age / period + 1U) * period;
+	legacy_u64 interval = race_presentation_interval();
+	return elapsed < interval ? (legacy_u32)(elapsed * FRAME_INTERPOLATION_ONE / interval)
+							  : FRAME_INTERPOLATION_ONE;
 }
 
 static void race_presentation_sync(legacy_s16 rewinding)
@@ -420,7 +430,6 @@ static void race_presentation_sync(legacy_s16 rewinding)
 		race_presentation.control_time = 0;
 		race_presentation.ghost_valid = 0;
 		race_presentation.started = 0;
-		race_presentation_reset_phantom();
 		presentation_reset(&race_presentation.clock, presentation_now());
 	}
 }
@@ -439,73 +448,28 @@ static void race_presentation_capture(void)
 	race_presentation.current = state;
 	race_presentation.sample_frame = state.game_frame;
 	race_presentation.sample_time = presentation_now();
-	race_presentation_reset_phantom();
+	presentation_reset(&race_presentation.clock, race_presentation.sample_time);
 }
 
-static void race_presentation_capture_ghost(void)
+static void race_presentation_interpolate_ghost(legacy_u32 fraction)
 {
 	const struct CARSTATE *car = ghost_car_state();
 	const struct GHOST_CAMERA_STATE *camera = ghost_camera_state();
-	if (car == 0 || camera == 0) {
-		race_presentation.ghost_valid = 0;
-		return;
-	}
-	legacy_s16 live_span =
-		LEGACY_S16_WRAP_SUB(state.game_frame, race_presentation.ghost_live_frame);
-	if (race_presentation.ghost_valid != 0 && race_presentation.ghost_frame == camera->frame &&
-		live_span >= 0) {
-		/* A lower-rate ghost repeats poses between source samples. Retain the
-		 * last distinct pair; only a sample overdue by a full source interval
-		 * indicates that the recorded ghost has stopped advancing. */
-		if (race_presentation.ghost_valid == 2 &&
-			(legacy_u16)live_span >= race_presentation.ghost_sample_span) {
-			race_presentation.ghost_valid = 1;
-		}
-		return;
-	}
-	legacy_s16 source_span = LEGACY_S16_WRAP_SUB(camera->frame, race_presentation.ghost_frame);
-	race_presentation.ghost_previous = race_presentation.ghost_current;
-	race_presentation.ghost_camera_previous = race_presentation.ghost_camera_current;
-	race_presentation.ghost_valid = race_presentation.ghost_valid != 0 && live_span > 0 &&
-											source_span > 0 &&
-											(legacy_s32)source_span <= (legacy_s32)live_span * 2 &&
-											(legacy_s32)source_span * 2 >= live_span
-										? 2
-										: 1;
-	race_presentation.ghost_sample_span = live_span > 0 ? (legacy_u16)live_span : 1U;
-	race_presentation.ghost_current = *car;
-	race_presentation.ghost_camera_current = *camera;
-	race_presentation.ghost_frame = camera->frame;
-	race_presentation.ghost_live_frame = state.game_frame;
-}
-
-static void race_presentation_predict_ghost(legacy_u32 fraction)
-{
+	race_presentation.ghost_valid = car != 0 && camera != 0;
 	if (race_presentation.ghost_valid == 0) {
 		return;
 	}
-	legacy_u32 ghost_fraction = 0;
-	legacy_s16 sample_age =
-		LEGACY_S16_WRAP_SUB(state.game_frame, race_presentation.ghost_live_frame);
-	if (race_presentation.ghost_valid == 2 && sample_age >= 0) {
-		/* The source pose can predate the current live tick. Include that age
-		 * even on its authoritative presentation, where fraction is zero. */
-		legacy_u64 elapsed = (legacy_u64)(legacy_u16)sample_age * FRAME_PREDICTION_ONE +
-							 (legacy_u64)fraction * race_presentation.sample_span;
-		legacy_u64 source_fraction = elapsed / race_presentation.ghost_sample_span;
-		ghost_fraction = source_fraction > FRAME_PREDICTION_ONE ? FRAME_PREDICTION_ONE
-																: (legacy_u32)source_fraction;
+	race_presentation.ghost_interpolated = *car;
+	race_presentation.ghost_camera_interpolated = *camera;
+	if (race_presentation.history_valid == 0) {
+		return;
 	}
-	frame_predict_car(&race_presentation.ghost_predicted, &race_presentation.ghost_current,
-					  &race_presentation.ghost_previous, ghost_fraction);
-	race_presentation.ghost_camera_predicted = race_presentation.ghost_camera_current;
-	if (race_presentation.ghost_camera_current.trackside_index ==
-		race_presentation.ghost_camera_previous.trackside_index) {
-		frame_predict_vector(&race_presentation.ghost_camera_predicted.follow_position,
-							 &race_presentation.ghost_camera_current.follow_position,
-							 &race_presentation.ghost_camera_previous.follow_position,
-							 ghost_fraction);
-	}
+	legacy_u32 lag = race_presentation.sample_span * (FRAME_INTERPOLATION_ONE - fraction);
+	/* Recorded ghosts can have a different tick rate. Sample their cached
+	 * replay at this same visual instant instead of blending repeated poses. */
+	(void)ghost_sample_render_pose((legacy_u32)(legacy_u16)state.game_frame + elapsed_time1,
+								   framespersec, lag, &race_presentation.ghost_interpolated,
+								   &race_presentation.ghost_camera_interpolated);
 }
 
 #endif
@@ -534,11 +498,11 @@ static void race_draw_frame(void)
 	}
 
 #ifdef RESTUNTS_SDL3
-	if (race_presentation.predicting != 0) {
-		update_frame_predicted(
-			frame_buffer_index, &rect_windshield, &race_presentation.predicted,
-			race_presentation.ghost_valid != 0 ? &race_presentation.ghost_predicted : 0,
-			race_presentation.ghost_valid != 0 ? &race_presentation.ghost_camera_predicted : 0);
+	if (race_presentation.interpolating != 0) {
+		update_frame_snapshot(
+			frame_buffer_index, &rect_windshield, &race_presentation.interpolated,
+			race_presentation.ghost_valid != 0 ? &race_presentation.ghost_interpolated : 0,
+			race_presentation.ghost_valid != 0 ? &race_presentation.ghost_camera_interpolated : 0);
 	} else
 #endif
 	{
@@ -596,36 +560,10 @@ static void race_draw_frame(void)
 #ifdef RESTUNTS_SDL3
 static void race_draw_visual(void)
 {
-	legacy_u64 now = presentation_now();
-	legacy_u32 fraction = 0;
-	if (race_presentation.history_valid != 0 &&
-		race_presentation.sample_frame == state.game_frame && framespersec > 0) {
-		legacy_u64 interval = PRESENTATION_SECOND_NS / (legacy_u16)framespersec;
-		if (game_replay_mode == REPLAY_MODE_PLAYBACK) {
-			if (replay_playback_speed == REPLAY_PLAYBACK_SLOW) {
-				interval *= 2;
-			}
-		}
-		legacy_u64 age = now - race_presentation.sample_time;
-		if (age > interval) {
-			age = interval;
-		}
-		fraction = (legacy_u32)(age * FRAME_PREDICTION_ONE / interval);
-	}
-	frame_predict_state(&race_presentation.predicted, &state, &race_presentation.previous,
-						fraction);
-	if (fraction != 0) {
-		legacy_u32 elapsed20 = (legacy_u32)((legacy_u64)fraction * race_presentation.sample_span *
-											GAME_FRAME_RATE_NORMAL / (legacy_u16)framespersec);
-		phantom_physics_advance(&race_presentation.phantom, elapsed20);
-		race_presentation.predicted.playerstate = race_presentation.phantom.state.playerstate;
-		race_presentation.predicted.opponentstate = race_presentation.phantom.state.opponentstate;
-		for (legacy_u16 car = 0; car < GAMESTATE_CAR_VECTOR_COUNT; car++) {
-			race_presentation.predicted.game_follow_camera_position[car] =
-				race_presentation.phantom.state.game_follow_camera_position[car];
-		}
-	}
-	race_presentation_predict_ghost(fraction);
+	legacy_u32 fraction = race_presentation_fraction(presentation_now());
+	frame_interpolate_state(&race_presentation.interpolated, &state, &race_presentation.previous,
+							fraction);
+	race_presentation_interpolate_ghost(fraction);
 
 	if (video_uses_page_flipping != 0) {
 		sprite_select_mcga_backbuffer();
@@ -633,15 +571,15 @@ static void race_draw_visual(void)
 	} else {
 		sprite_select_render_window();
 	}
-	race_presentation.predicting = 1;
+	race_presentation.interpolating = 1;
 	race_draw_frame();
-	race_presentation.predicting = 0;
+	race_presentation.interpolating = 0;
 }
 
-static void race_present_prediction(void)
+static void race_present_interpolation(void)
 {
-	/* Extra presentations advance only the disposable collision-aware branch.
-	 * Replay, controls and timer callbacks retain authoritative state. */
+	/* Extra presentations blend captured states without stepping physics.
+	 * Replay, controls and timer callbacks retain their authoritative cadence. */
 	if (supersight_enabled == 0 || race_presentation.started == 0 ||
 		state.game_frame != elapsed_time2 || state.game_inputmode == GAME_INPUT_MODE_WAITING ||
 		(game_replay_mode == REPLAY_MODE_PLAYBACK && is_in_replay != 0) || race_exit_request != 0) {
@@ -791,7 +729,7 @@ static void race_run_frames(struct RACE_VIEWPORT_CACHE *cache)
 		if (race_frame_is_ready(&last_processed_frame) == 0) {
 #ifdef RESTUNTS_SDL3
 			if (rewind.active == 0 && state.game_frame == last_processed_frame) {
-				race_present_prediction();
+				race_present_interpolation();
 			}
 #endif
 			continue;
@@ -825,7 +763,6 @@ static void race_run_frames(struct RACE_VIEWPORT_CACHE *cache)
 		race_update_viewport(cache, rewind.active);
 #ifdef RESTUNTS_SDL3
 		race_presentation_capture();
-		race_presentation_capture_ghost();
 		if (supersight_enabled == 0 || rewind.active != 0 ||
 			(game_replay_mode == REPLAY_MODE_PLAYBACK && is_in_replay != 0) ||
 			presentation_due(&race_presentation.clock, presentation_now()) != 0) {

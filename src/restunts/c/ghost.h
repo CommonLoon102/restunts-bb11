@@ -27,6 +27,14 @@ legacy_s16 ghost_is_active(void);
 void ghost_update(legacy_u32 frame, legacy_u16 live_frame_rate);
 struct CARSTATE *ghost_car_state(void);
 const struct GHOST_CAMERA_STATE *ghost_camera_state(void);
+#ifdef RESTUNTS_SDL3
+/* Sample cached recorded poses at (live_frame - lag / 65536) / live_frame_rate.
+ * This presentation-only read never advances physics or changes the live ghost.
+ * Failure leaves both outputs untouched. Start/end times clamp to the replay. */
+legacy_s16 ghost_sample_render_pose(legacy_u32 live_frame, legacy_u16 live_frame_rate,
+									legacy_u32 lag, struct CARSTATE *car,
+									struct GHOST_CAMERA_STATE *camera);
+#endif
 /* Convert recorded listener movement to one live audio tick, without file I/O. */
 void ghost_adjust_camera_motion(struct VECTOR *previous, const struct VECTOR *current);
 const struct SIMD *ghost_car_simd(void);

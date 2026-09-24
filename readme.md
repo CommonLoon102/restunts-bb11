@@ -105,20 +105,24 @@ and the clipboard frame are preserved. The selected full-resolution sources and
 4x working tiles are archived in `docs/opponents/game-sources/` for regeneration.
 
 SuperSight also targets **40 FPS** in SDL3 driving, replay playback, the nighttime
-intro, and rotating car previews. Between real simulation updates, driving and
-replay playback advance a disposable copy of the car physics in steps no longer
-than 1/40 second. At the normal 20 Hz simulation rate, one phantom frame appears
-between each pair of real updates. Each phantom frame uses the preceding state's
-motion, collision, and suspension, with the last sampled controls held constant.
-The next real update discards that branch and continues from the previous real
-state. This prevents visual predictions from carrying a landing through the ground
-without adding a deliberate simulation-tick delay. Short steps can still differ
-slightly from the next real update and produce a small correction.
+intro, and rotating car previews. Driving and replay playback interpolate between
+completed physics states. At the normal 20 Hz simulation rate, each new keyframe
+first displays the midpoint between it and the previous keyframe; 25 milliseconds
+later it displays the new keyframe itself. This keeps visual motion 25 milliseconds
+behind the physics timeline, before rendering and display delays, and avoids
+corrections between predicted motion and the next real update. Car position,
+rotation, suspension, and follow cameras use the same interpolation fraction.
+Recorded ghosts are sampled at that same visual time even when their replay
+uses a different physics frame rate.
+
 Input sampling, recording, and authoritative physics retain their original 10 or
-20 Hz schedule. Phantom crashes produce no sounds or gameplay events. Cracked
-glass, sinking, and explosions appear only after a real update confirms the event.
-Phantom state never enters replay data; toggling F12 during a replay does not
-change its simulated result. Seeking, pausing, and camera changes reset prediction.
+20 Hz schedule. A 10 Hz simulation uses four visual samples per keyframe interval
+and a 75-millisecond visual delay; slow replay playback increases the delay to
+cover its longer keyframe intervals. Late rendering skips overdue visual samples
+and never predicts beyond the newest state. Crashes, sinking, and explosions
+follow confirmed gameplay events. Interpolated state never enters replay data;
+toggling F12 during a replay does not change its simulated result. Seeking,
+pausing, rewinding, and camera changes reset interpolation history.
 
 Press **F11** to toggle a frame-rate counter in the top-left corner. It measures
 presented frames over approximately one second and rounds down, for example
@@ -334,15 +338,15 @@ out/sdl3-linux-x64/restunts --data-dir stunts /nointro
 
 Use `out/sdl3-linux-x86` instead for the x86 build.
 
-The native `frame-prediction` and `sdl3-race-frames` tests check visual prediction,
-40 Hz pacing, and unchanged input and authoritative physics counts. `render-replay`
-compares every serialized state and RNG seed with SuperSight disabled, enabled,
-and repeatedly toggled, including intermediate phantom physics and renders. It
-also checks that phantom steps preserve simulation scratch data and checkpoints.
-When `hardland.rpl` is available, its 16.00–16.50 second landing is covered.
-When `shaking.rpl` is available, its 40–45 second loop exit checks that a tiny
-phantom step cannot abruptly change cockpit rotation. Rendering checks also
-cover speculative and confirmed cracking, sinking, and explosions.
+The native `frame-interpolation` and `sdl3-race-frames` tests check bounded visual
+interpolation, synchronized 40 Hz pacing, and unchanged input and authoritative
+physics counts. `render-replay` compares every serialized state and RNG seed with
+SuperSight disabled, enabled, and repeatedly toggled, including intermediate
+interpolated renders. It also checks that rendering preserves simulation scratch
+data and checkpoints. When `hardland.rpl` is available, its 16.00–16.50 second
+landing is covered. When `shaking.rpl` is available, its 40–45 second loop exit
+checks interpolated cockpit rotation. Rendering checks also cover confirmed
+cracking, sinking, and explosions.
 
 #### Linux host: Windows backend
 

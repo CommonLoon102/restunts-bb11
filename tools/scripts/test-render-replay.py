@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Compare every replay tick and RNG seed across renderer toggle histories."""
+"""Verify interpolated rendering preserves every replay tick and RNG seed."""
 
 import os
 from pathlib import Path
@@ -24,7 +24,7 @@ def main():
                  if path.suffix.upper() == ".RPL"}
     # Cover 10 Hz, 20 Hz collisions/debris, both cars, and the hard landing at
     # 16.00-16.50 seconds, plus the loop exit after 40 seconds in SHAKING.
-    # HARDLAND's old second phantom at 16.30s was below ground.
+    # Check bounded interpolation through the HARDLAND landing and SHAKING loop exit.
     fixtures = [(available["DEFAULT"], 240, 0, 0)]
     for replay, limit, first, last in [("DEFCRSH", 0, 0, 0), ("0A0A", 240, 0, 0),
                                       ("HARDLAND", 0, 320, 330), ("SHAKING", 0, 0, 0)]:
@@ -57,7 +57,7 @@ def main():
                     raise AssertionError(f"{replay}, mode {mode}: {field} differs at "
                                          f"tick {offset // RECORD_SIZE}, byte {field_offset}")
             print(f"{replay}: {len(baseline) // RECORD_SIZE} identical gamestates and RNG seeds "
-                  "with F12 off, on and repeatedly toggled", flush=True)
+                  "with interpolated rendering off, on and repeatedly toggled", flush=True)
 
 
 if __name__ == "__main__":

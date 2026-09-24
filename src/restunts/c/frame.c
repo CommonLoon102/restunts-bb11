@@ -2087,9 +2087,8 @@ void update_frame(legacy_s8 buffer_index, struct RECTANGLE *cliprect)
 	polyinfo_set_supersight(0);
 }
 
-/* Motion can be speculative, but damage, sinking and disappearing cars must
- * wait for an authoritative event. Keep the private physics flags intact so
- * its next short step still resolves the predicted contact consistently. */
+/* A visual snapshot may lag behind physics. Damage, sinking and disappearing
+ * cars still follow the authoritative events, including their original timing. */
 static void frame_preserve_authoritative_events(struct GAMESTATE *presentation,
 												struct CARSTATE *ghost,
 												struct GHOST_CAMERA_STATE *ghost_camera)
@@ -2112,13 +2111,13 @@ static void frame_preserve_authoritative_events(struct GAMESTATE *presentation,
 	}
 }
 
-void update_frame_predicted(legacy_s8 buffer_index, struct RECTANGLE *cliprect,
-							const struct GAMESTATE *render_state,
-							const struct CARSTATE *render_ghost,
-							const struct GHOST_CAMERA_STATE *render_ghost_camera)
+void update_frame_snapshot(legacy_s8 buffer_index, struct RECTANGLE *cliprect,
+						   const struct GAMESTATE *render_state,
+						   const struct CARSTATE *render_ghost,
+						   const struct GHOST_CAMERA_STATE *render_ghost_camera)
 {
 	/* External-camera clearance borrows the collision and wheel-travel scratch.
-	 * Extra presentations must not leave their predicted geometry for physics. */
+	 * Extra presentations must not leave their visual geometry for physics. */
 	struct TRACK_COLLISION_SNAPSHOT saved_collision;
 	track_collision_capture(&saved_collision);
 	legacy_s16 saved_plane = planindex_copy;
