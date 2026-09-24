@@ -28,7 +28,12 @@ legacy_f64 shape3d_hires_depth(legacy_u32 index);
 void shape3d_hires_reset(void);
 /* Scale the stroke with model size; captured per queued primitive. */
 void shape3d_hires_set_model_scale(legacy_f64 scale);
-void shape3d_hires_begin_shape(legacy_u32 index, legacy_s32 depth_test);
+enum SHAPE3D_HIRES_DEPTH_MODE {
+	SHAPE3D_HIRES_DEPTH_ORDERED,
+	SHAPE3D_HIRES_DEPTH_SORTED,
+	SHAPE3D_HIRES_DEPTH_BACKGROUND
+};
+void shape3d_hires_begin_shape(legacy_u32 index, legacy_s32 depth_mode);
 void shape3d_hires_queue(legacy_u32 index, legacy_u8 type, legacy_u16 vertex_count,
 						 const legacy_u8 *indices, const struct SHAPE3D_HIRES_VECTOR *vertices,
 						 legacy_u16 flags);

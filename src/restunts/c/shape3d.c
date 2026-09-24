@@ -875,8 +875,13 @@ legacy_u16 shape3d_transform_and_queue(struct TRANSFORMEDSHAPE3D *instance)
 	}
 	transshapeprimitives = instance->shapeptr->shape3d_primitives;
 #if defined(RESTUNTS_SDL3)
-	shape3d_hires_begin_shape(polyinfonumpolys,
-							  (transshapeflags & SHAPE3D_NO_DEPTH_SORT_FLAG) == 0);
+	legacy_s32 depth_mode = SHAPE3D_HIRES_DEPTH_SORTED;
+	if ((transshapeflags & SHAPE3D_BACKGROUND_FLAG) != 0) {
+		depth_mode = SHAPE3D_HIRES_DEPTH_BACKGROUND;
+	} else if ((transshapeflags & SHAPE3D_NO_DEPTH_SORT_FLAG) != 0) {
+		depth_mode = SHAPE3D_HIRES_DEPTH_ORDERED;
+	}
+	shape3d_hires_begin_shape(polyinfonumpolys, depth_mode);
 #endif
 
 	legacy_s32 depth_sum;
