@@ -389,13 +389,18 @@ static legacy_u32 race_presentation_fraction(legacy_u64 now)
 		race_presentation.sample_frame != state.game_frame) {
 		return FRAME_INTERPOLATION_ONE;
 	}
-	const legacy_u64 period = PRESENTATION_SECOND_NS / PRESENTATION_RATE;
 	legacy_u64 age = now > race_presentation.sample_time ? now - race_presentation.sample_time : 0;
-	/* A new pair starts at its first 40 Hz interior sample: halfway at 20 Hz.
-	 * The next slot reaches the current keyframe. Quantize late draws to the
-	 * latest due slot, and hold the endpoint if no new keyframe is available. */
-	legacy_u64 elapsed = (age / period + 1U) * period;
 	legacy_u64 interval = race_presentation_interval();
+	if (age >= interval) {
+		return FRAME_INTERPOLATION_ONE;
+	}
+	/* Each pair starts one visual slot into its completed physics interval:
+	 * thirds at 20 Hz, sixths at 10 Hz. Keep the 60 Hz period rational so
+	 * fractional slots share presentation_due's exact deadlines and the final
+	 * slot reaches the keyframe. Late draws skip slots and hold the endpoint. */
+	legacy_u64 elapsed =
+		(age * PRESENTATION_RATE / PRESENTATION_SECOND_NS + 1U) * PRESENTATION_SECOND_NS;
+	interval *= PRESENTATION_RATE;
 	return elapsed < interval ? (legacy_u32)(elapsed * FRAME_INTERPOLATION_ONE / interval)
 							  : FRAME_INTERPOLATION_ONE;
 }

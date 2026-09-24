@@ -889,9 +889,9 @@ int main(void)
 		}
 		if (mode == 1) {
 			assert(frame_index == 100);
-			assert(preview_present_count == 40);
-			/* The final 40 Hz presentation is at 975 ms of a 100-unit rotation. */
-			assert(preview_last_rotation == 97);
+			assert(preview_present_count == 60);
+			/* The last 60 Hz deadline is 983.33 ms, drawn at the next millisecond. */
+			assert(preview_last_rotation == 98);
 		}
 	}
 	test_display_toggles();

@@ -1415,7 +1415,7 @@ html&gt;body{padding:0}&lt;/style&gt;
     #ss-timing .picture-swatch { background:var(--viz-series-2); }
     #ss-timing .input-swatch { background:var(--viz-series-3); }
   &lt;/style&gt;
-  &lt;h3&gt;SuperSight timing: 20 Hz physics → 40 FPS pictures&lt;/h3&gt;
+  &lt;h3&gt;SuperSight timing: 20 Hz physics → 60 FPS pictures&lt;/h3&gt;
   &lt;div class=&quot;text-small text-muted&quot;&gt;Ideal timing · held steering key · render / display delay excluded&lt;/div&gt;
   &lt;div class=&quot;viz-controls&quot;&gt;
     &lt;label class=&quot;form-label&quot; for=&quot;ss-inspect&quot;&gt;
@@ -1434,7 +1434,7 @@ html&gt;body{padding:0}&lt;/style&gt;
   &lt;/svg&gt;
   &lt;div class=&quot;legend text-small&quot;&gt;
     &lt;span&gt;&lt;span class=&quot;swatch physics-swatch&quot;&gt;&lt;/span&gt;K = completed physics keyframe&lt;/span&gt;
-    &lt;span&gt;&lt;span class=&quot;swatch picture-swatch&quot;&gt;&lt;/span&gt;M = midpoint of adjacent keyframes&lt;/span&gt;
+    &lt;span&gt;&lt;span class=&quot;swatch picture-swatch&quot;&gt;&lt;/span&gt;I₁ / I₂ = ⅓ / ⅔ blend toward the new keyframe&lt;/span&gt;
     &lt;span&gt;&lt;span class=&quot;swatch input-swatch&quot;&gt;&lt;/span&gt;Contains the new input&lt;/span&gt;
   &lt;/div&gt;
   &lt;div id=&quot;ss-selected&quot; class=&quot;text-small&quot; aria-live=&quot;polite&quot;&gt;&lt;/div&gt;
@@ -1447,7 +1447,9 @@ html&gt;body{padding:0}&lt;/style&gt;
       const key = root.querySelector('#ss-key');
       const state = { time:110, press:62 };
       const NS = 'http://www.w3.org/2000/svg';
-      const limits = { start:25, end:225 };
+      const limits = { start:0, end:225 };
+      // Keep timing in integer thirds of a millisecond; round only visible text.
+      const ticksPerMs = 3, frameTicks = 50, delayTicks = 100;
       let lastWidth = 0;
 
       function el(tag, attrs, text) {
@@ -1458,6 +1460,18 @@ html&gt;body{padding:0}&lt;/style&gt;
         return node;
       }
       function label(x,y,text,attrs={}) { return el('text',{x,y,...attrs},text); }
+      function ms(ticks) { return String(Math.round(ticks / ticksPerMs * 10) / 10); }
+      function picture(slot) {
+        if (slot &lt; 3) return { pose:0, phase:3, previous:0, current:0, name:'K0' };
+        const pose = slot * frameTicks - delayTicks;
+        const phase = slot % 3 + 1;
+        const current = Math.floor(slot / 3) * 50;
+        return { pose, phase, previous:current-50, current, name:(phase===3?'K':'I')+ms(pose) };
+      }
+      function blend(frame) {
+        if (frame.phase===3) return `K${frame.current} intact`;
+        return `${frame.phase===1?'⅔':'⅓'} K${frame.previous} + ${frame.phase===1?'⅓':'⅔'} K${frame.current}`;
+      }
       function sampleAt(press) { return Math.ceil(press / 50) * 50; }
       function save() {
         if (window.openai &amp;&amp; window.openai.setWidgetState) {
@@ -1466,8 +1480,8 @@ html&gt;body{padding:0}&lt;/style&gt;
       }
       function restore(saved) {
         const data = saved &amp;&amp; saved.modelContent;
-        if (data &amp;&amp; Number.isFinite(data.inspect_time_ms)) state.time = Math.max(50,Math.min(220,data.inspect_time_ms));
-        if (data &amp;&amp; Number.isFinite(data.key_press_ms)) state.press = Math.max(51,Math.min(149,data.key_press_ms));
+        if (data &amp;&amp; Number.isFinite(data.inspect_time_ms)) state.time = Math.max(50,Math.min(220,Math.round(data.inspect_time_ms)));
+        if (data &amp;&amp; Number.isFinite(data.key_press_ms)) state.press = Math.max(51,Math.min(149,Math.round(data.key_press_ms)));
       }
       function render() {
         const w = root.getBoundingClientRect().width;
@@ -1476,16 +1490,15 @@ html&gt;body{padding:0}&lt;/style&gt;
         const left = 12, right = w - 12;
         const x = t =&gt; left + (t - limits.start) / (limits.end - limits.start) * (right-left);
         const sampled = sampleAt(state.press);
-        const fullAt = sampled + 25;
+        const fullAt = sampled * ticksPerMs + delayTicks;
         const physics = Math.floor(state.time / 50) * 50;
-        const presentation = Math.floor(state.time / 25) * 25;
-        const pose = presentation - 25;
-        const midpoint = presentation % 50 === 0;
-        const visible = (midpoint ? 'M' : 'K') + pose;
-        const pictureAge = state.time - pose;
-        const physicsGap = physics - pose;
+        const frame = picture(Math.floor(state.time * ticksPerMs / frameTicks));
+        const pose = frame.pose;
+        const visible = frame.name;
+        const pictureAge = state.time * ticksPerMs - pose;
+        const physicsGap = physics * ticksPerMs - pose;
         const inputDelay = sampled - state.press;
-        const fullDelay = fullAt - state.press;
+        const fullDelay = fullAt - state.press * ticksPerMs;
         drawing.replaceChildren();
         svg.setAttribute('viewBox',`0 0 ${w} 515`);
         svg.setAttribute('height','515');
@@ -1494,16 +1507,16 @@ html&gt;body{padding:0}&lt;/style&gt;
         root.querySelector('#ss-key-value').textContent=state.press+' ms';
 
         label(left,17,'Real time (ms)',{class:'lane-label'});
-        for (let t=25;t&lt;=225;t+=25) {
-          const isEdge=t===25 || t===225;
+        for (let t=limits.start;t&lt;=limits.end;t+=25) {
+          const isEdge=t===limits.start || t===limits.end;
           [[42,51],[76,96],[143,177],[211,245]].forEach(([y1,y2])=&gt;el('line',{x1:x(t),x2:x(t),y1,y2,class:'grid'}));
-          if (!narrow || t%50===0) label(x(t),36,t,{'text-anchor':isEdge?(t===25?'start':'end'):'middle',class:'axis-label'});
+          if (!narrow || t&gt;0 &amp;&amp; t%50===0) label(x(t),36,t,{'text-anchor':isEdge?(t===limits.start?'start':'end'):'middle',class:'axis-label'});
         }
         const cursor=x(state.time);
         [[44,53],[76,96],[138,181],[206,249]].forEach(([y1,y2])=&gt;el('line',{x1:cursor,x2:cursor,y1,y2,class:'cursor'}));
 
         label(left,65,`User input · key down at ${state.press} ms`,{class:'lane-label'});
-        el('rect',{x:x(state.press),y:76,width:x(225)-x(state.press),height:18,class:'held'});
+        el('rect',{x:x(state.press),y:76,width:x(limits.end)-x(state.press),height:18,class:'held'});
         el('circle',{cx:x(state.press),cy:85,r:5,class:'input','data-tooltip':`Key pressed at ${state.press} ms; held through later samples.`});
         const keyLabelAnchor = x(state.press) &lt; w/2 ? 'start' : 'end';
         label(x(state.press)+(keyLabelAnchor==='start'?9:-9),89,'held',{'text-anchor':keyLabelAnchor});
@@ -1514,8 +1527,8 @@ html&gt;body{padding:0}&lt;/style&gt;
         [[112,120],[177,188],[205,211]].forEach(([y1,y2])=&gt;el('line',{x1:x(sampled),x2:x(sampled),y1,y2,stroke:'var(--viz-series-3)','stroke-width':2,'stroke-dasharray':'3 4'}));
 
         label(left,133,`Latest physics at ${state.time} ms · K${physics}`,{class:'lane-label'});
-        for(let t=0;t&lt;225;t+=50) {
-          const start=Math.max(25,t), end=Math.min(225,t+50);
+        for(let t=0;t&lt;limits.end;t+=50) {
+          const start=Math.max(limits.start,t), end=Math.min(limits.end,t+50);
           const tip=`K${t}: completed physics for ${t} ms. Held until ${t+50} ms. ${t&gt;=sampled?'Includes the held key.':'Does not include the new key.'}`;
           el('rect',{x:x(start)+1,y:143,width:x(end)-x(start)-2,height:34,rx:2,class:'physics','data-tooltip':tip});
           if(t&gt;=sampled) el('rect',{x:x(start)+1,y:173,width:x(end)-x(start)-2,height:4,class:'input'});
@@ -1524,39 +1537,38 @@ html&gt;body{padding:0}&lt;/style&gt;
         el('path',{d:`M ${cursor-4} 138 L ${cursor+4} 138 L ${cursor} 143 Z`,fill:'var(--foreground)'});
 
         label(left,201,`Player sees at ${state.time} ms · ${visible}`,{class:'lane-label'});
-        for(let t=25;t&lt;225;t+=25) {
-          const world=t-25;
-          const isMid=t%50===0;
-          const name=(isMid?'M':'K')+world;
-          const first=t===sampled, full=t===fullAt;
-          const tip=`Shown from ${t} to ${t+25} ms: ${isMid?`midpoint of K${world-25} and K${world+25}`:`K${world} intact`}. Pose timestamp ${world} ms. ${first?'First picture that can show the new input.':full?'First full keyframe affected by the new input.':t&gt;sampled?'Contains the held input.':'Before the input response.'}`;
-          el('rect',{x:x(t)+1,y:211,width:x(t+25)-x(t)-2,height:34,rx:2,class:'picture','data-tooltip':tip});
-          if(t&gt;=sampled) el('rect',{x:x(t)+1,y:241,width:x(t+25)-x(t)-2,height:4,class:'input'});
-          const centre=(x(t)+x(t+25))/2;
-          if(narrow) {
-            label(centre,224,isMid?'M':'K',{'text-anchor':'middle'});
-            label(centre,237,world,{'text-anchor':'middle'});
-          } else label(centre,232,name,{'text-anchor':'middle'});
+        for(let slot=0;slot*frameTicks&lt;limits.end*ticksPerMs;slot++) {
+          const tick=slot*frameTicks, next=tick+frameTicks;
+          const start=tick/ticksPerMs, end=Math.min(limits.end,next/ticksPerMs);
+          const shown=picture(slot);
+          const first=tick===sampled*ticksPerMs, full=tick===fullAt;
+          const tip=`Shown from ${ms(tick)} to ${ms(next)} ms: ${blend(shown)}. Pose timestamp ${ms(shown.pose)} ms. ${first?'First picture that can show the new input.':full?'First full keyframe affected by the new input.':tick&gt;sampled*ticksPerMs?'Contains the held input.':'Before the input response.'}`;
+          el('rect',{x:x(start)+1,y:211,width:x(end)-x(start)-2,height:34,rx:2,class:'picture','data-tooltip':tip});
+          if(tick&gt;=sampled*ticksPerMs) el('rect',{x:x(start)+1,y:241,width:x(end)-x(start)-2,height:4,class:'input'});
+          const centre=(x(start)+x(end))/2;
+          const symbol=shown.phase===3?'K':shown.phase===1?'I₁':'I₂';
+          label(centre,narrow?232:224,symbol,{'text-anchor':'middle'});
+          if(!narrow &amp;&amp; next&lt;=limits.end*ticksPerMs) label(centre,237,ms(shown.pose),{'text-anchor':'middle'});
         }
         el('path',{d:`M ${cursor-4} 206 L ${cursor+4} 206 L ${cursor} 211 Z`,fill:'var(--foreground)'});
 
         function range(y,from,to,title,kind) {
           label(left,y,title,{class:'lane-label'});
-          const a=x(from), b=x(to);
+          const a=x(from/ticksPerMs), b=x(to/ticksPerMs);
           if(to&gt;from) el('rect',{x:a,y:y+10,width:b-a,height:5,class:kind});
           el('circle',{cx:a,cy:y+12.5,r:3,class:kind});
           if(to&gt;from) el('circle',{cx:b,cy:y+12.5,r:3,class:kind});
-          const near=Math.abs(b-a)&lt;45;
-          if(near) label((a+b)/2,y+32,from===to?`${from} ms`:`${from} → ${to} ms`,{'text-anchor':'middle',class:'axis-label'});
-          else {
-            label(a,y+32,from+' ms',{'text-anchor':'middle',class:'axis-label'});
-            label(b,y+32,to+' ms',{'text-anchor':'middle',class:'axis-label'});
+          const first=label(a,y+32,ms(from)+' ms',{'text-anchor':'middle',class:'axis-label'});
+          const last=label(b,y+32,ms(to)+' ms',{'text-anchor':'middle',class:'axis-label'});
+          if(first.getBBox().x+first.getBBox().width+4&gt;last.getBBox().x) {
+            first.remove(); last.remove();
+            label((a+b)/2,y+32,from===to?`${ms(from)} ms`:`${ms(from)} → ${ms(to)} ms`,{'text-anchor':'middle',class:'axis-label'});
           }
         }
-        range(278,pose,state.time,`Picture age vs real time · ${pictureAge} ms`,'gap-real');
-        range(337,pose,physics,`Picture behind latest physics · ${physicsGap} ms`,'gap-physics');
-        range(396,state.press,sampled,`Key → M${sampled-25} (first effect) · ${inputDelay} ms`,'input');
-        range(455,state.press,fullAt,`Key → K${sampled} (full frame) · ${fullDelay} ms`,'input');
+        range(278,pose,state.time*ticksPerMs,`Picture age vs real time · ${ms(pictureAge)} ms`,'gap-real');
+        range(337,pose,physics*ticksPerMs,`Picture behind physics · ${ms(physicsGap)} ms`,'gap-physics');
+        range(396,state.press*ticksPerMs,sampled*ticksPerMs,`Key → I${ms(sampled*ticksPerMs-delayTicks)} (first) · ${inputDelay} ms`,'input');
+        range(455,state.press*ticksPerMs,fullAt,`Key → K${sampled} (full) · ${ms(fullDelay)} ms`,'input');
 
         drawing.querySelectorAll('text').forEach(node=&gt;{
           const bounds=node.getBBox();
@@ -1564,9 +1576,9 @@ html&gt;body{padding:0}&lt;/style&gt;
           else if(bounds.x+bounds.width&gt;w-3) node.setAttribute('x',Number(node.getAttribute('x'))+w-3-bounds.x-bounds.width);
         });
 
-        const mix=midpoint?`${visible} = ½ K${pose-25} + ½ K${pose+25}`:`${visible} = completed keyframe at ${pose} ms`;
+        const mix=`${visible} = ${blend(frame)} · pose time ${ms(pose)} ms`;
         root.querySelector('#ss-selected').textContent=mix;
-        root.querySelector('#ss-svg-description').textContent=`At real time ${state.time} ms, physics holds K${physics}; the displayed picture is ${visible}, representing pose time ${pose} ms. Its age against real time is ${pictureAge} ms, and it is ${physicsGap} ms behind latest physics. A held key pressed at ${state.press} ms is sampled into K${sampled}. It can first affect the picture at ${sampled} ms (${inputDelay} ms later). K${sampled} is displayed intact at ${fullAt} ms (${fullDelay} ms after pressing). Rendering and display delays are excluded.`;
+        root.querySelector('#ss-svg-description').textContent=`At real time ${state.time} ms, physics holds K${physics}; the displayed picture is ${visible}, representing pose time ${ms(pose)} ms. Its age against real time is ${ms(pictureAge)} ms, and it is ${ms(physicsGap)} ms behind latest physics. A held key pressed at ${state.press} ms is sampled into K${sampled}. It can first affect the picture at ${sampled} ms (${inputDelay} ms later). K${sampled} is displayed intact at ${ms(fullAt)} ms (${ms(fullDelay)} ms after pressing). Rendering and display delays are excluded.`;
       }
       inspect.addEventListener('input',()=&gt;{state.time=Number(inspect.value);render();});
       key.addEventListener('input',()=&gt;{state.press=Number(key.value);render();});
@@ -1575,7 +1587,7 @@ html&gt;body{padding:0}&lt;/style&gt;
         const rect=svg.getBoundingClientRect();
         const localY=event.clientY-rect.top;
         if(localY&gt;250) return;
-        state.time=Math.max(50,Math.min(220,Math.round(25+(event.clientX-rect.left-12)/(rect.width-24)*200)));
+        state.time=Math.max(50,Math.min(220,Math.round(limits.start+(event.clientX-rect.left-12)/(rect.width-24)*(limits.end-limits.start))));
         render();save();
       });
       restore(window.openai &amp;&amp; window.openai.widgetState);

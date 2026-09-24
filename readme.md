@@ -104,22 +104,23 @@ replacements fall back individually to the originals. Original numbered labels
 and the clipboard frame are preserved. The selected full-resolution sources and
 4x working tiles are archived in `docs/opponents/game-sources/` for regeneration.
 
-SuperSight also targets **40 FPS** in SDL3 driving, replay playback, the nighttime
+SuperSight also targets **60 FPS** in SDL3 driving, replay playback, the nighttime
 intro, and rotating car previews. Driving and replay playback interpolate between
 completed physics states. At the normal 20 Hz simulation rate, each new keyframe
-first displays the midpoint between it and the previous keyframe; 25 milliseconds
-later it displays the new keyframe itself. This keeps visual motion 25 milliseconds
-behind the physics timeline, before rendering and display delays, and avoids
-corrections between predicted motion and the next real update. Car position,
-rotation, suspension, and follow cameras use the same interpolation fraction.
-Recorded ghosts are sampled at that same visual time even when their replay
-uses a different physics frame rate.
+first displays a one-third blend toward it from the previous keyframe, then a
+two-thirds blend about 16.7 milliseconds later, then the complete new keyframe
+after about 33.3 milliseconds. This keeps visual motion about 33.3 milliseconds
+behind the physics timeline at each presentation, before rendering and display
+delays, and avoids corrections between predicted motion and the next real update.
+Car position, rotation, suspension, and follow cameras use the same interpolation
+fraction. Recorded ghosts are sampled at that same visual time even when their
+replay uses a different physics frame rate.
 
 Input sampling, recording, and authoritative physics retain their original 10 or
-20 Hz schedule. A 10 Hz simulation uses four visual samples per keyframe interval
-and a 75-millisecond visual delay; slow replay playback increases the delay to
-cover its longer keyframe intervals. Late rendering skips overdue visual samples
-and never predicts beyond the newest state. Crashes, sinking, and explosions
+20 Hz schedule. A 10 Hz simulation uses six visual samples per keyframe interval
+and an approximately 83.3-millisecond visual delay; slow replay playback increases
+the delay to cover its longer keyframe intervals. Late rendering skips overdue
+visual samples and never predicts beyond the newest state. Crashes, sinking, and explosions
 follow confirmed gameplay events. Interpolated state never enters replay data;
 toggling F12 during a replay does not change its simulated result. Seeking,
 pausing, rewinding, and camera changes reset interpolation history.
@@ -339,7 +340,7 @@ out/sdl3-linux-x64/restunts --data-dir stunts /nointro
 Use `out/sdl3-linux-x86` instead for the x86 build.
 
 The native `frame-interpolation` and `sdl3-race-frames` tests check bounded visual
-interpolation, synchronized 40 Hz pacing, and unchanged input and authoritative
+interpolation, synchronized 60 Hz pacing, and unchanged input and authoritative
 physics counts. `render-replay` compares every serialized state and RNG seed with
 SuperSight disabled, enabled, and repeatedly toggled, including intermediate
 interpolated renders. It also checks that rendering preserves simulation scratch
