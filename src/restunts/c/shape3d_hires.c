@@ -8,9 +8,13 @@
 #include "fatal.h"
 #include "hires.h"
 #include "projection.h"
+#include "render_workers.h"
 #include "shape3d_internal.h"
 
 #define HIRES_NEAR_CLIP_Z 12
+#define HIRES_BAND_HEIGHT 32
+#define HIRES_BAND_COUNT (HIRES_HEIGHT / HIRES_BAND_HEIGHT)
+#define HIRES_PARALLEL_MIN_AREA 65536U
 /* Keep the original displayed pixel width through medium-close views,
  * then let perspective narrow the stroke at greater distances. */
 #define HIRES_LINE_DIAMETER 1.5
@@ -32,6 +36,7 @@ struct HIRES_PRIMITIVE {
 };
 
 struct HIRES_PAINT {
+	struct HIRES_RASTER_CONTEXT *context;
 	legacy_u16 color;
 	legacy_u16 alternate;
 	legacy_u16 pattern;
@@ -54,6 +59,19 @@ static legacy_u32 current_family;
 static legacy_s32 rendered_depth_valid;
 static legacy_u32 rendered_generation;
 static legacy_f64 model_scale = 1;
+
+struct HIRES_COMMAND {
+	legacy_u32 index;
+	legacy_u8 type;
+	legacy_u16 color, second_color, third_color, pattern_type, pattern;
+	legacy_s32 top, bottom;
+};
+
+static struct HIRES_COMMAND *commands;
+static size_t command_capacity;
+static size_t command_count;
+static legacy_u32 command_area;
+static legacy_s32 batching;
 
 static void reserve_primitives(legacy_u32 index)
 {
@@ -511,6 +529,10 @@ static legacy_s32 polygon_covers_sample(const struct SHAPE3D_HIRES_POINT *points
 static void paint_pixel(legacy_s32 x, legacy_s32 y, legacy_f64 inverse_z,
 						const struct HIRES_PAINT *paint)
 {
+	struct HIRES_RASTER_CONTEXT *context = paint->context;
+	if (context != NULL && (y < context->top || y >= context->bottom)) {
+		return;
+	}
 	legacy_u16 color = paint->color;
 	if (paint->mode != 0) {
 		legacy_u32 bit = ((y & 1) == 0 ? 8U : 0U) + 7U - (x & 7);
@@ -520,7 +542,13 @@ static void paint_pixel(legacy_s32 x, legacy_s32 y, legacy_f64 inverse_z,
 			return;
 		}
 	}
-	if (!paint->depth_test || hires_depth_test(x, y, inverse_z, paint->family, paint->depth_mode)) {
+	if (context != NULL) {
+		if (!paint->depth_test ||
+			hires_raster_depth_test(context, x, y, inverse_z, paint->family, paint->depth_mode)) {
+			hires_raster_pixel(context, x, y, (legacy_u8)color);
+		}
+	} else if (!paint->depth_test ||
+			   hires_depth_test(x, y, inverse_z, paint->family, paint->depth_mode)) {
 		hires_pixel(x, y, (legacy_u8)color);
 	}
 }
@@ -559,7 +587,17 @@ static void paint_line_stroke(legacy_s32 x, legacy_s32 y, const struct SHAPE3D_H
 	/* Endpoint rounding can shift the Bresenham path by almost one sample
 	 * from the fractional segment; include that in the candidate search. */
 	legacy_s32 extent = HIRES_SCALE / 2 + 1;
-	for (legacy_s32 row = y - extent; row <= y + extent; row++) {
+	legacy_s32 top = y - extent;
+	legacy_s32 bottom = y + extent + 1;
+	if (paint->context != NULL) {
+		if (top < paint->context->top) {
+			top = paint->context->top;
+		}
+		if (bottom > paint->context->bottom) {
+			bottom = paint->context->bottom;
+		}
+	}
+	for (legacy_s32 row = top; row < bottom; row++) {
 		for (legacy_s32 column = x - extent; column <= x + extent; column++) {
 			legacy_f64 offset_x = column + 0.5 - first->x;
 			legacy_f64 offset_y = row + 0.5 - first->y;
@@ -674,6 +712,14 @@ static void fill_polygon(const struct SHAPE3D_HIRES_POINT *points, legacy_u32 co
 	}
 	legacy_s32 top = minimum_y < 0 ? 0 : ceil_coordinate(minimum_y - 0.5);
 	legacy_s32 bottom = maximum_y >= HIRES_HEIGHT ? HIRES_HEIGHT : ceil_coordinate(maximum_y - 0.5);
+	if (paint->context != NULL) {
+		if (top < paint->context->top) {
+			top = paint->context->top;
+		}
+		if (bottom > paint->context->bottom) {
+			bottom = paint->context->bottom;
+		}
+	}
 	for (legacy_s32 y = top; y < bottom; y++) {
 		struct SHAPE3D_HIRES_POINT intersections[HIRES_ROUND_POINTS];
 		legacy_u32 intersection_count = 0;
@@ -737,6 +783,14 @@ static void draw_polygon_border(const struct SHAPE3D_HIRES_POINT *points, legacy
 	}
 	legacy_s32 top = minimum_y < 0 ? 0 : ceil_coordinate(minimum_y - 0.5);
 	legacy_s32 bottom = maximum_y >= HIRES_HEIGHT ? HIRES_HEIGHT : ceil_coordinate(maximum_y - 0.5);
+	if (paint->context != NULL) {
+		if (top < paint->context->top) {
+			top = paint->context->top;
+		}
+		if (bottom > paint->context->bottom) {
+			bottom = paint->context->bottom;
+		}
+	}
 	legacy_f64 length_squared = dx * dx + dy * dy;
 	for (legacy_s32 y = top; y < bottom; y++) {
 		legacy_f64 sample_y = y + 0.5;
@@ -852,22 +906,24 @@ static void draw_wheel(const struct HIRES_PRIMITIVE *primitive, struct HIRES_PAI
 	draw_polygon(inner, HIRES_ROUND_POINTS, 0, &paint);
 }
 
-void shape3d_hires_render(legacy_u32 index, legacy_u8 type, legacy_u16 color,
-						  legacy_u16 second_color, legacy_u16 third_color, legacy_u16 pattern_type,
-						  legacy_u16 pattern)
+static void render_primitive(legacy_u32 index, legacy_u8 type, legacy_u16 color,
+							 legacy_u16 second_color, legacy_u16 third_color,
+							 legacy_u16 pattern_type, legacy_u16 pattern,
+							 struct HIRES_RASTER_CONTEXT *context)
 {
 	if (index >= primitive_capacity || primitives[index].count == 0) {
 		return;
 	}
 	struct HIRES_PRIMITIVE *primitive = &primitives[index];
 	const struct HIRES_SHAPE *shape = &shapes[primitive->shape];
-	if (!rendered_depth_valid || rendered_generation != hires_generation()) {
+	if (context == NULL && (!rendered_depth_valid || rendered_generation != hires_generation())) {
 		hires_depth_begin(0, HIRES_WIDTH, 0, HIRES_HEIGHT);
 		rendered_depth_valid = 1;
 		rendered_generation = hires_generation();
 	}
 	legacy_s32 ordered = shape->depth_mode == SHAPE3D_HIRES_DEPTH_ORDERED;
-	struct HIRES_PAINT paint = {color,
+	struct HIRES_PAINT paint = {context,
+								color,
 								second_color,
 								pattern,
 								pattern_type,
@@ -900,6 +956,133 @@ void shape3d_hires_render(legacy_u32 index, legacy_u8 type, legacy_u16 color,
 	} else if (type == RENDER_PRIMITIVE_WHEEL) {
 		draw_wheel(primitive, paint, second_color, third_color);
 	}
+}
+
+void shape3d_hires_batch_begin(void)
+{
+	command_count = 0;
+	command_area = 0;
+#if !defined(__DJGPP__)
+	batching = 1;
+#endif
+}
+
+void shape3d_hires_render(legacy_u32 index, legacy_u8 type, legacy_u16 color,
+						  legacy_u16 second_color, legacy_u16 third_color, legacy_u16 pattern_type,
+						  legacy_u16 pattern)
+{
+	if (!batching) {
+		render_primitive(index, type, color, second_color, third_color, pattern_type, pattern,
+						 NULL);
+		return;
+	}
+	if (index >= primitive_capacity || primitives[index].count == 0) {
+		return;
+	}
+	struct RECTANGLE bounds = {320, 0, 200, 0};
+	legacy_u8 bounds_type = type & ~RENDER_PRIMITIVE_GHOST_FLAG;
+	/* Points and degenerate polygons use rounded line endpoints. Their
+	 * fractional centers can lie just outside the screen and still hit it. */
+	if (bounds_type == RENDER_PRIMITIVE_POINT ||
+		(bounds_type == RENDER_PRIMITIVE_POLYGON && primitives[index].count < 3)) {
+		bounds_type = RENDER_PRIMITIVE_LINE;
+	}
+	shape3d_hires_update_bounds(index, bounds_type, &bounds);
+	if (bounds.left >= bounds.right || bounds.top >= bounds.bottom) {
+		return;
+	}
+	if (command_count == command_capacity) {
+		size_t capacity = command_capacity != 0 ? command_capacity * 2 : 1024;
+		if (capacity < command_capacity || capacity > (size_t)-1 / sizeof(*commands)) {
+			fatal_error("SuperSight drawing commands exceed addressable memory");
+			return;
+		}
+		struct HIRES_COMMAND *buffer = realloc(commands, capacity * sizeof(*commands));
+		if (buffer == NULL) {
+			fatal_error("Cannot allocate SuperSight drawing commands");
+			return;
+		}
+		commands = buffer;
+		command_capacity = capacity;
+	}
+	commands[command_count++] = (struct HIRES_COMMAND){index,
+													   type,
+													   color,
+													   second_color,
+													   third_color,
+													   pattern_type,
+													   pattern,
+													   bounds.top * HIRES_SCALE,
+													   bounds.bottom * HIRES_SCALE};
+	if (command_area < HIRES_PARALLEL_MIN_AREA) {
+		command_area += (legacy_u32)(bounds.right - bounds.left) * (bounds.bottom - bounds.top) *
+						HIRES_SCALE * HIRES_SCALE;
+	}
+}
+
+struct HIRES_BATCH {
+	struct HIRES_RASTER_TARGET target;
+	struct HIRES_RASTER_CONTEXT bands[HIRES_BAND_COUNT];
+};
+
+static void render_band(void *argument, legacy_s32 index)
+{
+	struct HIRES_BATCH *batch = argument;
+	struct HIRES_RASTER_CONTEXT *context = &batch->bands[index];
+	if (context->top >= context->bottom) {
+		return;
+	}
+	for (size_t command = 0; command < command_count; command++) {
+		const struct HIRES_COMMAND *entry = &commands[command];
+		if (entry->top >= context->bottom || entry->bottom <= context->top) {
+			continue;
+		}
+		render_primitive(entry->index, entry->type, entry->color, entry->second_color,
+						 entry->third_color, entry->pattern_type, entry->pattern, context);
+	}
+}
+
+legacy_s32 shape3d_hires_batch_end(void)
+{
+	batching = 0;
+	struct HIRES_BATCH batch;
+	if (command_area >= HIRES_PARALLEL_MIN_AREA && render_workers_count() != 0) {
+		/* Allocate and clear depth on the caller before any workers can read it. */
+		if (!rendered_depth_valid || rendered_generation != hires_generation()) {
+			hires_depth_begin(0, HIRES_WIDTH, 0, HIRES_HEIGHT);
+			rendered_depth_valid = 1;
+			rendered_generation = hires_generation();
+		}
+		if (hires_raster_prepare(&batch.target)) {
+			for (legacy_s32 index = 0; index < HIRES_BAND_COUNT; index++) {
+				batch.bands[index] = (struct HIRES_RASTER_CONTEXT){
+					&batch.target, index * HIRES_BAND_HEIGHT, (index + 1) * HIRES_BAND_HEIGHT, 0};
+				if (batch.bands[index].top < batch.target.top) {
+					batch.bands[index].top = batch.target.top;
+				}
+				if (batch.bands[index].bottom > batch.target.bottom) {
+					batch.bands[index].bottom = batch.target.bottom;
+				}
+			}
+			legacy_s32 workers = render_workers_run(HIRES_BAND_COUNT, render_band, &batch);
+			legacy_u32 cleared = 0;
+			for (legacy_s32 index = 0; index < HIRES_BAND_COUNT; index++) {
+				cleared += batch.bands[index].cleared_argb_cells;
+			}
+			hires_raster_finish(&batch.target, cleared);
+			command_count = 0;
+			command_area = 0;
+			return workers;
+		}
+	}
+	for (size_t index = 0; index < command_count; index++) {
+		const struct HIRES_COMMAND *entry = &commands[index];
+		render_primitive(entry->index, entry->type, entry->color, entry->second_color,
+						 entry->third_color, entry->pattern_type, entry->pattern, NULL);
+	}
+	command_count = 0;
+	command_area = 0;
+	return 0;
 }
 
 #endif
