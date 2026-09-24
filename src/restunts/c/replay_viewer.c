@@ -385,6 +385,12 @@ static void replay_reload_changed_resources(const struct GAMEINFO *saved_config,
 		free_player_cars();
 		setup_player_cars();
 	}
+#if defined(RESTUNTS_SDL3)
+	else {
+		/* Replays carry their own track even when the shape resources stay loaded. */
+		frame_preload_track_shadows();
+	}
+#endif
 }
 
 static void replay_load_recording(void)

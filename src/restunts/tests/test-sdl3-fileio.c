@@ -107,6 +107,95 @@ static void test_heap_buffers(void)
 	free(destination_allocation);
 }
 
+static void write_track_fixture(const legacy_u8 *bytes, size_t length)
+{
+	FILE *file = fopen("CaSeDir/MiXeD.tRk", "wb");
+	assert(file != NULL);
+	assert(fwrite(bytes, 1, length, file) == length);
+	assert(fclose(file) == 0);
+}
+
+static void test_track_lightmap_identity(void)
+{
+	legacy_u8 bytes[1807] = {0};
+	legacy_u8 elements[901];
+	legacy_u8 terrain[901];
+	for (legacy_u32 index = 0; index < 900; index++) {
+		bytes[index] = (legacy_u8)(index % 180);
+		bytes[901 + index] = (legacy_u8)(index % 9);
+	}
+	bytes[17] = 182;
+	bytes[18] = 252;
+	bytes[19] = 253;
+	bytes[20] = 255;
+	bytes[900] = 3;
+	bytes[1801] = 2;
+	memcpy(bytes + 1802, "EXTRA", 5);
+	memcpy(elements, bytes, sizeof(elements));
+	memcpy(terrain, bytes + 901, sizeof(terrain));
+	elements[17] = elements[18] = 4;
+	/* These independently computed digests cover the original bytes, before
+	 * track_setup normalizes unsupported element IDs to ordinary road. */
+	const legacy_u8 expected[16] = {0xD4, 0xC1, 0x25, 0xB0, 0xD2, 0xC4, 0x40, 0x30,
+									0x64, 0x13, 0x6E, 0x42, 0x36, 0x86, 0xC2, 0x01};
+	const legacy_u8 extended[16] = {0xA9, 0x3A, 0x53, 0x38, 0x02, 0xB2, 0x3B, 0x59,
+									0x66, 0xF3, 0xB6, 0x1D, 0x59, 0x00, 0x0D, 0xE3};
+	legacy_u8 digest[16];
+	char path[256];
+	write_track_fixture(bytes, 1802);
+	assert(dos_track_lightmap_path((const legacy_s8 *)"casedir", (const legacy_s8 *)"mixed",
+								   elements, terrain, path, sizeof(path), digest));
+	assert(strcmp(path, "CaSeDir/MiXeD.LMP") == 0);
+	assert(memcmp(digest, expected, sizeof(digest)) == 0);
+
+	/* A case-sensitive host must reuse an existing differently cased sibling
+	 * instead of creating two lightmaps for the same DOS track name. */
+	FILE *cache = fopen("CaSeDir/mIxEd.lMp", "wb");
+	assert(cache != NULL && fclose(cache) == 0);
+	assert(dos_track_lightmap_path((const legacy_s8 *)"CASEDIR", (const legacy_s8 *)"MIXED",
+								   elements, terrain, path, sizeof(path), digest));
+	assert(strcmp(path, "CaSeDir/mIxEd.lMp") == 0);
+	assert(memcmp(digest, expected, sizeof(digest)) == 0);
+
+	elements[0] ^= 1;
+	assert(!dos_track_lightmap_path((const legacy_s8 *)"casedir", (const legacy_s8 *)"mixed",
+									elements, terrain, path, sizeof(path), digest));
+	elements[0] ^= 1;
+	terrain[123] ^= 1;
+	assert(!dos_track_lightmap_path((const legacy_s8 *)"casedir", (const legacy_s8 *)"mixed",
+									elements, terrain, path, sizeof(path), digest));
+	terrain[123] ^= 1;
+	legacy_s8 unterminated_name[9];
+	legacy_s8 unterminated_directory[81];
+	memset(unterminated_name, 'X', sizeof(unterminated_name));
+	memset(unterminated_directory, 'X', sizeof(unterminated_directory));
+	assert(!dos_track_lightmap_path((const legacy_s8 *)"casedir", unterminated_name, elements,
+									terrain, path, sizeof(path), digest));
+	assert(!dos_track_lightmap_path(unterminated_directory, (const legacy_s8 *)"mixed", elements,
+									terrain, path, sizeof(path), digest));
+	struct {
+		char path[4];
+		legacy_u8 guard[8];
+	} small;
+	memset(&small, TEST_GUARD_VALUE, sizeof(small));
+	assert(!dos_track_lightmap_path((const legacy_s8 *)"casedir", (const legacy_s8 *)"mixed",
+									elements, terrain, small.path, sizeof(small.path), digest));
+	for (legacy_u32 index = 0; index < sizeof(small.guard); index++) {
+		assert(small.guard[index] == TEST_GUARD_VALUE);
+	}
+	write_track_fixture(bytes, 1801);
+	assert(!dos_track_lightmap_path((const legacy_s8 *)"casedir", (const legacy_s8 *)"mixed",
+									elements, terrain, path, sizeof(path), digest));
+	write_track_fixture(bytes, sizeof(bytes));
+	assert(dos_track_lightmap_path((const legacy_s8 *)"casedir", (const legacy_s8 *)"mixed",
+								   elements, terrain, path, sizeof(path), digest));
+	assert(memcmp(digest, extended, sizeof(digest)) == 0);
+	assert(remove("CaSeDir/MiXeD.tRk") == 0);
+	assert(!dos_track_lightmap_path((const legacy_s8 *)"casedir", (const legacy_s8 *)"mixed",
+									elements, terrain, path, sizeof(path), digest));
+	assert(remove("CaSeDir/mIxEd.lMp") == 0);
+}
+
 int main(void)
 {
 	sdl3_batch_mode = 1;
@@ -118,6 +207,7 @@ int main(void)
 	assert(result == 0 || errno == EEXIST);
 	test_highscore_stack_buffers();
 	test_heap_buffers();
+	test_track_lightmap_identity();
 	assert(rmdir("CaSeDir") == 0);
 	puts("SDL3 core file I/O stack, heap, page-boundary and path regressions passed");
 	return 0;

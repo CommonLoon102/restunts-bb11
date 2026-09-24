@@ -10,6 +10,7 @@
 #include "projection.h"
 #include "render_workers.h"
 #include "shape3d_internal.h"
+#include "shape3d_shadows.h"
 
 #define HIRES_NEAR_CLIP_Z 12
 #define HIRES_BAND_HEIGHT 32
@@ -278,6 +279,9 @@ void shape3d_hires_set_model_scale(legacy_f64 scale)
 
 void shape3d_hires_reset(void)
 {
+	/* A scene reset only clears transient casters. Track lightmaps survive
+	 * camera changes, menus and the F12 toggle until track resources unload. */
+	shape3d_shadows_reset();
 	model_scale = 1;
 	shape3d_hires_begin_shape(0, SHAPE3D_HIRES_DEPTH_SORTED);
 	rendered_depth_valid = 0;
@@ -505,10 +509,10 @@ void shape3d_hires_update_bounds(legacy_u32 index, legacy_u8 type, struct RECTAN
 	}
 }
 
-static legacy_s32 polygon_covers_sample(const struct SHAPE3D_HIRES_POINT *points, legacy_u32 count,
-										legacy_f64 x, legacy_f64 y)
+static legacy_u32 polygon_row_crossings(const struct SHAPE3D_HIRES_POINT *points, legacy_u32 count,
+										legacy_f64 y, legacy_f64 *crossings)
 {
-	legacy_s32 inside = 0;
+	legacy_u32 crossing_count = 0;
 	const struct SHAPE3D_HIRES_POINT *previous = &points[count - 1];
 	for (legacy_u32 index = 0; index < count; index++) {
 		const struct SHAPE3D_HIRES_POINT *current = &points[index];
@@ -517,13 +521,11 @@ static legacy_s32 polygon_covers_sample(const struct SHAPE3D_HIRES_POINT *points
 			const struct SHAPE3D_HIRES_POINT *lower = previous->y < current->y ? previous : current;
 			const struct SHAPE3D_HIRES_POINT *upper = previous->y < current->y ? current : previous;
 			legacy_f64 fraction = (y - lower->y) / (upper->y - lower->y);
-			if (lower->x + fraction * (upper->x - lower->x) <= x) {
-				inside = !inside;
-			}
+			crossings[crossing_count++] = lower->x + fraction * (upper->x - lower->x);
 		}
 		previous = current;
 	}
-	return inside;
+	return crossing_count;
 }
 
 static void paint_pixel(legacy_s32 x, legacy_s32 y, legacy_f64 inverse_z,
@@ -761,9 +763,15 @@ static void fill_polygon(const struct SHAPE3D_HIRES_POINT *points, legacy_u32 co
 				last->x >= HIRES_WIDTH ? HIRES_WIDTH : ceil_coordinate(last->x - 0.5);
 			legacy_f64 depth_step = (last->inverse_z - first->inverse_z) / (last->x - first->x);
 			legacy_f64 inverse_z = first->inverse_z + (left + 0.5 - first->x) * depth_step;
-			for (legacy_s32 x = left; x < right; x++) {
-				paint_pixel(x, y, inverse_z, paint);
-				inverse_z += depth_step;
+			if (paint->context != NULL) {
+				hires_raster_span(paint->context, left, right, y, inverse_z, depth_step,
+								  paint->family, paint->depth_mode, paint->color, paint->alternate,
+								  paint->pattern, paint->mode, paint->depth_test);
+			} else {
+				for (legacy_s32 x = left; x < right; x++) {
+					paint_pixel(x, y, inverse_z, paint);
+					inverse_z += depth_step;
+				}
 			}
 		}
 	}
@@ -810,6 +818,9 @@ static void draw_polygon_border(const struct SHAPE3D_HIRES_POINT *points, legacy
 		legacy_s32 left = minimum_x < 0 ? 0 : ceil_coordinate(minimum_x - 0.5);
 		legacy_s32 right =
 			maximum_x >= HIRES_WIDTH ? HIRES_WIDTH : ceil_coordinate(maximum_x - 0.5);
+		legacy_f64 crossings[HIRES_ROUND_POINTS];
+		legacy_u32 crossing_count = 0;
+		legacy_s32 crossings_valid = 0;
 		for (legacy_s32 x = left; x < right; x++) {
 			legacy_f64 offset_x = x + 0.5 - first->x;
 			legacy_f64 offset_y = sample_y - first->y;
@@ -823,8 +834,20 @@ static void draw_polygon_border(const struct SHAPE3D_HIRES_POINT *points, legacy
 			}
 			offset_x -= dx * fraction;
 			offset_y -= dy * fraction;
-			if (offset_x * offset_x + offset_y * offset_y < radius * radius &&
-				!polygon_covers_sample(points, count, x + 0.5, sample_y)) {
+			if (offset_x * offset_x + offset_y * offset_y < radius * radius) {
+				/* An edge can cover several samples on the same row. Compute the
+				 * polygon intersections once, while preserving exact fill coverage. */
+				if (!crossings_valid) {
+					crossing_count = polygon_row_crossings(points, count, sample_y, crossings);
+					crossings_valid = 1;
+				}
+				legacy_s32 inside = 0;
+				for (legacy_u32 crossing = 0; crossing < crossing_count; crossing++) {
+					inside ^= crossings[crossing] <= x + 0.5;
+				}
+				if (inside) {
+					continue;
+				}
 				legacy_f64 inverse_z =
 					first->inverse_z + (last->inverse_z - first->inverse_z) * fraction;
 				paint_pixel(x, y, inverse_z, paint);
@@ -1042,18 +1065,375 @@ static void render_band(void *argument, legacy_s32 index)
 	}
 }
 
+/* The depth pass has finished before these jobs start. Reconstruct receivers
+ * from the visible depth, so shadows follow roads, banked surfaces and scenery.
+ * The horizon's plain ground has no polygon depth; intersect its world plane. */
+struct HIRES_SHADOW_BATCH {
+	struct HIRES_RASTER_TARGET target;
+	legacy_f64 inverse_view[3][3];
+	legacy_f64 view_transpose[3][3];
+	legacy_f64 ray_step_x[3], ray_step_y[3];
+	legacy_f64 footprint_scale;
+	legacy_s32 baked;
+	legacy_u32 added[HIRES_BAND_COUNT];
+};
+
+static legacy_s32 shadow_depth_derivative(const struct HIRES_RASTER_TARGET *target, legacy_s32 x,
+										  legacy_s32 y, legacy_u32 family, legacy_f64 depth,
+										  legacy_s32 dx, legacy_s32 dy, legacy_f64 *derivative)
+{
+	*derivative = 0;
+	legacy_s32 found = 0;
+	for (legacy_s32 direction = -1; direction <= 1; direction += 2) {
+		legacy_s32 sx = x + direction * dx;
+		legacy_s32 sy = y + direction * dy;
+		if (sx < target->depth_left || sx >= target->depth_right || sy < target->depth_top ||
+			sy >= target->depth_bottom) {
+			continue;
+		}
+		size_t offset = (size_t)sy * HIRES_WIDTH + sx;
+		if (target->depth_family[offset] == family) {
+			legacy_f64 candidate = (target->inverse_depth[offset] - depth) * direction;
+			/* An ordered shape can contain a crease. Prefer the neighbor whose
+			 * depth stays closest to this receiver, never an unrelated silhouette. */
+			if (!found || SDL_fabs(candidate) < SDL_fabs(*derivative)) {
+				*derivative = candidate;
+				found = 1;
+			}
+		}
+	}
+	return found;
+}
+
+static legacy_u8 shade_receiver(const struct HIRES_SHADOW_BATCH *batch, const legacy_f64 *ray,
+								legacy_f64 view_x, legacy_f64 view_y, legacy_f64 inverse_depth,
+								legacy_f64 derivative_x, legacy_f64 derivative_y,
+								legacy_s32 plane_valid, legacy_f64 ground,
+								legacy_f64 depth_variation, legacy_f64 sample_scale,
+								legacy_u32 *surface_hint)
+{
+	legacy_f64 depth;
+	legacy_f64 normal[3] = {0, 1, 0};
+	if (inverse_depth > 0) {
+		depth = 1.0 / inverse_depth;
+		if (batch->baked) {
+			/* Inverse-depth variation accounts for grazing surfaces without
+			 * reconstructing a normal or taking additional depth samples. */
+			legacy_f64 footprint =
+				depth * (batch->footprint_scale * sample_scale + depth_variation * depth);
+			return shape3d_shadows_sample_cached_view(ray[0] * depth, ray[1] * depth,
+													  ray[2] * depth, footprint, surface_hint);
+		}
+		if (!plane_valid) {
+			return 0;
+		}
+		/* Inverse depth is affine across a projected plane. Its derivatives
+		 * recover the receiver normal without three world-space reconstructions.
+		 * Transform normals with the view transpose, not the position inverse. */
+		legacy_f64 nx = derivative_x * projection_focal_length_x * HIRES_SCALE;
+		legacy_f64 ny = -derivative_y * projection_focal_length_y * HIRES_SCALE;
+		legacy_f64 nz = inverse_depth - nx * view_x - ny * view_y;
+		for (legacy_s32 axis = 0; axis < 3; axis++) {
+			normal[axis] = batch->view_transpose[axis][0] * nx +
+						   batch->view_transpose[axis][1] * ny +
+						   batch->view_transpose[axis][2] * nz;
+		}
+	} else if (ground < 0 && ray[1] < -0.0001) {
+		depth = ground / ray[1];
+	} else {
+		return 0;
+	}
+	if (batch->baked) {
+		/* Ground spans grow toward the horizon; include that footprint so a
+		 * distant dense grille averages instead of shimmering between holes. */
+		legacy_f64 footprint = depth * batch->footprint_scale * sample_scale;
+		if (ray[1] < -0.0001) {
+			footprint += depth * SDL_fabs(batch->ray_step_y[1] / ray[1]) * 2 * sample_scale;
+		}
+		return shape3d_shadows_sample_cached_view(ray[0] * depth, ray[1] * depth, ray[2] * depth,
+												  footprint, surface_hint);
+	}
+	return shape3d_shadows_sample_plane(ray[0] * depth, ray[1] * depth, ray[2] * depth, normal[0],
+										normal[1], normal[2]);
+}
+
+static legacy_u32 shade_block2(const struct HIRES_SHADOW_BATCH *batch,
+							   struct HIRES_RASTER_CONTEXT *context, legacy_s32 x, legacy_s32 y,
+							   const legacy_f64 *ray, legacy_f64 view_x, legacy_f64 view_y,
+							   legacy_f64 ground, legacy_u32 *surface_hint)
+{
+	const struct HIRES_RASTER_TARGET *target = &batch->target;
+	legacy_f64 step_x = 1.0 / (projection_focal_length_x * HIRES_SCALE);
+	legacy_f64 step_y = -1.0 / (projection_focal_length_y * HIRES_SCALE);
+	legacy_u32 added = 0;
+	size_t index = (size_t)y * HIRES_WIDTH + x;
+	legacy_u32 family = target->depth_family[index];
+	legacy_s32 shared = x + 1 < target->depth_right && y + 1 < context->bottom;
+	legacy_f64 depths[4] = {0, 0, 0, 0};
+	legacy_f64 average = 0;
+	legacy_f64 depth_variation = 0;
+	if (shared) {
+		shared = target->depth_family[index + 1] == family &&
+				 target->depth_family[index + HIRES_WIDTH] == family &&
+				 target->depth_family[index + HIRES_WIDTH + 1] == family;
+	}
+	if (shared && family != 0) {
+		depths[0] = target->inverse_depth[index];
+		depths[1] = target->inverse_depth[index + 1];
+		depths[2] = target->inverse_depth[index + HIRES_WIDTH];
+		depths[3] = target->inverse_depth[index + HIRES_WIDTH + 1];
+		legacy_f64 minimum = depths[0], maximum = depths[0];
+		for (legacy_s32 sample = 1; sample < 4; sample++) {
+			if (depths[sample] < minimum) {
+				minimum = depths[sample];
+			}
+			if (depths[sample] > maximum) {
+				maximum = depths[sample];
+			}
+		}
+		depth_variation = maximum - minimum;
+		shared = depth_variation <= minimum * 0.01;
+		average = (depths[0] + depths[1] + depths[2] + depths[3]) * 0.25;
+	}
+	legacy_u8 opacity = 0;
+	if (shared) {
+		legacy_f64 derivative_x = 0, derivative_y = 0;
+		if (!batch->baked) {
+			derivative_x = (depths[1] - depths[0] + depths[3] - depths[2]) * 0.5;
+			derivative_y = (depths[2] - depths[0] + depths[3] - depths[1]) * 0.5;
+		}
+		opacity = shade_receiver(batch, ray, view_x, view_y, average, derivative_x, derivative_y, 1,
+								 ground, depth_variation, 1, surface_hint);
+	}
+	if (shared && opacity != 0) {
+		added += hires_raster_shadow_block2(context, x, y, opacity);
+	}
+	if (!shared) {
+		for (legacy_s32 sample = 0; sample < 4; sample++) {
+			legacy_s32 sx = x + sample % 2;
+			legacy_s32 sy = y + sample / 2;
+			if (sx >= target->depth_right || sy >= context->bottom) {
+				continue;
+			}
+			legacy_f64 sample_ray[3];
+			for (legacy_s32 axis = 0; axis < 3; axis++) {
+				sample_ray[axis] = ray[axis] + (sample % 2 - 0.5) * batch->ray_step_x[axis] +
+								   (sample / 2 - 0.5) * batch->ray_step_y[axis];
+			}
+			size_t offset = (size_t)sy * HIRES_WIDTH + sx;
+			legacy_u32 sample_family = target->depth_family[offset];
+			legacy_f64 depth = sample_family != 0 ? target->inverse_depth[offset] : 0;
+			legacy_f64 derivative_x = 0;
+			legacy_f64 derivative_y = 0;
+			legacy_s32 plane_valid = 1;
+			if (sample_family != 0 && !batch->baked) {
+				plane_valid = shadow_depth_derivative(target, sx, sy, sample_family, depth, 1, 0,
+													  &derivative_x);
+				plane_valid &= shadow_depth_derivative(target, sx, sy, sample_family, depth, 0, 1,
+													   &derivative_y);
+			}
+			opacity = shade_receiver(batch, sample_ray, view_x + (sample % 2 - 0.5) * step_x,
+									 view_y + (sample / 2 - 0.5) * step_y, depth, derivative_x,
+									 derivative_y, plane_valid, ground, 0, 1, surface_hint);
+			if (opacity != 0) {
+				added += hires_raster_shadow(context, sx, sy, opacity);
+			}
+		}
+	}
+	return added;
+}
+
+static void shade_band(void *argument, legacy_s32 band)
+{
+	struct HIRES_SHADOW_BATCH *batch = argument;
+	const struct HIRES_RASTER_TARGET *target = &batch->target;
+	struct HIRES_RASTER_CONTEXT context = {target, band * HIRES_BAND_HEIGHT,
+										   (band + 1) * HIRES_BAND_HEIGHT, 0};
+	if (context.top < target->depth_top) {
+		context.top = target->depth_top;
+	}
+	if (context.bottom > target->depth_bottom) {
+		context.bottom = target->depth_bottom;
+	}
+	legacy_f64 step_x = 1.0 / (projection_focal_length_x * HIRES_SCALE);
+	legacy_f64 step_y = -1.0 / (projection_focal_length_y * HIRES_SCALE);
+	legacy_f64 first_x =
+		(target->depth_left + 2.0 - (legacy_s16)projection_center_x * HIRES_SCALE) * step_x;
+	legacy_f64 ground = shape3d_shadows_ground_height();
+	legacy_u32 added = 0, surface_hint = 0;
+	/* Contact shading changes slowly inside a surface. Share one filtered
+	 * lookup across a legacy 4x4 cell; retain 2x2 and individual lookups at
+	 * silhouettes and depth breaks, where a coarse sample would bleed. */
+	for (legacy_s32 y = context.top; y < context.bottom; y += 4) {
+		legacy_f64 view_y = (y + 2.0 - (legacy_s16)projection_center_y * HIRES_SCALE) * step_y;
+		legacy_f64 ray[3], view_x = first_x;
+		for (legacy_s32 axis = 0; axis < 3; axis++) {
+			ray[axis] = batch->inverse_view[axis][0] * first_x +
+						batch->inverse_view[axis][1] * view_y + batch->inverse_view[axis][2];
+		}
+		for (legacy_s32 x = target->depth_left; x < target->depth_right; x += 4) {
+			legacy_s32 shared =
+				batch->baked && x + 3 < target->depth_right && y + 3 < context.bottom;
+			legacy_f64 average = 0, minimum = 0, maximum = 0;
+			if (shared) {
+				size_t index = (size_t)y * HIRES_WIDTH + x;
+				legacy_u32 family = target->depth_family[index];
+				for (legacy_s32 row = 0; row < 4 && shared; row++) {
+					const legacy_u32 *families = target->depth_family + index + row * HIRES_WIDTH;
+					shared = families[0] == family && families[1] == family &&
+							 families[2] == family && families[3] == family;
+				}
+				if (shared && family != 0) {
+					minimum = maximum = target->inverse_depth[index];
+					for (legacy_s32 row = 0; row < 4; row++) {
+						const legacy_f32 *depths =
+							target->inverse_depth + index + row * HIRES_WIDTH;
+						for (legacy_s32 column = 0; column < 4; column++) {
+							legacy_f64 depth = depths[column];
+							average += depth;
+							if (depth < minimum) {
+								minimum = depth;
+							}
+							if (depth > maximum) {
+								maximum = depth;
+							}
+						}
+					}
+					average *= 0.0625;
+					shared = maximum - minimum <= minimum * 0.03;
+				}
+			}
+			if (shared) {
+				legacy_u8 opacity = shade_receiver(batch, ray, view_x, view_y, average, 0, 0, 1,
+												   ground, maximum - minimum, 2, &surface_hint);
+				if (opacity != 0) {
+					added += hires_raster_shadow_block4(&context, x, y, opacity);
+				}
+			} else {
+				for (legacy_s32 row = 0; row < 4 && y + row < context.bottom; row += 2) {
+					for (legacy_s32 column = 0; column < 4 && x + column < target->depth_right;
+						 column += 2) {
+						legacy_f64 sample_ray[3];
+						for (legacy_s32 axis = 0; axis < 3; axis++) {
+							sample_ray[axis] = ray[axis] + (column - 1) * batch->ray_step_x[axis] +
+											   (row - 1) * batch->ray_step_y[axis];
+						}
+						added += shade_block2(batch, &context, x + column, y + row, sample_ray,
+											  view_x + (column - 1) * step_x,
+											  view_y + (row - 1) * step_y, ground, &surface_hint);
+					}
+				}
+			}
+			for (legacy_s32 axis = 0; axis < 3; axis++) {
+				ray[axis] += batch->ray_step_x[axis] * 4;
+			}
+			view_x += step_x * 4;
+		}
+	}
+	batch->added[band] = added;
+}
+
+static legacy_s32 prepare_shadow_batch(struct HIRES_SHADOW_BATCH *batch)
+{
+	if (!shape3d_shadows_active() || projection_focal_length_x == 0 ||
+		projection_focal_length_y == 0 || !hires_shadow_prepare()) {
+		return 0;
+	}
+	if (!rendered_depth_valid || rendered_generation != hires_generation()) {
+		hires_depth_begin(0, HIRES_WIDTH, 0, HIRES_HEIGHT);
+		rendered_depth_valid = 1;
+		rendered_generation = hires_generation();
+	}
+	if (!hires_raster_prepare(&batch->target)) {
+		return 0;
+	}
+	/* Invert the actual fixed-point view matrix, including its rounding.
+	 * A transpose alone drifts far enough to cause acne on distant slopes. */
+	legacy_f64 view[3][3];
+	for (legacy_s32 row = 0; row < 3; row++) {
+		for (legacy_s32 column = 0; column < 3; column++) {
+			view[row][column] = mat_temp.vals[column * 3 + row] / (legacy_f64)TRIG_FIXED_ONE;
+			batch->view_transpose[column][row] = view[row][column];
+		}
+	}
+	legacy_f64 determinant = 0;
+	for (legacy_s32 row = 0; row < 3; row++) {
+		for (legacy_s32 column = 0; column < 3; column++) {
+			batch->inverse_view[column][row] =
+				view[(row + 1) % 3][(column + 1) % 3] * view[(row + 2) % 3][(column + 2) % 3] -
+				view[(row + 1) % 3][(column + 2) % 3] * view[(row + 2) % 3][(column + 1) % 3];
+		}
+		determinant += view[row][0] * batch->inverse_view[0][row];
+	}
+	if (SDL_fabs(determinant) < 0.0001) {
+		return 0;
+	}
+	for (legacy_s32 row = 0; row < 3; row++) {
+		for (legacy_s32 column = 0; column < 3; column++) {
+			batch->inverse_view[row][column] /= determinant;
+		}
+	}
+	batch->baked = shape3d_shadows_baked();
+	legacy_f64 step_x = 1.0 / (projection_focal_length_x * HIRES_SCALE);
+	legacy_f64 step_y = -1.0 / (projection_focal_length_y * HIRES_SCALE);
+	batch->footprint_scale = 2 * (step_x > -step_y ? step_x : -step_y);
+	for (legacy_s32 axis = 0; axis < 3; axis++) {
+		batch->ray_step_x[axis] = batch->inverse_view[axis][0] * step_x;
+		batch->ray_step_y[axis] = batch->inverse_view[axis][1] * step_y;
+	}
+	return 1;
+}
+
+static void finish_shadow_batch(struct HIRES_SHADOW_BATCH *batch)
+{
+	legacy_u32 added = 0;
+	for (legacy_s32 band = 0; band < HIRES_BAND_COUNT; band++) {
+		added += batch->added[band];
+	}
+	hires_raster_shadow_finish(&batch->target, added);
+}
+
+static void shade_scene(void)
+{
+	struct HIRES_SHADOW_BATCH batch;
+	if (!prepare_shadow_batch(&batch)) {
+		return;
+	}
+	render_workers_run(HIRES_BAND_COUNT, shade_band, &batch);
+	finish_shadow_batch(&batch);
+}
+
+struct HIRES_SHADED_BATCH {
+	struct HIRES_BATCH *geometry;
+	struct HIRES_SHADOW_BATCH *lighting;
+};
+
+static void render_shaded_band(void *argument, legacy_s32 band)
+{
+	struct HIRES_SHADED_BATCH *batch = argument;
+	render_band(batch->geometry, band);
+	/* Cached lighting reads only this band's finished depth. Uncached dynamic
+	 * lighting needs neighboring normal samples and keeps the separate pass. */
+	shade_band(batch->lighting, band);
+}
+
 legacy_s32 shape3d_hires_batch_end(void)
 {
 	batching = 0;
 	struct HIRES_BATCH batch;
-	if (command_area >= HIRES_PARALLEL_MIN_AREA && render_workers_count() != 0) {
-		/* Allocate and clear depth on the caller before any workers can read it. */
-		if (!rendered_depth_valid || rendered_generation != hires_generation()) {
-			hires_depth_begin(0, HIRES_WIDTH, 0, HIRES_HEIGHT);
-			rendered_depth_valid = 1;
-			rendered_generation = hires_generation();
-		}
-		if (hires_raster_prepare(&batch.target)) {
+	legacy_s32 workers = 0;
+	legacy_s32 combined_shading = 0;
+	struct HIRES_SHADOW_BATCH lighting;
+	/* The prepared span path benefits serial drawing too. Initialize depth
+	 * once before either path, including the low-area and zero-worker cases. */
+	if (!rendered_depth_valid || rendered_generation != hires_generation()) {
+		hires_depth_begin(0, HIRES_WIDTH, 0, HIRES_HEIGHT);
+		rendered_depth_valid = 1;
+		rendered_generation = hires_generation();
+	}
+	if (hires_raster_prepare(&batch.target)) {
+		legacy_u32 cleared = 0;
+		if (command_area >= HIRES_PARALLEL_MIN_AREA && render_workers_count() != 0) {
 			for (legacy_s32 index = 0; index < HIRES_BAND_COUNT; index++) {
 				batch.bands[index] = (struct HIRES_RASTER_CONTEXT){
 					&batch.target, index * HIRES_BAND_HEIGHT, (index + 1) * HIRES_BAND_HEIGHT, 0};
@@ -1064,25 +1444,42 @@ legacy_s32 shape3d_hires_batch_end(void)
 					batch.bands[index].bottom = batch.target.bottom;
 				}
 			}
-			legacy_s32 workers = render_workers_run(HIRES_BAND_COUNT, render_band, &batch);
-			legacy_u32 cleared = 0;
+			combined_shading = shape3d_shadows_baked() && prepare_shadow_batch(&lighting);
+			if (combined_shading) {
+				struct HIRES_SHADED_BATCH shaded = {&batch, &lighting};
+				workers = render_workers_run(HIRES_BAND_COUNT, render_shaded_band, &shaded);
+			} else {
+				workers = render_workers_run(HIRES_BAND_COUNT, render_band, &batch);
+			}
 			for (legacy_s32 index = 0; index < HIRES_BAND_COUNT; index++) {
 				cleared += batch.bands[index].cleared_argb_cells;
 			}
-			hires_raster_finish(&batch.target, cleared);
-			command_count = 0;
-			command_area = 0;
-			return workers;
+		} else {
+			struct HIRES_RASTER_CONTEXT context = {&batch.target, batch.target.top,
+												   batch.target.bottom, 0};
+			for (size_t index = 0; index < command_count; index++) {
+				const struct HIRES_COMMAND *entry = &commands[index];
+				render_primitive(entry->index, entry->type, entry->color, entry->second_color,
+								 entry->third_color, entry->pattern_type, entry->pattern, &context);
+			}
+			cleared = context.cleared_argb_cells;
+		}
+		hires_raster_finish(&batch.target, cleared);
+	} else {
+		for (size_t index = 0; index < command_count; index++) {
+			const struct HIRES_COMMAND *entry = &commands[index];
+			render_primitive(entry->index, entry->type, entry->color, entry->second_color,
+							 entry->third_color, entry->pattern_type, entry->pattern, NULL);
 		}
 	}
-	for (size_t index = 0; index < command_count; index++) {
-		const struct HIRES_COMMAND *entry = &commands[index];
-		render_primitive(entry->index, entry->type, entry->color, entry->second_color,
-						 entry->third_color, entry->pattern_type, entry->pattern, NULL);
+	if (combined_shading) {
+		finish_shadow_batch(&lighting);
+	} else {
+		shade_scene();
 	}
 	command_count = 0;
 	command_area = 0;
-	return 0;
+	return workers;
 }
 
 #endif

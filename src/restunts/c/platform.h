@@ -48,6 +48,14 @@ legacy_s16 dos_file_remove(const legacy_s8 *path);
 const legacy_s8 *dos_file_find_first(const legacy_s8 *query);
 const legacy_s8 *dos_file_find_next(void);
 
+#if defined(RESTUNTS_SDL3)
+/* Match the loaded maps to the named disk track, then return its native sibling
+ * .LMP path and MD5 of the complete original .TRK, including trailing data. */
+legacy_s32 dos_track_lightmap_path(const legacy_s8 *directory, const legacy_s8 *name,
+								   const legacy_u8 *elements, const legacy_u8 *terrain, char *path,
+								   legacy_u32 capacity, legacy_u8 digest[16]);
+#endif
+
 void dos_install_divide_error_handler(void);
 
 void dos_interrupts_disable(void);

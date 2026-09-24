@@ -237,7 +237,10 @@ static void present_texture(const legacy_u8 *pixels, const legacy_u32 *argb, leg
 		SDL_DestroyTexture(texture);
 		texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING,
 									width, height);
-		if (texture == NULL || !SDL_SetTextureScaleMode(texture, SDL_SCALEMODE_NEAREST)) {
+		/* Palette expansion and artwork composition produce opaque pixels.
+		 * In particular, software SDL renderers can copy/scale these directly. */
+		if (texture == NULL || !SDL_SetTextureScaleMode(texture, SDL_SCALEMODE_NEAREST) ||
+			!SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_NONE)) {
 			video_fail("Create presentation texture");
 		}
 		texture_width = width;
@@ -280,8 +283,16 @@ void sdl3_video_present(void)
 	const legacy_u8 *legacy_pixels = dos_memory_make_pointer(VGA_MEMORY_SEGMENT, 0);
 	legacy_s32 width;
 	legacy_s32 height;
-	const legacy_u8 *pixels = hires_framebuffer(legacy_pixels, &width, &height);
 	const legacy_u32 *argb = hires_framebuffer_argb(legacy_pixels, palette_pixels);
+	const legacy_u8 *pixels = NULL;
+	if (argb != NULL) {
+		/* ARGB composition already expands every indexed sample. Building the
+		 * unused indexed framebuffer would repeat a full-frame conversion. */
+		width = HIRES_WIDTH;
+		height = HIRES_HEIGHT;
+	} else {
+		pixels = hires_framebuffer(legacy_pixels, &width, &height);
+	}
 	if (surface_output) {
 		present_surface(pixels, argb, width, height);
 	} else {
@@ -291,6 +302,14 @@ void sdl3_video_present(void)
 	previous_generation = hires_generation();
 	palette_changed = false;
 	last_present = SDL_GetTicks();
+}
+
+void sdl3_video_present_immediate(void)
+{
+	legacy_u8 saved_drawing_frame = drawing_frame;
+	drawing_frame = false;
+	sdl3_video_present();
+	drawing_frame = saved_drawing_frame;
 }
 
 void sdl3_video_begin_frame(void)

@@ -31,6 +31,7 @@ static legacy_s32 enabled;
 static legacy_u32 generation;
 static legacy_u8 *framebuffer;
 static legacy_u32 *argb_framebuffer;
+static legacy_u32 *spare_argb;
 static legacy_f32 *inverse_depth;
 static legacy_u32 *depth_family;
 static legacy_s32 depth_left, depth_right, depth_top, depth_bottom;
@@ -89,7 +90,10 @@ static void hires_clear_argb(struct HIRES_SURFACE *surface, legacy_u16 offset)
 static void hires_release_unused_argb(struct HIRES_SURFACE *surface)
 {
 	if (surface->argb != NULL && surface->argb_cells == 0) {
-		free(surface->argb);
+		/* Skybox repainting retires the previous frame's last shadow before
+		 * the next shadow pass starts. Reuse one allocation across that gap. */
+		free(spare_argb);
+		spare_argb = surface->argb;
 		surface->argb = NULL;
 	}
 }
@@ -97,7 +101,14 @@ static void hires_release_unused_argb(struct HIRES_SURFACE *surface)
 static legacy_s32 hires_allocate_argb(struct HIRES_SURFACE *surface)
 {
 	if (surface->argb == NULL) {
-		surface->argb = calloc(HIRES_ADDRESS_COUNT * HIRES_CELL_PIXELS, sizeof(*surface->argb));
+		surface->argb = spare_argb;
+		spare_argb = NULL;
+		if (surface->argb == NULL) {
+			/* A cell is initialized when valid changes to 2. Unused cells are
+			 * never read, so allocating the whole surface does not require zeroing. */
+			surface->argb =
+				malloc(HIRES_ADDRESS_COUNT * HIRES_CELL_PIXELS * sizeof(*surface->argb));
+		}
 	}
 	return surface->argb != NULL;
 }
@@ -120,6 +131,8 @@ void hires_shutdown(void)
 	free(framebuffer);
 	free(argb_framebuffer);
 	argb_framebuffer = NULL;
+	free(spare_argb);
+	spare_argb = NULL;
 	framebuffer = NULL;
 	free(inverse_depth);
 	free(depth_family);
@@ -170,6 +183,11 @@ legacy_s32 hires_begin(const struct SPRITE *target)
 		}
 	}
 	return 1;
+}
+
+legacy_s32 hires_shadow_prepare(void)
+{
+	return active != NULL && hires_allocate_argb(active);
 }
 
 legacy_s32 hires_begin_argb(const struct SPRITE *target)
@@ -424,9 +442,210 @@ void hires_raster_pixel(struct HIRES_RASTER_CONTEXT *context, legacy_s32 x, lega
 	}
 }
 
+void hires_raster_span(struct HIRES_RASTER_CONTEXT *context, legacy_s32 left, legacy_s32 right,
+					   legacy_s32 y, legacy_f64 inverse_z, legacy_f64 depth_step, legacy_u32 family,
+					   legacy_s32 depth_mode, legacy_u16 color, legacy_u16 alternate,
+					   legacy_u16 pattern, legacy_s32 paint_mode, legacy_s32 depth_test)
+{
+	const struct HIRES_RASTER_TARGET *target = context->target;
+	if (y < target->top || y >= target->bottom || y < context->top || y >= context->bottom) {
+		return;
+	}
+	legacy_s32 clip_left = target->left;
+	legacy_s32 clip_right = target->right;
+	if (depth_test) {
+		if (family == 0 || y < target->depth_top || y >= target->depth_bottom) {
+			return;
+		}
+		if (clip_left < target->depth_left) {
+			clip_left = target->depth_left;
+		}
+		if (clip_right > target->depth_right) {
+			clip_right = target->depth_right;
+		}
+	}
+	if (right > clip_right) {
+		right = clip_right;
+	}
+	/* Repeated addition is intentional: clipping must not change rounding
+	 * from the original per-pixel interpolation, including patterned holes. */
+	while (left < clip_left && left < right) {
+		inverse_z += depth_step;
+		left++;
+	}
+	legacy_u16 row = target->rows[y / HIRES_SCALE];
+	legacy_u32 sample_row = (y % HIRES_SCALE) * HIRES_SCALE;
+	/* Patterned materials often skip most samples. Retain their simple loop
+	 * rather than paying the per-cell setup cost for sparse coverage. */
+	if (paint_mode != 0) {
+		legacy_u32 pattern_row = (y & 1) == 0 ? 8U : 0U;
+		for (legacy_s32 x = left; x < right; x++, inverse_z += depth_step) {
+			legacy_u8 sample_color = (legacy_u8)color;
+			if ((pattern & (1U << (pattern_row + 7U - (x & 7)))) != 0) {
+				if (paint_mode == 2) {
+					sample_color = (legacy_u8)alternate;
+				}
+			} else if (paint_mode != 2) {
+				continue;
+			}
+			if (depth_test &&
+				(!(inverse_z > 0) || inverse_z > FLT_MAX ||
+				 !hires_test_depth(target->inverse_depth, target->depth_family,
+								   (size_t)y * HIRES_WIDTH + x, inverse_z, family, depth_mode))) {
+				continue;
+			}
+			legacy_u16 offset = (legacy_u16)(row + x / HIRES_SCALE);
+			if (hires_paint_sample(target->surface, offset, sample_row + x % HIRES_SCALE,
+								   sample_color) != 0) {
+				context->cleared_argb_cells++;
+			}
+		}
+		return;
+	}
+	struct HIRES_SURFACE *surface = target->surface;
+	for (legacy_s32 x = left; x < right;) {
+		legacy_u16 offset = (legacy_u16)(row + x / HIRES_SCALE);
+		legacy_u32 first_sample = sample_row + x % HIRES_SCALE;
+		legacy_s32 end = (x / HIRES_SCALE + 1) * HIRES_SCALE;
+		if (end > right) {
+			end = right;
+		}
+		legacy_u8 *cell = surface->pixels + (size_t)offset * HIRES_CELL_PIXELS;
+		legacy_u32 *argb =
+			surface->valid[offset] == 2 ? surface->argb + (size_t)offset * HIRES_CELL_PIXELS : NULL;
+		legacy_u32 sample = first_sample;
+		/* Opaque indexed surfaces cover most of the view. Keep their hot loop
+		 * free of material and full-color bookkeeping branches. */
+		if (argb == NULL && depth_test && depth_mode == HIRES_DEPTH_SURFACE) {
+			for (; x < end; x++, sample++, inverse_z += depth_step) {
+				if (inverse_z > 0 && inverse_z <= FLT_MAX &&
+					hires_test_depth(target->inverse_depth, target->depth_family,
+									 (size_t)y * HIRES_WIDTH + x, inverse_z, family,
+									 HIRES_DEPTH_SURFACE)) {
+					cell[sample] = (legacy_u8)color;
+				}
+			}
+			continue;
+		}
+		legacy_s32 painted = 0;
+		for (; x < end; x++, sample++, inverse_z += depth_step) {
+			if (depth_test &&
+				(!(inverse_z > 0) || inverse_z > FLT_MAX ||
+				 !hires_test_depth(target->inverse_depth, target->depth_family,
+								   (size_t)y * HIRES_WIDTH + x, inverse_z, family, depth_mode))) {
+				continue;
+			}
+			cell[sample] = (legacy_u8)color;
+			if (argb != NULL) {
+				argb[sample] = 0;
+				painted = 1;
+			}
+		}
+		/* No other job can change this cell. Retire full-color coverage once
+		 * after this run, rather than scanning its sixteen samples per pixel. */
+		if (painted) {
+			legacy_u32 remaining = 0;
+			for (legacy_s32 index = 0; index < HIRES_CELL_PIXELS; index++) {
+				remaining |= argb[index];
+			}
+			if (remaining == 0) {
+				surface->valid[offset] = 1;
+				context->cleared_argb_cells++;
+			}
+		}
+	}
+}
+
 void hires_raster_finish(const struct HIRES_RASTER_TARGET *target, legacy_u32 cleared_argb_cells)
 {
 	target->surface->argb_cells -= cleared_argb_cells;
+}
+
+legacy_u32 hires_raster_shadow(struct HIRES_RASTER_CONTEXT *context, legacy_s32 x, legacy_s32 y,
+							   legacy_u8 opacity)
+{
+	const struct HIRES_RASTER_TARGET *target = context->target;
+	if (opacity == 0 || target->surface->argb == NULL || x < target->left || x >= target->right ||
+		y < target->top || y >= target->bottom || y < context->top || y >= context->bottom) {
+		return 0;
+	}
+	legacy_u16 offset = (legacy_u16)(target->rows[y / HIRES_SCALE] + x / HIRES_SCALE);
+	legacy_u32 *cell = target->surface->argb + (size_t)offset * HIRES_CELL_PIXELS;
+	legacy_u32 added = target->surface->valid[offset] != 2;
+	if (added != 0) {
+		memset(cell, 0, HIRES_CELL_PIXELS * sizeof(*cell));
+		target->surface->valid[offset] = 2;
+	}
+	cell[(y % HIRES_SCALE) * HIRES_SCALE + x % HIRES_SCALE] = (legacy_u32)opacity << 24;
+	return added;
+}
+
+legacy_u32 hires_raster_shadow_block2(struct HIRES_RASTER_CONTEXT *context, legacy_s32 x,
+									  legacy_s32 y, legacy_u8 opacity)
+{
+	const struct HIRES_RASTER_TARGET *target = context->target;
+	if (opacity == 0 || target->surface->argb == NULL || x >= target->right ||
+		y >= target->bottom || y >= context->bottom || x < target->left - 1 ||
+		y < target->top - 1 || y < context->top - 1) {
+		return 0;
+	}
+	if (((x | y) & 1) != 0 || x < target->left || x >= target->right - 1 || y < target->top ||
+		y >= target->bottom - 1 || y < context->top || y >= context->bottom - 1) {
+		legacy_u32 added = hires_raster_shadow(context, x, y, opacity);
+		added += hires_raster_shadow(context, x + 1, y, opacity);
+		added += hires_raster_shadow(context, x, y + 1, opacity);
+		added += hires_raster_shadow(context, x + 1, y + 1, opacity);
+		return added;
+	}
+	/* An even 2x2 block fits inside one owned 4x4 legacy cell. Promote it
+	 * once, preserving the indexed colors and any other ARGB samples. */
+	legacy_u16 offset = (legacy_u16)(target->rows[y / HIRES_SCALE] + x / HIRES_SCALE);
+	legacy_u32 *cell = target->surface->argb + (size_t)offset * HIRES_CELL_PIXELS;
+	legacy_u32 added = target->surface->valid[offset] != 2;
+	if (added != 0) {
+		memset(cell, 0, HIRES_CELL_PIXELS * sizeof(*cell));
+		target->surface->valid[offset] = 2;
+	}
+	legacy_u32 sample = (y % HIRES_SCALE) * HIRES_SCALE + x % HIRES_SCALE;
+	legacy_u32 color = (legacy_u32)opacity << 24;
+	cell[sample] = color;
+	cell[sample + 1] = color;
+	cell[sample + HIRES_SCALE] = color;
+	cell[sample + HIRES_SCALE + 1] = color;
+	return added;
+}
+
+legacy_u32 hires_raster_shadow_block4(struct HIRES_RASTER_CONTEXT *context, legacy_s32 x,
+									  legacy_s32 y, legacy_u8 opacity)
+{
+	const struct HIRES_RASTER_TARGET *target = context->target;
+	if (opacity == 0 || target->surface->argb == NULL || x >= target->right ||
+		y >= target->bottom || y >= context->bottom || x < target->left - 3 ||
+		y < target->top - 3 || y < context->top - 3) {
+		return 0;
+	}
+	if (((x | y) & 3) != 0 || x < target->left || x >= target->right - 3 || y < target->top ||
+		y >= target->bottom - 3 || y < context->top || y >= context->bottom - 3) {
+		legacy_u32 added = hires_raster_shadow_block2(context, x, y, opacity);
+		added += hires_raster_shadow_block2(context, x + 2, y, opacity);
+		added += hires_raster_shadow_block2(context, x, y + 2, opacity);
+		added += hires_raster_shadow_block2(context, x + 2, y + 2, opacity);
+		return added;
+	}
+	legacy_u16 offset = (legacy_u16)(target->rows[y / HIRES_SCALE] + x / HIRES_SCALE);
+	legacy_u32 *cell = target->surface->argb + (size_t)offset * HIRES_CELL_PIXELS;
+	legacy_u32 added = target->surface->valid[offset] != 2;
+	target->surface->valid[offset] = 2;
+	legacy_u32 color = (legacy_u32)opacity << 24;
+	for (legacy_s32 sample = 0; sample < HIRES_CELL_PIXELS; sample++) {
+		cell[sample] = color;
+	}
+	return added;
+}
+
+void hires_raster_shadow_finish(const struct HIRES_RASTER_TARGET *target, legacy_u32 added_cells)
+{
+	target->surface->argb_cells += added_cells;
 }
 
 void hires_fill_pixel(legacy_s32 x, legacy_s32 y, legacy_u8 color)
@@ -441,6 +660,21 @@ void hires_fill_pixel(legacy_s32 x, legacy_s32 y, legacy_u8 color)
 	legacy_u16 offset = (legacy_u16)(row + x);
 	memset(hires_cell(active, offset), color, HIRES_CELL_PIXELS);
 	hires_clear_argb(active, offset);
+}
+
+void hires_fill_samples(legacy_s32 x, legacy_s32 y, const legacy_u8 *samples)
+{
+	if (active == NULL || x < 0 || y < 0 || x >= HIRES_WIDTH / HIRES_SCALE ||
+		y >= HIRES_HEIGHT / HIRES_SCALE || x < active_sprite.sprite_raster_left ||
+		x >= active_sprite.sprite_raster_right || y < active_sprite.sprite_top ||
+		y >= active_sprite.sprite_bottom) {
+		return;
+	}
+	legacy_u16 row = LEGACY_READ_U16_LE(active_sprite.sprite_lineofs + y * 2);
+	legacy_u16 offset = (legacy_u16)(row + x);
+	hires_clear_argb(active, offset);
+	memcpy(active->pixels + (size_t)offset * HIRES_CELL_PIXELS, samples, HIRES_CELL_PIXELS);
+	active->valid[offset] = 1;
 }
 
 void hires_argb_pixel(legacy_s32 x, legacy_s32 y, legacy_u32 color)
@@ -663,6 +897,53 @@ const legacy_u8 *hires_framebuffer(const legacy_u8 *legacy, legacy_s32 *width, l
 	return framebuffer;
 }
 
+/* Shadows only multiply palette colors by an opacity. Cache those exact
+ * integer results while the palette is stable, instead of blending three
+ * channels separately for every shadowed pixel on every presentation. */
+static legacy_u32 shadow_palette[256][256];
+static legacy_u32 shadow_palette_source[256];
+static legacy_s32 shadow_palette_valid;
+
+static void hires_prepare_shadow_palette(const legacy_u32 *palette)
+{
+	if (shadow_palette_valid &&
+		memcmp(shadow_palette_source, palette, sizeof(shadow_palette_source)) == 0) {
+		return;
+	}
+	memcpy(shadow_palette_source, palette, sizeof(shadow_palette_source));
+	for (legacy_u32 alpha = 1; alpha < 256; alpha++) {
+		for (legacy_u32 index = 0; index < 256; index++) {
+			legacy_u32 background = palette[index];
+			legacy_u32 output = 0xFF000000U;
+			for (legacy_u32 shift = 0; shift < 24; shift += 8) {
+				output |= (((background >> shift) & 255U) * (255U - alpha) / 255U) << shift;
+			}
+			shadow_palette[alpha][index] = output;
+		}
+	}
+	shadow_palette_valid = 1;
+}
+
+static legacy_u32 hires_composite_sample(legacy_u32 color, legacy_u8 index,
+										 const legacy_u32 *palette, legacy_u32 fade)
+{
+	legacy_u32 alpha = color >> 24;
+	legacy_u32 background = palette[index];
+	if (alpha == 0) {
+		return background;
+	}
+	if ((color & 0xFFFFFFU) == 0) {
+		return shadow_palette[alpha][index];
+	}
+	legacy_u32 output = 0xFF000000U;
+	for (legacy_u32 shift = 0; shift < 24; shift += 8) {
+		legacy_u32 channel = ((color >> shift) & 255U) * ((fade >> shift) & 255U) / 255U;
+		channel = (channel * alpha + ((background >> shift) & 255U) * (255U - alpha)) / 255U;
+		output |= channel << shift;
+	}
+	return output;
+}
+
 const legacy_u32 *hires_framebuffer_argb(const legacy_u8 *legacy, const legacy_u32 *palette)
 {
 	struct HIRES_SURFACE *surface = enabled ? hires_find(legacy) : NULL;
@@ -677,33 +958,41 @@ const legacy_u32 *hires_framebuffer_argb(const legacy_u8 *legacy, const legacy_u
 			return NULL;
 		}
 	}
+	hires_prepare_shadow_palette(palette);
 	/* Palette entry 15 is the menu's white. Match its fade so artwork follows
 	 * the same black-to-white transition as the original indexed pixels. */
 	legacy_u32 fade = palette[15];
-	for (legacy_s32 y = 0; y < HIRES_HEIGHT; y++) {
-		for (legacy_s32 x = 0; x < HIRES_WIDTH; x++) {
-			legacy_u32 offset = (y / HIRES_SCALE) * 320 + x / HIRES_SCALE;
-			legacy_u32 sample = (y % HIRES_SCALE) * HIRES_SCALE + x % HIRES_SCALE;
-			legacy_u8 index = surface->valid[offset] != 0
-								  ? surface->pixels[offset * HIRES_CELL_PIXELS + sample]
-								  : legacy[offset];
-			legacy_u32 background = palette[index];
-			legacy_u32 color = surface->valid[offset] == 2
-								   ? surface->argb[offset * HIRES_CELL_PIXELS + sample]
-								   : 0;
-			legacy_u32 alpha = color >> 24;
-			if (alpha == 0) {
-				argb_framebuffer[y * HIRES_WIDTH + x] = background;
+	/* Companion samples are stored in 4x4 cells. Read each cell's state and
+	 * sample addresses once; most cells need palette expansion alone. */
+	for (legacy_s32 y = 0; y < HIRES_HEIGHT / HIRES_SCALE; y++) {
+		for (legacy_s32 x = 0; x < HIRES_WIDTH / HIRES_SCALE; x++) {
+			legacy_u32 offset = y * (HIRES_WIDTH / HIRES_SCALE) + x;
+			legacy_u32 *out = argb_framebuffer + y * HIRES_SCALE * HIRES_WIDTH + x * HIRES_SCALE;
+			legacy_u8 valid = surface->valid[offset];
+			if (valid == 0) {
+				legacy_u32 color = palette[legacy[offset]];
+				for (legacy_s32 row = 0; row < HIRES_SCALE; row++, out += HIRES_WIDTH) {
+					for (legacy_s32 column = 0; column < HIRES_SCALE; column++) {
+						out[column] = color;
+					}
+				}
 				continue;
 			}
-			legacy_u32 output = 0xFF000000U;
-			for (legacy_s32 shift = 0; shift < 24; shift += 8) {
-				legacy_u32 channel = ((color >> shift) & 255U) * ((fade >> shift) & 255U) / 255U;
-				channel =
-					(channel * alpha + ((background >> shift) & 255U) * (255U - alpha)) / 255U;
-				output |= channel << shift;
+			const legacy_u8 *cell = surface->pixels + offset * HIRES_CELL_PIXELS;
+			if (valid != 2) {
+				for (legacy_s32 row = 0; row < HIRES_SCALE; row++, out += HIRES_WIDTH) {
+					for (legacy_s32 column = 0; column < HIRES_SCALE; column++) {
+						out[column] = palette[*cell++];
+					}
+				}
+				continue;
 			}
-			argb_framebuffer[y * HIRES_WIDTH + x] = output;
+			const legacy_u32 *argb = surface->argb + offset * HIRES_CELL_PIXELS;
+			for (legacy_s32 row = 0; row < HIRES_SCALE; row++, out += HIRES_WIDTH) {
+				for (legacy_s32 column = 0; column < HIRES_SCALE; column++) {
+					out[column] = hires_composite_sample(*argb++, *cell++, palette, fade);
+				}
+			}
 		}
 	}
 	return argb_framebuffer;

@@ -276,6 +276,8 @@ legacy_s32 skybox_hires_render(const struct SPRITE *target, const struct SKYBOX 
 								 above_center > 0 ? scenery->sky_color : scenery->ground_color);
 				continue;
 			}
+			legacy_u8 samples[HIRES_SCALE * HIRES_SCALE];
+			legacy_u32 sample = 0;
 			for (legacy_s32 sample_y = y * HIRES_SCALE; sample_y < (y + 1) * HIRES_SCALE;
 				 sample_y++) {
 				legacy_f64 relative_y = sample_y + 0.5 - center_y * HIRES_SCALE;
@@ -292,9 +294,10 @@ legacy_s32 skybox_hires_render(const struct SPRITE *target, const struct SKYBOX 
 						legacy_f64 along = normal_y * relative_x + row_along;
 						color = skybox_hires_sample(strips, along, above, color);
 					}
-					hires_pixel(sample_x, sample_y, color);
+					samples[sample++] = color;
 				}
 			}
+			hires_fill_samples(x, y, samples);
 		}
 	}
 	hires_end();

@@ -13,6 +13,10 @@
 #include "externs.h"
 #include "keyboard.h"
 #include "shape3d.h"
+#ifdef RESTUNTS_SDL3
+#include "shape2d_internal.h"
+#include "../platform/sdl3/sdl3.h"
+#endif
 
 #define RST_ASC_CHAR_UPPER 1
 #define RST_ASC_CHAR_LOWER 2
@@ -716,6 +720,36 @@ void show_waiting(void)
 				0, 0);
 	mouse_draw_opaque_check();
 }
+
+#ifdef RESTUNTS_SDL3
+legacy_s16 show_waiting_saved(void)
+{
+	if (sdl3_video_window() == 0 || mainresptr == 0 || active_font_definition == 0 ||
+		sprite_background_stack_depth >= sizeof(sprite_ptrs) / sizeof(sprite_ptrs[0])) {
+		return 0;
+	}
+	struct SPRITE saved_context[SPRITE_STATE_COUNT];
+	legacy_u8 saved_font_colors[4];
+	legacy_s16 saved_background_color = dialog_background_color;
+	sprite_save_context(saved_context);
+	fmemcpy(saved_font_colors, active_font_definition, sizeof(saved_font_colors));
+	/* Reuse show_waiting's position: startup may already have drawn the
+	 * bottom message without presenting it before the blocking load. */
+	legacy_u16 result = show_dialog(DIALOG_TYPE_MESSAGE, DIALOG_SAVE_BACKGROUND,
+									locate_text_res(mainresptr, waiting_message_id),
+									DIALOG_AUTO_POSITION, waitflag, dialog_border_color, 0, 0);
+	fmemcpy(active_font_definition, saved_font_colors, sizeof(saved_font_colors));
+	dialog_background_color = saved_background_color;
+	sprite_restore_context(saved_context);
+	if (result == DIALOG_FAILURE_RESULT) {
+		return 0;
+	}
+	/* Loading can happen inside a guarded race frame. Present the message now
+	 * without allowing an input wait or changing that frame's drawing state. */
+	sdl3_video_present_immediate();
+	return 1;
+}
+#endif
 
 legacy_s16 do_savefile_dialog(legacy_s8 *primary, legacy_s8 *secondary, legacy_s8 far *prompt)
 {

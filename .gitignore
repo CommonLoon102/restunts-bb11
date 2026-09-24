@@ -39,3 +39,9 @@ tools/.watcom-install.*/
 src/restunts/**/build/watcom/
 __pycache__/
 src/restunts/**/*.err
+
+# Generated SuperSight lightmaps.
+*.lmp
+*.LMP
+*.lmp.tmp-*
+*.LMP.tmp-*

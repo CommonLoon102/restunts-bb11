@@ -165,6 +165,10 @@ run_host_test test-replay-menu replay.c \
     "$test_source_dir/legacy.c" "$test_source_dir/headless_data.c" \
     "$test_source_dir/full_data.c" "$test_source_dir/full_strings.c" \
     -Wno-pointer-sign -Wno-missing-field-initializers
+run_host_test test-replay-menu replay.c \
+    "$test_source_dir/legacy.c" "$test_source_dir/headless_data.c" \
+    "$test_source_dir/full_data.c" "$test_source_dir/full_strings.c" \
+    -DRESTUNTS_SDL3 -Wno-pointer-sign -Wno-missing-field-initializers
 run_host_test test-replay-controls legacy.c \
     "$test_source_dir/headless_data.c" "$test_source_dir/full_data.c" "$test_source_dir/math.c" \
     -Wno-pointer-sign -Wno-missing-field-initializers

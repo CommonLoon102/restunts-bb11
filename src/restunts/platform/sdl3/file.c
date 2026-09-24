@@ -109,6 +109,187 @@ static legacy_s32 resolve_path(const char *source, char result[FILE_PATH_SIZE])
 	return 1;
 }
 
+/* MD5 identifies the complete source track, including editor extension data.
+ * It is a cache key; it does not authenticate the track or the lightmap. */
+struct TRACK_MD5 {
+	legacy_u32 state[4];
+	legacy_u64 length;
+	legacy_u8 block[64];
+	legacy_u32 used;
+};
+
+static void track_md5_block(struct TRACK_MD5 *context, const legacy_u8 *bytes)
+{
+	static const legacy_u32 constants[64] = {
+		0xd76aa478U, 0xe8c7b756U, 0x242070dbU, 0xc1bdceeeU, 0xf57c0fafU, 0x4787c62aU, 0xa8304613U,
+		0xfd469501U, 0x698098d8U, 0x8b44f7afU, 0xffff5bb1U, 0x895cd7beU, 0x6b901122U, 0xfd987193U,
+		0xa679438eU, 0x49b40821U, 0xf61e2562U, 0xc040b340U, 0x265e5a51U, 0xe9b6c7aaU, 0xd62f105dU,
+		0x02441453U, 0xd8a1e681U, 0xe7d3fbc8U, 0x21e1cde6U, 0xc33707d6U, 0xf4d50d87U, 0x455a14edU,
+		0xa9e3e905U, 0xfcefa3f8U, 0x676f02d9U, 0x8d2a4c8aU, 0xfffa3942U, 0x8771f681U, 0x6d9d6122U,
+		0xfde5380cU, 0xa4beea44U, 0x4bdecfa9U, 0xf6bb4b60U, 0xbebfbc70U, 0x289b7ec6U, 0xeaa127faU,
+		0xd4ef3085U, 0x04881d05U, 0xd9d4d039U, 0xe6db99e5U, 0x1fa27cf8U, 0xc4ac5665U, 0xf4292244U,
+		0x432aff97U, 0xab9423a7U, 0xfc93a039U, 0x655b59c3U, 0x8f0ccc92U, 0xffeff47dU, 0x85845dd1U,
+		0x6fa87e4fU, 0xfe2ce6e0U, 0xa3014314U, 0x4e0811a1U, 0xf7537e82U, 0xbd3af235U, 0x2ad7d2bbU,
+		0xeb86d391U};
+	static const legacy_u8 shifts[16] = {7, 12, 17, 22, 5, 9, 14, 20, 4, 11, 16, 23, 6, 10, 15, 21};
+	legacy_u32 words[16];
+	for (legacy_u32 i = 0; i < 16; i++) {
+		words[i] = LEGACY_READ_U32_LE(bytes + i * 4);
+	}
+	legacy_u32 a = context->state[0], b = context->state[1];
+	legacy_u32 c = context->state[2], d = context->state[3];
+	for (legacy_u32 i = 0; i < 64; i++) {
+		legacy_u32 mix, word;
+		if (i < 16) {
+			mix = (b & c) | (~b & d);
+			word = i;
+		} else if (i < 32) {
+			mix = (d & b) | (~d & c);
+			word = (i * 5 + 1) & 15U;
+		} else if (i < 48) {
+			mix = b ^ c ^ d;
+			word = (i * 3 + 5) & 15U;
+		} else {
+			mix = c ^ (b | ~d);
+			word = (i * 7) & 15U;
+		}
+		legacy_u32 sum = a + mix + constants[i] + words[word];
+		legacy_u32 shift = shifts[(i / 16) * 4 + (i & 3U)];
+		a = d;
+		d = c;
+		c = b;
+		b += (sum << shift) | (sum >> (32 - shift));
+	}
+	context->state[0] += a;
+	context->state[1] += b;
+	context->state[2] += c;
+	context->state[3] += d;
+}
+
+static void track_md5_update(struct TRACK_MD5 *context, const legacy_u8 *bytes, size_t length)
+{
+	context->length += length;
+	while (length != 0) {
+		size_t count = sizeof(context->block) - context->used;
+		if (count > length) {
+			count = length;
+		}
+		memcpy(context->block + context->used, bytes, count);
+		context->used += (legacy_u32)count;
+		bytes += count;
+		length -= count;
+		if (context->used == sizeof(context->block)) {
+			track_md5_block(context, context->block);
+			context->used = 0;
+		}
+	}
+}
+
+static void track_md5_finish(struct TRACK_MD5 *context, legacy_u8 digest[16])
+{
+	legacy_u8 padding[72] = {0x80};
+	legacy_u32 count = context->used < 56 ? 56 - context->used : 120 - context->used;
+	legacy_u64 bits = context->length * 8;
+	for (legacy_u32 i = 0; i < 8; i++) {
+		padding[count + i] = (legacy_u8)(bits >> (i * 8));
+	}
+	track_md5_update(context, padding, count + 8);
+	for (legacy_u32 i = 0; i < 4; i++) {
+		LEGACY_WRITE_U32_LE(digest + i * 4, context->state[i]);
+	}
+}
+
+static legacy_s32 track_lightmap_path(const legacy_s8 *directory, const legacy_s8 *name,
+									  const legacy_u8 *elements, const legacy_u8 *terrain,
+									  char *path, legacy_u32 capacity, legacy_u8 digest[16])
+{
+	if (path == NULL || capacity == 0) {
+		return 0;
+	}
+	path[0] = 0;
+	if (name == NULL || elements == NULL || terrain == NULL || digest == NULL) {
+		return 0;
+	}
+	/* These are fixed-size legacy dialog buffers, and replay names can contain
+	 * all nine bytes without a terminator. Never pass those through strlen. */
+	size_t directory_length = 0, name_length = 0;
+	while (directory != NULL && directory_length < 81 && directory[directory_length] != 0) {
+		directory_length++;
+	}
+	while (name_length < 9 && name[name_length] != 0) {
+		legacy_u8 ch = (legacy_u8)name[name_length];
+		if (ch <= ' ' || ch >= 127 || strchr("/\\:.?*\"<>|", ch) != NULL) {
+			return 0;
+		}
+		name_length++;
+	}
+	if (directory_length == 81 || name_length == 0 || name_length == 9) {
+		return 0;
+	}
+	char source[FILE_PATH_SIZE], resolved[FILE_PATH_SIZE];
+	legacy_s32 separator = directory_length != 0 && directory[directory_length - 1] != '/' &&
+						   directory[directory_length - 1] != '\\' &&
+						   directory[directory_length - 1] != ':';
+	snprintf(source, sizeof(source), "%.*s%s%.*s.TRK", (int)directory_length,
+			 directory != NULL ? (const char *)directory : "", separator ? "/" : "",
+			 (int)name_length, (const char *)name);
+	if (!resolve_path(source, resolved)) {
+		return 0;
+	}
+	FILE *file = fopen(resolved, "rb");
+	if (file == NULL) {
+		return 0;
+	}
+	legacy_u8 track[1802];
+	legacy_s32 matches_track = fread(track, 1, sizeof(track), file) == sizeof(track);
+	for (legacy_u32 i = 0; matches_track && i < 901; i++) {
+		legacy_u8 element = track[i];
+		/* Track setup replaces reserved large-element IDs before rendering. */
+		if (i < 900 && element >= 182 && element < 253) {
+			element = 4;
+		}
+		matches_track = element == elements[i] && track[901 + i] == terrain[i];
+	}
+	struct TRACK_MD5 md5 = {{0x67452301U, 0xefcdab89U, 0x98badcfeU, 0x10325476U}, 0, {0}, 0};
+	if (matches_track) {
+		track_md5_update(&md5, track, sizeof(track));
+		legacy_u8 buffer[4096];
+		size_t count;
+		while ((count = fread(buffer, 1, sizeof(buffer), file)) != 0) {
+			track_md5_update(&md5, buffer, count);
+		}
+		matches_track = !ferror(file);
+	}
+	if (fclose(file) != 0) {
+		matches_track = 0;
+	}
+	if (!matches_track) {
+		return 0;
+	}
+	/* Use the actual track basename and parent casing. Resolve an existing
+	 * .lmp case-insensitively too, so old caches do not acquire duplicates. */
+	size_t length = strlen(resolved);
+	memcpy(resolved + length - 4, ".LMP", 5);
+	if (!resolve_path(resolved, source) || strlen(source) >= capacity) {
+		return 0;
+	}
+	track_md5_finish(&md5, digest);
+	strcpy(path, source);
+	return 1;
+}
+
+legacy_s32 dos_track_lightmap_path(const legacy_s8 *directory, const legacy_s8 *name,
+								   const legacy_u8 *elements, const legacy_u8 *terrain, char *path,
+								   legacy_u32 capacity, legacy_u8 digest[16])
+{
+	legacy_s16 previous_error = file_error;
+	legacy_s32 result =
+		track_lightmap_path(directory, name, elements, terrain, path, capacity, digest);
+	/* Optional cache misses must not affect the legacy I/O error channel. */
+	file_error = previous_error;
+	return result;
+}
+
 static FILE *get_file(legacy_u16 handle)
 {
 	if (handle < FILE_FIRST_HANDLE || handle >= FILE_HANDLE_COUNT || files[handle] == NULL) {

@@ -13,6 +13,7 @@ void sdl3_audio_update(void);
 void sdl3_input_shutdown(void);
 void sdl3_video_shutdown(void);
 void sdl3_video_present(void);
+void sdl3_video_present_immediate(void);
 void sdl3_video_toggle_fullscreen(void);
 void sdl3_video_begin_frame(void);
 void sdl3_video_end_frame(void);

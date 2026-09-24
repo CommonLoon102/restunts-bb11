@@ -8,6 +8,7 @@
 #include "../c/projection.h"
 #include "../c/shape2d.h"
 #include "../c/shape3d_hires.h"
+#include "../c/shape3d_shadows.h"
 #include "../c/shape3d_internal.h"
 
 #undef memcpy
@@ -1426,6 +1427,8 @@ static legacy_s32 draw_batch_scene(legacy_s32 batched, legacy_s32 ordered)
 static void test_parallel_batches_match_serial(void)
 {
 	static legacy_u8 reference[HIRES_WIDTH * HIRES_HEIGHT];
+	static legacy_f32 reference_depth[HIRES_WIDTH * HIRES_HEIGHT];
+	static legacy_u32 reference_family[HIRES_WIDTH * HIRES_HEIGHT];
 	const char *settings[] = {"0", "1", "2"};
 	const char *original_setting = SDL_getenv("RESTUNTS_RENDER_WORKERS");
 	char *saved_setting = original_setting != NULL ? SDL_strdup(original_setting) : NULL;
@@ -1442,6 +1445,10 @@ static void test_parallel_batches_match_serial(void)
 									target.sprite_top, target.sprite_bottom};
 		reset_target();
 		assert(draw_batch_scene(0, !clipped) == 0);
+		struct HIRES_RASTER_TARGET raster;
+		assert(hires_raster_prepare(&raster));
+		memcpy(reference_depth, raster.inverse_depth, sizeof(reference_depth));
+		memcpy(reference_family, raster.depth_family, sizeof(reference_family));
 		hires_end();
 		/* Require coverage from the pattern, ghost and every primitive kind;
 		 * otherwise an empty or fully occluded fixture could compare equal. */
@@ -1473,6 +1480,18 @@ static void test_parallel_batches_match_serial(void)
 #else
 				assert(draw_batch_scene(1, !clipped) == workers);
 #endif
+				assert(hires_raster_prepare(&raster));
+				for (legacy_s32 y = raster.depth_top; y < raster.depth_bottom; y++) {
+					for (legacy_s32 x = raster.depth_left; x < raster.depth_right; x++) {
+						size_t sample = (size_t)y * HIRES_WIDTH + x;
+						assert(reference_family[sample] == raster.depth_family[sample]);
+						if (reference_family[sample] != 0) {
+							/* Span batching must preserve receiver depth as well as
+							 * visible color, including authored overlays and holes. */
+							assert(reference_depth[sample] == raster.inverse_depth[sample]);
+						}
+					}
+				}
 				hires_end();
 				assert(memcmp(reference, pixels(), sizeof(reference)) == 0);
 			}
@@ -1492,6 +1511,261 @@ static void test_parallel_batches_match_serial(void)
 	assert(shape3d_hires_batch_end() == 0);
 	hires_end();
 	assert(count_color(17) != 0);
+	hires_shutdown();
+	if (saved_setting != NULL) {
+		assert(SDL_SetEnvironmentVariable(SDL_GetEnvironment(), "RESTUNTS_RENDER_WORKERS",
+										  saved_setting, true));
+		SDL_free(saved_setting);
+	} else {
+		assert(SDL_UnsetEnvironmentVariable(SDL_GetEnvironment(), "RESTUNTS_RENDER_WORKERS"));
+	}
+}
+
+static void test_shadow_capture_survives_camera_culling(void)
+{
+	const struct VECTOR roof[] = {
+		{-128, 64, -128}, {128, 64, -128}, {128, 64, 128}, {-128, 64, 128}};
+	const legacy_u8 primitive[] = {4, 0, 0, 0, 1, 2, 3, 0, 0};
+	const struct VECTOR camera = {0, 0, 0};
+	for (legacy_s32 rejection = 0; rejection < 3; rejection++) {
+		prepare_scene(roof, 4, primitive, sizeof(primitive), 1);
+		scene_shape.shape3d_numprimitives = 1;
+		scene_instance.ts_flags = 0;
+		scene_instance.pos.z = rejection == 1 ? -500 : 500;
+		/* Directional masks, whole-shape clipping, and camera backfaces must
+		 * all leave the source geometry available to the light map. */
+		if (rejection < 2) {
+			memset(scene_visibility, 0, sizeof(scene_visibility));
+		} else {
+			for (legacy_u32 vertex = 0; vertex < 4; vertex++) {
+				scene_primitives[3 + vertex] = 3 - vertex;
+			}
+		}
+		shape3d_shadows_begin(&camera);
+		shape3d_capture_shadows(&scene_instance);
+		assert(shape3d_transform_and_queue(&scene_instance) == LEGACY_U16_MAX);
+		assert(polyinfonumpolys == 0);
+		assert(shape3d_shadows_sample(30, 0, scene_instance.pos.z + 20) >= 78);
+	}
+
+	const legacy_u8 excluded_flags[] = {SHAPE3D_GHOST_FLAG, SHAPE3D_BACKGROUND_FLAG, 2};
+	for (legacy_u32 flag = 0; flag < sizeof(excluded_flags); flag++) {
+		prepare_scene(roof, 4, primitive, sizeof(primitive), 1);
+		scene_shape.shape3d_numprimitives = 1;
+		scene_instance.ts_flags = excluded_flags[flag];
+		shape3d_shadows_begin(&camera);
+		shape3d_capture_shadows(&scene_instance);
+		assert(shape3d_shadows_sample(30, 0, 20) == 0);
+	}
+
+	prepare_scene(roof, 4, primitive, sizeof(primitive), 1);
+	scene_shape.shape3d_numprimitives = 1;
+	scene_instance.ts_flags = 0;
+	scene_primitives[1] = 2; /* Attached paint must not seal a grille's holes. */
+	shape3d_shadows_begin(&camera);
+	shape3d_capture_shadows(&scene_instance);
+	assert(shape3d_shadows_sample(30, 0, 20) == 0);
+	scene_primitives[1] = 0;
+	legacy_s16 invisible_pattern[] = {1, 0, 0, 0};
+	material_patlist_ptr_cpy = invisible_pattern;
+	shape3d_capture_shadows(&scene_instance);
+	assert(shape3d_shadows_sample(30, 0, 20) == 0);
+	material_patlist_ptr_cpy = scene_patterns;
+	shape3d_capture_shadows(&scene_instance);
+	assert(shape3d_shadows_sample(30, 0, 20) >= 78);
+	polyinfo_reset();
+	assert(!shape3d_shadows_active());
+}
+
+static void test_rendered_shapes_do_not_cast_automatically(void)
+{
+	const struct VECTOR roof[] = {
+		{-128, 64, -128}, {128, 64, -128}, {128, 64, 128}, {-128, 64, 128}};
+	const legacy_u8 primitive[] = {4, 0, 0, 0, 1, 2, 3, 0, 0};
+	const struct VECTOR camera = {0, 0, 0};
+	prepare_scene(roof, 4, primitive, sizeof(primitive), 1);
+	scene_shape.shape3d_numprimitives = 1;
+	scene_instance.ts_flags = 0;
+	scene_instance.pos.z = 500;
+	shape3d_shadows_begin(&camera);
+	/* Rendering a car or another ordinary object must not add a caster.
+	 * Only track baking and explicitly animated scenery collect geometry. */
+	shape3d_transform_and_queue(&scene_instance);
+	assert(shape3d_shadows_sample(30, 0, 520) == 0);
+	shape3d_capture_shadows(&scene_instance);
+	assert(shape3d_shadows_sample(30, 0, 520) >= 78);
+}
+
+static void test_animated_scenery_capture_excludes_static_surfaces(void)
+{
+	const struct VECTOR roof[] = {
+		{-128, 64, -128}, {128, 64, -128}, {128, 64, 128}, {-128, 64, 128}};
+	const legacy_u8 primitive[] = {4, 0, 0, 1, 0, 1, 2, 3, 0};
+	const struct VECTOR camera = {0, 0, 0};
+	legacy_s16 patterns[] = {0, 1, 2, 0};
+	legacy_s16 masks[] = {0, 0, 0, 0};
+	prepare_scene(roof, 4, primitive, sizeof(primitive), 1);
+	scene_shape.shape3d_numprimitives = 1;
+	scene_shape.shape3d_numpaints = 2;
+	scene_instance.ts_flags = 0;
+	material_patlist_ptr_cpy = patterns;
+	material_patlist2_ptr_cpy = masks;
+	shape3d_shadows_begin(&camera);
+	/* Windmill blades select visible/invisible paint variants. Their static
+	 * bake must omit both animation phases, while runtime captures only the
+	 * currently opaque phase and forgets it on the following presentation. */
+	shape3d_capture_static_shadows(&scene_instance, 1);
+	assert(shape3d_shadows_sample(30, 0, 20) == 0);
+	shape3d_capture_animated_shadows(&scene_instance);
+	assert(shape3d_shadows_sample(30, 0, 20) >= 78);
+	shape3d_shadows_begin(&camera);
+	scene_instance.material = 1;
+	shape3d_capture_animated_shadows(&scene_instance);
+	assert(shape3d_shadows_sample(30, 0, 20) == 0);
+	/* A color change with identical coverage stays entirely in the static
+	 * bake, preventing buildings and signs from being collected each frame. */
+	scene_primitives[3] = 2;
+	shape3d_capture_animated_shadows(&scene_instance);
+	assert(shape3d_shadows_sample(30, 0, 20) == 0);
+	shape3d_capture_static_shadows(&scene_instance, 1);
+	assert(shape3d_shadows_sample(30, 0, 20) >= 78);
+	material_patlist_ptr_cpy = scene_patterns;
+	material_patlist2_ptr_cpy = scene_patterns;
+}
+
+static legacy_s32 draw_shadow_scene(legacy_s16 camera_angle, legacy_s32 baked)
+{
+	const struct SHAPE3D_HIRES_VECTOR surfaces[][4] = {
+		{{-1000, -200, 200}, {1000, -200, 200}, {1000, -200, 2000}, {-1000, -200, 2000}},
+		{{-150, -120, 500}, {150, -120, 500}, {150, -120, 1000}, {-150, -120, 1000}}};
+	struct RECTANGLE clip = {0, 320, 0, 200};
+	select_cliprect_rotate(0, camera_angle / 2, camera_angle, &clip, 0);
+	reset_target();
+	const struct VECTOR camera = {1024, 200, 1024};
+	shape3d_shadows_invalidate();
+	if (baked) {
+		assert(shape3d_shadows_bake_begin());
+		for (legacy_u32 index = 0; index < 2; index++) {
+			struct SHAPE3D_HIRES_VECTOR world[4];
+			for (legacy_u32 vertex = 0; vertex < 4; vertex++) {
+				world[vertex] = (struct SHAPE3D_HIRES_VECTOR){surfaces[index][vertex].x + camera.x,
+															  surfaces[index][vertex].y + camera.y,
+															  surfaces[index][vertex].z + camera.z};
+			}
+			shape3d_shadows_add_polygon(world, 4, 0);
+		}
+		shape3d_shadows_bake_end();
+	}
+	shape3d_shadows_begin(&camera);
+	for (legacy_u32 index = 0; index < 2; index++) {
+		if (!baked) {
+			shape3d_shadows_add_polygon(surfaces[index], 4, 0);
+		}
+		struct SHAPE3D_HIRES_VECTOR view[4];
+		for (legacy_u32 vertex = 0; vertex < 4; vertex++) {
+			const struct SHAPE3D_HIRES_VECTOR *world = &surfaces[index][vertex];
+			view[vertex].x = (world->x * mat_temp.m._11 + world->y * mat_temp.m._12 +
+							  world->z * mat_temp.m._13) /
+							 TRIG_FIXED_ONE;
+			view[vertex].y = (world->x * mat_temp.m._21 + world->y * mat_temp.m._22 +
+							  world->z * mat_temp.m._23) /
+							 TRIG_FIXED_ONE;
+			view[vertex].z = (world->x * mat_temp.m._31 + world->y * mat_temp.m._32 +
+							  world->z * mat_temp.m._33) /
+							 TRIG_FIXED_ONE;
+		}
+		queue_polygon_shape(index, SHAPE3D_HIRES_DEPTH_SORTED, view);
+	}
+	shape3d_hires_batch_begin();
+	shape3d_hires_render(0, RENDER_PRIMITIVE_POLYGON, 7, 0, 0, 0, 0);
+	shape3d_hires_render(1, RENDER_PRIMITIVE_POLYGON, 8, 0, 0, 0, 0);
+	legacy_s32 workers = shape3d_hires_batch_end();
+	hires_end();
+	return workers;
+}
+
+static void test_offscreen_caster_shades_plain_ground(void)
+{
+	struct RECTANGLE clip = {0, 320, 0, 200};
+	select_cliprect_rotate(0, 0, 0, &clip, 0);
+	reset_target();
+	const struct VECTOR camera = {0, 200, 0};
+	/* This roof is entirely above the screen, but its displaced shadow lands
+	 * on visible plain ground. No raster primitive supplies a depth buffer. */
+	const struct SHAPE3D_HIRES_VECTOR roof[] = {
+		{-200, 1000, 500}, {200, 1000, 500}, {200, 1000, 1000}, {-200, 1000, 1000}};
+	shape3d_shadows_begin(&camera);
+	shape3d_shadows_add_polygon(roof, 4, 0);
+	shape3d_hires_batch_begin();
+	assert(shape3d_hires_batch_end() == 0);
+	hires_end();
+	legacy_u32 palette[256];
+	for (legacy_u32 color = 0; color < 256; color++) {
+		palette[color] = 0xFFFFFFFFU;
+	}
+	palette[3] = 0xFF80A060U;
+	const legacy_u32 *image = hires_framebuffer_argb(screen, palette);
+	assert(image != NULL);
+	assert(image[516 * HIRES_WIDTH + 930] != palette[3]);
+	assert(image[0] == palette[3]);
+	const legacy_u8 *indexed = pixels();
+	for (legacy_u32 pixel = 0; pixel < HIRES_WIDTH * HIRES_HEIGHT; pixel++) {
+		assert(indexed[pixel] == 3);
+	}
+}
+
+static void test_shadow_receivers_and_parallel_batches(void)
+{
+	static legacy_u32 reference[HIRES_WIDTH * HIRES_HEIGHT];
+	legacy_u32 palette[256];
+	for (legacy_u32 color = 0; color < 256; color++) {
+		palette[color] = 0xFFFFFFFFU;
+	}
+	palette[3] = 0xFF6080A0U;
+	palette[7] = 0xFFE0D0C0U;
+	palette[8] = 0xFFA08060U;
+	const char *original_setting = SDL_getenv("RESTUNTS_RENDER_WORKERS");
+	char *saved_setting = original_setting != NULL ? SDL_strdup(original_setting) : NULL;
+	assert(original_setting == NULL || saved_setting != NULL);
+	const char *settings[] = {"0", "2"};
+	for (legacy_s16 orientation = 0; orientation < 4; orientation++) {
+		for (legacy_s32 setting = 0; setting < 2; setting++) {
+			assert(SDL_SetEnvironmentVariable(SDL_GetEnvironment(), "RESTUNTS_RENDER_WORKERS",
+											  settings[setting], true));
+			legacy_s32 workers = draw_shadow_scene((orientation & 1) * 64, orientation >= 2);
+#if defined(__DJGPP__)
+			assert(workers == 0);
+#else
+			assert(workers == setting * 2);
+#endif
+			const legacy_u8 *indexed = pixels();
+			const legacy_u32 *image = hires_framebuffer_argb(screen, palette);
+			assert(image != NULL);
+			legacy_u32 shaded_ground = 0;
+			legacy_u32 lit_ground = 0;
+			legacy_u32 roof = 0;
+			for (legacy_u32 pixel = 0; pixel < HIRES_WIDTH * HIRES_HEIGHT; pixel++) {
+				if (indexed[pixel] == 7) {
+					shaded_ground += image[pixel] != palette[7];
+					lit_ground += image[pixel] == palette[7];
+				} else if (indexed[pixel] == 8) {
+					roof++;
+					/* The visible roof receives its own depth, not the ground
+					 * behind it, and must remain free from self-shadow acne. */
+					assert(image[pixel] == palette[8]);
+				}
+			}
+			assert(shaded_ground > 500);
+			assert(lit_ground > shaded_ground);
+			assert(roof > 1000);
+			assert(indexed[0] == 3 && image[0] == palette[3]);
+			if (setting == 0) {
+				memcpy(reference, image, sizeof(reference));
+			} else {
+				assert(memcmp(reference, image, sizeof(reference)) == 0);
+			}
+		}
+	}
 	hires_shutdown();
 	if (saved_setting != NULL) {
 		assert(SDL_SetEnvironmentVariable(SDL_GetEnvironment(), "RESTUNTS_RENDER_WORKERS",
@@ -1559,6 +1833,11 @@ int main(void)
 	test_shared_edge_pixel_coverage();
 	test_shared_edge_near_clipping();
 	test_parallel_batches_match_serial();
+	test_shadow_capture_survives_camera_culling();
+	test_rendered_shapes_do_not_cast_automatically();
+	test_animated_scenery_capture_excludes_static_surfaces();
+	test_shadow_receivers_and_parallel_batches();
+	test_offscreen_caster_shades_plain_ground();
 	hires_shutdown();
 	puts("High-resolution 3D projection and raster tests passed.");
 	return 0;

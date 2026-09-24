@@ -54,3 +54,5 @@ makefile text eol=lf
 *.PVS binary
 *.zip binary
 *.ZIP binary
+*.lmp binary
+*.LMP binary

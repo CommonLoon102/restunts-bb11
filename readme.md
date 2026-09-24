@@ -141,6 +141,34 @@ Leaving it unset selects the automatic count. The limit bounds overhead for the
 execution resources or in busy virtual machines. If thread creation fails, the
 game uses the workers available or falls back to serial drawing.
 
+SuperSight adds shadows and soft contact shading around scenery, bridge walls
+and slalom stones. Track loading bakes static lighting into in-memory lightmaps;
+drawing a frame samples those cached values instead of rebuilding static shadows.
+Soft shading shares filtered samples within small, continuous surface regions,
+with finer sampling at silhouettes and depth breaks. Geometry retains its full
+1280x800 detail. Worker bands draw geometry and cached shading together, and the
+framebuffer is converted once for presentation.
+Cars do not cast shadows. Only animated windmill sails update their shadows while
+playing. The cache survives camera changes and F12 toggles and is freed when
+the track resources unload. Reduced-scenery graphics modes keep track shadows
+but omit scenery and fence shadows; changing that setting rebuilds the cache once.
+
+The bake is also saved beside the track as a binary `.LMP` file, for example
+`DEFAULT.LMP` for `DEFAULT.TRK`. Later loads reuse it after checking the original
+track file's MD5, the collected geometry and the lighting format version. Changed
+tracks, resources or settings invalidate the cache; damaged caches are rebuilt.
+Renaming both files preserves reuse. If the directory is read-only, lighting stays
+in memory. Replays only use a disk cache when the matching track file exists and
+agrees with their embedded track.
+
+Grille decks cast a dense, world-aligned pattern with the bridge material's
+75-percent solid coverage. The projected shadow darkens existing surface colors;
+filtered lightmaps keep distant grille patterns from flickering. Shadows retain
+their fade between one and a half and two track tiles from the camera. A binary space
+partition tree accelerates baking and receiver lookup. These effects only apply
+to driving and replays in SuperSight; the original renderer and simulation are
+unchanged.
+
 Press **F11** to toggle a frame-rate counter in the top-left corner. It measures
 presented frames over approximately one second and rounds down, for example
 `20 FPS`. Values below 20 are red; values of 20 or higher are green.

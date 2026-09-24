@@ -38,11 +38,13 @@ def main():
             baseline = None
             for mode in range(3):
                 output = Path(directory) / f"{replay}-{mode}.bin"
+                # Allow slow hosts to render the CPU shadow pass at every
+                # interpolated presentation, including full-length fixtures.
                 subprocess.run([str(executable), "--data-dir", str(data_directory),
                                 replay, str(output), str(mode), str(limit),
                                 str(first), str(last), *settling],
                                env=environment, check=True,
-                               timeout=300 if full_replays else 120)
+                               timeout=300 if full_replays else 180)
                 actual = output.read_bytes()
                 assert actual and len(actual) % RECORD_SIZE == 0
                 if baseline is None:

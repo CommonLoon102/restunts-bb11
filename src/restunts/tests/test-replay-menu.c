@@ -13,6 +13,14 @@ static struct CARSTATE ghost_fixture;
 static legacy_s16 ghost_fixture_active;
 static legacy_s16 opponent_view_disabled;
 static legacy_u8 supersight_reset_pending;
+#if defined(RESTUNTS_SDL3)
+static legacy_u8 shadow_preloads;
+
+void frame_preload_track_shadows(void)
+{
+	shadow_preloads++;
+}
+#endif
 static legacy_u32 input_polls, input_exit_poll, fps_expire_poll, fps_expiry_checks;
 
 legacy_s16 frame_fps_expire_idle(void)
@@ -336,11 +344,18 @@ void free_player_cars(void)
 }
 legacy_s16 setup_player_cars(void)
 {
+#if defined(RESTUNTS_SDL3)
+	frame_preload_track_shadows();
+#endif
 	event(29);
 	return 0;
 }
 void init_game_state(legacy_s16 mode)
 {
+#if defined(RESTUNTS_SDL3)
+	/* Every loaded replay refreshes lighting, even when cars and skybox match. */
+	assert(shadow_preloads == 1);
+#endif
 	assert(supersight_reset_pending != 0);
 	supersight_reset_pending = 0;
 	event(30);
@@ -354,6 +369,9 @@ void show_graphic_levels_menu(void)
 
 static void reset_viewer(void)
 {
+#if defined(RESTUNTS_SDL3)
+	shadow_preloads = 0;
+#endif
 	supersight_reset_pending = 0;
 	memset(&state, 0, sizeof(state));
 	memset(&gameconfig, 0, sizeof(gameconfig));

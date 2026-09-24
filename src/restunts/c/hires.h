@@ -50,15 +50,38 @@ legacy_s32 hires_raster_depth_test(struct HIRES_RASTER_CONTEXT *context, legacy_
 								   legacy_f64 inverse_z, legacy_u32 family, legacy_s32 mode);
 void hires_raster_pixel(struct HIRES_RASTER_CONTEXT *context, legacy_s32 x, legacy_s32 y,
 						legacy_u8 color);
+/* Rasterize one exclusive-right polygon span, retaining sample-by-sample depth
+ * interpolation and the screen-aligned eight-by-two material pattern. */
+void hires_raster_span(struct HIRES_RASTER_CONTEXT *context, legacy_s32 left, legacy_s32 right,
+					   legacy_s32 y, legacy_f64 inverse_z, legacy_f64 depth_step, legacy_u32 family,
+					   legacy_s32 depth_mode, legacy_u16 color, legacy_u16 alternate,
+					   legacy_u16 pattern, legacy_s32 paint_mode, legacy_s32 depth_test);
 void hires_raster_finish(const struct HIRES_RASTER_TARGET *target, legacy_u32 cleared_argb_cells);
 /* Optional full-color artwork uses the same clipping and sprite-copy lifetime.
  * Allocation failure leaves the indexed fallback intact. */
 legacy_s32 hires_begin_argb(const struct SPRITE *target);
+/* Prepare after indexed raster workers have joined, within the active pass.
+ * Black ARGB pixels with shadow opacity darken the retained palette samples. */
+legacy_s32 hires_shadow_prepare(void);
+/* Shadow jobs own the same disjoint complete cells as indexed raster jobs.
+ * Sum newly promoted ARGB cells and finish once after every worker has joined. */
+legacy_u32 hires_raster_shadow(struct HIRES_RASTER_CONTEXT *context, legacy_s32 x, legacy_s32 y,
+							   legacy_u8 opacity);
+/* Uniform 2x2 shadows share cell promotion and addressing when aligned.
+ * Odd or clipped blocks retain the per-pixel clipping and counter behavior. */
+legacy_u32 hires_raster_shadow_block2(struct HIRES_RASTER_CONTEXT *context, legacy_s32 x,
+									  legacy_s32 y, legacy_u8 opacity);
+/* Aligned 4x4 shadows replace one complete legacy cell in a single write. */
+legacy_u32 hires_raster_shadow_block4(struct HIRES_RASTER_CONTEXT *context, legacy_s32 x,
+									  legacy_s32 y, legacy_u8 opacity);
+void hires_raster_shadow_finish(const struct HIRES_RASTER_TARGET *target, legacy_u32 added_cells);
 void hires_argb_pixel(legacy_s32 x, legacy_s32 y, legacy_u32 color);
 const legacy_u32 *hires_framebuffer_argb(const legacy_u8 *legacy, const legacy_u32 *palette);
 void hires_pixel(legacy_s32 x, legacy_s32 y, legacy_u8 color);
 /* Fill all companion samples at logical 320x200 coordinates without changing the legacy byte. */
 void hires_fill_pixel(legacy_s32 x, legacy_s32 y, legacy_u8 color);
+/* Replace a whole logical cell with sixteen row-major companion samples. */
+void hires_fill_samples(legacy_s32 x, legacy_s32 y, const legacy_u8 *samples);
 void hires_write(const legacy_u8 *base, legacy_u16 offset, legacy_u8 color);
 void hires_raster(const legacy_u8 *destination, legacy_u16 destination_offset,
 				  const legacy_u8 *source, legacy_u16 source_offset, legacy_u16 count,

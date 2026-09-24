@@ -70,6 +70,8 @@ index 116. Only the current scenery set is cached.
 
 The loader searches `skyboxes/` in the game data directory, then beside the
 executable, and finally `assets/skyboxes/` in a source build.
+Normal CMake builds copy the runtime strips beside the executable, so a build
+directory also works when the checkout is mounted at a different path.
 `cmake --install` installs the 20 runtime strips in `bin/skyboxes/`, with
 DOS-compatible names `sky0-0.png` through `sky4-3.png`. The first number
 selects desert, tropical, alpine, city, or country; the second selects the

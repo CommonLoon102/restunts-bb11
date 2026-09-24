@@ -83,6 +83,10 @@ void update_frame_snapshot(legacy_s8 buffer_index, struct RECTANGLE *cliprect,
 						   const struct GHOST_CAMERA_STATE *render_ghost_camera);
 
 void frame_supersight_reset(void);
+#if defined(RESTUNTS_SDL3)
+void frame_preload_track_shadows(void);
+void frame_free_track_shadows(void);
+#endif
 void frame_fps_reset(void);
 legacy_s16 frame_fps_expire_idle(void);
 void frame_fps_record_presented(void);

@@ -21,6 +21,7 @@
 #include "fatal.h"
 #include "hires.h"
 #include "shape3d_hires.h"
+#include "shape3d_shadows.h"
 #endif
 
 /*
@@ -349,6 +350,122 @@ static void shape3d_hires_rotate(const struct SHAPE3D_HIRES_VECTOR *source,
 	result->z =
 		(source->x * matrix->m._31 + source->y * matrix->m._32 + source->z * matrix->m._33) /
 		TRIG_FIXED_ONE;
+}
+
+static legacy_u16 shape3d_material_value(const legacy_s16 *table, legacy_u16 index);
+
+static legacy_u16 shape3d_shadow_pattern(legacy_u16 material)
+{
+	legacy_u16 type = shape3d_material_value(material_patlist_ptr_cpy, material);
+	if (type == 1U) {
+		return shape3d_material_value(material_patlist2_ptr_cpy, material);
+	}
+	return type <= 2U ? 0xFFFFU : 0U;
+}
+
+enum SHAPE3D_SHADOW_CAPTURE {
+	SHAPE3D_SHADOW_CAPTURE_ALL,
+	SHAPE3D_SHADOW_CAPTURE_STATIC,
+	SHAPE3D_SHADOW_CAPTURE_ANIMATED
+};
+
+static void shape3d_capture_shadow_polygons(const struct TRANSFORMEDSHAPE3D *instance,
+											enum SHAPE3D_SHADOW_CAPTURE capture,
+											legacy_s32 animated_material, legacy_f64 scale)
+{
+	/* Shadow casters must survive camera clipping and backface rejection: an
+	 * offscreen bridge or the far side of a wall can still shade visible ground. */
+	if (!shape3d_shadows_active() ||
+		(instance->ts_flags &
+		 (SHAPE3D_GHOST_FLAG | SHAPE3D_BACKGROUND_FLAG | SHAPE3D_PRETRANSFORMED_FLAG)) != 0) {
+		return;
+	}
+	const struct SHAPE3D *shape = instance->shapeptr;
+	if (shape == 0 || shape->shape3d_numverts > SHAPE3D_VERTEX_CAPACITY ||
+		shape->shape3d_numpaints == 0) {
+		return;
+	}
+	struct MATRIX rotation = *mat_rot_zxy(instance->rotvec.x, instance->rotvec.y,
+										  instance->rotvec.z, MATRIX_ROTATION_ORDER_ZXY);
+	struct SHAPE3D_HIRES_VECTOR world_vertices[SHAPE3D_VERTEX_CAPACITY];
+	legacy_u8 transformed[SHAPE3D_VERTEX_CAPACITY] = {0};
+	legacy_u16 paint = instance->material < shape->shape3d_numpaints ? instance->material : 0;
+	const legacy_u8 *primitive = shape->shape3d_primitives;
+	for (legacy_u16 index = 0; index < shape->shape3d_numprimitives && primitive[0] != 0; index++) {
+		if (primitive[0] >= 16U) {
+			break;
+		}
+		legacy_u16 count = primidxcounttab[primitive[0]];
+		const legacy_u8 *indices = primitive + 2U + shape->shape3d_numpaints;
+		legacy_u16 pattern = shape3d_shadow_pattern(primitive[2U + paint]);
+		legacy_s32 changes_coverage = 0;
+		if (animated_material != 0) {
+			legacy_u16 first_pattern = shape3d_shadow_pattern(primitive[2U]);
+			for (legacy_u16 variant = 1; variant < shape->shape3d_numpaints; variant++) {
+				if (shape3d_shadow_pattern(primitive[2U + variant]) != first_pattern) {
+					changes_coverage = 1;
+					break;
+				}
+			}
+		}
+		legacy_u16 flags = primitive[1];
+		legacy_u16 type = primtypetab[primitive[0]];
+		primitive = indices + count;
+		/* Attached markings share their supporting polygon's shadow. In
+		 * particular, they must not fill the holes in a grille underneath them. */
+		if (type != RENDER_PRIMITIVE_POLYGON ||
+			(flags & SHAPE3D_PRIMITIVE_SKIP_DEPTH_SORT_FLAG) != 0) {
+			continue;
+		}
+		/* Animated scenery changes coverage by selecting opaque and invisible
+		 * paint variants. Its permanent body belongs in the track light map. */
+		if (pattern == 0U || (capture == SHAPE3D_SHADOW_CAPTURE_STATIC && changes_coverage != 0) ||
+			(capture == SHAPE3D_SHADOW_CAPTURE_ANIMATED && changes_coverage == 0)) {
+			continue;
+		}
+		struct SHAPE3D_HIRES_VECTOR polygon[10];
+		legacy_u16 vertex;
+		for (vertex = 0; vertex < count; vertex++) {
+			legacy_u16 source_index = indices[vertex];
+			if (source_index >= shape->shape3d_numverts) {
+				break;
+			}
+			if (transformed[source_index] == 0) {
+				struct VECTOR source;
+				shape3d_vertex_read(shape, source_index, &source);
+				struct SHAPE3D_HIRES_VECTOR local = {source.x * scale, source.y * scale,
+													 source.z * scale};
+				struct SHAPE3D_HIRES_VECTOR *world = &world_vertices[source_index];
+				shape3d_hires_rotate(&local, &rotation, world);
+				world->x += instance->pos.x;
+				world->y += instance->pos.y;
+				world->z += instance->pos.z;
+				transformed[source_index] = 1;
+			}
+			polygon[vertex] = world_vertices[source_index];
+		}
+		if (vertex == count) {
+			shape3d_shadows_add_polygon(polygon, count, pattern != 0xFFFFU);
+		}
+	}
+}
+
+void shape3d_capture_shadows(const struct TRANSFORMEDSHAPE3D *instance)
+{
+	shape3d_capture_shadow_polygons(instance, SHAPE3D_SHADOW_CAPTURE_ALL, 0,
+									shape_half_scale != 0 ? 0.5 : 1.0);
+}
+
+void shape3d_capture_static_shadows(const struct TRANSFORMEDSHAPE3D *instance,
+									legacy_s32 animated_material)
+{
+	shape3d_capture_shadow_polygons(instance, SHAPE3D_SHADOW_CAPTURE_STATIC, animated_material,
+									1.0);
+}
+
+void shape3d_capture_animated_shadows(const struct TRANSFORMEDSHAPE3D *instance)
+{
+	shape3d_capture_shadow_polygons(instance, SHAPE3D_SHADOW_CAPTURE_ANIMATED, 1, 1.0);
 }
 
 static void shape3d_hires_transform_vertex(const struct SHAPE3D *shape, legacy_u16 index,

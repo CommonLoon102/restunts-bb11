@@ -21,6 +21,7 @@
 #include "video_pages.h"
 #ifdef RESTUNTS_SDL3
 #include "skybox_hires.h"
+#include "frame_internal.h"
 #endif
 
 #define SKYBOX_RESOURCE_COUNT 5
@@ -168,6 +169,9 @@ void ghost_free_simulation_resources(void)
 
 static legacy_s16 setup_player_cars_impl(legacy_s16 load_dashboard_shapes)
 {
+#ifdef RESTUNTS_SDL3
+	frame_free_track_shadows();
+#endif
 	setup_legacy_penalty_route_word();
 	render_window_sprite = 0;
 	/* Dump tools retain their linear buffer and original resource layout. */
@@ -204,6 +208,9 @@ static legacy_s16 setup_player_cars_impl(legacy_s16 load_dashboard_shapes)
 	if (shape3d_load_all() != 0) {
 		return 1;
 	}
+#ifdef RESTUNTS_SDL3
+	frame_preload_track_shadows();
+#endif
 
 	if (video_uses_page_flipping == 0) {
 		legacy_u32 window_pixel_bytes = LEGACY_U16_DIV_OR_ZERO(
@@ -233,6 +240,9 @@ legacy_s16 setup_player_cars_without_dashboard(void)
 
 void free_player_cars(void)
 {
+#ifdef RESTUNTS_SDL3
+	frame_free_track_shadows();
+#endif
 	if (video_uses_page_flipping == 0) {
 		if (render_window_sprite != 0) {
 			sprite_free_wnd(render_window_sprite);

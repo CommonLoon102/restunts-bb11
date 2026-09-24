@@ -8,6 +8,8 @@
 #include "../c/frame.c"
 
 #undef printf
+#undef memcpy
+#undef strcmp
 
 struct TRACKOBJECT trkObjectList[215];
 legacy_s16 camera_track_height_offset;
@@ -957,6 +959,192 @@ static void test_supersight_capacity_retries(void)
 }
 #endif
 
+#if defined(RESTUNTS_SDL3)
+static struct TRANSFORMEDSHAPE3D shadow_static_instances[1024];
+static legacy_s32 shadow_static_animated[1024];
+static legacy_u16 shadow_static_count;
+static legacy_u16 shadow_dynamic_count;
+static struct TRANSFORMEDSHAPE3D shadow_dynamic_instance;
+static legacy_s32 shadow_bake_available = 1;
+static legacy_u16 shadow_bake_completions;
+static legacy_u16 shadow_invalidations;
+static legacy_s32 shadow_path_available;
+static legacy_u16 shadow_disk_completions;
+static const legacy_u8 shadow_disk_digest[16] = {1, 2,	3,	4,	5,	6,	7,	8,
+												 9, 10, 11, 12, 13, 14, 15, 16};
+
+legacy_s32 dos_track_lightmap_path(const legacy_s8 *directory, const legacy_s8 *name,
+								   const legacy_u8 *elements, const legacy_u8 *terrain, char *path,
+								   legacy_u32 capacity, legacy_u8 digest[16])
+{
+	assert(directory == track_directory && name == gameconfig.game_trackname);
+	assert(elements == element_map && terrain == terrain_map);
+	if (!shadow_path_available) {
+		return 0;
+	}
+	const char fixture[] = "fixtures/DEFAULT.LMP";
+	assert(capacity >= sizeof(fixture));
+	memcpy(path, fixture, sizeof(fixture));
+	memcpy(digest, shadow_disk_digest, sizeof(shadow_disk_digest));
+	return 1;
+}
+
+legacy_s32 shape3d_shadows_bake_end_cached(const char *path, const legacy_u8 track_md5[16])
+{
+	assert(strcmp(path, "fixtures/DEFAULT.LMP") == 0);
+	assert(memcmp(track_md5, shadow_disk_digest, sizeof(shadow_disk_digest)) == 0);
+	shadow_disk_completions++;
+	shadow_bake_completions++;
+	return 1;
+}
+
+static legacy_s16 shadow_waiting_visible;
+static legacy_u16 shadow_waiting_count;
+
+legacy_s16 show_waiting_saved(void)
+{
+	assert(!shadow_waiting_visible);
+	shadow_waiting_visible = 1;
+	shadow_waiting_count++;
+	return 1;
+}
+
+void sprite_pop_background(void)
+{
+	assert(shadow_waiting_visible);
+	shadow_waiting_visible = 0;
+}
+
+legacy_s32 shape3d_shadows_bake_begin(void)
+{
+	assert(shadow_waiting_visible);
+	shadow_static_count = 0;
+	return shadow_bake_available;
+}
+
+void shape3d_shadows_bake_end(void)
+{
+	shadow_bake_completions++;
+}
+
+void shape3d_shadows_invalidate(void)
+{
+	shadow_invalidations++;
+}
+
+void shape3d_capture_static_shadows(const struct TRANSFORMEDSHAPE3D *instance,
+									legacy_s32 animated_material)
+{
+	assert(shadow_static_count < 1024U);
+	shadow_static_instances[shadow_static_count] = *instance;
+	shadow_static_animated[shadow_static_count++] = animated_material;
+}
+
+void shape3d_capture_animated_shadows(const struct TRANSFORMEDSHAPE3D *instance)
+{
+	shadow_dynamic_instance = *instance;
+	shadow_dynamic_count++;
+}
+
+static legacy_u16 shadow_model_count(legacy_u16 shape_index)
+{
+	legacy_u16 count = 0;
+	for (legacy_u16 index = 0; index < shadow_static_count; index++) {
+		count += shadow_static_instances[index].shapeptr == &game3dshapes[shape_index];
+	}
+	return count;
+}
+
+static void test_static_shadow_scene(void)
+{
+	configure_track();
+	memset(trkObjectList, 0, sizeof(trkObjectList));
+	trkObjectList[2].ss_shapePtr = &game3dshapes[PLAYER_CAR_HIGH_SHAPE];
+	trkObjectList[4].ss_shapePtr = &game3dshapes[10];
+	trkObjectList[5].ss_shapePtr = &game3dshapes[94];
+	trkObjectList[5].ss_physicalModel = PHYSICAL_MODEL_WINDMILL;
+	trkObjectList[5].ss_surfaceType = -1;
+	trkObjectList[6].ss_shapePtr = &game3dshapes[88];
+	trkObjectList[6].ss_multiTileFlag = FRAME_MULTITILE_BOTH;
+	trkObjectList[6].ss_ssOvelay = 7;
+	trkObjectList[7].ss_shapePtr = &game3dshapes[89];
+	trkObjectList[214].ss_shapePtr = &game3dshapes[106];
+	element_map[10 + 10 * 30] = 6;
+	element_map[11 + 10 * 30] = TRACK_TILE_CONTINUATION_EAST;
+	element_map[10 + 11 * 30] = TRACK_TILE_CONTINUATION_SOUTH;
+	element_map[11 + 11 * 30] = TRACK_TILE_CONTINUATION_SOUTHEAST;
+	terrain_map[10 + 10 * 30] = TERRAIN_RAISED_TILE;
+	element_map[20 + 20 * 30] = 5;
+	element_map[15 + 15 * 30] = 2;
+	terrain_map[1 + 1 * 30] = TERRAIN_RAISED_TILE;
+	element_map[2 + 2 * 30] = 4;
+	terrain_map[2 + 2 * 30] = FRAME_HILL_ROAD_TERRAIN_FIRST;
+	detail_level = FRAME_DETAIL_FULL;
+	frame_preload_track_shadows();
+	assert(shadow_bake_completions == 1 && shadow_invalidations == 1);
+	assert(shadow_waiting_count == 1 && !shadow_waiting_visible);
+	assert(frame_shadow_track_loaded && frame_shadow_windmill_count == 1);
+	assert(shadow_model_count(PLAYER_CAR_HIGH_SHAPE) == 0);
+	assert(shadow_model_count(10) == 1 && shadow_model_count(94) == 1);
+	assert(shadow_model_count(88) == 1 && shadow_model_count(89) == 1);
+	assert(shadow_model_count(FRAME_HILL_FILL_SHAPE_INDEX) == 5);
+	assert(shadow_model_count(106) != 0 && shadow_model_count(108) != 0);
+	for (legacy_u16 index = 0; index < shadow_static_count; index++) {
+		const struct TRANSFORMEDSHAPE3D *instance = &shadow_static_instances[index];
+		if (instance->shapeptr == &game3dshapes[88] || instance->shapeptr == &game3dshapes[89]) {
+			assert(instance->pos.x == track_column_positions[11]);
+			assert(instance->pos.z == track_row_positions[10]);
+			assert(instance->pos.y == hillHeightConsts[TERRAIN_RAISED_HEIGHT_INDEX]);
+		} else if (instance->shapeptr == &game3dshapes[94]) {
+			assert(shadow_static_animated[index] != 0);
+		} else if (instance->shapeptr == &game3dshapes[10]) {
+			assert(instance->pos.y == 0);
+		}
+	}
+	struct FRAME_CAMERA camera = {0};
+	camera.position.x = track_column_centers[20] - 200;
+	camera.position.y = 120;
+	camera.position.z = track_row_centers[20] - 400;
+	frame_capture_windmill_shadows(&camera, 2);
+	assert(shadow_dynamic_count == 1);
+	assert(shadow_dynamic_instance.pos.x == 200 && shadow_dynamic_instance.pos.y == -120 &&
+		   shadow_dynamic_instance.pos.z == 400 && shadow_dynamic_instance.material == 2);
+	camera.position.x = 0;
+	frame_capture_windmill_shadows(&camera, 3);
+	assert(shadow_dynamic_count == 1);
+	frame_supersight_reset();
+	assert(frame_shadow_windmill_count == 1);
+
+	detail_level = 1;
+	frame_preload_track_shadows();
+	assert(frame_shadow_full_scenery == 0 && frame_shadow_windmill_count == 0);
+	assert(shadow_model_count(94) == 0 && shadow_model_count(106) == 0 &&
+		   shadow_model_count(108) == 0);
+	assert(shadow_model_count(88) == 1 && shadow_model_count(10) == 1);
+	frame_free_track_shadows();
+	assert(frame_shadow_track_loaded == 0 && frame_shadow_windmill_count == 0);
+	assert(shadow_bake_completions == 2 && shadow_invalidations == 3);
+	shadow_bake_available = 0;
+	frame_preload_track_shadows();
+	assert(shadow_static_count == 0 && frame_shadow_windmill_count == 0);
+	assert(shadow_bake_completions == 2 && shadow_invalidations == 4);
+	assert(shadow_waiting_count == 3 && !shadow_waiting_visible);
+	frame_free_track_shadows();
+	shadow_bake_available = 1;
+	/* Only a verified original track path and digest reach persistence. A
+	 * replay-only or mismatching track uses the memory-only bake above. */
+	assert(shadow_disk_completions == 0);
+	shadow_path_available = 1;
+	legacy_u16 completions = shadow_bake_completions;
+	frame_preload_track_shadows();
+	assert(shadow_disk_completions == 1 && shadow_bake_completions == completions + 1);
+	assert(shadow_waiting_count == 4 && !shadow_waiting_visible);
+	assert(frame_shadow_track_loaded);
+	frame_free_track_shadows();
+	shadow_path_available = 0;
+}
+#endif
+
 int main(void)
 {
 	test_camera_modes();
@@ -979,6 +1167,9 @@ int main(void)
 	test_prediction_uses_authoritative_events();
 	test_supersight_selection();
 	test_supersight_capacity_retries();
+#if defined(RESTUNTS_SDL3)
+	test_static_shadow_scene();
+#endif
 	puts("Frame rendering snapshots, ghost isolation and SuperSight passed.");
 	return 0;
 }

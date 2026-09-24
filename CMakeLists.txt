@@ -80,7 +80,7 @@ set(game_sources
     menu_track.c menu_track_editor.c menu_opponent.c opponent_portrait.c menu_car.c audio_engine.c
     audio_resources.c audio_car.c audio_sequence.c shape3d.c shape3d_resources.c
     shape3d_car.c shape3d_prerender.c shape3d_lines.c shape2d.c shape2d_blit.c
-    video_pages.c hires.c render_workers.c frame_interpolation.c phantom_physics.c shape3d_hires.c shape2d_resources.c heapsort.c frame.c skybox.c skybox_hires.c frame_overlay.c
+    video_pages.c hires.c render_workers.c frame_interpolation.c phantom_physics.c shape3d_hires.c shape3d_shadows.c shape2d_resources.c heapsort.c frame.c skybox.c skybox_hires.c frame_overlay.c
     intro_render.c track_preview.c full_data.c full_strings.c full_tables.c)
 list(TRANSFORM common_sources PREPEND "${core}/")
 list(TRANSFORM game_sources PREPEND "${core}/")
@@ -135,9 +135,24 @@ target_link_libraries(pixldump PRIVATE restunts_game)
 
 install(TARGETS restunts repldump pixldump RUNTIME DESTINATION bin COMPONENT Runtime)
 install(FILES docs/sdl3.md DESTINATION share/docs/restunts COMPONENT Runtime)
+# Keep ordinary builds relocatable too. Run copy_if_different on every build
+# so updated artwork and missing output files do not require relinking.
+set(runtime_asset_commands
+    COMMAND "${CMAKE_COMMAND}" -E make_directory
+        "$<TARGET_FILE_DIR:restunts>/skyboxes"
+        "$<TARGET_FILE_DIR:restunts>/opponents/game")
+set(runtime_asset_sources)
 foreach(opponent RANGE 1 6)
-    install(FILES "assets/opponents/game/opp${opponent}.png"
+    set(opponent_image "assets/opponents/game/opp${opponent}.png")
+    install(FILES "${opponent_image}"
         DESTINATION bin/opponents/game COMPONENT Runtime OPTIONAL)
+    if(EXISTS "${CMAKE_SOURCE_DIR}/${opponent_image}")
+        list(APPEND runtime_asset_sources "${CMAKE_SOURCE_DIR}/${opponent_image}")
+        list(APPEND runtime_asset_commands
+            COMMAND "${CMAKE_COMMAND}" -E copy_if_different
+                "${CMAKE_SOURCE_DIR}/${opponent_image}"
+                "$<TARGET_FILE_DIR:restunts>/opponents/game/opp${opponent}.png")
+    endif()
 endforeach()
 set(skybox_themes desert tropical alpine city country)
 set(skybox_images scen sce2 sce3 sce4)
@@ -145,10 +160,23 @@ foreach(theme RANGE 0 4)
     list(GET skybox_themes ${theme} theme_name)
     foreach(image RANGE 0 3)
         list(GET skybox_images ${image} image_name)
-        install(FILES "assets/skyboxes/${theme_name}-${image_name}.png"
-            DESTINATION bin/skyboxes RENAME "sky${theme}-${image}.png" COMPONENT Runtime)
+        set(skybox_image "assets/skyboxes/${theme_name}-${image_name}.png")
+        set(skybox_runtime_name "sky${theme}-${image}.png")
+        install(FILES "${skybox_image}"
+            DESTINATION bin/skyboxes RENAME "${skybox_runtime_name}" COMPONENT Runtime)
+        list(APPEND runtime_asset_sources "${CMAKE_SOURCE_DIR}/${skybox_image}")
+        list(APPEND runtime_asset_commands
+            COMMAND "${CMAKE_COMMAND}" -E copy_if_different
+                "${CMAKE_SOURCE_DIR}/${skybox_image}"
+                "$<TARGET_FILE_DIR:restunts>/skyboxes/${skybox_runtime_name}")
     endforeach()
 endforeach()
+add_custom_target(restunts_runtime_assets
+    ${runtime_asset_commands}
+    DEPENDS ${runtime_asset_sources}
+    COMMENT "Updating runtime artwork"
+    VERBATIM)
+add_dependencies(restunts restunts_runtime_assets)
 if(TARGET nuked_opl2)
     install(TARGETS nuked_opl2
         RUNTIME DESTINATION bin COMPONENT Runtime
@@ -278,6 +306,11 @@ if(RESTUNTS_BUILD_TESTS)
             "${CMAKE_SOURCE_DIR}/tools/scripts/test-render-replay.py"
             "$<TARGET_FILE:test-render-replay>" "${CMAKE_SOURCE_DIR}/stunts")
     endif()
+    add_executable(test-shape3d-shadows src/restunts/tests/test-shape3d-shadows.c
+        ${core}/shape3d_shadows.c)
+    target_link_libraries(test-shape3d-shadows PRIVATE restunts_options)
+    target_compile_options(test-shape3d-shadows PRIVATE -UNDEBUG)
+    add_test(NAME shape3d-shadows COMMAND test-shape3d-shadows)
     add_executable(test-shape3d-hires src/restunts/tests/test-shape3d-hires.c)
     target_link_libraries(test-shape3d-hires PRIVATE restunts_game)
     target_compile_options(test-shape3d-hires PRIVATE -UNDEBUG)
@@ -321,7 +354,7 @@ if(RESTUNTS_BUILD_TESTS AND TARGET nuked_opl2)
     install(TARGETS nuked_opl2
         RUNTIME DESTINATION bin COMPONENT Tests EXCLUDE_FROM_ALL
         LIBRARY DESTINATION lib COMPONENT Tests EXCLUDE_FROM_ALL)
-    install(TARGETS test-shape3d-hires test-skybox-hires test-track-preview-skybox
+    install(TARGETS test-shape3d-hires test-shape3d-shadows test-skybox-hires test-track-preview-skybox
         RUNTIME DESTINATION bin COMPONENT Tests EXCLUDE_FROM_ALL)
     foreach(test platform audio audio-trace audio-definition audio-sequence input fileio hires)
         if(TARGET test-sdl3-${test})

@@ -23,6 +23,10 @@
 
 #if defined(RESTUNTS_SDL3)
 #include <stdlib.h>
+#include "hires.h"
+#include "platform.h"
+#include "shape3d_shadows.h"
+#include "ui_dialog.h"
 #endif
 
 /* Presentations read their own immutable pose. Timer callbacks continue to see
@@ -2054,8 +2058,211 @@ static void frame_finish(legacy_s8 buffer_index, struct RECTANGLE *cliprect,
 	}
 }
 
+#if defined(RESTUNTS_SDL3)
+/* Only the windmill sails change their shadow coverage. Keep their world poses
+ * independently of the visible tile queue, so offscreen sails still cast. */
+static struct TRANSFORMEDSHAPE3D frame_shadow_windmills[FRAME_MAXIMUM_TILE_COUNT];
+static legacy_u16 frame_shadow_windmill_count;
+static legacy_s32 frame_shadow_track_loaded;
+static legacy_s32 frame_shadow_full_scenery;
+
+static void frame_bake_shadow_shape(const struct SHAPE3D *shape, const struct VECTOR *position,
+									legacy_s16 rotation, legacy_s8 material, legacy_s32 windmill)
+{
+	if (shape == 0) {
+		return;
+	}
+	struct TRANSFORMEDSHAPE3D instance = {0};
+	instance.shapeptr = (struct SHAPE3D *)shape;
+	instance.pos = *position;
+	instance.rotvec.z = rotation;
+	instance.material = material >= 0 ? material : 0;
+	shape3d_capture_static_shadows(&instance, material < 0);
+	if (windmill != 0 && frame_shadow_windmill_count < FRAME_MAXIMUM_TILE_COUNT) {
+		frame_shadow_windmills[frame_shadow_windmill_count++] = instance;
+	}
+}
+
+static void frame_bake_shadow_terrain(legacy_u8 terrain, legacy_s16 east, legacy_s16 south,
+									  legacy_s16 height)
+{
+	if (terrain == 0 || terrain >= 19U || east > TRACK_GRID_LAST_COORDINATE ||
+		south > TRACK_GRID_LAST_COORDINATE) {
+		return;
+	}
+	const struct TRACKOBJECT *object = &terrain_scene_objects[terrain];
+	struct VECTOR position = {track_column_centers[east], height, track_row_centers[south]};
+	frame_bake_shadow_shape(object->ss_shapePtr, &position, object->ss_rotY, 0, 0);
+}
+
+static void frame_bake_shadow_hill_fill(const struct TRACKOBJECT *object,
+										const struct VECTOR *position)
+{
+	if (position->y == 0) {
+		return;
+	}
+	legacy_s16 count;
+	const legacy_s16 *offsets;
+	switch (object->ss_multiTileFlag) {
+		case FRAME_MULTITILE_NONE:
+			count = FRAME_HILL_FILL_COUNT_SINGLE;
+			offsets = hill_fill_offsets_single;
+			break;
+		case FRAME_MULTITILE_ROW:
+			count = FRAME_HILL_FILL_COUNT_ROW;
+			offsets = hill_fill_offsets_row;
+			break;
+		case FRAME_MULTITILE_COLUMN:
+			count = FRAME_HILL_FILL_COUNT_COLUMN;
+			offsets = hill_fill_offsets_column;
+			break;
+		case FRAME_MULTITILE_BOTH:
+			count = FRAME_HILL_FILL_COUNT_BOTH;
+			offsets = hill_fill_offsets_both;
+			break;
+		default:
+			return;
+	}
+	for (legacy_s16 index = 0; index < count; index++) {
+		struct VECTOR fill = {LEGACY_S16_WRAP_ADD(position->x, offsets[index * 2]), position->y,
+							  LEGACY_S16_WRAP_ADD(position->z, offsets[index * 2 + 1])};
+		frame_bake_shadow_shape(&game3dshapes[FRAME_HILL_FILL_SHAPE_INDEX], &fill, 0, 0, 0);
+	}
+}
+
+static void frame_bake_shadow_tile(legacy_u8 east, legacy_u8 south)
+{
+	legacy_u8 element = track_element_map[east + trackrows[south]];
+	legacy_u8 terrain = track_terrain_map[east + terrainrows[south]];
+	/* Multi-tile owners capture the whole model and its underlying terrain. */
+	if (element >= TRACK_TILE_CONTINUATION_SOUTHEAST) {
+		return;
+	}
+	if (element != 0 && terrain >= FRAME_HILL_ROAD_TERRAIN_FIRST &&
+		terrain < FRAME_HILL_ROAD_TERRAIN_END) {
+		element = subst_hillroad_track(terrain, element);
+		terrain = 0;
+	}
+	/* Low-detail graphics intentionally leave scenery out of the static map.
+	 * Their one nearby visible tile does not require rebuilding while driving. */
+	if (element < TRACK_OBJECT_COUNT && detail_level != FRAME_DETAIL_FULL &&
+		trkObjectList[element].ss_physicalModel >= FRAME_SCENERY_PHYSICAL_MODEL_FIRST) {
+		element = 0;
+	}
+	legacy_s16 height = 0;
+	if (terrain == TERRAIN_RAISED_TILE) {
+		height = hillHeightConsts[TERRAIN_RAISED_HEIGHT_INDEX];
+		if (element != 0) {
+			terrain = 0;
+		}
+	} else if (element >= FRAME_ELEVATED_CORNER_FIRST && element <= FRAME_ELEVATED_CORNER_LAST) {
+		for (legacy_s16 row = south; row <= south + 1 && row <= TRACK_GRID_LAST_COORDINATE; row++) {
+			for (legacy_s16 column = east;
+				 column <= east + 1 && column <= TRACK_GRID_LAST_COORDINATE; column++) {
+				frame_bake_shadow_terrain(track_terrain_map[column + terrainrows[row]], column, row,
+										  0);
+			}
+		}
+		terrain = 0;
+	}
+	frame_bake_shadow_terrain(terrain, east, south, height);
+	/* The two car slots are runtime objects rather than track scenery. */
+	if (element == 0 || element == FRAME_PLAYER_SORT_ID || element == FRAME_OPPONENT_SORT_ID ||
+		element >= TRACK_OBJECT_COUNT) {
+		return;
+	}
+	const struct TRACKOBJECT *object = &trkObjectList[element];
+	struct VECTOR position = {track_object_base_x(object, east), height,
+							  track_object_base_z(object, south)};
+	frame_bake_shadow_hill_fill(object, &position);
+	if (object->ss_ssOvelay != 0) {
+		const struct TRACKOBJECT *overlay =
+			frame_track_object_from_legacy_index(object->ss_ssOvelay);
+		frame_bake_shadow_shape(overlay->ss_shapePtr, &position, overlay->ss_rotY,
+								overlay->ss_surfaceType, 0);
+	}
+	frame_bake_shadow_shape(object->ss_shapePtr, &position, object->ss_rotY, object->ss_surfaceType,
+							object->ss_physicalModel == PHYSICAL_MODEL_WINDMILL);
+}
+
+void frame_free_track_shadows(void)
+{
+	frame_shadow_track_loaded = 0;
+	frame_shadow_windmill_count = 0;
+	shape3d_shadows_invalidate();
+}
+
+static void frame_load_track_shadows(void)
+{
+	frame_free_track_shadows();
+	frame_shadow_track_loaded = 1;
+	frame_shadow_full_scenery = detail_level == FRAME_DETAIL_FULL;
+	if (!shape3d_shadows_bake_begin()) {
+		return;
+	}
+	for (legacy_u8 south = 0; south <= TRACK_GRID_LAST_COORDINATE; south++) {
+		for (legacy_u8 east = 0; east <= TRACK_GRID_LAST_COORDINATE; east++) {
+			frame_bake_shadow_tile(east, south);
+			legacy_s16 fence = fence_by_edge[frame_border_index(east)][frame_border_index(south)];
+			if (frame_shadow_full_scenery != 0 && fence != FRAME_FENCE_NONE) {
+				const struct TRACKOBJECT *object =
+					frame_track_object_from_legacy_index(fence_TrkObjCodes[fence]);
+				struct VECTOR position = {track_column_centers[east], 0, track_row_centers[south]};
+				frame_bake_shadow_shape(object->ss_shapePtr, &position, fence_rotations[fence], 0,
+										0);
+			}
+		}
+	}
+	char cache_path[1024];
+	legacy_u8 track_md5[16];
+	if (dos_track_lightmap_path(track_directory, gameconfig.game_trackname, track_element_map,
+								track_terrain_map, cache_path, sizeof(cache_path), track_md5)) {
+		shape3d_shadows_bake_end_cached(cache_path, track_md5);
+	} else {
+		shape3d_shadows_bake_end();
+	}
+}
+
+void frame_preload_track_shadows(void)
+{
+	/* Display before collecting geometry or reading the cache; both paths can
+	 * block long enough to look frozen. Restore the covered screen afterward. */
+	legacy_s16 waiting = show_waiting_saved();
+	frame_load_track_shadows();
+	if (waiting != 0) {
+		sprite_pop_background();
+	}
+}
+
+static void frame_capture_windmill_shadows(const struct FRAME_CAMERA *camera,
+										   legacy_s8 animated_material)
+{
+	for (legacy_u16 index = 0; index < frame_shadow_windmill_count; index++) {
+		struct TRANSFORMEDSHAPE3D instance = frame_shadow_windmills[index];
+		legacy_s32 relative_x = (legacy_s32)instance.pos.x - camera->position.x;
+		legacy_s32 relative_z = (legacy_s32)instance.pos.z - camera->position.z;
+		/* This covers the bounded animated map plus the complete sail span.
+		 * Reject in wide coordinates before narrowing to legacy positions. */
+		if (relative_x < -4096 || relative_x > 4096 || relative_z < -4096 || relative_z > 4096) {
+			continue;
+		}
+		instance.pos.x = (legacy_s16)relative_x;
+		instance.pos.y = LEGACY_S16_WRAP_SUB(instance.pos.y, camera->position.y);
+		instance.pos.z = (legacy_s16)relative_z;
+		instance.material = animated_material;
+		shape3d_capture_animated_shadows(&instance);
+	}
+}
+#endif
+
 void update_frame(legacy_s8 buffer_index, struct RECTANGLE *cliprect)
 {
+#if defined(RESTUNTS_SDL3)
+	if (frame_shadow_track_loaded != 0 &&
+		frame_shadow_full_scenery != (detail_level == FRAME_DETAIL_FULL)) {
+		frame_preload_track_shadows();
+	}
+#endif
 	polyinfo_set_supersight(supersight_enabled);
 	if (supersight_enabled == 0) {
 		frame_supersight_reset();
@@ -2069,6 +2276,12 @@ void update_frame(legacy_s8 buffer_index, struct RECTANGLE *cliprect)
 	legacy_s8 animated_material = frame_animated_material();
 	struct FRAME_TILE_SELECTION tiles;
 	tiles.lookahead = frame_setup_projection(&camera, cliprect);
+#if defined(RESTUNTS_SDL3)
+	if (hires_enabled()) {
+		shape3d_shadows_begin(&camera.position);
+		frame_capture_windmill_shadows(&camera, animated_material);
+	}
+#endif
 	frame_draw_clouds(&camera, redraw_transform_flags);
 	frame_select_tiles(&tiles, &camera);
 	if (supersight_enabled != 0) {

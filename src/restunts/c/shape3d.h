@@ -72,6 +72,12 @@ void shape3d_load_car_shapes(legacy_s8 *carid, legacy_s8 *opponent_carid);
 void shape3d_free_car_shapes(void);
 void shape3d_init_shape(legacy_s8 far *shapeptr, struct SHAPE3D *gameshape);
 legacy_u16 shape3d_transform_and_queue(struct TRANSFORMEDSHAPE3D *instance);
+#if defined(RESTUNTS_SDL3)
+/* Explicit scenery capture keeps vehicles out of both static and animated maps. */
+void shape3d_capture_static_shadows(const struct TRANSFORMEDSHAPE3D *instance,
+									legacy_s32 animated_material);
+void shape3d_capture_animated_shadows(const struct TRANSFORMEDSHAPE3D *instance);
+#endif
 void set_projection(legacy_s16 horizontal_fov_degrees, legacy_s16 vertical_fov_degrees,
 					legacy_s16 width, legacy_s16 height);
 legacy_u16 select_cliprect_rotate(legacy_s16 angZ, legacy_s16 angX, legacy_s16 angY,

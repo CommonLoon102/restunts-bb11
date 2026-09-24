@@ -24,6 +24,10 @@ legacy_s8 do_fileselect_dialog(legacy_s8 *directory, legacy_s8 *filename, legacy
 legacy_s16 do_savefile_dialog(legacy_s8 *primary, legacy_s8 *secondary, legacy_s8 far *prompt);
 void ensure_file_exists(legacy_s16 unused);
 void show_waiting(void);
+#ifdef RESTUNTS_SDL3
+/* Returns nonzero when the caller must restore with sprite_pop_background(). */
+legacy_s16 show_waiting_saved(void);
+#endif
 legacy_s16 show_disk_error_dialog(void);
 void security_check(legacy_s16 question_index);
 void sprite_xor_rect_outline(legacy_s16 left, legacy_s16 top, legacy_s16 right, legacy_s16 bottom,
