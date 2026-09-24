@@ -409,8 +409,8 @@ legacy_s16 stuntsmain(legacy_s16 argc, legacy_s8 *argv[])
 			legacy_u16 count = PRESENTATION_RATE / gameconfig.game_framespersec;
 			struct GAMESTATE last;
 			interpolate_and_check(&last, &previous, 0);
-			/* Match the production schedule: the first midpoint is shown as soon
-			 * as the new keyframe exists, followed by its endpoint. */
+			/* Match production: sample the completed interval in 60 Hz slots,
+			 * starting at one third for 20 Hz physics and ending at its endpoint. */
 			for (legacy_u16 frame = 1; frame <= count; frame++) {
 				struct GAMESTATE interpolated;
 				legacy_u32 fraction = (FRAME_INTERPOLATION_ONE * frame) / count;
