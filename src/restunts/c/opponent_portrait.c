@@ -143,6 +143,13 @@ static SDL_Surface *portrait_image(legacy_u8 opponent)
 void opponent_portrait_draw(const struct SPRITE *target, const struct SHAPE2D *original,
 							legacy_u8 opponent)
 {
+	opponent_portrait_draw_at(target, original, opponent, shape2d_get_pos_x(original),
+							  shape2d_get_pos_y(original));
+}
+
+void opponent_portrait_draw_at(const struct SPRITE *target, const struct SHAPE2D *original,
+							   legacy_u8 opponent, legacy_s16 tile_x, legacy_s16 tile_y)
+{
 	if (!hires_enabled() || opponent < 1 || opponent > 6 ||
 		shape2d_get_width(original) != PORTRAIT_WIDTH ||
 		shape2d_get_height(original) != PORTRAIT_HEIGHT) {
@@ -152,8 +159,8 @@ void opponent_portrait_draw(const struct SPRITE *target, const struct SHAPE2D *o
 	if (source == NULL || !hires_begin_argb(target)) {
 		return;
 	}
-	legacy_s32 x = shape2d_get_pos_x(original) + PORTRAIT_LEFT;
-	legacy_s32 y = shape2d_get_pos_y(original) + PORTRAIT_TOP;
+	legacy_s32 x = tile_x + PORTRAIT_LEFT;
+	legacy_s32 y = tile_y + PORTRAIT_TOP;
 	const legacy_u8 *indexed = (const legacy_u8 *)original + SHAPE2D_HEADER_SIZE;
 	for (legacy_s32 row = 0; row < source->h; row++) {
 		const legacy_u32 *pixels =

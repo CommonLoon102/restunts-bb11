@@ -24,6 +24,8 @@
 #ifdef RESTUNTS_SDL3
 #include "../c/frame_internal.h"
 #include "../c/shape3d_hires.h"
+#include "../c/opponent_portrait.h"
+#include "../c/shape2d_internal.h"
 #endif
 
 #undef printf
@@ -53,6 +55,25 @@ static legacy_u8 display_fps_drawn, display_previous_fps, display_refresh_pendin
 static legacy_u32 display_present_count, display_fps_draw_count, display_record_count;
 static legacy_u32 display_reset_count, display_shortcut_count, display_sprite_free_count;
 static struct RECTANGLE display_clip, display_fps_bounds, display_previous_fps_bounds;
+static const struct RECTANGLE display_portrait_bounds = {240, 320, 0, 83};
+static legacy_u8 display_portrait_pending, display_portrait_mode, display_portrait_legacy_drawn;
+static legacy_u32 display_portrait_draws, display_enhanced_portrait_draws;
+
+void opponent_portrait_draw_at(const struct SPRITE *target, const struct SHAPE2D *original,
+							   legacy_u8 opponent, legacy_s16 x, legacy_s16 y)
+{
+	assert(target == &drawing_sprite && original == &fixture_shapes[1]);
+	assert(opponent == 2 && x == 240 && y == 0);
+	if (display_toggle_test != 0) {
+		assert((display_scenario & 4U) != 0 && display_target == 1);
+		assert(display_portrait_legacy_drawn != 0);
+		display_portrait_legacy_drawn = 0;
+		display_portrait_mode = supersight_enabled;
+		display_portrait_pending = 1;
+		display_portrait_draws++;
+		display_enhanced_portrait_draws += supersight_enabled != 0;
+	}
+}
 
 static void assert_contains(const struct RECTANGLE *outer, const struct RECTANGLE *inner)
 {
@@ -73,6 +94,13 @@ static void record_preview_copy(void)
 	}
 	if (display_previous_fps != 0) {
 		assert_contains(&display_clip, &display_previous_fps_bounds);
+	}
+	if ((display_scenario & 4U) != 0) {
+		assert(display_portrait_mode == supersight_enabled);
+	}
+	if (display_portrait_pending != 0) {
+		assert_contains(&display_clip, &display_portrait_bounds);
+		display_portrait_pending = 0;
 	}
 	display_previous_fps = display_fps_drawn;
 	display_previous_fps_bounds = display_fps_bounds;
@@ -129,6 +157,8 @@ legacy_s16 handle_ingame_kb_shortcuts(legacy_s16 key)
 		frame_fps_reset();
 	} else {
 		supersight_enabled ^= 1U;
+		/* F12 discards all enhanced sprite surfaces in the real renderer. */
+		display_portrait_mode = 255;
 	}
 	display_shortcut_count++;
 	display_refresh_pending = display_toggle_test;
@@ -534,6 +564,11 @@ legacy_u16 shape2d_get_height(const struct SHAPE2D *shape)
 {
 	trace_word(1029);
 	trace_pointer(shape);
+#ifdef RESTUNTS_SDL3
+	if (display_toggle_test != 0 && shape == &fixture_shapes[1]) {
+		return 83;
+	}
+#endif
 	return 12;
 }
 
@@ -541,6 +576,11 @@ legacy_u16 shape2d_get_width(const struct SHAPE2D *shape)
 {
 	trace_word(1030);
 	trace_pointer(shape);
+#ifdef RESTUNTS_SDL3
+	if (display_toggle_test != 0 && shape == &fixture_shapes[1]) {
+		return 80;
+	}
+#endif
 	return 30;
 }
 
@@ -634,6 +674,11 @@ void sprite_clear_target(legacy_u8 color)
 
 void sprite_copy_image_at(struct SHAPE2D *shape, legacy_s16 x, legacy_s16 y)
 {
+#ifdef RESTUNTS_SDL3
+	if (display_toggle_test != 0 && display_target == 1 && x == 240 && y == 0) {
+		display_portrait_legacy_drawn = 1;
+	}
+#endif
 	trace_word(1038);
 	trace_pointer(shape);
 	trace_word((legacy_u16)x);
@@ -681,6 +726,11 @@ void sprite_putimage(struct SHAPE2D *shape)
 
 void sprite_putimage_transparent(struct SHAPE2D *shape, legacy_s16 x, legacy_s16 y)
 {
+#ifdef RESTUNTS_SDL3
+	if (display_toggle_test != 0 && display_target == 1 && x == 240 && y == 0) {
+		display_portrait_legacy_drawn = 1;
+	}
+#endif
 	trace_word(1042);
 	trace_pointer(shape);
 	trace_word((legacy_u16)x);
@@ -846,6 +896,9 @@ static void test_display_toggles(void)
 		display_pending = display_fps_drawn = display_previous_fps = display_refresh_pending = 0;
 		display_present_count = display_fps_draw_count = display_record_count = 0;
 		display_reset_count = display_shortcut_count = display_sprite_free_count = 0;
+		display_portrait_pending = display_portrait_legacy_drawn = 0;
+		display_portrait_mode = 255;
+		display_portrait_draws = display_enhanced_portrait_draws = 0;
 		run_car_case(1);
 		assert(frame_index == 17);
 		assert(supersight_enabled == initial_supersight && fps_display_enabled == initial_fps);
@@ -855,9 +908,16 @@ static void test_display_toggles(void)
 		assert(display_present_count == display_record_count);
 		assert(display_pending == 0);
 		assert(display_sprite_free_count == sprite_index);
+		if ((display_scenario & 4U) != 0) {
+			assert(display_portrait_draws == 3);
+			assert(display_enhanced_portrait_draws == 1U + initial_supersight);
+		} else {
+			assert(display_portrait_draws == 0);
+		}
+		assert(display_portrait_pending == 0 && display_portrait_legacy_drawn == 0);
 	}
 	display_toggle_test = 0;
-	puts("Car menu FPS toggles passed (32 scenarios).");
+	puts("Car menu FPS and portrait toggles passed (32 scenarios).");
 }
 #endif
 

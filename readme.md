@@ -96,10 +96,11 @@ each horizon image at four times its original width and height. Switching it
 off restores the original skybox artwork. Missing enhanced PNGs fall back to
 the original strips. The Open Watcom 16-bit DOS version retains its existing renderer.
 
-The opponent-selection screen also uses [enhanced portraits](docs/opponents/README.md)
-while SuperSight is on. The final set in `assets/opponents/game/` contains
+The opponent-selection and opponent car-selection screens also use
+[enhanced portraits](docs/opponents/README.md) while SuperSight is on. The final set
+in `assets/opponents/game/` contains
 160 x 166 tiles, twice the original width and height, with the exact game palette
-and solid backgrounds. F12 switches portraits in the menu; missing or unreadable
+and solid backgrounds. F12 switches portraits in both menus; missing or unreadable
 replacements fall back individually to the originals. Original numbered labels
 and the clipboard frame are preserved. The selected full-resolution sources and
 4x working tiles are archived in `docs/opponents/game-sources/` for regeneration.
