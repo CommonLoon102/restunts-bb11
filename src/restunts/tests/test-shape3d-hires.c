@@ -905,6 +905,192 @@ static void test_crossing_surfaces_use_pixel_depth(void)
 	}
 }
 
+/* Different track elements can overlap even when their tile centers have
+ * the opposite painter order. Preserve depth across every shape boundary. */
+static void queue_polygon_shape(legacy_u32 index, legacy_s32 depth_mode,
+								const struct SHAPE3D_HIRES_VECTOR *vertices)
+{
+	const legacy_u8 indices[] = {0, 1, 2, 3};
+	shape3d_hires_begin_shape(index, depth_mode);
+	shape3d_hires_queue(index, RENDER_PRIMITIVE_POLYGON, 4, indices, vertices, 0);
+}
+
+static void test_separate_shapes_use_pixel_depth(void)
+{
+	const struct SHAPE3D_HIRES_VECTOR panels[][4] = {
+		{{-60, -30, 100}, {-60, 30, 100}, {60, 30, 300}, {60, -30, 300}},
+		{{-60, -30, 300}, {-60, 30, 300}, {60, 30, 100}, {60, -30, 100}}};
+	const legacy_s32 modes[] = {SHAPE3D_HIRES_DEPTH_ORDERED, SHAPE3D_HIRES_DEPTH_SORTED};
+	for (legacy_u32 first_mode = 0; first_mode < 2; first_mode++) {
+		for (legacy_u32 second_mode = 0; second_mode < 2; second_mode++) {
+			for (legacy_u32 order = 0; order < 2; order++) {
+				reset_target();
+				queue_polygon_shape(0, modes[first_mode], panels[0]);
+				queue_polygon_shape(1, modes[second_mode], panels[1]);
+				for (legacy_u32 pass = 0; pass < 2; pass++) {
+					legacy_u32 index = pass ^ order;
+					shape3d_hires_render(index, RENDER_PRIMITIVE_POLYGON, (legacy_u16)(7 + index),
+										 0, 0, 0, 0);
+				}
+				hires_end();
+				assert(pixels()[400 * HIRES_WIDTH + 600] == 7);
+				assert(pixels()[400 * HIRES_WIDTH + 680] == 8);
+			}
+		}
+	}
+}
+
+static void test_separate_shapes_preserve_authored_overlays(void)
+{
+	const struct SHAPE3D_HIRES_VECTOR parent[] = {
+		{-5, -2.5, 80}, {5, -2.5, 80}, {5, 2.5, 80}, {-5, 2.5, 80}};
+	const struct SHAPE3D_HIRES_VECTOR marking[] = {
+		{-5, -0.25, 80.5}, {5, -0.25, 80.5}, {5, 0.25, 80.5}, {-5, 0.25, 80.5}};
+	const struct SHAPE3D_HIRES_VECTOR middle[] = {
+		{-5, -2.5, 80.25}, {5, -2.5, 80.25}, {5, 2.5, 80.25}, {-5, 2.5, 80.25}};
+	const struct SHAPE3D_HIRES_VECTOR nearer[] = {
+		{-2.5, -1.25, 40}, {0, -1.25, 40}, {0, 1.25, 40}, {-2.5, 1.25, 40}};
+	const legacy_u8 indices[] = {0, 1, 2, 3};
+	const legacy_s32 modes[] = {SHAPE3D_HIRES_DEPTH_ORDERED, SHAPE3D_HIRES_DEPTH_SORTED};
+	for (legacy_u32 mode = 0; mode < 2; mode++) {
+		for (legacy_u32 order = 0; order < 2; order++) {
+			reset_target();
+			queue_polygon_shape(0, modes[mode], parent);
+			/* Unsorted roads retain authored paint order even without a
+			 * primitive attachment flag; sorted models use explicit decals. */
+			shape3d_hires_queue(1, RENDER_PRIMITIVE_POLYGON, 4, indices, marking,
+								mode == 0 ? 0 : 2);
+			queue_polygon_shape(2, SHAPE3D_HIRES_DEPTH_SORTED, middle);
+			queue_polygon_shape(3, SHAPE3D_HIRES_DEPTH_SORTED, nearer);
+			if (order == 0) {
+				shape3d_hires_render(2, RENDER_PRIMITIVE_POLYGON, 9, 0, 0, 0, 0);
+				shape3d_hires_render(3, RENDER_PRIMITIVE_POLYGON, 10, 0, 0, 0, 0);
+			}
+			shape3d_hires_render(0, RENDER_PRIMITIVE_POLYGON, 7, 0, 0, 0, 0);
+			shape3d_hires_render(1, RENDER_PRIMITIVE_POLYGON, 8, 0, 0, 0, 0);
+			if (order != 0) {
+				shape3d_hires_render(2, RENDER_PRIMITIVE_POLYGON, 9, 0, 0, 0, 0);
+				shape3d_hires_render(3, RENDER_PRIMITIVE_POLYGON, 10, 0, 0, 0, 0);
+			}
+			hires_end();
+			/* Paint behind its own support stays visible, yet retains the
+			 * support's depth against a surface between the road and paint. */
+			assert(pixels()[400 * HIRES_WIDTH + 660] == 8);
+			assert(pixels()[390 * HIRES_WIDTH + 660] == 7);
+			assert(pixels()[400 * HIRES_WIDTH + 620] == 10);
+		}
+	}
+}
+
+static void test_ordered_shapes_keep_nearest_support(void)
+{
+	const struct SHAPE3D_HIRES_VECTOR parent[] = {
+		{-5, -2.5, 80}, {5, -2.5, 80}, {5, 2.5, 80}, {-5, 2.5, 80}};
+	const struct SHAPE3D_HIRES_VECTOR nearer[] = {
+		{-2.5, -1.25, 40}, {2.5, -1.25, 40}, {2.5, 1.25, 40}, {-2.5, 1.25, 40}};
+	const struct SHAPE3D_HIRES_VECTOR marking[] = {
+		{-5, -0.25, 80.5}, {5, -0.25, 80.5}, {5, 0.25, 80.5}, {-5, 0.25, 80.5}};
+	const struct SHAPE3D_HIRES_VECTOR middle[] = {
+		{-3.75, -1.875, 60}, {3.75, -1.875, 60}, {3.75, 1.875, 60}, {-3.75, 1.875, 60}};
+	const legacy_u8 indices[] = {0, 1, 2, 3};
+	for (legacy_u32 order = 0; order < 2; order++) {
+		reset_target();
+		queue_polygon_shape(0, SHAPE3D_HIRES_DEPTH_ORDERED, parent);
+		shape3d_hires_queue(1, RENDER_PRIMITIVE_POLYGON, 4, indices, nearer, 0);
+		shape3d_hires_queue(2, RENDER_PRIMITIVE_POLYGON, 4, indices, marking, 0);
+		queue_polygon_shape(3, SHAPE3D_HIRES_DEPTH_SORTED, middle);
+		if (order == 0) {
+			shape3d_hires_render(3, RENDER_PRIMITIVE_POLYGON, 10, 0, 0, 0, 0);
+		}
+		shape3d_hires_render(0, RENDER_PRIMITIVE_POLYGON, 7, 0, 0, 0, 0);
+		shape3d_hires_render(1, RENDER_PRIMITIVE_POLYGON, 8, 0, 0, 0, 0);
+		shape3d_hires_render(2, RENDER_PRIMITIVE_POLYGON, 9, 0, 0, 0, 0);
+		if (order != 0) {
+			shape3d_hires_render(3, RENDER_PRIMITIVE_POLYGON, 10, 0, 0, 0, 0);
+		}
+		hires_end();
+		/* The nearer second surface advances the shape's depth. Subsequent
+		 * rear-authored paint must not move it back behind the other shape. */
+		assert(pixels()[400 * HIRES_WIDTH + 660] == 9);
+		assert(pixels()[390 * HIRES_WIDTH + 660] == 8);
+	}
+}
+
+static void test_scene_depth_resets_between_draws(void)
+{
+	const struct SHAPE3D_HIRES_VECTOR nearer[] = {
+		{-5, -2.5, 80}, {5, -2.5, 80}, {5, 2.5, 80}, {-5, 2.5, 80}};
+	const struct SHAPE3D_HIRES_VECTOR farther[] = {
+		{-10, -5, 160}, {10, -5, 160}, {10, 5, 160}, {-10, 5, 160}};
+	reset_target();
+	queue_polygon_shape(0, SHAPE3D_HIRES_DEPTH_SORTED, nearer);
+	queue_polygon_shape(1, SHAPE3D_HIRES_DEPTH_SORTED, farther);
+	shape3d_hires_render(0, RENDER_PRIMITIVE_POLYGON, 7, 0, 0, 0, 0);
+	hires_end();
+	assert(pixels()[400 * HIRES_WIDTH + 640] == 7);
+	assert(hires_begin(&target));
+	shape3d_hires_render(1, RENDER_PRIMITIVE_POLYGON, 8, 0, 0, 0, 0);
+	hires_end();
+	assert(pixels()[400 * HIRES_WIDTH + 640] == 8);
+	assert(hires_begin(&target));
+	shape3d_hires_render(0, RENDER_PRIMITIVE_POLYGON, 7, 0, 0, 0, 0);
+	shape3d_hires_reset();
+	queue_polygon_shape(0, SHAPE3D_HIRES_DEPTH_SORTED, farther);
+	shape3d_hires_render(0, RENDER_PRIMITIVE_POLYGON, 8, 0, 0, 0, 0);
+	hires_end();
+	assert(pixels()[400 * HIRES_WIDTH + 640] == 8);
+}
+
+static void test_separate_shapes_preserve_ghost_holes(void)
+{
+	const struct SHAPE3D_HIRES_VECTOR ghost[] = {
+		{-5, -2.5, 80}, {5, -2.5, 80}, {5, 2.5, 80}, {-5, 2.5, 80}};
+	const struct SHAPE3D_HIRES_VECTOR farther[] = {
+		{-10, -5, 160}, {10, -5, 160}, {10, 5, 160}, {-10, 5, 160}};
+	for (legacy_u32 order = 0; order < 2; order++) {
+		reset_target();
+		queue_polygon_shape(0, SHAPE3D_HIRES_DEPTH_SORTED, ghost);
+		queue_polygon_shape(1, SHAPE3D_HIRES_DEPTH_ORDERED, farther);
+		if (order == 0) {
+			shape3d_hires_render(1, RENDER_PRIMITIVE_POLYGON, 7, 0, 0, 0, 0);
+		}
+		shape3d_hires_render(0, RENDER_PRIMITIVE_POLYGON | RENDER_PRIMITIVE_GHOST_FLAG, 8, 0, 0, 0,
+							 0);
+		if (order != 0) {
+			shape3d_hires_render(1, RENDER_PRIMITIVE_POLYGON, 7, 0, 0, 0, 0);
+		}
+		hires_end();
+		const legacy_u8 *image = pixels();
+		for (legacy_s32 y = 380; y < 420; y++) {
+			for (legacy_s32 x = 600; x < 680; x++) {
+				legacy_u32 bit = ((y & 1) == 0 ? 8U : 0U) + 7U - (x & 7);
+				legacy_u8 expected = (PRERENDER_BLACK_GRILLE_PATTERN & (1U << bit)) != 0 ? 0 : 7;
+				assert(image[y * HIRES_WIDTH + x] == expected);
+			}
+		}
+	}
+}
+
+static void test_background_shapes_do_not_occlude_scene(void)
+{
+	const struct SHAPE3D_HIRES_VECTOR background[] = {
+		{-5, -2.5, 80}, {5, -2.5, 80}, {5, 2.5, 80}, {-5, 2.5, 80}};
+	const struct SHAPE3D_HIRES_VECTOR farther[] = {
+		{-10, -5, 160}, {0, -5, 160}, {0, 5, 160}, {-10, 5, 160}};
+	const legacy_s32 modes[] = {SHAPE3D_HIRES_DEPTH_ORDERED, SHAPE3D_HIRES_DEPTH_SORTED};
+	for (legacy_u32 mode = 0; mode < 2; mode++) {
+		reset_target();
+		/* Clouds use an artificial distance and must not hide world geometry. */
+		queue_polygon_shape(0, SHAPE3D_HIRES_DEPTH_BACKGROUND, background);
+		queue_polygon_shape(1, modes[mode], farther);
+		shape3d_hires_render(0, RENDER_PRIMITIVE_POLYGON, 7, 0, 0, 0, 0);
+		shape3d_hires_render(1, RENDER_PRIMITIVE_POLYGON, 8, 0, 0, 0, 0);
+		hires_end();
+		assert(pixels()[400 * HIRES_WIDTH + 620] == 8);
+		assert(pixels()[400 * HIRES_WIDTH + 660] == 7);
+	}
+}
+
 /* Opposite map corners are more than 32767 units apart after a diagonal
  * camera rotation, even though each world coordinate fits in a signed word. */
 static void test_far_diagonal_geometry(void)
@@ -1218,6 +1404,12 @@ int main(void)
 	test_clipped_polygon_visibility();
 	test_wheel_face_and_sort_depth();
 	test_crossing_surfaces_use_pixel_depth();
+	test_separate_shapes_use_pixel_depth();
+	test_separate_shapes_preserve_authored_overlays();
+	test_ordered_shapes_keep_nearest_support();
+	test_scene_depth_resets_between_draws();
+	test_separate_shapes_preserve_ghost_holes();
+	test_background_shapes_do_not_occlude_scene();
 	test_far_diagonal_geometry();
 	test_far_primitive_sort_depth();
 	test_supersight_full_scene_queue();
