@@ -76,7 +76,7 @@ static void init_car_wheels(struct CARSTATE *playerstate, legacy_s32 posX, legac
 	whlPos.z =
 		LEGACY_S16_FROM_BITS((legacy_u16)LEGACY_S32_DIV_OR_ZERO(posZ, CAR_WORLD_POSITION_SCALE));
 
-	for (legacy_s16 i = 0; i < CARSTATE_WHEEL_COUNT; ++i) {
+	for (legacy_u16 i = 0; i < CARSTATE_WHEEL_COUNT; ++i) {
 		playerstate->car_surfaceWhl[i] = CAR_SURFACE_PAVED;
 		playerstate->car_wheel_vertical_speed[i] = 0;
 		playerstate->car_suspension_deflection[i] = 0;
@@ -222,7 +222,7 @@ void init_game_state(legacy_s16 initialization_mode)
 {
 	if (initialization_mode == GAMESTATE_INIT_RESET_CHECKPOINTS) {
 		elapsed_time1 = 0;
-		for (legacy_s16 i = 0; i < GAMESTATE_CHECKPOINT_COUNT; ++i) {
+		for (legacy_u16 i = 0; i < GAMESTATE_CHECKPOINT_COUNT; ++i) {
 			cvxptr[i].game_checkpoint_valid = GAMESTATE_CHECKPOINT_INVALID;
 		}
 	}
@@ -250,10 +250,10 @@ void init_game_state(legacy_s16 initialization_mode)
 		state.game_trackside_camera_index[0] = 0;
 		state.game_trackside_camera_index[1] = 0;
 
-		for (legacy_s16 i = 0; i < GAMESTATE_BREAKABLE_OBJECT_COUNT; ++i) {
+		for (legacy_u16 i = 0; i < GAMESTATE_BREAKABLE_OBJECT_COUNT; ++i) {
 			state.game_object_destroyed[i] = 0;
 		}
-		for (legacy_s16 i = 0; i < GAMESTATE_PARTICLE_SLOT_COUNT; ++i) {
+		for (legacy_u16 i = 0; i < GAMESTATE_PARTICLE_SLOT_COUNT; ++i) {
 			state.game_particle_forward_speed[i] = 0;
 		}
 

@@ -238,6 +238,34 @@ static void test_deferred_branch(void)
 	trkObjectList[2] = saved_object;
 }
 
+/* The initial branch is saved before any predecessor has been appended. */
+static void test_start_finish_branch(void)
+{
+	rectangle(8, 8, 0);
+	struct TRACKOBJECT saved_object = trkObjectList[1];
+	struct TRKOBJINFO split[2];
+	split[0] = trkObjectList[1].ss_trkObjInfoPtr[0];
+	split[1] = split[0];
+	split[0].si_noOfBlocks = 2;
+	split[1].si_noOfBlocks = 0;
+	split[1].si_exitPoint = 4;
+	trkObjectList[1].ss_trkObjInfoPtr = split;
+
+	assert(run_setup() == 0);
+	assert(track_pieces_counter == 30);
+	for (legacy_s16 index = 0; index < 28; index++) {
+		assert(output.primary[index] == (index + 1) % 28);
+	}
+	assert(output.alternate[27] == 28);
+	for (legacy_s16 index = 28; index < track_pieces_counter; index++) {
+		assert(output.element_ids[index] == 1);
+		assert(output.traversal[index] == 1);
+		assert(output.primary[index] == -1);
+		assert(output.alternate[index] == -1);
+	}
+	trkObjectList[1] = saved_object;
+}
+
 static void test_failures(void)
 {
 	initialize();
@@ -282,6 +310,7 @@ int main(int argc, char **argv)
 {
 	test_closed_routes();
 	test_deferred_branch();
+	test_start_finish_branch();
 	test_failures();
 	for (legacy_s32 index = 1; index < argc; index++) {
 		test_replay(argv[index]);

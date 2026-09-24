@@ -124,7 +124,7 @@ void emit_crash_particles(legacy_s16 kind_arg, legacy_s16 base_angle_arg,
 
 	state.game_particles_active = PARTICLE_SYSTEM_ACTIVE;
 	emission.free_count = 0;
-	for (legacy_s16 slot = 0; slot < GAMESTATE_PARTICLE_SLOT_COUNT; slot++) {
+	for (legacy_u16 slot = 0; slot < GAMESTATE_PARTICLE_SLOT_COUNT; slot++) {
 		if (state.game_particle_forward_speed[slot] == PARTICLE_TIMER_INACTIVE) {
 			emission.free_count = LEGACY_S16_WRAP_ADD(emission.free_count, 1);
 		}
@@ -134,7 +134,7 @@ void emit_crash_particles(legacy_s16 kind_arg, legacy_s16 base_angle_arg,
 	}
 
 	legacy_s16 emitted = 0;
-	for (legacy_s16 slot = 0; slot < GAMESTATE_PARTICLE_SLOT_COUNT && emitted < emission.free_count;
+	for (legacy_u16 slot = 0; slot < GAMESTATE_PARTICLE_SLOT_COUNT && emitted < emission.free_count;
 		 slot++) {
 		if (state.game_particle_forward_speed[slot] != 0) {
 			continue;
@@ -151,7 +151,7 @@ void update_crash_particles(void)
 	struct MATRIX *rotation;
 	struct VECTOR direction;
 	struct VECTOR movement;
-	for (legacy_s16 slot = 0; slot < GAMESTATE_PARTICLE_SLOT_COUNT; slot++) {
+	for (legacy_u16 slot = 0; slot < GAMESTATE_PARTICLE_SLOT_COUNT; slot++) {
 		if (state.game_particle_forward_speed[slot] == PARTICLE_TIMER_INACTIVE) {
 			continue;
 		}
@@ -239,6 +239,8 @@ void update_crash_state(legacy_s16 crash_event, legacy_s16 car_index)
 		carstate = &state.playerstate;
 	} else if (car_index == OPPONENT_CAR_INDEX) {
 		carstate = &state.opponentstate;
+	} else {
+		return;
 	}
 	if (carstate->car_crashBmpFlag != CRASH_EVENT_NONE) {
 		return;

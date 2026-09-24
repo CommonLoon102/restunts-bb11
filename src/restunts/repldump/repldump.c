@@ -412,10 +412,10 @@ legacy_s16 stuntsmain(legacy_s16 argc, legacy_s8 *argv[])
 
 	printf("Copying track... ");
 	_memcpy(&gameconfigcopy, &gameconfig, sizeof(struct GAMEINFO));
-	for (legacy_s16 i = 0; i < TRACKDATA_LINK_TABLE_SIZE; i++) {
+	for (legacy_u16 i = 0; i < TRACKDATA_LINK_TABLE_SIZE; i++) {
 		track_and_directory_backup[i] = track_element_map[i];
 	}
-	for (legacy_s16 i = 0; i < TRACKDATA_CHECKPOINT_DATA_SIZE; i++) {
+	for (legacy_u16 i = 0; i < TRACKDATA_CHECKPOINT_DATA_SIZE; i++) {
 		track_and_directory_backup[i + TRACKDATA_LINK_TABLE_SIZE] = track_directory[i];
 		track_and_directory_backup[i + TRACKDATA_CHECKPOINT_SECOND_OFFSET] = replay_directory[i];
 	}

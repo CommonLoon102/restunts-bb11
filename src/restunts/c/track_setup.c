@@ -787,6 +787,12 @@ legacy_s16 track_setup(void)
 	walk.orientation = (legacy_s16)track_angle;
 	walk.previous_connection_code = 0;
 	walk.previous_piece = TRACK_PREVIOUS_PIECE_NONE;
+	/* Branch snapshots may precede the first piece, when no predecessor exists. */
+	walk.previous_column = 0;
+	walk.previous_row = 0;
+	walk.previous_tile_element = 0;
+	walk.previous_subtype = 0;
+	walk.previous_connection_status = TRACK_TRAVERSAL_UNMATCHED;
 
 	seam_status = track_setup_walk(&walk);
 	if (seam_status != TRACK_SETUP_OK) {
