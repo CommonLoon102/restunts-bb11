@@ -1,5 +1,6 @@
 #include <assert.h>
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -8,6 +9,10 @@
 #include "../c/platform.h"
 #include "../c/residue.h"
 #include "../c/trackdata_layout.h"
+#ifdef RESTUNTS_SDL3
+#include "../c/frame_interpolation.h"
+#include "../c/crash_state.h"
+#endif
 
 #undef memcpy
 #undef memset
@@ -48,6 +53,10 @@ static legacy_s32 simulation_steps;
 static legacy_s32 simulation_frees;
 static legacy_s32 fail_write;
 static legacy_s32 fail_read;
+#ifdef RESTUNTS_SDL3
+static legacy_u32 read_calls;
+static legacy_u8 render_fixture;
+#endif
 
 struct TEST_FILE {
 	legacy_s8 name[REPLAY_FILENAME_SIZE];
@@ -101,6 +110,9 @@ legacy_s16 dos_file_remove(const legacy_s8 *name)
 
 legacy_u16 dos_file_read(legacy_u16 file, void *destination, legacy_u16 length)
 {
+#ifdef RESTUNTS_SDL3
+	read_calls++;
+#endif
 	if (fail_read) {
 		return 0;
 	}
@@ -187,6 +199,23 @@ static void set_recorded_camera(legacy_s16 frame)
 	state.game_player_camera_previous.z = 299 + frame;
 	state.game_trackside_camera_index[PLAYER_CAR_INDEX] = (legacy_s8)(frame % 8);
 	state.game_pEndFrame = frame >= 2 ? 2 : 0;
+#ifdef RESTUNTS_SDL3
+	if (render_fixture != 0) {
+		state.playerstate.car_position.lx = frame * 100L;
+		state.playerstate.car_actual_speed = 1000 + frame;
+		for (legacy_u16 wheel = 0; wheel < CARSTATE_WHEEL_COUNT; wheel++) {
+			state.playerstate.car_surfaceWhl[wheel] = (legacy_s8)(frame % 3);
+		}
+		state.game_follow_camera_position[PLAYER_CAR_INDEX] =
+			(struct VECTOR){100 + frame * 100, 200 + frame * 100, 300 + frame * 100};
+		state.game_player_camera_previous =
+			(struct VECTOR){frame * 100, 100 + frame * 100, 200 + frame * 100};
+		state.game_trackside_camera_index[PLAYER_CAR_INDEX] =
+			render_fixture == 2 && frame >= 4 ? 3 : 2;
+		state.playerstate.car_crashBmpFlag =
+			render_fixture == 2 && frame >= 3 ? CRASH_EVENT_COLLISION : CRASH_EVENT_NONE;
+	}
+#endif
 }
 
 static void assert_camera_at_frame(legacy_s16 frame)
@@ -451,6 +480,125 @@ static void test_long_recording_and_preparation_failure(void)
 	assert_camera_at_frame(0);
 }
 
+#ifdef RESTUNTS_SDL3
+static void assert_render_sample(legacy_u32 live_frame, legacy_u16 live_rate, legacy_u32 lag,
+								 legacy_s32 position)
+{
+	struct CARSTATE authoritative = *ghost_car_state();
+	struct GHOST_CAMERA_STATE authoritative_camera = *ghost_camera_state();
+	struct GAMESTATE before = state;
+	struct GAMEINFO config = gameconfig;
+	legacy_s32 steps = simulation_steps;
+	struct CARSTATE rendered;
+	struct GHOST_CAMERA_STATE camera;
+	assert(ghost_sample_render_pose(live_frame, live_rate, lag, &rendered, &camera));
+	assert(rendered.car_position.lx == position);
+	assert(camera.follow_position.x == 100 + position);
+	assert(camera.previous_position.x == position);
+	assert(camera.frame == authoritative_camera.frame);
+	assert(camera.crash_frame == authoritative_camera.crash_frame);
+	assert(rendered.car_crashBmpFlag == authoritative.car_crashBmpFlag);
+	assert(rendered.car_sound_flags == CAR_SOUND_NONE);
+	assert(rendered.car_actual_speed == authoritative.car_actual_speed);
+	assert(memcmp(rendered.car_surfaceWhl, authoritative.car_surfaceWhl,
+				  sizeof(rendered.car_surfaceWhl)) == 0);
+	assert(memcmp(&authoritative, ghost_car_state(), sizeof(authoritative)) == 0);
+	assert(memcmp(&authoritative_camera, ghost_camera_state(), sizeof(authoritative_camera)) == 0);
+	assert(memcmp(&before, &state, sizeof(before)) == 0);
+	assert(memcmp(&config, &gameconfig, sizeof(config)) == 0);
+	assert(simulation_steps == steps);
+}
+
+static void test_render_sampling(void)
+{
+	render_fixture = 1;
+	assert(ghost_select_replay(0, (const legacy_s8 *)"source") == 0);
+	assert(ghost_prepare_race() == 0);
+	/* A 10 Hz recorded ghost moves every 25 ms alongside a 20 Hz live car,
+	 * even when the authoritative ghost repeats its last recorded pose. */
+	ghost_update(1, GAME_FRAME_RATE_NORMAL);
+	legacy_u32 reads = read_calls;
+	assert_render_sample(1, GAME_FRAME_RATE_NORMAL, FRAME_INTERPOLATION_ONE / 2U, 25);
+	assert(read_calls <= reads + 2U);
+	reads = read_calls;
+	assert_render_sample(1, GAME_FRAME_RATE_NORMAL, 0, 50);
+	assert_render_sample(2, GAME_FRAME_RATE_NORMAL, FRAME_INTERPOLATION_ONE / 2U, 75);
+	assert(read_calls == reads);
+	ghost_update(2, GAME_FRAME_RATE_NORMAL);
+	assert_render_sample(2, GAME_FRAME_RATE_NORMAL, 0, 100);
+	assert_camera_motion(95, 210, 285);
+
+	/* Presentation I/O failure preserves both fallback outputs and the live ghost. */
+	struct CARSTATE before = *ghost_car_state();
+	struct GHOST_CAMERA_STATE before_camera = *ghost_camera_state();
+	struct CARSTATE rendered = before;
+	struct GHOST_CAMERA_STATE camera = before_camera;
+	fail_read = 1;
+	assert(!ghost_sample_render_pose(14, GAME_FRAME_RATE_NORMAL, FRAME_INTERPOLATION_ONE / 2U,
+									 &rendered, &camera));
+	fail_read = 0;
+	assert(memcmp(&rendered, &before, sizeof(before)) == 0);
+	assert(memcmp(&camera, &before_camera, sizeof(before_camera)) == 0);
+	assert(memcmp(ghost_car_state(), &before, sizeof(before)) == 0);
+	assert(memcmp(ghost_camera_state(), &before_camera, sizeof(before_camera)) == 0);
+	assert(ghost_is_active());
+	assert_render_sample(14, GAME_FRAME_RATE_NORMAL, FRAME_INTERPOLATION_ONE / 2U, 675);
+	assert_render_sample(1, GAME_FRAME_RATE_NORMAL, FRAME_INTERPOLATION_ONE / 2U, 25);
+	assert_render_sample(0, GAME_FRAME_RATE_NORMAL, FRAME_INTERPOLATION_ONE, 0);
+	assert_render_sample(UINT32_C(0xffffffff), GAME_FRAME_RATE_NORMAL, 0, 800);
+	assert(!ghost_sample_render_pose(1, 0, 0, &rendered, &camera));
+	assert(memcmp(&rendered, &before, sizeof(before)) == 0);
+	assert(memcmp(&camera, &before_camera, sizeof(before_camera)) == 0);
+
+	/* Replacing the recording invalidates the sampled bracket. A 20 Hz source
+	 * also advances smoothly between the larger 10 Hz live intervals. */
+	make_replay("render.rpl", GAME_FRAME_RATE_NORMAL, TEST_RECORDING_FRAMES, 0);
+	assert(ghost_select_replay(0, (const legacy_s8 *)"render") == 0);
+	assert(ghost_prepare_race() == 0);
+	ghost_update(1, GAME_FRAME_RATE_LOW);
+	assert_render_sample(1, GAME_FRAME_RATE_LOW, FRAME_INTERPOLATION_ONE * 3U / 4U, 50);
+	assert_render_sample(1, GAME_FRAME_RATE_LOW, FRAME_INTERPOLATION_ONE / 2U, 100);
+	assert_render_sample(1, GAME_FRAME_RATE_LOW, FRAME_INTERPOLATION_ONE / 4U, 150);
+	assert_render_sample(1, GAME_FRAME_RATE_LOW, 0, 200);
+	ghost_end_race();
+	assert(!ghost_sample_render_pose(1, GAME_FRAME_RATE_LOW, 0, &rendered, &camera));
+	render_fixture = 0;
+}
+
+static void test_render_discontinuities(void)
+{
+	render_fixture = 2;
+	assert(ghost_select_replay(0, (const legacy_s8 *)"source") == 0);
+	assert(ghost_prepare_race() == 0);
+	ghost_update(5, GAME_FRAME_RATE_NORMAL);
+	/* The upper interpolation endpoint knows a future collision, but neither
+	 * its body position nor its camera/effect appears before confirmation. */
+	assert_render_sample(5, GAME_FRAME_RATE_NORMAL, 0, 200);
+	ghost_update(6, GAME_FRAME_RATE_NORMAL);
+	assert_render_sample(6, GAME_FRAME_RATE_NORMAL, FRAME_INTERPOLATION_ONE / 2U, 300);
+
+	struct CARSTATE rendered;
+	struct GHOST_CAMERA_STATE camera;
+	ghost_update(7, GAME_FRAME_RATE_NORMAL);
+	struct GHOST_CAMERA_STATE authoritative_camera = *ghost_camera_state();
+	assert(ghost_sample_render_pose(7, GAME_FRAME_RATE_NORMAL, 0, &rendered, &camera));
+	assert(rendered.car_position.lx == 350);
+	assert(memcmp(&camera, &authoritative_camera, sizeof(camera)) == 0);
+	ghost_update(8, GAME_FRAME_RATE_NORMAL);
+	authoritative_camera = *ghost_camera_state();
+	assert(ghost_sample_render_pose(8, GAME_FRAME_RATE_NORMAL, FRAME_INTERPOLATION_ONE / 2U,
+									&rendered, &camera));
+	assert(rendered.car_position.lx == 375);
+	assert(memcmp(&camera, &authoritative_camera, sizeof(camera)) == 0);
+	/* Preparation discards cached poses even when the selection is unchanged. */
+	render_fixture = 1;
+	assert(ghost_prepare_race() == 0);
+	ghost_update(5, GAME_FRAME_RATE_NORMAL);
+	assert_render_sample(5, GAME_FRAME_RATE_NORMAL, 0, 250);
+	render_fixture = 0;
+}
+#endif
+
 static void test_track_changes_and_cleanup(void)
 {
 	test_track[100]++;
@@ -476,6 +624,10 @@ int main(void)
 	test_selection_is_separate();
 	test_invalid_selection_preserves_previous();
 	test_playback_timing_and_isolation();
+#ifdef RESTUNTS_SDL3
+	test_render_sampling();
+	test_render_discontinuities();
+#endif
 	test_long_recording_and_preparation_failure();
 	test_track_changes_and_cleanup();
 	return 0;
