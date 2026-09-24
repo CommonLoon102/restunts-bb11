@@ -8,8 +8,7 @@
 #include "../c/memmgr.h"
 #include "../c/platform.h"
 #include "../c/frame_internal.h"
-#include "../c/frame_prediction.h"
-#include "../c/phantom_physics.h"
+#include "../c/frame_interpolation.h"
 #include "../c/presentation.h"
 #include "../c/physics_internal.h"
 #include "../c/game_input.h"
@@ -112,9 +111,11 @@ static void capture_physics_scratch(struct PHYSICS_SCRATCH *scratch)
 	scratch->flag_animation = start_flag_animation;
 }
 
-static void predict_and_check(struct PHANTOM_PHYSICS *phantom, legacy_u32 elapsed20)
+static void interpolate_and_check(struct GAMESTATE *result, const struct GAMESTATE *previous,
+								  legacy_u32 fraction)
 {
 	struct GAMESTATE saved = state;
+	struct GAMESTATE saved_previous = *previous;
 	struct GAMEINFO saved_config = gameconfig;
 	struct GAMESTATE checkpoints[GAMESTATE_CHECKPOINT_COUNT];
 	struct PHYSICS_SCRATCH before;
@@ -124,25 +125,101 @@ static void predict_and_check(struct PHANTOM_PHYSICS *phantom, legacy_u32 elapse
 	memcpy(checkpoints, cvxptr, sizeof(checkpoints));
 	get_kevinrandom_seed(seed_before);
 	capture_physics_scratch(&before);
-	phantom_physics_advance(phantom, elapsed20);
+	frame_interpolate_state(result, &state, previous, fraction);
 	get_kevinrandom_seed(seed_after);
 	capture_physics_scratch(&after);
 	assert(memcmp(&saved, &state, sizeof(state)) == 0);
+	assert(memcmp(&saved_previous, previous, sizeof(*previous)) == 0);
 	assert(memcmp(&saved_config, &gameconfig, sizeof(gameconfig)) == 0);
 	assert(memcmp(checkpoints, cvxptr, sizeof(checkpoints)) == 0);
 	assert(memcmp(seed_before, seed_after, sizeof(seed_before)) == 0);
 	assert(memcmp(&before, &after, sizeof(before)) == 0);
-	assert(phantom->state.game_frame == state.game_frame);
-	assert(phantom->elapsed20 == elapsed20);
-	/* Drawing the same instant again must not advance the disposable branch. */
-	struct GAMESTATE predicted = phantom->state;
-	struct LEGACY_EXECUTION_RESIDUE residue = phantom->residue;
-	phantom_physics_advance(phantom, elapsed20);
-	assert(memcmp(&predicted, &phantom->state, sizeof(predicted)) == 0);
-	assert(memcmp(&residue, &phantom->residue, sizeof(residue)) == 0);
+	assert(result->game_frame == state.game_frame);
+	/* Repeated presentations must depend only on the two authoritative snapshots. */
+	struct GAMESTATE repeated;
+	frame_interpolate_state(&repeated, &state, previous, fraction);
+	assert(memcmp(result, &repeated, sizeof(repeated)) == 0);
 }
 
-static void render_and_check(const struct GAMESTATE *predicted)
+static void check_linear_blend(legacy_s32 value, legacy_s32 previous, legacy_s32 current,
+							   legacy_s32 last)
+{
+	if (previous <= current) {
+		assert(value >= previous && value <= current && value >= last);
+	} else {
+		assert(value <= previous && value >= current && value <= last);
+	}
+}
+
+static legacy_s32 angle_difference(legacy_s16 previous, legacy_s16 current)
+{
+	return ((legacy_u16)(current - previous + ANGLE_HALF_TURN) & ANGLE_MASK) -
+		   (legacy_s32)ANGLE_HALF_TURN;
+}
+
+static void check_angle_blend(legacy_s16 value, legacy_s16 previous, legacy_s16 current,
+							  legacy_s16 last)
+{
+	check_linear_blend(angle_difference(previous, value), 0, angle_difference(previous, current),
+					   angle_difference(previous, last));
+}
+
+static void check_car_blend(const struct CARSTATE *result, const struct CARSTATE *current,
+							const struct CARSTATE *previous, const struct CARSTATE *last)
+{
+	if (current->car_crashBmpFlag != previous->car_crashBmpFlag) {
+		assert(memcmp(result, current, sizeof(*result)) == 0);
+		return;
+	}
+	check_linear_blend(result->car_position.lx, previous->car_position.lx, current->car_position.lx,
+					   last->car_position.lx);
+	check_linear_blend(result->car_position.ly, previous->car_position.ly, current->car_position.ly,
+					   last->car_position.ly);
+	check_linear_blend(result->car_position.lz, previous->car_position.lz, current->car_position.lz,
+					   last->car_position.lz);
+	check_angle_blend(result->car_rotate.x, previous->car_rotate.x, current->car_rotate.x,
+					  last->car_rotate.x);
+	check_angle_blend(result->car_rotate.y, previous->car_rotate.y, current->car_rotate.y,
+					  last->car_rotate.y);
+	check_angle_blend(result->car_rotate.z, previous->car_rotate.z, current->car_rotate.z,
+					  last->car_rotate.z);
+	check_linear_blend(result->car_steeringAngle, previous->car_steeringAngle,
+					   current->car_steeringAngle, last->car_steeringAngle);
+	for (legacy_u16 wheel = 0; wheel < CARSTATE_WHEEL_COUNT; wheel++) {
+		check_linear_blend(
+			result->car_suspension_deflection[wheel], previous->car_suspension_deflection[wheel],
+			current->car_suspension_deflection[wheel], last->car_suspension_deflection[wheel]);
+	}
+}
+
+static void check_state_blend(const struct GAMESTATE *result, const struct GAMESTATE *previous,
+							  const struct GAMESTATE *last)
+{
+	check_car_blend(&result->playerstate, &state.playerstate, &previous->playerstate,
+					&last->playerstate);
+	check_car_blend(&result->opponentstate, &state.opponentstate, &previous->opponentstate,
+					&last->opponentstate);
+	for (legacy_u16 car = 0; car < GAMESTATE_CAR_VECTOR_COUNT; car++) {
+		const struct VECTOR *value = &result->game_follow_camera_position[car];
+		const struct VECTOR *start = &previous->game_follow_camera_position[car];
+		const struct VECTOR *end = &state.game_follow_camera_position[car];
+		const struct VECTOR *last_value = &last->game_follow_camera_position[car];
+		const struct CARSTATE *current_car =
+			car == PLAYER_CAR_INDEX ? &state.playerstate : &state.opponentstate;
+		const struct CARSTATE *previous_car =
+			car == PLAYER_CAR_INDEX ? &previous->playerstate : &previous->opponentstate;
+		if (state.game_trackside_camera_index[car] != previous->game_trackside_camera_index[car] ||
+			current_car->car_crashBmpFlag != previous_car->car_crashBmpFlag) {
+			assert(memcmp(value, end, sizeof(*value)) == 0);
+		} else {
+			check_linear_blend(value->x, start->x, end->x, last_value->x);
+			check_linear_blend(value->y, start->y, end->y, last_value->y);
+			check_linear_blend(value->z, start->z, end->z, last_value->z);
+		}
+	}
+}
+
+static void render_and_check(const struct GAMESTATE *snapshot)
 {
 	struct GAMESTATE saved = state;
 	struct GAMEINFO saved_config = gameconfig;
@@ -153,10 +230,10 @@ static void render_and_check(const struct GAMESTATE *predicted)
 	get_kevinrandom_seed(seed_before);
 	capture_scratch(&before);
 	sprite_select_render_window();
-	if (predicted != NULL) {
-		update_frame_predicted(0, &rect_windshield, predicted, NULL, NULL);
+	if (snapshot != NULL) {
+		update_frame_snapshot(0, &rect_windshield, snapshot, NULL, NULL);
 	} else if (supersight_enabled != 0) {
-		update_frame_predicted(0, &rect_windshield, &saved, NULL, NULL);
+		update_frame_snapshot(0, &rect_windshield, &saved, NULL, NULL);
 	} else {
 		update_frame(0, &rect_windshield);
 	}
@@ -165,7 +242,7 @@ static void render_and_check(const struct GAMESTATE *predicted)
 	assert(memcmp(&saved, &state, sizeof(state)) == 0);
 	assert(memcmp(&saved_config, &gameconfig, sizeof(gameconfig)) == 0);
 	assert(memcmp(seed_before, seed_after, sizeof(seed_before)) == 0);
-	if (predicted != NULL || supersight_enabled != 0) {
+	if (snapshot != NULL || supersight_enabled != 0) {
 		capture_scratch(&after);
 		assert(memcmp(&before, &after, sizeof(before)) == 0);
 	}
@@ -174,11 +251,11 @@ static void render_and_check(const struct GAMESTATE *predicted)
 	}
 }
 
-static legacy_u8 *capture_predicted_pixels(const struct GAMESTATE *predicted, size_t *size)
+static legacy_u8 *capture_snapshot_pixels(const struct GAMESTATE *snapshot, size_t *size)
 {
 	/* Redraw completely so the comparison includes cockpit overlays and car visibility. */
 	full_redraw_frames_remaining = 1;
-	render_and_check(predicted);
+	render_and_check(snapshot);
 	legacy_s32 width;
 	legacy_s32 height;
 	const legacy_u8 *pixels =
@@ -210,15 +287,25 @@ static void check_authoritative_event_visuals(void)
 				state.game_pEndFrame = state.game_oEndFrame = state.game_frame - 3;
 				struct GAMESTATE presentation = state;
 				size_t expected_size;
-				legacy_u8 *expected = capture_predicted_pixels(&presentation, &expected_size);
-				for (legacy_u16 speculative = 0; speculative < sizeof(events) / sizeof(events[0]);
-					 speculative++) {
-					/* A phantom must neither introduce nor remove a confirmed event. */
-					presentation.playerstate.car_crashBmpFlag = events[speculative];
-					presentation.opponentstate.car_crashBmpFlag = events[speculative];
-					presentation.game_pEndFrame = presentation.game_oEndFrame = state.game_frame;
+				legacy_u8 *expected = capture_snapshot_pixels(&presentation, &expected_size);
+				for (legacy_u16 old_event = 0; old_event < sizeof(events) / sizeof(events[0]);
+					 old_event++) {
+					struct GAMESTATE previous = state;
+					previous.playerstate.car_crashBmpFlag = events[old_event];
+					previous.opponentstate.car_crashBmpFlag = events[old_event];
+					previous.game_pEndFrame = previous.game_oEndFrame = state.game_frame;
+					if (events[old_event] != events[confirmed]) {
+						/* A confirmed crash must snap both cars even at the old endpoint. */
+						previous.playerstate.car_position.ly += 128;
+						previous.opponentstate.car_position.ly += 128;
+					}
+					interpolate_and_check(&presentation, &previous, 0);
+					assert(memcmp(&presentation.playerstate, &state.playerstate,
+								  sizeof(state.playerstate)) == 0);
+					assert(memcmp(&presentation.opponentstate, &state.opponentstate,
+								  sizeof(state.opponentstate)) == 0);
 					size_t actual_size;
-					legacy_u8 *actual = capture_predicted_pixels(&presentation, &actual_size);
+					legacy_u8 *actual = capture_snapshot_pixels(&presentation, &actual_size);
 					assert(actual_size == expected_size);
 					assert(memcmp(actual, expected, actual_size) == 0);
 					free(actual);
@@ -301,8 +388,8 @@ legacy_s16 stuntsmain(legacy_s16 argc, legacy_s8 *argv[])
 	assert(output != NULL);
 	struct GAMESTATE previous = state;
 	legacy_u32 extra_frames = 0;
-	legacy_u16 landing_predictions = 0;
-	legacy_u16 settling_predictions = 0;
+	legacy_u16 landing_interpolations = 0;
+	legacy_u16 settling_interpolations = 0;
 	for (legacy_u16 tick = 0; tick <= limit; tick++) {
 		assert((legacy_u16)state.game_frame == tick);
 		legacy_s16 enhanced = mode == 1 || (mode == 2 && (tick / 17U) % 2U != 0);
@@ -318,67 +405,49 @@ legacy_s16 stuntsmain(legacy_s16 argc, legacy_s8 *argv[])
 		if (enhanced != 0 && tick == 30) {
 			check_authoritative_event_visuals();
 		}
-		render_and_check(NULL);
 		if (enhanced != 0 && tick != 0) {
 			legacy_u16 count = PRESENTATION_RATE / gameconfig.game_framespersec;
-			struct PHANTOM_PHYSICS phantom;
-			phantom_physics_reset(&phantom, &state, replay_input_buffer[tick - 1U]);
-			if (settling_end != 0 && tick >= settling_start && tick <= settling_end) {
-				struct PHANTOM_PHYSICS probe;
-				phantom_physics_reset(&probe, &state, replay_input_buffer[tick - 1U]);
-				predict_and_check(&probe, 1);
-				/* Less than one microsecond must not visibly release suspension
-				 * left over from a loop. Allow two angle units for integer geometry. */
-				const struct VECTOR *keyframe = &state.playerstate.car_rotate;
-				const struct VECTOR *predicted = &probe.state.playerstate.car_rotate;
-				legacy_s16 differences[3] = {predicted->x - keyframe->x, predicted->y - keyframe->y,
-											 predicted->z - keyframe->z};
-				for (legacy_u16 axis = 0; axis < 3; axis++) {
-					legacy_s16 wrapped = ((differences[axis] + 512) & 1023) - 512;
-					assert(wrapped >= -2 && wrapped <= 2);
-				}
-				settling_predictions++;
-			}
-			assert(phantom.elapsed20 == 0);
-			assert(memcmp(&phantom.state, &state, sizeof(state)) == 0);
-			assert(memcmp(&phantom.residue, &legacy_execution_residue, sizeof(phantom.residue)) ==
-				   0);
-			for (legacy_u16 frame = 1; frame < count; frame++) {
-				struct GAMESTATE predicted;
-				legacy_u32 fraction = (FRAME_PREDICTION_ONE * frame) / count;
-				frame_predict_state(&predicted, &state, &previous, fraction);
-				legacy_s16 check_landing =
-					landing_end != 0 && tick >= landing_start && tick <= landing_end;
-				legacy_u32 elapsed20 = FRAME_PREDICTION_ONE * GAME_FRAME_RATE_NORMAL * frame /
-									   (gameconfig.game_framespersec * count);
-				predict_and_check(&phantom, elapsed20);
+			struct GAMESTATE last;
+			interpolate_and_check(&last, &previous, 0);
+			/* Match the production schedule: the first midpoint is shown as soon
+			 * as the new keyframe exists, followed by its endpoint. */
+			for (legacy_u16 frame = 1; frame <= count; frame++) {
+				struct GAMESTATE interpolated;
+				legacy_u32 fraction = (FRAME_INTERPOLATION_ONE * frame) / count;
+				interpolate_and_check(&interpolated, &previous, fraction);
+				/* Render poses, suspension and cameras may only move toward the
+				 * next confirmed endpoint, including landings and loop exits. */
+				check_state_blend(&interpolated, &previous, &last);
 				if (frame == 1 && tick % 31U == 0 && tick < gameconfig.game_recordedframes) {
-					/* Only already consumed input may influence a phantom. */
 					legacy_s8 future_input = replay_input_buffer[tick];
 					replay_input_buffer[tick] = (legacy_s8) ~(legacy_u8)future_input;
-					struct PHANTOM_PHYSICS altered_future;
-					phantom_physics_reset(&altered_future, &state, replay_input_buffer[tick - 1U]);
-					predict_and_check(&altered_future, elapsed20);
+					struct GAMESTATE altered_future;
+					interpolate_and_check(&altered_future, &previous, fraction);
 					replay_input_buffer[tick] = future_input;
-					assert(memcmp(&altered_future.state, &phantom.state, sizeof(state)) == 0);
-					assert(memcmp(&altered_future.residue, &phantom.residue,
-								  sizeof(phantom.residue)) == 0);
+					assert(memcmp(&altered_future, &interpolated, sizeof(interpolated)) == 0);
 				}
-				predicted.playerstate = phantom.state.playerstate;
-				predicted.opponentstate = phantom.state.opponentstate;
-				for (legacy_u16 car = 0; car < GAMESTATE_CAR_VECTOR_COUNT; car++) {
-					predicted.game_follow_camera_position[car] =
-						phantom.state.game_follow_camera_position[car];
+				if (frame < count && landing_end != 0 && tick >= landing_start &&
+					tick <= landing_end) {
+					/* Known poses above the level road cannot blend below it. */
+					if (previous.playerstate.car_position.ly >= 0 &&
+						state.playerstate.car_position.ly >= 0) {
+						assert(interpolated.playerstate.car_position.ly >= 0);
+					}
+					landing_interpolations++;
 				}
-				if (check_landing) {
-					/* This replay lands on a level paved tile at world height zero.
-					 * The previous velocity-only predictor put the car below it. */
-					assert(predicted.playerstate.car_position.ly >= 0);
-					landing_predictions++;
+				if (frame < count && settling_end != 0 && tick >= settling_start &&
+					tick <= settling_end) {
+					settling_interpolations++;
 				}
-				render_and_check(&predicted);
-				extra_frames++;
+				render_and_check(&interpolated);
+				last = interpolated;
+				if (frame < count) {
+					extra_frames++;
+				}
 			}
+			assert(memcmp(&last, &state, sizeof(state)) == 0);
+		} else {
+			render_and_check(NULL);
 		}
 		legacy_u8 bytes[GAMESTATE_SERIALIZED_SIZE];
 		assert(gamestate_serialize(bytes, &state) == sizeof(bytes));
@@ -394,11 +463,13 @@ legacy_s16 stuntsmain(legacy_s16 argc, legacy_s8 *argv[])
 	}
 	assert(mode == 0 ? extra_frames == 0 : extra_frames != 0);
 	if (mode == 1 && landing_end != 0) {
-		assert(landing_predictions != 0);
+		assert(landing_interpolations != 0);
 	}
 	if (mode == 1 && settling_end != 0) {
-		assert(settling_predictions != 0);
+		assert(settling_interpolations != 0);
 	}
+	printf("mode %d: %lu interpolated extra frames (%u landing, %u loop exit)\n", mode,
+		   (unsigned long)extra_frames, landing_interpolations, settling_interpolations);
 	assert(fclose(output) == 0);
 	free(recording);
 	/* Match pixldump shutdown: this fixture never loaded dashboard resources. */

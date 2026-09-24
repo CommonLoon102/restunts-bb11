@@ -76,11 +76,11 @@ struct GAMESTATE;
 struct CARSTATE;
 struct GHOST_CAMERA_STATE;
 
-/* Render a predicted pose without changing the simulation or its retained scratch. */
-void update_frame_predicted(legacy_s8 buffer_index, struct RECTANGLE *cliprect,
-							const struct GAMESTATE *render_state,
-							const struct CARSTATE *render_ghost,
-							const struct GHOST_CAMERA_STATE *render_ghost_camera);
+/* Render a visual snapshot without changing the simulation or its retained scratch. */
+void update_frame_snapshot(legacy_s8 buffer_index, struct RECTANGLE *cliprect,
+						   const struct GAMESTATE *render_state,
+						   const struct CARSTATE *render_ghost,
+						   const struct GHOST_CAMERA_STATE *render_ghost_camera);
 
 void frame_supersight_reset(void);
 void frame_fps_reset(void);

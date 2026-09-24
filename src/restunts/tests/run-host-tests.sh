@@ -95,7 +95,7 @@ run_host_test test-frame-overlay frame_overlay.c \
     "$test_source_dir/shape3d_lines.c" "$test_source_dir/math.c" "$test_source_dir/legacy.c" \
     "$test_source_dir/full_data.c" "$test_source_dir/headless_data.c" \
     -Wno-pointer-sign -Wno-missing-field-initializers -Wno-unused-variable
-run_host_test test-frame-prediction frame_prediction.c
+run_host_test test-frame-interpolation frame_interpolation.c
 run_host_test test-intro-preview intro_render.c \
     "$test_source_dir/track_preview.c" "$test_source_dir/full_data.c" \
     "$test_source_dir/headless_data.c" "$test_source_dir/headless_trackdata.c" \
@@ -120,6 +120,10 @@ run_host_test test-gamestate-serialization stateio.c
 run_host_test test-ghost ghost.c \
     "$test_source_dir/replay.c" "$test_source_dir/strlib.c" \
     "$test_source_dir/legacy.c" -Wno-pointer-sign
+run_host_test test-ghost ghost.c \
+    "$test_source_dir/replay.c" "$test_source_dir/strlib.c" \
+    "$test_source_dir/legacy.c" "$test_source_dir/frame_interpolation.c" \
+    -DRESTUNTS_SDL3 -Wno-pointer-sign
 run_host_test test-grip physics_grip.c \
     "$test_source_dir/physics_collision.c" "$test_source_dir/strlib.c" \
     "$test_source_dir/math.c" "$test_source_dir/legacy.c" -Wno-sign-compare
