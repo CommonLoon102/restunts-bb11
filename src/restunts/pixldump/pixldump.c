@@ -544,10 +544,10 @@ static legacy_s16 PIXLDUMP_LEGACY_FRAME pixldump_process_replay(
 	}
 
 	_memcpy(&gameconfigcopy, &gameconfig, sizeof(struct GAMEINFO));
-	for (legacy_s16 index = 0; index < TRACKDATA_LINK_TABLE_SIZE; index++) {
+	for (legacy_u16 index = 0; index < TRACKDATA_LINK_TABLE_SIZE; index++) {
 		track_and_directory_backup[index] = track_element_map[index];
 	}
-	for (legacy_s16 index = 0; index < TRACKDATA_CHECKPOINT_DATA_SIZE; index++) {
+	for (legacy_u16 index = 0; index < TRACKDATA_CHECKPOINT_DATA_SIZE; index++) {
 		track_and_directory_backup[index + TRACKDATA_LINK_TABLE_SIZE] = track_directory[index];
 		track_and_directory_backup[index + TRACKDATA_CHECKPOINT_SECOND_OFFSET] =
 			replay_directory[index];

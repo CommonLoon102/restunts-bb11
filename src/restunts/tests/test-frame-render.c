@@ -462,6 +462,27 @@ static void test_track_elements_and_flags(void)
 	}
 }
 
+static void test_invalid_multitile_flags(void)
+{
+	struct FRAME_TILE tile = {0};
+	struct FRAME_TILE_SELECTION tiles = {0};
+	struct FRAME_CAMERA camera = {0};
+	configure_track();
+	tile.element = 1;
+	tile.height = 450;
+	/* Unknown footprint codes must never select an indeterminate offset table. */
+	for (legacy_s16 flag = -128; flag <= 127; flag++) {
+		if (flag >= FRAME_MULTITILE_NONE && flag <= FRAME_MULTITILE_BOTH) {
+			continue;
+		}
+		reset_shapes();
+		trkObjectList[1].ss_multiTileFlag = (legacy_s8)flag;
+		assert(frame_draw_fences(&tile, &tiles, &camera, 0) == 0);
+		assert(frame_draw_hill_fill(&tile, &trkObjectList[1], 0) == 0);
+		assert(transform_count == 0);
+	}
+}
+
 static void test_ghost_uses_independent_visual_state(void)
 {
 	struct FRAME_LOOKAHEAD_TILE lookahead[FRAME_LOOKAHEAD_TILE_COUNT] = {{0}};
@@ -952,6 +973,7 @@ int main(void)
 #else
 	assert(trace_hash == UINT64_C(0x1f0a24dd55dcfc37));
 #endif
+	test_invalid_multitile_flags();
 	test_ghost_uses_independent_visual_state();
 	test_ghost_camera_modes();
 	test_prediction_uses_authoritative_events();

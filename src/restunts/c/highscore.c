@@ -267,11 +267,6 @@ void highscore_draw_table(void)
 	font_set_fontdef();
 }
 
-static legacy_u16 read_highscore_u16(legacy_u8 far *address)
-{
-	return LEGACY_READ_U16_LE(address);
-}
-
 void enter_hiscore(legacy_s16 frame_count, void far *prompt, legacy_u8 car_flag)
 {
 	legacy_u16 time_bits = (legacy_u16)frame_count;

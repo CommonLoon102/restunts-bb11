@@ -285,7 +285,7 @@ static void audio_sequence_apply_command(legacy_s16 channel, struct AUDIO_CHANNE
 			audio_sequence_bind_instrument(channel, chunk, event->argument);
 			break;
 		case AUDIO_SEQUENCE_COMMAND_SET_TEMPO:
-			if (channel < AUDIO_DIRECT_CHANNEL_COUNT) {
+			if ((legacy_u16)channel < AUDIO_DIRECT_CHANNEL_COUNT) {
 				audio_sequence_tick_period =
 					LEGACY_U16_DIV_OR_ZERO(AUDIO_TEMPO_NUMERATOR, event->argument);
 			}

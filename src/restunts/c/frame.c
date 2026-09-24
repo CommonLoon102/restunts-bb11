@@ -773,7 +773,7 @@ static void frame_setup_camera(struct FRAME_CAMERA *camera)
 		frame_aim_external_camera(camera, &car_pos);
 	}
 
-	if (camera_roll > 1 && camera_roll < ANGLE_MASK) {
+	if (camera_roll > 1 && (legacy_u16)camera_roll < ANGLE_MASK) {
 		camera->roll = camera_roll;
 	} else {
 		camera->roll = 0;
@@ -1156,6 +1156,8 @@ static legacy_s16 frame_draw_fences(const struct FRAME_TILE *tile,
 		} else if (track_object->ss_multiTileFlag == FRAME_MULTITILE_BOTH) {
 			fence_position_count = FRAME_FENCE_POSITION_COUNT_BOTH;
 			fence_tile_offsets = fence_tile_offsets_both;
+		} else {
+			return 0;
 		}
 	}
 
@@ -1323,6 +1325,8 @@ static legacy_s16 frame_draw_hill_fill(const struct FRAME_TILE *tile,
 		} else if (track_object->ss_multiTileFlag == FRAME_MULTITILE_BOTH) {
 			fill_count = FRAME_HILL_FILL_COUNT_BOTH;
 			hill_fill_offsets = hill_fill_offsets_both;
+		} else {
+			return 0;
 		}
 
 		for (legacy_s16 fill_index = 0; fill_index < fill_count; fill_index++) {

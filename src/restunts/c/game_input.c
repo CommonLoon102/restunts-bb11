@@ -644,12 +644,10 @@ legacy_s16 scrollbar_update(legacy_s16 operation, legacy_s16 x, legacy_s16 width
 
 	legacy_s16 coordinate =
 		horizontal ? LEGACY_S16_WRAP_SUB(mouse_xpos, x) : LEGACY_S16_WRAP_SUB(mouse_ypos, y);
-	legacy_s16 dragged_start;
-	struct MOUSE_TRACK_DRAG track;
 	if (coordinate < thumb_start || coordinate > thumb_end) {
 		selected = mouse_track_page(coordinate, thumb_start, selected, item_count);
 	} else {
-		selected = -1;
+		struct MOUSE_TRACK_DRAG track;
 		track.x = x;
 		track.width = width;
 		track.y = y;
@@ -658,10 +656,7 @@ legacy_s16 scrollbar_update(legacy_s16 operation, legacy_s16 x, legacy_s16 width
 		track.length = length;
 		track.thumb_start = thumb_start;
 		track.thumb_size = thumb_size;
-		dragged_start = mouse_track_drag(&track, coordinate);
-	}
-
-	if (selected == -1) {
+		legacy_s16 dragged_start = mouse_track_drag(&track, coordinate);
 		legacy_s16 quotient = mouse_track_divide(length, (legacy_s16)item_count);
 		quotient = LEGACY_S16_SAR(quotient, 1U);
 		legacy_s16 scaled =
