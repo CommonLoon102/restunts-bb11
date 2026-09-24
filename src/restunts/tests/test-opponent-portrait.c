@@ -256,6 +256,53 @@ static void test_photo(struct SHAPE2D *shape)
 	assert(pixels[36 * HIRES_WIDTH + 456] == palette[3]);
 }
 
+static void test_positioned_photo(struct SHAPE2D *shape)
+{
+	reset();
+	hires_set_enabled(1);
+	opponent_portrait_draw_at(&target, shape, 1, 240, 0);
+	const legacy_u32 *pixels = hires_framebuffer_argb(screen, palette);
+	assert(pixels != NULL);
+	/* The car panel uses an explicit origin, independent of the source tile's
+	 * opponent-menu position. Its border and number still come from the original. */
+	assert(pixels[8 * HIRES_WIDTH + 968] == 0xFF123456U);
+	assert(pixels[7 * HIRES_WIDTH + 968] == palette[3]);
+	assert(pixels[8 * HIRES_WIDTH + 967] == palette[3]);
+	assert(pixels[8 * HIRES_WIDTH + 1264] == palette[3]);
+	assert(pixels[324 * HIRES_WIDTH + 968] == palette[3]);
+	assert(pixels[16 * HIRES_WIDTH + 1224] == palette[3]);
+	assert(pixels[16 * HIRES_WIDTH + 1223] == 0xFF123456U);
+	assert(pixels[16 * HIRES_WIDTH + 1228] == 0xFF123456U);
+	assert(pixels[32 * HIRES_WIDTH + 456] == palette[3]);
+	assert(shape->position_x == 112 && shape->position_y == 6);
+
+	hires_set_enabled(0);
+	opponent_portrait_draw_at(&target, shape, 1, 240, 0);
+	assert(hires_framebuffer_argb(screen, palette) == NULL);
+	hires_set_enabled(1);
+	opponent_portrait_draw_at(&target, shape, 1, 240, 0);
+	assert(hires_framebuffer_argb(screen, palette)[8 * HIRES_WIDTH + 968] == 0xFF123456U);
+
+	reset();
+	hires_set_enabled(1);
+	target.sprite_raster_right = 243;
+	target.sprite_bottom = 3;
+	opponent_portrait_draw_at(&target, shape, 1, 240, 0);
+	pixels = hires_framebuffer_argb(screen, palette);
+	assert(pixels != NULL && pixels[8 * HIRES_WIDTH + 968] == 0xFF123456U);
+	assert(pixels[8 * HIRES_WIDTH + 972] == palette[3]);
+	assert(pixels[12 * HIRES_WIDTH + 968] == palette[3]);
+
+	reset();
+	hires_set_enabled(1);
+	opponent_portrait_draw_at(&target, shape, 2, 240, 0);
+	assert(hires_framebuffer_argb(screen, palette) == NULL);
+	assert(shape->position_x == 112 && shape->position_y == 6);
+	for (legacy_u32 pixel = 0; pixel < 64000; pixel++) {
+		assert(screen[pixel] == 3);
+	}
+}
+
 int main(void)
 {
 	assert(SDL_Init(0));
@@ -296,6 +343,7 @@ int main(void)
 	original_bytes[SHAPE2D_HEADER_SIZE + 4 * 80 + 66] = 39;
 	test_fallback(shape);
 	test_photo(shape);
+	test_positioned_photo(shape);
 	test_prepared(shape);
 	test_original_upscale(shape);
 	reset();

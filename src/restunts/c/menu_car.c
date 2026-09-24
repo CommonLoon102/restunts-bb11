@@ -22,6 +22,8 @@
 #include "frame_internal.h"
 #include "presentation.h"
 #include "shape3d_hires.h"
+#include "opponent_portrait.h"
+#include "shape2d_internal.h"
 #endif
 
 #define GAME_RESOURCE_FILE_INDEX 2
@@ -117,6 +119,7 @@ struct CAR_MENU_STATE {
 	legacy_u64 rotation_time;
 	legacy_u64 input_time;
 	legacy_s16 input_delta;
+	legacy_u8 portrait_dirty;
 #endif
 };
 
@@ -202,6 +205,7 @@ static void car_menu_initialize(struct CAR_MENU_STATE *menu)
 	menu->rotation_time = presentation_now();
 	menu->input_time = menu->rotation_time;
 	menu->input_delta = 0;
+	menu->portrait_dirty = 0;
 	presentation_reset(&menu->presentation_clock, menu->rotation_time);
 #endif
 	menu->selected = CAR_MENU_DONE_BUTTON;
@@ -410,8 +414,11 @@ static void car_menu_render_preview(struct CAR_MENU_STATE *menu)
 									  menu->union_rect.top, menu->union_rect.bottom);
 		menu->previous_rect = menu->current_rect;
 
-		if (menu->opponent_type != CAR_MENU_PLAYER_MODE &&
-			menu->previous_car_index != menu->car_index) {
+		legacy_u8 redraw_portrait = menu->previous_car_index != menu->car_index;
+#ifdef RESTUNTS_SDL3
+		redraw_portrait |= menu->portrait_dirty;
+#endif
+		if (menu->opponent_type != CAR_MENU_PLAYER_MODE && redraw_portrait != 0) {
 			sprite_select_render_window();
 			if (video_uses_page_flipping == 0) {
 				sprite_putimage_transparent(
@@ -421,6 +428,20 @@ static void car_menu_render_preview(struct CAR_MENU_STATE *menu)
 				sprite_copy_image_at(menu->opponent_sprite->sprite_bitmapptr,
 									 CAR_MENU_OPPONENT_PANEL_X, 0);
 			}
+#ifdef RESTUNTS_SDL3
+			struct SHAPE2D *portrait_shape = (struct SHAPE2D *)oppresources[menu->opponent_type];
+			opponent_portrait_draw_at(&drawing_sprite, portrait_shape,
+									  (legacy_u8)menu->opponent_type, CAR_MENU_OPPONENT_PANEL_X, 0);
+			if (menu->portrait_dirty != 0) {
+				/* Normal preview copies stop before the opponent panel. */
+				struct RECTANGLE portrait_rect = {CAR_MENU_OPPONENT_PANEL_X,
+												  CAR_MENU_OPPONENT_PANEL_X +
+													  shape2d_get_width(portrait_shape),
+												  0, shape2d_get_height(portrait_shape)};
+				rect_union(&menu->union_rect, &portrait_rect, &menu->union_rect);
+				menu->portrait_dirty = 0;
+			}
+#endif
 		}
 
 		sprite_select_screen_compat();
@@ -542,6 +563,9 @@ static legacy_s16 car_menu_handle_input(struct CAR_MENU_STATE *menu, legacy_u16 
 #ifdef RESTUNTS_SDL3
 	if (input == (legacy_u16)KEY_F11 || input == (legacy_u16)KEY_F12) {
 		handle_ingame_kb_shortcuts(LEGACY_S16_FROM_BITS(input));
+		if (input == (legacy_u16)KEY_F12 && menu->opponent_type != CAR_MENU_PLAYER_MODE) {
+			menu->portrait_dirty = 1;
+		}
 		presentation_reset(&menu->presentation_clock, presentation_now());
 		menu->render_phase = CAR_RENDER_START_PHASE;
 		return 0;
