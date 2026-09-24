@@ -483,8 +483,6 @@ legacy_s16 audio_toggle_music(void)
 
 legacy_s16 audio_effect_range_idle(void)
 {
-	legacy_u16 offset;
-
 	if (audio_suspended == AUDIO_STATE_ENABLED || audio_music_enabled == AUDIO_STATE_DISABLED) {
 		return 1;
 	}
@@ -517,8 +515,8 @@ void audio_enable_effects(void)
 		return;
 	}
 
-	for (legacy_s16 channel = AUDIO_EFFECT_CHANNEL_FIRST; channel <= AUDIO_EFFECT_CHANNEL_LAST;
-		 channel++) {
+	for (legacy_s16 channel = AUDIO_EFFECT_CHANNEL_FIRST;
+		 (legacy_u16)channel <= AUDIO_EFFECT_CHANNEL_LAST; channel++) {
 		dos_audio_set_channel_volume(channel, audio_effect_channel_volumes[channel]);
 	}
 	audio_effects_enabled = AUDIO_STATE_ENABLED;
@@ -530,8 +528,8 @@ void audio_disable_effects(void)
 		return;
 	}
 
-	for (legacy_s16 channel = AUDIO_EFFECT_CHANNEL_FIRST; channel <= AUDIO_EFFECT_CHANNEL_LAST;
-		 channel++) {
+	for (legacy_s16 channel = AUDIO_EFFECT_CHANNEL_FIRST;
+		 (legacy_u16)channel <= AUDIO_EFFECT_CHANNEL_LAST; channel++) {
 		audio_effect_channel_volumes[channel] =
 			audio_sfx_channels[channel - AUDIO_EFFECT_CHANNEL_FIRST].volume;
 		dos_audio_set_channel_volume(channel, 0);
@@ -552,10 +550,9 @@ legacy_s16 audio_toggle_effects(void)
 
 legacy_s16 audio_effect_channel_idle(legacy_s16 channel)
 {
-	legacy_u16 offset;
-
-	if (audio_effects_enabled == AUDIO_STATE_DISABLED || channel < AUDIO_EFFECT_CHANNEL_FIRST ||
-		channel > AUDIO_EFFECT_CHANNEL_LAST) {
+	if (audio_effects_enabled == AUDIO_STATE_DISABLED ||
+		(legacy_u16)channel < AUDIO_EFFECT_CHANNEL_FIRST ||
+		(legacy_u16)channel > AUDIO_EFFECT_CHANNEL_LAST) {
 		return 1;
 	}
 
@@ -1146,10 +1143,8 @@ void audio_resume(void)
 
 static legacy_s16 audio_find_free_sfx_channel(void)
 {
-	legacy_u16 offset;
-
-	for (legacy_s16 candidate = AUDIO_EFFECT_CHANNEL_FIRST; candidate <= AUDIO_EFFECT_CHANNEL_LAST;
-		 candidate++) {
+	for (legacy_s16 candidate = AUDIO_EFFECT_CHANNEL_FIRST;
+		 (legacy_u16)candidate <= AUDIO_EFFECT_CHANNEL_LAST; candidate++) {
 		if ((audio_sfx_channels[candidate - AUDIO_EFFECT_CHANNEL_FIRST].cursor.offset |
 			 audio_sfx_channels[candidate - AUDIO_EFFECT_CHANNEL_FIRST].cursor.segment) == 0 &&
 			audio_channel_reserved[candidate] == 0) {
@@ -1184,7 +1179,7 @@ legacy_s16 audio_play_effect_at_rate(void far *resource, legacy_s16 channel, leg
 		legacy_u8 lowest_priority = AUDIO_PRIORITY_LOWEST;
 		legacy_s16 replacement = -1;
 		for (legacy_s16 candidate = AUDIO_EFFECT_CHANNEL_FIRST;
-			 candidate <= AUDIO_EFFECT_CHANNEL_LAST; candidate++) {
+			 (legacy_u16)candidate <= AUDIO_EFFECT_CHANNEL_LAST; candidate++) {
 			if (audio_channel_reserved[candidate] == 0 &&
 				audio_channels[candidate].priority <= lowest_priority) {
 				lowest_priority = audio_channels[candidate].priority;
@@ -1234,9 +1229,8 @@ legacy_s16 audio_reserve_effect_channel(legacy_s16 channel, legacy_u8 priority)
 
 void audio_stop_effect_channel(legacy_s16 channel)
 {
-	legacy_u16 offset;
-
-	if (channel < AUDIO_EFFECT_CHANNEL_FIRST || channel > AUDIO_EFFECT_CHANNEL_LAST) {
+	if ((legacy_u16)channel < AUDIO_EFFECT_CHANNEL_FIRST ||
+		(legacy_u16)channel > AUDIO_EFFECT_CHANNEL_LAST) {
 		return;
 	}
 

@@ -393,8 +393,6 @@ static void init_main_input_state(void)
 
 legacy_s16 run_shape_preview(legacy_s16 argc, legacy_s8 *argv[])
 {
-	struct SPRITE far *unused_preview_window;
-
 	// initialization
 	init_full_game(argc, argv);
 	init_main_input_state();
@@ -470,7 +468,6 @@ legacy_s16 run_shape_preview(legacy_s16 argc, legacy_s8 *argv[])
 		}
 	}
 
-	//unused_preview_window = sprite_make_wnd(320, 200);
 	//sprite_select_mcga_backbuffer();
 	//sprite_set_target_clip_bounds(0, 320, 0, 200);
 	//sprite_select_screen_compat();
@@ -479,7 +476,6 @@ legacy_s16 run_shape_preview(legacy_s16 argc, legacy_s8 *argv[])
 	//sprite_select_screen_compat();
 
 	//sprite_putimage(render_window_sprite->sprite_bitmapptr);
-	//sprite_putimage(unused_preview_window->sprite_bitmapptr);
 
 	//fatal_error("happy yet?");
 
@@ -531,7 +527,7 @@ static legacy_s16 main_menu_select_race(legacy_s16 result, legacy_s8 *start_in_r
 static void main_menu_backup_track(void)
 {
 	_memcpy(&gameconfigcopy, &gameconfig, sizeof(struct GAMEINFO));
-	for (legacy_s16 i = 0; i < REPLAY_TRACK_SIZE; i++) {
+	for (legacy_u16 i = 0; i < REPLAY_TRACK_SIZE; i++) {
 		track_and_directory_backup[i] = track_element_map[i];
 	}
 	for (legacy_s16 i = 0; i < TRACK_PATH_STORAGE_SIZE; i++) {
@@ -543,7 +539,7 @@ static void main_menu_backup_track(void)
 static void main_menu_restore_track(void)
 {
 	_memcpy(&gameconfigcopy, &gameconfig, sizeof(struct GAMEINFO));
-	for (legacy_s16 i = 0; i < REPLAY_TRACK_SIZE; i++) {
+	for (legacy_u16 i = 0; i < REPLAY_TRACK_SIZE; i++) {
 		track_element_map[i] = track_and_directory_backup[i];
 	}
 	for (legacy_s16 i = 0; i < TRACK_PATH_STORAGE_SIZE; i++) {

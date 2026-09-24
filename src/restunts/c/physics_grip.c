@@ -298,7 +298,7 @@ void update_legacy_grip_stack_words(struct CARSTATE *carstate, struct SIMD *simd
 	legacy_s16 combined_grip_operand = LEGACY_S16_SHL(simd->grip, 1U);
 	legacy_s16 *sliding_values = &simd->sliding;
 	legacy_s16 sliding_sum = 0;
-	for (legacy_s16 i = CAR_WHEEL_INDEX_FIRST; i < CAR_WHEEL_COUNT; i++) {
+	for (legacy_u16 i = CAR_WHEEL_INDEX_FIRST; i < CAR_WHEEL_COUNT; i++) {
 		sliding_sum = LEGACY_S16_WRAP_ADD(sliding_sum,
 										  sliding_values[(legacy_u8)carstate->car_surfaceWhl[i]]);
 	}
@@ -318,7 +318,7 @@ void update_legacy_grip_stack_words(struct CARSTATE *carstate, struct SIMD *simd
 	 * grass, with the divisor selected by the number of grass wheels.
 	 */
 	legacy_s16 grass_wheels = GRASS_WHEEL_COUNT_NONE;
-	for (legacy_s16 i = CAR_WHEEL_INDEX_FIRST; i < CAR_WHEEL_COUNT; i++) {
+	for (legacy_u16 i = CAR_WHEEL_INDEX_FIRST; i < CAR_WHEEL_COUNT; i++) {
 		if (carstate->car_surfaceWhl[i] == CAR_SURFACE_GRASS) {
 			grass_wheels = LEGACY_S16_WRAP_ADD(grass_wheels, GRASS_WHEEL_COUNT_STEP);
 		}
