@@ -47,7 +47,7 @@ static void test_extended_numeric_widths(void)
 
 static void test_numeric_formatting(void)
 {
-	char output[128];
+	legacy_char output[128];
 	legacy_s32 minimum32 = LEGACY_S32_FROM_BITS(LEGACY_U32_SIGN_BIT);
 	legacy_u32 maximum32 = LEGACY_U32_MAX;
 	legacy_u32 pattern32 = TEST_DWORD_PATTERN;

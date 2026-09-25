@@ -102,7 +102,7 @@ static void test_contact_residual_applies_to_wheel(void)
 	player_motion_fraction = 0;
 }
 
-int main(void)
+legacy_int main(void)
 {
 	test_inherited_contact_reconciliation();
 	test_fractional_inverted_attachment();

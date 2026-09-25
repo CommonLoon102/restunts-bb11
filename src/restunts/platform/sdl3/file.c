@@ -17,7 +17,7 @@ enum FILE_IO_DIRECTION { FILE_IO_NONE, FILE_IO_READ, FILE_IO_WRITE };
 static FILE *files[FILE_HANDLE_COUNT];
 static legacy_u8 file_directions[FILE_HANDLE_COUNT];
 static legacy_s16 file_error;
-static char **matches;
+static legacy_char **matches;
 static size_t match_count;
 static size_t match_index;
 
@@ -26,7 +26,7 @@ static legacy_u8 lower_ascii(legacy_u8 value)
 	return value >= 'A' && value <= 'Z' ? value + ('a' - 'A') : value;
 }
 
-static legacy_s32 compare_names(const char *left, const char *right)
+static legacy_s32 compare_names(const legacy_char *left, const legacy_char *right)
 {
 	while (*left != 0 && lower_ascii(*left) == lower_ascii(*right)) {
 		left++;
@@ -37,9 +37,9 @@ static legacy_s32 compare_names(const char *left, const char *right)
 
 /* Resolve each component case-insensitively, retaining an exact match when
  * available. Original resources and saved configurations mix DOS casing. */
-static legacy_s32 resolve_path(const char *source, char result[FILE_PATH_SIZE])
+static legacy_s32 resolve_path(const legacy_char *source, legacy_char result[FILE_PATH_SIZE])
 {
-	char path[FILE_PATH_SIZE];
+	legacy_char path[FILE_PATH_SIZE];
 	size_t length = strlen(source);
 	if (length == 0 || length >= sizeof(path)) {
 		file_error = 1;
@@ -49,7 +49,7 @@ static legacy_s32 resolve_path(const char *source, char result[FILE_PATH_SIZE])
 		path[index] = source[index] == '\\' ? '/' : source[index];
 	}
 	result[0] = 0;
-	char *component = path;
+	legacy_char *component = path;
 	if (*component == '/') {
 		strcpy(result, "/");
 		component++;
@@ -67,11 +67,11 @@ static legacy_s32 resolve_path(const char *source, char result[FILE_PATH_SIZE])
 	}
 #endif
 	while (*component != 0) {
-		char *separator = strchr(component, '/');
+		legacy_char *separator = strchr(component, '/');
 		if (separator != NULL) {
 			*separator = 0;
 		}
-		char selected[FILE_PATH_SIZE];
+		legacy_char selected[FILE_PATH_SIZE];
 		strcpy(selected, component);
 		DIR *directory = opendir(result[0] != 0 ? result : ".");
 		if (directory != NULL) {
@@ -137,9 +137,9 @@ static FILE *get_file_for_io(legacy_u16 handle, legacy_u8 direction)
 
 legacy_u16 dos_file_open(const legacy_s8 *path, legacy_s16 create)
 {
-	char resolved[FILE_PATH_SIZE];
+	legacy_char resolved[FILE_PATH_SIZE];
 	file_error = 0;
-	if (!resolve_path((const char *)path, resolved)) {
+	if (!resolve_path((const legacy_char *)path, resolved)) {
 		return 0;
 	}
 	for (legacy_u16 handle = FILE_FIRST_HANDLE; handle < FILE_HANDLE_COUNT; handle++) {
@@ -213,8 +213,8 @@ legacy_s32 dos_file_tell(legacy_u16 handle)
 {
 	FILE *file = get_file(handle);
 	/* Preserve the full ftell result until its legacy-range check. */
-	long position = file != NULL ? ftell(file) : -1;
-	if (position < 0 || position > (long)LEGACY_S32_MAX) {
+	legacy_s64 position = file != NULL ? ftell(file) : -1;
+	if (position < 0 || position > (legacy_s64)LEGACY_S32_MAX) {
 		file_error = 1;
 		return -1;
 	}
@@ -230,18 +230,18 @@ legacy_s16 dos_file_error(void)
 
 legacy_s16 dos_file_remove(const legacy_s8 *path)
 {
-	char resolved[FILE_PATH_SIZE];
-	if (!resolve_path((const char *)path, resolved) || remove(resolved) != 0) {
+	legacy_char resolved[FILE_PATH_SIZE];
+	if (!resolve_path((const legacy_char *)path, resolved) || remove(resolved) != 0) {
 		file_error = 1;
 		return -1;
 	}
 	return 0;
 }
 
-static legacy_s32 wildcard_matches(const char *pattern, const char *name)
+static legacy_s32 wildcard_matches(const legacy_char *pattern, const legacy_char *name)
 {
-	const char *star = NULL;
-	const char *retry = NULL;
+	const legacy_char *star = NULL;
+	const legacy_char *retry = NULL;
 	if (strcmp(pattern, "*.*") == 0) {
 		pattern = "*";
 	}
@@ -265,11 +265,11 @@ static legacy_s32 wildcard_matches(const char *pattern, const char *name)
 	return *pattern == 0;
 }
 
-/* qsort requires a comparator returning the host C int type. */
-static int sort_names(const void *left, const void *right)
+/* Match the comparator result type required by qsort. */
+static legacy_int sort_names(const void *left, const void *right)
 {
-	const char *a = *(const char *const *)left;
-	const char *b = *(const char *const *)right;
+	const legacy_char *a = *(const legacy_char *const *)left;
+	const legacy_char *b = *(const legacy_char *const *)right;
 	legacy_s32 result = compare_names(a, b);
 	return result != 0 ? result : strcmp(a, b);
 }
@@ -287,12 +287,12 @@ const legacy_s8 *dos_file_find_first(const legacy_s8 *query)
 	free(matches);
 	matches = NULL;
 	match_count = match_index = 0;
-	char resolved[FILE_PATH_SIZE];
-	if (!resolve_path((const char *)query, resolved)) {
+	legacy_char resolved[FILE_PATH_SIZE];
+	if (!resolve_path((const legacy_char *)query, resolved)) {
 		return NULL;
 	}
-	char *pattern = strrchr(resolved, '/');
-	const char *directory_name = ".";
+	legacy_char *pattern = strrchr(resolved, '/');
+	const legacy_char *directory_name = ".";
 	if (pattern != NULL) {
 		*pattern++ = 0;
 		directory_name = resolved[0] != 0 ? resolved : "/";
@@ -309,14 +309,14 @@ const legacy_s8 *dos_file_find_first(const legacy_s8 *query)
 			!wildcard_matches(pattern, entry->d_name)) {
 			continue;
 		}
-		char full_path[FILE_PATH_SIZE];
+		legacy_char full_path[FILE_PATH_SIZE];
 		struct stat info;
 		if (snprintf(full_path, sizeof(full_path), "%s/%s", directory_name, entry->d_name) >=
 				(legacy_s32)sizeof(full_path) ||
 			stat(full_path, &info) != 0 || !S_ISREG(info.st_mode)) {
 			continue;
 		}
-		char **grown = realloc(matches, (match_count + 1) * sizeof(*matches));
+		legacy_char **grown = realloc(matches, (match_count + 1) * sizeof(*matches));
 		if (grown == NULL) {
 			file_error = 1;
 			break;

@@ -46,9 +46,10 @@ static legacy_u32 portrait_read_be32(const legacy_u8 *bytes)
 		   bytes[3];
 }
 
-static SDL_Surface *portrait_load(const char *directory, legacy_u8 opponent, legacy_u8 prepared)
+static SDL_Surface *portrait_load(const legacy_char *directory, legacy_u8 opponent,
+								  legacy_u8 prepared)
 {
-	char path[PORTRAIT_PATH_SIZE];
+	legacy_char path[PORTRAIT_PATH_SIZE];
 	legacy_s32 length = snprintf(path, sizeof(path), "%s%sopp%u.png", directory,
 								 prepared != 0 ? "game/" : "", opponent);
 	if (length < 0 || (size_t)length >= sizeof(path)) {
@@ -89,8 +90,8 @@ static SDL_Surface *portrait_find(legacy_u8 opponent, legacy_u8 prepared)
 {
 	SDL_Surface *source = portrait_load("opponents/", opponent, prepared);
 	if (source == NULL) {
-		const char *base = SDL_GetBasePath();
-		char directory[PORTRAIT_PATH_SIZE];
+		const legacy_char *base = SDL_GetBasePath();
+		legacy_char directory[PORTRAIT_PATH_SIZE];
 		if (base != NULL) {
 			legacy_s32 length = snprintf(directory, sizeof(directory), "%sopponents/", base);
 			if (length >= 0 && (size_t)length < sizeof(directory)) {

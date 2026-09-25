@@ -2,6 +2,7 @@
 #define _GNU_SOURCE
 #endif
 #include "scheduling.h"
+#include "../../c/legacy.h"
 
 #if defined(__linux__) || defined(_WIN32)
 #include <errno.h>
@@ -23,20 +24,21 @@
 #define PROCESS_NICE_ABOVE_NORMAL (-5)
 #define PROCESS_CPU_MASK_GROWTH 2
 
-static int requested_cpu(void)
+static legacy_s32 requested_cpu(void)
 {
-	const char *setting = getenv("RESTUNTS_CPU_AFFINITY");
+	const legacy_char *setting = getenv("RESTUNTS_CPU_AFFINITY");
 	if (setting == NULL || *setting == '\0' || strcmp(setting, "auto") == 0) {
 		return PROCESS_CPU_AUTOMATIC;
 	}
 	if (strcmp(setting, "off") == 0) {
 		return PROCESS_CPU_UNCHANGED;
 	}
-	char *end;
+	legacy_char *end;
 	errno = 0;
-	long cpu = strtol(setting, &end, PROCESS_CPU_DECIMAL_BASE);
-	if (*setting >= '0' && *setting <= '9' && *end == '\0' && errno == 0 && cpu <= INT_MAX) {
-		return (int)cpu;
+	legacy_s64 cpu = strtol(setting, &end, PROCESS_CPU_DECIMAL_BASE);
+	if (*setting >= '0' && *setting <= '9' && *end == '\0' && errno == 0 &&
+		cpu <= (legacy_s64)LEGACY_S32_MAX) {
+		return (legacy_s32)cpu;
 	}
 	fputs("Invalid RESTUNTS_CPU_AFFINITY: use auto, off, or a logical CPU number; "
 		  "keeping inherited affinity.\n",
@@ -44,9 +46,9 @@ static int requested_cpu(void)
 	return PROCESS_CPU_UNCHANGED;
 }
 
-static int requested_high_priority(void)
+static legacy_s32 requested_high_priority(void)
 {
-	const char *setting = getenv("RESTUNTS_HIGH_PRIORITY");
+	const legacy_char *setting = getenv("RESTUNTS_HIGH_PRIORITY");
 	if (setting == NULL || *setting == '\0' || strcmp(setting, "1") == 0) {
 		return 1;
 	}
@@ -57,7 +59,7 @@ static int requested_high_priority(void)
 }
 
 #if defined(_WIN32)
-static void configure_affinity(int requested)
+static void configure_affinity(legacy_s32 requested)
 {
 	HANDLE process = GetCurrentProcess();
 	DWORD_PTR allowed;
@@ -70,10 +72,10 @@ static void configure_affinity(int requested)
 		fputs("Cannot select a CPU from the process's current processor group.\n", stderr);
 		return;
 	}
-	const int cpu_limit = (int)(sizeof(allowed) * CHAR_BIT);
-	int cpu = requested;
+	const legacy_s32 cpu_limit = (legacy_s32)(sizeof(allowed) * CHAR_BIT);
+	legacy_s32 cpu = requested;
 	if (cpu == PROCESS_CPU_AUTOMATIC) {
-		cpu = (int)GetCurrentProcessorNumber();
+		cpu = (legacy_s32)GetCurrentProcessorNumber();
 		if (cpu >= cpu_limit || !(allowed & ((DWORD_PTR)1 << cpu))) {
 			for (cpu = 0; cpu < cpu_limit; cpu++) {
 				if (allowed & ((DWORD_PTR)1 << cpu)) {
@@ -83,7 +85,9 @@ static void configure_affinity(int requested)
 		}
 	}
 	if (cpu >= cpu_limit || !(allowed & ((DWORD_PTR)1 << cpu))) {
-		fprintf(stderr, "Logical CPU %d is outside the allowed affinity; keeping it unchanged.\n",
+		fprintf(stderr,
+				"Logical CPU %" LEGACY_PRId32
+				" is outside the allowed affinity; keeping it unchanged.\n",
 				cpu);
 		return;
 	}
@@ -91,7 +95,7 @@ static void configure_affinity(int requested)
 		fprintf(stderr, "Cannot set CPU affinity (Windows error %lu).\n", GetLastError());
 		return;
 	}
-	fprintf(stderr, "CPU affinity: logical CPU %d.\n", cpu);
+	fprintf(stderr, "CPU affinity: logical CPU %" LEGACY_PRId32 ".\n", cpu);
 }
 
 static void configure_priority(void)
@@ -115,9 +119,9 @@ static void configure_priority(void)
 	fputs("Process priority: above normal.\n", stderr);
 }
 #else
-static void configure_affinity(int requested)
+static void configure_affinity(legacy_s32 requested)
 {
-	int capacity = CPU_SETSIZE;
+	legacy_s32 capacity = CPU_SETSIZE;
 	cpu_set_t *allowed;
 	size_t size;
 	/* Kernel masks can exceed cpu_set_t, even when few CPUs are online. */
@@ -131,15 +135,15 @@ static void configure_affinity(int requested)
 		if (sched_getaffinity(0, size, allowed) == 0) {
 			break;
 		}
-		int error = errno;
+		legacy_s32 error = errno;
 		CPU_FREE(allowed);
-		if (error != EINVAL || capacity > INT_MAX / PROCESS_CPU_MASK_GROWTH) {
+		if (error != EINVAL || capacity > (legacy_s32)LEGACY_S32_MAX / PROCESS_CPU_MASK_GROWTH) {
 			fprintf(stderr, "Cannot read CPU affinity: %s.\n", strerror(error));
 			return;
 		}
 		capacity *= PROCESS_CPU_MASK_GROWTH;
 	}
-	int cpu = requested;
+	legacy_s32 cpu = requested;
 	if (cpu == PROCESS_CPU_AUTOMATIC) {
 		cpu = sched_getcpu();
 		if (cpu < 0 || cpu >= capacity || !CPU_ISSET_S(cpu, size, allowed)) {
@@ -151,7 +155,9 @@ static void configure_affinity(int requested)
 		}
 	}
 	if (cpu >= capacity || !CPU_ISSET_S(cpu, size, allowed)) {
-		fprintf(stderr, "Logical CPU %d is outside the allowed affinity; keeping it unchanged.\n",
+		fprintf(stderr,
+				"Logical CPU %" LEGACY_PRId32
+				" is outside the allowed affinity; keeping it unchanged.\n",
 				cpu);
 		CPU_FREE(allowed);
 		return;
@@ -161,7 +167,7 @@ static void configure_affinity(int requested)
 	if (sched_setaffinity(0, size, allowed) != 0) {
 		fprintf(stderr, "Cannot set CPU affinity: %s.\n", strerror(errno));
 	} else {
-		fprintf(stderr, "CPU affinity: logical CPU %d.\n", cpu);
+		fprintf(stderr, "CPU affinity: logical CPU %" LEGACY_PRId32 ".\n", cpu);
 	}
 	CPU_FREE(allowed);
 }
@@ -169,7 +175,7 @@ static void configure_affinity(int requested)
 static void configure_priority(void)
 {
 	errno = 0;
-	int priority = getpriority(PRIO_PROCESS, 0);
+	legacy_s32 priority = getpriority(PRIO_PROCESS, 0);
 	if (priority == -1 && errno != 0) {
 		fprintf(stderr, "Cannot read process priority: %s.\n", strerror(errno));
 		return;
@@ -193,7 +199,7 @@ static void configure_priority(void)
 void sdl3_configure_process(void)
 {
 #if defined(__linux__) || defined(_WIN32)
-	int cpu = requested_cpu();
+	legacy_s32 cpu = requested_cpu();
 	if (cpu != PROCESS_CPU_UNCHANGED) {
 		configure_affinity(cpu);
 	}

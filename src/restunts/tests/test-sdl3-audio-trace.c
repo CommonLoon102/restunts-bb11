@@ -7,7 +7,7 @@
 #include <string.h>
 #include "../c/legacy.h"
 
-static const char *trace_path;
+static const legacy_char *trace_path;
 static legacy_u32 open_count;
 static legacy_u32 close_count;
 static legacy_u32 flush_count;
@@ -16,15 +16,15 @@ static legacy_s32 fail_open;
 static legacy_s32 fail_write;
 static legacy_s32 fail_flush;
 static legacy_s32 fail_close;
-static char captured_trace[2048];
+static legacy_char captured_trace[2048];
 
-static char *trace_test_getenv(const char *name)
+static legacy_char *trace_test_getenv(const legacy_char *name)
 {
 	assert(strcmp(name, "RESTUNTS_AUDIO_TRACE") == 0);
-	return (char *)trace_path;
+	return (legacy_char *)trace_path;
 }
 
-static FILE *trace_test_fopen(const char *path, const char *mode)
+static FILE *trace_test_fopen(const legacy_char *path, const legacy_char *mode)
 {
 	assert(strcmp(path, "test.trace") == 0);
 	assert(strcmp(mode, "wb") == 0);
@@ -38,7 +38,7 @@ static FILE *trace_test_fopen(const char *path, const char *mode)
 }
 
 /* These wrappers preserve the native stdio return types. */
-static int trace_test_fprintf(FILE *file, const char *format, ...)
+static legacy_int trace_test_fprintf(FILE *file, const legacy_char *format, ...)
 {
 	if (file == stderr) {
 		++error_count;
@@ -49,18 +49,18 @@ static int trace_test_fprintf(FILE *file, const char *format, ...)
 	}
 	va_list arguments;
 	va_start(arguments, format);
-	int result = vfprintf(file, format, arguments);
+	legacy_int result = vfprintf(file, format, arguments);
 	va_end(arguments);
 	return result;
 }
 
-static int trace_test_fflush(FILE *file)
+static legacy_int trace_test_fflush(FILE *file)
 {
 	++flush_count;
 	return fail_flush ? EOF : fflush(file);
 }
 
-static int trace_test_fclose(FILE *file)
+static legacy_int trace_test_fclose(FILE *file)
 {
 	++close_count;
 	assert(fflush(file) == 0);
@@ -212,7 +212,7 @@ static void test_io_failures(void)
 	assert(open_count == close_count + 1);
 }
 
-int main(void)
+legacy_int main(void)
 {
 	test_disabled();
 	test_order_and_timestamps();

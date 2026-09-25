@@ -10,7 +10,7 @@ static void test_update_streams(void)
 	static const legacy_s8 *names[] = {(const legacy_s8 *)"UPDATE0.TST",
 									   (const legacy_s8 *)"UPDATE1.TST"};
 	legacy_u16 handles[2];
-	char contents[16];
+	legacy_char contents[16];
 	for (legacy_u32 index = 0; index < 2; index++) {
 		handles[index] = dos_file_open(names[index], DOS_FILE_CREATE);
 		assert(handles[index] != 0);
@@ -57,7 +57,7 @@ static void test_update_streams(void)
 	}
 }
 
-int main(void)
+legacy_int main(void)
 {
 	legacy_u16 segment = dos_memory_allocate(100);
 	assert(segment != 0);
@@ -85,7 +85,7 @@ int main(void)
 	assert(dos_file_close(handle) == 0);
 	handle = dos_file_open((const legacy_s8 *)".\\case.tst", DOS_FILE_OPEN_EXISTING);
 	assert(handle == 5);
-	char contents[8] = {0};
+	legacy_char contents[8] = {0};
 	assert(dos_file_read(handle, contents, sizeof(contents)) == 5);
 	assert(strcmp(contents, "hello") == 0);
 	assert(dos_file_error() == 0);

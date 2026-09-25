@@ -2,6 +2,7 @@
 #include <limits.h>
 #include <stdio.h>
 #include <SDL3/SDL.h>
+#include "../c/legacy.h"
 
 enum {
 	TEST_MAX_WORKERS = 7,
@@ -12,19 +13,20 @@ enum {
 	TEST_FAILURE_LIMIT = 3
 };
 
-static int detected_cores;
-static int thread_budget;
-static int semaphore_budget;
-static int created_threads;
-static int created_semaphores;
-static int live_semaphores;
+static legacy_int detected_cores;
+static legacy_s32 thread_budget;
+static legacy_s32 semaphore_budget;
+static legacy_s32 created_threads;
+static legacy_s32 created_semaphores;
+static legacy_s32 live_semaphores;
 
-static int detect_cores(void)
+static legacy_int detect_cores(void)
 {
 	return detected_cores;
 }
 
-static SDL_Thread *create_thread(SDL_ThreadFunction function, const char *name, void *argument)
+static SDL_Thread *create_thread(SDL_ThreadFunction function, const legacy_char *name,
+								 void *argument)
 {
 	if (thread_budget == 0) {
 		return NULL;
@@ -66,7 +68,7 @@ static void destroy_semaphore(SDL_Semaphore *semaphore)
 #include "../c/render_workers.c"
 
 struct JOB_RESULTS {
-	int visits[TEST_JOB_COUNT];
+	legacy_s32 visits[TEST_JOB_COUNT];
 	SDL_ThreadID threads[TEST_JOB_COUNT];
 };
 
@@ -79,13 +81,13 @@ static void record_job(void *argument, legacy_s32 index)
 	SDL_Delay(TEST_JOB_DELAY_MS);
 }
 
-static void check_jobs(int expected_workers)
+static void check_jobs(legacy_s32 expected_workers)
 {
-	for (int pass = 0; pass < TEST_JOB_PASSES; pass++) {
+	for (legacy_s32 pass = 0; pass < TEST_JOB_PASSES; pass++) {
 		struct JOB_RESULTS results = {0};
 		assert(render_workers_run(TEST_JOB_COUNT, record_job, &results) == expected_workers);
-		int background_jobs = 0;
-		for (int index = 0; index < TEST_JOB_COUNT; index++) {
+		legacy_s32 background_jobs = 0;
+		for (legacy_s32 index = 0; index < TEST_JOB_COUNT; index++) {
 			assert(results.visits[index] == 1);
 			background_jobs += results.threads[index] != SDL_GetCurrentThreadID();
 		}
@@ -93,7 +95,7 @@ static void check_jobs(int expected_workers)
 	}
 }
 
-static void configure_workers(const char *setting)
+static void configure_workers(const legacy_char *setting)
 {
 	render_workers_shutdown();
 	render_workers_shutdown();
@@ -110,14 +112,14 @@ static void configure_workers(const char *setting)
 	created_semaphores = 0;
 }
 
-int main(void)
+legacy_int main(void)
 {
 	assert(SDL_Init(0));
-	const char *defaults[] = {NULL, ""};
-	const int cores[] = {INT_MIN, 0, 1, 2, 4, 64, INT_MAX};
-	const int expected[] = {0, 0, 0, 1, 3, TEST_MAX_WORKERS, TEST_MAX_WORKERS};
-	for (unsigned int setting = 0; setting < sizeof(defaults) / sizeof(defaults[0]); setting++) {
-		for (unsigned int index = 0; index < sizeof(cores) / sizeof(cores[0]); index++) {
+	const legacy_char *defaults[] = {NULL, ""};
+	const legacy_int cores[] = {INT_MIN, 0, 1, 2, 4, 64, INT_MAX};
+	const legacy_s32 expected[] = {0, 0, 0, 1, 3, TEST_MAX_WORKERS, TEST_MAX_WORKERS};
+	for (legacy_u32 setting = 0; setting < sizeof(defaults) / sizeof(defaults[0]); setting++) {
+		for (legacy_u32 index = 0; index < sizeof(cores) / sizeof(cores[0]); index++) {
 			configure_workers(defaults[setting]);
 			detected_cores = cores[index];
 			assert(render_workers_count() == 0);
@@ -125,34 +127,34 @@ int main(void)
 			assert(created_threads == 0 && created_semaphores == 0);
 		}
 	}
-	for (unsigned int index = 0; index < sizeof(cores) / sizeof(cores[0]); index++) {
+	for (legacy_u32 index = 0; index < sizeof(cores) / sizeof(cores[0]); index++) {
 		configure_workers("auto");
 		detected_cores = cores[index];
 		assert(render_workers_count() == expected[index]);
 		check_jobs(expected[index]);
 	}
 	/* Resource exhaustion keeps the workers already created, or runs serially. */
-	for (int available = 0; available < TEST_FAILURE_LIMIT; available++) {
+	for (legacy_s32 available = 0; available < TEST_FAILURE_LIMIT; available++) {
 		configure_workers("auto");
 		detected_cores = TEST_RESOURCE_BUDGET;
 		thread_budget = available;
 		check_jobs(available);
 		assert(render_workers_count() == available);
 	}
-	for (int available = 0; available < TEST_FAILURE_LIMIT; available++) {
+	for (legacy_s32 available = 0; available < TEST_FAILURE_LIMIT; available++) {
 		configure_workers("auto");
 		semaphore_budget = available;
-		int expected_workers = available > 0 ? available - 1 : 0;
+		legacy_s32 expected_workers = available > 0 ? available - 1 : 0;
 		check_jobs(expected_workers);
 		assert(render_workers_count() == expected_workers);
 	}
-	const char *settings[] = {
+	const legacy_char *settings[] = {
 		"0",	   "1",	 "2",		 "7", "999",
 		"invalid", "-2", "2workers", " ", "999999999999999999999999999999999999",
 		"auto2"};
-	const int configured[] = {0, 1, 2, TEST_MAX_WORKERS, TEST_MAX_WORKERS, 0, 0, 0, 0, 0, 0};
+	const legacy_s32 configured[] = {0, 1, 2, TEST_MAX_WORKERS, TEST_MAX_WORKERS, 0, 0, 0, 0, 0, 0};
 	detected_cores = 1;
-	for (unsigned int index = 0; index < sizeof(settings) / sizeof(settings[0]); index++) {
+	for (legacy_u32 index = 0; index < sizeof(settings) / sizeof(settings[0]); index++) {
 		configure_workers(settings[index]);
 		/* A previous library error must not reject a valid numeric override. */
 		errno = ERANGE;

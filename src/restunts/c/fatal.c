@@ -235,7 +235,7 @@ static void fatal_vprintf(const legacy_s8 *format, va_list arguments)
 				fatal_emit_character(&output, '%');
 				break;
 			case 'c':
-				value = (legacy_s16)va_arg(arguments, int);
+				value = (legacy_s16)va_arg(arguments, legacy_int);
 				fatal_emit_field_character(&output, &field, (legacy_s8)value);
 				break;
 			case 's':
@@ -245,14 +245,14 @@ static void fatal_vprintf(const legacy_s8 *format, va_list arguments)
 			case 'd':
 			case 'i':
 				long_signed_value = field.long_value ? va_arg(arguments, legacy_s32)
-													 : (legacy_s16)va_arg(arguments, int);
+													 : (legacy_s16)va_arg(arguments, legacy_int);
 				fatal_emit_signed_field(&output, &field, long_signed_value);
 				break;
 			case 'u':
 			case 'x':
 			case 'X':
 				unsigned_value = field.long_value ? va_arg(arguments, legacy_u32)
-												  : (legacy_u16)va_arg(arguments, unsigned int);
+												  : (legacy_u16)va_arg(arguments, legacy_uint);
 				fatal_emit_unsigned_field(&output, &field, unsigned_value);
 				break;
 			default:

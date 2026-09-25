@@ -122,9 +122,10 @@ HELPER = r'''
 #include <stdio.h>
 #include <stdlib.h>
 #include "opl2.h"
+#include "src/restunts/c/legacy.h"
 #define SAMPLE_BUFFER_FRAMES 4096U
 static opl2_chip *chip;
-static int initialize(uint32_t clock, uint32_t rate)
+static legacy_s32 initialize(uint32_t clock, uint32_t rate)
 {
     if (clock != OPL_CLOCK_HZ) { return 0; }
     chip = calloc(1, sizeof(*chip));
@@ -138,7 +139,7 @@ static int16_t next_sample(void)
     OPL2_GenerateResampled(chip, &sample);
     return sample;
 }
-static void write_register(unsigned int reg, unsigned int value, unsigned int buffered)
+static void write_register(legacy_uint reg, legacy_uint value, legacy_uint buffered)
 {
     if (buffered) {
         OPL2_WriteRegBuffered(chip, (uint8_t)reg, (uint8_t)value);
@@ -148,15 +149,15 @@ static void write_register(unsigned int reg, unsigned int value, unsigned int bu
 }
 static void destroy(void) { free(chip); }
 
-static int generate(FILE *output, uint64_t count)
+static legacy_s32 generate(FILE *output, uint64_t count)
 {
-    unsigned char bytes[SAMPLE_BUFFER_FRAMES * PCM_SAMPLE_BYTES];
+    legacy_u8 bytes[SAMPLE_BUFFER_FRAMES * PCM_SAMPLE_BYTES];
     while (count != 0) {
         size_t frames = count > SAMPLE_BUFFER_FRAMES ? SAMPLE_BUFFER_FRAMES : (size_t)count;
         for (size_t index = 0; index < frames; ++index) {
             uint16_t sample = (uint16_t)next_sample();
-            bytes[index * PCM_SAMPLE_BYTES] = (unsigned char)sample;
-            bytes[index * PCM_SAMPLE_BYTES + 1] = (unsigned char)(sample >> CHAR_BIT);
+            bytes[index * PCM_SAMPLE_BYTES] = (legacy_u8)sample;
+            bytes[index * PCM_SAMPLE_BYTES + 1] = (legacy_u8)(sample >> CHAR_BIT);
         }
         if (fwrite(bytes, PCM_SAMPLE_BYTES, frames, output) != frames) {
             return 0;
@@ -166,7 +167,7 @@ static int generate(FILE *output, uint64_t count)
     return 1;
 }
 
-int main(int argc, char **argv)
+legacy_int main(legacy_int argc, legacy_char **argv)
 {
     if (argc != 5) {
         return 2;
@@ -180,15 +181,15 @@ int main(int argc, char **argv)
     }
     uint64_t current = 0;
     uint64_t frame;
-    char event;
-    int ended = 0;
+    legacy_char event;
+    legacy_s32 ended = 0;
     while (fscanf(input, "%" SCNu64 " %c", &frame, &event) == 2) {
         if (frame < current || !generate(output, frame - current)) {
             break;
         }
         current = frame;
         if (event == 'W') {
-            unsigned int reg, value, buffered;
+            legacy_uint reg, value, buffered;
             if (fscanf(input, "%u %u %u", &reg, &value, &buffered) != 3 ||
                 reg > UINT8_MAX || value > UINT8_MAX || buffered > 1) {
                 break;
@@ -201,7 +202,7 @@ int main(int argc, char **argv)
             break;
         }
     }
-    int failed = !ended || ferror(input) || ferror(output);
+    legacy_s32 failed = !ended || ferror(input) || ferror(output);
     failed |= fclose(input) != 0;
     failed |= fclose(output) != 0;
     destroy();
@@ -219,7 +220,7 @@ def compile_helper(directory, cc="cc"):
     executable = directory / ("render.exe" if os.name == "nt" else "render")
     source.write_text(f"#define OPL_CLOCK_HZ {OPL_CLOCK_HZ}U\n"
                       f"#define PCM_SAMPLE_BYTES {PCM_SAMPLE_BYTES}U\n" + HELPER, encoding="utf-8")
-    command = [cc, "-std=c99", "-O2", "-I", str(library), str(source),
+    command = [cc, "-std=c99", "-O2", "-I", str(library), "-I", str(ROOT), str(source),
                str(library / "opl2.c"), "-o", str(executable)]
     subprocess.run(command, check=True)
     return executable

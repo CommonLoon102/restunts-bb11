@@ -27,7 +27,7 @@ static void fill_pattern(legacy_u8 *data, size_t length)
 	}
 }
 
-static void check_file_contents(const char *path, const legacy_u8 *expected, size_t length)
+static void check_file_contents(const legacy_char *path, const legacy_u8 *expected, size_t length)
 {
 	FILE *file = fopen(path, "rb");
 	assert(file != NULL);
@@ -107,7 +107,7 @@ static void test_heap_buffers(void)
 	free(destination_allocation);
 }
 
-int main(void)
+legacy_int main(void)
 {
 	sdl3_batch_mode = 1;
 #ifdef _WIN32

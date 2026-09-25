@@ -85,7 +85,7 @@ static void test_crash_event_is_applied_once(void)
 	assert(random_calls == random_calls_before);
 }
 
-int main(void)
+legacy_int main(void)
 {
 	test_invalid_car_indices();
 	test_player_and_opponent_selection();

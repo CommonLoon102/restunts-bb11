@@ -160,7 +160,7 @@ static void check_missing_note(legacy_u8 kind, legacy_u8 volume, legacy_s32 dire
 	}
 }
 
-int main(void)
+legacy_int main(void)
 {
 	SDL_SetMainReady();
 	assert(SDL_SetHintWithPriority(SDL_HINT_AUDIO_DRIVER, "dummy", SDL_HINT_OVERRIDE));

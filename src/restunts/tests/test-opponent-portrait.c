@@ -46,7 +46,7 @@ static void reset(void)
 	target.sprite_bottom = 200;
 }
 
-static void write_solid_fixture(const char *path, legacy_s32 width, legacy_s32 height,
+static void write_solid_fixture(const legacy_char *path, legacy_s32 width, legacy_s32 height,
 								legacy_u32 color)
 {
 	SDL_Surface *source = SDL_CreateSurface(width, height, SDL_PIXELFORMAT_ARGB8888);
@@ -58,7 +58,7 @@ static void write_solid_fixture(const char *path, legacy_s32 width, legacy_s32 h
 
 static const SDL_Color prepared_colors[2] = {{204, 51, 0, 255}, {0, 102, 204, 255}};
 
-static void write_prepared_fixture(const char *path)
+static void write_prepared_fixture(const legacy_char *path)
 {
 	SDL_Surface *source = SDL_CreateSurface(296, 316, SDL_PIXELFORMAT_INDEX8);
 	assert(source != NULL);
@@ -130,7 +130,8 @@ static legacy_u32 original_upscale_color(legacy_s32 x, legacy_s32 y)
 	return colors[(x + y * 3) % 4];
 }
 
-static void write_original_upscale_fixture(const char *path, legacy_s32 width, legacy_s32 height)
+static void write_original_upscale_fixture(const legacy_char *path, legacy_s32 width,
+										   legacy_s32 height)
 {
 	SDL_Surface *source = SDL_CreateSurface(width, height, SDL_PIXELFORMAT_ARGB8888);
 	assert(source != NULL);
@@ -303,7 +304,7 @@ static void test_positioned_photo(struct SHAPE2D *shape)
 	}
 }
 
-int main(void)
+legacy_int main(void)
 {
 	assert(SDL_Init(0));
 	assert(SDL_CreateDirectory("portrait-test"));

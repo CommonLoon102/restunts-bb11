@@ -46,7 +46,7 @@ static legacy_u8 fixture_color(legacy_s32 x, legacy_s32 y)
 	return 17 + (x + y * 8) % 63;
 }
 
-static void write_fixture(const char *path)
+static void write_fixture(const legacy_char *path)
 {
 	SDL_Surface *source = SDL_CreateSurface(8, 8, SDL_PIXELFORMAT_RGB24);
 	assert(source != NULL);
@@ -157,7 +157,7 @@ legacy_u16 projection_focal_length_y = 160;
 
 static const legacy_s32 panorama_widths[SKYBOX_IMAGE_COUNT] = {320, 192, 320, 192};
 static const legacy_s32 panorama_heights[SKYBOX_IMAGE_COUNT] = {24, 32, 40, 48};
-static const char *panorama_paths[SKYBOX_IMAGE_COUNT] = {
+static const legacy_char *panorama_paths[SKYBOX_IMAGE_COUNT] = {
 	"skyboxes/city-scen.png", "skyboxes/city-sce2.png", "skyboxes/city-sce3.png",
 	"skyboxes/city-sce4.png"};
 static struct SHAPE2D *panorama_shapes[SKYBOX_IMAGE_COUNT];
@@ -212,7 +212,7 @@ static void destroy_panorama_fixtures(void)
 
 static struct MATRIX roll_matrix(legacy_s32 angle)
 {
-	double radians = angle * (2.0 * SDL_PI_D / 1024.0);
+	legacy_f64 radians = angle * (2.0 * SDL_PI_D / 1024.0);
 	legacy_s16 cosine = SDL_lround(SDL_cos(radians) * TRIG_FIXED_ONE);
 	legacy_s16 sine = SDL_lround(SDL_sin(radians) * TRIG_FIXED_ONE);
 	struct MATRIX rotation = {0};
@@ -498,7 +498,7 @@ static void test_oriented_clipping_fallback_and_toggle(void)
 static void test_mixed_artwork_and_view_transitions(void)
 {
 	reset_target();
-	const char *hidden_path = "skyboxes/city-sce2.hidden.png";
+	const legacy_char *hidden_path = "skyboxes/city-sce2.hidden.png";
 	assert(rename(panorama_paths[1], hidden_path) == 0);
 	struct MATRIX rotation = roll_matrix(0);
 	assert(skybox_hires_render(&target, &scenery, panorama_shapes, 3, &rotation, 1, 192, 0, 0));
@@ -516,7 +516,7 @@ static void test_mixed_artwork_and_view_transitions(void)
 	assert_cardinal_image(2, 0, 0, 0, 0);
 }
 
-int main(void)
+legacy_int main(void)
 {
 	assert(SDL_Init(0));
 	screen = dos_memory_make_pointer(0xA000, 0);

@@ -343,7 +343,7 @@ static void reset_case(void)
 	font_definition[18] = 8;
 }
 
-static void check_hash(const char *name, legacy_u64 expected)
+static void check_hash(const legacy_char *name, legacy_u64 expected)
 {
 #ifdef UI_RECORD_BASELINE
 	printf("%s %016" LEGACY_PRIx64 "\n", name, trace_hash);

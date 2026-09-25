@@ -309,8 +309,8 @@ static void open_joystick(void)
 			return;
 		}
 	}
-	/* SDL writes a native int through this output pointer. */
-	int count;
+	/* Match the output parameter type required by SDL. */
+	legacy_int count;
 	SDL_JoystickID *ids = SDL_GetJoysticks(&count);
 	for (legacy_s32 index = 0; index < count && joystick == NULL; index++) {
 		joystick = SDL_OpenJoystick(ids[index]);

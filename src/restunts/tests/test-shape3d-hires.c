@@ -1426,9 +1426,9 @@ static legacy_s32 draw_batch_scene(legacy_s32 batched, legacy_s32 ordered)
 static void test_parallel_batches_match_serial(void)
 {
 	static legacy_u8 reference[HIRES_WIDTH * HIRES_HEIGHT];
-	const char *settings[] = {"0", "1", "2"};
-	const char *original_setting = SDL_getenv("RESTUNTS_RENDER_WORKERS");
-	char *saved_setting = original_setting != NULL ? SDL_strdup(original_setting) : NULL;
+	const legacy_char *settings[] = {"0", "1", "2"};
+	const legacy_char *original_setting = SDL_getenv("RESTUNTS_RENDER_WORKERS");
+	legacy_char *saved_setting = original_setting != NULL ? SDL_strdup(original_setting) : NULL;
 	assert(original_setting == NULL || saved_setting != NULL);
 	projection_center_x = 160;
 	projection_center_y = 100;
@@ -1780,7 +1780,7 @@ static void test_car_shadow_ground_fallback_and_reset(void)
 	hires_set_enabled(1);
 }
 
-int main(void)
+legacy_int main(void)
 {
 	screen = dos_memory_make_pointer(0xA000, 0);
 	target.sprite_bitmapptr = (struct SHAPE2D *)screen;

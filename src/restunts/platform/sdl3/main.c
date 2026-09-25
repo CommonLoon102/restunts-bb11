@@ -11,8 +11,8 @@
 extern void full_data_initialize(void);
 extern legacy_s16 stuntsmain(legacy_s16 argc, legacy_s8 *argv[]);
 
-/* The C runtime requires native int parameters and return type. */
-int main(int argc, char **argv)
+/* Match the argument and result types required by the C runtime. */
+legacy_int main(legacy_int argc, legacy_char **argv)
 {
 #if !defined(__DJGPP__) && !defined(RESTUNTS_HEADLESS)
 	if (argc == 2 && strcmp(argv[1], "--licenses") == 0) {
@@ -44,7 +44,7 @@ int main(int argc, char **argv)
 		}
 		argc -= 2;
 	}
-	if (argc > (int)LEGACY_S16_MAX) {
+	if (argc > (legacy_int)LEGACY_S16_MAX) {
 		fputs("Too many arguments\n", stderr);
 		return 1;
 	}

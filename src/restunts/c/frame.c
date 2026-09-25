@@ -1059,7 +1059,7 @@ struct FRAME_WORLD_TILE {
 	legacy_s32 depth;
 };
 
-static int frame_compare_world_tiles(const void *first, const void *second)
+static legacy_int frame_compare_world_tiles(const void *first, const void *second)
 {
 	const struct FRAME_WORLD_TILE *left = first;
 	const struct FRAME_WORLD_TILE *right = second;

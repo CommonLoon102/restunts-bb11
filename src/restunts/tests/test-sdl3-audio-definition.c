@@ -100,7 +100,7 @@ static void check_resource_boundaries(void)
 	free(allocation);
 }
 
-int main(void)
+legacy_int main(void)
 {
 	check_native_engine_definition();
 	check_finish_callback();
