@@ -243,7 +243,7 @@ static void test_particles(void)
 	assert(memcmp(&result, &current, sizeof(result)) == 0);
 }
 
-int main(void)
+legacy_int main(void)
 {
 	test_motion_and_isolation();
 	test_endpoints_and_bounds();

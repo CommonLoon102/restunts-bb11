@@ -38,11 +38,11 @@
 static legacy_u16 pixldump_dos_psp_segment(void)
 {
 #ifdef RESTUNTS_SDL3
-	const char *setting = getenv("RESTUNTS_ORACLE_PSP_SEGMENT");
+	const legacy_char *setting = getenv("RESTUNTS_ORACLE_PSP_SEGMENT");
 	if (setting != 0 && setting[0] != 0) {
-		char *end;
+		legacy_char *end;
 		/* Validate the complete host result before narrowing to a DOS segment. */
-		unsigned long value = strtoul(setting, &end, 0);
+		legacy_u64 value = strtoul(setting, &end, 0);
 		if (*end == 0 && value > 0 && value <= LEGACY_U16_MAX) {
 			return (legacy_u16)value;
 		}
@@ -117,7 +117,7 @@ static legacy_u16 pixldump_argument_length(const legacy_s8 *argument)
 static legacy_u16 pixldump_dos_program_path_length(void)
 {
 #ifdef RESTUNTS_SDL3
-	const char *setting = getenv("RESTUNTS_ORACLE_PROGRAM_PATH");
+	const legacy_char *setting = getenv("RESTUNTS_ORACLE_PROGRAM_PATH");
 	if (setting == 0 || setting[0] == 0) {
 		setting = PIXLDUMP_NATIVE_ORACLE_PROGRAM_PATH;
 	}

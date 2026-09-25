@@ -33,7 +33,7 @@ static legacy_u64 last_present;
 static legacy_u8 palette_changed = true;
 static legacy_u8 drawing_frame;
 
-static void video_fail(const char *operation)
+static void video_fail(const legacy_char *operation)
 {
 	fprintf(stderr, "%s: %s\n", operation, SDL_GetError());
 	dos_process_exit(1);
@@ -74,8 +74,8 @@ static legacy_u8 mode_is_better(const SDL_DisplayMode *candidate, const SDL_Disp
 
 static void select_dos_video_mode(legacy_u8 high_resolution)
 {
-	/* SDL writes a native int through this output pointer. */
-	int mode_count;
+	/* Match the output parameter type required by SDL. */
+	legacy_int mode_count;
 	SDL_DisplayMode **modes = SDL_GetFullscreenDisplayModes(SDL_GetPrimaryDisplay(), &mode_count);
 	legacy_u8 selected = false;
 	legacy_s32 selected_width = 0;
@@ -252,8 +252,8 @@ static void present_texture(const legacy_u8 *pixels, const legacy_u32 *argb, leg
 		texture_height = height;
 	}
 	void *texture_pixels;
-	/* SDL writes a native int through this output pointer. */
-	int pitch;
+	/* Match the output parameter type required by SDL. */
+	legacy_int pitch;
 	if (!SDL_LockTexture(texture, NULL, &texture_pixels, &pitch)) {
 		video_fail("Lock video texture");
 	}

@@ -1179,7 +1179,7 @@ static void test_shadow_composition(void)
 	hires_forget(screen.base);
 }
 
-int main(void)
+legacy_int main(void)
 {
 	struct TEST_SURFACE screen;
 	struct TEST_SURFACE window;

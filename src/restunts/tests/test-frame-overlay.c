@@ -351,7 +351,7 @@ static void reset_ingame_text(const char *filename)
 	render_window_sprite = &frame_sprite;
 }
 
-static void assert_text(legacy_u32 index, const char *text, legacy_s16 x, legacy_s16 y)
+static void assert_text(legacy_u32 index, const legacy_char *text, legacy_s16 x, legacy_s16 y)
 {
 	assert(index < text_draw_count);
 	assert(strcmp(text_draws[index].text, text) == 0);

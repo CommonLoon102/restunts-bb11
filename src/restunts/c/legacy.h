@@ -17,8 +17,13 @@
 #define huge
 #endif
 
-/* Keep native numeric types at compiler/library boundaries. Game state and
- * arithmetic use these checked widths, independent of the host data model. */
+/* Preserve exact C ABI types for strings, callbacks, entry points, and
+ * default argument promotions. Game state and arithmetic use the checked
+ * widths below, independent of the host data model. */
+typedef char legacy_char;
+typedef int legacy_int;
+typedef unsigned int legacy_uint;
+
 #if CHAR_BIT != 8 || SCHAR_MAX != 127 || SCHAR_MIN != (-127 - 1)
 #error Restunts requires exact 8-bit bytes
 #endif
@@ -109,15 +114,15 @@ typedef unsigned long legacy_u64;
 typedef float legacy_f32;
 typedef double legacy_f64;
 
-typedef char legacy_byte_must_be_8_bits[(CHAR_BIT == 8) ? 1 : -1];
-typedef char legacy_s16_must_be_2_bytes[(sizeof(legacy_s16) == 2) ? 1 : -1];
-typedef char legacy_u16_must_be_2_bytes[(sizeof(legacy_u16) == 2) ? 1 : -1];
-typedef char legacy_s32_must_be_4_bytes[(sizeof(legacy_s32) == 4) ? 1 : -1];
-typedef char legacy_u32_must_be_4_bytes[(sizeof(legacy_u32) == 4) ? 1 : -1];
-typedef char legacy_s64_must_be_8_bytes[(sizeof(legacy_s64) == 8) ? 1 : -1];
-typedef char legacy_u64_must_be_8_bytes[(sizeof(legacy_u64) == 8) ? 1 : -1];
-typedef char legacy_f32_must_be_4_bytes[(sizeof(legacy_f32) == 4) ? 1 : -1];
-typedef char legacy_f64_must_be_8_bytes[(sizeof(legacy_f64) == 8) ? 1 : -1];
+typedef legacy_s8 legacy_byte_must_be_8_bits[(CHAR_BIT == 8) ? 1 : -1];
+typedef legacy_s8 legacy_s16_must_be_2_bytes[(sizeof(legacy_s16) == 2) ? 1 : -1];
+typedef legacy_s8 legacy_u16_must_be_2_bytes[(sizeof(legacy_u16) == 2) ? 1 : -1];
+typedef legacy_s8 legacy_s32_must_be_4_bytes[(sizeof(legacy_s32) == 4) ? 1 : -1];
+typedef legacy_s8 legacy_u32_must_be_4_bytes[(sizeof(legacy_u32) == 4) ? 1 : -1];
+typedef legacy_s8 legacy_s64_must_be_8_bytes[(sizeof(legacy_s64) == 8) ? 1 : -1];
+typedef legacy_s8 legacy_u64_must_be_8_bytes[(sizeof(legacy_u64) == 8) ? 1 : -1];
+typedef legacy_s8 legacy_f32_must_be_4_bytes[(sizeof(legacy_f32) == 4) ? 1 : -1];
+typedef legacy_s8 legacy_f64_must_be_8_bytes[(sizeof(legacy_f64) == 8) ? 1 : -1];
 
 legacy_u16 legacy_u16_div_or_zero(legacy_u16 numerator, legacy_u16 denominator);
 legacy_s16 legacy_s16_div_or_zero(legacy_s16 numerator, legacy_s16 denominator);

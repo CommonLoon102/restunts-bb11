@@ -21,9 +21,9 @@ struct SKYBOX_HIRES_IMAGE {
 	legacy_s32 attempted;
 };
 
-static const char *theme_names[SKYBOX_THEME_COUNT] = {"desert", "tropical", "alpine", "city",
-													  "country"};
-static const char *image_names[SKYBOX_IMAGE_COUNT] = {"scen", "sce2", "sce3", "sce4"};
+static const legacy_char *theme_names[SKYBOX_THEME_COUNT] = {"desert", "tropical", "alpine", "city",
+															 "country"};
+static const legacy_char *image_names[SKYBOX_IMAGE_COUNT] = {"scen", "sce2", "sce3", "sce4"};
 static struct SKYBOX_HIRES_IMAGE images[SKYBOX_IMAGE_COUNT];
 static SDL_Color original_palette[SKYBOX_PALETTE_COLOR_COUNT];
 static legacy_s32 palette_ready;
@@ -56,9 +56,10 @@ void skybox_hires_set_palette(const legacy_u8 *palette)
 	palette_ready = 1;
 }
 
-static SDL_Surface *skybox_hires_load(const char *directory, legacy_s16 theme, legacy_s16 image)
+static SDL_Surface *skybox_hires_load(const legacy_char *directory, legacy_s16 theme,
+									  legacy_s16 image)
 {
-	char path[SKYBOX_PATH_SIZE];
+	legacy_char path[SKYBOX_PATH_SIZE];
 	legacy_s32 length = snprintf(path, sizeof(path), "%s%s-%s.png", directory, theme_names[theme],
 								 image_names[image]);
 	if (length < 0 || (size_t)length >= sizeof(path)) {
@@ -91,8 +92,8 @@ static SDL_Surface *skybox_hires_image(legacy_s16 theme, legacy_s16 image, legac
 	 * find the packaged images beside the executable, even with --data-dir. */
 	SDL_Surface *source = skybox_hires_load("skyboxes/", theme, image);
 	if (source == NULL) {
-		const char *base = SDL_GetBasePath();
-		char directory[SKYBOX_PATH_SIZE];
+		const legacy_char *base = SDL_GetBasePath();
+		legacy_char directory[SKYBOX_PATH_SIZE];
 		if (base != NULL) {
 			legacy_s32 length = snprintf(directory, sizeof(directory), "%sskyboxes/", base);
 			if (length >= 0 && (size_t)length < sizeof(directory)) {

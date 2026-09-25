@@ -329,7 +329,7 @@ static void check_cached_clearance(void)
 	assert(shape3d_car_ground_offset(&first) == 2);
 }
 
-int main(void)
+legacy_int main(void)
 {
 	check_wheel_clearance();
 	check_missing_wheels();
