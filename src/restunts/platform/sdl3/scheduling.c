@@ -49,12 +49,13 @@ static legacy_s32 requested_cpu(void)
 static legacy_s32 requested_high_priority(void)
 {
 	const legacy_char *setting = getenv("RESTUNTS_HIGH_PRIORITY");
-	if (setting == NULL || *setting == '\0' || strcmp(setting, "1") == 0) {
+	if (setting == NULL || *setting == '\0' || strcmp(setting, "0") == 0) {
+		return 0;
+	}
+	if (strcmp(setting, "1") == 0) {
 		return 1;
 	}
-	if (strcmp(setting, "0") != 0) {
-		fputs("Invalid RESTUNTS_HIGH_PRIORITY: use 0 or 1; keeping inherited priority.\n", stderr);
-	}
+	fputs("Invalid RESTUNTS_HIGH_PRIORITY: use 0 or 1; keeping inherited priority.\n", stderr);
 	return 0;
 }
 
