@@ -4,6 +4,9 @@
 #include "car_model.h"
 #include "scene_resources.h"
 #include "owoot.h"
+#if defined(RESTUNTS_SDL3)
+#include "shape3d_hires.h"
+#endif
 
 #define CAR_RESOURCE_ID_OFFSET 2U
 #define CAR_ID_LENGTH 4
@@ -72,6 +75,9 @@ static void shape3d_init_car_wheel_vertices(const struct SHAPE3D *shape,
 
 void shape3d_load_car_shapes(legacy_s8 player_car_id[], legacy_s8 opponent_car_id[])
 {
+#if defined(RESTUNTS_SDL3)
+	shape3d_hires_shadow_models_reset();
+#endif
 	for (legacy_s16 i = 0; i < CAR_ID_LENGTH; i++) {
 		car_shape_resource_name[CAR_RESOURCE_ID_OFFSET + i] = player_car_id[i];
 	}
@@ -234,6 +240,9 @@ void shape3d_update_car_wheel_vertices(struct SHAPE3D *shape, legacy_u16 first_v
 
 void shape3d_free_car_shapes(void)
 {
+#if defined(RESTUNTS_SDL3)
+	shape3d_hires_shadow_models_reset();
+#endif
 	if (car2resptr != 0) {
 		shape3d_update_car_wheel_vertices(&game3dshapes[OPPONENT_CAR_WHEEL_SHAPE],
 										  CAR_FIRST_WHEEL_VERTEX, 0, neutral_wheel_suspension,

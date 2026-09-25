@@ -258,6 +258,7 @@ static void test_lifetime(struct TEST_SURFACE *screen, struct TEST_SURFACE *wind
 	assert_detail(screen, 30, 40, 255, 0);
 	hires_set_enabled(0);
 	assert(!hires_enabled());
+	assert(!hires_shadow_begin());
 	legacy_s32 width = 0;
 	legacy_s32 height = 0;
 	const legacy_u8 *pixels = hires_framebuffer(screen->base, &width, &height);
@@ -630,6 +631,67 @@ static void test_raster_bands(void)
 	hires_forget(screen.base);
 }
 
+static void test_shadow_composition(void)
+{
+	struct TEST_SURFACE screen;
+	setup_surface(&screen, 0x8000, 0);
+	legacy_u32 palette[256] = {0};
+	palette[3] = 0xFF90C0F0U;
+	palette[15] = 0xFFFFFFFFU;
+	assert(!hires_shadow_begin());
+	hires_shadow_pixel(200, 240, 255);
+	struct SPRITE clipped = screen.sprite;
+	clipped.sprite_raster_left = 50;
+	clipped.sprite_raster_right = 51;
+	clipped.sprite_top = 60;
+	clipped.sprite_bottom = 61;
+	assert(hires_begin(&clipped));
+	hires_depth_begin(200, 204, 240, 244);
+	assert(hires_depth_test(200, 240, 0.02, 7, HIRES_DEPTH_SURFACE));
+	struct HIRES_RASTER_TARGET target;
+	assert(hires_raster_prepare(&target));
+	legacy_u32 offset = 240 * HIRES_WIDTH + 200;
+	legacy_f32 depth = target.inverse_depth[offset];
+	assert(hires_shadow_begin());
+	assert(hires_shadow_begin());
+	hires_argb_pixel(201, 240, 0xFF80C040U);
+	hires_argb_pixel(202, 240, 0x80FF0000U);
+	hires_shadow_pixel(200, 240, 85);
+	hires_shadow_pixel(201, 240, 85);
+	hires_shadow_pixel(202, 240, 85);
+	hires_shadow_pixel(203, 240, 0);
+	hires_shadow_pixel(199, 240, 255);
+	hires_shadow_pixel(204, 240, 255);
+	hires_shadow_pixel(200, 239, 255);
+	hires_shadow_pixel(200, 244, 255);
+	hires_shadow_pixel(-1, 240, 255);
+	hires_shadow_pixel(HIRES_WIDTH, 240, 255);
+	assert(target.inverse_depth[offset] == depth && target.depth_family[offset] == 7);
+	assert(target.depth_left == 200 && target.depth_right == 204);
+	assert(target.depth_top == 240 && target.depth_bottom == 244);
+	assert(!hires_depth_test(200, 240, 0.01, 8, HIRES_DEPTH_SURFACE));
+	hires_end();
+	const legacy_u32 *pixels = hires_framebuffer_argb(screen.base, palette);
+	assert(pixels != NULL && pixels[offset] == 0xFF6080A0U);
+	assert(pixels[offset + 1] == 0xFF55802AU);
+	assert(pixels[offset + 2] == 0xFF854050U);
+	assert(pixels[offset + 3] == palette[3]);
+	assert(pixels[offset - 1] == palette[3]);
+	assert(pixels[offset + 4] == palette[3]);
+	assert(pixels[offset - HIRES_WIDTH] == palette[3]);
+	assert(pixels[offset + 4 * HIRES_WIDTH] == palette[3]);
+	assert_block(&screen, 50, 60, 3);
+	assert(hires_begin(&clipped));
+	assert(hires_shadow_begin());
+	hires_shadow_pixel(200, 240, 255);
+	hires_end();
+	assert(hires_framebuffer_argb(screen.base, palette)[offset] == 0xFF000000U);
+	/* Ordinary painting must still clear the shadow and its ARGB bookkeeping. */
+	write_pixel(&screen, 50, 60, 3);
+	assert(hires_framebuffer_argb(screen.base, palette) == NULL);
+	hires_forget(screen.base);
+}
+
 int main(void)
 {
 	struct TEST_SURFACE screen;
@@ -653,6 +715,7 @@ int main(void)
 	test_logical_pixel_fill();
 	test_raster_target_aliases();
 	test_raster_bands();
+	test_shadow_composition();
 	test_depth_lifetime(&screen);
 	hires_shutdown();
 	puts("SDL3 high-resolution composition tests passed.");

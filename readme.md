@@ -91,6 +91,14 @@ surrounding menu UI retain their original pixel detail and size. SuperSight clip
 custom dashboards and the 3D view above visible replay controls so they remain
 unobstructed. Switching SuperSight off restores 320x200 rendering and the original
 dashboard layout.
+
+In SDL3 builds, SuperSight adds car-shaped shadows on nearby surfaces below
+each car. Small cached silhouettes follow the model's size, body, wheels, and
+suspension. Light comes from the south at about 70 degrees above the horizon,
+with a short northward extension and soft edges. Shadows shrink as the car
+rises above the surface. Cars do not receive shadows, ghosts do not cast them,
+and the viewed car's own shadow is hidden in the F1 cockpit camera.
+
 SuperSight also uses [AI-refined skybox artwork](docs/skyboxes/README.md), with
 each horizon image at four times its original width and height. Switching it
 off restores the original skybox artwork. Missing enhanced PNGs fall back to

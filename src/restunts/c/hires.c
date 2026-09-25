@@ -97,7 +97,10 @@ static void hires_release_unused_argb(struct HIRES_SURFACE *surface)
 static legacy_s32 hires_allocate_argb(struct HIRES_SURFACE *surface)
 {
 	if (surface->argb == NULL) {
-		surface->argb = calloc(HIRES_ADDRESS_COUNT * HIRES_CELL_PIXELS, sizeof(*surface->argb));
+		/* ARGB writers initialize each cell before marking it valid. A small
+		 * overlay must not clear the entire four-megabyte buffer every frame. */
+		surface->argb =
+			malloc((size_t)HIRES_ADDRESS_COUNT * HIRES_CELL_PIXELS * sizeof(*surface->argb));
 	}
 	return surface->argb != NULL;
 }
@@ -443,14 +446,14 @@ void hires_fill_pixel(legacy_s32 x, legacy_s32 y, legacy_u8 color)
 	hires_clear_argb(active, offset);
 }
 
-void hires_argb_pixel(legacy_s32 x, legacy_s32 y, legacy_u32 color)
+static legacy_u32 *hires_argb_sample(legacy_s32 x, legacy_s32 y)
 {
 	if (active == NULL || active->argb == NULL || x < 0 || y < 0 || x >= HIRES_WIDTH ||
 		y >= HIRES_HEIGHT || x < active_sprite.sprite_raster_left * HIRES_SCALE ||
 		x >= active_sprite.sprite_raster_right * HIRES_SCALE ||
 		y < active_sprite.sprite_top * HIRES_SCALE ||
 		y >= active_sprite.sprite_bottom * HIRES_SCALE) {
-		return;
+		return NULL;
 	}
 	legacy_u16 row = LEGACY_READ_U16_LE(active_sprite.sprite_lineofs + (y / HIRES_SCALE) * 2);
 	legacy_u16 offset = (legacy_u16)(row + x / HIRES_SCALE);
@@ -460,7 +463,41 @@ void hires_argb_pixel(legacy_s32 x, legacy_s32 y, legacy_u32 color)
 		active->valid[offset] = 2;
 		active->argb_cells++;
 	}
-	cell[(y % HIRES_SCALE) * HIRES_SCALE + x % HIRES_SCALE] = color;
+	return cell + (y % HIRES_SCALE) * HIRES_SCALE + x % HIRES_SCALE;
+}
+
+void hires_argb_pixel(legacy_s32 x, legacy_s32 y, legacy_u32 color)
+{
+	legacy_u32 *sample = hires_argb_sample(x, y);
+	if (sample != NULL) {
+		*sample = color;
+	}
+}
+
+legacy_s32 hires_shadow_begin(void)
+{
+	return enabled && active != NULL && hires_allocate_argb(active);
+}
+
+void hires_shadow_pixel(legacy_s32 x, legacy_s32 y, legacy_u8 opacity)
+{
+	if (opacity == 0) {
+		return;
+	}
+	legacy_u32 *sample = hires_argb_sample(x, y);
+	if (sample == NULL) {
+		return;
+	}
+	/* Store black over the existing straight-alpha overlay. Its transparent
+	 * portion continues to reveal the unchanged indexed sample underneath. */
+	legacy_u32 retained = (*sample >> 24) * (255U - opacity);
+	legacy_u32 alpha = opacity + retained / 255U;
+	legacy_u32 color = alpha << 24;
+	for (legacy_u32 shift = 0; shift < 24; shift += 8) {
+		legacy_u32 channel = ((*sample >> shift) & 255U) * retained / (alpha * 255U);
+		color |= channel << shift;
+	}
+	*sample = color;
 }
 
 void hires_write(const legacy_u8 *base, legacy_u16 offset, legacy_u8 color)
@@ -680,30 +717,49 @@ const legacy_u32 *hires_framebuffer_argb(const legacy_u8 *legacy, const legacy_u
 	/* Palette entry 15 is the menu's white. Match its fade so artwork follows
 	 * the same black-to-white transition as the original indexed pixels. */
 	legacy_u32 fade = palette[15];
-	for (legacy_s32 y = 0; y < HIRES_HEIGHT; y++) {
-		for (legacy_s32 x = 0; x < HIRES_WIDTH; x++) {
-			legacy_u32 offset = (y / HIRES_SCALE) * 320 + x / HIRES_SCALE;
-			legacy_u32 sample = (y % HIRES_SCALE) * HIRES_SCALE + x % HIRES_SCALE;
-			legacy_u8 index = surface->valid[offset] != 0
-								  ? surface->pixels[offset * HIRES_CELL_PIXELS + sample]
-								  : legacy[offset];
-			legacy_u32 background = palette[index];
-			legacy_u32 color = surface->valid[offset] == 2
-								   ? surface->argb[offset * HIRES_CELL_PIXELS + sample]
-								   : 0;
-			legacy_u32 alpha = color >> 24;
-			if (alpha == 0) {
-				argb_framebuffer[y * HIRES_WIDTH + x] = background;
+	for (legacy_s32 y = 0; y < HIRES_HEIGHT / HIRES_SCALE; y++) {
+		for (legacy_s32 x = 0; x < HIRES_WIDTH / HIRES_SCALE; x++) {
+			legacy_u32 offset = y * 320 + x;
+			const legacy_u8 *indices = surface->pixels + offset * HIRES_CELL_PIXELS;
+			legacy_u32 *output = argb_framebuffer + y * HIRES_SCALE * HIRES_WIDTH + x * HIRES_SCALE;
+			if (surface->valid[offset] != 2) {
+				/* Most cells have no full-color overlay. Convert their palette
+				 * samples directly, without per-sample alpha/fade bookkeeping. */
+				for (legacy_s32 row = 0; row < HIRES_SCALE; row++) {
+					for (legacy_s32 column = 0; column < HIRES_SCALE; column++) {
+						legacy_u8 index = surface->valid[offset] != 0
+											  ? indices[row * HIRES_SCALE + column]
+											  : legacy[offset];
+						output[column] = palette[index];
+					}
+					output += HIRES_WIDTH;
+				}
 				continue;
 			}
-			legacy_u32 output = 0xFF000000U;
-			for (legacy_s32 shift = 0; shift < 24; shift += 8) {
-				legacy_u32 channel = ((color >> shift) & 255U) * ((fade >> shift) & 255U) / 255U;
-				channel =
-					(channel * alpha + ((background >> shift) & 255U) * (255U - alpha)) / 255U;
-				output |= channel << shift;
+			const legacy_u32 *colors = surface->argb + offset * HIRES_CELL_PIXELS;
+			for (legacy_s32 row = 0; row < HIRES_SCALE; row++) {
+				for (legacy_s32 column = 0; column < HIRES_SCALE; column++) {
+					legacy_u32 sample = row * HIRES_SCALE + column;
+					legacy_u32 background = palette[indices[sample]];
+					legacy_u32 color = colors[sample];
+					legacy_u32 alpha = color >> 24;
+					if (alpha == 0) {
+						output[column] = background;
+						continue;
+					}
+					legacy_u32 blended = 0xFF000000U;
+					for (legacy_s32 shift = 0; shift < 24; shift += 8) {
+						legacy_u32 channel =
+							((color >> shift) & 255U) * ((fade >> shift) & 255U) / 255U;
+						channel =
+							(channel * alpha + ((background >> shift) & 255U) * (255U - alpha)) /
+							255U;
+						blended |= channel << shift;
+					}
+					output[column] = blended;
+				}
+				output += HIRES_WIDTH;
 			}
-			argb_framebuffer[y * HIRES_WIDTH + x] = output;
 		}
 	}
 	return argb_framebuffer;
