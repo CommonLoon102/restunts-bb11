@@ -1292,6 +1292,95 @@ static void test_shared_edge_near_clipping(void)
 	}
 }
 
+/* A concave outline has four active edges below the notch. The left edge
+ * ends and restarts exactly where the notch begins, and the final vertex
+ * repeats the first. Pixel-center ties must survive clipping and batching. */
+static void test_concave_polygon_scanlines(void)
+{
+	enum {
+		CONCAVE_LEFT = 180,
+		CONCAVE_RIGHT = 1060,
+		CONCAVE_TOP = 63,
+		CONCAVE_BOTTOM = 703,
+		CONCAVE_NOTCH_LEFT = 420,
+		CONCAVE_NOTCH_RIGHT = 820,
+		CONCAVE_NOTCH_TOP = 383,
+		CONCAVE_COLOR = 7,
+		CONCAVE_BACKGROUND = 3,
+		CONCAVE_CLIP_LEFT = 40,
+		CONCAVE_CLIP_RIGHT = 240,
+		CONCAVE_CLIP_TOP = 25,
+		CONCAVE_CLIP_BOTTOM = 175,
+		CONCAVE_VERTEX_COUNT = 10
+	};
+	const legacy_s32 outline[CONCAVE_VERTEX_COUNT][2] = {{CONCAVE_LEFT, CONCAVE_TOP},
+														 {CONCAVE_RIGHT, CONCAVE_TOP},
+														 {CONCAVE_RIGHT, CONCAVE_BOTTOM},
+														 {CONCAVE_NOTCH_RIGHT, CONCAVE_BOTTOM},
+														 {CONCAVE_NOTCH_RIGHT, CONCAVE_NOTCH_TOP},
+														 {CONCAVE_NOTCH_LEFT, CONCAVE_NOTCH_TOP},
+														 {CONCAVE_NOTCH_LEFT, CONCAVE_BOTTOM},
+														 {CONCAVE_LEFT, CONCAVE_BOTTOM},
+														 {CONCAVE_LEFT, CONCAVE_NOTCH_TOP},
+														 {CONCAVE_LEFT, CONCAVE_TOP}};
+	struct SHAPE3D_HIRES_VECTOR vertices[CONCAVE_VERTEX_COUNT];
+	legacy_u8 indices[CONCAVE_VERTEX_COUNT];
+	for (legacy_s32 collapsed = 0; collapsed < 2; collapsed++) {
+		for (legacy_u32 index = 0; index < CONCAVE_VERTEX_COUNT; index++) {
+			vertices[index].x =
+				outline[index][0] + HIRES_SAMPLE_CENTER_OFFSET - projection_center_x * HIRES_SCALE;
+			vertices[index].y =
+				projection_center_y * HIRES_SCALE -
+				((collapsed ? CONCAVE_TOP : outline[index][1]) + HIRES_SAMPLE_CENTER_OFFSET);
+			vertices[index].z = projection_focal_length_x * HIRES_SCALE;
+		}
+		for (legacy_s32 winding = 0; winding < 2; winding++) {
+			for (legacy_u32 index = 0; index < CONCAVE_VERTEX_COUNT; index++) {
+				indices[index] = (legacy_u8)(winding ? CONCAVE_VERTEX_COUNT - 1 - index : index);
+			}
+			for (legacy_s32 clipped = 0; clipped < 2; clipped++) {
+				target.sprite_raster_left = clipped ? CONCAVE_CLIP_LEFT : 0;
+				target.sprite_raster_right =
+					clipped ? CONCAVE_CLIP_RIGHT : HIRES_WIDTH / HIRES_SCALE;
+				target.sprite_top = clipped ? CONCAVE_CLIP_TOP : 0;
+				target.sprite_bottom = clipped ? CONCAVE_CLIP_BOTTOM : HIRES_HEIGHT / HIRES_SCALE;
+				for (legacy_s32 batched = 0; batched < 2; batched++) {
+					reset_target();
+					shape3d_hires_queue(0, RENDER_PRIMITIVE_POLYGON, CONCAVE_VERTEX_COUNT, indices,
+										vertices, 0);
+					if (batched) {
+						shape3d_hires_batch_begin();
+					}
+					shape3d_hires_render(0, RENDER_PRIMITIVE_POLYGON, CONCAVE_COLOR, 0, 0, 0, 0);
+					if (batched) {
+						shape3d_hires_batch_end();
+					}
+					hires_end();
+					const legacy_u8 *image = pixels();
+					for (legacy_s32 y = 0; y < HIRES_HEIGHT; y++) {
+						for (legacy_s32 x = 0; x < HIRES_WIDTH; x++) {
+							legacy_s32 covered = !collapsed && x >= CONCAVE_LEFT &&
+												 x < CONCAVE_RIGHT && y >= CONCAVE_TOP &&
+												 y < CONCAVE_BOTTOM &&
+												 (y < CONCAVE_NOTCH_TOP || x < CONCAVE_NOTCH_LEFT ||
+												  x >= CONCAVE_NOTCH_RIGHT) &&
+												 x >= target.sprite_raster_left * HIRES_SCALE &&
+												 x < target.sprite_raster_right * HIRES_SCALE &&
+												 y >= target.sprite_top * HIRES_SCALE &&
+												 y < target.sprite_bottom * HIRES_SCALE;
+							assert(image[y * HIRES_WIDTH + x] ==
+								   (covered ? CONCAVE_COLOR : CONCAVE_BACKGROUND));
+						}
+					}
+				}
+			}
+		}
+	}
+	target.sprite_raster_left = target.sprite_top = 0;
+	target.sprite_raster_right = HIRES_WIDTH / HIRES_SCALE;
+	target.sprite_bottom = HIRES_HEIGHT / HIRES_SCALE;
+}
+
 static void test_supersight_full_scene_queue(void)
 {
 	/* A dense scene exceeds both the old byte buffer and every 16-bit index.
@@ -1836,6 +1925,7 @@ legacy_int main(void)
 	test_joined_track_surfaces();
 	test_shared_edge_pixel_coverage();
 	test_shared_edge_near_clipping();
+	test_concave_polygon_scanlines();
 	test_parallel_batches_match_serial();
 	test_car_shadow_stays_below_and_shrinks();
 	test_car_shadow_model_details_and_north_light();
