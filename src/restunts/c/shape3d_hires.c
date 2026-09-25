@@ -24,6 +24,14 @@
 #define HIRES_DECAL_WIDTH_REDUCTION 2
 #define HIRES_MAX_POLYGON_POINTS 20
 #define HIRES_ROUND_POINTS 64
+#define HIRES_ROUND_SMALL_POINTS 8U
+#define HIRES_ROUND_MEDIUM_POINTS 16U
+#define HIRES_ROUND_LARGE_POINTS 32U
+#define HIRES_ROUND_SMALL_RADIUS 3.0
+#define HIRES_ROUND_MEDIUM_RADIUS 12.0
+#define HIRES_ROUND_LARGE_RADIUS 48.0
+#define HIRES_SPHERE_HORIZONTAL_SCALE 0.5
+#define HIRES_SPHERE_VERTICAL_SCALE (13.0 / 32.0)
 #define HIRES_DIRECT_POLYGON_EDGE_LIMIT 4U
 #define HIRES_WHEEL_INNER_SCALE (9472.0 / TRIG_FIXED_ONE)
 
@@ -31,6 +39,7 @@ struct HIRES_PRIMITIVE {
 	struct SHAPE3D_HIRES_POINT points[HIRES_MAX_POLYGON_POINTS];
 	legacy_u32 count;
 	legacy_u32 wheel_face;
+	legacy_u32 round_points;
 	legacy_u32 shape;
 	legacy_u32 family;
 	legacy_s32 attached;
@@ -377,6 +386,7 @@ static void queue_primitive(legacy_u32 index, legacy_u8 type, legacy_u16 vertex_
 	struct HIRES_PRIMITIVE *primitive = &primitives[index];
 	primitive->count = 0;
 	primitive->size = 0;
+	primitive->round_points = HIRES_ROUND_POINTS;
 	if (!hires_enabled() || vertex_count == 0 || vertex_count > HIRES_MAX_POLYGON_POINTS / 2) {
 		return;
 	}
@@ -435,6 +445,24 @@ static void queue_primitive(legacy_u32 index, legacy_u8 type, legacy_u16 vertex_
 	}
 }
 
+static legacy_u32 round_point_count(legacy_f64 radius_squared)
+{
+	/* The squared sum of both projected axes bounds the squared ellipse
+	 * radius, including skewed wheels. At radii 3, 12 and 48 the existing
+	 * fixed-point perimeter deviates from 8, 16 and 32 chords by less than
+	 * one quarter of a high-resolution pixel. All levels share its angles. */
+	if (radius_squared <= HIRES_ROUND_SMALL_RADIUS * HIRES_ROUND_SMALL_RADIUS) {
+		return HIRES_ROUND_SMALL_POINTS;
+	}
+	if (radius_squared <= HIRES_ROUND_MEDIUM_RADIUS * HIRES_ROUND_MEDIUM_RADIUS) {
+		return HIRES_ROUND_MEDIUM_POINTS;
+	}
+	if (radius_squared <= HIRES_ROUND_LARGE_RADIUS * HIRES_ROUND_LARGE_RADIUS) {
+		return HIRES_ROUND_LARGE_POINTS;
+	}
+	return HIRES_ROUND_POINTS;
+}
+
 void shape3d_hires_queue(legacy_u32 index, legacy_u8 type, legacy_u16 vertex_count,
 						 const legacy_u8 *indices, const struct SHAPE3D_HIRES_VECTOR *vertices,
 						 legacy_u16 flags)
@@ -445,6 +473,22 @@ void shape3d_hires_queue(legacy_u32 index, legacy_u8 type, legacy_u16 vertex_cou
 	}
 	struct HIRES_PRIMITIVE *primitive = &primitives[index];
 	primitive->shape = current_shape;
+	if (shapes[current_shape].depth_mode != SHAPE3D_HIRES_DEPTH_BACKGROUND) {
+		if (type == RENDER_PRIMITIVE_WHEEL) {
+			legacy_f64 first_x = primitive->points[1].x - primitive->points[0].x;
+			legacy_f64 first_y = primitive->points[1].y - primitive->points[0].y;
+			legacy_f64 second_x = primitive->points[2].x - primitive->points[0].x;
+			legacy_f64 second_y = primitive->points[2].y - primitive->points[0].y;
+			/* The inner rim is smaller; the tread's far perimeter is translated. */
+			primitive->round_points = round_point_count(first_x * first_x + first_y * first_y +
+														second_x * second_x + second_y * second_y);
+		} else if (type == RENDER_PRIMITIVE_SPHERE) {
+			legacy_f64 horizontal = primitive->size * HIRES_SPHERE_HORIZONTAL_SCALE;
+			legacy_f64 vertical = primitive->size * HIRES_SPHERE_VERTICAL_SCALE;
+			primitive->round_points =
+				round_point_count(horizontal * horizontal + vertical * vertical);
+		}
+	}
 	primitive->attached = (flags & SHAPE3D_PRIMITIVE_SKIP_DEPTH_SORT_FLAG) != 0;
 	if (type == RENDER_PRIMITIVE_POLYGON && primitive->attached) {
 		primitive->size = polygon_padding(primitive->points, primitive->count);
@@ -477,10 +521,10 @@ void shape3d_hires_update_bounds(legacy_u32 index, legacy_u8 type, struct RECTAN
 	legacy_f64 minimum_y = primitive->points[0].y;
 	legacy_f64 maximum_y = minimum_y;
 	if (type == RENDER_PRIMITIVE_SPHERE) {
-		minimum_x -= primitive->size * 0.5;
-		maximum_x += primitive->size * 0.5;
-		minimum_y -= primitive->size * (13.0 / 32.0);
-		maximum_y += primitive->size * (13.0 / 32.0);
+		minimum_x -= primitive->size * HIRES_SPHERE_HORIZONTAL_SCALE;
+		maximum_x += primitive->size * HIRES_SPHERE_HORIZONTAL_SCALE;
+		minimum_y -= primitive->size * HIRES_SPHERE_VERTICAL_SCALE;
+		maximum_y += primitive->size * HIRES_SPHERE_VERTICAL_SCALE;
 	} else if (type == RENDER_PRIMITIVE_WHEEL) {
 		/* The sum of the two axis magnitudes bounds every perimeter point,
 		 * including tilted ellipses and the far edge of the tread. */
@@ -984,10 +1028,11 @@ static void draw_polygon(const struct SHAPE3D_HIRES_POINT *points, legacy_u32 co
 static void build_perimeter(const struct SHAPE3D_HIRES_POINT *center,
 							const struct SHAPE3D_HIRES_POINT *first_axis,
 							const struct SHAPE3D_HIRES_POINT *second_axis, legacy_f64 scale,
-							struct SHAPE3D_HIRES_POINT *points)
+							legacy_u32 count, struct SHAPE3D_HIRES_POINT *points)
 {
-	for (legacy_u32 index = 0; index < HIRES_ROUND_POINTS; index++) {
-		legacy_s16 angle = (legacy_s16)(index * ANGLE_FULL_TURN / HIRES_ROUND_POINTS);
+	legacy_u32 angle_step = ANGLE_FULL_TURN / count;
+	for (legacy_u32 index = 0; index < count; index++) {
+		legacy_s16 angle = (legacy_s16)(index * angle_step);
 		legacy_f64 cosine = cos_fast(angle) * scale / TRIG_FIXED_ONE;
 		legacy_f64 sine = sin_fast(angle) * scale / TRIG_FIXED_ONE;
 		points[index].x =
@@ -1005,25 +1050,28 @@ static void draw_sphere(const struct HIRES_PRIMITIVE *primitive, const struct HI
 	struct SHAPE3D_HIRES_POINT points[HIRES_ROUND_POINTS];
 	struct SHAPE3D_HIRES_POINT horizontal = primitive->points[0];
 	struct SHAPE3D_HIRES_POINT vertical = horizontal;
-	horizontal.x += primitive->size * 0.5;
-	vertical.y += primitive->size * (13.0 / 32.0);
-	build_perimeter(&primitive->points[0], &horizontal, &vertical, 1, points);
-	draw_polygon(points, HIRES_ROUND_POINTS, 0, paint);
+	horizontal.x += primitive->size * HIRES_SPHERE_HORIZONTAL_SCALE;
+	vertical.y += primitive->size * HIRES_SPHERE_VERTICAL_SCALE;
+	build_perimeter(&primitive->points[0], &horizontal, &vertical, 1, primitive->round_points,
+					points);
+	draw_polygon(points, primitive->round_points, 0, paint);
 }
 
 static void draw_wheel(const struct HIRES_PRIMITIVE *primitive, struct HIRES_PAINT paint,
 					   legacy_u16 side_color, legacy_u16 inner_color)
 {
+	legacy_u32 count = primitive->round_points;
 	struct SHAPE3D_HIRES_POINT outer[HIRES_ROUND_POINTS];
 	struct SHAPE3D_HIRES_POINT inner[HIRES_ROUND_POINTS];
-	build_perimeter(&primitive->points[0], &primitive->points[1], &primitive->points[2], 1, outer);
+	build_perimeter(&primitive->points[0], &primitive->points[1], &primitive->points[2], 1, count,
+					outer);
 	build_perimeter(&primitive->points[0], &primitive->points[1], &primitive->points[2],
-					HIRES_WHEEL_INNER_SCALE, inner);
+					HIRES_WHEEL_INNER_SCALE, count, inner);
 	legacy_f64 depth_x = primitive->points[3].x - primitive->points[0].x;
 	legacy_f64 depth_y = primitive->points[3].y - primitive->points[0].y;
 	legacy_f64 depth_z = primitive->points[3].inverse_z - primitive->points[0].inverse_z;
-	for (legacy_u32 index = 0; index < HIRES_ROUND_POINTS; index++) {
-		legacy_u32 next = (index + 1) % HIRES_ROUND_POINTS;
+	for (legacy_u32 index = 0; index < count; index++) {
+		legacy_u32 next = index + 1 == count ? 0 : index + 1;
 		struct SHAPE3D_HIRES_POINT side[4] = {outer[index], outer[next], outer[next], outer[index]};
 		side[2].x += depth_x;
 		side[2].y += depth_y;
@@ -1034,13 +1082,13 @@ static void draw_wheel(const struct HIRES_PRIMITIVE *primitive, struct HIRES_PAI
 		draw_polygon(side, 4, 0, &paint);
 	}
 	paint.color = side_color;
-	for (legacy_u32 index = 0; index < HIRES_ROUND_POINTS; index++) {
-		legacy_u32 next = (index + 1) % HIRES_ROUND_POINTS;
+	for (legacy_u32 index = 0; index < count; index++) {
+		legacy_u32 next = index + 1 == count ? 0 : index + 1;
 		struct SHAPE3D_HIRES_POINT rim[4] = {outer[index], outer[next], inner[next], inner[index]};
 		draw_polygon(rim, 4, 0, &paint);
 	}
 	paint.color = inner_color;
-	draw_polygon(inner, HIRES_ROUND_POINTS, 0, &paint);
+	draw_polygon(inner, count, 0, &paint);
 }
 
 static void render_primitive(legacy_u32 index, legacy_u8 type, legacy_u16 color,
