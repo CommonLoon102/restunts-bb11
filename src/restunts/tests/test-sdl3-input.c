@@ -36,6 +36,21 @@ const legacy_u8 *hires_framebuffer(const legacy_u8 *legacy, legacy_s32 *width, l
 	return high_resolution_active ? high_resolution_framebuffer : legacy;
 }
 
+void hires_copy_framebuffer_argb(const legacy_u8 *legacy, const legacy_u32 *palette,
+								 legacy_u32 *destination, legacy_s32 pitch)
+{
+	legacy_s32 width, height;
+	const legacy_u8 *indexed = hires_framebuffer(legacy, &width, &height);
+	const legacy_u32 *argb = hires_framebuffer_argb(legacy, palette);
+	for (legacy_s32 row = 0; row < height; row++) {
+		legacy_u32 *output = (legacy_u32 *)((legacy_u8 *)destination + (size_t)row * pitch);
+		for (legacy_s32 column = 0; column < width; column++) {
+			size_t pixel = (size_t)row * width + column;
+			output[column] = argb != NULL ? argb[pixel] : palette[indexed[pixel]];
+		}
+	}
+}
+
 legacy_u32 hires_generation(void)
 {
 	return frame_generation;

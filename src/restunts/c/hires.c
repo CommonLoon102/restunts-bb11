@@ -879,39 +879,33 @@ const legacy_u8 *hires_framebuffer(const legacy_u8 *legacy, legacy_s32 *width, l
 	return framebuffer;
 }
 
-const legacy_u32 *hires_framebuffer_argb(const legacy_u8 *legacy, const legacy_u32 *palette)
+static void hires_compose_argb(const legacy_u8 *legacy, const legacy_u32 *palette,
+							   const struct HIRES_SURFACE *surface, legacy_u32 *destination,
+							   legacy_s32 pitch)
 {
-	struct HIRES_SURFACE *surface = enabled ? hires_find(legacy) : NULL;
-	if (surface == NULL || surface->argb_cells == 0) {
-		free(argb_framebuffer);
-		argb_framebuffer = NULL;
-		return NULL;
-	}
-	if (argb_framebuffer == NULL) {
-		argb_framebuffer = malloc((size_t)HIRES_WIDTH * HIRES_HEIGHT * sizeof(*argb_framebuffer));
-		if (argb_framebuffer == NULL) {
-			return NULL;
-		}
-	}
 	/* Palette entry 15 is the menu's white. Match its fade so artwork follows
 	 * the same black-to-white transition as the original indexed pixels. */
 	legacy_u32 fade = palette[HIRES_MENU_WHITE_INDEX];
 	for (legacy_s32 y = 0; y < HIRES_HEIGHT / HIRES_SCALE; y++) {
 		for (legacy_s32 x = 0; x < HIRES_WIDTH / HIRES_SCALE; x++) {
 			legacy_u32 offset = y * (HIRES_WIDTH / HIRES_SCALE) + x;
-			const legacy_u8 *indices = surface->pixels + offset * HIRES_CELL_PIXELS;
-			legacy_u32 *output = argb_framebuffer + y * HIRES_SCALE * HIRES_WIDTH + x * HIRES_SCALE;
-			if (surface->valid[offset] != HIRES_CELL_ARGB) {
+			legacy_u8 valid = surface != NULL ? surface->valid[offset] : HIRES_CELL_EMPTY;
+			const legacy_u8 *indices =
+				valid != HIRES_CELL_EMPTY ? surface->pixels + offset * HIRES_CELL_PIXELS : NULL;
+			legacy_u32 *output =
+				(legacy_u32 *)((legacy_u8 *)destination + y * HIRES_SCALE * pitch) +
+				x * HIRES_SCALE;
+			if (valid != HIRES_CELL_ARGB) {
 				/* Most cells have no full-color overlay. Convert their palette
 				 * samples directly, without per-sample alpha/fade bookkeeping. */
 				for (legacy_s32 row = 0; row < HIRES_SCALE; row++) {
 					for (legacy_s32 column = 0; column < HIRES_SCALE; column++) {
-						legacy_u8 index = surface->valid[offset] != 0
+						legacy_u8 index = valid != HIRES_CELL_EMPTY
 											  ? indices[row * HIRES_SCALE + column]
 											  : legacy[offset];
 						output[column] = palette[index];
 					}
-					output += HIRES_WIDTH;
+					output = (legacy_u32 *)((legacy_u8 *)output + pitch);
 				}
 				continue;
 			}
@@ -938,9 +932,42 @@ const legacy_u32 *hires_framebuffer_argb(const legacy_u8 *legacy, const legacy_u
 					}
 					output[column] = blended;
 				}
-				output += HIRES_WIDTH;
+				output = (legacy_u32 *)((legacy_u8 *)output + pitch);
 			}
 		}
 	}
+}
+
+void hires_copy_framebuffer_argb(const legacy_u8 *legacy, const legacy_u32 *palette,
+								 legacy_u32 *destination, legacy_s32 pitch)
+{
+	if (enabled) {
+		hires_compose_argb(legacy, palette, hires_find(legacy), destination, pitch);
+		return;
+	}
+	for (legacy_s32 row = 0; row < HIRES_HEIGHT / HIRES_SCALE; row++) {
+		legacy_u32 *output = (legacy_u32 *)((legacy_u8 *)destination + row * pitch);
+		for (legacy_s32 column = 0; column < HIRES_WIDTH / HIRES_SCALE; column++) {
+			output[column] = palette[legacy[row * (HIRES_WIDTH / HIRES_SCALE) + column]];
+		}
+	}
+}
+
+const legacy_u32 *hires_framebuffer_argb(const legacy_u8 *legacy, const legacy_u32 *palette)
+{
+	struct HIRES_SURFACE *surface = enabled ? hires_find(legacy) : NULL;
+	if (surface == NULL || surface->argb_cells == 0) {
+		free(argb_framebuffer);
+		argb_framebuffer = NULL;
+		return NULL;
+	}
+	if (argb_framebuffer == NULL) {
+		argb_framebuffer = malloc((size_t)HIRES_WIDTH * HIRES_HEIGHT * sizeof(*argb_framebuffer));
+		if (argb_framebuffer == NULL) {
+			return NULL;
+		}
+	}
+	hires_compose_argb(legacy, palette, surface, argb_framebuffer,
+					   HIRES_WIDTH * sizeof(*argb_framebuffer));
 	return argb_framebuffer;
 }

@@ -238,9 +238,10 @@ static void present_surface(const legacy_u8 *pixels, const legacy_u32 *argb, leg
 	}
 }
 
-static void present_texture(const legacy_u8 *pixels, const legacy_u32 *argb, legacy_s32 width,
-							legacy_s32 height)
+static void present_texture(const legacy_u8 *legacy_pixels)
 {
+	legacy_s32 width = hires_enabled() ? HIRES_WIDTH : SDL3_SCREEN_WIDTH;
+	legacy_s32 height = hires_enabled() ? HIRES_HEIGHT : SDL3_SCREEN_HEIGHT;
 	if (texture == NULL || texture_width != width || texture_height != height) {
 		SDL_DestroyTexture(texture);
 		texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING,
@@ -257,17 +258,7 @@ static void present_texture(const legacy_u8 *pixels, const legacy_u32 *argb, leg
 	if (!SDL_LockTexture(texture, NULL, &texture_pixels, &pitch)) {
 		video_fail("Lock video texture");
 	}
-	for (legacy_s32 row = 0; row < height; row++) {
-		legacy_u32 *destination = (legacy_u32 *)((legacy_u8 *)texture_pixels + row * pitch);
-		if (argb != NULL) {
-			memcpy(destination, argb + row * width, (size_t)width * sizeof(*destination));
-			continue;
-		}
-		const legacy_u8 *source = pixels + row * width;
-		for (legacy_s32 column = 0; column < width; column++) {
-			destination[column] = palette_pixels[source[column]];
-		}
-	}
+	hires_copy_framebuffer_argb(legacy_pixels, palette_pixels, texture_pixels, pitch);
 	SDL_UnlockTexture(texture);
 	if (!SDL_RenderClear(renderer) || !SDL_RenderTexture(renderer, texture, NULL, NULL) ||
 		!SDL_RenderPresent(renderer)) {
@@ -286,21 +277,21 @@ void sdl3_video_present(void)
 	}
 #endif
 	const legacy_u8 *legacy_pixels = dos_memory_make_pointer(VGA_MEMORY_SEGMENT, 0);
-	legacy_s32 width;
-	legacy_s32 height;
-	const legacy_u32 *argb = hires_framebuffer_argb(legacy_pixels, palette_pixels);
-	const legacy_u8 *pixels = NULL;
-	if (argb != NULL) {
-		/* ARGB composition already expands every indexed sample. */
-		width = HIRES_WIDTH;
-		height = HIRES_HEIGHT;
-	} else {
-		pixels = hires_framebuffer(legacy_pixels, &width, &height);
-	}
 	if (surface_output) {
+		legacy_s32 width;
+		legacy_s32 height;
+		const legacy_u32 *argb = hires_framebuffer_argb(legacy_pixels, palette_pixels);
+		const legacy_u8 *pixels = NULL;
+		if (argb != NULL) {
+			/* ARGB composition already expands every indexed sample. */
+			width = HIRES_WIDTH;
+			height = HIRES_HEIGHT;
+		} else {
+			pixels = hires_framebuffer(legacy_pixels, &width, &height);
+		}
 		present_surface(pixels, argb, width, height);
 	} else {
-		present_texture(pixels, argb, width, height);
+		present_texture(legacy_pixels);
 	}
 	memcpy(previous_pixels, legacy_pixels, SCREEN_BYTES);
 	previous_generation = hires_generation();
