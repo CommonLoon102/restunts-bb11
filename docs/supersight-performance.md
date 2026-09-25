@@ -124,3 +124,32 @@ identical tile/car checksums.
 
 These are preparation costs, not complete frame times. The dense fixture shows
 the benefit of avoiding repeated scans; sparse-map savings are much smaller.
+
+## Level skybox sampling
+
+An exactly level horizon reuses wrapped source columns across rows and source
+row pointers across columns. The original arithmetic and texel selection are
+preserved, including native artwork, original-resolution fallback, missing
+strips, clipping, altitude, and inverted views. Banked views retain the general
+renderer. Artwork, resolution, and sampling quality do not change.
+
+Twelve new full-image oracle cases use independent integer coordinates to check
+half-pixel horizons, inverted normals, altitude, clipping, missing/narrow strips,
+and one-unit banks that must continue through the general renderer. All pass,
+and the legacy framebuffer remains unchanged.
+
+Nine before/after fixtures matched byte for byte. Textured level fixtures
+contained 538,880 artwork pixels, so they exercised source sampling extensively.
+
+| Skybox workload | Before CPU ms | After CPU ms |
+| --- | ---: | ---: |
+| Level, enhanced artwork | 4.975 | 0.722 |
+| Level, original artwork | 5.566 | 0.724 |
+| Inverted, enhanced artwork | 4.476 | 0.754 |
+| Banked control | 5.675 | 5.721 |
+| Solid lowest-detail control | 0.578 | 0.387 |
+
+The level artwork cases used 83-87% less CPU; the general banked path was within
+observed timing drift. Three complete scene comparisons also matched output,
+but their timing changed in opposite directions (including a faster banked
+control), so they do not establish a complete-frame improvement.
