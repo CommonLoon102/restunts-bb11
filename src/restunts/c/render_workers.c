@@ -5,11 +5,14 @@
 #include <SDL3/SDL_cpuinfo.h>
 #include <SDL3/SDL_mutex.h>
 #include <SDL3/SDL_thread.h>
+#include <errno.h>
 #include <stdlib.h>
 
-/* Bound scheduling overhead for a one-megapixel software target. This is a
- * ceiling, not a CPU assumption: smaller machines use their detected count. */
+/* Serial rendering avoids worker scheduling overhead by default. Explicit
+ * requests and automatic CPU detection share a bounded worker pool. */
+#define RENDER_DEFAULT_WORKERS 0
 #define RENDER_MAX_WORKERS 7
+#define RENDER_WORKERS_AUTO "auto"
 
 struct RENDER_WORKER {
 	SDL_Thread *thread;
@@ -50,24 +53,35 @@ static int SDLCALL worker_main(void *argument)
 	}
 }
 
+static int requested_workers(void)
+{
+	const char *setting = SDL_getenv("RESTUNTS_RENDER_WORKERS");
+	if (setting == NULL || *setting == 0) {
+		return RENDER_DEFAULT_WORKERS;
+	}
+	if (SDL_strcmp(setting, RENDER_WORKERS_AUTO) == 0) {
+		int cores = SDL_GetNumLogicalCPUCores();
+		if (cores <= 1) {
+			return RENDER_DEFAULT_WORKERS;
+		}
+		return cores - 1 > RENDER_MAX_WORKERS ? RENDER_MAX_WORKERS : cores - 1;
+	}
+	char *end;
+	errno = 0;
+	long value = strtol(setting, &end, 10);
+	if (errno != 0 || end == setting || *end != 0 || value < 0) {
+		return RENDER_DEFAULT_WORKERS;
+	}
+	return value > RENDER_MAX_WORKERS ? RENDER_MAX_WORKERS : (int)value;
+}
+
 static void initialize_workers(void)
 {
 	if (initialized) {
 		return;
 	}
 	initialized = 1;
-	int requested = SDL_GetNumLogicalCPUCores() - 1;
-	const char *setting = SDL_getenv("RESTUNTS_RENDER_WORKERS");
-	if (setting != NULL && *setting != 0) {
-		char *end;
-		long value = strtol(setting, &end, 10);
-		if (*end == 0 && value >= 0) {
-			requested = value > RENDER_MAX_WORKERS ? RENDER_MAX_WORKERS : (int)value;
-		}
-	}
-	if (requested > RENDER_MAX_WORKERS) {
-		requested = RENDER_MAX_WORKERS;
-	}
+	int requested = requested_workers();
 	if (requested <= 0) {
 		return;
 	}
@@ -109,7 +123,9 @@ void render_workers_shutdown(void)
 		workers[index].thread = NULL;
 		workers[index].start = NULL;
 	}
-	SDL_DestroySemaphore(completed);
+	if (completed != NULL) {
+		SDL_DestroySemaphore(completed);
+	}
 	completed = NULL;
 	worker_count = 0;
 	initialized = 0;

@@ -161,6 +161,24 @@ Windows uses the corresponding `.exe` names. Dump outputs and saved game data
 are written in the selected data directory, so it must be writable. Keep the
 original game resources and replay/car additions together there.
 
+On Linux and Windows, the interactive game defaults to serial rendering, pins
+itself to one allowed logical CPU before SDL initialization, and requests
+above-normal priority (Windows) or nice `-5` (Linux). Higher inherited priority
+is preserved. Linux may deny the priority increase without an appropriate
+`RLIMIT_NICE` or `CAP_SYS_NICE`; a diagnostic is printed and the game continues.
+DOS and dump tools do not alter affinity or priority.
+
+Set `RESTUNTS_CPU_AFFINITY=off` to retain inherited affinity, or give an allowed
+zero-based logical CPU number to select it explicitly. The default `auto` keeps
+the OS-selected CPU at startup if allowed, otherwise the first allowed CPU.
+Windows CPU numbers are relative to the current processor group.
+Set `RESTUNTS_HIGH_PRIORITY=0` to retain inherited priority.
+`RESTUNTS_RENDER_WORKERS=auto` restores automatic parallel rendering, or use a
+count from `0` through `7`. Disable pinning when testing multiple workers so they
+can use multiple CPUs. See the [scheduling and worker settings](../readme.md#supersight-and-fps-display)
+for Linux and PowerShell examples. These settings can reduce migration and
+synchronization overhead; they do not reserve a core or guarantee a frame rate.
+
 Desktop windows apply the VGA vertical 6:5 pixel-aspect correction: the original
 320x200 framebuffer fills a 4:3 image. Nearest-neighbour scaling preserves sharp
 pixel edges, and resizing adds black borders to retain that aspect. Renderer dump
@@ -205,8 +223,9 @@ with SSE2 disabled. Linux tests cover the platform layer and AdLib synthesis
 from a shipped instrument, plus existing host regressions. Audio tests check
 audible PCM, pitch, engine frequency, volume, modulation, key-off, native
 engine-definition pointers, unavailable-device fallback, and batch-mode cleanup.
-Windows CI runs platform, file I/O, input, audio, and dump regressions on Windows
-Server 2022; Windows 7 runtime compatibility still needs verification on that OS.
+Windows CI runs platform, scheduling, worker lifecycle, file I/O, input, audio,
+and dump regressions on Windows Server 2022; Windows 7 runtime compatibility
+still needs verification on that OS.
 The shared **PR validation** and **Release** workflows run the complete physics
 corpus and configurable renderer coverage for the selected platforms. Their
 `platforms` input is a nonempty JSON array of unique names from `dos` and

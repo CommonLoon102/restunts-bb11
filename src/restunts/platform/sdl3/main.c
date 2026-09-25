@@ -6,6 +6,7 @@
 #include <SDL3/SDL_main.h>
 #include "../../c/restunts.h"
 #include "sdl3.h"
+#include "scheduling.h"
 
 extern void full_data_initialize(void);
 extern legacy_s16 stuntsmain(legacy_s16 argc, legacy_s8 *argv[]);
@@ -47,6 +48,10 @@ int main(int argc, char **argv)
 		fputs("Too many arguments\n", stderr);
 		return 1;
 	}
+#if !defined(RESTUNTS_HEADLESS) && !defined(RESTUNTS_PIXLDUMP)
+	/* Linux affinity and nice values are inherited by newly created threads. */
+	sdl3_configure_process();
+#endif
 	if (!SDL_Init(0)) {
 		fprintf(stderr, "SDL initialization failed: %s\n", SDL_GetError());
 		return 1;

@@ -119,7 +119,7 @@ if(TARGET restunts_opl)
     target_link_libraries(restunts_game PRIVATE restunts_opl)
 endif()
 
-add_executable(restunts ${platform}/main.c)
+add_executable(restunts ${platform}/main.c ${platform}/scheduling.c)
 target_compile_definitions(restunts PRIVATE RESTUNTS_FULL)
 target_link_libraries(restunts PRIVATE restunts_game)
 
@@ -245,6 +245,11 @@ if(RESTUNTS_BUILD_TESTS AND TARGET restunts_opl)
 endif()
 
 if(RESTUNTS_BUILD_TESTS AND NOT CMAKE_SYSTEM_NAME STREQUAL "DOS")
+    if(WIN32 OR CMAKE_SYSTEM_NAME STREQUAL "Linux")
+        add_executable(test-sdl3-scheduling src/restunts/tests/test-sdl3-scheduling.c)
+        target_compile_options(test-sdl3-scheduling PRIVATE -UNDEBUG -Wall -Wextra)
+        add_test(NAME sdl3-scheduling COMMAND test-sdl3-scheduling)
+    endif()
     add_executable(test-render-workers src/restunts/tests/test-render-workers.c)
     target_link_libraries(test-render-workers PRIVATE restunts_options)
     target_compile_options(test-render-workers PRIVATE -UNDEBUG)
@@ -321,9 +326,9 @@ if(RESTUNTS_BUILD_TESTS AND TARGET nuked_opl2)
     install(TARGETS nuked_opl2
         RUNTIME DESTINATION bin COMPONENT Tests EXCLUDE_FROM_ALL
         LIBRARY DESTINATION lib COMPONENT Tests EXCLUDE_FROM_ALL)
-    install(TARGETS test-shape3d-hires test-skybox-hires test-track-preview-skybox
+    install(TARGETS test-shape3d-hires test-skybox-hires test-track-preview-skybox test-render-workers
         RUNTIME DESTINATION bin COMPONENT Tests EXCLUDE_FROM_ALL)
-    foreach(test platform audio audio-trace audio-definition audio-sequence input fileio hires)
+    foreach(test platform audio audio-trace audio-definition audio-sequence input fileio hires scheduling)
         if(TARGET test-sdl3-${test})
             install(TARGETS test-sdl3-${test}
                 RUNTIME DESTINATION bin COMPONENT Tests EXCLUDE_FROM_ALL)

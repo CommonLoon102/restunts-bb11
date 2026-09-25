@@ -139,20 +139,46 @@ follow confirmed gameplay events. Interpolated state never enters replay data;
 toggling F12 during a replay does not change its simulated result. Seeking,
 pausing, rewinding, and camera changes reset interpolation history.
 
-On Windows and Linux, SuperSight can draw separate screen regions concurrently.
-The game detects the logical CPU count at runtime and uses up to `n - 1`
-background workers, capped at seven; the main thread also draws, for at most
-eight rendering threads in total. Small scenes stay serial to avoid scheduling
-overhead. Drawing order and pixel coverage are preserved, and physics retains
-its original schedule. DOS continues to use the serial renderer.
+On Windows and Linux, SuperSight draws serially by default to avoid worker
+synchronization overhead. The interactive game also pins itself to one allowed
+logical CPU and requests above-normal priority before initializing SDL, so new
+threads inherit the settings. Automatic affinity keeps the CPU selected by the
+OS at startup when it is allowed, otherwise it selects the first allowed CPU.
+It stays on that CPU for this run; a later launch can select a different one.
+Existing affinity restrictions are respected, and stronger inherited priority
+is preserved. DOS and dump tools do not change affinity or priority.
 
-Set the `RESTUNTS_RENDER_WORKERS` environment variable to override the background
-worker count (`0` disables workers; `1` through `7` selects a count). For example,
-on Linux run `RESTUNTS_RENDER_WORKERS=1 ./out/sdl3-linux-x64/restunts --data-dir stunts`.
-Leaving it unset selects the automatic count. The limit bounds overhead for the
-1280x800 target; more threads are not always faster, especially on CPUs sharing
-execution resources or in busy virtual machines. If thread creation fails, the
-game uses the workers available or falls back to serial drawing.
+Windows uses `ABOVE_NORMAL_PRIORITY_CLASS`; Linux requests nice `-5` within the
+normal scheduler. Linux usually needs an administrator-configured `RLIMIT_NICE`
+or `CAP_SYS_NICE` to permit the priority increase. If either scheduling request
+fails, the game prints a diagnostic and continues; priority denial does not
+undo affinity. Affinity does not reserve a core or keep other processes off it, and
+pinning SDL audio and graphics threads can also add contention. Compare settings
+on the same scene with your usual background audio; this cannot guarantee stable 60 FPS.
+
+These environment variables are read at startup (worker settings are read when
+the renderer initializes its worker pool):
+
+| Variable | Default | Overrides |
+| --- | --- | --- |
+| `RESTUNTS_CPU_AFFINITY` | `auto` | `off` keeps inherited affinity; a zero-based logical CPU number selects an allowed CPU. Windows numbers are within the current processor group. |
+| `RESTUNTS_HIGH_PRIORITY` | `1` | `0` keeps inherited priority. |
+| `RESTUNTS_RENDER_WORKERS` | `0` | `1` through `7` selects background workers; `auto` uses detected logical CPUs minus one, capped at seven. |
+
+Disable pinning when comparing parallel rendering, since otherwise the workers
+share the same logical CPU. For example, on Linux:
+
+```sh
+RESTUNTS_CPU_AFFINITY=off RESTUNTS_HIGH_PRIORITY=0 RESTUNTS_RENDER_WORKERS=auto \
+  ./out/sdl3-linux-x64/restunts --data-dir stunts
+```
+
+In PowerShell, use `$env:RESTUNTS_CPU_AFFINITY = 'off'`,
+`$env:RESTUNTS_HIGH_PRIORITY = '0'`, and `$env:RESTUNTS_RENDER_WORKERS = 'auto'`
+before launching `restunts.exe`. Unset the variables to restore the defaults.
+Small scenes remain serial even with workers enabled. Drawing order, pixel
+coverage, and the physics schedule are preserved; DOS always renders serially.
+If worker creation fails, rendering uses the available workers or runs serially.
 
 Press **F11** to toggle a frame-rate counter in the top-left corner. It measures
 presented frames over approximately one second and rounds down, for example
