@@ -72,6 +72,10 @@ void shape3d_vertex_read(const struct SHAPE3D *shape, legacy_u16 index, struct V
 void shape3d_vertex_write(struct SHAPE3D *shape, legacy_u16 index, const struct VECTOR *source);
 void shape3d_load_car_shapes(legacy_s8 *carid, legacy_s8 *opponent_carid);
 void shape3d_free_car_shapes(void);
+#if defined(RESTUNTS_SDL3)
+/* Cached local downward correction for a loaded car model; physics stays unchanged. */
+legacy_s16 shape3d_car_ground_offset(const struct SHAPE3D *shape);
+#endif
 void shape3d_init_shape(legacy_s8 far *shapeptr, struct SHAPE3D *gameshape);
 legacy_u16 shape3d_transform_and_queue(struct TRANSFORMEDSHAPE3D *instance);
 void set_projection(legacy_s16 horizontal_fov_degrees, legacy_s16 vertical_fov_degrees,

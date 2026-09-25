@@ -92,6 +92,11 @@ custom dashboards and the 3D view above visible replay controls so they remain
 unobstructed. Switching SuperSight off restores 320x200 rendering and the original
 dashboard layout.
 
+In SDL3 builds, SuperSight corrects each car model's visible ride height so
+its underside meets the driving surface, including cars with spherical wheels.
+This presentation offset follows the car's rotation and preserves suspension
+movement and jumps without changing physics or replay data. The original renderer retains the original car positioning.
+
 In SDL3 builds, SuperSight adds car-shaped shadows on nearby surfaces below
 each car. Small cached silhouettes follow the model's size, body, wheels, and
 suspension. Light comes from the south at about 70 degrees above the horizon,
