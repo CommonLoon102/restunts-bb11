@@ -185,8 +185,9 @@ static void shape3d_car_ground_bounds(const struct SHAPE3D *shape, struct CAR_GR
 	}
 }
 
-static legacy_s16 shape3d_calculate_car_ground_offset(const struct CAR_GROUND_BOUNDS *bounds,
-													  legacy_u16 focal_x, legacy_u16 focal_y)
+static legacy_s16 shape3d_calculate_car_ground_level(const struct CAR_GROUND_BOUNDS *bounds,
+													 legacy_u16 focal_x, legacy_u16 focal_y,
+													 legacy_s16 reference_height)
 {
 	legacy_s64 lowest = bounds->lowest;
 	legacy_u16 found = bounds->has_geometry;
@@ -209,13 +210,21 @@ static legacy_s16 shape3d_calculate_car_ground_offset(const struct CAR_GROUND_BO
 	if (!found) {
 		return 0;
 	}
-	legacy_s64 offset = lowest - CAR_PHYSICS_TIRE_BOTTOM;
+	legacy_s64 offset = lowest - reference_height;
 	if (offset > (legacy_s32)LEGACY_S16_MAX) {
 		offset = LEGACY_S16_MAX;
 	} else if (offset < -(legacy_s32)LEGACY_S16_MAX) {
 		offset = -(legacy_s32)LEGACY_S16_MAX;
 	}
 	return (legacy_s16)offset;
+}
+
+legacy_s16 shape3d_car_ground_height(const struct SHAPE3D *shape)
+{
+	struct CAR_GROUND_BOUNDS bounds;
+	shape3d_car_ground_bounds(shape, &bounds);
+	return shape3d_calculate_car_ground_level(&bounds, projection_focal_length_x,
+											  projection_focal_length_y, 0);
 }
 
 static void shape3d_reset_car_ground_offsets(void)
@@ -232,8 +241,9 @@ static void shape3d_cache_car_ground_offset(legacy_u16 index, const struct SHAPE
 	shape3d_car_ground_bounds(shape, &car_ground_offsets[index].bounds);
 	car_ground_offsets[index].focal_x = projection_focal_length_x;
 	car_ground_offsets[index].focal_y = projection_focal_length_y;
-	car_ground_offsets[index].offset = shape3d_calculate_car_ground_offset(
-		&car_ground_offsets[index].bounds, projection_focal_length_x, projection_focal_length_y);
+	car_ground_offsets[index].offset = shape3d_calculate_car_ground_level(
+		&car_ground_offsets[index].bounds, projection_focal_length_x, projection_focal_length_y,
+		CAR_PHYSICS_TIRE_BOTTOM);
 }
 
 legacy_s16 shape3d_car_ground_offset(const struct SHAPE3D *shape)
@@ -244,9 +254,9 @@ legacy_s16 shape3d_car_ground_offset(const struct SHAPE3D *shape)
 				car_ground_offsets[index].focal_y != projection_focal_length_y) {
 				car_ground_offsets[index].focal_x = projection_focal_length_x;
 				car_ground_offsets[index].focal_y = projection_focal_length_y;
-				car_ground_offsets[index].offset = shape3d_calculate_car_ground_offset(
+				car_ground_offsets[index].offset = shape3d_calculate_car_ground_level(
 					&car_ground_offsets[index].bounds, projection_focal_length_x,
-					projection_focal_length_y);
+					projection_focal_length_y, CAR_PHYSICS_TIRE_BOTTOM);
 			}
 			return car_ground_offsets[index].offset;
 		}
