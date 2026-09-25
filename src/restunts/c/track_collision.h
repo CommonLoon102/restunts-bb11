@@ -3,6 +3,14 @@
 
 #include "track_types.h"
 
+#define ROAD_HALF_WIDTH 120
+#define ELEVATED_DECK_CLEARANCE 390
+#define TUNNEL_HEIGHT 144
+#define SLALOM_POLE_INNER_X 23
+#define SLALOM_POLE_OUTER_X 97
+#define SLALOM_POLE_NEAR_Z 241
+#define SLALOM_POLE_FAR_Z 271
+
 /* Collision planes and walls for the currently selected track object. */
 
 extern legacy_s16 planindex;

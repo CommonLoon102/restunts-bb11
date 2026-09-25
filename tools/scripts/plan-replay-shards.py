@@ -10,6 +10,13 @@ import zipfile
 
 
 TOLERANCE = 0.02
+REPLAY_HEADER_SIZE = 26
+REPLAY_FRAMES_OFFSET = 24
+REPLAY_OPPONENT_OFFSET = 6
+MAX_SHARD_COUNT = (1 << 31) - 1
+PERCENTAGE_FULL = 100
+TARGET_PLAYER = 0
+TARGET_OPPONENT = 1
 RESERVED_NAMES = {"CON", "PRN", "AUX", "NUL", "CLOCK$", "CONIN$", "CONOUT$"} | {
     f"{prefix}{number}" for prefix in ("COM", "LPT") for number in range(1, 10)
 }
@@ -29,31 +36,31 @@ def read_replays(source):
             raise ValueError(f"Reserved DOS device replay basename: {basename}")
         if name.lower() in identities:
             raise ValueError(f"Case-insensitive replay filename collision: {name}")
-        if len(header) != 26:
+        if len(header) != REPLAY_HEADER_SIZE:
             raise ValueError(f"Incomplete replay header: {name}")
         identities.add(name.lower())
-        ticks[name] = struct.unpack_from("<H", header, 24)[0]
-        if header[6] != 0:  # game_opponenttype in the replay header.
+        ticks[name] = struct.unpack_from("<H", header, REPLAY_FRAMES_OFFSET)[0]
+        if header[REPLAY_OPPONENT_OFFSET] != 0:  # game_opponenttype in the replay header.
             opponents.add(name)
 
     if source.is_dir():
         for path in source.iterdir():
             if path.is_file() and path.suffix.lower() == ".rpl":
                 with path.open("rb") as stream:
-                    add(path.name, stream.read(26))
+                    add(path.name, stream.read(REPLAY_HEADER_SIZE))
     else:
         with zipfile.ZipFile(source) as archive:
             for entry in archive.infolist():
                 if "/" not in entry.filename and entry.filename.lower().endswith(".rpl"):
                     with archive.open(entry) as stream:
-                        add(entry.filename, stream.read(26))
+                        add(entry.filename, stream.read(REPLAY_HEADER_SIZE))
     if not ticks:
         raise ValueError(f"No replay files found in {source}.")
     return dict(sorted(ticks.items())), opponents
 
 
 def sample(replays, percentage):
-    count = (len(replays) * percentage + 99) // 100
+    count = (len(replays) * percentage + PERCENTAGE_FULL - 1) // PERCENTAGE_FULL
     return [replays[index * len(replays) // count] for index in range(count)]
 
 
@@ -108,15 +115,15 @@ def balance(replays, ticks, count):
     return [sorted(shard) for shard in shards], totals
 
 
-def create_plan(ticks, shard_count, percentage, target=0, opponents=()):
-    if not 1 <= shard_count <= 2147483647:
+def create_plan(ticks, shard_count, percentage, target=TARGET_PLAYER, opponents=()):
+    if not 1 <= shard_count <= MAX_SHARD_COUNT:
         raise ValueError("shards must be an integer from 1 to 2147483647")
-    if not 1 <= percentage <= 100:
+    if not 1 <= percentage <= PERCENTAGE_FULL:
         raise ValueError("renderer-test-percentage must be an integer from 1 to 100")
-    if target not in (0, 1):
+    if target not in (TARGET_PLAYER, TARGET_OPPONENT):
         raise ValueError("target must be 0 (player) or 1 (opponent)")
     replays = sorted(ticks)
-    renderer_replays = [name for name in replays if target == 0 or name in opponents]
+    renderer_replays = [name for name in replays if target == TARGET_PLAYER or name in opponents]
     physics, physics_ticks = balance(replays, ticks, shard_count)
     renderer, renderer_ticks = balance(sample(renderer_replays, percentage), ticks, shard_count)
     return {

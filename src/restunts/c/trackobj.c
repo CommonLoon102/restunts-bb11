@@ -26,10 +26,7 @@ enum WATER_TERRAIN_TILE {
 #define TERRAIN_SLOPE_3_ANGLE -640
 #define TERRAIN_SLOPE_4_ANGLE -384
 #define TERRAIN_SLOPE_5_ANGLE -128
-#define HILL_TERRAIN_FIRST 7U
-#define HILL_TERRAIN_END 11U
 #define TRACK_PHYSICAL_MODEL_MAXIMUM 74
-#define ROAD_HALF_WIDTH 120
 #define START_FINISH_FAR_Z -380
 #define START_FINISH_NEAR_Z -300
 #define START_FINISH_FAR_PLANE_INDEX 131
@@ -50,7 +47,6 @@ enum WATER_TERRAIN_TILE {
 #define HIGHWAY_NEAR_RIGHT_WALL_INDEX 187
 #define RAMP_PLANE_INDEX 3
 #define RAMP_ENTRY_WALL_INDEX 102
-#define ELEVATED_DECK_CLEARANCE 390
 #define ELEVATED_PLANE_INDEX 2
 #define ELEVATED_ROAD_END_Z 476
 #define ELEVATED_FORWARD_WALL_INDEX 103
@@ -99,7 +95,6 @@ enum BANKED_ENTRANCE_ADJUST_INDEX {
 #define LOOP_LANE_SEPARATION 400
 #define LOOP_LOW_CLEARANCE 100
 #define LOOP_LOW_CLEARANCE_LAST_SEGMENT 1U
-#define TUNNEL_HEIGHT 144
 #define TUNNEL_OUTER_HALF_WIDTH 270
 #define TUNNEL_ROOF_PLANE_INDEX 133
 #define TUNNEL_END_Z 512
@@ -206,10 +201,6 @@ enum CORK_LR_SEGMENT {
 #define TRACK_WALL_NONE -1
 #define TRACK_WALL_DEFAULT_HEIGHT ELEVATED_WALL_VERTICAL_OFFSET
 #define ELEVATED_WALL_LOWER_BOUND_DEFAULT -1000
-#define SLALOM_POLE_INNER_X 23
-#define SLALOM_POLE_OUTER_X 97
-#define SLALOM_POLE_NEAR_Z 241
-#define SLALOM_POLE_FAR_Z 271
 #define SLALOM_POLE_WALL_HEIGHT 42
 #define SLALOM_NEGATIVE_Z_FAR_WALL_INDEX 145
 #define SLALOM_NEGATIVE_Z_NEAR_WALL_INDEX 146
@@ -260,8 +251,6 @@ enum CORK_LR_SEGMENT {
 #define SHIP_FORWARD_WALL_INDEX 184
 #define SHIP_LEFT_WALL_INDEX 183
 #define SHIP_RIGHT_WALL_INDEX 182
-#define MULTI_TILE_ROW_EDGE_FLAG 1U
-#define MULTI_TILE_COLUMN_EDGE_FLAG 2U
 #define TRACK_TILE_EMPTY 0U
 #define TRACK_SURFACE_TYPE_OFFSET 1U
 #define TRACK_SURFACE_TYPE_MINIMUM 1
@@ -1543,6 +1532,8 @@ static legacy_s16 selected_wall_matches(const struct TRACK_COLLISION_SNAPSHOT *c
 		   wallHeight == candidate->wall_height && elRdWallRelated == candidate->wall_lower_bound;
 }
 
+#define WALL_CONTACT_PROBE_DISTANCE 2
+
 static legacy_s16 selected_wall_contains_point(struct VECTOR *point, struct MATRIX *rotation)
 {
 	struct TRACK_COLLISION_SNAPSHOT candidate;
@@ -1551,8 +1542,10 @@ static legacy_s16 selected_wall_contains_point(struct VECTOR *point, struct MATR
 	/* Requery across the wall at the intersection, not at a segment endpoint.
 	 * This retains the finite extent and distinguishes a rail from the solid
 	 * side below it. Two world units keep the probes on opposite grid sides. */
-	legacy_s16 offset_x = (legacy_s16)((legacy_s32)rotation->m._31 * 2 / TRIG_FIXED_ONE);
-	legacy_s16 offset_z = (legacy_s16)((legacy_s32)rotation->m._33 * 2 / TRIG_FIXED_ONE);
+	legacy_s16 offset_x =
+		(legacy_s16)((legacy_s32)rotation->m._31 * WALL_CONTACT_PROBE_DISTANCE / TRIG_FIXED_ONE);
+	legacy_s16 offset_z =
+		(legacy_s16)((legacy_s32)rotation->m._33 * WALL_CONTACT_PROBE_DISTANCE / TRIG_FIXED_ONE);
 	struct VECTOR first = *point;
 	struct VECTOR second = *point;
 	first.x = LEGACY_S16_WRAP_ADD(first.x, offset_x);

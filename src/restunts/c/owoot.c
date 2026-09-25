@@ -37,7 +37,7 @@ void owoot_update_player(struct CARSTATE *car, legacy_s16 car_index)
 			legacy_u16 count = owoot_wheel_footprint(car, wheel, footprint);
 			legacy_s16 road_contact = car->car_surfaceWhl[wheel] >= CAR_SURFACE_PAVED &&
 									  car->car_surfaceWhl[wheel] <= CAR_SURFACE_ICE;
-			if (track_road_overlaps_wheel(footprint, count / 2, road_contact)) {
+			if (track_road_overlaps_wheel(footprint, count / OWOOT_WHEEL_RIM_COUNT, road_contact)) {
 				return;
 			}
 		}

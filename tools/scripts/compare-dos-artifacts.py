@@ -25,6 +25,62 @@ import sys
 
 
 MAX_SEGMENT = 16 * 1024 * 1024
+OMF_THEADR = 0x80
+OMF_LHEADR = 0x82
+OMF_MODEND = 0x8A
+OMF_EXTDEF = 0x8C
+OMF_PUBDEF = 0x90
+OMF_COMENT = 0x88
+OMF_TYPDEF = 0x8E
+OMF_LINNUM = 0x94
+OMF_LINNUM32 = OMF_LINNUM + 1
+OMF_LNAMES = 0x96
+OMF_SEGDEF = 0x98
+OMF_GRPDEF = 0x9A
+OMF_FIXUPP = 0x9C
+OMF_LEDATA = 0xA0
+OMF_LIDATA = 0xA2
+OMF_LEXTDEF = 0xB4
+OMF_LPUBDEF = 0xB6
+OMF_GROUP_SEGMENT = 0xFF
+OMF_INDEX_WIDE = 0x80
+OMF_INDEX_HIGH_MASK = 0x7F
+OMF_MAX_ITERATION_DEPTH = 32
+OMF_REFERENCE_SEGMENT = 0
+OMF_REFERENCE_GROUP = 1
+OMF_REFERENCE_EXTERNAL = 2
+OMF_REFERENCE_ABSOLUTE = 3
+OMF_REFERENCE_LOCATION = 4
+OMF_REFERENCE_TARGET = 5
+OMF_REFERENCE_NONE = 6
+OMF_FRAME_THREAD_FLAG = 0x80
+OMF_TARGET_THREAD_FLAG = 0x08
+OMF_NO_DISPLACEMENT_FLAG = 0x04
+OMF_FRAME_METHOD_SHIFT = 4
+OMF_FRAME_METHOD_MASK = 7
+OMF_TARGET_METHOD_MASK = 3
+OMF_THREAD_INDEX_MASK = 3
+OMF_FIXUP_FLAG = 0x80
+OMF_SEGMENT_RELATIVE_FLAG = 0x40
+OMF_FRAME_THREAD_DEFINITION_FLAG = 0x40
+OMF_FIXUP_LOCATION_HIGH_MASK = 3
+OMF_FIXUP_KIND_SHIFT = 2
+OMF_FIXUP_KIND_MASK = 15
+OMF_THREAD_METHOD_SHIFT = 2
+OMF_SEGMENT_ALIGNMENT_SHIFT = 5
+OMF_BIG_SEGMENT_FLAG = 2
+OMF_WIDE_RECORD_FLAG = 1
+OMF_MODULE_START_FLAG = 0x40
+OMF_MODULE_MAIN_FLAG = 0x80
+OMF_MODULE_LOGICAL_START_FLAG = 1
+BYTE_BITS = 8
+BYTE_MASK = 0xFF
+MZ_HEADER_SIZE = struct.calcsize("<14H")
+MZ_PAGE_SIZE = 512
+MZ_PARAGRAPH_SIZE = 16
+MZ_RELOCATION_SIZE = struct.calcsize("<HH")
+MZ_MAX_LOAD_IMAGE = 1024 * 1024
+DIFFERING_BYTE_LIMIT = 16
 FIXUP_WIDTHS = {0: 1, 1: 2, 2: 2, 3: 4, 4: 1, 5: 2, 9: 4, 11: 6, 13: 4}
 
 
@@ -53,7 +109,7 @@ class Reader:
 
     def index(self):
         first = self.number()
-        return ((first & 0x7F) << 8) | self.number() if first & 0x80 else first
+        return ((first & OMF_INDEX_HIGH_MASK) << BYTE_BITS) | self.number() if first & OMF_INDEX_WIDE else first
 
     def name(self):
         return self.take(self.number()).decode("latin1")
@@ -64,21 +120,21 @@ class Reader:
 
 def parse_mz(path):
     data = path.read_bytes()
-    require(len(data) >= 28 and data[:2] == b"MZ", f"Not a DOS MZ executable: {path}")
+    require(len(data) >= MZ_HEADER_SIZE and data[:2] == b"MZ", f"Not a DOS MZ executable: {path}")
     words = struct.unpack_from("<14H", data)
     _, last_page, pages, count, paragraphs, minimum, maximum, ss, sp, checksum, ip, cs, table, overlay = words
-    require(pages > 0 and last_page < 512, "Invalid MZ page counts")
-    declared_size = (pages - 1) * 512 + (last_page or 512)
-    header_size = paragraphs * 16
-    require(28 <= header_size <= declared_size <= len(data), "Invalid MZ image bounds")
-    require(28 <= table and table + count * 4 <= header_size, "Invalid MZ relocation table")
+    require(pages > 0 and last_page < MZ_PAGE_SIZE, "Invalid MZ page counts")
+    declared_size = (pages - 1) * MZ_PAGE_SIZE + (last_page or MZ_PAGE_SIZE)
+    header_size = paragraphs * MZ_PARAGRAPH_SIZE
+    require(MZ_HEADER_SIZE <= header_size <= declared_size <= len(data), "Invalid MZ image bounds")
+    require(MZ_HEADER_SIZE <= table and table + count * MZ_RELOCATION_SIZE <= header_size, "Invalid MZ relocation table")
     image = data[header_size:declared_size]
-    require(len(image) <= 1024 * 1024, "MZ load image exceeds real-mode comparator bound")
+    require(len(image) <= MZ_MAX_LOAD_IMAGE, "MZ load image exceeds real-mode comparator bound")
     relocations = []
     relocation_entries = []
     for index in range(count):
-        offset, segment = struct.unpack_from("<HH", data, table + 4 * index)
-        address = segment * 16 + offset
+        offset, segment = struct.unpack_from("<HH", data, table + MZ_RELOCATION_SIZE * index)
+        address = segment * MZ_PARAGRAPH_SIZE + offset
         require(address + 2 <= len(image), "MZ relocation lies outside loaded image")
         relocations.append(address)
         relocation_entries.append((offset, segment))
@@ -104,7 +160,7 @@ def mz_summary(parsed):
     return result
 
 
-def differing_bytes(left, right, limit=16):
+def differing_bytes(left, right, limit=DIFFERING_BYTE_LIMIT):
     result = []
     for offset in range(max(len(left), len(right))):
         a = left[offset] if offset < len(left) else None
@@ -177,39 +233,39 @@ class OMF:
         return (segment["name"], segment["class"], segment["overlay"])
 
     def reference(self, reader, method):
-        if method == 0:
+        if method == OMF_REFERENCE_SEGMENT:
             return ("segment", self.segment_key(reader.index()))
-        if method == 1:
+        if method == OMF_REFERENCE_GROUP:
             return ("group", self.lookup(self.groups, reader.index())["name"])
-        if method == 2:
+        if method == OMF_REFERENCE_EXTERNAL:
             return ("external", self.lookup(self.externals, reader.index()))
-        if method == 3:
+        if method == OMF_REFERENCE_ABSOLUTE:
             return ("absolute", reader.number(2))
-        if method in (4, 5, 6):
-            return ("location", "target", "none")[method - 4],
+        if method in (OMF_REFERENCE_LOCATION, OMF_REFERENCE_TARGET, OMF_REFERENCE_NONE):
+            return ("location", "target", "none")[method - OMF_REFERENCE_LOCATION],
         raise ValueError(f"Unsupported OMF reference method {method}")
 
     def fixdata(self, reader, wide):
         flags = reader.number()
-        if flags & 0x80:
-            key = (flags >> 4) & 3
+        if flags & OMF_FRAME_THREAD_FLAG:
+            key = (flags >> OMF_FRAME_METHOD_SHIFT) & OMF_THREAD_INDEX_MASK
             require(key in self.frame_threads, "Undefined OMF frame thread")
             frame = self.frame_threads[key]
         else:
-            frame = self.reference(reader, (flags >> 4) & 7)
-        if flags & 8:
-            key = flags & 3
+            frame = self.reference(reader, (flags >> OMF_FRAME_METHOD_SHIFT) & OMF_FRAME_METHOD_MASK)
+        if flags & OMF_TARGET_THREAD_FLAG:
+            key = flags & OMF_THREAD_INDEX_MASK
             require(key in self.target_threads, "Undefined OMF target thread")
             target = self.target_threads[key]
         else:
-            target = self.reference(reader, flags & 3)
-        displacement = 0 if flags & 4 else reader.number(4 if wide else 2)
+            target = self.reference(reader, flags & OMF_TARGET_METHOD_MASK)
+        displacement = 0 if flags & OMF_NO_DISPLACEMENT_FLAG else reader.number(4 if wide else 2)
         if frame == ("target",):
             frame = target
         return frame, target, displacement
 
     def iterated(self, reader, wide, depth=0):
-        require(depth < 32, "Excessively nested LIDATA")
+        require(depth < OMF_MAX_ITERATION_DEPTH, "Excessively nested LIDATA")
         repeat = reader.number(4 if wide else 2)
         blocks = reader.number(2)
         if blocks:
@@ -229,22 +285,22 @@ class OMF:
     def read_record(self, record_type, payload):
         self.record_counts[f"{record_type:02x}"] += 1
         reader = Reader(payload)
-        wide = bool(record_type & 1)
-        base = record_type & ~1
-        if record_type in (0x80, 0x82, 0x8E, 0x94, 0x95):
+        wide = bool(record_type & OMF_WIDE_RECORD_FLAG)
+        base = record_type & ~OMF_WIDE_RECORD_FLAG
+        if record_type in (OMF_THEADR, OMF_LHEADR, OMF_TYPDEF, OMF_LINNUM, OMF_LINNUM32):
             return  # Module source names and debug type/line records.
-        if record_type == 0x88:
+        if record_type == OMF_COMENT:
             reader.number()
             self.comments[f"{reader.number():02x}"] += 1
             return  # Report their classes; this is an emitted-object comparator.
-        if record_type == 0x96:
+        if record_type == OMF_LNAMES:
             while reader.remaining():
                 self.names.append(self.canonical_name(reader.name()))
-        elif base == 0x98:
+        elif base == OMF_SEGDEF:
             attributes = reader.number()
-            absolute = [reader.number(2), reader.number()] if attributes >> 5 == 0 else None
+            absolute = [reader.number(2), reader.number()] if attributes >> OMF_SEGMENT_ALIGNMENT_SHIFT == 0 else None
             length = reader.number(4 if wide else 2)
-            if attributes & 2:
+            if attributes & OMF_BIG_SEGMENT_FLAG:
                 length = 1 << (32 if wide else 16)
             require(length <= MAX_SEGMENT, "OMF segment exceeds comparator bound")
             self.total_segment_bytes += length
@@ -254,19 +310,19 @@ class OMF:
                                   "attributes": attributes, "absolute": absolute,
                                   "length": length, "data": bytearray(length),
                                   "initialized": bytearray(length)})
-        elif record_type == 0x9A:
+        elif record_type == OMF_GRPDEF:
             name = self.lookup(self.names, reader.index())
             members = []
             while reader.remaining():
-                require(reader.number() == 0xFF, "Unsupported OMF group component")
+                require(reader.number() == OMF_GROUP_SEGMENT, "Unsupported OMF group component")
                 members.append(self.segment_key(reader.index()))
             self.groups.append({"name": name, "segments": members})
-        elif record_type in (0x8C, 0xB4):
+        elif record_type in (OMF_EXTDEF, OMF_LEXTDEF):
             while reader.remaining():
                 name = self.canonical_name(reader.name())
                 reader.index()  # Debug type index.
-                self.externals.append(("local" if record_type == 0xB4 else "global", name))
-        elif base in (0x90, 0xB6):
+                self.externals.append(("local" if record_type == OMF_LEXTDEF else "global", name))
+        elif base in (OMF_PUBDEF, OMF_LPUBDEF):
             group = reader.index()
             segment = reader.index()
             frame = reader.number(2) if segment == 0 else None
@@ -276,13 +332,13 @@ class OMF:
                 name = self.canonical_name(reader.name())
                 offset = reader.number(4 if wide else 2)
                 reader.index()
-                self.publics.append({"name": name, "local": base == 0xB6, "group": group_name,
+                self.publics.append({"name": name, "local": base == OMF_LPUBDEF, "group": group_name,
                                      "segment": segment_name, "frame": frame, "offset": offset})
-        elif base in (0xA0, 0xA2):
+        elif base in (OMF_LEDATA, OMF_LIDATA):
             index = reader.index()
             offset = reader.number(4 if wide else 2)
             segment = self.lookup(self.segments, index)
-            if base == 0xA2:
+            if base == OMF_LIDATA:
                 pieces = []
                 total = 0
                 while reader.remaining():
@@ -299,16 +355,16 @@ class OMF:
                         "Conflicting overlapping OMF data")
                 segment["data"][position] = value
                 segment["initialized"][position] = 1
-            self.last_data = (index, offset, len(data), base == 0xA2)
-        elif base == 0x9C:
+            self.last_data = (index, offset, len(data), base == OMF_LIDATA)
+        elif base == OMF_FIXUPP:
             while reader.remaining():
                 first = reader.number()
-                if first & 0x80:
+                if first & OMF_FIXUP_FLAG:
                     require(self.last_data is not None, "FIXUPP without preceding data")
                     segment, start, length, iterated = self.last_data
                     require(not iterated, "Relocations within LIDATA are unsupported")
-                    location = ((first & 3) << 8) | reader.number()
-                    kind = (first >> 2) & 15
+                    location = ((first & OMF_FIXUP_LOCATION_HIGH_MASK) << BYTE_BITS) | reader.number()
+                    kind = (first >> OMF_FIXUP_KIND_SHIFT) & OMF_FIXUP_KIND_MASK
                     require(kind in FIXUP_WIDTHS and location + FIXUP_WIDTHS[kind] <= length,
                             "Unsupported or out-of-bounds OMF fixup location")
                     frame, target, displacement = self.fixdata(reader, wide)
@@ -316,17 +372,17 @@ class OMF:
                         frame = ("segment", self.segment_key(segment))
                     self.fixups.append({"segment": self.segment_key(segment),
                                         "offset": start + location, "kind": kind,
-                                        "segment_relative": bool(first & 0x40), "frame": frame,
+                                        "segment_relative": bool(first & OMF_SEGMENT_RELATIVE_FLAG), "frame": frame,
                                         "target": target, "displacement": displacement})
-                elif first & 0x40:
-                    self.frame_threads[first & 3] = self.reference(reader, (first >> 2) & 7)
+                elif first & OMF_FRAME_THREAD_DEFINITION_FLAG:
+                    self.frame_threads[first & OMF_THREAD_INDEX_MASK] = self.reference(reader, (first >> OMF_THREAD_METHOD_SHIFT) & OMF_FRAME_METHOD_MASK)
                 else:
-                    self.target_threads[first & 3] = self.reference(reader, (first >> 2) & 3)
-        elif base == 0x8A:
+                    self.target_threads[first & OMF_THREAD_INDEX_MASK] = self.reference(reader, (first >> OMF_THREAD_METHOD_SHIFT) & OMF_TARGET_METHOD_MASK)
+        elif base == OMF_MODEND:
             flags = reader.number()
-            require(not (flags & 0x40) or flags & 1, "Physical MODEND start address unsupported")
-            start = self.fixdata(reader, wide) if flags & 0x40 else None
-            self.module_end = {"main": bool(flags & 0x80), "start": start}
+            require(not (flags & OMF_MODULE_START_FLAG) or flags & OMF_MODULE_LOGICAL_START_FLAG, "Physical MODEND start address unsupported")
+            start = self.fixdata(reader, wide) if flags & OMF_MODULE_START_FLAG else None
+            self.module_end = {"main": bool(flags & OMF_MODULE_MAIN_FLAG), "start": start}
         else:
             raise ValueError(f"Unsupported OMF record 0x{record_type:02x}")
         require(reader.remaining() == 0, f"Unparsed bytes in OMF record 0x{record_type:02x}")
@@ -367,7 +423,7 @@ def parse_omf(path, ignore_case=False):
         require(size >= 1, "Empty OMF record")
         payload = reader.take(size)
         # OMF explicitly allows a zero checksum byte to mean not supplied.
-        require(payload[-1] == 0 or sum(data[start:reader.offset]) & 255 == 0,
+        require(payload[-1] == 0 or sum(data[start:reader.offset]) & BYTE_MASK == 0,
                 "Invalid OMF record checksum")
         module.read_record(record_type, payload[:-1])
     require(module.module_end is not None, "Missing OMF MODEND")

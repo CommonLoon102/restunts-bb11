@@ -3,8 +3,9 @@
 #include "../../c/presentation.h"
 #include <string.h>
 
-#define TIMER_CALLBACK_CAPACITY 5U
+#define TIMER_CALLBACK_CAPACITY DOS_TIMER_USABLE_CALLBACK_COUNT
 #define TIMER_TICK_MS 10U
+#define TIMER_POLL_DELAY_MS 1U
 
 static void (*callbacks[TIMER_CALLBACK_CAPACITY])(void);
 static legacy_u64 last_tick;
@@ -32,7 +33,7 @@ void sdl3_timer_pump(void)
 	while (now - last_tick >= TIMER_TICK_MS) {
 		last_tick += TIMER_TICK_MS;
 		realtime_counter++;
-		if (++slow_divider == 5U) {
+		if (++slow_divider == DOS_TIMER_DEFAULT_DIVIDER_PERIOD) {
 			slow_divider = 0;
 			slow_counter++;
 		}
@@ -107,7 +108,7 @@ void dos_timer_reset_counter(void)
 void dos_timer_set_callbacks_suspended(legacy_s16 value)
 {
 	sdl3_timer_pump();
-	suspended = (value & 255) != 0;
+	suspended = (value & DOS_TIMER_CALLBACK_SUSPENDED_MASK) != 0;
 }
 
 legacy_u32 dos_timer_get_realtime_counter(void)
@@ -123,7 +124,7 @@ legacy_u32 timer_get_counter(void)
 	/* Legacy waits poll this accessor. Yield without delaying timer callbacks
 	 * or consuming an entire 10ms tick, so menus and frame pacing stay responsive. */
 	if (!dispatching && initialized && previous_read == game_counter) {
-		SDL_Delay(1);
+		SDL_Delay(TIMER_POLL_DELAY_MS);
 		sdl3_platform_pump();
 	}
 	previous_read = game_counter;

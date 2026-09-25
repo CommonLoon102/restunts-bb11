@@ -200,7 +200,8 @@ legacy_s16 dos_file_seek(legacy_u16 handle, legacy_s32 offset, legacy_s16 origin
 {
 	FILE *file = get_file(handle);
 	legacy_s32 origins[] = {SEEK_SET, SEEK_CUR, SEEK_END};
-	if (file == NULL || origin < 0 || origin > 2 || fseek(file, offset, origins[origin]) != 0) {
+	if (file == NULL || origin < 0 || origin > DOS_FILE_SEEK_END ||
+		fseek(file, offset, origins[origin]) != 0) {
 		file_error = 1;
 		return -1;
 	}
@@ -213,7 +214,7 @@ legacy_s32 dos_file_tell(legacy_u16 handle)
 	FILE *file = get_file(handle);
 	/* Preserve the full ftell result until its legacy-range check. */
 	long position = file != NULL ? ftell(file) : -1;
-	if (position < 0 || position > 2147483647L) {
+	if (position < 0 || position > (long)LEGACY_S32_MAX) {
 		file_error = 1;
 		return -1;
 	}

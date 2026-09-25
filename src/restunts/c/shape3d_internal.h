@@ -31,6 +31,7 @@ extern legacy_s16 material_pattern2_list[SHAPE3D_MATERIAL_COUNT];
 /* Ghost primitives retain their source material for visibility decisions. */
 #define RENDER_PRIMITIVE_GHOST_FLAG 128U
 #define PRERENDER_GHOST_COLOR 256U
+#define WHEEL_SOURCE_POINT_COUNT 4U
 #define PRERENDER_BLACK_GRILLE_PATTERN 0xCC33U
 
 #define DRAW_LINE_FIXED_ROUNDING 32768UL

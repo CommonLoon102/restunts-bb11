@@ -7,7 +7,9 @@ struct CARSTATE;
 
 extern legacy_s16 owoot_enabled;
 
-#define OWOOT_WHEEL_VERTEX_COUNT 32U
+#define OWOOT_WHEEL_RIM_COUNT 2U
+#define OWOOT_WHEEL_RING_COUNT 16U
+#define OWOOT_WHEEL_VERTEX_COUNT (OWOOT_WHEEL_RIM_COUNT * OWOOT_WHEEL_RING_COUNT)
 
 void configure_owoot(legacy_s16 argc, legacy_s8 *argv[]);
 void owoot_read_wheel_shape(const legacy_u8 far *shape);

@@ -7,7 +7,9 @@
 
 #define OWOOT_FIRST_WHEEL_VERTEX 8U
 #define OWOOT_WHEEL_CONTROL_COUNT 6U
-#define OWOOT_WHEEL_RING_COUNT 16U
+#define OWOOT_RESOURCE_ID_OFFSET 2U
+#define OWOOT_RESOURCE_EXTENSION_OFFSET (OWOOT_RESOURCE_ID_OFFSET + REPLAY_CAR_ID_SIZE + 1U)
+#define OWOOT_STEERED_WHEEL_COUNT 2U
 #define OWOOT_POSITION_SCALE 64L
 
 /* Preserve the unsteered model, independently of the renderer's mutable copy.
@@ -30,8 +32,10 @@ void owoot_read_wheel_shape(const legacy_u8 far *shape)
 			legacy_u16 index = OWOOT_FIRST_WHEEL_VERTEX + wheel * OWOOT_WHEEL_CONTROL_COUNT + point;
 			const legacy_u8 far *vertex = shape + SHAPE3D_HEADER_SIZE + index * SHAPE3D_VERTEX_SIZE;
 			wheel_controls[wheel][point].x = LEGACY_S16_FROM_BITS(LEGACY_READ_U16_LE(vertex));
-			wheel_controls[wheel][point].y = LEGACY_S16_FROM_BITS(LEGACY_READ_U16_LE(vertex + 2));
-			wheel_controls[wheel][point].z = LEGACY_S16_FROM_BITS(LEGACY_READ_U16_LE(vertex + 4));
+			wheel_controls[wheel][point].y =
+				LEGACY_S16_FROM_BITS(LEGACY_READ_U16_LE(vertex + SHAPE3D_VERTEX_Y_OFFSET));
+			wheel_controls[wheel][point].z =
+				LEGACY_S16_FROM_BITS(LEGACY_READ_U16_LE(vertex + SHAPE3D_VERTEX_Z_OFFSET));
 		}
 	}
 }
@@ -44,14 +48,12 @@ void owoot_load_player_wheels(void)
 		return;
 	}
 	legacy_s8 filename[] = "stxxxx.p3s";
-	for (legacy_u16 index = 0; index < 4; index++) {
-		filename[index + 2] = gameconfig.game_playercarid[index];
+	for (legacy_u16 index = 0; index < REPLAY_CAR_ID_SIZE; index++) {
+		filename[index + OWOOT_RESOURCE_ID_OFFSET] = gameconfig.game_playercarid[index];
 	}
 	void far *resource = file_decomp_nofatal(filename);
 	if (resource == 0) {
-		filename[7] = '3';
-		filename[8] = 's';
-		filename[9] = 'h';
+		strcpy(filename + OWOOT_RESOURCE_EXTENSION_OFFSET, "3sh");
 		resource = file_load_binary_fatal(filename);
 	}
 	owoot_read_wheel_shape((const legacy_u8 far *)locate_shape_fatal(resource, "car1"));
@@ -84,12 +86,14 @@ legacy_u16 owoot_wheel_footprint(const struct CARSTATE *car, legacy_u16 wheel,
 	legacy_s16 sine = sin_fast(LEGACY_S16_SAR(car->car_steeringAngle, 1U));
 	legacy_s16 cosine = cos_fast(LEGACY_S16_SAR(car->car_steeringAngle, 1U));
 	struct VECTOR controls[OWOOT_WHEEL_CONTROL_COUNT];
-	legacy_s16 center_x = LEGACY_S16_SAR(
-		LEGACY_S16_WRAP_ADD(wheel_controls[wheel][0].x, wheel_controls[wheel][3].x), 1U);
+	legacy_s16 center_x =
+		LEGACY_S16_SAR(LEGACY_S16_WRAP_ADD(wheel_controls[wheel][0].x,
+										   wheel_controls[wheel][SHAPE3D_WHEEL_RIM_VERTEX_COUNT].x),
+					   1U);
 	legacy_s16 center_z = wheel_controls[wheel][0].z;
 	for (legacy_u16 point = 0; point < OWOOT_WHEEL_CONTROL_COUNT; point++) {
 		controls[point] = wheel_controls[wheel][point];
-		if (wheel < 2 && car->car_steeringAngle != 0) {
+		if (wheel < OWOOT_STEERED_WHEEL_COUNT && car->car_steeringAngle != CAR_STEERING_CENTERED) {
 			/* Match shape3d_steer_car_wheel_vertices: its cached control
 			 * offsets are centre-minus-vertex, and both sine terms add.
 			 * Transform controls before constructing the rim so rounding
@@ -104,20 +108,23 @@ legacy_u16 owoot_wheel_footprint(const struct CARSTATE *car, legacy_u16 wheel,
 									multiply_and_scale(dz, cosine));
 		}
 	}
-	for (legacy_u16 side = 0; side < 2; side++) {
+	for (legacy_u16 side = 0; side < OWOOT_WHEEL_RIM_COUNT; side++) {
 		/* The far rim's control radii can be reversed for face culling.
 		 * The tire tread joins corresponding points by translating one rim,
 		 * just as the renderer does, not by joining opposite windings. */
 		const struct VECTOR *circle = controls;
 		for (legacy_u16 i = 0; i < OWOOT_WHEEL_RING_COUNT; i++) {
 			struct VECTOR local;
-			local.x = ring_coordinate(circle[0].x, circle[1].x, circle[2].x, i);
-			local.y = ring_coordinate(circle[0].y, circle[1].y, circle[2].y, i);
-			local.z = ring_coordinate(circle[0].z, circle[1].z, circle[2].z, i);
+			local.x = ring_coordinate(circle[0].x, circle[SHAPE3D_WHEEL_FIRST_AXIS].x,
+									  circle[SHAPE3D_WHEEL_SECOND_AXIS].x, i);
+			local.y = ring_coordinate(circle[0].y, circle[SHAPE3D_WHEEL_FIRST_AXIS].y,
+									  circle[SHAPE3D_WHEEL_SECOND_AXIS].y, i);
+			local.z = ring_coordinate(circle[0].z, circle[SHAPE3D_WHEEL_FIRST_AXIS].z,
+									  circle[SHAPE3D_WHEEL_SECOND_AXIS].z, i);
 			if (side != 0) {
-				local.x += controls[3].x - controls[0].x;
-				local.y += controls[3].y - controls[0].y;
-				local.z += controls[3].z - controls[0].z;
+				local.x += controls[SHAPE3D_WHEEL_RIM_VERTEX_COUNT].x - controls[0].x;
+				local.y += controls[SHAPE3D_WHEEL_RIM_VERTEX_COUNT].y - controls[0].y;
+				local.z += controls[SHAPE3D_WHEEL_RIM_VERTEX_COUNT].z - controls[0].z;
 			}
 			local.y -= (legacy_s16)(car->car_suspension_deflection[wheel] / OWOOT_POSITION_SCALE);
 			struct VECTOR *point = &output[side * OWOOT_WHEEL_RING_COUNT + i];

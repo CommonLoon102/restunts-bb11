@@ -8,7 +8,10 @@
 #define MEMORY_END_SEGMENT 0xA000U
 #define EXTERNAL_FIRST_SEGMENT 0xE000U
 #define EXTERNAL_PAGE_COUNT 512U
-#define EXTERNAL_PAGE_MASK 0xFFFFUL
+#define EXTERNAL_PAGE_MASK LEGACY_U16_MAX
+#define MEMORY_PARAGRAPH_BYTES 16U
+#define MEMORY_PARAGRAPH_SHIFT 4U
+#define MEMORY_PSP_ADDRESS 0x028E0UL
 
 /* Resource files contain real 16:16 addresses after relocation. Keep their
  * address space independent of the host pointer size, including VGA A000:0.
@@ -52,7 +55,7 @@ void *dos_memory_make_pointer(legacy_u16 segment, legacy_u16 offset)
 		}
 		return (void *)(external_pages[index] + offset);
 	}
-	legacy_u32 address = (legacy_u32)segment * 16U + offset;
+	legacy_u32 address = (legacy_u32)segment * MEMORY_PARAGRAPH_BYTES + offset;
 	if (address >= MEMORY_BYTES) {
 		memory_error();
 		return NULL;
@@ -68,7 +71,7 @@ legacy_u16 dos_memory_pointer_segment(const void *pointer)
 		return 0;
 	}
 	if (address >= base && address < base + MEMORY_BYTES) {
-		return (legacy_u16)((address - base) >> 4);
+		return (legacy_u16)((address - base) >> MEMORY_PARAGRAPH_SHIFT);
 	}
 	return external_segment(address);
 }
@@ -78,7 +81,7 @@ legacy_u16 dos_memory_pointer_offset(const void *pointer)
 	uintptr_t address = (uintptr_t)pointer;
 	uintptr_t base = (uintptr_t)memory;
 	if (address >= base && address < base + MEMORY_BYTES) {
-		return (legacy_u16)((address - base) & 15U);
+		return (legacy_u16)((address - base) & (MEMORY_PARAGRAPH_BYTES - 1U));
 	}
 	return (legacy_u16)(address & EXTERNAL_PAGE_MASK);
 }
@@ -94,7 +97,7 @@ void *dos_memory_make_near_pointer(legacy_u16 offset)
 
 void *dos_memory_get_psp(void)
 {
-	return memory + 0x028E0UL;
+	return memory + MEMORY_PSP_ADDRESS;
 }
 
 legacy_u16 dos_memory_allocate(legacy_u16 paragraphs)

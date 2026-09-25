@@ -36,6 +36,13 @@ BYTE_REGISTERS = {name: index for index, name in enumerate(("al", "cl", "dl", "b
 REGISTERS = set(WORD_REGISTERS) | {"al", "ah", "cl", "ch", "dl", "dh", "bl", "bh", "cs", "ds", "es", "ss"}
 ACCUMULATOR_OPCODES = {"add": 5, "or": 13, "adc": 21, "sbb": 29, "and": 37, "sub": 45, "xor": 53, "cmp": 61, "test": 169}
 LOGICAL_DIGITS = {"or": 1, "and": 4, "xor": 6}
+REPEAT_PREFIXES = {"repne": 0xF2, "repnz": 0xF2, "repe": 0xF3, "repz": 0xF3}
+FAR_TRANSFER_OPCODES = {"call": 0x9A, "jmp": 0xEA}
+REGISTER_BYTE_OPCODES = {"sbb": 0x1A, "xchg": 0x86}
+REGISTER_WORD_OPCODES = {"sbb": 0x1B, "xchg": 0x87}
+REGISTER_MODE_BITS = 0xC0
+MODRM_REGISTER_STRIDE = 8
+WORD_IMMEDIATE_GROUP_OPCODE = 0x81
 IDENTIFIER = r"[A-Za-z_@$?][A-Za-z_0-9@$?]*"
 QUALIFIED_NAME = re.compile(r"\b" + IDENTIFIER + r"(?:\." + IDENTIFIER + r")*")
 ASSIGNMENT = re.compile(r"^(\s*)(" + IDENTIFIER + r")\s*=\s*(" + IDENTIFIER + r")\s+ptr\s+(.+)$", re.I)
@@ -250,7 +257,7 @@ def lower_source(filename: str, data: bytes, layouts: dict[str, Layout]) -> tupl
             indent, opcode, operands = instruction[1], instruction[2].lower(), instruction[3]
             repeat = re.fullmatch(r"(movs[bw]?|stos[bw]?|lods[bw]?)(.*)", operands, re.I)
             if opcode in ("repne", "repnz", "repe", "repz") and repeat:
-                prefix = 242 if opcode in ("repne", "repnz") else 243
+                prefix = REPEAT_PREFIXES[opcode]
                 code = f"{indent}db {prefix}\n{indent}{repeat[1]}{repeat[2]}"
                 changed("string_prefix")
             elif opcode == "jmp" and not smart and operands.strip().lower() in local_labels:
@@ -261,15 +268,15 @@ def lower_source(filename: str, data: bytes, layouts: dict[str, Layout]) -> tupl
                 changed("local_near_jump")
             elif opcode in ("call", "jmp") and (operands.strip().lower() in local_far_procedures or re.fullmatch(r"far\s+ptr\s+" + IDENTIFIER, operands.strip(), re.I)):
                 target = re.sub(r"^far\s+ptr\s+", "", operands.strip(), flags=re.I)
-                far_opcode = 154 if opcode == "call" else 234
+                far_opcode = FAR_TRANSFER_OPCODES[opcode]
                 code = f"{indent}db {far_opcode}\n{indent}dw offset {target}, seg {target}"
                 changed("local_far_transfer")
             elif opcode in ("sbb", "xchg") and "," in operands:
                 left, right = (part.strip().lower() for part in operands.split(",", 1))
                 registers = WORD_REGISTERS if left in WORD_REGISTERS else BYTE_REGISTERS
                 if left in registers and right in registers and not (opcode == "xchg" and "ax" in (left, right)):
-                    byte_opcode = (27 if registers is WORD_REGISTERS else 26) if opcode == "sbb" else (135 if registers is WORD_REGISTERS else 134)
-                    modrm = 192 + registers[left] * 8 + registers[right]
+                    byte_opcode = (REGISTER_WORD_OPCODES if registers is WORD_REGISTERS else REGISTER_BYTE_OPCODES)[opcode]
+                    modrm = REGISTER_MODE_BITS + registers[left] * MODRM_REGISTER_STRIDE + registers[right]
                     code = f"{indent}db {byte_opcode}, {modrm}"
                     changed("register_direction")
             if opcode in ACCUMULATOR_OPCODES and "," in operands and "\n" not in code:
@@ -291,8 +298,8 @@ def lower_source(filename: str, data: bytes, layouts: dict[str, Layout]) -> tupl
                     code = f"{indent}db {ACCUMULATOR_OPCODES[opcode]}\n{indent}dw {right}"
                     changed("accumulator_immediate")
                 elif opcode in LOGICAL_DIGITS and not smart and immediate and left.lower() in WORD_REGISTERS:
-                    modrm = 192 + LOGICAL_DIGITS[opcode] * 8 + WORD_REGISTERS[left.lower()]
-                    code = f"{indent}db 129, {modrm}\n{indent}dw {right}"
+                    modrm = REGISTER_MODE_BITS + LOGICAL_DIGITS[opcode] * MODRM_REGISTER_STRIDE + WORD_REGISTERS[left.lower()]
+                    code = f"{indent}db {WORD_IMMEDIATE_GROUP_OPCODE}, {modrm}\n{indent}dw {right}"
                     changed("nosmart_logical_immediate")
         output.append(code + comment)
     return ("\n".join(output) + "\n").replace("\n", "\r\n").encode("latin1"), counts

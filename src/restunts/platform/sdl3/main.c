@@ -43,7 +43,7 @@ int main(int argc, char **argv)
 		}
 		argc -= 2;
 	}
-	if (argc > 32767) {
+	if (argc > (int)LEGACY_S16_MAX) {
 		fputs("Too many arguments\n", stderr);
 		return 1;
 	}

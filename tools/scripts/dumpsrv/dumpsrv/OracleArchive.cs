@@ -6,13 +6,14 @@ public static class OracleArchive
 {
     public static (int Extracted, int Missing) Extract(string archivePath, string gameDirectory,
         bool renderer, int percentage, int shardIndex, int shardCount,
-        int camera = 2, int target = 0, string? shardPlanPath = null,
+        int camera = RendererSettings.DefaultCamera, int target = RendererSettings.PlayerTarget,
+        string? shardPlanPath = null,
         CancellationToken cancellation = default)
     {
-        ArgumentOutOfRangeException.ThrowIfLessThan(camera, 1);
-        ArgumentOutOfRangeException.ThrowIfGreaterThan(camera, 4);
-        ArgumentOutOfRangeException.ThrowIfLessThan(target, 0);
-        ArgumentOutOfRangeException.ThrowIfGreaterThan(target, 1);
+        ArgumentOutOfRangeException.ThrowIfLessThan(camera, RendererSettings.MinimumCamera);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(camera, RendererSettings.MaximumCamera);
+        ArgumentOutOfRangeException.ThrowIfLessThan(target, RendererSettings.PlayerTarget);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(target, RendererSettings.OpponentTarget);
         var replays = ReplayCatalog.Discover(gameDirectory, cancellation);
         var rendererReplays = ReplayCatalog.RendererReplays(gameDirectory, replays,
             target, cancellation);

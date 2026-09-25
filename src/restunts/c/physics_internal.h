@@ -24,6 +24,7 @@ extern struct VECTOR corkscrew_up_collision_points[];
 extern struct VECTOR corkscrew_down_collision_points[];
 extern struct VECTOR slalom_collision_points[];
 
+#define PHYSICS_HEIGHT_ONLY_PLANE_COUNT 4
 #define PHYSICS_PLANE_CONTACT_TOLERANCE 12
 #define PHYSICS_UNDERSIDE_CLEARANCE 24
 
