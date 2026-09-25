@@ -639,6 +639,7 @@ static void test_raster_bands(void)
 #define TEST_SPAN_COLOR 43U
 #define TEST_SPAN_ALTERNATE_COLOR 201U
 #define TEST_SPAN_INITIAL_ARGB 0x83123456U
+#define TEST_SPAN_ARGB_CELL_PERIOD 2
 #define TEST_SPAN_SAME_FAMILY 3U
 #define TEST_SPAN_OTHER_FAMILY 7U
 #define TEST_SPAN_NAN_BITS 0x7FC12345U
@@ -692,7 +693,7 @@ static legacy_f32 raster_span_float_bits(legacy_u32 bits)
 	return value;
 }
 
-static void test_raster_span_depth_edges(void)
+static void test_raster_span_depth_edges(legacy_s32 paint_mode)
 {
 	enum {
 		EDGE_LEFT = 40 * HIRES_SCALE,
@@ -790,7 +791,9 @@ static void test_raster_span_depth_edges(void)
 					legacy_s32 x = EDGE_LEFT + column;
 					legacy_s32 y = EDGE_TOP + row;
 					hires_pixel(x, y, TEST_SPAN_INITIAL_COLOR);
-					hires_argb_pixel(x, y, TEST_SPAN_INITIAL_ARGB);
+					if (x / HIRES_SCALE % TEST_SPAN_ARGB_CELL_PERIOD == 0) {
+						hires_argb_pixel(x, y, TEST_SPAN_INITIAL_ARGB);
+					}
 					size_t index = (size_t)y * HIRES_WIDTH + x;
 					target.inverse_depth[index] = previous[column % EDGE_PREVIOUS_COUNT];
 					legacy_s32 owner = (column + column / EDGE_PREVIOUS_COUNT) % EDGE_FAMILY_CYCLE;
@@ -808,8 +811,6 @@ static void test_raster_span_depth_edges(void)
 			for (legacy_s32 row = 0; row < EDGE_ROWS; row++) {
 				legacy_u32 family =
 					mode == EDGE_INVALID_FAMILY ? HIRES_DEPTH_FAMILY_NONE : TEST_SPAN_SAME_FAMILY;
-				legacy_s32 paint_mode =
-					HIRES_PAINT_SOLID + row % (HIRES_PAINT_ALTERNATE - HIRES_PAINT_SOLID + 1);
 				/* Both positive and negative interpolation cross exceptional
 				 * depths, including inside four-lane groups and patterned holes. */
 				if (span == TEST_SPAN_BATCHED) {
@@ -980,7 +981,9 @@ static void test_raster_spans(void)
 					for (legacy_s32 x = SPAN_REFERENCE_LEFT;
 						 x < SPAN_REFERENCE_LEFT + SPAN_REFERENCE_WIDTH; x++) {
 						hires_pixel(x, y, TEST_SPAN_INITIAL_COLOR);
-						hires_argb_pixel(x, y, TEST_SPAN_INITIAL_ARGB);
+						if (x / HIRES_SCALE % TEST_SPAN_ARGB_CELL_PERIOD == 0) {
+							hires_argb_pixel(x, y, TEST_SPAN_INITIAL_ARGB);
+						}
 						size_t pixel = (size_t)y * HIRES_WIDTH + x;
 						target.inverse_depth[pixel] =
 							(legacy_f32)TEST_SPAN_DEPTH +
@@ -1204,7 +1207,10 @@ legacy_int main(void)
 	test_raster_target_aliases();
 	test_raster_bands();
 	test_raster_spans();
-	test_raster_span_depth_edges();
+	for (legacy_s32 paint_mode = HIRES_PAINT_SOLID; paint_mode <= HIRES_PAINT_ALTERNATE;
+		 paint_mode++) {
+		test_raster_span_depth_edges(paint_mode);
+	}
 	test_raster_span_argb_retirement();
 	test_shadow_composition();
 	test_depth_lifetime(&screen);
