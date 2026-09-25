@@ -282,7 +282,8 @@ legacy_s32 hires_depth_test(legacy_s32 x, legacy_s32 y, legacy_f64 inverse_z, le
 							legacy_s32 mode)
 {
 	if (active == NULL || x < depth_left || x >= depth_right || y < depth_top ||
-		y >= depth_bottom || !(inverse_z > 0) || inverse_z > FLT_MAX || family == 0) {
+		y >= depth_bottom || !(inverse_z > 0) || inverse_z > FLT_MAX ||
+		family == HIRES_DEPTH_FAMILY_NONE) {
 		return 0;
 	}
 	return hires_test_depth(inverse_depth, depth_family, (size_t)y * HIRES_WIDTH + x, inverse_z,
@@ -411,7 +412,7 @@ legacy_s32 hires_raster_depth_test(struct HIRES_RASTER_CONTEXT *context, legacy_
 	const struct HIRES_RASTER_TARGET *target = context->target;
 	if (x < target->depth_left || x >= target->depth_right || y < target->depth_top ||
 		y >= target->depth_bottom || y < context->top || y >= context->bottom || !(inverse_z > 0) ||
-		inverse_z > FLT_MAX || family == 0) {
+		inverse_z > FLT_MAX || family == HIRES_DEPTH_FAMILY_NONE) {
 		return 0;
 	}
 	return hires_test_depth(target->inverse_depth, target->depth_family,
@@ -433,6 +434,94 @@ void hires_raster_pixel(struct HIRES_RASTER_CONTEXT *context, legacy_s32 x, lega
 	}
 }
 
+void hires_raster_span(struct HIRES_RASTER_CONTEXT *context, legacy_s32 left, legacy_s32 right,
+					   legacy_s32 y, legacy_f64 inverse_z, legacy_f64 depth_step, legacy_u32 family,
+					   legacy_s32 depth_mode, legacy_u16 color, legacy_u16 alternate,
+					   legacy_u16 pattern, legacy_s32 paint_mode, legacy_s32 depth_test)
+{
+	const struct HIRES_RASTER_TARGET *target = context->target;
+	if (y < target->top || y >= target->bottom || y < context->top || y >= context->bottom) {
+		return;
+	}
+	legacy_s32 clip_left = target->left;
+	legacy_s32 clip_right = target->right;
+	if (depth_test) {
+		if (family == HIRES_DEPTH_FAMILY_NONE || y < target->depth_top ||
+			y >= target->depth_bottom) {
+			return;
+		}
+		if (clip_left < target->depth_left) {
+			clip_left = target->depth_left;
+		}
+		if (clip_right > target->depth_right) {
+			clip_right = target->depth_right;
+		}
+	}
+	if (right > clip_right) {
+		right = clip_right;
+	}
+	/* Repeated addition is intentional: clipping must not change rounding
+	 * from the original per-pixel interpolation, including patterned holes. */
+	while (left < clip_left && left < right) {
+		inverse_z += depth_step;
+		left++;
+	}
+	legacy_u16 row = target->rows[y / HIRES_SCALE];
+	legacy_u32 sample_row = (y % HIRES_SCALE) * HIRES_SCALE;
+	legacy_u32 pattern_row = (y & HIRES_PATTERN_ROW_MASK) == 0 ? HIRES_PATTERN_WIDTH : 0U;
+	struct HIRES_SURFACE *surface = target->surface;
+	for (legacy_s32 x = left; x < right;) {
+		legacy_u16 offset = (legacy_u16)(row + x / HIRES_SCALE);
+		legacy_u32 first_sample = sample_row + x % HIRES_SCALE;
+		legacy_s32 end = (x / HIRES_SCALE + 1) * HIRES_SCALE;
+		if (end > right) {
+			end = right;
+		}
+		legacy_u8 *cell = surface->pixels + (size_t)offset * HIRES_CELL_PIXELS;
+		legacy_u32 *argb = surface->valid[offset] == HIRES_CELL_ARGB
+							   ? surface->argb + (size_t)offset * HIRES_CELL_PIXELS
+							   : NULL;
+		legacy_u32 sample = first_sample;
+		legacy_s32 painted = 0;
+		for (; x < end; x++, sample++, inverse_z += depth_step) {
+			legacy_u8 sample_color = (legacy_u8)color;
+			if (paint_mode != HIRES_PAINT_SOLID) {
+				if ((pattern & (1U << (pattern_row + (HIRES_PATTERN_WIDTH - 1U) -
+									   (x & HIRES_PATTERN_COLUMN_MASK)))) != 0) {
+					if (paint_mode == HIRES_PAINT_ALTERNATE) {
+						sample_color = (legacy_u8)alternate;
+					}
+				} else if (paint_mode != HIRES_PAINT_ALTERNATE) {
+					continue;
+				}
+			}
+			if (depth_test &&
+				(!(inverse_z > 0) || inverse_z > FLT_MAX ||
+				 !hires_test_depth(target->inverse_depth, target->depth_family,
+								   (size_t)y * HIRES_WIDTH + x, inverse_z, family, depth_mode))) {
+				continue;
+			}
+			cell[sample] = sample_color;
+			if (argb != NULL) {
+				argb[sample] = 0;
+				painted = 1;
+			}
+		}
+		/* No other job can change this cell. Retire full-color coverage once
+		 * after this run, rather than scanning its sixteen samples per pixel. */
+		if (painted) {
+			legacy_u32 remaining = 0;
+			for (legacy_s32 index = 0; index < HIRES_CELL_PIXELS; index++) {
+				remaining |= argb[index];
+			}
+			if (remaining == 0) {
+				surface->valid[offset] = HIRES_CELL_INDEXED;
+				context->cleared_argb_cells++;
+			}
+		}
+	}
+}
+
 void hires_raster_finish(const struct HIRES_RASTER_TARGET *target, legacy_u32 cleared_argb_cells)
 {
 	target->surface->argb_cells -= cleared_argb_cells;
@@ -449,6 +538,20 @@ void hires_fill_pixel(legacy_s32 x, legacy_s32 y, legacy_u8 color)
 	legacy_u16 row = LEGACY_READ_U16_LE(active_sprite.sprite_lineofs + y * LEGACY_WORD_BYTES);
 	legacy_u16 offset = (legacy_u16)(row + x);
 	memset(hires_cell(active, offset), color, HIRES_CELL_PIXELS);
+	hires_clear_argb(active, offset);
+}
+
+void hires_write_pixel(legacy_s32 x, legacy_s32 y, const legacy_u8 *samples)
+{
+	if (active == NULL || x < 0 || y < 0 || x >= HIRES_WIDTH / HIRES_SCALE ||
+		y >= HIRES_HEIGHT / HIRES_SCALE || x < active_sprite.sprite_raster_left ||
+		x >= active_sprite.sprite_raster_right || y < active_sprite.sprite_top ||
+		y >= active_sprite.sprite_bottom) {
+		return;
+	}
+	legacy_u16 row = LEGACY_READ_U16_LE(active_sprite.sprite_lineofs + y * LEGACY_WORD_BYTES);
+	legacy_u16 offset = (legacy_u16)(row + x);
+	memcpy(hires_cell(active, offset), samples, HIRES_CELL_PIXELS);
 	hires_clear_argb(active, offset);
 }
 
