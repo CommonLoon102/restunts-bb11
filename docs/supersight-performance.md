@@ -92,7 +92,7 @@ receivers, height/depth boundaries, clipped and tiny shadows, model-less fallbac
 and the controller's overload/recovery/reset behavior before the experiment was
 removed. No FPS or quality setting was added for these rejected alternatives.
 
-## Tile and shape preparation
+## Tile and shape preparation: 8c37d320
 
 Shapes rejected by the existing screen-bounds check skip directional visibility
 preparation. Accepted shapes also skip that work when their existing distance
@@ -125,7 +125,7 @@ identical tile/car checksums.
 These are preparation costs, not complete frame times. The dense fixture shows
 the benefit of avoiding repeated scans; sparse-map savings are much smaller.
 
-## Level skybox sampling
+## Level skybox sampling: 53fe5d2b
 
 An exactly level horizon reuses wrapped source columns across rows and source
 row pointers across columns. The original arithmetic and texel selection are
@@ -153,3 +153,67 @@ The level artwork cases used 83-87% less CPU; the general banked path was within
 observed timing drift. Three complete scene comparisons also matched output,
 but their timing changed in opposite directions (including a faster banked
 control), so they do not establish a complete-frame improvement.
+
+## Worker settings
+
+The final worker comparison uses the retained implementation at 53fe5d2b on an
+x86_64 Linux VM with three allowed logical CPUs (0, 1, 2) and inherited nice 0.
+Affinity is applied before process/thread creation: CPU 0 for pinned serial
+rendering, or all three CPUs for unpinned runs. The headless harness bypasses the
+interactive game's scheduling setup; setting its environment alone would not
+be an adequate affinity comparison.
+
+Each configuration renders fixed mid-replay cockpit and external views with
+20 warmup frames and 60 timed frames, in two batches with reversed order.
+Initialization, replay advancement, warmup, and output capture are outside the
+timed interval. Process CPU time includes background workers; elapsed time is
+reported separately. As above, this excludes display, audio, frame pacing, UI,
+and timed authoritative physics.
+
+All 24 batches matched captured legacy, indexed, and final ARGB buffers byte for
+byte before and after timing. Times below are the median of the two batch means,
+in milliseconds per frame. Runs with background workers use all three CPUs.
+
+| Setting | Cockpit CPU | Cockpit elapsed | External CPU | External elapsed |
+| --- | ---: | ---: | ---: | ---: |
+| Serial, unpinned | 7.345 | 7.418 | 8.623 | 8.699 |
+| Serial, CPU 0 | 7.424 | 7.509 | 8.276 | 8.392 |
+| 1 worker | 7.519 | 5.684 | 8.564 | 6.752 |
+| 2 workers | 7.825 | 5.143 | 8.785 | 5.874 |
+| 4 workers | 7.361 | 5.234 | 9.220 | 7.453 |
+| Auto (resolved to 2) | 7.305 | 5.358 | 8.534 | 6.098 |
+
+Two workers reduced elapsed rendering/composition time by 30.7% in the cockpit
+and 32.5% externally, with modestly higher total CPU use. Four workers did not
+improve both views. This lower-contention run reverses earlier worker findings;
+compare configurations within this run, not its absolute times with earlier
+sessions on the VM. The shipped serial/affinity defaults remain unchanged:
+this three-CPU, headless measurement does not cover other machines or the
+interactive game's display/audio scheduling.
+
+To try the measured worker configuration with a normal unrestricted launch
+affinity, use the existing startup overrides (adjust the executable path):
+
+```sh
+RESTUNTS_CPU_AFFINITY=off RESTUNTS_HIGH_PRIORITY=0 RESTUNTS_RENDER_WORKERS=2 \
+  ./out/sdl3-linux-x64/restunts --data-dir stunts
+```
+
+## Validation
+
+The Release game builds successfully. The complete host regression suite passes,
+along with focused high-resolution geometry, composition, input, skybox,
+frame-scheduling, worker-pool, and track-preview checks with the relevant changes.
+The final render-replay check compares every game state and RNG seed with
+interpolation off, on, and repeatedly toggled:
+
+| Replay | Matching states per mode |
+| --- | ---: |
+| DEFAULT | 241 |
+| DEFCRSH | 313 |
+| 0A0A | 241 |
+| HARDLAND | 357 |
+| SHAKING | 1,266 |
+
+Changed C files pass clang-format 18.1.8 and EditorConfig checks and preserve
+CRLF line endings. All retained source changes received a separate review.
