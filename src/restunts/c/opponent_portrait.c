@@ -178,12 +178,21 @@ void opponent_portrait_draw_at(const struct SPRITE *target, const struct SHAPE2D
 	legacy_s32 x = tile_x + PORTRAIT_LEFT;
 	legacy_s32 y = tile_y + PORTRAIT_TOP;
 	const legacy_u8 *indexed = (const legacy_u8 *)original + SHAPE2D_HEADER_SIZE;
-	for (legacy_s32 row = 0; row < source->h; row++) {
+	legacy_s32 scale = hires_render_scale();
+	legacy_s32 source_step = HIRES_SCALE / scale;
+	legacy_s32 scale_shift = 0;
+	for (legacy_s32 samples = scale; samples > 1; samples /= 2) {
+		scale_shift++;
+	}
+	legacy_s32 width = PORTRAIT_INNER_WIDTH * scale;
+	legacy_s32 height = PORTRAIT_INNER_HEIGHT * scale;
+	for (legacy_s32 row = 0; row < height; row++) {
 		const legacy_u32 *pixels =
-			(const legacy_u32 *)((const legacy_u8 *)source->pixels + row * source->pitch);
-		for (legacy_s32 column = 0; column < source->w; column++) {
-			legacy_s32 original_x = column / HIRES_SCALE + PORTRAIT_LEFT;
-			legacy_s32 original_y = row / HIRES_SCALE + PORTRAIT_TOP;
+			(const legacy_u32 *)((const legacy_u8 *)source->pixels +
+								 (row * source_step + source_step / 2) * source->pitch);
+		for (legacy_s32 column = 0; column < width; column++) {
+			legacy_s32 original_x = (column >> scale_shift) + PORTRAIT_LEFT;
+			legacy_s32 original_y = (row >> scale_shift) + PORTRAIT_TOP;
 			/* Keep the authored red number, including its exact pixel contours.
 			 * Its surrounding photograph remains continuous through the mask. */
 			if (original_x >= PORTRAIT_DIGIT_LEFT && original_x <= PORTRAIT_DIGIT_RIGHT &&
@@ -191,7 +200,8 @@ void opponent_portrait_draw_at(const struct SPRITE *target, const struct SHAPE2D
 				indexed[original_y * PORTRAIT_WIDTH + original_x] == PORTRAIT_DIGIT_COLOR) {
 				continue;
 			}
-			hires_argb_pixel(x * HIRES_SCALE + column, y * HIRES_SCALE + row, pixels[column]);
+			hires_argb_pixel(x * scale + column, y * scale + row,
+							 pixels[column * source_step + source_step / 2]);
 		}
 	}
 	hires_end();

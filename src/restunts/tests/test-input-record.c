@@ -2,6 +2,9 @@
 #include <assert.h>
 #include <stdio.h>
 #include <string.h>
+#ifdef RESTUNTS_SDL3
+#include "../c/frame_adaptive.h"
+#endif
 #ifndef INPUT_SOURCE
 #define INPUT_SOURCE "../c/game_input.c"
 #endif
@@ -11,6 +14,8 @@
 #include INPUT_SOURCE
 #include RECORD_SOURCE
 #undef memcpy
+#undef strcmp
+#undef strlen
 
 static struct CARSTATE ghost_fixture;
 static legacy_s16 ghost_fixture_active;
@@ -23,10 +28,46 @@ struct CARSTATE *ghost_car_state(void)
 static legacy_u32 trace_hash, random_state = 1;
 static legacy_u32 fps_reset_count;
 static legacy_u32 supersight_reset_count;
+#ifdef RESTUNTS_SDL3
+#define TEST_SUPERSIGHT_STATUS_CAPACITY 16
+static legacy_u32 supersight_status_count, hires_enabled_transitions;
+static legacy_s8 supersight_status[TEST_SUPERSIGHT_STATUS_CAPACITY];
+static legacy_s32 test_hires_enabled, test_hires_scale = HIRES_SCALE;
+
+void hires_set_enabled(legacy_s32 enabled)
+{
+	if (test_hires_enabled != enabled) {
+		test_hires_enabled = enabled;
+		test_hires_scale = HIRES_SCALE;
+		hires_enabled_transitions++;
+	}
+}
+
+legacy_s32 hires_render_scale(void)
+{
+	return test_hires_scale;
+}
+
+void hires_set_render_scale(legacy_s32 scale)
+{
+	test_hires_scale = scale;
+}
+
+void frame_supersight_show_status(const legacy_s8 *name)
+{
+	size_t length = strlen((const legacy_char *)name);
+	assert(length < sizeof(supersight_status));
+	memcpy(supersight_status, name, length + 1);
+	supersight_status_count++;
+}
+#endif
 
 void frame_supersight_reset(void)
 {
 	supersight_reset_count++;
+#ifdef RESTUNTS_SDL3
+	frame_adaptive_restart(&frame_adaptive);
+#endif
 }
 
 void frame_fps_reset(void)
@@ -181,6 +222,13 @@ static void reset_inputs(void)
 	keyboard_char = joystick_flags = 0;
 	supersight_enabled = fps_display_enabled = 0;
 	fps_reset_count = supersight_reset_count = 0;
+#ifdef RESTUNTS_SDL3
+	frame_adaptive_reset(&frame_adaptive);
+	supersight_status_count = hires_enabled_transitions = 0;
+	supersight_status[0] = 0;
+	test_hires_enabled = 0;
+	test_hires_scale = HIRES_SCALE;
+#endif
 	video_page_count = 2;
 	full_redraw_frames_remaining = 0;
 	mouse_sample_index = 0;
@@ -523,6 +571,113 @@ static void test_display_shortcuts(void)
 	}
 }
 
+#ifdef RESTUNTS_SDL3
+static legacy_u32 shift_f12_callbacks;
+static legacy_u8 callback_interrupts_disabled;
+
+void dos_interrupts_disable(void)
+{
+	assert(callback_interrupts_disabled == 0);
+	callback_interrupts_disabled = 1;
+}
+
+void dos_interrupts_enable(void)
+{
+	assert(callback_interrupts_disabled != 0);
+	callback_interrupts_disabled = 0;
+}
+
+static void shift_f12_callback(void)
+{
+	assert(callback_interrupts_disabled == 0);
+	shift_f12_callbacks++;
+}
+
+static void test_shift_f12_callback(void)
+{
+	assert((legacy_u16)KEY_SHIFT_F12 == 0x8800U);
+	assert(kb_parse_key(KEY_SHIFT_F12) == KEY_SHIFT_F12);
+	kb_reg_callback(KEY_SHIFT_F12, shift_f12_callback);
+	assert(kb_parse_key(KEY_SHIFT_F12) == 0 && shift_f12_callbacks == 1);
+	assert(kb_parse_key(KEY_F12) == KEY_F12 && shift_f12_callbacks == 1);
+	kb_remove_callback(KEY_SHIFT_F12);
+	assert(kb_parse_key(KEY_SHIFT_F12) == KEY_SHIFT_F12 && shift_f12_callbacks == 1);
+}
+
+static void assert_supersight_status(const legacy_char *expected, legacy_u32 count)
+{
+	assert(supersight_status_count == count);
+	assert(strcmp((const legacy_char *)supersight_status, expected) == 0);
+}
+
+static void test_locked_display_shortcuts(void)
+{
+	static const struct {
+		enum FRAME_ADAPTIVE_PRESET preset;
+		legacy_s32 scale;
+		const legacy_char *name;
+	} presets[] = {{FRAME_ADAPTIVE_PRESET_FULL, FRAME_ADAPTIVE_FULL_SCALE, "Full"},
+				   {FRAME_ADAPTIVE_PRESET_HIGH, FRAME_ADAPTIVE_FULL_SCALE, "High"},
+				   {FRAME_ADAPTIVE_PRESET_MEDIUM, FRAME_ADAPTIVE_HALF_SCALE, "Medium"},
+				   {FRAME_ADAPTIVE_PRESET_LOW, FRAME_ADAPTIVE_MINIMUM_SCALE, "Low"},
+				   {FRAME_ADAPTIVE_PRESET_FULL, FRAME_ADAPTIVE_FULL_SCALE, "Full"}};
+	for (legacy_u8 mode = REPLAY_MODE_LIVE; mode <= REPLAY_MODE_PAUSED; mode++) {
+		for (legacy_u16 camera = CAMERA_MODE_COCKPIT; camera < CAMERA_MODE_COUNT; camera++) {
+			for (legacy_u8 start_auto = 0; start_auto <= 1; start_auto++) {
+				reset_inputs();
+				game_replay_mode = mode;
+				cameramode = camera;
+				followOpponentFlag = 1;
+				legacy_u32 status_count = 0;
+				if (start_auto != 0) {
+					assert(handle_ingame_kb_shortcuts(KEY_F12) == 1);
+					assert(supersight_enabled == 1 &&
+						   frame_adaptive.preset == FRAME_ADAPTIVE_PRESET_AUTO);
+					assert_supersight_status("Auto", ++status_count);
+					/* An already reduced auto stage still enters the first lock. */
+					frame_adaptive.quality = FRAME_ADAPTIVE_SMALL_VIEW;
+					test_hires_scale = FRAME_ADAPTIVE_MINIMUM_SCALE;
+				}
+				for (size_t preset = 0; preset < sizeof(presets) / sizeof(presets[0]); preset++) {
+					full_redraw_frames_remaining = 0;
+					assert(handle_ingame_kb_shortcuts(KEY_SHIFT_F12) == 1);
+					assert(supersight_enabled == 1 && test_hires_enabled == 1);
+					assert(frame_adaptive.preset == presets[preset].preset);
+					assert(test_hires_scale == presets[preset].scale);
+					assert(frame_adaptive_render_scale(&frame_adaptive) == presets[preset].scale);
+					assert(full_redraw_frames_remaining == video_page_count);
+					assert_supersight_status(presets[preset].name, ++status_count);
+					/* Selecting locked modes never cycles the output mode, and their
+					 * status is still requested with the FPS display switched off. */
+					assert(hires_enabled_transitions == 1 && fps_display_enabled == 0);
+					assert(game_replay_mode == mode && cameramode == camera &&
+						   followOpponentFlag == 1);
+				}
+			}
+		}
+	}
+	/* Plain F12 leaves every lock directly for Off, then returns to Auto. */
+	for (size_t preset = 0; preset + 1 < sizeof(presets) / sizeof(presets[0]); preset++) {
+		reset_inputs();
+		for (size_t press = 0; press <= preset; press++) {
+			assert(handle_ingame_kb_shortcuts(KEY_SHIFT_F12) == 1);
+		}
+		legacy_u32 status_count = supersight_status_count;
+		assert(handle_ingame_kb_shortcuts(KEY_F12) == 1);
+		assert(supersight_enabled == 0 && test_hires_enabled == 0);
+		assert(test_hires_scale == HIRES_SCALE && hires_enabled_transitions == 2);
+		assert_supersight_status("Off", ++status_count);
+		assert(handle_ingame_kb_shortcuts(KEY_F12) == 1);
+		assert(supersight_enabled == 1 && test_hires_enabled == 1);
+		assert(frame_adaptive.preset == FRAME_ADAPTIVE_PRESET_AUTO);
+		assert(frame_adaptive.quality == FRAME_ADAPTIVE_FULL_VIEW);
+		assert(test_hires_scale == HIRES_SCALE && hires_enabled_transitions == 3);
+		assert_supersight_status("Auto", ++status_count);
+		assert(fps_display_enabled == 0);
+	}
+}
+#endif
+
 int main(void)
 {
 	legacy_u32 input_hash = input_fingerprint();
@@ -534,6 +689,10 @@ int main(void)
 	test_recording_input_modes();
 	test_ghost_view_shortcut();
 	test_display_shortcuts();
+#ifdef RESTUNTS_SDL3
+	test_shift_f12_callback();
+	test_locked_display_shortcuts();
+#endif
 #ifdef INPUT_RECORD_BASELINE
 	fprintf(stdout,
 			"%08" LEGACY_PRIx32 " %08" LEGACY_PRIx32 " %08" LEGACY_PRIx32 " %08" LEGACY_PRIx32
@@ -544,8 +703,13 @@ int main(void)
 	assert(scrollbar_hash == 0x207b3fe7UL);
 	assert(record_hash == 0x41c4e48dUL);
 	assert(callback_hash == 0x9bd7fd3eUL);
-	/* F11/F12 are now handled without triggering the paused-race fallback. */
+	/* New display shortcuts bypass the paused-race fallback. Classic keeps its
+	 * original F11/F12 fingerprint; SDL additionally recognizes Shift+F12. */
+#ifdef RESTUNTS_SDL3
+	assert(shortcut_hash == 0xdecf17b2UL);
+#else
 	assert(shortcut_hash == 0xab8a7016UL);
+#endif
 #endif
 	return 0;
 }

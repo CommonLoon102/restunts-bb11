@@ -17,6 +17,9 @@
 #include "externs.h"
 #include "keyboard.h"
 #include "ghost.h"
+#ifdef RESTUNTS_SDL3
+#include "frame_internal.h"
+#endif
 
 #define TRACK_EDITOR_RESOURCE_FILE_INDEX 3
 #define TRACK_MENU_BUTTON_COUNT 3
@@ -131,10 +134,26 @@ static void track_menu_draw_background(void)
 	track_menu_draw_highscore();
 
 	track_menu_draw_buttons();
+#ifdef RESTUNTS_SDL3
+	if (frame_display_overlay_active() != 0) {
+		sprite_select_render_window();
+		sprite_set_target_clip_bounds(0, TRACK_MENU_SCREEN_WIDTH, 0, TRACK_MENU_SCREEN_HEIGHT);
+		frame_fps_draw_text();
+	}
+#endif
 }
 
 static legacy_u16 track_menu_poll_input(struct TRACK_MENU_STATE *menu)
 {
+#ifdef RESTUNTS_SDL3
+	if (frame_fps_expire_idle() != 0) {
+		mouse_draw_opaque_check();
+		sprite_free_wnd(render_window_sprite);
+		track_menu_draw_background();
+		menu->previous = TRACK_MENU_NO_SELECTION;
+		mouse_draw_transparent_check();
+	}
+#endif
 	if (menu->selected != menu->previous) {
 		menu->previous = menu->selected;
 		sprite_blit_to_video(render_window_sprite, LEGACY_S8_FROM_BITS(menu->blit_mode));
@@ -161,9 +180,9 @@ static legacy_u16 track_menu_poll_input(struct TRACK_MENU_STATE *menu)
 static legacy_u8 track_menu_activate_key(struct TRACK_MENU_STATE *menu, legacy_u16 key)
 {
 #ifdef RESTUNTS_SDL3
-	if (key == (legacy_u16)KEY_F12) {
+	if (key == (legacy_u16)KEY_F12 || key == (legacy_u16)KEY_SHIFT_F12) {
 		mouse_draw_opaque_check();
-		handle_ingame_kb_shortcuts(KEY_F12);
+		handle_ingame_kb_shortcuts(LEGACY_S16_FROM_BITS(key));
 		sprite_free_wnd(render_window_sprite);
 		track_menu_draw_background();
 		menu->previous = TRACK_MENU_NO_SELECTION;

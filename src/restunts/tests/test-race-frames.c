@@ -96,12 +96,63 @@ void sdl3_platform_pump(void)
 	}
 }
 
-void sdl3_video_begin_frame(void)
+static legacy_s32 test_render_scale = HIRES_SCALE;
+static struct {
+	legacy_u8 active, begun, expected_redraw;
+	legacy_s32 expected_scale;
+	legacy_u16 set_calls, draw_calls, end_calls;
+} scale_transition;
+
+static void assert_render_scale_before_drawing(void)
 {
+	if (scale_transition.active != 0) {
+		assert(scale_transition.begun != 0);
+		assert(test_render_scale == scale_transition.expected_scale);
+		assert(full_redraw_frames_remaining == scale_transition.expected_redraw);
+	}
+}
+
+legacy_s32 hires_render_scale(void)
+{
+	return test_render_scale;
+}
+
+void hires_set_render_scale(legacy_s32 scale)
+{
+	if (scale_transition.active != 0) {
+		assert(scale_transition.begun == 0);
+		assert(scale == scale_transition.expected_scale);
+		scale_transition.set_calls++;
+	}
+	test_render_scale = scale;
+}
+struct FRAME_ADAPTIVE_STATE frame_adaptive;
+legacy_s32 frame_adaptive_render_scale(const struct FRAME_ADAPTIVE_STATE *adaptive)
+{
+	if (adaptive->quality < FRAME_ADAPTIVE_HALF_RESOLUTION) {
+		return HIRES_SCALE;
+	}
+	return adaptive->quality == FRAME_ADAPTIVE_HALF_RESOLUTION ? FRAME_ADAPTIVE_HALF_SCALE
+															   : FRAME_ADAPTIVE_MINIMUM_SCALE;
+}
+
+void sdl3_video_begin_track_frame(legacy_u8 adaptive)
+{
+	if (scale_transition.active != 0) {
+		assert(scale_transition.begun == 0);
+		assert(adaptive == supersight_enabled);
+		scale_transition.begun = 1;
+		assert_render_scale_before_drawing();
+	}
 }
 
 void sdl3_video_end_frame(void)
 {
+	if (scale_transition.active != 0) {
+		assert(scale_transition.begun != 0 && scale_transition.draw_calls == 1);
+		scale_transition.begun = 0;
+		scale_transition.end_calls++;
+	}
 }
 
 struct CARSTATE *ghost_car_state(void)
@@ -330,6 +381,9 @@ void sprite_set_target_clip_bounds(legacy_u16 left, legacy_u16 right, legacy_u16
 }
 void setup_car_shapes(legacy_s16 operation)
 {
+#ifdef RESTUNTS_SDL3
+	assert_render_scale_before_drawing();
+#endif
 	if (replay_render.active != 0) {
 		if (operation == DASHBOARD_OPERATION_REDRAW_STATIC) {
 			replay_render.static_draws++;
@@ -367,6 +421,12 @@ void loop_game(legacy_s16 operation, legacy_s16 recorded, legacy_s16 current)
 }
 void update_frame(legacy_s8 buffer, struct RECTANGLE *rect)
 {
+#ifdef RESTUNTS_SDL3
+	assert_render_scale_before_drawing();
+	if (scale_transition.active != 0) {
+		scale_transition.draw_calls++;
+	}
+#endif
 	if (replay_render.active != 0) {
 		assert(rect == &rect_windshield);
 		assert(rect->bottom == (supersight_enabled != 0 && replaybar_enabled != 0 ? 151 : 165));
@@ -609,6 +669,83 @@ static void test_rewind_frame_loop(void)
 }
 
 #ifdef RESTUNTS_SDL3
+static void test_render_scale_transitions(void)
+{
+	static const struct {
+		legacy_u16 quality;
+		legacy_u8 supersight;
+		legacy_s32 scale;
+	} stages[] = {{FRAME_ADAPTIVE_FULL_VIEW, 1, HIRES_SCALE},
+				  {FRAME_ADAPTIVE_LARGE_VIEW, 1, HIRES_SCALE},
+				  {FRAME_ADAPTIVE_HALF_RESOLUTION, 1, FRAME_ADAPTIVE_HALF_SCALE},
+				  {FRAME_ADAPTIVE_MINIMUM_RESOLUTION, 1, FRAME_ADAPTIVE_MINIMUM_SCALE},
+				  {FRAME_ADAPTIVE_SMALL_VIEW, 1, FRAME_ADAPTIVE_MINIMUM_SCALE},
+				  /* F12 disables SuperSight even if its previous stage used a small raster. */
+				  {FRAME_ADAPTIVE_SMALL_VIEW, 0, HIRES_SCALE},
+				  {FRAME_ADAPTIVE_MINIMUM_RESOLUTION, 1, FRAME_ADAPTIVE_MINIMUM_SCALE},
+				  {FRAME_ADAPTIVE_FULL_VIEW, 1, HIRES_SCALE}};
+	const legacy_u32 previous_trace = trace_hash;
+	scheduled_mode = 0;
+	race_presentation.interpolating = 0;
+	for (legacy_u8 pages = 1; pages <= 2; pages++) {
+		test_render_scale = HIRES_SCALE;
+		for (size_t stage = 0; stage < sizeof(stages) / sizeof(stages[0]); stage++) {
+			memset(&replay_render, 0, sizeof(replay_render));
+			replay_render.active = 1;
+			supersight_enabled = stages[stage].supersight;
+			frame_adaptive.quality = stages[stage].quality;
+			legacy_u8 changed = test_render_scale != stages[stage].scale;
+			struct RACE_VIEWPORT_CACHE cache = {-1, -1, 0};
+			game_replay_mode = REPLAY_MODE_PLAYBACK;
+			game_replay_mode_copy = RACE_REPLAY_MODE_UNINITIALIZED;
+			idle_expired = followOpponentFlag = is_in_replay = 0;
+			dashb_toggle = replaybar_toggle = 1;
+			dashbmp_y = 165;
+			dastbmp_y = 130;
+			roofbmpheight = 0;
+			dasmshapeptr = &replay_render.shapes[0];
+			viewport_bottom_cache = -1;
+			video_page_count = pages;
+			video_uses_page_flipping = pages > 1;
+			frame_buffer_index = dashboard_buffer_index = 0;
+			slow_video_mgmt_copy = 0;
+			frames = presented_frames = 0;
+			race_update_viewport(&cache, 0);
+			/* Isolate the scale-triggered invalidation from viewport changes. */
+			full_redraw_frames_remaining = 0;
+			memset(&scale_transition, 0, sizeof(scale_transition));
+			scale_transition.active = 1;
+			scale_transition.expected_scale = stages[stage].scale;
+			for (legacy_u8 draw = 0; draw <= pages; draw++) {
+				scale_transition.expected_redraw = changed != 0 && draw < pages ? pages - draw : 0;
+				scale_transition.draw_calls = 0;
+				if (video_uses_page_flipping != 0) {
+					sprite_select_mcga_backbuffer();
+				} else {
+					sprite_select_render_window();
+				}
+				race_draw_frame();
+				assert(test_render_scale == stages[stage].scale);
+				assert(scale_transition.set_calls == changed);
+				assert(scale_transition.begun == 0 && scale_transition.draw_calls == 1);
+				assert(scale_transition.end_calls == draw + 1U);
+				assert(full_redraw_frames_remaining == (scale_transition.expected_redraw != 0
+															? scale_transition.expected_redraw - 1
+															: 0));
+			}
+			assert(replay_render.static_draws == (changed != 0 ? pages : 0));
+			assert(replay_render.controls == (changed != 0 ? pages : 0));
+			assert(replay_render.updates == pages + 1U);
+			scale_transition.active = 0;
+		}
+	}
+	replay_render.active = 0;
+	supersight_enabled = 0;
+	frame_adaptive.quality = FRAME_ADAPTIVE_FULL_VIEW;
+	test_render_scale = HIRES_SCALE;
+	assert(trace_hash == previous_trace);
+}
+
 static void prepare_presentation_test(legacy_u16 rate, legacy_u16 mode)
 {
 	memset(&state, 0, sizeof(state));
@@ -974,6 +1111,7 @@ int main(void)
 	test_rewind_frame_loop();
 	test_replay_dashboard_rendering();
 #ifdef RESTUNTS_SDL3
+	test_render_scale_transitions();
 	test_presentation_rate();
 	test_replay_presentation_rate();
 	test_interpolation_slot_boundaries();

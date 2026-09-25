@@ -127,9 +127,11 @@ static SDL_Surface *skybox_hires_image(legacy_s16 theme, legacy_s16 image, legac
 void skybox_hires_draw(const struct SPRITE *target, legacy_s16 theme, legacy_s16 image,
 					   legacy_s32 width, legacy_s32 height, legacy_s32 x, legacy_s32 y)
 {
-	if (!hires_enabled() || !palette_ready || theme < 0 || theme >= SKYBOX_THEME_COUNT ||
-		image < 0 || image >= SKYBOX_IMAGE_COUNT || width <= 0 || width > SKYBOX_SCREEN_WIDTH ||
-		height <= 0 || height > SKYBOX_SCREEN_BOTTOM) {
+	legacy_s32 scale = hires_render_scale();
+	/* The ordinary horizon has already been drawn into the legacy target. */
+	if (scale == HIRES_MINIMUM_SCALE || !hires_enabled() || !palette_ready || theme < 0 ||
+		theme >= SKYBOX_THEME_COUNT || image < 0 || image >= SKYBOX_IMAGE_COUNT || width <= 0 ||
+		width > SKYBOX_SCREEN_WIDTH || height <= 0 || height > SKYBOX_SCREEN_BOTTOM) {
 		return;
 	}
 	legacy_s32 left = SDL_max(SDL_max(x, target->sprite_raster_left), 0);
@@ -150,15 +152,21 @@ void skybox_hires_draw(const struct SPRITE *target, legacy_s16 theme, legacy_s16
 		!hires_begin(&clip)) {
 		return;
 	}
+	/* Retain authored artwork; sample destination-pixel centers at every scale. */
+	legacy_s32 source_step = HIRES_SCALE / scale;
 	for (legacy_s32 row = top; row < bottom; row++) {
 		const legacy_u8 *pixels = (const legacy_u8 *)source->pixels +
 								  (row - y) * HIRES_SCALE * source->pitch +
 								  (left - x) * HIRES_SCALE;
 		for (legacy_s32 column = left; column < right; column++) {
 			legacy_u8 samples[HIRES_SCALE * HIRES_SCALE];
-			for (legacy_s32 sample_y = 0; sample_y < HIRES_SCALE; sample_y++) {
-				memcpy(samples + sample_y * HIRES_SCALE, pixels + sample_y * source->pitch,
-					   HIRES_SCALE);
+			for (legacy_s32 sample_y = 0; sample_y < scale; sample_y++) {
+				const legacy_u8 *source_row =
+					pixels + (sample_y * source_step + source_step / 2) * source->pitch;
+				for (legacy_s32 sample_x = 0; sample_x < scale; sample_x++) {
+					samples[sample_y * scale + sample_x] =
+						source_row[sample_x * source_step + source_step / 2];
+				}
 			}
 			hires_write_pixel(column, row, samples);
 			pixels += HIRES_SCALE;
@@ -174,7 +182,7 @@ struct SKYBOX_HIRES_STRIP {
 
 static legacy_s32 skybox_hires_prepare_strips(struct SKYBOX_HIRES_STRIP strips[SKYBOX_IMAGE_COUNT],
 											  struct SHAPE2D *const shapes[SKYBOX_IMAGE_COUNT],
-											  legacy_s16 theme)
+											  legacy_s16 theme, legacy_s32 scale)
 {
 	legacy_s32 maximum_height = 0;
 	for (legacy_s32 index = 0; index < SKYBOX_IMAGE_COUNT; index++) {
@@ -190,7 +198,10 @@ static legacy_s32 skybox_hires_prepare_strips(struct SKYBOX_HIRES_STRIP strips[S
 		strip->pitch = shape->width;
 		strip->scale = SKYBOX_ORIGINAL_SAMPLE_SCALE;
 		SDL_Surface *source = NULL;
-		if (palette_ready && theme >= 0 && theme < SKYBOX_THEME_COUNT) {
+		/* Keep cached enhanced artwork available for recovery; the smallest
+		 * renderer uses the original pixels with the same modern projection. */
+		if (scale != HIRES_MINIMUM_SCALE && palette_ready && theme >= 0 &&
+			theme < SKYBOX_THEME_COUNT) {
 			source = skybox_hires_image(theme, index, shape->width, shape->height);
 		}
 		if (source != NULL && source->w == strip->width && source->h == strip->height) {
@@ -238,21 +249,24 @@ static void skybox_hires_render_level(const struct SPRITE *clip, const struct SK
 									  legacy_s32 maximum_height, legacy_f64 normal_y,
 									  legacy_f64 along_y, legacy_f64 above_x, legacy_f64 horizon,
 									  legacy_f64 phase, legacy_f64 center_x, legacy_f64 center_y,
-									  legacy_f64 cell_radius)
+									  legacy_f64 cell_radius, legacy_s32 scale)
 {
+	legacy_s32 source_step = HIRES_SCALE / scale;
 	enum { MISSING_STRIP = SKYBOX_IMAGE_COUNT, ROW_STRIP_COUNT = SKYBOX_IMAGE_COUNT + 1 };
 	static const legacy_s32 offsets[SKYBOX_IMAGE_COUNT] = {
 		0, SKYBOX_IMAGE_WIDTH, SKYBOX_IMAGE_HALF_WRAP, SKYBOX_IMAGE_ONE_AND_HALF_WIDTH};
 	legacy_u8 column_strips[HIRES_WIDTH];
 	legacy_u16 columns[HIRES_WIDTH];
-	legacy_f64 relative_y =
-		clip->sprite_top * HIRES_SCALE + HIRES_SAMPLE_CENTER_OFFSET - center_y * HIRES_SCALE;
+	legacy_f64 relative_y = clip->sprite_top * HIRES_SCALE +
+							HIRES_SAMPLE_CENTER_OFFSET * source_step - center_y * HIRES_SCALE;
 	legacy_f64 row_along = phase * HIRES_SCALE + along_y * relative_y;
-	legacy_f64 zero_above = above_x * (clip->sprite_raster_left * HIRES_SCALE +
-									   HIRES_SAMPLE_CENTER_OFFSET - center_x * HIRES_SCALE);
-	for (legacy_s32 x = clip->sprite_raster_left * HIRES_SCALE;
-		 x < clip->sprite_raster_right * HIRES_SCALE; x++) {
-		legacy_f64 relative_x = x + HIRES_SAMPLE_CENTER_OFFSET - center_x * HIRES_SCALE;
+	legacy_f64 zero_above =
+		above_x * (clip->sprite_raster_left * HIRES_SCALE +
+				   HIRES_SAMPLE_CENTER_OFFSET * source_step - center_x * HIRES_SCALE);
+	for (legacy_s32 x = clip->sprite_raster_left * scale; x < clip->sprite_raster_right * scale;
+		 x++) {
+		legacy_f64 relative_x =
+			(x + HIRES_SAMPLE_CENTER_OFFSET) * source_step - center_x * HIRES_SCALE;
 		legacy_f64 column_along = normal_y * relative_x;
 		legacy_f64 along = column_along + row_along;
 		legacy_s32 column = (legacy_s32)along;
@@ -292,9 +306,10 @@ static void skybox_hires_render_level(const struct SPRITE *clip, const struct SK
 		}
 		const legacy_u8 *sample_rows[HIRES_SCALE][ROW_STRIP_COUNT] = {0};
 		legacy_u8 row_colors[HIRES_SCALE];
-		for (legacy_s32 sample_y = 0; sample_y < HIRES_SCALE; sample_y++) {
-			legacy_f64 relative_y =
-				y * HIRES_SCALE + sample_y + HIRES_SAMPLE_CENTER_OFFSET - center_y * HIRES_SCALE;
+		for (legacy_s32 sample_y = 0; sample_y < scale; sample_y++) {
+			legacy_f64 relative_y = y * HIRES_SCALE +
+									(sample_y + HIRES_SAMPLE_CENTER_OFFSET) * source_step -
+									center_y * HIRES_SCALE;
 			legacy_f64 row_above = horizon - normal_y * relative_y;
 			legacy_f64 above = zero_above + row_above;
 			row_colors[sample_y] = above > 0 ? scenery->sky_color : scenery->ground_color;
@@ -315,11 +330,11 @@ static void skybox_hires_render_level(const struct SPRITE *clip, const struct SK
 		}
 		for (legacy_s32 x = clip->sprite_raster_left; x < clip->sprite_raster_right; x++) {
 			legacy_u8 samples[HIRES_SCALE * HIRES_SCALE];
-			for (legacy_s32 sample_y = 0; sample_y < HIRES_SCALE; sample_y++) {
-				for (legacy_s32 sample_x = 0; sample_x < HIRES_SCALE; sample_x++) {
-					legacy_s32 column = x * HIRES_SCALE + sample_x;
+			for (legacy_s32 sample_y = 0; sample_y < scale; sample_y++) {
+				for (legacy_s32 sample_x = 0; sample_x < scale; sample_x++) {
+					legacy_s32 column = x * scale + sample_x;
 					const legacy_u8 *row = sample_rows[sample_y][column_strips[column]];
-					samples[sample_y * HIRES_SCALE + sample_x] =
+					samples[sample_y * scale + sample_x] =
 						row != NULL ? row[columns[column]] : row_colors[sample_y];
 				}
 			}
@@ -336,6 +351,8 @@ legacy_s32 skybox_hires_render(const struct SPRITE *target, const struct SKYBOX 
 	if (!hires_enabled() || projection_focal_length_x == 0 || projection_focal_length_y == 0) {
 		return 0;
 	}
+	legacy_s32 scale = hires_render_scale();
+	legacy_s32 source_step = HIRES_SCALE / scale;
 	struct SPRITE clip = *target;
 	clip.sprite_raster_left = SDL_min(clip.sprite_raster_left, SKYBOX_SCREEN_WIDTH);
 	clip.sprite_raster_right = SDL_min(clip.sprite_raster_right, SKYBOX_SCREEN_WIDTH);
@@ -348,7 +365,7 @@ legacy_s32 skybox_hires_render(const struct SPRITE *target, const struct SKYBOX 
 	struct SKYBOX_HIRES_STRIP strips[SKYBOX_IMAGE_COUNT] = {0};
 	legacy_s32 maximum_height = 0;
 	if (detail != SKYBOX_LOWEST_DETAIL_LEVEL) {
-		maximum_height = skybox_hires_prepare_strips(strips, shapes, theme);
+		maximum_height = skybox_hires_prepare_strips(strips, shapes, theme, scale);
 	}
 	if (!hires_begin(&clip)) {
 		return 0;
@@ -383,15 +400,15 @@ legacy_s32 skybox_hires_render(const struct SPRITE *target, const struct SKYBOX 
 	legacy_f64 along_y = normal_x * focal_x / focal_y;
 	legacy_f64 above_x = normal_x * focal_y / focal_x;
 	legacy_f64 horizon = normal_z * focal_y * HIRES_SCALE;
-	/* A whole logical pixel can share one solid fill when all sixteen
+	/* A whole logical pixel can share one solid fill when all active
 	 * samples are outside the artwork band. Keep boundary cells in the
 	 * sample loop, including a one-sample margin for floating-point rounding. */
-	legacy_f64 cell_radius =
-		(HIRES_SCALE - 1) * HIRES_SAMPLE_CENTER_OFFSET * (SDL_fabs(above_x) + SDL_fabs(normal_y)) +
-		SKYBOX_SAMPLE_ROUNDING_MARGIN;
+	legacy_f64 cell_radius = (HIRES_SCALE - source_step) * HIRES_SAMPLE_CENTER_OFFSET *
+								 (SDL_fabs(above_x) + SDL_fabs(normal_y)) +
+							 SKYBOX_SAMPLE_ROUNDING_MARGIN;
 	if (normal_x == 0 && length > 0) {
 		skybox_hires_render_level(&clip, scenery, strips, maximum_height, normal_y, along_y,
-								  above_x, horizon, phase, center_x, center_y, cell_radius);
+								  above_x, horizon, phase, center_x, center_y, cell_radius, scale);
 		hires_end();
 		return 1;
 	}
@@ -400,9 +417,10 @@ legacy_s32 skybox_hires_render(const struct SPRITE *target, const struct SKYBOX 
 	 * sample arithmetic order at texel boundaries. */
 	legacy_f64 column_above[HIRES_WIDTH];
 	legacy_f64 column_along[HIRES_WIDTH];
-	for (legacy_s32 x = clip.sprite_raster_left * HIRES_SCALE;
-		 x < clip.sprite_raster_right * HIRES_SCALE; x++) {
-		legacy_f64 relative_x = x + HIRES_SAMPLE_CENTER_OFFSET - center_x * HIRES_SCALE;
+	for (legacy_s32 x = clip.sprite_raster_left * scale; x < clip.sprite_raster_right * scale;
+		 x++) {
+		legacy_f64 relative_x =
+			(x + HIRES_SAMPLE_CENTER_OFFSET) * source_step - center_x * HIRES_SCALE;
 		column_above[x] = above_x * relative_x;
 		column_along[x] = normal_y * relative_x;
 	}
@@ -412,9 +430,10 @@ legacy_s32 skybox_hires_render(const struct SPRITE *target, const struct SKYBOX 
 			normal_y * ((y + HIRES_SAMPLE_CENTER_OFFSET) * HIRES_SCALE - center_y * HIRES_SCALE);
 		legacy_f64 row_above[HIRES_SCALE];
 		legacy_f64 row_along[HIRES_SCALE];
-		for (legacy_s32 sample_y = 0; sample_y < HIRES_SCALE; sample_y++) {
-			legacy_f64 relative_y =
-				y * HIRES_SCALE + sample_y + HIRES_SAMPLE_CENTER_OFFSET - center_y * HIRES_SCALE;
+		for (legacy_s32 sample_y = 0; sample_y < scale; sample_y++) {
+			legacy_f64 relative_y = y * HIRES_SCALE +
+									(sample_y + HIRES_SAMPLE_CENTER_OFFSET) * source_step -
+									center_y * HIRES_SCALE;
 			row_above[sample_y] = horizon - normal_y * relative_y;
 			row_along[sample_y] = phase * HIRES_SCALE + along_y * relative_y;
 		}
@@ -429,9 +448,9 @@ legacy_s32 skybox_hires_render(const struct SPRITE *target, const struct SKYBOX 
 				continue;
 			}
 			legacy_u8 samples[HIRES_SCALE * HIRES_SCALE];
-			for (legacy_s32 sample_y = 0; sample_y < HIRES_SCALE; sample_y++) {
-				for (legacy_s32 sample_x = 0; sample_x < HIRES_SCALE; sample_x++) {
-					legacy_s32 column = x * HIRES_SCALE + sample_x;
+			for (legacy_s32 sample_y = 0; sample_y < scale; sample_y++) {
+				for (legacy_s32 sample_x = 0; sample_x < scale; sample_x++) {
+					legacy_s32 column = x * scale + sample_x;
 					legacy_f64 above = column_above[column] + row_above[sample_y];
 					legacy_u8 color = above > 0 ? scenery->sky_color : scenery->ground_color;
 					/* Check height before integer conversion so near-pole
@@ -440,7 +459,7 @@ legacy_s32 skybox_hires_render(const struct SPRITE *target, const struct SKYBOX 
 						legacy_f64 along = column_along[column] + row_along[sample_y];
 						color = skybox_hires_sample(strips, along, above, color);
 					}
-					samples[sample_y * HIRES_SCALE + sample_x] = color;
+					samples[sample_y * scale + sample_x] = color;
 				}
 			}
 			hires_write_pixel(x, y, samples);

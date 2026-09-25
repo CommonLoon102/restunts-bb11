@@ -29,7 +29,7 @@
 #include "../c/opponent_portrait.h"
 
 static legacy_u8 track_toggle_test, track_window_live, track_skybox_live, track_shapes_live;
-static legacy_u8 track_initial_supersight;
+static legacy_u8 track_initial_supersight, track_preset_test;
 static legacy_u32 track_window_allocations, track_window_releases, track_presentations;
 static legacy_u32 track_preview_draws, track_title_draws, track_button_draws;
 static legacy_u32 track_highscore_draws, track_highscore_entries, track_setup_calls;
@@ -171,6 +171,12 @@ legacy_s16 input_checking(legacy_s16 delta)
 	trace_word(2000);
 	trace_word(delta);
 	assert(frame_index < 16U);
+#ifdef RESTUNTS_SDL3
+	if (track_preset_test != 0 && frame_index == 2) {
+		assert(display_status_active != 0 && display_status_draw_count == 1);
+		display_status_expire_pending = 1;
+	}
+#endif
 	return menu_keys[frame_index];
 }
 legacy_s16 mouse_multi_hittest(legacy_s16 count, const struct BUTTON_AREA *buttons)
@@ -344,7 +350,10 @@ void draw_track_preview(void)
 #ifdef RESTUNTS_SDL3
 	if (track_toggle_test != 0) {
 		assert(track_window_live != 0 && track_skybox_live != 0 && track_shapes_live != 0);
-		assert(supersight_enabled == (track_initial_supersight ^ (track_preview_draws % 2U)));
+		legacy_u8 expected = track_preset_test != 0
+								 ? (track_preview_draws == 0 ? track_initial_supersight : 1)
+								 : (track_initial_supersight ^ (track_preview_draws % 2U));
+		assert(supersight_enabled == expected);
 		track_preview_draws++;
 	}
 #endif
@@ -565,27 +574,41 @@ static void test_track_supersight_toggle(void)
 {
 	for (legacy_u8 page_flipping = 0; page_flipping < 2; page_flipping++) {
 		for (legacy_u8 initial_mode = 0; initial_mode < 2; initial_mode++) {
-			reset_menu_case(1, 1);
-			video_uses_page_flipping = page_flipping;
-			supersight_enabled = track_initial_supersight = initial_mode;
-			track_window_live = track_skybox_live = track_shapes_live = 0;
-			track_window_allocations = track_window_releases = track_presentations = 0;
-			track_preview_draws = track_title_draws = track_button_draws = 0;
-			track_highscore_draws = track_highscore_entries = track_setup_calls = 0;
-			menu_keys[0] = menu_keys[3] = KEY_RIGHT;
-			menu_keys[1] = menu_keys[2] = (legacy_u16)KEY_F12;
-			menu_keys[4] = KEY_ENTER;
-			for (legacy_u32 index = 0; index < 5; index++) {
-				menu_hits[index] = -1;
+			for (legacy_u8 preset = 0; preset < 2; preset++) {
+				reset_menu_case(1, 1);
+				video_uses_page_flipping = page_flipping;
+				supersight_enabled = track_initial_supersight = initial_mode;
+				fps_display_enabled = 0;
+				track_preset_test = preset;
+				display_status_active = display_status_expire_pending = 0;
+				display_status_draw_count = display_status_expire_count = display_shift_shortcuts =
+					0;
+				track_window_live = track_skybox_live = track_shapes_live = 0;
+				track_window_allocations = track_window_releases = track_presentations = 0;
+				track_preview_draws = track_title_draws = track_button_draws = 0;
+				track_highscore_draws = track_highscore_entries = track_setup_calls = 0;
+				menu_keys[0] = menu_keys[3] = KEY_RIGHT;
+				menu_keys[1] = (legacy_u16)(preset != 0 ? KEY_SHIFT_F12 : KEY_F12);
+				menu_keys[2] = preset != 0 ? 0 : (legacy_u16)KEY_F12;
+				menu_keys[4] = KEY_ENTER;
+				for (legacy_u32 index = 0; index < 5; index++) {
+					menu_hits[index] = -1;
+				}
+				track_toggle_test = 1;
+				run_tracks_menu(0);
+				track_toggle_test = 0;
+				assert(frame_index == 5 && track_presentations == 5);
+				assert(track_preview_draws == 3);
+				assert(supersight_enabled == (preset != 0 ? 1 : initial_mode));
+				assert(display_shift_shortcuts == preset && display_status_draw_count == preset);
+				assert(display_status_expire_count == preset && display_status_active == 0);
+				/* Expiration rebuilds the entire background, including its preview,
+				 * while preserving the selected button and all resource lifetimes. */
+				assert(track_window_allocations == 3 && track_window_releases == 3);
+				assert(track_window_live == 0 && track_skybox_live == 0 && track_shapes_live == 0);
+				assert(track_setup_calls == 0 && ghost_track_checks == 0);
+				track_preset_test = 0;
 			}
-			track_toggle_test = 1;
-			run_tracks_menu(0);
-			track_toggle_test = 0;
-			assert(frame_index == 5 && track_presentations == 5);
-			assert(track_preview_draws == 3 && supersight_enabled == initial_mode);
-			assert(track_window_allocations == 3 && track_window_releases == 3);
-			assert(track_window_live == 0 && track_skybox_live == 0 && track_shapes_live == 0);
-			assert(track_setup_calls == 0 && ghost_track_checks == 0);
 		}
 	}
 }

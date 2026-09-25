@@ -18,6 +18,7 @@ void sdl3_video_shutdown(void);
 void sdl3_video_present(void);
 void sdl3_video_toggle_fullscreen(void);
 void sdl3_video_begin_frame(void);
+void sdl3_video_begin_track_frame(legacy_u8 adaptive);
 void sdl3_video_end_frame(void);
 void sdl3_video_refresh(void);
 SDL_Window *sdl3_video_window(void);

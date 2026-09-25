@@ -60,6 +60,8 @@ legacy_u8 supersight_enabled;
 legacy_u8 fps_display_enabled;
 static legacy_u8 display_toggle_test, display_scenario, display_target, display_pending;
 static legacy_u8 display_fps_drawn, display_previous_fps, display_refresh_pending;
+static legacy_u8 display_status_active, display_status_expire_pending;
+static legacy_u32 display_status_draw_count, display_status_expire_count, display_shift_shortcuts;
 static legacy_u32 display_present_count, display_fps_draw_count, display_record_count;
 static legacy_u32 display_reset_count, display_shortcut_count, display_sprite_free_count;
 static struct RECTANGLE display_clip, display_fps_bounds, display_previous_fps_bounds;
@@ -165,7 +167,7 @@ static void record_preview_copy(void)
 		return;
 	}
 	assert(display_target == 0);
-	assert(display_fps_drawn == fps_display_enabled);
+	assert(display_fps_drawn == (frame_display_overlay_active() != 0));
 	assert(display_reset_count != 0);
 	if (supersight_enabled != 0 || display_previous_shadow != 0) {
 		assert(display_shadow_restored != 0);
@@ -196,6 +198,21 @@ static void record_preview_copy(void)
 	assert(display_record_count + 1U == display_present_count);
 }
 
+legacy_s16 frame_display_overlay_active(void)
+{
+	return fps_display_enabled != 0 || display_status_active != 0;
+}
+
+legacy_s16 frame_fps_expire_idle(void)
+{
+	if (display_status_active != 0 && display_status_expire_pending != 0) {
+		display_status_active = display_status_expire_pending = 0;
+		display_status_expire_count++;
+		return 1;
+	}
+	return 0;
+}
+
 void frame_fps_reset(void)
 {
 	display_reset_count++;
@@ -211,7 +228,12 @@ void frame_fps_record_presented(void)
 
 struct RECTANGLE *frame_fps_draw_text(void)
 {
-	assert(fps_display_enabled != 0);
+	if (frame_display_overlay_active() == 0) {
+		return NULL;
+	}
+	if (display_status_active != 0 && fps_display_enabled == 0) {
+		display_status_draw_count++;
+	}
 	if (display_toggle_test != 0) {
 		assert(display_target == 1 && display_pending != 0);
 		assert(display_fps_drawn == 0);
@@ -238,12 +260,17 @@ legacy_u64 presentation_now(void)
 
 legacy_s16 handle_ingame_kb_shortcuts(legacy_s16 key)
 {
-	assert(key == KEY_F11 || key == KEY_F12);
+	assert(key == KEY_F11 || key == KEY_F12 || key == KEY_SHIFT_F12);
 	if (key == KEY_F11) {
 		fps_display_enabled ^= 1U;
 		frame_fps_reset();
 	} else {
-		supersight_enabled ^= 1U;
+		if (key == KEY_SHIFT_F12) {
+			supersight_enabled = display_status_active = 1;
+			display_shift_shortcuts++;
+		} else {
+			supersight_enabled ^= 1U;
+		}
 		/* F12 discards all enhanced sprite surfaces in the real renderer. */
 		display_portrait_mode = 255;
 	}
@@ -431,6 +458,10 @@ legacy_s16 input_checking(legacy_s16 frame_delta)
 			KEY_UP, KEY_UP, KEY_ENTER, KEY_DOWN, KEY_DOWN, KEY_F11, KEY_F11, 0, KEY_F12, KEY_F11,
 			KEY_ENTER, KEY_UP, KEY_UP, KEY_UP, KEY_ENTER};
 		assert(frame_index < sizeof(keys) / sizeof(keys[0]));
+		/* The first enable has completed; cycle a lock while keeping it enabled. */
+		if (frame_index == 6 && (display_scenario & 8U) == 0) {
+			return KEY_SHIFT_F12;
+		}
 		return keys[frame_index];
 	}
 	if (predictive_preview_test != 0) {
@@ -1030,6 +1061,8 @@ static void test_display_toggles(void)
 		fps_display_enabled = initial_fps;
 		display_pending = display_fps_drawn = display_previous_fps = display_refresh_pending = 0;
 		display_present_count = display_fps_draw_count = display_record_count = 0;
+		display_status_active = display_status_expire_pending = 0;
+		display_status_draw_count = display_status_expire_count = display_shift_shortcuts = 0;
 		display_reset_count = display_shortcut_count = display_sprite_free_count = 0;
 		display_portrait_pending = display_portrait_legacy_drawn = 0;
 		display_portrait_mode = 255;
@@ -1043,7 +1076,9 @@ static void test_display_toggles(void)
 		run_car_case(1);
 		assert(frame_index == 22);
 		assert(supersight_enabled == initial_supersight && fps_display_enabled == initial_fps);
-		assert(display_shortcut_count == 6);
+		assert(display_shift_shortcuts == (initial_supersight == 0));
+		assert(display_shortcut_count == 6U + display_shift_shortcuts);
+		assert((display_status_draw_count != 0) == (initial_supersight == 0));
 		assert(display_reset_count == 7);
 		assert(display_fps_draw_count > 0 && display_fps_draw_count < display_present_count);
 		assert(display_present_count == display_record_count);
@@ -1054,8 +1089,8 @@ static void test_display_toggles(void)
 		assert(display_car_loads == 2 && display_ground_queries == display_car_loads);
 		assert(display_sprite_free_count == sprite_index);
 		if ((display_scenario & 4U) != 0) {
-			assert(display_portrait_draws == 4);
-			assert(display_enhanced_portrait_draws == 2);
+			assert(display_portrait_draws == 4U + display_shift_shortcuts);
+			assert(display_enhanced_portrait_draws == 2U + display_shift_shortcuts);
 		} else {
 			assert(display_portrait_draws == 0);
 		}

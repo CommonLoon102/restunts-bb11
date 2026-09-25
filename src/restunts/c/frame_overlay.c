@@ -37,11 +37,21 @@
 #define FPS_TEXT_RED 4
 #define FPS_TEXT_GREEN 2
 #define FPS_TEXT_TARGET 20U
+#define FPS_TEXT_SUPERSIGHT_TARGET 60U
+#define FPS_TEXT_NUMBER_BASE 10U
 #define FPS_TEXT_MAX_DIGITS 5U
 #define FPS_TEXT_SUFFIX_LENGTH 4U
 #define FPS_TEXT_BUFFER_SIZE (FPS_TEXT_MAX_DIGITS + FPS_TEXT_SUFFIX_LENGTH + 1U)
 #define FPS_TEXT_RIGHT_X                                                                           \
 	(REPLAY_TEXT_LEFT_X + (FPS_TEXT_BUFFER_SIZE - 1U) * REPLAY_TEXT_CHARACTER_WIDTH + 1U)
+#define SUPERSIGHT_STATUS_PREFIX "SuperSight: "
+#define SUPERSIGHT_STATUS_NAME_LENGTH (sizeof("Medium") - 1U)
+#define SUPERSIGHT_STATUS_BUFFER_SIZE                                                              \
+	(sizeof(SUPERSIGHT_STATUS_PREFIX) + SUPERSIGHT_STATUS_NAME_LENGTH)
+#define SUPERSIGHT_STATUS_DURATION (2U * DOS_TIMER_REALTIME_TICKS_PER_SECOND)
+#define SUPERSIGHT_STATUS_RESTORE_PAGES 2U
+#define SUPERSIGHT_STATUS_RIGHT_X                                                                  \
+	(REPLAY_TEXT_LEFT_X + (SUPERSIGHT_STATUS_BUFFER_SIZE - 1U) * REPLAY_TEXT_CHARACTER_WIDTH + 1U)
 #define PREPARE_TEXT_Y 90
 #define SECURITY_TEXT_FIRST_Y 93
 #define SECURITY_TEXT_SECOND_Y 105
@@ -59,6 +69,55 @@ static legacy_u32 fps_last_presented;
 static legacy_u16 fps_sample_frames;
 static legacy_u16 fps_sample_value;
 static legacy_u8 fps_sample_started;
+static legacy_s8 supersight_status_text[SUPERSIGHT_STATUS_BUFFER_SIZE];
+static legacy_u32 supersight_status_start;
+static legacy_u8 supersight_status_active;
+static legacy_u8 supersight_status_expired_pending;
+static legacy_u8 supersight_status_clear_frames;
+static struct RECTANGLE fps_present_bounds;
+static legacy_u8 fps_present_pending;
+
+void frame_supersight_show_status(const legacy_s8 *name)
+{
+	legacy_u16 prefix_length = sizeof(SUPERSIGHT_STATUS_PREFIX) - 1U;
+	legacy_u16 length = 0;
+	copy_string(supersight_status_text, SUPERSIGHT_STATUS_PREFIX);
+	while (length < SUPERSIGHT_STATUS_NAME_LENGTH && name[length] != 0) {
+		supersight_status_text[prefix_length + length] = name[length];
+		length++;
+	}
+	supersight_status_text[prefix_length + length] = 0;
+	supersight_status_start = dos_timer_get_realtime_counter();
+	supersight_status_active = 1;
+	supersight_status_expired_pending = 0;
+}
+
+static legacy_s16 frame_supersight_expire_status(legacy_u32 now)
+{
+	if (supersight_status_active == 0 ||
+		LEGACY_U32_WRAP_SUB(now, supersight_status_start) < SUPERSIGHT_STATUS_DURATION) {
+		return 0;
+	}
+	supersight_status_active = 0;
+	supersight_status_expired_pending = 1;
+	return 1;
+}
+
+legacy_s16 frame_display_overlay_active(void)
+{
+	if (supersight_status_active != 0) {
+		frame_supersight_expire_status(dos_timer_get_realtime_counter());
+	}
+	return fps_display_enabled != 0 || supersight_status_active != 0 ||
+		   supersight_status_clear_frames != 0 || supersight_status_expired_pending != 0;
+}
+
+static struct RECTANGLE frame_supersight_status_bounds(void)
+{
+	struct RECTANGLE bounds = {REPLAY_TEXT_LEFT_X, SUPERSIGHT_STATUS_RIGHT_X, REPLAY_TEXT_Y,
+							   REPLAY_TEXT_Y + font_glyph_height + 1};
+	return bounds;
+}
 
 void frame_fps_reset(void)
 {
@@ -69,16 +128,23 @@ void frame_fps_reset(void)
 
 legacy_s16 frame_fps_expire_idle(void)
 {
-	if (fps_display_enabled == 0 || fps_sample_value == 0 || fps_sample_started == 0) {
+	legacy_s16 fps_can_expire =
+		fps_display_enabled != 0 && fps_sample_value != 0 && fps_sample_started != 0;
+	if (supersight_status_active == 0 && supersight_status_expired_pending == 0 &&
+		supersight_status_clear_frames == 0 && fps_can_expire == 0) {
 		return 0;
 	}
-	legacy_u32 elapsed = LEGACY_U32_WRAP_SUB(dos_timer_get_realtime_counter(), fps_last_presented);
-	if (elapsed < DOS_TIMER_REALTIME_TICKS_PER_SECOND) {
-		return 0;
+	legacy_u32 now = dos_timer_get_realtime_counter();
+	frame_supersight_expire_status(now);
+	legacy_s16 expired = supersight_status_expired_pending != 0 ||
+						 (supersight_status_active == 0 && supersight_status_clear_frames != 0);
+	if (fps_can_expire != 0 &&
+		LEGACY_U32_WRAP_SUB(now, fps_last_presented) >= DOS_TIMER_REALTIME_TICKS_PER_SECOND) {
+		/* Ask the waiting replay loop to repaint the expired value only once. */
+		frame_fps_reset();
+		expired = 1;
 	}
-	/* Ask the waiting replay loop to repaint the expired value only once. */
-	frame_fps_reset();
-	return 1;
+	return expired;
 }
 
 void frame_fps_record_presented(void)
@@ -109,25 +175,34 @@ void frame_fps_record_presented(void)
 	}
 }
 
-static legacy_s16 frame_fps_roof_bottom(void)
+static legacy_s16 frame_fps_adaptive_enabled(void)
 {
-	legacy_s16 bottom = REPLAY_FILENAME_Y + font_glyph_height + 1;
-	return roofbmpheight_copy < bottom ? roofbmpheight_copy : bottom;
+#if defined(RESTUNTS_SDL3)
+	return supersight_enabled != 0;
+#else
+	return 0;
+#endif
 }
 
-static void frame_fps_restore_roof(void)
+static void frame_fps_restore_roof(const struct RECTANGLE *overlay_bounds)
 {
-	legacy_s16 bottom = frame_fps_roof_bottom();
-	if (bottom <= REPLAY_FILENAME_Y || dashboard_visible == 0) {
+	fps_present_pending = 0;
+	if (overlay_bounds->left >= overlay_bounds->right || dashboard_visible == 0 ||
+		roofbmpheight_copy <= overlay_bounds->top) {
 		return;
 	}
+	fps_present_bounds = *overlay_bounds;
+	if (fps_present_bounds.bottom > roofbmpheight_copy) {
+		fps_present_bounds.bottom = roofbmpheight_copy;
+	}
+	fps_present_pending = 1;
 	struct SHAPE2D far *roof =
 		(struct SHAPE2D far *)locate_shape_nofatal(stdaresptr, dashboard_roof_shape_id);
 	if (roof != 0) {
 		struct SPRITE saved_context[SPRITE_STATE_COUNT];
 		sprite_save_context(saved_context);
-		sprite_set_target_clip_bounds(REPLAY_TEXT_LEFT_X, FPS_TEXT_RIGHT_X, REPLAY_FILENAME_Y,
-									  bottom);
+		sprite_set_target_clip_bounds(fps_present_bounds.left, fps_present_bounds.right,
+									  fps_present_bounds.top, fps_present_bounds.bottom);
 		shape2d_rle_copy_position_clipped(roof);
 		sprite_restore_context(saved_context);
 	}
@@ -135,54 +210,96 @@ static void frame_fps_restore_roof(void)
 
 void frame_fps_present_roof(void)
 {
-	legacy_s16 bottom = frame_fps_roof_bottom();
-	if (fps_display_enabled == 0 || video_uses_page_flipping != 0 || dashboard_visible == 0 ||
-		bottom <= REPLAY_FILENAME_Y) {
+	if (fps_present_pending == 0) {
 		return;
 	}
-	/* The normal camera copy excludes the static cockpit roof. */
+	fps_present_pending = 0;
+	if (video_uses_page_flipping != 0 || dashboard_visible == 0) {
+		return;
+	}
+	/* The normal camera copy excludes the static cockpit roof. This also
+	 * presents the restored status area on the frame after its text expires. */
 	struct SPRITE saved_context[SPRITE_STATE_COUNT];
 	sprite_save_context(saved_context);
-	sprite_set_target_clip_bounds(REPLAY_TEXT_LEFT_X, FPS_TEXT_RIGHT_X, REPLAY_FILENAME_Y, bottom);
+	sprite_set_target_clip_bounds(fps_present_bounds.left, fps_present_bounds.right,
+								  fps_present_bounds.top, fps_present_bounds.bottom);
 	mouse_draw_opaque_check();
 	sprite_putimage(render_window_sprite->sprite_bitmapptr);
 	mouse_draw_transparent_check();
 	sprite_restore_context(saved_context);
 }
 
-struct RECTANGLE *frame_fps_draw_text(void)
+static legacy_u16 frame_fps_format_number(legacy_s8 *text, legacy_u16 value)
 {
-	if (fps_display_enabled == 0) {
-		return &empty_rect;
-	}
-
-	legacy_s8 text[FPS_TEXT_BUFFER_SIZE];
 	legacy_s8 digits[FPS_TEXT_MAX_DIGITS];
-	legacy_u16 value = fps_sample_value;
 	legacy_u16 count = 0;
 	do {
-		digits[count++] = (legacy_s8)('0' + value % 10U);
-		value /= 10U;
+		digits[count++] = (legacy_s8)('0' + value % FPS_TEXT_NUMBER_BASE);
+		value /= FPS_TEXT_NUMBER_BASE;
 	} while (value != 0);
 	for (legacy_u16 i = 0; i < count; i++) {
 		text[i] = digits[count - i - 1U];
 	}
-	copy_string(text + count, " FPS");
-	legacy_s16 color = fps_sample_value < FPS_TEXT_TARGET ? FPS_TEXT_RED : FPS_TEXT_GREEN;
-	return intro_draw_text(text, REPLAY_TEXT_LEFT_X, REPLAY_FILENAME_Y, color, 0);
+	text[count] = 0;
+	return count;
+}
+
+struct RECTANGLE *frame_fps_draw_text(void)
+{
+	if (frame_display_overlay_active() == 0) {
+		return &empty_rect;
+	}
+
+	static struct RECTANGLE bounds;
+	bounds = empty_rect;
+	if (fps_display_enabled != 0) {
+		legacy_s8 text[FPS_TEXT_BUFFER_SIZE];
+		legacy_u16 count = frame_fps_format_number(text, fps_sample_value);
+		copy_string(text + count, " FPS");
+		legacy_u16 target =
+			frame_fps_adaptive_enabled() ? FPS_TEXT_SUPERSIGHT_TARGET : FPS_TEXT_TARGET;
+		legacy_s16 color = fps_sample_value < target ? FPS_TEXT_RED : FPS_TEXT_GREEN;
+		bounds = *intro_draw_text(text, REPLAY_TEXT_LEFT_X, REPLAY_FILENAME_Y, color, 0);
+	}
+	if (supersight_status_active != 0 || supersight_status_clear_frames != 0) {
+		/* Keep the longest status dirty while drawing and erasing. Replacing a
+		 * long preset name with a short one must not leave trailing letters. */
+		struct RECTANGLE status_bounds = frame_supersight_status_bounds();
+		rect_union(&bounds, &status_bounds, &bounds);
+		if (supersight_status_active != 0) {
+			intro_draw_text(supersight_status_text, REPLAY_TEXT_LEFT_X, REPLAY_TEXT_Y,
+							dialog_fnt_colour, 0);
+			supersight_status_clear_frames =
+				video_uses_page_flipping != 0 ? SUPERSIGHT_STATUS_RESTORE_PAGES : 1U;
+		} else {
+			supersight_status_clear_frames--;
+		}
+	}
+	/* A visibility query must not consume the waiting loop's cleanup request. */
+	supersight_status_expired_pending = 0;
+	return &bounds;
 }
 
 static legacy_u16 draw_fps_text(void)
 {
-	if (fps_display_enabled == 0) {
+	if (frame_display_overlay_active() == 0) {
+		fps_present_pending = 0;
 		return 0;
 	}
-
+	struct RECTANGLE roof_bounds = empty_rect;
+	if (fps_display_enabled != 0) {
+		roof_bounds = (struct RECTANGLE){REPLAY_TEXT_LEFT_X, FPS_TEXT_RIGHT_X, REPLAY_FILENAME_Y,
+										 REPLAY_FILENAME_Y + font_glyph_height + 1};
+	}
+	if (supersight_status_active != 0 || supersight_status_clear_frames != 0) {
+		struct RECTANGLE status_bounds = frame_supersight_status_bounds();
+		rect_union(&roof_bounds, &status_bounds, &roof_bounds);
+	}
 	/* Only the roof lies outside the scene that was redrawn this frame. */
-	frame_fps_restore_roof();
+	frame_fps_restore_roof(&roof_bounds);
 	rect_union(&rect_ingame_text, frame_fps_draw_text(), &rect_ingame_text);
-	/* Reserve the maximum width so changing FPS digits never rewraps the filename. */
-	return FPS_TEXT_BUFFER_SIZE;
+	/* Reserve the maximum width so changing counter digits never rewraps the filename. */
+	return fps_display_enabled != 0 ? FPS_TEXT_BUFFER_SIZE : 0;
 }
 
 enum DIRECTION_ICON_SHAPE_INDEX { DIRECTION_ICON_LEFT_SHAPE = 3, DIRECTION_ICON_RIGHT_SHAPE = 4 };
@@ -338,9 +455,13 @@ static legacy_s16 draw_replay_filename(legacy_u16 reserved_characters)
 {
 	const legacy_s8 *filename = replay_filename;
 	legacy_s16 y = REPLAY_FILENAME_Y;
+
 	while (*filename != 0) {
-		legacy_u16 line_limit = REPLAY_TEXT_MAX_CHARACTERS - reserved_characters;
-		reserved_characters = 0;
+		legacy_u16 reserved = y == REPLAY_FILENAME_Y ? reserved_characters : 0;
+		if (y == REPLAY_TEXT_Y && supersight_status_active != 0) {
+			reserved = SUPERSIGHT_STATUS_BUFFER_SIZE;
+		}
+		legacy_u16 line_limit = REPLAY_TEXT_MAX_CHARACTERS - reserved;
 		legacy_s8 line[REPLAY_TEXT_MAX_CHARACTERS + 1U];
 		legacy_u16 length = 0;
 		while (length < line_limit && *filename != 0) {

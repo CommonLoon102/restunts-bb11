@@ -304,6 +304,67 @@ static void test_positioned_photo(struct SHAPE2D *shape)
 	}
 }
 
+enum {
+	SCALE_PORTRAIT_LEFT = 2,
+	SCALE_PORTRAIT_TOP = 2,
+	SCALE_PORTRAIT_WIDTH = 74,
+	SCALE_PORTRAIT_HEIGHT = 79,
+	SCALE_PORTRAIT_DIGIT_X = 66,
+	SCALE_PORTRAIT_DIGIT_Y = 4,
+	SCALE_PORTRAIT_BACKGROUND = 3
+};
+
+static void test_render_scale_roundtrip(struct SHAPE2D *shape)
+{
+	static legacy_u32 full_resolution[HIRES_WIDTH * HIRES_HEIGHT];
+	const legacy_s32 scales[] = {HIRES_SCALE, HIRES_SCALE / 2, 1, HIRES_SCALE};
+	write_prepared_fixture("opponents/game/opp1.png");
+	reset();
+	hires_set_enabled(1);
+	for (legacy_u32 step = 0; step < SDL_arraysize(scales); step++) {
+		legacy_s32 scale = scales[step];
+		legacy_s32 source_step = HIRES_SCALE / scale;
+		hires_set_render_scale(scale);
+		opponent_portrait_draw(&target, shape, 1);
+		legacy_s32 width = hires_render_width();
+		legacy_s32 height = hires_render_height();
+		const legacy_u32 *image = hires_framebuffer_argb(screen, palette);
+		assert(image != NULL && hires_enabled());
+		legacy_s32 left = (shape->position_x + SCALE_PORTRAIT_LEFT) * scale;
+		legacy_s32 top = (shape->position_y + SCALE_PORTRAIT_TOP) * scale;
+		legacy_u32 drawn = 0;
+		for (legacy_s32 y = 0; y < height; y++) {
+			for (legacy_s32 x = 0; x < width; x++) {
+				legacy_u32 expected = palette[SCALE_PORTRAIT_BACKGROUND];
+				legacy_s32 column = x - left, row = y - top;
+				if (column >= 0 && column < SCALE_PORTRAIT_WIDTH * scale && row >= 0 &&
+					row < SCALE_PORTRAIT_HEIGHT * scale &&
+					!(column / scale + SCALE_PORTRAIT_LEFT == SCALE_PORTRAIT_DIGIT_X &&
+					  row / scale + SCALE_PORTRAIT_TOP == SCALE_PORTRAIT_DIGIT_Y)) {
+					legacy_s32 source_x = column * source_step + source_step / 2;
+					legacy_s32 source_y = row * source_step + source_step / 2;
+					const SDL_Color *color = &prepared_colors[(source_x / 2 + source_y / 2) % 2];
+					expected = 0xFF000000U | ((legacy_u32)color->r << LEGACY_WORD_BITS) |
+							   ((legacy_u32)color->g << LEGACY_BYTE_BITS) | color->b;
+					drawn++;
+				}
+				assert(image[y * width + x] == expected);
+			}
+		}
+		assert(drawn == (SCALE_PORTRAIT_WIDTH * SCALE_PORTRAIT_HEIGHT - 1U) * scale * scale);
+		if (step == 0) {
+			memcpy(full_resolution, image, sizeof(full_resolution));
+		} else if (step == SDL_arraysize(scales) - 1) {
+			assert(memcmp(full_resolution, image, sizeof(full_resolution)) == 0);
+		}
+		for (legacy_u32 pixel = 0;
+			 pixel < sizeof(rows) / LEGACY_WORD_BYTES * target.sprite_raster_right; pixel++) {
+			assert(screen[pixel] == SCALE_PORTRAIT_BACKGROUND);
+		}
+	}
+	assert(remove("opponents/game/opp1.png") == 0);
+}
+
 legacy_int main(void)
 {
 	assert(SDL_Init(0));
@@ -347,6 +408,7 @@ legacy_int main(void)
 	test_positioned_photo(shape);
 	test_prepared(shape);
 	test_original_upscale(shape);
+	test_render_scale_roundtrip(shape);
 	reset();
 	hires_set_enabled(1);
 	shape->width = 79;

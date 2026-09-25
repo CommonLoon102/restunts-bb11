@@ -64,7 +64,8 @@ static void assert_frame(legacy_s32 enhanced)
 {
 	legacy_s32 width, height;
 	const legacy_u8 *pixels = hires_framebuffer(screen, &width, &height);
-	legacy_s32 scale = enhanced ? HIRES_SCALE : 1;
+	legacy_s32 scale = enhanced ? hires_render_scale() : HIRES_MINIMUM_SCALE;
+	legacy_s32 source_step = HIRES_SCALE / scale;
 	assert(width == 320 * scale && height == 200 * scale);
 	for (legacy_s32 y = 0; y < height; y++) {
 		for (legacy_s32 x = 0; x < width; x++) {
@@ -72,17 +73,23 @@ static void assert_frame(legacy_s32 enhanced)
 			if (y >= HORIZON * scale) {
 				expected = skybox.ground_color;
 			} else if (y >= (HORIZON - SKY_HEIGHT) * scale) {
-				expected = enhanced ? fixture_color(x, y - (HORIZON - SKY_HEIGHT) * scale)
-									: LEGACY_SKY_COLOR;
+				expected = enhanced && scale != HIRES_MINIMUM_SCALE
+							   ? fixture_color(x * source_step + source_step / 2,
+											   (y - (HORIZON - SKY_HEIGHT) * scale) * source_step +
+												   source_step / 2)
+							   : LEGACY_SKY_COLOR;
 			}
 			assert(pixels[y * width + x] == expected);
 		}
 	}
 }
 
-static void test_preview(legacy_s32 enhanced)
+static void test_preview(legacy_s32 enhanced, legacy_s32 scale)
 {
 	hires_set_enabled(enhanced);
+	if (enhanced) {
+		hires_set_render_scale(scale);
+	}
 	loaded_skybox_index = 4;
 	sprite_select_target(&preview);
 	sprite_clear_target((legacy_u8)skybox.ground_color);
@@ -137,9 +144,13 @@ legacy_int main(void)
 	track_preview_horizon_vector.z = 1000;
 	projection_center_x = projection_focal_length_x = projection_focal_length_y = 160;
 	projection_center_y = HORIZON;
-	test_preview(0);
-	test_preview(1);
-	test_preview(0);
+	test_preview(0, HIRES_SCALE);
+	test_preview(1, HIRES_SCALE);
+	test_preview(1, HIRES_MEDIUM_SCALE);
+	test_preview(1, HIRES_MINIMUM_SCALE);
+	test_preview(1, HIRES_MEDIUM_SCALE);
+	test_preview(1, HIRES_SCALE);
+	test_preview(0, HIRES_SCALE);
 	hires_shutdown();
 	assert(remove("skyboxes/country-sce3.png") == 0);
 	assert(rmdir("skyboxes") == 0);

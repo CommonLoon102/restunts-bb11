@@ -32,7 +32,7 @@ static const legacy_u8 *pixels(void)
 	legacy_s32 width;
 	legacy_s32 height;
 	const legacy_u8 *result = hires_framebuffer(screen, &width, &height);
-	assert(width == HIRES_WIDTH && height == HIRES_HEIGHT);
+	assert(width == hires_render_width() && height == hires_render_height());
 	return result;
 }
 
@@ -40,11 +40,14 @@ static legacy_u32 count_color(legacy_u8 color)
 {
 	const legacy_u8 *image = pixels();
 	legacy_u32 count = 0;
-	for (legacy_u32 index = 0; index < HIRES_WIDTH * HIRES_HEIGHT; index++) {
+	legacy_s32 width = hires_render_width();
+	legacy_s32 height = hires_render_height();
+	legacy_s32 scale = hires_render_scale();
+	for (legacy_u32 index = 0; index < (legacy_u32)(width * height); index++) {
 		count += image[index] == color;
 		if (image[index] == color) {
-			legacy_s32 x = (index % HIRES_WIDTH) / HIRES_SCALE;
-			legacy_s32 y = (index / HIRES_WIDTH) / HIRES_SCALE;
+			legacy_s32 x = (index % width) / scale;
+			legacy_s32 y = (index / width) / scale;
 			assert(x >= bounds.left && x < bounds.right);
 			assert(y >= bounds.top && y < bounds.bottom);
 		}
@@ -1479,17 +1482,31 @@ static void test_shared_edge_pixel_coverage(void)
 
 static void test_shared_edge_near_clipping(void)
 {
-	/* The clipped corner projects exactly to (113.5, 168.5). Reversing
-	 * the near-plane crossing must preserve that covered pixel. */
-	const struct SHAPE3D_HIRES_VECTOR triangle[] = {{-6, 0, 11}, {-4962, 5556, 1291}, {2, 0, 757}};
+	/* Every clipped corner lands exactly on the named pixel center. Reversing
+	 * the near-plane crossing must preserve that covered pixel at every scale. */
+	const struct {
+		legacy_s32 scale;
+		legacy_f64 far_x, far_y;
+		legacy_s32 sample_x, sample_y;
+	} cases[] = {{HIRES_SCALE, -4962, 5556, 113, 168},
+				 {HIRES_SCALE / 2, -4974, 5544, 56, 84},
+				 {1, -4950, 5520, 28, 42}};
 	const legacy_u8 indices[][3] = {{0, 1, 2}, {2, 1, 0}};
-	for (legacy_u32 winding = 0; winding < 2; winding++) {
-		reset_target();
-		shape3d_hires_begin_shape(0, 0);
-		shared_edge_queue(triangle, indices[winding], 0);
-		shape3d_hires_render(0, RENDER_PRIMITIVE_POLYGON, 7, 0, 0, 0, 0);
-		hires_end();
-		assert(pixels()[168 * HIRES_WIDTH + 113] == 7);
+	for (legacy_u32 scale = 0; scale < SDL_arraysize(cases); scale++) {
+		const struct SHAPE3D_HIRES_VECTOR triangle[] = {
+			{-6, 0, 11}, {cases[scale].far_x, cases[scale].far_y, 1291}, {2, 0, 757}};
+		for (legacy_u32 winding = 0; winding < 2; winding++) {
+			reset_target();
+			hires_end();
+			hires_set_render_scale(cases[scale].scale);
+			assert(hires_begin(&target));
+			shape3d_hires_begin_shape(0, 0);
+			shared_edge_queue(triangle, indices[winding], 0);
+			shape3d_hires_render(0, RENDER_PRIMITIVE_POLYGON, 7, 0, 0, 0, 0);
+			hires_end();
+			assert(pixels()[cases[scale].sample_y * hires_render_width() + cases[scale].sample_x] ==
+				   7);
+		}
 	}
 }
 
@@ -1792,6 +1809,92 @@ static void test_parallel_batches_match_serial(void)
 	}
 }
 
+/* Resolution changes reproject geometry and shrink the raster workload while
+ * preserving logical clipping, every primitive family and joined-worker output. */
+static void test_render_scale_roundtrip(void)
+{
+	static legacy_u8 reference[HIRES_WIDTH * HIRES_HEIGHT];
+	static legacy_u8 full_resolution[HIRES_WIDTH * HIRES_HEIGHT];
+	const legacy_s32 scales[] = {HIRES_SCALE, HIRES_SCALE / 2, 1, HIRES_SCALE};
+	const legacy_char *settings[] = {"0", "2"};
+	const legacy_char *original_setting = SDL_getenv("RESTUNTS_RENDER_WORKERS");
+	legacy_char *saved_setting = original_setting != NULL ? SDL_strdup(original_setting) : NULL;
+	assert(original_setting == NULL || saved_setting != NULL);
+	projection_center_x = 160;
+	projection_center_y = 100;
+	projection_focal_length_x = projection_focal_length_y = 160;
+	target.sprite_raster_left = 13;
+	target.sprite_raster_right = 307;
+	target.sprite_top = 7;
+	target.sprite_bottom = 193;
+	for (legacy_u32 setting = 0; setting < SDL_arraysize(settings); setting++) {
+		assert(SDL_SetEnvironmentVariable(SDL_GetEnvironment(), "RESTUNTS_RENDER_WORKERS",
+										  settings[setting], true));
+		reset_target();
+		hires_end();
+		for (legacy_u32 step = 0; step < SDL_arraysize(scales); step++) {
+			legacy_s32 scale = scales[step];
+			hires_set_render_scale(scale);
+			assert(hires_enabled());
+			legacy_s32 width = hires_render_width();
+			legacy_s32 height = hires_render_height();
+			assert(width == 320 * scale && height == 200 * scale);
+			const struct SHAPE3D_HIRES_VECTOR vertex = {13.25, -7.75, 320};
+			struct SHAPE3D_HIRES_POINT point;
+			shape3d_hires_project(&vertex, &point);
+			assert(point.x == (160 + vertex.x / 2) * scale);
+			assert(point.y == (100 - vertex.y / 2) * scale);
+			/* Compare binary64 values even when x87 evaluates expressions more precisely. */
+			volatile legacy_f64 expected_inverse_z = 1.0 / vertex.z;
+			assert(point.inverse_z == expected_inverse_z);
+			assert(hires_begin(&target));
+			assert(draw_batch_scene(0, 1) == 0);
+			hires_end();
+			const legacy_u8 *image = pixels();
+			legacy_u32 drawn = 0;
+			for (legacy_s32 y = 0; y < height; y++) {
+				for (legacy_s32 x = 0; x < width; x++) {
+					legacy_s32 inside = x >= target.sprite_raster_left * scale &&
+										x < target.sprite_raster_right * scale &&
+										y >= target.sprite_top * scale &&
+										y < target.sprite_bottom * scale;
+					assert((image[y * width + x] != 3) == inside);
+					drawn += inside;
+				}
+			}
+			/* One quarter, then one sixteenth as many destination samples. */
+			assert(drawn == (legacy_u32)(target.sprite_raster_right - target.sprite_raster_left) *
+								(target.sprite_bottom - target.sprite_top) * scale * scale);
+			memcpy(reference, image, (size_t)width * height);
+			if (step == 0) {
+				memcpy(full_resolution, image, sizeof(full_resolution));
+			} else if (step == SDL_arraysize(scales) - 1) {
+				assert(memcmp(full_resolution, image, sizeof(full_resolution)) == 0);
+			}
+			assert(hires_begin(&target));
+			legacy_s32 workers = draw_batch_scene(1, 1);
+#if defined(__DJGPP__)
+			assert(workers == 0);
+#else
+			assert(workers == (setting == 0 ? 0 : 2));
+#endif
+			hires_end();
+			assert(memcmp(reference, pixels(), (size_t)width * height) == 0);
+		}
+	}
+	hires_shutdown();
+	if (saved_setting != NULL) {
+		assert(SDL_SetEnvironmentVariable(SDL_GetEnvironment(), "RESTUNTS_RENDER_WORKERS",
+										  saved_setting, true));
+		SDL_free(saved_setting);
+	} else {
+		assert(SDL_UnsetEnvironmentVariable(SDL_GetEnvironment(), "RESTUNTS_RENDER_WORKERS"));
+	}
+	target.sprite_raster_left = target.sprite_top = 0;
+	target.sprite_raster_right = 320;
+	target.sprite_bottom = 200;
+}
+
 struct SHADOW_TEST_IMAGE {
 	const legacy_u32 *pixels;
 	legacy_f64 centroid_x, centroid_z;
@@ -1801,11 +1904,16 @@ static struct SHADOW_TEST_IMAGE shadow_image;
 
 /* A camera directly above the car makes the world footprint measurable
  * without depending on the shadow implementation's projection helpers. */
-static void begin_shadow_scene(legacy_s16 car_height, legacy_s16 heading)
+static void begin_shadow_scene_at_scale(legacy_s16 car_height, legacy_s16 heading, legacy_s32 scale)
 {
 	const struct VECTOR camera = {0, 400, 0};
 	const struct VECTOR car = {0, (legacy_s16)(car_height - camera.y), 0};
 	reset_target();
+	if (scale != HIRES_SCALE) {
+		hires_end();
+		hires_set_render_scale(scale);
+		assert(hires_begin(&target));
+	}
 	memset(&mat_temp, 0, sizeof(mat_temp));
 	mat_temp.m._11 = 16384;
 	mat_temp.m._23 = 16384;
@@ -1813,11 +1921,16 @@ static void begin_shadow_scene(legacy_s16 car_height, legacy_s16 heading)
 	projection_center_x = 160;
 	projection_center_y = 100;
 	projection_focal_length_x = projection_focal_length_y = 160;
-	hires_depth_begin(0, HIRES_WIDTH, 0, HIRES_HEIGHT);
+	hires_depth_begin(0, hires_render_width(), 0, hires_render_height());
 	shape3d_hires_shadows_begin(&camera);
 	shape3d_hires_shadow_car(&car, heading, 40, 75);
 	shadow_image.half_width = 40;
 	shadow_image.half_length = 75;
+}
+
+static void begin_shadow_scene(legacy_s16 car_height, legacy_s16 heading)
+{
+	begin_shadow_scene_at_scale(car_height, heading, HIRES_SCALE);
 }
 
 static void queue_shadow_receiver(legacy_u32 index, legacy_s16 height, legacy_s32 receiver,
@@ -1837,23 +1950,26 @@ static legacy_u32 finish_shadow_scene(legacy_s16 receiver_height, legacy_s16 hea
 									  legacy_u8 excluded_color)
 {
 	static legacy_u8 indexed[HIRES_WIDTH * HIRES_HEIGHT];
+	legacy_s32 width = hires_render_width();
+	legacy_s32 height = hires_render_height();
+	legacy_s32 scale = hires_render_scale();
 	legacy_u32 palette[256];
 	for (legacy_u32 index = 0; index < 256; index++) {
 		palette[index] = 0xFFC0C0C0U;
 	}
 	palette[15] = 0xFFFFFFFFU;
-	memcpy(indexed, pixels(), sizeof(indexed));
+	memcpy(indexed, pixels(), (size_t)width * height);
 	shape3d_hires_draw_shadows();
 	hires_end();
-	assert(memcmp(indexed, pixels(), sizeof(indexed)) == 0);
+	assert(memcmp(indexed, pixels(), (size_t)width * height) == 0);
 	const legacy_u32 *image = hires_framebuffer_argb(screen, palette);
 	legacy_u32 changed = 0;
 	shadow_image.pixels = image;
 	shadow_image.centroid_x = shadow_image.centroid_z = 0;
 	legacy_f64 weight_total = 0;
-	for (legacy_s32 y = 0; image != NULL && y < HIRES_HEIGHT; y++) {
-		for (legacy_s32 x = 0; x < HIRES_WIDTH; x++) {
-			legacy_u32 offset = y * HIRES_WIDTH + x;
+	for (legacy_s32 y = 0; image != NULL && y < height; y++) {
+		for (legacy_s32 x = 0; x < width; x++) {
+			legacy_u32 offset = y * width + x;
 			if (image[offset] == palette[indexed[offset]]) {
 				continue;
 			}
@@ -1861,8 +1977,10 @@ static legacy_u32 finish_shadow_scene(legacy_s16 receiver_height, legacy_s16 hea
 			assert((image[offset] & 0xFFFFFFU) < (palette[indexed[offset]] & 0xFFFFFFU));
 			/* A short extension is permitted only toward world north (+Z).
 			 * The soft fringe still stays within the other three bounds. */
-			legacy_f64 world_x = (x + 0.5 - 640) * (400 - receiver_height) / 640;
-			legacy_f64 world_z = (400 - y - 0.5) * (400 - receiver_height) / 640;
+			legacy_f64 world_x = (x + 0.5 - projection_center_x * scale) * (400 - receiver_height) /
+								 (projection_focal_length_x * scale);
+			legacy_f64 world_z = (projection_center_y * scale - y - 0.5) * (400 - receiver_height) /
+								 (projection_focal_length_y * scale);
 			legacy_f64 half_x =
 				(heading & 256) == 0 ? shadow_image.half_width : shadow_image.half_length;
 			legacy_f64 half_z =
@@ -2070,6 +2188,54 @@ static void test_car_shadow_ground_fallback_and_reset(void)
 	hires_set_enabled(1);
 }
 
+static void test_car_shadow_render_scales(void)
+{
+	const legacy_s32 scales[] = {HIRES_SCALE, HIRES_MEDIUM_SCALE, HIRES_MINIMUM_SCALE,
+								 HIRES_MEDIUM_SCALE, HIRES_SCALE};
+	legacy_u32 coverage_by_scale[HIRES_SCALE + 1] = {0};
+	prepare_shadow_model(1);
+	for (legacy_u32 step = 0; step < SDL_arraysize(scales); step++) {
+		legacy_s32 scale = scales[step];
+		begin_shadow_scene_at_scale(0, 0, scale);
+		shape3d_hires_shadow_model(&shadow_model);
+		shadow_image.half_width = 40;
+		shadow_image.half_length = 60;
+		queue_shadow_receiver(0, 0, 1, 150);
+		shape3d_hires_render(0, RENDER_PRIMITIVE_POLYGON, 8, 0, 0, 0, 0);
+		legacy_u32 coverage = finish_shadow_scene(0, 0, 7);
+		if (scale == HIRES_MINIMUM_SCALE) {
+			assert(coverage == 0 && shadow_image.pixels == NULL);
+		} else {
+			assert(coverage != 0);
+			if (coverage_by_scale[scale] != 0) {
+				assert(coverage == coverage_by_scale[scale]);
+			}
+			coverage_by_scale[scale] = coverage;
+		}
+	}
+	assert(coverage_by_scale[HIRES_MEDIUM_SCALE] < coverage_by_scale[HIRES_SCALE]);
+	/* A shadow queued before a scale change must not draw at the minimum. */
+	begin_shadow_scene(0, 0);
+	hires_end();
+	hires_set_render_scale(HIRES_MINIMUM_SCALE);
+	assert(hires_begin(&target));
+	hires_depth_begin(0, hires_render_width(), 0, hires_render_height());
+	queue_shadow_receiver(0, 0, 1, 150);
+	shape3d_hires_render(0, RENDER_PRIMITIVE_POLYGON, 8, 0, 0, 0, 0);
+	assert(finish_shadow_scene(0, 0, 7) == 0);
+	/* Conversely, the minimum must not queue a car to appear after recovery. */
+	begin_shadow_scene_at_scale(0, 0, HIRES_MINIMUM_SCALE);
+	shape3d_hires_shadow_model(&shadow_model);
+	hires_end();
+	hires_set_render_scale(HIRES_MEDIUM_SCALE);
+	assert(hires_begin(&target));
+	hires_depth_begin(0, hires_render_width(), 0, hires_render_height());
+	queue_shadow_receiver(0, 0, 1, 150);
+	shape3d_hires_render(0, RENDER_PRIMITIVE_POLYGON, 8, 0, 0, 0, 0);
+	assert(finish_shadow_scene(0, 0, 7) == 0);
+	hires_set_render_scale(HIRES_SCALE);
+}
+
 legacy_int main(void)
 {
 	screen = dos_memory_make_pointer(0xA000, 0);
@@ -2130,12 +2296,14 @@ legacy_int main(void)
 	test_shared_edge_near_clipping();
 	test_concave_polygon_scanlines();
 	test_parallel_batches_match_serial();
+	test_render_scale_roundtrip();
 	test_car_shadow_stays_below_and_shrinks();
 	test_car_shadow_model_details_and_north_light();
 	test_car_shadow_model_size_and_cache_reset();
 	test_car_shadow_receiver_height();
 	test_car_shadow_excludes_car_geometry();
 	test_car_shadow_ground_fallback_and_reset();
+	test_car_shadow_render_scales();
 	hires_shutdown();
 	puts("High-resolution 3D projection and raster tests passed.");
 	return 0;
