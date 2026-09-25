@@ -62,7 +62,6 @@ enum PLAYER_PHYSICS_POSE_VECTOR_INDEX {
 #define PLAYER_PHYSICS_ROTATION_DEADBAND 2
 #define PLAYER_PHYSICS_PLANE_INDEX_NONE (-1)
 #define PLAYER_PHYSICS_GROUND_PLANE_INDEX 0
-#define PLAYER_PHYSICS_HEIGHT_ONLY_PLANE_COUNT 4
 #define PLAYER_PHYSICS_WALL_INDEX_NONE (-1)
 #define PLAYER_PHYSICS_ROADSIDE_SIGN_INDEX_NONE (-1)
 #define PLAYER_PHYSICS_OBJECT_PARTICLE_KIND_OFFSET 2
@@ -1191,7 +1190,7 @@ static void check_body_corner_plane(struct CARSTATE *carstate, struct VECTOR *cu
 	struct VECTOR sample = *current_position;
 	build_track_object(&sample, &carstate->car_body_corner_positions[corner_index]);
 	legacy_s16 current_distance = plane_signed_distance(planindex, sample.x, sample.y, sample.z);
-	if (planindex < PLAYER_PHYSICS_HEIGHT_ONLY_PLANE_COUNT) {
+	if (planindex < PHYSICS_HEIGHT_ONLY_PLANE_COUNT) {
 		if (current_distance <= 0) {
 			player_motion_crash(CRASH_EVENT_IMMEDIATE_STOP, car_index);
 		}

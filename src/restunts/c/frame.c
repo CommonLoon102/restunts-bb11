@@ -39,6 +39,8 @@ static legacy_u8 frame_uses_snapshot;
 #define FRAME_CAR_WHEEL_COUNT 4
 #define FRAME_LOOKAHEAD_TILE_COUNT 23
 #define FRAME_SUPERSIGHT_TILE_COUNT 110
+#define FRAME_LOOKAHEAD_DEPTH_TILES 4
+#define FRAME_LOOKAHEAD_WIDTH_TILES 2
 #if defined(RESTUNTS_SDL3)
 #define FRAME_MAXIMUM_TILE_COUNT (TRACK_GRID_SIZE * TRACK_GRID_SIZE)
 /* Match the collision height allowances in trackobj.c. */
@@ -1105,10 +1107,18 @@ static void frame_extend_lookahead(struct FRAME_TILE_SELECTION *tiles,
 	(void)camera;
 	legacy_s8 east = tiles->lookahead[0].east;
 	legacy_s8 south = tiles->lookahead[0].south;
-	legacy_s8 depth_east = east == 4 ? 1 : east == -4 ? -1 : 0;
-	legacy_s8 depth_south = south == 4 ? 1 : south == -4 ? -1 : 0;
-	legacy_s8 width_east = east == 2 ? 1 : east == -2 ? -1 : 0;
-	legacy_s8 width_south = south == 2 ? 1 : south == -2 ? -1 : 0;
+	legacy_s8 depth_east = east == FRAME_LOOKAHEAD_DEPTH_TILES	  ? 1
+						   : east == -FRAME_LOOKAHEAD_DEPTH_TILES ? -1
+																  : 0;
+	legacy_s8 depth_south = south == FRAME_LOOKAHEAD_DEPTH_TILES	? 1
+							: south == -FRAME_LOOKAHEAD_DEPTH_TILES ? -1
+																	: 0;
+	legacy_s8 width_east = east == FRAME_LOOKAHEAD_WIDTH_TILES	  ? 1
+						   : east == -FRAME_LOOKAHEAD_WIDTH_TILES ? -1
+																  : 0;
+	legacy_s8 width_south = south == FRAME_LOOKAHEAD_WIDTH_TILES	? 1
+							: south == -FRAME_LOOKAHEAD_WIDTH_TILES ? -1
+																	: 0;
 	for (legacy_s16 index = 0; index < FRAME_SUPERSIGHT_TILE_COUNT; index++) {
 		const struct FRAME_SUPERSIGHT_TILE *source = &supersight_tiles[index];
 		struct FRAME_LOOKAHEAD_TILE *target = &tiles->extended_lookahead[index];

@@ -23,11 +23,12 @@ public sealed class ShardPlan
     public List<ReplayShard> Shards { get; init; } = [];
 
     public static ShardPlan Load(string? path, IReadOnlyList<string> replays,
-        IReadOnlyList<string> rendererReplays, int percentage, int shardCount, int target = 0)
+        IReadOnlyList<string> rendererReplays, int percentage, int shardCount,
+        int target = RendererSettings.PlayerTarget)
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(shardCount, 1);
-        ArgumentOutOfRangeException.ThrowIfLessThan(target, 0);
-        ArgumentOutOfRangeException.ThrowIfGreaterThan(target, 1);
+        ArgumentOutOfRangeException.ThrowIfLessThan(target, RendererSettings.PlayerTarget);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(target, RendererSettings.OpponentTarget);
         if (path is null)
         {
             if (shardCount != 1)

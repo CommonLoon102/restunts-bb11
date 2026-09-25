@@ -92,8 +92,8 @@ public sealed record MergeOptions
     public bool PhysicsTests { get; init; } = true;
     public bool RendererTests { get; init; } = true;
     public int RendererTestPercentage { get; init; } = 100;
-    public int Camera { get; init; } = 2;
-    public int Target { get; init; } = 0;
+    public int Camera { get; init; } = RendererSettings.DefaultCamera;
+    public int Target { get; init; } = RendererSettings.PlayerTarget;
 }
 
 public sealed record MergeResult(bool Success, string Summary, IReadOnlyList<string> Diagnostics);
@@ -103,10 +103,12 @@ public static class ResultMerger
     public static async Task<MergeResult> MergeAsync(MergeOptions options, CancellationToken cancellation = default)
     {
         CandidatePlatforms.Validate(options.CandidatePlatform);
-        ArgumentOutOfRangeException.ThrowIfLessThan(options.Camera, 1);
-        ArgumentOutOfRangeException.ThrowIfGreaterThan(options.Camera, 4);
-        ArgumentOutOfRangeException.ThrowIfLessThan(options.Target, 0);
-        ArgumentOutOfRangeException.ThrowIfGreaterThan(options.Target, 1);
+        ArgumentOutOfRangeException.ThrowIfLessThan(options.Camera, RendererSettings.MinimumCamera);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(options.Camera,
+            RendererSettings.MaximumCamera);
+        ArgumentOutOfRangeException.ThrowIfLessThan(options.Target, RendererSettings.PlayerTarget);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(options.Target,
+            RendererSettings.OpponentTarget);
         var diagnostics = new List<string>();
         var results = new Dictionary<int, ShardResult>();
         IReadOnlyList<string> corpus = [];
@@ -173,7 +175,7 @@ public static class ResultMerger
                 }
                 diagnostics.AddRange(ReportFormatter.Diagnostics(result));
                 if (result.CandidatePlatform != options.CandidatePlatform ||
-                    result.OraclePspSegment is < 1 or > 65535 ||
+                    result.OraclePspSegment is < 1 or > ushort.MaxValue ||
                     (result.CandidatePlatform == CandidatePlatforms.Sdl3 &&
                         result.OraclePspSegment is null) ||
                     (result.CandidatePlatform == CandidatePlatforms.Dos &&

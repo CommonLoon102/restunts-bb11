@@ -120,6 +120,16 @@ static polyinfo_index queued_ghost_primitives;
 #define SHAPE3D_PRIMITIVE_ALWAYS_VISIBLE_FLAG 1U
 
 #define POLYINFO_LIST_SENTINEL (-1)
+#define POLYINFO_MATERIAL_OFFSET 2U
+#define POLYINFO_VERTEX_COUNT_OFFSET 3U
+#define POLYINFO_TYPE_OFFSET 4U
+#define POLYINFO_HEADER_WORD_COUNT 3U
+#define POLYINFO_POINT_WORD_COUNT 2U
+#define POLYINFO_START_X_WORD POLYINFO_HEADER_WORD_COUNT
+#define POLYINFO_START_Y_WORD (POLYINFO_START_X_WORD + 1U)
+#define POLYINFO_END_X_WORD (POLYINFO_START_X_WORD + POLYINFO_POINT_WORD_COUNT)
+#define POLYINFO_END_Y_WORD (POLYINFO_END_X_WORD + 1U)
+#define POLYINFO_SPHERE_SIZE_WORD (POLYINFO_HEADER_WORD_COUNT + POLYINFO_POINT_WORD_COUNT)
 #define POLYINFO_LEGACY_LAST_VALID_OFFSET 10354U
 /* A ten-vertex polygon can gain five vertices at the near plane. Reserve
  * a full record before beginning another primitive, including clipped ones. */
@@ -127,6 +137,12 @@ static polyinfo_index queued_ghost_primitives;
 #define POLYINFO_MAX_RECORD_SIZE (6U + 4U * POLYINFO_MAX_RENDER_POINTS)
 #define POLYINFO_SUPERSIGHT_LAST_VALID_OFFSET                                                      \
 	(POLYINFO_SUPERSIGHT_DATA_SIZE - POLYINFO_MAX_RECORD_SIZE)
+
+enum SHAPE3D_PATTERN_TYPE {
+	SHAPE3D_PATTERN_SOLID = 0,
+	SHAPE3D_PATTERN_MASKED = 1,
+	SHAPE3D_PATTERN_TWO_COLOR = 2
+};
 
 static polyinfo_index polyinfo_primitive_capacity = POLYINFO_LEGACY_PRIMITIVE_CAPACITY;
 static polyinfo_offset polyinfo_last_valid_offset = POLYINFO_LEGACY_LAST_VALID_OFFSET;
@@ -245,18 +261,19 @@ static legacy_u16 shape3d_average_depth(legacy_s32 sum, legacy_u16 vertex_count)
 
 static legacy_u16 polyinfo_read_word(const legacy_u8 far *record, legacy_u16 word_index)
 {
-	return LEGACY_READ_U16_LE(record + LEGACY_U16_WRAP_MUL(word_index, 2U));
+	return LEGACY_READ_U16_LE(record + LEGACY_U16_WRAP_MUL(word_index, LEGACY_WORD_BYTES));
 }
 
 static void polyinfo_write_word(legacy_u8 far *record, legacy_u16 word_index, legacy_u16 value)
 {
-	LEGACY_WRITE_U16_LE(record + LEGACY_U16_WRAP_MUL(word_index, 2U), value);
+	LEGACY_WRITE_U16_LE(record + LEGACY_U16_WRAP_MUL(word_index, LEGACY_WORD_BYTES), value);
 }
 
 static void polyinfo_read_point(const legacy_u8 far *record, legacy_u16 point_index,
 								struct POINT2D *point)
 {
-	legacy_u16 word_index = LEGACY_U16_WRAP_ADD(3U, LEGACY_U16_WRAP_MUL(point_index, 2U));
+	legacy_u16 word_index = LEGACY_U16_WRAP_ADD(
+		POLYINFO_HEADER_WORD_COUNT, LEGACY_U16_WRAP_MUL(point_index, POLYINFO_POINT_WORD_COUNT));
 	point->px = LEGACY_S16_FROM_BITS(polyinfo_read_word(record, word_index));
 	point->py =
 		LEGACY_S16_FROM_BITS(polyinfo_read_word(record, LEGACY_U16_WRAP_ADD(word_index, 1U)));
@@ -273,7 +290,8 @@ static void polyinfo_read_points(const legacy_u8 far *record, struct POINT2D *po
 static void polyinfo_write_point(legacy_u8 far *record, legacy_u16 point_index,
 								 const struct POINT2D *point)
 {
-	legacy_u16 word_index = LEGACY_U16_WRAP_ADD(3U, LEGACY_U16_WRAP_MUL(point_index, 2U));
+	legacy_u16 word_index = LEGACY_U16_WRAP_ADD(
+		POLYINFO_HEADER_WORD_COUNT, LEGACY_U16_WRAP_MUL(point_index, POLYINFO_POINT_WORD_COUNT));
 	polyinfo_write_word(record, word_index, (legacy_u16)point->px);
 	polyinfo_write_word(record, LEGACY_U16_WRAP_ADD(word_index, 1U), (legacy_u16)point->py);
 }
@@ -823,16 +841,16 @@ static legacy_u16 shape3d_prepare_primitive(struct SHAPE3D_TRANSFORM_CONTEXT *co
 static legacy_u16 shape3d_insert_primitive(legacy_u8 primitive_type, legacy_u16 primitive_flags,
 										   legacy_s32 depth_sum)
 {
-	transshapepolyinfo[3] = transshapenumvertscopy;
-	transshapepolyinfo[4] = primitive_type;
+	transshapepolyinfo[POLYINFO_VERTEX_COUNT_OFFSET] = transshapenumvertscopy;
+	transshapepolyinfo[POLYINFO_TYPE_OFFSET] = primitive_type;
 	if ((transshapeflags & SHAPE3D_GHOST_FLAG) != 0U) {
-		transshapepolyinfo[4] |= RENDER_PRIMITIVE_GHOST_FLAG;
+		transshapepolyinfo[POLYINFO_TYPE_OFFSET] |= RENDER_PRIMITIVE_GHOST_FLAG;
 		queued_ghost_primitives++;
 	}
 	if (transprimitivepaintjob == BACKLIGHT_PAINT_DEFAULT) {
-		transshapepolyinfo[2] = backlights_paint_override;
+		transshapepolyinfo[POLYINFO_MATERIAL_OFFSET] = backlights_paint_override;
 	} else {
-		transshapepolyinfo[2] = transprimitivepaintjob;
+		transshapepolyinfo[POLYINFO_MATERIAL_OFFSET] = transprimitivepaintjob;
 	}
 	legacy_u16 depth = shape3d_average_depth(depth_sum, transshapenumvertscopy);
 	polyinfo_write_word(transshapepolyinfo, 0U, depth);
@@ -1253,6 +1271,11 @@ void shape3d_set_legacy_render_stack(legacy_s16 *wheel_headings, legacy_u16 poly
 #define SHAPE3D_LEGACY_ROTATE_PAIR_RETURN_IP 5482U
 #define SHAPE3D_LEGACY_ROTATE_TRIPLE_RETURN_IP 5626U
 #define SHAPE3D_LEGACY_VIEW_ROTATION_STACK_OFFSET 42U
+#define SHAPE3D_LEGACY_ROTATE_Y_FLAG 1U
+#define SHAPE3D_LEGACY_ROTATE_X_FLAG 2U
+#define SHAPE3D_LEGACY_ROTATE_Z_FLAG 4U
+#define SHAPE3D_LEGACY_ROTATE_ALL_FLAGS                                                            \
+	(SHAPE3D_LEGACY_ROTATE_Z_FLAG | SHAPE3D_LEGACY_ROTATE_X_FLAG | SHAPE3D_LEGACY_ROTATE_Y_FLAG)
 
 static void shape3d_retain_legacy_view_rotation(legacy_s16 angZ, legacy_s16 angX, legacy_s16 angY)
 {
@@ -1275,11 +1298,14 @@ static void shape3d_retain_legacy_view_rotation(legacy_s16 angZ, legacy_s16 angX
 	frame_pointer = (legacy_u16)(legacy_render_polygon_frame_pointer -
 								 SHAPE3D_LEGACY_VIEW_ROTATION_STACK_OFFSET);
 	if ((rotate_z && rotate_x) || (rotate_z && rotate_y) || (rotate_x && rotate_y)) {
-		axes = (legacy_u16)((rotate_z ? 4 : 0) | (rotate_x ? 2 : 0) | (rotate_y ? 1 : 0));
+		axes = (legacy_u16)((rotate_z ? SHAPE3D_LEGACY_ROTATE_Z_FLAG : 0) |
+							(rotate_x ? SHAPE3D_LEGACY_ROTATE_X_FLAG : 0) |
+							(rotate_y ? SHAPE3D_LEGACY_ROTATE_Y_FLAG : 0));
 		headings[0] = LEGACY_S16_FROM_BITS(axes);
 		headings[1] = LEGACY_S16_FROM_BITS(frame_pointer);
-		headings[2] = LEGACY_S16_FROM_BITS(axes == 7 ? SHAPE3D_LEGACY_ROTATE_TRIPLE_RETURN_IP
-													 : SHAPE3D_LEGACY_ROTATE_PAIR_RETURN_IP);
+		headings[2] = LEGACY_S16_FROM_BITS(axes == SHAPE3D_LEGACY_ROTATE_ALL_FLAGS
+											   ? SHAPE3D_LEGACY_ROTATE_TRIPLE_RETURN_IP
+											   : SHAPE3D_LEGACY_ROTATE_PAIR_RETURN_IP);
 		headings[3] = LEGACY_S16_FROM_BITS(legacy_render_polygon_code_segment);
 		return;
 	} else if (rotate_z) {
@@ -1479,33 +1505,38 @@ static legacy_u16 shape3d_material_value(const legacy_s16 *table, legacy_u16 ind
  * must not become an input to either car's physics. */
 static void shape3d_render_ghost(const legacy_u8 far *record, struct POINT2D *points)
 {
-	legacy_u16 primitive_type = record[4] & ~RENDER_PRIMITIVE_GHOST_FLAG;
+	legacy_u16 primitive_type = record[POLYINFO_TYPE_OFFSET] & ~RENDER_PRIMITIVE_GHOST_FLAG;
 	if (primitive_type == RENDER_PRIMITIVE_POLYGON) {
-		legacy_u16 material = record[2];
+		legacy_u16 material = record[POLYINFO_MATERIAL_OFFSET];
 		legacy_u16 pattern_type = shape3d_material_value(material_patlist_ptr_cpy, material);
-		if (pattern_type > 2U ||
-			(pattern_type == 1U &&
+		if (pattern_type > SHAPE3D_PATTERN_TWO_COLOR ||
+			(pattern_type == SHAPE3D_PATTERN_MASKED &&
 			 shape3d_material_value(material_patlist2_ptr_cpy, material) == 0U)) {
 			return;
 		}
-		polyinfo_read_points(record, points, record[3]);
-		preRender_default(PRERENDER_GHOST_COLOR, record[3], points);
+		polyinfo_read_points(record, points, record[POLYINFO_VERTEX_COUNT_OFFSET]);
+		preRender_default(PRERENDER_GHOST_COLOR, record[POLYINFO_VERTEX_COUNT_OFFSET], points);
 	} else if (primitive_type == RENDER_PRIMITIVE_WHEEL) {
-		polyinfo_read_points(record, points, 4U);
+		polyinfo_read_points(record, points, WHEEL_SOURCE_POINT_COUNT);
 		preRender_wheel(points, WHEEL_INNER_RADIUS_SCALE, PRERENDER_GHOST_COLOR,
 						PRERENDER_GHOST_COLOR, PRERENDER_GHOST_COLOR);
 	} else if (primitive_type == RENDER_PRIMITIVE_SPHERE) {
-		preRender_sphere(LEGACY_S16_FROM_BITS(polyinfo_read_word(record, 3U)),
-						 LEGACY_S16_FROM_BITS(polyinfo_read_word(record, 4U)),
-						 polyinfo_read_word(record, 5U), PRERENDER_GHOST_COLOR);
+		preRender_sphere(LEGACY_S16_FROM_BITS(polyinfo_read_word(record, POLYINFO_START_X_WORD)),
+						 LEGACY_S16_FROM_BITS(polyinfo_read_word(record, POLYINFO_START_Y_WORD)),
+						 polyinfo_read_word(record, POLYINFO_SPHERE_SIZE_WORD),
+						 PRERENDER_GHOST_COLOR);
 	} else if (primitive_type == RENDER_PRIMITIVE_LINE ||
 			   primitive_type == RENDER_PRIMITIVE_POINT) {
-		legacy_u16 x = polyinfo_read_word(record, 3U);
-		legacy_u16 y = polyinfo_read_word(record, 4U);
-		preRender_line(
-			x, y, primitive_type == RENDER_PRIMITIVE_POINT ? x : polyinfo_read_word(record, 5U),
-			primitive_type == RENDER_PRIMITIVE_POINT ? y : polyinfo_read_word(record, 6U),
-			PRERENDER_GHOST_COLOR);
+		legacy_u16 x = polyinfo_read_word(record, POLYINFO_START_X_WORD);
+		legacy_u16 y = polyinfo_read_word(record, POLYINFO_START_Y_WORD);
+		preRender_line(x, y,
+					   primitive_type == RENDER_PRIMITIVE_POINT
+						   ? x
+						   : polyinfo_read_word(record, POLYINFO_END_X_WORD),
+					   primitive_type == RENDER_PRIMITIVE_POINT
+						   ? y
+						   : polyinfo_read_word(record, POLYINFO_END_Y_WORD),
+					   PRERENDER_GHOST_COLOR);
 	}
 }
 
@@ -1514,8 +1545,8 @@ static legacy_u16 shape3d_legacy_record_index(polyinfo_index record_index)
 	polyinfo_index result = record_index;
 	if (queued_ghost_primitives != 0U) {
 		for (polyinfo_index index = 0; index < record_index; index++) {
-			if ((polyinfoptr[polygon_record_offsets[index] + 4U] & RENDER_PRIMITIVE_GHOST_FLAG) !=
-				0U) {
+			if ((polyinfoptr[polygon_record_offsets[index] + POLYINFO_TYPE_OFFSET] &
+				 RENDER_PRIMITIVE_GHOST_FLAG) != 0U) {
 				result--;
 			}
 		}
@@ -1526,9 +1557,9 @@ static legacy_u16 shape3d_legacy_record_index(polyinfo_index record_index)
 #if defined(RESTUNTS_SDL3)
 static void shape3d_render_hires_primitive(polyinfo_index record_index, const legacy_u8 *record)
 {
-	legacy_u16 material = record[2];
-	legacy_u16 type = record[4] & ~RENDER_PRIMITIVE_GHOST_FLAG;
-	legacy_u16 pattern_type = 0;
+	legacy_u16 material = record[POLYINFO_MATERIAL_OFFSET];
+	legacy_u16 type = record[POLYINFO_TYPE_OFFSET] & ~RENDER_PRIMITIVE_GHOST_FLAG;
+	legacy_u16 pattern_type = SHAPE3D_PATTERN_SOLID;
 	legacy_u16 pattern = 0;
 	legacy_u16 color = shape3d_material_value(material_clrlist_ptr_cpy, material);
 	legacy_u16 second_color = 0;
@@ -1536,7 +1567,8 @@ static void shape3d_render_hires_primitive(polyinfo_index record_index, const le
 	if (type == RENDER_PRIMITIVE_POLYGON) {
 		pattern_type = shape3d_material_value(material_patlist_ptr_cpy, material);
 		pattern = shape3d_material_value(material_patlist2_ptr_cpy, material);
-		if (pattern_type > 2U || (pattern_type == 1U && pattern == 0U)) {
+		if (pattern_type > SHAPE3D_PATTERN_TWO_COLOR ||
+			(pattern_type == SHAPE3D_PATTERN_MASKED && pattern == 0U)) {
 			return;
 		}
 		second_color = shape3d_material_value(material_clrlist2_ptr_cpy, material);
@@ -1544,8 +1576,8 @@ static void shape3d_render_hires_primitive(polyinfo_index record_index, const le
 		second_color = shape3d_material_value(material_clrlist_ptr_cpy, material + 1U);
 		third_color = shape3d_material_value(material_clrlist_ptr_cpy, material + 2U);
 	}
-	shape3d_hires_render(record_index, record[4], color, second_color, third_color, pattern_type,
-						 pattern);
+	shape3d_hires_render(record_index, record[POLYINFO_TYPE_OFFSET], color, second_color,
+						 third_color, pattern_type, pattern);
 }
 #endif
 
@@ -1569,27 +1601,27 @@ void shape3d_render_queued_primitives(void)
 			shape3d_render_hires_primitive(record_index, record);
 		}
 #endif
-		if ((record[4] & RENDER_PRIMITIVE_GHOST_FLAG) != 0U) {
+		if ((record[POLYINFO_TYPE_OFFSET] & RENDER_PRIMITIVE_GHOST_FLAG) != 0U) {
 			shape3d_render_ghost(record, points);
 			rendered_ghost_primitives++;
 			continue;
 		}
-		legacy_u16 material_type = record[2];
+		legacy_u16 material_type = record[POLYINFO_MATERIAL_OFFSET];
 		legacy_u16 material_color = shape3d_material_value(material_clrlist_ptr_cpy, material_type);
-		legacy_u16 primitive_type = record[4];
+		legacy_u16 primitive_type = record[POLYINFO_TYPE_OFFSET];
 
 		if (primitive_type == RENDER_PRIMITIVE_POLYGON) {
-			legacy_u16 vertex_count = record[3];
+			legacy_u16 vertex_count = record[POLYINFO_VERTEX_COUNT_OFFSET];
 			polyinfo_read_points(record, points, vertex_count);
 			shape3d_retain_opponent_polygon_pointer(record, vertex_count);
 			legacy_u16 pattern_type =
 				shape3d_material_value(material_patlist_ptr_cpy, material_type);
-			if (pattern_type == 0U) {
+			if (pattern_type == SHAPE3D_PATTERN_SOLID) {
 				shape3d_retain_render_local_pair(
 					LEGACY_U16_WRAP_SUB(drawing_sprite.sprite_raster_right, 1U),
 					drawing_sprite.sprite_raster_left, SHAPE3D_LEGACY_SOLID_POLYGON_RETURN_IP);
 				preRender_default(material_color, vertex_count, points);
-			} else if (pattern_type == 1U) {
+			} else if (pattern_type == SHAPE3D_PATTERN_MASKED) {
 				pattern_type = shape3d_material_value(material_patlist2_ptr_cpy, material_type);
 				shape3d_retain_opponent_pattern(pattern_type);
 				if (pattern_type != 0U) {
@@ -1597,7 +1629,7 @@ void shape3d_render_queued_primitives(void)
 												SHAPE3D_LEGACY_PATTERNED_POLYGON_RETURN_IP);
 					preRender_patterned(pattern_type, material_color, vertex_count, points);
 				}
-			} else if (pattern_type == 2U) {
+			} else if (pattern_type == SHAPE3D_PATTERN_TWO_COLOR) {
 				shape3d_retain_opponent_pattern(LEGACY_U16_WRAP_MUL(material_type, 2U));
 				/* preRender_unk replaces its first argument with the secondary color. */
 				shape3d_retain_render_argument(
@@ -1610,15 +1642,17 @@ void shape3d_render_queued_primitives(void)
 			}
 		} else if (primitive_type == RENDER_PRIMITIVE_LINE) {
 			shape3d_retain_render_argument(SHAPE3D_LEGACY_LINE_RETURN_IP,
-										   polyinfo_read_word(record, 3U));
-			preRender_line(polyinfo_read_word(record, 3U), polyinfo_read_word(record, 4U),
-						   polyinfo_read_word(record, 5U), polyinfo_read_word(record, 6U),
-						   material_color);
+										   polyinfo_read_word(record, POLYINFO_START_X_WORD));
+			preRender_line(polyinfo_read_word(record, POLYINFO_START_X_WORD),
+						   polyinfo_read_word(record, POLYINFO_START_Y_WORD),
+						   polyinfo_read_word(record, POLYINFO_END_X_WORD),
+						   polyinfo_read_word(record, POLYINFO_END_Y_WORD), material_color);
 		} else if (primitive_type == RENDER_PRIMITIVE_SPHERE) {
-			shape3d_retain_sphere_stack(polyinfo_read_word(record, 5U));
-			preRender_sphere(LEGACY_S16_FROM_BITS(polyinfo_read_word(record, 3U)),
-							 LEGACY_S16_FROM_BITS(polyinfo_read_word(record, 4U)),
-							 polyinfo_read_word(record, 5U), material_color);
+			shape3d_retain_sphere_stack(polyinfo_read_word(record, POLYINFO_SPHERE_SIZE_WORD));
+			preRender_sphere(
+				LEGACY_S16_FROM_BITS(polyinfo_read_word(record, POLYINFO_START_X_WORD)),
+				LEGACY_S16_FROM_BITS(polyinfo_read_word(record, POLYINFO_START_Y_WORD)),
+				polyinfo_read_word(record, POLYINFO_SPHERE_SIZE_WORD), material_color);
 		} else if (primitive_type == RENDER_PRIMITIVE_WHEEL) {
 			shape3d_retain_opponent_pattern(
 				LEGACY_U16_WRAP_ADD(legacy_opponent_render_context.material_color_offset,
@@ -1627,7 +1661,7 @@ void shape3d_render_queued_primitives(void)
 				SHAPE3D_LEGACY_WHEEL_RETURN_IP,
 				LEGACY_U16_WRAP_SUB(legacy_render_polygon_frame_pointer,
 									SHAPE3D_LEGACY_POLYGON_POINTS_STACK_OFFSET));
-			polyinfo_read_points(record, points, 4U);
+			polyinfo_read_points(record, points, WHEEL_SOURCE_POINT_COUNT);
 			preRender_wheel(points, WHEEL_INNER_RADIUS_SCALE, material_color,
 							shape3d_material_value(material_clrlist_ptr_cpy, material_type + 1U),
 							shape3d_material_value(material_clrlist_ptr_cpy, material_type + 2U));
@@ -1635,9 +1669,10 @@ void shape3d_render_queued_primitives(void)
 			shape3d_retain_render_local_pair(shape3d_legacy_record_index(record_index),
 											 primitive_index - rendered_ghost_primitives,
 											 SHAPE3D_LEGACY_POINT_RETURN_IP);
-			sprite_putpixel_clipped(LEGACY_S16_FROM_BITS(polyinfo_read_word(record, 3U)),
-									LEGACY_S16_FROM_BITS(polyinfo_read_word(record, 4U)),
-									material_color);
+			sprite_putpixel_clipped(
+				LEGACY_S16_FROM_BITS(polyinfo_read_word(record, POLYINFO_START_X_WORD)),
+				LEGACY_S16_FROM_BITS(polyinfo_read_word(record, POLYINFO_START_Y_WORD)),
+				material_color);
 		}
 	}
 #if defined(RESTUNTS_SDL3)

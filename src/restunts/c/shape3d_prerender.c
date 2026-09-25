@@ -16,7 +16,6 @@
 #define SPHERE_HALF_STEP_NORMALIZATION 14654U
 #define SPHERE_QUARTER_STEP_NORMALIZATION 15895U
 #define SPHERE_THREE_QUARTER_STEP_NORMALIZATION 13107U
-#define WHEEL_SOURCE_POINT_COUNT 4U
 #define WHEEL_SOURCE_WORD_COUNT 8U
 #define WHEEL_PERIMETER_POINT_COUNT 16U
 #define WHEEL_PERIMETER_INDEX_MASK 15U
@@ -58,7 +57,7 @@ static legacy_s16 prerender_line(legacy_u16 start_x, legacy_u16 start_y, legacy_
 static void prerender_grille_pixel(legacy_u16 x, legacy_u16 y)
 {
 	legacy_u16 row_shift = (y & 1U) == 0U ? LEGACY_BYTE_BITS : 0U;
-	legacy_u16 bit = row_shift + 7U - (x & 7U);
+	legacy_u16 bit = row_shift + (LEGACY_BYTE_BITS - 1U) - (x & (LEGACY_BYTE_BITS - 1U));
 	if ((PRERENDER_BLACK_GRILLE_PATTERN & (1U << bit)) != 0U) {
 		sprite_putpixel_clipped(LEGACY_S16_FROM_BITS(x), LEGACY_S16_FROM_BITS(y), 0);
 	}

@@ -13,6 +13,8 @@ public interface INativeRunner
 
 public sealed class NativeRunner : INativeRunner
 {
+    internal const int DefaultOraclePspSegment = 654;
+
     public Task<ProcessResult> RunAsync(NativeInvocation invocation,
         CancellationToken cancellationToken) => ProcessRunner.RunAsync(CreateStartInfo(invocation),
             invocation.TimeoutSeconds, cancellationToken);
@@ -37,7 +39,8 @@ public sealed class NativeRunner : INativeRunner
         startInfo.Environment["SDL_VIDEODRIVER"] = "dummy";
         startInfo.Environment["SDL_AUDIODRIVER"] = "dummy";
         startInfo.Environment["RESTUNTS_ORACLE_PSP_SEGMENT"] =
-            (invocation.OraclePspSegment ?? 654).ToString(CultureInfo.InvariantCulture);
+            (invocation.OraclePspSegment ?? DefaultOraclePspSegment)
+                .ToString(CultureInfo.InvariantCulture);
         startInfo.Environment["RESTUNTS_ORACLE_PROGRAM_PATH"] = @"C:\PIXLDUMP.EXE";
         return startInfo;
     }

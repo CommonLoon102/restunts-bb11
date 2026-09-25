@@ -34,6 +34,7 @@
 #define REPLDUMP_CAR_ID_SIZE 4U
 #define REPLDUMP_CAR_ID_BUFFER_SIZE 5U
 #define REPLDUMP_REPLAY_EXTENSION_SIZE 4U
+#define REPLDUMP_OWOOT_RESULT_LENGTH 4U
 #define REPLDUMP_SERIALIZED_CHUNK_NAME_SIZE 12U
 #define REPLDUMP_POLYINFO_RESOURCE_SIZE 10400U
 #define REPLDUMP_CVX_RESOURCE_SIZE 22400U
@@ -308,9 +309,10 @@ static legacy_s16 repldump_write_owoot_result(const legacy_s8 *stem, legacy_s16 
 	if (output == 0) {
 		return 0;
 	}
-	legacy_u16 written = repldump_output_write(output, passed ? "pass" : "fail", 4U);
+	legacy_u16 written =
+		repldump_output_write(output, passed ? "pass" : "fail", REPLDUMP_OWOOT_RESULT_LENGTH);
 	legacy_s16 closed = repldump_output_close(output);
-	if (written != 4U || closed != 0) {
+	if (written != REPLDUMP_OWOOT_RESULT_LENGTH || closed != 0) {
 		(void)dos_file_remove(name);
 		return 0;
 	}

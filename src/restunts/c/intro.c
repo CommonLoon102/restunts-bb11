@@ -64,19 +64,23 @@ enum CREDITS_LINE_TYPE { CREDITS_LINE_SHAPE = 0, CREDITS_LINE_TEXT = 1 };
 static void far *ui_temp_resource;
 
 #if defined(RESTUNTS_SDL3) && !defined(__DJGPP__)
+#define INTRO_AUDIO_NOTICE_LINE_CAPACITY 32
+#define INTRO_AUDIO_NOTICE_TOP 132
+
 static void intro_draw_native_audio_notice(void)
 {
-	static legacy_s8 lines[][32] = {"Nuked OPL2 Lite", "Copyright (C) 2026 Nuke.YKT.",
-									"LGPL-2.1-or-later", "See share/licenses/restunts/",
-									"Nuked-OPL2-LICENSE"};
+	static legacy_s8 lines[][INTRO_AUDIO_NOTICE_LINE_CAPACITY] = {
+		"Nuked OPL2 Lite", "Copyright (C) 2026 Nuke.YKT.", "LGPL-2.1-or-later",
+		"See share/licenses/restunts/", "Nuked-OPL2-LICENSE"};
 	const legacy_s16 notice_x = 8;
 	const legacy_s16 title_text_color = 77;
-	legacy_s16 notice_y = 132;
+	legacy_s16 notice_y = INTRO_AUDIO_NOTICE_TOP;
 	const legacy_s16 line_height = 8;
 	legacy_u8 far *saved_font = active_font_definition;
 	legacy_u8 far *notice_font = (legacy_u8 far *)fontnptr;
 	legacy_s16 saved_color = LEGACY_S16_FROM_BITS(LEGACY_READ_U16_LE(notice_font));
-	legacy_s16 saved_background = LEGACY_S16_FROM_BITS(LEGACY_READ_U16_LE(notice_font + 2));
+	legacy_s16 saved_background =
+		LEGACY_S16_FROM_BITS(LEGACY_READ_U16_LE(notice_font + LEGACY_WORD_BYTES));
 	font_set_fontdef2(notice_font);
 	/* The narrow font fits beside the title's car and above its copyright. */
 	for (legacy_u16 line = 0; line < sizeof(lines) / sizeof(lines[0]); ++line) {

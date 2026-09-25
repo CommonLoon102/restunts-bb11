@@ -11,6 +11,7 @@ from pathlib import Path
 TRACK_SIZE = 1802
 TRACK_SKYBOX_OFFSET = 900
 REPLAY_HEADER_SIZE = 26
+REPLAY_FRAMES_OFFSET = 24
 SKYBOX_COUNT = 5
 
 
@@ -21,7 +22,7 @@ def skybox_offset(data, suffix):
     elif suffix.lower() == ".rpl":
         if len(data) < REPLAY_HEADER_SIZE:
             raise ValueError("Incomplete 26-byte replay header")
-        expected = REPLAY_HEADER_SIZE + TRACK_SIZE + int.from_bytes(data[24:26], "little")
+        expected = REPLAY_HEADER_SIZE + TRACK_SIZE + int.from_bytes(data[REPLAY_FRAMES_OFFSET:REPLAY_HEADER_SIZE], "little")
         offset = REPLAY_HEADER_SIZE + TRACK_SKYBOX_OFFSET
     else:
         raise ValueError("Expected a .trk or a 26-byte-header .rpl file")

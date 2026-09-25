@@ -17,7 +17,18 @@ import wave
 
 
 ROOT = Path(__file__).resolve().parents[2]
-MAX_WAV_FRAMES = (0xFFFFFFFF - 36) // 2
+OPL_CLOCK_HZ = 3579545
+MIN_SAMPLE_RATE = 8000
+MAX_SAMPLE_RATE = 384000
+DEFAULT_MAX_SECONDS = 3600
+PCM_SAMPLE_BYTES = 2
+PCM_CHANNELS = 1
+WAV_HEADER_OVERHEAD = 36
+MAX_RIFF_SIZE = 0xFFFFFFFF
+PCM_COPY_BUFFER_BYTES = 65536
+TRACE_HEADER_FIELDS = 5
+TRACE_WRITE_FIELDS = 5
+MAX_WAV_FRAMES = (MAX_RIFF_SIZE - WAV_HEADER_OVERHEAD) // PCM_SAMPLE_BYTES
 MAX_LINE_LENGTH = 4096
 
 
@@ -38,7 +49,7 @@ def number(token, base, description):
     return int(token, base)
 
 
-def normalize_trace(source, destination, max_seconds=3600):
+def normalize_trace(source, destination, max_seconds=DEFAULT_MAX_SECONDS):
     """Validate incrementally and write a bounded, decimal event stream."""
     if max_seconds <= 0:
         raise ValueError("maximum duration must be positive")
@@ -54,15 +65,15 @@ def normalize_trace(source, destination, max_seconds=3600):
             continue
         try:
             if info is None:
-                if len(fields) != 5 or fields[:2] != ["RESTUNTS_OPL_TRACE", "1"]:
+                if len(fields) != TRACE_HEADER_FIELDS or fields[:2] != ["RESTUNTS_OPL_TRACE", "1"]:
                     raise ValueError("expected RESTUNTS_OPL_TRACE 1 backend clock sample_rate")
                 if fields[2] != "nuked":
                     raise ValueError(f"unsupported recorded emulator: {fields[2]}")
                 clock = number(fields[3], 10, "clock")
                 sample_rate = number(fields[4], 10, "sample rate")
-                if clock != 3579545:
+                if clock != OPL_CLOCK_HZ:
                     raise ValueError("the vendored Nuked core supports only the 3579545 Hz clock")
-                if not 8000 <= sample_rate <= 384000:
+                if not MIN_SAMPLE_RATE <= sample_rate <= MAX_SAMPLE_RATE:
                     raise ValueError("sample rate must be between 8000 and 384000 Hz")
                 info = TraceInfo(clock, sample_rate)
                 continue
@@ -76,7 +87,7 @@ def normalize_trace(source, destination, max_seconds=3600):
             if frame > min(MAX_WAV_FRAMES, info.sample_rate * max_seconds):
                 raise ValueError("sample frame exceeds the duration or WAV size limit")
             kind = fields[1]
-            if kind == "W" and len(fields) == 5:
+            if kind == "W" and len(fields) == TRACE_WRITE_FIELDS:
                 register = number(fields[2], 16, "register")
                 value = number(fields[3], 16, "register value")
                 if fields[4] not in ("0", "1"):
@@ -106,14 +117,16 @@ def normalize_trace(source, destination, max_seconds=3600):
 
 HELPER = r'''
 #include <inttypes.h>
+#include <limits.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include "opl2.h"
+#define SAMPLE_BUFFER_FRAMES 4096U
 static opl2_chip *chip;
 static int initialize(uint32_t clock, uint32_t rate)
 {
-    if (clock != 3579545) { return 0; }
+    if (clock != OPL_CLOCK_HZ) { return 0; }
     chip = calloc(1, sizeof(*chip));
     if (!chip) { return 0; }
     OPL2_Reset(chip, rate);
@@ -137,15 +150,15 @@ static void destroy(void) { free(chip); }
 
 static int generate(FILE *output, uint64_t count)
 {
-    unsigned char bytes[8192];
+    unsigned char bytes[SAMPLE_BUFFER_FRAMES * PCM_SAMPLE_BYTES];
     while (count != 0) {
-        size_t frames = count > 4096 ? 4096 : (size_t)count;
+        size_t frames = count > SAMPLE_BUFFER_FRAMES ? SAMPLE_BUFFER_FRAMES : (size_t)count;
         for (size_t index = 0; index < frames; ++index) {
             uint16_t sample = (uint16_t)next_sample();
-            bytes[index * 2] = (unsigned char)sample;
-            bytes[index * 2 + 1] = (unsigned char)(sample >> 8);
+            bytes[index * PCM_SAMPLE_BYTES] = (unsigned char)sample;
+            bytes[index * PCM_SAMPLE_BYTES + 1] = (unsigned char)(sample >> CHAR_BIT);
         }
-        if (fwrite(bytes, 2, frames, output) != frames) {
+        if (fwrite(bytes, PCM_SAMPLE_BYTES, frames, output) != frames) {
             return 0;
         }
         count -= frames;
@@ -177,7 +190,7 @@ int main(int argc, char **argv)
         if (event == 'W') {
             unsigned int reg, value, buffered;
             if (fscanf(input, "%u %u %u", &reg, &value, &buffered) != 3 ||
-                reg > 255 || value > 255 || buffered > 1) {
+                reg > UINT8_MAX || value > UINT8_MAX || buffered > 1) {
                 break;
             }
             write_register(reg, value, buffered);
@@ -204,7 +217,8 @@ def compile_helper(directory, cc="cc"):
     library = ROOT / "third_party/nuked-opl2-lite"
     source = directory / "render.c"
     executable = directory / ("render.exe" if os.name == "nt" else "render")
-    source.write_text(HELPER, encoding="utf-8")
+    source.write_text(f"#define OPL_CLOCK_HZ {OPL_CLOCK_HZ}U\n"
+                      f"#define PCM_SAMPLE_BYTES {PCM_SAMPLE_BYTES}U\n" + HELPER, encoding="utf-8")
     command = [cc, "-std=c99", "-O2", "-I", str(library), str(source),
                str(library / "opl2.c"), "-o", str(executable)]
     subprocess.run(command, check=True)
@@ -214,7 +228,7 @@ def compile_helper(directory, cc="cc"):
 def synthesize(executable, events, raw_pcm, info):
     subprocess.run([str(executable), str(info.clock), str(info.sample_rate),
                     str(events), str(raw_pcm)], check=True)
-    if raw_pcm.stat().st_size != info.frames * 2:
+    if raw_pcm.stat().st_size != info.frames * PCM_SAMPLE_BYTES:
         raise ValueError("renderer returned the wrong sample count")
 
 
@@ -225,8 +239,8 @@ def write_wave(raw_pcm, output, info):
     os.close(descriptor)
     try:
         with wave.open(temporary, "wb") as destination, raw_pcm.open("rb") as source:
-            destination.setparams((1, 2, info.sample_rate, info.frames, "NONE", "not compressed"))
-            while block := source.read(65536):
+            destination.setparams((PCM_CHANNELS, PCM_SAMPLE_BYTES, info.sample_rate, info.frames, "NONE", "not compressed"))
+            while block := source.read(PCM_COPY_BUFFER_BYTES):
                 destination.writeframesraw(block)
         os.replace(temporary, output)
     finally:
@@ -234,7 +248,7 @@ def write_wave(raw_pcm, output, info):
             os.unlink(temporary)
 
 
-def render(trace, output, cc="cc", max_seconds=3600):
+def render(trace, output, cc="cc", max_seconds=DEFAULT_MAX_SECONDS):
     trace = Path(trace)
     output = Path(output)
     if trace.resolve() == output.resolve():
@@ -256,7 +270,7 @@ def main():
     parser.add_argument("trace", type=Path, help="completed RESTUNTS_OPL_TRACE file")
     parser.add_argument("output", type=Path, help="output mono 16-bit WAV")
     parser.add_argument("--cc", default="cc", help="host C compiler executable (default: cc)")
-    parser.add_argument("--max-seconds", type=int, default=3600,
+    parser.add_argument("--max-seconds", type=int, default=DEFAULT_MAX_SECONDS,
                         help="maximum trace duration to render (default: 3600 seconds)")
     arguments = parser.parse_args()
     try:

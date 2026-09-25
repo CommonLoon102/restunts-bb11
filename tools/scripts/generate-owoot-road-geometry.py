@@ -15,6 +15,46 @@ import struct
 import subprocess
 
 ROOT = Path(__file__).resolve().parents[2]
+BYTE_BITS = 8
+BYTE_MAX = (1 << BYTE_BITS) - 1
+WORD_BYTES = struct.calcsize("<H")
+PACKED_SIZE_OFFSET = 1
+PACKED_SIZE_BYTES = 3
+PACKED_HEADER_SIZE = PACKED_SIZE_OFFSET + PACKED_SIZE_BYTES
+PACKED_MULTI_PASS_FLAG = 0x80
+PACKED_PASS_COUNT_MASK = 0x7F
+COMPRESSION_RLE = 1
+COMPRESSION_VLE = 2
+VLE_FLAGS_OFFSET = PACKED_HEADER_SIZE
+VLE_HEADER_SIZE = VLE_FLAGS_OFFSET + 1
+VLE_DEPTH_MASK = 0x7F
+VLE_DELTA_FLAG = 0x80
+RLE_SOURCE_SIZE_OFFSET = PACKED_HEADER_SIZE
+RLE_FLAGS_OFFSET = 8
+RLE_HEADER_SIZE = RLE_FLAGS_OFFSET + 1
+RLE_ESCAPE_COUNT_MASK = 0x7F
+RLE_NO_SEQUENCE_FLAG = 0x80
+RLE_SEQUENCE_ESCAPE_INDEX = 1
+RLE_BYTE_COUNT_KIND = 1
+RLE_WORD_COUNT_KIND = 3
+RESOURCE_COUNT_OFFSET = struct.calcsize("<I")
+RESOURCE_HEADER_SIZE = struct.calcsize("<IH")
+RESOURCE_ID_SIZE = 4
+RESOURCE_OFFSET_SIZE = struct.calcsize("<I")
+SHAPE_HEADER_SIZE = 4
+SHAPE_COUNT_FIELDS = 3
+SHAPE_VERTEX_FORMAT = "<hhh"
+SHAPE_VERTEX_SIZE = struct.calcsize(SHAPE_VERTEX_FORMAT)
+SHAPE_PRIMITIVE_MASK_BYTES = struct.calcsize("<II")
+SHAPE_PRIMITIVE_HEADER_SIZE = 2
+SHAPE_POLYGON_MIN_VERTICES = 3
+SHAPE_POLYGON_MAX_VERTICES = 10
+SHAPE_PRIMITIVE_SPHERE = 11
+SHAPE_SPHERE_VERTEX_COUNT = 2
+SHAPE_WHEEL_VERTEX_COUNT = 6
+MODEL_COUNT = 37
+OVERPASS_MODEL = 22
+
 # Scene overlays are included with their base model. Finish/slalom have a road
 # overlay; the overpass also has the perpendicular lower road. Model 1's hill
 # variants use separate model 36 so their sloping surface heights are retained.
@@ -23,7 +63,7 @@ MODEL_SHAPES = {
     4: ("chi1",), 5: ("chi2",), 6: ("offl",), 7: ("offr",),
     8: ("sofl",), 9: ("sofr",), 10: ("gwro",), 11: ("wroa",),
     12: ("inte",), 16: ("ramp",), 17: ("sram",), 18: ("elrd",),
-    19: ("elsp",), 20: ("selr",), 21: ("sest",), 22: ("elsp",),
+    19: ("elsp",), 20: ("selr",), 21: ("sest",), OVERPASS_MODEL: ("elsp",),
     23: ("lban",), 24: ("rban",), 25: ("bank",), 26: ("btur",),
     27: ("loop", "loo1"), 28: ("tun2",), 29: ("spip",),
     30: ("pipe", "pip2"), 31: ("hpip", "pip2"),
@@ -34,10 +74,10 @@ ROAD_MATERIALS = {19, 22, 23}
 
 
 def vle(data):
-    size = int.from_bytes(data[1:4], "little")
-    depth = data[4] & 127
-    counts = data[5:5 + depth]
-    alphabet = iter(data[5 + depth:5 + depth + sum(counts)])
+    size = int.from_bytes(data[PACKED_SIZE_OFFSET:PACKED_HEADER_SIZE], "little")
+    depth = data[VLE_FLAGS_OFFSET] & VLE_DEPTH_MASK
+    counts = data[VLE_HEADER_SIZE:VLE_HEADER_SIZE + depth]
+    alphabet = iter(data[VLE_HEADER_SIZE + depth:VLE_HEADER_SIZE + depth + sum(counts)])
     codes = {}
     code = 0
     for width, count in enumerate(counts, 1):
@@ -45,18 +85,18 @@ def vle(data):
             codes[width, code] = next(alphabet)
             code += 1
         code *= 2
-    stream = data[5 + depth + sum(counts):]
+    stream = data[VLE_HEADER_SIZE + depth + sum(counts):]
     output = bytearray()
     code = width = previous = 0
     for byte in stream:
-        for bit in range(7, -1, -1):
+        for bit in range(BYTE_BITS - 1, -1, -1):
             code = code * 2 + ((byte >> bit) & 1)
             width += 1
             if (width, code) not in codes:
                 continue
             value = codes[width, code]
-            if data[4] & 128:
-                value = (value + previous) & 255
+            if data[VLE_FLAGS_OFFSET] & VLE_DELTA_FLAG:
+                value = (value + previous) & BYTE_MAX
             output.append(value)
             previous = value
             code = width = 0
@@ -66,18 +106,19 @@ def vle(data):
 
 
 def rle(data):
-    size = int.from_bytes(data[1:4], "little")
-    source_size = int.from_bytes(data[4:7], "little")
-    escape_count = data[8] & 127
-    escapes = data[9:9 + escape_count]
-    source = data[9 + escape_count:]
-    if data[8] <= 128:
+    size = int.from_bytes(data[PACKED_SIZE_OFFSET:PACKED_HEADER_SIZE], "little")
+    source_size = int.from_bytes(
+        data[RLE_SOURCE_SIZE_OFFSET:RLE_SOURCE_SIZE_OFFSET + PACKED_SIZE_BYTES], "little")
+    escape_count = data[RLE_FLAGS_OFFSET] & RLE_ESCAPE_COUNT_MASK
+    escapes = data[RLE_HEADER_SIZE:RLE_HEADER_SIZE + escape_count]
+    source = data[RLE_HEADER_SIZE + escape_count:]
+    if data[RLE_FLAGS_OFFSET] <= RLE_NO_SEQUENCE_FLAG:
         sequence = bytearray()
         cursor = 0
         while cursor < source_size:
             value = source[cursor]
             cursor += 1
-            if value == escapes[1]:
+            if value == escapes[RLE_SEQUENCE_ESCAPE_INDEX]:
                 end = source.index(value, cursor)
                 sequence.extend(source[cursor:end] * source[end + 1])
                 cursor = end + 2
@@ -92,12 +133,12 @@ def rle(data):
         cursor += 1
         kind = lookup.get(value, 0)
         if kind:
-            if kind == 1:
+            if kind == RLE_BYTE_COUNT_KIND:
                 count = source[cursor]
                 cursor += 1
-            elif kind == 3:
-                count = int.from_bytes(source[cursor:cursor + 2], "little")
-                cursor += 2
+            elif kind == RLE_WORD_COUNT_KIND:
+                count = int.from_bytes(source[cursor:cursor + WORD_BYTES], "little")
+                cursor += WORD_BYTES
             else:
                 count = kind - 1
             value = source[cursor]
@@ -109,13 +150,13 @@ def rle(data):
 
 
 def unpack(data):
-    passes = data[0] & 127 if data[0] & 128 else 1
-    if data[0] & 128:
-        data = data[4:]
+    passes = data[0] & PACKED_PASS_COUNT_MASK if data[0] & PACKED_MULTI_PASS_FLAG else 1
+    if data[0] & PACKED_MULTI_PASS_FLAG:
+        data = data[PACKED_HEADER_SIZE:]
     for _ in range(passes):
-        if data[0] == 1:
+        if data[0] == COMPRESSION_RLE:
             data = rle(data)
-        elif data[0] == 2:
+        elif data[0] == COMPRESSION_VLE:
             data = vle(data)
         else:
             raise ValueError("unsupported resource compression")
@@ -123,25 +164,33 @@ def unpack(data):
 
 
 def shapes(data):
-    count = struct.unpack_from("<H", data, 4)[0]
-    base = 6 + count * 8
+    count = struct.unpack_from("<H", data, RESOURCE_COUNT_OFFSET)[0]
+    base = RESOURCE_HEADER_SIZE + count * (RESOURCE_ID_SIZE + RESOURCE_OFFSET_SIZE)
     result = {}
     for index in range(count):
-        name = data[6 + 4 * index:10 + 4 * index].decode("ascii")
-        start = base + struct.unpack_from("<I", data, 6 + 4 * count + 4 * index)[0]
-        vertex_count, primitive_count, paint_count = data[start:start + 3]
-        vertices = [struct.unpack_from("<hhh", data, start + 4 + 6 * i)
-                    for i in range(vertex_count)]
-        cursor = start + 4 + 6 * vertex_count + 8 * primitive_count
+        name_start = RESOURCE_HEADER_SIZE + RESOURCE_ID_SIZE * index
+        name = data[name_start:name_start + RESOURCE_ID_SIZE].decode("ascii")
+        offset_start = RESOURCE_HEADER_SIZE + RESOURCE_ID_SIZE * count + RESOURCE_OFFSET_SIZE * index
+        start = base + struct.unpack_from("<I", data, offset_start)[0]
+        vertex_count, primitive_count, paint_count = data[start:start + SHAPE_COUNT_FIELDS]
+        vertices = [struct.unpack_from(
+            SHAPE_VERTEX_FORMAT, data, start + SHAPE_HEADER_SIZE + SHAPE_VERTEX_SIZE * i)
+            for i in range(vertex_count)]
+        cursor = (start + SHAPE_HEADER_SIZE + SHAPE_VERTEX_SIZE * vertex_count
+                  + SHAPE_PRIMITIVE_MASK_BYTES * primitive_count)
         polygons = []
         for _ in range(primitive_count):
             kind = data[cursor]
-            material = data[cursor + 2]
-            length = kind if kind <= 10 else (2 if kind == 11 else 6)
-            indices = data[cursor + 2 + paint_count:cursor + 2 + paint_count + length]
-            if 3 <= kind <= 10 and material in ROAD_MATERIALS:
+            material = data[cursor + SHAPE_PRIMITIVE_HEADER_SIZE]
+            length = (kind if kind <= SHAPE_POLYGON_MAX_VERTICES else
+                      SHAPE_SPHERE_VERTEX_COUNT if kind == SHAPE_PRIMITIVE_SPHERE else
+                      SHAPE_WHEEL_VERTEX_COUNT)
+            indices_start = cursor + SHAPE_PRIMITIVE_HEADER_SIZE + paint_count
+            indices = data[indices_start:indices_start + length]
+            if (SHAPE_POLYGON_MIN_VERTICES <= kind <= SHAPE_POLYGON_MAX_VERTICES
+                    and material in ROAD_MATERIALS):
                 polygons.append([vertices[i] for i in indices])
-            cursor += 2 + paint_count + length
+            cursor += SHAPE_PRIMITIVE_HEADER_SIZE + paint_count + length
         result[name] = polygons
     return result
 
@@ -186,10 +235,10 @@ def generate(directory):
         bank.update(shapes(unpack(data)))
     all_triangles = []
     model_ranges = []
-    for model in range(37):
+    for model in range(MODEL_COUNT):
         start = len(all_triangles)
         polygons = [p for name in MODEL_SHAPES.get(model, ()) for p in bank[name]]
-        if model == 22:
+        if model == OVERPASS_MODEL:
             polygons += [[(-z, y, x) for x, y, z in p] for p in bank["road"]]
         for polygon in polygons:
             all_triangles.extend(triangles(polygon))

@@ -8,6 +8,7 @@
 #define PENALTY_ROUTE_FINISH_REACHED (-1)
 #define PENALTY_ROUTE_OUTSIDE_TRACK (-2)
 #define TRACK_ROUTE_LINK_NONE (-1)
+#define ROUTE_GEOMETRY_POINT_COUNT 4U
 
 extern struct TRACKOBJECT trkObjectList[215];
 extern struct PLANE far plan_memres;

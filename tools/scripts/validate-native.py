@@ -15,6 +15,9 @@ import zipfile
 
 ROOT = Path(__file__).resolve().parents[2]
 ORACLES = ROOT / "tools/oracles/borland"
+DOS_POLL_INTERVAL_SECONDS = 0.05
+DOS_SEGMENT_MAX = (1 << 16) - 1
+REPLAY_OPPONENT_OFFSET = 6
 spec = importlib.util.spec_from_file_location("toolchain_validation", Path(__file__).with_name("validate-toolchain.py"))
 validation = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(validation)
@@ -45,7 +48,7 @@ def dos_capture(args, directory, command, identifier):
             while not done.exists():
                 if process.poll() is not None or time.monotonic() >= deadline:
                     raise RuntimeError(f"DOS capture failed or timed out: {command}; see {log_path}")
-                time.sleep(0.05)
+                time.sleep(DOS_POLL_INTERVAL_SECONDS)
         finally:
             if process.poll() is None:
                 process.kill()
@@ -73,7 +76,7 @@ def detect_oracle_psp(args, directory):
     (directory / "PSPDUMPO.COM").write_bytes(code)
     dos_capture(args, directory, "PSPDUMPO.COM", "oracle-psp")
     value = int((directory.parent / "oracle-psp-dos.txt").read_text().strip(), 16)
-    if not 0 < value <= 65535:
+    if not 0 < value <= DOS_SEGMENT_MAX:
         raise ValueError("DOS oracle PSP probe returned an invalid segment")
     return hex(value)
 
@@ -137,7 +140,7 @@ def main():
     with zipfile.ZipFile(corpus) as archive:
         eligible = sorted(name for name in archive.namelist()
                           if Path(name).name == name and name.lower().endswith(".rpl")
-                          and (not args.target or archive.read(name)[6]))
+                          and (not args.target or archive.read(name)[REPLAY_OPPONENT_OFFSET]))
         names_by_case = {name.upper(): name for name in eligible}
         if args.replay:
             missing = [name for name in args.replay if name.upper() not in names_by_case]

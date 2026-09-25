@@ -11,6 +11,9 @@ import tempfile
 import time
 
 
+POLL_INTERVAL_SECONDS = 0.1
+
+
 def main():
     repository = Path(__file__).resolve().parents[2]
     parser = argparse.ArgumentParser(description=__doc__)
@@ -56,7 +59,7 @@ def main():
                 while not (directory / "DONE.TXT").exists():
                     if process.poll() is not None or time.monotonic() >= deadline:
                         break
-                    time.sleep(0.1)
+                    time.sleep(POLL_INTERVAL_SECONDS)
             finally:
                 if process.poll() is None:
                     process.kill()

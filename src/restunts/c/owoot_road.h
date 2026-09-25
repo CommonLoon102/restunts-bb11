@@ -1,10 +1,11 @@
 #ifndef RESTUNTS_OWOOT_ROAD_H
 #define RESTUNTS_OWOOT_ROAD_H
 
-#include "math.h"
+#include "owoot.h"
+#include "gamestate.h"
 
-#define OWOOT_WHEEL_RING_MAX 16U
-#define OWOOT_WHEEL_VERTEX_MAX (OWOOT_WHEEL_RING_MAX * 2U)
+#define OWOOT_WHEEL_RING_MAX OWOOT_WHEEL_RING_COUNT
+#define OWOOT_WHEEL_VERTEX_MAX OWOOT_WHEEL_VERTEX_COUNT
 
 /* Supply two convex wheel rims in matching cyclic order: the first ring_count
  * vertices form one rim and the next ring_count form the other. The complete
@@ -27,10 +28,9 @@ legacy_s16 track_tunnel_aperture_overlaps_wheel(const struct VECTOR *vertices, l
  * center/rotation locate the tile; motion is the current-minus-previous car
  * translation in world coordinates.
  * This prevents hopping the barriers while retaining the full road width. */
-legacy_s16
-track_slalom_wheel_envelope_crosses_barrier(const struct VECTOR vertices[4][OWOOT_WHEEL_VERTEX_MAX],
-											const legacy_u16 counts[4], const struct VECTOR body[4],
-											const struct VECTOR *center, legacy_s16 rotation,
-											const struct VECTOR *motion);
+legacy_s16 track_slalom_wheel_envelope_crosses_barrier(
+	const struct VECTOR vertices[CARSTATE_WHEEL_COUNT][OWOOT_WHEEL_VERTEX_MAX],
+	const legacy_u16 counts[CARSTATE_WHEEL_COUNT], const struct VECTOR body[CARSTATE_WHEEL_COUNT],
+	const struct VECTOR *center, legacy_s16 rotation, const struct VECTOR *motion);
 
 #endif

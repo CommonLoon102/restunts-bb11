@@ -21,6 +21,9 @@
 #define PIXLDUMP_LEGACY_POLYGON_CODE_PARAGRAPH 5334U
 #define PIXLDUMP_LEGACY_IMAGE_PARAGRAPHS 14822U
 #define PIXLDUMP_DOS_MCB_PARAGRAPHS 1U
+#define PIXLDUMP_ENVIRONMENT_STRING_COUNT_OFFSET 2U
+#define PIXLDUMP_ENVIRONMENT_PATH_OFFSET                                                           \
+	(PIXLDUMP_ENVIRONMENT_STRING_COUNT_OFFSET + LEGACY_WORD_BYTES)
 
 #ifdef RESTUNTS_SDL3
 /* The archived oracle runs at the root of the mounted DOS drive. Native
@@ -149,16 +152,18 @@ static legacy_u16 pixldump_dos_program_path_length(void)
 			break;
 		}
 	}
-	if (offset > LEGACY_U16_MAX - 4U) {
+	if (offset > LEGACY_U16_MAX - PIXLDUMP_ENVIRONMENT_PATH_OFFSET) {
 		return 0;
 	}
 	legacy_u16 string_count =
-		(legacy_u16)(environment[(legacy_u16)(offset + 2U)] |
-					 ((legacy_u16)environment[(legacy_u16)(offset + 3U)] << LEGACY_BYTE_BITS));
+		(legacy_u16)(environment[(legacy_u16)(offset + PIXLDUMP_ENVIRONMENT_STRING_COUNT_OFFSET)] |
+					 ((legacy_u16)environment[(
+						  legacy_u16)(offset + PIXLDUMP_ENVIRONMENT_STRING_COUNT_OFFSET + 1U)]
+					  << LEGACY_BYTE_BITS));
 	if (string_count == 0) {
 		return 0;
 	}
-	legacy_u32 start = offset + 4U;
+	legacy_u32 start = offset + PIXLDUMP_ENVIRONMENT_PATH_OFFSET;
 	for (offset = start; offset <= LEGACY_U16_MAX; offset++) {
 		if (environment[(legacy_u16)offset] == 0) {
 			return (legacy_u16)(offset - start);

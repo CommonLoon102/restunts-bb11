@@ -682,7 +682,7 @@ static legacy_u16 race_frame_is_ready(legacy_s16 *last_processed_frame)
 #ifdef RESTUNTS_SDL3
 			/* Timer callbacks are dispatched on this thread. Yield while waiting
 			 * for the next input sample, then deliver elapsed 100 Hz ticks. */
-			SDL_Delay(1);
+			SDL_Delay(RACE_CONTROL_POLL_DELAY_MS);
 			sdl3_platform_pump();
 #endif
 			return 0;

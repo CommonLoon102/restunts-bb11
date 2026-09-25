@@ -1,16 +1,7 @@
 #ifndef RESTUNTS_SHAPE2D_INTERNAL_H
 #define RESTUNTS_SHAPE2D_INTERNAL_H
 
-#include "legacy.h"
-
-enum SHAPE2D_RASTER_OPERATION {
-	SHAPE2D_RASTER_AND = 0,
-	SHAPE2D_RASTER_OR = 1,
-	SHAPE2D_RASTER_COPY = 2,
-	SHAPE2D_RASTER_MAP = 3
-};
-
-struct SPRITE;
+#include "shape2d.h"
 
 extern legacy_s8 window_row_table_overflow_message[];
 extern legacy_s8 video_window_resource_name[];
@@ -31,9 +22,10 @@ extern struct SPRITE far *mouse_medium_sprite;
 extern struct SPRITE far *mouse_small_sprite;
 extern legacy_s8 mouse_background_dirty;
 extern legacy_u8 sprite_background_stack_depth;
-extern struct SPRITE far *sprite_ptrs[4];
-extern legacy_s16 sprite_background_saved_x[4];
-extern legacy_s16 sprite_background_saved_y[4];
+#define SPRITE_BACKGROUND_STACK_CAPACITY 4U
+extern struct SPRITE far *sprite_ptrs[SPRITE_BACKGROUND_STACK_CAPACITY];
+extern legacy_s16 sprite_background_saved_x[SPRITE_BACKGROUND_STACK_CAPACITY];
+extern legacy_s16 sprite_background_saved_y[SPRITE_BACKGROUND_STACK_CAPACITY];
 extern legacy_u8 far sprite_palette_map[];
 extern legacy_u16 raster_fill_pattern;
 extern legacy_u16 raster_alternate_color;

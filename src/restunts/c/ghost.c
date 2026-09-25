@@ -1,4 +1,5 @@
 #include "ghost.h"
+#include "opponent.h"
 #include "camera.h"
 #include "externs.h"
 #include "fatal.h"
@@ -14,8 +15,10 @@
 
 #define GHOST_TEMP_NAME_SIZE 13U
 #define GHOST_TEMP_NAME_DIGITS 6U
+#define GHOST_TEMP_NAME_DIGIT_OFFSET 2U
+#define GHOST_TEMP_NAME_CANDIDATE_COUNT 1000000UL
+#define GHOST_REPLAY_PATH_OVERHEAD (sizeof(".rpl") + sizeof("/") - 1U)
 #define GHOST_COPY_BUFFER_SIZE 256U
-#define GHOST_MAX_OPPONENT_TYPE 6
 
 struct GHOST_POSE {
 	struct CARSTATE car;
@@ -142,19 +145,14 @@ const legacy_s8 *ghost_car_id(void)
  * name. No persistent arena allocation may pin the opponent menu's resources. */
 static legacy_u16 ghost_create_file(legacy_s8 *name)
 {
-	for (legacy_u32 candidate = 0; candidate < 1000000UL; candidate++) {
+	for (legacy_u32 candidate = 0; candidate < GHOST_TEMP_NAME_CANDIDATE_COUNT; candidate++) {
 		legacy_u32 digits = candidate;
-		name[0] = 'G';
-		name[1] = 'H';
+		strcpy(name, "GH000000.TMP");
 		for (legacy_u16 index = 0; index < GHOST_TEMP_NAME_DIGITS; index++) {
-			name[7U - index] = (legacy_s8)('0' + digits % 10UL);
+			name[GHOST_TEMP_NAME_DIGIT_OFFSET + GHOST_TEMP_NAME_DIGITS - 1U - index] =
+				(legacy_s8)('0' + digits % 10UL);
 			digits /= 10UL;
 		}
-		name[8] = '.';
-		name[9] = 'T';
-		name[10] = 'M';
-		name[11] = 'P';
-		name[12] = 0;
 		if (dos_file_find_first(name) == 0) {
 			return dos_file_open(name, DOS_FILE_CREATE);
 		}
@@ -182,7 +180,7 @@ static legacy_s16 ghost_valid_config(const struct GAMEINFO *config)
 		return 0;
 	}
 	if (config->game_recordedframes > TRACKDATA_REPLAY_INPUT_BUFFER_SIZE ||
-		config->game_opponenttype < 0 || config->game_opponenttype > GHOST_MAX_OPPONENT_TYPE ||
+		config->game_opponenttype < 0 || config->game_opponenttype > (legacy_s16)OPPONENT_LAST ||
 		config->game_playertransmission < TRANSMISSION_MANUAL ||
 		config->game_playertransmission > TRANSMISSION_AUTOMATIC ||
 		!ghost_valid_car_id(config->game_playercarid)) {
@@ -209,7 +207,7 @@ legacy_s16 ghost_select_replay(const legacy_s8 *directory, const legacy_s8 *name
 {
 	legacy_s8 path[REPLAY_FILENAME_SIZE];
 	legacy_u16 directory_length = directory == 0 ? 0 : strlen(directory);
-	if ((legacy_u32)directory_length + strlen(name) + 6UL > sizeof(path)) {
+	if ((legacy_u32)directory_length + strlen(name) + GHOST_REPLAY_PATH_OVERHEAD > sizeof(path)) {
 		return 1;
 	}
 	file_build_path(directory, name, ".rpl", path);

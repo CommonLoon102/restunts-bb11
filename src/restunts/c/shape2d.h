@@ -23,6 +23,14 @@ struct SHAPE2D {
 #pragma pack(pop)
 
 #define SHAPE2D_HEADER_SIZE (sizeof(struct SHAPE2D))
+#define SHAPE2D_TRANSPARENT_COLOR LEGACY_U8_MAX
+
+enum SHAPE2D_RASTER_OPERATION {
+	SHAPE2D_RASTER_AND = 0,
+	SHAPE2D_RASTER_OR = 1,
+	SHAPE2D_RASTER_COPY = 2,
+	SHAPE2D_RASTER_MAP = 3
+};
 
 typedef char shape2d_header_must_be_16_bytes[(sizeof(struct SHAPE2D) == 16) ? 1 : -1];
 typedef char shape2d_centre_x_must_be_at_04[(offsetof(struct SHAPE2D, centre_x) == 4) ? 1 : -1];

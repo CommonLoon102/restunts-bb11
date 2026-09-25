@@ -1,5 +1,7 @@
 #include "dos_interrupts.h"
 #include "../../c/legacy.h"
+#include "../../c/platform.h"
+#include "../../c/video_pages.h"
 #include "../../c/fatal.h"
 
 #define DOS_VIDEO_BIOS_INTERRUPT 16
@@ -14,7 +16,6 @@
 #define DOS_VIDEO_CRTC_INDEX_PORT 948U
 #define DOS_VIDEO_CRTC_DATA_PORT 949U
 #define DOS_VIDEO_STATUS_PORT 986U
-#define DOS_VIDEO_RETRACE_STATUS_BIT 8U
 #define DOS_VIDEO_GRAPHICS_SEGMENT 40960U
 #define DOS_VIDEO_GRAPHICS_CLEAR_WORDS 64000U
 #define DOS_VIDEO_MONOCHROME_SEGMENT 47104U
@@ -164,10 +165,45 @@ void dos_video_set_mode_13h(void)
 #define DOS_VIDEO_VGA_CRTC_PORT 0x3D4U
 #define DOS_VIDEO_SEQUENCER_PORT 0x3C4U
 #define DOS_VIDEO_GRAPHICS_PORT 0x3CEU
-#define DOS_VIDEO_PAGE_PLANE_BYTES 16384U
-#define DOS_VIDEO_ALL_PLANES 15U
+#define DOS_VIDEO_ALL_PLANES ((1U << VGA_PLANE_COUNT) - 1U)
 #define DOS_VIDEO_PROBE_REGISTER_COUNT 11U
 #define DOS_VIDEO_PACKED_SCREEN_WORDS 32000U
+#define DOS_VIDEO_PLANE_WORDS 32768U
+#define DOS_VIDEO_UNSET_PLANE LEGACY_U8_MAX
+#define DOS_VIDEO_PROBE_FIRST_BASE 17U
+#define DOS_VIDEO_PROBE_SECOND_BASE 33U
+#define DOS_VIDEO_BIOS_DISPLAY_COMBINATION_FUNCTION 0x1AU
+#define DOS_VIDEO_BIOS_VGA_MONOCHROME 7U
+#define DOS_VIDEO_BIOS_VGA_COLOR 8U
+#define DOS_VIDEO_UNCHAINED_MEMORY_MODE 0x06U
+#define DOS_VIDEO_PLANAR_GRAPHICS_MODE 0x40U
+#define DOS_VIDEO_GRAPHICS_MAP 0x05U
+#define DOS_VIDEO_BYTE_ADDRESSING_MODE 0xE3U
+#define DOS_VIDEO_SCANLINE_OFFSET 0x28U
+
+enum DOS_VIDEO_SEQUENCER_REGISTER {
+	DOS_VIDEO_MAP_MASK_REGISTER = 2,
+	DOS_VIDEO_MEMORY_MODE_REGISTER = 4
+};
+
+enum DOS_VIDEO_GRAPHICS_REGISTER {
+	DOS_VIDEO_ENABLE_SET_RESET_REGISTER = 1,
+	DOS_VIDEO_DATA_ROTATE_REGISTER = 3,
+	DOS_VIDEO_READ_MAP_REGISTER = 4,
+	DOS_VIDEO_GRAPHICS_MODE_REGISTER = 5,
+	DOS_VIDEO_GRAPHICS_MISC_REGISTER = 6,
+	DOS_VIDEO_BIT_MASK_REGISTER = 8
+};
+
+enum DOS_VIDEO_CRTC_REGISTER {
+	DOS_VIDEO_START_ADDRESS_HIGH_REGISTER = 0x0c,
+	DOS_VIDEO_START_ADDRESS_LOW_REGISTER = 0x0d,
+	DOS_VIDEO_OFFSET_REGISTER = 0x13,
+	DOS_VIDEO_UNDERLINE_REGISTER = 0x14,
+	DOS_VIDEO_MODE_CONTROL_REGISTER = 0x17
+};
+
+#define DOS_VIDEO_REGISTER_VALUE(index, value) (((legacy_u16)(value) << LEGACY_BYTE_BITS) | (index))
 
 struct DOS_VIDEO_PROBE_REGISTER {
 	legacy_u16 port;
@@ -175,20 +211,26 @@ struct DOS_VIDEO_PROBE_REGISTER {
 };
 
 static const struct DOS_VIDEO_PROBE_REGISTER probe_registers[DOS_VIDEO_PROBE_REGISTER_COUNT] = {
-	{DOS_VIDEO_SEQUENCER_PORT, 2U},	  {DOS_VIDEO_SEQUENCER_PORT, 4U},
-	{DOS_VIDEO_GRAPHICS_PORT, 1U},	  {DOS_VIDEO_GRAPHICS_PORT, 3U},
-	{DOS_VIDEO_GRAPHICS_PORT, 4U},	  {DOS_VIDEO_GRAPHICS_PORT, 5U},
-	{DOS_VIDEO_GRAPHICS_PORT, 6U},	  {DOS_VIDEO_GRAPHICS_PORT, 8U},
-	{DOS_VIDEO_VGA_CRTC_PORT, 0x13U}, {DOS_VIDEO_VGA_CRTC_PORT, 0x14U},
-	{DOS_VIDEO_VGA_CRTC_PORT, 0x17U}};
+	{DOS_VIDEO_SEQUENCER_PORT, DOS_VIDEO_MAP_MASK_REGISTER},
+	{DOS_VIDEO_SEQUENCER_PORT, DOS_VIDEO_MEMORY_MODE_REGISTER},
+	{DOS_VIDEO_GRAPHICS_PORT, DOS_VIDEO_ENABLE_SET_RESET_REGISTER},
+	{DOS_VIDEO_GRAPHICS_PORT, DOS_VIDEO_DATA_ROTATE_REGISTER},
+	{DOS_VIDEO_GRAPHICS_PORT, DOS_VIDEO_READ_MAP_REGISTER},
+	{DOS_VIDEO_GRAPHICS_PORT, DOS_VIDEO_GRAPHICS_MODE_REGISTER},
+	{DOS_VIDEO_GRAPHICS_PORT, DOS_VIDEO_GRAPHICS_MISC_REGISTER},
+	{DOS_VIDEO_GRAPHICS_PORT, DOS_VIDEO_BIT_MASK_REGISTER},
+	{DOS_VIDEO_VGA_CRTC_PORT, DOS_VIDEO_OFFSET_REGISTER},
+	{DOS_VIDEO_VGA_CRTC_PORT, DOS_VIDEO_UNDERLINE_REGISTER},
+	{DOS_VIDEO_VGA_CRTC_PORT, DOS_VIDEO_MODE_CONTROL_REGISTER}};
 
-static legacy_u8 video_write_mask = 255U;
-static legacy_u8 video_read_plane = 255U;
+static legacy_u8 video_write_mask = DOS_VIDEO_UNSET_PLANE;
+static legacy_u8 video_read_plane = DOS_VIDEO_UNSET_PLANE;
 
 void dos_video_set_write_planes(legacy_u8 mask)
 {
 	if (video_write_mask != mask) {
-		outpw(DOS_VIDEO_SEQUENCER_PORT, ((legacy_u16)mask << 8) | 2U);
+		outpw(DOS_VIDEO_SEQUENCER_PORT,
+			  DOS_VIDEO_REGISTER_VALUE(DOS_VIDEO_MAP_MASK_REGISTER, mask));
 		video_write_mask = mask;
 	}
 }
@@ -196,7 +238,8 @@ void dos_video_set_write_planes(legacy_u8 mask)
 void dos_video_set_read_plane(legacy_u8 plane)
 {
 	if (video_read_plane != plane) {
-		outpw(DOS_VIDEO_GRAPHICS_PORT, ((legacy_u16)plane << 8) | 4U);
+		outpw(DOS_VIDEO_GRAPHICS_PORT,
+			  DOS_VIDEO_REGISTER_VALUE(DOS_VIDEO_READ_MAP_REGISTER, plane));
 		video_read_plane = plane;
 	}
 }
@@ -204,11 +247,13 @@ void dos_video_set_read_plane(legacy_u8 plane)
 legacy_u8 dos_video_enable_planar_pages(void)
 {
 	union REGS registers;
-	registers.x.ax = 0x1A00U;
+	registers.x.ax = DOS_VIDEO_BIOS_DISPLAY_COMBINATION_FUNCTION << LEGACY_BYTE_BITS;
 	registers.x.bx = 0;
 	int86(DOS_VIDEO_BIOS_INTERRUPT, &registers, &registers);
 	/* MCGA supports mode 13h but not the VGA plane/address registers. */
-	if (registers.h.al != 0x1AU || (registers.h.bl != 7U && registers.h.bl != 8U)) {
+	if (registers.h.al != DOS_VIDEO_BIOS_DISPLAY_COMBINATION_FUNCTION ||
+		(registers.h.bl != DOS_VIDEO_BIOS_VGA_MONOCHROME &&
+		 registers.h.bl != DOS_VIDEO_BIOS_VGA_COLOR)) {
 		return 0;
 	}
 
@@ -222,29 +267,36 @@ legacy_u8 dos_video_enable_planar_pages(void)
 	 * byte-addressed CRTC scanout: 80 bytes per row in each of four planes.
 	 * Register definitions: https://www.scs.stanford.edu/10wi-cs140/pintos/
 	 * specs/freevga/vga/{seqreg,graphreg,crtcreg}.htm */
-	outpw(DOS_VIDEO_SEQUENCER_PORT, 0x0604U);
-	outpw(DOS_VIDEO_GRAPHICS_PORT, 0x0001U);
-	outpw(DOS_VIDEO_GRAPHICS_PORT, 0x0003U);
-	outpw(DOS_VIDEO_GRAPHICS_PORT, 0x4005U);
-	outpw(DOS_VIDEO_GRAPHICS_PORT, 0x0506U);
-	outpw(DOS_VIDEO_GRAPHICS_PORT, 0xFF08U);
-	outpw(DOS_VIDEO_VGA_CRTC_PORT, 0x0014U);
-	outpw(DOS_VIDEO_VGA_CRTC_PORT, 0xE317U);
-	outpw(DOS_VIDEO_VGA_CRTC_PORT, 0x2800U | 0x13U);
-	video_write_mask = 255U;
-	video_read_plane = 255U;
+	outpw(DOS_VIDEO_SEQUENCER_PORT, DOS_VIDEO_REGISTER_VALUE(DOS_VIDEO_MEMORY_MODE_REGISTER,
+															 DOS_VIDEO_UNCHAINED_MEMORY_MODE));
+	outpw(DOS_VIDEO_GRAPHICS_PORT,
+		  DOS_VIDEO_REGISTER_VALUE(DOS_VIDEO_ENABLE_SET_RESET_REGISTER, 0));
+	outpw(DOS_VIDEO_GRAPHICS_PORT, DOS_VIDEO_REGISTER_VALUE(DOS_VIDEO_DATA_ROTATE_REGISTER, 0));
+	outpw(DOS_VIDEO_GRAPHICS_PORT, DOS_VIDEO_REGISTER_VALUE(DOS_VIDEO_GRAPHICS_MODE_REGISTER,
+															DOS_VIDEO_PLANAR_GRAPHICS_MODE));
+	outpw(DOS_VIDEO_GRAPHICS_PORT,
+		  DOS_VIDEO_REGISTER_VALUE(DOS_VIDEO_GRAPHICS_MISC_REGISTER, DOS_VIDEO_GRAPHICS_MAP));
+	outpw(DOS_VIDEO_GRAPHICS_PORT,
+		  DOS_VIDEO_REGISTER_VALUE(DOS_VIDEO_BIT_MASK_REGISTER, LEGACY_U8_MAX));
+	outpw(DOS_VIDEO_VGA_CRTC_PORT, DOS_VIDEO_REGISTER_VALUE(DOS_VIDEO_UNDERLINE_REGISTER, 0));
+	outpw(DOS_VIDEO_VGA_CRTC_PORT, DOS_VIDEO_REGISTER_VALUE(DOS_VIDEO_MODE_CONTROL_REGISTER,
+															DOS_VIDEO_BYTE_ADDRESSING_MODE));
+	outpw(DOS_VIDEO_VGA_CRTC_PORT,
+		  DOS_VIDEO_REGISTER_VALUE(DOS_VIDEO_OFFSET_REGISTER, DOS_VIDEO_SCANLINE_OFFSET));
+	video_write_mask = DOS_VIDEO_UNSET_PLANE;
+	video_read_plane = DOS_VIDEO_UNSET_PLANE;
 
 	volatile legacy_u8 far *memory = (volatile legacy_u8 far *)MK_FP(DOS_VIDEO_GRAPHICS_SEGMENT, 0);
-	for (legacy_u8 plane = 0; plane < 4U; plane++) {
+	for (legacy_u8 plane = 0; plane < VGA_PLANE_COUNT; plane++) {
 		dos_video_set_write_planes((legacy_u8)(1U << plane));
-		memory[0] = (legacy_u8)(17U + plane);
-		memory[DOS_VIDEO_PAGE_PLANE_BYTES] = (legacy_u8)(33U + plane);
+		memory[0] = (legacy_u8)(DOS_VIDEO_PROBE_FIRST_BASE + plane);
+		memory[VGA_PAGE_PLANE_BYTES] = (legacy_u8)(DOS_VIDEO_PROBE_SECOND_BASE + plane);
 	}
 	legacy_u8 supported = 1;
-	for (legacy_u8 plane = 0; plane < 4U; plane++) {
+	for (legacy_u8 plane = 0; plane < VGA_PLANE_COUNT; plane++) {
 		dos_video_set_read_plane(plane);
-		if (memory[0] != (legacy_u8)(17U + plane) ||
-			memory[DOS_VIDEO_PAGE_PLANE_BYTES] != (legacy_u8)(33U + plane)) {
+		if (memory[0] != (legacy_u8)(DOS_VIDEO_PROBE_FIRST_BASE + plane) ||
+			memory[VGA_PAGE_PLANE_BYTES] != (legacy_u8)(DOS_VIDEO_PROBE_SECOND_BASE + plane)) {
 			supported = 0;
 		}
 	}
@@ -253,15 +305,15 @@ legacy_u8 dos_video_enable_planar_pages(void)
 		 * Restore only the registers touched by the probe, then erase its pixels. */
 		for (legacy_u16 index = 0; index < DOS_VIDEO_PROBE_REGISTER_COUNT; index++) {
 			outpw(probe_registers[index].port,
-				  ((legacy_u16)saved_registers[index] << 8) | probe_registers[index].index);
+				  DOS_VIDEO_REGISTER_VALUE(probe_registers[index].index, saved_registers[index]));
 		}
 		dos_video_fill(DOS_VIDEO_GRAPHICS_SEGMENT, 0, DOS_VIDEO_PACKED_SCREEN_WORDS);
-		video_write_mask = 255U;
-		video_read_plane = 255U;
+		video_write_mask = DOS_VIDEO_UNSET_PLANE;
+		video_read_plane = DOS_VIDEO_UNSET_PLANE;
 		return 0;
 	}
 	dos_video_set_write_planes(DOS_VIDEO_ALL_PLANES);
-	dos_video_fill(DOS_VIDEO_GRAPHICS_SEGMENT, 0, 32768U);
+	dos_video_fill(DOS_VIDEO_GRAPHICS_SEGMENT, 0, DOS_VIDEO_PLANE_WORDS);
 	return 1;
 }
 
@@ -271,8 +323,10 @@ void dos_video_show_page(legacy_u16 address)
 	 * interval so the old visible page is safe to reuse when this returns. */
 	while ((inp(DOS_VIDEO_STATUS_PORT) & DOS_VIDEO_RETRACE_STATUS_BIT) != 0) {
 	}
-	outpw(DOS_VIDEO_VGA_CRTC_PORT, (address & 0xFF00U) | 0x0CU);
-	outpw(DOS_VIDEO_VGA_CRTC_PORT, (address << 8) | 0x0DU);
+	outpw(DOS_VIDEO_VGA_CRTC_PORT,
+		  (address & LEGACY_U16_HIGH_BYTE_MASK) | DOS_VIDEO_START_ADDRESS_HIGH_REGISTER);
+	outpw(DOS_VIDEO_VGA_CRTC_PORT,
+		  DOS_VIDEO_REGISTER_VALUE(DOS_VIDEO_START_ADDRESS_LOW_REGISTER, address));
 	while ((inp(DOS_VIDEO_STATUS_PORT) & DOS_VIDEO_RETRACE_STATUS_BIT) == 0) {
 	}
 }

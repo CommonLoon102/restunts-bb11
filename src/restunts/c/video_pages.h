@@ -1,7 +1,10 @@
 #ifndef RESTUNTS_VIDEO_PAGES_H
 #define RESTUNTS_VIDEO_PAGES_H
 
-#include "legacy.h"
+#include "shape2d.h"
+
+#define VGA_PLANE_COUNT 4U
+#define VGA_PAGE_PLANE_BYTES 16384U
 #ifdef RESTUNTS_SDL3
 #include "hires.h"
 #endif
@@ -86,13 +89,13 @@ static inline void video_pages_raster_span(legacy_u8 far *destination,
 #endif
 	while (count-- != 0) {
 		legacy_u8 value = source[source_offset++];
-		if (operation == 0) {
+		if (operation == SHAPE2D_RASTER_AND) {
 			destination[destination_offset] &= value;
-		} else if (operation == 1) {
+		} else if (operation == SHAPE2D_RASTER_OR) {
 			destination[destination_offset] |= value;
-		} else if (operation == 3) {
+		} else if (operation == SHAPE2D_RASTER_MAP) {
 			value = palette[value];
-			if (value != 255U) {
+			if (value != SHAPE2D_TRANSPARENT_COLOR) {
 				destination[destination_offset] = value;
 			}
 		} else {
@@ -105,14 +108,15 @@ static inline void video_pages_copy_span(legacy_u8 far *destination, legacy_u16 
 										 const legacy_u8 far *source, legacy_u16 source_offset,
 										 legacy_u16 count)
 {
-	video_pages_raster_span(destination, destination_offset, source, source_offset, count, 2, 0);
+	video_pages_raster_span(destination, destination_offset, source, source_offset, count,
+							SHAPE2D_RASTER_COPY, 0);
 }
 static inline void video_pages_pattern_span(legacy_u8 far *bitmap, legacy_u16 offset,
 											legacy_u16 count, legacy_u8 pattern, legacy_u8 color,
 											legacy_u8 alternate_color, legacy_s16 two_colors)
 {
 	while (count-- != 0) {
-		pattern = (legacy_u8)((pattern << 1) | (pattern >> 7));
+		pattern = (legacy_u8)((pattern << 1) | (pattern >> (LEGACY_BYTE_BITS - 1U)));
 		if ((pattern & 1U) != 0) {
 			video_pages_write_pixel(bitmap, offset, two_colors != 0 ? alternate_color : color);
 		} else if (two_colors != 0) {
