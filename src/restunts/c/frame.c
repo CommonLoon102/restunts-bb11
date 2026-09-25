@@ -40,7 +40,7 @@ static legacy_u8 frame_uses_snapshot;
 #define FRAME_LOOKAHEAD_TILE_COUNT 23
 #define FRAME_SUPERSIGHT_TILE_COUNT 110
 #if defined(RESTUNTS_SDL3)
-#define FRAME_MAXIMUM_TILE_COUNT 900
+#define FRAME_MAXIMUM_TILE_COUNT (TRACK_GRID_SIZE * TRACK_GRID_SIZE)
 /* Match the collision height allowances in trackobj.c. */
 #define FRAME_NON_GRASS_HEIGHT_OFFSET 2
 #define FRAME_GRASS_HEIGHT_HASH_SHIFT 8U
@@ -1899,7 +1899,7 @@ static void frame_draw_supersight(struct FRAME_TILE_SELECTION *tiles, struct FRA
 	(void)buffer_index;
 	/* The native queue grows to fit the scene, so every selected tile keeps
 	 * its full model even on crowded tracks. */
-	tiles->detail_threshold = 1;
+	tiles->detail_threshold = FRAME_TILE_DETAIL_FULL + 1;
 	frame_place_cars(tiles, cars);
 	frame_draw_tiles(tiles, camera, cars, redraw_transform_flags, animated_material);
 }

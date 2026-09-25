@@ -8,6 +8,8 @@ struct SIMD;
 
 /* Q16 time in units of one 20 Hz physics tick. */
 #define PHANTOM_PHYSICS_ONE 65536UL
+#define PHANTOM_PHYSICS_LOW_RATE_TICK                                                              \
+	(PHANTOM_PHYSICS_ONE * GAME_FRAME_RATE_NORMAL / GAME_FRAME_RATE_LOW)
 
 struct PHANTOM_PHYSICS {
 	struct GAMESTATE state;

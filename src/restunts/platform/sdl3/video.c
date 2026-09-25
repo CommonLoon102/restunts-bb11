@@ -191,7 +191,7 @@ static void present_surface(const legacy_u8 *pixels, const legacy_u32 *argb, leg
 	if (new_frame_surface) {
 		SDL_DestroySurface(frame_surface);
 		frame_surface = SDL_CreateSurfaceFrom(width, height, format, (void *)frame_pixels,
-											  width * (argb != NULL ? 4 : 1));
+											  width * SDL_BYTESPERPIXEL(format));
 		if (frame_surface == NULL ||
 			(argb == NULL && SDL_CreateSurfacePalette(frame_surface) == NULL)) {
 			video_fail("Create presentation surface");
@@ -213,8 +213,8 @@ static void present_surface(const legacy_u8 *pixels, const legacy_u32 *argb, leg
 			if (output_palette == NULL) {
 				output_palette = SDL_CreateSurfacePalette(surface);
 			}
-			if (output_palette == NULL ||
-				!SDL_SetPaletteColors(output_palette, palette_colors, 0, 256)) {
+			if (output_palette == NULL || !SDL_SetPaletteColors(output_palette, palette_colors, 0,
+																SDL_arraysize(palette_colors))) {
 				video_fail("Set framebuffer palette");
 			}
 		}

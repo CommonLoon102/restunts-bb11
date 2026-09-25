@@ -390,7 +390,7 @@ void update_car_speed_fraction(legacy_s8 input_flags, legacy_s16 car_index,
 	legacy_s16 previous_rpm = carstate->car_currpm;
 	legacy_s16 delta = pedal_speed_delta(input_flags, car_index, carstate, simd);
 	legacy_u32 interval =
-		framespersec == GAME_FRAME_RATE_LOW ? 2 * PHANTOM_PHYSICS_ONE : PHANTOM_PHYSICS_ONE;
+		framespersec == GAME_FRAME_RATE_LOW ? PHANTOM_PHYSICS_LOW_RATE_TICK : PHANTOM_PHYSICS_ONE;
 	carstate->car_currpm = previous_rpm + (legacy_s32)(carstate->car_currpm - previous_rpm) *
 											  (legacy_s32)fraction20 / (legacy_s32)interval;
 	delta = (legacy_s16)((legacy_s32)delta * (legacy_s32)fraction20 / (legacy_s32)interval);

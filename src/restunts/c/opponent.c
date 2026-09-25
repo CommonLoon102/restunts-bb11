@@ -574,7 +574,7 @@ static void update_player_steering(struct CARSTATE *carstate, legacy_s8 steering
 	}
 
 	legacy_u32 tick_fraction =
-		framespersec == GAME_FRAME_RATE_LOW ? 2 * PHANTOM_PHYSICS_ONE : PHANTOM_PHYSICS_ONE;
+		framespersec == GAME_FRAME_RATE_LOW ? PHANTOM_PHYSICS_LOW_RATE_TICK : PHANTOM_PHYSICS_ONE;
 	if (fraction20 != tick_fraction) {
 		response =
 			(legacy_s16)((legacy_s32)response * (legacy_s32)fraction20 / (legacy_s32)tick_fraction);
@@ -599,7 +599,7 @@ static void update_player_steering(struct CARSTATE *carstate, legacy_s8 steering
 void update_player_steering_input(legacy_s8 steering_input)
 {
 	legacy_u32 tick_fraction =
-		framespersec == GAME_FRAME_RATE_LOW ? 2 * PHANTOM_PHYSICS_ONE : PHANTOM_PHYSICS_ONE;
+		framespersec == GAME_FRAME_RATE_LOW ? PHANTOM_PHYSICS_LOW_RATE_TICK : PHANTOM_PHYSICS_ONE;
 	update_player_steering(&state.playerstate, steering_input, tick_fraction);
 }
 

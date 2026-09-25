@@ -352,6 +352,11 @@ static void race_update_viewport(struct RACE_VIEWPORT_CACHE *cache, legacy_s16 r
 }
 
 #ifdef RESTUNTS_SDL3
+#define RACE_PRESENTATION_VIEW_COUNT 13U
+#define RACE_PRESENTATION_SLOW_INTERVAL_SCALE 2U
+#define RACE_PRESENTATION_FAST_FRAME_SPAN 2
+#define RACE_CONTROL_POLL_DELAY_MS 1U
+
 struct RACE_PRESENTATION {
 	struct PRESENTATION_CLOCK clock;
 	struct GAMESTATE previous;
@@ -363,7 +368,7 @@ struct RACE_PRESENTATION {
 	legacy_u64 control_time;
 	legacy_u16 sample_span;
 	legacy_s16 sample_frame;
-	legacy_s16 view[13];
+	legacy_s16 view[RACE_PRESENTATION_VIEW_COUNT];
 	legacy_u8 history_valid;
 	legacy_u8 ghost_valid;
 	legacy_u8 started;
@@ -378,7 +383,7 @@ static legacy_u64 race_presentation_interval(void)
 	legacy_u16 rate = framespersec > 0 ? (legacy_u16)framespersec : GAME_FRAME_RATE_NORMAL;
 	legacy_u64 interval = PRESENTATION_SECOND_NS / rate;
 	if (game_replay_mode == REPLAY_MODE_PLAYBACK && replay_playback_speed == REPLAY_PLAYBACK_SLOW) {
-		interval *= 2;
+		interval *= RACE_PRESENTATION_SLOW_INTERVAL_SCALE;
 	}
 	return interval;
 }
@@ -407,19 +412,19 @@ static legacy_u32 race_presentation_fraction(legacy_u64 now)
 
 static void race_presentation_sync(legacy_s16 rewinding)
 {
-	legacy_s16 view[] = {supersight_enabled,
-						 cameramode,
-						 followOpponentFlag,
-						 game_replay_mode,
-						 is_in_replay,
-						 replay_playback_speed,
-						 framespersec,
-						 rewinding,
-						 elapsed_time1,
-						 custom_camera.distance,
-						 custom_camera.elevation_angle,
-						 custom_camera.azimuth_angle,
-						 camera_track_height_offset};
+	legacy_s16 view[RACE_PRESENTATION_VIEW_COUNT] = {supersight_enabled,
+													 cameramode,
+													 followOpponentFlag,
+													 game_replay_mode,
+													 is_in_replay,
+													 replay_playback_speed,
+													 framespersec,
+													 rewinding,
+													 elapsed_time1,
+													 custom_camera.distance,
+													 custom_camera.elevation_angle,
+													 custom_camera.azimuth_angle,
+													 camera_track_height_offset};
 	legacy_u8 changed = 0;
 	for (legacy_u16 index = 0; index < sizeof(view) / sizeof(view[0]); index++) {
 		if (race_presentation.view[index] != view[index]) {
@@ -445,9 +450,9 @@ static void race_presentation_capture(void)
 		return;
 	}
 	legacy_s16 span = LEGACY_S16_WRAP_SUB(state.game_frame, race_presentation.sample_frame);
-	race_presentation.history_valid =
-		span == 1 || (span == 2 && game_replay_mode == REPLAY_MODE_PLAYBACK &&
-					  replay_playback_speed == REPLAY_PLAYBACK_FAST);
+	race_presentation.history_valid = span == 1 || (span == RACE_PRESENTATION_FAST_FRAME_SPAN &&
+													game_replay_mode == REPLAY_MODE_PLAYBACK &&
+													replay_playback_speed == REPLAY_PLAYBACK_FAST);
 	race_presentation.sample_span = race_presentation.history_valid != 0 ? (legacy_u16)span : 1;
 	race_presentation.previous = race_presentation.current;
 	race_presentation.current = state;
@@ -658,7 +663,7 @@ static legacy_u16 race_frame_is_ready(legacy_s16 *last_processed_frame)
 									state.game_inputmode == GAME_INPUT_MODE_WAITING)) {
 		legacy_u64 now = presentation_now();
 		if (now < race_presentation.control_time) {
-			SDL_Delay(1);
+			SDL_Delay(RACE_CONTROL_POLL_DELAY_MS);
 			sdl3_platform_pump();
 			return 0;
 		}

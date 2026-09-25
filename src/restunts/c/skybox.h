@@ -3,12 +3,22 @@
 
 #include "math.h"
 
+#define SKYBOX_IMAGE_COUNT 4
+#define SKYBOX_IMAGE_WIDTH 320U
+#define SKYBOX_IMAGE_HALF_WRAP 512U
+#define SKYBOX_IMAGE_ONE_AND_HALF_WIDTH 832U
+#define SKYBOX_IMAGE_FULL_WRAP 1024U
+#define SKYBOX_SCREEN_WIDTH 320
+#define SKYBOX_SCREEN_BOTTOM 200
+#define SKYBOX_LOWEST_DETAIL_LEVEL 4
+#define SKYBOX_ROLL_VECTOR_Z 15000U
+
 struct SHAPE2D;
 
 /* The four horizon band images and the colours drawn around them. heights
  * is indexed the same way as the skyboxes[] resource array. */
 struct SKYBOX {
-	legacy_u16 heights[4];
+	legacy_u16 heights[SKYBOX_IMAGE_COUNT];
 	legacy_u16 minimum_height;
 	legacy_u16 maximum_height;
 	legacy_s16 sky_color;

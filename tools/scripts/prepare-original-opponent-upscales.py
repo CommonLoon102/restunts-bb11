@@ -20,6 +20,13 @@ NUMBER = (66, 4, 72, 13)
 WORKING_SCALE = 4
 SCALE = 2
 BACKGROUND_TOLERANCE = 16
+BACKGROUND_BUCKET_SIZE = 8
+BACKGROUND_CORE_TOLERANCE = 6
+BACKGROUND_HOLE_MIN_PIXELS = 16
+BACKGROUND_HOLE_CORE_FRACTION = 0.8
+RGB_CHANNELS = 3
+MASK_SELECTED = 255
+MEDIAN_FILTER_SIZE = 3
 
 
 def digest(data):
@@ -32,11 +39,12 @@ def background_mask(photo):
     colors = list(photo.getdata())
     edge = [colors[x] for x in range(width)]
     edge += [colors[y * width + x] for y in range(height) for x in (0, width - 1)]
-    buckets = Counter(tuple(channel // 8 for channel in color) for color in edge)
+    buckets = Counter(tuple(channel // BACKGROUND_BUCKET_SIZE for channel in color) for color in edge)
     dominant = buckets.most_common(1)[0][0]
     samples = [color for color in edge
-               if tuple(channel // 8 for channel in color) == dominant]
-    backdrop = tuple(round(median(color[channel] for color in samples)) for channel in range(3))
+               if tuple(channel // BACKGROUND_BUCKET_SIZE for channel in color) == dominant]
+    backdrop = tuple(round(median(color[channel] for color in samples))
+                     for channel in range(RGB_CHANNELS))
     distances = [max(abs(a - b) for a, b in zip(color, backdrop)) for color in colors]
     candidates = bytearray(distance <= BACKGROUND_TOLERANCE for distance in distances)
     selected = bytearray(len(colors))
@@ -61,11 +69,12 @@ def background_mask(photo):
                         queue.append(neighbor)
         # Enclosed backdrop holes must have a near-exact, flat-color core.
         # This avoids swallowing similarly colored clothing or highlights.
-        close = sum(distances[point] <= 6 for point in component)
-        enclosed = len(component) >= 16 and close >= len(component) * 0.8
+        close = sum(distances[point] <= BACKGROUND_CORE_TOLERANCE for point in component)
+        enclosed = (len(component) >= BACKGROUND_HOLE_MIN_PIXELS
+                    and close >= len(component) * BACKGROUND_HOLE_CORE_FRACTION)
         if touches_edge or enclosed:
             for point in component:
-                selected[point] = 255
+                selected[point] = MASK_SELECTED
             if not touches_edge:
                 enclosed_pixels += len(component)
     mask = Image.frombytes("L", photo.size, bytes(selected))
@@ -79,7 +88,8 @@ def tile_with_photo(original, photo, scale):
         output = output.convert("RGB")
     output.paste(photo, (PHOTO[0] * scale, PHOTO[1] * scale))
     # The authored number and its entire background rectangle remain exact.
-    digit = original.crop(NUMBER).resize((6 * scale, 9 * scale), Image.Resampling.NEAREST)
+    digit_size = ((NUMBER[2] - NUMBER[0]) * scale, (NUMBER[3] - NUMBER[1]) * scale)
+    digit = original.crop(NUMBER).resize(digit_size, Image.Resampling.NEAREST)
     output.paste(digit.convert(output.mode) if output.mode == "RGB" else digit,
                  (NUMBER[0] * scale, NUMBER[1] * scale))
     return output
@@ -89,18 +99,18 @@ def restore(original, generated):
     photo = original.crop(PHOTO)
     background = Counter(photo.getdata()).most_common(1)[0][0]
     palette = original.getpalette()
-    background_rgb = tuple(palette[background * 3:background * 3 + 3])
+    background_rgb = tuple(palette[background * RGB_CHANNELS:(background + 1) * RGB_CHANNELS])
     working_size = (photo.width * WORKING_SCALE, photo.height * WORKING_SCALE)
     working = generated.convert("RGB").resize(working_size, Image.Resampling.BILINEAR)
     # A one-working-pixel median removes isolated specks at one quarter of an
     # original pixel, before reduction. It does not reintroduce source noise.
-    working = working.filter(ImageFilter.MedianFilter(3))
+    working = working.filter(ImageFilter.MedianFilter(MEDIAN_FILTER_SIZE))
     mask, estimated_background, enclosed = background_mask(working)
     working.paste(background_rgb, mask=mask)
     reduced_size = (photo.width * SCALE, photo.height * SCALE)
     reduced = working.resize(reduced_size, Image.Resampling.BILINEAR)
     reduced_mask = mask.resize(reduced_size, Image.Resampling.BILINEAR)
-    solid = reduced_mask.point(lambda value: 255 if value == 255 else 0)
+    solid = reduced_mask.point(lambda value: MASK_SELECTED if value == MASK_SELECTED else 0)
     reduced.paste(background_rgb, mask=solid)
     palette_image = Image.new("P", (1, 1))
     palette_image.putpalette(palette)
@@ -112,9 +122,9 @@ def restore(original, generated):
         "background_palette_index": background,
         "background_rgb": list(background_rgb),
         "estimated_generated_background_rgb": list(estimated_background),
-        "working_background_pixels": sum(value == 255 for value in mask.getdata()),
+        "working_background_pixels": sum(value == MASK_SELECTED for value in mask.getdata()),
         "working_enclosed_background_pixels": enclosed,
-        "final_solid_background_pixels": sum(value == 255 for value in solid.getdata()),
+        "final_solid_background_pixels": sum(value == MASK_SELECTED for value in solid.getdata()),
     }
     return output, working_tile, stats
 
@@ -129,15 +139,17 @@ def generate(repository, game_directory, generated_directory):
         "detail_generation": "built-in imagegen, fresh photographs from original photo crops only",
         "prompts": "docs/opponents/game-regeneration-prompts.json",
         "pillow_version": PILLOW_VERSION,
-        "width": 160,
-        "height": 166,
-        "original_width": 80,
-        "original_height": 83,
-        "working_width": 320,
-        "working_height": 332,
+        "width": extractor["PORTRAIT_SIZE"][0] * SCALE,
+        "height": extractor["PORTRAIT_SIZE"][1] * SCALE,
+        "original_width": extractor["PORTRAIT_SIZE"][0],
+        "original_height": extractor["PORTRAIT_SIZE"][1],
+        "working_width": extractor["PORTRAIT_SIZE"][0] * WORKING_SCALE,
+        "working_height": extractor["PORTRAIT_SIZE"][1] * WORKING_SCALE,
         "working_scale": WORKING_SCALE,
         "scale": SCALE,
-        "photo_rectangle": {"x": 4, "y": 4, "width": 148, "height": 158},
+        "photo_rectangle": {"x": PHOTO[0] * SCALE, "y": PHOTO[1] * SCALE,
+                            "width": (PHOTO[2] - PHOTO[0]) * SCALE,
+                            "height": (PHOTO[3] - PHOTO[1]) * SCALE},
         "palette_source": provenance["palette_source"],
         "palette_source_sha256": provenance["palette_source_sha256"],
         "palette_rgb_sha256": provenance["palette_rgb_sha256"],
@@ -155,7 +167,7 @@ def generate(repository, game_directory, generated_directory):
     }
     outputs = {}
     working_outputs = {}
-    for number in range(1, 7):
+    for number in range(1, len(extractor["OPPONENTS"]) + 1):
         filename = f"opp{number}.png"
         generated_path = generated_directory / filename
         with Image.open(BytesIO(originals[filename])) as original:
