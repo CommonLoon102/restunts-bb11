@@ -97,6 +97,11 @@ its underside meets the driving surface, including cars with spherical wheels.
 This presentation offset follows the car's rotation and preserves suspension
 movement and jumps without changing physics or replay data. The original renderer retains the original car positioning.
 
+SuperSight uses fewer segments for wheels and spheres that occupy only a small
+part of the screen. Segment counts follow their projected size, with a geometric
+outline error below a quarter of a high-resolution pixel. Nearby round shapes
+and background geometry retain their full detail.
+
 In SDL3 builds, SuperSight adds car-shaped shadows on nearby surfaces below
 each car. Small cached silhouettes follow the model's size, body, wheels, and
 suspension. Light comes from the south at about 70 degrees above the horizon,

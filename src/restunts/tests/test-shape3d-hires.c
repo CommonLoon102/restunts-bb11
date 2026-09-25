@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <float.h>
 #include <stdio.h>
 #include <string.h>
 #include <SDL3/SDL_stdinc.h>
@@ -701,6 +702,206 @@ static void test_materials_and_rounded_primitives(void)
 	assert(count_color(11) != 0);
 	assert(count_color(12) != 0);
 	assert(count_color(13) != 0);
+}
+
+#define TEST_ROUND_REFERENCE_POINTS 64U
+#define TEST_ROUND_OUTLINE_ERROR 0.25
+#define TEST_ROUND_PHASE (3.0 / 8.0)
+#define TEST_ROUND_INNER_SCALE (9472.0 / TRIG_FIXED_ONE)
+#define TEST_ROUND_SPHERE_ASPECT (13.0 / 16.0)
+#define TEST_ROUND_SMALL_RADIUS 2.0
+#define TEST_ROUND_MEDIUM_RADIUS 8.0
+#define TEST_ROUND_LARGE_RADIUS 32.0
+#define TEST_ROUND_NEAR_RADIUS 96.0
+#define TEST_ROUND_COLOR 10U
+#define TEST_ROUND_RIM_COLOR 11U
+#define TEST_ROUND_HUB_COLOR 12U
+#define TEST_ROUND_BACKGROUND_COLOR 3U
+
+enum TEST_ROUND_KIND {
+	TEST_ROUND_SPHERE,
+	TEST_ROUND_WHEEL,
+	TEST_ROUND_SKEWED_WHEEL,
+	TEST_ROUND_KIND_COUNT
+};
+
+static void round_fixture_axes(legacy_s32 kind, legacy_f64 radius, legacy_f64 *first_x,
+							   legacy_f64 *first_y, legacy_f64 *second_x, legacy_f64 *second_y)
+{
+	*first_x = radius;
+	*first_y = kind == TEST_ROUND_SKEWED_WHEEL ? radius / 4 : 0;
+	*second_x = kind == TEST_ROUND_SKEWED_WHEEL ? radius / 2 : 0;
+	*second_y = kind == TEST_ROUND_SPHERE ? radius * TEST_ROUND_SPHERE_ASPECT : radius;
+}
+
+static void draw_round_fixture(legacy_s32 kind, legacy_f64 radius, legacy_s32 background,
+							   legacy_s32 ghost, legacy_s32 batched)
+{
+	legacy_f64 depth = projection_focal_length_x * HIRES_SCALE;
+	struct SHAPE3D_HIRES_VECTOR vertices[6];
+	vertices[0] = (struct SHAPE3D_HIRES_VECTOR){TEST_ROUND_PHASE, -TEST_ROUND_PHASE, depth};
+	legacy_u8 type;
+	legacy_u32 vertex_count;
+	if (kind == TEST_ROUND_SPHERE) {
+		vertices[1] = vertices[0];
+		vertices[1].x += radius * 2;
+		type = RENDER_PRIMITIVE_SPHERE;
+		vertex_count = 2;
+	} else {
+		legacy_f64 first_x, first_y, second_x, second_y;
+		round_fixture_axes(kind, radius, &first_x, &first_y, &second_x, &second_y);
+		vertices[1] = (struct SHAPE3D_HIRES_VECTOR){TEST_ROUND_PHASE + first_x,
+													-TEST_ROUND_PHASE - first_y, depth};
+		vertices[2] = (struct SHAPE3D_HIRES_VECTOR){TEST_ROUND_PHASE + second_x,
+													-TEST_ROUND_PHASE - second_y, depth};
+		/* A coplanar wheel isolates outline/rim coverage from tread depth. */
+		for (legacy_u32 vertex = 0; vertex < 3; vertex++) {
+			vertices[vertex + 3] = vertices[vertex];
+		}
+		type = RENDER_PRIMITIVE_WHEEL;
+		vertex_count = 6;
+	}
+	reset_target();
+	shape3d_hires_begin_shape(0, background ? SHAPE3D_HIRES_DEPTH_BACKGROUND
+											: SHAPE3D_HIRES_DEPTH_SORTED);
+	queue(type, vertex_count, vertices);
+	if (batched) {
+		/* A full-screen background makes even tiny fixtures use worker bands. */
+		legacy_f64 half_width = HIRES_WIDTH / 2;
+		legacy_f64 half_height = HIRES_HEIGHT / 2;
+		const struct SHAPE3D_HIRES_VECTOR panel[] = {{-half_width, -half_height, depth},
+													 {half_width, -half_height, depth},
+													 {half_width, half_height, depth},
+													 {-half_width, half_height, depth}};
+		const legacy_u8 indices[] = {0, 1, 2, 3};
+		shape3d_hires_begin_shape(1, SHAPE3D_HIRES_DEPTH_BACKGROUND);
+		shape3d_hires_queue(1, RENDER_PRIMITIVE_POLYGON, 4, indices, panel, 0);
+		shape3d_hires_batch_begin();
+		shape3d_hires_render(1, RENDER_PRIMITIVE_POLYGON, TEST_ROUND_BACKGROUND_COLOR, 0, 0, 0, 0);
+	}
+	shape3d_hires_render(0, type | (ghost ? RENDER_PRIMITIVE_GHOST_FLAG : 0), TEST_ROUND_COLOR,
+						 TEST_ROUND_RIM_COLOR, TEST_ROUND_HUB_COLOR, 0, 0);
+	if (batched) {
+		shape3d_hires_batch_end();
+	}
+	hires_end();
+}
+
+/* Measure distance to the old 64-point outline independently of scan conversion. */
+static legacy_f64 round_outline_distance_squared(legacy_s32 kind, legacy_f64 radius, legacy_f64 x,
+												 legacy_f64 y)
+{
+	legacy_f64 first_x, first_y, second_x, second_y;
+	round_fixture_axes(kind, radius, &first_x, &first_y, &second_x, &second_y);
+	legacy_f64 minimum = DBL_MAX;
+	for (legacy_u32 index = 0; index < TEST_ROUND_REFERENCE_POINTS; index++) {
+		legacy_u32 next = (index + 1) % TEST_ROUND_REFERENCE_POINTS;
+		legacy_u16 first_angle =
+			(legacy_u16)(index * ANGLE_FULL_TURN / TEST_ROUND_REFERENCE_POINTS);
+		legacy_u16 last_angle = (legacy_u16)(next * ANGLE_FULL_TURN / TEST_ROUND_REFERENCE_POINTS);
+		legacy_f64 first_cosine = cos_fast(first_angle) / (legacy_f64)TRIG_FIXED_ONE;
+		legacy_f64 first_sine = sin_fast(first_angle) / (legacy_f64)TRIG_FIXED_ONE;
+		legacy_f64 last_cosine = cos_fast(last_angle) / (legacy_f64)TRIG_FIXED_ONE;
+		legacy_f64 last_sine = sin_fast(last_angle) / (legacy_f64)TRIG_FIXED_ONE;
+		legacy_f64 start_x = first_x * first_cosine + second_x * first_sine;
+		legacy_f64 start_y = first_y * first_cosine + second_y * first_sine;
+		legacy_f64 dx = first_x * last_cosine + second_x * last_sine - start_x;
+		legacy_f64 dy = first_y * last_cosine + second_y * last_sine - start_y;
+		legacy_f64 offset_x = x - start_x;
+		legacy_f64 offset_y = y - start_y;
+		legacy_f64 length_squared = dx * dx + dy * dy;
+		legacy_f64 fraction =
+			length_squared == 0 ? 0 : (offset_x * dx + offset_y * dy) / length_squared;
+		if (fraction < 0) {
+			fraction = 0;
+		} else if (fraction > 1) {
+			fraction = 1;
+		}
+		offset_x -= dx * fraction;
+		offset_y -= dy * fraction;
+		legacy_f64 distance = offset_x * offset_x + offset_y * offset_y;
+		if (distance < minimum) {
+			minimum = distance;
+		}
+	}
+	return minimum;
+}
+
+static void test_roundness_preserves_near_and_bounds_small_shapes(void)
+{
+	static legacy_u8 reference[HIRES_WIDTH * HIRES_HEIGHT];
+	const legacy_f64 radii[] = {TEST_ROUND_SMALL_RADIUS, TEST_ROUND_MEDIUM_RADIUS,
+								TEST_ROUND_LARGE_RADIUS, TEST_ROUND_NEAR_RADIUS};
+	legacy_u32 changed_small_pixels = 0;
+	for (legacy_s32 kind = 0; kind < TEST_ROUND_KIND_COUNT; kind++) {
+		for (legacy_u32 size = 0; size < sizeof(radii) / sizeof(radii[0]); size++) {
+			legacy_f64 radius = radii[size];
+			for (legacy_s32 ghost = 0; ghost < 2; ghost++) {
+				/* Background geometry always retains the original 64-point perimeter. */
+				draw_round_fixture(kind, radius, 1, ghost, 0);
+				memcpy(reference, pixels(), sizeof(reference));
+				draw_round_fixture(kind, radius, 0, ghost, 0);
+				const legacy_u8 *image = pixels();
+				if (radius == TEST_ROUND_NEAR_RADIUS) {
+					assert(memcmp(reference, image, sizeof(reference)) == 0);
+					continue;
+				}
+				for (legacy_s32 y = 0; y < HIRES_HEIGHT; y++) {
+					for (legacy_s32 x = 0; x < HIRES_WIDTH; x++) {
+						legacy_u32 offset = y * HIRES_WIDTH + x;
+						if (reference[offset] == image[offset]) {
+							continue;
+						}
+						changed_small_pixels++;
+						legacy_f64 sample_x = x + HIRES_SAMPLE_CENTER_OFFSET -
+											  projection_center_x * HIRES_SCALE - TEST_ROUND_PHASE;
+						legacy_f64 sample_y = y + HIRES_SAMPLE_CENTER_OFFSET -
+											  projection_center_y * HIRES_SCALE - TEST_ROUND_PHASE;
+						legacy_f64 distance =
+							round_outline_distance_squared(kind, radius, sample_x, sample_y);
+						if (kind != TEST_ROUND_SPHERE) {
+							legacy_f64 inner = round_outline_distance_squared(
+								kind, radius * TEST_ROUND_INNER_SCALE, sample_x, sample_y);
+							if (inner < distance) {
+								distance = inner;
+							}
+						}
+						assert(distance <= TEST_ROUND_OUTLINE_ERROR * TEST_ROUND_OUTLINE_ERROR);
+					}
+				}
+			}
+		}
+	}
+	assert(changed_small_pixels != 0);
+}
+
+static void test_roundness_matches_worker_bands(void)
+{
+	static legacy_u8 reference[HIRES_WIDTH * HIRES_HEIGHT];
+	const legacy_char *settings[] = {"0", "1", "2"};
+	const legacy_char *original = SDL_getenv("RESTUNTS_RENDER_WORKERS");
+	legacy_char *saved = original != NULL ? SDL_strdup(original) : NULL;
+	assert(original == NULL || saved != NULL);
+	for (legacy_s32 kind = 0; kind < TEST_ROUND_KIND_COUNT; kind++) {
+		for (legacy_s32 ghost = 0; ghost < 2; ghost++) {
+			draw_round_fixture(kind, TEST_ROUND_LARGE_RADIUS, 0, ghost, 0);
+			memcpy(reference, pixels(), sizeof(reference));
+			for (legacy_u32 workers = 0; workers < sizeof(settings) / sizeof(settings[0]);
+				 workers++) {
+				assert(SDL_SetEnvironmentVariable(SDL_GetEnvironment(), "RESTUNTS_RENDER_WORKERS",
+												  settings[workers], true));
+				draw_round_fixture(kind, TEST_ROUND_LARGE_RADIUS, 0, ghost, 1);
+				assert(memcmp(reference, pixels(), sizeof(reference)) == 0);
+			}
+		}
+	}
+	if (saved != NULL) {
+		assert(SDL_SetEnvironmentVariable(SDL_GetEnvironment(), "RESTUNTS_RENDER_WORKERS", saved,
+										  true));
+		SDL_free(saved);
+	} else {
+		assert(SDL_UnsetEnvironmentVariable(SDL_GetEnvironment(), "RESTUNTS_RENDER_WORKERS"));
+	}
 }
 
 static void test_disabled_and_reset(void)
@@ -1904,6 +2105,8 @@ legacy_int main(void)
 	test_line_stroke_clipping();
 	test_line_stroke_occlusion();
 	test_materials_and_rounded_primitives();
+	test_roundness_preserves_near_and_bounds_small_shapes();
+	test_roundness_matches_worker_bands();
 	test_disabled_and_reset();
 	test_visible_line_overhang_survives_culling();
 	test_line_weight_in_half_scale_view();
