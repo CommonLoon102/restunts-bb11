@@ -27,11 +27,11 @@
 static legacy_s32 requested_cpu(void)
 {
 	const legacy_char *setting = getenv("RESTUNTS_CPU_AFFINITY");
-	if (setting == NULL || *setting == '\0' || strcmp(setting, "auto") == 0) {
-		return PROCESS_CPU_AUTOMATIC;
-	}
-	if (strcmp(setting, "off") == 0) {
+	if (setting == NULL || *setting == '\0' || strcmp(setting, "off") == 0) {
 		return PROCESS_CPU_UNCHANGED;
+	}
+	if (strcmp(setting, "auto") == 0) {
+		return PROCESS_CPU_AUTOMATIC;
 	}
 	legacy_char *end;
 	errno = 0;
