@@ -55,6 +55,9 @@ void hires_raster_finish(const struct HIRES_RASTER_TARGET *target, legacy_u32 cl
  * Allocation failure leaves the indexed fallback intact. */
 legacy_s32 hires_begin_argb(const struct SPRITE *target);
 void hires_argb_pixel(legacy_s32 x, legacy_s32 y, legacy_u32 color);
+/* Darken existing samples without changing their indexed color or scene depth. */
+legacy_s32 hires_shadow_begin(void);
+void hires_shadow_pixel(legacy_s32 x, legacy_s32 y, legacy_u8 opacity);
 const legacy_u32 *hires_framebuffer_argb(const legacy_u8 *legacy, const legacy_u32 *palette);
 void hires_pixel(legacy_s32 x, legacy_s32 y, legacy_u8 color);
 /* Fill all companion samples at logical 320x200 coordinates without changing the legacy byte. */

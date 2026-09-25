@@ -22,6 +22,7 @@
 #include "residue.h"
 
 #if defined(RESTUNTS_SDL3)
+#include "shape3d_hires.h"
 #include <stdlib.h>
 #endif
 
@@ -470,6 +471,11 @@ static void frame_add_car(const struct CARSTATE *carstate, legacy_s8 debris_owne
 						  legacy_s8 tile_detail, legacy_s8 flags, legacy_s16 material,
 						  legacy_s16 z_adjust)
 {
+#if defined(RESTUNTS_SDL3)
+	if (supersight_enabled != 0) {
+		flags |= SHAPE3D_NO_SHADOW_RECEIVE_FLAG;
+	}
+#endif
 	struct TRACKOBJECT *track_object;
 	if (frame_state->game_particles_active != 0 && (flags & SHAPE3D_GHOST_FLAG) == 0U) {
 		for (legacy_s16 index = 0; index < FRAME_DEBRIS_SLOT_COUNT; index++) {
@@ -523,6 +529,9 @@ static void frame_add_car(const struct CARSTATE *carstate, legacy_s8 debris_owne
 	}
 
 	curtransshape_ptr->ts_flags |= flags & SHAPE3D_GHOST_FLAG;
+#if defined(RESTUNTS_SDL3)
+	curtransshape_ptr->ts_flags |= flags & SHAPE3D_NO_SHADOW_RECEIVE_FLAG;
+#endif
 	curtransshape_ptr->rotvec.x = LEGACY_S16_WRAP_NEGATE(carstate->car_rotate.z);
 	curtransshape_ptr->rotvec.y = LEGACY_S16_WRAP_NEGATE(carstate->car_rotate.y);
 	curtransshape_ptr->rotvec.z = LEGACY_S16_WRAP_NEGATE(carstate->car_rotate.x);
@@ -838,6 +847,25 @@ static const struct FRAME_LOOKAHEAD_TILE *frame_setup_projection(struct FRAME_CA
 
 	return lookahead_tiles;
 }
+
+#if defined(RESTUNTS_SDL3)
+static void frame_add_car_shadow(const struct CARSTATE *carstate, const struct SIMD *simd,
+								 const struct VECTOR *camera_position, const struct SHAPE3D *shape)
+{
+	if (carstate->car_crashBmpFlag == CRASH_EVENT_WATER ||
+		(cameramode == CAMERA_MODE_COCKPIT && carstate == frame_viewed_car_state())) {
+		return;
+	}
+	struct VECTOR relative_position;
+	relative_position.x = frame_relative_position(carstate->car_position.lx, camera_position->x);
+	relative_position.y = frame_relative_position(carstate->car_position.ly, camera_position->y);
+	relative_position.z = frame_relative_position(carstate->car_position.lz, camera_position->z);
+	/* The collision box stores half-width and half-length in renderer units. */
+	shape3d_hires_shadow_car(&relative_position, LEGACY_S16_WRAP_NEGATE(carstate->car_rotate.x),
+							 simd->collide_points[0].px, simd->collide_points[1].px);
+	shape3d_hires_shadow_model(shape);
+}
+#endif
 
 static void frame_draw_clouds(struct FRAME_CAMERA *camera, legacy_s8 redraw_transform_flags)
 {
@@ -2069,6 +2097,17 @@ void update_frame(legacy_s8 buffer_index, struct RECTANGLE *cliprect)
 	legacy_s8 animated_material = frame_animated_material();
 	struct FRAME_TILE_SELECTION tiles;
 	tiles.lookahead = frame_setup_projection(&camera, cliprect);
+#if defined(RESTUNTS_SDL3)
+	if (supersight_enabled != 0) {
+		shape3d_hires_shadows_begin(&camera.position);
+		frame_add_car_shadow(&frame_state->playerstate, &simd_player, &camera.position,
+							 &game3dshapes[PLAYER_CAR_WHEEL_SHAPE]);
+		if (gameconfig.game_opponenttype != 0) {
+			frame_add_car_shadow(&frame_state->opponentstate, &simd_opponent, &camera.position,
+								 &game3dshapes[OPPONENT_CAR_WHEEL_SHAPE]);
+		}
+	}
+#endif
 	frame_draw_clouds(&camera, redraw_transform_flags);
 	frame_select_tiles(&tiles, &camera);
 	if (supersight_enabled != 0) {
