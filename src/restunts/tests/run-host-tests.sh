@@ -197,6 +197,7 @@ run_host_test test-shape3d-materials shape3d.c \
     -Wno-pointer-sign -Wno-unused-variable -Wno-missing-field-initializers
 run_host_test test-shape3d-vertices shape3d.c \
     -Wno-pointer-sign -Wno-unused-variable
+run_host_test test-car-grounding legacy.c -DRESTUNTS_SDL3 -Wno-pointer-sign
 run_host_test test-car-shape-lifetime shape3d_car.c \
     "$test_source_dir/owoot.c" "$test_source_dir/owoot_wheels.c" \
     "$test_source_dir/shape3d_resources.c" "$test_source_dir/shape3d.c" \

@@ -41,6 +41,10 @@ static legacy_u8 frame_uses_snapshot;
 #define FRAME_SUPERSIGHT_TILE_COUNT 110
 #if defined(RESTUNTS_SDL3)
 #define FRAME_MAXIMUM_TILE_COUNT 900
+/* Match the collision height allowances in trackobj.c. */
+#define FRAME_NON_GRASS_HEIGHT_OFFSET 2
+#define FRAME_GRASS_HEIGHT_HASH_SHIFT 8U
+#define FRAME_GRASS_HEIGHT_VARIATION_MASK 1U
 #else
 #define FRAME_MAXIMUM_TILE_COUNT FRAME_SUPERSIGHT_TILE_COUNT
 #endif
@@ -460,6 +464,45 @@ void frame_present(struct RECTANGLE *cliprect)
 	}
 }
 
+#if defined(RESTUNTS_SDL3)
+static struct VECTOR frame_car_render_offset(const struct CARSTATE *carstate,
+											 const struct SHAPE3D *wheel_shape)
+{
+	struct VECTOR local = {0, -shape3d_car_ground_offset(wheel_shape), 0};
+	struct VECTOR offset;
+	struct MATRIX *rotation =
+		mat_rot_zxy(LEGACY_S16_WRAP_NEGATE(carstate->car_rotate.z),
+					LEGACY_S16_WRAP_NEGATE(carstate->car_rotate.y),
+					LEGACY_S16_WRAP_NEGATE(carstate->car_rotate.x), MATRIX_ROTATION_ORDER_ZXY);
+	mat_mul_vector(&local, rotation, &offset);
+	/* Collision surfaces are raised two world units above the road artwork.
+	 * Grass uses a zero/one-unit height variation instead. Remove the lowest
+	 * supported-wheel bias to avoid sinking tires at mixed surface edges.
+	 * Keep the road allowance in flight, without snapping to a surface. */
+	legacy_s16 surface_bias = FRAME_NON_GRASS_HEIGHT_OFFSET;
+	for (legacy_s16 wheel = 0; wheel < FRAME_CAR_WHEEL_COUNT; wheel++) {
+		if (carstate->car_surfaceWhl[wheel] == CAR_SURFACE_GRASS) {
+			const struct VECTOR *contact = &carstate->car_wheel_contact_positions[wheel];
+			legacy_s16 grass_bias =
+				((legacy_u16)(contact->x ^ contact->z) >> FRAME_GRASS_HEIGHT_HASH_SHIFT) &
+				FRAME_GRASS_HEIGHT_VARIATION_MASK;
+			if (grass_bias < surface_bias) {
+				surface_bias = grass_bias;
+			}
+		}
+	}
+	offset.y = LEGACY_S16_WRAP_SUB(offset.y, surface_bias);
+	return offset;
+}
+
+static void frame_offset_car_shape(const struct VECTOR *offset)
+{
+	curtransshape_ptr->pos.x = LEGACY_S16_WRAP_ADD(curtransshape_ptr->pos.x, offset->x);
+	curtransshape_ptr->pos.y = LEGACY_S16_WRAP_ADD(curtransshape_ptr->pos.y, offset->y);
+	curtransshape_ptr->pos.z = LEGACY_S16_WRAP_ADD(curtransshape_ptr->pos.z, offset->z);
+}
+#endif
+
 /* The player and the opponent are drawn identically: first the debris
  * attached to that car, then the car body itself with its wheels, clip
  * rectangle and rotation. Only the shapes, buffers and material differ. */
@@ -472,8 +515,10 @@ static void frame_add_car(const struct CARSTATE *carstate, legacy_s8 debris_owne
 						  legacy_s16 z_adjust)
 {
 #if defined(RESTUNTS_SDL3)
+	struct VECTOR render_offset = {0, 0, 0};
 	if (supersight_enabled != 0) {
 		flags |= SHAPE3D_NO_SHADOW_RECEIVE_FLAG;
+		render_offset = frame_car_render_offset(carstate, wheel_shape);
 	}
 #endif
 	struct TRACKOBJECT *track_object;
@@ -492,6 +537,9 @@ static void frame_add_car(const struct CARSTATE *carstate, legacy_s8 debris_owne
 				curtransshape_ptr->pos.z =
 					frame_relative_position_sum(frame_state->game_particle_z[index],
 												carstate->car_position.lz, camera_position->z);
+#if defined(RESTUNTS_SDL3)
+				frame_offset_car_shape(&render_offset);
+#endif
 				frame_add_dynamic_shape(track_object, index,
 										flags | FRAME_TRANSFORM_FLAGS_NO_DEPTH_SORT, material,
 										z_adjust);
@@ -506,6 +554,9 @@ static void frame_add_car(const struct CARSTATE *carstate, legacy_s8 debris_owne
 		frame_relative_position(carstate->car_position.ly, camera_position->y);
 	curtransshape_ptr->pos.z =
 		frame_relative_position(carstate->car_position.lz, camera_position->z);
+#if defined(RESTUNTS_SDL3)
+	frame_offset_car_shape(&render_offset);
+#endif
 
 	if (tile_detail != FRAME_TILE_DETAIL_FULL ||
 		(supersight_enabled == 0 && detail_level >= FRAME_CAR_LOW_DETAIL_FIRST)) {
