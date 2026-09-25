@@ -344,9 +344,9 @@ static void check_fullscreen(legacy_u8 expected)
 	sdl3_platform_pump();
 	assert(((SDL_GetWindowFlags(sdl3_video_window()) & SDL_WINDOW_FULLSCREEN) != 0) == expected);
 	SDL_Renderer *renderer = SDL_GetRenderer(sdl3_video_window());
-	/* SDL output pointers require the library's native int type. */
-	int width;
-	int height;
+	/* SDL output pointers require the library's exact integer type. */
+	legacy_int width;
+	legacy_int height;
 	assert(SDL_GetRenderOutputSize(renderer, &width, &height));
 	legacy_f32 expected_width = (legacy_f32)width;
 	legacy_f32 expected_height = expected_width * 3.0f / 4.0f;
@@ -374,9 +374,9 @@ static void test_fullscreen_shortcut(void)
 {
 	kb_init_interrupt();
 	check_video_aspect(1100, 720, 70.0f, 0.0f);
-	/* SDL reads and writes window coordinates through native int pointers. */
-	int original_x;
-	int original_y;
+	/* SDL reads and writes window coordinates through exact native integer pointers. */
+	legacy_int original_x;
+	legacy_int original_y;
 	assert(SDL_GetWindowPosition(sdl3_video_window(), &original_x, &original_y));
 	send_key(SDL_SCANCODE_LALT, SDL_KMOD_LALT, true, false);
 	send_key(SDL_SCANCODE_RETURN, SDL_KMOD_LALT, true, false);
@@ -407,10 +407,10 @@ static void test_fullscreen_shortcut(void)
 	send_key(SDL_SCANCODE_KP_ENTER, SDL_KMOD_NONE, false, false);
 	send_key(SDL_SCANCODE_RALT, SDL_KMOD_NONE, false, false);
 	assert(kb_read_char() == 0);
-	int width;
-	int height;
-	int restored_x;
-	int restored_y;
+	legacy_int width;
+	legacy_int height;
+	legacy_int restored_x;
+	legacy_int restored_y;
 	assert(SDL_GetWindowSize(sdl3_video_window(), &width, &height));
 	assert(width == 1100 && height == 720);
 	assert(SDL_GetWindowPosition(sdl3_video_window(), &restored_x, &restored_y));
@@ -463,7 +463,7 @@ static void test_joystick(void)
 	assert(SDL_DetachVirtualJoystick(id));
 }
 
-int main(void)
+legacy_int main(void)
 {
 	SDL_SetHint(SDL_HINT_VIDEO_DRIVER, "dummy");
 	SDL_SetHint(SDL_HINT_RENDER_DRIVER, "software");

@@ -44,13 +44,13 @@ static void adlib_trace_close(void)
 	}
 }
 
-static void adlib_trace_open(const char *backend, legacy_u32 clock, legacy_u32 rate)
+static void adlib_trace_open(const legacy_char *backend, legacy_u32 clock, legacy_u32 rate)
 {
 	adlib_trace_close();
 	adlib_trace_frames = 0;
 	adlib_trace_last_flush = 0;
 	adlib_trace_sample_rate = rate;
-	const char *path = getenv("RESTUNTS_AUDIO_TRACE");
+	const legacy_char *path = getenv("RESTUNTS_AUDIO_TRACE");
 	if (path == NULL || path[0] == '\0') {
 		return;
 	}

@@ -32,7 +32,7 @@ static void *job_context;
 static void run_jobs(void)
 {
 	for (;;) {
-		int index = SDL_AddAtomicInt(&next_job, 1);
+		legacy_s32 index = SDL_AddAtomicInt(&next_job, 1);
 		if (index >= job_count) {
 			return;
 		}
@@ -40,7 +40,7 @@ static void run_jobs(void)
 	}
 }
 
-static int SDLCALL worker_main(void *argument)
+static legacy_int SDLCALL worker_main(void *argument)
 {
 	struct RENDER_WORKER *worker = argument;
 	for (;;) {
@@ -53,26 +53,26 @@ static int SDLCALL worker_main(void *argument)
 	}
 }
 
-static int requested_workers(void)
+static legacy_s32 requested_workers(void)
 {
-	const char *setting = SDL_getenv("RESTUNTS_RENDER_WORKERS");
+	const legacy_char *setting = SDL_getenv("RESTUNTS_RENDER_WORKERS");
 	if (setting == NULL || *setting == 0) {
 		return RENDER_DEFAULT_WORKERS;
 	}
 	if (SDL_strcmp(setting, RENDER_WORKERS_AUTO) == 0) {
-		int cores = SDL_GetNumLogicalCPUCores();
+		legacy_s32 cores = SDL_GetNumLogicalCPUCores();
 		if (cores <= 1) {
 			return RENDER_DEFAULT_WORKERS;
 		}
 		return cores - 1 > RENDER_MAX_WORKERS ? RENDER_MAX_WORKERS : cores - 1;
 	}
-	char *end;
+	legacy_char *end;
 	errno = 0;
-	long value = strtol(setting, &end, 10);
+	legacy_s64 value = strtol(setting, &end, 10);
 	if (errno != 0 || end == setting || *end != 0 || value < 0) {
 		return RENDER_DEFAULT_WORKERS;
 	}
-	return value > RENDER_MAX_WORKERS ? RENDER_MAX_WORKERS : (int)value;
+	return value > RENDER_MAX_WORKERS ? RENDER_MAX_WORKERS : (legacy_s32)value;
 }
 
 static void initialize_workers(void)
@@ -81,7 +81,7 @@ static void initialize_workers(void)
 		return;
 	}
 	initialized = 1;
-	int requested = requested_workers();
+	legacy_s32 requested = requested_workers();
 	if (requested <= 0) {
 		return;
 	}
@@ -89,7 +89,7 @@ static void initialize_workers(void)
 	if (completed == NULL) {
 		return;
 	}
-	for (int index = 0; index < requested; index++) {
+	for (legacy_s32 index = 0; index < requested; index++) {
 		struct RENDER_WORKER *worker = &workers[index];
 		worker->start = SDL_CreateSemaphore(0);
 		if (worker->start == NULL) {

@@ -37,7 +37,7 @@ static void trace_bytes(const legacy_u8 *bytes, legacy_u32 count)
 		trace_hash = (trace_hash ^ bytes[i]) * UINT64_C(1099511628211);
 	}
 }
-static void check_hash(const char *name, legacy_u64 expected_hash)
+static void check_hash(const legacy_char *name, legacy_u64 expected_hash)
 {
 #ifdef FILE_RECORD_BASELINE
 	printf("%s %016" LEGACY_PRIx64 "\n", name, trace_hash);

@@ -34,7 +34,7 @@ void audio_write_far_pointer(legacy_u8 *destination, const void *value)
 	assert(0 && "Unexpected sequencer resource rebinding");
 }
 
-static void load_first_instrument(const char *path, legacy_u8 *instrument)
+static void load_first_instrument(const legacy_char *path, legacy_u8 *instrument)
 {
 	FILE *file = fopen(path, "rb");
 	assert(file != NULL);
@@ -357,7 +357,7 @@ static void check_continuous_eligibility(struct AUDIO_CHANNEL *channel,
 	context->modulation = 0;
 }
 
-int main(int argc, char **argv)
+legacy_int main(legacy_int argc, legacy_char **argv)
 {
 	assert(argc == 2);
 	legacy_u8 instrument[ADLIB_RESOURCE_SIZE];

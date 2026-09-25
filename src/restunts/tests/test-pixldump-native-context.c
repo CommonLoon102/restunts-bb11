@@ -1,19 +1,20 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
+#include "../c/legacy.h"
 
 #define RESTUNTS_SDL3 1
 
-static const char *test_psp_setting;
-static const char *test_path_setting;
+static const legacy_char *test_psp_setting;
+static const legacy_char *test_path_setting;
 
-static char *test_getenv(const char *name)
+static legacy_char *test_getenv(const legacy_char *name)
 {
 	if (strcmp(name, "RESTUNTS_ORACLE_PSP_SEGMENT") == 0) {
-		return (char *)test_psp_setting;
+		return (legacy_char *)test_psp_setting;
 	}
 	assert(strcmp(name, "RESTUNTS_ORACLE_PROGRAM_PATH") == 0);
-	return (char *)test_path_setting;
+	return (legacy_char *)test_path_setting;
 }
 
 #define getenv test_getenv
@@ -34,7 +35,7 @@ void far *fontnptr = &test_resources[2];
 
 legacy_u16 file_paras_fatal(const legacy_s8 *filename)
 {
-	assert(strcmp((const char *)filename, "pc15.drv") == 0);
+	assert(strcmp((const legacy_char *)filename, "pc15.drv") == 0);
 	return 140U;
 }
 
@@ -55,7 +56,7 @@ legacy_u16 mmgr_get_chunk_size(legacy_s8 far *pointer)
 	return 91U;
 }
 
-int main(void)
+legacy_int main(void)
 {
 	legacy_s8 *arguments[] = {(legacy_s8 *)"/unrelated/native/build/pixldump",
 							  (legacy_s8 *)"my0000", (legacy_s8 *)"2", (legacy_s8 *)"0",

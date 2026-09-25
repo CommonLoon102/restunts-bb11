@@ -102,7 +102,7 @@ static void test_preview(legacy_s32 enhanced)
 	assert(screen[(HORIZON - SKY_HEIGHT) * 320] == LEGACY_SKY_COLOR);
 }
 
-int main(void)
+legacy_int main(void)
 {
 	assert(SDL_Init(0));
 	assert(SDL_CreateDirectory("fixtures"));

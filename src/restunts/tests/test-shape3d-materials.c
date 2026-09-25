@@ -162,7 +162,7 @@ static void test_replacement_material_tables(void)
 	assert(draw_calls == 1 && drawn_colors[0] == 77);
 }
 
-int main(void)
+legacy_int main(void)
 {
 	test_original_material_table_boundaries();
 	test_replacement_material_tables();

@@ -359,13 +359,13 @@ static void initialize_replay(const legacy_s8 *name)
 legacy_s16 stuntsmain(legacy_s16 argc, legacy_s8 *argv[])
 {
 	assert(argc == 7 || argc == 9);
-	legacy_s16 mode = (legacy_s16)atoi((const char *)argv[3]);
-	legacy_u16 limit = (legacy_u16)atoi((const char *)argv[4]);
+	legacy_s16 mode = (legacy_s16)atoi((const legacy_char *)argv[3]);
+	legacy_u16 limit = (legacy_u16)atoi((const legacy_char *)argv[4]);
 	assert(mode >= 0 && mode <= 2);
-	legacy_u16 landing_start = (legacy_u16)atoi((const char *)argv[5]);
-	legacy_u16 landing_end = (legacy_u16)atoi((const char *)argv[6]);
-	legacy_u16 settling_start = argc == 9 ? (legacy_u16)atoi((const char *)argv[7]) : 0;
-	legacy_u16 settling_end = argc == 9 ? (legacy_u16)atoi((const char *)argv[8]) : 0;
+	legacy_u16 landing_start = (legacy_u16)atoi((const legacy_char *)argv[5]);
+	legacy_u16 landing_end = (legacy_u16)atoi((const legacy_char *)argv[6]);
+	legacy_u16 settling_start = argc == 9 ? (legacy_u16)atoi((const legacy_char *)argv[7]) : 0;
+	legacy_u16 settling_end = argc == 9 ? (legacy_u16)atoi((const legacy_char *)argv[8]) : 0;
 	init_main(argc, argv);
 	init_div0();
 	init_row_tables();
@@ -384,7 +384,7 @@ legacy_s16 stuntsmain(legacy_s16 argc, legacy_s8 *argv[])
 	legacy_u8 *recording = malloc(gameconfig.game_recordedframes);
 	assert(recording != NULL);
 	memcpy(recording, replay_input_buffer, gameconfig.game_recordedframes);
-	FILE *output = fopen((const char *)argv[2], "wb");
+	FILE *output = fopen((const legacy_char *)argv[2], "wb");
 	assert(output != NULL);
 	struct GAMESTATE previous = state;
 	legacy_u32 extra_frames = 0;
@@ -468,8 +468,8 @@ legacy_s16 stuntsmain(legacy_s16 argc, legacy_s8 *argv[])
 	if (mode == 1 && settling_end != 0) {
 		assert(settling_interpolations != 0);
 	}
-	printf("mode %d: %lu interpolated extra frames (%u landing, %u loop exit)\n", mode,
-		   (unsigned long)extra_frames, landing_interpolations, settling_interpolations);
+	printf("mode %d: %" LEGACY_PRIu32 " interpolated extra frames (%u landing, %u loop exit)\n",
+		   mode, extra_frames, landing_interpolations, settling_interpolations);
 	assert(fclose(output) == 0);
 	free(recording);
 	/* Match pixldump shutdown: this fixture never loaded dashboard resources. */

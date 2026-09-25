@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "../c/legacy.h"
 
 #if defined(_WIN32)
 #include <windows.h>
@@ -22,42 +23,42 @@ enum {
 	TEST_CPU_UNSET = -1,
 	TEST_EXPECTED_NICE = -5,
 	TEST_STRONGER_NICE = -10,
-	TEST_CPU_TEXT_SIZE = sizeof(int) * CHAR_BIT + 1
+	TEST_CPU_TEXT_SIZE = sizeof(legacy_int) * CHAR_BIT + 1
 };
 
-static const char *affinity_setting;
-static const char *priority_setting;
-static int allowed_cpus[2];
-static int allowed_count;
-static int current_cpu;
-static int selected_cpu;
-static int affinity_queries;
-static int affinity_updates;
-static int priority_queries;
-static int priority_updates;
-static int affinity_query_error;
-static int affinity_update_error;
-static int priority_query_error;
-static int priority_update_error;
-static int diagnostic_count;
+static const legacy_char *affinity_setting;
+static const legacy_char *priority_setting;
+static legacy_s32 allowed_cpus[2];
+static legacy_s32 allowed_count;
+static legacy_s32 current_cpu;
+static legacy_s32 selected_cpu;
+static legacy_s32 affinity_queries;
+static legacy_s32 affinity_updates;
+static legacy_s32 priority_queries;
+static legacy_s32 priority_updates;
+static legacy_s32 affinity_query_error;
+static legacy_s32 affinity_update_error;
+static legacy_s32 priority_query_error;
+static legacy_s32 priority_update_error;
+static legacy_s32 diagnostic_count;
 
-static char *test_getenv(const char *name)
+static legacy_char *test_getenv(const legacy_char *name)
 {
 	if (strcmp(name, "RESTUNTS_CPU_AFFINITY") == 0) {
-		return (char *)affinity_setting;
+		return (legacy_char *)affinity_setting;
 	}
 	assert(strcmp(name, "RESTUNTS_HIGH_PRIORITY") == 0);
-	return (char *)priority_setting;
+	return (legacy_char *)priority_setting;
 }
 
-static int test_fprintf(FILE *stream, const char *format, ...)
+static legacy_int test_fprintf(FILE *stream, const legacy_char *format, ...)
 {
 	assert(stream == stderr && *format != '\0');
 	diagnostic_count++;
 	return 0;
 }
 
-static int test_fputs(const char *message, FILE *stream)
+static legacy_int test_fputs(const legacy_char *message, FILE *stream)
 {
 	return test_fprintf(stream, message);
 }
@@ -89,7 +90,7 @@ static BOOL test_GetProcessAffinityMask(HANDLE process, PDWORD_PTR allowed, PDWO
 	}
 	*allowed = 0;
 	*system = ~(DWORD_PTR)0;
-	for (int index = 0; index < allowed_count; index++) {
+	for (legacy_s32 index = 0; index < allowed_count; index++) {
 		*allowed |= (DWORD_PTR)1 << allowed_cpus[index];
 	}
 	return TRUE;
@@ -99,7 +100,7 @@ static BOOL test_SetProcessAffinityMask(HANDLE process, DWORD_PTR mask)
 {
 	assert(process == NULL && mask != 0 && (mask & (mask - 1)) == 0);
 	affinity_updates++;
-	for (int cpu = 0; cpu < (int)(sizeof(mask) * CHAR_BIT); cpu++) {
+	for (legacy_s32 cpu = 0; cpu < (legacy_s32)(sizeof(mask) * CHAR_BIT); cpu++) {
 		if (mask & ((DWORD_PTR)1 << cpu)) {
 			selected_cpu = cpu;
 		}
@@ -129,15 +130,15 @@ static BOOL test_SetPriorityClass(HANDLE process, DWORD priority)
 #define GetPriorityClass test_GetPriorityClass
 #define SetPriorityClass test_SetPriorityClass
 #else
-static int inherited_priority;
-static int mask_capacity;
+static legacy_s32 inherited_priority;
+static legacy_s32 mask_capacity;
 
-static int test_sched_getcpu(void)
+static legacy_int test_sched_getcpu(void)
 {
 	return current_cpu;
 }
 
-static int test_sched_getaffinity(pid_t process, size_t size, cpu_set_t *allowed)
+static legacy_int test_sched_getaffinity(pid_t process, size_t size, cpu_set_t *allowed)
 {
 	assert(process == 0);
 	affinity_queries++;
@@ -146,17 +147,17 @@ static int test_sched_getaffinity(pid_t process, size_t size, cpu_set_t *allowed
 		return -1;
 	}
 	CPU_ZERO_S(size, allowed);
-	for (int index = 0; index < allowed_count; index++) {
+	for (legacy_s32 index = 0; index < allowed_count; index++) {
 		CPU_SET_S(allowed_cpus[index], size, allowed);
 	}
 	return 0;
 }
 
-static int test_sched_setaffinity(pid_t process, size_t size, const cpu_set_t *mask)
+static legacy_int test_sched_setaffinity(pid_t process, size_t size, const cpu_set_t *mask)
 {
 	assert(process == 0 && CPU_COUNT_S(size, mask) == 1);
 	affinity_updates++;
-	for (int cpu = 0; cpu < mask_capacity; cpu++) {
+	for (legacy_s32 cpu = 0; cpu < mask_capacity; cpu++) {
 		if (CPU_ISSET_S(cpu, size, mask)) {
 			selected_cpu = cpu;
 		}
@@ -168,7 +169,7 @@ static int test_sched_setaffinity(pid_t process, size_t size, const cpu_set_t *m
 	return 0;
 }
 
-static int test_getpriority(int which, id_t process)
+static legacy_int test_getpriority(legacy_int which, id_t process)
 {
 	assert(which == PRIO_PROCESS && process == 0);
 	priority_queries++;
@@ -179,7 +180,7 @@ static int test_getpriority(int which, id_t process)
 	return inherited_priority;
 }
 
-static int test_setpriority(int which, id_t process, int priority)
+static legacy_int test_setpriority(legacy_int which, id_t process, legacy_int priority)
 {
 	assert(which == PRIO_PROCESS && process == 0 && priority == TEST_EXPECTED_NICE);
 	priority_updates++;
@@ -226,8 +227,8 @@ static void reset_settings(void)
 
 static void test_affinity_selection(void)
 {
-	const char *automatic[] = {NULL, "", "auto"};
-	for (unsigned int index = 0; index < sizeof(automatic) / sizeof(automatic[0]); index++) {
+	const legacy_char *automatic[] = {NULL, "", "auto"};
+	for (legacy_u32 index = 0; index < sizeof(automatic) / sizeof(automatic[0]); index++) {
 		reset_settings();
 		affinity_setting = automatic[index];
 		priority_setting = "0";
@@ -241,7 +242,7 @@ static void test_affinity_selection(void)
 	sdl3_configure_process();
 	assert(affinity_updates == 1 && selected_cpu == TEST_FIRST_CPU);
 
-	char explicit_cpu[TEST_CPU_TEXT_SIZE];
+	legacy_char explicit_cpu[TEST_CPU_TEXT_SIZE];
 	snprintf(explicit_cpu, sizeof(explicit_cpu), "%d", TEST_FIRST_CPU);
 	reset_settings();
 	affinity_setting = explicit_cpu;
@@ -262,24 +263,24 @@ static void test_affinity_selection(void)
 
 static void test_invalid_settings(void)
 {
-	const char *invalid_cpu[] = {
+	const legacy_char *invalid_cpu[] = {
 		"AUTO", "-1", "+1", " 1", "1 ", "1x", "1.0", "0x1", "999999999999999999999999999999999999"};
-	for (unsigned int index = 0; index < sizeof(invalid_cpu) / sizeof(invalid_cpu[0]); index++) {
+	for (legacy_u32 index = 0; index < sizeof(invalid_cpu) / sizeof(invalid_cpu[0]); index++) {
 		reset_settings();
 		affinity_setting = invalid_cpu[index];
 		priority_setting = "0";
 		sdl3_configure_process();
 		assert(affinity_queries == 0 && affinity_updates == 0 && diagnostic_count != 0);
 	}
-	char overflow_cpu[TEST_CPU_TEXT_SIZE];
-	snprintf(overflow_cpu, sizeof(overflow_cpu), "%lu", (unsigned long)INT_MAX + 1UL);
+	legacy_char overflow_cpu[TEST_CPU_TEXT_SIZE];
+	snprintf(overflow_cpu, sizeof(overflow_cpu), "%" LEGACY_PRIu32, (legacy_u32)INT_MAX + 1U);
 	reset_settings();
 	affinity_setting = overflow_cpu;
 	priority_setting = "0";
 	sdl3_configure_process();
 	assert(affinity_queries == 0 && affinity_updates == 0 && diagnostic_count != 0);
 
-	char unavailable_cpu[TEST_CPU_TEXT_SIZE];
+	legacy_char unavailable_cpu[TEST_CPU_TEXT_SIZE];
 	snprintf(unavailable_cpu, sizeof(unavailable_cpu), "%d", TEST_UNAVAILABLE_CPU);
 	reset_settings();
 	affinity_setting = unavailable_cpu;
@@ -292,8 +293,8 @@ static void test_invalid_settings(void)
 	sdl3_configure_process();
 	assert(affinity_updates == 0 && priority_updates == 1);
 
-	const char *invalid_priority[] = {"auto", "yes", "2", "-1", " 1", "1 "};
-	for (unsigned int index = 0; index < sizeof(invalid_priority) / sizeof(invalid_priority[0]);
+	const legacy_char *invalid_priority[] = {"auto", "yes", "2", "-1", " 1", "1 "};
+	for (legacy_u32 index = 0; index < sizeof(invalid_priority) / sizeof(invalid_priority[0]);
 		 index++) {
 		reset_settings();
 		affinity_setting = "off";
@@ -305,8 +306,8 @@ static void test_invalid_settings(void)
 
 static void test_priority_selection(void)
 {
-	const char *enabled[] = {NULL, "", "1"};
-	for (unsigned int index = 0; index < sizeof(enabled) / sizeof(enabled[0]); index++) {
+	const legacy_char *enabled[] = {NULL, "", "1"};
+	for (legacy_u32 index = 0; index < sizeof(enabled) / sizeof(enabled[0]); index++) {
 		reset_settings();
 		affinity_setting = "off";
 		priority_setting = enabled[index];
@@ -317,9 +318,9 @@ static void test_priority_selection(void)
 	const DWORD elevated[] = {ABOVE_NORMAL_PRIORITY_CLASS, HIGH_PRIORITY_CLASS,
 							  REALTIME_PRIORITY_CLASS};
 #else
-	const int elevated[] = {TEST_EXPECTED_NICE, TEST_STRONGER_NICE};
+	const legacy_s32 elevated[] = {TEST_EXPECTED_NICE, TEST_STRONGER_NICE};
 #endif
-	for (unsigned int index = 0; index < sizeof(elevated) / sizeof(elevated[0]); index++) {
+	for (legacy_u32 index = 0; index < sizeof(elevated) / sizeof(elevated[0]); index++) {
 		reset_settings();
 		affinity_setting = "off";
 		inherited_priority = elevated[index];
@@ -356,7 +357,7 @@ static void test_platform_boundaries(void)
 	reset_settings();
 #if defined(_WIN32)
 	/* Exercise a pointer-sized shift, including bit 63 in a 64-bit build. */
-	current_cpu = (int)(sizeof(DWORD_PTR) * CHAR_BIT) - 1;
+	current_cpu = (legacy_s32)(sizeof(DWORD_PTR) * CHAR_BIT) - 1;
 #else
 	/* A sparse CPU ID beyond cpu_set_t requires a larger kernel mask. */
 	current_cpu = CPU_SETSIZE + TEST_CURRENT_CPU;
@@ -382,7 +383,7 @@ static void test_platform_boundaries(void)
 #endif
 }
 
-int main(void)
+legacy_int main(void)
 {
 	test_affinity_selection();
 	test_invalid_settings();

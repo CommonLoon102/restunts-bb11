@@ -87,7 +87,8 @@ static void reset_arena(void)
 static void make_name(legacy_s8 name[MMGR_RESOURCE_NAME_LENGTH + 1], legacy_u32 resource_id)
 {
 	memset(name, 0, MMGR_RESOURCE_NAME_LENGTH + 1);
-	snprintf((char *)name, MMGR_RESOURCE_NAME_LENGTH + 1, "RES%08" LEGACY_PRIu32, resource_id);
+	snprintf((legacy_char *)name, MMGR_RESOURCE_NAME_LENGTH + 1, "RES%08" LEGACY_PRIu32,
+			 resource_id);
 }
 
 static legacy_u8 payload_byte(legacy_u32 resource_id, size_t offset)
