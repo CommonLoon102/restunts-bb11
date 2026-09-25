@@ -14,6 +14,15 @@ enum RENDER_PRIMITIVE_TYPE {
 	RENDER_PRIMITIVE_POINT = 5
 };
 
+#define SHAPE3D_RECT_CLIP_TOP 1U
+#define SHAPE3D_RECT_CLIP_BOTTOM 2U
+#define SHAPE3D_RECT_CLIP_LEFT 4U
+#define SHAPE3D_RECT_CLIP_RIGHT 8U
+#define SHAPE3D_ALL_RECT_CLIP_FLAGS                                                                \
+	(SHAPE3D_RECT_CLIP_TOP | SHAPE3D_RECT_CLIP_BOTTOM | SHAPE3D_RECT_CLIP_LEFT |                   \
+	 SHAPE3D_RECT_CLIP_RIGHT)
+#define SHAPE3D_PRIMITIVE_SKIP_DEPTH_SORT_FLAG 2U
+
 #define SHAPE3D_MATERIAL_COUNT 129U
 extern legacy_s16 material_color_list[SHAPE3D_MATERIAL_COUNT];
 extern legacy_s16 material_pattern_list[SHAPE3D_MATERIAL_COUNT];

@@ -77,7 +77,7 @@ static legacy_s16 follow_camera_step(legacy_s16 movement, legacy_u32 fraction20)
 		return movement;
 	}
 	legacy_u32 tick_fraction =
-		framespersec == GAME_FRAME_RATE_LOW ? 2 * PHANTOM_PHYSICS_ONE : PHANTOM_PHYSICS_ONE;
+		framespersec == GAME_FRAME_RATE_LOW ? PHANTOM_PHYSICS_LOW_RATE_TICK : PHANTOM_PHYSICS_ONE;
 	return (legacy_s16)((legacy_s32)movement * (legacy_s32)fraction20 / (legacy_s32)tick_fraction);
 }
 

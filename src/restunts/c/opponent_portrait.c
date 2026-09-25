@@ -1,4 +1,5 @@
 #include "opponent_portrait.h"
+#include "opponent.h"
 #include "hires.h"
 #include "shape2d.h"
 #include <SDL3/SDL.h>
@@ -12,9 +13,21 @@
 #define PORTRAIT_INNER_WIDTH 74
 #define PORTRAIT_INNER_HEIGHT 79
 #define PORTRAIT_DIGIT_COLOR 39
+#define PORTRAIT_DIGIT_LEFT 66
+#define PORTRAIT_DIGIT_RIGHT 71
+#define PORTRAIT_DIGIT_TOP 4
+#define PORTRAIT_DIGIT_BOTTOM 12
 #define PORTRAIT_ORIGINAL_SCALE 2
 #define PORTRAIT_PATH_SIZE 1024
 #define PORTRAIT_MAX_DIMENSION 4096U
+
+#define PNG_DIMENSION_HEADER_SIZE 24
+#define PNG_IHDR_LENGTH_OFFSET 8
+#define PNG_IHDR_TYPE_OFFSET 12
+#define PNG_IHDR_DATA_LENGTH 13
+#define PNG_IHDR_WIDTH_OFFSET 16
+#define PNG_IHDR_HEIGHT_OFFSET 20
+#define PNG_CHUNK_TYPE_SIZE 4
 
 static SDL_Surface *portrait;
 static legacy_u8 attempted_opponent;
@@ -28,8 +41,9 @@ void opponent_portrait_unload(void)
 
 static legacy_u32 portrait_read_be32(const legacy_u8 *bytes)
 {
-	return ((legacy_u32)bytes[0] << 24) | ((legacy_u32)bytes[1] << 16) |
-		   ((legacy_u32)bytes[2] << 8) | bytes[3];
+	return ((legacy_u32)bytes[0] << LEGACY_THREE_BYTE_BITS) |
+		   ((legacy_u32)bytes[1] << LEGACY_WORD_BITS) | ((legacy_u32)bytes[2] << LEGACY_BYTE_BITS) |
+		   bytes[3];
 }
 
 static SDL_Surface *portrait_load(const char *directory, legacy_u8 opponent, legacy_u8 prepared)
@@ -46,16 +60,17 @@ static SDL_Surface *portrait_load(const char *directory, legacy_u8 opponent, leg
 	if (file == NULL) {
 		return NULL;
 	}
-	legacy_u8 header[24];
+	legacy_u8 header[PNG_DIMENSION_HEADER_SIZE];
 	size_t read = fread(header, 1, sizeof(header), file);
 	fclose(file);
-	static const legacy_u8 signature[8] = {137, 'P', 'N', 'G', 13, 10, 26, 10};
+	static const legacy_u8 signature[] = {137, 'P', 'N', 'G', 13, 10, 26, 10};
 	if (read != sizeof(header) || memcmp(header, signature, sizeof(signature)) != 0 ||
-		portrait_read_be32(header + 8) != 13 || memcmp(header + 12, "IHDR", 4) != 0) {
+		portrait_read_be32(header + PNG_IHDR_LENGTH_OFFSET) != PNG_IHDR_DATA_LENGTH ||
+		memcmp(header + PNG_IHDR_TYPE_OFFSET, "IHDR", PNG_CHUNK_TYPE_SIZE) != 0) {
 		return NULL;
 	}
-	legacy_u32 width = portrait_read_be32(header + 16);
-	legacy_u32 height = portrait_read_be32(header + 20);
+	legacy_u32 width = portrait_read_be32(header + PNG_IHDR_WIDTH_OFFSET);
+	legacy_u32 height = portrait_read_be32(header + PNG_IHDR_HEIGHT_OFFSET);
 	if (width == 0 || height == 0 || width > PORTRAIT_MAX_DIMENSION ||
 		height > PORTRAIT_MAX_DIMENSION) {
 		return NULL;
@@ -150,7 +165,7 @@ void opponent_portrait_draw(const struct SPRITE *target, const struct SHAPE2D *o
 void opponent_portrait_draw_at(const struct SPRITE *target, const struct SHAPE2D *original,
 							   legacy_u8 opponent, legacy_s16 tile_x, legacy_s16 tile_y)
 {
-	if (!hires_enabled() || opponent < 1 || opponent > 6 ||
+	if (!hires_enabled() || opponent < OPPONENT_FIRST || opponent > OPPONENT_LAST ||
 		shape2d_get_width(original) != PORTRAIT_WIDTH ||
 		shape2d_get_height(original) != PORTRAIT_HEIGHT) {
 		return;
@@ -170,7 +185,8 @@ void opponent_portrait_draw_at(const struct SPRITE *target, const struct SHAPE2D
 			legacy_s32 original_y = row / HIRES_SCALE + PORTRAIT_TOP;
 			/* Keep the authored red number, including its exact pixel contours.
 			 * Its surrounding photograph remains continuous through the mask. */
-			if (original_x >= 66 && original_x <= 71 && original_y >= 4 && original_y <= 12 &&
+			if (original_x >= PORTRAIT_DIGIT_LEFT && original_x <= PORTRAIT_DIGIT_RIGHT &&
+				original_y >= PORTRAIT_DIGIT_TOP && original_y <= PORTRAIT_DIGIT_BOTTOM &&
 				indexed[original_y * PORTRAIT_WIDTH + original_x] == PORTRAIT_DIGIT_COLOR) {
 				continue;
 			}

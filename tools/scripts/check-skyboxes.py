@@ -19,6 +19,25 @@ SCENES = ("desert", "tropical", "alpine", "city", "country")
 SHAPES = ("scen", "sce2", "sce3", "sce4")
 SCALE = 4
 SKY_RGB = bytes((93, 255, 255))
+RGB_CHANNELS = 3
+RGB_COMPONENT_MAX = 255
+PALETTE_COLOR_COUNT = 256
+PANORAMA_WIDTH = 1024
+DETAIL_CHANNEL_RANGE = 8
+DETAIL_REQUIRED_DENOMINATOR = 10
+PNG_SIGNATURE = b"\x89PNG\r\n\x1a\n"
+PNG_CHUNK_HEADER_SIZE = struct.calcsize(">I4s")
+PNG_CHECKSUM_SIZE = struct.calcsize(">I")
+PNG_CHUNK_OVERHEAD = PNG_CHUNK_HEADER_SIZE + PNG_CHECKSUM_SIZE
+PNG_IMAGE_HEADER_SIZE = struct.calcsize(">IIBBBBB")
+PNG_ANCILLARY_MASK = 0x20
+PNG_BIT_DEPTH = 8
+PNG_COLOR_RGB = 2
+PNG_COLOR_INDEXED = 3
+PNG_FILTER_SUB = 1
+PNG_FILTER_UP = 2
+PNG_FILTER_AVERAGE = 3
+PNG_FILTER_PAETH = 4
 Image = namedtuple("Image", "width height rgb indices palette")
 
 
@@ -38,28 +57,29 @@ def paeth(left, up, upper_left):
 def read_png(path):
     """Read only the opaque, non-interlaced eight-bit PNG formats in this asset set."""
     data = path.read_bytes()
-    require(data[:8] == b"\x89PNG\r\n\x1a\n", f"{path}: invalid PNG signature")
-    offset = 8
+    require(data[:len(PNG_SIGNATURE)] == PNG_SIGNATURE, f"{path}: invalid PNG signature")
+    offset = len(PNG_SIGNATURE)
     header = palette = None
     compressed = bytearray()
     ended = False
     idat_ended = False
     while offset < len(data):
-        require(offset + 12 <= len(data), f"{path}: truncated PNG chunk")
+        require(offset + PNG_CHUNK_OVERHEAD <= len(data), f"{path}: truncated PNG chunk")
         size, kind = struct.unpack_from(">I4s", data, offset)
-        end = offset + 12 + size
+        end = offset + PNG_CHUNK_OVERHEAD + size
         require(end <= len(data), f"{path}: truncated {kind!r} chunk")
-        payload = data[offset + 8:end - 4]
-        checksum = struct.unpack_from(">I", data, end - 4)[0]
+        payload = data[offset + PNG_CHUNK_HEADER_SIZE:end - PNG_CHECKSUM_SIZE]
+        checksum = struct.unpack_from(">I", data, end - PNG_CHECKSUM_SIZE)[0]
         require(checksum == zlib.crc32(kind + payload), f"{path}: corrupt {kind!r} checksum")
         require(header is not None or kind == b"IHDR", f"{path}: IHDR must be first")
         if compressed and kind != b"IDAT":
             idat_ended = True
         if kind == b"IHDR":
-            require(header is None and size == 13, f"{path}: invalid IHDR")
+            require(header is None and size == PNG_IMAGE_HEADER_SIZE, f"{path}: invalid IHDR")
             header = struct.unpack(">IIBBBBB", payload)
         elif kind == b"PLTE":
-            require(palette is None and not compressed and 0 < size <= 768 and size % 3 == 0,
+            require(palette is None and not compressed
+                    and 0 < size <= PALETTE_COLOR_COUNT * RGB_CHANNELS and size % RGB_CHANNELS == 0,
                     f"{path}: invalid palette")
             palette = payload
         elif kind == b"IDAT":
@@ -70,15 +90,16 @@ def read_png(path):
             ended = True
             break
         else:
-            require(kind != b"tRNS" and kind[0] & 32,
+            require(kind != b"tRNS" and kind[0] & PNG_ANCILLARY_MASK,
                     f"{path}: unsupported PNG chunk {kind!r}")
         offset = end
     require(ended and header and compressed, f"{path}: incomplete PNG")
     width, height, depth, color, compression, filtering, interlace = header
-    require(width > 0 and height > 0 and depth == 8 and color in (2, 3)
+    require(width > 0 and height > 0 and depth == PNG_BIT_DEPTH
+            and color in (PNG_COLOR_RGB, PNG_COLOR_INDEXED)
             and (compression, filtering, interlace) == (0, 0, 0),
             f"{path}: expected opaque, non-interlaced eight-bit RGB or indexed PNG")
-    channels = 3 if color == 2 else 1
+    channels = RGB_CHANNELS if color == PNG_COLOR_RGB else 1
     stride = width * channels
     inflater = zlib.decompressobj()
     scanlines = inflater.decompress(compressed) + inflater.flush()
@@ -89,29 +110,31 @@ def read_png(path):
     for y in range(height):
         start = y * (stride + 1)
         filter_type = scanlines[start]
-        require(filter_type <= 4, f"{path}: invalid PNG scanline filter")
+        require(filter_type <= PNG_FILTER_PAETH, f"{path}: invalid PNG scanline filter")
         row = bytearray(scanlines[start + 1:start + 1 + stride])
         for x in range(stride):
             left = row[x - channels] if x >= channels else 0
             up = previous[x]
             upper_left = previous[x - channels] if x >= channels else 0
-            if filter_type == 1:
+            if filter_type == PNG_FILTER_SUB:
                 prediction = left
-            elif filter_type == 2:
+            elif filter_type == PNG_FILTER_UP:
                 prediction = up
-            elif filter_type == 3:
+            elif filter_type == PNG_FILTER_AVERAGE:
                 prediction = (left + up) // 2
-            elif filter_type == 4:
+            elif filter_type == PNG_FILTER_PAETH:
                 prediction = paeth(left, up, upper_left)
             else:
                 prediction = 0
-            row[x] = (row[x] + prediction) & 255
+            row[x] = (row[x] + prediction) & RGB_COMPONENT_MAX
         pixels.extend(row)
         previous = row
-    indices = bytes(pixels) if color == 3 else None
+    indices = bytes(pixels) if color == PNG_COLOR_INDEXED else None
     if indices is not None:
-        require(palette and max(indices) < len(palette) // 3, f"{path}: invalid palette index")
-        pixels = b"".join(palette[index * 3:index * 3 + 3] for index in indices)
+        require(palette and max(indices) < len(palette) // RGB_CHANNELS,
+                f"{path}: invalid palette index")
+        pixels = b"".join(palette[index * RGB_CHANNELS:(index + 1) * RGB_CHANNELS]
+                          for index in indices)
     return Image(width, height, bytes(pixels), indices, palette)
 
 
@@ -131,12 +154,13 @@ def detail_blocks(image):
         for x in range(image.width // SCALE):
             block = bytearray()
             for row in range(SCALE):
-                start = ((y * SCALE + row) * image.width + x * SCALE) * 3
-                block.extend(image.rgb[start:start + SCALE * 3])
+                start = ((y * SCALE + row) * image.width + x * SCALE) * RGB_CHANNELS
+                block.extend(image.rgb[start:start + SCALE * RGB_CHANNELS])
             if block == sky_block:
                 continue
             total += 1
-            if any(max(block[channel::3]) - min(block[channel::3]) >= 8 for channel in range(3)):
+            if any(max(block[channel::RGB_CHANNELS]) - min(block[channel::RGB_CHANNELS])
+                   >= DETAIL_CHANNEL_RANGE for channel in range(RGB_CHANNELS)):
                 detailed += 1
     return detailed, total
 
@@ -164,10 +188,10 @@ def verify(directory):
             start_x = item["panorama_x"] * SCALE
             start_y = item["panorama_y"] * SCALE
             for row in range(image.height):
-                source = row * image.width * 3
-                target = ((start_y + row) * panorama.width + start_x) * 3
-                require(image.rgb[source:source + image.width * 3]
-                        == panorama.rgb[target:target + image.width * 3],
+                source = row * image.width * RGB_CHANNELS
+                target = ((start_y + row) * panorama.width + start_x) * RGB_CHANNELS
+                require(image.rgb[source:source + image.width * RGB_CHANNELS]
+                        == panorama.rgb[target:target + image.width * RGB_CHANNELS],
                         f"{name}: enhanced strip differs from its panorama placement")
             detailed, total = detail_blocks(image)
             # Retain the original scenery-area baseline so replacing most of a
@@ -178,11 +202,11 @@ def verify(directory):
             total = max(total, baseline)
             # At least 10% of scenery blocks must vary by 8/255 or more within
             # an original pixel. This rejects repeated pixels and trivial noise.
-            require(detailed * 10 >= total,
+            require(detailed * DETAIL_REQUIRED_DENOMINATOR >= total,
                     f"{name}: insufficient detail beyond nearest-neighbor enlargement "
                     f"({detailed}/{total} scenery blocks)")
             minimum_detail = min(minimum_detail, detailed / total)
-        require(x == scene["width"] == 1024,
+        require(x == scene["width"] == PANORAMA_WIDTH,
                 f"{scene['name']}: incorrect panorama width")
     require({path.name for path in directory.glob("*.png")} == expected_files,
             "Expected exactly 20 enhanced strips and five enhanced panoramas")

@@ -540,15 +540,17 @@ legacy_s16 update_wheel_suspension_fraction(struct CARSTATE *carstate, legacy_s1
 	if (fraction20 == 0) {
 		return carstate->car_suspension_deflection[wheel_index];
 	}
-	if (fraction20 > 65536UL) {
-		fraction20 = 65536UL;
+	if (fraction20 > PHANTOM_PHYSICS_ONE) {
+		fraction20 = PHANTOM_PHYSICS_ONE;
 	}
 	/* Contact distances are geometric constraints; only spring recovery and
 	 * target decay are rates. Scaling penetration would leave wheels in ground. */
 	legacy_s16 target_decay =
-		(legacy_s16)((SUSPENSION_TARGET_DECAY * fraction20 + 32768UL) / 65536UL);
+		(legacy_s16)((SUSPENSION_TARGET_DECAY * fraction20 + PHANTOM_PHYSICS_ONE / 2) /
+					 PHANTOM_PHYSICS_ONE);
 	legacy_s16 return_step =
-		(legacy_s16)((SUSPENSION_RETURN_STEP * fraction20 + 32768UL) / 65536UL);
+		(legacy_s16)((SUSPENSION_RETURN_STEP * fraction20 + PHANTOM_PHYSICS_ONE / 2) /
+					 PHANTOM_PHYSICS_ONE);
 	return update_wheel_suspension_step(carstate, contact_delta, wheel_index, target_decay,
 										return_step);
 }

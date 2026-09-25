@@ -33,24 +33,8 @@
 #define CAR_PHYSICS_TIRE_BOTTOM -6
 #define CAR_GROUND_OFFSET_CACHE_COUNT 2U
 #define CAR_GROUND_SPHERE_CAPACITY 255U
-#define CAR_MODEL_PRIMITIVE_HEADER_SIZE 2U
-#define CAR_MODEL_VISIBILITY_MASK_SIZE 4U
-#define CAR_MODEL_POLYGON_MAX_VERTICES 10U
-#define CAR_MODEL_WHEEL_RIM_VERTEX_COUNT 3U
-#define CAR_MODEL_WHEEL_FIRST_AXIS 1U
-#define CAR_MODEL_WHEEL_SECOND_AXIS 2U
 #define CAR_GROUND_SPHERE_HEIGHT_NUMERATOR 13U
 #define CAR_GROUND_SPHERE_HEIGHT_DENOMINATOR 32UL
-
-/* Resource primitive IDs differ from the queued RENDER_PRIMITIVE_* IDs. */
-enum CAR_MODEL_PRIMITIVE_TYPE {
-	CAR_MODEL_PRIMITIVE_EMPTY = 0,
-	CAR_MODEL_PRIMITIVE_POINT = 1,
-	CAR_MODEL_PRIMITIVE_LINE = 2,
-	CAR_MODEL_PRIMITIVE_SPHERE = 11,
-	CAR_MODEL_PRIMITIVE_WHEEL = 12,
-	CAR_MODEL_PRIMITIVE_TYPE_COUNT = 16
-};
 
 struct CAR_GROUND_SPHERE {
 	legacy_s16 center_y;
@@ -121,8 +105,8 @@ static void shape3d_car_ground_bottom(struct CAR_GROUND_BOUNDS *bounds, legacy_s
 
 static void shape3d_car_ground_bounds(const struct SHAPE3D *shape, struct CAR_GROUND_BOUNDS *bounds)
 {
-	static const legacy_u8 vertex_counts[CAR_MODEL_PRIMITIVE_TYPE_COUNT] = {
-		0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 2, 6, 3, 0, 0};
+	static const legacy_u8 vertex_counts[SHAPE3D_PRIMITIVE_TYPE_COUNT] = {0, 1, 2,	3, 4, 5, 6, 7,
+																		  8, 9, 10, 2, 6, 3, 0, 0};
 	memset(bounds, 0, sizeof(*bounds));
 	if (shape == 0 || shape->shape3d_vertex_bytes == 0 || shape->shape3d_primitives == 0) {
 		return;
@@ -130,21 +114,21 @@ static void shape3d_car_ground_bounds(const struct SHAPE3D *shape, struct CAR_GR
 	const legacy_u8 *primitive = shape->shape3d_primitives;
 	for (legacy_u16 index = 0; index < shape->shape3d_numprimitives; index++) {
 		legacy_u8 type = primitive[0];
-		if (type >= CAR_MODEL_PRIMITIVE_TYPE_COUNT) {
+		if (type >= SHAPE3D_PRIMITIVE_TYPE_COUNT) {
 			memset(bounds, 0, sizeof(*bounds));
 			return;
 		}
 		legacy_u8 count = vertex_counts[type];
 		const legacy_u8 *indices =
-			primitive + CAR_MODEL_PRIMITIVE_HEADER_SIZE + shape->shape3d_numpaints;
+			primitive + SHAPE3D_PRIMITIVE_HEADER_SIZE + shape->shape3d_numpaints;
 		primitive = indices + count;
-		if (type == CAR_MODEL_PRIMITIVE_EMPTY || type > CAR_MODEL_PRIMITIVE_WHEEL ||
+		if (type == SHAPE3D_PRIMITIVE_EMPTY || type > SHAPE3D_PRIMITIVE_WHEEL ||
 			(shape->shape3d_visibility_masks != 0 &&
 			 LEGACY_READ_U32_LE(shape->shape3d_visibility_masks +
-								index * CAR_MODEL_VISIBILITY_MASK_SIZE) == 0)) {
+								index * SHAPE3D_VISIBILITY_MASK_SIZE) == 0)) {
 			continue;
 		}
-		struct VECTOR vertices[CAR_MODEL_POLYGON_MAX_VERTICES];
+		struct VECTOR vertices[SHAPE3D_POLYGON_MAX_VERTICES];
 		for (legacy_u16 vertex = 0; vertex < count; vertex++) {
 			if (indices[vertex] >= shape->shape3d_numverts) {
 				memset(bounds, 0, sizeof(*bounds));
@@ -152,18 +136,18 @@ static void shape3d_car_ground_bounds(const struct SHAPE3D *shape, struct CAR_GR
 			}
 			shape3d_vertex_read(shape, indices[vertex], &vertices[vertex]);
 		}
-		if (type == CAR_MODEL_PRIMITIVE_WHEEL) {
+		if (type == SHAPE3D_PRIMITIVE_WHEEL) {
 			legacy_s32 radius = 0;
 			legacy_u16 has_rim = 0;
 			for (legacy_u16 rim = 0; rim < CAR_WHEEL_VERTEX_GROUP_SIZE;
-				 rim += CAR_MODEL_WHEEL_RIM_VERTEX_COUNT) {
-				if (!shape3d_car_has_area(&vertices[rim], CAR_MODEL_WHEEL_RIM_VERTEX_COUNT)) {
+				 rim += SHAPE3D_WHEEL_RIM_VERTEX_COUNT) {
+				if (!shape3d_car_has_area(&vertices[rim], SHAPE3D_WHEEL_RIM_VERTEX_COUNT)) {
 					continue;
 				}
 				legacy_s32 first_y =
-					(legacy_s32)vertices[rim + CAR_MODEL_WHEEL_FIRST_AXIS].y - vertices[rim].y;
+					(legacy_s32)vertices[rim + SHAPE3D_WHEEL_FIRST_AXIS].y - vertices[rim].y;
 				legacy_s32 second_y =
-					(legacy_s32)vertices[rim + CAR_MODEL_WHEEL_SECOND_AXIS].y - vertices[rim].y;
+					(legacy_s32)vertices[rim + SHAPE3D_WHEEL_SECOND_AXIS].y - vertices[rim].y;
 				legacy_s32 rim_radius = shape3d_car_extent(first_y, second_y, 0);
 				if (rim_radius > radius) {
 					radius = rim_radius;
@@ -177,7 +161,7 @@ static void shape3d_car_ground_bounds(const struct SHAPE3D *shape, struct CAR_GR
 										: vertices[CAR_WHEEL_CENTER_SAMPLE_OFFSET].y;
 				shape3d_car_ground_bottom(bounds, center - radius);
 			}
-		} else if (type == CAR_MODEL_PRIMITIVE_SPHERE) {
+		} else if (type == SHAPE3D_PRIMITIVE_SPHERE) {
 			legacy_u32 diameter =
 				(legacy_u32)shape3d_car_extent((legacy_s32)vertices[1].x - vertices[0].x,
 											   (legacy_s32)vertices[1].y - vertices[0].y,
@@ -192,7 +176,7 @@ static void shape3d_car_ground_bounds(const struct SHAPE3D *shape, struct CAR_GR
 			struct CAR_GROUND_SPHERE *sphere = &bounds->spheres[bounds->sphere_count++];
 			sphere->center_y = vertices[0].y;
 			sphere->diameter = diameter;
-		} else if (type == CAR_MODEL_PRIMITIVE_POINT || type == CAR_MODEL_PRIMITIVE_LINE ||
+		} else if (type == SHAPE3D_PRIMITIVE_POINT || type == SHAPE3D_PRIMITIVE_LINE ||
 				   shape3d_car_has_area(vertices, count)) {
 			for (legacy_u16 vertex = 0; vertex < count; vertex++) {
 				shape3d_car_ground_bottom(bounds, vertices[vertex].y);

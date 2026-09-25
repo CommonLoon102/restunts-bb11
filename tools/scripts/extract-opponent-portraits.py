@@ -19,6 +19,12 @@ OPPONENTS = (
     ("Skid Vicious", "skid-vicious", 34),
 )
 DIGIT_RECT = (66, 4, 6, 9)
+PORTRAIT_SIZE = (80, 83)
+DIGIT_PALETTE_INDEX = 39
+RGB_CHANNELS = 3
+SHAPE_GEOMETRY_FORMAT = "<HHhhHH"
+SHAPE_PLANE_FLAGS_OFFSET = struct.calcsize(SHAPE_GEOMETRY_FORMAT)
+SHAPE_HEADER_SIZE = SHAPE_PLANE_FLAGS_OFFSET + 4
 
 
 def digest(data):
@@ -26,7 +32,7 @@ def digest(data):
 
 
 def shape_metadata(data):
-    width, height, anchor_x, anchor_y, x, y = struct.unpack_from("<HHhhHH", data)
+    width, height, anchor_x, anchor_y, x, y = struct.unpack_from(SHAPE_GEOMETRY_FORMAT, data)
     return {
         "width": width,
         "height": height,
@@ -34,8 +40,8 @@ def shape_metadata(data):
         "anchor_y": anchor_y,
         "position_x": x,
         "position_y": y,
-        "plane_flags": list(data[12:16]),
-        "header_hex": data[:16].hex(),
+        "plane_flags": list(data[SHAPE_PLANE_FLAGS_OFFSET:SHAPE_HEADER_SIZE]),
+        "header_hex": data[:SHAPE_HEADER_SIZE].hex(),
         "shape_sha256": digest(data),
     }
 
@@ -52,10 +58,12 @@ def generate(repository, directory):
 
     packed_palette = (directory / "SDMAIN.PVS").read_bytes()
     palette_shape = resources(unpack(packed_palette))["!pal"]
-    if len(palette_shape) != 784:
+    if len(palette_shape) != SHAPE_HEADER_SIZE + helpers["VGA_PALETTE_SIZE"]:
         raise ValueError("Expected a 768-byte VGA palette after its 16-byte header")
-    palette_vga = palette_shape[16:]
-    palette_rgb = bytes((value & 63) * 255 // 63 for value in palette_vga)
+    palette_vga = palette_shape[SHAPE_HEADER_SIZE:]
+    vga_max = helpers["VGA_COMPONENT_MAX"]
+    palette_rgb = bytes((value & vga_max) * helpers["RGB_COMPONENT_MAX"] // vga_max
+                        for value in palette_vga)
     packed_source = (directory / "SDOSEL.PVS").read_bytes()
     unpacked_source = unpack(packed_source)
     shapes = resources(unpacked_source)
@@ -72,8 +80,9 @@ def generate(repository, directory):
         "photo_interior": {"x": 2, "y": 2, "width": 74, "height": 79},
         "white_border_palette_index": 15,
         "black_right_columns": [78, 79],
-        "digit_palette_index": 39,
-        "digit_rgb": list(palette_rgb[39 * 3:40 * 3]),
+        "digit_palette_index": DIGIT_PALETTE_INDEX,
+        "digit_rgb": list(palette_rgb[DIGIT_PALETTE_INDEX * RGB_CHANNELS:
+                                      (DIGIT_PALETTE_INDEX + 1) * RGB_CHANNELS]),
         "digit_search_rectangle": dict(zip(("x", "y", "width", "height"), DIGIT_RECT)),
         "opponents": [],
     }
@@ -81,14 +90,14 @@ def generate(repository, directory):
         shape_id = f"opp{number}"
         shape = shapes[shape_id]
         width, height, pixels = bitmap(shape)
-        if (width, height) != (80, 83):
+        if (width, height) != PORTRAIT_SIZE:
             raise ValueError(f"Unexpected dimensions for {shape_id}: {width}x{height}")
         filename = f"{shape_id}.png"
         outputs[filename] = indexed_png(width, height, pixels, palette_rgb)
         digit_pixels = [
             [x, y] for y in range(DIGIT_RECT[1], DIGIT_RECT[1] + DIGIT_RECT[3])
             for x in range(DIGIT_RECT[0], DIGIT_RECT[0] + DIGIT_RECT[2])
-            if pixels[y * width + x] == 39
+            if pixels[y * width + x] == DIGIT_PALETTE_INDEX
         ]
         manifest["opponents"].append({
             "number": number,

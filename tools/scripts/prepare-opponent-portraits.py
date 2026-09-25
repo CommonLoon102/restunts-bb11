@@ -16,8 +16,11 @@ from PIL import Image, __version__ as PILLOW_VERSION
 
 ROOT = Path(__file__).resolve().parents[2]
 # The 74 x 79 VGA-pixel photo interior has four samples per axis in SuperSight.
-OUTPUT_SIZE = (74 * 4, 79 * 4)
+PHOTO_SIZE = (74, 79)
+SCALE = 4
+OUTPUT_SIZE = tuple(value * SCALE for value in PHOTO_SIZE)
 PIXEL_SIZE = 2
+OPPONENT_COUNT = 6
 
 
 def digest(data):
@@ -31,10 +34,13 @@ def generate(repository, game_directory, source_directory):
     )["unpack"]
     packed_palette = (game_directory / "SDMAIN.PVS").read_bytes()
     palette_shape = helpers["resource_shapes"](unpack(packed_palette))["!pal"]
-    if len(palette_shape) != 784:
+    header_size = helpers["SHAPE_HEADER_SIZE"]
+    if len(palette_shape) != header_size + helpers["VGA_PALETTE_SIZE"]:
         raise ValueError("Expected a 768-byte VGA palette after its 16-byte header")
-    palette_vga = palette_shape[16:]
-    palette_rgb = bytes((value & 63) * 255 // 63 for value in palette_vga)
+    palette_vga = palette_shape[header_size:]
+    vga_max = helpers["VGA_COMPONENT_MAX"]
+    palette_rgb = bytes((value & vga_max) * helpers["RGB_COMPONENT_MAX"] // vga_max
+                        for value in palette_vga)
     palette_image = Image.new("P", (1, 1))
     palette_image.putpalette(palette_rgb)
     block_size = tuple(value // PIXEL_SIZE for value in OUTPUT_SIZE)
@@ -58,7 +64,7 @@ def generate(repository, game_directory, source_directory):
         "images": [],
     }
     outputs = {}
-    for number in range(1, 7):
+    for number in range(1, OPPONENT_COUNT + 1):
         filename = f"opp{number}.png"
         source = source_directory / filename
         with Image.open(source) as original:

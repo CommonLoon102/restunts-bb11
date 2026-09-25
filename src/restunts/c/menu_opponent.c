@@ -15,6 +15,7 @@
 #include "externs.h"
 #include "keyboard.h"
 #include "ghost.h"
+#include "opponent.h"
 #ifdef RESTUNTS_SDL3
 #include "opponent_portrait.h"
 #include "shape2d_internal.h"
@@ -22,8 +23,6 @@
 
 #define OPPONENT_RESOURCE_FILE_INDEX 4
 #define OPPONENT_NONE 0U
-#define OPPONENT_FIRST 1U
-#define OPPONENT_LAST 6U
 #define OPPONENT_AFTER_LAST 7U
 #define OPPONENT_ID_DIGIT_INDEX 3U
 #define OPPONENT_MENU_BUTTON_COUNT 5U

@@ -46,6 +46,7 @@
 #define CAR_MENU_PROJECTION_X_SCALE 36
 #define CAR_MENU_PROJECTION_Y_SCALE 17
 #define CAR_MENU_PROJECTION_HEIGHT 100
+#define CAR_MENU_MODEL_SCALE 20
 #define CAR_MENU_TRANSFORM_DISTANCE 30000U
 #define CAR_MENU_CLIPPED_TRANSFORM_FLAG 8U
 #define CAR_MENU_BACKGROUND_Y 103
@@ -362,7 +363,7 @@ static void car_menu_prepare_preview(struct CAR_MENU_STATE *menu)
 		select_cliprect_rotate(0, car_position_angle, 0, &carmenu_cliprect, 0);
 #ifdef RESTUNTS_SDL3
 		/* The car0 showroom model is authored at twenty times the racing scale. */
-		shape3d_hires_set_model_scale(20);
+		shape3d_hires_set_model_scale(CAR_MENU_MODEL_SCALE);
 #endif
 		if ((legacy_s8)(legacy_u8)*menu->material >=
 			(legacy_s8)(legacy_u8)game3dshapes[PLAYER_CAR_LOW_SHAPE].shape3d_numpaints) {

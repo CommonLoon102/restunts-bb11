@@ -9,6 +9,8 @@
 #include "game_input.h"
 #include "crash_state.h"
 
+#define PHANTOM_MAXIMUM_TICK_COUNT 2U
+
 extern struct MATRIX wheel_heading_rotation;
 extern struct MATRIX plane_heading_rotation;
 extern legacy_s16 cached_plane_heading;
@@ -91,7 +93,7 @@ static void phantom_grip(struct CARSTATE *car, struct SIMD *simd, legacy_s16 beh
 	struct CARSTATE before = *car;
 	update_grip(car, simd, behavior);
 	if (framespersec == GAME_FRAME_RATE_LOW) {
-		fraction20 /= 2;
+		fraction20 /= GAME_FRAME_RATE_NORMAL / GAME_FRAME_RATE_LOW;
 	}
 	/* Grip's contact classification and wheel direction are instantaneous.
 	 * Its drag, heading decay and slide response evolve over the short step. */
@@ -118,7 +120,7 @@ static void phantom_car_step(struct PHANTOM_PHYSICS *phantom, legacy_s16 index,
 	}
 	if (car->car_crashBmpFlag != CRASH_EVENT_NONE) {
 		input = INPUT_BRAKE_FLAG;
-		if (car->car_actual_speed == 0 && car->car_rev_speed == 0 &&
+		if (car->car_actual_speed == CAR_SPEED_STOPPED && car->car_rev_speed == CAR_SPEED_STOPPED &&
 			car->car_wheel_vertical_speed[0] == 0 && car->car_wheel_vertical_speed[1] == 0 &&
 			car->car_wheel_vertical_speed[2] == 0 && car->car_wheel_vertical_speed[3] == 0) {
 			return;
@@ -148,8 +150,8 @@ void phantom_physics_advance(struct PHANTOM_PHYSICS *phantom, legacy_u32 elapsed
 {
 	/* At most the next pair of 10 Hz ticks (fast replay). A delayed renderer
 	 * must never run an unbounded speculative simulation. */
-	if (elapsed20 > 4 * PHANTOM_PHYSICS_ONE) {
-		elapsed20 = 4 * PHANTOM_PHYSICS_ONE;
+	if (elapsed20 > PHANTOM_MAXIMUM_TICK_COUNT * PHANTOM_PHYSICS_LOW_RATE_TICK) {
+		elapsed20 = PHANTOM_MAXIMUM_TICK_COUNT * PHANTOM_PHYSICS_LOW_RATE_TICK;
 	}
 	if (elapsed20 <= phantom->elapsed20) {
 		return;

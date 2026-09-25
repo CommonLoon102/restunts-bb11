@@ -150,19 +150,17 @@ static void test_copies_overlays_and_theme_changes(void)
 	assert(pixels()[0] == 0);
 }
 
-#define PANORAMA_IMAGE_COUNT 4
-
 legacy_u16 projection_center_x = 160;
 legacy_u16 projection_center_y = 100;
 legacy_u16 projection_focal_length_x = 160;
 legacy_u16 projection_focal_length_y = 160;
 
-static const legacy_s32 panorama_widths[PANORAMA_IMAGE_COUNT] = {320, 192, 320, 192};
-static const legacy_s32 panorama_heights[PANORAMA_IMAGE_COUNT] = {24, 32, 40, 48};
-static const char *panorama_paths[PANORAMA_IMAGE_COUNT] = {
+static const legacy_s32 panorama_widths[SKYBOX_IMAGE_COUNT] = {320, 192, 320, 192};
+static const legacy_s32 panorama_heights[SKYBOX_IMAGE_COUNT] = {24, 32, 40, 48};
+static const char *panorama_paths[SKYBOX_IMAGE_COUNT] = {
 	"skyboxes/city-scen.png", "skyboxes/city-sce2.png", "skyboxes/city-sce3.png",
 	"skyboxes/city-sce4.png"};
-static struct SHAPE2D *panorama_shapes[PANORAMA_IMAGE_COUNT];
+static struct SHAPE2D *panorama_shapes[SKYBOX_IMAGE_COUNT];
 static struct SKYBOX scenery = {{24, 32, 40, 48}, 24, 48, 1, 2, 4};
 
 static legacy_u8 panorama_color(legacy_s32 image, legacy_s32 x, legacy_s32 y)
@@ -177,7 +175,7 @@ static legacy_u8 original_color(legacy_s32 image, legacy_s32 x, legacy_s32 y)
 
 static void create_panorama_fixtures(void)
 {
-	for (legacy_s32 image = 0; image < PANORAMA_IMAGE_COUNT; image++) {
+	for (legacy_s32 image = 0; image < SKYBOX_IMAGE_COUNT; image++) {
 		legacy_s32 width = panorama_widths[image];
 		legacy_s32 height = panorama_heights[image];
 		struct SHAPE2D *shape = calloc(1, sizeof(*shape) + width * height);
@@ -206,7 +204,7 @@ static void create_panorama_fixtures(void)
 
 static void destroy_panorama_fixtures(void)
 {
-	for (legacy_s32 image = 0; image < PANORAMA_IMAGE_COUNT; image++) {
+	for (legacy_s32 image = 0; image < SKYBOX_IMAGE_COUNT; image++) {
 		assert(remove(panorama_paths[image]) == 0);
 		free(panorama_shapes[image]);
 	}
