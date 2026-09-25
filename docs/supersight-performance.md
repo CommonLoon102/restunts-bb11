@@ -187,9 +187,11 @@ Two workers reduced elapsed rendering/composition time by 30.7% in the cockpit
 and 32.5% externally, with modestly higher total CPU use. Four workers did not
 improve both views. This lower-contention run reverses earlier worker findings;
 compare configurations within this run, not its absolute times with earlier
-sessions on the VM. The shipped serial/affinity defaults remain unchanged:
-this three-CPU, headless measurement does not cover other machines or the
-interactive game's display/audio scheduling.
+sessions on the VM. This three-CPU, headless measurement does not cover other
+machines or the interactive game's display/audio scheduling. Following these
+measurements, CPU pinning was disabled by default at the user's request; zero
+background render workers and the priority policy remain the defaults. Explicit
+`auto` or numeric affinity overrides still enable pinning.
 
 To try the measured worker configuration with a normal unrestricted launch
 affinity, use the existing startup overrides (adjust the executable path):

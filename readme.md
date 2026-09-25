@@ -146,14 +146,16 @@ follow confirmed gameplay events. Interpolated state never enters replay data;
 toggling F12 during a replay does not change its simulated result. Seeking,
 pausing, rewinding, and camera changes reset interpolation history.
 
-On Windows and Linux, SuperSight draws serially by default to avoid worker
-synchronization overhead. The interactive game also pins itself to one allowed
-logical CPU and requests above-normal priority before initializing SDL, so new
-threads inherit the settings. Automatic affinity keeps the CPU selected by the
-OS at startup when it is allowed, otherwise it selects the first allowed CPU.
-It stays on that CPU for this run; a later launch can select a different one.
-Existing affinity restrictions are respected, and stronger inherited priority
-is preserved. DOS and dump tools do not change affinity or priority.
+On Windows and Linux, SuperSight draws serially by default with zero background
+render workers. The interactive game leaves CPU affinity unchanged, allowing
+the OS to schedule threads across the allowed CPUs. It requests above-normal
+priority before initializing SDL, and preserves stronger inherited priority.
+DOS and dump tools do not change affinity or priority.
+
+CPU pinning is optional. An explicit `auto` affinity setting keeps the CPU selected
+by the OS at startup when it is allowed, otherwise it selects the first allowed
+CPU. A numeric setting selects that allowed CPU. Both pin the process for the
+run and are inherited by newly created threads.
 
 Windows uses `ABOVE_NORMAL_PRIORITY_CLASS`; Linux requests nice `-5` within the
 normal scheduler. Linux usually needs an administrator-configured `RLIMIT_NICE`
@@ -168,12 +170,12 @@ the renderer initializes its worker pool):
 
 | Variable | Default | Overrides |
 | --- | --- | --- |
-| `RESTUNTS_CPU_AFFINITY` | `auto` | `off` keeps inherited affinity; a zero-based logical CPU number selects an allowed CPU. Windows numbers are within the current processor group. |
+| `RESTUNTS_CPU_AFFINITY` | `off` | `auto` pins to an automatically selected allowed CPU; a zero-based logical CPU number selects an allowed CPU. Windows numbers are within the current processor group. |
 | `RESTUNTS_HIGH_PRIORITY` | `1` | `0` keeps inherited priority. |
 | `RESTUNTS_RENDER_WORKERS` | `0` | `1` through `7` selects background workers; `auto` uses detected logical CPUs minus one, capped at seven. |
 
-Disable pinning when comparing parallel rendering, since otherwise the workers
-share the same logical CPU. For example, on Linux:
+Compare parallel rendering with affinity set to `off`, so workers can use all
+allowed CPUs. For example, on Linux:
 
 ```sh
 RESTUNTS_CPU_AFFINITY=off RESTUNTS_HIGH_PRIORITY=0 RESTUNTS_RENDER_WORKERS=auto \

@@ -227,17 +227,24 @@ static void reset_settings(void)
 
 static void test_affinity_selection(void)
 {
-	const legacy_char *automatic[] = {NULL, "", "auto"};
-	for (legacy_u32 index = 0; index < sizeof(automatic) / sizeof(automatic[0]); index++) {
+	const legacy_char *unpinned[] = {NULL, "", "off"};
+	for (legacy_u32 index = 0; index < sizeof(unpinned) / sizeof(unpinned[0]); index++) {
 		reset_settings();
-		affinity_setting = automatic[index];
-		priority_setting = "0";
+		affinity_setting = unpinned[index];
 		sdl3_configure_process();
-		assert(affinity_updates == 1 && selected_cpu == TEST_CURRENT_CPU);
-		assert(priority_queries == 0);
+		assert(affinity_queries == 0 && affinity_updates == 0 && selected_cpu == TEST_CPU_UNSET);
+		assert(priority_queries == 1 && priority_updates == 1 && diagnostic_count == 1);
 	}
 
 	reset_settings();
+	affinity_setting = "auto";
+	priority_setting = "0";
+	sdl3_configure_process();
+	assert(affinity_updates == 1 && selected_cpu == TEST_CURRENT_CPU);
+	assert(priority_queries == 0);
+
+	reset_settings();
+	affinity_setting = "auto";
 	current_cpu = TEST_UNAVAILABLE_CPU;
 	sdl3_configure_process();
 	assert(affinity_updates == 1 && selected_cpu == TEST_FIRST_CPU);
@@ -250,6 +257,7 @@ static void test_affinity_selection(void)
 	assert(affinity_updates == 1 && selected_cpu == TEST_FIRST_CPU);
 
 	reset_settings();
+	affinity_setting = "auto";
 	allowed_count = 0;
 	sdl3_configure_process();
 	assert(affinity_updates == 0 && priority_updates == 1);
@@ -332,21 +340,25 @@ static void test_priority_selection(void)
 static void test_independent_failures(void)
 {
 	reset_settings();
+	affinity_setting = "auto";
 	affinity_query_error = 1;
 	sdl3_configure_process();
 	assert(affinity_updates == 0 && priority_updates == 1);
 
 	reset_settings();
+	affinity_setting = "auto";
 	affinity_update_error = 1;
 	sdl3_configure_process();
 	assert(affinity_updates == 1 && priority_updates == 1);
 
 	reset_settings();
+	affinity_setting = "auto";
 	priority_query_error = 1;
 	sdl3_configure_process();
 	assert(affinity_updates == 1 && priority_queries == 1 && priority_updates == 0);
 
 	reset_settings();
+	affinity_setting = "auto";
 	priority_update_error = 1;
 	sdl3_configure_process();
 	assert(affinity_updates == 1 && priority_updates == 1);
@@ -355,6 +367,7 @@ static void test_independent_failures(void)
 static void test_platform_boundaries(void)
 {
 	reset_settings();
+	affinity_setting = "auto";
 #if defined(_WIN32)
 	/* Exercise a pointer-sized shift, including bit 63 in a 64-bit build. */
 	current_cpu = (legacy_s32)(sizeof(DWORD_PTR) * CHAR_BIT) - 1;
@@ -369,6 +382,7 @@ static void test_platform_boundaries(void)
 #if !defined(_WIN32)
 	assert(affinity_queries > 1);
 	reset_settings();
+	affinity_setting = "auto";
 	current_cpu = TEST_CPU_UNSET;
 	sdl3_configure_process();
 	assert(selected_cpu == TEST_FIRST_CPU);
