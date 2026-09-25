@@ -288,8 +288,15 @@ void sdl3_video_present(void)
 	const legacy_u8 *legacy_pixels = dos_memory_make_pointer(VGA_MEMORY_SEGMENT, 0);
 	legacy_s32 width;
 	legacy_s32 height;
-	const legacy_u8 *pixels = hires_framebuffer(legacy_pixels, &width, &height);
 	const legacy_u32 *argb = hires_framebuffer_argb(legacy_pixels, palette_pixels);
+	const legacy_u8 *pixels = NULL;
+	if (argb != NULL) {
+		/* ARGB composition already expands every indexed sample. */
+		width = HIRES_WIDTH;
+		height = HIRES_HEIGHT;
+	} else {
+		pixels = hires_framebuffer(legacy_pixels, &width, &height);
+	}
 	if (surface_output) {
 		present_surface(pixels, argb, width, height);
 	} else {

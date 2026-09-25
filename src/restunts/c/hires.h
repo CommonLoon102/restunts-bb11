@@ -6,6 +6,14 @@
 #define HIRES_SCALE 4
 #define HIRES_WIDTH 1280
 #define HIRES_HEIGHT 800
+#define HIRES_SAMPLE_CENTER_OFFSET 0.5
+#define HIRES_DEPTH_FAMILY_NONE 0U
+/* Legacy paint patterns contain two byte-wide rows, most significant bit first. */
+#define HIRES_PATTERN_WIDTH LEGACY_BYTE_BITS
+#define HIRES_PATTERN_HEIGHT LEGACY_WORD_BYTES
+#define HIRES_PATTERN_COLUMN_MASK ((legacy_s32)HIRES_PATTERN_WIDTH - 1)
+#define HIRES_PATTERN_ROW_MASK ((legacy_s32)HIRES_PATTERN_HEIGHT - 1)
+enum HIRES_PAINT_MODE { HIRES_PAINT_SOLID = 0, HIRES_PAINT_PATTERN = 1, HIRES_PAINT_ALTERNATE = 2 };
 
 struct SPRITE;
 struct HIRES_SURFACE;
@@ -50,6 +58,12 @@ legacy_s32 hires_raster_depth_test(struct HIRES_RASTER_CONTEXT *context, legacy_
 								   legacy_f64 inverse_z, legacy_u32 family, legacy_s32 mode);
 void hires_raster_pixel(struct HIRES_RASTER_CONTEXT *context, legacy_s32 x, legacy_s32 y,
 						legacy_u8 color);
+/* Draw an exclusive-right scanline with the same sequential depth interpolation
+ * and paint ordering as the per-pixel APIs. The context owns complete cells. */
+void hires_raster_span(struct HIRES_RASTER_CONTEXT *context, legacy_s32 left, legacy_s32 right,
+					   legacy_s32 y, legacy_f64 inverse_z, legacy_f64 depth_step, legacy_u32 family,
+					   legacy_s32 depth_mode, legacy_u16 color, legacy_u16 alternate,
+					   legacy_u16 pattern, legacy_s32 paint_mode, legacy_s32 depth_test);
 void hires_raster_finish(const struct HIRES_RASTER_TARGET *target, legacy_u32 cleared_argb_cells);
 /* Optional full-color artwork uses the same clipping and sprite-copy lifetime.
  * Allocation failure leaves the indexed fallback intact. */
@@ -62,6 +76,8 @@ const legacy_u32 *hires_framebuffer_argb(const legacy_u8 *legacy, const legacy_u
 void hires_pixel(legacy_s32 x, legacy_s32 y, legacy_u8 color);
 /* Fill all companion samples at logical 320x200 coordinates without changing the legacy byte. */
 void hires_fill_pixel(legacy_s32 x, legacy_s32 y, legacy_u8 color);
+/* Copy sixteen row-major samples into one logical cell, retiring its ARGB overlay. */
+void hires_write_pixel(legacy_s32 x, legacy_s32 y, const legacy_u8 *samples);
 void hires_write(const legacy_u8 *base, legacy_u16 offset, legacy_u8 color);
 void hires_raster(const legacy_u8 *destination, legacy_u16 destination_offset,
 				  const legacy_u8 *source, legacy_u16 source_offset, legacy_u16 count,

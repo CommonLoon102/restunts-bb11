@@ -336,6 +336,75 @@ static void test_banked_roads_and_corkscrew(void)
 	}
 }
 
+enum {
+	OBLIQUE_NORMAL_X = 3,
+	OBLIQUE_NORMAL_Y = 4,
+	OBLIQUE_NORMAL_LENGTH = 5,
+	OBLIQUE_MATRIX_SCALE = 1000,
+	OBLIQUE_TEXEL_DENOMINATOR = 2 * OBLIQUE_NORMAL_LENGTH,
+	OBLIQUE_CLIP_LEFT = 9,
+	OBLIQUE_CLIP_RIGHT_MARGIN = 13,
+	OBLIQUE_CLIP_TOP = 7,
+	OBLIQUE_CLIP_BOTTOM_MARGIN = 19,
+	OBLIQUE_BACKGROUND_COLOR = 3,
+	OBLIQUE_ORIGINAL_THEME = 0,
+	OBLIQUE_ENHANCED_THEME = 3,
+	OBLIQUE_FORWARD_DIRECTION = 1,
+	OBLIQUE_CAMERA_ALTITUDE = 0,
+	OBLIQUE_FULL_DETAIL = 0,
+	OBLIQUE_ALL_ORIGINAL_MASK = (1U << SKYBOX_IMAGE_COUNT) - 1
+};
+
+/* The 3:4 normal is a 3/5, 4/5 rotation after normalization. Computing
+ * its texels in tenths gives an independent integer oracle; odd numerators
+ * keep every sample away from floating-point texel boundaries. */
+static legacy_s32 floor_oblique_coordinate(legacy_s32 value)
+{
+	return value >= 0 ? value / OBLIQUE_TEXEL_DENOMINATOR
+					  : (value - (OBLIQUE_TEXEL_DENOMINATOR - 1)) / OBLIQUE_TEXEL_DENOMINATOR;
+}
+
+static void test_oblique_texels_and_original_fallback(void)
+{
+	struct MATRIX rotation = {0};
+	rotation.m._12 = OBLIQUE_NORMAL_X * OBLIQUE_MATRIX_SCALE;
+	rotation.m._22 = OBLIQUE_NORMAL_Y * OBLIQUE_MATRIX_SCALE;
+	rotation.m._33 = OBLIQUE_NORMAL_LENGTH * OBLIQUE_MATRIX_SCALE;
+	for (legacy_s32 original = 0; original <= 1; original++) {
+		reset_target();
+		target.sprite_raster_left = OBLIQUE_CLIP_LEFT;
+		target.sprite_raster_right = SKYBOX_SCREEN_WIDTH - OBLIQUE_CLIP_RIGHT_MARGIN;
+		target.sprite_top = OBLIQUE_CLIP_TOP;
+		target.sprite_bottom = SKYBOX_SCREEN_BOTTOM - OBLIQUE_CLIP_BOTTOM_MARGIN;
+		assert(skybox_hires_render(&target, &scenery, panorama_shapes,
+								   original ? OBLIQUE_ORIGINAL_THEME : OBLIQUE_ENHANCED_THEME,
+								   &rotation, OBLIQUE_FORWARD_DIRECTION, ANGLE_HALF_TURN,
+								   OBLIQUE_CAMERA_ALTITUDE, OBLIQUE_FULL_DETAIL));
+		const legacy_u8 *output = pixels();
+		for (legacy_s32 y = 0; y < HIRES_HEIGHT; y++) {
+			for (legacy_s32 x = 0; x < HIRES_WIDTH; x++) {
+				legacy_u8 expected = OBLIQUE_BACKGROUND_COLOR;
+				if (x >= target.sprite_raster_left * HIRES_SCALE &&
+					x < target.sprite_raster_right * HIRES_SCALE &&
+					y >= target.sprite_top * HIRES_SCALE &&
+					y < target.sprite_bottom * HIRES_SCALE) {
+					legacy_s32 doubled_x = 2 * x + 1 - HIRES_WIDTH;
+					legacy_s32 doubled_y = 2 * y + 1 - HIRES_HEIGHT;
+					legacy_s32 u = floor_oblique_coordinate(
+						projection_center_x * HIRES_SCALE * OBLIQUE_TEXEL_DENOMINATOR +
+						OBLIQUE_NORMAL_Y * doubled_x + OBLIQUE_NORMAL_X * doubled_y);
+					legacy_s32 band_y = floor_oblique_coordinate(OBLIQUE_NORMAL_Y * doubled_y -
+																 OBLIQUE_NORMAL_X * doubled_x);
+					expected = expected_panorama(
+						u, band_y, original ? OBLIQUE_ALL_ORIGINAL_MASK : 0, OBLIQUE_FULL_DETAIL);
+				}
+				assert(output[y * HIRES_WIDTH + x] == expected);
+			}
+		}
+		assert_legacy_unchanged();
+	}
+}
+
 static void test_pitch_poles_and_inverted_altitude(void)
 {
 	for (legacy_s16 direction = -1; direction <= 1; direction += 2) {
@@ -477,6 +546,7 @@ int main(void)
 	test_fallback_and_toggle();
 	test_cardinal_rotations_and_wrap();
 	test_banked_roads_and_corkscrew();
+	test_oblique_texels_and_original_fallback();
 	test_pitch_poles_and_inverted_altitude();
 	test_anisotropic_projection();
 	test_oriented_clipping_fallback_and_toggle();

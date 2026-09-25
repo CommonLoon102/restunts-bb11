@@ -581,11 +581,12 @@ static void paint_pixel(legacy_s32 x, legacy_s32 y, legacy_f64 inverse_z,
 		return;
 	}
 	legacy_u16 color = paint->color;
-	if (paint->mode != 0) {
-		legacy_u32 bit = ((y & 1) == 0 ? 8U : 0U) + 7U - (x & 7);
+	if (paint->mode != HIRES_PAINT_SOLID) {
+		legacy_u32 bit = ((y & HIRES_PATTERN_ROW_MASK) == 0 ? HIRES_PATTERN_WIDTH : 0U) +
+						 (HIRES_PATTERN_WIDTH - 1U) - (x & HIRES_PATTERN_COLUMN_MASK);
 		if ((paint->pattern & (1U << bit)) != 0) {
-			color = paint->mode == 2 ? paint->alternate : paint->color;
-		} else if (paint->mode != 2) {
+			color = paint->mode == HIRES_PAINT_ALTERNATE ? paint->alternate : paint->color;
+		} else if (paint->mode != HIRES_PAINT_ALTERNATE) {
 			return;
 		}
 	}
@@ -808,9 +809,15 @@ static void fill_polygon(const struct SHAPE3D_HIRES_POINT *points, legacy_u32 co
 				last->x >= HIRES_WIDTH ? HIRES_WIDTH : ceil_coordinate(last->x - 0.5);
 			legacy_f64 depth_step = (last->inverse_z - first->inverse_z) / (last->x - first->x);
 			legacy_f64 inverse_z = first->inverse_z + (left + 0.5 - first->x) * depth_step;
-			for (legacy_s32 x = left; x < right; x++) {
-				paint_pixel(x, y, inverse_z, paint);
-				inverse_z += depth_step;
+			if (paint->context != NULL) {
+				hires_raster_span(paint->context, left, right, y, inverse_z, depth_step,
+								  paint->family, paint->depth_mode, paint->color, paint->alternate,
+								  paint->pattern, paint->mode, paint->depth_test);
+			} else {
+				for (legacy_s32 x = left; x < right; x++) {
+					paint_pixel(x, y, inverse_z, paint);
+					inverse_z += depth_step;
+				}
 			}
 		}
 	}
@@ -978,7 +985,7 @@ static void render_primitive(legacy_u32 index, legacy_u8 type, legacy_u16 color,
 								ordered ? primitive->shape + 1 : primitive->family,
 								ordered && !primitive->attached ? HIRES_DEPTH_ORDERED
 																: primitive->attached};
-	if (pattern_type == 2) {
+	if (pattern_type == HIRES_PAINT_ALTERNATE) {
 		/* The legacy two-color helper receives the secondary material first;
 		 * set pattern bits still select the primary material color. */
 		paint.color = second_color;
@@ -988,7 +995,7 @@ static void render_primitive(legacy_u32 index, legacy_u8 type, legacy_u16 color,
 		type &= ~RENDER_PRIMITIVE_GHOST_FLAG;
 		paint.color = 0;
 		paint.pattern = PRERENDER_BLACK_GRILLE_PATTERN;
-		paint.mode = 1;
+		paint.mode = HIRES_PAINT_PATTERN;
 		second_color = 0;
 		third_color = 0;
 	}
@@ -1094,7 +1101,7 @@ legacy_s32 shape3d_hires_batch_end(void)
 {
 	batching = 0;
 	struct HIRES_BATCH batch;
-	if (command_area >= HIRES_PARALLEL_MIN_AREA && render_workers_count() != 0) {
+	if (command_count != 0) {
 		/* Allocate and clear depth on the caller before any workers can read it. */
 		if (!rendered_depth_valid || rendered_generation != hires_generation()) {
 			hires_depth_begin(0, HIRES_WIDTH, 0, HIRES_HEIGHT);
@@ -1102,19 +1109,30 @@ legacy_s32 shape3d_hires_batch_end(void)
 			rendered_generation = hires_generation();
 		}
 		if (hires_raster_prepare(&batch.target)) {
-			for (legacy_s32 index = 0; index < HIRES_BAND_COUNT; index++) {
-				batch.bands[index] = (struct HIRES_RASTER_CONTEXT){
-					&batch.target, index * HIRES_BAND_HEIGHT, (index + 1) * HIRES_BAND_HEIGHT, 0};
-				if (batch.bands[index].top < batch.target.top) {
-					batch.bands[index].top = batch.target.top;
+			legacy_s32 bands = 1;
+			legacy_s32 workers = 0;
+			if (command_area >= HIRES_PARALLEL_MIN_AREA && render_workers_count() != 0) {
+				bands = HIRES_BAND_COUNT;
+				for (legacy_s32 index = 0; index < bands; index++) {
+					batch.bands[index] =
+						(struct HIRES_RASTER_CONTEXT){&batch.target, index * HIRES_BAND_HEIGHT,
+													  (index + 1) * HIRES_BAND_HEIGHT, 0};
+					if (batch.bands[index].top < batch.target.top) {
+						batch.bands[index].top = batch.target.top;
+					}
+					if (batch.bands[index].bottom > batch.target.bottom) {
+						batch.bands[index].bottom = batch.target.bottom;
+					}
 				}
-				if (batch.bands[index].bottom > batch.target.bottom) {
-					batch.bands[index].bottom = batch.target.bottom;
-				}
+				workers = render_workers_run(bands, render_band, &batch);
+			} else {
+				/* Serial batches use the same clipped span path without scheduling. */
+				batch.bands[0] = (struct HIRES_RASTER_CONTEXT){&batch.target, batch.target.top,
+															   batch.target.bottom, 0};
+				render_band(&batch, 0);
 			}
-			legacy_s32 workers = render_workers_run(HIRES_BAND_COUNT, render_band, &batch);
 			legacy_u32 cleared = 0;
-			for (legacy_s32 index = 0; index < HIRES_BAND_COUNT; index++) {
+			for (legacy_s32 index = 0; index < bands; index++) {
 				cleared += batch.bands[index].cleared_argb_cells;
 			}
 			hires_raster_finish(&batch.target, cleared);
