@@ -70,12 +70,84 @@ minimum mcb free=1
 ### SuperSight and FPS display
 
 Press **F12** while driving or viewing a replay to toggle SuperSight. In SDL3
-builds (Windows, Linux, and 32-bit DOS), it considers the entire 30 x 30 track
-and renders all geometry within the camera's view, with no distance cutoff.
-Detailed models remain enabled across the track, and rendering buffers grow
-to fit crowded scenes instead of dropping distant tiles. The graphics menu's
-scenery setting still applies. Switching SuperSight off restores the original
-23-tile draw distance, detail policy, and rendering limits.
+builds (Windows, Linux, and 32-bit DOS), it starts with the entire 30 x 30 track,
+detailed models, and 1280x800 internal rendering. Driving and replay rendering
+adapt to sustained CPU load to target 60 FPS, using these stages in order:
+
+| Stage | Visible area and geometry | Internal rendering |
+| --- | --- | --- |
+| 0 | Full track, full geometry | 1280x800 |
+| 1 | Large camera mask below | 1280x800 |
+| 2 | Large camera mask | 640x400 |
+| 3 | Large camera mask | 320x200 |
+| 4 | Small camera mask below; minimum quality | 320x200 |
+
+The masks below face north. `C` is the active camera tile, `H` selects full
+geometry, `L` selects available low geometry, and `.` excludes the tile. A
+missing low model falls back to its full model. Both masks follow the active
+camera and rotate with its viewing direction, including diagonal headings.
+
+```text
+Large mask    Small mask
+..LLLLL..     LLLLL
+.LLLLLLL.     LLLLL
+.LLLLLLL.     LHHHL
+LLHHHHHLL     HHHHH
+LLHHHHHLL     .HCH.
+LLHHHHHLL
+LLHHHHHLL
+.LLHHHLL.
+..LHHHL..
+...HCH...
+```
+
+Pressing **F12** toggles **Auto** and **Off**. Pressing it while a locked preset
+is active turns SuperSight off; the next F12 selects Auto. **Shift+F12** enables
+SuperSight with **Full**, then cycles through these locked presets:
+
+| Preset | Stage | View | Internal resolution |
+| --- | ---: | --- | --- |
+| Full | 0 | Full SuperSight | 1280x800 |
+| High | 1 | Large mask | 1280x800 |
+| Medium | 2 | Large mask | 640x400 |
+| Low | 3 | Large mask | 320x200 |
+
+Shift+F12 after Low returns to Full. From Off or Auto, Shift+F12 starts at
+Full. Locked presets remain selected across race/replay resets and do not
+automatically reduce or restore quality. The small-mask stage is available only
+in Auto. Each F12 or Shift+F12 press displays `SuperSight: <name>` for two seconds
+below the FPS line, even when F11 is disabled.
+
+To start with a locked preset, pass exactly one of `ss:full`, `ss:high`,
+`ss:medium`, or `ss:low` to the executable. For example:
+
+```sh
+./restunts ss:medium
+```
+
+The preset is active from the intro onward. These options are case-insensitive;
+multiple `ss:` options (including duplicates) or an unknown preset report an error
+and exit. Without an `ss:` option, SuperSight starts off as usual. F12 and Shift+F12
+can change the selection later. The options apply to SDL3 builds, including 32-bit DOS.
+
+An entire multi-tile object stays visible if any of its tiles is inside the
+mask. Any `H` overlap keeps full geometry; otherwise an `L` overlap uses low
+geometry when available. The same policy applies to rendered cars: their occupied
+tiles determine visibility and geometry. `C` always keeps full geometry. The
+graphics menu's scenery setting still applies.
+
+A sustained overload reduces one stage after about half a second at the target
+frame rate; isolated stalls do not trigger a reduction. About three seconds of
+frames with spare processing time restore one stage. Failed recovery attempts
+increase the wait before trying again. The small mask at 320x200 is the floor;
+there are no further reductions if the machine still cannot reach 60 FPS.
+
+Resolution changes affect the internal renderer. The output keeps its existing
+4:3 presentation, window/fullscreen size, and DOS VESA display mode. At 320x200,
+SuperSight uses the original horizon artwork and disables car shadows. This applies
+to locked Low and both of Auto's lowest stages; higher resolutions restore enhanced
+artwork and shadows. Physics and replay data are unaffected. Switching SuperSight off restores the original draw
+distance, detail policy, and rendering limits; enabling it starts at full quality.
 The enhancement is based on Alberto Marnetto's
 [SuperSight](https://marnetto.net/2025/02/20/broderbund-stunts-1).
 
@@ -83,7 +155,7 @@ The Open Watcom 16-bit DOS build retains its 110-tile SuperSight mode, with
 up to 592 primitives in a 13 KiB rendering buffer and reduced distant detail
 or visibility when crowded scenes exceed that capacity.
 
-In SDL3 builds (Windows, Linux, and 32-bit DOS), SuperSight also renders 3D
+In SDL3 builds (Windows, Linux, and 32-bit DOS), SuperSight starts 3D rendering
 at **1280x800**, four times the original width and height. Player and opponent
 car-selection previews use the same higher resolution; F12 also works in those
 screens and in the track preview. Dashboard artwork, replay controls, and the
@@ -109,11 +181,11 @@ with a short northward extension and soft edges. Shadows shrink as the car
 rises above the surface. Cars do not receive shadows, ghosts do not cast them,
 and the viewed car's own shadow is hidden in the F1 cockpit camera. The player
 and opponent car-selection showrooms use the same shadows beneath their rotating
-car previews while SuperSight is on.
+car previews while SuperSight is on at 640x400 or 1280x800.
 
 SuperSight also uses [AI-refined skybox artwork](docs/skyboxes/README.md), with
 each horizon image at four times its original width and height. Switching it
-off restores the original skybox artwork. Missing enhanced PNGs fall back to
+off or using 320x200 restores the original skybox artwork. Missing enhanced PNGs fall back to
 the original strips. The Open Watcom 16-bit DOS version retains its existing renderer.
 
 The opponent-selection and opponent car-selection screens also use
@@ -195,8 +267,11 @@ optimizations, worker comparisons, and measurement limits.
 
 Press **F11** to toggle a frame-rate counter in the top-left corner. It measures
 presented frames over approximately one second and rounds down, for example
-`20 FPS`. Values below 20 are red; values of 20 or higher are green.
-In SDL3 builds, F11 and F12 also work in both car-selection screens and during
+`20 FPS`. The target color threshold is 20 FPS in classic mode and 60 FPS in
+SDL3 SuperSight. The display shows FPS only; it does not show an omitted-object
+count. The temporary SuperSight preset message appears below it after F12 or
+Shift+F12, independently of F11. Automatic adaptation works whether F11 is on or off.
+In SDL3 builds, F11, F12, and Shift+F12 also work in both car-selection screens and during
 the nighttime driving intro without skipping the animation.
 
 Both features start off and retain their selected state until toggled again or

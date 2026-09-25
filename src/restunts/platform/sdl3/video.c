@@ -2,6 +2,7 @@
 #include "../../c/platform.h"
 #include "../../c/fatal.h"
 #include "../../c/hires.h"
+#include "../../c/frame_adaptive.h"
 #include <string.h>
 #include <stdio.h>
 
@@ -32,6 +33,8 @@ static legacy_u32 previous_generation;
 static legacy_u64 last_present;
 static legacy_u8 palette_changed = true;
 static legacy_u8 drawing_frame;
+static legacy_u8 adaptive_frame;
+static legacy_u64 adaptive_frame_started;
 
 static void video_fail(const legacy_char *operation)
 {
@@ -184,6 +187,14 @@ void sdl3_video_game_to_window(legacy_f32 x, legacy_f32 y, legacy_f32 *window_x,
 	}
 }
 
+static void video_record_adaptive_work(void)
+{
+	if (adaptive_frame != 0) {
+		frame_adaptive_record(&frame_adaptive, SDL_GetTicksNS() - adaptive_frame_started);
+		adaptive_frame = 0;
+	}
+}
+
 static void present_surface(const legacy_u8 *pixels, const legacy_u32 *argb, legacy_s32 width,
 							legacy_s32 height)
 {
@@ -232,16 +243,19 @@ static void present_surface(const legacy_u8 *pixels, const legacy_u32 *argb, leg
 		video_fail("Clear video borders");
 	}
 	if (!SDL_BlitSurfaceScaled(frame_surface, NULL, surface, &surface_viewport,
-							   SDL_SCALEMODE_NEAREST) ||
-		!SDL_UpdateWindowSurface(window)) {
+							   SDL_SCALEMODE_NEAREST)) {
+		video_fail("Scale video surface");
+	}
+	video_record_adaptive_work();
+	if (!SDL_UpdateWindowSurface(window)) {
 		video_fail("Present video surface");
 	}
 }
 
 static void present_texture(const legacy_u8 *legacy_pixels)
 {
-	legacy_s32 width = hires_enabled() ? HIRES_WIDTH : SDL3_SCREEN_WIDTH;
-	legacy_s32 height = hires_enabled() ? HIRES_HEIGHT : SDL3_SCREEN_HEIGHT;
+	legacy_s32 width = hires_enabled() ? hires_render_width() : SDL3_SCREEN_WIDTH;
+	legacy_s32 height = hires_enabled() ? hires_render_height() : SDL3_SCREEN_HEIGHT;
 	if (texture == NULL || texture_width != width || texture_height != height) {
 		SDL_DestroyTexture(texture);
 		texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING,
@@ -260,8 +274,13 @@ static void present_texture(const legacy_u8 *legacy_pixels)
 	}
 	hires_copy_framebuffer_argb(legacy_pixels, palette_pixels, texture_pixels, pitch);
 	SDL_UnlockTexture(texture);
-	if (!SDL_RenderClear(renderer) || !SDL_RenderTexture(renderer, texture, NULL, NULL) ||
-		!SDL_RenderPresent(renderer)) {
+	if (!SDL_RenderClear(renderer) || !SDL_RenderTexture(renderer, texture, NULL, NULL)) {
+		video_fail("Render video texture");
+	}
+	/* Include CPU composition and submission, but exclude the presentation
+	 * call, which can deliberately wait for display synchronization. */
+	video_record_adaptive_work();
+	if (!SDL_RenderPresent(renderer)) {
 		video_fail("Present video");
 	}
 }
@@ -284,8 +303,8 @@ void sdl3_video_present(void)
 		const legacy_u8 *pixels = NULL;
 		if (argb != NULL) {
 			/* ARGB composition already expands every indexed sample. */
-			width = HIRES_WIDTH;
-			height = HIRES_HEIGHT;
+			width = hires_render_width();
+			height = hires_render_height();
 		} else {
 			pixels = hires_framebuffer(legacy_pixels, &width, &height);
 		}
@@ -301,13 +320,27 @@ void sdl3_video_present(void)
 
 void sdl3_video_begin_frame(void)
 {
+	hires_set_render_scale(frame_adaptive.preset == FRAME_ADAPTIVE_PRESET_AUTO
+							   ? HIRES_SCALE
+							   : frame_adaptive_render_scale(&frame_adaptive));
 	drawing_frame = true;
+	adaptive_frame = 0;
+}
+
+void sdl3_video_begin_track_frame(legacy_u8 adaptive)
+{
+	drawing_frame = true;
+	adaptive_frame = adaptive != 0 && frame_adaptive.preset == FRAME_ADAPTIVE_PRESET_AUTO;
+	if (adaptive_frame != 0) {
+		adaptive_frame_started = SDL_GetTicksNS();
+	}
 }
 
 void sdl3_video_end_frame(void)
 {
 	drawing_frame = false;
 	sdl3_video_present();
+	adaptive_frame = 0;
 }
 
 void sdl3_video_refresh(void)

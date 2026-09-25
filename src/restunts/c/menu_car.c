@@ -429,7 +429,7 @@ static void car_menu_render_preview(struct CAR_MENU_STATE *menu)
 		shape3d_render_queued_primitives();
 		sprite_select_render_window();
 #ifdef RESTUNTS_SDL3
-		if (fps_display_enabled != 0) {
+		if (frame_display_overlay_active() != 0) {
 			sprite_set_target_clip_bounds(0, CAR_MENU_SCREEN_WIDTH, 0, CAR_MENU_CAR_CLIP_BOTTOM);
 			struct RECTANGLE *fps_rect = frame_fps_draw_text();
 			/* Include the counter in this copy and the next frame's background restore. */
@@ -588,9 +588,10 @@ static legacy_s16 car_menu_activate_selection(struct CAR_MENU_STATE *menu)
 static legacy_s16 car_menu_handle_input(struct CAR_MENU_STATE *menu, legacy_u16 input)
 {
 #ifdef RESTUNTS_SDL3
-	if (input == (legacy_u16)KEY_F11 || input == (legacy_u16)KEY_F12) {
+	if (input == (legacy_u16)KEY_F11 || input == (legacy_u16)KEY_F12 ||
+		input == (legacy_u16)KEY_SHIFT_F12) {
 		handle_ingame_kb_shortcuts(LEGACY_S16_FROM_BITS(input));
-		if (input == (legacy_u16)KEY_F12 && menu->opponent_type != CAR_MENU_PLAYER_MODE) {
+		if (input != (legacy_u16)KEY_F11 && menu->opponent_type != CAR_MENU_PLAYER_MODE) {
 			menu->portrait_dirty = 1;
 		}
 		presentation_reset(&menu->presentation_clock, presentation_now());

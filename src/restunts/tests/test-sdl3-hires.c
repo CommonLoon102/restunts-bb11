@@ -1318,6 +1318,387 @@ static void test_framebuffer_copy(void)
 	hires_forget(screen.base);
 }
 
+#define TEST_SCALE_MEDIUM 2
+#define TEST_SCALE_MINIMUM 1
+#define TEST_SCALE_SCREEN_SEGMENT 0x7000U
+#define TEST_SCALE_WINDOW_SEGMENT 0x9000U
+#define TEST_SCALE_WORKER_SEGMENT 0x5000U
+#define TEST_SCALE_PATTERN 0xA55AU
+#define TEST_SCALE_WORKER_COUNT 2
+#define TEST_SCALE_FADE 0xFF808080U
+#define TEST_SCALE_FADED_OVERLAY 0xFF406020U
+#define TEST_SCALE_LEFT 40
+#define TEST_SCALE_TOP 60
+#define TEST_SCALE_CLIP_WIDTH 3
+#define TEST_SCALE_CLIP_HEIGHT 2
+#define TEST_SCALE_FILL 77U
+#define TEST_SCALE_OR_MASK 1U
+#define TEST_SCALE_MAP_COLOR 55U
+#define TEST_SCALE_SHADOW_OPACITY 85U
+#define TEST_SCALE_OVERLAY 0xFF80C040U
+#define TEST_SCALE_SHADOW_BACKGROUND 0xFF90C0F0U
+#define TEST_SCALE_SHADOW_RESULT 0xFF6080A0U
+
+static void assert_scaled_cell(const struct TEST_SURFACE *screen, legacy_s32 x, legacy_s32 y,
+							   legacy_s32 scale, const legacy_u8 *samples, const legacy_u32 *colors,
+							   const legacy_u32 *palette)
+{
+	legacy_s32 width, height;
+	const legacy_u8 *indexed = hires_framebuffer(screen->base, &width, &height);
+	const legacy_u32 *argb = hires_framebuffer_argb(screen->base, palette);
+	assert(width == TEST_WIDTH * scale && height == TEST_HEIGHT * scale);
+	for (legacy_s32 row = 0; row < scale; row++) {
+		for (legacy_s32 column = 0; column < scale; column++) {
+			legacy_s32 sample = row * scale + column;
+			size_t pixel = (size_t)(y * scale + row) * width + x * scale + column;
+			assert(indexed[pixel] == samples[sample]);
+			legacy_u32 actual = argb != NULL ? argb[pixel] : palette[indexed[pixel]];
+			assert(actual == (colors != NULL ? colors[sample] : palette[samples[sample]]));
+		}
+	}
+}
+
+/* Use logical cells and an independent full-image index oracle: smaller rasters
+ * must really have fewer samples, including sprite copies and partial overlays. */
+static void test_scaled_pixels(legacy_s32 scale)
+{
+	struct TEST_SURFACE screen, window;
+	setup_surface(&screen, TEST_SCALE_SCREEN_SEGMENT, 0);
+	setup_surface(&window, TEST_SCALE_WINDOW_SEGMENT, SHAPE2D_HEADER_SIZE);
+	hires_forget(screen.base);
+	hires_forget(window.base);
+	legacy_u32 palette[TEST_PALETTE_SIZE];
+	legacy_u8 map[TEST_PALETTE_SIZE];
+	for (legacy_u32 index = 0; index < TEST_PALETTE_SIZE; index++) {
+		palette[index] = TEST_OPAQUE_ALPHA | index * TEST_GRAYSCALE_CHANNELS;
+		map[index] = (legacy_u8)index;
+	}
+	palette[TEST_WHITE_INDEX] = TEST_WHITE_ARGB;
+	palette[TEST_SCALE_FILL] = TEST_SCALE_SHADOW_BACKGROUND;
+	legacy_s32 width = TEST_WIDTH * scale, height = TEST_HEIGHT * scale;
+	legacy_s32 cells = scale * scale;
+	legacy_u8 *samples = malloc(cells);
+	legacy_u8 *expected = malloc((size_t)width * height);
+	assert(samples != NULL && expected != NULL);
+	memset(expected, TEST_BACKGROUND_COLOR, (size_t)width * height);
+	for (legacy_s32 sample = 0; sample < cells; sample++) {
+		samples[sample] = (legacy_u8)(TEST_SPAN_INITIAL_COLOR + sample);
+	}
+	struct SPRITE clip = screen.sprite;
+	clip.sprite_raster_left = TEST_SCALE_LEFT;
+	clip.sprite_raster_right = TEST_SCALE_LEFT + TEST_SCALE_CLIP_WIDTH;
+	clip.sprite_top = TEST_SCALE_TOP;
+	clip.sprite_bottom = TEST_SCALE_TOP + TEST_SCALE_CLIP_HEIGHT;
+	assert(hires_begin(&clip));
+	legacy_u32 generation = hires_generation();
+	hires_set_render_scale(scale == TEST_SCALE ? TEST_SCALE_MINIMUM : TEST_SCALE);
+	assert(hires_render_scale() == scale && hires_generation() == generation);
+	for (legacy_s32 row = 0; row < scale; row++) {
+		for (legacy_s32 column = 0; column < scale; column++) {
+			legacy_s32 x = TEST_SCALE_LEFT * scale + column;
+			legacy_s32 y = TEST_SCALE_TOP * scale + row;
+			legacy_u8 color = samples[row * scale + column];
+			hires_pixel(x, y, color);
+			expected[(size_t)y * width + x] = color;
+			expected[(size_t)y * width + x + scale] = TEST_SCALE_FILL;
+			expected[(size_t)y * width + x + scale * 2] = color;
+		}
+	}
+	hires_fill_pixel(TEST_SCALE_LEFT + 1, TEST_SCALE_TOP, TEST_SCALE_FILL);
+	/* The allocation is exactly the active cell size, catching stale 4x4 reads. */
+	hires_write_pixel(TEST_SCALE_LEFT + 2, TEST_SCALE_TOP, samples);
+	hires_pixel(TEST_SCALE_LEFT * scale - 1, TEST_SCALE_TOP * scale, TEST_SCALE_FILL);
+	hires_pixel((TEST_SCALE_LEFT + TEST_SCALE_CLIP_WIDTH) * scale, TEST_SCALE_TOP * scale,
+				TEST_SCALE_FILL);
+	hires_fill_pixel(TEST_SCALE_LEFT, TEST_SCALE_TOP - 1, TEST_SCALE_FILL);
+	hires_write_pixel(TEST_SCALE_LEFT, TEST_SCALE_TOP + TEST_SCALE_CLIP_HEIGHT, samples);
+	hires_depth_begin(-1, HIRES_WIDTH + 1, -1, HIRES_HEIGHT + 1);
+	struct HIRES_RASTER_TARGET target;
+	assert(hires_raster_prepare(&target));
+	assert(target.width == width && target.height == height && target.scale == scale);
+	assert(target.cell_pixels == cells && (1 << target.scale_shift) == scale);
+	assert((1 << target.cell_shift) == cells && target.scale_mask == scale - 1);
+	assert(target.depth_left == TEST_SCALE_LEFT * scale);
+	assert(target.depth_right == (TEST_SCALE_LEFT + TEST_SCALE_CLIP_WIDTH) * scale);
+	assert(target.depth_top == TEST_SCALE_TOP * scale);
+	assert(target.depth_bottom == (TEST_SCALE_TOP + TEST_SCALE_CLIP_HEIGHT) * scale);
+	legacy_s32 x = TEST_SCALE_LEFT * scale, y = TEST_SCALE_TOP * scale;
+	assert(hires_depth_test(x, y, TEST_SPAN_DEPTH, TEST_SPAN_SAME_FAMILY, HIRES_DEPTH_SURFACE));
+	assert(
+		!hires_depth_test(x, y, TEST_SPAN_DEPTH / 2, TEST_SPAN_OTHER_FAMILY, HIRES_DEPTH_SURFACE));
+	assert(!hires_depth_test(target.depth_right, y, TEST_SPAN_DEPTH, TEST_SPAN_SAME_FAMILY,
+							 HIRES_DEPTH_SURFACE));
+	assert(!hires_depth_test(x, target.depth_bottom, TEST_SPAN_DEPTH, TEST_SPAN_SAME_FAMILY,
+							 HIRES_DEPTH_SURFACE));
+	size_t depth_pixel = (size_t)y * width + x;
+	assert(target.inverse_depth[depth_pixel] == (legacy_f32)TEST_SPAN_DEPTH);
+	assert(target.depth_family[depth_pixel] == TEST_SPAN_SAME_FAMILY);
+	assert(hires_shadow_begin());
+	hires_argb_pixel(x, y, TEST_SCALE_OVERLAY);
+	hires_shadow_pixel(x + scale, y, TEST_SCALE_SHADOW_OPACITY);
+	hires_argb_pixel(x - 1, y, TEST_SCALE_OVERLAY);
+	hires_shadow_pixel(target.depth_right, y, LEGACY_U8_MAX);
+	assert(target.inverse_depth[depth_pixel] == (legacy_f32)TEST_SPAN_DEPTH);
+	assert(target.depth_family[depth_pixel] == TEST_SPAN_SAME_FAMILY);
+	hires_end();
+	legacy_s32 actual_width, actual_height;
+	const legacy_u8 *indexed = hires_framebuffer(screen.base, &actual_width, &actual_height);
+	assert(actual_width == width && actual_height == height);
+	assert(memcmp(indexed, expected, (size_t)width * height) == 0);
+	const legacy_u32 *argb = hires_framebuffer_argb(screen.base, palette);
+	assert(argb != NULL);
+	for (size_t pixel = 0; pixel < (size_t)width * height; pixel++) {
+		legacy_u32 color = pixel == depth_pixel			  ? TEST_SCALE_OVERLAY
+						   : pixel == depth_pixel + scale ? TEST_SCALE_SHADOW_RESULT
+														  : palette[expected[pixel]];
+		assert(argb[pixel] == color);
+	}
+	assert_framebuffer_copy(&screen, palette);
+	palette[TEST_WHITE_INDEX] = TEST_SCALE_FADE;
+	assert(hires_framebuffer_argb(screen.base, palette)[depth_pixel] == TEST_SCALE_FADED_OVERLAY);
+	assert_framebuffer_copy(&screen, palette);
+	palette[TEST_WHITE_INDEX] = TEST_OPAQUE_ALPHA;
+	assert(hires_framebuffer_argb(screen.base, palette)[depth_pixel] == TEST_OPAQUE_ALPHA);
+	assert_framebuffer_copy(&screen, palette);
+	palette[TEST_WHITE_INDEX] = TEST_WHITE_ARGB;
+	for (legacy_s32 pixel = 0; pixel < TEST_BYTES; pixel++) {
+		assert(screen.base[pixel] == TEST_BACKGROUND_COLOR);
+	}
+	/* Saved backgrounds use header-relative offsets; copies preserve the active
+	 * cell size and its overlay, including self-maps and transparent masks. */
+	legacy_u32 colors[HIRES_SCALE * HIRES_SCALE];
+	for (legacy_s32 sample = 0; sample < cells; sample++) {
+		colors[sample] = sample == 0 ? TEST_SCALE_OVERLAY : palette[samples[sample]];
+	}
+	raster_pixel(&window, TEST_SCALE_LEFT, TEST_SCALE_TOP, &screen, TEST_SCALE_LEFT, TEST_SCALE_TOP,
+				 SHAPE2D_RASTER_COPY, NULL);
+	raster_pixel(&screen, TEST_SCALE_LEFT, TEST_SCALE_TOP + 1, &window, TEST_SCALE_LEFT,
+				 TEST_SCALE_TOP, SHAPE2D_RASTER_COPY, NULL);
+	assert_scaled_cell(&screen, TEST_SCALE_LEFT, TEST_SCALE_TOP + 1, scale, samples, colors,
+					   palette);
+	raster_pixel(&screen, TEST_SCALE_LEFT, TEST_SCALE_TOP + 1, &screen, TEST_SCALE_LEFT,
+				 TEST_SCALE_TOP + 1, SHAPE2D_RASTER_MAP, map);
+	assert_scaled_cell(&screen, TEST_SCALE_LEFT, TEST_SCALE_TOP + 1, scale, samples, colors,
+					   palette);
+	memset(map, LEGACY_U8_MAX, sizeof(map));
+	raster_pixel(&screen, TEST_SCALE_LEFT, TEST_SCALE_TOP + 1, &window, TEST_SCALE_LEFT,
+				 TEST_SCALE_TOP, SHAPE2D_RASTER_MAP, map);
+	write_pixel(&window, 0, 0, LEGACY_U8_MAX);
+	raster_pixel(&screen, TEST_SCALE_LEFT, TEST_SCALE_TOP + 1, &window, 0, 0, SHAPE2D_RASTER_AND,
+				 NULL);
+	write_pixel(&window, 0, 0, 0);
+	raster_pixel(&screen, TEST_SCALE_LEFT, TEST_SCALE_TOP + 1, &window, 0, 0, SHAPE2D_RASTER_OR,
+				 NULL);
+	assert_scaled_cell(&screen, TEST_SCALE_LEFT, TEST_SCALE_TOP + 1, scale, samples, colors,
+					   palette);
+	write_pixel(&window, 0, 0, TEST_SCALE_OR_MASK);
+	raster_pixel(&screen, TEST_SCALE_LEFT, TEST_SCALE_TOP + 1, &window, 0, 0, SHAPE2D_RASTER_OR,
+				 NULL);
+	for (legacy_s32 sample = 0; sample < cells; sample++) {
+		samples[sample] |= TEST_SCALE_OR_MASK;
+	}
+	assert_scaled_cell(&screen, TEST_SCALE_LEFT, TEST_SCALE_TOP + 1, scale, samples, NULL, palette);
+	memset(map, TEST_SCALE_MAP_COLOR, sizeof(map));
+	raster_pixel(&screen, TEST_SCALE_LEFT, TEST_SCALE_TOP + 1, &window, TEST_SCALE_LEFT,
+				 TEST_SCALE_TOP, SHAPE2D_RASTER_MAP, map);
+	memset(samples, TEST_SCALE_MAP_COLOR, cells);
+	assert_scaled_cell(&screen, TEST_SCALE_LEFT, TEST_SCALE_TOP + 1, scale, samples, NULL, palette);
+	write_pixel(&window, 0, 0, 0);
+	raster_pixel(&screen, TEST_SCALE_LEFT, TEST_SCALE_TOP + 1, &window, 0, 0, SHAPE2D_RASTER_AND,
+				 NULL);
+	memset(samples, 0, cells);
+	assert_scaled_cell(&screen, TEST_SCALE_LEFT, TEST_SCALE_TOP + 1, scale, samples, NULL, palette);
+	assert_framebuffer_copy(&screen, palette);
+	assert(hires_begin(&clip));
+	hires_write_pixel(TEST_SCALE_LEFT, TEST_SCALE_TOP, samples);
+	hires_fill_pixel(TEST_SCALE_LEFT + 1, TEST_SCALE_TOP, TEST_SCALE_FILL);
+	hires_end();
+	assert(hires_framebuffer_argb(screen.base, palette) == NULL);
+	assert_scaled_cell(&screen, TEST_SCALE_LEFT, TEST_SCALE_TOP, scale, samples, NULL, palette);
+	/* The last packed row and column must be valid at every active size. */
+	assert(hires_begin_argb(&screen.sprite));
+	hires_depth_begin(0, HIRES_WIDTH, 0, HIRES_HEIGHT);
+	assert(hires_raster_prepare(&target));
+	assert(target.depth_right == width && target.depth_bottom == height);
+	assert(hires_depth_test(width - 1, height - 1, TEST_SPAN_DEPTH, TEST_SPAN_SAME_FAMILY,
+							HIRES_DEPTH_SURFACE));
+	assert(!hires_depth_test(width, height - 1, TEST_SPAN_DEPTH, TEST_SPAN_SAME_FAMILY,
+							 HIRES_DEPTH_SURFACE));
+	assert(!hires_depth_test(width - 1, height, TEST_SPAN_DEPTH, TEST_SPAN_SAME_FAMILY,
+							 HIRES_DEPTH_SURFACE));
+	hires_argb_pixel(width - 1, height - 1, TEST_SCALE_OVERLAY);
+	hires_argb_pixel(width, height - 1, TEST_WHITE_ARGB);
+	hires_argb_pixel(width - 1, height, TEST_WHITE_ARGB);
+	assert(target.depth_family[(size_t)width * height - 1] == TEST_SPAN_SAME_FAMILY);
+	hires_end();
+	assert(hires_framebuffer_argb(screen.base, palette)[(size_t)width * height - 1] ==
+		   TEST_SCALE_OVERLAY);
+	free(expected);
+	free(samples);
+	/* Leave both cached surfaces populated for the next scale's invalidation check. */
+}
+
+struct TEST_SCALE_RASTER_JOBS {
+	struct HIRES_RASTER_CONTEXT contexts[TEST_SCALE_WORKER_COUNT];
+	legacy_s32 reference;
+};
+
+static void scaled_raster_job(void *opaque, legacy_s32 job)
+{
+	struct TEST_SCALE_RASTER_JOBS *jobs = opaque;
+	struct HIRES_RASTER_CONTEXT *context = &jobs->contexts[job];
+	const struct HIRES_RASTER_TARGET *target = context->target;
+	const legacy_f64 step = 0.00001;
+	for (legacy_s32 y = target->top - 1; y <= target->bottom; y++) {
+		for (legacy_s32 mode = HIRES_PAINT_SOLID; mode <= HIRES_PAINT_ALTERNATE; mode++) {
+			legacy_f64 depth = TEST_SPAN_DEPTH + mode * TEST_SPAN_DEPTH;
+			if (jobs->reference) {
+				raster_span_reference(context, target->left - 1, target->right + 1, y, depth, step,
+									  TEST_SPAN_SAME_FAMILY, HIRES_DEPTH_SURFACE, TEST_SPAN_COLOR,
+									  TEST_SPAN_ALTERNATE_COLOR, TEST_SCALE_PATTERN, mode,
+									  mode != HIRES_PAINT_SOLID);
+			} else {
+				hires_raster_span(context, target->left - 1, target->right + 1, y, depth, step,
+								  TEST_SPAN_SAME_FAMILY, HIRES_DEPTH_SURFACE, TEST_SPAN_COLOR,
+								  TEST_SPAN_ALTERNATE_COLOR, TEST_SCALE_PATTERN, mode,
+								  mode != HIRES_PAINT_SOLID);
+			}
+		}
+	}
+}
+
+static void test_scaled_workers(legacy_s32 scale)
+{
+	enum { WORKER_ROWS = 4, WORKER_COLUMNS = 8, WORKER_COUNT = TEST_SCALE_WORKER_COUNT };
+	struct TEST_SURFACE screen;
+	setup_surface(&screen, TEST_SCALE_WORKER_SEGMENT, 0);
+	legacy_s32 width = TEST_WIDTH * scale, height = TEST_HEIGHT * scale;
+	size_t bytes = (size_t)width * height;
+	legacy_u8 *reference = malloc(bytes);
+	legacy_f32 *depth = malloc(bytes * sizeof(*depth));
+	legacy_u32 *family = malloc(bytes * sizeof(*family));
+	assert(reference != NULL && depth != NULL && family != NULL);
+	legacy_u32 palette[TEST_PALETTE_SIZE] = {0};
+	legacy_u32 cleared = 0;
+	for (legacy_s32 backend = TEST_SPAN_REFERENCE; backend < TEST_SPAN_BACKEND_COUNT; backend++) {
+		hires_forget(screen.base);
+		struct SPRITE clip = screen.sprite;
+		clip.sprite_raster_left = TEST_SCALE_LEFT;
+		clip.sprite_raster_right = TEST_SCALE_LEFT + WORKER_COLUMNS;
+		clip.sprite_top = TEST_SCALE_TOP;
+		clip.sprite_bottom = TEST_SCALE_TOP + WORKER_ROWS;
+		assert(hires_begin_argb(&clip));
+		hires_depth_begin(0, width, 0, height);
+		struct HIRES_RASTER_TARGET target;
+		assert(hires_raster_prepare(&target));
+		for (legacy_s32 y = target.top; y < target.bottom; y++) {
+			for (legacy_s32 x = target.left; x < target.right; x++) {
+				hires_argb_pixel(x, y, TEST_SPAN_INITIAL_ARGB);
+				assert(hires_depth_test(x, y, TEST_SPAN_DEPTH, TEST_SPAN_OTHER_FAMILY,
+										HIRES_DEPTH_SURFACE));
+			}
+		}
+		legacy_s32 middle = (TEST_SCALE_TOP + WORKER_ROWS / WORKER_COUNT) * scale;
+		struct TEST_SCALE_RASTER_JOBS jobs = {
+			{{&target, target.top, middle, 0}, {&target, middle, target.bottom, 0}},
+			backend == TEST_SPAN_REFERENCE};
+		if (jobs.reference) {
+			for (legacy_s32 job = 0; job < WORKER_COUNT; job++) {
+				scaled_raster_job(&jobs, job);
+			}
+		} else {
+			render_workers_run(WORKER_COUNT, scaled_raster_job, &jobs);
+		}
+		legacy_u32 actual_cleared =
+			jobs.contexts[0].cleared_argb_cells + jobs.contexts[1].cleared_argb_cells;
+		assert(actual_cleared == WORKER_ROWS * WORKER_COLUMNS);
+		hires_raster_finish(&target, actual_cleared);
+		hires_end();
+		legacy_s32 actual_width, actual_height;
+		const legacy_u8 *pixels = hires_framebuffer(screen.base, &actual_width, &actual_height);
+		assert(actual_width == width && actual_height == height);
+		assert(hires_framebuffer_argb(screen.base, palette) == NULL);
+		if (backend == TEST_SPAN_REFERENCE) {
+			memcpy(reference, pixels, bytes);
+			cleared = actual_cleared;
+		} else {
+			assert(memcmp(reference, pixels, bytes) == 0 && cleared == actual_cleared);
+		}
+		for (legacy_s32 y = target.top; y < target.bottom; y++) {
+			size_t start = (size_t)y * width + target.left;
+			size_t row_pixels = target.right - target.left;
+			if (backend == TEST_SPAN_REFERENCE) {
+				memcpy(depth + start, target.inverse_depth + start, row_pixels * sizeof(*depth));
+				memcpy(family + start, target.depth_family + start, row_pixels * sizeof(*family));
+			} else {
+				assert(memcmp(depth + start, target.inverse_depth + start,
+							  row_pixels * sizeof(*depth)) == 0);
+				assert(memcmp(family + start, target.depth_family + start,
+							  row_pixels * sizeof(*family)) == 0);
+			}
+		}
+	}
+	free(family);
+	free(depth);
+	free(reference);
+	hires_forget(screen.base);
+}
+
+static void test_render_scales(void)
+{
+	const legacy_s32 scales[] = {TEST_SCALE, TEST_SCALE_MEDIUM,	 TEST_SCALE_MINIMUM,
+								 TEST_SCALE, TEST_SCALE_MINIMUM, TEST_SCALE_MEDIUM,
+								 TEST_SCALE};
+	const legacy_s32 invalid[] = {-1, 0, 3, 8};
+	struct TEST_SURFACE screen;
+	setup_surface(&screen, TEST_SCALE_SCREEN_SEGMENT, 0);
+	legacy_u32 palette[TEST_PALETTE_SIZE] = {0};
+	hires_shutdown();
+	assert(hires_render_scale() == TEST_SCALE);
+	hires_set_enabled(1);
+	for (size_t pass = 0; pass < sizeof(scales) / sizeof(scales[0]); pass++) {
+		legacy_s32 previous = hires_render_scale();
+		legacy_u32 generation = hires_generation();
+		hires_set_render_scale(scales[pass]);
+		assert(hires_enabled() && hires_render_scale() == scales[pass]);
+		assert(hires_render_width() == TEST_WIDTH * scales[pass]);
+		assert(hires_render_height() == TEST_HEIGHT * scales[pass]);
+		assert((hires_generation() != generation) == (previous != scales[pass]));
+		assert(hires_framebuffer_argb(screen.base, palette) == NULL);
+		legacy_s32 width, height;
+		const legacy_u8 *pixels = hires_framebuffer(screen.base, &width, &height);
+		assert(width == TEST_WIDTH * scales[pass] && height == TEST_HEIGHT * scales[pass]);
+		for (legacy_s32 y = 0; y < height; y++) {
+			for (legacy_s32 x = 0; x < width; x++) {
+				assert(pixels[(size_t)y * width + x] ==
+					   screen.base[(y / scales[pass]) * TEST_WIDTH + x / scales[pass]]);
+			}
+		}
+		generation = hires_generation();
+		hires_set_render_scale(scales[pass]);
+		for (size_t index = 0; index < sizeof(invalid) / sizeof(invalid[0]); index++) {
+			hires_set_render_scale(invalid[index]);
+		}
+		assert(hires_generation() == generation && hires_render_scale() == scales[pass]);
+		test_scaled_workers(scales[pass]);
+		test_raster_target_aliases();
+		test_scaled_pixels(scales[pass]);
+	}
+	hires_set_render_scale(TEST_SCALE_MINIMUM);
+	hires_set_enabled(0);
+	assert(hires_render_scale() == TEST_SCALE);
+	legacy_s32 width, height;
+	assert(hires_framebuffer(screen.base, &width, &height) == screen.base);
+	assert(width == TEST_WIDTH && height == TEST_HEIGHT);
+	assert_framebuffer_copy(&screen, palette);
+	hires_set_render_scale(TEST_SCALE_MINIMUM);
+	hires_set_enabled(1);
+	assert(hires_render_scale() == TEST_SCALE);
+	hires_set_render_scale(TEST_SCALE_MEDIUM);
+	hires_shutdown();
+	assert(!hires_enabled() && hires_render_scale() == TEST_SCALE);
+}
+
 legacy_int main(void)
 {
 	struct TEST_SURFACE screen;
@@ -1351,6 +1732,7 @@ legacy_int main(void)
 	test_shadow_composition();
 	test_framebuffer_copy();
 	test_depth_lifetime(&screen);
+	test_render_scales();
 	hires_shutdown();
 	puts("SDL3 high-resolution composition tests passed.");
 	return 0;

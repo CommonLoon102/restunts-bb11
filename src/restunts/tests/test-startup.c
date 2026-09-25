@@ -20,6 +20,34 @@ static legacy_u32 timer_calls, status_calls;
 static legacy_u32 geometry_ticks, clear_ticks, partial_ticks;
 static legacy_s16 audio_failure;
 static jmp_buf exit_jump;
+#ifdef RESTUNTS_SDL3
+legacy_u8 supersight_enabled;
+static legacy_s32 startup_render_enabled;
+static legacy_s32 startup_render_scale = HIRES_SCALE;
+static legacy_u16 expected_supersight_preset;
+static legacy_s16 startup_exit_status;
+
+void hires_set_enabled(legacy_s32 enabled)
+{
+	startup_render_enabled = enabled;
+	startup_render_scale = HIRES_SCALE;
+}
+
+void hires_set_render_scale(legacy_s32 scale)
+{
+	assert(startup_render_enabled != 0);
+	startup_render_scale = scale;
+}
+
+static void check_startup_supersight(void)
+{
+	if (expected_supersight_preset != FRAME_ADAPTIVE_PRESET_AUTO) {
+		assert(supersight_enabled != 0 && startup_render_enabled != 0);
+		assert(frame_adaptive.preset == expected_supersight_preset);
+		assert(startup_render_scale == frame_adaptive_render_scale(&frame_adaptive));
+	}
+}
+#endif
 
 static void trace(legacy_u32 value)
 {
@@ -99,6 +127,9 @@ void audio_allocate_car_state_records(void)
 }
 void dos_video_set_mode_13h(void)
 {
+#ifdef RESTUNTS_SDL3
+	check_startup_supersight();
+#endif
 	trace(8);
 }
 void dos_video_set_mode4(void)
@@ -135,6 +166,9 @@ void dos_timer_shutdown(void)
 }
 void dos_process_exit(legacy_s16 status)
 {
+#ifdef RESTUNTS_SDL3
+	startup_exit_status = status;
+#endif
 	trace(15);
 	trace(status);
 	longjmp(exit_jump, 1);
@@ -304,6 +338,9 @@ void far *file_read_fatal(const legacy_s8 *name, void far *destination)
 }
 legacy_s16 run_intro_looped(void)
 {
+#ifdef RESTUNTS_SDL3
+	check_startup_supersight();
+#endif
 	trace(44);
 	assert(intro_calls < 3);
 	if (expected_initial_intro_calls >= 0) {
@@ -359,6 +396,9 @@ void file_load_audiores(const legacy_s8 *song, const legacy_s8 *voice, const leg
 }
 legacy_s8 run_menu(void)
 {
+#ifdef RESTUNTS_SDL3
+	check_startup_supersight();
+#endif
 	legacy_u32 call = menu_calls++;
 	trace(52);
 	assert(menu_calls < 10);
@@ -577,6 +617,100 @@ static void test_startup_physics_options(void)
 	}
 }
 
+#ifdef RESTUNTS_SDL3
+static void reset_startup_supersight(void)
+{
+	supersight_enabled = 0;
+	startup_render_enabled = 0;
+	startup_render_scale = HIRES_SCALE;
+	expected_supersight_preset = FRAME_ADAPTIVE_PRESET_AUTO;
+	frame_adaptive_reset(&frame_adaptive);
+	timer_calls = status_calls = 0;
+	audio_failure = 0;
+}
+
+static void expect_startup_option_error(legacy_s16 count, legacy_s8 *arguments[])
+{
+	reset_startup_supersight();
+	startup_exit_status = EXIT_SUCCESS;
+	if (setjmp(exit_jump) == 0) {
+		init_main(count, arguments);
+		assert(0);
+	}
+	assert(startup_exit_status == EXIT_FAILURE);
+	/* Validate all arguments before enabling rendering or starting the timer. */
+	assert(startup_render_enabled == 0 && supersight_enabled == 0);
+	assert(frame_adaptive.preset == FRAME_ADAPTIVE_PRESET_AUTO);
+	assert(timer_calls == 0);
+}
+
+#define STARTUP_TEST_GEOMETRY_TICKS 55U
+#define STARTUP_TEST_CLEAR_TICKS 15U
+#define STARTUP_TEST_PARTIAL_TICKS 16U
+
+static void test_startup_supersight_options(void)
+{
+	static const struct {
+		const legacy_s8 *argument;
+		enum FRAME_ADAPTIVE_PRESET preset;
+		legacy_s32 scale;
+	} cases[] = {{"ss:full", FRAME_ADAPTIVE_PRESET_FULL, HIRES_SCALE},
+				 {"ss:high", FRAME_ADAPTIVE_PRESET_HIGH, HIRES_SCALE},
+				 {"ss:medium", FRAME_ADAPTIVE_PRESET_MEDIUM, HIRES_MEDIUM_SCALE},
+				 {"ss:low", FRAME_ADAPTIVE_PRESET_LOW, HIRES_MINIMUM_SCALE},
+				 {"SS:FuLl", FRAME_ADAPTIVE_PRESET_FULL, HIRES_SCALE},
+				 {"sS:LoW", FRAME_ADAPTIVE_PRESET_LOW, HIRES_MINIMUM_SCALE}};
+	for (legacy_u16 index = 0; index < sizeof(cases) / sizeof(cases[0]); index++) {
+		legacy_s8 *arguments[] = {(legacy_s8 *)"game", (legacy_s8 *)"/sSB",
+								  (legacy_s8 *)cases[index].argument, (legacy_s8 *)"/pg:off",
+								  (legacy_s8 *)"/nointro"};
+		reset_startup_supersight();
+		expected_supersight_preset = cases[index].preset;
+		expected_initial_intro_calls = index % 2U;
+		menu_calls = intro_calls = game_calls = score_calls = 0;
+		is_audioloaded = 0;
+		track_element_map = menu_track_data;
+		geometry_ticks = STARTUP_TEST_GEOMETRY_TICKS;
+		clear_ticks = STARTUP_TEST_CLEAR_TICKS;
+		partial_ticks = STARTUP_TEST_PARTIAL_TICKS;
+		legacy_s16 count = sizeof(arguments) / sizeof(arguments[0]);
+		if (expected_initial_intro_calls != 0) {
+			count--;
+		}
+		assert(run_main_menu_loop(count, arguments) == 1);
+		assert(menu_calls == 1 && intro_calls == (legacy_u32)expected_initial_intro_calls + 1U);
+		assert(game_calls == 0);
+		assert(frame_adaptive.quality == cases[index].preset - FRAME_ADAPTIVE_PRESET_FULL);
+		assert(startup_render_scale == cases[index].scale);
+		assert(audiodriverstring[0] == 'a' && audiodriverstring[1] == 'd');
+	}
+	expected_initial_intro_calls = -1;
+
+	/* Any two preset arguments conflict, including identical repetitions. */
+	for (legacy_u16 first = 0; first < sizeof(cases) / sizeof(cases[0]); first++) {
+		for (legacy_u16 second = 0; second < sizeof(cases) / sizeof(cases[0]); second++) {
+			legacy_s8 *arguments[] = {(legacy_s8 *)"game", (legacy_s8 *)cases[first].argument,
+									  (legacy_s8 *)"/nointro", (legacy_s8 *)cases[second].argument};
+			expect_startup_option_error(sizeof(arguments) / sizeof(arguments[0]), arguments);
+		}
+	}
+	static const legacy_s8 *invalid[] = {"ss:",		 "ss:auto",		"ss:off",	 "ss:veryhigh",
+										 "ss:fullx", "ss:low:high", "SS:unknown"};
+	for (legacy_u16 index = 0; index < sizeof(invalid) / sizeof(invalid[0]); index++) {
+		legacy_s8 *arguments[] = {(legacy_s8 *)"game", (legacy_s8 *)invalid[index]};
+		expect_startup_option_error(sizeof(arguments) / sizeof(arguments[0]), arguments);
+	}
+
+	/* Unrelated or incomplete prefixes preserve the normal startup default. */
+	legacy_s8 *arguments[] = {(legacy_s8 *)"game", (legacy_s8 *)"", (legacy_s8 *)"s",
+							  (legacy_s8 *)"ss", (legacy_s8 *)"ssfull"};
+	reset_startup_supersight();
+	init_main(sizeof(arguments) / sizeof(arguments[0]), arguments);
+	assert(startup_render_enabled == 0 && supersight_enabled == 0);
+	assert(startup_options.supersight_preset == FRAME_ADAPTIVE_PRESET_AUTO);
+}
+#endif
+
 int main(void)
 {
 	static legacy_s8 *arguments[][8] = {
@@ -624,5 +758,8 @@ int main(void)
 #endif
 	test_startup_intro_option();
 	test_startup_physics_options();
+#ifdef RESTUNTS_SDL3
+	test_startup_supersight_options();
+#endif
 	return 0;
 }

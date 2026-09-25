@@ -1,5 +1,12 @@
 #include <stddef.h>
 #include <stdarg.h>
+#ifdef RESTUNTS_SDL3
+#include <ctype.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include "frame_adaptive.h"
+#include "hires.h"
+#endif
 #include "audio.h"
 #include "dashboard.h"
 #include "car_speed.h"
@@ -56,6 +63,8 @@
 #define CALLBACK_DOS_HELP_KEY 17
 #define CALLBACK_SOUND_HELP_KEY 19
 #define CALLBACK_DOS_HELP_ALT_KEY 24
+
+#define STARTUP_SUPERSIGHT_PREFIX "ss:"
 
 #define STARTUP_PROJECTION_X 36
 #define STARTUP_PROJECTION_Y 17
@@ -168,6 +177,9 @@ struct STARTUP_OPTIONS {
 	legacy_u8 sound_disabled;
 	legacy_u8 unused_nd_option;
 	legacy_u8 skip_intro;
+#ifdef RESTUNTS_SDL3
+	legacy_u16 supersight_preset;
+#endif
 };
 
 static struct STARTUP_OPTIONS startup_options;
@@ -205,6 +217,42 @@ static void startup_select_audio_driver(const legacy_s8 *argument)
 	}
 }
 
+#ifdef RESTUNTS_SDL3
+static void startup_parse_supersight(const legacy_s8 *argument, struct STARTUP_OPTIONS *options)
+{
+	const legacy_s8 *prefix = STARTUP_SUPERSIGHT_PREFIX;
+	const legacy_s8 *value = argument;
+	while (*prefix != 0) {
+		if (tolower((legacy_u8)*value) != *prefix) {
+			return;
+		}
+		prefix++;
+		value++;
+	}
+	if (options->supersight_preset != FRAME_ADAPTIVE_PRESET_AUTO) {
+		fprintf(stderr, "Only one ss: preset may be specified.\n");
+		dos_process_exit(EXIT_FAILURE);
+		return;
+	}
+	static const struct {
+		const legacy_s8 *name;
+		enum FRAME_ADAPTIVE_PRESET preset;
+	} presets[] = {{"full", FRAME_ADAPTIVE_PRESET_FULL},
+				   {"high", FRAME_ADAPTIVE_PRESET_HIGH},
+				   {"medium", FRAME_ADAPTIVE_PRESET_MEDIUM},
+				   {"low", FRAME_ADAPTIVE_PRESET_LOW}};
+	for (legacy_u16 index = 0; index < sizeof(presets) / sizeof(presets[0]); index++) {
+		if (stricmp(value, presets[index].name) == 0) {
+			options->supersight_preset = presets[index].preset;
+			return;
+		}
+	}
+	fprintf(stderr, "Invalid SuperSight preset '%s'; use ss:full, ss:high, ss:medium or ss:low.\n",
+			argument);
+	dos_process_exit(EXIT_FAILURE);
+}
+#endif
+
 static void startup_parse_options(legacy_s16 argc, legacy_s8 *argv[],
 								  struct STARTUP_OPTIONS *options)
 {
@@ -212,7 +260,13 @@ static void startup_parse_options(legacy_s16 argc, legacy_s8 *argv[],
 	options->sound_disabled = 0;
 	options->unused_nd_option = 0;
 	options->skip_intro = 0;
+#ifdef RESTUNTS_SDL3
+	options->supersight_preset = FRAME_ADAPTIVE_PRESET_AUTO;
+#endif
 	for (legacy_u16 i = 1; argc > i; ++i) {
+#ifdef RESTUNTS_SDL3
+		startup_parse_supersight(argv[i], options);
+#endif
 		if (argv[i][0] == '/') {
 			switch (argv[i][1]) {
 				case 'h':
@@ -315,6 +369,15 @@ void init_main(legacy_s16 argc, legacy_s8 *argv[])
 	configure_legacy_collision(argc, argv);
 	configure_owoot(argc, argv);
 	startup_parse_options(argc, argv, &startup_options);
+#ifdef RESTUNTS_SDL3
+	if (startup_options.supersight_preset != FRAME_ADAPTIVE_PRESET_AUTO) {
+		frame_adaptive_set_preset(&frame_adaptive,
+								  (enum FRAME_ADAPTIVE_PRESET)startup_options.supersight_preset);
+		supersight_enabled = 1;
+		hires_set_enabled(supersight_enabled);
+		hires_set_render_scale(frame_adaptive_render_scale(&frame_adaptive));
+	}
+#endif
 
 	// Unused "/nd" switch. Maybe used when loading other video drivers?
 	(void)startup_options.unused_nd_option;

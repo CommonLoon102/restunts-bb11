@@ -37,7 +37,7 @@ static const legacy_u8 *pixels(void)
 	legacy_s32 width;
 	legacy_s32 height;
 	const legacy_u8 *result = hires_framebuffer(screen, &width, &height);
-	assert(width == HIRES_WIDTH && height == HIRES_HEIGHT);
+	assert(width == hires_render_width() && height == hires_render_height());
 	return result;
 }
 
@@ -704,6 +704,132 @@ static void test_tiny_bank_texel_boundaries(void)
 	projection_focal_length_y = saved_focal_y;
 }
 
+/* The reduced renderer samples destination-pixel centers in the authored
+ * panorama coordinates. Its smallest scale uses the original source pixels. */
+static void test_render_scale_roundtrip(void)
+{
+	static legacy_u8 full_resolution[HIRES_WIDTH * HIRES_HEIGHT];
+	const legacy_s32 scales[] = {HIRES_SCALE, HIRES_MEDIUM_SCALE, HIRES_MINIMUM_SCALE,
+								 HIRES_MEDIUM_SCALE, HIRES_SCALE};
+	for (legacy_s32 original = 0; original <= 1; original++) {
+		for (legacy_s32 quarter = 0; quarter < 4; quarter++) {
+			reset_target();
+			target.sprite_raster_left = OBLIQUE_CLIP_LEFT;
+			target.sprite_raster_right = SKYBOX_SCREEN_WIDTH - OBLIQUE_CLIP_RIGHT_MARGIN;
+			target.sprite_top = OBLIQUE_CLIP_TOP;
+			target.sprite_bottom = SKYBOX_SCREEN_BOTTOM - OBLIQUE_CLIP_BOTTOM_MARGIN;
+			struct MATRIX rotation = roll_matrix(quarter * ANGLE_QUARTER_TURN);
+			for (legacy_u32 step = 0; step < SDL_arraysize(scales); step++) {
+				legacy_s32 scale = scales[step];
+				legacy_s32 source_step = HIRES_SCALE / scale;
+				hires_set_render_scale(scale);
+				assert(hires_enabled());
+				assert(
+					skybox_hires_render(&target, &scenery, panorama_shapes,
+										original ? OBLIQUE_ORIGINAL_THEME : OBLIQUE_ENHANCED_THEME,
+										&rotation, OBLIQUE_FORWARD_DIRECTION, ANGLE_HALF_TURN,
+										OBLIQUE_CAMERA_ALTITUDE, OBLIQUE_FULL_DETAIL));
+				const legacy_u8 *output = pixels();
+				legacy_s32 width = hires_render_width();
+				legacy_s32 height = hires_render_height();
+				legacy_u32 drawn = 0;
+				for (legacy_s32 y = 0; y < height; y++) {
+					for (legacy_s32 x = 0; x < width; x++) {
+						legacy_u8 expected = OBLIQUE_BACKGROUND_COLOR;
+						if (x >= target.sprite_raster_left * scale &&
+							x < target.sprite_raster_right * scale &&
+							y >= target.sprite_top * scale && y < target.sprite_bottom * scale) {
+							legacy_f64 sx = (x + HIRES_SAMPLE_CENTER_OFFSET) * source_step;
+							legacy_f64 sy = (y + HIRES_SAMPLE_CENTER_OFFSET) * source_step;
+							legacy_f64 u, band_y;
+							switch (quarter) {
+								case 0:
+									u = sx;
+									band_y = sy - HIRES_HEIGHT / 2;
+									break;
+								case 1:
+									u = (HIRES_WIDTH + HIRES_HEIGHT) / 2 - sy;
+									band_y = sx - HIRES_WIDTH / 2;
+									break;
+								case 2:
+									u = HIRES_WIDTH - sx;
+									band_y = HIRES_HEIGHT / 2 - sy;
+									break;
+								default:
+									u = (HIRES_WIDTH - HIRES_HEIGHT) / 2 + sy;
+									band_y = HIRES_WIDTH / 2 - sx;
+									break;
+							}
+							expected = expected_panorama(
+								(legacy_s32)SDL_floor(u), (legacy_s32)SDL_floor(band_y),
+								original || scale == HIRES_MINIMUM_SCALE ? OBLIQUE_ALL_ORIGINAL_MASK
+																		 : 0,
+								OBLIQUE_FULL_DETAIL);
+							drawn++;
+						}
+						assert(output[y * width + x] == expected);
+					}
+				}
+				assert(drawn ==
+					   (legacy_u32)(target.sprite_raster_right - target.sprite_raster_left) *
+						   (target.sprite_bottom - target.sprite_top) * scale * scale);
+				if (step == 0) {
+					memcpy(full_resolution, output, sizeof(full_resolution));
+				} else if (step == SDL_arraysize(scales) - 1) {
+					assert(memcmp(full_resolution, output, sizeof(full_resolution)) == 0);
+				}
+				assert_legacy_unchanged();
+			}
+		}
+	}
+	reset_target();
+	for (legacy_u32 step = 0; step < SDL_arraysize(scales); step++) {
+		legacy_s32 scale = scales[step];
+		legacy_s32 source_step = HIRES_SCALE / scale;
+		hires_set_render_scale(scale);
+		skybox_hires_draw(&target, 0, 0, 2, 2, -1, -1);
+		const legacy_u8 *output = pixels();
+		for (legacy_s32 y = 0; y < hires_render_height(); y++) {
+			for (legacy_s32 x = 0; x < hires_render_width(); x++) {
+				legacy_u8 expected =
+					scale != HIRES_MINIMUM_SCALE && x < scale && y < scale
+						? fixture_color(HIRES_SCALE + x * source_step + source_step / 2,
+										HIRES_SCALE + y * source_step + source_step / 2)
+						: OBLIQUE_BACKGROUND_COLOR;
+				assert(output[y * hires_render_width() + x] == expected);
+			}
+		}
+		assert_legacy_unchanged();
+	}
+}
+
+static void test_original_scale_retains_enhanced_cache(void)
+{
+	static legacy_u8 enhanced[HIRES_WIDTH * HIRES_HEIGHT];
+	const legacy_char *hidden_path = "skyboxes/city-scen.cached.png";
+	reset_target();
+	struct MATRIX rotation = roll_matrix(0);
+	assert(skybox_hires_render(&target, &scenery, panorama_shapes, OBLIQUE_ENHANCED_THEME,
+							   &rotation, OBLIQUE_FORWARD_DIRECTION, ANGLE_HALF_TURN,
+							   OBLIQUE_CAMERA_ALTITUDE, OBLIQUE_FULL_DETAIL));
+	memcpy(enhanced, pixels(), sizeof(enhanced));
+	assert(rename(panorama_paths[0], hidden_path) == 0);
+	hires_set_render_scale(HIRES_MINIMUM_SCALE);
+	assert(skybox_hires_render(&target, &scenery, panorama_shapes, OBLIQUE_ENHANCED_THEME,
+							   &rotation, OBLIQUE_FORWARD_DIRECTION, ANGLE_HALF_TURN,
+							   OBLIQUE_CAMERA_ALTITUDE, OBLIQUE_FULL_DETAIL));
+	legacy_s32 first_row = SKYBOX_SCREEN_BOTTOM / 2 - panorama_heights[0];
+	assert(pixels()[first_row * hires_render_width()] == original_color(0, 0, 0));
+	/* Recovery must use the cached PNG even while its source file is absent. */
+	hires_set_render_scale(HIRES_SCALE);
+	assert(skybox_hires_render(&target, &scenery, panorama_shapes, OBLIQUE_ENHANCED_THEME,
+							   &rotation, OBLIQUE_FORWARD_DIRECTION, ANGLE_HALF_TURN,
+							   OBLIQUE_CAMERA_ALTITUDE, OBLIQUE_FULL_DETAIL));
+	assert(memcmp(enhanced, pixels(), sizeof(enhanced)) == 0);
+	assert(rename(hidden_path, panorama_paths[0]) == 0);
+	assert_legacy_unchanged();
+}
+
 legacy_int main(void)
 {
 	assert(SDL_Init(0));
@@ -741,6 +867,8 @@ legacy_int main(void)
 	test_mixed_artwork_and_view_transitions();
 	test_level_half_pixel_horizons();
 	test_tiny_bank_texel_boundaries();
+	test_render_scale_roundtrip();
+	test_original_scale_retains_enhanced_cache();
 	test_copies_overlays_and_theme_changes();
 	skybox_hires_unload();
 	hires_shutdown();

@@ -3,7 +3,10 @@
 
 #include "legacy.h"
 
+/* Maximum raster size and authored artwork scale. Active dimensions may be smaller. */
 #define HIRES_SCALE 4
+#define HIRES_MEDIUM_SCALE 2
+#define HIRES_MINIMUM_SCALE 1
 #define HIRES_WIDTH 1280
 #define HIRES_HEIGHT 800
 #define HIRES_SAMPLE_CENTER_OFFSET 0.5
@@ -24,12 +27,14 @@ struct HIRES_RASTER_TARGET {
 	struct HIRES_SURFACE *surface;
 	legacy_u16 rows[HIRES_HEIGHT / HIRES_SCALE];
 	legacy_s32 left, right, top, bottom;
+	legacy_s32 scale, scale_shift, scale_mask, cell_pixels, cell_shift;
+	legacy_s32 width, height;
 	legacy_f32 *inverse_depth;
 	legacy_u32 *depth_family;
 	legacy_s32 depth_left, depth_right, depth_top, depth_bottom;
 };
 
-/* Each job owns complete legacy rows: top/bottom are multiples of HIRES_SCALE.
+/* Each job owns complete legacy rows: top/bottom are multiples of target->scale.
  * Contexts must not overlap, and their counters start at zero. */
 struct HIRES_RASTER_CONTEXT {
 	const struct HIRES_RASTER_TARGET *target;
@@ -40,6 +45,14 @@ struct HIRES_RASTER_CONTEXT {
 /* SDL3-only companion pixels. Legacy sprite offsets and resources stay 16-bit. */
 void hires_set_enabled(legacy_s32 enabled);
 legacy_s32 hires_enabled(void);
+/* Select 4, 2 or 1 samples per axis between joined frames. Changing scale discards
+ * cached companion pixels, so the next frame must redraw its scene. Invalid values
+ * and changes inside hires_begin/end are ignored. Enable transitions reset to 4.
+ * Getters describe the SuperSight raster even when SuperSight is disabled. */
+void hires_set_render_scale(legacy_s32 scale);
+legacy_s32 hires_render_scale(void);
+legacy_s32 hires_render_width(void);
+legacy_s32 hires_render_height(void);
 legacy_s32 hires_begin(const struct SPRITE *target);
 void hires_end(void);
 enum HIRES_DEPTH_MODE { HIRES_DEPTH_SURFACE, HIRES_DEPTH_ATTACHED, HIRES_DEPTH_ORDERED };
@@ -80,7 +93,7 @@ void hires_copy_framebuffer_argb(const legacy_u8 *legacy, const legacy_u32 *pale
 void hires_pixel(legacy_s32 x, legacy_s32 y, legacy_u8 color);
 /* Fill all companion samples at logical 320x200 coordinates without changing the legacy byte. */
 void hires_fill_pixel(legacy_s32 x, legacy_s32 y, legacy_u8 color);
-/* Copy sixteen row-major samples into one logical cell, retiring its ARGB overlay. */
+/* Copy scale*scale row-major samples into one logical cell, retiring its ARGB overlay. */
 void hires_write_pixel(legacy_s32 x, legacy_s32 y, const legacy_u8 *samples);
 void hires_write(const legacy_u8 *base, legacy_u16 offset, legacy_u8 color);
 void hires_raster(const legacy_u8 *destination, legacy_u16 destination_offset,

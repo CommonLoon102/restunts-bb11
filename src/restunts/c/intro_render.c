@@ -519,7 +519,7 @@ static void intro_render_session(struct INTRO_SESSION *intro, const struct INTRO
 							&intro->shape_rect, &intro->combined_rect);
 
 #ifdef RESTUNTS_SDL3
-	if (fps_display_enabled != 0) {
+	if (frame_display_overlay_active() != 0) {
 		struct RECTANGLE *fps_rect = frame_fps_draw_text();
 		if (slow_video_mgmt_copy != 0) {
 			/* Erase the previous digits and include the counter in the screen copy. */
@@ -608,7 +608,7 @@ legacy_s8 setup_intro(void)
 		key = input_do_checking(delta);
 #endif
 #ifdef RESTUNTS_SDL3
-		if (key == KEY_F11 || key == KEY_F12) {
+		if (key == KEY_F11 || key == KEY_F12 || key == KEY_SHIFT_F12) {
 			handle_ingame_kb_shortcuts(key);
 			intro_request_full_redraw(&intro);
 			key = 0;
