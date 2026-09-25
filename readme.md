@@ -102,7 +102,9 @@ each car. Small cached silhouettes follow the model's size, body, wheels, and
 suspension. Light comes from the south at about 70 degrees above the horizon,
 with a short northward extension and soft edges. Shadows shrink as the car
 rises above the surface. Cars do not receive shadows, ghosts do not cast them,
-and the viewed car's own shadow is hidden in the F1 cockpit camera.
+and the viewed car's own shadow is hidden in the F1 cockpit camera. The player
+and opponent car-selection showrooms use the same shadows beneath their rotating
+car previews while SuperSight is on.
 
 SuperSight also uses [AI-refined skybox artwork](docs/skyboxes/README.md), with
 each horizon image at four times its original width and height. Switching it

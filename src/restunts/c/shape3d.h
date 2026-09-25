@@ -92,6 +92,8 @@ void shape3d_vertex_write(struct SHAPE3D *shape, legacy_u16 index, const struct 
 void shape3d_load_car_shapes(legacy_s8 *carid, legacy_s8 *opponent_carid);
 void shape3d_free_car_shapes(void);
 #if defined(RESTUNTS_SDL3)
+/* Visible local underside at the current projection, clamped to signed renderer units. */
+legacy_s16 shape3d_car_ground_height(const struct SHAPE3D *shape);
 /* Cached local downward correction for a loaded car model; physics stays unchanged. */
 legacy_s16 shape3d_car_ground_offset(const struct SHAPE3D *shape);
 #endif

@@ -43,10 +43,18 @@ static const legacy_s8 *fixture_files[] = {(const legacy_s8 *)"CARVETT.RES",
 										   (const legacy_s8 *)"CARCOUN.RES"};
 
 #ifdef RESTUNTS_SDL3
-void shape3d_hires_set_model_scale(legacy_f64 scale)
-{
-	assert(scale == 20);
-}
+#define SHOWROOM_TEST_MODEL_SCALE 20
+#define SHOWROOM_TEST_HALF_WIDTH 48
+#define SHOWROOM_TEST_HALF_LENGTH 103
+#define SHOWROOM_TEST_FIRST_GROUND_HEIGHT 37
+#define SHOWROOM_TEST_NEXT_GROUND_HEIGHT -61
+
+enum SHOWROOM_TEST_SHADOW_STAGE {
+	SHOWROOM_TEST_SHADOW_IDLE,
+	SHOWROOM_TEST_SHADOW_CAMERA,
+	SHOWROOM_TEST_SHADOW_CAR,
+	SHOWROOM_TEST_SHADOW_MODEL
+};
 
 legacy_u8 supersight_enabled;
 legacy_u8 fps_display_enabled;
@@ -58,6 +66,67 @@ static struct RECTANGLE display_clip, display_fps_bounds, display_previous_fps_b
 static const struct RECTANGLE display_portrait_bounds = {240, 320, 0, 83};
 static legacy_u8 display_portrait_pending, display_portrait_mode, display_portrait_legacy_drawn;
 static legacy_u32 display_portrait_draws, display_enhanced_portrait_draws;
+static legacy_u8 display_model_scaled, display_shadow_stage, display_previous_shadow;
+static legacy_u8 display_shadow_restored;
+static legacy_u32 display_shadow_models, display_shadow_frames[2], display_shadow_erasures;
+static struct VECTOR display_shadow_camera, display_shadow_position;
+static legacy_s16 display_shadow_heading, display_ground_height;
+static legacy_u32 display_car_loads, display_ground_queries, display_load_present_count;
+
+legacy_s16 shape3d_car_ground_height(const struct SHAPE3D *shape)
+{
+	assert(shape == &game3dshapes[PLAYER_CAR_LOW_SHAPE]);
+	if (display_toggle_test != 0) {
+		display_ground_queries++;
+		assert(display_ground_queries == display_car_loads);
+		return display_ground_height;
+	}
+	return 0;
+}
+
+void shape3d_hires_set_model_scale(legacy_f64 scale)
+{
+	assert(scale == SHOWROOM_TEST_MODEL_SCALE);
+	if (display_toggle_test != 0) {
+		display_model_scaled = 1;
+	}
+}
+
+void shape3d_hires_shadows_begin(const struct VECTOR *camera_position)
+{
+	assert(supersight_enabled != 0);
+	if (display_toggle_test != 0) {
+		assert(display_model_scaled != 0);
+		assert(display_shadow_stage == SHOWROOM_TEST_SHADOW_IDLE);
+		display_shadow_camera = *camera_position;
+		display_shadow_stage = SHOWROOM_TEST_SHADOW_CAMERA;
+	}
+}
+
+void shape3d_hires_shadow_car(const struct VECTOR *relative_position, legacy_s16 heading,
+							  legacy_s16 half_width, legacy_s16 half_length)
+{
+	assert(supersight_enabled != 0);
+	if (display_toggle_test != 0) {
+		assert(display_shadow_stage == SHOWROOM_TEST_SHADOW_CAMERA);
+		assert(half_width == SHOWROOM_TEST_HALF_WIDTH * SHOWROOM_TEST_MODEL_SCALE);
+		assert(half_length == SHOWROOM_TEST_HALF_LENGTH * SHOWROOM_TEST_MODEL_SCALE);
+		display_shadow_position = *relative_position;
+		display_shadow_heading = heading;
+		display_shadow_stage = SHOWROOM_TEST_SHADOW_CAR;
+	}
+}
+
+void shape3d_hires_shadow_model(const struct SHAPE3D *shape)
+{
+	assert(supersight_enabled != 0);
+	assert(shape == &game3dshapes[PLAYER_CAR_LOW_SHAPE]);
+	if (display_toggle_test != 0) {
+		assert(display_shadow_stage == SHOWROOM_TEST_SHADOW_CAR);
+		display_shadow_stage = SHOWROOM_TEST_SHADOW_MODEL;
+		display_shadow_models++;
+	}
+}
 
 void opponent_portrait_draw_at(const struct SPRITE *target, const struct SHAPE2D *original,
 							   legacy_u8 opponent, legacy_s16 x, legacy_s16 y)
@@ -81,6 +150,15 @@ static void assert_contains(const struct RECTANGLE *outer, const struct RECTANGL
 	assert(outer->top <= inner->top && outer->bottom >= inner->bottom);
 }
 
+static void assert_shadow_floor_covered(void)
+{
+	struct RECTANGLE floor = carmenu_cliprect;
+	if ((display_scenario & 4U) != 0) {
+		floor.right = display_portrait_bounds.left;
+	}
+	assert_contains(&display_clip, &floor);
+}
+
 static void record_preview_copy(void)
 {
 	if (display_toggle_test == 0 || display_pending == 0) {
@@ -89,6 +167,14 @@ static void record_preview_copy(void)
 	assert(display_target == 0);
 	assert(display_fps_drawn == fps_display_enabled);
 	assert(display_reset_count != 0);
+	if (supersight_enabled != 0 || display_previous_shadow != 0) {
+		assert(display_shadow_restored != 0);
+		assert_shadow_floor_covered();
+		if (supersight_enabled == 0) {
+			display_shadow_erasures++;
+		}
+	}
+	display_previous_shadow = supersight_enabled;
 	if (display_fps_drawn != 0) {
 		assert_contains(&display_clip, &display_fps_bounds);
 	}
@@ -106,6 +192,7 @@ static void record_preview_copy(void)
 	display_previous_fps_bounds = display_fps_bounds;
 	display_fps_drawn = display_pending = display_refresh_pending = 0;
 	display_present_count++;
+	display_load_present_count++;
 	assert(display_record_count + 1U == display_present_count);
 }
 
@@ -338,9 +425,11 @@ legacy_s16 input_checking(legacy_s16 frame_delta)
 #ifdef RESTUNTS_SDL3
 	if (display_toggle_test != 0) {
 		assert(display_refresh_pending == 0);
-		static const legacy_u16 keys[] = {KEY_DOWN,	 KEY_DOWN, KEY_DOWN, KEY_F11, 0,		KEY_F12,
-										  0,		 KEY_F11,  KEY_F11,	 0,		  KEY_F12,	KEY_F11,
-										  KEY_ENTER, KEY_UP,   KEY_UP,	 KEY_UP,  KEY_ENTER};
+		static const legacy_u16 keys[] = {
+			KEY_DOWN, KEY_DOWN, KEY_DOWN, KEY_F11, 0, KEY_F12, 0,
+			/* Change the model between F12 transitions to refresh its ground height. */
+			KEY_UP, KEY_UP, KEY_ENTER, KEY_DOWN, KEY_DOWN, KEY_F11, KEY_F11, 0, KEY_F12, KEY_F11,
+			KEY_ENTER, KEY_UP, KEY_UP, KEY_UP, KEY_ENTER};
 		assert(frame_index < sizeof(keys) / sizeof(keys[0]));
 		return keys[frame_index];
 	}
@@ -540,6 +629,12 @@ legacy_u16 select_cliprect_rotate(legacy_s16 angZ, legacy_s16 angX, legacy_s16 a
 	trace_word((legacy_u16)angY);
 	trace_rect(cliprect);
 	trace_word((legacy_u16)half_scale);
+#ifdef RESTUNTS_SDL3
+	if (display_toggle_test != 0) {
+		display_model_scaled = display_shadow_restored = 0;
+		display_shadow_stage = SHOWROOM_TEST_SHADOW_IDLE;
+	}
+#endif
 	return 0;
 }
 
@@ -594,6 +689,14 @@ void shape3d_load_car_shapes(legacy_s8 *carid, legacy_s8 *opponent_carid)
 	trace_word(1032);
 	trace_text(carid);
 	trace_text(opponent_carid);
+#ifdef RESTUNTS_SDL3
+	if (display_toggle_test != 0) {
+		display_car_loads++;
+		display_load_present_count = 0;
+		display_ground_height = display_car_loads == 1 ? SHOWROOM_TEST_FIRST_GROUND_HEIGHT
+													   : SHOWROOM_TEST_NEXT_GROUND_HEIGHT;
+	}
+#endif
 }
 
 void shape3d_render_queued_primitives(void)
@@ -601,6 +704,10 @@ void shape3d_render_queued_primitives(void)
 #ifdef RESTUNTS_SDL3
 	if (display_toggle_test != 0) {
 		assert(display_pending == 0);
+		if (supersight_enabled != 0 || display_previous_shadow != 0) {
+			assert(display_shadow_restored != 0);
+		}
+		display_shadow_frames[supersight_enabled != 0]++;
 		display_pending = 1;
 	}
 	if (predictive_preview_test != 0) {
@@ -613,6 +720,24 @@ void shape3d_render_queued_primitives(void)
 legacy_u16 shape3d_transform_and_queue(struct TRANSFORMEDSHAPE3D *instance)
 {
 #ifdef RESTUNTS_SDL3
+	if (display_toggle_test != 0) {
+		assert(display_model_scaled != 0);
+		assert(((instance->ts_flags & SHAPE3D_NO_SHADOW_RECEIVE_FLAG) != 0) ==
+			   (supersight_enabled != 0));
+		if (supersight_enabled != 0) {
+			assert(display_shadow_stage == SHOWROOM_TEST_SHADOW_MODEL);
+			assert(instance->pos.y == carmenu_carpos.y);
+			assert(display_shadow_camera.x == -display_shadow_position.x);
+			assert(display_shadow_camera.y == -display_shadow_position.y);
+			assert(display_shadow_camera.z == -display_shadow_position.z);
+			assert(display_shadow_position.x == instance->pos.x);
+			assert(display_shadow_position.y == instance->pos.y + display_ground_height);
+			assert(display_shadow_position.z == instance->pos.z);
+			assert(display_shadow_heading == instance->rotvec.z);
+		} else {
+			assert(display_shadow_stage == SHOWROOM_TEST_SHADOW_IDLE);
+		}
+	}
 	if (predictive_preview_test != 0) {
 		assert(instance->rotvec.z >= preview_last_rotation);
 		preview_last_rotation = instance->rotvec.z;
@@ -711,9 +836,19 @@ void sprite_putimage(struct SHAPE2D *shape)
 {
 #ifdef RESTUNTS_SDL3
 	if (display_toggle_test != 0) {
-		if (display_target == 1 && display_previous_fps != 0) {
-			/* The background copy must erase old digits even after F11 turns off. */
-			assert_contains(&display_clip, &display_previous_fps_bounds);
+		if (display_target == 1) {
+			if (supersight_enabled != 0 || display_previous_shadow != 0) {
+				assert_shadow_floor_covered();
+				display_shadow_restored = 1;
+			}
+			if (display_load_present_count != 0 && (display_scenario & 4U) != 0) {
+				/* The showroom floor must stop before the opponent portrait. */
+				assert(display_clip.right <= display_portrait_bounds.left);
+			}
+			if (display_previous_fps != 0) {
+				/* The background copy must erase old digits even after F11 turns off. */
+				assert_contains(&display_clip, &display_previous_fps_bounds);
+			}
 		} else if (display_target == 0) {
 			assert(shape == render_window_sprite->sprite_bitmapptr);
 			record_preview_copy();
@@ -871,7 +1006,7 @@ static void run_car_case(legacy_u32 index)
 	run_car_menu(car_id, &material, &transmission, opponent_type);
 #ifdef RESTUNTS_SDL3
 	if (display_toggle_test != 0) {
-		assert(_strcmp(car_id, (const legacy_s8 *)"COUN") == 0);
+		assert(_strcmp(car_id, (const legacy_s8 *)"VETT") == 0);
 		assert(material == 1 && transmission == 0);
 	}
 #endif
@@ -899,25 +1034,35 @@ static void test_display_toggles(void)
 		display_portrait_pending = display_portrait_legacy_drawn = 0;
 		display_portrait_mode = 255;
 		display_portrait_draws = display_enhanced_portrait_draws = 0;
+		display_previous_shadow = display_shadow_restored = 0;
+		display_shadow_models = display_shadow_erasures = 0;
+		display_car_loads = display_ground_queries = display_load_present_count = 0;
+		display_shadow_frames[0] = display_shadow_frames[1] = 0;
+		simd_player.collide_points[0].px = SHOWROOM_TEST_HALF_WIDTH;
+		simd_player.collide_points[1].px = SHOWROOM_TEST_HALF_LENGTH;
 		run_car_case(1);
-		assert(frame_index == 17);
+		assert(frame_index == 22);
 		assert(supersight_enabled == initial_supersight && fps_display_enabled == initial_fps);
 		assert(display_shortcut_count == 6);
-		assert(display_reset_count == 6);
+		assert(display_reset_count == 7);
 		assert(display_fps_draw_count > 0 && display_fps_draw_count < display_present_count);
 		assert(display_present_count == display_record_count);
 		assert(display_pending == 0);
+		assert(display_shadow_frames[0] != 0 && display_shadow_frames[1] != 0);
+		assert(display_shadow_models == display_shadow_frames[1]);
+		assert(display_shadow_erasures == 1);
+		assert(display_car_loads == 2 && display_ground_queries == display_car_loads);
 		assert(display_sprite_free_count == sprite_index);
 		if ((display_scenario & 4U) != 0) {
-			assert(display_portrait_draws == 3);
-			assert(display_enhanced_portrait_draws == 1U + initial_supersight);
+			assert(display_portrait_draws == 4);
+			assert(display_enhanced_portrait_draws == 2);
 		} else {
 			assert(display_portrait_draws == 0);
 		}
 		assert(display_portrait_pending == 0 && display_portrait_legacy_drawn == 0);
 	}
 	display_toggle_test = 0;
-	puts("Car menu FPS and portrait toggles passed (32 scenarios).");
+	puts("Car menu FPS, portrait and showroom shadow toggles passed (32 scenarios).");
 }
 #endif
 

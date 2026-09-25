@@ -116,6 +116,7 @@ struct CAR_MENU_STATE {
 	legacy_s8 *transmission;
 	legacy_u16 opponent_type;
 #ifdef RESTUNTS_SDL3
+	struct VECTOR shadow_position;
 	struct PRESENTATION_CLOCK presentation_clock;
 	legacy_u64 rotation_time;
 	legacy_u64 input_time;
@@ -285,6 +286,11 @@ static void car_menu_load_car(struct CAR_MENU_STATE *menu)
 	}
 	menu->car_resource = (legacy_s8 far *)file_load_resfile(car_resource_name);
 	setup_aero_trackdata(menu->car_resource, 0);
+#ifdef RESTUNTS_SDL3
+	menu->shadow_position = menu->transformed.pos;
+	menu->shadow_position.y = LEGACY_S16_WRAP_ADD(
+		menu->shadow_position.y, shape3d_car_ground_height(menu->transformed.shapeptr));
+#endif
 
 	sprite_select_render_window_and_clear();
 	draw_button(0, 0, CAR_MENU_BACKGROUND_Y, CAR_MENU_SCREEN_WIDTH, CAR_MENU_BACKGROUND_HEIGHT,
@@ -364,6 +370,19 @@ static void car_menu_prepare_preview(struct CAR_MENU_STATE *menu)
 #ifdef RESTUNTS_SDL3
 		/* The car0 showroom model is authored at twenty times the racing scale. */
 		shape3d_hires_set_model_scale(CAR_MENU_MODEL_SCALE);
+		menu->transformed.ts_flags &= ~SHAPE3D_NO_SHADOW_RECEIVE_FLAG;
+		if (supersight_enabled != 0) {
+			const struct VECTOR camera = {LEGACY_S16_WRAP_NEGATE(menu->shadow_position.x),
+										  LEGACY_S16_WRAP_NEGATE(menu->shadow_position.y),
+										  LEGACY_S16_WRAP_NEGATE(menu->shadow_position.z)};
+			shape3d_hires_shadows_begin(&camera);
+			shape3d_hires_shadow_car(
+				&menu->shadow_position, visual_rotation,
+				LEGACY_S16_WRAP_MUL(simd_player.collide_points[0].px, CAR_MENU_MODEL_SCALE),
+				LEGACY_S16_WRAP_MUL(simd_player.collide_points[1].px, CAR_MENU_MODEL_SCALE));
+			shape3d_hires_shadow_model(menu->transformed.shapeptr);
+			menu->transformed.ts_flags |= SHAPE3D_NO_SHADOW_RECEIVE_FLAG;
+		}
 #endif
 		if ((legacy_s8)(legacy_u8)*menu->material >=
 			(legacy_s8)(legacy_u8)game3dshapes[PLAYER_CAR_LOW_SHAPE].shape3d_numpaints) {
@@ -372,6 +391,13 @@ static void car_menu_prepare_preview(struct CAR_MENU_STATE *menu)
 		menu->transformed.rotvec.z = visual_rotation;
 		menu->transformed.material = (legacy_u8)*menu->material;
 		shape3d_transform_and_queue(&menu->transformed);
+#ifdef RESTUNTS_SDL3
+		if (supersight_enabled != 0) {
+			/* Restore and copy the floor beyond the car's own dirty bounds, including
+			 * the previous shadow when the preview rotates or F12 turns it off. */
+			menu->current_rect = carmenu_cliprect;
+		}
+#endif
 		car_menu_redraw_cliprect.bottom = menu->previous_car_index == menu->car_index
 											  ? CAR_MENU_CAR_CLIP_BOTTOM
 											  : CAR_MENU_FULL_CLIP_BOTTOM;

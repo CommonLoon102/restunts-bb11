@@ -69,8 +69,8 @@ static legacy_s16 calculate_offset(const struct SHAPE3D *shape)
 {
 	struct CAR_GROUND_BOUNDS bounds;
 	shape3d_car_ground_bounds(shape, &bounds);
-	return shape3d_calculate_car_ground_offset(&bounds, projection_focal_length_x,
-											   projection_focal_length_y);
+	return shape3d_calculate_car_ground_level(&bounds, projection_focal_length_x,
+											  projection_focal_length_y, CAR_PHYSICS_TIRE_BOTTOM);
 }
 
 static void check_wheel_clearance(void)
@@ -329,6 +329,59 @@ static void check_cached_clearance(void)
 	assert(shape3d_car_ground_offset(&first) == 2);
 }
 
+static void check_model_ground_height(void)
+{
+	enum {
+		FIRST_WHEEL_VERTEX = 1,
+		SECOND_WHEEL_VERTEX = 10,
+		RAISED_WHEEL_CENTER = 10,
+		RAISED_WHEEL_RADIUS = 4,
+		LOWERED_WHEEL_CENTER = 1,
+		LOWERED_WHEEL_RADIUS = 10,
+		SPHERE_CENTER_VERTEX = 10,
+		SPHERE_CONTROL_VERTEX = 11,
+		SPHERE_CENTER_HEIGHT = 4,
+		SPHERE_DIAMETER = 8,
+		WIDE_PROJECTION_FOCAL_X = 230,
+		WIDE_PROJECTION_FOCAL_Y = 155,
+		PRIMITIVE_PAINT = 1
+	};
+	struct SHAPE3D shape = reset_shape();
+	/* The showroom floor uses the visible underside without a physics offset. */
+	assert(shape3d_car_ground_height(&shape) == -1);
+	assert(calculate_offset(&shape) == 5);
+	set_wheel(FIRST_WHEEL_VERTEX, RAISED_WHEEL_CENTER, RAISED_WHEEL_RADIUS);
+	set_wheel(SECOND_WHEEL_VERTEX, RAISED_WHEEL_CENTER, RAISED_WHEEL_RADIUS);
+	assert(shape3d_car_ground_height(&shape) == 6);
+	set_wheel(FIRST_WHEEL_VERTEX, LOWERED_WHEEL_CENTER, LOWERED_WHEEL_RADIUS);
+	assert(shape3d_car_ground_height(&shape) == -9);
+	assert(shape3d_car_ground_height(0) == 0);
+	shape.shape3d_numprimitives = 0;
+	assert(shape3d_car_ground_height(&shape) == 0);
+
+	static legacy_u8 point[] = {SHAPE3D_PRIMITIVE_POINT, 0, PRIMITIVE_PAINT, FIRST_WHEEL_VERTEX};
+	shape.shape3d_numprimitives = 1;
+	shape.shape3d_primitives = point;
+	set_height(FIRST_WHEEL_VERTEX, LEGACY_S16_FROM_BITS(LEGACY_U16_SIGN_BIT));
+	/* Apply the physics reference before clamping, preserving extreme models. */
+	assert(shape3d_car_ground_height(&shape) == -(legacy_s32)LEGACY_S16_MAX);
+	assert(calculate_offset(&shape) == -(legacy_s32)LEGACY_S16_MAX - 1 - CAR_PHYSICS_TIRE_BOTTOM);
+
+	static legacy_u8 sphere[] = {SHAPE3D_PRIMITIVE_SPHERE, 0, PRIMITIVE_PAINT, SPHERE_CENTER_VERTEX,
+								 SPHERE_CONTROL_VERTEX};
+	shape.shape3d_primitives = sphere;
+	set_vertex(SPHERE_CENTER_VERTEX, 0, SPHERE_CENTER_HEIGHT, 0);
+	set_vertex(SPHERE_CONTROL_VERTEX, 0, SPHERE_CENTER_HEIGHT + SPHERE_DIAMETER, 0);
+	assert(shape3d_car_ground_height(&shape) == 0);
+	legacy_u16 original_focal_x = projection_focal_length_x;
+	legacy_u16 original_focal_y = projection_focal_length_y;
+	projection_focal_length_x = WIDE_PROJECTION_FOCAL_X;
+	projection_focal_length_y = WIDE_PROJECTION_FOCAL_Y;
+	assert(shape3d_car_ground_height(&shape) == -1);
+	projection_focal_length_x = original_focal_x;
+	projection_focal_length_y = original_focal_y;
+}
+
 legacy_int main(void)
 {
 	check_wheel_clearance();
@@ -337,5 +390,6 @@ legacy_int main(void)
 	check_visible_body_caps_wheel_correction();
 	check_sphere_geometry();
 	check_cached_clearance();
+	check_model_ground_height();
 	return 0;
 }
