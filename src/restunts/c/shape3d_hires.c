@@ -48,7 +48,26 @@ struct HIRES_PAINT {
 
 struct HIRES_SHAPE {
 	legacy_s32 depth_mode;
+	legacy_s32 shadow_receiver;
 };
+
+#define HIRES_CAR_SHADOW_COUNT 2
+#define HIRES_CAR_SHADOW_REACH 256.0
+
+struct HIRES_CAR_SHADOW {
+	struct VECTOR position;
+	legacy_f64 cosine, sine;
+	legacy_f64 half_width, half_length;
+	legacy_f64 min_x, max_x, min_z, max_z, height;
+	const struct SHADOW_SILHOUETTE *silhouette;
+};
+
+static struct HIRES_CAR_SHADOW car_shadows[HIRES_CAR_SHADOW_COUNT];
+static legacy_s32 car_shadow_count;
+static legacy_s32 shadow_model_pending;
+static struct MATRIX shadow_view;
+static legacy_f64 shadow_inverse[3][3];
+static legacy_f64 shadow_ground_y;
 
 static struct HIRES_PRIMITIVE *primitives;
 static struct HIRES_SHAPE *shapes;
@@ -269,6 +288,12 @@ void shape3d_hires_begin_shape(legacy_u32 index, legacy_s32 depth_mode)
 	current_shape = index;
 	current_family = index + 1;
 	shapes[index].depth_mode = depth_mode;
+	shapes[index].shadow_receiver = 1;
+}
+
+void shape3d_hires_set_shadow_receiver(legacy_s32 enabled)
+{
+	shapes[current_shape].shadow_receiver = enabled;
 }
 
 void shape3d_hires_set_model_scale(legacy_f64 scale)
@@ -278,6 +303,8 @@ void shape3d_hires_set_model_scale(legacy_f64 scale)
 
 void shape3d_hires_reset(void)
 {
+	car_shadow_count = 0;
+	shadow_model_pending = 0;
 	model_scale = 1;
 	shape3d_hires_begin_shape(0, SHAPE3D_HIRES_DEPTH_SORTED);
 	rendered_depth_valid = 0;
@@ -1083,6 +1110,514 @@ legacy_s32 shape3d_hires_batch_end(void)
 	command_count = 0;
 	command_area = 0;
 	return 0;
+}
+
+#define SHADOW_SILHOUETTE_WIDTH 128
+#define SHADOW_SILHOUETTE_LENGTH 256
+#define SHADOW_SILHOUETTE_ROUND_POINTS 12
+
+struct SHADOW_SILHOUETTE {
+	const struct SHAPE3D *shape;
+	const legacy_u8 *vertex_bytes;
+	legacy_f64 min_x, min_z, max_x, max_z, height, scale_x, scale_z;
+	legacy_u8 pixels[SHADOW_SILHOUETTE_WIDTH * SHADOW_SILHOUETTE_LENGTH];
+};
+
+struct SHADOW_SILHOUETTE_POINT {
+	legacy_f64 x, z;
+};
+
+/* Build a tiny top-down union of the authored primitives once per loaded car.
+ * Keeping separate polygons preserves the gaps beside open-wheel suspension. */
+static void shadow_silhouette_polygon(struct SHADOW_SILHOUETTE *silhouette,
+									  const struct SHADOW_SILHOUETTE_POINT *points,
+									  legacy_s32 count, legacy_s32 rasterize)
+{
+	if (!rasterize) {
+		for (legacy_s32 index = 0; index < count; index++) {
+			if (points[index].x < silhouette->min_x) {
+				silhouette->min_x = points[index].x;
+			}
+			if (points[index].x > silhouette->max_x) {
+				silhouette->max_x = points[index].x;
+			}
+			if (points[index].z < silhouette->min_z) {
+				silhouette->min_z = points[index].z;
+			}
+			if (points[index].z > silhouette->max_z) {
+				silhouette->max_z = points[index].z;
+			}
+		}
+		return;
+	}
+	for (legacy_s32 row = 1; row < SHADOW_SILHOUETTE_LENGTH - 1; row++) {
+		legacy_f64 z = silhouette->min_z + (row + 0.5) / silhouette->scale_z;
+		legacy_f64 crossings[SHADOW_SILHOUETTE_ROUND_POINTS];
+		legacy_s32 crossing_count = 0;
+		for (legacy_s32 index = 0; index < count; index++) {
+			const struct SHADOW_SILHOUETTE_POINT *first = &points[index];
+			const struct SHADOW_SILHOUETTE_POINT *last = &points[(index + 1) % count];
+			if ((first->z > z) != (last->z > z)) {
+				legacy_f64 x =
+					first->x + (last->x - first->x) * (z - first->z) / (last->z - first->z);
+				legacy_s32 insertion = crossing_count++;
+				while (insertion > 0 && crossings[insertion - 1] > x) {
+					crossings[insertion] = crossings[insertion - 1];
+					insertion--;
+				}
+				crossings[insertion] = x;
+			}
+		}
+		for (legacy_s32 index = 0; index + 1 < crossing_count; index += 2) {
+			legacy_s32 left = (legacy_s32)SDL_ceil(
+				(crossings[index] - silhouette->min_x) * silhouette->scale_x - 0.5);
+			legacy_s32 right = (legacy_s32)SDL_ceil(
+				(crossings[index + 1] - silhouette->min_x) * silhouette->scale_x - 0.5);
+			if (left < 1) {
+				left = 1;
+			}
+			if (right > SHADOW_SILHOUETTE_WIDTH - 1) {
+				right = SHADOW_SILHOUETTE_WIDTH - 1;
+			}
+			if (left < right) {
+				memset(&silhouette->pixels[row * SHADOW_SILHOUETTE_WIDTH + left], 255,
+					   (size_t)(right - left));
+			}
+		}
+	}
+}
+
+static void shadow_silhouette_line(struct SHADOW_SILHOUETTE *silhouette, const struct VECTOR *first,
+								   const struct VECTOR *last, legacy_s32 rasterize)
+{
+	legacy_f64 dx = last->x - first->x;
+	legacy_f64 dz = last->z - first->z;
+	legacy_f64 length = SDL_sqrt(dx * dx + dz * dz);
+	if (length == 0) {
+		return;
+	}
+	legacy_f64 radius = 0.75;
+	if (rasterize) {
+		legacy_f64 texel = 0.5 / silhouette->scale_x + 0.5 / silhouette->scale_z;
+		if (radius < texel) {
+			radius = texel;
+		}
+	}
+	legacy_f64 x = dz * radius / length;
+	legacy_f64 z = -dx * radius / length;
+	struct SHADOW_SILHOUETTE_POINT points[4] = {{first->x - x, first->z - z},
+												{last->x - x, last->z - z},
+												{last->x + x, last->z + z},
+												{first->x + x, first->z + z}};
+	shadow_silhouette_polygon(silhouette, points, 4, rasterize);
+}
+
+static void shadow_silhouette_primitives(struct SHADOW_SILHOUETTE *silhouette,
+										 const struct SHAPE3D *shape, legacy_s32 rasterize)
+{
+	static const legacy_u8 vertex_counts[16] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 2, 6, 3, 0, 0};
+	const legacy_u8 *primitive = shape->shape3d_primitives;
+	for (legacy_u16 index = 0; index < shape->shape3d_numprimitives; index++) {
+		legacy_u8 type = primitive[0];
+		if (type >= 16) {
+			return;
+		}
+		legacy_u8 count = vertex_counts[type];
+		const legacy_u8 *indices = primitive + 2 + shape->shape3d_numpaints;
+		primitive = indices + count;
+		struct VECTOR vertices[10];
+		legacy_s32 valid = 1;
+		for (legacy_u8 vertex = 0; vertex < count; vertex++) {
+			if (indices[vertex] >= shape->shape3d_numverts) {
+				valid = 0;
+				break;
+			}
+			shape3d_vertex_read(shape, indices[vertex], &vertices[vertex]);
+			if (!rasterize && vertices[vertex].y > silhouette->height) {
+				silhouette->height = vertices[vertex].y;
+			}
+		}
+		if (!valid) {
+			continue;
+		}
+		struct SHADOW_SILHOUETTE_POINT points[SHADOW_SILHOUETTE_ROUND_POINTS];
+		if (type >= 3 && type <= 10) {
+			for (legacy_u8 vertex = 0; vertex < count; vertex++) {
+				points[vertex].x = vertices[vertex].x;
+				points[vertex].z = vertices[vertex].z;
+			}
+			shadow_silhouette_polygon(silhouette, points, count, rasterize);
+		} else if (type == 2) {
+			shadow_silhouette_line(silhouette, &vertices[0], &vertices[1], rasterize);
+		} else if (type == 12) {
+			/* A wheel is an ellipse extruded from vertex 0 to vertex 3.
+			 * Its two authored radial axes also support steered/custom wheels. */
+			struct SHADOW_SILHOUETTE_POINT other[SHADOW_SILHOUETTE_ROUND_POINTS];
+			for (legacy_s32 vertex = 0; vertex < SHADOW_SILHOUETTE_ROUND_POINTS; vertex++) {
+				legacy_s16 angle =
+					(legacy_s16)(vertex * ANGLE_FULL_TURN / SHADOW_SILHOUETTE_ROUND_POINTS);
+				legacy_f64 cosine = cos_fast(angle) / (legacy_f64)TRIG_FIXED_ONE;
+				legacy_f64 sine = sin_fast(angle) / (legacy_f64)TRIG_FIXED_ONE;
+				points[vertex].x = vertices[0].x + (vertices[1].x - vertices[0].x) * cosine +
+								   (vertices[2].x - vertices[0].x) * sine;
+				points[vertex].z = vertices[0].z + (vertices[1].z - vertices[0].z) * cosine +
+								   (vertices[2].z - vertices[0].z) * sine;
+				other[vertex].x = points[vertex].x + vertices[3].x - vertices[0].x;
+				other[vertex].z = points[vertex].z + vertices[3].z - vertices[0].z;
+			}
+			shadow_silhouette_polygon(silhouette, points, SHADOW_SILHOUETTE_ROUND_POINTS,
+									  rasterize);
+			shadow_silhouette_polygon(silhouette, other, SHADOW_SILHOUETTE_ROUND_POINTS, rasterize);
+			for (legacy_s32 vertex = 0; vertex < SHADOW_SILHOUETTE_ROUND_POINTS; vertex++) {
+				legacy_s32 next = (vertex + 1) % SHADOW_SILHOUETTE_ROUND_POINTS;
+				struct SHADOW_SILHOUETTE_POINT side[4] = {points[vertex], points[next], other[next],
+														  other[vertex]};
+				shadow_silhouette_polygon(silhouette, side, 4, rasterize);
+			}
+		} else if (type == 11) {
+			legacy_f64 dx = vertices[1].x - vertices[0].x;
+			legacy_f64 dy = vertices[1].y - vertices[0].y;
+			legacy_f64 dz = vertices[1].z - vertices[0].z;
+			legacy_f64 radius = SDL_sqrt(dx * dx + dy * dy + dz * dz);
+			if (!rasterize && vertices[0].y + radius > silhouette->height) {
+				silhouette->height = vertices[0].y + radius;
+			}
+			for (legacy_s32 vertex = 0; vertex < SHADOW_SILHOUETTE_ROUND_POINTS; vertex++) {
+				legacy_s16 angle =
+					(legacy_s16)(vertex * ANGLE_FULL_TURN / SHADOW_SILHOUETTE_ROUND_POINTS);
+				points[vertex].x = vertices[0].x + radius * cos_fast(angle) / TRIG_FIXED_ONE;
+				points[vertex].z = vertices[0].z + radius * sin_fast(angle) / TRIG_FIXED_ONE;
+			}
+			shadow_silhouette_polygon(silhouette, points, SHADOW_SILHOUETTE_ROUND_POINTS,
+									  rasterize);
+		}
+	}
+}
+
+static legacy_s32 shadow_silhouette_build(struct SHADOW_SILHOUETTE *silhouette,
+										  const struct SHAPE3D *shape)
+{
+	memset(silhouette, 0, sizeof(*silhouette));
+	if (shape == NULL || shape->shape3d_numverts == 0 || shape->shape3d_numprimitives == 0) {
+		return 0;
+	}
+	silhouette->min_x = silhouette->min_z = 65536;
+	silhouette->max_x = silhouette->max_z = -65536;
+	shadow_silhouette_primitives(silhouette, shape, 0);
+	legacy_f64 width = silhouette->max_x - silhouette->min_x;
+	legacy_f64 length = silhouette->max_z - silhouette->min_z;
+	if (width <= 0 || length <= 0) {
+		return 0;
+	}
+	/* Leave clear texels around the model so bilinear filtering softens only
+	 * the silhouette edge and cannot wrap onto the opposite side. */
+	silhouette->scale_x = (SHADOW_SILHOUETTE_WIDTH - 4) / width;
+	silhouette->scale_z = (SHADOW_SILHOUETTE_LENGTH - 4) / length;
+	silhouette->min_x -= 2 / silhouette->scale_x;
+	silhouette->max_x += 2 / silhouette->scale_x;
+	silhouette->min_z -= 2 / silhouette->scale_z;
+	silhouette->max_z += 2 / silhouette->scale_z;
+	shadow_silhouette_primitives(silhouette, shape, 1);
+	silhouette->shape = shape;
+	silhouette->vertex_bytes = shape->shape3d_vertex_bytes;
+	return 1;
+}
+
+static legacy_f64 shadow_silhouette_sample(const struct SHADOW_SILHOUETTE *silhouette, legacy_f64 x,
+										   legacy_f64 z)
+{
+	x = (x - silhouette->min_x) * silhouette->scale_x - 0.5;
+	z = (z - silhouette->min_z) * silhouette->scale_z - 0.5;
+	if (x < 0 || z < 0 || x >= SHADOW_SILHOUETTE_WIDTH - 1 || z >= SHADOW_SILHOUETTE_LENGTH - 1) {
+		return 0;
+	}
+	legacy_s32 column = (legacy_s32)x;
+	legacy_s32 row = (legacy_s32)z;
+	x -= column;
+	z -= row;
+	const legacy_u8 *pixels = &silhouette->pixels[row * SHADOW_SILHOUETTE_WIDTH + column];
+	legacy_f64 first = pixels[0] + (pixels[1] - pixels[0]) * x;
+	legacy_f64 last = pixels[SHADOW_SILHOUETTE_WIDTH] +
+					  (pixels[SHADOW_SILHOUETTE_WIDTH + 1] - pixels[SHADOW_SILHOUETTE_WIDTH]) * x;
+	return (first + (last - first) * z) / 255;
+}
+
+static struct SHADOW_SILHOUETTE shadow_silhouettes[HIRES_CAR_SHADOW_COUNT];
+
+void shape3d_hires_shadows_begin(const struct VECTOR *camera_position)
+{
+	car_shadow_count = 0;
+	shadow_model_pending = 0;
+	shadow_ground_y = -camera_position->y;
+	shadow_view = mat_temp;
+	/* Invert the fixed-point view exactly: transposing its rounded rotation
+	 * can move a small distant footprint away from its supporting surface. */
+	legacy_f64 a = shadow_view.m._11, b = shadow_view.m._12, c = shadow_view.m._13;
+	legacy_f64 d = shadow_view.m._21, e = shadow_view.m._22, f = shadow_view.m._23;
+	legacy_f64 g = shadow_view.m._31, h = shadow_view.m._32, i = shadow_view.m._33;
+	legacy_f64 determinant = a * (e * i - f * h) - b * (d * i - f * g) + c * (d * h - e * g);
+	legacy_f64 scale = determinant != 0 ? TRIG_FIXED_ONE / determinant : 0;
+	shadow_inverse[0][0] = (e * i - f * h) * scale;
+	shadow_inverse[0][1] = (c * h - b * i) * scale;
+	shadow_inverse[0][2] = (b * f - c * e) * scale;
+	shadow_inverse[1][0] = (f * g - d * i) * scale;
+	shadow_inverse[1][1] = (a * i - c * g) * scale;
+	shadow_inverse[1][2] = (c * d - a * f) * scale;
+	shadow_inverse[2][0] = (d * h - e * g) * scale;
+	shadow_inverse[2][1] = (b * g - a * h) * scale;
+	shadow_inverse[2][2] = (a * e - b * d) * scale;
+}
+
+void shape3d_hires_shadow_car(const struct VECTOR *relative_position, legacy_s16 heading,
+							  legacy_s16 half_width, legacy_s16 half_length)
+{
+	shadow_model_pending = 0;
+	if (!hires_enabled() || car_shadow_count == HIRES_CAR_SHADOW_COUNT || half_width <= 0 ||
+		half_length <= 0) {
+		return;
+	}
+	struct HIRES_CAR_SHADOW *shadow = &car_shadows[car_shadow_count++];
+	shadow->position = *relative_position;
+	shadow->cosine = cos_fast((legacy_u16)heading) / (legacy_f64)TRIG_FIXED_ONE;
+	shadow->sine = sin_fast((legacy_u16)heading) / (legacy_f64)TRIG_FIXED_ONE;
+	shadow->half_width = half_width;
+	shadow->half_length = half_length;
+	shadow->min_x = -half_width;
+	shadow->max_x = half_width;
+	shadow->min_z = -half_length;
+	shadow->max_z = half_length;
+	shadow->height = SDL_min(half_width, half_length) * 0.5;
+	shadow->silhouette = NULL;
+	shadow_model_pending = 1;
+}
+
+void shape3d_hires_shadow_models_reset(void)
+{
+	car_shadow_count = 0;
+	shadow_model_pending = 0;
+	for (legacy_s32 index = 0; index < HIRES_CAR_SHADOW_COUNT; index++) {
+		shadow_silhouettes[index].shape = NULL;
+	}
+}
+
+void shape3d_hires_shadow_model(const struct SHAPE3D *shape)
+{
+	if (!shadow_model_pending || shape == NULL) {
+		return;
+	}
+	shadow_model_pending = 0;
+	struct HIRES_CAR_SHADOW *shadow = &car_shadows[car_shadow_count - 1];
+	struct SHADOW_SILHOUETTE *silhouette = &shadow_silhouettes[car_shadow_count - 1];
+	if (silhouette->shape != shape || silhouette->vertex_bytes != shape->shape3d_vertex_bytes) {
+		if (!shadow_silhouette_build(silhouette, shape)) {
+			return;
+		}
+		silhouette->shape = shape;
+		silhouette->vertex_bytes = shape->shape3d_vertex_bytes;
+	}
+	shadow->silhouette = silhouette;
+	shadow->min_x = silhouette->min_x;
+	shadow->max_x = silhouette->max_x;
+	shadow->min_z = silhouette->min_z;
+	shadow->max_z = silhouette->max_z;
+	shadow->height = silhouette->height;
+	shadow->half_width = (silhouette->max_x - silhouette->min_x) * 0.5;
+	shadow->half_length = (silhouette->max_z - silhouette->min_z) * 0.5;
+}
+
+static legacy_f64 shadow_north_offset(const struct HIRES_CAR_SHADOW *shadow, legacy_f64 gap)
+{
+	/* North is +world Z. A 70-degree southern sun leaves a visible, short
+	 * lean even on the ground; limit travel as the car rises into the air. */
+	legacy_f64 offset = (gap + shadow->height * 0.6) * 0.363970;
+	legacy_f64 limit = SDL_min(shadow->half_width, shadow->half_length) * 0.7;
+	return offset < limit ? offset : limit;
+}
+
+static struct RECTANGLE shadow_bounds(const struct HIRES_CAR_SHADOW *shadow)
+{
+	struct RECTANGLE bounds = {HIRES_WIDTH, 0, HIRES_HEIGHT, 0};
+	/* The flat ground bounds the bottom of the small receiving volume. */
+	legacy_f64 bottom = shadow->position.y - HIRES_CAR_SHADOW_REACH;
+	if (bottom < shadow_ground_y) {
+		bottom = shadow_ground_y;
+	}
+	legacy_f64 extension = shadow_north_offset(shadow, HIRES_CAR_SHADOW_REACH);
+	legacy_f64 extend_x = -extension * shadow->sine;
+	legacy_f64 extend_z = extension * shadow->cosine;
+	struct SHAPE3D_HIRES_VECTOR vertices[8];
+	for (legacy_s32 corner = 0; corner < 8; corner++) {
+		legacy_f64 x = (corner & 1) ? shadow->max_x + SDL_max(0, extend_x)
+									: shadow->min_x + SDL_min(0, extend_x);
+		legacy_f64 z = (corner & 2) ? shadow->max_z + SDL_max(0, extend_z)
+									: shadow->min_z + SDL_min(0, extend_z);
+		legacy_f64 world_x = shadow->position.x + x * shadow->cosine + z * shadow->sine;
+		legacy_f64 world_y = (corner & 4) ? bottom : shadow->position.y;
+		legacy_f64 world_z = shadow->position.z - x * shadow->sine + z * shadow->cosine;
+		struct SHAPE3D_HIRES_VECTOR view = {
+			(world_x * shadow_view.m._11 + world_y * shadow_view.m._12 +
+			 world_z * shadow_view.m._13) /
+				TRIG_FIXED_ONE,
+			(world_x * shadow_view.m._21 + world_y * shadow_view.m._22 +
+			 world_z * shadow_view.m._23) /
+				TRIG_FIXED_ONE,
+			(world_x * shadow_view.m._31 + world_y * shadow_view.m._32 +
+			 world_z * shadow_view.m._33) /
+				TRIG_FIXED_ONE};
+		vertices[corner] = view;
+	}
+	/* Clip the twelve prism edges, including near-camera cars, rather than
+	 * turning a single behind-camera corner into a full-screen scan. */
+	struct SHAPE3D_HIRES_POINT points[20];
+	legacy_s32 count = 0;
+	for (legacy_s32 corner = 0; corner < 8; corner++) {
+		if (vertices[corner].z >= HIRES_NEAR_CLIP_Z) {
+			shape3d_hires_project(&vertices[corner], &points[count++]);
+		}
+		for (legacy_s32 edge = 1; edge <= 4; edge *= 2) {
+			if ((corner & edge) == 0 && ((vertices[corner].z < HIRES_NEAR_CLIP_Z) !=
+										 (vertices[corner | edge].z < HIRES_NEAR_CLIP_Z))) {
+				project_intersection(&vertices[corner], &vertices[corner | edge], &points[count++]);
+			}
+		}
+	}
+	for (legacy_s32 index = 0; index < count; index++) {
+		struct SHAPE3D_HIRES_POINT point = points[index];
+		legacy_s16 px = (legacy_s16)(point.x < 0			 ? 0
+									 : point.x > HIRES_WIDTH ? HIRES_WIDTH
+															 : point.x);
+		legacy_s16 py = (legacy_s16)(point.y < 0			  ? 0
+									 : point.y > HIRES_HEIGHT ? HIRES_HEIGHT
+															  : point.y);
+		if (px < bounds.left) {
+			bounds.left = px;
+		}
+		if (px + 1 > bounds.right) {
+			bounds.right = px + 1;
+		}
+		if (py < bounds.top) {
+			bounds.top = py;
+		}
+		if (py + 1 > bounds.bottom) {
+			bounds.bottom = py + 1;
+		}
+	}
+	return bounds;
+}
+
+static legacy_u8 shadow_opacity(const struct HIRES_CAR_SHADOW *shadow, legacy_f64 x, legacy_f64 y,
+								legacy_f64 z)
+{
+	legacy_f64 gap = shadow->position.y - y;
+	if (gap < -0.5 || gap >= HIRES_CAR_SHADOW_REACH) {
+		return 0;
+	}
+	if (gap < 0) {
+		gap = 0;
+	}
+	x -= shadow->position.x;
+	z -= shadow->position.z + shadow_north_offset(shadow, gap);
+	legacy_f64 shrink = 1 + gap / 128;
+	legacy_f64 u = (x * shadow->cosine - z * shadow->sine) * shrink;
+	legacy_f64 v = (x * shadow->sine + z * shadow->cosine) * shrink;
+	legacy_f64 coverage;
+	if (shadow->silhouette != NULL) {
+		coverage = shadow_silhouette_sample(shadow->silhouette, u, v);
+	} else {
+		/* Retain a modest footprint if a custom model has no usable geometry. */
+		u = absolute_coordinate(u / shadow->half_width);
+		v = absolute_coordinate(v / shadow->half_length);
+		legacy_f64 contour = SDL_max(SDL_max(u, v), (u + v) / 1.7);
+		coverage = SDL_min(1, (1 - contour) * 8);
+	}
+	if (coverage <= 0) {
+		return 0;
+	}
+	/* Fade the last part of the short reach so a high jump has no cutoff. */
+	legacy_f64 fade = (HIRES_CAR_SHADOW_REACH - gap) / 64;
+	if (fade > 1) {
+		fade = 1;
+	}
+	return (legacy_u8)(96 * coverage * fade);
+}
+
+void shape3d_hires_draw_shadows(void)
+{
+	if (!hires_enabled() || car_shadow_count == 0 || projection_focal_length_x == 0 ||
+		projection_focal_length_y == 0) {
+		return;
+	}
+	struct HIRES_RASTER_TARGET target;
+	if (!hires_raster_prepare(&target)) {
+		return;
+	}
+	legacy_f64 focal_x = projection_focal_length_x * HIRES_SCALE;
+	legacy_f64 focal_y = projection_focal_length_y * HIRES_SCALE;
+	legacy_f64 ray_step[3];
+	for (legacy_s32 axis = 0; axis < 3; axis++) {
+		ray_step[axis] = shadow_inverse[axis][0] / focal_x;
+	}
+	legacy_s32 started = 0;
+	for (legacy_s32 car = 0; car < car_shadow_count; car++) {
+		const struct HIRES_CAR_SHADOW *shadow = &car_shadows[car];
+		struct RECTANGLE bounds = shadow_bounds(shadow);
+		if (bounds.left < target.left) {
+			bounds.left = (legacy_s16)target.left;
+		}
+		if (bounds.right > target.right) {
+			bounds.right = (legacy_s16)target.right;
+		}
+		if (bounds.top < target.top) {
+			bounds.top = (legacy_s16)target.top;
+		}
+		if (bounds.bottom > target.bottom) {
+			bounds.bottom = (legacy_s16)target.bottom;
+		}
+		for (legacy_s32 y = bounds.top; y < bounds.bottom; y++) {
+			legacy_f64 view_x =
+				(bounds.left + 0.5 - (legacy_s16)projection_center_x * HIRES_SCALE) / focal_x;
+			legacy_f64 view_y = ((legacy_s16)projection_center_y * HIRES_SCALE - y - 0.5) / focal_y;
+			legacy_f64 ray[3];
+			for (legacy_s32 axis = 0; axis < 3; axis++) {
+				ray[axis] = shadow_inverse[axis][0] * view_x + shadow_inverse[axis][1] * view_y +
+							shadow_inverse[axis][2];
+			}
+			for (legacy_s32 x = bounds.left; x < bounds.right; x++) {
+				legacy_u32 family = 0;
+				size_t pixel = (size_t)y * HIRES_WIDTH + x;
+				if (x >= target.depth_left && x < target.depth_right && y >= target.depth_top &&
+					y < target.depth_bottom) {
+					family = target.depth_family[pixel];
+				}
+				legacy_f64 depth = 0;
+				if (family != 0) {
+					if (family <= primitive_count &&
+						shapes[primitives[family - 1].shape].shadow_receiver) {
+						depth = 1.0 / target.inverse_depth[pixel];
+					}
+				} else if (ray[1] < 0 && shadow_ground_y < 0) {
+					/* Flat grass is the skybox's ground fill, not queued geometry. */
+					depth = shadow_ground_y / ray[1];
+				}
+				if (depth >= HIRES_NEAR_CLIP_Z) {
+					legacy_u8 opacity =
+						shadow_opacity(shadow, ray[0] * depth, ray[1] * depth, ray[2] * depth);
+					if (opacity != 0) {
+						if (!started) {
+							if (!hires_shadow_begin()) {
+								return;
+							}
+							started = 1;
+						}
+						hires_shadow_pixel(x, y, opacity);
+					}
+				}
+				for (legacy_s32 axis = 0; axis < 3; axis++) {
+					ray[axis] += ray_step[axis];
+				}
+			}
+		}
+	}
 }
 
 #endif

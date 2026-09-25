@@ -882,6 +882,8 @@ legacy_u16 shape3d_transform_and_queue(struct TRANSFORMEDSHAPE3D *instance)
 		depth_mode = SHAPE3D_HIRES_DEPTH_ORDERED;
 	}
 	shape3d_hires_begin_shape(polyinfonumpolys, depth_mode);
+	shape3d_hires_set_shadow_receiver(
+		(transshapeflags & (SHAPE3D_NO_SHADOW_RECEIVE_FLAG | SHAPE3D_GHOST_FLAG)) == 0);
 #endif
 
 	legacy_s32 depth_sum;
@@ -1643,6 +1645,7 @@ void shape3d_render_queued_primitives(void)
 #if defined(RESTUNTS_SDL3)
 	if (high_resolution != 0) {
 		shape3d_hires_batch_end();
+		shape3d_hires_draw_shadows();
 		hires_end();
 	}
 #endif

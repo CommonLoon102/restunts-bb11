@@ -1502,6 +1502,284 @@ static void test_parallel_batches_match_serial(void)
 	}
 }
 
+struct SHADOW_TEST_IMAGE {
+	const legacy_u32 *pixels;
+	legacy_f64 centroid_x, centroid_z;
+	legacy_f64 half_width, half_length;
+};
+static struct SHADOW_TEST_IMAGE shadow_image;
+
+/* A camera directly above the car makes the world footprint measurable
+ * without depending on the shadow implementation's projection helpers. */
+static void begin_shadow_scene(legacy_s16 car_height, legacy_s16 heading)
+{
+	const struct VECTOR camera = {0, 400, 0};
+	const struct VECTOR car = {0, (legacy_s16)(car_height - camera.y), 0};
+	reset_target();
+	memset(&mat_temp, 0, sizeof(mat_temp));
+	mat_temp.m._11 = 16384;
+	mat_temp.m._23 = 16384;
+	mat_temp.m._32 = -16384;
+	projection_center_x = 160;
+	projection_center_y = 100;
+	projection_focal_length_x = projection_focal_length_y = 160;
+	hires_depth_begin(0, HIRES_WIDTH, 0, HIRES_HEIGHT);
+	shape3d_hires_shadows_begin(&camera);
+	shape3d_hires_shadow_car(&car, heading, 40, 75);
+	shadow_image.half_width = 40;
+	shadow_image.half_length = 75;
+}
+
+static void queue_shadow_receiver(legacy_u32 index, legacy_s16 height, legacy_s32 receiver,
+								  legacy_f64 right)
+{
+	const legacy_u8 indices[] = {0, 1, 2, 3};
+	const struct SHAPE3D_HIRES_VECTOR plane[] = {{-150, -150, 400 - height},
+												 {right, -150, 400 - height},
+												 {right, 150, 400 - height},
+												 {-150, 150, 400 - height}};
+	shape3d_hires_begin_shape(index, SHAPE3D_HIRES_DEPTH_SORTED);
+	shape3d_hires_set_shadow_receiver(receiver);
+	shape3d_hires_queue(index, RENDER_PRIMITIVE_POLYGON, 4, indices, plane, 0);
+}
+
+static legacy_u32 finish_shadow_scene(legacy_s16 receiver_height, legacy_s16 heading,
+									  legacy_u8 excluded_color)
+{
+	static legacy_u8 indexed[HIRES_WIDTH * HIRES_HEIGHT];
+	legacy_u32 palette[256];
+	for (legacy_u32 index = 0; index < 256; index++) {
+		palette[index] = 0xFFC0C0C0U;
+	}
+	palette[15] = 0xFFFFFFFFU;
+	memcpy(indexed, pixels(), sizeof(indexed));
+	shape3d_hires_draw_shadows();
+	hires_end();
+	assert(memcmp(indexed, pixels(), sizeof(indexed)) == 0);
+	const legacy_u32 *image = hires_framebuffer_argb(screen, palette);
+	legacy_u32 changed = 0;
+	shadow_image.pixels = image;
+	shadow_image.centroid_x = shadow_image.centroid_z = 0;
+	legacy_f64 weight_total = 0;
+	for (legacy_s32 y = 0; image != NULL && y < HIRES_HEIGHT; y++) {
+		for (legacy_s32 x = 0; x < HIRES_WIDTH; x++) {
+			legacy_u32 offset = y * HIRES_WIDTH + x;
+			if (image[offset] == palette[indexed[offset]]) {
+				continue;
+			}
+			assert(indexed[offset] != excluded_color);
+			assert((image[offset] & 0xFFFFFFU) < (palette[indexed[offset]] & 0xFFFFFFU));
+			/* A short extension is permitted only toward world north (+Z).
+			 * The soft fringe still stays within the other three bounds. */
+			legacy_f64 world_x = (x + 0.5 - 640) * (400 - receiver_height) / 640;
+			legacy_f64 world_z = (400 - y - 0.5) * (400 - receiver_height) / 640;
+			legacy_f64 half_x =
+				(heading & 256) == 0 ? shadow_image.half_width : shadow_image.half_length;
+			legacy_f64 half_z =
+				(heading & 256) == 0 ? shadow_image.half_length : shadow_image.half_width;
+			legacy_f64 north_extension = (half_x < half_z ? half_x : half_z) * 0.7;
+			assert(world_x >= -half_x - 0.5 && world_x <= half_x + 0.5);
+			assert(world_z >= -half_z - 0.5 && world_z <= half_z + north_extension + 0.5);
+			legacy_f64 weight = (palette[indexed[offset]] & 255U) - (image[offset] & 255U);
+			shadow_image.centroid_x += world_x * weight;
+			shadow_image.centroid_z += world_z * weight;
+			weight_total += weight;
+			changed++;
+		}
+	}
+	if (weight_total > 0) {
+		shadow_image.centroid_x /= weight_total;
+		shadow_image.centroid_z /= weight_total;
+	}
+	return changed;
+}
+
+static void test_car_shadow_stays_below_and_shrinks(void)
+{
+	const legacy_s16 heights[] = {0, 48, 128};
+	for (legacy_s16 heading = 0; heading <= 256; heading += 256) {
+		legacy_u32 previous = HIRES_WIDTH * HIRES_HEIGHT;
+		for (legacy_u32 height = 0; height < sizeof(heights) / sizeof(heights[0]); height++) {
+			begin_shadow_scene(heights[height], heading);
+			queue_shadow_receiver(0, 0, 1, 150);
+			shape3d_hires_render(0, RENDER_PRIMITIVE_POLYGON, 8, 0, 0, 0, 0);
+			legacy_u32 coverage = finish_shadow_scene(0, heading, 0);
+			assert(coverage > 100);
+			assert(coverage < previous);
+			previous = coverage;
+		}
+	}
+}
+
+/* A narrow open-wheel body, four cylinders and four suspension lines leave
+ * deliberate gaps that a generic rounded rectangle cannot reproduce. */
+static struct SHAPE3D shadow_model;
+static legacy_u8 shadow_model_vertices[36 * SHAPE3D_VERTEX_SIZE];
+static legacy_u8 shadow_model_primitives[7 + 4 * 9 + 4 * 5 + 2];
+
+static void prepare_shadow_model(legacy_s16 scale)
+{
+	struct VECTOR vertices[36] = {{-12, 24, -60}, {12, 24, -60}, {12, 24, 60}, {-12, 24, 60}};
+	memset(&shadow_model, 0, sizeof(shadow_model));
+	shadow_model.shape3d_numverts = 36;
+	shadow_model.shape3d_numprimitives = 9;
+	shadow_model.shape3d_numpaints = 1;
+	shadow_model.shape3d_vertex_bytes = shadow_model_vertices;
+	shadow_model.shape3d_primitives = shadow_model_primitives;
+	const legacy_u8 body[] = {4, 0, 0, 0, 1, 2, 3};
+	memcpy(shadow_model_primitives, body, sizeof(body));
+	legacy_u32 offset = sizeof(body);
+	for (legacy_u32 wheel = 0; wheel < 4; wheel++) {
+		legacy_s16 side = (wheel & 1) != 0 ? 1 : -1;
+		legacy_s16 z = wheel < 2 ? -43 : 43;
+		legacy_u8 base = (legacy_u8)(4 + wheel * 6);
+		vertices[base] = (struct VECTOR){(legacy_s16)(side * 28), 12, z};
+		vertices[base + 1] = (struct VECTOR){(legacy_s16)(side * 28), 12, (legacy_s16)(z + 12)};
+		vertices[base + 2] = (struct VECTOR){(legacy_s16)(side * 28), 24, z};
+		vertices[base + 3] = (struct VECTOR){(legacy_s16)(side * 40), 12, z};
+		vertices[base + 4] = (struct VECTOR){(legacy_s16)(side * 40), 12, (legacy_s16)(z + 12)};
+		vertices[base + 5] = (struct VECTOR){(legacy_s16)(side * 40), 24, z};
+		shadow_model_primitives[offset++] = 12;
+		shadow_model_primitives[offset++] = 0;
+		shadow_model_primitives[offset++] = 0;
+		for (legacy_u32 vertex = 0; vertex < 6; vertex++) {
+			shadow_model_primitives[offset++] = (legacy_u8)(base + vertex);
+		}
+		base = (legacy_u8)(28 + wheel * 2);
+		vertices[base] =
+			(struct VECTOR){(legacy_s16)(side * 10), 12, (legacy_s16)(z < 0 ? -37 : 37)};
+		vertices[base + 1] = (struct VECTOR){(legacy_s16)(side * 28), 12, z};
+	}
+	for (legacy_u32 wheel = 0; wheel < 4; wheel++) {
+		shadow_model_primitives[offset++] = 2;
+		shadow_model_primitives[offset++] = 0;
+		shadow_model_primitives[offset++] = 0;
+		shadow_model_primitives[offset++] = (legacy_u8)(28 + wheel * 2);
+		shadow_model_primitives[offset++] = (legacy_u8)(29 + wheel * 2);
+	}
+	shadow_model_primitives[offset++] = 0;
+	shadow_model_primitives[offset] = 0;
+	for (legacy_u16 vertex = 0; vertex < 36; vertex++) {
+		vertices[vertex].x *= scale;
+		vertices[vertex].y *= scale;
+		vertices[vertex].z *= scale;
+		shape3d_vertex_write(&shadow_model, vertex, &vertices[vertex]);
+	}
+}
+
+static legacy_u32 render_shadow_model(legacy_s16 heading, legacy_s16 scale)
+{
+	begin_shadow_scene(0, heading);
+	shape3d_hires_shadow_model(&shadow_model);
+	shadow_image.half_width = 40 * scale;
+	shadow_image.half_length = 60 * scale;
+	queue_shadow_receiver(0, 0, 1, 150);
+	shape3d_hires_render(0, RENDER_PRIMITIVE_POLYGON, 8, 0, 0, 0, 0);
+	return finish_shadow_scene(0, heading, 0);
+}
+
+static legacy_u32 shadow_samples_near(legacy_f64 world_x, legacy_f64 world_z)
+{
+	legacy_s32 center_x = (legacy_s32)(640 + world_x * 1.6);
+	legacy_s32 center_y = (legacy_s32)(400 - world_z * 1.6);
+	legacy_u32 changed = 0;
+	for (legacy_s32 y = center_y - 1; y <= center_y + 1; y++) {
+		for (legacy_s32 x = center_x - 1; x <= center_x + 1; x++) {
+			changed += shadow_image.pixels[y * HIRES_WIDTH + x] != 0xFFC0C0C0U;
+		}
+	}
+	return changed;
+}
+
+static void test_car_shadow_model_details_and_north_light(void)
+{
+	prepare_shadow_model(1);
+	shape3d_hires_shadow_models_reset();
+	for (legacy_s16 heading = 0; heading < 1024; heading += 256) {
+		assert(render_shadow_model(heading, 1) > 100);
+		/* Car heading changes the silhouette, never the sun's direction. */
+		assert(shadow_image.centroid_x > -0.5 && shadow_image.centroid_x < 0.5);
+		assert(shadow_image.centroid_z > 3 && shadow_image.centroid_z < 20);
+	}
+	assert(render_shadow_model(0, 1) > 100);
+	legacy_f64 north = shadow_image.centroid_z;
+	assert(shadow_samples_near(0, north) == 9);
+	for (legacy_s16 side = -1; side <= 1; side += 2) {
+		for (legacy_s16 end = -1; end <= 1; end += 2) {
+			assert(shadow_samples_near(side * 34, end * 43 + north) == 9);
+			assert(shadow_samples_near(side * 20, end * 40 + north) > 0);
+			assert(shadow_samples_near(side * 20, end * 20 + north) == 0);
+		}
+	}
+}
+
+static void test_car_shadow_model_size_and_cache_reset(void)
+{
+	prepare_shadow_model(1);
+	shape3d_hires_shadow_models_reset();
+	legacy_u32 small = render_shadow_model(0, 1);
+	/* Reloading a different car may reuse both the shape and vertex addresses.
+	 * Its geometry must supersede the cached mask after resource invalidation. */
+	prepare_shadow_model(2);
+	shape3d_hires_shadow_models_reset();
+	legacy_u32 large = render_shadow_model(0, 2);
+	assert(large > small * 3.6 && large < small * 4.4);
+	assert(shadow_samples_near(68, 86 + shadow_image.centroid_z) == 9);
+	shape3d_hires_shadow_models_reset();
+}
+
+static void test_car_shadow_receiver_height(void)
+{
+	/* Elevated track under a car receives a shadow; a roof above it does
+	 * not. Nor should a car high in the air darken remote terrain. */
+	const legacy_s16 car_heights[] = {96, 24, 300};
+	const legacy_s16 surface_heights[] = {64, 64, 0};
+	for (legacy_u32 scene = 0; scene < 3; scene++) {
+		begin_shadow_scene(car_heights[scene], 0);
+		queue_shadow_receiver(0, surface_heights[scene], 1, 150);
+		shape3d_hires_render(0, RENDER_PRIMITIVE_POLYGON, 8, 0, 0, 0, 0);
+		legacy_u32 coverage = finish_shadow_scene(surface_heights[scene], 0, 0);
+		assert(scene == 0 ? coverage > 100 : coverage == 0);
+	}
+}
+
+static void test_car_shadow_excludes_car_geometry(void)
+{
+	begin_shadow_scene(24, 0);
+	/* An excluded car panel covers the left half of the footprint, even
+	 * though it lies below the caster. The next shape is ordinary road. */
+	queue_shadow_receiver(0, 8, 0, 0);
+	const struct SHAPE3D_HIRES_VECTOR road[] = {
+		{-150, -150, 400}, {150, -150, 400}, {150, 150, 400}, {-150, 150, 400}};
+	queue_polygon_shape(1, SHAPE3D_HIRES_DEPTH_SORTED, road);
+	shape3d_hires_render(1, RENDER_PRIMITIVE_POLYGON, 8, 0, 0, 0, 0);
+	shape3d_hires_render(0, RENDER_PRIMITIVE_POLYGON, 9, 0, 0, 0, 0);
+	assert(pixels()[400 * HIRES_WIDTH + 620] == 9);
+	assert(pixels()[400 * HIRES_WIDTH + 660] == 8);
+	assert(finish_shadow_scene(0, 0, 9) > 100);
+}
+
+static void test_car_shadow_ground_fallback_and_reset(void)
+{
+	/* The ordinary flat ground has no queued depth surface. */
+	begin_shadow_scene(24, 0);
+	assert(finish_shadow_scene(0, 0, 0) > 100);
+	begin_shadow_scene(24, 0);
+	shape3d_hires_reset();
+	assert(finish_shadow_scene(0, 0, 0) == 0);
+
+	begin_shadow_scene(24, 0);
+	hires_set_enabled(0);
+	shape3d_hires_draw_shadows();
+	hires_end();
+	for (legacy_u32 index = 0; index < 320 * 200; index++) {
+		assert(screen[index] == 3);
+	}
+	legacy_u32 palette[256] = {0};
+	assert(hires_framebuffer_argb(screen, palette) == NULL);
+	hires_set_enabled(1);
+}
+
 int main(void)
 {
 	screen = dos_memory_make_pointer(0xA000, 0);
@@ -1559,6 +1837,12 @@ int main(void)
 	test_shared_edge_pixel_coverage();
 	test_shared_edge_near_clipping();
 	test_parallel_batches_match_serial();
+	test_car_shadow_stays_below_and_shrinks();
+	test_car_shadow_model_details_and_north_light();
+	test_car_shadow_model_size_and_cache_reset();
+	test_car_shadow_receiver_height();
+	test_car_shadow_excludes_car_geometry();
+	test_car_shadow_ground_fallback_and_reset();
 	hires_shutdown();
 	puts("High-resolution 3D projection and raster tests passed.");
 	return 0;

@@ -34,6 +34,113 @@ static legacy_s16 cockpit_effect_kind;
 static legacy_s16 ghost_fixture_active;
 static legacy_s16 ghost_wheel_updates;
 
+#if defined(RESTUNTS_SDL3)
+legacy_u16 frame_callback_count;
+legacy_s8 *lookahead_tiles_tables[8];
+
+struct FRAME_SHADOW_FIXTURE {
+	struct VECTOR position;
+	legacy_s16 heading, half_width, half_length;
+	const struct SHAPE3D *model;
+};
+static struct FRAME_SHADOW_FIXTURE shadow_cars[2];
+static struct VECTOR shadow_camera;
+static legacy_s16 shadow_count, shadow_begin_count, shadow_projection_count;
+static legacy_s16 shadow_frame_active;
+
+void shape3d_hires_shadows_begin(const struct VECTOR *camera_position)
+{
+	assert(shadow_projection_count == 1);
+	shadow_camera = *camera_position;
+	shadow_count = 0;
+	shadow_begin_count++;
+}
+
+void shape3d_hires_shadow_car(const struct VECTOR *position, legacy_s16 heading,
+							  legacy_s16 half_width, legacy_s16 half_length)
+{
+	assert(shadow_begin_count == 1 && shadow_count < 2);
+	shadow_cars[shadow_count++] =
+		(struct FRAME_SHADOW_FIXTURE){*position, heading, half_width, half_length, NULL};
+}
+
+void shape3d_hires_shadow_model(const struct SHAPE3D *shape)
+{
+	assert(shadow_count > 0 && shadow_count <= 2);
+	assert(shadow_cars[shadow_count - 1].model == NULL);
+	shadow_cars[shadow_count - 1].model = shape;
+}
+
+legacy_u16 select_cliprect_rotate(legacy_s16 roll, legacy_s16 pitch, legacy_s16 yaw,
+								  struct RECTANGLE *cliprect, legacy_s16 half_scale)
+{
+	(void)cliprect;
+	(void)half_scale;
+	mat_temp = *mat_rot_zxy(roll, pitch, yaw, MATRIX_ROTATION_ORDER_YXZ);
+	shadow_projection_count++;
+	return 0;
+}
+
+void polyinfo_set_supersight(legacy_u8 enabled)
+{
+	(void)enabled;
+}
+
+void shape3d_render_queued_primitives(void)
+{
+	assert(shadow_frame_active != 0);
+}
+
+legacy_s16 skybox_render(legacy_s16 view_index, struct RECTANGLE *clip, legacy_s16 direction,
+						 struct MATRIX *rotation, legacy_s16 roll, legacy_s16 angle,
+						 legacy_s16 camera_y)
+{
+	(void)view_index;
+	(void)clip;
+	(void)direction;
+	(void)rotation;
+	(void)roll;
+	(void)angle;
+	(void)camera_y;
+	return 0;
+}
+
+struct RECTANGLE *draw_ingame_text(void)
+{
+	return &empty_rect;
+}
+
+void format_frame_as_string(legacy_s8 *destination, legacy_s16 frames, legacy_s16 hundredths)
+{
+	(void)destination;
+	(void)frames;
+	(void)hundredths;
+	assert(0);
+}
+
+struct RECTANGLE *intro_draw_text(legacy_s8 *text, legacy_s16 x, legacy_s16 y, legacy_s16 color,
+								  legacy_s16 shadow_color)
+{
+	(void)text;
+	(void)x;
+	(void)y;
+	(void)color;
+	(void)shadow_color;
+	assert(0);
+	return &empty_rect;
+}
+
+void shape2d_draw_scaled_transparent_clipped(legacy_s16 scale, struct SHAPE2D far *shape,
+											 legacy_s16 x, legacy_s16 y)
+{
+	(void)scale;
+	(void)shape;
+	(void)x;
+	(void)y;
+	assert(0);
+}
+#endif
+
 struct CARSTATE *ghost_car_state(void)
 {
 	return ghost_fixture_active != 0 ? &ghost_fixture : 0;
@@ -89,6 +196,13 @@ void shape3d_update_car_wheel_vertices(struct SHAPE3D *shape, legacy_u16 first_v
 									   legacy_s16 *cached_wheel_state, struct VECTOR *base_vertices,
 									   struct VECTOR *front_wheel_centers)
 {
+#if defined(RESTUNTS_SDL3)
+	if (shadow_frame_active != 0) {
+		assert(shape == &game3dshapes[PLAYER_CAR_WHEEL_SHAPE] ||
+			   shape == &game3dshapes[OPPONENT_CAR_WHEEL_SHAPE]);
+		return;
+	}
+#endif
 	assert(shape == &game3dshapes[127]);
 	assert(first_vertex == FRAME_STEERED_WHEEL_FIRST_VERTEX);
 	assert(steering_angle == ghost_fixture.car_steeringAngle);
@@ -957,6 +1071,135 @@ static void test_supersight_capacity_retries(void)
 }
 #endif
 
+#if defined(RESTUNTS_SDL3)
+static void test_supersight_car_shadows(void)
+{
+	struct RECTANGLE cliprect = {0, 320, 0, 200};
+	static struct FRAME_LOOKAHEAD_TILE lookahead[24];
+	lookahead_tiles_tables[0] = (legacy_s8 *)lookahead;
+	configure_track();
+	memset(&state, 0, sizeof(state));
+	memset(&simd_player, 0, sizeof(simd_player));
+	memset(&simd_opponent, 0, sizeof(simd_opponent));
+	state.playerstate.car_position = (struct VECTORLONG){640000, 6400, 700000};
+	state.opponentstate.car_position = (struct VECTORLONG){660000, 9600, 720000};
+	state.playerstate.car_rotate.x = 179;
+	state.opponentstate.car_rotate.x = -321;
+	state.game_follow_camera_position[0] = (struct VECTOR){9500, 500, 10000};
+	state.game_follow_camera_position[1] = (struct VECTOR){9600, 600, 10100};
+	simd_player.car_height = simd_opponent.car_height = 40;
+	simd_player.collide_points[0].px = 47;
+	simd_player.collide_points[1].px = 96;
+	simd_opponent.collide_points[0].px = 39;
+	simd_opponent.collide_points[1].px = 81;
+	ghost_fixture = state.opponentstate;
+	ghost_fixture.car_position.lx += 10000;
+	ghost_camera_fixture.follow_position = (struct VECTOR){9000, 450, 10300};
+	ghost_simd_fixture.car_height = 40;
+	trkObjectList[FRAME_PLAYER_SORT_ID].ss_shapePtr = &game3dshapes[PLAYER_CAR_WHEEL_SHAPE];
+	trkObjectList[FRAME_OPPONENT_SORT_ID].ss_shapePtr = &game3dshapes[OPPONENT_CAR_WHEEL_SHAPE];
+	trkObjectList[FRAME_PLAYER_SORT_ID].ss_loShapePtr = &game3dshapes[PLAYER_CAR_LOW_SHAPE];
+	trkObjectList[FRAME_OPPONENT_SORT_ID].ss_loShapePtr = &game3dshapes[OPPONENT_CAR_LOW_SHAPE];
+	start_finish_column = -1;
+	detail_level = 1;
+	slow_video_mgmt_copy = 0;
+	game_replay_mode = REPLAY_MODE_PAUSED;
+	terrainHeight = 0;
+	track_wall_collision_enabled = 0;
+	shadow_frame_active = 1;
+	/* Exercise the actual frame entry point, including T into an AI or ghost
+	 * cockpit, with both a live pose and a separate interpolated snapshot. */
+	for (legacy_s16 snapshot = 0; snapshot < 2; snapshot++) {
+		struct GAMESTATE presentation = state;
+		presentation.playerstate.car_position.lx += 640;
+		frame_state = snapshot != 0 ? &presentation : &state;
+		frame_uses_snapshot = snapshot;
+		frame_ghost = &ghost_fixture;
+		frame_ghost_camera = &ghost_camera_fixture;
+		for (legacy_s16 scenario = 0; scenario < 48; scenario++) {
+			supersight_enabled = scenario & 1;
+			followOpponentFlag = (scenario >> 1) & 1;
+			cameramode = (scenario & 4) != 0 ? CAMERA_MODE_COCKPIT : CAMERA_MODE_FOLLOW;
+			gameconfig.game_opponenttype = (scenario >> 3) & 1;
+			ghost_fixture_active = gameconfig.game_opponenttype == 0;
+			state.playerstate.car_crashBmpFlag = presentation.playerstate.car_crashBmpFlag =
+				scenario >= 32 ? CRASH_EVENT_WATER : CRASH_EVENT_NONE;
+			state.opponentstate.car_crashBmpFlag = presentation.opponentstate.car_crashBmpFlag =
+				scenario >= 16 && scenario < 32 ? CRASH_EVENT_WATER : CRASH_EVENT_NONE;
+			reset_shapes();
+			shadow_count = shadow_begin_count = shadow_projection_count = 0;
+			update_frame(0, &cliprect);
+			assert(shadow_begin_count == supersight_enabled);
+			legacy_s16 expected_count = 0;
+			for (legacy_s16 car_index = 0; car_index < 2; car_index++) {
+				const struct CARSTATE *car =
+					car_index == 0 ? &frame_state->playerstate : &frame_state->opponentstate;
+				const struct SIMD *simd = car_index == 0 ? &simd_player : &simd_opponent;
+				if (supersight_enabled == 0 ||
+					(car_index == 1 && gameconfig.game_opponenttype == 0) ||
+					car->car_crashBmpFlag == CRASH_EVENT_WATER ||
+					(cameramode == CAMERA_MODE_COCKPIT && car_index == followOpponentFlag)) {
+					continue;
+				}
+				assert(expected_count < shadow_count);
+				const struct FRAME_SHADOW_FIXTURE *shadow = &shadow_cars[expected_count++];
+				assert(shadow->position.x ==
+					   position_to_word(car->car_position.lx) - shadow_camera.x);
+				assert(shadow->position.y ==
+					   position_to_word(car->car_position.ly) - shadow_camera.y);
+				assert(shadow->position.z ==
+					   position_to_word(car->car_position.lz) - shadow_camera.z);
+				assert(shadow->heading == -car->car_rotate.x);
+				assert(shadow->half_width == simd->collide_points[0].px);
+				assert(shadow->half_length == simd->collide_points[1].px);
+				assert(shadow->model == &game3dshapes[car_index == 0 ? PLAYER_CAR_WHEEL_SHAPE
+																	 : OPPONENT_CAR_WHEEL_SHAPE]);
+			}
+			assert(shadow_count == expected_count);
+		}
+	}
+	frame_uses_snapshot = 0;
+	frame_state = &state;
+	frame_ghost = 0;
+	frame_ghost_camera = 0;
+	ghost_fixture_active = 0;
+	/* Body, wheel model, ghost and attached debris all reject receiving;
+	 * ordinary rendering retains exactly its original flag bits. */
+	for (legacy_s16 enabled = 0; enabled < 2; enabled++) {
+		for (legacy_s16 ghost = 0; ghost < 2; ghost++) {
+			reset_shapes();
+			supersight_enabled = enabled;
+			state.playerstate.car_crashBmpFlag = CRASH_EVENT_NONE;
+			state.game_particles_active = 1;
+			state.game_particle_forward_speed[0] = 1;
+			state.game_particle_owner[0] = PLAYER_CAR_INDEX;
+			state.game_particle_shape_index[0] = 0;
+			particle_scene_objects[0].ss_shapePtr = &game3dshapes[116];
+			struct VECTOR camera_position = {0};
+			struct RECTANGLE crash_rect = {0};
+			frame_add_car(&state.playerstate, PLAYER_CAR_INDEX, FRAME_PLAYER_SORT_ID,
+						  &game3dshapes[PLAYER_CAR_WHEEL_SHAPE], player_wheel_vertex_state,
+						  player_base_wheel_vertices, player_front_wheel_centers,
+						  &frame_player_car_rect, &crash_rect, &camera_position, 0,
+						  ghost != 0 ? SHAPE3D_GHOST_FLAG : 0, 0, 0);
+			assert(transformedshape_counter == (ghost != 0 ? 1 : 2));
+			for (legacy_s16 shape = 0; shape < transformedshape_counter; shape++) {
+				assert(((currenttransshape[shape].ts_flags & SHAPE3D_NO_SHADOW_RECEIVE_FLAG) !=
+						0) == enabled);
+			}
+			legacy_s16 body = transformedshape_counter - 1;
+			assert(currenttransshape[body].shapeptr == &game3dshapes[PLAYER_CAR_WHEEL_SHAPE]);
+			assert((currenttransshape[body].ts_flags & ~SHAPE3D_NO_SHADOW_RECEIVE_FLAG) ==
+				   (FRAME_TRANSFORM_FLAGS_DEFAULT | (ghost != 0 ? SHAPE3D_GHOST_FLAG : 0)));
+		}
+	}
+	shadow_frame_active = 0;
+	supersight_enabled = 0;
+	state.game_particles_active = 0;
+	followOpponentFlag = 0;
+}
+#endif
+
 int main(void)
 {
 	test_camera_modes();
@@ -979,6 +1222,9 @@ int main(void)
 	test_prediction_uses_authoritative_events();
 	test_supersight_selection();
 	test_supersight_capacity_retries();
+#if defined(RESTUNTS_SDL3)
+	test_supersight_car_shadows();
+#endif
 	puts("Frame rendering snapshots, ghost isolation and SuperSight passed.");
 	return 0;
 }

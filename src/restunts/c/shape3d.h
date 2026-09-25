@@ -16,6 +16,8 @@
 #define SHAPE3D_GHOST_FLAG 16U
 /* Camera-relative scenery is painted behind all world geometry in SuperSight. */
 #define SHAPE3D_BACKGROUND_FLAG 32U
+/* Cars and their wheels never receive the simple ground shadow. */
+#define SHAPE3D_NO_SHADOW_RECEIVE_FLAG 64U
 
 enum BACKLIGHT_PAINT {
 	BACKLIGHT_PAINT_DEFAULT = 45,

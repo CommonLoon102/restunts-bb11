@@ -34,6 +34,19 @@ enum SHAPE3D_HIRES_DEPTH_MODE {
 	SHAPE3D_HIRES_DEPTH_BACKGROUND
 };
 void shape3d_hires_begin_shape(legacy_u32 index, legacy_s32 depth_mode);
+void shape3d_hires_set_shadow_receiver(legacy_s32 enabled);
+/* At most two car silhouettes; visible receivers reuse the scene depth buffer.
+ * Positions are camera-relative world coordinates, with Y up and heading around Y. */
+void shape3d_hires_shadows_begin(const struct VECTOR *camera_position);
+void shape3d_hires_shadow_car(const struct VECTOR *relative_position, legacy_s16 heading,
+							  legacy_s16 half_width, legacy_s16 half_length);
+struct SHAPE3D;
+/* Attach the loaded model to the last car; masks are cached across frames. */
+void shape3d_hires_shadow_model(const struct SHAPE3D *shape);
+/* Invalidate cached geometry before car resources are replaced or freed. */
+void shape3d_hires_shadow_models_reset(void);
+/* Apply to visible receivers after the joined scene pass, before hires_end. */
+void shape3d_hires_draw_shadows(void);
 void shape3d_hires_queue(legacy_u32 index, legacy_u8 type, legacy_u16 vertex_count,
 						 const legacy_u8 *indices, const struct SHAPE3D_HIRES_VECTOR *vertices,
 						 legacy_u16 flags);
