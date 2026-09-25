@@ -1182,6 +1182,142 @@ static void test_shadow_composition(void)
 	hires_forget(screen.base);
 }
 
+/* Direct presentation must match the existing readback paths while respecting
+ * the caller's row pitch and leaving every source representation untouched. */
+static void assert_framebuffer_copy(const struct TEST_SURFACE *screen, const legacy_u32 *palette)
+{
+	enum { COPY_GUARD_PIXELS = 3, COPY_ROW_PADDING = 7 };
+	const legacy_u32 guard = 0xC15E9A27U;
+	const legacy_s32 paddings[] = {0, COPY_ROW_PADDING};
+	legacy_s32 width, height;
+	const legacy_u8 *indexed = hires_framebuffer(screen->base, &width, &height);
+	const legacy_u32 *argb = hires_framebuffer_argb(screen->base, palette);
+	legacy_s32 has_argb = argb != NULL;
+	size_t pixels = (size_t)width * height;
+	legacy_u8 *original_indices = malloc(pixels);
+	legacy_u32 *expected = malloc(pixels * sizeof(*expected));
+	assert(original_indices != NULL && expected != NULL);
+	memcpy(original_indices, indexed, pixels);
+	for (size_t pixel = 0; pixel < pixels; pixel++) {
+		expected[pixel] = has_argb ? argb[pixel] : palette[indexed[pixel]];
+	}
+	legacy_u8 original_legacy[TEST_BYTES];
+	legacy_u32 original_palette[TEST_PALETTE_SIZE];
+	memcpy(original_legacy, screen->base, sizeof(original_legacy));
+	memcpy(original_palette, palette, sizeof(original_palette));
+	legacy_u32 generation = hires_generation();
+	for (size_t pass = 0; pass < sizeof(paddings) / sizeof(paddings[0]); pass++) {
+		legacy_s32 stride = width + paddings[pass];
+		size_t allocation = (size_t)stride * height + COPY_GUARD_PIXELS * 2;
+		legacy_u32 *guarded = malloc(allocation * sizeof(*guarded));
+		assert(guarded != NULL);
+		for (size_t pixel = 0; pixel < allocation; pixel++) {
+			guarded[pixel] = guard;
+		}
+		legacy_u32 *output = guarded + COPY_GUARD_PIXELS;
+		hires_copy_framebuffer_argb(screen->base, palette, output,
+									stride * (legacy_s32)sizeof(*output));
+		for (legacy_s32 row = 0; row < height; row++) {
+			assert(memcmp(output + (size_t)row * stride, expected + (size_t)row * width,
+						  (size_t)width * sizeof(*output)) == 0);
+			for (legacy_s32 column = width; column < stride; column++) {
+				assert(output[(size_t)row * stride + column] == guard);
+			}
+		}
+		for (legacy_s32 pixel = 0; pixel < COPY_GUARD_PIXELS; pixel++) {
+			assert(guarded[pixel] == guard);
+			assert(output[(size_t)stride * height + pixel] == guard);
+		}
+		free(guarded);
+	}
+	assert(hires_generation() == generation);
+	assert(memcmp(screen->base, original_legacy, sizeof(original_legacy)) == 0);
+	assert(memcmp(palette, original_palette, sizeof(original_palette)) == 0);
+	indexed = hires_framebuffer(screen->base, &width, &height);
+	assert(memcmp(indexed, original_indices, pixels) == 0);
+	argb = hires_framebuffer_argb(screen->base, palette);
+	assert((argb != NULL) == has_argb);
+	if (has_argb) {
+		assert(memcmp(argb, expected, pixels * sizeof(*expected)) == 0);
+	}
+	free(expected);
+	free(original_indices);
+}
+
+static void test_framebuffer_copy(void)
+{
+	enum {
+		COPY_LEGACY,
+		COPY_NO_SURFACE,
+		COPY_INDEXED,
+		COPY_ARGB,
+		COPY_CASES,
+		COPY_SEGMENT = 0x9000U,
+		COPY_LEFT = 40,
+		COPY_TOP = 60,
+		COPY_WIDTH = 3,
+		COPY_HEIGHT = 2,
+		COPY_LEGACY_ROW_STEP = 17,
+		COPY_GREEN_STEP = 3,
+		COPY_SHADOW_OPACITY = 85
+	};
+	const legacy_u32 fades[] = {TEST_WHITE_ARGB, 0xFF814325U, TEST_OPAQUE_ALPHA};
+	const legacy_u32 overlays[] = {0x00112233U, 0x01112233U, 0x80112233U, 0xFF112233U};
+	struct TEST_SURFACE screen;
+	setup_surface(&screen, COPY_SEGMENT, 0);
+	legacy_u32 palette[TEST_PALETTE_SIZE];
+	for (legacy_u32 index = 0; index < TEST_PALETTE_SIZE; index++) {
+		palette[index] = TEST_OPAQUE_ALPHA | (index << LEGACY_WORD_BITS) |
+						 ((index * COPY_GREEN_STEP & LEGACY_U8_MAX) << LEGACY_BYTE_BITS) |
+						 (LEGACY_U8_MAX - index);
+	}
+	for (legacy_s32 variant = COPY_LEGACY; variant < COPY_CASES; variant++) {
+		hires_set_enabled(variant != COPY_LEGACY);
+		hires_forget(screen.base);
+		for (legacy_s32 y = 0; y < TEST_HEIGHT; y++) {
+			for (legacy_s32 x = 0; x < TEST_WIDTH; x++) {
+				screen.base[y * TEST_WIDTH + x] = (legacy_u8)(x + y * COPY_LEGACY_ROW_STEP);
+			}
+		}
+		if (variant >= COPY_INDEXED) {
+			struct SPRITE clip = screen.sprite;
+			clip.sprite_raster_left = COPY_LEFT;
+			clip.sprite_raster_right = COPY_LEFT + COPY_WIDTH;
+			clip.sprite_top = COPY_TOP;
+			clip.sprite_bottom = COPY_TOP + COPY_HEIGHT;
+			assert(hires_begin(&clip));
+			for (legacy_s32 y = COPY_TOP * HIRES_SCALE; y < (COPY_TOP + COPY_HEIGHT) * HIRES_SCALE;
+				 y++) {
+				for (legacy_s32 x = COPY_LEFT * HIRES_SCALE;
+					 x < (COPY_LEFT + COPY_WIDTH) * HIRES_SCALE; x++) {
+					hires_pixel(x, y, (legacy_u8)(x + y * COPY_LEGACY_ROW_STEP));
+				}
+			}
+			if (variant == COPY_ARGB) {
+				assert(hires_shadow_begin());
+				for (size_t sample = 0; sample < sizeof(overlays) / sizeof(overlays[0]); sample++) {
+					hires_argb_pixel(COPY_LEFT * HIRES_SCALE + (legacy_s32)sample,
+									 COPY_TOP * HIRES_SCALE, overlays[sample]);
+				}
+				/* Shadow-only and twice-darkened overlay samples share a cell with
+				 * ordinary indexed samples; neighbouring cells retain no overlay. */
+				hires_shadow_pixel(COPY_LEFT * HIRES_SCALE, COPY_TOP * HIRES_SCALE + 1,
+								   COPY_SHADOW_OPACITY);
+				hires_shadow_pixel(COPY_LEFT * HIRES_SCALE + HIRES_SCALE - 1,
+								   COPY_TOP * HIRES_SCALE, COPY_SHADOW_OPACITY);
+				hires_shadow_pixel(COPY_LEFT * HIRES_SCALE + HIRES_SCALE - 1,
+								   COPY_TOP * HIRES_SCALE, COPY_SHADOW_OPACITY);
+			}
+			hires_end();
+		}
+		for (size_t fade = 0; fade < sizeof(fades) / sizeof(fades[0]); fade++) {
+			palette[TEST_WHITE_INDEX] = fades[fade];
+			assert_framebuffer_copy(&screen, palette);
+		}
+	}
+	hires_forget(screen.base);
+}
+
 legacy_int main(void)
 {
 	struct TEST_SURFACE screen;
@@ -1213,6 +1349,7 @@ legacy_int main(void)
 	}
 	test_raster_span_argb_retirement();
 	test_shadow_composition();
+	test_framebuffer_copy();
 	test_depth_lifetime(&screen);
 	hires_shutdown();
 	puts("SDL3 high-resolution composition tests passed.");
