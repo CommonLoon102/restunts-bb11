@@ -4,6 +4,9 @@
 #include <SDL3/SDL.h>
 #include "../../c/legacy.h"
 
+#define SDL3_SCREEN_WIDTH 320
+#define SDL3_SCREEN_HEIGHT 200
+
 extern legacy_s32 sdl3_batch_mode;
 
 void sdl3_platform_pump(void);

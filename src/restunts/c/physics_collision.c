@@ -93,7 +93,7 @@ static legacy_s16 project_contact_coordinate(legacy_s16 position, legacy_s16 dis
 static legacy_s16 sweep_selected_track_underside(struct VECTOR *previous, struct VECTOR *current,
 												 legacy_s16 *fraction)
 {
-	if (track_wall_collision_enabled != 0 || planindex < 4) {
+	if (track_wall_collision_enabled != 0 || planindex < PHYSICS_HEIGHT_ONLY_PLANE_COUNT) {
 		return 0;
 	}
 

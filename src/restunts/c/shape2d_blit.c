@@ -12,7 +12,7 @@
 #include "game_input.h"
 #include "video_pages.h"
 #ifdef RESTUNTS_SDL3
-static struct SPRITE sdl3_background_contexts[4][SPRITE_STATE_COUNT];
+static struct SPRITE sdl3_background_contexts[SPRITE_BACKGROUND_STACK_CAPACITY][SPRITE_STATE_COUNT];
 #endif
 
 #define WINDOW_DEFINITION_TABLE_BYTES 3600U
@@ -69,19 +69,19 @@ static void shape2d_write_raster(legacy_u8 far *bitmap, legacy_u16 destination, 
 static void shape2d_apply_planar_run(legacy_u8 far *bitmap, legacy_u16 destination,
 									 legacy_u16 count, legacy_u8 value, legacy_s16 operation)
 {
-	if ((operation == SHAPE2D_RASTER_AND && value == 255U) ||
+	if ((operation == SHAPE2D_RASTER_AND && value == LEGACY_U8_MAX) ||
 		(operation == SHAPE2D_RASTER_OR && value == 0U)) {
 		return;
 	}
 	if (operation == SHAPE2D_RASTER_COPY || (operation == SHAPE2D_RASTER_AND && value == 0U) ||
-		(operation == SHAPE2D_RASTER_OR && value == 255U)) {
+		(operation == SHAPE2D_RASTER_OR && value == LEGACY_U8_MAX)) {
 		video_pages_fill_span(bitmap, destination, count, value);
 		return;
 	}
 	/* RLE runs contain at most 128 pixels. Visit each plane together so
 	 * repeated masks change the read/write registers at most four times. */
-	for (legacy_u16 plane = 0; plane < 4U; plane++) {
-		for (legacy_u16 index = plane; index < count; index += 4U) {
+	for (legacy_u16 plane = 0; plane < VGA_PLANE_COUNT; plane++) {
+		for (legacy_u16 index = plane; index < count; index += VGA_PLANE_COUNT) {
 			shape2d_write_raster(bitmap, LEGACY_U16_WRAP_ADD(destination, index), value, operation,
 								 1);
 		}

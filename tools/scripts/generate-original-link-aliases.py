@@ -10,6 +10,17 @@ from pathlib import Path
 import re
 
 
+OMF_THEADR = 0x80
+OMF_LHEADR = 0x82
+OMF_MODEND = 0x8A
+OMF_EXTDEF = 0x8C
+OMF_PUBDEF = 0x90
+OMF_MODEND32 = OMF_MODEND + 1
+OMF_PUBDEF32 = OMF_PUBDEF + 1
+OMF_INDEX_WIDE = 0x80
+OMF_INDEX_HIGH_MASK = 0x7F
+BYTE_BITS = 8
+BYTE_MASK = 0xFF
 MAX_OBJECT_BYTES = 16 * 1024 * 1024
 SYMBOL = re.compile(r"[A-Za-z_$?][A-Za-z0-9_$?]*\Z")
 
@@ -35,7 +46,7 @@ class Reader:
 
     def index(self):
         value = self.number()
-        return ((value & 127) << 8) | self.number() if value & 128 else value
+        return ((value & OMF_INDEX_HIGH_MASK) << BYTE_BITS) | self.number() if value & OMF_INDEX_WIDE else value
 
     def name(self):
         return self.take(self.number()).decode("latin1")
@@ -63,27 +74,27 @@ def read_symbols(path):
         if size == 0:
             raise SymbolError(f"{path}: empty OMF record")
         payload = reader.take(size)
-        if payload[-1] and sum(data[start:reader.offset]) & 255:
+        if payload[-1] and sum(data[start:reader.offset]) & BYTE_MASK:
             raise SymbolError(f"{path}: invalid OMF checksum")
         record = Reader(payload[:-1])
-        if first and kind not in (0x80, 0x82):
+        if first and kind not in (OMF_THEADR, OMF_LHEADR):
             raise SymbolError(f"{path}: missing OMF module header")
         first = False
-        if kind in (0x80, 0x82):
+        if kind in (OMF_THEADR, OMF_LHEADR):
             record.name()
-        elif kind in (0x90, 0x91):
+        elif kind in (OMF_PUBDEF, OMF_PUBDEF32):
             record.index()  # Group index.
             if record.index() == 0:  # Absolute public includes a frame number.
                 record.number(2)
             while record.remaining():
                 publics.add(record.name())
-                record.number(4 if kind == 0x91 else 2)
+                record.number(4 if kind == OMF_PUBDEF32 else 2)
                 record.index()  # Debug type index.
-        elif kind == 0x8C:
+        elif kind == OMF_EXTDEF:
             while record.remaining():
                 externals.add(record.name())
                 record.index()
-        elif kind in (0x8A, 0x8B):
+        elif kind in (OMF_MODEND, OMF_MODEND32):
             record.number()  # Module attributes; optional start address follows.
             ended = True
         # Local symbols, debug records and emitted bytes cannot add link names.

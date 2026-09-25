@@ -26,8 +26,10 @@ public static class CommandLine
                         DosBoxTimeoutSeconds = arguments.Timeout("DosBoxTimeoutSeconds", 60),
                         RendererTestPercentage =
                             arguments.Number("RendererTestPercentage", 100, 1, 100),
-                        Camera = arguments.Number("Camera", 2, 1, 4),
-                        Target = arguments.Number("Target", 0, 0, 1),
+                        Camera = arguments.Number("Camera", RendererSettings.DefaultCamera,
+                            RendererSettings.MinimumCamera, RendererSettings.MaximumCamera),
+                        Target = arguments.Number("Target", RendererSettings.PlayerTarget,
+                            RendererSettings.PlayerTarget, RendererSettings.OpponentTarget),
                         ResponseProcessingTimeoutSeconds = arguments.Timeout("ResponseProcessingTimeoutSeconds", 1800)
                     };
                     arguments.CheckUnused();
@@ -44,7 +46,7 @@ public static class CommandLine
                     var oraclePsp = arguments.Optional("OraclePspSegment");
                     if (oraclePsp is not null && (!int.TryParse(oraclePsp, NumberStyles.None,
                         CultureInfo.InvariantCulture, out var segment) ||
-                        segment is < 1 or > 65535))
+                        segment is < 1 or > ushort.MaxValue))
                     {
                         throw new ArgumentException(
                             "OraclePspSegment must be an integer from 1 through 65535.");
@@ -80,8 +82,10 @@ public static class CommandLine
                         RendererTests = arguments.Boolean("RendererTests", true),
                         RendererTestPercentage =
                             arguments.Number("RendererTestPercentage", 100, 1, 100),
-                        Camera = arguments.Number("Camera", 2, 1, 4),
-                        Target = arguments.Number("Target", 0, 0, 1),
+                        Camera = arguments.Number("Camera", RendererSettings.DefaultCamera,
+                            RendererSettings.MinimumCamera, RendererSettings.MaximumCamera),
+                        Target = arguments.Number("Target", RendererSettings.PlayerTarget,
+                            RendererSettings.PlayerTarget, RendererSettings.OpponentTarget),
                         DosBoxTimeoutSeconds = timeout,
                         RendererTimeoutSeconds = arguments.Timeout("RendererTimeoutSeconds", timeout)
                     };
@@ -100,8 +104,10 @@ public static class CommandLine
                     var gameDirectory = Path.GetFullPath(arguments.String("GameDirectory"));
                     var renderer = arguments.Boolean("Renderer", false);
                     var percentage = arguments.Number("RendererTestPercentage", 100, 1, 100);
-                    var camera = arguments.Number("Camera", 2, 1, 4);
-                    var target = arguments.Number("Target", 0, 0, 1);
+                    var camera = arguments.Number("Camera", RendererSettings.DefaultCamera,
+                            RendererSettings.MinimumCamera, RendererSettings.MaximumCamera);
+                    var target = arguments.Number("Target", RendererSettings.PlayerTarget,
+                            RendererSettings.PlayerTarget, RendererSettings.OpponentTarget);
                     var shardPlanPath = arguments.Optional("ShardPlan");
                     var shardIndex = arguments.Number("ShardIndex", 0, 0, int.MaxValue);
                     var shardCount = arguments.Number("ShardCount", 1, 1, int.MaxValue);
@@ -127,8 +133,10 @@ public static class CommandLine
                         RendererTests = arguments.Boolean("RendererTests", true),
                         RendererTestPercentage =
                             arguments.Number("RendererTestPercentage", 100, 1, 100),
-                        Camera = arguments.Number("Camera", 2, 1, 4),
-                        Target = arguments.Number("Target", 0, 0, 1)
+                        Camera = arguments.Number("Camera", RendererSettings.DefaultCamera,
+                            RendererSettings.MinimumCamera, RendererSettings.MaximumCamera),
+                        Target = arguments.Number("Target", RendererSettings.PlayerTarget,
+                            RendererSettings.PlayerTarget, RendererSettings.OpponentTarget)
                     };
                     arguments.CheckUnused();
                     RequireTests(merge.PhysicsTests, merge.RendererTests);

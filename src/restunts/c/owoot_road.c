@@ -1,6 +1,7 @@
 #include "owoot_road.h"
 #include "externs.h"
 #include "track_objects.h"
+#include "track_collision.h"
 #include "trackdata_layout.h"
 
 #define OWOOT_ROAD_CONTACT_TOLERANCE 12
@@ -8,6 +9,7 @@
 #define OWOOT_CLIPPED_VERTEX_MAX (OWOOT_WHEEL_RING_MAX * 5U)
 #define OWOOT_HILL_ROAD_MODEL 36U
 #define OWOOT_ROAD_TILE_OVERHANG 8
+#define OWOOT_SLALOM_BARRIER_VERTEX_COUNT 4U
 
 struct OWOOT_ROAD_TRIANGLE {
 	struct VECTOR vertex[3];
@@ -210,8 +212,10 @@ legacy_s16 track_tunnel_aperture_overlaps_wheel(const struct VECTOR *vertices, l
 {
 	/* The tunn model's opening is 240 wide and 144 high. Both polygon edge
 	 * crossings and enclosure count, but touching only its outside does not. */
-	static const struct OWOOT_PROJECTED_POINT aperture[] = {
-		{-120, 0}, {120, 0}, {120, 144}, {-120, 144}};
+	static const struct OWOOT_PROJECTED_POINT aperture[] = {{-ROAD_HALF_WIDTH, 0},
+															{ROAD_HALF_WIDTH, 0},
+															{ROAD_HALF_WIDTH, TUNNEL_HEIGHT},
+															{-ROAD_HALF_WIDTH, TUNNEL_HEIGHT}};
 	return road_aperture_overlaps_wheel(aperture, sizeof(aperture) / sizeof(aperture[0]), vertices,
 										count);
 }
@@ -254,7 +258,7 @@ static legacy_s16 road_swept_axis_separates(const struct OWOOT_PROJECTED_POINT *
 	}
 	legacy_s64 barrier_min = road_cross(a, b, &barrier[0]);
 	legacy_s64 barrier_max = barrier_min;
-	for (legacy_u16 index = 1; index < 4U; index++) {
+	for (legacy_u16 index = 1; index < OWOOT_SLALOM_BARRIER_VERTEX_COUNT; index++) {
 		legacy_s64 value = road_cross(a, b, &barrier[index]);
 		if (value < barrier_min) {
 			barrier_min = value;
@@ -289,9 +293,10 @@ static legacy_s16 road_swept_barrier_overlap(const struct OWOOT_PROJECTED_POINT 
 											 legacy_u16 count,
 											 const struct OWOOT_PROJECTED_POINT *motion)
 {
-	for (legacy_u16 edge = 0; edge < 4U; edge++) {
-		if (road_swept_axis_separates(&barrier[edge], &barrier[(edge + 1U) % 4U], barrier, hull,
-									  count, motion)) {
+	for (legacy_u16 edge = 0; edge < OWOOT_SLALOM_BARRIER_VERTEX_COUNT; edge++) {
+		if (road_swept_axis_separates(&barrier[edge],
+									  &barrier[(edge + 1U) % OWOOT_SLALOM_BARRIER_VERTEX_COUNT],
+									  barrier, hull, count, motion)) {
 			return 0;
 		}
 	}
@@ -305,21 +310,26 @@ static legacy_s16 road_swept_barrier_overlap(const struct OWOOT_PROJECTED_POINT 
 	return !road_swept_axis_separates(&origin, motion, barrier, hull, count, motion);
 }
 
-legacy_s16
-track_slalom_wheel_envelope_crosses_barrier(const struct VECTOR vertices[4][OWOOT_WHEEL_VERTEX_MAX],
-											const legacy_u16 counts[4], const struct VECTOR body[4],
-											const struct VECTOR *center, legacy_s16 rotation,
-											const struct VECTOR *motion)
+legacy_s16 track_slalom_wheel_envelope_crosses_barrier(
+	const struct VECTOR vertices[CARSTATE_WHEEL_COUNT][OWOOT_WHEEL_VERTEX_MAX],
+	const legacy_u16 counts[CARSTATE_WHEEL_COUNT], const struct VECTOR body[CARSTATE_WHEEL_COUNT],
+	const struct VECTOR *center, legacy_s16 rotation, const struct VECTOR *motion)
 {
 	/* Match the two physical slalom boxes in trackobj.c. Combine tires with
 	 * the normal body-plane contact corners; no preferred opponent lane is
 	 * imposed. Ignoring barrier height prevents jumping over the obstacles. */
-	static const struct OWOOT_PROJECTED_POINT barriers[2][4] = {
-		{{23, -271}, {97, -271}, {97, -241}, {23, -241}},
-		{{-97, 241}, {-23, 241}, {-23, 271}, {-97, 271}}};
-	struct OWOOT_PROJECTED_POINT points[4U * OWOOT_WHEEL_VERTEX_MAX + 4U];
+	static const struct OWOOT_PROJECTED_POINT barriers[][OWOOT_SLALOM_BARRIER_VERTEX_COUNT] = {
+		{{SLALOM_POLE_INNER_X, -SLALOM_POLE_FAR_Z},
+		 {SLALOM_POLE_OUTER_X, -SLALOM_POLE_FAR_Z},
+		 {SLALOM_POLE_OUTER_X, -SLALOM_POLE_NEAR_Z},
+		 {SLALOM_POLE_INNER_X, -SLALOM_POLE_NEAR_Z}},
+		{{-SLALOM_POLE_OUTER_X, SLALOM_POLE_NEAR_Z},
+		 {-SLALOM_POLE_INNER_X, SLALOM_POLE_NEAR_Z},
+		 {-SLALOM_POLE_INNER_X, SLALOM_POLE_FAR_Z},
+		 {-SLALOM_POLE_OUTER_X, SLALOM_POLE_FAR_Z}}};
+	struct OWOOT_PROJECTED_POINT points[CARSTATE_WHEEL_COUNT * (OWOOT_WHEEL_VERTEX_MAX + 1U)];
 	legacy_u16 count = 0;
-	for (legacy_u16 wheel = 0; wheel < 4U; wheel++) {
+	for (legacy_u16 wheel = 0; wheel < CARSTATE_WHEEL_COUNT; wheel++) {
 		if (counts[wheel] > OWOOT_WHEEL_VERTEX_MAX) {
 			return 0;
 		}
@@ -330,7 +340,7 @@ track_slalom_wheel_envelope_crosses_barrier(const struct VECTOR vertices[4][OWOO
 		}
 	}
 	if (body != 0) {
-		for (legacy_u16 corner = 0; corner < 4U; corner++) {
+		for (legacy_u16 corner = 0; corner < CARSTATE_WHEEL_COUNT; corner++) {
 			points[count++] =
 				road_local_projection((legacy_s32)body[corner].x - center->x,
 									  (legacy_s32)body[corner].z - center->z, rotation);
@@ -361,12 +371,14 @@ track_slalom_wheel_envelope_crosses_barrier(const struct VECTOR vertices[4][OWOO
 	max_x += sweep.x > 0 ? sweep.x : 0;
 	min_z += sweep.z < 0 ? sweep.z : 0;
 	max_z += sweep.z > 0 ? sweep.z : 0;
-	legacy_s16 first = max_x > 23 && min_x < 97 && max_z > -271 && min_z < -241;
-	legacy_s16 second = max_x > -97 && min_x < -23 && max_z > 241 && min_z < 271;
+	legacy_s16 first = max_x > SLALOM_POLE_INNER_X && min_x < SLALOM_POLE_OUTER_X &&
+					   max_z > -SLALOM_POLE_FAR_Z && min_z < -SLALOM_POLE_NEAR_Z;
+	legacy_s16 second = max_x > -SLALOM_POLE_OUTER_X && min_x < -SLALOM_POLE_INNER_X &&
+						max_z > SLALOM_POLE_NEAR_Z && min_z < SLALOM_POLE_FAR_Z;
 	if (!first && !second) {
 		return 0;
 	}
-	struct OWOOT_PROJECTED_POINT hull[8U * OWOOT_WHEEL_VERTEX_MAX + 8U];
+	struct OWOOT_PROJECTED_POINT hull[2U * CARSTATE_WHEEL_COUNT * (OWOOT_WHEEL_VERTEX_MAX + 1U)];
 	legacy_u16 hull_count = road_projected_hull(points, count, hull);
 	return (first && road_swept_barrier_overlap(barriers[0], hull, hull_count, &sweep)) ||
 		   (second && road_swept_barrier_overlap(barriers[1], hull, hull_count, &sweep));
@@ -415,7 +427,7 @@ static legacy_s16 road_triangle_overlaps_wheel(const struct OWOOT_ROAD_TRIANGLE 
 	legacy_s16 right = 1;
 	legacy_s16 before = 1;
 	legacy_s16 after = 1;
-	for (legacy_u16 i = 0; i < ring_count * 2U; i++) {
+	for (legacy_u16 i = 0; i < ring_count * OWOOT_WHEEL_RIM_COUNT; i++) {
 		left &= vertices[i].x < min_x;
 		right &= vertices[i].x > max_x;
 		before &= vertices[i].z < min_z;
@@ -458,7 +470,7 @@ static legacy_s16 road_triangle_overlaps_wheel(const struct OWOOT_ROAD_TRIANGLE 
 	struct OWOOT_PROJECTED_POINT points[OWOOT_CLIPPED_VERTEX_MAX];
 	legacy_s64 distances[OWOOT_WHEEL_VERTEX_MAX];
 	legacy_u16 count = 0;
-	for (legacy_u16 i = 0; i < ring_count * 2U; i++) {
+	for (legacy_u16 i = 0; i < ring_count * OWOOT_WHEEL_RIM_COUNT; i++) {
 		distances[i] =
 			(legacy_s64)normal_x * (vertices[i].x - a.x) +
 			(legacy_s64)normal_y * ((legacy_s32)vertices[i].y - a.y + contact_tolerance) +
@@ -471,7 +483,7 @@ static legacy_s16 road_triangle_overlaps_wheel(const struct OWOOT_ROAD_TRIANGLE 
 	if (count == 0) {
 		return 0;
 	}
-	if (count != ring_count * 2U) {
+	if (count != ring_count * OWOOT_WHEEL_RIM_COUNT) {
 		for (legacy_u16 i = 0; i < ring_count; i++) {
 			legacy_u16 next = (i + 1) % ring_count;
 			road_append_crossing(points, &count, vertices, distances, i, next);
@@ -502,11 +514,11 @@ static legacy_s16 road_tile_overlaps_wheel(const struct VECTOR *vertices, legacy
 		return 0;
 	}
 	tile = track_element_map[terrainrows[row] + column];
-	if (tile == 0 || tile >= 215U) {
+	if (tile == 0 || tile >= sizeof(trkObjectList) / sizeof(trkObjectList[0])) {
 		return 0;
 	}
 	legacy_u8 terrain = track_terrain_map[trackrows[row] + column];
-	if (terrain >= 7U && terrain <= 10U) {
+	if (terrain >= HILL_TERRAIN_FIRST && terrain < HILL_TERRAIN_END) {
 		tile = subst_hillroad_track(terrain, tile);
 		if (tile == 0) {
 			return 0;
@@ -517,22 +529,23 @@ static legacy_s16 road_tile_overlaps_wheel(const struct VECTOR *vertices, legacy
 	if (model < 0 || model > PHYSICAL_MODEL_CORKSCREW_LEFT_RIGHT) {
 		return 0;
 	}
-	if (model == PHYSICAL_MODEL_ROAD && terrain >= 7U && terrain <= 10U) {
+	if (model == PHYSICAL_MODEL_ROAD && terrain >= HILL_TERRAIN_FIRST &&
+		terrain < HILL_TERRAIN_END) {
 		model = OWOOT_HILL_ROAD_MODEL;
 	}
-	legacy_s16 origin_x = (legacy_s16)((column + 1) * 1024);
-	legacy_s16 origin_z = (legacy_s16)(row * 1024);
-	if ((object->ss_multiTileFlag & 2) == 0) {
+	legacy_s16 origin_x = (legacy_s16)((column + 1) * TRACK_TILE_SIZE);
+	legacy_s16 origin_z = (legacy_s16)(row * TRACK_TILE_SIZE);
+	if ((object->ss_multiTileFlag & MULTI_TILE_COLUMN_EDGE_FLAG) == 0) {
 		origin_x -= TRACK_TILE_HALF_SIZE;
 	}
-	if ((object->ss_multiTileFlag & 1) == 0) {
+	if ((object->ss_multiTileFlag & MULTI_TILE_ROW_EDGE_FLAG) == 0) {
 		origin_z += TRACK_TILE_HALF_SIZE;
 	}
 	legacy_s16 elevation = terrain == TERRAIN_RAISED_TILE
 							   ? (legacy_s16)hillHeightConsts[TERRAIN_RAISED_HEIGHT_INDEX]
 							   : 0;
 	struct VECTOR local[OWOOT_WHEEL_VERTEX_MAX];
-	for (legacy_u16 i = 0; i < ring_count * 2U; i++) {
+	for (legacy_u16 i = 0; i < ring_count * OWOOT_WHEEL_RIM_COUNT; i++) {
 		legacy_s16 x = LEGACY_S16_WRAP_SUB(vertices[i].x, origin_x);
 		legacy_s16 z = LEGACY_S16_WRAP_SUB(vertices[i].z, origin_z);
 		local[i].x = x;
@@ -574,7 +587,7 @@ legacy_s16 track_road_overlaps_wheel(const struct VECTOR *vertices, legacy_u16 r
 	legacy_s16 max_x = vertices[0].x;
 	legacy_s16 min_z = vertices[0].z;
 	legacy_s16 max_z = vertices[0].z;
-	for (legacy_u16 i = 1; i < ring_count * 2U; i++) {
+	for (legacy_u16 i = 1; i < ring_count * OWOOT_WHEEL_RIM_COUNT; i++) {
 		if (vertices[i].x < min_x) {
 			min_x = vertices[i].x;
 		}
@@ -590,10 +603,14 @@ legacy_s16 track_road_overlaps_wheel(const struct VECTOR *vertices, legacy_u16 r
 	}
 	/* The renderer extends road ends by up to seven world units, so adjacent
 	 * elements may own a visible surface just outside their nominal tile. */
-	legacy_s16 first_column = (legacy_s16)(((legacy_s32)min_x - OWOOT_ROAD_TILE_OVERHANG) >> 10);
-	legacy_s16 last_column = (legacy_s16)(((legacy_s32)max_x + OWOOT_ROAD_TILE_OVERHANG) >> 10);
-	legacy_s16 first_row = (legacy_s16)(((legacy_s32)min_z - OWOOT_ROAD_TILE_OVERHANG) >> 10);
-	legacy_s16 last_row = (legacy_s16)(((legacy_s32)max_z + OWOOT_ROAD_TILE_OVERHANG) >> 10);
+	legacy_s16 first_column =
+		(legacy_s16)(((legacy_s32)min_x - OWOOT_ROAD_TILE_OVERHANG) >> TRACK_TILE_POSITION_SHIFT);
+	legacy_s16 last_column =
+		(legacy_s16)(((legacy_s32)max_x + OWOOT_ROAD_TILE_OVERHANG) >> TRACK_TILE_POSITION_SHIFT);
+	legacy_s16 first_row =
+		(legacy_s16)(((legacy_s32)min_z - OWOOT_ROAD_TILE_OVERHANG) >> TRACK_TILE_POSITION_SHIFT);
+	legacy_s16 last_row =
+		(legacy_s16)(((legacy_s32)max_z + OWOOT_ROAD_TILE_OVERHANG) >> TRACK_TILE_POSITION_SHIFT);
 	if (first_column < 0) {
 		first_column = 0;
 	}

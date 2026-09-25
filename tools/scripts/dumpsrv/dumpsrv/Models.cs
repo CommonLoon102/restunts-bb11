@@ -32,8 +32,8 @@ public sealed record RunOptions
     public bool PhysicsTests { get; init; } = true;
     public bool RendererTests { get; init; } = true;
     public int RendererTestPercentage { get; init; } = 100;
-    public int Camera { get; init; } = 2;
-    public int Target { get; init; } = 0;
+    public int Camera { get; init; } = RendererSettings.DefaultCamera;
+    public int Target { get; init; } = RendererSettings.PlayerTarget;
     public int DosBoxTimeoutSeconds { get; init; } = 60;
     public int RendererTimeoutSeconds { get; init; } = 60;
 }
@@ -45,8 +45,8 @@ public sealed record ServiceOptions
     public int Port { get; init; } = 8080;
     public int DosBoxTimeoutSeconds { get; init; } = 60;
     public int RendererTestPercentage { get; init; } = 100;
-    public int Camera { get; init; } = 2;
-    public int Target { get; init; } = 0;
+    public int Camera { get; init; } = RendererSettings.DefaultCamera;
+    public int Target { get; init; } = RendererSettings.PlayerTarget;
     public int ResponseProcessingTimeoutSeconds { get; init; } = 1800;
     public string ServiceDirectory { get; init; } = AppContext.BaseDirectory;
 }
@@ -71,9 +71,9 @@ public sealed class ShardResult
     [JsonRequired]
     public int RendererTestPercentage { get; set; }
     [JsonRequired]
-    public int Camera { get; set; } = 2;
+    public int Camera { get; set; } = RendererSettings.DefaultCamera;
     [JsonRequired]
-    public int Target { get; set; } = 0;
+    public int Target { get; set; } = RendererSettings.PlayerTarget;
     [JsonRequired]
     public int DosBoxTimeoutSeconds { get; set; } = 60;
     [JsonRequired]

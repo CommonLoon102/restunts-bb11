@@ -5,11 +5,16 @@
 #include <string.h>
 #include <stdio.h>
 
-#define SCREEN_WIDTH 320
-#define SCREEN_HEIGHT 200
-#define SCREEN_BYTES (SCREEN_WIDTH * SCREEN_HEIGHT)
+#define SCREEN_BYTES (SDL3_SCREEN_WIDTH * SDL3_SCREEN_HEIGHT)
 #define VGA_MEMORY_SEGMENT 0xA000U
 #define PRESENT_INTERVAL_MS 10U
+#define PRESENTATION_HEIGHT 240
+#define WINDOW_INITIAL_SCALE 3
+#define VGA_PALETTE_COLOR_COUNT 256U
+#define VGA_PALETTE_CHANNEL_COUNT 3U
+#define VGA_PALETTE_CHANNEL_MAX 63U
+#define VGA_RETRACE_PERIOD_MS 14U
+#define VGA_RETRACE_DURATION_MS 2U
 
 static SDL_Window *window;
 static SDL_Renderer *renderer;
@@ -20,8 +25,8 @@ static legacy_s32 texture_height;
 static legacy_u8 surface_output;
 static legacy_u8 high_resolution_output;
 static SDL_Rect surface_viewport;
-static SDL_Color palette_colors[256];
-static legacy_u32 palette_pixels[256];
+static SDL_Color palette_colors[VGA_PALETTE_COLOR_COUNT];
+static legacy_u32 palette_pixels[VGA_PALETTE_COLOR_COUNT];
 static legacy_u8 previous_pixels[SCREEN_BYTES];
 static legacy_u32 previous_generation;
 static legacy_u64 last_present;
@@ -38,8 +43,8 @@ static void video_fail(const char *operation)
 static legacy_s32 mode_viewport_width(const SDL_DisplayMode *mode)
 {
 	/* The legacy VGA mode has nonsquare pixels; VESA modes use a 4:3 viewport. */
-	if (mode->w == SCREEN_WIDTH && mode->h == SCREEN_HEIGHT) {
-		return SCREEN_WIDTH;
+	if (mode->w == SDL3_SCREEN_WIDTH && mode->h == SDL3_SCREEN_HEIGHT) {
+		return SDL3_SCREEN_WIDTH;
 	}
 	return SDL_min(mode->w, mode->h * 4 / 3);
 }
@@ -83,8 +88,9 @@ static void select_dos_video_mode(legacy_u8 high_resolution)
 									 mode->format != SDL_PIXELFORMAT_INDEX8)) {
 					continue;
 				}
-				if (!high_resolution && (mode->w != SCREEN_WIDTH || mode->h != SCREEN_HEIGHT ||
-										 mode->format != SDL_PIXELFORMAT_INDEX8)) {
+				if (!high_resolution &&
+					(mode->w != SDL3_SCREEN_WIDTH || mode->h != SDL3_SCREEN_HEIGHT ||
+					 mode->format != SDL_PIXELFORMAT_INDEX8)) {
 					continue;
 				}
 				if (best < 0 || mode_is_better(mode, modes[best])) {
@@ -112,7 +118,7 @@ static void select_dos_video_mode(legacy_u8 high_resolution)
 	surface_viewport.y = 0;
 	surface_viewport.w = surface->w;
 	surface_viewport.h = surface->h;
-	if (surface->w != SCREEN_WIDTH || surface->h != SCREEN_HEIGHT) {
+	if (surface->w != SDL3_SCREEN_WIDTH || surface->h != SDL3_SCREEN_HEIGHT) {
 		if (surface->w * 3 > surface->h * 4) {
 			surface_viewport.w = surface->h * 4 / 3;
 		} else {
@@ -156,10 +162,10 @@ void sdl3_video_window_to_game(legacy_f32 window_x, legacy_f32 window_y, legacy_
 	*y = window_y;
 	if (renderer != NULL) {
 		SDL_RenderCoordinatesFromWindow(renderer, window_x, window_y, x, y);
-		*y *= 200.0f / 240.0f;
+		*y *= (legacy_f32)SDL3_SCREEN_HEIGHT / PRESENTATION_HEIGHT;
 	} else if (surface_output) {
-		*x = (window_x - surface_viewport.x) * SCREEN_WIDTH / surface_viewport.w;
-		*y = (window_y - surface_viewport.y) * SCREEN_HEIGHT / surface_viewport.h;
+		*x = (window_x - surface_viewport.x) * SDL3_SCREEN_WIDTH / surface_viewport.w;
+		*y = (window_y - surface_viewport.y) * SDL3_SCREEN_HEIGHT / surface_viewport.h;
 	}
 }
 
@@ -169,10 +175,12 @@ void sdl3_video_game_to_window(legacy_f32 x, legacy_f32 y, legacy_f32 *window_x,
 	*window_x = x;
 	*window_y = y;
 	if (renderer != NULL) {
-		SDL_RenderCoordinatesToWindow(renderer, x, y * (240.0f / 200.0f), window_x, window_y);
+		SDL_RenderCoordinatesToWindow(renderer, x,
+									  y * ((legacy_f32)PRESENTATION_HEIGHT / SDL3_SCREEN_HEIGHT),
+									  window_x, window_y);
 	} else if (surface_output) {
-		*window_x = surface_viewport.x + x * surface_viewport.w / SCREEN_WIDTH;
-		*window_y = surface_viewport.y + y * surface_viewport.h / SCREEN_HEIGHT;
+		*window_x = surface_viewport.x + x * surface_viewport.w / SDL3_SCREEN_WIDTH;
+		*window_y = surface_viewport.y + y * surface_viewport.h / SDL3_SCREEN_HEIGHT;
 	}
 }
 
@@ -199,7 +207,7 @@ static void present_surface(const legacy_u8 *pixels, const legacy_u32 *argb, leg
 	}
 	SDL_Palette *palette = SDL_GetSurfacePalette(frame_surface);
 	if (palette != NULL && (palette_changed || new_frame_surface) &&
-		!SDL_SetPaletteColors(palette, palette_colors, 0, 256)) {
+		!SDL_SetPaletteColors(palette, palette_colors, 0, VGA_PALETTE_COLOR_COUNT)) {
 		video_fail("Set video palette");
 	}
 	if (surface->format == SDL_PIXELFORMAT_INDEX8) {
@@ -348,10 +356,11 @@ void dos_video_set_mode_13h(void)
 #ifdef __DJGPP__
 	/* The direct framebuffer supports indexed and truecolour VESA modes. */
 	SDL_SetHint(SDL_HINT_DOS_ALLOW_DIRECT_FRAMEBUFFER, "1");
-	window =
-		SDL_CreateWindow("Chocolate Stunts", SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_FULLSCREEN);
+	window = SDL_CreateWindow("Chocolate Stunts", SDL3_SCREEN_WIDTH, SDL3_SCREEN_HEIGHT,
+							  SDL_WINDOW_FULLSCREEN);
 #else
-	window = SDL_CreateWindow("Chocolate Stunts", 960, 720, SDL_WINDOW_RESIZABLE);
+	window = SDL_CreateWindow("Chocolate Stunts", SDL3_SCREEN_WIDTH * WINDOW_INITIAL_SCALE,
+							  PRESENTATION_HEIGHT * WINDOW_INITIAL_SCALE, SDL_WINDOW_RESIZABLE);
 #endif
 	if (window == NULL) {
 		video_fail("Create game window");
@@ -366,11 +375,11 @@ void dos_video_set_mode_13h(void)
 	if (renderer == NULL) {
 		video_fail("Create renderer");
 	}
-	if (!SDL_SetRenderLogicalPresentation(renderer, SCREEN_WIDTH, 240,
+	if (!SDL_SetRenderLogicalPresentation(renderer, SDL3_SCREEN_WIDTH, PRESENTATION_HEIGHT,
 										  SDL_LOGICAL_PRESENTATION_LETTERBOX)) {
 		video_fail("Configure framebuffer scaling");
 	}
-	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+	SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
 #endif
 	SDL_HideCursor();
 	palette_changed = true;
@@ -381,7 +390,9 @@ legacy_s16 dos_video_get_status(void)
 {
 	/* Preserve polling loops that wait for both phases of VGA retrace. */
 	sdl3_platform_pump();
-	return (SDL_GetTicks() % 14U) < 2U ? 8 : 0;
+	return (SDL_GetTicks() % VGA_RETRACE_PERIOD_MS) < VGA_RETRACE_DURATION_MS
+			   ? DOS_VIDEO_RETRACE_STATUS_BIT
+			   : 0;
 }
 
 legacy_s16 video_get_status(void)
@@ -391,15 +402,20 @@ legacy_s16 video_get_status(void)
 
 void dos_video_set_palette(legacy_u16 start, legacy_u16 count, legacy_u8 *palette)
 {
-	for (legacy_u32 index = start; index < 256U && index < (legacy_u32)start + count; index++) {
+	for (legacy_u32 index = start;
+		 index < VGA_PALETTE_COLOR_COUNT && index < (legacy_u32)start + count; index++) {
 		SDL_Color *color = &palette_colors[index];
-		color->r = (legacy_u8)((palette[0] & 63U) * 255U / 63U);
-		color->g = (legacy_u8)((palette[1] & 63U) * 255U / 63U);
-		color->b = (legacy_u8)((palette[2] & 63U) * 255U / 63U);
-		color->a = 255;
-		palette_pixels[index] =
-			0xFF000000U | ((legacy_u32)color->r << 16) | ((legacy_u32)color->g << 8) | color->b;
-		palette += 3;
+		color->r = (legacy_u8)((palette[0] & VGA_PALETTE_CHANNEL_MAX) * SDL_ALPHA_OPAQUE /
+							   VGA_PALETTE_CHANNEL_MAX);
+		color->g = (legacy_u8)((palette[1] & VGA_PALETTE_CHANNEL_MAX) * SDL_ALPHA_OPAQUE /
+							   VGA_PALETTE_CHANNEL_MAX);
+		color->b = (legacy_u8)((palette[2] & VGA_PALETTE_CHANNEL_MAX) * SDL_ALPHA_OPAQUE /
+							   VGA_PALETTE_CHANNEL_MAX);
+		color->a = SDL_ALPHA_OPAQUE;
+		palette_pixels[index] = ((legacy_u32)SDL_ALPHA_OPAQUE << LEGACY_THREE_BYTE_BITS) |
+								((legacy_u32)color->r << LEGACY_WORD_BITS) |
+								((legacy_u32)color->g << LEGACY_BYTE_BITS) | color->b;
+		palette += VGA_PALETTE_CHANNEL_COUNT;
 	}
 	palette_changed = true;
 }

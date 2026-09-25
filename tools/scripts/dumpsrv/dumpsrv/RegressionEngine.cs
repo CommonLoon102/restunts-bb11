@@ -16,7 +16,7 @@ public class RegressionEngine(IDosBoxRunner? runner = null, Action<string>? log 
         {
             CandidatePlatform = options.CandidatePlatform,
             OraclePspSegment = options.CandidatePlatform == CandidatePlatforms.Sdl3
-                ? options.OraclePspSegment ?? 654 : null,
+                ? options.OraclePspSegment ?? NativeRunner.DefaultOraclePspSegment : null,
             ShardIndex = options.ShardIndex,
             ShardCount = options.ShardCount,
             PartitionCount = options.PartitionCount,
@@ -314,14 +314,16 @@ public class RegressionEngine(IDosBoxRunner? runner = null, Action<string>? log 
             throw new ArgumentException(
                 "NativeDirectory and OraclePspSegment require SDL3 candidates.");
         }
-        if (options.OraclePspSegment is < 1 or > 65535)
+        if (options.OraclePspSegment is < 1 or > ushort.MaxValue)
         {
             throw new ArgumentOutOfRangeException(nameof(options.OraclePspSegment));
         }
-        ArgumentOutOfRangeException.ThrowIfLessThan(options.Camera, 1);
-        ArgumentOutOfRangeException.ThrowIfGreaterThan(options.Camera, 4);
-        ArgumentOutOfRangeException.ThrowIfLessThan(options.Target, 0);
-        ArgumentOutOfRangeException.ThrowIfGreaterThan(options.Target, 1);
+        ArgumentOutOfRangeException.ThrowIfLessThan(options.Camera, RendererSettings.MinimumCamera);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(options.Camera,
+            RendererSettings.MaximumCamera);
+        ArgumentOutOfRangeException.ThrowIfLessThan(options.Target, RendererSettings.PlayerTarget);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(options.Target,
+            RendererSettings.OpponentTarget);
         ArgumentOutOfRangeException.ThrowIfLessThan(options.PartitionCount, 1);
         ArgumentOutOfRangeException.ThrowIfGreaterThan(options.PartitionCount, 64);
         ArgumentOutOfRangeException.ThrowIfLessThan(options.ShardCount, 1);

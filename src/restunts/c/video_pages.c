@@ -8,10 +8,12 @@
 
 #define VGA_PAGE_SEGMENT 0xA000U
 #define VGA_SECOND_PAGE_SEGMENT 0xA400U
-#define VGA_PAGE_PLANE_BYTES 16384U
 #define VGA_PAGE_PIXELS 64000U
 #define VGA_ALL_PLANES 15U
-#define VGA_PLANE_COUNT 4U
+#define VGA_PLANE_SHIFT 2U
+#define VGA_PLANE_MASK (VGA_PLANE_COUNT - 1U)
+#define VGA_PAGE_COUNT 2U
+#define VGA_PARAGRAPH_BYTES 16U
 
 static legacy_u8 pages_active;
 static struct SPRITE hidden_page;
@@ -20,8 +22,9 @@ static struct SPRITE hidden_page;
  * pitches stay in pixels, so resource decoding and clipping keep their layout. */
 static legacy_u16 video_pages_address(const void far *bitmap, legacy_u16 offset)
 {
-	return (legacy_u16)((dos_memory_pointer_segment(bitmap) - VGA_PAGE_SEGMENT) * 16U +
-						((legacy_u16)(dos_memory_pointer_offset(bitmap) + offset) >> 2));
+	return (
+		legacy_u16)((dos_memory_pointer_segment(bitmap) - VGA_PAGE_SEGMENT) * VGA_PARAGRAPH_BYTES +
+					((legacy_u16)(dos_memory_pointer_offset(bitmap) + offset) >> VGA_PLANE_SHIFT));
 }
 
 #ifdef RESTUNTS_VGA_TEST
@@ -60,7 +63,8 @@ legacy_u8 video_pages_read_pixel(const legacy_u8 far *bitmap, legacy_u16 offset)
 	if (video_pages_is_target(bitmap) == 0) {
 		return bitmap[offset];
 	}
-	dos_video_set_read_plane((legacy_u8)((offset + dos_memory_pointer_offset(bitmap)) & 3U));
+	dos_video_set_read_plane(
+		(legacy_u8)((offset + dos_memory_pointer_offset(bitmap)) & VGA_PLANE_MASK));
 	return video_pages_read_vram(video_pages_address(bitmap, offset));
 }
 
@@ -71,7 +75,7 @@ void video_pages_write_pixel(legacy_u8 far *bitmap, legacy_u16 offset, legacy_u8
 		return;
 	}
 	dos_video_set_write_planes(
-		(legacy_u8)(1U << ((offset + dos_memory_pointer_offset(bitmap)) & 3U)));
+		(legacy_u8)(1U << ((offset + dos_memory_pointer_offset(bitmap)) & VGA_PLANE_MASK)));
 	video_pages_write_vram(video_pages_address(bitmap, offset), color);
 }
 
@@ -84,7 +88,7 @@ void video_pages_fill_span(legacy_u8 far *bitmap, legacy_u16 offset, legacy_u16 
 		}
 		return;
 	}
-	while (count != 0 && ((offset + dos_memory_pointer_offset(bitmap)) & 3U) != 0) {
+	while (count != 0 && ((offset + dos_memory_pointer_offset(bitmap)) & VGA_PLANE_MASK) != 0) {
 		video_pages_write_pixel(bitmap, offset++, color);
 		count--;
 	}
@@ -134,7 +138,7 @@ void video_pages_raster_span(legacy_u8 far *destination, legacy_u16 destination_
 											  : source[source_index];
 			if (operation == SHAPE2D_RASTER_MAP) {
 				value = palette[value];
-				if (value == 255U) {
+				if (value == SHAPE2D_TRANSPARENT_COLOR) {
 					continue;
 				}
 			}
@@ -165,7 +169,8 @@ void video_pages_pattern_span(legacy_u8 far *bitmap, legacy_u16 offset, legacy_u
 							  legacy_s16 two_colors)
 {
 	for (legacy_u16 plane = 0; plane < VGA_PLANE_COUNT; plane++) {
-		legacy_u8 rotated = (legacy_u8)((pattern << (plane + 1U)) | (pattern >> (7U - plane)));
+		legacy_u8 rotated =
+			(legacy_u8)((pattern << (plane + 1U)) | (pattern >> (LEGACY_BYTE_BITS - 1U - plane)));
 		for (legacy_u32 index = plane; index < count; index += VGA_PLANE_COUNT) {
 			if ((rotated & 1U) != 0) {
 				video_pages_write_pixel(bitmap, (legacy_u16)(offset + index),
@@ -173,7 +178,8 @@ void video_pages_pattern_span(legacy_u8 far *bitmap, legacy_u16 offset, legacy_u
 			} else if (two_colors != 0) {
 				video_pages_write_pixel(bitmap, (legacy_u16)(offset + index), color);
 			}
-			rotated = (legacy_u8)((rotated << 4) | (rotated >> 4));
+			rotated = (legacy_u8)((rotated << VGA_PLANE_COUNT) |
+								  (rotated >> (LEGACY_BYTE_BITS - VGA_PLANE_COUNT)));
 		}
 	}
 }
@@ -199,7 +205,7 @@ void video_pages_begin_race(void)
 		return;
 	}
 	video_uses_page_flipping = 1;
-	video_page_count = 2;
+	video_page_count = VGA_PAGE_COUNT;
 	full_redraw_frames_remaining = video_page_count;
 	frame_buffer_index = 0;
 	dashboard_buffer_index = 0;
