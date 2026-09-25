@@ -47,6 +47,14 @@ static struct FRAME_SHADOW_FIXTURE shadow_cars[2];
 static struct VECTOR shadow_camera;
 static legacy_s16 shadow_count, shadow_begin_count, shadow_projection_count;
 static legacy_s16 shadow_frame_active;
+static legacy_s16 car_ground_offsets[2];
+
+legacy_s16 shape3d_car_ground_offset(const struct SHAPE3D *shape)
+{
+	assert(shape == &game3dshapes[PLAYER_CAR_WHEEL_SHAPE] ||
+		   shape == &game3dshapes[OPPONENT_CAR_WHEEL_SHAPE]);
+	return car_ground_offsets[shape == &game3dshapes[OPPONENT_CAR_WHEEL_SHAPE]];
+}
 
 void shape3d_hires_shadows_begin(const struct VECTOR *camera_position)
 {
@@ -1072,6 +1080,131 @@ static void test_supersight_capacity_retries(void)
 #endif
 
 #if defined(RESTUNTS_SDL3)
+static void assert_grounding_offset(const struct CARSTATE *car, legacy_s16 x, legacy_s16 y,
+									legacy_s16 z)
+{
+	struct CARSTATE original = *car;
+	struct VECTOR offset = frame_car_render_offset(car, &game3dshapes[PLAYER_CAR_WHEEL_SHAPE]);
+	assert(offset.x == x && offset.y == y && offset.z == z);
+	assert(memcmp(car, &original, sizeof(original)) == 0);
+}
+
+static void test_supersight_grounding_surfaces(void)
+{
+	struct CARSTATE car = {0};
+	car_ground_offsets[0] = 8;
+	for (legacy_s16 wheel = 0; wheel < FRAME_CAR_WHEEL_COUNT; wheel++) {
+		car.car_surfaceWhl[wheel] = CAR_SURFACE_PAVED;
+	}
+	assert_grounding_offset(&car, 0, -10, 0);
+	/* The authored tire correction follows the local up axis. The collision
+	 * surface allowance remains vertical, including on walls and loops. */
+	car.car_rotate.z = ANGLE_QUARTER_TURN;
+	assert_grounding_offset(&car, -8, -2, 0);
+	car.car_rotate.z = 0;
+	car.car_rotate.y = ANGLE_QUARTER_TURN;
+	assert_grounding_offset(&car, 0, -2, 8);
+	car.car_rotate.y = ANGLE_HALF_TURN;
+	assert_grounding_offset(&car, 0, 6, 0);
+	car.car_rotate.y = 0;
+	car.car_rotate.x = ANGLE_QUARTER_TURN;
+	assert_grounding_offset(&car, 0, -10, 0);
+	car.car_rotate.x = 0;
+
+	for (legacy_s16 wheel = 0; wheel < FRAME_CAR_WHEEL_COUNT; wheel++) {
+		car.car_surfaceWhl[wheel] = CAR_SURFACE_GRASS;
+		car.car_wheel_contact_positions[wheel] = (struct VECTOR){256, 0, 0};
+	}
+	assert_grounding_offset(&car, 0, -9, 0);
+	car.car_wheel_contact_positions[2].z = 256;
+	assert_grounding_offset(&car, 0, -8, 0);
+	/* At a road edge the lowest supported wheel determines the correction,
+	 * so the grass-side tires cannot be buried by the road's larger bias. */
+	car.car_surfaceWhl[0] = car.car_surfaceWhl[1] = CAR_SURFACE_PAVED;
+	assert_grounding_offset(&car, 0, -8, 0);
+	car.car_wheel_contact_positions[2].z = 0;
+	assert_grounding_offset(&car, 0, -9, 0);
+	car_ground_offsets[0] = 0;
+}
+
+static void test_supersight_grounding_poses(void)
+{
+	struct FRAME_CAMERA camera = {0};
+	struct FRAME_TILE tile = {0};
+	camera.position = (struct VECTOR){100, 50, 700};
+	tile.east = tile.last_east = 10;
+	tile.south = tile.last_south = 12;
+	tile.detail = FRAME_TILE_DETAIL_FULL;
+	shadow_frame_active = 1;
+	car_ground_offsets[0] = 5;
+	car_ground_offsets[1] = 3;
+	frame_state = &state;
+	frame_uses_snapshot = 0;
+	slow_video_mgmt_copy = 0;
+	detail_level = 0;
+	for (legacy_s16 enabled = 0; enabled < 2; enabled++) {
+		for (legacy_s16 kind = 0; kind < 3; kind++) {
+			for (legacy_s16 airborne = 0; airborne < 2; airborne++) {
+				memset(&state, 0, sizeof(state));
+				memset(&ghost_fixture, 0, sizeof(ghost_fixture));
+				struct FRAME_CAR_RENDER cars[2] = {{0}};
+				legacy_s16 owner = kind == 0 ? PLAYER_CAR_INDEX : OPPONENT_CAR_INDEX;
+				struct CARSTATE *car = kind == 0   ? &state.playerstate
+									   : kind == 1 ? &state.opponentstate
+												   : &ghost_fixture;
+				car->car_position =
+					(struct VECTORLONG){64000, (200 + 600 * airborne) * 64L, 192000};
+				for (legacy_s16 wheel = 0; wheel < FRAME_CAR_WHEEL_COUNT; wheel++) {
+					car->car_surfaceWhl[wheel] =
+						airborne != 0 ? CAR_WHEEL_CONTACT_NONE : CAR_SURFACE_PAVED;
+				}
+				cars[0].east = cars[1].east = -1;
+				cars[owner].east = tile.east;
+				cars[owner].south = tile.south;
+				gameconfig.game_opponenttype = kind == 1;
+				ghost_fixture_active = kind == 2;
+				state.game_particles_active = 1;
+				state.game_particle_forward_speed[0] = 1;
+				state.game_particle_owner[0] = owner;
+				state.game_particle_shape_index[0] = 0;
+				state.game_particle_x[0] = 2 * 64;
+				state.game_particle_y[0] = 3 * 64;
+				state.game_particle_z[0] = 4 * 64;
+				particle_scene_objects[0].ss_shapePtr = &game3dshapes[116];
+				trkObjectList[FRAME_PLAYER_SORT_ID].ss_shapePtr =
+					&game3dshapes[PLAYER_CAR_WHEEL_SHAPE];
+				trkObjectList[FRAME_OPPONENT_SORT_ID].ss_shapePtr =
+					&game3dshapes[OPPONENT_CAR_WHEEL_SHAPE];
+				struct GAMESTATE original = state;
+				struct CARSTATE original_ghost = ghost_fixture;
+				reset_shapes();
+				supersight_enabled = enabled;
+				frame_add_tile_cars(&tile, &camera, cars, 0);
+				assert(transformedshape_counter == (kind == 2 ? 1 : 2));
+				legacy_s16 body = transformedshape_counter - 1;
+				struct VECTOR expected = {900, 150 + 600 * airborne, 2300};
+				if (enabled != 0) {
+					expected.y -= car_ground_offsets[owner] + 2;
+				}
+				assert(memcmp(&currenttransshape[body].pos, &expected, sizeof(expected)) == 0);
+				assert(((currenttransshape[body].ts_flags & SHAPE3D_GHOST_FLAG) != 0) ==
+					   (kind == 2));
+				if (kind != 2) {
+					expected.x += 2;
+					expected.y += 3;
+					expected.z += 4;
+					assert(memcmp(&currenttransshape[0].pos, &expected, sizeof(expected)) == 0);
+				}
+				assert(memcmp(&state, &original, sizeof(state)) == 0);
+				assert(memcmp(&ghost_fixture, &original_ghost, sizeof(ghost_fixture)) == 0);
+			}
+		}
+	}
+	car_ground_offsets[0] = car_ground_offsets[1] = 0;
+	shadow_frame_active = supersight_enabled = ghost_fixture_active = 0;
+	state.game_particles_active = 0;
+}
+
 static void test_supersight_car_shadows(void)
 {
 	struct RECTANGLE cliprect = {0, 320, 0, 200};
@@ -1224,6 +1357,8 @@ int main(void)
 	test_supersight_capacity_retries();
 #if defined(RESTUNTS_SDL3)
 	test_supersight_car_shadows();
+	test_supersight_grounding_surfaces();
+	test_supersight_grounding_poses();
 #endif
 	puts("Frame rendering snapshots, ghost isolation and SuperSight passed.");
 	return 0;
