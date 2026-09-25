@@ -187,6 +187,9 @@ Small scenes remain serial even with workers enabled. Drawing order, pixel
 coverage, and the physics schedule are preserved; DOS always renders serially.
 If worker creation fails, rendering uses the available workers or runs serially.
 
+See [SuperSight CPU measurements](docs/supersight-performance.md) for tested
+optimizations, worker comparisons, and measurement limits.
+
 Press **F11** to toggle a frame-rate counter in the top-left corner. It measures
 presented frames over approximately one second and rounds down, for example
 `20 FPS`. Values below 20 are red; values of 20 or higher are green.
