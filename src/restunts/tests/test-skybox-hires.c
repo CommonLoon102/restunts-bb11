@@ -516,6 +516,194 @@ static void test_mixed_artwork_and_view_transitions(void)
 	assert_cardinal_image(2, 0, 0, 0, 0);
 }
 
+enum {
+	LEVEL_FOCAL_X = 200,
+	LEVEL_FOCAL_Y = 128,
+	LEVEL_CENTER_X = 159,
+	LEVEL_CENTER_Y = 99,
+	LEVEL_HALF_PIXEL_MATRIX_Z = TRIG_FIXED_ONE / (2 * LEVEL_FOCAL_Y * HIRES_SCALE),
+	LEVEL_ALTITUDE = SKYBOX_ROLL_VECTOR_Z / 8,
+	LEVEL_ALTITUDE_HORIZON_HALVES = 2 * LEVEL_FOCAL_Y * HIRES_SCALE / 8,
+	LEVEL_NARROW_COLUMNS = 7,
+	LEVEL_NO_STRIP = -1,
+	LEVEL_ENHANCED_THEME = 3,
+	LEVEL_ORIGINAL_THEME = 0,
+	LEVEL_ALL_ORIGINAL_MASK = (1U << SKYBOX_IMAGE_COUNT) - 1,
+	LEVEL_BACKGROUND_COLOR = 3,
+	LEVEL_CLIP_LEFT = 11,
+	LEVEL_CLIP_RIGHT_MARGIN = 17,
+	LEVEL_CLIP_TOP = 5,
+	LEVEL_CLIP_BOTTOM_MARGIN = 13,
+	LEVEL_LOWEST_DETAIL = 4,
+	LEVEL_TINY_BANK = 1
+};
+
+struct LEVEL_PANORAMA_CASE {
+	legacy_s16 normal_sign, horizon_halves, direction, heading, altitude;
+	legacy_s32 original, clipped, missing, narrow, detail;
+};
+
+static legacy_s32 floor_half_coordinate(legacy_s32 value)
+{
+	return value >= 0 ? value / 2 : (value - 1) / 2;
+}
+
+static legacy_u8 expected_level_panorama(legacy_s32 u, legacy_s32 band_y,
+										 const struct LEVEL_PANORAMA_CASE *scene)
+{
+	legacy_s32 original_mask = scene->original ? LEVEL_ALL_ORIGINAL_MASK : 0;
+	if (scene->narrow != LEVEL_NO_STRIP) {
+		original_mask |= 1U << scene->narrow;
+	}
+	legacy_u8 expected = expected_panorama(u, band_y, original_mask, scene->detail);
+	if (band_y >= 0 || scene->detail == LEVEL_LOWEST_DETAIL) {
+		return expected;
+	}
+	legacy_s32 column =
+		(u % (SKYBOX_IMAGE_FULL_WRAP * HIRES_SCALE) + SKYBOX_IMAGE_FULL_WRAP * HIRES_SCALE) %
+		(SKYBOX_IMAGE_FULL_WRAP * HIRES_SCALE);
+	legacy_s32 image = 0;
+	while (column >= panorama_widths[image] * HIRES_SCALE) {
+		column -= panorama_widths[image] * HIRES_SCALE;
+		image++;
+	}
+	if (image == scene->missing ||
+		(image == scene->narrow &&
+		 column >= (panorama_widths[image] - LEVEL_NARROW_COLUMNS) * HIRES_SCALE)) {
+		return scenery.sky_color;
+	}
+	return expected;
+}
+
+static void test_level_half_pixel_horizons(void)
+{
+	static const struct LEVEL_PANORAMA_CASE cases[] = {
+		{1, 1, 1, 512, 0, 0, 0, LEVEL_NO_STRIP, LEVEL_NO_STRIP, 0},
+		{-1, -1, 1, 192, 0, 0, 1, LEVEL_NO_STRIP, LEVEL_NO_STRIP, 0},
+		{1, -3, -1, 704, LEVEL_ALTITUDE, 1, 1, LEVEL_NO_STRIP, LEVEL_NO_STRIP, 0},
+		{-1, 3, -1, 0, -LEVEL_ALTITUDE, 0, 1, LEVEL_NO_STRIP, LEVEL_NO_STRIP, 0},
+		{1, 0, 1, 192, LEVEL_ALTITUDE, 0, 1, 1, LEVEL_NO_STRIP, 0},
+		{-1, 1, -1, 704, 0, 0, 0, 1, LEVEL_NO_STRIP, 0},
+		{1, 1, 1, 192, 0, 0, 1, LEVEL_NO_STRIP, 1, 0},
+		{-1, -3, -1, 704, LEVEL_ALTITUDE, 1, 0, LEVEL_NO_STRIP, 1, 0},
+		{1, 3, 1, 192, -LEVEL_ALTITUDE, 0, 0, 2, 1, 0},
+		{-1, 1, -1, 192, LEVEL_ALTITUDE, 0, 1, LEVEL_NO_STRIP, LEVEL_NO_STRIP,
+		 LEVEL_LOWEST_DETAIL}};
+	legacy_u16 saved_center_x = projection_center_x;
+	legacy_u16 saved_center_y = projection_center_y;
+	legacy_u16 saved_focal_x = projection_focal_length_x;
+	legacy_u16 saved_focal_y = projection_focal_length_y;
+	projection_center_x = LEVEL_CENTER_X;
+	projection_center_y = LEVEL_CENTER_Y;
+	projection_focal_length_x = LEVEL_FOCAL_X;
+	projection_focal_length_y = LEVEL_FOCAL_Y;
+	for (legacy_s32 index = 0; index < (legacy_s32)SDL_arraysize(cases); index++) {
+		const struct LEVEL_PANORAMA_CASE *scene = &cases[index];
+		reset_target();
+		if (scene->clipped) {
+			target.sprite_raster_left = LEVEL_CLIP_LEFT;
+			target.sprite_raster_right = SKYBOX_SCREEN_WIDTH - LEVEL_CLIP_RIGHT_MARGIN;
+			target.sprite_top = LEVEL_CLIP_TOP;
+			target.sprite_bottom = SKYBOX_SCREEN_BOTTOM - LEVEL_CLIP_BOTTOM_MARGIN;
+		}
+		struct SHAPE2D *shapes[SKYBOX_IMAGE_COUNT];
+		memcpy(shapes, panorama_shapes, sizeof(shapes));
+		if (scene->missing != LEVEL_NO_STRIP) {
+			shapes[scene->missing] = NULL;
+		}
+		struct SHAPE2D *narrow = NULL;
+		if (scene->narrow != LEVEL_NO_STRIP) {
+			legacy_s32 width = panorama_widths[scene->narrow] - LEVEL_NARROW_COLUMNS;
+			legacy_s32 height = panorama_heights[scene->narrow];
+			narrow = calloc(1, sizeof(*narrow) + width * height);
+			assert(narrow != NULL);
+			narrow->width = width;
+			narrow->height = height;
+			legacy_u8 *source = (legacy_u8 *)(narrow + 1);
+			for (legacy_s32 y = 0; y < height; y++) {
+				for (legacy_s32 x = 0; x < width; x++) {
+					source[y * width + x] = original_color(scene->narrow, x, y);
+				}
+			}
+			shapes[scene->narrow] = narrow;
+		}
+		struct MATRIX rotation = {0};
+		rotation.m._22 = scene->normal_sign * TRIG_FIXED_ONE;
+		rotation.m._32 = scene->horizon_halves * LEVEL_HALF_PIXEL_MATRIX_Z;
+		rotation.m._33 = TRIG_FIXED_ONE;
+		assert(skybox_hires_render(&target, &scenery, shapes,
+								   scene->original ? LEVEL_ORIGINAL_THEME : LEVEL_ENHANCED_THEME,
+								   &rotation, scene->direction, scene->heading, scene->altitude,
+								   scene->detail));
+		/* These focal lengths, matrix entries and altitudes put every horizon
+		 * on an exact half pixel. Doubled integer coordinates independently
+		 * check source rows, including samples exactly on the ground boundary. */
+		legacy_s32 horizon_halves = scene->horizon_halves + scene->direction * scene->altitude /
+																LEVEL_ALTITUDE *
+																LEVEL_ALTITUDE_HORIZON_HALVES;
+		legacy_s32 phase = (LEVEL_CENTER_X - ((scene->heading + ANGLE_HALF_TURN) & ANGLE_MASK) +
+							(scene->direction < 0 ? ANGLE_HALF_TURN : 0)) *
+						   HIRES_SCALE;
+		const legacy_u8 *output = pixels();
+		for (legacy_s32 y = 0; y < HIRES_HEIGHT; y++) {
+			for (legacy_s32 x = 0; x < HIRES_WIDTH; x++) {
+				legacy_u8 expected = LEVEL_BACKGROUND_COLOR;
+				if (x >= target.sprite_raster_left * HIRES_SCALE &&
+					x < target.sprite_raster_right * HIRES_SCALE &&
+					y >= target.sprite_top * HIRES_SCALE &&
+					y < target.sprite_bottom * HIRES_SCALE) {
+					legacy_s32 u =
+						floor_half_coordinate(scene->normal_sign *
+											  (2 * x + 1 - 2 * LEVEL_CENTER_X * HIRES_SCALE)) +
+						phase;
+					legacy_s32 band_y = floor_half_coordinate(
+						scene->normal_sign * (2 * y + 1 - 2 * LEVEL_CENTER_Y * HIRES_SCALE) -
+						horizon_halves);
+					expected = expected_level_panorama(u, band_y, scene);
+				}
+				assert(output[y * HIRES_WIDTH + x] == expected);
+			}
+		}
+		assert_legacy_unchanged();
+		free(narrow);
+	}
+	projection_center_x = saved_center_x;
+	projection_center_y = saved_center_y;
+	projection_focal_length_x = saved_focal_x;
+	projection_focal_length_y = saved_focal_y;
+}
+
+static void test_tiny_bank_texel_boundaries(void)
+{
+	legacy_u16 saved_focal_x = projection_focal_length_x;
+	legacy_u16 saved_focal_y = projection_focal_length_y;
+	projection_focal_length_x = LEVEL_FOCAL_X;
+	projection_focal_length_y = LEVEL_FOCAL_Y;
+	for (legacy_s32 direction = -1; direction <= 1; direction += 2) {
+		reset_target();
+		struct MATRIX rotation = {0};
+		rotation.m._12 = direction * LEVEL_TINY_BANK;
+		rotation.m._22 = TRIG_FIXED_ONE;
+		rotation.m._32 = LEVEL_HALF_PIXEL_MATRIX_Z;
+		assert(skybox_hires_render(&target, &scenery, panorama_shapes, LEVEL_ENHANCED_THEME,
+								   &rotation, 1, ANGLE_HALF_TURN, 0, 0));
+		/* A one-unit bank shifts source rows to either side of their exact
+		 * texel boundary. Its column displacement stays below half a texel.
+		 * Treating this small bank as level would fail half of each image. */
+		const legacy_u8 *output = pixels();
+		for (legacy_s32 y = 0; y < HIRES_HEIGHT; y++) {
+			for (legacy_s32 x = 0; x < HIRES_WIDTH; x++) {
+				legacy_s32 shifted = direction * (2 * x + 1 - HIRES_WIDTH) > 0;
+				legacy_s32 band_y = y - HIRES_HEIGHT / 2 - shifted;
+				assert(output[y * HIRES_WIDTH + x] == expected_panorama(x, band_y, 0, 0));
+			}
+		}
+		assert_legacy_unchanged();
+	}
+	projection_focal_length_x = saved_focal_x;
+	projection_focal_length_y = saved_focal_y;
+}
+
 legacy_int main(void)
 {
 	assert(SDL_Init(0));
@@ -551,6 +739,8 @@ legacy_int main(void)
 	test_anisotropic_projection();
 	test_oriented_clipping_fallback_and_toggle();
 	test_mixed_artwork_and_view_transitions();
+	test_level_half_pixel_horizons();
+	test_tiny_bank_texel_boundaries();
 	test_copies_overlays_and_theme_changes();
 	skybox_hires_unload();
 	hires_shutdown();

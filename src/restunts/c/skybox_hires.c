@@ -230,6 +230,104 @@ static legacy_u8 skybox_hires_sample(const struct SKYBOX_HIRES_STRIP strips[SKYB
 	return strip->pixels[row * strip->pitch + column];
 }
 
+/* With an exactly level horizon, source columns do not change between rows
+ * and source rows do not change between columns. Keep the original sums and
+ * conversions so half-pixel boundaries select precisely the same texels. */
+static void skybox_hires_render_level(const struct SPRITE *clip, const struct SKYBOX *scenery,
+									  const struct SKYBOX_HIRES_STRIP strips[SKYBOX_IMAGE_COUNT],
+									  legacy_s32 maximum_height, legacy_f64 normal_y,
+									  legacy_f64 along_y, legacy_f64 above_x, legacy_f64 horizon,
+									  legacy_f64 phase, legacy_f64 center_x, legacy_f64 center_y,
+									  legacy_f64 cell_radius)
+{
+	enum { MISSING_STRIP = SKYBOX_IMAGE_COUNT, ROW_STRIP_COUNT = SKYBOX_IMAGE_COUNT + 1 };
+	static const legacy_s32 offsets[SKYBOX_IMAGE_COUNT] = {
+		0, SKYBOX_IMAGE_WIDTH, SKYBOX_IMAGE_HALF_WRAP, SKYBOX_IMAGE_ONE_AND_HALF_WIDTH};
+	legacy_u8 column_strips[HIRES_WIDTH];
+	legacy_u16 columns[HIRES_WIDTH];
+	legacy_f64 relative_y =
+		clip->sprite_top * HIRES_SCALE + HIRES_SAMPLE_CENTER_OFFSET - center_y * HIRES_SCALE;
+	legacy_f64 row_along = phase * HIRES_SCALE + along_y * relative_y;
+	legacy_f64 zero_above = above_x * (clip->sprite_raster_left * HIRES_SCALE +
+									   HIRES_SAMPLE_CENTER_OFFSET - center_x * HIRES_SCALE);
+	for (legacy_s32 x = clip->sprite_raster_left * HIRES_SCALE;
+		 x < clip->sprite_raster_right * HIRES_SCALE; x++) {
+		legacy_f64 relative_x = x + HIRES_SAMPLE_CENTER_OFFSET - center_x * HIRES_SCALE;
+		legacy_f64 column_along = normal_y * relative_x;
+		legacy_f64 along = column_along + row_along;
+		legacy_s32 column = (legacy_s32)along;
+		column -= along < column;
+		column = (legacy_u32)column & (SKYBOX_IMAGE_FULL_WRAP * HIRES_SCALE - 1);
+		legacy_s32 index =
+			column < (legacy_s32)SKYBOX_IMAGE_HALF_WRAP * HIRES_SCALE
+				? (column < (legacy_s32)SKYBOX_IMAGE_WIDTH * HIRES_SCALE ? 0 : 1)
+				: (column < (legacy_s32)SKYBOX_IMAGE_ONE_AND_HALF_WIDTH * HIRES_SCALE ? 2 : 3);
+		const struct SKYBOX_HIRES_STRIP *strip = &strips[index];
+		column -= offsets[index] * HIRES_SCALE;
+		if (strip->pixels == NULL || column >= strip->width) {
+			column_strips[x] = MISSING_STRIP;
+			columns[x] = 0;
+			continue;
+		}
+		column_strips[x] = index;
+		if (strip->scale != SKYBOX_NATIVE_SAMPLE_SCALE) {
+			column /= SKYBOX_ORIGINAL_SAMPLE_SCALE;
+		}
+		columns[x] = column;
+	}
+	for (legacy_s32 y = clip->sprite_top; y < clip->sprite_bottom; y++) {
+		legacy_f64 center_above =
+			horizon -
+			normal_y * ((y + HIRES_SAMPLE_CENTER_OFFSET) * HIRES_SCALE - center_y * HIRES_SCALE);
+		legacy_f64 above_center =
+			center_above +
+			above_x * ((clip->sprite_raster_left + HIRES_SAMPLE_CENTER_OFFSET) * HIRES_SCALE -
+					   center_x * HIRES_SCALE);
+		if (above_center + cell_radius < 0 || above_center - cell_radius > maximum_height) {
+			legacy_u8 color = above_center > 0 ? scenery->sky_color : scenery->ground_color;
+			for (legacy_s32 x = clip->sprite_raster_left; x < clip->sprite_raster_right; x++) {
+				hires_fill_pixel(x, y, color);
+			}
+			continue;
+		}
+		const legacy_u8 *sample_rows[HIRES_SCALE][ROW_STRIP_COUNT] = {0};
+		legacy_u8 row_colors[HIRES_SCALE];
+		for (legacy_s32 sample_y = 0; sample_y < HIRES_SCALE; sample_y++) {
+			legacy_f64 relative_y =
+				y * HIRES_SCALE + sample_y + HIRES_SAMPLE_CENTER_OFFSET - center_y * HIRES_SCALE;
+			legacy_f64 row_above = horizon - normal_y * relative_y;
+			legacy_f64 above = zero_above + row_above;
+			row_colors[sample_y] = above > 0 ? scenery->sky_color : scenery->ground_color;
+			if (above <= 0 || above > maximum_height) {
+				continue;
+			}
+			for (legacy_s32 index = 0; index < SKYBOX_IMAGE_COUNT; index++) {
+				const struct SKYBOX_HIRES_STRIP *strip = &strips[index];
+				if (strip->pixels == NULL || above > strip->height) {
+					continue;
+				}
+				legacy_s32 row = (legacy_s32)(strip->height - above);
+				if (strip->scale != SKYBOX_NATIVE_SAMPLE_SCALE) {
+					row /= SKYBOX_ORIGINAL_SAMPLE_SCALE;
+				}
+				sample_rows[sample_y][index] = strip->pixels + row * strip->pitch;
+			}
+		}
+		for (legacy_s32 x = clip->sprite_raster_left; x < clip->sprite_raster_right; x++) {
+			legacy_u8 samples[HIRES_SCALE * HIRES_SCALE];
+			for (legacy_s32 sample_y = 0; sample_y < HIRES_SCALE; sample_y++) {
+				for (legacy_s32 sample_x = 0; sample_x < HIRES_SCALE; sample_x++) {
+					legacy_s32 column = x * HIRES_SCALE + sample_x;
+					const legacy_u8 *row = sample_rows[sample_y][column_strips[column]];
+					samples[sample_y * HIRES_SCALE + sample_x] =
+						row != NULL ? row[columns[column]] : row_colors[sample_y];
+				}
+			}
+			hires_write_pixel(x, y, samples);
+		}
+	}
+}
+
 legacy_s32 skybox_hires_render(const struct SPRITE *target, const struct SKYBOX *scenery,
 							   struct SHAPE2D *const shapes[SKYBOX_IMAGE_COUNT], legacy_s16 theme,
 							   const struct MATRIX *rotation, legacy_s16 direction,
@@ -291,6 +389,12 @@ legacy_s32 skybox_hires_render(const struct SPRITE *target, const struct SKYBOX 
 	legacy_f64 cell_radius =
 		(HIRES_SCALE - 1) * HIRES_SAMPLE_CENTER_OFFSET * (SDL_fabs(above_x) + SDL_fabs(normal_y)) +
 		SKYBOX_SAMPLE_ROUNDING_MARGIN;
+	if (normal_x == 0 && length > 0) {
+		skybox_hires_render_level(&clip, scenery, strips, maximum_height, normal_y, along_y,
+								  above_x, horizon, phase, center_x, center_y, cell_radius);
+		hires_end();
+		return 1;
+	}
 	/* Projection is affine. Reuse each column's products across the whole
 	 * viewport and each row's products across all cells, keeping the original
 	 * sample arithmetic order at texel boundaries. */
