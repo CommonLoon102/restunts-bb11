@@ -24,6 +24,7 @@
 #define HIRES_DECAL_WIDTH_REDUCTION 2
 #define HIRES_MAX_POLYGON_POINTS 20
 #define HIRES_ROUND_POINTS 64
+#define HIRES_DIRECT_POLYGON_EDGE_LIMIT 4U
 #define HIRES_WHEEL_INNER_SCALE (9472.0 / TRIG_FIXED_ONE)
 
 struct HIRES_PRIMITIVE {
@@ -735,6 +736,33 @@ static void draw_line(const struct SHAPE3D_HIRES_POINT *first,
 	}
 }
 
+struct HIRES_POLYGON_EDGE {
+	const struct SHAPE3D_HIRES_POINT *lower;
+	const struct SHAPE3D_HIRES_POINT *upper;
+	legacy_s32 top;
+	legacy_s32 bottom;
+};
+
+static void polygon_insert_intersection(const struct SHAPE3D_HIRES_POINT *lower,
+										const struct SHAPE3D_HIRES_POINT *upper,
+										legacy_f64 sample_y,
+										struct SHAPE3D_HIRES_POINT *intersections, legacy_u32 count)
+{
+	/* Evaluate each shared edge from its lower endpoint on every row.
+	 * Incremental slopes or cached rounded deltas can change pixel ties. */
+	legacy_f64 fraction = (sample_y - lower->y) / (upper->y - lower->y);
+	struct SHAPE3D_HIRES_POINT intersection;
+	intersection.x = lower->x + fraction * (upper->x - lower->x);
+	intersection.y = sample_y;
+	intersection.inverse_z = lower->inverse_z + fraction * (upper->inverse_z - lower->inverse_z);
+	legacy_u32 position = count;
+	while (position != 0 && intersections[position - 1].x > intersection.x) {
+		intersections[position] = intersections[position - 1];
+		position--;
+	}
+	intersections[position] = intersection;
+}
+
 static void fill_polygon(const struct SHAPE3D_HIRES_POINT *points, legacy_u32 count,
 						 const struct HIRES_PAINT *paint)
 {
@@ -758,8 +786,10 @@ static void fill_polygon(const struct SHAPE3D_HIRES_POINT *points, legacy_u32 co
 	if (maximum_y < 0 || minimum_y >= HIRES_HEIGHT) {
 		return;
 	}
-	legacy_s32 top = minimum_y < 0 ? 0 : ceil_coordinate(minimum_y - 0.5);
-	legacy_s32 bottom = maximum_y >= HIRES_HEIGHT ? HIRES_HEIGHT : ceil_coordinate(maximum_y - 0.5);
+	legacy_s32 top = minimum_y < 0 ? 0 : ceil_coordinate(minimum_y - HIRES_SAMPLE_CENTER_OFFSET);
+	legacy_s32 bottom = maximum_y >= HIRES_HEIGHT
+							? HIRES_HEIGHT
+							: ceil_coordinate(maximum_y - HIRES_SAMPLE_CENTER_OFFSET);
 	if (paint->context != NULL) {
 		if (top < paint->context->top) {
 			top = paint->context->top;
@@ -768,35 +798,85 @@ static void fill_polygon(const struct SHAPE3D_HIRES_POINT *points, legacy_u32 co
 			bottom = paint->context->bottom;
 		}
 	}
-	for (legacy_s32 y = top; y < bottom; y++) {
-		struct SHAPE3D_HIRES_POINT intersections[HIRES_ROUND_POINTS];
-		legacy_u32 intersection_count = 0;
-		legacy_f64 sample_y = y + 0.5;
+	if (top >= bottom) {
+		return;
+	}
+	struct HIRES_POLYGON_EDGE edges[HIRES_ROUND_POINTS];
+	legacy_u32 pending[HIRES_ROUND_POINTS];
+	legacy_u32 edge_count = 0;
+	/* Triangles and quads cost less to scan directly than to schedule. */
+	if (count > HIRES_DIRECT_POLYGON_EDGE_LIMIT) {
 		const struct SHAPE3D_HIRES_POINT *previous = &points[count - 1];
 		for (legacy_u32 index = 0; index < count; index++) {
 			const struct SHAPE3D_HIRES_POINT *current = &points[index];
-			if ((previous->y <= sample_y && current->y > sample_y) ||
-				(current->y <= sample_y && previous->y > sample_y)) {
-				/* Opposite polygon windings must produce bit-identical shared
-				 * edges before pixel-center coverage rounds the intersection. */
-				const struct SHAPE3D_HIRES_POINT *lower =
-					previous->y < current->y ? previous : current;
-				const struct SHAPE3D_HIRES_POINT *upper =
-					previous->y < current->y ? current : previous;
-				legacy_f64 fraction = (sample_y - lower->y) / (upper->y - lower->y);
-				struct SHAPE3D_HIRES_POINT intersection;
-				intersection.x = lower->x + fraction * (upper->x - lower->x);
-				intersection.y = sample_y;
-				intersection.inverse_z =
-					lower->inverse_z + fraction * (upper->inverse_z - lower->inverse_z);
-				legacy_u32 position = intersection_count++;
-				while (position != 0 && intersections[position - 1].x > intersection.x) {
-					intersections[position] = intersections[position - 1];
+			const struct SHAPE3D_HIRES_POINT *lower = previous->y < current->y ? previous : current;
+			const struct SHAPE3D_HIRES_POINT *upper = previous->y < current->y ? current : previous;
+			previous = current;
+			if (!(lower->y < upper->y) || lower->y >= bottom || upper->y <= top) {
+				continue;
+			}
+			/* Clamp to the raster band before converting projected coordinates. */
+			legacy_s32 first_row =
+				lower->y < top ? top : ceil_coordinate(lower->y - HIRES_SAMPLE_CENTER_OFFSET);
+			legacy_s32 last_row =
+				upper->y > bottom ? bottom : ceil_coordinate(upper->y - HIRES_SAMPLE_CENTER_OFFSET);
+			if (first_row >= last_row) {
+				continue;
+			}
+			edges[edge_count] = (struct HIRES_POLYGON_EDGE){lower, upper, first_row, last_row};
+			legacy_u32 position = edge_count;
+			while (position != 0 && edges[pending[position - 1]].top > first_row) {
+				pending[position] = pending[position - 1];
+				position--;
+			}
+			pending[position] = edge_count++;
+		}
+	}
+	legacy_u32 active[HIRES_ROUND_POINTS];
+	legacy_u32 active_count = 0;
+	legacy_u32 next_edge = 0;
+	for (legacy_s32 y = top; y < bottom; y++) {
+		struct SHAPE3D_HIRES_POINT intersections[HIRES_ROUND_POINTS];
+		legacy_u32 intersection_count = 0;
+		legacy_f64 sample_y = y + HIRES_SAMPLE_CENTER_OFFSET;
+		if (count <= HIRES_DIRECT_POLYGON_EDGE_LIMIT) {
+			const struct SHAPE3D_HIRES_POINT *previous = &points[count - 1];
+			for (legacy_u32 index = 0; index < count; index++) {
+				const struct SHAPE3D_HIRES_POINT *current = &points[index];
+				if ((previous->y <= sample_y && current->y > sample_y) ||
+					(current->y <= sample_y && previous->y > sample_y)) {
+					const struct SHAPE3D_HIRES_POINT *lower =
+						previous->y < current->y ? previous : current;
+					const struct SHAPE3D_HIRES_POINT *upper =
+						previous->y < current->y ? current : previous;
+					polygon_insert_intersection(lower, upper, sample_y, intersections,
+												intersection_count++);
+				}
+				previous = current;
+			}
+		} else {
+			legacy_u32 retained_count = 0;
+			for (legacy_u32 index = 0; index < active_count; index++) {
+				if (edges[active[index]].bottom > y) {
+					active[retained_count++] = active[index];
+				}
+			}
+			active_count = retained_count;
+			while (next_edge < edge_count && edges[pending[next_edge]].top <= y) {
+				legacy_u32 edge_index = pending[next_edge++];
+				legacy_u32 position = active_count++;
+				/* Equal-X intersections retain the original polygon edge order. */
+				while (position != 0 && active[position - 1] > edge_index) {
+					active[position] = active[position - 1];
 					position--;
 				}
-				intersections[position] = intersection;
+				active[position] = edge_index;
 			}
-			previous = current;
+			for (legacy_u32 index = 0; index < active_count; index++) {
+				const struct HIRES_POLYGON_EDGE *edge = &edges[active[index]];
+				polygon_insert_intersection(edge->lower, edge->upper, sample_y, intersections,
+											intersection_count++);
+			}
 		}
 		for (legacy_u32 index = 0; index + 1 < intersection_count; index += 2) {
 			const struct SHAPE3D_HIRES_POINT *first = &intersections[index];
@@ -804,11 +884,14 @@ static void fill_polygon(const struct SHAPE3D_HIRES_POINT *points, legacy_u32 co
 			if (last->x < 0 || first->x >= HIRES_WIDTH || last->x <= first->x) {
 				continue;
 			}
-			legacy_s32 left = first->x < 0 ? 0 : ceil_coordinate(first->x - 0.5);
-			legacy_s32 right =
-				last->x >= HIRES_WIDTH ? HIRES_WIDTH : ceil_coordinate(last->x - 0.5);
+			legacy_s32 left =
+				first->x < 0 ? 0 : ceil_coordinate(first->x - HIRES_SAMPLE_CENTER_OFFSET);
+			legacy_s32 right = last->x >= HIRES_WIDTH
+								   ? HIRES_WIDTH
+								   : ceil_coordinate(last->x - HIRES_SAMPLE_CENTER_OFFSET);
 			legacy_f64 depth_step = (last->inverse_z - first->inverse_z) / (last->x - first->x);
-			legacy_f64 inverse_z = first->inverse_z + (left + 0.5 - first->x) * depth_step;
+			legacy_f64 inverse_z =
+				first->inverse_z + (left + HIRES_SAMPLE_CENTER_OFFSET - first->x) * depth_step;
 			if (paint->context != NULL) {
 				hires_raster_span(paint->context, left, right, y, inverse_z, depth_step,
 								  paint->family, paint->depth_mode, paint->color, paint->alternate,
