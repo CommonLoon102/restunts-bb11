@@ -1,6 +1,8 @@
 #ifdef RESTUNTS_SDL3
 #include "../platform/sdl3/sdl3.h"
 #include "frame_interpolation.h"
+#include "frame_adaptive.h"
+#include "hires.h"
 #include "presentation.h"
 #endif
 #include "dashboard.h"
@@ -487,7 +489,14 @@ static void race_presentation_interpolate_ghost(legacy_u32 fraction)
 static void race_draw_frame(void)
 {
 #ifdef RESTUNTS_SDL3
-	sdl3_video_begin_frame();
+	legacy_s32 render_scale =
+		supersight_enabled != 0 ? frame_adaptive_render_scale(&frame_adaptive) : HIRES_SCALE;
+	if (hires_render_scale() != render_scale) {
+		hires_set_render_scale(render_scale);
+		/* Companion pixels were invalidated; rebuild static dashboard/replay art. */
+		full_redraw_frames_remaining = video_page_count;
+	}
+	sdl3_video_begin_track_frame(supersight_enabled);
 #endif
 	if (full_redraw_frames_remaining != 0) {
 		replay_controls_drawn[dashboard_buffer_index] = 0;
@@ -858,6 +867,12 @@ static void race_release_resources(void)
 	mouse_minmax_position(0);
 	remove_frame_callback();
 	free_player_cars();
+#ifdef RESTUNTS_SDL3
+	/* Auto restores menu resolution; a manually locked scale stays selected. */
+	hires_set_render_scale(frame_adaptive.preset == FRAME_ADAPTIVE_PRESET_AUTO
+							   ? HIRES_SCALE
+							   : frame_adaptive_render_scale(&frame_adaptive));
+#endif
 }
 
 void run_game(void)

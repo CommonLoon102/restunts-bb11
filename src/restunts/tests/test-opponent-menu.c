@@ -30,6 +30,7 @@
 #include "../c/opponent_portrait.h"
 #include "../c/shape2d_internal.h"
 static legacy_u32 portrait_draws, enhanced_portrait_draws, portrait_unloads;
+static legacy_u8 opponent_expiry_test;
 
 void opponent_portrait_draw(const struct SPRITE *target, const struct SHAPE2D *original,
 							legacy_u8 opponent)
@@ -153,6 +154,12 @@ legacy_s16 input_checking(legacy_s16 elapsed)
 	(void)elapsed;
 	assert(event_index < event_count);
 	assert((legacy_u8)gameconfig.game_opponenttype == expected_opponents[event_index]);
+#ifdef RESTUNTS_SDL3
+	if (opponent_expiry_test != 0 && event_index == 1) {
+		assert(display_status_active != 0 && display_status_draw_count == 1);
+		display_status_expire_pending = 1;
+	}
+#endif
 	return (legacy_s16)opponent_keys[event_index];
 }
 
@@ -325,7 +332,9 @@ static void begin_case(legacy_u8 opponent, legacy_u8 page_flipping)
 	resource_allocations = resource_releases = window_allocations = window_releases = 0;
 	expect_load(opponent);
 #ifdef RESTUNTS_SDL3
-	supersight_enabled = 0;
+	supersight_enabled = fps_display_enabled = 0;
+	display_status_active = display_status_expire_pending = opponent_expiry_test = 0;
+	display_status_draw_count = display_status_expire_count = display_shift_shortcuts = 0;
 	portrait_draws = enhanced_portrait_draws = portrait_unloads = 0;
 #endif
 }
@@ -457,6 +466,23 @@ static void test_opponent_car(legacy_u8 page_flipping)
 }
 
 #ifdef RESTUNTS_SDL3
+static void test_preset_notice_expiry(legacy_u8 page_flipping)
+{
+	begin_case(3, page_flipping);
+	opponent_expiry_test = 1;
+	add_event(KEY_SHIFT_F12, 3);
+	add_event(0, 3);
+	add_event(KEY_ENTER, 3);
+	opponent_hits[event_count - 1] = 4;
+	finish_case(3, 1);
+	assert(supersight_enabled == 1 && fps_display_enabled == 0);
+	assert(display_shift_shortcuts == 1 && display_status_draw_count == 1);
+	assert(display_status_expire_count == 1 && display_status_active == 0);
+	/* The third portrait belongs to the fresh background that erases the notice. */
+	assert(portrait_draws == 3 && enhanced_portrait_draws == 2);
+	opponent_expiry_test = 0;
+}
+
 static void test_portrait_toggle(legacy_u8 page_flipping)
 {
 	begin_case(3, page_flipping);
@@ -493,6 +519,7 @@ int main(void)
 		test_opponent_car(page_flipping);
 #ifdef RESTUNTS_SDL3
 		test_portrait_toggle(page_flipping);
+		test_preset_notice_expiry(page_flipping);
 #endif
 	}
 	printf("test-opponent-menu: passed %" LEGACY_PRIu32 " sessions, %" LEGACY_PRIu32

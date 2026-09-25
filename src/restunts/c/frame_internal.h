@@ -84,6 +84,8 @@ void update_frame_snapshot(legacy_s8 buffer_index, struct RECTANGLE *cliprect,
 
 void frame_supersight_reset(void);
 void frame_fps_reset(void);
+void frame_supersight_show_status(const legacy_s8 *name);
+legacy_s16 frame_display_overlay_active(void);
 legacy_s16 frame_fps_expire_idle(void);
 void frame_fps_record_presented(void);
 void frame_fps_present_roof(void);

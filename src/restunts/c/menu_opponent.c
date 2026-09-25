@@ -18,6 +18,7 @@
 #include "opponent.h"
 #ifdef RESTUNTS_SDL3
 #include "opponent_portrait.h"
+#include "frame_internal.h"
 #include "shape2d_internal.h"
 #endif
 
@@ -132,6 +133,13 @@ static void opponent_menu_draw_background(void)
 		sprite_clear_shape_alt(render_window_sprite->sprite_bitmapptr, 0, 0);
 		sprite_select_render_window();
 	}
+#ifdef RESTUNTS_SDL3
+	if (frame_display_overlay_active() != 0) {
+		sprite_set_target_clip_bounds(0, OPPONENT_MENU_SCREEN_WIDTH, 0,
+									  OPPONENT_MENU_SCREEN_HEIGHT);
+		frame_fps_draw_text();
+	}
+#endif
 }
 
 static void opponent_menu_refresh(struct OPPONENT_MENU_STATE *menu)
@@ -170,6 +178,15 @@ static void opponent_menu_refresh(struct OPPONENT_MENU_STATE *menu)
 
 static legacy_u16 opponent_menu_poll_input(struct OPPONENT_MENU_STATE *menu)
 {
+#ifdef RESTUNTS_SDL3
+	if (frame_fps_expire_idle() != 0) {
+		mouse_draw_opaque_check();
+		opponent_menu_draw_background();
+		opponent_menu_draw_description(menu);
+		menu->previous_selection = OPPONENT_MENU_NO_SELECTION;
+		mouse_draw_transparent_check();
+	}
+#endif
 	if (menu->selected != menu->previous_selection) {
 		menu->previous_selection = menu->selected;
 		sprite_blit_to_video(render_window_sprite, LEGACY_S8_FROM_BITS(menu->blit_mode));
@@ -193,9 +210,9 @@ static legacy_u16 opponent_menu_poll_input(struct OPPONENT_MENU_STATE *menu)
 static legacy_u8 opponent_menu_activate_key(struct OPPONENT_MENU_STATE *menu, legacy_u16 key)
 {
 #ifdef RESTUNTS_SDL3
-	if (key == (legacy_u16)KEY_F12) {
+	if (key == (legacy_u16)KEY_F12 || key == (legacy_u16)KEY_SHIFT_F12) {
 		mouse_draw_opaque_check();
-		handle_ingame_kb_shortcuts(KEY_F12);
+		handle_ingame_kb_shortcuts(LEGACY_S16_FROM_BITS(key));
 		opponent_menu_draw_background();
 		opponent_menu_draw_description(menu);
 		menu->previous_selection = OPPONENT_MENU_NO_SELECTION;

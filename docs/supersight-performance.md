@@ -1,7 +1,10 @@
 # SuperSight CPU optimization measurements
 
-These measurements guide the SDL3 renderer changes made on 2026-09-25.
-Resolution remains 1280 x 800. Skybox artwork and sampling quality are preserved.
+The recorded optimization measurements below used fixed 1280x800 rendering
+and preserved skybox artwork. The current adaptive renderer also supports
+640x400 and 320x200 internally, as described in the final section; those stages
+do not change the output display mode. At 320x200, the renderer uses the original
+horizon artwork and disables car shadows.
 
 ## Method and limits
 
@@ -220,3 +223,128 @@ interpolation off, on, and repeatedly toggled:
 
 Changed C files pass clang-format 18.1.8 and EditorConfig checks and preserve
 CRLF line endings. All retained source changes received a separate review.
+
+## Adaptive view masks and internal resolution
+
+SDL3 driving and replay presentations start at full quality. The controller uses
+elapsed rendering/composition work, sampled independently of F11. It takes two
+monotonic timestamp readings per presentation; SDL's final presentation call and
+intentional frame pacing are outside the sample. The work budget is 15.667 ms,
+reserving 1 ms of the 60 Hz interval for other work.
+
+The five stages are:
+
+| Stage | Tile policy | Internal scale | Internal dimensions |
+| --- | --- | ---: | --- |
+| 0 | Full SuperSight track view and full geometry | 4 | 1280x800 |
+| 1 | Large H/L mask | 4 | 1280x800 |
+| 2 | Large H/L mask | 2 | 640x400 |
+| 3 | Large H/L mask | 1 | 320x200 |
+| 4 | Small H/L mask; minimum quality | 1 | 320x200 |
+
+F12 toggles Auto/Off, including turning any locked preset off. Shift+F12 starts
+at Full from Off or Auto and cycles Full, High, Medium, Low, then Full again.
+These lock stages 0, 1, 2, and 3 respectively; stage 4 remains Auto-only.
+Locked modes do not collect adaptive timing or change quality under load, and
+race/replay resets preserve the selected preset. The selected internal resolution
+also remains locked in previews. Returning to Auto restarts at stage 0.
+
+Startup accepts one case-insensitive `ss:full`, `ss:high`, `ss:medium`, or `ss:low`
+argument to enable and lock that preset before video initialization and the intro.
+Multiple `ss:` arguments or an unknown preset exit with an error. Omitting the
+option preserves normal startup with SuperSight off. In-game shortcuts remain
+available to change a preset selected at startup.
+
+At internal scale 1 (320x200), the renderer uses the original horizon strip and
+skips car-shadow submission and rendering. This applies to locked Low and Auto
+stages 3/4. Higher scales restore enhanced horizon artwork and shadows. The enhanced
+source cache stays available during the temporary reduction.
+
+These are the exact north-facing masks. `C` anchors the active camera tile and
+uses full geometry. `H` is full geometry, `L` is available low geometry, and `.`
+is outside the visible mask. Missing low geometry falls back to the full model.
+
+```text
+Large mask    Small mask
+..LLLLL..     LLLLL
+.LLLLLLL.     LLLLL
+.LLLLLLL.     LHHHL
+LLHHHHHLL     HHHHH
+LLHHHHHLL     .HCH.
+LLHHHHHLL
+LLHHHHHLL
+.LLHHHLL.
+..LHHHL..
+...HCH...
+```
+
+The masks follow the active camera's tile and effective view heading, including
+opponent, ghost, and external views. All 1024 heading steps can change their
+orientation. Each world-tile center is inverse-transformed into the camera grid
+using the heading's fixed-point sine and cosine, then assigned to its nearest
+mask cell. This avoids duplicates and holes caused by rounding forward-rotated
+mask offsets. Queries outside the track are hidden when adaptation is active.
+
+An entire multi-tile object remains visible when any occupied tile overlaps the
+mask. Any `H` overlap selects full geometry; otherwise an `L` overlap selects low
+geometry. Only an entirely excluded footprint is hidden. The small mask retains
+full geometry across its nearest five-tile row, so two near tiles marked `L` in
+the large mask become `H` at the floor. Visible coverage still only decreases.
+Rendered cars use their occupied tiles for the same visibility and geometry
+policy; their simulation and ghost replay behavior are unchanged. `C` explicitly
+keeps full geometry. Existing graphics-menu scenery settings continue to apply.
+
+Internal resolution changes resize the rendering work and composition buffers,
+while the existing 4:3 output presentation, window/fullscreen size, and DOS VESA
+display mode remain unchanged. Enhanced skybox source artwork stays at its authored
+scale; scale 1 uses the original strip. There is no reduction below the
+small mask at 320x200. Fixed rendering, simulation, and presentation costs can
+still prevent 60 FPS on a slow machine.
+
+### Timing and recovery
+
+A 30-frame window requires both an over-budget mean and at least seven
+over-budget frames before reducing quality by one stage. This is about half a
+second at 60 FPS and longer at lower frame rates. A single long sample is capped
+before summation and cannot trigger a reduction by itself.
+
+Recovery requires six consecutive headroom windows: each has no over-budget
+samples and a mean at most 85% of the work budget. That restores one stage after
+about three seconds at the target rate. A failed recovery probe doubles the wait,
+up to 48 windows (about 24 seconds); two successful headroom windows reduce the
+backoff. Neutral or overloaded windows interrupt the consecutive recovery period.
+Auto track/session resets restore full quality; locked presets survive resets. Adaptation
+applies only to presentation snapshots, preserving physics, replay state, and
+random seeds.
+
+F11 controls the FPS counter. Each F12 or Shift+F12 press also displays
+`SuperSight: <name>` on the next line for two seconds, even with FPS hidden. Its
+expiry restores cockpit roofs, preview backgrounds, and both video pages as needed.
+The previous omitted-object counter and category-by-category distance ladder have
+been removed. Timing and adaptation do not depend on whether FPS is visible.
+
+### Policy cost and focused validation
+
+Full quality builds no mask. Reduced quality caches a 900-byte tile policy using
+camera tile, heading sine/cosine, and mask kind. Stages 1, 2, and 3 share the same
+mask, so resolution-only changes reuse the cache. Track-object submission reads cached
+bytes and combines footprint flags without per-object trigonometry, allocation,
+or distance calculations. Car footprints rotate their existing wheel offsets.
+Render consumers cache active dimensions outside pixel loops.
+
+The standalone controller regression covers the exact masks at all four cardinal
+headings and four diagonal headings, stage resolutions, camera/heading cache
+invalidation, reuse across resolution changes, whole-footprint flag combinations,
+out-of-track and extreme coordinates, isolated stalls, sustained uneven loads,
+interrupted recovery, failed-probe backoff, and the minimum-quality floor. It
+passes with strict compiler warnings and AddressSanitizer/UndefinedBehaviorSanitizer.
+Changed controller C/H files pass clang-format and EditorConfig checks and retain
+CRLF line endings.
+
+The opt-in `test-frame-adaptive --benchmark` uses 10 million iterations for each
+stable path and 5000 camera-change rebuilds. One local x86_64 Linux run measured
+8.40 ns per full-quality record/prepare/lookup sequence, 11.77 ns for a reduced-
+state cache hit, and 2.25 microseconds for a cache rebuild. These focused CPU-clock
+measurements exclude timestamp reads, renderer submission branches, actual drawing,
+and presentation. They are not whole-frame savings or an Athlon XP measurement;
+full scene measurements must compare the new stages separately.

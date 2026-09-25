@@ -23,9 +23,27 @@
 #include "../c/fatal.h"
 #include "../c/hires.h"
 #include "../c/crash_state.h"
+#include "../c/frame_adaptive.h"
+
+#define RENDER_REPLAY_ADAPTIVE_MODE 3
 
 #undef memcpy
 #undef printf
+
+/* Keep the production timer pump, but control its UI timestamp during exact
+ * framebuffer comparisons. No wall-clock overlay may expire between snapshots. */
+#define dos_timer_get_realtime_counter render_replay_realtime_counter
+#include "../platform/sdl3/timer.c"
+#undef dos_timer_get_realtime_counter
+
+static legacy_u8 visual_clock_frozen;
+static legacy_u32 visual_clock_ticks;
+
+legacy_u32 dos_timer_get_realtime_counter(void)
+{
+	legacy_u32 now = render_replay_realtime_counter();
+	return visual_clock_frozen != 0 ? visual_clock_ticks : now;
+}
 
 extern struct MATRIX wheel_heading_rotation;
 extern struct MATRIX plane_heading_rotation;
@@ -270,6 +288,9 @@ static legacy_u8 *capture_snapshot_pixels(const struct GAMESTATE *snapshot, size
 
 static void check_authoritative_event_visuals(void)
 {
+	assert(visual_clock_frozen == 0);
+	visual_clock_ticks = dos_timer_get_realtime_counter();
+	visual_clock_frozen = 1;
 	struct GAMESTATE saved = state;
 	legacy_s8 saved_camera = cameramode;
 	legacy_s8 saved_follow = followOpponentFlag;
@@ -317,6 +338,7 @@ static void check_authoritative_event_visuals(void)
 	state = saved;
 	cameramode = saved_camera;
 	followOpponentFlag = saved_follow;
+	visual_clock_frozen = 0;
 }
 
 static void initialize_replay(const legacy_s8 *name)
@@ -361,7 +383,7 @@ legacy_s16 stuntsmain(legacy_s16 argc, legacy_s8 *argv[])
 	assert(argc == 7 || argc == 9);
 	legacy_s16 mode = (legacy_s16)atoi((const legacy_char *)argv[3]);
 	legacy_u16 limit = (legacy_u16)atoi((const legacy_char *)argv[4]);
-	assert(mode >= 0 && mode <= 2);
+	assert(mode >= 0 && mode <= RENDER_REPLAY_ADAPTIVE_MODE);
 	legacy_u16 landing_start = (legacy_u16)atoi((const legacy_char *)argv[5]);
 	legacy_u16 landing_end = (legacy_u16)atoi((const legacy_char *)argv[6]);
 	legacy_u16 settling_start = argc == 9 ? (legacy_u16)atoi((const legacy_char *)argv[7]) : 0;
@@ -392,9 +414,15 @@ legacy_s16 stuntsmain(legacy_s16 argc, legacy_s8 *argv[])
 	legacy_u16 settling_interpolations = 0;
 	for (legacy_u16 tick = 0; tick <= limit; tick++) {
 		assert((legacy_u16)state.game_frame == tick);
-		legacy_s16 enhanced = mode == 1 || (mode == 2 && (tick / 17U) % 2U != 0);
+		legacy_s16 enhanced = mode == 1 || mode == RENDER_REPLAY_ADAPTIVE_MODE ||
+							  (mode == 2 && (tick / 17U) % 2U != 0);
 		if (enhanced != supersight_enabled) {
 			assert(handle_ingame_kb_shortcuts(KEY_F12) != 0);
+		}
+		if (mode == RENDER_REPLAY_ADAPTIVE_MODE) {
+			/* Sweep every reduction and recovery state independently of host speed. */
+			frame_adaptive.quality = tick % (FRAME_ADAPTIVE_MAX_QUALITY + 1U);
+			hires_set_render_scale(frame_adaptive_render_scale(&frame_adaptive));
 		}
 		/* Cover each camera and both targets without modifying recorded input. */
 		cameramode = (legacy_s8)((tick / 29U) % CAMERA_MODE_COUNT);

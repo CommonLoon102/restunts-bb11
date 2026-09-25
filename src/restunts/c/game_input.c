@@ -14,6 +14,7 @@
 #include "frame_internal.h"
 #ifdef RESTUNTS_SDL3
 #include "hires.h"
+#include "frame_adaptive.h"
 #include "skybox_hires.h"
 #endif
 
@@ -21,8 +22,8 @@
 #define INPUT_KEY_COUNT 10U
 #define INPUT_CALLBACK_COUNT 64U
 #define INPUT_ASCII_KEY_COUNT 128U
-#define INPUT_EXTENDED_KEY_COUNT 135U
-#define INPUT_EXTENDED_KEY_MAX_INDEX 134U
+#define INPUT_EXTENDED_KEY_COUNT 137U
+#define INPUT_EXTENDED_KEY_MAX_INDEX (INPUT_EXTENDED_KEY_COUNT - 1U)
 #define INPUT_ASCII_BYTE_MASK 255U
 #define INPUT_ASCII_INDEX_MASK 127U
 #define INPUT_MODE_STACK_LIMIT 8U
@@ -228,6 +229,34 @@ void load_palandcursor(void)
 	sprite_select_screen_compat();
 }
 
+#ifdef RESTUNTS_SDL3
+static void input_select_supersight(legacy_s16 key)
+{
+	static const legacy_s8 *preset_names[] = {"Auto", "Full", "High", "Medium", "Low"};
+	legacy_u8 was_enabled = supersight_enabled;
+	if (key == KEY_SHIFT_F12) {
+		legacy_u16 preset =
+			supersight_enabled != 0 ? frame_adaptive.preset : FRAME_ADAPTIVE_PRESET_AUTO;
+		preset = preset >= FRAME_ADAPTIVE_PRESET_LOW ? FRAME_ADAPTIVE_PRESET_FULL : preset + 1U;
+		frame_adaptive_set_preset(&frame_adaptive, (enum FRAME_ADAPTIVE_PRESET)preset);
+		supersight_enabled = 1;
+	} else {
+		supersight_enabled ^= 1U;
+		frame_adaptive_set_preset(&frame_adaptive, FRAME_ADAPTIVE_PRESET_AUTO);
+	}
+	if (was_enabled != supersight_enabled) {
+		hires_set_enabled(supersight_enabled);
+	}
+	if (supersight_enabled != 0) {
+		hires_set_render_scale(frame_adaptive_render_scale(&frame_adaptive));
+	}
+	frame_supersight_reset();
+	frame_supersight_show_status(supersight_enabled != 0 ? preset_names[frame_adaptive.preset]
+														 : (const legacy_s8 *)"Off");
+	full_redraw_frames_remaining = (legacy_s8)video_page_count;
+}
+#endif
+
 static legacy_s16 input_handle_display_shortcut(legacy_s16 key)
 {
 	switch (key) {
@@ -237,14 +266,18 @@ static legacy_s16 input_handle_display_shortcut(legacy_s16 key)
 			full_redraw_frames_remaining = (legacy_s8)video_page_count;
 			return 1;
 
+#ifdef RESTUNTS_SDL3
+		case KEY_SHIFT_F12:
+		case KEY_F12:
+			input_select_supersight(key);
+			return 1;
+#else
 		case KEY_F12:
 			supersight_enabled ^= 1U;
-#ifdef RESTUNTS_SDL3
-			hires_set_enabled(supersight_enabled);
-#endif
 			frame_supersight_reset();
 			full_redraw_frames_remaining = (legacy_s8)video_page_count;
 			return 1;
+#endif
 
 		case 'D':
 		case 'd':

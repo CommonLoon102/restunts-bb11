@@ -36,7 +36,7 @@ def main():
         for replay, limit, first, last in fixtures:
             settling = ("800", "900") if replay.upper() == "SHAKING" else ("0", "0")
             baseline = None
-            for mode in range(3):
+            for mode in range(4):
                 output = Path(directory) / f"{replay}-{mode}.bin"
                 subprocess.run([str(executable), "--data-dir", str(data_directory),
                                 replay, str(output), str(mode), str(limit),
@@ -57,7 +57,7 @@ def main():
                     raise AssertionError(f"{replay}, mode {mode}: {field} differs at "
                                          f"tick {offset // RECORD_SIZE}, byte {field_offset}")
             print(f"{replay}: {len(baseline) // RECORD_SIZE} identical gamestates and RNG seeds "
-                  "with interpolated rendering off, on and repeatedly toggled", flush=True)
+                  "with rendering off, on, toggled and adaptive quality swept", flush=True)
 
 
 if __name__ == "__main__":
