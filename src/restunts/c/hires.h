@@ -73,6 +73,10 @@ void hires_argb_pixel(legacy_s32 x, legacy_s32 y, legacy_u32 color);
 legacy_s32 hires_shadow_begin(void);
 void hires_shadow_pixel(legacy_s32 x, legacy_s32 y, legacy_u8 opacity);
 const legacy_u32 *hires_framebuffer_argb(const legacy_u8 *legacy, const legacy_u32 *palette);
+/* Compose at the current output resolution directly into caller-owned rows.
+ * Pitch is in bytes; each row must be aligned for legacy_u32 and hold a full row. */
+void hires_copy_framebuffer_argb(const legacy_u8 *legacy, const legacy_u32 *palette,
+								 legacy_u32 *destination, legacy_s32 pitch);
 void hires_pixel(legacy_s32 x, legacy_s32 y, legacy_u8 color);
 /* Fill all companion samples at logical 320x200 coordinates without changing the legacy byte. */
 void hires_fill_pixel(legacy_s32 x, legacy_s32 y, legacy_u8 color);
