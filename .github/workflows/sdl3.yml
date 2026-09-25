@@ -170,7 +170,7 @@ jobs:
             -Uri 'https://github.com/CommonLoon102/restunts4d-oracles/releases/download/v1.0.1/BB11.zip' `
             -OutFile $archive
           Expand-Archive -Path $archive -DestinationPath stunts -Force
-      - name: Run platform, file I/O, input and audio regressions on Windows
+      - name: Run native regressions on Windows
         shell: pwsh
         env:
           SDL_VIDEODRIVER: dummy
@@ -180,10 +180,12 @@ jobs:
           New-Item -ItemType Directory -Path fixture -Force | Out-Null
           Push-Location fixture
           try {
-            foreach ($test in @('platform', 'fileio', 'input', 'audio-sequence')) {
+            foreach ($test in @('platform', 'scheduling', 'fileio', 'input', 'audio-sequence')) {
               & "$root/native-tests/bin/test-sdl3-$test.exe"
               if ($LASTEXITCODE -ne 0) { throw "$test failed: $LASTEXITCODE" }
             }
+            & "$root/native-tests/bin/test-render-workers.exe"
+            if ($LASTEXITCODE -ne 0) { throw "render-workers failed: $LASTEXITCODE" }
             & "$root/native-tests/bin/test-sdl3-audio.exe" "$root/stunts/ADSKIDMS.VCE"
             if ($LASTEXITCODE -ne 0) { throw "audio failed: $LASTEXITCODE" }
           } finally {
