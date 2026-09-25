@@ -3,6 +3,7 @@
 #if defined(RESTUNTS_SDL3)
 
 #include <SDL3/SDL_stdinc.h>
+#include <float.h>
 #include <stdlib.h>
 #include <string.h>
 #include "fatal.h"
@@ -609,7 +610,14 @@ static legacy_s32 polygon_covers_sample(const struct SHAPE3D_HIRES_POINT *points
 			const struct SHAPE3D_HIRES_POINT *lower = previous->y < current->y ? previous : current;
 			const struct SHAPE3D_HIRES_POINT *upper = previous->y < current->y ? current : previous;
 			legacy_f64 fraction = (y - lower->y) / (upper->y - lower->y);
-			if (lower->x + fraction * (upper->x - lower->x) <= x) {
+			/* Match the fill's stored intersection when expressions retain extra precision.
+			 * A normal local assignment can remain in an x87 register without rounding. */
+#if FLT_EVAL_METHOD > 0
+			volatile legacy_f64 intersection_x = lower->x + fraction * (upper->x - lower->x);
+#else
+			legacy_f64 intersection_x = lower->x + fraction * (upper->x - lower->x);
+#endif
+			if (intersection_x <= x) {
 				inside = !inside;
 			}
 		}
