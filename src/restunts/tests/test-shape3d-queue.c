@@ -426,6 +426,73 @@ static void test_ghost_override_is_per_instance(void)
 	assert(polyinfoptr[polygon_record_offsets[1] + 4U] == RENDER_PRIMITIVE_POLYGON);
 }
 
+#define TEST_VISIBILITY_DEPTH 100
+#define TEST_VISIBILITY_FORWARD_SCALE 4096
+#define TEST_VISIBILITY_OFFSCREEN_X 30000
+#define TEST_VISIBILITY_BOUNDING_RECT_FLAG 8U
+#define TEST_VISIBILITY_PRETRANSFORMED_FLAG 2U
+
+static void test_visibility_masks_after_bounds(void)
+{
+	const struct VECTOR rotations[] = {{0, 0, 0},
+									   {0, ANGLE_QUARTER_TURN, 0},
+									   {ANGLE_QUARTER_TURN / 2, 0, 0},
+									   {-ANGLE_QUARTER_TURN / 2, 0, 0},
+									   {0, ANGLE_HALF_TURN, 0}};
+	const legacy_s16 heights[] = {-10, 0, 10};
+	const legacy_s16 distances[] = {TEST_VISIBILITY_DEPTH / 2 - 1, TEST_VISIBILITY_DEPTH / 2,
+									TEST_VISIBILITY_DEPTH / 2 + 1, -1, LEGACY_S16_MAX};
+	const struct VECTOR points[] = {{-2, -2, 0}, {2, -2, 0}, {2, 2, 0}, {-2, 2, 0}};
+	const legacy_u8 point_primitives[] = {1, 1, 7, 0, 1, 1, 8, 1, 0, 0};
+	for (legacy_u32 rotation = 0; rotation < sizeof(rotations) / sizeof(rotations[0]); rotation++) {
+		for (legacy_u32 height = 0; height < sizeof(heights) / sizeof(heights[0]); height++) {
+			for (legacy_u32 distance = 0; distance < sizeof(distances) / sizeof(distances[0]);
+				 distance++) {
+				for (legacy_s16 pretransformed = 0; pretransformed < 2; pretransformed++) {
+					reset_scene();
+					shape.shape3d_numverts = sizeof(points) / sizeof(points[0]);
+					for (legacy_u32 point = 0; point < sizeof(points) / sizeof(points[0]);
+						 point++) {
+						shape3d_vertex_write(&shape, point, &points[point]);
+					}
+					memcpy(primitives, point_primitives, sizeof(point_primitives));
+					instance.rotvec = rotations[rotation];
+					instance.pos = (struct VECTOR){0, heights[height], TEST_VISIBILITY_DEPTH};
+					instance.culling_distance = distances[distance];
+					instance.ts_flags = TEST_VISIBILITY_BOUNDING_RECT_FLAG |
+										(pretransformed ? TEST_VISIBILITY_PRETRANSFORMED_FLAG : 0);
+					struct MATRIX object_rotation =
+						*mat_rot_zxy(instance.rotvec.x, instance.rotvec.y, instance.rotvec.z,
+									 MATRIX_ROTATION_ORDER_ZXY);
+					struct MATRIX inverse_rotation;
+					mat_invert(&object_rotation, &inverse_rotation);
+					struct VECTOR forward = {0, 0, TEST_VISIBILITY_FORWARD_SCALE};
+					struct VECTOR direction;
+					mat_mul_vector(&forward, &inverse_rotation, &direction);
+					legacy_u32 selected_mask =
+						LEGACY_U32_SIGN_BIT >> vector_direction_sector(&direction);
+					LEGACY_WRITE_U32_LE(masks, selected_mask);
+					LEGACY_WRITE_U32_LE(masks + sizeof(selected_mask), ~selected_mask);
+					legacy_s32 use_sector =
+						!pretransformed && (direction.y <= 0 || instance.pos.y >= 0) &&
+						LEGACY_S16_SHL(instance.culling_distance, 1U) <= TEST_VISIBILITY_DEPTH;
+					/* Reject an earlier instance before testing visibility of this one. */
+					instance.pos.x = TEST_VISIBILITY_OFFSCREEN_X;
+					assert(shape3d_transform_and_queue(&instance) == LEGACY_U16_MAX);
+					assert(polyinfonumpolys == 0);
+					instance.pos.x = 0;
+					assert(shape3d_transform_and_queue(&instance) == 0);
+					assert(polyinfonumpolys == (use_sector ? 1 : 2));
+					assert(polyinfo[2] == 7);
+					if (!use_sector) {
+						assert(polyinfo[polygon_record_offsets[1] + 2U] == 8);
+					}
+				}
+			}
+		}
+	}
+}
+
 int main(void)
 {
 	test_primitive_records();
@@ -439,5 +506,6 @@ int main(void)
 	test_supersight_queue_limits();
 	test_supersight_clipped_record_boundary();
 	test_ghost_override_is_per_instance();
+	test_visibility_masks_after_bounds();
 	return 0;
 }

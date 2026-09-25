@@ -8,6 +8,7 @@
 #include "../c/frame.c"
 
 #undef printf
+#undef memcpy
 
 struct TRACKOBJECT trkObjectList[215];
 legacy_s16 camera_track_height_offset;
@@ -971,6 +972,98 @@ static void test_supersight_capacity_retries(void)
 }
 
 #else
+#define TEST_LOOKUP_CAMERA_POSES 2U
+#define TEST_LOOKUP_MARKER_KINDS 3U
+#define TEST_LOOKUP_WORLD_TILE_SIZE 65536L
+#define TEST_LOOKUP_WHEEL_TILE_STEP 1024
+
+static void test_complete_tile_lookup_matches_scans(void)
+{
+	const legacy_s8 camera_tiles[] = {-128, -100, -99, -98, -1, 0, 15, 29, 127};
+	const legacy_s8 coordinates[] = {-1, 0, 14, 29, 30};
+	const legacy_s16 indices[] = {0, 1, FRAME_MAXIMUM_TILE_COUNT / 2, FRAME_MAXIMUM_TILE_COUNT};
+	struct FRAME_CAMERA camera = {0};
+	struct FRAME_TILE_SELECTION tiles = {0};
+	struct FRAME_TILE_SELECTION reference;
+	configure_track();
+	for (legacy_u32 pose = 0; pose < TEST_LOOKUP_CAMERA_POSES; pose++) {
+		for (legacy_u32 camera_index = 0;
+			 camera_index < sizeof(camera_tiles) / sizeof(camera_tiles[0]); camera_index++) {
+			tiles.camera_east = camera_tiles[camera_index];
+			tiles.camera_south =
+				camera_tiles[sizeof(camera_tiles) / sizeof(camera_tiles[0]) - 1U - camera_index];
+			mat_temp =
+				*mat_rot_zxy(pose * 43, camera_index * 73, pose * 127, MATRIX_ROTATION_ORDER_ZXY);
+			frame_extend_lookahead(&tiles, &camera);
+			legacy_s32 reconstructed = 1;
+			for (legacy_s16 index = 0; index < tiles.count; index++) {
+				legacy_s16 east = tiles.lookahead[index].east + tiles.camera_east;
+				legacy_s16 south = tiles.lookahead[index].south + tiles.camera_south;
+				if (east < 0 || east > TRACK_GRID_LAST_COORDINATE || south < 0 ||
+					south > TRACK_GRID_LAST_COORDINATE) {
+					reconstructed = 0;
+				} else if (frame_has_complete_tile_lookup(&tiles)) {
+					assert(frame_lookup_world_tile(&tiles, east, south) == index);
+				}
+			}
+			assert(frame_has_complete_tile_lookup(&tiles) == reconstructed);
+			/* A copied selection retains the same offsets but explicitly uses the
+			 * original scan, including duplicate and signed-byte wrap semantics. */
+			reference = tiles;
+			reference.complete_tile_lookup = 0;
+			for (legacy_s16 flag = FRAME_MULTITILE_NONE - 1; flag <= FRAME_MULTITILE_BOTH + 1;
+				 flag++) {
+				trkObjectList[1].ss_multiTileFlag = flag;
+				for (legacy_u32 location = 0;
+					 location < sizeof(coordinates) / sizeof(coordinates[0]); location++) {
+					struct FRAME_TILE tile = {0};
+					tile.element = 1;
+					tile.east = coordinates[location];
+					tile.south = coordinates[(location + pose) %
+											 (sizeof(coordinates) / sizeof(coordinates[0]))];
+					for (legacy_u32 limit = 0; limit < sizeof(indices) / sizeof(indices[0]);
+						 limit++) {
+						for (legacy_s16 index = 0; index < tiles.count; index++) {
+							tiles.markers[index] = index % TEST_LOOKUP_MARKER_KINDS;
+						}
+						memcpy(reference.markers, tiles.markers, sizeof(tiles.markers));
+						frame_mark_covered_tiles(&tiles, &tile, indices[limit]);
+						frame_mark_covered_tiles(&reference, &tile, indices[limit]);
+						assert(memcmp(reference.markers, tiles.markers, sizeof(tiles.markers)) ==
+							   0);
+					}
+				}
+			}
+			for (legacy_u32 location = 0; location < sizeof(coordinates) / sizeof(coordinates[0]);
+				 location++) {
+				for (legacy_s16 spread = 0; spread < TEST_LOOKUP_CAMERA_POSES; spread++) {
+					struct CARSTATE car = {0};
+					struct SIMD simd = {0};
+					car.car_position.lx = coordinates[location] * TEST_LOOKUP_WORLD_TILE_SIZE;
+					car.car_position.lz = (TRACK_GRID_LAST_COORDINATE - coordinates[location]) *
+										  TEST_LOOKUP_WORLD_TILE_SIZE;
+					car.car_rotate.y = pose * ANGLE_QUARTER_TURN;
+					for (legacy_s16 wheel = 0; wheel < FRAME_CAR_WHEEL_COUNT; wheel++) {
+						simd.wheel_coords[wheel].x =
+							spread * (wheel & 1 ? TEST_LOOKUP_WHEEL_TILE_STEP
+												: -TEST_LOOKUP_WHEEL_TILE_STEP);
+						simd.wheel_coords[wheel].z =
+							spread * (wheel & 2 ? TEST_LOOKUP_WHEEL_TILE_STEP
+												: -TEST_LOOKUP_WHEEL_TILE_STEP);
+					}
+					legacy_s8 east = -1, south = -1, reference_east = -1, reference_south = -1;
+					legacy_s16 adjustment =
+						frame_find_car_wheel(&car, &simd, &tiles, &east, &south);
+					legacy_s16 reference_adjustment = frame_find_car_wheel(
+						&car, &simd, &reference, &reference_east, &reference_south);
+					assert(adjustment == reference_adjustment);
+					assert(east == reference_east && south == reference_south);
+				}
+			}
+		}
+	}
+}
+
 static void test_supersight_selection(void)
 {
 	struct FRAME_CAMERA camera = {0};
@@ -1356,6 +1449,7 @@ int main(void)
 	test_supersight_selection();
 	test_supersight_capacity_retries();
 #if defined(RESTUNTS_SDL3)
+	test_complete_tile_lookup_matches_scans();
 	test_supersight_car_shadows();
 	test_supersight_grounding_surfaces();
 	test_supersight_grounding_poses();
