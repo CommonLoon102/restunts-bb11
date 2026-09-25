@@ -78,7 +78,8 @@ static legacy_s16 scale_player_fraction(legacy_s16 value, legacy_u32 fraction)
 		return value;
 	}
 	legacy_s32 product = (legacy_s32)value * (legacy_s32)fraction;
-	product += product < 0 ? -32768L : 32768L;
+	legacy_s32 rounding = (legacy_s32)(PHANTOM_PHYSICS_ONE / 2);
+	product += product < 0 ? -rounding : rounding;
 	return (legacy_s16)(product / (legacy_s32)PHANTOM_PHYSICS_ONE);
 }
 
@@ -92,8 +93,9 @@ static legacy_u32 player_tick_fraction(void)
 {
 	/* Suspension recovery and slide rotation run once per original tick;
 	 * forward travel and gravity instead use a fixed 20 Hz unit. */
-	return framespersec == GAME_FRAME_RATE_LOW ? player_motion_fraction / 2
-											   : player_motion_fraction;
+	return framespersec == GAME_FRAME_RATE_LOW
+			   ? player_motion_fraction / (GAME_FRAME_RATE_NORMAL / GAME_FRAME_RATE_LOW)
+			   : player_motion_fraction;
 }
 
 /* A speculative impact changes only its disposable race. Sounds, particles,
@@ -118,8 +120,8 @@ static void player_motion_crash(legacy_s16 crash_event, legacy_s16 car_index)
 		player_motion_state->game_oEndFrame = player_motion_state->game_frame;
 	}
 	if (crash_event == CRASH_EVENT_IMMEDIATE_STOP || crash_event == CRASH_EVENT_WATER) {
-		carstate->car_actual_speed = 0;
-		carstate->car_rev_speed = 0;
+		carstate->car_actual_speed = CAR_SPEED_STOPPED;
+		carstate->car_rev_speed = CAR_SPEED_STOPPED;
 	}
 }
 

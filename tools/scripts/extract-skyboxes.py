@@ -23,6 +23,26 @@ ROOT = Path(__file__).resolve().parents[2]
 SCENES = ("desert", "tropical", "alpine", "city", "country")
 SHAPES = ("scen", "sce2", "sce3", "sce4")
 SKY_COLOR = 116
+RESOURCE_HEADER_SIZE = struct.calcsize("<IH")
+RESOURCE_ID_SIZE = 4
+RESOURCE_OFFSET_SIZE = struct.calcsize("<I")
+SHAPE_HEADER_SIZE = 16
+SHAPE_ORDER_OFFSET = 14
+SHAPE_PLANE_OFFSET = 15
+SHAPE_ORDER_SHIFT = 4
+SHAPE_PLANE_MASK = 0xF0
+SHAPE_ORDER_COLUMN = 1
+SHAPE_ORDER_INTERLEAVED_COLUMN = 2
+SHAPE_ORDER_INTERLEAVED_PLANE = 3
+VGA_PALETTE_SIZE = 256 * 3
+VGA_COMPONENT_MAX = 63
+RGB_COMPONENT_MAX = 255
+PANORAMA_IMAGE_WIDTHS = (320, 192, 320, 192)
+PANORAMA_WIDTH = sum(PANORAMA_IMAGE_WIDTHS)
+PNG_SIGNATURE = b"\x89PNG\r\n\x1a\n"
+PNG_BIT_DEPTH = 8
+PNG_COLOR_INDEXED = 3
+PNG_COMPRESSION_LEVEL = 9
 
 
 def digest(data):
@@ -30,17 +50,19 @@ def digest(data):
 
 
 def resource_shapes(data):
-    if len(data) < 6 or struct.unpack_from("<I", data)[0] != len(data):
+    if len(data) < RESOURCE_HEADER_SIZE or struct.unpack_from("<I", data)[0] != len(data):
         raise ValueError("Invalid resource size")
-    count = struct.unpack_from("<H", data, 4)[0]
-    base = 6 + count * 8
+    count = struct.unpack_from("<H", data, RESOURCE_OFFSET_SIZE)[0]
+    base = RESOURCE_HEADER_SIZE + count * (RESOURCE_ID_SIZE + RESOURCE_OFFSET_SIZE)
     if base > len(data):
         raise ValueError("Truncated resource table")
     entries = []
     for index in range(count):
-        name = data[6 + index * 4:10 + index * 4].decode("ascii")
-        offset = base + struct.unpack_from("<I", data, 6 + count * 4 + index * 4)[0]
-        if offset < base or offset + 16 > len(data):
+        name_start = RESOURCE_HEADER_SIZE + index * RESOURCE_ID_SIZE
+        name = data[name_start:name_start + RESOURCE_ID_SIZE].decode("ascii")
+        offset_start = RESOURCE_HEADER_SIZE + count * RESOURCE_ID_SIZE + index * RESOURCE_OFFSET_SIZE
+        offset = base + struct.unpack_from("<I", data, offset_start)[0]
+        if offset < base or offset + SHAPE_HEADER_SIZE > len(data):
             raise ValueError(f"Invalid resource offset: {name}")
         entries.append((offset, name))
     entries.sort()
@@ -55,21 +77,21 @@ def resource_shapes(data):
 
 def bitmap(data):
     width, height = struct.unpack_from("<HH", data)
-    if width == 0 or height == 0 or len(data) < 16 + width * height:
+    if width == 0 or height == 0 or len(data) < SHAPE_HEADER_SIZE + width * height:
         raise ValueError("Truncated or empty VGA bitmap")
-    pixels = data[16:16 + width * height]
-    if data[15] & 240:
+    pixels = data[SHAPE_HEADER_SIZE:SHAPE_HEADER_SIZE + width * height]
+    if data[SHAPE_PLANE_OFFSET] & SHAPE_PLANE_MASK:
         raise ValueError("Planar VGA bitmap is not supported")
-    flip = data[14] >> 4
-    if flip > 3:
+    flip = data[SHAPE_ORDER_OFFSET] >> SHAPE_ORDER_SHIFT
+    if flip > SHAPE_ORDER_INTERLEAVED_PLANE:
         raise ValueError(f"Unknown VGA bitmap ordering: {flip}")
     if flip:
         output = bytearray(width * height)
         for y in range(height):
             for x in range(width):
-                if flip == 1:
+                if flip == SHAPE_ORDER_COLUMN:
                     source = x * height + y
-                elif flip == 2:
+                elif flip == SHAPE_ORDER_INTERLEAVED_COLUMN:
                     source = x * height + (y // 2 if y % 2 == 0 else (height + y) // 2)
                 elif y % 2 == 0:
                     source = x * ((height + 1) // 2) + y // 2
@@ -87,10 +109,11 @@ def png_chunk(kind, payload):
 
 def indexed_png(width, height, pixels, palette):
     rows = b"".join(b"\0" + pixels[y * width:(y + 1) * width] for y in range(height))
-    return (b"\x89PNG\r\n\x1a\n"
-            + png_chunk(b"IHDR", struct.pack(">IIBBBBB", width, height, 8, 3, 0, 0, 0))
+    return (PNG_SIGNATURE
+            + png_chunk(b"IHDR", struct.pack(">IIBBBBB", width, height,
+                                             PNG_BIT_DEPTH, PNG_COLOR_INDEXED, 0, 0, 0))
             + png_chunk(b"PLTE", palette)
-            + png_chunk(b"IDAT", zlib.compress(rows, 9))
+            + png_chunk(b"IDAT", zlib.compress(rows, PNG_COMPRESSION_LEVEL))
             + png_chunk(b"IEND", b""))
 
 
@@ -99,10 +122,11 @@ def generate(directory):
     unpack = runpy.run_path(str(ROOT / "tools/scripts/generate-owoot-road-geometry.py"))["unpack"]
     source_palette = (directory / "SDMAIN.PVS").read_bytes()
     palette_shape = resource_shapes(unpack(source_palette))["!pal"]
-    if len(palette_shape) != 784:
+    if len(palette_shape) != SHAPE_HEADER_SIZE + VGA_PALETTE_SIZE:
         raise ValueError("Expected a 768-byte VGA palette after the 16-byte shape header")
-    palette_vga = palette_shape[16:]
-    palette_rgb = bytes((value & 63) * 255 // 63 for value in palette_vga)
+    palette_vga = palette_shape[SHAPE_HEADER_SIZE:]
+    palette_rgb = bytes((value & VGA_COMPONENT_MAX) * RGB_COMPONENT_MAX // VGA_COMPONENT_MAX
+                        for value in palette_vga)
     outputs = {}
     manifest = {
         "palette_source": "SDMAIN.PVS:!pal",
@@ -111,7 +135,7 @@ def generate(directory):
         "palette_rgb_sha256": digest(palette_rgb),
         "palette_conversion": "(component & 63) * 255 // 63",
         "sky_palette_index": SKY_COLOR,
-        "panorama_width": 1024,
+        "panorama_width": PANORAMA_WIDTH,
         "scenes": [],
     }
     for selector, scene in enumerate(SCENES):
@@ -120,16 +144,16 @@ def generate(directory):
         resources = resource_shapes(unpack(packed))
         images = [bitmap(resources[name]) for name in SHAPES]
         panorama_height = max(image[1] for image in images)
-        if [image[0] for image in images] != [320, 192, 320, 192]:
+        if tuple(image[0] for image in images) != PANORAMA_IMAGE_WIDTHS:
             raise ValueError(f"Unexpected panorama image widths: {source_name}")
-        panorama = bytearray([SKY_COLOR]) * (1024 * panorama_height)
+        panorama = bytearray([SKY_COLOR]) * (PANORAMA_WIDTH * panorama_height)
         entry = {
             "name": scene,
             "selector": selector,
             "source": source_name,
             "source_sha256": digest(packed),
             "panorama": f"{scene}.png",
-            "width": 1024,
+            "width": PANORAMA_WIDTH,
             "height": panorama_height,
             "images": [],
         }
@@ -139,7 +163,7 @@ def generate(directory):
             outputs[filename] = indexed_png(width, height, pixels, palette_rgb)
             y = panorama_height - height
             for row in range(height):
-                offset = (y + row) * 1024 + x
+                offset = (y + row) * PANORAMA_WIDTH + x
                 panorama[offset:offset + width] = pixels[row * width:(row + 1) * width]
             entry["images"].append({
                 "resource": shape_name,
@@ -149,12 +173,12 @@ def generate(directory):
                 "scenery_pixels": sum(value != SKY_COLOR for value in pixels),
                 "panorama_x": x,
                 "panorama_y": y,
-                "header_hex": resources[shape_name][:16].hex(),
+                "header_hex": resources[shape_name][:SHAPE_HEADER_SIZE].hex(),
                 "pixels_sha256": digest(pixels),
                 "png_sha256": digest(outputs[filename]),
             })
             x += width
-        outputs[entry["panorama"]] = indexed_png(1024, panorama_height, panorama, palette_rgb)
+        outputs[entry["panorama"]] = indexed_png(PANORAMA_WIDTH, panorama_height, panorama, palette_rgb)
         entry["panorama_pixels_sha256"] = digest(panorama)
         entry["panorama_png_sha256"] = digest(outputs[entry["panorama"]])
         manifest["scenes"].append(entry)

@@ -114,12 +114,10 @@ static polyinfo_index queued_ghost_primitives;
 #define SHAPE3D_VERTEX_UNTRANSFORMED LEGACY_U8_MAX
 #define SHAPE3D_FORWARD_VECTOR_SCALE 4096
 #define SHAPE3D_NEAR_CLIP_Z 12
-#define SHAPE3D_ALL_RECT_CLIP_FLAGS 15U
 #define SHAPE3D_USE_BOUNDING_RECT_FLAG 8U
 #define SHAPE3D_PRETRANSFORMED_FLAG 2U
 #define SHAPE3D_NO_DEPTH_SORT_FLAG 1U
 #define SHAPE3D_PRIMITIVE_ALWAYS_VISIBLE_FLAG 1U
-#define SHAPE3D_PRIMITIVE_SKIP_DEPTH_SORT_FLAG 2U
 
 #define POLYINFO_LIST_SENTINEL (-1)
 #define POLYINFO_LEGACY_LAST_VALID_OFFSET 10354U
@@ -162,7 +160,7 @@ static void polyinfo_reserve(void)
 	if (polyinfonumpolys >= polyinfo_primitive_capacity) {
 		polyinfo_index previous_capacity = polyinfo_primitive_capacity;
 		/* Links use a signed index so that -1 remains the end marker. */
-		if (previous_capacity > 0x3FFFFFFFUL) {
+		if (previous_capacity > LEGACY_S32_MAX / 2U) {
 			fatal_error("SuperSight scene has too many primitives");
 			return;
 		}

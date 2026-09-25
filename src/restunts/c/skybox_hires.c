@@ -8,11 +8,10 @@
 #include <string.h>
 
 #define SKYBOX_THEME_COUNT 5
-#define SKYBOX_IMAGE_COUNT 4
 #define SKYBOX_PATH_SIZE 1024
-#define SKYBOX_PANORAMA_WIDTH 1024
-#define SKYBOX_HORIZON_DISTANCE 15000.0
-#define SKYBOX_LOWEST_DETAIL_LEVEL 4
+#define SKYBOX_PALETTE_COLOR_COUNT (LEGACY_U8_MAX + 1)
+#define SKYBOX_PALETTE_CHANNEL_COUNT 3
+#define SKYBOX_PALETTE_CHANNEL_MAX 63U
 
 struct SKYBOX_HIRES_IMAGE {
 	SDL_Surface *surface;
@@ -23,7 +22,7 @@ static const char *theme_names[SKYBOX_THEME_COUNT] = {"desert", "tropical", "alp
 													  "country"};
 static const char *image_names[SKYBOX_IMAGE_COUNT] = {"scen", "sce2", "sce3", "sce4"};
 static struct SKYBOX_HIRES_IMAGE images[SKYBOX_IMAGE_COUNT];
-static SDL_Color original_palette[256];
+static SDL_Color original_palette[SKYBOX_PALETTE_COLOR_COUNT];
 static legacy_s32 palette_ready;
 static legacy_s16 loaded_theme = -1;
 
@@ -39,11 +38,17 @@ void skybox_hires_unload(void)
 void skybox_hires_set_palette(const legacy_u8 *palette)
 {
 	skybox_hires_unload();
-	for (legacy_s32 index = 0; index < 256; index++) {
-		original_palette[index].r = (palette[index * 3] & 63U) * 255U / 63U;
-		original_palette[index].g = (palette[index * 3 + 1] & 63U) * 255U / 63U;
-		original_palette[index].b = (palette[index * 3 + 2] & 63U) * 255U / 63U;
-		original_palette[index].a = 255;
+	for (legacy_s32 index = 0; index < (legacy_s32)SKYBOX_PALETTE_COLOR_COUNT; index++) {
+		original_palette[index].r =
+			(palette[index * SKYBOX_PALETTE_CHANNEL_COUNT] & SKYBOX_PALETTE_CHANNEL_MAX) *
+			SDL_ALPHA_OPAQUE / SKYBOX_PALETTE_CHANNEL_MAX;
+		original_palette[index].g =
+			(palette[index * SKYBOX_PALETTE_CHANNEL_COUNT + 1] & SKYBOX_PALETTE_CHANNEL_MAX) *
+			SDL_ALPHA_OPAQUE / SKYBOX_PALETTE_CHANNEL_MAX;
+		original_palette[index].b =
+			(palette[index * SKYBOX_PALETTE_CHANNEL_COUNT + 2] & SKYBOX_PALETTE_CHANNEL_MAX) *
+			SDL_ALPHA_OPAQUE / SKYBOX_PALETTE_CHANNEL_MAX;
+		original_palette[index].a = SDL_ALPHA_OPAQUE;
 	}
 	palette_ready = 1;
 }
@@ -104,8 +109,9 @@ static SDL_Surface *skybox_hires_image(legacy_s16 theme, legacy_s16 image, legac
 		SDL_DestroySurface(source);
 		return NULL;
 	}
-	SDL_Palette *palette = SDL_CreatePalette(256);
-	if (palette != NULL && SDL_SetPaletteColors(palette, original_palette, 0, 256)) {
+	SDL_Palette *palette = SDL_CreatePalette(SKYBOX_PALETTE_COLOR_COUNT);
+	if (palette != NULL &&
+		SDL_SetPaletteColors(palette, original_palette, 0, SKYBOX_PALETTE_COLOR_COUNT)) {
 		entry->surface = SDL_ConvertSurfaceAndColorspace(source, SDL_PIXELFORMAT_INDEX8, palette,
 														 SDL_COLORSPACE_SRGB, 0);
 	}
@@ -118,14 +124,15 @@ void skybox_hires_draw(const struct SPRITE *target, legacy_s16 theme, legacy_s16
 					   legacy_s32 width, legacy_s32 height, legacy_s32 x, legacy_s32 y)
 {
 	if (!hires_enabled() || !palette_ready || theme < 0 || theme >= SKYBOX_THEME_COUNT ||
-		image < 0 || image >= SKYBOX_IMAGE_COUNT || width <= 0 || width > 320 || height <= 0 ||
-		height > 200) {
+		image < 0 || image >= SKYBOX_IMAGE_COUNT || width <= 0 || width > SKYBOX_SCREEN_WIDTH ||
+		height <= 0 || height > SKYBOX_SCREEN_BOTTOM) {
 		return;
 	}
 	legacy_s32 left = SDL_max(SDL_max(x, target->sprite_raster_left), 0);
-	legacy_s32 right = SDL_min(SDL_min(x + width, target->sprite_raster_right), 320);
+	legacy_s32 right =
+		SDL_min(SDL_min(x + width, target->sprite_raster_right), SKYBOX_SCREEN_WIDTH);
 	legacy_s32 top = SDL_max(SDL_max(y, target->sprite_top), 0);
-	legacy_s32 bottom = SDL_min(SDL_min(y + height, target->sprite_bottom), 200);
+	legacy_s32 bottom = SDL_min(SDL_min(y + height, target->sprite_bottom), SKYBOX_SCREEN_BOTTOM);
 	if (left >= right || top >= bottom) {
 		return;
 	}
@@ -158,14 +165,15 @@ struct SKYBOX_HIRES_STRIP {
 	legacy_s32 width, height, pitch, scale;
 };
 
-static legacy_s32 skybox_hires_prepare_strips(struct SKYBOX_HIRES_STRIP strips[4],
-											  struct SHAPE2D *const shapes[4], legacy_s16 theme)
+static legacy_s32 skybox_hires_prepare_strips(struct SKYBOX_HIRES_STRIP strips[SKYBOX_IMAGE_COUNT],
+											  struct SHAPE2D *const shapes[SKYBOX_IMAGE_COUNT],
+											  legacy_s16 theme)
 {
 	legacy_s32 maximum_height = 0;
 	for (legacy_s32 index = 0; index < SKYBOX_IMAGE_COUNT; index++) {
 		const struct SHAPE2D *shape = shapes[index];
-		if (shape == NULL || shape->width == 0 || shape->width > 320 || shape->height == 0 ||
-			shape->height > 200) {
+		if (shape == NULL || shape->width == 0 || shape->width > SKYBOX_SCREEN_WIDTH ||
+			shape->height == 0 || shape->height > SKYBOX_SCREEN_BOTTOM) {
 			continue;
 		}
 		struct SKYBOX_HIRES_STRIP *strip = &strips[index];
@@ -188,14 +196,17 @@ static legacy_s32 skybox_hires_prepare_strips(struct SKYBOX_HIRES_STRIP strips[4
 	return maximum_height;
 }
 
-static legacy_u8 skybox_hires_sample(const struct SKYBOX_HIRES_STRIP strips[4], legacy_f64 along,
-									 legacy_f64 above, legacy_u8 sky_color)
+static legacy_u8 skybox_hires_sample(const struct SKYBOX_HIRES_STRIP strips[SKYBOX_IMAGE_COUNT],
+									 legacy_f64 along, legacy_f64 above, legacy_u8 sky_color)
 {
-	static const legacy_s32 offsets[SKYBOX_IMAGE_COUNT] = {0, 320, 512, 832};
+	static const legacy_s32 offsets[SKYBOX_IMAGE_COUNT] = {
+		0, SKYBOX_IMAGE_WIDTH, SKYBOX_IMAGE_HALF_WRAP, SKYBOX_IMAGE_ONE_AND_HALF_WIDTH};
 	legacy_s32 column =
-		(legacy_u32)(legacy_s32)SDL_floor(along) & (SKYBOX_PANORAMA_WIDTH * HIRES_SCALE - 1);
-	legacy_s32 index = column < 512 * HIRES_SCALE ? (column < 320 * HIRES_SCALE ? 0 : 1)
-												  : (column < 832 * HIRES_SCALE ? 2 : 3);
+		(legacy_u32)(legacy_s32)SDL_floor(along) & (SKYBOX_IMAGE_FULL_WRAP * HIRES_SCALE - 1);
+	legacy_s32 index =
+		column < (legacy_s32)SKYBOX_IMAGE_HALF_WRAP * HIRES_SCALE
+			? (column < (legacy_s32)SKYBOX_IMAGE_WIDTH * HIRES_SCALE ? 0 : 1)
+			: (column < (legacy_s32)SKYBOX_IMAGE_ONE_AND_HALF_WIDTH * HIRES_SCALE ? 2 : 3);
 	const struct SKYBOX_HIRES_STRIP *strip = &strips[index];
 	column -= offsets[index] * HIRES_SCALE;
 	if (strip->pixels == NULL || column >= strip->width || above > strip->height) {
@@ -206,7 +217,7 @@ static legacy_u8 skybox_hires_sample(const struct SKYBOX_HIRES_STRIP strips[4], 
 }
 
 legacy_s32 skybox_hires_render(const struct SPRITE *target, const struct SKYBOX *scenery,
-							   struct SHAPE2D *const shapes[4], legacy_s16 theme,
+							   struct SHAPE2D *const shapes[SKYBOX_IMAGE_COUNT], legacy_s16 theme,
 							   const struct MATRIX *rotation, legacy_s16 direction,
 							   legacy_s16 angle, legacy_s16 camera_y, legacy_s16 detail)
 {
@@ -214,10 +225,10 @@ legacy_s32 skybox_hires_render(const struct SPRITE *target, const struct SKYBOX 
 		return 0;
 	}
 	struct SPRITE clip = *target;
-	clip.sprite_raster_left = SDL_min(clip.sprite_raster_left, 320);
-	clip.sprite_raster_right = SDL_min(clip.sprite_raster_right, 320);
-	clip.sprite_top = SDL_min(clip.sprite_top, 200);
-	clip.sprite_bottom = SDL_min(clip.sprite_bottom, 200);
+	clip.sprite_raster_left = SDL_min(clip.sprite_raster_left, SKYBOX_SCREEN_WIDTH);
+	clip.sprite_raster_right = SDL_min(clip.sprite_raster_right, SKYBOX_SCREEN_WIDTH);
+	clip.sprite_top = SDL_min(clip.sprite_top, SKYBOX_SCREEN_BOTTOM);
+	clip.sprite_bottom = SDL_min(clip.sprite_bottom, SKYBOX_SCREEN_BOTTOM);
 	if (clip.sprite_raster_left >= clip.sprite_raster_right ||
 		clip.sprite_top >= clip.sprite_bottom) {
 		return 0;
@@ -236,7 +247,7 @@ legacy_s32 skybox_hires_render(const struct SPRITE *target, const struct SKYBOX 
 	 * above that line. Undoing projection's unequal X/Y scales keeps banking
 	 * aligned with the road. Unlike vertical image strips this also works at
 	 * 90 and 180 degrees, without changing the level panorama's size. */
-	legacy_f64 altitude = direction * (legacy_f64)camera_y / SKYBOX_HORIZON_DISTANCE;
+	legacy_f64 altitude = direction * (legacy_f64)camera_y / SKYBOX_ROLL_VECTOR_Z;
 	legacy_f64 normal_x = rotation->m._12 + altitude * rotation->m._13;
 	legacy_f64 normal_y = rotation->m._22 + altitude * rotation->m._23;
 	legacy_f64 normal_z = rotation->m._32 + altitude * rotation->m._33;
