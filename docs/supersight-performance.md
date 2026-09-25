@@ -91,3 +91,36 @@ indexed pixels and depth arrays remained unchanged. Tests also covered excluded
 receivers, height/depth boundaries, clipped and tiny shadows, model-less fallback,
 and the controller's overload/recovery/reset behavior before the experiment was
 removed. No FPS or quality setting was added for these rejected alternatives.
+
+## Tile and shape preparation
+
+Shapes rejected by the existing screen-bounds check skip directional visibility
+preparation. Accepted shapes also skip that work when their existing distance
+gate cannot require a visibility sector. The projection, clipping, and visibility
+rules themselves remain the same.
+
+SuperSight builds a coordinate-to-sorted-index table while copying its 900-tile
+lookahead list. Multi-tile coverage and car-wheel placement reuse this table
+instead of repeatedly scanning the list. The table is rebuilt for each camera
+view, so there is no cross-frame cache to invalidate after editing/loading a
+track. Classic lookahead and wrapped signed-byte camera offsets retain the
+original scans. Marker eligibility, wheel ties, and tile ordering are preserved.
+
+All 12 moving-view comparisons matched legacy, indexed, and final ARGB pixels
+across 96 frames per version, including five camera modes, a rolled cockpit,
+two replays, and classic controls. Whole-scene CPU timing was inconclusive.
+
+A focused comparison used the actual preceding and candidate code, including
+per-frame sorting, lookup construction, and both cars' wheel searches across
+16 changing camera poses. All four paired comparisons improved and produced
+identical tile/car checksums.
+
+| Preparation workload | Before CPU microseconds | After CPU microseconds |
+| --- | ---: | ---: |
+| Sparse single-tile map | 35.58 | 33.31 |
+| Dense map with 225 four-tile elements | 124.48 | 33.10 |
+| One offscreen shape transform | 0.573 | 0.546 |
+| One behind-camera shape transform | 0.463 | 0.419 |
+
+These are preparation costs, not complete frame times. The dense fixture shows
+the benefit of avoiding repeated scans; sparse-map savings are much smaller.

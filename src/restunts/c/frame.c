@@ -298,45 +298,6 @@ static legacy_s16 frame_car_z_adjust(const legacy_s8 *wheel_surfaces, struct MAT
 	return FRAME_CAR_NEAR_SORT_ADJUSTMENT;
 }
 
-static legacy_s16 frame_find_car_wheel(const struct CARSTATE *carstate, const struct SIMD *simd,
-									   const legacy_s8 *should_skip_tile,
-									   const struct FRAME_LOOKAHEAD_TILE *lookahead_tiles,
-									   legacy_s16 tile_count, legacy_s8 camera_tile_east,
-									   legacy_s8 camera_tile_south, legacy_s8 *result_tile_east,
-									   legacy_s8 *result_tile_south)
-{
-	struct MATRIX *rotation =
-		mat_rot_zxy(LEGACY_S16_WRAP_NEGATE(carstate->car_rotate.z),
-					LEGACY_S16_WRAP_NEGATE(carstate->car_rotate.y),
-					LEGACY_S16_WRAP_NEGATE(carstate->car_rotate.x), MATRIX_ROTATION_ORDER_ZXY);
-	struct VECTOR rotated_vector;
-	legacy_s16 best_tile_index = -1;
-	legacy_s16 matched_wheel = -1;
-	struct VECTOR offset_vector;
-	for (legacy_s16 wheel = 0; wheel < FRAME_CAR_WHEEL_COUNT; wheel++) {
-		offset_vector = simd->wheel_coords[wheel];
-		mat_mul_vector(&offset_vector, rotation, &rotated_vector);
-		legacy_s8 tile_east =
-			frame_tile_from_world_offset(carstate->car_position.lx, rotated_vector.x);
-		legacy_s8 tile_south =
-			frame_south_tile_from_world_offset(carstate->car_position.lz, rotated_vector.z);
-		for (legacy_s16 tile_index = tile_count - 1; tile_index > best_tile_index; tile_index--) {
-			if (should_skip_tile[tile_index] != FRAME_TILE_UNAVAILABLE_MARKER &&
-				lookahead_tiles[tile_index].east + camera_tile_east == tile_east &&
-				lookahead_tiles[tile_index].south + camera_tile_south == tile_south) {
-				*result_tile_east = tile_east;
-				*result_tile_south = tile_south;
-				best_tile_index = tile_index;
-				matched_wheel = wheel;
-			}
-		}
-	}
-	if (matched_wheel != -1) {
-		return frame_car_z_adjust(carstate->car_surfaceWhl, rotation);
-	}
-	return 0;
-}
-
 static void frame_add_dynamic_shape(struct TRACKOBJECT *track_object, legacy_s16 state_index,
 									legacy_s16 flags, legacy_s16 material, legacy_s16 z_adjust)
 {
@@ -642,6 +603,10 @@ struct FRAME_TILE_SELECTION {
 	legacy_s8 detail[FRAME_MAXIMUM_TILE_COUNT];
 	legacy_u8 elements[FRAME_MAXIMUM_TILE_COUNT];
 	legacy_u8 terrain[FRAME_MAXIMUM_TILE_COUNT];
+#if defined(RESTUNTS_SDL3)
+	legacy_s16 index_by_world_tile[FRAME_MAXIMUM_TILE_COUNT];
+	legacy_s32 complete_tile_lookup;
+#endif
 };
 
 struct FRAME_CAR_RENDER {
@@ -660,6 +625,73 @@ struct FRAME_TILE {
 	legacy_s16 depth_mask;
 	struct VECTOR position;
 };
+
+#if defined(RESTUNTS_SDL3)
+static legacy_s32 frame_has_complete_tile_lookup(const struct FRAME_TILE_SELECTION *tiles)
+{
+	return tiles->complete_tile_lookup && tiles->count == FRAME_MAXIMUM_TILE_COUNT &&
+		   tiles->lookahead == tiles->extended_lookahead;
+}
+
+static legacy_s16 frame_lookup_world_tile(const struct FRAME_TILE_SELECTION *tiles, legacy_s16 east,
+										  legacy_s16 south)
+{
+	if (east < 0 || east > TRACK_GRID_LAST_COORDINATE || south < 0 ||
+		south > TRACK_GRID_LAST_COORDINATE) {
+		return -1;
+	}
+	return tiles->index_by_world_tile[south * TRACK_GRID_SIZE + east];
+}
+#endif
+
+static legacy_s16 frame_find_car_wheel(const struct CARSTATE *carstate, const struct SIMD *simd,
+									   const struct FRAME_TILE_SELECTION *tiles,
+									   legacy_s8 *result_tile_east, legacy_s8 *result_tile_south)
+{
+	struct MATRIX *rotation =
+		mat_rot_zxy(LEGACY_S16_WRAP_NEGATE(carstate->car_rotate.z),
+					LEGACY_S16_WRAP_NEGATE(carstate->car_rotate.y),
+					LEGACY_S16_WRAP_NEGATE(carstate->car_rotate.x), MATRIX_ROTATION_ORDER_ZXY);
+	struct VECTOR rotated_vector;
+	legacy_s16 best_tile_index = -1;
+	legacy_s16 matched_wheel = -1;
+	struct VECTOR offset_vector;
+	for (legacy_s16 wheel = 0; wheel < FRAME_CAR_WHEEL_COUNT; wheel++) {
+		offset_vector = simd->wheel_coords[wheel];
+		mat_mul_vector(&offset_vector, rotation, &rotated_vector);
+		legacy_s8 tile_east =
+			frame_tile_from_world_offset(carstate->car_position.lx, rotated_vector.x);
+		legacy_s8 tile_south =
+			frame_south_tile_from_world_offset(carstate->car_position.lz, rotated_vector.z);
+#if defined(RESTUNTS_SDL3)
+		if (frame_has_complete_tile_lookup(tiles)) {
+			legacy_s16 tile_index = frame_lookup_world_tile(tiles, tile_east, tile_south);
+			if (tile_index > best_tile_index &&
+				tiles->markers[tile_index] != FRAME_TILE_UNAVAILABLE_MARKER) {
+				*result_tile_east = tile_east;
+				*result_tile_south = tile_south;
+				best_tile_index = tile_index;
+				matched_wheel = wheel;
+			}
+			continue;
+		}
+#endif
+		for (legacy_s16 tile_index = tiles->count - 1; tile_index > best_tile_index; tile_index--) {
+			if (tiles->markers[tile_index] != FRAME_TILE_UNAVAILABLE_MARKER &&
+				tiles->lookahead[tile_index].east + tiles->camera_east == tile_east &&
+				tiles->lookahead[tile_index].south + tiles->camera_south == tile_south) {
+				*result_tile_east = tile_east;
+				*result_tile_south = tile_south;
+				best_tile_index = tile_index;
+				matched_wheel = wheel;
+			}
+		}
+	}
+	if (matched_wheel != -1) {
+		return frame_car_z_adjust(carstate->car_surfaceWhl, rotation);
+	}
+	return 0;
+}
 
 static legacy_s8 frame_begin(legacy_s8 buffer_index)
 {
@@ -1017,6 +1049,24 @@ static void frame_mark_covered_tiles(struct FRAME_TILE_SELECTION *tiles,
 	if (tile->element != 0) {
 		legacy_s16 multitile_flag = trkObjectList[tile->element].ss_multiTileFlag;
 		if (multitile_flag != FRAME_MULTITILE_NONE) {
+#if defined(RESTUNTS_SDL3)
+			if (frame_has_complete_tile_lookup(tiles)) {
+				if (multitile_flag < FRAME_MULTITILE_ROW || multitile_flag > FRAME_MULTITILE_BOTH) {
+					return;
+				}
+				legacy_s16 last_east = tile->east + (multitile_flag != FRAME_MULTITILE_ROW);
+				legacy_s16 last_south = tile->south + (multitile_flag != FRAME_MULTITILE_COLUMN);
+				for (legacy_s16 south = tile->south; south <= last_south; south++) {
+					for (legacy_s16 east = tile->east; east <= last_east; east++) {
+						legacy_s16 covered_index = frame_lookup_world_tile(tiles, east, south);
+						if (covered_index >= 0 && covered_index < tile_index) {
+							tiles->markers[covered_index] = FRAME_TILE_MULTITILE_COVERED_MARKER;
+						}
+					}
+				}
+				return;
+			}
+#endif
 			/* Recalculate after resolving filler tiles. Lower indices are visited later. */
 			legacy_s8 east_offset = LEGACY_S8_WRAP_SUB(tile->east, tiles->camera_east);
 			legacy_s8 south_offset = LEGACY_S8_WRAP_SUB(tile->south, tiles->camera_south);
@@ -1094,8 +1144,19 @@ static void frame_extend_lookahead(struct FRAME_TILE_SELECTION *tiles,
 		}
 	}
 	qsort(candidates, FRAME_MAXIMUM_TILE_COUNT, sizeof(candidates[0]), frame_compare_world_tiles);
+	tiles->complete_tile_lookup = 1;
 	for (index = 0; index < FRAME_MAXIMUM_TILE_COUNT; index++) {
 		tiles->extended_lookahead[index] = candidates[index].offset;
+		legacy_s16 east = candidates[index].offset.east + tiles->camera_east;
+		legacy_s16 south = candidates[index].offset.south + tiles->camera_south;
+		/* Wrapped signed-byte offsets need the original comparison semantics. */
+		if (east < 0 || east > TRACK_GRID_LAST_COORDINATE || south < 0 ||
+			south > TRACK_GRID_LAST_COORDINATE) {
+			tiles->complete_tile_lookup = 0;
+		} else {
+			/* Each coordinate occurs once; the moving-camera order is fresh. */
+			tiles->index_by_world_tile[south * TRACK_GRID_SIZE + east] = index;
+		}
 	}
 	tiles->lookahead = tiles->extended_lookahead;
 	tiles->count = FRAME_MAXIMUM_TILE_COUNT;
@@ -1135,6 +1196,9 @@ static void frame_extend_lookahead(struct FRAME_TILE_SELECTION *tiles,
 static void frame_select_tiles(struct FRAME_TILE_SELECTION *tiles,
 							   const struct FRAME_CAMERA *camera)
 {
+#if defined(RESTUNTS_SDL3)
+	tiles->complete_tile_lookup = 0;
+#endif
 	tiles->count = FRAME_LOOKAHEAD_TILE_COUNT;
 	tiles->first = 0;
 	tiles->camera_east =
@@ -1194,10 +1258,9 @@ static void frame_place_cars(const struct FRAME_TILE_SELECTION *tiles,
 	cars[PLAYER_CAR_INDEX].depth_adjustment = 0;
 	if (cameramode != CAMERA_MODE_COCKPIT || followOpponentFlag != 0) {
 		if (frame_state->playerstate.car_crashBmpFlag != CRASH_EVENT_WATER) {
-			cars[PLAYER_CAR_INDEX].depth_adjustment = frame_find_car_wheel(
-				&frame_state->playerstate, &simd_player, tiles->markers, tiles->lookahead,
-				tiles->count, tiles->camera_east, tiles->camera_south, &cars[PLAYER_CAR_INDEX].east,
-				&cars[PLAYER_CAR_INDEX].south);
+			cars[PLAYER_CAR_INDEX].depth_adjustment =
+				frame_find_car_wheel(&frame_state->playerstate, &simd_player, tiles,
+									 &cars[PLAYER_CAR_INDEX].east, &cars[PLAYER_CAR_INDEX].south);
 		}
 	}
 
@@ -1211,8 +1274,7 @@ static void frame_place_cars(const struct FRAME_TILE_SELECTION *tiles,
 				const struct SIMD *second_simd =
 					gameconfig.game_opponenttype != 0 ? &simd_opponent : ghost_car_simd();
 				cars[OPPONENT_CAR_INDEX].depth_adjustment = frame_find_car_wheel(
-					second_car, second_simd, tiles->markers, tiles->lookahead, tiles->count,
-					tiles->camera_east, tiles->camera_south, &cars[OPPONENT_CAR_INDEX].east,
+					second_car, second_simd, tiles, &cars[OPPONENT_CAR_INDEX].east,
 					&cars[OPPONENT_CAR_INDEX].south);
 			}
 		}

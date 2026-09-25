@@ -426,6 +426,20 @@ static void shape3d_prepare_instance(struct TRANSFORMEDSHAPE3D *instance,
 	}
 	mat_mul_vector(&instance->pos, &mat_temp, &context->view_translation);
 	mat_multiply(object_rotation, &mat_temp, &context->object_to_view_rotation);
+}
+
+/* Directional visibility cannot affect the bounds test. Prepare it only for
+ * surviving instances, and only when their existing distance gate needs it. */
+static void shape3d_prepare_visibility(struct TRANSFORMEDSHAPE3D *instance,
+									   struct SHAPE3D_TRANSFORM_CONTEXT *context)
+{
+	if ((transshapeflags & SHAPE3D_PRETRANSFORMED_FLAG) != 0 ||
+		(LEGACY_S16_SHL(instance->culling_distance, 1U) >
+			 absolute_word(context->view_translation.x) &&
+		 LEGACY_S16_SHL(instance->culling_distance, 1U) >
+			 absolute_word(context->view_translation.z))) {
+		return;
+	}
 	struct MATRIX inverse_view_rotation;
 	mat_invert(&context->object_to_view_rotation, &inverse_view_rotation);
 	struct VECTOR forward_vector;
@@ -434,11 +448,7 @@ static void shape3d_prepare_instance(struct TRANSFORMEDSHAPE3D *instance,
 	forward_vector.z = SHAPE3D_FORWARD_VECTOR_SCALE;
 	struct VECTOR view_direction;
 	mat_mul_vector(&forward_vector, &inverse_view_rotation, &view_direction);
-	if ((view_direction.y <= 0 || instance->pos.y >= 0) &&
-		(LEGACY_S16_SHL(instance->culling_distance, 1U) <=
-			 absolute_word(context->view_translation.x) ||
-		 LEGACY_S16_SHL(instance->culling_distance, 1U) <=
-			 absolute_word(context->view_translation.z))) {
+	if (view_direction.y <= 0 || instance->pos.y >= 0) {
 		shape_view_direction_sector = vector_direction_sector(&view_direction);
 		context->visibility_mask = invpow2tbl[shape_view_direction_sector];
 		context->front_facing_mask = invpow2tbl[shape_view_direction_sector];
@@ -889,6 +899,7 @@ legacy_u16 shape3d_transform_and_queue(struct TRANSFORMEDSHAPE3D *instance)
 	if (shape3d_bounds_are_clipped(instance, &context) != 0) {
 		return (legacy_u16)-1;
 	}
+	shape3d_prepare_visibility(instance, &context);
 	transshapeprimitives = instance->shapeptr->shape3d_primitives;
 #if defined(RESTUNTS_SDL3)
 	legacy_s32 depth_mode = SHAPE3D_HIRES_DEPTH_SORTED;
