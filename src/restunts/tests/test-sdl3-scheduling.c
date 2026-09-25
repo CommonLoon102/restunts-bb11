@@ -233,7 +233,7 @@ static void test_affinity_selection(void)
 		affinity_setting = unpinned[index];
 		sdl3_configure_process();
 		assert(affinity_queries == 0 && affinity_updates == 0 && selected_cpu == TEST_CPU_UNSET);
-		assert(priority_queries == 1 && priority_updates == 1 && diagnostic_count == 1);
+		assert(priority_queries == 0 && priority_updates == 0 && diagnostic_count == 0);
 	}
 
 	reset_settings();
@@ -258,6 +258,7 @@ static void test_affinity_selection(void)
 
 	reset_settings();
 	affinity_setting = "auto";
+	priority_setting = "1";
 	allowed_count = 0;
 	sdl3_configure_process();
 	assert(affinity_updates == 0 && priority_updates == 1);
@@ -292,12 +293,14 @@ static void test_invalid_settings(void)
 	snprintf(unavailable_cpu, sizeof(unavailable_cpu), "%d", TEST_UNAVAILABLE_CPU);
 	reset_settings();
 	affinity_setting = unavailable_cpu;
+	priority_setting = "1";
 	sdl3_configure_process();
 	assert(affinity_queries != 0 && affinity_updates == 0 && priority_updates == 1);
 
 	snprintf(unavailable_cpu, sizeof(unavailable_cpu), "%d", INT_MAX);
 	reset_settings();
 	affinity_setting = unavailable_cpu;
+	priority_setting = "1";
 	sdl3_configure_process();
 	assert(affinity_updates == 0 && priority_updates == 1);
 
@@ -314,14 +317,17 @@ static void test_invalid_settings(void)
 
 static void test_priority_selection(void)
 {
-	const legacy_char *enabled[] = {NULL, "", "1"};
-	for (legacy_u32 index = 0; index < sizeof(enabled) / sizeof(enabled[0]); index++) {
+	const legacy_char *disabled[] = {NULL, "", "0"};
+	for (legacy_u32 index = 0; index < sizeof(disabled) / sizeof(disabled[0]); index++) {
 		reset_settings();
-		affinity_setting = "off";
-		priority_setting = enabled[index];
+		priority_setting = disabled[index];
 		sdl3_configure_process();
-		assert(priority_queries == 1 && priority_updates == 1);
+		assert(priority_queries == 0 && priority_updates == 0 && diagnostic_count == 0);
 	}
+	reset_settings();
+	priority_setting = "1";
+	sdl3_configure_process();
+	assert(priority_queries == 1 && priority_updates == 1);
 #if defined(_WIN32)
 	const DWORD elevated[] = {ABOVE_NORMAL_PRIORITY_CLASS, HIGH_PRIORITY_CLASS,
 							  REALTIME_PRIORITY_CLASS};
@@ -331,6 +337,7 @@ static void test_priority_selection(void)
 	for (legacy_u32 index = 0; index < sizeof(elevated) / sizeof(elevated[0]); index++) {
 		reset_settings();
 		affinity_setting = "off";
+		priority_setting = "1";
 		inherited_priority = elevated[index];
 		sdl3_configure_process();
 		assert(priority_queries == 1 && priority_updates == 0 && diagnostic_count == 0);
@@ -341,24 +348,28 @@ static void test_independent_failures(void)
 {
 	reset_settings();
 	affinity_setting = "auto";
+	priority_setting = "1";
 	affinity_query_error = 1;
 	sdl3_configure_process();
 	assert(affinity_updates == 0 && priority_updates == 1);
 
 	reset_settings();
 	affinity_setting = "auto";
+	priority_setting = "1";
 	affinity_update_error = 1;
 	sdl3_configure_process();
 	assert(affinity_updates == 1 && priority_updates == 1);
 
 	reset_settings();
 	affinity_setting = "auto";
+	priority_setting = "1";
 	priority_query_error = 1;
 	sdl3_configure_process();
 	assert(affinity_updates == 1 && priority_queries == 1 && priority_updates == 0);
 
 	reset_settings();
 	affinity_setting = "auto";
+	priority_setting = "1";
 	priority_update_error = 1;
 	sdl3_configure_process();
 	assert(affinity_updates == 1 && priority_updates == 1);
@@ -390,6 +401,7 @@ static void test_platform_boundaries(void)
 	/* A valid nice value of -1 must not inherit a stale errno from another call. */
 	reset_settings();
 	affinity_setting = "off";
+	priority_setting = "1";
 	inherited_priority = -1;
 	errno = EACCES;
 	sdl3_configure_process();
