@@ -162,18 +162,19 @@ are written in the selected data directory, so it must be writable. Keep the
 original game resources and replay/car additions together there.
 
 On Linux and Windows, the interactive game defaults to serial rendering with
-zero background render workers and leaves CPU affinity unchanged. The OS can
-schedule threads across the allowed CPUs. Before SDL initialization, the game
-requests above-normal priority (Windows) or nice `-5` (Linux). Higher inherited
-priority is preserved. Linux may deny the priority increase without an appropriate
-`RLIMIT_NICE` or `CAP_SYS_NICE`; a diagnostic is printed and the game continues.
+zero background render workers and leaves CPU affinity and process priority
+unchanged. The OS can schedule threads across the allowed CPUs.
 DOS and dump tools do not alter affinity or priority.
 
 `RESTUNTS_CPU_AFFINITY=off` is the default and retains inherited affinity. Set it
 to an allowed zero-based logical CPU number to pin the process explicitly, or
 use `auto` to pin to the OS-selected CPU at startup if allowed, otherwise the
 first allowed CPU. Windows CPU numbers are relative to the current processor group.
-Set `RESTUNTS_HIGH_PRIORITY=0` to retain inherited priority.
+`RESTUNTS_HIGH_PRIORITY=0` is the default and retains inherited priority. Set it
+to `1` to request above-normal priority (Windows) or nice `-5` (Linux) before SDL
+initialization, while preserving higher inherited priority. Linux may deny the
+increase without an appropriate `RLIMIT_NICE` or `CAP_SYS_NICE`; a diagnostic is
+printed and the game continues.
 `RESTUNTS_RENDER_WORKERS=auto` enables automatic parallel rendering, or use a
 count from `0` through `7`. Keep affinity set to `off` when comparing multiple
 workers so they can use all allowed CPUs. See the
