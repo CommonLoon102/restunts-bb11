@@ -1203,7 +1203,9 @@ static void check_body_corner_plane(struct CARSTATE *carstate, struct VECTOR *cu
 				plane_signed_distance(planindex, sample.x, sample.y, sample.z);
 			if (game_replay_mode != REPLAY_MODE_PAUSED &&
 				((current_distance < 0 && previous_distance > 0) ||
-				 (current_distance > 0 && previous_distance < 0))) {
+				 (current_distance > 0 && previous_distance < 0)) &&
+				body_plane_crossing_is_collision(&carstate->car_body_corner_positions[corner_index],
+												 current_position)) {
 				player_motion_crash(CRASH_EVENT_IMMEDIATE_STOP, car_index);
 			}
 		}
