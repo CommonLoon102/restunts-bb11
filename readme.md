@@ -337,6 +337,11 @@ also checked against finite walls, catching impacts with the start of a ramp
 side wall that individual wheel paths can miss. Slalom stones use their full
 finite bounds for these checks, including wheel movement that crosses an entire
 stone between frames. The car stops at the first contact.
+With `/lc:off`, body collisions also distinguish separate surfaces that reuse
+one collision-plane template. Moving from a hill into the clear space beneath
+an open ramp, or between elevated surfaces at different heights, no longer
+causes a false crash merely because the selected surface changes. Actual
+crossings of either surface and collisions at continuous surface joins remain.
 With `/lc:off`, collision-induced sideways heading offsets and opponent spin
 also decay fully to zero in either direction, preventing a permanent steering
 bias after contact. Legacy mode retains the original negative-rounding behavior.

@@ -83,6 +83,115 @@ static legacy_s16 sweep_coordinate(legacy_s16 previous, legacy_s16 current, lega
 	return LEGACY_S16_WRAP_ADD(previous, LEGACY_S16_FROM_BITS((legacy_u16)displacement));
 }
 
+static legacy_s16 selected_body_plane_is_coplanar(const struct TRACK_COLLISION_SNAPSHOT *other)
+{
+	const struct PLANE far *plane = current_planptr;
+	const struct PLANE far *other_plane = other->plane;
+	if (plane->plane_normal.x != other_plane->plane_normal.x ||
+		plane->plane_normal.y != other_plane->plane_normal.y ||
+		plane->plane_normal.z != other_plane->plane_normal.z) {
+		return 0;
+	}
+
+	legacy_s32 delta_x = (legacy_s32)elem_xCenter - other->element_x + plane->plane_origin.x -
+						 other_plane->plane_origin.x;
+	legacy_s32 delta_y = (legacy_s32)terrainHeight - other->terrain_height + plane->plane_origin.y -
+						 other_plane->plane_origin.y;
+	legacy_s32 delta_z = (legacy_s32)elem_zCenter - other->element_z + plane->plane_origin.z -
+						 other_plane->plane_origin.z;
+	return (legacy_s64)delta_x * plane->plane_normal.x +
+			   (legacy_s64)delta_y * plane->plane_normal.y +
+			   (legacy_s64)delta_z * plane->plane_normal.z ==
+		   0;
+}
+
+static legacy_s64 body_plane_distance(const struct VECTOR *point)
+{
+	const struct PLANE far *plane = current_planptr;
+	legacy_s32 x = (legacy_s32)point->x - elem_xCenter - plane->plane_origin.x;
+	legacy_s32 y = (legacy_s32)point->y - terrainHeight - plane->plane_origin.y;
+	legacy_s32 z = (legacy_s32)point->z - elem_zCenter - plane->plane_origin.z;
+	return (legacy_s64)x * plane->plane_normal.x + (legacy_s64)y * plane->plane_normal.y +
+		   (legacy_s64)z * plane->plane_normal.z;
+}
+
+#define BODY_PLANE_CONTACT_BOUND_COUNT 2U
+
+static void body_plane_intersection_axis(legacy_s16 previous, legacy_s16 current, legacy_s64 offset,
+										 legacy_s64 span, legacy_s16 *first, legacy_s16 *second)
+{
+	legacy_s64 numerator = (legacy_s64)previous * span + ((legacy_s64)current - previous) * offset;
+	*first = (legacy_s16)(numerator / span);
+	*second = *first;
+	/* A fractional contact can lie inside a narrow surface while its rounded
+	 * coordinate lands just outside. Retain both neighboring integer bounds. */
+	if (numerator % span != 0) {
+		*second += (numerator < 0) == (span < 0) ? 1 : -1;
+	}
+}
+
+static legacy_s16 body_crosses_selected_plane(struct VECTOR *previous, struct VECTOR *current)
+{
+	legacy_s64 start = body_plane_distance(previous);
+	legacy_s64 end = body_plane_distance(current);
+	if (!((start < 0 && end > 0) || (start > 0 && end < 0))) {
+		return 0;
+	}
+
+	/* Intersect one world plane, not distances measured from two placements of
+	 * a reusable template. Keep sub-unit plane distances and the full ratio until
+	 * each contact coordinate is rounded. */
+	legacy_s64 offset = -start;
+	legacy_s64 span = end - start;
+	struct VECTOR bounds[BODY_PLANE_CONTACT_BOUND_COUNT];
+	body_plane_intersection_axis(previous->x, current->x, offset, span, &bounds[0].x, &bounds[1].x);
+	body_plane_intersection_axis(previous->y, current->y, offset, span, &bounds[0].y, &bounds[1].y);
+	body_plane_intersection_axis(previous->z, current->z, offset, span, &bounds[0].z, &bounds[1].z);
+
+	struct TRACK_COLLISION_SNAPSHOT selected;
+	track_collision_capture(&selected);
+	legacy_s16 hit = 0;
+	/* Check the finite surface at the integer bounds of the exact contact.
+	 * Coplanar neighboring tiles are valid too, including a contact on a seam. */
+	for (legacy_u16 x = 0; x < BODY_PLANE_CONTACT_BOUND_COUNT && !hit; x++) {
+		for (legacy_u16 y = 0; y < BODY_PLANE_CONTACT_BOUND_COUNT && !hit; y++) {
+			for (legacy_u16 z = 0; z < BODY_PLANE_CONTACT_BOUND_COUNT && !hit; z++) {
+				struct VECTOR contact = {bounds[x].x, bounds[y].y, bounds[z].z};
+				build_track_object(&contact, &contact);
+				hit = selected_body_plane_is_coplanar(&selected);
+			}
+		}
+	}
+	track_collision_restore(&selected);
+	return hit;
+}
+
+legacy_s16 body_plane_crossing_is_collision(struct VECTOR *previous, struct VECTOR *current)
+{
+	if (legacy_collision_enabled != 0) {
+		return 1;
+	}
+
+	/* Validate an existing body crash without changing the legacy trigger or
+	 * adding collisions for unrelated plane IDs. Preserve the caller's lookup. */
+	struct TRACK_COLLISION_SNAPSHOT saved;
+	struct TRACK_COLLISION_SNAPSHOT selected;
+	track_collision_capture(&saved);
+	build_track_object(current, previous);
+	track_collision_capture(&selected);
+	build_track_object(previous, current);
+	legacy_s16 hit = selected_body_plane_is_coplanar(&selected);
+	if (!hit) {
+		hit = body_crosses_selected_plane(previous, current);
+		if (!hit) {
+			track_collision_restore(&selected);
+			hit = body_crosses_selected_plane(previous, current);
+		}
+	}
+	track_collision_restore(&saved);
+	return hit;
+}
+
 static legacy_s16 project_contact_coordinate(legacy_s16 position, legacy_s16 distance,
 											 legacy_s16 normal)
 {
