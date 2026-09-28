@@ -182,6 +182,27 @@ workers so they can use all allowed CPUs. See the
 Linux and PowerShell examples. These settings do not reserve a core or guarantee
 a frame rate.
 
+Desktop rendering uses two owned ARGB presentation pages. Composition writes the
+hidden page and flips it to the front only after the complete frame is ready.
+Exposure and resize events repaint the frozen front page, preserving its pixels,
+palette colors, and dimensions while a new frame is drawn or SuperSight changes
+resolution. Driving, replay playback, animated intro frames, and car-preview
+refreshes use explicit frame boundaries; menu fades and the initial car-menu
+dissolve retain their incremental updates. Pages are released on video shutdown.
+This internal buffering does not force SDL's swapchain buffer count or replace
+monitor synchronization. The DOS indexed/VESA presentation path is unchanged.
+
+Windows and Linux enable VSync by default in windowed and fullscreen mode,
+including classic rendering and SuperSight. SDL may use timed pacing when a
+renderer cannot synchronize to the display. Set `RESTUNTS_VSYNC=0` before
+launching the game to disable it; `1`, an empty value, or an unset variable
+selects the default. Invalid values log a warning and enable VSync. If SDL cannot
+apply the setting, the game logs a warning and continues. The existing classic
+and SuperSight frame-rate targets and physics schedule remain in place; waiting
+for a display refresh does not count as CPU load for automatic quality changes.
+DOS and batch dump tools are unaffected. See the
+[VSync examples](../readme.md#supersight-and-fps-display) for Linux and PowerShell.
+
 Desktop windows apply the VGA vertical 6:5 pixel-aspect correction: the original
 320x200 framebuffer fills a 4:3 image. Nearest-neighbour scaling preserves sharp
 pixel edges, and resizing adds black borders to retain that aspect. Renderer dump

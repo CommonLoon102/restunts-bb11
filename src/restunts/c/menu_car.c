@@ -421,6 +421,14 @@ static void car_menu_render_preview(struct CAR_MENU_STATE *menu)
 									   menu->render_phase == CAR_RENDER_START_PHASE)) {
 		menu->render_phase = CAR_RENDER_IDLE_PHASE;
 		menu->car_ready = 1;
+#ifdef RESTUNTS_SDL3
+		legacy_u8 complete_frame = menu->blit_mode == MENU_BLIT_MODE_REFRESH;
+		if (complete_frame != 0) {
+			/* Geometry is already queued at the current scale. Keep that scale and
+			 * leave the initial dissolve free to present each of its phases. */
+			sdl3_video_begin_track_frame(0);
+		}
+#endif
 		sprite_select_render_window();
 		sprite_set_target_clip_bounds(menu->union_rect.left, menu->union_rect.right,
 									  menu->union_rect.top, menu->union_rect.bottom);
@@ -484,6 +492,9 @@ static void car_menu_render_preview(struct CAR_MENU_STATE *menu)
 		mouse_draw_transparent_check();
 #ifdef RESTUNTS_SDL3
 		frame_fps_record_presented();
+		if (complete_frame != 0) {
+			sdl3_video_end_frame();
+		}
 #endif
 		menu->previous_car_index = menu->car_index;
 	}

@@ -68,6 +68,20 @@ static legacy_s16 scripted_key;
 static legacy_u64 scripted_now;
 static legacy_u64 previous_input_time;
 static legacy_u32 predicted_transforms;
+static legacy_u8 drawing_frame, completed_frame;
+
+void sdl3_video_begin_frame(void)
+{
+	assert(drawing_frame == 0);
+	drawing_frame = 1;
+	completed_frame = 0;
+}
+
+void sdl3_video_end_frame(void)
+{
+	assert(drawing_frame != 0 && completed_frame != 0);
+	drawing_frame = 0;
+}
 
 legacy_u64 presentation_now(void)
 {
@@ -106,6 +120,8 @@ void frame_fps_reset(void)
 
 void frame_fps_record_presented(void)
 {
+	assert(drawing_frame != 0);
+	completed_frame = 1;
 	fps_presented_count++;
 }
 
@@ -676,6 +692,7 @@ legacy_s16 input_do_checking(legacy_s16 delta)
 	record_word(delta);
 	input_polls++;
 #ifdef RESTUNTS_SDL3
+	assert(drawing_frame == 0);
 	if (scripted_input == 3) {
 		if (supersight_enabled != 0) {
 			assert(scripted_now - previous_input_time >= 10000000ULL);

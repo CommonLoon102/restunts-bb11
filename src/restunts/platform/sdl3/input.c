@@ -330,6 +330,7 @@ void sdl3_platform_pump(void)
 		return;
 	}
 	pumping = true;
+	legacy_u8 redraw_requested = false;
 	SDL_Event event;
 	legacy_u8 poll_events =
 		SDL_GetTicks() != last_event_poll || SDL_HasEvents(SDL_EVENT_FIRST, SDL_EVENT_LAST);
@@ -354,7 +355,7 @@ void sdl3_platform_pump(void)
 				break;
 			case SDL_EVENT_WINDOW_EXPOSED:
 			case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
-				sdl3_video_present();
+				redraw_requested = true;
 				break;
 			case SDL_EVENT_MOUSE_MOTION:
 				input_mouse_position(event.motion.x, event.motion.y);
@@ -405,6 +406,9 @@ void sdl3_platform_pump(void)
 		last_event_poll = SDL_GetTicks();
 	}
 	sdl3_timer_pump();
+	if (redraw_requested) {
+		sdl3_video_redraw();
+	}
 	sdl3_video_refresh();
 	pumping = false;
 }

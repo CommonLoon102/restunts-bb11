@@ -74,6 +74,22 @@ static legacy_u32 display_shadow_models, display_shadow_frames[2], display_shado
 static struct VECTOR display_shadow_camera, display_shadow_position;
 static legacy_s16 display_shadow_heading, display_ground_height;
 static legacy_u32 display_car_loads, display_ground_queries, display_load_present_count;
+static legacy_u8 drawing_frame, completed_frame;
+static legacy_u32 committed_frames;
+
+void sdl3_video_begin_track_frame(legacy_u8 adaptive)
+{
+	assert(adaptive == 0 && drawing_frame == 0);
+	drawing_frame = 1;
+	completed_frame = 0;
+}
+
+void sdl3_video_end_frame(void)
+{
+	assert(drawing_frame != 0 && completed_frame != 0);
+	drawing_frame = 0;
+	committed_frames++;
+}
 
 legacy_s16 shape3d_car_ground_height(const struct SHAPE3D *shape)
 {
@@ -220,6 +236,7 @@ void frame_fps_reset(void)
 
 void frame_fps_record_presented(void)
 {
+	completed_frame = 1;
 	if (display_toggle_test != 0) {
 		display_record_count++;
 		assert(display_record_count == display_present_count);
@@ -447,6 +464,9 @@ void init_game_state(legacy_s16 initialization_mode)
 
 legacy_s16 input_checking(legacy_s16 frame_delta)
 {
+#ifdef RESTUNTS_SDL3
+	assert(drawing_frame == 0);
+#endif
 	trace_word(1013);
 	trace_word((legacy_u16)frame_delta);
 #ifdef RESTUNTS_SDL3
@@ -802,6 +822,10 @@ legacy_u16 shape3d_transform_and_queue(struct TRANSFORMEDSHAPE3D *instance)
 
 legacy_s16 sprite_blit_to_video(struct SPRITE *sprite, legacy_s16 mode)
 {
+#ifdef RESTUNTS_SDL3
+	/* Dissolve phases must still be able to present through input polling. */
+	assert(drawing_frame == 0);
+#endif
 	trace_word(1035);
 	trace_pointer(sprite);
 	trace_word((legacy_u16)mode);
@@ -1073,7 +1097,9 @@ static void test_display_toggles(void)
 		display_shadow_frames[0] = display_shadow_frames[1] = 0;
 		simd_player.collide_points[0].px = SHOWROOM_TEST_HALF_WIDTH;
 		simd_player.collide_points[1].px = SHOWROOM_TEST_HALF_LENGTH;
+		committed_frames = 0;
 		run_car_case(1);
+		assert(drawing_frame == 0 && committed_frames != 0);
 		assert(frame_index == 22);
 		assert(supersight_enabled == initial_supersight && fps_display_enabled == initial_fps);
 		assert(display_shift_shortcuts == (initial_supersight == 0));
