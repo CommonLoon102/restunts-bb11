@@ -305,10 +305,15 @@ static legacy_s16 frame_car_z_adjust(const legacy_s8 *wheel_surfaces, struct MAT
 #if defined(RESTUNTS_SDL3)
 static legacy_s32 frame_adaptive_world_tile(legacy_s32 position, legacy_s16 offset)
 {
-	/* Car positions have six fractional bits; wheel offsets are whole world
-	 * units. Keep the historical wheel-placement arithmetic in classic mode. */
-	legacy_s32 whole = LEGACY_S32_SAR(position, TRACK_WORLD_TILE_SHIFT - FRAME_CAMERA_TILE_SHIFT);
-	return LEGACY_S32_SAR(whole + offset, FRAME_CAMERA_TILE_SHIFT);
+	/* Positions and SIMD wheel offsets both have six fractional bits. Add
+	 * before converting to tiles, retaining fractional boundary crossings.
+	 * Widen the sum and floor negative values to keep off-map tiles signed. */
+	legacy_s64 combined = (legacy_s64)position + offset;
+	const legacy_s64 tile_size = (legacy_s64)1 << TRACK_WORLD_TILE_SHIFT;
+	if (combined < 0) {
+		combined -= tile_size - 1;
+	}
+	return (legacy_s32)(combined / tile_size);
 }
 
 static legacy_u8 frame_adaptive_position_flags(const struct VECTOR *relative,
