@@ -66,14 +66,14 @@ run_host_test test-collision-interpolation physics_collision.c \
     "$test_source_dir/math.c" "$test_source_dir/legacy.c" "$test_source_dir/strlib.c"
 run_host_test test-startup math.c "$test_source_dir/owoot.c" \
     "$test_source_dir/statecar.c" "$test_source_dir/strlib.c" \
-    "$test_source_dir/physics_collision.c" \
+    "$test_source_dir/physics_collision.c" "$test_source_dir/physics_grip.c" \
     "$test_source_dir/full_data.c" "$test_source_dir/full_strings.c" \
     "$test_source_dir/headless_data.c" "$test_source_dir/legacy.c" \
     -Wno-pointer-sign -Wno-missing-field-initializers -Wno-unused-variable
 run_host_test test-startup math.c -DRESTUNTS_SDL3 \
     "$test_source_dir/frame_adaptive.c" "$test_source_dir/owoot.c" \
     "$test_source_dir/statecar.c" "$test_source_dir/strlib.c" \
-    "$test_source_dir/physics_collision.c" \
+    "$test_source_dir/physics_collision.c" "$test_source_dir/physics_grip.c" \
     "$test_source_dir/full_data.c" "$test_source_dir/full_strings.c" \
     "$test_source_dir/headless_data.c" "$test_source_dir/legacy.c" \
     -Wno-pointer-sign -Wno-missing-field-initializers -Wno-unused-variable
@@ -156,7 +156,9 @@ run_host_test test-simulation-setup gameinit.c "$test_source_dir/owoot.c" \
     "$test_source_dir/legacy.c" -Wno-pointer-sign -Wno-sign-compare
 run_host_test test-penalty-routing physics_grip.c -Wno-sign-compare
 run_host_test test-wheel-suspension physics_collision.c
-run_host_test test-phantom-motion legacy.c
+run_host_test test-phantom-motion legacy.c \
+    "$test_source_dir/physics_grip.c" "$test_source_dir/physics_collision.c" \
+    "$test_source_dir/strlib.c" -Wno-sign-compare
 run_host_test test-route-points opponent.c "$test_source_dir/trkutil.c" -Wno-missing-braces
 run_host_test test-memmgr-cache memmgr.c \
     -Wno-pointer-sign -Wno-unused-variable -Wno-missing-braces -Wno-missing-field-initializers

@@ -65,6 +65,41 @@ enum PENALTY_DETECTION_RESULT { PENALTY_NOT_DETECTED = 0, PENALTY_DETECTED = 1 }
 #define SLIDE_GRIP_TOLERANCE 1000U
 #define SLIDE_YAW_DAMPING_DIVISOR 2
 #define SLIDE_SPEED_PENALTY_SHIFT 1U
+
+enum LEFT_CORNER_BIAS_MODE { LEFT_CORNER_BIAS_OFF = 0, LEFT_CORNER_BIAS_ON = 1 };
+
+static legacy_s16 left_corner_bias_enabled = LEFT_CORNER_BIAS_ON;
+
+void configure_left_corner_bias(legacy_s16 argc, legacy_s8 *argv[])
+{
+	static const legacy_s8 off_option[] = "lcb:off";
+	static const legacy_s8 on_option[] = "lcb:on";
+	left_corner_bias_enabled = LEFT_CORNER_BIAS_ON;
+	for (legacy_s16 index = 1; index < argc; index++) {
+		const legacy_s8 *option = argv[index];
+		if (*option == '/') {
+			option++;
+		}
+		if (stricmp(option, off_option) == 0) {
+			left_corner_bias_enabled = LEFT_CORNER_BIAS_OFF;
+		} else if (stricmp(option, on_option) == 0) {
+			left_corner_bias_enabled = LEFT_CORNER_BIAS_ON;
+		}
+	}
+}
+
+legacy_s16 scale_cornering_angle(legacy_s16 angle, legacy_u8 shift)
+{
+	if (left_corner_bias_enabled == LEFT_CORNER_BIAS_OFF && angle < 0) {
+		/* Shift the magnitude to round both steering directions toward zero.
+		 * Widen before negation so the minimum signed word remains valid. */
+		return (legacy_s16)-LEGACY_S32_SAR(-(legacy_s32)angle, shift);
+	}
+	/* The original SAR rounds negative (left) angles down, increasing their
+	 * magnitude and turning farther for the same demanded grip. */
+	return LEGACY_S16_SAR(angle, shift);
+}
+
 static legacy_s16 penalty_route_next(legacy_s16 track_index)
 {
 	if (track_index == PENALTY_ROUTE_SENTINEL) {
@@ -422,7 +457,7 @@ static legacy_s16 grip_slip_angle(struct CARSTATE *carstate, legacy_s16 initial_
 		if (initial_angle < 0) {
 			adjusted_angle = LEGACY_S16_WRAP_NEGATE(adjusted_angle);
 		}
-		adjusted_angle = LEGACY_S16_SAR(
+		adjusted_angle = scale_cornering_angle(
 			LEGACY_S16_WRAP_ADD(LEGACY_S16_WRAP_MUL(adjusted_angle, SLIDE_ANGLE_WEIGHT),
 								initial_angle),
 			SLIDE_ANGLE_BLEND_SHIFT);
