@@ -489,6 +489,50 @@ legacy_s32 hires_raster_depth_test(struct HIRES_RASTER_CONTEXT *context, legacy_
 							(size_t)y * target->width + x, inverse_z, family, mode);
 }
 
+void hires_coverage_pixel(struct HIRES_RASTER_CONTEXT *context, legacy_s32 x, legacy_s32 y,
+						  legacy_f64 inverse_z, legacy_u32 family, legacy_s32 mode, legacy_u8 color,
+						  const struct HIRES_DEPTH_PLANE *ground)
+{
+	legacy_f32 *depths;
+	legacy_u32 *families;
+	legacy_s32 width;
+	if (context != NULL) {
+		const struct HIRES_RASTER_TARGET *target = context->target;
+		if (x < target->depth_left || x >= target->depth_right || y < target->depth_top ||
+			y >= target->depth_bottom || y < context->top || y >= context->bottom) {
+			return;
+		}
+		depths = target->inverse_depth;
+		families = target->depth_family;
+		width = target->width;
+	} else {
+		if (active == NULL || x < depth_left || x >= depth_right || y < depth_top ||
+			y >= depth_bottom) {
+			return;
+		}
+		depths = inverse_depth;
+		families = depth_family;
+		width = render_width;
+	}
+	if (!(inverse_z > 0) || inverse_z > FLT_MAX || family == HIRES_DEPTH_FAMILY_NONE) {
+		return;
+	}
+	size_t index = (size_t)y * width + x;
+	if (families[index] == HIRES_DEPTH_FAMILY_NONE) {
+		legacy_f64 ground_depth = ground->x_step * x + ground->y_step * y + ground->origin;
+		if (inverse_z + HIRES_DEPTH_EPSILON_SCALE * FLT_EPSILON * ground_depth < ground_depth) {
+			return;
+		}
+	}
+	if (hires_test_depth(depths, families, index, inverse_z, family, mode)) {
+		if (context != NULL) {
+			hires_raster_pixel(context, x, y, color);
+		} else {
+			hires_pixel(x, y, color);
+		}
+	}
+}
+
 void hires_raster_pixel(struct HIRES_RASTER_CONTEXT *context, legacy_s32 x, legacy_s32 y,
 						legacy_u8 color)
 {

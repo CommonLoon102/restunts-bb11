@@ -21,6 +21,11 @@ enum HIRES_PAINT_MODE { HIRES_PAINT_SOLID = 0, HIRES_PAINT_PATTERN = 1, HIRES_PA
 struct SPRITE;
 struct HIRES_SURFACE;
 
+/* Inverse depth at pixel centers: x_step*x + y_step*y + origin. */
+struct HIRES_DEPTH_PLANE {
+	legacy_f64 x_step, y_step, origin;
+};
+
 /* Immutable for one joined raster pass. Screen rows must map to disjoint
  * legacy cells; preparation rejects targets that cannot be split safely. */
 struct HIRES_RASTER_TARGET {
@@ -69,6 +74,12 @@ legacy_s32 hires_depth_test(legacy_s32 x, legacy_s32 y, legacy_f64 inverse_z, le
 legacy_s32 hires_raster_prepare(struct HIRES_RASTER_TARGET *target);
 legacy_s32 hires_raster_depth_test(struct HIRES_RASTER_CONTEXT *context, legacy_s32 x, legacy_s32 y,
 								   legacy_f64 inverse_z, legacy_u32 family, legacy_s32 mode);
+/* Additional line/stroke/decal coverage must not show through uncovered ground.
+ * A null context uses the active target; ground must point to the scene plane.
+ * Existing surface ownership and attached-detail ordering take precedence. */
+void hires_coverage_pixel(struct HIRES_RASTER_CONTEXT *context, legacy_s32 x, legacy_s32 y,
+						  legacy_f64 inverse_z, legacy_u32 family, legacy_s32 mode, legacy_u8 color,
+						  const struct HIRES_DEPTH_PLANE *ground);
 void hires_raster_pixel(struct HIRES_RASTER_CONTEXT *context, legacy_s32 x, legacy_s32 y,
 						legacy_u8 color);
 /* Draw an exclusive-right scanline with the same sequential depth interpolation

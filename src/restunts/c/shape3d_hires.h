@@ -35,6 +35,8 @@ enum SHAPE3D_HIRES_DEPTH_MODE {
 };
 void shape3d_hires_begin_shape(legacy_u32 index, legacy_s32 depth_mode);
 void shape3d_hires_set_shadow_receiver(legacy_s32 enabled);
+/* Clip added coverage against flat track ground, independently of car shadows. */
+void shape3d_hires_ground_begin(const struct VECTOR *camera_position);
 /* At most two car silhouettes; visible receivers reuse the scene depth buffer.
  * Positions are camera-relative world coordinates, with Y up and heading around Y. */
 void shape3d_hires_shadows_begin(const struct VECTOR *camera_position);
