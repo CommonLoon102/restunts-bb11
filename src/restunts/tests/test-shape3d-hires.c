@@ -76,8 +76,11 @@ static void queue(legacy_u8 type, legacy_u32 count, const struct SHAPE3D_HIRES_V
 	queue_flagged(type, count, vertices, 0);
 }
 
-/* Road dashes are attached polygons, not line primitives. Nearby markings
- * retain their weight; distant markings become finer without losing coverage. */
+#define DECAL_TEST_MINIMUM_WIDTH 0.75
+#define DECAL_TEST_BORDER_SAMPLE_OFFSET (HIRES_SAMPLE_CENTER_OFFSET / 2)
+
+/* Attached road dashes are polygons. Nearby markings retain their weight;
+ * distant subpixel markings can miss pixel centers or have gaps. */
 static void test_attached_polygon_weight(void)
 {
 	const legacy_f64 directions[][2] = {{1, 0}, {0, 1}, {0.8, 0.6}};
@@ -113,19 +116,32 @@ static void test_attached_polygon_weight(void)
 					const legacy_u8 *image = pixels();
 					legacy_u32 coverage = count_color(8);
 					distance_coverage[distance] += coverage;
-					assert(coverage >= 80);
+					if (distance != 2) {
+						assert(coverage >= 80);
+					}
 					assert(coverage <= 84 * (HIRES_SCALE + 1));
 					if (distance == 0) {
 						assert(coverage >= 80 * (HIRES_SCALE - 1));
 						near_coverage[translation][winding] = coverage;
 					} else if (distance == 2) {
-						assert(coverage <= 84 * 2);
+						assert(coverage <= 84);
 						assert(coverage < near_coverage[translation][winding]);
 					}
 					for (legacy_s32 along = -30; along <= 30; along++) {
 						legacy_s32 x = (legacy_s32)(640 + tangent_x * along + shift);
 						legacy_s32 y = (legacy_s32)(400 + tangent_y * along + shift);
-						assert(image[y * HIRES_WIDTH + x] == 8);
+						if (distance == 2) {
+							/* Sample the interior of the projected strip, away from its
+							 * end caps. Coverage depends on the pixel center's distance
+							 * from the dash, not just its integer centerline. */
+							legacy_f64 offset_x = x + HIRES_SAMPLE_CENTER_OFFSET - (640 + shift);
+							legacy_f64 offset_y = y + HIRES_SAMPLE_CENTER_OFFSET - (400 + shift);
+							legacy_f64 across = offset_x * tangent_y - offset_y * tangent_x;
+							legacy_s32 covered = SDL_fabs(across) < DECAL_TEST_MINIMUM_WIDTH / 2;
+							assert((image[y * HIRES_WIDTH + x] == 8) == covered);
+						} else {
+							assert(image[y * HIRES_WIDTH + x] == 8);
+						}
 					}
 				}
 			}
@@ -216,9 +232,15 @@ static void test_attached_polygon_weight_follows_projection(void)
 
 static void test_attached_polygon_varies_along_depth(void)
 {
-	/* Perspective narrows the far end of a dash on a sloping road. */
-	const struct SHAPE3D_HIRES_VECTOR marking[] = {
+	/* Perspective narrows the far end of a dash on a sloping road. Offset
+	 * its projected center so the far tip needs added border coverage to reach
+	 * the sample row: its original half-width is 0.15 pixels at that end. */
+	struct SHAPE3D_HIRES_VECTOR marking[] = {
 		{-100, -1.5, 1600}, {-100, 1.5, 1600}, {400, 1.5, 6400}, {400, -1.5, 6400}};
+	for (legacy_u32 vertex = 0; vertex < SDL_arraysize(marking); vertex++) {
+		marking[vertex].y -= marking[vertex].z * DECAL_TEST_BORDER_SAMPLE_OFFSET /
+							 (projection_focal_length_y * HIRES_SCALE);
+	}
 	reset_target();
 	queue_flagged(RENDER_PRIMITIVE_POLYGON, 4, marking, 3);
 	shape3d_hires_render(0, RENDER_PRIMITIVE_POLYGON, 8, 0, 0, 0, 0);
@@ -265,18 +287,23 @@ static void test_polygon_weight_preserves_surfaces(void)
 
 static void test_attached_polygon_clipping(void)
 {
-	const struct SHAPE3D_HIRES_VECTOR marking[] = {
+	/* Offset the subpixel dash so only its added border reaches the sample
+	 * row, exercising border clipping at both ends and at the viewport top. */
+	struct SHAPE3D_HIRES_VECTOR marking[] = {
 		{-7000, -1.5, 6400}, {7000, -1.5, 6400}, {7000, 1.5, 6400}, {-7000, 1.5, 6400}};
+	for (legacy_u32 vertex = 0; vertex < SDL_arraysize(marking); vertex++) {
+		marking[vertex].y -= marking[vertex].z * DECAL_TEST_BORDER_SAMPLE_OFFSET /
+							 (projection_focal_length_y * HIRES_SCALE);
+	}
 	reset_target();
 	queue_flagged(RENDER_PRIMITIVE_POLYGON, 4, marking, 3);
 	shape3d_hires_render(0, RENDER_PRIMITIVE_POLYGON, 8, 0, 0, 0, 0);
 	hires_end();
 	const legacy_u8 *image = pixels();
-	assert(count_color(8) == HIRES_WIDTH * 2);
-	for (legacy_s32 y = 399; y < 401; y++) {
-		assert(image[y * HIRES_WIDTH] == 8);
-		assert(image[y * HIRES_WIDTH + HIRES_WIDTH - 1] == 8);
-	}
+	assert(count_color(8) == HIRES_WIDTH);
+	legacy_s32 sample_row = projection_center_y * HIRES_SCALE;
+	assert(image[sample_row * HIRES_WIDTH] == 8);
+	assert(image[sample_row * HIRES_WIDTH + HIRES_WIDTH - 1] == 8);
 
 	target.sprite_raster_left = 150;
 	target.sprite_raster_right = 170;
