@@ -30,6 +30,12 @@ void sdl3_timer_pump(void)
 	}
 	dispatching = true;
 	legacy_u64 now = SDL_GetTicks();
+	/* A backward clock sample must not wrap the unsigned elapsed time and
+	 * trap the main thread dispatching timer/audio callbacks. Rebase so the
+	 * normal cadence also resumes after a persistent clock reset. */
+	if (now < last_tick) {
+		last_tick = now;
+	}
 	while (now - last_tick >= TIMER_TICK_MS) {
 		last_tick += TIMER_TICK_MS;
 		realtime_counter++;
