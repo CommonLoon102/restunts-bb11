@@ -2597,6 +2597,7 @@ void update_frame(legacy_s8 buffer_index, struct RECTANGLE *cliprect)
 	frame_select_tiles(&tiles, &camera);
 #if defined(RESTUNTS_SDL3)
 	if (supersight_enabled != 0) {
+		shape3d_hires_ground_begin(&camera.position);
 		shape3d_hires_shadows_begin(&camera.position);
 		frame_add_car_shadow(&frame_state->playerstate, &simd_player, &camera.position,
 							 &game3dshapes[PLAYER_CAR_WHEEL_SHAPE]);

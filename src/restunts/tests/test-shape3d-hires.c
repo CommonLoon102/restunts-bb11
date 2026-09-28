@@ -1922,6 +1922,168 @@ static void test_render_scale_roundtrip(void)
 	target.sprite_bottom = 200;
 }
 
+#define GROUND_DETAIL_CAMERA_HEIGHT 16
+#define GROUND_DETAIL_FOCAL_LENGTH 160
+#define GROUND_DETAIL_FOOT_OFFSET 1.2
+#define GROUND_DETAIL_FAR_OFFSET 1.3
+#define GROUND_DETAIL_TOP_OFFSET -4.0
+#define GROUND_DETAIL_HALF_LENGTH 8.0
+#define GROUND_DETAIL_SUPPORT_MARGIN 2.0
+#define GROUND_DETAIL_STROKE_SCALE 32.0
+#define GROUND_DETAIL_BACKGROUND_COLOR 3
+#define GROUND_DETAIL_SUPPORT_COLOR 7
+#define GROUND_DETAIL_COLOR 8
+
+enum GROUND_DETAIL_PLANE { GROUND_DETAIL_NO_PLANE, GROUND_DETAIL_PLANE, GROUND_DETAIL_RESET };
+
+/* Rotating the camera by a quarter turn makes the ground boundary vertical.
+ * The same fixture then verifies that clipping follows the camera plane. */
+static struct SHAPE3D_HIRES_VECTOR ground_detail_vertex(legacy_f64 along, legacy_f64 down,
+														legacy_f64 depth, legacy_s32 rolled,
+														legacy_s32 scale)
+{
+	legacy_f64 focal = GROUND_DETAIL_FOCAL_LENGTH * scale;
+	struct SHAPE3D_HIRES_VECTOR result = {(rolled ? down : along) * depth / focal,
+										  -(rolled ? along : down) * depth / focal, depth};
+	return result;
+}
+
+static void draw_ground_detail(legacy_s32 scale, legacy_s32 rolled, legacy_u8 type,
+							   legacy_s32 supported, legacy_s32 plane, legacy_s32 batched)
+{
+	reset_target();
+	hires_end();
+	hires_set_render_scale(scale);
+	assert(hires_begin(&target));
+	memset(&mat_temp, 0, sizeof(mat_temp));
+	mat_temp.m._33 = TRIG_FIXED_ONE;
+	if (rolled) {
+		mat_temp.m._12 = -TRIG_FIXED_ONE;
+		mat_temp.m._21 = TRIG_FIXED_ONE;
+	} else {
+		mat_temp.m._11 = mat_temp.m._22 = TRIG_FIXED_ONE;
+	}
+	const struct VECTOR camera = {0, GROUND_DETAIL_CAMERA_HEIGHT, 0};
+	if (plane != GROUND_DETAIL_NO_PLANE) {
+		shape3d_hires_ground_begin(&camera);
+	}
+	if (plane == GROUND_DETAIL_RESET) {
+		shape3d_hires_reset();
+	}
+	legacy_f64 depth = GROUND_DETAIL_CAMERA_HEIGHT * GROUND_DETAIL_FOCAL_LENGTH * scale /
+					   GROUND_DETAIL_FOOT_OFFSET;
+	legacy_f64 near_depth =
+		GROUND_DETAIL_CAMERA_HEIGHT * GROUND_DETAIL_FOCAL_LENGTH * scale / GROUND_DETAIL_FAR_OFFSET;
+	const legacy_u8 indices[] = {0, 1, 2, 3};
+	legacy_u32 index = 0;
+	if (supported) {
+		const struct SHAPE3D_HIRES_VECTOR support[] = {
+			ground_detail_vertex(-GROUND_DETAIL_HALF_LENGTH, -GROUND_DETAIL_SUPPORT_MARGIN, depth,
+								 rolled, scale),
+			ground_detail_vertex(GROUND_DETAIL_HALF_LENGTH, -GROUND_DETAIL_SUPPORT_MARGIN, depth,
+								 rolled, scale),
+			ground_detail_vertex(GROUND_DETAIL_HALF_LENGTH, GROUND_DETAIL_SUPPORT_MARGIN * 2, depth,
+								 rolled, scale),
+			ground_detail_vertex(-GROUND_DETAIL_HALF_LENGTH, GROUND_DETAIL_SUPPORT_MARGIN * 2,
+								 depth, rolled, scale)};
+		shape3d_hires_queue(index++, RENDER_PRIMITIVE_POLYGON, SDL_arraysize(support), indices,
+							support, 0);
+	}
+	struct SHAPE3D_HIRES_VECTOR detail[4];
+	legacy_u16 count;
+	if (type == RENDER_PRIMITIVE_POLYGON) {
+		detail[0] = ground_detail_vertex(-GROUND_DETAIL_HALF_LENGTH, GROUND_DETAIL_FOOT_OFFSET,
+										 depth, rolled, scale);
+		detail[1] = ground_detail_vertex(GROUND_DETAIL_HALF_LENGTH, GROUND_DETAIL_FOOT_OFFSET,
+										 depth, rolled, scale);
+		detail[2] = ground_detail_vertex(GROUND_DETAIL_HALF_LENGTH, GROUND_DETAIL_FAR_OFFSET,
+										 near_depth, rolled, scale);
+		detail[3] = ground_detail_vertex(-GROUND_DETAIL_HALF_LENGTH, GROUND_DETAIL_FAR_OFFSET,
+										 near_depth, rolled, scale);
+		count = SDL_arraysize(detail);
+	} else {
+		detail[0] = ground_detail_vertex(0, GROUND_DETAIL_FOOT_OFFSET, depth, rolled, scale);
+		detail[1] = ground_detail_vertex(0, GROUND_DETAIL_TOP_OFFSET, depth, rolled, scale);
+		count = type == RENDER_PRIMITIVE_POINT ? 1 : 2;
+		/* Exercise widened strokes as well as their continuous pixel spine. */
+		shape3d_hires_set_model_scale(GROUND_DETAIL_STROKE_SCALE);
+	}
+	shape3d_hires_queue(index, type, count, indices, detail,
+						SHAPE3D_PRIMITIVE_SKIP_DEPTH_SORT_FLAG);
+	shape3d_hires_set_model_scale(1);
+	if (batched) {
+		shape3d_hires_batch_begin();
+	}
+	if (supported) {
+		shape3d_hires_render(0, RENDER_PRIMITIVE_POLYGON, GROUND_DETAIL_SUPPORT_COLOR, 0, 0, 0, 0);
+	}
+	shape3d_hires_render(index, type, GROUND_DETAIL_COLOR, 0, 0, 0, 0);
+	if (batched) {
+		shape3d_hires_batch_end();
+	}
+	hires_end();
+}
+
+/* Generated detail can reach a pixel below a model's ground-level footprint.
+ * Grass has no stored depth family there, but an existing surface must retain
+ * authored paint order and ordinary polygon fills must remain unchanged. */
+static void test_ground_occludes_generated_detail(void)
+{
+	static legacy_u8 reference[HIRES_WIDTH * HIRES_HEIGHT];
+	static legacy_u8 without_plane[HIRES_WIDTH * HIRES_HEIGHT];
+	const legacy_u8 types[] = {RENDER_PRIMITIVE_LINE, RENDER_PRIMITIVE_POINT,
+							   RENDER_PRIMITIVE_POLYGON};
+	const struct MATRIX saved_view = mat_temp;
+	projection_focal_length_x = projection_focal_length_y = GROUND_DETAIL_FOCAL_LENGTH;
+	for (legacy_s32 scale = HIRES_MINIMUM_SCALE; scale <= HIRES_SCALE; scale *= 2) {
+		for (legacy_s32 rolled = 0; rolled < 2; rolled++) {
+			for (legacy_u32 kind = 0; kind < SDL_arraysize(types); kind++) {
+				for (legacy_s32 supported = 0; supported < 2; supported++) {
+					for (legacy_s32 plane = GROUND_DETAIL_NO_PLANE; plane <= GROUND_DETAIL_RESET;
+						 plane++) {
+						for (legacy_s32 batched = 0; batched < 2; batched++) {
+							draw_ground_detail(scale, rolled, types[kind], supported, plane,
+											   batched);
+							const legacy_u8 *image = pixels();
+							legacy_s32 width = hires_render_width();
+							legacy_s32 center_x = projection_center_x * scale;
+							legacy_s32 center_y = projection_center_y * scale;
+							legacy_s32 foot = (legacy_s32)GROUND_DETAIL_FOOT_OFFSET;
+							legacy_s32 x = center_x + (rolled ? foot : 0);
+							legacy_s32 y = center_y + (rolled ? 0 : foot);
+							legacy_u8 expected = !supported && plane == GROUND_DETAIL_PLANE
+													 ? GROUND_DETAIL_BACKGROUND_COLOR
+													 : GROUND_DETAIL_COLOR;
+							assert(image[y * width + x] == expected);
+							if (supported) {
+								/* This core fill lies behind ground but has no added coverage. */
+								legacy_s32 interior =
+									(legacy_s32)(GROUND_DETAIL_SUPPORT_MARGIN + 1);
+								x = center_x + (rolled ? interior : 0);
+								y = center_y + (rolled ? 0 : interior);
+								assert(image[y * width + x] == GROUND_DETAIL_SUPPORT_COLOR);
+							}
+							size_t size = (size_t)width * hires_render_height();
+							if (!batched) {
+								memcpy(reference, image, size);
+								if (plane == GROUND_DETAIL_NO_PLANE) {
+									memcpy(without_plane, image, size);
+								} else if (plane == GROUND_DETAIL_RESET) {
+									assert(memcmp(without_plane, image, size) == 0);
+								}
+							} else {
+								assert(memcmp(reference, image, size) == 0);
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	mat_temp = saved_view;
+	hires_set_render_scale(HIRES_SCALE);
+}
+
 struct SHADOW_TEST_IMAGE {
 	const legacy_u32 *pixels;
 	legacy_f64 centroid_x, centroid_z;
@@ -2722,6 +2884,7 @@ legacy_int main(void)
 	test_concave_polygon_scanlines();
 	test_parallel_batches_match_serial();
 	test_render_scale_roundtrip();
+	test_ground_occludes_generated_detail();
 	test_car_shadow_stays_below_and_shrinks();
 	test_car_shadow_model_details_and_north_light();
 	test_car_shadow_model_size_and_cache_reset();

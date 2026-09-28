@@ -131,6 +131,8 @@ static legacy_u32 current_family;
 static legacy_s32 rendered_depth_valid;
 static legacy_u32 rendered_generation;
 static legacy_f64 model_scale = 1;
+static struct HIRES_DEPTH_PLANE ground_plane;
+static legacy_s32 ground_enabled;
 
 struct HIRES_COMMAND {
 	legacy_u32 index;
@@ -359,6 +361,7 @@ void shape3d_hires_set_model_scale(legacy_f64 scale)
 
 void shape3d_hires_reset(void)
 {
+	ground_enabled = 0;
 	car_shadow_count = 0;
 	shadow_model_pending = 0;
 	shadow_surface_count = 0;
@@ -661,7 +664,7 @@ static legacy_s32 polygon_covers_sample(const struct SHAPE3D_HIRES_POINT *points
 }
 
 static void paint_pixel(legacy_s32 x, legacy_s32 y, legacy_f64 inverse_z,
-						const struct HIRES_PAINT *paint)
+						const struct HIRES_PAINT *paint, const struct HIRES_DEPTH_PLANE *ground)
 {
 	struct HIRES_RASTER_CONTEXT *context = paint->context;
 	if (context != NULL && (y < context->top || y >= context->bottom)) {
@@ -677,7 +680,10 @@ static void paint_pixel(legacy_s32 x, legacy_s32 y, legacy_f64 inverse_z,
 			return;
 		}
 	}
-	if (context != NULL) {
+	if (ground != NULL && paint->depth_test) {
+		hires_coverage_pixel(context, x, y, inverse_z, paint->family, paint->depth_mode,
+							 (legacy_u8)color, ground);
+	} else if (context != NULL) {
 		if (!paint->depth_test ||
 			hires_raster_depth_test(context, x, y, inverse_z, paint->family, paint->depth_mode)) {
 			hires_raster_pixel(context, x, y, (legacy_u8)color);
@@ -759,7 +765,7 @@ static void paint_line_stroke(legacy_s32 x, legacy_s32 y, const struct SHAPE3D_H
 			/* Fractional coverage gives a round stroke that tapers with depth,
 			 * without rounding the entire primitive to an integer brush size. */
 			if (offset_x * offset_x + offset_y * offset_y < width * width * 0.25) {
-				paint_pixel(column, row, inverse_z, paint);
+				paint_pixel(column, row, inverse_z, paint, ground_enabled ? &ground_plane : NULL);
 			}
 		}
 	}
@@ -802,7 +808,7 @@ static void draw_line(const struct SHAPE3D_HIRES_POINT *first,
 	}
 	for (;;) {
 		/* Retain a continuous one-pixel spine for distant or edge-on details. */
-		paint_pixel(x, y, inverse_z, paint);
+		paint_pixel(x, y, inverse_z, paint, ground_enabled ? &ground_plane : NULL);
 		if (projected_width * nearest_depth > 1) {
 			paint_line_stroke(x, y, first, last, projected_width, inverse_length_squared, paint);
 		}
@@ -984,7 +990,7 @@ static void fill_polygon(const struct SHAPE3D_HIRES_POINT *points, legacy_u32 co
 								  paint->pattern, paint->mode, paint->depth_test);
 			} else {
 				for (legacy_s32 x = left; x < right; x++) {
-					paint_pixel(x, y, inverse_z, paint);
+					paint_pixel(x, y, inverse_z, paint, NULL);
 					inverse_z += depth_step;
 				}
 			}
@@ -1051,7 +1057,7 @@ static void draw_polygon_border(const struct SHAPE3D_HIRES_POINT *points, legacy
 				!polygon_covers_sample(points, count, x + 0.5, sample_y)) {
 				legacy_f64 inverse_z =
 					first->inverse_z + (last->inverse_z - first->inverse_z) * fraction;
-				paint_pixel(x, y, inverse_z, paint);
+				paint_pixel(x, y, inverse_z, paint, ground_enabled ? &ground_plane : NULL);
 			}
 		}
 	}
@@ -1569,6 +1575,34 @@ static legacy_f64 shadow_silhouette_sample(const struct SHADOW_SILHOUETTE *silho
 }
 
 static struct SHADOW_SILHOUETTE shadow_silhouettes[HIRES_CAR_SHADOW_COUNT];
+
+void shape3d_hires_ground_begin(const struct VECTOR *camera_position)
+{
+	ground_enabled = 0;
+	if (!hires_enabled() || camera_position->y <= 0 || projection_focal_length_x == 0 ||
+		projection_focal_length_y == 0) {
+		return;
+	}
+	/* Only the world-Y row of the inverse view is needed. Use the actual
+	 * fixed-point matrix rather than assuming its rounded rows are orthogonal. */
+	legacy_f64 a = mat_temp.m._11, b = mat_temp.m._12, c = mat_temp.m._13;
+	legacy_f64 d = mat_temp.m._21, e = mat_temp.m._22, f = mat_temp.m._23;
+	legacy_f64 g = mat_temp.m._31, h = mat_temp.m._32, i = mat_temp.m._33;
+	legacy_f64 determinant = a * (e * i - f * h) - b * (d * i - f * g) + c * (d * h - e * g);
+	if (determinant == 0) {
+		return;
+	}
+	legacy_f64 inverse_scale = -TRIG_FIXED_ONE / (determinant * camera_position->y);
+	legacy_f64 scale = hires_render_scale();
+	ground_plane.x_step = (f * g - d * i) * inverse_scale / (projection_focal_length_x * scale);
+	ground_plane.y_step = -(a * i - c * g) * inverse_scale / (projection_focal_length_y * scale);
+	ground_plane.origin = (c * d - a * f) * inverse_scale +
+						  (HIRES_SAMPLE_CENTER_OFFSET - (legacy_s16)projection_center_x * scale) *
+							  ground_plane.x_step +
+						  (HIRES_SAMPLE_CENTER_OFFSET - (legacy_s16)projection_center_y * scale) *
+							  ground_plane.y_step;
+	ground_enabled = 1;
+}
 
 void shape3d_hires_shadows_begin(const struct VECTOR *camera_position)
 {

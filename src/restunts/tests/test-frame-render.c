@@ -61,6 +61,12 @@ legacy_s16 shape3d_car_ground_offset(const struct SHAPE3D *shape)
 	return car_ground_offsets[shape == &game3dshapes[OPPONENT_CAR_WHEEL_SHAPE]];
 }
 
+void shape3d_hires_ground_begin(const struct VECTOR *camera_position)
+{
+	assert(shadow_projection_count == 1);
+	(void)camera_position;
+}
+
 void shape3d_hires_shadows_begin(const struct VECTOR *camera_position)
 {
 	assert(shadow_projection_count == 1);
