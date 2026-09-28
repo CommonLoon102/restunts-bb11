@@ -168,7 +168,9 @@ The enhancement is based on Alberto Marnetto's
 
 The Open Watcom 16-bit DOS build retains its 110-tile SuperSight mode, with
 up to 592 primitives in a 13 KiB rendering buffer and reduced distant detail
-or visibility when crowded scenes exceed that capacity.
+or visibility when crowded scenes exceed that capacity. F12 toggles it on and off
+and displays `SuperSight: On` or `SuperSight: Off` for two seconds, even when the
+FPS counter is hidden. This build has no SuperSight presets.
 
 In SDL3 builds (Windows, Linux, and 32-bit DOS), SuperSight starts 3D rendering
 at **1280x800**, four times the original width and height. Player and opponent
@@ -313,8 +315,10 @@ presented frames over approximately one second and rounds down, for example
 SDL3 SuperSight. The display shows FPS only; it does not show an omitted-object
 count. The temporary SuperSight preset message appears below it after F12 or
 Shift+F12, independently of F11. Automatic adaptation works whether F11 is on or off.
-In SDL3 builds, F11, F12, and Shift+F12 also work in both car-selection screens and during
-the nighttime driving intro without skipping the animation.
+F11 and F12 also work in both car-selection screens and during the nighttime
+driving intro without skipping the animation, including in 16-bit DOS. F12 also
+works in the track preview and opponent-selection menu, with the same two-second
+status display. SDL3 builds additionally support Shift+F12 in these locations.
 
 Both features start off and retain their selected state until toggled again or
 the game exits. They work in all driving and replay cameras, including opponent

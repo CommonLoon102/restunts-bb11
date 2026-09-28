@@ -10,8 +10,8 @@
 #include "externs.h"
 #include "fileio.h"
 #include "memmgr.h"
-#ifdef RESTUNTS_SDL3
 #include "keyboard.h"
+#ifdef RESTUNTS_SDL3
 #include "presentation.h"
 #endif
 
@@ -239,7 +239,6 @@ struct INTRO_SESSION {
 #endif
 };
 
-#ifdef RESTUNTS_SDL3
 static void intro_request_full_redraw(struct INTRO_SESSION *intro)
 {
 	/* Refresh both pages after display changes, including an otherwise idle frame. */
@@ -250,10 +249,11 @@ static void intro_request_full_redraw(struct INTRO_SESSION *intro)
 	intro->shape_rect = intro_redraw_cliprect;
 	intro->combined_rect = intro_redraw_cliprect;
 	intro->needs_render = 1;
+#ifdef RESTUNTS_SDL3
 	intro->view_valid = 0;
 	presentation_reset(&intro->presentation_clock, presentation_now());
-}
 #endif
+}
 
 static void intro_load_title(struct INTRO_SESSION *intro)
 {
@@ -521,7 +521,6 @@ static void intro_render_session(struct INTRO_SESSION *intro, const struct INTRO
 							active_point_count, &frame_layer_rects[intro->rect_index],
 							&intro->shape_rect, &intro->combined_rect);
 
-#ifdef RESTUNTS_SDL3
 	if (frame_display_overlay_active() != 0) {
 		struct RECTANGLE *fps_rect = frame_fps_draw_text();
 		if (slow_video_mgmt_copy != 0) {
@@ -530,10 +529,9 @@ static void intro_render_session(struct INTRO_SESSION *intro, const struct INTRO
 			rect_union(&intro->combined_rect, fps_rect, &intro->combined_rect);
 		}
 	}
-#endif
 	intro_present_session(intro);
-#ifdef RESTUNTS_SDL3
 	frame_fps_record_presented();
+#ifdef RESTUNTS_SDL3
 	sdl3_video_end_frame();
 #endif
 }
@@ -560,9 +558,9 @@ legacy_s8 setup_intro(void)
 	intro_load_title(&intro);
 	intro_create_stars(intro.stars);
 	intro_prepare_session(&intro);
-#ifdef RESTUNTS_SDL3
 	frame_fps_reset();
 	intro_request_full_redraw(&intro);
+#ifdef RESTUNTS_SDL3
 	legacy_u64 input_time = presentation_now();
 	legacy_s16 input_delta = 0;
 #endif
@@ -611,13 +609,15 @@ legacy_s8 setup_intro(void)
 #else
 		key = input_do_checking(delta);
 #endif
+		if (key == KEY_F11 || key == KEY_F12
 #ifdef RESTUNTS_SDL3
-		if (key == KEY_F11 || key == KEY_F12 || key == KEY_SHIFT_F12) {
+			|| key == KEY_SHIFT_F12
+#endif
+		) {
 			handle_ingame_kb_shortcuts(key);
 			intro_request_full_redraw(&intro);
 			key = 0;
 		}
-#endif
 		if (key != 0) {
 			interrupted = 1;
 			break;
@@ -628,8 +628,6 @@ legacy_s8 setup_intro(void)
 		}
 	}
 	intro_finish_session(&intro);
-#ifdef RESTUNTS_SDL3
 	frame_fps_reset();
-#endif
 	return interrupted;
 }
