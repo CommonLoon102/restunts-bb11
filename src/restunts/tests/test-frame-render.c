@@ -1460,7 +1460,21 @@ enum {
 	ADAPTIVE_TEST_H_FORWARD = 6,
 	ADAPTIVE_TEST_L_COLUMN = -3,
 	ADAPTIVE_TEST_POSITION_SCALE = TEST_LOOKUP_WORLD_TILE_SIZE / ADAPTIVE_TEST_WORLD_TILE_SIZE,
-	ADAPTIVE_TEST_WHEEL_CROSSING_OFFSET = 2,
+	ADAPTIVE_TEST_WHEEL_CROSSING_OFFSET = 2 * ADAPTIVE_TEST_POSITION_SCALE,
+	ADAPTIVE_TEST_CAR_HALF_WIDTH = 17 * ADAPTIVE_TEST_POSITION_SCALE,
+	ADAPTIVE_TEST_CAR_HALF_LENGTH = 29 * ADAPTIVE_TEST_POSITION_SCALE,
+	ADAPTIVE_TEST_EDGE_CAR_EAST = TRACK_GRID_LAST_COORDINATE - 1,
+	ADAPTIVE_TEST_EDGE_CAR_SOUTH = TRACK_GRID_SIZE * 2 / 3 - 1,
+	ADAPTIVE_TEST_EDGE_CAR_X = ADAPTIVE_TEST_EDGE_CAR_EAST * ADAPTIVE_TEST_WORLD_TILE_SIZE +
+							   ADAPTIVE_TEST_WORLD_TILE_SIZE * 2 / 3,
+	ADAPTIVE_TEST_EDGE_CAR_Z = (TRACK_GRID_LAST_COORDINATE - ADAPTIVE_TEST_EDGE_CAR_SOUTH) *
+								   ADAPTIVE_TEST_WORLD_TILE_SIZE +
+							   2 * ADAPTIVE_TEST_CAR_HALF_LENGTH / ADAPTIVE_TEST_POSITION_SCALE,
+	ADAPTIVE_TEST_EDGE_CAR_HEADING = ANGLE_HALF_TURN + ANGLE_EIGHTH_TURN / 2,
+	ADAPTIVE_TEST_EDGE_VIEW_HEADING = ANGLE_QUARTER_TURN - ANGLE_EIGHTH_TURN / 3,
+	ADAPTIVE_TEST_EDGE_CAMERA_X_OFFSET = ADAPTIVE_TEST_WORLD_TILE_SIZE * 7 / 16,
+	ADAPTIVE_TEST_EDGE_CAMERA_HEIGHT = ADAPTIVE_TEST_WORLD_TILE_SIZE / 4,
+	ADAPTIVE_TEST_EDGE_CAMERA_Z_OFFSET = ADAPTIVE_TEST_WORLD_TILE_SIZE / 8,
 	ADAPTIVE_TEST_PARTICLE_OWNER_DISTANCE = 8,
 	ADAPTIVE_TEST_PARTICLE_HEIGHT = 100,
 	ADAPTIVE_TEST_PARTICLE_GROUND_OFFSET = 7,
@@ -1862,6 +1876,84 @@ static void test_adaptive_model_fallbacks(void)
 	supersight_enabled = 0;
 }
 
+static void test_adaptive_world_tile_boundaries(void)
+{
+	const legacy_s32 minimum_position = -(legacy_s32)LEGACY_S32_MAX - 1;
+	const struct {
+		legacy_s32 position;
+		legacy_s16 offset;
+		legacy_s32 expected;
+	} cases[] = {{TEST_LOOKUP_WORLD_TILE_SIZE - 1, 1, 1},
+				 {TEST_LOOKUP_WORLD_TILE_SIZE, -1, 0},
+				 {-1, 1, 0},
+				 {0, -1, -1},
+				 {-TEST_LOOKUP_WORLD_TILE_SIZE, -1, -2},
+				 {-TEST_LOOKUP_WORLD_TILE_SIZE - 1, 1, -1},
+				 {TRACK_GRID_SIZE * TEST_LOOKUP_WORLD_TILE_SIZE, -1, TRACK_GRID_LAST_COORDINATE},
+				 {TRACK_GRID_SIZE * TEST_LOOKUP_WORLD_TILE_SIZE - 1, 1, TRACK_GRID_SIZE},
+				 {LEGACY_S32_MAX, 1, LEGACY_S32_MAX / TEST_LOOKUP_WORLD_TILE_SIZE + 1},
+				 {minimum_position, -1, minimum_position / TEST_LOOKUP_WORLD_TILE_SIZE - 1}};
+	for (legacy_u16 which = 0; which < sizeof(cases) / sizeof(cases[0]); which++) {
+		assert(frame_adaptive_world_tile(cases[which].position, cases[which].offset) ==
+			   cases[which].expected);
+	}
+}
+
+static void test_adaptive_car_submission_near_track_edge(void)
+{
+	/* A rotated car sits just in front of the helicopter camera near the east
+	 * edge. Its real wheel footprint occupies one tile; treating fixed-point
+	 * offsets as whole units moves every wheel outside the selected tiles. */
+	for (legacy_u16 quality = FRAME_ADAPTIVE_FULL_VIEW; quality <= FRAME_ADAPTIVE_SMALL_VIEW;
+		 quality++) {
+		adaptive_reset_scene();
+		memset(&simd_player, 0, sizeof(simd_player));
+		frame_adaptive.quality = quality;
+		frame_adaptive_active = quality != FRAME_ADAPTIVE_FULL_VIEW;
+		/* Omit unrelated border fences from this empty-track fixture. */
+		detail_level = FRAME_DETAIL_FASTEST;
+		cameramode = CAMERA_MODE_FOLLOW;
+		followOpponentFlag = 0;
+		state.playerstate.car_position.lx =
+			(legacy_s32)ADAPTIVE_TEST_EDGE_CAR_X * ADAPTIVE_TEST_POSITION_SCALE;
+		state.playerstate.car_position.lz =
+			(legacy_s32)ADAPTIVE_TEST_EDGE_CAR_Z * ADAPTIVE_TEST_POSITION_SCALE;
+		state.playerstate.car_rotate.x = ADAPTIVE_TEST_EDGE_CAR_HEADING;
+		for (legacy_s16 wheel = 0; wheel < FRAME_CAR_WHEEL_COUNT; wheel++) {
+			simd_player.wheel_coords[wheel].x =
+				wheel & 1 ? ADAPTIVE_TEST_CAR_HALF_WIDTH : -ADAPTIVE_TEST_CAR_HALF_WIDTH;
+			simd_player.wheel_coords[wheel].z =
+				wheel & 2 ? ADAPTIVE_TEST_CAR_HALF_LENGTH : -ADAPTIVE_TEST_CAR_HALF_LENGTH;
+		}
+		trkObjectList[FRAME_PLAYER_SORT_ID].ss_shapePtr = &game3dshapes[PLAYER_CAR_WHEEL_SHAPE];
+		trkObjectList[FRAME_PLAYER_SORT_ID].ss_loShapePtr = &game3dshapes[PLAYER_CAR_LOW_SHAPE];
+		struct FRAME_CAMERA camera = {0};
+		camera.position.x = ADAPTIVE_TEST_EDGE_CAR_X - ADAPTIVE_TEST_EDGE_CAMERA_X_OFFSET;
+		camera.position.y = ADAPTIVE_TEST_EDGE_CAMERA_HEIGHT;
+		camera.position.z = ADAPTIVE_TEST_EDGE_CAR_Z - ADAPTIVE_TEST_EDGE_CAMERA_Z_OFFSET;
+		camera.view_heading = ADAPTIVE_TEST_EDGE_VIEW_HEADING;
+		mat_temp = *mat_rot_zxy(0, 0, camera.view_heading, MATRIX_ROTATION_ORDER_YXZ);
+		struct FRAME_TILE_SELECTION tiles = {0};
+		tiles.detail_threshold = FRAME_TILE_DETAIL_FULL + 1;
+		struct FRAME_CAR_RENDER cars[GAME_CAR_COUNT] = {{0}};
+		struct GAMESTATE before = state;
+		frame_select_tiles(&tiles, &camera);
+		assert(frame_lookup_world_tile(&tiles, ADAPTIVE_TEST_EDGE_CAR_EAST,
+									   ADAPTIVE_TEST_EDGE_CAR_SOUTH) >= 0);
+		assert(frame_adaptive_car_flags(&state.playerstate, &simd_player) == FRAME_ADAPTIVE_FULL);
+		frame_place_cars(&tiles, cars);
+		assert(cars[PLAYER_CAR_INDEX].east == ADAPTIVE_TEST_EDGE_CAR_EAST);
+		assert(cars[PLAYER_CAR_INDEX].south == ADAPTIVE_TEST_EDGE_CAR_SOUTH);
+		assert(frame_draw_tiles(&tiles, &camera, cars, 0, 0) == 0);
+		assert(memcmp(&before, &state, sizeof(state)) == 0);
+		assert(adaptive_captured_count == 1);
+		assert(adaptive_captured[0].shapeptr == &game3dshapes[PLAYER_CAR_WHEEL_SHAPE]);
+	}
+	adaptive_capture_enabled = 0;
+	frame_adaptive_reset(&frame_adaptive);
+	frame_adaptive_active = shadow_frame_active = supersight_enabled = 0;
+}
+
 static void test_adaptive_car_footprint_and_fallback(void)
 {
 	adaptive_reset_scene();
@@ -1900,13 +1992,14 @@ static void test_adaptive_car_footprint_and_fallback(void)
 		}
 	}
 	/* The center is one world unit outside, but a two-unit wheel offset
-	 * crosses into H. Position longs have six fractional bits; wheel vectors
-	 * do not. A raw offset added to the fixed-point position misses this. */
+	 * crosses into H. Positions and wheel vectors both have six fractional bits. */
 	state.playerstate.car_position.lx += ADAPTIVE_TEST_POSITION_SCALE;
 	memset(frame_adaptive.tile_flags, FRAME_ADAPTIVE_HIDE, sizeof(frame_adaptive.tile_flags));
 	frame_adaptive
 		.tile_flags[ADAPTIVE_TEST_CAMERA_TILE * TRACK_GRID_SIZE + ADAPTIVE_TEST_CAMERA_TILE - 1] =
 		FRAME_ADAPTIVE_FULL;
+	simd_player.wheel_coords[0].x = -ADAPTIVE_TEST_POSITION_SCALE / 2;
+	assert(frame_adaptive_car_flags(&state.playerstate, &simd_player) == FRAME_ADAPTIVE_HIDE);
 	simd_player.wheel_coords[0].x = -ADAPTIVE_TEST_WHEEL_CROSSING_OFFSET;
 	assert(frame_adaptive_car_flags(&state.playerstate, &simd_player) == FRAME_ADAPTIVE_FULL);
 	frame_adaptive
@@ -1925,10 +2018,11 @@ static void test_adaptive_car_footprint_and_fallback(void)
 	assert(cars[PLAYER_CAR_INDEX].east == ADAPTIVE_TEST_CAMERA_TILE - 1);
 	assert(cars[PLAYER_CAR_INDEX].south == ADAPTIVE_TEST_CAMERA_TILE);
 	assert(memcmp(&before, &state, sizeof(state)) == 0);
-	/* Classic placement retains its historical fixed-point offset arithmetic. */
+	/* Adaptive and classic placement agree on the physical wheel footprint. */
 	frame_adaptive_active = 0;
 	frame_place_cars(&tiles, cars);
-	assert(cars[PLAYER_CAR_INDEX].east == -1);
+	assert(cars[PLAYER_CAR_INDEX].east == ADAPTIVE_TEST_CAMERA_TILE - 1);
+	assert(cars[PLAYER_CAR_INDEX].south == ADAPTIVE_TEST_CAMERA_TILE);
 	adaptive_capture_enabled = 0;
 	frame_adaptive_reset(&frame_adaptive);
 	frame_adaptive_active = shadow_frame_active = supersight_enabled = 0;
@@ -2073,6 +2167,8 @@ legacy_int main(void)
 	test_adaptive_selection_before_sort();
 	test_adaptive_multitile_boundary();
 	test_adaptive_model_fallbacks();
+	test_adaptive_world_tile_boundaries();
+	test_adaptive_car_submission_near_track_edge();
 	test_adaptive_car_footprint_and_fallback();
 	test_adaptive_detached_particles();
 #endif
