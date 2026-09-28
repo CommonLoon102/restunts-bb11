@@ -175,18 +175,15 @@ static legacy_u16 race_prepare_mode(void)
 {
 	if (idle_expired == 0) {
 		if (gameconfig.game_recordedframes != 0) {
-			cameramode = CAMERA_MODE_COCKPIT;
+			camera_select_mode(CAMERA_MODE_COCKPIT);
 			game_replay_mode = REPLAY_MODE_PLAYBACK;
 			is_in_replay = 1;
 		} else {
-			cameramode = CAMERA_MODE_COCKPIT;
+			camera_select_mode(CAMERA_MODE_COCKPIT);
 			game_replay_mode = REPLAY_MODE_PAUSED;
 		}
 	} else {
-		cameramode++;
-		if (cameramode == CAMERA_MODE_COUNT) {
-			cameramode = CAMERA_MODE_COCKPIT;
-		}
+		camera_select_mode((legacy_s8)(((legacy_u8)cameramode + 1U) & CAMERA_MODE_MASK));
 
 		game_replay_mode = REPLAY_MODE_PLAYBACK;
 		if (file_load_replay(0, "default") != 0) {
@@ -208,6 +205,9 @@ static void race_initialize_state(void)
 	frame_buffer_index = 0;
 	dashboard_buffer_index = 0;
 	recording_limit_warning_requested = 0;
+	if (idle_expired == 0) {
+		camera_select_mode(CAMERA_MODE_COCKPIT);
+	}
 	dashb_toggle = 0;
 
 	if (idle_expired != 0) {
@@ -217,7 +217,6 @@ static void race_initialize_state(void)
 	} else {
 		if (is_in_replay == 0) {
 			replay_filename[0] = 0;
-			cameramode = CAMERA_MODE_COCKPIT;
 			dashb_toggle = 1;
 			show_penalty_counter = 0;
 			init_game_state_with_frame_rate(configured_frame_rate);
@@ -242,7 +241,6 @@ static void race_initialize_state(void)
 				state.playerstate.car_position.ly, RACE_START_CAMERA_HEIGHT_OFFSET);
 			replay_recording_flags = REPLAY_RECORDING_ACTIVE_FLAG;
 		} else {
-			cameramode = CAMERA_MODE_COCKPIT;
 			game_replay_mode = REPLAY_MODE_PLAYBACK;
 			start_flag_animation = RACE_REPLAY_RESTORE_WAIT_TICKS;
 			framespersec = gameconfig.game_framespersec;

@@ -43,6 +43,27 @@
 #define MCGA_SCREEN_CENTER_Y 100
 #define MOUSE_SCREEN_INSET 15
 #define MOUSE_TRACK_POSITION_SCALE 4
+#define CUSTOM_CAMERA_CHASE_RIGHT_STEPS 3
+#define CUSTOM_CAMERA_CHASE_DOWN_STEPS 2
+#define CUSTOM_CAMERA_CHASE_ZOOM_IN_STEPS 2
+#define CUSTOM_CAMERA_CHASE_ZOOM_OUT_STEPS 3
+
+#define CUSTOM_CAMERA_CHASE_AZIMUTH                                                                \
+	(CUSTOM_CAMERA_INITIAL_AZIMUTH_ANGLE + CUSTOM_CAMERA_CHASE_RIGHT_STEPS * CAMERA_ANGLE_STEP)
+#define CUSTOM_CAMERA_CHASE_ELEVATION                                                              \
+	(CUSTOM_CAMERA_INITIAL_ELEVATION_ANGLE - CUSTOM_CAMERA_CHASE_DOWN_STEPS * CAMERA_ANGLE_STEP)
+
+enum CUSTOM_CAMERA_PRESET {
+	CUSTOM_CAMERA_PRESET_ORIGINAL,
+	CUSTOM_CAMERA_PRESET_CLOSE,
+	CUSTOM_CAMERA_PRESET_NORMAL,
+	CUSTOM_CAMERA_PRESET_FAR,
+	CUSTOM_CAMERA_PRESET_COUNT
+};
+
+static legacy_u8 custom_camera_preset = CUSTOM_CAMERA_PRESET_ORIGINAL;
+static struct CUSTOM_CAMERA custom_camera_original;
+static legacy_s8 custom_camera_original_dashboard;
 
 static const legacy_u8 far input_direction_table[INPUT_DIRECTION_COUNT] = {0, 1, 5, 0, 3, 2, 4, 3,
 																		   7, 8, 6, 7, 0, 1, 5, 0};
@@ -303,30 +324,71 @@ static legacy_s16 input_handle_display_shortcut(legacy_s16 key)
 	return 0;
 }
 
+static void input_restore_custom_camera(void)
+{
+	if (custom_camera_preset != CUSTOM_CAMERA_PRESET_ORIGINAL) {
+		custom_camera = custom_camera_original;
+		dashb_toggle = custom_camera_original_dashboard;
+		custom_camera_preset = CUSTOM_CAMERA_PRESET_ORIGINAL;
+	}
+}
+
+void camera_select_mode(legacy_s8 mode)
+{
+	if (mode != cameramode) {
+		input_restore_custom_camera();
+	}
+	cameramode = mode;
+}
+
+static void input_cycle_custom_camera(void)
+{
+	static const legacy_s16 distances[CUSTOM_CAMERA_PRESET_COUNT] = {
+		CUSTOM_CAMERA_INITIAL_DISTANCE,
+		CUSTOM_CAMERA_INITIAL_DISTANCE - CUSTOM_CAMERA_CHASE_ZOOM_IN_STEPS * CAMERA_ZOOM_STEP,
+		CUSTOM_CAMERA_INITIAL_DISTANCE,
+		CUSTOM_CAMERA_INITIAL_DISTANCE + CUSTOM_CAMERA_CHASE_ZOOM_OUT_STEPS * CAMERA_ZOOM_STEP};
+
+	if (cameramode != CAMERA_MODE_CUSTOM) {
+		camera_select_mode(CAMERA_MODE_CUSTOM);
+		return;
+	}
+	if (custom_camera_preset == CUSTOM_CAMERA_PRESET_FAR) {
+		input_restore_custom_camera();
+		return;
+	}
+	if (custom_camera_preset == CUSTOM_CAMERA_PRESET_ORIGINAL) {
+		custom_camera_original = custom_camera;
+		custom_camera_original_dashboard = dashb_toggle;
+	}
+	custom_camera_preset++;
+	custom_camera.distance = distances[custom_camera_preset];
+	custom_camera.elevation_angle = CUSTOM_CAMERA_CHASE_ELEVATION;
+	custom_camera.azimuth_angle = CUSTOM_CAMERA_CHASE_AZIMUTH;
+	dashb_toggle = 0;
+}
+
 static legacy_s16 input_handle_camera_shortcut(legacy_s16 key)
 {
 	switch (key) {
 		case 'C':
 		case 'c':
 			if (game_replay_mode != REPLAY_MODE_PAUSED) {
-				cameramode++;
-				if (cameramode == CAMERA_MODE_COUNT) {
-					cameramode = CAMERA_MODE_COCKPIT;
-				}
+				camera_select_mode((legacy_s8)(((legacy_u8)cameramode + 1U) & CAMERA_MODE_MASK));
 			}
 			return 1;
 
 		case KEY_F1:
-			cameramode = CAMERA_MODE_COCKPIT;
+			camera_select_mode(CAMERA_MODE_COCKPIT);
 			return 1;
 		case KEY_F2:
-			cameramode = CAMERA_MODE_FOLLOW;
+			camera_select_mode(CAMERA_MODE_FOLLOW);
 			return 1;
 		case KEY_F3:
-			cameramode = CAMERA_MODE_CUSTOM;
+			input_cycle_custom_camera();
 			return 1;
 		case KEY_F4:
-			cameramode = CAMERA_MODE_TRACKSIDE;
+			camera_select_mode(CAMERA_MODE_TRACKSIDE);
 			return 1;
 	}
 	return 0;

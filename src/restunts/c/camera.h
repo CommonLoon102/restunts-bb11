@@ -13,6 +13,12 @@ enum CAMERA_MODE {
 #define CAMERA_MODE_COUNT 4U
 #define CAMERA_MODE_MASK (CAMERA_MODE_COUNT - 1U)
 
+#define CUSTOM_CAMERA_INITIAL_DISTANCE 210
+#define CUSTOM_CAMERA_INITIAL_ELEVATION_ANGLE 80
+#define CUSTOM_CAMERA_INITIAL_AZIMUTH_ANGLE 464
+#define CAMERA_ZOOM_STEP 30
+#define CAMERA_ANGLE_STEP 16
+
 /* The free camera the player steers with the keypad in replay mode. */
 struct CUSTOM_CAMERA {
 	legacy_s16 distance;
@@ -24,5 +30,8 @@ extern legacy_s8 cameramode;
 extern legacy_s8 followOpponentFlag;
 extern legacy_s8 followOpponentFlag_copy;
 extern legacy_s16 camera_track_height_offset;
+
+/* Selecting another camera ends the F3 preset cycle and restores its original view. */
+void camera_select_mode(legacy_s8 mode);
 
 #endif

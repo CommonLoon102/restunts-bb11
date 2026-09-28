@@ -72,12 +72,12 @@ static void test_custom_camera_limits(void)
 	custom_camera.azimuth_angle = 32760;
 	legacy_u16 input = KEY_RIGHT;
 	assert(replay_adjust_custom_camera(&input) == 1);
-	assert(custom_camera.azimuth_angle == LEGACY_S16_WRAP_ADD(32760, REPLAY_CAMERA_ANGLE_STEP));
+	assert(custom_camera.azimuth_angle == LEGACY_S16_WRAP_ADD(32760, CAMERA_ANGLE_STEP));
 	input = KEY_LEFT;
 	assert(replay_adjust_custom_camera(&input) == 1);
 	assert(custom_camera.azimuth_angle == 32760);
 
-	custom_camera.elevation_angle = REPLAY_CUSTOM_CAMERA_ELEVATION_LIMIT - REPLAY_CAMERA_ANGLE_STEP;
+	custom_camera.elevation_angle = REPLAY_CUSTOM_CAMERA_ELEVATION_LIMIT - CAMERA_ANGLE_STEP;
 	input = KEY_UP;
 	assert(replay_adjust_custom_camera(&input) == 0);
 	assert(input == 0);
@@ -86,8 +86,7 @@ static void test_custom_camera_limits(void)
 	assert(replay_adjust_custom_camera(&input) == 1);
 	assert(custom_camera.elevation_angle == REPLAY_CUSTOM_CAMERA_ELEVATION_LIMIT - 1);
 
-	custom_camera.elevation_angle =
-		-REPLAY_CUSTOM_CAMERA_ELEVATION_LIMIT + REPLAY_CAMERA_ANGLE_STEP;
+	custom_camera.elevation_angle = -REPLAY_CUSTOM_CAMERA_ELEVATION_LIMIT + CAMERA_ANGLE_STEP;
 	input = KEY_DOWN;
 	assert(replay_adjust_custom_camera(&input) == 0);
 	assert(input == 0);

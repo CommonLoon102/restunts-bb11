@@ -32,6 +32,11 @@ legacy_s16 input_checking(legacy_s16 delta)
 	return input_polls == input_exit_poll ? KEY_F2 : 0;
 }
 
+void camera_select_mode(legacy_s8 mode)
+{
+	cameramode = mode;
+}
+
 legacy_s16 handle_ingame_kb_shortcuts(legacy_s16 key)
 {
 	assert(key == KEY_F2);
