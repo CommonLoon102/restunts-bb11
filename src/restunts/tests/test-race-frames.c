@@ -13,6 +13,28 @@ static legacy_u32 scenario, frames, keys;
 static legacy_u32 scripted_rewind;
 static legacy_u32 presented_frames;
 
+#define TEST_HOTKEY_QUEUE_CAPACITY 64U
+#define TEST_HOTKEY_IGNORED_COUNT 48U
+#define TEST_HOTKEY_CALLBACK 'p'
+#define TEST_HOTKEY_ARRIVAL_NS 1000000U
+#define TEST_HOTKEY_CATCHUP_FRAMES 4U
+#define TEST_HOTKEY_OPEN_REPLAY 1U
+
+static struct {
+	legacy_u8 active;
+	legacy_u16 read, count, actions, callbacks;
+	legacy_s16 queue[TEST_HOTKEY_QUEUE_CAPACITY];
+	legacy_s16 last_action;
+	legacy_u32 action_renders;
+#ifdef RESTUNTS_SDL3
+	legacy_u64 available_time, action_time;
+	legacy_u32 available_physics, action_physics;
+	legacy_u16 exit_request, exit_transitions;
+	legacy_u32 exit_physics, exit_renders, analog_updates;
+	legacy_u64 catchup_delay;
+#endif
+} hotkey_script;
+
 static struct {
 	legacy_u8 active;
 	legacy_u8 target;
@@ -268,6 +290,11 @@ static void trace_rect(const struct RECTANGLE *rect)
 /* Q-up polling and rewind-only dependencies must not alter the legacy trace. */
 legacy_s16 kb_get_key_state(legacy_s16 scan_code)
 {
+#ifdef RESTUNTS_SDL3
+	if (hotkey_script.catchup_delay != 0) {
+		sdl3_platform_pump();
+	}
+#endif
 	if (scan_code == RACE_CONTROL_SCAN_CODE) {
 		return 0;
 	}
@@ -300,6 +327,11 @@ legacy_u8 dos_joystick_is_enabled(void)
 }
 void replay_apply_analog_steering_history(void)
 {
+#ifdef RESTUNTS_SDL3
+	if (hotkey_script.active != 0) {
+		hotkey_script.analog_updates++;
+	}
+#endif
 	trace(2);
 }
 void update_gamestate(void)
@@ -307,6 +339,11 @@ void update_gamestate(void)
 #ifdef RESTUNTS_SDL3
 	if (scheduled_mode != 0) {
 		scheduled_physics++;
+		if (hotkey_script.catchup_delay != 0 && hotkey_script.actions == 0) {
+			/* Rendering never becomes ready when each update takes a full input interval. */
+			scheduled_time += hotkey_script.catchup_delay;
+			assert(scheduled_physics < TEST_HOTKEY_CATCHUP_FRAMES);
+		}
 		state.playerstate.car_position.lx += 60;
 	}
 #endif
@@ -421,6 +458,16 @@ void loop_game(legacy_s16 operation, legacy_s16 recorded, legacy_s16 current)
 	}
 #ifdef RESTUNTS_SDL3
 	if (scheduled_mode != 0) {
+		if (hotkey_script.active != 0 && hotkey_script.exit_request == TEST_HOTKEY_OPEN_REPLAY &&
+			operation == REPLAY_LOOP_SELECT_CONTROL) {
+			assert(recorded == REPLAY_CONTROL_PAUSE);
+			assert(game_replay_mode == REPLAY_MODE_PLAYBACK);
+			hotkey_script.exit_transitions++;
+			hotkey_script.exit_physics = scheduled_physics;
+			hotkey_script.exit_renders = frames;
+			/* End the fixture after observing the request to open replay controls. */
+			race_exit_request = REPLAY_EXIT_REQUESTED;
+		}
 		if (operation == REPLAY_LOOP_HANDLE_INPUT) {
 			keys++;
 		}
@@ -565,8 +612,41 @@ void audio_carstate(void)
 {
 	trace(29);
 }
+static legacy_s16 hotkey_script_pending(void)
+{
+	if (hotkey_script.active == 0 || hotkey_script.read == hotkey_script.count) {
+		return 0;
+	}
+#ifdef RESTUNTS_SDL3
+	if (scheduled_mode != 0 && (scheduled_time < hotkey_script.available_time ||
+								scheduled_physics < hotkey_script.available_physics)) {
+		return 0;
+	}
+#endif
+	return hotkey_script.queue[hotkey_script.read];
+}
+
+legacy_s16 kb_checking(void)
+{
+	/* Existing cadence and replay traces have no asynchronous keyboard arrivals. */
+	return hotkey_script_pending();
+}
+
 legacy_s16 dos_kb_get_char(void)
 {
+	if (hotkey_script.active != 0) {
+		keys++;
+		legacy_s16 key = hotkey_script_pending();
+		if (key != 0) {
+			hotkey_script.read++;
+			if (key == TEST_HOTKEY_CALLBACK) {
+				/* Registered callbacks consume their key before returning to the race. */
+				hotkey_script.callbacks++;
+				return 0;
+			}
+		}
+		return key;
+	}
 #ifdef RESTUNTS_SDL3
 	if (scheduled_mode != 0) {
 		keys++;
@@ -585,6 +665,25 @@ legacy_s16 dos_kb_get_char(void)
 }
 legacy_s16 handle_ingame_kb_shortcuts(legacy_s16 key)
 {
+	if (hotkey_script.active != 0) {
+		if (key != KEY_F11 && key != KEY_F12 && key != KEY_ESCAPE && key != 'd') {
+			return 0;
+		}
+		hotkey_script.actions++;
+		hotkey_script.last_action = key;
+		hotkey_script.action_renders = frames;
+#ifdef RESTUNTS_SDL3
+		hotkey_script.action_time = scheduled_time;
+		hotkey_script.action_physics = scheduled_physics;
+		if (hotkey_script.exit_request != 0) {
+			assert(key == KEY_ESCAPE);
+			/* Match Escape's exit event, or a callback requesting the main menu. */
+			state.game_end_event = CRASH_EVENT_EXIT;
+			race_exit_request = hotkey_script.exit_request;
+		}
+#endif
+		return 1;
+	}
 	trace(31);
 	trace(key);
 	return 0;
@@ -600,6 +699,40 @@ legacy_s16 get_kb_or_joy_flags(void)
 {
 	trace(33);
 	return scenario & 2 ? INPUT_ACTION_BUTTON_MASK : 0;
+}
+
+static void test_driving_hotkey_queue(void)
+{
+	static const legacy_s16 ignored[] = {KEY_HOME, KEY_END, KEY_SPACE, KEY_ENTER, 'a', 'z', 'q'};
+	static const legacy_s16 shortcuts[] = {KEY_F11, KEY_F12, KEY_ESCAPE, 'd', TEST_HOTKEY_CALLBACK};
+	game_replay_mode = REPLAY_MODE_LIVE;
+	for (legacy_u16 shortcut = 0; shortcut < sizeof(shortcuts) / sizeof(shortcuts[0]); shortcut++) {
+		memset(&hotkey_script, 0, sizeof(hotkey_script));
+		hotkey_script.active = 1;
+		for (legacy_u16 index = 0; index < TEST_HOTKEY_IGNORED_COUNT; index++) {
+			hotkey_script.queue[hotkey_script.count++] =
+				ignored[index % (sizeof(ignored) / sizeof(ignored[0]))];
+		}
+		hotkey_script.queue[hotkey_script.count++] = shortcuts[shortcut];
+		hotkey_script.queue[hotkey_script.count++] = KEY_F12;
+		race_handle_driving_input();
+		/* One poll passes every ignored driving control and reaches the command. */
+		assert(hotkey_script.read == TEST_HOTKEY_IGNORED_COUNT + 1U);
+		legacy_u16 callback = shortcuts[shortcut] == TEST_HOTKEY_CALLBACK;
+		assert(hotkey_script.callbacks == callback);
+		assert(hotkey_script.actions == 1U - callback);
+		if (callback == 0) {
+			assert(hotkey_script.last_action == shortcuts[shortcut]);
+		}
+		/* Keep the following command queued across actions and modal callbacks. */
+		assert(kb_checking() == KEY_F12);
+		race_handle_driving_input();
+		assert(hotkey_script.read == hotkey_script.count);
+		assert(hotkey_script.actions == 2U - callback);
+		assert(hotkey_script.last_action == KEY_F12);
+		assert(kb_checking() == 0);
+	}
+	memset(&hotkey_script, 0, sizeof(hotkey_script));
 }
 
 static void test_replay_dashboard_rendering(void)
@@ -790,6 +923,87 @@ static void prepare_presentation_test(legacy_u16 rate, legacy_u16 mode)
 	full_redraw_frames_remaining = 1;
 	height_above_replaybar = 200;
 	viewport_bottom_cache = -1;
+}
+
+enum TEST_HOTKEY_TIMING {
+	TEST_HOTKEY_BETWEEN_SAMPLES,
+	TEST_HOTKEY_DURING_CATCHUP,
+	TEST_HOTKEY_DURING_STALL,
+	TEST_HOTKEY_TIMING_COUNT
+};
+
+static void test_hotkeys_during_frame_waits(void)
+{
+	static const legacy_u16 rates[] = {GAME_FRAME_RATE_LOW, GAME_FRAME_RATE_NORMAL};
+	for (legacy_u16 rate_index = 0; rate_index < sizeof(rates) / sizeof(rates[0]); rate_index++) {
+		for (legacy_u16 mode = 0; mode < 2; mode++) {
+			for (legacy_u16 timing = TEST_HOTKEY_BETWEEN_SAMPLES; timing < TEST_HOTKEY_TIMING_COUNT;
+				 timing++) {
+				struct RACE_VIEWPORT_CACHE cache = {-1, -1, 0};
+				legacy_u16 rate = rates[rate_index];
+				prepare_presentation_test(rate, mode);
+				memset(&hotkey_script, 0, sizeof(hotkey_script));
+				hotkey_script.active = 1;
+				hotkey_script.queue[hotkey_script.count++] = KEY_F11;
+				if (timing != TEST_HOTKEY_BETWEEN_SAMPLES) {
+					/* A key arrives during catch-up, with three physics updates outstanding. */
+					scheduled_time = TEST_HOTKEY_CATCHUP_FRAMES * PRESENTATION_SECOND_NS / rate;
+					elapsed_time2 = TEST_HOTKEY_CATCHUP_FRAMES;
+					hotkey_script.available_physics = 1;
+					if (timing == TEST_HOTKEY_DURING_STALL) {
+						hotkey_script.catchup_delay = PRESENTATION_SECOND_NS / rate;
+					}
+				} else {
+					/* A key arrives just after presentation, before the next input sample. */
+					hotkey_script.available_time = TEST_HOTKEY_ARRIVAL_NS;
+				}
+				legacy_u64 expected_time =
+					scheduled_time + hotkey_script.available_time + hotkey_script.catchup_delay;
+				race_run_frames(&cache);
+				assert(hotkey_script.actions == 1 && hotkey_script.last_action == KEY_F11);
+				assert(hotkey_script.action_time == expected_time);
+				assert(hotkey_script.action_physics ==
+					   (timing != TEST_HOTKEY_BETWEEN_SAMPLES ? 1U : 0U));
+				assert(hotkey_script.action_renders ==
+					   (timing != TEST_HOTKEY_BETWEEN_SAMPLES ? 0U : 1U));
+				/* Polling commands does not change the authoritative simulation schedule. */
+				assert(scheduled_physics == rate && (legacy_u16)state.game_frame == rate);
+				memset(&hotkey_script, 0, sizeof(hotkey_script));
+			}
+		}
+	}
+}
+
+static void test_hotkey_exit_during_catchup(void)
+{
+	for (legacy_u16 request = TEST_HOTKEY_OPEN_REPLAY; request <= REPLAY_EXIT_REQUESTED;
+		 request++) {
+		struct RACE_VIEWPORT_CACHE cache = {-1, -1, 0};
+		prepare_presentation_test(GAME_FRAME_RATE_NORMAL, 1);
+		scheduled_time = TEST_HOTKEY_CATCHUP_FRAMES * PRESENTATION_SECOND_NS / framespersec;
+		elapsed_time2 = TEST_HOTKEY_CATCHUP_FRAMES;
+		memset(&hotkey_script, 0, sizeof(hotkey_script));
+		hotkey_script.active = 1;
+		hotkey_script.queue[hotkey_script.count++] = KEY_ESCAPE;
+		hotkey_script.available_physics = 1;
+		hotkey_script.exit_request = request;
+		mouse_driving_enabled = 1;
+		race_run_frames(&cache);
+		assert(hotkey_script.actions == 1 && hotkey_script.action_physics == 1);
+		assert(hotkey_script.action_renders == 0);
+		/* Queued live samples must retain their analog steering before replay opens. */
+		assert(hotkey_script.analog_updates == TEST_HOTKEY_CATCHUP_FRAMES);
+		assert(scheduled_physics == TEST_HOTKEY_CATCHUP_FRAMES);
+		if (request == REPLAY_EXIT_REQUESTED) {
+			assert(hotkey_script.exit_transitions == 0);
+			assert(frames == 1);
+		} else {
+			assert(hotkey_script.exit_transitions == 1);
+			assert(hotkey_script.exit_physics == TEST_HOTKEY_CATCHUP_FRAMES);
+			assert(hotkey_script.exit_renders == 1);
+		}
+		memset(&hotkey_script, 0, sizeof(hotkey_script));
+	}
 }
 
 static void assert_presentation_timestamps(legacy_u16 samples_per_second,
@@ -1198,10 +1412,13 @@ int main(void)
 #else
 	assert(trace_hash == UINT32_C(0xe6335ceb));
 #endif
+	test_driving_hotkey_queue();
 	test_rewind_frame_loop();
 	test_replay_dashboard_rendering();
 #ifdef RESTUNTS_SDL3
 	test_render_scale_transitions();
+	test_hotkeys_during_frame_waits();
+	test_hotkey_exit_during_catchup();
 	test_presentation_rate();
 	test_replay_presentation_rate();
 	test_interpolation_slot_boundaries();
