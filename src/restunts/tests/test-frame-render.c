@@ -1478,6 +1478,180 @@ static void adaptive_reset_capture(void)
 	adaptive_capture_enabled = 1;
 }
 
+enum {
+	WATER_TEST_TILE = TRACK_GRID_SIZE / 2,
+	WATER_TEST_OBJECT = 1,
+	WATER_TEST_SHAPE_BASE = 16,
+	WATER_TEST_CAMERA_HEIGHT = 250,
+	WATER_TEST_NORTHWEST = 1U << FRAME_CORNER_NORTHWEST,
+	WATER_TEST_NORTHEAST = 1U << FRAME_CORNER_NORTHEAST,
+	WATER_TEST_SOUTHWEST = 1U << FRAME_CORNER_SOUTHWEST,
+	WATER_TEST_SOUTHEAST = 1U << FRAME_CORNER_SOUTHEAST,
+	WATER_TEST_ALL_CELLS = (1U << FRAME_ELEVATED_CORNER_COUNT) - 1U,
+	WATER_TEST_MASK_COUNT = WATER_TEST_ALL_CELLS + 1U
+};
+
+static void water_reset_scene(struct FRAME_TILE *tile, legacy_s16 footprint, legacy_u16 wet_cells,
+							  legacy_u8 terrain, legacy_u8 raised)
+{
+	configure_track();
+	adaptive_reset_capture();
+	frame_adaptive_active = 0;
+	memset(tile, 0, sizeof(*tile));
+	tile->east = tile->south = WATER_TEST_TILE;
+	tile->element = WATER_TEST_OBJECT;
+	tile->detail = FRAME_TILE_DETAIL_FULL;
+	trkObjectList[WATER_TEST_OBJECT].ss_multiTileFlag = footprint;
+	for (legacy_u16 corner = 0; corner < FRAME_ELEVATED_CORNER_COUNT; corner++) {
+		legacy_s16 east = tile->east + (corner & 1U);
+		legacy_s16 south = tile->south + (corner >> 1U);
+		terrain_map[terrainrows[south] + east] = (wet_cells & (1U << corner)) != 0 ? terrain : 0;
+	}
+	if (raised != 0) {
+		terrain_map[terrainrows[tile->south] + tile->east] = TERRAIN_RAISED_TILE;
+	}
+	tile->terrain = terrain_map[terrainrows[tile->south] + tile->east];
+	for (legacy_u8 water = FRAME_WATER_TERRAIN_FIRST; water <= FRAME_WATER_TERRAIN_LAST; water++) {
+		terrain_scene_objects[water].ss_shapePtr = &game3dshapes[WATER_TEST_SHAPE_BASE + water];
+		terrain_scene_objects[water].ss_loShapePtr = terrain_scene_objects[water].ss_shapePtr;
+		terrain_scene_objects[water].ss_rotY = water * ANGLE_QUARTER_TURN;
+	}
+}
+
+static void water_assert_shapes(const struct FRAME_TILE *tile, const struct FRAME_CAMERA *camera,
+								legacy_u16 expected_cells)
+{
+	legacy_u16 seen = 0;
+	for (legacy_s16 index = 0; index < adaptive_captured_count; index++) {
+		const struct TRANSFORMEDSHAPE3D *shape = &adaptive_captured[index];
+		legacy_u16 cell = 0;
+		for (legacy_u16 corner = 0; corner < FRAME_ELEVATED_CORNER_COUNT; corner++) {
+			legacy_s16 east = tile->east + (corner & 1U);
+			legacy_s16 south = tile->south + (corner >> 1U);
+			if (east >= TRACK_GRID_SIZE || south >= TRACK_GRID_SIZE ||
+				shape->pos.x !=
+					LEGACY_S16_WRAP_SUB(track_column_centers[east], camera->position.x) ||
+				shape->pos.z != LEGACY_S16_WRAP_SUB(track_row_centers[south], camera->position.z)) {
+				continue;
+			}
+			legacy_u8 terrain = terrain_map[terrainrows[south] + east];
+			assert(shape->shapeptr == &game3dshapes[WATER_TEST_SHAPE_BASE + terrain]);
+			assert(shape->rotvec.z == terrain_scene_objects[terrain].ss_rotY);
+			cell = 1U << corner;
+		}
+		assert(cell != 0 && (expected_cells & cell) != 0 && (seen & cell) == 0);
+		seen |= cell;
+		assert(shape->pos.y == -camera->position.y);
+		assert(shape->rotvec.x == 0 && shape->rotvec.y == 0);
+		assert(shape->ts_flags ==
+			   (FRAME_TRANSFORM_FLAGS_CLIPPED | FRAME_TRANSFORM_FLAGS_NO_DEPTH_SORT));
+		assert(shape->material == 0);
+	}
+	assert(seen == expected_cells);
+}
+
+static void test_supersight_covered_water(void)
+{
+	static const struct {
+		legacy_s16 footprint;
+		legacy_u16 cells;
+	} footprints[] = {{FRAME_MULTITILE_NONE, WATER_TEST_NORTHWEST},
+					  {FRAME_MULTITILE_ROW, WATER_TEST_NORTHWEST | WATER_TEST_SOUTHWEST},
+					  {FRAME_MULTITILE_COLUMN, WATER_TEST_NORTHWEST | WATER_TEST_NORTHEAST},
+					  {FRAME_MULTITILE_BOTH, WATER_TEST_ALL_CELLS}};
+	struct FRAME_CAMERA camera = {0};
+	camera.position.y = WATER_TEST_CAMERA_HEIGHT;
+	struct FRAME_TILE tile;
+	/* Every wet/dry arrangement checks independent terrain under the footprint,
+	 * including a dry or raised owner. The classic path keeps only its owner. */
+	for (legacy_u16 footprint = 0; footprint < sizeof(footprints) / sizeof(footprints[0]);
+		 footprint++) {
+		for (legacy_u8 water = FRAME_WATER_TERRAIN_FIRST; water <= FRAME_WATER_TERRAIN_LAST;
+			 water++) {
+			for (legacy_u16 wet_cells = 0; wet_cells < WATER_TEST_MASK_COUNT; wet_cells++) {
+				for (legacy_u8 raised = 0; raised <= 1; raised++) {
+					for (supersight_enabled = 0; supersight_enabled <= 1; supersight_enabled++) {
+						water_reset_scene(&tile, footprints[footprint].footprint, wet_cells, water,
+										  raised);
+						legacy_u16 expected =
+							wet_cells & (supersight_enabled != 0 ? footprints[footprint].cells
+																 : WATER_TEST_NORTHWEST);
+						if (raised != 0) {
+							expected &= ~WATER_TEST_NORTHWEST;
+						}
+						assert(frame_draw_terrain(&tile, &camera, FRAME_TRANSFORM_FLAGS_CLIPPED) ==
+							   0);
+						water_assert_shapes(&tile, &camera, expected);
+						assert(tile.height ==
+							   (raised != 0 ? hillHeightConsts[TERRAIN_RAISED_HEIGHT_INDEX] : 0));
+					}
+				}
+			}
+		}
+	}
+	supersight_enabled = 1;
+	/* Shoreline models and rotations must come from each cell, not the owner. */
+	water_reset_scene(&tile, FRAME_MULTITILE_BOTH, WATER_TEST_ALL_CELLS, FRAME_WATER_TERRAIN_FIRST,
+					  0);
+	for (legacy_u16 corner = 0; corner < FRAME_ELEVATED_CORNER_COUNT; corner++) {
+		terrain_map[terrainrows[tile.south + (corner >> 1U)] + tile.east + (corner & 1U)] =
+			FRAME_WATER_TERRAIN_FIRST + corner;
+	}
+	assert(frame_draw_terrain(&tile, &camera, FRAME_TRANSFORM_FLAGS_CLIPPED) == 0);
+	water_assert_shapes(&tile, &camera, WATER_TEST_ALL_CELLS);
+	/* A visible object keeps water across its footprint even across an adaptive
+	 * mask boundary. Elevated corners already own their complete terrain pass. */
+	for (legacy_u8 special = 0; special <= 1; special++) {
+		water_reset_scene(&tile, FRAME_MULTITILE_BOTH, WATER_TEST_ALL_CELLS,
+						  FRAME_WATER_TERRAIN_FIRST, 0);
+		if (special != 0) {
+			tile.element = FRAME_ELEVATED_CORNER_FIRST;
+			trkObjectList[tile.element].ss_multiTileFlag = FRAME_MULTITILE_BOTH;
+		} else {
+			frame_adaptive_active = 1;
+			memset(frame_adaptive.tile_flags, FRAME_ADAPTIVE_HIDE,
+				   sizeof(frame_adaptive.tile_flags));
+		}
+		assert(frame_draw_terrain(&tile, &camera, FRAME_TRANSFORM_FLAGS_CLIPPED) == 0);
+		water_assert_shapes(&tile, &camera, WATER_TEST_ALL_CELLS);
+	}
+	/* Raised land and hillside terrain are not water. */
+	for (legacy_u8 terrain = TERRAIN_RAISED_TILE; terrain < FRAME_HILL_ROAD_TERRAIN_END;
+		 terrain++) {
+		water_reset_scene(&tile, FRAME_MULTITILE_BOTH, WATER_TEST_ALL_CELLS,
+						  FRAME_WATER_TERRAIN_FIRST, 0);
+		for (legacy_u16 corner = FRAME_CORNER_NORTHEAST; corner < FRAME_ELEVATED_CORNER_COUNT;
+			 corner++) {
+			terrain_map[terrainrows[tile.south + (corner >> 1U)] + tile.east + (corner & 1U)] =
+				terrain;
+		}
+		assert(frame_draw_terrain(&tile, &camera, FRAME_TRANSFORM_FLAGS_CLIPPED) == 0);
+		water_assert_shapes(&tile, &camera, WATER_TEST_NORTHWEST);
+	}
+	/* Track-edge continuations cannot read beyond the terrain map. */
+	water_reset_scene(&tile, FRAME_MULTITILE_BOTH, WATER_TEST_ALL_CELLS, FRAME_WATER_TERRAIN_FIRST,
+					  0);
+	tile.east = tile.south = TRACK_GRID_LAST_COORDINATE;
+	terrain_map[terrainrows[tile.south] + tile.east] = tile.terrain;
+	assert(frame_draw_terrain(&tile, &camera, FRAME_TRANSFORM_FLAGS_CLIPPED) == 0);
+	water_assert_shapes(&tile, &camera, WATER_TEST_NORTHWEST);
+	/* All terrain submissions propagate queue exhaustion; a culled shape does
+	 * not prevent the remaining covered water from being queued. */
+	for (legacy_s16 stop = 1; stop <= FRAME_ELEVATED_CORNER_COUNT; stop++) {
+		water_reset_scene(&tile, FRAME_MULTITILE_BOTH, WATER_TEST_ALL_CELLS,
+						  FRAME_WATER_TERRAIN_FIRST, 0);
+		transform_stop_at = stop;
+		assert(frame_draw_terrain(&tile, &camera, FRAME_TRANSFORM_FLAGS_CLIPPED) == 1);
+		assert(transform_count == stop);
+	}
+	water_reset_scene(&tile, FRAME_MULTITILE_BOTH, WATER_TEST_ALL_CELLS, FRAME_WATER_TERRAIN_FIRST,
+					  0);
+	rejected_shape = 1;
+	assert(frame_draw_terrain(&tile, &camera, FRAME_TRANSFORM_FLAGS_CLIPPED) == 0);
+	water_assert_shapes(&tile, &camera, WATER_TEST_ALL_CELLS);
+	adaptive_capture_enabled = frame_adaptive_active = supersight_enabled = 0;
+}
+
 static void adaptive_reset_scene(void)
 {
 	configure_track();
@@ -1895,6 +2069,7 @@ legacy_int main(void)
 	test_supersight_car_shadows();
 	test_supersight_grounding_surfaces();
 	test_supersight_grounding_poses();
+	test_supersight_covered_water();
 	test_adaptive_selection_before_sort();
 	test_adaptive_multitile_boundary();
 	test_adaptive_model_fallbacks();

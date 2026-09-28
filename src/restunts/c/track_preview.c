@@ -1,4 +1,5 @@
 #include "frame_internal.h"
+#include "game_input.h"
 #include "trackdata_layout.h"
 #include "shape2d.h"
 #include "shape3d.h"
@@ -15,6 +16,8 @@
 #define TRACK_PREVIEW_TRANSFORM_DISTANCE 1024
 #define TRACK_PREVIEW_GRID_SIZE 30U
 #define TRACK_PREVIEW_PLACEHOLDER_MINIMUM 253U
+#define TRACK_PREVIEW_WATER_TERRAIN_FIRST 1U
+#define TRACK_PREVIEW_WATER_TERRAIN_LAST 5U
 #define TRACK_PREVIEW_HILL_ROAD_TERRAIN_FIRST 7U
 #define TRACK_PREVIEW_HILL_ROAD_TERRAIN_END 11U
 #define TRACK_PREVIEW_BRIDGE_FIRST 105U
@@ -113,6 +116,43 @@ static void track_preview_draw_bridge_terrain(legacy_u8 column, legacy_u8 row,
 	}
 }
 
+/* Queue covered water with its owner so later continuation cells cannot paint
+ * over the road after the owner's primitives have been flushed. */
+static void track_preview_draw_covered_water(legacy_u8 track, legacy_u8 terrain, legacy_u8 column,
+											 legacy_u8 row, const struct VECTOR *camera,
+											 struct TRANSFORMEDSHAPE3D *transformed)
+{
+	if (track == 0 || (track >= TRACK_PREVIEW_BRIDGE_FIRST && track <= TRACK_PREVIEW_BRIDGE_LAST &&
+					   terrain != TERRAIN_RAISED_TILE)) {
+		/* Elevated corners already draw every cell's terrain. */
+		return;
+	}
+	legacy_u8 footprint = trkObjectList[track].ss_multiTileFlag;
+	if (footprint < MULTI_TILE_ROW_EDGE_FLAG ||
+		footprint > (MULTI_TILE_ROW_EDGE_FLAG | MULTI_TILE_COLUMN_EDGE_FLAG)) {
+		return;
+	}
+	legacy_u8 last_column = column + ((footprint & MULTI_TILE_COLUMN_EDGE_FLAG) != 0);
+	legacy_u8 last_row = row + ((footprint & MULTI_TILE_ROW_EDGE_FLAG) != 0);
+	for (legacy_u8 adjacent_row = row;
+		 adjacent_row <= last_row && adjacent_row < TRACK_PREVIEW_GRID_SIZE; adjacent_row++) {
+		for (legacy_u8 adjacent_column = column;
+			 adjacent_column <= last_column && adjacent_column < TRACK_PREVIEW_GRID_SIZE;
+			 adjacent_column++) {
+			if (adjacent_column == column && adjacent_row == row) {
+				continue;
+			}
+			legacy_u8 covered_terrain =
+				track_terrain_map[LEGACY_U16_WRAP_ADD(terrainrows[adjacent_row], adjacent_column)];
+			if (covered_terrain >= TRACK_PREVIEW_WATER_TERRAIN_FIRST &&
+				covered_terrain <= TRACK_PREVIEW_WATER_TERRAIN_LAST) {
+				track_preview_draw_terrain(covered_terrain, adjacent_column, adjacent_row, 0,
+										   camera->x, camera->y, camera->z, 0, transformed);
+			}
+		}
+	}
+}
+
 static void track_preview_draw_hill_base(const struct TRACKOBJECT *track_object,
 										 const struct VECTOR *position,
 										 struct TRANSFORMEDSHAPE3D *transformed)
@@ -191,6 +231,10 @@ static void track_preview_draw_cell(legacy_u8 column, legacy_u8 row, const struc
 	if (track >= TRACK_PREVIEW_PLACEHOLDER_MINIMUM) {
 		track = 0;
 		terrain = 0;
+	}
+
+	if (supersight_enabled != 0) {
+		track_preview_draw_covered_water(track, terrain, column, row, camera, transformed);
 	}
 
 	legacy_s16 terrain_height = 0;
