@@ -573,12 +573,22 @@ static void test_startup_intro_option(void)
 
 static void test_startup_physics_options(void)
 {
-	legacy_s8 *arguments[] = {(legacy_s8 *)"game",	  (legacy_s8 *)"/nointro",
-							  (legacy_s8 *)"/PG:OFF", (legacy_s8 *)"/LC:OFF",
-							  (legacy_s8 *)"/pg:on",  (legacy_s8 *)"/lc:on"};
-	static const legacy_s16 counts[] = {2, 3, 4, 5, 6, 2};
-	static const legacy_u16 expected_speeds[] = {17757, 15573, 15573, 17757, 17757, 17757};
-	static const legacy_s16 expected_crossings[] = {100, 100, 0, 0, 100, 100};
+	legacy_s8 *arguments[] = {
+		(legacy_s8 *)"game",	(legacy_s8 *)"/nointro", (legacy_s8 *)"/PG:OFF",
+		(legacy_s8 *)"/LC:OFF", (legacy_s8 *)"/LCB:OFF", (legacy_s8 *)"/pg:on",
+		(legacy_s8 *)"/lc:on",	(legacy_s8 *)"lcb:on",	 (legacy_s8 *)"LCB:OFF"};
+	static const legacy_s16 counts[] = {2, 3, 4, 5, 6, 7, 8, 9, 2};
+	static const legacy_u16 expected_speeds[] = {17757, 15573, 15573, 15573, 17757,
+												 17757, 17757, 17757, 17757};
+	static const legacy_s16 expected_crossings[] = {100, 100, 0, 0, 0, 100, 100, 100, 100};
+	const legacy_s16 cornering_angle = -7;
+	const legacy_u8 cornering_shift = 2;
+	const legacy_s16 original_cornering_response = -2;
+	const legacy_s16 symmetric_cornering_response = -1;
+	const legacy_s16 expected_cornering_responses[] = {
+		original_cornering_response,  original_cornering_response,	original_cornering_response,
+		symmetric_cornering_response, symmetric_cornering_response, symmetric_cornering_response,
+		original_cornering_response,  symmetric_cornering_response, original_cornering_response};
 	for (legacy_u32 scenario = 0; scenario < sizeof(counts) / sizeof(counts[0]); scenario++) {
 		timer_calls = status_calls = 0;
 		audio_failure = 0;
@@ -614,6 +624,10 @@ static void test_startup_physics_options(void)
 		assert(result.x == expected_crossings[scenario]);
 		assert(result.y == expected_crossings[scenario] * 2);
 		assert(result.z == 0);
+
+		/* Cornering mode must stay independent of the power gear and collision options. */
+		assert(scale_cornering_angle(cornering_angle, cornering_shift) ==
+			   expected_cornering_responses[scenario]);
 	}
 }
 

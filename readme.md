@@ -389,8 +389,17 @@ also decay fully to zero in either direction, preventing a permanent steering
 bias after contact. Legacy mode retains the original negative-rounding behavior.
 Renderer clipping retains its original arithmetic.
 
+Run `restunts.exe lcb:off` to disable the original left corner bias: left turns
+gain a stronger steering response from signed rounding in wheel-heading and skid
+calculations. With the bias disabled, those angle calculations round symmetrically
+for both directions. Original behavior remains the default; `lcb:on` explicitly
+selects it. These switches are case-insensitive, accept an optional leading `/`,
+and the last one wins. They can be combined with `/pg:off`, `/lc:off`, `/nointro`,
+and other startup options. Collision recovery rounding remains controlled
+separately by `/lc:off`.
+
 The ported physics dump tool accepts the same switches after the replay name:
-`repldump.exe 0681 /pg:off /lc:off`. Replays do not store these options, so use
+`repldump.exe 0681 /pg:off /lc:off lcb:off`. Replays do not store these options, so use
 the same physics settings for recording and playback. Original assembly
 executables and the renderer dump tools retain their existing interfaces.
 

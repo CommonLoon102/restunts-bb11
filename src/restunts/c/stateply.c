@@ -13,6 +13,7 @@
 
 #define PLAYER_PHYSICS_WHEEL_COUNT 4
 #define PLAYER_PHYSICS_FRONT_WHEEL_COUNT 2
+#define PLAYER_PHYSICS_FRONT_WHEEL_HEADING_SHIFT 2U
 
 enum PLAYER_PHYSICS_WHEEL_INDEX {
 	PLAYER_PHYSICS_FRONT_WHEEL_FIRST = 0,
@@ -353,7 +354,8 @@ static legacy_s16 prepare_wheel_travel(struct CARSTATE *carstate,
 	}
 	legacy_s16 front_wheel_heading_offset =
 		carstate->car_sumSurfAllWheels != CAR_WHEEL_CONTACT_NONE
-			? LEGACY_S16_SAR2(carstate->car_front_wheel_response_angle)
+			? scale_cornering_angle(carstate->car_front_wheel_response_angle,
+									PLAYER_PHYSICS_FRONT_WHEEL_HEADING_SHIFT)
 			: 0;
 	motion->travel =
 		scale_speed_to_travel(carstate->car_actual_speed,

@@ -258,6 +258,95 @@ static void test_wrapped_grip_sweep(void)
 #endif
 }
 
+enum CORNERING_TEST_SETUP {
+	CORNERING_TEST_ANGLE = 67,
+	CORNERING_TEST_SPEED = 16000,
+	CORNERING_TEST_GRIP = 100,
+	CORNERING_TEST_MAX_ANGLE = 128,
+	CORNERING_TEST_WHEEL_COUNT = 4
+};
+
+static void configure_cornering_option(const legacy_s8 *option)
+{
+	legacy_s8 *argv[] = {(legacy_s8 *)"restunts", (legacy_s8 *)option};
+	configure_left_corner_bias(option != NULL ? 2 : 1, argv);
+}
+
+static void test_cornering_skid_bias(void)
+{
+	static const struct {
+		const legacy_s8 *option;
+		legacy_s16 left_response;
+		legacy_u16 left_speed;
+	} cases[] = {{NULL, -27, 15920},
+				 {(const legacy_s8 *)"lcb:off", -26, 15918},
+				 {(const legacy_s8 *)"/LCB:ON", -27, 15920}};
+	static const legacy_s16 expected_right_response = 26;
+	static const legacy_u16 expected_right_speed = 15918;
+	configure_collision_option(NULL);
+	for (legacy_u16 index = 0; index < sizeof(cases) / sizeof(cases[0]); index++) {
+		configure_cornering_option(cases[index].option);
+		reset_car();
+		simd.grip = CORNERING_TEST_GRIP;
+		car.car_actual_speed = CORNERING_TEST_SPEED;
+		car.car_rev_speed = CORNERING_TEST_SPEED;
+		car.car_steeringAngle = CORNERING_TEST_ANGLE;
+		update_grip(&car, &simd, GRIP_BEHAVIOR_PLAYER);
+		assert(car.car_slidingFlag == CAR_SLIDING_ACTIVE);
+		assert(car.car_front_wheel_response_angle == expected_right_response);
+		assert(car.car_actual_speed == expected_right_speed);
+		struct CARSTATE right = car;
+		reset_car();
+		simd.grip = CORNERING_TEST_GRIP;
+		car.car_actual_speed = CORNERING_TEST_SPEED;
+		car.car_rev_speed = CORNERING_TEST_SPEED;
+		car.car_steeringAngle = -CORNERING_TEST_ANGLE;
+		update_grip(&car, &simd, GRIP_BEHAVIOR_PLAYER);
+		assert(car.car_slidingFlag == CAR_SLIDING_ACTIVE);
+		assert(car.car_demandedGrip == right.car_demandedGrip);
+		assert(car.car_front_wheel_response_angle == cases[index].left_response);
+		assert(car.car_actual_speed == cases[index].left_speed);
+	}
+	configure_cornering_option(NULL);
+}
+
+static void test_corrected_cornering_symmetry(void)
+{
+	static const legacy_u16 speeds[] = {0, 256, 8000, CORNERING_TEST_SPEED, 32000, 64000};
+	static const legacy_s16 grips[] = {0, CORNERING_TEST_GRIP, 500};
+	configure_cornering_option((const legacy_s8 *)"lcb:off");
+	for (legacy_u16 speed = 0; speed < sizeof(speeds) / sizeof(speeds[0]); speed++) {
+		for (legacy_u16 grip = 0; grip < sizeof(grips) / sizeof(grips[0]); grip++) {
+			for (legacy_u16 surface = 0; surface <= SIMD_SURFACE_GRIP_COUNT; surface++) {
+				for (legacy_s16 angle = 0; angle <= CORNERING_TEST_MAX_ANGLE; angle++) {
+					reset_car();
+					simd.grip = grips[grip];
+					car.car_actual_speed = speeds[speed];
+					car.car_rev_speed = speeds[speed];
+					for (legacy_u16 wheel = 0; wheel < CORNERING_TEST_WHEEL_COUNT; wheel++) {
+						car.car_surfaceWhl[wheel] = (legacy_s8)surface;
+					}
+					car.car_steeringAngle = angle;
+					struct CARSTATE left = car;
+					left.car_steeringAngle = -angle;
+					update_grip(&car, &simd, GRIP_BEHAVIOR_PLAYER);
+					update_grip(&left, &simd, GRIP_BEHAVIOR_PLAYER);
+					assert(left.car_demandedGrip == car.car_demandedGrip);
+					assert(left.car_surfacegrip_sum == car.car_surfacegrip_sum);
+					assert(left.car_slidingFlag == car.car_slidingFlag);
+					assert(left.car_front_wheel_response_angle ==
+						   -car.car_front_wheel_response_angle);
+					assert(left.car_slide_yaw_delta == -car.car_slide_yaw_delta);
+					assert(left.car_velocity_heading_offset == -car.car_velocity_heading_offset);
+					assert(left.car_actual_speed == car.car_actual_speed);
+					assert(left.car_rev_speed == car.car_rev_speed);
+				}
+			}
+		}
+	}
+	configure_cornering_option(NULL);
+}
+
 int main(void)
 {
 	test_contact_and_grass();
@@ -265,5 +354,7 @@ int main(void)
 	test_wrapped_grip_sweep();
 	test_legacy_collision_recovery();
 	test_corrected_collision_recovery();
+	test_cornering_skid_bias();
+	test_corrected_cornering_symmetry();
 	return 0;
 }
