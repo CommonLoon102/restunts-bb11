@@ -18,8 +18,8 @@
 #include "menu_common.h"
 #include "externs.h"
 #include "keyboard.h"
-#ifdef RESTUNTS_SDL3
 #include "frame_internal.h"
+#ifdef RESTUNTS_SDL3
 #include "presentation.h"
 #include "shape3d_hires.h"
 #include "opponent_portrait.h"
@@ -329,8 +329,8 @@ static void car_menu_load_car(struct CAR_MENU_STATE *menu)
 	car_menu_draw_description(menu);
 
 	(void)timer_get_delta_alt();
-#ifdef RESTUNTS_SDL3
 	frame_fps_reset();
+#ifdef RESTUNTS_SDL3
 	menu->rotation_time = presentation_now();
 	presentation_reset(&menu->presentation_clock, menu->rotation_time);
 #endif
@@ -436,7 +436,6 @@ static void car_menu_render_preview(struct CAR_MENU_STATE *menu)
 																 car_preview_top_shape_id));
 		shape3d_render_queued_primitives();
 		sprite_select_render_window();
-#ifdef RESTUNTS_SDL3
 		if (frame_display_overlay_active() != 0) {
 			sprite_set_target_clip_bounds(0, CAR_MENU_SCREEN_WIDTH, 0, CAR_MENU_CAR_CLIP_BOTTOM);
 			struct RECTANGLE *fps_rect = frame_fps_draw_text();
@@ -444,7 +443,6 @@ static void car_menu_render_preview(struct CAR_MENU_STATE *menu)
 			rect_union(&menu->current_rect, fps_rect, &menu->current_rect);
 			rect_union(&menu->union_rect, fps_rect, &menu->union_rect);
 		}
-#endif
 		sprite_set_target_clip_bounds(menu->union_rect.left, menu->union_rect.right,
 									  menu->union_rect.top, menu->union_rect.bottom);
 		menu->previous_rect = menu->current_rect;
@@ -490,8 +488,8 @@ static void car_menu_render_preview(struct CAR_MENU_STATE *menu)
 			sprite_putimage(render_window_sprite->sprite_bitmapptr);
 		}
 		mouse_draw_transparent_check();
-#ifdef RESTUNTS_SDL3
 		frame_fps_record_presented();
+#ifdef RESTUNTS_SDL3
 		if (complete_frame != 0) {
 			sdl3_video_end_frame();
 		}
@@ -598,18 +596,21 @@ static legacy_s16 car_menu_activate_selection(struct CAR_MENU_STATE *menu)
 
 static legacy_s16 car_menu_handle_input(struct CAR_MENU_STATE *menu, legacy_u16 input)
 {
+	if (input == (legacy_u16)KEY_F11 || input == (legacy_u16)KEY_F12
 #ifdef RESTUNTS_SDL3
-	if (input == (legacy_u16)KEY_F11 || input == (legacy_u16)KEY_F12 ||
-		input == (legacy_u16)KEY_SHIFT_F12) {
+		|| input == (legacy_u16)KEY_SHIFT_F12
+#endif
+	) {
 		handle_ingame_kb_shortcuts(LEGACY_S16_FROM_BITS(input));
+#ifdef RESTUNTS_SDL3
 		if (input != (legacy_u16)KEY_F11 && menu->opponent_type != CAR_MENU_PLAYER_MODE) {
 			menu->portrait_dirty = 1;
 		}
 		presentation_reset(&menu->presentation_clock, presentation_now());
+#endif
 		menu->render_phase = CAR_RENDER_START_PHASE;
 		return 0;
 	}
-#endif
 	if (input == 0) {
 		return 0;
 	}
@@ -689,7 +690,5 @@ void run_car_menu(legacy_s8 *car_id, legacy_s8 *material, legacy_s8 *transmissio
 		}
 	}
 	car_menu_release(menu, car_id);
-#ifdef RESTUNTS_SDL3
 	frame_fps_reset();
-#endif
 }

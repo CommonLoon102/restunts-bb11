@@ -21,12 +21,10 @@
 #include "../c/menu_common.h"
 #include "../c/externs.h"
 #include "../c/keyboard.h"
-#ifdef RESTUNTS_SDL3
 #include "../c/frame_internal.h"
 #include "../c/shape3d_hires.h"
 #include "../c/opponent_portrait.h"
 #include "../c/shape2d_internal.h"
-#endif
 
 #undef printf
 
@@ -42,12 +40,12 @@ static const legacy_s8 *fixture_files[] = {(const legacy_s8 *)"CARVETT.RES",
 										   (const legacy_s8 *)"CARANSX.RES",
 										   (const legacy_s8 *)"CARCOUN.RES"};
 
-#ifdef RESTUNTS_SDL3
 #define SHOWROOM_TEST_MODEL_SCALE 20
 #define SHOWROOM_TEST_HALF_WIDTH 48
 #define SHOWROOM_TEST_HALF_LENGTH 103
 #define SHOWROOM_TEST_FIRST_GROUND_HEIGHT 37
 #define SHOWROOM_TEST_NEXT_GROUND_HEIGHT -61
+#define SHOWROOM_TEST_STATUS_EXPIRY_FRAME 18U
 
 enum SHOWROOM_TEST_SHADOW_STAGE {
 	SHOWROOM_TEST_SHADOW_IDLE,
@@ -168,6 +166,7 @@ static void assert_contains(const struct RECTANGLE *outer, const struct RECTANGL
 	assert(outer->top <= inner->top && outer->bottom >= inner->bottom);
 }
 
+#ifdef RESTUNTS_SDL3
 static void assert_shadow_floor_covered(void)
 {
 	struct RECTANGLE floor = carmenu_cliprect;
@@ -177,6 +176,8 @@ static void assert_shadow_floor_covered(void)
 	assert_contains(&display_clip, &floor);
 }
 
+#endif
+
 static void record_preview_copy(void)
 {
 	if (display_toggle_test == 0 || display_pending == 0) {
@@ -185,6 +186,7 @@ static void record_preview_copy(void)
 	assert(display_target == 0);
 	assert(display_fps_drawn == (frame_display_overlay_active() != 0));
 	assert(display_reset_count != 0);
+#ifdef RESTUNTS_SDL3
 	if (supersight_enabled != 0 || display_previous_shadow != 0) {
 		assert(display_shadow_restored != 0);
 		assert_shadow_floor_covered();
@@ -193,12 +195,14 @@ static void record_preview_copy(void)
 		}
 	}
 	display_previous_shadow = supersight_enabled;
+#endif
 	if (display_fps_drawn != 0) {
 		assert_contains(&display_clip, &display_fps_bounds);
 	}
 	if (display_previous_fps != 0) {
 		assert_contains(&display_clip, &display_previous_fps_bounds);
 	}
+#ifdef RESTUNTS_SDL3
 	if ((display_scenario & 4U) != 0) {
 		assert(display_portrait_mode == supersight_enabled);
 	}
@@ -206,6 +210,7 @@ static void record_preview_copy(void)
 		assert_contains(&display_clip, &display_portrait_bounds);
 		display_portrait_pending = 0;
 	}
+#endif
 	display_previous_fps = display_fps_drawn;
 	display_previous_fps_bounds = display_fps_bounds;
 	display_fps_drawn = display_pending = display_refresh_pending = 0;
@@ -287,6 +292,7 @@ legacy_s16 handle_ingame_kb_shortcuts(legacy_s16 key)
 			display_shift_shortcuts++;
 		} else {
 			supersight_enabled ^= 1U;
+			display_status_active = 1;
 		}
 		/* F12 discards all enhanced sprite surfaces in the real renderer. */
 		display_portrait_mode = 255;
@@ -295,7 +301,6 @@ legacy_s16 handle_ingame_kb_shortcuts(legacy_s16 key)
 	display_refresh_pending = display_toggle_test;
 	return 1;
 }
-#endif
 
 static void trace_word(legacy_u16 value)
 {
@@ -464,24 +469,27 @@ void init_game_state(legacy_s16 initialization_mode)
 
 legacy_s16 input_checking(legacy_s16 frame_delta)
 {
-#ifdef RESTUNTS_SDL3
 	assert(drawing_frame == 0);
-#endif
 	trace_word(1013);
 	trace_word((legacy_u16)frame_delta);
-#ifdef RESTUNTS_SDL3
 	if (display_toggle_test != 0) {
 		assert(display_refresh_pending == 0);
+		if (frame_index == SHOWROOM_TEST_STATUS_EXPIRY_FRAME) {
+			display_status_expire_pending = 1;
+			assert(frame_fps_expire_idle() != 0);
+		}
 		static const legacy_u16 keys[] = {
 			KEY_DOWN, KEY_DOWN, KEY_DOWN, KEY_F11, 0, KEY_F12, 0,
 			/* Change the model between F12 transitions to refresh its ground height. */
 			KEY_UP, KEY_UP, KEY_ENTER, KEY_DOWN, KEY_DOWN, KEY_F11, KEY_F11, 0, KEY_F12, KEY_F11,
 			KEY_ENTER, KEY_UP, KEY_UP, KEY_UP, KEY_ENTER};
 		assert(frame_index < sizeof(keys) / sizeof(keys[0]));
+#ifdef RESTUNTS_SDL3
 		/* The first enable has completed; cycle a lock while keeping it enabled. */
 		if (frame_index == 6 && (display_scenario & 8U) == 0) {
 			return KEY_SHIFT_F12;
 		}
+#endif
 		return keys[frame_index];
 	}
 	if (predictive_preview_test != 0) {
@@ -497,7 +505,6 @@ legacy_s16 input_checking(legacy_s16 frame_delta)
 		}
 		return preview_now >= 1000000000ULL ? KEY_ENTER : 0;
 	}
-#endif
 	static const legacy_u16 keys[] = {0,		 KEY_DOWN, KEY_ENTER, KEY_ENTER, KEY_DOWN,
 									  KEY_ENTER, KEY_DOWN, KEY_ENTER, KEY_DOWN,	 KEY_ENTER,
 									  KEY_UP,	 KEY_UP,   KEY_UP,	  KEY_UP,	 KEY_ENTER};
@@ -535,13 +542,11 @@ legacy_s16 menu_animate_button_highlight(legacy_s16 item_index, const struct BUT
 	trace_pointer(buttons);
 	trace_word((legacy_u16)second_color);
 	trace_word((legacy_u16)first_color);
-#ifdef RESTUNTS_SDL3
 	if (predictive_preview_test != 0) {
 		preview_now += 1000000ULL;
 		return preview_now % 10000000ULL == 0;
 	}
 	preview_now += 20000000ULL;
-#endif
 	return (legacy_s16)(1U + frame_index % 3U);
 }
 
@@ -581,7 +586,6 @@ legacy_s16 mouse_multi_hittest(legacy_s16 count, const struct BUTTON_AREA *butto
 {
 	trace_word(1022);
 	trace_word((legacy_u16)count);
-#ifdef RESTUNTS_SDL3
 	if (display_toggle_test != 0) {
 		frame_index++;
 		return -1;
@@ -590,7 +594,6 @@ legacy_s16 mouse_multi_hittest(legacy_s16 count, const struct BUTTON_AREA *butto
 		frame_index++;
 		return 0;
 	}
-#endif
 	trace_pointer(buttons);
 	for (legacy_u32 i = 0; i < (legacy_u32)count; i++) {
 		trace_word(buttons[i].x1);
@@ -622,7 +625,6 @@ legacy_s16 rect_intersect(struct RECTANGLE *r1, struct RECTANGLE *r2)
 	trace_word(1024);
 	trace_rect(r1);
 	trace_rect(r2);
-#ifdef RESTUNTS_SDL3
 	if (display_toggle_test != 0) {
 		if (r1->left < r2->left) {
 			r1->left = r2->left;
@@ -638,7 +640,6 @@ legacy_s16 rect_intersect(struct RECTANGLE *r1, struct RECTANGLE *r2)
 		}
 		return 1;
 	}
-#endif
 	r1->left = r2->left;
 	r1->right = r2->right;
 	r1->top = r2->top;
@@ -653,7 +654,6 @@ void rect_union(struct RECTANGLE *r1, struct RECTANGLE *r2, struct RECTANGLE *ou
 	trace_rect(r2);
 
 	*outrc = *r1;
-#ifdef RESTUNTS_SDL3
 	if (display_toggle_test != 0) {
 		if (r2->left < outrc->left) {
 			outrc->left = r2->left;
@@ -665,7 +665,6 @@ void rect_union(struct RECTANGLE *r1, struct RECTANGLE *r2, struct RECTANGLE *ou
 			outrc->top = r2->top;
 		}
 	}
-#endif
 	if (r2->bottom > outrc->bottom) {
 		outrc->bottom = r2->bottom;
 	}
@@ -680,12 +679,10 @@ legacy_u16 select_cliprect_rotate(legacy_s16 angZ, legacy_s16 angX, legacy_s16 a
 	trace_word((legacy_u16)angY);
 	trace_rect(cliprect);
 	trace_word((legacy_u16)half_scale);
-#ifdef RESTUNTS_SDL3
 	if (display_toggle_test != 0) {
 		display_model_scaled = display_shadow_restored = 0;
 		display_shadow_stage = SHOWROOM_TEST_SHADOW_IDLE;
 	}
-#endif
 	return 0;
 }
 
@@ -710,11 +707,9 @@ legacy_u16 shape2d_get_height(const struct SHAPE2D *shape)
 {
 	trace_word(1029);
 	trace_pointer(shape);
-#ifdef RESTUNTS_SDL3
 	if (display_toggle_test != 0 && shape == &fixture_shapes[1]) {
 		return 83;
 	}
-#endif
 	return 12;
 }
 
@@ -722,11 +717,9 @@ legacy_u16 shape2d_get_width(const struct SHAPE2D *shape)
 {
 	trace_word(1030);
 	trace_pointer(shape);
-#ifdef RESTUNTS_SDL3
 	if (display_toggle_test != 0 && shape == &fixture_shapes[1]) {
 		return 80;
 	}
-#endif
 	return 30;
 }
 
@@ -740,31 +733,29 @@ void shape3d_load_car_shapes(legacy_s8 *carid, legacy_s8 *opponent_carid)
 	trace_word(1032);
 	trace_text(carid);
 	trace_text(opponent_carid);
-#ifdef RESTUNTS_SDL3
 	if (display_toggle_test != 0) {
 		display_car_loads++;
 		display_load_present_count = 0;
 		display_ground_height = display_car_loads == 1 ? SHOWROOM_TEST_FIRST_GROUND_HEIGHT
 													   : SHOWROOM_TEST_NEXT_GROUND_HEIGHT;
 	}
-#endif
 }
 
 void shape3d_render_queued_primitives(void)
 {
-#ifdef RESTUNTS_SDL3
 	if (display_toggle_test != 0) {
 		assert(display_pending == 0);
+#ifdef RESTUNTS_SDL3
 		if (supersight_enabled != 0 || display_previous_shadow != 0) {
 			assert(display_shadow_restored != 0);
 		}
+#endif
 		display_shadow_frames[supersight_enabled != 0]++;
 		display_pending = 1;
 	}
 	if (predictive_preview_test != 0) {
 		preview_present_count++;
 	}
-#endif
 	trace_word(1033);
 }
 
@@ -789,11 +780,11 @@ legacy_u16 shape3d_transform_and_queue(struct TRANSFORMEDSHAPE3D *instance)
 			assert(display_shadow_stage == SHOWROOM_TEST_SHADOW_IDLE);
 		}
 	}
+#endif
 	if (predictive_preview_test != 0) {
 		assert(instance->rotvec.z >= preview_last_rotation);
 		preview_last_rotation = instance->rotvec.z;
 	}
-#endif
 	trace_word(1034);
 	trace_pointer(instance);
 	trace_word(instance->rotvec.z);
@@ -807,7 +798,6 @@ legacy_u16 shape3d_transform_and_queue(struct TRANSFORMEDSHAPE3D *instance)
 		instance->rectptr->right = 128;
 		instance->rectptr->top = 7;
 		instance->rectptr->bottom = 88;
-#ifdef RESTUNTS_SDL3
 		if (display_toggle_test != 0) {
 			/* Keep the car disjoint from the counter to expose missing FPS dirt. */
 			instance->rectptr->left = 100;
@@ -815,26 +805,21 @@ legacy_u16 shape3d_transform_and_queue(struct TRANSFORMEDSHAPE3D *instance)
 			instance->rectptr->top = 30;
 			instance->rectptr->bottom = 80;
 		}
-#endif
 	}
 	return 0;
 }
 
 legacy_s16 sprite_blit_to_video(struct SPRITE *sprite, legacy_s16 mode)
 {
-#ifdef RESTUNTS_SDL3
 	/* Dissolve phases must still be able to present through input polling. */
 	assert(drawing_frame == 0);
-#endif
 	trace_word(1035);
 	trace_pointer(sprite);
 	trace_word((legacy_u16)mode);
-#ifdef RESTUNTS_SDL3
 	if (display_toggle_test != 0) {
 		assert(sprite == render_window_sprite);
 		record_preview_copy();
 	}
-#endif
 	return 0;
 }
 
@@ -854,11 +839,9 @@ void sprite_clear_target(legacy_u8 color)
 
 void sprite_copy_image_at(struct SHAPE2D *shape, legacy_s16 x, legacy_s16 y)
 {
-#ifdef RESTUNTS_SDL3
 	if (display_toggle_test != 0 && display_target == 1 && x == 240 && y == 0) {
 		display_portrait_legacy_drawn = 1;
 	}
-#endif
 	trace_word(1038);
 	trace_pointer(shape);
 	trace_word((legacy_u16)x);
@@ -867,11 +850,9 @@ void sprite_copy_image_at(struct SHAPE2D *shape, legacy_s16 x, legacy_s16 y)
 
 void sprite_free_wnd(struct SPRITE *wndsprite)
 {
-#ifdef RESTUNTS_SDL3
 	if (display_toggle_test != 0) {
 		display_sprite_free_count++;
 	}
-#endif
 	trace_word(1039);
 	trace_pointer(wndsprite);
 }
@@ -889,13 +870,14 @@ struct SPRITE *sprite_make_wnd(legacy_u16 width, legacy_u16 height, legacy_u16 c
 
 void sprite_putimage(struct SHAPE2D *shape)
 {
-#ifdef RESTUNTS_SDL3
 	if (display_toggle_test != 0) {
 		if (display_target == 1) {
+#ifdef RESTUNTS_SDL3
 			if (supersight_enabled != 0 || display_previous_shadow != 0) {
 				assert_shadow_floor_covered();
 				display_shadow_restored = 1;
 			}
+#endif
 			if (display_load_present_count != 0 && (display_scenario & 4U) != 0) {
 				/* The showroom floor must stop before the opponent portrait. */
 				assert(display_clip.right <= display_portrait_bounds.left);
@@ -909,18 +891,15 @@ void sprite_putimage(struct SHAPE2D *shape)
 			record_preview_copy();
 		}
 	}
-#endif
 	trace_word(1041);
 	trace_pointer(shape);
 }
 
 void sprite_putimage_transparent(struct SHAPE2D *shape, legacy_s16 x, legacy_s16 y)
 {
-#ifdef RESTUNTS_SDL3
 	if (display_toggle_test != 0 && display_target == 1 && x == 240 && y == 0) {
 		display_portrait_legacy_drawn = 1;
 	}
-#endif
 	trace_word(1042);
 	trace_pointer(shape);
 	trace_word((legacy_u16)x);
@@ -937,45 +916,35 @@ void sprite_putpixel_clipped(legacy_s16 x, legacy_s16 y, legacy_s16 color)
 
 void sprite_select_mcga_backbuffer(void)
 {
-#ifdef RESTUNTS_SDL3
 	display_target = 2;
-#endif
 	trace_word(1044);
 }
 
 void sprite_select_render_window(void)
 {
-#ifdef RESTUNTS_SDL3
 	display_target = 1;
-#endif
 	trace_word(1045);
 }
 
 void sprite_select_render_window_and_clear(void)
 {
-#ifdef RESTUNTS_SDL3
 	display_target = 1;
-#endif
 	trace_word(1046);
 }
 
 void sprite_select_screen_compat(void)
 {
-#ifdef RESTUNTS_SDL3
 	display_target = 0;
-#endif
 	trace_word(1047);
 }
 
 void sprite_set_target_clip_bounds(legacy_u16 left, legacy_u16 right, legacy_u16 top,
 								   legacy_u16 bottom)
 {
-#ifdef RESTUNTS_SDL3
 	display_clip.left = left;
 	display_clip.right = right;
 	display_clip.top = top;
 	display_clip.bottom = bottom;
-#endif
 	trace_word(1048);
 	trace_word((legacy_u16)left);
 	trace_word((legacy_u16)right);
@@ -1012,11 +981,9 @@ void update_car_speed(legacy_s8 input, legacy_s16 car_index, struct CARSTATE *ca
 	trace_pointer(simd);
 	trace_word(carstate->car_transmission);
 	acceleration_step++;
-#ifdef RESTUNTS_SDL3
 	if (predictive_preview_test != 0) {
 		preview_physics_steps++;
 	}
-#endif
 	carstate->car_rev_speed =
 		(legacy_s16)((scenario % 3U == 0U ? acceleration_step % 64U : acceleration_step) * 256U);
 }
@@ -1027,21 +994,17 @@ static void run_car_case(legacy_u32 index)
 	legacy_s8 transmission = index % 2U;
 	scenario = index;
 	frame_index = 0;
-#ifdef RESTUNTS_SDL3
 	preview_now = preview_previous_input_time = 0;
-#endif
 	file_index = 0;
 	allocation_index = 0;
 	sprite_index = 0;
 	idle_expired = 0;
 	video_uses_page_flipping = index % 2U;
 	slow_video_mgmt = index % 3U == 0U;
-#ifdef RESTUNTS_SDL3
 	if (display_toggle_test != 0) {
 		video_uses_page_flipping = display_scenario & 1U;
 		slow_video_mgmt = (display_scenario >> 1) & 1U;
 	}
-#endif
 	framespersec = 10 + index % 3U;
 	miscptr = (legacy_s8 *)resource_bytes[63];
 	fontnptr = (legacy_s8 *)resource_bytes[62];
@@ -1053,18 +1016,14 @@ static void run_car_case(legacy_u32 index)
 	trace_word(index);
 	legacy_s8 car_id[5] = "COUN";
 	legacy_u16 opponent_type = index % 3U == 0U ? 2U : 0U;
-#ifdef RESTUNTS_SDL3
 	if (display_toggle_test != 0) {
 		opponent_type = (display_scenario & 4U) != 0 ? 2U : 0U;
 	}
-#endif
 	run_car_menu(car_id, &material, &transmission, opponent_type);
-#ifdef RESTUNTS_SDL3
 	if (display_toggle_test != 0) {
 		assert(_strcmp(car_id, (const legacy_s8 *)"VETT") == 0);
 		assert(material == 1 && transmission == 0);
 	}
-#endif
 	trace_text(car_id);
 	trace_word((legacy_u8)material);
 	trace_word((legacy_u8)transmission);
@@ -1073,7 +1032,6 @@ static void run_car_case(legacy_u32 index)
 	trace_word(waitflag);
 }
 
-#ifdef RESTUNTS_SDL3
 static void test_display_toggles(void)
 {
 	predictive_preview_test = 0;
@@ -1099,17 +1057,25 @@ static void test_display_toggles(void)
 		simd_player.collide_points[1].px = SHOWROOM_TEST_HALF_LENGTH;
 		committed_frames = 0;
 		run_car_case(1);
+#ifdef RESTUNTS_SDL3
 		assert(drawing_frame == 0 && committed_frames != 0);
+#endif
 		assert(frame_index == 22);
 		assert(supersight_enabled == initial_supersight && fps_display_enabled == initial_fps);
+#ifdef RESTUNTS_SDL3
 		assert(display_shift_shortcuts == (initial_supersight == 0));
+#else
+		assert(display_shift_shortcuts == 0);
+#endif
 		assert(display_shortcut_count == 6U + display_shift_shortcuts);
-		assert((display_status_draw_count != 0) == (initial_supersight == 0));
+		assert(display_status_draw_count != 0);
 		assert(display_reset_count == 7);
+		assert(display_status_expire_count == 1);
 		assert(display_fps_draw_count > 0 && display_fps_draw_count < display_present_count);
 		assert(display_present_count == display_record_count);
 		assert(display_pending == 0);
 		assert(display_shadow_frames[0] != 0 && display_shadow_frames[1] != 0);
+#ifdef RESTUNTS_SDL3
 		assert(display_shadow_models == display_shadow_frames[1]);
 		assert(display_shadow_erasures == 1);
 		assert(display_car_loads == 2 && display_ground_queries == display_car_loads);
@@ -1121,11 +1087,11 @@ static void test_display_toggles(void)
 			assert(display_portrait_draws == 0);
 		}
 		assert(display_portrait_pending == 0 && display_portrait_legacy_drawn == 0);
+#endif
 	}
 	display_toggle_test = 0;
-	puts("Car menu FPS, portrait and showroom shadow toggles passed (32 scenarios).");
+	puts("Car menu display toggles and overlay cleanup passed (32 scenarios).");
 }
-#endif
 
 int main(void)
 {
@@ -1160,8 +1126,8 @@ int main(void)
 			assert(preview_last_rotation == 98);
 		}
 	}
-	test_display_toggles();
 #endif
+	test_display_toggles();
 	puts("Car menu interaction snapshots passed (102 scenarios).");
 	return 0;
 }

@@ -28,10 +28,11 @@ struct CARSTATE *ghost_car_state(void)
 static legacy_u32 trace_hash, random_state = 1;
 static legacy_u32 fps_reset_count;
 static legacy_u32 supersight_reset_count;
-#ifdef RESTUNTS_SDL3
 #define TEST_SUPERSIGHT_STATUS_CAPACITY 16
-static legacy_u32 supersight_status_count, hires_enabled_transitions;
+static legacy_u32 supersight_status_count;
 static legacy_s8 supersight_status[TEST_SUPERSIGHT_STATUS_CAPACITY];
+#ifdef RESTUNTS_SDL3
+static legacy_u32 hires_enabled_transitions;
 static legacy_s32 test_hires_enabled, test_hires_scale = HIRES_SCALE;
 
 void hires_set_enabled(legacy_s32 enabled)
@@ -52,6 +53,7 @@ void hires_set_render_scale(legacy_s32 scale)
 {
 	test_hires_scale = scale;
 }
+#endif
 
 void frame_supersight_show_status(const legacy_s8 *name)
 {
@@ -60,7 +62,6 @@ void frame_supersight_show_status(const legacy_s8 *name)
 	memcpy(supersight_status, name, length + 1);
 	supersight_status_count++;
 }
-#endif
 
 void frame_supersight_reset(void)
 {
@@ -221,11 +222,11 @@ static void reset_inputs(void)
 	memset(mouse_samples, 0, sizeof(mouse_samples));
 	keyboard_char = joystick_flags = 0;
 	supersight_enabled = fps_display_enabled = 0;
-	fps_reset_count = supersight_reset_count = 0;
+	fps_reset_count = supersight_reset_count = supersight_status_count = 0;
+	supersight_status[0] = 0;
 #ifdef RESTUNTS_SDL3
 	frame_adaptive_reset(&frame_adaptive);
-	supersight_status_count = hires_enabled_transitions = 0;
-	supersight_status[0] = 0;
+	hires_enabled_transitions = 0;
 	test_hires_enabled = 0;
 	test_hires_scale = HIRES_SCALE;
 #endif
@@ -651,8 +652,19 @@ static void test_custom_camera_switches(void)
 	}
 }
 
+static void assert_supersight_status(const legacy_char *expected, legacy_u32 count)
+{
+	assert(supersight_status_count == count);
+	assert(strcmp((const legacy_char *)supersight_status, expected) == 0);
+}
+
 static void test_display_shortcuts(void)
 {
+#ifdef RESTUNTS_SDL3
+	const legacy_char *enabled_status = "Auto";
+#else
+	const legacy_char *enabled_status = "On";
+#endif
 	assert((legacy_u16)KEY_F11 == 0x8500U);
 	assert((legacy_u16)KEY_F12 == 0x8600U);
 	for (legacy_u8 mode = REPLAY_MODE_LIVE; mode <= REPLAY_MODE_PAUSED; mode++) {
@@ -665,11 +677,13 @@ static void test_display_shortcuts(void)
 			assert(handle_ingame_kb_shortcuts(KEY_F11) == 1);
 			assert(fps_display_enabled == 1 && supersight_enabled == 0);
 			assert(fps_reset_count == 1);
+			assert(supersight_status_count == 0);
 			assert(full_redraw_frames_remaining == video_page_count);
 			full_redraw_frames_remaining = 0;
 			assert(handle_ingame_kb_shortcuts(KEY_F12) == 1);
 			assert(fps_display_enabled == 1 && supersight_enabled == 1);
 			assert(supersight_reset_count == 1);
+			assert_supersight_status(enabled_status, 1);
 			assert(full_redraw_frames_remaining == video_page_count);
 			assert(game_replay_mode == mode && cameramode == camera);
 			assert(followOpponentFlag == 1);
@@ -680,9 +694,16 @@ static void test_display_shortcuts(void)
 			assert(handle_ingame_kb_shortcuts(KEY_F11) == 1);
 			assert(fps_display_enabled == 0 && supersight_enabled == 1);
 			assert(fps_reset_count == 2);
+			assert_supersight_status(enabled_status, 1);
 			assert(handle_ingame_kb_shortcuts(KEY_F12) == 1);
 			assert(fps_display_enabled == 0 && supersight_enabled == 0);
 			assert(supersight_reset_count == 2);
+			assert_supersight_status("Off", 2);
+			/* Both toggle directions request status while the FPS display is off. */
+			assert(handle_ingame_kb_shortcuts(KEY_F12) == 1);
+			assert(fps_display_enabled == 0 && supersight_enabled == 1);
+			assert(supersight_reset_count == 3);
+			assert_supersight_status(enabled_status, 3);
 		}
 	}
 }
@@ -718,12 +739,6 @@ static void test_shift_f12_callback(void)
 	assert(kb_parse_key(KEY_F12) == KEY_F12 && shift_f12_callbacks == 1);
 	kb_remove_callback(KEY_SHIFT_F12);
 	assert(kb_parse_key(KEY_SHIFT_F12) == KEY_SHIFT_F12 && shift_f12_callbacks == 1);
-}
-
-static void assert_supersight_status(const legacy_char *expected, legacy_u32 count)
-{
-	assert(supersight_status_count == count);
-	assert(strcmp((const legacy_char *)supersight_status, expected) == 0);
 }
 
 static void test_locked_display_shortcuts(void)

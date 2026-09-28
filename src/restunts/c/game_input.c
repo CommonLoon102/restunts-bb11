@@ -296,6 +296,7 @@ static legacy_s16 input_handle_display_shortcut(legacy_s16 key)
 		case KEY_F12:
 			supersight_enabled ^= 1U;
 			frame_supersight_reset();
+			frame_supersight_show_status(supersight_enabled != 0 ? "On" : "Off");
 			full_redraw_frames_remaining = (legacy_s8)video_page_count;
 			return 1;
 #endif

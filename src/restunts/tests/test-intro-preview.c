@@ -18,9 +18,7 @@
 #include "../c/game_input.h"
 #include "../c/video_frame.h"
 #include "../c/shape3d.h"
-#ifdef RESTUNTS_SDL3
 #include "../c/keyboard.h"
-#endif
 
 #undef strcmp
 
@@ -59,7 +57,11 @@ static legacy_u8 preview_capture_active;
 static legacy_u16 preview_captured_count;
 static struct TRANSFORMEDSHAPE3D preview_captured[PREVIEW_WATER_CAPTURE_CAPACITY];
 
-#ifdef RESTUNTS_SDL3
+#define INTRO_TEST_STATUS_EXPIRY_INPUT 4U
+#define INTRO_TEST_STATUS_EXPIRY_POLL 3U
+#define INTRO_TEST_EXIT_POLL 5U
+#define INTRO_TEST_CLEAR_PAGE_CASES 4U
+
 legacy_u8 fps_display_enabled;
 static legacy_u32 scripted_input, shortcut_count, opponent_updates;
 static legacy_u32 fps_draw_count, fps_presented_count, fps_reset_count;
@@ -102,6 +104,7 @@ legacy_s16 handle_ingame_kb_shortcuts(legacy_s16 key)
 		supersight_enabled = preset_status_active = 1;
 	} else {
 		supersight_enabled ^= 1U;
+		preset_status_active = 1;
 	}
 	shortcut_count++;
 	return 1;
@@ -120,7 +123,9 @@ void frame_fps_reset(void)
 
 void frame_fps_record_presented(void)
 {
+#ifdef RESTUNTS_SDL3
 	assert(drawing_frame != 0);
+#endif
 	completed_frame = 1;
 	fps_presented_count++;
 }
@@ -131,7 +136,6 @@ struct RECTANGLE *frame_fps_draw_text(void)
 	fps_draw_count++;
 	return &fps_bounds;
 }
-#endif
 
 static void record_word(legacy_u16 value)
 {
@@ -182,23 +186,20 @@ void sprite_set_target_clip_bounds(legacy_u16 left, legacy_u16 right, legacy_u16
 	record_word(right);
 	record_word(top);
 	record_word(bottom);
-#ifdef RESTUNTS_SDL3
 	target_clip.left = left;
 	target_clip.right = right;
 	target_clip.top = top;
 	target_clip.bottom = bottom;
-#endif
 }
 
 void sprite_clear_target(legacy_u8 color)
 {
 	record_word(2);
 	record_word(color);
-#ifdef RESTUNTS_SDL3
-	if (scripted_input == 1 && flush_count < 8) {
+	if ((scripted_input == 1 || scripted_input == INTRO_TEST_STATUS_EXPIRY_INPUT) &&
+		flush_count < 8) {
 		cleared_rects[flush_count] = target_clip;
 	}
-#endif
 }
 
 void sprite_copy_image_at(struct SHAPE2D far *shape, legacy_s16 x, legacy_s16 y)
@@ -243,13 +244,11 @@ legacy_u16 shape3d_transform_and_queue(struct TRANSFORMEDSHAPE3D *shape)
 		assert(preview_captured_count < PREVIEW_WATER_CAPTURE_CAPACITY);
 		preview_captured[preview_captured_count++] = *shape;
 	}
-#ifdef RESTUNTS_SDL3
 	if (scripted_input == 3 && id == 132 &&
 		shape->pos.x !=
 			LEGACY_S16_WRAP_SUB(1024, position_to_word(state.opponentstate.car_position.lx))) {
 		predicted_transforms++;
 	}
-#endif
 
 	record_word(6);
 	record_word(id);
@@ -280,12 +279,11 @@ legacy_u16 shape3d_transform_and_queue(struct TRANSFORMEDSHAPE3D *shape)
 void shape3d_render_queued_primitives(void)
 {
 	record_word(7);
-#ifdef RESTUNTS_SDL3
-	if (scripted_input == 1 && flush_count < 8) {
+	if ((scripted_input == 1 || scripted_input == INTRO_TEST_STATUS_EXPIRY_INPUT) &&
+		flush_count < 8) {
 		rendered_modes[flush_count] = supersight_enabled;
 		rendered_fps[flush_count] = fps_display_enabled;
 	}
-#endif
 	flush_count++;
 }
 
@@ -662,7 +660,6 @@ legacy_u32 timer_get_delta(void)
 {
 	timer_reads++;
 	record_word(32);
-#ifdef RESTUNTS_SDL3
 	if (scripted_input == 3) {
 		scripted_now += 1000000ULL;
 		return scripted_now % 10000000ULL == 0;
@@ -673,14 +670,11 @@ legacy_u32 timer_get_delta(void)
 	if (scripted_input == 1 && (timer_reads == 3 || timer_reads == 5)) {
 		return 0;
 	}
-#endif
 	return 2;
 }
 void update_opponent(void)
 {
-#ifdef RESTUNTS_SDL3
 	opponent_updates++;
-#endif
 	record_word(33);
 	state.opponentstate.car_position.lx += 128;
 	state.opponentstate.car_position.lz += 64;
@@ -691,7 +685,6 @@ legacy_s16 input_do_checking(legacy_s16 delta)
 	record_word(34);
 	record_word(delta);
 	input_polls++;
-#ifdef RESTUNTS_SDL3
 	assert(drawing_frame == 0);
 	if (scripted_input == 3) {
 		if (supersight_enabled != 0) {
@@ -705,15 +698,19 @@ legacy_s16 input_do_checking(legacy_s16 delta)
 		return scripted_now >= 1000000000ULL ? KEY_ESCAPE : 0;
 	}
 	if (scripted_input != 0) {
+		if (scripted_input == INTRO_TEST_STATUS_EXPIRY_INPUT &&
+			input_polls == INTRO_TEST_STATUS_EXPIRY_POLL) {
+			preset_status_active = 0;
+		}
 		if (input_polls == 1 || (scripted_input == 1 && input_polls == 3)) {
 			return scripted_key;
 		}
-		if (scripted_input == 1 && input_polls >= 5) {
+		if ((scripted_input == 1 || scripted_input == INTRO_TEST_STATUS_EXPIRY_INPUT) &&
+			input_polls >= INTRO_TEST_EXIT_POLL) {
 			return KEY_ESCAPE;
 		}
 		return 0;
 	}
-#endif
 	return cancel_after != 0 && input_polls >= cancel_after;
 }
 void sprite_select_mcga_backbuffer(void)
@@ -797,7 +794,6 @@ static void lifecycle_case(legacy_u32 scenario)
 	record_word(intro_colorvalue);
 }
 
-#ifdef RESTUNTS_SDL3
 static void assert_full_clear(legacy_u32 index)
 {
 	assert(cleared_rects[index].left == intro_cliprect.left);
@@ -845,7 +841,7 @@ static void display_toggle_case(legacy_u32 scenario)
 		legacy_u8 expected_fps = initial_fps ^ (toggled && scripted_key == KEY_F11);
 		assert(rendered_modes[frame] == expected_mode);
 		assert(rendered_fps[frame] == expected_fps);
-		expected_fps_draws += expected_fps;
+		expected_fps_draws += expected_fps || (scripted_key == KEY_F12 && frame != 0);
 		/* Dirty rendering must clear the previous FPS text on the same page,
 		 * including when F12 leaves the counter enabled throughout. */
 		legacy_u32 page_age = video_uses_page_flipping != 0 ? 2 : 1;
@@ -871,6 +867,7 @@ static void display_toggle_case(legacy_u32 scenario)
 	scripted_input = 0;
 }
 
+#ifdef RESTUNTS_SDL3
 static void predictive_presentation_case(void)
 {
 	struct GAMESTATE reference;
@@ -918,6 +915,41 @@ static void predictive_presentation_case(void)
 	scripted_input = 0;
 }
 
+#endif
+
+static void display_status_expiry_case(legacy_u32 scenario)
+{
+	reset_projection();
+	framespersec = GAME_FRAME_RATE_NORMAL;
+	timer_ticks_per_frame = 1;
+	intro_elapsed_ticks = 0;
+	intro_colorvalue = 1;
+	intro_palette_color_count = 16;
+	slow_video_mgmt = (scenario >> 1) & 1U;
+	video_uses_page_flipping = scenario & 1U;
+	supersight_enabled = fps_display_enabled = 0;
+	input_polls = timer_reads = shortcut_count = 0;
+	fps_draw_count = fps_presented_count = fps_reset_count = 0;
+	copy_backbuffer = cancel_after = 0;
+	scripted_key = KEY_F12;
+	scripted_input = INTRO_TEST_STATUS_EXPIRY_INPUT;
+	assert(setup_intro() == 1);
+	assert(shortcut_count == 1 && supersight_enabled != 0);
+	assert(fps_draw_count == INTRO_TEST_STATUS_EXPIRY_POLL - 1U);
+	assert(fps_presented_count == flush_count);
+	legacy_u32 page_age = video_uses_page_flipping != 0 ? 2U : 1U;
+	for (legacy_u32 frame = INTRO_TEST_STATUS_EXPIRY_POLL; frame < flush_count; frame++) {
+		if (slow_video_mgmt != 0 && frame < INTRO_TEST_STATUS_EXPIRY_POLL + page_age) {
+			/* Status expiry must restore each page that still contains the OSD. */
+			assert(cleared_rects[frame].left <= fps_bounds.left);
+			assert(cleared_rects[frame].right >= fps_bounds.right);
+			assert(cleared_rects[frame].top <= fps_bounds.top);
+			assert(cleared_rects[frame].bottom >= fps_bounds.bottom);
+		}
+	}
+	scripted_input = 0;
+}
+
 static void display_toggle_completion_case(legacy_s16 key)
 {
 	reset_projection();
@@ -938,12 +970,11 @@ static void display_toggle_completion_case(legacy_s16 key)
 	assert(shortcut_count == 1);
 	assert(supersight_enabled == (key != KEY_F11));
 	assert(fps_display_enabled == (key == KEY_F11));
-	assert(fps_draw_count == (key == KEY_F11 || key == KEY_SHIFT_F12 ? flush_count - 1U : 0U));
+	assert(fps_draw_count == flush_count - 1U);
 	assert(fps_presented_count == flush_count);
 	assert(fps_reset_count == (key == KEY_F11 ? 3U : 2U));
 	scripted_input = 0;
 }
-#endif
 
 int main(void)
 {
@@ -977,12 +1008,15 @@ int main(void)
 	/* Lifecycle now evaluates each RNG and timer operation exactly once. */
 	assert(lifecycle_hash == 0xa3183e31UL);
 #endif
-#ifdef RESTUNTS_SDL3
 	for (legacy_u32 scenario = 0; scenario < 32; scenario++) {
 		display_toggle_case(scenario);
 	}
+	for (legacy_u32 scenario = 0; scenario < INTRO_TEST_CLEAR_PAGE_CASES; scenario++) {
+		display_status_expiry_case(scenario);
+	}
 	display_toggle_completion_case(KEY_F12);
 	display_toggle_completion_case(KEY_F11);
+#ifdef RESTUNTS_SDL3
 	display_toggle_completion_case(KEY_SHIFT_F12);
 	predictive_presentation_case();
 #endif

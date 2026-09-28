@@ -13,8 +13,20 @@
 #define sprite_free_wnd car_fixture_sprite_free_wnd
 #define draw_button car_fixture_draw_button
 #define font_draw_text car_fixture_font_draw_text
+#define sprite_clear_target car_fixture_sprite_clear_target
+#define sprite_clear_shape_alt car_fixture_sprite_clear_shape_alt
+#define sprite_select_mcga_backbuffer car_fixture_sprite_select_mcga_backbuffer
+#define sprite_select_render_window car_fixture_sprite_select_render_window
+#define frame_fps_draw_text car_fixture_frame_fps_draw_text
+#define sprite_blit_to_video car_fixture_sprite_blit_to_video
 #include "test-car-menu.c"
 #undef main
+#undef sprite_clear_target
+#undef sprite_clear_shape_alt
+#undef sprite_select_mcga_backbuffer
+#undef sprite_select_render_window
+#undef frame_fps_draw_text
+#undef sprite_blit_to_video
 #undef input_checking
 #undef mouse_multi_hittest
 #undef locate_text_res
@@ -30,7 +42,6 @@
 #include "../c/opponent_portrait.h"
 #include "../c/shape2d_internal.h"
 static legacy_u32 portrait_draws, enhanced_portrait_draws, portrait_unloads;
-static legacy_u8 opponent_expiry_test;
 
 void opponent_portrait_draw(const struct SPRITE *target, const struct SHAPE2D *original,
 							legacy_u8 opponent)
@@ -52,6 +63,66 @@ void opponent_portrait_unload(void)
 
 #define OPPONENT_TEST_EVENT_CAPACITY 32U
 #define OPPONENT_TEST_RESOURCE_COUNT 3U
+
+enum OPPONENT_TEST_DRAW_TARGET { OPPONENT_TEST_RENDER_WINDOW, OPPONENT_TEST_BACKBUFFER };
+
+static legacy_u8 opponent_expiry_test, opponent_draw_target, opponent_window_notice;
+static legacy_u8 opponent_backbuffer_notice;
+static legacy_u32 opponent_background_draws, opponent_background_copies;
+static legacy_u32 opponent_notice_presentations, opponent_notice_erasures;
+static legacy_u8 opponent_presented_notice;
+
+void sprite_clear_target(legacy_u8 color)
+{
+	if (opponent_draw_target == OPPONENT_TEST_RENDER_WINDOW) {
+		opponent_window_notice = 0;
+	} else {
+		opponent_backbuffer_notice = 0;
+	}
+	opponent_background_draws++;
+	car_fixture_sprite_clear_target(color);
+}
+
+void sprite_clear_shape_alt(struct SHAPE2D *shape, legacy_s16 x, legacy_s16 y)
+{
+	assert(opponent_draw_target == OPPONENT_TEST_BACKBUFFER);
+	assert(shape == render_window_sprite->sprite_bitmapptr);
+	opponent_window_notice = opponent_backbuffer_notice;
+	opponent_background_copies++;
+	car_fixture_sprite_clear_shape_alt(shape, x, y);
+}
+
+void sprite_select_mcga_backbuffer(void)
+{
+	opponent_draw_target = OPPONENT_TEST_BACKBUFFER;
+	car_fixture_sprite_select_mcga_backbuffer();
+}
+
+void sprite_select_render_window(void)
+{
+	opponent_draw_target = OPPONENT_TEST_RENDER_WINDOW;
+	car_fixture_sprite_select_render_window();
+}
+
+struct RECTANGLE *frame_fps_draw_text(void)
+{
+	assert(opponent_draw_target == OPPONENT_TEST_RENDER_WINDOW);
+	opponent_window_notice = display_status_active;
+	return car_fixture_frame_fps_draw_text();
+}
+
+legacy_s16 sprite_blit_to_video(struct SPRITE *sprite, legacy_s16 mode)
+{
+	assert(sprite == render_window_sprite);
+	assert(opponent_window_notice == display_status_active);
+	if (opponent_window_notice != 0) {
+		opponent_notice_presentations++;
+	} else if (opponent_presented_notice != 0) {
+		opponent_notice_erasures++;
+	}
+	opponent_presented_notice = opponent_window_notice;
+	return car_fixture_sprite_blit_to_video(sprite, mode);
+}
 
 static const legacy_u8 previous_opponent[7] = {6, 6, 1, 2, 3, 4, 5};
 static const legacy_u8 next_opponent[7] = {1, 2, 3, 4, 5, 6, 1};
@@ -154,12 +225,10 @@ legacy_s16 input_checking(legacy_s16 elapsed)
 	(void)elapsed;
 	assert(event_index < event_count);
 	assert((legacy_u8)gameconfig.game_opponenttype == expected_opponents[event_index]);
-#ifdef RESTUNTS_SDL3
 	if (opponent_expiry_test != 0 && event_index == 1) {
 		assert(display_status_active != 0 && display_status_draw_count == 1);
 		display_status_expire_pending = 1;
 	}
-#endif
 	return (legacy_s16)opponent_keys[event_index];
 }
 
@@ -331,10 +400,14 @@ static void begin_case(legacy_u8 opponent, legacy_u8 page_flipping)
 	event_count = event_index = expected_load_count = load_count = 0;
 	resource_allocations = resource_releases = window_allocations = window_releases = 0;
 	expect_load(opponent);
-#ifdef RESTUNTS_SDL3
 	supersight_enabled = fps_display_enabled = 0;
 	display_status_active = display_status_expire_pending = opponent_expiry_test = 0;
 	display_status_draw_count = display_status_expire_count = display_shift_shortcuts = 0;
+	opponent_draw_target = OPPONENT_TEST_RENDER_WINDOW;
+	opponent_window_notice = opponent_backbuffer_notice = opponent_presented_notice = 0;
+	opponent_background_draws = opponent_background_copies = 0;
+	opponent_notice_presentations = opponent_notice_erasures = 0;
+#ifdef RESTUNTS_SDL3
 	portrait_draws = enhanced_portrait_draws = portrait_unloads = 0;
 #endif
 }
@@ -465,25 +538,30 @@ static void test_opponent_car(legacy_u8 page_flipping)
 	assert(car_menu_calls == 1 && ghost_dialogs == 0 && ghost_button_draws == 0);
 }
 
-#ifdef RESTUNTS_SDL3
-static void test_preset_notice_expiry(legacy_u8 page_flipping)
+static void test_notice_expiry(legacy_u8 page_flipping, legacy_u16 shortcut)
 {
 	begin_case(3, page_flipping);
 	opponent_expiry_test = 1;
-	add_event(KEY_SHIFT_F12, 3);
+	add_event(shortcut, 3);
 	add_event(0, 3);
 	add_event(KEY_ENTER, 3);
 	opponent_hits[event_count - 1] = 4;
 	finish_case(3, 1);
 	assert(supersight_enabled == 1 && fps_display_enabled == 0);
-	assert(display_shift_shortcuts == 1 && display_status_draw_count == 1);
+	assert(display_shift_shortcuts == (shortcut == (legacy_u16)KEY_SHIFT_F12));
+	assert(display_status_draw_count == 1);
 	assert(display_status_expire_count == 1 && display_status_active == 0);
+	assert(opponent_background_draws == 3);
+	assert(opponent_background_copies == (page_flipping != 0 ? 3 : 0));
+	assert(opponent_notice_presentations == 1 && opponent_notice_erasures == 1);
+#ifdef RESTUNTS_SDL3
 	/* The third portrait belongs to the fresh background that erases the notice. */
 	assert(portrait_draws == 3 && enhanced_portrait_draws == 2);
+#endif
 	opponent_expiry_test = 0;
 }
 
-static void test_portrait_toggle(legacy_u8 page_flipping)
+static void test_supersight_toggle(legacy_u8 page_flipping)
 {
 	begin_case(3, page_flipping);
 	add_event(KEY_F12, 3);
@@ -492,9 +570,14 @@ static void test_portrait_toggle(legacy_u8 page_flipping)
 	opponent_hits[event_count - 1] = 4;
 	finish_case(3, 1);
 	assert(supersight_enabled == 0);
+	assert(display_status_draw_count == 2 && display_status_active != 0);
+	assert(opponent_background_draws == 3);
+	assert(opponent_background_copies == (page_flipping != 0 ? 3 : 0));
+	assert(opponent_notice_presentations == 2 && opponent_notice_erasures == 0);
+#ifdef RESTUNTS_SDL3
 	assert(portrait_draws == 3 && enhanced_portrait_draws == 1);
-}
 #endif
+}
 
 int main(void)
 {
@@ -517,9 +600,10 @@ int main(void)
 			test_clear_ghost(page_flipping, selection);
 		}
 		test_opponent_car(page_flipping);
+		test_supersight_toggle(page_flipping);
+		test_notice_expiry(page_flipping, (legacy_u16)KEY_F12);
 #ifdef RESTUNTS_SDL3
-		test_portrait_toggle(page_flipping);
-		test_preset_notice_expiry(page_flipping);
+		test_notice_expiry(page_flipping, (legacy_u16)KEY_SHIFT_F12);
 #endif
 	}
 	printf("test-opponent-menu: passed %" LEGACY_PRIu32 " sessions, %" LEGACY_PRIu32

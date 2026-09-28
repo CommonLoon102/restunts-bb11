@@ -750,9 +750,10 @@ static void test_supersight_status_names_and_copy(void)
 	static const struct {
 		const legacy_s8 *name;
 		const legacy_char *text;
-	} cases[] = {{"Auto", "SuperSight: Auto"},	   {"Off", "SuperSight: Off"},
-				 {"Full", "SuperSight: Full"},	   {"High", "SuperSight: High"},
-				 {"Medium", "SuperSight: Medium"}, {"Low", "SuperSight: Low"}};
+	} cases[] = {{"On", "SuperSight: On"},	   {"Auto", "SuperSight: Auto"},
+				 {"Off", "SuperSight: Off"},   {"Full", "SuperSight: Full"},
+				 {"High", "SuperSight: High"}, {"Medium", "SuperSight: Medium"},
+				 {"Low", "SuperSight: Low"}};
 	for (legacy_u32 index = 0; index < sizeof(cases) / sizeof(cases[0]); index++) {
 		reset_status_text();
 		assert(frame_display_overlay_active() == 0);
