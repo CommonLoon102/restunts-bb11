@@ -624,12 +624,12 @@ static void race_handle_driving_input(void)
 
 	do {
 		input_key = dos_kb_get_char();
-		if (input_key != 0) {
-			handle_ingame_kb_shortcuts(input_key);
+		if (input_key != 0 && handle_ingame_kb_shortcuts(input_key) != 0) {
+			break;
 		}
-
-	} while (input_key == KEY_UP || input_key == KEY_LEFT || input_key == KEY_RIGHT ||
-			 input_key == KEY_DOWN);
+		/* Driving controls are sampled by state. Drain all unhandled repeats so
+		 * they cannot delay commands; a consumed callback keeps its modal boundary. */
+	} while (input_key != 0);
 
 	if (game_replay_mode == REPLAY_MODE_PAUSED) {
 		dos_mouse_get_state(&mouse_butstate, &mouse_xpos, &mouse_ypos);
@@ -749,6 +749,12 @@ static void race_run_frames(struct RACE_VIEWPORT_CACHE *cache)
 		race_update_rewind(&rewind);
 		if (was_rewinding != 0 && rewind.active == 0) {
 			last_processed_frame = -1;
+		}
+		/* Commands must remain responsive while waiting for input samples or
+		 * catching up physics, before another potentially expensive draw. */
+		if (rewind.active == 0 && idle_expired == 0 && game_replay_mode == REPLAY_MODE_LIVE &&
+			race_exit_request == 0 && kb_checking() != 0) {
+			race_handle_driving_input();
 		}
 #ifdef RESTUNTS_SDL3
 		race_presentation_sync(rewind.active);
