@@ -47,6 +47,15 @@ void shape3d_hires_shadow_model(const struct SHAPE3D *shape);
 void shape3d_hires_shadow_models_reset(void);
 /* Apply to visible receivers after the joined scene pass, before hires_end. */
 void shape3d_hires_draw_shadows(void);
+/* Collect only nearby receiving surfaces, before camera clipping/backface culling.
+ * The input coordinates use the current view transform, without projection.
+ * A collected polygon returns a nonzero token to link its visible queue entry. */
+legacy_s32 shape3d_hires_shadows_active(void);
+void shape3d_hires_set_shadow_surface(legacy_u32 index, legacy_u32 surface);
+legacy_s32 shape3d_hires_shadow_overlap(const struct SHAPE3D_HIRES_VECTOR *vertices,
+										legacy_u32 count);
+legacy_u32 shape3d_hires_shadow_polygon(const struct SHAPE3D_HIRES_VECTOR *vertices,
+										legacy_u32 count, legacy_s32 grille);
 void shape3d_hires_queue(legacy_u32 index, legacy_u8 type, legacy_u16 vertex_count,
 						 const legacy_u8 *indices, const struct SHAPE3D_HIRES_VECTOR *vertices,
 						 legacy_u16 flags);

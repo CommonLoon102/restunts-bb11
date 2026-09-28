@@ -2188,6 +2188,404 @@ static void test_car_shadow_ground_fallback_and_reset(void)
 	hires_set_enabled(1);
 }
 
+/* Collecting an occluder without drawing it models a road hidden from the
+ * camera: its shadow visibility must not depend on camera depth coverage. */
+enum SHADOW_OCCLUSION_TEST_CONSTANTS {
+	SHADOW_TEST_CAMERA_HEIGHT = 400,
+	SHADOW_TEST_CAR_HEIGHT = 128,
+	SHADOW_TEST_ROAD_HEIGHT = 64,
+	SHADOW_TEST_HALF_SURFACE = 150,
+	SHADOW_TEST_SAMPLE_X = 8,
+	SHADOW_TEST_SAMPLE_Z = 24,
+	SHADOW_TEST_BASE_CHANNEL = 192,
+	SHADOW_TEST_WHITE_INDEX = 15,
+	SHADOW_TEST_SURFACE_COLOR = 8,
+	SHADOW_TEST_CAR_COLOR = 9,
+	SHADOW_TEST_QUAD_VERTICES = 4,
+	SHADOW_TEST_CHANNEL_ROUNDING = 1,
+	SHADOW_TEST_MASKED_MATERIAL = 1,
+	SHADOW_TEST_ORDERED_FLAG = 1,
+	SHADOW_TEST_DOUBLE_SIDED_FLAG = 1
+};
+
+#define SHADOW_TEST_BASE_COLOR 0xFFC0C0C0U
+
+static const legacy_u32 *shadow_test_argb(void)
+{
+	legacy_u32 palette[LEGACY_U8_MAX + 1];
+	for (legacy_u32 index = 0; index < SDL_arraysize(palette); index++) {
+		palette[index] = SHADOW_TEST_BASE_COLOR;
+	}
+	palette[SHADOW_TEST_WHITE_INDEX] = LEGACY_U32_MAX;
+	return hires_framebuffer_argb(screen, palette);
+}
+
+static void collect_shadow_road(legacy_s16 left_height, legacy_s16 right_height, legacy_f64 right,
+								legacy_s32 grille)
+{
+	const struct SHAPE3D_HIRES_VECTOR road[] = {
+		{-SHADOW_TEST_HALF_SURFACE, -SHADOW_TEST_HALF_SURFACE,
+		 SHADOW_TEST_CAMERA_HEIGHT - left_height},
+		{right, -SHADOW_TEST_HALF_SURFACE, SHADOW_TEST_CAMERA_HEIGHT - right_height},
+		{right, SHADOW_TEST_HALF_SURFACE, SHADOW_TEST_CAMERA_HEIGHT - right_height},
+		{-SHADOW_TEST_HALF_SURFACE, SHADOW_TEST_HALF_SURFACE,
+		 SHADOW_TEST_CAMERA_HEIGHT - left_height}};
+	shape3d_hires_shadow_polygon(road, SDL_arraysize(road), grille);
+}
+
+static legacy_s32 shadow_darkening_at(legacy_f64 world_x, legacy_f64 world_z, legacy_s16 height)
+{
+	if (shadow_image.pixels == NULL) {
+		return 0;
+	}
+	legacy_f64 focal = projection_focal_length_x * HIRES_SCALE;
+	legacy_f64 depth = SHADOW_TEST_CAMERA_HEIGHT - height;
+	legacy_s32 x = (legacy_s32)(projection_center_x * HIRES_SCALE + world_x * focal / depth);
+	legacy_s32 y = (legacy_s32)(projection_center_y * HIRES_SCALE - world_z * focal / depth);
+	return SHADOW_TEST_BASE_CHANNEL - (shadow_image.pixels[y * HIRES_WIDTH + x] & LEGACY_U8_MAX);
+}
+
+static void assert_shadow_fraction(legacy_s32 full, legacy_s32 partial, legacy_s32 denominator)
+{
+	assert(full > 0 && partial > 0);
+	legacy_s32 difference = full - partial * denominator;
+	legacy_s32 tolerance = SHADOW_TEST_CHANNEL_ROUNDING * denominator;
+	assert(difference >= -tolerance && difference <= tolerance);
+}
+
+static void test_car_shadow_opaque_road_and_partial_edge(void)
+{
+	begin_shadow_scene(SHADOW_TEST_CAR_HEIGHT, 0);
+	queue_shadow_receiver(0, 0, 1, SHADOW_TEST_HALF_SURFACE);
+	shape3d_hires_render(0, RENDER_PRIMITIVE_POLYGON, SHADOW_TEST_SURFACE_COLOR, 0, 0, 0, 0);
+	legacy_u32 baseline = finish_shadow_scene(0, 0, 0);
+	legacy_s32 right = shadow_darkening_at(SHADOW_TEST_SAMPLE_X, SHADOW_TEST_SAMPLE_Z, 0);
+	assert(baseline > 0 && right > 0);
+	for (legacy_s32 fallback = 0; fallback < 2; fallback++) {
+		begin_shadow_scene(SHADOW_TEST_CAR_HEIGHT, 0);
+		collect_shadow_road(SHADOW_TEST_ROAD_HEIGHT, SHADOW_TEST_ROAD_HEIGHT,
+							SHADOW_TEST_HALF_SURFACE, 0);
+		if (!fallback) {
+			queue_shadow_receiver(0, 0, 1, SHADOW_TEST_HALF_SURFACE);
+			shape3d_hires_render(0, RENDER_PRIMITIVE_POLYGON, SHADOW_TEST_SURFACE_COLOR, 0, 0, 0,
+								 0);
+		}
+		assert(finish_shadow_scene(0, 0, 0) == 0);
+	}
+	begin_shadow_scene(SHADOW_TEST_CAR_HEIGHT, 0);
+	collect_shadow_road(SHADOW_TEST_ROAD_HEIGHT, SHADOW_TEST_ROAD_HEIGHT, 0, 0);
+	queue_shadow_receiver(0, 0, 1, SHADOW_TEST_HALF_SURFACE);
+	shape3d_hires_render(0, RENDER_PRIMITIVE_POLYGON, SHADOW_TEST_SURFACE_COLOR, 0, 0, 0, 0);
+	legacy_u32 partial = finish_shadow_scene(0, 0, 0);
+	assert(partial > 0 && partial < baseline);
+	assert(shadow_darkening_at(-SHADOW_TEST_SAMPLE_X, SHADOW_TEST_SAMPLE_Z, 0) == 0);
+	assert(shadow_darkening_at(SHADOW_TEST_SAMPLE_X, SHADOW_TEST_SAMPLE_Z, 0) == right);
+	/* A sloping deck blocks the entire footprint, independent of which
+	 * triangle contains a particular sample. A roof above the car does not. */
+	const legacy_s16 left_heights[] = {SHADOW_TEST_ROAD_HEIGHT / 2,
+									   SHADOW_TEST_CAR_HEIGHT + SHADOW_TEST_ROAD_HEIGHT};
+	const legacy_s16 right_heights[] = {SHADOW_TEST_ROAD_HEIGHT + SHADOW_TEST_ROAD_HEIGHT / 2,
+										SHADOW_TEST_CAR_HEIGHT + SHADOW_TEST_ROAD_HEIGHT};
+	for (legacy_u32 scene = 0; scene < SDL_arraysize(left_heights); scene++) {
+		begin_shadow_scene(SHADOW_TEST_CAR_HEIGHT, 0);
+		collect_shadow_road(left_heights[scene], right_heights[scene], SHADOW_TEST_HALF_SURFACE, 0);
+		queue_shadow_receiver(0, 0, 1, SHADOW_TEST_HALF_SURFACE);
+		shape3d_hires_render(0, RENDER_PRIMITIVE_POLYGON, SHADOW_TEST_SURFACE_COLOR, 0, 0, 0, 0);
+		assert(finish_shadow_scene(0, 0, 0) == (scene == 0 ? 0 : baseline));
+	}
+}
+
+static void test_car_shadow_grille_transmission(void)
+{
+	legacy_s32 full[2];
+	const legacy_s16 receiver_heights[] = {0, SHADOW_TEST_ROAD_HEIGHT};
+	for (legacy_u32 receiver = 0; receiver < SDL_arraysize(receiver_heights); receiver++) {
+		legacy_s16 height = receiver_heights[receiver];
+		for (legacy_s32 grille = 0; grille < 2; grille++) {
+			begin_shadow_scene(SHADOW_TEST_CAR_HEIGHT, 0);
+			if (grille || height == SHADOW_TEST_ROAD_HEIGHT) {
+				collect_shadow_road(SHADOW_TEST_ROAD_HEIGHT, SHADOW_TEST_ROAD_HEIGHT,
+									SHADOW_TEST_HALF_SURFACE, grille);
+			}
+			queue_shadow_receiver(0, height, 1, SHADOW_TEST_HALF_SURFACE);
+			shape3d_hires_render(0, RENDER_PRIMITIVE_POLYGON, SHADOW_TEST_SURFACE_COLOR, 0, 0, 0,
+								 0);
+			assert(finish_shadow_scene(height, 0, 0) > 0);
+			legacy_s32 sample =
+				shadow_darkening_at(SHADOW_TEST_SAMPLE_X, SHADOW_TEST_SAMPLE_Z, height);
+			if (!grille) {
+				full[receiver] = sample;
+			} else {
+				assert_shadow_fraction(full[receiver], sample, 2);
+			}
+		}
+	}
+	/* Duplicate faces and triangles at the same height are one layer.
+	 * A genuinely separate grille transmits half of the remaining shadow. */
+	for (legacy_s32 layers = 1; layers <= 2; layers++) {
+		begin_shadow_scene(SHADOW_TEST_CAR_HEIGHT, 0);
+		for (legacy_s32 layer = 1; layer <= layers; layer++) {
+			legacy_s16 height = (legacy_s16)(SHADOW_TEST_ROAD_HEIGHT / layer);
+			collect_shadow_road(height, height, SHADOW_TEST_HALF_SURFACE, 1);
+			collect_shadow_road(height, height, SHADOW_TEST_HALF_SURFACE, 1);
+		}
+		queue_shadow_receiver(0, 0, 1, SHADOW_TEST_HALF_SURFACE);
+		shape3d_hires_render(0, RENDER_PRIMITIVE_POLYGON, SHADOW_TEST_SURFACE_COLOR, 0, 0, 0, 0);
+		assert(finish_shadow_scene(0, 0, 0) > 0);
+		assert_shadow_fraction(full[0],
+							   shadow_darkening_at(SHADOW_TEST_SAMPLE_X, SHADOW_TEST_SAMPLE_Z, 0),
+							   1 << layers);
+	}
+	begin_shadow_scene(SHADOW_TEST_CAR_HEIGHT, 0);
+	collect_shadow_road(SHADOW_TEST_ROAD_HEIGHT, SHADOW_TEST_ROAD_HEIGHT, SHADOW_TEST_HALF_SURFACE,
+						1);
+	queue_shadow_receiver(0, SHADOW_TEST_ROAD_HEIGHT / 2, 0, 0);
+	queue_shadow_receiver(1, 0, 1, SHADOW_TEST_HALF_SURFACE);
+	shape3d_hires_render(1, RENDER_PRIMITIVE_POLYGON, SHADOW_TEST_SURFACE_COLOR, 0, 0, 0, 0);
+	shape3d_hires_render(0, RENDER_PRIMITIVE_POLYGON, SHADOW_TEST_CAR_COLOR, 0, 0, 0, 0);
+	assert(finish_shadow_scene(0, 0, SHADOW_TEST_CAR_COLOR) > 0);
+	assert(shadow_darkening_at(-SHADOW_TEST_SAMPLE_X, SHADOW_TEST_SAMPLE_Z, 0) == 0);
+	assert_shadow_fraction(full[0],
+						   shadow_darkening_at(SHADOW_TEST_SAMPLE_X, SHADOW_TEST_SAMPLE_Z, 0), 2);
+}
+
+static void test_car_shadow_collects_camera_hidden_roads(void)
+{
+	const legacy_s16 relative_height = SHADOW_TEST_ROAD_HEIGHT - SHADOW_TEST_CAMERA_HEIGHT;
+	const struct VECTOR road[] = {
+		{-SHADOW_TEST_HALF_SURFACE, relative_height, -SHADOW_TEST_HALF_SURFACE},
+		{SHADOW_TEST_HALF_SURFACE, relative_height, -SHADOW_TEST_HALF_SURFACE},
+		{SHADOW_TEST_HALF_SURFACE, relative_height, SHADOW_TEST_HALF_SURFACE},
+		{-SHADOW_TEST_HALF_SURFACE, relative_height, SHADOW_TEST_HALF_SURFACE}};
+	const legacy_u8 primitive[] = {SHADOW_TEST_QUAD_VERTICES, 0, 0, 0, 1, 2, 3, 0, 0};
+	legacy_s16 grille_patterns[SDL_arraysize(scene_patterns)] = {
+		(legacy_s16)PRERENDER_BLACK_GRILLE_PATTERN};
+	const legacy_u8 flags[] = {0, 0, SHAPE3D_NO_SHADOW_RECEIVE_FLAG, SHAPE3D_GHOST_FLAG,
+							   SHAPE3D_BACKGROUND_FLAG};
+	legacy_s32 transmitted = 0;
+	for (legacy_u32 scene = 0; scene < SDL_arraysize(flags); scene++) {
+		prepare_scene(road, SDL_arraysize(road), primitive, sizeof(primitive), 1);
+		begin_shadow_scene(SHADOW_TEST_CAR_HEIGHT, 0);
+		/* Force rejection by the ordinary visibility gate after transforming
+		 * the model. Occluder collection must still process the road. */
+		memset(scene_visibility, 0, sizeof(scene_visibility));
+		scene_instance.ts_flags |= flags[scene];
+		scene_patterns[0] = scene == 0 ? 0 : SHADOW_TEST_MASKED_MATERIAL;
+		material_patlist2_ptr_cpy = grille_patterns;
+		assert(shape3d_transform_and_queue(&scene_instance) == LEGACY_U16_MAX);
+		assert(polyinfonumpolys == 0);
+		legacy_u32 coverage = finish_shadow_scene(0, 0, 0);
+		legacy_s32 sample = shadow_darkening_at(SHADOW_TEST_SAMPLE_X, SHADOW_TEST_SAMPLE_Z, 0);
+		if (scene == 0) {
+			assert(coverage == 0);
+		} else if (scene == 1) {
+			assert(coverage > 0 && sample > 0);
+			transmitted = sample;
+		} else {
+			assert_shadow_fraction(sample, transmitted, 2);
+		}
+	}
+	scene_patterns[0] = 0;
+	material_patlist2_ptr_cpy = scene_patterns;
+}
+
+/* A camera underneath a bridge still sees its lower shadow receiver. The
+ * deck behind the near plane must remain an occluder although none is queued. */
+static void test_car_shadow_collects_behind_camera_road(void)
+{
+	const legacy_s16 camera_height = SHADOW_TEST_ROAD_HEIGHT + SHADOW_TEST_ROAD_HEIGHT / 2;
+	const legacy_s16 road_height = SHADOW_TEST_CAR_HEIGHT - SHADOW_TEST_ROAD_HEIGHT / 4;
+	const legacy_s16 relative_height = road_height - camera_height;
+	const struct VECTOR road[] = {
+		{-SHADOW_TEST_HALF_SURFACE, relative_height, -SHADOW_TEST_HALF_SURFACE},
+		{SHADOW_TEST_HALF_SURFACE, relative_height, -SHADOW_TEST_HALF_SURFACE},
+		{SHADOW_TEST_HALF_SURFACE, relative_height, SHADOW_TEST_HALF_SURFACE},
+		{-SHADOW_TEST_HALF_SURFACE, relative_height, SHADOW_TEST_HALF_SURFACE}};
+	const legacy_u8 primitive[] = {SHADOW_TEST_QUAD_VERTICES, 0, 0, 0, 1, 2, 3, 0, 0};
+	const struct VECTOR camera = {0, camera_height, 0};
+	const struct VECTOR car = {0, SHADOW_TEST_CAR_HEIGHT - camera_height, 0};
+	for (legacy_s32 blocker = 0; blocker < 2; blocker++) {
+		prepare_scene(road, SDL_arraysize(road), primitive, sizeof(primitive), 1);
+		begin_shadow_scene(SHADOW_TEST_CAR_HEIGHT, 0);
+		shape3d_hires_shadows_begin(&camera);
+		shape3d_hires_shadow_car(&car, 0, (legacy_s16)shadow_image.half_width,
+								 (legacy_s16)shadow_image.half_length);
+		if (blocker) {
+			assert(shape3d_transform_and_queue(&scene_instance) == LEGACY_U16_MAX);
+			assert(polyinfonumpolys == 0);
+		}
+		legacy_u32 coverage = finish_shadow_scene(SHADOW_TEST_CAMERA_HEIGHT - camera_height, 0, 0);
+		assert(blocker ? coverage == 0 : coverage > 0);
+	}
+}
+
+enum SHADOW_CONTACT_TEST_CONSTANTS {
+	SHADOW_CONTACT_CAMERA_DISTANCE = 400,
+	SHADOW_CONTACT_CAMERA_ROLL = 23,
+	SHADOW_CONTACT_CAMERA_PITCH = -128,
+	SHADOW_CONTACT_CAMERA_YAW = 17,
+	SHADOW_CONTACT_NO_BLOCKER = 0,
+	SHADOW_CONTACT_SOLID,
+	SHADOW_CONTACT_GRILLE
+};
+#define SHADOW_CONTACT_DEPTH_ERROR 1e-7
+
+static struct SHAPE3D_HIRES_VECTOR shadow_contact_view(legacy_f64 x, legacy_f64 y, legacy_f64 z)
+{
+	return (struct SHAPE3D_HIRES_VECTOR){
+		(x * mat_temp.m._11 + y * mat_temp.m._12 + z * mat_temp.m._13) / TRIG_FIXED_ONE,
+		(x * mat_temp.m._21 + y * mat_temp.m._22 + z * mat_temp.m._23) / TRIG_FIXED_ONE,
+		(x * mat_temp.m._31 + y * mat_temp.m._32 + z * mat_temp.m._33) / TRIG_FIXED_ONE};
+}
+
+static legacy_s32 render_contact_shadow(legacy_s32 material, legacy_s32 lower,
+										legacy_f64 depth_error)
+{
+	const struct VECTOR camera = {0, SHADOW_TEST_CAMERA_HEIGHT, -SHADOW_CONTACT_CAMERA_DISTANCE};
+	const struct VECTOR car = {0, SHADOW_TEST_ROAD_HEIGHT - SHADOW_TEST_CAMERA_HEIGHT,
+							   SHADOW_CONTACT_CAMERA_DISTANCE};
+	begin_shadow_scene(SHADOW_TEST_ROAD_HEIGHT, 0);
+	mat_temp = *mat_rot_zxy(SHADOW_CONTACT_CAMERA_ROLL, SHADOW_CONTACT_CAMERA_PITCH,
+							SHADOW_CONTACT_CAMERA_YAW, MATRIX_ROTATION_ORDER_YXZ);
+	shape3d_hires_shadows_begin(&camera);
+	shape3d_hires_shadow_car(&car, 0, (legacy_s16)shadow_image.half_width,
+							 (legacy_s16)shadow_image.half_length);
+	const legacy_s16 corners[][2] = {{-SHADOW_TEST_HALF_SURFACE, -SHADOW_TEST_HALF_SURFACE},
+									 {SHADOW_TEST_HALF_SURFACE, -SHADOW_TEST_HALF_SURFACE},
+									 {SHADOW_TEST_HALF_SURFACE, SHADOW_TEST_HALF_SURFACE},
+									 {-SHADOW_TEST_HALF_SURFACE, SHADOW_TEST_HALF_SURFACE}};
+	struct SHAPE3D_HIRES_VECTOR road[SHADOW_TEST_QUAD_VERTICES];
+	struct SHAPE3D_HIRES_VECTOR receiver[SHADOW_TEST_QUAD_VERTICES];
+	for (legacy_u32 vertex = 0; vertex < SDL_arraysize(corners); vertex++) {
+		road[vertex] = shadow_contact_view(corners[vertex][0], car.y, corners[vertex][1] + car.z);
+		receiver[vertex] =
+			shadow_contact_view(corners[vertex][0], (lower ? -camera.y : car.y) + depth_error,
+								corners[vertex][1] + car.z);
+	}
+	if (material != SHADOW_CONTACT_NO_BLOCKER) {
+		shape3d_hires_shadow_polygon(road, SDL_arraysize(road), material == SHADOW_CONTACT_GRILLE);
+	}
+	queue_polygon_shape(0, SHAPE3D_HIRES_DEPTH_SORTED, receiver);
+	shape3d_hires_render(0, RENDER_PRIMITIVE_POLYGON, SHADOW_TEST_SURFACE_COLOR, 0, 0, 0, 0);
+	shape3d_hires_draw_shadows();
+	hires_end();
+	const legacy_u32 *image = shadow_test_argb();
+	if (image == NULL) {
+		return 0;
+	}
+	struct SHAPE3D_HIRES_VECTOR sample = shadow_contact_view(
+		SHADOW_TEST_SAMPLE_X, lower ? -camera.y : car.y, car.z + SHADOW_TEST_SAMPLE_Z);
+	struct SHAPE3D_HIRES_POINT point;
+	shape3d_hires_project(&sample, &point);
+	legacy_s32 x = (legacy_s32)point.x;
+	legacy_s32 y = (legacy_s32)point.y;
+	assert(x >= 0 && x < HIRES_WIDTH && y >= 0 && y < HIRES_HEIGHT);
+	return SHADOW_TEST_BASE_CHANNEL - (image[y * HIRES_WIDTH + x] & LEGACY_U8_MAX);
+}
+
+static void test_car_shadow_contact_plane_precision(void)
+{
+	/* The rounded camera matrix and reciprocal depth buffer reconstruct a
+	 * contact point on either side of the exact surface plane. Neither tiny
+	 * error may remove the road's shadow or bypass grille attenuation. */
+	const legacy_f64 errors[] = {-SHADOW_CONTACT_DEPTH_ERROR, 0, SHADOW_CONTACT_DEPTH_ERROR};
+	for (legacy_s32 lower = 0; lower < 2; lower++) {
+		legacy_s32 full = render_contact_shadow(SHADOW_CONTACT_NO_BLOCKER, lower, 0);
+		assert(full > 0);
+		for (legacy_u32 error = 0; error < SDL_arraysize(errors); error++) {
+			legacy_s32 solid = render_contact_shadow(SHADOW_CONTACT_SOLID, lower, errors[error]);
+			assert(solid == (lower ? 0 : full));
+			legacy_s32 grille = render_contact_shadow(SHADOW_CONTACT_GRILLE, lower, errors[error]);
+			assert_shadow_fraction(full, grille, 2);
+		}
+	}
+}
+
+static const legacy_u32 *render_warped_shadow(legacy_s32 ordered, legacy_s32 lower,
+											  legacy_s32 grille, legacy_s32 collect)
+{
+	const legacy_s16 relative_height = SHADOW_TEST_ROAD_HEIGHT - SHADOW_TEST_CAMERA_HEIGHT;
+	const struct VECTOR road[] = {
+		{-SHADOW_TEST_HALF_SURFACE, relative_height, -SHADOW_TEST_HALF_SURFACE},
+		{SHADOW_TEST_HALF_SURFACE, relative_height, -SHADOW_TEST_HALF_SURFACE},
+		{SHADOW_TEST_HALF_SURFACE, relative_height, SHADOW_TEST_HALF_SURFACE},
+		{-SHADOW_TEST_HALF_SURFACE, relative_height + SHADOW_TEST_ROAD_HEIGHT / 4,
+		 SHADOW_TEST_HALF_SURFACE}};
+	const legacy_u8 primitive[] = {
+		SHADOW_TEST_QUAD_VERTICES, SHADOW_TEST_DOUBLE_SIDED_FLAG, 0, 0, 1, 2, 3, 0, 0};
+	const struct VECTOR camera = {0, SHADOW_TEST_CAMERA_HEIGHT, 0};
+	const struct VECTOR car = {0, SHADOW_TEST_CAR_HEIGHT - SHADOW_TEST_CAMERA_HEIGHT, 0};
+	legacy_s16 grille_patterns[SDL_arraysize(scene_patterns)] = {
+		(legacy_s16)PRERENDER_BLACK_GRILLE_PATTERN};
+	prepare_scene(road, SDL_arraysize(road), primitive, sizeof(primitive), 1);
+	begin_shadow_scene(SHADOW_TEST_CAR_HEIGHT, 0);
+	shape3d_hires_shadows_begin(&camera);
+	if (collect) {
+		shape3d_hires_shadow_car(&car, 0, (legacy_s16)shadow_image.half_width,
+								 (legacy_s16)shadow_image.half_length);
+	}
+	if (lower) {
+		memset(scene_visibility, 0, sizeof(scene_visibility));
+	}
+	if (ordered) {
+		scene_instance.ts_flags |= SHADOW_TEST_ORDERED_FLAG;
+	}
+	scene_patterns[0] = grille ? SHADOW_TEST_MASKED_MATERIAL : 0;
+	material_patlist2_ptr_cpy = grille_patterns;
+	assert(shape3d_transform_and_queue(&scene_instance) == (lower ? LEGACY_U16_MAX : 0));
+	assert(polyinfonumpolys == (lower ? 0 : 1));
+	if (!collect) {
+		/* The reference draws the same receiver before there is a caster
+		 * to collect blockers for, retaining the original shadow footprint. */
+		shape3d_hires_shadow_car(&car, 0, (legacy_s16)shadow_image.half_width,
+								 (legacy_s16)shadow_image.half_length);
+	}
+	if (lower) {
+		queue_shadow_receiver(0, 0, 1, SHADOW_TEST_HALF_SURFACE);
+	}
+	/* Draw the collected receiver without grille holes so every pixel can
+	 * compare attenuation independently of the screen-space material mask. */
+	shape3d_hires_render(0, RENDER_PRIMITIVE_POLYGON, SHADOW_TEST_SURFACE_COLOR, 0, 0, 0, 0);
+	shape3d_hires_draw_shadows();
+	hires_end();
+	scene_patterns[0] = 0;
+	material_patlist2_ptr_cpy = scene_patterns;
+	return shadow_test_argb();
+}
+
+static void test_car_shadow_warped_road_preserves_receiver(void)
+{
+	static legacy_u32 reference[HIRES_WIDTH * HIRES_HEIGHT];
+	/* The fourth corner is raised, so the polygon's averaged occlusion
+	 * plane differs from the rasterized receiver by several world units. */
+	for (legacy_s32 ordered = 0; ordered < 2; ordered++) {
+		for (legacy_s32 lower = 0; lower < 2; lower++) {
+			const legacy_u32 *image = render_warped_shadow(ordered, lower, 0, 0);
+			assert(image != NULL);
+			memcpy(reference, image, sizeof(reference));
+			for (legacy_s32 grille = 0; grille < 2; grille++) {
+				image = render_warped_shadow(ordered, lower, grille, 1);
+				legacy_u32 shadowed = 0;
+				for (legacy_u32 pixel = 0; pixel < SDL_arraysize(reference); pixel++) {
+					legacy_s32 full = SHADOW_TEST_BASE_CHANNEL - (reference[pixel] & LEGACY_U8_MAX);
+					legacy_s32 actual =
+						image == NULL ? 0
+									  : SHADOW_TEST_BASE_CHANNEL - (image[pixel] & LEGACY_U8_MAX);
+					if (grille) {
+						legacy_s32 difference = full - actual * 2;
+						assert(difference >= -SHADOW_TEST_CHANNEL_ROUNDING * 2 &&
+							   difference <= SHADOW_TEST_CHANNEL_ROUNDING * 2);
+					} else {
+						assert(actual == (lower ? 0 : full));
+					}
+					shadowed += full > 0;
+				}
+				assert(shadowed > 0);
+			}
+		}
+	}
+}
+
 static void test_car_shadow_render_scales(void)
 {
 	const legacy_s32 scales[] = {HIRES_SCALE, HIRES_MEDIUM_SCALE, HIRES_MINIMUM_SCALE,
@@ -2303,6 +2701,12 @@ legacy_int main(void)
 	test_car_shadow_receiver_height();
 	test_car_shadow_excludes_car_geometry();
 	test_car_shadow_ground_fallback_and_reset();
+	test_car_shadow_opaque_road_and_partial_edge();
+	test_car_shadow_grille_transmission();
+	test_car_shadow_collects_camera_hidden_roads();
+	test_car_shadow_collects_behind_camera_road();
+	test_car_shadow_contact_plane_precision();
+	test_car_shadow_warped_road_preserves_receiver();
 	test_car_shadow_render_scales();
 	hires_shutdown();
 	puts("High-resolution 3D projection and raster tests passed.");
