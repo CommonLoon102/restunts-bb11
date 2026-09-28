@@ -221,6 +221,30 @@ follow confirmed gameplay events. Interpolated state never enters replay data;
 toggling F12 during a replay does not change its simulated result. Seeking,
 pausing, rewinding, and camera changes reset interpolation history.
 
+Desktop SDL3 builds use two internal presentation pages. Each complete frame is
+composed into the hidden page, including its palette colors and SuperSight detail,
+then flipped to the front before SDL receives it. Window exposure and resizing
+repaint that completed page while the next frame is being drawn. This prevents
+partial game-frame updates from reaching presentation without queuing an extra
+frame. Display synchronization still depends on SDL and the graphics driver.
+
+On Windows and Linux, VSync is enabled by default in both windowed and fullscreen
+mode, with or without SuperSight. The game requests synchronization to the display's
+vertical refresh; SDL may use timed pacing when a renderer cannot synchronize.
+The existing classic and 60 FPS SuperSight targets still apply. Set
+`RESTUNTS_VSYNC=0` to disable it, or `RESTUNTS_VSYNC=1` to enable it explicitly.
+For example, on Linux:
+
+```sh
+RESTUNTS_VSYNC=0 ./out/sdl3-linux-x64/restunts --data-dir stunts
+```
+
+In PowerShell, set `$env:RESTUNTS_VSYNC = '0'` before launching `restunts.exe`.
+Unset the variable to restore the default. Invalid values warn and select the
+default. If the renderer cannot apply the requested setting, the game warns and
+continues. The setting does not affect DOS builds or batch dump tools. Display
+synchronization waits are excluded from automatic SuperSight quality measurements.
+
 On Windows and Linux, SuperSight draws serially by default with zero background
 render workers. The interactive game leaves CPU affinity and process priority
 unchanged, allowing the OS to schedule threads across the allowed CPUs.

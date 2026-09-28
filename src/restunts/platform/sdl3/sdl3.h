@@ -3,6 +3,7 @@
 
 #include <SDL3/SDL.h>
 #include "../../c/legacy.h"
+#include "../../c/video_frame.h"
 
 #define SDL3_SCREEN_WIDTH 320
 #define SDL3_SCREEN_HEIGHT 200
@@ -16,10 +17,8 @@ void sdl3_audio_update(void);
 void sdl3_input_shutdown(void);
 void sdl3_video_shutdown(void);
 void sdl3_video_present(void);
+void sdl3_video_redraw(void);
 void sdl3_video_toggle_fullscreen(void);
-void sdl3_video_begin_frame(void);
-void sdl3_video_begin_track_frame(legacy_u8 adaptive);
-void sdl3_video_end_frame(void);
 void sdl3_video_refresh(void);
 SDL_Window *sdl3_video_window(void);
 void sdl3_video_window_to_game(legacy_f32 window_x, legacy_f32 window_y, legacy_f32 *x,

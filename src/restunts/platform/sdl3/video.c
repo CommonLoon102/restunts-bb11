@@ -5,6 +5,7 @@
 #include "../../c/frame_adaptive.h"
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #define SCREEN_BYTES (SDL3_SCREEN_WIDTH * SDL3_SCREEN_HEIGHT)
 #define VGA_MEMORY_SEGMENT 0xA000U
@@ -16,10 +17,20 @@
 #define VGA_PALETTE_CHANNEL_MAX 63U
 #define VGA_RETRACE_PERIOD_MS 14U
 #define VGA_RETRACE_DURATION_MS 2U
+#define VSYNC_EVERY_REFRESH 1
+#define PRESENTATION_PAGE_COUNT 2U
+
+struct PRESENTATION_PAGE {
+	legacy_u32 *pixels;
+	legacy_s32 width;
+	legacy_s32 height;
+};
 
 static SDL_Window *window;
 static SDL_Renderer *renderer;
 static SDL_Texture *texture;
+static struct PRESENTATION_PAGE presentation_pages[PRESENTATION_PAGE_COUNT];
+static legacy_u32 front_page;
 static SDL_Surface *frame_surface;
 static legacy_s32 texture_width;
 static legacy_s32 texture_height;
@@ -41,6 +52,26 @@ static void video_fail(const legacy_char *operation)
 	fprintf(stderr, "%s: %s\n", operation, SDL_GetError());
 	dos_process_exit(1);
 }
+
+#ifndef __DJGPP__
+static void configure_vsync(void)
+{
+	legacy_s32 interval = VSYNC_EVERY_REFRESH;
+	const legacy_char *setting = getenv("RESTUNTS_VSYNC");
+	if (setting != NULL && *setting != '\0') {
+		if (strcmp(setting, "0") == 0) {
+			interval = SDL_RENDERER_VSYNC_DISABLED;
+		} else if (strcmp(setting, "1") != 0) {
+			SDL_LogWarn(SDL_LOG_CATEGORY_VIDEO,
+						"Invalid RESTUNTS_VSYNC: use 0 or 1; enabling VSync.");
+		}
+	}
+	if (!SDL_SetRenderVSync(renderer, interval)) {
+		SDL_LogWarn(SDL_LOG_CATEGORY_VIDEO, "Cannot %s VSync: %s",
+					interval == SDL_RENDERER_VSYNC_DISABLED ? "disable" : "enable", SDL_GetError());
+	}
+}
+#endif
 
 #ifdef __DJGPP__
 static legacy_s32 mode_viewport_width(const SDL_DisplayMode *mode)
@@ -252,36 +283,78 @@ static void present_surface(const legacy_u8 *pixels, const legacy_u32 *argb, leg
 	}
 }
 
-static void present_texture(const legacy_u8 *legacy_pixels)
+static void prepare_presentation_page(const legacy_u8 *legacy_pixels)
 {
+	legacy_u32 back_page = (front_page + 1U) % PRESENTATION_PAGE_COUNT;
+	struct PRESENTATION_PAGE *page = &presentation_pages[back_page];
 	legacy_s32 width = hires_enabled() ? hires_render_width() : SDL3_SCREEN_WIDTH;
 	legacy_s32 height = hires_enabled() ? hires_render_height() : SDL3_SCREEN_HEIGHT;
-	if (texture == NULL || texture_width != width || texture_height != height) {
+	if (page->pixels == NULL || page->width != width || page->height != height) {
+		legacy_u32 *pixels = SDL_realloc(page->pixels, (size_t)width * height * sizeof(*pixels));
+		if (pixels == NULL) {
+			SDL_OutOfMemory();
+			video_fail("Allocate presentation page");
+		}
+		page->pixels = pixels;
+		page->width = width;
+		page->height = height;
+	}
+	/* Compose from the original address so high-resolution companion pixels
+	 * remain associated with it. Bake the palette into the owned hidden page,
+	 * then flip only after the entire composition is complete. */
+	hires_copy_framebuffer_argb(legacy_pixels, palette_pixels, page->pixels,
+								width * sizeof(*page->pixels));
+	front_page = back_page;
+}
+
+static void present_texture(legacy_u8 new_frame)
+{
+	const struct PRESENTATION_PAGE *page = &presentation_pages[front_page];
+	if (page->pixels == NULL) {
+		return;
+	}
+	legacy_u8 upload = new_frame;
+	if (texture == NULL || texture_width != page->width || texture_height != page->height) {
 		SDL_DestroyTexture(texture);
 		texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING,
-									width, height);
+									page->width, page->height);
 		if (texture == NULL || !SDL_SetTextureScaleMode(texture, SDL_SCALEMODE_NEAREST)) {
 			video_fail("Create presentation texture");
 		}
-		texture_width = width;
-		texture_height = height;
+		texture_width = page->width;
+		texture_height = page->height;
+		upload = true;
 	}
-	void *texture_pixels;
-	/* Match the output parameter type required by SDL. */
-	legacy_int pitch;
-	if (!SDL_LockTexture(texture, NULL, &texture_pixels, &pitch)) {
-		video_fail("Lock video texture");
+	if (upload) {
+		void *texture_pixels;
+		/* Match the output parameter type required by SDL. */
+		legacy_int pitch;
+		if (!SDL_LockTexture(texture, NULL, &texture_pixels, &pitch)) {
+			video_fail("Lock video texture");
+		}
+		for (legacy_s32 row = 0; row < page->height; row++) {
+			memcpy((legacy_u8 *)texture_pixels + (size_t)row * pitch,
+				   page->pixels + (size_t)row * page->width,
+				   (size_t)page->width * sizeof(*page->pixels));
+		}
+		SDL_UnlockTexture(texture);
 	}
-	hires_copy_framebuffer_argb(legacy_pixels, palette_pixels, texture_pixels, pitch);
-	SDL_UnlockTexture(texture);
 	if (!SDL_RenderClear(renderer) || !SDL_RenderTexture(renderer, texture, NULL, NULL)) {
 		video_fail("Render video texture");
 	}
 	/* Include CPU composition and submission, but exclude the presentation
 	 * call, which can deliberately wait for display synchronization. */
-	video_record_adaptive_work();
+	if (new_frame) {
+		video_record_adaptive_work();
+	}
+	legacy_u64 present_started = SDL_GetTicksNS();
 	if (!SDL_RenderPresent(renderer)) {
 		video_fail("Present video");
+	}
+	if (adaptive_frame != 0) {
+		/* An exposure can repaint the completed front page while another frame
+		 * is being drawn. Its refresh wait is not rendering workload either. */
+		adaptive_frame_started += SDL_GetTicksNS() - present_started;
 	}
 }
 
@@ -310,11 +383,28 @@ void sdl3_video_present(void)
 		}
 		present_surface(pixels, argb, width, height);
 	} else {
-		present_texture(legacy_pixels);
+		prepare_presentation_page(legacy_pixels);
+		present_texture(true);
 	}
 	memcpy(previous_pixels, legacy_pixels, SCREEN_BYTES);
 	previous_generation = hires_generation();
 	palette_changed = false;
+	last_present = SDL_GetTicks();
+}
+
+void sdl3_video_redraw(void)
+{
+	if (window == NULL) {
+		return;
+	}
+	if (surface_output) {
+		/* DOS keeps its direct indexed/VESA path and frame guard. */
+		sdl3_video_present();
+		return;
+	}
+	/* Repaint only the published page. Drawing, palette edits, and retiring
+	 * high-resolution buffers cannot change this snapshot before a flip. */
+	present_texture(false);
 	last_present = SDL_GetTicks();
 }
 
@@ -360,11 +450,18 @@ void sdl3_video_shutdown(void)
 {
 	SDL_DestroySurface(frame_surface);
 	SDL_DestroyTexture(texture);
+	for (legacy_u32 index = 0; index < PRESENTATION_PAGE_COUNT; index++) {
+		SDL_free(presentation_pages[index].pixels);
+		memset(&presentation_pages[index], 0, sizeof(presentation_pages[index]));
+	}
+	front_page = 0;
 	SDL_DestroyRenderer(renderer);
 	SDL_DestroyWindow(window);
 	surface_output = false;
 	high_resolution_output = false;
 	drawing_frame = false;
+	adaptive_frame = 0;
+	adaptive_frame_started = 0;
 	frame_surface = NULL;
 	texture = NULL;
 	texture_width = 0;
@@ -406,6 +503,7 @@ void dos_video_set_mode_13h(void)
 	if (renderer == NULL) {
 		video_fail("Create renderer");
 	}
+	configure_vsync();
 	if (!SDL_SetRenderLogicalPresentation(renderer, SDL3_SCREEN_WIDTH, PRESENTATION_HEIGHT,
 										  SDL_LOGICAL_PRESENTATION_LETTERBOX)) {
 		video_fail("Configure framebuffer scaling");

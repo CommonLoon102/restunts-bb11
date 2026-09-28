@@ -285,6 +285,65 @@ static void check_video_aspect(legacy_s32 width, legacy_s32 height, legacy_f32 l
 	assert_coordinate(y, top + 36.0f);
 }
 
+#define TEST_VSYNC_ENVIRONMENT "RESTUNTS_VSYNC"
+#define TEST_VSYNC_INTERVAL 1
+
+static void set_vsync_environment(const legacy_char *setting)
+{
+	if (setting != NULL) {
+		assert(SDL_setenv_unsafe(TEST_VSYNC_ENVIRONMENT, setting, true) == 0);
+	} else {
+		assert(SDL_unsetenv_unsafe(TEST_VSYNC_ENVIRONMENT) == 0);
+	}
+}
+
+static void assert_video_vsync(legacy_int expected)
+{
+	assert(sdl3_video_window() != NULL);
+	SDL_Renderer *renderer = SDL_GetRenderer(sdl3_video_window());
+	assert(renderer != NULL);
+	legacy_int actual;
+	assert(SDL_GetRenderVSync(renderer, &actual));
+	assert(actual == expected);
+}
+
+static void test_video_vsync(void)
+{
+	const struct {
+		const legacy_char *setting;
+		legacy_int interval;
+	} cases[] = {{NULL, TEST_VSYNC_INTERVAL}, {"0", SDL_RENDERER_VSYNC_DISABLED},
+				 {"1", TEST_VSYNC_INTERVAL},  {"", TEST_VSYNC_INTERVAL},
+				 {"00", TEST_VSYNC_INTERVAL}, {"invalid", TEST_VSYNC_INTERVAL}};
+	const legacy_char *original = getenv(TEST_VSYNC_ENVIRONMENT);
+	legacy_char *saved = original != NULL ? SDL_strdup(original) : NULL;
+	assert(original == NULL || saved != NULL);
+	for (size_t index = 0; index < SDL_arraysize(cases); index++) {
+		set_vsync_environment(cases[index].setting);
+		/* Recreating the renderer must re-read the selected interval. The dummy
+		 * driver exposes SDL's VSync state without timing-dependent assertions. */
+		dos_video_set_mode_13h();
+		assert_video_vsync(cases[index].interval);
+		/* Fullscreen changes and subsequent presentations retain that choice. */
+		sdl3_video_toggle_fullscreen();
+		assert(SDL_SyncWindow(sdl3_video_window()));
+		sdl3_video_present();
+		assert_video_vsync(cases[index].interval);
+		sdl3_video_toggle_fullscreen();
+		assert(SDL_SyncWindow(sdl3_video_window()));
+		sdl3_video_present();
+		assert_video_vsync(cases[index].interval);
+	}
+	sdl3_video_shutdown();
+	set_vsync_environment("1");
+	sdl3_batch_mode = true;
+	dos_video_set_mode_13h();
+	assert(sdl3_video_window() == NULL);
+	sdl3_batch_mode = false;
+	set_vsync_environment(saved);
+	SDL_free(saved);
+}
+
 static void test_video_and_mouse(void)
 {
 	dos_video_set_mode_13h();
@@ -365,6 +424,166 @@ static void assert_presented_color(legacy_s32 x, legacy_s32 y, Uint8 red, Uint8 
 	}
 	assert(actual_red == red && actual_green == green && actual_blue == blue);
 	SDL_DestroySurface(surface);
+}
+
+enum {
+	PAGE_VIDEO_WINDOW_WIDTH = SDL3_SCREEN_WIDTH,
+	PAGE_VIDEO_WINDOW_HEIGHT = 240,
+	PAGE_VIDEO_PIXELS = SDL3_SCREEN_WIDTH * SDL3_SCREEN_HEIGHT,
+	PAGE_VIDEO_FIRST_INDEX = 16,
+	PAGE_VIDEO_SECOND_INDEX,
+	PAGE_VIDEO_COLOR_COUNT = 2,
+	PAGE_VIDEO_DAC_MAX = 63,
+	PAGE_VIDEO_REFRESH_DELAY_MS = 11
+};
+#define PAGE_VIDEO_RED 0xFFFF0000U
+#define PAGE_VIDEO_GREEN 0xFF00FF00U
+#define PAGE_VIDEO_BLUE 0xFF0000FFU
+#define PAGE_VIDEO_YELLOW 0xFFFFFF00U
+#define PAGE_VIDEO_WHITE 0xFFFFFFFFU
+#define PAGE_VIDEO_BLACK 0xFF000000U
+
+static void assert_presented_page(legacy_u32 top, legacy_u32 bottom)
+{
+	SDL_Surface *surface = SDL_RenderReadPixels(SDL_GetRenderer(sdl3_video_window()), NULL);
+	assert(surface != NULL);
+	assert(surface->w == PAGE_VIDEO_WINDOW_WIDTH && surface->h == PAGE_VIDEO_WINDOW_HEIGHT);
+	for (legacy_s32 y = 0; y < surface->h; y++) {
+		legacy_u32 expected = y < surface->h / 2 ? top : bottom;
+		legacy_u8 red = (legacy_u8)(expected >> LEGACY_WORD_BITS);
+		legacy_u8 green = (legacy_u8)(expected >> LEGACY_BYTE_BITS);
+		legacy_u8 blue = (legacy_u8)expected;
+		for (legacy_s32 x = 0; x < surface->w; x++) {
+			legacy_u8 actual_red, actual_green, actual_blue;
+			assert(SDL_ReadSurfacePixel(surface, x, y, &actual_red, &actual_green, &actual_blue,
+										NULL));
+			if (actual_red != red || actual_green != green || actual_blue != blue) {
+				fprintf(stderr,
+						"Published page pixel (%" LEGACY_PRId32 ", %" LEGACY_PRId32
+						"): got (%d, %d, %d), expected (%d, %d, %d)\n",
+						x, y, actual_red, actual_green, actual_blue, red, green, blue);
+			}
+			assert(actual_red == red && actual_green == green && actual_blue == blue);
+		}
+	}
+	SDL_DestroySurface(surface);
+}
+
+static void request_page_repaint(legacy_u32 event_type)
+{
+	SDL_Renderer *renderer = SDL_GetRenderer(sdl3_video_window());
+	/* Model contents lost after a window repaint. Merely suppressing an upload
+	 * while drawing is insufficient: the completed page must be redrawn. */
+	assert(SDL_SetRenderDrawColor(renderer, LEGACY_U8_MAX, 0, LEGACY_U8_MAX, SDL_ALPHA_OPAQUE));
+	assert(SDL_RenderClear(renderer));
+	assert(SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE));
+	SDL_Event event;
+	SDL_zero(event);
+	event.type = event_type;
+	event.window.windowID = SDL_GetWindowID(sdl3_video_window());
+	assert(SDL_PushEvent(&event));
+	sdl3_platform_pump();
+}
+
+static void test_completed_video_pages(void)
+{
+	hires_shutdown();
+	frame_adaptive_reset(&frame_adaptive);
+	assert(
+		SDL_SetWindowSize(sdl3_video_window(), PAGE_VIDEO_WINDOW_WIDTH, PAGE_VIDEO_WINDOW_HEIGHT));
+	assert(SDL_SyncWindow(sdl3_video_window()));
+	legacy_u8 colors[] = {PAGE_VIDEO_DAC_MAX, 0, 0, 0, 0, PAGE_VIDEO_DAC_MAX};
+	dos_video_set_palette(PAGE_VIDEO_FIRST_INDEX, PAGE_VIDEO_COLOR_COUNT, colors);
+	memset(framebuffer, PAGE_VIDEO_FIRST_INDEX, PAGE_VIDEO_PIXELS);
+	sdl3_video_present();
+	assert_presented_page(PAGE_VIDEO_RED, PAGE_VIDEO_RED);
+
+	sdl3_video_begin_track_frame(1);
+	memset(framebuffer, PAGE_VIDEO_SECOND_INDEX, PAGE_VIDEO_PIXELS / 2);
+	legacy_u8 next_colors[] = {PAGE_VIDEO_DAC_MAX, PAGE_VIDEO_DAC_MAX, 0, 0, PAGE_VIDEO_DAC_MAX, 0};
+	dos_video_set_palette(PAGE_VIDEO_FIRST_INDEX, PAGE_VIDEO_COLOR_COUNT, next_colors);
+	request_page_repaint(SDL_EVENT_WINDOW_EXPOSED);
+	assert_presented_page(PAGE_VIDEO_RED, PAGE_VIDEO_RED);
+	assert(frame_adaptive.samples == 0);
+	memset(framebuffer + PAGE_VIDEO_PIXELS / 2, PAGE_VIDEO_SECOND_INDEX, PAGE_VIDEO_PIXELS / 2);
+	sdl3_video_end_frame();
+	assert_presented_page(PAGE_VIDEO_GREEN, PAGE_VIDEO_GREEN);
+	assert(frame_adaptive.samples == 1);
+
+	/* Reuse the other page with different top and bottom regions, so a stale
+	 * half or a palette borrowed from the next frame cannot pass unnoticed. */
+	sdl3_video_begin_frame();
+	memset(framebuffer, PAGE_VIDEO_FIRST_INDEX, PAGE_VIDEO_PIXELS / 2);
+	legacy_u8 blue[] = {0, 0, PAGE_VIDEO_DAC_MAX};
+	dos_video_set_palette(PAGE_VIDEO_SECOND_INDEX, 1, blue);
+	request_page_repaint(SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED);
+	assert_presented_page(PAGE_VIDEO_GREEN, PAGE_VIDEO_GREEN);
+	sdl3_video_end_frame();
+	assert_presented_page(PAGE_VIDEO_YELLOW, PAGE_VIDEO_BLUE);
+	assert(frame_adaptive.samples == 1);
+
+	/* Unbracketed menu palette fades must still become new completed pages. */
+	legacy_u8 faded_colors[] = {
+		PAGE_VIDEO_DAC_MAX, PAGE_VIDEO_DAC_MAX, PAGE_VIDEO_DAC_MAX, PAGE_VIDEO_DAC_MAX, 0, 0};
+	dos_video_set_palette(PAGE_VIDEO_FIRST_INDEX, PAGE_VIDEO_COLOR_COUNT, faded_colors);
+	SDL_Delay(PAGE_VIDEO_REFRESH_DELAY_MS);
+	sdl3_video_refresh();
+	assert_presented_page(PAGE_VIDEO_WHITE, PAGE_VIDEO_RED);
+	assert(frame_adaptive.samples == 1);
+}
+
+static void test_video_page_lifetime(void)
+{
+	legacy_u8 colors[] = {PAGE_VIDEO_DAC_MAX, PAGE_VIDEO_DAC_MAX, PAGE_VIDEO_DAC_MAX, 0, 0,
+						  PAGE_VIDEO_DAC_MAX};
+	dos_video_set_palette(PAGE_VIDEO_FIRST_INDEX, PAGE_VIDEO_COLOR_COUNT, colors);
+	high_resolution_active = true;
+	hires_set_render_scale(HIRES_SCALE);
+	for (size_t pixel = 0; pixel < SDL_arraysize(argb_framebuffer); pixel++) {
+		argb_framebuffer[pixel] =
+			pixel < SDL_arraysize(argb_framebuffer) / 2 ? PAGE_VIDEO_RED : PAGE_VIDEO_GREEN;
+	}
+	argb_active = true;
+	frame_generation++;
+	sdl3_video_present();
+	assert_presented_page(PAGE_VIDEO_RED, PAGE_VIDEO_GREEN);
+
+	sdl3_video_begin_track_frame(0);
+	/* A resolution change retires hires storage. Neither the preceding ARGB
+	 * pixels nor its dimensions may be borrowed by the published page. */
+	memset(argb_framebuffer, 0, sizeof(argb_framebuffer));
+	hires_set_render_scale(FRAME_ADAPTIVE_HALF_SCALE);
+	memset(high_resolution_framebuffer, PAGE_VIDEO_SECOND_INDEX,
+		   sizeof(high_resolution_framebuffer));
+	legacy_u8 blue[] = {0, 0, PAGE_VIDEO_DAC_MAX};
+	dos_video_set_palette(PAGE_VIDEO_SECOND_INDEX, 1, blue);
+	request_page_repaint(SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED);
+	assert_presented_page(PAGE_VIDEO_RED, PAGE_VIDEO_GREEN);
+	sdl3_video_end_frame();
+	assert_presented_page(PAGE_VIDEO_BLUE, PAGE_VIDEO_BLUE);
+
+	sdl3_video_begin_track_frame(0);
+	hires_shutdown();
+	memset(high_resolution_framebuffer, 0, sizeof(high_resolution_framebuffer));
+	memset(framebuffer, PAGE_VIDEO_FIRST_INDEX, PAGE_VIDEO_PIXELS);
+	request_page_repaint(SDL_EVENT_WINDOW_EXPOSED);
+	assert_presented_page(PAGE_VIDEO_BLUE, PAGE_VIDEO_BLUE);
+	sdl3_video_end_frame();
+	assert_presented_page(PAGE_VIDEO_WHITE, PAGE_VIDEO_WHITE);
+
+	/* Mode recreation must discard the front page even if a drawing frame
+	 * was abandoned, and the first repaint must show the newly cleared mode. */
+	legacy_u32 completed_samples = frame_adaptive.samples;
+	sdl3_video_begin_track_frame(1);
+	memset(framebuffer, PAGE_VIDEO_SECOND_INDEX, PAGE_VIDEO_PIXELS);
+	dos_video_set_mode_13h();
+	assert(
+		SDL_SetWindowSize(sdl3_video_window(), PAGE_VIDEO_WINDOW_WIDTH, PAGE_VIDEO_WINDOW_HEIGHT));
+	assert(SDL_SyncWindow(sdl3_video_window()));
+	request_page_repaint(SDL_EVENT_WINDOW_EXPOSED);
+	assert_presented_page(PAGE_VIDEO_BLACK, PAGE_VIDEO_BLACK);
+	assert(frame_adaptive.samples == completed_samples);
+	frame_adaptive_reset(&frame_adaptive);
 }
 
 static void test_adaptive_frame_timing(void)
@@ -711,9 +930,12 @@ legacy_int main(void)
 	sdl3_batch_mode = 0;
 	test_keyboard();
 	test_timer();
+	test_video_vsync();
 	test_video_and_mouse();
 	test_high_resolution_video();
 	test_dynamic_resolution_video();
+	test_completed_video_pages();
+	test_video_page_lifetime();
 	test_adaptive_frame_timing();
 	test_fullscreen_shortcut();
 	test_joystick();
