@@ -34,6 +34,8 @@ enum REPLAY_TEST_TARGET {
 legacy_u8 supersight_enabled;
 
 #ifdef RESTUNTS_SDL3
+#define TEST_GHOST_DISTANCE_PER_FRAME 100L
+
 legacy_s16 camera_track_height_offset;
 static legacy_u8 scheduled_mode;
 static legacy_u8 scheduled_toggle;
@@ -178,7 +180,10 @@ legacy_s16 ghost_sample_render_pose(legacy_u32 live_frame, legacy_u16 live_frame
 	}
 	*car = scheduled_ghost;
 	*camera = scheduled_ghost_camera;
-	car->car_position.lx = live_frame * 100L - lag * 100L / FRAME_INTERPOLATION_ONE;
+	legacy_u64 live_time = (legacy_u64)live_frame * FRAME_INTERPOLATION_ONE;
+	live_time = live_time > lag ? live_time - lag : 0;
+	car->car_position.lx =
+		(legacy_s32)(live_time * TEST_GHOST_DISTANCE_PER_FRAME / FRAME_INTERPOLATION_ONE);
 	camera->follow_position.x = (legacy_s16)car->car_position.lx;
 	return 1;
 }
@@ -190,7 +195,12 @@ void update_frame_snapshot(legacy_s8 buffer, struct RECTANGLE *rect,
 	(void)buffer;
 	(void)rect;
 	assert(scheduled_mode != 0 && supersight_enabled != 0);
-	assert(ghost == NULL && ghost_camera == NULL);
+	if (scheduled_ghost_active != 0) {
+		assert(ghost == &race_presentation.ghost_interpolated);
+		assert(ghost_camera == &race_presentation.ghost_camera_interpolated);
+	} else {
+		assert(ghost == NULL && ghost_camera == NULL);
+	}
 	assert(snapshot->game_frame == state.game_frame);
 	assert(snapshot->playerstate.car_position.lx <= state.playerstate.car_position.lx);
 	if (race_presentation.history_valid != 0) {
@@ -225,6 +235,10 @@ void ghost_update(legacy_u32 frame, legacy_u16 frame_rate)
 #ifdef RESTUNTS_SDL3
 	if (scheduled_mode != 0) {
 		scheduled_ghosts++;
+		if (scheduled_ghost_active != 0) {
+			scheduled_ghost.car_position.lx = frame * TEST_GHOST_DISTANCE_PER_FRAME;
+			scheduled_ghost_camera.follow_position.x = (legacy_s16)scheduled_ghost.car_position.lx;
+		}
 	}
 #endif
 	assert(frame == (game_replay_mode == REPLAY_MODE_PAUSED
@@ -994,6 +1008,82 @@ static void test_interpolation_resets(void)
 	}
 }
 
+static void assert_visual_ghost_position(legacy_s32 position)
+{
+	struct CARSTATE authoritative_car = scheduled_ghost;
+	struct GHOST_CAMERA_STATE authoritative_camera = scheduled_ghost_camera;
+	assert_visual_position(state.playerstate.car_position.lx);
+	assert(race_presentation.ghost_valid != 0);
+	assert(race_presentation.ghost_interpolated.car_position.lx == position);
+	assert(race_presentation.ghost_camera_interpolated.follow_position.x == position);
+	assert(memcmp(&authoritative_car, &scheduled_ghost, sizeof(authoritative_car)) == 0);
+	assert(memcmp(&authoritative_camera, &scheduled_ghost_camera, sizeof(authoritative_camera)) ==
+		   0);
+}
+
+static void test_ghost_waits_for_race_start(void)
+{
+	static const legacy_u16 rates[] = {GAME_FRAME_RATE_LOW, GAME_FRAME_RATE_NORMAL};
+	static const legacy_u8 sequences[] = {RACE_START_SEQUENCE_FLAG_ANIMATION,
+										  RACE_START_SEQUENCE_AUTO_DRIVE};
+	for (legacy_u16 rate_index = 0; rate_index < sizeof(rates) / sizeof(rates[0]); rate_index++) {
+		legacy_u16 rate = rates[rate_index];
+		legacy_u16 slots = PRESENTATION_RATE / rate;
+		prepare_presentation_test(rate, 1);
+		race_presentation = (struct RACE_PRESENTATION){0};
+		scheduled_ghost_active = 1;
+		scheduled_ghost = (struct CARSTATE){0};
+		scheduled_ghost_camera = (struct GHOST_CAMERA_STATE){0};
+		game_replay_mode = REPLAY_MODE_PAUSED;
+		state.game_inputmode = GAME_INPUT_MODE_WAITING;
+		race_presentation_sync(0);
+		/* The truck sequence advances simulation frames while race time stays zero. */
+		for (legacy_u16 sequence = 0; sequence < sizeof(sequences) / sizeof(sequences[0]);
+			 sequence++) {
+			race_start_sequence_state = sequences[sequence];
+			state.game_frame++;
+			elapsed_time2 = state.game_frame;
+			ghost_update(0, rate);
+			scheduled_time += PRESENTATION_SECOND_NS / rate;
+			race_presentation_capture();
+			assert(race_presentation.history_valid != 0);
+			for (legacy_u16 slot = 0; slot < slots; slot++) {
+				scheduled_time =
+					race_presentation.sample_time +
+					((legacy_u64)slot * PRESENTATION_SECOND_NS + PRESENTATION_RATE - 1U) /
+						PRESENTATION_RATE;
+				assert_visual_ghost_position(0);
+				assert(scheduled_ghost_sample_frame == 0 && scheduled_ghost_sample_rate == rate);
+			}
+		}
+		/* Finishing the animation still waits for the driver's first input. */
+		game_replay_mode = REPLAY_MODE_LIVE;
+		race_start_sequence_state = RACE_START_SEQUENCE_INACTIVE;
+		state.game_frame = elapsed_time2 = 0;
+		ghost_update(0, rate);
+		race_presentation_sync(0);
+		assert_visual_ghost_position(0);
+		scheduled_time += PRESENTATION_SECOND_NS / rate;
+		assert_visual_ghost_position(0);
+
+		state.game_inputmode = GAME_INPUT_MODE_ACTIVE;
+		state.game_frame = elapsed_time2 = 1;
+		ghost_update(1, rate);
+		race_presentation_capture();
+		assert(race_presentation.history_valid != 0);
+		for (legacy_u16 slot = 0; slot < slots; slot++) {
+			scheduled_time = race_presentation.sample_time +
+							 ((legacy_u64)slot * PRESENTATION_SECOND_NS + PRESENTATION_RATE - 1U) /
+								 PRESENTATION_RATE;
+			legacy_u32 fraction = (slot + 1U) * FRAME_INTERPOLATION_ONE / slots;
+			assert_visual_ghost_position(
+				(legacy_s32)(fraction * TEST_GHOST_DISTANCE_PER_FRAME / FRAME_INTERPOLATION_ONE));
+			assert(scheduled_ghost_sample_frame == 1 && scheduled_ghost_sample_rate == rate);
+		}
+	}
+	scheduled_ghost_active = 0;
+}
+
 static void test_ghost_interpolation_timestamps(void)
 {
 	prepare_interpolation_pair();
@@ -1117,6 +1207,7 @@ int main(void)
 	test_interpolation_slot_boundaries();
 	test_interpolation_slots_and_stalls();
 	test_interpolation_resets();
+	test_ghost_waits_for_race_start();
 	test_ghost_interpolation_timestamps();
 #endif
 	return 0;

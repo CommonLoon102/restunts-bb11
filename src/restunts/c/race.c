@@ -353,6 +353,14 @@ static void race_update_viewport(struct RACE_VIEWPORT_CACHE *cache, legacy_s16 r
 	}
 }
 
+static legacy_u32 race_ghost_frame(void)
+{
+	/* The truck sequence advances simulation frames before the race clock starts. */
+	return game_replay_mode == REPLAY_MODE_PAUSED
+			   ? 0
+			   : (legacy_u32)(legacy_u16)state.game_frame + elapsed_time1;
+}
+
 #ifdef RESTUNTS_SDL3
 #define RACE_PRESENTATION_VIEW_COUNT 13U
 #define RACE_PRESENTATION_SLOW_INTERVAL_SCALE 2U
@@ -479,8 +487,8 @@ static void race_presentation_interpolate_ghost(legacy_u32 fraction)
 	legacy_u32 lag = race_presentation.sample_span * (FRAME_INTERPOLATION_ONE - fraction);
 	/* Recorded ghosts can have a different tick rate. Sample their cached
 	 * replay at this same visual instant instead of blending repeated poses. */
-	(void)ghost_sample_render_pose((legacy_u32)(legacy_u16)state.game_frame + elapsed_time1,
-								   framespersec, lag, &race_presentation.ghost_interpolated,
+	(void)ghost_sample_render_pose(race_ghost_frame(), framespersec, lag,
+								   &race_presentation.ghost_interpolated,
 								   &race_presentation.ghost_camera_interpolated);
 }
 
@@ -775,10 +783,7 @@ static void race_run_frames(struct RACE_VIEWPORT_CACHE *cache)
 			sprite_select_render_window();
 		}
 
-		legacy_u32 ghost_frame = game_replay_mode == REPLAY_MODE_PAUSED
-									 ? 0
-									 : (legacy_u32)(legacy_u16)state.game_frame + elapsed_time1;
-		ghost_update(ghost_frame, framespersec);
+		ghost_update(race_ghost_frame(), framespersec);
 		race_update_viewport(cache, rewind.active);
 #ifdef RESTUNTS_SDL3
 		race_presentation_capture();
