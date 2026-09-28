@@ -20,7 +20,7 @@
 /* Keep the original displayed pixel width through medium-close views,
  * then let perspective narrow the stroke at greater distances. */
 #define HIRES_LINE_DIAMETER 1.5
-/* A subpixel decal still needs coverage across diagonal sample gaps. */
+/* Subpixel decals can miss pixel centers at some positions and orientations. */
 #define HIRES_MIN_DECAL_WIDTH 0.75
 #define HIRES_DECAL_WIDTH_REDUCTION 2
 #define HIRES_MAX_POLYGON_POINTS 20
@@ -245,7 +245,7 @@ static legacy_f64 decal_width(legacy_f64 inverse_z)
 	if (width <= minimum_width) {
 		return minimum_width;
 	}
-	/* Reduce mid-range coverage while preserving the near cap and distant visibility floor. */
+	/* Reduce mid-range coverage while preserving the near cap and distant width floor. */
 	legacy_f64 excess = width - minimum_width;
 	legacy_f64 reduction = excess - excess * excess / (scale - minimum_width);
 	width -= HIRES_DECAL_WIDTH_REDUCTION * reduction;
@@ -253,7 +253,7 @@ static legacy_f64 decal_width(legacy_f64 inverse_z)
 }
 
 /* Measure the complete projected polygon across each edge normal. The coverage
- * target follows perspective, with a small floor to keep distant decals solid. */
+ * target follows perspective, with a subpixel minimum width for distant decals. */
 static legacy_f64 polygon_padding(const struct SHAPE3D_HIRES_POINT *points, legacy_u32 count)
 {
 	legacy_s32 scale = hires_render_scale();
