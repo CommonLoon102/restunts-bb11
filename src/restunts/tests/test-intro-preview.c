@@ -11,6 +11,7 @@
 #include "../c/projection.h"
 #include "../c/menu_internal.h"
 #include "../c/track_objects.h"
+#include "../c/trackdata_layout.h"
 #include "../c/platform.h"
 #include "../c/fileio.h"
 #include "../c/memmgr.h"
@@ -32,9 +33,33 @@ static legacy_u32 trace_hash;
 static legacy_u32 queued_count, flush_count, pixel_count;
 static struct SHAPE2D sky_images[4];
 static legacy_u8 elements[900], terrain[900];
+legacy_u8 supersight_enabled;
+
+enum {
+	PREVIEW_WATER_TILE = TRACK_GRID_SIZE / 2,
+	PREVIEW_WATER_OBJECT = 1,
+	PREVIEW_WATER_BRIDGE_FIRST = 105,
+	PREVIEW_WATER_BRIDGE_LAST = 108,
+	PREVIEW_WATER_HIGH_SHAPE = 16,
+	PREVIEW_WATER_LOW_SHAPE = 32,
+	PREVIEW_WATER_FIRST = 1,
+	PREVIEW_WATER_LAST = 5,
+	PREVIEW_WATER_COUNT = PREVIEW_WATER_LAST - PREVIEW_WATER_FIRST + 1,
+	PREVIEW_WATER_QUADRANTS = 4,
+	PREVIEW_WATER_ALL_CELLS = (1U << PREVIEW_WATER_QUADRANTS) - 1U,
+	PREVIEW_WATER_NORTHWEST = 1,
+	PREVIEW_WATER_VERTICAL = 5,
+	PREVIEW_WATER_HORIZONTAL = 3,
+	PREVIEW_WATER_CAPTURE_CAPACITY = 8,
+	PREVIEW_WATER_HALF_SCALE = 2,
+	PREVIEW_WATER_FLAGS = 5,
+	PREVIEW_WATER_CAMERA_HEIGHT = 256
+};
+static legacy_u8 preview_capture_active;
+static legacy_u16 preview_captured_count;
+static struct TRANSFORMEDSHAPE3D preview_captured[PREVIEW_WATER_CAPTURE_CAPACITY];
 
 #ifdef RESTUNTS_SDL3
-legacy_u8 supersight_enabled;
 legacy_u8 fps_display_enabled;
 static legacy_u32 scripted_input, shortcut_count, opponent_updates;
 static legacy_u32 fps_draw_count, fps_presented_count, fps_reset_count;
@@ -198,6 +223,10 @@ legacy_u16 select_cliprect_rotate(legacy_s16 z, legacy_s16 x, legacy_s16 y, stru
 legacy_u16 shape3d_transform_and_queue(struct TRANSFORMEDSHAPE3D *shape)
 {
 	legacy_u16 id = shape_id(shape->shapeptr);
+	if (preview_capture_active != 0) {
+		assert(preview_captured_count < PREVIEW_WATER_CAPTURE_CAPACITY);
+		preview_captured[preview_captured_count++] = *shape;
+	}
 #ifdef RESTUNTS_SDL3
 	if (scripted_input == 3 && id == 132 &&
 		shape->pos.x !=
@@ -380,6 +409,153 @@ static void preview_case(legacy_u32 scenario)
 	assert(flush_count == 900);
 	assert(queued_count > 0);
 	record_word(queued_count);
+}
+
+struct PREVIEW_WATER_FIXTURE {
+	legacy_u8 track, footprint, cells, column, row;
+};
+
+static void preview_water_case(const struct PREVIEW_WATER_FIXTURE *fixture, legacy_u8 wet_cells,
+							   legacy_u8 water, legacy_u8 raised)
+{
+	static const legacy_u8 continuations[PREVIEW_WATER_QUADRANTS] = {
+		0, TRACK_TILE_CONTINUATION_EAST, TRACK_TILE_CONTINUATION_SOUTH,
+		TRACK_TILE_CONTINUATION_SOUTHEAST};
+	reset_projection();
+	memset(elements, 0, sizeof(elements));
+	memset(terrain, 0, sizeof(terrain));
+	memset(&trkObjectList[fixture->track], 0, sizeof(trkObjectList[fixture->track]));
+	trkObjectList[fixture->track].ss_multiTileFlag = fixture->footprint;
+	trkObjectList[fixture->track].ss_loShapePtr = &game3dshapes[0];
+	legacy_u8 expected = wet_cells & fixture->cells;
+	legacy_u8 bridge = fixture->track >= PREVIEW_WATER_BRIDGE_FIRST &&
+					   fixture->track <= PREVIEW_WATER_BRIDGE_LAST && raised == 0;
+	if (supersight_enabled == 0 && bridge == 0) {
+		expected &= PREVIEW_WATER_NORTHWEST;
+	}
+	if (raised != 0) {
+		expected &= ~PREVIEW_WATER_NORTHWEST;
+	}
+	for (legacy_u8 quadrant = 0; quadrant < PREVIEW_WATER_QUADRANTS; quadrant++) {
+		legacy_u8 column = fixture->column + (quadrant & 1U);
+		legacy_u8 row = fixture->row + (quadrant >> 1U);
+		legacy_u8 cell = 1U << quadrant;
+		if (column >= TRACK_GRID_SIZE || row >= TRACK_GRID_SIZE) {
+			expected &= ~cell;
+			continue;
+		}
+		if ((fixture->cells & cell) == 0) {
+			continue;
+		}
+		elements[trackrows[row] + column] =
+			quadrant == 0 ? fixture->track : continuations[quadrant];
+		terrain[terrainrows[row] + column] =
+			(wet_cells & cell) != 0
+				? PREVIEW_WATER_FIRST +
+					  (water - PREVIEW_WATER_FIRST + quadrant) % PREVIEW_WATER_COUNT
+				: 0;
+		if (quadrant == 0 && raised != 0) {
+			terrain[terrainrows[row] + column] = TERRAIN_RAISED_TILE;
+		}
+	}
+	preview_captured_count = 0;
+	preview_capture_active = 1;
+	draw_track_preview();
+	preview_capture_active = 0;
+	assert(flush_count == TRACK_GRID_SIZE * TRACK_GRID_SIZE);
+	legacy_u8 seen = 0, object_drawn = 0;
+	for (legacy_u16 index = 0; index < preview_captured_count; index++) {
+		const struct TRANSFORMEDSHAPE3D *shape = &preview_captured[index];
+		if (shape->shapeptr == &game3dshapes[0]) {
+			assert(object_drawn++ == 0);
+			continue;
+		}
+		legacy_u8 cell = 0;
+		for (legacy_u8 quadrant = 0; quadrant < PREVIEW_WATER_QUADRANTS; quadrant++) {
+			legacy_u8 column = fixture->column + (quadrant & 1U);
+			legacy_u8 row = fixture->row + (quadrant >> 1U);
+			if (column >= TRACK_GRID_SIZE || row >= TRACK_GRID_SIZE ||
+				(expected & (1U << quadrant)) == 0) {
+				continue;
+			}
+			legacy_u8 tile_terrain = terrain[terrainrows[row] + column];
+			legacy_u16 shape_base =
+				bridge != 0 ? PREVIEW_WATER_HIGH_SHAPE : PREVIEW_WATER_LOW_SHAPE;
+			if (shape->shapeptr != &game3dshapes[shape_base + tile_terrain]) {
+				continue;
+			}
+			assert(object_drawn == 0);
+			assert(shape->pos.x == (track_column_centers[column] - track_preview_camera_x) /
+									   PREVIEW_WATER_HALF_SCALE);
+			assert(shape->pos.z ==
+				   (track_row_centers[row] - track_preview_camera_z) / PREVIEW_WATER_HALF_SCALE);
+			assert(shape->pos.y == -PREVIEW_WATER_CAMERA_HEIGHT / PREVIEW_WATER_HALF_SCALE);
+			assert(shape->rotvec.z == terrain_scene_objects[tile_terrain].ss_rotY);
+			assert(shape->rotvec.x == 0 && shape->rotvec.y == 0);
+			assert(shape->ts_flags == PREVIEW_WATER_FLAGS && shape->material == 0);
+			cell = 1U << quadrant;
+		}
+		if (cell != 0) {
+			assert((seen & cell) == 0);
+			seen |= cell;
+		} else {
+			/* Raised owners retain their existing solid hill foundation. */
+			assert(raised != 0 && object_drawn == 0);
+			assert(shape->pos.y ==
+				   (hillHeightConsts[TERRAIN_RAISED_HEIGHT_INDEX] - PREVIEW_WATER_CAMERA_HEIGHT) /
+					   PREVIEW_WATER_HALF_SCALE);
+		}
+	}
+	assert(seen == expected && object_drawn == 1);
+}
+
+static void test_preview_covered_water(void)
+{
+	static const legacy_u8 coverage[] = {PREVIEW_WATER_NORTHWEST, PREVIEW_WATER_VERTICAL,
+										 PREVIEW_WATER_HORIZONTAL, PREVIEW_WATER_ALL_CELLS};
+	preview_map(0);
+	track_preview_camera_x = track_column_centers[PREVIEW_WATER_TILE];
+	track_preview_camera_y = PREVIEW_WATER_CAMERA_HEIGHT;
+	track_preview_camera_z = track_row_centers[PREVIEW_WATER_TILE];
+	for (legacy_u8 water = PREVIEW_WATER_FIRST; water <= PREVIEW_WATER_LAST; water++) {
+		terrain_scene_objects[water].ss_shapePtr = &game3dshapes[PREVIEW_WATER_HIGH_SHAPE + water];
+		terrain_scene_objects[water].ss_loShapePtr = &game3dshapes[PREVIEW_WATER_LOW_SHAPE + water];
+	}
+	/* Exercise the full preview traversal, so continuation suppression and any
+	 * duplicate or late terrain submissions are covered along with tile drawing. */
+	for (legacy_u8 footprint = 0; footprint < sizeof(coverage) / sizeof(coverage[0]); footprint++) {
+		struct PREVIEW_WATER_FIXTURE fixture = {PREVIEW_WATER_OBJECT, footprint,
+												coverage[footprint], PREVIEW_WATER_TILE,
+												PREVIEW_WATER_TILE};
+		for (legacy_u8 water = PREVIEW_WATER_FIRST; water <= PREVIEW_WATER_LAST; water++) {
+			for (legacy_u8 wet = 0; wet <= PREVIEW_WATER_ALL_CELLS; wet++) {
+				for (legacy_u8 raised = 0; raised <= 1; raised++) {
+					for (supersight_enabled = 0; supersight_enabled <= 1; supersight_enabled++) {
+						preview_water_case(&fixture, wet, water, raised);
+					}
+				}
+			}
+		}
+	}
+	struct PREVIEW_WATER_FIXTURE fixture = {
+		PREVIEW_WATER_BRIDGE_FIRST, MULTI_TILE_ROW_EDGE_FLAG | MULTI_TILE_COLUMN_EDGE_FLAG,
+		PREVIEW_WATER_ALL_CELLS, PREVIEW_WATER_TILE, PREVIEW_WATER_TILE};
+	/* Elevated corners already draw four high-detail terrain cells. */
+	for (; fixture.track <= PREVIEW_WATER_BRIDGE_LAST; fixture.track++) {
+		for (legacy_u8 raised = 0; raised <= 1; raised++) {
+			for (supersight_enabled = 0; supersight_enabled <= 1; supersight_enabled++) {
+				preview_water_case(&fixture, PREVIEW_WATER_ALL_CELLS, PREVIEW_WATER_FIRST, raised);
+			}
+		}
+	}
+	fixture.track = PREVIEW_WATER_OBJECT;
+	supersight_enabled = 1;
+	for (legacy_u8 edge = 0; edge < PREVIEW_WATER_QUADRANTS; edge++) {
+		fixture.column = (edge & 1U) != 0 ? TRACK_GRID_LAST_INDEX : PREVIEW_WATER_TILE;
+		fixture.row = (edge & 2U) != 0 ? TRACK_GRID_LAST_INDEX : PREVIEW_WATER_TILE;
+		preview_water_case(&fixture, PREVIEW_WATER_ALL_CELLS, PREVIEW_WATER_FIRST, 0);
+	}
+	supersight_enabled = 0;
 }
 
 static legacy_s8 title_data[3];
@@ -793,5 +969,6 @@ int main(void)
 	display_toggle_completion_case(KEY_SHIFT_F12);
 	predictive_presentation_case();
 #endif
+	test_preview_covered_water();
 	return 0;
 }
