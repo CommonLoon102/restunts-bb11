@@ -21,7 +21,7 @@
  * then let perspective narrow the stroke at greater distances. */
 #define HIRES_LINE_DIAMETER 1.5
 /* A subpixel decal still needs coverage across diagonal sample gaps. */
-#define HIRES_MIN_DECAL_WIDTH 1.5
+#define HIRES_MIN_DECAL_WIDTH 0.75
 #define HIRES_DECAL_WIDTH_REDUCTION 2
 #define HIRES_MAX_POLYGON_POINTS 20
 #define HIRES_ROUND_POINTS 64
