@@ -904,8 +904,10 @@ static void relax_wheel_plane_residual(struct PLAYER_WHEEL_MOTION *motion, legac
 	legacy_u32 fraction = player_tick_fraction();
 	legacy_s16 residual = retained_wheel_plane_residual(initial_distance, distance, fraction);
 	if (residual != 0) {
-		struct VECTOR normal = {0, LEGACY_S16_SHL(residual, PLAYER_PHYSICS_POSITION_SCALE_SHIFT),
-								0};
+		struct VECTOR normal;
+		normal.x = 0;
+		normal.y = LEGACY_S16_SHL(residual, PLAYER_PHYSICS_POSITION_SCALE_SHIFT);
+		normal.z = 0;
 		struct VECTOR offset;
 		mat_mul_vector2(&normal, &planptr[planindex].plane_rotation, &offset);
 		physics_position_offset(&motion->current[wheel_index], &motion->current[wheel_index],

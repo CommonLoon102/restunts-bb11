@@ -114,8 +114,11 @@ legacy_s16 frame_display_overlay_active(void)
 
 static struct RECTANGLE frame_supersight_status_bounds(void)
 {
-	struct RECTANGLE bounds = {REPLAY_TEXT_LEFT_X, SUPERSIGHT_STATUS_RIGHT_X, REPLAY_TEXT_Y,
-							   REPLAY_TEXT_Y + font_glyph_height + 1};
+	struct RECTANGLE bounds;
+	bounds.left = REPLAY_TEXT_LEFT_X;
+	bounds.right = SUPERSIGHT_STATUS_RIGHT_X;
+	bounds.top = REPLAY_TEXT_Y;
+	bounds.bottom = REPLAY_TEXT_Y + font_glyph_height + 1;
 	return bounds;
 }
 
@@ -288,8 +291,10 @@ static legacy_u16 draw_fps_text(void)
 	}
 	struct RECTANGLE roof_bounds = empty_rect;
 	if (fps_display_enabled != 0) {
-		roof_bounds = (struct RECTANGLE){REPLAY_TEXT_LEFT_X, FPS_TEXT_RIGHT_X, REPLAY_FILENAME_Y,
-										 REPLAY_FILENAME_Y + font_glyph_height + 1};
+		roof_bounds.left = REPLAY_TEXT_LEFT_X;
+		roof_bounds.right = FPS_TEXT_RIGHT_X;
+		roof_bounds.top = REPLAY_FILENAME_Y;
+		roof_bounds.bottom = REPLAY_FILENAME_Y + font_glyph_height + 1;
 	}
 	if (supersight_status_active != 0 || supersight_status_clear_frames != 0) {
 		struct RECTANGLE status_bounds = frame_supersight_status_bounds();

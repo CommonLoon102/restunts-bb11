@@ -156,7 +156,10 @@ static legacy_s16 body_crosses_selected_plane(struct VECTOR *previous, struct VE
 	for (legacy_u16 x = 0; x < BODY_PLANE_CONTACT_BOUND_COUNT && !hit; x++) {
 		for (legacy_u16 y = 0; y < BODY_PLANE_CONTACT_BOUND_COUNT && !hit; y++) {
 			for (legacy_u16 z = 0; z < BODY_PLANE_CONTACT_BOUND_COUNT && !hit; z++) {
-				struct VECTOR contact = {bounds[x].x, bounds[y].y, bounds[z].z};
+				struct VECTOR contact;
+				contact.x = bounds[x].x;
+				contact.y = bounds[y].y;
+				contact.z = bounds[z].z;
 				build_track_object(&contact, &contact);
 				hit = selected_body_plane_is_coplanar(&selected);
 			}
