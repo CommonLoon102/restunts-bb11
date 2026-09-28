@@ -62,11 +62,9 @@
 #define REPLAY_INPUT_SETTLE_DELTA 1000
 #define REPLAY_RESTART_WAIT_TICKS 50UL
 
-#define REPLAY_CAMERA_ZOOM_STEP 30
 #define REPLAY_CUSTOM_CAMERA_MIN_DISTANCE 120
 #define REPLAY_CUSTOM_CAMERA_MAX_DISTANCE 1500
 #define REPLAY_TRACK_CAMERA_MAX_HEIGHT 900
-#define REPLAY_CAMERA_ANGLE_STEP 16
 #define REPLAY_CUSTOM_CAMERA_ELEVATION_LIMIT ANGLE_QUARTER_TURN
 #define REPLAY_CUSTOM_CAMERA_MODIFIER_SCAN_CODE 29
 
@@ -342,11 +340,11 @@ static legacy_s16 replay_continue_recording(void)
 static void replay_resume_live(void)
 {
 	replay_filename[0] = 0;
+	camera_select_mode(CAMERA_MODE_COCKPIT);
 	dashb_toggle = 1;
 	show_penalty_counter = 0;
 	followOpponentFlag = 0;
 	game_replay_mode = REPLAY_MODE_LIVE;
-	cameramode = CAMERA_MODE_COCKPIT;
 	state.game_end_event = 0;
 	state.game_frame_in_sec = 0;
 	replay_playback_speed = REPLAY_PLAYBACK_NORMAL;
@@ -477,7 +475,7 @@ static void replay_display_options(void)
 			replaybar_toggle ^= 1;
 			break;
 		case REPLAY_MODE_ACTION_CAMERA:
-			cameramode = (legacy_s8)(((legacy_u8)cameramode + 1U) & CAMERA_MODE_MASK);
+			camera_select_mode((legacy_s8)(((legacy_u8)cameramode + 1U) & CAMERA_MODE_MASK));
 			break;
 		case REPLAY_MODE_ACTION_DETAIL:
 			show_graphic_levels_menu();
@@ -652,13 +650,12 @@ static legacy_s16 replay_try_zoom(legacy_u16 input)
 				return 0;
 			}
 			camera_track_height_offset =
-				LEGACY_S16_WRAP_SUB(camera_track_height_offset, REPLAY_CAMERA_ZOOM_STEP);
+				LEGACY_S16_WRAP_SUB(camera_track_height_offset, CAMERA_ZOOM_STEP);
 		} else {
 			if (custom_camera.distance >= REPLAY_CUSTOM_CAMERA_MAX_DISTANCE) {
 				return 0;
 			}
-			custom_camera.distance =
-				LEGACY_S16_WRAP_ADD(custom_camera.distance, REPLAY_CAMERA_ZOOM_STEP);
+			custom_camera.distance = LEGACY_S16_WRAP_ADD(custom_camera.distance, CAMERA_ZOOM_STEP);
 		}
 	} else {
 		if (cameramode == CAMERA_MODE_TRACKSIDE) {
@@ -666,13 +663,12 @@ static legacy_s16 replay_try_zoom(legacy_u16 input)
 				return 0;
 			}
 			camera_track_height_offset =
-				LEGACY_S16_WRAP_ADD(camera_track_height_offset, REPLAY_CAMERA_ZOOM_STEP);
+				LEGACY_S16_WRAP_ADD(camera_track_height_offset, CAMERA_ZOOM_STEP);
 		} else {
 			if (custom_camera.distance <= REPLAY_CUSTOM_CAMERA_MIN_DISTANCE) {
 				return 0;
 			}
-			custom_camera.distance =
-				LEGACY_S16_WRAP_SUB(custom_camera.distance, REPLAY_CAMERA_ZOOM_STEP);
+			custom_camera.distance = LEGACY_S16_WRAP_SUB(custom_camera.distance, CAMERA_ZOOM_STEP);
 		}
 	}
 	return 1;
@@ -739,26 +735,26 @@ static legacy_u16 replay_adjust_custom_camera(legacy_u16 *input)
 	switch (*input) {
 		case KEY_RIGHT:
 			custom_camera.azimuth_angle =
-				LEGACY_S16_WRAP_ADD(custom_camera.azimuth_angle, REPLAY_CAMERA_ANGLE_STEP);
+				LEGACY_S16_WRAP_ADD(custom_camera.azimuth_angle, CAMERA_ANGLE_STEP);
 			return 1;
 		case KEY_LEFT:
 			custom_camera.azimuth_angle =
-				LEGACY_S16_WRAP_SUB(custom_camera.azimuth_angle, REPLAY_CAMERA_ANGLE_STEP);
+				LEGACY_S16_WRAP_SUB(custom_camera.azimuth_angle, CAMERA_ANGLE_STEP);
 			return 1;
 		case KEY_UP:
-			if (LEGACY_S16_WRAP_ADD(custom_camera.elevation_angle, REPLAY_CAMERA_ANGLE_STEP) <
+			if (LEGACY_S16_WRAP_ADD(custom_camera.elevation_angle, CAMERA_ANGLE_STEP) <
 				REPLAY_CUSTOM_CAMERA_ELEVATION_LIMIT) {
 				custom_camera.elevation_angle =
-					LEGACY_S16_WRAP_ADD(custom_camera.elevation_angle, REPLAY_CAMERA_ANGLE_STEP);
+					LEGACY_S16_WRAP_ADD(custom_camera.elevation_angle, CAMERA_ANGLE_STEP);
 				return 1;
 			}
 			*input = 0;
 			break;
 		case KEY_DOWN:
-			if (LEGACY_S16_WRAP_SUB(custom_camera.elevation_angle, REPLAY_CAMERA_ANGLE_STEP) >
+			if (LEGACY_S16_WRAP_SUB(custom_camera.elevation_angle, CAMERA_ANGLE_STEP) >
 				-REPLAY_CUSTOM_CAMERA_ELEVATION_LIMIT) {
 				custom_camera.elevation_angle =
-					LEGACY_S16_WRAP_SUB(custom_camera.elevation_angle, REPLAY_CAMERA_ANGLE_STEP);
+					LEGACY_S16_WRAP_SUB(custom_camera.elevation_angle, CAMERA_ANGLE_STEP);
 				return 1;
 			}
 			*input = 0;

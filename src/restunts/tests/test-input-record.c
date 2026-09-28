@@ -535,6 +535,122 @@ static void test_ghost_view_shortcut(void)
 	ghost_fixture_active = 0;
 }
 
+#define TEST_CAMERA_CLOSE_DISTANCE 150
+#define TEST_CAMERA_NORMAL_DISTANCE 210
+#define TEST_CAMERA_FAR_DISTANCE 300
+#define TEST_CAMERA_CHASE_ELEVATION 48
+#define TEST_CAMERA_CHASE_AZIMUTH 512
+
+static const struct CUSTOM_CAMERA test_camera_presets[] = {
+	{TEST_CAMERA_CLOSE_DISTANCE, TEST_CAMERA_CHASE_ELEVATION, TEST_CAMERA_CHASE_AZIMUTH},
+	{TEST_CAMERA_NORMAL_DISTANCE, TEST_CAMERA_CHASE_ELEVATION, TEST_CAMERA_CHASE_AZIMUTH},
+	{TEST_CAMERA_FAR_DISTANCE, TEST_CAMERA_CHASE_ELEVATION, TEST_CAMERA_CHASE_AZIMUTH}};
+static const struct CUSTOM_CAMERA test_camera_originals[] = {
+	{CUSTOM_CAMERA_INITIAL_DISTANCE, CUSTOM_CAMERA_INITIAL_ELEVATION_ANGLE,
+	 CUSTOM_CAMERA_INITIAL_AZIMUTH_ANGLE},
+	{CUSTOM_CAMERA_INITIAL_DISTANCE + CAMERA_ZOOM_STEP,
+	 CUSTOM_CAMERA_INITIAL_ELEVATION_ANGLE + CAMERA_ANGLE_STEP,
+	 CUSTOM_CAMERA_INITIAL_AZIMUTH_ANGLE - CAMERA_ANGLE_STEP}};
+
+static void assert_custom_camera(const struct CUSTOM_CAMERA *expected, legacy_s8 dashboard)
+{
+	assert(custom_camera.distance == expected->distance);
+	assert(custom_camera.elevation_angle == expected->elevation_angle);
+	assert(custom_camera.azimuth_angle == expected->azimuth_angle);
+	assert(dashb_toggle == dashboard);
+}
+
+static void test_custom_camera_cycle(void)
+{
+	for (legacy_u8 mode = REPLAY_MODE_LIVE; mode <= REPLAY_MODE_PLAYBACK; mode++) {
+		for (legacy_s8 dashboard = 0; dashboard <= 1; dashboard++) {
+			for (legacy_u32 original = 0;
+				 original < sizeof(test_camera_originals) / sizeof(test_camera_originals[0]);
+				 original++) {
+				reset_inputs();
+				camera_select_mode(CAMERA_MODE_COCKPIT);
+				game_replay_mode = mode;
+				followOpponentFlag = replaybar_toggle = 1;
+				custom_camera = test_camera_originals[original];
+				dashb_toggle = dashboard;
+				assert(handle_ingame_kb_shortcuts(KEY_F3) == 1);
+				assert(cameramode == CAMERA_MODE_CUSTOM);
+				assert_custom_camera(&test_camera_originals[original], dashboard);
+				for (legacy_u32 preset = 0;
+					 preset < sizeof(test_camera_presets) / sizeof(test_camera_presets[0]);
+					 preset++) {
+					assert(handle_ingame_kb_shortcuts(KEY_F3) == 1);
+					assert_custom_camera(&test_camera_presets[preset], 0);
+					assert(cameramode == CAMERA_MODE_CUSTOM && game_replay_mode == mode);
+					assert(followOpponentFlag == 1 && replaybar_toggle == 1);
+					/* Manual camera edits and D remain usable. The next F3 selects
+					 * an absolute preset, and wrapping restores the original view. */
+					custom_camera = test_camera_originals[original];
+					assert(handle_ingame_kb_shortcuts('D') == 1);
+					assert(dashb_toggle == 1);
+				}
+				assert(handle_ingame_kb_shortcuts(KEY_F3) == 1);
+				assert_custom_camera(&test_camera_originals[original], dashboard);
+				assert(cameramode == CAMERA_MODE_CUSTOM && game_replay_mode == mode);
+			}
+		}
+	}
+	camera_select_mode(CAMERA_MODE_COCKPIT);
+}
+
+static void test_custom_camera_switches(void)
+{
+	static const struct {
+		legacy_s16 key;
+		legacy_s8 mode;
+	} shortcuts[] = {{KEY_F1, CAMERA_MODE_COCKPIT},
+					 {KEY_F2, CAMERA_MODE_FOLLOW},
+					 {KEY_F4, CAMERA_MODE_TRACKSIDE},
+					 {'c', CAMERA_MODE_TRACKSIDE},
+					 {'C', CAMERA_MODE_TRACKSIDE}};
+	const struct CUSTOM_CAMERA *original = &test_camera_originals[1];
+	for (legacy_u8 mode = REPLAY_MODE_LIVE; mode <= REPLAY_MODE_PLAYBACK; mode++) {
+		for (legacy_s8 dashboard = 0; dashboard <= 1; dashboard++) {
+			for (legacy_u32 shortcut = 0; shortcut < sizeof(shortcuts) / sizeof(shortcuts[0]);
+				 shortcut++) {
+				for (legacy_u32 preset = 0;
+					 preset < sizeof(test_camera_presets) / sizeof(test_camera_presets[0]);
+					 preset++) {
+					reset_inputs();
+					camera_select_mode(CAMERA_MODE_COCKPIT);
+					game_replay_mode = mode;
+					custom_camera = *original;
+					dashb_toggle = dashboard;
+					assert(handle_ingame_kb_shortcuts(KEY_F3) == 1);
+					for (legacy_u32 press = 0; press <= preset; press++) {
+						assert(handle_ingame_kb_shortcuts(KEY_F3) == 1);
+					}
+					assert_custom_camera(&test_camera_presets[preset], 0);
+					assert(handle_ingame_kb_shortcuts(shortcuts[shortcut].key) == 1);
+					if (mode == REPLAY_MODE_PAUSED &&
+						(shortcuts[shortcut].key == 'c' || shortcuts[shortcut].key == 'C')) {
+						/* C keeps its existing paused-race behavior. */
+						assert(cameramode == CAMERA_MODE_CUSTOM);
+						assert_custom_camera(&test_camera_presets[preset], 0);
+						camera_select_mode(shortcuts[shortcut].mode);
+					}
+					assert(cameramode == shortcuts[shortcut].mode && game_replay_mode == mode);
+					assert_custom_camera(original, dashboard);
+					assert(handle_ingame_kb_shortcuts(KEY_F3) == 1);
+					assert_custom_camera(original, dashboard);
+					assert(handle_ingame_kb_shortcuts(KEY_F3) == 1);
+					assert_custom_camera(&test_camera_presets[0], 0);
+					/* Re-selecting the current camera preserves the active preset. */
+					camera_select_mode(CAMERA_MODE_CUSTOM);
+					assert_custom_camera(&test_camera_presets[0], 0);
+					camera_select_mode(shortcuts[shortcut].mode);
+					assert_custom_camera(original, dashboard);
+				}
+			}
+		}
+	}
+}
+
 static void test_display_shortcuts(void)
 {
 	assert((legacy_u16)KEY_F11 == 0x8500U);
@@ -689,6 +805,8 @@ int main(void)
 	test_recording_input_modes();
 	test_ghost_view_shortcut();
 	test_display_shortcuts();
+	test_custom_camera_cycle();
+	test_custom_camera_switches();
 #ifdef RESTUNTS_SDL3
 	test_shift_f12_callback();
 	test_locked_display_shortcuts();

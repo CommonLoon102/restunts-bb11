@@ -67,6 +67,21 @@ lfn=true
 minimum mcb free=1
 ```
 
+### F3 camera views
+
+Press **F3** to select the original adjustable camera. Press F3 again to cycle
+through three chase views, then back to the original view:
+
+1. Original F3 view, with its existing angle, zoom, and dashboard visibility.
+2. Three right steps and two down steps from the default angle, with two zoom-in steps.
+3. The same chase angle at the default zoom.
+4. The same chase angle with three zoom-out steps from the default zoom.
+
+The three chase presets hide the dashboard. Cycling back to the original view
+or selecting another camera restores the original F3 position and prior dashboard
+visibility. Returning to F3 from another camera starts with the original view.
+Replay pan and zoom controls still work; the next F3 preset uses its fixed position.
+
 ### SuperSight and FPS display
 
 Press **F12** while driving or viewing a replay to toggle SuperSight. In SDL3
