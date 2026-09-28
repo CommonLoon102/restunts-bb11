@@ -287,11 +287,14 @@ jobs:
             -DRESTUNTS_BUILD_TESTS=ON
           cmake --build build/sdl3 --parallel 2
 
+      - name: Run SDL3 timer regression
+        run: ctest --test-dir build/sdl3 --output-on-failure --no-tests=error -R '^sdl3-timer$'
+
       - name: Run SDL3 platform regressions
         env:
           SDL_VIDEODRIVER: dummy
           SDL_AUDIODRIVER: dummy
-        run: ctest --test-dir build/sdl3 --output-on-failure
+        run: ctest --test-dir build/sdl3 --output-on-failure -E '^sdl3-timer$'
 
       - name: Package the SDL3 runtime with executable permissions
         run: |
