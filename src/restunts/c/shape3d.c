@@ -112,6 +112,7 @@ static polyinfo_index queued_ghost_primitives;
 #define SHAPE3D_VERTEX_CAPACITY 255U
 #define SHAPE3D_VERTEX_FLAG_CAPACITY 256U
 #define SHAPE3D_VERTEX_UNTRANSFORMED LEGACY_U8_MAX
+#define SHAPE3D_SHADOW_PRIMITIVE_CAPACITY (LEGACY_U8_MAX + 1U)
 #define SHAPE3D_FORWARD_VECTOR_SCALE 4096
 #define SHAPE3D_NEAR_CLIP_Z 12
 #define SHAPE3D_USE_BOUNDING_RECT_FLAG 8U
@@ -347,6 +348,8 @@ struct SHAPE3D_TRANSFORM_CONTEXT {
 	struct MATRIX object_to_world_rotation;
 	struct VECTOR object_translation;
 	struct SHAPE3D_HIRES_VECTOR hires_vertices[SHAPE3D_VERTEX_CAPACITY];
+	legacy_u32 shadow_surfaces[SHAPE3D_SHADOW_PRIMITIVE_CAPACITY];
+	legacy_u32 shadow_surface_count;
 #endif
 	legacy_s32 visibility_mask;
 	legacy_s32 front_facing_mask;
@@ -416,6 +419,7 @@ static void shape3d_prepare_instance(struct TRANSFORMEDSHAPE3D *instance,
 	struct MATRIX *object_rotation = mat_rot_zxy(instance->rotvec.x, instance->rotvec.y,
 												 instance->rotvec.z, MATRIX_ROTATION_ORDER_ZXY);
 #if defined(RESTUNTS_SDL3)
+	context->shadow_surface_count = 0;
 	context->object_to_world_rotation = *object_rotation;
 	context->object_translation = instance->pos;
 #endif
@@ -530,6 +534,73 @@ static legacy_u16 shape3d_bounds_are_clipped(struct TRANSFORMEDSHAPE3D *instance
 										   LEGACY_S16_FROM_BITS(instance->culling_distance) <
 											   absolute_word(context->view_translation.x));
 }
+
+#if defined(RESTUNTS_SDL3)
+#define SHAPE3D_SHADOW_BOUNDS_VERTEX_COUNT 8U
+#define SHAPE3D_SHADOW_PRIMITIVE_FLAGS_OFFSET 1U
+
+static legacy_u16 shape3d_material_value(const legacy_s16 *table, legacy_u16 index);
+
+static void shape3d_collect_shadow_polygons(const struct TRANSFORMEDSHAPE3D *instance,
+											struct SHAPE3D_TRANSFORM_CONTEXT *context)
+{
+	if (!shape3d_hires_shadows_active() || !hires_enabled() ||
+		hires_render_scale() == HIRES_MINIMUM_SCALE ||
+		(transshapeflags &
+		 (SHAPE3D_NO_SHADOW_RECEIVE_FLAG | SHAPE3D_GHOST_FLAG | SHAPE3D_BACKGROUND_FLAG)) != 0) {
+		return;
+	}
+	const struct SHAPE3D *shape = instance->shapeptr;
+	legacy_u32 bounds_count = transshapenumverts < SHAPE3D_SHADOW_BOUNDS_VERTEX_COUNT
+								  ? transshapenumverts
+								  : SHAPE3D_SHADOW_BOUNDS_VERTEX_COUNT;
+	/* The camera bounds test can stop early or use only four flat corners. */
+	for (legacy_u32 vertex = 0; vertex < bounds_count; vertex++) {
+		if (context->vertex_clip_flags[vertex] == SHAPE3D_VERTEX_UNTRANSFORMED) {
+			shape3d_cache_vertex(shape, context, (legacy_u16)vertex);
+		}
+	}
+	if (!shape3d_hires_shadow_overlap(context->hires_vertices, bounds_count)) {
+		return;
+	}
+	/* Shadow blockers retain their geometry even when camera visibility rejects them. */
+	const legacy_u8 *primitive = shape->shape3d_primitives;
+	while (primitive[0] != 0 && context->shadow_surface_count < SHAPE3D_SHADOW_PRIMITIVE_CAPACITY) {
+		legacy_u32 surface = 0;
+		legacy_u32 count = primidxcounttab[primitive[0]];
+		const legacy_u8 *indices = primitive + SHAPE3D_PRIMITIVE_HEADER_SIZE + transshapenumpaints;
+		if (primtypetab[primitive[0]] == RENDER_PRIMITIVE_POLYGON &&
+			count <= SHAPE3D_POLYGON_MAX_VERTICES &&
+			(primitive[SHAPE3D_SHADOW_PRIMITIVE_FLAGS_OFFSET] &
+			 SHAPE3D_PRIMITIVE_SKIP_DEPTH_SORT_FLAG) == 0) {
+			legacy_u16 material = primitive[SHAPE3D_PRIMITIVE_HEADER_SIZE + transshapematerial];
+			legacy_u16 pattern_type = shape3d_material_value(material_patlist_ptr_cpy, material);
+			if (pattern_type <= SHAPE3D_PATTERN_TWO_COLOR &&
+				(pattern_type != SHAPE3D_PATTERN_MASKED ||
+				 shape3d_material_value(material_patlist2_ptr_cpy, material) != 0U)) {
+				struct SHAPE3D_HIRES_VECTOR vertices[SHAPE3D_POLYGON_MAX_VERTICES];
+				legacy_u32 vertex;
+				for (vertex = 0; vertex < count; vertex++) {
+					legacy_u16 index = indices[vertex];
+					if (index >= transshapenumverts) {
+						break;
+					}
+					if (context->vertex_clip_flags[index] == SHAPE3D_VERTEX_UNTRANSFORMED) {
+						shape3d_cache_vertex(shape, context, index);
+					}
+					vertices[vertex] = context->hires_vertices[index];
+				}
+				if (vertex == count) {
+					surface = shape3d_hires_shadow_polygon(vertices, count,
+														   pattern_type == SHAPE3D_PATTERN_MASKED);
+				}
+			}
+		}
+		context->shadow_surfaces[context->shadow_surface_count++] = surface;
+		primitive = indices + count;
+	}
+}
+#endif
 
 static legacy_u16 shape3d_prepare_primitive_vertices(const struct SHAPE3D *shape,
 													 struct SHAPE3D_TRANSFORM_CONTEXT *context,
@@ -896,12 +967,17 @@ legacy_u16 shape3d_transform_and_queue(struct TRANSFORMEDSHAPE3D *instance)
 	shape_polygon_predecessor = polygon_list_tail;
 	polygon_insertion_cursor = polygon_list_tail;
 	shape_polygon_count = 0;
-	if (shape3d_bounds_are_clipped(instance, &context) != 0) {
+	legacy_u16 bounds_clipped = shape3d_bounds_are_clipped(instance, &context);
+#if defined(RESTUNTS_SDL3)
+	shape3d_collect_shadow_polygons(instance, &context);
+#endif
+	if (bounds_clipped != 0) {
 		return (legacy_u16)-1;
 	}
 	shape3d_prepare_visibility(instance, &context);
 	transshapeprimitives = instance->shapeptr->shape3d_primitives;
 #if defined(RESTUNTS_SDL3)
+	legacy_u32 shadow_primitive = 0;
 	legacy_s32 depth_mode = SHAPE3D_HIRES_DEPTH_SORTED;
 	if ((transshapeflags & SHAPE3D_BACKGROUND_FLAG) != 0) {
 		depth_mode = SHAPE3D_HIRES_DEPTH_BACKGROUND;
@@ -944,6 +1020,10 @@ legacy_u16 shape3d_transform_and_queue(struct TRANSFORMEDSHAPE3D *instance)
 											  primitive_flags, front_facing_masks, &depth_sum);
 #if defined(RESTUNTS_SDL3)
 				if (primitive_visible != 0) {
+					if (shadow_primitive < context.shadow_surface_count) {
+						shape3d_hires_set_shadow_surface(polyinfonumpolys,
+														 context.shadow_surfaces[shadow_primitive]);
+					}
 					if ((transshapeflags & SHAPE3D_USE_BOUNDING_RECT_FLAG) != 0) {
 						shape3d_hires_update_bounds(polyinfonumpolys, primitive_type,
 													transshaperectptr);
@@ -954,6 +1034,9 @@ legacy_u16 shape3d_transform_and_queue(struct TRANSFORMEDSHAPE3D *instance)
 		}
 
 		transshapeprimitives = transshapeprimptr;
+#if defined(RESTUNTS_SDL3)
+		shadow_primitive++;
+#endif
 		visibility_masks += 4U;
 		front_facing_masks += 4U;
 		if (primitive_visible != 0) {
@@ -965,6 +1048,9 @@ legacy_u16 shape3d_transform_and_queue(struct TRANSFORMEDSHAPE3D *instance)
 			while ((transshapeprimitives[1] & SHAPE3D_PRIMITIVE_SKIP_DEPTH_SORT_FLAG) != 0) {
 				transshapeprimitives +=
 					primidxcounttab[transshapeprimitives[0]] + transshapenumpaints + 2;
+#if defined(RESTUNTS_SDL3)
+				shadow_primitive++;
+#endif
 				visibility_masks += 4U;
 				front_facing_masks += 4U;
 			}

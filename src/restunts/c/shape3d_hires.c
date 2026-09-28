@@ -43,6 +43,7 @@ struct HIRES_PRIMITIVE {
 	legacy_u32 round_points;
 	legacy_u32 shape;
 	legacy_u32 family;
+	legacy_u32 shadow_surface;
 	legacy_s32 attached;
 	legacy_f64 size;
 	legacy_f64 depth;
@@ -83,6 +84,13 @@ struct HIRES_SHAPE {
 #define HIRES_CAR_SHADOW_CORNER_MAX_X 1
 #define HIRES_CAR_SHADOW_CORNER_MAX_Z 2
 #define HIRES_CAR_SHADOW_CORNER_BOTTOM 4
+#define HIRES_SHADOW_SURFACE_INITIAL_CAPACITY 32U
+#define HIRES_SHADOW_SURFACE_MAX_POINTS SHAPE3D_POLYGON_MAX_VERTICES
+#define HIRES_SHADOW_GRILLE_TRANSMISSION 0.5
+#define HIRES_SHADOW_SURFACE_MAX_HITS 4U
+#define HIRES_SHADOW_INTERSECTION_EPSILON 1e-9
+/* Match the rasterizer's tolerance when resolving an ordered depth family. */
+#define HIRES_SHADOW_DEPTH_EPSILON (4 * FLT_EPSILON)
 
 struct HIRES_CAR_SHADOW {
 	struct VECTOR position;
@@ -90,6 +98,8 @@ struct HIRES_CAR_SHADOW {
 	legacy_f64 half_width, half_length;
 	legacy_f64 min_x, max_x, min_z, max_z, height;
 	const struct SHADOW_SILHOUETTE *silhouette;
+	struct SHAPE3D_HIRES_VECTOR minimum, maximum;
+	legacy_f64 surface_top, grille_top;
 };
 
 static struct HIRES_CAR_SHADOW car_shadows[HIRES_CAR_SHADOW_COUNT];
@@ -98,6 +108,19 @@ static legacy_s32 shadow_model_pending;
 static struct MATRIX shadow_view;
 static legacy_f64 shadow_inverse[3][3];
 static legacy_f64 shadow_ground_y;
+
+struct SHADOW_SURFACE {
+	struct SHAPE3D_HIRES_VECTOR vertices[HIRES_SHADOW_SURFACE_MAX_POINTS];
+	struct SHAPE3D_HIRES_VECTOR minimum, maximum, normal;
+	legacy_f64 distance;
+	legacy_u32 count, cars, rendered_index;
+	legacy_s32 grille, axis;
+};
+
+static struct SHADOW_SURFACE *shadow_surfaces;
+static legacy_f64 *shadow_grille_hits;
+static size_t shadow_surface_count, shadow_surface_capacity;
+static void shadow_update_volume(struct HIRES_CAR_SHADOW *shadow);
 
 static struct HIRES_PRIMITIVE *primitives;
 static struct HIRES_SHAPE *shapes;
@@ -338,6 +361,7 @@ void shape3d_hires_reset(void)
 {
 	car_shadow_count = 0;
 	shadow_model_pending = 0;
+	shadow_surface_count = 0;
 	model_scale = 1;
 	shape3d_hires_begin_shape(0, SHAPE3D_HIRES_DEPTH_SORTED);
 	rendered_depth_valid = 0;
@@ -397,6 +421,7 @@ static void queue_primitive(legacy_u32 index, legacy_u8 type, legacy_u16 vertex_
 	struct HIRES_PRIMITIVE *primitive = &primitives[index];
 	primitive->count = 0;
 	primitive->size = 0;
+	primitive->shadow_surface = 0;
 	primitive->round_points = HIRES_ROUND_POINTS;
 	if (!hires_enabled() || vertex_count == 0 || vertex_count > HIRES_MAX_POLYGON_POINTS / 2) {
 		return;
@@ -1549,6 +1574,7 @@ void shape3d_hires_shadows_begin(const struct VECTOR *camera_position)
 {
 	car_shadow_count = 0;
 	shadow_model_pending = 0;
+	shadow_surface_count = 0;
 	if (!hires_enabled() || hires_render_scale() == HIRES_MINIMUM_SCALE) {
 		return;
 	}
@@ -1592,6 +1618,8 @@ void shape3d_hires_shadow_car(const struct VECTOR *relative_position, legacy_s16
 	shadow->max_z = half_length;
 	shadow->height = SDL_min(half_width, half_length) * HIRES_CAR_SHADOW_FALLBACK_HEIGHT_SCALE;
 	shadow->silhouette = NULL;
+	shadow->surface_top = shadow->grille_top = -DBL_MAX;
+	shadow_update_volume(shadow);
 	shadow_model_pending = 1;
 }
 
@@ -1599,6 +1627,7 @@ void shape3d_hires_shadow_models_reset(void)
 {
 	car_shadow_count = 0;
 	shadow_model_pending = 0;
+	shadow_surface_count = 0;
 	for (legacy_s32 index = 0; index < HIRES_CAR_SHADOW_COUNT; index++) {
 		shadow_silhouettes[index].shape = NULL;
 	}
@@ -1630,6 +1659,7 @@ void shape3d_hires_shadow_model(const struct SHAPE3D *shape)
 	shadow->height = silhouette->height;
 	shadow->half_width = (silhouette->max_x - silhouette->min_x) * 0.5;
 	shadow->half_length = (silhouette->max_z - silhouette->min_z) * 0.5;
+	shadow_update_volume(shadow);
 }
 
 static legacy_f64 shadow_north_offset(const struct HIRES_CAR_SHADOW *shadow, legacy_f64 gap)
@@ -1641,6 +1671,408 @@ static legacy_f64 shadow_north_offset(const struct HIRES_CAR_SHADOW *shadow, leg
 	legacy_f64 limit =
 		SDL_min(shadow->half_width, shadow->half_length) * HIRES_CAR_SHADOW_OFFSET_LIMIT_SCALE;
 	return offset < limit ? offset : limit;
+}
+
+static void shadow_update_volume(struct HIRES_CAR_SHADOW *shadow)
+{
+	legacy_f64 extent_x = SDL_max(-shadow->min_x, shadow->max_x);
+	legacy_f64 extent_z = SDL_max(-shadow->min_z, shadow->max_z);
+	legacy_f64 radius_x = absolute_coordinate(shadow->cosine) * extent_x +
+						  absolute_coordinate(shadow->sine) * extent_z;
+	legacy_f64 radius_z = absolute_coordinate(shadow->sine) * extent_x +
+						  absolute_coordinate(shadow->cosine) * extent_z;
+	shadow->minimum = (struct SHAPE3D_HIRES_VECTOR){
+		shadow->position.x - radius_x,
+		SDL_max(shadow_ground_y, shadow->position.y - HIRES_CAR_SHADOW_REACH),
+		shadow->position.z - radius_z};
+	shadow->maximum = (struct SHAPE3D_HIRES_VECTOR){
+		shadow->position.x + radius_x, shadow->position.y + HIRES_CAR_SHADOW_RECEIVER_TOLERANCE,
+		shadow->position.z + radius_z + shadow_north_offset(shadow, HIRES_CAR_SHADOW_REACH)};
+}
+
+static void shadow_world_vertices(const struct SHAPE3D_HIRES_VECTOR *vertices, legacy_u32 count,
+								  struct SHADOW_SURFACE *surface)
+{
+	for (legacy_u32 index = 0; index < count; index++) {
+		const struct SHAPE3D_HIRES_VECTOR *view = &vertices[index];
+		struct SHAPE3D_HIRES_VECTOR world = {
+			shadow_inverse[0][0] * view->x + shadow_inverse[0][1] * view->y +
+				shadow_inverse[0][2] * view->z,
+			shadow_inverse[1][0] * view->x + shadow_inverse[1][1] * view->y +
+				shadow_inverse[1][2] * view->z,
+			shadow_inverse[2][0] * view->x + shadow_inverse[2][1] * view->y +
+				shadow_inverse[2][2] * view->z};
+		surface->vertices[index] = world;
+		if (index == 0) {
+			surface->minimum = surface->maximum = world;
+		} else {
+			surface->minimum.x = SDL_min(surface->minimum.x, world.x);
+			surface->minimum.y = SDL_min(surface->minimum.y, world.y);
+			surface->minimum.z = SDL_min(surface->minimum.z, world.z);
+			surface->maximum.x = SDL_max(surface->maximum.x, world.x);
+			surface->maximum.y = SDL_max(surface->maximum.y, world.y);
+			surface->maximum.z = SDL_max(surface->maximum.z, world.z);
+		}
+	}
+	surface->cars = 0;
+	for (legacy_s32 car = 0; car < car_shadow_count; car++) {
+		const struct HIRES_CAR_SHADOW *shadow = &car_shadows[car];
+		if (surface->maximum.x >= shadow->minimum.x && surface->minimum.x <= shadow->maximum.x &&
+			surface->maximum.y >= shadow->minimum.y && surface->minimum.y <= shadow->maximum.y &&
+			surface->maximum.z >= shadow->minimum.z && surface->minimum.z <= shadow->maximum.z) {
+			surface->cars |= 1U << car;
+		}
+	}
+}
+
+legacy_s32 shape3d_hires_shadows_active(void)
+{
+	return car_shadow_count != 0;
+}
+
+legacy_s32 shape3d_hires_shadow_overlap(const struct SHAPE3D_HIRES_VECTOR *vertices,
+										legacy_u32 count)
+{
+	if (car_shadow_count == 0 || count == 0 || count > HIRES_SHADOW_SURFACE_MAX_POINTS) {
+		return 0;
+	}
+	struct SHADOW_SURFACE surface;
+	shadow_world_vertices(vertices, count, &surface);
+	return surface.cars != 0;
+}
+
+legacy_u32 shape3d_hires_shadow_polygon(const struct SHAPE3D_HIRES_VECTOR *vertices,
+										legacy_u32 count, legacy_s32 grille)
+{
+	if (car_shadow_count == 0 || count < 3 || count > HIRES_SHADOW_SURFACE_MAX_POINTS) {
+		return 0;
+	}
+	struct SHADOW_SURFACE surface;
+	shadow_world_vertices(vertices, count, &surface);
+	if (surface.cars == 0) {
+		return 0;
+	}
+	/* Newell's normal also handles polygons with collinear leading vertices. */
+	surface.normal = (struct SHAPE3D_HIRES_VECTOR){0, 0, 0};
+	for (legacy_u32 index = 0; index < count; index++) {
+		const struct SHAPE3D_HIRES_VECTOR *first = &surface.vertices[index];
+		const struct SHAPE3D_HIRES_VECTOR *last = &surface.vertices[(index + 1) % count];
+		surface.normal.x += (first->y - last->y) * (first->z + last->z);
+		surface.normal.y += (first->z - last->z) * (first->x + last->x);
+		surface.normal.z += (first->x - last->x) * (first->y + last->y);
+	}
+	legacy_f64 length =
+		SDL_sqrt(surface.normal.x * surface.normal.x + surface.normal.y * surface.normal.y +
+				 surface.normal.z * surface.normal.z);
+	if (length < HIRES_SHADOW_INTERSECTION_EPSILON) {
+		return 0;
+	}
+	surface.normal.x /= length;
+	surface.normal.y /= length;
+	surface.normal.z /= length;
+	surface.distance = 0;
+	for (legacy_u32 index = 0; index < count; index++) {
+		surface.distance += surface.normal.x * surface.vertices[index].x +
+							surface.normal.y * surface.vertices[index].y +
+							surface.normal.z * surface.vertices[index].z;
+	}
+	surface.distance /= count;
+	/* Drop the dominant normal coordinate for the point-in-polygon test. */
+	surface.axis =
+		absolute_coordinate(surface.normal.x) > absolute_coordinate(surface.normal.y) ? 0 : 1;
+	if (absolute_coordinate(surface.normal.z) > (surface.axis == 0
+													 ? absolute_coordinate(surface.normal.x)
+													 : absolute_coordinate(surface.normal.y))) {
+		surface.axis = 2;
+	}
+	if (surface.axis == 1) {
+		/* A warped quad's fitted plane can extend outside its authored Y
+		 * bounds. Include its projected corners when clipping intersections. */
+		for (legacy_u32 index = 0; index < count; index++) {
+			legacy_f64 y = (surface.distance - surface.normal.x * surface.vertices[index].x -
+							surface.normal.z * surface.vertices[index].z) /
+						   surface.normal.y;
+			surface.minimum.y = SDL_min(surface.minimum.y, y);
+			surface.maximum.y = SDL_max(surface.maximum.y, y);
+		}
+	}
+	surface.count = count;
+	surface.rendered_index = LEGACY_U32_MAX;
+	surface.grille = grille;
+	if (shadow_surface_count == shadow_surface_capacity) {
+		size_t capacity = shadow_surface_capacity != 0 ? shadow_surface_capacity * 2
+													   : HIRES_SHADOW_SURFACE_INITIAL_CAPACITY;
+		/* Each plane intersects each of the two projection pieces at most twice. */
+		if (capacity < shadow_surface_capacity || capacity > LEGACY_U32_MAX ||
+			capacity > (size_t)-1 / sizeof(*shadow_surfaces) ||
+			capacity > (size_t)-1 / (HIRES_SHADOW_SURFACE_MAX_HITS * sizeof(*shadow_grille_hits))) {
+			fatal_error("SuperSight shadow surfaces exceed addressable memory");
+			return 0;
+		}
+		struct SHADOW_SURFACE *surfaces = realloc(shadow_surfaces, capacity * sizeof(*surfaces));
+		legacy_f64 *hits =
+			realloc(shadow_grille_hits, capacity * HIRES_SHADOW_SURFACE_MAX_HITS * sizeof(*hits));
+		if (surfaces == NULL || hits == NULL) {
+			fatal_error("Cannot allocate SuperSight shadow surfaces");
+			return 0;
+		}
+		shadow_surfaces = surfaces;
+		shadow_grille_hits = hits;
+		shadow_surface_capacity = capacity;
+	}
+	shadow_surfaces[shadow_surface_count++] = surface;
+	for (legacy_s32 car = 0; car < car_shadow_count; car++) {
+		if ((surface.cars & (1U << car)) != 0) {
+			struct HIRES_CAR_SHADOW *shadow = &car_shadows[car];
+			shadow->surface_top = SDL_max(shadow->surface_top, surface.maximum.y);
+			if (grille) {
+				shadow->grille_top = SDL_max(shadow->grille_top, surface.maximum.y);
+			}
+		}
+	}
+	return (legacy_u32)shadow_surface_count;
+}
+
+void shape3d_hires_set_shadow_surface(legacy_u32 index, legacy_u32 surface)
+{
+	if (index < primitive_count && surface != 0 && surface <= shadow_surface_count) {
+		primitives[index].shadow_surface = surface;
+		shadow_surfaces[surface - 1].rendered_index = index;
+	}
+}
+
+/* Sorted polygons identify their support directly. An ordered shape shares one
+ * depth family, so resolve its support only among the few collected surfaces,
+ * using the same scanline depth interpolation as the scene rasterizer. */
+static legacy_u32 shadow_receiver_surface(legacy_u32 family, legacy_s32 x, legacy_s32 y,
+										  legacy_f64 inverse_z)
+{
+	if (family == 0 || family > primitive_count) {
+		return 0;
+	}
+	const struct HIRES_PRIMITIVE *support = &primitives[family - 1];
+	if (shapes[support->shape].depth_mode != SHAPE3D_HIRES_DEPTH_ORDERED) {
+		return support->shadow_surface;
+	}
+	legacy_f64 sample_x = x + HIRES_SAMPLE_CENTER_OFFSET;
+	legacy_f64 sample_y = y + HIRES_SAMPLE_CENTER_OFFSET;
+	legacy_f64 closest = DBL_MAX;
+	legacy_u32 result = 0;
+	for (size_t surface = 0; surface < shadow_surface_count; surface++) {
+		legacy_u32 index = shadow_surfaces[surface].rendered_index;
+		if (index >= primitive_count || primitives[index].shape != support->shape) {
+			continue;
+		}
+		const struct HIRES_PRIMITIVE *primitive = &primitives[index];
+		if (primitive->count < 3) {
+			continue;
+		}
+		struct SHAPE3D_HIRES_POINT intersections[HIRES_MAX_POLYGON_POINTS];
+		legacy_u32 count = 0;
+		const struct SHAPE3D_HIRES_POINT *previous = &primitive->points[primitive->count - 1];
+		for (legacy_u32 vertex = 0; vertex < primitive->count; vertex++) {
+			const struct SHAPE3D_HIRES_POINT *current = &primitive->points[vertex];
+			if ((previous->y <= sample_y && current->y > sample_y) ||
+				(current->y <= sample_y && previous->y > sample_y)) {
+				polygon_insert_intersection(previous->y < current->y ? previous : current,
+											previous->y < current->y ? current : previous, sample_y,
+											intersections, count++);
+			}
+			previous = current;
+		}
+		for (legacy_u32 crossing = 0; crossing + 1 < count; crossing += 2) {
+			const struct SHAPE3D_HIRES_POINT *first = &intersections[crossing];
+			const struct SHAPE3D_HIRES_POINT *last = &intersections[crossing + 1];
+			if (sample_x >= first->x && sample_x < last->x) {
+				legacy_f64 depth = first->inverse_z + (last->inverse_z - first->inverse_z) *
+														  (sample_x - first->x) /
+														  (last->x - first->x);
+				legacy_f64 difference = absolute_coordinate(depth - inverse_z);
+				if (difference < closest) {
+					closest = difference;
+					result = (legacy_u32)surface + 1;
+				}
+			}
+		}
+	}
+	return closest <= HIRES_SHADOW_DEPTH_EPSILON * inverse_z ? result : 0;
+}
+
+static legacy_s32 shadow_surface_contains(const struct SHADOW_SURFACE *surface, legacy_f64 x,
+										  legacy_f64 y, legacy_f64 z)
+{
+	if (x < surface->minimum.x - HIRES_SHADOW_INTERSECTION_EPSILON ||
+		x > surface->maximum.x + HIRES_SHADOW_INTERSECTION_EPSILON ||
+		z < surface->minimum.z - HIRES_SHADOW_INTERSECTION_EPSILON ||
+		z > surface->maximum.z + HIRES_SHADOW_INTERSECTION_EPSILON) {
+		return 0;
+	}
+	legacy_f64 u = surface->axis == 0 ? y : x;
+	legacy_f64 v = surface->axis == 2 ? y : z;
+	legacy_s32 inside = 0;
+	for (legacy_u32 index = 0; index < surface->count; index++) {
+		const struct SHAPE3D_HIRES_VECTOR *first = &surface->vertices[index];
+		const struct SHAPE3D_HIRES_VECTOR *last = &surface->vertices[(index + 1) % surface->count];
+		legacy_f64 first_u = surface->axis == 0 ? first->y : first->x;
+		legacy_f64 first_v = surface->axis == 2 ? first->y : first->z;
+		legacy_f64 last_u = surface->axis == 0 ? last->y : last->x;
+		legacy_f64 last_v = surface->axis == 2 ? last->y : last->z;
+		legacy_f64 cross = (last_u - first_u) * (v - first_v) - (last_v - first_v) * (u - first_u);
+		if (absolute_coordinate(cross) < HIRES_SHADOW_INTERSECTION_EPSILON &&
+			u >= SDL_min(first_u, last_u) && u <= SDL_max(first_u, last_u) &&
+			v >= SDL_min(first_v, last_v) && v <= SDL_max(first_v, last_v)) {
+			return 1;
+		}
+		if ((first_v > v) != (last_v > v) && ((cross > 0) == (last_v > first_v))) {
+			inside = !inside;
+		}
+	}
+	return inside;
+}
+
+struct SHADOW_TRACE {
+	const struct HIRES_CAR_SHADOW *shadow;
+	legacy_f64 source_x, source_z, gap, transmission;
+	size_t grille_count;
+	legacy_s32 solid_receiver, grille_receiver;
+};
+
+static legacy_s32 shadow_surface_hit(const struct SHADOW_SURFACE *surface,
+									 struct SHADOW_TRACE *trace, legacy_f64 gap, legacy_f64 first,
+									 legacy_f64 last)
+{
+	if (gap < first - HIRES_SHADOW_INTERSECTION_EPSILON ||
+		gap > last + HIRES_SHADOW_INTERSECTION_EPSILON) {
+		return 0;
+	}
+	const struct HIRES_CAR_SHADOW *shadow = trace->shadow;
+	legacy_f64 shrink = 1 + gap / HIRES_CAR_SHADOW_SHRINK_HEIGHT;
+	legacy_f64 x = shadow->position.x + trace->source_x / shrink;
+	legacy_f64 z = shadow->position.z + shadow_north_offset(shadow, gap) + trace->source_z / shrink;
+	if (!shadow_surface_contains(surface, x, shadow->position.y - gap, z)) {
+		return 0;
+	}
+	if (gap >= trace->gap - HIRES_CAR_SHADOW_RECEIVER_TOLERANCE) {
+		if (surface->grille) {
+			trace->grille_receiver = 1;
+		} else {
+			trace->solid_receiver = 1;
+		}
+		return 0;
+	}
+	if (!surface->grille) {
+		return 1;
+	}
+	/* Mesh triangles, reversed faces and coplanar panels form one layer. */
+	for (size_t index = 0; index < trace->grille_count; index++) {
+		if (absolute_coordinate(shadow_grille_hits[index] - gap) <=
+			HIRES_CAR_SHADOW_RECEIVER_TOLERANCE) {
+			return 0;
+		}
+	}
+	shadow_grille_hits[trace->grille_count++] = gap;
+	trace->transmission *= HIRES_SHADOW_GRILLE_TRANSMISSION;
+	return 0;
+}
+
+static legacy_s32 shadow_surface_segment(const struct SHADOW_SURFACE *surface,
+										 struct SHADOW_TRACE *trace, legacy_f64 first,
+										 legacy_f64 last, legacy_f64 offset, legacy_f64 slope)
+{
+	const struct HIRES_CAR_SHADOW *shadow = trace->shadow;
+	const struct SHAPE3D_HIRES_VECTOR *normal = &surface->normal;
+	legacy_f64 constant = normal->x * shadow->position.x + normal->y * shadow->position.y +
+						  normal->z * (shadow->position.z + offset) - surface->distance;
+	legacy_f64 linear = normal->z * slope - normal->y;
+	/* Follow the existing shrinking footprint, including the northward offset
+	 * clamp. Multiplying the plane equation by (1 + gap / height) yields a
+	 * quadratic, so ramps and road edges need no marching or shadow map. */
+	legacy_f64 a = linear / HIRES_CAR_SHADOW_SHRINK_HEIGHT;
+	legacy_f64 b = linear + constant / HIRES_CAR_SHADOW_SHRINK_HEIGHT;
+	legacy_f64 c = constant + normal->x * trace->source_x + normal->z * trace->source_z;
+	if (absolute_coordinate(a) < HIRES_SHADOW_INTERSECTION_EPSILON) {
+		return absolute_coordinate(b) >= HIRES_SHADOW_INTERSECTION_EPSILON &&
+			   shadow_surface_hit(surface, trace, -c / b, first, last);
+	}
+	legacy_f64 discriminant = b * b - 4 * a * c;
+	if (discriminant < 0) {
+		return 0;
+	}
+	legacy_f64 root = SDL_sqrt(discriminant);
+	legacy_f64 q = -0.5 * (b + (b < 0 ? -root : root));
+	if (q == 0) {
+		return shadow_surface_hit(surface, trace, -b / (2 * a), first, last);
+	}
+	return shadow_surface_hit(surface, trace, q / a, first, last) ||
+		   shadow_surface_hit(surface, trace, c / q, first, last);
+}
+
+static legacy_s32 shadow_occlusion_needed(const struct HIRES_CAR_SHADOW *shadow, legacy_f64 y)
+{
+	/* Normal driving on an opaque surface needs no intersection work. */
+	return shadow_surface_count != 0 &&
+		   (y < shadow->surface_top - HIRES_CAR_SHADOW_RECEIVER_TOLERANCE ||
+			y <= shadow->grille_top + HIRES_CAR_SHADOW_RECEIVER_TOLERANCE);
+}
+
+static legacy_f64 shadow_transmission(const struct HIRES_CAR_SHADOW *shadow, legacy_f64 x,
+									  legacy_f64 y, legacy_f64 z, legacy_u32 receiver)
+{
+
+	legacy_f64 gap = SDL_max(0, shadow->position.y - y);
+	legacy_f64 shrink = 1 + gap / HIRES_CAR_SHADOW_SHRINK_HEIGHT;
+	struct SHADOW_TRACE trace = {shadow,
+								 (x - shadow->position.x) * shrink,
+								 (z - shadow->position.z - shadow_north_offset(shadow, gap)) *
+									 shrink,
+								 gap,
+								 1,
+								 0,
+								 0,
+								 0};
+	legacy_f64 limit =
+		SDL_min(shadow->half_width, shadow->half_length) * HIRES_CAR_SHADOW_OFFSET_LIMIT_SCALE;
+	legacy_f64 offset =
+		shadow->height * HIRES_CAR_SHADOW_HEIGHT_SCALE * HIRES_CAR_SHADOW_SUN_COTANGENT;
+	legacy_f64 turn = SDL_max(0, (limit - offset) / HIRES_CAR_SHADOW_SUN_COTANGENT);
+	legacy_u32 car = 1U << (shadow - car_shadows);
+	for (size_t index = 0; index < shadow_surface_count; index++) {
+		const struct SHADOW_SURFACE *surface = &shadow_surfaces[index];
+		/* A warped road quad's rasterized depth need not lie on its Newell
+		 * plane. Its identity prevents that approximation from self-blocking. */
+		if (index + 1 == receiver) {
+			trace.grille_receiver |= surface->grille;
+			trace.solid_receiver |= !surface->grille;
+			continue;
+		}
+		if ((surface->cars & car) == 0 ||
+			surface->maximum.y < y - HIRES_CAR_SHADOW_RECEIVER_TOLERANCE) {
+			continue;
+		}
+		legacy_f64 first =
+			SDL_max(-HIRES_CAR_SHADOW_RECEIVER_TOLERANCE, shadow->position.y - surface->maximum.y);
+		legacy_f64 last = SDL_min(gap + HIRES_CAR_SHADOW_RECEIVER_TOLERANCE,
+								  shadow->position.y - surface->minimum.y);
+		if (first > last) {
+			continue;
+		}
+		/* Flat decks dominate normal driving; their intersection needs no roots. */
+		if (absolute_coordinate(surface->normal.x) < HIRES_SHADOW_INTERSECTION_EPSILON &&
+			absolute_coordinate(surface->normal.z) < HIRES_SHADOW_INTERSECTION_EPSILON) {
+			if (shadow_surface_hit(surface, &trace, shadow->position.y - surface->vertices[0].y,
+								   first, last)) {
+				return 0;
+			}
+		} else if ((first < turn &&
+					shadow_surface_segment(surface, &trace, first, SDL_min(last, turn), offset,
+										   HIRES_CAR_SHADOW_SUN_COTANGENT)) ||
+				   (last >= turn && shadow_surface_segment(surface, &trace, SDL_max(first, turn),
+														   last, limit, 0))) {
+			return 0;
+		}
+	}
+	return trace.transmission *
+		   (trace.grille_receiver && !trace.solid_receiver ? HIRES_SHADOW_GRILLE_TRANSMISSION : 1);
 }
 
 static struct RECTANGLE shadow_bounds(const struct HIRES_CAR_SHADOW *shadow)
@@ -1816,6 +2248,13 @@ void shape3d_hires_draw_shadows(void)
 				if (depth >= HIRES_NEAR_CLIP_Z) {
 					legacy_u8 opacity =
 						shadow_opacity(shadow, ray[0] * depth, ray[1] * depth, ray[2] * depth);
+					if (opacity != 0 && shadow_occlusion_needed(shadow, ray[1] * depth)) {
+						opacity =
+							(legacy_u8)(opacity *
+										shadow_transmission(
+											shadow, ray[0] * depth, ray[1] * depth, ray[2] * depth,
+											shadow_receiver_surface(family, x, y, 1.0 / depth)));
+					}
 					if (opacity != 0) {
 						if (!started) {
 							if (!hires_shadow_begin()) {
