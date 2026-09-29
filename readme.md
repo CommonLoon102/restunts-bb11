@@ -49,6 +49,12 @@ An SDL3 [WebAssembly build](docs/wasm.md) runs directly from a local HTML file
 without a web server. Only enhanced artwork is embedded; select your own
 original game folder in the browser before starting.
 
+All builds require the original Broderbund Stunts 1.1 game data (12 Feb. 1991).
+Startup checks the `gver` text in `MISC.RES`, or `MISC.PRE` when no unpacked
+resource exists, and reports an error if it is missing, invalid, or different.
+Other resources are not compared, so custom cars, graphics, opponents, tracks,
+and horizons remain supported.
+
 Run `restunts.exe` in DOSBox or DOSBox-X with `core=dynamic` and `cycles=max`.
 Mount `stunts/` directly as a DOS drive in the emulator.
 

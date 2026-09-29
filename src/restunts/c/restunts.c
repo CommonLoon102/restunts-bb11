@@ -358,6 +358,15 @@ void init_main(legacy_s16 argc, legacy_s8 *argv[])
 	init_video_geometry_flags();
 
 	mmgr_init_conventional_arena();
+	if (file_game_version_matches() == 0) {
+		static const legacy_s8 message[] =
+			"Incompatible game data. Use Broderbund Stunts 1.1 (Feb 12 1991). "
+			"MISC.RES/MISC.PRE is missing, invalid, or has a different version.\n";
+		dos_show_startup_error(message);
+		call_exitlist();
+		dos_process_exit(1);
+		return;
+	}
 	audio_allocate_car_state_records();
 
 	video_uses_page_flipping = 0;

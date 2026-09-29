@@ -53,6 +53,8 @@ void far *file_load_binary(const legacy_s8 *filename, legacy_s16 fatal);
 void far *file_load_binary_nofatal(const legacy_s8 *filename);
 void far *file_load_binary_fatal(const legacy_s8 *filename);
 
+/* Validate the original game-data version without requiring unmodified assets. */
+legacy_u16 file_game_version_matches(void);
 void far *file_load_resfile(const legacy_s8 *filename);
 /* With a nonzero tail, load a fresh snapshot whose allocation retains at least
  * tail_bytes after the rounded resource length, including legacy decoder

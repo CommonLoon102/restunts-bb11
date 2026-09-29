@@ -1,6 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+/* The shared runtime also serves tools and tests without SDL dependencies. */
+#if defined(RESTUNTS_FULL) && !defined(__EMSCRIPTEN__) && !defined(__DJGPP__)
+#include <SDL3/SDL_messagebox.h>
+#endif
 #include "../../c/platform.h"
 
 legacy_s32 sdl3_batch_mode;
@@ -23,6 +27,17 @@ legacy_s16 dos_write_stdout(const legacy_s8 *text, legacy_u16 length)
 legacy_s16 dos_write_stderr(const legacy_s8 *text, legacy_u16 length)
 {
 	return fwrite(text, 1, length, stderr) == length ? (legacy_s16)length : -1;
+}
+
+void dos_show_startup_error(const legacy_s8 *message)
+{
+	dos_write_stderr(message, (legacy_u16)strlen((const legacy_char *)message));
+#if defined(RESTUNTS_FULL) && !defined(__EMSCRIPTEN__) && !defined(__DJGPP__)
+	if (!sdl3_batch_mode) {
+		SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Restunts", (const legacy_char *)message,
+								 NULL);
+	}
+#endif
 }
 
 void dos_process_exit(legacy_s16 status)

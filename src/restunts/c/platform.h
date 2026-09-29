@@ -70,6 +70,7 @@ void dos_set_critical_error_handler(legacy_s16(far *callback)(void));
 
 legacy_s16 dos_write_stdout(const legacy_s8 *text, legacy_u16 length);
 legacy_s16 dos_write_stderr(const legacy_s8 *text, legacy_u16 length);
+void dos_show_startup_error(const legacy_s8 *message);
 void dos_process_exit(legacy_s16 status);
 legacy_s16 dos_data_stack_segments_match(void);
 

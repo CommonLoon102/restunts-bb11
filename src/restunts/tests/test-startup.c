@@ -19,13 +19,16 @@ static legacy_u32 trace_hash = UINT32_C(2166136261);
 static legacy_u32 timer_calls, status_calls;
 static legacy_u32 geometry_ticks, clear_ticks, partial_ticks;
 static legacy_s16 audio_failure;
+static legacy_u16 valid_game_version = 1;
+static legacy_u16 startup_error_calls, startup_cleanup_calls;
+static legacy_u16 startup_audio_calls, startup_video_calls;
+static legacy_s16 startup_exit_status;
 static jmp_buf exit_jump;
 #ifdef RESTUNTS_SDL3
 legacy_u8 supersight_enabled;
 static legacy_s32 startup_render_enabled;
 static legacy_s32 startup_render_scale = HIRES_SCALE;
 static legacy_u16 expected_supersight_preset;
-static legacy_s16 startup_exit_status;
 
 void hires_set_enabled(legacy_s32 enabled)
 {
@@ -121,12 +124,27 @@ void mmgr_init_conventional_arena(void)
 {
 	trace(6);
 }
+legacy_u16 file_game_version_matches(void)
+{
+	return valid_game_version;
+}
+void dos_show_startup_error(const legacy_s8 *message)
+{
+	assert(strstr((const legacy_char *)message, "Broderbund Stunts 1.1 (Feb 12 1991)") != 0);
+	startup_error_calls++;
+}
+void call_exitlist(void)
+{
+	startup_cleanup_calls++;
+}
 void audio_allocate_car_state_records(void)
 {
+	startup_audio_calls++;
 	trace(7);
 }
 void dos_video_set_mode_13h(void)
 {
+	startup_video_calls++;
 #ifdef RESTUNTS_SDL3
 	check_startup_supersight();
 #endif
@@ -166,9 +184,7 @@ void dos_timer_shutdown(void)
 }
 void dos_process_exit(legacy_s16 status)
 {
-#ifdef RESTUNTS_SDL3
 	startup_exit_status = status;
-#endif
 	trace(15);
 	trace(status);
 	longjmp(exit_jump, 1);
@@ -729,6 +745,22 @@ static void test_startup_supersight_options(void)
 }
 #endif
 
+static void test_startup_game_version(void)
+{
+	legacy_s8 *arguments[] = {(legacy_s8 *)"game"};
+	valid_game_version = 0;
+	startup_error_calls = startup_cleanup_calls = 0;
+	startup_audio_calls = startup_video_calls = 0;
+	if (setjmp(exit_jump) == 0) {
+		init_main(sizeof(arguments) / sizeof(arguments[0]), arguments);
+		assert(0);
+	}
+	assert(startup_exit_status != 0);
+	assert(startup_error_calls == 1 && startup_cleanup_calls == 1);
+	assert(startup_audio_calls == 0 && startup_video_calls == 0);
+	valid_game_version = 1;
+}
+
 int main(void)
 {
 	static legacy_s8 *arguments[][8] = {
@@ -774,6 +806,7 @@ int main(void)
 #else
 	assert(trace_hash == UINT32_C(0x00524607));
 #endif
+	test_startup_game_version();
 	test_startup_intro_option();
 	test_startup_physics_options();
 #ifdef RESTUNTS_SDL3

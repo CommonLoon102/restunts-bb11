@@ -24,17 +24,24 @@ built for the browser. No pthreads, shared memory, server headers, CDN, or netwo
 requests are needed at runtime. Emscripten's single-file output and embedded
 artwork avoid requests for neighboring `.wasm`, `.js`, or `.data` files.
 
-## Run from disk
+## Play from a website or offline
 
-1. Put `restunts.html` in your own Broderbund Stunts 1.1 game folder.
-2. Open the HTML directly in a browser; `file://` is supported. No web server is
-   needed.
-3. Click **Choose game folder** and select that folder the first time. Supported
-   browsers remember it for this HTML and reload it when permission is still
-   granted. Otherwise, click **Allow folder access** to approve access again.
-   Use **Change game folder** to select a different folder.
-4. Click **Start game**. This user gesture enables browser audio. **Skip intro**
+You can open a hosted `restunts.html` directly in your browser; saving a copy
+is optional. For offline play, save the HTML file anywhere on your device and
+open it in your browser. `file://` is supported, so a local web server is not
+needed. The HTML's location does not determine where the game looks for data.
+
+1. Have your own Broderbund Stunts 1.1 game files in a folder on your device.
+2. Click **Choose game folder** and select the folder containing those files.
+   Supported browsers remember it for this page and reopen it when permission
+   is still granted. Otherwise, click **Allow folder access** to approve access
+   again. Use **Change game folder** to select a different folder.
+3. Click **Start game**. This user gesture enables browser audio. **Skip intro**
    is optional. Click the canvas to focus the game keyboard.
+
+**Your game files and saves stay on your device and are never uploaded**, even
+when you play from a website. Selecting a folder gives the game local access to
+its files; it does not send them to the hosting server.
 
 Only immediate game files are loaded; subfolders, executables, and the HTML are
 ignored. Filenames are resolved case-insensitively. Identical files differing
@@ -42,6 +49,12 @@ only in case are accepted; conflicting contents report an error. The selected
 folder must contain the original game resources, including `MAIN.RES` (or
 `MAIN.PRE`), `FONTDEF.FNT`, and `FONTN.FNT`. Other missing resources are reported by
 the game. Files are read locally and are never uploaded.
+
+On **Start game**, the game checks the version text in `MISC.RES` (preferred) or
+`MISC.PRE`. It requires Broderbund Stunts 1.1 (12 Feb. 1991), while allowing
+modifications to other resources. A missing or incompatible version displays an
+error on the page; reload and choose the correct game folder before starting
+again.
 
 ## Saving and browser support
 
