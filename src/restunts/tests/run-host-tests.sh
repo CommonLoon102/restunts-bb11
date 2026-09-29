@@ -5,7 +5,7 @@ set -euo pipefail
 test_script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 test_source_dir="$test_script_dir/../c"
 test_build_dir="$(mktemp -d)"
-test_compiler="${CC:-gcc}"
+test_compiler="${CC:-cc}"
 
 cleanup_test_build_dir() {
     rm -rf -- "$test_build_dir"
@@ -20,7 +20,15 @@ test_compile_flags=(
     -ffunction-sections
     -fdata-sections
 )
-test_link_flags=(-Wl,--gc-sections)
+case "$(uname -s)" in
+    Darwin) test_link_flags=(-Wl,-dead_strip) ;;
+    *) test_link_flags=(-Wl,--gc-sections) ;;
+esac
+# Clang (including Apple's compiler) has no GCC maybe-uninitialized warning.
+test_uninitialized_flag=-Wno-uninitialized
+if "$test_compiler" -Werror -Wno-maybe-uninitialized -x c -fsyntax-only /dev/null 2>/dev/null; then
+    test_uninitialized_flag=-Wno-maybe-uninitialized
+fi
 
 run_host_test() {
     local test_name="$1"
@@ -90,13 +98,13 @@ run_host_test test-dashboard dashboard.c \
 run_host_test test-frame-render math.c \
     "$test_source_dir/full_data.c" "$test_source_dir/headless_data.c" \
     "$test_source_dir/legacy.c" "$test_source_dir/heapsort.c" "$test_source_dir/trkutil.c" \
-    -Wno-pointer-sign -Wno-sign-compare -Wno-missing-field-initializers -Wno-maybe-uninitialized \
+    -Wno-pointer-sign -Wno-sign-compare -Wno-missing-field-initializers "$test_uninitialized_flag" \
     -Wno-missing-braces
 run_host_test test-frame-render math.c -DRESTUNTS_SDL3 \
     "$test_source_dir/frame_adaptive.c" \
     "$test_source_dir/full_data.c" "$test_source_dir/headless_data.c" \
     "$test_source_dir/legacy.c" "$test_source_dir/heapsort.c" "$test_source_dir/trkutil.c" \
-    -Wno-pointer-sign -Wno-sign-compare -Wno-missing-field-initializers -Wno-maybe-uninitialized \
+    -Wno-pointer-sign -Wno-sign-compare -Wno-missing-field-initializers "$test_uninitialized_flag" \
     -Wno-missing-braces
 run_host_test test-frame-overlay frame_overlay.c \
     "$test_source_dir/strlib.c" \
@@ -177,11 +185,11 @@ run_host_test test-polygon-edges shape3d_prerender.c \
     -Wno-pointer-sign -Wno-unused-variable -Wno-missing-field-initializers
 run_host_test test-input-record legacy.c \
     "$test_source_dir/headless_data.c" "$test_source_dir/full_data.c" \
-    -Wno-pointer-sign -Wno-missing-field-initializers -Wno-maybe-uninitialized
+    -Wno-pointer-sign -Wno-missing-field-initializers "$test_uninitialized_flag"
 run_host_test test-input-record legacy.c \
     "$test_source_dir/headless_data.c" "$test_source_dir/full_data.c" \
     "$test_source_dir/frame_adaptive.c" -DRESTUNTS_SDL3 \
-    -Wno-pointer-sign -Wno-missing-field-initializers -Wno-maybe-uninitialized
+    -Wno-pointer-sign -Wno-missing-field-initializers "$test_uninitialized_flag"
 run_host_test test-replay-menu replay.c \
     "$test_source_dir/legacy.c" "$test_source_dir/headless_data.c" \
     "$test_source_dir/full_data.c" "$test_source_dir/full_strings.c" \
@@ -293,7 +301,7 @@ run_host_test test-track-setup track_setup.c \
     "$test_source_dir/headless_data.c" "$test_source_dir/headless_trackdata.c" \
     "$test_source_dir/trkutil.c" "$test_source_dir/opponent.c" "$test_source_dir/legacy.c" \
     -Wno-missing-braces -Wno-type-limits -Wno-pointer-sign -Wno-unused-variable \
-    -Wno-maybe-uninitialized
+    "$test_uninitialized_flag"
 run_host_test test-track-resource-decoding trackres.c
 run_host_test test-ui-file-input ui_dialog.c \
     "$test_source_dir/ui_input.c" "$test_source_dir/legacy.c" \

@@ -189,9 +189,10 @@ static void car_menu_initialize(struct CAR_MENU_STATE *menu)
 		car_menu_redraw_cliprect.right = CAR_MENU_OPPONENT_PANEL_RIGHT;
 		if (video_uses_page_flipping != 0) {
 			opponent_shape = (struct SHAPE2D far *)oppresources[(legacy_u16)menu->opponent_type];
-			menu->opponent_sprite =
-				sprite_make_wnd(shape2d_get_width(opponent_shape),
-								shape2d_get_height(opponent_shape), CAR_MENU_TRANSPARENT_COLOR);
+			/* Preserve resource access order independently of argument evaluation. */
+			legacy_u16 height = shape2d_get_height(opponent_shape);
+			legacy_u16 width = shape2d_get_width(opponent_shape);
+			menu->opponent_sprite = sprite_make_wnd(width, height, CAR_MENU_TRANSPARENT_COLOR);
 			sprite_select_mcga_backbuffer();
 			sprite_clear_target(0);
 			sprite_putimage_transparent(opponent_shape, 0, 0);

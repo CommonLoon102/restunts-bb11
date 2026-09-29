@@ -14,9 +14,16 @@ Local changes, 2026-09-21, beyond CRLF line endings:
   layouts and calling conventions.
 - Add this documentation and a standalone CMake shared-library build script.
 
+Local build changes, 2026-09-29:
+
+- Set the macOS shared-library install name to `@rpath/libnuked-opl2.dylib`
+  so packages can move and use a user-rebuilt replacement.
+- Document macOS replacement builds and their architecture, deployment target,
+  and SDK settings.
+
 All SDL3 desktop builds use this library, dynamically linked as
-`libnuked-opl2.so` on Linux or `nuked-opl2.dll` on Windows. DOS writes the hardware
-OPL2 chip and does not include the library.
+`libnuked-opl2.so` on Linux, `libnuked-opl2.dylib` on macOS, or `nuked-opl2.dll`
+on Windows. DOS writes the hardware OPL2 chip and does not include the library.
 
 Buffered register writes preserve same-tick key-off/key-on transitions;
 immediate writes can collapse them. Initialization writes can be immediate.
@@ -41,8 +48,24 @@ cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build
 ```
 
-This produces `build/libnuked-opl2.so` on Linux. For 32-bit Linux using GCC on an
-x64 host, install the multilib compiler and development runtime, then use:
+This produces `build/libnuked-opl2.so` on Linux or `build/libnuked-opl2.dylib` on
+macOS. On macOS, install the Xcode Command Line Tools (`xcode-select --install`)
+and use the same architecture and deployment target recorded in
+`nuked-build-info.txt`. For example, for an Apple Silicon package targeting
+macOS 11.0 or later:
+
+```sh
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_OSX_ARCHITECTURES=arm64 -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0
+cmake --build build
+```
+
+Use `x86_64` for an Intel package, or `"arm64;x86_64"` for a universal package.
+Use an SDK compatible with the recorded deployment target; if needed, select
+it with `-DCMAKE_OSX_SYSROOT` using the SDK path on your Mac.
+
+For 32-bit Linux using GCC on an x64 host, install the multilib compiler and
+development runtime, then use:
 
 ```sh
 cmake -S . -B build-x86 -DCMAKE_BUILD_TYPE=Release \
@@ -70,10 +93,13 @@ Single-configuration generators place the DLL in the build directory;
 multi-configuration generators may put it under `Release/`.
 
 Close the game, keep a backup, and replace the packaged `lib/libnuked-opl2.so`
-on Linux or `bin/nuked-opl2.dll` on Windows with your rebuilt file. For a source
-tree build, the library lives beside `restunts` instead. No executable relinking
-is required. You can modify the implementation while preserving the public
-function names, calling conventions and the layouts in `opl2.h`; the application
+on Linux, `lib/libnuked-opl2.dylib` on macOS, or `bin/nuked-opl2.dll` on Windows
+with your rebuilt file. On macOS, move the old dylib aside before copying the
+replacement so the new file receives a fresh inode and code-signature cache
+entry. For a source tree build, the library lives beside `restunts` instead.
+No executable relinking is required. You can modify the implementation while
+preserving the public function names, calling conventions and the layouts in
+`opl2.h`; the application
 allocates the public `opl2_chip` structure. Changes to that ABI require rebuilding
 the application against the changed header too.
 

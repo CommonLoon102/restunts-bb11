@@ -95,7 +95,7 @@ Replay pan and zoom controls still work; the next F3 preset uses its fixed posit
 ### SuperSight and FPS display
 
 Press **F12** while driving or viewing a replay to toggle SuperSight. In SDL3
-builds (Windows, Linux, and 32-bit DOS), it starts with the entire 30 x 30 track,
+builds (Windows, Linux, macOS, and 32-bit DOS), it starts with the entire 30 x 30 track,
 detailed models, and 1280x800 internal rendering. Driving and replay rendering
 adapt to sustained CPU load to target 60 FPS, using these stages in order:
 
@@ -182,7 +182,7 @@ or visibility when crowded scenes exceed that capacity. F12 toggles it on and of
 and displays `SuperSight: On` or `SuperSight: Off` for two seconds, even when the
 FPS counter is hidden. This build has no SuperSight presets.
 
-In SDL3 builds (Windows, Linux, and 32-bit DOS), SuperSight starts 3D rendering
+In SDL3 builds (Windows, Linux, macOS, and 32-bit DOS), SuperSight starts 3D rendering
 at **1280x800**, four times the original width and height. Player and opponent
 car-selection previews use the same higher resolution; F12 also works in those
 screens and in the track preview. Dashboard artwork, replay controls, and the
@@ -255,7 +255,7 @@ repaint that completed page while the next frame is being drawn. This prevents
 partial game-frame updates from reaching presentation without queuing an extra
 frame. Display synchronization still depends on SDL and the graphics driver.
 
-On Windows and Linux, VSync is enabled by default in both windowed and fullscreen
+On Windows, Linux, and macOS, VSync is enabled by default in both windowed and fullscreen
 mode, with or without SuperSight. The game requests synchronization to the display's
 vertical refresh; SDL may use timed pacing when a renderer cannot synchronize.
 The existing classic and 60 FPS SuperSight targets still apply. Set
@@ -272,12 +272,12 @@ default. If the renderer cannot apply the requested setting, the game warns and
 continues. The setting does not affect DOS builds or batch dump tools. Display
 synchronization waits are excluded from automatic SuperSight quality measurements.
 
-On Windows and Linux, SuperSight draws serially by default with zero background
+On Windows, Linux, and macOS, SuperSight draws serially by default with zero background
 render workers. The interactive game leaves CPU affinity and process priority
 unchanged, allowing the OS to schedule threads across the allowed CPUs.
 DOS and dump tools do not change affinity or priority.
 
-CPU pinning is optional. An explicit `auto` affinity setting keeps the CPU selected
+CPU pinning is optional on Windows and Linux. An explicit `auto` affinity setting keeps the CPU selected
 by the OS at startup when it is allowed, otherwise it selects the first allowed
 CPU. A numeric setting selects that allowed CPU. Both pin the process for the
 run and are inherited by newly created threads.
@@ -291,6 +291,10 @@ fails, the game prints a diagnostic and continues; priority denial does not
 undo affinity. Affinity does not reserve a core or keep other processes off it, and
 pinning SDL audio and graphics threads can also add contention. Compare settings
 on the same scene with your usual background audio; this cannot guarantee stable 60 FPS.
+
+macOS retains the system CPU affinity and process priority;
+`RESTUNTS_CPU_AFFINITY` and `RESTUNTS_HIGH_PRIORITY` apply only to Windows and
+Linux. `RESTUNTS_RENDER_WORKERS` and `RESTUNTS_VSYNC` also work on macOS.
 
 These environment variables are read at startup (worker settings are read when
 the renderer initializes its worker pool):
@@ -465,13 +469,13 @@ the tachometer. The stock value `0x0010` keeps both needles white, and
 
 ## How to build
 
-SDL3 builds support Linux, Windows, 32-bit DOS, and
+SDL3 builds support Linux, Windows, macOS, 32-bit DOS, and
 [offline HTML/WebAssembly](#sdl3-webassembly-build-offline-html).
 
-### SDL3 native builds: Linux, Windows, and 32-bit DOS
+### SDL3 native builds: Linux, Windows, macOS, and 32-bit DOS
 
 The CMake build produces the game (`restunts`), physics dumper (`repldump`),
-and renderer dumper (`pixldump`) for all three backends. Run the commands below
+and renderer dumper (`pixldump`) for all four native targets. Run the commands below
 from the repository root. Use a separate build directory for each target,
 architecture, compiler, and host; do not reuse a native Windows build directory
 from WSL, or vice versa.
@@ -490,10 +494,11 @@ For other targets, use their build directory and repeat the toolchain and CPU
 options from the corresponding recipe. `--fresh` clears previously cached
 configuration options, so include any custom options you want to retain.
 
-| Build host | Linux backend | Windows backend | DOS backend |
-| --- | --- | --- | --- |
-| Linux x64 | Native GCC, x64 or x86 multilib | MinGW-w64 cross-compiler, x64 or x86 | DJGPP cross-compiler, 32-bit DPMI |
-| Windows x64 | GCC inside WSL2 | Native MSYS2 UCRT64 for x64; MinGW-w64 inside WSL2 for x86 | Native DJGPP in MSYS2, or DJGPP inside WSL2 |
+| Build host | Linux backend | Windows backend | macOS backend | DOS backend |
+| --- | --- | --- | --- | --- |
+| Linux x64 | Native GCC, x64 or x86 multilib | MinGW-w64 cross-compiler, x64 or x86 | Build on a Mac | DJGPP cross-compiler, 32-bit DPMI |
+| Windows x64 | GCC inside WSL2 | Native MSYS2 UCRT64 for x64; MinGW-w64 inside WSL2 for x86 | Build on a Mac | Native DJGPP in MSYS2, or DJGPP inside WSL2 |
+| macOS Apple Silicon or Intel | Use a Linux environment | Use a Windows or Linux environment | Apple Clang and macOS SDK; arm64, x86_64, or universal | Use a documented Linux or Windows environment |
 
 CMake 3.25 or newer, Ninja, Git, and the selected compiler must be on `PATH`.
 CMake downloads and verifies the pinned SDL3 source automatically, so the
@@ -701,6 +706,134 @@ The WSL2 route above is also available and uses the same Linux DJGPP toolchain
 as CI. DOS tests are disabled in these builds because DOS executables cannot
 be run directly by the host's CTest process.
 
+#### macOS host: macOS backend
+
+The macOS target uses the shared SDL3 backend with Apple's native window,
+input, audio, and graphics drivers. Build on a Mac with the Xcode Command Line
+Tools and the macOS SDK. The helper script targets macOS 11.0 or newer on both
+Apple Silicon (`arm64`) and Intel (`x86_64`). That is a build setting; older
+macOS releases still require runtime testing.
+
+In Terminal, install Apple's tools, complete the installer, then install
+CMake 3.25+, Ninja, Git, and Python 3 using [Homebrew](https://brew.sh/):
+
+```sh
+xcode-select --install
+brew install cmake ninja git python
+```
+
+Homebrew must already be installed and on `PATH`. SDL3 itself is fetched and
+built by CMake; a Homebrew SDL installation is not needed. From the repository
+root, build and package for the Mac running the command:
+
+```sh
+bash tools/scripts/build-macos.sh
+```
+
+The script selects `arm64` or `x86_64` from the current shell architecture,
+builds Release executables in `out/sdl3-macos-<arch>/`, and installs the complete
+runtime into `out/package-macos-<arch>/`. On Apple Silicon, use a native Terminal
+or select `--arch arm64` explicitly if the shell runs through Rosetta.
+To select an architecture or create a universal package for both CPU families:
+
+```sh
+bash tools/scripts/build-macos.sh --arch arm64
+bash tools/scripts/build-macos.sh --arch x86_64
+bash tools/scripts/build-macos.sh --arch universal
+```
+
+Each selection has a separate build and package directory. A universal build
+contains both architectures in every executable and the audio library. CMake's
+[`CMAKE_OSX_ARCHITECTURES`](https://cmake.org/cmake/help/latest/variable/CMAKE_OSX_ARCHITECTURES.html)
+and [SDL's macOS build guide](https://wiki.libsdl.org/SDL3/README-macos) describe
+this mechanism. Test each architecture on a matching Mac; an Intel-only build
+needs Rosetta to run on Apple Silicon, and an arm64-only build cannot run on Intel.
+
+Use `--jobs 4` to change build parallelism, or `--build-dir DIR` and
+`--package-dir DIR` to choose output folders. Additional CMake options follow
+`--`, for example `-- -DRESTUNTS_BUILD_TESTS=OFF`. To change the minimum OS,
+set `MACOSX_DEPLOYMENT_TARGET` before configuring a fresh build directory.
+
+To configure manually instead, this example targets Apple Silicon:
+
+```sh
+cmake -S . -B out/sdl3-macos-arm64 -G Ninja -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_C_COMPILER="$(xcrun --find clang)" \
+    -DCMAKE_OSX_ARCHITECTURES=arm64 -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0
+cmake --build out/sdl3-macos-arm64 --parallel 2
+cmake --install out/sdl3-macos-arm64 --prefix out/package-macos-arm64 --component Runtime
+```
+
+Use `x86_64` in both directory names and the architecture option for Intel;
+use `universal` in the directory names and
+`'-DCMAKE_OSX_ARCHITECTURES=arm64;x86_64'` for a universal build.
+The build directory contains `restunts`, `repldump`, `pixldump`, and
+`libnuked-opl2.dylib`. The package keeps executables in `bin/`, the replaceable
+audio library in `lib/`, and enhanced artwork beside the executables.
+
+After placing the original game data in `stunts/`, run the native tests and game:
+
+```sh
+bash tools/scripts/build-macos.sh --arch arm64 --test
+bash tools/scripts/run-macos.sh --runtime-dir out/package-macos-arm64 \
+    --data-dir stunts -- /nointro
+```
+
+Replace `arm64` with `x86_64` on Intel. `--test` uses SDL's dummy video/audio
+drivers for CTest and requires the game fixtures described above. To run tests
+without rebuilding:
+
+```sh
+SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy \
+    ctest --test-dir out/sdl3-macos-arm64 --output-on-failure
+```
+
+The launcher also accepts the build directory with `--runtime-dir`.
+
+The **SDL3 builds** workflow builds and tests Apple Silicon and Intel separately,
+checks relocated packages and replacement audio libraries, and uploads
+`restunts-sdl3-macos-arm64` and `restunts-sdl3-macos-x86_64` artifacts. Each contains
+a `.tar.gz` runtime archive that preserves executable permissions.
+
+#### macOS: running an already compiled package
+
+No compiler, Homebrew, CMake, or separate SDL installation is needed for the
+default runtime package. Choose the archive for your Mac (`arm64` for Apple
+Silicon, `x86_64` for Intel, or a universal build). Download the matching
+**SDL3 builds** artifact and unzip its outer GitHub Actions archive first, if
+applicable. Extract the contained runtime archive to a writable folder:
+
+```sh
+mkdir -p "$HOME/Games/restunts"
+tar -xzf "$HOME/Downloads/restunts-sdl3-macos-arm64.tar.gz" -C "$HOME/Games/restunts"
+```
+
+Use the Intel archive filename instead on Intel. Keep the entire extracted
+package together, including `bin/`, `lib/`, `share/`, and `run-restunts.sh`.
+Copy your original Broderbund Stunts 1.1 data into a separate writable folder,
+for example `$HOME/Games/Stunts-data`, with `MISC.RES` (or `MISC.PRE`),
+`ADSKIDMS.VCE`, tracks, cars, and the other game resources directly inside it.
+Then launch from Terminal:
+
+```sh
+bash "$HOME/Games/restunts/run-restunts.sh" \
+    --data-dir "$HOME/Games/Stunts-data" -- /nointro
+```
+
+Omit `-- /nointro` to watch the intro, or pass other game arguments after `--`,
+for example `-- ss:medium`. The launcher finds its own package regardless of
+the terminal's working directory. The equivalent direct command is:
+
+```sh
+"$HOME/Games/restunts/bin/restunts" --data-dir "$HOME/Games/Stunts-data" /nointro
+```
+
+Saved games, replays, and dump outputs go into the selected game-data folder.
+Use `repldump` or `pixldump` from the same `bin/` folder with their normal
+arguments. The runtime is a Terminal-launched program; there is no Finder
+`.app` bundle. On keyboards that assign system actions to function keys, use
+Fn/Globe with F11/F12 for the game's FPS and SuperSight controls.
+
 #### SDL3 build options, packages, and DOS runtime
 
 Desktop regression binaries are built by default. Add
@@ -728,7 +861,7 @@ cmake --install out/sdl3-dos --prefix out/package-dos --component Runtime
 Run only the install commands for targets you built. For native Windows
 builds, substitute `out/sdl3-windows-x64-msys2` or `out/sdl3-dos-windows` as
 the build directory. Packages contain `bin/` executables, the desktop Nuked
-library in Linux `lib/` or Windows `bin/`, and dependency sources/notices under
+library in Linux/macOS `lib/` or Windows `bin/`, and dependency sources/notices under
 `share/`. Keep the complete package together when moving or distributing it.
 Game data is separate; desktop programs accept `--data-dir stunts` as their
 first option when launched from the repository root.

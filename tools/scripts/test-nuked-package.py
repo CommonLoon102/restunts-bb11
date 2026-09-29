@@ -1,7 +1,7 @@
-"""Verify relocated Linux packages and replacement of their shared Nuked library.
+"""Verify relocated Linux/macOS packages and replacement of their Nuked library.
 
 Requires an existing native CMake build with tests enabled, the game test assets,
-a C compiler, CMake, and readelf. Everything installed or rebuilt by this test
+a C compiler, CMake, and readelf (Linux) or otool (macOS). Installed or rebuilt data
 lives in a temporary directory; the existing build and its binaries are retained.
 """
 
@@ -17,7 +17,13 @@ import tempfile
 
 
 ROOT = Path(__file__).resolve().parents[2]
-LIBRARY_NAME = "libnuked-opl2.so"
+MACOS = sys.platform == "darwin"
+LIBRARY_NAME = "libnuked-opl2.dylib" if MACOS else "libnuked-opl2.so"
+LINKAGE_TOOL = "otool" if MACOS else "readelf"
+MACHO_LOAD_COMMANDS = ("LC_LOAD_DYLIB", "LC_LOAD_WEAK_DYLIB", "LC_REEXPORT_DYLIB",
+                      "LC_LOAD_UPWARD_DYLIB", "LC_LAZY_LOAD_DYLIB")
+MACOS_BUILD_SETTINGS = ("CMAKE_OSX_ARCHITECTURES", "CMAKE_OSX_DEPLOYMENT_TARGET",
+                       "CMAKE_OSX_SYSROOT")
 SOURCE_DIRECTORY = Path("share/restunts/nuked-opl2-lite")
 MARKER = "RESTUNTS_REPLACEMENT_NUKED_LIBRARY_LOADED"
 SOURCE_FILES = ("opl2.c", "opl2.h", "CMakeLists.txt", "LICENSE", "README.md")
@@ -85,12 +91,16 @@ def verify_contents(prefix, component, source, build, bundled_sdl):
         for name in ("restunts", "repldump", "pixldump"):
             require((prefix / "bin" / name).is_file(), f"missing runtime executable: {name}")
         matching_file(prefix / "share/docs/restunts/sdl3.md", source / "docs/sdl3.md")
+        if MACOS:
+            launcher = prefix / "run-restunts.sh"
+            matching_file(launcher, source / "tools/scripts/run-macos.sh")
+            require(os.access(launcher, os.X_OK), f"packaged launcher is not executable: {launcher}")
     else:
         require((prefix / "bin/test-sdl3-audio").is_file(),
                 "Tests package is missing its audio regression executable")
 
 
-def verify_dynamic_linkage(binary, *, needs_nuked):
+def verify_elf_linkage(binary, *, needs_nuked):
     output = command(["readelf", "--dynamic", binary], env=dict(os.environ, LC_ALL="C"))
     needed = re.findall(r"\(NEEDED\).*?\[([^]]+)\]", output)
     require((LIBRARY_NAME in needed) == needs_nuked,
@@ -106,10 +116,51 @@ def verify_dynamic_linkage(binary, *, needs_nuked):
                 f"missing package-relative library search path in {binary}")
 
 
+def verify_macho_linkage(binary, *, needs_nuked):
+    output = command(["otool", "-l", binary], env=dict(os.environ, LC_ALL="C"))
+    load_commands = re.findall(r"\bcmd (LC_\w+)\n(.*?)(?=\nLoad command |\Z)",
+                               output, re.DOTALL)
+    require(load_commands, f"no Mach-O load commands found in {binary}")
+    needed = []
+    search_paths = []
+    identities = []
+    for kind, contents in load_commands:
+        if kind in MACHO_LOAD_COMMANDS or kind == "LC_ID_DYLIB":
+            names = re.findall(r"^\s*name (.+) \(offset \d+\)$", contents, re.MULTILINE)
+            require(len(names) == 1, f"cannot read {kind} in {binary}")
+            (identities if kind == "LC_ID_DYLIB" else needed).extend(names)
+        elif kind == "LC_RPATH":
+            paths = re.findall(r"^\s*path (.+) \(offset \d+\)$", contents, re.MULTILINE)
+            require(len(paths) == 1, f"cannot read {kind} in {binary}")
+            search_paths.extend(paths)
+    nuked_dependencies = [name for name in needed if Path(name).name == LIBRARY_NAME]
+    require(bool(nuked_dependencies) == needs_nuked,
+            f"unexpected Nuked dynamic dependency for {binary}: {needed}")
+    for name in nuked_dependencies + identities:
+        require(name == f"@rpath/{LIBRARY_NAME}",
+                f"non-relocatable Nuked install name in {binary}: {name!r}")
+    if binary.name == LIBRARY_NAME:
+        require(identities, f"missing Nuked install name in {binary}")
+    for path in search_paths:
+        require(path.startswith(("@loader_path/", "@executable_path/")),
+                f"non-relocatable library search path in {binary}: {path!r}")
+    if needs_nuked:
+        require(any(path in ("@loader_path/../lib", "@executable_path/../lib")
+                    for path in search_paths),
+                f"missing package-relative library search path in {binary}")
+
+
+def verify_dynamic_linkage(binary, *, needs_nuked):
+    if MACOS:
+        verify_macho_linkage(binary, needs_nuked=needs_nuked)
+    else:
+        verify_elf_linkage(binary, needs_nuked=needs_nuked)
+
+
 def fixture_environment():
     environment = os.environ.copy()
     for name in list(environment):
-        if name.startswith("LD_") or name == "RESTUNTS_AUDIO_TRACE":
+        if name.startswith(("LD_", "DYLD_")) or name == "RESTUNTS_AUDIO_TRACE":
             environment.pop(name)
     environment.update(SDL_VIDEODRIVER="dummy", SDL_AUDIODRIVER="dummy")
     return environment
@@ -138,12 +189,14 @@ def instrument_replacement(source):
 
 
 def test_package(build, cmake):
-    require(sys.platform.startswith("linux"), "this package regression requires native Linux")
+    require(sys.platform.startswith("linux") or MACOS,
+            "this package regression requires native Linux or macOS")
     build = build.resolve()
     cache = cache_values(build)
     source = Path(cache.get("CMAKE_HOME_DIRECTORY", str(ROOT))).resolve()
     require(cache.get("RESTUNTS_BUILD_TESTS") == "ON", "configure with RESTUNTS_BUILD_TESTS=ON")
-    require(shutil.which("readelf") is not None, "readelf is required to inspect ELF dependencies")
+    require(shutil.which(LINKAGE_TOOL) is not None,
+            f"{LINKAGE_TOOL} is required to inspect dynamic dependencies")
     asset = source / "stunts/ADSKIDMS.VCE"
     require(asset.is_file(), f"missing audio fixture asset: {asset}")
     compiler = cache.get("CMAKE_C_COMPILER")
@@ -176,7 +229,7 @@ def test_package(build, cmake):
         working_directory.mkdir()
         output = run_audio_fixture(fixture, asset, working_directory)
         require(MARKER not in output, "baseline package unexpectedly contains the replacement marker")
-        print("Relocated Runtime and Tests packages contain matching source, licenses, and ELF linkage.",
+        print("Relocated Runtime and Tests packages contain matching source, licenses, and linkage.",
               flush=True)
         print("Relocated audio fixture passes without library-path environment overrides.", flush=True)
 
@@ -186,17 +239,28 @@ def test_package(build, cmake):
         replacement_build = directory / "replacement-build"
         build_type = cache.get("CMAKE_BUILD_TYPE") or "Release"
         build_configuration = build_type.upper()
-        command([cmake, "-S", replacement_source, "-B", replacement_build,
-                 f"-DCMAKE_BUILD_TYPE={build_type}", f"-DCMAKE_C_COMPILER={compiler}",
-                 f"-DCMAKE_C_FLAGS={cache.get('CMAKE_C_FLAGS', '')}",
-                 f"-DCMAKE_C_FLAGS_{build_configuration}=" +
-                 cache.get(f"CMAKE_C_FLAGS_{build_configuration}", ""),
-                 f"-DCMAKE_SHARED_LINKER_FLAGS={cache.get('CMAKE_SHARED_LINKER_FLAGS', '')}",
-                 f"-DNUKED_OPL2_SSE2={cache.get('RESTUNTS_SSE2', 'ON')}"])
+        configure_arguments = [
+            cmake, "-S", replacement_source, "-B", replacement_build,
+            f"-DCMAKE_BUILD_TYPE={build_type}", f"-DCMAKE_C_COMPILER={compiler}",
+            f"-DCMAKE_C_FLAGS={cache.get('CMAKE_C_FLAGS', '')}",
+            f"-DCMAKE_C_FLAGS_{build_configuration}=" +
+            cache.get(f"CMAKE_C_FLAGS_{build_configuration}", ""),
+            f"-DCMAKE_SHARED_LINKER_FLAGS={cache.get('CMAKE_SHARED_LINKER_FLAGS', '')}",
+            f"-DNUKED_OPL2_SSE2={cache.get('RESTUNTS_SSE2', 'ON')}",
+        ]
+        if MACOS:
+            configure_arguments.extend(f"-D{name}={cache[name]}" for name in MACOS_BUILD_SETTINGS
+                                       if name in cache)
+        command(configure_arguments)
         command([cmake, "--build", replacement_build, "--parallel", "2"])
         replacement = replacement_build / LIBRARY_NAME
         require(replacement.is_file(), "shipped library sources did not build the replacement library")
-        shutil.copy2(replacement, tests / "lib" / LIBRARY_NAME)
+        # A new inode avoids stale macOS code-signature cache entries after replacement.
+        packaged_library = tests / "lib" / LIBRARY_NAME
+        replacement_install = packaged_library.with_name(LIBRARY_NAME + ".replacement")
+        shutil.copy2(replacement, replacement_install)
+        replacement_install.replace(packaged_library)
+        verify_dynamic_linkage(packaged_library, needs_nuked=False)
         output = run_audio_fixture(fixture, asset, working_directory)
         require(MARKER in output, "packaged executable did not load the user-rebuilt library")
         require(hashlib.sha256(fixture.read_bytes()).digest() == executable_hash,
@@ -208,7 +272,7 @@ def test_package(build, cmake):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--build-directory", type=Path, required=True,
-                        help="existing native Linux CMake build with tests enabled")
+                        help="existing native Linux or macOS CMake build with tests enabled")
     parser.add_argument("--cmake", default="cmake", help="CMake executable (default: cmake)")
     arguments = parser.parse_args()
     try:
