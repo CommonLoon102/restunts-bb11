@@ -61,6 +61,10 @@ void far *file_load_resfile(const legacy_s8 *filename);
 void far *file_load_resfile_with_tail(const legacy_s8 *filename, legacy_u16 tail_bytes);
 void far *file_load_resource(legacy_s16 resource_type, const legacy_s8 *filename);
 void unload_resource(void far *resptr);
+/* Load and map a song without starting it; pass the result to load_audio_finalize
+ * once other resources are ready. audio_unload releases the prepared resources. */
+void far *file_prepare_audiores(const legacy_s8 *songfile, const legacy_s8 *voicefile,
+								const legacy_s8 *name);
 void file_load_audiores(const legacy_s8 *songfile, const legacy_s8 *voicefile,
 						const legacy_s8 *name);
 void far *file_load_3dres(const legacy_s8 *filename);

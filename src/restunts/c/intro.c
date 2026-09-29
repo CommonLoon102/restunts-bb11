@@ -92,7 +92,7 @@ static void intro_draw_native_audio_notice(void)
 }
 #endif
 
-legacy_s16 run_intro(void)
+static legacy_s16 run_intro(void far *audio_resource)
 {
 	mouse_draw_opaque_check();
 	sprite_select_screen_and_clear();
@@ -107,6 +107,9 @@ legacy_s16 run_intro(void)
 	shape = (struct SHAPE2D far *)locate_shape_fatal((legacy_s8 far *)ui_temp_resource, "prod");
 	sprite_shape_to_1_alt(shape);
 	legacy_s16 result = sprite_blit_to_video(render_window_sprite, -1);
+	/* Finish title loading and drawing before music starts: DOS sends timer-driven
+	 * notes directly to OPL, so a delayed first timer pump shortens the opening. */
+	load_audio_finalize(audio_resource);
 	if (result == 0) {
 		result = input_repeat_check(INTRO_PAGE_INPUT_DELAY);
 	}
@@ -130,11 +133,11 @@ legacy_s16 run_intro(void)
 
 legacy_s16 run_intro_looped(void)
 {
-	file_load_audiores("skidtitl", "skidms", "TITL");
+	void far *audio_resource = file_prepare_audiores("skidtitl", "skidms", "TITL");
 	ui_temp_resource = file_load_resource(FILE_RESOURCE_SHAPE2D, "sdtitl");
 	render_window_sprite =
 		sprite_make_wnd(INTRO_SCREEN_WIDTH, INTRO_SCREEN_HEIGHT, INTRO_SCREEN_COLOR);
-	legacy_s16 result = run_intro();
+	legacy_s16 result = run_intro(audio_resource);
 	sprite_free_wnd(render_window_sprite);
 	mmgr_free((legacy_s8 far *)ui_temp_resource);
 

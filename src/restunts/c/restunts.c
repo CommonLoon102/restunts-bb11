@@ -708,9 +708,6 @@ legacy_s16 run_main_menu_loop(legacy_s16 argc, legacy_s8 *argv[])
 
 		while (1) {
 			ensure_file_exists(2);
-			if (is_audioloaded == 0) {
-				file_load_audiores("skidslct", "skidms", "SLCT");
-			}
 			result = main_menu_select_race(run_menu(), &start_in_replay);
 			if (result == 0) {
 				continue;

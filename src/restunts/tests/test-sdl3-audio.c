@@ -14,6 +14,11 @@ void audio_sequence_timer(void)
 {
 }
 
+/* This driver-only fixture has no running clock or sequencer. */
+void sdl3_timer_pump(void)
+{
+}
+
 void timer_remove_callback(void (*callback)(void))
 {
 	assert(callback == audio_sequence_timer);

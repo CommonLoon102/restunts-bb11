@@ -1045,14 +1045,20 @@ void far *file_load_3dres(const legacy_s8 *filename)
 	}
 }
 
-void file_load_audiores(const legacy_s8 *songfile, const legacy_s8 *voicefile,
-						const legacy_s8 *name)
+void far *file_prepare_audiores(const legacy_s8 *songfile, const legacy_s8 *voicefile,
+								const legacy_s8 *name)
 {
 	voicefileptr = file_load_resource(FILE_RESOURCE_VOICE, voicefile);
 	songfileptr = file_load_resource(FILE_RESOURCE_SONG, songfile);
 	void far *audiores = init_audio_resources(songfileptr, voicefileptr, name);
-	load_audio_finalize(audiores);
 	is_audioloaded = 1;
+	return audiores;
+}
+
+void file_load_audiores(const legacy_s8 *songfile, const legacy_s8 *voicefile,
+						const legacy_s8 *name)
+{
+	load_audio_finalize(file_prepare_audiores(songfile, voicefile, name));
 }
 #endif
 
