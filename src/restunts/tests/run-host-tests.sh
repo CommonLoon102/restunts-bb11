@@ -233,6 +233,9 @@ run_host_test test-editor-boundaries legacy.c \
     "$test_source_dir/headless_data.c" "$test_source_dir/headless_trackdata.c" \
     "$test_source_dir/full_data.c" "$test_source_dir/full_strings.c" \
     -Wno-pointer-sign -Wno-missing-field-initializers -Wno-missing-braces
+run_host_test test-menu-main menu_main.c "$test_source_dir/legacy.c" -Wno-pointer-sign
+run_host_test test-menu-main menu_main.c "$test_source_dir/legacy.c" \
+    -DRESTUNTS_SDL3 -Wno-pointer-sign
 run_host_test test-menu-options menu_options.c \
     "$test_source_dir/legacy.c" "$test_source_dir/full_data.c" \
     "$test_source_dir/full_strings.c" "$test_source_dir/headless_data.c" \

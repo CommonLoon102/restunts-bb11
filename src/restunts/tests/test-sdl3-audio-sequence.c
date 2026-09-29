@@ -1,5 +1,5 @@
-/* Exercise optional voice-bank entries through the real native resource mapper,
- * sound-effect sequencer, context allocator and SDL dummy audio device. */
+/* Exercise music startup and optional voice-bank entries through the real native
+ * resource mapper, sequencer, context allocator and SDL dummy audio device. */
 #include <assert.h>
 #include <stdio.h>
 #include <string.h>
@@ -18,6 +18,50 @@ extern legacy_s16 audio_play_effect(void *resource, legacy_s16 channel, legacy_u
 #define TEST_BANK_BYTES 512U
 #define TEST_INSTRUMENT_COUNT 3U
 #define TEST_HEADER_BYTES (8U + TEST_INSTRUMENT_COUNT * AUDIO_FAR_POINTER_SIZE + 5U)
+#define TEST_MILLISECONDS_PER_SECOND 1000U
+#define TEST_TIMER_TICK_MS (TEST_MILLISECONDS_PER_SECOND / DOS_TIMER_REALTIME_TICKS_PER_SECOND)
+#define TEST_TIMER_POLL_MS 1U
+#define TEST_SHORT_LOADING_TICKS 50U
+#define TEST_LONG_LOADING_TICKS 137U
+#define TEST_RESOURCE_TYPE_OFFSET 4U
+#define TEST_FIRST_INSTRUMENT_ARGUMENT_OFFSET 2U
+#define TEST_FIRST_NOTE_DURATION_OFFSET 8U
+#define TEST_SECOND_EVENT_OFFSET 9U
+#define TEST_TONE_INSTRUMENT 1U
+#define TEST_FIRST_NOTE_TICKS 5U
+#define TEST_ATTACK_LEVEL_OFFSET 30U
+#define TEST_ATTACK_STEP_OFFSET 32U
+#define TEST_SUSTAIN_LEVEL_OFFSET 36U
+#define TEST_RELEASE_STEP_OFFSET 38U
+
+static legacy_u64 mock_time_ms = TEST_MILLISECONDS_PER_SECOND;
+
+static legacy_u64 test_get_ticks(void)
+{
+	return mock_time_ms;
+}
+
+static void test_delay(legacy_u32 milliseconds)
+{
+	assert(milliseconds == TEST_TIMER_POLL_MS);
+}
+
+static void test_platform_pump(void);
+
+/* Use the real timer with a controlled clock: resource loading must not become
+ * elapsed playback when the next main-thread timer pump starts a new song. */
+#define SDL_GetTicks test_get_ticks
+#define SDL_Delay test_delay
+#define sdl3_platform_pump test_platform_pump
+#include "../platform/sdl3/timer.c"
+#undef SDL_GetTicks
+#undef SDL_Delay
+#undef sdl3_platform_pump
+
+static void test_platform_pump(void)
+{
+	sdl3_timer_pump();
+}
 
 enum missing_note_kind { MISSING_INSTRUMENT, UNBOUND_INSTRUMENT, MISSING_PERCUSSION };
 
@@ -160,9 +204,60 @@ static void check_missing_note(legacy_u8 kind, legacy_u8 volume, legacy_s32 dire
 	}
 }
 
+static void check_music_start_after_loading(void)
+{
+	dos_audio_uses_direct_channels = 0;
+	audio_reset_channels();
+	audio_music_enabled = AUDIO_STATE_ENABLED;
+	struct sequence_fixture fixture = make_fixture(MISSING_INSTRUMENT, AUDIO_ENGINE_MAX_VOLUME);
+	fixture.header[TEST_RESOURCE_TYPE_OFFSET] = AUDIO_RESOURCE_TYPE_SONG;
+	fixture.events[TEST_FIRST_INSTRUMENT_ARGUMENT_OFFSET] = TEST_TONE_INSTRUMENT;
+	fixture.events[TEST_FIRST_NOTE_DURATION_OFFSET] = TEST_FIRST_NOTE_TICKS;
+	fixture.events[TEST_SECOND_EVENT_OFFSET] = TEST_FIRST_NOTE_TICKS + 1U;
+	LEGACY_WRITE_U16_LE(fixture.instrument + TEST_ATTACK_LEVEL_OFFSET, AUDIO_ENGINE_MAX_VOLUME);
+	LEGACY_WRITE_U16_LE(fixture.instrument + TEST_ATTACK_STEP_OFFSET, AUDIO_ENGINE_MAX_VOLUME);
+	LEGACY_WRITE_U16_LE(fixture.instrument + TEST_SUSTAIN_LEVEL_OFFSET, AUDIO_ENGINE_MAX_VOLUME);
+	LEGACY_WRITE_U16_LE(fixture.instrument + TEST_RELEASE_STEP_OFFSET, AUDIO_ENGINE_MAX_VOLUME);
+	struct AUDIO_CHANNEL *channel = &audio_channels[AUDIO_MUSIC_CHANNEL_FIRST];
+	struct AUDIO_CONTEXT *context = &dos_audio_contexts[AUDIO_DRIVER_CHANNEL_BASE];
+	static const legacy_u32 loading_ticks[] = {TEST_SHORT_LOADING_TICKS, TEST_LONG_LOADING_TICKS};
+
+	/* Repeat with another loading interval to cover later music changes as well
+	 * as the initial intro. Both game clocks retain the full loading duration. */
+	for (legacy_u32 run = 0; run < sizeof(loading_ticks) / sizeof(loading_ticks[0]); ++run) {
+		legacy_u32 previous_ticks = dos_timer_get_realtime_counter();
+		mock_time_ms += loading_ticks[run] * TEST_TIMER_TICK_MS;
+		load_audio_finalize(fixture.header);
+		legacy_u32 start_ticks = previous_ticks + loading_ticks[run];
+		assert(dos_timer_get_realtime_counter() == start_ticks);
+		assert(timer_get_counter() == start_ticks);
+		assert(audio_sequence_elapsed_ticks == 0);
+		assert(audio_read_far_pointer((legacy_u8 *)&channel->cursor) == fixture.events);
+		assert(channel->active_notes == 0);
+		assert(context->state == AUDIO_CONTEXT_STATE_FREE);
+
+		/* The first note starts on the next tick and retains its complete duration. */
+		for (legacy_u32 elapsed = 0; elapsed < TEST_FIRST_NOTE_TICKS; ++elapsed) {
+			mock_time_ms += TEST_TIMER_TICK_MS;
+			sdl3_timer_pump();
+			assert(channel->active_notes == 1);
+			assert(context->state == AUDIO_CONTEXT_STATE_PLAYING);
+			assert(context->age == elapsed);
+			assert(context->fade_out_flag == TEST_FIRST_NOTE_TICKS - elapsed - 1U);
+			assert(audio_read_far_pointer((legacy_u8 *)&channel->cursor) ==
+				   fixture.events + TEST_SECOND_EVENT_OFFSET);
+		}
+		mock_time_ms += TEST_TIMER_TICK_MS;
+		sdl3_timer_pump();
+		assert(context->state == AUDIO_CONTEXT_STATE_RELEASING);
+		assert(context->age == TEST_FIRST_NOTE_TICKS);
+	}
+}
+
 legacy_int main(void)
 {
 	SDL_SetMainReady();
+	dos_timer_setup_interrupt();
 	assert(SDL_SetHintWithPriority(SDL_HINT_AUDIO_DRIVER, "dummy", SDL_HINT_OVERRIDE));
 	assert(audio_load_dos_driver("ad15.drv", 0, 0) == 0);
 	assert(SDL_GetCurrentAudioDriver() != NULL);
@@ -175,8 +270,11 @@ legacy_int main(void)
 		check_missing_note(UNBOUND_INSTRUMENT, 127, direct);
 		check_missing_note(MISSING_PERCUSSION, 127, direct);
 	}
+	check_music_start_after_loading();
 	dos_audio_shutdown();
+	dos_timer_shutdown();
 	SDL_Quit();
-	puts("SDL3 audio sequences: missing instruments skip notes and preserve later playback");
+	puts(
+		"SDL3 audio sequences: music starts at its first note and missing instruments are skipped");
 	return 0;
 }

@@ -2,7 +2,7 @@
  * register arithmetic follow the supplied AD15.DRV; the portable sequencer
  * continues to own channel allocation, note timing, envelopes and modulation.
  * Only the main thread accesses this state. SDL consumes queued PCM separately. */
-#include <SDL3/SDL.h>
+#include "sdl3.h"
 #include <string.h>
 #include <stdio.h>
 #include "../../c/audio.h"
@@ -724,6 +724,14 @@ void dos_audio_driver_set_control(legacy_s16 driver_channel, struct AUDIO_CONTEX
 	}
 }
 
+void dos_audio_driver_reset(void)
+{
+	/* Account for loading time while the old song is stopped, before the
+	 * sequencer activates its replacement. Otherwise the next pump applies
+	 * that elapsed time to the new song and rushes its opening notes on OPL. */
+	sdl3_timer_pump();
+}
+
 /* These operations are also no-ops in AD15: banks/master SysEx belong to
  * MT-32, and pitch changes are applied by the per-context 100 Hz update. */
 void dos_audio_driver_load_bank(void *bank)
@@ -742,10 +750,6 @@ void dos_audio_driver_send_data(legacy_u16 length, legacy_u8 *data)
 {
 	(void)length;
 	(void)data;
-}
-
-void dos_audio_driver_reset(void)
-{
 }
 
 void dos_audio_driver_suspend_all(struct AUDIO_CONTEXT *contexts)

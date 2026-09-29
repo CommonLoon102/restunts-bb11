@@ -396,6 +396,10 @@ void file_load_audiores(const legacy_s8 *song, const legacy_s8 *voice, const leg
 }
 legacy_s8 run_menu(void)
 {
+	/* The menu now owns music loading as well as its deferred playback. */
+	if (is_audioloaded == 0) {
+		file_load_audiores("skidslct", "skidms", "SLCT");
+	}
 #ifdef RESTUNTS_SDL3
 	check_startup_supersight();
 #endif

@@ -1,4 +1,5 @@
 #include "fileio.h"
+#include "audio_control.h"
 #include "legacy.h"
 #include "memmgr.h"
 #include "menu_internal.h"
@@ -40,6 +41,11 @@ legacy_s8 run_menu(void)
 	legacy_u8 selected = MAIN_MENU_DRIVE;
 	legacy_u8 previous = MAIN_MENU_NO_SELECTION;
 	legacy_u8 blit_mode = MENU_BLIT_MODE_INITIAL;
+	/* Keep music resources below the temporary menu allocations, but defer
+	 * playback until loading and the first screen drawing have finished. */
+	legacy_u8 start_music = is_audioloaded == 0;
+	void far *audio_resource =
+		start_music ? file_prepare_audiores("skidslct", "skidms", "SLCT") : 0;
 	show_waiting();
 	waitflag = MAIN_MENU_WAIT_TICKS;
 	render_window_sprite = sprite_make_wnd(MAIN_MENU_SCREEN_WIDTH, MAIN_MENU_SCREEN_HEIGHT,
@@ -60,6 +66,10 @@ legacy_s8 run_menu(void)
 			blit_mode = MENU_BLIT_MODE_REFRESH;
 			sprite_select_screen_compat();
 			menu_reset_animation_timers();
+			if (start_music != 0) {
+				load_audio_finalize(audio_resource);
+				start_music = 0;
+			}
 		}
 
 		legacy_u16 elapsed = (legacy_u16)menu_animate_button_highlight(
