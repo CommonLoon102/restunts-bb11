@@ -192,28 +192,10 @@ are written in the selected data directory, so it must be writable. Keep the
 original game resources and replay/car additions together there.
 
 On Linux, Windows, and macOS, the interactive game defaults to serial rendering with
-zero background render workers and leaves CPU affinity and process priority
-unchanged. The OS can schedule threads across the allowed CPUs.
-DOS and dump tools do not alter affinity or priority.
-
-CPU affinity and priority overrides apply only to Linux and Windows; macOS
-keeps the system defaults. Render-worker and VSync settings also work on macOS.
-
-`RESTUNTS_CPU_AFFINITY=off` is the default and retains inherited affinity. Set it
-to an allowed zero-based logical CPU number to pin the process explicitly, or
-use `auto` to pin to the OS-selected CPU at startup if allowed, otherwise the
-first allowed CPU. Windows CPU numbers are relative to the current processor group.
-`RESTUNTS_HIGH_PRIORITY=0` is the default and retains inherited priority. Set it
-to `1` to request above-normal priority (Windows) or nice `-5` (Linux) before SDL
-initialization, while preserving higher inherited priority. Linux may deny the
-increase without an appropriate `RLIMIT_NICE` or `CAP_SYS_NICE`; a diagnostic is
-printed and the game continues.
-`RESTUNTS_RENDER_WORKERS=auto` enables automatic parallel rendering, or use a
-count from `0` through `7`. Keep affinity set to `off` when comparing multiple
-workers so they can use all allowed CPUs. See the
-[scheduling and worker settings](../readme.md#supersight-and-fps-display) for
-Linux and PowerShell examples. These settings do not reserve a core or guarantee
-a frame rate.
+zero background render workers. `RESTUNTS_RENDER_WORKERS=auto` enables automatic
+parallel rendering, or use a count from `0` through `7`. See the
+[render-worker settings](../readme.md#supersight-and-fps-display) for Linux and
+PowerShell examples.
 
 Desktop rendering uses two owned ARGB presentation pages. Composition writes the
 hidden page and flips it to the front only after the complete frame is ready.
@@ -280,7 +262,7 @@ with SSE2 disabled. Linux tests cover the platform layer and AdLib synthesis
 from a shipped instrument, plus existing host regressions. Audio tests check
 audible PCM, pitch, engine frequency, volume, modulation, key-off, native
 engine-definition pointers, unavailable-device fallback, and batch-mode cleanup.
-Windows CI runs platform, scheduling, worker lifecycle, file I/O, input, audio,
+Windows CI runs platform, worker lifecycle, file I/O, input, audio,
 and dump regressions on Windows Server 2022; Windows 7 runtime compatibility
 still needs verification on that OS. macOS CI builds and runs native CTest
 regressions on Apple Silicon and Intel, checks relocated packages and a rebuilt

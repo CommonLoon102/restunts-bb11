@@ -161,10 +161,8 @@ control), so they do not establish a complete-frame improvement.
 
 The final worker comparison uses the retained implementation at 53fe5d2b on an
 x86_64 Linux VM with three allowed logical CPUs (0, 1, 2) and inherited nice 0.
-Affinity is applied before process/thread creation: CPU 0 for pinned serial
-rendering, or all three CPUs for unpinned runs. The headless harness bypasses the
-interactive game's scheduling setup; setting its environment alone would not
-be an adequate affinity comparison.
+The benchmark applies affinity before process/thread creation: CPU 0 for pinned
+serial rendering, or all three CPUs for unpinned runs.
 
 Each configuration renders fixed mid-replay cockpit and external views with
 20 warmup frames and 60 timed frames, in two batches with reversed order.
@@ -191,18 +189,14 @@ and 32.5% externally, with modestly higher total CPU use. Four workers did not
 improve both views. This lower-contention run reverses earlier worker findings;
 compare configurations within this run, not its absolute times with earlier
 sessions on the VM. This three-CPU, headless measurement does not cover other
-machines or the interactive game's display/audio scheduling. Following these
-measurements, CPU pinning and automatic priority elevation were disabled by
-default at the user's request. Zero background render workers remain the default.
-Explicit `auto` or numeric affinity overrides still enable pinning, and
-`RESTUNTS_HIGH_PRIORITY=1` still requests above-normal priority.
+machines or the interactive game's display/audio scheduling. Zero background
+render workers remain the default.
 
-To try the measured worker configuration with a normal unrestricted launch
-affinity, use the existing startup overrides (adjust the executable path):
+To try the measured worker configuration, set the worker count at startup
+(adjust the executable path):
 
 ```sh
-RESTUNTS_CPU_AFFINITY=off RESTUNTS_HIGH_PRIORITY=0 RESTUNTS_RENDER_WORKERS=2 \
-  ./out/sdl3-linux-x64/restunts --data-dir stunts
+RESTUNTS_RENDER_WORKERS=2 ./out/sdl3-linux-x64/restunts --data-dir stunts
 ```
 
 ## Validation
