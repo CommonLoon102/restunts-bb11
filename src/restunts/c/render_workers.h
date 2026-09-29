@@ -4,7 +4,7 @@
 #include "legacy.h"
 
 /* Synchronous CPU jobs. The caller also works; no job may call SDL video APIs.
- * Returns the number of background workers used. DOS always runs serially. */
+ * Returns the number of background workers used. DOS and browsers run serially. */
 legacy_s32 render_workers_run(legacy_s32 count, void (*job)(void *, legacy_s32), void *context);
 legacy_s32 render_workers_count(void);
 void render_workers_shutdown(void);

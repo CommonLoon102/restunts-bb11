@@ -1,5 +1,5 @@
-Restunts SDL3 desktop packages - third-party notices
-===================================================
+Restunts SDL3 packages - third-party notices
+===========================================
 
 Nuked OPL2 Lite
 --------------
@@ -7,13 +7,13 @@ Copyright (C) 2026 Nuke.YKT.
 https://github.com/nukeykt/Nuked-OPL2-Lite
 Upstream revision: f3209b087da9117a5cd0e6db2fb8bea4df4e181a (0.9 beta).
 
-The desktop game, renderer dumper, and audio regression use this library under
+The desktop/browser game, renderer dumper, and audio regression use this library under
 GNU Lesser General Public License version 2.1 or, at your option, any later
 version. It is provided WITHOUT ANY WARRANTY; without even the implied warranty
 of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the complete license
 in share/licenses/restunts/Nuked-OPL2-LICENSE (or LICENSE beside its source).
 
-The library is dynamically linked. You may modify this application for your own
+Desktop builds link the library dynamically. Browser builds link it statically. You may modify this application for your own
 use and reverse engineer it for debugging modifications to the LGPL-covered
 library. No restriction in these distribution terms limits those permissions.
 This notice does not change the licenses of unrelated code or game assets.
@@ -29,6 +29,15 @@ and follow the LGPL for any further changes or redistribution.
 On Linux, replace lib/libnuked-opl2.so. On Windows, replace bin/nuked-opl2.dll.
 Use the same CPU architecture and compatible public API and structure layouts.
 The game does not check library signatures or prohibit modified replacements.
+
+Browser packages include the same library source and license, plus a standalone
+relink kit in share/restunts/wasm-relink/. It contains the application and SDL
+object/archive files, enhanced artwork, HTML shell, and build instructions needed
+to relink the application with a modified Nuked library using the recorded
+Emscripten SDK. No original game data is included or needed to relink. Keep the
+complete kit with a redistributed browser package, even though only the HTML is
+needed to run it. The own-use modification and debugging permissions above also
+apply to browser builds.
 
 SDL3
 ----

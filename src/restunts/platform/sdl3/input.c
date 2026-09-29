@@ -8,6 +8,7 @@
 
 #define KEY_BUFFER_CAPACITY 64U
 #define INPUT_POLL_DELAY_MS 1U
+#define BROWSER_EVENT_YIELD_INTERVAL_MS 8U
 #define JOYSTICK_AXIS_COUNT 2
 #define JOYSTICK_AXIS_SCALE 32
 #define JOYSTICK_AXIS_DEADZONE 16384
@@ -46,6 +47,9 @@ static legacy_u8 joystick_enabled;
 static SDL_Joystick *joystick;
 static legacy_u8 pumping;
 static legacy_u64 last_event_poll;
+#ifdef __EMSCRIPTEN__
+static legacy_u64 last_browser_yield;
+#endif
 
 static const legacy_u8 dos_kb_keymap1[DOS_KB_PRIMARY_KEYMAP_SIZE] = {
 	0,	 27,  49,  50,	51,	 52,  53,  54,	55,	 56,  57,  48,	45,	 61,  8,   9,	113, 119, 101,
@@ -330,6 +334,16 @@ void sdl3_platform_pump(void)
 		return;
 	}
 	pumping = true;
+#ifdef __EMSCRIPTEN__
+	/* Idle menus can poll only input without presenting or waiting on the timer.
+	 * Asyncify must return control for browser events to reach SDL. Bound these
+	 * extra yields so repeated key-state reads do not each suspend the game. */
+	legacy_u64 now = SDL_GetTicks();
+	if (now - last_browser_yield >= BROWSER_EVENT_YIELD_INTERVAL_MS) {
+		SDL_Delay(0);
+		last_browser_yield = SDL_GetTicks();
+	}
+#endif
 	legacy_u8 redraw_requested = false;
 	SDL_Event event;
 	legacy_u8 poll_events =

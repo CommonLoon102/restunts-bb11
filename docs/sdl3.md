@@ -2,7 +2,7 @@
 
 The SDL3 platform in `src/restunts/platform/sdl3/` builds the game (`restunts`),
 physics replay dumper (`repldump`), and renderer dumper (`pixldump`) for Windows,
-Linux, and 32-bit DOS. The existing Open Watcom 16-bit DOS build remains available
+Linux, 32-bit DOS, and [WebAssembly for offline browsers](wasm.md). The existing Open Watcom 16-bit DOS build remains available
 through `make -C src/restunts restunts repldump pixldump`; its platform code stays
 under `src/restunts/platform/dos/`.
 
@@ -13,13 +13,14 @@ tool, Git, and network access are required. CMake fetches and verifies SDL3 upst
 [`015489c672f24feed28c2aa2cdd6176df95329f3`](https://github.com/libsdl-org/SDL/tree/015489c672f24feed28c2aa2cdd6176df95329f3).
 That revision includes SDL's DOS backend and the gameport/Sound Blaster timing fix
 used by the [reference DOS port](https://github.com/murphy666/stuntsengine/pull/3).
-All three platforms use the same revision; no separate SDL fork is required.
+All platforms use the same revision; no separate SDL fork is required.
 
 | Target | Compiler and baseline |
 | --- | --- |
 | Linux x64 | GCC, Debian 12 build baseline. |
 | Linux x86 | GCC multilib or an i386 environment, Debian 12 build baseline. |
 | Windows x64 and x86 | MinGW-w64; Windows 7 API target (`_WIN32_WINNT=0x0601`). |
+| WebAssembly | Emscripten; single offline HTML, user-supplied game folder. See [browser build](wasm.md). |
 | DOS | DJGPP GCC 12.2.0, 32-bit DPMI executable; VGA and a DPMI host. |
 
 The baseline describes build settings. Successful builds and automated tests do
