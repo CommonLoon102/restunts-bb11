@@ -1,0 +1,503 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Restunts</title>
+    <style>
+        :root { color-scheme: dark; font-family: system-ui, sans-serif; background: #121820; color: #eef3fa; }
+        body { max-width: 960px; margin: 24px auto; padding: 0 16px; }
+        h1 { margin-bottom: 8px; }
+        p { color: #b8c6d8; line-height: 1.5; }
+        .controls { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin: 16px 0; }
+        button, .file-label { font: inherit; border: 1px solid #63748a; border-radius: 6px; padding: 8px 14px; background: #243246; color: inherit; cursor: pointer; }
+        button:disabled { opacity: .5; cursor: default; }
+        #start { background: #145b99; }
+        canvas { display: block; width: 100%; aspect-ratio: 4 / 3; background: #000; image-rendering: pixelated; outline-offset: 4px; }
+        canvas:fullscreen { width: 100vw; height: 100vh; object-fit: contain; }
+        #status { min-height: 1.5em; }
+        #log { white-space: pre-wrap; overflow-wrap: anywhere; max-height: 200px; overflow: auto; }
+        input[type="file"] { max-width: 100%; }
+    </style>
+</head>
+<body>
+    <h1>Restunts</h1>
+    <p>The classic driving game, ready to play offline.</p>
+    <p>Place this HTML in your own Stunts game folder, then choose that folder below.
+        Original game files are not included. Where supported, your browser remembers the folder
+        and may ask you to allow access again next time. Otherwise, select it each time.
+        Files are read locally and never uploaded.</p>
+    <button id="restore-folder" disabled hidden>Allow folder access</button>
+    <button id="open-folder" disabled hidden>Choose game folder</button>
+    <div id="read-only-folder" hidden>
+        <label for="game-files">Choose game folder</label>
+        <input id="game-files" type="file" webkitdirectory multiple disabled>
+    </div>
+    <div class="controls">
+        <button id="start" disabled>Start game</button>
+        <label><input id="skip-intro" type="checkbox"> Skip intro</label>
+        <button id="fullscreen" disabled>Fullscreen</button>
+
+    </div>
+    <p id="status" role="status" aria-live="polite">Preparing game…</p>
+    <canvas id="canvas" width="960" height="720" tabindex="0" aria-label="Restunts game"></canvas>
+    <p>Click the game to focus the keyboard. Use the arrow keys to drive and Esc to return to menus.
+        Your browser may reserve some function keys. Click Fullscreen for a larger view.</p>
+    <p id="save-mode"></p>
+    <div id="save-controls" hidden>
+    <button id="export" disabled>Export saves</button>
+    <p>Saves stay in this tab. Export them before closing, then import the saved file before starting next time.
+        You can also import tracks and replays.</p>
+    <label for="import">Import saves, tracks, or replays</label>
+    <input id="import" type="file" accept=".json,.trk,.rpl,.hig,.cfg" multiple disabled>
+    </div>
+    <details>
+        <summary>Game log</summary>
+        <pre id="log"></pre>
+    </details>
+    <script>
+        'use strict';
+        const DATA_DIRECTORY = '/stunts';
+        const SAVE_FORMAT = 'restunts-saves';
+        const SAVE_VERSION = 1;
+        const MAX_IMPORT_BYTES = 16 * 1024 * 1024;
+        const MAX_GAME_BYTES = 256 * 1024 * 1024;
+        // Use character comparisons: HTML minifiers may unescape regex control ranges.
+        const DOS_BASENAME_MAX_LENGTH = 8;
+        const DOS_BACKSLASH_CODE = 92;
+        const DOS_RESERVED_CHARACTERS = '"*/:<>?|.' + String.fromCharCode(DOS_BACKSLASH_CODE);
+        // Include the shape and compressed audio alternatives used by the native loaders.
+        const GAME_EXTENSIONS = new Set(['3sh', 'cfg', 'cod', 'dif', 'drv', 'esh', 'fnt', 'hdr', 'hig',
+            'kms', 'lmp', 'p3s', 'pes', 'pkm', 'plb', 'pre', 'psf', 'pvc', 'pvs', 'res', 'rpl',
+            'sfx', 'trk', 'vce', 'vsh', 'xvs']);
+        const SAVE_EXTENSIONS = new Set(['cfg', 'hig', 'rpl', 'trk']);
+        const TEMP_EXTENSIONS = new Set(['tmp']);
+        const MAX_LOG_LINES = 100;
+        const DOWNLOAD_RELEASE_DELAY_MS = 1000;
+        const FOLDER_DATABASE = 'restunts-folders';
+        const FOLDER_DATABASE_VERSION = 1;
+        const FOLDER_STORE = 'folders';
+        // Local HTML copies can share browser storage; remember each page's own folder.
+        const FOLDER_KEY = window.location.href;
+
+        function validFilename(name, extensions) {
+            if (typeof name !== 'string') return false;
+            const separator = name.lastIndexOf('.');
+            if (separator < 1 || separator > DOS_BASENAME_MAX_LENGTH) return false;
+            if (!extensions.has(name.slice(separator + 1).toLowerCase())) return false;
+            return Array.from(name.slice(0, separator)).every(character =>
+                character >= '!' && character <= '~' && !DOS_RESERVED_CHARACTERS.includes(character));
+        }
+
+        const canvas = document.getElementById('canvas');
+        const status = document.getElementById('status');
+        const start = document.getElementById('start');
+        const importer = document.getElementById('import');
+        const gameFiles = document.getElementById('game-files');
+        const openFolder = document.getElementById('open-folder');
+        const restoreFolder = document.getElementById('restore-folder');
+        const saveControls = document.getElementById('save-controls');
+        const saveMode = document.getElementById('save-mode');
+        const directSavingAvailable = typeof window.showDirectoryPicker === 'function';
+        const diskNames = new Map();
+        let directoryHandle = null;
+        let rememberedDirectory = null;
+        const exporter = document.getElementById('export');
+        const fullscreen = document.getElementById('fullscreen');
+        const baseline = new Map();
+        const logLines = [];
+        let started = false;
+        let gameLoaded = false;
+
+        function log(message) {
+            logLines.push(String(message));
+            if (logLines.length > MAX_LOG_LINES) logLines.shift();
+            document.getElementById('log').textContent = logLines.join('\n');
+        }
+
+        function saveFiles() {
+            return Module.FS.readdir(DATA_DIRECTORY).filter(name =>
+                validFilename(name, SAVE_EXTENSIONS) && Module.FS.isFile(Module.FS.stat(DATA_DIRECTORY + '/' + name).mode));
+        }
+
+        function sameBytes(left, right) {
+            return left && left.length === right.length && left.every((value, index) => value === right[index]);
+        }
+
+        function encode(bytes) {
+            let binary = '';
+            for (const value of bytes) binary += String.fromCharCode(value);
+            return btoa(binary);
+        }
+
+        function fail(error) {
+            const message = error instanceof Error ? error.message : String(error);
+            status.textContent = 'Game error: ' + message;
+            log(message);
+        }
+
+        var Module = {
+            canvas,
+            noInitialRun: true,
+            print: log,
+            printErr: log,
+            onAbort: fail,
+            persistFileNeeded(path) {
+                // Emscripten cannot suspend from atexit: scratch cleanup stays synchronous.
+                const name = path.slice(path.lastIndexOf('/') + 1);
+                return directoryHandle !== null && !validFilename(name, TEMP_EXTENSIONS);
+            },
+            async persistFile(path, removed) {
+                if (!directoryHandle) return;
+                let writable;
+                try {
+                    const parent = Module.FS.lookupPath(path, { parent: true }).path;
+                    const name = path.slice(path.lastIndexOf('/') + 1);
+                    if (parent !== DATA_DIRECTORY || (!validFilename(name, GAME_EXTENSIONS) && !validFilename(name, TEMP_EXTENSIONS))) {
+                        throw new Error('Invalid save path: ' + path);
+                    }
+                    // Ghost playback uses temporary files, including during exit cleanup.
+                    // Keep scratch data in MEMFS rather than performing unnecessary disk writes.
+                    if (validFilename(name, TEMP_EXTENSIONS)) return;
+                    const absolute = parent + '/' + name;
+                    const key = name.toLowerCase();
+                    const diskName = diskNames.get(key) || name;
+                    if (removed) {
+                        try {
+                            await directoryHandle.removeEntry(diskName);
+                        } catch (error) {
+                            if (error.name !== 'NotFoundError') throw error;
+                        }
+                        diskNames.delete(key);
+                    } else {
+                        const bytes = Module.FS.readFile(absolute);
+                        status.textContent = 'Saving ' + diskName + '…';
+                        const handle = await directoryHandle.getFileHandle(diskName, { create: true });
+                        writable = await handle.createWritable();
+                        await writable.write(bytes);
+                        await writable.close();
+                        writable = null;
+                        diskNames.set(key, diskName);
+                    }
+                    status.textContent = removed ? 'Deleted ' + diskName + '.' : 'Saved ' + diskName + ' to your game folder.';
+                } catch (error) {
+                    if (writable) await writable.abort().catch(() => {});
+                    saveControls.hidden = false;
+                    exporter.disabled = false;
+                    status.textContent = 'Direct saving failed: ' + error.message + '. Export saves to keep your changes.';
+                    throw error;
+                }
+            },
+            onExit(code) {
+                status.textContent = code === 0 ? (directoryHandle ? 'Game closed. Reload to play again.' :
+                    'Game closed. Export your saves, or reload to play again.') :
+                    'Game exited with code ' + code + '. See the game log.';
+                fullscreen.disabled = true;
+            },
+            onRuntimeInitialized() {
+                Module.FS.mkdirTree(DATA_DIRECTORY);
+                openFolder.hidden = !directSavingAvailable;
+                document.getElementById('read-only-folder').hidden = directSavingAvailable;
+                saveControls.hidden = directSavingAvailable;
+                saveMode.textContent = directSavingAvailable ?
+                    'Grant read/write access to your game folder. Game saves will be written there directly.' :
+                    'This browser offers read-only folder access. Use Export saves to keep changes.';
+                status.textContent = 'Choose your Stunts game folder to continue.';
+                setLoading(true);
+                restoreRememberedFolder().finally(() => setLoading(false));
+            }
+        };
+
+        start.addEventListener('click', () => {
+            if (started || !gameLoaded) return;
+            started = true;
+            start.disabled = true;
+            importer.disabled = true;
+            gameFiles.disabled = true;
+            openFolder.disabled = true;
+            restoreFolder.disabled = true;
+            document.getElementById('skip-intro').disabled = true;
+            fullscreen.disabled = false;
+            exporter.disabled = false;
+            status.textContent = directoryHandle ? 'Game running. Saves go directly to your game folder.' :
+                'Game running. Use Export saves before closing this tab.';
+            canvas.focus();
+            const args = ['--data-dir', DATA_DIRECTORY];
+            if (document.getElementById('skip-intro').checked) args.push('/nointro');
+            try {
+                Module.callMain(args);
+            } catch (error) {
+                fail(error);
+            }
+        });
+
+        canvas.addEventListener('click', () => canvas.focus());
+        canvas.addEventListener('contextmenu', event => event.preventDefault());
+        canvas.addEventListener('webglcontextlost', event => {
+            event.preventDefault();
+            fail('The graphics context was lost. Export saves and reload this page.');
+        });
+        fullscreen.addEventListener('click', async () => {
+            try {
+                Module.requestFullscreen(false, true);
+                canvas.focus();
+            } catch (error) {
+                status.textContent = 'Fullscreen is unavailable: ' + error.message;
+            }
+        });
+
+        exporter.addEventListener('click', () => {
+            try {
+                const files = [];
+                for (const name of saveFiles()) {
+                    const bytes = Module.FS.readFile(DATA_DIRECTORY + '/' + name);
+                    if (!sameBytes(baseline.get(name.toLowerCase()), bytes)) {
+                        files.push({ name, data: encode(bytes) });
+                    }
+                }
+                const blob = new Blob([JSON.stringify({ format: SAVE_FORMAT, version: SAVE_VERSION, files })],
+                    { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = 'restunts-saves.json';
+                link.click();
+                setTimeout(() => URL.revokeObjectURL(url), DOWNLOAD_RELEASE_DELAY_MS);
+                status.textContent = 'Exported ' + files.length + ' changed save file(s).';
+            } catch (error) {
+                fail(error);
+            }
+        });
+
+        function setLoading(loading) {
+            openFolder.disabled = loading || started;
+            restoreFolder.disabled = loading || started;
+            gameFiles.disabled = loading || started;
+            start.disabled = loading || started || !gameLoaded;
+            importer.disabled = loading || started || !gameLoaded;
+            exporter.disabled = loading || !gameLoaded;
+        }
+
+        async function loadGameFiles(files, selectedDirectory) {
+            const pending = new Map();
+            let totalBytes = 0;
+            for (const file of files) {
+                if (!validFilename(file.name, GAME_EXTENSIONS)) continue;
+                const name = file.name.toLowerCase();
+                if (pending.has(name)) {
+                    const previous = pending.get(name);
+                    if (file.size !== previous.size || !sameBytes(new Uint8Array(await file.arrayBuffer()),
+                        new Uint8Array(await previous.arrayBuffer()))) {
+                        throw new Error('Conflicting game filenames: ' + previous.name + ' and ' + file.name);
+                    }
+                    continue;
+                }
+                totalBytes += file.size;
+                if (totalBytes > MAX_GAME_BYTES) throw new Error('Game folder resources exceed 256 MiB.');
+                pending.set(name, file);
+            }
+            if ((!pending.has('main.res') && !pending.has('main.pre')) ||
+                !pending.has('fontdef.fnt') || !pending.has('fontn.fnt')) {
+                throw new Error('Select the folder containing MAIN.RES (or MAIN.PRE), FONTDEF.FNT, and FONTN.FNT.');
+            }
+            const contents = new Map();
+            for (const [name, file] of pending) contents.set(name, new Uint8Array(await file.arrayBuffer()));
+            for (const name of Module.FS.readdir(DATA_DIRECTORY)) {
+                if (name !== '.' && name !== '..') Module.FS.unlink(DATA_DIRECTORY + '/' + name);
+            }
+            for (const [name, bytes] of contents) Module.FS.writeFile(DATA_DIRECTORY + '/' + name, bytes);
+            directoryHandle = selectedDirectory;
+            diskNames.clear();
+            for (const [name, file] of pending) diskNames.set(name, file.name);
+            baseline.clear();
+            for (const name of saveFiles()) {
+                baseline.set(name.toLowerCase(), Module.FS.readFile(DATA_DIRECTORY + '/' + name));
+            }
+            gameLoaded = true;
+            status.textContent = 'Loaded ' + pending.size + ' game files. Click Start game to play with sound.';
+        }
+
+        async function folderStorage(mode, handle) {
+            const database = await new Promise((resolve, reject) => {
+                let blocked = false;
+                const request = indexedDB.open(FOLDER_DATABASE, FOLDER_DATABASE_VERSION);
+                request.onupgradeneeded = () => request.result.createObjectStore(FOLDER_STORE);
+                request.onerror = () => reject(request.error);
+                request.onblocked = () => {
+                    blocked = true;
+                    reject(new Error('Folder storage is busy in another tab.'));
+                };
+                request.onsuccess = () => {
+                    if (blocked) {
+                        request.result.close();
+                        return;
+                    }
+                    request.result.onversionchange = () => request.result.close();
+                    resolve(request.result);
+                };
+            });
+            try {
+                return await new Promise((resolve, reject) => {
+                    const transaction = database.transaction(FOLDER_STORE, mode);
+                    const store = transaction.objectStore(FOLDER_STORE);
+                    const request = mode === 'readonly' ? store.get(FOLDER_KEY) : store.put(handle, FOLDER_KEY);
+                    transaction.oncomplete = () => resolve(request.result);
+                    transaction.onabort = () => reject(transaction.error || new Error('Folder storage was interrupted.'));
+                    transaction.onerror = () => reject(transaction.error || request.error);
+                });
+            } finally {
+                database.close();
+            }
+        }
+
+        function showFolderError(error, prefix) {
+            status.textContent = error.name === 'AbortError' ? 'Folder selection cancelled.' :
+                prefix + error.message;
+            if (error.name === 'SecurityError' || error.name === 'NotAllowedError') {
+                document.getElementById('read-only-folder').hidden = false;
+                saveControls.hidden = false;
+                saveMode.textContent = 'Direct access was denied. You can choose a read-only folder and export saves instead.';
+            }
+        }
+
+        async function loadDirectory(selected) {
+            status.textContent = 'Reading game files from ' + selected.name + '…';
+            const files = [];
+            for await (const entry of selected.values()) {
+                if (entry.kind === 'file' && validFilename(entry.name, GAME_EXTENSIONS)) files.push(await entry.getFile());
+            }
+            await loadGameFiles(files, selected);
+            rememberedDirectory = selected;
+            openFolder.textContent = 'Change game folder';
+            restoreFolder.hidden = true;
+            document.getElementById('read-only-folder').hidden = true;
+            saveControls.hidden = true;
+            saveMode.textContent = 'Game saves will be written directly to ' + selected.name + '.';
+        }
+
+        async function restoreRememberedFolder() {
+            if (!directSavingAvailable) return;
+            let stored;
+            try {
+                stored = await folderStorage('readonly');
+            } catch (error) {
+                log('Remembered folder unavailable: ' + error.message);
+                return;
+            }
+            if (!stored || stored.kind !== 'directory' || typeof stored.queryPermission !== 'function') return;
+            rememberedDirectory = stored;
+            openFolder.textContent = 'Change game folder';
+            restoreFolder.hidden = false;
+            status.textContent = 'Remembered folder: ' + stored.name + '. Allow folder access to continue, or change the folder.';
+            try {
+                if (await stored.queryPermission({ mode: 'readwrite' }) === 'granted') {
+                    await loadDirectory(stored);
+                }
+            } catch (error) {
+                showFolderError(error, 'Cannot reopen the remembered folder. Change game folder or try again: ');
+            }
+        }
+
+        restoreFolder.addEventListener('click', async () => {
+            if (started || !rememberedDirectory) return;
+            setLoading(true);
+            try {
+                // Permission prompts require a click; do not request them during startup.
+                if (await rememberedDirectory.requestPermission({ mode: 'readwrite' }) !== 'granted') {
+                    throw new DOMException('Folder access was not granted.', 'NotAllowedError');
+                }
+                await loadDirectory(rememberedDirectory);
+            } catch (error) {
+                showFolderError(error, 'Folder access failed: ');
+            } finally {
+                setLoading(false);
+            }
+        });
+
+        openFolder.addEventListener('click', async () => {
+            if (started) return;
+            setLoading(true);
+            try {
+                const selected = await window.showDirectoryPicker({ mode: 'readwrite' });
+                await loadDirectory(selected);
+                try {
+                    await folderStorage('readwrite', selected);
+                } catch (error) {
+                    // Unavailable storage must not prevent playing or saving this session.
+                    log('Folder could not be remembered for next time: ' + error.message);
+                }
+            } catch (error) {
+                showFolderError(error, 'Folder loading failed: ');
+            } finally {
+                setLoading(false);
+            }
+        });
+
+        gameFiles.addEventListener('change', async () => {
+            if (started) return;
+            setLoading(true);
+            status.textContent = 'Reading game files from your folder…';
+            try {
+                // Ignore subfolders, executables, and this HTML.
+                const files = Array.from(gameFiles.files).filter(file => file.webkitRelativePath.split('/').length === 2);
+                await loadGameFiles(files, null);
+                restoreFolder.hidden = true;
+                saveControls.hidden = false;
+                saveMode.textContent = 'Folder access is read-only. Export saves before closing this tab.';
+            } catch (error) {
+                status.textContent = 'Folder loading failed: ' + error.message;
+            } finally {
+                gameFiles.value = '';
+                setLoading(false);
+            }
+        });
+
+        importer.addEventListener('change', async () => {
+            if (started || !gameLoaded) return;
+            setLoading(true);
+            try {
+                const pending = new Map();
+                let totalBytes = 0;
+                function addFile(name, bytes) {
+                    if (typeof name !== 'string' || !validFilename(name, SAVE_EXTENSIONS)) {
+                        throw new Error('Save names must use a DOS filename with CFG, HIG, RPL, or TRK extension.');
+                    }
+                    totalBytes += bytes.length;
+                    if (totalBytes > MAX_IMPORT_BYTES) throw new Error('Imported saves exceed 16 MiB.');
+                    pending.set(name.toLowerCase(), { name, bytes });
+                }
+                for (const file of importer.files) {
+                    if (file.size > MAX_IMPORT_BYTES) throw new Error('Import file exceeds 16 MiB.');
+                    if (file.name.toLowerCase().endsWith('.json')) {
+                        const saved = JSON.parse(await file.text());
+                        if (saved.format !== SAVE_FORMAT || saved.version !== SAVE_VERSION || !Array.isArray(saved.files)) {
+                            throw new Error('This is not a Restunts save export.');
+                        }
+                        for (const entry of saved.files) {
+                            if (!entry || typeof entry.data !== 'string') throw new Error('Invalid save entry.');
+                            const binary = atob(entry.data);
+                            addFile(entry.name, Uint8Array.from(binary, value => value.charCodeAt(0)));
+                        }
+                    } else {
+                        addFile(file.name, new Uint8Array(await file.arrayBuffer()));
+                    }
+                }
+                const names = new Map(saveFiles().map(name => [name.toLowerCase(), name]));
+                for (const [key, entry] of pending) {
+                    Module.FS.writeFile(DATA_DIRECTORY + '/' + (names.get(key) || entry.name), entry.bytes);
+                }
+                status.textContent = 'Imported ' + pending.size + ' file(s). Ready to start.';
+                exporter.disabled = false;
+            } catch (error) {
+                status.textContent = 'Import failed: ' + error.message;
+            } finally {
+                importer.value = '';
+                setLoading(false);
+            }
+        });
+        window.addEventListener('error', event => fail(event.message));
+        window.addEventListener('unhandledrejection', event => fail(event.reason));
+    </script>
+    {{{ SCRIPT }}}
+</body>
+</html>

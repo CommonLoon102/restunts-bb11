@@ -14,4 +14,5 @@ Shared linker flags: @CMAKE_SHARED_LINKER_FLAGS@
 NUKED_OPL2_SSE2: @NUKED_OPL2_SSE2@
 
 This directory contains the exact library source and standalone build script.
-See README.md for rebuilding and replacing the shared library.
+See README.md for desktop shared-library replacement, or wasm-relink.md in a
+browser package for relinking its static library.

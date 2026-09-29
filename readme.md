@@ -45,6 +45,10 @@ Main repository: https://github.com/4d-stunts/restunts
 
 ## Running the game
 
+An SDL3 [WebAssembly build](docs/wasm.md) runs directly from a local HTML file
+without a web server. Only enhanced artwork is embedded; select your own
+original game folder in the browser before starting.
+
 Run `restunts.exe` in DOSBox or DOSBox-X with `core=dynamic` and `cycles=max`.
 Mount `stunts/` directly as a DOS drive in the emulator.
 
@@ -455,7 +459,10 @@ the tachometer. The stock value `0x0010` keeps both needles white, and
 
 ## How to build
 
-### SDL3 builds: Linux, Windows, and 32-bit DOS
+SDL3 builds support Linux, Windows, 32-bit DOS, and
+[offline HTML/WebAssembly](#sdl3-webassembly-build-offline-html).
+
+### SDL3 native builds: Linux, Windows, and 32-bit DOS
 
 The CMake build produces the game (`restunts`), physics dumper (`repldump`),
 and renderer dumper (`pixldump`) for all three backends. Run the commands below
@@ -729,6 +736,74 @@ Stop automated DOSBox runs with SIGKILL to avoid the shutdown confirmation.
 
 See [the SDL3 guide](docs/sdl3.md) for controls, audio details, package contents,
 and native replay validation.
+
+### SDL3 WebAssembly build: offline HTML
+
+This target produces a single `restunts.html` that opens directly in a browser
+without a web server. It embeds the program, enhanced skyboxes, and enhanced
+opponent portraits. **Original game files, including tracks and cars, are not
+included** and are not needed to build the HTML. Players supply their own game
+folder when starting it.
+
+Install CMake 3.25+, Ninja, Git, Python 3, and the
+[Emscripten SDK](https://emscripten.org/docs/getting_started/downloads.html).
+The commands below use the tested Emscripten **6.0.10**. Install and activate the
+SDK once; load its environment again in each new terminal. If you already have
+that SDK installed, use its location instead of cloning another copy.
+
+#### Linux host: WebAssembly backend
+
+These Bash commands also work inside WSL2. Keep the SDK on a filesystem that
+supports symbolic links, such as your Linux home directory. From the repository
+root:
+
+```sh
+git clone https://github.com/emscripten-core/emsdk.git "$HOME/emsdk"
+"$HOME/emsdk/emsdk" install 6.0.10
+"$HOME/emsdk/emsdk" activate 6.0.10
+. "$HOME/emsdk/emsdk_env.sh"
+emcmake cmake -S . -B out/sdl3-wasm -G Ninja -DCMAKE_BUILD_TYPE=Release
+cmake --build out/sdl3-wasm --parallel 2
+```
+
+The output is `out/sdl3-wasm/restunts.html`.
+
+#### Windows host: WebAssembly backend
+
+Use **Command Prompt** with CMake, Ninja, Git, and Python 3 on `PATH`.
+Run from the repository root, using a separate build directory from WSL2:
+
+```bat
+git clone https://github.com/emscripten-core/emsdk.git "%USERPROFILE%\emsdk"
+call "%USERPROFILE%\emsdk\emsdk.bat" install 6.0.10
+call "%USERPROFILE%\emsdk\emsdk.bat" activate 6.0.10
+call "%USERPROFILE%\emsdk\emsdk_env.bat"
+call emcmake cmake -S . -B out/sdl3-wasm-windows -G Ninja -DCMAKE_BUILD_TYPE=Release
+cmake --build out/sdl3-wasm-windows --parallel 2
+```
+
+The output is `out/sdl3-wasm-windows/restunts.html`. The browser build produces
+only the game; native dump tools and regression executables are disabled.
+
+#### Run and package the HTML
+
+Copy `restunts.html` into your own Stunts game folder and open it in a browser.
+Click **Choose game folder**, select that folder, then click **Start game**.
+Supported browsers remember the selected folder and may ask you to **Allow folder
+access** again when reopening the HTML. Use **Change game folder** to select a
+different folder. These browsers can save directly after read/write permission;
+others require folder selection each time and show save import/export controls.
+
+To create the distribution package from a Linux/WSL2 build:
+
+```sh
+cmake --install out/sdl3-wasm --prefix out/package-wasm --component Runtime
+```
+
+For a native Windows build, replace `out/sdl3-wasm` with
+`out/sdl3-wasm-windows`. Distribute the complete package, including dependency
+licenses and the Nuked OPL2 relink kit. It contains no original game data.
+See [the browser build guide](docs/wasm.md) for browser support, saving, and tests.
 
 ### Original 16-bit DOS builds with Open Watcom
 

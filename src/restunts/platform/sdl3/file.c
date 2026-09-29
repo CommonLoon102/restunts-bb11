@@ -6,6 +6,9 @@
 #include <string.h>
 #include <sys/stat.h>
 #include "../../c/platform.h"
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
 
 #define FILE_HANDLE_COUNT 64U
 #define FILE_FIRST_HANDLE 5U
@@ -16,6 +19,39 @@ enum FILE_IO_DIRECTION { FILE_IO_NONE, FILE_IO_READ, FILE_IO_WRITE };
 
 static FILE *files[FILE_HANDLE_COUNT];
 static legacy_u8 file_directions[FILE_HANDLE_COUNT];
+#ifdef __EMSCRIPTEN__
+static legacy_u8 file_modified[FILE_HANDLE_COUNT];
+static legacy_char file_paths[FILE_HANDLE_COUNT][FILE_PATH_SIZE];
+
+/* Pure MEMFS operations must stay synchronous, including exit handlers where
+ * Emscripten has already shut down Asyncify. Browser policy owns the decision. */
+EM_JS(legacy_int, persist_file_needed, (const legacy_char *path), {
+	try {
+		const predicate = Module['persistFileNeeded'];
+		return predicate == null || predicate(UTF8ToString(path)) ? 1 : 0;
+	} catch (error) {
+		console.error('Cannot determine file persistence:', error);
+		return -1;
+	}
+});
+
+/* Await the browser write before reporting a successful DOS close/delete. */
+EM_ASYNC_JS(legacy_int, persist_file, (const legacy_char *path, legacy_int removed), {
+	try {
+		await Module['persistFile'](UTF8ToString(path), removed != 0);
+		return 0;
+	} catch (error) {
+		console.error('Cannot persist game file:', error);
+		return -1;
+	}
+});
+
+static legacy_int commit_file(const legacy_char *path, legacy_int removed)
+{
+	legacy_int needed = persist_file_needed(path);
+	return needed > 0 ? persist_file(path, removed) : needed;
+}
+#endif
 static legacy_s16 file_error;
 static legacy_char **matches;
 static size_t match_count;
@@ -147,6 +183,10 @@ legacy_u16 dos_file_open(const legacy_s8 *path, legacy_s16 create)
 			files[handle] = fopen(resolved, create == DOS_FILE_OPEN_EXISTING ? "rb" : "wb+");
 			if (files[handle] != NULL) {
 				file_directions[handle] = FILE_IO_NONE;
+#ifdef __EMSCRIPTEN__
+				file_modified[handle] = create != DOS_FILE_OPEN_EXISTING;
+				strcpy(file_paths[handle], resolved);
+#endif
 				return handle;
 			}
 			break;
@@ -162,11 +202,26 @@ legacy_s16 dos_file_close(legacy_u16 handle)
 	if (file == NULL) {
 		return -1;
 	}
+#ifdef __EMSCRIPTEN__
+	legacy_u8 modified = file_modified[handle];
+	legacy_char resolved[FILE_PATH_SIZE];
+	if (modified) {
+		strcpy(resolved, file_paths[handle]);
+	}
+	file_modified[handle] = 0;
+	file_paths[handle][0] = 0;
+#endif
 	files[handle] = NULL;
 	if (fclose(file) != 0) {
 		file_error = 1;
 		return -1;
 	}
+#ifdef __EMSCRIPTEN__
+	if (modified && commit_file(resolved, 0) != 0) {
+		file_error = 1;
+		return -1;
+	}
+#endif
 	return 0;
 }
 
@@ -190,6 +245,11 @@ legacy_u16 dos_file_write(legacy_u16 handle, const void *source, legacy_u16 leng
 		return 0;
 	}
 	size_t count = fwrite(source, 1, length, file);
+#ifdef __EMSCRIPTEN__
+	if (count != 0) {
+		file_modified[handle] = 1;
+	}
+#endif
 	if (count != length) {
 		file_error = 1;
 	}
@@ -231,7 +291,19 @@ legacy_s16 dos_file_error(void)
 legacy_s16 dos_file_remove(const legacy_s8 *path)
 {
 	legacy_char resolved[FILE_PATH_SIZE];
-	if (!resolve_path((const legacy_char *)path, resolved) || remove(resolved) != 0) {
+	if (!resolve_path((const legacy_char *)path, resolved)) {
+		return -1;
+	}
+#ifdef __EMSCRIPTEN__
+	/* Retain the virtual file when its persistent deletion fails. Check the
+	 * virtual path first so a missing file cannot delete an external copy. */
+	struct stat info;
+	if (stat(resolved, &info) != 0 || commit_file(resolved, 1) != 0) {
+		file_error = 1;
+		return -1;
+	}
+#endif
+	if (remove(resolved) != 0) {
 		file_error = 1;
 		return -1;
 	}

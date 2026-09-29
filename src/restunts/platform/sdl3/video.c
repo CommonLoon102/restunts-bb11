@@ -53,7 +53,7 @@ static void video_fail(const legacy_char *operation)
 	dos_process_exit(1);
 }
 
-#ifndef __DJGPP__
+#if !defined(__DJGPP__) && !defined(__EMSCRIPTEN__)
 static void configure_vsync(void)
 {
 	legacy_s32 interval = VSYNC_EVERY_REFRESH;
@@ -478,6 +478,10 @@ void dos_video_set_mode_13h(void)
 		return;
 	}
 	sdl3_video_shutdown();
+#ifdef __EMSCRIPTEN__
+	/* Keep keyboard capture on the game canvas, leaving page controls usable. */
+	SDL_SetHint(SDL_HINT_EMSCRIPTEN_KEYBOARD_ELEMENT, "#canvas");
+#endif
 	if (SDL_WasInit(SDL_INIT_VIDEO) == 0 && !SDL_InitSubSystem(SDL_INIT_VIDEO)) {
 		video_fail("Initialize video");
 	}
@@ -503,7 +507,12 @@ void dos_video_set_mode_13h(void)
 	if (renderer == NULL) {
 		video_fail("Create renderer");
 	}
+	/* Browser presentation is composited on its own refresh cycle. SDL
+	 * implements swap intervals through an Emscripten main-loop callback,
+	 * whereas this backend preserves the nested game loops with Asyncify. */
+#ifndef __EMSCRIPTEN__
 	configure_vsync();
+#endif
 	if (!SDL_SetRenderLogicalPresentation(renderer, SDL3_SCREEN_WIDTH, PRESENTATION_HEIGHT,
 										  SDL_LOGICAL_PRESENTATION_LETTERBOX)) {
 		video_fail("Configure framebuffer scaling");

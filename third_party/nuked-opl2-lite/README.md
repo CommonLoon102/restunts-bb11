@@ -79,3 +79,11 @@ the application against the changed header too.
 
 The LGPL permits modified versions subject to its terms. Preserve the copyright,
 license and warranty notices, and add dated notices of your further changes.
+
+### Browser builds
+
+With Emscripten, the CMake build produces a static WebAssembly archive instead
+of a shared library. Installed Restunts browser packages include the game and
+SDL objects, this library's source, and a standalone relink project under
+`share/restunts/wasm-relink/`. Follow `wasm-relink.md` there to rebuild the HTML
+with a modified library. Original game resources are not part of that package.

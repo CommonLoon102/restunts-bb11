@@ -1,6 +1,6 @@
 #include "render_workers.h"
 
-#if !defined(__DJGPP__)
+#if !defined(__DJGPP__) && !defined(__EMSCRIPTEN__)
 #include <SDL3/SDL_atomic.h>
 #include <SDL3/SDL_cpuinfo.h>
 #include <SDL3/SDL_mutex.h>

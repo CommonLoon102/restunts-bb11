@@ -1,4 +1,7 @@
 #include <stddef.h>
+#ifdef RESTUNTS_SDL3
+#include <stdio.h>
+#endif
 #include "externs.h"
 #include "fileio.h"
 #include "memmgr.h"
@@ -339,6 +342,9 @@ legacy_s16 file_write(const legacy_s8 *filename, void far *src, legacy_u32 lengt
 {
 	fileio_handle file;
 	legacy_u16 retval = 0;
+#ifdef __EMSCRIPTEN__
+	legacy_u8 close_failed = 0;
+#endif
 	if ((file = fileio_open(filename, DOS_FILE_CREATE)) != FILEIO_INVALID_HANDLE) {
 		// Write one page at a time.
 		while (length != 0) {
@@ -362,10 +368,17 @@ legacy_s16 file_write(const legacy_s8 *filename, void far *src, legacy_u32 lengt
 #endif
 		}
 
+#ifdef __EMSCRIPTEN__
+		/* Browser writes reach disk only when the asynchronous close commits.
+		 * Report that failure through the same path as an incomplete write. */
+		if (fileio_close(file) != 0) {
+			retval = 1;
+			close_failed = 1;
+		}
+#else
+		/* Preserve the original DOS behavior, which ignores close failures. */
 		fileio_close(file);
-
-		// The original ignores the close result. Clear the shim's sticky error
-		// state without turning a close failure into a failed write.
+#endif
 		(void)fileio_error();
 
 		if (retval == 0) {
@@ -380,7 +393,15 @@ legacy_s16 file_write(const legacy_s8 *filename, void far *src, legacy_u32 lengt
 
 	// loc_32570 closes the handle and unlinks the file on EVERY error, before
 	// it ever looks at the flag, so a truncated file is never left on disk.
+#ifdef __EMSCRIPTEN__
+	/* A failed browser commit may leave the previous disk file intact. Keep
+	 * that file and the new MEMFS bytes available for retry or export. */
+	if (!close_failed) {
+		fileio_remove(filename);
+	}
+#else
 	fileio_remove(filename);
+#endif
 
 	if (!fatal) {
 		fatal_error(file_write_error_format, filename);
@@ -918,6 +939,19 @@ static void far *file_try_load_resource(legacy_s16 resource_type, const legacy_s
 }
 #endif
 
+#ifndef RESTUNTS_HEADLESS
+static legacy_s16 file_show_resource_error(const legacy_s8 *filename)
+{
+#ifdef RESTUNTS_SDL3
+	/* The DOS retry dialog has no filename; keep it available in the game log. */
+	fprintf(stderr, "Cannot load game resource: %s\n", filename);
+#else
+	(void)filename;
+#endif
+	return show_disk_error_dialog();
+}
+#endif
+
 void far *file_load_resource(legacy_s16 resource_type, const legacy_s8 *filename)
 {
 	void far *result;
@@ -944,7 +978,7 @@ void far *file_load_resource(legacy_s16 resource_type, const legacy_s8 *filename
 			return result;
 		}
 
-		legacy_s16 dearesult = show_disk_error_dialog();
+		legacy_s16 dearesult = file_show_resource_error(filename);
 		if (dearesult == FILE_ERROR_DIALOG_ABORT) {
 			return 0;
 		}
@@ -987,7 +1021,7 @@ void far *file_load_resfile(const legacy_s8 *filename)
 			return result;
 		}
 
-		show_disk_error_dialog();
+		file_show_resource_error(filename);
 	}
 #endif
 }
@@ -1015,7 +1049,7 @@ void far *file_load_resfile_with_tail(const legacy_s8 *filename, legacy_u16 tail
 		fatal_error(headless_file_error, filename);
 		return 0;
 #else
-		show_disk_error_dialog();
+		file_show_resource_error(filename);
 #endif
 	}
 }
@@ -1041,7 +1075,7 @@ void far *file_load_3dres(const legacy_s8 *filename)
 			return result;
 		}
 
-		show_disk_error_dialog();
+		file_show_resource_error(filename);
 	}
 }
 
