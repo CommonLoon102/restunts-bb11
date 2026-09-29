@@ -3,10 +3,28 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Restunts</title>
+    <title>Chocolate Stunts</title>
     <style>
-        :root { color-scheme: dark; font-family: system-ui, sans-serif; background: #121820; color: #eef3fa; }
-        body { max-width: 960px; margin: 24px auto; padding: 0 16px; }
+        :root { --game-width: 960px; --hotkeys-width: 320px; --layout-gap: 24px; --page-padding: 16px; color-scheme: dark; font-family: system-ui, sans-serif; background: #121820; color: #eef3fa; }
+        body { max-width: var(--game-width); margin: 24px auto; padding: 0 var(--page-padding); }
+        main { min-width: 0; }
+        .hotkeys { margin-top: var(--layout-gap); }
+        .hotkeys table { width: 100%; border-collapse: collapse; font-size: .875rem; line-height: 1.5; }
+        .hotkeys caption { margin-bottom: 12px; font-size: 1.25rem; font-weight: 700; text-align: left; }
+        .hotkeys th, .hotkeys td { padding: 8px; border-bottom: 1px solid #334154; text-align: left; vertical-align: top; }
+        .hotkeys th[scope="row"] { width: 38%; font-weight: normal; }
+        .hotkeys th[scope="rowgroup"] { background: #243246; }
+        .hotkeys td { color: #b8c6d8; }
+        kbd { display: inline-block; padding: 0 4px; border: 1px solid #63748a; border-radius: 4px; background: #1b2635; font-size: .85em; white-space: nowrap; }
+        details { margin: 16px 0; }
+        summary { cursor: pointer; }
+        /* Fit the game plus two equal gutters, each wide enough for the hotkeys and gap. */
+        /* 1680px = game-width + 2 * (hotkeys-width + layout-gap + page-padding). */
+        @media (min-width: 1680px) {
+            body { display: grid; grid-template-columns: minmax(0, 1fr) var(--game-width) minmax(0, 1fr); column-gap: var(--layout-gap); max-width: none; }
+            main { grid-column: 2; grid-row: 1; }
+            .hotkeys { grid-column: 1; grid-row: 1; width: var(--hotkeys-width); justify-self: end; margin-top: 0; }
+        }
         h1 { margin-bottom: 8px; }
         p { color: #b8c6d8; line-height: 1.5; }
         .controls { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin: 16px 0; }
@@ -21,40 +39,114 @@
     </style>
 </head>
 <body>
-    <h1>Restunts</h1>
-    <p>The classic driving game, ready to play offline.</p>
-    <p>Place this HTML in your own Stunts game folder, then choose that folder below.
-        Original game files are not included. Where supported, your browser remembers the folder
-        and may ask you to allow access again next time. Otherwise, select it each time.
-        Files are read locally and never uploaded.</p>
-    <button id="restore-folder" disabled hidden>Allow folder access</button>
-    <button id="open-folder" disabled hidden>Choose game folder</button>
-    <div id="read-only-folder" hidden>
-        <label for="game-files">Choose game folder</label>
-        <input id="game-files" type="file" webkitdirectory multiple disabled>
-    </div>
-    <div class="controls">
-        <button id="start" disabled>Start game</button>
-        <label><input id="skip-intro" type="checkbox"> Skip intro</label>
-        <button id="fullscreen" disabled>Fullscreen</button>
+    <main>
+        <h1>Chocolate Stunts</h1>
+        <p>The classic driving game, <strong>Brøderbund Stunts 1.1</strong>, ready to play offline.</p>
+        <details>
+            <summary>Setup instructions</summary>
+            <p>Place this HTML in your own Stunts (Brøderbund 1.1 version) game folder, then choose that folder below.
+                Original game files are not included. Where supported, your browser remembers the folder
+                and may ask you to allow access again next time. Otherwise, select it each time.
+                Files are read locally and never uploaded.</p>
+        </details>
+        <button id="restore-folder" disabled hidden>Allow folder access</button>
+        <button id="open-folder" disabled hidden>Choose game folder</button>
+        <div id="read-only-folder" hidden>
+            <label for="game-files">Choose game folder</label>
+            <input id="game-files" type="file" webkitdirectory multiple disabled>
+        </div>
+        <div class="controls">
+            <button id="start" disabled>Start game</button>
+            <label><input id="skip-intro" type="checkbox"> Skip intro</label>
+            <button id="fullscreen" disabled>Fullscreen (Alt+Enter)</button>
 
-    </div>
-    <p id="status" role="status" aria-live="polite">Preparing game…</p>
-    <canvas id="canvas" width="960" height="720" tabindex="0" aria-label="Restunts game"></canvas>
-    <p>Click the game to focus the keyboard. Use the arrow keys to drive and Esc to return to menus.
-        Your browser may reserve some function keys. Click Fullscreen for a larger view.</p>
-    <p id="save-mode"></p>
-    <div id="save-controls" hidden>
-    <button id="export" disabled>Export saves</button>
-    <p>Saves stay in this tab. Export them before closing, then import the saved file before starting next time.
-        You can also import tracks and replays.</p>
-    <label for="import">Import saves, tracks, or replays</label>
-    <input id="import" type="file" accept=".json,.trk,.rpl,.hig,.cfg" multiple disabled>
-    </div>
-    <details>
-        <summary>Game log</summary>
-        <pre id="log"></pre>
-    </details>
+        </div>
+        <p id="status" role="status" aria-live="polite">Preparing game…</p>
+        <canvas id="canvas" width="960" height="720" tabindex="0" aria-label="Restunts game"></canvas>
+        <p>Click the game to focus the keyboard. Use the arrow keys to drive and Esc to return to menus.
+            Your browser may reserve some function keys. Press <strong>Alt+Enter</strong> or click Fullscreen for a larger view.</p>
+        <p id="save-mode"></p>
+        <div id="save-controls" hidden>
+        <button id="export" disabled>Export saves</button>
+        <p>Saves stay in this tab. Export them before closing, then import the saved file before starting next time.
+            You can also import tracks and replays.</p>
+        <label for="import">Import saves, tracks, or replays</label>
+        <input id="import" type="file" accept=".json,.trk,.rpl,.hig,.cfg" multiple disabled>
+        </div>
+        <details>
+            <summary>Game log</summary>
+            <pre id="log"></pre>
+        </details>
+    </main>
+    <aside class="hotkeys" aria-labelledby="hotkeys-caption">
+        <table>
+            <caption id="hotkeys-caption">Game controls</caption>
+            <thead>
+                <tr><th scope="col">Key</th><th scope="col">Action</th></tr>
+            </thead>
+            <tbody>
+                <tr><th colspan="2" scope="rowgroup">Driving</th></tr>
+                <tr><th scope="row"><kbd>↑</kbd> / <kbd>↓</kbd></th><td>Accelerate / brake.</td></tr>
+                <tr><th scope="row"><kbd>←</kbd> / <kbd>→</kbd></th><td>Steer left / right.</td></tr>
+                <tr><th scope="row"><kbd>A</kbd> or <kbd>Space</kbd></th><td>Shift up (manual gears).</td></tr>
+                <tr><th scope="row"><kbd>Z</kbd> or <kbd>Enter</kbd></th><td>Shift down (manual gears).</td></tr>
+            </tbody>
+            <tbody>
+                <tr><th colspan="2" scope="rowgroup">Quick rewind</th></tr>
+                <tr><th scope="row">Hold <kbd>Q</kbd></th><td>Rewind while driving; release to continue from that point.
+                    The run no longer qualifies for normal high scores.</td></tr>
+            </tbody>
+            <tbody>
+                <tr><th colspan="2" scope="rowgroup">SuperSight</th></tr>
+                <tr><th scope="row"><kbd>F12</kbd></th><td>Toggle SuperSight Auto / Off.</td></tr>
+                <tr><th scope="row"><kbd>Shift+F12</kbd></th><td>Enable and cycle fixed quality: Full → High → Medium → Low.</td></tr>
+                <tr><th scope="row"><kbd>F11</kbd></th><td>Show / hide the FPS counter.</td></tr>
+            </tbody>
+            <tbody>
+                <tr><th colspan="2" scope="rowgroup">Cameras</th></tr>
+                <tr><th scope="row"><kbd>F1</kbd></th><td>Cockpit view.</td></tr>
+                <tr><th scope="row"><kbd>F2</kbd></th><td>Follow view.</td></tr>
+                <tr><th scope="row"><kbd>F3</kbd></th><td>Adjustable view. Press again to cycle close, normal, and far chase views,
+                    then return to the original view. Chase views hide the dashboard; leaving them restores the original
+                    position and dashboard visibility.</td></tr>
+                <tr><th scope="row"><kbd>F4</kbd></th><td>Trackside view.</td></tr>
+                <tr><th scope="row"><kbd>C</kbd></th><td>Cycle cameras while driving or playing a replay.</td></tr>
+                <tr><th scope="row"><kbd>Ctrl</kbd> + arrows</th><td>Rotate the adjustable F3 camera in replay.</td></tr>
+                <tr><th scope="row"><kbd>+</kbd> / <kbd>−</kbd></th><td>Zoom the F3 view in / out in replay; adjust camera height in F4.</td></tr>
+            </tbody>
+            <tbody>
+                <tr><th colspan="2" scope="rowgroup">Dashboard and opponent</th></tr>
+                <tr><th scope="row"><kbd>D</kbd></th><td>Show / hide the dashboard.</td></tr>
+                <tr><th scope="row"><kbd>T</kbd></th><td>Switch between your car and the opponent or ghost.</td></tr>
+            </tbody>
+            <tbody>
+                <tr><th colspan="2" scope="rowgroup">Replay</th></tr>
+                <tr><th scope="row"><kbd>R</kbd></th><td>Show / hide the replay controls.</td></tr>
+                <tr><th scope="row">Arrow keys</th><td>Select a replay toolbar button.</td></tr>
+                <tr><th scope="row"><kbd>Enter</kbd> or <kbd>Space</kbd></th><td>Activate the selected button: play, fast play,
+                    pause, rewind, fast forward, restart, or menu.</td></tr>
+                <tr><th scope="row"><kbd>Esc</kbd></th><td>Open the replay menu.</td></tr>
+            </tbody>
+            <tbody>
+                <tr><th colspan="2" scope="rowgroup">Track editor</th></tr>
+                <tr><th scope="row">Arrow keys</th><td>Move the track or palette selection.</td></tr>
+                <tr><th scope="row"><kbd>Enter</kbd></th><td>Place the selected tile or activate a palette button.</td></tr>
+                <tr><th scope="row"><kbd>Space</kbd> or <kbd>Insert</kbd></th><td>Switch between track and palette.</td></tr>
+                <tr><th scope="row"><kbd>F1</kbd>–<kbd>F10</kbd></th><td>Select a palette page.</td></tr>
+                <tr><th scope="row"><kbd>+</kbd> / <kbd>−</kbd></th><td>Next / previous palette page.</td></tr>
+                <tr><th scope="row"><kbd>Shift+F1</kbd></th><td>Select the terrain palette.</td></tr>
+                <tr><th scope="row"><kbd>C</kbd></th><td>Check the track route.</td></tr>
+                <tr><th scope="row"><kbd>Home</kbd></th><td>On the track, move to the top-left; press again to go to the track origin.</td></tr>
+            </tbody>
+            <tbody>
+                <tr><th colspan="2" scope="rowgroup">Pause, menus, and sound</th></tr>
+                <tr><th scope="row"><kbd>P</kbd></th><td>Pause the game.</td></tr>
+                <tr><th scope="row"><kbd>Esc</kbd></th><td>Leave the race / return to menus.</td></tr>
+                <tr><th scope="row"><kbd>Ctrl+S</kbd></th><td>Toggle sound effects.</td></tr>
+                <tr><th scope="row"><kbd>Alt+M</kbd></th><td>Toggle music.</td></tr>
+            </tbody>
+        </table>
+    </aside>
     <script>
         'use strict';
         const DATA_DIRECTORY = '/stunts';
