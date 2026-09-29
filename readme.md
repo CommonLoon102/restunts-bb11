@@ -273,49 +273,17 @@ continues. The setting does not affect DOS builds or batch dump tools. Display
 synchronization waits are excluded from automatic SuperSight quality measurements.
 
 On Windows, Linux, and macOS, SuperSight draws serially by default with zero background
-render workers. The interactive game leaves CPU affinity and process priority
-unchanged, allowing the OS to schedule threads across the allowed CPUs.
-DOS and dump tools do not change affinity or priority.
-
-CPU pinning is optional on Windows and Linux. An explicit `auto` affinity setting keeps the CPU selected
-by the OS at startup when it is allowed, otherwise it selects the first allowed
-CPU. A numeric setting selects that allowed CPU. Both pin the process for the
-run and are inherited by newly created threads.
-
-Set `RESTUNTS_HIGH_PRIORITY=1` to request above-normal priority before SDL
-initialization while preserving stronger inherited priority. Windows uses
-`ABOVE_NORMAL_PRIORITY_CLASS`; Linux requests nice `-5` within the normal
-scheduler. Linux usually needs an administrator-configured `RLIMIT_NICE` or
-`CAP_SYS_NICE` to permit the priority increase. If either scheduling request
-fails, the game prints a diagnostic and continues; priority denial does not
-undo affinity. Affinity does not reserve a core or keep other processes off it, and
-pinning SDL audio and graphics threads can also add contention. Compare settings
-on the same scene with your usual background audio; this cannot guarantee stable 60 FPS.
-
-macOS retains the system CPU affinity and process priority;
-`RESTUNTS_CPU_AFFINITY` and `RESTUNTS_HIGH_PRIORITY` apply only to Windows and
-Linux. `RESTUNTS_RENDER_WORKERS` and `RESTUNTS_VSYNC` also work on macOS.
-
-These environment variables are read at startup (worker settings are read when
-the renderer initializes its worker pool):
-
-| Variable | Default | Overrides |
-| --- | --- | --- |
-| `RESTUNTS_CPU_AFFINITY` | `off` | `auto` pins to an automatically selected allowed CPU; a zero-based logical CPU number selects an allowed CPU. Windows numbers are within the current processor group. |
-| `RESTUNTS_HIGH_PRIORITY` | `0` | `1` requests above-normal priority while preserving stronger inherited priority. |
-| `RESTUNTS_RENDER_WORKERS` | `0` | `1` through `7` selects background workers; `auto` uses detected logical CPUs minus one, capped at seven. |
-
-Compare parallel rendering with affinity set to `off`, so workers can use all
-allowed CPUs. For example, on Linux:
+render workers. Set `RESTUNTS_RENDER_WORKERS` to `1` through `7` to select a
+background worker count, or `auto` to use the detected logical CPU count minus
+one, capped at seven. The setting is read when the renderer initializes its
+worker pool. For example, on Linux:
 
 ```sh
-RESTUNTS_CPU_AFFINITY=off RESTUNTS_HIGH_PRIORITY=0 RESTUNTS_RENDER_WORKERS=auto \
-  ./out/sdl3-linux-x64/restunts --data-dir stunts
+RESTUNTS_RENDER_WORKERS=auto ./out/sdl3-linux-x64/restunts --data-dir stunts
 ```
 
-In PowerShell, use `$env:RESTUNTS_CPU_AFFINITY = 'off'`,
-`$env:RESTUNTS_HIGH_PRIORITY = '0'`, and `$env:RESTUNTS_RENDER_WORKERS = 'auto'`
-before launching `restunts.exe`. Unset the variables to restore the defaults.
+In PowerShell, use `$env:RESTUNTS_RENDER_WORKERS = 'auto'` before launching
+`restunts.exe`. Unset the variable or set it to `0` to restore the default.
 Small scenes remain serial even with workers enabled. Drawing order, pixel
 coverage, and the physics schedule are preserved; DOS always renders serially.
 If worker creation fails, rendering uses the available workers or runs serially.
