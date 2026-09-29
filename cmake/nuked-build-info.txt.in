@@ -7,6 +7,9 @@ Pointer size in bytes: @CMAKE_SIZEOF_VOID_P@
 Compiler: @CMAKE_C_COMPILER_ID@ @CMAKE_C_COMPILER_VERSION@
 Compiler executable: @CMAKE_C_COMPILER@
 Toolchain: @CMAKE_TOOLCHAIN_FILE@
+macOS architectures: @CMAKE_OSX_ARCHITECTURES@
+macOS deployment target: @CMAKE_OSX_DEPLOYMENT_TARGET@
+macOS SDK: @CMAKE_OSX_SYSROOT@
 C flags: @CMAKE_C_FLAGS@
 Release flags: @CMAKE_C_FLAGS_RELEASE@
 RelWithDebInfo flags: @CMAKE_C_FLAGS_RELWITHDEBINFO@

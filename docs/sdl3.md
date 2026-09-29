@@ -2,7 +2,7 @@
 
 The SDL3 platform in `src/restunts/platform/sdl3/` builds the game (`restunts`),
 physics replay dumper (`repldump`), and renderer dumper (`pixldump`) for Windows,
-Linux, 32-bit DOS, and [WebAssembly for offline browsers](wasm.md). The existing Open Watcom 16-bit DOS build remains available
+Linux, macOS, 32-bit DOS, and [WebAssembly for offline browsers](wasm.md). The existing Open Watcom 16-bit DOS build remains available
 through `make -C src/restunts restunts repldump pixldump`; its platform code stays
 under `src/restunts/platform/dos/`.
 
@@ -19,6 +19,7 @@ All platforms use the same revision; no separate SDL fork is required.
 | --- | --- |
 | Linux x64 | GCC, Debian 12 build baseline. |
 | Linux x86 | GCC multilib or an i386 environment, Debian 12 build baseline. |
+| macOS arm64 and x86_64 | Apple Clang and macOS SDK; helper scripts target macOS 11.0+. Universal builds are available. |
 | Windows x64 and x86 | MinGW-w64; Windows 7 API target (`_WIN32_WINNT=0x0601`). |
 | WebAssembly | Emscripten; single offline HTML, user-supplied game folder. See [browser build](wasm.md). |
 | DOS | DJGPP GCC 12.2.0, 32-bit DPMI executable; VGA and a DPMI host. |
@@ -63,6 +64,34 @@ by default.
 `-DRESTUNTS_SYSTEM_SDL=ON` uses an installed SDL 3.4+ CMake package instead of the
 pinned source. This option is incompatible with `RESTUNTS_SSE2=OFF`, because
 CMake cannot control the instruction set of a prebuilt SDL library.
+
+## macOS
+
+Install the Xcode Command Line Tools (`xcode-select --install`), then CMake
+3.25+, Ninja, Git, and Python 3 (for example, `brew install cmake ninja git python`).
+From the repository root, build the native architecture and install its runtime:
+
+```sh
+bash tools/scripts/build-macos.sh
+```
+
+Use `--arch arm64`, `--arch x86_64`, or `--arch universal` to select the target.
+Output directories are `out/sdl3-macos-<arch>` and `out/package-macos-<arch>`;
+`native` resolves to the shell's `arm64` or `x86_64` architecture. After adding
+original game data to `stunts/`, `--test` also runs native CTest regressions.
+SDL is linked statically, and `libnuked-opl2.dylib` stays replaceable under the
+runtime package's `lib/` directory. Keep `bin/`, `lib/`, and `share/` together.
+
+To run an extracted runtime package without installing build tools:
+
+```sh
+bash /path/to/package/run-restunts.sh --data-dir /path/to/Stunts -- /nointro
+```
+
+See the root README for the complete
+[macOS build instructions](../readme.md#macos-host-macos-backend) and
+[precompiled-package instructions](../readme.md#macos-running-an-already-compiled-package),
+including architecture selection, archive extraction, and direct executable use.
 
 ## Windows with MinGW-w64
 
@@ -162,10 +191,13 @@ Windows uses the corresponding `.exe` names. Dump outputs and saved game data
 are written in the selected data directory, so it must be writable. Keep the
 original game resources and replay/car additions together there.
 
-On Linux and Windows, the interactive game defaults to serial rendering with
+On Linux, Windows, and macOS, the interactive game defaults to serial rendering with
 zero background render workers and leaves CPU affinity and process priority
 unchanged. The OS can schedule threads across the allowed CPUs.
 DOS and dump tools do not alter affinity or priority.
+
+CPU affinity and priority overrides apply only to Linux and Windows; macOS
+keeps the system defaults. Render-worker and VSync settings also work on macOS.
 
 `RESTUNTS_CPU_AFFINITY=off` is the default and retains inherited affinity. Set it
 to an allowed zero-based logical CPU number to pin the process explicitly, or
@@ -193,7 +225,7 @@ dissolve retain their incremental updates. Pages are released on video shutdown.
 This internal buffering does not force SDL's swapchain buffer count or replace
 monitor synchronization. The DOS indexed/VESA presentation path is unchanged.
 
-Windows and Linux enable VSync by default in windowed and fullscreen mode,
+Windows, Linux, and macOS enable VSync by default in windowed and fullscreen mode,
 including classic rendering and SuperSight. SDL may use timed pacing when a
 renderer cannot synchronize to the display. Set `RESTUNTS_VSYNC=0` before
 launching the game to disable it; `1`, an empty value, or an unset variable
@@ -250,7 +282,10 @@ audible PCM, pitch, engine frequency, volume, modulation, key-off, native
 engine-definition pointers, unavailable-device fallback, and batch-mode cleanup.
 Windows CI runs platform, scheduling, worker lifecycle, file I/O, input, audio,
 and dump regressions on Windows Server 2022; Windows 7 runtime compatibility
-still needs verification on that OS.
+still needs verification on that OS. macOS CI builds and runs native CTest
+regressions on Apple Silicon and Intel, checks relocated packages and a rebuilt
+Nuked dylib, and exercises the installed dump tools. Its runtime artifacts
+contain `.tar.gz` archives to preserve executable permissions.
 The shared **PR validation** and **Release** workflows run the complete physics
 corpus and configurable renderer coverage for the selected platforms. Their
 `platforms` input is a nonempty JSON array of unique names from `dos` and
@@ -285,7 +320,7 @@ from the build matrix; a successful sample is not evidence that all replays,
 controllers, or sound hardware have been exercised.
 
 CI archives contain an installed package: executables in `bin/`, Nuked's shared
-library in `lib/` on Linux or `bin/` on Windows, dependency license notices, and
+library in `lib/` on Linux/macOS or `bin/` on Windows, dependency license notices, and
 the exact Nuked source and rebuild instructions. Windows test archives carry
 the same library, source and notices. DOS packages omit Nuked. These are build
 artifacts, not automatic GitHub Releases or deployments.
@@ -300,7 +335,7 @@ out/package-linux-x64/bin/restunts --data-dir "$PWD/stunts" /nointro
 ```
 
 Distribute the complete directory, including `THIRD-PARTY-NOTICES.txt` and
-`share/`. Linux executables find the library relative to their installed location,
+`share/`. Linux and macOS executables find the library relative to their installed location,
 so the package can be moved; Windows loads the DLL beside the executable.
 Do not distribute a desktop executable alone. `--component Tests` installs a
 separate test package with the same license and source material.

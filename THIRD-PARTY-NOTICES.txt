@@ -26,7 +26,8 @@ The build-context/ directory preserves the parent project's build-control files.
 Keep these source files, notices and license with any redistributed package,
 and follow the LGPL for any further changes or redistribution.
 
-On Linux, replace lib/libnuked-opl2.so. On Windows, replace bin/nuked-opl2.dll.
+On Linux, replace lib/libnuked-opl2.so. On macOS, replace
+lib/libnuked-opl2.dylib. On Windows, replace bin/nuked-opl2.dll.
 Use the same CPU architecture and compatible public API and structure layouts.
 The game does not check library signatures or prohibit modified replacements.
 

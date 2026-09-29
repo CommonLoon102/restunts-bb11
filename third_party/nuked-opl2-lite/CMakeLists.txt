@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: LGPL-2.1-or-later
-# Restunts build integration, 2026-09-21; WebAssembly support, 2026-09-29.
+# Restunts build integration, 2026-09-21; WebAssembly and macOS support, 2026-09-29.
 cmake_minimum_required(VERSION 3.25)
 project(NukedOPL2Lite VERSION 0.9.0 LANGUAGES C)
 
@@ -30,6 +30,9 @@ set_target_properties(nuked_opl2 PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
 if(WIN32)
     set_target_properties(nuked_opl2 PROPERTIES PREFIX "")
+elseif(APPLE)
+    # Preserve the same relocatable identity for standalone replacement builds.
+    set_target_properties(nuked_opl2 PROPERTIES MACOSX_RPATH ON INSTALL_NAME_DIR "@rpath")
 endif()
 
 if(PROJECT_IS_TOP_LEVEL)

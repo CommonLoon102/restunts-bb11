@@ -361,11 +361,13 @@ static void end_hiscore_draw_animation_frame(legacy_s8 far *animation_resource,
 		sprite_select_target(animation_sprite);
 		shape2d_rle_copy(frame_shape, 0, 0);
 		sprite_select_screen_compat();
+		/* Preserve resource access order independently of argument evaluation. */
+		legacy_u16 height = shape2d_get_height(frame_shape);
+		legacy_u16 width = shape2d_get_width(frame_shape);
 		sprite_set_target_clip_bounds(
 			animation_x,
-			LEGACY_S16_WRAP_ADD(animation_x, LEGACY_S16_WRAP_MUL(shape2d_get_width(frame_shape),
-																 video_shape_width_scale)),
-			animation_y, LEGACY_S16_WRAP_ADD(animation_y, shape2d_get_height(frame_shape)));
+			LEGACY_S16_WRAP_ADD(animation_x, LEGACY_S16_WRAP_MUL(width, video_shape_width_scale)),
+			animation_y, LEGACY_S16_WRAP_ADD(animation_y, height));
 		sprite_copy_image_at(animation_sprite->sprite_bitmapptr, animation_x, animation_y);
 		sprite_select_screen_compat();
 	} else {

@@ -143,6 +143,64 @@ jobs:
             out/sdl3-oracle-sample/game/*.PDD
           if-no-files-found: ignore
 
+  macos:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: macos-arm64
+            runner: macos-15
+            arch: arm64
+          - name: macos-x86_64
+            runner: macos-15-intel
+            arch: x86_64
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v7
+      - name: Fetch the game assets used by existing DOS CI
+        run: |
+          curl --fail --location --retry 3 \
+            https://github.com/CommonLoon102/restunts4d-oracles/releases/download/v1.0.1/BB11.zip \
+            -o "$RUNNER_TEMP/BB11.zip"
+          unzip -oq "$RUNNER_TEMP/BB11.zip" -d stunts
+      - name: Build game, dump tools, regressions, and runtime package
+        env:
+          TARGET_ARCH: ${{ matrix.arch }}
+        run: |
+          bash tools/scripts/build-macos.sh --arch "$TARGET_ARCH" \
+            --build-dir build/sdl3-macos --package-dir artifacts --jobs 2
+          lipo -verify_arch "$TARGET_ARCH" artifacts/bin/restunts
+          lipo -verify_arch "$TARGET_ARCH" artifacts/lib/libnuked-opl2.dylib
+      - name: Run native regressions
+        env:
+          SDL_VIDEODRIVER: dummy
+          SDL_AUDIODRIVER: dummy
+        run: ctest --test-dir build/sdl3-macos --output-on-failure --no-tests=error
+      - name: Verify relocated packages and user-rebuilt Nuked replacement
+        run: python3 tools/scripts/test-nuked-package.py --build-directory build/sdl3-macos
+      - name: Run packaged physics and renderer tools on macOS
+        env:
+          SDL_VIDEODRIVER: dummy
+          SDL_AUDIODRIVER: dummy
+        run: |
+          artifacts/bin/repldump --data-dir stunts DEFAULT.RPL
+          artifacts/bin/pixldump --data-dir stunts DEFAULT.RPL 2 0 5
+          test -f stunts/DEFAULT.2.0.5.PDD.bmp
+      - name: Archive the runtime package with executable permissions
+        env:
+          TARGET_NAME: ${{ matrix.name }}
+        run: tar -czf "restunts-sdl3-$TARGET_NAME.tar.gz" -C artifacts .
+      - uses: actions/upload-artifact@v7
+        with:
+          name: restunts-sdl3-${{ matrix.name }}
+          path: restunts-sdl3-${{ matrix.name }}.tar.gz
+          if-no-files-found: error
+
   windows-smoke:
     name: Windows ${{ matrix.arch }} native regressions
     needs: desktop
