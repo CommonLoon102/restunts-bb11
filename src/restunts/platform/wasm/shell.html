@@ -9,6 +9,7 @@
         body { max-width: var(--game-width); margin: 24px auto; padding: 0 var(--page-padding); }
         main { min-width: 0; }
         .hotkeys { margin-top: var(--layout-gap); }
+        .hotkeys .keyboard-layout-note { margin: 0 0 12px; padding: 8px; border-left: 3px solid #e8b55b; background: #243246; color: #eef3fa; font-size: .875rem; }
         .hotkeys table { width: 100%; border-collapse: collapse; font-size: .875rem; line-height: 1.5; }
         .hotkeys caption { margin-bottom: 12px; font-size: 1.25rem; font-weight: 700; text-align: left; }
         .hotkeys th, .hotkeys td { padding: 8px; border-bottom: 1px solid #334154; text-align: left; vertical-align: top; }
@@ -41,13 +42,19 @@
 <body>
     <main>
         <h1>Chocolate Stunts</h1>
-        <p>The classic driving game, <strong>Brøderbund Stunts 1.1</strong>, ready to play offline.</p>
+        <p>The classic driving game, <strong>Brøderbund Stunts 1.1</strong>, playable in your browser.</p>
+        <p><strong>Your game files and saves stay on your device and are never uploaded.</strong></p>
         <details>
             <summary>Setup instructions</summary>
-            <p>Place this HTML in your own Stunts (Brøderbund 1.1 version) game folder, then choose that folder below.
-                Original game files are not included. Where supported, your browser remembers the folder
-                and may ask you to allow access again next time. Otherwise, select it each time.
-                Files are read locally and never uploaded.</p>
+            <p>You need your own <strong>Stunts (Brøderbund 1.1)</strong> game files to play.
+                Click <strong>Choose game folder</strong> and select the folder containing those files
+                on your device, then click <strong>Start game</strong>.</p>
+            <p>You can play directly from a website. Saving a copy of this page is optional.
+                For offline play, save the HTML file anywhere on your device and open it in your browser.
+                In either case, select the folder containing your game files.</p>
+            <p>Where supported, your browser remembers the folder and may ask you to allow access again next time.
+                Otherwise, select it each time. Your game files and saves remain on your device,
+                even when you play from a website.</p>
         </details>
         <button id="restore-folder" disabled hidden>Allow folder access</button>
         <button id="open-folder" disabled hidden>Choose game folder</button>
@@ -79,6 +86,9 @@
         </details>
     </main>
     <aside class="hotkeys" aria-labelledby="hotkeys-caption">
+        <p class="keyboard-layout-note"><strong>Keyboard layout warning:</strong> The controls below use QWERTY key positions.
+            On French (AZERTY) keyboards, <kbd>A</kbd>/<kbd>Q</kbd> and <kbd>Z</kbd>/<kbd>W</kbd> are swapped.
+            On German and Central/Southeast European (QWERTZ) keyboards, <kbd>Z</kbd>/<kbd>Y</kbd> are swapped.</p>
         <table>
             <caption id="hotkeys-caption">Game controls</caption>
             <thead>
@@ -100,7 +110,7 @@
                 <tr><th colspan="2" scope="rowgroup">SuperSight</th></tr>
                 <tr><th scope="row"><kbd>F12</kbd></th><td>Toggle SuperSight Auto / Off.</td></tr>
                 <tr><th scope="row"><kbd>Shift+F12</kbd></th><td>Enable and cycle fixed quality: Full → High → Medium → Low.</td></tr>
-                <tr><th scope="row"><kbd>F11</kbd></th><td>Show / hide the FPS counter.</td></tr>
+                <tr><th scope="row"><kbd>F11</kbd></th><td>Show / hide the FPS counter. Press <kbd>Alt+Enter</kbd> to go back fullscreen.</td></tr>
             </tbody>
             <tbody>
                 <tr><th colspan="2" scope="rowgroup">Cameras</th></tr>
@@ -200,6 +210,7 @@
         const logLines = [];
         let started = false;
         let gameLoaded = false;
+        let lastErrorMessage = '';
 
         function log(message) {
             logLines.push(String(message));
@@ -232,7 +243,11 @@
             canvas,
             noInitialRun: true,
             print: log,
-            printErr: log,
+            printErr(message) {
+                log(message);
+                const text = String(message).trim();
+                if (text) lastErrorMessage = text;
+            },
             onAbort: fail,
             persistFileNeeded(path) {
                 // Emscripten cannot suspend from atexit: scratch cleanup stays synchronous.
@@ -283,7 +298,9 @@
             onExit(code) {
                 status.textContent = code === 0 ? (directoryHandle ? 'Game closed. Reload to play again.' :
                     'Game closed. Export your saves, or reload to play again.') :
-                    'Game exited with code ' + code + '. See the game log.';
+                    (lastErrorMessage ? 'Game error: ' + lastErrorMessage :
+                        'Game exited with code ' + code + '. See the game log.') +
+                    ' Reload the page to try again.';
                 fullscreen.disabled = true;
             },
             onRuntimeInitialized() {

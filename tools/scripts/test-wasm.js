@@ -157,6 +157,40 @@ async function exerciseSaves(page, settings, report) {
     report.atomicImportRejections = true;
 }
 
+async function exerciseExitFeedback(context, settings, report) {
+    const page = await context.newPage();
+    page.on('pageerror', error => report.errors.push(String(error)));
+    try {
+        await page.goto(pathToFileURL(settings.html).href, { timeout: READY_TIMEOUT_MS });
+        await page.waitForFunction(() => !document.getElementById('open-folder').disabled ||
+            !document.getElementById('game-files').disabled, null, { timeout: READY_TIMEOUT_MS });
+        await page.evaluate(() => Module.onExit(1));
+        assert.match(await page.locator('#status').innerText(), /^Game exited with code 1\./,
+            'Failed exits without stderr must retain their exit code');
+
+        const message = 'Broderbund Stunts 1.1 (Feb 12 1991) game data is required. ' +
+            'MISC.RES/MISC.PRE has an unexpected gver.';
+        await page.evaluate(message => {
+            Module.printErr(message);
+            Module.printErr('');
+            Module.print('Closing the game');
+            Module.onExit(1);
+        }, message);
+        assert.equal(await page.locator('#status').isVisible(), true);
+        assert.equal(await page.locator('#status').innerText(),
+            'Game error: ' + message + ' Reload the page to try again.',
+            'Failed startup must display the stderr diagnostic outside the collapsed game log');
+        assert.equal(await page.locator('#fullscreen').isDisabled(), true);
+
+        await page.evaluate(() => Module.onExit(0));
+        assert.match(await page.locator('#status').innerText(), /^Game closed\./,
+            'Successful exits must not display previous stderr warnings as failures');
+        report.exitErrorFeedback = true;
+    } finally {
+        await page.close();
+    }
+}
+
 async function exerciseDirectSaving(context, settings, report) {
     const page = await context.newPage();
     page.on('pageerror', error => report.errors.push(String(error)));
@@ -679,12 +713,13 @@ async function main() {
                 }
             }
         }
+        await exerciseExitFeedback(context, settings, report);
         await exerciseDirectSaving(context, settings, report);
         await exerciseRememberedFolders(context, settings, report);
         assert.deepEqual(report.errors, [], 'Browser errors or external resource requests occurred');
         report.passed = true;
-        const passedChecks = settings.directOnly ? 'resource imports, direct saves, remembered folders, permission retry and recovery' :
-            'file:// offline startup, supplied data, resource imports, remembered folders and direct-write recovery' +
+        const passedChecks = settings.directOnly ? 'exit feedback, resource imports, direct saves, remembered folders, permission retry and recovery' :
+            'file:// offline startup, exit feedback, supplied data, resource imports, remembered folders and direct-write recovery' +
             (settings.idleOnly ? ', idle demo playback' : settings.savesOnly ? ', saves' : ', saves, keyboard and driving');
         console.log('PASS: ' + passedChecks);
     } catch (error) {

@@ -8,6 +8,7 @@
 #include "platform.h"
 #include "shape2d.h"
 #include "fatal.h"
+#include "resource.h"
 #include "ui_dialog.h"
 #include "audio_control.h"
 
@@ -1052,6 +1053,75 @@ void far *file_load_resfile_with_tail(const legacy_s8 *filename, legacy_u16 tail
 		file_show_resource_error(filename);
 #endif
 	}
+}
+
+/* Inspect the actual file length before trusting either resource header. The
+ * legacy allocation sizes are paragraph-rounded and cannot detect truncation. */
+static legacy_s32 file_game_resource_size(const legacy_s8 *filename, legacy_u16 packed)
+{
+	fileio_handle file = fileio_open(filename, DOS_FILE_OPEN_EXISTING);
+	if (file == FILEIO_INVALID_HANDLE) {
+		return -1;
+	}
+	legacy_s32 length = 0;
+	if (fileio_seek(file, 0, DOS_FILE_SEEK_END) == 0) {
+		length = fileio_tell(file);
+	}
+	const legacy_u32 maximum_size = ((legacy_u32)LEGACY_S16_MAX - COMPRESSION_WORKSPACE_PARAGRAPHS)
+									<< DOS_PARAGRAPH_SHIFT;
+	if (length < (legacy_s32)RESOURCE_FILE_DIRECTORY_OFFSET || (legacy_u32)length > maximum_size) {
+		length = 0;
+	} else if (packed) {
+		legacy_u8 header[COMPR_HEADER_SIZE];
+		if (fileio_seek(file, 0, DOS_FILE_SEEK_BEGIN) != 0 ||
+			fileio_read(header, sizeof(header), 1, file) != sizeof(header)) {
+			length = 0;
+		} else {
+			legacy_u32 unpacked_size =
+				LEGACY_READ_U16_LE(header + COMPR_SIZE_LOW_OFFSET) |
+				((legacy_u32)header[COMPR_SIZE_HIGH_OFFSET] << LEGACY_WORD_BITS);
+			legacy_u8 compression = header[0];
+			legacy_u16 valid_compression =
+				compression == COMPRESSION_RLE_TYPE || compression == COMPRESSION_VLE_TYPE ||
+				((compression & BYTE_HIGH_BIT) != 0 && (compression & (BYTE_HIGH_BIT - 1U)) != 0);
+			if (valid_compression == 0 || unpacked_size < RESOURCE_FILE_DIRECTORY_OFFSET ||
+				unpacked_size > maximum_size ||
+				file_bytes_to_paras(length) > file_bytes_to_paras((legacy_s32)unpacked_size) +
+												  COMPRESSION_WORKSPACE_PARAGRAPHS) {
+				length = 0;
+			} else {
+				length = (legacy_s32)unpacked_size;
+			}
+		}
+	}
+	fileio_close(file);
+	return fileio_error() ? 0 : length;
+}
+
+legacy_u16 file_game_version_matches(void)
+{
+	static const legacy_s8 unpacked_name[] = "misc.res";
+	static const legacy_s8 packed_name[] = "misc.pre";
+	static const legacy_s8 version_id[] = "gver";
+	static const legacy_s8 expected_version[] = "Version 1.1 (Feb 12 1991)";
+	legacy_s32 length = file_game_resource_size(unpacked_name, 0);
+	legacy_u16 packed = length < 0;
+	if (packed) {
+		length = file_game_resource_size(packed_name, 1);
+	}
+	if (length <= 0) {
+		return 0;
+	}
+	legacy_u8 far *resource =
+		packed ? file_decomp_nofatal(packed_name) : file_load_binary_nofatal(unpacked_name);
+	if (resource == 0) {
+		return 0;
+	}
+	legacy_u16 matches =
+		resource_text_equals(resource, (legacy_u32)length, version_id, expected_version);
+	/* This startup probe must not keep an extra live or cached allocation. */
+	mmgr_release(resource);
+	return matches;
 }
 
 void unload_resource(void far *resptr)

@@ -52,6 +52,11 @@ legacy_s16 dos_write_stderr(const legacy_s8 *text, legacy_u16 length)
 	return dos_write_handle(DOS_RUNTIME_STDERR_HANDLE, text, length);
 }
 
+void dos_show_startup_error(const legacy_s8 *message)
+{
+	dos_write_stderr(message, (legacy_u16)strlen((const legacy_char *)message));
+}
+
 void dos_process_exit(legacy_s16 status)
 {
 	__asm {

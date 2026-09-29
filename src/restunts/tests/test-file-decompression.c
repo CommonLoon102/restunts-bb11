@@ -6,6 +6,7 @@
 #include "../c/memmgr.h"
 #include "../c/platform.h"
 #include "../c/fatal.h"
+#include "../c/resource.h"
 
 legacy_u32 file_decomp_vle(legacy_u8 huge *src, legacy_u8 huge *dst, legacy_u16 paragraphs);
 legacy_u32 file_decomp_rle(legacy_u8 huge *src, legacy_u8 huge *dst, legacy_u16 paragraphs);
@@ -20,6 +21,7 @@ static legacy_u8 expected[70000];
 static legacy_u8 stage[200000];
 static legacy_u8 file_bytes[200000];
 static legacy_u32 file_length, file_position;
+static legacy_u32 packed_open_calls;
 static legacy_u32 open_calls, close_calls, read_calls, resize_calls, copy_calls, fatal_calls;
 static legacy_u32 fail_open, fail_read, cached;
 static legacy_u32 allocated_paragraphs, resized_paragraphs;
@@ -60,6 +62,9 @@ void far *dos_memory_make_pointer(legacy_u16 segment, legacy_u16 offset)
 }
 legacy_u16 dos_memory_pointer_segment(const void far *pointer)
 {
+	if (pointer == 0) {
+		return 0;
+	}
 	assert((const legacy_u8 *)pointer >= memory &&
 		   (const legacy_u8 *)pointer < memory + sizeof(memory));
 	return ((const legacy_u8 *)pointer - memory) >> 4;
@@ -117,6 +122,9 @@ legacy_u16 dos_file_open(const legacy_s8 *name, legacy_s16 create)
 	trace_word(5);
 	trace_word(create);
 	open_calls++;
+	if (strstr((const legacy_char *)name, ".pre") != 0) {
+		packed_open_calls++;
+	}
 	file_position = 0;
 	if (resource_file_kind == 1 && strstr((const char *)name, ".res") != 0) {
 		return 0;
@@ -153,8 +161,8 @@ legacy_s16 dos_file_seek(legacy_u16 handle, legacy_s32 offset, legacy_s16 origin
 	trace_word(handle);
 	trace_word(offset);
 	trace_word(origin);
-	assert(origin == DOS_FILE_SEEK_END && offset == 0);
-	file_position = file_length;
+	assert((origin == DOS_FILE_SEEK_END || origin == DOS_FILE_SEEK_BEGIN) && offset == 0);
+	file_position = origin == DOS_FILE_SEEK_END ? file_length : 0;
 	return 0;
 }
 legacy_s32 dos_file_tell(legacy_u16 handle)
@@ -668,6 +676,73 @@ static void test_resource_tail_errors(void)
 	}
 }
 
+#define TEST_GAME_VERSION_DATA_OFFSET                                                              \
+	(RESOURCE_FILE_DIRECTORY_OFFSET + RESOURCE_FILE_IDENTIFIER_SIZE + RESOURCE_FILE_OFFSET_SIZE)
+#define TEST_PACKED_HEADER_SIZE 4U
+
+static legacy_u32 make_game_version_resource(legacy_u8 *destination)
+{
+	static const legacy_s8 version[] = "Version 1.1 (Feb 12 1991)";
+	legacy_u32 size = TEST_GAME_VERSION_DATA_OFFSET + sizeof(version);
+	memset(destination, 0, size);
+	LEGACY_WRITE_U32_LE(destination + RESOURCE_FILE_SIZE_OFFSET, size);
+	LEGACY_WRITE_U16_LE(destination + RESOURCE_FILE_COUNT_OFFSET, 1);
+	memcpy(destination + RESOURCE_FILE_DIRECTORY_OFFSET, "gver", RESOURCE_FILE_IDENTIFIER_SIZE);
+	memcpy(destination + TEST_GAME_VERSION_DATA_OFFSET, version, sizeof(version));
+	return size;
+}
+
+static void test_game_version(void)
+{
+	reset_file();
+	file_length = make_game_version_resource(file_bytes);
+	assert(file_game_version_matches() != 0);
+	assert(release_calls == 1 && fatal_calls == 0);
+
+	/* An unpacked override is authoritative, even when a packed file exists. */
+	reset_file();
+	packed_open_calls = 0;
+	file_length = make_game_version_resource(file_bytes);
+	file_bytes[TEST_GAME_VERSION_DATA_OFFSET] = 'X';
+	assert(file_game_version_matches() == 0);
+	assert(packed_open_calls == 0 && release_calls == 1 && fatal_calls == 0);
+
+	reset_file();
+	file_length = make_game_version_resource(file_bytes) - 1U;
+	assert(file_game_version_matches() == 0);
+	assert(release_calls == 1 && fatal_calls == 0);
+
+	reset_file();
+	file_length = make_game_version_resource(file_bytes);
+	fail_read = 1;
+	assert(file_game_version_matches() == 0);
+	assert(allocated_paragraphs == 0 && fatal_calls == 0);
+
+	reset_file();
+	fail_open = 1;
+	assert(file_game_version_matches() == 0);
+	assert(fatal_calls == 0);
+
+	reset_file();
+	packed_open_calls = 0;
+	file_length = 0;
+	assert(file_game_version_matches() == 0);
+	assert(packed_open_calls == 0 && fatal_calls == 0);
+
+	reset_file();
+	resource_file_kind = 1;
+	legacy_u32 length = make_game_version_resource(expected);
+	file_length = make_rle_literals(file_bytes, expected, length);
+	assert(file_game_version_matches() != 0);
+	assert(release_calls == 1 && fatal_calls == 0);
+
+	reset_file();
+	resource_file_kind = 1;
+	file_length = TEST_PACKED_HEADER_SIZE - 1U;
+	assert(file_game_version_matches() == 0);
+	assert(allocated_paragraphs == 0 && fatal_calls == 0);
+}
+
 int main(void)
 {
 	test_vle();
@@ -680,6 +755,7 @@ int main(void)
 	test_multipass_resource_tail();
 	test_binary_resource_tail();
 	test_resource_tail_errors();
+	test_game_version();
 	puts("File decompression regression checks passed.");
 	return 0;
 }
