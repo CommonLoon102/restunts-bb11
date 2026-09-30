@@ -8,15 +8,12 @@
 #include <string.h>
 #include "fatal.h"
 #include "hires.h"
+#include "hypervision.h"
 #include "projection.h"
 #include "render_workers.h"
 #include "shape3d_internal.h"
 
 #define HIRES_NEAR_CLIP_Z 12
-#define HIRES_BAND_HEIGHT 32
-#define HIRES_BAND_COUNT (HIRES_HEIGHT / HIRES_BAND_HEIGHT)
-#define HIRES_PARALLEL_MIN_AREA 65536U
-#define HIRES_INITIAL_COMMAND_CAPACITY 1024U
 /* Keep the original displayed pixel width through medium-close views,
  * then let perspective narrow the stroke at greater distances. */
 #define HIRES_LINE_DIAMETER 1.5
@@ -33,7 +30,6 @@
 #define HIRES_ROUND_LARGE_RADIUS 48.0
 #define HIRES_SPHERE_HORIZONTAL_SCALE 0.5
 #define HIRES_SPHERE_VERTICAL_SCALE (13.0 / 32.0)
-#define HIRES_DIRECT_POLYGON_EDGE_LIMIT 4U
 #define HIRES_WHEEL_INNER_SCALE (9472.0 / TRIG_FIXED_ONE)
 
 struct HIRES_PRIMITIVE {
@@ -50,15 +46,8 @@ struct HIRES_PRIMITIVE {
 };
 
 struct HIRES_PAINT {
-	struct HIRES_RASTER_CONTEXT *context;
-	legacy_u16 color;
-	legacy_u16 alternate;
-	legacy_u16 pattern;
-	legacy_u16 mode;
-	legacy_s32 depth_test;
-	legacy_u32 family;
-	legacy_s32 depth_mode;
-	legacy_s32 scale, width, height;
+	struct HYPERVISION_MATERIAL material;
+	legacy_s32 scale;
 };
 
 struct HIRES_SHAPE {
@@ -89,8 +78,6 @@ struct HIRES_SHAPE {
 #define HIRES_SHADOW_GRILLE_TRANSMISSION 0.5
 #define HIRES_SHADOW_SURFACE_MAX_HITS 4U
 #define HIRES_SHADOW_INTERSECTION_EPSILON 1e-9
-/* Match the rasterizer's tolerance when resolving an ordered depth family. */
-#define HIRES_SHADOW_DEPTH_EPSILON (4 * FLT_EPSILON)
 
 struct HIRES_CAR_SHADOW {
 	struct VECTOR position;
@@ -134,17 +121,6 @@ static legacy_f64 model_scale = 1;
 static struct HIRES_DEPTH_PLANE ground_plane;
 static legacy_s32 ground_enabled;
 
-struct HIRES_COMMAND {
-	legacy_u32 index;
-	legacy_u8 type;
-	legacy_u16 color, second_color, third_color, pattern_type, pattern;
-	legacy_s32 top, bottom;
-};
-
-static struct HIRES_COMMAND *commands;
-static size_t command_capacity;
-static size_t command_count;
-static legacy_u32 command_area;
 static legacy_s32 batching;
 
 static void reserve_primitives(legacy_u32 index)
@@ -156,19 +132,19 @@ static void reserve_primitives(legacy_u32 index)
 		primitive_capacity != 0 ? primitive_capacity : POLYINFO_SUPERSIGHT_PRIMITIVE_CAPACITY;
 	while (capacity <= index) {
 		if (capacity > LEGACY_S32_MAX / 2U) {
-			fatal_error("SuperSight scene has too many primitives");
+			fatal_error("HyperVision scene has too many primitives");
 			return;
 		}
 		capacity *= 2U;
 	}
 	if (capacity > (size_t)-1 / sizeof(*primitives) || capacity > (size_t)-1 / sizeof(*shapes)) {
-		fatal_error("SuperSight scene exceeds addressable memory");
+		fatal_error("HyperVision scene exceeds addressable memory");
 		return;
 	}
 	struct HIRES_PRIMITIVE *new_primitives = calloc(capacity, sizeof(*new_primitives));
 	struct HIRES_SHAPE *new_shapes = calloc(capacity, sizeof(*new_shapes));
 	if (new_primitives == NULL || new_shapes == NULL) {
-		fatal_error("Cannot allocate SuperSight scene geometry");
+		fatal_error("Cannot allocate HyperVision scene geometry");
 		return;
 	}
 	if (primitive_capacity != 0) {
@@ -635,442 +611,79 @@ void shape3d_hires_update_bounds(legacy_u32 index, legacy_u8 type, struct RECTAN
 	}
 }
 
-static legacy_s32 polygon_covers_sample(const struct SHAPE3D_HIRES_POINT *points, legacy_u32 count,
-										legacy_f64 x, legacy_f64 y)
-{
-	legacy_s32 inside = 0;
-	const struct SHAPE3D_HIRES_POINT *previous = &points[count - 1];
-	for (legacy_u32 index = 0; index < count; index++) {
-		const struct SHAPE3D_HIRES_POINT *current = &points[index];
-		if ((previous->y <= y && current->y > y) || (current->y <= y && previous->y > y)) {
-			/* Match the fill's half-open spans and shared-edge arithmetic exactly. */
-			const struct SHAPE3D_HIRES_POINT *lower = previous->y < current->y ? previous : current;
-			const struct SHAPE3D_HIRES_POINT *upper = previous->y < current->y ? current : previous;
-			legacy_f64 fraction = (y - lower->y) / (upper->y - lower->y);
-			/* Match the fill's stored intersection when expressions retain extra precision.
-			 * A normal local assignment can remain in an x87 register without rounding. */
-#if FLT_EVAL_METHOD > 0
-			volatile legacy_f64 intersection_x = lower->x + fraction * (upper->x - lower->x);
-#else
-			legacy_f64 intersection_x = lower->x + fraction * (upper->x - lower->x);
-#endif
-			if (intersection_x <= x) {
-				inside = !inside;
-			}
-		}
-		previous = current;
-	}
-	return inside;
-}
-
-static void paint_pixel(legacy_s32 x, legacy_s32 y, legacy_f64 inverse_z,
-						const struct HIRES_PAINT *paint, const struct HIRES_DEPTH_PLANE *ground)
-{
-	struct HIRES_RASTER_CONTEXT *context = paint->context;
-	if (context != NULL && (y < context->top || y >= context->bottom)) {
-		return;
-	}
-	legacy_u16 color = paint->color;
-	if (paint->mode != HIRES_PAINT_SOLID) {
-		legacy_u32 bit = ((y & HIRES_PATTERN_ROW_MASK) == 0 ? HIRES_PATTERN_WIDTH : 0U) +
-						 (HIRES_PATTERN_WIDTH - 1U) - (x & HIRES_PATTERN_COLUMN_MASK);
-		if ((paint->pattern & (1U << bit)) != 0) {
-			color = paint->mode == HIRES_PAINT_ALTERNATE ? paint->alternate : paint->color;
-		} else if (paint->mode != HIRES_PAINT_ALTERNATE) {
-			return;
-		}
-	}
-	if (ground != NULL && paint->depth_test) {
-		hires_coverage_pixel(context, x, y, inverse_z, paint->family, paint->depth_mode,
-							 (legacy_u8)color, ground);
-	} else if (context != NULL) {
-		if (!paint->depth_test ||
-			hires_raster_depth_test(context, x, y, inverse_z, paint->family, paint->depth_mode)) {
-			hires_raster_pixel(context, x, y, (legacy_u8)color);
-		}
-	} else if (!paint->depth_test ||
-			   hires_depth_test(x, y, inverse_z, paint->family, paint->depth_mode)) {
-		hires_pixel(x, y, (legacy_u8)color);
-	}
-}
-
-static legacy_s32 clip_line_edge(legacy_f64 direction, legacy_f64 distance, legacy_f64 *first,
-								 legacy_f64 *last)
-{
-	if (direction == 0) {
-		return distance >= 0;
-	}
-	legacy_f64 ratio = distance / direction;
-	if (direction < 0) {
-		if (ratio > *last) {
-			return 0;
-		}
-		if (ratio > *first) {
-			*first = ratio;
-		}
-	} else {
-		if (ratio < *first) {
-			return 0;
-		}
-		if (ratio < *last) {
-			*last = ratio;
-		}
-	}
-	return 1;
-}
-
-static void paint_line_stroke(legacy_s32 x, legacy_s32 y, const struct SHAPE3D_HIRES_POINT *first,
-							  const struct SHAPE3D_HIRES_POINT *last, legacy_f64 projected_width,
-							  legacy_f64 inverse_length_squared, const struct HIRES_PAINT *paint)
-{
-	legacy_f64 delta_x = last->x - first->x;
-	legacy_f64 delta_y = last->y - first->y;
-	/* Endpoint rounding can shift the Bresenham path by almost one sample
-	 * from the fractional segment; include that in the candidate search. */
-	legacy_s32 extent = paint->scale / 2 + 1;
-	legacy_s32 top = y - extent;
-	legacy_s32 bottom = y + extent + 1;
-	if (paint->context != NULL) {
-		if (top < paint->context->top) {
-			top = paint->context->top;
-		}
-		if (bottom > paint->context->bottom) {
-			bottom = paint->context->bottom;
-		}
-	}
-	for (legacy_s32 row = top; row < bottom; row++) {
-		for (legacy_s32 column = x - extent; column <= x + extent; column++) {
-			legacy_f64 offset_x = column + 0.5 - first->x;
-			legacy_f64 offset_y = row + 0.5 - first->y;
-			legacy_f64 fraction =
-				inverse_length_squared == 0
-					? (first->inverse_z < last->inverse_z ? 1 : 0)
-					: (offset_x * delta_x + offset_y * delta_y) * inverse_length_squared;
-			if (fraction < 0) {
-				fraction = 0;
-			} else if (fraction > 1) {
-				fraction = 1;
-			}
-			legacy_f64 inverse_z =
-				first->inverse_z + (last->inverse_z - first->inverse_z) * fraction;
-			legacy_f64 width = projected_width * inverse_z;
-			if (width <= 1) {
-				continue;
-			}
-			if (width > paint->scale) {
-				width = paint->scale;
-			}
-			offset_x -= delta_x * fraction;
-			offset_y -= delta_y * fraction;
-			/* Fractional coverage gives a round stroke that tapers with depth,
-			 * without rounding the entire primitive to an integer brush size. */
-			if (offset_x * offset_x + offset_y * offset_y < width * width * 0.25) {
-				paint_pixel(column, row, inverse_z, paint, ground_enabled ? &ground_plane : NULL);
-			}
-		}
-	}
-}
-
+/* Lines become narrow quads once, instead of repeatedly covering the same
+ * samples with a Bresenham spine and overlapping circles. */
 static void draw_line(const struct SHAPE3D_HIRES_POINT *first,
 					  const struct SHAPE3D_HIRES_POINT *last, legacy_f64 projected_width,
 					  const struct HIRES_PAINT *paint)
 {
-	legacy_f64 padding = (projected_width > 0 ? paint->scale / 2.0 : 0) + 0.5;
-	legacy_f64 delta_x = last->x - first->x;
-	legacy_f64 delta_y = last->y - first->y;
-	legacy_f64 start = 0;
-	legacy_f64 end = 1;
-	if (!clip_line_edge(-delta_x, first->x + padding, &start, &end) ||
-		!clip_line_edge(delta_x, paint->width - 1 + padding - first->x, &start, &end) ||
-		!clip_line_edge(-delta_y, first->y + padding, &start, &end) ||
-		!clip_line_edge(delta_y, paint->height - 1 + padding - first->y, &start, &end)) {
-		return;
-	}
-	legacy_s32 x = (legacy_s32)SDL_floor(first->x + delta_x * start + 0.5);
-	legacy_s32 y = (legacy_s32)SDL_floor(first->y + delta_y * start + 0.5);
-	legacy_s32 end_x = (legacy_s32)SDL_floor(first->x + delta_x * end + 0.5);
-	legacy_s32 end_y = (legacy_s32)SDL_floor(first->y + delta_y * end + 0.5);
-	legacy_s32 step_x = x < end_x ? 1 : -1;
-	legacy_s32 step_y = y < end_y ? 1 : -1;
-	legacy_s32 width = x < end_x ? end_x - x : x - end_x;
-	legacy_s32 height = y < end_y ? y - end_y : end_y - y;
-	legacy_s32 error = width + height;
-	legacy_s32 steps = width > -height ? width : -height;
-	legacy_f64 inverse_z = first->inverse_z + (last->inverse_z - first->inverse_z) * start;
-	legacy_f64 depth_step =
-		steps == 0 ? 0 : (last->inverse_z - first->inverse_z) * (end - start) / steps;
-	legacy_f64 length_squared = delta_x * delta_x + delta_y * delta_y;
-	legacy_f64 inverse_length_squared = length_squared == 0 ? 0 : 1 / length_squared;
-	legacy_f64 nearest_depth =
-		first->inverse_z > last->inverse_z ? first->inverse_z : last->inverse_z;
-	if (steps == 0) {
-		inverse_z = nearest_depth;
-	}
-	for (;;) {
-		/* Retain a continuous one-pixel spine for distant or edge-on details. */
-		paint_pixel(x, y, inverse_z, paint, ground_enabled ? &ground_plane : NULL);
-		if (projected_width * nearest_depth > 1) {
-			paint_line_stroke(x, y, first, last, projected_width, inverse_length_squared, paint);
-		}
-		inverse_z += depth_step;
-		if (x == end_x && y == end_y) {
-			break;
-		}
-		legacy_s32 twice_error = error * 2;
-		if (twice_error >= height) {
-			error += height;
-			x += step_x;
-		}
-		if (twice_error <= width) {
-			error += width;
-			y += step_y;
-		}
-	}
-}
-
-struct HIRES_POLYGON_EDGE {
-	const struct SHAPE3D_HIRES_POINT *lower;
-	const struct SHAPE3D_HIRES_POINT *upper;
-	legacy_s32 top;
-	legacy_s32 bottom;
-};
-
-static void polygon_insert_intersection(const struct SHAPE3D_HIRES_POINT *lower,
-										const struct SHAPE3D_HIRES_POINT *upper,
-										legacy_f64 sample_y,
-										struct SHAPE3D_HIRES_POINT *intersections, legacy_u32 count)
-{
-	/* Evaluate each shared edge from its lower endpoint on every row.
-	 * Incremental slopes or cached rounded deltas can change pixel ties. */
-	legacy_f64 fraction = (sample_y - lower->y) / (upper->y - lower->y);
-	struct SHAPE3D_HIRES_POINT intersection;
-	intersection.x = lower->x + fraction * (upper->x - lower->x);
-	intersection.y = sample_y;
-	intersection.inverse_z = lower->inverse_z + fraction * (upper->inverse_z - lower->inverse_z);
-	legacy_u32 position = count;
-	while (position != 0 && intersections[position - 1].x > intersection.x) {
-		intersections[position] = intersections[position - 1];
-		position--;
-	}
-	intersections[position] = intersection;
-}
-
-static void fill_polygon(const struct SHAPE3D_HIRES_POINT *points, legacy_u32 count,
-						 const struct HIRES_PAINT *paint)
-{
-	if (count == 0) {
-		return;
-	}
-	if (count < 3) {
-		draw_line(&points[0], &points[count - 1], 0, paint);
-		return;
-	}
-	legacy_f64 minimum_y = points[0].y;
-	legacy_f64 maximum_y = minimum_y;
-	for (legacy_u32 index = 1; index < count; index++) {
-		if (points[index].y < minimum_y) {
-			minimum_y = points[index].y;
-		}
-		if (points[index].y > maximum_y) {
-			maximum_y = points[index].y;
-		}
-	}
-	if (maximum_y < 0 || minimum_y >= paint->height) {
-		return;
-	}
-	legacy_s32 top = minimum_y < 0 ? 0 : ceil_coordinate(minimum_y - HIRES_SAMPLE_CENTER_OFFSET);
-	legacy_s32 bottom = maximum_y >= paint->height
-							? paint->height
-							: ceil_coordinate(maximum_y - HIRES_SAMPLE_CENTER_OFFSET);
-	if (paint->context != NULL) {
-		if (top < paint->context->top) {
-			top = paint->context->top;
-		}
-		if (bottom > paint->context->bottom) {
-			bottom = paint->context->bottom;
-		}
-	}
-	if (top >= bottom) {
-		return;
-	}
-	struct HIRES_POLYGON_EDGE edges[HIRES_ROUND_POINTS];
-	legacy_u32 pending[HIRES_ROUND_POINTS];
-	legacy_u32 edge_count = 0;
-	/* Triangles and quads cost less to scan directly than to schedule. */
-	if (count > HIRES_DIRECT_POLYGON_EDGE_LIMIT) {
-		const struct SHAPE3D_HIRES_POINT *previous = &points[count - 1];
-		for (legacy_u32 index = 0; index < count; index++) {
-			const struct SHAPE3D_HIRES_POINT *current = &points[index];
-			const struct SHAPE3D_HIRES_POINT *lower = previous->y < current->y ? previous : current;
-			const struct SHAPE3D_HIRES_POINT *upper = previous->y < current->y ? current : previous;
-			previous = current;
-			if (!(lower->y < upper->y) || lower->y >= bottom || upper->y <= top) {
-				continue;
-			}
-			/* Clamp to the raster band before converting projected coordinates. */
-			legacy_s32 first_row =
-				lower->y < top ? top : ceil_coordinate(lower->y - HIRES_SAMPLE_CENTER_OFFSET);
-			legacy_s32 last_row =
-				upper->y > bottom ? bottom : ceil_coordinate(upper->y - HIRES_SAMPLE_CENTER_OFFSET);
-			if (first_row >= last_row) {
-				continue;
-			}
-			edges[edge_count] = (struct HIRES_POLYGON_EDGE){lower, upper, first_row, last_row};
-			legacy_u32 position = edge_count;
-			while (position != 0 && edges[pending[position - 1]].top > first_row) {
-				pending[position] = pending[position - 1];
-				position--;
-			}
-			pending[position] = edge_count++;
-		}
-	}
-	legacy_u32 active[HIRES_ROUND_POINTS];
-	legacy_u32 active_count = 0;
-	legacy_u32 next_edge = 0;
-	for (legacy_s32 y = top; y < bottom; y++) {
-		struct SHAPE3D_HIRES_POINT intersections[HIRES_ROUND_POINTS];
-		legacy_u32 intersection_count = 0;
-		legacy_f64 sample_y = y + HIRES_SAMPLE_CENTER_OFFSET;
-		if (count <= HIRES_DIRECT_POLYGON_EDGE_LIMIT) {
-			const struct SHAPE3D_HIRES_POINT *previous = &points[count - 1];
-			for (legacy_u32 index = 0; index < count; index++) {
-				const struct SHAPE3D_HIRES_POINT *current = &points[index];
-				if ((previous->y <= sample_y && current->y > sample_y) ||
-					(current->y <= sample_y && previous->y > sample_y)) {
-					const struct SHAPE3D_HIRES_POINT *lower =
-						previous->y < current->y ? previous : current;
-					const struct SHAPE3D_HIRES_POINT *upper =
-						previous->y < current->y ? current : previous;
-					polygon_insert_intersection(lower, upper, sample_y, intersections,
-												intersection_count++);
-				}
-				previous = current;
-			}
-		} else {
-			legacy_u32 retained_count = 0;
-			for (legacy_u32 index = 0; index < active_count; index++) {
-				if (edges[active[index]].bottom > y) {
-					active[retained_count++] = active[index];
-				}
-			}
-			active_count = retained_count;
-			while (next_edge < edge_count && edges[pending[next_edge]].top <= y) {
-				legacy_u32 edge_index = pending[next_edge++];
-				legacy_u32 position = active_count++;
-				/* Equal-X intersections retain the original polygon edge order. */
-				while (position != 0 && active[position - 1] > edge_index) {
-					active[position] = active[position - 1];
-					position--;
-				}
-				active[position] = edge_index;
-			}
-			for (legacy_u32 index = 0; index < active_count; index++) {
-				const struct HIRES_POLYGON_EDGE *edge = &edges[active[index]];
-				polygon_insert_intersection(edge->lower, edge->upper, sample_y, intersections,
-											intersection_count++);
-			}
-		}
-		for (legacy_u32 index = 0; index + 1 < intersection_count; index += 2) {
-			const struct SHAPE3D_HIRES_POINT *first = &intersections[index];
-			const struct SHAPE3D_HIRES_POINT *last = &intersections[index + 1];
-			if (last->x < 0 || first->x >= paint->width || last->x <= first->x) {
-				continue;
-			}
-			legacy_s32 left =
-				first->x < 0 ? 0 : ceil_coordinate(first->x - HIRES_SAMPLE_CENTER_OFFSET);
-			legacy_s32 right = last->x >= paint->width
-								   ? paint->width
-								   : ceil_coordinate(last->x - HIRES_SAMPLE_CENTER_OFFSET);
-			legacy_f64 depth_step = (last->inverse_z - first->inverse_z) / (last->x - first->x);
-			legacy_f64 inverse_z =
-				first->inverse_z + (left + HIRES_SAMPLE_CENTER_OFFSET - first->x) * depth_step;
-			if (paint->context != NULL) {
-				hires_raster_span(paint->context, left, right, y, inverse_z, depth_step,
-								  paint->family, paint->depth_mode, paint->color, paint->alternate,
-								  paint->pattern, paint->mode, paint->depth_test);
-			} else {
-				for (legacy_s32 x = left; x < right; x++) {
-					paint_pixel(x, y, inverse_z, paint, NULL);
-					inverse_z += depth_step;
-				}
-			}
-		}
-	}
-}
-
-static void draw_polygon_border(const struct SHAPE3D_HIRES_POINT *points, legacy_u32 count,
-								legacy_u32 edge, legacy_f64 radius, const struct HIRES_PAINT *paint)
-{
-	const struct SHAPE3D_HIRES_POINT *first = &points[edge];
-	const struct SHAPE3D_HIRES_POINT *last = &points[(edge + 1) % count];
 	legacy_f64 dx = last->x - first->x;
 	legacy_f64 dy = last->y - first->y;
-	legacy_f64 minimum_y = (dy < 0 ? last->y : first->y) - radius;
-	legacy_f64 maximum_y = (dy < 0 ? first->y : last->y) + radius;
-	if (maximum_y < 0 || minimum_y >= paint->height) {
+	legacy_f64 length = SDL_sqrt(dx * dx + dy * dy);
+	if (length == 0) {
+		legacy_f64 x = SDL_floor(first->x + HIRES_SAMPLE_CENTER_OFFSET);
+		legacy_f64 y = SDL_floor(first->y + HIRES_SAMPLE_CENTER_OFFSET);
+		struct HYPERVISION_VERTEX point[4] = {{x, y, first->inverse_z},
+											  {x + 1, y, first->inverse_z},
+											  {x + 1, y + 1, first->inverse_z},
+											  {x, y + 1, first->inverse_z}};
+		struct HYPERVISION_MATERIAL material = paint->material;
+		material.flags |= HYPERVISION_GROUND_CLIP;
+		hypervision_polygon(point, 4, &material);
 		return;
 	}
-	legacy_s32 top = minimum_y < 0 ? 0 : ceil_coordinate(minimum_y - 0.5);
-	legacy_s32 bottom =
-		maximum_y >= paint->height ? paint->height : ceil_coordinate(maximum_y - 0.5);
-	if (paint->context != NULL) {
-		if (top < paint->context->top) {
-			top = paint->context->top;
-		}
-		if (bottom > paint->context->bottom) {
-			bottom = paint->context->bottom;
-		}
+	legacy_f64 first_radius = projected_width * first->inverse_z / 2;
+	legacy_f64 last_radius = projected_width * last->inverse_z / 2;
+	legacy_f64 limit = paint->scale / 2.0;
+	if (first_radius < HIRES_SAMPLE_CENTER_OFFSET) {
+		first_radius = HIRES_SAMPLE_CENTER_OFFSET;
+	} else if (first_radius > limit) {
+		first_radius = limit;
 	}
-	legacy_f64 length_squared = dx * dx + dy * dy;
-	for (legacy_s32 y = top; y < bottom; y++) {
-		legacy_f64 sample_y = y + 0.5;
-		legacy_f64 start = 0;
-		legacy_f64 end = 1;
-		/* Restrict each row to the part of the edge within one radius. Unlike
-		 * stamping a brush along the edge, this visits each candidate only once. */
-		if (!clip_line_edge(-dy, first->y - sample_y + radius, &start, &end) ||
-			!clip_line_edge(dy, sample_y + radius - first->y, &start, &end)) {
-			continue;
-		}
-		legacy_f64 minimum_x = first->x + dx * (dx < 0 ? end : start) - radius;
-		legacy_f64 maximum_x = first->x + dx * (dx < 0 ? start : end) + radius;
-		if (maximum_x < 0 || minimum_x >= paint->width) {
-			continue;
-		}
-		legacy_s32 left = minimum_x < 0 ? 0 : ceil_coordinate(minimum_x - 0.5);
-		legacy_s32 right =
-			maximum_x >= paint->width ? paint->width : ceil_coordinate(maximum_x - 0.5);
-		for (legacy_s32 x = left; x < right; x++) {
-			legacy_f64 offset_x = x + 0.5 - first->x;
-			legacy_f64 offset_y = sample_y - first->y;
-			legacy_f64 fraction = length_squared == 0
-									  ? (first->inverse_z < last->inverse_z ? 1 : 0)
-									  : (offset_x * dx + offset_y * dy) / length_squared;
-			if (fraction < 0) {
-				fraction = 0;
-			} else if (fraction > 1) {
-				fraction = 1;
-			}
-			offset_x -= dx * fraction;
-			offset_y -= dy * fraction;
-			if (offset_x * offset_x + offset_y * offset_y < radius * radius &&
-				!polygon_covers_sample(points, count, x + 0.5, sample_y)) {
-				legacy_f64 inverse_z =
-					first->inverse_z + (last->inverse_z - first->inverse_z) * fraction;
-				paint_pixel(x, y, inverse_z, paint, ground_enabled ? &ground_plane : NULL);
-			}
-		}
+	if (last_radius < HIRES_SAMPLE_CENTER_OFFSET) {
+		last_radius = HIRES_SAMPLE_CENTER_OFFSET;
+	} else if (last_radius > limit) {
+		last_radius = limit;
 	}
+	legacy_f64 nx = length > 0 ? -dy / length : 1;
+	legacy_f64 ny = length > 0 ? dx / length : 0;
+	legacy_f64 end_x = length > 0 ? dx / length * HIRES_SAMPLE_CENTER_OFFSET : 0;
+	legacy_f64 end_y =
+		length > 0 ? dy / length * HIRES_SAMPLE_CENTER_OFFSET : HIRES_SAMPLE_CENTER_OFFSET;
+	struct HYPERVISION_VERTEX points[4] = {
+		{first->x - end_x + nx * first_radius, first->y - end_y + ny * first_radius,
+		 first->inverse_z},
+		{last->x + end_x + nx * last_radius, last->y + end_y + ny * last_radius, last->inverse_z},
+		{last->x + end_x - nx * last_radius, last->y + end_y - ny * last_radius, last->inverse_z},
+		{first->x - end_x - nx * first_radius, first->y - end_y - ny * first_radius,
+		 first->inverse_z}};
+	struct HYPERVISION_MATERIAL material = paint->material;
+	material.flags |= HYPERVISION_GROUND_CLIP;
+	hypervision_polygon(points, 4, &material);
 }
 
 static void draw_polygon(const struct SHAPE3D_HIRES_POINT *points, legacy_u32 count,
 						 legacy_f64 padding, const struct HIRES_PAINT *paint)
 {
-	fill_polygon(points, count, paint);
-	/* Only add coverage outside the original polygon. Interior samples must
-	 * keep their exact fill depth, including when another surface occludes them. */
-	for (legacy_u32 edge = 0; padding > 0 && edge < count; edge++) {
-		draw_polygon_border(points, count, edge, padding, paint);
+	if (count < 3U) {
+		if (count != 0U) {
+			draw_line(&points[0], &points[count - 1U], 0, paint);
+		}
+		return;
+	}
+	struct HYPERVISION_VERTEX vertices[HYPERVISION_MAX_VERTICES];
+	for (legacy_u32 index = 0; index < count; index++) {
+		vertices[index] =
+			(struct HYPERVISION_VERTEX){points[index].x, points[index].y, points[index].inverse_z};
+	}
+	hypervision_polygon(vertices, count, &paint->material);
+	/* Thin authored decals retain a visible stroke without the former per-pixel
+	 * distance/coverage search over every polygon edge. */
+	if (padding > 0) {
+		for (legacy_u32 index = 0; index < count; index++) {
+			legacy_u32 next = index + 1U == count ? 0U : index + 1U;
+			draw_line(&points[index], &points[next], 0, paint);
+		}
 	}
 }
 
@@ -1130,55 +743,44 @@ static void draw_wheel(const struct HIRES_PRIMITIVE *primitive, struct HIRES_PAI
 		side[3].inverse_z += depth_z;
 		draw_polygon(side, 4, 0, &paint);
 	}
-	paint.color = side_color;
+	paint.material.color = side_color;
 	for (legacy_u32 index = 0; index < count; index++) {
 		legacy_u32 next = index + 1 == count ? 0 : index + 1;
 		struct SHAPE3D_HIRES_POINT rim[4] = {outer[index], outer[next], inner[next], inner[index]};
 		draw_polygon(rim, 4, 0, &paint);
 	}
-	paint.color = inner_color;
+	paint.material.color = inner_color;
 	draw_polygon(inner, count, 0, &paint);
 }
 
 static void render_primitive(legacy_u32 index, legacy_u8 type, legacy_u16 color,
 							 legacy_u16 second_color, legacy_u16 third_color,
-							 legacy_u16 pattern_type, legacy_u16 pattern,
-							 struct HIRES_RASTER_CONTEXT *context)
+							 legacy_u16 pattern_type, legacy_u16 pattern)
 {
 	if (index >= primitive_capacity || primitives[index].count == 0) {
 		return;
 	}
-	struct HIRES_PRIMITIVE *primitive = &primitives[index];
+	const struct HIRES_PRIMITIVE *primitive = &primitives[index];
 	const struct HIRES_SHAPE *shape = &shapes[primitive->shape];
-	if (context == NULL && (!rendered_depth_valid || rendered_generation != hires_generation())) {
-		hires_depth_begin(0, hires_render_width(), 0, hires_render_height());
-		rendered_depth_valid = 1;
-		rendered_generation = hires_generation();
+	struct HIRES_PAINT paint = {
+		{index + 1U, color, second_color, pattern, (legacy_u8)pattern_type, 0},
+		hires_render_scale()};
+	if (shape->depth_mode == SHAPE3D_HIRES_DEPTH_BACKGROUND) {
+		paint.material.flags |= HYPERVISION_BACKGROUND;
 	}
-	legacy_s32 ordered = shape->depth_mode == SHAPE3D_HIRES_DEPTH_ORDERED;
-	struct HIRES_PAINT paint = {context,
-								color,
-								second_color,
-								pattern,
-								pattern_type,
-								shape->depth_mode != SHAPE3D_HIRES_DEPTH_BACKGROUND,
-								ordered ? primitive->shape + 1 : primitive->family,
-								ordered && !primitive->attached ? HIRES_DEPTH_ORDERED
-																: primitive->attached,
-								context != NULL ? context->target->scale : hires_render_scale(),
-								context != NULL ? context->target->width : hires_render_width(),
-								context != NULL ? context->target->height : hires_render_height()};
+	if (primitive->attached) {
+		paint.material.flags |= HYPERVISION_DECAL;
+		paint.material.family = primitive->family;
+	}
 	if (pattern_type == HIRES_PAINT_ALTERNATE) {
-		/* The legacy two-color helper receives the secondary material first;
-		 * set pattern bits still select the primary material color. */
-		paint.color = second_color;
-		paint.alternate = color;
+		paint.material.color = second_color;
+		paint.material.alternate = color;
 	}
 	if ((type & RENDER_PRIMITIVE_GHOST_FLAG) != 0) {
 		type &= ~RENDER_PRIMITIVE_GHOST_FLAG;
-		paint.color = 0;
-		paint.pattern = PRERENDER_BLACK_GRILLE_PATTERN;
-		paint.mode = HIRES_PAINT_PATTERN;
+		paint.material.color = 0;
+		paint.material.pattern = PRERENDER_BLACK_GRILLE_PATTERN;
+		paint.material.mode = HIRES_PAINT_PATTERN;
 		second_color = 0;
 		third_color = 0;
 	}
@@ -1197,142 +799,41 @@ static void render_primitive(legacy_u32 index, legacy_u8 type, legacy_u16 color,
 
 void shape3d_hires_batch_begin(void)
 {
-	command_count = 0;
-	command_area = 0;
-#if !defined(__DJGPP__)
 	batching = 1;
-#endif
+	hypervision_begin(ground_enabled ? &ground_plane : NULL);
+}
+
+static legacy_s32 finish_commands(legacy_s32 incremental)
+{
+	if (!rendered_depth_valid || rendered_generation != hires_generation()) {
+		hires_depth_begin(0, hires_render_width(), 0, hires_render_height());
+		rendered_depth_valid = 1;
+		rendered_generation = hires_generation();
+	}
+	struct HIRES_RASTER_TARGET target;
+	if (!hires_raster_prepare(&target)) {
+		return 0;
+	}
+	return hypervision_end(&target, incremental);
 }
 
 void shape3d_hires_render(legacy_u32 index, legacy_u8 type, legacy_u16 color,
 						  legacy_u16 second_color, legacy_u16 third_color, legacy_u16 pattern_type,
 						  legacy_u16 pattern)
 {
-	legacy_s32 scale = hires_render_scale();
 	if (!batching) {
-		render_primitive(index, type, color, second_color, third_color, pattern_type, pattern,
-						 NULL);
-		return;
+		hypervision_begin(ground_enabled ? &ground_plane : NULL);
 	}
-	if (index >= primitive_capacity || primitives[index].count == 0) {
-		return;
-	}
-	struct RECTANGLE bounds = {HIRES_WIDTH / HIRES_SCALE, 0, HIRES_HEIGHT / HIRES_SCALE, 0};
-	legacy_u8 bounds_type = type & ~RENDER_PRIMITIVE_GHOST_FLAG;
-	/* Points and degenerate polygons use rounded line endpoints. Their
-	 * fractional centers can lie just outside the screen and still hit it. */
-	if (bounds_type == RENDER_PRIMITIVE_POINT ||
-		(bounds_type == RENDER_PRIMITIVE_POLYGON && primitives[index].count < 3)) {
-		bounds_type = RENDER_PRIMITIVE_LINE;
-	}
-	shape3d_hires_update_bounds(index, bounds_type, &bounds);
-	if (bounds.left >= bounds.right || bounds.top >= bounds.bottom) {
-		return;
-	}
-	if (command_count == command_capacity) {
-		size_t capacity =
-			command_capacity != 0 ? command_capacity * 2 : HIRES_INITIAL_COMMAND_CAPACITY;
-		if (capacity < command_capacity || capacity > (size_t)-1 / sizeof(*commands)) {
-			fatal_error("SuperSight drawing commands exceed addressable memory");
-			return;
-		}
-		struct HIRES_COMMAND *buffer = realloc(commands, capacity * sizeof(*commands));
-		if (buffer == NULL) {
-			fatal_error("Cannot allocate SuperSight drawing commands");
-			return;
-		}
-		commands = buffer;
-		command_capacity = capacity;
-	}
-	commands[command_count++] = (struct HIRES_COMMAND){index,
-													   type,
-													   color,
-													   second_color,
-													   third_color,
-													   pattern_type,
-													   pattern,
-													   bounds.top * scale,
-													   bounds.bottom * scale};
-	if (command_area < HIRES_PARALLEL_MIN_AREA) {
-		command_area +=
-			(legacy_u32)(bounds.right - bounds.left) * (bounds.bottom - bounds.top) * scale * scale;
-	}
-}
-
-struct HIRES_BATCH {
-	struct HIRES_RASTER_TARGET target;
-	struct HIRES_RASTER_CONTEXT bands[HIRES_BAND_COUNT];
-};
-
-static void render_band(void *argument, legacy_s32 index)
-{
-	struct HIRES_BATCH *batch = argument;
-	struct HIRES_RASTER_CONTEXT *context = &batch->bands[index];
-	if (context->top >= context->bottom) {
-		return;
-	}
-	for (size_t command = 0; command < command_count; command++) {
-		const struct HIRES_COMMAND *entry = &commands[command];
-		if (entry->top >= context->bottom || entry->bottom <= context->top) {
-			continue;
-		}
-		render_primitive(entry->index, entry->type, entry->color, entry->second_color,
-						 entry->third_color, entry->pattern_type, entry->pattern, context);
+	render_primitive(index, type, color, second_color, third_color, pattern_type, pattern);
+	if (!batching) {
+		finish_commands(1);
 	}
 }
 
 legacy_s32 shape3d_hires_batch_end(void)
 {
 	batching = 0;
-	struct HIRES_BATCH batch;
-	if (command_count != 0) {
-		/* Allocate and clear depth on the caller before any workers can read it. */
-		if (!rendered_depth_valid || rendered_generation != hires_generation()) {
-			hires_depth_begin(0, hires_render_width(), 0, hires_render_height());
-			rendered_depth_valid = 1;
-			rendered_generation = hires_generation();
-		}
-		if (hires_raster_prepare(&batch.target)) {
-			legacy_s32 bands = 1;
-			legacy_s32 workers = 0;
-			if (command_area >= HIRES_PARALLEL_MIN_AREA && render_workers_count() != 0) {
-				bands = (hires_render_height() + HIRES_BAND_HEIGHT - 1) / HIRES_BAND_HEIGHT;
-				for (legacy_s32 index = 0; index < bands; index++) {
-					batch.bands[index] =
-						(struct HIRES_RASTER_CONTEXT){&batch.target, index * HIRES_BAND_HEIGHT,
-													  (index + 1) * HIRES_BAND_HEIGHT, 0};
-					if (batch.bands[index].top < batch.target.top) {
-						batch.bands[index].top = batch.target.top;
-					}
-					if (batch.bands[index].bottom > batch.target.bottom) {
-						batch.bands[index].bottom = batch.target.bottom;
-					}
-				}
-				workers = render_workers_run(bands, render_band, &batch);
-			} else {
-				/* Serial batches use the same clipped span path without scheduling. */
-				batch.bands[0] = (struct HIRES_RASTER_CONTEXT){&batch.target, batch.target.top,
-															   batch.target.bottom, 0};
-				render_band(&batch, 0);
-			}
-			legacy_u32 cleared = 0;
-			for (legacy_s32 index = 0; index < bands; index++) {
-				cleared += batch.bands[index].cleared_argb_cells;
-			}
-			hires_raster_finish(&batch.target, cleared);
-			command_count = 0;
-			command_area = 0;
-			return workers;
-		}
-	}
-	for (size_t index = 0; index < command_count; index++) {
-		const struct HIRES_COMMAND *entry = &commands[index];
-		render_primitive(entry->index, entry->type, entry->color, entry->second_color,
-						 entry->third_color, entry->pattern_type, entry->pattern, NULL);
-	}
-	command_count = 0;
-	command_area = 0;
-	return 0;
+	return finish_commands(0);
 }
 
 #define SHADOW_SILHOUETTE_WIDTH 128
@@ -1840,14 +1341,14 @@ legacy_u32 shape3d_hires_shadow_polygon(const struct SHAPE3D_HIRES_VECTOR *verti
 		if (capacity < shadow_surface_capacity || capacity > LEGACY_U32_MAX ||
 			capacity > (size_t)-1 / sizeof(*shadow_surfaces) ||
 			capacity > (size_t)-1 / (HIRES_SHADOW_SURFACE_MAX_HITS * sizeof(*shadow_grille_hits))) {
-			fatal_error("SuperSight shadow surfaces exceed addressable memory");
+			fatal_error("HyperVision shadow surfaces exceed addressable memory");
 			return 0;
 		}
 		struct SHADOW_SURFACE *surfaces = realloc(shadow_surfaces, capacity * sizeof(*surfaces));
 		legacy_f64 *hits =
 			realloc(shadow_grille_hits, capacity * HIRES_SHADOW_SURFACE_MAX_HITS * sizeof(*hits));
 		if (surfaces == NULL || hits == NULL) {
-			fatal_error("Cannot allocate SuperSight shadow surfaces");
+			fatal_error("Cannot allocate HyperVision shadow surfaces");
 			return 0;
 		}
 		shadow_surfaces = surfaces;
@@ -1878,58 +1379,9 @@ void shape3d_hires_set_shadow_surface(legacy_u32 index, legacy_u32 surface)
 /* Sorted polygons identify their support directly. An ordered shape shares one
  * depth family, so resolve its support only among the few collected surfaces,
  * using the same scanline depth interpolation as the scene rasterizer. */
-static legacy_u32 shadow_receiver_surface(legacy_u32 family, legacy_s32 x, legacy_s32 y,
-										  legacy_f64 inverse_z)
+static legacy_u32 shadow_receiver_surface(legacy_u32 family)
 {
-	if (family == 0 || family > primitive_count) {
-		return 0;
-	}
-	const struct HIRES_PRIMITIVE *support = &primitives[family - 1];
-	if (shapes[support->shape].depth_mode != SHAPE3D_HIRES_DEPTH_ORDERED) {
-		return support->shadow_surface;
-	}
-	legacy_f64 sample_x = x + HIRES_SAMPLE_CENTER_OFFSET;
-	legacy_f64 sample_y = y + HIRES_SAMPLE_CENTER_OFFSET;
-	legacy_f64 closest = DBL_MAX;
-	legacy_u32 result = 0;
-	for (size_t surface = 0; surface < shadow_surface_count; surface++) {
-		legacy_u32 index = shadow_surfaces[surface].rendered_index;
-		if (index >= primitive_count || primitives[index].shape != support->shape) {
-			continue;
-		}
-		const struct HIRES_PRIMITIVE *primitive = &primitives[index];
-		if (primitive->count < 3) {
-			continue;
-		}
-		struct SHAPE3D_HIRES_POINT intersections[HIRES_MAX_POLYGON_POINTS];
-		legacy_u32 count = 0;
-		const struct SHAPE3D_HIRES_POINT *previous = &primitive->points[primitive->count - 1];
-		for (legacy_u32 vertex = 0; vertex < primitive->count; vertex++) {
-			const struct SHAPE3D_HIRES_POINT *current = &primitive->points[vertex];
-			if ((previous->y <= sample_y && current->y > sample_y) ||
-				(current->y <= sample_y && previous->y > sample_y)) {
-				polygon_insert_intersection(previous->y < current->y ? previous : current,
-											previous->y < current->y ? current : previous, sample_y,
-											intersections, count++);
-			}
-			previous = current;
-		}
-		for (legacy_u32 crossing = 0; crossing + 1 < count; crossing += 2) {
-			const struct SHAPE3D_HIRES_POINT *first = &intersections[crossing];
-			const struct SHAPE3D_HIRES_POINT *last = &intersections[crossing + 1];
-			if (sample_x >= first->x && sample_x < last->x) {
-				legacy_f64 depth = first->inverse_z + (last->inverse_z - first->inverse_z) *
-														  (sample_x - first->x) /
-														  (last->x - first->x);
-				legacy_f64 difference = absolute_coordinate(depth - inverse_z);
-				if (difference < closest) {
-					closest = difference;
-					result = (legacy_u32)surface + 1;
-				}
-			}
-		}
-	}
-	return closest <= HIRES_SHADOW_DEPTH_EPSILON * inverse_z ? result : 0;
+	return family != 0U && family <= primitive_count ? primitives[family - 1U].shadow_surface : 0U;
 }
 
 static legacy_s32 shadow_surface_contains(const struct SHADOW_SURFACE *surface, legacy_f64 x,
@@ -2283,11 +1735,10 @@ void shape3d_hires_draw_shadows(void)
 					legacy_u8 opacity =
 						shadow_opacity(shadow, ray[0] * depth, ray[1] * depth, ray[2] * depth);
 					if (opacity != 0 && shadow_occlusion_needed(shadow, ray[1] * depth)) {
-						opacity =
-							(legacy_u8)(opacity *
-										shadow_transmission(
-											shadow, ray[0] * depth, ray[1] * depth, ray[2] * depth,
-											shadow_receiver_surface(family, x, y, 1.0 / depth)));
+						opacity = (legacy_u8)(opacity *
+											  shadow_transmission(shadow, ray[0] * depth,
+																  ray[1] * depth, ray[2] * depth,
+																  shadow_receiver_surface(family)));
 					}
 					if (opacity != 0) {
 						if (!started) {

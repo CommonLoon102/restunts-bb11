@@ -688,7 +688,13 @@ static void test_startup_supersight_options(void)
 		const legacy_s8 *argument;
 		enum FRAME_ADAPTIVE_PRESET preset;
 		legacy_s32 scale;
-	} cases[] = {{"ss:full", FRAME_ADAPTIVE_PRESET_FULL, HIRES_SCALE},
+	} cases[] = {{"hv:full", FRAME_ADAPTIVE_PRESET_FULL, HIRES_SCALE},
+				 {"hv:high", FRAME_ADAPTIVE_PRESET_HIGH, HIRES_SCALE},
+				 {"hv:medium", FRAME_ADAPTIVE_PRESET_MEDIUM, HIRES_MEDIUM_SCALE},
+				 {"hv:low", FRAME_ADAPTIVE_PRESET_LOW, HIRES_MINIMUM_SCALE},
+				 {"HV:FuLl", FRAME_ADAPTIVE_PRESET_FULL, HIRES_SCALE},
+				 {"hV:LoW", FRAME_ADAPTIVE_PRESET_LOW, HIRES_MINIMUM_SCALE},
+				 {"ss:full", FRAME_ADAPTIVE_PRESET_FULL, HIRES_SCALE},
 				 {"ss:high", FRAME_ADAPTIVE_PRESET_HIGH, HIRES_SCALE},
 				 {"ss:medium", FRAME_ADAPTIVE_PRESET_MEDIUM, HIRES_MEDIUM_SCALE},
 				 {"ss:low", FRAME_ADAPTIVE_PRESET_LOW, HIRES_MINIMUM_SCALE},
@@ -728,16 +734,18 @@ static void test_startup_supersight_options(void)
 			expect_startup_option_error(sizeof(arguments) / sizeof(arguments[0]), arguments);
 		}
 	}
-	static const legacy_s8 *invalid[] = {"ss:",		 "ss:auto",		"ss:off",	 "ss:veryhigh",
-										 "ss:fullx", "ss:low:high", "SS:unknown"};
+	static const legacy_s8 *invalid[] = {
+		"hv:", "hv:auto", "hv:off", "hv:veryhigh", "hv:fullx", "hv:low:high", "HV:unknown",
+		"ss:", "ss:auto", "ss:off", "ss:veryhigh", "ss:fullx", "ss:low:high", "SS:unknown"};
 	for (legacy_u16 index = 0; index < sizeof(invalid) / sizeof(invalid[0]); index++) {
 		legacy_s8 *arguments[] = {(legacy_s8 *)"game", (legacy_s8 *)invalid[index]};
 		expect_startup_option_error(sizeof(arguments) / sizeof(arguments[0]), arguments);
 	}
 
 	/* Unrelated or incomplete prefixes preserve the normal startup default. */
-	legacy_s8 *arguments[] = {(legacy_s8 *)"game", (legacy_s8 *)"", (legacy_s8 *)"s",
-							  (legacy_s8 *)"ss", (legacy_s8 *)"ssfull"};
+	legacy_s8 *arguments[] = {(legacy_s8 *)"game", (legacy_s8 *)"",		  (legacy_s8 *)"s",
+							  (legacy_s8 *)"ss",   (legacy_s8 *)"ssfull", (legacy_s8 *)"h",
+							  (legacy_s8 *)"hv",   (legacy_s8 *)"hvfull"};
 	reset_startup_supersight();
 	init_main(sizeof(arguments) / sizeof(arguments[0]), arguments);
 	assert(startup_render_enabled == 0 && supersight_enabled == 0);

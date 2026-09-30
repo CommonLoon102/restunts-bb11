@@ -711,6 +711,64 @@ void hires_raster_span(struct HIRES_RASTER_CONTEXT *context, legacy_s32 left, le
 	}
 }
 
+void hires_raster_resolved_span(struct HIRES_RASTER_CONTEXT *context, legacy_s32 left,
+								legacy_s32 right, legacy_s32 y, legacy_f64 inverse_z,
+								legacy_f64 depth_step, legacy_u32 family, legacy_u16 color,
+								legacy_u16 alternate, legacy_u16 pattern, legacy_s32 paint_mode)
+{
+	const struct HIRES_RASTER_TARGET *target = context->target;
+	struct HIRES_SURFACE *surface = target->surface;
+	const legacy_s32 shift = target->scale_shift;
+	const legacy_s32 mask = target->scale_mask;
+	const legacy_s32 cell_shift = target->cell_shift;
+	legacy_u16 row = target->rows[y >> shift];
+	legacy_u32 sample_row = (y & mask) << shift;
+	legacy_u32 pattern_row = (y & HIRES_PATTERN_ROW_MASK) == 0 ? HIRES_PATTERN_WIDTH : 0U;
+	legacy_f32 *depths = target->inverse_depth + (size_t)y * target->width;
+	legacy_u32 *families = target->depth_family + (size_t)y * target->width;
+	/* Separate contiguous depth output from the legacy-cell pixel layout.
+	 * Independent samples permit vectorization without a serial recurrence. */
+	for (legacy_s32 x = left; x < right; x++) {
+		depths[x] = (legacy_f32)(inverse_z + (x - left) * depth_step);
+		families[x] = family;
+	}
+	legacy_u32 packed_color = (legacy_u8)color * (LEGACY_U32_MAX / LEGACY_U8_MAX);
+	for (legacy_s32 x = left; x < right;) {
+		legacy_u16 offset = (legacy_u16)(row + (x >> shift));
+		legacy_u32 sample = sample_row + (x & mask);
+		legacy_s32 end = (x | mask) + 1;
+		if (end > right) {
+			end = right;
+		}
+		legacy_u8 *cell = surface->pixels + ((size_t)offset << cell_shift);
+		legacy_u32 *argb = surface->valid[offset] == HIRES_CELL_ARGB
+							   ? surface->argb + ((size_t)offset << cell_shift)
+							   : NULL;
+		if (argb != NULL) {
+			memset(argb + sample, 0, (size_t)(end - x) * sizeof(*argb));
+		}
+		if (paint_mode == HIRES_PAINT_SOLID) {
+			if (end - x == HIRES_SCALE) {
+				memcpy(cell + sample, &packed_color, HIRES_SCALE);
+			} else {
+				for (legacy_s32 pixel = x; pixel < end; pixel++) {
+					cell[sample + pixel - x] = (legacy_u8)color;
+				}
+			}
+			x = end;
+		} else {
+			for (; x < end; x++, sample++) {
+				legacy_u32 bit =
+					pattern_row + HIRES_PATTERN_WIDTH - 1U - (x & HIRES_PATTERN_COLUMN_MASK);
+				cell[sample] = (legacy_u8)((pattern & (1U << bit)) != 0U ? alternate : color);
+			}
+		}
+		if (argb != NULL) {
+			hires_raster_retire_argb(context, surface, offset, argb);
+		}
+	}
+}
+
 void hires_raster_finish(const struct HIRES_RASTER_TARGET *target, legacy_u32 cleared_argb_cells)
 {
 	target->surface->argb_cells -= cleared_argb_cells;

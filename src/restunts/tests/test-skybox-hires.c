@@ -366,42 +366,73 @@ static legacy_s32 floor_oblique_coordinate(legacy_s32 value)
 
 static void test_oblique_texels_and_original_fallback(void)
 {
-	struct MATRIX rotation = {0};
-	rotation.m._12 = OBLIQUE_NORMAL_X * OBLIQUE_MATRIX_SCALE;
-	rotation.m._22 = OBLIQUE_NORMAL_Y * OBLIQUE_MATRIX_SCALE;
-	rotation.m._33 = OBLIQUE_NORMAL_LENGTH * OBLIQUE_MATRIX_SCALE;
-	for (legacy_s32 original = 0; original <= 1; original++) {
-		reset_target();
-		target.sprite_raster_left = OBLIQUE_CLIP_LEFT;
-		target.sprite_raster_right = SKYBOX_SCREEN_WIDTH - OBLIQUE_CLIP_RIGHT_MARGIN;
-		target.sprite_top = OBLIQUE_CLIP_TOP;
-		target.sprite_bottom = SKYBOX_SCREEN_BOTTOM - OBLIQUE_CLIP_BOTTOM_MARGIN;
-		assert(skybox_hires_render(&target, &scenery, panorama_shapes,
-								   original ? OBLIQUE_ORIGINAL_THEME : OBLIQUE_ENHANCED_THEME,
-								   &rotation, OBLIQUE_FORWARD_DIRECTION, ANGLE_HALF_TURN,
-								   OBLIQUE_CAMERA_ALTITUDE, OBLIQUE_FULL_DETAIL));
-		const legacy_u8 *output = pixels();
-		for (legacy_s32 y = 0; y < HIRES_HEIGHT; y++) {
-			for (legacy_s32 x = 0; x < HIRES_WIDTH; x++) {
-				legacy_u8 expected = OBLIQUE_BACKGROUND_COLOR;
-				if (x >= target.sprite_raster_left * HIRES_SCALE &&
-					x < target.sprite_raster_right * HIRES_SCALE &&
-					y >= target.sprite_top * HIRES_SCALE &&
-					y < target.sprite_bottom * HIRES_SCALE) {
-					legacy_s32 doubled_x = 2 * x + 1 - HIRES_WIDTH;
-					legacy_s32 doubled_y = 2 * y + 1 - HIRES_HEIGHT;
-					legacy_s32 u = floor_oblique_coordinate(
-						projection_center_x * HIRES_SCALE * OBLIQUE_TEXEL_DENOMINATOR +
-						OBLIQUE_NORMAL_Y * doubled_x + OBLIQUE_NORMAL_X * doubled_y);
-					legacy_s32 band_y = floor_oblique_coordinate(OBLIQUE_NORMAL_Y * doubled_y -
+	const legacy_s32 scales[] = {HIRES_SCALE, HIRES_MEDIUM_SCALE, HIRES_MINIMUM_SCALE};
+	for (legacy_s32 sign = -1; sign <= 1; sign += 2) {
+		struct MATRIX rotation = {0};
+		rotation.m._12 = sign * OBLIQUE_NORMAL_X * OBLIQUE_MATRIX_SCALE;
+		rotation.m._22 = sign * OBLIQUE_NORMAL_Y * OBLIQUE_MATRIX_SCALE;
+		rotation.m._33 = OBLIQUE_NORMAL_LENGTH * OBLIQUE_MATRIX_SCALE;
+		for (legacy_s32 original = 0; original <= 1; original++) {
+			reset_target();
+			target.sprite_raster_left = OBLIQUE_CLIP_LEFT;
+			target.sprite_raster_right = SKYBOX_SCREEN_WIDTH - OBLIQUE_CLIP_RIGHT_MARGIN;
+			target.sprite_top = OBLIQUE_CLIP_TOP;
+			target.sprite_bottom = SKYBOX_SCREEN_BOTTOM - OBLIQUE_CLIP_BOTTOM_MARGIN;
+			for (legacy_u32 step = 0; step < SDL_arraysize(scales); step++) {
+				legacy_s32 scale = scales[step];
+				legacy_s32 source_step = HIRES_SCALE / scale;
+				hires_set_render_scale(scale);
+				assert(
+					skybox_hires_render(&target, &scenery, panorama_shapes,
+										original ? OBLIQUE_ORIGINAL_THEME : OBLIQUE_ENHANCED_THEME,
+										&rotation, OBLIQUE_FORWARD_DIRECTION, ANGLE_HALF_TURN,
+										OBLIQUE_CAMERA_ALTITUDE, OBLIQUE_FULL_DETAIL));
+				const legacy_u8 *output = pixels();
+				for (legacy_s32 y = 0; y < hires_render_height(); y++) {
+					for (legacy_s32 x = 0; x < hires_render_width(); x++) {
+						legacy_u8 expected = OBLIQUE_BACKGROUND_COLOR;
+						if (x >= target.sprite_raster_left * scale &&
+							x < target.sprite_raster_right * scale &&
+							y >= target.sprite_top * scale && y < target.sprite_bottom * scale) {
+							legacy_s32 doubled_x = (2 * x + 1) * source_step - HIRES_WIDTH;
+							legacy_s32 doubled_y = (2 * y + 1) * source_step - HIRES_HEIGHT;
+							legacy_s32 along_numerator =
+								projection_center_x * HIRES_SCALE * OBLIQUE_TEXEL_DENOMINATOR +
+								sign *
+									(OBLIQUE_NORMAL_Y * doubled_x + OBLIQUE_NORMAL_X * doubled_y);
+							legacy_s32 above_numerator = sign * (OBLIQUE_NORMAL_Y * doubled_y -
 																 OBLIQUE_NORMAL_X * doubled_x);
-					expected = expected_panorama(
-						u, band_y, original ? OBLIQUE_ALL_ORIGINAL_MASK : 0, OBLIQUE_FULL_DETAIL);
+							legacy_s32 u = floor_oblique_coordinate(along_numerator);
+							legacy_s32 band_y = floor_oblique_coordinate(above_numerator);
+							expected = expected_panorama(u, band_y,
+														 original || scale == HIRES_MINIMUM_SCALE
+															 ? OBLIQUE_ALL_ORIGINAL_MASK
+															 : 0,
+														 OBLIQUE_FULL_DETAIL);
+							/* Reduced-resolution centers can land exactly on a texel
+							 * edge. Either neighboring texel is valid at that edge. */
+							legacy_s32 edge_x = along_numerator % OBLIQUE_TEXEL_DENOMINATOR == 0;
+							legacy_s32 edge_y = above_numerator % OBLIQUE_TEXEL_DENOMINATOR == 0;
+							for (legacy_s32 dy = 0; dy <= edge_y; dy++) {
+								for (legacy_s32 dx = 0; dx <= edge_x; dx++) {
+									legacy_u8 adjacent =
+										expected_panorama(u - dx, band_y - dy,
+														  original || scale == HIRES_MINIMUM_SCALE
+															  ? OBLIQUE_ALL_ORIGINAL_MASK
+															  : 0,
+														  OBLIQUE_FULL_DETAIL);
+									if (output[y * hires_render_width() + x] == adjacent) {
+										expected = adjacent;
+									}
+								}
+							}
+						}
+						assert(output[y * hires_render_width() + x] == expected);
+					}
 				}
-				assert(output[y * HIRES_WIDTH + x] == expected);
+				assert_legacy_unchanged();
 			}
 		}
-		assert_legacy_unchanged();
 	}
 }
 
@@ -673,6 +704,44 @@ static void test_level_half_pixel_horizons(void)
 	projection_focal_length_y = saved_focal_y;
 }
 
+static void test_banked_panorama_cache_changes(void)
+{
+	enum { PANORAMA_CACHE_STAGE_COUNT = 3 };
+	reset_target();
+	struct MATRIX rotation = roll_matrix(ANGLE_QUARTER_TURN);
+	struct SHAPE2D *shapes[SKYBOX_IMAGE_COUNT];
+	memcpy(shapes, panorama_shapes, sizeof(shapes));
+	struct LEVEL_PANORAMA_CASE scene = {0};
+	scene.missing = 1;
+	scene.narrow = LEVEL_NO_STRIP;
+	shapes[scene.missing] = NULL;
+	legacy_u8 saved_sky_color = scenery.sky_color;
+	legacy_s16 heading = ANGLE_HALF_TURN - SKYBOX_IMAGE_WIDTH;
+	legacy_s32 phase = -((heading + ANGLE_HALF_TURN) & ANGLE_MASK) * HIRES_SCALE;
+	for (legacy_s32 step = 0; step < PANORAMA_CACHE_STAGE_COUNT; step++) {
+		if (step != 0) {
+			scenery.sky_color = OBLIQUE_BACKGROUND_COLOR;
+		}
+		if (step == PANORAMA_CACHE_STAGE_COUNT - 1) {
+			shapes[scene.missing] = panorama_shapes[scene.missing];
+			scene.missing = LEVEL_NO_STRIP;
+		}
+		assert(skybox_hires_render(&target, &scenery, shapes, LEVEL_ENHANCED_THEME, &rotation,
+								   OBLIQUE_FORWARD_DIRECTION, heading, OBLIQUE_CAMERA_ALTITUDE,
+								   OBLIQUE_FULL_DETAIL));
+		const legacy_u8 *output = pixels();
+		for (legacy_s32 y = 0; y < HIRES_HEIGHT; y++) {
+			for (legacy_s32 x = 0; x < HIRES_WIDTH; x++) {
+				legacy_s32 u = (HIRES_WIDTH + HIRES_HEIGHT) / 2 - 1 - y + phase;
+				legacy_s32 band_y = x - HIRES_WIDTH / 2;
+				assert(output[y * HIRES_WIDTH + x] == expected_level_panorama(u, band_y, &scene));
+			}
+		}
+		assert_legacy_unchanged();
+	}
+	scenery.sky_color = saved_sky_color;
+}
+
 static void test_tiny_bank_texel_boundaries(void)
 {
 	legacy_u16 saved_focal_x = projection_focal_length_x;
@@ -704,8 +773,8 @@ static void test_tiny_bank_texel_boundaries(void)
 	projection_focal_length_y = saved_focal_y;
 }
 
-/* The reduced renderer samples destination-pixel centers in the authored
- * panorama coordinates. Its smallest scale uses the original source pixels. */
+/* Reduced resolutions sample destination-pixel centers in the same panorama.
+ * The smallest scale uses original artwork, including banked/inverted views. */
 static void test_render_scale_roundtrip(void)
 {
 	static legacy_u8 full_resolution[HIRES_WIDTH * HIRES_HEIGHT];
@@ -866,6 +935,7 @@ legacy_int main(void)
 	test_oriented_clipping_fallback_and_toggle();
 	test_mixed_artwork_and_view_transitions();
 	test_level_half_pixel_horizons();
+	test_banked_panorama_cache_changes();
 	test_tiny_bank_texel_boundaries();
 	test_render_scale_roundtrip();
 	test_original_scale_retains_enhanced_cache();

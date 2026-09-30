@@ -1095,20 +1095,16 @@ static void test_supersight_selection(void)
 			legacy_u8 seen[900] = {0};
 			frame_select_tiles(&tiles, &camera);
 			assert(tiles.count == 900 && tiles.first == 0);
-			legacy_s32 previous_depth = INT32_MAX;
 			for (legacy_s16 i = 0; i < tiles.count; i++) {
 				assert(tiles.markers[i] == FRAME_TILE_DRAW_MARKER);
 				assert(tiles.detail[i] == FRAME_TILE_DETAIL_FULL);
 				assert(tiles.east[i] >= 0 && tiles.east[i] < 30);
 				assert(tiles.south[i] >= 0 && tiles.south[i] < 30);
 				assert(seen[tiles.south[i] * 30 + tiles.east[i]]++ == 0);
-				legacy_s32 x = (legacy_s32)track_column_centers[tiles.east[i]] - camera.position.x;
-				legacy_s32 z = (legacy_s32)track_row_centers[tiles.south[i]] - camera.position.z;
-				legacy_s32 depth =
-					(legacy_s32)(((legacy_s64)x * mat_temp.m._31 + (legacy_s64)z * mat_temp.m._33) /
-								 TRIG_FIXED_ONE);
-				assert(depth <= previous_depth);
-				previous_depth = depth;
+				/* Scene submission is stable across camera rotation; visibility is
+				 * resolved by HyperVision rather than painter ordering. */
+				assert(tiles.east[i] == i % TRACK_GRID_SIZE);
+				assert(tiles.south[i] == i / TRACK_GRID_SIZE);
 			}
 		}
 	}
@@ -1167,7 +1163,7 @@ static void test_supersight_capacity_retries(void)
 	frame_draw_supersight(&tiles, &camera, cars, 0, 0, 0);
 	assert(queue_resets == 0 && tiles.first == 0);
 	assert(transform_count == 900);
-	/* Full diagonal depths and signed biases must preserve far-to-near order. */
+	/* Camera depths and legacy painter biases must not reorder enhanced submissions. */
 	reset_shapes();
 	mat_temp = *mat_rot_zxy(0, 0, 128, MATRIX_ROTATION_ORDER_ZXY);
 	curtransshape_ptr = currenttransshape;
@@ -1178,11 +1174,9 @@ static void test_supersight_capacity_retries(void)
 		curtransshape_ptr->shapeptr = &game3dshapes[0];
 		transformed_shape_add_for_sort(i == 0 ? -2048 : 0, 0);
 	}
-	assert(supersight_shape_depths[1] > 32767);
 	frame_draw_sorted_shapes(cars);
-	for (legacy_s16 i = 1; i < 3; i++) {
-		assert(supersight_shape_depths[transformedshape_indices[i - 1]] >=
-			   supersight_shape_depths[transformedshape_indices[i]]);
+	for (legacy_s16 i = 0; i < transformedshape_counter; i++) {
+		assert(transformedshape_indices[i] == i);
 	}
 	supersight_enabled = 0;
 }
@@ -1707,7 +1701,7 @@ static struct FRAME_CAMERA adaptive_camera(void)
 	return camera;
 }
 
-static void test_adaptive_selection_before_sort(void)
+static void test_adaptive_selection_before_submission(void)
 {
 	adaptive_reset_scene();
 	adaptive_capture_enabled = 0;
@@ -1730,19 +1724,15 @@ static void test_adaptive_selection_before_sort(void)
 			assert(frame_has_complete_tile_lookup(&tiles));
 			assert(frame_adaptive.cached_cos == cos_fast(camera.view_heading));
 			assert(frame_adaptive.cached_sin == sin_fast(camera.view_heading));
-			legacy_s32 previous_depth = LEGACY_S32_MAX;
+			legacy_s16 previous_tile = -1;
 			for (legacy_s16 index = 0; index < tiles.count; index++) {
 				legacy_s16 east = tiles.lookahead[index].east + tiles.camera_east;
 				legacy_s16 south = tiles.lookahead[index].south + tiles.camera_south;
 				assert(frame_adaptive_flags(&frame_adaptive, east, south) != FRAME_ADAPTIVE_HIDE);
 				assert(frame_lookup_world_tile(&tiles, east, south) == index);
-				legacy_s32 x = track_column_centers[east] - camera.position.x;
-				legacy_s32 z = track_row_centers[south] - camera.position.z;
-				legacy_s32 depth =
-					(legacy_s32)(((legacy_s64)x * mat_temp.m._31 + (legacy_s64)z * mat_temp.m._33) /
-								 TRIG_FIXED_ONE);
-				assert(depth <= previous_depth);
-				previous_depth = depth;
+				legacy_s16 tile = south * TRACK_GRID_SIZE + east;
+				assert(tile > previous_tile);
+				previous_tile = tile;
 			}
 			for (legacy_s16 south = 0; south < TRACK_GRID_SIZE; south++) {
 				for (legacy_s16 east = 0; east < TRACK_GRID_SIZE; east++) {
@@ -2170,7 +2160,7 @@ legacy_int main(void)
 	test_supersight_grounding_surfaces();
 	test_supersight_grounding_poses();
 	test_supersight_covered_water();
-	test_adaptive_selection_before_sort();
+	test_adaptive_selection_before_submission();
 	test_adaptive_multitile_boundary();
 	test_adaptive_model_fallbacks();
 	test_adaptive_world_tile_boundaries();

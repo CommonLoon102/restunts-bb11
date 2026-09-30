@@ -126,7 +126,7 @@ set(game_sources
     menu_track.c menu_track_editor.c menu_opponent.c opponent_portrait.c menu_car.c audio_engine.c
     audio_resources.c audio_car.c audio_sequence.c shape3d.c shape3d_resources.c
     shape3d_car.c shape3d_prerender.c shape3d_lines.c shape2d.c shape2d_blit.c
-    video_pages.c hires.c render_workers.c frame_interpolation.c phantom_physics.c shape3d_hires.c shape2d_resources.c heapsort.c frame.c frame_adaptive.c skybox.c skybox_hires.c frame_overlay.c
+    video_pages.c hires.c hypervision.c render_workers.c frame_interpolation.c phantom_physics.c shape3d_hires.c shape2d_resources.c heapsort.c frame.c frame_adaptive.c skybox.c skybox_hires.c frame_overlay.c
     intro_render.c track_preview.c full_data.c full_strings.c full_tables.c)
 list(TRANSFORM common_sources PREPEND "${core}/")
 list(TRANSFORM game_sources PREPEND "${core}/")
@@ -369,7 +369,16 @@ if(RESTUNTS_BUILD_TESTS)
         add_test(NAME render-replay COMMAND "${Python3_EXECUTABLE}"
             "${CMAKE_SOURCE_DIR}/tools/scripts/test-render-replay.py"
             "$<TARGET_FILE:test-render-replay>" "${CMAKE_SOURCE_DIR}/stunts")
+        add_executable(benchmark-hypervision EXCLUDE_FROM_ALL ${platform}/main.c
+            src/restunts/benchmarks/benchmark-hypervision.c)
+        target_compile_definitions(benchmark-hypervision PRIVATE RESTUNTS_PIXLDUMP)
+        target_link_libraries(benchmark-hypervision PRIVATE restunts_game)
+        target_compile_options(benchmark-hypervision PRIVATE -UNDEBUG)
     endif()
+    add_executable(test-hypervision src/restunts/tests/test-hypervision.c)
+    target_link_libraries(test-hypervision PRIVATE restunts_game)
+    target_compile_options(test-hypervision PRIVATE -UNDEBUG)
+    add_test(NAME hypervision COMMAND test-hypervision)
     add_executable(test-shape3d-hires src/restunts/tests/test-shape3d-hires.c)
     target_link_libraries(test-shape3d-hires PRIVATE restunts_game)
     target_compile_options(test-shape3d-hires PRIVATE -UNDEBUG)
