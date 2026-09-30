@@ -63,7 +63,7 @@ case "$target" in
         bash "$script_dir/build-macos.sh" --arch universal --build-dir "$build_dir" \
             --package-dir "$package_dir" --jobs "$jobs" -- -DRESTUNTS_BUILD_TESTS=OFF
         for binary in bin/restunts bin/repldump bin/pixldump lib/libnuked-opl2.dylib; do
-            lipo -verify_arch arm64 x86_64 "$package_dir/$binary"
+            lipo "$package_dir/$binary" -verify_arch arm64 x86_64
         done
         ;;
     *)
