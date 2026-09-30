@@ -8,15 +8,15 @@ on:
       platforms:
         description: Nonempty JSON array of unique candidate platforms to test (dos, sdl3).
         type: string
-        default: '["dos","sdl3"]'
+        default: '["sdl3"]'
       cameras:
         description: Nonempty JSON array of unique renderer camera IDs (integers 1-4).
         type: string
-        default: '[2]'
-      target:
-        description: Renderer target (0 for player, 1 for opponent).
-        type: number
-        default: 0
+        default: '[1,2,3,4]'
+      targets:
+        description: Nonempty JSON array of unique renderer target IDs (0 for player, 1 for opponent).
+        type: string
+        default: '[0,1]'
       renderer-test-percentage:
         description: Percentage of golden replays sampled for renderer tests (integer 1-100).
         type: number
@@ -73,7 +73,7 @@ jobs:
       # The DOS16 package is required regardless of the replay test selection.
       build-dos-artifact: true
       cameras: ${{ inputs.cameras }}
-      target: ${{ inputs.target }}
+      targets: ${{ inputs.targets }}
       renderer-test-percentage: ${{ inputs.renderer-test-percentage }}
 
   packages:
