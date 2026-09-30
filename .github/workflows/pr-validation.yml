@@ -17,10 +17,10 @@ on:
         description: Nonempty JSON array of unique renderer camera IDs (integers 1-4).
         type: string
         default: '[1,2,3,4]'
-      target:
-        description: Renderer target (0 for player, 1 for opponent).
-        type: number
-        default: 0
+      targets:
+        description: Nonempty JSON array of unique renderer target IDs (0 for player, 1 for opponent).
+        type: string
+        default: '[0,1]'
       renderer-test-percentage:
         description: Percentage of golden replays sampled for renderer tests (integer 1-100).
         type: number
@@ -42,7 +42,7 @@ jobs:
       # Every run packages DOS16, including an SDL3-only replay test selection.
       build-dos-artifact: true
       cameras: ${{ github.event.inputs.cameras || '[1,2,3,4]' }}
-      target: ${{ fromJSON(github.event.inputs.target || '0') }}
+      targets: ${{ github.event.inputs.targets || '[0,1]' }}
       renderer-test-percentage: ${{ fromJSON(github.event.inputs.renderer-test-percentage || '100') }}
 
   packages:

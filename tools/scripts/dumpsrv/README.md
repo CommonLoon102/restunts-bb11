@@ -287,7 +287,10 @@ use references generated under that same environment.
 
 `Camera` accepts integers from `1` through `4` and defaults to `2`. `Target`
 accepts `0` (player, the default) or `1` (opponent). These settings are passed
-to both renderer executables; physics output is independent of them.
+to both renderer executables; physics output is independent of them. Each
+service or direct-runner invocation uses one camera and target. CI supports
+multiple targets by starting separate renderer jobs, so these parameters and
+the HTTP interface are unchanged.
 
 `ShardIndex` defaults to `0` and `ShardCount` to `1`. Single-shard runs, including
 the HTTP service, work without a plan. For a distributed run, generate a plan
@@ -334,33 +337,39 @@ summary used by GitHub Actions.
 CI first runs formatting, service and host tests, and shard planning in
 parallel, then builds the selected platforms after all four jobs pass. The
 `platforms` workflow input is a nonempty JSON array of unique names from `dos`
-and `sdl3`, defaulting to `["dos","sdl3"]`. Use `platforms: '["dos"]'` for DOS
-only, `platforms: '["sdl3"]'` for Linux x64 SDL3 only, or
-`platforms: '["dos","sdl3"]'` for both. Like `cameras`, it is available in the
-manual **PR validation** and **Release** workflows and the reusable
-**Build and validate** workflow. Unselected builds are skipped, except
-**Release** always builds the DOS executables it publishes, even for SDL3-only
-replay tests.
+and `sdl3`. **Build and validate** and **Release** default to
+`["sdl3"]`; **PR validation** defaults to `["sdl3"]`.
+Use `platforms: '["dos"]'` for DOS only, `platforms: '["sdl3"]'` for Linux x64
+SDL3 only, or `platforms: '["dos","sdl3"]'` for both. Like `cameras` and
+`targets`, it is available in the manual **PR validation** and **Release**
+workflows and the reusable **Build and validate** workflow. Unselected replay
+builds are skipped. **PR validation** and **Release** always build every
+distribution package, including DOS, even for SDL3-only replay tests.
 
-The planning job publishes `shard-plan.json` in the `replay-shard-plan` artifact
-and reports each phase's tick balance in its job summary. Replay jobs and
-coverage checks download that artifact. Physics runs once per selected
-platform after the builds. A separate renderer job runs for each selected
-platform and requested camera after every physics shard and its coverage
-check pass. Both platforms and all cameras share the same plan and renderer
-sample. Camera, target, renderer percentage, shard, worker, and timeout inputs
-configure both platforms. Tests and reports run only for selected platforms.
+The planning job publishes one plan per selected target as `target0.json` or
+`target1.json` in the `replay-shard-plan` artifact and reports each phase's tick
+balance in its job summary. Replay jobs and coverage checks download that
+artifact and select the matching plan. Each plan retains the single-target
+JSON format and uses the same physics assignments; renderer eligibility and
+sampling are computed separately for each target. Physics runs once per
+selected platform after the builds. A separate renderer job runs for each
+selected platform, camera, and target after every physics shard and its
+coverage check pass. Both platforms and all cameras share the same plan and
+renderer sample for a given target. Renderer percentage, shard, worker, and
+timeout inputs configure both platforms. Tests and reports run only for
+selected platforms.
 Each shard's JSON is uploaded as
 `<phase>-partitions-cam<camera>-target<target>-<index>`. Renderer oracle files
 are uploaded as `renderer-pdo-cam<camera>-target<target>-<index>` and combined
 into `renderer-pdo-cam<camera>-target<target>`. Phase reports are uploaded as
 `<phase>-cam<camera>-target<target>-report`, including diagnostics when
-validation fails. The physics report uses the first requested camera in its
-metadata; physics results do not depend on the camera. The final Replay report
-jobs run once per selected platform and camera after all renderer validation
-passes. Each job combines that platform's physics diagnostics with only its
-camera's renderer diagnostics and publishes `partitions_all-cam<camera>-target<target>`, containing
-`partitions_all.txt`. Renderer diagnostics from different cameras stay separate.
+validation fails. The physics report uses the first requested camera and
+target in its metadata; physics results do not depend on either setting. The
+final Replay report jobs run once per selected platform, camera, and target
+after all renderer validation passes. Each job combines that platform's shared
+physics diagnostics with its camera and target's renderer diagnostics and
+publishes `partitions_all-cam<camera>-target<target>`, containing
+`partitions_all.txt`. Each camera and target combination has its own report.
 SDL3 artifacts use the same names with an `sdl3-` prefix. Native executables
 and their shared OPL library travel together in `restunts-sdl3-replay-exes`;
 the tar archive preserves executable permissions and the installed layout.
@@ -395,9 +404,13 @@ archives fail preparation. Imported outputs
 still undergo the runner's completeness checks before reuse.
 
 **Build and validate** and the manual **PR validation** and **Release**
-workflows accept `cameras` as a JSON array, such as `[1,2,3,4]`, defaulting to
-`[2]`. The list must be nonempty and contain unique integers from 1 through 4.
-Each renderer job passes one `camera` and the shared `target` to **Replay tests**.
+workflows accept `cameras` and `targets` as nonempty JSON arrays of unique
+integers. Cameras range from 1 through 4; **Build and validate** and **Release**
+default to `[1,2,3,4]`, while **PR validation** defaults to `[1,2,3,4]`. Targets are
+player (`0`) and opponent (`1`), defaulting to `[0,1]`. Use `targets: '[0,1]'` to
+test both or `targets: '[1]'` to test the opponent alone. Each renderer job
+passes one `camera` and one `target` to **Replay tests**. For target `1`, the
+renderer percentage applies only to replays containing an opponent.
 CI downloads `PDOs-cam<camera>-target<target>.zip` for rendering and `BINs.zip`
 for physics from oracle release `v1.0.4`.
 The oracle download/extraction step runs for both targets. If a cache download

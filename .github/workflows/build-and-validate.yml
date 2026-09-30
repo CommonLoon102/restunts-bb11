@@ -9,7 +9,7 @@ on:
       platforms:
         description: Nonempty JSON array of unique candidate platforms (dos, sdl3).
         type: string
-        default: '["dos","sdl3"]'
+        default: '["sdl3"]'
       build-dos-artifact:
         description: Build DOS release executables even when DOS replay tests are not selected.
         type: boolean
@@ -36,11 +36,11 @@ on:
       cameras:
         description: Nonempty JSON array of unique renderer camera IDs (integers 1-4).
         type: string
-        default: '[2]'
-      target:
-        description: Renderer target (0 for player, 1 for opponent).
-        type: number
-        default: 0
+        default: '[1,2,3,4]'
+      targets:
+        description: Nonempty JSON array of unique renderer target IDs (0 for player, 1 for opponent).
+        type: string
+        default: '[0,1]'
       renderer-test-percentage:
         description: Percentage of golden replays sampled for renderer tests (integer 1-100).
         type: number
@@ -112,6 +112,7 @@ jobs:
       shards: ${{ steps.plan.outputs.shards }}
       platforms: ${{ steps.platforms.outputs.platforms }}
       cameras: ${{ steps.cameras.outputs.cameras }}
+      targets: ${{ steps.targets.outputs.targets }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
@@ -147,6 +148,26 @@ jobs:
           fi
           echo "cameras=$cameras" >> "$GITHUB_OUTPUT"
 
+      - name: Validate renderer targets
+        id: targets
+        env:
+          TARGETS: ${{ inputs.targets }}
+        run: |
+          if ! targets=$(jq -ces '
+              select(length == 1) | .[0] |
+              select(type == "array" and length > 0) |
+              select(all(.[]; . == 0 or . == 1)) |
+              select(length == (unique | length)) |
+              map(if . == 0 then 0 else 1 end)
+          ' <<< "$TARGETS"); then
+              echo "::error::targets must be a nonempty JSON array of unique integers: 0 (player), 1 (opponent)"
+              exit 1
+          fi
+          echo "targets=$targets" >> "$GITHUB_OUTPUT"
+
+      - name: Test replay workflow target selection
+        run: python3 tools/scripts/test-replay-workflow.py
+
       - name: Test tick-based shard planning
         run: python3 tools/scripts/test-plan-replay-shards.py
 
@@ -158,7 +179,7 @@ jobs:
         env:
           SHARDS: ${{ inputs.shards }}
           PARTITIONS_PER_SHARD: ${{ inputs.partitions-per-shard }}
-          TARGET: ${{ inputs.target }}
+          TARGETS: ${{ steps.targets.outputs.targets }}
           RENDERER_TEST_PERCENTAGE: ${{ inputs.renderer-test-percentage }}
         run: |
           set -eu
@@ -174,16 +195,21 @@ jobs:
               echo "::error::renderer-test-percentage must be an integer from 1 to 100"
               exit 1
           fi
-          python3 tools/scripts/plan-replay-shards.py \
-              --replays tools/scripts/rpls_golden/replays.zip \
-              --shards "$SHARDS" --renderer-test-percentage "$RENDERER_TEST_PERCENTAGE" \
-              --target "$TARGET" --output shard-plan.json --summary "$GITHUB_STEP_SUMMARY"
+          mkdir -p shard-plans
+          for target in $(jq -r '.[]' <<< "$TARGETS"); do
+              printf '\n### Renderer target %s\n\n' "$target" >> "$GITHUB_STEP_SUMMARY"
+              python3 tools/scripts/plan-replay-shards.py \
+                  --replays tools/scripts/rpls_golden/replays.zip \
+                  --shards "$SHARDS" --renderer-test-percentage "$RENDERER_TEST_PERCENTAGE" \
+                  --target "$target" --output "shard-plans/target$target.json" \
+                  --summary "$GITHUB_STEP_SUMMARY"
+          done
           echo "shards=[$(seq 0 $(( SHARDS - 1 )) | paste -sd, -)]" >> "$GITHUB_OUTPUT"
 
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: replay-shard-plan
-          path: shard-plan.json
+          path: shard-plans/*.json
           if-no-files-found: error
           retention-days: 14
 
@@ -338,14 +364,14 @@ jobs:
       shards: ${{ inputs.shards }}
       partitions-per-shard: ${{ inputs.partitions-per-shard }}
       replay-timeout-seconds: ${{ inputs.replay-timeout-seconds }}
-      # Physics runs once per platform; the first camera is only report metadata.
+      # Physics runs once per platform; the first camera/target are only report metadata.
       camera: ${{ fromJSON(needs.plan.outputs.cameras)[0] }}
-      target: ${{ inputs.target }}
+      target: ${{ fromJSON(needs.plan.outputs.targets)[0] }}
       renderer-test-percentage: ${{ inputs.renderer-test-percentage }}
       renderer-timeout-seconds: ${{ inputs.renderer-timeout-seconds }}
 
   renderer:
-    name: Renderer replays (${{ matrix.platform }}, camera ${{ matrix.camera }})
+    name: Renderer replays (${{ matrix.platform }}, camera ${{ matrix.camera }}, target ${{ matrix.target }})
     needs: [build, plan, physics]
     if: >-
       ${{ !cancelled() && needs.plan.result == 'success' &&
@@ -355,6 +381,7 @@ jobs:
       matrix:
         platform: ${{ fromJSON(needs.plan.outputs.platforms) }}
         camera: ${{ fromJSON(needs.plan.outputs.cameras) }}
+        target: ${{ fromJSON(needs.plan.outputs.targets) }}
     uses: ./.github/workflows/replay-tests.yml
     with:
       phase: renderer
@@ -367,12 +394,12 @@ jobs:
       partitions-per-shard: ${{ inputs.partitions-per-shard }}
       replay-timeout-seconds: ${{ inputs.replay-timeout-seconds }}
       camera: ${{ matrix.camera }}
-      target: ${{ inputs.target }}
+      target: ${{ matrix.target }}
       renderer-test-percentage: ${{ inputs.renderer-test-percentage }}
       renderer-timeout-seconds: ${{ inputs.renderer-timeout-seconds }}
 
   report:
-    name: Replay report (${{ matrix.platform }}, camera ${{ matrix.camera }})
+    name: Replay report (${{ matrix.platform }}, camera ${{ matrix.camera }}, target ${{ matrix.target }})
     needs: [plan, physics, renderer]
     if: >-
       ${{ !cancelled() && needs.plan.result == 'success' &&
@@ -384,17 +411,18 @@ jobs:
       matrix:
         platform: ${{ fromJSON(needs.plan.outputs.platforms) }}
         camera: ${{ fromJSON(needs.plan.outputs.cameras) }}
+        target: ${{ fromJSON(needs.plan.outputs.targets) }}
     steps:
       - name: Download the shared physics report
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
-          name: ${{ matrix.platform == 'sdl3' && 'sdl3-' || '' }}physics-cam${{ fromJSON(needs.plan.outputs.cameras)[0] }}-target${{ inputs.target }}-report
+          name: ${{ matrix.platform == 'sdl3' && 'sdl3-' || '' }}physics-cam${{ fromJSON(needs.plan.outputs.cameras)[0] }}-target${{ fromJSON(needs.plan.outputs.targets)[0] }}-report
           path: reports/physics
 
-      - name: Download this camera's renderer report
+      - name: Download this camera and target's renderer report
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
-          name: ${{ matrix.platform == 'sdl3' && 'sdl3-' || '' }}renderer-cam${{ matrix.camera }}-target${{ inputs.target }}-report
+          name: ${{ matrix.platform == 'sdl3' && 'sdl3-' || '' }}renderer-cam${{ matrix.camera }}-target${{ matrix.target }}-report
           path: reports/renderer
 
       - name: Combine physics and renderer diagnostics
@@ -405,7 +433,7 @@ jobs:
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         if: always()
         with:
-          name: ${{ matrix.platform == 'sdl3' && 'sdl3-' || '' }}partitions_all-cam${{ matrix.camera }}-target${{ inputs.target }}
+          name: ${{ matrix.platform == 'sdl3' && 'sdl3-' || '' }}partitions_all-cam${{ matrix.camera }}-target${{ matrix.target }}
           path: partitions_all.txt
           if-no-files-found: warn
           retention-days: 14
