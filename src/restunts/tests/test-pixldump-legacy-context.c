@@ -34,7 +34,7 @@ void far *fontnptr = &test_secondary_font;
 
 legacy_u16 file_paras_fatal(const legacy_s8 *filename)
 {
-	assert(strcmp((const char *)filename, "pc15.drv") == 0);
+	assert(strcmp(LEGACY_CSTR(filename), "pc15.drv") == 0);
 	return test_driver_paragraphs;
 }
 
@@ -89,7 +89,7 @@ static void prepare_environment(const legacy_s8 *program_path)
 	static const legacy_s8 variables[] = "PATH=C:\\DOS\0TEMP=C:\\TEMP\0";
 	memcpy(test_environment, variables, sizeof(variables));
 	test_environment[sizeof(variables)] = 1;
-	strcpy((char *)test_environment + sizeof(variables) + 2U, (const char *)program_path);
+	strcpy((char *)test_environment + sizeof(variables) + 2U, LEGACY_CSTR(program_path));
 }
 
 static void assert_context(legacy_u16 expected, legacy_s16 argc, legacy_s8 *argv[])

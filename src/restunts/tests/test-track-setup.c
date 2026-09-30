@@ -269,7 +269,7 @@ static void test_failures(void)
 static void test_replay(const legacy_s8 *path)
 {
 	initialize();
-	FILE *file = fopen((const char *)path, "rb");
+	FILE *file = fopen(LEGACY_CSTR(path), "rb");
 	assert(file != NULL);
 	assert(fseek(file, REPLAY_GAMEINFO_SIZE, SEEK_SET) == 0);
 	assert(fread(output.elements, 1, TEST_TILE_COUNT, file) == TEST_TILE_COUNT);

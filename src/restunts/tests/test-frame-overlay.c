@@ -28,10 +28,10 @@ static legacy_s16 opponent[LEGACY_RESIDUE_WORD_COUNT];
 legacy_s8 far *locate_shape_alt(legacy_s8 far *resource, const legacy_s8 *name)
 {
 	assert(resource == gameresptr);
-	if (strcmp((const char *)name, "crak") == 0) {
+	if (strcmp(LEGACY_CSTR(name), "crak") == 0) {
 		return (legacy_s8 far *)crack_lines;
 	}
-	assert(strcmp((const char *)name, "cinf") == 0);
+	assert(strcmp(LEGACY_CSTR(name), "cinf") == 0);
 	return (legacy_s8 far *)crack_info;
 }
 
