@@ -35,29 +35,29 @@ struct AUDIO_CAR_STATE {
 
 #pragma pack(pop)
 
-typedef char audio_car_state_must_be_34_bytes
+typedef legacy_u8 audio_car_state_must_be_34_bytes
 	[(sizeof(struct AUDIO_CAR_STATE) == AUDIO_CAR_STATE_RECORD_SIZE) ? 1 : -1];
-typedef char audio_car_state_player_previous_offset_must_match
+typedef legacy_u8 audio_car_state_player_previous_offset_must_match
 	[(offsetof(struct AUDIO_CAR_STATE, player_previous) == AUDIO_CAR_STATE_PLAYER_PREVIOUS_OFFSET)
 		 ? 1
 		 : -1];
-typedef char audio_car_state_player_current_offset_must_match
+typedef legacy_u8 audio_car_state_player_current_offset_must_match
 	[(offsetof(struct AUDIO_CAR_STATE, player_current) == AUDIO_CAR_STATE_PLAYER_CURRENT_OFFSET)
 		 ? 1
 		 : -1];
-typedef char
+typedef legacy_u8
 	audio_car_state_opponent_previous_offset_must_match[(offsetof(struct AUDIO_CAR_STATE,
 																  opponent_previous) ==
 														 AUDIO_CAR_STATE_OPPONENT_PREVIOUS_OFFSET)
 															? 1
 															: -1];
-typedef char audio_car_state_opponent_current_offset_must_match
+typedef legacy_u8 audio_car_state_opponent_current_offset_must_match
 	[(offsetof(struct AUDIO_CAR_STATE, opponent_current) == AUDIO_CAR_STATE_OPPONENT_CURRENT_OFFSET)
 		 ? 1
 		 : -1];
-typedef char audio_car_state_player_rpm_offset_must_match
+typedef legacy_u8 audio_car_state_player_rpm_offset_must_match
 	[(offsetof(struct AUDIO_CAR_STATE, player_rpm) == AUDIO_CAR_STATE_PLAYER_RPM_OFFSET) ? 1 : -1];
-typedef char audio_car_state_opponent_rpm_offset_must_match
+typedef legacy_u8 audio_car_state_opponent_rpm_offset_must_match
 	[(offsetof(struct AUDIO_CAR_STATE, opponent_rpm) == AUDIO_CAR_STATE_OPPONENT_RPM_OFFSET) ? 1
 																							 : -1];
 
@@ -73,7 +73,7 @@ struct FULL_AUDIO_ENGINE_DEFINITION {
 
 /* The resource-id fields are 16-bit far pointers in the DOS ABI. */
 #if defined(RESTUNTS_DOS16)
-typedef char full_audio_engine_definition_must_be_48_bytes
+typedef legacy_u8 full_audio_engine_definition_must_be_48_bytes
 	[(sizeof(struct FULL_AUDIO_ENGINE_DEFINITION) == 48) ? 1 : -1];
 #endif
 
