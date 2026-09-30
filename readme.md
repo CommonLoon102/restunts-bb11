@@ -55,7 +55,7 @@ resource exists, and reports an error if it is missing, invalid, or different.
 Other resources are not compared, so custom cars, graphics, opponents, tracks,
 and horizons remain supported.
 
-Run `restunts.exe` in DOSBox or DOSBox-X with `core=dynamic` and `cycles=max`.
+Run `restunts.exe` in DOSBox or DOSBox-X with `core=dynamic`, `cycles=max`, and `aspect=true`.
 Mount `stunts/` directly as a DOS drive in the emulator.
 
 For DOSBox-X, use these recommended settings in the `[dos]` section of your
@@ -528,16 +528,6 @@ out/sdl3-linux-x64/restunts --data-dir stunts /nointro
 
 Use `out/sdl3-linux-x86` instead for the x86 build.
 
-The native `frame-interpolation` and `sdl3-race-frames` tests check bounded visual
-interpolation, synchronized 60 Hz pacing, and unchanged input and authoritative
-physics counts. `render-replay` compares every serialized state and RNG seed with
-SuperSight disabled, enabled, and repeatedly toggled, including intermediate
-interpolated renders. It also checks that rendering preserves simulation scratch
-data and checkpoints. When `hardland.rpl` is available, its 16.00–16.50 second
-landing is covered. When `shaking.rpl` is available, its 40–45 second loop exit
-checks interpolated cockpit rotation. Rendering checks also cover confirmed
-cracking, sinking, and explosions.
-
 #### Linux host: Windows backend
 
 Install MinGW-w64 and build each desired Windows architecture in its own tree:
@@ -758,26 +748,27 @@ SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy \
 
 The launcher also accepts the build directory with `--runtime-dir`.
 
-The **SDL3 builds** workflow builds and tests Apple Silicon and Intel separately,
-checks relocated packages and replacement audio libraries, and uploads
-`restunts-sdl3-macos-arm64` and `restunts-sdl3-macos-x86_64` artifacts. Each contains
-a `.tar.gz` runtime archive that preserves executable permissions.
+The **PR validation** and **Release** workflows build one Universal package for
+Apple Silicon and Intel, targeting macOS 11.0 or newer. The
+`packages-macos-universal` artifact contains `restunts-macos-universal.tar.gz`,
+which preserves executable permissions. CI runs game tests on native Linux
+and/or 16-bit DOS; the macOS job builds and checks package contents.
 
 #### macOS: running an already compiled package
 
 No compiler, Homebrew, CMake, or separate SDL installation is needed for the
-default runtime package. Choose the archive for your Mac (`arm64` for Apple
-Silicon, `x86_64` for Intel, or a universal build). Download the matching
-**SDL3 builds** artifact and unzip its outer GitHub Actions archive first, if
-applicable. Extract the contained runtime archive to a writable folder:
+default runtime package. Download `restunts-macos-universal.tar.gz` from a
+release for either Apple Silicon or Intel. When downloading the
+`packages-macos-universal` CI artifact instead, unzip its outer GitHub Actions
+archive first. Extract the runtime archive to a writable folder:
 
 ```sh
 mkdir -p "$HOME/Games/restunts"
-tar -xzf "$HOME/Downloads/restunts-sdl3-macos-arm64.tar.gz" -C "$HOME/Games/restunts"
+tar -xzf "$HOME/Downloads/restunts-macos-universal.tar.gz" -C "$HOME/Games/restunts"
 ```
 
-Use the Intel archive filename instead on Intel. Keep the entire extracted
-package together, including `bin/`, `lib/`, `share/`, and `run-restunts.sh`.
+Keep the entire extracted package together, including `bin/`, `lib/`, `share/`,
+and `run-restunts.sh`.
 Copy your original Broderbund Stunts 1.1 data into a separate writable folder,
 for example `$HOME/Games/Stunts-data`, with `MISC.RES` (or `MISC.PRE`),
 `ADSKIDMS.VCE`, tracks, cars, and the other game resources directly inside it.
@@ -835,9 +826,10 @@ Game data is separate; desktop programs accept `--data-dir stunts` as their
 first option when launched from the repository root.
 
 For DOS, copy the three executables from the package's `bin/` into a separate
-DOS game directory with the Stunts resources. Add a compatible DPMI host such
-as [CWSDPMI.EXE](https://sandmann.dotster.com/cwsdpmi/) if the DOS environment
-does not provide one. Mount that directory in DOSBox/DOSBox-X, set
+DOS game directory with the Stunts resources and the enhanced artwork folders.
+CI and release DOS32 packages include [CWSDPMI.EXE](https://sandmann.dotster.com/cwsdpmi/)
+in `bin/`; copy it beside the executables too. For a manual CMake install, add
+a compatible DPMI host if the DOS environment does not provide one. Mount that directory in DOSBox/DOSBox-X, set
 `core=dynamic`, `cycles=max`, and `aspect=true`, then run `RESTUNTS.EXE`.
 Stop automated DOSBox runs with SIGKILL to avoid the shutdown confirmation.
 
@@ -878,7 +870,7 @@ The output is `out/sdl3-wasm/restunts.html`.
 #### Windows host: WebAssembly backend
 
 Use **Command Prompt** with CMake, Ninja, Git, and Python 3 on `PATH`.
-Run from the repository root, using a separate build directory from WSL2:
+Run from the repository root and using a different build directory than other builds (e.g. WSL2):
 
 ```bat
 git clone https://github.com/emscripten-core/emsdk.git "%USERPROFILE%\emsdk"
@@ -1029,7 +1021,71 @@ reference in `stunts/`. `validate-toolchain.py` takes it from
 physics oracle. CI copies both archived Borland oracles into its isolated
 test directory after copying the source-built executables.
 
-### pixldump parameters
+#### Assembler
+
+All assembly targets use Open Watcom WASM from the same pinned installation
+as WCC and WLINK, with 8086 code generation. `-zcm=tasm` selects WASM's
+built-in compatibility mode for the preserved assembly syntax; it does not
+require the Turbo Assembler tools.
+
+#### Compiler, linker, and debugging symbols
+
+All DOS C targets use Open Watcom 2 WCC and WLINK. `LINKER=wlink` is the only
+supported linker setting. `setpath.bat` puts the pinned Watcom tools before
+bundled utilities on PATH and sets `WATCOM` and `INCLUDE` accordingly.
+
+Shared flags live in `src/restunts/watcom.mk`: 8086 instructions, the medium
+memory model (far code and near data), the stack-based C calling convention,
+signed `char`, and byte-packed structures. These settings preserve the
+original game's 16-bit data layout and assembly interfaces. The custom DOS
+startup initializes the stack and BSS; compiler stack probes are disabled.
+The runtime libraries and headers come from the same pinned Watcom release.
+Portable game C uses size optimization (`-os`). The DOS platform layer and
+startup are compiled without optimization (`-od`) because the pinned compiler
+can incorrectly merge branches around inline assembly interrupt calls.
+DOS resource pointers are explicitly normalized to a paragraph plus an offset
+below 16 bytes before they reach fixed-segment sprite code.
+[Watcom huge-pointer arithmetic](https://github.com/open-watcom/open-watcom-v2/blob/2026-09-01-Build/bld/clib/cgsupp/a/pia.asm)
+preserves larger offsets; normalization retains the Borland representation
+and prevents bitmap reads from wrapping at a 64 KiB boundary.
+
+Use `CONFIG=debug` to request Watcom C debug information. C optimization is
+disabled except for the original renderer wrapper described below:
+
+```text
+make CONFIG=debug restunts
+```
+
+For `pixldump-original`, `pixldump.c` and `murmur3.c` retain size optimization
+(`-os`) and use line debugging (`-d1`) without local-variable information.
+This preserves the release code generation and stack layout required by the
+original rendering code. Other objects use their usual debug flags.
+
+WLINK writes Watcom debug information; debug builds also request WASM line
+information.
+
+#### The toolchain
+
+| Purpose | Active tool |
+| --- | --- |
+| 16-bit DOS C compilation | Open Watcom 2 `binnt/wcc.exe` or native Linux `binl64/wcc` |
+| 16-bit DOS linking | Open Watcom 2 `binnt/wlink.exe` or native Linux `binl64/wlink` |
+| C headers and runtime | Open Watcom 2 `h/` and `lib286/` |
+| Assembly | Open Watcom 2 `binnt/wasm.exe` or native Linux `binl64/wasm` |
+| Build orchestration | GNU Make 4.3 or newer (bundled 4.4.1 on Windows) |
+| Original-source preparation | Python 3.9 or newer, for the `*-original` targets with WASM |
+| Running and testing | DOSBox / DOSBox-X |
+
+Current makefiles select Watcom executables by their full installation paths.
+Open Watcom supplies all C headers and runtime libraries. Regression oracles
+retain their original Borland-built machine code.
+
+#### Debugging restunts.exe
+
+`CONFIG=debug` builds Watcom debug information and writes linker map files
+beside the executables. Use a debugger that supports Watcom's format.
+
+## pixldump
 
 pixldump and pixldumo use the same mandatory parameters. The number of
 parameters selects the output mode:
@@ -1119,7 +1175,7 @@ complete output path, including its generated suffix, must fit in 127
 characters. BMP filenames require DOS long-filename support; the supplied
 `tools/scripts/dosbox.proc.conf` enables it for DOSBox-X.
 
-### pixelcheck parameters
+## pixelcheck
 
 On Linux, `pixelcheck.sh` builds or reuses both executables, runs them with the
 same replay, camera, target, and optional BMP frame, and compares the resulting
@@ -1236,6 +1292,22 @@ See [the complexity report](docs/complexity.md) for measurements, completed
 refactors and audit results.
 
 
+## CI packages and releases
+
+**PR validation** and **Release** build all 13 distribution packages: 16-bit and
+32-bit DOS; Linux ARMv7, ARM64, x86 with and without SSE2, and x64; Windows ARM64,
+x86 with and without SSE2, and x64; Universal macOS; and the offline browser.
+The reusable **Build release packages** workflow is used by **PR validation** and **Release**.
+
+Packages contain the runtime dependencies and enhanced artwork, but no original
+game data. Desktop and browser packages include the Nuked sources and license;
+DOS uses hardware OPL and omits Nuked. DOS32 also includes CWSDPMI.
+
+A release publishes the exact archives downloaded from its build artifacts,
+after verifying their checksums and signed build provenance. Immutable releases
+lock the published assets and source tag. See [release packages and verification](docs/releases.md)
+for the platform baselines, package contents, and verification commands.
+
 ## CI replay validation
 
 CI runs in five phases, each requiring the previous phase to pass:
@@ -1254,7 +1326,7 @@ CI runs in five phases, each requiring the previous phase to pass:
 A failed phase skips the later phases. Physics and renderer phase diagnostics
 remain available in their individual artifacts if replay validation fails.
 
-The `platforms` input selects the builds, replay tests, and reports. It is a
+The `platforms` input selects the replay-test builds, tests, and reports. It is a
 nonempty JSON array of unique names from `dos` and `sdl3`, defaulting to
 `["dos","sdl3"]`. For example:
 
@@ -1263,8 +1335,10 @@ nonempty JSON array of unique names from `dos` and `sdl3`, defaulting to
 - `platforms: '["dos","sdl3"]'` selects both.
 
 Unknown names, duplicates, and empty arrays fail validation before building.
-Unselected platforms are skipped, except **Release** always builds the DOS
-executables it publishes, even when replay tests select only SDL3.
+Unselected replay platforms are skipped. **PR validation** and **Release**
+always build every distribution package, including the DOS executables, even
+when replay tests select only SDL3. The package matrix does not run game tests
+on additional operating systems or architectures.
 
 Physics covers the full golden replay set; renderer tests use the configured
 percentage (the reusable and manual workflows default to 100%). Both DOS and
@@ -1381,70 +1455,3 @@ in both DOSBox and DOSBox-X; the latter has a smaller conventional-memory budget
 and custom car resources are copied to an isolated directory. The test links
 all normal game objects; its small test entry makes its memory budget slightly
 stricter than the game.
-
-
-## Build options
-
-### Assembler
-
-All assembly targets use Open Watcom WASM from the same pinned installation
-as WCC and WLINK, with 8086 code generation. `-zcm=tasm` selects WASM's
-built-in compatibility mode for the preserved assembly syntax; it does not
-require the Turbo Assembler tools.
-
-### Compiler, linker, and debugging symbols
-
-All DOS C targets use Open Watcom 2 WCC and WLINK. `LINKER=wlink` is the only
-supported linker setting. `setpath.bat` puts the pinned Watcom tools before
-bundled utilities on PATH and sets `WATCOM` and `INCLUDE` accordingly.
-
-Shared flags live in `src/restunts/watcom.mk`: 8086 instructions, the medium
-memory model (far code and near data), the stack-based C calling convention,
-signed `char`, and byte-packed structures. These settings preserve the
-original game's 16-bit data layout and assembly interfaces. The custom DOS
-startup initializes the stack and BSS; compiler stack probes are disabled.
-The runtime libraries and headers come from the same pinned Watcom release.
-Portable game C uses size optimization (`-os`). The DOS platform layer and
-startup are compiled without optimization (`-od`) because the pinned compiler
-can incorrectly merge branches around inline assembly interrupt calls.
-DOS resource pointers are explicitly normalized to a paragraph plus an offset
-below 16 bytes before they reach fixed-segment sprite code.
-[Watcom huge-pointer arithmetic](https://github.com/open-watcom/open-watcom-v2/blob/2026-09-01-Build/bld/clib/cgsupp/a/pia.asm)
-preserves larger offsets; normalization retains the Borland representation
-and prevents bitmap reads from wrapping at a 64 KiB boundary.
-
-Use `CONFIG=debug` to request Watcom C debug information. C optimization is
-disabled except for the original renderer wrapper described below:
-
-```text
-make CONFIG=debug restunts
-```
-
-For `pixldump-original`, `pixldump.c` and `murmur3.c` retain size optimization
-(`-os`) and use line debugging (`-d1`) without local-variable information.
-This preserves the release code generation and stack layout required by the
-original rendering code. Other objects use their usual debug flags.
-
-WLINK writes Watcom debug information; debug builds also request WASM line
-information.
-
-## The toolchain
-
-| Purpose | Active tool |
-| --- | --- |
-| 16-bit DOS C compilation | Open Watcom 2 `binnt/wcc.exe` or native Linux `binl64/wcc` |
-| 16-bit DOS linking | Open Watcom 2 `binnt/wlink.exe` or native Linux `binl64/wlink` |
-| C headers and runtime | Open Watcom 2 `h/` and `lib286/` |
-| Assembly | Open Watcom 2 `binnt/wasm.exe` or native Linux `binl64/wasm` |
-| Build orchestration | GNU Make 4.3 or newer (bundled 4.4.1 on Windows) |
-| Original-source preparation | Python 3.9 or newer, for the `*-original` targets with WASM |
-| Running and testing | DOSBox / DOSBox-X |
-
-Current makefiles select Watcom executables by their full installation paths.
-Open Watcom supplies all C headers and runtime libraries. Regression oracles
-retain their original Borland-built machine code.
-
-## Debugging restunts.exe
-
-`CONFIG=debug` builds Watcom debug information and writes linker map files
-beside the executables. Use a debugger that supports Watcom's format.

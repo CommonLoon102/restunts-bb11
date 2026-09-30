@@ -63,7 +63,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Install pinned formatting tools
         run: python3 -m pip install -r tools/scripts/requirements-format.txt
@@ -79,9 +79,9 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
-      - uses: actions/setup-dotnet@v6
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6
         with:
           dotnet-version: 10.0.x
 
@@ -99,7 +99,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Compile and run the host tests
         run: bash src/restunts/tests/run-host-tests.sh
@@ -113,7 +113,7 @@ jobs:
       platforms: ${{ steps.platforms.outputs.platforms }}
       cameras: ${{ steps.cameras.outputs.cameras }}
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Validate candidate platforms
         id: platforms
@@ -180,7 +180,7 @@ jobs:
               --target "$TARGET" --output shard-plan.json --summary "$GITHUB_STEP_SUMMARY"
           echo "shards=[$(seq 0 $(( SHARDS - 1 )) | paste -sd, -)]" >> "$GITHUB_OUTPUT"
 
-      - uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: replay-shard-plan
           path: shard-plan.json
@@ -196,7 +196,7 @@ jobs:
     outputs:
       exe-artifact: ${{ steps.names.outputs.value }}
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Publish the artifact name
         id: names
@@ -249,7 +249,7 @@ jobs:
       - name: Check original dump failure cleanup
         run: python3 tools/scripts/test-original-dump-exits.py --executable dist/repldumo.exe
 
-      - uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: ${{ env.EXE_ARTIFACT }}
           path: dist/*.exe
@@ -263,7 +263,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 35
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Install native build dependencies
         run: |
@@ -296,12 +296,15 @@ jobs:
           SDL_AUDIODRIVER: dummy
         run: ctest --test-dir build/sdl3 --output-on-failure -E '^sdl3-timer$'
 
+      - name: Verify relocated runtime and replacement Nuked library
+        run: python3 tools/scripts/test-nuked-package.py --build-directory build/sdl3
+
       - name: Package the SDL3 runtime with executable permissions
         run: |
           cmake --install build/sdl3 --prefix "$RUNNER_TEMP/sdl3" --component Runtime
           tar -C "$RUNNER_TEMP/sdl3" -czf sdl3-runtime.tar.gz .
 
-      - uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: restunts-sdl3-replay-exes
           path: sdl3-runtime.tar.gz
@@ -383,13 +386,13 @@ jobs:
         camera: ${{ fromJSON(needs.plan.outputs.cameras) }}
     steps:
       - name: Download the shared physics report
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
           name: ${{ matrix.platform == 'sdl3' && 'sdl3-' || '' }}physics-cam${{ fromJSON(needs.plan.outputs.cameras)[0] }}-target${{ inputs.target }}-report
           path: reports/physics
 
       - name: Download this camera's renderer report
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
           name: ${{ matrix.platform == 'sdl3' && 'sdl3-' || '' }}renderer-cam${{ matrix.camera }}-target${{ inputs.target }}-report
           path: reports/renderer
@@ -399,7 +402,7 @@ jobs:
           cat reports/physics/partitions_all.txt \
               reports/renderer/partitions_all.txt > partitions_all.txt
 
-      - uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         if: always()
         with:
           name: ${{ matrix.platform == 'sdl3' && 'sdl3-' || '' }}partitions_all-cam${{ matrix.camera }}-target${{ inputs.target }}

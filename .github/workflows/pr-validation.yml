@@ -3,20 +3,20 @@ name: PR validation
 # Blocks a pull request when any executable fails to build, full physics
 # validation fails, or sampled renderer output differs from pixldumo.
 on:
-  push:
-    branches: [cl102/sdl3-init-x]
+  #push:
+  #  branches: [cl102/feat]
   pull_request:
-    branches: [master]
+    branches: [main]
   workflow_dispatch:
     inputs:
       platforms:
         description: Nonempty JSON array of unique candidate platforms (dos, sdl3).
         type: string
-        default: '["dos","sdl3"]'
+        default: '["sdl3"]'
       cameras:
         description: Nonempty JSON array of unique renderer camera IDs (integers 1-4).
         type: string
-        default: '[2]'
+        default: '[1,2,3,4]'
       target:
         description: Renderer target (0 for player, 1 for opponent).
         type: number
@@ -39,6 +39,16 @@ jobs:
     uses: ./.github/workflows/build-and-validate.yml
     with:
       platforms: ${{ github.event.inputs.platforms || '["sdl3"]' }}
-      cameras: ${{ github.event.inputs.cameras || '[1,2]' }}
+      # Every run packages DOS16, including an SDL3-only replay test selection.
+      build-dos-artifact: true
+      cameras: ${{ github.event.inputs.cameras || '[1,2,3,4]' }}
       target: ${{ fromJSON(github.event.inputs.target || '0') }}
       renderer-test-percentage: ${{ fromJSON(github.event.inputs.renderer-test-percentage || '100') }}
+
+  packages:
+    name: All release packages
+    needs: validate
+    uses: ./.github/workflows/build-packages.yml
+    with:
+      dos-artifact: ${{ needs.validate.outputs.exe-artifact }}
+      attest: false

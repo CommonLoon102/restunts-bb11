@@ -88,7 +88,9 @@ cmake --build build-win64
 
 Use `i686-w64-mingw32-gcc` and a separate build directory for Windows x86.
 Alternatively, build directly in a MinGW-w64 shell on Windows using the first
-pair of commands. These builds target Windows 7 APIs and bundle the GCC runtime.
+pair of commands. The game targets Windows XP APIs on x86 and Windows 7 APIs on x64, bundling
+the GCC runtime. The library itself does not require Windows 7 APIs. The packaged game
+requires XP SP2 or newer because of SDL's system API imports.
 Single-configuration generators place the DLL in the build directory;
 multi-configuration generators may put it under `Release/`.
 

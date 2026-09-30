@@ -1,0 +1,339 @@
+#!/usr/bin/env python3
+"""Create and verify complete release archives without original game data."""
+
+import argparse
+import gzip
+import hashlib
+import io
+import json
+import os
+from pathlib import Path, PurePosixPath
+import re
+import stat
+import subprocess
+import tarfile
+import zipfile
+
+
+ROOT = Path(__file__).resolve().parents[2]
+MANIFEST = "PACKAGE-MANIFEST.json"
+MANIFEST_VERSION = 1
+README = "README-PACKAGE.txt"
+DOS_EXECUTABLES = ("restunts", "restunto", "repldump", "repldumo", "pixldump", "pixldumo")
+NATIVE_EXECUTABLES = ("restunts", "repldump", "pixldump")
+TARGETS = {
+    "dos16": ".zip",
+    "dos32": ".zip",
+    "linux-arm32": ".tar.gz",
+    "linux-arm64": ".tar.gz",
+    "linux-x86": ".tar.gz",
+    "linux-x86-no-sse2": ".tar.gz",
+    "linux-x64": ".tar.gz",
+    "windows-arm64": ".zip",
+    "windows-x86": ".zip",
+    "windows-x86-no-sse2": ".zip",
+    "windows-x64": ".zip",
+    "macos-universal": ".tar.gz",
+    "browser": ".zip",
+}
+ORIGINAL_SUFFIXES = {
+    ".res", ".pre", ".3sh", ".vsh", ".pvs", ".rpl", ".trk", ".vce", ".drv", ".fnt",
+    ".cod", ".dif", ".hig", ".bin", ".bni", ".pdo", ".pdd",
+}
+NUKED_FILES = ("opl2.c", "opl2.h", "CMakeLists.txt", "LICENSE", "README.md")
+SKYBOX_THEMES = ("desert", "tropical", "alpine", "city", "country")
+SKYBOX_IMAGES = ("scen", "sce2", "sce3", "sce4")
+OPPONENT_COUNT = 6
+SHA256_PATTERN = re.compile(r"[0-9a-f]{64}")
+COMMIT_PATTERN = re.compile(r"[0-9a-f]{40}")
+DOS_RUNTIME_NAME_PATTERN = re.compile(r"[A-Za-z0-9_-]{1,8}(?:\.[A-Za-z0-9_-]{1,3})?")
+ZIP_EPOCH = (1980, 1, 1, 0, 0, 0)
+FILE_MODE = 0o644
+EXECUTABLE_MODE = 0o755
+
+
+def require(condition, message):
+    if not condition:
+        raise ValueError(message)
+
+
+def sha256(data):
+    return hashlib.sha256(data).hexdigest()
+
+
+def archive_name(target):
+    return f"restunts-{target}{TARGETS[target]}"
+
+
+def checked_path(name):
+    path = PurePosixPath(name)
+    require(name and path.parts and not path.is_absolute() and ".." not in path.parts and
+            ":" not in name and not any(ord(character) < 32 for character in name) and
+            "\\" not in name and str(path) == name,
+            f"Unsafe or noncanonical package path: {name!r}")
+    require(path.suffix.lower() not in ORIGINAL_SUFFIXES,
+            f"Original game content or regression output is forbidden: {name}")
+    require("stunts" not in (part.lower() for part in path.parts),
+            f"Original game directory is forbidden: {name}")
+    return path
+
+
+def required_files(target):
+    required = {README}
+    if target == "browser":
+        required |= {"restunts.html", "wasm.md", "THIRD-PARTY-NOTICES.txt",
+                     "share/licenses/restunts/SDL-LICENSE.txt",
+                     "share/licenses/restunts/Nuked-OPL2-LICENSE"}
+        relink = "share/restunts/wasm-relink"
+        required |= {f"{relink}/{name}" for name in (
+            "CMakeLists.txt", "wasm-link.cmake", "wasm-relink.md", "shell.html",
+            "nuked-build-info.txt", "lib/librestunts_game.a", "lib/libSDL3.a", "objects/main.c.o")}
+        required |= {f"{relink}/nuked-opl2-lite/{name}" for name in NUKED_FILES}
+        required |= {f"{relink}/data/assets/skyboxes/{theme}-{image}.png"
+                     for theme in SKYBOX_THEMES for image in SKYBOX_IMAGES}
+        required |= {f"{relink}/data/assets/opponents/game/opp{opponent}.png"
+                     for opponent in range(1, OPPONENT_COUNT + 1)}
+        return required
+    names = DOS_EXECUTABLES if target == "dos16" else NATIVE_EXECUTABLES
+    extension = ".exe" if target.startswith(("dos", "windows")) else ""
+    prefix = "" if target == "dos16" else "bin/"
+    required |= {f"{prefix}{name}{extension}" for name in names}
+    if target == "dos16":
+        return required
+    required |= {"share/docs/restunts/sdl3.md", "share/licenses/restunts/SDL-LICENSE.txt"}
+    required |= {f"bin/skyboxes/sky{theme}-{image}.png"
+                 for theme in range(len(SKYBOX_THEMES)) for image in range(len(SKYBOX_IMAGES))}
+    opponent_directory = "opponent" if target == "dos32" else "opponents"
+    required |= {f"bin/{opponent_directory}/game/opp{opponent}.png"
+                 for opponent in range(1, OPPONENT_COUNT + 1)}
+    if target == "dos32":
+        return required | {"bin/CWSDPMI.EXE", "share/licenses/restunts/CWSDPMI.DOC"}
+    required |= {"THIRD-PARTY-NOTICES.txt", "share/licenses/restunts/Nuked-OPL2-LICENSE"}
+    required |= {f"share/restunts/nuked-opl2-lite/{name}" for name in NUKED_FILES}
+    required |= {"share/restunts/nuked-opl2-lite/nuked-build-info.txt",
+                 "share/restunts/nuked-opl2-lite/build-context/CMakeLists.txt",
+                 "share/restunts/nuked-opl2-lite/build-context/cmake/nuked-build-info.txt.in"}
+    required |= {"share/restunts/nuked-opl2-lite/build-context/" + path.relative_to(ROOT).as_posix()
+                 for path in (ROOT / "cmake/toolchains").glob("*.cmake")}
+    if target.startswith("windows"):
+        required.add("bin/nuked-opl2.dll")
+    elif target == "macos-universal":
+        required |= {"lib/libnuked-opl2.dylib", "run-restunts.sh"}
+    else:
+        required.add("lib/libnuked-opl2.so")
+    return required
+
+
+def validate_contents(target, files, modes):
+    required = required_files(target)
+    missing = required - files.keys()
+    require(not missing, f"{target}: missing packaged files: {', '.join(sorted(missing))}")
+    for name, content in files.items():
+        path = checked_path(name)
+        require(content, f"Empty package file: {name}")
+        if target == "dos32" and name.startswith("bin/"):
+            require(all(DOS_RUNTIME_NAME_PATTERN.fullmatch(part) for part in path.parts),
+                    f"DOS runtime path must use 8.3 names: {name}")
+        require(name in required, f"Unexpected package file: {name}")
+        if target.startswith("dos"):
+            require("nuked" not in name.lower(), f"DOS package must omit Nuked: {name}")
+    if target == "browser":
+        require(any(name.startswith("share/restunts/wasm-relink/objects/") for name in files),
+                "Browser package is missing application entry objects for relinking")
+    if target.startswith("linux") or target == "macos-universal":
+        executables = {f"bin/{name}" for name in NATIVE_EXECUTABLES}
+        if target == "macos-universal":
+            executables.add("run-restunts.sh")
+        for name in executables:
+            require(modes[name] & stat.S_IXUSR, f"Missing executable permission: {name}")
+
+
+def readme(target, commit):
+    lines = [f"Restunts package: {target}", f"Source commit: {commit}", "",
+             "Supply your own original Broderbund Stunts 1.1 game data (12 Feb. 1991).",
+             "Original game content is not included. Keep this package's files together.", ""]
+    if target == "browser":
+        lines += ["Open restunts.html in your browser and choose your game-data folder.",
+                  "The HTML runs offline by itself. Keep the licenses and Nuked source/relink",
+                  "kit with redistributed packages; see wasm.md for instructions."]
+    elif target == "dos16":
+        lines += ["Copy the executable files into your original game's directory.",
+                  "Run restunts.exe in DOS or DOSBox with core=dynamic and cycles=max.",
+                  "The other executables are original/rebuilt game and regression tools."]
+    else:
+        executable = "restunts.exe" if target.startswith(("windows", "dos")) else "restunts"
+        lines += [f"Run bin/{executable} --data-dir PATH_TO_YOUR_STUNTS_FOLDER.",
+                  "Enhanced skyboxes and opponent portraits are included beside the game.",
+                  "See share/docs/restunts/sdl3.md for controls and platform details."]
+    if target == "macos-universal":
+        lines += ["macOS 11.0 or newer; Intel and Apple Silicon are in the same binary.",
+                  "You can also use: bash run-restunts.sh --data-dir PATH_TO_YOUR_STUNTS_FOLDER"]
+    if target.startswith("windows-x86"):
+        lines += ["Requires Windows XP SP2 or newer (the pinned SDL system API minimum)."]
+    if target == "dos32":
+        lines += ["You can instead copy the entire contents of bin (including artwork folders)",
+                  "into your original game's directory, then run restunts.exe there.",
+                  "", "CWSDPMI release 7 is included unmodified in bin/CWSDPMI.EXE.",
+                  "You have the right to receive its source code and binary updates:",
+                  "https://www.delorie.com/pub/djgpp/current/v2misc/csdpmi7s.zip",
+                  "https://www.delorie.com/pub/djgpp/current/v2misc/csdpmi7b.zip",
+                  "Its redistribution terms are in share/licenses/restunts/CWSDPMI.DOC."]
+    return ("\r\n".join(lines) + "\r\n").encode("utf-8")
+
+
+def create_package(args):
+    require(COMMIT_PATTERN.fullmatch(args.commit), "Source commit must be a full Git SHA-1")
+    head = subprocess.check_output(["git", "-c", f"safe.directory={ROOT}", "rev-parse", "HEAD"],
+                                   cwd=ROOT, text=True).strip()
+    require(head == args.commit, "Package source commit differs from the checked-out commit")
+    files = {}
+    modes = {}
+    for source in sorted(args.runtime.rglob("*")):
+        require(not source.is_symlink(), f"Package symlinks are not supported: {source}")
+        if source.is_dir():
+            continue
+        require(source.is_file(), f"Unsupported package entry: {source}")
+        name = source.relative_to(args.runtime).as_posix()
+        require(name not in (README, MANIFEST), f"Generated package file already exists: {name}")
+        files[name] = source.read_bytes()
+        modes[name] = EXECUTABLE_MODE if source.stat().st_mode & stat.S_IXUSR else FILE_MODE
+    files[README] = readme(args.target, args.commit)
+    modes[README] = FILE_MODE
+    validate_contents(args.target, files, modes)
+    manifest = {
+        "version": MANIFEST_VERSION,
+        "target": args.target,
+        "source_commit": args.commit,
+        "source_ref": os.environ.get("GITHUB_REF", ""),
+        "github_run_id": os.environ.get("GITHUB_RUN_ID", ""),
+        "github_run_attempt": os.environ.get("GITHUB_RUN_ATTEMPT", ""),
+        "files": [{"path": name, "sha256": sha256(data), "size": len(data), "mode": modes[name]}
+                  for name, data in sorted(files.items())],
+    }
+    files[MANIFEST] = (json.dumps(manifest, indent=2, sort_keys=True) + "\n").encode()
+    modes[MANIFEST] = FILE_MODE
+    args.directory.mkdir(parents=True, exist_ok=True)
+    archive = args.directory / archive_name(args.target)
+    require(not archive.exists(), f"Refusing to overwrite release archive: {archive}")
+    if TARGETS[args.target] == ".zip":
+        with zipfile.ZipFile(archive, "w", compression=zipfile.ZIP_DEFLATED) as output:
+            for name, data in sorted(files.items()):
+                info = zipfile.ZipInfo(name, ZIP_EPOCH)
+                info.create_system = 3
+                info.external_attr = (stat.S_IFREG | modes[name]) << 16
+                info.compress_type = zipfile.ZIP_DEFLATED
+                output.writestr(info, data)
+    else:
+        with archive.open("wb") as raw, gzip.GzipFile(filename="", fileobj=raw, mode="wb", mtime=0) as compressed:
+            with tarfile.open(fileobj=compressed, mode="w") as output:
+                for name, data in sorted(files.items()):
+                    info = tarfile.TarInfo(name)
+                    info.size = len(data)
+                    info.mode = modes[name]
+                    output.addfile(info, io.BytesIO(data))
+    checksum = f"{sha256(archive.read_bytes())}  {archive.name}\n"
+    archive.with_name(archive.name + ".sha256").write_text(checksum, encoding="ascii")
+    verify_package(archive, args.target, args.commit)
+    print(f"Created and verified {archive}")
+
+
+def archive_contents(archive):
+    files = {}
+    modes = {}
+
+    def add(name, data, mode):
+        checked_path(name)
+        require(name not in files, f"Duplicate archive entry: {name}")
+        files[name] = data
+        modes[name] = stat.S_IMODE(mode)
+
+    if archive.name.endswith(".zip"):
+        with zipfile.ZipFile(archive) as source:
+            for entry in source.infolist():
+                mode = entry.external_attr >> 16
+                require(stat.S_ISREG(mode), f"Unsupported ZIP member: {entry.filename}")
+                add(entry.filename, source.read(entry), mode)
+    else:
+        with tarfile.open(archive, "r:gz") as source:
+            for entry in source:
+                require(entry.isfile(), f"Unsupported tar member: {entry.name}")
+                add(entry.name, source.extractfile(entry).read(), entry.mode)
+    return files, modes
+
+
+def verify_package(archive, target, commit, run_id=None, run_attempt=None):
+    expected_checksum = f"{sha256(archive.read_bytes())}  {archive.name}\n"
+    actual_checksum = archive.with_name(archive.name + ".sha256").read_text(encoding="ascii")
+    require(actual_checksum == expected_checksum, f"SHA256 mismatch or malformed checksum: {archive.name}")
+    files, modes = archive_contents(archive)
+    require(MANIFEST in files, f"Missing {MANIFEST} in {archive.name}")
+    manifest = json.loads(files.pop(MANIFEST))
+    require(manifest.get("version") == MANIFEST_VERSION, "Unsupported package manifest version")
+    require(manifest.get("target") == target, f"Wrong target in {archive.name}")
+    require(manifest.get("source_commit") == commit, f"Wrong source commit in {archive.name}")
+    if run_id is not None:
+        require(manifest.get("github_run_id") == run_id, f"Wrong workflow run in {archive.name}")
+    if run_attempt is not None:
+        require(manifest.get("github_run_attempt") == run_attempt, f"Wrong run attempt in {archive.name}")
+    inventory = manifest.get("files")
+    require(isinstance(inventory, list), f"Missing file inventory in {archive.name}")
+    names = []
+    for entry in inventory:
+        name = entry["path"]
+        require(name in files, f"Manifest file is absent from archive: {name}")
+        require(SHA256_PATTERN.fullmatch(entry["sha256"]), f"Invalid manifest hash: {name}")
+        require(sha256(files[name]) == entry["sha256"] and len(files[name]) == entry["size"],
+                f"File differs from manifest: {name}")
+        require(modes[name] == entry["mode"], f"File permissions differ from manifest: {name}")
+        names.append(name)
+    require(len(names) == len(set(names)), "Duplicate file in package manifest")
+    require(set(names) == files.keys(), f"Unlisted files in {archive.name}")
+    validate_contents(target, files, modes)
+
+
+def verify_directory(args):
+    require(COMMIT_PATTERN.fullmatch(args.commit), "Source commit must be a full Git SHA-1")
+    targets = TARGETS if args.all else (args.target,)
+    if args.all:
+        expected = {name for target in targets for name in
+                    (archive_name(target), archive_name(target) + ".sha256")}
+        actual = {path.name for path in args.directory.iterdir()}
+        require(actual == expected, f"Release file set differs: missing={sorted(expected - actual)}, "
+                                   f"unexpected={sorted(actual - expected)}")
+    for target in targets:
+        archive = args.directory / archive_name(target)
+        require(archive.is_file() and not archive.is_symlink(), f"Missing regular archive: {archive}")
+        checksum = archive.with_name(archive.name + ".sha256")
+        require(checksum.is_file() and not checksum.is_symlink(), f"Missing regular checksum: {checksum}")
+        verify_package(archive, target, args.commit, args.run_id, args.run_attempt)
+    print(f"Verified {len(targets)} complete package(s) from {args.commit}")
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    commands = parser.add_subparsers(dest="command", required=True)
+    create = commands.add_parser("create", help="Archive an installed Runtime component")
+    create.add_argument("--target", required=True, choices=TARGETS)
+    create.add_argument("--runtime", required=True, type=Path)
+    create.add_argument("--directory", required=True, type=Path)
+    create.add_argument("--commit", required=True)
+    verify = commands.add_parser("verify", help="Verify downloaded release artifacts before publishing")
+    group = verify.add_mutually_exclusive_group(required=True)
+    group.add_argument("--target", choices=TARGETS)
+    group.add_argument("--all", action="store_true")
+    verify.add_argument("--directory", required=True, type=Path)
+    verify.add_argument("--commit", required=True)
+    verify.add_argument("--run-id")
+    verify.add_argument("--run-attempt")
+    args = parser.parse_args()
+    try:
+        if args.command == "create":
+            create_package(args)
+        else:
+            verify_directory(args)
+    except (OSError, ValueError, KeyError, TypeError, zipfile.BadZipFile, tarfile.TarError) as error:
+        parser.exit(1, f"Package validation failed: {error}\n")
+
+
+if __name__ == "__main__":
+    main()
