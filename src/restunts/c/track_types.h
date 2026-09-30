@@ -47,11 +47,11 @@ struct TRACKOBJECT {
 
 #pragma pack(pop)
 
-typedef char legacy_track_wall_must_be_6_bytes[(sizeof(struct TRACK_WALL) == 6) ? 1 : -1];
+typedef legacy_u8 legacy_track_wall_must_be_6_bytes[(sizeof(struct TRACK_WALL) == 6) ? 1 : -1];
 
 #if defined(RESTUNTS_DOS16)
-typedef char legacy_trkobjinfo_must_be_14_bytes[(sizeof(struct TRKOBJINFO) == 14) ? 1 : -1];
-typedef char legacy_trackobject_must_be_14_bytes[(sizeof(struct TRACKOBJECT) == 14) ? 1 : -1];
+typedef legacy_u8 legacy_trkobjinfo_must_be_14_bytes[(sizeof(struct TRKOBJINFO) == 14) ? 1 : -1];
+typedef legacy_u8 legacy_trackobject_must_be_14_bytes[(sizeof(struct TRACKOBJECT) == 14) ? 1 : -1];
 
 #endif
 

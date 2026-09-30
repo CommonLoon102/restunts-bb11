@@ -8,13 +8,13 @@
 #undef printf
 #undef memset
 
-static uint32_t trace_hash = UINT32_C(2166136261);
-static unsigned scenario, frames, keys;
+static legacy_u32 trace_hash = UINT32_C(2166136261);
+static legacy_u32 scenario, frames, keys;
 static struct RECTANGLE dirty_rect;
 static legacy_s8 text_resource[8];
 static void trace(legacy_u32 value)
 {
-	for (unsigned i = 0; i < 4; i++) {
+	for (legacy_u32 i = 0; i < 4; i++) {
 		trace_hash = (trace_hash ^ (value & 255U)) * UINT32_C(16777619);
 		value >>= 8;
 	}

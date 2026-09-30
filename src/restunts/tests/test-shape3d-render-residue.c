@@ -12,7 +12,7 @@
 
 #undef memcpy
 
-static unsigned solid_calls;
+static legacy_u32 solid_calls;
 static legacy_s16 colors[4] = {7, 8, 9, 10};
 static legacy_s16 patterns[3];
 static legacy_s16 secondary_patterns[3];

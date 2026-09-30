@@ -21,7 +21,7 @@ static legacy_u8 crack_lines[16];
 static legacy_u8 crack_info[6];
 static legacy_u16 crack_offset;
 static legacy_u16 last_line[DRAW_LINE_WORD_COUNT];
-static unsigned drawn_lines;
+static legacy_u32 drawn_lines;
 static legacy_s16 player[LEGACY_RESIDUE_WORD_COUNT];
 static legacy_s16 opponent[LEGACY_RESIDUE_WORD_COUNT];
 
@@ -53,7 +53,7 @@ static void assert_words(const legacy_s16 *words, legacy_s16 a, legacy_s16 b, le
 	assert(words[0] == a && words[1] == b && words[2] == c && words[3] == d);
 }
 
-static void set_line(unsigned index, legacy_s16 x1, legacy_s16 y1, legacy_s16 x2, legacy_s16 y2)
+static void set_line(legacy_u32 index, legacy_s16 x1, legacy_s16 y1, legacy_s16 x2, legacy_s16 y2)
 {
 	LEGACY_WRITE_U16_LE(crack_lines + index * 8, x1);
 	LEGACY_WRITE_U16_LE(crack_lines + index * 8 + 2, y1);
@@ -64,7 +64,7 @@ static void set_line(unsigned index, legacy_s16 x1, legacy_s16 y1, legacy_s16 x2
 static void reset_overlay(legacy_s16 dirty_rects)
 {
 	struct SHAPE3D_LEGACY_OPPONENT_RENDER_CONTEXT context;
-	unsigned i;
+	legacy_u32 i;
 
 	memset(&context, 0, sizeof(context));
 	context.wheel_headings = opponent;

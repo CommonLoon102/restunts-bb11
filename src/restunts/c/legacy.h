@@ -52,11 +52,11 @@ typedef unsigned long legacy_u32;
 #error Restunts requires an exact 32-bit integer type
 #endif
 
-typedef char legacy_byte_must_be_8_bits[(CHAR_BIT == 8) ? 1 : -1];
-typedef char legacy_s16_must_be_2_bytes[(sizeof(legacy_s16) == 2) ? 1 : -1];
-typedef char legacy_u16_must_be_2_bytes[(sizeof(legacy_u16) == 2) ? 1 : -1];
-typedef char legacy_s32_must_be_4_bytes[(sizeof(legacy_s32) == 4) ? 1 : -1];
-typedef char legacy_u32_must_be_4_bytes[(sizeof(legacy_u32) == 4) ? 1 : -1];
+typedef legacy_u8 legacy_byte_must_be_8_bits[(CHAR_BIT == 8) ? 1 : -1];
+typedef legacy_u8 legacy_s16_must_be_2_bytes[(sizeof(legacy_s16) == 2) ? 1 : -1];
+typedef legacy_u8 legacy_u16_must_be_2_bytes[(sizeof(legacy_u16) == 2) ? 1 : -1];
+typedef legacy_u8 legacy_s32_must_be_4_bytes[(sizeof(legacy_s32) == 4) ? 1 : -1];
+typedef legacy_u8 legacy_u32_must_be_4_bytes[(sizeof(legacy_u32) == 4) ? 1 : -1];
 
 legacy_u16 legacy_u16_div_or_zero(legacy_u16 numerator, legacy_u16 denominator);
 legacy_s16 legacy_s16_div_or_zero(legacy_s16 numerator, legacy_s16 denominator);

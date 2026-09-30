@@ -14,7 +14,7 @@
 
 static legacy_u8 test_psp[256];
 static legacy_u8 test_environment[TEST_ENVIRONMENT_SIZE];
-static int test_psp_available;
+static legacy_s32 test_psp_available;
 static legacy_u16 test_psp_segment;
 static legacy_u8 test_psp_reference;
 static struct SHAPE2D test_shapes[3];
@@ -76,7 +76,7 @@ void far *dos_memory_make_pointer(legacy_u16 segment, legacy_u16 offset)
 	return test_environment;
 }
 
-static void prepare_environment(const char *program_path)
+static void prepare_environment(const legacy_s8 *program_path)
 {
 	memset(test_psp, 0, sizeof(test_psp));
 	memset(test_environment, 0, sizeof(test_environment));
@@ -86,10 +86,10 @@ static void prepare_environment(const char *program_path)
 	test_psp[1] = 0x20;
 	test_psp[0x2c] = (legacy_u8)TEST_ENVIRONMENT_SEGMENT;
 	test_psp[0x2d] = (legacy_u8)(TEST_ENVIRONMENT_SEGMENT >> LEGACY_BYTE_BITS);
-	static const char variables[] = "PATH=C:\\DOS\0TEMP=C:\\TEMP\0";
+	static const legacy_s8 variables[] = "PATH=C:\\DOS\0TEMP=C:\\TEMP\0";
 	memcpy(test_environment, variables, sizeof(variables));
 	test_environment[sizeof(variables)] = 1;
-	strcpy((char *)test_environment + sizeof(variables) + 2U, program_path);
+	strcpy((char *)test_environment + sizeof(variables) + 2U, (const char *)program_path);
 }
 
 static void assert_context(legacy_u16 expected, legacy_s16 argc, legacy_s8 *argv[])
@@ -104,7 +104,7 @@ static void test_archived_argument_addresses(void)
 	legacy_s8 *bmp[] = {(legacy_s8 *)"PIXLDUMP", (legacy_s8 *)"my0000", (legacy_s8 *)"2",
 						(legacy_s8 *)"0", (legacy_s8 *)"170"};
 
-	prepare_environment("C:\\PIXLDUMP.EXE");
+	prepare_environment((const legacy_s8 *)"C:\\PIXLDUMP.EXE");
 	/* CC38 and the complete argv strings were read from the archived DOS trace.
 	 * The additional BMP argument moves that same CRT table to CC32. */
 	assert_context(0xcc38, 4, sample);
@@ -122,9 +122,9 @@ static void test_archived_argument_addresses(void)
 	/* Quotes have already been removed by the command-line parser. */
 	assert_context(0xcc2e, 5, bmp);
 	bmp[1] = (legacy_s8 *)"my0000";
-	prepare_environment("C:\\GAMES\\STUNTS\\PIXLDUMP.EXE");
+	prepare_environment((const legacy_s8 *)"C:\\GAMES\\STUNTS\\PIXLDUMP.EXE");
 	assert_context(0xcc26, 5, bmp);
-	prepare_environment("C:\\X\\PIXLDUMP.EXE");
+	prepare_environment((const legacy_s8 *)"C:\\X\\PIXLDUMP.EXE");
 	assert_context(0xcc30, 5, bmp);
 	bmp[4] = (legacy_s8 *)"1000";
 	assert_context(0xcc30, 5, bmp);
@@ -134,7 +134,7 @@ static void test_archived_argument_addresses(void)
 
 static void test_archived_polyinfo_allocation(void)
 {
-	prepare_environment("C:\\PIXLDUMP.EXE");
+	prepare_environment((const legacy_s8 *)"C:\\PIXLDUMP.EXE");
 	test_driver_paragraphs = 140U;
 	for (legacy_u16 index = 0; index < 3U; index++) {
 		test_sprites[index].sprite_bitmapptr = &test_shapes[index];
@@ -166,7 +166,7 @@ static void test_environment_bounds_and_fallback(void)
 	legacy_s8 *bmp[] = {(legacy_s8 *)"PIXLDUMP", (legacy_s8 *)"my0000", (legacy_s8 *)"2",
 						(legacy_s8 *)"0", (legacy_s8 *)"170"};
 
-	prepare_environment("C:\\PIXLDUMP.EXE");
+	prepare_environment((const legacy_s8 *)"C:\\PIXLDUMP.EXE");
 	test_psp_available = 0;
 	assert_context(0xcc3a, 5, bmp);
 	test_psp_available = 1;
@@ -177,7 +177,7 @@ static void test_environment_bounds_and_fallback(void)
 	test_psp[0x2d] = 0;
 	assert_context(0xcc3a, 5, bmp);
 
-	prepare_environment("C:\\PIXLDUMP.EXE");
+	prepare_environment((const legacy_s8 *)"C:\\PIXLDUMP.EXE");
 	memset(test_environment, 'X', sizeof(test_environment));
 	assert_context(0xcc3a, 5, bmp);
 	test_environment[65534] = 0;

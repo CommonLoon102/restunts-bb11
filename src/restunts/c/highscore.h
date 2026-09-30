@@ -34,15 +34,15 @@ struct HIGHSCORE_ENTRY {
 
 #pragma pack(pop)
 
-typedef char highscore_entry_must_have_expected_size
+typedef legacy_u8 highscore_entry_must_have_expected_size
 	[(sizeof(struct HIGHSCORE_ENTRY) == HIGHSCORE_ENTRY_SIZE_BYTES) ? 1 : -1];
-typedef char highscore_entry_car_name_must_have_expected_offset
+typedef legacy_u8 highscore_entry_car_name_must_have_expected_offset
 	[(offsetof(struct HIGHSCORE_ENTRY, car_name) == HIGHSCORE_CAR_NAME_OFFSET) ? 1 : -1];
-typedef char highscore_entry_car_flag_must_have_expected_offset
+typedef legacy_u8 highscore_entry_car_flag_must_have_expected_offset
 	[(offsetof(struct HIGHSCORE_ENTRY, car_flag) == HIGHSCORE_CAR_FLAG_OFFSET) ? 1 : -1];
-typedef char highscore_entry_opponent_must_have_expected_offset
+typedef legacy_u8 highscore_entry_opponent_must_have_expected_offset
 	[(offsetof(struct HIGHSCORE_ENTRY, opponent) == HIGHSCORE_OPPONENT_OFFSET) ? 1 : -1];
-typedef char highscore_entry_time_must_have_expected_offset
+typedef legacy_u8 highscore_entry_time_must_have_expected_offset
 	[(offsetof(struct HIGHSCORE_ENTRY, time) == HIGHSCORE_TIME_OFFSET) ? 1 : -1];
 
 legacy_s16 highscore_load_or_create(legacy_s16 create_default);

@@ -49,7 +49,7 @@ static void reset_scene(void)
 	static const struct VECTOR points[] = {{-20, -20, 100}, {20, -20, 100},	 {0, 20, 100},
 										   {0, 0, 0},		{-20, -20, 150}, {20, -20, 150},
 										   {0, 20, 150},	{0, 0, 100}};
-	for (unsigned i = 0; i < 8; i++) {
+	for (legacy_u32 i = 0; i < 8; i++) {
 		shape3d_vertex_write(&shape, i, &points[i]);
 	}
 	projection_focal_length_x = 256;
@@ -63,7 +63,7 @@ static void reset_scene(void)
 	polyinfo_reset();
 }
 
-static void check_point(const legacy_u8 *record, unsigned index, legacy_s16 x, legacy_s16 y)
+static void check_point(const legacy_u8 *record, legacy_u32 index, legacy_s16 x, legacy_s16 y)
 {
 	assert(LEGACY_READ_S16_LE(record + 6U + index * 4U) == x);
 	assert(LEGACY_READ_S16_LE(record + 8U + index * 4U) == y);
@@ -121,7 +121,7 @@ static void test_primitive_records(void)
 		 65,
 		 221}};
 
-	for (unsigned i = 0; i < sizeof(cases) / sizeof(cases[0]); i++) {
+	for (legacy_u32 i = 0; i < sizeof(cases) / sizeof(cases[0]); i++) {
 		reset_scene();
 		memcpy(primitives, cases[i].primitive, sizeof(cases[i].primitive));
 		assert(shape3d_transform_and_queue(&instance) == 0);
@@ -131,7 +131,7 @@ static void test_primitive_records(void)
 		assert(polyinfo[2] == 7);
 		assert(polyinfo[3] == cases[i].count);
 		assert(polyinfo[4] == cases[i].type);
-		for (unsigned point = 0; point < cases[i].count; point++) {
+		for (legacy_u32 point = 0; point < cases[i].count; point++) {
 			check_point(polyinfo, point, cases[i].points[point].px, cases[i].points[point].py);
 		}
 		assert(bounds.left == cases[i].left);
@@ -238,18 +238,18 @@ static void test_clipped_depth_signedness(void)
 				 {3, 4, {100, 100, -401, 0}, -51, 1},
 				 {4, 5, {40, 50, 60, -600}, 13017, 0}};
 	static const struct VECTOR points[] = {{-20, -20, 0}, {20, -20, 0}, {20, 20, 0}, {-20, 20, 0}};
-	for (unsigned i = 0; i < sizeof(cases) / sizeof(cases[0]); i++) {
+	for (legacy_u32 i = 0; i < sizeof(cases) / sizeof(cases[0]); i++) {
 		reset_scene();
 		primitives[0] = cases[i].source_count;
 		primitives[1] = 1;
 		primitives[2] = 7;
-		for (unsigned j = 0; j < cases[i].source_count; j++) {
+		for (legacy_u32 j = 0; j < cases[i].source_count; j++) {
 			vertex = points[j];
 			vertex.z = cases[i].depths[j];
 			shape3d_vertex_write(&shape, j, &vertex);
 			primitives[3U + j] = (legacy_u8)j;
 		}
-		unsigned next = 3U + cases[i].source_count;
+		legacy_u32 next = 3U + cases[i].source_count;
 		primitives[next] = 1;
 		primitives[next + 1U] = 1;
 		primitives[next + 2U] = 8;
@@ -291,7 +291,7 @@ static void test_queue_limits(void)
 	reset_scene();
 	static const legacy_u8 point[] = {1, 1, 7, 0, 0, 0};
 	memcpy(primitives, point, sizeof(point));
-	for (unsigned i = 0; i < 399; i++) {
+	for (legacy_u32 i = 0; i < 399; i++) {
 		assert(shape3d_transform_and_queue(&instance) == 0);
 	}
 	assert(shape3d_transform_and_queue(&instance) == 1);
@@ -301,7 +301,7 @@ static void test_queue_limits(void)
 	reset_scene();
 	static const legacy_u8 polygon[] = {10, 1, 7, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 0, 0};
 	memcpy(primitives, polygon, sizeof(polygon));
-	for (unsigned i = 0; i < 225; i++) {
+	for (legacy_u32 i = 0; i < 225; i++) {
 		assert(shape3d_transform_and_queue(&instance) == 0);
 	}
 	assert(shape3d_transform_and_queue(&instance) == 1);

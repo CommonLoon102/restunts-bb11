@@ -74,14 +74,15 @@ static legacy_s16 fileio_close(fileio_handle file)
 	return dos_file_close(file);
 }
 
-static size_t fileio_read(void far *dst, size_t size, size_t nmemb, fileio_handle file)
+static legacy_u16 fileio_read(void far *dst, legacy_u16 size, legacy_u16 nmemb, fileio_handle file)
 {
-	return dos_file_read(file, dst, (legacy_u16)(size * nmemb));
+	return dos_file_read(file, dst, (legacy_u16)((legacy_u32)size * nmemb));
 }
 
-static size_t fileio_write(const void far *src, size_t size, size_t nmemb, fileio_handle file)
+static legacy_u16 fileio_write(const void far *src, legacy_u16 size, legacy_u16 nmemb,
+							   fileio_handle file)
 {
-	return dos_file_write(file, src, (legacy_u16)(size * nmemb));
+	return dos_file_write(file, src, (legacy_u16)((legacy_u32)size * nmemb));
 }
 
 static legacy_s16 fileio_seek(fileio_handle file, legacy_s32 offset, legacy_s16 origin)
