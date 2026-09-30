@@ -126,7 +126,9 @@ legacy_u8 fence_TrkObjCodes[8] = {FENCE_TRACK_OBJECT_CODE, FENCE_SCENE_OBJECT_CO
 								  FENCE_TRACK_OBJECT_CODE, FENCE_SCENE_OBJECT_CODE};
 legacy_s8 fence_tile_offsets_single[2] = {0, 0};
 legacy_s8 fence_tile_offsets_row[4] = {0, 0, 0, 1};
-legacy_s8 fence_tile_offsets_column[4] = {0, 0, 1, 0};
+/* The original assembly reads a third (0, 0) pair from the next table.
+ * Store it explicitly to preserve the duplicate fence without an out-of-bounds read. */
+legacy_s8 fence_tile_offsets_column[6] = {0, 0, 1, 0, 0, 0};
 legacy_s8 fence_tile_offsets_both[16] = {0, 0, 1, 0, 0, 1, 1, 1, -128, 0, -128, 1, -1, -1, 0, 0};
 legacy_s16 track_preview_camera_x = TRACK_PREVIEW_CAMERA_X;
 legacy_s16 track_preview_camera_y = TRACK_PREVIEW_CAMERA_Y;
