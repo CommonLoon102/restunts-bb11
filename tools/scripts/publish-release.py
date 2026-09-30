@@ -138,7 +138,7 @@ def release_notes(repository, tag, commit, source_ref, run_id, platforms, draft)
         f"Built from `{source_ref}` at commit `{commit}`.", "",
         f"[Build and validation run](https://github.com/{repository}/actions/runs/{run_id}).",
         f"Golden replay validation passed for: {', '.join(json.loads(platforms))}.", "",
-        "All 13 platform packages and their SHA-256 files are the original build artifacts.",
+        "All platform packages and their SHA-256 files are the original build artifacts.",
         "Original Stunts game content is not included; supply your own game files.", "",
         "Verify a downloaded package's build provenance using a current GitHub CLI:", "",
         "```sh",

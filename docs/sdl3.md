@@ -2,7 +2,7 @@
 
 The SDL3 platform in `src/restunts/platform/sdl3/` builds the game (`restunts`),
 physics replay dumper (`repldump`), and renderer dumper (`pixldump`) for Windows,
-Linux, macOS, 32-bit DOS, and [WebAssembly for offline browsers](wasm.md). The existing Open Watcom 16-bit DOS build remains available
+Linux, FreeBSD, OpenBSD, NetBSD, macOS, 32-bit DOS, and [WebAssembly for offline browsers](wasm.md). The existing Open Watcom 16-bit DOS build remains available
 through `make -C src/restunts restunts repldump pixldump`; its platform code stays
 under `src/restunts/platform/dos/`.
 
@@ -20,6 +20,9 @@ All platforms use the same revision; no separate SDL fork is required.
 | Linux x64 | GCC, Debian 12 build baseline. |
 | Linux x86 | GCC multilib or an i386 environment, Debian 12 build baseline; separate SSE2 and no-SSE2 packages. |
 | Linux ARM32 and ARM64 | Debian 12 cross-compilers; ARMv7 hard-float (Pi 2+) or AArch64. Debian/Raspbian 12+ baseline. |
+| FreeBSD x64 | Native compiler, FreeBSD 14.4 amd64 build baseline. |
+| OpenBSD x64 | Native Clang, OpenBSD 7.9 amd64 build baseline. |
+| NetBSD x64 and x86 | Native GCC, NetBSD 10.2 amd64/i386 build baseline; separate x86 SSE2 and no-SSE2 packages. |
 | macOS arm64 and x86_64 | Apple Clang and macOS SDK; helper scripts target macOS 11.0+. Universal builds are available. |
 | Windows x86 | MinGW-w64 with MSVCRT; Windows XP SP2+ runtime, XP API target; separate SSE2 and no-SSE2 packages. |
 | Windows x64 | MinGW-w64; Windows 7 API target. |
@@ -67,7 +70,7 @@ complete package list used by the Debian 12 build jobs.
 
 Append `-DRESTUNTS_SSE2=OFF` for a 32-bit x86 build without SSE/SSE2/AVX code in
 the game, Nuked OPL2 Lite, or bundled SDL. Use another fresh build tree when changing CPU options.
-The same option is available for Windows x86; x64 requires SSE2. A build without
+The same option is available for Windows x86 and NetBSD i386; x64 requires SSE2. A build without
 SSE2 still uses the toolchain's x86 instruction-set baseline and system runtime;
 it is not an 8086 executable. The DOS toolchain selects i386 and disables SSE2
 by default.
@@ -75,6 +78,74 @@ by default.
 `-DRESTUNTS_SYSTEM_SDL=ON` uses an installed SDL 3.4+ CMake package instead of the
 pinned source. This option is incompatible with `RESTUNTS_SSE2=OFF`, because
 CMake cannot control the instruction set of a prebuilt SDL library.
+
+## BSD
+
+FreeBSD, OpenBSD, and NetBSD use the same SDL3 backend as the other desktop
+builds. Release jobs use FreeBSD 14.4 amd64, OpenBSD 7.9 amd64, and NetBSD 10.2
+amd64/i386. Each OS has its own binary archive and system dependencies.
+
+Install the build dependencies on the matching BSD using
+`tools/scripts/install-bsd-package-dependencies.sh` as root, with the desired
+release target (`freebsd-x64`, `openbsd-x64`, `netbsd-x64`, `netbsd-x86`, or
+`netbsd-x86-no-sse2`). Run this helper with `sh`; it installs Bash as well.
+OpenBSD needs its X11 base/development sets. On NetBSD 10.2 the helper installs
+missing X11 sets from checksum-verified release archives. These are build
+prerequisites; a running graphical desktop and its audio drivers are needed to play.
+
+For a local native x64 build, for example on FreeBSD:
+
+```sh
+cmake -S . -B out/sdl3-freebsd-x64 -G Ninja -DCMAKE_BUILD_TYPE=Release
+cmake --build out/sdl3-freebsd-x64 --parallel 2
+cmake --install out/sdl3-freebsd-x64 --prefix "$PWD/out/package-freebsd-x64" \
+    --component Runtime
+out/package-freebsd-x64/bin/restunts --data-dir "$PWD/stunts"
+```
+
+Use a corresponding output directory on OpenBSD. On NetBSD, include the
+pkgsrc and X11 prefixes and disable precompiled headers, which conflict with
+the native compiler's address layout:
+
+```sh
+PKG_CONFIG_PATH=/usr/pkg/lib/pkgconfig:/usr/X11R7/lib/pkgconfig \
+    cmake -S . -B out/sdl3-netbsd-x64 -G Ninja -DCMAKE_BUILD_TYPE=Release \
+    '-DCMAKE_PREFIX_PATH=/usr/pkg;/usr/X11R7' -DCMAKE_DISABLE_PRECOMPILE_HEADERS=ON
+```
+
+Use that directory for the build and install commands above. To build
+NetBSD x86, run in an **i386 userspace** with its native compiler and libraries
+and use a separate output directory such as `out/sdl3-netbsd-x86`. SSE2 is
+enabled by default. For a build without SSE2, add `-DRESTUNTS_SSE2=OFF` at
+configure time and use another fresh build tree. This option disables
+SSE/SSE2/AVX in the game, bundled SDL and Nuked; system libraries retain their
+own CPU requirements. It cannot be combined with a prebuilt system SDL.
+The CI jobs create the i386 userspace from checksum-verified NetBSD release
+sets inside an amd64 VM, then build with the 32-bit compiler there.
+
+Local regression tests are available after supplying original game data in
+`stunts/`:
+
+```sh
+SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy \
+    ctest --test-dir out/sdl3-freebsd-x64 --output-on-failure
+```
+
+To produce a release archive from a clean committed checkout on the matching
+BSD, set the source commit and run the package helper:
+
+```sh
+export GITHUB_SHA="$(git rev-parse HEAD)"
+bash tools/scripts/build-package.sh freebsd-x64
+```
+
+Replace the target for the other four packages. Archives and checksums appear
+under `dist/packages/`. The release workflow also supplies build-run provenance
+and attestations. Keep `bin/`, `lib/`, and `share/` together when moving an
+extracted package. The executables find Nuked relative to their location;
+artwork discovery works without requiring NetBSD's optional `/proc` mount.
+BSD CI checks executable architecture, package contents and startup after
+relocation. Interactive graphics/audio and older hardware require native testing.
 
 ## macOS
 
@@ -215,7 +286,7 @@ Windows uses the corresponding `.exe` names. Dump outputs and saved game data
 are written in the selected data directory, so it must be writable. Keep the
 original game resources and replay/car additions together there.
 
-On Linux, Windows, and macOS, the interactive game defaults to serial rendering with
+On Linux, BSD, Windows, and macOS, the interactive game defaults to serial rendering with
 zero background render workers. `RESTUNTS_RENDER_WORKERS=auto` enables automatic
 parallel rendering, or use a count from `0` through `7`. See the
 [render-worker settings](../readme.md#supersight-and-fps-display) for Linux and
@@ -231,7 +302,7 @@ dissolve retain their incremental updates. Pages are released on video shutdown.
 This internal buffering does not force SDL's swapchain buffer count or replace
 monitor synchronization. The DOS indexed/VESA presentation path is unchanged.
 
-Windows, Linux, and macOS enable VSync by default in windowed and fullscreen mode,
+Windows, Linux, BSD, and macOS enable VSync by default in windowed and fullscreen mode,
 including classic rendering and SuperSight. SDL may use timed pacing when a
 renderer cannot synchronize to the display. Set `RESTUNTS_VSYNC=0` before
 launching the game to disable it; `1`, an empty value, or an unset variable
@@ -283,8 +354,10 @@ audio callback cannot race resource loading or freeing.
 The shared **Build release packages** workflow builds all distribution targets for
 **PR validation** and **Release**, using Debian 12 for the Linux baseline.
 The matrix includes ARMv7, ARM64, both x86 SSE2 variants, Windows ARM64, and a
-Universal macOS 11+ package. It checks package contents without running game
-tests on the cross-built targets. Linux/macOS archives use `.tar.gz` to preserve
+Universal macOS 11+ package. Native BSD VM jobs add FreeBSD, OpenBSD, and NetBSD
+x64 plus NetBSD x86 with and without SSE2. They check package contents, binary architecture,
+and relocated startup without game data. The cross-built targets do not run game
+tests. Linux/BSD/macOS archives use `.tar.gz` to preserve
 executable permissions; DOS, Windows, and browser archives use `.zip`.
 
 Native Linux SDL3 tests cover the platform layer, AdLib synthesis, worker
@@ -324,7 +397,7 @@ from the build matrix; a successful sample is not evidence that all replays,
 controllers, or sound hardware have been exercised.
 
 CI archives contain an installed package: executables in `bin/`, Nuked's shared
-library in `lib/` on Linux/macOS or `bin/` on Windows, dependency license notices, and
+library in `lib/` on Linux/BSD/macOS or `bin/` on Windows, dependency license notices, and
 the exact Nuked source and rebuild instructions. DOS packages omit Nuked and
 DOS32 includes CWSDPMI. The browser archive retains its Nuked relinking kit.
 The manual **Release** workflow publishes the exact build archives after
@@ -340,7 +413,7 @@ out/package-linux-x64/bin/restunts --data-dir "$PWD/stunts" /nointro
 ```
 
 Distribute the complete directory, including `THIRD-PARTY-NOTICES.txt` and
-`share/`. Linux and macOS executables find the library relative to their installed location,
+`share/`. Linux, BSD, and macOS executables find the library relative to their installed location,
 so the package can be moved; Windows loads the DLL beside the executable.
 Do not distribute a desktop executable alone. `--component Tests` installs a
 separate test package with the same license and source material.

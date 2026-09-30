@@ -10,6 +10,7 @@ import os
 from pathlib import Path, PurePosixPath
 import re
 import stat
+import struct
 import subprocess
 import tarfile
 import zipfile
@@ -24,11 +25,16 @@ NATIVE_EXECUTABLES = ("restunts", "repldump", "pixldump")
 TARGETS = {
     "dos16": ".zip",
     "dos32": ".zip",
+    "freebsd-x64": ".tar.gz",
     "linux-arm32": ".tar.gz",
     "linux-arm64": ".tar.gz",
     "linux-x86": ".tar.gz",
     "linux-x86-no-sse2": ".tar.gz",
     "linux-x64": ".tar.gz",
+    "netbsd-x64": ".tar.gz",
+    "netbsd-x86": ".tar.gz",
+    "netbsd-x86-no-sse2": ".tar.gz",
+    "openbsd-x64": ".tar.gz",
     "windows-arm64": ".zip",
     "windows-x86": ".zip",
     "windows-x86-no-sse2": ".zip",
@@ -36,6 +42,28 @@ TARGETS = {
     "macos-universal": ".tar.gz",
     "browser": ".zip",
 }
+BSD_TARGETS = {
+    "freebsd-x64": "FreeBSD x86-64",
+    "openbsd-x64": "OpenBSD x86-64",
+    "netbsd-x64": "NetBSD x86-64",
+    "netbsd-x86": "NetBSD 32-bit x86 with SSE2",
+    "netbsd-x86-no-sse2": "NetBSD 32-bit x86; SSE2 instructions are disabled",
+}
+ELF_MAGIC = b"\x7fELF"
+ELF_CLASS_32 = 1
+ELF_CLASS_64 = 2
+ELF_DATA_LSB = 1
+ELF_CLASS_OFFSET = 4
+ELF_DATA_OFFSET = 5
+ELF_MACHINE_X86 = 3
+ELF_MACHINE_X64 = 62
+ELF_MACHINE_OFFSET = 18
+ELF_HEADER_SIZES = {ELF_CLASS_32: 52, ELF_CLASS_64: 64}
+BSD_ELF_ARCHITECTURES = {
+    "x86": (ELF_CLASS_32, ELF_MACHINE_X86),
+    "x64": (ELF_CLASS_64, ELF_MACHINE_X64),
+}
+BSD_ELF_FILES = {f"bin/{name}" for name in NATIVE_EXECUTABLES} | {"lib/libnuked-opl2.so"}
 ORIGINAL_SUFFIXES = {
     ".res", ".pre", ".3sh", ".vsh", ".pvs", ".rpl", ".trk", ".vce", ".drv", ".fnt",
     ".cod", ".dif", ".hig", ".bin", ".bni", ".pdo", ".pdd",
@@ -140,12 +168,22 @@ def validate_contents(target, files, modes):
     if target == "browser":
         require(any(name.startswith("share/restunts/wasm-relink/objects/") for name in files),
                 "Browser package is missing application entry objects for relinking")
-    if target.startswith("linux") or target == "macos-universal":
+    if TARGETS[target] == ".tar.gz":
         executables = {f"bin/{name}" for name in NATIVE_EXECUTABLES}
         if target == "macos-universal":
             executables.add("run-restunts.sh")
         for name in executables:
             require(modes[name] & stat.S_IXUSR, f"Missing executable permission: {name}")
+    if target in BSD_TARGETS:
+        elf_class, machine = BSD_ELF_ARCHITECTURES[target.split("-")[1]]
+        for name in BSD_ELF_FILES:
+            content = files[name]
+            require(len(content) >= ELF_HEADER_SIZES[elf_class] and content.startswith(ELF_MAGIC),
+                    f"Missing or truncated ELF header: {name}")
+            require(content[ELF_CLASS_OFFSET] == elf_class and
+                    content[ELF_DATA_OFFSET] == ELF_DATA_LSB and
+                    struct.unpack_from("<H", content, ELF_MACHINE_OFFSET)[0] == machine,
+                    f"Wrong ELF architecture for {target}: {name}")
 
 
 def readme(target, commit):
@@ -170,6 +208,9 @@ def readme(target, commit):
                   "You can also use: bash run-restunts.sh --data-dir PATH_TO_YOUR_STUNTS_FOLDER"]
     if target.startswith("windows-x86"):
         lines += ["Requires Windows XP SP2 or newer (the pinned SDL system API minimum)."]
+    if target in BSD_TARGETS:
+        lines += [f"Built for {BSD_TARGETS[target]}.",
+                  "Packages for different BSD operating systems are not interchangeable."]
     if target == "dos32":
         lines += ["You can instead copy the entire contents of bin (including artwork folders)",
                   "into your original game's directory, then run restunts.exe there.",

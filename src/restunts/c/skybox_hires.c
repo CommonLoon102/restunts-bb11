@@ -3,6 +3,7 @@
 #include "shape2d.h"
 #include "skybox.h"
 #include "projection.h"
+#include "asset_path.h"
 #include <SDL3/SDL.h>
 #include <stdio.h>
 #include <string.h>
@@ -92,7 +93,7 @@ static SDL_Surface *skybox_hires_image(legacy_s16 theme, legacy_s16 image, legac
 	 * find the packaged images beside the executable, even with --data-dir. */
 	SDL_Surface *source = skybox_hires_load("skyboxes/", theme, image);
 	if (source == NULL) {
-		const legacy_char *base = SDL_GetBasePath();
+		const legacy_char *base = asset_path_base();
 		legacy_char directory[SKYBOX_PATH_SIZE];
 		if (base != NULL) {
 			legacy_s32 length = snprintf(directory, sizeof(directory), "%sskyboxes/", base);

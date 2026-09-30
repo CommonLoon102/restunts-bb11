@@ -95,7 +95,7 @@ Replay pan and zoom controls still work; the next F3 preset uses its fixed posit
 ### SuperSight and FPS display
 
 Press **F12** while driving or viewing a replay to toggle SuperSight. In SDL3
-builds (Windows, Linux, macOS, and 32-bit DOS), it starts with the entire 30 x 30 track,
+builds (Windows, Linux, BSD, macOS, and 32-bit DOS), it starts with the entire 30 x 30 track,
 detailed models, and 1280x800 internal rendering. Driving and replay rendering
 adapt to sustained CPU load to target 60 FPS, using these stages in order:
 
@@ -182,7 +182,7 @@ or visibility when crowded scenes exceed that capacity. F12 toggles it on and of
 and displays `SuperSight: On` or `SuperSight: Off` for two seconds, even when the
 FPS counter is hidden. This build has no SuperSight presets.
 
-In SDL3 builds (Windows, Linux, macOS, and 32-bit DOS), SuperSight starts 3D rendering
+In SDL3 builds (Windows, Linux, BSD, macOS, and 32-bit DOS), SuperSight starts 3D rendering
 at **1280x800**, four times the original width and height. Player and opponent
 car-selection previews use the same higher resolution; F12 also works in those
 screens and in the track preview. Dashboard artwork, replay controls, and the
@@ -255,7 +255,7 @@ repaint that completed page while the next frame is being drawn. This prevents
 partial game-frame updates from reaching presentation without queuing an extra
 frame. Display synchronization still depends on SDL and the graphics driver.
 
-On Windows, Linux, and macOS, VSync is enabled by default in both windowed and fullscreen
+On Windows, Linux, BSD, and macOS, VSync is enabled by default in both windowed and fullscreen
 mode, with or without SuperSight. The game requests synchronization to the display's
 vertical refresh; SDL may use timed pacing when a renderer cannot synchronize.
 The existing classic and 60 FPS SuperSight targets still apply. Set
@@ -272,7 +272,7 @@ default. If the renderer cannot apply the requested setting, the game warns and
 continues. The setting does not affect DOS builds or batch dump tools. Display
 synchronization waits are excluded from automatic SuperSight quality measurements.
 
-On Windows, Linux, and macOS, SuperSight draws serially by default with zero background
+On Windows, Linux, BSD, and macOS, SuperSight draws serially by default with zero background
 render workers. Set `RESTUNTS_RENDER_WORKERS` to `1` through `7` to select a
 background worker count, or `auto` to use the detected logical CPU count minus
 one, capped at seven. The setting is read when the renderer initializes its
@@ -437,13 +437,13 @@ the tachometer. The stock value `0x0010` keeps both needles white, and
 
 ## How to build
 
-SDL3 builds support Linux, Windows, macOS, 32-bit DOS, and
+SDL3 builds support Linux, BSD, Windows, macOS, 32-bit DOS, and
 [offline HTML/WebAssembly](#sdl3-webassembly-build-offline-html).
 
-### SDL3 native builds: Linux, Windows, macOS, and 32-bit DOS
+### SDL3 native builds: Linux, BSD, Windows, macOS, and 32-bit DOS
 
 The CMake build produces the game (`restunts`), physics dumper (`repldump`),
-and renderer dumper (`pixldump`) for all four native targets. Run the commands below
+and renderer dumper (`pixldump`) for all native targets. Run the commands below
 from the repository root. Use a separate build directory for each target,
 architecture, compiler, and host; do not reuse a native Windows build directory
 from WSL, or vice versa.
@@ -793,6 +793,24 @@ arguments. The runtime is a Terminal-launched program; there is no Finder
 `.app` bundle. On keyboards that assign system actions to function keys, use
 Fn/Globe with F11/F12 for the game's FPS and SuperSight controls.
 
+#### BSD hosts: FreeBSD, OpenBSD, and NetBSD
+
+The shared SDL3 backend has these native release targets:
+
+| Target | Build environment |
+| --- | --- |
+| `freebsd-x64` | FreeBSD 14.4, amd64 |
+| `openbsd-x64` | OpenBSD 7.9, amd64 |
+| `netbsd-x64` | NetBSD 10.2, amd64 |
+| `netbsd-x86` | NetBSD 10.2, i386 userspace; SSE2 enabled |
+| `netbsd-x86-no-sse2` | NetBSD 10.2, i386 userspace; SSE2 disabled |
+
+Each target produces a separate `.tar.gz` archive. Build on the matching BSD;
+Linux binaries and libraries cannot be used for these native targets. See the
+[BSD build instructions](docs/sdl3.md#bsd) for dependencies, local builds, and
+package creation. CI uses BSD virtual machines; the NetBSD x86 jobs build in
+an i386 userspace inside the amd64 VM.
+
 #### SDL3 build options, packages, and DOS runtime
 
 Desktop regression binaries are built by default. Add
@@ -801,7 +819,7 @@ dump tools. Run CTest in the native build environment. For cross-builds, run
 the test binaries on the target OS; generated CTest files refer to the original
 build and source paths.
 
-For a **32-bit Linux or Windows build without SSE2**, add
+For a **32-bit Linux, Windows, or NetBSD build without SSE2**, add
 `-DRESTUNTS_SSE2=OFF` to its configure command and choose another build tree
 (for example, `out/sdl3-linux-x86-nosse2`). This disables SSE/SSE2/AVX in the
 game, Nuked, and bundled SDL. x64 requires SSE2; DOS uses the i386 baseline
@@ -820,7 +838,7 @@ cmake --install out/sdl3-dos --prefix out/package-dos --component Runtime
 Run only the install commands for targets you built. For native Windows
 builds, substitute `out/sdl3-windows-x64-msys2` or `out/sdl3-dos-windows` as
 the build directory. Packages contain `bin/` executables, the desktop Nuked
-library in Linux/macOS `lib/` or Windows `bin/`, and dependency sources/notices under
+library in Linux/BSD/macOS `lib/` or Windows `bin/`, and dependency sources/notices under
 `share/`. Keep the complete package together when moving or distributing it.
 Game data is separate; desktop programs accept `--data-dir stunts` as their
 first option when launched from the repository root.
@@ -1294,9 +1312,10 @@ refactors and audit results.
 
 ## CI packages and releases
 
-**PR validation** and **Release** build all 13 distribution packages: 16-bit and
+**PR validation** and **Release** build all 18 distribution packages: 16-bit and
 32-bit DOS; Linux ARMv7, ARM64, x86 with and without SSE2, and x64; Windows ARM64,
-x86 with and without SSE2, and x64; Universal macOS; and the offline browser.
+x86 with and without SSE2, and x64; FreeBSD, OpenBSD, and NetBSD x64; NetBSD x86
+with and without SSE2; Universal macOS; and the offline browser.
 The reusable **Build release packages** workflow is used by **PR validation** and **Release**.
 
 Packages contain the runtime dependencies and enhanced artwork, but no original

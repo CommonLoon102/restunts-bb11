@@ -12,6 +12,30 @@ archive_dir="$repo_dir/dist/packages"
 default_jobs=2
 jobs=${RESTUNTS_BUILD_JOBS:-$default_jobs}
 cmake_options=(-DCMAKE_BUILD_TYPE=Release -DRESTUNTS_BUILD_TESTS=OFF)
+python_command=${PYTHON:-python3}
+
+verify_bsd_host() {
+    local host_system host_architecture
+    host_system=$(uname -s)
+    host_architecture=$(uname -m)
+    case "$target:$host_system:$host_architecture" in
+        freebsd-x64:FreeBSD:amd64|freebsd-x64:FreeBSD:x86_64|\
+        openbsd-x64:OpenBSD:amd64|openbsd-x64:OpenBSD:x86_64|\
+        netbsd-x64:NetBSD:amd64|netbsd-x64:NetBSD:x86_64|\
+        netbsd-x86:NetBSD:i386|netbsd-x86-no-sse2:NetBSD:i386) ;;
+        *)
+            echo "$target requires its matching native BSD userspace; found $host_system $host_architecture." >&2
+            exit 1
+            ;;
+    esac
+}
+
+case "$target" in
+    freebsd-*|openbsd-*|netbsd-*)
+        verify_bsd_host
+        python_command=${PYTHON:-python3.13}
+        ;;
+esac
 
 verify_clean_source() {
     if ! git -c safe.directory="$repo_dir" -C "$repo_dir" diff --quiet HEAD --; then
@@ -50,6 +74,17 @@ case "$target" in
                 cmake_options+=(-DCMAKE_TOOLCHAIN_FILE=cmake/toolchains/linux-x86.cmake -DRESTUNTS_SSE2=OFF) ;;
             linux-arm32) cmake_options+=(-DCMAKE_TOOLCHAIN_FILE=cmake/toolchains/linux-arm32.cmake) ;;
             linux-arm64) cmake_options+=(-DCMAKE_TOOLCHAIN_FILE=cmake/toolchains/linux-arm64.cmake) ;;
+            freebsd-x64|openbsd-x64) ;;
+            netbsd-x64|netbsd-x86|netbsd-x86-no-sse2)
+                # NetBSD's ASLR prevents GCC from reusing SDL's precompiled header.
+                cmake_options+=('-DCMAKE_PREFIX_PATH=/usr/pkg;/usr/X11R7' -DCMAKE_DISABLE_PRECOMPILE_HEADERS=ON)
+                export PKG_CONFIG_PATH="/usr/pkg/lib/pkgconfig:/usr/X11R7/lib/pkgconfig${PKG_CONFIG_PATH:+:$PKG_CONFIG_PATH}"
+                if [[ "$target" == netbsd-x86 ]]; then
+                    cmake_options+=(-DRESTUNTS_SSE2=ON)
+                elif [[ "$target" == netbsd-x86-no-sse2 ]]; then
+                    cmake_options+=(-DRESTUNTS_SSE2=OFF)
+                fi
+                ;;
             windows-x86) cmake_options+=(-DCMAKE_TOOLCHAIN_FILE=cmake/toolchains/mingw-x86.cmake) ;;
             windows-x86-no-sse2)
                 cmake_options+=(-DCMAKE_TOOLCHAIN_FILE=cmake/toolchains/mingw-x86.cmake -DRESTUNTS_SSE2=OFF) ;;
@@ -80,6 +115,19 @@ case "$target" in
         ;;
 esac
 
+case "$target" in
+    freebsd-*|openbsd-*|netbsd-*)
+        # Check the installed loader paths after moving the complete runtime.
+        # --licenses does not require a display, audio device, or game data.
+        smoke_dir=$(mktemp -d "${TMPDIR:-/tmp}/restunts-runtime.XXXXXX")
+        trap 'rm -rf -- "$smoke_dir"' EXIT
+        cp -RP "$package_dir/." "$smoke_dir/"
+        (unset LD_LIBRARY_PATH; "$smoke_dir/bin/restunts" --licenses > /dev/null)
+        rm -rf -- "$smoke_dir"
+        trap - EXIT
+        ;;
+esac
+
 verify_clean_source
-python3 "$script_dir/release-packages.py" create --target "$target" \
+"$python_command" "$script_dir/release-packages.py" create --target "$target" \
     --runtime "$package_dir" --directory "$archive_dir" --commit "${GITHUB_SHA:?Missing source commit}"

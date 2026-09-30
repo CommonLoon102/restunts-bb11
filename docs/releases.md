@@ -1,7 +1,7 @@
 # Release packages and verification
 
 The **PR validation** and manual **Release** workflows call the same
-`build-packages.yml` workflow. Every successful run produces these 13 archives
+`build-packages.yml` workflow. Every successful run produces these 18 archives
 and a SHA-256 sidecar for each archive:
 
 | Archive | Target baseline |
@@ -17,13 +17,22 @@ and a SHA-256 sidecar for each archive:
 | `restunts-windows-x86.zip` | 32-bit x86 with SSE2, Windows XP SP2+ |
 | `restunts-windows-x86-no-sse2.zip` | 32-bit x86 without SSE2, Windows XP SP2+ |
 | `restunts-windows-x64.zip` | x86_64, Windows 7+ |
+| `restunts-freebsd-x64.tar.gz` | x86_64, FreeBSD 14.4 |
+| `restunts-openbsd-x64.tar.gz` | x86_64, OpenBSD 7.9 |
+| `restunts-netbsd-x64.tar.gz` | x86_64, NetBSD 10.2 |
+| `restunts-netbsd-x86.tar.gz` | 32-bit x86 with SSE2, NetBSD 10.2 |
+| `restunts-netbsd-x86-no-sse2.tar.gz` | 32-bit x86 without SSE2, NetBSD 10.2 |
 | `restunts-macos-universal.tar.gz` | Intel and Apple Silicon, macOS 11.0+ |
 | `restunts-browser.zip` | Offline HTML/WebAssembly |
 
 These are build baselines, not a claim that CI exercises every OS version and
 CPU. The game and replay tests run only on native Linux SDL3 and/or 16-bit DOS,
 as selected by the `platforms` input. That selection never reduces the package
-matrix. ARM32 targets ARMv7; it does not cover the original Pi 1 or Pi Zero.
+matrix. BSD packages build in native virtual machines; the NetBSD x86 packages
+use an i386 userspace inside the amd64 VM. BSD jobs validate architecture and
+relocated startup without game data. ARM32 targets ARMv7; it does not cover
+the original Pi 1 or Pi Zero. The no-SSE2 option controls the game, bundled SDL,
+and Nuked library; system libraries retain their own CPU requirements.
 
 ## Package contents
 

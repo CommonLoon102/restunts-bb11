@@ -5,6 +5,7 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 #include "../../c/restunts.h"
+#include "../../c/asset_path.h"
 #include "sdl3.h"
 
 extern void full_data_initialize(void);
@@ -30,6 +31,9 @@ legacy_int main(legacy_int argc, legacy_char **argv)
 #endif
 #if defined(RESTUNTS_HEADLESS) || defined(RESTUNTS_PIXLDUMP)
 	sdl3_batch_mode = 1;
+#endif
+#ifndef RESTUNTS_HEADLESS
+	asset_path_initialize(argc > 0 ? argv[0] : NULL);
 #endif
 	/* Accept a resource directory without changing the historical game and
  * dump argument syntax. By default resources are read from the current dir. */

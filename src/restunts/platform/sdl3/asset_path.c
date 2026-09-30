@@ -1,0 +1,106 @@
+#include "../../c/asset_path.h"
+#include <SDL3/SDL.h>
+
+#if !defined(_WIN32) && !defined(__DJGPP__) && !defined(__EMSCRIPTEN__)
+#include <limits.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <unistd.h>
+
+static legacy_char *executable_directory;
+static legacy_s32 cleanup_registered;
+
+static void asset_path_cleanup(void)
+{
+	free(executable_directory);
+	executable_directory = NULL;
+}
+
+static legacy_char *asset_path_resolve(const legacy_char *executable)
+{
+	struct stat info;
+	if (stat(executable, &info) != 0 || !S_ISREG(info.st_mode) || access(executable, X_OK) != 0) {
+		return NULL;
+	}
+	return realpath(executable, NULL);
+}
+
+static legacy_char *asset_path_search(const legacy_char *executable)
+{
+	if (executable == NULL || executable[0] == '\0') {
+		return NULL;
+	}
+	if (strchr(executable, '/') != NULL) {
+		return asset_path_resolve(executable);
+	}
+	const legacy_char *environment_path = getenv("PATH");
+	if (environment_path == NULL) {
+		return NULL;
+	}
+	legacy_char *search_path = strdup(environment_path);
+	if (search_path == NULL) {
+		return NULL;
+	}
+	legacy_char *directory = search_path;
+	legacy_char *resolved = NULL;
+	while (directory != NULL) {
+		legacy_char *next = strchr(directory, ':');
+		if (next != NULL) {
+			*next++ = '\0';
+		}
+		legacy_char candidate[PATH_MAX];
+		legacy_s32 length = snprintf(candidate, sizeof(candidate), "%s/%s",
+									 directory[0] != '\0' ? directory : ".", executable);
+		if (length >= 0 && length < (legacy_s32)sizeof(candidate)) {
+			resolved = asset_path_resolve(candidate);
+			if (resolved != NULL) {
+				break;
+			}
+		}
+		directory = next;
+	}
+	free(search_path);
+	return resolved;
+}
+#endif
+
+void asset_path_initialize(const legacy_char *executable)
+{
+#if !defined(_WIN32) && !defined(__DJGPP__) && !defined(__EMSCRIPTEN__)
+	if (executable_directory != NULL) {
+		return;
+	}
+	const legacy_char *base = SDL_GetBasePath();
+	if (base != NULL) {
+		executable_directory = strdup(base);
+	} else {
+		executable_directory = asset_path_search(executable);
+		if (executable_directory != NULL) {
+			/* realpath resolves symlinks and produces an absolute executable path. */
+			legacy_char *separator = strrchr(executable_directory, '/');
+			separator[1] = '\0';
+		}
+	}
+	if (executable_directory != NULL && !cleanup_registered) {
+		if (atexit(asset_path_cleanup) != 0) {
+			asset_path_cleanup();
+			return;
+		}
+		cleanup_registered = 1;
+	}
+#else
+	(void)executable;
+#endif
+}
+
+const legacy_char *asset_path_base(void)
+{
+#if !defined(_WIN32) && !defined(__DJGPP__) && !defined(__EMSCRIPTEN__)
+	if (executable_directory != NULL) {
+		return executable_directory;
+	}
+#endif
+	return SDL_GetBasePath();
+}

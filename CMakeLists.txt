@@ -8,11 +8,23 @@ set(CMAKE_C_EXTENSIONS ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # Both build-tree and installed binaries must accept a user-rebuilt OPL library.
 set(CMAKE_BUILD_RPATH_USE_ORIGIN ON)
-if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-    set(CMAKE_INSTALL_RPATH "$ORIGIN/../lib")
+if(CMAKE_SHARED_LIBRARY_RPATH_ORIGIN_TOKEN)
+    # ELF platforms, including the BSDs, resolve this relative to the executable.
+    set(CMAKE_INSTALL_RPATH "${CMAKE_SHARED_LIBRARY_RPATH_ORIGIN_TOKEN}/../lib")
 elseif(APPLE)
     # Keep the installed package movable and its OPL dylib replaceable.
     set(CMAKE_INSTALL_RPATH "@loader_path/../lib")
+endif()
+if(CMAKE_SYSTEM_NAME MATCHES "^(OpenBSD|NetBSD)$")
+    # These kernels skip oversized ELF note segments, including the OS identification.
+    set(SDL_DLOPEN_NOTES OFF CACHE BOOL "Keep BSD ELF notes compatible with the kernel" FORCE)
+endif()
+if(CMAKE_SYSTEM_NAME STREQUAL "NetBSD")
+    # SDL loads desktop drivers by soname. NetBSD's loader only searches
+    # /usr/lib by default, even when CMake found X11 or pkgsrc at build time.
+    set(restunts_system_library_paths /usr/X11R7/lib /usr/pkg/lib)
+    list(APPEND CMAKE_BUILD_RPATH ${restunts_system_library_paths})
+    list(APPEND CMAKE_INSTALL_RPATH ${restunts_system_library_paths})
 endif()
 
 option(RESTUNTS_SYSTEM_SDL "Use an installed SDL3 instead of the pinned source" OFF)
@@ -119,7 +131,7 @@ set(game_sources
 list(TRANSFORM common_sources PREPEND "${core}/")
 list(TRANSFORM game_sources PREPEND "${core}/")
 set(platform_common ${platform}/memory.c ${platform}/file.c ${platform}/runtime.c)
-set(platform_game ${platform}/video.c ${platform}/input.c ${platform}/timer.c ${platform}/audio.c)
+set(platform_game ${platform}/asset_path.c ${platform}/video.c ${platform}/input.c ${platform}/timer.c ${platform}/audio.c)
 
 execute_process(COMMAND git -c safe.directory=${CMAKE_SOURCE_DIR} rev-parse HEAD
     WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}" OUTPUT_VARIABLE RESTUNTS_GIT_HASH
@@ -274,6 +286,10 @@ if(RESTUNTS_BUILD_TESTS)
     add_test(NAME sdl3-platform COMMAND test-sdl3-platform)
     set_tests_properties(sdl3-platform PROPERTIES WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/platform-test")
     if(UNIX AND NOT CMAKE_CROSSCOMPILING)
+        add_executable(test-sdl3-asset-path src/restunts/tests/test-sdl3-asset-path.c)
+        target_link_libraries(test-sdl3-asset-path PRIVATE restunts_options)
+        target_compile_options(test-sdl3-asset-path PRIVATE -UNDEBUG)
+        add_test(NAME sdl3-asset-path COMMAND test-sdl3-asset-path)
         add_test(NAME host-regressions COMMAND ${CMAKE_COMMAND} -E env "CC=${CMAKE_C_COMPILER}"
             bash ${CMAKE_SOURCE_DIR}/src/restunts/tests/run-host-tests.sh)
         find_package(Python3 COMPONENTS Interpreter QUIET)
@@ -359,7 +375,7 @@ if(RESTUNTS_BUILD_TESTS)
     target_compile_options(test-shape3d-hires PRIVATE -UNDEBUG)
     add_test(NAME shape3d-hires COMMAND test-shape3d-hires)
     add_executable(test-skybox-hires src/restunts/tests/test-skybox-hires.c
-        ${core}/skybox_hires.c ${core}/hires.c ${core}/render_workers.c ${platform}/memory.c)
+        ${core}/skybox_hires.c ${core}/hires.c ${core}/render_workers.c ${platform}/memory.c ${platform}/asset_path.c)
     target_link_libraries(test-skybox-hires PRIVATE restunts_options)
     target_compile_options(test-skybox-hires PRIVATE -UNDEBUG)
     file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/skybox-test")
@@ -374,7 +390,7 @@ if(RESTUNTS_BUILD_TESTS)
     set_tests_properties(track-preview-skybox PROPERTIES
         WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/track-preview-test")
     add_executable(test-opponent-portrait src/restunts/tests/test-opponent-portrait.c
-        ${core}/opponent_portrait.c ${core}/hires.c ${core}/render_workers.c ${platform}/memory.c)
+        ${core}/opponent_portrait.c ${core}/hires.c ${core}/render_workers.c ${platform}/memory.c ${platform}/asset_path.c)
     target_link_libraries(test-opponent-portrait PRIVATE restunts_options)
     target_compile_options(test-opponent-portrait PRIVATE -UNDEBUG)
     file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/opponent-test")
