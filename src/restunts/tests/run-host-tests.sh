@@ -24,6 +24,17 @@ case "$(uname -s)" in
     Darwin) test_link_flags=(-Wl,-dead_strip) ;;
     *) test_link_flags=(-Wl,--gc-sections) ;;
 esac
+# Match CMake's environment flags, including sanitizer instrumentation. Split
+# on whitespace without evaluating shell syntax or expanding file patterns.
+read -r -a test_extra_compile_flags <<< "${CFLAGS:-}"
+read -r -a test_extra_link_flags <<< "${LDFLAGS:-}"
+# Bash 3.2 (macOS) treats an empty array expansion as unset with nounset.
+if [[ ${#test_extra_compile_flags[@]} -gt 0 ]]; then
+    test_compile_flags+=("${test_extra_compile_flags[@]}")
+fi
+if [[ ${#test_extra_link_flags[@]} -gt 0 ]]; then
+    test_link_flags+=("${test_extra_link_flags[@]}")
+fi
 # Clang (including Apple's compiler) has no GCC maybe-uninitialized warning.
 test_uninitialized_flag=-Wno-uninitialized
 if "$test_compiler" -Werror -Wno-maybe-uninitialized -x c -fsyntax-only /dev/null 2>/dev/null; then
