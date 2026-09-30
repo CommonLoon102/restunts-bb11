@@ -83,7 +83,7 @@ legacy_u16 mmgr_resize_memory(legacy_u16 offset, legacy_u16 segment, legacy_u16 
 
 void fatal_error(const legacy_s8 *format, ...)
 {
-	fprintf(stderr, "Unexpected fatal error: %s\n", format);
+	fprintf(stderr, "Unexpected fatal error: %s\n", LEGACY_CSTR(format));
 	abort();
 }
 
@@ -360,11 +360,11 @@ static void check_fingerprint(const legacy_s8 *name, legacy_u32 expected, void (
 	test();
 #ifdef SHAPE2D_RECORD_BASELINE
 	(void)expected;
-	fprintf(stdout, "%s=0x%08lxUL\n", (const char *)name, (unsigned long)fingerprint);
+	fprintf(stdout, "%s=0x%08" LEGACY_PRIx32 "UL\n", LEGACY_CSTR(name), fingerprint);
 #else
 	if (fingerprint != expected) {
-		fprintf(stderr, "%s: got %08lx, expected %08lx\n", (const char *)name,
-				(unsigned long)fingerprint, (unsigned long)expected);
+		fprintf(stderr, "%s: got %08" LEGACY_PRIx32 ", expected %08" LEGACY_PRIx32 "\n",
+				LEGACY_CSTR(name), fingerprint, expected);
 		assert(0);
 	}
 #endif

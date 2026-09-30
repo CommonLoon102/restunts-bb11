@@ -42,15 +42,25 @@ typedef unsigned short legacy_u16;
 #define LEGACY_X86_ROTATE16_COUNT_MASK 15U
 #define LEGACY_X86_SHIFT_COUNT_MASK 31U
 
+/* C-library printf conversion fragments must match the selected integer types. */
 #if UINT_MAX == 4294967295UL
 typedef signed int legacy_s32;
 typedef unsigned int legacy_u32;
+#define LEGACY_PRId32 "d"
+#define LEGACY_PRIu32 "u"
+#define LEGACY_PRIx32 "x"
 #elif ULONG_MAX == 4294967295UL
 typedef signed long legacy_s32;
 typedef unsigned long legacy_u32;
+#define LEGACY_PRId32 "ld"
+#define LEGACY_PRIu32 "lu"
+#define LEGACY_PRIx32 "lx"
 #else
 #error Restunts requires an exact 32-bit integer type
 #endif
+
+/* Adapt legacy strings at C-library string argument boundaries. */
+#define LEGACY_CSTR(value) ((const char *)(value))
 
 typedef legacy_u8 legacy_byte_must_be_8_bits[(CHAR_BIT == 8) ? 1 : -1];
 typedef legacy_u8 legacy_s16_must_be_2_bytes[(sizeof(legacy_s16) == 2) ? 1 : -1];

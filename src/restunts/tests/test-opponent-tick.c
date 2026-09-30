@@ -242,7 +242,7 @@ static void test_tick_sweep(void)
 		}
 	}
 #ifdef OPPONENT_RECORD_BASELINE
-	fprintf(stdout, "%08lx\n", (unsigned long)hash);
+	fprintf(stdout, "%08" LEGACY_PRIx32 "\n", hash);
 #else
 	/* Original opponent state and dependency-call sequence fingerprint. */
 	assert(hash == 0x2a58ad0dUL);

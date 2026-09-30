@@ -209,7 +209,7 @@ int main(void)
 		check_cycle(different_opponent, 2U, 1U);
 	}
 #ifdef PRERENDER_RECORD_BASELINE
-	fprintf(stdout, "%08lx\n", (unsigned long)wheel_vertex_fingerprint());
+	fprintf(stdout, "%08" LEGACY_PRIx32 "\n", wheel_vertex_fingerprint());
 #else
 	/* Pre-refactor geometry and cache state across steering and suspension boundaries. */
 	assert(wheel_vertex_fingerprint() == 0x12e2833dUL);

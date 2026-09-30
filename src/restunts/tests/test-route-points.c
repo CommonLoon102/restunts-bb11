@@ -189,7 +189,7 @@ int main(void)
 	legacy_u32 route_hash = route_point_fingerprint();
 	legacy_u32 steering_hash = steering_fingerprint();
 #ifdef PHYSICS_RECORD_BASELINE
-	fprintf(stdout, "%08lx %08lx\n", (unsigned long)route_hash, (unsigned long)steering_hash);
+	fprintf(stdout, "%08" LEGACY_PRIx32 " %08" LEGACY_PRIx32 "\n", route_hash, steering_hash);
 #else
 	/* Fingerprints captured from the pre-refactor implementation. */
 	assert(route_hash == 0xdc6e8189UL);

@@ -448,9 +448,10 @@ int main(void)
 	test_event_priority();
 	test_recording_input_modes();
 #ifdef INPUT_RECORD_BASELINE
-	fprintf(stdout, "%08lx %08lx %08lx %08lx %08lx\n", (unsigned long)input_hash,
-			(unsigned long)scrollbar_hash, (unsigned long)record_hash, (unsigned long)callback_hash,
-			(unsigned long)shortcut_hash);
+	fprintf(stdout,
+			"%08" LEGACY_PRIx32 " %08" LEGACY_PRIx32 " %08" LEGACY_PRIx32 " %08" LEGACY_PRIx32
+			" %08" LEGACY_PRIx32 "\n",
+			input_hash, scrollbar_hash, record_hash, callback_hash, shortcut_hash);
 #else
 	assert(input_hash == 0x2a5d4036UL);
 	assert(scrollbar_hash == 0x207b3fe7UL);

@@ -148,7 +148,7 @@ int main(void)
 	test_branch_and_finish();
 	legacy_u32 hash = route_fingerprint();
 #ifdef PHYSICS_RECORD_BASELINE
-	fprintf(stdout, "%08lx\n", (unsigned long)hash);
+	fprintf(stdout, "%08" LEGACY_PRIx32 "\n", hash);
 #else
 	/* Fingerprints captured from the pre-refactor implementation. */
 	assert(hash == 0xaca23d6bUL);

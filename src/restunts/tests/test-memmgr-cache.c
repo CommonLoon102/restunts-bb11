@@ -28,7 +28,7 @@ static union {
 
 void fatal_error(const legacy_s8 *format, ...)
 {
-	fprintf(stderr, "Unexpected memory manager error: %s\n", format);
+	fprintf(stderr, "Unexpected memory manager error: %s\n", LEGACY_CSTR(format));
 	abort();
 }
 
@@ -110,10 +110,9 @@ static void check_payload(const void *pointer, legacy_u16 paragraphs, legacy_u32
 	for (size_t i = 0; i < (size_t)paragraphs * TEST_PARAGRAPH_BYTES; i++) {
 		if (bytes[i] != payload_byte(resource_id, i)) {
 			fprintf(stderr,
-					"Cached resource %u corrupted at byte %lu: "
-					"expected %u, got %u\n",
-					(unsigned int)resource_id, (unsigned long)i,
-					(unsigned int)payload_byte(resource_id, i), (unsigned int)bytes[i]);
+					"Cached resource %" LEGACY_PRIu32 " corrupted at byte %zu: "
+					"expected %" LEGACY_PRIu32 ", got %" LEGACY_PRIu32 "\n",
+					resource_id, i, (legacy_u32)payload_byte(resource_id, i), (legacy_u32)bytes[i]);
 			abort();
 		}
 	}

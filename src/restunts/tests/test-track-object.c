@@ -92,7 +92,8 @@ static legacy_u32 probe(legacy_u32 hash, struct VECTOR *position, struct VECTOR 
 				trkObjectList[1].ss_physicalModel, trkObjectList[1].ss_rotY, position->x,
 				position->y, position->z);
 		for (legacy_s32 index = 0; index < RESULT_COUNT; index++) {
-			fprintf(stderr, "  output %d: %d != %d\n", (int)index, reference[index], result[index]);
+			fprintf(stderr, "  output %" LEGACY_PRId32 ": %d != %d\n", index, reference[index],
+					result[index]);
 		}
 		assert(0);
 	}
@@ -271,11 +272,13 @@ int main(void)
 	for (legacy_s32 model = -1; model <= 75; model++) {
 		hash = probe_model(model);
 #ifdef TRACK_OBJECT_RECORD_BASELINE
-		fprintf(stdout, "0x%08lxUL,%s", (unsigned long)hash, (model + 2) % 5 ? " " : "\n");
+		fprintf(stdout, "0x%08" LEGACY_PRIx32 "UL,%s", hash, (model + 2) % 5 ? " " : "\n");
 #else
 		if (hash != model_hashes[model + 1]) {
-			fprintf(stderr, "Track object model %d: got %08lx, expected %08lx\n", (int)model,
-					(unsigned long)hash, (unsigned long)model_hashes[model + 1]);
+			fprintf(stderr,
+					"Track object model %" LEGACY_PRId32 ": got %08" LEGACY_PRIx32
+					", expected %08" LEGACY_PRIx32 "\n",
+					model, hash, model_hashes[model + 1]);
 			assert(0);
 		}
 #endif
@@ -283,7 +286,7 @@ int main(void)
 	trkObjectList[1] = saved_object;
 	hash = probe_layouts();
 #ifdef TRACK_OBJECT_RECORD_BASELINE
-	fprintf(stdout, "\nlayout=0x%08lxUL\n", (unsigned long)hash);
+	fprintf(stdout, "\nlayout=0x%08" LEGACY_PRIx32 "UL\n", hash);
 #else
 	assert(hash == 0x49fa168bUL);
 #endif

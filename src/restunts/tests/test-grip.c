@@ -168,7 +168,7 @@ static void test_wrapped_grip_sweep(void)
 		}
 	}
 #ifdef GRIP_RECORD_BASELINE
-	fprintf(stdout, "%08lx\n", (unsigned long)hash);
+	fprintf(stdout, "%08" LEGACY_PRIx32 "\n", hash);
 #else
 	/* Captured from the original update_grip and explicit stack-residue model. */
 	assert(hash == 0x216e96a0UL);
