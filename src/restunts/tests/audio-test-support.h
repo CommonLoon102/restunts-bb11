@@ -11,7 +11,7 @@
 static legacy_u32 trace_hash;
 static legacy_u8 memory_bytes[131328];
 static const void *external_pointers[128];
-static unsigned external_count;
+static legacy_u32 external_count;
 static legacy_u8 segments_match = 1, nested_timer;
 struct AUDIO_CHANNEL audio_channels[AUDIO_CHANNEL_COUNT];
 struct AUDIO_CONTEXT dos_audio_contexts[AUDIO_CONTEXT_COUNT];
@@ -32,10 +32,10 @@ static void hash_word(legacy_u16 word)
 {
 	trace_hash = (trace_hash ^ word) * 16777619UL;
 }
-static void hash_bytes(const void *data, unsigned length)
+static void hash_bytes(const void *data, legacy_u32 length)
 {
 	const legacy_u8 *bytes = data;
-	for (unsigned index = 0; index < length; index++) {
+	for (legacy_u32 index = 0; index < length; index++) {
 		hash_word(bytes[index]);
 	}
 }
@@ -53,7 +53,7 @@ static void *pointer_at(legacy_u16 segment, legacy_u16 offset)
 		return (void *)finish_callback;
 	}
 	if (segment >= 0x8000) {
-		assert((unsigned)(segment - 0x8000) < external_count);
+		assert((legacy_u32)(segment - 0x8000) < external_count);
 		return (legacy_u8 *)external_pointers[segment - 0x8000] + offset;
 	}
 	assert(segment == 0x1000 || segment == 0x2000);
@@ -75,7 +75,7 @@ legacy_u16 dos_memory_pointer_segment(const void *pointer)
 	if (address >= (uintptr_t)memory_bytes && address < (uintptr_t)(memory_bytes + 131072)) {
 		return address - (uintptr_t)memory_bytes < 65536 ? 0x1000 : 0x2000;
 	}
-	for (unsigned index = 0; index < external_count; index++) {
+	for (legacy_u32 index = 0; index < external_count; index++) {
 		if (external_pointers[index] == pointer) {
 			return 0x8000 + index;
 		}
