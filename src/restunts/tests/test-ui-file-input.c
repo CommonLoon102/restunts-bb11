@@ -19,13 +19,13 @@ legacy_s16 dialog_fnt_colour;
 legacy_s16 dialog_background_color;
 legacy_s16 performGraphColor;
 
-static unsigned int pop_calls;
+static legacy_u32 pop_calls;
 static uint64_t trace_hash = UINT64_C(1469598103934665603);
 static legacy_u16 scripted_keys[512];
 static legacy_s16 scripted_hits[512];
 static legacy_s16 scripted_buttons[512];
-static unsigned int input_index;
-static unsigned int timer_calls;
+static legacy_u32 input_index;
+static legacy_u32 timer_calls;
 static legacy_s16 save_succeeds;
 
 static void trace_word(legacy_u16 value)
@@ -169,13 +169,13 @@ legacy_s8 file_load_dialog_id[4] = "loa";
 legacy_s8 file_scroll_up_label_id[4] = "lsu";
 legacy_s8 file_scroll_down_label_id[4] = "lsd";
 static legacy_u16 keyboard_keys[512];
-static unsigned int keyboard_index;
-static unsigned int keyboard_count;
-static unsigned int timeout_at;
-static unsigned int listed_count;
-static unsigned int listed_index;
-static unsigned int find_calls;
-static unsigned int first_search_empty;
+static legacy_u32 keyboard_index;
+static legacy_u32 keyboard_count;
+static legacy_u32 timeout_at;
+static legacy_u32 listed_count;
+static legacy_u32 listed_index;
+static legacy_u32 find_calls;
+static legacy_u32 first_search_empty;
 static legacy_s8 listed_names[130][13];
 static legacy_u8 font_definition[20];
 
@@ -316,7 +316,7 @@ const legacy_s8 *file_find_next_alt(void)
 
 static void reset_case(void)
 {
-	for (unsigned int i = 0; i < 512; i++) {
+	for (legacy_u32 i = 0; i < 512; i++) {
 		scripted_keys[i] = KEY_ENTER;
 		scripted_hits[i] = -1;
 		scripted_buttons[i] = 0;
@@ -342,15 +342,15 @@ static void reset_case(void)
 	font_definition[18] = 8;
 }
 
-static void check_hash(const char *name, uint64_t expected)
+static void check_hash(const legacy_s8 *name, uint64_t expected)
 {
 #ifdef UI_RECORD_BASELINE
-	printf("%s %016llx\n", name, (unsigned long long)trace_hash);
+	printf("%s %016llx\n", (const char *)name, (unsigned long long)trace_hash);
 	(void)expected;
 #else
 	if (trace_hash != expected) {
-		fprintf(stderr, "%s: got %016llx expected %016llx\n", name, (unsigned long long)trace_hash,
-				(unsigned long long)expected);
+		fprintf(stderr, "%s: got %016llx expected %016llx\n", (const char *)name,
+				(unsigned long long)trace_hash, (unsigned long long)expected);
 		assert(trace_hash == expected);
 	}
 #endif
@@ -360,16 +360,17 @@ static void check_hash(const char *name, uint64_t expected)
 static void test_file_dialog(void)
 {
 	legacy_s8 filename[16];
-	static const unsigned int counts[] = {0, 1, 6, 7, 8, 127, 128, 130};
+	static const legacy_u32 counts[] = {0, 1, 6, 7, 8, 127, 128, 130};
 	legacy_s8 directory[32];
-	for (unsigned int c = 0; c < sizeof(counts) / sizeof(counts[0]); c++) {
-		for (unsigned int scenario = 0; scenario < 14; scenario++) {
+	for (legacy_u32 c = 0; c < sizeof(counts) / sizeof(counts[0]); c++) {
+		for (legacy_u32 scenario = 0; scenario < 14; scenario++) {
 			reset_case();
 			listed_count = counts[c];
 			g_is_busy = (legacy_s8)(scenario * 23);
-			for (unsigned int i = 0; i < listed_count; i++) {
-				unsigned int value = (i * 47) % 131;
-				snprintf(listed_names[i], 13, "%c%03u.RPL", 'A' + value % 26, value);
+			for (legacy_u32 i = 0; i < listed_count; i++) {
+				legacy_u32 value = (i * 47) % 131;
+				snprintf((char *)listed_names[i], 13, "%c%03u.RPL", (int)('A' + value % 26),
+						 (unsigned)value);
 			}
 			strcpy(directory, "DOS");
 			strcpy(filename, "UNCHANGED");
@@ -389,7 +390,7 @@ static void test_file_dialog(void)
 				keyboard_keys[0] = KEY_ESCAPE;
 			}
 			if (scenario == 4) {
-				for (unsigned int i = 0; i < 140; i++) {
+				for (legacy_u32 i = 0; i < 140; i++) {
 					scripted_keys[i] = KEY_DOWN;
 				}
 			}
@@ -452,7 +453,7 @@ static void test_file_dialog(void)
 			}
 		}
 	}
-	check_hash("file selection", UINT64_C(0xb6dddb318767b7d1));
+	check_hash((const legacy_s8 *)"file selection", UINT64_C(0xb6dddb318767b7d1));
 }
 
 static void test_read_line(void)
@@ -465,9 +466,9 @@ static void test_read_line(void)
 	static const legacy_s16 endings[] = {KEY_ENTER, KEY_ESCAPE, KEY_UP, KEY_DOWN, KEY_TAB};
 	legacy_s8 text[32];
 	static const legacy_s16 widths[] = {0, 1, 10, 100, -1};
-	for (unsigned int flags = 0; flags < 32; flags++) {
-		for (unsigned int w = 0; w < 5; w++) {
-			for (unsigned int scenario = 0; scenario < 5; scenario++) {
+	for (legacy_u32 flags = 0; flags < 32; flags++) {
+		for (legacy_u32 w = 0; w < 5; w++) {
+			for (legacy_u32 scenario = 0; scenario < 5; scenario++) {
 				reset_case();
 				strcpy(text, "Ab cd");
 				if (scenario == 0) {
@@ -475,7 +476,7 @@ static void test_read_line(void)
 					keyboard_keys[1] = endings[flags % 5];
 				}
 				if (scenario == 1) {
-					for (unsigned int i = 0; i < sizeof(keys) / sizeof(keys[0]); i++) {
+					for (legacy_u32 i = 0; i < sizeof(keys) / sizeof(keys[0]); i++) {
 						keyboard_keys[i] = keys[i];
 					}
 				}
@@ -506,13 +507,13 @@ static void test_read_line(void)
 			}
 		}
 	}
-	check_hash("text editing", UINT64_C(0x50b29e25e6bf27ec));
+	check_hash((const legacy_s8 *)"text editing", UINT64_C(0x50b29e25e6bf27ec));
 }
 
 static void test_read_line_wrapper(void)
 {
 	legacy_s8 text[32];
-	for (unsigned int scenario = 0; scenario < 3; scenario++) {
+	for (legacy_u32 scenario = 0; scenario < 3; scenario++) {
 		reset_case();
 		strcpy(text, "Name ");
 		keyboard_keys[0] = (scenario == 0 ? KEY_ENTER : (scenario == 1 ? KEY_ESCAPE : 'Z'));
@@ -522,16 +523,16 @@ static void test_read_line_wrapper(void)
 		trace_word(keyboard_index);
 		assert(text[strlen(text) - 1] != ' ');
 	}
-	check_hash("edit wrapper", UINT64_C(0x66b95896f189e2bb));
+	check_hash((const legacy_s8 *)"edit wrapper", UINT64_C(0x66b95896f189e2bb));
 }
 
 static void test_character_limit(void)
 {
 	static legacy_s8 text[65536];
 	static const legacy_u16 capacities[] = {0, 1, 2, 8, 0x8000, 0xffff};
-	for (unsigned int capacity = 0; capacity < sizeof(capacities) / sizeof(capacities[0]);
+	for (legacy_u32 capacity = 0; capacity < sizeof(capacities) / sizeof(capacities[0]);
 		 capacity++) {
-		for (unsigned int scenario = 0; scenario < 4; scenario++) {
+		for (legacy_u32 scenario = 0; scenario < 4; scenario++) {
 			reset_case();
 			memset(text, 0, sizeof(text));
 			strcpy(text, "A");
@@ -554,7 +555,7 @@ static void test_character_limit(void)
 			trace_word((legacy_u8)text[(legacy_u16)(capacities[capacity] - 1U)]);
 		}
 	}
-	check_hash("character limits", UINT64_C(0x9e0d9cfda6cf1f47));
+	check_hash((const legacy_s8 *)"character limits", UINT64_C(0x9e0d9cfda6cf1f47));
 }
 
 int main(void)

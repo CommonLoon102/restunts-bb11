@@ -24,10 +24,12 @@ struct SHAPE2D {
 
 #define SHAPE2D_HEADER_SIZE (sizeof(struct SHAPE2D))
 
-typedef char shape2d_header_must_be_16_bytes[(sizeof(struct SHAPE2D) == 16) ? 1 : -1];
-typedef char shape2d_centre_x_must_be_at_04[(offsetof(struct SHAPE2D, centre_x) == 4) ? 1 : -1];
-typedef char shape2d_position_x_must_be_at_08[(offsetof(struct SHAPE2D, position_x) == 8) ? 1 : -1];
-typedef char
+typedef legacy_u8 shape2d_header_must_be_16_bytes[(sizeof(struct SHAPE2D) == 16) ? 1 : -1];
+typedef legacy_u8
+	shape2d_centre_x_must_be_at_04[(offsetof(struct SHAPE2D, centre_x) == 4) ? 1 : -1];
+typedef legacy_u8
+	shape2d_position_x_must_be_at_08[(offsetof(struct SHAPE2D, position_x) == 8) ? 1 : -1];
+typedef legacy_u8
 	shape2d_plane_flags_must_be_at_0C[(offsetof(struct SHAPE2D, plane_flags) == 12) ? 1 : -1];
 
 #pragma pack(push, 1)
@@ -60,7 +62,7 @@ legacy_u16 shape2d_anchored_y(const struct SHAPE2D far *shape, legacy_s16 y);
 
 /* SPRITE contains both 16-bit near and far pointers. */
 #if defined(RESTUNTS_DOS16)
-typedef char legacy_sprite_must_be_30_bytes[(sizeof(struct SPRITE) == 30) ? 1 : -1];
+typedef legacy_u8 legacy_sprite_must_be_30_bytes[(sizeof(struct SPRITE) == 30) ? 1 : -1];
 #endif
 
 struct SPRITE far *sprite_make_wnd(legacy_u16 width, legacy_u16 height, legacy_u16);

@@ -15,8 +15,8 @@ legacy_s8 full_redraw_frames_remaining;
 static legacy_u8 framebuffer[64000];
 static legacy_u8 output_bytes[65535];
 static legacy_u8 palette_resource[SHAPE2D_HEADER_SIZE + 768];
-static unsigned output_length, render_count, present_count, close_count;
-static int render_stack_enabled;
+static legacy_u32 output_length, render_count, present_count, close_count;
+static legacy_s32 render_stack_enabled;
 static legacy_s16 expected_bmp_mode;
 
 void far *dos_memory_make_pointer(legacy_u16 segment, legacy_u16 offset)
@@ -56,7 +56,7 @@ void update_frame(legacy_s8 index, struct RECTANGLE *clip)
 {
 	assert(index == 0 && clip == &rect_windshield);
 	assert(render_stack_enabled);
-	assert(render_count == (unsigned)state.game_frame);
+	assert(render_count == (legacy_u32)state.game_frame);
 	assert(full_redraw_frames_remaining == (render_count == 0));
 	/* Each frame changes one pixel using its previous contents. Skipping an
 	 * intermediate render therefore changes the eventual hash and BMP too. */
@@ -77,7 +77,7 @@ void mouse_draw_opaque_check(void)
 void update_gamestate_with_legacy_si(legacy_s16 caller_si)
 {
 	assert(caller_si == pixldump_caller_si);
-	assert(render_count == (unsigned)state.game_frame + 1);
+	assert(render_count == (legacy_u32)state.game_frame + 1);
 	state.game_frame++;
 }
 
@@ -143,20 +143,20 @@ static void test_hash_capture(void)
 	expected_bmp_mode = 0;
 	gameconfig.game_recordedframes = 12;
 	assert(pixldump_write_frames((const legacy_s8 *)"test.PDD") == 0);
-	static const char expected[] = "PIXLDUMP 2\r\n"
-								   "0 00000001\r\n"
-								   "1 00000003\r\n"
-								   "2 00000006\r\n"
-								   "3 0000000a\r\n"
-								   "4 0000000f\r\n"
-								   "5 00000015\r\n"
-								   "6 0000001c\r\n"
-								   "7 00000024\r\n"
-								   "8 0000002d\r\n"
-								   "9 00000037\r\n"
-								   "10 00000042\r\n"
-								   "11 0000004e\r\n"
-								   "12 0000005b\r\n";
+	static const legacy_s8 expected[] = "PIXLDUMP 2\r\n"
+										"0 00000001\r\n"
+										"1 00000003\r\n"
+										"2 00000006\r\n"
+										"3 0000000a\r\n"
+										"4 0000000f\r\n"
+										"5 00000015\r\n"
+										"6 0000001c\r\n"
+										"7 00000024\r\n"
+										"8 0000002d\r\n"
+										"9 00000037\r\n"
+										"10 00000042\r\n"
+										"11 0000004e\r\n"
+										"12 0000005b\r\n";
 	assert(output_length == sizeof(expected) - 1);
 	assert(memcmp(output_bytes, expected, sizeof(expected) - 1) == 0);
 	assert(render_count == 13 && present_count == 13);
@@ -174,7 +174,7 @@ static void test_bmp_capture(void)
 		assert(output_bytes[0] == 'B' && output_bytes[1] == 'M');
 		/* The BMP stores the top scanline last. */
 		assert(output_bytes[1078 + 199 * 320] == (frame + 1) * (frame + 2) / 2);
-		assert(render_count == (unsigned)frame + 1 && present_count == render_count);
+		assert(render_count == (legacy_u32)frame + 1 && present_count == render_count);
 		assert(close_count == 1 && !render_stack_enabled);
 		assert(full_redraw_frames_remaining == 0);
 	}

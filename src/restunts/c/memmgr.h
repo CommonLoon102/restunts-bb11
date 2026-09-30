@@ -16,7 +16,7 @@ struct MEMCHUNK {
 };
 #pragma pack(pop)
 
-typedef char legacy_memchunk_must_be_18_bytes
+typedef legacy_u8 legacy_memchunk_must_be_18_bytes
 	[(sizeof(struct MEMCHUNK) == MMGR_LEGACY_MEMCHUNK_SIZE_BYTES) ? 1 : -1];
 
 const legacy_s8 *mmgr_path_to_name(const legacy_s8 *filename);

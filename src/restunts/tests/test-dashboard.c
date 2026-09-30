@@ -17,7 +17,7 @@ static legacy_u32 trace;
 static struct SHAPE2D shapes[40];
 static struct SPRITE sprites[3];
 static legacy_u16 sprite_count;
-static int optional_shapes;
+static legacy_s32 optional_shapes;
 static legacy_s8 resources[2];
 
 static void record(legacy_u16 value)
@@ -207,20 +207,20 @@ void *mmgr_free(legacy_s8 *pointer)
 void locate_many_resources(legacy_s8 *data, const legacy_s8 *names, legacy_s8 **result)
 {
 	(void)data;
-	unsigned int first = names == dashboard_wheel_and_instrument_ids ? 0
-						 : names == dashboard_gear_and_dot_shape_ids ? 10
-																	 : 20;
-	unsigned int count = first == 0 ? 9 : first == 10 ? 6 : 10;
+	legacy_u32 first = names == dashboard_wheel_and_instrument_ids ? 0
+					   : names == dashboard_gear_and_dot_shape_ids ? 10
+																   : 20;
+	legacy_u32 count = first == 0 ? 9 : first == 10 ? 6 : 10;
 	record(38);
 	record(first);
-	for (unsigned int i = 0; i < count; i++) {
+	for (legacy_u32 i = 0; i < count; i++) {
 		result[i] = (legacy_s8 *)&shapes[first + i];
 	}
 }
 legacy_s8 *locate_shape_nofatal(legacy_s8 *data, const legacy_s8 *name)
 {
 	(void)data;
-	unsigned int index = name == dashboard_roof_shape_id ? 31 : 32;
+	legacy_u32 index = name == dashboard_roof_shape_id ? 31 : 32;
 	record(39);
 	record(index);
 	return optional_shapes ? (legacy_s8 *)&shapes[index] : 0;
@@ -228,15 +228,15 @@ legacy_s8 *locate_shape_nofatal(legacy_s8 *data, const legacy_s8 *name)
 legacy_s8 *locate_shape_fatal(legacy_s8 *data, const legacy_s8 *name)
 {
 	(void)data;
-	unsigned int index = name == dashboard_background_shape_id ? 30
-						 : name == dashboard_roof_shape_id	   ? 31
-						 : name == dashboard_top_shape_id	   ? 32
-															   : 33;
+	legacy_u32 index = name == dashboard_background_shape_id ? 30
+					   : name == dashboard_roof_shape_id	 ? 31
+					   : name == dashboard_top_shape_id		 ? 32
+															 : 33;
 	record(40);
 	record(index);
 	return (legacy_s8 *)&shapes[index];
 }
-static void capture_cache(unsigned int buffer)
+static void capture_cache(legacy_u32 buffer)
 {
 	record(dashboard_gear_knob_visible_cache[buffer]);
 	record(dashboard_gear_knob_x_cache[buffer]);
@@ -250,12 +250,12 @@ static void capture_cache(unsigned int buffer)
 }
 /* Full-entry traces cover resource lifetime, both buffers, mouse ordering,
  * cache invalidation, wheel movement, and the 99/100/199/200 digit boundaries. */
-static void run_scenario(unsigned int scenario)
+static void run_scenario(legacy_u32 scenario)
 {
 	memset(&state, 0, sizeof(state));
 	memset(&simd_player, 0, sizeof(simd_player));
 	memset(sprites, 0, sizeof(sprites));
-	for (unsigned int i = 0; i < 40; i++) {
+	for (legacy_u32 i = 0; i < 40; i++) {
 		shapes[i].width = i + 1;
 		shapes[i].height = i + 2;
 		shapes[i].centre_x = 3;
@@ -263,13 +263,13 @@ static void run_scenario(unsigned int scenario)
 		shapes[i].position_x = 20 + i;
 		shapes[i].position_y = 50 + i;
 	}
-	for (unsigned int i = 0; i < sizeof(simd_player.steeringdots); i++) {
+	for (legacy_u32 i = 0; i < sizeof(simd_player.steeringdots); i++) {
 		simd_player.steeringdots[i] = 40 + (i % 50);
 	}
-	for (unsigned int i = 0; i < sizeof(simd_player.spdpoints); i++) {
+	for (legacy_u32 i = 0; i < sizeof(simd_player.spdpoints); i++) {
 		simd_player.spdpoints[i] = 10 + (i % 50);
 	}
-	for (unsigned int i = 0; i < sizeof(simd_player.revpoints); i++) {
+	for (legacy_u32 i = 0; i < sizeof(simd_player.revpoints); i++) {
 		simd_player.revpoints[i] = 20 + (i % 50);
 	}
 	simd_player.spdnumpoints = 20;
@@ -291,7 +291,7 @@ static void run_scenario(unsigned int scenario)
 	setup_car_shapes(DASHBOARD_OPERATION_REDRAW_STATIC);
 	static const legacy_s16 steering[] = {-88, -80, 0, 80, 88, 0};
 	static const legacy_u16 speeds[] = {0, 99, 100, 199, 200, 255};
-	for (unsigned int i = 0; i < 6; i++) {
+	for (legacy_u32 i = 0; i < 6; i++) {
 		state.playerstate.car_steeringAngle = steering[i];
 		state.playerstate.car_rev_speed = speeds[i] << 8;
 		state.playerstate.car_currpm = i * 600;
@@ -311,7 +311,7 @@ static void run_scenario(unsigned int scenario)
 int main(void)
 {
 	trace = 2166136261UL;
-	for (unsigned int scenario = 0; scenario < 48; scenario++) {
+	for (legacy_u32 scenario = 0; scenario < 48; scenario++) {
 		run_scenario(scenario);
 	}
 	assert(trace == 0x21c8a2f5UL);

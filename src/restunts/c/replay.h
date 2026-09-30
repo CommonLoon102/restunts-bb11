@@ -42,7 +42,7 @@ struct GAMEINFO {
 
 #pragma pack(pop)
 
-typedef char
+typedef legacy_u8
 	legacy_gameinfo_must_be_26_bytes[(sizeof(struct GAMEINFO) == REPLAY_GAMEINFO_SIZE) ? 1 : -1];
 
 void replay_gameinfo_decode(struct GAMEINFO *destination, const legacy_u8 far *source);

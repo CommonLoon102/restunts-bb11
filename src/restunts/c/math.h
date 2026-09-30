@@ -60,12 +60,12 @@ struct PLANE {
 
 #pragma pack(pop)
 
-typedef char legacy_rectangle_must_be_8_bytes[(sizeof(struct RECTANGLE) == 8) ? 1 : -1];
-typedef char legacy_vector_must_be_6_bytes[(sizeof(struct VECTOR) == 6) ? 1 : -1];
-typedef char legacy_vectorlong_must_be_12_bytes[(sizeof(struct VECTORLONG) == 12) ? 1 : -1];
-typedef char legacy_point2d_must_be_4_bytes[(sizeof(struct POINT2D) == 4) ? 1 : -1];
-typedef char legacy_matrix_must_be_18_bytes[(sizeof(struct MATRIX) == 18) ? 1 : -1];
-typedef char legacy_plane_must_be_34_bytes[(sizeof(struct PLANE) == 34) ? 1 : -1];
+typedef legacy_u8 legacy_rectangle_must_be_8_bytes[(sizeof(struct RECTANGLE) == 8) ? 1 : -1];
+typedef legacy_u8 legacy_vector_must_be_6_bytes[(sizeof(struct VECTOR) == 6) ? 1 : -1];
+typedef legacy_u8 legacy_vectorlong_must_be_12_bytes[(sizeof(struct VECTORLONG) == 12) ? 1 : -1];
+typedef legacy_u8 legacy_point2d_must_be_4_bytes[(sizeof(struct POINT2D) == 4) ? 1 : -1];
+typedef legacy_u8 legacy_matrix_must_be_18_bytes[(sizeof(struct MATRIX) == 18) ? 1 : -1];
+typedef legacy_u8 legacy_plane_must_be_34_bytes[(sizeof(struct PLANE) == 34) ? 1 : -1];
 
 legacy_s16 sin_fast(legacy_u16 s);
 legacy_s16 cos_fast(legacy_u16 s);

@@ -205,10 +205,10 @@ struct GAMESTATE {
 
 #pragma pack(pop)
 
-typedef char legacy_carstate_must_be_208_bytes[(sizeof(struct CARSTATE) == CARSTATE_SERIALIZED_SIZE)
-												   ? 1
-												   : -1];
-typedef char legacy_gamestate_must_be_1120_bytes
+typedef legacy_u8
+	legacy_carstate_must_be_208_bytes[(sizeof(struct CARSTATE) == CARSTATE_SERIALIZED_SIZE) ? 1
+																							: -1];
+typedef legacy_u8 legacy_gamestate_must_be_1120_bytes
 	[(sizeof(struct GAMESTATE) == GAMESTATE_SERIALIZED_SIZE) ? 1 : -1];
 
 legacy_u16 gamestate_serialize(legacy_u8 far *destination, const struct GAMESTATE *source);

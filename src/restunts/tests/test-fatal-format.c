@@ -19,13 +19,13 @@
 #undef memcpy
 #undef strlen
 
-static uint32_t trace_hash = UINT32_C(2166136261);
+static legacy_u32 trace_hash = UINT32_C(2166136261);
 static legacy_s8 captured[20000];
-static unsigned captured_length, write_count;
+static legacy_u32 captured_length, write_count;
 static jmp_buf exit_jump;
 static void trace(legacy_u32 value)
 {
-	for (unsigned i = 0; i < 4; i++) {
+	for (legacy_u32 i = 0; i < 4; i++) {
 		trace_hash = (trace_hash ^ (value & 255U)) * UINT32_C(16777619);
 		value >>= 8;
 	}
@@ -37,7 +37,7 @@ legacy_s16 dos_write_stderr(const legacy_s8 *data, legacy_u16 length)
 	trace(1);
 	trace(length);
 	write_count++;
-	for (unsigned i = 0; i < length; i++) {
+	for (legacy_u32 i = 0; i < length; i++) {
 		trace((legacy_u8)data[i]);
 	}
 	memcpy(captured + captured_length, data, length);
@@ -86,9 +86,9 @@ int main(void)
 	};
 	static const legacy_s16 signed_values[] = {0, 1, -1, 32767, -32768};
 	static const legacy_u32 long_values[] = {0, 1, 0x7fffffffUL, 0x80000000UL, 0xffffffffUL};
-	for (unsigned a = 0; a < 5; a++) {
-		for (unsigned b = 0; b < 5; b++) {
-			for (unsigned f = 0; f < 4; f++) {
+	for (legacy_u32 a = 0; a < 5; a++) {
+		for (legacy_u32 b = 0; b < 5; b++) {
+			for (legacy_u32 f = 0; f < 4; f++) {
 				check_format(formats[f], signed_values[a], signed_values[a],
 							 (legacy_u16)signed_values[a], (legacy_u16)signed_values[a],
 							 (legacy_u16)signed_values[a], (legacy_s32)long_values[b],
@@ -101,7 +101,7 @@ int main(void)
 	check_format((legacy_s8 *)"literal %% %q %lq trailing%");
 	legacy_s8 long_text[195];
 	memset(long_text, 'A', sizeof(long_text));
-	for (unsigned length = 94; length <= 194; length++) {
+	for (legacy_u32 length = 94; length <= 194; length++) {
 		long_text[length] = 0;
 		check_format((legacy_s8 *)"%s", long_text);
 		long_text[length] = 'A';

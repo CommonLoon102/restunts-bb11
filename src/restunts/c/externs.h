@@ -153,7 +153,7 @@ struct SIMD {
 /* These records contain 16-bit near/far pointers.  Their DOS ABI layout is
  * meaningful only when the DOS memory model supplies those pointer sizes. */
 #if defined(RESTUNTS_DOS16)
-typedef char
+typedef legacy_u8
 	legacy_simd_must_be_776_bytes[(sizeof(struct SIMD) == SIMD_DOS_STRUCTURE_SIZE) ? 1 : -1];
 
 #endif
