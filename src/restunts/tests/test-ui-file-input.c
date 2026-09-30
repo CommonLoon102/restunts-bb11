@@ -1,5 +1,5 @@
 #include <assert.h>
-#include <stdint.h>
+#include <inttypes.h>
 #include <stdio.h>
 #include <string.h>
 #include "../c/ui_input.h"
@@ -349,8 +349,8 @@ static void check_hash(const legacy_s8 *name, uint64_t expected)
 	(void)expected;
 #else
 	if (trace_hash != expected) {
-		fprintf(stderr, "%s: got %016llx expected %016llx\n", (const char *)name,
-				(unsigned long long)trace_hash, (unsigned long long)expected);
+		fprintf(stderr, "%s: got %016" PRIx64 " expected %016" PRIx64 "\n", LEGACY_CSTR(name),
+				trace_hash, expected);
 		assert(trace_hash == expected);
 	}
 #endif

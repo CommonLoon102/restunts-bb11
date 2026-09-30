@@ -489,8 +489,10 @@ int main(void)
 	}
 	legacy_u32 lifecycle_hash = trace_hash;
 #ifdef INTRO_PREVIEW_RECORD_BASELINE
-	fprintf(stdout, "intro=0x%08lx preview=0x%08lx lifecycle=0x%08lx\n", (unsigned long)intro_hash,
-			(unsigned long)preview_hash, (unsigned long)lifecycle_hash);
+	fprintf(stdout,
+			"intro=0x%08" LEGACY_PRIx32 " preview=0x%08" LEGACY_PRIx32
+			" lifecycle=0x%08" LEGACY_PRIx32 "\n",
+			intro_hash, preview_hash, lifecycle_hash);
 #else
 	/* Captured from unmodified production at 43fba20d. */
 	assert(intro_hash == 0xcdcdbe61UL);

@@ -177,8 +177,8 @@ int main(void)
 		assert(edge_fingerprint(i & 1U, i >> 1U) == expected[i]);
 	}
 #ifdef PRERENDER_RECORD_BASELINE
-	fprintf(stdout, "%08lx %08lx\n", (unsigned long)first_edge_fingerprint(0),
-			(unsigned long)first_edge_fingerprint(1));
+	fprintf(stdout, "%08" LEGACY_PRIx32 " %08" LEGACY_PRIx32 "\n", first_edge_fingerprint(0),
+			first_edge_fingerprint(1));
 #else
 	/* Pre-refactor first-edge baselines include untouched rows and clipping padding. */
 	assert(first_edge_fingerprint(0) == 0x8ca17529UL);

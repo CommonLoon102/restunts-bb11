@@ -1,5 +1,5 @@
 #include <assert.h>
-#include <stdint.h>
+#include <inttypes.h>
 #include <stdio.h>
 #include <string.h>
 #include "../c/fileio.h"
@@ -43,8 +43,8 @@ static void check_hash(const legacy_s8 *name, uint64_t expected_hash)
 	(void)expected_hash;
 #else
 	if (trace_hash != expected_hash) {
-		fprintf(stderr, "%s: got %016llx expected %016llx\n", (const char *)name,
-				(unsigned long long)trace_hash, (unsigned long long)expected_hash);
+		fprintf(stderr, "%s: got %016" PRIx64 " expected %016" PRIx64 "\n", LEGACY_CSTR(name),
+				trace_hash, expected_hash);
 		assert(trace_hash == expected_hash);
 	}
 #endif

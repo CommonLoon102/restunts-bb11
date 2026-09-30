@@ -195,8 +195,8 @@ int main(void)
 	legacy_u32 sphere_hash = sphere_fingerprint();
 	legacy_u32 perimeter_hash = perimeter_fingerprint();
 #ifdef PRERENDER_RECORD_BASELINE
-	fprintf(stdout, "%08lx %08lx %08lx\n", (unsigned long)polygon_hash, (unsigned long)sphere_hash,
-			(unsigned long)perimeter_hash);
+	fprintf(stdout, "%08" LEGACY_PRIx32 " %08" LEGACY_PRIx32 " %08" LEGACY_PRIx32 "\n",
+			polygon_hash, sphere_hash, perimeter_hash);
 #else
 	/* Captured from the original implementation with both -O0 and -O2. */
 	assert(polygon_hash == 0x1322835bUL);
