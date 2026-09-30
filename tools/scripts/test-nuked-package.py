@@ -1,7 +1,7 @@
-"""Verify relocated Linux/macOS packages and replacement of their Nuked library.
+"""Verify relocated Linux/BSD/macOS packages and replacement of their Nuked library.
 
 Requires an existing native CMake build with tests enabled, the game test assets,
-a C compiler, CMake, and readelf (Linux) or otool (macOS). Installed or rebuilt data
+a C compiler, CMake, and readelf (Linux/BSD) or otool (macOS). Installed or rebuilt data
 lives in a temporary directory; the existing build and its binaries are retained.
 """
 
@@ -18,6 +18,8 @@ import tempfile
 
 ROOT = Path(__file__).resolve().parents[2]
 MACOS = sys.platform == "darwin"
+ELF_PLATFORMS = ("linux", "freebsd", "openbsd", "netbsd")
+ELF_SYSTEM_PATHS = {"/usr/X11R7/lib", "/usr/pkg/lib"} if sys.platform.startswith("netbsd") else set()
 LIBRARY_NAME = "libnuked-opl2.dylib" if MACOS else "libnuked-opl2.so"
 LINKAGE_TOOL = "otool" if MACOS else "readelf"
 MACHO_LOAD_COMMANDS = ("LC_LOAD_DYLIB", "LC_LOAD_WEAK_DYLIB", "LC_REEXPORT_DYLIB",
@@ -108,7 +110,7 @@ def verify_elf_linkage(binary, *, needs_nuked):
     search_paths = re.findall(r"\((?:RPATH|RUNPATH)\).*?\[([^]]*)\]", output)
     for entry in search_paths:
         for path in entry.split(":"):
-            require(path.startswith(("$ORIGIN/", "${ORIGIN}/")),
+            require(path in ELF_SYSTEM_PATHS or path.startswith(("$ORIGIN/", "${ORIGIN}/")),
                     f"non-relocatable library search path in {binary}: {path!r}")
     if needs_nuked:
         require(any("$ORIGIN/../lib" in entry.split(":") or
@@ -189,8 +191,8 @@ def instrument_replacement(source):
 
 
 def test_package(build, cmake):
-    require(sys.platform.startswith("linux") or MACOS,
-            "this package regression requires native Linux or macOS")
+    require(sys.platform.startswith(ELF_PLATFORMS) or MACOS,
+            "this package regression requires native Linux, BSD, or macOS")
     build = build.resolve()
     cache = cache_values(build)
     source = Path(cache.get("CMAKE_HOME_DIRECTORY", str(ROOT))).resolve()
@@ -272,7 +274,7 @@ def test_package(build, cmake):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--build-directory", type=Path, required=True,
-                        help="existing native Linux or macOS CMake build with tests enabled")
+                        help="existing native Linux, BSD, or macOS CMake build with tests enabled")
     parser.add_argument("--cmake", default="cmake", help="CMake executable (default: cmake)")
     arguments = parser.parse_args()
     try:

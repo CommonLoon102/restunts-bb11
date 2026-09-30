@@ -76,6 +76,87 @@ jobs:
         with:
           subject-path: dist/packages/*
 
+  bsd:
+    name: Package ${{ matrix.target }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+          - freebsd-x64
+          - openbsd-x64
+          - netbsd-x64
+          - netbsd-x86
+          - netbsd-x86-no-sse2
+    env:
+      PACKAGE_TARGET: ${{ matrix.target }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      - name: Build the FreeBSD 14.4 x86-64 package
+        if: matrix.target == 'freebsd-x64'
+        uses: vmactions/freebsd-vm@a2f9a41fa97f6848b8c3b791087dfcdaa5b473ff # v1.5.8
+        with:
+          release: '14.4'
+          arch: x86_64
+          sync: rsync
+          envs: PACKAGE_TARGET GITHUB_SHA GITHUB_REF GITHUB_RUN_ID GITHUB_RUN_ATTEMPT
+          run: |
+            set -eu
+            sh tools/scripts/install-bsd-package-dependencies.sh "$PACKAGE_TARGET"
+            bash tools/scripts/build-package.sh "$PACKAGE_TARGET"
+
+      - name: Build the OpenBSD 7.9 x86-64 package
+        if: matrix.target == 'openbsd-x64'
+        uses: vmactions/openbsd-vm@5f7b2c933b8846a138361d6843c52af4bef5d945 # v1.4.8
+        with:
+          release: '7.9'
+          arch: x86_64
+          sync: rsync
+          envs: PACKAGE_TARGET GITHUB_SHA GITHUB_REF GITHUB_RUN_ID GITHUB_RUN_ATTEMPT
+          run: |
+            set -eu
+            sh tools/scripts/install-bsd-package-dependencies.sh "$PACKAGE_TARGET"
+            bash tools/scripts/build-package.sh "$PACKAGE_TARGET"
+
+      - name: Build the NetBSD 10.2 package in its native userspace
+        if: startsWith(matrix.target, 'netbsd-')
+        uses: vmactions/netbsd-vm@c8a0d7ddb84619a7a8cc4e652efa7950b3fd9f92 # v1.5.2
+        with:
+          release: '10.2'
+          arch: x86_64
+          sync: rsync
+          envs: PACKAGE_TARGET GITHUB_SHA GITHUB_REF GITHUB_RUN_ID GITHUB_RUN_ATTEMPT
+          prepare: |
+            /usr/sbin/pkg_add curl git-base mozilla-rootcerts-openssl
+          run: |
+            set -eu
+            export PATH="/usr/pkg/sbin:/usr/pkg/bin:$PATH"
+            if [ "$PACKAGE_TARGET" = netbsd-x86 ] || [ "$PACKAGE_TARGET" = netbsd-x86-no-sse2 ]; then
+              sh tools/scripts/build-netbsd-x86-package.sh "$PACKAGE_TARGET"
+            else
+              sh tools/scripts/install-bsd-package-dependencies.sh "$PACKAGE_TARGET"
+              bash tools/scripts/build-package.sh "$PACKAGE_TARGET"
+            fi
+
+      - name: Upload immutable package artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: packages-${{ matrix.target }}
+          path: dist/packages/*
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 14
+
+      - name: Attest the package and its checksum
+        if: inputs.attest
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4
+        with:
+          subject-path: dist/packages/*
+
   dos16:
     name: Package DOS16 validation artifacts
     runs-on: ubuntu-24.04

@@ -2,6 +2,7 @@
 #include "opponent.h"
 #include "hires.h"
 #include "shape2d.h"
+#include "asset_path.h"
 #include <SDL3/SDL.h>
 #include <stdio.h>
 #include <string.h>
@@ -95,7 +96,7 @@ static SDL_Surface *portrait_find(legacy_u8 opponent, legacy_u8 prepared)
 {
 	SDL_Surface *source = portrait_load(PORTRAIT_DIRECTORY, opponent, prepared);
 	if (source == NULL) {
-		const legacy_char *base = SDL_GetBasePath();
+		const legacy_char *base = asset_path_base();
 		legacy_char directory[PORTRAIT_PATH_SIZE];
 		if (base != NULL) {
 			legacy_s32 length =
