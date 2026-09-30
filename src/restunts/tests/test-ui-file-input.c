@@ -345,7 +345,7 @@ static void reset_case(void)
 static void check_hash(const legacy_s8 *name, uint64_t expected)
 {
 #ifdef UI_RECORD_BASELINE
-	printf("%s %016llx\n", (const char *)name, (unsigned long long)trace_hash);
+	printf("%s %016llx\n", LEGACY_CSTR(name), (unsigned long long)trace_hash);
 	(void)expected;
 #else
 	if (trace_hash != expected) {

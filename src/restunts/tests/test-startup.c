@@ -208,7 +208,7 @@ legacy_s16 get_kevinrandom(void)
 }
 legacy_u16 _strlen(const legacy_s8 *text)
 {
-	return (legacy_u16)strlen((const char *)text);
+	return (legacy_u16)strlen(LEGACY_CSTR(text));
 }
 
 static legacy_u32 menu_scenario, menu_calls, intro_calls, game_calls, score_calls;
@@ -226,7 +226,7 @@ static void trace_text(const legacy_s8 *text)
 }
 legacy_s8 *_strcpy(legacy_s8 *destination, const legacy_s8 *source)
 {
-	return (legacy_s8 *)strcpy((char *)destination, (const char *)source);
+	return (legacy_s8 *)strcpy((char *)destination, LEGACY_CSTR(source));
 }
 void *_memcpy(void *destination, const void *source, legacy_u16 count)
 {

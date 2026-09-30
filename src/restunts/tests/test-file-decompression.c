@@ -39,7 +39,7 @@ static void trace_bytes(const legacy_u8 *bytes, legacy_u32 count)
 static void check_hash(const legacy_s8 *name, uint64_t expected_hash)
 {
 #ifdef FILE_RECORD_BASELINE
-	printf("%s %016llx\n", (const char *)name, (unsigned long long)trace_hash);
+	printf("%s %016llx\n", LEGACY_CSTR(name), (unsigned long long)trace_hash);
 	(void)expected_hash;
 #else
 	if (trace_hash != expected_hash) {
