@@ -1,0 +1,76 @@
+name: GitHub Pages
+
+# Publish only when explicitly requested. The build includes no original game data.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: github-pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build the website and browser game
+    runs-on: ubuntu-24.04
+    container: debian:12
+    timeout-minutes: 60
+    permissions:
+      contents: read
+      pages: read
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Install build tools
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends build-essential cmake ninja-build \
+            git curl ca-certificates pkg-config python3 unzip xz-utils bzip2 libfl2
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5
+
+      - name: Check package and Pages assembly validation
+        run: |
+          python3 tools/scripts/test-release-packages.py
+          python3 -m unittest discover -s tools/scripts/tests -p test_build_pages.py
+
+      - name: Install the pinned browser toolchain
+        run: bash tools/scripts/install-package-dependencies.sh browser
+
+      - name: Build and verify the complete browser package
+        run: bash tools/scripts/build-package.sh browser
+
+      - name: Assemble the website
+        run: |
+          python3 tools/scripts/build-pages.py \
+            --browser-package dist/packages/restunts-browser.zip \
+            --commit "$GITHUB_SHA" --output out/github-pages
+
+      - name: Upload the website
+        uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b # v4
+        with:
+          path: out/github-pages
+
+  deploy:
+    name: Publish GitHub Pages
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy the website
+        id: deployment
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4

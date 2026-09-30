@@ -1,0 +1,401 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#1b2531">
+    <meta name="description" content="Chocolate Stunts keeps your Broderbund Stunts 1.1 replays and custom cars at home, with rewind, ghost racing, optional fixes, and SuperSight rendering.">
+    <title>Chocolate Stunts — the classic, with more possibilities</title>
+    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="styles.css">
+    <script src="site.js" defer></script>
+</head>
+<body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header wrap">
+        <a class="wordmark" href="#" aria-label="Chocolate Stunts home"><span class="flag" aria-hidden="true"></span>Chocolate Stunts</a>
+        <nav aria-label="Main navigation">
+            <a href="#features">Features</a>
+            <a href="#downloads">Downloads</a>
+            <a href="#play">Play</a>
+            <a href="https://github.com/CommonLoon102/restunts-bb11">GitHub</a>
+        </nav>
+    </header>
+
+    <main id="main">
+        <section class="hero wrap" aria-labelledby="title">
+            <div>
+                <p class="eyebrow">A fresh lap for a classic</p>
+                <h1 id="title">Chocolate<br><span>Stunts.</span></h1>
+                <p class="intro">The driving game you remember.<br>More ways to make the next lap your best.</p>
+                <div class="actions">
+                    <a class="button primary" href="#downloads">Find your download</a>
+                    <a class="button" href="#play">Play in your browser</a>
+                </div>
+            </div>
+            <aside class="compatibility" aria-label="Original game compatibility">
+                <p class="eyebrow">Your collection comes with you</p>
+                <p class="compatibility-number">100<span>%</span></p>
+                <h2>Stunts 1.1 compatible<br>by default</h2>
+                <p>Bring <strong>all your Brøderbund Stunts 1.1 replays and custom cars.</strong> They work here, too.</p>
+                <p class="small">Original physics stay on by default. Gameplay fixes are your choice.</p>
+            </aside>
+        </section>
+
+        <section class="features wrap" id="features" aria-labelledby="features-title">
+            <div class="section-heading">
+                <p class="eyebrow">Familiar at heart</p>
+                <h2 id="features-title">A few more reasons to race.</h2>
+            </div>
+
+            <article class="feature">
+                <div class="feature-title"><span class="section-number">01</span><h3>Take that corner again.</h3><p>Rewind while you drive</p></div>
+                <div class="feature-content">
+                    <ul>
+                        <li><strong>Hold <kbd>Q</kbd> to go back in time.</strong> Release it and carry on from that moment.</li>
+                        <li>Try a new line without leaving the race or opening the replay controls.</li>
+                    </ul>
+                    <p class="note">Rewound runs are marked as modified and do not qualify for the normal high-score table (but you can use the <a target="_blank" href="https://wiki.stunts.hu/wiki/RH_Hiding">trick</a> to make it so).</p>
+                </div>
+            </article>
+
+            <article class="feature">
+                <div class="feature-title"><span class="section-number">02</span><h3>Little things. Better laps.</h3><p>Quality of life</p></div>
+                <div class="feature-content">
+                    <ul class="two-columns">
+                        <li><strong>A bigger garage:</strong> up to 120 cars, instead of 32.</li>
+                        <li>Custom speedometer and tachometer needle colours for custom cars.</li>
+                        <li>See the replay filename during playback.</li>
+                        <li><kbd>F3</kbd> cycles three new chase cameras and the original adjustable view.</li>
+                        <li><kbd>F11</kbd> shows or hides the FPS counter.</li>
+                        <li><code>/nointro</code> takes you straight to the main menu.</li>
+                        <li>Build and version information in the Options menu.</li>
+                        <li><kbd>Alt</kbd> + <kbd>Enter</kbd> toggles fullscreen in desktop ports.</li>
+                    </ul>
+                </div>
+            </article>
+
+            <article class="feature">
+                <div class="feature-title"><span class="section-number">03</span><h3>A rival worth chasing.</h3><p>Race against a ghost</p></div>
+                <div class="feature-content">
+                    <ul>
+                        <li>Choose <strong>Opponent → Clock → Ghost</strong>, then select a replay to race against.</li>
+                        <li>Drive its track in your choice of car. The ghost follows the recorded run and never collides with you.</li>
+                        <li>Rewind or restart: your ghost stays in sync. Press <kbd>T</kbd> to see the race from its view.</li>
+                    </ul>
+                </div>
+            </article>
+
+            <article class="feature">
+                <div class="feature-title"><span class="section-number">04</span><h3>Stay on track.</h3><p>OWOOT · One Wheel On Or Over Track</p></div>
+                <div class="feature-content">
+                    <ul>
+                        <li>Enable <code>/owoot</code>: at least part of one tyre must stay <strong>on or above the road.</strong> Going underneath it does not count; large-corner rumble strips count as grass.</li>
+                        <li>Follow loops, corkscrews, slaloms, and other stunts along their intended route.</li>
+                        <li>Jump the single off-road tile between connected, aligned ramps or bridges. Arbitrary flights over grass are out.</li>
+                        <li>Break a rule and the run ends in a crash. OWOOT is optional and off by default.</li>
+                        <li><strong>Check replays automatically:</strong> <code>repldump RACE.RPL /owoot</code> writes a <code>RACE.owo</code> pass/fail result. A pass requires a completed race without violations or crashes.</li>
+                    </ul>
+                </div>
+            </article>
+
+            <article class="feature">
+                <div class="feature-title"><span class="section-number">05</span><h3>Old quirks. Your call.</h3><p>Optional legacy bug fixes</p><span class="label warning">OFF BY DEFAULT</span></div>
+                <div class="feature-content">
+                    <p class="feature-lead">Keep the original handling, or opt into these fixes individually.</p>
+                    <ul>
+                        <li><code>/pg:off</code> disables power gear and anti-power gear, restoring the missing aerodynamic slowdown.</li>
+                        <li><code>/lcb:off</code> removes the original left-corner steering advantage.</li>
+                        <li><code>/lc:off</code> fixes legacy collision behaviour:
+                            <ul>
+                                <li>No slipping through concrete blocks or loop bases.</li>
+                                <li>Fixes low-speed wall crossings in <a target="_blank" href="https://wiki.stunts.hu/wiki/Corkscrew_up/down">corkscrew up/down</a> pieces.</li>
+                                <li>No false crashes beneath an open ramp where a hill meets it.</li>
+                                <li>No permanent steering bias left behind after a collision.</li>
+                            </ul>
+                        </li>
+                    </ul>
+                    <p class="note"><strong>Replay compatibility comes first.</strong> Replays do not store these switches or the OWOOT setting. Use the same settings for recording, playback, and ghost racing.</p>
+                </div>
+            </article>
+
+            <article class="feature">
+                <div class="feature-title"><span class="section-number">06</span><h3>See the whole track.</h3><p>The SuperSight renderer</p></div>
+                <div class="feature-content">
+                    <ul>
+                        <li><kbd>F12</kbd> turns SuperSight Auto on or off. <kbd>Shift</kbd> + <kbd>F12</kbd> cycles fixed <strong>Full → High → Medium → Low</strong> quality.</li>
+                        <li><strong>Full view distance:</strong> see the entire 30 × 30 track at Full quality.</li>
+                        <li>Up to <strong>1280 × 800</strong> rendering with smooth, interpolated motion targeting <strong>60 FPS</strong> and VSync on desktop ports.</li>
+                        <li>Auto adapts resolution, detail, and view distance to keep the action smooth. Fixed presets keep you in control.</li>
+                        <li>Water stays blue, including beneath multi-tile track pieces.</li>
+                        <li>Car shadows, sharper horizons and opponent portraits, and corrected visual car height.</li>
+                    </ul>
+                    <p class="note">A visual upgrade that preserves the original physics. These features apply to the modern ports, including browser and DOS32; DOS16 offers a simpler extended view without high resolution, interpolation, or the quality presets.</p>
+                </div>
+            </article>
+        </section>
+
+        <section class="downloads wrap" id="downloads" aria-labelledby="downloads-title">
+            <div class="section-heading">
+                <p class="eyebrow">Pick your platform</p>
+                <h2 id="downloads-title">18 ways to play.</h2>
+                <p>From classic DOS to your browser. Bring your own Brøderbund Stunts 1.1 game files.</p>
+            </div>
+            <div class="download-notice"><strong>Packages are coming soon.</strong> Download links will appear here when they are ready.</div>
+            <p class="badge-key"><span class="bits-example">32</span> / <span class="bits-example">64</span> / <span class="bits-example">16</span> = package bitness <span class="badge-divider">·</span> <span class="no-sse2 legend-badge" aria-hidden="true">SSE2</span> = no SSE2 requirement</p>
+            <!-- To publish a package, add its URL as href, remove aria-disabled,
+                 and change the package-status text to Download. -->
+            <div class="package-grid">
+                <a class="package" data-target="browser" role="link" aria-disabled="true">
+                    <span class="platform-icon" aria-hidden="true">
+                        <img src="assets/icons/html5.svg" alt="" width="58" height="58">
+                        <span class="bits">32</span>
+                    </span>
+                    <span class="package-info">
+                        <span class="package-name">HTML5 / Browser</span>
+                        <span class="package-arch">WebAssembly · 32-bit</span>
+                        <span class="package-requirement">Modern desktop browser</span>
+                        <span class="package-status">Coming soon</span>
+                    </span>
+                </a>
+                <a class="package" data-target="windows-x64" role="link" aria-disabled="true">
+                    <span class="platform-icon" aria-hidden="true">
+                        <img src="assets/icons/windows-xp-color.svg" alt="" width="58" height="58">
+                        <span class="bits">64</span>
+                    </span>
+                    <span class="package-info">
+                        <span class="package-name">Windows</span>
+                        <span class="package-arch">x86-64 · 64-bit</span>
+                        <span class="package-requirement">Windows 7+ · SSE2</span>
+                        <span class="package-status">Coming soon</span>
+                    </span>
+                </a>
+                <a class="package" data-target="windows-x86" role="link" aria-disabled="true">
+                    <span class="platform-icon" aria-hidden="true">
+                        <img src="assets/icons/windows-xp-color.svg" alt="" width="58" height="58">
+                        <span class="bits">32</span>
+                    </span>
+                    <span class="package-info">
+                        <span class="package-name">Windows</span>
+                        <span class="package-arch">x86 · 32-bit</span>
+                        <span class="package-requirement">Windows XP SP2+ · SSE2</span>
+                        <span class="package-status">Coming soon</span>
+                    </span>
+                </a>
+                <a class="package" data-target="windows-x86-no-sse2" role="link" aria-disabled="true">
+                    <span class="platform-icon" aria-hidden="true">
+                        <img src="assets/icons/windows-xp-color.svg" alt="" width="58" height="58">
+                        <span class="no-sse2">SSE2</span><span class="bits">32</span>
+                    </span>
+                    <span class="package-info">
+                        <span class="package-name">Windows</span>
+                        <span class="package-arch">x86 · 32-bit · no SSE2</span>
+                        <span class="package-requirement">Windows XP SP2+</span>
+                        <span class="package-status">Coming soon</span>
+                    </span>
+                </a>
+                <a class="package" data-target="windows-arm64" role="link" aria-disabled="true">
+                    <span class="platform-icon" aria-hidden="true">
+                        <img src="assets/icons/windows-xp-color.svg" alt="" width="58" height="58">
+                        <span class="bits">64</span>
+                    </span>
+                    <span class="package-info">
+                        <span class="package-name">Windows</span>
+                        <span class="package-arch">ARM64 · 64-bit</span>
+                        <span class="package-requirement">Windows 10+</span>
+                        <span class="package-status">Coming soon</span>
+                    </span>
+                </a>
+                <a class="package" data-target="linux-x64" role="link" aria-disabled="true">
+                    <span class="platform-icon" aria-hidden="true">
+                        <img src="assets/icons/linux-tux.svg" alt="" width="58" height="58">
+                        <span class="bits">64</span>
+                    </span>
+                    <span class="package-info">
+                        <span class="package-name">Linux</span>
+                        <span class="package-arch">x86-64 · 64-bit</span>
+                        <span class="package-requirement">Debian 12+ · SSE2</span>
+                        <span class="package-status">Coming soon</span>
+                    </span>
+                </a>
+                <a class="package" data-target="linux-x86" role="link" aria-disabled="true">
+                    <span class="platform-icon" aria-hidden="true">
+                        <img src="assets/icons/linux-tux.svg" alt="" width="58" height="58">
+                        <span class="bits">32</span>
+                    </span>
+                    <span class="package-info">
+                        <span class="package-name">Linux</span>
+                        <span class="package-arch">x86 · 32-bit</span>
+                        <span class="package-requirement">Debian 12+ · SSE2</span>
+                        <span class="package-status">Coming soon</span>
+                    </span>
+                </a>
+                <a class="package" data-target="linux-x86-no-sse2" role="link" aria-disabled="true">
+                    <span class="platform-icon" aria-hidden="true">
+                        <img src="assets/icons/linux-tux.svg" alt="" width="58" height="58">
+                        <span class="no-sse2">SSE2</span><span class="bits">32</span>
+                    </span>
+                    <span class="package-info">
+                        <span class="package-name">Linux</span>
+                        <span class="package-arch">x86 · 32-bit · no SSE2</span>
+                        <span class="package-requirement">Debian 12+</span>
+                        <span class="package-status">Coming soon</span>
+                    </span>
+                </a>
+                <a class="package" data-target="linux-arm32" role="link" aria-disabled="true">
+                    <span class="platform-icon" aria-hidden="true">
+                        <img src="assets/icons/linux-tux.svg" alt="" width="58" height="58">
+                        <span class="bits">32</span>
+                    </span>
+                    <span class="package-info">
+                        <span class="package-name">Linux</span>
+                        <span class="package-arch">ARMv7 · 32-bit · hard-float</span>
+                        <span class="package-requirement">Debian / Raspbian 12+</span>
+                        <span class="package-status">Coming soon</span>
+                    </span>
+                </a>
+                <a class="package" data-target="linux-arm64" role="link" aria-disabled="true">
+                    <span class="platform-icon" aria-hidden="true">
+                        <img src="assets/icons/linux-tux.svg" alt="" width="58" height="58">
+                        <span class="bits">64</span>
+                    </span>
+                    <span class="package-info">
+                        <span class="package-name">Linux</span>
+                        <span class="package-arch">ARM64 · 64-bit</span>
+                        <span class="package-requirement">Debian / Raspbian 12+</span>
+                        <span class="package-status">Coming soon</span>
+                    </span>
+                </a>
+                <a class="package" data-target="macos-universal" role="link" aria-disabled="true">
+                    <span class="platform-icon" aria-hidden="true">
+                        <img src="assets/icons/apple-silver.svg" alt="" width="58" height="58">
+                        <span class="bits">64</span>
+                    </span>
+                    <span class="package-info">
+                        <span class="package-name">macOS</span>
+                        <span class="package-arch">Universal · 64-bit</span>
+                        <span class="package-requirement">macOS 11+ · Intel &amp; Apple Silicon</span>
+                        <span class="package-status">Coming soon</span>
+                    </span>
+                </a>
+                <a class="package" data-target="freebsd-x64" role="link" aria-disabled="true">
+                    <span class="platform-icon" aria-hidden="true">
+                        <img src="assets/icons/freebsd-symbol.svg" alt="" width="58" height="58">
+                        <span class="bits">64</span>
+                    </span>
+                    <span class="package-info">
+                        <span class="package-name">FreeBSD</span>
+                        <span class="package-arch">x86-64 · 64-bit</span>
+                        <span class="package-requirement">FreeBSD 14.4 · SSE2</span>
+                        <span class="package-status">Coming soon</span>
+                    </span>
+                </a>
+                <a class="package" data-target="openbsd-x64" role="link" aria-disabled="true">
+                    <span class="platform-icon" aria-hidden="true">
+                        <img src="assets/icons/openbsd-gold.svg" alt="" width="58" height="58">
+                        <span class="bits">64</span>
+                    </span>
+                    <span class="package-info">
+                        <span class="package-name">OpenBSD</span>
+                        <span class="package-arch">x86-64 · 64-bit</span>
+                        <span class="package-requirement">OpenBSD 7.9 · SSE2</span>
+                        <span class="package-status">Coming soon</span>
+                    </span>
+                </a>
+                <a class="package" data-target="netbsd-x64" role="link" aria-disabled="true">
+                    <span class="platform-icon" aria-hidden="true">
+                        <img src="assets/icons/netbsd.png" alt="" width="58" height="58">
+                        <span class="bits">64</span>
+                    </span>
+                    <span class="package-info">
+                        <span class="package-name">NetBSD</span>
+                        <span class="package-arch">x86-64 · 64-bit</span>
+                        <span class="package-requirement">NetBSD 10.2 · SSE2</span>
+                        <span class="package-status">Coming soon</span>
+                    </span>
+                </a>
+                <a class="package" data-target="netbsd-x86" role="link" aria-disabled="true">
+                    <span class="platform-icon" aria-hidden="true">
+                        <img src="assets/icons/netbsd.png" alt="" width="58" height="58">
+                        <span class="bits">32</span>
+                    </span>
+                    <span class="package-info">
+                        <span class="package-name">NetBSD</span>
+                        <span class="package-arch">x86 · 32-bit</span>
+                        <span class="package-requirement">NetBSD 10.2 · SSE2</span>
+                        <span class="package-status">Coming soon</span>
+                    </span>
+                </a>
+                <a class="package" data-target="netbsd-x86-no-sse2" role="link" aria-disabled="true">
+                    <span class="platform-icon" aria-hidden="true">
+                        <img src="assets/icons/netbsd.png" alt="" width="58" height="58">
+                        <span class="no-sse2">SSE2</span><span class="bits">32</span>
+                    </span>
+                    <span class="package-info">
+                        <span class="package-name">NetBSD</span>
+                        <span class="package-arch">x86 · 32-bit · no SSE2</span>
+                        <span class="package-requirement">NetBSD 10.2</span>
+                        <span class="package-status">Coming soon</span>
+                    </span>
+                </a>
+                <a class="package" data-target="dos16" role="link" aria-disabled="true">
+                    <span class="platform-icon" aria-hidden="true">
+                        <img src="assets/icons/dos.png" alt="" width="58" height="58" class="pixel-icon">
+                        <span class="bits">16</span>
+                    </span>
+                    <span class="package-info">
+                        <span class="package-name">DOS Classic</span>
+                        <span class="package-arch">x86 · 16-bit</span>
+                        <span class="package-requirement">Original DOS edition</span>
+                        <span class="package-status">Coming soon</span>
+                    </span>
+                </a>
+                <a class="package" data-target="dos32" role="link" aria-disabled="true">
+                    <span class="platform-icon" aria-hidden="true">
+                        <img src="assets/icons/dos.png" alt="" width="58" height="58" class="pixel-icon">
+                        <span class="bits">32</span>
+                    </span>
+                    <span class="package-info">
+                        <span class="package-name">DOS Extended</span>
+                        <span class="package-arch">i386 · 32-bit</span>
+                        <span class="package-requirement">Includes CWSDPMI</span>
+                        <span class="package-status">Coming soon</span>
+                    </span>
+                </a>
+            </div>
+            <p class="note">The browser badge refers to 32-bit WebAssembly, not your operating system. ARM ports do not use SSE2. macOS Universal includes both Intel and Apple Silicon. Platform icons identify the operating system; the requirements on each card identify the supported version.</p>
+        </section>
+
+        <section class="play wrap" id="play" aria-labelledby="play-title">
+            <div class="section-heading">
+                <p class="eyebrow">One more lap?</p>
+                <h2 id="play-title">Play right here.</h2>
+                <p>Choose your own game folder, then start your engine. Your game files and saves stay on your device and are never uploaded.</p>
+            </div>
+            <div class="player-panel">
+                <div class="player-toolbar"><span><span class="flag" aria-hidden="true"></span>Browser edition</span><a href="game/restunts.html" target="_blank" rel="noopener">Open in a new tab</a></div>
+                <div class="player-start" id="player-start">
+                    <h3>The track is waiting.</h3>
+                    <p>You’ll need a keyboard and a folder containing your Brøderbund Stunts 1.1 game files.</p>
+                    <button class="button primary" id="load-game" type="button" hidden>Load browser game</button>
+                    <noscript><p><a class="button primary" href="game/restunts.html">Open browser game</a></p></noscript>
+                    <p class="small">Loads on request, so browsing the page stays lightweight.</p>
+                </div>
+                <p class="player-status" id="player-status" role="status" hidden></p>
+                <iframe id="game-frame" title="Play Chocolate Stunts" data-src="game/restunts.html" allow="fullscreen; autoplay" allowfullscreen hidden></iframe>
+            </div>
+            <p class="note">Click inside the game to focus the keyboard. The player includes setup instructions, save controls, and a key reference. Use its Fullscreen button for a larger view. You can also save <a href="game/restunts.html" download>restunts.html</a> for offline play.</p>
+        </section>
+    </main>
+
+    <footer class="site-footer wrap">
+        <p><strong>Chocolate Stunts</strong><br>A continuation of the Restunts reverse engineering project.</p>
+        <nav aria-label="Project resources">
+            <a href="https://github.com/CommonLoon102/restunts-bb11">Source &amp; documentation</a>
+            <a href="game/THIRD-PARTY-NOTICES.txt">Third-party notices</a>
+            <a href="game/browser-runtime.zip">Browser source &amp; relinking kit</a>
+            <a href="assets/icons/credits.html">Icon credits</a>
+        </nav>
+    </footer>
+</body>
+</html>
