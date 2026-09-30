@@ -4,16 +4,24 @@ cmake_minimum_required(VERSION 3.25)
 project(NukedOPL2Lite VERSION 0.9.0 LANGUAGES C)
 
 option(NUKED_OPL2_SSE2 "Allow SSE2 in 32-bit x86 builds" ON)
-if(NOT EMSCRIPTEN AND CMAKE_SIZEOF_VOID_P EQUAL 4 AND CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+# Keep the standalone replacement build valid on ARM32 and x86 multilib hosts.
+include(CheckSymbolExists)
+check_symbol_exists(__i386__ "" NUKED_OPL2_TARGET_X86)
+if(NOT EMSCRIPTEN AND NUKED_OPL2_TARGET_X86 AND CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
     if(NUKED_OPL2_SSE2)
         add_compile_options(-msse2)
     else()
         add_compile_options(-mno-sse -mno-sse2 -mno-avx -mfpmath=387)
     endif()
 endif()
+# The core uses no Windows API; its C runtime must remain bundled without
+# requiring a newer Windows version than the parent game.
 if(WIN32 AND MINGW)
-    add_compile_definitions(_WIN32_WINNT=0x0601 WINVER=0x0601)
-    add_link_options(-static-libgcc)
+    if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+        add_link_options(-static-libgcc)
+    else()
+        add_link_options(-static)
+    endif()
 endif()
 
 if(EMSCRIPTEN)

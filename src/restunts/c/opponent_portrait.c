@@ -20,6 +20,11 @@
 #define PORTRAIT_ORIGINAL_SCALE 2
 #define PORTRAIT_PATH_SIZE 1024
 #define PORTRAIT_MAX_DIMENSION 4096U
+#ifdef __DJGPP__
+#define PORTRAIT_DIRECTORY "opponent/"
+#else
+#define PORTRAIT_DIRECTORY "opponents/"
+#endif
 
 #define PNG_DIMENSION_HEADER_SIZE 24
 #define PNG_IHDR_LENGTH_OFFSET 8
@@ -88,12 +93,13 @@ static SDL_Surface *portrait_load(const legacy_char *directory, legacy_u8 oppone
 
 static SDL_Surface *portrait_find(legacy_u8 opponent, legacy_u8 prepared)
 {
-	SDL_Surface *source = portrait_load("opponents/", opponent, prepared);
+	SDL_Surface *source = portrait_load(PORTRAIT_DIRECTORY, opponent, prepared);
 	if (source == NULL) {
 		const legacy_char *base = SDL_GetBasePath();
 		legacy_char directory[PORTRAIT_PATH_SIZE];
 		if (base != NULL) {
-			legacy_s32 length = snprintf(directory, sizeof(directory), "%sopponents/", base);
+			legacy_s32 length =
+				snprintf(directory, sizeof(directory), "%s%s", base, PORTRAIT_DIRECTORY);
 			if (length >= 0 && (size_t)length < sizeof(directory)) {
 				source = portrait_load(directory, opponent, prepared);
 			}

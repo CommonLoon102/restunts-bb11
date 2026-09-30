@@ -1,7 +1,7 @@
 name: Release
 
-# Manually publishes the four executables from any branch. The golden replays
-# get full physics and sampled renderer validation before a release is created.
+# Build and attest all packages, then publish the exact downloaded artifacts.
+# The golden replay gates run only for DOS16 and native Linux SDL3.
 on:
   workflow_dispatch:
     inputs:
@@ -34,7 +34,7 @@ on:
         type: boolean
         default: false
       draft:
-        description: Create the release as a draft.
+        description: Keep the verified release as a draft (mutable until published).
         type: boolean
         default: false
 
@@ -51,25 +51,18 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
-          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Test release verification safeguards
+        run: python3 -m unittest discover -s tools/scripts/tests -p 'test_release_integrity.py'
 
       - name: Reject a malformed or already used tag
         env:
+          GH_TOKEN: ${{ github.token }}
           TAG: ${{ inputs.tag }}
-        run: |
-          set -u
-          # Fail before spending a full build and replay run on a tag that
-          # cannot be created anyway.
-          if [[ ! "$TAG" =~ ^[A-Za-z0-9][A-Za-z0-9._/-]*$ ]]; then
-              echo "::error::'$TAG' is not a usable tag name"
-              exit 1
-          fi
-          if git rev-parse -q --verify "refs/tags/$TAG" >/dev/null; then
-              echo "::error::tag '$TAG' already exists"
-              exit 1
-          fi
+        run: python3 tools/scripts/publish-release.py check-tag --tag "$TAG"
 
   validate:
     name: Golden replays
@@ -77,26 +70,44 @@ jobs:
     uses: ./.github/workflows/build-and-validate.yml
     with:
       platforms: ${{ inputs.platforms }}
-      # This workflow publishes DOS executables regardless of the test selection.
+      # The DOS16 package is required regardless of the replay test selection.
       build-dos-artifact: true
       cameras: ${{ inputs.cameras }}
       target: ${{ inputs.target }}
       renderer-test-percentage: ${{ inputs.renderer-test-percentage }}
 
+  packages:
+    name: All release packages
+    needs: validate
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+    uses: ./.github/workflows/build-packages.yml
+    with:
+      dos-artifact: ${{ needs.validate.outputs.exe-artifact }}
+      attest: true
+
   release:
     name: Publish the release
-    needs: [check-tag, validate]
+    needs: [check-tag, validate, packages]
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    timeout-minutes: 30
     permissions:
       contents: write
+      attestations: read
     steps:
-      - uses: actions/download-artifact@v8
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
-          name: ${{ needs.validate.outputs.exe-artifact }}
-          path: dist
+          persist-credentials: false
 
-      - name: Create the release
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          pattern: packages-*
+          path: dist
+          merge-multiple: true
+
+      - name: Verify provenance, upload, verify bytes, and publish immutably
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ inputs.tag }}
@@ -105,7 +116,7 @@ jobs:
           PRERELEASE: ${{ inputs.prerelease }}
           PLATFORMS: ${{ inputs.platforms }}
         run: |
-          set -u
+          set -euo pipefail
           flags=()
           if [[ "$DRAFT" == "true" ]]; then
               flags+=(--draft)
@@ -113,15 +124,5 @@ jobs:
           if [[ "$PRERELEASE" == "true" ]]; then
               flags+=(--prerelease)
           fi
-          notes=$(printf '%s\n' \
-              "Built from $GITHUB_REF_NAME at commit $GITHUB_SHA." \
-              "" \
-              "This release packages the DOS executables." \
-              "Golden replay validation passed for candidate platforms: $PLATFORMS.")
-          gh release create "$TAG" \
-              --repo "$GITHUB_REPOSITORY" \
-              --target "$GITHUB_SHA" \
-              --title "${TITLE:-$TAG}" \
-              --notes "$notes" \
-              "${flags[@]}" \
-              dist/restunts.exe dist/restunto.exe dist/repldump.exe dist/repldumo.exe
+          python3 tools/scripts/publish-release.py publish --directory dist \
+              --tag "$TAG" --title="$TITLE" --platforms "$PLATFORMS" "${flags[@]}"

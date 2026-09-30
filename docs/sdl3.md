@@ -18,14 +18,17 @@ All platforms use the same revision; no separate SDL fork is required.
 | Target | Compiler and baseline |
 | --- | --- |
 | Linux x64 | GCC, Debian 12 build baseline. |
-| Linux x86 | GCC multilib or an i386 environment, Debian 12 build baseline. |
+| Linux x86 | GCC multilib or an i386 environment, Debian 12 build baseline; separate SSE2 and no-SSE2 packages. |
+| Linux ARM32 and ARM64 | Debian 12 cross-compilers; ARMv7 hard-float (Pi 2+) or AArch64. Debian/Raspbian 12+ baseline. |
 | macOS arm64 and x86_64 | Apple Clang and macOS SDK; helper scripts target macOS 11.0+. Universal builds are available. |
-| Windows x64 and x86 | MinGW-w64; Windows 7 API target (`_WIN32_WINNT=0x0601`). |
+| Windows x86 | MinGW-w64 with MSVCRT; Windows XP SP2+ runtime, XP API target; separate SSE2 and no-SSE2 packages. |
+| Windows x64 | MinGW-w64; Windows 7 API target. |
+| Windows ARM64 | LLVM-MinGW; Windows 10+ API target. |
 | WebAssembly | Emscripten; single offline HTML, user-supplied game folder. See [browser build](wasm.md). |
 | DOS | DJGPP GCC 12.2.0, 32-bit DPMI executable; VGA and a DPMI host. |
 
 The baseline describes build settings. Successful builds and automated tests do
-not establish runtime compatibility with every old OS or CPU. Windows 7, older
+not establish runtime compatibility with every old OS or CPU. Windows XP/7, older
 non-SSE2 processors, and physical DOS hardware need testing on those systems.
 SDL's DOS minimum is i386 with 4 MB RAM; the game's actual memory and performance
 requirements can be higher. See [SDL's DOS notes](https://github.com/libsdl-org/SDL/blob/015489c672f24feed28c2aa2cdd6176df95329f3/docs/README-dos.md).
@@ -53,6 +56,14 @@ cmake -S . -B out/sdl3-linux-x86 -G Ninja -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_TOOLCHAIN_FILE=cmake/toolchains/linux-x86.cmake
 cmake --build out/sdl3-linux-x86
 ```
+
+For ARM cross-builds, use `cmake/toolchains/linux-arm32.cmake` with
+`gcc-arm-linux-gnueabihf` and the `:armhf` driver development packages, or
+`cmake/toolchains/linux-arm64.cmake` with `gcc-aarch64-linux-gnu` and `:arm64`
+packages. Enable that architecture with `dpkg --add-architecture` before
+installing its packages. The ARM32 toolchain selects ARMv7 and VFPv3-D16 with
+the hard-float ABI. `tools/scripts/install-package-dependencies.sh` records the
+complete package list used by the Debian 12 build jobs.
 
 Append `-DRESTUNTS_SSE2=OFF` for a 32-bit x86 build without SSE/SSE2/AVX code in
 the game, Nuked OPL2 Lite, or bundled SDL. Use another fresh build tree when changing CPU options.
@@ -112,6 +123,18 @@ directory, together with the required `nuked-opl2.dll`. Native Windows builds ca
 Ninja; select its GCC compiler directly instead of a Linux cross toolchain file.
 MSVC is not a supported compiler for this port.
 
+The x86 release builds use Debian 12's MSVCRT-based MinGW toolchain for Windows
+XP compatibility. The pinned SDL imports `IsWow64Process`, which requires
+[Windows XP SP2 or newer](https://learn.microsoft.com/en-us/windows/win32/api/wow64apiset/nf-wow64apiset-iswow64process).
+The x64 release builds select Windows 7 APIs. A local UCRT
+compiler may require additional runtime support on older Windows versions;
+use the CI toolchain when reproducing those release baselines.
+
+For Windows ARM64, put the LLVM-MinGW toolchain's `bin/` on `PATH`, then select
+`-DCMAKE_TOOLCHAIN_FILE=cmake/toolchains/mingw-arm64.cmake`. It uses
+`aarch64-w64-mingw32-clang` and targets Windows 10 or newer. The exact downloaded
+LLVM-MinGW version and checksum are in `tools/scripts/package-toolchains.conf`.
+
 ## DOS with DJGPP
 
 The pinned Linux x64 cross-toolchain is
@@ -134,8 +157,9 @@ cmake --build out/sdl3-dos
 
 This creates 32-bit DOS `.exe` files. Place a compatible DPMI host such as
 [`CWSDPMI.EXE`](https://sandmann.dotster.com/cwsdpmi/) alongside them when the
-DOS environment does not supply one. CI artifacts do not bundle CWSDPMI or the
-game's data files.
+DOS environment does not supply one. CI and release DOS32 packages include
+CWSDPMI in `bin/` and its accompanying redistribution notice under `share/`.
+Original game data is supplied separately by the player.
 
 The DOS video path uses indexed VGA 320x200 with SuperSight off. Enabling
 SuperSight with F12 renders the 3D scene at 1280x800 and selects a VESA mode
@@ -256,18 +280,17 @@ audio callback cannot race resource loading or freeing.
 
 ## Validation and CI
 
-The `SDL3 builds` workflow builds the game and both dump tools on all targets,
-using Debian 12 for the Linux release baseline. Its Linux matrix includes x86
-with SSE2 disabled. Linux tests cover the platform layer and AdLib synthesis
-from a shipped instrument, plus existing host regressions. Audio tests check
+The shared **Build release packages** workflow builds all distribution targets for
+**PR validation** and **Release**, using Debian 12 for the Linux baseline.
+The matrix includes ARMv7, ARM64, both x86 SSE2 variants, Windows ARM64, and a
+Universal macOS 11+ package. It checks package contents without running game
+tests on the cross-built targets. Linux/macOS archives use `.tar.gz` to preserve
+executable permissions; DOS, Windows, and browser archives use `.zip`.
+
+Native Linux SDL3 tests cover the platform layer, AdLib synthesis, worker
+lifecycle, and replacement of the packaged Nuked library. Audio tests check
 audible PCM, pitch, engine frequency, volume, modulation, key-off, native
 engine-definition pointers, unavailable-device fallback, and batch-mode cleanup.
-Windows CI runs platform, worker lifecycle, file I/O, input, audio,
-and dump regressions on Windows Server 2022; Windows 7 runtime compatibility
-still needs verification on that OS. macOS CI builds and runs native CTest
-regressions on Apple Silicon and Intel, checks relocated packages and a rebuilt
-Nuked dylib, and exercises the installed dump tools. Its runtime artifacts
-contain `.tar.gz` archives to preserve executable permissions.
 The shared **PR validation** and **Release** workflows run the complete physics
 corpus and configurable renderer coverage for the selected platforms. Their
 `platforms` input is a nonempty JSON array of unique names from `dos` and
@@ -275,8 +298,8 @@ corpus and configurable renderer coverage for the selected platforms. Their
 x64 SDL3 only, `platforms: '["dos"]'` for DOS only, or
 `platforms: '["dos","sdl3"]'` for both. Like `cameras`, this input is available
 in the manual workflows and the reusable **Build and validate** workflow.
-Tests and reports run only for selected platforms. Unselected builds are
-skipped, except **Release** always builds the DOS executables it publishes.
+Game tests and replay reports run only for selected platforms. Both workflows
+build all distribution packages regardless of the replay-test selection.
 
 Both platforms use identical shard plans and archived Borland references. The
 `cameras`, `target`, and `renderer-test-percentage` inputs apply to both; setting
@@ -286,7 +309,6 @@ errors, or incomplete coverage. These dump comparisons exercise physics and
 framebuffer rendering; interactive display, input, and audio have separate
 platform regressions.
 
-The separate **SDL3 builds** workflow also retains a small Linux x64 sample.
 For an isolated local comparison against freshly generated DOS physics and
 renderer oracles, run:
 
@@ -303,9 +325,10 @@ controllers, or sound hardware have been exercised.
 
 CI archives contain an installed package: executables in `bin/`, Nuked's shared
 library in `lib/` on Linux/macOS or `bin/` on Windows, dependency license notices, and
-the exact Nuked source and rebuild instructions. Windows test archives carry
-the same library, source and notices. DOS packages omit Nuked. These are build
-artifacts, not automatic GitHub Releases or deployments.
+the exact Nuked source and rebuild instructions. DOS packages omit Nuked and
+DOS32 includes CWSDPMI. The browser archive retains its Nuked relinking kit.
+The manual **Release** workflow publishes the exact build archives after
+validation and provenance checks. See [release verification](releases.md).
 
 ## Packaging and Nuked's license
 

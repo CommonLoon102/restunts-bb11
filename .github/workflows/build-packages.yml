@@ -1,0 +1,141 @@
+name: Build release packages
+
+# Reused by PR validation and Release. Packages are archived before upload;
+# the publishing job downloads these exact bytes and never rebuilds them.
+on:
+  workflow_call:
+    inputs:
+      dos-artifact:
+        description: The six DOS16 executables produced by build-and-validate.
+        type: string
+        required: true
+      attest:
+        description: Attest package archives and checksums for a release run.
+        type: boolean
+        default: false
+
+# Inherit the caller's permissions: PRs are read-only; releases additionally
+# grant OIDC and attestation writes to the guarded provenance steps.
+jobs:
+  cross:
+    name: Package ${{ matrix.target }}
+    runs-on: ubuntu-24.04
+    container: debian:12
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+          - dos32
+          - linux-arm32
+          - linux-arm64
+          - linux-x86
+          - linux-x86-no-sse2
+          - linux-x64
+          - windows-arm64
+          - windows-x86
+          - windows-x86-no-sse2
+          - windows-x64
+          - browser
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Install Debian 12 build tools
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends build-essential cmake ninja-build \
+            git curl ca-certificates pkg-config python3 unzip xz-utils bzip2 libfl2
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      - name: Install target dependencies and verified cross compilers
+        env:
+          PACKAGE_TARGET: ${{ matrix.target }}
+        run: bash tools/scripts/install-package-dependencies.sh "$PACKAGE_TARGET"
+
+      - name: Build and verify the complete runtime archive
+        env:
+          PACKAGE_TARGET: ${{ matrix.target }}
+        run: bash tools/scripts/build-package.sh "$PACKAGE_TARGET"
+
+      - name: Upload immutable package artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: packages-${{ matrix.target }}
+          path: dist/packages/*
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 14
+
+      - name: Attest the package and its checksum
+        if: inputs.attest
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4
+        with:
+          subject-path: dist/packages/*
+
+  dos16:
+    name: Package DOS16 validation artifacts
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          name: ${{ inputs.dos-artifact }}
+          path: build/dos16-executables
+
+      - name: Check package integrity validation
+        run: python3 tools/scripts/test-release-packages.py
+
+      - name: Package the already built DOS16 executables
+        run: bash tools/scripts/build-package.sh dos16 build/dos16-executables
+
+      - name: Upload immutable package artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: packages-dos16
+          path: dist/packages/*
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 14
+
+      - name: Attest the package and its checksum
+        if: inputs.attest
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4
+        with:
+          subject-path: dist/packages/*
+
+  macos:
+    name: Package macOS Universal
+    runs-on: macos-15
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      - name: Build both architectures with a macOS 11.0 deployment target
+        env:
+          MACOSX_DEPLOYMENT_TARGET: '11.0'
+        run: bash tools/scripts/build-package.sh macos-universal
+
+      - name: Upload immutable package artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: packages-macos-universal
+          path: dist/packages/*
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 14
+
+      - name: Attest the package and its checksum
+        if: inputs.attest
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4
+        with:
+          subject-path: dist/packages/*
