@@ -105,6 +105,20 @@ const legacy_s8 *mmgr_path_to_name(const legacy_s8 *filename)
 	return result;
 }
 
+static void mmgr_copy_resource_name(legacy_s8 *destination, const legacy_s8 *name)
+{
+	const legacy_s8 *basename = mmgr_path_to_name(name);
+	legacy_s16 name_index = 0;
+	/* Keep all twelve characters of full-length names; bytes after a shorter
+	 * name's terminator do not participate in cache matching. */
+	for (; name_index < MMGR_RESOURCE_NAME_LENGTH && basename[name_index] != 0; name_index++) {
+		destination[name_index] = basename[name_index];
+	}
+	for (; name_index < MMGR_RESOURCE_NAME_LENGTH; name_index++) {
+		destination[name_index] = 0;
+	}
+}
+
 void far *mmgr_alloc_pages(const legacy_s8 *name, legacy_u16 paragraphs)
 {
 	struct MEMCHUNK *live_chunk = mmgr_last_live_chunk;
@@ -122,10 +136,7 @@ void far *mmgr_alloc_pages(const legacy_s8 *name, legacy_u16 paragraphs)
 	}
 
 	mmgr_last_live_chunk = live_chunk;
-	const legacy_s8 *chunkname = mmgr_path_to_name(name);
-	for (legacy_s16 name_index = 0; name_index < MMGR_RESOURCE_NAME_LENGTH; name_index++) {
-		live_chunk->resname[name_index] = chunkname[name_index];
-	}
+	mmgr_copy_resource_name(live_chunk->resname, name);
 
 	legacy_u16 size_or_end_segment = paragraphs;
 	live_chunk->resofs = start_segment;
@@ -505,10 +516,7 @@ void mmgr_rename_chunk(legacy_s8 far *ptr, const legacy_s8 *name)
 
 	MMGR_FIND_ARENA_CHUNK(chunk, segment);
 
-	const legacy_s8 *chunkname = mmgr_path_to_name(name);
-	for (legacy_s16 name_index = 0; name_index < MMGR_RESOURCE_NAME_LENGTH; name_index++) {
-		chunk->resname[name_index] = chunkname[name_index];
-	}
+	mmgr_copy_resource_name(chunk->resname, name);
 }
 
 legacy_u16 mmgr_get_chunk_size(legacy_s8 far *ptr)

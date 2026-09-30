@@ -15,6 +15,8 @@
 #define TEST_RESOURCE_SLOTS 48U
 #define TEST_CHURN_COUNT 2000U
 #define TEST_CHURN_RESOURCE_COUNT 53U
+#define TEST_NAME_PARAGRAPHS 2U
+#define TEST_NAME_PAYLOAD_ID 71U
 
 extern struct MEMCHUNK *mmgr_live_sentinel;
 extern struct MEMCHUNK *mmgr_last_live_chunk;
@@ -119,6 +121,65 @@ static void check_payload(const void *pointer, legacy_u16 paragraphs, legacy_u32
 	}
 }
 
+static void check_named_cache_round_trip(void *resource, const legacy_s8 *lookup,
+										 const legacy_s8 *miss, const legacy_s8 *expected)
+{
+	assert(dos_memory_pointer_segment(resource) == TEST_ARENA_START);
+	assert(mmgr_last_live_chunk->ressize == TEST_NAME_PARAGRAPHS);
+	assert(memcmp(mmgr_last_live_chunk->resname, expected, MMGR_RESOURCE_NAME_LENGTH) == 0);
+	check_payload(resource, TEST_NAME_PARAGRAPHS, TEST_NAME_PAYLOAD_ID);
+	void *cached = mmgr_free((legacy_s8 *)resource);
+	assert(dos_memory_pointer_segment(cached) == TEST_ARENA_END - TEST_NAME_PARAGRAPHS);
+	assert(memcmp(mmgr_first_cached_chunk->resname, expected, MMGR_RESOURCE_NAME_LENGTH) == 0);
+	check_payload(cached, TEST_NAME_PARAGRAPHS, TEST_NAME_PAYLOAD_ID);
+	assert(mmgr_get_chunk_by_name(miss) == NULL);
+	void *restored = mmgr_get_chunk_by_name(lookup);
+	assert(restored == resource);
+	assert(mmgr_get_chunk_size((legacy_s8 *)restored) == TEST_NAME_PARAGRAPHS);
+	assert(memcmp(mmgr_last_live_chunk->resname, expected, MMGR_RESOURCE_NAME_LENGTH) == 0);
+	check_payload(restored, TEST_NAME_PARAGRAPHS, TEST_NAME_PAYLOAD_ID);
+	mmgr_release(restored);
+	assert(mmgr_get_ofs_diff() == TEST_ARENA_END - TEST_ARENA_START);
+}
+
+static void test_resource_name_boundaries(void)
+{
+	/* Tight source objects let ASan detect reads beyond the first terminator. */
+	const legacy_s8 short_name[] = "short";
+	const legacy_s8 empty_name[] = "";
+	const legacy_s8 path_name[] = "C:\\game/assets/misc.pre";
+	const legacy_s8 full_name[] = "ABCDEFGH.EXT";
+	const legacy_s8 long_name[] = "ABCDEFGH.EXTsuffix";
+	const struct {
+		const legacy_s8 *name;
+		const legacy_s8 *lookup;
+		const legacy_s8 *miss;
+		legacy_s8 expected[MMGR_RESOURCE_NAME_LENGTH];
+	} cases[] = {
+		{short_name, short_name, "shorter", "short"},
+		{empty_name, empty_name, "x", ""},
+		{path_name, "misc", "mis", "misc.pre"},
+		{full_name, full_name, "ABCDEFGH.EXZ", "ABCDEFGH.EXT"},
+		{long_name, "ABCDEFGH.EXTdifferent", "ABCDEFGH.EXZ", "ABCDEFGH.EXT"},
+	};
+
+	for (legacy_u16 index = 0; index < sizeof(cases) / sizeof(cases[0]); index++) {
+		reset_arena();
+		void *resource = mmgr_alloc_pages(cases[index].name, TEST_NAME_PARAGRAPHS);
+		write_payload(resource, TEST_NAME_PARAGRAPHS, TEST_NAME_PAYLOAD_ID);
+		check_named_cache_round_trip(resource, cases[index].lookup, cases[index].miss,
+									 cases[index].expected);
+
+		reset_arena();
+		resource = mmgr_alloc_pages(full_name, TEST_NAME_PARAGRAPHS);
+		write_payload(resource, TEST_NAME_PARAGRAPHS, TEST_NAME_PAYLOAD_ID);
+		/* Renaming a full descriptor must erase the previous name's suffix. */
+		mmgr_rename_chunk((legacy_s8 *)resource, cases[index].name);
+		check_named_cache_round_trip(resource, cases[index].lookup, cases[index].miss,
+									 cases[index].expected);
+	}
+}
+
 static void test_free_last_resource_with_full_table(void)
 {
 	void *last_resource = NULL;
@@ -220,6 +281,7 @@ static void test_repeated_cache_churn(void)
 
 int main(void)
 {
+	test_resource_name_boundaries();
 	test_free_last_resource_with_full_table();
 	test_free_non_last_resource_with_full_table();
 	test_repeated_cache_churn();
