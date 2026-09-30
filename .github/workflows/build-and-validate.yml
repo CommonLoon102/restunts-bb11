@@ -1,6 +1,6 @@
 name: Build and validate
 
-# Checks formatting, the regression services and host tests, and plans shards
+# Checks formatting, regression services, host tests and sanitizers, and plans shards
 # in parallel. Then builds, validates physics, validates rendering, and reports.
 # PR and release workflows both gate on this validation.
 on:
@@ -103,6 +103,80 @@ jobs:
 
       - name: Compile and run the host tests
         run: bash src/restunts/tests/run-host-tests.sh
+
+  sanitizers:
+    name: Native sanitizer (${{ matrix.sanitizer }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Clang and start-stop-gc preserve the host fixtures' dead-data removal
+          # while keeping ASan checks on every global that survives the link.
+          - sanitizer: address
+            compiler: clang-18
+            linker-flags: -Wl,-z,start-stop-gc
+          - sanitizer: thread
+            compiler: gcc
+          - sanitizer: undefined
+            compiler: gcc
+    env:
+      CC: ${{ matrix.compiler }}
+      CFLAGS: -O2 -g -fsanitize=${{ matrix.sanitizer }} -fno-omit-frame-pointer -fno-sanitize-recover=all
+      LDFLAGS: ${{ matrix.linker-flags }}
+      ASAN_OPTIONS: detect_leaks=1:halt_on_error=1
+      ASAN_SYMBOLIZER_PATH: /usr/bin/llvm-symbolizer-18
+      TSAN_OPTIONS: halt_on_error=1
+      UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1
+      RESTUNTS_RENDER_REPLAY_TIMEOUT_SECONDS: 600
+      CTEST_TIMEOUT_SECONDS: 1800
+      SDL_VIDEODRIVER: dummy
+      SDL_AUDIODRIVER: dummy
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Install native build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends gcc clang-18 libclang-rt-18-dev llvm-18 \
+            cmake ninja-build pkg-config \
+            libasound2-dev libpulse-dev libx11-dev libxext-dev libxrandr-dev \
+            libxcursor-dev libxi-dev libxfixes-dev libxss-dev libxtst-dev \
+            libwayland-dev libxkbcommon-dev libudev-dev libdrm-dev libgbm-dev \
+            libegl1-mesa-dev libgl1-mesa-dev
+
+      - name: Reserve a compatible address space for ThreadSanitizer
+        if: matrix.sanitizer == 'thread'
+        # Ubuntu's high-entropy ASLR can overlap GCC TSan's fixed shadow mapping.
+        run: sudo sysctl -w vm.mmap_rnd_bits=28
+
+      - name: Download and extract the game assets
+        run: |
+          curl --fail --location --silent --show-error --retry 3 \
+            https://github.com/CommonLoon102/restunts4d-oracles/releases/download/v1.0.1/BB11.zip \
+            --output "$RUNNER_TEMP/BB11.zip"
+          unzip -oq "$RUNNER_TEMP/BB11.zip" -d stunts
+
+      - name: Build instrumented native binaries
+        run: |
+          cmake -S . -B build/sanitizer -G Ninja -DCMAKE_BUILD_TYPE=Debug \
+            -DRESTUNTS_BUILD_TESTS=ON
+          cmake --build build/sanitizer --parallel 2
+
+      - name: Run instrumented host and SDL3 regressions
+        run: >-
+          ctest --test-dir build/sanitizer --output-on-failure --no-tests=error
+          --timeout "$CTEST_TIMEOUT_SECONDS"
+
+      - name: Upload sanitizer test diagnostics
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: sanitizer-${{ matrix.sanitizer }}-logs
+          path: build/sanitizer/Testing/Temporary/
+          if-no-files-found: warn
+          retention-days: 14
 
   plan:
     name: Plan the shards
@@ -215,7 +289,7 @@ jobs:
 
   build:
     name: Build DOS executables
-    needs: [formatting, dumpsrv-tests, host-tests, plan]
+    needs: [formatting, dumpsrv-tests, host-tests, sanitizers, plan]
     if: inputs.build-dos-artifact || contains(fromJSON(needs.plan.outputs.platforms), 'dos')
     runs-on: ubuntu-24.04
     timeout-minutes: 60
@@ -284,7 +358,7 @@ jobs:
 
   build-sdl3:
     name: Build SDL3 executables (Linux x64)
-    needs: [formatting, dumpsrv-tests, host-tests, plan]
+    needs: [formatting, dumpsrv-tests, host-tests, sanitizers, plan]
     if: contains(fromJSON(needs.plan.outputs.platforms), 'sdl3')
     runs-on: ubuntu-24.04
     timeout-minutes: 35

@@ -11,11 +11,17 @@ import tempfile
 GAMESTATE_SIZE = 1120
 RANDOM_SEED_SIZE = 6
 RECORD_SIZE = GAMESTATE_SIZE + RANDOM_SEED_SIZE
+REPLAY_TIMEOUT_SECONDS = 120
+FULL_REPLAY_TIMEOUT_SECONDS = 300
 
 
 def main():
     executable, data_directory = map(Path, sys.argv[1:3])
     full_replays = "--full" in sys.argv[3:]
+    default_timeout = FULL_REPLAY_TIMEOUT_SECONDS if full_replays else REPLAY_TIMEOUT_SECONDS
+    timeout_seconds = int(os.environ.get("RESTUNTS_RENDER_REPLAY_TIMEOUT_SECONDS", default_timeout))
+    if timeout_seconds <= 0:
+        raise ValueError("RESTUNTS_RENDER_REPLAY_TIMEOUT_SECONDS must be a positive integer")
     executable = executable.resolve()
     data_directory = data_directory.resolve()
     environment = dict(os.environ, SDL_VIDEODRIVER="dummy", SDL_AUDIODRIVER="dummy",
@@ -42,7 +48,7 @@ def main():
                                 replay, str(output), str(mode), str(limit),
                                 str(first), str(last), *settling],
                                env=environment, check=True,
-                               timeout=300 if full_replays else 120)
+                               timeout=timeout_seconds)
                 actual = output.read_bytes()
                 assert actual and len(actual) % RECORD_SIZE == 0
                 if baseline is None:
