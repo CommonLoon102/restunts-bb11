@@ -13,6 +13,8 @@
 
 #undef memcpy
 
+extern legacy_u8 primidxcounttab[SHAPE3D_PRIMITIVE_TYPE_COUNT];
+
 static struct SPRITE target;
 static legacy_u8 rows[200 * 2];
 static legacy_u8 *screen;
@@ -76,7 +78,11 @@ static void queue(legacy_u8 type, legacy_u32 count, const struct SHAPE3D_HIRES_V
 	queue_flagged(type, count, vertices, 0);
 }
 
-#define DECAL_TEST_MINIMUM_WIDTH 0.75
+#define DECAL_TEST_INTERIOR_WIDTH 0.5
+#define DECAL_TEST_MAXIMUM_BORDER_WIDTH 2U
+#define DECAL_TEST_CENTER_Y (HIRES_HEIGHT / 2)
+#define LINE_TEST_FAR_MAXIMUM_WIDTH 2U
+#define LINE_TEST_CLIPPED_FAR_SAMPLE_X 739
 #define DECAL_TEST_BORDER_SAMPLE_OFFSET (HIRES_SAMPLE_CENTER_OFFSET / 2)
 
 /* Attached road dashes are polygons. Nearby markings retain their weight;
@@ -124,21 +130,22 @@ static void test_attached_polygon_weight(void)
 						assert(coverage >= 80 * (HIRES_SCALE - 1));
 						near_coverage[translation][winding] = coverage;
 					} else if (distance == 2) {
-						assert(coverage <= 84);
+						assert(coverage <= 84 * DECAL_TEST_MAXIMUM_BORDER_WIDTH);
 						assert(coverage < near_coverage[translation][winding]);
 					}
 					for (legacy_s32 along = -30; along <= 30; along++) {
 						legacy_s32 x = (legacy_s32)(640 + tangent_x * along + shift);
 						legacy_s32 y = (legacy_s32)(400 + tangent_y * along + shift);
 						if (distance == 2) {
-							/* Sample the interior of the projected strip, away from its
-							 * end caps. Coverage depends on the pixel center's distance
-							 * from the dash, not just its integer centerline. */
+							/* Edge quads may cover an extra sample compared with the old
+							 * distance-based border. Keep their interior visible while
+							 * bounding the complete distant stroke above. */
 							legacy_f64 offset_x = x + HIRES_SAMPLE_CENTER_OFFSET - (640 + shift);
 							legacy_f64 offset_y = y + HIRES_SAMPLE_CENTER_OFFSET - (400 + shift);
 							legacy_f64 across = offset_x * tangent_y - offset_y * tangent_x;
-							legacy_s32 covered = SDL_fabs(across) < DECAL_TEST_MINIMUM_WIDTH / 2;
-							assert((image[y * HIRES_WIDTH + x] == 8) == covered);
+							if (SDL_fabs(across) < DECAL_TEST_INTERIOR_WIDTH / 2) {
+								assert(image[y * HIRES_WIDTH + x] == 8);
+							}
 						} else {
 							assert(image[y * HIRES_WIDTH + x] == 8);
 						}
@@ -156,7 +163,7 @@ static void test_attached_polygon_midrange_weight(void)
 	/* Keep the projected dash length and subpixel phase fixed. These distances
 	 * cover the near cap, mid-range falloff, and distant visibility floor. */
 	const legacy_f64 depths[] = {200, 250, 300, 400, 1000, 6400};
-	const legacy_u32 expected_widths[] = {4, 3, 2, 1, 1, 1};
+	legacy_u32 widths[SDL_arraysize(depths)] = {0};
 	for (legacy_u32 distance = 0; distance < sizeof(depths) / sizeof(depths[0]); distance++) {
 		legacy_f64 depth = depths[distance];
 		legacy_f64 shift = depth * 0.375 / 640;
@@ -174,10 +181,16 @@ static void test_attached_polygon_midrange_weight(void)
 			for (legacy_s32 y = 395; y <= 405; y++) {
 				coverage += image[y * HIRES_WIDTH + x] == 8;
 			}
-			assert(coverage == expected_widths[distance]);
+			assert(coverage >= 1 && coverage <= HIRES_SCALE);
+			assert(widths[distance] == 0 || widths[distance] == coverage);
+			widths[distance] = coverage;
 			assert(image[400 * HIRES_WIDTH + x] == 8);
 		}
+		if (distance != 0) {
+			assert(widths[distance] <= widths[distance - 1U]);
+		}
 	}
+	assert(widths[0] > widths[SDL_arraysize(depths) - 1U]);
 }
 
 static void test_attached_polygon_weight_follows_projection(void)
@@ -338,28 +351,38 @@ static void test_attached_polygon_occlusion(void)
 	const struct SHAPE3D_HIRES_VECTOR nearer[] = {
 		{-3.75, -1.25, 40}, {0, -1.25, 40}, {0, 1.25, 40}, {-3.75, 1.25, 40}};
 	const legacy_u8 indices[] = {0, 1, 2, 3};
-	for (legacy_u32 order = 0; order < 2; order++) {
-		reset_target();
-		queue(RENDER_PRIMITIVE_POLYGON, 4, parent);
-		shape3d_hires_queue(1, RENDER_PRIMITIVE_POLYGON, 4, indices, marking, 3);
-		shape3d_hires_update_bounds(1, RENDER_PRIMITIVE_POLYGON, &bounds);
-		shape3d_hires_queue(2, RENDER_PRIMITIVE_POLYGON, 4, indices, nearer, 0);
-		shape3d_hires_update_bounds(2, RENDER_PRIMITIVE_POLYGON, &bounds);
-		if (order == 0) {
-			shape3d_hires_render(2, RENDER_PRIMITIVE_POLYGON, 9, 0, 0, 0, 0);
-		}
-		shape3d_hires_render(0, RENDER_PRIMITIVE_POLYGON, 7, 0, 0, 0, 0);
-		shape3d_hires_render(1, RENDER_PRIMITIVE_POLYGON, 8, 0, 0, 0, 0);
-		if (order != 0) {
-			shape3d_hires_render(2, RENDER_PRIMITIVE_POLYGON, 9, 0, 0, 0, 0);
-		}
-		hires_end();
-		const legacy_u8 *image = pixels();
-		assert(count_color(8) != 0);
-		for (legacy_s32 y = 398; y < 402; y++) {
-			assert(image[y * HIRES_WIDTH + 639] == 9);
-			assert(image[y * HIRES_WIDTH + 640] == 8);
-			assert(image[y * HIRES_WIDTH + 660] == 8);
+	for (legacy_s32 batched = 0; batched < 2; batched++) {
+		for (legacy_u32 order = 0; order < 2; order++) {
+			reset_target();
+			if (batched) {
+				shape3d_hires_batch_begin();
+			}
+			queue(RENDER_PRIMITIVE_POLYGON, 4, parent);
+			shape3d_hires_queue(1, RENDER_PRIMITIVE_POLYGON, 4, indices, marking, 3);
+			shape3d_hires_update_bounds(1, RENDER_PRIMITIVE_POLYGON, &bounds);
+			shape3d_hires_queue(2, RENDER_PRIMITIVE_POLYGON, 4, indices, nearer, 0);
+			shape3d_hires_update_bounds(2, RENDER_PRIMITIVE_POLYGON, &bounds);
+			if (order == 0) {
+				shape3d_hires_render(2, RENDER_PRIMITIVE_POLYGON, 9, 0, 0, 0, 0);
+			}
+			shape3d_hires_render(0, RENDER_PRIMITIVE_POLYGON, 7, 0, 0, 0, 0);
+			shape3d_hires_render(1, RENDER_PRIMITIVE_POLYGON, 8, 0, 0, 0, 0);
+			if (order != 0) {
+				shape3d_hires_render(2, RENDER_PRIMITIVE_POLYGON, 9, 0, 0, 0, 0);
+			}
+			if (batched) {
+				shape3d_hires_batch_end();
+			}
+			hires_end();
+			const legacy_u8 *image = pixels();
+			assert(count_color(8) != 0);
+			/* Check the interior of the cheaper edge-quad stroke, including the
+			 * exact left/right boundary where an independent nearer panel covers it. */
+			for (legacy_s32 y = DECAL_TEST_CENTER_Y - 1; y <= DECAL_TEST_CENTER_Y; y++) {
+				assert(image[y * HIRES_WIDTH + 639] == 9);
+				assert(image[y * HIRES_WIDTH + 640] == 8);
+				assert(image[y * HIRES_WIDTH + 660] == 8);
+			}
 		}
 	}
 }
@@ -377,23 +400,31 @@ static void test_attached_polygon_preserves_interior_depth(void)
 												  {2 / 6.08, 20 / 6.08, 1 / 0.0095},
 												  {-2 / 6.08, 20 / 6.08, 1 / 0.0095}};
 	const legacy_u8 indices[] = {0, 1, 2, 3};
-	for (legacy_u32 order = 0; order < 2; order++) {
-		reset_target();
-		queue_flagged(RENDER_PRIMITIVE_POLYGON, 4, marking, 3);
-		shape3d_hires_queue(1, RENDER_PRIMITIVE_POLYGON, 4, indices, nearer, 0);
-		shape3d_hires_update_bounds(1, RENDER_PRIMITIVE_POLYGON, &bounds);
-		if (order == 0) {
-			shape3d_hires_render(1, RENDER_PRIMITIVE_POLYGON, 9, 0, 0, 0, 0);
-		}
-		shape3d_hires_render(0, RENDER_PRIMITIVE_POLYGON, 8, 0, 0, 0, 0);
-		if (order != 0) {
-			shape3d_hires_render(1, RENDER_PRIMITIVE_POLYGON, 9, 0, 0, 0, 0);
-		}
-		hires_end();
-		const legacy_u8 *image = pixels();
-		assert(count_color(9) != 0);
-		for (legacy_s32 y = 385; y < 415; y++) {
-			assert(image[y * HIRES_WIDTH + 640] == 9);
+	for (legacy_s32 batched = 0; batched < 2; batched++) {
+		for (legacy_u32 order = 0; order < 2; order++) {
+			reset_target();
+			if (batched) {
+				shape3d_hires_batch_begin();
+			}
+			queue_flagged(RENDER_PRIMITIVE_POLYGON, 4, marking, 3);
+			shape3d_hires_queue(1, RENDER_PRIMITIVE_POLYGON, 4, indices, nearer, 0);
+			shape3d_hires_update_bounds(1, RENDER_PRIMITIVE_POLYGON, &bounds);
+			if (order == 0) {
+				shape3d_hires_render(1, RENDER_PRIMITIVE_POLYGON, 9, 0, 0, 0, 0);
+			}
+			shape3d_hires_render(0, RENDER_PRIMITIVE_POLYGON, 8, 0, 0, 0, 0);
+			if (order != 0) {
+				shape3d_hires_render(1, RENDER_PRIMITIVE_POLYGON, 9, 0, 0, 0, 0);
+			}
+			if (batched) {
+				shape3d_hires_batch_end();
+			}
+			hires_end();
+			const legacy_u8 *image = pixels();
+			assert(count_color(9) != 0);
+			for (legacy_s32 y = 385; y < 415; y++) {
+				assert(image[y * HIRES_WIDTH + 640] == 9);
+			}
 		}
 	}
 }
@@ -487,7 +518,7 @@ static void test_line_weight(void)
 				assert(coverage > 80 * HIRES_SCALE);
 				assert(image[400 * HIRES_WIDTH + 645] == 3);
 			} else {
-				assert(coverage > 1 && coverage <= HIRES_SCALE * HIRES_SCALE);
+				assert(coverage >= 1 && coverage <= HIRES_SCALE * HIRES_SCALE);
 			}
 			if (reverse == 0) {
 				memcpy(forward, image, sizeof(forward));
@@ -580,8 +611,11 @@ static void test_line_weight_varies_along_depth(void)
 		legacy_u32 middle_width = colored_column(660, 10);
 		legacy_u32 far_width = colored_column(730, 10);
 		assert(near_width == HIRES_SCALE);
-		assert(near_width > middle_width && middle_width > far_width);
-		assert(far_width == 1);
+		/* A tapered quad can round adjacent far widths to the same sample
+		 * count; it must still narrow and never widen with distance. */
+		assert(near_width >= middle_width && middle_width >= far_width);
+		assert(near_width > far_width);
+		assert(far_width >= 1 && far_width <= LINE_TEST_FAR_MAXIMUM_WIDTH);
 	}
 }
 
@@ -604,7 +638,8 @@ static void test_line_weight_after_clipping(void)
 		hires_end();
 		assert(count_color(10) != 0);
 		assert(colored_column(640, 10) == HIRES_SCALE);
-		assert(colored_column(740, 10) == 1);
+		assert(colored_column(LINE_TEST_CLIPPED_FAR_SAMPLE_X, 10) >= 1);
+		assert(colored_column(LINE_TEST_CLIPPED_FAR_SAMPLE_X, 10) <= LINE_TEST_FAR_MAXIMUM_WIDTH);
 	}
 }
 
@@ -981,6 +1016,15 @@ static void prepare_scene(const struct VECTOR *vertices, legacy_u32 count,
 	scene_shape.shape3d_numverts = (legacy_u16)count;
 	scene_shape.shape3d_vertex_bytes = scene_vertices;
 	scene_shape.shape3d_numpaints = 1;
+	for (legacy_u32 offset = 0;
+		 offset < primitive_size && primitives[offset] != SHAPE3D_PRIMITIVE_EMPTY;) {
+		legacy_u8 type = primitives[offset];
+		assert(type < SHAPE3D_PRIMITIVE_TYPE_COUNT);
+		offset +=
+			SHAPE3D_PRIMITIVE_HEADER_SIZE + scene_shape.shape3d_numpaints + primidxcounttab[type];
+		assert(offset <= primitive_size);
+		scene_shape.shape3d_numprimitives++;
+	}
 	scene_shape.shape3d_primitives = scene_primitives;
 	scene_shape.shape3d_visibility_masks = scene_visibility;
 	scene_shape.shape3d_front_facing_masks = scene_front_facing;
@@ -1013,12 +1057,56 @@ static void test_visible_line_overhang_survives_culling(void)
 	for (legacy_u32 edge = 0; edge < 2; edge++) {
 		prepare_scene(lines[edge], 2, primitive, sizeof(primitive), 1);
 		assert(shape3d_transform_and_queue(&scene_instance) == 0);
-		assert(polyinfonumpolys == 1);
+		assert(shape3d_queued_primitive_count() == 1);
 		shape3d_render_queued_primitives();
 		assert(count_color(7) != 0);
 		assert(pixels()[edge == 0 ? 400 * HIRES_WIDTH : 640] == 7);
 	}
 	projection_focal_length_x = projection_focal_length_y = 160;
+}
+
+#define ROUND_CULL_VERTEX_CAPACITY (SHAPE3D_WHEEL_RIM_VERTEX_COUNT * 2U)
+#define ROUND_CULL_OUTSIDE_SHIFT 200
+
+static void test_visible_round_overhang_survives_culling(void)
+{
+	/* Every defining point is offscreen, but a sphere or wheel extends in
+	 * both directions from its center. Its visible rim must survive culling. */
+	static const struct VECTOR models[][ROUND_CULL_VERTEX_CAPACITY] = {
+		{{-110, 0, 100}, {-150, 0, 100}},
+		{{-110, 0, 100},
+		 {-150, 0, 100},
+		 {-110, 20, 100},
+		 {-121, 0, 110},
+		 {-165, 0, 110},
+		 {-121, 22, 110}}};
+	static const legacy_u16 counts[] = {2, ROUND_CULL_VERTEX_CAPACITY};
+	static const legacy_u8 primitives[][SHAPE3D_PRIMITIVE_HEADER_SIZE + 1U +
+										ROUND_CULL_VERTEX_CAPACITY +
+										SHAPE3D_PRIMITIVE_HEADER_SIZE] = {
+		{SHAPE3D_PRIMITIVE_SPHERE, 0, 0, 0, 1, 0, 0},
+		{SHAPE3D_PRIMITIVE_WHEEL, 0, 0, 0, 1, 2, 3, 4, 5, 0, 0}};
+	for (legacy_u32 kind = 0; kind < SDL_arraysize(models); kind++) {
+		for (legacy_s32 side = 0; side < 2; side++) {
+			for (legacy_s32 outside = 0; outside < 2; outside++) {
+				struct VECTOR model[ROUND_CULL_VERTEX_CAPACITY];
+				for (legacy_u32 vertex = 0; vertex < counts[kind]; vertex++) {
+					model[vertex] = models[kind][vertex];
+					model[vertex].x -= outside * ROUND_CULL_OUTSIDE_SHIFT;
+					if (side != 0) {
+						model[vertex].x = -model[vertex].x;
+					}
+				}
+				prepare_scene(model, counts[kind], primitives[kind], sizeof(primitives[kind]), 1);
+				assert(shape3d_transform_and_queue(&scene_instance) ==
+					   (outside ? LEGACY_U16_MAX : 0));
+				assert(shape3d_queued_primitive_count() == (outside ? 0U : 1U));
+				shape3d_render_queued_primitives();
+				legacy_u32 coverage = count_color(7) + count_color(8) + count_color(9);
+				assert((coverage != 0) == !outside);
+			}
+		}
+	}
 }
 
 static void test_line_weight_in_half_scale_view(void)
@@ -1050,11 +1138,11 @@ static void test_thin_polygon_and_attached_detail(void)
 	const legacy_u8 primitives[] = {4, 0, 0, 0, 1, 2, 3, 2, 2, 1, 0, 1, 0, 0};
 	prepare_scene(road, 4, primitives, sizeof(primitives), 0);
 	assert(shape3d_transform_and_queue(&scene_instance) == LEGACY_U16_MAX);
-	assert(polyinfonumpolys == 0);
+	assert(shape3d_queued_primitive_count() == 0);
 
 	prepare_scene(road, 4, primitives, sizeof(primitives), 1);
 	assert(shape3d_transform_and_queue(&scene_instance) == 0);
-	assert(polyinfonumpolys == 2);
+	assert(shape3d_queued_primitive_count() == 2);
 	shape3d_render_queued_primitives();
 	assert(count_color(7) > 0);
 	assert(count_color(8) > 0);
@@ -1069,18 +1157,18 @@ static void test_full_polygon_winding(void)
 	const legacy_u8 reverse[] = {5, 0, 0, 4, 3, 2, 1, 0, 0, 0};
 	prepare_scene(panel, 5, forward, sizeof(forward), 0);
 	assert(shape3d_transform_and_queue(&scene_instance) == LEGACY_U16_MAX);
-	assert(polyinfonumpolys == 0);
+	assert(shape3d_queued_primitive_count() == 0);
 
 	prepare_scene(panel, 5, forward, sizeof(forward), 1);
 	assert(shape3d_transform_and_queue(&scene_instance) == 0);
-	assert(polyinfonumpolys == 1);
+	assert(shape3d_queued_primitive_count() == 1);
 	shape3d_render_queued_primitives();
 	assert(count_color(7) > 20000);
 	assert(pixels()[400 * HIRES_WIDTH + 640] == 7);
 
 	prepare_scene(panel, 5, reverse, sizeof(reverse), 1);
 	assert(shape3d_transform_and_queue(&scene_instance) == LEGACY_U16_MAX);
-	assert(polyinfonumpolys == 0);
+	assert(shape3d_queued_primitive_count() == 0);
 	shape3d_render_queued_primitives();
 	assert(count_color(7) == 0);
 }
@@ -1092,13 +1180,13 @@ static void test_clipped_polygon_visibility(void)
 	const legacy_u8 reverse[] = {3, 0, 0, 2, 1, 0, 0, 0};
 	prepare_scene(triangle, 3, forward, sizeof(forward), 1);
 	assert(shape3d_transform_and_queue(&scene_instance) == 0);
-	assert(polyinfonumpolys == 1);
+	assert(shape3d_queued_primitive_count() == 1);
 	shape3d_render_queued_primitives();
 	assert(count_color(7) > 100000);
 
 	prepare_scene(triangle, 3, reverse, sizeof(reverse), 1);
 	assert(shape3d_transform_and_queue(&scene_instance) == LEGACY_U16_MAX);
-	assert(polyinfonumpolys == 0);
+	assert(shape3d_queued_primitive_count() == 0);
 }
 
 static void test_wheel_face_and_sort_depth(void)
@@ -1108,13 +1196,13 @@ static void test_wheel_face_and_sort_depth(void)
 	const legacy_u8 primitive[] = {12, 0, 0, 0, 1, 2, 3, 4, 5, 0, 0};
 	prepare_scene(wheel, 6, primitive, sizeof(primitive), 0);
 	assert(shape3d_transform_and_queue(&scene_instance) == 0);
-	assert(polyinfonumpolys == 1);
+	assert(shape3d_queued_primitive_count() == 1);
 	assert(LEGACY_READ_U16_LE(scene_polyinfo) == 420);
 
 	prepare_scene(wheel, 6, primitive, sizeof(primitive), 1);
 	assert(shape3d_transform_and_queue(&scene_instance) == 0);
-	assert(polyinfonumpolys == 1);
-	assert(LEGACY_READ_U16_LE(scene_polyinfo) == 400);
+	assert(shape3d_queued_primitive_count() == 1);
+	assert(polyinfonumpolys == 0 && polyinfoptrnext == 0);
 	shape3d_render_queued_primitives();
 	assert(count_color(7) + count_color(8) + count_color(9) != 0);
 }
@@ -1128,7 +1216,7 @@ static void test_crossing_surfaces_use_pixel_depth(void)
 	for (legacy_u32 order = 0; order < 2; order++) {
 		prepare_scene(panels, 8, order == 0 ? forward : reverse, sizeof(forward), 1);
 		assert(shape3d_transform_and_queue(&scene_instance) == 0);
-		assert(polyinfonumpolys == 2);
+		assert(shape3d_queued_primitive_count() == 2);
 		shape3d_render_queued_primitives();
 		/* The equal average depths cannot order these intersecting panels:
 		 * each is nearer on a different side of the image. */
@@ -1184,37 +1272,45 @@ static void test_separate_shapes_preserve_authored_overlays(void)
 		{-2.5, -1.25, 40}, {0, -1.25, 40}, {0, 1.25, 40}, {-2.5, 1.25, 40}};
 	const legacy_u8 indices[] = {0, 1, 2, 3};
 	const legacy_s32 modes[] = {SHAPE3D_HIRES_DEPTH_ORDERED, SHAPE3D_HIRES_DEPTH_SORTED};
-	for (legacy_u32 mode = 0; mode < 2; mode++) {
-		for (legacy_u32 order = 0; order < 2; order++) {
-			reset_target();
-			queue_polygon_shape(0, modes[mode], parent);
-			/* Unsorted roads retain authored paint order even without a
-			 * primitive attachment flag; sorted models use explicit decals. */
-			shape3d_hires_queue(1, RENDER_PRIMITIVE_POLYGON, 4, indices, marking,
-								mode == 0 ? 0 : 2);
-			queue_polygon_shape(2, SHAPE3D_HIRES_DEPTH_SORTED, middle);
-			queue_polygon_shape(3, SHAPE3D_HIRES_DEPTH_SORTED, nearer);
-			if (order == 0) {
-				shape3d_hires_render(2, RENDER_PRIMITIVE_POLYGON, 9, 0, 0, 0, 0);
-				shape3d_hires_render(3, RENDER_PRIMITIVE_POLYGON, 10, 0, 0, 0, 0);
+	for (legacy_s32 batched = 0; batched < 2; batched++) {
+		for (legacy_u32 mode = 0; mode < 2; mode++) {
+			for (legacy_u32 order = 0; order < 2; order++) {
+				reset_target();
+				if (batched) {
+					shape3d_hires_batch_begin();
+				}
+				queue_polygon_shape(0, modes[mode], parent);
+				/* Both former ordering modes use an explicit attachment to retain
+				 * paint authored behind its own support. */
+				shape3d_hires_queue(1, RENDER_PRIMITIVE_POLYGON, 4, indices, marking,
+									SHAPE3D_PRIMITIVE_SKIP_DEPTH_SORT_FLAG);
+				queue_polygon_shape(2, SHAPE3D_HIRES_DEPTH_SORTED, middle);
+				queue_polygon_shape(3, SHAPE3D_HIRES_DEPTH_SORTED, nearer);
+				if (order == 0) {
+					shape3d_hires_render(2, RENDER_PRIMITIVE_POLYGON, 9, 0, 0, 0, 0);
+					shape3d_hires_render(3, RENDER_PRIMITIVE_POLYGON, 10, 0, 0, 0, 0);
+				}
+				shape3d_hires_render(0, RENDER_PRIMITIVE_POLYGON, 7, 0, 0, 0, 0);
+				shape3d_hires_render(1, RENDER_PRIMITIVE_POLYGON, 8, 0, 0, 0, 0);
+				if (order != 0) {
+					shape3d_hires_render(2, RENDER_PRIMITIVE_POLYGON, 9, 0, 0, 0, 0);
+					shape3d_hires_render(3, RENDER_PRIMITIVE_POLYGON, 10, 0, 0, 0, 0);
+				}
+				if (batched) {
+					shape3d_hires_batch_end();
+				}
+				hires_end();
+				/* Paint behind its own support stays visible, yet retains the
+				 * support's depth against a surface between the road and paint. */
+				assert(pixels()[400 * HIRES_WIDTH + 660] == 8);
+				assert(pixels()[390 * HIRES_WIDTH + 660] == 7);
+				assert(pixels()[400 * HIRES_WIDTH + 620] == 10);
 			}
-			shape3d_hires_render(0, RENDER_PRIMITIVE_POLYGON, 7, 0, 0, 0, 0);
-			shape3d_hires_render(1, RENDER_PRIMITIVE_POLYGON, 8, 0, 0, 0, 0);
-			if (order != 0) {
-				shape3d_hires_render(2, RENDER_PRIMITIVE_POLYGON, 9, 0, 0, 0, 0);
-				shape3d_hires_render(3, RENDER_PRIMITIVE_POLYGON, 10, 0, 0, 0, 0);
-			}
-			hires_end();
-			/* Paint behind its own support stays visible, yet retains the
-			 * support's depth against a surface between the road and paint. */
-			assert(pixels()[400 * HIRES_WIDTH + 660] == 8);
-			assert(pixels()[390 * HIRES_WIDTH + 660] == 7);
-			assert(pixels()[400 * HIRES_WIDTH + 620] == 10);
 		}
 	}
 }
 
-static void test_ordered_shapes_keep_nearest_support(void)
+static void test_unattached_polygons_keep_nearest_surface(void)
 {
 	const struct SHAPE3D_HIRES_VECTOR parent[] = {
 		{-5, -2.5, 80}, {5, -2.5, 80}, {5, 2.5, 80}, {-5, 2.5, 80}};
@@ -1241,9 +1337,9 @@ static void test_ordered_shapes_keep_nearest_support(void)
 			shape3d_hires_render(3, RENDER_PRIMITIVE_POLYGON, 10, 0, 0, 0, 0);
 		}
 		hires_end();
-		/* The nearer second surface advances the shape's depth. Subsequent
-		 * rear-authored paint must not move it back behind the other shape. */
-		assert(pixels()[400 * HIRES_WIDTH + 660] == 9);
+		/* Unattached geometry uses its own depth even when its model had
+		 * painter ordering. A rear panel cannot repaint the nearer surface. */
+		assert(pixels()[400 * HIRES_WIDTH + 660] == 8);
 		assert(pixels()[390 * HIRES_WIDTH + 660] == 8);
 	}
 }
@@ -1340,14 +1436,14 @@ static void test_far_diagonal_geometry(void)
 		scene_instance.pos = (struct VECTOR){30000, 0, 30000};
 		scene_instance.rotvec.z = 128;
 		assert(shape3d_transform_and_queue(&scene_instance) == 0);
-		assert(polyinfonumpolys == 2);
+		assert(shape3d_queued_primitive_count() == 2);
 		shape3d_render_queued_primitives();
 		assert(pixels()[400 * HIRES_WIDTH + 620] == 7);
 		assert(pixels()[400 * HIRES_WIDTH + 660] == 8);
 	}
 }
 
-static void test_far_primitive_sort_depth(void)
+static void test_far_primitive_depth_visibility(void)
 {
 	const struct VECTOR panels[] = {
 		{-2000, -1000, 1200},  {-2000, 1000, 1200},	 {2000, 1000, 1200},  {2000, -1000, 1200},
@@ -1362,10 +1458,10 @@ static void test_far_primitive_sort_depth(void)
 		scene_instance.pos = (struct VECTOR){23000, 0, 23000};
 		scene_instance.rotvec.z = 128;
 		assert(shape3d_transform_and_queue(&scene_instance) == 0);
-		assert(polyinfonumpolys == 2);
-		/* Their depths straddle the signed 16-bit boundary. The far panel must
-		 * precede the near panel regardless of the shape's authored order. */
-		assert(polygon_next_index[order] == (legacy_s32)(1 - order));
+		assert(shape3d_queued_primitive_count() == 2);
+		/* Their depths straddle the signed 16-bit boundary. Visibility must
+		 * select the near panel without constructing a legacy painter queue. */
+		assert(polyinfonumpolys == 0 && polyinfoptrnext == 0);
 		shape3d_render_queued_primitives();
 		assert(pixels()[400 * HIRES_WIDTH + 640] == 8);
 	}
@@ -1379,11 +1475,10 @@ static void test_body_panel_occludes_wheel(void)
 	const legacy_u8 primitives[] = {4, 0, 0, 0, 1, 2, 3, 12, 0, 1, 4, 5, 6, 7, 8, 9, 0, 0};
 	prepare_scene(model, 10, primitives, sizeof(primitives), 1);
 	assert(shape3d_transform_and_queue(&scene_instance) == 0);
-	assert(polyinfonumpolys == 2);
-	/* The body averages350 while the wheel is349. At the wheel's screen
-	 * position the sloping body is actually nearer, at approximately288. */
-	assert(LEGACY_READ_U16_LE(scene_polyinfo) == 350);
-	assert(LEGACY_READ_U16_LE(scene_polyinfo + polygon_record_offsets[1]) == 349);
+	assert(shape3d_queued_primitive_count() == 2);
+	/* The body averages 350 while the wheel is 349. At the wheel's screen
+	 * position the sloping body is actually nearer, at approximately 288. */
+	assert(polyinfonumpolys == 0 && polyinfoptrnext == 0);
 	shape3d_render_queued_primitives();
 	assert(pixels()[400 * HIRES_WIDTH + 732] == 7);
 	assert(count_color(8) + count_color(9) + count_color(10) == 0);
@@ -1626,7 +1721,7 @@ static void test_concave_polygon_scanlines(void)
 	target.sprite_bottom = HIRES_HEIGHT / HIRES_SCALE;
 }
 
-static void test_supersight_full_scene_queue(void)
+static void test_hypervision_full_scene_queue(void)
 {
 	/* A dense scene exceeds both the old byte buffer and every 16-bit index.
 	 * Three out-of-order points per shape also grow the queue mid-shape. */
@@ -1643,20 +1738,13 @@ static void test_supersight_full_scene_queue(void)
 		}
 		assert(shape3d_transform_and_queue(&scene_instance) == 0);
 	}
-	assert(polyinfonumpolys == count);
-	assert(polyinfoptrnext == count * 10U);
-	assert(polygon_record_offsets[count - 1U] > LEGACY_U16_MAX);
-	polyinfo_link link = 1;
-	for (legacy_u32 index = 0; index < count; index++) {
-		legacy_u32 expected = index / 3U * 3U + (index % 3U + 1U) % 3U;
-		assert(link == (polyinfo_link)expected);
-		assert(polygon_record_offsets[link] == expected * 10U);
-		assert(polyinfoptr[polygon_record_offsets[link] + 4U] == RENDER_PRIMITIVE_POINT);
-		link = polygon_next_index[link];
-	}
-	assert(link == -1);
+	assert(shape3d_queued_primitive_count() == count);
+	/* Enhanced commands exceed the old 16-bit limits without serializing
+	 * or sorting any classic polygon records. */
+	assert(count > LEGACY_U16_MAX);
+	assert(polyinfonumpolys == 0 && polyinfoptrnext == 0);
 	shape3d_render_queued_primitives();
-	assert(polyinfonumpolys == 0);
+	assert(shape3d_queued_primitive_count() == 0);
 	assert(count_color(7) != 0);
 	assert(count_color(8) != 0);
 
@@ -1683,14 +1771,14 @@ static void test_supersight_full_scene_queue(void)
 		assert(shape3d_transform_and_queue(&scene_instance) == 0);
 	}
 	assert(shape3d_transform_and_queue(&scene_instance) == 1);
-	assert(polyinfonumpolys == POLYINFO_LEGACY_PRIMITIVE_CAPACITY);
+	assert(shape3d_queued_primitive_count() == POLYINFO_LEGACY_PRIMITIVE_CAPACITY);
 	prepare_scene(vertices, 1, point, sizeof(point), 1);
 	polyinfo_set_supersight(1);
 	for (legacy_u32 index = 0; index < 2000; index++) {
 		assert(shape3d_transform_and_queue(&scene_instance) == 0);
 	}
-	assert(polyinfonumpolys == 2000);
-	assert(polyinfoptrnext == 20000);
+	assert(shape3d_queued_primitive_count() == 2000);
+	assert(polyinfonumpolys == 0 && polyinfoptrnext == 0);
 	shape3d_render_queued_primitives();
 	assert(count_color(7) != 0);
 	polyinfo_set_supersight(0);
@@ -1714,9 +1802,10 @@ static legacy_s32 draw_batch_scene(legacy_s32 batched, legacy_s32 ordered)
 		{{-2, 1, 3}, {30, 20, 60}},
 		{{-20, -0.1, 30}, {20, -0.1, 30}, {20, 0.1, 30}, {-20, 0.1, 30}},
 		{{0.025, 0.016, 20}},
-		/* These round inward from just beyond the left and top screen edges. */
+		/* The point rounds inward from the left edge. The line straddles
+		 * the top edge while retaining coverage at the first pixel center. */
 		{{-100.0390625, 46.875, 100}},
-		{{-84.375, 62.5390625, 100}, {-81.25, 62.5390625, 100}}};
+		{{-84.375, 62.4609375, 100}, {-81.25, 62.4609375, 100}}};
 	static const legacy_u8 types[] = {
 		RENDER_PRIMITIVE_POLYGON, RENDER_PRIMITIVE_POLYGON,
 		RENDER_PRIMITIVE_POLYGON, RENDER_PRIMITIVE_POLYGON,
@@ -1740,7 +1829,9 @@ static legacy_s32 draw_batch_scene(legacy_s32 batched, legacy_s32 ordered)
 		if (index != 4) {
 			shape3d_hires_begin_shape(index, mode);
 		}
-		legacy_u16 flags = index == 4 ? (ordered ? 0 : 2) : index == 10 ? 3 : 0;
+		legacy_u16 flags = index == 4	 ? SHAPE3D_PRIMITIVE_SKIP_DEPTH_SORT_FLAG
+						   : index == 10 ? 3
+										 : 0;
 		shape3d_hires_queue(index, types[index] & ~RENDER_PRIMITIVE_GHOST_FLAG, counts[index],
 							indices, vertices[index], flags);
 	}
@@ -1929,6 +2020,7 @@ static void test_render_scale_roundtrip(void)
 #define GROUND_DETAIL_TOP_OFFSET -4.0
 #define GROUND_DETAIL_HALF_LENGTH 8.0
 #define GROUND_DETAIL_SUPPORT_MARGIN 2.0
+#define GROUND_DETAIL_SAMPLE_RADIUS 2
 #define GROUND_DETAIL_STROKE_SCALE 32.0
 #define GROUND_DETAIL_BACKGROUND_COLOR 3
 #define GROUND_DETAIL_SUPPORT_COLOR 7
@@ -2024,9 +2116,27 @@ static void draw_ground_detail(legacy_s32 scale, legacy_s32 rolled, legacy_u8 ty
 	hires_end();
 }
 
+/* Quad strokes can cover either side of an integer centerline. Select an
+ * actually covered sample below the footprint before testing its occlusion. */
+static legacy_s32 ground_detail_sample(const legacy_u8 *image, legacy_s32 width, legacy_s32 rolled,
+									   legacy_s32 *x, legacy_s32 *y)
+{
+	for (legacy_s32 offset = -GROUND_DETAIL_SAMPLE_RADIUS; offset <= GROUND_DETAIL_SAMPLE_RADIUS;
+		 offset++) {
+		legacy_s32 sample_x = *x + (rolled ? 0 : offset);
+		legacy_s32 sample_y = *y + (rolled ? offset : 0);
+		if (image[sample_y * width + sample_x] == GROUND_DETAIL_COLOR) {
+			*x = sample_x;
+			*y = sample_y;
+			return 1;
+		}
+	}
+	return 0;
+}
+
 /* Generated detail can reach a pixel below a model's ground-level footprint.
  * Grass has no stored depth family there, but an existing surface must retain
- * authored paint order and ordinary polygon fills must remain unchanged. */
+ * attached paint and ordinary polygon fills must remain unchanged. */
 static void test_ground_occludes_generated_detail(void)
 {
 	static legacy_u8 reference[HIRES_WIDTH * HIRES_HEIGHT];
@@ -2051,6 +2161,9 @@ static void test_ground_occludes_generated_detail(void)
 							legacy_s32 foot = (legacy_s32)GROUND_DETAIL_FOOT_OFFSET;
 							legacy_s32 x = center_x + (rolled ? foot : 0);
 							legacy_s32 y = center_y + (rolled ? 0 : foot);
+							const legacy_u8 *sample_image =
+								plane == GROUND_DETAIL_NO_PLANE ? image : without_plane;
+							assert(ground_detail_sample(sample_image, width, rolled, &x, &y));
 							legacy_u8 expected = !supported && plane == GROUND_DETAIL_PLANE
 													 ? GROUND_DETAIL_BACKGROUND_COLOR
 													 : GROUND_DETAIL_COLOR;
@@ -2562,7 +2675,7 @@ static void test_car_shadow_collects_camera_hidden_roads(void)
 		scene_patterns[0] = scene == 0 ? 0 : SHADOW_TEST_MASKED_MATERIAL;
 		material_patlist2_ptr_cpy = grille_patterns;
 		assert(shape3d_transform_and_queue(&scene_instance) == LEGACY_U16_MAX);
-		assert(polyinfonumpolys == 0);
+		assert(shape3d_queued_primitive_count() == 0);
 		legacy_u32 coverage = finish_shadow_scene(0, 0, 0);
 		legacy_s32 sample = shadow_darkening_at(SHADOW_TEST_SAMPLE_X, SHADOW_TEST_SAMPLE_Z, 0);
 		if (scene == 0) {
@@ -2601,7 +2714,7 @@ static void test_car_shadow_collects_behind_camera_road(void)
 								 (legacy_s16)shadow_image.half_length);
 		if (blocker) {
 			assert(shape3d_transform_and_queue(&scene_instance) == LEGACY_U16_MAX);
-			assert(polyinfonumpolys == 0);
+			assert(shape3d_queued_primitive_count() == 0);
 		}
 		legacy_u32 coverage = finish_shadow_scene(SHADOW_TEST_CAMERA_HEIGHT - camera_height, 0, 0);
 		assert(blocker ? coverage == 0 : coverage > 0);
@@ -2722,7 +2835,7 @@ static const legacy_u32 *render_warped_shadow(legacy_s32 ordered, legacy_s32 low
 	scene_patterns[0] = grille ? SHADOW_TEST_MASKED_MATERIAL : 0;
 	material_patlist2_ptr_cpy = grille_patterns;
 	assert(shape3d_transform_and_queue(&scene_instance) == (lower ? LEGACY_U16_MAX : 0));
-	assert(polyinfonumpolys == (lower ? 0 : 1));
+	assert(shape3d_queued_primitive_count() == (lower ? 0 : 1));
 	if (!collect) {
 		/* The reference draws the same receiver before there is a caster
 		 * to collect blockers for, retaining the original shadow footprint. */
@@ -2862,6 +2975,7 @@ legacy_int main(void)
 	test_roundness_matches_worker_bands();
 	test_disabled_and_reset();
 	test_visible_line_overhang_survives_culling();
+	test_visible_round_overhang_survives_culling();
 	test_line_weight_in_half_scale_view();
 	test_thin_polygon_and_attached_detail();
 	test_full_polygon_winding();
@@ -2870,13 +2984,13 @@ legacy_int main(void)
 	test_crossing_surfaces_use_pixel_depth();
 	test_separate_shapes_use_pixel_depth();
 	test_separate_shapes_preserve_authored_overlays();
-	test_ordered_shapes_keep_nearest_support();
+	test_unattached_polygons_keep_nearest_surface();
 	test_scene_depth_resets_between_draws();
 	test_separate_shapes_preserve_ghost_holes();
 	test_background_shapes_do_not_occlude_scene();
 	test_far_diagonal_geometry();
-	test_far_primitive_sort_depth();
-	test_supersight_full_scene_queue();
+	test_far_primitive_depth_visibility();
+	test_hypervision_full_scene_queue();
 	test_body_panel_occludes_wheel();
 	test_joined_track_surfaces();
 	test_shared_edge_pixel_coverage();

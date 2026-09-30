@@ -92,11 +92,13 @@ or selecting another camera restores the original F3 position and prior dashboar
 visibility. Returning to F3 from another camera starts with the original view.
 Replay pan and zoom controls still work; the next F3 preset uses its fixed position.
 
-### SuperSight and FPS display
+<a id="supersight-and-fps-display"></a>
 
-Press **F12** while driving or viewing a replay to toggle SuperSight. In SDL3
-builds (Windows, Linux, BSD, macOS, and 32-bit DOS), it starts with the entire 30 x 30 track,
-detailed models, and 1280x800 internal rendering. Driving and replay rendering
+### HyperVision and FPS display
+
+Press **F12** while driving or viewing a replay to toggle HyperVision. In SDL3
+builds (Windows, Linux, BSD, macOS, 32-bit DOS, and WebAssembly), it starts with
+the entire 30 x 30 track, detailed models, and 1280x800 internal rendering. Driving and replay rendering
 adapt to sustained CPU load to target 60 FPS, using these stages in order:
 
 | Stage | Visible area and geometry | Internal rendering |
@@ -127,12 +129,12 @@ LLHHHHHLL
 ```
 
 Pressing **F12** toggles **Auto** and **Off**. Pressing it while a locked preset
-is active turns SuperSight off; the next F12 selects Auto. **Shift+F12** enables
-SuperSight with **Full**, then cycles through these locked presets:
+is active turns HyperVision off; the next F12 selects Auto. **Shift+F12** enables
+HyperVision with **Full**, then cycles through these locked presets:
 
 | Preset | Stage | View | Internal resolution |
 | --- | ---: | --- | --- |
-| Full | 0 | Full SuperSight | 1280x800 |
+| Full | 0 | Full HyperVision | 1280x800 |
 | High | 1 | Large mask | 1280x800 |
 | Medium | 2 | Large mask | 640x400 |
 | Low | 3 | Large mask | 320x200 |
@@ -140,20 +142,22 @@ SuperSight with **Full**, then cycles through these locked presets:
 Shift+F12 after Low returns to Full. From Off or Auto, Shift+F12 starts at
 Full. Locked presets remain selected across race/replay resets and do not
 automatically reduce or restore quality. The small-mask stage is available only
-in Auto. Each F12 or Shift+F12 press displays `SuperSight: <name>` for two seconds
+in Auto. Each F12 or Shift+F12 press displays `HyperVision: <name>` for two seconds
 below the FPS line, even when F11 is disabled.
 
-To start with a locked preset, pass exactly one of `ss:full`, `ss:high`,
-`ss:medium`, or `ss:low` to the executable. For example:
+To start with a locked preset, pass exactly one of `hv:full`, `hv:high`,
+`hv:medium`, or `hv:low` to the executable. For example:
 
 ```sh
-./restunts ss:medium
+./restunts hv:medium
 ```
 
 The preset is active from the intro onward. These options are case-insensitive;
-multiple `ss:` options (including duplicates) or an unknown preset report an error
-and exit. Without an `ss:` option, SuperSight starts off as usual. F12 and Shift+F12
-can change the selection later. The options apply to SDL3 builds, including 32-bit DOS.
+the older `ss:full`, `ss:high`, `ss:medium`, and `ss:low` spellings remain compatible
+aliases. Multiple preset options, including mixed aliases or duplicates, and
+unknown presets report an error and exit. Without a preset option, HyperVision
+starts off as usual. F12 and Shift+F12 can change the selection later. The options
+apply to SDL3 builds, including 32-bit DOS.
 
 An entire multi-tile object stays visible if any of its tiles is inside the
 mask. Any `H` overlap keeps full geometry; otherwise an `L` overlap uses low
@@ -169,11 +173,18 @@ there are no further reductions if the machine still cannot reach 60 FPS.
 
 Resolution changes affect the internal renderer. The output keeps its existing
 4:3 presentation, window/fullscreen size, and DOS VESA display mode. At 320x200,
-SuperSight uses the original horizon artwork and disables car shadows. This applies
-to locked Low and both of Auto's lowest stages; higher resolutions restore enhanced
-artwork and shadows. Physics and replay data are unaffected. Switching SuperSight off restores the original draw
-distance, detail policy, and rendering limits; enabling it starts at full quality.
-The enhancement is based on Alberto Marnetto's
+HyperVision disables car shadows and uses the original horizon artwork. This
+applies to locked Low and both of Auto's lowest stages; higher resolutions restore
+shadows and enhanced horizons. Physics and replay data are unaffected. Switching HyperVision
+off restores the original draw distance, detail policy, and rendering limits;
+enabling it starts at full quality.
+
+HyperVision replaces the SDL3 SuperSight rasterizer with visibility spans resolved
+from polygon depth, without painter-style sorting. Its target is a 2 GHz Core 2 Duo;
+small visual differences are acceptable to reduce CPU cost. Classic rendering and
+replay compatibility remain separate requirements. See the
+[HyperVision architecture and measurement notes](docs/hypervision.md).
+The earlier enhancement was inspired by Alberto Marnetto's
 [SuperSight](https://marnetto.net/2025/02/20/broderbund-stunts-1).
 
 The Open Watcom 16-bit DOS build retains its 110-tile SuperSight mode, with
@@ -182,26 +193,25 @@ or visibility when crowded scenes exceed that capacity. F12 toggles it on and of
 and displays `SuperSight: On` or `SuperSight: Off` for two seconds, even when the
 FPS counter is hidden. This build has no SuperSight presets.
 
-In SDL3 builds (Windows, Linux, BSD, macOS, and 32-bit DOS), SuperSight starts 3D rendering
-at **1280x800**, four times the original width and height. Player and opponent
+In SDL3 builds, HyperVision starts 3D rendering at **1280x800**, four times the
+original width and height. Player and opponent
 car-selection previews use the same higher resolution; F12 also works in those
 screens and in the track preview. Dashboard artwork, replay controls, and the
-surrounding menu UI retain their original pixel detail and size. SuperSight clips
+surrounding menu UI retain their original pixel detail and size. HyperVision clips
 custom dashboards and the 3D view above visible replay controls so they remain
-unobstructed. Switching SuperSight off restores 320x200 rendering and the original
+unobstructed. Switching HyperVision off restores 320x200 rendering and the original
 dashboard layout.
 
-In SDL3 builds, SuperSight corrects each car model's visible ride height so
+In SDL3 builds, HyperVision corrects each car model's visible ride height so
 its underside meets the driving surface, including cars with spherical wheels.
 This presentation offset follows the car's rotation and preserves suspension
 movement and jumps without changing physics or replay data. The original renderer retains the original car positioning.
 
-SuperSight uses fewer segments for wheels and spheres that occupy only a small
-part of the screen. Segment counts follow their projected size, with a geometric
-outline error below a quarter of a high-resolution pixel. Nearby round shapes
-and background geometry retain their full detail.
+HyperVision uses fewer segments for wheels and spheres that occupy only a small
+part of the screen. Segment counts follow their projected size; nearby round
+shapes and background geometry retain their full detail.
 
-In SDL3 builds, SuperSight adds car-shaped shadows on nearby surfaces below
+In SDL3 builds, HyperVision adds car-shaped shadows on nearby surfaces below
 each car. Small cached silhouettes follow the model's size, body, wheels, and
 suspension. Light comes from the south at about 70 degrees above the horizon,
 with a short northward extension and soft edges. Shadows shrink as the car
@@ -211,15 +221,17 @@ the shadow strength to the next surface; successive grilles halve it again.
 Cars do not receive shadows, ghosts do not cast them, and the viewed car's own
 shadow is hidden in the F1 cockpit camera. The player
 and opponent car-selection showrooms use the same shadows beneath their rotating
-car previews while SuperSight is on at 640x400 or 1280x800.
+car previews while HyperVision is on at 640x400 or 1280x800.
 
-SuperSight also uses [AI-refined skybox artwork](docs/skyboxes/README.md), with
-each horizon image at four times its original width and height. Switching it
-off or using 320x200 restores the original skybox artwork. Missing enhanced PNGs fall back to
-the original strips. The Open Watcom 16-bit DOS version retains its existing renderer.
+HyperVision also uses [AI-refined skybox artwork](docs/skyboxes/README.md), with
+each horizon image at four times its original width and height, at 640x400 and
+1280x800. The 320x200 mode and classic rendering use the original skybox artwork.
+Banked and upside-down views remain supported at every HyperVision resolution.
+Missing enhanced PNGs fall back to the original strips. The Open Watcom 16-bit DOS
+version retains its existing renderer.
 
 The opponent-selection and opponent car-selection screens also use
-[enhanced portraits](docs/opponents/README.md) while SuperSight is on. The final set
+[enhanced portraits](docs/opponents/README.md) while HyperVision is on. The final set
 in `assets/opponents/game/` contains
 160 x 166 tiles, twice the original width and height, with the exact game palette
 and solid backgrounds. F12 switches portraits in both menus; missing or unreadable
@@ -227,7 +239,7 @@ replacements fall back individually to the originals. Original numbered labels
 and the clipboard frame are preserved. The selected full-resolution sources and
 4x working tiles are archived in `docs/opponents/game-sources/` for regeneration.
 
-SuperSight also targets **60 FPS** in SDL3 driving, replay playback, the nighttime
+HyperVision also targets **60 FPS** in SDL3 driving, replay playback, the nighttime
 intro, and rotating car previews. Driving and replay playback interpolate between
 completed physics states. At the normal 20 Hz simulation rate, each new keyframe
 first displays a one-third blend toward it from the previous keyframe, then a
@@ -249,16 +261,16 @@ toggling F12 during a replay does not change its simulated result. Seeking,
 pausing, rewinding, and camera changes reset interpolation history.
 
 Desktop SDL3 builds use two internal presentation pages. Each complete frame is
-composed into the hidden page, including its palette colors and SuperSight detail,
+composed into the hidden page, including its palette colors and HyperVision detail,
 then flipped to the front before SDL receives it. Window exposure and resizing
 repaint that completed page while the next frame is being drawn. This prevents
 partial game-frame updates from reaching presentation without queuing an extra
 frame. Display synchronization still depends on SDL and the graphics driver.
 
 On Windows, Linux, BSD, and macOS, VSync is enabled by default in both windowed and fullscreen
-mode, with or without SuperSight. The game requests synchronization to the display's
+mode, with or without HyperVision. The game requests synchronization to the display's
 vertical refresh; SDL may use timed pacing when a renderer cannot synchronize.
-The existing classic and 60 FPS SuperSight targets still apply. Set
+The existing classic and 60 FPS HyperVision targets still apply. Set
 `RESTUNTS_VSYNC=0` to disable it, or `RESTUNTS_VSYNC=1` to enable it explicitly.
 For example, on Linux:
 
@@ -270,9 +282,9 @@ In PowerShell, set `$env:RESTUNTS_VSYNC = '0'` before launching `restunts.exe`.
 Unset the variable to restore the default. Invalid values warn and select the
 default. If the renderer cannot apply the requested setting, the game warns and
 continues. The setting does not affect DOS builds or batch dump tools. Display
-synchronization waits are excluded from automatic SuperSight quality measurements.
+synchronization waits are excluded from automatic HyperVision quality measurements.
 
-On Windows, Linux, BSD, and macOS, SuperSight draws serially by default with zero background
+On Windows, Linux, BSD, and macOS, HyperVision draws serially by default with zero background
 render workers. Set `RESTUNTS_RENDER_WORKERS` to `1` through `7` to select a
 background worker count, or `auto` to use the detected logical CPU count minus
 one, capped at seven. The setting is read when the renderer initializes its
@@ -284,18 +296,21 @@ RESTUNTS_RENDER_WORKERS=auto ./out/sdl3-linux-x64/restunts --data-dir stunts
 
 In PowerShell, use `$env:RESTUNTS_RENDER_WORKERS = 'auto'` before launching
 `restunts.exe`. Unset the variable or set it to `0` to restore the default.
-Small scenes remain serial even with workers enabled. Drawing order, pixel
-coverage, and the physics schedule are preserved; DOS always renders serially.
-If worker creation fails, rendering uses the available workers or runs serially.
+Small scenes remain serial even with workers enabled. The physics schedule is
+independent of the worker count; DOS always renders serially. If worker creation
+fails, rendering uses the available workers or runs serially. Enable workers only
+when measurements on the intended machine show a useful benefit.
 
-See [SuperSight CPU measurements](docs/supersight-performance.md) for tested
-optimizations, worker comparisons, and measurement limits.
+See [HyperVision measurement methods](docs/hypervision.md#performance-measurement)
+for the current benchmark scope. The earlier
+[SuperSight CPU measurements](docs/supersight-performance.md) document the previous
+renderer and do not establish HyperVision performance.
 
 Press **F11** to toggle a frame-rate counter in the top-left corner. It measures
 presented frames over approximately one second and rounds down, for example
 `20 FPS`. The target color threshold is 20 FPS in classic mode and 60 FPS in
-SDL3 SuperSight. The display shows FPS only; it does not show an omitted-object
-count. The temporary SuperSight preset message appears below it after F12 or
+SDL3 HyperVision. The display shows FPS only; it does not show an omitted-object
+count. The temporary HyperVision preset message appears below it after F12 or
 Shift+F12, independently of F11. Automatic adaptation works whether F11 is on or off.
 F11 and F12 also work in both car-selection screens and during the nighttime
 driving intro without skipping the animation, including in 16-bit DOS. F12 also
@@ -780,7 +795,7 @@ bash "$HOME/Games/restunts/run-restunts.sh" \
 ```
 
 Omit `-- /nointro` to watch the intro, or pass other game arguments after `--`,
-for example `-- ss:medium`. The launcher finds its own package regardless of
+for example `-- hv:medium`. The launcher finds its own package regardless of
 the terminal's working directory. The equivalent direct command is:
 
 ```sh
@@ -791,7 +806,7 @@ Saved games, replays, and dump outputs go into the selected game-data folder.
 Use `repldump` or `pixldump` from the same `bin/` folder with their normal
 arguments. The runtime is a Terminal-launched program; there is no Finder
 `.app` bundle. On keyboards that assign system actions to function keys, use
-Fn/Globe with F11/F12 for the game's FPS and SuperSight controls.
+Fn/Globe with F11/F12 for the game's FPS and HyperVision controls.
 
 #### BSD hosts: FreeBSD, OpenBSD, and NetBSD
 

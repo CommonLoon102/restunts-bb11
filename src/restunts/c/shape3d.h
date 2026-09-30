@@ -108,6 +108,10 @@ void polyinfo_reset(void);
 /* Changing capacity discards queued primitives; select the mode before drawing a frame. */
 void polyinfo_set_supersight(legacy_u8 enabled);
 void shape3d_render_queued_primitives(void);
+#if defined(RESTUNTS_SDL3)
+/* Submitted scene primitives before rasterization, for either active backend. */
+legacy_u32 shape3d_queued_primitive_count(void);
+#endif
 /* Logical original addresses are independent of the host's allocation layout. */
 struct SHAPE3D_LEGACY_OPPONENT_RENDER_CONTEXT {
 	legacy_s16 *wheel_headings;

@@ -232,13 +232,13 @@ DOS environment does not supply one. CI and release DOS32 packages include
 CWSDPMI in `bin/` and its accompanying redistribution notice under `share/`.
 Original game data is supplied separately by the player.
 
-The DOS video path uses indexed VGA 320x200 with SuperSight off. Enabling
-SuperSight with F12 renders the 3D scene at 1280x800 and selects a VESA mode
+The DOS video path uses indexed VGA 320x200 with HyperVision off. Enabling
+HyperVision with F12 renders the 3D scene at 1280x800 and selects a VESA mode
 that can display it with the original 4:3 aspect ratio (normally 1280x1024,
 with a 1280x960 image and black borders). Indexed modes are preferred; true-colour
 VESA modes are supported too. If no sufficiently large mode is available, SDL
 scales the 1280x800 rendering to the largest available viewport and logs a warning.
-Disabling SuperSight restores Mode 13h. High-resolution rendering requires more
+Disabling HyperVision restores Mode 13h. High-resolution rendering requires more
 RAM and processing power than the original mode.
 
 Audio writes the real
@@ -289,13 +289,13 @@ original game resources and replay/car additions together there.
 On Linux, BSD, Windows, and macOS, the interactive game defaults to serial rendering with
 zero background render workers. `RESTUNTS_RENDER_WORKERS=auto` enables automatic
 parallel rendering, or use a count from `0` through `7`. See the
-[render-worker settings](../readme.md#supersight-and-fps-display) for Linux and
+[render-worker settings](../readme.md#hypervision-and-fps-display) for Linux and
 PowerShell examples.
 
 Desktop rendering uses two owned ARGB presentation pages. Composition writes the
 hidden page and flips it to the front only after the complete frame is ready.
 Exposure and resize events repaint the frozen front page, preserving its pixels,
-palette colors, and dimensions while a new frame is drawn or SuperSight changes
+palette colors, and dimensions while a new frame is drawn or HyperVision changes
 resolution. Driving, replay playback, animated intro frames, and car-preview
 refreshes use explicit frame boundaries; menu fades and the initial car-menu
 dissolve retain their incremental updates. Pages are released on video shutdown.
@@ -303,27 +303,30 @@ This internal buffering does not force SDL's swapchain buffer count or replace
 monitor synchronization. The DOS indexed/VESA presentation path is unchanged.
 
 Windows, Linux, BSD, and macOS enable VSync by default in windowed and fullscreen mode,
-including classic rendering and SuperSight. SDL may use timed pacing when a
+including classic rendering and HyperVision. SDL may use timed pacing when a
 renderer cannot synchronize to the display. Set `RESTUNTS_VSYNC=0` before
 launching the game to disable it; `1`, an empty value, or an unset variable
 selects the default. Invalid values log a warning and enable VSync. If SDL cannot
 apply the setting, the game logs a warning and continues. The existing classic
-and SuperSight frame-rate targets and physics schedule remain in place; waiting
+and HyperVision frame-rate targets and physics schedule remain in place; waiting
 for a display refresh does not count as CPU load for automatic quality changes.
 DOS and batch dump tools are unaffected. See the
-[VSync examples](../readme.md#supersight-and-fps-display) for Linux and PowerShell.
+[VSync examples](../readme.md#hypervision-and-fps-display) for Linux and PowerShell.
 
 Desktop windows apply the VGA vertical 6:5 pixel-aspect correction: the original
 320x200 framebuffer fills a 4:3 image. Nearest-neighbour scaling preserves sharp
 pixel edges, and resizing adds black borders to retain that aspect. Renderer dump
-images retain the original 320x200 pixel data for parity checks. With SuperSight
-on, the 3D scene and both car-selection previews render at 1280x800. Their geometry
+images use the classic renderer's original 320x200 pixel data for parity checks.
+With HyperVision on, the 3D scene and both car-selection previews start at 1280x800;
+its lower quality presets also support 640x400 and 320x200. Their geometry
 is projected and rasterized at the higher resolution; menu artwork, dashboard,
 and replay controls keep their original pixel detail. F12 works in both car
 selection screens and the track preview as well as driving and replay views.
-Enhanced driving and replay scenes use [AI-refined skybox PNGs](skyboxes/README.md)
-at four times the original width and height. Track selector previews use these same PNGs
-when SuperSight is active. Runtime installs include the required
+Driving, replay, and track selector previews use
+[AI-refined skybox PNGs](skyboxes/README.md) at 640x400 and 1280x800, with artwork
+at four times the original width and height. The 320x200 mode uses the original
+horizon strips. Banked and inverted views work at every HyperVision resolution.
+Runtime installs include the required
 `bin/skyboxes/` directory; retain it beside the executable when packaging.
 Missing or invalid textures fall back to the original artwork. Menus support
 keyboard, mouse, and an SDL joystick. Existing driving and replay controls remain
@@ -334,13 +337,13 @@ available:
 - **Alt+Enter** toggles desktop fullscreen, preserving the 4:3 image and restoring
   the previous window size when leaving fullscreen. Keypad Enter also works.
 - **F11** toggles the frame-rate counter, including in both car-selection
-  screens; **F12** toggles SuperSight.
+  screens; **F12** toggles HyperVision.
 - Hold **Q** to rewind a live race; release it to resume from that point.
 - **T** switches between the player and opponent or selected ghost view.
 - **Escape** leaves driving or replay playback; closing the desktop window exits
   the game and removes its temporary ghost cache.
 
-See the [gameplay notes](../readme.md#supersight-and-fps-display) for SuperSight,
+See the [gameplay notes](../readme.md#hypervision-and-fps-display) for HyperVision,
 ghost selection, and rewind behavior.
 
 The SDL3 build supports AdLib music and effects. Other original executable DOS

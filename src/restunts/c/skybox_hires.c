@@ -22,6 +22,20 @@ struct SKYBOX_HIRES_IMAGE {
 	legacy_s32 attempted;
 };
 
+/* One wrapped, bottom-aligned panorama replaces strip selection in the
+ * banked sampler. Memory is shared by all camera orientations and resolutions. */
+#define SKYBOX_ATLAS_WIDTH (SKYBOX_IMAGE_FULL_WRAP * HIRES_SCALE)
+
+struct SKYBOX_HIRES_STRIP {
+	const legacy_u8 *pixels;
+	legacy_s32 width, height, pitch, scale;
+};
+
+static legacy_u8 *panorama_pixels;
+static struct SKYBOX_HIRES_STRIP panorama_strips[SKYBOX_IMAGE_COUNT];
+static legacy_s32 panorama_height;
+static legacy_u8 panorama_sky_color;
+
 static const legacy_char *theme_names[SKYBOX_THEME_COUNT] = {"desert", "tropical", "alpine", "city",
 															 "country"};
 static const legacy_char *image_names[SKYBOX_IMAGE_COUNT] = {"scen", "sce2", "sce3", "sce4"};
@@ -36,6 +50,9 @@ void skybox_hires_unload(void)
 		SDL_DestroySurface(images[index].surface);
 	}
 	memset(images, 0, sizeof(images));
+	SDL_free(panorama_pixels);
+	panorama_pixels = NULL;
+	panorama_height = 0;
 	loaded_theme = -1;
 }
 
@@ -176,11 +193,6 @@ void skybox_hires_draw(const struct SPRITE *target, legacy_s16 theme, legacy_s16
 	hires_end();
 }
 
-struct SKYBOX_HIRES_STRIP {
-	const legacy_u8 *pixels;
-	legacy_s32 width, height, pitch, scale;
-};
-
 static legacy_s32 skybox_hires_prepare_strips(struct SKYBOX_HIRES_STRIP strips[SKYBOX_IMAGE_COUNT],
 											  struct SHAPE2D *const shapes[SKYBOX_IMAGE_COUNT],
 											  legacy_s16 theme, legacy_s32 scale)
@@ -199,8 +211,8 @@ static legacy_s32 skybox_hires_prepare_strips(struct SKYBOX_HIRES_STRIP strips[S
 		strip->pitch = shape->width;
 		strip->scale = SKYBOX_ORIGINAL_SAMPLE_SCALE;
 		SDL_Surface *source = NULL;
-		/* Keep cached enhanced artwork available for recovery; the smallest
-		 * renderer uses the original pixels with the same modern projection. */
+		/* Keep enhanced images cached for resolution recovery. The smallest
+		 * renderer samples original artwork through the same rotated projection. */
 		if (scale != HIRES_MINIMUM_SCALE && palette_ready && theme >= 0 &&
 			theme < SKYBOX_THEME_COUNT) {
 			source = skybox_hires_image(theme, index, shape->width, shape->height);
@@ -240,6 +252,62 @@ static legacy_u8 skybox_hires_sample(const struct SKYBOX_HIRES_STRIP strips[SKYB
 		column /= SKYBOX_ORIGINAL_SAMPLE_SCALE;
 	}
 	return strip->pixels[row * strip->pitch + column];
+}
+
+static const legacy_u8 *
+skybox_hires_panorama(const struct SKYBOX_HIRES_STRIP strips[SKYBOX_IMAGE_COUNT], legacy_s32 height,
+					  legacy_u8 sky_color)
+{
+	if (height <= 0) {
+		return NULL;
+	}
+	legacy_s32 matches =
+		panorama_pixels != NULL && panorama_height == height && panorama_sky_color == sky_color;
+	for (legacy_s32 index = 0; matches && index < SKYBOX_IMAGE_COUNT; index++) {
+		const struct SKYBOX_HIRES_STRIP *old = &panorama_strips[index];
+		const struct SKYBOX_HIRES_STRIP *current = &strips[index];
+		matches = old->pixels == current->pixels && old->width == current->width &&
+				  old->height == current->height && old->pitch == current->pitch &&
+				  old->scale == current->scale;
+	}
+	if (matches) {
+		return panorama_pixels;
+	}
+	legacy_u8 *pixels = SDL_realloc(panorama_pixels, (size_t)SKYBOX_ATLAS_WIDTH * height);
+	if (pixels == NULL) {
+		/* The existing direct sampler remains a complete allocation fallback. */
+		return NULL;
+	}
+	panorama_pixels = pixels;
+	panorama_height = height;
+	panorama_sky_color = sky_color;
+	memcpy(panorama_strips, strips, sizeof(panorama_strips));
+	memset(pixels, sky_color, (size_t)SKYBOX_ATLAS_WIDTH * height);
+	static const legacy_s32 offsets[SKYBOX_IMAGE_COUNT + 1] = {
+		0, SKYBOX_IMAGE_WIDTH, SKYBOX_IMAGE_HALF_WRAP, SKYBOX_IMAGE_ONE_AND_HALF_WIDTH,
+		SKYBOX_IMAGE_FULL_WRAP};
+	for (legacy_s32 index = 0; index < SKYBOX_IMAGE_COUNT; index++) {
+		const struct SKYBOX_HIRES_STRIP *strip = &strips[index];
+		if (strip->pixels == NULL) {
+			continue;
+		}
+		legacy_s32 width =
+			SDL_min(strip->width, (offsets[index + 1] - offsets[index]) * HIRES_SCALE);
+		for (legacy_s32 row = 0; row < strip->height; row++) {
+			legacy_u8 *destination = pixels +
+									 (size_t)(height - strip->height + row) * SKYBOX_ATLAS_WIDTH +
+									 offsets[index] * HIRES_SCALE;
+			const legacy_u8 *source = strip->pixels + (row / strip->scale) * strip->pitch;
+			if (strip->scale == SKYBOX_NATIVE_SAMPLE_SCALE) {
+				memcpy(destination, source, width);
+			} else {
+				for (legacy_s32 column = 0; column < width; column++) {
+					destination[column] = source[column / SKYBOX_ORIGINAL_SAMPLE_SCALE];
+				}
+			}
+		}
+	}
+	return pixels;
 }
 
 /* With an exactly level horizon, source columns do not change between rows
@@ -413,6 +481,7 @@ legacy_s32 skybox_hires_render(const struct SPRITE *target, const struct SKYBOX 
 		hires_end();
 		return 1;
 	}
+	const legacy_u8 *panorama = skybox_hires_panorama(strips, maximum_height, scenery->sky_color);
 	/* Projection is affine. Reuse each column's products across the whole
 	 * viewport and each row's products across all cells, keeping the original
 	 * sample arithmetic order at texel boundaries. */
@@ -458,7 +527,15 @@ legacy_s32 skybox_hires_render(const struct SPRITE *target, const struct SKYBOX 
 					 * coordinates never reach the texture sampler. */
 					if (above > 0 && above <= maximum_height) {
 						legacy_f64 along = column_along[column] + row_along[sample_y];
-						color = skybox_hires_sample(strips, along, above, color);
+						if (panorama != NULL) {
+							legacy_s32 source_x = (legacy_s32)along;
+							source_x -= along < source_x;
+							source_x = (legacy_u32)source_x & (SKYBOX_ATLAS_WIDTH - 1U);
+							legacy_s32 source_y = (legacy_s32)(maximum_height - above);
+							color = panorama[(size_t)source_y * SKYBOX_ATLAS_WIDTH + source_x];
+						} else {
+							color = skybox_hires_sample(strips, along, above, color);
+						}
 					}
 					samples[sample_y * scale + sample_x] = color;
 				}

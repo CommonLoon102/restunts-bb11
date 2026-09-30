@@ -64,6 +64,7 @@
 #define CALLBACK_SOUND_HELP_KEY 19
 #define CALLBACK_DOS_HELP_ALT_KEY 24
 
+#define STARTUP_HYPERVISION_PREFIX "hv:"
 #define STARTUP_SUPERSIGHT_PREFIX "ss:"
 
 #define STARTUP_PROJECTION_X 36
@@ -220,17 +221,25 @@ static void startup_select_audio_driver(const legacy_s8 *argument)
 #ifdef RESTUNTS_SDL3
 static void startup_parse_supersight(const legacy_s8 *argument, struct STARTUP_OPTIONS *options)
 {
-	const legacy_s8 *prefix = STARTUP_SUPERSIGHT_PREFIX;
-	const legacy_s8 *value = argument;
-	while (*prefix != 0) {
-		if (tolower((legacy_u8)*value) != *prefix) {
-			return;
+	static const legacy_s8 *prefixes[] = {STARTUP_HYPERVISION_PREFIX, STARTUP_SUPERSIGHT_PREFIX};
+	const legacy_s8 *value = NULL;
+	for (legacy_u16 index = 0; index < sizeof(prefixes) / sizeof(prefixes[0]); index++) {
+		const legacy_s8 *prefix = prefixes[index];
+		const legacy_s8 *candidate = argument;
+		while (*prefix != 0 && tolower((legacy_u8)*candidate) == *prefix) {
+			prefix++;
+			candidate++;
 		}
-		prefix++;
-		value++;
+		if (*prefix == 0) {
+			value = candidate;
+			break;
+		}
+	}
+	if (value == NULL) {
+		return;
 	}
 	if (options->supersight_preset != FRAME_ADAPTIVE_PRESET_AUTO) {
-		fprintf(stderr, "Only one ss: preset may be specified.\n");
+		fprintf(stderr, "Only one HyperVision preset may be specified (hv: or legacy ss:).\n");
 		dos_process_exit(EXIT_FAILURE);
 		return;
 	}
@@ -247,7 +256,7 @@ static void startup_parse_supersight(const legacy_s8 *argument, struct STARTUP_O
 			return;
 		}
 	}
-	fprintf(stderr, "Invalid SuperSight preset '%s'; use ss:full, ss:high, ss:medium or ss:low.\n",
+	fprintf(stderr, "Invalid HyperVision preset '%s'; use hv:full, hv:high, hv:medium or hv:low.\n",
 			argument);
 	dos_process_exit(EXIT_FAILURE);
 }

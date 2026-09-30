@@ -53,7 +53,7 @@ legacy_s32 hires_enabled(void);
 /* Select 4, 2 or 1 samples per axis between joined frames. Changing scale discards
  * cached companion pixels, so the next frame must redraw its scene. Invalid values
  * and changes inside hires_begin/end are ignored. Enable transitions reset to 4.
- * Getters describe the SuperSight raster even when SuperSight is disabled. */
+ * Getters describe the enhanced raster even when HyperVision is disabled. */
 void hires_set_render_scale(legacy_s32 scale);
 legacy_s32 hires_render_scale(void);
 legacy_s32 hires_render_width(void);
@@ -88,6 +88,12 @@ void hires_raster_span(struct HIRES_RASTER_CONTEXT *context, legacy_s32 left, le
 					   legacy_s32 y, legacy_f64 inverse_z, legacy_f64 depth_step, legacy_u32 family,
 					   legacy_s32 depth_mode, legacy_u16 color, legacy_u16 alternate,
 					   legacy_u16 pattern, legacy_s32 paint_mode, legacy_s32 depth_test);
+/* HyperVision has already resolved this opaque span. Write each visible sample
+ * once, without repeating visibility tests or touching legacy simulation data. */
+void hires_raster_resolved_span(struct HIRES_RASTER_CONTEXT *context, legacy_s32 left,
+								legacy_s32 right, legacy_s32 y, legacy_f64 inverse_z,
+								legacy_f64 depth_step, legacy_u32 family, legacy_u16 color,
+								legacy_u16 alternate, legacy_u16 pattern, legacy_s32 paint_mode);
 void hires_raster_finish(const struct HIRES_RASTER_TARGET *target, legacy_u32 cleared_argb_cells);
 /* Optional full-color artwork uses the same clipping and sprite-copy lifetime.
  * Allocation failure leaves the indexed fallback intact. */

@@ -24,7 +24,6 @@
 #if defined(RESTUNTS_SDL3)
 #include "shape3d_hires.h"
 #include "frame_adaptive.h"
-#include <stdlib.h>
 #endif
 
 /* Presentations read their own immutable pose. Timer callbacks continue to see
@@ -181,26 +180,20 @@ struct TRACKOBJECT *frame_track_object_from_legacy_index(legacy_u8 index)
 }
 
 #if defined(RESTUNTS_SDL3)
-static legacy_s32 supersight_shape_depths[sizeof(currenttransshape) / sizeof(currenttransshape[0])];
 static legacy_u8 frame_adaptive_active;
 #endif
 
 void transformed_shape_add_for_sort(legacy_s16 z_adjust, legacy_s16 type)
 {
-	struct VECTOR transformed_position;
-	mat_mul_vector(&curtransshape_ptr->pos, &mat_temp, &transformed_position);
 	legacy_s16 index = LEGACY_S8_FROM_BITS((legacy_u8)transformedshape_counter);
-	transformedshape_zarray[index] = LEGACY_S16_WRAP_ADD(transformed_position.z, z_adjust);
 #if defined(RESTUNTS_SDL3)
-	if (supersight_enabled != 0) {
-		const struct VECTOR *position = &curtransshape_ptr->pos;
-		supersight_shape_depths[index] = (legacy_s32)(((legacy_s64)position->x * mat_temp.m._31 +
-													   (legacy_s64)position->y * mat_temp.m._32 +
-													   (legacy_s64)position->z * mat_temp.m._33) /
-													  TRIG_FIXED_ONE) +
-										 z_adjust;
-	}
+	if (supersight_enabled == 0)
 #endif
+	{
+		struct VECTOR transformed_position;
+		mat_mul_vector(&curtransshape_ptr->pos, &mat_temp, &transformed_position);
+		transformedshape_zarray[index] = LEGACY_S16_WRAP_ADD(transformed_position.z, z_adjust);
+	}
 	transformed_shape_sort_types[index] = (legacy_s8)(legacy_u8)type;
 	transformedshape_indices[index] = index;
 	transformedshape_counter = LEGACY_S8_WRAP_ADD(transformedshape_counter, 1);
@@ -1275,30 +1268,13 @@ static void frame_select_track_tile(struct FRAME_TILE_SELECTION *tiles, struct F
 }
 
 #if defined(RESTUNTS_SDL3)
-struct FRAME_WORLD_TILE {
-	struct FRAME_LOOKAHEAD_TILE offset;
-	legacy_s32 depth;
-};
-
-static legacy_int frame_compare_world_tiles(const void *first, const void *second)
-{
-	const struct FRAME_WORLD_TILE *left = first;
-	const struct FRAME_WORLD_TILE *right = second;
-	if (left->depth != right->depth) {
-		return left->depth > right->depth ? -1 : 1;
-	}
-	if (left->offset.south != right->offset.south) {
-		return left->offset.south - right->offset.south;
-	}
-	return left->offset.east - right->offset.east;
-}
-
 static void frame_extend_lookahead(struct FRAME_TILE_SELECTION *tiles,
 								   const struct FRAME_CAMERA *camera)
 {
-	/* The cached mask rejects tiles before depth sorting or shape work.
-	 * Visible continuation tiles still resolve to their complete object. */
-	struct FRAME_WORLD_TILE candidates[FRAME_MAXIMUM_TILE_COUNT];
+	(void)camera;
+	/* HyperVision uses screen depth, so enumerate each world tile once in
+	 * stable grid order. Continuations still resolve to their complete object;
+	 * the lookup identifies the same submission tile for its cars and wheels. */
 	legacy_s16 index = 0;
 	memset(tiles->index_by_world_tile, -1, sizeof(tiles->index_by_world_tile));
 	for (legacy_s16 south = 0; south <= TRACK_GRID_LAST_COORDINATE; south++) {
@@ -1307,30 +1283,22 @@ static void frame_extend_lookahead(struct FRAME_TILE_SELECTION *tiles,
 				frame_adaptive_flags(&frame_adaptive, east, south) == FRAME_ADAPTIVE_HIDE) {
 				continue;
 			}
-			struct FRAME_WORLD_TILE *tile = &candidates[index++];
-			tile->offset.east = east - tiles->camera_east;
-			tile->offset.south = south - tiles->camera_south;
-			tile->offset.detail = FRAME_TILE_DETAIL_FULL;
-			legacy_s32 x = (legacy_s32)track_column_centers[east] - camera->position.x;
-			legacy_s32 z = (legacy_s32)track_row_centers[south] - camera->position.z;
-			tile->depth =
-				(legacy_s32)(((legacy_s64)x * mat_temp.m._31 + (legacy_s64)z * mat_temp.m._33) /
-							 TRIG_FIXED_ONE);
+			struct FRAME_LOOKAHEAD_TILE *tile = &tiles->extended_lookahead[index++];
+			tile->east = east - tiles->camera_east;
+			tile->south = south - tiles->camera_south;
+			tile->detail = FRAME_TILE_DETAIL_FULL;
 		}
 	}
 	tiles->count = index;
-	qsort(candidates, tiles->count, sizeof(candidates[0]), frame_compare_world_tiles);
 	tiles->complete_tile_lookup = 1;
 	for (index = 0; index < tiles->count; index++) {
-		tiles->extended_lookahead[index] = candidates[index].offset;
-		legacy_s16 east = candidates[index].offset.east + tiles->camera_east;
-		legacy_s16 south = candidates[index].offset.south + tiles->camera_south;
+		legacy_s16 east = tiles->extended_lookahead[index].east + tiles->camera_east;
+		legacy_s16 south = tiles->extended_lookahead[index].south + tiles->camera_south;
 		/* Wrapped signed-byte offsets need the original comparison semantics. */
 		if (east < 0 || east > TRACK_GRID_LAST_COORDINATE || south < 0 ||
 			south > TRACK_GRID_LAST_COORDINATE) {
 			tiles->complete_tile_lookup = 0;
 		} else {
-			/* Each coordinate occurs once; the moving-camera order is fresh. */
 			tiles->index_by_world_tile[south * TRACK_GRID_SIZE + east] = index;
 		}
 	}
@@ -1402,7 +1370,8 @@ static void frame_select_tiles(struct FRAME_TILE_SELECTION *tiles,
 	// were chosen, MEDIUM if the 3rd, FASTEST if 4th or 5th)
 	legacy_s8 detail_threshold = detail_threshold_by_level[detail_level];
 
-	// Resolve visible tiles from nearest to farthest, suppressing multi-tile duplicates.
+	/* Resolve each object's last submission tile first, suppressing earlier
+	 * copies. The classic lookahead also retains its nearest-to-farthest order. */
 	struct FRAME_TILE tile;
 	for (legacy_s16 tile_index = tiles->count - 1; tile_index >= 0; tile_index--) {
 		// Skip if a previous iteration determined this tile is not needed
@@ -1992,27 +1961,13 @@ static void frame_select_brake_paint(legacy_s16 shape_index)
 static legacy_s16 frame_draw_sorted_shapes(struct FRAME_CAR_RENDER *cars)
 {
 	if (transformedshape_counter != 0) {
-		if (transformedshape_counter >= FRAME_SORT_MINIMUM_SHAPE_COUNT) {
+		if (transformedshape_counter >= FRAME_SORT_MINIMUM_SHAPE_COUNT
 #if defined(RESTUNTS_SDL3)
-			if (supersight_enabled != 0) {
-				/* Local shape groups are small. Retain their full camera-space
-				 * depth across the track diagonal and overlay depth adjustments. */
-				for (legacy_s16 i = 1; i < transformedshape_counter; i++) {
-					legacy_s16 shape = transformedshape_indices[i];
-					legacy_s16 j = i;
-					while (j > 0 && supersight_shape_depths[shape] >
-										supersight_shape_depths[transformedshape_indices[j - 1]]) {
-						transformedshape_indices[j] = transformedshape_indices[j - 1];
-						j--;
-					}
-					transformedshape_indices[j] = shape;
-				}
-			} else
+			&& supersight_enabled == 0
 #endif
-			{
-				heapsort_by_order(transformedshape_counter, transformedshape_zarray,
-								  transformedshape_indices);
-			}
+		) {
+			heapsort_by_order(transformedshape_counter, transformedshape_zarray,
+							  transformedshape_indices);
 		}
 
 		// Draw red overlights on the brake lights on own and opponent's car
@@ -2271,9 +2226,8 @@ static legacy_s16 frame_draw_tiles(const struct FRAME_TILE_SELECTION *tiles,
 	/* A deferred overlay can carry over until a depth-sorted track shape. */
 	legacy_s8 overlay_needs_depth_sort = 0;
 
-	// With the information collected by the tile-selection pass,
-	// proceed to draw the shapes in each tile. Start from the farthest
-	// (painter's algorithm)
+	/* Submit the selected shapes in tile order. Classic lookahead is arranged
+	 * back to front; HyperVision's stable grid order needs no depth sorting. */
 	struct FRAME_TILE tile;
 	for (legacy_s16 tile_index = tiles->first; tile_index < tiles->count; tile_index++) {
 		if (tiles->markers[tile_index] != FRAME_TILE_DRAW_MARKER) {

@@ -44,7 +44,11 @@
 #define FPS_TEXT_BUFFER_SIZE (FPS_TEXT_MAX_DIGITS + FPS_TEXT_SUFFIX_LENGTH + 1U)
 #define FPS_TEXT_RIGHT_X                                                                           \
 	(REPLAY_TEXT_LEFT_X + (FPS_TEXT_BUFFER_SIZE - 1U) * REPLAY_TEXT_CHARACTER_WIDTH + 1U)
+#ifdef RESTUNTS_SDL3
+#define SUPERSIGHT_STATUS_PREFIX "HyperVision: "
+#else
 #define SUPERSIGHT_STATUS_PREFIX "SuperSight: "
+#endif
 #define SUPERSIGHT_STATUS_NAME_LENGTH (sizeof("Medium") - 1U)
 #define SUPERSIGHT_STATUS_BUFFER_SIZE                                                              \
 	(sizeof(SUPERSIGHT_STATUS_PREFIX) + SUPERSIGHT_STATUS_NAME_LENGTH)

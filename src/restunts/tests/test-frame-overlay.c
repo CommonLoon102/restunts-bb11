@@ -48,6 +48,12 @@ struct TEXT_DRAW {
 	legacy_s16 shadow_color;
 };
 
+#ifdef RESTUNTS_SDL3
+#define STATUS_TEST_PREFIX "HyperVision: "
+#else
+#define STATUS_TEST_PREFIX "SuperSight: "
+#endif
+
 #define TEXT_DRAW_CAPACITY 8U
 static struct TEXT_DRAW text_draws[TEXT_DRAW_CAPACITY];
 static legacy_u32 text_draw_count;
@@ -721,8 +727,9 @@ enum {
 	STATUS_TEST_LEFT = 8,
 	STATUS_TEST_TOP = 15,
 	STATUS_TEST_BOTTOM = 24,
-	STATUS_TEST_RIGHT = 153,
 	STATUS_TEST_FONT_WIDTH = 8,
+	STATUS_TEST_RIGHT =
+		STATUS_TEST_LEFT + (sizeof(STATUS_TEST_PREFIX "Medium") - 1U) * STATUS_TEST_FONT_WIDTH + 1U,
 	STATUS_TEST_PAGE_COUNT = 2
 };
 
@@ -750,10 +757,10 @@ static void test_supersight_status_names_and_copy(void)
 	static const struct {
 		const legacy_s8 *name;
 		const legacy_char *text;
-	} cases[] = {{"On", "SuperSight: On"},	   {"Auto", "SuperSight: Auto"},
-				 {"Off", "SuperSight: Off"},   {"Full", "SuperSight: Full"},
-				 {"High", "SuperSight: High"}, {"Medium", "SuperSight: Medium"},
-				 {"Low", "SuperSight: Low"}};
+	} cases[] = {{"On", STATUS_TEST_PREFIX "On"},	  {"Auto", STATUS_TEST_PREFIX "Auto"},
+				 {"Off", STATUS_TEST_PREFIX "Off"},	  {"Full", STATUS_TEST_PREFIX "Full"},
+				 {"High", STATUS_TEST_PREFIX "High"}, {"Medium", STATUS_TEST_PREFIX "Medium"},
+				 {"Low", STATUS_TEST_PREFIX "Low"}};
 	for (legacy_u32 index = 0; index < sizeof(cases) / sizeof(cases[0]); index++) {
 		reset_status_text();
 		assert(frame_display_overlay_active() == 0);
@@ -775,7 +782,7 @@ static void test_supersight_status_names_and_copy(void)
 	frame_fps_reset();
 	frame_fps_record_presented();
 	frame_fps_draw_text();
-	assert_text(0, "SuperSight: Medium", STATUS_TEST_LEFT, STATUS_TEST_TOP);
+	assert_text(0, STATUS_TEST_PREFIX "Medium", STATUS_TEST_LEFT, STATUS_TEST_TOP);
 }
 
 static void test_supersight_status_expiry_and_replacement(void)
@@ -792,7 +799,7 @@ static void test_supersight_status_expiry_and_replacement(void)
 	frame_fps_draw_text();
 	assert(text_draw_count == 2);
 	assert(strcmp(text_draws[0].text, "0 FPS") == 0);
-	assert_text(1, "SuperSight: Auto", STATUS_TEST_LEFT, STATUS_TEST_TOP);
+	assert_text(1, STATUS_TEST_PREFIX "Auto", STATUS_TEST_LEFT, STATUS_TEST_TOP);
 	fps_display_enabled = 0;
 	realtime_ticks = LEGACY_U32_WRAP_ADD(realtime_ticks, 1U);
 	/* Querying before the waiting loop must retain its repaint request. */
@@ -815,7 +822,7 @@ static void test_supersight_status_expiry_and_replacement(void)
 	text_draw_count = 0;
 	assert_status_bounds(frame_fps_draw_text());
 	assert(text_draw_count == 1);
-	assert_text(0, "SuperSight: Low", STATUS_TEST_LEFT, STATUS_TEST_TOP);
+	assert_text(0, STATUS_TEST_PREFIX "Low", STATUS_TEST_LEFT, STATUS_TEST_TOP);
 	realtime_ticks = LEGACY_U32_WRAP_ADD(realtime_ticks, 1U);
 	assert(frame_fps_expire_idle() == 1);
 	text_draw_count = 0;
@@ -844,7 +851,7 @@ static void test_supersight_status_roof_cleanup(void)
 				frame_supersight_show_status("Medium");
 				draw_ingame_text();
 				assert(text_draw_count == (legacy_u32)fps + 1U);
-				assert_text(fps, "SuperSight: Medium", STATUS_TEST_LEFT, STATUS_TEST_TOP);
+				assert_text(fps, STATUS_TEST_PREFIX "Medium", STATUS_TEST_LEFT, STATUS_TEST_TOP);
 				legacy_s16 top = fps != 0 ? 3 : STATUS_TEST_TOP;
 				legacy_u32 restored = roofbmpheight_copy > top;
 				assert(restored_roof_count == restored);
@@ -863,7 +870,7 @@ static void test_supersight_status_roof_cleanup(void)
 				text_draw_count = 0;
 				draw_ingame_text();
 				frame_fps_present_roof();
-				assert_text(fps, "SuperSight: Off", STATUS_TEST_LEFT, STATUS_TEST_TOP);
+				assert_text(fps, STATUS_TEST_PREFIX "Off", STATUS_TEST_LEFT, STATUS_TEST_TOP);
 				assert(restored_roof_count == restored * 2U);
 				realtime_ticks = LEGACY_U32_WRAP_ADD(realtime_ticks, STATUS_TEST_DURATION);
 				assert(frame_fps_expire_idle() == 1);
@@ -928,7 +935,7 @@ static void test_supersight_status_replay_filename_collision(void)
 		fps_display_enabled = fps;
 		frame_supersight_show_status("Medium");
 		draw_ingame_text();
-		assert_text(fps, "SuperSight: Medium", STATUS_TEST_LEFT, STATUS_TEST_TOP);
+		assert_text(fps, STATUS_TEST_PREFIX "Medium", STATUS_TEST_LEFT, STATUS_TEST_TOP);
 		legacy_char reconstructed[REPLAY_FILENAME_SIZE];
 		legacy_u32 copied = 0;
 		for (legacy_u32 index = fps + 1U; index + 1U < text_draw_count; index++) {
