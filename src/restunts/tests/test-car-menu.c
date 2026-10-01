@@ -46,6 +46,7 @@ static const legacy_s8 *fixture_files[] = {(const legacy_s8 *)"CARVETT.RES",
 #define SHOWROOM_TEST_FIRST_GROUND_HEIGHT 37
 #define SHOWROOM_TEST_NEXT_GROUND_HEIGHT -61
 #define SHOWROOM_TEST_STATUS_EXPIRY_FRAME 18U
+#define SHOWROOM_TEST_PREPARE_NS 2000ULL
 
 enum SHOWROOM_TEST_SHADOW_STAGE {
 	SHOWROOM_TEST_SHADOW_IDLE,
@@ -74,17 +75,30 @@ static legacy_s16 display_shadow_heading, display_ground_height;
 static legacy_u32 display_car_loads, display_ground_queries, display_load_present_count;
 static legacy_u8 drawing_frame, completed_frame;
 static legacy_u32 committed_frames;
+static legacy_u8 frame_work_added;
+static legacy_u32 prepared_frame_samples;
 
 void sdl3_video_begin_track_frame(legacy_u8 adaptive)
 {
 	assert(adaptive == 0 && drawing_frame == 0);
 	drawing_frame = 1;
 	completed_frame = 0;
+	frame_work_added = 0;
+}
+
+void sdl3_video_add_frame_work(legacy_u64 elapsed_ns)
+{
+	assert(drawing_frame != 0 && frame_work_added == 0);
+	frame_work_added = 1;
+	if (display_toggle_test != 0) {
+		assert(elapsed_ns == SHOWROOM_TEST_PREPARE_NS);
+		prepared_frame_samples++;
+	}
 }
 
 void sdl3_video_end_frame(void)
 {
-	assert(drawing_frame != 0 && completed_frame != 0);
+	assert(drawing_frame != 0 && completed_frame != 0 && frame_work_added != 0);
 	drawing_frame = 0;
 	committed_frames++;
 }
@@ -763,6 +777,7 @@ legacy_u16 shape3d_transform_and_queue(struct TRANSFORMEDSHAPE3D *instance)
 {
 #ifdef RESTUNTS_SDL3
 	if (display_toggle_test != 0) {
+		preview_now += SHOWROOM_TEST_PREPARE_NS;
 		assert(display_model_scaled != 0);
 		assert(((instance->ts_flags & SHAPE3D_NO_SHADOW_RECEIVE_FLAG) != 0) ==
 			   (supersight_enabled != 0));
@@ -1056,9 +1071,11 @@ static void test_display_toggles(void)
 		simd_player.collide_points[0].px = SHOWROOM_TEST_HALF_WIDTH;
 		simd_player.collide_points[1].px = SHOWROOM_TEST_HALF_LENGTH;
 		committed_frames = 0;
+		prepared_frame_samples = 0;
 		run_car_case(1);
 #ifdef RESTUNTS_SDL3
 		assert(drawing_frame == 0 && committed_frames != 0);
+		assert(prepared_frame_samples == committed_frames);
 #endif
 		assert(frame_index == 22);
 		assert(supersight_enabled == initial_supersight && fps_display_enabled == initial_fps);

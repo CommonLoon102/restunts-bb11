@@ -41,7 +41,18 @@
 #define FPS_TEXT_NUMBER_BASE 10U
 #define FPS_TEXT_MAX_DIGITS 5U
 #define FPS_TEXT_SUFFIX_LENGTH 4U
-#define FPS_TEXT_BUFFER_SIZE (FPS_TEXT_MAX_DIGITS + FPS_TEXT_SUFFIX_LENGTH + 1U)
+#ifdef RESTUNTS_SDL3
+#define FPS_RENDER_SAMPLE_COUNT 100U
+#define FPS_RENDER_NS_PER_TENTH_MS 100000ULL
+#define FPS_RENDER_FRACTIONS_PER_MS 10U
+#define FPS_RENDER_MAX_TENTHS_MS                                                                   \
+	((legacy_u32)LEGACY_U16_MAX * FPS_RENDER_FRACTIONS_PER_MS + FPS_RENDER_FRACTIONS_PER_MS - 1U)
+#define FPS_RENDER_SUFFIX_LENGTH (FPS_TEXT_MAX_DIGITS + sizeof(" .0 ms") - 1U)
+#else
+#define FPS_RENDER_SUFFIX_LENGTH 0U
+#endif
+#define FPS_TEXT_BUFFER_SIZE                                                                       \
+	(FPS_TEXT_MAX_DIGITS + FPS_TEXT_SUFFIX_LENGTH + FPS_RENDER_SUFFIX_LENGTH + 1U)
 #define FPS_TEXT_RIGHT_X                                                                           \
 	(REPLAY_TEXT_LEFT_X + (FPS_TEXT_BUFFER_SIZE - 1U) * REPLAY_TEXT_CHARACTER_WIDTH + 1U)
 #ifdef RESTUNTS_SDL3
@@ -73,6 +84,12 @@ static legacy_u32 fps_last_presented;
 static legacy_u16 fps_sample_frames;
 static legacy_u16 fps_sample_value;
 static legacy_u8 fps_sample_started;
+#ifdef RESTUNTS_SDL3
+static legacy_u64 fps_render_samples[FPS_RENDER_SAMPLE_COUNT];
+static legacy_u64 fps_render_total_ns;
+static legacy_u16 fps_render_sample_count;
+static legacy_u16 fps_render_sample_index;
+#endif
 static legacy_s8 supersight_status_text[SUPERSIGHT_STATUS_BUFFER_SIZE];
 static legacy_u32 supersight_status_start;
 static legacy_u8 supersight_status_active;
@@ -131,7 +148,29 @@ void frame_fps_reset(void)
 	fps_sample_frames = 0;
 	fps_sample_value = 0;
 	fps_sample_started = 0;
+#ifdef RESTUNTS_SDL3
+	fps_render_total_ns = 0;
+	fps_render_sample_count = 0;
+	fps_render_sample_index = 0;
+#endif
 }
+
+#ifdef RESTUNTS_SDL3
+void frame_fps_record_rendered(legacy_u64 elapsed_ns)
+{
+	if (fps_display_enabled == 0) {
+		return;
+	}
+	if (fps_render_sample_count == FPS_RENDER_SAMPLE_COUNT) {
+		fps_render_total_ns -= fps_render_samples[fps_render_sample_index];
+	} else {
+		fps_render_sample_count++;
+	}
+	fps_render_samples[fps_render_sample_index] = elapsed_ns;
+	fps_render_total_ns += elapsed_ns;
+	fps_render_sample_index = (fps_render_sample_index + 1U) % FPS_RENDER_SAMPLE_COUNT;
+}
+#endif
 
 legacy_s16 frame_fps_expire_idle(void)
 {
@@ -263,6 +302,21 @@ struct RECTANGLE *frame_fps_draw_text(void)
 		legacy_s8 text[FPS_TEXT_BUFFER_SIZE];
 		legacy_u16 count = frame_fps_format_number(text, fps_sample_value);
 		copy_string(text + count, " FPS");
+#ifdef RESTUNTS_SDL3
+		legacy_u64 average_ns =
+			fps_render_sample_count != 0 ? fps_render_total_ns / fps_render_sample_count : 0;
+		legacy_u64 tenths_ms = average_ns / FPS_RENDER_NS_PER_TENTH_MS;
+		if (tenths_ms > FPS_RENDER_MAX_TENTHS_MS) {
+			tenths_ms = FPS_RENDER_MAX_TENTHS_MS;
+		}
+		count += FPS_TEXT_SUFFIX_LENGTH;
+		text[count++] = ' ';
+		count += frame_fps_format_number(text + count,
+										 (legacy_u16)(tenths_ms / FPS_RENDER_FRACTIONS_PER_MS));
+		text[count++] = '.';
+		text[count++] = (legacy_s8)('0' + tenths_ms % FPS_RENDER_FRACTIONS_PER_MS);
+		copy_string(text + count, " ms");
+#endif
 		legacy_u16 target =
 			frame_fps_adaptive_enabled() ? FPS_TEXT_SUPERSIGHT_TARGET : FPS_TEXT_TARGET;
 		legacy_s16 color = fps_sample_value < target ? FPS_TEXT_RED : FPS_TEXT_GREEN;

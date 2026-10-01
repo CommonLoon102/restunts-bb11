@@ -16,6 +16,10 @@ legacy_s16 video_backbuffer_copy_required(void);
 void sdl3_video_begin_frame(void);
 void sdl3_video_begin_track_frame(legacy_u8 adaptive);
 void sdl3_video_end_frame(void);
+/* Include work prepared earlier without counting the intervening idle time. */
+void sdl3_video_add_frame_work(legacy_u64 elapsed_ns);
+/* Completed rendering work excludes presentation and frame pacing waits. */
+void frame_fps_record_rendered(legacy_u64 elapsed_ns);
 #endif
 
 #endif

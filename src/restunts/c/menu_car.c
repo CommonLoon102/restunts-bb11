@@ -120,6 +120,7 @@ struct CAR_MENU_STATE {
 	struct PRESENTATION_CLOCK presentation_clock;
 	legacy_u64 rotation_time;
 	legacy_u64 input_time;
+	legacy_u64 prepare_elapsed_ns;
 	legacy_s16 input_delta;
 	legacy_u8 portrait_dirty;
 #endif
@@ -365,6 +366,9 @@ static void car_menu_prepare_preview(struct CAR_MENU_STATE *menu)
 #endif
 	if (menu->render_phase == CAR_RENDER_IDLE_PHASE ||
 		menu->render_phase == CAR_RENDER_START_PHASE) {
+#ifdef RESTUNTS_SDL3
+		legacy_u64 prepare_started = presentation_now();
+#endif
 		legacy_s16 car_position_angle = (legacy_s16)polarAngle(carmenu_carpos.y, carmenu_carpos.z);
 		menu->current_rect = slow_video_mgmt_copy != 0 ? empty_rect : carmenu_cliprect;
 		select_cliprect_rotate(0, car_position_angle, 0, &carmenu_cliprect, 0);
@@ -404,6 +408,9 @@ static void car_menu_prepare_preview(struct CAR_MENU_STATE *menu)
 											  : CAR_MENU_FULL_CLIP_BOTTOM;
 		(void)rect_intersect(&menu->current_rect, &car_menu_redraw_cliprect);
 		rect_union(&menu->current_rect, &menu->previous_rect, &menu->union_rect);
+#ifdef RESTUNTS_SDL3
+		menu->prepare_elapsed_ns = presentation_now() - prepare_started;
+#endif
 		if (menu->render_phase != CAR_RENDER_START_PHASE) {
 			menu->render_phase = CAR_RENDER_DRAW_PHASE;
 			menu->render_deferred = 1;
@@ -428,6 +435,8 @@ static void car_menu_render_preview(struct CAR_MENU_STATE *menu)
 			/* Geometry is already queued at the current scale. Keep that scale and
 			 * leave the initial dissolve free to present each of its phases. */
 			sdl3_video_begin_track_frame(0);
+			/* Classic previews defer rasterization until the next input iteration. */
+			sdl3_video_add_frame_work(menu->prepare_elapsed_ns);
 		}
 #endif
 		sprite_select_render_window();

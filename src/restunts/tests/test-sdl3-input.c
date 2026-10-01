@@ -21,6 +21,16 @@ static legacy_u32 argb_framebuffer[HIRES_WIDTH * HIRES_HEIGHT];
 static legacy_u8 argb_active;
 static legacy_u32 frame_generation;
 static legacy_s32 presented_raster_width, presented_raster_height;
+#define FRAME_TIMING_PREPARE_NS SDL_NS_PER_MS
+
+static legacy_u32 rendered_frame_samples;
+static legacy_u64 rendered_frame_elapsed_ns;
+
+void frame_fps_record_rendered(legacy_u64 elapsed_ns)
+{
+	rendered_frame_samples++;
+	rendered_frame_elapsed_ns = elapsed_ns;
+}
 
 legacy_s32 hires_render_scale(void)
 {
@@ -574,6 +584,7 @@ static void test_video_page_lifetime(void)
 	/* Mode recreation must discard the front page even if a drawing frame
 	 * was abandoned, and the first repaint must show the newly cleared mode. */
 	legacy_u32 completed_samples = frame_adaptive.samples;
+	legacy_u32 completed_render_samples = rendered_frame_samples;
 	sdl3_video_begin_track_frame(1);
 	memset(framebuffer, PAGE_VIDEO_SECOND_INDEX, PAGE_VIDEO_PIXELS);
 	dos_video_set_mode_13h();
@@ -583,25 +594,48 @@ static void test_video_page_lifetime(void)
 	request_page_repaint(SDL_EVENT_WINDOW_EXPOSED);
 	assert_presented_page(PAGE_VIDEO_BLACK, PAGE_VIDEO_BLACK);
 	assert(frame_adaptive.samples == completed_samples);
+	assert(rendered_frame_samples == completed_render_samples);
 	frame_adaptive_reset(&frame_adaptive);
 }
 
 static void test_adaptive_frame_timing(void)
 {
 	frame_adaptive_reset(&frame_adaptive);
+	rendered_frame_samples = 0;
+	rendered_frame_elapsed_ns = 0;
 	sdl3_video_begin_track_frame(1);
+	sdl3_video_add_frame_work(FRAME_TIMING_PREPARE_NS);
 	sdl3_video_refresh();
+	request_page_repaint(SDL_EVENT_WINDOW_EXPOSED);
 	assert(frame_adaptive.samples == 0);
+	assert(rendered_frame_samples == 0);
 	sdl3_video_end_frame();
 	assert(frame_adaptive.samples == 1);
 	assert(frame_adaptive.elapsed_ns > 0);
+	assert(rendered_frame_samples == 1);
+	assert(frame_adaptive.elapsed_ns ==
+		   SDL_min(rendered_frame_elapsed_ns, FRAME_ADAPTIVE_MAX_SAMPLE_NS));
+	assert(rendered_frame_elapsed_ns >= FRAME_TIMING_PREPARE_NS);
 	legacy_u64 elapsed = frame_adaptive.elapsed_ns;
-	/* Incidental presentations, menus and classic frames must not influence quality. */
+	/* Only complete frames contribute rendering samples; all rendering modes
+	 * contribute, while menus and classic frames must not influence quality. */
+	legacy_u32 completed_render_samples = rendered_frame_samples;
+	sdl3_video_add_frame_work(FRAME_TIMING_PREPARE_NS);
 	sdl3_video_present();
+	sdl3_video_redraw();
+	assert(rendered_frame_samples == completed_render_samples);
 	sdl3_video_begin_frame();
+	request_page_repaint(SDL_EVENT_WINDOW_EXPOSED);
+	assert(rendered_frame_samples == completed_render_samples);
 	sdl3_video_end_frame();
+	completed_render_samples++;
+	assert(rendered_frame_samples == completed_render_samples);
+	assert(rendered_frame_elapsed_ns > 0);
 	sdl3_video_begin_track_frame(0);
 	sdl3_video_end_frame();
+	completed_render_samples++;
+	assert(rendered_frame_samples == completed_render_samples);
+	assert(rendered_frame_elapsed_ns > 0);
 	assert(frame_adaptive.samples == 1);
 	assert(frame_adaptive.elapsed_ns == elapsed);
 	for (enum FRAME_ADAPTIVE_PRESET preset = FRAME_ADAPTIVE_PRESET_FULL;
@@ -611,11 +645,17 @@ static void test_adaptive_frame_timing(void)
 		sdl3_video_begin_track_frame(1);
 		sdl3_video_refresh();
 		sdl3_video_end_frame();
+		completed_render_samples++;
+		assert(rendered_frame_samples == completed_render_samples);
+		assert(rendered_frame_elapsed_ns > 0);
 		assert(memcmp(&frame_adaptive, &unchanged, sizeof(unchanged)) == 0);
 		/* Preview/menu frames retain the chosen lock as well as its raster scale. */
 		sdl3_video_begin_frame();
 		assert(hires_render_scale() == frame_adaptive_render_scale(&frame_adaptive));
 		sdl3_video_end_frame();
+		completed_render_samples++;
+		assert(rendered_frame_samples == completed_render_samples);
+		assert(rendered_frame_elapsed_ns > 0);
 		assert(memcmp(&frame_adaptive, &unchanged, sizeof(unchanged)) == 0);
 	}
 	frame_adaptive_set_preset(&frame_adaptive, FRAME_ADAPTIVE_PRESET_AUTO);

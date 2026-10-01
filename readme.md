@@ -308,10 +308,13 @@ renderer and do not establish HyperVision performance.
 
 Press **F11** to toggle a frame-rate counter in the top-left corner. It measures
 presented frames over approximately one second and rounds down, for example
-`20 FPS`. The target color threshold is 20 FPS in classic mode and 60 FPS in
-SDL3 HyperVision. The display shows FPS only; it does not show an omitted-object
-count. The temporary HyperVision preset message appears below it after F12 or
-Shift+F12, independently of F11. Automatic adaptation works whether F11 is on or off.
+`20 FPS`. In SDL3 builds, the average rendering time of the last 100 frames
+appears beside it in milliseconds, for example `60 FPS 12.3 ms`. Rendering time
+excludes frame pacing and display synchronization waits. Until 100 frames have
+been collected, it averages the available frames; resetting the FPS counter also
+clears this history. The target color threshold is 20 FPS in classic mode and
+60 FPS in SDL3 HyperVision. The temporary HyperVision preset message appears
+below it after F12 or Shift+F12, independently of F11. Automatic adaptation works whether F11 is on or off.
 F11 and F12 also work in both car-selection screens and during the nighttime
 driving intro without skipping the animation, including in 16-bit DOS. F12 also
 works in the track preview and opponent-selection menu, with the same two-second

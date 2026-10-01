@@ -45,7 +45,8 @@ static legacy_u64 last_present;
 static legacy_u8 palette_changed = true;
 static legacy_u8 drawing_frame;
 static legacy_u8 adaptive_frame;
-static legacy_u64 adaptive_frame_started;
+static legacy_u8 render_frame_pending;
+static legacy_u64 render_frame_started;
 
 static void video_fail(const legacy_char *operation)
 {
@@ -218,10 +219,15 @@ void sdl3_video_game_to_window(legacy_f32 x, legacy_f32 y, legacy_f32 *window_x,
 	}
 }
 
-static void video_record_adaptive_work(void)
+static void video_record_frame_work(void)
 {
-	if (adaptive_frame != 0) {
-		frame_adaptive_record(&frame_adaptive, SDL_GetTicksNS() - adaptive_frame_started);
+	if (render_frame_pending != 0) {
+		legacy_u64 elapsed_ns = SDL_GetTicksNS() - render_frame_started;
+		frame_fps_record_rendered(elapsed_ns);
+		if (adaptive_frame != 0) {
+			frame_adaptive_record(&frame_adaptive, elapsed_ns);
+		}
+		render_frame_pending = 0;
 		adaptive_frame = 0;
 	}
 }
@@ -277,7 +283,7 @@ static void present_surface(const legacy_u8 *pixels, const legacy_u32 *argb, leg
 							   SDL_SCALEMODE_NEAREST)) {
 		video_fail("Scale video surface");
 	}
-	video_record_adaptive_work();
+	video_record_frame_work();
 	if (!SDL_UpdateWindowSurface(window)) {
 		video_fail("Present video surface");
 	}
@@ -345,16 +351,16 @@ static void present_texture(legacy_u8 new_frame)
 	/* Include CPU composition and submission, but exclude the presentation
 	 * call, which can deliberately wait for display synchronization. */
 	if (new_frame) {
-		video_record_adaptive_work();
+		video_record_frame_work();
 	}
 	legacy_u64 present_started = SDL_GetTicksNS();
 	if (!SDL_RenderPresent(renderer)) {
 		video_fail("Present video");
 	}
-	if (adaptive_frame != 0) {
+	if (render_frame_pending != 0) {
 		/* An exposure can repaint the completed front page while another frame
 		 * is being drawn. Its refresh wait is not rendering workload either. */
-		adaptive_frame_started += SDL_GetTicksNS() - present_started;
+		render_frame_started += SDL_GetTicksNS() - present_started;
 	}
 }
 
@@ -410,6 +416,8 @@ void sdl3_video_redraw(void)
 
 void sdl3_video_begin_frame(void)
 {
+	render_frame_started = SDL_GetTicksNS();
+	render_frame_pending = 1;
 	hires_set_render_scale(frame_adaptive.preset == FRAME_ADAPTIVE_PRESET_AUTO
 							   ? HIRES_SCALE
 							   : frame_adaptive_render_scale(&frame_adaptive));
@@ -419,10 +427,16 @@ void sdl3_video_begin_frame(void)
 
 void sdl3_video_begin_track_frame(legacy_u8 adaptive)
 {
+	render_frame_started = SDL_GetTicksNS();
+	render_frame_pending = 1;
 	drawing_frame = true;
 	adaptive_frame = adaptive != 0 && frame_adaptive.preset == FRAME_ADAPTIVE_PRESET_AUTO;
-	if (adaptive_frame != 0) {
-		adaptive_frame_started = SDL_GetTicksNS();
+}
+
+void sdl3_video_add_frame_work(legacy_u64 elapsed_ns)
+{
+	if (render_frame_pending != 0) {
+		render_frame_started -= elapsed_ns;
 	}
 }
 
@@ -430,6 +444,7 @@ void sdl3_video_end_frame(void)
 {
 	drawing_frame = false;
 	sdl3_video_present();
+	render_frame_pending = 0;
 	adaptive_frame = 0;
 }
 
@@ -461,7 +476,8 @@ void sdl3_video_shutdown(void)
 	high_resolution_output = false;
 	drawing_frame = false;
 	adaptive_frame = 0;
-	adaptive_frame_started = 0;
+	render_frame_pending = 0;
+	render_frame_started = 0;
 	frame_surface = NULL;
 	texture = NULL;
 	texture_width = 0;
