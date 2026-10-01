@@ -210,7 +210,8 @@ legacy_s16 audio_init_engine(legacy_s16 unused_type, void far *source_pointer,
 		}
 	}
 	if (index == AUDIO_TIMER_COUNT) {
-		fatal_error("InitEngine: All handles used.");
+		static const legacy_s8 exhausted_handles_message[] = "InitEngine: All handles used.";
+		fatal_error(exhausted_handles_message);
 		return -1;
 	}
 
