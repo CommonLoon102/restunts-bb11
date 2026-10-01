@@ -611,7 +611,7 @@ legacy_s8 setup_intro(void)
 #endif
 		if (key == KEY_F11 || key == KEY_F12
 #ifdef RESTUNTS_SDL3
-			|| key == KEY_SHIFT_F12
+			|| key == KEY_F10 || key == KEY_SHIFT_F12
 #endif
 		) {
 			handle_ingame_kb_shortcuts(key);

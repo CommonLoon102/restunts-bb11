@@ -276,6 +276,10 @@ struct RECTANGLE *frame_fps_draw_text(void)
 	return &display_fps_bounds;
 }
 static legacy_u8 predictive_preview_test;
+#ifdef RESTUNTS_SDL3
+static legacy_u8 display_backend_shortcut;
+#endif
+static legacy_u32 display_backend_shortcuts;
 static legacy_u32 preview_present_count;
 static legacy_s16 preview_last_rotation;
 static legacy_u32 preview_physics_steps, preview_toggle_count;
@@ -288,12 +292,15 @@ legacy_u64 presentation_now(void)
 
 legacy_s16 handle_ingame_kb_shortcuts(legacy_s16 key)
 {
-	assert(key == KEY_F11 || key == KEY_F12 || key == KEY_SHIFT_F12);
+	assert(key == KEY_F10 || key == KEY_F11 || key == KEY_F12 || key == KEY_SHIFT_F12);
 	if (key == KEY_F11) {
 		fps_display_enabled = (fps_display_enabled + 1U) % FRAME_FPS_DISPLAY_MODE_COUNT;
 		frame_fps_reset();
 	} else {
-		if (key == KEY_SHIFT_F12) {
+		if (key == KEY_F10) {
+			supersight_enabled = display_status_active = 1;
+			display_backend_shortcuts++;
+		} else if (key == KEY_SHIFT_F12) {
 			supersight_enabled = display_status_active = 1;
 			display_shift_shortcuts++;
 		} else {
@@ -493,7 +500,7 @@ legacy_s16 input_checking(legacy_s16 frame_delta)
 #ifdef RESTUNTS_SDL3
 		/* The first enable has completed; cycle a lock while keeping it enabled. */
 		if (frame_index == 6 && (display_scenario & 8U) == 0) {
-			return KEY_SHIFT_F12;
+			return display_backend_shortcut != 0 ? KEY_F10 : KEY_SHIFT_F12;
 		}
 #endif
 		return keys[frame_index];
@@ -1051,6 +1058,7 @@ static void test_display_toggles(void)
 		display_present_count = display_fps_draw_count = display_record_count = 0;
 		display_status_active = display_status_expire_pending = 0;
 		display_status_draw_count = display_status_expire_count = display_shift_shortcuts = 0;
+		display_backend_shortcuts = 0;
 		display_reset_count = display_shortcut_count = display_sprite_free_count = 0;
 		display_portrait_pending = display_portrait_legacy_drawn = 0;
 		display_portrait_mode = 255;
@@ -1071,11 +1079,14 @@ static void test_display_toggles(void)
 		/* The script presses F11 four times, traversing every SDL3 HUD state. */
 		assert(fps_display_enabled == (initial_fps + 4U) % FRAME_FPS_DISPLAY_MODE_COUNT);
 #ifdef RESTUNTS_SDL3
-		assert(display_shift_shortcuts == (initial_supersight == 0));
+		assert(display_shift_shortcuts ==
+			   (initial_supersight == 0 && display_backend_shortcut == 0));
+		assert(display_backend_shortcuts ==
+			   (initial_supersight == 0 && display_backend_shortcut != 0));
 #else
 		assert(display_shift_shortcuts == 0);
 #endif
-		assert(display_shortcut_count == 6U + display_shift_shortcuts);
+		assert(display_shortcut_count == 6U + display_shift_shortcuts + display_backend_shortcuts);
 		assert(display_status_draw_count != 0);
 		assert(display_reset_count == 7);
 		assert(display_status_expire_count == 1);
@@ -1089,8 +1100,10 @@ static void test_display_toggles(void)
 		assert(display_car_loads == 2 && display_ground_queries == display_car_loads);
 		assert(display_sprite_free_count == sprite_index);
 		if ((display_scenario & 4U) != 0) {
-			assert(display_portrait_draws == 4U + display_shift_shortcuts);
-			assert(display_enhanced_portrait_draws == 2U + display_shift_shortcuts);
+			assert(display_portrait_draws ==
+				   4U + display_shift_shortcuts + display_backend_shortcuts);
+			assert(display_enhanced_portrait_draws ==
+				   2U + display_shift_shortcuts + display_backend_shortcuts);
 		} else {
 			assert(display_portrait_draws == 0);
 		}
@@ -1136,6 +1149,10 @@ int main(void)
 	}
 #endif
 	test_display_toggles();
+#ifdef RESTUNTS_SDL3
+	display_backend_shortcut = 1;
+	test_display_toggles();
+#endif
 	puts("Car menu interaction snapshots passed (102 scenarios).");
 	return 0;
 }

@@ -91,7 +91,8 @@ access. Audio needs a user gesture; browser shortcuts can take precedence over
 some function keys. Use the page's **Fullscreen** button for fullscreen mode.
 With the canvas focused, **F12** toggles HyperVision Auto and **Shift+F12** cycles
 fixed **Full → High → Medium → Low** presets. **F11** cycles
-**Off → FPS → FPS + render time → Off**.
+**Off → FPS → FPS + render time → Off**. WebAssembly uses the HyperVision CPU
+renderer; the desktop **F10** Vulkan switch is unavailable.
 
 The browser presents frames through SDL3's WebGL renderer and uses WebAudio
 output. Scene rendering runs on the CPU and is serial;

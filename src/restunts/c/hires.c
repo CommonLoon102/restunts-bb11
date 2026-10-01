@@ -549,6 +549,53 @@ void hires_raster_pixel(struct HIRES_RASTER_CONTEXT *context, legacy_s32 x, lega
 	}
 }
 
+void hires_raster_import(const struct HIRES_RASTER_TARGET *target, const legacy_u8 *color_coverage,
+						 const legacy_f32 *depth, const legacy_u32 *family)
+{
+	struct HIRES_SURFACE *surface = target->surface;
+	const legacy_s32 shift = target->scale_shift;
+	const legacy_s32 mask = target->scale_mask;
+	/* Cell ownership lets this loop initialize once, preserve uncovered samples,
+	 * and retire an old ARGB overlay once after all imported samples are written. */
+	for (legacy_s32 top = target->top; top < target->bottom; top += target->scale) {
+		legacy_u16 row = target->rows[top >> shift];
+		for (legacy_s32 left = target->left; left < target->right; left += target->scale) {
+			legacy_u16 offset = (legacy_u16)(row + (left >> shift));
+			legacy_u8 *cell = hires_cell(surface, offset);
+			legacy_u32 *argb = surface->valid[offset] == HIRES_CELL_ARGB
+								   ? surface->argb + ((size_t)offset << target->cell_shift)
+								   : NULL;
+			legacy_u32 remaining = 0;
+			for (legacy_s32 y = top; y < top + target->scale; y++) {
+				size_t index = (size_t)y * target->width + left;
+				legacy_s32 sample = (y & mask) << shift;
+				for (legacy_s32 x = left; x < left + target->scale; x++, index++, sample++) {
+					const legacy_u8 *pixel = color_coverage + index * HIRES_IMPORT_PIXEL_BYTES;
+					if (pixel[HIRES_IMPORT_COVERAGE_BYTE] != 0) {
+						cell[sample] = pixel[0];
+						if (argb != NULL) {
+							argb[sample] = 0;
+						}
+						if (x >= target->depth_left && x < target->depth_right &&
+							y >= target->depth_top && y < target->depth_bottom) {
+							target->inverse_depth[index] = depth[index];
+							target->depth_family[index] = family[index];
+						}
+					}
+					if (argb != NULL) {
+						remaining |= argb[sample];
+					}
+				}
+			}
+			if (argb != NULL && remaining == 0) {
+				surface->valid[offset] = HIRES_CELL_INDEXED;
+				surface->argb_cells--;
+			}
+		}
+	}
+	hires_release_unused_argb(surface);
+}
+
 static void hires_raster_retire_argb(struct HIRES_RASTER_CONTEXT *context,
 									 struct HIRES_SURFACE *surface, legacy_u16 offset,
 									 const legacy_u32 *argb)

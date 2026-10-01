@@ -1778,6 +1778,99 @@ static void test_scaled_workers(legacy_s32 scale)
 	hires_forget(screen.base);
 }
 
+#define TEST_IMPORT_BACKGROUND 3U
+#define TEST_IMPORT_LEFT 7
+#define TEST_IMPORT_RIGHT 10
+#define TEST_IMPORT_TOP 8
+#define TEST_IMPORT_BOTTOM 10
+#define TEST_IMPORT_FAMILY 0xFFFFFE01U
+#define TEST_IMPORT_DEPTH 2.0f
+#define TEST_IMPORT_COLOR 9U
+#define TEST_IMPORT_OVERLAY 0xFFABCDEFU
+
+static void test_external_raster_import(legacy_s32 scale)
+{
+	struct TEST_SURFACE screen;
+	setup_surface(&screen, TEST_SCALE_SCREEN_SEGMENT, 0);
+	hires_shutdown();
+	hires_set_enabled(1);
+	hires_set_render_scale(scale);
+	screen.sprite.sprite_raster_left = TEST_IMPORT_LEFT;
+	screen.sprite.sprite_raster_right = TEST_IMPORT_RIGHT;
+	screen.sprite.sprite_top = TEST_IMPORT_TOP;
+	screen.sprite.sprite_bottom = TEST_IMPORT_BOTTOM;
+	assert(hires_begin_argb(&screen.sprite));
+	hires_depth_begin(0, hires_render_width(), 0, hires_render_height());
+	struct HIRES_RASTER_TARGET target;
+	assert(hires_raster_prepare(&target));
+	size_t count = (size_t)target.width * target.height;
+	legacy_u8 *colors = calloc(count, HIRES_IMPORT_PIXEL_BYTES);
+	legacy_f32 *depth = calloc(count, sizeof(*depth));
+	legacy_u32 *family = calloc(count, sizeof(*family));
+	assert(colors != NULL && depth != NULL && family != NULL);
+	legacy_u32 palette[TEST_PALETTE_SIZE];
+	for (legacy_u32 index = 0; index < TEST_PALETTE_SIZE; index++) {
+		palette[index] = TEST_OPAQUE_ALPHA | index;
+	}
+	palette[TEST_WHITE_INDEX] = TEST_WHITE_ARGB;
+	/* Coverage outside the clipped target must leave all guard pixels intact.
+	 * Checkerboard holes within a cell preserve its old full-color overlay. */
+	for (legacy_s32 y = 0; y < target.height; y++) {
+		for (legacy_s32 x = 0; x < target.width; x++) {
+			size_t index = (size_t)y * target.width + x;
+			colors[index * HIRES_IMPORT_PIXEL_BYTES] = TEST_IMPORT_COLOR;
+			colors[index * HIRES_IMPORT_PIXEL_BYTES + HIRES_IMPORT_COVERAGE_BYTE] =
+				(legacy_u8)((x + y) % HIRES_MEDIUM_SCALE);
+			depth[index] = TEST_IMPORT_DEPTH;
+			family[index] = TEST_IMPORT_FAMILY;
+			if (x >= target.left && x < target.right && y >= target.top && y < target.bottom) {
+				hires_argb_pixel(x, y, TEST_IMPORT_OVERLAY);
+			}
+		}
+	}
+	hires_raster_import(&target, colors, depth, family);
+	for (legacy_s32 y = target.top; y < target.bottom; y++) {
+		for (legacy_s32 x = target.left; x < target.right; x++) {
+			size_t index = (size_t)y * target.width + x;
+			if (colors[index * HIRES_IMPORT_PIXEL_BYTES + HIRES_IMPORT_COVERAGE_BYTE]) {
+				assert(target.depth_family[index] == TEST_IMPORT_FAMILY);
+				assert(target.inverse_depth[index] == TEST_IMPORT_DEPTH);
+			} else {
+				assert(target.depth_family[index] == HIRES_DEPTH_FAMILY_NONE);
+			}
+		}
+	}
+	hires_end();
+	const legacy_u32 *argb = hires_framebuffer_argb(screen.base, palette);
+	assert(argb != NULL);
+	for (legacy_s32 y = 0; y < target.height; y++) {
+		for (legacy_s32 x = 0; x < target.width; x++) {
+			size_t index = (size_t)y * target.width + x;
+			legacy_u32 expected = palette[screen.base[(y / scale) * TEST_WIDTH + x / scale]];
+			if (x >= target.left && x < target.right && y >= target.top && y < target.bottom) {
+				expected = (x + y) % HIRES_MEDIUM_SCALE != 0 ? palette[TEST_IMPORT_COLOR]
+															 : TEST_IMPORT_OVERLAY;
+			}
+			assert(argb[index] == expected);
+		}
+	}
+	/* Replacing the remaining holes must retire the complete ARGB overlay. */
+	assert(hires_begin(&screen.sprite));
+	assert(hires_raster_prepare(&target));
+	for (size_t index = 0; index < count; index++) {
+		colors[index * HIRES_IMPORT_PIXEL_BYTES + HIRES_IMPORT_COVERAGE_BYTE] = 1;
+	}
+	hires_raster_import(&target, colors, depth, family);
+	hires_end();
+	assert(hires_framebuffer_argb(screen.base, palette) == NULL);
+	for (legacy_u32 index = 0; index < TEST_BYTES; index++) {
+		assert(screen.base[index] == TEST_IMPORT_BACKGROUND);
+	}
+	free(colors);
+	free(depth);
+	free(family);
+}
+
 static void test_render_scales(void)
 {
 	const legacy_s32 scales[] = {TEST_SCALE, TEST_SCALE_MEDIUM,	 TEST_SCALE_MINIMUM,
@@ -1874,6 +1967,9 @@ legacy_int main(void)
 	test_framebuffer_copy();
 	test_depth_lifetime(&screen);
 	test_render_scales();
+	for (legacy_s32 scale = HIRES_MINIMUM_SCALE; scale <= HIRES_SCALE; scale *= 2) {
+		test_external_raster_import(scale);
+	}
 	hires_shutdown();
 	puts("SDL3 high-resolution composition tests passed.");
 	return 0;

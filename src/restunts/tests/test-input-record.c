@@ -34,6 +34,27 @@ static legacy_s8 supersight_status[TEST_SUPERSIGHT_STATUS_CAPACITY];
 #ifdef RESTUNTS_SDL3
 static legacy_u32 hires_enabled_transitions;
 static legacy_u32 render_timing_reset_count;
+static legacy_s32 test_vulkan_available = 1;
+static enum HYPERVISION_BACKEND test_backend;
+
+legacy_s32 hypervision_select_backend(enum HYPERVISION_BACKEND backend)
+{
+	if (backend == HYPERVISION_BACKEND_VULKAN && !test_vulkan_available) {
+		return 0;
+	}
+	test_backend = backend;
+	return 1;
+}
+
+enum HYPERVISION_BACKEND hypervision_backend(void)
+{
+	return test_backend;
+}
+
+const legacy_char *hypervision_backend_name(void)
+{
+	return test_backend == HYPERVISION_BACKEND_VULKAN ? "Vulkan" : "CPU";
+}
 void frame_render_timing_reset(void)
 {
 	render_timing_reset_count++;
@@ -232,6 +253,8 @@ static void reset_inputs(void)
 #ifdef RESTUNTS_SDL3
 	frame_adaptive_reset(&frame_adaptive);
 	render_timing_reset_count = 0;
+	test_backend = HYPERVISION_BACKEND_CPU;
+	test_vulkan_available = 1;
 	hires_enabled_transitions = 0;
 	test_hires_enabled = 0;
 	test_hires_scale = HIRES_SCALE;
@@ -753,6 +776,77 @@ static void test_shift_f12_callback(void)
 	assert(kb_parse_key(KEY_SHIFT_F12) == KEY_SHIFT_F12 && shift_f12_callbacks == 1);
 }
 
+static void test_backend_shortcuts(void)
+{
+	enum { TEST_BACKEND_TOGGLE_COUNT = 4 };
+	for (legacy_u8 mode = REPLAY_MODE_LIVE; mode <= REPLAY_MODE_PAUSED; mode++) {
+		for (legacy_u16 preset = FRAME_ADAPTIVE_PRESET_AUTO; preset <= FRAME_ADAPTIVE_PRESET_LOW;
+			 preset++) {
+			reset_inputs();
+			game_replay_mode = mode;
+			cameramode = CAMERA_MODE_CUSTOM;
+			followOpponentFlag = 1;
+			frame_adaptive_set_preset(&frame_adaptive, (enum FRAME_ADAPTIVE_PRESET)preset);
+			if (preset == FRAME_ADAPTIVE_PRESET_AUTO) {
+				frame_adaptive.quality = FRAME_ADAPTIVE_SMALL_VIEW;
+			}
+			frame_adaptive.samples = FRAME_ADAPTIVE_WINDOW_FRAMES / 2U;
+			frame_adaptive.elapsed_ns = FRAME_ADAPTIVE_WORK_BUDGET_NS;
+			struct FRAME_ADAPTIVE_STATE adaptive = frame_adaptive;
+			test_hires_scale = frame_adaptive_render_scale(&frame_adaptive);
+			legacy_s32 scale = test_hires_scale;
+			struct GAMESTATE before = state;
+			for (legacy_u32 press = 0; press < TEST_BACKEND_TOGGLE_COUNT; press++) {
+				full_redraw_frames_remaining = 0;
+				assert(handle_ingame_kb_shortcuts(KEY_F10) == 1);
+				assert(test_backend ==
+					   ((press & 1U) == 0 ? HYPERVISION_BACKEND_VULKAN : HYPERVISION_BACKEND_CPU));
+				assert(supersight_enabled == 1 && test_hires_enabled == 1);
+				assert(test_hires_scale == scale && hires_enabled_transitions == 1);
+				assert(memcmp(&frame_adaptive, &adaptive, sizeof(adaptive)) == 0);
+				assert(memcmp(&state, &before, sizeof(before)) == 0);
+				assert(game_replay_mode == mode && cameramode == CAMERA_MODE_CUSTOM &&
+					   followOpponentFlag == 1);
+				assert(full_redraw_frames_remaining == video_page_count);
+				assert(render_timing_reset_count == press + 1 && fps_reset_count == press + 1);
+				assert(supersight_reset_count == 0);
+				assert_supersight_status((press & 1U) == 0 ? "Vulkan" : "CPU", press + 1);
+			}
+		}
+	}
+	/* A rejected request is handled even in paused replay; it cannot start the
+	 * race, change rendering quality, or discard the current timing history. */
+	for (legacy_u8 enabled = 0; enabled <= 1; enabled++) {
+		reset_inputs();
+		test_vulkan_available = 0;
+		supersight_enabled = test_hires_enabled = enabled;
+		test_hires_scale = HIRES_MEDIUM_SCALE;
+		frame_adaptive_set_preset(&frame_adaptive, FRAME_ADAPTIVE_PRESET_MEDIUM);
+		struct FRAME_ADAPTIVE_STATE adaptive = frame_adaptive;
+		game_replay_mode = REPLAY_MODE_PAUSED;
+		struct GAMESTATE before = state;
+		assert(handle_ingame_kb_shortcuts(KEY_F10) == 1);
+		assert(supersight_enabled == enabled && test_hires_enabled == enabled);
+		assert(test_backend == HYPERVISION_BACKEND_CPU && test_hires_scale == HIRES_MEDIUM_SCALE);
+		assert(memcmp(&frame_adaptive, &adaptive, sizeof(adaptive)) == 0);
+		assert(memcmp(&state, &before, sizeof(before)) == 0 &&
+			   game_replay_mode == REPLAY_MODE_PAUSED);
+		assert(fps_reset_count == 0 && render_timing_reset_count == 0 &&
+			   hires_enabled_transitions == 0);
+		assert_supersight_status("No GPU", 1);
+	}
+	/* F12 retains the selected backend. F10 from classic resumes Vulkan even
+	 * when that selection is already retained, then returns to enhanced CPU. */
+	reset_inputs();
+	assert(handle_ingame_kb_shortcuts(KEY_F10) == 1);
+	assert(handle_ingame_kb_shortcuts(KEY_F12) == 1);
+	assert(supersight_enabled == 0 && test_backend == HYPERVISION_BACKEND_VULKAN);
+	assert(handle_ingame_kb_shortcuts(KEY_F10) == 1);
+	assert(supersight_enabled == 1 && test_backend == HYPERVISION_BACKEND_VULKAN);
+	assert(handle_ingame_kb_shortcuts(KEY_F10) == 1);
+	assert(supersight_enabled == 1 && test_backend == HYPERVISION_BACKEND_CPU);
+}
+
 static void test_locked_display_shortcuts(void)
 {
 	static const struct {
@@ -837,6 +931,7 @@ int main(void)
 #ifdef RESTUNTS_SDL3
 	test_shift_f12_callback();
 	test_locked_display_shortcuts();
+	test_backend_shortcuts();
 #endif
 #ifdef INPUT_RECORD_BASELINE
 	fprintf(stdout,
@@ -849,9 +944,9 @@ int main(void)
 	assert(record_hash == 0x41c4e48dUL);
 	assert(callback_hash == 0x9bd7fd3eUL);
 	/* New display shortcuts bypass the paused-race fallback. Classic keeps its
-	 * original F11/F12 fingerprint; SDL additionally recognizes Shift+F12. */
+	 * original F11/F12 fingerprint; SDL additionally recognizes F10 and Shift+F12. */
 #ifdef RESTUNTS_SDL3
-	assert(shortcut_hash == 0xdecf17b2UL);
+	assert(shortcut_hash == 0x31d093b6UL);
 #else
 	assert(shortcut_hash == 0xab8a7016UL);
 #endif

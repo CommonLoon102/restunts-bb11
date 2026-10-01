@@ -33,8 +33,11 @@
 static legacy_s32 benchmark_compose;
 static legacy_u32 benchmark_palette[LEGACY_U8_MAX + 1U];
 
-static void benchmark_parse_options(legacy_s16 *argc, legacy_s8 *argv[])
+static legacy_s32 benchmark_parse_options(legacy_s16 *argc, legacy_s8 *argv[])
 {
+	if (!render_replay_parse_backend(argc, argv)) {
+		return 0;
+	}
 	legacy_s16 output = 1;
 	for (legacy_s16 input = 1; input < *argc; input++) {
 		if (strcmp((const legacy_char *)argv[input], "--compose") == 0) {
@@ -45,6 +48,7 @@ static void benchmark_parse_options(legacy_s16 *argc, legacy_s8 *argv[])
 	}
 	*argc = output;
 	argv[output] = NULL;
+	return 1;
 }
 
 static void benchmark_load_palette(void)
@@ -79,11 +83,12 @@ static void benchmark_render_frame(legacy_u32 *composed)
 static void benchmark_usage(const legacy_s8 *program)
 {
 	fprintf(stderr,
-			"Usage: %s [--data-dir DIR] [--compose] REPLAY [FRAMES]\n"
+			"Usage: %s [--data-dir DIR] [--backend cpu|vulkan] [--compose] REPLAY [FRAMES]\n"
 			"  REPLAY is a replay name without .rpl; FRAMES is a positive integer\n"
 			"  (default %u). Measures full-track geometry at 320x200, 640x400\n"
 			"  and 1280x800 in cockpit and external views at ticks 0, 80, 160.\n"
-			"  --compose also measures final ARGB framebuffer composition.\n",
+			"  --compose also measures final ARGB framebuffer composition.\n"
+			"  Backend requests are strict: unavailable Vulkan or fallback fails.\n",
 			program, BENCH_DEFAULT_FRAMES);
 }
 
@@ -163,10 +168,11 @@ static legacy_s32 benchmark_frames(legacy_u16 tick, legacy_u32 count)
 	qsort(times, count, sizeof(*times), benchmark_compare_times);
 	legacy_u32 percentile =
 		(legacy_u32)((legacy_u64)count * BENCH_PERCENTILE_95 / BENCH_PERCENTILE_100);
-	printf("tick=%u camera=%d resolution=%dx%d workers=%d n=%u "
+	printf("backend=%s tick=%u camera=%d resolution=%dx%d workers=%d n=%u "
 		   "cpu=%.3f mean=%.3f p50=%.3f p95=%.3f ms\n",
-		   tick, cameramode, hires_render_width(), hires_render_height(), render_workers_count(),
-		   count, cpu, total / count, times[count / 2U], times[percentile]);
+		   hypervision_backend_name(), tick, cameramode, hires_render_width(),
+		   hires_render_height(), render_workers_count(), count, cpu, total / count,
+		   times[count / 2U], times[percentile]);
 	fflush(stdout);
 	free(composed);
 	free(times);
@@ -175,7 +181,9 @@ static legacy_s32 benchmark_frames(legacy_u16 tick, legacy_u32 count)
 
 legacy_s16 stuntsmain(legacy_s16 argc, legacy_s8 *argv[])
 {
-	benchmark_parse_options(&argc, argv);
+	if (!benchmark_parse_options(&argc, argv)) {
+		return EXIT_FAILURE;
+	}
 	legacy_u32 count = BENCH_DEFAULT_FRAMES;
 	if (argc == BENCH_ARGUMENTS_REQUIRED &&
 		SDL_strcmp((const legacy_char *)argv[BENCH_REPLAY_ARGUMENT], "--help") == 0) {
@@ -201,10 +209,14 @@ legacy_s16 stuntsmain(legacy_s16 argc, legacy_s8 *argv[])
 	reset_race_loop_state();
 	init_kevinrandom("kevin");
 	initialize_replay(argv[BENCH_REPLAY_ARGUMENT]);
+	if (!render_replay_select_backend()) {
+		call_exitlist();
+		return EXIT_FAILURE;
+	}
 	if (benchmark_compose) {
 		benchmark_load_palette();
 	}
-	/* Keep transient HUD coverage identical across fast and slow runs. */
+	/* Keep transient HUD coverage identical across fast and slow backends. */
 	visual_clock_ticks = dos_timer_get_realtime_counter();
 	visual_clock_frozen = 1;
 	assert(handle_ingame_kb_shortcuts(KEY_F12) != 0);

@@ -195,6 +195,23 @@ static void test_keyboard(void)
 	send_key(SDL_SCANCODE_F1, SDL_KMOD_SHIFT, true, false);
 	assert(kb_read_char() == KEY_SHIFT_F1);
 	send_key(SDL_SCANCODE_F1, SDL_KMOD_NONE, false, false);
+	/* Renderer switches act once per physical press, including modifier
+	 * release while held. The same plain F10 still reaches the track editor. */
+	send_key(SDL_SCANCODE_F10, SDL_KMOD_NONE, true, false);
+	send_key(SDL_SCANCODE_F10, SDL_KMOD_NONE, true, true);
+	send_key(SDL_SCANCODE_F10, SDL_KMOD_NONE, true, false);
+	assert(kb_read_char() == KEY_F10);
+	assert(kb_read_char() == 0);
+	send_key(SDL_SCANCODE_F10, SDL_KMOD_NONE, false, false);
+	const SDL_Keymod f10_modifiers[] = {SDL_KMOD_SHIFT, SDL_KMOD_CTRL, SDL_KMOD_ALT, SDL_KMOD_GUI};
+	for (size_t modifier = 0; modifier < sizeof(f10_modifiers) / sizeof(f10_modifiers[0]);
+		 modifier++) {
+		send_key(SDL_SCANCODE_F10, f10_modifiers[modifier], true, false);
+		assert(kb_read_char() == 0);
+		send_key(SDL_SCANCODE_F10, SDL_KMOD_NONE, true, false);
+		assert(kb_read_char() == 0);
+		send_key(SDL_SCANCODE_F10, SDL_KMOD_NONE, false, false);
+	}
 	send_key(SDL_SCANCODE_F11, SDL_KMOD_NONE, true, false);
 	send_key(SDL_SCANCODE_F11, SDL_KMOD_NONE, true, true);
 	assert(kb_read_char() == KEY_F11);

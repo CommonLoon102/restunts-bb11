@@ -604,6 +604,7 @@ int main(void)
 		test_notice_expiry(page_flipping, (legacy_u16)KEY_F12);
 #ifdef RESTUNTS_SDL3
 		test_notice_expiry(page_flipping, (legacy_u16)KEY_SHIFT_F12);
+		test_notice_expiry(page_flipping, (legacy_u16)KEY_F10);
 #endif
 	}
 	printf("test-opponent-menu: passed %" LEGACY_PRIu32 " sessions, %" LEGACY_PRIu32

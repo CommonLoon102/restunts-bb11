@@ -762,10 +762,14 @@ static void test_supersight_status_names_and_copy(void)
 		const legacy_s8 *name;
 		const legacy_char *text;
 	} cases[] = {
-		{"On", STATUS_TEST_PREFIX "On"},	 {"Auto", STATUS_TEST_PREFIX "Auto"},
-		{"Off", STATUS_TEST_PREFIX "Off"},	 {"Full", STATUS_TEST_PREFIX "Full"},
-		{"High", STATUS_TEST_PREFIX "High"}, {"Medium", STATUS_TEST_PREFIX "Medium"},
+		{"On", STATUS_TEST_PREFIX "On"},		 {"Auto", STATUS_TEST_PREFIX "Auto"},
+		{"Off", STATUS_TEST_PREFIX "Off"},		 {"Full", STATUS_TEST_PREFIX "Full"},
+		{"High", STATUS_TEST_PREFIX "High"},	 {"Medium", STATUS_TEST_PREFIX "Medium"},
 		{"Low", STATUS_TEST_PREFIX "Low"},
+#ifdef RESTUNTS_SDL3
+		{"CPU", STATUS_TEST_PREFIX "CPU"},		 {"Vulkan", STATUS_TEST_PREFIX "Vulkan"},
+		{"No GPU", STATUS_TEST_PREFIX "No GPU"},
+#endif
 	};
 	for (legacy_u32 index = 0; index < sizeof(cases) / sizeof(cases[0]); index++) {
 		reset_status_text();

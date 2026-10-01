@@ -306,6 +306,15 @@ for the current benchmark scope. The earlier
 [SuperSight CPU measurements](docs/supersight-performance.md) document the previous
 renderer and do not establish HyperVision performance.
 
+In desktop SDL3 builds, **F10** switches between the HyperVision CPU and Vulkan renderers.
+From classic mode it enables HyperVision with Vulkan; if Vulkan is unavailable,
+the current renderer and quality stay unchanged and `HyperVision: No GPU` appears.
+Backend switches preserve the preset, adaptive quality, and resolution, and clear
+the FPS and render-time history for comparison. F12 still toggles classic mode
+and retains the selected backend. F10 also works in the intro, car previews,
+track preview, and opponent menu; in the track editor it retains its palette-page
+selection. Vulkan is unavailable in DOS32 and WebAssembly builds.
+
 In SDL3 builds, **F11** cycles **Off → FPS → FPS + render time → Off**. The
 counter measures presented frames over approximately one second and rounds down,
 for example `20 FPS`. The second press adds a line such as `8.4ms`: the average
@@ -324,8 +333,8 @@ driving intro without skipping the animation, including in 16-bit DOS. F12 also
 works in the track preview and opponent-selection menu, with the same two-second
 status display. SDL3 builds additionally support Shift+F12 in these locations.
 
-HyperVision and the FPS display start off by default. Their selections persist
-until changed or the game exits.
+HyperVision and the FPS display start off by default, with CPU selected as the
+enhanced backend. Their selections persist until changed or the game exits.
 The renderer and display shortcuts work in all driving and replay cameras,
 including opponent and ghost views and paused replays. Holding a shortcut key
 changes its selection only once.
@@ -815,7 +824,7 @@ Saved games, replays, and dump outputs go into the selected game-data folder.
 Use `repldump` or `pixldump` from the same `bin/` folder with their normal
 arguments. The runtime is a Terminal-launched program; there is no Finder
 `.app` bundle. On keyboards that assign system actions to function keys, use
-Fn/Globe with F11/F12 for the game's timing and HyperVision controls.
+Fn/Globe with F10/F11/F12 for the game's renderer and timing controls.
 
 #### BSD hosts: FreeBSD, OpenBSD, and NetBSD
 

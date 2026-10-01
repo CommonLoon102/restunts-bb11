@@ -101,6 +101,13 @@ void hires_raster_fill_row(struct HIRES_RASTER_CONTEXT *context, legacy_s32 y, l
 void hires_raster_write_row(struct HIRES_RASTER_CONTEXT *context, legacy_s32 y,
 							const legacy_u8 *samples);
 void hires_raster_finish(const struct HIRES_RASTER_TARGET *target, legacy_u32 cleared_argb_cells);
+/* Import a completed external raster without altering legacy bytes. RGBA8_UINT
+ * pixels use R for the palette index, G for coverage; B/A are reserved. Depth
+ * and family are full-size row-major arrays. Uncovered samples retain artwork. */
+#define HIRES_IMPORT_PIXEL_BYTES 4U
+#define HIRES_IMPORT_COVERAGE_BYTE 1U
+void hires_raster_import(const struct HIRES_RASTER_TARGET *target, const legacy_u8 *color_coverage,
+						 const legacy_f32 *depth, const legacy_u32 *family);
 /* Optional full-color artwork uses the same clipping and sprite-copy lifetime.
  * Allocation failure leaves the indexed fallback intact. */
 legacy_s32 hires_begin_argb(const struct SPRITE *target);

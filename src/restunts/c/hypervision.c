@@ -1,6 +1,11 @@
 #include "hypervision.h"
 #include "fatal.h"
 #include "render_workers.h"
+#ifdef RESTUNTS_VULKAN_AVAILABLE
+#include "../platform/sdl3/hypervision_vulkan.h"
+#include <SDL3/SDL_log.h>
+#include <SDL3/SDL_error.h>
+#endif
 #include <float.h>
 #include <stdlib.h>
 #include <string.h>
@@ -50,6 +55,78 @@ static struct HV_BIN bins[HV_BAND_COUNT];
 static struct HIRES_DEPTH_PLANE ground;
 static legacy_s32 ground_enabled, incremental;
 static legacy_u32 command_area;
+static enum HYPERVISION_BACKEND selected_backend;
+#ifdef RESTUNTS_VULKAN_AVAILABLE
+static struct HYPERVISION_POLYGON *gpu_polygons;
+static size_t gpu_capacity;
+
+static void hv_vulkan_fallback(void)
+{
+	SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION,
+				"HyperVision Vulkan failed; continuing with CPU rendering: %s", SDL_GetError());
+	selected_backend = HYPERVISION_BACKEND_CPU;
+	hv_vulkan_shutdown();
+}
+#endif
+
+legacy_s32 hypervision_select_backend(enum HYPERVISION_BACKEND backend)
+{
+	if (backend == HYPERVISION_BACKEND_CPU) {
+		selected_backend = backend;
+		return 1;
+	}
+#ifdef RESTUNTS_VULKAN_AVAILABLE
+	if (backend == HYPERVISION_BACKEND_VULKAN) {
+		if (hv_vulkan_initialize()) {
+			selected_backend = backend;
+			return 1;
+		}
+		SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "HyperVision Vulkan unavailable: %s",
+					SDL_GetError());
+	}
+#endif
+	return 0;
+}
+
+enum HYPERVISION_BACKEND hypervision_backend(void)
+{
+	return selected_backend;
+}
+
+const legacy_char *hypervision_backend_name(void)
+{
+	return selected_backend == HYPERVISION_BACKEND_VULKAN ? "Vulkan" : "CPU";
+}
+
+const legacy_char *hypervision_device_name(void)
+{
+#ifdef RESTUNTS_VULKAN_AVAILABLE
+	if (selected_backend == HYPERVISION_BACKEND_VULKAN) {
+		return hv_vulkan_name();
+	}
+#endif
+	return "HyperVision CPU spans";
+}
+
+const legacy_char *hypervision_driver_name(void)
+{
+#ifdef RESTUNTS_VULKAN_AVAILABLE
+	if (selected_backend == HYPERVISION_BACKEND_VULKAN) {
+		return hv_vulkan_driver();
+	}
+#endif
+	return "CPU";
+}
+
+legacy_s32 hypervision_hardware_accelerated(void)
+{
+#ifdef RESTUNTS_VULKAN_AVAILABLE
+	return selected_backend == HYPERVISION_BACKEND_VULKAN && hv_vulkan_hardware_accelerated();
+#else
+	return 0;
+#endif
+}
+
 static void *hv_reserve(void *buffer, size_t *capacity, size_t required, size_t initial,
 						size_t element_size)
 {
@@ -96,6 +173,13 @@ void hypervision_begin(const struct HIRES_DEPTH_PLANE *plane)
 
 void hypervision_shutdown(void)
 {
+#ifdef RESTUNTS_VULKAN_AVAILABLE
+	hv_vulkan_shutdown();
+	free(gpu_polygons);
+	gpu_polygons = NULL;
+	gpu_capacity = 0;
+#endif
+	selected_backend = HYPERVISION_BACKEND_CPU;
 	free(commands);
 	free(edges);
 	commands = NULL;
@@ -210,6 +294,30 @@ void hypervision_polygon(const struct HYPERVISION_VERTEX *vertices, legacy_u32 c
 	}
 	commands = hv_reserve(commands, &command_capacity, command_count + 1U, HV_INITIAL_COMMANDS,
 						  sizeof(*commands));
+#ifdef RESTUNTS_VULKAN_AVAILABLE
+	if (selected_backend == HYPERVISION_BACKEND_VULKAN) {
+		if (command_count == gpu_capacity) {
+			size_t next = gpu_capacity != 0 ? gpu_capacity * 2U : HV_INITIAL_COMMANDS;
+			void *replacement = NULL;
+			if (next > gpu_capacity && next <= (size_t)-1 / sizeof(*gpu_polygons)) {
+				replacement = realloc(gpu_polygons, next * sizeof(*gpu_polygons));
+			}
+			if (replacement == NULL) {
+				SDL_SetError("Cannot allocate HyperVision Vulkan commands");
+				hv_vulkan_fallback();
+			} else {
+				gpu_polygons = replacement;
+				gpu_capacity = next;
+			}
+		}
+		if (selected_backend == HYPERVISION_BACKEND_VULKAN) {
+			struct HYPERVISION_POLYGON *polygon = &gpu_polygons[command_count];
+			memcpy(polygon->vertices, vertices, count * sizeof(*vertices));
+			polygon->count = count;
+			polygon->material = *material;
+		}
+	}
+#endif
 	commands[command_count++] = command;
 	if (command_area < HV_PARALLEL_MIN_AREA) {
 		command_area += (legacy_u32)(command.bottom - command.top) * HIRES_WIDTH;
@@ -478,6 +586,24 @@ legacy_s32 hypervision_end(const struct HIRES_RASTER_TARGET *target, legacy_s32 
 	if (command_count == 0 || target->left >= target->right || target->top >= target->bottom) {
 		return 0;
 	}
+#ifdef RESTUNTS_VULKAN_AVAILABLE
+	/* Direct incremental legacy callers retain their CPU depth buffer. Normal
+	 * game scenes submit one complete batch, including all support surfaces. */
+	if (selected_backend == HYPERVISION_BACKEND_VULKAN && !preserve_depth) {
+		struct HV_VULKAN_RESULT result;
+		if (hv_vulkan_render(gpu_polygons, (legacy_u32)command_count, target,
+							 ground_enabled ? &ground : NULL, preserve_depth, &result) &&
+			result.width == target->width && result.height == target->height) {
+			hires_raster_import(target, result.color_coverage, result.inverse_depth, result.family);
+			command_count = 0;
+			edge_count = 0;
+			return 0;
+		}
+		/* No companion pixels were modified before successful readback. The
+		 * retained CPU commands can render this same batch without a lost frame. */
+		hv_vulkan_fallback();
+	}
+#endif
 	incremental = preserve_depth;
 	legacy_s32 band_count = (target->height + HV_BAND_HEIGHT - 1) / HV_BAND_HEIGHT;
 	for (legacy_s32 band = 0; band < band_count; band++) {

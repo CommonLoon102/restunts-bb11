@@ -2,6 +2,9 @@
 #include <stdlib.h>
 #include <string.h>
 /* The shared runtime also serves tools and tests without SDL dependencies. */
+#ifdef RESTUNTS_FULL
+#include "sdl3.h"
+#endif
 #if defined(RESTUNTS_FULL) && !defined(__EMSCRIPTEN__) && !defined(__DJGPP__)
 #include <SDL3/SDL_messagebox.h>
 #endif
@@ -42,6 +45,10 @@ void dos_show_startup_error(const legacy_s8 *message)
 
 void dos_process_exit(legacy_s16 status)
 {
+#ifdef RESTUNTS_FULL
+	/* Fatal exits need the same driver lifetime ordering as returning from main. */
+	sdl3_platform_shutdown();
+#endif
 	exit(status);
 }
 

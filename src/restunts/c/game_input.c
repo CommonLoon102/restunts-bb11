@@ -14,6 +14,7 @@
 #include "frame_internal.h"
 #ifdef RESTUNTS_SDL3
 #include "hires.h"
+#include "hypervision.h"
 #include "frame_adaptive.h"
 #include "skybox_hires.h"
 #endif
@@ -251,6 +252,31 @@ void load_palandcursor(void)
 }
 
 #ifdef RESTUNTS_SDL3
+static void input_select_hypervision_backend(void)
+{
+	enum HYPERVISION_BACKEND backend =
+		supersight_enabled != 0 && hypervision_backend() == HYPERVISION_BACKEND_VULKAN
+			? HYPERVISION_BACKEND_CPU
+			: HYPERVISION_BACKEND_VULKAN;
+	if (!hypervision_select_backend(backend)) {
+		frame_supersight_show_status("No GPU");
+		full_redraw_frames_remaining = (legacy_s8)video_page_count;
+		return;
+	}
+	if (supersight_enabled == 0) {
+		legacy_s32 scale = hires_render_scale();
+		supersight_enabled = 1;
+		hires_set_enabled(1);
+		hires_set_render_scale(scale);
+	}
+	/* Keep the exact quality and resolution for backend comparisons. A normal
+	 * HyperVision reset would restart automatic quality at full detail. */
+	frame_render_timing_reset();
+	frame_fps_reset();
+	frame_supersight_show_status((const legacy_s8 *)hypervision_backend_name());
+	full_redraw_frames_remaining = (legacy_s8)video_page_count;
+}
+
 static void input_select_supersight(legacy_s16 key)
 {
 	static const legacy_s8 *preset_names[] = {"Auto", "Full", "High", "Medium", "Low"};
@@ -289,6 +315,10 @@ static legacy_s16 input_handle_display_shortcut(legacy_s16 key)
 			return 1;
 
 #ifdef RESTUNTS_SDL3
+		case KEY_F10:
+			input_select_hypervision_backend();
+			return 1;
+
 		case KEY_SHIFT_F12:
 		case KEY_F12:
 			input_select_supersight(key);

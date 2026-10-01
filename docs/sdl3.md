@@ -336,6 +336,9 @@ available:
 - **F1–F4** select cockpit, follow, custom, and trackside cameras.
 - **Alt+Enter** toggles desktop fullscreen, preserving the 4:3 image and restoring
   the previous window size when leaving fullscreen. Keypad Enter also works.
+- **F10** switches HyperVision between CPU and Vulkan on desktop builds, keeping
+  the current quality and resolution. CPU is the default; unavailable Vulkan
+  leaves the selection unchanged. DOS32 and WebAssembly do not support Vulkan.
 - **F11** cycles **Off → FPS → FPS + render time → Off**, including in both
   car-selection screens. Render time excludes physics and presentation waits.
 - **F12** toggles HyperVision Auto on or off; **Shift+F12** cycles the fixed

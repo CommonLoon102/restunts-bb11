@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <SDL3/SDL_init.h>
+#include <SDL3/SDL_error.h>
 #include "../c/externs.h"
 #include "../c/restunts.h"
 #include "../c/fileio.h"
@@ -22,10 +24,13 @@
 #include "../c/track_objects.h"
 #include "../c/fatal.h"
 #include "../c/hires.h"
+#include "../c/hypervision.h"
 #include "../c/crash_state.h"
 #include "../c/frame_adaptive.h"
 
 #define RENDER_REPLAY_ADAPTIVE_MODE 3
+#define RENDER_REPLAY_BACKEND_TOGGLE_MODE 4
+#define RENDER_REPLAY_BACKEND_TOGGLE_TICKS 17U
 
 #undef memcpy
 #undef printf
@@ -38,6 +43,64 @@
 
 static legacy_u8 visual_clock_frozen;
 static legacy_u32 visual_clock_ticks;
+static enum HYPERVISION_BACKEND render_replay_backend = HYPERVISION_BACKEND_CPU;
+
+/* Both the replay oracle and benchmark must reject an unavailable request or
+ * a runtime fallback, so CPU work can never be reported as Vulkan rendering. */
+static legacy_s32 render_replay_parse_backend(legacy_s16 *argc, legacy_s8 *argv[])
+{
+	legacy_s16 output = 1;
+	legacy_s32 selected = 0;
+	for (legacy_s16 input = 1; input < *argc; input++) {
+		if (strcmp((const legacy_char *)argv[input], "--backend") != 0) {
+			argv[output++] = argv[input];
+			continue;
+		}
+		if (selected || ++input >= *argc) {
+			fputs("Specify --backend cpu or --backend vulkan once.\n", stderr);
+			return 0;
+		}
+		selected = 1;
+		if (strcmp((const legacy_char *)argv[input], "cpu") == 0) {
+			render_replay_backend = HYPERVISION_BACKEND_CPU;
+		} else if (strcmp((const legacy_char *)argv[input], "vulkan") == 0) {
+			render_replay_backend = HYPERVISION_BACKEND_VULKAN;
+		} else {
+			fputs("Unknown renderer backend; use cpu or vulkan.\n", stderr);
+			return 0;
+		}
+	}
+	*argc = output;
+	argv[output] = NULL;
+	return 1;
+}
+
+static legacy_s32 render_replay_select_backend(void)
+{
+	/* Batch fixtures skip window creation, but SDL GPU still needs a video host. */
+	if (render_replay_backend == HYPERVISION_BACKEND_VULKAN && !SDL_InitSubSystem(SDL_INIT_VIDEO)) {
+		fprintf(stderr, "Cannot initialize Vulkan video host: %s\n", SDL_GetError());
+		return 0;
+	}
+	if (!hypervision_select_backend(render_replay_backend)) {
+		fputs("Requested renderer backend is unavailable; refusing fallback.\n", stderr);
+		return 0;
+	}
+	printf("Renderer backend: %s; device: %s; driver: %s; hardware accelerated: %d\n",
+		   hypervision_backend_name(), hypervision_device_name(), hypervision_driver_name(),
+		   hypervision_hardware_accelerated());
+	fflush(stdout);
+	return 1;
+}
+
+static void render_replay_require_backend(void)
+{
+	if (hypervision_backend() != render_replay_backend) {
+		fprintf(stderr, "Renderer changed backend during validation; refusing fallback: %s\n",
+				SDL_GetError());
+		abort();
+	}
+}
 
 legacy_u32 dos_timer_get_realtime_counter(void)
 {
@@ -256,6 +319,7 @@ static void render_and_check(const struct GAMESTATE *snapshot)
 		update_frame(0, &rect_windshield);
 	}
 	frame_present(&rect_windshield);
+	render_replay_require_backend();
 	get_kevinrandom_seed(seed_after);
 	assert(memcmp(&saved, &state, sizeof(state)) == 0);
 	assert(memcmp(&saved_config, &gameconfig, sizeof(gameconfig)) == 0);
@@ -380,10 +444,15 @@ static void initialize_replay(const legacy_s8 *name)
 
 legacy_s16 stuntsmain(legacy_s16 argc, legacy_s8 *argv[])
 {
+	if (!render_replay_parse_backend(&argc, argv)) {
+		return EXIT_FAILURE;
+	}
 	assert(argc == 7 || argc == 9);
 	legacy_s16 mode = (legacy_s16)atoi((const legacy_char *)argv[3]);
 	legacy_u16 limit = (legacy_u16)atoi((const legacy_char *)argv[4]);
-	assert(mode >= 0 && mode <= RENDER_REPLAY_ADAPTIVE_MODE);
+	assert(mode >= 0 && mode <= RENDER_REPLAY_BACKEND_TOGGLE_MODE);
+	assert(mode != RENDER_REPLAY_BACKEND_TOGGLE_MODE ||
+		   render_replay_backend == HYPERVISION_BACKEND_VULKAN);
 	legacy_u16 landing_start = (legacy_u16)atoi((const legacy_char *)argv[5]);
 	legacy_u16 landing_end = (legacy_u16)atoi((const legacy_char *)argv[6]);
 	legacy_u16 settling_start = argc == 9 ? (legacy_u16)atoi((const legacy_char *)argv[7]) : 0;
@@ -400,6 +469,10 @@ legacy_s16 stuntsmain(legacy_s16 argc, legacy_s8 *argv[])
 	reset_race_loop_state();
 	init_kevinrandom("kevin");
 	initialize_replay(argv[1]);
+	if (!render_replay_select_backend()) {
+		call_exitlist();
+		return EXIT_FAILURE;
+	}
 	if (limit == 0 || limit > gameconfig.game_recordedframes) {
 		limit = gameconfig.game_recordedframes;
 	}
@@ -414,7 +487,17 @@ legacy_s16 stuntsmain(legacy_s16 argc, legacy_s8 *argv[])
 	legacy_u16 settling_interpolations = 0;
 	for (legacy_u16 tick = 0; tick <= limit; tick++) {
 		assert((legacy_u16)state.game_frame == tick);
+		if (mode == RENDER_REPLAY_BACKEND_TOGGLE_MODE && tick != 0 &&
+			tick % RENDER_REPLAY_BACKEND_TOGGLE_TICKS == 0) {
+			enum HYPERVISION_BACKEND next = render_replay_backend == HYPERVISION_BACKEND_VULKAN
+												? HYPERVISION_BACKEND_CPU
+												: HYPERVISION_BACKEND_VULKAN;
+			assert(handle_ingame_kb_shortcuts(KEY_F10) != 0);
+			render_replay_backend = next;
+			render_replay_require_backend();
+		}
 		legacy_s16 enhanced = mode == 1 || mode == RENDER_REPLAY_ADAPTIVE_MODE ||
+							  mode == RENDER_REPLAY_BACKEND_TOGGLE_MODE ||
 							  (mode == 2 && (tick / 17U) % 2U != 0);
 		if (enhanced != supersight_enabled) {
 			assert(handle_ingame_kb_shortcuts(KEY_F12) != 0);
@@ -490,10 +573,10 @@ legacy_s16 stuntsmain(legacy_s16 argc, legacy_s8 *argv[])
 		}
 	}
 	assert(mode == 0 ? extra_frames == 0 : extra_frames != 0);
-	if (mode == 1 && landing_end != 0) {
+	if ((mode == 1 || mode == RENDER_REPLAY_BACKEND_TOGGLE_MODE) && landing_end != 0) {
 		assert(landing_interpolations != 0);
 	}
-	if (mode == 1 && settling_end != 0) {
+	if ((mode == 1 || mode == RENDER_REPLAY_BACKEND_TOGGLE_MODE) && settling_end != 0) {
 		assert(settling_interpolations != 0);
 	}
 	printf("mode %d: %" LEGACY_PRIu32 " interpolated extra frames (%u landing, %u loop exit)\n",

@@ -1,6 +1,6 @@
 # HyperVision
 
-HyperVision is the enhanced software renderer for SDL3 builds, including native
+HyperVision is the enhanced renderer for SDL3 builds, including native
 desktop platforms, 32-bit DOS, and WebAssembly. It replaces SDL3 SuperSight while
 retaining its three internal resolutions, quality controls, visual interpolation,
 skyboxes, ghosts, and shadows. The performance target is a 2 GHz Core 2 Duo.
@@ -66,15 +66,47 @@ pixel-parity requirements.
 ## Scene and backend boundary
 
 The command boundary describes projected geometry, material selection, and depth
-independently of the code that writes software pixels. This makes visibility
-rules easier to test and gives a future graphics backend a smaller integration
-surface.
+independently of the backend. CPU spans remain the default. Desktop builds also
+include a Vulkan backend selected with F10; F10 again returns to CPU rendering.
+The preset, current quality, and internal resolution stay the same when switching.
+For a sustained comparison, lock a preset with Shift+F12 and use the second F11
+mode to view average render time. VSync can cap displayed FPS even when rendering
+gets faster; the timing line excludes that wait.
+From classic mode, F10 first enables HyperVision with Vulkan. Initialization
+failure leaves the current renderer and quality unchanged.
 
-There is no Vulkan backend in this change. A future implementation would still
-need device setup, GPU resources, presentation, and a decision about how much
-transformation and clipping to move onto the GPU. The current boundary avoids
-introducing those abstractions before they are needed; it does not imply that
-software span resolution should be translated directly into Vulkan commands.
+Vulkan uses SDL3's GPU API with the Vulkan driver explicitly selected. Projected
+polygons are triangulated and rasterized with hardware depth testing. Concave
+contours use ear clipping; self-crossing or touching contours are split into
+even-odd trapezoids before GPU rasterization. Indexed color, coverage, full-width
+surface family IDs, and physical inverse depth use
+separate offscreen attachments. Completed support metadata is copied before
+attached details sample it, avoiding simultaneous sampling and writing of the
+same attachment. Patterns discard uncovered fragments; alternate materials
+retain both palette colors.
+
+Projection, enhanced horizons, shadow effects, sprite copies, and final framebuffer
+composition remain on the CPU. A synchronized readback imports covered Vulkan
+samples and depth into the existing companion buffers, preserving uncovered
+artwork and the legacy interface. Resources and transfer buffers are retained
+between frames. This allows the two visibility backends to share the same game
+and presentation path, but the transfer and wait can outweigh GPU rasterization
+savings. Benchmarks must include that cost.
+
+Failed Vulkan submissions fall back to the retained CPU commands for the same
+frame. Legacy incremental raster calls continue to use CPU depth tests; ordinary
+game scenes submit a complete Vulkan batch. Backend switches happen between
+joined frames and never change authoritative simulation state. Render-time history
+resets on a switch, including automatic fallback.
+
+Configure with `-DRESTUNTS_VULKAN=OFF` to omit the Vulkan implementation. Desktop
+builds enable it by default; DOS and WebAssembly use CPU rendering. No Vulkan SDK
+is needed to build the game because compiled SPIR-V is included. Regenerate it
+with `tools/scripts/generate-hypervision-shaders.py`, glslang 15.1.0, and
+`spirv-val`; `--check` verifies the checked-in header. Set
+`RESTUNTS_VULKAN_DEBUG=1` to enable driver validation when its layers are installed.
+The runtime requires a Vulkan driver compatible with SDL3; software Vulkan
+drivers can also be selected explicitly with F10 for comparison.
 
 ## Physics, interpolation, and presentation
 
@@ -165,6 +197,22 @@ and physics advancement remain outside the timed loop. It does not measure
 complete interactive FPS. The target is excluded from ordinary builds and is
 not a CTest timing gate.
 
+Use `--backend cpu` or `--backend vulkan` to require a particular backend. Vulkan
+measurements include triangulation, submission, rasterization, synchronized
+readback, and import; any fallback fails the run. Use the same `--compose` setting
+for both backends. On a headless Linux host, Vulkan needs a video driver such as
+`offscreen`; SDL's `dummy` video driver cannot load Vulkan:
+
+```sh
+SDL_VIDEODRIVER=offscreen SDL_AUDIODRIVER=dummy RESTUNTS_RENDER_WORKERS=0 \
+    out/sdl3-linux-x64/benchmark-hypervision --data-dir stunts \
+    --backend vulkan --compose DEFAULT 120
+```
+
+The output identifies the device, driver, hardware-acceleration status, and
+composition setting. Disable validation layers during timing; run them separately
+for correctness checks.
+
 ### Workers
 
 Existing desktop render workers remain opt-in: `RESTUNTS_RENDER_WORKERS=0` is the
@@ -254,20 +302,93 @@ byte-for-byte between zero and two workers. The high-resolution serial elapsed
 comparison (7.333 to 7.299 ms) is also within this VM's timing noise; the table
 reports process CPU time, not a guaranteed FPS increase.
 
+### CPU versus Vulkan
+
+The final comparison used the same Linux Release executable and host described
+above, with Vulkan provided by **software llvmpipe**, LLVM 20.1.2 (256 bits),
+Mesa 25.2.8. No physical Vulkan GPU was available. Both backends used SDL's
+`offscreen` video driver, zero application render workers, `--compose`, and a
+frozen UI clock. Validation layers, VSync, and pacing were disabled. The order
+was CPU, Vulkan, Vulkan, CPU, with eight warmup frames and 60 measured frames
+for each of the 18 cases. All 72 case records completed without fallback or crash.
+
+Mean milliseconds per frame across both runs and six scenes at each resolution:
+
+| Resolution | CPU elapsed | Vulkan elapsed | CPU process time | Vulkan process time |
+| --- | ---: | ---: | ---: | ---: |
+| 320x200 | 2.366 | 10.497 | 2.321 | 13.200 |
+| 640x400 | 3.594 | 15.692 | 3.559 | 20.162 |
+| 1280x800 | 6.859 | 29.394 | 6.780 | 40.096 |
+
+Software Vulkan is substantially slower on this host. GPU submission, wait,
+readback, and import are included, as are CPU scene preparation, horizons,
+shadows, frame copies, composition, and state checks. Display upload and physics
+advancement are excluded. These results do not predict performance on a physical
+GPU or a Core 2 Duo; CPU remains the default. Unlike the earlier CPU optimization
+table, this comparison includes final composition, so the two tables have
+different measurement scopes.
+
+A candidate using interpolated hardware depth for earlier rejection passed the
+small GPU fixtures but produced extensive road and grass striping in real scenes.
+It was rejected before timing; the shipped shaders retain explicit fragment-depth
+calculation for consistent coplanar surfaces.
+
 ## Validation
 
-The native Linux Release build and optional benchmark build pass. All 23 CTest
-suites pass, including the host regressions, projection/visibility tests,
-worker consistency, horizon artwork at every resolution, inverted sampling,
-track-preview composition, interpolation, and presentation controls.
+`test-hypervision-vulkan` runs actual GPU commands. CTest skips it when no usable
+Vulkan driver is available; `--require-vulkan` makes that an error. The replay
+harness also rejects any unexpected CPU fallback:
+
+```sh
+SDL_VIDEODRIVER=offscreen out/sdl3-linux-x64/test-hypervision-vulkan --require-vulkan
+python3 tools/scripts/test-render-replay.py \
+    out/sdl3-linux-x64/test-render-replay stunts --backend vulkan
+python3 tools/scripts/test-render-replay.py \
+    out/sdl3-linux-x64/test-render-replay stunts --backend vulkan --toggle-backends-only
+```
+
+The native Linux Release build and optional benchmark build pass. All 24 CTest
+suites pass, including actual Vulkan execution with no skipped suites, host
+regressions, projection/visibility, worker consistency, horizon artwork, inverted
+sampling, track previews, interpolation, and presentation controls.
 
 The replay harness compares complete authoritative state and RNG values with
-classic rendering, HyperVision, repeated renderer switching, and adaptive quality
-changes. DEFAULT (10 Hz), DEFCRSH, 0A0A, HARDLAND, and SHAKING (20 Hz fixtures)
-produce identical records across all four modes. Extra interpolated frames cover
-ordinary playback, a hard landing, and a loop exit without changing physics.
+classic rendering, HyperVision CPU or Vulkan, repeated F12 switching, and
+adaptive quality changes. The checked ranges produce identical records:
 
-The visibility backend and geometry suites also pass AddressSanitizer and
-UndefinedBehaviorSanitizer with leak detection. Source formatting, EditorConfig,
-CRLF, and whitespace checks pass. Windows, DOS, and WebAssembly cross-builds
-were not run in this environment.
+| Replay | Physics rate | Ticks checked | State/RNG records |
+| --- | ---: | ---: | ---: |
+| DEFAULT | 10 Hz | 0–240 | 241 |
+| DEFCRSH | 20 Hz | 0–312, complete replay | 313 |
+| 0A0A | 20 Hz | 0–240 | 241 |
+| HARDLAND | 20 Hz | 0–356, complete replay | 357 |
+| SHAKING | 20 Hz | 0–1265, complete replay | 1266 |
+
+Extra interpolated frames cover ordinary playback, a hard landing, and a loop
+exit without changing physics. Actual F10 CPU/Vulkan transitions also match
+classic rendering for DEFAULT ticks 0–60 and HARDLAND ticks 0–330, including
+interpolated hard-landing samples. This coverage does not claim full playback of
+DEFAULT or 0A0A. Eighteen ordinary and eighteen inverted CPU/Vulkan frame pairs
+were compared; the largest pixel difference was under 0.05%. Enhanced horizons
+were visually confirmed in inverted 640x400 and 1280x800 views.
+
+The Vulkan fixtures pass Khronos validation for crossing depth, background
+surfaces, concave and self-crossing contours, patterned and alternate colors,
+attached decals, full-width surface families, partial overlay preservation,
+shadows, resizing, and deliberate CPU fallback followed by Vulkan recovery.
+Real scene smoke tests also exit cleanly with validation enabled. Normal and
+fatal shutdown paths release the renderer before loaded driver exit handlers.
+
+One plain Release SHAKING run with F12 switching exited with SIGSEGV after its
+rendering loop completed. The cause remains unknown: the same case subsequently
+exited cleanly in a plain Release run, under the debugger, with Vulkan validation,
+and with renderer AddressSanitizer instrumentation. All retained repeat outputs
+match the classic state/RNG records. This is an unresolved intermittent cleanup
+failure, not a confirmed fix or an observed replay desynchronization.
+
+The CPU visibility backend, geometry suites, Vulkan backend, and companion-buffer
+import pass AddressSanitizer and UndefinedBehaviorSanitizer with leak detection.
+A separate 64-vertex crossing-contour stress test exercises tessellation bounds.
+The long SHAKING toggle run also passes renderer AddressSanitizer and leak checks.
+Source formatting, EditorConfig, CRLF, and whitespace checks pass. Windows, DOS,
+and WebAssembly cross-builds were not run in this environment.

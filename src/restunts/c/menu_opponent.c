@@ -207,7 +207,7 @@ static legacy_u8 opponent_menu_activate_key(struct OPPONENT_MENU_STATE *menu, le
 {
 	if (key == (legacy_u16)KEY_F12
 #ifdef RESTUNTS_SDL3
-		|| key == (legacy_u16)KEY_SHIFT_F12
+		|| key == (legacy_u16)KEY_F10 || key == (legacy_u16)KEY_SHIFT_F12
 #endif
 	) {
 		mouse_draw_opaque_check();

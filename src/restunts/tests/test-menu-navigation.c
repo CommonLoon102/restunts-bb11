@@ -560,7 +560,7 @@ static void test_track_supersight_case(legacy_u8 page_flipping, legacy_u8 initia
 	track_expiry_test = expire;
 	track_shortcut_supersight = initial_mode ^ 1U;
 #ifdef RESTUNTS_SDL3
-	if (shortcut == (legacy_u16)KEY_SHIFT_F12) {
+	if (shortcut == (legacy_u16)KEY_F10 || shortcut == (legacy_u16)KEY_SHIFT_F12) {
 		track_shortcut_supersight = 1;
 	}
 #endif
@@ -602,6 +602,7 @@ static void test_track_supersight_toggle(void)
 			test_track_supersight_case(page_flipping, initial_mode, 1, (legacy_u16)KEY_F12);
 #ifdef RESTUNTS_SDL3
 			test_track_supersight_case(page_flipping, initial_mode, 1, (legacy_u16)KEY_SHIFT_F12);
+			test_track_supersight_case(page_flipping, initial_mode, 1, (legacy_u16)KEY_F10);
 #endif
 		}
 	}

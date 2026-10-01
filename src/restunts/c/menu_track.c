@@ -175,7 +175,7 @@ static legacy_u8 track_menu_activate_key(struct TRACK_MENU_STATE *menu, legacy_u
 {
 	if (key == (legacy_u16)KEY_F12
 #ifdef RESTUNTS_SDL3
-		|| key == (legacy_u16)KEY_SHIFT_F12
+		|| key == (legacy_u16)KEY_F10 || key == (legacy_u16)KEY_SHIFT_F12
 #endif
 	) {
 		mouse_draw_opaque_check();

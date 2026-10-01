@@ -96,11 +96,11 @@ static legacy_u8 rendered_modes[8], rendered_fps[8];
 
 legacy_s16 handle_ingame_kb_shortcuts(legacy_s16 key)
 {
-	assert(key == KEY_F11 || key == KEY_F12 || key == KEY_SHIFT_F12);
+	assert(key == KEY_F10 || key == KEY_F11 || key == KEY_F12 || key == KEY_SHIFT_F12);
 	if (key == KEY_F11) {
 		fps_display_enabled = (fps_display_enabled + 1U) % FRAME_FPS_DISPLAY_MODE_COUNT;
 		frame_fps_reset();
-	} else if (key == KEY_SHIFT_F12) {
+	} else if (key == KEY_F10 || key == KEY_SHIFT_F12) {
 		supersight_enabled = preset_status_active = 1;
 	} else {
 		supersight_enabled ^= 1U;
@@ -1019,6 +1019,7 @@ int main(void)
 	display_toggle_completion_case(KEY_F12);
 	display_toggle_completion_case(KEY_F11);
 #ifdef RESTUNTS_SDL3
+	display_toggle_completion_case(KEY_F10);
 	display_toggle_completion_case(KEY_SHIFT_F12);
 	predictive_presentation_case();
 #endif

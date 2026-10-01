@@ -4,6 +4,9 @@
 #include "../../c/hires.h"
 #include "../../c/frame_adaptive.h"
 #include "../../c/frame_internal.h"
+#ifdef RESTUNTS_VULKAN_AVAILABLE
+#include "../../c/hypervision.h"
+#endif
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -222,6 +225,14 @@ void sdl3_video_game_to_window(legacy_f32 x, legacy_f32 y, legacy_f32 *window_x,
 
 static void video_record_render_work(void)
 {
+#ifdef RESTUNTS_VULKAN_AVAILABLE
+	static enum HYPERVISION_BACKEND timed_backend;
+	if (timed_backend != hypervision_backend()) {
+		/* Includes an automatic CPU fallback after a Vulkan submission failure. */
+		frame_render_timing_reset();
+		timed_backend = hypervision_backend();
+	}
+#endif
 	if (measured_frame != 0) {
 		legacy_u64 elapsed = SDL_GetTicksNS() - render_frame_started;
 		frame_render_timing_record(elapsed);

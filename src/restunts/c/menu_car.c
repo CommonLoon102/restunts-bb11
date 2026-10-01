@@ -611,7 +611,7 @@ static legacy_s16 car_menu_handle_input(struct CAR_MENU_STATE *menu, legacy_u16 
 {
 	if (input == (legacy_u16)KEY_F11 || input == (legacy_u16)KEY_F12
 #ifdef RESTUNTS_SDL3
-		|| input == (legacy_u16)KEY_SHIFT_F12
+		|| input == (legacy_u16)KEY_F10 || input == (legacy_u16)KEY_SHIFT_F12
 #endif
 	) {
 		handle_ingame_kb_shortcuts(LEGACY_S16_FROM_BITS(input));

@@ -4,6 +4,9 @@
 #include "../../c/game_input.h"
 #include "../../c/fatal.h"
 #include "../../c/hires.h"
+#ifdef RESTUNTS_VULKAN_AVAILABLE
+#include "../../c/hypervision.h"
+#endif
 #include <string.h>
 
 #define KEY_BUFFER_CAPACITY 64U
@@ -247,15 +250,20 @@ static void input_key(const SDL_KeyboardEvent *event)
 		return;
 	}
 	legacy_u16 value;
-	if (scan == DOS_KB_F11_SCANCODE || scan == DOS_KB_F12_SCANCODE) {
+	if (event->scancode == SDL_SCANCODE_F10 || scan == DOS_KB_F11_SCANCODE ||
+		scan == DOS_KB_F12_SCANCODE) {
 		if (was_pressed || event->repeat ||
 			(event->mod & (SDL_KMOD_CTRL | SDL_KMOD_ALT | SDL_KMOD_GUI)) ||
-			(scan == DOS_KB_F11_SCANCODE && (event->mod & SDL_KMOD_SHIFT))) {
+			(scan != DOS_KB_F12_SCANCODE && (event->mod & SDL_KMOD_SHIFT))) {
 			return;
 		}
-		value = (legacy_u16)(scan == DOS_KB_F11_SCANCODE	 ? KEY_F11
-							 : (event->mod & SDL_KMOD_SHIFT) ? KEY_SHIFT_F12
-															 : KEY_F12);
+		if (event->scancode == SDL_SCANCODE_F10) {
+			value = (legacy_u16)KEY_F10;
+		} else {
+			value = (legacy_u16)(scan == DOS_KB_F11_SCANCODE	 ? KEY_F11
+								 : (event->mod & SDL_KMOD_SHIFT) ? KEY_SHIFT_F12
+																 : KEY_F12);
+		}
 	} else {
 		if ((event->mod & SDL_KMOD_ALT) != 0) {
 			value = dos_kb_keymap5[scan];
@@ -443,10 +451,20 @@ void sdl3_input_shutdown(void)
 
 void sdl3_platform_shutdown(void)
 {
+	/* Normal and fatal exits clean up before dynamically loaded driver exit
+	 * handlers. The emergency atexit hook must not reenter SDL afterward. */
+	static legacy_u8 shutdown_started;
+	if (shutdown_started) {
+		return;
+	}
+	shutdown_started = 1;
 	dos_timer_shutdown();
 	dos_audio_shutdown();
 	sdl3_input_shutdown();
 	sdl3_video_shutdown();
+#ifdef RESTUNTS_VULKAN_AVAILABLE
+	hypervision_shutdown();
+#endif
 	hires_shutdown();
 	SDL_Quit();
 }

@@ -62,8 +62,16 @@ legacy_int main(legacy_int argc, legacy_char **argv)
 	full_data_initialize();
 #endif
 #if defined(RESTUNTS_HEADLESS) || defined(RESTUNTS_PIXLDUMP)
-	return stuntsmain((legacy_s16)argc, (legacy_s8 **)argv);
+	legacy_s16 result = stuntsmain((legacy_s16)argc, (legacy_s8 **)argv);
 #else
-	return run_main_menu_loop((legacy_s16)argc, (legacy_s8 **)argv);
+	legacy_s16 result = run_main_menu_loop((legacy_s16)argc, (legacy_s8 **)argv);
 #endif
+	/* Lazy graphics drivers can register later exit handlers. Release their
+	 * devices while those libraries are still alive, before libc runs handlers. */
+#ifdef RESTUNTS_HEADLESS
+	SDL_Quit();
+#else
+	sdl3_platform_shutdown();
+#endif
+	return result;
 }

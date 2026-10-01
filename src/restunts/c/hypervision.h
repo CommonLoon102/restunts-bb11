@@ -19,6 +19,24 @@ struct HYPERVISION_MATERIAL {
 	legacy_u8 mode, flags;
 };
 
+/* Retained polygons are also the Vulkan submission boundary. CPU rendering does
+ * not allocate this stream unless the Vulkan backend is selected. */
+struct HYPERVISION_POLYGON {
+	struct HYPERVISION_VERTEX vertices[HYPERVISION_MAX_VERTICES];
+	legacy_u32 count;
+	struct HYPERVISION_MATERIAL material;
+};
+enum HYPERVISION_BACKEND { HYPERVISION_BACKEND_CPU, HYPERVISION_BACKEND_VULKAN };
+
+/* Change backends only between joined frames. Failed initialization preserves
+ * the current selection. Optional/unsupported builds always retain CPU rendering. */
+legacy_s32 hypervision_select_backend(enum HYPERVISION_BACKEND backend);
+enum HYPERVISION_BACKEND hypervision_backend(void);
+const legacy_char *hypervision_backend_name(void);
+const legacy_char *hypervision_device_name(void);
+const legacy_char *hypervision_driver_name(void);
+legacy_s32 hypervision_hardware_accelerated(void);
+
 /* One immutable command stream per joined frame. Polygons use even-odd coverage;
  * inverse depth varies linearly along each scanline, including concave models. */
 void hypervision_begin(const struct HIRES_DEPTH_PLANE *ground);
