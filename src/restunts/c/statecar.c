@@ -57,8 +57,8 @@ static legacy_s16 powergear_bug_enabled = 1;
 
 void configure_powergear_bug(legacy_s16 argc, legacy_s8 *argv[])
 {
-	static const legacy_s8 off_option[] = "/pg:off";
-	static const legacy_s8 on_option[] = "/pg:on";
+	static const legacy_s8 off_option[] = "--pg:off";
+	static const legacy_s8 on_option[] = "--pg:on";
 	powergear_bug_enabled = 1;
 	for (legacy_s16 index = 1; index < argc; index++) {
 		if (stricmp(argv[index], off_option) == 0) {

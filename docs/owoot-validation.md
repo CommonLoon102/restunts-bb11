@@ -58,7 +58,7 @@ not impose an imaginary road-width limit inside that exempt tile.
 
 The audit checks the production OWOOT rules against the original frame states.
 After a first violation, further diagnostics describe the original replay
-trajectory; actual `/owoot` playback has already crashed and will diverge.
+trajectory; actual `--owoot` playback has already crashed and will diverge.
 The final DOS checks below independently verify first-violation behavior.
 Uninvestigated rejections remain review candidates; this audit does not certify
 that every flagged replay is invalid.
@@ -142,7 +142,7 @@ rotated and angled passes, clear-side travel, and airborne obstacle skipping.
 ## DOS integration checks
 
 The DOS game, physics dump tool, and renderer dump tool build with Open Watcom.
-Seventeen physics dumps without `/owoot` match the independent original
+Seventeen physics dumps with OWOOT disabled match the independent original
 Borland executable byte for byte. With the switch, R0000, R0187, R0249, R0262,
 R0377, R1105, R1250, and R1509 finish without a crash. The nine selected
 violations crash at exactly the frames predicted by the native audit:

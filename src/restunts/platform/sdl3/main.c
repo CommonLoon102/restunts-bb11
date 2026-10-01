@@ -5,6 +5,7 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
 #include "../../c/restunts.h"
+#include "../../c/command_line.h"
 #include "../../c/asset_path.h"
 #include "sdl3.h"
 
@@ -14,6 +15,15 @@ extern legacy_s16 stuntsmain(legacy_s16 argc, legacy_s8 *argv[]);
 /* Match the argument and result types required by the C runtime. */
 legacy_int main(legacy_int argc, legacy_char **argv)
 {
+#ifdef RESTUNTS_FULL
+	legacy_s16 info_result = command_line_print_info((legacy_s32)argc, (legacy_s8 **)argv);
+	if (info_result != COMMAND_LINE_CONTINUE) {
+		if (fflush(stdout) != 0) {
+			return COMMAND_LINE_FAILURE;
+		}
+		return info_result;
+	}
+#endif
 #if !defined(__DJGPP__) && !defined(RESTUNTS_HEADLESS)
 	if (argc == 2 && strcmp(argv[1], "--licenses") == 0) {
 		fputs("Nuked OPL2 Lite - Copyright (C) 2026 Nuke.YKT.\n"

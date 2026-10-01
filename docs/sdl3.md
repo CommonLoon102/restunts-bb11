@@ -167,7 +167,7 @@ runtime package's `lib/` directory. Keep `bin/`, `lib/`, and `share/` together.
 To run an extracted runtime package without installing build tools:
 
 ```sh
-bash /path/to/package/run-restunts.sh --data-dir /path/to/Stunts -- /nointro
+bash /path/to/package/run-restunts.sh --data-dir /path/to/Stunts -- --nointro
 ```
 
 See the root README for the complete
@@ -267,6 +267,18 @@ configured DOSBox joystick; the reference port did not establish that coverage.
 
 ## Running and controls
 
+Run `restunts --help` (or `restunts -h`) to list the command-line options for
+that build. Run `restunts --version` (or `restunts -v`) to print the Git revision
+and compilation date, using the version format from the Options screen. Both
+commands print to standard output and exit before initializing SDL, graphics,
+audio, or game resources, so no original game files are needed. They also work
+in the Open Watcom 16-bit DOS game executable.
+
+Help and version switches are case-sensitive and can appear alongside game
+options; the first help or version switch wins. A directory argument following
+an initial `--data-dir` is treated as a path, even if its name matches a switch.
+The legacy `/h` spelling retains its Hercules meaning; use `-h` for help.
+
 The source checkout contains only a placeholder under `stunts/`; building does
 not fetch game data. Copy Broderbund Stunts 1.1 resources into `stunts/`, or extract
 the [BB11 archive used by the existing DOS CI](https://github.com/CommonLoon102/restunts4d-oracles/releases/download/v1.0.1/BB11.zip)
@@ -277,7 +289,7 @@ Resources are read from the current directory, or from `--data-dir` when it is
 the first argument. Existing game and dump parameters follow it unchanged:
 
 ```sh
-out/sdl3-linux-x64/restunts --data-dir stunts /nointro
+out/sdl3-linux-x64/restunts --data-dir stunts --nointro
 out/sdl3-linux-x64/repldump --data-dir stunts DEFAULT.RPL
 out/sdl3-linux-x64/pixldump --data-dir stunts DEFAULT.RPL 2 0 5
 ```
@@ -415,7 +427,7 @@ Create a redistributable directory from a completed build:
 
 ```sh
 cmake --install out/sdl3-linux-x64 --prefix out/package-linux-x64 --component Runtime
-out/package-linux-x64/bin/restunts --data-dir "$PWD/stunts" /nointro
+out/package-linux-x64/bin/restunts --data-dir "$PWD/stunts" --nointro
 ```
 
 Distribute the complete directory, including `THIRD-PARTY-NOTICES.txt` and
@@ -455,7 +467,7 @@ From the repository root on Linux:
 
 ```sh
 RESTUNTS_AUDIO_TRACE="$PWD/engine.trace" \
-  ./out/sdl3-linux-x64/restunts --data-dir ./stunts /nointro
+  ./out/sdl3-linux-x64/restunts --data-dir ./stunts --nointro
 ```
 
 In PowerShell, set `$env:RESTUNTS_AUDIO_TRACE = "$PWD\engine.trace"` before

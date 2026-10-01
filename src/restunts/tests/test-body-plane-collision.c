@@ -204,7 +204,7 @@ static void test_ramp_hill_alias(legacy_u32 rotation)
 	const struct VECTOR ramp_point = {47, 31, TRACK_TILE_HALF_SIZE - 7};
 	struct VECTOR previous = world_point(hill_point, rotation, 0);
 	struct VECTOR current = world_point(ramp_point, rotation, 0);
-	configure_option((const legacy_s8 *)"/lc:off");
+	configure_option((const legacy_s8 *)"--lc:off");
 	assert_both_directions(previous, current, 0);
 
 	/* A sub-unit positive distance to the ramp must not round away. The true
@@ -236,7 +236,7 @@ static void test_repeated_ramps(legacy_u32 rotation, legacy_s16 elevation)
 	place_tile(0, TRACK_TILE_SIZE, TEST_TILE_SECOND, ground, rotation);
 	const struct VECTOR clear_points[] = {{0, 34, TRACK_TILE_HALF_SIZE + 4},
 										  {0, 31, TRACK_TILE_HALF_SIZE - 7}};
-	configure_option((const legacy_s8 *)"/lc:off");
+	configure_option((const legacy_s8 *)"--lc:off");
 	assert_both_directions(world_point(clear_points[0], rotation, elevation),
 						   world_point(clear_points[1], rotation, elevation), 0);
 
@@ -262,7 +262,7 @@ static void test_deck_height_alias(legacy_u32 rotation)
 	build_track_object(&current, &previous);
 	assert(plane_signed_distance(planindex, current.x, current.y, current.z) == -42);
 	assert(wallindex == TEST_NO_WALL);
-	configure_option((const legacy_s8 *)"/lc:off");
+	configure_option((const legacy_s8 *)"--lc:off");
 	assert_both_directions(previous, current, 0);
 }
 
@@ -276,7 +276,7 @@ static void test_real_deck_crossings(legacy_u32 rotation, legacy_s16 elevation)
 	const struct VECTOR coplanar_seam[] = {
 		{0, TEST_DECK_HEIGHT + TEST_PAVED_HEIGHT_OFFSET + 8, TRACK_TILE_HALF_SIZE - 4},
 		{0, TEST_DECK_HEIGHT + TEST_PAVED_HEIGHT_OFFSET - 8, TRACK_TILE_HALF_SIZE + 4}};
-	configure_option((const legacy_s8 *)"/lc:off");
+	configure_option((const legacy_s8 *)"--lc:off");
 	assert_both_directions(world_point(same_tile[0], rotation, elevation),
 						   world_point(same_tile[1], rotation, elevation), 1);
 	/* Distinct element origins can still describe the same world plane. */
@@ -289,7 +289,7 @@ static void test_real_ramp_crossing(legacy_u32 rotation, legacy_s16 elevation, l
 	initialize_track(rotation, model);
 	place_tile(0, 0, TEST_TILE_FIRST, elevation == 0 ? 0 : TERRAIN_RAISED_TILE, rotation);
 	const struct VECTOR points[] = {{0, 260, 0}, {0, 190, 0}};
-	configure_option((const legacy_s8 *)"/lc:off");
+	configure_option((const legacy_s8 *)"--lc:off");
 	assert_both_directions(world_point(points[0], rotation, elevation),
 						   world_point(points[1], rotation, elevation), 1);
 }
@@ -302,7 +302,7 @@ static void test_finite_ramp_footprint(legacy_u32 rotation)
 	/* The high ramp's infinite plane crosses this diagonal movement in the
 	 * empty gap between the two road strips. Both actual decks stay clear. */
 	const struct VECTOR points[] = {{0, 1000, 0}, {TRACK_TILE_SIZE, 500, 0}};
-	configure_option((const legacy_s8 *)"/lc:off");
+	configure_option((const legacy_s8 *)"--lc:off");
 	assert_both_directions(world_point(points[0], rotation, 0), world_point(points[1], rotation, 0),
 						   0);
 }
@@ -318,7 +318,7 @@ static void test_grass_height_variation(void)
 	legacy_s16 previous_height = terrainHeight;
 	build_track_object(&current, &previous);
 	assert(terrainHeight != previous_height);
-	configure_option((const legacy_s8 *)"/lc:off");
+	configure_option((const legacy_s8 *)"--lc:off");
 	assert_both_directions(previous, current, 1);
 }
 
@@ -333,9 +333,9 @@ static void test_mode_gate(void)
 	struct VECTOR current = world_point(points[1], 0, 0);
 	/* Run first to exercise static startup before any explicit configuration. */
 	assert_both_directions(previous, current, 1);
-	configure_option((const legacy_s8 *)"/lc:off");
+	configure_option((const legacy_s8 *)"--lc:off");
 	assert_both_directions(previous, current, 0);
-	configure_option((const legacy_s8 *)"/lc:on");
+	configure_option((const legacy_s8 *)"--lc:on");
 	assert_both_directions(previous, current, 1);
 	configure_option(NULL);
 	assert_both_directions(previous, current, 1);

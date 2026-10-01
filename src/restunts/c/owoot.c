@@ -10,7 +10,7 @@ void configure_owoot(legacy_s16 argc, legacy_s8 *argv[])
 {
 	owoot_enabled = 0;
 	for (legacy_s16 index = 1; index < argc; index++) {
-		if (stricmp(argv[index], "/owoot") == 0) {
+		if (stricmp(argv[index], "--owoot") == 0) {
 			owoot_enabled = 1;
 		}
 	}

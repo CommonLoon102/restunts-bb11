@@ -332,7 +332,7 @@
                 'Game running. Use Export saves before closing this tab.';
             canvas.focus();
             const args = ['--data-dir', DATA_DIRECTORY];
-            if (document.getElementById('skip-intro').checked) args.push('/nointro');
+            if (document.getElementById('skip-intro').checked) args.push('--nointro');
             try {
                 Module.callMain(args);
             } catch (error) {

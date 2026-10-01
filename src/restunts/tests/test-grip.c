@@ -134,7 +134,7 @@ static void configure_collision_option(const char *option)
 
 static void test_legacy_collision_recovery(void)
 {
-	static const char *options[] = {NULL, "/lc:on"};
+	static const char *options[] = {NULL, "--lc:on"};
 	for (legacy_u32 index = 0; index < sizeof(options) / sizeof(options[0]); index++) {
 		configure_collision_option(options[index]);
 		reset_car();
@@ -194,7 +194,7 @@ static void test_corrected_collision_recovery(void)
 		{-32768, -30720}, {-4096, -3840}, {-46, -43}, {-16, -15},	{-15, -14},		{0, 0},
 		{15, 14},		  {16, 15},		  {46, 43},	  {4096, 3840}, {32767, 30719},
 	};
-	configure_collision_option("/lc:off");
+	configure_collision_option("--lc:off");
 	/* Include every formerly stuck negative remainder and the replay's -46 offset. */
 	for (legacy_s16 angle = -64; angle <= 64; angle++) {
 		assert_collision_recovery(angle, GRIP_BEHAVIOR_PLAYER, 16000);
@@ -272,6 +272,58 @@ static void configure_cornering_option(const legacy_s8 *option)
 	configure_left_corner_bias(option != NULL ? 2 : 1, argv);
 }
 
+static void test_cornering_options(void)
+{
+	enum CORNERING_OPTION_TEST_VALUES {
+		CORNERING_OPTION_TEST_ANGLE = -7,
+		CORNERING_OPTION_TEST_SHIFT = 2,
+		CORNERING_OPTION_TEST_BIASED = -2,
+		CORNERING_OPTION_TEST_SYMMETRIC = -1
+	};
+	static const struct {
+		const legacy_s8 *first;
+		const legacy_s8 *second;
+		legacy_s16 expected_angle;
+	} cases[] = {{NULL, NULL, CORNERING_OPTION_TEST_BIASED},
+				 {(const legacy_s8 *)"--lcb:on", NULL, CORNERING_OPTION_TEST_BIASED},
+				 {(const legacy_s8 *)"--lcb:off", NULL, CORNERING_OPTION_TEST_SYMMETRIC},
+				 {(const legacy_s8 *)"--LCB:OFF", NULL, CORNERING_OPTION_TEST_SYMMETRIC},
+				 {(const legacy_s8 *)"--LcB:OfF", NULL, CORNERING_OPTION_TEST_SYMMETRIC},
+				 {(const legacy_s8 *)"lcb:off", NULL, CORNERING_OPTION_TEST_BIASED},
+				 {(const legacy_s8 *)"/lcb:off", NULL, CORNERING_OPTION_TEST_BIASED},
+				 {(const legacy_s8 *)"/LCB:OFF", NULL, CORNERING_OPTION_TEST_BIASED},
+				 {(const legacy_s8 *)"-lcb:off", NULL, CORNERING_OPTION_TEST_BIASED},
+				 {(const legacy_s8 *)"--lcb:offx", NULL, CORNERING_OPTION_TEST_BIASED},
+				 {(const legacy_s8 *)"--lcb:off ", NULL, CORNERING_OPTION_TEST_BIASED},
+				 {(const legacy_s8 *)"--lcb:", NULL, CORNERING_OPTION_TEST_BIASED},
+				 {(const legacy_s8 *)"--lcb", NULL, CORNERING_OPTION_TEST_BIASED},
+				 {(const legacy_s8 *)"--lcb:off", (const legacy_s8 *)"--LCB:ON",
+				  CORNERING_OPTION_TEST_BIASED},
+				 {(const legacy_s8 *)"--LCB:ON", (const legacy_s8 *)"--lcb:off",
+				  CORNERING_OPTION_TEST_SYMMETRIC},
+				 {(const legacy_s8 *)"--lcb:off", (const legacy_s8 *)"lcb:on",
+				  CORNERING_OPTION_TEST_SYMMETRIC},
+				 {(const legacy_s8 *)"--lcb:off", (const legacy_s8 *)"/lcb:on",
+				  CORNERING_OPTION_TEST_SYMMETRIC},
+				 {(const legacy_s8 *)"--lcb:off", (const legacy_s8 *)"--lc:on",
+				  CORNERING_OPTION_TEST_SYMMETRIC}};
+	for (legacy_u16 index = 0; index < sizeof(cases) / sizeof(cases[0]); index++) {
+		/* A new parse restores the default before applying its recognized switches. */
+		configure_cornering_option((const legacy_s8 *)"--lcb:off");
+		legacy_s8 *arguments[] = {(legacy_s8 *)"restunts", (legacy_s8 *)cases[index].first,
+								  (legacy_s8 *)cases[index].second};
+		legacy_s16 count = cases[index].second != NULL ? 3 : cases[index].first != NULL ? 2 : 1;
+		configure_left_corner_bias(count, arguments);
+		assert(scale_cornering_angle(CORNERING_OPTION_TEST_ANGLE, CORNERING_OPTION_TEST_SHIFT) ==
+			   cases[index].expected_angle);
+	}
+	legacy_s8 *executable_only[] = {(legacy_s8 *)"--lcb:off"};
+	configure_left_corner_bias(sizeof(executable_only) / sizeof(executable_only[0]),
+							   executable_only);
+	assert(scale_cornering_angle(CORNERING_OPTION_TEST_ANGLE, CORNERING_OPTION_TEST_SHIFT) ==
+		   CORNERING_OPTION_TEST_BIASED);
+}
+
 static void test_cornering_skid_bias(void)
 {
 	static const struct {
@@ -279,8 +331,8 @@ static void test_cornering_skid_bias(void)
 		legacy_s16 left_response;
 		legacy_u16 left_speed;
 	} cases[] = {{NULL, -27, 15920},
-				 {(const legacy_s8 *)"lcb:off", -26, 15918},
-				 {(const legacy_s8 *)"/LCB:ON", -27, 15920}};
+				 {(const legacy_s8 *)"--lcb:off", -26, 15918},
+				 {(const legacy_s8 *)"--LCB:ON", -27, 15920}};
 	static const legacy_s16 expected_right_response = 26;
 	static const legacy_u16 expected_right_speed = 15918;
 	configure_collision_option(NULL);
@@ -314,7 +366,7 @@ static void test_corrected_cornering_symmetry(void)
 {
 	static const legacy_u16 speeds[] = {0, 256, 8000, CORNERING_TEST_SPEED, 32000, 64000};
 	static const legacy_s16 grips[] = {0, CORNERING_TEST_GRIP, 500};
-	configure_cornering_option((const legacy_s8 *)"lcb:off");
+	configure_cornering_option((const legacy_s8 *)"--lcb:off");
 	for (legacy_u16 speed = 0; speed < sizeof(speeds) / sizeof(speeds[0]); speed++) {
 		for (legacy_u16 grip = 0; grip < sizeof(grips) / sizeof(grips[0]); grip++) {
 			for (legacy_u16 surface = 0; surface <= SIMD_SURFACE_GRIP_COUNT; surface++) {
@@ -354,6 +406,7 @@ int main(void)
 	test_wrapped_grip_sweep();
 	test_legacy_collision_recovery();
 	test_corrected_collision_recovery();
+	test_cornering_options();
 	test_cornering_skid_bias();
 	test_corrected_cornering_symmetry();
 	return 0;

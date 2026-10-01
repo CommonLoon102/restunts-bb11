@@ -64,8 +64,8 @@
 #define CALLBACK_SOUND_HELP_KEY 19
 #define CALLBACK_DOS_HELP_ALT_KEY 24
 
-#define STARTUP_HYPERVISION_PREFIX "hv:"
-#define STARTUP_SUPERSIGHT_PREFIX "ss:"
+#define STARTUP_HYPERVISION_PREFIX "--hv:"
+#define STARTUP_SKIP_INTRO_OPTION "--nointro"
 
 #define STARTUP_PROJECTION_X 36
 #define STARTUP_PROJECTION_Y 17
@@ -179,7 +179,7 @@ struct STARTUP_OPTIONS {
 	legacy_u8 unused_nd_option;
 	legacy_u8 skip_intro;
 #ifdef RESTUNTS_SDL3
-	legacy_u16 supersight_preset;
+	legacy_u16 hypervision_preset;
 #endif
 };
 
@@ -219,27 +219,19 @@ static void startup_select_audio_driver(const legacy_s8 *argument)
 }
 
 #ifdef RESTUNTS_SDL3
-static void startup_parse_supersight(const legacy_s8 *argument, struct STARTUP_OPTIONS *options)
+static void startup_parse_hypervision(const legacy_s8 *argument, struct STARTUP_OPTIONS *options)
 {
-	static const legacy_s8 *prefixes[] = {STARTUP_HYPERVISION_PREFIX, STARTUP_SUPERSIGHT_PREFIX};
-	const legacy_s8 *value = NULL;
-	for (legacy_u16 index = 0; index < sizeof(prefixes) / sizeof(prefixes[0]); index++) {
-		const legacy_s8 *prefix = prefixes[index];
-		const legacy_s8 *candidate = argument;
-		while (*prefix != 0 && tolower((legacy_u8)*candidate) == *prefix) {
-			prefix++;
-			candidate++;
-		}
-		if (*prefix == 0) {
-			value = candidate;
-			break;
-		}
+	const legacy_s8 *prefix = STARTUP_HYPERVISION_PREFIX;
+	const legacy_s8 *value = argument;
+	while (*prefix != 0 && tolower((legacy_u8)*value) == *prefix) {
+		prefix++;
+		value++;
 	}
-	if (value == NULL) {
+	if (*prefix != 0) {
 		return;
 	}
-	if (options->supersight_preset != FRAME_ADAPTIVE_PRESET_AUTO) {
-		fprintf(stderr, "Only one HyperVision preset may be specified (hv: or legacy ss:).\n");
+	if (options->hypervision_preset != FRAME_ADAPTIVE_PRESET_AUTO) {
+		fprintf(stderr, "Only one HyperVision preset may be specified (--hv:).\n");
 		dos_process_exit(EXIT_FAILURE);
 		return;
 	}
@@ -252,11 +244,12 @@ static void startup_parse_supersight(const legacy_s8 *argument, struct STARTUP_O
 				   {"low", FRAME_ADAPTIVE_PRESET_LOW}};
 	for (legacy_u16 index = 0; index < sizeof(presets) / sizeof(presets[0]); index++) {
 		if (stricmp(value, presets[index].name) == 0) {
-			options->supersight_preset = presets[index].preset;
+			options->hypervision_preset = presets[index].preset;
 			return;
 		}
 	}
-	fprintf(stderr, "Invalid HyperVision preset '%s'; use hv:full, hv:high, hv:medium or hv:low.\n",
+	fprintf(stderr,
+			"Invalid HyperVision preset '%s'; use --hv:full, --hv:high, --hv:medium or --hv:low.\n",
 			argument);
 	dos_process_exit(EXIT_FAILURE);
 }
@@ -270,12 +263,15 @@ static void startup_parse_options(legacy_s16 argc, legacy_s8 *argv[],
 	options->unused_nd_option = 0;
 	options->skip_intro = 0;
 #ifdef RESTUNTS_SDL3
-	options->supersight_preset = FRAME_ADAPTIVE_PRESET_AUTO;
+	options->hypervision_preset = FRAME_ADAPTIVE_PRESET_AUTO;
 #endif
 	for (legacy_u16 i = 1; argc > i; ++i) {
 #ifdef RESTUNTS_SDL3
-		startup_parse_supersight(argv[i], options);
+		startup_parse_hypervision(argv[i], options);
 #endif
+		if (strcmp(argv[i], STARTUP_SKIP_INTRO_OPTION) == 0) {
+			options->skip_intro = 1;
+		}
 		if (argv[i][0] == '/') {
 			switch (argv[i][1]) {
 				case 'h':
@@ -287,8 +283,6 @@ static void startup_parse_options(legacy_s16 argc, legacy_s8 *argv[],
 						options->sound_disabled = 1;
 					} else if (argv[i][2] == 'd') {
 						options->unused_nd_option = 1;
-					} else if (strcmp(argv[i], "/nointro") == 0) {
-						options->skip_intro = 1;
 					}
 					break;
 
@@ -389,9 +383,9 @@ void init_main(legacy_s16 argc, legacy_s8 *argv[])
 	configure_owoot(argc, argv);
 	startup_parse_options(argc, argv, &startup_options);
 #ifdef RESTUNTS_SDL3
-	if (startup_options.supersight_preset != FRAME_ADAPTIVE_PRESET_AUTO) {
+	if (startup_options.hypervision_preset != FRAME_ADAPTIVE_PRESET_AUTO) {
 		frame_adaptive_set_preset(&frame_adaptive,
-								  (enum FRAME_ADAPTIVE_PRESET)startup_options.supersight_preset);
+								  (enum FRAME_ADAPTIVE_PRESET)startup_options.hypervision_preset);
 		supersight_enabled = 1;
 		hires_set_enabled(supersight_enabled);
 		hires_set_render_scale(frame_adaptive_render_scale(&frame_adaptive));

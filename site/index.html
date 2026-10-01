@@ -68,7 +68,7 @@
                         <li>See the replay filename during playback.</li>
                         <li><kbd>F3</kbd> cycles three new chase cameras and the original adjustable view.</li>
                         <li><kbd>F11</kbd> or <kbd>Shift+F11</kbd> toggles <strong>FPS and render time</strong> on or off in modern ports. DOS16 shows only FPS. Use <kbd>Shift+F11</kbd> in browsers where F11 toggles fullscreen.</li>
-                        <li><code>/nointro</code> takes you straight to the main menu.</li>
+                        <li><code>--nointro</code> takes you straight to the main menu.</li>
                         <li>Build and version information in the Options menu.</li>
                         <li><kbd>Alt</kbd> + <kbd>Enter</kbd> toggles fullscreen in desktop ports.</li>
                     </ul>
@@ -90,11 +90,11 @@
                 <div class="feature-title"><span class="section-number">04</span><h3>Stay on track.</h3><p>OWOOT · One Wheel On Or Over Track</p></div>
                 <div class="feature-content">
                     <ul>
-                        <li>Enable <code>/owoot</code>: at least part of one tyre must stay <strong>on or above the road.</strong> Going underneath it does not count; large-corner rumble strips count as grass.</li>
+                        <li>Enable <code>--owoot</code>: at least part of one tyre must stay <strong>on or above the road.</strong> Going underneath it does not count; large-corner rumble strips count as grass.</li>
                         <li>Follow loops, corkscrews, slaloms, and other stunts along their intended route.</li>
                         <li>Jump the single off-road tile between connected, aligned ramps or bridges. Arbitrary flights over grass are out.</li>
                         <li>Break a rule and the run ends in a crash. OWOOT is optional and off by default.</li>
-                        <li><strong>Check replays automatically:</strong> <code>repldump RACE.RPL /owoot</code> writes a <code>RACE.owo</code> pass/fail result. A pass requires a completed race without violations or crashes.</li>
+                        <li><strong>Check replays automatically:</strong> <code>repldump RACE.RPL --owoot</code> writes a <code>RACE.owo</code> pass/fail result. A pass requires a completed race without violations or crashes.</li>
                     </ul>
                 </div>
             </article>
@@ -104,9 +104,9 @@
                 <div class="feature-content">
                     <p class="feature-lead">Keep the original handling, or opt into these fixes individually.</p>
                     <ul>
-                        <li><code>/pg:off</code> disables power gear and anti-power gear, restoring the missing aerodynamic slowdown.</li>
-                        <li><code>/lcb:off</code> removes the original left-corner steering advantage.</li>
-                        <li><code>/lc:off</code> fixes legacy collision behaviour:
+                        <li><code>--pg:off</code> disables power gear and anti-power gear, restoring the missing aerodynamic slowdown.</li>
+                        <li><code>--lcb:off</code> removes the original left-corner steering advantage.</li>
+                        <li><code>--lc:off</code> fixes legacy collision behaviour:
                             <ul>
                                 <li>No slipping through concrete blocks or loop bases.</li>
                                 <li>Fixes low-speed wall crossings in <a target="_blank" href="https://wiki.stunts.hu/wiki/Corkscrew_up/down">corkscrew up/down</a> pieces.</li>

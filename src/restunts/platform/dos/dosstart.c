@@ -3,9 +3,18 @@
 
 #include "dos_interrupts.h"
 #include "restunts.h"
+#ifdef RESTUNTS_FULL
+#include "command_line.h"
+#endif
 
-#define HEADLESS_MAX_ARGS 6
 #define HEADLESS_COMMAND_LINE_SIZE 128
+#ifdef RESTUNTS_FULL
+/* The shortest argument and its separator occupy two command-tail bytes. */
+#define HEADLESS_MIN_ARGUMENT_SIZE 2U
+#define HEADLESS_MAX_ARGS (HEADLESS_COMMAND_LINE_SIZE / HEADLESS_MIN_ARGUMENT_SIZE + 1U)
+#else
+#define HEADLESS_MAX_ARGS 6
+#endif
 #define HEADLESS_STACK_PARAGRAPHS 512
 #define HEADLESS_DOS_INTERRUPT 33
 #define HEADLESS_DOS_RESIZE_MEMORY_FUNCTION 74
@@ -100,10 +109,17 @@ static legacy_s16 headless_parse_command_line(void)
 static void headless_run(void)
 {
 	headless_release_extra_memory();
+	legacy_s16 argc = headless_parse_command_line();
+#ifdef RESTUNTS_FULL
+	legacy_s16 info_result = command_line_print_info(argc, headless_argv);
+	if (info_result != COMMAND_LINE_CONTINUE) {
+		headless_exit(info_result);
+		return;
+	}
+#endif
 #if defined(RESTUNTS_FULL) || defined(RESTUNTS_PIXLDUMP)
 	full_data_initialize();
 #endif
-	legacy_s16 argc = headless_parse_command_line();
 	legacy_s16 result = dos_program_main(argc, headless_argv);
 	headless_exit(result);
 }

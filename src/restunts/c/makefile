@@ -21,7 +21,7 @@ ifeq ($(TARGET),dosheadless)
 endif
 
 ifeq ($(TARGET),dosfull)
-  C_FILES += video_pages.c headless_data.c headless_trackdata.c full_data.c full_strings.c full_tables.c
+  C_FILES += command_line.c video_pages.c headless_data.c headless_trackdata.c full_data.c full_strings.c full_tables.c
   DOS_STARTUP_OBJ = $(OBJDIR)/dosstart.obj
 endif
 
@@ -49,8 +49,8 @@ $(GIT_REVISION_HEADER): force-git-revision | $(OBJDIR)
 	$(if $(findstring "$(GIT_REVISION)",$(file <$@)),,$(WRITE_GIT_REVISION_HEADER))
 
 # Refresh the compilation date even when the commit and sources are unchanged.
-$(OBJDIR)/menu_options.obj: $(GIT_REVISION_HEADER) force-git-revision
-$(OBJDIR)/menu_options.obj: CFLAGS += -fi=$(GIT_REVISION_HEADER)
+$(OBJDIR)/menu_options.obj $(OBJDIR)/command_line.obj: $(GIT_REVISION_HEADER) force-git-revision
+$(OBJDIR)/menu_options.obj $(OBJDIR)/command_line.obj: CFLAGS += -fi=$(GIT_REVISION_HEADER)
 
 $(OBJDIR)/%.obj: %.c $(C_HEADERS) makefile ../watcom.mk $(WATCOM_STAMP) | $(OBJDIR)
 	$(CC) $(WATCOM_CFLAGS) $(CFLAGS) -fo=$@ $<

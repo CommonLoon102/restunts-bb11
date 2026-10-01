@@ -76,7 +76,7 @@ def main():
             "-c",
             "c:",
             "-c",
-            "RACEMEM.EXE /nointro > RESULT.TXT",
+            "RACEMEM.EXE --nointro > RESULT.TXT",
             "-c",
             "if errorlevel 1 echo FAILED > STATUS.TXT",
             "-c",
