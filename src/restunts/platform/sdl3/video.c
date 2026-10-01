@@ -56,6 +56,23 @@ static void video_fail(const legacy_char *operation)
 }
 
 #if !defined(__DJGPP__) && !defined(__EMSCRIPTEN__)
+static SDL_WindowFlags desktop_window_flags(void)
+{
+	const legacy_char *setting = getenv("RESTUNTS_BORDERLESS");
+	if (setting != NULL && *setting != '\0') {
+		if (strcmp(setting, "1") == 0) {
+			/* Keep ordinary window status and maximize within the usable desktop.
+			 * Fullscreen status can select a different compositor presentation path. */
+			return SDL_WINDOW_RESIZABLE | SDL_WINDOW_BORDERLESS | SDL_WINDOW_MAXIMIZED;
+		}
+		if (strcmp(setting, "0") != 0) {
+			SDL_LogWarn(SDL_LOG_CATEGORY_VIDEO,
+						"Invalid RESTUNTS_BORDERLESS: use 0 or 1; using a normal window.");
+		}
+	}
+	return SDL_WINDOW_RESIZABLE;
+}
+
 static void configure_vsync(void)
 {
 	legacy_s32 interval = VSYNC_EVERY_REFRESH;
@@ -517,8 +534,12 @@ void dos_video_set_mode_13h(void)
 	window = SDL_CreateWindow("Chocolate Stunts", SDL3_SCREEN_WIDTH, SDL3_SCREEN_HEIGHT,
 							  SDL_WINDOW_FULLSCREEN);
 #else
+	SDL_WindowFlags window_flags = SDL_WINDOW_RESIZABLE;
+#ifndef __EMSCRIPTEN__
+	window_flags = desktop_window_flags();
+#endif
 	window = SDL_CreateWindow("Chocolate Stunts", SDL3_SCREEN_WIDTH * WINDOW_INITIAL_SCALE,
-							  PRESENTATION_HEIGHT * WINDOW_INITIAL_SCALE, SDL_WINDOW_RESIZABLE);
+							  PRESENTATION_HEIGHT * WINDOW_INITIAL_SCALE, window_flags);
 #endif
 	if (window == NULL) {
 		video_fail("Create game window");

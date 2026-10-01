@@ -266,6 +266,20 @@ repaint that completed page while the next frame is being drawn. This prevents
 partial game-frame updates from reaching presentation without queuing an extra
 frame. Display synchronization still depends on SDL and the graphics driver.
 
+If fullscreen tears but a maximized window is smooth, desktop SDL3 builds can
+start in a borderless maximized window with `RESTUNTS_BORDERLESS=1`:
+
+```sh
+RESTUNTS_BORDERLESS=1 ./out/sdl3-linux-x64/restunts --data-dir stunts
+```
+
+This keeps ordinary window status and uses the desktop's usable area; a panel or
+dock may remain visible. Alt+Enter still toggles fullscreen, returning to the
+borderless window when fullscreen is turned off. Omit the variable or set it to
+`0` to start with the normal window. This option does not change interpolation,
+frame pacing, or VSync. It has no effect in DOS, browser, or batch builds.
+Maximization depends on window-manager support.
+
 On Windows, Linux, BSD, and macOS, VSync is enabled by default in both windowed and fullscreen
 mode, with or without HyperVision. The game requests synchronization to the display's
 vertical refresh; SDL may use timed pacing when a renderer cannot synchronize.

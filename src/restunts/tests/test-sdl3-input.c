@@ -375,6 +375,59 @@ static void test_video_vsync(void)
 	SDL_free(saved);
 }
 
+#define TEST_BORDERLESS_ENVIRONMENT "RESTUNTS_BORDERLESS"
+
+static void set_borderless_environment(const legacy_char *setting)
+{
+	if (setting != NULL) {
+		assert(SDL_setenv_unsafe(TEST_BORDERLESS_ENVIRONMENT, setting, true) == 0);
+	} else {
+		assert(SDL_unsetenv_unsafe(TEST_BORDERLESS_ENVIRONMENT) == 0);
+	}
+}
+
+static void assert_borderless_video(legacy_u8 borderless, legacy_u8 fullscreen)
+{
+	assert(sdl3_video_window() != NULL);
+	assert(SDL_SyncWindow(sdl3_video_window()));
+	SDL_WindowFlags flags = SDL_GetWindowFlags(sdl3_video_window());
+	assert((flags & SDL_WINDOW_RESIZABLE) != 0);
+	assert(((flags & SDL_WINDOW_BORDERLESS) != 0) == borderless);
+	assert(((flags & SDL_WINDOW_FULLSCREEN) != 0) == fullscreen);
+	/* Dummy video retains the requested borders but cannot maximize. Actual
+	 * maximization and compositor behavior require a window manager. */
+}
+
+static void test_video_borderless(void)
+{
+	const struct {
+		const legacy_char *setting;
+		legacy_u8 borderless;
+	} cases[] = {{NULL, false}, {"1", true},		{"0", false}, {"1", true},
+				 {"", false},	{"invalid", false}, {"01", false}};
+	const legacy_char *original = getenv(TEST_BORDERLESS_ENVIRONMENT);
+	legacy_char *saved = original != NULL ? SDL_strdup(original) : NULL;
+	assert(original == NULL || saved != NULL);
+	for (legacy_u32 index = 0; index < SDL_arraysize(cases); index++) {
+		set_borderless_environment(cases[index].setting);
+		/* Recreation re-reads the option and must not inherit earlier borders. */
+		dos_video_set_mode_13h();
+		assert_borderless_video(cases[index].borderless, false);
+		sdl3_video_toggle_fullscreen();
+		assert_borderless_video(cases[index].borderless, true);
+		sdl3_video_toggle_fullscreen();
+		assert_borderless_video(cases[index].borderless, false);
+	}
+	sdl3_video_shutdown();
+	set_borderless_environment("1");
+	sdl3_batch_mode = true;
+	dos_video_set_mode_13h();
+	assert(sdl3_video_window() == NULL);
+	sdl3_batch_mode = false;
+	set_borderless_environment(saved);
+	SDL_free(saved);
+}
+
 static void test_video_and_mouse(void)
 {
 	dos_video_set_mode_13h();
@@ -978,6 +1031,7 @@ legacy_int main(void)
 	test_keyboard();
 	test_timer();
 	test_video_vsync();
+	test_video_borderless();
 	test_video_and_mouse();
 	test_high_resolution_video();
 	test_dynamic_resolution_video();
