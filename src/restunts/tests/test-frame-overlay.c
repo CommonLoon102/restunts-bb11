@@ -54,6 +54,27 @@ struct TEXT_DRAW {
 #define STATUS_TEST_PREFIX "SuperSight: "
 #endif
 
+enum {
+	DIAGNOSTIC_TEST_LEFT = 8,
+	DIAGNOSTIC_TEST_TOP = 3,
+	DIAGNOSTIC_TEST_FONT_WIDTH = 8,
+	DIAGNOSTIC_TEST_FONT_HEIGHT = 8,
+	DIAGNOSTIC_TEST_LINE_HEIGHT = 12,
+#ifdef RESTUNTS_SDL3
+	DIAGNOSTIC_TEST_LINE_COUNT = 2,
+#else
+	DIAGNOSTIC_TEST_LINE_COUNT = 1,
+#endif
+	DIAGNOSTIC_TEST_BOTTOM = DIAGNOSTIC_TEST_TOP +
+							 (DIAGNOSTIC_TEST_LINE_COUNT - 1) * DIAGNOSTIC_TEST_LINE_HEIGHT +
+							 DIAGNOSTIC_TEST_FONT_HEIGHT + 1,
+	DIAGNOSTIC_TEST_RIGHT =
+		DIAGNOSTIC_TEST_LEFT + (sizeof("65535 FPS") - 1U) * DIAGNOSTIC_TEST_FONT_WIDTH + 1U,
+	DIAGNOSTIC_TEST_FILENAME_LINES = 4,
+	DIAGNOSTIC_TEST_FILENAME_LABEL_Y =
+		DIAGNOSTIC_TEST_TOP + DIAGNOSTIC_TEST_FILENAME_LINES * DIAGNOSTIC_TEST_LINE_HEIGHT
+};
+
 #define TEXT_DRAW_CAPACITY 12U
 static struct TEXT_DRAW text_draws[TEXT_DRAW_CAPACITY];
 static legacy_u32 text_draw_count;
@@ -402,7 +423,7 @@ static void reset_ingame_text(const char *filename)
 	passed_security = 1;
 	cameramode = CAMERA_MODE_TRACKSIDE;
 	text_draw_count = 0;
-	fps_display_enabled = 0;
+	fps_display_enabled = FRAME_FPS_DISPLAY_OFF;
 	frame_fps_reset();
 	realtime_ticks = 0;
 	roofbmpheight_copy = 0;
@@ -561,11 +582,12 @@ static void test_filename_hidden_in_live_race_and_demo(void)
 	assert(bounds->top == 170 && bounds->bottom == 191);
 }
 
-static void assert_fps(const char *expected, legacy_s16 color)
+static void assert_fps(const legacy_char *expected, legacy_s16 color)
 {
 	text_draw_count = 0;
 	struct RECTANGLE *bounds = draw_complete_ingame_text();
 	const struct TEXT_DRAW *fps = &text_draws[diagnostic_text_start];
+	assert(text_draw_count == diagnostic_text_start + DIAGNOSTIC_TEST_LINE_COUNT);
 	assert(strcmp(fps->text, expected) == 0);
 	assert(fps->x == 8 && fps->y == 3);
 	assert(fps->color == color && fps->shadow_color == 0);
@@ -585,7 +607,7 @@ static void present_frames(legacy_u32 frames, legacy_u32 ticks)
 static void test_fps_sampling(void)
 {
 	reset_ingame_text("");
-	fps_display_enabled = 1;
+	fps_display_enabled = FRAME_FPS_DISPLAY_ON;
 	frame_fps_record_presented();
 	assert_fps("0 FPS", 4);
 	present_frames(20, 100);
@@ -605,14 +627,14 @@ static void test_fps_sampling(void)
 	assert_fps("0 FPS", 4);
 	present_frames(20, 100);
 	assert_fps("20 FPS", 2);
-	fps_display_enabled = 0;
+	fps_display_enabled = FRAME_FPS_DISPLAY_OFF;
 	text_draw_count = 0;
 	game_replay_mode = REPLAY_MODE_PAUSED;
 	struct RECTANGLE *bounds = draw_complete_ingame_text();
 	assert(text_draw_count == 0);
 	assert(memcmp(bounds, &empty_rect, sizeof(*bounds)) == 0);
 	frame_fps_record_presented();
-	fps_display_enabled = 1;
+	fps_display_enabled = FRAME_FPS_DISPLAY_ON;
 	frame_fps_record_presented();
 	assert_fps("0 FPS", 4);
 	present_frames(20, 100);
@@ -636,16 +658,16 @@ static void test_fps_outside_race(void)
 	struct RECTANGLE *bounds = frame_fps_draw_text();
 	assert(memcmp(bounds, &empty_rect, sizeof(*bounds)) == 0);
 	assert(text_draw_count == 0);
-	fps_display_enabled = 1;
+	fps_display_enabled = FRAME_FPS_DISPLAY_ON;
 	frame_fps_record_presented();
 	present_frames(20, DOS_TIMER_REALTIME_TICKS_PER_SECOND);
 	bounds = frame_fps_draw_text();
-	assert(text_draw_count == 1);
+	assert(text_draw_count == DIAGNOSTIC_TEST_LINE_COUNT);
 	assert(strcmp(text_draws[0].text, "20 FPS") == 0);
 	assert(text_draws[0].x == 8 && text_draws[0].y == 3);
 	assert(text_draws[0].color == 2 && text_draws[0].shadow_color == 0);
 	assert(bounds->left == 8 && bounds->right == 57);
-	assert(bounds->top == 3 && bounds->bottom == 12);
+	assert(bounds->top == DIAGNOSTIC_TEST_TOP && bounds->bottom == DIAGNOSTIC_TEST_BOTTOM);
 	assert(restored_roof_count == 0 && copied_roof_count == 0);
 	assert(memcmp(&rect_ingame_text, &saved_text_rect, sizeof(rect_ingame_text)) == 0);
 }
@@ -653,7 +675,7 @@ static void test_fps_outside_race(void)
 static void test_fps_idle_expiry(void)
 {
 	reset_ingame_text("");
-	fps_display_enabled = 1;
+	fps_display_enabled = FRAME_FPS_DISPLAY_ON;
 	frame_fps_record_presented();
 	present_frames(20, 100);
 	assert_fps("20 FPS", 2);
@@ -677,9 +699,9 @@ static void test_fps_idle_expiry(void)
 	present_frames(20, 100);
 	assert_fps("20 FPS", 2);
 	realtime_ticks = LEGACY_U32_WRAP_ADD(realtime_ticks, 100);
-	fps_display_enabled = 0;
+	fps_display_enabled = FRAME_FPS_DISPLAY_OFF;
 	assert(frame_fps_expire_idle() == 0);
-	fps_display_enabled = 1;
+	fps_display_enabled = FRAME_FPS_DISPLAY_ON;
 	assert(frame_fps_expire_idle() == 1);
 	assert_fps("0 FPS", 4);
 }
@@ -689,7 +711,7 @@ static void test_fps_camera_modes(void)
 	for (legacy_u8 mode = REPLAY_MODE_LIVE; mode <= REPLAY_MODE_PAUSED; mode++) {
 		for (legacy_u16 camera = CAMERA_MODE_COCKPIT; camera < CAMERA_MODE_COUNT; camera++) {
 			reset_ingame_text("TEST");
-			fps_display_enabled = 1;
+			fps_display_enabled = FRAME_FPS_DISPLAY_ON;
 			game_replay_mode = mode;
 			cameramode = camera;
 			state.game_inputmode = GAME_INPUT_MODE_ACTIVE;
@@ -701,19 +723,25 @@ static void test_fps_camera_modes(void)
 
 static void test_fps_and_long_replay_filename(void)
 {
-	char filename[REPLAY_FILENAME_SIZE];
+	legacy_char filename[REPLAY_FILENAME_SIZE];
 	memset(filename, 'R', sizeof(filename) - 1);
 	filename[sizeof(filename) - 1] = 0;
 	reset_ingame_text(filename);
-	fps_display_enabled = 1;
+	fps_display_enabled = FRAME_FPS_DISPLAY_ON;
 	frame_fps_record_presented();
 	present_frames(20, 100);
 	assert_fps("20 FPS", 2);
-	assert(text_draw_count == 6);
-	assert(text_draws[0].y == 3);
+	assert(text_draw_count == DIAGNOSTIC_TEST_FILENAME_LINES + 1U + DIAGNOSTIC_TEST_LINE_COUNT);
+	assert(text_draws[0].y == DIAGNOSTIC_TEST_TOP);
 	const struct TEXT_DRAW *fps = &text_draws[diagnostic_text_start];
-	assert(text_draws[0].x > fps->x + (legacy_s16)strlen(fps->text) * 8);
-	char reconstructed[REPLAY_FILENAME_SIZE];
+	assert(text_draws[0].x > fps->x + (legacy_s16)strlen(fps->text) * DIAGNOSTIC_TEST_FONT_WIDTH);
+#ifdef RESTUNTS_SDL3
+	const struct TEXT_DRAW *timing = fps + 1;
+	assert(text_draws[1].y == timing->y);
+	assert(text_draws[1].x >
+		   timing->x + (legacy_s16)strlen(timing->text) * DIAGNOSTIC_TEST_FONT_WIDTH);
+#endif
+	legacy_char reconstructed[REPLAY_FILENAME_SIZE];
 	legacy_u32 copied = 0;
 	for (legacy_u32 line = 0; line + 1U < diagnostic_text_start; line++) {
 		legacy_u32 length = strlen(text_draws[line].text);
@@ -722,15 +750,15 @@ static void test_fps_and_long_replay_filename(void)
 	}
 	reconstructed[copied] = 0;
 	assert(strcmp(reconstructed, filename) == 0);
-	assert_text(diagnostic_text_start - 1U, "Replay", 264, 51);
+	assert_text(diagnostic_text_start - 1U, "Replay", 264, DIAGNOSTIC_TEST_FILENAME_LABEL_Y);
 }
 
 static void test_fps_on_cockpit_roof(void)
 {
-	for (legacy_s16 roof_height = 0; roof_height <= 20; roof_height++) {
+	for (legacy_s16 roof_height = 0; roof_height <= COMPOSITION_TEST_ROOF_HEIGHT; roof_height++) {
 		for (legacy_s16 page_flipping = 0; page_flipping <= 1; page_flipping++) {
 			reset_ingame_text("");
-			fps_display_enabled = 1;
+			fps_display_enabled = FRAME_FPS_DISPLAY_ON;
 			dashboard_visible = 1;
 			roofbmpheight_copy = roof_height;
 			video_uses_page_flipping = page_flipping;
@@ -746,9 +774,12 @@ static void test_fps_on_cockpit_roof(void)
 			assert(restored_roof_count == (legacy_u32)(roof_height > 3));
 			assert(copied_roof_count == (legacy_u32)(roof_height > 3 && page_flipping == 0));
 			if (roof_height > 3) {
-				assert(restored_roof_bounds.left == 8 && restored_roof_bounds.right == 81);
+				assert(restored_roof_bounds.left == DIAGNOSTIC_TEST_LEFT &&
+					   restored_roof_bounds.right == DIAGNOSTIC_TEST_RIGHT);
 				assert(restored_roof_bounds.top == 3);
-				assert(restored_roof_bounds.bottom == (roof_height < 12 ? roof_height : 12));
+				assert(
+					restored_roof_bounds.bottom ==
+					(roof_height < DIAGNOSTIC_TEST_BOTTOM ? roof_height : DIAGNOSTIC_TEST_BOTTOM));
 				if (page_flipping == 0) {
 					assert(memcmp(&copied_roof_bounds, &restored_roof_bounds,
 								  sizeof(copied_roof_bounds)) == 0);
@@ -772,21 +803,21 @@ enum {
 	SUPERSIGHT_TEST_GREEN = 2
 };
 
-static void test_supersight_fps_only(void)
+static void test_supersight_fps_target(void)
 {
 	reset_ingame_text("");
 	game_replay_mode = REPLAY_MODE_PAUSED;
-	fps_display_enabled = 1;
+	fps_display_enabled = FRAME_FPS_DISPLAY_ON;
 	supersight_enabled = 1;
 	frame_fps_record_presented();
 	assert_fps("0 FPS", SUPERSIGHT_TEST_RED);
-	assert(text_draw_count == 1);
+	assert(text_draw_count == DIAGNOSTIC_TEST_LINE_COUNT);
 	present_frames(SUPERSIGHT_TEST_SLOW_FPS, DOS_TIMER_REALTIME_TICKS_PER_SECOND);
 	assert_fps("59 FPS", SUPERSIGHT_TEST_RED);
-	assert(text_draw_count == 1);
+	assert(text_draw_count == DIAGNOSTIC_TEST_LINE_COUNT);
 	present_frames(SUPERSIGHT_TEST_TARGET_FPS, DOS_TIMER_REALTIME_TICKS_PER_SECOND);
 	assert_fps("60 FPS", SUPERSIGHT_TEST_GREEN);
-	assert(text_draw_count == 1);
+	assert(text_draw_count == DIAGNOSTIC_TEST_LINE_COUNT);
 }
 #endif
 
@@ -809,7 +840,7 @@ static void reset_status_text(void)
 {
 	/* Drain any prior status without giving F11's sampling reset another role. */
 	realtime_ticks = LEGACY_U32_WRAP_ADD(realtime_ticks, STATUS_TEST_DURATION);
-	fps_display_enabled = 0;
+	fps_display_enabled = FRAME_FPS_DISPLAY_OFF;
 	frame_fps_expire_idle();
 	text_draw_count = 0;
 	frame_fps_draw_text();
@@ -868,13 +899,14 @@ static void test_supersight_status_expiry_and_replacement(void)
 	realtime_ticks = LEGACY_U32_WRAP_ADD(realtime_ticks, STATUS_TEST_DURATION - 1U);
 	assert(frame_fps_expire_idle() == 0);
 	text_draw_count = 0;
-	fps_display_enabled = 1;
+	fps_display_enabled = FRAME_FPS_DISPLAY_ON;
 	frame_fps_reset();
 	frame_fps_draw_text();
-	assert(text_draw_count == 2);
+	assert(text_draw_count == DIAGNOSTIC_TEST_LINE_COUNT + 1U);
 	assert(strcmp(text_draws[0].text, "0 FPS") == 0);
-	assert_text(1, STATUS_TEST_PREFIX "Auto", STATUS_TEST_LEFT, STATUS_TEST_TOP);
-	fps_display_enabled = 0;
+	assert_text(DIAGNOSTIC_TEST_LINE_COUNT, STATUS_TEST_PREFIX "Auto", STATUS_TEST_LEFT,
+				STATUS_TEST_TOP);
+	fps_display_enabled = FRAME_FPS_DISPLAY_OFF;
 	realtime_ticks = LEGACY_U32_WRAP_ADD(realtime_ticks, 1U);
 	/* Querying before the waiting loop must retain its repaint request. */
 	assert(frame_display_overlay_active() != 0);
@@ -911,7 +943,9 @@ static void test_supersight_status_roof_cleanup(void)
 									   STATUS_TEST_BOTTOM + 3};
 	for (legacy_u32 roof = 0; roof < sizeof(roof_heights) / sizeof(roof_heights[0]); roof++) {
 		for (legacy_u8 flipping = 0; flipping <= 1; flipping++) {
-			for (legacy_u8 fps = 0; fps <= 1; fps++) {
+			for (legacy_u8 fps = FRAME_FPS_DISPLAY_OFF; fps < FRAME_FPS_DISPLAY_MODE_COUNT; fps++) {
+				legacy_u32 diagnostic_lines =
+					fps == FRAME_FPS_DISPLAY_ON ? DIAGNOSTIC_TEST_LINE_COUNT : 0;
 				reset_status_text();
 				game_replay_mode = REPLAY_MODE_LIVE;
 				state.game_inputmode = GAME_INPUT_MODE_ACTIVE;
@@ -924,8 +958,9 @@ static void test_supersight_status_roof_cleanup(void)
 				sprite_save_context(saved_context);
 				frame_supersight_show_status("Medium");
 				draw_complete_ingame_text();
-				assert(text_draw_count == (legacy_u32)fps + 1U);
-				assert_text(fps, STATUS_TEST_PREFIX "Medium", STATUS_TEST_LEFT, STATUS_TEST_TOP);
+				assert(text_draw_count == diagnostic_lines + 1U);
+				assert_text(diagnostic_lines, STATUS_TEST_PREFIX "Medium", STATUS_TEST_LEFT,
+							STATUS_TEST_TOP);
 				legacy_s16 top = fps != 0 ? 3 : STATUS_TEST_TOP;
 				legacy_u32 restored = roofbmpheight_copy > top;
 				assert(restored_roof_count == restored);
@@ -944,13 +979,14 @@ static void test_supersight_status_roof_cleanup(void)
 				text_draw_count = 0;
 				draw_complete_ingame_text();
 				frame_fps_present_roof();
-				assert_text(fps, STATUS_TEST_PREFIX "Off", STATUS_TEST_LEFT, STATUS_TEST_TOP);
+				assert_text(diagnostic_lines, STATUS_TEST_PREFIX "Off", STATUS_TEST_LEFT,
+							STATUS_TEST_TOP);
 				assert(restored_roof_count == restored * 2U);
 				realtime_ticks = LEGACY_U32_WRAP_ADD(realtime_ticks, STATUS_TEST_DURATION);
 				assert(frame_fps_expire_idle() == 1);
 				text_draw_count = 0;
 				struct RECTANGLE *bounds = draw_complete_ingame_text();
-				assert(text_draw_count == fps);
+				assert(text_draw_count == diagnostic_lines);
 				assert(bounds->right == STATUS_TEST_RIGHT && bounds->bottom == STATUS_TEST_BOTTOM);
 				assert(restored_roof_count == restored * 3U);
 				frame_fps_present_roof();
@@ -1006,7 +1042,7 @@ static void test_diagnostic_text_after_dashboard(void)
 	for (legacy_u8 flipping = 0; flipping <= 1; flipping++) {
 		for (legacy_u16 roof = 0; roof < sizeof(roof_heights) / sizeof(roof_heights[0]); roof++) {
 			reset_status_text();
-			fps_display_enabled = FRAME_FPS_DISPLAY_RATE;
+			fps_display_enabled = FRAME_FPS_DISPLAY_ON;
 			dashboard_visible = 1;
 			roofbmpheight_copy = roof_heights[roof];
 			video_uses_page_flipping = flipping;
@@ -1040,7 +1076,7 @@ static void test_diagnostic_text_after_dashboard(void)
 						/* Preparation must leave each pending page cleanup for the final paint. */
 						assert(frame_fps_expire_idle() != 0);
 					}
-					/* A custom dashboard can cover both diagnostic rows, including the roof. */
+					/* A custom dashboard can cover every diagnostic row, including the roof. */
 					composition_fill(&dashboard_bounds, COMPOSITION_TEST_DASHBOARD_COLOR);
 					if (flipping == 0) {
 						for (legacy_s16 y = scene_bounds.top; y < scene_bounds.bottom; y++) {
@@ -1052,10 +1088,17 @@ static void test_diagnostic_text_after_dashboard(void)
 					}
 					frame_fps_present_roof();
 					frame_fps_draw_text();
-					assert(text_draw_count == (phase == COMPOSITION_TEST_EXPIRED_STATUS ? 1U : 2U));
+					assert(text_draw_count ==
+						   DIAGNOSTIC_TEST_LINE_COUNT + (phase != COMPOSITION_TEST_EXPIRED_STATUS));
 					assert(strcmp(text_draws[0].text, "0 FPS") == 0);
 					assert(composition.pixels[composition.target][COMPOSITION_TEST_FPS_TOP]
 											 [STATUS_TEST_LEFT] == text_draws[0].color);
+#ifdef RESTUNTS_SDL3
+					legacy_s16 timing_y = DIAGNOSTIC_TEST_TOP + DIAGNOSTIC_TEST_LINE_HEIGHT;
+					assert_text(1, "0.0ms", DIAGNOSTIC_TEST_LEFT, timing_y);
+					assert(composition.pixels[composition.target][timing_y][DIAGNOSTIC_TEST_LEFT] ==
+						   dialog_fnt_colour);
+#endif
 					assert(
 						composition.pixels[composition.target][STATUS_TEST_TOP][STATUS_TEST_LEFT] ==
 						(phase == COMPOSITION_TEST_EXPIRED_STATUS ? COMPOSITION_TEST_DASHBOARD_COLOR
@@ -1083,10 +1126,11 @@ static void test_supersight_status_replay_filename_collision(void)
 		reset_status_text();
 		reset_ingame_text(filename);
 		fps_display_enabled = fps;
+		legacy_u32 diagnostic_lines = fps == FRAME_FPS_DISPLAY_ON ? DIAGNOSTIC_TEST_LINE_COUNT : 0;
 		frame_supersight_show_status("Medium");
 		draw_complete_ingame_text();
-		assert_text(diagnostic_text_start + fps, STATUS_TEST_PREFIX "Medium", STATUS_TEST_LEFT,
-					STATUS_TEST_TOP);
+		assert_text(diagnostic_text_start + diagnostic_lines, STATUS_TEST_PREFIX "Medium",
+					STATUS_TEST_LEFT, STATUS_TEST_TOP);
 		legacy_char reconstructed[REPLAY_FILENAME_SIZE];
 		legacy_u32 copied = 0;
 		for (legacy_u32 index = 0; index + 1U < diagnostic_text_start; index++) {
@@ -1119,8 +1163,8 @@ static void test_supersight_status_replay_filename_collision(void)
 #ifdef RESTUNTS_SDL3
 enum {
 	RENDER_TEST_SAMPLE_COUNT = 100,
-	RENDER_TEST_LINE_Y = 15,
-	RENDER_TEST_LINE_BOTTOM = 24,
+	RENDER_TEST_LINE_Y = DIAGNOSTIC_TEST_TOP + DIAGNOSTIC_TEST_LINE_HEIGHT,
+	RENDER_TEST_LINE_BOTTOM = DIAGNOSTIC_TEST_BOTTOM,
 	RENDER_TEST_HALF_SAMPLES = RENDER_TEST_SAMPLE_COUNT / 2
 };
 #define RENDER_TEST_FIRST_NS 8400000ULL
@@ -1142,7 +1186,7 @@ static void test_render_timing(void)
 {
 	reset_status_text();
 	frame_render_timing_reset();
-	fps_display_enabled = FRAME_FPS_DISPLAY_TIMING;
+	fps_display_enabled = FRAME_FPS_DISPLAY_ON;
 	assert_render_timing("0.0ms");
 	frame_render_timing_record(RENDER_TEST_FIRST_NS);
 	assert_render_timing("8.4ms");
@@ -1150,10 +1194,14 @@ static void test_render_timing(void)
 	frame_fps_reset();
 	assert_render_timing("8.4ms");
 	fps_display_enabled = FRAME_FPS_DISPLAY_OFF;
+	text_draw_count = 0;
+	assert(frame_display_overlay_active() == 0);
+	assert(memcmp(frame_fps_draw_text(), &empty_rect, sizeof(empty_rect)) == 0);
+	assert(text_draw_count == 0);
 	for (legacy_u32 frame = 0; frame < RENDER_TEST_SAMPLE_COUNT; frame++) {
 		frame_render_timing_record(RENDER_TEST_BASE_NS);
 	}
-	fps_display_enabled = FRAME_FPS_DISPLAY_TIMING;
+	fps_display_enabled = FRAME_FPS_DISPLAY_ON;
 	assert_render_timing("10.0ms");
 	for (legacy_u32 frame = 0; frame < RENDER_TEST_HALF_SAMPLES; frame++) {
 		frame_render_timing_record(RENDER_TEST_DOUBLE_NS);
@@ -1211,7 +1259,7 @@ legacy_int main(void)
 	test_fps_and_long_replay_filename();
 	test_fps_on_cockpit_roof();
 #if defined(RESTUNTS_SDL3)
-	test_supersight_fps_only();
+	test_supersight_fps_target();
 #endif
 	test_supersight_status_names_and_copy();
 	test_supersight_status_expiry_and_replacement();

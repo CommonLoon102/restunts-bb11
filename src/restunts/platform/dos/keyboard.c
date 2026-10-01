@@ -105,11 +105,11 @@ void interrupt kb_int9_handler(void)
 
 		legacy_u16 kbval;
 		if (kbc == DOS_KB_F11_SCANCODE || kbc == DOS_KB_F12_SCANCODE) {
-			/* Toggle once per physical press; modifiers do not select this shortcut. */
+			/* Toggle once per physical press; F11 also accepts either Shift key. */
 			if (was_pressed != 0 || dos_kb_input[DOS_KB_ALT_SCANCODE] != 0 ||
 				dos_kb_input[DOS_KB_CONTROL_SCANCODE] != 0 ||
-				dos_kb_input[DOS_KB_LEFT_SHIFT_SCANCODE] != 0 ||
-				dos_kb_input[DOS_KB_RIGHT_SHIFT_SCANCODE] != 0) {
+				(kbc == DOS_KB_F12_SCANCODE && (dos_kb_input[DOS_KB_LEFT_SHIFT_SCANCODE] != 0 ||
+												dos_kb_input[DOS_KB_RIGHT_SHIFT_SCANCODE] != 0))) {
 				goto acknowledge_interrupt;
 			}
 			kbval = (legacy_u16)(kbc == DOS_KB_F11_SCANCODE ? KEY_F11 : KEY_F12);

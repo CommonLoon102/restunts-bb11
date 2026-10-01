@@ -305,22 +305,17 @@ struct RECTANGLE *frame_fps_draw_text(void)
 		legacy_s16 color = fps_sample_value < target ? FPS_TEXT_RED : FPS_TEXT_GREEN;
 		bounds = *intro_draw_text(text, REPLAY_TEXT_LEFT_X, REPLAY_FILENAME_Y, color, 0);
 #ifdef RESTUNTS_SDL3
-		if (fps_display_enabled == FRAME_FPS_DISPLAY_TIMING) {
-			legacy_u64 average_ns =
-				render_time_count != 0 ? render_time_sum / render_time_count : 0;
-			legacy_u32 tenths = (legacy_u32)((average_ns + RENDER_TIME_NS_PER_TENTH_MS / 2U) /
-											 RENDER_TIME_NS_PER_TENTH_MS);
-			legacy_s8 timing[RENDER_TIME_BUFFER_SIZE];
-			count =
-				frame_fps_format_number(timing, (legacy_u16)(tenths / RENDER_TIME_TENTHS_PER_MS));
-			timing[count++] = '.';
-			timing[count++] = (legacy_s8)('0' + tenths % RENDER_TIME_TENTHS_PER_MS);
-			copy_string(timing + count, "ms");
-			rect_union(
-				&bounds,
-				intro_draw_text(timing, REPLAY_TEXT_LEFT_X, REPLAY_TEXT_Y, dialog_fnt_colour, 0),
-				&bounds);
-		}
+		legacy_u64 average_ns = render_time_count != 0 ? render_time_sum / render_time_count : 0;
+		legacy_u32 tenths = (legacy_u32)((average_ns + RENDER_TIME_NS_PER_TENTH_MS / 2U) /
+										 RENDER_TIME_NS_PER_TENTH_MS);
+		legacy_s8 timing[RENDER_TIME_BUFFER_SIZE];
+		count = frame_fps_format_number(timing, (legacy_u16)(tenths / RENDER_TIME_TENTHS_PER_MS));
+		timing[count++] = '.';
+		timing[count++] = (legacy_s8)('0' + tenths % RENDER_TIME_TENTHS_PER_MS);
+		copy_string(timing + count, "ms");
+		rect_union(&bounds,
+				   intro_draw_text(timing, REPLAY_TEXT_LEFT_X, REPLAY_TEXT_Y, dialog_fnt_colour, 0),
+				   &bounds);
 #endif
 	}
 	if (supersight_status_active != 0 || supersight_status_clear_frames != 0) {
@@ -355,9 +350,7 @@ static legacy_u16 prepare_fps_text(void)
 		overlay_bounds.top = REPLAY_FILENAME_Y;
 		overlay_bounds.bottom = REPLAY_FILENAME_Y + font_glyph_height + 1;
 #ifdef RESTUNTS_SDL3
-		if (fps_display_enabled == FRAME_FPS_DISPLAY_TIMING) {
-			overlay_bounds.bottom = REPLAY_TEXT_Y + font_glyph_height + 1;
-		}
+		overlay_bounds.bottom = REPLAY_TEXT_Y + font_glyph_height + 1;
 #endif
 	}
 	if (supersight_status_active != 0 || supersight_status_clear_frames != 0) {
@@ -530,7 +523,7 @@ static legacy_s16 draw_replay_filename(legacy_u16 reserved_characters)
 	while (*filename != 0) {
 		legacy_u16 reserved = y == REPLAY_FILENAME_Y ? reserved_characters : 0;
 #ifdef RESTUNTS_SDL3
-		if (y == REPLAY_TEXT_Y && fps_display_enabled == FRAME_FPS_DISPLAY_TIMING) {
+		if (y == REPLAY_TEXT_Y && fps_display_enabled != FRAME_FPS_DISPLAY_OFF) {
 			reserved = RENDER_TIME_BUFFER_SIZE;
 		}
 #endif
