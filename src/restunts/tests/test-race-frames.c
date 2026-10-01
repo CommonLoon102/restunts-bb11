@@ -100,7 +100,7 @@ legacy_u64 presentation_now(void)
 	return scheduled_time;
 }
 
-void SDL_Delay(Uint32 milliseconds)
+void sdl3_platform_delay(legacy_u32 milliseconds)
 {
 	assert(scheduled_mode != 0);
 	scheduled_time += (legacy_u64)milliseconds * 1000000U;
