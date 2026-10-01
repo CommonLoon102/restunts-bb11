@@ -290,7 +290,8 @@ legacy_s16 handle_ingame_kb_shortcuts(legacy_s16 key)
 {
 	assert(key == KEY_F11 || key == KEY_F12 || key == KEY_SHIFT_F12);
 	if (key == KEY_F11) {
-		fps_display_enabled = (fps_display_enabled + 1U) % FRAME_FPS_DISPLAY_MODE_COUNT;
+		fps_display_enabled = fps_display_enabled == FRAME_FPS_DISPLAY_OFF ? FRAME_FPS_DISPLAY_ON
+																		   : FRAME_FPS_DISPLAY_OFF;
 		frame_fps_reset();
 	} else {
 		if (key == KEY_SHIFT_F12) {
@@ -1068,8 +1069,8 @@ static void test_display_toggles(void)
 #endif
 		assert(frame_index == 22);
 		assert(supersight_enabled == initial_supersight);
-		/* The script presses F11 four times, traversing every SDL3 HUD state. */
-		assert(fps_display_enabled == (initial_fps + 4U) % FRAME_FPS_DISPLAY_MODE_COUNT);
+		/* Four F11 presses return the diagnostics to their initial state. */
+		assert(fps_display_enabled == initial_fps);
 #ifdef RESTUNTS_SDL3
 		assert(display_shift_shortcuts == (initial_supersight == 0));
 #else

@@ -195,11 +195,20 @@ static void test_keyboard(void)
 	send_key(SDL_SCANCODE_F1, SDL_KMOD_SHIFT, true, false);
 	assert(kb_read_char() == KEY_SHIFT_F1);
 	send_key(SDL_SCANCODE_F1, SDL_KMOD_NONE, false, false);
-	send_key(SDL_SCANCODE_F11, SDL_KMOD_NONE, true, false);
-	send_key(SDL_SCANCODE_F11, SDL_KMOD_NONE, true, true);
-	assert(kb_read_char() == KEY_F11);
-	assert(kb_read_char() == 0);
-	send_key(SDL_SCANCODE_F11, SDL_KMOD_NONE, false, false);
+	const SDL_Keymod f11_modifiers[] = {SDL_KMOD_NONE, SDL_KMOD_LSHIFT, SDL_KMOD_RSHIFT,
+										SDL_KMOD_SHIFT};
+	for (legacy_u32 modifier = 0; modifier < SDL_arraysize(f11_modifiers); modifier++) {
+		send_key(SDL_SCANCODE_F11, f11_modifiers[modifier], true, false);
+		send_key(SDL_SCANCODE_F11, f11_modifiers[modifier], true, true);
+		send_key(SDL_SCANCODE_F11, f11_modifiers[modifier], true, false);
+		assert(kb_read_char() == KEY_F11);
+		assert(kb_read_char() == 0);
+		/* Changing Shift while F11 remains held must not toggle the display again. */
+		send_key(SDL_SCANCODE_F11, SDL_KMOD_NONE, true, false);
+		send_key(SDL_SCANCODE_F11, SDL_KMOD_SHIFT, true, true);
+		assert(kb_read_char() == 0);
+		send_key(SDL_SCANCODE_F11, SDL_KMOD_NONE, false, false);
+	}
 	send_key(SDL_SCANCODE_F12, SDL_KMOD_CTRL, true, false);
 	assert(kb_read_char() == 0);
 	send_key(SDL_SCANCODE_F12, SDL_KMOD_NONE, false, false);
@@ -215,17 +224,22 @@ static void test_keyboard(void)
 	send_key(SDL_SCANCODE_F12, SDL_KMOD_NONE, true, false);
 	assert(kb_read_char() == 0);
 	send_key(SDL_SCANCODE_F12, SDL_KMOD_NONE, false, false);
-	const SDL_Keymod rejected_modifiers[] = {SDL_KMOD_SHIFT | SDL_KMOD_CTRL,
-											 SDL_KMOD_SHIFT | SDL_KMOD_ALT};
-	for (size_t modifier = 0; modifier < sizeof(rejected_modifiers) / sizeof(rejected_modifiers[0]);
-		 modifier++) {
-		send_key(SDL_SCANCODE_F12, rejected_modifiers[modifier], true, false);
-		assert(kb_read_char() == 0);
-		send_key(SDL_SCANCODE_F12, SDL_KMOD_NONE, false, false);
+	const SDL_Keymod rejected_modifiers[] = {SDL_KMOD_CTRL,
+											 SDL_KMOD_ALT,
+											 SDL_KMOD_GUI,
+											 SDL_KMOD_SHIFT | SDL_KMOD_CTRL,
+											 SDL_KMOD_SHIFT | SDL_KMOD_ALT,
+											 SDL_KMOD_SHIFT | SDL_KMOD_GUI};
+	const SDL_Scancode shortcuts[] = {SDL_SCANCODE_F11, SDL_SCANCODE_F12};
+	for (legacy_u32 shortcut = 0; shortcut < SDL_arraysize(shortcuts); shortcut++) {
+		for (legacy_u32 modifier = 0; modifier < SDL_arraysize(rejected_modifiers); modifier++) {
+			send_key(shortcuts[shortcut], rejected_modifiers[modifier], true, false);
+			assert(kb_read_char() == 0);
+			send_key(shortcuts[shortcut], SDL_KMOD_NONE, true, false);
+			assert(kb_read_char() == 0);
+			send_key(shortcuts[shortcut], SDL_KMOD_NONE, false, false);
+		}
 	}
-	send_key(SDL_SCANCODE_F11, SDL_KMOD_SHIFT, true, false);
-	assert(kb_read_char() == 0);
-	send_key(SDL_SCANCODE_F11, SDL_KMOD_NONE, false, false);
 	send_key(SDL_SCANCODE_F12, SDL_KMOD_NONE, true, false);
 	assert(kb_read_char() == KEY_F12);
 	SDL_Event event;

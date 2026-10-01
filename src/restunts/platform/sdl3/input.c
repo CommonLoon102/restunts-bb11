@@ -249,8 +249,7 @@ static void input_key(const SDL_KeyboardEvent *event)
 	legacy_u16 value;
 	if (scan == DOS_KB_F11_SCANCODE || scan == DOS_KB_F12_SCANCODE) {
 		if (was_pressed || event->repeat ||
-			(event->mod & (SDL_KMOD_CTRL | SDL_KMOD_ALT | SDL_KMOD_GUI)) ||
-			(scan == DOS_KB_F11_SCANCODE && (event->mod & SDL_KMOD_SHIFT))) {
+			(event->mod & (SDL_KMOD_CTRL | SDL_KMOD_ALT | SDL_KMOD_GUI))) {
 			return;
 		}
 		value = (legacy_u16)(scan == DOS_KB_F11_SCANCODE	 ? KEY_F11

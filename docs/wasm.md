@@ -90,8 +90,9 @@ Both paths work offline. Browser settings and policies may restrict folder
 access. Audio needs a user gesture; browser shortcuts can take precedence over
 some function keys. Use the page's **Fullscreen** button for fullscreen mode.
 With the canvas focused, **F12** toggles HyperVision Auto and **Shift+F12** cycles
-fixed **Full → High → Medium → Low** presets. **F11** cycles
-**Off → FPS → FPS + render time → Off**.
+fixed **Full → High → Medium → Low** presets. **F11** or **Shift+F11** toggles
+the FPS and render-time display on or off. Use Shift+F11 to avoid the browser
+fullscreen shortcut assigned to F11.
 
 The browser presents frames through SDL3's WebGL renderer and uses WebAudio
 output. Scene rendering runs on the CPU and is serial;

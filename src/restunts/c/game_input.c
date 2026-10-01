@@ -283,7 +283,9 @@ static legacy_s16 input_handle_display_shortcut(legacy_s16 key)
 {
 	switch (key) {
 		case KEY_F11:
-			fps_display_enabled = (fps_display_enabled + 1U) % FRAME_FPS_DISPLAY_MODE_COUNT;
+			fps_display_enabled = fps_display_enabled == FRAME_FPS_DISPLAY_OFF
+									  ? FRAME_FPS_DISPLAY_ON
+									  : FRAME_FPS_DISPLAY_OFF;
 			frame_fps_reset();
 			full_redraw_frames_remaining = (legacy_s8)video_page_count;
 			return 1;

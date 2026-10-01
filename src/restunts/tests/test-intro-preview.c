@@ -98,7 +98,8 @@ legacy_s16 handle_ingame_kb_shortcuts(legacy_s16 key)
 {
 	assert(key == KEY_F11 || key == KEY_F12 || key == KEY_SHIFT_F12);
 	if (key == KEY_F11) {
-		fps_display_enabled = (fps_display_enabled + 1U) % FRAME_FPS_DISPLAY_MODE_COUNT;
+		fps_display_enabled = fps_display_enabled == FRAME_FPS_DISPLAY_OFF ? FRAME_FPS_DISPLAY_ON
+																		   : FRAME_FPS_DISPLAY_OFF;
 		frame_fps_reset();
 	} else if (key == KEY_SHIFT_F12) {
 		supersight_enabled = preset_status_active = 1;
@@ -831,16 +832,14 @@ static void display_toggle_case(legacy_u32 scenario)
 	assert(input_polls == 5);
 	assert(shortcut_count == 2);
 	assert(supersight_enabled == initial_mode);
-	assert(fps_display_enabled ==
-		   (initial_fps + (scripted_key == KEY_F11 ? 2U : 0U)) % FRAME_FPS_DISPLAY_MODE_COUNT);
+	assert(fps_display_enabled == initial_fps);
 	assert(opponent_updates == 5);
 	assert(flush_count == 5);
 	legacy_u32 expected_fps_draws = 0;
 	for (legacy_u32 frame = 0; frame < flush_count; frame++) {
 		legacy_u8 toggled = frame == 1 || frame == 2;
 		legacy_u8 expected_mode = initial_mode ^ (toggled && scripted_key == KEY_F12);
-		legacy_u8 presses = scripted_key != KEY_F11 || frame == 0 ? 0 : (frame < 3 ? 1 : 2);
-		legacy_u8 expected_fps = (initial_fps + presses) % FRAME_FPS_DISPLAY_MODE_COUNT;
+		legacy_u8 expected_fps = initial_fps ^ (toggled && scripted_key == KEY_F11);
 		assert(rendered_modes[frame] == expected_mode);
 		assert(rendered_fps[frame] == expected_fps);
 		expected_fps_draws += expected_fps || (scripted_key == KEY_F12 && frame != 0);
