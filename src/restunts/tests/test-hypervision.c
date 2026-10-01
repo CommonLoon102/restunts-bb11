@@ -37,6 +37,7 @@
 #define TEST_PLANE_STEP 0.0000001
 #define TEST_PLANE_SEPARATION 0.000009147
 #define TEST_SAMPLE_JITTER 0.125
+#define TEST_DEPTH_TOLERANCE (8 * FLT_EPSILON)
 
 static struct SPRITE sprite;
 static struct HIRES_RASTER_TARGET target;
@@ -449,6 +450,55 @@ static void test_ground_uses_surface_ownership(legacy_s32 scale)
 	}
 }
 
+/* Custom road models can contain warped quads. Their edge-interpolated depth
+ * must not be replaced by the plane through only three of their vertices. */
+static void test_warped_quad_depth(legacy_s32 scale)
+{
+	const struct HYPERVISION_MATERIAL warped = material(TEST_FIRST_COLOR, TEST_FIRST_FAMILY);
+	const struct HYPERVISION_MATERIAL flat = material(TEST_SECOND_COLOR, TEST_SECOND_FAMILY);
+	for (legacy_s32 reverse = 0; reverse <= 1; reverse++) {
+		begin_frame(scale);
+		const struct HYPERVISION_VERTEX vertices[TEST_RECTANGLE_VERTICES] = {
+			{0, 0, TEST_FAR_DEPTH},
+			{target.width, 0, TEST_FAR_DEPTH},
+			{target.width, target.height, TEST_NEAR_DEPTH},
+			{0, target.height, TEST_FAR_DEPTH}};
+		for (legacy_s32 order = 0; order <= 1; order++) {
+			if ((order ^ reverse) == 0) {
+				hypervision_polygon(vertices, TEST_RECTANGLE_VERTICES, &warped);
+			} else {
+				rectangle(0, target.width, 0, target.height, TEST_MIDDLE_DEPTH, TEST_MIDDLE_DEPTH,
+						  &flat);
+			}
+		}
+		const legacy_u8 *pixels = end_frame();
+		for (legacy_s32 y = 0; y < target.height; y++) {
+			for (legacy_s32 x = 0; x < target.width; x++) {
+				legacy_f64 u = (x + HIRES_SAMPLE_CENTER_OFFSET) / target.width;
+				legacy_f64 v = (y + HIRES_SAMPLE_CENTER_OFFSET) / target.height;
+				legacy_f64 depth = TEST_FAR_DEPTH + (TEST_NEAR_DEPTH - TEST_FAR_DEPTH) * u * v;
+				legacy_s32 visible = depth >= TEST_MIDDLE_DEPTH;
+				legacy_u32 offset = (legacy_u32)y * target.width + x;
+				/* Coincident depths can choose either surface within the
+				 * renderer's floating-point tolerance. Away from that
+				 * narrow crossing, require the independent bilinear result. */
+				legacy_f64 separation = depth - TEST_MIDDLE_DEPTH;
+				if (separation < -TEST_MIDDLE_DEPTH * TEST_DEPTH_TOLERANCE ||
+					separation > TEST_MIDDLE_DEPTH * TEST_DEPTH_TOLERANCE) {
+					assert(pixels[offset] == (visible ? TEST_FIRST_COLOR : TEST_SECOND_COLOR));
+				} else {
+					assert(pixels[offset] == TEST_FIRST_COLOR ||
+						   pixels[offset] == TEST_SECOND_COLOR);
+				}
+				legacy_f64 expected = visible ? depth : TEST_MIDDLE_DEPTH;
+				legacy_f64 error = target.inverse_depth[offset] - expected;
+				assert(error >= -expected * TEST_DEPTH_TOLERANCE &&
+					   error <= expected * TEST_DEPTH_TOLERANCE);
+			}
+		}
+	}
+}
+
 static void test_growth_and_reset(void)
 {
 	begin_frame(HIRES_SCALE);
@@ -526,6 +576,7 @@ legacy_int main(void)
 		test_coplanar_edge_interpolation(scale);
 		test_attached_support_depth(scale);
 		test_ground_uses_surface_ownership(scale);
+		test_warped_quad_depth(scale);
 	}
 	test_growth_and_reset();
 	test_workers_match();

@@ -82,6 +82,12 @@ void sdl3_video_begin_track_frame(legacy_u8 adaptive)
 	completed_frame = 0;
 }
 
+void sdl3_video_add_render_work(legacy_u64 elapsed_ns)
+{
+	assert(drawing_frame != 0);
+	(void)elapsed_ns;
+}
+
 void sdl3_video_end_frame(void)
 {
 	assert(drawing_frame != 0 && completed_frame != 0);
@@ -284,7 +290,7 @@ legacy_s16 handle_ingame_kb_shortcuts(legacy_s16 key)
 {
 	assert(key == KEY_F11 || key == KEY_F12 || key == KEY_SHIFT_F12);
 	if (key == KEY_F11) {
-		fps_display_enabled ^= 1U;
+		fps_display_enabled = (fps_display_enabled + 1U) % FRAME_FPS_DISPLAY_MODE_COUNT;
 		frame_fps_reset();
 	} else {
 		if (key == KEY_SHIFT_F12) {
@@ -1061,7 +1067,9 @@ static void test_display_toggles(void)
 		assert(drawing_frame == 0 && committed_frames != 0);
 #endif
 		assert(frame_index == 22);
-		assert(supersight_enabled == initial_supersight && fps_display_enabled == initial_fps);
+		assert(supersight_enabled == initial_supersight);
+		/* The script presses F11 four times, traversing every SDL3 HUD state. */
+		assert(fps_display_enabled == (initial_fps + 4U) % FRAME_FPS_DISPLAY_MODE_COUNT);
 #ifdef RESTUNTS_SDL3
 		assert(display_shift_shortcuts == (initial_supersight == 0));
 #else
@@ -1071,7 +1079,7 @@ static void test_display_toggles(void)
 		assert(display_status_draw_count != 0);
 		assert(display_reset_count == 7);
 		assert(display_status_expire_count == 1);
-		assert(display_fps_draw_count > 0 && display_fps_draw_count < display_present_count);
+		assert(display_fps_draw_count > 0 && display_fps_draw_count <= display_present_count);
 		assert(display_present_count == display_record_count);
 		assert(display_pending == 0);
 		assert(display_shadow_frames[0] != 0 && display_shadow_frames[1] != 0);

@@ -15,6 +15,9 @@ legacy_s16 video_backbuffer_copy_required(void);
 /* Keep frame boundaries available to controllers without SDL type dependencies. */
 void sdl3_video_begin_frame(void);
 void sdl3_video_begin_track_frame(legacy_u8 adaptive);
+/* Add already completed geometry preparation to the currently measured frame.
+ * The caller consumes each prepared batch once; idle time is never included. */
+void sdl3_video_add_render_work(legacy_u64 elapsed_ns);
 void sdl3_video_end_frame(void);
 #endif
 

@@ -58,6 +58,15 @@ void mouse_minmax_position(legacy_s16 inset);
 
 extern legacy_s16 input_combined_flags;
 extern legacy_u8 supersight_enabled;
+/* Preserve the session byte and existing nonzero visibility checks. */
+enum FRAME_FPS_DISPLAY_MODE {
+	FRAME_FPS_DISPLAY_OFF,
+	FRAME_FPS_DISPLAY_RATE,
+#ifdef RESTUNTS_SDL3
+	FRAME_FPS_DISPLAY_TIMING,
+#endif
+	FRAME_FPS_DISPLAY_MODE_COUNT
+};
 extern legacy_u8 fps_display_enabled;
 
 #endif

@@ -33,6 +33,11 @@ static legacy_u32 supersight_status_count;
 static legacy_s8 supersight_status[TEST_SUPERSIGHT_STATUS_CAPACITY];
 #ifdef RESTUNTS_SDL3
 static legacy_u32 hires_enabled_transitions;
+static legacy_u32 render_timing_reset_count;
+void frame_render_timing_reset(void)
+{
+	render_timing_reset_count++;
+}
 static legacy_s32 test_hires_enabled, test_hires_scale = HIRES_SCALE;
 
 void hires_set_enabled(legacy_s32 enabled)
@@ -226,6 +231,7 @@ static void reset_inputs(void)
 	supersight_status[0] = 0;
 #ifdef RESTUNTS_SDL3
 	frame_adaptive_reset(&frame_adaptive);
+	render_timing_reset_count = 0;
 	hires_enabled_transitions = 0;
 	test_hires_enabled = 0;
 	test_hires_scale = HIRES_SCALE;
@@ -692,8 +698,14 @@ static void test_display_shortcuts(void)
 			game_replay_mode = REPLAY_MODE_PLAYBACK;
 			assert(fps_display_enabled == 1 && supersight_enabled == 1);
 			assert(handle_ingame_kb_shortcuts(KEY_F11) == 1);
-			assert(fps_display_enabled == 0 && supersight_enabled == 1);
+#ifdef RESTUNTS_SDL3
+			assert(fps_display_enabled == FRAME_FPS_DISPLAY_TIMING && supersight_enabled == 1);
 			assert(fps_reset_count == 2);
+			assert(full_redraw_frames_remaining == video_page_count);
+			assert(handle_ingame_kb_shortcuts(KEY_F11) == 1);
+#endif
+			assert(fps_display_enabled == FRAME_FPS_DISPLAY_OFF && supersight_enabled == 1);
+			assert(fps_reset_count == FRAME_FPS_DISPLAY_MODE_COUNT);
 			assert_supersight_status(enabled_status, 1);
 			assert(handle_ingame_kb_shortcuts(KEY_F12) == 1);
 			assert(fps_display_enabled == 0 && supersight_enabled == 0);

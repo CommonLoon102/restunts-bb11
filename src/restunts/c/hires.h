@@ -94,6 +94,12 @@ void hires_raster_resolved_span(struct HIRES_RASTER_CONTEXT *context, legacy_s32
 								legacy_s32 right, legacy_s32 y, legacy_f64 inverse_z,
 								legacy_f64 depth_step, legacy_u32 family, legacy_u16 color,
 								legacy_u16 alternate, legacy_u16 pattern, legacy_s32 paint_mode);
+/* Replace a complete logical row of the prepared target. Samples are contiguous
+ * cell-major blocks of scale*scale bytes, starting at target->left / scale.
+ * Jobs own whole logical rows; ARGB retirement is counted until the join. */
+void hires_raster_fill_row(struct HIRES_RASTER_CONTEXT *context, legacy_s32 y, legacy_u8 color);
+void hires_raster_write_row(struct HIRES_RASTER_CONTEXT *context, legacy_s32 y,
+							const legacy_u8 *samples);
 void hires_raster_finish(const struct HIRES_RASTER_TARGET *target, legacy_u32 cleared_argb_cells);
 /* Optional full-color artwork uses the same clipping and sprite-copy lifetime.
  * Allocation failure leaves the indexed fallback intact. */

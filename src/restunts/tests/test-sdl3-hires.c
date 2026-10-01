@@ -1538,6 +1538,140 @@ static void test_scaled_pixels(legacy_s32 scale)
 	/* Leave both cached surfaces populated for the next scale's invalidation check. */
 }
 
+enum {
+	TEST_ROW_LEFT = 11,
+	TEST_ROW_TOP = 23,
+	TEST_ROW_COUNT = 4,
+	TEST_ROW_JOBS = 2,
+	TEST_ROW_NARROW_WIDTH = 7,
+	TEST_ROW_READBACK_SEGMENT = 0x6000U,
+	TEST_ROW_SAMPLE_STEP = 13
+};
+
+struct TEST_ROW_JOBS {
+	struct HIRES_RASTER_CONTEXT contexts[TEST_ROW_JOBS];
+	legacy_u8 samples[TEST_WIDTH * HIRES_SCALE * HIRES_SCALE];
+	legacy_s32 reference;
+};
+
+static void raster_row_job(void *opaque, legacy_s32 job)
+{
+	struct TEST_ROW_JOBS *jobs = opaque;
+	struct HIRES_RASTER_CONTEXT *context = &jobs->contexts[job];
+	const struct HIRES_RASTER_TARGET *target = context->target;
+	for (legacy_s32 y = TEST_ROW_TOP - 1; y <= TEST_ROW_TOP + TEST_ROW_COUNT; y++) {
+		if (jobs->reference) {
+			for (legacy_s32 row = 0; row < target->scale; row++) {
+				for (legacy_s32 x = target->left; x < target->right; x++) {
+					legacy_s32 cell = (x - target->left) / target->scale;
+					legacy_s32 sample =
+						cell * target->cell_pixels + row * target->scale + (x & target->scale_mask);
+					legacy_u8 color = (y & 1) != 0 ? jobs->samples[sample] : TEST_SPAN_COLOR;
+					hires_raster_pixel(context, x, y * target->scale + row, color);
+				}
+			}
+		} else {
+			hires_raster_fill_row(context, y, TEST_SPAN_COLOR);
+			if ((y & 1) != 0) {
+				hires_raster_write_row(context, y, jobs->samples);
+			}
+		}
+	}
+}
+
+static void test_raster_rows(legacy_s32 scale, legacy_s32 columns, legacy_s32 wrap)
+{
+	struct TEST_SURFACE screen, readback;
+	setup_surface(&screen, TEST_SCALE_WORKER_SEGMENT, 0);
+	setup_surface(&readback, TEST_ROW_READBACK_SEGMENT, 0);
+	memset(screen.base, TEST_BACKGROUND_COLOR, (size_t)LEGACY_U16_MAX + 1U);
+	if (wrap) {
+		legacy_u16 start = (legacy_u16)(LEGACY_U16_MAX - TEST_ROW_LEFT - columns / 2);
+		LEGACY_WRITE_U16_LE(screen.lines + TEST_ROW_TOP * LEGACY_WORD_BYTES, start);
+	}
+	legacy_s32 width = TEST_WIDTH * scale, height = TEST_HEIGHT * scale;
+	size_t bytes = (size_t)width * height;
+	legacy_u8 *reference = malloc(bytes);
+	assert(reference != NULL);
+	legacy_u32 palette[TEST_PALETTE_SIZE] = {0};
+	for (legacy_s32 backend = TEST_SPAN_REFERENCE; backend < TEST_SPAN_BACKEND_COUNT; backend++) {
+		hires_forget(screen.base);
+		hires_forget(readback.base);
+		assert(hires_begin_argb(&screen.sprite));
+		for (legacy_s32 y = TEST_ROW_TOP - 1; y <= TEST_ROW_TOP + TEST_ROW_COUNT; y++) {
+			for (legacy_s32 x = TEST_ROW_LEFT - 1; x <= TEST_ROW_LEFT + columns; x++) {
+				for (legacy_s32 sample_y = 0; sample_y < scale; sample_y++) {
+					for (legacy_s32 sample_x = 0; sample_x < scale; sample_x++) {
+						hires_pixel(x * scale + sample_x, y * scale + sample_y,
+									TEST_SPAN_INITIAL_COLOR);
+						if (y >= TEST_ROW_TOP && y < TEST_ROW_TOP + TEST_ROW_COUNT &&
+							x >= TEST_ROW_LEFT && x < TEST_ROW_LEFT + columns) {
+							hires_argb_pixel(x * scale + sample_x, y * scale + sample_y,
+											 TEST_SPAN_INITIAL_ARGB);
+						}
+					}
+				}
+			}
+		}
+		hires_end();
+		struct SPRITE clip = screen.sprite;
+		clip.sprite_raster_left = TEST_ROW_LEFT;
+		clip.sprite_raster_right = TEST_ROW_LEFT + columns;
+		clip.sprite_top = TEST_ROW_TOP;
+		clip.sprite_bottom = TEST_ROW_TOP + TEST_ROW_COUNT;
+		assert(hires_begin(&clip));
+		struct HIRES_RASTER_TARGET target;
+		assert(hires_raster_prepare(&target));
+		legacy_s32 middle = (TEST_ROW_TOP + TEST_ROW_COUNT / TEST_ROW_JOBS) * scale;
+		struct TEST_ROW_JOBS jobs = {
+			{{&target, target.top - scale, middle, 0}, {&target, middle, target.bottom + scale, 0}},
+			{0},
+			backend == TEST_SPAN_REFERENCE};
+		for (legacy_s32 sample = 0; sample < columns * target.cell_pixels; sample++) {
+			jobs.samples[sample] = (legacy_u8)(TEST_SPAN_COLOR + sample * TEST_ROW_SAMPLE_STEP);
+		}
+		if (jobs.reference) {
+			for (legacy_s32 job = 0; job < TEST_ROW_JOBS; job++) {
+				raster_row_job(&jobs, job);
+			}
+		} else {
+			render_workers_run(TEST_ROW_JOBS, raster_row_job, &jobs);
+		}
+		legacy_u32 retired = 0;
+		for (legacy_s32 job = 0; job < TEST_ROW_JOBS; job++) {
+			assert(jobs.contexts[job].cleared_argb_cells ==
+				   (legacy_u32)(columns * TEST_ROW_COUNT / TEST_ROW_JOBS));
+			retired += jobs.contexts[job].cleared_argb_cells;
+		}
+		/* Workers retire cells locally. The allocation stays live until the join. */
+		assert(hires_framebuffer_argb(screen.base, palette) != NULL);
+		hires_raster_finish(&target, retired);
+		hires_end();
+		assert(hires_framebuffer_argb(screen.base, palette) == NULL);
+		/* Copy through the declared row table to inspect samples on both sides of
+		 * the 16-bit address wrap, including cells beyond the visible screen. */
+		for (legacy_s32 y = 0; y < TEST_HEIGHT; y++) {
+			legacy_u16 source = LEGACY_READ_U16_LE(screen.lines + y * LEGACY_WORD_BYTES);
+			hires_raster(readback.base, (legacy_u16)(y * TEST_WIDTH), screen.base, source,
+						 TEST_WIDTH, SHAPE2D_RASTER_COPY, NULL);
+		}
+		legacy_s32 actual_width, actual_height;
+		const legacy_u8 *pixels = hires_framebuffer(readback.base, &actual_width, &actual_height);
+		assert(actual_width == width && actual_height == height);
+		if (jobs.reference) {
+			memcpy(reference, pixels, bytes);
+		} else {
+			assert(memcmp(reference, pixels, bytes) == 0);
+		}
+		for (legacy_u32 offset = 0; offset <= LEGACY_U16_MAX; offset++) {
+			assert(screen.base[offset] == TEST_BACKGROUND_COLOR);
+		}
+	}
+	free(reference);
+	hires_forget(readback.base);
+	hires_forget(screen.base);
+}
+
 struct TEST_SCALE_RASTER_JOBS {
 	struct HIRES_RASTER_CONTEXT contexts[TEST_SCALE_WORKER_COUNT];
 	legacy_s32 reference;
@@ -1681,6 +1815,13 @@ static void test_render_scales(void)
 		}
 		assert(hires_generation() == generation && hires_render_scale() == scales[pass]);
 		test_scaled_workers(scales[pass]);
+		const legacy_s32 row_widths[] = {1, TEST_ROW_NARROW_WIDTH, TEST_WIDTH - TEST_ROW_LEFT - 1};
+		for (size_t row_width = 0; row_width < sizeof(row_widths) / sizeof(row_widths[0]);
+			 row_width++) {
+			for (legacy_s32 wrap = 0; wrap <= 1; wrap++) {
+				test_raster_rows(scales[pass], row_widths[row_width], wrap);
+			}
+		}
 		test_raster_target_aliases();
 		test_scaled_pixels(scales[pass]);
 	}

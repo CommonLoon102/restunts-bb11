@@ -26,6 +26,8 @@ struct HV_COMMAND {
 	struct HYPERVISION_MATERIAL material;
 	legacy_u32 first_edge, edge_count;
 	legacy_s32 top, bottom;
+	struct HIRES_DEPTH_PLANE plane;
+	legacy_s32 planar;
 };
 struct HV_BIN {
 	legacy_u32 *commands;
@@ -48,7 +50,6 @@ static struct HV_BIN bins[HV_BAND_COUNT];
 static struct HIRES_DEPTH_PLANE ground;
 static legacy_s32 ground_enabled, incremental;
 static legacy_u32 command_area;
-
 static void *hv_reserve(void *buffer, size_t *capacity, size_t required, size_t initial,
 						size_t element_size)
 {
@@ -108,6 +109,50 @@ void hypervision_shutdown(void)
 	hypervision_begin(NULL);
 }
 
+/* A planar polygon has one affine inverse-depth function. Reuse it across
+ * scanlines rather than dividing between the same two interpolated edges. */
+static legacy_s32 hv_polygon_plane(const struct HYPERVISION_VERTEX *vertices, legacy_u32 count,
+								   struct HIRES_DEPTH_PLANE *plane)
+{
+	const struct HYPERVISION_VERTEX *origin = &vertices[0];
+	legacy_f64 largest = 0;
+	legacy_u32 chosen = 0;
+	for (legacy_u32 index = 1; index + 1U < count; index++) {
+		const struct HYPERVISION_VERTEX *a = &vertices[index];
+		const struct HYPERVISION_VERTEX *b = &vertices[index + 1U];
+		legacy_f64 area =
+			(a->x - origin->x) * (b->y - origin->y) - (b->x - origin->x) * (a->y - origin->y);
+		legacy_f64 absolute = area < 0 ? -area : area;
+		if (absolute > largest) {
+			largest = absolute;
+			chosen = index;
+		}
+	}
+	if (chosen == 0) {
+		return 0;
+	}
+	const struct HYPERVISION_VERTEX *a = &vertices[chosen];
+	const struct HYPERVISION_VERTEX *b = &vertices[chosen + 1U];
+	legacy_f64 ax = a->x - origin->x, ay = a->y - origin->y;
+	legacy_f64 bx = b->x - origin->x, by = b->y - origin->y;
+	legacy_f64 az = a->inverse_z - origin->inverse_z, bz = b->inverse_z - origin->inverse_z;
+	legacy_f64 reciprocal = 1.0 / (ax * by - bx * ay);
+	plane->x_step = (az * by - bz * ay) * reciprocal;
+	plane->y_step = (ax * bz - bx * az) * reciprocal;
+	plane->origin = origin->inverse_z - origin->x * plane->x_step - origin->y * plane->y_step;
+	for (legacy_u32 index = 0; index < count; index++) {
+		const struct HYPERVISION_VERTEX *point = &vertices[index];
+		legacy_f64 error =
+			plane->origin + point->x * plane->x_step + point->y * plane->y_step - point->inverse_z;
+		legacy_f64 tolerance = point->inverse_z * HV_DEPTH_RELATIVE_EPSILON;
+		if (!(error >= -tolerance && error <= tolerance)) {
+			return 0;
+		}
+	}
+	plane->origin += HV_HALF_PIXEL * (plane->x_step + plane->y_step);
+	return 1;
+}
+
 void hypervision_polygon(const struct HYPERVISION_VERTEX *vertices, legacy_u32 count,
 						 const struct HYPERVISION_MATERIAL *material)
 {
@@ -126,6 +171,7 @@ void hypervision_polygon(const struct HYPERVISION_VERTEX *vertices, legacy_u32 c
 	}
 	edges = hv_reserve(edges, &edge_capacity, edge_count + count, HV_INITIAL_EDGES, sizeof(*edges));
 	struct HV_COMMAND command = {*material, (legacy_u32)edge_count, 0, HIRES_HEIGHT, 0};
+	command.planar = hv_polygon_plane(vertices, count, &command.plane);
 	const struct HYPERVISION_VERTEX *previous = &vertices[count - 1U];
 	for (legacy_u32 vertex = 0; vertex < count; vertex++) {
 		const struct HYPERVISION_VERTEX *current = &vertices[vertex];
@@ -330,7 +376,7 @@ static void hv_scan_command(struct HV_BIN *bin, legacy_u32 command_index, legacy
 		}
 		legacy_f64 distance = y + HV_HALF_PIXEL - edge->y;
 		struct HV_CROSSING crossing = {edge->x + distance * edge->x_step,
-									   edge->z + distance * edge->z_step};
+									   command->planar ? 0 : edge->z + distance * edge->z_step};
 		legacy_u32 insertion = crossing_count++;
 		while (insertion != 0 && crossings[insertion - 1U].x > crossing.x) {
 			crossings[insertion] = crossings[insertion - 1U];
@@ -354,9 +400,11 @@ static void hv_scan_command(struct HV_BIN *bin, legacy_u32 command_index, legacy
 		if (left >= right) {
 			continue;
 		}
-		legacy_f64 step = (last->z - first->z) / (last->x - first->x);
-		struct HV_SPAN span = {left, right, first->z + (HV_HALF_PIXEL - first->x) * step, step,
-							   command_index};
+		legacy_f64 step =
+			command->planar ? command->plane.x_step : (last->z - first->z) / (last->x - first->x);
+		legacy_f64 origin = command->planar ? command->plane.origin + y * command->plane.y_step
+											: first->z + (HV_HALF_PIXEL - first->x) * step;
+		struct HV_SPAN span = {left, right, origin, step, command_index};
 
 		if (span.left >= span.right) {
 			continue;

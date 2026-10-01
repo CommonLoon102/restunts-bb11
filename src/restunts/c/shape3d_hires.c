@@ -14,6 +14,7 @@
 #include "shape3d_internal.h"
 
 #define HIRES_NEAR_CLIP_Z 12
+#define HIRES_CLIP_ROUNDING_MARGIN 8
 /* Keep the original displayed pixel width through medium-close views,
  * then let perspective narrow the stroke at greater distances. */
 #define HIRES_LINE_DIAMETER 1.5
@@ -42,7 +43,6 @@ struct HIRES_PRIMITIVE {
 	legacy_u32 shadow_surface;
 	legacy_s32 attached;
 	legacy_f64 size;
-	legacy_f64 depth;
 };
 
 struct HIRES_PAINT {
@@ -192,11 +192,37 @@ static legacy_u8 point_clip_flags(const struct SHAPE3D_HIRES_POINT *point, legac
 
 legacy_u8 shape3d_hires_clip_flags(const struct SHAPE3D_HIRES_VECTOR *vector)
 {
-	struct SHAPE3D_HIRES_POINT point;
-	shape3d_hires_project(vector, &point);
-	/* The shared early cull must retain lines whose wider stroke reaches
-	 * into the viewport even when their centerline is just outside it. */
-	return point_clip_flags(&point, hires_render_scale() / 2.0 + 0.5);
+	/* Compare the camera-space vertex with the padded frustum planes. This
+	 * avoids projecting the same vertex again merely to reject an instance.
+	 * Keep a floating-point margin so rearranging the equation cannot discard
+	 * a line or polygon lying exactly on a viewport boundary. */
+	legacy_s32 scale = hires_render_scale();
+	legacy_f64 padding = 0.5 + 0.5 / scale;
+	legacy_f64 z = vector->z > 0 ? vector->z : 1;
+	legacy_f64 x = vector->x * projection_focal_length_x;
+	legacy_f64 y = vector->y * projection_focal_length_y;
+	legacy_f64 center_x = (legacy_s16)projection_center_x;
+	legacy_f64 center_y = (legacy_s16)projection_center_y;
+	legacy_f64 left = (select_rect_rc.left - padding - center_x) * z;
+	legacy_f64 right = (select_rect_rc.right + 1 + padding - center_x) * z;
+	legacy_f64 top = (center_y - select_rect_rc.top + padding) * z;
+	legacy_f64 bottom = (center_y - select_rect_rc.bottom - 1 - padding) * z;
+	legacy_f64 margin_x =
+		HIRES_CLIP_ROUNDING_MARGIN * DBL_EPSILON * (SDL_fabs(x) + SDL_fabs(left) + SDL_fabs(right));
+	legacy_f64 margin_y =
+		HIRES_CLIP_ROUNDING_MARGIN * DBL_EPSILON * (SDL_fabs(y) + SDL_fabs(top) + SDL_fabs(bottom));
+	legacy_u8 flags = 0;
+	if (y > top + margin_y) {
+		flags |= SHAPE3D_RECT_CLIP_TOP;
+	} else if (y < bottom - margin_y) {
+		flags |= SHAPE3D_RECT_CLIP_BOTTOM;
+	}
+	if (x < left - margin_x) {
+		flags |= SHAPE3D_RECT_CLIP_LEFT;
+	} else if (x > right + margin_x) {
+		flags |= SHAPE3D_RECT_CLIP_RIGHT;
+	}
+	return flags;
 }
 
 static legacy_s32 polygon_faces_camera(const struct SHAPE3D_HIRES_POINT *points, legacy_u32 count)
@@ -311,11 +337,6 @@ legacy_u32 shape3d_hires_wheel_face(legacy_u32 index)
 	return index < primitive_capacity ? primitives[index].wheel_face : 0;
 }
 
-legacy_f64 shape3d_hires_depth(legacy_u32 index)
-{
-	return index < primitive_capacity ? primitives[index].depth : 0;
-}
-
 void shape3d_hires_begin_shape(legacy_u32 index, legacy_s32 depth_mode)
 {
 	reserve_primitives(index);
@@ -405,13 +426,6 @@ static void queue_primitive(legacy_u32 index, legacy_u8 type, legacy_u16 vertex_
 	if (!hires_enabled() || vertex_count == 0 || vertex_count > HIRES_MAX_POLYGON_POINTS / 2) {
 		return;
 	}
-	/* Keep scene sorting independent of the serialized 16-bit depth word.
-	 * Track corners can be farther than 32767 units from the camera. */
-	primitive->depth = 0;
-	for (legacy_u32 vertex = 0; vertex < vertex_count; vertex++) {
-		primitive->depth += vertices[indices[vertex]].z;
-	}
-	primitive->depth /= vertex_count;
 	if (type == RENDER_PRIMITIVE_POLYGON) {
 		queue_polygon(primitive, vertex_count, indices, vertices);
 		return;
@@ -425,7 +439,6 @@ static void queue_primitive(legacy_u32 index, legacy_u8 type, legacy_u16 vertex_
 							   ? 0
 							   : SHAPE3D_WHEEL_RIM_VERTEX_COUNT;
 		primitive->wheel_face = start;
-		primitive->depth = vertices[indices[start]].z;
 		for (legacy_u32 vertex = 0; vertex < 4; vertex++) {
 			shape3d_hires_project(&vertices[indices[(start + vertex) % 6]],
 								  &primitive->points[vertex]);
