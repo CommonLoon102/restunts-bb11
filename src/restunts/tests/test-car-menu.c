@@ -46,10 +46,12 @@ static const legacy_s8 *fixture_files[] = {(const legacy_s8 *)"CARVETT.RES",
 #define SHOWROOM_TEST_FIRST_GROUND_HEIGHT 37
 #define SHOWROOM_TEST_NEXT_GROUND_HEIGHT -61
 #define SHOWROOM_TEST_STATUS_EXPIRY_FRAME 18U
+#define SHOWROOM_TEST_LOW_LIGHT_MINIMUM_COTANGENT 1.0
 
 enum SHOWROOM_TEST_SHADOW_STAGE {
 	SHOWROOM_TEST_SHADOW_IDLE,
 	SHOWROOM_TEST_SHADOW_CAMERA,
+	SHOWROOM_TEST_SHADOW_LIGHT,
 	SHOWROOM_TEST_SHADOW_CAR,
 	SHOWROOM_TEST_SHADOW_MODEL
 };
@@ -125,12 +127,24 @@ void shape3d_hires_shadows_begin(const struct VECTOR *camera_position)
 	}
 }
 
+void shape3d_hires_set_shadow_light(legacy_s16 heading, legacy_f64 cotangent)
+{
+	assert(supersight_enabled != 0);
+	/* The showroom light stays to the left/front as either preview rotates. */
+	assert(heading > 0 && heading < ANGLE_QUARTER_TURN);
+	assert(cotangent > SHOWROOM_TEST_LOW_LIGHT_MINIMUM_COTANGENT);
+	if (display_toggle_test != 0) {
+		assert(display_shadow_stage == SHOWROOM_TEST_SHADOW_CAMERA);
+		display_shadow_stage = SHOWROOM_TEST_SHADOW_LIGHT;
+	}
+}
+
 void shape3d_hires_shadow_car(const struct VECTOR *relative_position, legacy_s16 heading,
 							  legacy_s16 half_width, legacy_s16 half_length)
 {
 	assert(supersight_enabled != 0);
 	if (display_toggle_test != 0) {
-		assert(display_shadow_stage == SHOWROOM_TEST_SHADOW_CAMERA);
+		assert(display_shadow_stage == SHOWROOM_TEST_SHADOW_LIGHT);
 		assert(half_width == SHOWROOM_TEST_HALF_WIDTH * SHOWROOM_TEST_MODEL_SCALE);
 		assert(half_length == SHOWROOM_TEST_HALF_LENGTH * SHOWROOM_TEST_MODEL_SCALE);
 		display_shadow_position = *relative_position;
@@ -139,12 +153,13 @@ void shape3d_hires_shadow_car(const struct VECTOR *relative_position, legacy_s16
 	}
 }
 
-void shape3d_hires_shadow_model(const struct SHAPE3D *shape)
+void shape3d_hires_shadow_projected_model(const struct SHAPE3D *shape, legacy_s16 ground_height)
 {
 	assert(supersight_enabled != 0);
 	assert(shape == &game3dshapes[PLAYER_CAR_LOW_SHAPE]);
 	if (display_toggle_test != 0) {
 		assert(display_shadow_stage == SHOWROOM_TEST_SHADOW_CAR);
+		assert(ground_height == display_ground_height);
 		display_shadow_stage = SHOWROOM_TEST_SHADOW_MODEL;
 		display_shadow_models++;
 	}

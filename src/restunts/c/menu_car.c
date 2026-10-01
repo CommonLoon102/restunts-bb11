@@ -47,6 +47,10 @@
 #define CAR_MENU_PROJECTION_Y_SCALE 17
 #define CAR_MENU_PROJECTION_HEIGHT 100
 #define CAR_MENU_MODEL_SCALE 20
+/* Low light from the left casts toward the rear-right of the painted podium. */
+#define CAR_MENU_SHADOW_HEADING ANGLE_EIGHTH_TURN
+/* Cotangent of the showroom light's 30-degree elevation. */
+#define CAR_MENU_SHADOW_COTANGENT 1.732051
 #define CAR_MENU_TRANSFORM_DISTANCE 30000U
 #define CAR_MENU_CLIPPED_TRANSFORM_FLAG 8U
 #define CAR_MENU_BACKGROUND_Y 103
@@ -382,11 +386,14 @@ static void car_menu_prepare_preview(struct CAR_MENU_STATE *menu)
 										  LEGACY_S16_WRAP_NEGATE(menu->shadow_position.y),
 										  LEGACY_S16_WRAP_NEGATE(menu->shadow_position.z)};
 			shape3d_hires_shadows_begin(&camera);
+			shape3d_hires_set_shadow_light(CAR_MENU_SHADOW_HEADING, CAR_MENU_SHADOW_COTANGENT);
 			shape3d_hires_shadow_car(
 				&menu->shadow_position, visual_rotation,
 				LEGACY_S16_WRAP_MUL(simd_player.collide_points[0].px, CAR_MENU_MODEL_SCALE),
 				LEGACY_S16_WRAP_MUL(simd_player.collide_points[1].px, CAR_MENU_MODEL_SCALE));
-			shape3d_hires_shadow_model(menu->transformed.shapeptr);
+			shape3d_hires_shadow_projected_model(
+				menu->transformed.shapeptr,
+				LEGACY_S16_WRAP_SUB(menu->shadow_position.y, menu->transformed.pos.y));
 			menu->transformed.ts_flags |= SHAPE3D_NO_SHADOW_RECEIVE_FLAG;
 		}
 #endif
