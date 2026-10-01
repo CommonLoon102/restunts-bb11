@@ -3,6 +3,7 @@
 #include "../../c/fatal.h"
 #include "../../c/hires.h"
 #include "../../c/frame_adaptive.h"
+#include "../../c/frame_internal.h"
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -45,7 +46,8 @@ static legacy_u64 last_present;
 static legacy_u8 palette_changed = true;
 static legacy_u8 drawing_frame;
 static legacy_u8 adaptive_frame;
-static legacy_u64 adaptive_frame_started;
+static legacy_u8 measured_frame;
+static legacy_u64 render_frame_started;
 
 static void video_fail(const legacy_char *operation)
 {
@@ -218,10 +220,15 @@ void sdl3_video_game_to_window(legacy_f32 x, legacy_f32 y, legacy_f32 *window_x,
 	}
 }
 
-static void video_record_adaptive_work(void)
+static void video_record_render_work(void)
 {
-	if (adaptive_frame != 0) {
-		frame_adaptive_record(&frame_adaptive, SDL_GetTicksNS() - adaptive_frame_started);
+	if (measured_frame != 0) {
+		legacy_u64 elapsed = SDL_GetTicksNS() - render_frame_started;
+		frame_render_timing_record(elapsed);
+		if (adaptive_frame != 0) {
+			frame_adaptive_record(&frame_adaptive, elapsed);
+		}
+		measured_frame = 0;
 		adaptive_frame = 0;
 	}
 }
@@ -277,7 +284,7 @@ static void present_surface(const legacy_u8 *pixels, const legacy_u32 *argb, leg
 							   SDL_SCALEMODE_NEAREST)) {
 		video_fail("Scale video surface");
 	}
-	video_record_adaptive_work();
+	video_record_render_work();
 	if (!SDL_UpdateWindowSurface(window)) {
 		video_fail("Present video surface");
 	}
@@ -345,16 +352,16 @@ static void present_texture(legacy_u8 new_frame)
 	/* Include CPU composition and submission, but exclude the presentation
 	 * call, which can deliberately wait for display synchronization. */
 	if (new_frame) {
-		video_record_adaptive_work();
+		video_record_render_work();
 	}
 	legacy_u64 present_started = SDL_GetTicksNS();
 	if (!SDL_RenderPresent(renderer)) {
 		video_fail("Present video");
 	}
-	if (adaptive_frame != 0) {
+	if (measured_frame != 0) {
 		/* An exposure can repaint the completed front page while another frame
 		 * is being drawn. Its refresh wait is not rendering workload either. */
-		adaptive_frame_started += SDL_GetTicksNS() - present_started;
+		render_frame_started += SDL_GetTicksNS() - present_started;
 	}
 }
 
@@ -415,14 +422,22 @@ void sdl3_video_begin_frame(void)
 							   : frame_adaptive_render_scale(&frame_adaptive));
 	drawing_frame = true;
 	adaptive_frame = 0;
+	measured_frame = 1;
+	render_frame_started = SDL_GetTicksNS();
 }
 
 void sdl3_video_begin_track_frame(legacy_u8 adaptive)
 {
 	drawing_frame = true;
 	adaptive_frame = adaptive != 0 && frame_adaptive.preset == FRAME_ADAPTIVE_PRESET_AUTO;
-	if (adaptive_frame != 0) {
-		adaptive_frame_started = SDL_GetTicksNS();
+	measured_frame = 1;
+	render_frame_started = SDL_GetTicksNS();
+}
+
+void sdl3_video_add_render_work(legacy_u64 elapsed_ns)
+{
+	if (measured_frame != 0) {
+		render_frame_started -= elapsed_ns;
 	}
 }
 
@@ -431,6 +446,7 @@ void sdl3_video_end_frame(void)
 	drawing_frame = false;
 	sdl3_video_present();
 	adaptive_frame = 0;
+	measured_frame = 0;
 }
 
 void sdl3_video_refresh(void)
@@ -461,7 +477,9 @@ void sdl3_video_shutdown(void)
 	high_resolution_output = false;
 	drawing_frame = false;
 	adaptive_frame = 0;
-	adaptive_frame_started = 0;
+	measured_frame = 0;
+	render_frame_started = 0;
+	frame_render_timing_reset();
 	frame_surface = NULL;
 	texture = NULL;
 	texture_width = 0;

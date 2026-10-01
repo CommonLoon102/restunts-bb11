@@ -28,8 +28,10 @@ original ordering and rendering rules.
 The software backend resolves visibility along screen-space spans. A planar
 polygon's inverse depth varies linearly across a scanline. Overlapping spans can
 therefore be compared over intervals, splitting at depth crossings to identify
-the nearer surface. Intersecting surfaces do not need a single global painter
-order; the visible surface can change within the overlap.
+the nearer surface. Planar commands cache their depth equation for reuse across
+scanlines; warped polygons retain edge interpolation. Intersecting surfaces do
+not need a single global painter order; the visible surface can change within
+the overlap.
 
 The pipeline is:
 
@@ -157,10 +159,11 @@ The output reports the actual background worker count. Repeat with
 `RESTUNTS_RENDER_WORKERS=1` to assess the second Core 2 Duo core.
 
 This batch harness includes scene rendering, framebuffer copies, and checks that
-rendering preserves simulation state. It excludes display upload/composition,
-VSync, audio playback, frame pacing, and physics advancement from the timed loop.
-It does not measure complete interactive FPS. The target is excluded from ordinary
-builds and is not a CTest timing gate.
+rendering preserves simulation state. Add `--compose` to include final ARGB
+framebuffer composition. Display upload, VSync, audio playback, frame pacing,
+and physics advancement remain outside the timed loop. It does not measure
+complete interactive FPS. The target is excluded from ordinary builds and is
+not a CTest timing gate.
 
 ### Workers
 
@@ -218,6 +221,38 @@ available in
 [`benchmark-hypervision.c`](../src/restunts/benchmarks/benchmark-hypervision.c).
 The [SuperSight measurements](supersight-performance.md) remain the record of
 previous experiments.
+
+### CPU optimization follow-up
+
+The follow-up compares against the first HyperVision commit, `492d4770`, with
+original horizons at 320x200 in both builds. The same host, compiler, replay,
+18 scene/resolution cases, and 60-frame batches were used. Each worker setting
+(0, 1, 2) was measured in baseline/candidate order and then in reverse order.
+
+| Resolution | First HyperVision CPU ms | Optimized CPU ms | Reduction |
+| --- | ---: | ---: | ---: |
+| 320x200 | 2.761 | 2.358 | 14.6% |
+| 640x400 | 3.994 | 3.396 | 15.0% |
+| 1280x800 | 7.310 | 6.835 | 6.5% |
+
+The changes batch complete skybox rows, emit opaque indexed spans without
+repeating overlay checks for every cell, cache planar inverse-depth equations,
+remove unused primitive mean-depth work, and reject wholly offscreen primitives
+against frustum planes before projection. Skybox rows can also use the existing worker
+pool. Jobs own disjoint logical rows and combine overlay-retirement counts only
+after joining; unusual aliased sprite rows retain the serial fallback.
+
+Shape preparation remains serial: its shared transform and queue state would
+require substantial restructuring, while its measured cost was much smaller
+than shading, skybox output, and shadows. Shadow traversal also remains serial.
+
+At 1280x800 the optimized serial elapsed mean was 7.299 ms, versus 7.116 ms with
+one worker and 7.531 ms with two workers. Process CPU rose from 6.835 ms to
+7.279 and 7.539 ms. Scheduling variation is too large to establish a consistent
+worker benefit here, so the default remains serial. All 18 captured views match
+byte-for-byte between zero and two workers. The high-resolution serial elapsed
+comparison (7.333 to 7.299 ms) is also within this VM's timing noise; the table
+reports process CPU time, not a guaranteed FPS increase.
 
 ## Validation
 

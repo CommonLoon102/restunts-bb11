@@ -46,8 +46,15 @@
 	(REPLAY_TEXT_LEFT_X + (FPS_TEXT_BUFFER_SIZE - 1U) * REPLAY_TEXT_CHARACTER_WIDTH + 1U)
 #ifdef RESTUNTS_SDL3
 #define SUPERSIGHT_STATUS_PREFIX "HyperVision: "
+#define SUPERSIGHT_STATUS_Y (REPLAY_TEXT_Y + REPLAY_TEXT_LINE_HEIGHT)
+#define RENDER_TIME_SAMPLE_COUNT 100U
+#define RENDER_TIME_NS_PER_TENTH_MS 100000ULL
+#define RENDER_TIME_TENTHS_PER_MS 10U
+#define RENDER_TIME_MAX_TENTHS ((legacy_u32)LEGACY_U16_MAX * RENDER_TIME_TENTHS_PER_MS)
+#define RENDER_TIME_BUFFER_SIZE (FPS_TEXT_MAX_DIGITS + sizeof(".0ms"))
 #else
 #define SUPERSIGHT_STATUS_PREFIX "SuperSight: "
+#define SUPERSIGHT_STATUS_Y REPLAY_TEXT_Y
 #endif
 #define SUPERSIGHT_STATUS_NAME_LENGTH (sizeof("Medium") - 1U)
 #define SUPERSIGHT_STATUS_BUFFER_SIZE                                                              \
@@ -73,6 +80,36 @@ static legacy_u32 fps_last_presented;
 static legacy_u16 fps_sample_frames;
 static legacy_u16 fps_sample_value;
 static legacy_u8 fps_sample_started;
+#ifdef RESTUNTS_SDL3
+static legacy_u64 render_time_samples[RENDER_TIME_SAMPLE_COUNT];
+static legacy_u64 render_time_sum;
+static legacy_u16 render_time_count;
+static legacy_u16 render_time_next;
+
+void frame_render_timing_reset(void)
+{
+	render_time_sum = 0;
+	render_time_count = 0;
+	render_time_next = 0;
+}
+
+void frame_render_timing_record(legacy_u64 elapsed_ns)
+{
+	/* Bound pathological stalls before summing; the display has five integer digits. */
+	legacy_u64 maximum = (legacy_u64)RENDER_TIME_MAX_TENTHS * RENDER_TIME_NS_PER_TENTH_MS;
+	if (elapsed_ns > maximum) {
+		elapsed_ns = maximum;
+	}
+	if (render_time_count == RENDER_TIME_SAMPLE_COUNT) {
+		render_time_sum -= render_time_samples[render_time_next];
+	} else {
+		render_time_count++;
+	}
+	render_time_samples[render_time_next] = elapsed_ns;
+	render_time_sum += elapsed_ns;
+	render_time_next = (render_time_next + 1U) % RENDER_TIME_SAMPLE_COUNT;
+}
+#endif
 static legacy_s8 supersight_status_text[SUPERSIGHT_STATUS_BUFFER_SIZE];
 static legacy_u32 supersight_status_start;
 static legacy_u8 supersight_status_active;
@@ -121,8 +158,8 @@ static struct RECTANGLE frame_supersight_status_bounds(void)
 	struct RECTANGLE bounds;
 	bounds.left = REPLAY_TEXT_LEFT_X;
 	bounds.right = SUPERSIGHT_STATUS_RIGHT_X;
-	bounds.top = REPLAY_TEXT_Y;
-	bounds.bottom = REPLAY_TEXT_Y + font_glyph_height + 1;
+	bounds.top = SUPERSIGHT_STATUS_Y;
+	bounds.bottom = SUPERSIGHT_STATUS_Y + font_glyph_height + 1;
 	return bounds;
 }
 
@@ -267,6 +304,24 @@ struct RECTANGLE *frame_fps_draw_text(void)
 			frame_fps_adaptive_enabled() ? FPS_TEXT_SUPERSIGHT_TARGET : FPS_TEXT_TARGET;
 		legacy_s16 color = fps_sample_value < target ? FPS_TEXT_RED : FPS_TEXT_GREEN;
 		bounds = *intro_draw_text(text, REPLAY_TEXT_LEFT_X, REPLAY_FILENAME_Y, color, 0);
+#ifdef RESTUNTS_SDL3
+		if (fps_display_enabled == FRAME_FPS_DISPLAY_TIMING) {
+			legacy_u64 average_ns =
+				render_time_count != 0 ? render_time_sum / render_time_count : 0;
+			legacy_u32 tenths = (legacy_u32)((average_ns + RENDER_TIME_NS_PER_TENTH_MS / 2U) /
+											 RENDER_TIME_NS_PER_TENTH_MS);
+			legacy_s8 timing[RENDER_TIME_BUFFER_SIZE];
+			count =
+				frame_fps_format_number(timing, (legacy_u16)(tenths / RENDER_TIME_TENTHS_PER_MS));
+			timing[count++] = '.';
+			timing[count++] = (legacy_s8)('0' + tenths % RENDER_TIME_TENTHS_PER_MS);
+			copy_string(timing + count, "ms");
+			rect_union(
+				&bounds,
+				intro_draw_text(timing, REPLAY_TEXT_LEFT_X, REPLAY_TEXT_Y, dialog_fnt_colour, 0),
+				&bounds);
+		}
+#endif
 	}
 	if (supersight_status_active != 0 || supersight_status_clear_frames != 0) {
 		/* Keep the longest status dirty while drawing and erasing. Replacing a
@@ -274,7 +329,7 @@ struct RECTANGLE *frame_fps_draw_text(void)
 		struct RECTANGLE status_bounds = frame_supersight_status_bounds();
 		rect_union(&bounds, &status_bounds, &bounds);
 		if (supersight_status_active != 0) {
-			intro_draw_text(supersight_status_text, REPLAY_TEXT_LEFT_X, REPLAY_TEXT_Y,
+			intro_draw_text(supersight_status_text, REPLAY_TEXT_LEFT_X, SUPERSIGHT_STATUS_Y,
 							dialog_fnt_colour, 0);
 			supersight_status_clear_frames =
 				video_uses_page_flipping != 0 ? SUPERSIGHT_STATUS_RESTORE_PAGES : 1U;
@@ -299,6 +354,11 @@ static legacy_u16 draw_fps_text(void)
 		roof_bounds.right = FPS_TEXT_RIGHT_X;
 		roof_bounds.top = REPLAY_FILENAME_Y;
 		roof_bounds.bottom = REPLAY_FILENAME_Y + font_glyph_height + 1;
+#ifdef RESTUNTS_SDL3
+		if (fps_display_enabled == FRAME_FPS_DISPLAY_TIMING) {
+			roof_bounds.bottom = REPLAY_TEXT_Y + font_glyph_height + 1;
+		}
+#endif
 	}
 	if (supersight_status_active != 0 || supersight_status_clear_frames != 0) {
 		struct RECTANGLE status_bounds = frame_supersight_status_bounds();
@@ -467,7 +527,12 @@ static legacy_s16 draw_replay_filename(legacy_u16 reserved_characters)
 
 	while (*filename != 0) {
 		legacy_u16 reserved = y == REPLAY_FILENAME_Y ? reserved_characters : 0;
-		if (y == REPLAY_TEXT_Y && supersight_status_active != 0) {
+#ifdef RESTUNTS_SDL3
+		if (y == REPLAY_TEXT_Y && fps_display_enabled == FRAME_FPS_DISPLAY_TIMING) {
+			reserved = RENDER_TIME_BUFFER_SIZE;
+		}
+#endif
+		if (y == SUPERSIGHT_STATUS_Y && supersight_status_active != 0) {
 			reserved = SUPERSIGHT_STATUS_BUFFER_SIZE;
 		}
 		legacy_u16 line_limit = REPLAY_TEXT_MAX_CHARACTERS - reserved;

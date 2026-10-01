@@ -51,15 +51,16 @@ output locations. Extraction does not regenerate or overwrite enhanced art.
 
 ## Enhanced rendering
 
-F12 enables the refined horizon strips in SDL3 SuperSight, alongside the
-1280 × 800 scene. Track selector previews use the same enhanced strips when
-SuperSight is active. F12 off and the 16-bit Open Watcom renderer retain the
-original art. Missing, unreadable, or incorrectly sized enhanced
-images fall back to their original strips. Scenery detail settings still apply.
+F12 enables HyperVision in SDL3 builds. At 640 × 400 and 1280 × 800, driving
+and track selector previews use the refined horizon strips. HyperVision at
+320 × 200, classic mode, and the 16-bit Open Watcom renderer use the original
+art. Missing, unreadable, or incorrectly sized enhanced images fall back to
+their original strips. Scenery detail settings still apply.
 
-During driving, SuperSight rotates the panorama continuously with the camera,
-including sideways and upside-down views. It preserves the original level
-panorama scale and projects the horizon with the same camera as the road.
+During driving, HyperVision rotates the panorama continuously with the camera,
+including sideways and upside-down views at every supported resolution. It
+preserves the original level panorama scale and projects the horizon with the
+same camera as the road.
 Missing enhanced strips use the original artwork with the same rotation.
 The original renderer retains its historical banking cutoff.
 

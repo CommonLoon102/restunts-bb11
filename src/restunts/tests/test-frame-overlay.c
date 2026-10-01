@@ -54,7 +54,7 @@ struct TEXT_DRAW {
 #define STATUS_TEST_PREFIX "SuperSight: "
 #endif
 
-#define TEXT_DRAW_CAPACITY 8U
+#define TEXT_DRAW_CAPACITY 12U
 static struct TEXT_DRAW text_draws[TEXT_DRAW_CAPACITY];
 static legacy_u32 text_draw_count;
 static struct RECTANGLE text_bounds;
@@ -725,8 +725,12 @@ static void test_supersight_fps_only(void)
 enum {
 	STATUS_TEST_DURATION = 2U * DOS_TIMER_REALTIME_TICKS_PER_SECOND,
 	STATUS_TEST_LEFT = 8,
+#ifdef RESTUNTS_SDL3
+	STATUS_TEST_TOP = 27,
+#else
 	STATUS_TEST_TOP = 15,
-	STATUS_TEST_BOTTOM = 24,
+#endif
+	STATUS_TEST_BOTTOM = STATUS_TEST_TOP + 9,
 	STATUS_TEST_FONT_WIDTH = 8,
 	STATUS_TEST_RIGHT =
 		STATUS_TEST_LEFT + (sizeof(STATUS_TEST_PREFIX "Medium") - 1U) * STATUS_TEST_FONT_WIDTH + 1U,
@@ -757,10 +761,12 @@ static void test_supersight_status_names_and_copy(void)
 	static const struct {
 		const legacy_s8 *name;
 		const legacy_char *text;
-	} cases[] = {{"On", STATUS_TEST_PREFIX "On"},	  {"Auto", STATUS_TEST_PREFIX "Auto"},
-				 {"Off", STATUS_TEST_PREFIX "Off"},	  {"Full", STATUS_TEST_PREFIX "Full"},
-				 {"High", STATUS_TEST_PREFIX "High"}, {"Medium", STATUS_TEST_PREFIX "Medium"},
-				 {"Low", STATUS_TEST_PREFIX "Low"}};
+	} cases[] = {
+		{"On", STATUS_TEST_PREFIX "On"},	 {"Auto", STATUS_TEST_PREFIX "Auto"},
+		{"Off", STATUS_TEST_PREFIX "Off"},	 {"Full", STATUS_TEST_PREFIX "Full"},
+		{"High", STATUS_TEST_PREFIX "High"}, {"Medium", STATUS_TEST_PREFIX "Medium"},
+		{"Low", STATUS_TEST_PREFIX "Low"},
+	};
 	for (legacy_u32 index = 0; index < sizeof(cases) / sizeof(cases[0]); index++) {
 		reset_status_text();
 		assert(frame_display_overlay_active() == 0);
@@ -929,7 +935,7 @@ static void test_supersight_status_replay_filename_collision(void)
 	legacy_char filename[REPLAY_FILENAME_SIZE];
 	memset(filename, 'R', sizeof(filename) - 1U);
 	filename[sizeof(filename) - 1U] = 0;
-	for (legacy_u8 fps = 0; fps <= 1; fps++) {
+	for (legacy_u8 fps = FRAME_FPS_DISPLAY_OFF; fps < FRAME_FPS_DISPLAY_MODE_COUNT; fps++) {
 		reset_status_text();
 		reset_ingame_text(filename);
 		fps_display_enabled = fps;
@@ -960,6 +966,83 @@ static void test_supersight_status_replay_filename_collision(void)
 	reset_status_text();
 }
 
+#ifdef RESTUNTS_SDL3
+enum {
+	RENDER_TEST_SAMPLE_COUNT = 100,
+	RENDER_TEST_LINE_Y = 15,
+	RENDER_TEST_LINE_BOTTOM = 24,
+	RENDER_TEST_HALF_SAMPLES = RENDER_TEST_SAMPLE_COUNT / 2
+};
+#define RENDER_TEST_FIRST_NS 8400000ULL
+#define RENDER_TEST_ROUND_NS 8450000ULL
+#define RENDER_TEST_BASE_NS 10000000ULL
+#define RENDER_TEST_DOUBLE_NS (RENDER_TEST_BASE_NS * 2U)
+
+static void assert_render_timing(const legacy_char *expected)
+{
+	text_draw_count = 0;
+	struct RECTANGLE *bounds = frame_fps_draw_text();
+	assert(text_draw_count == 2);
+	assert(strcmp(text_draws[0].text, "0 FPS") == 0);
+	assert_text(1, expected, STATUS_TEST_LEFT, RENDER_TEST_LINE_Y);
+	assert(bounds->bottom == RENDER_TEST_LINE_BOTTOM);
+}
+
+static void test_render_timing(void)
+{
+	reset_status_text();
+	frame_render_timing_reset();
+	fps_display_enabled = FRAME_FPS_DISPLAY_TIMING;
+	assert_render_timing("0.0ms");
+	frame_render_timing_record(RENDER_TEST_FIRST_NS);
+	assert_render_timing("8.4ms");
+	/* FPS resets and HUD toggles retain actual rendering history. */
+	frame_fps_reset();
+	assert_render_timing("8.4ms");
+	fps_display_enabled = FRAME_FPS_DISPLAY_OFF;
+	for (legacy_u32 frame = 0; frame < RENDER_TEST_SAMPLE_COUNT; frame++) {
+		frame_render_timing_record(RENDER_TEST_BASE_NS);
+	}
+	fps_display_enabled = FRAME_FPS_DISPLAY_TIMING;
+	assert_render_timing("10.0ms");
+	for (legacy_u32 frame = 0; frame < RENDER_TEST_HALF_SAMPLES; frame++) {
+		frame_render_timing_record(RENDER_TEST_DOUBLE_NS);
+	}
+	assert_render_timing("15.0ms");
+	for (legacy_u32 frame = 0; frame < RENDER_TEST_HALF_SAMPLES; frame++) {
+		frame_render_timing_record(RENDER_TEST_DOUBLE_NS);
+	}
+	assert_render_timing("20.0ms");
+	/* Backend transitions discard old samples, then round to the nearest tenth. */
+	frame_render_timing_reset();
+	frame_render_timing_record(RENDER_TEST_ROUND_NS);
+	assert_render_timing("8.5ms");
+	frame_render_timing_reset();
+	frame_render_timing_record(~(legacy_u64)0);
+	assert_render_timing("65535.0ms");
+	frame_render_timing_reset();
+	frame_render_timing_record(RENDER_TEST_FIRST_NS);
+	dashboard_visible = 1;
+	roofbmpheight_copy = STATUS_TEST_BOTTOM;
+	frame_supersight_show_status("Medium");
+	text_draw_count = 0;
+	draw_ingame_text();
+	assert(text_draw_count == 3);
+	assert_text(1, "8.4ms", STATUS_TEST_LEFT, RENDER_TEST_LINE_Y);
+	assert_text(2, STATUS_TEST_PREFIX "Medium", STATUS_TEST_LEFT, STATUS_TEST_TOP);
+	assert(restored_roof_bounds.top == 3 && restored_roof_bounds.bottom == STATUS_TEST_BOTTOM);
+	realtime_ticks += STATUS_TEST_DURATION;
+	text_draw_count = 0;
+	draw_ingame_text();
+	assert(text_draw_count == 2);
+	assert(restored_roof_bounds.bottom == STATUS_TEST_BOTTOM);
+	text_draw_count = 0;
+	draw_ingame_text();
+	assert(restored_roof_bounds.bottom == RENDER_TEST_LINE_BOTTOM);
+	reset_status_text();
+}
+#endif
+
 legacy_int main(void)
 {
 	test_incremental_crack_overlay();
@@ -985,5 +1068,8 @@ legacy_int main(void)
 	test_supersight_status_roof_cleanup();
 	test_supersight_status_paused_page_cleanup();
 	test_supersight_status_replay_filename_collision();
+#ifdef RESTUNTS_SDL3
+	test_render_timing();
+#endif
 	return 0;
 }

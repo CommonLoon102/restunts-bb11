@@ -711,6 +711,58 @@ void hires_raster_span(struct HIRES_RASTER_CONTEXT *context, legacy_s32 left, le
 	}
 }
 
+/* Common opaque indexed rows have no overlay to retire. Emit full sample
+ * words directly between the two partial edge cells. */
+static void hires_raster_indexed_span(const struct HIRES_RASTER_TARGET *target, legacy_s32 left,
+									  legacy_s32 right, legacy_s32 y, legacy_u8 color)
+{
+	const legacy_s32 shift = target->scale_shift, mask = target->scale_mask;
+	const legacy_s32 cell_shift = target->cell_shift;
+	const legacy_u16 row = target->rows[y >> shift];
+	const legacy_u32 sample_row = (y & mask) << shift;
+	legacy_u8 *pixels = target->surface->pixels;
+	legacy_s32 x = left;
+	if (shift == 0) {
+		while (x < right) {
+			legacy_u16 offset = (legacy_u16)(row + x);
+			legacy_u32 count = HIRES_ADDRESS_COUNT - offset;
+			if (count > (legacy_u32)(right - x)) {
+				count = (legacy_u32)(right - x);
+			}
+			memset(pixels + offset, color, count);
+			x += count;
+		}
+		return;
+	}
+	if ((x & mask) != 0 && x < right) {
+		legacy_s32 end = (x | mask) + 1;
+		if (end > right) {
+			end = right;
+		}
+		legacy_u8 *cell = pixels + ((size_t)(legacy_u16)(row + (x >> shift)) << cell_shift);
+		memset(cell + sample_row + (x & mask), color, (size_t)(end - x));
+		x = end;
+	}
+	legacy_s32 aligned_right = right & ~mask;
+	if (target->scale == HIRES_SCALE) {
+		legacy_u32 word = color * (LEGACY_U32_MAX / LEGACY_U8_MAX);
+		for (; x < aligned_right; x += HIRES_SCALE) {
+			legacy_u8 *cell = pixels + ((size_t)(legacy_u16)(row + (x >> shift)) << cell_shift);
+			memcpy(cell + sample_row, &word, sizeof(word));
+		}
+	} else {
+		legacy_u16 word = color * (LEGACY_U16_MAX / LEGACY_U8_MAX);
+		for (; x < aligned_right; x += HIRES_MEDIUM_SCALE) {
+			legacy_u8 *cell = pixels + ((size_t)(legacy_u16)(row + (x >> shift)) << cell_shift);
+			memcpy(cell + sample_row, &word, sizeof(word));
+		}
+	}
+	if (x < right) {
+		legacy_u8 *cell = pixels + ((size_t)(legacy_u16)(row + (x >> shift)) << cell_shift);
+		memset(cell + sample_row, color, (size_t)(right - x));
+	}
+}
+
 void hires_raster_resolved_span(struct HIRES_RASTER_CONTEXT *context, legacy_s32 left,
 								legacy_s32 right, legacy_s32 y, legacy_f64 inverse_z,
 								legacy_f64 depth_step, legacy_u32 family, legacy_u16 color,
@@ -731,6 +783,10 @@ void hires_raster_resolved_span(struct HIRES_RASTER_CONTEXT *context, legacy_s32
 	for (legacy_s32 x = left; x < right; x++) {
 		depths[x] = (legacy_f32)(inverse_z + (x - left) * depth_step);
 		families[x] = family;
+	}
+	if (paint_mode == HIRES_PAINT_SOLID && surface->argb_cells == 0) {
+		hires_raster_indexed_span(target, left, right, y, (legacy_u8)color);
+		return;
 	}
 	legacy_u32 packed_color = (legacy_u8)color * (LEGACY_U32_MAX / LEGACY_U8_MAX);
 	for (legacy_s32 x = left; x < right;) {
@@ -767,6 +823,55 @@ void hires_raster_resolved_span(struct HIRES_RASTER_CONTEXT *context, legacy_s32
 			hires_raster_retire_argb(context, surface, offset, argb);
 		}
 	}
+}
+
+/* Disjoint logical rows can replace contiguous cell blocks without repeating
+ * sprite clipping, row lookup, and overlay bookkeeping for every cell. */
+static void hires_raster_replace_row(struct HIRES_RASTER_CONTEXT *context, legacy_s32 y,
+									 const legacy_u8 *samples, legacy_u8 color)
+{
+	const struct HIRES_RASTER_TARGET *target = context->target;
+	const legacy_s32 shift = target->scale_shift;
+	if (y < (context->top >> shift) || y >= (context->bottom >> shift) ||
+		y < (target->top >> shift) || y >= (target->bottom >> shift)) {
+		return;
+	}
+	struct HIRES_SURFACE *surface = target->surface;
+	legacy_u32 remaining = (legacy_u32)(target->right - target->left) >> shift;
+	legacy_u16 offset = (legacy_u16)(target->rows[y] + (target->left >> shift));
+	while (remaining != 0) {
+		legacy_u32 count = HIRES_ADDRESS_COUNT - offset;
+		if (count > remaining) {
+			count = remaining;
+		}
+		legacy_u8 *output = surface->pixels + ((size_t)offset << target->cell_shift);
+		size_t bytes = (size_t)count << target->cell_shift;
+		if (samples != NULL) {
+			memcpy(output, samples, bytes);
+			samples += bytes;
+		} else {
+			memset(output, color, bytes);
+		}
+		if (surface->argb_cells != 0) {
+			for (legacy_u32 cell = 0; cell < count; cell++) {
+				context->cleared_argb_cells += surface->valid[offset + cell] == HIRES_CELL_ARGB;
+			}
+		}
+		memset(surface->valid + offset, HIRES_CELL_INDEXED, count);
+		remaining -= count;
+		offset = 0;
+	}
+}
+
+void hires_raster_fill_row(struct HIRES_RASTER_CONTEXT *context, legacy_s32 y, legacy_u8 color)
+{
+	hires_raster_replace_row(context, y, NULL, color);
+}
+
+void hires_raster_write_row(struct HIRES_RASTER_CONTEXT *context, legacy_s32 y,
+							const legacy_u8 *samples)
+{
+	hires_raster_replace_row(context, y, samples, 0);
 }
 
 void hires_raster_finish(const struct HIRES_RASTER_TARGET *target, legacy_u32 cleared_argb_cells)

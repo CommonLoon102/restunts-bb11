@@ -84,6 +84,12 @@ void update_frame_snapshot(legacy_s8 buffer_index, struct RECTANGLE *cliprect,
 
 void frame_supersight_reset(void);
 void frame_fps_reset(void);
+#ifdef RESTUNTS_SDL3
+/* Completed rendering only, excluding simulation, pacing, and display synchronization.
+ * Reset when changing renderer so the rolling history describes the selected backend. */
+void frame_render_timing_record(legacy_u64 elapsed_ns);
+void frame_render_timing_reset(void);
+#endif
 void frame_supersight_show_status(const legacy_s8 *name);
 legacy_s16 frame_display_overlay_active(void);
 legacy_s16 frame_fps_expire_idle(void);

@@ -89,8 +89,12 @@ and [MDN's directory picker reference](https://developer.mozilla.org/en-US/docs/
 Both paths work offline. Browser settings and policies may restrict folder
 access. Audio needs a user gesture; browser shortcuts can take precedence over
 some function keys. Use the page's **Fullscreen** button for fullscreen mode.
+With the canvas focused, **F12** toggles HyperVision Auto and **Shift+F12** cycles
+fixed **Full → High → Medium → Low** presets. **F11** cycles
+**Off → FPS → FPS + render time → Off**.
 
-The browser uses SDL3's WebGL renderer and WebAudio output. Rendering is serial;
+The browser presents frames through SDL3's WebGL renderer and uses WebAudio
+output. Scene rendering runs on the CPU and is serial;
 `RESTUNTS_RENDER_WORKERS` does not enable threads. Asyncify allows the existing
 nested game/menu waits to yield to the browser, and idle input polling yields
 at a bounded interval. Physics and replay formats use the same game code as

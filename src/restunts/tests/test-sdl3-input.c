@@ -10,6 +10,8 @@
 #include "../c/keyboard.h"
 #include "../c/hires.h"
 #include "../c/frame_adaptive.h"
+#include "../c/video_frame.h"
+#include "../c/presentation.h"
 
 legacy_s32 sdl3_batch_mode;
 static legacy_u8 framebuffer[65536];
@@ -44,6 +46,21 @@ legacy_s32 hires_render_width(void)
 legacy_s32 hires_render_height(void)
 {
 	return SDL3_SCREEN_HEIGHT * active_render_scale;
+}
+
+static legacy_u32 render_timing_samples;
+static legacy_u64 render_timing_last_ns;
+
+void frame_render_timing_reset(void)
+{
+	render_timing_samples = 0;
+	render_timing_last_ns = 0;
+}
+
+void frame_render_timing_record(legacy_u64 elapsed_ns)
+{
+	render_timing_samples++;
+	render_timing_last_ns = elapsed_ns;
 }
 
 static legacy_u32 first_callbacks;
@@ -583,35 +600,51 @@ static void test_video_page_lifetime(void)
 	request_page_repaint(SDL_EVENT_WINDOW_EXPOSED);
 	assert_presented_page(PAGE_VIDEO_BLACK, PAGE_VIDEO_BLACK);
 	assert(frame_adaptive.samples == completed_samples);
+	assert(render_timing_samples == 0);
 	frame_adaptive_reset(&frame_adaptive);
 }
 
 static void test_adaptive_frame_timing(void)
 {
 	frame_adaptive_reset(&frame_adaptive);
+	frame_render_timing_reset();
+	const legacy_u64 prepared_render_ns = PRESENTATION_SECOND_NS / 2U;
 	sdl3_video_begin_track_frame(1);
+	sdl3_video_add_render_work(prepared_render_ns);
 	sdl3_video_refresh();
 	assert(frame_adaptive.samples == 0);
+	assert(render_timing_samples == 0);
 	sdl3_video_end_frame();
 	assert(frame_adaptive.samples == 1);
+	assert(render_timing_samples == 1);
+	/* Adaptive quality caps stalls; the HUD must retain their actual duration. */
+	assert(frame_adaptive.elapsed_ns ==
+		   SDL_min(render_timing_last_ns, FRAME_ADAPTIVE_MAX_SAMPLE_NS));
+	assert(render_timing_last_ns >= prepared_render_ns);
 	assert(frame_adaptive.elapsed_ns > 0);
 	legacy_u64 elapsed = frame_adaptive.elapsed_ns;
 	/* Incidental presentations, menus and classic frames must not influence quality. */
 	sdl3_video_present();
+	sdl3_video_redraw();
+	assert(render_timing_samples == 1);
 	sdl3_video_begin_frame();
 	sdl3_video_end_frame();
+	assert(render_timing_samples == 2 && render_timing_last_ns > 0);
 	sdl3_video_begin_track_frame(0);
 	sdl3_video_end_frame();
+	assert(render_timing_samples == 3 && render_timing_last_ns > 0);
 	assert(frame_adaptive.samples == 1);
 	assert(frame_adaptive.elapsed_ns == elapsed);
 	for (enum FRAME_ADAPTIVE_PRESET preset = FRAME_ADAPTIVE_PRESET_FULL;
 		 preset <= FRAME_ADAPTIVE_PRESET_LOW; preset++) {
 		frame_adaptive_set_preset(&frame_adaptive, preset);
 		struct FRAME_ADAPTIVE_STATE unchanged = frame_adaptive;
+		legacy_u32 completed_render_samples = render_timing_samples;
 		sdl3_video_begin_track_frame(1);
 		sdl3_video_refresh();
 		sdl3_video_end_frame();
 		assert(memcmp(&frame_adaptive, &unchanged, sizeof(unchanged)) == 0);
+		assert(render_timing_samples == completed_render_samples + 1U);
 		/* Preview/menu frames retain the chosen lock as well as its raster scale. */
 		sdl3_video_begin_frame();
 		assert(hires_render_scale() == frame_adaptive_render_scale(&frame_adaptive));

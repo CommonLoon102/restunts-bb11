@@ -266,6 +266,7 @@ static void input_select_supersight(legacy_s16 key)
 		frame_adaptive_set_preset(&frame_adaptive, FRAME_ADAPTIVE_PRESET_AUTO);
 	}
 	if (was_enabled != supersight_enabled) {
+		frame_render_timing_reset();
 		hires_set_enabled(supersight_enabled);
 	}
 	if (supersight_enabled != 0) {
@@ -282,7 +283,7 @@ static legacy_s16 input_handle_display_shortcut(legacy_s16 key)
 {
 	switch (key) {
 		case KEY_F11:
-			fps_display_enabled ^= 1U;
+			fps_display_enabled = (fps_display_enabled + 1U) % FRAME_FPS_DISPLAY_MODE_COUNT;
 			frame_fps_reset();
 			full_redraw_frames_remaining = (legacy_s8)video_page_count;
 			return 1;

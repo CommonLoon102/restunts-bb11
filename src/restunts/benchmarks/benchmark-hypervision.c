@@ -23,14 +23,67 @@
 #define BENCH_CAMERA_ELEVATION 64
 #define BENCH_CAMERA_AZIMUTH 128
 #define BENCH_CAMERA_DISTANCE 450
+#define BENCH_PALETTE_CHANNELS 3U
+#define BENCH_PALETTE_CHANNEL_MAX 63U
+#define BENCH_RED_SHIFT 16U
+#define BENCH_GREEN_SHIFT 8U
+#define BENCH_OPAQUE_ALPHA 0xFF000000U
+#define BENCH_SCREEN_SEGMENT 0xA000U
+
+static legacy_s32 benchmark_compose;
+static legacy_u32 benchmark_palette[LEGACY_U8_MAX + 1U];
+
+static void benchmark_parse_options(legacy_s16 *argc, legacy_s8 *argv[])
+{
+	legacy_s16 output = 1;
+	for (legacy_s16 input = 1; input < *argc; input++) {
+		if (strcmp((const legacy_char *)argv[input], "--compose") == 0) {
+			benchmark_compose = 1;
+		} else {
+			argv[output++] = argv[input];
+		}
+	}
+	*argc = output;
+	argv[output] = NULL;
+}
+
+static void benchmark_load_palette(void)
+{
+	legacy_s8 *resource = file_load_shape2d_fatal("sdmain");
+	const legacy_u8 *palette =
+		(const legacy_u8 *)locate_shape_fatal(resource, "!pal") + SHAPE2D_HEADER_SIZE;
+	for (legacy_u32 index = 0; index <= LEGACY_U8_MAX; index++) {
+		legacy_u32 channels[BENCH_PALETTE_CHANNELS];
+		for (legacy_u32 channel = 0; channel < BENCH_PALETTE_CHANNELS; channel++) {
+			channels[channel] =
+				(palette[index * BENCH_PALETTE_CHANNELS + channel] & BENCH_PALETTE_CHANNEL_MAX) *
+				LEGACY_U8_MAX / BENCH_PALETTE_CHANNEL_MAX;
+		}
+		benchmark_palette[index] = BENCH_OPAQUE_ALPHA | (channels[0] << BENCH_RED_SHIFT) |
+								   (channels[1] << BENCH_GREEN_SHIFT) | channels[2];
+	}
+	mmgr_free(resource);
+}
+
+static void benchmark_render_frame(legacy_u32 *composed)
+{
+	full_redraw_frames_remaining = 1;
+	render_and_check(NULL);
+	if (composed != NULL) {
+		hires_copy_framebuffer_argb(dos_memory_make_pointer(BENCH_SCREEN_SEGMENT, 0),
+									benchmark_palette, composed,
+									hires_render_width() * sizeof(*composed));
+	}
+}
 
 static void benchmark_usage(const legacy_s8 *program)
 {
 	fprintf(stderr,
-			"Usage: %s [--data-dir DIR] REPLAY [FRAMES]\n"
+			"Usage: %s [--data-dir DIR] [--compose] REPLAY [FRAMES]\n"
 			"  REPLAY is a replay name without .rpl; FRAMES is a positive integer\n"
 			"  (default %u). Measures full-track geometry at 320x200, 640x400\n"
-			"  and 1280x800 in cockpit and external views at ticks 0, 80, 160.\n",
+			"  and 1280x800 in cockpit and external views at ticks 0, 80, 160.\n"
+			"  --compose also measures final ARGB framebuffer composition.\n",
 			program, BENCH_DEFAULT_FRAMES);
 }
 
@@ -70,17 +123,23 @@ static legacy_f64 benchmark_cpu_milliseconds(const struct rusage *start, const s
 static legacy_s32 benchmark_frames(legacy_u16 tick, legacy_u32 count)
 {
 	legacy_f64 *times = malloc((size_t)count * sizeof(*times));
-	if (times == NULL) {
+	legacy_u32 *composed =
+		benchmark_compose
+			? malloc((size_t)hires_render_width() * hires_render_height() * sizeof(*composed))
+			: NULL;
+	if (times == NULL || (benchmark_compose && composed == NULL)) {
+		free(composed);
+		free(times);
 		fputs("Cannot allocate benchmark frame samples\n", stderr);
 		return 0;
 	}
 	for (legacy_u32 frame = 0; frame < BENCH_WARMUP_FRAMES; frame++) {
-		full_redraw_frames_remaining = 1;
-		render_and_check(NULL);
+		benchmark_render_frame(composed);
 	}
 	struct rusage cpu_start, cpu_end;
 	if (getrusage(RUSAGE_SELF, &cpu_start) != 0) {
 		perror("Cannot read process CPU time");
+		free(composed);
 		free(times);
 		return 0;
 	}
@@ -88,8 +147,7 @@ static legacy_s32 benchmark_frames(legacy_u16 tick, legacy_u32 count)
 	legacy_u64 started = SDL_GetPerformanceCounter();
 	for (legacy_u32 frame = 0; frame < count; frame++) {
 		legacy_u64 before = SDL_GetPerformanceCounter();
-		full_redraw_frames_remaining = 1;
-		render_and_check(NULL);
+		benchmark_render_frame(composed);
 		times[frame] =
 			(SDL_GetPerformanceCounter() - before) * BENCH_MILLISECONDS_PER_SECOND / frequency;
 	}
@@ -97,6 +155,7 @@ static legacy_s32 benchmark_frames(legacy_u16 tick, legacy_u32 count)
 		(SDL_GetPerformanceCounter() - started) * BENCH_MILLISECONDS_PER_SECOND / frequency;
 	if (getrusage(RUSAGE_SELF, &cpu_end) != 0) {
 		perror("Cannot read process CPU time");
+		free(composed);
 		free(times);
 		return 0;
 	}
@@ -109,12 +168,14 @@ static legacy_s32 benchmark_frames(legacy_u16 tick, legacy_u32 count)
 		   tick, cameramode, hires_render_width(), hires_render_height(), render_workers_count(),
 		   count, cpu, total / count, times[count / 2U], times[percentile]);
 	fflush(stdout);
+	free(composed);
 	free(times);
 	return 1;
 }
 
 legacy_s16 stuntsmain(legacy_s16 argc, legacy_s8 *argv[])
 {
+	benchmark_parse_options(&argc, argv);
 	legacy_u32 count = BENCH_DEFAULT_FRAMES;
 	if (argc == BENCH_ARGUMENTS_REQUIRED &&
 		SDL_strcmp((const legacy_char *)argv[BENCH_REPLAY_ARGUMENT], "--help") == 0) {
@@ -140,6 +201,12 @@ legacy_s16 stuntsmain(legacy_s16 argc, legacy_s8 *argv[])
 	reset_race_loop_state();
 	init_kevinrandom("kevin");
 	initialize_replay(argv[BENCH_REPLAY_ARGUMENT]);
+	if (benchmark_compose) {
+		benchmark_load_palette();
+	}
+	/* Keep transient HUD coverage identical across fast and slow runs. */
+	visual_clock_ticks = dos_timer_get_realtime_counter();
+	visual_clock_frozen = 1;
 	assert(handle_ingame_kb_shortcuts(KEY_F12) != 0);
 	frame_adaptive_set_preset(&frame_adaptive, FRAME_ADAPTIVE_PRESET_FULL);
 	custom_camera.elevation_angle = BENCH_CAMERA_ELEVATION;
@@ -151,8 +218,9 @@ legacy_s16 stuntsmain(legacy_s16 argc, legacy_s8 *argv[])
 						   ? gameconfig.game_recordedframes
 						   : BENCH_LAST_TICK;
 	puts("HyperVision full-track renderer benchmark: process CPU and elapsed milliseconds/frame.");
-	puts("Includes render/state checks and framebuffer copies; excludes display, pacing and "
-		 "physics.");
+	puts("Includes render/state checks, shadows, skybox and framebuffer copies; "
+		 "excludes display, pacing and physics.");
+	printf("Final ARGB composition: %s.\n", benchmark_compose ? "included" : "excluded");
 	for (legacy_u16 tick = 0; tick <= limit; tick++) {
 		if (tick % BENCH_TICK_INTERVAL == 0 || tick == limit) {
 			for (legacy_u32 camera = 0; camera < SDL_arraysize(cameras); camera++) {

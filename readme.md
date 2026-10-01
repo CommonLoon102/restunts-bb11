@@ -143,7 +143,7 @@ Shift+F12 after Low returns to Full. From Off or Auto, Shift+F12 starts at
 Full. Locked presets remain selected across race/replay resets and do not
 automatically reduce or restore quality. The small-mask stage is available only
 in Auto. Each F12 or Shift+F12 press displays `HyperVision: <name>` for two seconds
-below the FPS line, even when F11 is disabled.
+below the FPS and optional render-time lines, even when F11 is disabled.
 
 To start with a locked preset, pass exactly one of `hv:full`, `hv:high`,
 `hv:medium`, or `hv:low` to the executable. For example:
@@ -306,20 +306,29 @@ for the current benchmark scope. The earlier
 [SuperSight CPU measurements](docs/supersight-performance.md) document the previous
 renderer and do not establish HyperVision performance.
 
-Press **F11** to toggle a frame-rate counter in the top-left corner. It measures
-presented frames over approximately one second and rounds down, for example
-`20 FPS`. The target color threshold is 20 FPS in classic mode and 60 FPS in
-SDL3 HyperVision. The display shows FPS only; it does not show an omitted-object
-count. The temporary HyperVision preset message appears below it after F12 or
-Shift+F12, independently of F11. Automatic adaptation works whether F11 is on or off.
+In SDL3 builds, **F11** cycles **Off → FPS → FPS + render time → Off**. The
+counter measures presented frames over approximately one second and rounds down,
+for example `20 FPS`. The second press adds a line such as `8.4ms`: the average
+render duration of the latest 100 completed frames, or the available frames while
+warming up, rounded to one decimal place. Rendering and framebuffer composition
+are measured before presentation waits; physics, frame pacing, and VSync waits
+are excluded. Changing renderer clears the duration history. The original 16-bit
+DOS build retains its two-state FPS toggle.
+
+The target color threshold is 20 FPS in classic mode and 60 FPS in SDL3
+HyperVision. The temporary HyperVision preset message appears below the timing
+line after F12 or Shift+F12, independently of F11. Automatic adaptation works
+whether F11 is on or off.
 F11 and F12 also work in both car-selection screens and during the nighttime
 driving intro without skipping the animation, including in 16-bit DOS. F12 also
 works in the track preview and opponent-selection menu, with the same two-second
 status display. SDL3 builds additionally support Shift+F12 in these locations.
 
-Both features start off and retain their selected state until toggled again or
-the game exits. They work in all driving and replay cameras, including opponent
-and ghost views and paused replays. Holding either key toggles only once.
+HyperVision and the FPS display start off by default. Their selections persist
+until changed or the game exits.
+The renderer and display shortcuts work in all driving and replay cameras,
+including opponent and ghost views and paused replays. Holding a shortcut key
+changes its selection only once.
 
 ### Race against a ghost
 
@@ -806,7 +815,7 @@ Saved games, replays, and dump outputs go into the selected game-data folder.
 Use `repldump` or `pixldump` from the same `bin/` folder with their normal
 arguments. The runtime is a Terminal-launched program; there is no Finder
 `.app` bundle. On keyboards that assign system actions to function keys, use
-Fn/Globe with F11/F12 for the game's FPS and HyperVision controls.
+Fn/Globe with F11/F12 for the game's timing and HyperVision controls.
 
 #### BSD hosts: FreeBSD, OpenBSD, and NetBSD
 

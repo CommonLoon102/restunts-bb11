@@ -17,10 +17,10 @@ game's palette. The original game resources remain unchanged.
 | `opp5.png` | Helen Wheels | `SDOSEL.PVS:opp5` |
 | `opp6.png` | Skid Vicious | `SDOSEL.PVS:opp6` |
 
-SDL3 builds display the enhanced photos only while SuperSight is enabled with
-**F12**. F12 also switches the artwork while the opponent menu is open. If an
+SDL3 builds display the enhanced photos while HyperVision is enabled.
+**F12** also switches the artwork while the opponent menu is open. If an
 individual replacement cannot be loaded, that opponent keeps the original
-portrait. Turning SuperSight off restores the original artwork for all six.
+portrait. Turning HyperVision off restores the original artwork for all six.
 Clock and Ghost retain their original illustration.
 
 The original portraits occupy 80 x 83 VGA pixels. The final tile's photo interior
@@ -128,7 +128,7 @@ The loader first searches for `game/oppN.png`, then accepts a root-level
 `opponents/` in the game data directory, beside the executable, then this
 checkout's `assets/opponents/` directory. Missing, invalid or incorrectly sized
 prepared files fall through to the next usable replacement; if none exists,
-the original game portrait remains visible. F12 gates all replacements.
+the original game portrait remains visible. HyperVision gates all replacements.
 
 The prepared `game` tier accepts the final 160 x 166 tile format and the earlier
 296 x 316 photo-interior format. For a final tile, the `(4,4,148,158)` interior is
