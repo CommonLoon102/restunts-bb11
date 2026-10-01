@@ -74,7 +74,8 @@ jobs:
       build-dos-artifact: true
       cameras: ${{ inputs.cameras }}
       targets: ${{ inputs.targets }}
-      renderer-test-percentage: ${{ inputs.renderer-test-percentage }}
+      # Convert the dispatch payload string to the reusable workflow's numeric input.
+      renderer-test-percentage: ${{ fromJSON(github.event.inputs.renderer-test-percentage) }}
 
   packages:
     name: All release packages
