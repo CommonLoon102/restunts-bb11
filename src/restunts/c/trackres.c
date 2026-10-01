@@ -11,11 +11,14 @@ static struct TRACK_WALL decoded_walls[TRACK_WALL_RESOURCE_COUNT];
 
 void load_track_collision_resources(void)
 {
-	gameresptr = file_load_resfile("game");
+	static const legacy_s8 game_resource_name[] = "game";
+	static const legacy_s8 plane_resource_name[] = "plan";
+	static const legacy_s8 wall_resource_name[] = "wall";
+	gameresptr = file_load_resfile(game_resource_name);
 	const legacy_u8 far *plane_resource =
-		(const legacy_u8 far *)locate_shape_alt(gameresptr, "plan");
+		(const legacy_u8 far *)locate_shape_alt(gameresptr, plane_resource_name);
 	const legacy_u8 far *wall_resource =
-		(const legacy_u8 far *)locate_shape_alt(gameresptr, "wall");
+		(const legacy_u8 far *)locate_shape_alt(gameresptr, wall_resource_name);
 	track_collision_resources_decode(plane_resource, wall_resource);
 }
 
