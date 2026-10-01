@@ -145,19 +145,18 @@ automatically reduce or restore quality. The small-mask stage is available only
 in Auto. Each F12 or Shift+F12 press displays `HyperVision: <name>` for two seconds
 below the FPS and render-time lines, even when F11 is disabled.
 
-To start with a locked preset, pass exactly one of `hv:full`, `hv:high`,
-`hv:medium`, or `hv:low` to the executable. For example:
+To start with a locked preset, pass exactly one of `--hv:full`, `--hv:high`,
+`--hv:medium`, or `--hv:low` to the executable. For example:
 
 ```sh
-./restunts hv:medium
+./restunts --hv:medium
 ```
 
-The preset is active from the intro onward. These options are case-insensitive;
-the older `ss:full`, `ss:high`, `ss:medium`, and `ss:low` spellings remain compatible
-aliases. Multiple preset options, including mixed aliases or duplicates, and
-unknown presets report an error and exit. Without a preset option, HyperVision
-starts off as usual. F12 and Shift+F12 can change the selection later. The options
-apply to SDL3 builds, including 32-bit DOS.
+The preset is active from the intro onward. These options are case-insensitive.
+Multiple preset options, including duplicates, and unknown presets report an
+error and exit. Without a preset option, HyperVision starts off as usual. F12 and
+Shift+F12 can change the selection later. The options apply to SDL3 builds,
+including 32-bit DOS.
 
 An entire multi-tile object stays visible if any of its tiles is inside the
 mask. Any `H` overlap keeps full geometry; otherwise an `L` overlap uses low
@@ -364,23 +363,24 @@ replay, and does not qualify for the normal high-score table.
 
 ### Optional parameters
 
-Run `restunts.exe /nointro` to skip the startup intro and open the main menu
+Run `restunts.exe --nointro` to skip the startup intro and open the main menu
 immediately after initialization. The intro remains available when leaving the
-main menu. This switch can be combined with the existing startup options.
-
-Run `restunts.exe /pg:off` to correct the original power gear bug, including
-anti-power gear and the loss of aerodynamic deceleration while accelerating.
-Original physics remain the default for replay compatibility. `/pg:on` explicitly
-selects the original behavior. These switches are case-insensitive; if both are
-supplied, the last one wins. They can be combined with `/nointro` and other
+main menu. This switch is case-sensitive and can be combined with the other
 startup options.
 
-Run `restunts.exe /lc:off` to disable Legacy Collision and restore the earlier
+Run `restunts.exe --pg:off` to correct the original power gear bug, including
+anti-power gear and the loss of aerodynamic deceleration while accelerating.
+Original physics remain the default for replay compatibility. `--pg:on` explicitly
+selects the original behavior. These switches are case-insensitive; if both are
+supplied, the last one wins. They can be combined with `--nointro` and other
+startup options.
+
+Run `restunts.exe --lc:off` to disable Legacy Collision and restore the earlier
 32-bit signed interpolation for wheel collisions with walls and track planes.
-Legacy collision behavior remains the default for replay compatibility; `/lc:on`
+Legacy collision behavior remains the default for replay compatibility; `--lc:on`
 explicitly selects it. These switches are case-insensitive, and the last one
-wins. They can be combined with `/pg:off`, `/nointro`, and other startup options.
-With `/lc:off`, collisions also check the wheel's movement through the underside
+wins. They can be combined with `--pg:off`, `--nointro`, and other startup options.
+With `--lc:off`, collisions also check the wheel's movement through the underside
 clearance of elevated track surfaces, preventing fast cars from skipping the
 collision zone behind a loop. The impact is checked against the actual surface
 footprint, preserving clear passages underneath and beside it. Surfaces at both
@@ -390,33 +390,32 @@ also checked against finite walls, catching impacts with the start of a ramp
 side wall that individual wheel paths can miss. Slalom stones use their full
 finite bounds for these checks, including wheel movement that crosses an entire
 stone between frames. The car stops at the first contact.
-With `/lc:off`, body collisions also distinguish separate surfaces that reuse
+With `--lc:off`, body collisions also distinguish separate surfaces that reuse
 one collision-plane template. Moving from a hill into the clear space beneath
 an open ramp, or between elevated surfaces at different heights, no longer
 causes a false crash merely because the selected surface changes. Actual
 crossings of either surface and collisions at continuous surface joins remain.
-With `/lc:off`, collision-induced sideways heading offsets and opponent spin
+With `--lc:off`, collision-induced sideways heading offsets and opponent spin
 also decay fully to zero in either direction, preventing a permanent steering
 bias after contact. Legacy mode retains the original negative-rounding behavior.
 Renderer clipping retains its original arithmetic.
 
-Run `restunts.exe lcb:off` to disable the original left corner bias: left turns
+Run `restunts.exe --lcb:off` to disable the original left corner bias: left turns
 gain a stronger steering response from signed rounding in wheel-heading and skid
 calculations. With the bias disabled, those angle calculations round symmetrically
-for both directions. Original behavior remains the default; `lcb:on` explicitly
-selects it. These switches are case-insensitive, accept an optional leading `/`,
-and the last one wins. They can be combined with `/pg:off`, `/lc:off`, `/nointro`,
-and other startup options. Collision recovery rounding remains controlled
-separately by `/lc:off`.
+for both directions. Original behavior remains the default; `--lcb:on` explicitly
+selects it. These switches are case-insensitive, and the last one wins. They
+can be combined with `--pg:off`, `--lc:off`, `--nointro`, and other startup
+options. Collision recovery rounding remains controlled separately by `--lc:off`.
 
 The ported physics dump tool accepts the same switches after the replay name:
-`repldump.exe 0681 /pg:off /lc:off lcb:off`. Replays do not store these options, so use
-the same physics settings for recording and playback. Original assembly
-executables and the renderer dump tools retain their existing interfaces.
+`repldump.exe 0681 --pg:off --lc:off --lcb:off`. Replays do not store these
+options, so use the same physics settings for recording and playback. Original
+assembly executables and the renderer dump tools retain their existing interfaces.
 
 ### OWOOT driving rules
 
-Run `restunts.exe /owoot` to require at least part of one player wheel to remain
+Run `restunts.exe --owoot` to require at least part of one player wheel to remain
 on or above the road. The check uses the car model's tire geometry, including
 steering, suspension, pitch, and roll, and is independent of camera position,
 zoom, and detail level. Red-white rumble strips on large corners count as grass.
@@ -435,18 +434,18 @@ over the receiving road for additional tiles.
 A violation triggers the normal crash immediately. Only the player is checked,
 including during replay playback. Rewinding restores the OWOOT progress along
 with the car state. The switch is case-insensitive and can be combined with
-`/pg:off`, `/lc:off`, and `/nointro`; it is disabled by default.
+`--pg:off`, `--lc:off`, and `--nointro`; it is disabled by default.
 
-The physics dump tool also accepts `repldump.exe <replay> /owoot`. Replays do not
+The physics dump tool also accepts `repldump.exe <replay> --owoot`. Replays do not
 store the switch, so launch with the same settings for recording and playback.
 See [OWOOT validation notes](docs/owoot-validation.md) for replay audit findings.
 
-With `/owoot`, `repldump.exe R0019.RPL /owoot` also writes `R0019.owo`, containing
+With `--owoot`, `repldump.exe R0019.RPL --owoot` also writes `R0019.owo`, containing
 exactly `pass` or `fail`. Passing requires finishing the race without an OWOOT
 violation; ordinary crashes and unfinished replays fail too. The result starts
 as `fail` and changes to `pass` only after successful processing. File-writing
 or replay-loading errors return a nonzero exit code; check that code as well
-when validating a batch. Without `/owoot`, no `.owo` file is created or updated.
+when validating a batch. Without `--owoot`, no `.owo` file is created or updated.
 
 ### Needle colours
 
@@ -548,7 +547,7 @@ The build directory contains `restunts`, `repldump`, `pixldump`, and
 ```sh
 SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy \
     ctest --test-dir out/sdl3-linux-x64 --output-on-failure
-out/sdl3-linux-x64/restunts --data-dir stunts /nointro
+out/sdl3-linux-x64/restunts --data-dir stunts --nointro
 ```
 
 Use `out/sdl3-linux-x86` instead for the x86 build.
@@ -759,7 +758,7 @@ After placing the original game data in `stunts/`, run the native tests and game
 ```sh
 bash tools/scripts/build-macos.sh --arch arm64 --test
 bash tools/scripts/run-macos.sh --runtime-dir out/package-macos-arm64 \
-    --data-dir stunts -- /nointro
+    --data-dir stunts -- --nointro
 ```
 
 Replace `arm64` with `x86_64` on Intel. `--test` uses SDL's dummy video/audio
@@ -801,15 +800,15 @@ Then launch from Terminal:
 
 ```sh
 bash "$HOME/Games/restunts/run-restunts.sh" \
-    --data-dir "$HOME/Games/Stunts-data" -- /nointro
+    --data-dir "$HOME/Games/Stunts-data" -- --nointro
 ```
 
-Omit `-- /nointro` to watch the intro, or pass other game arguments after `--`,
-for example `-- hv:medium`. The launcher finds its own package regardless of
+Omit `-- --nointro` to watch the intro, or pass other game arguments after `--`,
+for example `-- --hv:medium`. The launcher finds its own package regardless of
 the terminal's working directory. The equivalent direct command is:
 
 ```sh
-"$HOME/Games/restunts/bin/restunts" --data-dir "$HOME/Games/Stunts-data" /nointro
+"$HOME/Games/restunts/bin/restunts" --data-dir "$HOME/Games/Stunts-data" --nointro
 ```
 
 Saved games, replays, and dump outputs go into the selected game-data folder.

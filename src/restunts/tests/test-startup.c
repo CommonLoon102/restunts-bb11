@@ -28,7 +28,7 @@ static jmp_buf exit_jump;
 legacy_u8 supersight_enabled;
 static legacy_s32 startup_render_enabled;
 static legacy_s32 startup_render_scale = HIRES_SCALE;
-static legacy_u16 expected_supersight_preset;
+static legacy_u16 expected_hypervision_preset;
 
 void hires_set_enabled(legacy_s32 enabled)
 {
@@ -42,11 +42,11 @@ void hires_set_render_scale(legacy_s32 scale)
 	startup_render_scale = scale;
 }
 
-static void check_startup_supersight(void)
+static void check_startup_hypervision(void)
 {
-	if (expected_supersight_preset != FRAME_ADAPTIVE_PRESET_AUTO) {
+	if (expected_hypervision_preset != FRAME_ADAPTIVE_PRESET_AUTO) {
 		assert(supersight_enabled != 0 && startup_render_enabled != 0);
-		assert(frame_adaptive.preset == expected_supersight_preset);
+		assert(frame_adaptive.preset == expected_hypervision_preset);
 		assert(startup_render_scale == frame_adaptive_render_scale(&frame_adaptive));
 	}
 }
@@ -146,7 +146,7 @@ void dos_video_set_mode_13h(void)
 {
 	startup_video_calls++;
 #ifdef RESTUNTS_SDL3
-	check_startup_supersight();
+	check_startup_hypervision();
 #endif
 	trace(8);
 }
@@ -355,7 +355,7 @@ void far *file_read_fatal(const legacy_s8 *name, void far *destination)
 legacy_s16 run_intro_looped(void)
 {
 #ifdef RESTUNTS_SDL3
-	check_startup_supersight();
+	check_startup_hypervision();
 #endif
 	trace(44);
 	assert(intro_calls < 3);
@@ -417,7 +417,7 @@ legacy_s8 run_menu(void)
 		file_load_audiores("skidslct", "skidms", "SLCT");
 	}
 #ifdef RESTUNTS_SDL3
-	check_startup_supersight();
+	check_startup_hypervision();
 #endif
 	legacy_u32 call = menu_calls++;
 	trace(52);
@@ -563,16 +563,19 @@ static void test_menu_lifecycle(void)
 static void test_startup_intro_option(void)
 {
 	static legacy_s8 *arguments[][5] = {
-		{(legacy_s8 *)"game", (legacy_s8 *)"/nointro"},
-		{(legacy_s8 *)"game", (legacy_s8 *)"/ns", (legacy_s8 *)"/nointro", (legacy_s8 *)"/sSB"},
-		{(legacy_s8 *)"game", (legacy_s8 *)"/nointro", (legacy_s8 *)"/ns", (legacy_s8 *)"/nd"},
-		{(legacy_s8 *)"game", (legacy_s8 *)"/nointro", (legacy_s8 *)"/nointro"},
+		{(legacy_s8 *)"game", (legacy_s8 *)"--nointro"},
+		{(legacy_s8 *)"game", (legacy_s8 *)"/ns", (legacy_s8 *)"--nointro", (legacy_s8 *)"/sSB"},
+		{(legacy_s8 *)"game", (legacy_s8 *)"--nointro", (legacy_s8 *)"/ns", (legacy_s8 *)"/nd"},
+		{(legacy_s8 *)"game", (legacy_s8 *)"--nointro", (legacy_s8 *)"--nointro"},
 		{(legacy_s8 *)"game", (legacy_s8 *)"/no"},
-		{(legacy_s8 *)"game", (legacy_s8 *)"/nointrox"},
+		{(legacy_s8 *)"game", (legacy_s8 *)"--nointrox"},
 		{(legacy_s8 *)"game", (legacy_s8 *)"nointro"},
+		{(legacy_s8 *)"game", (legacy_s8 *)"/nointro"},
+		{(legacy_s8 *)"game", (legacy_s8 *)"-nointro"},
+		{(legacy_s8 *)"game", (legacy_s8 *)"--NOINTRO"},
 		{(legacy_s8 *)"game"},
 	};
-	static const legacy_s16 counts[] = {2, 4, 4, 3, 2, 2, 2, 1};
+	static const legacy_s16 counts[] = {2, 4, 4, 3, 2, 2, 2, 2, 2, 2, 1};
 	for (legacy_u32 scenario = 0; scenario < sizeof(counts) / sizeof(counts[0]); scenario++) {
 		expected_initial_intro_calls = scenario < 4 ? 0 : 1;
 		menu_calls = intro_calls = game_calls = score_calls = 0;
@@ -594,9 +597,9 @@ static void test_startup_intro_option(void)
 static void test_startup_physics_options(void)
 {
 	legacy_s8 *arguments[] = {
-		(legacy_s8 *)"game",	(legacy_s8 *)"/nointro", (legacy_s8 *)"/PG:OFF",
-		(legacy_s8 *)"/LC:OFF", (legacy_s8 *)"/LCB:OFF", (legacy_s8 *)"/pg:on",
-		(legacy_s8 *)"/lc:on",	(legacy_s8 *)"lcb:on",	 (legacy_s8 *)"LCB:OFF"};
+		(legacy_s8 *)"game",	 (legacy_s8 *)"--nointro", (legacy_s8 *)"--PG:OFF",
+		(legacy_s8 *)"--LC:OFF", (legacy_s8 *)"--LCB:OFF", (legacy_s8 *)"--pg:on",
+		(legacy_s8 *)"--lc:on",	 (legacy_s8 *)"--lcb:on",  (legacy_s8 *)"--LCB:OFF"};
 	static const legacy_s16 counts[] = {2, 3, 4, 5, 6, 7, 8, 9, 2};
 	static const legacy_u16 expected_speeds[] = {17757, 15573, 15573, 15573, 17757,
 												 17757, 17757, 17757, 17757};
@@ -614,7 +617,7 @@ static void test_startup_physics_options(void)
 		audio_failure = 0;
 		init_main(counts[scenario], arguments);
 
-		/* An Indy-mass car must decelerate under net drag only with /pg:off. */
+		/* An Indy-mass car must decelerate under net drag only with --pg:off. */
 		struct SIMD simd = {0};
 		struct CARSTATE car = {0};
 		legacy_s16 drag[64] = {0};
@@ -652,12 +655,12 @@ static void test_startup_physics_options(void)
 }
 
 #ifdef RESTUNTS_SDL3
-static void reset_startup_supersight(void)
+static void reset_startup_hypervision(void)
 {
 	supersight_enabled = 0;
 	startup_render_enabled = 0;
 	startup_render_scale = HIRES_SCALE;
-	expected_supersight_preset = FRAME_ADAPTIVE_PRESET_AUTO;
+	expected_hypervision_preset = FRAME_ADAPTIVE_PRESET_AUTO;
 	frame_adaptive_reset(&frame_adaptive);
 	timer_calls = status_calls = 0;
 	audio_failure = 0;
@@ -665,7 +668,7 @@ static void reset_startup_supersight(void)
 
 static void expect_startup_option_error(legacy_s16 count, legacy_s8 *arguments[])
 {
-	reset_startup_supersight();
+	reset_startup_hypervision();
 	startup_exit_status = EXIT_SUCCESS;
 	if (setjmp(exit_jump) == 0) {
 		init_main(count, arguments);
@@ -682,30 +685,24 @@ static void expect_startup_option_error(legacy_s16 count, legacy_s8 *arguments[]
 #define STARTUP_TEST_CLEAR_TICKS 15U
 #define STARTUP_TEST_PARTIAL_TICKS 16U
 
-static void test_startup_supersight_options(void)
+static void test_startup_hypervision_options(void)
 {
 	static const struct {
 		const legacy_s8 *argument;
 		enum FRAME_ADAPTIVE_PRESET preset;
 		legacy_s32 scale;
-	} cases[] = {{"hv:full", FRAME_ADAPTIVE_PRESET_FULL, HIRES_SCALE},
-				 {"hv:high", FRAME_ADAPTIVE_PRESET_HIGH, HIRES_SCALE},
-				 {"hv:medium", FRAME_ADAPTIVE_PRESET_MEDIUM, HIRES_MEDIUM_SCALE},
-				 {"hv:low", FRAME_ADAPTIVE_PRESET_LOW, HIRES_MINIMUM_SCALE},
-				 {"HV:FuLl", FRAME_ADAPTIVE_PRESET_FULL, HIRES_SCALE},
-				 {"hV:LoW", FRAME_ADAPTIVE_PRESET_LOW, HIRES_MINIMUM_SCALE},
-				 {"ss:full", FRAME_ADAPTIVE_PRESET_FULL, HIRES_SCALE},
-				 {"ss:high", FRAME_ADAPTIVE_PRESET_HIGH, HIRES_SCALE},
-				 {"ss:medium", FRAME_ADAPTIVE_PRESET_MEDIUM, HIRES_MEDIUM_SCALE},
-				 {"ss:low", FRAME_ADAPTIVE_PRESET_LOW, HIRES_MINIMUM_SCALE},
-				 {"SS:FuLl", FRAME_ADAPTIVE_PRESET_FULL, HIRES_SCALE},
-				 {"sS:LoW", FRAME_ADAPTIVE_PRESET_LOW, HIRES_MINIMUM_SCALE}};
+	} cases[] = {{"--hv:full", FRAME_ADAPTIVE_PRESET_FULL, HIRES_SCALE},
+				 {"--hv:high", FRAME_ADAPTIVE_PRESET_HIGH, HIRES_SCALE},
+				 {"--hv:medium", FRAME_ADAPTIVE_PRESET_MEDIUM, HIRES_MEDIUM_SCALE},
+				 {"--hv:low", FRAME_ADAPTIVE_PRESET_LOW, HIRES_MINIMUM_SCALE},
+				 {"--HV:FuLl", FRAME_ADAPTIVE_PRESET_FULL, HIRES_SCALE},
+				 {"--hV:LoW", FRAME_ADAPTIVE_PRESET_LOW, HIRES_MINIMUM_SCALE}};
 	for (legacy_u16 index = 0; index < sizeof(cases) / sizeof(cases[0]); index++) {
 		legacy_s8 *arguments[] = {(legacy_s8 *)"game", (legacy_s8 *)"/sSB",
-								  (legacy_s8 *)cases[index].argument, (legacy_s8 *)"/pg:off",
-								  (legacy_s8 *)"/nointro"};
-		reset_startup_supersight();
-		expected_supersight_preset = cases[index].preset;
+								  (legacy_s8 *)cases[index].argument, (legacy_s8 *)"--pg:off",
+								  (legacy_s8 *)"--nointro"};
+		reset_startup_hypervision();
+		expected_hypervision_preset = cases[index].preset;
 		expected_initial_intro_calls = index % 2U;
 		menu_calls = intro_calls = game_calls = score_calls = 0;
 		is_audioloaded = 0;
@@ -730,26 +727,35 @@ static void test_startup_supersight_options(void)
 	for (legacy_u16 first = 0; first < sizeof(cases) / sizeof(cases[0]); first++) {
 		for (legacy_u16 second = 0; second < sizeof(cases) / sizeof(cases[0]); second++) {
 			legacy_s8 *arguments[] = {(legacy_s8 *)"game", (legacy_s8 *)cases[first].argument,
-									  (legacy_s8 *)"/nointro", (legacy_s8 *)cases[second].argument};
+									  (legacy_s8 *)"--nointro",
+									  (legacy_s8 *)cases[second].argument};
 			expect_startup_option_error(sizeof(arguments) / sizeof(arguments[0]), arguments);
 		}
 	}
-	static const legacy_s8 *invalid[] = {
-		"hv:", "hv:auto", "hv:off", "hv:veryhigh", "hv:fullx", "hv:low:high", "HV:unknown",
-		"ss:", "ss:auto", "ss:off", "ss:veryhigh", "ss:fullx", "ss:low:high", "SS:unknown"};
+	static const legacy_s8 *invalid[] = {"--hv:",		  "--hv:auto",	"--hv:off",
+										 "--hv:veryhigh", "--hv:fullx", "--hv:low:high",
+										 "--HV:unknown"};
 	for (legacy_u16 index = 0; index < sizeof(invalid) / sizeof(invalid[0]); index++) {
 		legacy_s8 *arguments[] = {(legacy_s8 *)"game", (legacy_s8 *)invalid[index]};
 		expect_startup_option_error(sizeof(arguments) / sizeof(arguments[0]), arguments);
 	}
 
-	/* Unrelated or incomplete prefixes preserve the normal startup default. */
-	legacy_s8 *arguments[] = {(legacy_s8 *)"game", (legacy_s8 *)"",		  (legacy_s8 *)"s",
-							  (legacy_s8 *)"ss",   (legacy_s8 *)"ssfull", (legacy_s8 *)"h",
-							  (legacy_s8 *)"hv",   (legacy_s8 *)"hvfull"};
-	reset_startup_supersight();
-	init_main(sizeof(arguments) / sizeof(arguments[0]), arguments);
-	assert(startup_render_enabled == 0 && supersight_enabled == 0);
-	assert(startup_options.supersight_preset == FRAME_ADAPTIVE_PRESET_AUTO);
+	/* Unrecognized options, including the removed ss: and hv: forms, leave rendering off. */
+	static const legacy_s8 *ignored[] = {
+		"",			 "s",			"ss",		 "ssfull",		"h",
+		"hv",		 "hvfull",		"ss:",		 "ss:full",		"ss:high",
+		"ss:medium", "ss:low",		"SS:FuLl",	 "sS:LoW",		"ss:auto",
+		"ss:off",	 "ss:veryhigh", "ss:fullx",	 "ss:low:high", "SS:unknown",
+		"hv:full",	 "hv:high",		"hv:medium", "hv:low",		"HV:FuLl",
+		"hV:LoW",	 "hv:",			"hv:off",	 "hv:invalid",	"--hv",
+		"--hvfull"};
+	for (legacy_u16 index = 0; index < sizeof(ignored) / sizeof(ignored[0]); index++) {
+		legacy_s8 *arguments[] = {(legacy_s8 *)"game", (legacy_s8 *)ignored[index]};
+		reset_startup_hypervision();
+		init_main(sizeof(arguments) / sizeof(arguments[0]), arguments);
+		assert(startup_render_enabled == 0 && supersight_enabled == 0);
+		assert(startup_options.hypervision_preset == FRAME_ADAPTIVE_PRESET_AUTO);
+	}
 }
 #endif
 
@@ -818,7 +824,7 @@ int main(void)
 	test_startup_intro_option();
 	test_startup_physics_options();
 #ifdef RESTUNTS_SDL3
-	test_startup_supersight_options();
+	test_startup_hypervision_options();
 #endif
 	return 0;
 }

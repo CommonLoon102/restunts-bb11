@@ -192,7 +192,7 @@ static void test_swept_geometry(legacy_u32 rotation, legacy_s16 elevation, legac
 	};
 
 	initialize_loop(rotation, elevation, rear);
-	configure_option("/lc:off");
+	configure_option("--lc:off");
 	for (legacy_u32 index = 0; index < sizeof(cases) / sizeof(cases[0]); index++) {
 		struct VECTOR previous =
 			world_point(-200, cases[index].previous_height, 100, rotation, elevation, rear);
@@ -223,15 +223,15 @@ static void test_opt_in_and_surface_eligibility(void)
 	struct VECTOR current = world_point(-200, 60, 100, 0, 0, 0);
 	/* Static startup state and both explicit/default legacy modes stay unchanged. */
 	assert_sweep(previous, current, 0, 0);
-	configure_option("/lc:on");
+	configure_option("--lc:on");
 	assert_sweep(previous, current, 0, 0);
-	configure_option("/lc:off");
+	configure_option("--lc:off");
 	assert_sweep(previous, current, 1, 21 * TRIG_FIXED_ONE / 44);
 	configure_option(NULL);
 	assert_sweep(previous, current, 0, 0);
 
 	/* A genuinely clear path beside the loop must remain traversable. */
-	configure_option("/lc:off");
+	configure_option("--lc:off");
 	previous = world_point(-450, 9, 100, 0, 0, 0);
 	current = world_point(-450, 60, 100, 0, 0, 0);
 	build_track_object(&current, &previous);
@@ -279,9 +279,9 @@ static void test_surface_transitions(legacy_u32 rotation, legacy_s16 elevation, 
 			   (cases[index].current_facet < 0 ? 0 : base + cases[index].current_facet * 4));
 		configure_option(NULL);
 		assert_sweep(previous, current, 0, 0);
-		configure_option("/lc:on");
+		configure_option("--lc:on");
 		assert_sweep(previous, current, 0, 0);
-		configure_option("/lc:off");
+		configure_option("--lc:off");
 		assert_sweep(previous, current, cases[index].hit, cases[index].fraction);
 	}
 }

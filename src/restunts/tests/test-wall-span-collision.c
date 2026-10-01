@@ -189,7 +189,7 @@ static struct VECTOR retained_position(struct VECTORLONG *previous, struct VECTO
 static void test_fractional_motion(legacy_u32 rotation, legacy_s16 elevation, legacy_s32 side)
 {
 	initialize_ramp(rotation, elevation);
-	configure_option("/lc:off");
+	configure_option("--lc:off");
 	struct VECTOR points[] = {{100, 220, -32}, {140, 220, -32}, {100, 248, 32}, {140, 248, 32}};
 	struct VECTOR offsets[] = {{55, 11, 63}, {55, 11, 63}, {7, 57, 3}, {7, 57, 3}};
 	struct VECTORLONG fixed_points[4];
@@ -263,9 +263,9 @@ static void test_mode_gate(void)
 	}
 	/* Startup, explicit legacy mode, and resetting to defaults retain old physics. */
 	assert_span(points, 0, 0, 0);
-	configure_option("/lc:on");
+	configure_option("--lc:on");
 	assert_span(points, 0, 0, 0);
-	configure_option("/lc:off");
+	configure_option("--lc:off");
 	assert_span(points, 1, TRIG_FIXED_ONE / 2, TRIG_FIXED_ONE / 64);
 	configure_option(NULL);
 	assert_span(points, 0, 0, 0);
@@ -320,7 +320,7 @@ static void test_wall_geometry(legacy_u32 rotation, legacy_s16 elevation, legacy
 		{{{100, 248, 32}, {140, 248, 32}, {100, 220, -32}, {140, 220, -32}}, 0, 0, 0},
 	};
 	initialize_ramp(rotation, elevation);
-	configure_option("/lc:off");
+	configure_option("--lc:off");
 	for (legacy_u32 index = 0; index < sizeof(cases) / sizeof(cases[0]); index++) {
 		struct VECTOR points[4];
 		for (legacy_u32 point = 0; point < 4; point++) {

@@ -72,17 +72,13 @@ static legacy_s16 left_corner_bias_enabled = LEFT_CORNER_BIAS_ON;
 
 void configure_left_corner_bias(legacy_s16 argc, legacy_s8 *argv[])
 {
-	static const legacy_s8 off_option[] = "lcb:off";
-	static const legacy_s8 on_option[] = "lcb:on";
+	static const legacy_s8 off_option[] = "--lcb:off";
+	static const legacy_s8 on_option[] = "--lcb:on";
 	left_corner_bias_enabled = LEFT_CORNER_BIAS_ON;
 	for (legacy_s16 index = 1; index < argc; index++) {
-		const legacy_s8 *option = argv[index];
-		if (*option == '/') {
-			option++;
-		}
-		if (stricmp(option, off_option) == 0) {
+		if (stricmp(argv[index], off_option) == 0) {
 			left_corner_bias_enabled = LEFT_CORNER_BIAS_OFF;
-		} else if (stricmp(option, on_option) == 0) {
+		} else if (stricmp(argv[index], on_option) == 0) {
 			left_corner_bias_enabled = LEFT_CORNER_BIAS_ON;
 		}
 	}

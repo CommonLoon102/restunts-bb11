@@ -13,7 +13,7 @@ Usage: bash run-restunts.sh --data-dir DIR [--runtime-dir DIR] [-- game argument
 In a runtime package, the launcher finds bin/restunts beside itself. From a
 source checkout, the default is out/package-macos-<native architecture>.
 Relative paths are resolved from the current working directory. All arguments
-after -- are passed to the game, for example: -- /nointro ss:medium
+after -- are passed to the game, for example: -- --nointro --hv:medium
 USAGE
 }
 

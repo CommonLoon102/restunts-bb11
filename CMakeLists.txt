@@ -120,7 +120,7 @@ set(common_sources
     track_setup.c stateply.c physics_collision.c statecrs.c statecar.c trackobj.c
     owoot.c owoot_wheels.c owoot_road.c owoot_route.c replay.c stateio.c)
 set(game_sources
-    restunts.c fatal.c timing.c game_input.c ui_text.c ui_input.c ui_dialog.c
+    restunts.c command_line.c fatal.c timing.c game_input.c ui_text.c ui_input.c ui_dialog.c
     intro.c highscore.c replay_record.c replay_viewer.c race.c ghost.c
     race_resources.c dashboard.c menu_common.c menu_main.c menu_options.c
     menu_track.c menu_track_editor.c menu_opponent.c opponent_portrait.c menu_car.c audio_engine.c
@@ -275,6 +275,24 @@ if(RESTUNTS_BUILD_TESTS)
         set(restunts_test_gc_sections "LINKER:--gc-sections")
     endif()
     enable_testing()
+    if(NOT CMAKE_CROSSCOMPILING)
+        # Information switches must work without game files or a working data path.
+        set(command_line_test_directory "${CMAKE_CURRENT_BINARY_DIR}/command-line-test")
+        file(MAKE_DIRECTORY "${command_line_test_directory}")
+        add_test(NAME command-line-help COMMAND restunts
+            --data-dir "${command_line_test_directory}/missing" --help)
+        add_test(NAME command-line-help-short COMMAND restunts
+            --data-dir "${command_line_test_directory}/missing" -h)
+        add_test(NAME command-line-version COMMAND restunts
+            --data-dir "${command_line_test_directory}/missing" --version)
+        add_test(NAME command-line-version-short COMMAND restunts
+            --data-dir "${command_line_test_directory}/missing" -v)
+        set_tests_properties(command-line-help command-line-help-short
+            command-line-version command-line-version-short PROPERTIES
+            WORKING_DIRECTORY "${command_line_test_directory}"
+            ENVIRONMENT "SDL_VIDEODRIVER=restunts-invalid-driver;SDL_AUDIODRIVER=restunts-invalid-driver"
+            TIMEOUT 10)
+    endif()
     add_executable(test-sdl3-timer src/restunts/tests/test-sdl3-timer.c)
     target_link_libraries(test-sdl3-timer PRIVATE restunts_options)
     target_compile_options(test-sdl3-timer PRIVATE -UNDEBUG)

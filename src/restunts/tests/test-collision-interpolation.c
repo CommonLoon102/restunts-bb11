@@ -61,11 +61,11 @@ static void test_interpolation_geometry(void)
 		struct VECTOR original;
 		struct VECTOR result;
 		vector_interpolate_at_z(&first, &second, &original, cases[index].depth);
-		configure_collision_option("/lc:on");
+		configure_collision_option("--lc:on");
 		interpolate_collision_at_z(&first, &second, &result, cases[index].depth);
 		assert_vector(&result, &original);
 
-		configure_collision_option("/lc:off");
+		configure_collision_option("--lc:off");
 		interpolate_collision_at_z(&first, &second, &result, cases[index].depth);
 		assert_vector(&result, &cases[index].corrected);
 
@@ -80,22 +80,24 @@ static void test_interpolation_geometry(void)
 static void test_collision_options(void)
 {
 	static const struct {
-		const char *first;
-		const char *second;
+		const legacy_char *first;
+		const legacy_char *second;
 		legacy_s16 expected_x;
 	} cases[] = {
-		{NULL, NULL, 100},		  {"/lc:on", NULL, 100},	 {"/lc:off", NULL, 0},
-		{"/LC:OFF", NULL, 0},	  {"/Lc:OfF", NULL, 0},		 {"/lc", NULL, 100},
-		{"lc:off", NULL, 100},	  {"-lc:off", NULL, 100},	 {"/lc:offx", NULL, 100},
-		{"/lc:off ", NULL, 100},  {"/lc:", NULL, 100},		 {"/lc:off", "/lC:On", 100},
-		{"/LC:ON", "/lc:off", 0}, {"/lc:off", "/lc:onx", 0}, {"/lc:off", "/nointro", 0},
-		{"/ns", "/lc:off", 0},	  {"/lc:off", "/lc:off", 0}, {"/pg:off", NULL, 100},
-		{"/lc:off", "/pg:on", 0},
+		/* Removed spellings are ignored, including after a recognized option. */
+		{"/lc:off", NULL, 100},		  {"/LC:OFF", NULL, 100},	  {"--lc:off", "/lc:on", 0},
+		{"--lc:off", "/LC:ON", 0},	  {NULL, NULL, 100},		  {"--lc:on", NULL, 100},
+		{"--lc:off", NULL, 0},		  {"--LC:OFF", NULL, 0},	  {"--Lc:OfF", NULL, 0},
+		{"--lc", NULL, 100},		  {"lc:off", NULL, 100},	  {"-lc:off", NULL, 100},
+		{"--lc:offx", NULL, 100},	  {"--lc:off ", NULL, 100},	  {"--lc:", NULL, 100},
+		{"--lc:off", "--lC:On", 100}, {"--LC:ON", "--lc:off", 0}, {"--lc:off", "--lc:onx", 0},
+		{"--lc:off", "--nointro", 0}, {"/ns", "--lc:off", 0},	  {"--lc:off", "--lc:off", 0},
+		{"--pg:off", NULL, 100},	  {"--lc:off", "--pg:on", 0},
 	};
 
 	for (legacy_u32 index = 0; index < sizeof(cases) / sizeof(cases[0]); index++) {
 		/* A new invocation must reset the preceding invocation's opt-in. */
-		configure_collision_option("/lc:off");
+		configure_collision_option("--lc:off");
 		legacy_s8 *argv[] = {(legacy_s8 *)"restunts", (legacy_s8 *)cases[index].first,
 							 (legacy_s8 *)cases[index].second};
 		legacy_s16 argc = cases[index].second ? 3 : cases[index].first ? 2 : 1;
@@ -103,7 +105,7 @@ static void test_collision_options(void)
 		assert_crossing(cases[index].expected_x);
 	}
 
-	legacy_s8 *argv[] = {(legacy_s8 *)"/lc:off"};
+	legacy_s8 *argv[] = {(legacy_s8 *)"--lc:off"};
 	configure_legacy_collision(1, argv);
 	assert_crossing(100);
 }

@@ -53,7 +53,7 @@ void fatal_error(const legacy_s8 *format, ...)
 	abort();
 }
 
-static void set_mode(const char *option)
+static void set_mode(const legacy_char *option)
 {
 	legacy_s8 *arguments[] = {(legacy_s8 *)"restunts.exe", (legacy_s8 *)option};
 	configure_owoot(option ? 2 : 1, arguments);
@@ -70,17 +70,40 @@ static void reset_player(void)
 	road_wheel = -1;
 }
 
+static void test_owoot_options(void)
+{
+	static const struct {
+		const legacy_char *option;
+		legacy_s16 expected_enabled;
+	} cases[] = {{NULL, 0},		  {"--owoot", 1},	{"--OWOOT", 1},
+				 {"--OwOoT", 1},  {"/owoot", 0},	{"/OWOOT", 0},
+				 {"owoot", 0},	  {"-owoot", 0},	{"--owoot-extra", 0},
+				 {"--owoot ", 0}, {"--owoot:on", 0}};
+	for (legacy_u16 index = 0; index < sizeof(cases) / sizeof(cases[0]); index++) {
+		set_mode("--owoot");
+		set_mode(cases[index].option);
+		assert(owoot_enabled == cases[index].expected_enabled);
+	}
+	legacy_s8 *arguments[] = {(legacy_s8 *)"restunts", (legacy_s8 *)"--owoot",
+							  (legacy_s8 *)"--nointro", (legacy_s8 *)"--OWOOT"};
+	configure_owoot(sizeof(arguments) / sizeof(arguments[0]), arguments);
+	assert(owoot_enabled);
+	legacy_s8 *executable_only[] = {(legacy_s8 *)"--owoot"};
+	configure_owoot(sizeof(executable_only) / sizeof(executable_only[0]), executable_only);
+	assert(!owoot_enabled);
+}
+
 static void test_switch_and_enforcement(void)
 {
 	reset_player();
-	set_mode("/OWOOT");
+	set_mode("--OWOOT");
 	assert(owoot_enabled);
-	set_mode("/owoot-extra");
+	set_mode("--owoot-extra");
 	assert(!owoot_enabled);
 	set_mode(0);
 	owoot_update_player(&state.playerstate, PLAYER_CAR_INDEX);
 	assert(crashes == 0 && route_queries == 0);
-	set_mode("/owoot");
+	set_mode("--owoot");
 	owoot_update_player(&state.opponentstate, OPPONENT_CAR_INDEX);
 	assert(crashes == 0 && route_queries == 0);
 	state.game_inputmode = GAME_INPUT_MODE_INTRO;
@@ -149,7 +172,7 @@ static void bounds(const struct VECTOR *points, legacy_s16 *minimum, legacy_s16 
 static void test_model_wheel_projection(void)
 {
 	reset_player();
-	set_mode("/owoot");
+	set_mode("--owoot");
 	load_test_wheels();
 	struct VECTOR points[OWOOT_WHEEL_VERTEX_COUNT];
 	struct CARSTATE *car = &state.playerstate;
@@ -185,7 +208,7 @@ static void test_model_wheel_projection(void)
 static void test_steering_control_rounding(void)
 {
 	reset_player();
-	set_mode("/owoot");
+	set_mode("--owoot");
 	load_test_wheels();
 	for (legacy_u16 point = 0; point < 3; point++) {
 		wheel_controls[0][point].x = -45;
@@ -213,6 +236,7 @@ int main(void)
 {
 	test_model_wheel_projection();
 	test_steering_control_rounding();
+	test_owoot_options();
 	test_switch_and_enforcement();
 	puts("OWOOT mode and wheel tests passed");
 	return 0;

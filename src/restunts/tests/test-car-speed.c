@@ -248,12 +248,12 @@ static void test_powergear_stock_mass_classes(void)
 	static const legacy_u16 frame_rates[] = {GAME_FRAME_RATE_NORMAL, GAME_FRAME_RATE_LOW};
 
 	for (legacy_u32 index = 0; index < sizeof(cases) / sizeof(cases[0]); index++) {
-		configure_powergear_option("/pg:on");
+		configure_powergear_option("--pg:on");
 		prepare_powergear_car(cases[index].mass, 544, 0);
 		update_car_speed(INPUT_ACCELERATE_FLAG, PLAYER_CAR_INDEX, &car, &simd);
 		assert(car.car_actual_speed == cases[index].legacy_speed);
 
-		configure_powergear_option("/pg:off");
+		configure_powergear_option("--pg:off");
 		for (legacy_u32 rate = 0; rate < sizeof(frame_rates) / sizeof(frame_rates[0]); rate++) {
 			for (legacy_s16 car_index = PLAYER_CAR_INDEX; car_index <= OPPONENT_CAR_INDEX;
 				 car_index++) {
@@ -280,7 +280,7 @@ static void test_powergear_stock_mass_classes(void)
 
 		/* Positive force keeps its original acceleration in either mode. */
 		for (legacy_u32 mode = 0; mode < 2; mode++) {
-			configure_powergear_option(mode ? "/pg:off" : "/pg:on");
+			configure_powergear_option(mode ? "--pg:off" : "--pg:on");
 			prepare_powergear_car(cases[index].mass, 0, 0);
 			update_car_speed(INPUT_ACCELERATE_FLAG, PLAYER_CAR_INDEX, &car, &simd);
 			assert(car.car_actual_speed == 59000 + cases[index].positive_delta);
@@ -299,7 +299,7 @@ static void test_powergear_division_rounding(void)
 		{32, -1, 0},  {32, -3, -1}, {32, 3, 1}, {15, -1, -1},
 	};
 
-	configure_powergear_option("/pg:off");
+	configure_powergear_option("--pg:off");
 	for (legacy_u32 index = 0; index < sizeof(cases) / sizeof(cases[0]); index++) {
 		prepare_powergear_car(cases[index].mass, 32 - cases[index].force, 0);
 		update_car_speed(INPUT_ACCELERATE_FLAG, PLAYER_CAR_INDEX, &car, &simd);
@@ -308,7 +308,7 @@ static void test_powergear_division_rounding(void)
 
 	/* A power-of-two mass still differs by one unit for fractional negatives:
 	 * unsigned division floors the negative equivalent; signed division does not. */
-	configure_powergear_option("/pg:on");
+	configure_powergear_option("--pg:on");
 	prepare_powergear_car(32, 33, 0);
 	update_car_speed(INPUT_ACCELERATE_FLAG, PLAYER_CAR_INDEX, &car, &simd);
 	assert(car.car_actual_speed == 58999);
@@ -317,21 +317,37 @@ static void test_powergear_division_rounding(void)
 static void test_powergear_options(void)
 {
 	static const struct {
-		const char *first;
-		const char *second;
+		const legacy_char *first;
+		const legacy_char *second;
 		legacy_u16 expected_speed;
 	} cases[] = {
-		{NULL, NULL, 60757},		  {"/pg:on", NULL, 60757},		 {"/pg:off", NULL, 58573},
-		{"/PG:OFF", NULL, 58573},	  {"/Pg:OfF", NULL, 58573},		 {"/pg", NULL, 60757},
-		{"pg:off", NULL, 60757},	  {"-pg:off", NULL, 60757},		 {"/pg:offx", NULL, 60757},
-		{"/pg:off ", NULL, 60757},	  {"/pg:", NULL, 60757},		 {"/pg:off", "/pG:On", 60757},
-		{"/PG:ON", "/pg:off", 58573}, {"/pg:off", "/pg:onx", 58573}, {"/pg:off", "/nointro", 58573},
-		{"/ns", "/pg:off", 58573},	  {"/pg:off", "/pg:off", 58573},
+		/* Removed spellings are ignored, including after a recognized option. */
+		{"/pg:off", NULL, 60757},
+		{"/PG:OFF", NULL, 60757},
+		{"--pg:off", "/pg:on", 58573},
+		{"--pg:off", "/PG:ON", 58573},
+		{NULL, NULL, 60757},
+		{"--pg:on", NULL, 60757},
+		{"--pg:off", NULL, 58573},
+		{"--PG:OFF", NULL, 58573},
+		{"--Pg:OfF", NULL, 58573},
+		{"--pg", NULL, 60757},
+		{"pg:off", NULL, 60757},
+		{"-pg:off", NULL, 60757},
+		{"--pg:offx", NULL, 60757},
+		{"--pg:off ", NULL, 60757},
+		{"--pg:", NULL, 60757},
+		{"--pg:off", "--pG:On", 60757},
+		{"--PG:ON", "--pg:off", 58573},
+		{"--pg:off", "--pg:onx", 58573},
+		{"--pg:off", "--nointro", 58573},
+		{"/ns", "--pg:off", 58573},
+		{"--pg:off", "--pg:off", 58573},
 	};
 
 	for (legacy_u32 index = 0; index < sizeof(cases) / sizeof(cases[0]); index++) {
 		/* Each invocation must reset an earlier invocation's opt-in. */
-		configure_powergear_option("/pg:off");
+		configure_powergear_option("--pg:off");
 		legacy_s8 *argv[] = {(legacy_s8 *)"restunts", (legacy_s8 *)cases[index].first,
 							 (legacy_s8 *)cases[index].second};
 		legacy_s16 argc = cases[index].second ? 3 : cases[index].first ? 2 : 1;
@@ -341,7 +357,7 @@ static void test_powergear_options(void)
 		assert(car.car_actual_speed == cases[index].expected_speed);
 	}
 
-	legacy_s8 *argv[] = {(legacy_s8 *)"/pg:off"};
+	legacy_s8 *argv[] = {(legacy_s8 *)"--pg:off"};
 	configure_powergear_bug(1, argv);
 	prepare_powergear_car(15, 544, 0);
 	update_car_speed(INPUT_ACCELERATE_FLAG, PLAYER_CAR_INDEX, &car, &simd);
@@ -424,7 +440,7 @@ static legacy_u32 authoritative_speed_fingerprint(legacy_s16 include_phantoms)
 									   INPUT_ACCELERATE_FLAG | INPUT_SHIFT_UP_FLAG,
 									   INPUT_SHIFT_DOWN_FLAG};
 	legacy_u32 hash = 2166136261UL;
-	configure_powergear_option("/pg:on");
+	configure_powergear_option("--pg:on");
 #ifdef PHYSICS_RECORD_BASELINE
 	(void)include_phantoms;
 #endif

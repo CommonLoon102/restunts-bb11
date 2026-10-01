@@ -206,9 +206,9 @@ static void test_mode_gate(void)
 	struct VECTORLONG previous = fixed_point(world_point(first, 0, 0, 1));
 	struct VECTORLONG current = fixed_point(world_point(second, 0, 0, 1));
 	assert_sweep(previous, current, 0);
-	configure_option("/lc:on");
+	configure_option("--lc:on");
 	assert_sweep(previous, current, 0);
-	configure_option("/lc:off");
+	configure_option("--lc:off");
 	assert_sweep(previous, current, 1);
 	configure_option(NULL);
 	assert_sweep(previous, current, 0);
@@ -249,7 +249,7 @@ static void test_solid_geometry(legacy_u32 rotation, legacy_s16 elevation, legac
 		{{60, 2, -271}, {60, 2, -240}, 1},
 	};
 	initialize_slalom(rotation, elevation);
-	configure_option("/lc:off");
+	configure_option("--lc:off");
 	for (legacy_u32 index = 0; index < sizeof(cases) / sizeof(cases[0]); index++) {
 		struct VECTOR first = world_point(cases[index].first, rotation, elevation, stone);
 		struct VECTOR second = world_point(cases[index].second, rotation, elevation, stone);

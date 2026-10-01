@@ -243,11 +243,13 @@ Locked modes do not collect adaptive timing or change quality under load, and
 race/replay resets preserve the selected preset. The selected internal resolution
 also remains locked in previews. Returning to Auto restarts at stage 0.
 
-Startup accepts one case-insensitive `ss:full`, `ss:high`, `ss:medium`, or `ss:low`
-argument to enable and lock that preset before video initialization and the intro.
-Multiple `ss:` arguments or an unknown preset exit with an error. Omitting the
-option preserves normal startup with SuperSight off. In-game shortcuts remain
-available to change a preset selected at startup.
+At this stage, startup accepted one case-insensitive `ss:full`, `ss:high`,
+`ss:medium`, or `ss:low` argument to enable and lock that preset before video
+initialization and the intro. Multiple `ss:` arguments or an unknown preset
+exited with an error. Omitting the option preserved normal startup with
+SuperSight off. In-game shortcuts remained available to change a preset
+selected at startup. These `ss:` options are no longer supported; current
+builds use the [HyperVision `--hv:` options](hypervision.md).
 
 At internal scale 1 (320x200), the renderer uses the original horizon strip and
 skips car-shadow submission and rendering. This applies to locked Low and Auto

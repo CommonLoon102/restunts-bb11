@@ -83,6 +83,18 @@ run_host_test test-car-speed statecar.c \
 run_host_test test-crash-state statecrs.c "$test_source_dir/legacy.c" -DRESTUNTS_HEADLESS
 run_host_test test-collision-interpolation physics_collision.c \
     "$test_source_dir/math.c" "$test_source_dir/legacy.c" "$test_source_dir/strlib.c"
+run_host_test test-command-line command_line.c \
+    -DRESTUNTS_GIT_HASH='"0123456789abcdef0123456789abcdef01234567"' \
+    -DRESTUNTS_BUILD_DATE='"Feb 12 1991"'
+run_host_test test-command-line command_line.c -DRESTUNTS_SDL3 \
+    -DRESTUNTS_GIT_HASH='"0123456789abcdef0123456789abcdef01234567"' \
+    -DRESTUNTS_BUILD_DATE='"Feb 12 1991"'
+run_host_test test-command-line command_line.c -DRESTUNTS_SDL3 -D__DJGPP__ \
+    -DRESTUNTS_GIT_HASH='"0123456789abcdef0123456789abcdef01234567"' \
+    -DRESTUNTS_BUILD_DATE='"Feb 12 1991"'
+run_host_test test-command-line command_line.c \
+    -DRESTUNTS_BUILD_DATE='"Feb 12 1991"' \
+    -DCOMMAND_LINE_TEST_VERSION='"Version source-archive (Feb 12 1991)"'
 run_host_test test-startup math.c "$test_source_dir/owoot.c" \
     "$test_source_dir/statecar.c" "$test_source_dir/strlib.c" \
     "$test_source_dir/physics_collision.c" "$test_source_dir/physics_grip.c" \

@@ -6,10 +6,10 @@ retaining its three internal resolutions, quality controls, visual interpolation
 skyboxes, ghosts, and shadows. The performance target is a 2 GHz Core 2 Duo.
 That target is a hardware requirement to evaluate, not a measured FPS result.
 
-F12 selects Auto or Off; Shift+F12 cycles Full, High, Medium, and Low. The preferred
-startup options are `hv:full`, `hv:high`, `hv:medium`, and `hv:low`; the corresponding
-`ss:` options remain aliases. Off uses the classic renderer. The Open Watcom
-16-bit DOS build retains its existing SuperSight renderer and controls.
+F12 selects Auto or Off; Shift+F12 cycles Full, High, Medium, and Low. The startup
+options are `--hv:full`, `--hv:high`, `--hv:medium`, and `--hv:low`. Off uses the
+classic renderer. The Open Watcom 16-bit DOS build retains its existing SuperSight
+renderer and controls.
 
 Enhanced horizon artwork is enabled at 640x400 and 1280x800. The 320x200 mode
 uses the original horizon strips and disables car shadows. Banked and inverted

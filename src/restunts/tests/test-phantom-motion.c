@@ -65,7 +65,7 @@ static void test_original_cornering_bias(void)
 	struct PLAYER_WHEEL_MOTION motion = {0};
 	framespersec = GAME_FRAME_RATE_NORMAL;
 	player_motion_fraction = 0;
-	configure_cornering((legacy_s8 *)"lcb:on");
+	configure_cornering((legacy_s8 *)"--lcb:on");
 	/* Equal tire demand still produces a larger wheel angle for a left turn. */
 	assert(cornering_heading(-TEST_CORNERING_SAFE_STEERING, TEST_CORNERING_SPEED, &left, &motion) ==
 		   TEST_CORNERING_LEGACY_LEFT_HEADING);
@@ -91,7 +91,7 @@ static void test_symmetric_cornering(void)
 	static const legacy_u16 rates[] = {GAME_FRAME_RATE_NORMAL, GAME_FRAME_RATE_LOW};
 	static const legacy_u32 fractions[] = {0, PHANTOM_PHYSICS_ONE / 3, PHANTOM_PHYSICS_ONE};
 	static const legacy_u16 speeds[] = {0, 4096U, 12800U, TEST_CORNERING_SPEED, 40000U};
-	configure_cornering((legacy_s8 *)"lcb:off");
+	configure_cornering((legacy_s8 *)"--lcb:off");
 	for (legacy_u16 rate = 0; rate < sizeof(rates) / sizeof(rates[0]); rate++) {
 		framespersec = rates[rate];
 		for (legacy_u16 fraction = 0; fraction < sizeof(fractions) / sizeof(fractions[0]);
@@ -123,7 +123,7 @@ static void test_symmetric_cornering(void)
 			}
 		}
 	}
-	configure_cornering((legacy_s8 *)"lcb:on");
+	configure_cornering((legacy_s8 *)"--lcb:on");
 	player_motion_fraction = 0;
 }
 
