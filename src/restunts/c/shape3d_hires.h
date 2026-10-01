@@ -39,11 +39,19 @@ void shape3d_hires_ground_begin(const struct VECTOR *camera_position);
 /* At most two car silhouettes; visible receivers reuse the scene depth buffer.
  * Positions are camera-relative world coordinates, with Y up and heading around Y. */
 void shape3d_hires_shadows_begin(const struct VECTOR *camera_position);
+/* Override the scene light after shadows_begin and before queuing cars.
+ * Heading points along the cast shadow (+Z at zero, +X at a quarter turn);
+ * cotangent is horizontal travel per unit height, zero for overhead light. */
+void shape3d_hires_set_shadow_light(legacy_s16 heading, legacy_f64 cotangent);
 void shape3d_hires_shadow_car(const struct VECTOR *relative_position, legacy_s16 heading,
 							  legacy_s16 half_width, legacy_s16 half_length);
 struct SHAPE3D;
 /* Attach the loaded model to the last car; masks are cached across frames. */
 void shape3d_hires_shadow_model(const struct SHAPE3D *shape);
+/* Cast the last car's actual geometry onto its registered flat contact plane.
+ * ground_height is the model-space Y resting on that plane. The cached mask
+ * follows the car heading and scene light; this mode has no airborne shrink. */
+void shape3d_hires_shadow_projected_model(const struct SHAPE3D *shape, legacy_s16 ground_height);
 /* Invalidate cached geometry before car resources are replaced or freed. */
 void shape3d_hires_shadow_models_reset(void);
 /* Apply to visible receivers after the joined scene pass, before hires_end. */
