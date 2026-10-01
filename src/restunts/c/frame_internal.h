@@ -96,6 +96,8 @@ legacy_s16 frame_fps_expire_idle(void);
 void frame_fps_record_presented(void);
 void frame_fps_present_roof(void);
 struct RECTANGLE *frame_fps_draw_text(void);
+/* Prepare diagnostic redraw bounds before dashboard composition; paint it with
+ * frame_fps_draw_text after the dashboard is complete. */
 struct RECTANGLE *draw_ingame_text(void);
 struct RECTANGLE *init_crak(legacy_s16 frame, legacy_s16 top, legacy_s16 height);
 struct RECTANGLE *do_sinking(legacy_s16 frame, legacy_s16 top, legacy_s16 height);

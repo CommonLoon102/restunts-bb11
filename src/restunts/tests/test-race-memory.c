@@ -107,6 +107,9 @@ static legacy_s16 race_memory_draw(void)
 										  height_above_replaybar);
 			setup_car_shapes(DASHBOARD_OPERATION_UPDATE);
 			sprite_set_target_clip_bounds(0, GAME_SCREEN_WIDTH, 0, GAME_SCREEN_HEIGHT);
+			mouse_draw_opaque_check();
+			frame_fps_draw_text();
+			mouse_draw_transparent_check();
 			/* Four adjacent pixels cover every VGA plane at the end of the page. */
 			for (legacy_u16 pixel = 0; pixel < RACE_MEMORY_MARKER_WIDTH; pixel++) {
 				markers[page][pixel] = (legacy_u8)(32 + (pass * 6 + step) * 4 + pixel);

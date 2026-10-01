@@ -564,6 +564,12 @@ static void race_draw_frame(void)
 		setup_car_shapes(DASHBOARD_OPERATION_UPDATE);
 		sprite_set_target_clip_bounds(0, RACE_SCREEN_WIDTH, 0, RACE_SCREEN_HEIGHT);
 	}
+	if (frame_display_overlay_active() != 0) {
+		/* Keep diagnostic text above every layer of custom dashboard artwork. */
+		mouse_draw_opaque_check();
+		frame_fps_draw_text();
+		mouse_draw_transparent_check();
+	}
 
 	if (full_redraw_frames_remaining != 0) {
 		full_redraw_frames_remaining--;
