@@ -684,7 +684,7 @@ static legacy_u16 race_frame_is_ready(legacy_s16 *last_processed_frame)
 									state.game_inputmode == GAME_INPUT_MODE_WAITING)) {
 		legacy_u64 now = presentation_now();
 		if (now < race_presentation.control_time) {
-			SDL_Delay(RACE_CONTROL_POLL_DELAY_MS);
+			sdl3_platform_delay(RACE_CONTROL_POLL_DELAY_MS);
 			sdl3_platform_pump();
 			return 0;
 		}
@@ -703,7 +703,7 @@ static legacy_u16 race_frame_is_ready(legacy_s16 *last_processed_frame)
 #ifdef RESTUNTS_SDL3
 			/* Timer callbacks are dispatched on this thread. Yield while waiting
 			 * for the next input sample, then deliver elapsed 100 Hz ticks. */
-			SDL_Delay(RACE_CONTROL_POLL_DELAY_MS);
+			sdl3_platform_delay(RACE_CONTROL_POLL_DELAY_MS);
 			sdl3_platform_pump();
 #endif
 			return 0;

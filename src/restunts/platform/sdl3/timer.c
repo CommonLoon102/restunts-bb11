@@ -2,6 +2,9 @@
 #include "../../c/platform.h"
 #include "../../c/presentation.h"
 #include <string.h>
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
 
 #define TIMER_CALLBACK_CAPACITY DOS_TIMER_USABLE_CALLBACK_COUNT
 #define TIMER_TICK_MS 10U
@@ -17,6 +20,58 @@ static legacy_u32 slow_divider;
 static legacy_u8 initialized;
 static legacy_u8 suspended;
 static legacy_u8 dispatching;
+
+#ifdef __EMSCRIPTEN__
+#define BROWSER_EVENT_YIELD_INTERVAL_MS 8U
+
+static legacy_u64 last_browser_yield;
+
+/* Resume on a message task, including after a timed wait. Resuming directly
+ * from setTimeout would nest the next polling timer and eventually clamp every
+ * requested 0/1ms sleep to at least 4ms. Asyncify permits one suspended C stack. */
+EM_ASYNC_JS(void, browser_delay, (legacy_u32 milliseconds), {
+	if (!Module['restuntsBrowserPacing']) {
+		const state = {channel : new MessageChannel(), resume : null};
+		state.channel.port1.onmessage = function()
+		{
+			const resume = state.resume;
+			state.resume = null;
+			resume();
+		};
+		Module['restuntsBrowserPacing'] = state;
+	}
+	const state = Module['restuntsBrowserPacing'];
+	await new Promise(function(resolve) {
+		state.resume = resolve;
+		if (milliseconds > 0) {
+			setTimeout(function() { state.channel.port2.postMessage(null); }, milliseconds);
+		} else {
+			state.channel.port2.postMessage(null);
+		}
+	});
+});
+#endif
+
+void sdl3_platform_delay(legacy_u32 milliseconds)
+{
+#ifdef __EMSCRIPTEN__
+	browser_delay(milliseconds);
+	/* Polling and presentation share this timestamp, so an explicit timer or
+	 * race wait also satisfies the input-only loop's cooperative yield. */
+	last_browser_yield = SDL_GetTicks();
+#else
+	SDL_Delay(milliseconds);
+#endif
+}
+
+#ifdef __EMSCRIPTEN__
+void sdl3_browser_yield_if_due(void)
+{
+	if (SDL_GetTicks() - last_browser_yield >= BROWSER_EVENT_YIELD_INTERVAL_MS) {
+		sdl3_platform_delay(0);
+	}
+}
+#endif
 
 legacy_u64 presentation_now(void)
 {
@@ -130,7 +185,7 @@ legacy_u32 timer_get_counter(void)
 	/* Legacy waits poll this accessor. Yield without delaying timer callbacks
 	 * or consuming an entire 10ms tick, so menus and frame pacing stay responsive. */
 	if (!dispatching && initialized && previous_read == game_counter) {
-		SDL_Delay(TIMER_POLL_DELAY_MS);
+		sdl3_platform_delay(TIMER_POLL_DELAY_MS);
 		sdl3_platform_pump();
 	}
 	previous_read = game_counter;

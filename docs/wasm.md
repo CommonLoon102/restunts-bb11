@@ -96,10 +96,15 @@ fullscreen shortcut assigned to F11.
 
 The browser presents frames through SDL3's WebGL renderer and uses WebAudio
 output. Scene rendering runs on the CPU and is serial;
-`RESTUNTS_RENDER_WORKERS` does not enable threads. Asyncify allows the existing
-nested game/menu waits to yield to the browser, and idle input polling yields
-at a bounded interval. Physics and replay formats use the same game code as
-native builds. Background tabs may be throttled by the browser.
+`RESTUNTS_RENDER_WORKERS` does not enable threads. Asyncify preserves the existing
+nested game/menu loops. Browser waits share one scheduler: explicit waits also
+satisfy the bounded input/presentation yield interval, and SDL's additional
+implicit sleeps are disabled. Each wait resumes through a `MessageChannel` task
+so repeated short waits do not accumulate the browser's nested-timer minimum.
+The existing game clock still targets 60 visual FPS in HyperVision; physics and
+replay formats use the same game code as native builds. This does not require
+an Emscripten main-loop callback or change the native VSync setting.
+Background tabs may still be throttled by the browser.
 
 ## Distribution and rebuilding the audio library
 
@@ -120,6 +125,21 @@ without the game's source or original game data. Use the SDK version recorded
 in the kit. See its `wasm-relink.md` and `THIRD-PARTY-NOTICES.txt` for details.
 
 ## Verification
+
+The pacing regression builds a small WebAssembly fixture with the real Asyncify
+wait implementation, then runs it in Playwright without original game data.
+It checks that input polling shares explicit waits, repeated short waits resume
+through browser message tasks without nesting timers, and waits complete even
+when animation callbacks are unavailable. Activate the Emscripten SDK and install
+Playwright as described below, then run:
+
+```sh
+NODE_PATH="$PWD/out/wasm-test-tools/node_modules" node tools/scripts/test-wasm-pacing.js \
+    --sdl-include out/sdl3-wasm/_deps/sdl3-src/include
+```
+
+Use `--browser firefox` for Firefox. `--emcc` accepts an explicit compiler path,
+and `--sdl-include` names the SDL3 public include directory from a configured build.
 
 The actual WebAssembly file I/O regression checks asynchronous commit ordering
 and failure propagation with Node.js (included in the SDK):

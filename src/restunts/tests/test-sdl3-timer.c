@@ -12,6 +12,7 @@ enum {
 	TEST_PARTIAL_TICK_MS = TEST_TICK_MS / 2,
 	TEST_INITIAL_TICKS = 3,
 	TEST_POLL_DELAY_MS = 1,
+	TEST_EXPLICIT_DELAY_MS = 7,
 	TEST_NS_PER_MS = 1000000,
 	TEST_SUB_MS_NS = 12345,
 	TEST_MAX_DISPATCHES = 32
@@ -23,6 +24,8 @@ static legacy_u32 first_calls;
 static legacy_u32 second_calls;
 static legacy_u32 audio_calls;
 static legacy_u32 delay_calls;
+static legacy_u32 last_delay_ms;
+static legacy_u32 expected_delay_ms = TEST_POLL_DELAY_MS;
 static legacy_u8 inside_callback;
 
 static legacy_u64 test_get_ticks(void)
@@ -37,7 +40,8 @@ static legacy_u64 test_get_ticks_ns(void)
 
 static void test_delay(legacy_u32 milliseconds)
 {
-	assert(milliseconds == TEST_POLL_DELAY_MS);
+	assert(milliseconds == expected_delay_ms);
+	last_delay_ms = milliseconds;
 	delay_calls++;
 }
 
@@ -112,6 +116,20 @@ static void expect_counters(legacy_u32 game_ticks, legacy_u32 realtime_ticks,
 	assert(first_calls == callback_ticks);
 	assert(second_calls == callback_ticks);
 	assert(audio_calls == audio_ticks);
+}
+
+static void test_platform_delay(void)
+{
+	reset_timer();
+	expected_delay_ms = 0;
+	sdl3_platform_delay(0);
+	assert(delay_calls == 1U && last_delay_ms == 0);
+	expected_delay_ms = TEST_EXPLICIT_DELAY_MS;
+	sdl3_platform_delay(TEST_EXPLICIT_DELAY_MS);
+	assert(delay_calls == 2U && last_delay_ms == TEST_EXPLICIT_DELAY_MS);
+	expected_delay_ms = TEST_POLL_DELAY_MS;
+	(void)timer_get_counter();
+	assert(delay_calls == 3U && last_delay_ms == TEST_POLL_DELAY_MS);
 }
 
 static void test_regular_progression(void)
@@ -202,6 +220,7 @@ static void test_shutdown_restart(void)
 
 legacy_int main(void)
 {
+	test_platform_delay();
 	test_regular_progression();
 	test_backward_clock();
 	test_paused_clock_recovery();

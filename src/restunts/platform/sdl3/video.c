@@ -358,6 +358,11 @@ static void present_texture(legacy_u8 new_frame)
 	if (!SDL_RenderPresent(renderer)) {
 		video_fail("Present video");
 	}
+#ifdef __EMSCRIPTEN__
+	/* SDL's implicit Asyncify sleep is disabled. Keep long rendering loops
+	 * cooperative without adding another wait after recent input/timer yields. */
+	sdl3_browser_yield_if_due();
+#endif
 	if (measured_frame != 0) {
 		/* An exposure can repaint the completed front page while another frame
 		 * is being drawn. Its refresh wait is not rendering workload either. */
@@ -499,6 +504,9 @@ void dos_video_set_mode_13h(void)
 #ifdef __EMSCRIPTEN__
 	/* Keep keyboard capture on the game canvas, leaving page controls usable. */
 	SDL_SetHint(SDL_HINT_EMSCRIPTEN_KEYBOARD_ELEMENT, "#canvas");
+	/* Own browser suspension centrally; SDL's swap sleep would add a nested
+	 * zero-delay timer on top of the game's explicit pacing waits. */
+	SDL_SetHint(SDL_HINT_EMSCRIPTEN_ASYNCIFY, "0");
 #endif
 	if (SDL_WasInit(SDL_INIT_VIDEO) == 0 && !SDL_InitSubSystem(SDL_INIT_VIDEO)) {
 		video_fail("Initialize video");
