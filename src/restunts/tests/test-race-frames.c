@@ -12,6 +12,7 @@ static legacy_u32 trace_hash = UINT32_C(2166136261);
 static legacy_u32 scenario, frames, keys;
 static legacy_u32 scripted_rewind;
 static legacy_u32 presented_frames;
+static legacy_u8 render_timing_active;
 
 #define TEST_HOTKEY_QUEUE_CAPACITY 64U
 #define TEST_HOTKEY_IGNORED_COUNT 48U
@@ -98,7 +99,7 @@ legacy_u64 presentation_now(void)
 
 void SDL_Delay(Uint32 milliseconds)
 {
-	assert(scheduled_mode != 0);
+	assert(scheduled_mode != 0 && render_timing_active == 0);
 	scheduled_time += (legacy_u64)milliseconds * 1000000U;
 	assert(scheduled_time <= PRESENTATION_SECOND_NS);
 }
@@ -214,6 +215,7 @@ void update_frame_snapshot(legacy_s8 buffer, struct RECTANGLE *rect,
 						   const struct GAMESTATE *snapshot, const struct CARSTATE *ghost,
 						   const struct GHOST_CAMERA_STATE *ghost_camera)
 {
+	assert(render_timing_active != 0);
 	(void)buffer;
 	(void)rect;
 	assert(scheduled_mode != 0 && supersight_enabled != 0);
@@ -238,6 +240,18 @@ void frame_supersight_reset(void)
 {
 }
 
+void frame_fps_render_begin(void)
+{
+	assert(render_timing_active == 0);
+	render_timing_active = 1;
+}
+
+void frame_fps_render_end(void)
+{
+	assert(render_timing_active != 0);
+	render_timing_active = 0;
+}
+
 void frame_fps_reset(void)
 {
 	presented_frames = 0;
@@ -249,6 +263,7 @@ void frame_fps_present_roof(void)
 
 void frame_fps_record_presented(void)
 {
+	assert(render_timing_active == 0);
 	presented_frames++;
 	assert(presented_frames == frames);
 }
@@ -482,6 +497,7 @@ void loop_game(legacy_s16 operation, legacy_s16 recorded, legacy_s16 current)
 }
 void update_frame(legacy_s8 buffer, struct RECTANGLE *rect)
 {
+	assert(render_timing_active != 0);
 #ifdef RESTUNTS_SDL3
 	assert_render_scale_before_drawing();
 	if (scale_transition.active != 0) {

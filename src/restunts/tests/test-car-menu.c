@@ -74,6 +74,7 @@ static legacy_s16 display_shadow_heading, display_ground_height;
 static legacy_u32 display_car_loads, display_ground_queries, display_load_present_count;
 static legacy_u8 drawing_frame, completed_frame;
 static legacy_u32 committed_frames;
+static legacy_u8 render_timing_pending, render_timing_running;
 
 void sdl3_video_begin_track_frame(legacy_u8 adaptive)
 {
@@ -84,7 +85,7 @@ void sdl3_video_begin_track_frame(legacy_u8 adaptive)
 
 void sdl3_video_end_frame(void)
 {
-	assert(drawing_frame != 0 && completed_frame != 0);
+	assert(drawing_frame != 0 && completed_frame == 0);
 	drawing_frame = 0;
 	committed_frames++;
 }
@@ -234,13 +235,41 @@ legacy_s16 frame_fps_expire_idle(void)
 	return 0;
 }
 
+void frame_fps_render_begin(void)
+{
+	assert(render_timing_running == 0);
+	render_timing_pending = render_timing_running = 1;
+}
+
+legacy_u8 frame_fps_render_pause(void)
+{
+	legacy_u8 was_running = render_timing_running;
+	render_timing_running = 0;
+	return was_running;
+}
+
+void frame_fps_render_resume(void)
+{
+	assert(render_timing_running == 0);
+	render_timing_running = render_timing_pending;
+}
+
+void frame_fps_render_end(void)
+{
+	assert(render_timing_pending == 0 || render_timing_running != 0);
+	render_timing_pending = render_timing_running = 0;
+}
+
 void frame_fps_reset(void)
 {
+	assert(render_timing_running == 0);
+	render_timing_pending = 0;
 	display_reset_count++;
 }
 
 void frame_fps_record_presented(void)
 {
+	assert(render_timing_pending == 0 && render_timing_running == 0);
 	completed_frame = 1;
 	if (display_toggle_test != 0) {
 		display_record_count++;
@@ -469,7 +498,7 @@ void init_game_state(legacy_s16 initialization_mode)
 
 legacy_s16 input_checking(legacy_s16 frame_delta)
 {
-	assert(drawing_frame == 0);
+	assert(drawing_frame == 0 && render_timing_running == 0);
 	trace_word(1013);
 	trace_word((legacy_u16)frame_delta);
 	if (display_toggle_test != 0) {
@@ -761,6 +790,7 @@ void shape3d_render_queued_primitives(void)
 
 legacy_u16 shape3d_transform_and_queue(struct TRANSFORMEDSHAPE3D *instance)
 {
+	assert(render_timing_running != 0);
 #ifdef RESTUNTS_SDL3
 	if (display_toggle_test != 0) {
 		assert(display_model_scaled != 0);
@@ -811,6 +841,7 @@ legacy_u16 shape3d_transform_and_queue(struct TRANSFORMEDSHAPE3D *instance)
 
 legacy_s16 sprite_blit_to_video(struct SPRITE *sprite, legacy_s16 mode)
 {
+	assert(render_timing_running == 0);
 	/* Dissolve phases must still be able to present through input polling. */
 	assert(drawing_frame == 0);
 	trace_word(1035);

@@ -494,6 +494,7 @@ static void race_presentation_interpolate_ghost(legacy_u32 fraction)
 
 static void race_draw_frame(void)
 {
+	frame_fps_render_begin();
 #ifdef RESTUNTS_SDL3
 	legacy_s32 render_scale =
 		supersight_enabled != 0 ? frame_adaptive_render_scale(&frame_adaptive) : HIRES_SCALE;
@@ -576,10 +577,11 @@ static void race_draw_frame(void)
 		dashboard_buffer_index = frame_buffer_index;
 		mouse_draw_transparent_check();
 	}
-	frame_fps_record_presented();
 #ifdef RESTUNTS_SDL3
 	sdl3_video_end_frame();
 #endif
+	frame_fps_render_end();
+	frame_fps_record_presented();
 }
 
 #ifdef RESTUNTS_SDL3

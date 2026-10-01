@@ -504,6 +504,7 @@ static void intro_present_session(struct INTRO_SESSION *intro)
 
 static void intro_render_session(struct INTRO_SESSION *intro, const struct INTRO_VIEW *view)
 {
+	frame_fps_render_begin();
 #ifdef RESTUNTS_SDL3
 	sdl3_video_begin_frame();
 #endif
@@ -530,10 +531,11 @@ static void intro_render_session(struct INTRO_SESSION *intro, const struct INTRO
 		}
 	}
 	intro_present_session(intro);
-	frame_fps_record_presented();
 #ifdef RESTUNTS_SDL3
 	sdl3_video_end_frame();
 #endif
+	frame_fps_render_end();
+	frame_fps_record_presented();
 }
 
 static void intro_finish_session(struct INTRO_SESSION *intro)

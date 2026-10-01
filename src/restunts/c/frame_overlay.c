@@ -13,6 +13,9 @@
 #include "crash_state.h"
 #include "platform.h"
 #include "dashboard.h"
+#ifdef RESTUNTS_SDL3
+#include "presentation.h"
+#endif
 
 #define OVERLAY_SCREEN_WIDTH 320
 #define OVERLAY_REFERENCE_HEIGHT 200L
@@ -42,8 +45,18 @@
 #define FPS_TEXT_MAX_DIGITS 5U
 #define FPS_TEXT_SUFFIX_LENGTH 4U
 #define FPS_TEXT_BUFFER_SIZE (FPS_TEXT_MAX_DIGITS + FPS_TEXT_SUFFIX_LENGTH + 1U)
-#define FPS_TEXT_RIGHT_X                                                                           \
-	(REPLAY_TEXT_LEFT_X + (FPS_TEXT_BUFFER_SIZE - 1U) * REPLAY_TEXT_CHARACTER_WIDTH + 1U)
+#define FPS_RENDER_TEXT_SEPARATOR " / "
+#define FPS_RENDER_TEXT_SUFFIX " ms avg"
+#define FPS_RENDER_TEXT_FRACTION_DIGITS 1U
+#define FPS_RENDER_TEXT_BUFFER_SIZE                                                                \
+	(FPS_TEXT_BUFFER_SIZE + sizeof(FPS_RENDER_TEXT_SEPARATOR) - 1U + FPS_TEXT_MAX_DIGITS + 1U +    \
+	 FPS_RENDER_TEXT_FRACTION_DIGITS + sizeof(FPS_RENDER_TEXT_SUFFIX) - 1U)
+#define FPS_RENDER_NS_PER_SECOND 1000000000ULL
+#define FPS_RENDER_NS_PER_MILLISECOND 1000000ULL
+#define FPS_RENDER_FRACTIONS_PER_MS FPS_TEXT_NUMBER_BASE
+#define FPS_RENDER_NS_PER_FRACTION (FPS_RENDER_NS_PER_MILLISECOND / FPS_RENDER_FRACTIONS_PER_MS)
+#define FPS_RENDER_MAX_FRACTIONS                                                                   \
+	((legacy_u32)LEGACY_U16_MAX * FPS_RENDER_FRACTIONS_PER_MS + FPS_RENDER_FRACTIONS_PER_MS - 1U)
 #define SUPERSIGHT_STATUS_PREFIX "SuperSight: "
 #define SUPERSIGHT_STATUS_NAME_LENGTH (sizeof("Medium") - 1U)
 #define SUPERSIGHT_STATUS_BUFFER_SIZE                                                              \
@@ -69,6 +82,14 @@ static legacy_u32 fps_last_presented;
 static legacy_u16 fps_sample_frames;
 static legacy_u16 fps_sample_value;
 static legacy_u8 fps_sample_started;
+static legacy_u64 fps_render_samples[FRAME_FPS_RENDER_WINDOW_FRAMES];
+static legacy_u64 fps_render_total;
+static legacy_u64 fps_render_started;
+static legacy_u64 fps_render_elapsed;
+static legacy_u16 fps_render_count;
+static legacy_u16 fps_render_next;
+static legacy_u8 fps_render_pending;
+static legacy_u8 fps_render_running;
 static legacy_s8 supersight_status_text[SUPERSIGHT_STATUS_BUFFER_SIZE];
 static legacy_u32 supersight_status_start;
 static legacy_u8 supersight_status_active;
@@ -122,11 +143,82 @@ static struct RECTANGLE frame_supersight_status_bounds(void)
 	return bounds;
 }
 
-void frame_fps_reset(void)
+static void frame_fps_reset_sample(void)
 {
 	fps_sample_frames = 0;
 	fps_sample_value = 0;
 	fps_sample_started = 0;
+}
+
+void frame_fps_reset(void)
+{
+	frame_fps_reset_sample();
+	fps_render_total = 0;
+	fps_render_count = 0;
+	fps_render_next = 0;
+	fps_render_pending = 0;
+	fps_render_running = 0;
+}
+
+static legacy_u64 frame_fps_render_now(void)
+{
+#ifdef RESTUNTS_SDL3
+	return presentation_now();
+#else
+	return dos_timer_get_realtime_counter();
+#endif
+}
+
+void frame_fps_render_begin(void)
+{
+	fps_render_elapsed = 0;
+	fps_render_pending = 1;
+	fps_render_running = 1;
+	fps_render_started = frame_fps_render_now();
+}
+
+legacy_u8 frame_fps_render_pause(void)
+{
+	if (fps_render_running == 0) {
+		return 0;
+	}
+	legacy_u64 now = frame_fps_render_now();
+#ifdef RESTUNTS_SDL3
+	if (now >= fps_render_started) {
+		fps_render_elapsed += now - fps_render_started;
+	}
+#else
+	fps_render_elapsed +=
+		(legacy_u64)LEGACY_U32_WRAP_SUB((legacy_u32)now, (legacy_u32)fps_render_started) *
+		(FPS_RENDER_NS_PER_SECOND / DOS_TIMER_REALTIME_TICKS_PER_SECOND);
+#endif
+	fps_render_running = 0;
+	return 1;
+}
+
+void frame_fps_render_resume(void)
+{
+	if (fps_render_pending != 0 && fps_render_running == 0) {
+		fps_render_started = frame_fps_render_now();
+		fps_render_running = 1;
+	}
+}
+
+void frame_fps_render_end(void)
+{
+	if (fps_render_pending == 0) {
+		return;
+	}
+	frame_fps_render_pause();
+	if (fps_render_count == FRAME_FPS_RENDER_WINDOW_FRAMES) {
+		fps_render_total -= fps_render_samples[fps_render_next];
+	} else {
+		fps_render_count++;
+	}
+	fps_render_samples[fps_render_next] = fps_render_elapsed;
+	fps_render_total += fps_render_elapsed;
+	fps_render_next = (fps_render_next + 1U) % FRAME_FPS_RENDER_WINDOW_FRAMES;
+	fps_render_pending = 0;
 }
 
 legacy_s16 frame_fps_expire_idle(void)
@@ -144,7 +236,7 @@ legacy_s16 frame_fps_expire_idle(void)
 	if (fps_can_expire != 0 &&
 		LEGACY_U32_WRAP_SUB(now, fps_last_presented) >= DOS_TIMER_REALTIME_TICKS_PER_SECOND) {
 		/* Ask the waiting replay loop to repaint the expired value only once. */
-		frame_fps_reset();
+		frame_fps_reset_sample();
 		expired = 1;
 	}
 	return expired;
@@ -153,7 +245,7 @@ legacy_s16 frame_fps_expire_idle(void)
 void frame_fps_record_presented(void)
 {
 	if (fps_display_enabled == 0) {
-		frame_fps_reset();
+		frame_fps_reset_sample();
 		return;
 	}
 
@@ -247,6 +339,27 @@ static legacy_u16 frame_fps_format_number(legacy_s8 *text, legacy_u16 value)
 	return count;
 }
 
+static legacy_u16 frame_fps_text_capacity(void)
+{
+	return fps_display_enabled == FPS_DISPLAY_RENDER_TIME ? FPS_RENDER_TEXT_BUFFER_SIZE
+														  : FPS_TEXT_BUFFER_SIZE;
+}
+
+static void frame_fps_format_render_time(legacy_s8 *text)
+{
+	legacy_u64 average = fps_render_count != 0 ? fps_render_total / fps_render_count : 0;
+	legacy_u64 fractions = average / FPS_RENDER_NS_PER_FRACTION;
+	if (fractions > FPS_RENDER_MAX_FRACTIONS) {
+		fractions = FPS_RENDER_MAX_FRACTIONS;
+	}
+	copy_string(text, FPS_RENDER_TEXT_SEPARATOR);
+	text += sizeof(FPS_RENDER_TEXT_SEPARATOR) - 1U;
+	text += frame_fps_format_number(text, (legacy_u16)(fractions / FPS_RENDER_FRACTIONS_PER_MS));
+	*text++ = '.';
+	*text++ = (legacy_s8)('0' + fractions % FPS_RENDER_FRACTIONS_PER_MS);
+	copy_string(text, FPS_RENDER_TEXT_SUFFIX);
+}
+
 struct RECTANGLE *frame_fps_draw_text(void)
 {
 	if (frame_display_overlay_active() == 0) {
@@ -256,9 +369,12 @@ struct RECTANGLE *frame_fps_draw_text(void)
 	static struct RECTANGLE bounds;
 	bounds = empty_rect;
 	if (fps_display_enabled != 0) {
-		legacy_s8 text[FPS_TEXT_BUFFER_SIZE];
+		legacy_s8 text[FPS_RENDER_TEXT_BUFFER_SIZE];
 		legacy_u16 count = frame_fps_format_number(text, fps_sample_value);
 		copy_string(text + count, " FPS");
+		if (fps_display_enabled == FPS_DISPLAY_RENDER_TIME) {
+			frame_fps_format_render_time(text + count + FPS_TEXT_SUFFIX_LENGTH);
+		}
 		legacy_u16 target =
 			frame_fps_adaptive_enabled() ? FPS_TEXT_SUPERSIGHT_TARGET : FPS_TEXT_TARGET;
 		legacy_s16 color = fps_sample_value < target ? FPS_TEXT_RED : FPS_TEXT_GREEN;
@@ -292,7 +408,8 @@ static legacy_u16 draw_fps_text(void)
 	struct RECTANGLE roof_bounds = empty_rect;
 	if (fps_display_enabled != 0) {
 		roof_bounds.left = REPLAY_TEXT_LEFT_X;
-		roof_bounds.right = FPS_TEXT_RIGHT_X;
+		roof_bounds.right = REPLAY_TEXT_LEFT_X +
+							(frame_fps_text_capacity() - 1U) * REPLAY_TEXT_CHARACTER_WIDTH + 1U;
 		roof_bounds.top = REPLAY_FILENAME_Y;
 		roof_bounds.bottom = REPLAY_FILENAME_Y + font_glyph_height + 1;
 	}
@@ -304,7 +421,7 @@ static legacy_u16 draw_fps_text(void)
 	frame_fps_restore_roof(&roof_bounds);
 	rect_union(&rect_ingame_text, frame_fps_draw_text(), &rect_ingame_text);
 	/* Reserve the maximum width so changing counter digits never rewraps the filename. */
-	return fps_display_enabled != 0 ? FPS_TEXT_BUFFER_SIZE : 0;
+	return fps_display_enabled != 0 ? frame_fps_text_capacity() : 0;
 }
 
 enum DIRECTION_ICON_SHAPE_INDEX { DIRECTION_ICON_LEFT_SHAPE = 3, DIRECTION_ICON_RIGHT_SHAPE = 4 };

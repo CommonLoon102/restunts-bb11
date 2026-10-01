@@ -221,7 +221,8 @@ static void reset_inputs(void)
 	memset(key_states, 0, sizeof(key_states));
 	memset(mouse_samples, 0, sizeof(mouse_samples));
 	keyboard_char = joystick_flags = 0;
-	supersight_enabled = fps_display_enabled = 0;
+	supersight_enabled = 0;
+	fps_display_enabled = FPS_DISPLAY_HIDDEN;
 	fps_reset_count = supersight_reset_count = supersight_status_count = 0;
 	supersight_status[0] = 0;
 #ifdef RESTUNTS_SDL3
@@ -673,15 +674,15 @@ static void test_display_shortcuts(void)
 			game_replay_mode = mode;
 			cameramode = camera;
 			followOpponentFlag = 1;
-			assert(supersight_enabled == 0 && fps_display_enabled == 0);
+			assert(supersight_enabled == 0 && fps_display_enabled == FPS_DISPLAY_HIDDEN);
 			assert(handle_ingame_kb_shortcuts(KEY_F11) == 1);
-			assert(fps_display_enabled == 1 && supersight_enabled == 0);
-			assert(fps_reset_count == 1);
+			assert(fps_display_enabled == FPS_DISPLAY_FPS && supersight_enabled == 0);
+			assert(fps_reset_count == 0);
 			assert(supersight_status_count == 0);
 			assert(full_redraw_frames_remaining == video_page_count);
 			full_redraw_frames_remaining = 0;
 			assert(handle_ingame_kb_shortcuts(KEY_F12) == 1);
-			assert(fps_display_enabled == 1 && supersight_enabled == 1);
+			assert(fps_display_enabled == FPS_DISPLAY_FPS && supersight_enabled == 1);
 			assert(supersight_reset_count == 1);
 			assert_supersight_status(enabled_status, 1);
 			assert(full_redraw_frames_remaining == video_page_count);
@@ -690,18 +691,28 @@ static void test_display_shortcuts(void)
 			/* Camera changes and live/replay transitions retain the session toggles. */
 			assert(handle_ingame_kb_shortcuts(KEY_F2) == 1);
 			game_replay_mode = REPLAY_MODE_PLAYBACK;
-			assert(fps_display_enabled == 1 && supersight_enabled == 1);
+			assert(fps_display_enabled == FPS_DISPLAY_FPS && supersight_enabled == 1);
+			full_redraw_frames_remaining = 0;
 			assert(handle_ingame_kb_shortcuts(KEY_F11) == 1);
-			assert(fps_display_enabled == 0 && supersight_enabled == 1);
-			assert(fps_reset_count == 2);
+			assert(fps_display_enabled == FPS_DISPLAY_RENDER_TIME && supersight_enabled == 1);
+			assert(full_redraw_frames_remaining == video_page_count);
+			assert(fps_reset_count == 0);
+			assert(handle_ingame_kb_shortcuts(KEY_F4) == 1);
+			assert(fps_display_enabled == FPS_DISPLAY_RENDER_TIME);
+			full_redraw_frames_remaining = 0;
+			assert(handle_ingame_kb_shortcuts(KEY_F11) == 1);
+			assert(fps_display_enabled == FPS_DISPLAY_HIDDEN && supersight_enabled == 1);
+			assert(full_redraw_frames_remaining == video_page_count);
+			/* Display changes preserve the rolling frame statistics. */
+			assert(fps_reset_count == 0);
 			assert_supersight_status(enabled_status, 1);
 			assert(handle_ingame_kb_shortcuts(KEY_F12) == 1);
-			assert(fps_display_enabled == 0 && supersight_enabled == 0);
+			assert(fps_display_enabled == FPS_DISPLAY_HIDDEN && supersight_enabled == 0);
 			assert(supersight_reset_count == 2);
 			assert_supersight_status("Off", 2);
 			/* Both toggle directions request status while the FPS display is off. */
 			assert(handle_ingame_kb_shortcuts(KEY_F12) == 1);
-			assert(fps_display_enabled == 0 && supersight_enabled == 1);
+			assert(fps_display_enabled == FPS_DISPLAY_HIDDEN && supersight_enabled == 1);
 			assert(supersight_reset_count == 3);
 			assert_supersight_status(enabled_status, 3);
 		}
@@ -780,7 +791,8 @@ static void test_locked_display_shortcuts(void)
 					assert_supersight_status(presets[preset].name, ++status_count);
 					/* Selecting locked modes never cycles the output mode, and their
 					 * status is still requested with the FPS display switched off. */
-					assert(hires_enabled_transitions == 1 && fps_display_enabled == 0);
+					assert(hires_enabled_transitions == 1 &&
+						   fps_display_enabled == FPS_DISPLAY_HIDDEN);
 					assert(game_replay_mode == mode && cameramode == camera &&
 						   followOpponentFlag == 1);
 				}
@@ -804,7 +816,7 @@ static void test_locked_display_shortcuts(void)
 		assert(frame_adaptive.quality == FRAME_ADAPTIVE_FULL_VIEW);
 		assert(test_hires_scale == HIRES_SCALE && hires_enabled_transitions == 3);
 		assert_supersight_status("Auto", ++status_count);
-		assert(fps_display_enabled == 0);
+		assert(fps_display_enabled == FPS_DISPLAY_HIDDEN);
 	}
 }
 #endif

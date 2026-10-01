@@ -19,6 +19,13 @@
 #define INPUT_ACTION_BUTTON_MASK (INPUT_PRIMARY_ACTION_FLAG | INPUT_SECONDARY_ACTION_FLAG)
 #define INPUT_NON_STEERING_MASK (INPUT_PEDAL_MASK | INPUT_ACTION_BUTTON_MASK)
 
+enum FPS_DISPLAY_MODE {
+	FPS_DISPLAY_HIDDEN = 0,
+	FPS_DISPLAY_FPS,
+	FPS_DISPLAY_RENDER_TIME,
+	FPS_DISPLAY_MODE_COUNT
+};
+
 typedef legacy_s16(far *readchar_callback_type)(void);
 
 void kb_reg_callback(legacy_s16 code, void(far *callback)(void));

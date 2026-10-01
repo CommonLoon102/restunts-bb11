@@ -21,6 +21,23 @@ static legacy_u32 argb_framebuffer[HIRES_WIDTH * HIRES_HEIGHT];
 static legacy_u8 argb_active;
 static legacy_u32 frame_generation;
 static legacy_s32 presented_raster_width, presented_raster_height;
+static legacy_u8 render_timing_running;
+static legacy_u32 render_pause_count, render_resume_count;
+
+legacy_u8 frame_fps_render_pause(void)
+{
+	legacy_u8 was_running = render_timing_running;
+	render_timing_running = 0;
+	render_pause_count++;
+	return was_running;
+}
+
+void frame_fps_render_resume(void)
+{
+	assert(render_timing_running == 0);
+	render_timing_running = 1;
+	render_resume_count++;
+}
 
 legacy_s32 hires_render_scale(void)
 {
@@ -913,6 +930,25 @@ static void test_joystick(void)
 	assert(SDL_DetachVirtualJoystick(id));
 }
 
+static void test_render_timing_pause(void)
+{
+	assert(sdl3_video_window() != NULL);
+	for (legacy_u8 running = 0; running <= 1; running++) {
+		render_timing_running = running;
+		legacy_u32 pauses = render_pause_count;
+		legacy_u32 resumes = render_resume_count;
+		sdl3_video_present();
+		assert(render_pause_count == pauses + 1U);
+		assert(render_resume_count == resumes + running);
+		assert(render_timing_running == running);
+		sdl3_video_redraw();
+		assert(render_pause_count == pauses + 2U);
+		assert(render_resume_count == resumes + 2U * running);
+		assert(render_timing_running == running);
+	}
+	render_timing_running = 0;
+}
+
 legacy_int main(void)
 {
 	SDL_SetHint(SDL_HINT_VIDEO_DRIVER, "dummy");
@@ -937,6 +973,7 @@ legacy_int main(void)
 	test_completed_video_pages();
 	test_video_page_lifetime();
 	test_adaptive_frame_timing();
+	test_render_timing_pause();
 	test_fullscreen_shortcut();
 	test_joystick();
 	SDL_Event quit;

@@ -3,6 +3,7 @@
 #include "../../c/fatal.h"
 #include "../../c/hires.h"
 #include "../../c/frame_adaptive.h"
+#include "../../c/frame_internal.h"
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -278,8 +279,12 @@ static void present_surface(const legacy_u8 *pixels, const legacy_u32 *argb, leg
 		video_fail("Scale video surface");
 	}
 	video_record_adaptive_work();
+	legacy_u8 render_running = frame_fps_render_pause();
 	if (!SDL_UpdateWindowSurface(window)) {
 		video_fail("Present video surface");
+	}
+	if (render_running != 0) {
+		frame_fps_render_resume();
 	}
 }
 
@@ -347,6 +352,7 @@ static void present_texture(legacy_u8 new_frame)
 	if (new_frame) {
 		video_record_adaptive_work();
 	}
+	legacy_u8 render_running = frame_fps_render_pause();
 	legacy_u64 present_started = SDL_GetTicksNS();
 	if (!SDL_RenderPresent(renderer)) {
 		video_fail("Present video");
@@ -355,6 +361,9 @@ static void present_texture(legacy_u8 new_frame)
 		/* An exposure can repaint the completed front page while another frame
 		 * is being drawn. Its refresh wait is not rendering workload either. */
 		adaptive_frame_started += SDL_GetTicksNS() - present_started;
+	}
+	if (render_running != 0) {
+		frame_fps_render_resume();
 	}
 }
 

@@ -3,6 +3,7 @@
 #include "../../c/platform.h"
 #include "../../c/video_pages.h"
 #include "../../c/fatal.h"
+#include "../../c/frame_internal.h"
 
 #define DOS_VIDEO_BIOS_INTERRUPT 16
 #define DOS_VIDEO_BIOS_SET_DAC_BLOCK_FUNCTION 4114
@@ -319,6 +320,7 @@ legacy_u8 dos_video_enable_planar_pages(void)
 
 void dos_video_show_page(legacy_u16 address)
 {
+	legacy_u8 render_running = frame_fps_render_pause();
 	/* Start-address writes are latched at retrace. Wait for a fresh blanking
 	 * interval so the old visible page is safe to reuse when this returns. */
 	while ((inp(DOS_VIDEO_STATUS_PORT) & DOS_VIDEO_RETRACE_STATUS_BIT) != 0) {
@@ -328,6 +330,9 @@ void dos_video_show_page(legacy_u16 address)
 	outpw(DOS_VIDEO_VGA_CRTC_PORT,
 		  DOS_VIDEO_REGISTER_VALUE(DOS_VIDEO_START_ADDRESS_LOW_REGISTER, address));
 	while ((inp(DOS_VIDEO_STATUS_PORT) & DOS_VIDEO_RETRACE_STATUS_BIT) == 0) {
+	}
+	if (render_running != 0) {
+		frame_fps_render_resume();
 	}
 }
 

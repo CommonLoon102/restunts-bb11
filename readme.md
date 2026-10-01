@@ -291,20 +291,24 @@ If worker creation fails, rendering uses the available workers or runs serially.
 See [SuperSight CPU measurements](docs/supersight-performance.md) for tested
 optimizations, worker comparisons, and measurement limits.
 
-Press **F11** to toggle a frame-rate counter in the top-left corner. It measures
-presented frames over approximately one second and rounds down, for example
-`20 FPS`. The target color threshold is 20 FPS in classic mode and 60 FPS in
-SDL3 SuperSight. The display shows FPS only; it does not show an omitted-object
-count. The temporary SuperSight preset message appears below it after F12 or
-Shift+F12, independently of F11. Automatic adaptation works whether F11 is on or off.
+Press **F11** to cycle the top-left display through hidden, FPS, and FPS with
+average render time. FPS measures presented frames over approximately one second
+and rounds down, for example `20 FPS`. The target color threshold is 20 FPS in
+classic mode and 60 FPS in SDL3 SuperSight. Render time is the rolling average of
+the last 100 completed frames, shown in milliseconds, excluding VSync and frame
+pacing, for example `20 FPS / 3.4 ms avg`. During warmup it averages the available
+samples. The 16-bit DOS build averages its 10-millisecond timer samples. Render-time
+sampling continues while hidden, and changing display modes preserves its history.
+The temporary SuperSight preset message appears below it after F12 or Shift+F12,
+independently of F11. Automatic adaptation works whether F11 is on or off.
 F11 and F12 also work in both car-selection screens and during the nighttime
 driving intro without skipping the animation, including in 16-bit DOS. F12 also
 works in the track preview and opponent-selection menu, with the same two-second
 status display. SDL3 builds additionally support Shift+F12 in these locations.
 
-Both features start off and retain their selected state until toggled again or
+Both features start off and retain their selected state until changed again or
 the game exits. They work in all driving and replay cameras, including opponent
-and ghost views and paused replays. Holding either key toggles only once.
+and ghost views and paused replays. Holding either key changes its mode only once.
 
 ### Race against a ghost
 

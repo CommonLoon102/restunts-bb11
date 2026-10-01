@@ -84,6 +84,13 @@ void update_frame_snapshot(legacy_s8 buffer_index, struct RECTANGLE *cliprect,
 
 void frame_supersight_reset(void);
 void frame_fps_reset(void);
+/* Accumulate only active render work, pausing across pacing and display waits.
+ * Begin replaces an abandoned frame; end commits one completed sample. */
+#define FRAME_FPS_RENDER_WINDOW_FRAMES 100U
+void frame_fps_render_begin(void);
+legacy_u8 frame_fps_render_pause(void);
+void frame_fps_render_resume(void);
+void frame_fps_render_end(void);
 void frame_supersight_show_status(const legacy_s8 *name);
 legacy_s16 frame_display_overlay_active(void);
 legacy_s16 frame_fps_expire_idle(void);

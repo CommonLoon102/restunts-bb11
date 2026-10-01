@@ -365,6 +365,7 @@ static void car_menu_prepare_preview(struct CAR_MENU_STATE *menu)
 #endif
 	if (menu->render_phase == CAR_RENDER_IDLE_PHASE ||
 		menu->render_phase == CAR_RENDER_START_PHASE) {
+		frame_fps_render_begin();
 		legacy_s16 car_position_angle = (legacy_s16)polarAngle(carmenu_carpos.y, carmenu_carpos.z);
 		menu->current_rect = slow_video_mgmt_copy != 0 ? empty_rect : carmenu_cliprect;
 		select_cliprect_rotate(0, car_position_angle, 0, &carmenu_cliprect, 0);
@@ -413,6 +414,8 @@ static void car_menu_prepare_preview(struct CAR_MENU_STATE *menu)
 			}
 #endif
 		}
+		/* Classic previews defer rasterization until after the next input/pacing pass. */
+		(void)frame_fps_render_pause();
 	}
 }
 
@@ -420,6 +423,7 @@ static void car_menu_render_preview(struct CAR_MENU_STATE *menu)
 {
 	if (menu->render_deferred == 0 && (menu->render_phase == CAR_RENDER_DRAW_PHASE ||
 									   menu->render_phase == CAR_RENDER_START_PHASE)) {
+		frame_fps_render_resume();
 		menu->render_phase = CAR_RENDER_IDLE_PHASE;
 		menu->car_ready = 1;
 #ifdef RESTUNTS_SDL3
@@ -483,18 +487,24 @@ static void car_menu_render_preview(struct CAR_MENU_STATE *menu)
 									  menu->union_rect.top, menu->union_rect.bottom);
 		mouse_draw_opaque_check();
 		if (menu->blit_mode != MENU_BLIT_MODE_REFRESH) {
+			/* The initial dissolve is a paced transition, not one rendered preview frame. */
+			legacy_u8 render_running = frame_fps_render_pause();
 			(void)sprite_blit_to_video(render_window_sprite, LEGACY_S8_FROM_BITS(menu->blit_mode));
+			if (render_running != 0) {
+				frame_fps_render_resume();
+			}
 			menu->blit_mode = MENU_BLIT_MODE_REFRESH;
 		} else {
 			sprite_putimage(render_window_sprite->sprite_bitmapptr);
 		}
 		mouse_draw_transparent_check();
-		frame_fps_record_presented();
 #ifdef RESTUNTS_SDL3
 		if (complete_frame != 0) {
 			sdl3_video_end_frame();
 		}
 #endif
+		frame_fps_render_end();
+		frame_fps_record_presented();
 		menu->previous_car_index = menu->car_index;
 	}
 }

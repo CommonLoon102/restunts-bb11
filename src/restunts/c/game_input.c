@@ -79,7 +79,7 @@ legacy_s8 mouse_background_dirty;
 static legacy_s8 mouse_transparent_mode;
 static legacy_u8 h_key_toggle;
 legacy_u8 supersight_enabled;
-legacy_u8 fps_display_enabled;
+legacy_u8 fps_display_enabled = FPS_DISPLAY_HIDDEN;
 static legacy_s16 input_elapsed_frames;
 
 /* A control that has not changed still fires again once the configured repeat
@@ -282,8 +282,10 @@ static legacy_s16 input_handle_display_shortcut(legacy_s16 key)
 {
 	switch (key) {
 		case KEY_F11:
-			fps_display_enabled ^= 1U;
-			frame_fps_reset();
+			fps_display_enabled++;
+			if (fps_display_enabled >= FPS_DISPLAY_MODE_COUNT) {
+				fps_display_enabled = FPS_DISPLAY_HIDDEN;
+			}
 			full_redraw_frames_remaining = (legacy_s8)video_page_count;
 			return 1;
 

@@ -71,6 +71,7 @@ static legacy_u64 scripted_now;
 static legacy_u64 previous_input_time;
 static legacy_u32 predicted_transforms;
 static legacy_u8 drawing_frame, completed_frame;
+static legacy_u8 render_timing_active;
 
 void sdl3_video_begin_frame(void)
 {
@@ -81,7 +82,7 @@ void sdl3_video_begin_frame(void)
 
 void sdl3_video_end_frame(void)
 {
-	assert(drawing_frame != 0 && completed_frame != 0);
+	assert(drawing_frame != 0 && completed_frame == 0);
 	drawing_frame = 0;
 }
 
@@ -115,6 +116,18 @@ legacy_s16 frame_display_overlay_active(void)
 	return fps_display_enabled != 0 || preset_status_active != 0;
 }
 
+void frame_fps_render_begin(void)
+{
+	assert(render_timing_active == 0);
+	render_timing_active = 1;
+}
+
+void frame_fps_render_end(void)
+{
+	assert(render_timing_active != 0);
+	render_timing_active = 0;
+}
+
 void frame_fps_reset(void)
 {
 	preset_status_active = 0;
@@ -123,8 +136,9 @@ void frame_fps_reset(void)
 
 void frame_fps_record_presented(void)
 {
+	assert(render_timing_active == 0);
 #ifdef RESTUNTS_SDL3
-	assert(drawing_frame != 0);
+	assert(drawing_frame == 0);
 #endif
 	completed_frame = 1;
 	fps_presented_count++;
@@ -685,7 +699,7 @@ legacy_s16 input_do_checking(legacy_s16 delta)
 	record_word(34);
 	record_word(delta);
 	input_polls++;
-	assert(drawing_frame == 0);
+	assert(drawing_frame == 0 && render_timing_active == 0);
 	if (scripted_input == 3) {
 		if (supersight_enabled != 0) {
 			assert(scripted_now - previous_input_time >= 10000000ULL);

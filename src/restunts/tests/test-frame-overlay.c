@@ -16,6 +16,9 @@
 #include "../c/fatal.h"
 #include "../c/game_input.h"
 #include "../c/dashboard.h"
+#ifdef RESTUNTS_SDL3
+#include "../c/presentation.h"
+#endif
 
 #undef strcmp
 #undef memcpy
@@ -26,6 +29,14 @@ legacy_s16 legacy_render_player_headings_active;
 legacy_u8 fps_display_enabled;
 legacy_u8 supersight_enabled;
 static legacy_u32 realtime_ticks;
+#ifdef RESTUNTS_SDL3
+static legacy_u64 render_nanoseconds;
+
+legacy_u64 presentation_now(void)
+{
+	return render_nanoseconds;
+}
+#endif
 
 legacy_u32 dos_timer_get_realtime_counter(void)
 {
@@ -341,9 +352,12 @@ static void reset_ingame_text(const char *filename)
 	passed_security = 1;
 	cameramode = CAMERA_MODE_TRACKSIDE;
 	text_draw_count = 0;
-	fps_display_enabled = 0;
+	fps_display_enabled = FPS_DISPLAY_HIDDEN;
 	frame_fps_reset();
 	realtime_ticks = 0;
+#ifdef RESTUNTS_SDL3
+	render_nanoseconds = 0;
+#endif
 	roofbmpheight_copy = 0;
 	dashboard_visible = 0;
 	font_glyph_height = 8;
@@ -509,10 +523,160 @@ static void present_frames(legacy_u32 frames, legacy_u32 ticks)
 	}
 }
 
+enum {
+	RENDER_TEST_MS_PER_SECOND = 1000U,
+	RENDER_TEST_MS_PER_TICK = RENDER_TEST_MS_PER_SECOND / DOS_TIMER_REALTIME_TICKS_PER_SECOND,
+	RENDER_TEST_SHORT_MS = 10U,
+	RENDER_TEST_LONG_MS = 30U,
+	RENDER_TEST_WAIT_MS = RENDER_TEST_MS_PER_SECOND,
+	RENDER_TEST_RED = 4,
+	RENDER_TEST_GREEN = 2,
+	RENDER_TEST_TARGET_FPS = 20,
+	RENDER_TEST_FONT_WIDTH = 8,
+	RENDER_TEST_LEFT = 8
+};
+#define RENDER_TEST_NS_PER_MS 1000000ULL
+#define RENDER_TEST_FRACTIONAL_NS 12399999ULL
+#define RENDER_TEST_MAX_TEXT "65535 FPS / 65535.9 ms avg"
+
+static void advance_render_clock(legacy_u32 milliseconds)
+{
+	assert(milliseconds % RENDER_TEST_MS_PER_TICK == 0);
+	realtime_ticks = LEGACY_U32_WRAP_ADD(realtime_ticks, milliseconds / RENDER_TEST_MS_PER_TICK);
+#ifdef RESTUNTS_SDL3
+	render_nanoseconds += (legacy_u64)milliseconds * RENDER_TEST_NS_PER_MS;
+#endif
+}
+
+static void render_sample(legacy_u32 milliseconds)
+{
+	frame_fps_render_begin();
+	advance_render_clock(milliseconds);
+	frame_fps_render_end();
+}
+
+static void reset_render_time(void)
+{
+	reset_ingame_text("");
+	game_replay_mode = REPLAY_MODE_PAUSED;
+	fps_display_enabled = FPS_DISPLAY_RENDER_TIME;
+	supersight_enabled = 0;
+}
+
+static void test_render_time_warmup_and_window(void)
+{
+	reset_render_time();
+	assert_fps("0 FPS / 0.0 ms avg", RENDER_TEST_RED);
+	frame_fps_render_end();
+	render_sample(RENDER_TEST_SHORT_MS);
+	assert_fps("0 FPS / 10.0 ms avg", RENDER_TEST_RED);
+	/* Zero-duration frames count in the average even with DOS's coarse clock. */
+	render_sample(0);
+	assert_fps("0 FPS / 5.0 ms avg", RENDER_TEST_RED);
+	render_sample(RENDER_TEST_LONG_MS);
+	assert_fps("0 FPS / 13.3 ms avg", RENDER_TEST_RED);
+
+	frame_fps_reset();
+	render_sample(RENDER_TEST_WAIT_MS);
+	for (legacy_u16 frame = 1; frame < FRAME_FPS_RENDER_WINDOW_FRAMES; frame++) {
+		render_sample(RENDER_TEST_SHORT_MS);
+	}
+	assert_fps("0 FPS / 19.9 ms avg", RENDER_TEST_RED);
+	/* The 101st sample evicts the old stall instead of averaging cumulatively. */
+	render_sample(RENDER_TEST_SHORT_MS);
+	assert_fps("0 FPS / 10.0 ms avg", RENDER_TEST_RED);
+}
+
+static void test_render_time_excludes_waits(void)
+{
+	reset_render_time();
+	assert(frame_fps_render_pause() == 0);
+	frame_fps_render_resume();
+	frame_fps_render_begin();
+	advance_render_clock(RENDER_TEST_SHORT_MS);
+	assert(frame_fps_render_pause() == 1);
+	assert(frame_fps_render_pause() == 0);
+	advance_render_clock(RENDER_TEST_WAIT_MS);
+	frame_fps_render_resume();
+	advance_render_clock(RENDER_TEST_SHORT_MS);
+	frame_fps_render_resume();
+	advance_render_clock(RENDER_TEST_SHORT_MS);
+	frame_fps_render_end();
+	assert_fps("0 FPS / 30.0 ms avg", RENDER_TEST_RED);
+	/* Duplicate completion must not add another sample. Completing while paused
+	 * commits the work before that pause, excluding the final display wait. */
+	frame_fps_render_end();
+	frame_fps_render_begin();
+	advance_render_clock(RENDER_TEST_SHORT_MS);
+	assert(frame_fps_render_pause() == 1);
+	advance_render_clock(RENDER_TEST_WAIT_MS);
+	frame_fps_render_end();
+	assert_fps("0 FPS / 20.0 ms avg", RENDER_TEST_RED);
+}
+
+static void test_render_time_abandoned_and_reset(void)
+{
+	reset_render_time();
+	frame_fps_render_begin();
+	advance_render_clock(RENDER_TEST_WAIT_MS);
+	frame_fps_render_begin();
+	advance_render_clock(RENDER_TEST_LONG_MS);
+	frame_fps_render_end();
+	assert_fps("0 FPS / 30.0 ms avg", RENDER_TEST_RED);
+	frame_fps_render_begin();
+	advance_render_clock(RENDER_TEST_WAIT_MS);
+	frame_fps_reset();
+	frame_fps_render_resume();
+	advance_render_clock(RENDER_TEST_WAIT_MS);
+	frame_fps_render_end();
+	assert_fps("0 FPS / 0.0 ms avg", RENDER_TEST_RED);
+	render_sample(RENDER_TEST_SHORT_MS);
+	assert_fps("0 FPS / 10.0 ms avg", RENDER_TEST_RED);
+}
+
+static void test_render_time_hidden_history_and_idle(void)
+{
+	reset_render_time();
+	fps_display_enabled = FPS_DISPLAY_HIDDEN;
+	render_sample(RENDER_TEST_SHORT_MS);
+	frame_fps_record_presented();
+	fps_display_enabled = FPS_DISPLAY_FPS;
+	render_sample(RENDER_TEST_LONG_MS);
+	frame_fps_record_presented();
+	fps_display_enabled = FPS_DISPLAY_RENDER_TIME;
+	assert_fps("0 FPS / 20.0 ms avg", RENDER_TEST_RED);
+	present_frames(RENDER_TEST_TARGET_FPS, DOS_TIMER_REALTIME_TICKS_PER_SECOND);
+	assert_fps("20 FPS / 20.0 ms avg", RENDER_TEST_GREEN);
+	advance_render_clock(RENDER_TEST_WAIT_MS);
+	assert(frame_fps_expire_idle() == 1);
+	assert_fps("0 FPS / 20.0 ms avg", RENDER_TEST_RED);
+	fps_display_enabled = FPS_DISPLAY_HIDDEN;
+	render_sample(0);
+	frame_fps_record_presented();
+	fps_display_enabled = FPS_DISPLAY_RENDER_TIME;
+	assert_fps("0 FPS / 13.3 ms avg", RENDER_TEST_RED);
+}
+
+static void test_render_time_clock_precision(void)
+{
+	reset_render_time();
+#ifdef RESTUNTS_SDL3
+	frame_fps_render_begin();
+	render_nanoseconds += RENDER_TEST_FRACTIONAL_NS;
+	frame_fps_render_end();
+	assert_fps("0 FPS / 12.3 ms avg", RENDER_TEST_RED);
+#else
+	/* Rendering across DOS's 32-bit realtime wrap still measures elapsed work. */
+	realtime_ticks = LEGACY_U32_MAX;
+	render_sample(RENDER_TEST_LONG_MS);
+	assert_fps("0 FPS / 30.0 ms avg", RENDER_TEST_RED);
+#endif
+}
+
 static void test_fps_sampling(void)
 {
 	reset_ingame_text("");
-	fps_display_enabled = 1;
+	fps_display_enabled = FPS_DISPLAY_FPS;
 	frame_fps_record_presented();
 	assert_fps("0 FPS", 4);
 	present_frames(20, 100);
@@ -532,14 +696,14 @@ static void test_fps_sampling(void)
 	assert_fps("0 FPS", 4);
 	present_frames(20, 100);
 	assert_fps("20 FPS", 2);
-	fps_display_enabled = 0;
+	fps_display_enabled = FPS_DISPLAY_HIDDEN;
 	text_draw_count = 0;
 	game_replay_mode = REPLAY_MODE_PAUSED;
 	struct RECTANGLE *bounds = draw_ingame_text();
 	assert(text_draw_count == 0);
 	assert(memcmp(bounds, &empty_rect, sizeof(*bounds)) == 0);
 	frame_fps_record_presented();
-	fps_display_enabled = 1;
+	fps_display_enabled = FPS_DISPLAY_FPS;
 	frame_fps_record_presented();
 	assert_fps("0 FPS", 4);
 	present_frames(20, 100);
@@ -563,7 +727,7 @@ static void test_fps_outside_race(void)
 	struct RECTANGLE *bounds = frame_fps_draw_text();
 	assert(memcmp(bounds, &empty_rect, sizeof(*bounds)) == 0);
 	assert(text_draw_count == 0);
-	fps_display_enabled = 1;
+	fps_display_enabled = FPS_DISPLAY_FPS;
 	frame_fps_record_presented();
 	present_frames(20, DOS_TIMER_REALTIME_TICKS_PER_SECOND);
 	bounds = frame_fps_draw_text();
@@ -580,7 +744,7 @@ static void test_fps_outside_race(void)
 static void test_fps_idle_expiry(void)
 {
 	reset_ingame_text("");
-	fps_display_enabled = 1;
+	fps_display_enabled = FPS_DISPLAY_FPS;
 	frame_fps_record_presented();
 	present_frames(20, 100);
 	assert_fps("20 FPS", 2);
@@ -604,9 +768,9 @@ static void test_fps_idle_expiry(void)
 	present_frames(20, 100);
 	assert_fps("20 FPS", 2);
 	realtime_ticks = LEGACY_U32_WRAP_ADD(realtime_ticks, 100);
-	fps_display_enabled = 0;
+	fps_display_enabled = FPS_DISPLAY_HIDDEN;
 	assert(frame_fps_expire_idle() == 0);
-	fps_display_enabled = 1;
+	fps_display_enabled = FPS_DISPLAY_FPS;
 	assert(frame_fps_expire_idle() == 1);
 	assert_fps("0 FPS", 4);
 }
@@ -616,7 +780,7 @@ static void test_fps_camera_modes(void)
 	for (legacy_u8 mode = REPLAY_MODE_LIVE; mode <= REPLAY_MODE_PAUSED; mode++) {
 		for (legacy_u16 camera = CAMERA_MODE_COCKPIT; camera < CAMERA_MODE_COUNT; camera++) {
 			reset_ingame_text("TEST");
-			fps_display_enabled = 1;
+			fps_display_enabled = FPS_DISPLAY_FPS;
 			game_replay_mode = mode;
 			cameramode = camera;
 			state.game_inputmode = GAME_INPUT_MODE_ACTIVE;
@@ -632,7 +796,7 @@ static void test_fps_and_long_replay_filename(void)
 	memset(filename, 'R', sizeof(filename) - 1);
 	filename[sizeof(filename) - 1] = 0;
 	reset_ingame_text(filename);
-	fps_display_enabled = 1;
+	fps_display_enabled = FPS_DISPLAY_FPS;
 	frame_fps_record_presented();
 	present_frames(20, 100);
 	assert_fps("20 FPS", 2);
@@ -653,39 +817,46 @@ static void test_fps_and_long_replay_filename(void)
 
 static void test_fps_on_cockpit_roof(void)
 {
-	for (legacy_s16 roof_height = 0; roof_height <= 20; roof_height++) {
-		for (legacy_s16 page_flipping = 0; page_flipping <= 1; page_flipping++) {
-			reset_ingame_text("");
-			fps_display_enabled = 1;
-			dashboard_visible = 1;
-			roofbmpheight_copy = roof_height;
-			video_uses_page_flipping = page_flipping;
-			sprite_set_target_clip_bounds(0, 320, roof_height, 200);
-			struct SPRITE original_context[SPRITE_STATE_COUNT];
-			sprite_save_context(original_context);
-			assert_fps("0 FPS", 4);
-			assert(memcmp(&drawing_sprite, original_context, sizeof(drawing_sprite)) == 0);
-			assert(memcmp(&screen_sprite, original_context + 1, sizeof(screen_sprite)) == 0);
-			frame_fps_present_roof();
-			assert(memcmp(&drawing_sprite, original_context, sizeof(drawing_sprite)) == 0);
-			assert(memcmp(&screen_sprite, original_context + 1, sizeof(screen_sprite)) == 0);
-			assert(restored_roof_count == (legacy_u32)(roof_height > 3));
-			assert(copied_roof_count == (legacy_u32)(roof_height > 3 && page_flipping == 0));
-			if (roof_height > 3) {
-				assert(restored_roof_bounds.left == 8 && restored_roof_bounds.right == 81);
-				assert(restored_roof_bounds.top == 3);
-				assert(restored_roof_bounds.bottom == (roof_height < 12 ? roof_height : 12));
-				if (page_flipping == 0) {
-					assert(memcmp(&copied_roof_bounds, &restored_roof_bounds,
-								  sizeof(copied_roof_bounds)) == 0);
+	for (legacy_u8 mode = FPS_DISPLAY_FPS; mode < FPS_DISPLAY_MODE_COUNT; mode++) {
+		const legacy_char *expected =
+			mode == FPS_DISPLAY_RENDER_TIME ? "0 FPS / 0.0 ms avg" : "0 FPS";
+		const legacy_char *maximum_text =
+			mode == FPS_DISPLAY_RENDER_TIME ? RENDER_TEST_MAX_TEXT : "65535 FPS";
+		legacy_s16 right = RENDER_TEST_LEFT + strlen(maximum_text) * RENDER_TEST_FONT_WIDTH + 1U;
+		for (legacy_s16 roof_height = 0; roof_height <= 20; roof_height++) {
+			for (legacy_s16 page_flipping = 0; page_flipping <= 1; page_flipping++) {
+				reset_ingame_text("");
+				fps_display_enabled = mode;
+				dashboard_visible = 1;
+				roofbmpheight_copy = roof_height;
+				video_uses_page_flipping = page_flipping;
+				sprite_set_target_clip_bounds(0, 320, roof_height, 200);
+				struct SPRITE original_context[SPRITE_STATE_COUNT];
+				sprite_save_context(original_context);
+				assert_fps(expected, RENDER_TEST_RED);
+				assert(memcmp(&drawing_sprite, original_context, sizeof(drawing_sprite)) == 0);
+				assert(memcmp(&screen_sprite, original_context + 1, sizeof(screen_sprite)) == 0);
+				frame_fps_present_roof();
+				assert(memcmp(&drawing_sprite, original_context, sizeof(drawing_sprite)) == 0);
+				assert(memcmp(&screen_sprite, original_context + 1, sizeof(screen_sprite)) == 0);
+				assert(restored_roof_count == (legacy_u32)(roof_height > 3));
+				assert(copied_roof_count == (legacy_u32)(roof_height > 3 && page_flipping == 0));
+				if (roof_height > 3) {
+					assert(restored_roof_bounds.left == 8 && restored_roof_bounds.right == right);
+					assert(restored_roof_bounds.top == 3);
+					assert(restored_roof_bounds.bottom == (roof_height < 12 ? roof_height : 12));
+					if (page_flipping == 0) {
+						assert(memcmp(&copied_roof_bounds, &restored_roof_bounds,
+									  sizeof(copied_roof_bounds)) == 0);
+					}
 				}
+				/* Hidden dashboards and disabled FPS never touch the roof. */
+				dashboard_visible = 0;
+				assert_fps(expected, RENDER_TEST_RED);
+				frame_fps_present_roof();
+				assert(restored_roof_count == (legacy_u32)(roof_height > 3));
+				assert(copied_roof_count == (legacy_u32)(roof_height > 3 && page_flipping == 0));
 			}
-			/* Hidden dashboards and disabled FPS never touch the roof. */
-			dashboard_visible = 0;
-			assert_fps("0 FPS", 4);
-			frame_fps_present_roof();
-			assert(restored_roof_count == (legacy_u32)(roof_height > 3));
-			assert(copied_roof_count == (legacy_u32)(roof_height > 3 && page_flipping == 0));
 		}
 	}
 }
@@ -702,7 +873,7 @@ static void test_supersight_fps_only(void)
 {
 	reset_ingame_text("");
 	game_replay_mode = REPLAY_MODE_PAUSED;
-	fps_display_enabled = 1;
+	fps_display_enabled = FPS_DISPLAY_FPS;
 	supersight_enabled = 1;
 	frame_fps_record_presented();
 	assert_fps("0 FPS", SUPERSIGHT_TEST_RED);
@@ -730,7 +901,7 @@ static void reset_status_text(void)
 {
 	/* Drain any prior status without giving F11's sampling reset another role. */
 	realtime_ticks = LEGACY_U32_WRAP_ADD(realtime_ticks, STATUS_TEST_DURATION);
-	fps_display_enabled = 0;
+	fps_display_enabled = FPS_DISPLAY_HIDDEN;
 	frame_fps_expire_idle();
 	text_draw_count = 0;
 	frame_fps_draw_text();
@@ -787,13 +958,13 @@ static void test_supersight_status_expiry_and_replacement(void)
 	realtime_ticks = LEGACY_U32_WRAP_ADD(realtime_ticks, STATUS_TEST_DURATION - 1U);
 	assert(frame_fps_expire_idle() == 0);
 	text_draw_count = 0;
-	fps_display_enabled = 1;
+	fps_display_enabled = FPS_DISPLAY_FPS;
 	frame_fps_reset();
 	frame_fps_draw_text();
 	assert(text_draw_count == 2);
 	assert(strcmp(text_draws[0].text, "0 FPS") == 0);
 	assert_text(1, "SuperSight: Auto", STATUS_TEST_LEFT, STATUS_TEST_TOP);
-	fps_display_enabled = 0;
+	fps_display_enabled = FPS_DISPLAY_HIDDEN;
 	realtime_ticks = LEGACY_U32_WRAP_ADD(realtime_ticks, 1U);
 	/* Querying before the waiting loop must retain its repaint request. */
 	assert(frame_display_overlay_active() != 0);
@@ -830,7 +1001,13 @@ static void test_supersight_status_roof_cleanup(void)
 									   STATUS_TEST_BOTTOM + 3};
 	for (legacy_u32 roof = 0; roof < sizeof(roof_heights) / sizeof(roof_heights[0]); roof++) {
 		for (legacy_u8 flipping = 0; flipping <= 1; flipping++) {
-			for (legacy_u8 fps = 0; fps <= 1; fps++) {
+			for (legacy_u8 fps = FPS_DISPLAY_HIDDEN; fps < FPS_DISPLAY_MODE_COUNT; fps++) {
+				legacy_u8 fps_lines = fps != FPS_DISPLAY_HIDDEN;
+				legacy_s16 right =
+					fps == FPS_DISPLAY_RENDER_TIME
+						? RENDER_TEST_LEFT +
+							  (sizeof(RENDER_TEST_MAX_TEXT) - 1U) * RENDER_TEST_FONT_WIDTH + 1U
+						: STATUS_TEST_RIGHT;
 				reset_status_text();
 				game_replay_mode = REPLAY_MODE_LIVE;
 				state.game_inputmode = GAME_INPUT_MODE_ACTIVE;
@@ -843,8 +1020,8 @@ static void test_supersight_status_roof_cleanup(void)
 				sprite_save_context(saved_context);
 				frame_supersight_show_status("Medium");
 				draw_ingame_text();
-				assert(text_draw_count == (legacy_u32)fps + 1U);
-				assert_text(fps, "SuperSight: Medium", STATUS_TEST_LEFT, STATUS_TEST_TOP);
+				assert(text_draw_count == (legacy_u32)fps_lines + 1U);
+				assert_text(fps_lines, "SuperSight: Medium", STATUS_TEST_LEFT, STATUS_TEST_TOP);
 				legacy_s16 top = fps != 0 ? 3 : STATUS_TEST_TOP;
 				legacy_u32 restored = roofbmpheight_copy > top;
 				assert(restored_roof_count == restored);
@@ -852,7 +1029,7 @@ static void test_supersight_status_roof_cleanup(void)
 				assert(copied_roof_count == (restored && flipping == 0));
 				if (restored != 0) {
 					assert(restored_roof_bounds.left == STATUS_TEST_LEFT);
-					assert(restored_roof_bounds.right == STATUS_TEST_RIGHT);
+					assert(restored_roof_bounds.right == right);
 					assert(restored_roof_bounds.top == top);
 					assert(restored_roof_bounds.bottom == (roofbmpheight_copy < STATUS_TEST_BOTTOM
 															   ? roofbmpheight_copy
@@ -863,14 +1040,19 @@ static void test_supersight_status_roof_cleanup(void)
 				text_draw_count = 0;
 				draw_ingame_text();
 				frame_fps_present_roof();
-				assert_text(fps, "SuperSight: Off", STATUS_TEST_LEFT, STATUS_TEST_TOP);
+				assert_text(fps_lines, "SuperSight: Off", STATUS_TEST_LEFT, STATUS_TEST_TOP);
 				assert(restored_roof_count == restored * 2U);
 				realtime_ticks = LEGACY_U32_WRAP_ADD(realtime_ticks, STATUS_TEST_DURATION);
 				assert(frame_fps_expire_idle() == 1);
 				text_draw_count = 0;
 				struct RECTANGLE *bounds = draw_ingame_text();
-				assert(text_draw_count == fps);
-				assert(bounds->right == STATUS_TEST_RIGHT && bounds->bottom == STATUS_TEST_BOTTOM);
+				assert(text_draw_count == fps_lines);
+				legacy_s16 visible_right =
+					fps == FPS_DISPLAY_RENDER_TIME
+						? RENDER_TEST_LEFT + strlen("0 FPS / 0.0 ms avg") * RENDER_TEST_FONT_WIDTH +
+							  1U
+						: STATUS_TEST_RIGHT;
+				assert(bounds->right == visible_right && bounds->bottom == STATUS_TEST_BOTTOM);
 				assert(restored_roof_count == restored * 3U);
 				frame_fps_present_roof();
 				assert(copied_roof_count == (flipping == 0 ? restored * 3U : 0));
@@ -885,7 +1067,7 @@ static void test_supersight_status_roof_cleanup(void)
 					draw_ingame_text();
 					frame_fps_present_roof();
 				}
-				assert(frame_display_overlay_active() == fps);
+				assert(frame_display_overlay_active() == fps_lines);
 				assert(fps_display_enabled == fps);
 			}
 		}
@@ -922,16 +1104,17 @@ static void test_supersight_status_replay_filename_collision(void)
 	legacy_char filename[REPLAY_FILENAME_SIZE];
 	memset(filename, 'R', sizeof(filename) - 1U);
 	filename[sizeof(filename) - 1U] = 0;
-	for (legacy_u8 fps = 0; fps <= 1; fps++) {
+	for (legacy_u8 fps = FPS_DISPLAY_HIDDEN; fps < FPS_DISPLAY_MODE_COUNT; fps++) {
+		legacy_u8 fps_lines = fps != FPS_DISPLAY_HIDDEN;
 		reset_status_text();
 		reset_ingame_text(filename);
 		fps_display_enabled = fps;
 		frame_supersight_show_status("Medium");
 		draw_ingame_text();
-		assert_text(fps, "SuperSight: Medium", STATUS_TEST_LEFT, STATUS_TEST_TOP);
+		assert_text(fps_lines, "SuperSight: Medium", STATUS_TEST_LEFT, STATUS_TEST_TOP);
 		legacy_char reconstructed[REPLAY_FILENAME_SIZE];
 		legacy_u32 copied = 0;
-		for (legacy_u32 index = fps + 1U; index + 1U < text_draw_count; index++) {
+		for (legacy_u32 index = fps_lines + 1U; index + 1U < text_draw_count; index++) {
 			legacy_u32 length = strlen(text_draws[index].text);
 			memcpy(reconstructed + copied, text_draws[index].text, length);
 			copied += length;
@@ -964,6 +1147,11 @@ legacy_int main(void)
 	test_replay_filename_when_paused();
 	test_unnamed_replay_overlay();
 	test_filename_hidden_in_live_race_and_demo();
+	test_render_time_warmup_and_window();
+	test_render_time_excludes_waits();
+	test_render_time_abandoned_and_reset();
+	test_render_time_hidden_history_and_idle();
+	test_render_time_clock_precision();
 	test_fps_sampling();
 	test_fps_outside_race();
 	test_fps_idle_expiry();
