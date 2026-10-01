@@ -68,6 +68,46 @@ static struct SPRITE frame_sprite;
 struct SPRITE far *render_window_sprite;
 legacy_s8 dashboard_roof_shape_id[] = "roof";
 
+enum {
+	COMPOSITION_TEST_WIDTH = 320,
+	COMPOSITION_TEST_HEIGHT = 48,
+	COMPOSITION_TEST_RENDER = 0,
+	COMPOSITION_TEST_FIRST_PAGE,
+	COMPOSITION_TEST_SECOND_PAGE,
+	COMPOSITION_TEST_BUFFER_COUNT,
+	COMPOSITION_TEST_SCENE_COLOR = 1,
+	COMPOSITION_TEST_ROOF_COLOR = 3,
+	COMPOSITION_TEST_DASHBOARD_COLOR = 6,
+	COMPOSITION_TEST_FPS_TOP = 3,
+	COMPOSITION_TEST_ROOF_HEIGHT = 40,
+	COMPOSITION_TEST_SINGLE_PAGE = 1
+};
+
+enum COMPOSITION_TEST_PHASE {
+	COMPOSITION_TEST_LONG_STATUS,
+	COMPOSITION_TEST_SHORT_STATUS,
+	COMPOSITION_TEST_EXPIRED_STATUS,
+	COMPOSITION_TEST_PHASE_COUNT
+};
+
+static struct {
+	legacy_u8 active;
+	legacy_u8 target;
+	legacy_u8 pixels[COMPOSITION_TEST_BUFFER_COUNT][COMPOSITION_TEST_HEIGHT]
+					[COMPOSITION_TEST_WIDTH];
+} composition;
+
+static void composition_fill(const struct RECTANGLE *bounds, legacy_u8 color)
+{
+	for (legacy_s16 y = bounds->top; y < bounds->bottom; y++) {
+		for (legacy_s16 x = bounds->left; x < bounds->right; x++) {
+			assert(x >= 0 && x < COMPOSITION_TEST_WIDTH);
+			assert(y >= 0 && y < COMPOSITION_TEST_HEIGHT);
+			composition.pixels[composition.target][y][x] = color;
+		}
+	}
+}
+
 void sprite_save_context(struct SPRITE context[SPRITE_STATE_COUNT])
 {
 	context[0] = drawing_sprite;
@@ -104,6 +144,9 @@ void shape2d_rle_copy_position_clipped(struct SHAPE2D far *shape)
 	restored_roof_bounds.top = drawing_sprite.sprite_top;
 	restored_roof_bounds.bottom = drawing_sprite.sprite_bottom;
 	restored_roof_count++;
+	if (composition.active != 0) {
+		composition_fill(&restored_roof_bounds, COMPOSITION_TEST_ROOF_COLOR);
+	}
 }
 
 void sprite_putimage(struct SHAPE2D far *shape)
@@ -114,6 +157,14 @@ void sprite_putimage(struct SHAPE2D far *shape)
 	copied_roof_bounds.top = drawing_sprite.sprite_top;
 	copied_roof_bounds.bottom = drawing_sprite.sprite_bottom;
 	copied_roof_count++;
+	if (composition.active != 0) {
+		for (legacy_s16 y = copied_roof_bounds.top; y < copied_roof_bounds.bottom; y++) {
+			for (legacy_s16 x = copied_roof_bounds.left; x < copied_roof_bounds.right; x++) {
+				composition.pixels[COMPOSITION_TEST_FIRST_PAGE][y][x] =
+					composition.pixels[COMPOSITION_TEST_RENDER][y][x];
+			}
+		}
+	}
 }
 
 void mouse_draw_opaque_check(void)
@@ -160,6 +211,10 @@ struct RECTANGLE *intro_draw_text(legacy_s8 *text, legacy_s16 x, legacy_s16 y, l
 	text_bounds.right = x + length * 8 + 1;
 	text_bounds.top = y;
 	text_bounds.bottom = y + 9;
+	if (composition.active != 0) {
+		/* Solid glyph bounds expose any subsequent opaque cockpit overwrite. */
+		composition_fill(&text_bounds, (legacy_u8)color);
+	}
 	return &text_bounds;
 }
 
@@ -359,6 +414,17 @@ static void reset_ingame_text(const char *filename)
 	render_window_sprite = &frame_sprite;
 }
 
+static legacy_u32 diagnostic_text_start;
+
+static struct RECTANGLE *draw_complete_ingame_text(void)
+{
+	struct RECTANGLE *bounds = draw_ingame_text();
+	diagnostic_text_start = text_draw_count;
+	frame_fps_present_roof();
+	frame_fps_draw_text();
+	return bounds;
+}
+
 static void assert_text(legacy_u32 index, const legacy_char *text, legacy_s16 x, legacy_s16 y)
 {
 	assert(index < text_draw_count);
@@ -381,7 +447,7 @@ static void test_replay_filename_survives_blink(void)
 			for (legacy_u32 frame = 0; frame < frame_rate * 2; frame++) {
 				state.game_frame = frame;
 				text_draw_count = 0;
-				struct RECTANGLE *bounds = draw_ingame_text();
+				struct RECTANGLE *bounds = draw_complete_ingame_text();
 				assert_text(0, filenames[name], filename_x, 3);
 				assert(bounds->top == 3 && bounds->right == 313);
 				if (frame % frame_rate < frame_rate / 2) {
@@ -418,7 +484,7 @@ static void test_wrapped_replay_filename(void)
 			} else if (phase == 2) {
 				game_replay_mode = REPLAY_MODE_PAUSED;
 			}
-			struct RECTANGLE *bounds = draw_ingame_text();
+			struct RECTANGLE *bounds = draw_complete_ingame_text();
 			legacy_u32 line_count = cases[name].lines;
 			assert(text_draw_count == line_count + (phase == 0));
 			char reconstructed[REPLAY_FILENAME_SIZE];
@@ -451,7 +517,7 @@ static void test_replay_filename_when_paused(void)
 {
 	reset_ingame_text("RACE2026");
 	game_replay_mode = REPLAY_MODE_PAUSED;
-	struct RECTANGLE *bounds = draw_ingame_text();
+	struct RECTANGLE *bounds = draw_complete_ingame_text();
 	assert(text_draw_count == 1);
 	assert_text(0, "RACE2026", 248, 3);
 	assert(bounds->left == 248 && bounds->right == 313);
@@ -461,18 +527,18 @@ static void test_replay_filename_when_paused(void)
 static void test_unnamed_replay_overlay(void)
 {
 	reset_ingame_text("");
-	struct RECTANGLE *bounds = draw_ingame_text();
+	struct RECTANGLE *bounds = draw_complete_ingame_text();
 	assert(text_draw_count == 1);
 	assert_text(0, "Replay", 264, 15);
 	assert(bounds->top == 15 && bounds->bottom == 24);
 	state.game_frame = 10;
 	text_draw_count = 0;
-	bounds = draw_ingame_text();
+	bounds = draw_complete_ingame_text();
 	assert(text_draw_count == 0);
 	assert(memcmp(bounds, &empty_rect, sizeof(*bounds)) == 0);
 
 	game_replay_mode = REPLAY_MODE_PAUSED;
-	bounds = draw_ingame_text();
+	bounds = draw_complete_ingame_text();
 	assert(text_draw_count == 0);
 	assert(memcmp(bounds, &empty_rect, sizeof(*bounds)) == 0);
 }
@@ -482,13 +548,13 @@ static void test_filename_hidden_in_live_race_and_demo(void)
 	reset_ingame_text("DEFAULT");
 	game_replay_mode = REPLAY_MODE_LIVE;
 	state.game_inputmode = GAME_INPUT_MODE_ACTIVE;
-	struct RECTANGLE *bounds = draw_ingame_text();
+	struct RECTANGLE *bounds = draw_complete_ingame_text();
 	assert(text_draw_count == 0);
 	assert(memcmp(bounds, &empty_rect, sizeof(*bounds)) == 0);
 
 	game_replay_mode = REPLAY_MODE_PLAYBACK;
 	idle_expired = 1;
-	bounds = draw_ingame_text();
+	bounds = draw_complete_ingame_text();
 	assert(text_draw_count == 2);
 	assert_text(0, "Demo", 144, 170);
 	assert_text(1, "Press a key", 116, 182);
@@ -498,10 +564,11 @@ static void test_filename_hidden_in_live_race_and_demo(void)
 static void assert_fps(const char *expected, legacy_s16 color)
 {
 	text_draw_count = 0;
-	struct RECTANGLE *bounds = draw_ingame_text();
-	assert(strcmp(text_draws[0].text, expected) == 0);
-	assert(text_draws[0].x == 8 && text_draws[0].y == 3);
-	assert(text_draws[0].color == color && text_draws[0].shadow_color == 0);
+	struct RECTANGLE *bounds = draw_complete_ingame_text();
+	const struct TEXT_DRAW *fps = &text_draws[diagnostic_text_start];
+	assert(strcmp(fps->text, expected) == 0);
+	assert(fps->x == 8 && fps->y == 3);
+	assert(fps->color == color && fps->shadow_color == 0);
 	assert(bounds->left == 8 && bounds->top == 3);
 	assert(bounds->right >= (legacy_s16)(8 + strlen(expected) * 8 + 1));
 }
@@ -541,7 +608,7 @@ static void test_fps_sampling(void)
 	fps_display_enabled = 0;
 	text_draw_count = 0;
 	game_replay_mode = REPLAY_MODE_PAUSED;
-	struct RECTANGLE *bounds = draw_ingame_text();
+	struct RECTANGLE *bounds = draw_complete_ingame_text();
 	assert(text_draw_count == 0);
 	assert(memcmp(bounds, &empty_rect, sizeof(*bounds)) == 0);
 	frame_fps_record_presented();
@@ -643,18 +710,19 @@ static void test_fps_and_long_replay_filename(void)
 	present_frames(20, 100);
 	assert_fps("20 FPS", 2);
 	assert(text_draw_count == 6);
-	assert(text_draws[1].y == 3);
-	assert(text_draws[1].x > text_draws[0].x + (legacy_s16)strlen(text_draws[0].text) * 8);
+	assert(text_draws[0].y == 3);
+	const struct TEXT_DRAW *fps = &text_draws[diagnostic_text_start];
+	assert(text_draws[0].x > fps->x + (legacy_s16)strlen(fps->text) * 8);
 	char reconstructed[REPLAY_FILENAME_SIZE];
 	legacy_u32 copied = 0;
-	for (legacy_u32 line = 1; line < text_draw_count - 1; line++) {
+	for (legacy_u32 line = 0; line + 1U < diagnostic_text_start; line++) {
 		legacy_u32 length = strlen(text_draws[line].text);
 		memcpy(reconstructed + copied, text_draws[line].text, length);
 		copied += length;
 	}
 	reconstructed[copied] = 0;
 	assert(strcmp(reconstructed, filename) == 0);
-	assert_text(text_draw_count - 1, "Replay", 264, 51);
+	assert_text(diagnostic_text_start - 1U, "Replay", 264, 51);
 }
 
 static void test_fps_on_cockpit_roof(void)
@@ -832,7 +900,7 @@ static void test_supersight_status_expiry_and_replacement(void)
 	realtime_ticks = LEGACY_U32_WRAP_ADD(realtime_ticks, 1U);
 	assert(frame_fps_expire_idle() == 1);
 	text_draw_count = 0;
-	assert_status_bounds(draw_ingame_text());
+	assert_status_bounds(draw_complete_ingame_text());
 	assert(text_draw_count == 0 && fps_display_enabled == 0);
 	assert(frame_fps_expire_idle() == 0);
 }
@@ -855,7 +923,7 @@ static void test_supersight_status_roof_cleanup(void)
 				struct SPRITE saved_context[SPRITE_STATE_COUNT];
 				sprite_save_context(saved_context);
 				frame_supersight_show_status("Medium");
-				draw_ingame_text();
+				draw_complete_ingame_text();
 				assert(text_draw_count == (legacy_u32)fps + 1U);
 				assert_text(fps, STATUS_TEST_PREFIX "Medium", STATUS_TEST_LEFT, STATUS_TEST_TOP);
 				legacy_s16 top = fps != 0 ? 3 : STATUS_TEST_TOP;
@@ -874,14 +942,14 @@ static void test_supersight_status_roof_cleanup(void)
 				/* A shorter replacement still restores the full old text region. */
 				frame_supersight_show_status("Off");
 				text_draw_count = 0;
-				draw_ingame_text();
+				draw_complete_ingame_text();
 				frame_fps_present_roof();
 				assert_text(fps, STATUS_TEST_PREFIX "Off", STATUS_TEST_LEFT, STATUS_TEST_TOP);
 				assert(restored_roof_count == restored * 2U);
 				realtime_ticks = LEGACY_U32_WRAP_ADD(realtime_ticks, STATUS_TEST_DURATION);
 				assert(frame_fps_expire_idle() == 1);
 				text_draw_count = 0;
-				struct RECTANGLE *bounds = draw_ingame_text();
+				struct RECTANGLE *bounds = draw_complete_ingame_text();
 				assert(text_draw_count == fps);
 				assert(bounds->right == STATUS_TEST_RIGHT && bounds->bottom == STATUS_TEST_BOTTOM);
 				assert(restored_roof_count == restored * 3U);
@@ -895,7 +963,7 @@ static void test_supersight_status_roof_cleanup(void)
 				/* Both page buffers are cleaned before status-only visibility ends. */
 				if (flipping != 0) {
 					text_draw_count = 0;
-					draw_ingame_text();
+					draw_complete_ingame_text();
 					frame_fps_present_roof();
 				}
 				assert(frame_display_overlay_active() == fps);
@@ -912,7 +980,7 @@ static void test_supersight_status_paused_page_cleanup(void)
 	dashboard_visible = 1;
 	roofbmpheight_copy = STATUS_TEST_BOTTOM;
 	frame_supersight_show_status("Low");
-	assert_status_bounds(draw_ingame_text());
+	assert_status_bounds(draw_complete_ingame_text());
 	frame_fps_present_roof();
 	realtime_ticks = LEGACY_U32_WRAP_ADD(realtime_ticks, STATUS_TEST_DURATION);
 	for (legacy_u16 page = 0; page < STATUS_TEST_PAGE_COUNT; page++) {
@@ -920,7 +988,7 @@ static void test_supersight_status_paused_page_cleanup(void)
 		assert(frame_fps_expire_idle() == 1);
 		assert(frame_display_overlay_active() != 0);
 		text_draw_count = 0;
-		assert_status_bounds(draw_ingame_text());
+		assert_status_bounds(draw_complete_ingame_text());
 		assert(text_draw_count == 0);
 		frame_fps_present_roof();
 	}
@@ -928,6 +996,82 @@ static void test_supersight_status_paused_page_cleanup(void)
 	assert(fps_display_enabled == 0);
 	assert(frame_fps_expire_idle() == 0);
 	assert(frame_display_overlay_active() == 0);
+}
+
+static void test_diagnostic_text_after_dashboard(void)
+{
+	const struct RECTANGLE dashboard_bounds = {0, COMPOSITION_TEST_WIDTH, 0,
+											   COMPOSITION_TEST_HEIGHT};
+	const legacy_s16 roof_heights[] = {0, COMPOSITION_TEST_ROOF_HEIGHT};
+	for (legacy_u8 flipping = 0; flipping <= 1; flipping++) {
+		for (legacy_u16 roof = 0; roof < sizeof(roof_heights) / sizeof(roof_heights[0]); roof++) {
+			reset_status_text();
+			fps_display_enabled = FRAME_FPS_DISPLAY_RATE;
+			dashboard_visible = 1;
+			roofbmpheight_copy = roof_heights[roof];
+			video_uses_page_flipping = flipping;
+			memset(&composition, 0, sizeof(composition));
+			composition.active = 1;
+			legacy_u16 pages =
+				flipping != 0 ? STATUS_TEST_PAGE_COUNT : COMPOSITION_TEST_SINGLE_PAGE;
+			for (legacy_u16 phase = COMPOSITION_TEST_LONG_STATUS;
+				 phase < COMPOSITION_TEST_PHASE_COUNT; phase++) {
+				if (phase == COMPOSITION_TEST_LONG_STATUS) {
+					frame_supersight_show_status("Medium");
+				} else if (phase == COMPOSITION_TEST_SHORT_STATUS) {
+					frame_supersight_show_status("Off");
+				} else {
+					realtime_ticks = LEGACY_U32_WRAP_ADD(realtime_ticks, STATUS_TEST_DURATION);
+				}
+				for (legacy_u16 page = 0; page < pages; page++) {
+					legacy_u8 target = flipping != 0 ? COMPOSITION_TEST_FIRST_PAGE + page
+													 : COMPOSITION_TEST_RENDER;
+					composition.target = target;
+					const struct RECTANGLE scene_bounds = {
+						0, COMPOSITION_TEST_WIDTH, roofbmpheight_copy, COMPOSITION_TEST_HEIGHT};
+					composition_fill(&scene_bounds, COMPOSITION_TEST_SCENE_COLOR);
+					text_draw_count = 0;
+					struct RECTANGLE bounds = *draw_ingame_text();
+					assert(text_draw_count == 0);
+					assert(bounds.left == STATUS_TEST_LEFT && bounds.right == STATUS_TEST_RIGHT);
+					assert(bounds.top == COMPOSITION_TEST_FPS_TOP &&
+						   bounds.bottom == STATUS_TEST_BOTTOM);
+					if (phase == COMPOSITION_TEST_EXPIRED_STATUS) {
+						/* Preparation must leave each pending page cleanup for the final paint. */
+						assert(frame_fps_expire_idle() != 0);
+					}
+					/* A custom dashboard can cover both diagnostic rows, including the roof. */
+					composition_fill(&dashboard_bounds, COMPOSITION_TEST_DASHBOARD_COLOR);
+					if (flipping == 0) {
+						for (legacy_s16 y = scene_bounds.top; y < scene_bounds.bottom; y++) {
+							memcpy(composition.pixels[COMPOSITION_TEST_FIRST_PAGE][y],
+								   composition.pixels[COMPOSITION_TEST_RENDER][y],
+								   COMPOSITION_TEST_WIDTH);
+						}
+						composition.target = COMPOSITION_TEST_FIRST_PAGE;
+					}
+					frame_fps_present_roof();
+					frame_fps_draw_text();
+					assert(text_draw_count == (phase == COMPOSITION_TEST_EXPIRED_STATUS ? 1U : 2U));
+					assert(strcmp(text_draws[0].text, "0 FPS") == 0);
+					assert(composition.pixels[composition.target][COMPOSITION_TEST_FPS_TOP]
+											 [STATUS_TEST_LEFT] == text_draws[0].color);
+					assert(
+						composition.pixels[composition.target][STATUS_TEST_TOP][STATUS_TEST_LEFT] ==
+						(phase == COMPOSITION_TEST_EXPIRED_STATUS ? COMPOSITION_TEST_DASHBOARD_COLOR
+																  : dialog_fnt_colour));
+					assert(
+						composition
+							.pixels[composition.target][STATUS_TEST_TOP][STATUS_TEST_RIGHT - 1U] ==
+						(phase == COMPOSITION_TEST_LONG_STATUS ? dialog_fnt_colour
+															   : COMPOSITION_TEST_DASHBOARD_COLOR));
+				}
+			}
+			assert(frame_fps_expire_idle() == 0);
+			composition.active = 0;
+		}
+	}
+	reset_status_text();
 }
 
 static void test_supersight_status_replay_filename_collision(void)
@@ -940,11 +1084,12 @@ static void test_supersight_status_replay_filename_collision(void)
 		reset_ingame_text(filename);
 		fps_display_enabled = fps;
 		frame_supersight_show_status("Medium");
-		draw_ingame_text();
-		assert_text(fps, STATUS_TEST_PREFIX "Medium", STATUS_TEST_LEFT, STATUS_TEST_TOP);
+		draw_complete_ingame_text();
+		assert_text(diagnostic_text_start + fps, STATUS_TEST_PREFIX "Medium", STATUS_TEST_LEFT,
+					STATUS_TEST_TOP);
 		legacy_char reconstructed[REPLAY_FILENAME_SIZE];
 		legacy_u32 copied = 0;
-		for (legacy_u32 index = fps + 1U; index + 1U < text_draw_count; index++) {
+		for (legacy_u32 index = 0; index + 1U < diagnostic_text_start; index++) {
 			legacy_u32 length = strlen(text_draws[index].text);
 			memcpy(reconstructed + copied, text_draws[index].text, length);
 			copied += length;
@@ -954,13 +1099,18 @@ static void test_supersight_status_replay_filename_collision(void)
 		for (legacy_u32 first = 0; first < text_draw_count; first++) {
 			for (legacy_u32 second = first + 1U; second < text_draw_count; second++) {
 				if (text_draws[first].y == text_draws[second].y) {
-					assert(text_draws[first].x +
-							   (legacy_s16)strlen(text_draws[first].text) * STATUS_TEST_FONT_WIDTH <
-						   text_draws[second].x);
+					legacy_s16 first_right =
+						text_draws[first].x +
+						(legacy_s16)strlen(text_draws[first].text) * STATUS_TEST_FONT_WIDTH;
+					legacy_s16 second_right =
+						text_draws[second].x +
+						(legacy_s16)strlen(text_draws[second].text) * STATUS_TEST_FONT_WIDTH;
+					assert(first_right < text_draws[second].x ||
+						   second_right < text_draws[first].x);
 				}
 			}
 		}
-		assert(strcmp(text_draws[text_draw_count - 1U].text, "Replay") == 0);
+		assert(strcmp(text_draws[diagnostic_text_start - 1U].text, "Replay") == 0);
 		assert(strcmp((const legacy_char *)replay_filename, filename) == 0);
 	}
 	reset_status_text();
@@ -1026,18 +1176,18 @@ static void test_render_timing(void)
 	roofbmpheight_copy = STATUS_TEST_BOTTOM;
 	frame_supersight_show_status("Medium");
 	text_draw_count = 0;
-	draw_ingame_text();
+	draw_complete_ingame_text();
 	assert(text_draw_count == 3);
 	assert_text(1, "8.4ms", STATUS_TEST_LEFT, RENDER_TEST_LINE_Y);
 	assert_text(2, STATUS_TEST_PREFIX "Medium", STATUS_TEST_LEFT, STATUS_TEST_TOP);
 	assert(restored_roof_bounds.top == 3 && restored_roof_bounds.bottom == STATUS_TEST_BOTTOM);
 	realtime_ticks += STATUS_TEST_DURATION;
 	text_draw_count = 0;
-	draw_ingame_text();
+	draw_complete_ingame_text();
 	assert(text_draw_count == 2);
 	assert(restored_roof_bounds.bottom == STATUS_TEST_BOTTOM);
 	text_draw_count = 0;
-	draw_ingame_text();
+	draw_complete_ingame_text();
 	assert(restored_roof_bounds.bottom == RENDER_TEST_LINE_BOTTOM);
 	reset_status_text();
 }
@@ -1067,6 +1217,7 @@ legacy_int main(void)
 	test_supersight_status_expiry_and_replacement();
 	test_supersight_status_roof_cleanup();
 	test_supersight_status_paused_page_cleanup();
+	test_diagnostic_text_after_dashboard();
 	test_supersight_status_replay_filename_collision();
 #ifdef RESTUNTS_SDL3
 	test_render_timing();

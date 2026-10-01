@@ -19,6 +19,8 @@ static legacy_u32 presented_frames;
 #define TEST_HOTKEY_ARRIVAL_NS 1000000U
 #define TEST_HOTKEY_CATCHUP_FRAMES 4U
 #define TEST_HOTKEY_OPEN_REPLAY 1U
+#define TEST_DASHBOARD_RENDER_MODES 32U
+#define TEST_DASHBOARD_DIRTY_MODE_SHIFT 4U
 
 static struct {
 	legacy_u8 active;
@@ -42,6 +44,8 @@ static struct {
 	legacy_u16 overlays[2];
 	legacy_u16 static_draws;
 	legacy_u16 updates;
+	legacy_u16 diagnostic_draws;
+	legacy_u8 mouse_hidden;
 	legacy_u16 controls;
 	struct RECTANGLE clip;
 	struct SHAPE2D shapes[2];
@@ -245,6 +249,27 @@ void frame_fps_reset(void)
 
 void frame_fps_present_roof(void)
 {
+}
+
+legacy_s16 frame_display_overlay_active(void)
+{
+	return replay_render.active;
+}
+
+struct RECTANGLE *frame_fps_draw_text(void)
+{
+	if (replay_render.active != 0) {
+		/* Custom top artwork and instruments must be composed before the text. */
+		assert(replay_render.masks[0] + replay_render.masks[1] == frames);
+		assert(replay_render.overlays[0] + replay_render.overlays[1] == frames);
+		assert(replay_render.updates == frames);
+		assert(replay_render.mouse_hidden != 0);
+		assert(replay_render.target == (video_uses_page_flipping != 0 ? REPLAY_TEST_PAGE_TARGET
+																	  : REPLAY_TEST_SCREEN_TARGET));
+		replay_render.diagnostic_draws++;
+		assert(replay_render.diagnostic_draws == frames);
+	}
+	return &empty_rect;
 }
 
 void frame_fps_record_presented(void)
@@ -588,10 +613,12 @@ void frame_present(struct RECTANGLE *rect)
 }
 void mouse_draw_opaque_check(void)
 {
+	replay_render.mouse_hidden = 1;
 	trace(24);
 }
 void mouse_draw_transparent_check(void)
 {
+	replay_render.mouse_hidden = 0;
 	trace(25);
 }
 void sprite_present_mcga_backbuffer(void)
@@ -738,7 +765,7 @@ static void test_driving_hotkey_queue(void)
 static void test_replay_dashboard_rendering(void)
 {
 	legacy_u32 previous_trace = trace_hash;
-	for (legacy_u16 mode = 0; mode < 16; mode++) {
+	for (legacy_u16 mode = 0; mode < TEST_DASHBOARD_RENDER_MODES; mode++) {
 		memset(&replay_render, 0, sizeof(replay_render));
 		replay_render.active = 1;
 		supersight_enabled = mode & 1;
@@ -757,7 +784,7 @@ static void test_replay_dashboard_rendering(void)
 		viewport_bottom_cache = -1;
 		video_page_count = video_uses_page_flipping != 0 ? 2 : 1;
 		frame_buffer_index = dashboard_buffer_index = 0;
-		slow_video_mgmt_copy = 0;
+		slow_video_mgmt_copy = (mode >> TEST_DASHBOARD_DIRTY_MODE_SHIFT) & 1U;
 		frames = presented_frames = 0;
 		race_update_viewport(&cache, 0);
 		legacy_u8 clipped = supersight_enabled != 0 && replaybar_enabled != 0;
@@ -773,6 +800,7 @@ static void test_replay_dashboard_rendering(void)
 		assert(replay_render.masks[clipped] == 1 && replay_render.overlays[clipped] == 1);
 		assert(replay_render.masks[!clipped] == 0 && replay_render.overlays[!clipped] == 0);
 		assert(replay_render.static_draws == full_redraw && replay_render.updates == 1);
+		assert(replay_render.diagnostic_draws == 1);
 		assert(replay_render.controls == (full_redraw != 0 && replaybar_enabled != 0));
 		assert(replay_render.clip.left == 0 && replay_render.clip.right == 320);
 		assert(replay_render.clip.top == 0 && replay_render.clip.bottom == 200);

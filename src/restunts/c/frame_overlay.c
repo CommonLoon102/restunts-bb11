@@ -342,31 +342,33 @@ struct RECTANGLE *frame_fps_draw_text(void)
 	return &bounds;
 }
 
-static legacy_u16 draw_fps_text(void)
+static legacy_u16 prepare_fps_text(void)
 {
 	if (frame_display_overlay_active() == 0) {
 		fps_present_pending = 0;
 		return 0;
 	}
-	struct RECTANGLE roof_bounds = empty_rect;
+	struct RECTANGLE overlay_bounds = empty_rect;
 	if (fps_display_enabled != 0) {
-		roof_bounds.left = REPLAY_TEXT_LEFT_X;
-		roof_bounds.right = FPS_TEXT_RIGHT_X;
-		roof_bounds.top = REPLAY_FILENAME_Y;
-		roof_bounds.bottom = REPLAY_FILENAME_Y + font_glyph_height + 1;
+		overlay_bounds.left = REPLAY_TEXT_LEFT_X;
+		overlay_bounds.right = FPS_TEXT_RIGHT_X;
+		overlay_bounds.top = REPLAY_FILENAME_Y;
+		overlay_bounds.bottom = REPLAY_FILENAME_Y + font_glyph_height + 1;
 #ifdef RESTUNTS_SDL3
 		if (fps_display_enabled == FRAME_FPS_DISPLAY_TIMING) {
-			roof_bounds.bottom = REPLAY_TEXT_Y + font_glyph_height + 1;
+			overlay_bounds.bottom = REPLAY_TEXT_Y + font_glyph_height + 1;
 		}
 #endif
 	}
 	if (supersight_status_active != 0 || supersight_status_clear_frames != 0) {
 		struct RECTANGLE status_bounds = frame_supersight_status_bounds();
-		rect_union(&roof_bounds, &status_bounds, &roof_bounds);
+		rect_union(&overlay_bounds, &status_bounds, &overlay_bounds);
 	}
 	/* Only the roof lies outside the scene that was redrawn this frame. */
-	frame_fps_restore_roof(&roof_bounds);
-	rect_union(&rect_ingame_text, frame_fps_draw_text(), &rect_ingame_text);
+	frame_fps_restore_roof(&overlay_bounds);
+	/* Reserve the dirty region now; the race controller paints the text after
+	 * composing the dashboard so custom upper artwork cannot cover it. */
+	rect_union(&rect_ingame_text, &overlay_bounds, &rect_ingame_text);
 	/* Reserve the maximum width so changing counter digits never rewraps the filename. */
 	return fps_display_enabled != 0 ? FPS_TEXT_BUFFER_SIZE : 0;
 }
@@ -551,7 +553,7 @@ static legacy_s16 draw_replay_filename(legacy_u16 reserved_characters)
 struct RECTANGLE *draw_ingame_text(void)
 {
 	rect_ingame_text = empty_rect;
-	legacy_u16 fps_characters = draw_fps_text();
+	legacy_u16 fps_characters = prepare_fps_text();
 	if (idle_expired != 0) {
 		draw_centered_ingame_resource("dm1", DEMO_TEXT_FIRST_Y);
 		draw_centered_ingame_resource("dm2", DEMO_TEXT_SECOND_Y);
