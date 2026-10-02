@@ -1,0 +1,920 @@
+{
+  "base": "docs/menus/sources/full-resolution/opponent.png (nearest-neighbor normalized to working dimensions)",
+  "base_sha256": "828d2eb61320c37b5149eccae452e4c1c9b2f388dfac1ef680653b0cc1a98b42",
+  "canvas_size": [
+    1280,
+    728
+  ],
+  "patch": "opponent-corrections.png",
+  "patch_sha256": "f20ab5f716e2e58079bb4c332ad4dee994d859c9fb096f9b3d188f82af928862",
+  "mask": "opponent-correction-mask.png",
+  "mask_sha256": "c19aa90513d7074a5d194ff721b020ce2f7adbf3900678e6693cbe730eb8cae1",
+  "mask_pixels": 17154,
+  "features": [
+    {
+      "name": "cord-left",
+      "mask": "opponent-mask-cord-left.png",
+      "bounds_exclusive": [
+        892,
+        0,
+        1145,
+        189
+      ],
+      "pixels": 5369,
+      "mask_sha256": "171d25ccb94556f89541beb1b80c8402677f5e801a50cf2f2176a73cd4808c31",
+      "definition": {
+        "polygon": [
+          [
+            1149,
+            0
+          ],
+          [
+            1143,
+            10
+          ],
+          [
+            1108,
+            21
+          ],
+          [
+            1076,
+            32
+          ],
+          [
+            1054,
+            43
+          ],
+          [
+            1043,
+            53
+          ],
+          [
+            1044,
+            62
+          ],
+          [
+            1056,
+            74
+          ],
+          [
+            1071,
+            86
+          ],
+          [
+            1073,
+            99
+          ],
+          [
+            1069,
+            108
+          ],
+          [
+            1058,
+            114
+          ],
+          [
+            1027,
+            121
+          ],
+          [
+            996,
+            126
+          ],
+          [
+            964,
+            129
+          ],
+          [
+            935,
+            129
+          ],
+          [
+            919,
+            132
+          ],
+          [
+            909,
+            141
+          ],
+          [
+            906,
+            154
+          ],
+          [
+            912,
+            168
+          ],
+          [
+            920,
+            177
+          ],
+          [
+            920,
+            188
+          ],
+          [
+            903,
+            187
+          ],
+          [
+            894,
+            177
+          ],
+          [
+            889,
+            164
+          ],
+          [
+            887,
+            149
+          ],
+          [
+            891,
+            134
+          ],
+          [
+            900,
+            123
+          ],
+          [
+            913,
+            116
+          ],
+          [
+            933,
+            113
+          ],
+          [
+            963,
+            112
+          ],
+          [
+            989,
+            110
+          ],
+          [
+            1013,
+            107
+          ],
+          [
+            1033,
+            104
+          ],
+          [
+            1050,
+            98
+          ],
+          [
+            1055,
+            94
+          ],
+          [
+            1053,
+            90
+          ],
+          [
+            1041,
+            82
+          ],
+          [
+            1031,
+            73
+          ],
+          [
+            1026,
+            64
+          ],
+          [
+            1024,
+            53
+          ],
+          [
+            1026,
+            41
+          ],
+          [
+            1035,
+            31
+          ],
+          [
+            1047,
+            22
+          ],
+          [
+            1066,
+            14
+          ],
+          [
+            1089,
+            7
+          ],
+          [
+            1117,
+            0
+          ]
+        ],
+        "color_selector": "old or donor R < 2.6*B+15 and G < 2.6*B+10; 3x3 closing, clipped to polygon"
+      },
+      "donor": "opponent-details-source.png"
+    },
+    {
+      "name": "cord-right",
+      "mask": "opponent-mask-cord-right.png",
+      "bounds_exclusive": [
+        1074,
+        0,
+        1280,
+        339
+      ],
+      "pixels": 6268,
+      "mask_sha256": "4edfc7659a37c13516abaa7e0a8013fe4d89cffbd072f51afe492dc2020cd5e4",
+      "definition": {
+        "polygon": [
+          [
+            1280,
+            0
+          ],
+          [
+            1280,
+            9
+          ],
+          [
+            1261,
+            11
+          ],
+          [
+            1239,
+            18
+          ],
+          [
+            1218,
+            25
+          ],
+          [
+            1196,
+            35
+          ],
+          [
+            1187,
+            44
+          ],
+          [
+            1186,
+            51
+          ],
+          [
+            1195,
+            63
+          ],
+          [
+            1205,
+            76
+          ],
+          [
+            1208,
+            85
+          ],
+          [
+            1205,
+            95
+          ],
+          [
+            1198,
+            104
+          ],
+          [
+            1188,
+            112
+          ],
+          [
+            1172,
+            124
+          ],
+          [
+            1159,
+            134
+          ],
+          [
+            1150,
+            146
+          ],
+          [
+            1147,
+            156
+          ],
+          [
+            1150,
+            166
+          ],
+          [
+            1161,
+            180
+          ],
+          [
+            1175,
+            194
+          ],
+          [
+            1192,
+            210
+          ],
+          [
+            1205,
+            224
+          ],
+          [
+            1222,
+            239
+          ],
+          [
+            1237,
+            253
+          ],
+          [
+            1242,
+            264
+          ],
+          [
+            1238,
+            276
+          ],
+          [
+            1226,
+            290
+          ],
+          [
+            1214,
+            302
+          ],
+          [
+            1200,
+            313
+          ],
+          [
+            1184,
+            323
+          ],
+          [
+            1166,
+            331
+          ],
+          [
+            1147,
+            337
+          ],
+          [
+            1136,
+            338
+          ],
+          [
+            1136,
+            332
+          ],
+          [
+            1118,
+            333
+          ],
+          [
+            1100,
+            328
+          ],
+          [
+            1081,
+            321
+          ],
+          [
+            1074,
+            317
+          ],
+          [
+            1075,
+            308
+          ],
+          [
+            1083,
+            308
+          ],
+          [
+            1101,
+            316
+          ],
+          [
+            1120,
+            320
+          ],
+          [
+            1136,
+            321
+          ],
+          [
+            1149,
+            322
+          ],
+          [
+            1168,
+            316
+          ],
+          [
+            1185,
+            309
+          ],
+          [
+            1200,
+            298
+          ],
+          [
+            1213,
+            286
+          ],
+          [
+            1224,
+            272
+          ],
+          [
+            1226,
+            264
+          ],
+          [
+            1218,
+            255
+          ],
+          [
+            1205,
+            243
+          ],
+          [
+            1189,
+            227
+          ],
+          [
+            1176,
+            214
+          ],
+          [
+            1163,
+            202
+          ],
+          [
+            1148,
+            187
+          ],
+          [
+            1138,
+            174
+          ],
+          [
+            1132,
+            162
+          ],
+          [
+            1131,
+            149
+          ],
+          [
+            1136,
+            133
+          ],
+          [
+            1144,
+            120
+          ],
+          [
+            1157,
+            108
+          ],
+          [
+            1175,
+            94
+          ],
+          [
+            1189,
+            82
+          ],
+          [
+            1190,
+            77
+          ],
+          [
+            1183,
+            69
+          ],
+          [
+            1176,
+            61
+          ],
+          [
+            1171,
+            52
+          ],
+          [
+            1171,
+            41
+          ],
+          [
+            1176,
+            31
+          ],
+          [
+            1188,
+            21
+          ],
+          [
+            1205,
+            13
+          ],
+          [
+            1233,
+            3
+          ],
+          [
+            1242,
+            0
+          ]
+        ],
+        "color_selector": "old or donor R < 2.6*B+15 and G < 2.6*B+10; 3x3 closing, clipped to polygon"
+      },
+      "donor": "opponent-details-source.png"
+    },
+    {
+      "name": "left-ring",
+      "mask": "opponent-mask-left-ring.png",
+      "bounds_exclusive": [
+        912,
+        168,
+        939,
+        188
+      ],
+      "pixels": 335,
+      "mask_sha256": "5e35ce0b820389afe318da2b6c2741f6097e65cc8dae05dcd4d148e42101e90a",
+      "definition": {
+        "polygon": [
+          [
+            914,
+            168
+          ],
+          [
+            924,
+            168
+          ],
+          [
+            934,
+            176
+          ],
+          [
+            938,
+            184
+          ],
+          [
+            932,
+            187
+          ],
+          [
+            923,
+            183
+          ],
+          [
+            917,
+            183
+          ],
+          [
+            912,
+            177
+          ]
+        ]
+      },
+      "donor": "opponent-details-source.png"
+    },
+    {
+      "name": "remove-filament",
+      "mask": "opponent-mask-remove-filament.png",
+      "bounds_exclusive": [
+        1068,
+        230,
+        1093,
+        276
+      ],
+      "pixels": 514,
+      "mask_sha256": "cc7dca2cd46940b641266e6a6cd5eb9903c7b1718eea84009b1c19ca13affa14",
+      "definition": {
+        "polygon": [
+          [
+            1069,
+            230
+          ],
+          [
+            1075,
+            232
+          ],
+          [
+            1082,
+            237
+          ],
+          [
+            1088,
+            242
+          ],
+          [
+            1090,
+            247
+          ],
+          [
+            1090,
+            253
+          ],
+          [
+            1088,
+            259
+          ],
+          [
+            1092,
+            264
+          ],
+          [
+            1092,
+            270
+          ],
+          [
+            1089,
+            275
+          ],
+          [
+            1083,
+            275
+          ],
+          [
+            1080,
+            269
+          ],
+          [
+            1080,
+            261
+          ],
+          [
+            1077,
+            255
+          ],
+          [
+            1077,
+            248
+          ],
+          [
+            1079,
+            244
+          ],
+          [
+            1077,
+            240
+          ],
+          [
+            1068,
+            236
+          ]
+        ]
+      },
+      "donor": "opponent-details-source.png"
+    },
+    {
+      "name": "black-hand",
+      "mask": "opponent-mask-black-hand.png",
+      "bounds_exclusive": [
+        880,
+        237,
+        962,
+        321
+      ],
+      "pixels": 1626,
+      "mask_sha256": "9fb9ed6862c2606cdff77deb6d26dde7498d192edcdbd8b58e0ba55d98aae684",
+      "definition": {
+        "polygon": [
+          [
+            880,
+            237
+          ],
+          [
+            899,
+            249
+          ],
+          [
+            960,
+            307
+          ],
+          [
+            961,
+            320
+          ],
+          [
+            948,
+            319
+          ],
+          [
+            880,
+            248
+          ]
+        ],
+        "purpose": "union corridor covering old thick hand, donor thin shaft, and widened outer tip"
+      },
+      "donor": "opponent-details-source.png"
+    },
+    {
+      "name": "red-hand",
+      "mask": "opponent-mask-red-hand.png",
+      "bounds_exclusive": [
+        951,
+        241,
+        1030,
+        322
+      ],
+      "pixels": 1497,
+      "mask_sha256": "d72d0ad68a8db245f98223b2f6577c40ddae0ae974738bd9bbf34aa5bf033f37",
+      "definition": {
+        "polygon": [
+          [
+            1029,
+            241
+          ],
+          [
+            1029,
+            251
+          ],
+          [
+            962,
+            321
+          ],
+          [
+            951,
+            320
+          ],
+          [
+            951,
+            309
+          ],
+          [
+            1018,
+            246
+          ]
+        ],
+        "purpose": "union corridor covering old thick hand, donor thin shaft, and widened outer tip"
+      },
+      "donor": "opponent-details-source.png"
+    },
+    {
+      "name": "hb-ink",
+      "mask": "opponent-mask-hb-ink.png",
+      "bounds_exclusive": [
+        1142,
+        432,
+        1164,
+        467
+      ],
+      "pixels": 261,
+      "mask_sha256": "8004f6ae656a68360191d929453157fe4834b2861a8cc1981ffe4b5dc9872bb6",
+      "definition": {
+        "polygon": [
+          [
+            1140,
+            430
+          ],
+          [
+            1156,
+            429
+          ],
+          [
+            1169,
+            469
+          ],
+          [
+            1152,
+            473
+          ]
+        ],
+        "color_selector": "donor max(R,G,B) < 150; copy only donor ink pixels"
+      },
+      "donor": "opponent-details-source.png"
+    },
+    {
+      "name": "emblem-si",
+      "mask": "opponent-mask-emblem-si.png",
+      "bounds_exclusive": [
+        1242,
+        600,
+        1280,
+        652
+      ],
+      "pixels": 1157,
+      "mask_sha256": "e2f5275f93def825ed5806442cee65b2c391b9c948659224d46342b739d969aa",
+      "definition": {
+        "polygon": [
+          [
+            1239,
+            609
+          ],
+          [
+            1257,
+            605
+          ],
+          [
+            1258,
+            598
+          ],
+          [
+            1279,
+            598
+          ],
+          [
+            1279,
+            657
+          ],
+          [
+            1264,
+            655
+          ],
+          [
+            1263,
+            647
+          ],
+          [
+            1240,
+            632
+          ]
+        ],
+        "color_selector": "old or donor min(R,G,B)>135; 2-pixel expansion clipped to polygon; subtract original D component and 2-pixel border",
+        "protected_original_D_pixels": 398
+      },
+      "donor": "opponent-details-source.png"
+    },
+    {
+      "name": "right-ring-refinement",
+      "mask": "opponent-mask-right-ring-refinement.png",
+      "bounds_exclusive": [
+        1069,
+        300,
+        1111,
+        330
+      ],
+      "pixels": 788,
+      "mask_sha256": "5987e95e6b78f94f662e5c36444a4083cbc9f7059c856013283e210716d6fd26",
+      "definition": {
+        "polygon": [
+          [
+            1072,
+            301
+          ],
+          [
+            1089,
+            300
+          ],
+          [
+            1094,
+            308
+          ],
+          [
+            1101,
+            313
+          ],
+          [
+            1110,
+            317
+          ],
+          [
+            1110,
+            327
+          ],
+          [
+            1101,
+            329
+          ],
+          [
+            1088,
+            325
+          ],
+          [
+            1073,
+            320
+          ],
+          [
+            1069,
+            315
+          ],
+          [
+            1069,
+            307
+          ]
+        ],
+        "normalized_source_box": [
+          1050,
+          279,
+          1150,
+          356
+        ],
+        "purpose": "replace socket with small obscured silver loop and matching cord"
+      },
+      "donor": "opponent-right-ring-source.png"
+    }
+  ],
+  "normalization": "All donor resampling NEAREST; full crop 808,0,1280,728 resized to472x728; ring crop1050,279,1150,356 resized to100x77",
+  "verification": {
+    "outside_mask_unchanged": true,
+    "original_D_white_component_unchanged": true
+  },
+  "palette_preview": "NEAREST640x364 then original game palette without dithering"
+}

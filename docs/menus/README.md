@@ -48,6 +48,14 @@ working images in [`sources/working-4x/`](sources/working-4x/). Optional RGBA
 correction patches are applied at these exact working dimensions before
 reduction. Transparent pixels retain the generated image unchanged.
 
+The [detail correction prompts](sources/patches/detail-generation-prompts.json)
+record local edits to the showroom shadows and opponent desk objects. The
+showroom patch removes the right curtain cast shadow and restores the podium
+shadow along its upper-right edge. The opponent patch corrects the cord color
+and metal attachments, stopwatch hands, pencil lettering and stray metal, and
+the key fob lettering. Masked patches preserve the surrounding artwork; their
+composition records and selected generated close-ups are kept beside the patches.
+
 The working images are then reduced with **nearest neighbor** to half their
 width and height: from 16 times the original pixel count to 4 times. Palette
 mapping follows reduction, without dithering, blur, sharpening or other filters.

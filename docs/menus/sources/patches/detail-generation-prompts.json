@@ -1,0 +1,37 @@
+{
+  "generator": "built-in imagegen",
+  "mode": "edit",
+  "composition": "Only selected feature masks are composited at 4x working dimensions; all other working pixels stay unchanged.",
+  "prompts": {
+    "showroom_shadows": {
+      "target_crop": [
+        920,
+        120,
+        1280,
+        412
+      ],
+      "donor_file": "showroom-shadow-source.png",
+      "prompt": "Use case: precise-object-edit. Edit only two red carpet shadow areas in IMAGE 1, the provided closeup of the restored showroom. IMAGE 2 is the same exact crop of the original game artwork enlarged by nearest neighbor; its shadow placement is authoritative. Output the same crop, same composition and framing, with no margins, no new objects.\n1. REMOVE the dark maroon cast shadow directly underneath the blue curtain's raised curved swag: the carpet area below the blue arc and above-left of the vertical hanging blue curtain panel must be normal bright RED carpet matching the surrounding lit floor. Preserve the blue fabric's own shading and silhouette perfectly. Specifically the broad dark maroon patch immediately BELOW the swag at crop x175..274, y109..168 must disappear completely.\n2. RESTORE the podium's cast shadow at its BACK/UPPER RIGHT on the carpet, as visible in image 2. It is a narrow dark burgundy crescent/wedge hugging the upper-right diagonal outer edge of the gray circular podium, between that rim and the curtain. Begin near the top at crop x42,y35, follow the podium's curved back rim toward x120,y62, x150,y93, and finish tapering along its right edge near x200,y151. Match IMAGE 2's placement and tapered silhouette as closely as possible. This is the shadow FROM THE PODIUM ON RED CARPET, not a shadow under the blue curtain.\nRetain every other detail of image 1: its gray platform top and front sidewall, its existing lower contact shadow, curtain folds and gold tieback, gray wall, red carpet texture. Photorealistic pixel art, crisp clusters, no blur. Only the two carpet shadow edits."
+    },
+    "opponent_details": {
+      "target_crop": [
+        808,
+        0,
+        1280,
+        728
+      ],
+      "donor_file": "opponent-details-source.png",
+      "prompt": "Use case: precise-object-edit. IMAGE 1 is the edit target, a closeup of a restored Stunts opponent-selection background. IMAGE 2 is the same region in original pixel art, authoritative for the few corrections requested. Preserve the exact framing, wood grain, shapes, size and placement of all objects in image 1. Photorealistic crisp pixel art. Make only these small fixes:\nA) Stopwatch lanyard: LIGHTEN BOTH existing braided brown cords to match original warm medium brown (highlights RGB174,113,64; midtones129,85,44; deep shadows68,48,20), preserving the exact paths and fine braided texture. Do not add cord. On the watch's upper-left shoulder where cord terminates, restore a tiny STEEL METAL ATTACHMENT RING, mostly obscured by the cord but with a small silver crescent visible. At the right attachment, replace the incorrect gold socket/hole in the blue casing with a TINY STEEL METAL RING connecting cord to case: cord passes THROUGH THE RING, never into blue enamel. Right ring mostly hidden behind the cord, subtle gray metal visibility only.\nB) Restore continuous yellow pencil between the two stopwatch push buttons: REMOVE ONLY the stray thin silver metal filament on the pencil immediately below the large angled top button and above the small horizontal right button. Keep both legitimate stopwatch buttons unchanged.\nC) Add the two small dark graphite pencil-grade letters H and B, reading H then B from top to bottom, printed along the diagonal shaft immediately ABOVE its orange metal ferrule near lower right. Follow the pencil's existing angle. Small crisp legible dark letters, not broad text. They are present in original image 2.\nD) Stopwatch main hands must faithfully follow original image 2. Keep their existing angles and pivot location, but make both shafts VERY THIN uniform needles, with SHORT WIDENED LEAF/SPADE portions ONLY NEAR THE VERY OUTER TIPS. Black hand points upper left, red hand upper right. Tips pointed, wide leaf occurs only within outermost quarter of each hand. Remaining three quarters down to the pivot a fine narrow shaft. Do not make whole hands thick. Do not move or redesign face, ticks, subdial or pivot.\nE) On the cropped blue circular keyring emblem at bottom right, retain the D, fix S so its bottom curve is connected and fully visible as in image 2, and make the partial I to the right more visible. Exact white thin text DSI following the existing diagonal baseline; keep the emblem and keyring unchanged.\nNo changes to any other area. No additional metal, text, objects, buttons, grain, shadows, no crop or padding. Output exact same closeup framing."
+    },
+    "opponent_right_attachment": {
+      "target_crop": [
+        1050,
+        279,
+        1150,
+        356
+      ],
+      "donor_file": "opponent-right-ring-source.png",
+      "prompt": "Precise small repair to image 1, a cropped stopwatch attachment. Image 2 is same original-game crop, authoritative for attachment position and overlap.\nKeep all existing objects exactly placed. REMOVE the circular GOLD GROMMET / SOCKET from the BLUE stopwatch frame. There is NO HOLE and no round eyelet drawn in the blue face of the case. Restore plain continuous blue enamel in that spot.\nThe brown string does NOT penetrate the blue case. It lies IN FRONT OF a tiny steel wire attachment loop fixed at the case's OUTER RIGHT SIDE EDGE, around the junction of blue case and yellow pencil. The loop itself is almost entirely HIDDEN BEHIND THE BROWN CORD as in image 2: only one very small gray/silver crescent may show behind the cord at the case's outside edge. Do NOT create any visible circle on the blue area. The cord passes across/in front of this hidden loop and bends naturally rightwards over the yellow pencil. Preserve its existing path, but use a lighter warm medium brown cord matching reference.\nKeep the large legitimate horizontal silver push button at top intact, all blue watch edges/shape, white dial at left, yellow pencil and wood unchanged. This is a tiny occlusion correction. No new metal ornament or button. Crisp photorealistic pixel-art style matching image 1. Same tight crop without margins."
+    }
+  }
+}
