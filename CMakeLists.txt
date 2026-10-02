@@ -132,7 +132,8 @@ set(game_sources
 list(TRANSFORM common_sources PREPEND "${core}/")
 list(TRANSFORM game_sources PREPEND "${core}/")
 set(platform_common ${platform}/memory.c ${platform}/file.c ${platform}/runtime.c)
-set(platform_game ${platform}/asset_path.c ${platform}/video.c ${platform}/input.c ${platform}/timer.c ${platform}/audio.c)
+set(platform_game ${platform}/asset_path.c ${platform}/video.c ${platform}/input.c ${platform}/timer.c
+    ${platform}/audio.c ${platform}/music.c)
 
 execute_process(COMMAND git -c safe.directory=${CMAKE_SOURCE_DIR} rev-parse HEAD
     WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}" OUTPUT_VARIABLE RESTUNTS_GIT_HASH
@@ -157,17 +158,24 @@ if(NOT CMAKE_SYSTEM_NAME STREQUAL "DOS")
     add_library(restunts_opl ALIAS nuked_opl2)
 endif()
 
-add_library(restunts_game STATIC ${common_sources} ${game_sources} ${platform_common} ${platform_game})
+# Keep the decoder objects in the application archive, including browser relink kits.
+add_library(restunts_vorbis OBJECT third_party/stb/stb_vorbis.c)
+target_compile_definitions(restunts_vorbis PRIVATE STB_VORBIS_NO_PUSHDATA_API)
+add_library(restunts_game STATIC ${common_sources} ${game_sources} ${platform_common} ${platform_game}
+    $<TARGET_OBJECTS:restunts_vorbis>)
+target_include_directories(restunts_game PRIVATE "${CMAKE_SOURCE_DIR}/third_party/stb")
 if(EMSCRIPTEN)
     set(restunts_asset_directory "/assets")
 else()
     set(restunts_asset_directory "${CMAKE_SOURCE_DIR}/assets")
 endif()
 set(menu_backgrounds main showroom opponent)
+set(music_tracks titl slct over vict)
 target_compile_definitions(restunts_game PRIVATE RESTUNTS_FULL
     RESTUNTS_MENU_DIRECTORY="${restunts_asset_directory}/menus"
     RESTUNTS_SKYBOX_DIRECTORY="${restunts_asset_directory}/skyboxes"
-    RESTUNTS_OPPONENT_DIRECTORY="${restunts_asset_directory}/opponents")
+    RESTUNTS_OPPONENT_DIRECTORY="${restunts_asset_directory}/opponents"
+    RESTUNTS_MUSIC_DIRECTORY="${restunts_asset_directory}/music")
 target_link_libraries(restunts_game PUBLIC restunts_options)
 if(TARGET restunts_opl)
     target_link_libraries(restunts_game PRIVATE restunts_opl)
@@ -184,6 +192,18 @@ else()
     target_compile_definitions(restunts PRIVATE RESTUNTS_FULL)
 endif()
 target_link_libraries(restunts PRIVATE restunts_game)
+
+foreach(component Runtime Tests)
+    set(exclude_from_default)
+    if(component STREQUAL "Tests")
+        set(exclude_from_default EXCLUDE_FROM_ALL)
+    endif()
+    install(FILES third_party/stb/LICENSE
+        DESTINATION share/licenses/restunts RENAME stb-LICENSE
+        COMPONENT ${component} ${exclude_from_default})
+    install(FILES THIRD-PARTY-NOTICES.txt
+        DESTINATION . COMPONENT ${component} ${exclude_from_default})
+endforeach()
 
 if(EMSCRIPTEN)
     include(cmake/wasm.cmake)
@@ -202,6 +222,9 @@ target_compile_definitions(pixldump PRIVATE RESTUNTS_PIXLDUMP)
 target_link_libraries(pixldump PRIVATE restunts_game)
 
 install(TARGETS restunts repldump pixldump RUNTIME DESTINATION bin COMPONENT Runtime)
+foreach(music IN LISTS music_tracks)
+    install(FILES "assets/music/${music}.ogg" DESTINATION bin/music COMPONENT Runtime OPTIONAL)
+endforeach()
 if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
     install(PROGRAMS tools/scripts/run-macos.sh DESTINATION . RENAME run-restunts.sh COMPONENT Runtime)
 endif()
@@ -241,8 +264,6 @@ if(TARGET nuked_opl2)
         install(FILES third_party/nuked-opl2-lite/LICENSE
             DESTINATION share/licenses/restunts RENAME Nuked-OPL2-LICENSE
             COMPONENT ${component} ${exclude_from_default})
-        install(FILES THIRD-PARTY-NOTICES.txt
-            DESTINATION . COMPONENT ${component} ${exclude_from_default})
         install(FILES third_party/nuked-opl2-lite/opl2.c third_party/nuked-opl2-lite/opl2.h
             third_party/nuked-opl2-lite/CMakeLists.txt third_party/nuked-opl2-lite/LICENSE
             third_party/nuked-opl2-lite/README.md "${CMAKE_CURRENT_BINARY_DIR}/nuked-build-info.txt"
@@ -330,6 +351,15 @@ if(RESTUNTS_BUILD_TESTS AND TARGET restunts_opl)
     add_executable(test-sdl3-audio-trace src/restunts/tests/test-sdl3-audio-trace.c)
     target_compile_options(test-sdl3-audio-trace PRIVATE -UNDEBUG)
     add_test(NAME sdl3-audio-trace COMMAND test-sdl3-audio-trace)
+    add_executable(test-sdl3-music src/restunts/tests/test-sdl3-music.c
+        $<TARGET_OBJECTS:restunts_vorbis>)
+    target_link_libraries(test-sdl3-music PRIVATE restunts_options)
+    target_include_directories(test-sdl3-music PRIVATE "${CMAKE_SOURCE_DIR}/third_party/stb")
+    target_compile_options(test-sdl3-music PRIVATE -UNDEBUG)
+    file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/music-test")
+    add_test(NAME sdl3-music COMMAND test-sdl3-music
+        "${CMAKE_SOURCE_DIR}/src/restunts/tests/fixtures/music")
+    set_tests_properties(sdl3-music PROPERTIES WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/music-test")
     add_executable(test-sdl3-audio src/restunts/tests/test-sdl3-audio.c)
     target_link_libraries(test-sdl3-audio PRIVATE restunts_options restunts_opl)
     # Exercise real synthesis and SDL's dummy audio device, plus initialization
@@ -341,8 +371,11 @@ if(RESTUNTS_BUILD_TESTS AND TARGET restunts_opl)
     add_executable(test-sdl3-audio-sequence src/restunts/tests/test-sdl3-audio-sequence.c)
     target_link_libraries(test-sdl3-audio-sequence PRIVATE restunts_game)
     target_compile_options(test-sdl3-audio-sequence PRIVATE -UNDEBUG)
-    add_test(NAME sdl3-audio-sequence COMMAND test-sdl3-audio-sequence)
-    set_tests_properties(sdl3-audio-sequence PROPERTIES ENVIRONMENT "RESTUNTS_AUDIO_TRACE=")
+    file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/audio-sequence-test")
+    add_test(NAME sdl3-audio-sequence COMMAND test-sdl3-audio-sequence
+        "${CMAKE_SOURCE_DIR}/src/restunts/tests/fixtures/music/tone-mono.ogg")
+    set_tests_properties(sdl3-audio-sequence PROPERTIES ENVIRONMENT "RESTUNTS_AUDIO_TRACE="
+        WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/audio-sequence-test")
     if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
         # This fixture includes the sequencer to reach its private marshaling
         # helper. ELF section GC isolates that helper from the rest of the game;

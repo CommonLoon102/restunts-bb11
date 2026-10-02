@@ -1,5 +1,5 @@
-# Emscripten application packaging. Embed only the enhanced artwork. Original
-# game resources are selected by the player and loaded into MEMFS by the shell.
+# Emscripten application packaging. Embed enhanced artwork and optional music.
+# Original game resources are selected by the player and loaded into MEMFS by the shell.
 set(restunts_web_assets "${CMAKE_CURRENT_BINARY_DIR}/web-assets")
 set(restunts_web_shell "${CMAKE_SOURCE_DIR}/src/restunts/platform/wasm/shell.html")
 # Recreate only this generated directory so removed assets cannot linger.
@@ -18,6 +18,14 @@ endforeach()
 foreach(background IN LISTS menu_backgrounds)
     configure_file("${CMAKE_SOURCE_DIR}/assets/menus/${background}.png"
         "${restunts_web_assets}/assets/menus/${background}.png" COPYONLY)
+endforeach()
+
+# Optional replacements are captured at configure time, like the artwork above.
+foreach(track IN LISTS music_tracks)
+    if(EXISTS "${CMAKE_SOURCE_DIR}/assets/music/${track}.ogg")
+        configure_file("${CMAKE_SOURCE_DIR}/assets/music/${track}.ogg"
+            "${restunts_web_assets}/assets/music/${track}.ogg" COPYONLY)
+    endif()
 endforeach()
 
 include("${CMAKE_CURRENT_LIST_DIR}/wasm-link.cmake")

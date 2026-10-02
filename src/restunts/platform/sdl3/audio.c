@@ -3,6 +3,7 @@
  * continues to own channel allocation, note timing, envelopes and modulation.
  * Only the main thread accesses this state. SDL consumes queued PCM separately. */
 #include "sdl3.h"
+#include "music.h"
 #include <string.h>
 #include <stdio.h>
 #include "../../c/audio.h"
@@ -479,6 +480,7 @@ legacy_u8 dos_audio_driver_initialize(void)
  * here avoids racing the sequencer or resource frees in SDL's audio thread. */
 void sdl3_audio_update(void)
 {
+	sdl3_music_update();
 #ifndef __DJGPP__
 	if (!adlib_ready || !adlib_stream) {
 		return;
@@ -765,6 +767,7 @@ void dos_audio_driver_set_master_state(legacy_s16 operation, void *state)
 
 void dos_audio_shutdown(void)
 {
+	sdl3_music_shutdown();
 	audio_update_lock = AUDIO_UPDATE_LOCKED;
 	timer_remove_callback(audio_sequence_timer);
 	dos_audio_driver_start();

@@ -10,6 +10,15 @@
 legacy_s32 sdl3_batch_mode;
 static legacy_u32 removed_callbacks;
 
+/* Optional music has its own decoder/device regression fixture. */
+void sdl3_music_update(void)
+{
+}
+
+void sdl3_music_shutdown(void)
+{
+}
+
 void audio_sequence_timer(void)
 {
 }

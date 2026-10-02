@@ -1,9 +1,9 @@
 # Browser / WebAssembly build
 
 The SDL3 platform also builds with Emscripten. The output is one offline
-`restunts.html`: JavaScript, WebAssembly, enhanced skyboxes, and enhanced opponent
-portraits are embedded. **No original game data is included**, including cars,
-tracks, replays, sounds, fonts, or menus. The build does not require a `stunts/`
+`restunts.html`: JavaScript, WebAssembly, enhanced artwork, and any supplied
+optional Ogg Vorbis music replacements are embedded. **No original game data is
+included**, including cars, tracks, replays, sounds, fonts, or menus. The build does not require a `stunts/`
 directory. The redistributable package and relink kit also exclude that data.
 
 ## Build
@@ -23,6 +23,15 @@ SDL3 source as native builds. Native dump tools and native regressions are not
 built for the browser. No pthreads, shared memory, server headers, CDN, or network
 requests are needed at runtime. Emscripten's single-file output and embedded
 artwork avoid requests for neighboring `.wasm`, `.js`, or `.data` files.
+
+To embed replacement music, add any of `titl.ogg`, `slct.ogg`, `over.ogg`, and
+`vict.ogg` to `assets/music/` before configuring CMake. These replace title,
+selection, race-end, and victory music respectively. Each absent or unusable
+replacement falls back to its original song. The decoder accepts mono/stereo
+Ogg Vorbis at 8,000–192,000 Hz and is bundled with the game. Reconfigure and
+rebuild after adding, changing, or removing recordings; the resulting HTML and
+relink kit contain the configured files. No recordings are included by default.
+See [music asset instructions](../assets/music/README.md).
 
 ## Play from a website or offline
 
@@ -119,9 +128,10 @@ Do not copy them into the package.
 
 The browser links Nuked OPL2 Lite statically. The package includes its exact
 source and a standalone relink kit under `share/restunts/wasm-relink/`, containing
-the compiled application/SDL objects, enhanced artwork, HTML shell, and build
-instructions. Recipients can modify and rebuild Nuked and relink the HTML
-without the game's source or original game data. Use the SDK version recorded
+the compiled application/SDL objects, enhanced artwork, any embedded optional
+music replacements, HTML shell, and build instructions. Recipients can modify
+and rebuild Nuked and relink the HTML without the game's source or original game
+data. Use the SDK version recorded
 in the kit. See its `wasm-relink.md` and `THIRD-PARTY-NOTICES.txt` for details.
 
 ## Verification
