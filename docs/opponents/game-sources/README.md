@@ -16,9 +16,10 @@ a straight hanging section, a rounded bend below the chin, and a narrow return
 on its viewer-left side rising toward the jacket edge beside the jaw.
 The localized cord patch preserves every master pixel outside its mask. His dark lightweight
 jacket is collarless and unzipped over a black T-shirt; his lips have a natural
-partial kiss pucker. Otto uses nearest-neighbor resizing, as recorded in
-[`processing.json`](processing.json), while the other portraits retain bilinear
-resizing. Bernie's selected source has the corrected green shirt collars. Cherry's source
+partial kiss pucker. Otto uses bilinear resizing, as recorded in
+[`processing.json`](processing.json), matching the other portraits. The selected
+full-resolution photograph and its localized corrections remain unchanged.
+Bernie's selected source has the corrected green shirt collars. Cherry's source
 also restores the far-side triangular earring visible in the original portrait,
 with a longer pointed tip. The committed photograph supplies every pixel outside
 the localized earring patch, preserving its original detail and sharpness.

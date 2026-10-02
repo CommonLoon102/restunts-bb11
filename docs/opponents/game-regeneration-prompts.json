@@ -140,8 +140,19 @@
           }
         ],
         "processing_config": "docs/opponents/game-sources/processing.json",
-        "resampling": "nearest",
-        "review": "The cord follows the user-drawn red path. A separate hand-only patch adds the missing curled middle finger, yielding four distinct long fingers and one tucked thumb, while preserving the monocle grip and every master pixel outside the finger patch."
+        "resampling": "bilinear",
+        "review": "The cord follows the user-drawn red path. A separate hand-only patch adds the missing curled middle finger, yielding four distinct long fingers and one tucked thumb, while preserving the monocle grip and every master pixel outside the finger patch.",
+        "processing_revisions": [
+          {
+            "date": "2026-10-02",
+            "previous_resampling": "nearest",
+            "resampling": "bilinear",
+            "reason": "User requested bilinear downscaling after reviewing nearest-neighbor output",
+            "source_unchanged": true,
+            "preserved_source_sha256": "cdc5c40d48a65a0c4f357f2f161f17d84b33c71e13d48c3c3a2e0a72e3d67146",
+            "processing_config": "docs/opponents/game-sources/processing.json"
+          }
+        ]
       }
     ],
     "final_composition": {

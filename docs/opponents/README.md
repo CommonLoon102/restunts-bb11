@@ -69,8 +69,8 @@ No fallback CLI or API key was used.
 Preparation follows the requested larger-to-smaller workflow:
 
 1. Resize the reconstructed photograph into a 320 x 332 working tile, four times
-   the original width and height, with a 296 x 316 photo interior. Use nearest
-   neighbor for Otto and the established bilinear filter for the other portraits.
+   the original width and height, with a 296 x 316 photo interior. Use bilinear
+   filtering for all six portraits, including Otto.
 2. Apply a gentle 3 x 3 median to the photo at that working size to remove isolated
    specks while retaining facial features and intentional clothing patterns.
 3. Fill the connected flat backdrop with its exact original palette color.
@@ -78,7 +78,7 @@ Preparation follows the requested larger-to-smaller workflow:
    filled. Masks follow the new photograph's silhouette.
 4. Reduce the photo and its backdrop mask to half size with the same selected
    filter, then map it to the exact game palette without dithering, added grain
-   or sharpening. Otto's final reduction uses nearest neighbor.
+   or sharpening. Otto's final reduction uses bilinear filtering.
 5. Restore the original border and complete number rectangle as exact 2x copies.
 
 The [final asset manifest](../../assets/opponents/game/manifest.json) records
