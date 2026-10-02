@@ -73,6 +73,8 @@ SKYBOX_THEMES = ("desert", "tropical", "alpine", "city", "country")
 SKYBOX_IMAGES = ("scen", "sce2", "sce3", "sce4")
 OPPONENT_COUNT = 6
 MENU_BACKGROUNDS = ("main", "showroom", "opponent")
+MUSIC_TRACKS = ("titl", "slct", "over", "vict")
+SDL_DECODER_LICENSES = ("stb-LICENSE", "libvpx-LICENSE", "libvpx-PATENTS", "nestegg-LICENSE")
 SHA256_PATTERN = re.compile(r"[0-9a-f]{64}")
 COMMIT_PATTERN = re.compile(r"[0-9a-f]{40}")
 DOS_RUNTIME_NAME_PATTERN = re.compile(r"[A-Za-z0-9_-]{1,8}(?:\.[A-Za-z0-9_-]{1,3})?")
@@ -107,8 +109,24 @@ def checked_path(name):
     return path
 
 
+def optional_music_files(target):
+    if target == "dos16":
+        return set()
+    if target == "browser":
+        prefix = "share/restunts/wasm-relink/data/assets"
+    else:
+        prefix = "bin"
+    # Match CMake's named optional music. Present source files must survive
+    # installation and archiving; an absent replacement keeps original playback.
+    return {f"{prefix}/music/{track}.ogg" for track in MUSIC_TRACKS
+            if (ROOT / "assets/music" / f"{track}.ogg").is_file()}
+
+
 def required_files(target):
-    required = {README}
+    required = {README} | optional_music_files(target)
+    if target != "dos16":
+        required.add("THIRD-PARTY-NOTICES.txt")
+        required |= {f"share/licenses/restunts/{name}" for name in SDL_DECODER_LICENSES}
     if target == "browser":
         required |= {"restunts.html", "wasm.md", "THIRD-PARTY-NOTICES.txt",
                      "share/licenses/restunts/SDL-LICENSE.txt",
@@ -116,7 +134,8 @@ def required_files(target):
         relink = "share/restunts/wasm-relink"
         required |= {f"{relink}/{name}" for name in (
             "CMakeLists.txt", "wasm-link.cmake", "wasm-relink.md", "shell.html",
-            "nuked-build-info.txt", "lib/librestunts_game.a", "lib/libSDL3.a", "objects/main.c.o")}
+            "nuked-build-info.txt", "lib/librestunts_game.a", "lib/librestunts_webm.a",
+            "lib/libSDL3.a", "objects/main.c.o")}
         required |= {f"{relink}/nuked-opl2-lite/{name}" for name in NUKED_FILES}
         required |= {f"{relink}/data/assets/skyboxes/{theme}-{image}.png"
                      for theme in SKYBOX_THEMES for image in SKYBOX_IMAGES}

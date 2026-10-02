@@ -53,7 +53,7 @@ class ReleasePackageTests(unittest.TestCase):
         struct.pack_into("<H", header, PACKAGES.ELF_MACHINE_OFFSET, machine)
         return bytes(header) + FILE_DATA
 
-    def create(self, target):
+    def create(self, target, asset_data=None):
         runtime = self.root / target
         for name in PACKAGES.required_files(target) - {PACKAGES.README}:
             path = runtime / name
@@ -61,6 +61,10 @@ class ReleasePackageTests(unittest.TestCase):
             path.write_bytes(self.runtime_data(target, name))
             if name in {"bin/restunts", "bin/repldump", "bin/pixldump", "run-restunts.sh"}:
                 path.chmod(PACKAGES.EXECUTABLE_MODE)
+        for name, content in (asset_data or {}).items():
+            path = runtime / name
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(content)
         arguments = argparse.Namespace(target=target, runtime=runtime,
                                        directory=self.output, commit=COMMIT)
         environment = {"GITHUB_RUN_ID": RUN_ID, "GITHUB_RUN_ATTEMPT": RUN_ATTEMPT}
@@ -240,6 +244,68 @@ class ReleasePackageTests(unittest.TestCase):
                 PACKAGES.validate_contents("browser", incomplete, {})
         for target in ("dos16", "dos32"):
             self.assertFalse(any("nuked" in name for name in PACKAGES.required_files(target)))
+
+    def test_source_music_is_required_and_survives_archiving(self):
+        source = self.root / "source"
+        tracks = ("titl", "slct", "over", "vict")
+        targets = {"linux-x64": "bin/music", "dos32": "bin/music",
+                   "browser": "share/restunts/wasm-relink/data/assets/music"}
+        with mock.patch.object(PACKAGES, "ROOT", source):
+            baseline = {target: PACKAGES.required_files(target) for target in targets}
+            for track in tracks:
+                path = source / "assets/music" / f"{track}.ogg"
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_bytes(b"OggS archive payload " + track.encode("ascii"))
+            for target, directory in targets.items():
+                audio = {f"{directory}/{track}.ogg":
+                         (source / "assets/music" / f"{track}.ogg").read_bytes() for track in tracks}
+                files = {name: FILE_DATA for name in baseline[target]} | audio
+                modes = {name: PACKAGES.EXECUTABLE_MODE for name in files}
+                with self.subTest(target=target):
+                    PACKAGES.validate_contents(target, files, modes)
+                    for missing in audio:
+                        incomplete = files.copy()
+                        incomplete.pop(missing)
+                        with self.assertRaisesRegex(ValueError, "missing packaged files"):
+                            PACKAGES.validate_contents(target, incomplete, modes)
+                    for wrong in ("menu.ogg", "SLCT.ogg", "slct.wav"):
+                        with self.assertRaisesRegex(ValueError, "Unexpected package file"):
+                            PACKAGES.validate_contents(
+                                target, files | {f"{directory}/{wrong}": FILE_DATA}, modes)
+                    archive = self.create(target, audio)
+                    archived, _ = PACKAGES.archive_contents(archive)
+                    for name, content in audio.items():
+                        self.assertEqual(archived[name], content)
+            self.assertFalse(any("/music/" in name for name in PACKAGES.required_files("dos16")))
+
+    def test_absent_music_is_optional(self):
+        with mock.patch.object(PACKAGES, "ROOT", self.root / "empty-source"):
+            for target in ("linux-x64", "dos32", "browser"):
+                with self.subTest(target=target):
+                    self.assertEqual(PACKAGES.optional_music_files(target), set())
+                    files = {name: FILE_DATA for name in PACKAGES.required_files(target)}
+                    modes = {name: PACKAGES.EXECUTABLE_MODE for name in files}
+                    PACKAGES.validate_contents(target, files, modes)
+
+    def test_decoder_files_follow_install_paths(self):
+        decoder_files = {"THIRD-PARTY-NOTICES.txt", "share/licenses/restunts/stb-LICENSE",
+                         "share/licenses/restunts/libvpx-LICENSE",
+                         "share/licenses/restunts/libvpx-PATENTS",
+                         "share/licenses/restunts/nestegg-LICENSE"}
+        for target in ("linux-x64", "dos32", "browser"):
+            expected = decoder_files.copy()
+            if target == "browser":
+                expected.add("share/restunts/wasm-relink/lib/librestunts_webm.a")
+            files = {name: FILE_DATA for name in PACKAGES.required_files(target)}
+            modes = {name: PACKAGES.EXECUTABLE_MODE for name in files}
+            with self.subTest(target=target):
+                self.assertTrue(expected <= files.keys())
+                PACKAGES.validate_contents(target, files, modes)
+                for missing in expected:
+                    incomplete = files.copy()
+                    incomplete.pop(missing)
+                    with self.assertRaisesRegex(ValueError, "missing packaged files"):
+                        PACKAGES.validate_contents(target, incomplete, modes)
 
 
 if __name__ == "__main__":

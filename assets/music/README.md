@@ -1,7 +1,8 @@
 # Optional music replacements
 
-Place any of these Ogg Vorbis files in this directory. No replacement recordings
-are included in the repository.
+The repository includes Ogg Vorbis replacements for all four songs below.
+Each recording preserves its original loop length, with no added ending tail
+or fade-out. The race-end track retains its original pause before repeating.
 
 | Filename | Original track |
 | --- | --- |
