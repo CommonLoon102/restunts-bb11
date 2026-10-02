@@ -79,8 +79,10 @@ minimum mcb free=1
 
 ### Replacement music
 
-SDL3 builds start with the original AdLib music. Use `--ogg:on` to start with
-Ogg replacements enabled, or `--ogg:off` to select the default explicitly.
+SDL3 executables start with the original AdLib music. The browser launcher
+enables Ogg replacements by default through its **New MIDI** checkbox.
+Use `--ogg:on` to start with Ogg replacements enabled, or `--ogg:off` to select
+the original AdLib music explicitly.
 Press **Shift+F10** during the
 intro, menus, or race-end/victory screens to switch to the included Ogg music.
 Press it again to return to AdLib at the same song position. The selection lasts
@@ -156,8 +158,9 @@ automatically reduce or restore quality. The small-mask stage is available only
 in Auto. Each F12 or Shift+F12 press displays `HyperVision: <name>` for two seconds
 below the FPS and render-time lines, even when F11 is disabled.
 
-To start with a locked preset, pass exactly one of `--hv:full`, `--hv:high`,
-`--hv:medium`, or `--hv:low` to the executable. For example:
+To start with adaptive HyperVision, pass `--hv:auto`. To start with a locked
+preset, pass exactly one of `--hv:full`, `--hv:high`, `--hv:medium`, or `--hv:low`
+to the executable. For example:
 
 ```sh
 ./restunts --hv:medium
@@ -165,8 +168,9 @@ To start with a locked preset, pass exactly one of `--hv:full`, `--hv:high`,
 
 The preset is active from the intro onward. These options are case-insensitive.
 Multiple preset options, including duplicates, and unknown presets report an
-error and exit. Without a preset option, HyperVision starts off as usual. F12 and
-Shift+F12 can change the selection later. The options apply to SDL3 builds,
+error and exit. Without a preset option, HyperVision starts off as usual. The
+browser launcher enables `--hv:auto` by default through its **HiperVision**
+checkbox. F12 and Shift+F12 can change the selection later. The options apply to SDL3 builds,
 including 32-bit DOS.
 
 An entire multi-tile object stays visible if any of its tiles is inside the

@@ -29,6 +29,7 @@ legacy_u8 supersight_enabled;
 static legacy_s32 startup_render_enabled;
 static legacy_s32 startup_render_scale = HIRES_SCALE;
 static legacy_u16 expected_hypervision_preset;
+static legacy_u8 expected_hypervision_enabled;
 static legacy_s32 startup_audio_driver_loaded;
 static legacy_s32 startup_ogg_music_enabled;
 static legacy_s32 expected_ogg_music_enabled;
@@ -56,7 +57,7 @@ void hires_set_render_scale(legacy_s32 scale)
 
 static void check_startup_hypervision(void)
 {
-	if (expected_hypervision_preset != FRAME_ADAPTIVE_PRESET_AUTO) {
+	if (expected_hypervision_enabled != 0) {
 		assert(supersight_enabled != 0 && startup_render_enabled != 0);
 		assert(frame_adaptive.preset == expected_hypervision_preset);
 		assert(startup_render_scale == frame_adaptive_render_scale(&frame_adaptive));
@@ -682,6 +683,7 @@ static void reset_startup_hypervision(void)
 	startup_render_enabled = 0;
 	startup_render_scale = HIRES_SCALE;
 	expected_hypervision_preset = FRAME_ADAPTIVE_PRESET_AUTO;
+	expected_hypervision_enabled = 0;
 	frame_adaptive_reset(&frame_adaptive);
 	timer_calls = status_calls = 0;
 	audio_failure = 0;
@@ -711,19 +713,28 @@ static void test_startup_hypervision_options(void)
 	static const struct {
 		const legacy_s8 *argument;
 		enum FRAME_ADAPTIVE_PRESET preset;
+		enum FRAME_ADAPTIVE_QUALITY quality;
 		legacy_s32 scale;
-	} cases[] = {{"--hv:full", FRAME_ADAPTIVE_PRESET_FULL, HIRES_SCALE},
-				 {"--hv:high", FRAME_ADAPTIVE_PRESET_HIGH, HIRES_SCALE},
-				 {"--hv:medium", FRAME_ADAPTIVE_PRESET_MEDIUM, HIRES_MEDIUM_SCALE},
-				 {"--hv:low", FRAME_ADAPTIVE_PRESET_LOW, HIRES_MINIMUM_SCALE},
-				 {"--HV:FuLl", FRAME_ADAPTIVE_PRESET_FULL, HIRES_SCALE},
-				 {"--hV:LoW", FRAME_ADAPTIVE_PRESET_LOW, HIRES_MINIMUM_SCALE}};
+	} cases[] = {{"--hv:auto", FRAME_ADAPTIVE_PRESET_AUTO, FRAME_ADAPTIVE_FULL_VIEW, HIRES_SCALE},
+				 {"--hv:full", FRAME_ADAPTIVE_PRESET_FULL, FRAME_ADAPTIVE_FULL_VIEW, HIRES_SCALE},
+				 {"--hv:high", FRAME_ADAPTIVE_PRESET_HIGH, FRAME_ADAPTIVE_LARGE_VIEW, HIRES_SCALE},
+				 {"--hv:medium", FRAME_ADAPTIVE_PRESET_MEDIUM, FRAME_ADAPTIVE_HALF_RESOLUTION,
+				  HIRES_MEDIUM_SCALE},
+				 {"--hv:low", FRAME_ADAPTIVE_PRESET_LOW, FRAME_ADAPTIVE_MINIMUM_RESOLUTION,
+				  HIRES_MINIMUM_SCALE},
+				 {"--HV:AuTo", FRAME_ADAPTIVE_PRESET_AUTO, FRAME_ADAPTIVE_FULL_VIEW, HIRES_SCALE},
+				 {"--HV:FuLl", FRAME_ADAPTIVE_PRESET_FULL, FRAME_ADAPTIVE_FULL_VIEW, HIRES_SCALE},
+				 {"--hV:LoW", FRAME_ADAPTIVE_PRESET_LOW, FRAME_ADAPTIVE_MINIMUM_RESOLUTION,
+				  HIRES_MINIMUM_SCALE}};
 	for (legacy_u16 index = 0; index < sizeof(cases) / sizeof(cases[0]); index++) {
 		legacy_s8 *arguments[] = {(legacy_s8 *)"game", (legacy_s8 *)"/sSB",
 								  (legacy_s8 *)cases[index].argument, (legacy_s8 *)"--pg:off",
 								  (legacy_s8 *)"--nointro"};
 		reset_startup_hypervision();
+		/* Explicit startup selection must replace any previous adaptive state. */
+		frame_adaptive_set_preset(&frame_adaptive, FRAME_ADAPTIVE_PRESET_LOW);
 		expected_hypervision_preset = cases[index].preset;
+		expected_hypervision_enabled = 1;
 		expected_initial_intro_calls = index % 2U;
 		menu_calls = intro_calls = game_calls = score_calls = 0;
 		is_audioloaded = 0;
@@ -738,7 +749,8 @@ static void test_startup_hypervision_options(void)
 		assert(run_main_menu_loop(count, arguments) == 1);
 		assert(menu_calls == 1 && intro_calls == (legacy_u32)expected_initial_intro_calls + 1U);
 		assert(game_calls == 0);
-		assert(frame_adaptive.quality == cases[index].preset - FRAME_ADAPTIVE_PRESET_FULL);
+		assert(startup_options.hypervision_specified != 0);
+		assert(frame_adaptive.quality == cases[index].quality);
 		assert(startup_render_scale == cases[index].scale);
 		assert(audiodriverstring[0] == 'a' && audiodriverstring[1] == 'd');
 	}
@@ -753,7 +765,7 @@ static void test_startup_hypervision_options(void)
 			expect_startup_option_error(sizeof(arguments) / sizeof(arguments[0]), arguments);
 		}
 	}
-	static const legacy_s8 *invalid[] = {"--hv:",		  "--hv:auto",	"--hv:off",
+	static const legacy_s8 *invalid[] = {"--hv:",		  "--hv:autox", "--hv:off",
 										 "--hv:veryhigh", "--hv:fullx", "--hv:low:high",
 										 "--HV:unknown"};
 	for (legacy_u16 index = 0; index < sizeof(invalid) / sizeof(invalid[0]); index++) {
@@ -776,6 +788,7 @@ static void test_startup_hypervision_options(void)
 		init_main(sizeof(arguments) / sizeof(arguments[0]), arguments);
 		assert(startup_render_enabled == 0 && supersight_enabled == 0);
 		assert(startup_options.hypervision_preset == FRAME_ADAPTIVE_PRESET_AUTO);
+		assert(startup_options.hypervision_specified == 0);
 	}
 }
 
@@ -791,6 +804,7 @@ static void test_startup_ogg_music_options(void)
 								  (legacy_s8 *)"--nointro"};
 		reset_startup_hypervision();
 		expected_hypervision_preset = FRAME_ADAPTIVE_PRESET_LOW;
+		expected_hypervision_enabled = 1;
 		expected_ogg_music_enabled = cases[index].enabled;
 		expected_initial_intro_calls = index % 2U;
 		menu_calls = intro_calls = game_calls = score_calls = 0;

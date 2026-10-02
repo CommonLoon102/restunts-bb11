@@ -51,6 +51,7 @@ static const legacy_s8 command_line_help[] = COMMAND_LINE_NEWLINE
 	"  --owoot          Enable One Wheel On/Over Track driving "
 	"rules." COMMAND_LINE_NEWLINE COMMAND_LINE_NEWLINE
 #ifdef RESTUNTS_SDL3
+	"  --hv:auto        Enable HyperVision with automatic quality." COMMAND_LINE_NEWLINE
 	"  --hv:full        Lock HyperVision: full track at 1280x800." COMMAND_LINE_NEWLINE
 	"  --hv:high        Lock HyperVision: large visibility mask at 1280x800." COMMAND_LINE_NEWLINE
 	"  --hv:medium      Lock HyperVision: large visibility mask at 640x400." COMMAND_LINE_NEWLINE
