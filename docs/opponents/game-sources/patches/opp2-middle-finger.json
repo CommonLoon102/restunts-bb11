@@ -1,0 +1,139 @@
+{
+  "method": "Built-in imagegen on hand crop only; localized masked copy into untouched full-resolution master",
+  "base_composition": "opp2-cord-path.json",
+  "base_png_sha256": "2f117dc153ddce66efa46a17baa0910926da86508d128bf209e6dfdf16d12f2c",
+  "base_pixels_sha256": "96ac528a831017701c139f6d1f1ff73ba398e576629a030ddc4f393b64768793",
+  "donor_generated_source": "/home/user/.codex/generated_images/01a0fbef-5372-7fc0-b66a-7f1406966230/exec-34038342-faca-45fe-a8b9-2c024813776a.png",
+  "donor_png_sha256": "ba46f77e1aa0727c1307a57309a50b7689c7dcfdf89d8ca7e17b48a594790245",
+  "donor_dimensions": [
+    1448,
+    1086
+  ],
+  "crop_rectangle": [
+    0,
+    260,
+    560,
+    680
+  ],
+  "crop_dimensions": [
+    560,
+    420
+  ],
+  "donor_resampling": "Lanczos to hand crop dimensions only; master never resampled",
+  "patch_file": "opp2-middle-finger.png",
+  "before_crop_file": "opp2-middle-finger-before.png",
+  "destination": [
+    239,
+    313
+  ],
+  "patch_dimensions": [
+    299,
+    314
+  ],
+  "mask_polygon_in_crop": [
+    [
+      275,
+      86
+    ],
+    [
+      335,
+      65
+    ],
+    [
+      393,
+      73
+    ],
+    [
+      440,
+      115
+    ],
+    [
+      479,
+      172
+    ],
+    [
+      524,
+      189
+    ],
+    [
+      537,
+      221
+    ],
+    [
+      529,
+      245
+    ],
+    [
+      501,
+      251
+    ],
+    [
+      499,
+      309
+    ],
+    [
+      476,
+      335
+    ],
+    [
+      446,
+      345
+    ],
+    [
+      418,
+      354
+    ],
+    [
+      395,
+      351
+    ],
+    [
+      373,
+      333
+    ],
+    [
+      354,
+      298
+    ],
+    [
+      340,
+      258
+    ],
+    [
+      316,
+      222
+    ],
+    [
+      286,
+      194
+    ],
+    [
+      260,
+      178
+    ],
+    [
+      251,
+      149
+    ],
+    [
+      257,
+      116
+    ]
+  ],
+  "mask_feather_radius": 5,
+  "protection": "Index-to-monocle contact preserved; all pixels outside patch alpha identical",
+  "changed_pixel_count": 54042,
+  "unchanged_pixel_count": 1519383,
+  "changed_rectangle": [
+    244,
+    315,
+    537,
+    624
+  ],
+  "patch_sha256": "75a776f882c6ae8537195883cdf3bf8a31bd88cfe8233dfa9da091b01ad0c36d",
+  "before_crop_sha256": "2c9427725469ff9db6bca66103a977abfe12b961cf049e3ade6b6191ec4a4708",
+  "output_png_sha256": "cdc5c40d48a65a0c4f357f2f161f17d84b33c71e13d48c3c3a2e0a72e3d67146",
+  "output_pixels_sha256": "2f292e7356f10753badf7d206af83d8ff623c7611fa7877305be4dea98ca2979",
+  "output_file": "docs/opponents/game-sources/full-resolution/opp2.png",
+  "reconstruction": "Restore before_crop_file at destination in the selected source to recover the prior master exactly. Paste patch_file there using its alpha mask to reconstruct the corrected source."
+}

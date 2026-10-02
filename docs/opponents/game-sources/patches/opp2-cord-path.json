@@ -1,0 +1,228 @@
+{
+  "method": "Built-in imagegen donor from user-drawn path, localized Pillow masked copy; no image resampling",
+  "base_composition": "opp2-cord-back.json",
+  "base_png_sha256": "337f36144b0cb4003da2b4ec3c4d6f40f21cb2b9d254cd8981ed3a8a7f7ee552",
+  "base_pixels_sha256": "8a80466bc63c1293d81b7f2b9718eb7cf417b6fc0eaf0eea48ee08239602b639",
+  "donor_generated_source": "/home/user/.codex/generated_images/01a0fbef-5372-7fc0-b66a-7f1406966230/exec-4cfeffbc-d12e-498c-9cc9-038f09cffbea.png",
+  "donor_png_sha256": "89aa3af2403ad0b816f61970f5040e9a6945b952c2302738cc30ac38eefd5245",
+  "donor_dimensions": [
+    1214,
+    1295
+  ],
+  "master_dimensions": [
+    1215,
+    1295
+  ],
+  "registration": "Unscaled donor crop at identical pixel coordinates; donor one-pixel canvas-width difference does not affect the localized patch",
+  "user_reference": "opp2-cord-reference.png",
+  "user_reference_sha256": "0672954ff62204885c02796f1839a360d354dc3eb2b43efb7e63c7eeeb499207",
+  "route": "Straight hanging leg on viewer-right; rounded low bend; narrow return on viewer-left rising toward jacket edge beside jaw, matching red annotation",
+  "mapped_guide": {
+    "points": [
+      [
+        424,
+        650
+      ],
+      [
+        424,
+        720
+      ],
+      [
+        424,
+        800
+      ],
+      [
+        424,
+        900
+      ],
+      [
+        424,
+        939
+      ],
+      [
+        420,
+        950
+      ],
+      [
+        412,
+        959
+      ],
+      [
+        400,
+        961
+      ],
+      [
+        390,
+        953
+      ],
+      [
+        379,
+        935
+      ],
+      [
+        367,
+        912
+      ],
+      [
+        356,
+        883
+      ],
+      [
+        350,
+        850
+      ],
+      [
+        348,
+        811
+      ],
+      [
+        353,
+        791
+      ],
+      [
+        362,
+        775
+      ],
+      [
+        382,
+        753
+      ],
+      [
+        402,
+        733
+      ],
+      [
+        424,
+        722
+      ]
+    ],
+    "reference_photo_rectangle": [
+      5,
+      0,
+      227,
+      284
+    ],
+    "master_dimensions": [
+      1215,
+      1295
+    ],
+    "alignment": "Reference photo proportions mapped to master and aligned to existing vertical cord"
+  },
+  "patch_file": "opp2-cord-path.png",
+  "before_crop_file": "opp2-cord-path-before.png",
+  "destination": [
+    353,
+    699
+  ],
+  "rectangle": [
+    353,
+    699,
+    463,
+    961
+  ],
+  "old_return": [
+    [
+      426,
+      954
+    ],
+    [
+      426,
+      944
+    ],
+    [
+      433,
+      926
+    ],
+    [
+      442,
+      888
+    ],
+    [
+      450,
+      858
+    ],
+    [
+      455,
+      839
+    ]
+  ],
+  "new_return": [
+    [
+      431,
+      698
+    ],
+    [
+      420,
+      719
+    ],
+    [
+      408,
+      740
+    ],
+    [
+      395,
+      762
+    ],
+    [
+      382,
+      785
+    ],
+    [
+      372,
+      807
+    ],
+    [
+      365,
+      831
+    ],
+    [
+      366,
+      853
+    ],
+    [
+      371,
+      879
+    ],
+    [
+      380,
+      905
+    ],
+    [
+      391,
+      927
+    ],
+    [
+      401,
+      941
+    ],
+    [
+      410,
+      948
+    ],
+    [
+      418,
+      944
+    ],
+    [
+      424,
+      931
+    ]
+  ],
+  "mask_width": 20,
+  "mask_feather_radius": 1.2,
+  "protection": "Original backdrop, neck skin and existing upper straight cord are unchanged; skin mask uses the preceding base recovered from opp2-cord-before.png so the obsolete brown cord is not mistaken for skin",
+  "changed_pixel_count": 8642,
+  "unchanged_pixel_count": 1564783,
+  "changed_rectangle": [
+    355,
+    700,
+    463,
+    960
+  ],
+  "patch_sha256": "01d240611df75861ff43f699085c598213f05b9dd8bc614e6d5acfe5bb257127",
+  "before_crop_sha256": "415a944a988e823125be8dc31b8fd24f4c6235e2a1284baff9679c4efd9790ee",
+  "output_png_sha256": "2f117dc153ddce66efa46a17baa0910926da86508d128bf209e6dfdf16d12f2c",
+  "output_pixels_sha256": "96ac528a831017701c139f6d1f1ff73ba398e576629a030ddc4f393b64768793",
+  "output_file": "docs/opponents/game-sources/full-resolution/opp2.png",
+  "reconstruction": "Restore before_crop_file at destination in the current source to recover this patch base exactly. Paste patch_file there as RGBA using its alpha mask to reconstruct the corrected source. Every pixel outside the patch alpha is identical."
+}

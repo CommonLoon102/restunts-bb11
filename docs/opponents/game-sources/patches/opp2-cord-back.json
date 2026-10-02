@@ -1,0 +1,158 @@
+{
+  "method": "Built-in imagegen donor, localized Pillow masked copy; no whole-image resampling",
+  "base_generated_source": "/home/user/.codex/generated_images/01a0fbef-5372-7fc0-b66a-7f1406966230/exec-85e0a223-e0d1-46af-8ca9-9603191a7f36.png",
+  "base_png_sha256": "4b4a254a9e0b8129ada3a6faf7df077f10d837ff021b61fef432a1f5a3ed9090",
+  "donor_generated_source": "/home/user/.codex/generated_images/01a0fbef-5372-7fc0-b66a-7f1406966230/exec-8e98ecc0-6989-426b-8743-b3c6f168aeb4.png",
+  "donor_png_sha256": "942dfd8fdbc2813196c8a0eb2fba311013aeef1a5f75c1a62a2aa139e5e543c2",
+  "patch_file": "opp2-cord-back.png",
+  "before_crop_file": "opp2-cord-before.png",
+  "destination": [
+    0,
+    805
+  ],
+  "rectangle": [
+    0,
+    805,
+    463,
+    960
+  ],
+  "old_route": [
+    [
+      0,
+      814
+    ],
+    [
+      20,
+      817
+    ],
+    [
+      40,
+      818
+    ],
+    [
+      60,
+      821
+    ],
+    [
+      95,
+      825
+    ],
+    [
+      115,
+      828
+    ],
+    [
+      150,
+      834
+    ],
+    [
+      170,
+      836
+    ],
+    [
+      200,
+      839
+    ],
+    [
+      220,
+      843
+    ],
+    [
+      240,
+      849
+    ],
+    [
+      250,
+      853
+    ],
+    [
+      270,
+      864
+    ],
+    [
+      290,
+      877
+    ],
+    [
+      320,
+      895
+    ],
+    [
+      340,
+      906
+    ],
+    [
+      370,
+      918
+    ],
+    [
+      390,
+      922
+    ],
+    [
+      404,
+      919
+    ],
+    [
+      414,
+      911
+    ],
+    [
+      420,
+      895
+    ]
+  ],
+  "new_route": [
+    [
+      424,
+      868
+    ],
+    [
+      424,
+      944
+    ],
+    [
+      427,
+      948
+    ],
+    [
+      433,
+      926
+    ],
+    [
+      442,
+      888
+    ],
+    [
+      450,
+      858
+    ],
+    [
+      455,
+      839
+    ]
+  ],
+  "mask_width": 18,
+  "mask_feather_radius": 1.2,
+  "protection": "Original backdrop and neck skin preserved at mask boundaries",
+  "local_registration": {
+    "region": "Outer shoulder erase-only donor pixels",
+    "maximum_vertical_offset": 24,
+    "taper_width": 80
+  },
+  "changed_pixel_count": 12561,
+  "unchanged_pixel_count": 1560864,
+  "changed_rectangle": [
+    0,
+    805,
+    463,
+    958
+  ],
+  "patch_sha256": "0afd96e539c39d599fdf987255c03c2a48750220d0354d0b14ae96c91ed5c4b2",
+  "before_crop_sha256": "965f5f44945104909ff7a2a188ee567490f7438a9897002febcd4c9cc5bf9650",
+  "output_png_sha256": "337f36144b0cb4003da2b4ec3c4d6f40f21cb2b9d254cd8981ed3a8a7f7ee552",
+  "output_file": "docs/opponents/game-sources/full-resolution/opp2.png",
+  "reconstruction": "Load the selected output as RGB and restore before_crop_file at destination to recover the exact base pixels. Paste patch_file as RGBA at destination using its alpha as the mask to reconstruct the corrected output. All pixels outside the patch alpha are unchanged.",
+  "base_pixels_sha256": "fd0cfd7598abb46c8824f59877bdd95aaf1198f77e326760f93b1b844a2ffbd3",
+  "output_pixels_sha256": "8a80466bc63c1293d81b7f2b9718eb7cf417b6fc0eaf0eea48ee08239602b639"
+}

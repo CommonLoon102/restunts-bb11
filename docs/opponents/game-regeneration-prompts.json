@@ -47,8 +47,7 @@
         "generated_source": "/home/user/.codex/generated_images/01a0cdb3-98b5-7151-a9b0-1b3d7f16170c/exec-8c2d9b45-9a8c-4018-b345-0e9731664e75.png",
         "output": "/media/sf_ubi24/restunts-bb11/out/opponents/game2-rebuilt/opp2-monocle-edit-final.png",
         "prompt": "Use case: precise-object-edit.\nEdit only the monocle retaining cord in this otherwise finished photograph. Keep everything else exactly unchanged, including the gold monocle, all face/hand/moustache detail, puckered CLOSED kiss lips, black shirt, open lightweight dark zip jacket, purple background, crop and photographic sharpness.\nThe cord currently incorrectly forks near shoulder level into TWO paths, with an extra loose dangling vertical tail continuing down the front beside the neck. REMOVE THAT EXTRA LOWER FRONT TAIL. There must be just ONE continuous unbranched fine golden-brown cord: attached to the monocle ring, hanging vertically straight down alongside the cheek, then turning in one gentle curve across the visible shoulder on the same side as the raised hand and disappearing BEHIND the neck at the rear collar. Retain the visible upper vertical segment and shoulder curve; erase the redundant vertical segment below the point where the shoulder curve branches away. No fork, no second string, no loose front end, no new jewellery. The shoulder curve must look natural under gravity, with a continuous ring-to-shoulder-to-behind-neck route.\nDo not regenerate the portrait or change any unrelated pixel. Return the same full-resolution image.",
-        "status": "selected final: user explicitly chose the version with the cord curving over the shoulder",
-        "preserved_source": "docs/opponents/game-sources/full-resolution/opp2.png"
+        "status": "previously selected: superseded by the 2026-10-02 reconstruction from the original game portrait"
       },
       {
         "opponent": 2,
@@ -60,9 +59,145 @@
         "status": "discarded: user prefers the version with the cord curving over the shoulder"
       }
     ],
-    "final_generated_source": "/home/user/.codex/generated_images/01a0cdb3-98b5-7151-a9b0-1b3d7f16170c/exec-8c2d9b45-9a8c-4018-b345-0e9731664e75.png",
     "preserved_source": "docs/opponents/game-sources/full-resolution/opp2.png",
-    "preserved_working_image": "docs/opponents/game-sources/working-4x/opp2.png"
+    "preserved_working_image": "docs/opponents/game-sources/working-4x/opp2.png",
+    "regenerations": [
+      {
+        "date": "2026-10-02",
+        "tool": "built-in image_gen.imagegen",
+        "input": "/media/sf_ubi24/restunts-bb11/out/opponents/game2-input/opp2.png",
+        "input_original": "SDOSEL.PVS:opp2, photo rectangle (2, 2, 76, 81), number removed",
+        "reference": "/media/sf_ubi24/restunts-bb11/out/opponents/otto-rework/reference-12x.png",
+        "reference_preparation": "Exact 12x nearest-neighbor enlargement of the original 74 x 79 photo crop for inspection and imagegen; no earlier enhanced portrait used",
+        "generated_source": "/home/user/.codex/generated_images/01a0fbef-5372-7fc0-b66a-7f1406966230/exec-2d8e237f-87d5-4100-9176-163993f6bd55.png",
+        "prompt": "Use case: identity-preserve.\nAsset type: freshly reconstructed photorealistic Herr Otto Partz portrait for the Stunts game, to be prepared as a 4x original-dimension working image before nearest-neighbor reduction and game-palette conversion.\nInput image 1 is the SOLE visual reference: an exact nearest-neighbor enlargement of the ORIGINAL game's 74 x 79 pixel photo crop. Build the photograph from the ground up using that original. Do not use any previous enhanced Otto image.\nComposition: same 74:79 width:height proportions, same frontal head position, same head size, receding short slicked-back brown hair, broad face and chin, thick wide brown handlebar moustache, eye placement and gaze, raised RIGHT hand at viewer-left holding the monocle, and identical amount of shoulders/crop. Preserve distinctive natural facial asymmetry. Do not bake VGA display aspect correction into the image. Produce a detailed larger photographic master in this aspect ratio; the exact working photo will be 296 x 316 inside a 320 x 332 tile.\nMonocle: exactly ONE round clear lens over HIS RIGHT eye (VIEWER LEFT), held by his raised right hand as in the original. Its thin metal frame is unmistakably warm yellow GOLD with realistic metallic highlights. The other eye is completely uncovered. Reconstruct plausible fingers and thumb holding the rim in the source pose. No glasses bridge, second lens, temple arms or nose pads.\nString: study the ORIGINAL's thin retaining string on viewer-left carefully. One single continuous unbranched string attaches to the monocle's lower outer rim, partly occluded by the holding fingers, then hangs STRAIGHT VERTICALLY down beside the cheek, to a little BELOW THE CHIN LINE. At that low point it bends toward Otto's BACK on that SAME side: to the VIEWER'S LEFT, lying on and following the dark jacket over his right shoulder toward the outer left/back edge. The reference shows the long vertical part about 30% of the image width, its low bend about 73% of image height, then its route going leftward over the clothing. Follow the reference's geometry. The lower bend is below the chin, not at mouth level. A fine muted brown-gray string with a subtle pale highlight makes it readable. It must rest on the clothes after the bend, not float. No fork, second cord, dangling tail, necklace, chest loop, or line turning inward across the neck. It goes toward the outer shoulder/back, not into the center of the chest.\nMouth: examine the original's mouth under the moustache closely. Preserve its unusual expression NATURALLY: the lips are only HALFWAY toward a kiss pucker, gently brought forward and inward but not fully pursed into a kiss. Keep a small natural curved lip seam and softly rounded lip volume, subtle asymmetry. It is neither a neutral straight mouth nor an exaggerated tight O, duck face, full kiss, smile, or open surprised mouth. No visible teeth. Use natural muted lip color, no lipstick. The moustache keeps the original wide span and upward curled ends.\nClothes: lightweight fabric jacket, BLACK or extremely dark purple, fully UNZIPPED with both zipper tracks visibly separated down its front. Absolutely COLLARLESS: a simple flat neckline and open front, no folded collar, no standing collar and no lapels. Under it a plain BLACK T-SHIRT. The jacket sleeve covers his raised arm as in the source. Smooth light fabric with restrained folds. The original multicolored pixel noise is NOT plaid or a pattern: do not reproduce it.\nPhotographic quality: believable real human skin, eyes, hair, moustache, hand anatomy and cloth. Soft even portrait lighting matching the original. Remove ALL digital speckles, dithering, pixel grid, colored noise, mosaic blocks, artificial grain and jagged pixel edges. No painting, illustration, plastic skin, beautification or exaggerated pores. This should look like recovering the original real person's photograph.\nBackdrop: perfectly flat uniform solid RGB(182,32,255), #B620FF, including the gap between the raised arm and head. No gradient, vignette, shadow, halo, texture or noise.\nNo text, number, border, frame, clipboard, UI, watermark, added jewelry or extra props. Preserve the source composition and natural understated partly puckered expression.",
+        "edits": [
+          {
+            "tool": "built-in image_gen.imagegen",
+            "edit_target": "/home/user/.codex/generated_images/01a0fbef-5372-7fc0-b66a-7f1406966230/exec-2d8e237f-87d5-4100-9176-163993f6bd55.png",
+            "supporting_reference": "/media/sf_ubi24/restunts-bb11/out/opponents/otto-rework/reference-12x.png",
+            "generated_source": "/home/user/.codex/generated_images/01a0fbef-5372-7fc0-b66a-7f1406966230/exec-85e0a223-e0d1-46af-8ca9-9603191a7f36.png",
+            "prompt": "Use case: precise-object-edit.\nInput image 1 is the EDIT TARGET: newly reconstructed photographic Otto portrait. Input image 2 is the ORIGINAL game reference for the monocle string route only.\nCorrect ONLY THE MONOCLE STRING. There is currently a disconnected loose J-shaped hook below the chin and a separate line lying across the far viewer-left shoulder. These must become ONE CONTINUOUS UNBROKEN STRING.\nRetain the vertical cord coming from beneath the holding fingers at roughly x34%, running straight down beside the cheek to x34%, y72.8%, just below the chin. At its bottom it must turn smoothly LEFTWARD, then continue up and left over the jacket fabric toward Otto's right shoulder/back on VIEWER LEFT, joining the existing shoulder segment at approximately x17%, y64.5%, and continuing left across that shoulder to the image's left edge around y63%. This is a single smooth continuous path: monocle -> behind holding fingers -> long straight vertical descent -> one low leftward bend just below the chin -> shoulder/back along the clothing toward the LEFT edge. The long descending section is vertical; the subsequent section rests naturally on the jacket. Fill in the missing connection from the bottom bend to the shoulder segment with the SAME fine brown-gray string and pale highlight. Remove/reform the tiny loose hook so it has NO loose tip. No branch, double cord, extra tail or detached shoulder string. Do not turn the cord toward the center neck or chest.\nKeep absolutely everything else as in input 1: same real person's face, subtle halfway-kiss puckered mouth, moustache, hair, eyes, single gold monocle, hand/fingers, collarless lightweight unzipped dark jacket, black T-shirt, solid purple backdrop, framing, size, light and photographic detail. Only repair this string's continuity and path. Do not regenerate unrelated details. No text, numbers or border.",
+            "status": "superseded cord route: user requested a localized return up and right toward the back of the neck instead of the outer shoulder"
+          },
+          {
+            "tool": "built-in image_gen.imagegen",
+            "edit_target": "/home/user/.codex/generated_images/01a0fbef-5372-7fc0-b66a-7f1406966230/exec-85e0a223-e0d1-46af-8ca9-9603191a7f36.png",
+            "generated_source": "/home/user/.codex/generated_images/01a0fbef-5372-7fc0-b66a-7f1406966230/exec-72a974f9-427e-4a2c-903d-dc628336fd26.png",
+            "prompt": "Use case: precise-object-edit.\nEdit this existing full-resolution photographic Otto portrait. This is ONLY a localized correction of the lower monocle retaining cord; preserve the exact input canvas size, pixel alignment, crop and all other details.\nThe user has explicitly confirmed the required direction: AFTER ITS VERTICAL DESCENT, the cord must turn UP AND RIGHT IN THE IMAGE toward THE BACK OF HIS NECK and disappear behind the jacket beside his neck.\nKeep the existing straight vertical cord beside his cheek exactly where it is, from beneath the holding fingers down to just below his chin, at about x34.7%, y71%. At that low point, turn the same single cord smoothly toward the RIGHT, then take a short, nearly straight, steep upward-right route over the narrow area of jacket beside the neck, disappearing behind the jacket at the side/back of the neck. The return lies on the jacket, close beside the neck; it does not cross his throat or skin. Keep its color, fine twisted texture, thin width, and lighting consistent with the existing string. It is one continuous unbranched cord.\nREMOVE THE ENTIRE WRONG OUTWARD SHOULDER SEGMENT: the current long string extending LEFT from the bottom turn all the way across the shoulder to the image's left edge. Restore the matching plain dark fabric, original seams, folds and texture under that removed line. There must be NO horizontal or sideways cord over the outer shoulder and no leftover end of that old line.\nKeep the lowest bend close to its current height just below the chin. The corrected route is: unchanged vertical descent -> a small rightward bottom bend -> short steep return UP AND RIGHT toward the BACK OF THE NECK -> disappears behind the jacket beside the neck. No dangling tail, no fork, no extra string, no big loop and no broad route across the chest.\nStrictly preserve the rest: face, natural partial-pucker lips, eyes, skin texture, moustache and curled tips, hair, single golden monocle and its position, right hand/fingers, black T-shirt, collarless unzipped dark jacket, zipper tracks, all lighting, sharpness and flat purple background. Do not soften, sharpen, beautify or re-render unrelated areas. No text or border. Return the same 1215 x 1295 composition.",
+            "status": "intermediate patch donor: correct inward return direction, but vertical section too short"
+          },
+          {
+            "tool": "built-in image_gen.imagegen",
+            "edit_target": "/home/user/.codex/generated_images/01a0fbef-5372-7fc0-b66a-7f1406966230/exec-72a974f9-427e-4a2c-903d-dc628336fd26.png",
+            "generated_source": "/home/user/.codex/generated_images/01a0fbef-5372-7fc0-b66a-7f1406966230/exec-8e98ecc0-6989-426b-8743-b3c6f168aeb4.png",
+            "prompt": "Use case: precise-object-edit.\nCorrect ONLY THE LOWEST POINT OF THE MONOCLE CORD in this image. Keep the current corrected up-and-right return direction toward the back of the neck and the completely clear outer left shoulder.\nThe current bottom of the string is TOO HIGH, at about image pixel x425,y830. LENGTHEN THE VERTICAL SECTION BY ABOUT 90 PIXELS so its LOWEST BEND reaches x425,y920, just below the bottom of his chin. This image is 1215 x 1295. The low bend must be at 71% of image height, not 64%.\nRun the original left/vertical leg straight down at x424 from below his holding fingers all the way to y916. At y920 make a small smooth turn RIGHT. Then run the other leg on a short steep almost straight diagonal UP AND RIGHT over the narrow jacket area beside the neck, reaching approximately x448,y800 and disappearing behind the dark jacket edge there. Keep both legs continuous with exactly one low bend at y920. The original cord eyelet and finger occlusion remain unchanged.\nDo not leave a kink or stub at the old y830 turn. Do not add a string running across the left shoulder. No additional cord, fork, loose tip, wide loop or necklace. Match existing fine tan-brown twisted cord, width and light.\nEverything else must stay exactly unchanged: all facial detail, hair, hand, monocle, purple backdrop, partial-pucker lips, moustache, collarless jacket and T-shirt, all seams and zippers. No repainting or softening. Return identical image dimensions and composition.",
+            "status": "localized cord patch donor only; full master retained outside the patch alpha",
+            "composition": "docs/opponents/game-sources/patches/opp2-cord-back.json"
+          },
+          {
+            "tool": "built-in image_gen.imagegen",
+            "edit_target": "docs/opponents/game-sources/full-resolution/opp2.png before the user-drawn-path correction",
+            "base_png_sha256": "337f36144b0cb4003da2b4ec3c4d6f40f21cb2b9d254cd8981ed3a8a7f7ee552",
+            "base_composition": "docs/opponents/game-sources/patches/opp2-cord-back.json",
+            "user_reference": "docs/opponents/game-sources/patches/opp2-cord-reference.png",
+            "mapped_guide": "/media/sf_ubi24/restunts-bb11/out/opponents/otto-cord-red-path/mapped-path-guide.png",
+            "generated_source": "/home/user/.codex/generated_images/01a0fbef-5372-7fc0-b66a-7f1406966230/exec-4cfeffbc-d12e-498c-9cc9-038f09cffbea.png",
+            "prompt": "Use case: precise-object-edit.\nInput 1 is the exact upscaled PHOTOGRAPH TO EDIT. Input 2 is the user's original game screenshot with the desired cord path drawn RED. Input 3 is the same photograph as input 1 with that red path mapped onto it as a precise geometry guide. The red lines are annotations, NEVER actual cord color.\nChange ONLY the lower monocle cord and the tiny fabric directly underneath its old/new paths. Follow the red guide in input 3 exactly, using input 2 to confirm its shape. The correct shape is a tall narrow hanging U/teardrop on the VIEWER'S LEFT side of the neck: the existing straight vertical hanging section is the RIGHT edge of the loop. At the bottom, it turns LEFT, then returns UP on the jacket to the LEFT of that vertical section. The upper end of this returning leg bends diagonally up-right to disappear at the jacket edge beside the jaw near the top of the loop. The whole return stays LEFT of the straight section. This is one continuous retaining cord, with no branch or knot.\nGeometry on the 1215x1295 master: retain the existing straight descent near x424 from beneath the fingers. Keep it vertical down to about y939. Form a small smooth rounded low bend via x412,y959 and x400,y961. Rise on the LEFT through approximately x379,y935, x356,y883, x348,y811, then x362,y775, x402,y733, and disappear at the jacket edge around x424,y722. The guide's centerline defines the route; render it with physically natural smooth curvature and subtle contact with the fabric, rather than angular drawing segments.\nCompletely remove the CURRENT WRONG GOLD RETURN on the RIGHT side of the straight cord, around x430-458,y835-952. Reconstruct the dark fabric under only that obsolete leg. Do not leave a stub, branch, detached piece, or second cord. Do not extend a cord across the outer shoulder.\nRender the corrected string in the SAME fine muted tan-brown braided material, thickness and light as the existing cord, NOT red. The upper straight cord above the guide is unchanged, including its connection beneath the fingers.\nPreserve the exact photograph from input 1 everywhere else: face, lips, eyes, gold monocle, moustache, hair, hand, skin texture, jacket folds and seams, black T-shirt, zippers, silhouette, flat purple background, lighting, sharpness, crop and 1215x1295 canvas. No overall regeneration, retouching, softening or resampling. No red annotation, number, text, watermark or border in the output.",
+            "status": "selected localized patch donor matching the user-drawn red path; all pixels outside the mask retained from the current master",
+            "composition": "docs/opponents/game-sources/patches/opp2-cord-path.json"
+          },
+          {
+            "tool": "built-in image_gen.imagegen",
+            "edit_target": "/media/sf_ubi24/restunts-bb11/out/opponents/otto-middle-finger/hand-edit-target.png",
+            "crop_rectangle": [
+              0,
+              260,
+              560,
+              680
+            ],
+            "base_png_sha256": "2f117dc153ddce66efa46a17baa0910926da86508d128bf209e6dfdf16d12f2c",
+            "generated_source": "/home/user/.codex/generated_images/01a0fbef-5372-7fc0-b66a-7f1406966230/exec-7e710071-45fb-4cd1-baf1-12bac76e3cd3.png",
+            "prompt": "Use case: precise-object-edit.\nThis image is a CROPPED HAND REPAIR TARGET from an existing portrait. The rest of the portrait is deliberately excluded. Repair ONLY the hand's missing MIDDLE FINGER.\nThis is Otto's raised RIGHT hand holding a gold monocle. The INDEX finger is the rightmost curled finger whose fingertip touches the monocle rim. His ring and little fingers curl downward toward the left of it; the thumb is tucked behind the grip. The existing rendering lacks the separate MIDDLE finger between the index and ring fingers.\nAdd the missing middle finger in its anatomically correct place BETWEEN the index finger and the ring finger. It should curl naturally with the other fingers, emerging from a believable middle knuckle and showing a distinct rounded distal segment and subtle fingernail in the gap below/behind the index finger, to the right of the ring finger. Preserve the existing hand gesture and monocle grip. Make the four long fingers clearly countable as index, middle, ring and little, with the single thumb remaining part of the natural partly occluded grip. Exactly five anatomically connected digits total; no extra fingers, fused digits, unattached fingertips or repeated nails. The middle finger is a normal relaxed curled finger, not an extended gesture.\nKeep the existing index finger against the rim, existing ring/little finger shapes and thumb, wrist/palm, skin color, fine skin texture and soft light as close as possible. Change only the small knuckle/finger area necessary to insert the missing finger naturally. Do not redesign the whole hand, move the wrist, change the grip or add jewellery.\nStrict invariants: unchanged gold monocle rim, visible eye/cheek/hair/moustache fragments, existing cord, purple background, wrist position, crop boundaries and photographic sharpness. No general smoothing, beauty retouching, noise, new skin marks, red marks, text or border.\nReturn exactly this 560 x 420 crop with identical framing, scale and pixel alignment, or the same 4:3 aspect ratio if a larger output is necessary. This will be composited only within the repaired finger region over the untouched original portrait.",
+            "status": "discarded: missing middle finger still not separately visible"
+          },
+          {
+            "tool": "built-in image_gen.imagegen",
+            "edit_target": "/media/sf_ubi24/restunts-bb11/out/opponents/otto-middle-finger/hand-edit-target.png",
+            "placement_guide": "/media/sf_ubi24/restunts-bb11/out/opponents/otto-middle-finger/middle-finger-placement.png",
+            "base_composition": "docs/opponents/game-sources/patches/opp2-cord-path.json",
+            "crop_rectangle": [
+              0,
+              260,
+              560,
+              680
+            ],
+            "base_png_sha256": "2f117dc153ddce66efa46a17baa0910926da86508d128bf209e6dfdf16d12f2c",
+            "generated_source": "/home/user/.codex/generated_images/01a0fbef-5372-7fc0-b66a-7f1406966230/exec-34038342-faca-45fe-a8b9-2c024813776a.png",
+            "prompt": "Use case: precise-object-edit.\nInput 1 is the cropped hand photograph to repair. Input 2 is the same crop with a CYAN placement guide showing the missing middle finger and its nail. Cyan is ONLY an annotation; it must not appear in the result.\nThe first attempted correction did not add a visibly distinct finger. This time ADD ONE NEW CURLED MIDDLE FINGER BETWEEN the existing rightmost index finger (touching the gold monocle) and the existing central ring finger. Follow the cyan guide for its placement.\nThere are currently only THREE clearly visible curled long fingers. The corrected result MUST show FOUR distinct curled long fingers, each with its own recognizable distal segment and fingernail: index, MIDDLE, ring and little. A single thumb remains naturally tucked behind the grip, making five digits total. Do not count the new finger as the thumb. Do not add extra digits beyond those five.\nKeep the three existing visible fingertips intact. The new middle fingertip should sit at about x502,y279 IN THIS 560x420 CROP, between the existing index nail at x521,y205 and ring nail at x474,y290. It has a natural rounded fingertip and visible small nail, and a plausible curled finger body rising to a knuckle around x429,y110. Its right side curves through x494,y200 and x510,y262. It may pass partly behind the index and ring fingers, but the NEW fingertip and nail must be clearly exposed, not concealed as another shadow. Match realistic anatomy and the relaxed curved posture of the other fingers.\nEdit only this finger cluster. Preserve the index's contact with the monocle, existing ring/little fingertips, palm, wrist, hand outline, skin tone, light and texture as closely as possible. Keep the monocle, cord, purple backdrop and face fragments exactly positioned. Do not smooth or regenerate unrelated areas.\nRender a natural photorealistic hand with four visibly countable curled long fingers and one partly hidden thumb, with no cyan marks, text or border. Keep the same 4:3 crop and framing.",
+            "status": "selected localized finger-cluster donor: four distinct curled long fingers with one tucked thumb; all pixels outside patch retained from prior master",
+            "composition": "docs/opponents/game-sources/patches/opp2-middle-finger.json"
+          }
+        ],
+        "processing_config": "docs/opponents/game-sources/processing.json",
+        "resampling": "nearest",
+        "review": "The cord follows the user-drawn red path. A separate hand-only patch adds the missing curled middle finger, yielding four distinct long fingers and one tucked thumb, while preserving the monocle grip and every master pixel outside the finger patch."
+      }
+    ],
+    "final_composition": {
+      "method": "Built-in imagegen on hand crop only; localized masked copy into untouched full-resolution master",
+      "base_composition": "docs/opponents/game-sources/patches/opp2-cord-path.json",
+      "donor_generated_source": "/home/user/.codex/generated_images/01a0fbef-5372-7fc0-b66a-7f1406966230/exec-34038342-faca-45fe-a8b9-2c024813776a.png",
+      "patch": "docs/opponents/game-sources/patches/opp2-middle-finger.png",
+      "before_crop": "docs/opponents/game-sources/patches/opp2-middle-finger-before.png",
+      "provenance": "docs/opponents/game-sources/patches/opp2-middle-finger.json",
+      "changed_pixel_count": 54042,
+      "changed_rectangle": [
+        244,
+        315,
+        537,
+        624
+      ],
+      "output_png_sha256": "cdc5c40d48a65a0c4f357f2f161f17d84b33c71e13d48c3c3a2e0a72e3d67146",
+      "output_file": "docs/opponents/game-sources/full-resolution/opp2.png"
+    },
+    "composition_history": [
+      {
+        "method": "Built-in imagegen donor, localized Pillow masked copy; no whole-image resampling",
+        "base_generated_source": "/home/user/.codex/generated_images/01a0fbef-5372-7fc0-b66a-7f1406966230/exec-85e0a223-e0d1-46af-8ca9-9603191a7f36.png",
+        "donor_generated_source": "/home/user/.codex/generated_images/01a0fbef-5372-7fc0-b66a-7f1406966230/exec-8e98ecc0-6989-426b-8743-b3c6f168aeb4.png",
+        "patch": "docs/opponents/game-sources/patches/opp2-cord-back.png",
+        "before_crop": "docs/opponents/game-sources/patches/opp2-cord-before.png",
+        "provenance": "docs/opponents/game-sources/patches/opp2-cord-back.json",
+        "changed_pixel_count": 12561,
+        "changed_rectangle": [
+          0,
+          805,
+          463,
+          958
+        ],
+        "output_png_sha256": "337f36144b0cb4003da2b4ec3c4d6f40f21cb2b9d254cd8981ed3a8a7f7ee552",
+        "output_file": "docs/opponents/game-sources/full-resolution/opp2.png"
+      },
+      {
+        "method": "Built-in imagegen donor from user-drawn path, localized Pillow masked copy; no image resampling",
+        "base_composition": "docs/opponents/game-sources/patches/opp2-cord-back.json",
+        "donor_generated_source": "/home/user/.codex/generated_images/01a0fbef-5372-7fc0-b66a-7f1406966230/exec-4cfeffbc-d12e-498c-9cc9-038f09cffbea.png",
+        "user_reference": "docs/opponents/game-sources/patches/opp2-cord-reference.png",
+        "patch": "docs/opponents/game-sources/patches/opp2-cord-path.png",
+        "before_crop": "docs/opponents/game-sources/patches/opp2-cord-path-before.png",
+        "provenance": "docs/opponents/game-sources/patches/opp2-cord-path.json",
+        "changed_pixel_count": 8642,
+        "changed_rectangle": [
+          355,
+          700,
+          463,
+          960
+        ],
+        "output_png_sha256": "2f117dc153ddce66efa46a17baa0910926da86508d128bf209e6dfdf16d12f2c",
+        "output_file": "docs/opponents/game-sources/full-resolution/opp2.png"
+      }
+    ]
   },
   {
     "opponent": 3,
