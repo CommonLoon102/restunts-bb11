@@ -19,7 +19,7 @@
 #define sprite_clear_shape_alt car_fixture_sprite_clear_shape_alt
 #define sprite_select_mcga_backbuffer car_fixture_sprite_select_mcga_backbuffer
 #define sprite_select_render_window car_fixture_sprite_select_render_window
-#define frame_fps_draw_text car_fixture_frame_fps_draw_text
+#define frame_status_draw_text car_fixture_frame_status_draw_text
 #define sprite_blit_to_video car_fixture_sprite_blit_to_video
 #include "test-car-menu.c"
 #undef main
@@ -29,7 +29,7 @@
 #undef sprite_clear_shape_alt
 #undef sprite_select_mcga_backbuffer
 #undef sprite_select_render_window
-#undef frame_fps_draw_text
+#undef frame_status_draw_text
 #undef sprite_blit_to_video
 #undef input_checking
 #undef mouse_multi_hittest
@@ -170,11 +170,11 @@ void sprite_select_render_window(void)
 	car_fixture_sprite_select_render_window();
 }
 
-struct RECTANGLE *frame_fps_draw_text(void)
+struct RECTANGLE *frame_status_draw_text(void)
 {
 	assert(opponent_draw_target == OPPONENT_TEST_RENDER_WINDOW);
 	opponent_window_notice = display_status_active;
-	return car_fixture_frame_fps_draw_text();
+	return car_fixture_frame_status_draw_text();
 }
 
 legacy_s16 sprite_blit_to_video(struct SPRITE *sprite, legacy_s16 mode)
@@ -489,6 +489,7 @@ static void begin_case(legacy_u8 opponent, legacy_u8 page_flipping)
 	event_count = event_index = expected_load_count = load_count = 0;
 	resource_allocations = resource_releases = window_allocations = window_releases = 0;
 	expect_load(opponent);
+	status_only_test = 1;
 	supersight_enabled = fps_display_enabled = 0;
 	display_status_active = display_status_expire_pending = opponent_expiry_test = 0;
 	display_status_draw_count = display_status_expire_count = display_shift_shortcuts = 0;
@@ -508,7 +509,10 @@ static void begin_case(legacy_u8 opponent, legacy_u8 page_flipping)
 
 static void finish_case(legacy_u8 opponent, legacy_u32 refresh_count)
 {
+	legacy_u8 original_fps_preference = fps_display_enabled;
 	run_opponent_menu();
+	assert(fps_display_enabled == original_fps_preference);
+	status_only_test = 0;
 	assert(event_index == event_count && load_count == expected_load_count);
 	assert((legacy_u8)gameconfig.game_opponenttype == opponent);
 	assert(resource_allocations == resource_releases && window_allocations == window_releases);
@@ -622,9 +626,10 @@ static void test_clear_ghost(legacy_u8 page_flipping, legacy_u8 selection)
 	assert(ghost_dialogs == 0);
 }
 
-static void test_opponent_car(legacy_u8 page_flipping)
+static void test_opponent_car(legacy_u8 page_flipping, legacy_u8 initial_fps)
 {
 	begin_case(3, page_flipping);
+	fps_display_enabled = initial_fps;
 	add_event(KEY_ENTER, 3);
 	opponent_hits[event_count - 1] = 3;
 	expect_load(3);
@@ -634,16 +639,17 @@ static void test_opponent_car(legacy_u8 page_flipping)
 	assert(car_menu_calls == 1 && ghost_dialogs == 0 && ghost_button_draws == 0);
 }
 
-static void test_notice_expiry(legacy_u8 page_flipping, legacy_u16 shortcut)
+static void test_notice_expiry(legacy_u8 page_flipping, legacy_u16 shortcut, legacy_u8 initial_fps)
 {
 	begin_case(3, page_flipping);
+	fps_display_enabled = initial_fps;
 	opponent_expiry_test = 1;
 	add_event(shortcut, 3);
 	add_event(0, 3);
 	add_event(KEY_ENTER, 3);
 	opponent_hits[event_count - 1] = 4;
 	finish_case(3, 1);
-	assert(supersight_enabled == 1 && fps_display_enabled == 0);
+	assert(supersight_enabled == 1 && fps_display_enabled == initial_fps);
 	assert(display_shift_shortcuts == (shortcut == (legacy_u16)KEY_SHIFT_F12));
 	assert(display_status_draw_count == 1);
 	assert(display_status_expire_count == 1 && display_status_active == 0);
@@ -658,9 +664,11 @@ static void test_notice_expiry(legacy_u8 page_flipping, legacy_u16 shortcut)
 	opponent_expiry_test = 0;
 }
 
-static void test_supersight_toggle(legacy_u8 page_flipping, legacy_u8 opponent)
+static void test_supersight_toggle(legacy_u8 page_flipping, legacy_u8 opponent,
+								   legacy_u8 initial_fps)
 {
 	begin_case(opponent, page_flipping);
+	fps_display_enabled = initial_fps;
 	add_event(KEY_F12, opponent);
 	add_event(KEY_F12, opponent);
 	add_event(KEY_ENTER, opponent);
@@ -697,13 +705,15 @@ int main(void)
 		for (legacy_u8 selection = 0; selection < 3; selection++) {
 			test_clear_ghost(page_flipping, selection);
 		}
-		test_opponent_car(page_flipping);
-		test_supersight_toggle(page_flipping, 3);
-		test_supersight_toggle(page_flipping, 0);
-		test_notice_expiry(page_flipping, (legacy_u16)KEY_F12);
+		for (legacy_u8 fps = FRAME_FPS_DISPLAY_OFF; fps < FRAME_FPS_DISPLAY_MODE_COUNT; fps++) {
+			test_opponent_car(page_flipping, fps);
+			test_supersight_toggle(page_flipping, 3, fps);
+			test_supersight_toggle(page_flipping, 0, fps);
+			test_notice_expiry(page_flipping, (legacy_u16)KEY_F12, fps);
 #ifdef RESTUNTS_SDL3
-		test_notice_expiry(page_flipping, (legacy_u16)KEY_SHIFT_F12);
+			test_notice_expiry(page_flipping, (legacy_u16)KEY_SHIFT_F12, fps);
 #endif
+		}
 	}
 	printf("test-opponent-menu: passed %" LEGACY_PRIu32 " sessions, %" LEGACY_PRIu32
 		   " transitions\n",

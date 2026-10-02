@@ -91,6 +91,10 @@ void frame_render_timing_record(legacy_u64 elapsed_ns);
 void frame_render_timing_reset(void);
 #endif
 void frame_supersight_show_status(const legacy_s8 *name);
+/* Static menus retain mode-change notices without drawing or sampling F11 diagnostics. */
+legacy_s16 frame_status_overlay_active(void);
+legacy_s16 frame_status_expire_idle(void);
+struct RECTANGLE *frame_status_draw_text(void);
 legacy_s16 frame_display_overlay_active(void);
 legacy_s16 frame_fps_expire_idle(void);
 void frame_fps_record_presented(void);

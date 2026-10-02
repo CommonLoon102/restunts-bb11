@@ -567,12 +567,13 @@ static void test_ghost_track_changes(void)
 }
 
 static void test_track_supersight_case(legacy_u8 page_flipping, legacy_u8 initial_mode,
-									   legacy_u8 expire, legacy_u16 shortcut)
+									   legacy_u8 expire, legacy_u16 shortcut, legacy_u8 initial_fps)
 {
 	reset_menu_case(1, 1);
 	video_uses_page_flipping = page_flipping;
 	supersight_enabled = track_initial_supersight = initial_mode;
-	fps_display_enabled = 0;
+	fps_display_enabled = initial_fps;
+	status_only_test = 1;
 	track_expiry_test = expire;
 	track_shortcut_supersight = initial_mode ^ 1U;
 #ifdef RESTUNTS_SDL3
@@ -596,6 +597,8 @@ static void test_track_supersight_case(legacy_u8 page_flipping, legacy_u8 initia
 	track_toggle_test = 1;
 	run_tracks_menu(0);
 	track_toggle_test = 0;
+	status_only_test = 0;
+	assert(fps_display_enabled == initial_fps);
 	assert(frame_index == 5 && track_presentations == 5);
 	assert(track_preview_draws == 3);
 	assert(supersight_enabled == (expire != 0 ? track_shortcut_supersight : initial_mode));
@@ -614,11 +617,16 @@ static void test_track_supersight_toggle(void)
 {
 	for (legacy_u8 page_flipping = 0; page_flipping < 2; page_flipping++) {
 		for (legacy_u8 initial_mode = 0; initial_mode < 2; initial_mode++) {
-			test_track_supersight_case(page_flipping, initial_mode, 0, (legacy_u16)KEY_F12);
-			test_track_supersight_case(page_flipping, initial_mode, 1, (legacy_u16)KEY_F12);
+			for (legacy_u8 fps = FRAME_FPS_DISPLAY_OFF; fps < FRAME_FPS_DISPLAY_MODE_COUNT; fps++) {
+				test_track_supersight_case(page_flipping, initial_mode, 0, (legacy_u16)KEY_F12,
+										   fps);
+				test_track_supersight_case(page_flipping, initial_mode, 1, (legacy_u16)KEY_F12,
+										   fps);
 #ifdef RESTUNTS_SDL3
-			test_track_supersight_case(page_flipping, initial_mode, 1, (legacy_u16)KEY_SHIFT_F12);
+				test_track_supersight_case(page_flipping, initial_mode, 1,
+										   (legacy_u16)KEY_SHIFT_F12, fps);
 #endif
+			}
 		}
 	}
 }

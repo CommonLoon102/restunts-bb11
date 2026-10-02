@@ -1241,6 +1241,84 @@ static void test_render_timing(void)
 }
 #endif
 
+#define STATUS_ONLY_TEST_FPS 24U
+#define STATUS_ONLY_TEST_FPS_TEXT "24 FPS"
+
+static void assert_saved_diagnostics(const legacy_char *expected_fps)
+{
+	text_draw_count = 0;
+	frame_fps_draw_text();
+	assert(text_draw_count == DIAGNOSTIC_TEST_LINE_COUNT);
+	assert(strcmp(text_draws[0].text, expected_fps) == 0);
+	assert(text_draws[0].x == DIAGNOSTIC_TEST_LEFT && text_draws[0].y == DIAGNOSTIC_TEST_TOP);
+#ifdef RESTUNTS_SDL3
+	assert_text(1, "8.4ms", DIAGNOSTIC_TEST_LEFT, RENDER_TEST_LINE_Y);
+#endif
+}
+
+static void test_status_only_preserves_diagnostics(void)
+{
+	for (legacy_u8 flipping = 0; flipping <= 1; flipping++) {
+		reset_status_text();
+		video_uses_page_flipping = flipping;
+		fps_display_enabled = FRAME_FPS_DISPLAY_ON;
+		frame_fps_record_presented();
+		present_frames(STATUS_ONLY_TEST_FPS, DOS_TIMER_REALTIME_TICKS_PER_SECOND);
+#ifdef RESTUNTS_SDL3
+		frame_render_timing_reset();
+		frame_render_timing_record(RENDER_TEST_FIRST_NS);
+#endif
+		struct RECTANGLE saved_ingame_bounds = rect_ingame_text;
+		/* A static menu may stay open beyond the normal FPS idle timeout.
+		 * Status queries, draws and expiry must leave that sample untouched. */
+		realtime_ticks = LEGACY_U32_WRAP_ADD(realtime_ticks, STATUS_TEST_DURATION);
+		assert(frame_status_overlay_active() == 0);
+		assert(frame_status_expire_idle() == 0);
+		text_draw_count = 0;
+		struct RECTANGLE *bounds = frame_status_draw_text();
+		assert(text_draw_count == 0 && memcmp(bounds, &empty_rect, sizeof(*bounds)) == 0);
+		assert_saved_diagnostics(STATUS_ONLY_TEST_FPS_TEXT);
+
+		frame_supersight_show_status("Medium");
+		assert(frame_status_overlay_active() != 0 && frame_status_expire_idle() == 0);
+		text_draw_count = 0;
+		bounds = frame_status_draw_text();
+		assert(text_draw_count == 1);
+		assert_text(0, STATUS_TEST_PREFIX "Medium", STATUS_TEST_LEFT, STATUS_TEST_TOP);
+		assert_status_bounds(bounds);
+		assert(fps_display_enabled == FRAME_FPS_DISPLAY_ON);
+
+		realtime_ticks = LEGACY_U32_WRAP_ADD(realtime_ticks, STATUS_TEST_DURATION);
+		legacy_u16 pages = flipping != 0 ? STATUS_TEST_PAGE_COUNT : COMPOSITION_TEST_SINGLE_PAGE;
+		for (legacy_u16 page = 0; page < pages; page++) {
+			/* Visibility checks retain the pending request until that page is
+			 * restored, including the second page after the notice disappears. */
+			assert(frame_status_overlay_active() != 0);
+			assert(frame_status_expire_idle() != 0);
+			text_draw_count = 0;
+			bounds = frame_status_draw_text();
+			assert(text_draw_count == 0);
+			assert_status_bounds(bounds);
+			assert(fps_display_enabled == FRAME_FPS_DISPLAY_ON);
+		}
+		assert(frame_status_overlay_active() == 0 && frame_status_expire_idle() == 0);
+		text_draw_count = 0;
+		bounds = frame_status_draw_text();
+		assert(text_draw_count == 0 && memcmp(bounds, &empty_rect, sizeof(*bounds)) == 0);
+		assert_saved_diagnostics(STATUS_ONLY_TEST_FPS_TEXT);
+		assert(restored_roof_count == 0 && copied_roof_count == 0);
+		assert(memcmp(&rect_ingame_text, &saved_ingame_bounds, sizeof(rect_ingame_text)) == 0);
+
+		/* Supported animated views still draw and expire the preserved FPS;
+		 * the independent render-time sample survives the FPS idle reset. */
+		assert(frame_display_overlay_active() != 0);
+		assert(frame_fps_expire_idle() != 0);
+		assert_saved_diagnostics("0 FPS");
+		assert(fps_display_enabled == FRAME_FPS_DISPLAY_ON);
+	}
+	reset_status_text();
+}
+
 legacy_int main(void)
 {
 	test_incremental_crack_overlay();
@@ -1267,6 +1345,7 @@ legacy_int main(void)
 	test_supersight_status_paused_page_cleanup();
 	test_diagnostic_text_after_dashboard();
 	test_supersight_status_replay_filename_collision();
+	test_status_only_preserves_diagnostics();
 #ifdef RESTUNTS_SDL3
 	test_render_timing();
 #endif

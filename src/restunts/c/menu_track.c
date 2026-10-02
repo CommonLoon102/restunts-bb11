@@ -132,16 +132,16 @@ static void track_menu_draw_background(void)
 	track_menu_draw_highscore();
 
 	track_menu_draw_buttons();
-	if (frame_display_overlay_active() != 0) {
+	if (frame_status_overlay_active() != 0) {
 		sprite_select_render_window();
 		sprite_set_target_clip_bounds(0, TRACK_MENU_SCREEN_WIDTH, 0, TRACK_MENU_SCREEN_HEIGHT);
-		frame_fps_draw_text();
+		frame_status_draw_text();
 	}
 }
 
 static legacy_u16 track_menu_poll_input(struct TRACK_MENU_STATE *menu)
 {
-	if (frame_fps_expire_idle() != 0) {
+	if (frame_status_expire_idle() != 0) {
 		mouse_draw_opaque_check();
 		sprite_free_wnd(render_window_sprite);
 		track_menu_draw_background();
