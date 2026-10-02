@@ -19,6 +19,9 @@
 #include "../c/video_frame.h"
 #include "../c/shape3d.h"
 #include "../c/keyboard.h"
+#ifdef RESTUNTS_SDL3
+#include "../c/hires.h"
+#endif
 
 #undef strcmp
 
@@ -33,7 +36,17 @@ static struct SHAPE2D sky_images[4];
 static legacy_u8 elements[900], terrain[900];
 legacy_u8 supersight_enabled;
 
+#ifdef RESTUNTS_SDL3
+static legacy_u8 hires_active;
+
+legacy_s32 hires_enabled(void)
+{
+	return hires_active;
+}
+#endif
+
 enum {
+	PREVIEW_SCENARIO_COUNT = 32,
 	PREVIEW_WATER_TILE = TRACK_GRID_SIZE / 2,
 	PREVIEW_WATER_OBJECT = 1,
 	PREVIEW_WATER_BRIDGE_FIRST = 105,
@@ -240,6 +253,11 @@ legacy_u16 select_cliprect_rotate(legacy_s16 z, legacy_s16 x, legacy_s16 y, stru
 
 legacy_u16 shape3d_transform_and_queue(struct TRANSFORMEDSHAPE3D *shape)
 {
+#ifdef RESTUNTS_SDL3
+	if (hires_active != 0) {
+		assert(flush_count == 0);
+	}
+#endif
 	legacy_u16 id = shape_id(shape->shapeptr);
 	if (preview_capture_active != 0) {
 		assert(preview_captured_count < PREVIEW_WATER_CAPTURE_CAPACITY);
@@ -421,10 +439,32 @@ static void preview_case(legacy_u32 scenario)
 		skyboxes[index] = &sky_images[index];
 	}
 	draw_track_preview();
-	assert(flush_count == 900);
+	legacy_u32 expected_flushes = TRACK_GRID_SIZE * TRACK_GRID_SIZE;
+#ifdef RESTUNTS_SDL3
+	if (hires_active != 0) {
+		expected_flushes = 1;
+	}
+#endif
+	assert(flush_count == expected_flushes);
 	assert(queued_count > 0);
 	record_word(queued_count);
 }
+
+#ifdef RESTUNTS_SDL3
+static void test_preview_batching(void)
+{
+	for (legacy_u32 scenario = 0; scenario < PREVIEW_SCENARIO_COUNT; scenario++) {
+		preview_case(scenario);
+		legacy_u32 classic_queued_count = queued_count;
+		hires_active = 1;
+		preview_case(scenario);
+		assert(queued_count == classic_queued_count);
+		hires_active = 0;
+		preview_case(scenario);
+		assert(queued_count == classic_queued_count);
+	}
+}
+#endif
 
 struct PREVIEW_WATER_FIXTURE {
 	legacy_u8 track, footprint, cells, column, row;
@@ -986,7 +1026,7 @@ int main(void)
 	}
 	legacy_u32 intro_hash = trace_hash;
 	trace_hash = 2166136261UL;
-	for (legacy_u32 scenario = 0; scenario < 32; scenario++) {
+	for (legacy_u32 scenario = 0; scenario < PREVIEW_SCENARIO_COUNT; scenario++) {
 		record_word(scenario);
 		preview_case(scenario);
 	}
@@ -1008,6 +1048,9 @@ int main(void)
 	assert(preview_hash == 0x8ae71f07UL);
 	/* Lifecycle now evaluates each RNG and timer operation exactly once. */
 	assert(lifecycle_hash == 0xa3183e31UL);
+#endif
+#ifdef RESTUNTS_SDL3
+	test_preview_batching();
 #endif
 	for (legacy_u32 scenario = 0; scenario < 32; scenario++) {
 		display_toggle_case(scenario);
