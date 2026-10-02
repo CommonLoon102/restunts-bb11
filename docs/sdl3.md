@@ -358,6 +358,13 @@ available:
   presentation waits.
 - **F12** toggles HyperVision Auto on or off; **Shift+F12** cycles the fixed
   **Full → High → Medium → Low** presets.
+- **Ctrl+F12** saves the last completed frame as a PNG in the game data directory
+  (`--data-dir`, or the current directory by default). Files are named
+  `SHOT0001.PNG` through `SHOT9999.PNG`, skipping names that already exist.
+  Desktop and browser captures use the game's render resolution; the SDL3 DOS
+  build captures its display surface. Holding the shortcut saves only once.
+  Browsers save to the selected game folder when possible, otherwise download
+  the PNG.
 - Hold **Q** to rewind a live race; release it to resume from that point.
 - **T** switches between the player and opponent or selected ghost view.
 - **Escape** leaves driving or replay playback; closing the desktop window exits

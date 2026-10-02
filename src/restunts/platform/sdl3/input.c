@@ -246,6 +246,15 @@ static void input_key(const SDL_KeyboardEvent *event)
 		consumed_keys[event->scancode] = true;
 		return;
 	}
+	if (event->scancode == SDL_SCANCODE_F12 && (event->mod & SDL_KMOD_CTRL) != 0 &&
+		(event->mod & (SDL_KMOD_SHIFT | SDL_KMOD_ALT | SDL_KMOD_GUI)) == 0) {
+		/* Keep F12 consumed if Ctrl is released before the shortcut key. */
+		consumed_keys[event->scancode] = true;
+		if (!was_pressed && !event->repeat) {
+			sdl3_video_screenshot();
+		}
+		return;
+	}
 	legacy_u32 scan = legacy_scancode(event->scancode);
 	if (scan == 0) {
 		return;

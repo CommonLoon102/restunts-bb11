@@ -30,6 +30,9 @@ const MIN_COLORS = 16;
 const MIN_SCREEN_CHANGE = 0.03;
 const SAVE_NAME = 'WEB!$1.HIG';
 const SAVE_BYTES = Buffer.from([0, 255, 1, 128, 13, 10, 32, 127]);
+const SCREENSHOT_NAME = 'SHOT0001.PNG';
+const SCREENSHOT_BYTES = Buffer.from(
+    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aWQAAAABJRU5ErkJggg==', 'base64');
 const SAVE_FORMAT = 'restunts-saves';
 const SAVE_VERSION = 1;
 const DATA_DIRECTORY = '/stunts';
@@ -194,6 +197,37 @@ async function exerciseExitFeedback(context, settings, report) {
     }
 }
 
+async function checkScreenshotDownload(page, settings, filename, label) {
+    const downloadPending = page.waitForEvent('download');
+    await page.evaluate(async name => Module.saveScreenshot(name), filename);
+    const download = await downloadPending;
+    assert.equal(download.suggestedFilename(), SCREENSHOT_NAME);
+    const output = path.join(settings.output, label + '.png');
+    await download.saveAs(output);
+    assert.deepEqual(await fs.readFile(output), SCREENSHOT_BYTES,
+        'Screenshot download must preserve the encoded PNG');
+}
+
+async function exerciseReadOnlyScreenshot(context, settings, report) {
+    const page = await context.newPage();
+    page.on('pageerror', error => report.errors.push(String(error)));
+    await page.addInitScript(() => { window.showDirectoryPicker = undefined; });
+    try {
+        await page.goto(pathToFileURL(settings.html).href, { timeout: READY_TIMEOUT_MS });
+        await page.waitForFunction(() => !document.getElementById('game-files').disabled,
+            null, { timeout: READY_TIMEOUT_MS });
+        await page.evaluate(({ directory, name, bytes }) => {
+            Module.FS.chdir(directory);
+            Module.FS.writeFile(name, Uint8Array.from(bytes));
+        }, { directory: DATA_DIRECTORY, name: SCREENSHOT_NAME, bytes: Array.from(SCREENSHOT_BYTES) });
+        await checkScreenshotDownload(page, settings, SCREENSHOT_NAME, 'screenshot-read-only');
+        assert.match(await page.locator('#status').innerText(), /^Downloaded screenshot SHOT0001\.PNG\.$/);
+        report.screenshotReadOnlyDownload = true;
+    } finally {
+        await page.close();
+    }
+}
+
 async function exerciseDirectSaving(context, settings, report) {
     const page = await context.newPage();
     page.on('pageerror', error => report.errors.push(String(error)));
@@ -205,6 +239,9 @@ async function exerciseDirectSaving(context, settings, report) {
         for (const name of resourceNames.concat(animationNames, ignoredNames)) {
             files.set(name, Uint8Array.from(fixtureBytes));
         }
+        files.set('SHOT0001.PNG', Uint8Array.from(initialBytes));
+        files.set('sHoT0002.PnG', Uint8Array.from(initialBytes));
+        files.set('SHOT0003.PNG/keep.txt', Uint8Array.from(initialBytes));
         window.testDirectory = files;
         window.testWriteFailure = false;
         window.testAbortedWrites = 0;
@@ -292,6 +329,33 @@ async function exerciseDirectSaving(context, settings, report) {
         assert.deepEqual(importedResources.ignored, [], 'Folder import must exclude executables and HTML');
         report.resourceFormatImports = true;
 
+        const screenshotResults = await page.evaluate(async ({ directory, name, bytes }) => {
+            Module.FS.chdir(directory);
+            Module.FS.writeFile(name, Uint8Array.from(bytes));
+            await Module.saveScreenshot(name);
+            const status = document.getElementById('status').textContent;
+            // Repeat with the same MEMFS source to model numbering restarting next session.
+            await Module.saveScreenshot(name);
+            const operations = window.testDiskOperations.length;
+            let unsafeRejected = false;
+            try { await Module.saveScreenshot('../' + name); }
+            catch (_) { unsafeRejected = true; }
+            return { status, unsafeRejected, noUnsafeWrites: operations === window.testDiskOperations.length,
+                existing: Array.from(window.testDirectory.get('SHOT0001.PNG')),
+                mixedCase: Array.from(window.testDirectory.get('sHoT0002.PnG')),
+                first: Array.from(window.testDirectory.get('SHOT0004.PNG')),
+                second: Array.from(window.testDirectory.get('SHOT0005.PNG')) };
+        }, { directory: DATA_DIRECTORY, name: SCREENSHOT_NAME, bytes: Array.from(SCREENSHOT_BYTES) });
+        assert.equal(screenshotResults.status, 'Saved SHOT0004.PNG to your game folder.');
+        assert.deepEqual(screenshotResults.existing, [1, 2, 3]);
+        assert.deepEqual(screenshotResults.mixedCase, [1, 2, 3]);
+        assert.deepEqual(screenshotResults.first, Array.from(SCREENSHOT_BYTES));
+        assert.deepEqual(screenshotResults.second, Array.from(SCREENSHOT_BYTES));
+        assert.equal(screenshotResults.unsafeRejected, true);
+        assert.equal(screenshotResults.noUnsafeWrites, true);
+        report.screenshotDirectSaving = true;
+        report.screenshotExistingNamesPreserved = true;
+
         const directResults = await page.evaluate(async ({ directory, bytes }) => {
             const modified = Uint8Array.from(bytes);
             Module.FS.writeFile(directory + '/mixed.hig', modified);
@@ -346,6 +410,11 @@ async function exerciseDirectSaving(context, settings, report) {
         report.directSaving = true;
         report.directSavingCasePreserved = true;
         report.directSavingFailureRecovery = true;
+        await checkScreenshotDownload(page, settings, SCREENSHOT_NAME, 'screenshot-write-failed');
+        assert.equal(await page.evaluate(() => window.testAbortedWrites), 2);
+        assert.match(await page.locator('#status').innerText(), /^Screenshot folder write failed\./);
+        assert.equal(await page.evaluate(() => window.testDirectory.has('SHOT0006.PNG')), false);
+        report.screenshotWriteFailureDownload = true;
         // Changing folders must remove optional assets from the previous selection.
         await page.evaluate(names => names.forEach(name => window.testDirectory.delete(name)), ANIMATION_IMPORT_NAMES);
         await page.locator('#open-folder').click();
@@ -789,11 +858,12 @@ async function main() {
         }
         await exerciseExitFeedback(context, settings, report);
         await exerciseDirectSaving(context, settings, report);
+        await exerciseReadOnlyScreenshot(context, settings, report);
         await exerciseReadOnlyAnimationImports(context, settings, report);
         await exerciseRememberedFolders(context, settings, report);
         assert.deepEqual(report.errors, [], 'Browser errors or external resource requests occurred');
         report.passed = true;
-        const passedChecks = settings.directOnly ? 'exit feedback, resource imports, direct saves, remembered folders, permission retry and recovery' :
+        const passedChecks = settings.directOnly ? 'exit feedback, resource imports, direct saves, screenshot saves/downloads, remembered folders, permission retry and recovery' :
             'file:// offline startup, exit feedback, supplied data, resource imports, remembered folders and direct-write recovery' +
             (settings.idleOnly ? ', idle demo playback' : settings.savesOnly ? ', saves' : ', saves, keyboard and driving');
         console.log('PASS: ' + passedChecks);

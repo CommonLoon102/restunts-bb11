@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include "../platform/sdl3/sdl3.h"
 #include "../platform/sdl3/music.h"
 #include "../c/platform.h"
@@ -749,6 +750,193 @@ static void test_video_page_lifetime(void)
 	frame_adaptive_reset(&frame_adaptive);
 }
 
+#define SCREENSHOT_TEST_FILENAME "SHOT0000.PNG"
+#define SCREENSHOT_TEST_EXISTING_CONTENT "Keep this existing screenshot unchanged."
+
+enum {
+	SCREENSHOT_TEST_DIRECTORY_BYTES = 64,
+	SCREENSHOT_TEST_EXISTING_FILE = 1,
+	SCREENSHOT_TEST_EXISTING_DIRECTORY,
+	SCREENSHOT_TEST_FIRST_IMAGE
+};
+
+static void screenshot_test_path(legacy_u32 number,
+								 legacy_char path[sizeof(SCREENSHOT_TEST_FILENAME)])
+{
+	assert(snprintf(path, sizeof(SCREENSHOT_TEST_FILENAME), "SHOT%04" LEGACY_PRIu32 ".PNG",
+					number) == (legacy_s32)sizeof(SCREENSHOT_TEST_FILENAME) - 1);
+}
+
+static void assert_no_screenshot(legacy_u32 number)
+{
+	legacy_char path[sizeof(SCREENSHOT_TEST_FILENAME)];
+	screenshot_test_path(number, path);
+	assert(!SDL_GetPathInfo(path, NULL));
+}
+
+static void assert_screenshot(legacy_u32 number, legacy_s32 width, legacy_s32 height,
+							  legacy_u32 top, legacy_u32 bottom)
+{
+	legacy_char path[sizeof(SCREENSHOT_TEST_FILENAME)];
+	screenshot_test_path(number, path);
+	SDL_Surface *surface = SDL_LoadPNG(path);
+	assert(surface != NULL);
+	assert(surface->w == width && surface->h == height);
+	for (legacy_s32 y = 0; y < height; y++) {
+		legacy_u32 expected = y < height / 2 ? top : bottom;
+		for (legacy_s32 x = 0; x < width; x++) {
+			legacy_u8 red, green, blue, alpha;
+			assert(SDL_ReadSurfacePixel(surface, x, y, &red, &green, &blue, &alpha));
+			assert(red == (legacy_u8)(expected >> LEGACY_WORD_BITS));
+			assert(green == (legacy_u8)(expected >> LEGACY_BYTE_BITS));
+			assert(blue == (legacy_u8)expected);
+			assert(alpha == SDL_ALPHA_OPAQUE);
+		}
+	}
+	SDL_DestroySurface(surface);
+}
+
+static void press_screenshot_key(SDL_Keymod modifiers)
+{
+	send_key(SDL_SCANCODE_F12, modifiers, true, false);
+	assert(kb_read_char() == 0);
+	assert(kb_get_key_state(DOS_KB_F12_SCANCODE) == 0);
+}
+
+static void release_screenshot_key(void)
+{
+	send_key(SDL_SCANCODE_F12, SDL_KMOD_NONE, false, false);
+	assert(kb_read_char() == 0);
+	assert(kb_get_key_state(DOS_KB_F12_SCANCODE) == 0);
+}
+
+static void test_screenshots(void)
+{
+	/* --data-dir changes the working directory before game startup. Keep every
+	 * screenshot assertion in an isolated directory matching that contract. */
+	legacy_char *original_directory = SDL_GetCurrentDirectory();
+	assert(original_directory != NULL);
+	legacy_char directory[SCREENSHOT_TEST_DIRECTORY_BYTES];
+	legacy_s32 length = snprintf(directory, sizeof(directory), "screenshot-test-%" LEGACY_PRIu64,
+								 (legacy_u64)SDL_GetTicksNS());
+	assert(length > 0 && length < (legacy_s32)sizeof(directory));
+	assert(!SDL_GetPathInfo(directory, NULL));
+	assert(SDL_CreateDirectory(directory));
+	assert(chdir(directory) == 0);
+	kb_init_interrupt();
+	sdl3_video_shutdown();
+	press_screenshot_key(SDL_KMOD_LCTRL);
+	release_screenshot_key();
+	assert(sdl3_video_window() == NULL);
+	assert_no_screenshot(SCREENSHOT_TEST_EXISTING_FILE);
+
+	legacy_char path[sizeof(SCREENSHOT_TEST_FILENAME)];
+	screenshot_test_path(SCREENSHOT_TEST_EXISTING_FILE, path);
+	FILE *existing = fopen(path, "wb");
+	assert(existing != NULL);
+	assert(fwrite(SCREENSHOT_TEST_EXISTING_CONTENT, 1, sizeof(SCREENSHOT_TEST_EXISTING_CONTENT),
+				  existing) == sizeof(SCREENSHOT_TEST_EXISTING_CONTENT));
+	assert(fclose(existing) == 0);
+	screenshot_test_path(SCREENSHOT_TEST_EXISTING_DIRECTORY, path);
+	assert(SDL_CreateDirectory(path));
+
+	dos_video_set_mode_13h();
+	hires_shutdown();
+	frame_adaptive_reset(&frame_adaptive);
+	legacy_u8 colors[] = {PAGE_VIDEO_DAC_MAX, 0, 0, 0, 0, PAGE_VIDEO_DAC_MAX};
+	dos_video_set_palette(PAGE_VIDEO_FIRST_INDEX, PAGE_VIDEO_COLOR_COUNT, colors);
+	memset(framebuffer, PAGE_VIDEO_FIRST_INDEX, PAGE_VIDEO_PIXELS);
+	sdl3_video_present();
+	legacy_u32 image_number = SCREENSHOT_TEST_FIRST_IMAGE;
+	press_screenshot_key(SDL_KMOD_LCTRL);
+	assert_screenshot(image_number++, SDL3_SCREEN_WIDTH, SDL3_SCREEN_HEIGHT, PAGE_VIDEO_RED,
+					  PAGE_VIDEO_RED);
+	/* Repeats, duplicate down events and releasing Ctrl while F12 remains held
+	 * must neither capture again nor reach the HyperVision action. */
+	send_key(SDL_SCANCODE_F12, SDL_KMOD_LCTRL, true, true);
+	press_screenshot_key(SDL_KMOD_LCTRL);
+	press_screenshot_key(SDL_KMOD_NONE);
+	press_screenshot_key(SDL_KMOD_SHIFT);
+	assert_no_screenshot(image_number);
+	release_screenshot_key();
+
+	sdl3_video_begin_frame();
+	memset(framebuffer, PAGE_VIDEO_SECOND_INDEX, PAGE_VIDEO_PIXELS / 2);
+	legacy_u8 next_colors[] = {PAGE_VIDEO_DAC_MAX, PAGE_VIDEO_DAC_MAX, 0, 0, PAGE_VIDEO_DAC_MAX, 0};
+	dos_video_set_palette(PAGE_VIDEO_FIRST_INDEX, PAGE_VIDEO_COLOR_COUNT, next_colors);
+	press_screenshot_key(SDL_KMOD_RCTRL | SDL_KMOD_CAPS | SDL_KMOD_NUM);
+	assert_screenshot(image_number++, SDL3_SCREEN_WIDTH, SDL3_SCREEN_HEIGHT, PAGE_VIDEO_RED,
+					  PAGE_VIDEO_RED);
+	release_screenshot_key();
+	memset(framebuffer + PAGE_VIDEO_PIXELS / 2, PAGE_VIDEO_SECOND_INDEX, PAGE_VIDEO_PIXELS / 2);
+	sdl3_video_end_frame();
+	press_screenshot_key(SDL_KMOD_CTRL);
+	assert_screenshot(image_number++, SDL3_SCREEN_WIDTH, SDL3_SCREEN_HEIGHT, PAGE_VIDEO_GREEN,
+					  PAGE_VIDEO_GREEN);
+	release_screenshot_key();
+
+	high_resolution_active = true;
+	hires_set_render_scale(HIRES_SCALE);
+	for (size_t pixel = 0; pixel < SDL_arraysize(argb_framebuffer); pixel++) {
+		argb_framebuffer[pixel] =
+			pixel < SDL_arraysize(argb_framebuffer) / 2 ? PAGE_VIDEO_RED : PAGE_VIDEO_GREEN;
+	}
+	argb_active = true;
+	frame_generation++;
+	sdl3_video_present();
+	sdl3_video_begin_frame();
+	/* A pending resolution change destroys the source ARGB pixels. Capture
+	 * must still retain the completed page's pixels and native dimensions. */
+	memset(argb_framebuffer, 0, sizeof(argb_framebuffer));
+	hires_set_render_scale(FRAME_ADAPTIVE_HALF_SCALE);
+	memset(high_resolution_framebuffer, PAGE_VIDEO_SECOND_INDEX,
+		   sizeof(high_resolution_framebuffer));
+	legacy_u8 blue[] = {0, 0, PAGE_VIDEO_DAC_MAX};
+	dos_video_set_palette(PAGE_VIDEO_SECOND_INDEX, 1, blue);
+	press_screenshot_key(SDL_KMOD_RCTRL);
+	assert_screenshot(image_number++, HIRES_WIDTH, HIRES_HEIGHT, PAGE_VIDEO_RED, PAGE_VIDEO_GREEN);
+	release_screenshot_key();
+	sdl3_video_end_frame();
+	press_screenshot_key(SDL_KMOD_LCTRL);
+	assert_screenshot(image_number++, SDL3_SCREEN_WIDTH * FRAME_ADAPTIVE_HALF_SCALE,
+					  SDL3_SCREEN_HEIGHT * FRAME_ADAPTIVE_HALF_SCALE, PAGE_VIDEO_BLUE,
+					  PAGE_VIDEO_BLUE);
+	release_screenshot_key();
+
+	const SDL_Keymod rejected[] = {SDL_KMOD_CTRL | SDL_KMOD_SHIFT, SDL_KMOD_CTRL | SDL_KMOD_ALT,
+								   SDL_KMOD_CTRL | SDL_KMOD_GUI};
+	for (legacy_u32 modifier = 0; modifier < SDL_arraysize(rejected); modifier++) {
+		send_key(SDL_SCANCODE_F12, rejected[modifier], true, false);
+		assert(kb_read_char() == 0);
+		press_screenshot_key(SDL_KMOD_CTRL);
+		release_screenshot_key();
+	}
+	send_key(SDL_SCANCODE_F12, SDL_KMOD_NONE, true, false);
+	assert(kb_read_char() == KEY_F12);
+	send_key(SDL_SCANCODE_F12, SDL_KMOD_LCTRL, true, false);
+	assert(kb_read_char() == 0);
+	release_screenshot_key();
+	assert_no_screenshot(image_number);
+
+	screenshot_test_path(SCREENSHOT_TEST_EXISTING_FILE, path);
+	existing = fopen(path, "rb");
+	assert(existing != NULL);
+	legacy_char saved[sizeof(SCREENSHOT_TEST_EXISTING_CONTENT)];
+	assert(fread(saved, 1, sizeof(saved), existing) == sizeof(saved));
+	assert(memcmp(saved, SCREENSHOT_TEST_EXISTING_CONTENT, sizeof(saved)) == 0);
+	assert(fgetc(existing) == EOF);
+	assert(fclose(existing) == 0);
+	for (legacy_u32 number = SCREENSHOT_TEST_EXISTING_FILE; number < image_number; number++) {
+		screenshot_test_path(number, path);
+		assert(SDL_RemovePath(path));
+	}
+	assert(chdir(original_directory) == 0);
+	assert(SDL_RemovePath(directory));
+	SDL_free(original_directory);
+	hires_shutdown();
+	dos_video_set_mode_13h();
+}
+
 static void test_adaptive_frame_timing(void)
 {
 	frame_adaptive_reset(&frame_adaptive);
@@ -1116,6 +1304,7 @@ legacy_int main(void)
 	test_dynamic_resolution_video();
 	test_completed_video_pages();
 	test_video_page_lifetime();
+	test_screenshots();
 	test_adaptive_frame_timing();
 	test_fullscreen_shortcut();
 	test_joystick();

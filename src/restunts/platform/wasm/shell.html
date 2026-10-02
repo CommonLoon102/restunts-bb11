@@ -154,6 +154,7 @@
                 <tr><th colspan="2" scope="rowgroup">Pause, menus, and sound</th></tr>
                 <tr><th scope="row"><kbd>P</kbd></th><td>Pause the game.</td></tr>
                 <tr><th scope="row"><kbd>Esc</kbd></th><td>Leave the race / return to menus.</td></tr>
+                <tr><th scope="row"><kbd>Ctrl+F12</kbd></th><td>Save a PNG screenshot to your game folder, or download it with read-only folder access.</td></tr>
                 <tr><th scope="row"><kbd>Ctrl+S</kbd></th><td>Toggle sound effects.</td></tr>
                 <tr><th scope="row"><kbd>Alt+M</kbd></th><td>Toggle music.</td></tr>
                 <tr><th scope="row"><kbd>Shift+F10</kbd></th><td>Switch between New MIDI and original AdLib music
@@ -181,6 +182,10 @@
         const TEMP_EXTENSIONS = new Set(['tmp']);
         const MAX_LOG_LINES = 100;
         const DOWNLOAD_RELEASE_DELAY_MS = 1000;
+        const SCREENSHOT_FIRST_NUMBER = 1;
+        const SCREENSHOT_LAST_NUMBER = 9999;
+        const SCREENSHOT_NUMBER_WIDTH = 4;
+        const SCREENSHOT_MIME_TYPE = 'image/png';
         const FOLDER_DATABASE = 'restunts-folders';
         const FOLDER_DATABASE_VERSION = 1;
         const FOLDER_STORE = 'folders';
@@ -233,6 +238,15 @@
         function saveFiles() {
             return Module.FS.readdir(DATA_DIRECTORY).filter(name =>
                 validFilename(name, SAVE_EXTENSIONS) && Module.FS.isFile(Module.FS.stat(DATA_DIRECTORY + '/' + name).mode));
+        }
+
+        function downloadFile(name, bytes, type) {
+            const url = URL.createObjectURL(new Blob([bytes], { type }));
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = name;
+            link.click();
+            setTimeout(() => URL.revokeObjectURL(url), DOWNLOAD_RELEASE_DELAY_MS);
         }
 
         function sameBytes(left, right) {
@@ -307,6 +321,49 @@
                     throw error;
                 }
             },
+            async saveScreenshot(path) {
+                const parent = Module.FS.lookupPath(path, { parent: true }).path;
+                const name = path.slice(path.lastIndexOf('/') + 1);
+                if (parent !== DATA_DIRECTORY || !/^SHOT[0-9]{4}\.PNG$/.test(name)) {
+                    throw new Error('Invalid screenshot path: ' + path);
+                }
+                const bytes = Module.FS.readFile(path);
+                let writable;
+                if (directoryHandle) {
+                    try {
+                        // PNGs are not imported as game resources. Check disk names at save
+                        // time so captures from earlier sessions cannot be overwritten.
+                        const occupied = new Set();
+                        for await (const entry of directoryHandle.values()) {
+                            occupied.add(entry.name.toLowerCase());
+                        }
+                        let available;
+                        for (let number = SCREENSHOT_FIRST_NUMBER; number <= SCREENSHOT_LAST_NUMBER; number++) {
+                            const candidate = 'SHOT' + String(number).padStart(SCREENSHOT_NUMBER_WIDTH, '0') + '.PNG';
+                            if (!occupied.has(candidate.toLowerCase())) {
+                                available = candidate;
+                                break;
+                            }
+                        }
+                        if (!available) throw new Error('All screenshot filenames are in use.');
+                        const handle = await directoryHandle.getFileHandle(available, { create: true });
+                        writable = await handle.createWritable();
+                        await writable.write(bytes);
+                        await writable.close();
+                        writable = null;
+                        status.textContent = 'Saved ' + available + ' to your game folder.';
+                        return;
+                    } catch (error) {
+                        if (writable) await writable.abort().catch(() => {});
+                        log('Cannot save screenshot to game folder: ' + error.message);
+                        downloadFile(name, bytes, SCREENSHOT_MIME_TYPE);
+                        status.textContent = 'Screenshot folder write failed. Downloaded ' + name + ' instead.';
+                        return;
+                    }
+                }
+                downloadFile(name, bytes, SCREENSHOT_MIME_TYPE);
+                status.textContent = 'Downloaded screenshot ' + name + '.';
+            },
             onExit(code) {
                 status.textContent = code === 0 ? (directoryHandle ? 'Game closed. Reload to play again.' :
                     'Game closed. Export your saves, or reload to play again.') :
@@ -380,14 +437,8 @@
                         files.push({ name, data: encode(bytes) });
                     }
                 }
-                const blob = new Blob([JSON.stringify({ format: SAVE_FORMAT, version: SAVE_VERSION, files })],
-                    { type: 'application/json' });
-                const url = URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                link.href = url;
-                link.download = 'restunts-saves.json';
-                link.click();
-                setTimeout(() => URL.revokeObjectURL(url), DOWNLOAD_RELEASE_DELAY_MS);
+                downloadFile('restunts-saves.json',
+                    JSON.stringify({ format: SAVE_FORMAT, version: SAVE_VERSION, files }), 'application/json');
                 status.textContent = 'Exported ' + files.length + ' changed save file(s).';
             } catch (error) {
                 fail(error);
