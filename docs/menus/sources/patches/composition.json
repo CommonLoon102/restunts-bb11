@@ -78,5 +78,184 @@
     "changed_working_pixels": 9031,
     "pixels_outside_sky_mask_unchanged": true,
     "prompt": "docs/menus/sources/patches/generation-prompts.json:sky_cleanup"
+  },
+  "grille_wall_correction": {
+    "method": "Built-in imagegen crop edit; nearest-neighbor normalize donor and composite only the two grille material masks over the existing correction patch",
+    "source": "docs/menus/sources/patches/main-grille-source.png",
+    "source_sha256": "daf86995fc4367a4ea81e9b93e3ecb6bf2a1287c09b72c0d454b8455b81ce3b9",
+    "source_size": [
+      2162,
+      727
+    ],
+    "source_crop_in_working": [
+      272,
+      160,
+      712,
+      308
+    ],
+    "source_normalized_size": [
+      440,
+      148
+    ],
+    "mask": "docs/menus/sources/patches/main-grille-mask.png",
+    "mask_sha256": "3646c4c5bd77ce7126f29984547a6019881d73803fe050a369c85e5abf5ed834",
+    "mask_polygons": {
+      "left_side_wall": [
+        [
+          309,
+          247
+        ],
+        [
+          324,
+          240
+        ],
+        [
+          345,
+          232
+        ],
+        [
+          371,
+          222
+        ],
+        [
+          396,
+          215
+        ],
+        [
+          419,
+          211
+        ],
+        [
+          419,
+          215
+        ],
+        [
+          404,
+          219
+        ],
+        [
+          390,
+          225
+        ],
+        [
+          375,
+          231
+        ],
+        [
+          361,
+          237
+        ],
+        [
+          347,
+          242
+        ],
+        [
+          332,
+          248
+        ],
+        [
+          315,
+          255
+        ],
+        [
+          312,
+          255
+        ],
+        [
+          312,
+          250
+        ]
+      ],
+      "right_grille": [
+        [
+          552,
+          210
+        ],
+        [
+          568,
+          214
+        ],
+        [
+          587,
+          217
+        ],
+        [
+          608,
+          223
+        ],
+        [
+          626,
+          230
+        ],
+        [
+          644,
+          237
+        ],
+        [
+          662,
+          247
+        ],
+        [
+          680,
+          252
+        ],
+        [
+          690,
+          255
+        ],
+        [
+          678,
+          257
+        ],
+        [
+          660,
+          259
+        ],
+        [
+          649,
+          258
+        ],
+        [
+          632,
+          251
+        ],
+        [
+          614,
+          244
+        ],
+        [
+          596,
+          237
+        ],
+        [
+          578,
+          229
+        ],
+        [
+          561,
+          221
+        ],
+        [
+          552,
+          217
+        ]
+      ]
+    },
+    "mask_pixel_count": 2981,
+    "mask_feather_pixels": 0,
+    "mask_selection": "Only the former left grille strip and the right grille plane; excludes tan fascia, red supports, car and surrounding scenery",
+    "left_material": "Opaque warm tan-brown side wall with no visible grille",
+    "right_material": "Dark metal grille with opaque ramp wall behind nearly every opening; tiny scenery opening retained near outer lower right end",
+    "previous_working_png_sha256": "eb4df214168aca66d243455ece1e2732ee89ff96f5257574004a252d268b29fc",
+    "working_png_sha256": "23c1b3bf1044d6165cb0697352f9689128be723d263802785a5f09d427c08d81",
+    "changed_working_pixels": 2981,
+    "outside_working_mask_changed_pixels": 0,
+    "previous_final_png_sha256": "5c473abe64c38432b2c27cae1360dead2edbf91fe7fe5de9a98991b6350f5ee7",
+    "final_png_sha256": "248d484c218ef074360a9722c1dcfdbdcbbcc2f41ad36ab997267082563f10a8",
+    "changed_final_pixels": 669,
+    "outside_reduced_mask_changed_pixels": 0,
+    "original_palette_unchanged": true,
+    "full_resolution_source_unchanged": true,
+    "prompt": "docs/menus/sources/patches/generation-prompts.json:grille_wall_correction"
   }
 }
