@@ -45,8 +45,13 @@ needed. The HTML's location does not determine where the game looks for data.
    Supported browsers remember it for this page and reopen it when permission
    is still granted. Otherwise, click **Allow folder access** to approve access
    again. Use **Change game folder** to select a different folder.
-3. Click **Start game**. This user gesture enables browser audio. **Skip intro**
-   is optional. Click the canvas to focus the game keyboard.
+3. Choose the startup options beside **Start game**. **Skip intro** is optional.
+   **HiperVision** and **New MIDI** are enabled by default. HiperVision starts
+   adaptive rendering (`--hv:auto`); uncheck it to start without a HyperVision
+   option. New MIDI selects Ogg replacement music (`--ogg:on`); uncheck it for
+   original AdLib music (`--ogg:off`).
+4. Click **Start game**. This user gesture enables browser audio. Click the
+   canvas to focus the game keyboard.
 
 **Your game files and saves stay on your device and are never uploaded**, even
 when you play from a website. Selecting a folder gives the game local access to
@@ -106,7 +111,8 @@ some function keys. Use the page's **Fullscreen** button for fullscreen mode.
 With the canvas focused, **F12** toggles HyperVision Auto and **Shift+F12** cycles
 fixed **Full → High → Medium → Low** presets. **F11** or **Shift+F11** toggles
 the FPS and render-time display on or off. Use Shift+F11 to avoid the browser
-fullscreen shortcut assigned to F11.
+fullscreen shortcut assigned to F11. **Shift+F10** switches between New MIDI
+and original AdLib music during the intro, menus, and race-end/victory screens.
 
 The browser presents frames through SDL3's WebGL renderer and uses WebAudio
 output. Scene rendering runs on the CPU and is serial;

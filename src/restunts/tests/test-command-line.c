@@ -96,7 +96,7 @@ static void test_help_contents(void)
 	static const legacy_char *physics_options[] = {"  --pg:on|off", "  --lc:on|off",
 												   "  --lcb:on|off", "  --owoot"};
 #ifdef RESTUNTS_SDL3
-	static const legacy_char *hypervision_options[] = {"  --hv:full", "  --hv:high",
+	static const legacy_char *hypervision_options[] = {"  --hv:auto", "  --hv:full", "  --hv:high",
 													   "  --hv:medium", "  --hv:low"};
 #endif
 	static const legacy_char *legacy_options[] = {"  /ns", "  /sXX", "  /h", "  /nd"};
@@ -170,11 +170,11 @@ static void test_aliases_and_version(void)
 static void test_normal_and_similar_arguments(void)
 {
 	static const legacy_char *normal_arguments[] = {
-		"/h",		"/sAD",		"/ns",		 "/nd",		 "--nointro",  "--hv:full",
-		"--pg:off", "--lc:on",	"--lcb:off", "--owoot",	 "--licenses", "--data-dir",
-		"",			"-H",		"-V",		 "-help",	 "-version",   "/help",
-		"/v",		"/version", "help",		 "version",	 "--helpful",  "--version=1",
-		"-hv",		"-vh",		"--ogg:on",	 "--ogg:off"};
+		"/h",		"/sAD",		"/ns",		 "/nd",		  "--nointro",	"--hv:full",
+		"--pg:off", "--lc:on",	"--lcb:off", "--owoot",	  "--licenses", "--data-dir",
+		"",			"-H",		"-V",		 "-help",	  "-version",	"/help",
+		"/v",		"/version", "help",		 "version",	  "--helpful",	"--version=1",
+		"-hv",		"-vh",		"--ogg:on",	 "--ogg:off", "--hv:auto"};
 	legacy_s8 *executable_only[] = {(legacy_s8 *)"--help"};
 	assert(run_arguments(COMMAND_LINE_TEST_ARGUMENT_COUNT(executable_only), executable_only) ==
 		   COMMAND_LINE_CONTINUE);

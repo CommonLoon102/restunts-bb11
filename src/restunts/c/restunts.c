@@ -182,6 +182,7 @@ struct STARTUP_OPTIONS {
 	legacy_u8 skip_intro;
 #ifdef RESTUNTS_SDL3
 	legacy_u16 hypervision_preset;
+	legacy_u8 hypervision_specified;
 	legacy_u8 ogg_music_enabled;
 	legacy_u8 ogg_music_specified;
 #endif
@@ -234,7 +235,7 @@ static void startup_parse_hypervision(const legacy_s8 *argument, struct STARTUP_
 	if (*prefix != 0) {
 		return;
 	}
-	if (options->hypervision_preset != FRAME_ADAPTIVE_PRESET_AUTO) {
+	if (options->hypervision_specified != 0) {
 		fprintf(stderr, "Only one HyperVision preset may be specified (--hv:).\n");
 		dos_process_exit(EXIT_FAILURE);
 		return;
@@ -242,18 +243,21 @@ static void startup_parse_hypervision(const legacy_s8 *argument, struct STARTUP_
 	static const struct {
 		const legacy_s8 *name;
 		enum FRAME_ADAPTIVE_PRESET preset;
-	} presets[] = {{"full", FRAME_ADAPTIVE_PRESET_FULL},
+	} presets[] = {{"auto", FRAME_ADAPTIVE_PRESET_AUTO},
+				   {"full", FRAME_ADAPTIVE_PRESET_FULL},
 				   {"high", FRAME_ADAPTIVE_PRESET_HIGH},
 				   {"medium", FRAME_ADAPTIVE_PRESET_MEDIUM},
 				   {"low", FRAME_ADAPTIVE_PRESET_LOW}};
 	for (legacy_u16 index = 0; index < sizeof(presets) / sizeof(presets[0]); index++) {
 		if (stricmp(value, presets[index].name) == 0) {
 			options->hypervision_preset = presets[index].preset;
+			options->hypervision_specified = 1;
 			return;
 		}
 	}
 	fprintf(stderr,
-			"Invalid HyperVision preset '%s'; use --hv:full, --hv:high, --hv:medium or --hv:low.\n",
+			"Invalid HyperVision preset '%s'; use --hv:auto, --hv:full, --hv:high, "
+			"--hv:medium or --hv:low.\n",
 			argument);
 	dos_process_exit(EXIT_FAILURE);
 }
@@ -296,6 +300,7 @@ static void startup_parse_options(legacy_s16 argc, legacy_s8 *argv[],
 	options->skip_intro = 0;
 #ifdef RESTUNTS_SDL3
 	options->hypervision_preset = FRAME_ADAPTIVE_PRESET_AUTO;
+	options->hypervision_specified = 0;
 	options->ogg_music_enabled = 0;
 	options->ogg_music_specified = 0;
 #endif
@@ -418,7 +423,7 @@ void init_main(legacy_s16 argc, legacy_s8 *argv[])
 	configure_owoot(argc, argv);
 	startup_parse_options(argc, argv, &startup_options);
 #ifdef RESTUNTS_SDL3
-	if (startup_options.hypervision_preset != FRAME_ADAPTIVE_PRESET_AUTO) {
+	if (startup_options.hypervision_specified != 0) {
 		frame_adaptive_set_preset(&frame_adaptive,
 								  (enum FRAME_ADAPTIVE_PRESET)startup_options.hypervision_preset);
 		supersight_enabled = 1;

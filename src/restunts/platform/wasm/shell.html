@@ -65,6 +65,8 @@
         <div class="controls">
             <button id="start" disabled>Start game</button>
             <label><input id="skip-intro" type="checkbox"> Skip intro</label>
+            <label><input id="hypervision" type="checkbox" checked> HiperVision</label>
+            <label><input id="new-midi" type="checkbox" checked> New MIDI</label>
             <button id="fullscreen" disabled>Fullscreen (Alt+Enter)</button>
 
         </div>
@@ -154,6 +156,8 @@
                 <tr><th scope="row"><kbd>Esc</kbd></th><td>Leave the race / return to menus.</td></tr>
                 <tr><th scope="row"><kbd>Ctrl+S</kbd></th><td>Toggle sound effects.</td></tr>
                 <tr><th scope="row"><kbd>Alt+M</kbd></th><td>Toggle music.</td></tr>
+                <tr><th scope="row"><kbd>Shift+F10</kbd></th><td>Switch between New MIDI and original AdLib music
+                    during the intro, menus, and race-end screens.</td></tr>
             </tbody>
         </table>
     </aside>
@@ -334,6 +338,8 @@
             openFolder.disabled = true;
             restoreFolder.disabled = true;
             document.getElementById('skip-intro').disabled = true;
+            document.getElementById('hypervision').disabled = true;
+            document.getElementById('new-midi').disabled = true;
             fullscreen.disabled = false;
             exporter.disabled = false;
             status.textContent = directoryHandle ? 'Game running. Saves go directly to your game folder.' :
@@ -341,6 +347,8 @@
             canvas.focus();
             const args = ['--data-dir', DATA_DIRECTORY];
             if (document.getElementById('skip-intro').checked) args.push('--nointro');
+            if (document.getElementById('hypervision').checked) args.push('--hv:auto');
+            args.push(document.getElementById('new-midi').checked ? '--ogg:on' : '--ogg:off');
             try {
                 Module.callMain(args);
             } catch (error) {
