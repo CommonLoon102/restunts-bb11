@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#1b2531">
+    <meta name="description" content="Know the original Stunts? Catch up on Chocolate Stunts hotkeys, launch options, ghost racing, HyperVision, and browser play.">
+    <title>Quick guide — Chocolate Stunts</title>
+    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header wrap">
+        <a class="wordmark" href="index.html" aria-label="Chocolate Stunts home"><span class="flag" aria-hidden="true"></span>Chocolate Stunts</a>
+        <nav aria-label="Main navigation">
+            <a href="index.html#features">Features</a>
+            <a href="quick-guide.html" aria-current="page">Quick guide</a>
+            <a href="index.html#downloads">Downloads</a>
+            <a href="index.html#play">Play</a>
+            <a href="https://github.com/CommonLoon102/restunts-bb11">GitHub</a>
+        </nav>
+    </header>
+
+    <main id="main" class="guide wrap">
+        <header class="guide-intro">
+            <p class="eyebrow">For returning Stunts drivers</p>
+            <h1>The <span>quick guide.</span></h1>
+            <p class="intro">Know the original game? Here are the new controls, settings, and extras to try on your next lap.</p>
+            <p>Original physics stay on by default. Native builds start with classic graphics and AdLib music; the browser launcher starts with HyperVision and replacement music enabled.</p>
+            <p class="small"><strong>Modern ports</strong> below means SDL3 builds, including browser and DOS32. <strong>Desktop</strong> means Windows, Linux, BSD, and macOS. DOS16 has the exceptions noted below.</p>
+            <nav class="guide-nav" aria-label="On this page">
+                <a href="#hotkeys">Hotkeys</a>
+                <a href="#parameters">Launch parameters</a>
+                <a href="#extras">More additions</a>
+                <a href="#browser">Browser play</a>
+                <a href="#desktop">Desktop tuning</a>
+            </nav>
+        </header>
+
+        <section class="guide-section" id="hotkeys" aria-labelledby="hotkeys-title">
+            <div class="section-heading">
+                <p class="eyebrow">01 / While playing</p>
+                <h2 id="hotkeys-title">New and extended hotkeys</h2>
+            </div>
+            <dl class="guide-list">
+                <div>
+                    <dt><kbd>Q</kbd> — Rewind your driving.</dt>
+                    <dd>Hold during a race, then release to drive again from that moment. After ten seconds, rewind speed doubles. Your new driving replaces the later recording; the run is marked as modified and is ineligible for the normal high-score table.</dd>
+                </div>
+                <div>
+                    <dt><kbd>F3</kbd> — Cycle three new chase views.</dt>
+                    <dd>Select the original adjustable F3 camera, then press again for close, normal, and far chase views. Chase presets hide the dashboard. Cycling back restores your original F3 position and dashboard visibility; returning from another camera starts at the original view.</dd>
+                </div>
+                <div>
+                    <dt><kbd>T</kbd> — Watch from your ghost’s view.</dt>
+                    <dd>With a <a href="#ghost">ghost selected</a>, the existing opponent-view key switches between you and the ghost. Use <kbd>F1</kbd>–<kbd>F4</kbd> to choose the camera for either car.</dd>
+                </div>
+                <div>
+                    <dt><kbd>F12</kbd> — Toggle HyperVision Auto.</dt>
+                    <dd>Modern ports start at full-track, 1280 × 800 rendering and adapt quality to target 60 FPS. Press again to return to classic graphics. From a fixed preset, F12 turns HyperVision off; the next press selects Auto. DOS16 toggles the simpler extended-view SuperSight mode instead.</dd>
+                </div>
+                <div>
+                    <dt><kbd>Shift</kbd> + <kbd>F12</kbd> — Choose fixed graphics quality.</dt>
+                    <dd>Modern ports cycle Full → High → Medium → Low → Full. Full shows the whole track at 1280 × 800; High narrows the view at that resolution, Medium uses 640 × 400, and Low uses 320 × 200. From Off or Auto, the first press selects Full. Fixed presets do not adapt to load.</dd>
+                </div>
+                <div>
+                    <dt><kbd>F11</kbd> or <kbd>Shift</kbd> + <kbd>F11</kbd> — Show performance.</dt>
+                    <dd>Toggle FPS and render time in modern ports, or FPS alone in DOS16. Use Shift+F11 if your browser reserves F11 for fullscreen. Works while driving, in replays, car previews, and the driving intro; some menus hide the display until you return.</dd>
+                </div>
+                <div>
+                    <dt><kbd>Shift</kbd> + <kbd>F10</kbd> — Switch the music.</dt>
+                    <dd>Modern ports switch between original AdLib and included Ogg recordings at the same song position. Use it during the intro, menus, or race-end screens; it is inactive during races. Missing recordings fall back to AdLib. Plain F10 keeps its original track-editor function.</dd>
+                </div>
+                <div>
+                    <dt><kbd>Alt</kbd> + <kbd>Enter</kbd> — Toggle fullscreen.</dt>
+                    <dd>Use in desktop ports, or use the browser launcher’s Fullscreen button or Alt+Enter shortcut. Click inside the browser game first so it receives keyboard input.</dd>
+                </div>
+            </dl>
+            <p class="note">Graphics and music choices last for the current session. HyperVision changes presentation without changing physics or replay data. In modern ports, F12 also works in the main menu, track preview, car-selection screens, and opponent screens.</p>
+        </section>
+
+        <section class="guide-section" id="parameters" aria-labelledby="parameters-title">
+            <div class="section-heading">
+                <p class="eyebrow">02 / Before you start</p>
+                <h2 id="parameters-title">Launch parameters</h2>
+                <p>For native builds, add switches after the executable name in a terminal or shortcut. For example: <code>restunts.exe --nointro --hv:auto --ogg:on</code>. On Linux or macOS, use <code>./restunts</code> instead.</p>
+            </div>
+            <p class="guide-callout small"><strong>Keep replay settings consistent.</strong> Replays do not store the physics fixes or OWOOT setting. Use the same settings for recording, playback, and ghost racing. The three legacy behaviours below default to <code>on</code>; use <code>off</code> to apply each fix.</p>
+            <dl class="guide-list">
+                <div>
+                    <dt><code>--nointro</code> — Go straight to the menu.</dt>
+                    <dd>Skip the startup intro after initialization. The intro is still available when leaving the main menu. Use this exact lowercase spelling.</dd>
+                </div>
+                <div>
+                    <dt><code>--hv:auto|full|high|medium|low</code> — Start with HyperVision.</dt>
+                    <dd>Choose one value, such as <code>--hv:medium</code>, in modern ports. Auto adapts quality; the other values lock a preset. The choice applies from the intro onward and can be changed with F12 or Shift+F12. Omit the switch for classic graphics; repeated or unknown presets are errors.</dd>
+                </div>
+                <div>
+                    <dt><code>--ogg:on</code> / <code>--ogg:off</code> — Pick the starting music.</dt>
+                    <dd>In modern ports, <code>on</code> enables replacement Ogg music and <code>off</code> selects original AdLib, the native default. Supply this option only once. Shift+F10 can switch later; missing or broken recordings use AdLib.</dd>
+                </div>
+                <div>
+                    <dt><code>--pg:off</code> — Fix power gear and anti-power gear.</dt>
+                    <dd>Restore the aerodynamic slowdown lost by the original power-gear bug. This changes handling and may change replay outcomes. <code>--pg:on</code> restores the original behaviour.</dd>
+                </div>
+                <div>
+                    <dt><code>--lcb:off</code> — Remove the left-turn advantage.</dt>
+                    <dd>Make steering and skid-angle rounding symmetrical, removing the original stronger response when turning left. <code>--lcb:on</code> restores the original bias. Collision-recovery behaviour is controlled separately by <code>--lc</code>.</dd>
+                </div>
+                <div>
+                    <dt><code>--lc:off</code> — Enable collision fixes.</dt>
+                    <dd>Prevent missed wall, block, and loop-base impacts; avoid false crashes in clear passages under ramps; and remove permanent steering bias after contact. <code>--lc:on</code> restores legacy collision behaviour for original replay compatibility.</dd>
+                </div>
+                <div>
+                    <dt><code>--owoot</code> — Enforce One Wheel On Or Over Track.</dt>
+                    <dd>Keep part of at least one tyre on or above the road and follow each stunt’s intended route. Under-road driving and large-corner rumble strips do not count. A single gap tile between connected, aligned ramps or bridges is allowed. A violation crashes the player, including during replay playback. Omit the switch to disable it.</dd>
+                </div>
+                <div>
+                    <dt><code>--data-dir PATH</code> — Choose the game and save folder.</dt>
+                    <dd>In native modern ports, put this first: <code>restunts.exe --data-dir "C:\Games\Stunts" --nointro</code>. It changes where resources are read and saves are written. Without it, the current working directory is used. In the browser, use Choose game folder instead.</dd>
+                </div>
+                <div>
+                    <dt><code>--help</code> / <code>-h</code> — List supported options.</dt>
+                    <dd>Run on its own to print the options for your build and exit. Useful when switching between modern ports and DOS16.</dd>
+                </div>
+                <div>
+                    <dt><code>--version</code> / <code>-v</code> — Identify your build.</dt>
+                    <dd>Run on its own to print version and build information without starting the game. You can also see build information in the in-game Options menu.</dd>
+                </div>
+                <div>
+                    <dt><code>--licenses</code> — Read dependency notices.</dt>
+                    <dd>Run on its own in non-DOS modern ports to print the bundled third-party notices and exit.</dd>
+                </div>
+                <div>
+                    <dt><code>repldump RACE.RPL --owoot</code> — Check a recorded run.</dt>
+                    <dd>The separate physics dump tool writes <code>RACE.owo</code> with <code>pass</code> or <code>fail</code>. Passing requires a completed, crash-free run without OWOOT violations. Add the recording’s physics switches after the replay name; when checking batches, also check the tool’s exit code.</dd>
+                </div>
+            </dl>
+            <p class="note">The HyperVision, Ogg, physics, and OWOOT options are case-insensitive. For each of <code>--pg</code>, <code>--lc</code>, and <code>--lcb</code>, the last supplied value wins. <code>--nointro</code> is case-sensitive. The browser launcher exposes the checkboxes described below.</p>
+        </section>
+
+        <section class="guide-section" id="extras" aria-labelledby="extras-title">
+            <div class="section-heading">
+                <p class="eyebrow">03 / More to discover</p>
+                <h2 id="extras-title">Beyond the keyboard</h2>
+            </div>
+            <dl class="guide-list">
+                <div id="ghost">
+                    <dt>Opponent → Clock → Ghost — Race a recorded lap.</dt>
+                    <dd>Choose a replay to load its track, then drive in your own selected car and transmission. The silent grille ghost never collides with you, stays synchronized through rewinds and restarts, and stops at its final position. Choose Clock again to clear it; a different track, edited layout, or AI opponent also clears it. Saved replays do not include the ghost.</dd>
+                </div>
+                <div>
+                    <dt>A bigger garage — Bring up to 120 cars.</dt>
+                    <dd>The original 32-car limit is expanded. Keep your custom car resources in the game folder and select them through the usual car-selection screen.</dd>
+                </div>
+                <div>
+                    <dt>HyperVision artwork — Sharper views and smoother motion.</dt>
+                    <dd>Modern ports add interpolated motion targeting 60 FPS, car shadows, corrected visual ride height, sharper horizons, menu backgrounds, and opponent portraits. Shadows and enhanced horizons appear at 640 × 400 and above; 320 × 200 uses original horizons without shadows. Missing enhanced artwork falls back to the original.</dd>
+                </div>
+                <div>
+                    <dt>Replay filenames — See which run you are watching.</dt>
+                    <dd>The loaded replay’s filename appears during playback, making it easier to keep track of saved runs.</dd>
+                </div>
+                <div>
+                    <dt>Needle colours — Customize analogue dashboards.</dt>
+                    <dd>In CarWorks, edit the car’s “needle colour” word (Red #5). Its low byte selects the speedometer colour; the high byte selects the tachometer colour, or inherits the low byte when zero. For example, <code>0x040F</code> selects palette indices 15 and 4. Digital digits are unchanged. <a href="https://github.com/CommonLoon102/restunts-bb11#needle-colours">Full format details</a>.</dd>
+                </div>
+                <div>
+                    <dt>Opponent videos — Add custom win and lose animations.</dt>
+                    <dd>In modern ports, put VP8 WebM clips named <code>opp1win.webm</code>, <code>opp1lose.webm</code>, through <code>opp6win.webm</code>, <code>opp6lose.webm</code> in <code>opponents/animations/</code> under the game folder. On DOS32, use <code>opponent/anim/</code> with long-filename support. “Win” and “lose” refer to the opponent. HyperVision loops them with the game music; missing or unsupported clips use the original animation. <a href="https://github.com/CommonLoon102/restunts-bb11/blob/main/docs/opponents/README.md#custom-win-and-lose-animations">Setup details</a>.</dd>
+                </div>
+            </dl>
+        </section>
+
+        <section class="guide-section" id="browser" aria-labelledby="browser-title">
+            <div class="section-heading">
+                <p class="eyebrow">04 / No installation needed</p>
+                <h2 id="browser-title">Playing in your browser</h2>
+            </div>
+            <dl class="guide-list">
+                <div>
+                    <dt>Choose game folder — Bring your original data.</dt>
+                    <dd>Open the <a href="index.html#play">browser player</a>, select your Brøderbund Stunts 1.1 folder (12 February 1991), then choose Start game. Files stay on your device. You can also download <a href="game/restunts.html" download>restunts.html</a> and open it for offline play.</dd>
+                </div>
+                <div>
+                    <dt>Launcher checkboxes — Set graphics, music, and intro.</dt>
+                    <dd>Before starting, “HiperVision” selects <code>--hv:auto</code> and “New MIDI” enables the Ogg recordings; both are checked by default. “Skip intro” selects <code>--nointro</code>. Use F12, Shift+F12, and Shift+F10 to change graphics or music in game.</dd>
+                </div>
+                <div>
+                    <dt>Export / Import — Keep your browser saves.</dt>
+                    <dd>With read/write folder access, saves go directly into your game folder. With read-only access, use Export saves before closing the tab, then import that file before starting next time. Follow the launcher’s save-status message; tracks and replays can also be imported.</dd>
+                </div>
+            </dl>
+        </section>
+
+        <section class="guide-section" id="desktop" aria-labelledby="desktop-title">
+            <div class="section-heading">
+                <p class="eyebrow">05 / Optional tuning</p>
+                <h2 id="desktop-title">Desktop display and performance</h2>
+                <p>These are environment variables for desktop ports. Set them before launching the game; leave them unset to use the defaults.</p>
+            </div>
+            <dl class="guide-list">
+                <div>
+                    <dt><code>RESTUNTS_BORDERLESS=1</code> — Start in a borderless window.</dt>
+                    <dd>Use a maximized borderless window if it presents more smoothly on your desktop. Panels or docks may remain visible. Alt+Enter still toggles fullscreen and returns to this window. Unset the variable or use <code>0</code> for the normal window.</dd>
+                </div>
+                <div>
+                    <dt><code>RESTUNTS_VSYNC=0</code> — Disable display synchronization.</dt>
+                    <dd>Desktop VSync is on by default in both classic and HyperVision rendering. Use <code>0</code> to disable it, or <code>1</code> to explicitly enable it. Game speed and the rendering targets stay the same.</dd>
+                </div>
+                <div>
+                    <dt><code>RESTUNTS_RENDER_WORKERS=auto</code> — Try parallel HyperVision rendering.</dt>
+                    <dd>The default is <code>0</code> background workers. Select <code>1</code>–<code>7</code>, or <code>auto</code> for the logical CPU count minus one, capped at seven. Small scenes stay serial. Try this only if it improves measured performance on your machine; physics are unaffected.</dd>
+                </div>
+            </dl>
+            <p class="note">Linux/macOS example: <code>RESTUNTS_BORDERLESS=1 ./restunts</code>.<br>PowerShell example: <code>$env:RESTUNTS_BORDERLESS = '1'</code>, then run <code>.\restunts.exe</code>.</p>
+        </section>
+    </main>
+
+    <footer class="site-footer wrap">
+        <p><strong>Chocolate Stunts</strong><br>Familiar roads. A few more possibilities.</p>
+        <nav aria-label="Guide resources">
+            <a href="index.html">Back to the homepage</a>
+            <a href="https://github.com/CommonLoon102/restunts-bb11#running-the-game">Full game documentation</a>
+            <a href="#main">Back to top</a>
+        </nav>
+    </footer>
+</body>
+</html>

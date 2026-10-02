@@ -4,6 +4,10 @@ The landing page lives in `site/`. It presents the game's features, placeholders
 for all 18 release packages, and the browser game in a same-origin iframe. Its
 relative URLs work under a repository path such as `/restunts-bb11/`.
 
+The linked `site/quick-guide.html` shares the landing page styling and gives
+returning players a short guide to added hotkeys and launch parameters. Keep
+it in the builder's `WEBSITE_FILES` list so it is included in the published site.
+
 ## Publish
 
 1. Add the website and workflow changes to the repository through the usual
