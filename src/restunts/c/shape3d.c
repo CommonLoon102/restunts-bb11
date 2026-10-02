@@ -2003,6 +2003,3 @@ void shape3d_render_queued_primitives(void)
 	}
 	polyinfo_reset();
 }
-
-// generate_poly_edges is called preRender_helper in the IDB.
-// aka preRender_helper3 in the IDB
