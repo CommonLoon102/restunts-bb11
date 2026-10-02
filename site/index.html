@@ -43,6 +43,32 @@
             </aside>
         </section>
 
+        <section class="graphics wrap" aria-labelledby="graphics-title">
+            <div class="section-heading">
+                <p class="eyebrow">See the difference</p>
+                <h2 id="graphics-title">Same game. A clearer view.</h2>
+                <p>Compare the original graphics with HyperVision at full quality.</p>
+            </div>
+            <figure class="graphics-comparison" data-comparison>
+                <div class="comparison-image">
+                    <img src="assets/graphics/after.png" alt="Enhanced Stunts graphics: a white car beside the water, with distant bridges, hills, and a city skyline." width="1280" height="800" draggable="false">
+                    <span class="comparison-label" aria-hidden="true" hidden>After</span>
+                    <div class="comparison-before" hidden>
+                        <img src="assets/graphics/before.png" alt="The same view with the original low-resolution graphics and shorter view distance." width="1280" height="800" draggable="false">
+                        <span class="comparison-label" aria-hidden="true">Before</span>
+                    </div>
+                    <div class="comparison-divider" aria-hidden="true" hidden>
+                        <span><svg viewBox="0 0 24 24" focusable="false"><path d="M3 12h18M8 7l-5 5 5 5M16 7l5 5-5 5"/></svg></span>
+                    </div>
+                    <input class="comparison-slider" type="range" min="0" max="100" value="50" aria-label="Original graphics shown" aria-describedby="comparison-help" hidden>
+                </div>
+                <figcaption>
+                    <p id="comparison-help" hidden>Drag left or right to compare. You can also focus the image and use the arrow keys.</p>
+                    <p><a href="assets/graphics/before.png">Before</a>: 320 × 200, enlarged with nearest-neighbor scaling. <a href="assets/graphics/after.png">After</a>: 1280 × 800 with HyperVision.</p>
+                </figcaption>
+            </figure>
+        </section>
+
         <section class="features wrap" id="features" aria-labelledby="features-title">
             <div class="section-heading">
                 <p class="eyebrow">Familiar at heart</p>
