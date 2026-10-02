@@ -60,10 +60,10 @@
       "file": "opp2.png",
       "opponent": 2,
       "original": "SDOSEL.PVS:opp2",
-      "resampling": "nearest",
+      "resampling": "bilinear",
       "original_png_sha256": "2fc7300a22b07b4740018b02de86d1386589e88a98a0205f26994994c4b8dd97",
       "generated_restoration_sha256": "cdc5c40d48a65a0c4f357f2f161f17d84b33c71e13d48c3c3a2e0a72e3d67146",
-      "working_png_sha256": "e93f9531befe733deeaae8edca2536bb28ebb4491e776f8227846b6bf15d6051",
+      "working_png_sha256": "0fd860aadae26bd84c9aaf76f982400dfae32a7b4ffcdcc7dfe978efee8aa27c",
       "background_palette_index": 166,
       "background_rgb": [
         182,
@@ -71,15 +71,15 @@
         255
       ],
       "estimated_generated_background_rgb": [
-        178,
-        30,
+        177,
+        31,
         251
       ],
-      "working_background_pixels": 26348,
+      "working_background_pixels": 26018,
       "working_enclosed_background_pixels": 0,
-      "final_solid_background_pixels": 6569,
-      "sha256": "b1300b04a7f0355dc664227f80a642b9a709c2118ea1336c7763df9398fd7d10",
-      "pixels_sha256": "e7bb9bf257ef0f8b91f53f15a0c9f1155154da835fa98c15b6fceea4f2c2b3ff"
+      "final_solid_background_pixels": 6118,
+      "sha256": "dbd07106f97dc36d021245fc9fce7cc2b39e8acf5d30a574129c32bfcade138a",
+      "pixels_sha256": "9c83a24c65977e59ecd7bf63523e7203c7209a8121579bb6ac8ac41b01410f50"
     },
     {
       "file": "opp3.png",

@@ -40,10 +40,10 @@
       "role": "4x working tile used before final reduction",
       "width": 320,
       "height": 332,
-      "bytes": 94799,
-      "sha256": "e93f9531befe733deeaae8edca2536bb28ebb4491e776f8227846b6bf15d6051",
+      "bytes": 89053,
+      "sha256": "0fd860aadae26bd84c9aaf76f982400dfae32a7b4ffcdcc7dfe978efee8aa27c",
       "source": "/media/sf_ubi24/restunts-bb11/docs/opponents/game-sources/full-resolution/opp2.png",
-      "resampling": "nearest"
+      "resampling": "bilinear"
     },
     {
       "file": "full-resolution/opp3.png",
