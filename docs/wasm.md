@@ -49,7 +49,8 @@ needed. The HTML's location does not determine where the game looks for data.
    **HiperVision** and **New MIDI** are enabled by default. HiperVision starts
    adaptive rendering (`--hv:auto`); uncheck it to start without a HyperVision
    option. New MIDI selects Ogg replacement music (`--ogg:on`); uncheck it for
-   original AdLib music (`--ogg:off`).
+   original AdLib music (`--ogg:off`). All three checkbox choices are remembered
+   for this page, including with read-only folder access.
 4. Click **Start game**. This user gesture enables browser audio. Click the
    canvas to focus the game keyboard.
 
@@ -85,12 +86,13 @@ game and on the page. Deletions are also propagated. Closing or reloading a tab
 while a save is in progress can interrupt it; wait until the page reports the
 save is complete.
 
-The selected directory handle is stored in IndexedDB for this HTML's location;
-original game data is not stored in that database. On reopening, the game checks
-read/write permission and asks for approval through **Allow folder access** only
-when needed. Clearing browser storage, moving the HTML, or browser restrictions
-can require selecting the folder again. If storage is unavailable, folder
-selection and saving still work for the current session.
+The selected directory handle and startup checkbox choices are stored in IndexedDB
+for this HTML's location; original game data is not stored in that database. On
+reopening, the game checks read/write permission and asks for approval through
+**Allow folder access** only when needed. Clearing browser storage, moving the
+HTML, or browser restrictions can require selecting the folder and checkbox
+choices again. If storage is unavailable, folder selection, startup options, and
+saving still work for the current session.
 
 Firefox, Safari, and other browsers without that API use a read-only directory
 picker and require selecting the folder each time. The page shows **Export saves** and **Import saves, tracks, or replays**

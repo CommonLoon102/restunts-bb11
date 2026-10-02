@@ -64,9 +64,9 @@
         </div>
         <div class="controls">
             <button id="start" disabled>Start game</button>
-            <label><input id="skip-intro" type="checkbox"> Skip intro</label>
-            <label><input id="hypervision" type="checkbox" checked> HiperVision</label>
-            <label><input id="new-midi" type="checkbox" checked> New MIDI</label>
+            <label><input id="skip-intro" type="checkbox" disabled> Skip intro</label>
+            <label><input id="hypervision" type="checkbox" checked disabled> HiperVision</label>
+            <label><input id="new-midi" type="checkbox" checked disabled> New MIDI</label>
             <button id="fullscreen" disabled>Fullscreen (Alt+Enter)</button>
 
         </div>
@@ -186,11 +186,13 @@
         const SCREENSHOT_LAST_NUMBER = 9999;
         const SCREENSHOT_NUMBER_WIDTH = 4;
         const SCREENSHOT_MIME_TYPE = 'image/png';
-        const FOLDER_DATABASE = 'restunts-folders';
-        const FOLDER_DATABASE_VERSION = 1;
+        const STORAGE_DATABASE = 'restunts-folders';
+        const STORAGE_DATABASE_VERSION = 2;
         const FOLDER_STORE = 'folders';
-        // Local HTML copies can share browser storage; remember each page's own folder.
-        const FOLDER_KEY = window.location.href;
+        const LAUNCH_OPTIONS_STORE = 'launch-options';
+        const LAUNCH_OPTION_IDS = ['skip-intro', 'hypervision', 'new-midi'];
+        // Local HTML copies can share browser storage; remember each page's own settings.
+        const STORAGE_KEY = window.location.href;
 
         function validFilename(name, extensions) {
             if (typeof name !== 'string') return false;
@@ -215,6 +217,7 @@
         const gameFiles = document.getElementById('game-files');
         const openFolder = document.getElementById('open-folder');
         const restoreFolder = document.getElementById('restore-folder');
+        const launchOptions = LAUNCH_OPTION_IDS.map(id => document.getElementById(id));
         const saveControls = document.getElementById('save-controls');
         const saveMode = document.getElementById('save-mode');
         const directSavingAvailable = typeof window.showDirectoryPicker === 'function';
@@ -382,7 +385,7 @@
                     'This browser offers read-only folder access. Use Export saves to keep changes.';
                 status.textContent = 'Choose your Stunts game folder to continue.';
                 setLoading(true);
-                restoreRememberedFolder().finally(() => setLoading(false));
+                Promise.all([restoreRememberedFolder(), restoreLaunchOptions()]).finally(() => setLoading(false));
             }
         };
 
@@ -394,9 +397,7 @@
             gameFiles.disabled = true;
             openFolder.disabled = true;
             restoreFolder.disabled = true;
-            document.getElementById('skip-intro').disabled = true;
-            document.getElementById('hypervision').disabled = true;
-            document.getElementById('new-midi').disabled = true;
+            for (const option of launchOptions) option.disabled = true;
             fullscreen.disabled = false;
             exporter.disabled = false;
             status.textContent = directoryHandle ? 'Game running. Saves go directly to your game folder.' :
@@ -446,6 +447,7 @@
         });
 
         function setLoading(loading) {
+            for (const option of launchOptions) option.disabled = loading || started;
             openFolder.disabled = loading || started;
             restoreFolder.disabled = loading || started;
             gameFiles.disabled = loading || started;
@@ -508,15 +510,19 @@
             status.textContent = 'Loaded ' + pending.size + ' game files. Click Start game to play with sound.';
         }
 
-        async function folderStorage(mode, handle) {
+        async function browserStorage(storeName, mode, value) {
             const database = await new Promise((resolve, reject) => {
                 let blocked = false;
-                const request = indexedDB.open(FOLDER_DATABASE, FOLDER_DATABASE_VERSION);
-                request.onupgradeneeded = () => request.result.createObjectStore(FOLDER_STORE);
+                const request = indexedDB.open(STORAGE_DATABASE, STORAGE_DATABASE_VERSION);
+                request.onupgradeneeded = () => {
+                    for (const name of [FOLDER_STORE, LAUNCH_OPTIONS_STORE]) {
+                        if (!request.result.objectStoreNames.contains(name)) request.result.createObjectStore(name);
+                    }
+                };
                 request.onerror = () => reject(request.error);
                 request.onblocked = () => {
                     blocked = true;
-                    reject(new Error('Folder storage is busy in another tab.'));
+                    reject(new Error('Browser storage is busy in another tab.'));
                 };
                 request.onsuccess = () => {
                     if (blocked) {
@@ -529,16 +535,38 @@
             });
             try {
                 return await new Promise((resolve, reject) => {
-                    const transaction = database.transaction(FOLDER_STORE, mode);
-                    const store = transaction.objectStore(FOLDER_STORE);
-                    const request = mode === 'readonly' ? store.get(FOLDER_KEY) : store.put(handle, FOLDER_KEY);
+                    const transaction = database.transaction(storeName, mode);
+                    const store = transaction.objectStore(storeName);
+                    const request = mode === 'readonly' ? store.get(STORAGE_KEY) : store.put(value, STORAGE_KEY);
                     transaction.oncomplete = () => resolve(request.result);
-                    transaction.onabort = () => reject(transaction.error || new Error('Folder storage was interrupted.'));
+                    transaction.onabort = () => reject(transaction.error || new Error('Browser storage was interrupted.'));
                     transaction.onerror = () => reject(transaction.error || request.error);
                 });
             } finally {
                 database.close();
             }
+        }
+
+        async function restoreLaunchOptions() {
+            try {
+                const stored = await browserStorage(LAUNCH_OPTIONS_STORE, 'readonly');
+                for (const option of launchOptions) {
+                    if (stored && typeof stored[option.id] === 'boolean') option.checked = stored[option.id];
+                }
+            } catch (error) {
+                log('Remembered launch options unavailable: ' + error.message);
+            }
+        }
+
+        for (const option of launchOptions) {
+            option.addEventListener('change', async () => {
+                const values = Object.fromEntries(launchOptions.map(option => [option.id, option.checked]));
+                try {
+                    await browserStorage(LAUNCH_OPTIONS_STORE, 'readwrite', values);
+                } catch (error) {
+                    log('Launch options could not be remembered for next time: ' + error.message);
+                }
+            });
         }
 
         function showFolderError(error, prefix) {
@@ -579,7 +607,7 @@
             if (!directSavingAvailable) return;
             let stored;
             try {
-                stored = await folderStorage('readonly');
+                stored = await browserStorage(FOLDER_STORE, 'readonly');
             } catch (error) {
                 log('Remembered folder unavailable: ' + error.message);
                 return;
@@ -621,7 +649,7 @@
                 const selected = await window.showDirectoryPicker({ mode: 'readwrite' });
                 await loadDirectory(selected);
                 try {
-                    await folderStorage('readwrite', selected);
+                    await browserStorage(FOLDER_STORE, 'readwrite', selected);
                 } catch (error) {
                     // Unavailable storage must not prevent playing or saving this session.
                     log('Folder could not be remembered for next time: ' + error.message);
