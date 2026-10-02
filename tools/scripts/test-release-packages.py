@@ -106,7 +106,9 @@ class ReleasePackageTests(unittest.TestCase):
                     self.assertTrue(modes[name] & stat.S_IXUSR)
                 for required in ("lib/libnuked-opl2.so", "share/restunts/nuked-opl2-lite/opl2.c",
                                  "share/licenses/restunts/Nuked-OPL2-LICENSE",
-                                 "bin/opponents/game/opp6.png", "bin/skyboxes/sky4-3.png"):
+                                 "bin/opponents/game/opp6.png", "bin/skyboxes/sky4-3.png",
+                                 "bin/menus/main.png", "bin/menus/showroom.png",
+                                 "bin/menus/opponent.png"):
                     self.assertIn(required, files)
                 self.assertIn(platform, files[PACKAGES.README].decode("utf-8"))
 
@@ -197,6 +199,7 @@ class ReleasePackageTests(unittest.TestCase):
         files = {name: FILE_DATA for name in PACKAGES.required_files("windows-arm64")}
         modes = {name: PACKAGES.FILE_MODE for name in files}
         for missing in ("bin/opponents/game/opp6.png", "bin/skyboxes/sky4-3.png",
+                        "bin/menus/main.png", "bin/menus/showroom.png", "bin/menus/opponent.png",
                         "bin/nuked-opl2.dll", "share/restunts/nuked-opl2-lite/opl2.c",
                         "share/licenses/restunts/Nuked-OPL2-LICENSE"):
             incomplete = files.copy()
@@ -227,9 +230,14 @@ class ReleasePackageTests(unittest.TestCase):
 
     def test_browser_requires_relink_objects_and_dos_omits_nuked(self):
         files = {name: FILE_DATA for name in PACKAGES.required_files("browser")}
-        files.pop("share/restunts/wasm-relink/objects/main.c.o")
-        with self.assertRaisesRegex(ValueError, "missing packaged"):
-            PACKAGES.validate_contents("browser", files, {})
+        for missing in ("share/restunts/wasm-relink/objects/main.c.o",
+                        "share/restunts/wasm-relink/data/assets/menus/main.png",
+                        "share/restunts/wasm-relink/data/assets/menus/showroom.png",
+                        "share/restunts/wasm-relink/data/assets/menus/opponent.png"):
+            incomplete = files.copy()
+            incomplete.pop(missing)
+            with self.subTest(missing=missing), self.assertRaisesRegex(ValueError, "missing packaged"):
+                PACKAGES.validate_contents("browser", incomplete, {})
         for target in ("dos16", "dos32"):
             self.assertFalse(any("nuked" in name for name in PACKAGES.required_files(target)))
 

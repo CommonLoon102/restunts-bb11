@@ -1,0 +1,9 @@
+{
+  "images": {
+    "main.png": {
+      "base_working_pixels_sha256": "91f6cca373678ef39eec16b61d1025190f2c7fbef37e077ca6877d7082f51a7f",
+      "patch_file": "main-corrections.png",
+      "patch_sha256": "b98047ab140d028987f45e608da4438bc0fa4871a926a84d4f1817127f9e2a63"
+    }
+  }
+}

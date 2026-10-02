@@ -23,6 +23,7 @@
 #include "presentation.h"
 #include "shape3d_hires.h"
 #include "opponent_portrait.h"
+#include "menu_background.h"
 #include "shape2d_internal.h"
 #endif
 
@@ -126,7 +127,7 @@ struct CAR_MENU_STATE {
 	legacy_u64 prepared_render_ns;
 	legacy_u64 input_time;
 	legacy_s16 input_delta;
-	legacy_u8 portrait_dirty;
+	legacy_u8 portrait_dirty, background_dirty;
 #endif
 };
 
@@ -215,6 +216,7 @@ static void car_menu_initialize(struct CAR_MENU_STATE *menu)
 	menu->input_time = menu->rotation_time;
 	menu->input_delta = 0;
 	menu->portrait_dirty = 0;
+	menu->background_dirty = 0;
 	presentation_reset(&menu->presentation_clock, menu->rotation_time);
 #endif
 	menu->selected = CAR_MENU_DONE_BUTTON;
@@ -416,6 +418,14 @@ static void car_menu_prepare_preview(struct CAR_MENU_STATE *menu)
 											  : CAR_MENU_FULL_CLIP_BOTTOM;
 		(void)rect_intersect(&menu->current_rect, &car_menu_redraw_cliprect);
 		rect_union(&menu->current_rect, &menu->previous_rect, &menu->union_rect);
+#ifdef RESTUNTS_SDL3
+		if (menu->background_dirty != 0) {
+			/* Mode/scale changes discard companion pixels. Restore the complete
+			 * showroom, including the wall outside the rotating car's bounds. */
+			struct RECTANGLE background_rect = {0, CAR_MENU_SCREEN_WIDTH, 0, CAR_MENU_BACKGROUND_Y};
+			rect_union(&menu->union_rect, &background_rect, &menu->union_rect);
+		}
+#endif
 		if (menu->render_phase != CAR_RENDER_START_PHASE) {
 			menu->render_phase = CAR_RENDER_DRAW_PHASE;
 			menu->render_deferred = 1;
@@ -452,8 +462,13 @@ static void car_menu_render_preview(struct CAR_MENU_STATE *menu)
 		sprite_select_render_window();
 		sprite_set_target_clip_bounds(menu->union_rect.left, menu->union_rect.right,
 									  menu->union_rect.top, menu->union_rect.bottom);
-		sprite_putimage((struct SHAPE2D far *)locate_shape_fatal(menu->selector_resource,
-																 car_preview_top_shape_id));
+		struct SHAPE2D far *background = (struct SHAPE2D far *)locate_shape_fatal(
+			menu->selector_resource, car_preview_top_shape_id);
+		sprite_putimage(background);
+#ifdef RESTUNTS_SDL3
+		menu_background_draw(&drawing_sprite, background, MENU_BACKGROUND_SHOWROOM);
+		menu->background_dirty = 0;
+#endif
 		shape3d_render_queued_primitives();
 		sprite_select_render_window();
 		if (frame_display_overlay_active() != 0) {
@@ -623,8 +638,11 @@ static legacy_s16 car_menu_handle_input(struct CAR_MENU_STATE *menu, legacy_u16 
 	) {
 		handle_ingame_kb_shortcuts(LEGACY_S16_FROM_BITS(input));
 #ifdef RESTUNTS_SDL3
-		if (input != (legacy_u16)KEY_F11 && menu->opponent_type != CAR_MENU_PLAYER_MODE) {
-			menu->portrait_dirty = 1;
+		if (input != (legacy_u16)KEY_F11) {
+			menu->background_dirty = 1;
+			if (menu->opponent_type != CAR_MENU_PLAYER_MODE) {
+				menu->portrait_dirty = 1;
+			}
 		}
 		presentation_reset(&menu->presentation_clock, presentation_now());
 #endif
@@ -653,6 +671,9 @@ static legacy_s16 car_menu_handle_input(struct CAR_MENU_STATE *menu, legacy_u16 
 
 static void car_menu_release(struct CAR_MENU_STATE *menu, legacy_s8 *car_id)
 {
+#ifdef RESTUNTS_SDL3
+	menu_background_unload();
+#endif
 	sprite_free_wnd(render_window_sprite);
 	unload_resource(menu->car_resource);
 	shape3d_free_car_shapes();

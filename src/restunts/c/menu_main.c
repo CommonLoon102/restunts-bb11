@@ -11,6 +11,10 @@
 #include "menu_common.h"
 #include "externs.h"
 #include "keyboard.h"
+#ifdef RESTUNTS_SDL3
+#include "game_input.h"
+#include "menu_background.h"
+#endif
 
 #define MAIN_MENU_BUTTON_COUNT 5U
 #define MAIN_MENU_NO_SELECTION 255U
@@ -62,6 +66,10 @@ legacy_s8 run_menu(void)
 		if (selected != previous) {
 			previous = selected;
 			sprite_select_render_window();
+#ifdef RESTUNTS_SDL3
+			menu_background_draw(render_window_sprite, render_window_sprite->sprite_bitmapptr,
+								 MENU_BACKGROUND_MAIN);
+#endif
 			sprite_blit_to_video(render_window_sprite, LEGACY_S8_FROM_BITS(blit_mode));
 			blit_mode = MENU_BLIT_MODE_REFRESH;
 			sprite_select_screen_compat();
@@ -86,6 +94,13 @@ legacy_s8 run_menu(void)
 			key = KEY_ENTER;
 		}
 
+#ifdef RESTUNTS_SDL3
+		if (key == (legacy_u16)KEY_F12 || key == (legacy_u16)KEY_SHIFT_F12) {
+			handle_ingame_kb_shortcuts(LEGACY_S16_FROM_BITS(key));
+			previous = MAIN_MENU_NO_SELECTION;
+			continue;
+		}
+#endif
 		if (key == MAIN_MENU_KEY_NONE) {
 			continue;
 		}
@@ -103,6 +118,9 @@ legacy_s8 run_menu(void)
 		}
 	}
 
+#ifdef RESTUNTS_SDL3
+	menu_background_unload();
+#endif
 	sprite_free_wnd(render_window_sprite);
 	return LEGACY_S8_FROM_BITS(selected);
 }

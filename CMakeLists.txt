@@ -123,7 +123,8 @@ set(game_sources
     restunts.c command_line.c fatal.c timing.c game_input.c ui_text.c ui_input.c ui_dialog.c
     intro.c highscore.c replay_record.c replay_viewer.c race.c ghost.c
     race_resources.c dashboard.c menu_common.c menu_main.c menu_options.c
-    menu_track.c menu_track_editor.c menu_opponent.c opponent_portrait.c menu_car.c audio_engine.c
+    menu_track.c menu_track_editor.c menu_opponent.c opponent_portrait.c menu_background.c
+    menu_car.c audio_engine.c
     audio_resources.c audio_car.c audio_sequence.c shape3d.c shape3d_resources.c
     shape3d_car.c shape3d_prerender.c shape3d_lines.c shape2d.c shape2d_blit.c
     video_pages.c hires.c hypervision.c render_workers.c frame_interpolation.c phantom_physics.c shape3d_hires.c shape2d_resources.c heapsort.c frame.c frame_adaptive.c skybox.c skybox_hires.c frame_overlay.c
@@ -162,7 +163,9 @@ if(EMSCRIPTEN)
 else()
     set(restunts_asset_directory "${CMAKE_SOURCE_DIR}/assets")
 endif()
+set(menu_backgrounds main showroom opponent)
 target_compile_definitions(restunts_game PRIVATE RESTUNTS_FULL
+    RESTUNTS_MENU_DIRECTORY="${restunts_asset_directory}/menus"
     RESTUNTS_SKYBOX_DIRECTORY="${restunts_asset_directory}/skyboxes"
     RESTUNTS_OPPONENT_DIRECTORY="${restunts_asset_directory}/opponents")
 target_link_libraries(restunts_game PUBLIC restunts_options)
@@ -203,6 +206,9 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
     install(PROGRAMS tools/scripts/run-macos.sh DESTINATION . RENAME run-restunts.sh COMPONENT Runtime)
 endif()
 install(FILES docs/sdl3.md DESTINATION share/docs/restunts COMPONENT Runtime)
+foreach(background IN LISTS menu_backgrounds)
+    install(FILES "assets/menus/${background}.png" DESTINATION bin/menus COMPONENT Runtime)
+endforeach()
 if(CMAKE_SYSTEM_NAME STREQUAL "DOS")
     set(restunts_opponent_install_directory opponent)
 else()
@@ -424,6 +430,14 @@ if(RESTUNTS_BUILD_TESTS)
     add_test(NAME opponent-portrait COMMAND test-opponent-portrait)
     set_tests_properties(opponent-portrait PROPERTIES
         WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/opponent-test")
+    add_executable(test-menu-background src/restunts/tests/test-menu-background.c
+        ${core}/menu_background.c ${core}/hires.c ${core}/render_workers.c ${platform}/memory.c ${platform}/asset_path.c)
+    target_link_libraries(test-menu-background PRIVATE restunts_options)
+    target_compile_options(test-menu-background PRIVATE -UNDEBUG)
+    file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/menu-background-test")
+    add_test(NAME menu-background COMMAND test-menu-background)
+    set_tests_properties(menu-background PROPERTIES
+        WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/menu-background-test")
     add_executable(test-sdl3-hires src/restunts/tests/test-sdl3-hires.c ${core}/hires.c ${core}/render_workers.c ${platform}/memory.c)
     target_link_libraries(test-sdl3-hires PRIVATE restunts_options)
     target_compile_options(test-sdl3-hires PRIVATE -UNDEBUG)

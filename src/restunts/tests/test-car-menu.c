@@ -24,6 +24,7 @@
 #include "../c/frame_internal.h"
 #include "../c/shape3d_hires.h"
 #include "../c/opponent_portrait.h"
+#include "../c/menu_background.h"
 #include "../c/shape2d_internal.h"
 
 #undef printf
@@ -41,6 +42,8 @@ static const legacy_s8 *fixture_files[] = {(const legacy_s8 *)"CARVETT.RES",
 										   (const legacy_s8 *)"CARCOUN.RES"};
 
 #define SHOWROOM_TEST_MODEL_SCALE 20
+#define SHOWROOM_TEST_SCREEN_WIDTH 320
+#define SHOWROOM_TEST_BACKGROUND_HEIGHT 103
 #define SHOWROOM_TEST_HALF_WIDTH 48
 #define SHOWROOM_TEST_HALF_LENGTH 103
 #define SHOWROOM_TEST_FIRST_GROUND_HEIGHT 37
@@ -76,6 +79,9 @@ static legacy_s16 display_shadow_heading, display_ground_height;
 static legacy_u32 display_car_loads, display_ground_queries, display_load_present_count;
 static legacy_u8 drawing_frame, completed_frame;
 static legacy_u32 committed_frames;
+static legacy_u8 display_background_mode, display_background_restored;
+static const struct RECTANGLE display_background_bounds = {0, SHOWROOM_TEST_SCREEN_WIDTH, 0,
+														   SHOWROOM_TEST_BACKGROUND_HEIGHT};
 
 void sdl3_video_begin_track_frame(legacy_u8 adaptive)
 {
@@ -185,6 +191,27 @@ static void assert_contains(const struct RECTANGLE *outer, const struct RECTANGL
 {
 	assert(outer->left <= inner->left && outer->right >= inner->right);
 	assert(outer->top <= inner->top && outer->bottom >= inner->bottom);
+}
+
+void menu_background_draw(const struct SPRITE *target, const struct SHAPE2D *original,
+						  enum MENU_BACKGROUND kind)
+{
+	assert(target == &drawing_sprite && original == &fixture_shapes[0]);
+	assert(kind == MENU_BACKGROUND_SHOWROOM);
+	if (display_toggle_test != 0) {
+		assert(display_target == 1);
+		if (display_background_mode != supersight_enabled) {
+			/* Both on/off transitions and scale presets must restore the wall,
+			 * floor and the strip beneath the opponent panel, beyond the car. */
+			assert_contains(&display_clip, &display_background_bounds);
+		}
+		display_background_mode = supersight_enabled;
+		display_background_restored = 1;
+	}
+}
+
+void menu_background_unload(void)
+{
 }
 
 #ifdef RESTUNTS_SDL3
@@ -318,6 +345,7 @@ legacy_s16 handle_ingame_kb_shortcuts(legacy_s16 key)
 		}
 		/* F12 discards all enhanced sprite surfaces in the real renderer. */
 		display_portrait_mode = 255;
+		display_background_mode = LEGACY_U8_MAX;
 	}
 	display_shortcut_count++;
 	display_refresh_pending = display_toggle_test;
@@ -768,6 +796,8 @@ void shape3d_render_queued_primitives(void)
 	if (display_toggle_test != 0) {
 		assert(display_pending == 0);
 #ifdef RESTUNTS_SDL3
+		assert(display_background_restored != 0);
+		display_background_restored = 0;
 		if (supersight_enabled != 0 || display_previous_shadow != 0) {
 			assert(display_shadow_restored != 0);
 		}
@@ -900,7 +930,11 @@ void sprite_putimage(struct SHAPE2D *shape)
 				display_shadow_restored = 1;
 			}
 #endif
-			if (display_load_present_count != 0 && (display_scenario & 4U) != 0) {
+			if (display_load_present_count != 0 && (display_scenario & 4U) != 0
+#ifdef RESTUNTS_SDL3
+				&& display_background_mode != LEGACY_U8_MAX
+#endif
+			) {
 				/* The showroom floor must stop before the opponent portrait. */
 				assert(display_clip.right <= display_portrait_bounds.left);
 			}
@@ -1070,6 +1104,8 @@ static void test_display_toggles(void)
 		display_reset_count = display_shortcut_count = display_sprite_free_count = 0;
 		display_portrait_pending = display_portrait_legacy_drawn = 0;
 		display_portrait_mode = 255;
+		display_background_mode = LEGACY_U8_MAX;
+		display_background_restored = 0;
 		display_portrait_draws = display_enhanced_portrait_draws = 0;
 		display_previous_shadow = display_shadow_restored = 0;
 		display_shadow_models = display_shadow_erasures = 0;

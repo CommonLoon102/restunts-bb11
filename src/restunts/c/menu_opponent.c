@@ -19,6 +19,7 @@
 #include "frame_internal.h"
 #ifdef RESTUNTS_SDL3
 #include "opponent_portrait.h"
+#include "menu_background.h"
 #include "shape2d_internal.h"
 #endif
 
@@ -108,6 +109,9 @@ static void opponent_menu_draw_background(void)
 	struct SHAPE2D far *shape =
 		(struct SHAPE2D far *)locate_shape_fatal(opp_res, opponent_menu_background_id);
 	sprite_draw_palette_mapped(shape);
+#ifdef RESTUNTS_SDL3
+	menu_background_draw(&drawing_sprite, shape, MENU_BACKGROUND_OPPONENT);
+#endif
 	for (legacy_u16 index = 0; index < OPPONENT_MENU_BUTTON_COUNT; index++) {
 		legacy_s8 far *label =
 			index == OPPONENT_MENU_CAR_BUTTON &&
@@ -129,6 +133,9 @@ static void opponent_menu_draw_background(void)
 #endif
 	shape = (struct SHAPE2D far *)locate_shape_fatal(opp_res, opponent_portrait_clip_id);
 	sprite_draw_palette_mapped(shape);
+#ifdef RESTUNTS_SDL3
+	menu_background_draw_overlay(&drawing_sprite, shape, MENU_BACKGROUND_OPPONENT);
+#endif
 	if (video_uses_page_flipping != 0) {
 		sprite_clear_shape_alt(render_window_sprite->sprite_bitmapptr, 0, 0);
 		sprite_select_render_window();
@@ -317,6 +324,7 @@ static void opponent_menu_release(struct OPPONENT_MENU_STATE *menu)
 	}
 #ifdef RESTUNTS_SDL3
 	opponent_portrait_unload();
+	menu_background_unload();
 #endif
 	mmgr_free(opp_res);
 	unload_resource(miscptr);

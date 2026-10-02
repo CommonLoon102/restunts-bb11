@@ -1,0 +1,82 @@
+{
+  "method": "Built-in imagegen regional reconstruction and screw removal, composited only inside declared repair areas",
+  "base": "docs/menus/sources/full-resolution/main.png",
+  "base_working_size": [
+    1280,
+    800
+  ],
+  "ramp_source": "docs/menus/sources/patches/main-ramps-source.png",
+  "ramp_source_sha256": "689dd0e243a07ff2edbcfa59eb8b09ab98c0ec1089ef55bc8c9c2ded53434523",
+  "ramp_region": [
+    208,
+    80,
+    792,
+    316
+  ],
+  "ramp_boundary_feather_pixels": 16,
+  "screw_ellipse_boxes": [
+    [
+      139,
+      483,
+      154,
+      499
+    ],
+    [
+      138,
+      639,
+      153,
+      655
+    ],
+    [
+      884,
+      443,
+      899,
+      460
+    ],
+    [
+      1127,
+      482,
+      1142,
+      498
+    ],
+    [
+      1127,
+      631,
+      1142,
+      647
+    ]
+  ],
+  "changed_working_pixels": 135486,
+  "unchanged_working_pixels": 888514,
+  "outside_patch_unchanged": true,
+  "showroom_sha256_unchanged": "b182948e6377c3dc4d9744aae99d9446cb082f824ee40cd56163b76a9ab7df98",
+  "latest_revision_changed_region": [
+    222,
+    89,
+    780,
+    223
+  ],
+  "latest_revision_outside_ramp_region_unchanged": true,
+  "prompts": "docs/menus/sources/patches/generation-prompts.json",
+  "sky_cleanup": {
+    "method": "Palette-color cleanup of isolated blue-sky pixels after built-in imagegen sky-edit review; all nonselected pixels preserved",
+    "region": [
+      208,
+      80,
+      792,
+      316
+    ],
+    "source_quantized_palette_index": 134,
+    "destination_palette_index": 133,
+    "destination_rgb": [
+      64,
+      178,
+      255
+    ],
+    "mask": "docs/menus/sources/patches/main-sky-cleanup-mask.png",
+    "mask_sha256": "f00de8adafb2a45f23bc267c8ece10b6d76526487ac9d944559c1105ab3ec696",
+    "changed_working_pixels": 9031,
+    "pixels_outside_sky_mask_unchanged": true,
+    "prompt": "docs/menus/sources/patches/generation-prompts.json:sky_cleanup"
+  }
+}

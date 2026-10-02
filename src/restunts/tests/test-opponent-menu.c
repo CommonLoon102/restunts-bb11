@@ -3,6 +3,8 @@
 /* Reuse the car-menu drawing fixture, replacing input and ownership hooks
  * so this test drives the real opponent menu and checks each refresh. */
 #define main car_snapshot_main
+#define menu_background_draw car_fixture_menu_background_draw
+#define menu_background_unload car_fixture_menu_background_unload
 #define input_checking car_fixture_input_checking
 #define mouse_multi_hittest car_fixture_mouse_multi_hittest
 #define locate_text_res car_fixture_locate_text_res
@@ -21,6 +23,8 @@
 #define sprite_blit_to_video car_fixture_sprite_blit_to_video
 #include "test-car-menu.c"
 #undef main
+#undef menu_background_draw
+#undef menu_background_unload
 #undef sprite_clear_target
 #undef sprite_clear_shape_alt
 #undef sprite_select_mcga_backbuffer
@@ -42,12 +46,26 @@
 #include "../c/opponent_portrait.h"
 #include "../c/shape2d_internal.h"
 static legacy_u32 portrait_draws, enhanced_portrait_draws, portrait_unloads;
+static legacy_u32 background_draws, enhanced_background_draws, background_unloads;
+static legacy_u32 background_overlay_draws;
+static legacy_u8 background_overlay_ready;
+static legacy_u8 background_mapped_draws, background_button_draws, background_ready;
+static legacy_u8 background_window_mode, background_backbuffer_mode;
+
+#define OPPONENT_TEST_BUTTON_COUNT 5U
+enum OPPONENT_TEST_MAPPED_STAGE {
+	OPPONENT_TEST_MAPPED_CLEAR,
+	OPPONENT_TEST_MAPPED_BACKGROUND,
+	OPPONENT_TEST_MAPPED_PORTRAIT,
+	OPPONENT_TEST_MAPPED_CLIP
+};
 
 void opponent_portrait_draw(const struct SPRITE *target, const struct SHAPE2D *original,
 							legacy_u8 opponent)
 {
 	assert(target == &drawing_sprite && original == &fixture_shapes[1]);
 	assert(opponent == (legacy_u8)gameconfig.game_opponenttype);
+	assert(background_ready != 0 && background_mapped_draws == OPPONENT_TEST_MAPPED_PORTRAIT);
 	portrait_draws++;
 	if (supersight_enabled != 0 && opponent != 0) {
 		enhanced_portrait_draws++;
@@ -72,8 +90,51 @@ static legacy_u32 opponent_background_draws, opponent_background_copies;
 static legacy_u32 opponent_notice_presentations, opponent_notice_erasures;
 static legacy_u8 opponent_presented_notice;
 
+#ifdef RESTUNTS_SDL3
+void menu_background_draw(const struct SPRITE *target, const struct SHAPE2D *original,
+						  enum MENU_BACKGROUND kind)
+{
+	assert(target == &drawing_sprite && original == &fixture_shapes[0]);
+	assert(kind == MENU_BACKGROUND_OPPONENT);
+	assert(background_mapped_draws == OPPONENT_TEST_MAPPED_BACKGROUND);
+	assert(background_button_draws == 0 && background_ready == 0);
+	assert(opponent_draw_target == (video_uses_page_flipping != 0 ? OPPONENT_TEST_BACKBUFFER
+																  : OPPONENT_TEST_RENDER_WINDOW));
+	background_draws++;
+	enhanced_background_draws += supersight_enabled != 0;
+	background_ready = 1;
+	if (opponent_draw_target == OPPONENT_TEST_BACKBUFFER) {
+		background_backbuffer_mode = supersight_enabled;
+	} else {
+		background_window_mode = supersight_enabled;
+	}
+}
+
+void menu_background_draw_overlay(const struct SPRITE *target, const struct SHAPE2D *original,
+								  enum MENU_BACKGROUND kind)
+{
+	assert(target == &drawing_sprite && original == &fixture_shapes[0]);
+	assert(kind == MENU_BACKGROUND_OPPONENT);
+	assert(background_ready != 0 && background_mapped_draws == OPPONENT_TEST_MAPPED_CLIP);
+	assert(background_overlay_ready == 0 && background_draws == portrait_draws);
+	assert(opponent_draw_target == (video_uses_page_flipping != 0 ? OPPONENT_TEST_BACKBUFFER
+																  : OPPONENT_TEST_RENDER_WINDOW));
+	background_overlay_ready = 1;
+	background_overlay_draws++;
+}
+
+void menu_background_unload(void)
+{
+	background_unloads++;
+}
+#endif
+
 void sprite_clear_target(legacy_u8 color)
 {
+#ifdef RESTUNTS_SDL3
+	background_mapped_draws = OPPONENT_TEST_MAPPED_CLEAR;
+	background_button_draws = background_ready = background_overlay_ready = 0;
+#endif
 	if (opponent_draw_target == OPPONENT_TEST_RENDER_WINDOW) {
 		opponent_window_notice = 0;
 	} else {
@@ -88,6 +149,11 @@ void sprite_clear_shape_alt(struct SHAPE2D *shape, legacy_s16 x, legacy_s16 y)
 	assert(opponent_draw_target == OPPONENT_TEST_BACKBUFFER);
 	assert(shape == render_window_sprite->sprite_bitmapptr);
 	opponent_window_notice = opponent_backbuffer_notice;
+#ifdef RESTUNTS_SDL3
+	assert(background_ready != 0 && background_mapped_draws == OPPONENT_TEST_MAPPED_CLIP);
+	assert(background_overlay_ready != 0);
+	background_window_mode = background_backbuffer_mode;
+#endif
 	opponent_background_copies++;
 	car_fixture_sprite_clear_shape_alt(shape, x, y);
 }
@@ -115,6 +181,9 @@ legacy_s16 sprite_blit_to_video(struct SPRITE *sprite, legacy_s16 mode)
 {
 	assert(sprite == render_window_sprite);
 	assert(opponent_window_notice == display_status_active);
+#ifdef RESTUNTS_SDL3
+	assert(background_ready != 0 && background_window_mode == supersight_enabled);
+#endif
 	if (opponent_window_notice != 0) {
 		opponent_notice_presentations++;
 	} else if (opponent_presented_notice != 0) {
@@ -195,6 +264,10 @@ void draw_button(legacy_s8 *text, legacy_s16 x, legacy_s16 y, legacy_s16 width, 
 				 legacy_s16 top_color, legacy_s16 bottom_color, legacy_s16 fill_color,
 				 legacy_s16 font_color)
 {
+#ifdef RESTUNTS_SDL3
+	assert(background_ready != 0 && background_mapped_draws == OPPONENT_TEST_MAPPED_BACKGROUND);
+	background_button_draws++;
+#endif
 	if (x == 21 + 3 * 56) {
 		assert(_strcmp(text, gameconfig.game_opponenttype == 0 ? (legacy_s8 *)"Ghost"
 															   : opponent_car_button_id) == 0);
@@ -208,6 +281,10 @@ void draw_button(legacy_s8 *text, legacy_s16 x, legacy_s16 y, legacy_s16 width, 
 
 void font_draw_text(const legacy_s8 *text, legacy_s16 x, legacy_s16 y)
 {
+#ifdef RESTUNTS_SDL3
+	assert(background_ready != 0 && background_mapped_draws == OPPONENT_TEST_MAPPED_CLIP);
+	assert(background_overlay_ready != 0);
+#endif
 	if (gameconfig.game_opponenttype == 0) {
 		assert(_strcmp(text, ghost_selected != 0 ? (legacy_s8 *)"Race against a Ghost."
 												 : (legacy_s8 *)"Race against the Clock.") == 0);
@@ -342,6 +419,18 @@ void sprite_draw_palette_mapped(struct SHAPE2D *shape)
 {
 	assert(shape == &fixture_shapes[0] || shape == &fixture_shapes[1]);
 	assert((legacy_u8)gameconfig.game_opponenttype <= 6);
+#ifdef RESTUNTS_SDL3
+	if (background_mapped_draws == OPPONENT_TEST_MAPPED_CLEAR) {
+		assert(shape == &fixture_shapes[0] && background_ready == 0);
+	} else {
+		assert(background_ready != 0 && background_button_draws == OPPONENT_TEST_BUTTON_COUNT);
+		assert(shape == (background_mapped_draws == OPPONENT_TEST_MAPPED_BACKGROUND
+							 ? &fixture_shapes[1]
+							 : &fixture_shapes[0]));
+	}
+	background_mapped_draws++;
+	assert(background_mapped_draws <= OPPONENT_TEST_MAPPED_CLIP);
+#endif
 }
 
 void check_input(void)
@@ -409,6 +498,11 @@ static void begin_case(legacy_u8 opponent, legacy_u8 page_flipping)
 	opponent_notice_presentations = opponent_notice_erasures = 0;
 #ifdef RESTUNTS_SDL3
 	portrait_draws = enhanced_portrait_draws = portrait_unloads = 0;
+	background_draws = enhanced_background_draws = background_unloads = background_overlay_draws =
+		0;
+	background_mapped_draws = OPPONENT_TEST_MAPPED_CLEAR;
+	background_button_draws = background_ready = background_overlay_ready = 0;
+	background_window_mode = background_backbuffer_mode = LEGACY_U8_MAX;
 #endif
 }
 
@@ -433,7 +527,9 @@ static void finish_case(legacy_u8 opponent, legacy_u32 refresh_count)
 		assert(gameconfig.game_opponentcarid[0] == -1);
 	}
 #ifdef RESTUNTS_SDL3
-	assert(portrait_unloads == 1);
+	assert(portrait_unloads == 1 && background_unloads == 1);
+	assert(background_draws == opponent_background_draws);
+	assert(background_overlay_draws == background_draws);
 #endif
 	case_count++;
 }
@@ -557,25 +653,27 @@ static void test_notice_expiry(legacy_u8 page_flipping, legacy_u16 shortcut)
 #ifdef RESTUNTS_SDL3
 	/* The third portrait belongs to the fresh background that erases the notice. */
 	assert(portrait_draws == 3 && enhanced_portrait_draws == 2);
+	assert(background_draws == 3 && enhanced_background_draws == 2);
 #endif
 	opponent_expiry_test = 0;
 }
 
-static void test_supersight_toggle(legacy_u8 page_flipping)
+static void test_supersight_toggle(legacy_u8 page_flipping, legacy_u8 opponent)
 {
-	begin_case(3, page_flipping);
-	add_event(KEY_F12, 3);
-	add_event(KEY_F12, 3);
-	add_event(KEY_ENTER, 3);
+	begin_case(opponent, page_flipping);
+	add_event(KEY_F12, opponent);
+	add_event(KEY_F12, opponent);
+	add_event(KEY_ENTER, opponent);
 	opponent_hits[event_count - 1] = 4;
-	finish_case(3, 1);
+	finish_case(opponent, 1);
 	assert(supersight_enabled == 0);
 	assert(display_status_draw_count == 2 && display_status_active != 0);
 	assert(opponent_background_draws == 3);
 	assert(opponent_background_copies == (page_flipping != 0 ? 3 : 0));
 	assert(opponent_notice_presentations == 2 && opponent_notice_erasures == 0);
 #ifdef RESTUNTS_SDL3
-	assert(portrait_draws == 3 && enhanced_portrait_draws == 1);
+	assert(portrait_draws == 3 && enhanced_portrait_draws == (opponent != 0));
+	assert(background_draws == 3 && enhanced_background_draws == 1);
 #endif
 }
 
@@ -600,7 +698,8 @@ int main(void)
 			test_clear_ghost(page_flipping, selection);
 		}
 		test_opponent_car(page_flipping);
-		test_supersight_toggle(page_flipping);
+		test_supersight_toggle(page_flipping, 3);
+		test_supersight_toggle(page_flipping, 0);
 		test_notice_expiry(page_flipping, (legacy_u16)KEY_F12);
 #ifdef RESTUNTS_SDL3
 		test_notice_expiry(page_flipping, (legacy_u16)KEY_SHIFT_F12);
