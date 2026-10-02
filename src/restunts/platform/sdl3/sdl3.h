@@ -24,6 +24,7 @@ void sdl3_input_shutdown(void);
 void sdl3_video_shutdown(void);
 void sdl3_video_present(void);
 void sdl3_video_redraw(void);
+void sdl3_video_screenshot(void);
 void sdl3_video_toggle_fullscreen(void);
 void sdl3_video_refresh(void);
 SDL_Window *sdl3_video_window(void);

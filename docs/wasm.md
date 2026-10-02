@@ -102,6 +102,12 @@ the game in memory; this fallback does not overwrite the selected disk folder.
 Deleting files in fallback mode affects the current session only. Landscape
 cache files are regenerated rather than exported.
 
+**Ctrl+F12** captures the last completed game frame as a PNG. With read/write
+folder access, screenshots are saved directly to the selected game folder as
+`SHOT0001.PNG` through `SHOT9999.PNG`, skipping existing names. With read-only
+folder access, or if the folder write fails, the PNG is downloaded instead.
+Screenshots are separate from the JSON save export.
+
 Browser support for directory writes is described in
 [Chrome's File System Access documentation](https://developer.chrome.com/docs/capabilities/web-apis/file-system-access)
 and [MDN's directory picker reference](https://developer.mozilla.org/en-US/docs/Web/API/Window/showDirectoryPicker).

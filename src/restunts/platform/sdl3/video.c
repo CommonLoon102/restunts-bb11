@@ -7,6 +7,9 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
 
 #define SCREEN_BYTES (SDL3_SCREEN_WIDTH * SDL3_SCREEN_HEIGHT)
 #define VGA_MEMORY_SEGMENT 0xA000U
@@ -20,6 +23,10 @@
 #define VGA_RETRACE_DURATION_MS 2U
 #define VSYNC_EVERY_REFRESH 1
 #define PRESENTATION_PAGE_COUNT 2U
+#define SCREENSHOT_FIRST_NUMBER 1U
+#define SCREENSHOT_LAST_NUMBER 9999U
+#define SCREENSHOT_NAME_FORMAT "SHOT%04u.PNG"
+#define SCREENSHOT_NAME_CAPACITY sizeof("SHOT0000.PNG")
 
 struct PRESENTATION_PAGE {
 	legacy_u32 *pixels;
@@ -48,6 +55,18 @@ static legacy_u8 drawing_frame;
 static legacy_u8 adaptive_frame;
 static legacy_u8 measured_frame;
 static legacy_u64 render_frame_started;
+
+#ifdef __EMSCRIPTEN__
+EM_ASYNC_JS(legacy_int, save_browser_screenshot, (const legacy_char *path), {
+	try {
+		await Module['saveScreenshot'](UTF8ToString(path));
+		return 1;
+	} catch (error) {
+		console.error('Cannot save screenshot:', error);
+		return 0;
+	}
+});
+#endif
 
 static void video_fail(const legacy_char *operation)
 {
@@ -435,6 +454,63 @@ void sdl3_video_redraw(void)
 	 * high-resolution buffers cannot change this snapshot before a flip. */
 	present_texture(false);
 	last_present = SDL_GetTicks();
+}
+
+void sdl3_video_screenshot(void)
+{
+	if (window == NULL) {
+		return;
+	}
+	/* Use the completed frame, not renderer readback after RenderPresent or
+	 * the live game buffers, which may already contain part of the next frame. */
+	SDL_Surface *surface;
+	if (surface_output) {
+		surface = SDL_GetWindowSurface(window);
+	} else {
+		const struct PRESENTATION_PAGE *page = &presentation_pages[front_page];
+		if (page->pixels == NULL) {
+			return;
+		}
+		surface = SDL_CreateSurfaceFrom(page->width, page->height, SDL_PIXELFORMAT_ARGB8888,
+										page->pixels, page->width * sizeof(*page->pixels));
+	}
+	if (surface == NULL) {
+		SDL_LogWarn(SDL_LOG_CATEGORY_VIDEO, "Cannot capture screenshot: %s", SDL_GetError());
+		return;
+	}
+	legacy_u64 capture_started = SDL_GetTicksNS();
+	legacy_char filename[SCREENSHOT_NAME_CAPACITY];
+	legacy_u32 number;
+	/* main selects the game data directory as the working directory. Keep
+	 * names compatible with DOS and skip existing captures across restarts. */
+	for (number = SCREENSHOT_FIRST_NUMBER; number <= SCREENSHOT_LAST_NUMBER; number++) {
+		SDL_snprintf(filename, sizeof(filename), SCREENSHOT_NAME_FORMAT, (legacy_uint)number);
+		if (!SDL_GetPathInfo(filename, NULL)) {
+			break;
+		}
+	}
+	if (number > SCREENSHOT_LAST_NUMBER) {
+		SDL_LogWarn(SDL_LOG_CATEGORY_VIDEO,
+					"Cannot save screenshot: all SHOTxxxx.PNG names are in use");
+	} else if (!SDL_SavePNG(surface, filename)) {
+		SDL_LogWarn(SDL_LOG_CATEGORY_VIDEO, "Cannot save screenshot %s: %s", filename,
+					SDL_GetError());
+	} else {
+#ifdef __EMSCRIPTEN__
+		if (!save_browser_screenshot(filename)) {
+			SDL_LogWarn(SDL_LOG_CATEGORY_VIDEO, "Cannot save browser screenshot %s", filename);
+		}
+#else
+		SDL_Log("Screenshot saved to %s", filename);
+#endif
+	}
+	if (!surface_output) {
+		SDL_DestroySurface(surface);
+	}
+	if (measured_frame != 0) {
+		/* PNG compression and disk/browser writes are not rendering workload. */
+		render_frame_started += SDL_GetTicksNS() - capture_started;
+	}
 }
 
 void sdl3_video_begin_frame(void)
