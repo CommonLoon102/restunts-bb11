@@ -16,6 +16,8 @@ extern legacy_s16 audio_play_effect(void *resource, legacy_s16 channel, legacy_u
 #define TEST_CHANNEL AUDIO_EFFECT_CHANNEL_FIRST
 #define TEST_INSTRUMENT_BYTES 94U
 #define TEST_BANK_BYTES 512U
+#define TEST_FIXTURE_BYTES (TEST_BANK_BYTES * 2U)
+#define TEST_PARAGRAPH_BYTES 16U
 #define TEST_INSTRUMENT_COUNT 3U
 #define TEST_HEADER_BYTES (8U + TEST_INSTRUMENT_COUNT * AUDIO_FAR_POINTER_SIZE + 5U)
 #define TEST_MILLISECONDS_PER_SECOND 1000U
@@ -33,8 +35,12 @@ extern legacy_s16 audio_play_effect(void *resource, legacy_s16 channel, legacy_u
 #define TEST_ATTACK_STEP_OFFSET 32U
 #define TEST_SUSTAIN_LEVEL_OFFSET 36U
 #define TEST_RELEASE_STEP_OFFSET 38U
+#define TEST_EXPECTED_ARGUMENTS 2
+#define TEST_MUSIC_DIRECTORY "assets/music"
+#define TEST_MUSIC_PATH TEST_MUSIC_DIRECTORY "/titl.ogg"
 
 static legacy_u64 mock_time_ms = TEST_MILLISECONDS_PER_SECOND;
+static legacy_u16 fixture_offset;
 
 static legacy_u64 test_get_ticks(void)
 {
@@ -87,13 +93,18 @@ static void make_instrument(legacy_u8 *resource)
 	resource[90] = 1;
 }
 
-static struct sequence_fixture make_fixture(legacy_u8 kind, legacy_u8 volume)
+static struct sequence_fixture make_fixture(legacy_u8 kind, legacy_u8 volume, const legacy_s8 *name)
 {
-	legacy_u16 segment = dos_memory_allocate(TEST_BANK_BYTES * 2U / 16U);
+	/* Native DOS allocation reserves one arena; fixtures partition that arena
+	 * explicitly so preparing a second song cannot overwrite the first. */
+	assert(fixture_offset <= LEGACY_U16_MAX - TEST_FIXTURE_BYTES);
+	legacy_u16 segment =
+		dos_memory_allocate((fixture_offset + TEST_FIXTURE_BYTES) / TEST_PARAGRAPH_BYTES);
 	assert(segment != 0);
-	legacy_u8 *effects = dos_memory_make_pointer(segment, 0);
+	legacy_u8 *effects = dos_memory_make_pointer(segment, fixture_offset);
+	fixture_offset += TEST_FIXTURE_BYTES;
 	legacy_u8 *voices = effects + TEST_BANK_BYTES;
-	memset(effects, 0, TEST_BANK_BYTES * 2U);
+	memset(effects, 0, TEST_FIXTURE_BYTES);
 
 	/* MISS is deliberately absent. PERC selects a percussion bank whose
 	 * individual drum instruments are all absent as well. */
@@ -126,7 +137,7 @@ static struct sequence_fixture make_fixture(legacy_u8 kind, legacy_u8 volume)
 	legacy_u32 song_bytes = 22U + TEST_HEADER_BYTES + 4U + event_bytes;
 	LEGACY_WRITE_U32_LE(effects, 14U + song_bytes);
 	LEGACY_WRITE_U16_LE(effects + 4, 1);
-	memcpy(effects + 6, "TEST", 4);
+	memcpy(effects + 6, name, AUDIO_RESOURCE_ID_LENGTH);
 	LEGACY_WRITE_U32_LE(effects + 10, 0);
 	LEGACY_WRITE_U32_LE(song, song_bytes);
 	LEGACY_WRITE_U16_LE(song + 4, 2);
@@ -142,7 +153,7 @@ static struct sequence_fixture make_fixture(legacy_u8 kind, legacy_u8 volume)
 	LEGACY_WRITE_U32_LE(sequence, 4U + event_bytes);
 	memcpy(sequence + 4, events + skipped, event_bytes);
 
-	assert(init_audio_resources(effects, voices, "TEST") == header);
+	assert(init_audio_resources(effects, voices, name) == header);
 	assert(audio_read_far_pointer(header + 7) == NULL);
 	assert(audio_read_far_pointer(header + 11) == instrument);
 	assert(audio_bass_drum_resource == NULL);
@@ -154,7 +165,7 @@ static void check_missing_note(legacy_u8 kind, legacy_u8 volume, legacy_s32 dire
 {
 	dos_audio_uses_direct_channels = (legacy_u8)direct;
 	audio_reset_channels();
-	struct sequence_fixture fixture = make_fixture(kind, volume);
+	struct sequence_fixture fixture = make_fixture(kind, volume, "TEST");
 	assert(audio_play_effect(fixture.header, TEST_CHANNEL, 64) == TEST_CHANNEL);
 	struct AUDIO_CHANNEL *channel = &audio_channels[TEST_CHANNEL];
 	assert(audio_read_far_pointer((legacy_u8 *)&channel->cursor) == fixture.events);
@@ -209,7 +220,8 @@ static void check_music_start_after_loading(void)
 	dos_audio_uses_direct_channels = 0;
 	audio_reset_channels();
 	audio_music_enabled = AUDIO_STATE_ENABLED;
-	struct sequence_fixture fixture = make_fixture(MISSING_INSTRUMENT, AUDIO_ENGINE_MAX_VOLUME);
+	struct sequence_fixture fixture =
+		make_fixture(MISSING_INSTRUMENT, AUDIO_ENGINE_MAX_VOLUME, "TEST");
 	fixture.header[TEST_RESOURCE_TYPE_OFFSET] = AUDIO_RESOURCE_TYPE_SONG;
 	fixture.events[TEST_FIRST_INSTRUMENT_ARGUMENT_OFFSET] = TEST_TONE_INSTRUMENT;
 	fixture.events[TEST_FIRST_NOTE_DURATION_OFFSET] = TEST_FIRST_NOTE_TICKS;
@@ -254,8 +266,61 @@ static void check_music_start_after_loading(void)
 	}
 }
 
-legacy_int main(void)
+static void check_replacement_music(const legacy_char *fixture_path)
 {
+	dos_audio_uses_direct_channels = 0;
+	audio_music_enabled = AUDIO_STATE_ENABLED;
+	assert(SDL_CreateDirectory(TEST_MUSIC_DIRECTORY));
+	assert(SDL_CopyFile(fixture_path, TEST_MUSIC_PATH));
+	struct sequence_fixture replacement =
+		make_fixture(MISSING_INSTRUMENT, AUDIO_ENGINE_MAX_VOLUME, "TITL");
+	struct sequence_fixture original =
+		make_fixture(MISSING_INSTRUMENT, AUDIO_ENGINE_MAX_VOLUME, "TEST");
+	replacement.header[TEST_RESOURCE_TYPE_OFFSET] = AUDIO_RESOURCE_TYPE_SONG;
+	original.header[TEST_RESOURCE_TYPE_OFFSET] = AUDIO_RESOURCE_TYPE_SONG;
+	struct AUDIO_CHANNEL *channel = &audio_channels[AUDIO_MUSIC_CHANNEL_FIRST];
+
+	/* The resource mapper must select the replacement, including when another
+	 * mapped resource was prepared before playback starts. */
+	load_audio_finalize(replacement.header);
+	/* A replacement can be the first song at startup, before any original
+	 * sequence has initialized its nonzero timer period. */
+	assert(audio_sequence_tick_period > 0);
+	assert(audio_sequence_elapsed_ticks == 0);
+	assert(audio_music_active == AUDIO_STATE_ENABLED);
+	assert(audio_music_channel_count == 0);
+	assert(audio_read_far_pointer((legacy_u8 *)&channel->cursor) == NULL);
+	assert(audio_toggle_music() == 0);
+	audio_suspend();
+	assert(audio_suspended == AUDIO_STATE_ENABLED);
+	assert(audio_toggle_music() == 1);
+	audio_resume();
+	assert(audio_suspended == AUDIO_STATE_DISABLED);
+	mock_time_ms += TEST_TIMER_TICK_MS;
+	sdl3_timer_pump();
+	assert(audio_music_channel_count == 0);
+	assert(audio_read_far_pointer((legacy_u8 *)&channel->cursor) == NULL);
+
+	/* A song without a matching Ogg returns to the original sequence without
+	 * affecting the next replacement or shutting down the shared SDL device. */
+	load_audio_finalize(original.header);
+	assert(audio_music_active == AUDIO_STATE_ENABLED);
+	assert(audio_music_channel_count == 1);
+	assert(audio_read_far_pointer((legacy_u8 *)&channel->cursor) == original.events);
+	load_audio_finalize(replacement.header);
+	assert(audio_music_active == AUDIO_STATE_ENABLED);
+	assert(audio_music_channel_count == 0);
+	assert(audio_read_far_pointer((legacy_u8 *)&channel->cursor) == NULL);
+	audio_stop_music();
+	assert(audio_music_active == AUDIO_STATE_DISABLED);
+	assert(audio_music_channel_count == 0);
+	assert(strcmp(SDL_GetCurrentAudioDriver(), "dummy") == 0);
+	assert(SDL_RemovePath(TEST_MUSIC_PATH));
+}
+
+legacy_int main(legacy_int argc, legacy_char **argv)
+{
+	assert(argc == TEST_EXPECTED_ARGUMENTS);
 	SDL_SetMainReady();
 	dos_timer_setup_interrupt();
 	assert(SDL_SetHintWithPriority(SDL_HINT_AUDIO_DRIVER, "dummy", SDL_HINT_OVERRIDE));
@@ -270,11 +335,12 @@ legacy_int main(void)
 		check_missing_note(UNBOUND_INSTRUMENT, 127, direct);
 		check_missing_note(MISSING_PERCUSSION, 127, direct);
 	}
+	check_replacement_music(argv[1]);
 	check_music_start_after_loading();
 	dos_audio_shutdown();
 	dos_timer_shutdown();
 	SDL_Quit();
-	puts(
-		"SDL3 audio sequences: music starts at its first note and missing instruments are skipped");
+	puts("SDL3 audio sequences: replacement switching, original timing, and missing instruments "
+		 "pass");
 	return 0;
 }

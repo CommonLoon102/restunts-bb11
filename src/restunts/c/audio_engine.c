@@ -12,6 +12,9 @@
 #include "car_audio.h"
 #include "audio_control.h"
 #include "resource_bytes.h"
+#ifdef RESTUNTS_SDL3
+#include "../platform/sdl3/music.h"
+#endif
 
 #define AUDIO_DRIVER_TIMER_RATE 22U
 #define AUDIO_DRIVER_DIRECT_CHANNEL_PERIOD 2
@@ -454,6 +457,9 @@ void audio_unload(void)
 void audio_enable_music(void)
 {
 	audio_music_enabled = AUDIO_STATE_ENABLED;
+#ifdef RESTUNTS_SDL3
+	sdl3_music_sync();
+#endif
 }
 
 void audio_disable_music(void)
@@ -465,6 +471,9 @@ void audio_disable_music(void)
 	}
 	audio_update_driver_contexts();
 	audio_update_lock = AUDIO_UPDATE_UNLOCKED;
+#ifdef RESTUNTS_SDL3
+	sdl3_music_sync();
+#endif
 }
 
 legacy_s16 audio_toggle_music(void)
@@ -497,6 +506,9 @@ legacy_s16 audio_effect_range_idle(void)
 void audio_stop_music(void)
 {
 	audio_update_lock = AUDIO_UPDATE_LOCKED;
+#ifdef RESTUNTS_SDL3
+	sdl3_music_stop();
+#endif
 	audio_music_active = AUDIO_STATE_DISABLED;
 	audio_release_channel_range(AUDIO_MUSIC_CHANNEL_FIRST, AUDIO_MUSIC_CHANNEL_LAST);
 	audio_init_channel_range(AUDIO_MUSIC_CHANNEL_FIRST, AUDIO_MUSIC_CHANNEL_LAST, 0, 0,
@@ -1089,6 +1101,9 @@ void audio_update_driver_contexts(void)
 void audio_suspend(void)
 {
 	audio_suspended = AUDIO_STATE_ENABLED;
+#ifdef RESTUNTS_SDL3
+	sdl3_music_sync();
+#endif
 	audio_update_lock = AUDIO_UPDATE_LOCKED;
 	if (dos_audio_uses_direct_channels != 0) {
 		dos_audio_master_volume = 0;
@@ -1136,6 +1151,9 @@ void audio_resume(void)
 	}
 	audio_update_lock = AUDIO_UPDATE_UNLOCKED;
 	audio_suspended = AUDIO_STATE_DISABLED;
+#ifdef RESTUNTS_SDL3
+	sdl3_music_sync();
+#endif
 }
 
 static legacy_s16 audio_find_free_sfx_channel(void)
@@ -1359,6 +1377,9 @@ void audio_request_context_fade(legacy_s16 index)
 legacy_s16 audio_set_music_channel_volume(legacy_s16 value)
 {
 	legacy_s16 channel;
+#ifdef RESTUNTS_SDL3
+	sdl3_music_set_volume(value);
+#endif
 
 	for (channel = 0; channel < (legacy_u16)audio_music_channel_count; channel++) {
 		dos_audio_set_channel_volume(channel, value);

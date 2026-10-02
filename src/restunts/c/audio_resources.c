@@ -12,6 +12,9 @@
 #include "audio_control.h"
 #include "resource_bytes.h"
 #include "residue.h"
+#ifdef RESTUNTS_SDL3
+#include "../platform/sdl3/music.h"
+#endif
 
 #define AUDIO_DRIVER_PREFIX_LENGTH 14U
 #define AUDIO_PADDED_ID_LENGTH (AUDIO_RESOURCE_ID_LENGTH + 1U)
@@ -734,6 +737,9 @@ void far *init_audio_resources(void far *song, void far *instruments, const lega
 		audio_map_percussion_instruments(instruments);
 	}
 
+#ifdef RESTUNTS_SDL3
+	sdl3_music_register(header, name);
+#endif
 	return header;
 }
 
@@ -750,6 +756,16 @@ void load_audio_finalize(void far *audio_resource)
 	dos_audio_driver_reset();
 	audio_sequence_elapsed_ticks = 0;
 	audio_sequence_tick_period = AUDIO_ENGINE_INITIAL_TICK_STEP;
+#ifdef RESTUNTS_SDL3
+	if (sdl3_music_start(resource)) {
+		audio_music_channel_count = 0;
+		audio_music_active = AUDIO_STATE_ENABLED;
+		audio_update_lock = AUDIO_UPDATE_UNLOCKED;
+		return;
+	}
+	/* File probing and audio-device setup can take time before fallback starts. */
+	dos_audio_driver_reset();
+#endif
 	legacy_u16 data_offset =
 		LEGACY_U16_WRAP_ADD((legacy_u16)((legacy_u16)resource[AUDIO_SONG_INSTRUMENT_COUNT_OFFSET]
 										 << AUDIO_MUSIC_CHANNEL_COUNT_SCALE_SHIFT),

@@ -241,10 +241,12 @@ scales the 1280x800 rendering to the largest available viewport and logs a warni
 Disabling HyperVision restores Mode 13h. High-resolution rendering requires more
 RAM and processing power than the original mode.
 
-Audio writes the real
-AdLib-compatible OPL2 chip at port `388h`, which DOSBox also emulates. An AdLib
-or compatible Sound Blaster FM device is needed for sound. If audio initialization
-fails, the native game reports a warning and continues silently. Desktop builds
+Original music and effects write the real AdLib-compatible OPL2 chip at port
+`388h`, which DOSBox also emulates. An AdLib or compatible Sound Blaster FM device
+is needed for those sounds. Optional Ogg Vorbis music uses SDL's PCM output and
+requires a supported digital-audio device, such as a compatible Sound Blaster.
+If original audio initialization fails, the native game reports a warning and
+continues silently. Desktop builds
 synthesize the same FM registers through
 [Nuked OPL2 Lite](https://github.com/nukeykt/Nuked-OPL2-Lite), licensed under
 LGPL-2.1-or-later, and send PCM to SDL. The library is dynamically linked and
@@ -366,6 +368,45 @@ sound drivers (MT-32, PC speaker, and Sound Blaster sampled-speech paths) are no
 ported. Original DOS16 builds retain their existing driver selection. Native
 sequencing remains on the main thread; SDL only consumes generated PCM, so an
 audio callback cannot race resource loading or freeing.
+
+## Optional Ogg Vorbis music
+
+All SDL3 builds, including 32-bit DOS and WebAssembly, can replace the game's
+four songs with files from `assets/music/`:
+
+| Filename | Song |
+| --- | --- |
+| `titl.ogg` | Title / intro |
+| `slct.ogg` | Selection / main menu |
+| `over.ogg` | Race end |
+| `vict.ogg` | Victory |
+
+Use lowercase filenames and Ogg Vorbis audio with one or two channels at
+8,000–192,000 Hz. Ogg Opus and other codecs are unsupported. Every replacement
+loops from its beginning while its song is active. The existing Options menu
+music toggle, music volume/fades, and audio suspension apply; effects retain
+their original sound. Each missing, unreadable, unsupported, or broken song
+falls back independently to its original music. Original game resources remain
+required. No replacement recordings are supplied.
+
+Native builds search `assets/music/` in the working directory, then beside the
+executable; next they search `music/` in those same two locations, followed by
+the source checkout's `assets/music/` path recorded at build time. `--data-dir`
+sets the working directory to that game-data folder; without it, the startup
+working directory is retained. Installed packages put available replacements in
+`bin/music/`. Files can also be added to
+these native runtime locations after building.
+
+CMake packages whichever named files are present in the source `assets/music/`
+directory. Reconfigure before rebuilding/installing after changing that set.
+Browser builds embed them at `/assets/music/` in the offline HTML and relink kit;
+reconfigure and rebuild after any music-file change. The game-folder picker does
+not import subfolders. See [the asset instructions](../assets/music/README.md).
+
+The bundled stb_vorbis decoder is compiled into the game on every SDL3 target;
+no separate Vorbis library installation is required. Its license is included at
+`share/licenses/restunts/stb-LICENSE`. The 16-bit Open Watcom DOS build keeps its
+original music behavior.
 
 ## Validation and CI
 
