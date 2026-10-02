@@ -64,6 +64,8 @@ legacy_u8 fps_display_enabled;
 static legacy_u8 display_toggle_test, display_scenario, display_target, display_pending;
 static legacy_u8 display_fps_drawn, display_previous_fps, display_refresh_pending;
 static legacy_u8 display_status_active, display_status_expire_pending;
+/* Static menus may show mode notices without using diagnostic drawing/sampling. */
+static legacy_u8 status_only_test;
 static legacy_u32 display_status_draw_count, display_status_expire_count, display_shift_shortcuts;
 static legacy_u32 display_present_count, display_fps_draw_count, display_record_count;
 static legacy_u32 display_reset_count, display_shortcut_count, display_sprite_free_count;
@@ -267,12 +269,18 @@ static void record_preview_copy(void)
 	assert(display_record_count + 1U == display_present_count);
 }
 
-legacy_s16 frame_display_overlay_active(void)
+legacy_s16 frame_status_overlay_active(void)
 {
-	return fps_display_enabled != 0 || display_status_active != 0;
+	return display_status_active != 0;
 }
 
-legacy_s16 frame_fps_expire_idle(void)
+legacy_s16 frame_display_overlay_active(void)
+{
+	assert(status_only_test == 0);
+	return fps_display_enabled != 0 || frame_status_overlay_active() != 0;
+}
+
+legacy_s16 frame_status_expire_idle(void)
 {
 	if (display_status_active != 0 && display_status_expire_pending != 0) {
 		display_status_active = display_status_expire_pending = 0;
@@ -282,13 +290,21 @@ legacy_s16 frame_fps_expire_idle(void)
 	return 0;
 }
 
+legacy_s16 frame_fps_expire_idle(void)
+{
+	assert(status_only_test == 0);
+	return frame_status_expire_idle();
+}
+
 void frame_fps_reset(void)
 {
+	assert(status_only_test == 0);
 	display_reset_count++;
 }
 
 void frame_fps_record_presented(void)
 {
+	assert(status_only_test == 0);
 	completed_frame = 1;
 	if (display_toggle_test != 0) {
 		display_record_count++;
@@ -296,8 +312,18 @@ void frame_fps_record_presented(void)
 	}
 }
 
+struct RECTANGLE *frame_status_draw_text(void)
+{
+	if (frame_status_overlay_active() == 0) {
+		return NULL;
+	}
+	display_status_draw_count++;
+	return &display_fps_bounds;
+}
+
 struct RECTANGLE *frame_fps_draw_text(void)
 {
+	assert(status_only_test == 0);
 	if (frame_display_overlay_active() == 0) {
 		return NULL;
 	}

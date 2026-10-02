@@ -144,13 +144,19 @@ static legacy_s16 frame_supersight_expire_status(legacy_u32 now)
 	return 1;
 }
 
-legacy_s16 frame_display_overlay_active(void)
+legacy_s16 frame_status_overlay_active(void)
 {
 	if (supersight_status_active != 0) {
 		frame_supersight_expire_status(dos_timer_get_realtime_counter());
 	}
-	return fps_display_enabled != 0 || supersight_status_active != 0 ||
-		   supersight_status_clear_frames != 0 || supersight_status_expired_pending != 0;
+	return supersight_status_active != 0 || supersight_status_clear_frames != 0 ||
+		   supersight_status_expired_pending != 0;
+}
+
+legacy_s16 frame_display_overlay_active(void)
+{
+	legacy_s16 status_active = frame_status_overlay_active();
+	return fps_display_enabled != 0 || status_active != 0;
 }
 
 static struct RECTANGLE frame_supersight_status_bounds(void)
@@ -170,6 +176,22 @@ void frame_fps_reset(void)
 	fps_sample_started = 0;
 }
 
+static legacy_s16 frame_status_expire_at(legacy_u32 now)
+{
+	frame_supersight_expire_status(now);
+	return supersight_status_expired_pending != 0 ||
+		   (supersight_status_active == 0 && supersight_status_clear_frames != 0);
+}
+
+legacy_s16 frame_status_expire_idle(void)
+{
+	if (supersight_status_active == 0 && supersight_status_expired_pending == 0 &&
+		supersight_status_clear_frames == 0) {
+		return 0;
+	}
+	return frame_status_expire_at(dos_timer_get_realtime_counter());
+}
+
 legacy_s16 frame_fps_expire_idle(void)
 {
 	legacy_s16 fps_can_expire =
@@ -179,9 +201,7 @@ legacy_s16 frame_fps_expire_idle(void)
 		return 0;
 	}
 	legacy_u32 now = dos_timer_get_realtime_counter();
-	frame_supersight_expire_status(now);
-	legacy_s16 expired = supersight_status_expired_pending != 0 ||
-						 (supersight_status_active == 0 && supersight_status_clear_frames != 0);
+	legacy_s16 expired = frame_status_expire_at(now);
 	if (fps_can_expire != 0 &&
 		LEGACY_U32_WRAP_SUB(now, fps_last_presented) >= DOS_TIMER_REALTIME_TICKS_PER_SECOND) {
 		/* Ask the waiting replay loop to repaint the expired value only once. */
@@ -288,6 +308,31 @@ static legacy_u16 frame_fps_format_number(legacy_s8 *text, legacy_u16 value)
 	return count;
 }
 
+struct RECTANGLE *frame_status_draw_text(void)
+{
+	if (frame_status_overlay_active() == 0) {
+		return &empty_rect;
+	}
+	static struct RECTANGLE bounds;
+	bounds = empty_rect;
+	if (supersight_status_active != 0 || supersight_status_clear_frames != 0) {
+		/* Keep the longest status dirty while drawing and erasing. Replacing a
+		 * long preset name with a short one must not leave trailing letters. */
+		bounds = frame_supersight_status_bounds();
+		if (supersight_status_active != 0) {
+			intro_draw_text(supersight_status_text, REPLAY_TEXT_LEFT_X, SUPERSIGHT_STATUS_Y,
+							dialog_fnt_colour, 0);
+			supersight_status_clear_frames =
+				video_uses_page_flipping != 0 ? SUPERSIGHT_STATUS_RESTORE_PAGES : 1U;
+		} else {
+			supersight_status_clear_frames--;
+		}
+	}
+	/* A visibility query must not consume the waiting loop's cleanup request. */
+	supersight_status_expired_pending = 0;
+	return &bounds;
+}
+
 struct RECTANGLE *frame_fps_draw_text(void)
 {
 	if (frame_display_overlay_active() == 0) {
@@ -318,22 +363,7 @@ struct RECTANGLE *frame_fps_draw_text(void)
 				   &bounds);
 #endif
 	}
-	if (supersight_status_active != 0 || supersight_status_clear_frames != 0) {
-		/* Keep the longest status dirty while drawing and erasing. Replacing a
-		 * long preset name with a short one must not leave trailing letters. */
-		struct RECTANGLE status_bounds = frame_supersight_status_bounds();
-		rect_union(&bounds, &status_bounds, &bounds);
-		if (supersight_status_active != 0) {
-			intro_draw_text(supersight_status_text, REPLAY_TEXT_LEFT_X, SUPERSIGHT_STATUS_Y,
-							dialog_fnt_colour, 0);
-			supersight_status_clear_frames =
-				video_uses_page_flipping != 0 ? SUPERSIGHT_STATUS_RESTORE_PAGES : 1U;
-		} else {
-			supersight_status_clear_frames--;
-		}
-	}
-	/* A visibility query must not consume the waiting loop's cleanup request. */
-	supersight_status_expired_pending = 0;
+	rect_union(&bounds, frame_status_draw_text(), &bounds);
 	return &bounds;
 }
 
