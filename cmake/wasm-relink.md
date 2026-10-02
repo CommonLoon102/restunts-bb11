@@ -1,7 +1,7 @@
 # Relinking the browser game with a modified OPL library
 
-This package supplies the game and SDL WebAssembly objects, original linker
-settings, enhanced artwork, page shell, and the corresponding Nuked OPL2 Lite
+This package supplies the game, SDL and WebM decoder WebAssembly objects,
+original linker settings, enhanced artwork, page shell, and the corresponding Nuked OPL2 Lite
 source under LGPL-2.1-or-later. You may modify the application for your own use
 and reverse engineer it to debug modifications to the LGPL-covered library.
 The game does not check library signatures or prohibit modified replacements.

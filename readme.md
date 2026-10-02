@@ -242,6 +242,15 @@ replacements fall back individually to the originals. Original numbered labels
 and the clipboard frame are preserved. The selected full-resolution sources and
 4x working tiles are archived in `docs/opponents/game-sources/` for regeneration.
 
+In SDL3 builds, you can also supply your own opponent win/lose animations as
+**WebM videos encoded with VP8**. Put `opp1win.webm`, `opp1lose.webm`, through
+`opp6win.webm`, `opp6lose.webm` in `opponents/animations/` in the game data
+folder or beside the executable. Win and lose refer to the opponent's result.
+HyperVision loops each clip in the original result-screen frame, keeping the
+game music; missing or unsupported clips use the original animation. F12 also
+works on this screen. See [custom opponent animations](docs/opponents/README.md#custom-win-and-lose-animations)
+for paths, encoding and 32-bit DOS details.
+
 HyperVision also targets **60 FPS** in SDL3 driving, replay playback, the nighttime
 intro, and rotating car previews. Driving and replay playback interpolate between
 completed physics states. At the normal 20 Hz simulation rate, each new keyframe

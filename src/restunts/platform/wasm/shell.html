@@ -164,6 +164,7 @@
         const SAVE_VERSION = 1;
         const MAX_IMPORT_BYTES = 16 * 1024 * 1024;
         const MAX_GAME_BYTES = 256 * 1024 * 1024;
+        const ANIMATION_DIRECTORY = 'opponents/animations';
         // Use character comparisons: HTML minifiers may unescape regex control ranges.
         const DOS_BASENAME_MAX_LENGTH = 8;
         const DOS_BACKSLASH_CODE = 92;
@@ -189,6 +190,13 @@
             if (!extensions.has(name.slice(separator + 1).toLowerCase())) return false;
             return Array.from(name.slice(0, separator)).every(character =>
                 character >= '!' && character <= '~' && !DOS_RESERVED_CHARACTERS.includes(character));
+        }
+
+        function gameImportPath(path) {
+            const name = path.toLowerCase();
+            if (!name.includes('/') && validFilename(path, GAME_EXTENSIONS)) return name;
+            if (/^opponents\/animations\/opp[1-6](win|lose)\.webm$/.test(name)) return name;
+            return null;
         }
 
         const canvas = document.getElementById('canvas');
@@ -390,9 +398,10 @@
         async function loadGameFiles(files, selectedDirectory) {
             const pending = new Map();
             let totalBytes = 0;
-            for (const file of files) {
-                if (!validFilename(file.name, GAME_EXTENSIONS)) continue;
-                const name = file.name.toLowerCase();
+            for (const entry of files) {
+                const file = entry.file;
+                const name = gameImportPath(entry.path);
+                if (!name) continue;
                 if (pending.has(name)) {
                     const previous = pending.get(name);
                     if (file.size !== previous.size || !sameBytes(new Uint8Array(await file.arrayBuffer()),
@@ -411,10 +420,24 @@
             }
             const contents = new Map();
             for (const [name, file] of pending) contents.set(name, new Uint8Array(await file.arrayBuffer()));
-            for (const name of Module.FS.readdir(DATA_DIRECTORY)) {
-                if (name !== '.' && name !== '..') Module.FS.unlink(DATA_DIRECTORY + '/' + name);
+            function clearDirectory(path) {
+                for (const name of Module.FS.readdir(path)) {
+                    if (name === '.' || name === '..') continue;
+                    const child = path + '/' + name;
+                    if (Module.FS.isDir(Module.FS.stat(child).mode)) {
+                        clearDirectory(child);
+                        Module.FS.rmdir(child);
+                    } else {
+                        Module.FS.unlink(child);
+                    }
+                }
             }
-            for (const [name, bytes] of contents) Module.FS.writeFile(DATA_DIRECTORY + '/' + name, bytes);
+            clearDirectory(DATA_DIRECTORY);
+            for (const [name, bytes] of contents) {
+                const path = DATA_DIRECTORY + '/' + name;
+                Module.FS.mkdirTree(path.slice(0, path.lastIndexOf('/')));
+                Module.FS.writeFile(path, bytes);
+            }
             directoryHandle = selectedDirectory;
             diskNames.clear();
             for (const [name, file] of pending) diskNames.set(name, file.name);
@@ -472,9 +495,18 @@
         async function loadDirectory(selected) {
             status.textContent = 'Reading game files from ' + selected.name + '…';
             const files = [];
-            for await (const entry of selected.values()) {
-                if (entry.kind === 'file' && validFilename(entry.name, GAME_EXTENSIONS)) files.push(await entry.getFile());
+            async function collectDirectory(directory, prefix) {
+                for await (const entry of directory.values()) {
+                    const path = prefix + entry.name;
+                    if (entry.kind === 'file' && gameImportPath(path)) {
+                        files.push({ file: await entry.getFile(), path });
+                    } else if (entry.kind === 'directory' &&
+                        (path.toLowerCase() === 'opponents' || path.toLowerCase() === ANIMATION_DIRECTORY)) {
+                        await collectDirectory(entry, path + '/');
+                    }
+                }
             }
+            await collectDirectory(selected, '');
             await loadGameFiles(files, selected);
             rememberedDirectory = selected;
             openFolder.textContent = 'Change game folder';
@@ -547,8 +579,9 @@
             setLoading(true);
             status.textContent = 'Reading game files from your folder…';
             try {
-                // Ignore subfolders, executables, and this HTML.
-                const files = Array.from(gameFiles.files).filter(file => file.webkitRelativePath.split('/').length === 2);
+                // Import only immediate game resources and supported opponent animations.
+                const files = Array.from(gameFiles.files).map(file => ({ file,
+                    path: file.webkitRelativePath.split('/').slice(1).join('/') }));
                 await loadGameFiles(files, null);
                 restoreFolder.hidden = true;
                 saveControls.hidden = false;

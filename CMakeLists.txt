@@ -123,7 +123,7 @@ set(game_sources
     restunts.c command_line.c fatal.c timing.c game_input.c ui_text.c ui_input.c ui_dialog.c
     intro.c highscore.c replay_record.c replay_viewer.c race.c ghost.c
     race_resources.c dashboard.c menu_common.c menu_main.c menu_options.c
-    menu_track.c menu_track_editor.c menu_opponent.c opponent_portrait.c menu_background.c
+    menu_track.c menu_track_editor.c menu_opponent.c opponent_portrait.c opponent_animation.c menu_background.c
     menu_car.c audio_engine.c
     audio_resources.c audio_car.c audio_sequence.c shape3d.c shape3d_resources.c
     shape3d_car.c shape3d_prerender.c shape3d_lines.c shape2d.c shape2d_blit.c
@@ -158,6 +158,9 @@ if(NOT CMAKE_SYSTEM_NAME STREQUAL "DOS")
     add_library(restunts_opl ALIAS nuked_opl2)
 endif()
 
+# The portable VP8/WebM decoder is a separate static archive for browser relinking.
+include(cmake/webm.cmake)
+
 # Keep the decoder objects in the application archive, including browser relink kits.
 add_library(restunts_vorbis OBJECT third_party/stb/stb_vorbis.c)
 target_compile_definitions(restunts_vorbis PRIVATE STB_VORBIS_NO_PUSHDATA_API)
@@ -176,7 +179,7 @@ target_compile_definitions(restunts_game PRIVATE RESTUNTS_FULL
     RESTUNTS_SKYBOX_DIRECTORY="${restunts_asset_directory}/skyboxes"
     RESTUNTS_OPPONENT_DIRECTORY="${restunts_asset_directory}/opponents"
     RESTUNTS_MUSIC_DIRECTORY="${restunts_asset_directory}/music")
-target_link_libraries(restunts_game PUBLIC restunts_options)
+target_link_libraries(restunts_game PUBLIC restunts_options PRIVATE restunts_webm)
 if(TARGET restunts_opl)
     target_link_libraries(restunts_game PRIVATE restunts_opl)
 endif()
@@ -234,12 +237,18 @@ foreach(background IN LISTS menu_backgrounds)
 endforeach()
 if(CMAKE_SYSTEM_NAME STREQUAL "DOS")
     set(restunts_opponent_install_directory opponent)
+    set(restunts_animation_install_directory opponent/anim)
 else()
     set(restunts_opponent_install_directory opponents)
+    set(restunts_animation_install_directory opponents/animations)
 endif()
 foreach(opponent RANGE 1 6)
     install(FILES "assets/opponents/game/opp${opponent}.png"
         DESTINATION bin/${restunts_opponent_install_directory}/game COMPONENT Runtime)
+    foreach(outcome win lose)
+        install(FILES "assets/opponents/animations/opp${opponent}${outcome}.webm"
+            DESTINATION bin/${restunts_animation_install_directory} COMPONENT Runtime OPTIONAL)
+    endforeach()
 endforeach()
 set(skybox_themes desert tropical alpine city country)
 set(skybox_images scen sce2 sce3 sce4)
@@ -463,6 +472,14 @@ if(RESTUNTS_BUILD_TESTS)
     add_test(NAME opponent-portrait COMMAND test-opponent-portrait)
     set_tests_properties(opponent-portrait PROPERTIES
         WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/opponent-test")
+    add_executable(test-opponent-animation src/restunts/tests/test-opponent-animation.c)
+    target_link_libraries(test-opponent-animation PRIVATE restunts_options restunts_webm)
+    target_compile_options(test-opponent-animation PRIVATE -UNDEBUG)
+    file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/opponent-animation-test")
+    add_test(NAME opponent-animation COMMAND test-opponent-animation
+        "${CMAKE_SOURCE_DIR}/src/restunts/tests/fixtures/opponent-animation")
+    set_tests_properties(opponent-animation PROPERTIES
+        WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/opponent-animation-test")
     add_executable(test-menu-background src/restunts/tests/test-menu-background.c
         ${core}/menu_background.c ${core}/hires.c ${core}/render_workers.c ${platform}/memory.c ${platform}/asset_path.c)
     target_link_libraries(test-menu-background PRIVATE restunts_options)
