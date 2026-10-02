@@ -66,9 +66,14 @@
       ],
       "original_png_sha256": "4dcaac2c53c92d4e0f376a5d88086baaaefa98f8cba3c77c9d44636fd207ea99",
       "generated_restoration_sha256": "373e145ac37de4f86126fed0dd6a7127975514ba2a63150fb27590b2dfbd6a6a",
-      "working_png_sha256": "e51ac205fe7982bf6dd351201df7420e5cf8259278c66ede93ba6b5c47c77ed9",
-      "sha256": "b182948e6377c3dc4d9744aae99d9446cb082f824ee40cd56163b76a9ab7df98",
-      "pixels_sha256": "8f88d533b1113897503aece33e5d74b494cb377ce778788b3caaeca90baa286b"
+      "working_png_sha256": "57bba343675cc4c4516faf4cd8b21f963effd17b4723a0bdd4bc6ad82d042ffa",
+      "sha256": "aaef3bfa4aae1ff77fbf2f19af5f6f9536df80d3bfbd5f2ba3f80ab834d1d314",
+      "pixels_sha256": "77c0a788c17bb713df21fcfa2ec212f9bc7e3770231de377fea32a448411d3f6",
+      "patch": {
+        "base_working_pixels_sha256": "f47909e2f9f7a18c1854d89b774c4f672522db23c8282ac1c2f0b96b47d75936",
+        "patch_file": "docs/menus/sources/patches/showroom-corrections.png",
+        "patch_sha256": "c2f7b33c69661a982e26a1f2f075eac87b4741b9e87fb661e2d704455bfd3bb2"
+      }
     },
     {
       "file": "opponent.png",
@@ -91,9 +96,14 @@
       ],
       "original_png_sha256": "cf38a7cd0df8f74b09a02b1fdbafb6844e4f36aa507639244f90a8d06578bde1",
       "generated_restoration_sha256": "b7fb72d1a8ce6d48ff76fdc2d2a95ddc53b109e5c4001b8bc7d5e5d06b61b085",
-      "working_png_sha256": "828d2eb61320c37b5149eccae452e4c1c9b2f388dfac1ef680653b0cc1a98b42",
-      "sha256": "d1b6ba5b3e854a6f4be07c45810520a971e79c236867adb18a3ec25c135eb8eb",
-      "pixels_sha256": "68fbed09f5b7976640d131b6e0a77dad0296060961077c0edbdc71519c2191e4"
+      "working_png_sha256": "a79cc938b73a2c880065c5d39b24a704de5e79528b869e8d1f3c28e5c6ce9bee",
+      "sha256": "69dc39b439d9409038646b13aff599cb2c05164f61d49bc1bf71fc714130dabe",
+      "pixels_sha256": "033ad27e469d964e67f5065840cd4bffd8879e4bb5b5a36fa59e5eeb4c6f0ed8",
+      "patch": {
+        "base_working_pixels_sha256": "7bc1528135dfda1d71e4c790dcef6d2053e0bc56c7454ce021da2c190df934e6",
+        "patch_file": "docs/menus/sources/patches/opponent-corrections.png",
+        "patch_sha256": "f20ab5f716e2e58079bb4c332ad4dee994d859c9fb096f9b3d188f82af928862"
+      }
     }
   ]
 }

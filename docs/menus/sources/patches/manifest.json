@@ -4,6 +4,16 @@
       "base_working_pixels_sha256": "91f6cca373678ef39eec16b61d1025190f2c7fbef37e077ca6877d7082f51a7f",
       "patch_file": "main-corrections.png",
       "patch_sha256": "b98047ab140d028987f45e608da4438bc0fa4871a926a84d4f1817127f9e2a63"
+    },
+    "showroom.png": {
+      "base_working_pixels_sha256": "f47909e2f9f7a18c1854d89b774c4f672522db23c8282ac1c2f0b96b47d75936",
+      "patch_file": "showroom-corrections.png",
+      "patch_sha256": "c2f7b33c69661a982e26a1f2f075eac87b4741b9e87fb661e2d704455bfd3bb2"
+    },
+    "opponent.png": {
+      "base_working_pixels_sha256": "7bc1528135dfda1d71e4c790dcef6d2053e0bc56c7454ce021da2c190df934e6",
+      "patch_file": "opponent-corrections.png",
+      "patch_sha256": "f20ab5f716e2e58079bb4c332ad4dee994d859c9fb096f9b3d188f82af928862"
     }
   }
 }

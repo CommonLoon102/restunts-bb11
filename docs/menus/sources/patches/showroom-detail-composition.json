@@ -1,0 +1,60 @@
+{
+  "base_file": "docs/menus/sources/full-resolution/showroom.png (nearest-neighbor normalized to working dimensions)",
+  "base_working_pixels_sha256": "f47909e2f9f7a18c1854d89b774c4f672522db23c8282ac1c2f0b96b47d75936",
+  "patch_file": "showroom-corrections.png",
+  "patch_sha256": "c2f7b33c69661a982e26a1f2f075eac87b4741b9e87fb661e2d704455bfd3bb2",
+  "donor_file": "showroom-shadow-source.png",
+  "donor_sha256": "8a97df68af7284061eada61dabaca115d621dc1cb47d1fc852f4d9fbabc8c562",
+  "donor_size": [
+    1392,
+    1130
+  ],
+  "donor_crop_in_working": [
+    920,
+    120,
+    1280,
+    412
+  ],
+  "donor_normalized_size": [
+    360,
+    292
+  ],
+  "normalization": "Nearest neighbor",
+  "working_size": [
+    1280,
+    412
+  ],
+  "regions": {
+    "right_curtain_and_podium_shadow": [
+      936,
+      144,
+      1192,
+      308
+    ],
+    "hanging_curtain_shadow": [
+      1152,
+      296,
+      1192,
+      380
+    ]
+  },
+  "mask_selection": "Inside either region, both original and donor RGB satisfy R >= 8, R >= 3*G and R >= 3*B.",
+  "mask_feather_pixels": 12,
+  "mask_feather": "Linear alpha at upper region left/top/bottom edges and lower region left/bottom edges; union uses maximum alpha. No feather across material boundaries.",
+  "mask_pixel_count": 13498,
+  "changed_pixel_count": 13452,
+  "source_red_donor_nonred_excluded_count": 54,
+  "mask_bounds": [
+    968,
+    160,
+    1187,
+    380
+  ],
+  "outside_mask_changed_pixels": 0,
+  "non_red_source_changed_pixels": 0,
+  "composition": "Alpha composite verified donor carpet pixels over original working image; all other artwork unchanged.",
+  "palette_preview": "Nearest neighbor to 640x206, then original palette without dithering.",
+  "composited_working_pixels_sha256": "b9a01f701d736e5bc2ece654b0a44763eeea24b58d9751e6b2be3f0e71b38d75",
+  "final_changed_pixel_count": 2929,
+  "final_outside_reduced_mask_changed_pixels": 0
+}
