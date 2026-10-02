@@ -32,8 +32,9 @@ Use the same CPU architecture and compatible public API and structure layouts.
 The game does not check library signatures or prohibit modified replacements.
 
 Browser packages include the same library source and license, plus a standalone
-relink kit in share/restunts/wasm-relink/. It contains the application and SDL
-object/archive files, enhanced artwork, HTML shell, and build instructions needed
+relink kit in share/restunts/wasm-relink/. It contains the application, WebM
+decoder and SDL object/archive files, enhanced artwork, HTML shell, and build
+instructions needed
 to relink the application with a modified Nuked library using the recorded
 Emscripten SDK. No original game data is included or needed to relink. Keep the
 complete kit with a redistributed browser package, even though only the HTML is
@@ -51,6 +52,21 @@ All SDL3 builds include this Ogg Vorbis decoder under its MIT license option.
 See the complete license in share/licenses/restunts/stb-LICENSE (or LICENSE
 beside its source in third_party/stb). The decoder is unmodified apart from
 working-tree line endings. The unused push-data API is disabled when compiling.
+
+libvpx and nestegg
+------------------
+The SDL3 builds decode external WebM VP8 opponent animations with libvpx 1.17.0
+(BSD-3-Clause) and Mozilla nestegg (ISC).
+libvpx source: https://github.com/webmproject/libvpx/tree/v1.17.0
+nestegg source: https://github.com/mozilla/nestegg/tree/767aab25013acefbdcc6d68a2a7a2c9081303e3f
+
+Copyright (c) 2010, The WebM Project authors. All rights reserved.
+Copyright (c) 2010, Mozilla Foundation.
+Complete licenses and the additional WebM patent grant are installed as
+share/licenses/restunts/libvpx-LICENSE, libvpx-PATENTS and nestegg-LICENSE.
+The upstream sources are unmodified; only the portable VP8 decoder is built,
+without encoders, VP9, assembly, threads or external codec dependencies.
+The generated libvpx configuration is in third_party/libvpx-config/.
 
 SDL3
 ----

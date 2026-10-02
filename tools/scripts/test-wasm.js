@@ -39,7 +39,10 @@ const FIRST_FOLDER = 'remembered-first';
 const SECOND_FOLDER = 'remembered-second';
 // Native resource loaders accept expanded shapes and compressed songs, voices and effects.
 const RESOURCE_IMPORT_NAMES = ['SDGAME2.ESH', 'ALPINE.XvS', 'SKIDSLCT.PKM', 'ADENG1.PVC', 'GEENG.PSF'];
-const IGNORED_IMPORT_NAMES = ['SETUP.EXE', 'restunts.html'];
+const ANIMATION_IMPORT_NAMES = ['Opponents/Animations/Opp1Win.WebM', 'opponents/animations/opp2lose.webm'];
+const IGNORED_IMPORT_NAMES = ['SETUP.EXE', 'restunts.html', 'opp1win.webm',
+    'opponents/animations/opp7win.webm', 'opponents/animations/opp1win.mp4',
+    'opponents/other/opp1win.webm', 'unrelated/MAIN.RES'];
 
 function options() {
     const result = { html: DEFAULT_HTML, output: DEFAULT_OUTPUT, browser: 'chromium', headed: false };
@@ -194,22 +197,23 @@ async function exerciseExitFeedback(context, settings, report) {
 async function exerciseDirectSaving(context, settings, report) {
     const page = await context.newPage();
     page.on('pageerror', error => report.errors.push(String(error)));
-    await page.addInitScript(({ resourceNames, ignoredNames, fixtureBytes }) => {
+    await page.addInitScript(({ resourceNames, animationNames, ignoredNames, fixtureBytes }) => {
         // Model the granted directory in memory. Never write into the user's data folder.
         const initialBytes = [1, 2, 3];
         const files = new Map(['MAIN.RES', 'FONTDEF.FNT', 'FONTN.FNT', 'MiXeD.HIG']
             .map(name => [name, Uint8Array.from(initialBytes)]));
-        for (const name of resourceNames.concat(ignoredNames)) {
+        for (const name of resourceNames.concat(animationNames, ignoredNames)) {
             files.set(name, Uint8Array.from(fixtureBytes));
         }
         window.testDirectory = files;
         window.testWriteFailure = false;
         window.testAbortedWrites = 0;
         window.testDiskOperations = [];
-        function fileHandle(name) {
+        function fileHandle(name, prefix = '') {
+            const key = prefix + name;
             return {
                 kind: 'file', name,
-                async getFile() { return new File([files.get(name)], name); },
+                async getFile() { return new File([files.get(key)], name); },
                 async createWritable() {
                     let pending;
                     return {
@@ -219,18 +223,27 @@ async function exerciseDirectSaving(context, settings, report) {
                             }
                             pending = Uint8Array.from(bytes);
                         },
-                        async close() { files.set(name, pending); },
+                        async close() { files.set(key, pending); },
                         async abort() { window.testAbortedWrites++; }
                     };
                 }
             };
         }
-        window.showDirectoryPicker = async options => {
-            window.testPickerOptions = options;
+        function directoryHandle(name, prefix = '') {
             return {
-                kind: 'directory', name: 'test-directory',
+                kind: 'directory', name,
                 async *values() {
-                    for (const name of files.keys()) { yield fileHandle(name); }
+                    const children = new Set();
+                    for (const key of files.keys()) {
+                        if (!key.startsWith(prefix)) continue;
+                        const relative = key.slice(prefix.length);
+                        const separator = relative.indexOf('/');
+                        const child = separator < 0 ? relative : relative.slice(0, separator);
+                        if (children.has(child)) continue;
+                        children.add(child);
+                        yield separator < 0 ? fileHandle(child, prefix) :
+                            directoryHandle(child, prefix + child + '/');
+                    }
                 },
                 async getFileHandle(name) {
                     window.testDiskOperations.push('open:' + name);
@@ -241,9 +254,13 @@ async function exerciseDirectSaving(context, settings, report) {
                     if (!files.delete(name)) { throw new DOMException('Missing', 'NotFoundError'); }
                 }
             };
+        }
+        window.showDirectoryPicker = async options => {
+            window.testPickerOptions = options;
+            return directoryHandle('test-directory');
         };
-    }, { resourceNames: RESOURCE_IMPORT_NAMES, ignoredNames: IGNORED_IMPORT_NAMES,
-        fixtureBytes: Array.from(SAVE_BYTES) });
+    }, { resourceNames: RESOURCE_IMPORT_NAMES, animationNames: ANIMATION_IMPORT_NAMES,
+        ignoredNames: IGNORED_IMPORT_NAMES, fixtureBytes: Array.from(SAVE_BYTES) });
     try {
         await page.goto(pathToFileURL(settings.html).href, { timeout: READY_TIMEOUT_MS });
         assert.deepEqual(report.errors, [], 'Browser startup failed');
@@ -266,7 +283,8 @@ async function exerciseDirectSaving(context, settings, report) {
                     Array.from(Module.FS.readFile(filename)) : null };
             }),
             ignored: ignoredNames.filter(name => Module.FS.analyzePath(directory + '/' + name.toLowerCase()).exists)
-        }), { directory: DATA_DIRECTORY, resourceNames: RESOURCE_IMPORT_NAMES, ignoredNames: IGNORED_IMPORT_NAMES });
+        }), { directory: DATA_DIRECTORY, resourceNames: RESOURCE_IMPORT_NAMES.concat(ANIMATION_IMPORT_NAMES),
+            ignoredNames: IGNORED_IMPORT_NAMES });
         for (const resource of importedResources.resources) {
             assert.deepEqual(resource.bytes, Array.from(SAVE_BYTES),
                 'Folder import must preserve supported resource ' + resource.name);
@@ -328,6 +346,62 @@ async function exerciseDirectSaving(context, settings, report) {
         report.directSaving = true;
         report.directSavingCasePreserved = true;
         report.directSavingFailureRecovery = true;
+        // Changing folders must remove optional assets from the previous selection.
+        await page.evaluate(names => names.forEach(name => window.testDirectory.delete(name)), ANIMATION_IMPORT_NAMES);
+        await page.locator('#open-folder').click();
+        await page.waitForFunction(() => !document.getElementById('open-folder').disabled);
+        assert.equal(await page.evaluate(directory => Module.FS.analyzePath(directory).exists,
+            DATA_DIRECTORY + '/opponents'), false, 'Folder changes must clear previous animation directories');
+        report.animationDirectImports = true;
+    } finally {
+        await page.close();
+    }
+}
+
+async function exerciseReadOnlyAnimationImports(context, settings, report) {
+    const page = await context.newPage();
+    page.on('pageerror', error => report.errors.push(String(error)));
+    await page.addInitScript(() => { window.showDirectoryPicker = undefined; });
+    async function selectFiles(extra) {
+        await page.evaluate(({ extra, bytes }) => {
+            const entries = ['MAIN.RES', 'FONTDEF.FNT', 'FONTN.FNT']
+                .map(path => ({ path, bytes })).concat(extra);
+            const files = entries.map(entry => {
+                const file = new File([Uint8Array.from(entry.bytes)], entry.path.split('/').pop());
+                Object.defineProperty(file, 'webkitRelativePath', { value: 'selected/' + entry.path });
+                return file;
+            });
+            const input = document.getElementById('game-files');
+            Object.defineProperty(input, 'files', { configurable: true, value: files });
+            input.dispatchEvent(new Event('change'));
+        }, { extra, bytes: Array.from(SAVE_BYTES) });
+        await page.waitForFunction(() => !document.getElementById('game-files').disabled);
+    }
+    try {
+        await page.goto(pathToFileURL(settings.html).href, { timeout: READY_TIMEOUT_MS });
+        await page.waitForFunction(() => !document.getElementById('game-files').disabled,
+            null, { timeout: READY_TIMEOUT_MS });
+        const animationPath = ANIMATION_IMPORT_NAMES[0].toLowerCase();
+        const animation = { path: ANIMATION_IMPORT_NAMES[0], bytes: Array.from(SAVE_BYTES) };
+        await selectFiles([animation, { ...animation, path: animationPath },
+            ...IGNORED_IMPORT_NAMES.map(path => ({ path, bytes: animation.bytes }))]);
+        assert.match(await page.locator('#status').innerText(), /^Loaded 4 game files/);
+        const imported = await page.evaluate(({ directory, name, ignored }) => ({
+            bytes: Array.from(Module.FS.readFile(directory + '/' + name)),
+            ignored: ignored.filter(path => Module.FS.analyzePath(directory + '/' + path.toLowerCase()).exists)
+        }), { directory: DATA_DIRECTORY, name: animationPath, ignored: IGNORED_IMPORT_NAMES });
+        assert.deepEqual(imported.bytes, animation.bytes);
+        assert.deepEqual(imported.ignored, [], 'Read-only folders must ignore unsupported nested assets');
+        await selectFiles([animation, { path: animationPath, bytes: [1] }]);
+        assert.match(await page.locator('#status').innerText(), /^Folder loading failed: Conflicting game filenames/);
+        assert.deepEqual(await page.evaluate(path => Array.from(Module.FS.readFile(path)),
+            DATA_DIRECTORY + '/' + animationPath), animation.bytes,
+            'Conflicting animation filenames must preserve the previous complete folder');
+        await selectFiles([]);
+        assert.match(await page.locator('#status').innerText(), /^Loaded 3 game files/);
+        assert.equal(await page.evaluate(directory => Module.FS.analyzePath(directory).exists,
+            DATA_DIRECTORY + '/opponents'), false);
+        report.animationReadOnlyImports = true;
     } finally {
         await page.close();
     }
@@ -715,6 +789,7 @@ async function main() {
         }
         await exerciseExitFeedback(context, settings, report);
         await exerciseDirectSaving(context, settings, report);
+        await exerciseReadOnlyAnimationImports(context, settings, report);
         await exerciseRememberedFolders(context, settings, report);
         assert.deepEqual(report.errors, [], 'Browser errors or external resource requests occurred');
         report.passed = true;

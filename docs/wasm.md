@@ -52,8 +52,13 @@ needed. The HTML's location does not determine where the game looks for data.
 when you play from a website. Selecting a folder gives the game local access to
 its files; it does not send them to the hosting server.
 
-Only immediate game files are loaded; subfolders, executables, and the HTML are
-ignored. Filenames are resolved case-insensitively. Identical files differing
+Immediate game files and custom opponent animations in
+`opponents/animations/opp1win.webm` through `opp6win.webm`, or `opp1lose.webm`
+through `opp6lose.webm`, are loaded. Animation names describe the opponent's
+result. Use WebM with VP8 video; animations play silently while HyperVision is
+on, keeping the game's music. Missing or unusable clips retain the original
+animation. Other subfolders, executables, and the HTML are ignored.
+Filenames are resolved case-insensitively. Identical files differing
 only in case are accepted; conflicting contents report an error. The selected
 folder must contain the original game resources, including `MAIN.RES` (or
 `MAIN.PRE`), `FONTDEF.FNT`, and `FONTN.FNT`. Other missing resources are reported by

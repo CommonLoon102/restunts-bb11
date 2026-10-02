@@ -139,3 +139,51 @@ continues to draw its original number, border and clipboard over the photograph.
 CMake runtime installation copies only the final six prepared PNGs to
 `bin/opponents/game/`. The archived photographs and working tiles are for future
 edits and regeneration. No extra original game resource files are required.
+
+## Custom win and lose animations
+
+SDL3 builds can replace each opponent's result-screen animation with a silent
+**WebM video using the VP8 codec** while HyperVision is enabled. Put your files
+in `opponents/animations/` inside the original game data directory, or beside
+the executable:
+
+```text
+opponents/
+  animations/
+    opp1win.webm
+    opp1lose.webm
+    opp2win.webm
+    opp2lose.webm
+    ...
+    opp6win.webm
+    opp6lose.webm
+```
+
+The number uses the same opponent mapping as the portraits above. `win` and
+`lose` describe **the opponent's result**: `opp1win.webm` plays when Bernie beats
+you, and `opp1lose.webm` plays when you beat Bernie. You can replace any subset
+of these twelve clips. Neutral results continue to use the original artwork.
+
+The search order is the game data directory, the executable directory, then
+this checkout's `assets/opponents/animations/`. On 32-bit DOS, use the shorter
+`opponent/anim/` directory instead. The `.webm` extension requires long-filename
+support there (for example, DOSBox-X with `lfn=true`). The 16-bit DOS build keeps
+the original animations.
+
+A clip loops at its recorded frame timing inside the original animation frame;
+it is stretched to that frame's width and height. Keep the same proportions as
+the original VGA artwork to avoid distortion. The existing border, result text,
+buttons and game music are preserved, and video audio is ignored. **F12** also
+switches HyperVision while the result screen is open. Missing, unreadable or
+unsupported clips fall back to the original animation.
+
+For example, with an FFmpeg build that includes the VP8 encoder:
+
+```sh
+ffmpeg -i my-animation.mp4 -an -c:v libvpx -pix_fmt yuv420p opp1win.webm
+```
+
+The `.webm` extension alone does not select the codec: VP9 and AV1 video are
+unsupported. Clips may be at most 2048 pixels wide or tall, 60 seconds long,
+and 32 MiB in file size. Original game resources are still required for the
+fallback, layout and result text.

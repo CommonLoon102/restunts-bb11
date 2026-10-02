@@ -13,6 +13,13 @@ endforeach()
 foreach(opponent RANGE 1 6)
     configure_file("${CMAKE_SOURCE_DIR}/assets/opponents/game/opp${opponent}.png"
         "${restunts_web_assets}/assets/opponents/game/opp${opponent}.png" COPYONLY)
+    foreach(outcome win lose)
+        set(animation "opp${opponent}${outcome}.webm")
+        if(EXISTS "${CMAKE_SOURCE_DIR}/assets/opponents/animations/${animation}")
+            configure_file("${CMAKE_SOURCE_DIR}/assets/opponents/animations/${animation}"
+                "${restunts_web_assets}/assets/opponents/animations/${animation}" COPYONLY)
+        endif()
+    endforeach()
 endforeach()
 
 foreach(background IN LISTS menu_backgrounds)
@@ -38,7 +45,7 @@ install(FILES "${SDL3_SOURCE_DIR}/LICENSE.txt"
     DESTINATION share/licenses/restunts RENAME SDL-LICENSE.txt COMPONENT Runtime)
 
 # The browser cannot replace a shared library. Ship the application objects,
-# SDL archive, linker inputs and exact OPL source so users can relink instead.
+# SDL/WebM archives, linker inputs and exact OPL source so users can relink instead.
 set(restunts_relink_directory share/restunts/wasm-relink)
 configure_file(cmake/wasm-relink.CMakeLists.txt.in
     "${CMAKE_CURRENT_BINARY_DIR}/wasm-relink/CMakeLists.txt" @ONLY)
@@ -54,6 +61,8 @@ install(FILES "${CMAKE_CURRENT_BINARY_DIR}/wasm-relink/CMakeLists.txt"
     DESTINATION ${restunts_relink_directory} COMPONENT Runtime)
 install(FILES "$<TARGET_FILE:restunts_game>"
     DESTINATION ${restunts_relink_directory}/lib RENAME librestunts_game.a COMPONENT Runtime)
+install(FILES "$<TARGET_FILE:restunts_webm>"
+    DESTINATION ${restunts_relink_directory}/lib RENAME librestunts_webm.a COMPONENT Runtime)
 install(FILES "$<TARGET_FILE:SDL3::SDL3>"
     DESTINATION ${restunts_relink_directory}/lib RENAME libSDL3.a COMPONENT Runtime)
 install(FILES $<TARGET_OBJECTS:restunts_entry>

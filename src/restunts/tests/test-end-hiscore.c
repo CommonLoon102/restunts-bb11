@@ -21,6 +21,11 @@
 #include "../c/menu_common.h"
 #include "../c/externs.h"
 #include "../c/keyboard.h"
+#ifdef RESTUNTS_SDL3
+#include "../c/hires.h"
+#include "../c/opponent_animation.h"
+#include "../c/shape2d_internal.h"
+#endif
 
 #undef printf
 
@@ -35,6 +40,82 @@ static legacy_u8 fixture_sequence[] = {1, 2, 3, 0};
 static struct SHAPE2D fixture_shapes[4];
 static struct SPRITE fixture_sprites[4];
 static struct HIGHSCORE_ENTRY fixture_scores[HIGHSCORE_ENTRY_COUNT];
+
+#ifdef RESTUNTS_SDL3
+#define FIXTURE_ANIMATION_WIDTH 30U
+#define FIXTURE_ANIMATION_WIDTH_VARIANTS 4U
+#define FIXTURE_ANIMATION_HEIGHT 12
+#define FIXTURE_ANIMATION_RIGHT 312
+#define FIXTURE_ANIMATION_TOP 43
+#define FIXTURE_DECODE_FAILURE_DRAW 3U
+#define FIXTURE_SHORTCUT_COUNT 3U
+
+static legacy_u8 movie_available, display_shortcuts, hires_active;
+static legacy_u8 movie_loaded, movie_won, movie_drawn, fallback_pending;
+static legacy_u32 movie_draws, movie_unloads, original_draws, previous_original_draws;
+static legacy_u32 fallback_restorations, movie_draws_between_originals, display_shortcut_count;
+static legacy_u32 movie_failure_draw;
+
+legacy_s32 hires_enabled(void)
+{
+	return hires_active;
+}
+
+void opponent_animation_load(legacy_u8 opponent, legacy_u8 won)
+{
+	assert(movie_loaded == 0);
+	assert(opponent == (legacy_u8)gameconfig.game_opponenttype);
+	assert(gState_total_finish_time != 0 || gState_opponent_finish_time != 0);
+	legacy_u8 expected_win =
+		gState_opponent_finish_time != 0 &&
+		(gState_total_finish_time == 0 ||
+		 (legacy_u16)gState_opponent_finish_time < (legacy_u16)gState_total_finish_time);
+	assert(won == expected_win);
+	movie_loaded = 1;
+	movie_won = won;
+}
+
+void opponent_animation_unload(void)
+{
+	assert(fallback_pending == 0);
+	movie_unloads++;
+}
+
+legacy_s32 opponent_animation_draw(const struct SPRITE *target, legacy_s16 x, legacy_s16 y,
+								   legacy_s16 width, legacy_s16 height)
+{
+	assert(movie_loaded != 0);
+	assert(target == &drawing_sprite);
+	assert((legacy_u16)width ==
+		   (FIXTURE_ANIMATION_WIDTH + scenario % FIXTURE_ANIMATION_WIDTH_VARIANTS) *
+			   video_shape_width_scale);
+	assert(height == FIXTURE_ANIMATION_HEIGHT);
+	assert(x == FIXTURE_ANIMATION_RIGHT - width && y == FIXTURE_ANIMATION_TOP);
+	if (movie_draws != 0 && original_draws == previous_original_draws) {
+		movie_draws_between_originals++;
+	}
+	previous_original_draws = original_draws;
+	movie_draws++;
+	legacy_u8 drawn = movie_available != 0 && hires_active != 0 &&
+					  (movie_failure_draw == 0 || movie_draws < movie_failure_draw);
+	if (movie_drawn != 0 && drawn == 0 && hires_active != 0) {
+		fallback_pending = 1;
+	}
+	movie_drawn = drawn;
+	return drawn;
+}
+
+legacy_s16 handle_ingame_kb_shortcuts(legacy_s16 key)
+{
+	assert(key == KEY_F12 || key == KEY_SHIFT_F12);
+	hires_active = key == KEY_F12 ? !hires_active : 1;
+	if (hires_active == 0) {
+		movie_drawn = 0;
+	}
+	display_shortcut_count++;
+	return 1;
+}
+#endif
 
 static void trace_word(legacy_u16 value)
 {
@@ -333,6 +414,12 @@ legacy_s16 get_super_random(void)
 
 legacy_s16 input_checking(legacy_s16 frame_delta)
 {
+#ifdef RESTUNTS_SDL3
+	assert(fallback_pending == 0);
+	if (display_shortcuts != 0 && display_shortcut_count < FIXTURE_SHORTCUT_COUNT) {
+		return display_shortcut_count < FIXTURE_SHORTCUT_COUNT - 1U ? KEY_F12 : KEY_SHIFT_F12;
+	}
+#endif
 	trace_word(1026);
 	trace_word((legacy_u16)frame_delta);
 	static const legacy_u16 keys[] = {KEY_LEFT, KEY_RIGHT, 0, KEY_ENTER};
@@ -430,6 +517,13 @@ legacy_u16 shape2d_get_width(const struct SHAPE2D *shape)
 
 void shape2d_rle_copy(struct SHAPE2D *shape, legacy_s16 x, legacy_s16 y)
 {
+#ifdef RESTUNTS_SDL3
+	original_draws++;
+	if (fallback_pending != 0) {
+		fallback_pending = 0;
+		fallback_restorations++;
+	}
+#endif
 	trace_word(1038);
 	trace_pointer(shape);
 	trace_word((legacy_u16)x);
@@ -577,6 +671,12 @@ static void initialize_score_fixture(legacy_u32 index)
 
 static void initialize_end_screen(legacy_u32 index)
 {
+#ifdef RESTUNTS_SDL3
+	hires_active = movie_available;
+	movie_loaded = movie_won = movie_drawn = fallback_pending = 0;
+	movie_draws = movie_unloads = original_draws = previous_original_draws = 0;
+	fallback_restorations = movie_draws_between_originals = display_shortcut_count = 0;
+#endif
 	initialize_score_fixture(index);
 	scenario = index;
 	input_index = 0;
@@ -618,6 +718,14 @@ static void run_end_screen_case(legacy_u32 index)
 	initialize_end_screen(index);
 	trace_word(index);
 	legacy_u16 result = end_hiscore();
+#ifdef RESTUNTS_SDL3
+	legacy_u8 decisive = gameconfig.game_opponenttype != 0 &&
+						 (gState_total_finish_time != 0 || gState_opponent_finish_time != 0);
+	assert(movie_loaded == decisive);
+	assert(movie_unloads == 1U);
+	assert((movie_draws != 0) == decisive);
+	assert(fallback_pending == 0);
+#endif
 	trace_word(result);
 	trace_word(end_opening_variant);
 	trace_word(end_closing_variant);
@@ -633,6 +741,26 @@ static void run_end_screen_case(legacy_u32 index)
 	}
 }
 
+#ifdef RESTUNTS_SDL3
+static void test_external_animation_interaction(void)
+{
+	movie_available = 1;
+	movie_failure_draw = FIXTURE_DECODE_FAILURE_DRAW;
+	run_end_screen_case(1U);
+	assert(movie_won == 0 && fallback_restorations == 1U);
+	assert(movie_draws_between_originals != 0);
+
+	movie_failure_draw = 0;
+	display_shortcuts = 1;
+	/* Exercise both the score-entry continue loop and the regular result menu. */
+	run_end_screen_case(1U);
+	assert(display_shortcut_count == FIXTURE_SHORTCUT_COUNT && hires_active != 0);
+	run_end_screen_case(2U);
+	assert(display_shortcut_count == FIXTURE_SHORTCUT_COUNT && hires_active != 0);
+	assert(movie_draws_between_originals != 0);
+}
+#endif
+
 int main(void)
 {
 	for (legacy_u32 index = 0; index < 360U; index++) {
@@ -645,6 +773,10 @@ int main(void)
 	fprintf(stdout, "highscore=0x%016" LEGACY_PRIx64 "\n", trace_hash);
 #else
 	assert(trace_hash == UINT64_C(0x0294efe4d2efdda5));
+#endif
+#ifdef RESTUNTS_SDL3
+	test_external_animation_interaction();
+	puts("External opponent animation lifecycle and display toggles passed.");
 #endif
 	puts("End-of-race interaction snapshots passed (360 scenarios).");
 	return 0;

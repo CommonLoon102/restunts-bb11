@@ -18,6 +18,11 @@
 #include "menu_common.h"
 #include "externs.h"
 #include "keyboard.h"
+#ifdef RESTUNTS_SDL3
+#include "hires.h"
+#include "opponent_animation.h"
+#include "shape2d_internal.h"
+#endif
 
 #define HIGHSCORE_READ_RETRY_CANCEL_RESULT 2
 
@@ -517,7 +522,43 @@ struct END_SCREEN_STATE {
 	legacy_u8 selected, previous_selection, blit_mode;
 	legacy_u8 animation_frame, previous_animation_frame, text_prefix;
 	legacy_s16 finish_time, animation_x, animation_y, animation_timer, text_y;
+#ifdef RESTUNTS_SDL3
+	legacy_s16 animation_width, animation_height;
+	legacy_u8 external_animation_drawn;
+#endif
 };
+
+#ifdef RESTUNTS_SDL3
+static void end_hiscore_update_external_animation(struct END_SCREEN_STATE *screen)
+{
+	if (screen->outcome == END_SCREEN_OUTCOME_NONE || !hires_enabled()) {
+		screen->external_animation_drawn = 0;
+		return;
+	}
+	sprite_select_screen_compat();
+	mouse_draw_opaque_check();
+	legacy_u8 drawn =
+		opponent_animation_draw(&drawing_sprite, screen->animation_x, screen->animation_y,
+								screen->animation_width, screen->animation_height) != 0;
+	mouse_draw_transparent_check();
+	if (screen->external_animation_drawn != 0 && drawn == 0) {
+		/* A later decode error must retire the old full-color frame immediately. */
+		end_hiscore_draw_animation_frame(screen->animation_resource, screen->animation_sequence,
+										 screen->animation_frame, screen->animation_x,
+										 screen->animation_y, screen->animation_sprite, 0);
+	}
+	screen->external_animation_drawn = drawn;
+}
+
+static legacy_u8 end_hiscore_handle_display_input(legacy_u16 input)
+{
+	if (input != (legacy_u16)KEY_F12 && input != (legacy_u16)KEY_SHIFT_F12) {
+		return 0;
+	}
+	(void)handle_ingame_kb_shortcuts(LEGACY_S16_FROM_BITS(input));
+	return 1;
+}
+#endif
 
 static void end_hiscore_initialize(struct END_SCREEN_STATE *screen)
 {
@@ -689,6 +730,9 @@ static void end_hiscore_prepare_animation(struct END_SCREEN_STATE *screen)
 	screen->animation_resource = 0;
 	screen->animation_sequence = 0;
 	screen->text_prefix = 0;
+#ifdef RESTUNTS_SDL3
+	screen->external_animation_drawn = 0;
+#endif
 	if (screen->opponent_active != 0) {
 		if (((legacy_u8)replay_recording_flags & REPLAY_RECORDING_RESTARTABLE_FLAG) == 0) {
 			end_hiscore_choose_text_variants(screen);
@@ -719,6 +763,12 @@ static void end_hiscore_prepare_animation(struct END_SCREEN_STATE *screen)
 							 END_SCREEN_FOUR_WAY_RANDOM_MASK);
 			screen->text_prefix = 'd';
 		}
+#ifdef RESTUNTS_SDL3
+		if (screen->outcome != END_SCREEN_OUTCOME_NONE) {
+			opponent_animation_load(screen->opponent_active,
+									screen->outcome == END_SCREEN_OUTCOME_WIN);
+		}
+#endif
 	}
 }
 
@@ -780,8 +830,8 @@ static void end_hiscore_show_opponent(struct END_SCREEN_STATE *screen)
 	legacy_s16 animation_width =
 		LEGACY_S16_WRAP_MUL(shape2d_get_width(frame_shape), video_shape_width_scale);
 	screen->animation_x = LEGACY_S16_WRAP_SUB(END_SCREEN_ANIMATION_RIGHT, animation_width);
-	screen->animation_y =
-		LEGACY_S16_WRAP_SUB(END_SCREEN_ANIMATION_BOTTOM, shape2d_get_height(frame_shape));
+	legacy_s16 animation_height = (legacy_s16)shape2d_get_height(frame_shape);
+	screen->animation_y = LEGACY_S16_WRAP_SUB(END_SCREEN_ANIMATION_BOTTOM, animation_height);
 	screen->animation_y = LEGACY_S16_FROM_BITS(
 		LEGACY_U16_SAR((legacy_u16)screen->animation_y, END_SCREEN_ANIMATION_CENTER_SHIFT));
 	draw_three_color_beveled_border(
@@ -796,6 +846,15 @@ static void end_hiscore_show_opponent(struct END_SCREEN_STATE *screen)
 															  opponent_animation_frame_id),
 					 screen->animation_x, screen->animation_y);
 	screen->previous_animation_frame = screen->animation_frame;
+#ifdef RESTUNTS_SDL3
+	screen->animation_width = animation_width;
+	screen->animation_height = animation_height;
+	if (screen->outcome != END_SCREEN_OUTCOME_NONE) {
+		screen->external_animation_drawn =
+			opponent_animation_draw(&drawing_sprite, screen->animation_x, screen->animation_y,
+									animation_width, animation_height) != 0;
+	}
+#endif
 	font_set_colors(0, 0);
 	end_hiscore_draw_opponent_text(screen->opponent_resource, screen->outcome, screen->text_prefix,
 								   screen->animation_x);
@@ -832,7 +891,15 @@ static void end_hiscore_enter_opponent_score(struct END_SCREEN_STATE *screen)
 									 &screen->previous_animation_frame, screen->animation_resource,
 									 screen->animation_sequence, screen->animation_x,
 									 screen->animation_y, screen->animation_sprite, 0);
+#ifdef RESTUNTS_SDL3
+		end_hiscore_update_external_animation(screen);
+#endif
 		legacy_u16 input = (legacy_u16)input_checking((legacy_s16)text_resource_count);
+#ifdef RESTUNTS_SDL3
+		if (end_hiscore_handle_display_input(input)) {
+			continue;
+		}
+#endif
 		if (input == KEY_ENTER || input == KEY_SPACE || input == KEY_ESCAPE) {
 			break;
 		}
@@ -991,6 +1058,11 @@ static legacy_s16 end_hiscore_navigate_menu(struct END_SCREEN_STATE *screen, leg
 
 static legacy_s16 end_hiscore_handle_menu_input(struct END_SCREEN_STATE *screen, legacy_u16 input)
 {
+#ifdef RESTUNTS_SDL3
+	if (end_hiscore_handle_display_input(input)) {
+		return 0;
+	}
+#endif
 	if (input == 0) {
 		return 0;
 	}
@@ -1024,6 +1096,9 @@ static legacy_s16 end_hiscore_run_menu(struct END_SCREEN_STATE *screen)
 										 screen->animation_resource, screen->animation_sequence,
 										 screen->animation_x, screen->animation_y,
 										 screen->animation_sprite, 1);
+#ifdef RESTUNTS_SDL3
+			end_hiscore_update_external_animation(screen);
+#endif
 		}
 		end_hiscore_select_mouse(screen);
 		legacy_u16 input = (legacy_u16)input_checking(delta);
@@ -1036,6 +1111,9 @@ static legacy_s16 end_hiscore_run_menu(struct END_SCREEN_STATE *screen)
 
 static legacy_u16 end_hiscore_release(struct END_SCREEN_STATE *screen)
 {
+#ifdef RESTUNTS_SDL3
+	opponent_animation_unload();
+#endif
 	audio_unload();
 	if (screen->opponent_active != 0) {
 		mmgr_release(screen->animation_resource);
