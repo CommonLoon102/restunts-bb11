@@ -387,7 +387,9 @@ loops from its beginning while its song is active. The existing Options menu
 music toggle, music volume/fades, and audio suspension apply; effects retain
 their original sound. Each missing, unreadable, unsupported, or broken song
 falls back independently to its original music. Original game resources remain
-required. No replacement recordings are supplied.
+required. The repository includes replacements for all four songs, preserving
+their original loop lengths without added ending tails or fade-outs. The
+race-end track retains its original pause before repeating.
 
 Native builds search `assets/music/` in the working directory, then beside the
 executable; next they search `music/` in those same two locations, followed by
