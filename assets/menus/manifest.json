@@ -1,0 +1,99 @@
+{
+  "generator": "tools/scripts/prepare-menu-backgrounds.py",
+  "detail_generation": "built-in imagegen, faithful photorealistic pixel-art restoration",
+  "prompts": "docs/menus/generation-prompts.json",
+  "pillow_version": "10.2.0",
+  "working_scale": 4,
+  "final_scale": 2,
+  "palette_source": "SDMAIN.PVS:!pal",
+  "palette_rgb_sha256": "0fc80b406c5fbb11d58c243acba08afc7af7c290eb090997d3751694dc1640c9",
+  "palette_conversion": "(component & 63) * 255 // 63",
+  "processing": [
+    "Nearest-neighbor normalize generated restoration to 4x original width and height",
+    "Alpha-composite verified RGBA corrections at exact working dimensions",
+    "Nearest-neighbor reduce to 2x original width and height (one quarter pixel count)",
+    "Map to the exact original game palette without dithering or filtering"
+  ],
+  "images": [
+    {
+      "file": "main.png",
+      "original": "SDMSEL.PVS:scrn",
+      "original_size": [
+        320,
+        200
+      ],
+      "generated_size": [
+        1586,
+        992
+      ],
+      "working_size": [
+        1280,
+        800
+      ],
+      "final_size": [
+        640,
+        400
+      ],
+      "original_png_sha256": "d8895221f808ce197a547d2642370364c9a41f72be3094c36d73678699c5a75b",
+      "generated_restoration_sha256": "069ee9df8ffd1aa74a93d25d85a22ee72cdcead4c8c0edb2f3e60e84e83cb6e2",
+      "working_png_sha256": "eb4df214168aca66d243455ece1e2732ee89ff96f5257574004a252d268b29fc",
+      "sha256": "5c473abe64c38432b2c27cae1360dead2edbf91fe7fe5de9a98991b6350f5ee7",
+      "pixels_sha256": "7bda265e94cbccced841601e5d63bde46e6ebb8dcde2722deeb683d1ca9a61d5",
+      "patch": {
+        "base_working_pixels_sha256": "91f6cca373678ef39eec16b61d1025190f2c7fbef37e077ca6877d7082f51a7f",
+        "patch_file": "docs/menus/sources/patches/main-corrections.png",
+        "patch_sha256": "b98047ab140d028987f45e608da4438bc0fa4871a926a84d4f1817127f9e2a63"
+      }
+    },
+    {
+      "file": "showroom.png",
+      "original": "SDCSEL.PVS:stop",
+      "original_size": [
+        320,
+        103
+      ],
+      "generated_size": [
+        2210,
+        712
+      ],
+      "working_size": [
+        1280,
+        412
+      ],
+      "final_size": [
+        640,
+        206
+      ],
+      "original_png_sha256": "4dcaac2c53c92d4e0f376a5d88086baaaefa98f8cba3c77c9d44636fd207ea99",
+      "generated_restoration_sha256": "373e145ac37de4f86126fed0dd6a7127975514ba2a63150fb27590b2dfbd6a6a",
+      "working_png_sha256": "e51ac205fe7982bf6dd351201df7420e5cf8259278c66ede93ba6b5c47c77ed9",
+      "sha256": "b182948e6377c3dc4d9744aae99d9446cb082f824ee40cd56163b76a9ab7df98",
+      "pixels_sha256": "8f88d533b1113897503aece33e5d74b494cb377ce778788b3caaeca90baa286b"
+    },
+    {
+      "file": "opponent.png",
+      "original": "SDOSEL.PVS:scrn",
+      "original_size": [
+        320,
+        182
+      ],
+      "generated_size": [
+        1663,
+        946
+      ],
+      "working_size": [
+        1280,
+        728
+      ],
+      "final_size": [
+        640,
+        364
+      ],
+      "original_png_sha256": "cf38a7cd0df8f74b09a02b1fdbafb6844e4f36aa507639244f90a8d06578bde1",
+      "generated_restoration_sha256": "b7fb72d1a8ce6d48ff76fdc2d2a95ddc53b109e5c4001b8bc7d5e5d06b61b085",
+      "working_png_sha256": "828d2eb61320c37b5149eccae452e4c1c9b2f388dfac1ef680653b0cc1a98b42",
+      "sha256": "d1b6ba5b3e854a6f4be07c45810520a971e79c236867adb18a3ec25c135eb8eb",
+      "pixels_sha256": "68fbed09f5b7976640d131b6e0a77dad0296060961077c0edbdc71519c2191e4"
+    }
+  ]
+}

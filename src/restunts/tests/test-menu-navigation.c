@@ -1,5 +1,6 @@
 #include <string.h>
 #define main car_snapshot_main
+#define menu_background_draw car_fixture_menu_background_draw
 #define input_checking car_fixture_input_checking
 #define mouse_multi_hittest car_fixture_mouse_multi_hittest
 #define locate_text_res car_fixture_locate_text_res
@@ -11,6 +12,7 @@
 #define menu_animate_button_highlight car_fixture_menu_animate_button_highlight
 #include "test-car-menu.c"
 #undef main
+#undef menu_background_draw
 #undef input_checking
 #undef mouse_multi_hittest
 #undef locate_text_res
@@ -35,6 +37,20 @@ static legacy_u32 track_highscore_draws, track_highscore_entries, track_setup_ca
 static const legacy_s16 track_expected_selection[] = {0, 1, 1, 1, 2};
 
 #ifdef RESTUNTS_SDL3
+void menu_background_draw(const struct SPRITE *target, const struct SHAPE2D *original,
+						  enum MENU_BACKGROUND kind)
+{
+	assert(target == &drawing_sprite && original == &fixture_shapes[0]);
+	assert(kind == MENU_BACKGROUND_OPPONENT);
+}
+
+void menu_background_draw_overlay(const struct SPRITE *target, const struct SHAPE2D *original,
+								  enum MENU_BACKGROUND kind)
+{
+	assert(target == &drawing_sprite && original == &fixture_shapes[0]);
+	assert(kind == MENU_BACKGROUND_OPPONENT);
+}
+
 void opponent_portrait_draw(const struct SPRITE *target, const struct SHAPE2D *original,
 							legacy_u8 opponent)
 {

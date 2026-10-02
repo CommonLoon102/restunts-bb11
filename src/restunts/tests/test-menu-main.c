@@ -10,6 +10,7 @@
 #include "../c/resource.h"
 #include "../c/ui_dialog.h"
 #include "../c/ui_input.h"
+#include "../c/menu_background.h"
 
 #define TEST_MENU_BUTTON_COUNT 5U
 #define TEST_SCREEN_WIDTH 320U
@@ -43,6 +44,32 @@ static legacy_u32 prepare_count, activate_count, present_count, reset_count;
 static legacy_u32 song_ticks, frame_index, frame_count, idle_frame;
 static const legacy_u16 *keys;
 static const legacy_s16 *selections;
+#ifdef RESTUNTS_SDL3
+static legacy_u32 background_draws, enhanced_draws, background_unloads, shortcut_count;
+static legacy_u8 enhanced_mode;
+
+void menu_background_draw(const struct SPRITE *target, const struct SHAPE2D *original,
+						  enum MENU_BACKGROUND kind)
+{
+	assert(target == &window && original == window.sprite_bitmapptr);
+	assert(kind == MENU_BACKGROUND_MAIN && screen_selected == 0 && background_drawn != 0);
+	background_draws++;
+	enhanced_draws += enhanced_mode != 0;
+}
+
+void menu_background_unload(void)
+{
+	background_unloads++;
+}
+
+legacy_s16 handle_ingame_kb_shortcuts(legacy_s16 key)
+{
+	assert(key == KEY_F12 || key == KEY_SHIFT_F12);
+	enhanced_mode = key == KEY_F12 ? enhanced_mode ^ 1U : 1;
+	shortcut_count++;
+	return 1;
+}
+#endif
 
 static void simulate_slow_operation(void)
 {
@@ -96,6 +123,7 @@ struct SPRITE *sprite_make_wnd(legacy_u16 width, legacy_u16 height, legacy_u16 c
 	assert(existing_song != 0 || prepare_count == 1);
 	assert(window_live == 0);
 	window_live = 1;
+	window.sprite_bitmapptr = &background;
 	simulate_slow_operation();
 	return &window;
 }
@@ -216,9 +244,16 @@ static void check_menu(const legacy_u16 *input_keys, const legacy_s16 *expected_
 	window_live = resource_live = background_drawn = screen_selected = 0;
 	prepare_count = activate_count = present_count = reset_count = frame_index = 0;
 	idle_expired = 0;
+#ifdef RESTUNTS_SDL3
+	background_draws = enhanced_draws = background_unloads = shortcut_count = 0;
+	enhanced_mode = 0;
+#endif
 
 	assert(run_menu() == expected_result);
 	assert(frame_index == input_count && window_live == 0 && resource_live == 0);
+#ifdef RESTUNTS_SDL3
+	assert(background_draws == present_count && background_unloads == 1);
+#endif
 	assert(prepare_count == (already_playing != 0 ? 0U : 1U));
 	assert(activate_count == prepare_count);
 	assert(song_playing != 0 && is_audioloaded != 0);
@@ -248,6 +283,14 @@ legacy_int main(void)
 	check_menu(cancel_keys, enter_selections, 1, TEST_CANCEL, 0, 0, 0);
 	check_menu(idle_keys, idle_selections, idle_count, TEST_DRIVE, 0, 0, idle_count);
 	check_menu(enter_keys, enter_selections, 1, TEST_DRIVE, 0, 1, 0);
+#ifdef RESTUNTS_SDL3
+	static const legacy_u16 toggle_keys[] = {KEY_F12, KEY_SHIFT_F12, KEY_F12, KEY_ENTER};
+	static const legacy_s16 toggle_selections[] = {TEST_DRIVE, TEST_DRIVE, TEST_DRIVE, TEST_DRIVE};
+	check_menu(toggle_keys, toggle_selections, sizeof(toggle_keys) / sizeof(toggle_keys[0]),
+			   TEST_DRIVE, 0, 0, 0);
+	assert(shortcut_count == 3 && background_draws == 4 && enhanced_draws == 2);
+	assert(enhanced_mode == 0);
+#endif
 	puts("Main menu audio start and lifetime tests passed.");
 	return 0;
 }

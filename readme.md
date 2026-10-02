@@ -195,8 +195,12 @@ FPS counter is hidden. This build has no SuperSight presets.
 In SDL3 builds, HyperVision starts 3D rendering at **1280x800**, four times the
 original width and height. Player and opponent
 car-selection previews use the same higher resolution; F12 also works in those
-screens and in the track preview. Dashboard artwork, replay controls, and the
-surrounding menu UI retain their original pixel detail and size. HyperVision clips
+screens, in the main menu, and in the track preview. The main-menu, showroom
+and opponent-selection backgrounds use [restored pixel artwork](docs/menus/README.md)
+at twice the original width and height while HyperVision is enabled, like the
+enhanced opponent portraits.
+Turning it off restores the original backgrounds. Dashboard artwork, replay
+controls, and other menu UI retain their original pixel detail and size. HyperVision clips
 custom dashboards and the 3D view above visible replay controls so they remain
 unobstructed. Switching HyperVision off restores 320x200 rendering and the original
 dashboard layout.

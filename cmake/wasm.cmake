@@ -15,6 +15,11 @@ foreach(opponent RANGE 1 6)
         "${restunts_web_assets}/assets/opponents/game/opp${opponent}.png" COPYONLY)
 endforeach()
 
+foreach(background IN LISTS menu_backgrounds)
+    configure_file("${CMAKE_SOURCE_DIR}/assets/menus/${background}.png"
+        "${restunts_web_assets}/assets/menus/${background}.png" COPYONLY)
+endforeach()
+
 include("${CMAKE_CURRENT_LIST_DIR}/wasm-link.cmake")
 restunts_configure_wasm(restunts "${restunts_web_assets}" "${restunts_web_shell}")
 install(TARGETS restunts RUNTIME DESTINATION . COMPONENT Runtime)

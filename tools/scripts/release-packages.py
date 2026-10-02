@@ -72,6 +72,7 @@ NUKED_FILES = ("opl2.c", "opl2.h", "CMakeLists.txt", "LICENSE", "README.md")
 SKYBOX_THEMES = ("desert", "tropical", "alpine", "city", "country")
 SKYBOX_IMAGES = ("scen", "sce2", "sce3", "sce4")
 OPPONENT_COUNT = 6
+MENU_BACKGROUNDS = ("main", "showroom", "opponent")
 SHA256_PATTERN = re.compile(r"[0-9a-f]{64}")
 COMMIT_PATTERN = re.compile(r"[0-9a-f]{40}")
 DOS_RUNTIME_NAME_PATTERN = re.compile(r"[A-Za-z0-9_-]{1,8}(?:\.[A-Za-z0-9_-]{1,3})?")
@@ -119,6 +120,8 @@ def required_files(target):
         required |= {f"{relink}/nuked-opl2-lite/{name}" for name in NUKED_FILES}
         required |= {f"{relink}/data/assets/skyboxes/{theme}-{image}.png"
                      for theme in SKYBOX_THEMES for image in SKYBOX_IMAGES}
+        required |= {f"{relink}/data/assets/menus/{background}.png"
+                     for background in MENU_BACKGROUNDS}
         required |= {f"{relink}/data/assets/opponents/game/opp{opponent}.png"
                      for opponent in range(1, OPPONENT_COUNT + 1)}
         return required
@@ -129,6 +132,7 @@ def required_files(target):
     if target == "dos16":
         return required
     required |= {"share/docs/restunts/sdl3.md", "share/licenses/restunts/SDL-LICENSE.txt"}
+    required |= {f"bin/menus/{background}.png" for background in MENU_BACKGROUNDS}
     required |= {f"bin/skyboxes/sky{theme}-{image}.png"
                  for theme in range(len(SKYBOX_THEMES)) for image in range(len(SKYBOX_IMAGES))}
     opponent_directory = "opponent" if target == "dos32" else "opponents"
@@ -201,7 +205,8 @@ def readme(target, commit):
     else:
         executable = "restunts.exe" if target.startswith(("windows", "dos")) else "restunts"
         lines += [f"Run bin/{executable} --data-dir PATH_TO_YOUR_STUNTS_FOLDER.",
-                  "Enhanced skyboxes and opponent portraits are included beside the game.",
+                  "Enhanced skyboxes, opponent portraits, and menu backgrounds are included",
+                  "beside the game.",
                   "See share/docs/restunts/sdl3.md for controls and platform details."]
     if target == "macos-universal":
         lines += ["macOS 11.0 or newer; Intel and Apple Silicon are in the same binary.",
