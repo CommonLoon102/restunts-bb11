@@ -11,6 +11,10 @@
 #include "../c/ui_dialog.h"
 #include "../c/ui_input.h"
 #include "../c/menu_background.h"
+#include "../c/game_input.h"
+#ifdef RESTUNTS_SDL3
+#include "../c/frame_internal.h"
+#endif
 
 #define TEST_MENU_BUTTON_COUNT 5U
 #define TEST_SCREEN_WIDTH 320U
@@ -21,6 +25,7 @@
 #define TEST_EXISTING_SONG_TICKS 37U
 #define TEST_MOUSE_NONE (-1)
 #define TEST_IDLE_LIMIT 6000
+#define TEST_STATUS_LIFETIME_FRAMES 3U
 
 enum TEST_SELECTION { TEST_DRIVE = 0, TEST_TRACK = 3, TEST_CANCEL = -1 };
 
@@ -47,6 +52,57 @@ static const legacy_s16 *selections;
 #ifdef RESTUNTS_SDL3
 static legacy_u32 background_draws, enhanced_draws, background_unloads, shortcut_count;
 static legacy_u8 enhanced_mode;
+legacy_u8 fps_display_enabled;
+enum TEST_STATUS { TEST_STATUS_NONE, TEST_STATUS_AUTO, TEST_STATUS_FULL, TEST_STATUS_OFF };
+static enum TEST_STATUS status_message, screen_status, initial_status;
+static const enum TEST_STATUS *expected_statuses;
+static legacy_u32 status_deadline, status_draws, status_expirations;
+static legacy_u8 status_clear_pending, mouse_hidden, full_screen_clip;
+
+legacy_s16 frame_status_overlay_active(void)
+{
+	return status_message != TEST_STATUS_NONE || status_clear_pending != 0;
+}
+
+legacy_s16 frame_status_expire_idle(void)
+{
+	if (status_message != TEST_STATUS_NONE && frame_index >= status_deadline) {
+		status_message = TEST_STATUS_NONE;
+		status_clear_pending = 1;
+		status_expirations++;
+	}
+	return status_clear_pending;
+}
+
+void mouse_draw_opaque_check(void)
+{
+	assert(screen_selected != 0 && mouse_hidden == 0);
+	mouse_hidden = 1;
+}
+
+void sprite_set_target_clip_bounds(legacy_u16 left, legacy_u16 right, legacy_u16 top,
+								   legacy_u16 bottom)
+{
+	assert(left == 0 && right == TEST_SCREEN_WIDTH && top == 0 && bottom == TEST_SCREEN_HEIGHT);
+	full_screen_clip = 1;
+}
+
+struct RECTANGLE *frame_status_draw_text(void)
+{
+	/* Status text must never become part of the cached menu background. */
+	assert(screen_selected != 0 && mouse_hidden != 0 && full_screen_clip != 0);
+	assert(screen_status == TEST_STATUS_NONE && frame_status_overlay_active() != 0);
+	screen_status = status_message;
+	status_clear_pending = 0;
+	status_draws++;
+	return NULL;
+}
+
+void mouse_draw_transparent_check(void)
+{
+	assert(mouse_hidden != 0);
+	mouse_hidden = 0;
+}
 
 void menu_background_draw(const struct SPRITE *target, const struct SHAPE2D *original,
 						  enum MENU_BACKGROUND kind)
@@ -66,6 +122,11 @@ legacy_s16 handle_ingame_kb_shortcuts(legacy_s16 key)
 {
 	assert(key == KEY_F12 || key == KEY_SHIFT_F12);
 	enhanced_mode = key == KEY_F12 ? enhanced_mode ^ 1U : 1;
+	status_message = key == KEY_SHIFT_F12
+						 ? TEST_STATUS_FULL
+						 : (enhanced_mode != 0 ? TEST_STATUS_AUTO : TEST_STATUS_OFF);
+	status_deadline = frame_index + TEST_STATUS_LIFETIME_FRAMES;
+	status_clear_pending = 0;
 	shortcut_count++;
 	return 1;
 }
@@ -172,6 +233,10 @@ legacy_s16 sprite_blit_to_video(struct SPRITE *sprite, legacy_s16 mode)
 		   (present_count == 0 ? MENU_BLIT_MODE_INITIAL : MENU_BLIT_MODE_REFRESH));
 	simulate_slow_operation();
 	present_count++;
+#ifdef RESTUNTS_SDL3
+	screen_status = TEST_STATUS_NONE;
+	full_screen_clip = 0;
+#endif
 	return 0;
 }
 
@@ -194,6 +259,12 @@ legacy_s16 menu_animate_button_highlight(legacy_s16 item_index, const struct BUT
 	assert(buttons == menu_buttons && second_color == menu_highlight_second_color);
 	assert(first_color == menu_highlight_first_color);
 	assert(song_playing != 0);
+#ifdef RESTUNTS_SDL3
+	assert(mouse_hidden == 0);
+	if (expected_statuses != NULL) {
+		assert(screen_status == expected_statuses[frame_index]);
+	}
+#endif
 	assert(activate_count == (existing_song != 0 ? 0U : 1U));
 	if (frame_index == 0 && existing_song == 0) {
 		assert(song_ticks == 0);
@@ -247,6 +318,11 @@ static void check_menu(const legacy_u16 *input_keys, const legacy_s16 *expected_
 #ifdef RESTUNTS_SDL3
 	background_draws = enhanced_draws = background_unloads = shortcut_count = 0;
 	enhanced_mode = 0;
+	status_message = initial_status;
+	screen_status = TEST_STATUS_NONE;
+	status_deadline = TEST_STATUS_LIFETIME_FRAMES;
+	status_draws = status_expirations = 0;
+	status_clear_pending = mouse_hidden = full_screen_clip = 0;
 #endif
 
 	assert(run_menu() == expected_result);
@@ -262,6 +338,48 @@ static void check_menu(const legacy_u16 *input_keys, const legacy_s16 *expected_
 		assert(song_ticks > TEST_EXISTING_SONG_TICKS);
 	}
 }
+
+#ifdef RESTUNTS_SDL3
+static void check_status_lifetime(void)
+{
+	static const legacy_u16 status_keys[] = {KEY_F12, KEY_RIGHT, KEY_SHIFT_F12, 0,		  0,
+											 0,		  0,		 KEY_LEFT,		KEY_ENTER};
+	static const legacy_s16 status_selections[] = {TEST_DRIVE, TEST_DRIVE, TEST_TRACK,
+												   TEST_TRACK, TEST_TRACK, TEST_TRACK,
+												   TEST_TRACK, TEST_TRACK, TEST_DRIVE};
+	static const enum TEST_STATUS statuses[] = {
+		TEST_STATUS_NONE, TEST_STATUS_AUTO, TEST_STATUS_AUTO, TEST_STATUS_FULL, TEST_STATUS_FULL,
+		TEST_STATUS_FULL, TEST_STATUS_NONE, TEST_STATUS_NONE, TEST_STATUS_NONE};
+	static const legacy_u16 incoming_keys[] = {0, 0, 0, 0, KEY_ENTER};
+	static const legacy_s16 incoming_selections[] = {TEST_DRIVE, TEST_DRIVE, TEST_DRIVE, TEST_DRIVE,
+													 TEST_DRIVE};
+	static const enum TEST_STATUS incoming_statuses[] = {
+		TEST_STATUS_AUTO, TEST_STATUS_AUTO, TEST_STATUS_AUTO, TEST_STATUS_NONE, TEST_STATUS_NONE};
+
+	/* Selection changes retain the message; replacing it refreshes its deadline.
+	 * Idle expiration and a later selection redraw must both leave a clean screen. */
+	for (legacy_u8 diagnostics = FRAME_FPS_DISPLAY_OFF; diagnostics <= FRAME_FPS_DISPLAY_ON;
+		 diagnostics++) {
+		fps_display_enabled = diagnostics;
+		expected_statuses = statuses;
+		check_menu(status_keys, status_selections, sizeof(status_keys) / sizeof(status_keys[0]),
+				   TEST_DRIVE, 0, 0, 0);
+		assert(shortcut_count == 2 && status_draws == 4 && status_expirations == 1);
+		assert(present_count == 6 && status_clear_pending == 0);
+		assert(fps_display_enabled == diagnostics);
+
+		initial_status = TEST_STATUS_AUTO;
+		expected_statuses = incoming_statuses;
+		check_menu(incoming_keys, incoming_selections,
+				   sizeof(incoming_keys) / sizeof(incoming_keys[0]), TEST_DRIVE, 0, 0, 0);
+		assert(shortcut_count == 0 && status_draws == 2 && status_expirations == 1);
+		assert(present_count == 2 && status_clear_pending == 0);
+		assert(fps_display_enabled == diagnostics);
+		initial_status = TEST_STATUS_NONE;
+	}
+	expected_statuses = NULL;
+}
+#endif
 
 legacy_int main(void)
 {
@@ -286,11 +404,15 @@ legacy_int main(void)
 #ifdef RESTUNTS_SDL3
 	static const legacy_u16 toggle_keys[] = {KEY_F12, KEY_SHIFT_F12, KEY_F12, KEY_ENTER};
 	static const legacy_s16 toggle_selections[] = {TEST_DRIVE, TEST_DRIVE, TEST_DRIVE, TEST_DRIVE};
+	static const enum TEST_STATUS toggle_statuses[] = {TEST_STATUS_NONE, TEST_STATUS_AUTO,
+													   TEST_STATUS_FULL, TEST_STATUS_OFF};
+	expected_statuses = toggle_statuses;
 	check_menu(toggle_keys, toggle_selections, sizeof(toggle_keys) / sizeof(toggle_keys[0]),
 			   TEST_DRIVE, 0, 0, 0);
 	assert(shortcut_count == 3 && background_draws == 4 && enhanced_draws == 2);
 	assert(enhanced_mode == 0);
+	check_status_lifetime();
 #endif
-	puts("Main menu audio start and lifetime tests passed.");
+	puts("Main menu audio and status lifetime tests passed.");
 	return 0;
 }

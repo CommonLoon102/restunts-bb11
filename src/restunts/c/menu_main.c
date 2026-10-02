@@ -13,6 +13,7 @@
 #include "keyboard.h"
 #ifdef RESTUNTS_SDL3
 #include "game_input.h"
+#include "frame_internal.h"
 #include "menu_background.h"
 #endif
 
@@ -63,6 +64,11 @@ legacy_s8 run_menu(void)
 	mmgr_free(resource);
 
 	for (;;) {
+#ifdef RESTUNTS_SDL3
+		if (frame_status_expire_idle() != 0) {
+			previous = MAIN_MENU_NO_SELECTION;
+		}
+#endif
 		if (selected != previous) {
 			previous = selected;
 			sprite_select_render_window();
@@ -73,6 +79,16 @@ legacy_s8 run_menu(void)
 			sprite_blit_to_video(render_window_sprite, LEGACY_S8_FROM_BITS(blit_mode));
 			blit_mode = MENU_BLIT_MODE_REFRESH;
 			sprite_select_screen_compat();
+#ifdef RESTUNTS_SDL3
+			/* Keep the cached background clean so refreshes erase expired or replaced text. */
+			if (frame_status_overlay_active() != 0) {
+				mouse_draw_opaque_check();
+				sprite_set_target_clip_bounds(0, MAIN_MENU_SCREEN_WIDTH, 0,
+											  MAIN_MENU_SCREEN_HEIGHT);
+				frame_status_draw_text();
+				mouse_draw_transparent_check();
+			}
+#endif
 			menu_reset_animation_timers();
 			if (start_music != 0) {
 				load_audio_finalize(audio_resource);
