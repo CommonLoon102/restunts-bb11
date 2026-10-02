@@ -36,13 +36,13 @@
       ],
       "original_png_sha256": "d8895221f808ce197a547d2642370364c9a41f72be3094c36d73678699c5a75b",
       "generated_restoration_sha256": "069ee9df8ffd1aa74a93d25d85a22ee72cdcead4c8c0edb2f3e60e84e83cb6e2",
-      "working_png_sha256": "eb4df214168aca66d243455ece1e2732ee89ff96f5257574004a252d268b29fc",
-      "sha256": "5c473abe64c38432b2c27cae1360dead2edbf91fe7fe5de9a98991b6350f5ee7",
-      "pixels_sha256": "7bda265e94cbccced841601e5d63bde46e6ebb8dcde2722deeb683d1ca9a61d5",
+      "working_png_sha256": "23c1b3bf1044d6165cb0697352f9689128be723d263802785a5f09d427c08d81",
+      "sha256": "248d484c218ef074360a9722c1dcfdbdcbbcc2f41ad36ab997267082563f10a8",
+      "pixels_sha256": "d1f8960cb462efe3a90686c17f737be35196d6806ba6e6e919dfa065a383b73f",
       "patch": {
         "base_working_pixels_sha256": "91f6cca373678ef39eec16b61d1025190f2c7fbef37e077ca6877d7082f51a7f",
         "patch_file": "docs/menus/sources/patches/main-corrections.png",
-        "patch_sha256": "b98047ab140d028987f45e608da4438bc0fa4871a926a84d4f1817127f9e2a63"
+        "patch_sha256": "5cb823cf2b71c8cbf1bc8fc519288142ffc7ac4dcf3ae41f3272e5e7873a18bc"
       }
     },
     {
