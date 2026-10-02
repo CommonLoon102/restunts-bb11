@@ -122,6 +122,20 @@ code { color: #f6d59e; overflow-wrap: anywhere; }
 .site-footer p { font-size: .875rem; margin-bottom: 0; }
 .site-footer nav { display: grid; grid-template-columns: repeat(2, auto); gap: 8px 24px; font-size: .8125rem; }
 
+.site-header nav a[aria-current="page"] { color: var(--accent); }
+.guide { --guide-gap: 32px; --guide-section-space: 48px; }
+.guide-intro { padding-block: var(--guide-section-space); max-width: 880px; }
+.guide-intro h1 { font-size: clamp(2.6rem, 6vw, 4rem); }
+.guide-intro .intro { margin-bottom: 18px; }
+.guide-nav { display: flex; flex-wrap: wrap; gap: 10px 24px; margin-top: 24px; font-size: .875rem; }
+.guide-section { padding-block: var(--guide-section-space); border-top: 1px solid var(--line); }
+.guide-section .section-heading { margin-bottom: 24px; }
+.guide-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 26rem), 1fr)); gap: var(--guide-gap); margin: 0; }
+.guide-list > div { min-width: 0; }
+.guide-list dt { font-size: 1.0625rem; font-weight: 650; line-height: 1.55; margin-bottom: 8px; }
+.guide-list dd { margin: 0; color: var(--muted); font-size: .875rem; line-height: 1.7; }
+.guide-callout { padding: 16px 20px; border-left: 3px solid var(--accent); background: var(--surface); margin-bottom: var(--guide-gap); }
+
 @media (max-width: 960px) {
     .hero { gap: 32px; }
     .feature { grid-template-columns: 220px minmax(0, 1fr); gap: 32px; }

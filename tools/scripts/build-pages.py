@@ -12,7 +12,7 @@ import zipfile
 
 ROOT = Path(__file__).resolve().parents[2]
 SITE = ROOT / "site"
-WEBSITE_FILES = ("index.html", "styles.css", "site.js")
+WEBSITE_FILES = ("index.html", "quick-guide.html", "styles.css", "site.js")
 ASSET_SUFFIXES = {".svg", ".png", ".jpg", ".jpeg", ".webp", ".gif", ".ico",
                   ".woff", ".woff2", ".txt", ".md", ".html"}
 HOSTED_GAME_FILES = ("restunts.html", "THIRD-PARTY-NOTICES.txt",
