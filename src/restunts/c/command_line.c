@@ -39,7 +39,12 @@ static const legacy_s8 command_line_help[] = COMMAND_LINE_NEWLINE
 #ifdef RESTUNTS_SDL3
 	"  --data-dir DIR   Read game data and saves in DIR; must be first." COMMAND_LINE_NEWLINE
 #endif
-	"  --nointro        Skip the startup intro." COMMAND_LINE_NEWLINE COMMAND_LINE_NEWLINE
+	"  --nointro        Skip the startup intro." COMMAND_LINE_NEWLINE
+#ifdef RESTUNTS_SDL3
+	"  --ogg:on|off     Start with Ogg replacements enabled/disabled; supply "
+	"once." COMMAND_LINE_NEWLINE
+#endif
+	COMMAND_LINE_NEWLINE
 	"  --pg:on|off      Enable/disable the original power gear bug." COMMAND_LINE_NEWLINE
 	"  --lc:on|off      Enable/disable original collision behavior." COMMAND_LINE_NEWLINE
 	"  --lcb:on|off     Enable/disable the original left corner bias." COMMAND_LINE_NEWLINE
@@ -67,12 +72,13 @@ static const legacy_s8 command_line_help[] = COMMAND_LINE_NEWLINE
 	"Defaults: intro and sound on; --pg:on, --lc:on, --lcb:on; --owoot off." COMMAND_LINE_NEWLINE
 #ifdef RESTUNTS_SDL3
 	"HyperVision starts off. F12 and Shift+F12 change it during play." COMMAND_LINE_NEWLINE
+	"Ogg music starts off. Shift+F10 switches music sources outside races." COMMAND_LINE_NEWLINE
 #else
 	"AdLib is the default driver. F12 toggles SuperSight; no presets." COMMAND_LINE_NEWLINE
 #endif
 	"Physics switches are case-insensitive; the last on/off value wins." COMMAND_LINE_NEWLINE
 #ifdef RESTUNTS_SDL3
-	"HyperVision presets are also case-insensitive." COMMAND_LINE_NEWLINE
+	"HyperVision presets and Ogg music options are also case-insensitive." COMMAND_LINE_NEWLINE
 #endif
 	"Other switch names are case-sensitive; keep legacy names lowercase." COMMAND_LINE_NEWLINE
 	"For example, /sAD uses lowercase s and a two-letter audio driver ID." COMMAND_LINE_NEWLINE

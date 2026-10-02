@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "../platform/sdl3/sdl3.h"
+#include "../platform/sdl3/music.h"
 #include "../c/platform.h"
 #include "../c/keyboard.h"
 #include "../c/hires.h"
@@ -67,6 +68,18 @@ static legacy_u32 first_callbacks;
 static legacy_u32 second_callbacks;
 static legacy_u32 audio_ticks;
 static legacy_u8 quit_cleaned_up;
+static legacy_u8 music_toggle_available;
+static legacy_u32 music_toggle_requests;
+
+void sdl3_music_sync(void)
+{
+}
+
+legacy_s32 sdl3_music_toggle(void)
+{
+	music_toggle_requests++;
+	return music_toggle_available;
+}
 
 const legacy_u32 *hires_framebuffer_argb(const legacy_u8 *legacy, const legacy_u32 *palette)
 {
@@ -249,6 +262,71 @@ static void test_keyboard(void)
 	assert(kb_get_key_state(88) == 0);
 	assert(kb_get_key_state(-1) == 0);
 	assert(kb_get_key_state(500) == 0);
+}
+
+static void test_music_shortcut(void)
+{
+	const legacy_s16 f10_scancode = (legacy_u16)KEY_F10 >> LEGACY_BYTE_BITS;
+	kb_init_interrupt();
+	music_toggle_requests = 0;
+	music_toggle_available = true;
+	send_key(SDL_SCANCODE_F10, SDL_KMOD_LSHIFT, true, false);
+	assert(kb_checking() == 0);
+	assert(kb_read_char() == 0);
+	assert(kb_get_key_state(f10_scancode) == 0);
+	assert(music_toggle_requests == 1);
+	/* Keep the entire accepted press consumed, including repeats after the
+	 * music context changes or Shift is released while F10 is held. */
+	music_toggle_available = false;
+	send_key(SDL_SCANCODE_F10, SDL_KMOD_LSHIFT, true, true);
+	send_key(SDL_SCANCODE_F10, SDL_KMOD_LSHIFT, true, false);
+	send_key(SDL_SCANCODE_F10, SDL_KMOD_NONE, true, false);
+	assert(kb_read_char() == 0);
+	assert(kb_get_key_state(f10_scancode) == 0);
+	assert(music_toggle_requests == 1);
+	SDL_Event event;
+	SDL_zero(event);
+	event.type = SDL_EVENT_WINDOW_FOCUS_LOST;
+	assert(SDL_PushEvent(&event));
+	send_key(SDL_SCANCODE_F10, SDL_KMOD_LSHIFT, true, true);
+	assert(kb_read_char() == 0);
+	assert(kb_get_key_state(f10_scancode) == 0);
+	assert(music_toggle_requests == 1);
+	send_key(SDL_SCANCODE_F10, SDL_KMOD_NONE, false, false);
+
+	/* An unavailable music shortcut retains the legacy Shift+F10 action. Entering
+	 * a music context during the same held press must not toggle it. */
+	send_key(SDL_SCANCODE_F10, SDL_KMOD_LSHIFT, true, false);
+	assert(kb_read_char() == KEY_SHIFT_F10);
+	assert(kb_get_key_state(f10_scancode) == 1);
+	assert(music_toggle_requests == 2);
+	music_toggle_available = true;
+	send_key(SDL_SCANCODE_F10, SDL_KMOD_LSHIFT, true, true);
+	send_key(SDL_SCANCODE_F10, SDL_KMOD_LSHIFT, true, false);
+	assert(kb_read_char() == KEY_SHIFT_F10);
+	assert(kb_read_char() == KEY_SHIFT_F10);
+	assert(kb_read_char() == 0);
+	assert(music_toggle_requests == 2);
+	send_key(SDL_SCANCODE_F10, SDL_KMOD_NONE, false, false);
+
+	const SDL_Keymod modifiers[] = {SDL_KMOD_NONE, SDL_KMOD_SHIFT | SDL_KMOD_CTRL,
+									SDL_KMOD_SHIFT | SDL_KMOD_ALT, SDL_KMOD_SHIFT | SDL_KMOD_GUI};
+	for (legacy_u32 modifier = 0; modifier < SDL_arraysize(modifiers); modifier++) {
+		send_key(SDL_SCANCODE_F10, modifiers[modifier], true, false);
+		assert(kb_read_char() != 0);
+		send_key(SDL_SCANCODE_F10, SDL_KMOD_LSHIFT, true, false);
+		assert(kb_read_char() == KEY_SHIFT_F10);
+		assert(music_toggle_requests == 2);
+		send_key(SDL_SCANCODE_F10, SDL_KMOD_NONE, false, false);
+	}
+	/* Lock keys do not modify a function-key shortcut. */
+	send_key(SDL_SCANCODE_F10, SDL_KMOD_RSHIFT | SDL_KMOD_CAPS | SDL_KMOD_NUM, true, false);
+	assert(kb_read_char() == 0);
+	assert(kb_get_key_state(f10_scancode) == 0);
+	assert(music_toggle_requests == 3);
+	send_key(SDL_SCANCODE_F10, SDL_KMOD_NONE, false, false);
+	assert(kb_get_key_state(f10_scancode) == 0);
+	music_toggle_available = false;
 }
 
 static void test_timer(void)
@@ -1029,6 +1107,7 @@ legacy_int main(void)
 	dos_joystick_set_enabled(0);
 	sdl3_batch_mode = 0;
 	test_keyboard();
+	test_music_shortcut();
 	test_timer();
 	test_video_vsync();
 	test_video_borderless();

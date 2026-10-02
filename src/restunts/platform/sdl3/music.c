@@ -3,8 +3,8 @@
 #include "music.h"
 #include "sdl3.h"
 #include "../../c/asset_path.h"
+#include "../../c/platform.h"
 #include "../../c/audio_internal.h"
-#include "../../c/audio_control.h"
 #include <stdio.h>
 #include <string.h>
 #define STB_VORBIS_HEADER_ONLY
@@ -36,6 +36,9 @@ static legacy_s32 music_audio_initialized;
 static legacy_s32 music_paused;
 static legacy_s32 music_channels;
 static legacy_s32 music_queue_bytes;
+static legacy_s32 music_enabled;
+static legacy_s32 music_loading;
+static legacy_u64 music_elapsed_ticks;
 
 void sdl3_music_register(const void *resource, const legacy_s8 *name)
 {
@@ -100,7 +103,7 @@ static stb_vorbis *music_find(legacy_s32 track)
 	return decoder;
 }
 
-void sdl3_music_stop(void)
+static void music_close(void)
 {
 	SDL_DestroyAudioStream(music_stream);
 	music_stream = NULL;
@@ -112,8 +115,24 @@ void sdl3_music_stop(void)
 		SDL_QuitSubSystem(SDL_INIT_AUDIO);
 		music_audio_initialized = 0;
 	}
+	sdl3_audio_set_music_muted(0);
+}
+
+void sdl3_music_stop(void)
+{
+	music_close();
 	music_track = MUSIC_NO_TRACK;
 	music_resource = NULL;
+	music_elapsed_ticks = 0;
+}
+
+void sdl3_music_tick(void)
+{
+	/* The original sequencer calls this only for an active, unpaused tick.
+	 * Both sources therefore share loading, mute and dialog-pause behavior. */
+	if (music_resource != NULL) {
+		music_elapsed_ticks++;
+	}
 }
 
 void sdl3_music_set_volume(legacy_s16 value)
@@ -130,16 +149,19 @@ void sdl3_music_set_volume(legacy_s16 value)
 
 void sdl3_music_sync(void)
 {
-	if (music_stream == NULL) {
+	if (music_stream == NULL || music_loading) {
 		return;
 	}
-	legacy_s32 paused =
-		audio_music_enabled == AUDIO_STATE_DISABLED || audio_suspended == AUDIO_STATE_ENABLED;
+	legacy_s32 paused = audio_music_active == AUDIO_STATE_DISABLED ||
+						audio_music_enabled == AUDIO_STATE_DISABLED ||
+						audio_suspended == AUDIO_STATE_ENABLED || sdl3_timer_callbacks_suspended();
 	if (paused != music_paused) {
-		if (paused) {
-			SDL_PauseAudioStreamDevice(music_stream);
-		} else {
-			SDL_ResumeAudioStreamDevice(music_stream);
+		legacy_s32 succeeded = paused ? SDL_PauseAudioStreamDevice(music_stream)
+									  : SDL_ResumeAudioStreamDevice(music_stream);
+		if (!succeeded) {
+			music_failed[music_track] = 1;
+			music_close();
+			return;
 		}
 		music_paused = paused;
 	}
@@ -179,28 +201,22 @@ static legacy_s32 music_fill(void)
 	return 1;
 }
 
-legacy_s32 sdl3_music_start(const void *resource)
+static legacy_s32 music_open_current(void)
 {
-	sdl3_music_stop();
-	if (sdl3_batch_mode || resource == NULL) {
+	if (music_track == MUSIC_NO_TRACK || music_failed[music_track]) {
 		return 0;
 	}
-	for (size_t index = 0; index < MUSIC_TRACK_COUNT; ++index) {
-		if (music_resources[index] == resource && !music_failed[index]) {
-			music_track = (legacy_s32)index;
-			break;
-		}
-	}
-	if (music_track == MUSIC_NO_TRACK) {
-		return 0;
-	}
+	music_loading = 1;
 	music_decoder = music_find(music_track);
 	if (music_decoder == NULL || !SDL_InitSubSystem(SDL_INIT_AUDIO)) {
-		sdl3_music_stop();
-		return 0;
+		goto failed;
 	}
 	music_audio_initialized = 1;
 	stb_vorbis_info info = stb_vorbis_get_info(music_decoder);
+	legacy_u32 length = stb_vorbis_stream_length_in_samples(music_decoder);
+	if (length == 0 || stb_vorbis_get_error(music_decoder) != VORBIS__no_error) {
+		goto failed;
+	}
 	music_channels = info.channels;
 	music_queue_bytes =
 		(legacy_s32)(info.sample_rate * MUSIC_QUEUE_MILLISECONDS / MUSIC_MILLISECONDS_PER_SECOND *
@@ -211,43 +227,91 @@ legacy_s32 sdl3_music_start(const void *resource)
 	SDL_AudioSpec source_spec = {SDL_AUDIO_S16, music_channels, (legacy_s32)info.sample_rate};
 	music_stream =
 		SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &device_spec, NULL, NULL);
-	if (music_stream == NULL || !SDL_SetAudioStreamFormat(music_stream, &source_spec, NULL) ||
-		!music_fill()) {
-		sdl3_music_stop();
-		return 0;
+	if (music_stream == NULL || !SDL_SetAudioStreamFormat(music_stream, &source_spec, NULL)) {
+		goto failed;
 	}
-	music_resource = resource;
+	/* Account for device/file setup before seeking. The original sequence keeps
+	 * running during a Shift+F10 switch, but is still stopped during song loading. */
+	sdl3_timer_pump();
+	legacy_u32 frame = (legacy_u32)((music_elapsed_ticks * info.sample_rate /
+									 DOS_TIMER_REALTIME_TICKS_PER_SECOND) %
+									length);
+	if (!stb_vorbis_seek(music_decoder, frame) || !music_fill()) {
+		goto failed;
+	}
 	sdl3_music_set_volume(audio_music_rate);
 	music_paused = 1;
-	if (audio_music_enabled != AUDIO_STATE_DISABLED && audio_suspended != AUDIO_STATE_ENABLED) {
-		if (!SDL_ResumeAudioStreamDevice(music_stream)) {
-			sdl3_music_stop();
-			return 0;
-		}
-		music_paused = 0;
+	sdl3_audio_set_music_muted(1);
+	music_loading = 0;
+	sdl3_music_sync();
+	return music_stream != NULL;
+
+failed:
+	music_close();
+	music_loading = 0;
+	return 0;
+}
+
+legacy_s32 sdl3_music_start(const void *resource)
+{
+	sdl3_music_stop();
+	if (sdl3_batch_mode || resource == NULL) {
+		return 0;
 	}
+	for (size_t index = 0; index < MUSIC_TRACK_COUNT; ++index) {
+		if (music_resources[index] == resource) {
+			music_track = (legacy_s32)index;
+			music_resource = resource;
+			break;
+		}
+	}
+	return music_enabled ? music_open_current() : 0;
+}
+
+void sdl3_music_set_enabled(legacy_s32 enabled)
+{
+	enabled = enabled != 0;
+	if (music_enabled == enabled) {
+		return;
+	}
+	/* Catch up before choosing the new source so pending timer ticks cannot be
+	 * charged to a freshly opened decoder or lost when returning to AdLib. */
+	sdl3_timer_pump();
+	music_enabled = enabled;
+	if (music_enabled && music_resource != NULL && !sdl3_batch_mode) {
+		music_open_current();
+	} else {
+		music_close();
+	}
+}
+
+legacy_s32 sdl3_music_toggle(void)
+{
+	if (sdl3_batch_mode || music_resource == NULL) {
+		return 0;
+	}
+	sdl3_music_set_enabled(!music_enabled);
 	return 1;
 }
 
 void sdl3_music_update(void)
 {
-	if (music_stream == NULL) {
+	if (music_stream == NULL || music_loading) {
 		return;
 	}
 	sdl3_music_sync();
-	if (!music_paused && !music_fill()) {
-		/* A later read/decoder failure resumes the original song. Suppress
-		 * this replacement until the resource is prepared again. */
-		const void *resource = music_resource;
+	if (music_stream != NULL && !music_paused && !music_fill()) {
+		/* The original sequence has kept running silently, so a failed decoder
+		 * can return to it at the current note without restarting the song. */
 		music_failed[music_track] = 1;
-		sdl3_music_stop();
-		load_audio_finalize((void *)resource);
+		music_close();
 	}
 }
 
 void sdl3_music_shutdown(void)
 {
 	sdl3_music_stop();
+	music_enabled = 0;
 	memset(music_resources, 0, sizeof(music_resources));
 	memset(music_failed, 0, sizeof(music_failed));
 }

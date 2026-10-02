@@ -77,6 +77,17 @@ lfn=true
 minimum mcb free=1
 ```
 
+### Replacement music
+
+SDL3 builds start with the original AdLib music. Use `--ogg:on` to start with
+Ogg replacements enabled, or `--ogg:off` to select the default explicitly.
+Press **Shift+F10** during the
+intro, menus, or race-end/victory screens to switch to the included Ogg music.
+Press it again to return to AdLib at the same song position. The selection lasts
+for the current game session; the shortcut is inactive during races. Plain
+**F10** keeps its track-editor function. Missing or broken recordings use AdLib.
+See [replacement music details](docs/sdl3.md#optional-ogg-vorbis-music).
+
 ### F3 camera views
 
 Press **F3** to select the original adjustable camera. Press F3 again to cycle

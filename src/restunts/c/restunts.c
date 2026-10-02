@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include "frame_adaptive.h"
 #include "hires.h"
+#include "../platform/sdl3/music.h"
 #endif
 #include "audio.h"
 #include "dashboard.h"
@@ -65,6 +66,7 @@
 #define CALLBACK_DOS_HELP_ALT_KEY 24
 
 #define STARTUP_HYPERVISION_PREFIX "--hv:"
+#define STARTUP_OGG_MUSIC_PREFIX "--ogg:"
 #define STARTUP_SKIP_INTRO_OPTION "--nointro"
 
 #define STARTUP_PROJECTION_X 36
@@ -180,6 +182,8 @@ struct STARTUP_OPTIONS {
 	legacy_u8 skip_intro;
 #ifdef RESTUNTS_SDL3
 	legacy_u16 hypervision_preset;
+	legacy_u8 ogg_music_enabled;
+	legacy_u8 ogg_music_specified;
 #endif
 };
 
@@ -253,6 +257,34 @@ static void startup_parse_hypervision(const legacy_s8 *argument, struct STARTUP_
 			argument);
 	dos_process_exit(EXIT_FAILURE);
 }
+static void startup_parse_ogg_music(const legacy_s8 *argument, struct STARTUP_OPTIONS *options)
+{
+	const legacy_s8 *prefix = STARTUP_OGG_MUSIC_PREFIX;
+	const legacy_s8 *value = argument;
+	while (*prefix != 0 && tolower((legacy_u8)*value) == *prefix) {
+		prefix++;
+		value++;
+	}
+	if (*prefix != 0) {
+		return;
+	}
+	if (options->ogg_music_specified != 0) {
+		fprintf(stderr, "Only one Ogg music option may be specified (--ogg:).\n");
+		dos_process_exit(EXIT_FAILURE);
+		return;
+	}
+	options->ogg_music_specified = 1;
+	if (stricmp(value, "on") == 0) {
+		options->ogg_music_enabled = 1;
+		return;
+	}
+	if (stricmp(value, "off") == 0) {
+		options->ogg_music_enabled = 0;
+		return;
+	}
+	fprintf(stderr, "Invalid Ogg music option '%s'; use --ogg:on or --ogg:off.\n", argument);
+	dos_process_exit(EXIT_FAILURE);
+}
 #endif
 
 static void startup_parse_options(legacy_s16 argc, legacy_s8 *argv[],
@@ -264,10 +296,13 @@ static void startup_parse_options(legacy_s16 argc, legacy_s8 *argv[],
 	options->skip_intro = 0;
 #ifdef RESTUNTS_SDL3
 	options->hypervision_preset = FRAME_ADAPTIVE_PRESET_AUTO;
+	options->ogg_music_enabled = 0;
+	options->ogg_music_specified = 0;
 #endif
 	for (legacy_u16 i = 1; argc > i; ++i) {
 #ifdef RESTUNTS_SDL3
 		startup_parse_hypervision(argv[i], options);
+		startup_parse_ogg_music(argv[i], options);
 #endif
 		if (strcmp(argv[i], STARTUP_SKIP_INTRO_OPTION) == 0) {
 			options->skip_intro = 1;
@@ -412,6 +447,12 @@ void init_main(legacy_s16 argc, legacy_s8 *argv[])
 		dos_timer_shutdown();
 		dos_process_exit(1);
 	}
+
+#ifdef RESTUNTS_SDL3
+	/* Driver setup resets audio state, so apply the requested source afterward
+	 * and before the first intro or menu song is loaded. */
+	sdl3_music_set_enabled(startup_options.ogg_music_enabled);
+#endif
 
 	if (startup_options.sound_disabled) {
 		audio_toggle_music();

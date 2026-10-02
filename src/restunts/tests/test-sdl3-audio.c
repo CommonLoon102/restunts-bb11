@@ -10,6 +10,14 @@
 legacy_s32 sdl3_batch_mode;
 static legacy_u32 removed_callbacks;
 
+#define TEST_MUTE_SETTLE_SAMPLES 256U
+#define TEST_MUTE_NOTE 72
+#define TEST_MUTE_VOLUME 96
+#define TEST_MUTE_CONTROL_VOLUME 64
+#define TEST_MUTE_CONTROL_LEVEL 32
+#define TEST_MUTE_MIN_ENERGY 1000000U
+#define TEST_MUTE_ENERGY_RATIO 100U
+
 /* Optional music has its own decoder/device regression fixture. */
 void sdl3_music_update(void)
 {
@@ -371,6 +379,95 @@ static void check_continuous_eligibility(struct AUDIO_CHANNEL *channel,
 	context->modulation = 0;
 }
 
+static void check_music_mute(void)
+{
+	legacy_u8 instrument[ADLIB_RESOURCE_SIZE];
+	make_sine_instrument(instrument);
+	instrument[ADLIB_RESOURCE_CONNECTION_OFFSET] = ADLIB_CONNECTION_ADDITIVE;
+	struct AUDIO_CHANNEL *music = &audio_channels[AUDIO_MUSIC_CHANNEL_FIRST];
+	struct AUDIO_CHANNEL *effect = &audio_channels[AUDIO_EFFECT_CHANNEL_FIRST];
+	struct AUDIO_CONTEXT *context = &dos_audio_contexts[AUDIO_DRIVER_CHANNEL_BASE];
+	struct AUDIO_CONTEXT *effect_context = &dos_audio_contexts[AUDIO_DRIVER_CHANNEL_BASE + 1U];
+	music->channel = AUDIO_MUSIC_CHANNEL_FIRST;
+	music->volume = AUDIO_ENGINE_MAX_VOLUME;
+	effect->channel = AUDIO_EFFECT_CHANNEL_FIRST;
+	effect->volume = AUDIO_ENGINE_MAX_VOLUME;
+	context->channel = music->channel;
+	context->state = AUDIO_CONTEXT_STATE_PLAYING;
+	effect_context->channel = effect->channel;
+	effect_context->state = AUDIO_CONTEXT_STATE_PLAYING;
+	dos_audio_driver_prepare_context(AUDIO_DRIVER_CHANNEL_BASE, context, (legacy_u8 *)music,
+									 instrument);
+	dos_audio_driver_activate_context(AUDIO_DRIVER_CHANNEL_BASE, context, (legacy_u8 *)music,
+									  TEST_MUTE_NOTE, AUDIO_ENGINE_MAX_VOLUME, instrument);
+	dos_audio_driver_prepare_context(AUDIO_DRIVER_CHANNEL_BASE + 1U, effect_context,
+									 (legacy_u8 *)effect, instrument);
+	dos_audio_driver_activate_context(AUDIO_DRIVER_CHANNEL_BASE + 1U, effect_context,
+									  (legacy_u8 *)effect, TEST_MUTE_NOTE, AUDIO_ENGINE_MAX_VOLUME,
+									  instrument);
+	generate_samples(TEST_MUTE_SETTLE_SAMPLES);
+	legacy_u32 music_carrier =
+		ADLIB_REGISTER_OPERATOR_LEVEL + adlib_slots[0] + ADLIB_CARRIER_SLOT_OFFSET;
+	legacy_u32 effect_carrier =
+		ADLIB_REGISTER_OPERATOR_LEVEL + adlib_slots[1] + ADLIB_CARRIER_SLOT_OFFSET;
+	legacy_u8 music_level = adlib_registers[music_carrier];
+	legacy_u8 effect_level = adlib_registers[effect_carrier];
+	legacy_u8 key_state = adlib_registers[ADLIB_REGISTER_KEY_BLOCK];
+	legacy_u32 phase = carrier_phase();
+	assert(SDL_PauseAudioStreamDevice(adlib_stream));
+	legacy_s16 queued_samples[ADLIB_TICK_SAMPLES] = {0};
+	assert(SDL_PutAudioStreamData(adlib_stream, queued_samples, sizeof(queued_samples)));
+	assert(SDL_GetAudioStreamQueued(adlib_stream) > 0);
+	sdl3_audio_set_music_muted(1);
+	assert(SDL_GetAudioStreamQueued(adlib_stream) == 0);
+	assert(carrier_phase() == phase);
+	assert(adlib_registers[ADLIB_REGISTER_KEY_BLOCK] == key_state);
+	assert(adlib_registers[music_carrier] == music_level);
+	assert((adlib_output_registers[music_carrier] & ADLIB_LEVEL_MAX) == ADLIB_LEVEL_MAX);
+	assert(adlib_output_registers[effect_carrier] == effect_level);
+	generate_samples(TEST_MUTE_SETTLE_SAMPLES);
+	assert(pcm_energy() > TEST_MUTE_MIN_ENERGY);
+	dos_audio_driver_release_channel(AUDIO_DRIVER_CHANNEL_BASE + 1U);
+	generate_samples(TEST_MUTE_SETTLE_SAMPLES);
+	legacy_u64 muted_energy = pcm_energy();
+	/* Volume and controller writes still update their logical state while
+	 * both operators stay attenuated, including the additive modulator. */
+	dos_audio_set_channel_volume(AUDIO_MUSIC_CHANNEL_FIRST, TEST_MUTE_VOLUME);
+	dos_audio_driver_set_control(AUDIO_DRIVER_CHANNEL_BASE, context, ADLIB_CONTROL_VOLUME,
+								 TEST_MUTE_CONTROL_VOLUME);
+	adlib_control(0, ADLIB_SELECTOR_MODULATOR_LEVEL, TEST_MUTE_CONTROL_LEVEL);
+	assert(music->volume == TEST_MUTE_VOLUME);
+	assert((adlib_registers[music_carrier] & ADLIB_LEVEL_MAX) < ADLIB_LEVEL_MAX);
+	assert((adlib_registers[ADLIB_REGISTER_OPERATOR_LEVEL] & ADLIB_LEVEL_MAX) < ADLIB_LEVEL_MAX);
+	assert((adlib_output_registers[music_carrier] & ADLIB_LEVEL_MAX) == ADLIB_LEVEL_MAX);
+	assert((adlib_output_registers[ADLIB_REGISTER_OPERATOR_LEVEL] & ADLIB_LEVEL_MAX) ==
+		   ADLIB_LEVEL_MAX);
+	sdl3_audio_set_music_muted(0);
+	assert(adlib_registers[ADLIB_REGISTER_KEY_BLOCK] == key_state);
+	assert(adlib_output_registers[music_carrier] == adlib_registers[music_carrier]);
+	assert(adlib_output_registers[ADLIB_REGISTER_OPERATOR_LEVEL] ==
+		   adlib_registers[ADLIB_REGISTER_OPERATOR_LEVEL]);
+	generate_samples(TEST_MUTE_SETTLE_SAMPLES);
+	legacy_u64 restored_energy = pcm_energy();
+	assert(restored_energy > TEST_MUTE_MIN_ENERGY);
+	assert(restored_energy > muted_energy * TEST_MUTE_ENERGY_RATIO);
+
+	/* Reusing a voice and its instrument for an effect must restore its
+	 * output even when the global music-mute setting remains enabled. */
+	sdl3_audio_set_music_muted(1);
+	dos_audio_driver_activate_context(AUDIO_DRIVER_CHANNEL_BASE, context, (legacy_u8 *)effect,
+									  TEST_MUTE_NOTE, AUDIO_ENGINE_MAX_VOLUME, instrument);
+	assert(adlib_output_registers[music_carrier] == adlib_registers[music_carrier]);
+	assert((adlib_output_registers[music_carrier] & ADLIB_LEVEL_MAX) < ADLIB_LEVEL_MAX);
+	dos_audio_driver_activate_context(AUDIO_DRIVER_CHANNEL_BASE, context, (legacy_u8 *)music,
+									  TEST_MUTE_NOTE, AUDIO_ENGINE_MAX_VOLUME, instrument);
+	assert((adlib_output_registers[music_carrier] & ADLIB_LEVEL_MAX) == ADLIB_LEVEL_MAX);
+	dos_audio_driver_release_channel(AUDIO_DRIVER_CHANNEL_BASE);
+	sdl3_audio_set_music_muted(0);
+	assert(SDL_ResumeAudioStreamDevice(adlib_stream));
+	puts("Music mute: live notes and controllers preserved, effects audible, queued PCM cleared");
+}
+
 legacy_int main(legacy_int argc, legacy_char **argv)
 {
 	assert(argc == 2);
@@ -443,8 +540,11 @@ legacy_int main(legacy_int argc, legacy_char **argv)
 	check_octave_crossing_bends(channel, context);
 	check_continuous_pitch_history(channel, context);
 	check_continuous_eligibility(channel, context);
+	check_music_mute();
 	sdl3_audio_update();
+	sdl3_audio_set_music_muted(1);
 	dos_audio_shutdown();
+	assert(!adlib_music_muted);
 	assert(!adlib_ready && adlib_chip == NULL && adlib_stream == NULL);
 	assert(removed_callbacks == 1);
 	SDL_Quit();

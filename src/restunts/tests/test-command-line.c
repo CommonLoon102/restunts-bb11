@@ -88,7 +88,11 @@ static void test_help_contents(void)
 #ifdef RESTUNTS_SDL3
 		"  --data-dir DIR",
 #endif
-		"  --nointro"};
+		"  --nointro",
+#ifdef RESTUNTS_SDL3
+		"  --ogg:on|off",
+#endif
+	};
 	static const legacy_char *physics_options[] = {"  --pg:on|off", "  --lc:on|off",
 												   "  --lcb:on|off", "  --owoot"};
 #ifdef RESTUNTS_SDL3
@@ -121,11 +125,15 @@ static void test_help_contents(void)
 	expect_text("no effect");
 #ifdef RESTUNTS_SDL3
 	expect_text("HyperVision starts off.");
+	expect_text("Ogg music starts off.");
+	expect_text("Shift+F10 switches music sources outside races.");
+	expect_text("Ogg music options are also case-insensitive.");
 #ifdef __DJGPP__
 	assert(strstr(output, "--licenses") == NULL);
 #endif
 #else
 	assert(strstr(output, "--data-dir") == NULL);
+	assert(strstr(output, "--ogg") == NULL);
 	assert(strstr(output, "hv:") == NULL);
 	assert(strstr(output, "--licenses") == NULL);
 	expect_text("AdLib");
@@ -162,10 +170,11 @@ static void test_aliases_and_version(void)
 static void test_normal_and_similar_arguments(void)
 {
 	static const legacy_char *normal_arguments[] = {
-		"/h",	   "/sAD",		"/ns",		   "/nd",		 "--nointro",  "--hv:full", "--pg:off",
-		"--lc:on", "--lcb:off", "--owoot",	   "--licenses", "--data-dir", "",			"-H",
-		"-V",	   "-help",		"-version",	   "/help",		 "/v",		   "/version",	"help",
-		"version", "--helpful", "--version=1", "-hv",		 "-vh"};
+		"/h",		"/sAD",		"/ns",		 "/nd",		 "--nointro",  "--hv:full",
+		"--pg:off", "--lc:on",	"--lcb:off", "--owoot",	 "--licenses", "--data-dir",
+		"",			"-H",		"-V",		 "-help",	 "-version",   "/help",
+		"/v",		"/version", "help",		 "version",	 "--helpful",  "--version=1",
+		"-hv",		"-vh",		"--ogg:on",	 "--ogg:off"};
 	legacy_s8 *executable_only[] = {(legacy_s8 *)"--help"};
 	assert(run_arguments(COMMAND_LINE_TEST_ARGUMENT_COUNT(executable_only), executable_only) ==
 		   COMMAND_LINE_CONTINUE);

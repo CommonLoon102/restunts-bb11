@@ -163,6 +163,8 @@ struct ADLIB_VOICE {
 
 static struct ADLIB_VOICE adlib_voices[ADLIB_VOICES];
 static legacy_u8 adlib_registers[ADLIB_REGISTER_COUNT];
+static legacy_u8 adlib_output_registers[ADLIB_REGISTER_COUNT];
+static legacy_s32 adlib_music_muted;
 static legacy_u8 adlib_register_valid[ADLIB_REGISTER_COUNT];
 static legacy_s32 adlib_ready;
 static const legacy_u8 adlib_slots[ADLIB_VOICES] = {0, 1, 2, 8, 9, 10, 16, 17, 18};
@@ -189,16 +191,38 @@ static void adlib_generate_samples(legacy_s16 *samples, legacy_u32 count)
 }
 #endif
 
+static legacy_u8 adlib_output_value(legacy_u32 reg, legacy_u8 value)
+{
+	if (!adlib_music_muted || reg < ADLIB_REGISTER_OPERATOR_LEVEL ||
+		reg > ADLIB_REGISTER_OPERATOR_LEVEL + adlib_slots[ADLIB_VOICES - 1U] +
+				  ADLIB_CARRIER_SLOT_OFFSET) {
+		return value;
+	}
+	for (legacy_u32 voice = 0; voice < ADLIB_VOICES; ++voice) {
+		const struct AUDIO_CHANNEL *channel = adlib_voices[voice].channel;
+		legacy_u32 operator_reg = ADLIB_REGISTER_OPERATOR_LEVEL + adlib_slots[voice];
+		if (channel != NULL && channel->channel < AUDIO_EFFECT_CHANNEL_FIRST &&
+			(reg == operator_reg || reg == operator_reg + ADLIB_CARRIER_SLOT_OFFSET)) {
+			return value | ADLIB_LEVEL_MAX;
+		}
+	}
+	return value;
+}
+
 static void adlib_write(legacy_u32 reg, legacy_u32 value)
 {
 	legacy_u8 byte = (legacy_u8)value;
 	if (!adlib_ready || reg >= sizeof(adlib_registers)) {
 		return;
 	}
-	if (adlib_register_valid[reg] && adlib_registers[reg] == byte) {
+	/* Keep the original register state current while attenuating only music
+	 * voices at the output. Notes, envelopes and controllers keep advancing. */
+	adlib_registers[reg] = byte;
+	byte = adlib_output_value(reg, byte);
+	if (adlib_register_valid[reg] && adlib_output_registers[reg] == byte) {
 		return;
 	}
-	adlib_registers[reg] = byte;
+	adlib_output_registers[reg] = byte;
 	adlib_register_valid[reg] = 1;
 #ifdef __DJGPP__
 	outportb(ADLIB_ADDRESS_PORT, reg);
@@ -218,6 +242,31 @@ static void adlib_write(legacy_u32 reg, legacy_u32 value)
 		OPL2_WriteReg(adlib_chip, (legacy_u8)reg, byte);
 	}
 	adlib_trace_write(reg, byte, buffered);
+#endif
+}
+
+void sdl3_audio_set_music_muted(legacy_s32 muted)
+{
+	muted = muted != 0;
+	if (adlib_music_muted == muted) {
+		return;
+	}
+	adlib_music_muted = muted;
+	for (legacy_u32 voice = 0; voice < ADLIB_VOICES; ++voice) {
+		for (legacy_u32 operator_index = 0; operator_index < ADLIB_OPERATORS_PER_VOICE;
+			 ++operator_index) {
+			legacy_u32 reg = ADLIB_REGISTER_OPERATOR_LEVEL + adlib_slots[voice] +
+							 operator_index * ADLIB_CARRIER_SLOT_OFFSET;
+			adlib_write(reg, adlib_registers[reg]);
+		}
+	}
+#ifndef __DJGPP__
+	if (adlib_stream != NULL) {
+		/* Discard already queued music so the switch takes effect immediately;
+		 * the chip and all currently sounding effects retain their state. */
+		adlib_trace_clear();
+		SDL_ClearAudioStream(adlib_stream);
+	}
 #endif
 }
 
@@ -411,6 +460,7 @@ static void adlib_control(legacy_s32 voice, legacy_u32 selector, legacy_u32 valu
 legacy_u8 dos_audio_driver_initialize(void)
 {
 	adlib_ready = 0;
+	adlib_music_muted = 0;
 	memset(adlib_register_valid, 0, sizeof(adlib_register_valid));
 	memset(adlib_voices, 0, sizeof(adlib_voices));
 	if (sdl3_batch_mode) {
@@ -772,6 +822,7 @@ void dos_audio_shutdown(void)
 	timer_remove_callback(audio_sequence_timer);
 	dos_audio_driver_start();
 	adlib_ready = 0;
+	adlib_music_muted = 0;
 #ifndef __DJGPP__
 	adlib_trace_close();
 	if (adlib_stream) {

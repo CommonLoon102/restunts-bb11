@@ -1,4 +1,5 @@
 #include "sdl3.h"
+#include "music.h"
 #include "../../c/platform.h"
 #include "../../c/keyboard.h"
 #include "../../c/game_input.h"
@@ -236,6 +237,13 @@ static void input_key(const SDL_KeyboardEvent *event)
 		if (!was_pressed && !event->repeat) {
 			sdl3_video_toggle_fullscreen();
 		}
+		return;
+	}
+	if (event->scancode == SDL_SCANCODE_F10 && !was_pressed && !event->repeat &&
+		(event->mod & SDL_KMOD_SHIFT) != 0 &&
+		(event->mod & (SDL_KMOD_CTRL | SDL_KMOD_ALT | SDL_KMOD_GUI)) == 0 && sdl3_music_toggle()) {
+		/* Do not let the accepted shortcut dismiss the intro or a music screen. */
+		consumed_keys[event->scancode] = true;
 		return;
 	}
 	legacy_u32 scan = legacy_scancode(event->scancode);
