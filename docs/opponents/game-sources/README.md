@@ -10,8 +10,15 @@ independently of ignored build output and local generated-image storage.
   These include the original border and number, before the final half-size
   reduction and game-palette conversion.
 
-Otto's selected source has the cord curving over his shoulder, as requested.
-Bernie's selected source has the corrected green shirt collars. Cherry's source
+Otto's selected source was rebuilt from the original game portrait on 2026-10-02.
+His gold monocle cord follows the [user-drawn path](patches/opp2-cord-reference.png):
+a straight hanging section, a rounded bend below the chin, and a narrow return
+on its viewer-left side rising toward the jacket edge beside the jaw.
+The localized cord patch preserves every master pixel outside its mask. His dark lightweight
+jacket is collarless and unzipped over a black T-shirt; his lips have a natural
+partial kiss pucker. Otto uses nearest-neighbor resizing, as recorded in
+[`processing.json`](processing.json), while the other portraits retain bilinear
+resizing. Bernie's selected source has the corrected green shirt collars. Cherry's source
 also restores the far-side triangular earring visible in the original portrait,
 with a longer pointed tip. The committed photograph supplies every pixel outside
 the localized earring patch, preserving its original detail and sharpness.
@@ -47,7 +54,8 @@ python3 tools/scripts/prepare-original-opponent-upscales.py --check
 ```
 
 The script reads `full-resolution/`, prepares `working-4x/`, and writes the final
-indexed tiles into `assets/opponents/game/`. `--check` verifies without writing.
+indexed tiles into `assets/opponents/game/`, using the per-image filters in
+[`processing.json`](processing.json). `--check` verifies without writing.
 When selecting a new source, update the [archive manifest](manifest.json) and
 [generation records](../game-regeneration-prompts.json). The manifest records
 dimensions and SHA-256 hashes so the preserved files can be checked exactly.
@@ -62,3 +70,24 @@ with `git cat-file blob <base_blob>` using the recorded object ID, load it as RG
 and load the patch as RGBA, then use
 `base.paste(patch, (179, 691), patch)`. Only 2,778 pixels change; every pixel outside
 the earring patch remains identical to the committed photograph.
+
+Otto's selected [RGBA cord patch](patches/opp2-cord-path.png),
+[preceding region](patches/opp2-cord-path-before.png), and
+[composition record](patches/opp2-cord-path.json) preserve the correction from the
+[user's red annotation](patches/opp2-cord-reference.png). Only 8,642 source pixels
+change relative to the preceding master. Paste the preceding region at the
+recorded destination to recover that master's exact pixels; then apply the RGBA
+patch there using its alpha mask to reconstruct the selected source. No full-image
+resampling or generated face detail is applied. The earlier
+[cord correction](patches/opp2-cord-back.json) is retained as historical provenance
+and can be reversed after restoring this patch's preceding region.
+
+Otto's latest [middle-finger patch](patches/opp2-middle-finger.png),
+[pre-repair region](patches/opp2-middle-finger-before.png), and
+[composition record](patches/opp2-middle-finger.json) repair the raised hand.
+The repaired grip has four distinct curled long fingers and one tucked thumb.
+Imagegen received only a hand crop. The donor finger cluster was embedded in the
+existing master; all pixels outside its alpha mask remain identical. The original
+portrait was not resampled, and the monocle contact was protected. This step
+changes 54,042 source pixels. Undo this latest patch with its pre-repair region
+before reconstructing or reversing the earlier cord patches described above.

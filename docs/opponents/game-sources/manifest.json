@@ -29,9 +29,10 @@
       "role": "selected full-resolution source",
       "width": 1215,
       "height": 1295,
-      "bytes": 1778415,
-      "sha256": "2bf85aa691fb7e87e723fc86c09a1172226c073f6243940880ac0a3e028c42d2",
-      "source": "/home/user/.codex/generated_images/01a0cdb3-98b5-7151-a9b0-1b3d7f16170c/exec-8c2d9b45-9a8c-4018-b345-0e9731664e75.png"
+      "bytes": 1886551,
+      "sha256": "cdc5c40d48a65a0c4f357f2f161f17d84b33c71e13d48c3c3a2e0a72e3d67146",
+      "source": "composite:patches/opp2-cord-path.json",
+      "composition": "patches/opp2-middle-finger.json"
     },
     {
       "file": "working-4x/opp2.png",
@@ -39,9 +40,10 @@
       "role": "4x working tile used before final reduction",
       "width": 320,
       "height": 332,
-      "bytes": 87518,
-      "sha256": "ad2b44df8a8c8a81b14bb3be430315bfe51f8134554c64540cc30526f022f70c",
-      "source": "/media/sf_ubi24/restunts-bb11/out/opponents/game2-rebuilt/4x/opp2.png"
+      "bytes": 94799,
+      "sha256": "e93f9531befe733deeaae8edca2536bb28ebb4491e776f8227846b6bf15d6051",
+      "source": "/media/sf_ubi24/restunts-bb11/docs/opponents/game-sources/full-resolution/opp2.png",
+      "resampling": "nearest"
     },
     {
       "file": "full-resolution/opp3.png",
@@ -124,5 +126,6 @@
       "sha256": "eb7bdbdb0cad8f330908f2f2aaa1bf9ba505b5b3ca7a8959569440b8ca41effc",
       "source": "/media/sf_ubi24/restunts-bb11/out/opponents/game2-rebuilt/4x/opp6.png"
     }
-  ]
+  ],
+  "processing": "processing.json"
 }
