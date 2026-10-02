@@ -23,6 +23,8 @@ static legacy_u64 mock_time_ns;
 static legacy_u32 first_calls;
 static legacy_u32 second_calls;
 static legacy_u32 audio_calls;
+static legacy_u32 music_sync_calls;
+static legacy_s32 music_paused;
 static legacy_u32 delay_calls;
 static legacy_u32 last_delay_ms;
 static legacy_u32 expected_delay_ms = TEST_POLL_DELAY_MS;
@@ -54,6 +56,12 @@ static void test_delay(legacy_u32 milliseconds)
 #undef SDL_GetTicks
 #undef SDL_GetTicksNS
 #undef SDL_Delay
+
+void sdl3_music_sync(void)
+{
+	music_sync_calls++;
+	music_paused = sdl3_timer_callbacks_suspended();
+}
 
 void sdl3_platform_pump(void)
 {
@@ -102,6 +110,8 @@ static void reset_timer(void)
 	mock_time_ms = TEST_START_MS;
 	mock_time_ns = mock_time_ms * TEST_NS_PER_MS + TEST_SUB_MS_NS;
 	first_calls = second_calls = audio_calls = delay_calls = 0;
+	music_sync_calls = 0;
+	music_paused = false;
 	inside_callback = false;
 	dos_timer_setup_interrupt();
 	register_callbacks();
@@ -175,6 +185,28 @@ static void test_backward_clock(void)
 					TEST_INITIAL_TICKS + 2U);
 }
 
+static void test_music_pause_transition(void)
+{
+	reset_timer();
+	mock_time_ms += TEST_PARTIAL_TICK_MS;
+	dos_timer_set_callbacks_suspended(DOS_TIMER_CALLBACK_SUSPENDED_MASK);
+	/* No timer tick has elapsed: the device must pause immediately, without
+	 * waiting for sdl3_audio_update to notice the changed callback state. */
+	assert(music_sync_calls == 1U && music_paused);
+	assert(sdl3_timer_callbacks_suspended());
+	assert(first_calls == 0 && second_calls == 0 && audio_calls == 0);
+
+	mock_time_ms += TEST_INITIAL_TICKS * TEST_TICK_MS;
+	dos_timer_set_callbacks_suspended(false);
+	/* Pending ticks belong to the suspended interval, then the device resumes
+	 * before another timer tick or sequencer callback can run. */
+	assert(music_sync_calls == 2U && !music_paused);
+	assert(!sdl3_timer_callbacks_suspended());
+	assert(first_calls == 0 && second_calls == 0 && audio_calls == TEST_INITIAL_TICKS);
+	mock_time_ms += TEST_TICK_MS;
+	expect_counters(1, TEST_INITIAL_TICKS + 1U, 1, TEST_INITIAL_TICKS + 1U);
+}
+
 static void test_paused_clock_recovery(void)
 {
 	reset_timer();
@@ -223,6 +255,7 @@ legacy_int main(void)
 	test_platform_delay();
 	test_regular_progression();
 	test_backward_clock();
+	test_music_pause_transition();
 	test_paused_clock_recovery();
 	test_shutdown_restart();
 	puts("SDL3 timer regression tests passed");

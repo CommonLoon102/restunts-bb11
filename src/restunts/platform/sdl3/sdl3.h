@@ -17,7 +17,9 @@ void sdl3_browser_yield_if_due(void);
 #endif
 void sdl3_platform_shutdown(void);
 void sdl3_timer_pump(void);
+legacy_s32 sdl3_timer_callbacks_suspended(void);
 void sdl3_audio_update(void);
+void sdl3_audio_set_music_muted(legacy_s32 muted);
 void sdl3_input_shutdown(void);
 void sdl3_video_shutdown(void);
 void sdl3_video_present(void);

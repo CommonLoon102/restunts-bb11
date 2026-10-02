@@ -1,5 +1,8 @@
 #include "audio_internal.h"
 #include "platform.h"
+#ifdef RESTUNTS_SDL3
+#include "../platform/sdl3/music.h"
+#endif
 
 extern legacy_u8 audio_channel_reserved[];
 extern legacy_u8 dos_audio_driver_data[];
@@ -381,6 +384,9 @@ void audio_sequence_timer(void)
 	audio_update_driver_contexts();
 	if (audio_music_active == AUDIO_STATE_ENABLED && audio_music_enabled == AUDIO_STATE_ENABLED &&
 		audio_suspended == AUDIO_STATE_DISABLED) {
+#ifdef RESTUNTS_SDL3
+		sdl3_music_tick();
+#endif
 		audio_sequence_elapsed_ticks =
 			LEGACY_U16_WRAP_ADD(audio_sequence_elapsed_ticks, AUDIO_SEQUENCE_TIMER_TICK_STEP);
 		while (audio_sequence_elapsed_ticks >= audio_sequence_tick_period) {

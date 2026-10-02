@@ -9,6 +9,7 @@
 #include "../c/audio_internal.h"
 #include "../c/platform.h"
 #include "../platform/sdl3/sdl3.h"
+#include "../platform/sdl3/music.h"
 
 extern legacy_s16 audio_play_effect(void *resource, legacy_s16 channel, legacy_u8 priority);
 
@@ -25,6 +26,8 @@ extern legacy_s16 audio_play_effect(void *resource, legacy_s16 channel, legacy_u
 #define TEST_TIMER_POLL_MS 1U
 #define TEST_SHORT_LOADING_TICKS 50U
 #define TEST_LONG_LOADING_TICKS 137U
+#define TEST_PAUSED_TICKS 21U
+#define TEST_REPEATED_SWITCHES 4U
 #define TEST_RESOURCE_TYPE_OFFSET 4U
 #define TEST_FIRST_INSTRUMENT_ARGUMENT_OFFSET 2U
 #define TEST_FIRST_NOTE_DURATION_OFFSET 8U
@@ -215,13 +218,10 @@ static void check_missing_note(legacy_u8 kind, legacy_u8 volume, legacy_s32 dire
 	}
 }
 
-static void check_music_start_after_loading(void)
+static struct sequence_fixture make_song_fixture(const legacy_s8 *name)
 {
-	dos_audio_uses_direct_channels = 0;
-	audio_reset_channels();
-	audio_music_enabled = AUDIO_STATE_ENABLED;
 	struct sequence_fixture fixture =
-		make_fixture(MISSING_INSTRUMENT, AUDIO_ENGINE_MAX_VOLUME, "TEST");
+		make_fixture(MISSING_INSTRUMENT, AUDIO_ENGINE_MAX_VOLUME, name);
 	fixture.header[TEST_RESOURCE_TYPE_OFFSET] = AUDIO_RESOURCE_TYPE_SONG;
 	fixture.events[TEST_FIRST_INSTRUMENT_ARGUMENT_OFFSET] = TEST_TONE_INSTRUMENT;
 	fixture.events[TEST_FIRST_NOTE_DURATION_OFFSET] = TEST_FIRST_NOTE_TICKS;
@@ -230,6 +230,15 @@ static void check_music_start_after_loading(void)
 	LEGACY_WRITE_U16_LE(fixture.instrument + TEST_ATTACK_STEP_OFFSET, AUDIO_ENGINE_MAX_VOLUME);
 	LEGACY_WRITE_U16_LE(fixture.instrument + TEST_SUSTAIN_LEVEL_OFFSET, AUDIO_ENGINE_MAX_VOLUME);
 	LEGACY_WRITE_U16_LE(fixture.instrument + TEST_RELEASE_STEP_OFFSET, AUDIO_ENGINE_MAX_VOLUME);
+	return fixture;
+}
+
+static void check_music_start_after_loading(void)
+{
+	dos_audio_uses_direct_channels = 0;
+	audio_reset_channels();
+	audio_music_enabled = AUDIO_STATE_ENABLED;
+	struct sequence_fixture fixture = make_song_fixture("TEST");
 	struct AUDIO_CHANNEL *channel = &audio_channels[AUDIO_MUSIC_CHANNEL_FIRST];
 	struct AUDIO_CONTEXT *context = &dos_audio_contexts[AUDIO_DRIVER_CHANNEL_BASE];
 	static const legacy_u32 loading_ticks[] = {TEST_SHORT_LOADING_TICKS, TEST_LONG_LOADING_TICKS};
@@ -238,11 +247,12 @@ static void check_music_start_after_loading(void)
 	 * as the initial intro. Both game clocks retain the full loading duration. */
 	for (legacy_u32 run = 0; run < sizeof(loading_ticks) / sizeof(loading_ticks[0]); ++run) {
 		legacy_u32 previous_ticks = dos_timer_get_realtime_counter();
+		legacy_u32 previous_game_ticks = timer_get_counter();
 		mock_time_ms += loading_ticks[run] * TEST_TIMER_TICK_MS;
 		load_audio_finalize(fixture.header);
 		legacy_u32 start_ticks = previous_ticks + loading_ticks[run];
 		assert(dos_timer_get_realtime_counter() == start_ticks);
-		assert(timer_get_counter() == start_ticks);
+		assert(timer_get_counter() == previous_game_ticks + loading_ticks[run]);
 		assert(audio_sequence_elapsed_ticks == 0);
 		assert(audio_read_far_pointer((legacy_u8 *)&channel->cursor) == fixture.events);
 		assert(channel->active_notes == 0);
@@ -266,56 +276,118 @@ static void check_music_start_after_loading(void)
 	}
 }
 
+static void check_switch_preserves_sequence(void)
+{
+	struct AUDIO_CHANNEL before_channels[AUDIO_CHANNEL_COUNT];
+	struct AUDIO_CONTEXT before_contexts[AUDIO_CONTEXT_COUNT];
+	memcpy(before_channels, audio_channels, sizeof(before_channels));
+	memcpy(before_contexts, dos_audio_contexts, sizeof(before_contexts));
+	legacy_u16 elapsed = audio_sequence_elapsed_ticks;
+	legacy_u16 period = audio_sequence_tick_period;
+	assert(sdl3_music_toggle());
+	assert(memcmp(before_channels, audio_channels, sizeof(before_channels)) == 0);
+	assert(memcmp(before_contexts, dos_audio_contexts, sizeof(before_contexts)) == 0);
+	assert(audio_sequence_elapsed_ticks == elapsed && audio_sequence_tick_period == period);
+	assert(audio_music_active == AUDIO_STATE_ENABLED && audio_music_channel_count == 1);
+}
+
 static void check_replacement_music(const legacy_char *fixture_path)
 {
 	dos_audio_uses_direct_channels = 0;
 	audio_music_enabled = AUDIO_STATE_ENABLED;
+	assert(!sdl3_music_toggle());
 	assert(SDL_CreateDirectory(TEST_MUSIC_DIRECTORY));
 	assert(SDL_CopyFile(fixture_path, TEST_MUSIC_PATH));
-	struct sequence_fixture replacement =
-		make_fixture(MISSING_INSTRUMENT, AUDIO_ENGINE_MAX_VOLUME, "TITL");
-	struct sequence_fixture original =
-		make_fixture(MISSING_INSTRUMENT, AUDIO_ENGINE_MAX_VOLUME, "TEST");
-	replacement.header[TEST_RESOURCE_TYPE_OFFSET] = AUDIO_RESOURCE_TYPE_SONG;
-	original.header[TEST_RESOURCE_TYPE_OFFSET] = AUDIO_RESOURCE_TYPE_SONG;
+	struct sequence_fixture replacement = make_song_fixture("TITL");
+	struct sequence_fixture original = make_song_fixture("TEST");
 	struct AUDIO_CHANNEL *channel = &audio_channels[AUDIO_MUSIC_CHANNEL_FIRST];
+	struct AUDIO_CONTEXT *context = &dos_audio_contexts[AUDIO_DRIVER_CHANNEL_BASE];
 
-	/* The resource mapper must select the replacement, including when another
-	 * mapped resource was prepared before playback starts. */
+	/* A mapped replacement still starts on AdLib. Preparing another resource
+	 * beforehand must not replace its mapping or discard the original sequence. */
 	load_audio_finalize(replacement.header);
-	/* A replacement can be the first song at startup, before any original
-	 * sequence has initialized its nonzero timer period. */
 	assert(audio_sequence_tick_period > 0);
 	assert(audio_sequence_elapsed_ticks == 0);
 	assert(audio_music_active == AUDIO_STATE_ENABLED);
-	assert(audio_music_channel_count == 0);
-	assert(audio_read_far_pointer((legacy_u8 *)&channel->cursor) == NULL);
-	assert(audio_toggle_music() == 0);
-	audio_suspend();
-	assert(audio_suspended == AUDIO_STATE_ENABLED);
-	assert(audio_toggle_music() == 1);
-	audio_resume();
-	assert(audio_suspended == AUDIO_STATE_DISABLED);
+	assert(audio_music_channel_count == 1);
+	assert(audio_read_far_pointer((legacy_u8 *)&channel->cursor) == replacement.events);
 	mock_time_ms += TEST_TIMER_TICK_MS;
 	sdl3_timer_pump();
-	assert(audio_music_channel_count == 0);
-	assert(audio_read_far_pointer((legacy_u8 *)&channel->cursor) == NULL);
+	assert(channel->active_notes == 1 && context->age == 0);
+	assert(audio_read_far_pointer((legacy_u8 *)&channel->cursor) ==
+		   replacement.events + TEST_SECOND_EVENT_OFFSET);
 
-	/* A song without a matching Ogg returns to the original sequence without
-	 * affecting the next replacement or shutting down the shared SDL device. */
+	/* The switch itself catches up a pending tick before opening the Ogg.
+	 * Subsequent changes preserve the note's envelope, age, cursor and tempo. */
+	mock_time_ms += TEST_TIMER_TICK_MS;
+	assert(sdl3_music_toggle());
+	assert(context->age == 1 && context->state == AUDIO_CONTEXT_STATE_PLAYING);
+	assert(context->fade_out_flag == TEST_FIRST_NOTE_TICKS - 2U);
+	for (legacy_u32 index = 0; index < TEST_REPEATED_SWITCHES; ++index) {
+		check_switch_preserves_sequence();
+	}
+	mock_time_ms += TEST_TIMER_TICK_MS;
+	sdl3_timer_pump();
+	assert(context->age == 2 && channel->active_notes == 1);
+	assert(context->fade_out_flag == TEST_FIRST_NOTE_TICKS - 3U);
+
+	/* Modal dialogs suspend callback time. Switching while the dialog is open
+	 * leaves the original note frozen, then both sources resume on one tick. */
+	dos_timer_set_callbacks_suspended(DOS_TIMER_CALLBACK_SUSPENDED_MASK);
+	legacy_u16 delay = channel->delay;
+	mock_time_ms += TEST_PAUSED_TICKS * TEST_TIMER_TICK_MS;
+	sdl3_timer_pump();
+	assert(context->age == 2 && channel->delay == delay);
+	check_switch_preserves_sequence();
+	check_switch_preserves_sequence();
+	dos_timer_set_callbacks_suspended(0);
+	mock_time_ms += TEST_TIMER_TICK_MS;
+	sdl3_timer_pump();
+	assert(context->age == 3 && channel->active_notes == 1);
+	check_switch_preserves_sequence();
+
+	/* Music options and audio suspension preserve the sequence location too.
+	 * The legacy option may release its sounding note, but cannot restart it. */
+	assert(audio_toggle_music() == 0);
+	void *cursor = audio_read_far_pointer((legacy_u8 *)&channel->cursor);
+	delay = channel->delay;
+	legacy_u16 elapsed = audio_sequence_elapsed_ticks;
+	mock_time_ms += TEST_PAUSED_TICKS * TEST_TIMER_TICK_MS;
+	sdl3_timer_pump();
+	assert(audio_read_far_pointer((legacy_u8 *)&channel->cursor) == cursor);
+	assert(channel->delay == delay && audio_sequence_elapsed_ticks == elapsed);
+	check_switch_preserves_sequence();
+	assert(audio_toggle_music() == 1);
+	audio_suspend();
+	mock_time_ms += TEST_PAUSED_TICKS * TEST_TIMER_TICK_MS;
+	sdl3_timer_pump();
+	assert(audio_read_far_pointer((legacy_u8 *)&channel->cursor) == cursor);
+	assert(channel->delay == delay && audio_sequence_elapsed_ticks == elapsed);
+	check_switch_preserves_sequence();
+	audio_resume();
+	assert(audio_suspended == AUDIO_STATE_DISABLED);
+	check_switch_preserves_sequence();
+
+	/* Changing songs resets each song normally; the playback preference does
+	 * not remove original channels. An unmapped song cannot toggle sources. */
 	load_audio_finalize(original.header);
-	assert(audio_music_active == AUDIO_STATE_ENABLED);
-	assert(audio_music_channel_count == 1);
+	assert(audio_music_active == AUDIO_STATE_ENABLED && audio_music_channel_count == 1);
 	assert(audio_read_far_pointer((legacy_u8 *)&channel->cursor) == original.events);
+	assert(!sdl3_music_toggle());
 	load_audio_finalize(replacement.header);
-	assert(audio_music_active == AUDIO_STATE_ENABLED);
-	assert(audio_music_channel_count == 0);
-	assert(audio_read_far_pointer((legacy_u8 *)&channel->cursor) == NULL);
-	audio_stop_music();
-	assert(audio_music_active == AUDIO_STATE_DISABLED);
-	assert(audio_music_channel_count == 0);
-	assert(strcmp(SDL_GetCurrentAudioDriver(), "dummy") == 0);
+	assert(audio_music_active == AUDIO_STATE_ENABLED && audio_music_channel_count == 1);
+	assert(audio_read_far_pointer((legacy_u8 *)&channel->cursor) == replacement.events);
 	assert(SDL_RemovePath(TEST_MUSIC_PATH));
+	load_audio_finalize(replacement.header);
+	mock_time_ms += TEST_TIMER_TICK_MS;
+	sdl3_timer_pump();
+	assert(context->age == 0 && channel->active_notes == 1);
+	check_switch_preserves_sequence();
+	check_switch_preserves_sequence();
+	audio_stop_music();
+	assert(audio_music_active == AUDIO_STATE_DISABLED && audio_music_channel_count == 0);
+	assert(!sdl3_music_toggle());
+	assert(strcmp(SDL_GetCurrentAudioDriver(), "dummy") == 0);
 }
 
 legacy_int main(legacy_int argc, legacy_char **argv)

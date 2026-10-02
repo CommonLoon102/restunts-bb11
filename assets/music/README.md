@@ -11,6 +11,14 @@ or fade-out. The race-end track retains its original pause before repeating.
 | `over.ogg` | Race-end music (`OVER`) |
 | `vict.ogg` | Victory music (`VICT`) |
 
+Original AdLib music is selected at startup (`--ogg:off`). Use `--ogg:on` to
+start with replacements enabled instead. **Shift+F10** enables these
+replacements on music screens and switches back to AdLib on the next press.
+The choice lasts for the current game session; it cannot change during a race.
+Switches keep the current song position instead of restarting it. Plain **F10**
+retains its track-editor function. Use the original song timing and loop length
+when making replacements so both versions stay musically aligned.
+
 Use these lowercase filenames. Files must contain Ogg Vorbis audio with one
 (mono) or two (stereo) channels and a sample rate from 8,000 through 192,000 Hz.
 Other codecs in an Ogg container, such as Opus, are not supported. Each track
@@ -21,7 +29,7 @@ their original sound.
 Replacement is independent for each song: supply one, several, or all four.
 Missing, unreadable, unsupported, or broken files fall back to the corresponding
 original music. A decoding or playback-queue failure during a song also resumes
-its original music. Original game resources are still required.
+its original music at the current position. Original game resources are still required.
 
 All SDL3 builds support replacements, including 32-bit DOS and WebAssembly.
 The bundled stb_vorbis decoder needs no separate Vorbis library installation.

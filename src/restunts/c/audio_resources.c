@@ -757,13 +757,10 @@ void load_audio_finalize(void far *audio_resource)
 	audio_sequence_elapsed_ticks = 0;
 	audio_sequence_tick_period = AUDIO_ENGINE_INITIAL_TICK_STEP;
 #ifdef RESTUNTS_SDL3
-	if (sdl3_music_start(resource)) {
-		audio_music_channel_count = 0;
-		audio_music_active = AUDIO_STATE_ENABLED;
-		audio_update_lock = AUDIO_UPDATE_UNLOCKED;
-		return;
-	}
-	/* File probing and audio-device setup can take time before fallback starts. */
+	/* Always keep the original sequence alive. Shift+F10 selects which source is
+	 * audible without losing its notes, controllers or current position. */
+	sdl3_music_start(resource);
+	/* File probing and audio-device setup can take time before either source starts. */
 	dos_audio_driver_reset();
 #endif
 	legacy_u16 data_offset =
@@ -775,6 +772,9 @@ void load_audio_finalize(void far *audio_resource)
 							 resource, data_offset, audio_music_rate, AUDIO_MUSIC_PRIORITY);
 	audio_music_active = AUDIO_STATE_ENABLED;
 	audio_update_lock = AUDIO_UPDATE_UNLOCKED;
+#ifdef RESTUNTS_SDL3
+	sdl3_music_sync();
+#endif
 }
 
 void audioresource_copy_n_bytes(const legacy_u8 far *source, legacy_u8 far *destination,

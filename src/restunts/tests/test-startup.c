@@ -29,6 +29,18 @@ legacy_u8 supersight_enabled;
 static legacy_s32 startup_render_enabled;
 static legacy_s32 startup_render_scale = HIRES_SCALE;
 static legacy_u16 expected_hypervision_preset;
+static legacy_s32 startup_audio_driver_loaded;
+static legacy_s32 startup_ogg_music_enabled;
+static legacy_s32 expected_ogg_music_enabled;
+static legacy_u32 startup_ogg_set_calls;
+
+void sdl3_music_set_enabled(legacy_s32 enabled)
+{
+	assert(startup_audio_driver_loaded);
+	startup_audio_driver_loaded = 0;
+	startup_ogg_music_enabled = enabled;
+	++startup_ogg_set_calls;
+}
 
 void hires_set_enabled(legacy_s32 enabled)
 {
@@ -176,6 +188,11 @@ legacy_s16 audio_load_dos_driver(const legacy_s8 *name, legacy_s16 a, legacy_s16
 	trace(name[1]);
 	trace(a);
 	trace(b);
+#ifdef RESTUNTS_SDL3
+	startup_audio_driver_loaded = audio_failure == 0;
+	/* Mirror real driver initialization resetting the source preference. */
+	startup_ogg_music_enabled = 0;
+#endif
 	return audio_failure;
 }
 void dos_timer_shutdown(void)
@@ -356,6 +373,7 @@ legacy_s16 run_intro_looped(void)
 {
 #ifdef RESTUNTS_SDL3
 	check_startup_hypervision();
+	assert(startup_ogg_music_enabled == expected_ogg_music_enabled);
 #endif
 	trace(44);
 	assert(intro_calls < 3);
@@ -418,6 +436,9 @@ legacy_s8 run_menu(void)
 	}
 #ifdef RESTUNTS_SDL3
 	check_startup_hypervision();
+#endif
+#ifdef RESTUNTS_SDL3
+	assert(startup_ogg_music_enabled == expected_ogg_music_enabled);
 #endif
 	legacy_u32 call = menu_calls++;
 	trace(52);
@@ -757,6 +778,69 @@ static void test_startup_hypervision_options(void)
 		assert(startup_options.hypervision_preset == FRAME_ADAPTIVE_PRESET_AUTO);
 	}
 }
+
+static void test_startup_ogg_music_options(void)
+{
+	static const struct {
+		const legacy_s8 *argument;
+		legacy_s32 enabled;
+	} cases[] = {{"--ogg:on", 1}, {"--ogg:off", 0}, {"--OGG:On", 1}, {"--oGg:OfF", 0}};
+	for (legacy_u16 index = 0; index < sizeof(cases) / sizeof(cases[0]); ++index) {
+		legacy_s8 *arguments[] = {(legacy_s8 *)"game", (legacy_s8 *)cases[index].argument,
+								  (legacy_s8 *)"/ns", (legacy_s8 *)"--hv:low",
+								  (legacy_s8 *)"--nointro"};
+		reset_startup_hypervision();
+		expected_hypervision_preset = FRAME_ADAPTIVE_PRESET_LOW;
+		expected_ogg_music_enabled = cases[index].enabled;
+		expected_initial_intro_calls = index % 2U;
+		menu_calls = intro_calls = game_calls = score_calls = 0;
+		is_audioloaded = 0;
+		track_element_map = menu_track_data;
+		geometry_ticks = STARTUP_TEST_GEOMETRY_TICKS;
+		clear_ticks = STARTUP_TEST_CLEAR_TICKS;
+		partial_ticks = STARTUP_TEST_PARTIAL_TICKS;
+		legacy_s16 count = sizeof(arguments) / sizeof(arguments[0]);
+		if (expected_initial_intro_calls != 0) {
+			--count;
+		}
+		legacy_u32 before = startup_ogg_set_calls;
+		assert(run_main_menu_loop(count, arguments) == 1);
+		assert(startup_ogg_set_calls == before + 1U);
+		assert(startup_options.ogg_music_specified);
+		assert(startup_options.ogg_music_enabled == cases[index].enabled);
+		assert(menu_calls == 1 && intro_calls == (legacy_u32)expected_initial_intro_calls + 1U);
+	}
+	expected_initial_intro_calls = -1;
+	expected_ogg_music_enabled = 0;
+
+	/* Repeated startup must return to the default rather than retain the last
+	 * session or an earlier explicit --ogg:on preference. */
+	legacy_s8 *defaults[] = {(legacy_s8 *)"game"};
+	reset_startup_hypervision();
+	startup_ogg_music_enabled = 1;
+	init_main(sizeof(defaults) / sizeof(defaults[0]), defaults);
+	assert(startup_ogg_music_enabled == 0);
+	assert(!startup_options.ogg_music_enabled && !startup_options.ogg_music_specified);
+
+	for (legacy_u16 first = 0; first < sizeof(cases) / sizeof(cases[0]); ++first) {
+		for (legacy_u16 second = 0; second < sizeof(cases) / sizeof(cases[0]); ++second) {
+			legacy_s8 *arguments[] = {(legacy_s8 *)"game", (legacy_s8 *)cases[first].argument,
+									  (legacy_s8 *)"--nointro",
+									  (legacy_s8 *)cases[second].argument};
+			legacy_u32 before = startup_ogg_set_calls;
+			expect_startup_option_error(sizeof(arguments) / sizeof(arguments[0]), arguments);
+			assert(startup_ogg_set_calls == before);
+		}
+	}
+	static const legacy_s8 *invalid[] = {"--ogg:",	  "--ogg:auto",	  "--ogg:1",
+										 "--ogg:onx", "--ogg:off:on", "--OGG:unknown"};
+	for (legacy_u16 index = 0; index < sizeof(invalid) / sizeof(invalid[0]); ++index) {
+		legacy_s8 *arguments[] = {(legacy_s8 *)"game", (legacy_s8 *)invalid[index]};
+		legacy_u32 before = startup_ogg_set_calls;
+		expect_startup_option_error(sizeof(arguments) / sizeof(arguments[0]), arguments);
+		assert(startup_ogg_set_calls == before);
+	}
+}
 #endif
 
 static void test_startup_game_version(void)
@@ -825,6 +909,7 @@ int main(void)
 	test_startup_physics_options();
 #ifdef RESTUNTS_SDL3
 	test_startup_hypervision_options();
+	test_startup_ogg_music_options();
 #endif
 	return 0;
 }

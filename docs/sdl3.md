@@ -350,6 +350,9 @@ available:
 - **F1–F4** select cockpit, follow, custom, and trackside cameras.
 - **Alt+Enter** toggles desktop fullscreen, preserving the 4:3 image and restoring
   the previous window size when leaving fullscreen. Keypad Enter also works.
+- **Shift+F10** switches between original AdLib and replacement Ogg music on
+  music screens, keeping the current song position. It is inactive during races;
+  plain **F10** retains its track-editor function.
 - **F11** or **Shift+F11** toggles the FPS and render-time display on or off,
   including in both car-selection screens. Render time excludes physics and
   presentation waits.
@@ -381,12 +384,22 @@ four songs with files from `assets/music/`:
 | `over.ogg` | Race end |
 | `vict.ogg` | Victory |
 
+Original AdLib music is selected at startup. Use `--ogg:on` to start with Ogg
+replacements enabled, or `--ogg:off` to select the default explicitly. These
+options are case-insensitive; specify at most one. Press **Shift+F10** during the
+intro, menus (including the track editor), or race-end/victory screens to enable
+replacement music; press it again to return to AdLib. This selection lasts for
+the current game session and cannot be changed during a race. Switching takes
+effect at the current song position, including after loops, without restarting
+the song. For matching musical positions, replacements should use the original
+song timing and loop length.
+
 Use lowercase filenames and Ogg Vorbis audio with one or two channels at
 8,000–192,000 Hz. Ogg Opus and other codecs are unsupported. Every replacement
 loops from its beginning while its song is active. The existing Options menu
 music toggle, music volume/fades, and audio suspension apply; effects retain
 their original sound. Each missing, unreadable, unsupported, or broken song
-falls back independently to its original music. Original game resources remain
+falls back independently to its original music at the current position. Original game resources remain
 required. The repository includes replacements for all four songs, preserving
 their original loop lengths without added ending tails or fade-outs. The
 race-end track retains its original pause before repeating.

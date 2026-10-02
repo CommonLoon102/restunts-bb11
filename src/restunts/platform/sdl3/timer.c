@@ -1,4 +1,5 @@
 #include "sdl3.h"
+#include "music.h"
 #include "../../c/platform.h"
 #include "../../c/presentation.h"
 #include <string.h>
@@ -166,10 +167,16 @@ void dos_timer_reset_counter(void)
 	last_counter = 0;
 }
 
+legacy_s32 sdl3_timer_callbacks_suspended(void)
+{
+	return suspended;
+}
+
 void dos_timer_set_callbacks_suspended(legacy_s16 value)
 {
 	sdl3_timer_pump();
 	suspended = (value & DOS_TIMER_CALLBACK_SUSPENDED_MASK) != 0;
+	sdl3_music_sync();
 }
 
 legacy_u32 dos_timer_get_realtime_counter(void)
