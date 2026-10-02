@@ -14,6 +14,18 @@
 static struct SPRITE target;
 static legacy_u8 rows[200 * 2];
 static legacy_u8 *screen;
+static legacy_u32 timer_pumps;
+
+void sdl3_timer_pump(void)
+{
+	timer_pumps++;
+}
+
+#ifdef __EMSCRIPTEN__
+void sdl3_browser_yield_if_due(void)
+{
+}
+#endif
 
 void dos_process_exit(legacy_s16 status)
 {
@@ -58,6 +70,97 @@ static void write_fixture(const legacy_char *path)
 	}
 	assert(SDL_SavePNG(source, path));
 	SDL_DestroySurface(source);
+}
+
+#define CONVERSION_WIDTH 65
+#define CONVERSION_COLOR_RUN_WIDTH 3
+#define CONVERSION_HEIGHT 3
+#define CONVERSION_PALETTE_COLORS (LEGACY_U8_MAX + 1)
+#define CONVERSION_PALETTE_CHANNELS 3
+#define CONVERSION_PALETTE_CHANNEL_MAX 63U
+#define CONVERSION_FIXTURE_PATH "skyboxes/tropical-scen.png"
+#define CONVERSION_FIXTURE_THEME 1
+#define CONVERSION_PARTIAL_ALPHA_FIXTURE 3
+
+static void test_palette_conversion_and_audio(const legacy_u8 *game_palette)
+{
+	static const SDL_Color fixture_colors[] = {{7, 19, 31, SDL_ALPHA_TRANSPARENT},
+											   {56, 81, 107, 85},
+											   {141, 177, 203, 170},
+											   {217, 233, 251, SDL_ALPHA_OPAQUE}};
+	static const SDL_PixelFormat formats[] = {SDL_PIXELFORMAT_RGB24, SDL_PIXELFORMAT_RGBA32,
+											  SDL_PIXELFORMAT_INDEX8, SDL_PIXELFORMAT_INDEX8};
+	SDL_Color colors[CONVERSION_PALETTE_COLORS];
+	for (legacy_s32 index = 0; index < (legacy_s32)CONVERSION_PALETTE_COLORS; index++) {
+		const legacy_u8 *color = game_palette + index * CONVERSION_PALETTE_CHANNELS;
+		colors[index].r = color[0] * SDL_ALPHA_OPAQUE / CONVERSION_PALETTE_CHANNEL_MAX;
+		colors[index].g = color[1] * SDL_ALPHA_OPAQUE / CONVERSION_PALETTE_CHANNEL_MAX;
+		colors[index].b = color[2] * SDL_ALPHA_OPAQUE / CONVERSION_PALETTE_CHANNEL_MAX;
+		colors[index].a = SDL_ALPHA_OPAQUE;
+	}
+	SDL_Palette *palette = SDL_CreatePalette(CONVERSION_PALETTE_COLORS);
+	assert(palette != NULL);
+	assert(SDL_SetPaletteColors(palette, colors, 0, CONVERSION_PALETTE_COLORS));
+	for (legacy_u32 fixture = 0; fixture < SDL_arraysize(formats); fixture++) {
+		reset_target();
+		SDL_Surface *source = SDL_CreateSurface(CONVERSION_WIDTH * HIRES_SCALE,
+												CONVERSION_HEIGHT * HIRES_SCALE, formats[fixture]);
+		assert(source != NULL);
+		if (SDL_ISPIXELFORMAT_INDEXED(source->format)) {
+			SDL_Palette *indexed_palette = SDL_CreatePalette(SDL_arraysize(fixture_colors));
+			assert(indexed_palette != NULL);
+			assert(SDL_SetPaletteColors(indexed_palette, fixture_colors, 0,
+										SDL_arraysize(fixture_colors)));
+			if (fixture != CONVERSION_PARTIAL_ALPHA_FIXTURE) {
+				/* One transparent index loads as a color key; partial alpha loads
+				 * with blending. Neither must skip or blend conversion pixels. */
+				for (legacy_s32 index = 1; index < indexed_palette->ncolors; index++) {
+					indexed_palette->colors[index].a = SDL_ALPHA_OPAQUE;
+				}
+			}
+			assert(SDL_SetSurfacePalette(source, indexed_palette));
+			SDL_DestroyPalette(indexed_palette);
+		}
+		for (legacy_s32 y = 0; y < source->h; y++) {
+			for (legacy_s32 x = 0; x < source->w; x++) {
+				legacy_u8 index =
+					(x / CONVERSION_COLOR_RUN_WIDTH + y) % SDL_arraysize(fixture_colors);
+				if (SDL_ISPIXELFORMAT_INDEXED(source->format)) {
+					((legacy_u8 *)source->pixels)[y * source->pitch + x] = index;
+				} else {
+					SDL_Color color = fixture_colors[index];
+					assert(SDL_WriteSurfacePixel(source, x, y, color.r, color.g, color.b, color.a));
+				}
+			}
+		}
+		assert(SDL_SavePNG(source, CONVERSION_FIXTURE_PATH));
+		SDL_DestroySurface(source);
+		source = SDL_LoadPNG(CONVERSION_FIXTURE_PATH);
+		assert(source != NULL);
+		SDL_Surface *reference = SDL_ConvertSurfaceAndColorspace(source, SDL_PIXELFORMAT_INDEX8,
+																 palette, SDL_COLORSPACE_SRGB, 0);
+		assert(reference != NULL);
+		timer_pumps = 0;
+		skybox_hires_draw(&target, CONVERSION_FIXTURE_THEME, 0, CONVERSION_WIDTH, CONVERSION_HEIGHT,
+						  0, 0);
+		/* Require checkpoints within a conversion, independently of machine speed. */
+		assert(timer_pumps >= (legacy_u32)source->h);
+		const legacy_u8 *output = pixels();
+		for (legacy_s32 y = 0; y < source->h; y++) {
+			assert(memcmp(output + y * HIRES_WIDTH,
+						  (const legacy_u8 *)reference->pixels + y * reference->pitch,
+						  source->w) == 0);
+		}
+		legacy_u32 completed_pumps = timer_pumps;
+		skybox_hires_draw(&target, CONVERSION_FIXTURE_THEME, 0, CONVERSION_WIDTH, CONVERSION_HEIGHT,
+						  0, 0);
+		assert(timer_pumps == completed_pumps);
+		SDL_DestroySurface(reference);
+		SDL_DestroySurface(source);
+	}
+	SDL_DestroyPalette(palette);
+	skybox_hires_unload();
+	assert(remove(CONVERSION_FIXTURE_PATH) == 0);
 }
 
 static void test_detail_clipping_and_legacy(void)
@@ -925,6 +1028,7 @@ legacy_int main(void)
 		memset(palette + (16 + index) * 3, index, 3);
 	}
 	skybox_hires_set_palette(palette);
+	test_palette_conversion_and_audio(palette);
 	test_detail_clipping_and_legacy();
 	test_fallback_and_toggle();
 	test_cardinal_rotations_and_wrap();

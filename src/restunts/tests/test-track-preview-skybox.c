@@ -10,12 +10,34 @@
 #include "../c/platform.h"
 #include "../c/projection.h"
 #include "../c/shape2d.h"
+#include "../c/shape3d.h"
+#include "../c/track_objects.h"
+#include "../c/trackdata_layout.h"
 #include "../c/skybox.h"
 #include "../c/skybox_hires.h"
 
 #define SKY_HEIGHT 8
 #define HORIZON 80
 #define LEGACY_SKY_COLOR 4
+#define PREVIEW_SKYBOX_RASTER_PASSES 2U
+#define PREVIEW_MAX_RASTER_PASSES (PREVIEW_SKYBOX_RASTER_PASSES + 1U)
+#define PREVIEW_TEST_VERTEX_COUNT 4U
+#define PREVIEW_TEST_PAINT_COUNT 2U
+#define PREVIEW_TEST_HALF_PANEL 160
+#define PREVIEW_TEST_OFFSET 80
+#define PREVIEW_TEST_NEAR_DISTANCE 400
+#define PREVIEW_TEST_FAR_DISTANCE (PREVIEW_TEST_NEAR_DISTANCE * 2)
+#define PREVIEW_TEST_NEAR_COLOR 7
+#define PREVIEW_TEST_FAR_COLOR 8
+#define PREVIEW_TEST_NEAR_OBJECT 1U
+#define PREVIEW_TEST_FAR_OBJECT 2U
+#define PREVIEW_TEST_NEAR_COLUMN 0U
+#define PREVIEW_TEST_FAR_COLUMN 1U
+#define PREVIEW_TEST_NEAR_ROW 0U
+#define PREVIEW_TEST_FAR_ROW 1U
+#define PREVIEW_TEST_NEAR_SAMPLE_X 80
+#define PREVIEW_TEST_OVERLAP_SAMPLE_X 160
+#define PREVIEW_TEST_FAR_SAMPLE_X 200
 
 static struct SPRITE preview, screen_target;
 static legacy_u8 preview_rows[200 * 2], screen_rows[200 * 2];
@@ -84,6 +106,18 @@ static void assert_frame(legacy_s32 enhanced)
 	}
 }
 
+static void draw_preview_with_bounded_passes(void)
+{
+	/* Start without a cached target so generations count completed raster
+	 * passes, excluding invalidations of artwork from the previous preview. */
+	hires_forget(preview.sprite_bitmapptr);
+	legacy_u32 generation = hires_generation();
+	draw_track_preview();
+	/* Loading artwork may draw the horizon strips before the scene. The
+	 * number of full raster passes must not grow with the track's cell count. */
+	assert(hires_generation() - generation <= PREVIEW_MAX_RASTER_PASSES);
+}
+
 static void test_preview(legacy_s32 enhanced, legacy_s32 scale)
 {
 	hires_set_enabled(enhanced);
@@ -93,7 +127,7 @@ static void test_preview(legacy_s32 enhanced, legacy_s32 scale)
 	loaded_skybox_index = 4;
 	sprite_select_target(&preview);
 	sprite_clear_target((legacy_u8)skybox.ground_color);
-	draw_track_preview();
+	draw_preview_with_bounded_passes();
 	/* The track menu releases the source artwork before presenting its window. */
 	unload_skybox();
 	sprite_select_target(&screen_target);
@@ -107,6 +141,73 @@ static void test_preview(legacy_s32 enhanced, legacy_s32 scale)
 	sprite_putimage(preview.sprite_bitmapptr);
 	assert_frame(enhanced);
 	assert(screen[(HORIZON - SKY_HEIGHT) * 320] == LEGACY_SKY_COLOR);
+}
+
+static void test_populated_preview(legacy_s32 scale)
+{
+	legacy_u8 elements[TRACK_GRID_SIZE * TRACK_GRID_SIZE] = {0};
+	legacy_u8 vertices[PREVIEW_TEST_VERTEX_COUNT * SHAPE3D_VERTEX_SIZE];
+	legacy_u8 primitive[] = {PREVIEW_TEST_VERTEX_COUNT, 0, 0, 1, 0, 1, 2, 3, 0, 0};
+	legacy_u8 visibility[SHAPE3D_VISIBILITY_MASK_SIZE];
+	legacy_u8 front_facing[SHAPE3D_VISIBILITY_MASK_SIZE] = {0};
+	legacy_s16 colors[PREVIEW_TEST_PAINT_COUNT] = {PREVIEW_TEST_NEAR_COLOR, PREVIEW_TEST_FAR_COLOR};
+	legacy_s16 patterns[PREVIEW_TEST_PAINT_COUNT] = {0};
+	const struct VECTOR panel[PREVIEW_TEST_VERTEX_COUNT] = {
+		{-PREVIEW_TEST_HALF_PANEL, -PREVIEW_TEST_HALF_PANEL, 0},
+		{-PREVIEW_TEST_HALF_PANEL, PREVIEW_TEST_HALF_PANEL, 0},
+		{PREVIEW_TEST_HALF_PANEL, PREVIEW_TEST_HALF_PANEL, 0},
+		{PREVIEW_TEST_HALF_PANEL, -PREVIEW_TEST_HALF_PANEL, 0}};
+	struct SHAPE3D shape = {PREVIEW_TEST_VERTEX_COUNT,
+							vertices,
+							1,
+							PREVIEW_TEST_PAINT_COUNT,
+							primitive,
+							visibility,
+							front_facing};
+	memset(visibility, LEGACY_U8_MAX, sizeof(visibility));
+	for (legacy_u16 index = 0; index < PREVIEW_TEST_VERTEX_COUNT; index++) {
+		shape3d_vertex_write(&shape, index, &panel[index]);
+	}
+	for (legacy_u16 row = 0; row < TRACK_GRID_SIZE; row++) {
+		trackrows[row] = terrainrows[row] = row * TRACK_GRID_SIZE;
+	}
+	track_column_centers[PREVIEW_TEST_NEAR_COLUMN] = -PREVIEW_TEST_OFFSET;
+	track_column_centers[PREVIEW_TEST_FAR_COLUMN] = PREVIEW_TEST_OFFSET;
+	track_row_centers[PREVIEW_TEST_NEAR_ROW] = PREVIEW_TEST_NEAR_DISTANCE;
+	track_row_centers[PREVIEW_TEST_FAR_ROW] = PREVIEW_TEST_FAR_DISTANCE;
+	memset(&trkObjectList[PREVIEW_TEST_NEAR_OBJECT], 0, sizeof(struct TRACKOBJECT));
+	memset(&trkObjectList[PREVIEW_TEST_FAR_OBJECT], 0, sizeof(struct TRACKOBJECT));
+	trkObjectList[PREVIEW_TEST_NEAR_OBJECT].ss_loShapePtr = &shape;
+	trkObjectList[PREVIEW_TEST_FAR_OBJECT].ss_loShapePtr = &shape;
+	trkObjectList[PREVIEW_TEST_FAR_OBJECT].ss_surfaceType = 1;
+	elements[trackrows[PREVIEW_TEST_NEAR_ROW] + PREVIEW_TEST_NEAR_COLUMN] =
+		PREVIEW_TEST_NEAR_OBJECT;
+	elements[trackrows[PREVIEW_TEST_FAR_ROW] + PREVIEW_TEST_FAR_COLUMN] = PREVIEW_TEST_FAR_OBJECT;
+	track_element_map = elements;
+	material_clrlist_ptr_cpy = material_clrlist2_ptr_cpy = colors;
+	material_patlist_ptr_cpy = material_patlist2_ptr_cpy = patterns;
+	hires_set_enabled(1);
+	hires_set_render_scale(scale);
+	sprite_select_target(&preview);
+	sprite_clear_target((legacy_u8)skybox.ground_color);
+	draw_preview_with_bounded_passes();
+	sprite_select_target(&screen_target);
+	sprite_clear_target(0);
+	sprite_putimage(preview.sprite_bitmapptr);
+	legacy_s32 width, height;
+	const legacy_u8 *pixels = hires_framebuffer(screen, &width, &height);
+	assert(width == HIRES_WIDTH / HIRES_SCALE * scale &&
+		   height == HIRES_HEIGHT / HIRES_SCALE * scale);
+	/* Distinct cells must both survive the batch. The farther panel is queued
+	 * later but cannot cover the nearer panel where their projections overlap. */
+	assert(pixels[HORIZON * scale * width + PREVIEW_TEST_NEAR_SAMPLE_X * scale] ==
+		   PREVIEW_TEST_NEAR_COLOR);
+	assert(pixels[HORIZON * scale * width + PREVIEW_TEST_OVERLAP_SAMPLE_X * scale] ==
+		   PREVIEW_TEST_NEAR_COLOR);
+	assert(pixels[HORIZON * scale * width + PREVIEW_TEST_FAR_SAMPLE_X * scale] ==
+		   PREVIEW_TEST_FAR_COLOR);
+	assert(shape3d_queued_primitive_count() == 0);
+	track_element_map = empty_track;
 }
 
 legacy_int main(void)
@@ -151,6 +252,9 @@ legacy_int main(void)
 	test_preview(1, HIRES_MEDIUM_SCALE);
 	test_preview(1, HIRES_SCALE);
 	test_preview(0, HIRES_SCALE);
+	test_populated_preview(HIRES_SCALE);
+	test_populated_preview(HIRES_MEDIUM_SCALE);
+	test_populated_preview(HIRES_MINIMUM_SCALE);
 	hires_shutdown();
 	assert(remove("skyboxes/country-sce3.png") == 0);
 	assert(rmdir("skyboxes") == 0);

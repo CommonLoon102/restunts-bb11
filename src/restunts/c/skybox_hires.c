@@ -5,6 +5,7 @@
 #include "projection.h"
 #include "render_workers.h"
 #include "asset_path.h"
+#include "../platform/sdl3/sdl3.h"
 #include <SDL3/SDL.h>
 #include <stdio.h>
 #include <string.h>
@@ -14,6 +15,8 @@
 #define SKYBOX_PALETTE_COLOR_COUNT (LEGACY_U8_MAX + 1)
 #define SKYBOX_PALETTE_CHANNEL_COUNT 3
 #define SKYBOX_PALETTE_CHANNEL_MAX 63U
+#define SKYBOX_PALETTE_WORK_ROWS 1
+#define SKYBOX_PALETTE_WORK_PIXELS 256
 #define SKYBOX_NATIVE_SAMPLE_SCALE 1
 #define SKYBOX_ORIGINAL_SAMPLE_SCALE HIRES_SCALE
 #define SKYBOX_SAMPLE_ROUNDING_MARGIN 1
@@ -81,6 +84,60 @@ void skybox_hires_set_palette(const legacy_u8 *palette)
 	palette_ready = 1;
 }
 
+/* Asset loading runs on the main thread that also advances both music paths.
+ * Service only timers here: event polling could redraw the incomplete scene. */
+static void skybox_hires_service_audio(void)
+{
+	sdl3_timer_pump();
+#ifdef __EMSCRIPTEN__
+	sdl3_browser_yield_if_due();
+#endif
+}
+
+static SDL_Surface *skybox_hires_convert(SDL_Surface *source, SDL_Palette *palette)
+{
+	SDL_Surface *result = SDL_CreateSurface(source->w, source->h, SDL_PIXELFORMAT_INDEX8);
+	if (result == NULL) {
+		return NULL;
+	}
+	if (!SDL_SetSurfacePalette(result, palette) ||
+		!SDL_SetSurfaceColorspace(result, SDL_COLORSPACE_SRGB)) {
+		SDL_DestroySurface(result);
+		return NULL;
+	}
+	SDL_Palette *source_palette = SDL_GetSurfacePalette(source);
+	SDL_Colorspace colorspace = SDL_GetSurfaceColorspace(source);
+	SDL_PropertiesID properties = SDL_GetSurfaceProperties(source);
+	for (legacy_s32 row = 0; row < source->h; row += SKYBOX_PALETTE_WORK_ROWS) {
+		for (legacy_s32 column = 0; column < source->w; column += SKYBOX_PALETTE_WORK_PIXELS) {
+			SDL_Rect span = {column, row, SDL_min(SKYBOX_PALETTE_WORK_PIXELS, source->w - column),
+							 SDL_min(SKYBOX_PALETTE_WORK_ROWS, source->h - row)};
+			legacy_u8 *pixels = (legacy_u8 *)source->pixels + row * source->pitch +
+								column * SDL_BYTESPERPIXEL(source->format);
+			/* A borrowed view also bounds SDL's truecolor-to-palette lookup cache:
+			 * large opaque images otherwise accumulate costly hash collisions. */
+			SDL_Surface *view =
+				SDL_CreateSurfaceFrom(span.w, span.h, source->format, pixels, source->pitch);
+			/* Match surface conversion's raw pixels, including transparent PNG
+			 * colors. The view has no color key or modulation; disable blending. */
+			legacy_s32 copied =
+				view != NULL &&
+				(source_palette == NULL || SDL_SetSurfacePalette(view, source_palette)) &&
+				SDL_SetSurfaceColorspace(view, colorspace) &&
+				SDL_CopyProperties(properties, SDL_GetSurfaceProperties(view)) &&
+				SDL_SetSurfaceBlendMode(view, SDL_BLENDMODE_NONE) &&
+				SDL_BlitSurface(view, NULL, result, &span);
+			SDL_DestroySurface(view);
+			if (!copied) {
+				SDL_DestroySurface(result);
+				return NULL;
+			}
+			skybox_hires_service_audio();
+		}
+	}
+	return result;
+}
+
 static SDL_Surface *skybox_hires_load(const legacy_char *directory, legacy_s16 theme,
 									  legacy_s16 image)
 {
@@ -90,12 +147,15 @@ static SDL_Surface *skybox_hires_load(const legacy_char *directory, legacy_s16 t
 	if (length < 0 || (size_t)length >= sizeof(path)) {
 		return NULL;
 	}
+	skybox_hires_service_audio();
 	SDL_Surface *source = SDL_LoadPNG(path);
+	skybox_hires_service_audio();
 	if (source == NULL) {
 		/* Packaged names also work on DOS filesystems without long names. */
 		length = snprintf(path, sizeof(path), "%ssky%d-%d.png", directory, theme, image);
 		if (length >= 0 && (size_t)length < sizeof(path)) {
 			source = SDL_LoadPNG(path);
+			skybox_hires_service_audio();
 		}
 	}
 	return source;
@@ -141,8 +201,7 @@ static SDL_Surface *skybox_hires_image(legacy_s16 theme, legacy_s16 image, legac
 	SDL_Palette *palette = SDL_CreatePalette(SKYBOX_PALETTE_COLOR_COUNT);
 	if (palette != NULL &&
 		SDL_SetPaletteColors(palette, original_palette, 0, SKYBOX_PALETTE_COLOR_COUNT)) {
-		entry->surface = SDL_ConvertSurfaceAndColorspace(source, SDL_PIXELFORMAT_INDEX8, palette,
-														 SDL_COLORSPACE_SRGB, 0);
+		entry->surface = skybox_hires_convert(source, palette);
 	}
 	SDL_DestroyPalette(palette);
 	SDL_DestroySurface(source);

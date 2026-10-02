@@ -8,6 +8,9 @@
 #include "scene_resources.h"
 #include "skybox.h"
 #include "externs.h"
+#ifdef RESTUNTS_SDL3
+#include "hires.h"
+#endif
 
 #define TRACK_PREVIEW_HALF_SHIFT 1U
 #define TRACK_PREVIEW_SCREEN_WIDTH 320
@@ -250,13 +253,9 @@ static void track_preview_draw_cell(legacy_u8 column, legacy_u8 row, const struc
 
 	track_preview_draw_terrain(terrain, column, row, terrain_height, camera->x, camera->y,
 							   camera->z, 0, transformed);
-	if (track == 0) {
-		shape3d_render_queued_primitives();
-		return;
+	if (track != 0) {
+		track_preview_draw_object(track, column, row, terrain_height, camera, transformed);
 	}
-
-	track_preview_draw_object(track, column, row, terrain_height, camera, transformed);
-	shape3d_render_queued_primitives();
 }
 
 void draw_track_preview(void)
@@ -270,9 +269,23 @@ void draw_track_preview(void)
 	transformed.rotvec.x = 0;
 	transformed.rotvec.y = 0;
 	transformed.culling_distance = TRACK_PREVIEW_TRANSFORM_DISTANCE;
+	legacy_s32 batch_scene = 0;
+#ifdef RESTUNTS_SDL3
+	batch_scene = hires_enabled();
+#endif
+	/* HyperVision resolves the whole scene by depth. Starting a full-screen
+	 * raster for every tile repeatedly clears its depth buffer and starves
+	 * music playback while the preview is built. Keep per-tile flushing for
+	 * the classic renderer, whose fixed queue and painter order require it. */
 	for (legacy_u8 row = 0; row < TRACK_PREVIEW_GRID_SIZE; row++) {
 		for (legacy_u8 column = 0; column < TRACK_PREVIEW_GRID_SIZE; column++) {
 			track_preview_draw_cell(column, row, &camera, &transformed);
+			if (!batch_scene) {
+				shape3d_render_queued_primitives();
+			}
 		}
+	}
+	if (batch_scene) {
+		shape3d_render_queued_primitives();
 	}
 }
