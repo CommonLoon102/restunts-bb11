@@ -34,6 +34,9 @@ Main repository: https://github.com/4d-stunts/restunts
 	src\restunts\platform\dos
 		DOS specific code.
 
+	src\restunts\platform\templeos
+		Native HolyC port for TempleOS/TinkerOS: 640x480, 16 colors, PC speaker.
+
 	src\restunts\repldump
 		Tool based on the original game code, loads replays and dumps the game
 		state contents at each frame in a file for further analysis.
@@ -48,6 +51,11 @@ Main repository: https://github.com/4d-stunts/restunts
 An SDL3 [WebAssembly build](docs/wasm.md) runs directly from a local HTML file
 without a web server. Only enhanced artwork is embedded; select your own
 original game folder in the browser before starting.
+
+The [TempleOS/TinkerOS port](src/restunts/platform/templeos/README.TXT) includes
+HolyC sources, an uppercase-file packager, and an isolated QEMU test workflow.
+The [stock TempleOS installation guide](docs/templeos.md) covers the game CD,
+installation on a fresh system, controls, and rebuilding the package.
 
 All builds require the original Broderbund Stunts 1.1 game data (12 Feb. 1991).
 Startup checks the `gver` text in `MISC.RES`, or `MISC.PRE` when no unpacked
@@ -1316,8 +1324,8 @@ Two standard tools check the style directly:
 - [editorconfig-checker](https://github.com/editorconfig-checker/editorconfig-checker)
   reads the whitespace rules in `.editorconfig`. Its Python package installs
   the `ec` command. `.editorconfig-checker.json` limits discovery to `src/`
-  and permits alignment spaces after indentation tabs. Only C/H files have
-  EditorConfig rules.
+  and permits alignment spaces after indentation tabs. C/H and HolyC HC/HH files
+  have source formatting rules.
 - [clang-format](https://clang.llvm.org/docs/ClangFormat.html) reads C layout
   and brace rules from `.clang-format`. Keep its whitespace settings consistent
   with `.editorconfig`. Include order is preserved.
