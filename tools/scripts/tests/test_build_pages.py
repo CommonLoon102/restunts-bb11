@@ -31,8 +31,17 @@ class BuildPagesTests(unittest.TestCase):
         self.site = self.root / "site"
         (self.site / "assets").mkdir(parents=True)
         for name in PAGES.WEBSITE_FILES:
-            (self.site / name).write_bytes(FIXTURE_DATA)
+            path = self.site / name
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(FIXTURE_DATA)
         (self.site / "assets/icon.svg").write_bytes(b"<svg/>")
+        downloads = self.site / PAGES.TEMPLEOS_DOWNLOAD_DIRECTORY
+        downloads.mkdir(parents=True)
+        for name in PAGES.TEMPLEOS_DOWNLOAD_FILES:
+            (downloads / name).write_bytes(FIXTURE_DATA)
+        (downloads / PAGES.TEMPLEOS_CHECKSUM_FILE).write_text(
+            "".join(f"{PACKAGES.sha256(FIXTURE_DATA)}  {name}\n"
+                    for name in PAGES.TEMPLEOS_DOWNLOAD_FILES), encoding="ascii")
         runtime = self.root / "runtime"
         for name in PACKAGES.required_files("browser") - {PACKAGES.README}:
             path = runtime / name
@@ -62,6 +71,11 @@ class BuildPagesTests(unittest.TestCase):
 
     def test_complete_browser_distribution_and_only_landing_assets_are_published(self):
         (self.site / "MISC.RES").write_bytes(b"must not be published")
+        downloads = self.site / PAGES.TEMPLEOS_DOWNLOAD_DIRECTORY
+        (downloads / "STUNTSDATA.ISO").write_bytes(b"private game data must not be published")
+        screenshots = self.site / "assets/templeos"
+        screenshots.mkdir()
+        (screenshots / "cockpit.png").write_bytes(FIXTURE_DATA)
         self.build()
         published_archive = self.output / "game" / PAGES.DOWNLOAD_NAME
         self.assertEqual(published_archive.read_bytes(), self.archive.read_bytes())
@@ -73,6 +87,58 @@ class BuildPagesTests(unittest.TestCase):
         self.assertTrue((self.output / ".nojekyll").is_file())
         self.assertEqual((self.output / "assets/icon.svg").read_bytes(), b"<svg/>")
         self.assertFalse((self.output / "MISC.RES").exists())
+        self.assertEqual((self.output / "assets/templeos/cockpit.png").read_bytes(), FIXTURE_DATA)
+        published_downloads = self.output / PAGES.TEMPLEOS_DOWNLOAD_DIRECTORY
+        self.assertEqual({path.name for path in published_downloads.iterdir()},
+                         {*PAGES.TEMPLEOS_DOWNLOAD_FILES, PAGES.TEMPLEOS_CHECKSUM_FILE})
+        for name in PAGES.TEMPLEOS_DOWNLOAD_FILES:
+            self.assertEqual((published_downloads / name).read_bytes(), FIXTURE_DATA)
+
+    def test_modified_templeos_download_fails_before_writing_output(self):
+        downloads = self.site / PAGES.TEMPLEOS_DOWNLOAD_DIRECTORY
+        (downloads / PAGES.TEMPLEOS_DOWNLOAD_FILES[0]).write_bytes(b"corrupt download")
+        with self.assertRaisesRegex(ValueError, "TempleOS download SHA256 mismatch"):
+            self.build()
+        self.assertFalse(self.output.exists())
+
+    def test_missing_templeos_downloads_fail_before_writing_output(self):
+        downloads = self.site / PAGES.TEMPLEOS_DOWNLOAD_DIRECTORY
+        for name in (*PAGES.TEMPLEOS_DOWNLOAD_FILES, PAGES.TEMPLEOS_CHECKSUM_FILE):
+            with self.subTest(name=name):
+                path = downloads / name
+                content = path.read_bytes()
+                path.unlink()
+                try:
+                    with self.assertRaisesRegex(ValueError, "Missing regular website file"):
+                        self.build()
+                    self.assertFalse(self.output.exists())
+                finally:
+                    path.write_bytes(content)
+
+    def test_templeos_download_symlinks_fail_before_writing_output(self):
+        downloads = self.site / PAGES.TEMPLEOS_DOWNLOAD_DIRECTORY
+        for name in (*PAGES.TEMPLEOS_DOWNLOAD_FILES, PAGES.TEMPLEOS_CHECKSUM_FILE):
+            with self.subTest(name=name):
+                path = downloads / name
+                external = self.root / name
+                path.rename(external)
+                path.symlink_to(external)
+                try:
+                    with self.assertRaisesRegex(ValueError, "Missing regular website file"):
+                        self.build()
+                    self.assertFalse(self.output.exists())
+                finally:
+                    path.unlink()
+                    external.rename(path)
+
+    def test_nested_website_directory_symlink_is_rejected(self):
+        subsite = self.site / "templeos"
+        relocated = self.root / "external-subsite"
+        subsite.rename(relocated)
+        subsite.symlink_to(relocated, target_is_directory=True)
+        with self.assertRaisesRegex(ValueError, "symlink"):
+            self.build()
+        self.assertFalse(self.output.exists())
 
     def test_wrong_source_revision_fails_before_writing_output(self):
         with self.assertRaisesRegex(ValueError, "Wrong source commit"):

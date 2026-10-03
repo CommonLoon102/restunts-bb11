@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Assemble GitHub Pages from website assets and a verified browser package."""
+"""Assemble GitHub Pages with verified browser and TempleOS downloads."""
 
 import argparse
 import importlib.util
@@ -12,7 +12,11 @@ import zipfile
 
 ROOT = Path(__file__).resolve().parents[2]
 SITE = ROOT / "site"
-WEBSITE_FILES = ("index.html", "quick-guide.html", "styles.css", "site.js")
+WEBSITE_FILES = ("index.html", "quick-guide.html", "styles.css", "site.js",
+                 "templeos/index.html", "templeos/templeos.css")
+TEMPLEOS_DOWNLOAD_DIRECTORY = "downloads/templeos"
+TEMPLEOS_DOWNLOAD_FILES = ("RESTUNTS.ISO", "RESTUNTS_STOCK_TEMPLEOS.ZIP", "README.MD")
+TEMPLEOS_CHECKSUM_FILE = "SHA256SUMS.TXT"
 ASSET_SUFFIXES = {".svg", ".png", ".jpg", ".jpeg", ".webp", ".gif", ".ico",
                   ".woff", ".woff2", ".txt", ".md", ".html"}
 HOSTED_GAME_FILES = ("restunts.html", "THIRD-PARTY-NOTICES.txt",
@@ -27,10 +31,17 @@ SPEC.loader.exec_module(PACKAGES)
 def website_files(source):
     PACKAGES.require(source.is_dir() and not source.is_symlink(), f"Missing website directory: {source}")
     files = {}
-    for name in WEBSITE_FILES:
+    downloads = tuple(f"{TEMPLEOS_DOWNLOAD_DIRECTORY}/{name}"
+                      for name in (*TEMPLEOS_DOWNLOAD_FILES, TEMPLEOS_CHECKSUM_FILE))
+    for name in (*WEBSITE_FILES, *downloads):
         path = source / name
+        PACKAGES.checked_path(name)
+        for parent in path.relative_to(source).parents:
+            PACKAGES.require(not (source / parent).is_symlink(),
+                             f"Website directory must not be a symlink: {source / parent}")
         PACKAGES.require(path.is_file() and not path.is_symlink(), f"Missing regular website file: {path}")
         files[name] = path
+    verify_templeos_downloads(source / TEMPLEOS_DOWNLOAD_DIRECTORY)
     assets = source / "assets"
     PACKAGES.require(assets.is_dir() and not assets.is_symlink(), f"Missing website assets: {assets}")
     for path in sorted(assets.rglob("*")):
@@ -43,6 +54,23 @@ def website_files(source):
                          f"Unsupported website asset: {name}")
         files[name] = path
     return files
+
+
+def verify_templeos_downloads(directory):
+    checksums = {}
+    for line in (directory / TEMPLEOS_CHECKSUM_FILE).read_text(encoding="ascii").splitlines():
+        parts = line.split("  ")
+        PACKAGES.require(len(parts) == 2 and PACKAGES.SHA256_PATTERN.fullmatch(parts[0]),
+                         "Invalid TempleOS download checksum")
+        digest, name = parts
+        PACKAGES.require(name in TEMPLEOS_DOWNLOAD_FILES and name not in checksums,
+                         f"Unexpected or duplicate TempleOS download: {name}")
+        checksums[name] = digest
+    PACKAGES.require(set(checksums) == set(TEMPLEOS_DOWNLOAD_FILES),
+                     "Missing TempleOS download checksums")
+    for name, digest in checksums.items():
+        PACKAGES.require(PACKAGES.sha256((directory / name).read_bytes()) == digest,
+                         f"TempleOS download SHA256 mismatch: {name}")
 
 
 def build_pages(browser_package, output, commit, source=SITE):

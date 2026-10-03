@@ -1,0 +1,30 @@
+// The DOS game supplies its own string, allocation, and number routines.
+// These are the remaining host services needed by generated code and TIMER.HC.
+#include "LEGACY.HH"
+
+#define TEMPLE_STDOUT 1
+#define TEMPLE_STDERR 2
+
+legacy_s64 stdout = TEMPLE_STDOUT;
+legacy_s64 stderr = TEMPLE_STDERR;
+
+legacy_u8 *memmove(legacy_u8 *destination, legacy_u8 *source, legacy_u64 length)
+{
+	legacy_u64 index;
+	if (destination > source && destination < source + length) {
+		index = length;
+		while (index) {
+			index--;
+			destination[index] = source[index];
+		}
+	} else {
+		MemCpy(destination, source, length);
+	}
+	return destination;
+}
+
+legacy_s32 fputs(legacy_u8 *text, legacy_s64 stream)
+{
+	Print("%s", text);
+	return StrLen(text);
+}

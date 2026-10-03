@@ -1,0 +1,103 @@
+TEMPLEOS / TINKEROS GUEST VALIDATION
+
+VM.PY boots a supplied live CD in a disposable QEMU machine. It copies the
+requested source directory to C:/PORT on a new 256 MiB FAT32 disk. Optional
+game data is copied to C:/DATA. The original ISO and source files are read
+only; no existing VirtualBox or QEMU disk is attached.
+
+Host dependencies: Python 3, qemu-system-x86_64, dosfstools (mkfs.fat), and
+mtools (mcopy). Pillow is optional and converts screenshots to PNG.
+
+From the repository root:
+
+python3 src/restunts/platform/templeos/tools/VM.PY run \
+  --iso /path/to/TinkerOS_5.20-rc15.ISO \
+  --source src/restunts/platform/templeos --entry COMPILE.HC
+
+The entry is relative to --source. The current guest directory is C:/PORT
+when execution starts. The script declines installation and the first-use
+tour, checks the HolyC prompt, mounts only its disposable disk, and invokes
+ExeFile2 inside an exception handler. A completed entry emits
+RESTUNTS_VM_PASS; a compile/runtime exception emits RESTUNTS_VM_FAIL.
+The command also scans the captured compiler document for ERROR markers:
+some missing #include files report an error without throwing an exception.
+The command exits successfully only when both checks pass. A timeout also
+fails; an interactive game entry normally needs --no-wait instead.
+
+Useful options:
+
+  --data /path/to/game             Copy original game data to C:/DATA.
+  --mcopy /custom/path/mcopy       Use a locally extracted mtools binary.
+  --timeout 120                   Seconds to wait after starting the entry.
+  --boot-seconds 20               Initial startup delay (20 is the default).
+  --keep                          Leave the guest running after completion.
+  --no-wait                       Launch an interactive entry and return.
+  --record-speaker                Capture PC speaker output to SPEAKER.WAV.
+  --verbose                       Print the full captured compiler document.
+
+Place --work /tmp/a-unique-directory BEFORE the command for a separate guest.
+The default is /tmp/restunts-templeos-vm. Use a different work directory for
+concurrent checks. TCG runs are more reliable when tested sequentially;
+keyboard events use a 40 ms hold and 80 ms spacing. Each run replaces that directory's generated SHARE.IMG;
+the script refuses to replace it while its guest is running. Normal output
+contains the result and artifact paths; failures include the last 40 lines.
+The complete compiler document is always retained in DEBUG.LOG.
+
+Guest control after --keep or --no-wait:
+
+python3 src/restunts/platform/templeos/tools/VM.PY screenshot
+python3 src/restunts/platform/templeos/tools/VM.PY key esc
+python3 src/restunts/platform/templeos/tools/VM.PY text 'Dir;'
+python3 src/restunts/platform/templeos/tools/VM.PY key ret
+python3 src/restunts/platform/templeos/tools/VM.PY stop
+
+Use the same --work argument when controlling a separately named guest.
+Keys use QEMU sendkey names (for example ctrl-c, shift-f3, up, ret).
+Use key up --hold-ms 2000 to hold the accelerator for two seconds. The
+command returns while QEMU holds the key; text entry keeps its normal delay.
+
+Artifacts in the work directory:
+
+  DEBUG.LOG     QEMU debug-port output plus the guest compiler document.
+  SCREEN.PPM    Screenshot taken at completion or failure.
+  SCREEN.PNG    Same screenshot when Pillow is available.
+  SPEAKER.WAV   PC speaker capture when requested; finalized on stop.
+  VMRUN.HC      The exact guest compilation/exception wrapper.
+  SHARE.IMG     Disposable FAT32 disk containing the input snapshot.
+
+The helper uses TCG so it does not contend for hardware virtualization with
+an existing VirtualBox guest. It does not open a desktop window. The debugger
+port is used only by this test wrapper; the port itself is not required by
+the game. Source changes made after a run starts require a new run.
+
+The PC speaker backend was translated from the shipped PC15.DRV interfaces:
+six tone contexts retain the DOS PIT divisor tables, pitch bend rounding,
+envelopes, and voice selection; context zero plays PCM through PIT channel 2
+pulse-width modulation. PCM scheduling uses a native task instead of taking
+over the system timer. A spare guest CPU improves sample timing. Single-core
+PCM playback yields periodically and can have more timing jitter.
+
+REPLAY REGRESSION
+
+TEST_REPLAY.HC executes the actual translated physics with rendering and
+audio disabled. It requires --data pointing to the original game resources
+and the unmodified DEFAULT.RPL. The first 120 serialized 1120-byte states
+are checked against archived DOS REPLDUMO.EXE output recorded in
+REPLAY_EXPECTED.HH. That header records executable, replay, and full
+oracle dump SHA256 fingerprints. A successful run writes C:/REPLAY.BNI;
+a mismatch writes the first differing canonical state to C:/FAILURE.BIN.
+
+The independent oracle was generated in a copied game directory by running
+tools/oracles/borland/repldumo.exe as REPLDUMO DEFAULT 1 under DOSBox, with
+core=dynamic and cycles=max. DOSBox was terminated using SIGKILL after its
+command returned. The output DEFAULT.BIN has a two-byte little-endian frame
+count followed by 1120-byte serialized states. REPLAY_ORACLE.PY regenerates
+the expected hashes from that dump and rejects malformed or short files.
+
+TEST_AUDIO.HC separately checks original PC15.DRV divisor tables, continuous
+engine pitch, pitch-bend rounding, native PCM completion, and cleanup. Use
+--record-speaker to capture real PIT channel 2 output while it runs.
+
+TEST_AUDIO_CORE.HC loads the complete translated core and checks native
+function-pointer round trips through packed DOS audio fields, including
+that assigning a callback preserves adjacent fields and channels.
