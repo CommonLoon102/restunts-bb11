@@ -1,6 +1,6 @@
 # Chocolate Stunts on GitHub Pages
 
-The landing page lives in `site/`. It presents the game's features, placeholders
+The landing page lives in `site/`. It presents the game's features, download links
 for all 18 release packages, and the browser game in a same-origin iframe. Its
 relative URLs work under a repository path such as `/restunts-bb11/`.
 
@@ -75,14 +75,14 @@ The hosted game is `game/restunts.html`. Its matching, unmodified browser ZIP is
 available as `game/browser-runtime.zip`, with a checksum sidecar. That archive
 includes the dependency notices, licenses, Nuked source, and complete relink kit.
 Keep the archive and notice links with the hosted game. The 18 download cards
-remain placeholders independently of this required runtime-materials link.
+link to released packages independently of this required runtime-materials link.
 
-## Add release download links
+## Update release download links
 
-Edit the 18 package cards in `site/index.html` when their release URLs are ready.
-Add the matching release URL as each card anchor's `href`, remove
-`aria-disabled="true"`, and replace its `Coming soon` status text with `Download`.
-Update the section's packages-coming-soon notice once downloads are available.
+The 18 package cards in `site/index.html` link directly to the
+[v1.2.0 release archives](https://github.com/CommonLoon102/restunts-bb11/releases/tag/v1.2.0).
+For a new release, update each card anchor's `href` to its matching archive
+and update the version and release link in the section's notice.
 Match each card's `data-target` to the
 archive names in [the release package list](releases.md); the SSE2 and no-SSE2
 variants are separate archives. Keep the CPU labels and bitness badges intact.
