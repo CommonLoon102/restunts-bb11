@@ -45,6 +45,7 @@ legacy_void TestAssert(legacy_s64 condition)
 }
 
 #include "TEST_POLYGON.HC"
+#include "TEST_LINE.HC"
 
 legacy_void TestPresentChanged(legacy_u8 changed)
 {
@@ -193,6 +194,7 @@ legacy_void RasterTests()
 	}
 	TestPolygonSharedEdges(dc);
 	TestNativeGeometry(dc);
+	TestLineCoverage(dc);
 	DCDel(dc);
 	for (y = 0; y < TEMPLE_RENDER_HEIGHT; y++) {
 		ly = y / TEMPLE_RASTER_Y_SCALE;

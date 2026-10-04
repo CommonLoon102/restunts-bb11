@@ -6,6 +6,7 @@
 #include "NATIVE.HH"
 #include "RASTER.HH"
 #include "generated/DATA.HC"
+#include "MATERIAL.HC"
 #include "PALETTE.HC"
 #include "RASTER.HC"
 #include "VIDEO.HC"
@@ -37,6 +38,7 @@ legacy_s16 Restunts(legacy_u8 *data_directory = "C:/DATA", legacy_u8 skip_intro 
 	temple_exit_status = 0;
 	try {
 		full_data_initialize();
+		TempleMaterialInit();
 		audiodriverstring[0] = 'p';
 		audiodriverstring[1] = 'c';
 		temple_exit_status = run_main_menu_loop(argument_count, arguments);
