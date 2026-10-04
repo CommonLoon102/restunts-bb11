@@ -1,7 +1,7 @@
-"""Verify relocated Linux/BSD/macOS packages and replacement of their Nuked library.
+"""Verify relocated Linux/BSD/Haiku/macOS packages and their replacement Nuked library.
 
 Requires an existing native CMake build with tests enabled, the game test assets,
-a C compiler, CMake, and readelf (Linux/BSD) or otool (macOS). Installed or rebuilt data
+a C compiler, CMake, and readelf (Linux/BSD/Haiku) or otool (macOS). Installed or rebuilt data
 lives in a temporary directory; the existing build and its binaries are retained.
 """
 
@@ -18,7 +18,7 @@ import tempfile
 
 ROOT = Path(__file__).resolve().parents[2]
 MACOS = sys.platform == "darwin"
-ELF_PLATFORMS = ("linux", "freebsd", "openbsd", "netbsd")
+ELF_PLATFORMS = ("linux", "freebsd", "openbsd", "netbsd", "haiku")
 ELF_SYSTEM_PATHS = {"/usr/X11R7/lib", "/usr/pkg/lib"} if sys.platform.startswith("netbsd") else set()
 LIBRARY_NAME = "libnuked-opl2.dylib" if MACOS else "libnuked-opl2.so"
 LINKAGE_TOOL = "otool" if MACOS else "readelf"
@@ -162,7 +162,8 @@ def verify_dynamic_linkage(binary, *, needs_nuked):
 def fixture_environment():
     environment = os.environ.copy()
     for name in list(environment):
-        if name.startswith(("LD_", "DYLD_")) or name == "RESTUNTS_AUDIO_TRACE":
+        if name.startswith(("LD_", "DYLD_")) or name in (
+                "LIBRARY_PATH", "ADDON_PATH", "RESTUNTS_AUDIO_TRACE"):
             environment.pop(name)
     environment.update(SDL_VIDEODRIVER="dummy", SDL_AUDIODRIVER="dummy")
     return environment
@@ -192,7 +193,7 @@ def instrument_replacement(source):
 
 def test_package(build, cmake):
     require(sys.platform.startswith(ELF_PLATFORMS) or MACOS,
-            "this package regression requires native Linux, BSD, or macOS")
+            "this package regression requires native Linux, BSD, Haiku, or macOS")
     build = build.resolve()
     cache = cache_values(build)
     source = Path(cache.get("CMAKE_HOME_DIRECTORY", str(ROOT))).resolve()
@@ -278,7 +279,7 @@ def test_package(build, cmake):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--build-directory", type=Path, required=True,
-                        help="existing native Linux, BSD, or macOS CMake build with tests enabled")
+                        help="existing native Linux, BSD, Haiku, or macOS CMake build with tests enabled")
     parser.add_argument("--cmake", default="cmake", help="CMake executable (default: cmake)")
     arguments = parser.parse_args()
     try:

@@ -22,6 +22,11 @@ test_compile_flags=(
 )
 case "$(uname -s)" in
     Darwin) test_link_flags=(-Wl,-dead_strip) ;;
+    Haiku)
+        # Haiku links executables as shared objects; hide unused fixture symbols.
+        test_compile_flags+=(-fvisibility=hidden)
+        test_link_flags=(-Wl,--gc-sections)
+        ;;
     *) test_link_flags=(-Wl,--gc-sections) ;;
 esac
 # Match CMake's environment flags, including sanitizer instrumentation. Split

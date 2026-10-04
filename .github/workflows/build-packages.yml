@@ -157,6 +157,94 @@ jobs:
         with:
           subject-path: dist/packages/*
 
+  haiku:
+    name: Package ${{ matrix.target }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [haiku-x64, haiku-x86]
+    env:
+      PACKAGE_TARGET: ${{ matrix.target }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      - name: Test the Haiku VM helper
+        run: python3 -m unittest discover -s tools/scripts/tests -p test_haiku_vm.py
+
+      - name: Download and verify native regression test assets
+        run: |
+          curl --fail --location --silent --show-error --retry 3 \
+            https://github.com/CommonLoon102/restunts4d-oracles/releases/download/v1.0.1/BB11.zip \
+            --output "$RUNNER_TEMP/BB11.zip"
+          echo "71fd29f55c726a5f1ee6a6073275708cdb6eb2799a25b1a83b44ed0c01742511  $RUNNER_TEMP/BB11.zip" \
+            | sha256sum --check --strict
+          unzip -oq "$RUNNER_TEMP/BB11.zip" -d stunts
+
+      - name: Install the Haiku VM host tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends qemu-system-x86 qemu-utils zstd
+          # The hosted CI time budget assumes hardware acceleration.
+          test -c /dev/kvm
+          sudo chmod a+rw /dev/kvm
+
+      - name: Assemble the Haiku R1 beta 6 x86 disk
+        if: matrix.target == 'haiku-x86'
+        run: |
+          python3 tools/scripts/haiku-vm.py --directory "$RUNNER_TEMP/haiku-vm" \
+            prepare-x86 --accel kvm
+
+      - name: Boot the Haiku VM and upload sources
+        run: |
+          python3 tools/scripts/haiku-vm.py --directory "$RUNNER_TEMP/haiku-vm" \
+            start --arch "${PACKAGE_TARGET#haiku-}" --accel kvm
+          python3 tools/scripts/haiku-vm.py --directory "$RUNNER_TEMP/haiku-vm" \
+            upload "$GITHUB_WORKSPACE" /boot/home/restunts
+
+      - name: Install and activate native build dependencies
+        run: |
+          python3 tools/scripts/haiku-vm.py --directory "$RUNNER_TEMP/haiku-vm" ssh \
+            sh /boot/home/restunts/tools/scripts/install-haiku-package-dependencies.sh "$PACKAGE_TARGET"
+          # A Haiku system update defers package activation until the next boot.
+          python3 tools/scripts/haiku-vm.py --directory "$RUNNER_TEMP/haiku-vm" stop
+          python3 tools/scripts/haiku-vm.py --directory "$RUNNER_TEMP/haiku-vm" \
+            start --arch "${PACKAGE_TARGET#haiku-}" --accel kvm
+
+      - name: Build and test in the Haiku VM
+        run: |
+          python3 tools/scripts/haiku-vm.py --directory "$RUNNER_TEMP/haiku-vm" ssh env \
+            PACKAGE_TARGET="$PACKAGE_TARGET" \
+            GITHUB_SHA="$GITHUB_SHA" GITHUB_REF="$GITHUB_REF" \
+            GITHUB_RUN_ID="$GITHUB_RUN_ID" GITHUB_RUN_ATTEMPT="$GITHUB_RUN_ATTEMPT" \
+            bash -c 'set -eu; cd /boot/home/restunts
+              bash tools/scripts/build-package.sh "$PACKAGE_TARGET"'
+          mkdir -p dist
+          python3 tools/scripts/haiku-vm.py --directory "$RUNNER_TEMP/haiku-vm" \
+            download /boot/home/restunts/dist/packages dist/
+
+      - name: Shut down the Haiku VM
+        if: always()
+        run: python3 tools/scripts/haiku-vm.py --directory "$RUNNER_TEMP/haiku-vm" stop
+
+      - name: Upload immutable package artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: packages-${{ matrix.target }}
+          path: dist/packages/*
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 14
+
+      - name: Attest the package and its checksum
+        if: inputs.attest
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4
+        with:
+          subject-path: dist/packages/*
+
   dos16:
     name: Package DOS16 validation artifacts
     runs-on: ubuntu-24.04

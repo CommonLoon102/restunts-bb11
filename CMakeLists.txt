@@ -1,6 +1,11 @@
 cmake_minimum_required(VERSION 3.25)
 project(restunts VERSION 1.0 LANGUAGES C)
 
+if(CMAKE_SYSTEM_NAME STREQUAL "Haiku")
+    # SDL's native Haiku backend needs C++ link information in the parent scope.
+    enable_language(CXX)
+endif()
+
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 # SDL's DOS/POSIX backends need the platform declarations hidden by strict ANSI.
@@ -109,6 +114,25 @@ else()
         URL_HASH SHA256=50c373115702974928c760f6e752aae33b69dcc51b4c2d909c35b30f41283a52
         DOWNLOAD_EXTRACT_TIMESTAMP TRUE)
     FetchContent_MakeAvailable(SDL3)
+    if(CMAKE_SYSTEM_NAME STREQUAL "Haiku" AND CMAKE_HAIKU_SECONDARY_ARCH)
+        # Hybrid Haiku's implicit paths prefer the primary GCC2 OpenGL kit.
+        # Use the matching Mesa C++ headers alongside the secondary libraries.
+        set(restunts_haiku_header_roots ${CMAKE_SYSTEM_INCLUDE_PATH})
+        list(FILTER restunts_haiku_header_roots INCLUDE
+            REGEX "/${CMAKE_HAIKU_SECONDARY_ARCH}$")
+        find_path(RESTUNTS_HAIKU_OPENGL_HEADER_ROOT opengl/GLView.h
+            HINTS ${restunts_haiku_header_roots} NO_DEFAULT_PATH REQUIRED)
+        set(restunts_haiku_opengl_kit "${RESTUNTS_HAIKU_OPENGL_HEADER_ROOT}/opengl")
+        if(NOT EXISTS "${restunts_haiku_opengl_kit}/OpenGLKit.h")
+            message(FATAL_ERROR "Matching Haiku OpenGLKit.h and GLView.h are required")
+        endif()
+        target_include_directories(SDL3-static BEFORE PRIVATE
+            "$<$<COMPILE_LANGUAGE:CXX>:${restunts_haiku_opengl_kit}>")
+        # Qualified includes also need the secondary root first. An explicit
+        # system option overrides its position in the compiler's implicit paths.
+        target_compile_options(SDL3-static PRIVATE
+            "$<$<COMPILE_LANGUAGE:CXX>:SHELL:-isystem \"${RESTUNTS_HAIKU_OPENGL_HEADER_ROOT}\">")
+    endif()
 endif()
 
 set(core src/restunts/c)
@@ -232,6 +256,9 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
     install(PROGRAMS tools/scripts/run-macos.sh DESTINATION . RENAME run-restunts.sh COMPONENT Runtime)
 endif()
 install(FILES docs/sdl3.md DESTINATION share/docs/restunts COMPONENT Runtime)
+if(CMAKE_SYSTEM_NAME STREQUAL "Haiku")
+    install(FILES docs/haiku.md DESTINATION share/docs/restunts COMPONENT Runtime)
+endif()
 foreach(background IN LISTS menu_backgrounds)
     install(FILES "assets/menus/${background}.png" DESTINATION bin/menus COMPONENT Runtime)
 endforeach()
@@ -305,6 +332,11 @@ endif()
 if(RESTUNTS_BUILD_TESTS)
     # Fixtures include selected implementation files; discard unrelated code
     # and its unresolved references using the target platform's linker syntax.
+    set(restunts_test_section_options -ffunction-sections -fdata-sections)
+    if(CMAKE_SYSTEM_NAME STREQUAL "Haiku")
+        # Haiku links executables as shared objects, retaining visible symbols.
+        list(APPEND restunts_test_section_options -fvisibility=hidden)
+    endif()
     if(APPLE)
         set(restunts_test_gc_sections "LINKER:-dead_strip")
     else()
@@ -396,7 +428,7 @@ if(RESTUNTS_BUILD_TESTS AND TARGET restunts_opl)
         add_executable(test-sdl3-audio-definition src/restunts/tests/test-sdl3-audio-definition.c
             ${core}/resource.c ${platform}/memory.c ${platform}/runtime.c)
         target_link_libraries(test-sdl3-audio-definition PRIVATE restunts_options)
-        target_compile_options(test-sdl3-audio-definition PRIVATE -UNDEBUG -ffunction-sections -fdata-sections)
+        target_compile_options(test-sdl3-audio-definition PRIVATE -UNDEBUG ${restunts_test_section_options})
         target_link_options(test-sdl3-audio-definition PRIVATE ${restunts_test_gc_sections})
         add_test(NAME sdl3-audio-definition COMMAND test-sdl3-audio-definition)
     endif()
@@ -427,7 +459,7 @@ if(RESTUNTS_BUILD_TESTS)
         add_executable(test-sdl3-race-frames src/restunts/tests/test-race-frames.c
             ${core}/legacy.c ${core}/full_data.c ${core}/headless_data.c ${core}/frame_interpolation.c)
         target_link_libraries(test-sdl3-race-frames PRIVATE restunts_options)
-        target_compile_options(test-sdl3-race-frames PRIVATE -UNDEBUG -ffunction-sections -fdata-sections)
+        target_compile_options(test-sdl3-race-frames PRIVATE -UNDEBUG ${restunts_test_section_options})
         target_link_options(test-sdl3-race-frames PRIVATE ${restunts_test_gc_sections})
         add_test(NAME sdl3-race-frames COMMAND test-sdl3-race-frames)
     endif()

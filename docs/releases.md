@@ -1,7 +1,7 @@
 # Release packages and verification
 
 The **PR validation** and manual **Release** workflows call the same
-`build-packages.yml` workflow. Every successful run produces these 18 archives
+`build-packages.yml` workflow. Every successful run produces these 20 archives
 and a SHA-256 sidecar for each archive:
 
 | Archive | Target baseline |
@@ -22,15 +22,18 @@ and a SHA-256 sidecar for each archive:
 | `restunts-netbsd-x64.tar.gz` | x86_64, NetBSD 10.2 |
 | `restunts-netbsd-x86.tar.gz` | 32-bit x86 with SSE2, NetBSD 10.2 |
 | `restunts-netbsd-x86-no-sse2.tar.gz` | 32-bit x86 without SSE2, NetBSD 10.2 |
+| `restunts-haiku-x64.tar.gz` | x86_64, Haiku R1/beta6 |
+| `restunts-haiku-x86.tar.gz` | 32-bit x86 with SSE2, modern GCC ABI, Haiku R1/beta6 |
 | `restunts-macos-universal.tar.gz` | Intel and Apple Silicon, macOS 11.0+ |
 | `restunts-browser.zip` | Offline HTML/WebAssembly |
 
 These are build baselines, not a claim that CI exercises every OS version and
-CPU. The game and replay tests run only on native Linux SDL3 and/or 16-bit DOS,
+CPU. The full golden replay suites run on native Linux SDL3 and/or 16-bit DOS,
 as selected by the `platforms` input. That selection never reduces the package
 matrix. BSD packages build in native virtual machines; the NetBSD x86 packages
 use an i386 userspace inside the amd64 VM. BSD jobs validate architecture and
-relocated startup without game data. ARM32 targets ARMv7; it does not cover
+relocated startup without game data. Haiku x64 and x86 build in Haiku R1/beta6 VMs
+and run native regressions, including relocated-package and Nuked replacement tests. ARM32 targets ARMv7; it does not cover
 the original Pi 1 or Pi Zero. The no-SSE2 option controls the game, bundled SDL,
 and Nuked library; system libraries retain their own CPU requirements.
 

@@ -11,6 +11,8 @@ package_dir="$repo_dir/build/package-runtime/$target"
 archive_dir="$repo_dir/dist/packages"
 default_jobs=2
 jobs=${RESTUNTS_BUILD_JOBS:-$default_jobs}
+default_test_timeout_seconds=600
+test_timeout_seconds=${RESTUNTS_TEST_TIMEOUT_SECONDS:-$default_test_timeout_seconds}
 cmake_options=(-DCMAKE_BUILD_TYPE=Release -DRESTUNTS_BUILD_TESTS=OFF)
 python_command=${PYTHON:-python3}
 
@@ -30,10 +32,31 @@ verify_bsd_host() {
     esac
 }
 
+verify_haiku_host() {
+    local host_system host_architecture
+    host_system=$(uname -s)
+    host_architecture=$(uname -m)
+    case "$target:$host_system:$host_architecture" in
+        haiku-x64:Haiku:x86_64|haiku-x86:Haiku:BePC|haiku-x86:Haiku:x86) ;;
+        *)
+            echo "$target requires its matching native Haiku userspace; found $host_system $host_architecture." >&2
+            exit 1
+            ;;
+    esac
+}
+
 case "$target" in
     freebsd-*|openbsd-*|netbsd-*)
         verify_bsd_host
         python_command=${PYTHON:-python3.13}
+        ;;
+    haiku-*)
+        verify_haiku_host
+        if [[ "$target" == haiku-x86 ]]; then
+            # Hybrid Haiku defaults to GCC 2; select the modern x86 toolchain.
+            PATH=$(setarch -p x86)
+            export PATH
+        fi
         ;;
 esac
 
@@ -75,6 +98,7 @@ case "$target" in
             linux-arm32) cmake_options+=(-DCMAKE_TOOLCHAIN_FILE=cmake/toolchains/linux-arm32.cmake) ;;
             linux-arm64) cmake_options+=(-DCMAKE_TOOLCHAIN_FILE=cmake/toolchains/linux-arm64.cmake) ;;
             freebsd-x64|openbsd-x64) ;;
+            haiku-x64|haiku-x86) cmake_options+=(-DRESTUNTS_BUILD_TESTS=ON) ;;
             netbsd-x64|netbsd-x86|netbsd-x86-no-sse2)
                 # NetBSD's ASLR prevents GCC from reusing SDL's precompiled header.
                 cmake_options+=('-DCMAKE_PREFIX_PATH=/usr/pkg;/usr/X11R7' -DCMAKE_DISABLE_PRECOMPILE_HEADERS=ON)
@@ -105,6 +129,12 @@ case "$target" in
         esac
         cmake -S "$repo_dir" -B "$build_dir" -G Ninja "${cmake_options[@]}"
         cmake --build "$build_dir" --parallel "$jobs"
+        if [[ "$target" == haiku-* ]]; then
+            SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy \
+                ctest --test-dir "$build_dir" --output-on-failure --no-tests=error \
+                    --timeout "$test_timeout_seconds"
+            "$python_command" "$script_dir/test-nuked-package.py" --build-directory "$build_dir"
+        fi
         cmake --install "$build_dir" --prefix "$package_dir" --component Runtime
         if [[ "$target" == dos32 ]]; then
             unzip -p "$tool_root/downloads/csdpmi7b.zip" bin/CWSDPMI.EXE > "$package_dir/bin/CWSDPMI.EXE"
@@ -116,13 +146,13 @@ case "$target" in
 esac
 
 case "$target" in
-    freebsd-*|openbsd-*|netbsd-*)
+    freebsd-*|openbsd-*|netbsd-*|haiku-*)
         # Check the installed loader paths after moving the complete runtime.
         # --licenses does not require a display, audio device, or game data.
         smoke_dir=$(mktemp -d "${TMPDIR:-/tmp}/restunts-runtime.XXXXXX")
         trap 'rm -rf -- "$smoke_dir"' EXIT
         cp -RP "$package_dir/." "$smoke_dir/"
-        (unset LD_LIBRARY_PATH; "$smoke_dir/bin/restunts" --licenses > /dev/null)
+        (unset LD_LIBRARY_PATH LIBRARY_PATH ADDON_PATH; "$smoke_dir/bin/restunts" --licenses > /dev/null)
         rm -rf -- "$smoke_dir"
         trap - EXIT
         ;;
