@@ -24,6 +24,20 @@ red/green/blue weights 30/59/11 and the lowest index winning a tie. Transparency
 and AND/OR masks operate before color conversion. Palette changes rebuild the
 lookup table and update the hardware palette so the original fades still work.
 
+3D geometry uses the original EGA driver's 129 primary colors, secondary colors,
+pattern types, and pattern masks, installed by MATERIAL.HC after game-data
+initialization. These tables must not be replaced by SDMAIN's !eg0 bitmap map:
+several VGA blue material shades map to purple through that map. Bitmap resources
+keep their own !eg0 pairs, while original UI lines fill complete 2x2 source pixels.
+Native 3D lines retain their one-pixel thickness at 640x400.
+
+Material-table provenance: Broderbund Stunts 1.1 EGA.CMN + EGA.COD, resource
+unpacked, concatenated, then EXEPACK decoded. The decoded image SHA256 is
+90841d1ac8aa27d47c94af74911a36b0ed4baf03db5f9500121da5965b8d93df.
+The four 129-word little-endian tables start at image offsets 0x356e4 (primary),
+0x357e6 (pattern type), 0x358e8 (pattern bits), and 0x359ea (secondary).
+The pointer block at 0x35aec confirms these tables relative to data base 0x30650.
+
 The PC speaker is the only audio device. The native backend uses the original
 PC15 note periods, engine pitch conversion, resource envelopes, and sequencer.
 TempleOS's IRQ0 system timer is not replaced. Keyboard and mouse are
@@ -108,7 +122,7 @@ Run the guest checks with tools/VM.PY and a fresh disposable disk for each entry
     TEST_RENDERER.HC  Palette, native raster, masks, backgrounds, video cleanup.
     TEST_AUDIO.HC     Speaker note/engine/bend periods and PCM task cleanup.
     TEST_AUDIO_CORE.HC Native callbacks in the original packed audio structures.
-    TEST_GRAPHICS.HC  Generated graphics, binary layouts, and native sprite storage.
+    TEST_GRAPHICS.HC  EGA materials, generated graphics, layouts, and sprite storage.
     TEST_RESOURCES.HC Original-resource loading and native-buffer file round trips.
     TEST_REPLAY.HC    Compare 120 physics frames with an independent DOS oracle.
 
@@ -117,7 +131,7 @@ its unchanged DEFAULT.RPL. Tests create temporary files in the disposable guest;
 they should not run against an existing game disk. tools/VM.TXT gives commands,
 oracle provenance, and diagnostic paths. tools/TEST_TRANSLATE.PY builds a host
 C oracle and matching HolyC language-semantics fixture; tools/TEST_RENDERER.PY
-checks raster behavior under host address/undefined-behavior sanitizers.
+checks EGA materials and raster behavior with address/undefined-behavior sanitizers.
 Host checks complement actual HolyC compilation and guest runtime tests.
 
 Reference projects and documentation

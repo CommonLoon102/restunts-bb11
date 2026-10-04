@@ -596,7 +596,8 @@ legacy_void TempleRasterPaint(legacy_s64 x, legacy_s64 y, legacy_u16 color, lega
 	legacy_s64 row;
 	legacy_s64 bit;
 	if (mode != TEMPLE_RASTER_PAINT_SOLID) {
-		row = y % TEMPLE_RASTER_PATTERN_ROWS;
+		/* DOS pattern words store the even scanline in their high byte. */
+		row = TEMPLE_RASTER_PATTERN_ROWS - 1 - y % TEMPLE_RASTER_PATTERN_ROWS;
 		bit = (TEMPLE_BYTE_BITS - 1 - (x & TEMPLE_RASTER_PATTERN_MASK)) + row * TEMPLE_BYTE_BITS;
 		if (pattern & (1 << bit)) {
 			if (mode == TEMPLE_RASTER_PAINT_TWO_COLOR) {
@@ -709,16 +710,18 @@ legacy_void preRender_line(legacy_u16 start_x, legacy_u16 start_y, legacy_u16 en
 						   legacy_u16 end_y, legacy_u16 color)
 {
 	legacy_s64 scale = TempleRasterCoordinateScale();
-	legacy_s64 x = TempleRasterSigned16(start_x) * scale;
-	legacy_s64 y = TempleRasterSigned16(start_y) * scale;
-	legacy_s64 right = TempleRasterSigned16(end_x) * scale;
-	legacy_s64 bottom = TempleRasterSigned16(end_y) * scale;
+	legacy_s64 x = TempleRasterSigned16(start_x);
+	legacy_s64 y = TempleRasterSigned16(start_y);
+	legacy_s64 right = TempleRasterSigned16(end_x);
+	legacy_s64 bottom = TempleRasterSigned16(end_y);
 	legacy_s64 dx = AbsI64(right - x);
 	legacy_s64 dy = -AbsI64(bottom - y);
 	legacy_s64 sx = -1;
 	legacy_s64 sy = -1;
 	legacy_s64 error = dx + dy;
 	legacy_s64 doubled;
+	legacy_s64 column;
+	legacy_s64 row;
 	if (x < right) {
 		sx = 1;
 	}
@@ -727,11 +730,17 @@ legacy_void preRender_line(legacy_u16 start_x, legacy_u16 start_y, legacy_u16 en
 	}
 	TempleRasterSelect(&drawing_sprite);
 	while (TRUE) {
-		if (color == TEMPLE_RASTER_GHOST_COLOR) {
-			TempleRasterPaint(x, y, BLACK, BLACK, TEMPLE_RASTER_GHOST_PATTERN,
-							  TEMPLE_RASTER_PAINT_MASKED);
-		} else {
-			TempleRasterPlot(x, y, color);
+		/* UI lines retain each complete DOS pixel, including their endpoints.
+		 * Native geometry uses scale one and keeps its finer line detail. */
+		for (row = 0; row < scale; row++) {
+			for (column = 0; column < scale; column++) {
+				if (color == TEMPLE_RASTER_GHOST_COLOR) {
+					TempleRasterPaint(x * scale + column, y * scale + row, BLACK, BLACK,
+									  TEMPLE_RASTER_GHOST_PATTERN, TEMPLE_RASTER_PAINT_MASKED);
+				} else {
+					TempleRasterPlot(x * scale + column, y * scale + row, color);
+				}
+			}
 		}
 		if (x == right && y == bottom) {
 			break;

@@ -13,7 +13,7 @@ import subprocess
 import tempfile
 
 root = Path(__file__).resolve().parents[1]
-s='\n'.join((root/f).read_text() for f in ['PALETTE.HH','PALETTE.HC','RASTER.HH','RASTER.HC'])
+s='\n'.join((root/f).read_text() for f in ['PALETTE.HH','PALETTE.HC','RASTER.HH','RASTER.HC','MATERIAL.HC'])
 s=re.sub(r'^#include.*$','',s,flags=re.M)
 s=re.sub(r'class (\w+)\s+\{',r'typedef struct \1 \1; struct \1 {',s)
 s=s.replace('output[index] = 0;', 'memset(&output[index],0,sizeof(output[index]));')
@@ -29,6 +29,12 @@ prefix=r'''
 #include "RESTUNTS_LEGACY_INCLUDE"
 #define legacy_void void
 RESTUNTS_TEMPLE_CONSTANTS
+RESTUNTS_MATERIAL_COUNT
+legacy_s16 material_color_list[SHAPE3D_MATERIAL_COUNT];
+legacy_s16 material_pattern_list[SHAPE3D_MATERIAL_COUNT];
+legacy_s16 material_pattern2_list[SHAPE3D_MATERIAL_COUNT];
+legacy_s16 *material_clrlist_ptr, *material_clrlist2_ptr;
+legacy_s16 *material_patlist_ptr, *material_patlist2_ptr;
 #define FALSE 0
 #define TRUE 1
 #define BLACK 0
@@ -63,9 +69,12 @@ legacy_u16 dos_memory_pointer_segment(legacy_void *p) {return ((legacy_u8*)p-are
 legacy_s16 mmgr_get_chunk_size(legacy_void *p) {(void)p;return 4096;}
 '''
 polygon_tests = "#define TestAssert assert\n" + (root / "TEST_POLYGON.HC").read_text()
+line_tests = (root / "TEST_LINE.HC").read_text()
+material_tests = "#define TestMaterialAssert assert\n" + (root / "TEST_MATERIAL.HC").read_text()
 tests=r'''
 legacy_int main(legacy_void) {
  TemplePaletteInit();
+ TestMaterialInitialization();
  for(legacy_int i=0;i<16;i++)assert(TemplePaletteNearest(temple_palette_standard[i*3],temple_palette_standard[i*3+1],temple_palette_standard[i*3+2])==i);
  legacy_u8 rgb[3]={63,0,0}; TemplePaletteSet(255,65535,rgb); assert(TemplePaletteColor(255)==4);
  rgb[0]=rgb[1]=rgb[2]=0;TemplePaletteSet(255,1,rgb);assert(TemplePaletteColor(255)==0);
@@ -83,7 +92,7 @@ legacy_int main(legacy_void) {
  SPRITE background={arena+0x20000,rows,320,0,200,0,320};TempleRasterRegisterSprite(&background);
  video_pages_copy_span(background.sprite_bitmapptr,9,drawing_sprite.sprite_bitmapptr,5,1);assert(!memcmp(saved,TempleRasterFind(background.sprite_bitmapptr)->samples+9*TEMPLE_RASTER_CELL_PIXELS,sizeof(saved)));
  video_pages_write_pixel(drawing_sprite.sprite_bitmapptr,5,2);video_pages_copy_span(drawing_sprite.sprite_bitmapptr,5,background.sprite_bitmapptr,9,1);assert(!memcmp(saved,cell,sizeof(saved)));
- CDC dc={calloc(TEMPLE_SCREEN_PIXELS,1),TEMPLE_SCREEN_WIDTH};TempleRasterPresent(&dc);for(legacy_int i=0;i<TEMPLE_SCREEN_PIXELS;i++)assert(dc.body[i]<16);TestPolygonSharedEdges(&dc);TestNativeGeometry(&dc);memset(dc.body,255,TEMPLE_SCREEN_PIXELS);TempleRasterPresent(&dc);assert(dc.body[0]==BLACK&&dc.body[(TEMPLE_SCREEN_HEIGHT-1)*dc.width_internal]==BLACK);free(dc.body);
+ CDC dc={calloc(TEMPLE_SCREEN_PIXELS,1),TEMPLE_SCREEN_WIDTH};TempleRasterPresent(&dc);for(legacy_int i=0;i<TEMPLE_SCREEN_PIXELS;i++)assert(dc.body[i]<16);TestPolygonSharedEdges(&dc);TestNativeGeometry(&dc);TestLineCoverage(&dc);TestMaterialRaster(&dc);memset(dc.body,255,TEMPLE_SCREEN_PIXELS);TempleRasterPresent(&dc);assert(dc.body[0]==BLACK&&dc.body[(TEMPLE_SCREEN_HEIGHT-1)*dc.width_internal]==BLACK);free(dc.body);
  for(legacy_int y=0;y<TEMPLE_RENDER_HEIGHT;y++){legacy_int ly=y/TEMPLE_RASTER_Y_SCALE;assert(TempleRasterY(ly)<=y&&TempleRasterY(ly+1)>y);}
  legacy_u8 *res=arena+0x30000;res[4]=1;memcpy(res+6,"!eg0",4);res[14]=0;res[15]=1;res[16]=1;for(legacy_int i=0;i<256;i++)res[30+i]=i;
  TempleRasterResource(res);assert(TempleRasterPairs(res+30)[127]==127);
@@ -105,11 +114,15 @@ prefix = prefix.replace("RESTUNTS_TEMPLE_CONSTANTS", "\n".join(
     line for line in (root / "LEGACY.HH").read_text().splitlines()
     if line.startswith("#define TEMPLE_")
 ))
+prefix = prefix.replace("RESTUNTS_MATERIAL_COUNT", next(
+    line for line in (root.parents[1] / "c" / "shape3d_internal.h").read_text().splitlines()
+    if line.startswith("#define SHAPE3D_MATERIAL_COUNT ")
+))
 prefix = prefix.replace("RESTUNTS_LEGACY_INCLUDE", str(root.parents[1] / "c" / "legacy.h"))
 with tempfile.TemporaryDirectory(prefix="restunts-raster-") as directory:
     source = Path(directory) / "TEST.C"
     program = Path(directory) / "TEST"
-    source.write_text(prefix + s + polygon_tests + tests, encoding="ascii")
+    source.write_text(prefix + s + polygon_tests + line_tests + material_tests + tests, encoding="ascii")
     subprocess.run([
         os.environ.get("CC", "cc"), "-x", "c", "-std=c99",
         "-fsanitize=address,undefined", "-g", "-O1", str(source), "-lm", "-o", str(program),

@@ -50,6 +50,13 @@ legacy_void TempleGraphicsAssert(legacy_s64 condition, legacy_u8 *message)
 	}
 }
 
+legacy_void TestMaterialAssert(legacy_s64 condition)
+{
+	TempleGraphicsAssert(condition, "original EGA material tables and raster colors");
+}
+
+#include "TEST_MATERIAL.HC"
+
 legacy_void TempleGraphicsQueueTest()
 {
 	legacy_u16 expected;
@@ -101,9 +108,13 @@ legacy_void TempleGraphicsProjectionTest()
 	legacy_u8 vertices[TEMPLE_GRAPHICS_TRIANGLE_VERTICES * TEMPLE_GRAPHICS_VECTOR_BYTES];
 	legacy_u8 primitives[TEMPLE_GRAPHICS_PRIMITIVE_BYTES];
 	legacy_u8 mask[TEMPLE_GRAPHICS_SHAPE_MASK_BYTES];
+	legacy_s64 material, x, y;
 	legacy_s16 colors[1], patterns[1];
 	legacy_s16 *saved_colors = material_clrlist_ptr_cpy;
 	legacy_s16 *saved_patterns = material_patlist_ptr_cpy;
+	legacy_s16 *saved_secondary = material_clrlist2_ptr_cpy;
+	legacy_s16 *saved_bits = material_patlist2_ptr_cpy;
+	legacy_u16 saved_reserved = reserved_material_video_word;
 	MemSet(&shape, 0, sizeof(shape));
 	MemSet(&instance, 0, sizeof(instance));
 	MemSet(primitives, 0, sizeof(primitives));
@@ -176,6 +187,30 @@ legacy_void TempleGraphicsProjectionTest()
 	TempleGraphicsAssert(!temple_raster_native, "queue drawing restores logical UI coordinates");
 	material_clrlist_ptr_cpy = saved_colors;
 	material_patlist_ptr_cpy = saved_patterns;
+
+	/* Send the real EGA materials through the generated transform and queue. */
+	copy_material_list_pointers(material_clrlist_ptr, material_clrlist2_ptr, material_patlist_ptr,
+								material_patlist2_ptr, saved_reserved);
+	for (material = TEST_MATERIAL_BLUE_FIRST; material <= TEST_MATERIAL_BLUE_LAST; material++) {
+		primitives[TEMPLE_GRAPHICS_PRIMITIVE_HEADER_BYTES - 1] = material;
+		TempleGraphicsAssert(!shape3d_transform_and_queue(&instance) && polyinfonumpolys == 1,
+							 "EGA blue material survives real geometry queue");
+		sprite_clear_target(TEMPLE_GRAPHICS_CLEAR_COLOR);
+		shape3d_render_queued_primitives();
+		for (y = TEMPLE_GRAPHICS_SAMPLE_Y; y < TEMPLE_GRAPHICS_SAMPLE_Y + TEMPLE_RENDER_SCALE;
+			 y++) {
+			for (x = TEMPLE_GRAPHICS_PROJECTED_LEFT;
+				 x < TEMPLE_GRAPHICS_PROJECTED_LEFT + TEMPLE_RENDER_SCALE; x++) {
+				TempleGraphicsAssert(TempleGraphicsSample(x, y) ==
+										 TestMaterialExpectedColor(material, x, y),
+									 "queued EGA blue paint retains DOS colors and checker phase");
+			}
+		}
+		TempleGraphicsAssert(!temple_raster_native, "EGA queue restores logical UI coordinates");
+	}
+	primitives[TEMPLE_GRAPHICS_PRIMITIVE_HEADER_BYTES - 1] = 0;
+	copy_material_list_pointers(saved_colors, saved_secondary, saved_patterns, saved_bits,
+								saved_reserved);
 
 	/* Clipping against z=12 must retain the fractional 3D intersections. */
 	vertex.x = 0;
@@ -308,6 +343,7 @@ legacy_void TempleGraphicsTest()
 	TempleGraphicsAssert(vertex.x == -1 && vertex.y == 2 && vertex.z == I16_MIN,
 						 "signed binary vertex round trip");
 	full_data_initialize;
+	TestMaterialInitialization();
 	init_video_geometry_flags;
 	mmgr_init_conventional_arena;
 	TempleGraphicsQueueTest();
@@ -317,6 +353,7 @@ legacy_void TempleGraphicsTest()
 						 "opaque frames select native row-copy blitting");
 	video_pages_initialize;
 	sprite_select_screen;
+	TestMaterialRaster(temple_video_front);
 	TempleGraphicsProjectionTest();
 	window = sprite_make_wnd(TEMPLE_GRAPHICS_WINDOW_SIZE, TEMPLE_GRAPHICS_WINDOW_SIZE, 0);
 	background = sprite_make_wnd(TEMPLE_GRAPHICS_CAPTURE_SIDE, TEMPLE_GRAPHICS_CAPTURE_SIDE, 0);
@@ -373,7 +410,8 @@ legacy_void TempleGraphicsTest()
 	TempleGraphicsAssert(!TempleRasterFind(window_bitmap), "window raster release");
 	TempleVideoShutdown;
 	TempleGraphicsAssert(ms.show == mouse_was_shown, "mouse visibility restoration");
-	"Generated native projection, geometry queue, sprite capture/blit and lifetime checks "
+	"Generated EGA materials, native projection, geometry queue, sprite capture/blit and "
+	"lifetime checks "
 	"passed.\n";
 }
 TempleGraphicsTest;

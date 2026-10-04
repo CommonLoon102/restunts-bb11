@@ -117,7 +117,7 @@ legacy_void TestPolygonSharedEdges(CDC *dc)
 										expected = TEST_POLYGON_UPPER_COLOR;
 									}
 									if (mode != TEMPLE_RASTER_PAINT_SOLID) {
-										if ((x / TEST_POLYGON_PATTERN_RUN + render_y) & 1) {
+										if (((x / TEST_POLYGON_PATTERN_RUN + render_y) & 1) == 0) {
 											if (mode == TEMPLE_RASTER_PAINT_TWO_COLOR) {
 												expected = TEST_POLYGON_ALTERNATE_COLOR;
 											}
