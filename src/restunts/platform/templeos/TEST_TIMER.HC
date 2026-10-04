@@ -1,0 +1,142 @@
+// Run only in a fresh disposable VM task: replaces clock and sleep for this test.
+#include "LEGACY.HH"
+#include "LIBC.HC"
+#include "NATIVE.HH"
+
+#define TEMPLE_TIMER_TEST_START_SECONDS 10.0
+#define TEMPLE_TIMER_TEST_TICK_FRACTION 0.25
+#define TEMPLE_TIMER_TEST_TICKS_PER_SECOND 100
+#define TEMPLE_TIMER_TEST_SLOW_TICKS_PER_SECOND 20
+#define TEMPLE_TIMER_TEST_POLL_ROUNDS 32
+#define TEMPLE_TIMER_TEST_DISPATCH_LIMIT (TEMPLE_TIMER_TEST_TICKS_PER_SECOND * 4)
+#define TEMPLE_TIMER_TEST_INITIAL_TICKS 3
+#define TEMPLE_TIMER_TEST_BACKWARD_TICKS 2
+#define TEMPLE_TIMER_TEST_FORWARD_TICKS 8
+#define TEMPLE_TIMER_TEST_SUSPEND_TICKS 13
+#define TEMPLE_TIMER_TEST_RESUME_TICKS 18
+#define TEMPLE_TIMER_TEST_RESET_PROGRESS_TICKS 23
+
+legacy_f64 temple_timer_test_time = TEMPLE_TIMER_TEST_START_SECONDS;
+legacy_u32 temple_timer_test_callbacks = 0, temple_timer_test_audio = 0;
+
+legacy_void TempleTimerTestAssert(legacy_u8 condition, legacy_u8 *message)
+{
+	if (!condition) {
+		PrintErr("Timer test: %s\n", message);
+		throw('Timer');
+	}
+}
+
+legacy_void TempleTimerTestSleep(legacy_s64 milliseconds)
+{
+	no_warn milliseconds;
+}
+
+legacy_void TempleAudioTick()
+{
+	temple_timer_test_audio++;
+	TempleTimerTestAssert(temple_timer_test_audio <= TEMPLE_TIMER_TEST_DISPATCH_LIMIT,
+						  "bounded audio dispatch");
+}
+
+legacy_void TemplePump()
+{
+	TempleTimerPump();
+}
+
+// HolyC has no #undef; these replacements stay in this disposable test task.
+#define tS temple_timer_test_time
+#define Sleep TempleTimerTestSleep
+#include "TIMER.HC"
+
+legacy_void TempleTimerTestCallback()
+{
+	temple_timer_test_callbacks++;
+}
+
+legacy_void TempleTimerTestReset()
+{
+	dos_timer_shutdown();
+	temple_timer_test_time = TEMPLE_TIMER_TEST_START_SECONDS;
+	temple_timer_test_callbacks = 0;
+	temple_timer_test_audio = 0;
+	dos_timer_setup_interrupt();
+	TempleTimerTestAssert(dos_timer_register_callback(&TempleTimerTestCallback),
+						  "register timer callback");
+}
+
+legacy_void TempleTimerTestSample(legacy_u32 ticks)
+{
+	temple_timer_test_time =
+		TEMPLE_TIMER_TEST_START_SECONDS +
+		(ToF64(ticks) + TEMPLE_TIMER_TEST_TICK_FRACTION) / TEMPLE_TIMER_TEST_TICKS_PER_SECOND;
+	TempleTimerPump();
+}
+
+legacy_void TempleTimerTestCounters(legacy_u32 game, legacy_u32 realtime, legacy_u32 callbacks,
+									legacy_u32 audio)
+{
+	TempleTimerTestAssert(timer_get_counter() == game, "game counter matches elapsed time");
+	TempleTimerTestAssert(dos_timer_get_realtime_counter() == realtime,
+						  "realtime counter matches elapsed time");
+	TempleTimerTestAssert(timer_get_slow_counter() == realtime *
+														  TEMPLE_TIMER_TEST_SLOW_TICKS_PER_SECOND /
+														  TEMPLE_TIMER_TEST_TICKS_PER_SECOND,
+						  "slow counter keeps its 20 Hz cadence");
+	TempleTimerTestAssert(temple_timer_test_callbacks == callbacks,
+						  "callbacks run once per active tick");
+	TempleTimerTestAssert(temple_timer_test_audio == audio, "audio runs once per active tick");
+}
+
+legacy_void TempleTimerTests()
+{
+	legacy_u16 round;
+	legacy_u32 interval = TEMPLE_TIMER_TEST_SUSPEND_TICKS - TEMPLE_TIMER_TEST_FORWARD_TICKS;
+	TempleTimerTestReset();
+	TempleTimerTestCounters(0, 0, 0, 0);
+	TempleTimerTestSample(TEMPLE_TIMER_TEST_TICKS_PER_SECOND);
+	for (round = 0; round < TEMPLE_TIMER_TEST_POLL_ROUNDS; round++) {
+		TempleTimerTestCounters(
+			TEMPLE_TIMER_TEST_TICKS_PER_SECOND, TEMPLE_TIMER_TEST_TICKS_PER_SECOND,
+			TEMPLE_TIMER_TEST_TICKS_PER_SECOND, TEMPLE_TIMER_TEST_TICKS_PER_SECOND);
+	}
+	TempleTimerTestAssert(timer_get_delta() == TEMPLE_TIMER_TEST_TICKS_PER_SECOND,
+						  "one second produces 100 delta ticks");
+	TempleTimerTestAssert(timer_get_delta() == 0, "repeated delta read consumes no time");
+
+	TempleTimerTestReset();
+	TempleTimerTestSample(TEMPLE_TIMER_TEST_INITIAL_TICKS);
+	for (round = 0; round < TEMPLE_TIMER_TEST_POLL_ROUNDS; round++) {
+		TempleTimerTestSample(TEMPLE_TIMER_TEST_BACKWARD_TICKS);
+		TempleTimerTestSample(TEMPLE_TIMER_TEST_INITIAL_TICKS);
+		TempleTimerTestAssert(temple_timer_test_callbacks == TEMPLE_TIMER_TEST_INITIAL_TICKS,
+							  "clock rollback and rebound must not replay consumed ticks");
+	}
+	TempleTimerTestSample(TEMPLE_TIMER_TEST_FORWARD_TICKS);
+	TempleTimerTestCounters(TEMPLE_TIMER_TEST_FORWARD_TICKS, TEMPLE_TIMER_TEST_FORWARD_TICKS,
+							TEMPLE_TIMER_TEST_FORWARD_TICKS, TEMPLE_TIMER_TEST_FORWARD_TICKS);
+	dos_timer_set_callbacks_suspended(TRUE);
+	TempleTimerTestSample(TEMPLE_TIMER_TEST_SUSPEND_TICKS);
+	TempleTimerTestSample(TEMPLE_TIMER_TEST_BACKWARD_TICKS);
+	TempleTimerTestSample(TEMPLE_TIMER_TEST_SUSPEND_TICKS);
+	TempleTimerTestCounters(TEMPLE_TIMER_TEST_FORWARD_TICKS, TEMPLE_TIMER_TEST_SUSPEND_TICKS,
+							TEMPLE_TIMER_TEST_FORWARD_TICKS, TEMPLE_TIMER_TEST_FORWARD_TICKS);
+	dos_timer_set_callbacks_suspended(FALSE);
+	TempleTimerTestSample(TEMPLE_TIMER_TEST_RESUME_TICKS);
+	TempleTimerTestCounters(TEMPLE_TIMER_TEST_SUSPEND_TICKS, TEMPLE_TIMER_TEST_RESUME_TICKS,
+							TEMPLE_TIMER_TEST_SUSPEND_TICKS, TEMPLE_TIMER_TEST_SUSPEND_TICKS);
+
+	dos_timer_reset_counter();
+	TempleTimerTestAssert(timer_get_delta() == 0, "counter reset also resets the delta baseline");
+	dos_timer_setup_interrupt();
+	TempleTimerTestCounters(0, TEMPLE_TIMER_TEST_RESUME_TICKS, TEMPLE_TIMER_TEST_SUSPEND_TICKS,
+							TEMPLE_TIMER_TEST_SUSPEND_TICKS);
+	TempleTimerTestSample(TEMPLE_TIMER_TEST_RESET_PROGRESS_TICKS);
+	TempleTimerTestCounters(interval, TEMPLE_TIMER_TEST_RESET_PROGRESS_TICKS,
+							TEMPLE_TIMER_TEST_RESUME_TICKS, TEMPLE_TIMER_TEST_RESUME_TICKS);
+	TempleTimerTestAssert(timer_get_delta() == interval, "counter reset preserves clock cadence");
+	dos_timer_shutdown();
+	Print("Deterministic timer tests passed.\n");
+}
+
+TempleTimerTests();

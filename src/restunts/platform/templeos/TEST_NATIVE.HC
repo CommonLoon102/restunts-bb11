@@ -16,6 +16,8 @@
 #define TEMPLE_TEST_BUFFER_SIZE 8
 #define TEMPLE_TEST_KEY_F11 0x8500
 #define TEMPLE_TEST_TICK_WAIT_MS 35
+#define TEMPLE_TEST_TIMER_SECONDS 1
+#define TEMPLE_TEST_TIMER_TOLERANCE_TICKS 2
 #define TEMPLE_TEST_PUMP_ROUNDS 4
 #define TEMPLE_TEST_WORKER_KEY 'K'
 
@@ -152,6 +154,28 @@ legacy_void TempleTestPumpScheduling()
 	TempleTestAssert(delivered, "busy pump receives worker input messages");
 }
 
+legacy_void TempleTestTimerCadence()
+{
+	legacy_s64 start, elapsed;
+	legacy_u32 expected;
+	dos_timer_setup_interrupt();
+	start = cnts.jiffies;
+	while ((cnts.jiffies - start) < TEMPLE_TEST_TIMER_SECONDS * JIFFY_FREQ) {
+		// Exercise busy polling; sleeping between ticks can hide clock rollbacks.
+		TempleTimerPump();
+		Yield;
+	}
+	TempleTimerPump();
+	elapsed = cnts.jiffies - start;
+	expected = elapsed * TEMPLE_TIMER_TICKS_PER_SECOND / JIFFY_FREQ;
+	Print("Timer cadence: %d ticks in %d jiffies (%d expected).\n", temple_timer_counter, elapsed,
+		  expected);
+	TempleTestAssert(temple_timer_counter + TEMPLE_TEST_TIMER_TOLERANCE_TICKS >= expected &&
+						 temple_timer_counter <= expected + TEMPLE_TEST_TIMER_TOLERANCE_TICKS,
+					 "busy timer follows elapsed real time");
+	dos_timer_shutdown();
+}
+
 legacy_void TempleTestNative()
 {
 	legacy_u16 handle;
@@ -225,6 +249,7 @@ legacy_void TempleTestNative()
 	TempleTestAssert(temple_test_callback_ticks == before, "suspended callbacks");
 	dos_timer_unregister_callback(&TempleTestCallback);
 	dos_timer_shutdown();
+	TempleTestTimerCadence();
 	Print("Native file/input/timer/scheduling tests passed.\n");
 }
 

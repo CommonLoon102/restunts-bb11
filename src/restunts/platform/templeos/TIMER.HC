@@ -23,9 +23,8 @@ legacy_void TempleTimerPump()
 	}
 	temple_timer_dispatching = TRUE;
 	now = ToI64(tS * TEMPLE_TIMER_TICKS_PER_SECOND);
-	if (now < temple_timer_last_tick) {
-		temple_timer_last_tick = now;
-	}
+	// The PIT-backed clock can briefly read backward around a hardware reload.
+	// Keep the last consumed tick so recovery cannot dispatch the same time twice.
 	while (temple_timer_last_tick < now) {
 		temple_timer_last_tick++;
 		temple_timer_realtime++;
