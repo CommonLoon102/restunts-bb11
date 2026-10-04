@@ -2,6 +2,7 @@
 
 // Native hook: TempleRasterForget
 // Native hook: TempleRasterForgetRange
+legacy_void TempleRasterNative(legacy_u8 enabled);
 // Native hook: TempleRasterRegisterSprite
 // Native hook: TempleRasterResource
 // Native hook: TempleRasterResourceParsed

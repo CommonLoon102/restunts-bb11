@@ -7,11 +7,12 @@ explicit legacy integer conversions. It has no SDL, OPL, PNG, or Ogg dependency.
 Display and original assets
 ---------------------------
 
-The output is 640x480. Original logical X coordinates scale by 2; Y coordinates
-scale by 12/5. Projection keeps the DOS integer-coordinate precision; polygon
-edges and fills are rasterized at the output resolution. Bitmap artwork, fonts,
-mouse coordinates, clipping, and saved backgrounds use the same transform.
-DOS resource sizes and stored offsets retain their original widths.
+The internal 3D resolution is 640x400: projection and rasterization both use
+the finer pixel grid. The 8:5 image is centered on the 640x480 display, with
+40-pixel black bars above and below. Original bitmap artwork, fonts, and UI
+retain their source detail at a uniform 2x scale. Mouse coordinates, clipping,
+and saved backgrounds follow the same layout. DOS resource sizes and stored
+offsets retain their original widths.
 
 The first sixteen VGA palette entries drive the hardware's sixteen colors.
 Original bitmap resources containing !eg0 supply a 256-entry table of packed

@@ -35,7 +35,7 @@ Main repository: https://github.com/4d-stunts/restunts
 		DOS specific code.
 
 	src\restunts\platform\templeos
-		Native HolyC port for TempleOS/TinkerOS: 640x480, 16 colors, PC speaker.
+		Native HolyC port for TempleOS/TinkerOS: 640x400 rendering, 16 colors, PC speaker.
 
 	src\restunts\repldump
 		Tool based on the original game code, loads replays and dumps the game
@@ -55,7 +55,10 @@ original game folder in the browser before starting.
 The [TempleOS/TinkerOS port](src/restunts/platform/templeos/README.TXT) includes
 HolyC sources, an uppercase-file packager, and an isolated QEMU test workflow.
 The [stock TempleOS installation guide](docs/templeos.md) covers the game CD,
-installation on a fresh system, controls, and rebuilding the package.
+installation on a fresh system, controls, and rebuilding the package. The port
+projects and rasterizes 3D geometry at 640x400, preserving the original 8:5 aspect
+ratio within the 640x480 display with 40-pixel black bars above and below.
+Original bitmap artwork and UI retain their source detail at a uniform 2x scale.
 
 All builds require the original Broderbund Stunts 1.1 game data (12 Feb. 1991).
 Startup checks the `gver` text in `MISC.RES`, or `MISC.PRE` when no unpacked

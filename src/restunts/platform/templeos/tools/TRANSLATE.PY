@@ -170,7 +170,7 @@ def prepare_sources(folder):
         if path.name == "command_line.c":
             help_text = ('Restunts for TempleOS\r\n'
                          'Run Restunts("C:/DATA"); append TRUE to skip the intro.\r\n'
-                         'Video: 640 x 480, 16 colors. Audio: PC speaker.\r\n'
+                         'Video: 640 x 400 (8:5), 16 colors. Audio: PC speaker.\r\n'
                          'F12 toggles SuperSight.\r\n')
             replacement = 'static const legacy_s8 command_line_help[] = ' + json.dumps(help_text) + ';'
             text, count = re.subn(r'static const legacy_s8 command_line_help\[\] =.*?COMMAND_LINE_NEWLINE;', lambda match: replacement, text, flags=re.S)

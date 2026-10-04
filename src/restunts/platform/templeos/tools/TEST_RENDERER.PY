@@ -28,13 +28,7 @@ prefix=r'''
 #include <stdio.h>
 #include "RESTUNTS_LEGACY_INCLUDE"
 #define legacy_void void
-#define TEMPLE_LOGICAL_WIDTH 320
-#define TEMPLE_LOGICAL_HEIGHT 200
-#define TEMPLE_SCREEN_WIDTH 640
-#define TEMPLE_SCREEN_HEIGHT 480
-#define TEMPLE_BYTE_BITS 8
-#define TEMPLE_BYTE_MASK 255
-#define TEMPLE_WORD_MASK 65535
+RESTUNTS_TEMPLE_CONSTANTS
 #define FALSE 0
 #define TRUE 1
 #define BLACK 0
@@ -80,17 +74,17 @@ legacy_int main(legacy_void) {
  TempleRasterSelect(&drawing_sprite);
  POINT2D triangle[3]={{0,0},{7,0},{0,7}};preRender_default(12,3,triangle);
  legacy_u32 *cell=temple_raster_target->samples+5*TEMPLE_RASTER_CELL_PIXELS;
- legacy_u32 saved[6];memcpy(saved,cell,sizeof(saved));
- legacy_int saw_mixed=0;for(legacy_int i=0;i<100;i++){legacy_u32 *p=temple_raster_target->samples+i*6;for(legacy_int j=1;j<6;j++)if(p[0]!=p[j])saw_mixed=1;}assert(saw_mixed);
+ legacy_u32 saved[TEMPLE_RASTER_CELL_PIXELS];memcpy(saved,cell,sizeof(saved));
+ legacy_int saw_mixed=0;for(legacy_int i=0;i<100;i++){legacy_u32 *p=temple_raster_target->samples+i*TEMPLE_RASTER_CELL_PIXELS;for(legacy_int j=1;j<TEMPLE_RASTER_CELL_PIXELS;j++)if(p[0]!=p[j])saw_mixed=1;}assert(saw_mixed);
  TempleRasterXorPixel(drawing_sprite.sprite_bitmapptr,5,15);TempleRasterXorPixel(drawing_sprite.sprite_bitmapptr,5,15);assert(!memcmp(saved,cell,sizeof(saved)));
  legacy_u8 neutral=255;video_pages_raster_span(drawing_sprite.sprite_bitmapptr,5,&neutral,0,1,SHAPE2D_RASTER_AND,NULL);assert(!memcmp(saved,cell,sizeof(saved)));
  neutral=0;video_pages_raster_span(drawing_sprite.sprite_bitmapptr,5,&neutral,0,1,SHAPE2D_RASTER_OR,NULL);assert(!memcmp(saved,cell,sizeof(saved)));
  legacy_u8 map[256];memset(map,255,sizeof(map));neutral=3;video_pages_raster_span(drawing_sprite.sprite_bitmapptr,5,&neutral,0,1,SHAPE2D_RASTER_MAP,map);assert(!memcmp(saved,cell,sizeof(saved)));
  SPRITE background={arena+0x20000,rows,320,0,200,0,320};TempleRasterRegisterSprite(&background);
- video_pages_copy_span(background.sprite_bitmapptr,9,drawing_sprite.sprite_bitmapptr,5,1);assert(!memcmp(saved,TempleRasterFind(background.sprite_bitmapptr)->samples+9*6,sizeof(saved)));
+ video_pages_copy_span(background.sprite_bitmapptr,9,drawing_sprite.sprite_bitmapptr,5,1);assert(!memcmp(saved,TempleRasterFind(background.sprite_bitmapptr)->samples+9*TEMPLE_RASTER_CELL_PIXELS,sizeof(saved)));
  video_pages_write_pixel(drawing_sprite.sprite_bitmapptr,5,2);video_pages_copy_span(drawing_sprite.sprite_bitmapptr,5,background.sprite_bitmapptr,9,1);assert(!memcmp(saved,cell,sizeof(saved)));
- CDC dc={calloc(640*480,1),640};TempleRasterPresent(&dc);for(legacy_int i=0;i<640*480;i++)assert(dc.body[i]<16);TestPolygonSharedEdges(&dc);free(dc.body);
- for(legacy_int y=0;y<480;y++){legacy_int ly=((y+1)*5-1)/12;assert(TempleRasterY(ly)<=y&&TempleRasterY(ly+1)>y);}
+ CDC dc={calloc(TEMPLE_SCREEN_PIXELS,1),TEMPLE_SCREEN_WIDTH};TempleRasterPresent(&dc);for(legacy_int i=0;i<TEMPLE_SCREEN_PIXELS;i++)assert(dc.body[i]<16);TestPolygonSharedEdges(&dc);TestNativeGeometry(&dc);memset(dc.body,255,TEMPLE_SCREEN_PIXELS);TempleRasterPresent(&dc);assert(dc.body[0]==BLACK&&dc.body[(TEMPLE_SCREEN_HEIGHT-1)*dc.width_internal]==BLACK);free(dc.body);
+ for(legacy_int y=0;y<TEMPLE_RENDER_HEIGHT;y++){legacy_int ly=y/TEMPLE_RASTER_Y_SCALE;assert(TempleRasterY(ly)<=y&&TempleRasterY(ly+1)>y);}
  legacy_u8 *res=arena+0x30000;res[4]=1;memcpy(res+6,"!eg0",4);res[14]=0;res[15]=1;res[16]=1;for(legacy_int i=0;i<256;i++)res[30+i]=i;
  TempleRasterResource(res);assert(TempleRasterPairs(res+30)[127]==127);
  TempleRasterForget(res);assert(!TempleRasterPairs(res+30));
@@ -99,14 +93,18 @@ legacy_int main(legacy_void) {
  MemCpy(res+6,"test",4);TempleRasterResource(res);assert(!TempleRasterPairs(res+30));
  temple_raster_have_default=TRUE;memset(temple_raster_default_pairs,0xcc,sizeof(temple_raster_default_pairs));
  res[30]=255;video_pages_raster_span(drawing_sprite.sprite_bitmapptr,10,res,30,1,SHAPE2D_RASTER_COPY,NULL);
- assert(!(temple_raster_target->samples[10*6]&TEMPLE_RASTER_PAIR_FLAG));
+ assert(!(temple_raster_target->samples[10*TEMPLE_RASTER_CELL_PIXELS]&TEMPLE_RASTER_PAIR_FLAG));
  TempleRasterSource(res+30);video_pages_write_pixel(drawing_sprite.sprite_bitmapptr,11,255);TempleRasterSource(NULL);
- assert(!(temple_raster_target->samples[11*6]&TEMPLE_RASTER_PAIR_FLAG));
+ assert(!(temple_raster_target->samples[11*TEMPLE_RASTER_CELL_PIXELS]&TEMPLE_RASTER_PAIR_FLAG));
  TempleRasterForgetRange(arena+0x1f000,16);assert(!TempleRasterFind(drawing_sprite.sprite_bitmapptr));assert(TempleRasterFind(background.sprite_bitmapptr));
  TempleRasterForgetRange(res+31,1);assert(!TempleRasterResourceAt(res+30));
  TempleRasterShutdown();TemplePaletteShutdown();puts("palette/raster host regression checks passed");return 0;
 }
 '''
+prefix = prefix.replace("RESTUNTS_TEMPLE_CONSTANTS", "\n".join(
+    line for line in (root / "LEGACY.HH").read_text().splitlines()
+    if line.startswith("#define TEMPLE_")
+))
 prefix = prefix.replace("RESTUNTS_LEGACY_INCLUDE", str(root.parents[1] / "c" / "legacy.h"))
 with tempfile.TemporaryDirectory(prefix="restunts-raster-") as directory:
     source = Path(directory) / "TEST.C"

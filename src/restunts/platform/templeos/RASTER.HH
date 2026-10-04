@@ -13,6 +13,7 @@ extern legacy_void TempleRasterSource(legacy_void *shape);
 extern legacy_void *TempleRasterResource(legacy_void *resource);
 extern legacy_void *TempleRasterResourceParsed(legacy_void *resource);
 extern legacy_void TempleRasterPresent(CDC *dc);
+extern legacy_void TempleRasterNative(legacy_u8 enabled);
 extern legacy_u8 TempleRasterScreenDirty();
 extern legacy_void TempleRasterScreenPresented();
 

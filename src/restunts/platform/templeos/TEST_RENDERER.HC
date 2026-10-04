@@ -65,39 +65,43 @@ legacy_void TestVideoCache(SPRITE *background)
 	TestPresentChanged(FALSE);
 	video_pages_write_pixel(screen_sprite.sprite_bitmapptr, 0, BLUE);
 	TestPresentChanged(TRUE);
-	TestAssert(temple_video_front->body[0] == BLUE);
+	TestAssert(TestRasterPixel(temple_video_front, 0, 0) == BLUE);
 	video_pages_copy_span(screen_sprite.sprite_bitmapptr, 0, background->sprite_bitmapptr, 0, 1);
 	TestPresentChanged(TRUE);
-	TestAssert(temple_video_front->body[0] == GREEN);
+	TestAssert(TestRasterPixel(temple_video_front, 0, 0) == GREEN);
 	TempleRasterXorPixel(screen_sprite.sprite_bitmapptr, 0, BLUE ^ GREEN);
 	TestPresentChanged(TRUE);
-	TestAssert(temple_video_front->body[0] == BLUE);
+	TestAssert(TestRasterPixel(temple_video_front, 0, 0) == BLUE);
 	video_pages_fill_span(screen_sprite.sprite_bitmapptr, 0, 1, RED);
 	TestPresentChanged(TRUE);
-	TestAssert(temple_video_front->body[0] == RED);
+	TestAssert(TestRasterPixel(temple_video_front, 0, 0) == RED);
 	video_pages_pattern_span(screen_sprite.sprite_bitmapptr, 0, 1, TEMPLE_RASTER_BYTE_SIGN, GREEN,
 							 BLACK, FALSE);
 	TestPresentChanged(TRUE);
-	TestAssert(temple_video_front->body[0] == GREEN);
+	TestAssert(TestRasterPixel(temple_video_front, 0, 0) == GREEN);
 	preRender_line(0, 0, 0, 0, RED);
 	TestPresentChanged(TRUE);
-	TestAssert(temple_video_front->body[0] == RED);
+	TestAssert(TestRasterPixel(temple_video_front, 0, 0) == RED);
 	MemCpy(rgb, temple_palette_standard + RED * TEMPLE_PALETTE_CHANNEL_COUNT, sizeof(rgb));
 	TemplePaletteSet(TEMPLE_BYTE_MASK, 1, rgb);
 	video_pages_write_pixel(screen_sprite.sprite_bitmapptr, 0, TEMPLE_BYTE_MASK);
 	TestPresentChanged(TRUE);
-	TestAssert(temple_video_front->body[0] == RED);
+	TestAssert(TestRasterPixel(temple_video_front, 0, 0) == RED);
 	TestAssert(!TempleRasterScreenDirty());
 	MemCpy(rgb, temple_palette_standard + GREEN * TEMPLE_PALETTE_CHANNEL_COUNT, sizeof(rgb));
 	TemplePaletteSet(TEMPLE_BYTE_MASK, 1, rgb);
 	TestAssert(!TempleRasterScreenDirty());
 	TestPresentChanged(TRUE);
-	TestAssert(temple_video_front->body[0] == GREEN);
+	TestAssert(TestRasterPixel(temple_video_front, 0, 0) == GREEN);
 	TestPresentChanged(FALSE);
 	/* Direct raster callers still get a complete conversion of a clean screen. */
 	DCFill(temple_video_back, WHITE);
 	TempleRasterPresent(temple_video_back);
-	TestAssert(temple_video_back->body[0] == GREEN);
+	TestAssert(temple_video_back->body[0] == BLACK);
+	TestAssert(
+		temple_video_back->body[(TEMPLE_SCREEN_HEIGHT - 1) * temple_video_back->width_internal] ==
+		BLACK);
+	TestAssert(TestRasterPixel(temple_video_back, 0, 0) == GREEN);
 	TestPresentChanged(FALSE);
 }
 
@@ -105,7 +109,7 @@ legacy_void RasterTests()
 {
 	legacy_s64 i, j, y, ly, saw_mixed = 0;
 	legacy_u8 rows[400], rgb[3], map[256], neutral;
-	legacy_u32 *cell, *p, saved[6];
+	legacy_u32 *cell, *p, saved[TEMPLE_RASTER_CELL_PIXELS];
 	POINT2D triangle[3];
 	SPRITE background;
 	CDC *dc;
@@ -147,8 +151,8 @@ legacy_void RasterTests()
 	cell = temple_raster_target->samples + 5 * TEMPLE_RASTER_CELL_PIXELS;
 	MemCpy(saved, cell, sizeof(saved));
 	for (i = 0; i < 100; i++) {
-		p = temple_raster_target->samples + i * 6;
-		for (j = 1; j < 6; j++) {
+		p = temple_raster_target->samples + i * TEMPLE_RASTER_CELL_PIXELS;
+		for (j = 1; j < TEMPLE_RASTER_CELL_PIXELS; j++) {
 			if (p[0] != p[j]) {
 				saw_mixed = 1;
 			}
@@ -175,20 +179,23 @@ legacy_void RasterTests()
 	background.sprite_bitmapptr = arena + 0x20000;
 	TempleRasterRegisterSprite(&background);
 	video_pages_copy_span(background.sprite_bitmapptr, 9, drawing_sprite.sprite_bitmapptr, 5, 1);
-	TestAssert(!MemCmp(saved, TempleRasterFind(background.sprite_bitmapptr)->samples + 9 * 6,
+	TestAssert(!MemCmp(saved,
+					   TempleRasterFind(background.sprite_bitmapptr)->samples +
+						   9 * TEMPLE_RASTER_CELL_PIXELS,
 					   sizeof(saved)));
 	video_pages_write_pixel(drawing_sprite.sprite_bitmapptr, 5, 2);
 	video_pages_copy_span(drawing_sprite.sprite_bitmapptr, 5, background.sprite_bitmapptr, 9, 1);
 	TestAssert(!MemCmp(saved, cell, sizeof(saved)));
-	dc = DCNew(640, 480);
+	dc = DCNew(TEMPLE_SCREEN_WIDTH, TEMPLE_SCREEN_HEIGHT);
 	TempleRasterPresent(dc);
-	for (i = 0; i < 640 * 480; i++) {
+	for (i = 0; i < TEMPLE_SCREEN_PIXELS; i++) {
 		TestAssert(dc->body[i] < 16);
 	}
 	TestPolygonSharedEdges(dc);
+	TestNativeGeometry(dc);
 	DCDel(dc);
-	for (y = 0; y < 480; y++) {
-		ly = ((y + 1) * 5 - 1) / 12;
+	for (y = 0; y < TEMPLE_RENDER_HEIGHT; y++) {
+		ly = y / TEMPLE_RASTER_Y_SCALE;
 		TestAssert(TempleRasterY(ly) <= y && TempleRasterY(ly + 1) > y);
 	}
 	res = arena + 0x30000;

@@ -74,13 +74,13 @@ legacy_u16 TempleInputKey(legacy_s64 character, legacy_s64 scan)
 
 legacy_s16 TempleMouseX(legacy_s64 x)
 {
-	return ClampI64(x * TEMPLE_LOGICAL_WIDTH / TEMPLE_SCREEN_WIDTH, temple_mouse_left,
+	return ClampI64((x - TEMPLE_RENDER_LEFT) / TEMPLE_RENDER_SCALE, temple_mouse_left,
 					temple_mouse_right);
 }
 
 legacy_s16 TempleMouseY(legacy_s64 y)
 {
-	return ClampI64(((y + 1) * TEMPLE_LOGICAL_HEIGHT - 1) / TEMPLE_SCREEN_HEIGHT, temple_mouse_top,
+	return ClampI64((y - TEMPLE_RENDER_TOP) / TEMPLE_RENDER_SCALE, temple_mouse_top,
 					temple_mouse_bottom);
 }
 
@@ -224,8 +224,8 @@ legacy_void dos_mouse_set_position(legacy_s16 x, legacy_s16 y)
 	x = ClampI64(x, temple_mouse_left, temple_mouse_right);
 	y = ClampI64(y, temple_mouse_top, temple_mouse_bottom);
 	// Use the rasterizer's first physical pixel for the requested logical cell.
-	MsSet(x * TEMPLE_SCREEN_WIDTH / TEMPLE_LOGICAL_WIDTH,
-		  y * TEMPLE_SCREEN_HEIGHT / TEMPLE_LOGICAL_HEIGHT);
+	MsSet(TEMPLE_RENDER_LEFT + x * TEMPLE_RENDER_SCALE,
+		  TEMPLE_RENDER_TOP + y * TEMPLE_RENDER_SCALE);
 }
 
 legacy_s16 dos_mouse_init(legacy_s16 width, legacy_s16 height)

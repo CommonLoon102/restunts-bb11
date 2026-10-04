@@ -2,49 +2,49 @@
 
 legacy_s8 rs_stateio_legacy_s8_from_bits(legacy_u8 value)
 {
-	legacy_s32 temple_tmp_7721;
+	legacy_s32 temple_tmp_7729;
 	if ((value <= 127)) {
-		temple_tmp_7721 = TempleCastS32(TempleCastS8(value));
+		temple_tmp_7729 = TempleCastS32(TempleCastS8(value));
 	} else {
-		temple_tmp_7721 = TempleCastS32(TempleCastS8(
+		temple_tmp_7729 = TempleCastS32(TempleCastS8(
 			TempleCastS32((TempleCastS32((-(1))) - TempleCastS8(TempleCastU32((255 - value)))))));
 	}
-	return TempleCastS8(temple_tmp_7721);
+	return TempleCastS8(temple_tmp_7729);
 }
 
 legacy_s16 rs_stateio_legacy_s16_from_bits(legacy_u16 value)
 {
-	legacy_s32 temple_tmp_7722;
+	legacy_s32 temple_tmp_7730;
 	if ((value <= 32767)) {
-		temple_tmp_7722 = TempleCastS32(TempleCastS16(value));
+		temple_tmp_7730 = TempleCastS32(TempleCastS16(value));
 	} else {
-		temple_tmp_7722 = TempleCastS32(TempleCastS16(TempleCastS32(
+		temple_tmp_7730 = TempleCastS32(TempleCastS16(TempleCastS32(
 			(TempleCastS32((-(1))) - TempleCastS16(TempleCastU32((65535 - value)))))));
 	}
-	return TempleCastS16(temple_tmp_7722);
+	return TempleCastS16(temple_tmp_7730);
 }
 
 legacy_s32 rs_stateio_legacy_s32_from_bits(legacy_u32 value)
 {
-	legacy_s32 temple_tmp_7723;
+	legacy_s32 temple_tmp_7731;
 	if ((value <= TempleCastU32(2147483647))) {
-		temple_tmp_7723 = TempleCastS32(TempleCastS32(value));
+		temple_tmp_7731 = TempleCastS32(TempleCastS32(value));
 	} else {
-		temple_tmp_7723 = TempleCastS32(TempleCastS32(
+		temple_tmp_7731 = TempleCastS32(TempleCastS32(
 			TempleCastS32((TempleCastS32((-(1))) -
 						   TempleCastS32(TempleCastU32((TempleCastU32(4294967295) - value)))))));
 	}
-	return TempleCastS32(temple_tmp_7723);
+	return TempleCastS32(temple_tmp_7731);
 }
 
 legacy_void rs_stateio_gamestate_write_u8(GAMESTATE_WRITER *writer, legacy_u8 value)
 {
-	legacy_u16 *temple_tmp_7724;
-	legacy_u16 temple_tmp_7725;
-	temple_tmp_7724 = &(writer->offset);
-	temple_tmp_7725 = *temple_tmp_7724;
-	*temple_tmp_7724 = TempleCastU16((temple_tmp_7725 + 1));
-	(writer->destination[temple_tmp_7725] = TempleCastU8(value));
+	legacy_u16 *temple_tmp_7732;
+	legacy_u16 temple_tmp_7733;
+	temple_tmp_7732 = &(writer->offset);
+	temple_tmp_7733 = *temple_tmp_7732;
+	*temple_tmp_7732 = TempleCastU16((temple_tmp_7733 + 1));
+	(writer->destination[temple_tmp_7733] = TempleCastU8(value));
 }
 
 legacy_void rs_stateio_gamestate_write_s8(GAMESTATE_WRITER *writer, legacy_s8 value)
@@ -54,20 +54,20 @@ legacy_void rs_stateio_gamestate_write_s8(GAMESTATE_WRITER *writer, legacy_s8 va
 
 legacy_void rs_stateio_gamestate_write_u16(GAMESTATE_WRITER *writer, legacy_u16 value)
 {
-	legacy_u16 temple_legacy_write_u16_value__7727;
-	legacy_u16 *temple_tmp_7728;
+	legacy_u16 temple_legacy_write_u16_value__7735;
+	legacy_u16 *temple_tmp_7736;
 	while (1) {
-		temple_legacy_write_u16_value__7727 = TempleCastU16(TempleCastU16(value));
+		temple_legacy_write_u16_value__7735 = TempleCastU16(TempleCastU16(value));
 		((writer->destination + writer->offset)[0] =
-			 TempleCastU8(TempleCastU8(temple_legacy_write_u16_value__7727)));
+			 TempleCastU8(TempleCastU8(temple_legacy_write_u16_value__7735)));
 		((writer->destination + writer->offset)[1] =
-			 TempleCastU8(TempleCastU8(TempleCastS32((temple_legacy_write_u16_value__7727 >> 8)))));
+			 TempleCastU8(TempleCastU8(TempleCastS32((temple_legacy_write_u16_value__7735 >> 8)))));
 		if (!(0)) {
 			break;
 		}
 	}
-	temple_tmp_7728 = &(writer->offset);
-	((*temple_tmp_7728) = TempleCastU16(((*temple_tmp_7728) + 2)));
+	temple_tmp_7736 = &(writer->offset);
+	((*temple_tmp_7736) = TempleCastU16(((*temple_tmp_7736) + 2)));
 }
 
 legacy_void rs_stateio_gamestate_write_s16(GAMESTATE_WRITER *writer, legacy_s16 value)
@@ -77,24 +77,24 @@ legacy_void rs_stateio_gamestate_write_s16(GAMESTATE_WRITER *writer, legacy_s16 
 
 legacy_void rs_stateio_gamestate_write_s32(GAMESTATE_WRITER *writer, legacy_s32 value)
 {
-	legacy_u32 temple_legacy_write_u32_value__7730;
-	legacy_u16 *temple_tmp_7731;
+	legacy_u32 temple_legacy_write_u32_value__7738;
+	legacy_u16 *temple_tmp_7739;
 	while (1) {
-		temple_legacy_write_u32_value__7730 = TempleCastU32(TempleCastU32(TempleCastU32(value)));
+		temple_legacy_write_u32_value__7738 = TempleCastU32(TempleCastU32(TempleCastU32(value)));
 		((writer->destination + writer->offset)[0] =
-			 TempleCastU8(TempleCastU8(temple_legacy_write_u32_value__7730)));
+			 TempleCastU8(TempleCastU8(temple_legacy_write_u32_value__7738)));
 		((writer->destination + writer->offset)[1] =
-			 TempleCastU8(TempleCastU8(TempleCastU32((temple_legacy_write_u32_value__7730 >> 8)))));
+			 TempleCastU8(TempleCastU8(TempleCastU32((temple_legacy_write_u32_value__7738 >> 8)))));
 		((writer->destination + writer->offset)[2] = TempleCastU8(
-			 TempleCastU8(TempleCastU32((temple_legacy_write_u32_value__7730 >> 16)))));
+			 TempleCastU8(TempleCastU32((temple_legacy_write_u32_value__7738 >> 16)))));
 		((writer->destination + writer->offset)[3] = TempleCastU8(
-			 TempleCastU8(TempleCastU32((temple_legacy_write_u32_value__7730 >> 24)))));
+			 TempleCastU8(TempleCastU32((temple_legacy_write_u32_value__7738 >> 24)))));
 		if (!(0)) {
 			break;
 		}
 	}
-	temple_tmp_7731 = &(writer->offset);
-	((*temple_tmp_7731) = TempleCastU16(((*temple_tmp_7731) + 4)));
+	temple_tmp_7739 = &(writer->offset);
+	((*temple_tmp_7739) = TempleCastU16(((*temple_tmp_7739) + 4)));
 }
 
 legacy_void rs_stateio_gamestate_write_vector(GAMESTATE_WRITER *writer, VECTOR *vector)
@@ -114,44 +114,6 @@ legacy_void rs_stateio_gamestate_write_vectorlong(GAMESTATE_WRITER *writer, VECT
 legacy_void rs_stateio_gamestate_write_s8_array(GAMESTATE_WRITER *writer, legacy_s8 *values,
 												legacy_u16 count)
 {
-	legacy_u16 temple_index_7733;
-	legacy_u16 *temple_tmp_7734;
-	legacy_u16 temple_tmp_7735;
-	temple_index_7733 = TempleCastU16(0);
-	while (1) {
-		if (!((temple_index_7733 < count))) {
-			break;
-		}
-		rs_stateio_gamestate_write_s8(writer, TempleCastS8(values[temple_index_7733]));
-		temple_tmp_7734 = &(temple_index_7733);
-		temple_tmp_7735 = *temple_tmp_7734;
-		*temple_tmp_7734 = TempleCastU16((temple_tmp_7735 + 1));
-		temple_tmp_7735;
-	}
-}
-
-legacy_void rs_stateio_gamestate_write_s16_array(GAMESTATE_WRITER *writer, legacy_s16 *values,
-												 legacy_u16 count)
-{
-	legacy_u16 temple_index_7737;
-	legacy_u16 *temple_tmp_7738;
-	legacy_u16 temple_tmp_7739;
-	temple_index_7737 = TempleCastU16(0);
-	while (1) {
-		if (!((temple_index_7737 < count))) {
-			break;
-		}
-		rs_stateio_gamestate_write_s16(writer, TempleCastS16(values[temple_index_7737]));
-		temple_tmp_7738 = &(temple_index_7737);
-		temple_tmp_7739 = *temple_tmp_7738;
-		*temple_tmp_7738 = TempleCastU16((temple_tmp_7739 + 1));
-		temple_tmp_7739;
-	}
-}
-
-legacy_void rs_stateio_gamestate_write_s32_array(GAMESTATE_WRITER *writer, legacy_s32 *values,
-												 legacy_u16 count)
-{
 	legacy_u16 temple_index_7741;
 	legacy_u16 *temple_tmp_7742;
 	legacy_u16 temple_tmp_7743;
@@ -160,7 +122,7 @@ legacy_void rs_stateio_gamestate_write_s32_array(GAMESTATE_WRITER *writer, legac
 		if (!((temple_index_7741 < count))) {
 			break;
 		}
-		rs_stateio_gamestate_write_s32(writer, TempleCastS32(values[temple_index_7741]));
+		rs_stateio_gamestate_write_s8(writer, TempleCastS8(values[temple_index_7741]));
 		temple_tmp_7742 = &(temple_index_7741);
 		temple_tmp_7743 = *temple_tmp_7742;
 		*temple_tmp_7742 = TempleCastU16((temple_tmp_7743 + 1));
@@ -168,8 +130,8 @@ legacy_void rs_stateio_gamestate_write_s32_array(GAMESTATE_WRITER *writer, legac
 	}
 }
 
-legacy_void rs_stateio_gamestate_write_vector_array(GAMESTATE_WRITER *writer, VECTOR *vectors,
-													legacy_u16 count)
+legacy_void rs_stateio_gamestate_write_s16_array(GAMESTATE_WRITER *writer, legacy_s16 *values,
+												 legacy_u16 count)
 {
 	legacy_u16 temple_index_7745;
 	legacy_u16 *temple_tmp_7746;
@@ -179,11 +141,49 @@ legacy_void rs_stateio_gamestate_write_vector_array(GAMESTATE_WRITER *writer, VE
 		if (!((temple_index_7745 < count))) {
 			break;
 		}
-		rs_stateio_gamestate_write_vector(writer, (&(vectors[temple_index_7745])));
+		rs_stateio_gamestate_write_s16(writer, TempleCastS16(values[temple_index_7745]));
 		temple_tmp_7746 = &(temple_index_7745);
 		temple_tmp_7747 = *temple_tmp_7746;
 		*temple_tmp_7746 = TempleCastU16((temple_tmp_7747 + 1));
 		temple_tmp_7747;
+	}
+}
+
+legacy_void rs_stateio_gamestate_write_s32_array(GAMESTATE_WRITER *writer, legacy_s32 *values,
+												 legacy_u16 count)
+{
+	legacy_u16 temple_index_7749;
+	legacy_u16 *temple_tmp_7750;
+	legacy_u16 temple_tmp_7751;
+	temple_index_7749 = TempleCastU16(0);
+	while (1) {
+		if (!((temple_index_7749 < count))) {
+			break;
+		}
+		rs_stateio_gamestate_write_s32(writer, TempleCastS32(values[temple_index_7749]));
+		temple_tmp_7750 = &(temple_index_7749);
+		temple_tmp_7751 = *temple_tmp_7750;
+		*temple_tmp_7750 = TempleCastU16((temple_tmp_7751 + 1));
+		temple_tmp_7751;
+	}
+}
+
+legacy_void rs_stateio_gamestate_write_vector_array(GAMESTATE_WRITER *writer, VECTOR *vectors,
+													legacy_u16 count)
+{
+	legacy_u16 temple_index_7753;
+	legacy_u16 *temple_tmp_7754;
+	legacy_u16 temple_tmp_7755;
+	temple_index_7753 = TempleCastU16(0);
+	while (1) {
+		if (!((temple_index_7753 < count))) {
+			break;
+		}
+		rs_stateio_gamestate_write_vector(writer, (&(vectors[temple_index_7753])));
+		temple_tmp_7754 = &(temple_index_7753);
+		temple_tmp_7755 = *temple_tmp_7754;
+		*temple_tmp_7754 = TempleCastU16((temple_tmp_7755 + 1));
+		temple_tmp_7755;
 	}
 }
 
@@ -255,86 +255,86 @@ legacy_void rs_stateio_gamestate_write_carstate(GAMESTATE_WRITER *writer, CARSTA
 
 legacy_u16 gamestate_serialize(legacy_u8 *destination, GAMESTATE *source)
 {
-	GAMESTATE_WRITER temple_writer_7748;
-	(temple_writer_7748.destination = destination);
-	(temple_writer_7748.offset = TempleCastU16(0));
-	rs_stateio_gamestate_write_s32_array((&(temple_writer_7748)), source->game_particle_x,
+	GAMESTATE_WRITER temple_writer_7756;
+	(temple_writer_7756.destination = destination);
+	(temple_writer_7756.offset = TempleCastU16(0));
+	rs_stateio_gamestate_write_s32_array((&(temple_writer_7756)), source->game_particle_x,
 										 TempleCastU16(24));
-	rs_stateio_gamestate_write_s32_array((&(temple_writer_7748)), source->game_particle_y,
+	rs_stateio_gamestate_write_s32_array((&(temple_writer_7756)), source->game_particle_y,
 										 TempleCastU16(24));
-	rs_stateio_gamestate_write_s32_array((&(temple_writer_7748)), source->game_particle_z,
+	rs_stateio_gamestate_write_s32_array((&(temple_writer_7756)), source->game_particle_z,
 										 TempleCastU16(24));
-	rs_stateio_gamestate_write_vector_array((&(temple_writer_7748)),
+	rs_stateio_gamestate_write_vector_array((&(temple_writer_7756)),
 											source->game_follow_camera_position, TempleCastU16(2));
-	rs_stateio_gamestate_write_vector((&(temple_writer_7748)),
+	rs_stateio_gamestate_write_vector((&(temple_writer_7756)),
 									  (&(source->game_player_camera_previous)));
-	rs_stateio_gamestate_write_vector((&(temple_writer_7748)),
+	rs_stateio_gamestate_write_vector((&(temple_writer_7756)),
 									  (&(source->game_opponent_camera_previous)));
-	rs_stateio_gamestate_write_s16((&(temple_writer_7748)),
+	rs_stateio_gamestate_write_s16((&(temple_writer_7756)),
 								   TempleCastS16(source->game_frame_in_sec));
-	rs_stateio_gamestate_write_s16((&(temple_writer_7748)),
+	rs_stateio_gamestate_write_s16((&(temple_writer_7756)),
 								   TempleCastS16(source->game_frames_per_sec));
-	rs_stateio_gamestate_write_s32((&(temple_writer_7748)), TempleCastS32(source->game_travDist));
-	rs_stateio_gamestate_write_s16((&(temple_writer_7748)), TempleCastS16(source->game_frame));
-	rs_stateio_gamestate_write_s16((&(temple_writer_7748)),
+	rs_stateio_gamestate_write_s32((&(temple_writer_7756)), TempleCastS32(source->game_travDist));
+	rs_stateio_gamestate_write_s16((&(temple_writer_7756)), TempleCastS16(source->game_frame));
+	rs_stateio_gamestate_write_s16((&(temple_writer_7756)),
 								   TempleCastS16(source->game_total_finish));
-	rs_stateio_gamestate_write_s16((&(temple_writer_7748)),
+	rs_stateio_gamestate_write_s16((&(temple_writer_7756)),
 								   TempleCastS16(source->game_opponent_finish_time));
-	rs_stateio_gamestate_write_s16((&(temple_writer_7748)), TempleCastS16(source->game_pEndFrame));
-	rs_stateio_gamestate_write_s16((&(temple_writer_7748)), TempleCastS16(source->game_oEndFrame));
-	rs_stateio_gamestate_write_s16((&(temple_writer_7748)), TempleCastS16(source->game_penalty));
-	rs_stateio_gamestate_write_u16((&(temple_writer_7748)),
+	rs_stateio_gamestate_write_s16((&(temple_writer_7756)), TempleCastS16(source->game_pEndFrame));
+	rs_stateio_gamestate_write_s16((&(temple_writer_7756)), TempleCastS16(source->game_oEndFrame));
+	rs_stateio_gamestate_write_s16((&(temple_writer_7756)), TempleCastS16(source->game_penalty));
+	rs_stateio_gamestate_write_u16((&(temple_writer_7756)),
 								   TempleCastU16(source->game_impactSpeed));
-	rs_stateio_gamestate_write_u16((&(temple_writer_7748)), TempleCastU16(source->game_topSpeed));
-	rs_stateio_gamestate_write_s16((&(temple_writer_7748)), TempleCastS16(source->game_jumpCount));
-	rs_stateio_gamestate_write_carstate((&(temple_writer_7748)), (&(source->playerstate)));
-	rs_stateio_gamestate_write_carstate((&(temple_writer_7748)), (&(source->opponentstate)));
-	rs_stateio_gamestate_write_s16((&(temple_writer_7748)),
+	rs_stateio_gamestate_write_u16((&(temple_writer_7756)), TempleCastU16(source->game_topSpeed));
+	rs_stateio_gamestate_write_s16((&(temple_writer_7756)), TempleCastS16(source->game_jumpCount));
+	rs_stateio_gamestate_write_carstate((&(temple_writer_7756)), (&(source->playerstate)));
+	rs_stateio_gamestate_write_carstate((&(temple_writer_7756)), (&(source->opponentstate)));
+	rs_stateio_gamestate_write_s16((&(temple_writer_7756)),
 								   TempleCastS16(source->game_player_confirmed_route));
-	rs_stateio_gamestate_write_s16((&(temple_writer_7748)),
+	rs_stateio_gamestate_write_s16((&(temple_writer_7756)),
 								   TempleCastS16(source->game_player_previous_route));
-	rs_stateio_gamestate_write_s16((&(temple_writer_7748)), TempleCastS16(source->game_startcol));
-	rs_stateio_gamestate_write_s16((&(temple_writer_7748)), TempleCastS16(source->game_startcol2));
-	rs_stateio_gamestate_write_s16((&(temple_writer_7748)), TempleCastS16(source->game_startrow));
-	rs_stateio_gamestate_write_s16((&(temple_writer_7748)), TempleCastS16(source->game_startrow2));
-	rs_stateio_gamestate_write_s16_array((&(temple_writer_7748)), source->game_particle_rotation_x,
+	rs_stateio_gamestate_write_s16((&(temple_writer_7756)), TempleCastS16(source->game_startcol));
+	rs_stateio_gamestate_write_s16((&(temple_writer_7756)), TempleCastS16(source->game_startcol2));
+	rs_stateio_gamestate_write_s16((&(temple_writer_7756)), TempleCastS16(source->game_startrow));
+	rs_stateio_gamestate_write_s16((&(temple_writer_7756)), TempleCastS16(source->game_startrow2));
+	rs_stateio_gamestate_write_s16_array((&(temple_writer_7756)), source->game_particle_rotation_x,
 										 TempleCastU16(24));
-	rs_stateio_gamestate_write_s16_array((&(temple_writer_7748)), source->game_particle_rotation_y,
+	rs_stateio_gamestate_write_s16_array((&(temple_writer_7756)), source->game_particle_rotation_y,
 										 TempleCastU16(24));
-	rs_stateio_gamestate_write_s16_array((&(temple_writer_7748)), source->game_particle_heading,
+	rs_stateio_gamestate_write_s16_array((&(temple_writer_7756)), source->game_particle_heading,
 										 TempleCastU16(24));
-	rs_stateio_gamestate_write_s16_array((&(temple_writer_7748)),
+	rs_stateio_gamestate_write_s16_array((&(temple_writer_7756)),
 										 source->game_particle_forward_speed, TempleCastU16(24));
-	rs_stateio_gamestate_write_s8_array((&(temple_writer_7748)),
+	rs_stateio_gamestate_write_s8_array((&(temple_writer_7756)),
 										source->game_particle_vertical_speed,
 										TempleCastU16(TempleCastU32((24 * 2))));
-	rs_stateio_gamestate_write_s8_array((&(temple_writer_7748)), source->kevinseed,
+	rs_stateio_gamestate_write_s8_array((&(temple_writer_7756)), source->kevinseed,
 										TempleCastU16(6));
-	rs_stateio_gamestate_write_s8((&(temple_writer_7748)),
+	rs_stateio_gamestate_write_s8((&(temple_writer_7756)),
 								  TempleCastS8(source->game_checkpoint_valid));
-	rs_stateio_gamestate_write_s8((&(temple_writer_7748)), TempleCastS8(source->game_inputmode));
-	rs_stateio_gamestate_write_s8((&(temple_writer_7748)), TempleCastS8(source->game_end_event));
-	rs_stateio_gamestate_write_s8_array((&(temple_writer_7748)),
+	rs_stateio_gamestate_write_s8((&(temple_writer_7756)), TempleCastS8(source->game_inputmode));
+	rs_stateio_gamestate_write_s8((&(temple_writer_7756)), TempleCastS8(source->game_end_event));
+	rs_stateio_gamestate_write_s8_array((&(temple_writer_7756)),
 										source->game_trackside_camera_index, TempleCastU16(2));
-	rs_stateio_gamestate_write_s8((&(temple_writer_7748)),
+	rs_stateio_gamestate_write_s8((&(temple_writer_7756)),
 								  TempleCastS8(source->game_opponent_target_speed));
-	rs_stateio_gamestate_write_s8_array((&(temple_writer_7748)), source->game_object_destroyed,
+	rs_stateio_gamestate_write_s8_array((&(temple_writer_7756)), source->game_object_destroyed,
 										TempleCastU16(48));
-	rs_stateio_gamestate_write_s8((&(temple_writer_7748)),
+	rs_stateio_gamestate_write_s8((&(temple_writer_7756)),
 								  TempleCastS8(source->game_particles_active));
-	rs_stateio_gamestate_write_s8_array((&(temple_writer_7748)), source->game_particle_shape_index,
+	rs_stateio_gamestate_write_s8_array((&(temple_writer_7756)), source->game_particle_shape_index,
 										TempleCastU16(24));
-	rs_stateio_gamestate_write_s8_array((&(temple_writer_7748)), source->game_particle_owner,
+	rs_stateio_gamestate_write_s8_array((&(temple_writer_7756)), source->game_particle_owner,
 										TempleCastU16(24));
-	rs_stateio_gamestate_write_s8((&(temple_writer_7748)),
+	rs_stateio_gamestate_write_s8((&(temple_writer_7756)),
 								  TempleCastS8(source->game_player_route_status));
-	rs_stateio_gamestate_write_s8((&(temple_writer_7748)),
+	rs_stateio_gamestate_write_s8((&(temple_writer_7756)),
 								  TempleCastS8(source->game_route_confirmation_count));
-	rs_stateio_gamestate_write_s8((&(temple_writer_7748)),
+	rs_stateio_gamestate_write_s8((&(temple_writer_7756)),
 								  TempleCastS8(source->game_player_route_indicator));
-	rs_stateio_gamestate_write_s8((&(temple_writer_7748)),
+	rs_stateio_gamestate_write_s8((&(temple_writer_7756)),
 								  TempleCastS8(source->game_opponent_route_indicator));
-	rs_stateio_gamestate_write_s8((&(temple_writer_7748)),
+	rs_stateio_gamestate_write_s8((&(temple_writer_7756)),
 								  TempleCastS8(source->game_reserved_trailing_byte));
-	return TempleCastU16(temple_writer_7748.offset);
+	return TempleCastU16(temple_writer_7756.offset);
 }
