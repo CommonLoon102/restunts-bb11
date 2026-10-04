@@ -308,6 +308,72 @@ static void polyinfo_write_point(legacy_u8 far *record, legacy_u16 point_index,
 	polyinfo_write_word(record, LEGACY_U16_WRAP_ADD(word_index, 1U), (legacy_u16)point->py);
 }
 
+#if defined(RESTUNTS_TEMPLEOS)
+#define SHAPE3D_NATIVE_SCALE 2
+/* Bound cross products and packed wheel deltas as well as projected points. */
+#define SHAPE3D_NATIVE_COORD_LIMIT ((legacy_s32)LEGACY_S16_MAX / SHAPE3D_NATIVE_SCALE)
+
+extern void TempleRasterNative(legacy_u8 enabled);
+
+static legacy_s16 shape3d_native_coordinate(legacy_s64 value)
+{
+	if (value < -SHAPE3D_NATIVE_COORD_LIMIT) {
+		return -SHAPE3D_NATIVE_COORD_LIMIT;
+	}
+	if (value > SHAPE3D_NATIVE_COORD_LIMIT) {
+		return SHAPE3D_NATIVE_COORD_LIMIT;
+	}
+	return (legacy_s16)value;
+}
+
+static void shape3d_project_coordinates(legacy_s64 x, legacy_s64 y, legacy_s64 z,
+										struct POINT2D *point)
+{
+	/* Scale before division: half a DOS pixel is a complete native pixel. */
+	point->px = shape3d_native_coordinate((legacy_s64)(legacy_s16)projection_center_x *
+											  SHAPE3D_NATIVE_SCALE +
+										  x * projection_focal_length_x * SHAPE3D_NATIVE_SCALE / z);
+	point->py = shape3d_native_coordinate((legacy_s64)(legacy_s16)projection_center_y *
+											  SHAPE3D_NATIVE_SCALE -
+										  y * projection_focal_length_y * SHAPE3D_NATIVE_SCALE / z);
+}
+
+static void shape3d_project_point(struct VECTOR *vector, struct POINT2D *point)
+{
+	shape3d_project_coordinates(vector->x, vector->y, vector->z, point);
+}
+
+static legacy_s16 shape3d_logical_coordinate(legacy_s16 value)
+{
+	/* Floor negative coordinates so clipping and saved backgrounds agree. */
+	if (value < 0) {
+		return (
+			legacy_s16)(-((-(legacy_s32)value + SHAPE3D_NATIVE_SCALE - 1) / SHAPE3D_NATIVE_SCALE));
+	}
+	return value / SHAPE3D_NATIVE_SCALE;
+}
+
+static legacy_u16 shape3d_geometry_clip_flags(struct POINT2D *point)
+{
+	struct POINT2D logical;
+	logical.px = shape3d_logical_coordinate(point->px);
+	logical.py = shape3d_logical_coordinate(point->py);
+	return rect_compare_point(&logical);
+}
+
+static void shape3d_adjust_geometry_bounds(struct POINT2D *point, struct RECTANGLE *rectangle)
+{
+	struct POINT2D logical;
+	logical.px = shape3d_logical_coordinate(point->px);
+	logical.py = shape3d_logical_coordinate(point->py);
+	rect_adjust_from_point(&logical, rectangle);
+}
+#else
+#define shape3d_project_point vector_to_point
+#define shape3d_geometry_clip_flags rect_compare_point
+#define shape3d_adjust_geometry_bounds rect_adjust_from_point
+#endif
+
 /* Emitting a polygon point always appends it to the polyinfo record and
  * narrows the clip flags by the same test. */
 static void polyinfo_emit_point(legacy_u16 *point_index, legacy_u8 *rect_flags,
@@ -315,7 +381,7 @@ static void polyinfo_emit_point(legacy_u16 *point_index, legacy_u8 *rect_flags,
 {
 	polyinfo_write_point(transshapepolyinfo, *point_index, point);
 	if (*rect_flags != 0) {
-		*rect_flags &= rect_compare_point(point);
+		*rect_flags &= shape3d_geometry_clip_flags(point);
 	}
 	*point_index = LEGACY_U16_WRAP_ADD(*point_index, 1U);
 }
@@ -514,7 +580,7 @@ static void shape3d_cache_vertex(const struct SHAPE3D *shape,
 		context->vertex_clip_flags[index] = 1;
 	} else {
 		context->vertex_clip_flags[index] = 0;
-		vector_to_point(&transformed, &context->projected_vertices[index]);
+		shape3d_project_point(&transformed, &context->projected_vertices[index]);
 	}
 }
 
@@ -526,7 +592,7 @@ static legacy_u8 shape3d_vertex_rect_flags(struct SHAPE3D_TRANSFORM_CONTEXT *con
 		return shape3d_hires_clip_flags(&context->hires_vertices[index]);
 	}
 #endif
-	return (legacy_u8)rect_compare_point(&context->projected_vertices[index]);
+	return (legacy_u8)shape3d_geometry_clip_flags(&context->projected_vertices[index]);
 }
 
 static legacy_u16 shape3d_bounds_are_clipped(struct TRANSFORMEDSHAPE3D *instance,
@@ -670,12 +736,24 @@ static void shape3d_project_near_intersection(struct SHAPE3D_TRANSFORM_CONTEXT *
 											  legacy_u16 front_index, legacy_u16 behind_index,
 											  struct POINT2D *point)
 {
+#if defined(RESTUNTS_TEMPLEOS)
+	const struct VECTOR *front = &context->view_vertices[front_index];
+	const struct VECTOR *behind = &context->view_vertices[behind_index];
+	legacy_s64 depth_span = (legacy_s64)front->z - behind->z;
+	legacy_s64 near_offset = SHAPE3D_NEAR_CLIP_Z - (legacy_s64)behind->z;
+	/* Preserve the intersection's fraction until the native projection divides. */
+	shape3d_project_coordinates(
+		behind->x * depth_span + ((legacy_s64)front->x - behind->x) * near_offset,
+		behind->y * depth_span + ((legacy_s64)front->y - behind->y) * near_offset,
+		SHAPE3D_NEAR_CLIP_Z * depth_span, point);
+#else
 	struct VECTOR intersection;
 
 	vector_interpolate_at_z(&context->view_vertices[front_index],
 							&context->view_vertices[behind_index], &intersection,
 							SHAPE3D_NEAR_CLIP_Z);
-	vector_to_point(&intersection, point);
+	shape3d_project_point(&intersection, point);
+#endif
 }
 
 static void shape3d_emit_polygon_intersection(struct SHAPE3D_TRANSFORM_CONTEXT *context,
@@ -745,6 +823,10 @@ static void shape3d_adjust_polygon_bounds(void)
 	struct POINT2D point;
 	for (legacy_u16 i = 0; i < transshapenumvertscopy; i = LEGACY_U16_WRAP_ADD(i, 1U)) {
 		polyinfo_read_point(transshapepolyinfo, i, &point);
+#if defined(RESTUNTS_TEMPLEOS)
+		point.px = shape3d_logical_coordinate(point.px);
+		point.py = shape3d_logical_coordinate(point.py);
+#endif
 		if (point.px < transshaperectptr->left) {
 			transshaperectptr->left = point.px;
 		}
@@ -810,8 +892,8 @@ static legacy_u16 shape3d_prepare_line(struct SHAPE3D_TRANSFORM_CONTEXT *context
 	polyinfo_write_point(transshapepolyinfo, 0U, polyvertpointptrtab[0]);
 	polyinfo_write_point(transshapepolyinfo, 1U, polyvertpointptrtab[1]);
 	if ((transshapeflags & SHAPE3D_USE_BOUNDING_RECT_FLAG) != 0) {
-		rect_adjust_from_point(polyvertpointptrtab[0], transshaperectptr);
-		rect_adjust_from_point(polyvertpointptrtab[1], transshaperectptr);
+		shape3d_adjust_geometry_bounds(polyvertpointptrtab[0], transshaperectptr);
+		shape3d_adjust_geometry_bounds(polyvertpointptrtab[1], transshaperectptr);
 	}
 	transshapenumvertscopy = 2;
 	return 1;
@@ -822,12 +904,22 @@ static void shape3d_adjust_round_bounds(const struct POINT2D *center, legacy_u16
 {
 	struct POINT2D point;
 
+#if defined(RESTUNTS_TEMPLEOS)
+	/* Large offscreen wheels must not wrap their saved-background bounds. */
+	legacy_s64 extent = (legacy_s64)radius + padding * SHAPE3D_NATIVE_SCALE;
+	point.px = shape3d_native_coordinate(center->px - extent);
+	point.py = shape3d_native_coordinate(center->py - extent);
+	shape3d_adjust_geometry_bounds(&point, transshaperectptr);
+	point.px = shape3d_native_coordinate(center->px + extent);
+	point.py = shape3d_native_coordinate(center->py + extent);
+#else
 	point.px = LEGACY_S16_WRAP_SUB(LEGACY_S16_WRAP_SUB(center->px, radius), padding);
 	point.py = LEGACY_S16_WRAP_SUB(LEGACY_S16_WRAP_SUB(center->py, radius), padding);
-	rect_adjust_from_point(&point, transshaperectptr);
+	shape3d_adjust_geometry_bounds(&point, transshaperectptr);
 	point.px = LEGACY_S16_WRAP_ADD(LEGACY_S16_WRAP_ADD(center->px, radius), padding);
 	point.py = LEGACY_S16_WRAP_ADD(LEGACY_S16_WRAP_ADD(center->py, radius), padding);
-	rect_adjust_from_point(&point, transshaperectptr);
+#endif
+	shape3d_adjust_geometry_bounds(&point, transshaperectptr);
 }
 
 static legacy_u16 shape3d_prepare_wheel(struct SHAPE3D_TRANSFORM_CONTEXT *context,
@@ -883,11 +975,11 @@ static void shape3d_adjust_sphere_bounds(const struct POINT2D *center, legacy_u1
 
 	point.px = LEGACY_S16_WRAP_SUB(center->px, radius);
 	point.py = LEGACY_S16_WRAP_SUB(center->py, radius);
-	rect_adjust_from_point(&point, transshaperectptr);
+	shape3d_adjust_geometry_bounds(&point, transshaperectptr);
 	/* Original SEG006 sphere code overwrites the second point's X with Y + radius;
 	 * its Y stays at Y - radius. Crash explosions scale from these bounds. */
 	point.px = LEGACY_S16_WRAP_ADD(center->py, radius);
-	rect_adjust_from_point(&point, transshaperectptr);
+	shape3d_adjust_geometry_bounds(&point, transshaperectptr);
 }
 
 static legacy_u16 shape3d_prepare_sphere(struct SHAPE3D_TRANSFORM_CONTEXT *context,
@@ -907,7 +999,13 @@ static legacy_u16 shape3d_prepare_sphere(struct SHAPE3D_TRANSFORM_CONTEXT *conte
 	radius_vector.x = LEGACY_S16_WRAP_SUB(center.x, endpoint.x);
 	radius_vector.y = LEGACY_S16_WRAP_SUB(center.y, endpoint.y);
 	radius_vector.z = LEGACY_S16_WRAP_SUB(center.z, endpoint.z);
+#if defined(RESTUNTS_TEMPLEOS)
+	legacy_u16 screen_radius = shape3d_native_coordinate((legacy_s64)projection_focal_length_x *
+														 (legacy_u16)polarRadius3D(&radius_vector) *
+														 SHAPE3D_NATIVE_SCALE / center.z);
+#else
 	legacy_u16 screen_radius = projection_scale_x_wrapped(polarRadius3D(&radius_vector), center.z);
+#endif
 	polyinfo_write_word(transshapepolyinfo, 5U, screen_radius);
 	if ((transshapeflags & SHAPE3D_USE_BOUNDING_RECT_FLAG) != 0) {
 		shape3d_adjust_sphere_bounds(polyvertpointptrtab[0], screen_radius);
@@ -926,7 +1024,7 @@ static legacy_u16 shape3d_prepare_point(struct SHAPE3D_TRANSFORM_CONTEXT *contex
 	*depth_sum = context->view_vertices[vertex_index].z;
 	polyinfo_write_point(transshapepolyinfo, 0U, polyvertpointptrtab[0]);
 	if ((transshapeflags & SHAPE3D_USE_BOUNDING_RECT_FLAG) != 0) {
-		rect_adjust_from_point(polyvertpointptrtab[0], transshaperectptr);
+		shape3d_adjust_geometry_bounds(polyvertpointptrtab[0], transshaperectptr);
 	}
 	transshapenumvertscopy = 1;
 	return 1;
@@ -1905,6 +2003,9 @@ static void shape3d_render_hires_primitive(legacy_u32 index,
 
 void shape3d_render_queued_primitives(void)
 {
+#if defined(RESTUNTS_TEMPLEOS)
+	TempleRasterNative(1);
+#endif
 #if defined(RESTUNTS_SDL3)
 	if (hires_begin(&drawing_sprite) != 0) {
 		/* Enhanced presentation has its own depth rasterizer. Drawing the
@@ -1995,11 +2096,20 @@ void shape3d_render_queued_primitives(void)
 			shape3d_retain_render_local_pair(shape3d_legacy_record_index(record_index),
 											 primitive_index - rendered_ghost_primitives,
 											 SHAPE3D_LEGACY_POINT_RETURN_IP);
+#if defined(RESTUNTS_TEMPLEOS)
+			legacy_u16 x = polyinfo_read_word(record, POLYINFO_START_X_WORD);
+			legacy_u16 y = polyinfo_read_word(record, POLYINFO_START_Y_WORD);
+			preRender_line(x, y, x, y, material_color);
+#else
 			sprite_putpixel_clipped(
 				LEGACY_S16_FROM_BITS(polyinfo_read_word(record, POLYINFO_START_X_WORD)),
 				LEGACY_S16_FROM_BITS(polyinfo_read_word(record, POLYINFO_START_Y_WORD)),
 				material_color);
+#endif
 		}
 	}
+#if defined(RESTUNTS_TEMPLEOS)
+	TempleRasterNative(0);
+#endif
 	polyinfo_reset();
 }

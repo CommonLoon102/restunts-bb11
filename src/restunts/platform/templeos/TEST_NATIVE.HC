@@ -196,10 +196,14 @@ legacy_void TempleTestNative()
 	TempleTestAssert(TempleMouseX(TEMPLE_SCREEN_WIDTH - 1) == TEMPLE_LOGICAL_WIDTH - 1 &&
 						 TempleMouseY(TEMPLE_SCREEN_HEIGHT - 1) == TEMPLE_LOGICAL_HEIGHT - 1,
 					 "aspect-correct mouse mapping reaches all edges");
+	TempleTestAssert(TempleMouseY(TEMPLE_RENDER_TOP - 1) == 0 &&
+						 TempleMouseY(TEMPLE_RENDER_TOP + TEMPLE_RENDER_HEIGHT) ==
+							 TEMPLE_LOGICAL_HEIGHT - 1,
+					 "letterbox mouse positions clamp to the game edges");
 	TempleTestAssert(TempleInputKey(0, SC_F11) == TEMPLE_TEST_KEY_F11, "BIOS function-key mapping");
 	for (y = 0; y < TEMPLE_LOGICAL_HEIGHT; y++) {
-		first = y * TEMPLE_SCREEN_HEIGHT / TEMPLE_LOGICAL_HEIGHT;
-		last = (y + 1) * TEMPLE_SCREEN_HEIGHT / TEMPLE_LOGICAL_HEIGHT - 1;
+		first = TEMPLE_RENDER_TOP + y * TEMPLE_RENDER_SCALE;
+		last = first + TEMPLE_RENDER_SCALE - 1;
 		TempleTestAssert(TempleMouseY(first) == y && TempleMouseY(last) == y,
 						 "mouse hits match raster cell boundaries");
 		dos_mouse_set_position(1, y);

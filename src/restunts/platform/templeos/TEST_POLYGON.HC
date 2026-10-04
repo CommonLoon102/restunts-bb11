@@ -1,10 +1,13 @@
-/* Shared HolyC/host checks for native polygon coverage at fractional Y edges. */
+/* Shared HolyC/host checks for native and logical polygon coverage. */
 #define TEST_POLYGON_VERTEX_COUNT 4
 #define TEST_POLYGON_TILE_COUNT 2
 #define TEST_POLYGON_BASE_Y 100
 #define TEST_POLYGON_LEFT 10
 #define TEST_POLYGON_WIDTH 12
-#define TEST_POLYGON_HEIGHT TEMPLE_RASTER_Y_DENOMINATOR
+#define TEST_POLYGON_HEIGHT TEMPLE_RENDER_SCALE
+#define TEST_POLYGON_NATIVE_PIXEL 1
+#define TEST_SPHERE_CENTER 11
+#define TEST_SPHERE_SIZE 4
 #define TEST_POLYGON_UPPER_COLOR 4
 #define TEST_POLYGON_LOWER_COLOR 2
 #define TEST_POLYGON_ALTERNATE_COLOR 14
@@ -29,6 +32,9 @@ legacy_void TestPolygonSharedEdges(CDC *dc)
 	SPRITE saved_sprite;
 	POINT2D upper[TEST_POLYGON_VERTEX_COUNT];
 	POINT2D lower[TEST_POLYGON_VERTEX_COUNT];
+	legacy_s64 native;
+	legacy_s64 scale;
+	legacy_s64 render_y;
 	legacy_s64 clipped;
 	legacy_s64 phase;
 	legacy_s64 mode;
@@ -46,83 +52,145 @@ legacy_void TestPolygonSharedEdges(CDC *dc)
 	legacy_s64 clipped_bottom;
 	legacy_u8 expected;
 	MemCpy(&saved_sprite, &drawing_sprite, sizeof(SPRITE));
-	for (clipped = FALSE; clipped <= TRUE; clipped++) {
-		/* The second window also exercises negative polygon vertices and clipping. */
-		left = TEST_POLYGON_LEFT;
-		drawing_sprite.sprite_top = 0;
-		drawing_sprite.sprite_bottom = TEMPLE_LOGICAL_HEIGHT;
-		drawing_sprite.sprite_raster_left = 0;
-		drawing_sprite.sprite_raster_right = TEMPLE_LOGICAL_WIDTH;
-		if (clipped) {
-			left = -TEST_POLYGON_WIDTH / 2;
-			drawing_sprite.sprite_top = 1;
-			drawing_sprite.sprite_bottom = TEST_POLYGON_HEIGHT;
-			drawing_sprite.sprite_raster_left = 1;
-			drawing_sprite.sprite_raster_right = TEST_POLYGON_WIDTH / 2 - 1;
-		}
-		right = left + TEST_POLYGON_WIDTH;
-		clipped_top =
-			drawing_sprite.sprite_top * TEMPLE_RASTER_Y_NUMERATOR / TEMPLE_RASTER_Y_DENOMINATOR;
-		clipped_bottom =
-			drawing_sprite.sprite_bottom * TEMPLE_RASTER_Y_NUMERATOR / TEMPLE_RASTER_Y_DENOMINATOR;
-		for (phase = 0; phase < TEMPLE_RASTER_Y_DENOMINATOR; phase++) {
-			shared_y = phase;
-			if (!clipped) {
-				shared_y += TEST_POLYGON_BASE_Y;
+	for (native = FALSE; native <= TRUE; native++) {
+		TempleRasterNative(native);
+		scale = TempleRasterCoordinateScale();
+		for (clipped = FALSE; clipped <= TRUE; clipped++) {
+			/* The second window also exercises negative polygon vertices and clipping. */
+			left = TEST_POLYGON_LEFT;
+			drawing_sprite.sprite_top = 0;
+			drawing_sprite.sprite_bottom = TEMPLE_LOGICAL_HEIGHT;
+			drawing_sprite.sprite_raster_left = 0;
+			drawing_sprite.sprite_raster_right = TEMPLE_LOGICAL_WIDTH;
+			if (clipped) {
+				left = -TEST_POLYGON_WIDTH / 2;
+				drawing_sprite.sprite_top = 1;
+				drawing_sprite.sprite_bottom = TEST_POLYGON_HEIGHT;
+				drawing_sprite.sprite_raster_left = 1;
+				drawing_sprite.sprite_raster_right = TEST_POLYGON_WIDTH / 2 - 1;
 			}
-			top = shared_y - TEST_POLYGON_HEIGHT;
-			bottom = shared_y + TEST_POLYGON_HEIGHT;
-			TestPolygonQuad(upper, left, top, right, shared_y);
-			TestPolygonQuad(lower, left, shared_y, right, bottom);
-			for (mode = TEMPLE_RASTER_PAINT_SOLID; mode <= TEMPLE_RASTER_PAINT_TWO_COLOR; mode++) {
-				for (reverse = FALSE; reverse <= TRUE; reverse++) {
-					video_pages_fill_span(drawing_sprite.sprite_bitmapptr, 0,
-										  TEMPLE_LOGICAL_WIDTH * TEMPLE_LOGICAL_HEIGHT, BLACK);
-					/* Distinct colors expose overlaps as well as missing shared-edge rows. */
-					for (tile = 0; tile < TEST_POLYGON_TILE_COUNT; tile++) {
-						if (tile == reverse) {
-							TempleRasterPolygon(TEST_POLYGON_UPPER_COLOR,
-												TEST_POLYGON_ALTERNATE_COLOR, TEST_POLYGON_PATTERN,
-												mode, TEST_POLYGON_VERTEX_COUNT, upper);
-						} else {
-							TempleRasterPolygon(TEST_POLYGON_LOWER_COLOR,
-												TEST_POLYGON_ALTERNATE_COLOR, TEST_POLYGON_PATTERN,
-												mode, TEST_POLYGON_VERTEX_COUNT, lower);
+			right = left + TEST_POLYGON_WIDTH;
+			clipped_top = drawing_sprite.sprite_top * TEMPLE_RASTER_Y_SCALE;
+			clipped_bottom = drawing_sprite.sprite_bottom * TEMPLE_RASTER_Y_SCALE;
+			for (phase = 0; phase < TEMPLE_RENDER_SCALE; phase++) {
+				shared_y = phase;
+				if (!clipped) {
+					shared_y += TEST_POLYGON_BASE_Y;
+				}
+				top = shared_y - TEST_POLYGON_HEIGHT;
+				bottom = shared_y + TEST_POLYGON_HEIGHT;
+				TestPolygonQuad(upper, left, top, right, shared_y);
+				TestPolygonQuad(lower, left, shared_y, right, bottom);
+				for (mode = TEMPLE_RASTER_PAINT_SOLID; mode <= TEMPLE_RASTER_PAINT_TWO_COLOR;
+					 mode++) {
+					for (reverse = FALSE; reverse <= TRUE; reverse++) {
+						video_pages_fill_span(drawing_sprite.sprite_bitmapptr, 0,
+											  TEMPLE_LOGICAL_WIDTH * TEMPLE_LOGICAL_HEIGHT, BLACK);
+						/* Distinct colors expose overlaps as well as missing shared-edge rows. */
+						for (tile = 0; tile < TEST_POLYGON_TILE_COUNT; tile++) {
+							if (tile == reverse) {
+								TempleRasterPolygon(
+									TEST_POLYGON_UPPER_COLOR, TEST_POLYGON_ALTERNATE_COLOR,
+									TEST_POLYGON_PATTERN, mode, TEST_POLYGON_VERTEX_COUNT, upper);
+							} else {
+								TempleRasterPolygon(
+									TEST_POLYGON_LOWER_COLOR, TEST_POLYGON_ALTERNATE_COLOR,
+									TEST_POLYGON_PATTERN, mode, TEST_POLYGON_VERTEX_COUNT, lower);
+							}
 						}
-					}
-					TempleRasterPresent(dc);
-					for (y = 0; y < TEMPLE_SCREEN_HEIGHT; y++) {
-						/* Integer inequalities independently test pixel centers against edges. */
-						center_y = (2 * y + 1) * TEMPLE_RASTER_Y_DENOMINATOR;
-						for (x = 0; x < TEMPLE_SCREEN_WIDTH; x++) {
-							expected = BLACK;
-							if (x >= left * TEMPLE_RASTER_X_SCALE &&
-								x < right * TEMPLE_RASTER_X_SCALE &&
-								x >= drawing_sprite.sprite_raster_left * TEMPLE_RASTER_X_SCALE &&
-								x < drawing_sprite.sprite_raster_right * TEMPLE_RASTER_X_SCALE &&
-								y >= clipped_top && y < clipped_bottom &&
-								center_y >= 2 * top * TEMPLE_RASTER_Y_NUMERATOR &&
-								center_y < 2 * bottom * TEMPLE_RASTER_Y_NUMERATOR) {
-								expected = TEST_POLYGON_LOWER_COLOR;
-								if (center_y < 2 * shared_y * TEMPLE_RASTER_Y_NUMERATOR) {
-									expected = TEST_POLYGON_UPPER_COLOR;
-								}
-								if (mode != TEMPLE_RASTER_PAINT_SOLID) {
-									if ((x / TEST_POLYGON_PATTERN_RUN + y) & 1) {
-										if (mode == TEMPLE_RASTER_PAINT_TWO_COLOR) {
-											expected = TEST_POLYGON_ALTERNATE_COLOR;
+						TempleRasterPresent(dc);
+						for (y = 0; y < TEMPLE_SCREEN_HEIGHT; y++) {
+							/* Integer inequalities independently test pixel centers against edges. */
+							render_y = y - TEMPLE_RENDER_TOP;
+							center_y = 2 * render_y + 1;
+							for (x = 0; x < TEMPLE_SCREEN_WIDTH; x++) {
+								expected = BLACK;
+								if (x >= left * scale && x < right * scale &&
+									x >=
+										drawing_sprite.sprite_raster_left * TEMPLE_RASTER_X_SCALE &&
+									x < drawing_sprite.sprite_raster_right *
+											TEMPLE_RASTER_X_SCALE &&
+									render_y >= clipped_top && render_y < clipped_bottom &&
+									center_y >= 2 * top * scale && center_y < 2 * bottom * scale) {
+									expected = TEST_POLYGON_LOWER_COLOR;
+									if (center_y < 2 * shared_y * scale) {
+										expected = TEST_POLYGON_UPPER_COLOR;
+									}
+									if (mode != TEMPLE_RASTER_PAINT_SOLID) {
+										if ((x / TEST_POLYGON_PATTERN_RUN + render_y) & 1) {
+											if (mode == TEMPLE_RASTER_PAINT_TWO_COLOR) {
+												expected = TEST_POLYGON_ALTERNATE_COLOR;
+											}
+										} else if (mode == TEMPLE_RASTER_PAINT_MASKED) {
+											expected = BLACK;
 										}
-									} else if (mode == TEMPLE_RASTER_PAINT_MASKED) {
-										expected = BLACK;
 									}
 								}
+								TestAssert(dc->body[y * dc->width_internal + x] == expected);
 							}
-							TestAssert(dc->body[y * dc->width_internal + x] == expected);
 						}
 					}
 				}
 			}
 		}
 	}
+	TempleRasterNative(FALSE);
 	MemCpy(&drawing_sprite, &saved_sprite, sizeof(SPRITE));
+}
+
+legacy_u8 TestRasterPixel(CDC *dc, legacy_s64 x, legacy_s64 y)
+{
+	return dc->body[(y + TEMPLE_RENDER_TOP) * dc->width_internal + x + TEMPLE_RENDER_LEFT];
+}
+
+legacy_void TestNativeGeometry(CDC *dc)
+{
+	POINT2D vertices[TEST_POLYGON_VERTEX_COUNT];
+	legacy_s64 x;
+	legacy_s64 y;
+	legacy_u8 expected;
+	video_pages_fill_span(drawing_sprite.sprite_bitmapptr, 0,
+						  TEMPLE_LOGICAL_WIDTH * TEMPLE_LOGICAL_HEIGHT, BLACK);
+	TempleRasterNative(TRUE);
+	/* A one-pixel polygon at odd coordinates cannot survive DOS quantization. */
+	TestPolygonQuad(vertices, TEST_POLYGON_NATIVE_PIXEL, TEST_POLYGON_NATIVE_PIXEL,
+					TEST_POLYGON_NATIVE_PIXEL + 1, TEST_POLYGON_NATIVE_PIXEL + 1);
+	preRender_default(TEST_POLYGON_UPPER_COLOR, TEST_POLYGON_VERTEX_COUNT, vertices);
+	TempleRasterPresent(dc);
+	for (y = 0; y < TEMPLE_RENDER_SCALE; y++) {
+		for (x = 0; x < TEMPLE_RENDER_SCALE; x++) {
+			expected = BLACK;
+			if (x == TEST_POLYGON_NATIVE_PIXEL && y == TEST_POLYGON_NATIVE_PIXEL) {
+				expected = TEST_POLYGON_UPPER_COLOR;
+			}
+			TestAssert(TestRasterPixel(dc, x, y) == expected);
+		}
+	}
+	preRender_line(TEST_POLYGON_NATIVE_PIXEL, TEST_POLYGON_NATIVE_PIXEL, TEST_POLYGON_NATIVE_PIXEL,
+				   TEST_POLYGON_NATIVE_PIXEL, TEST_POLYGON_LOWER_COLOR);
+	TempleRasterPresent(dc);
+	TestAssert(TestRasterPixel(dc, TEST_POLYGON_NATIVE_PIXEL, TEST_POLYGON_NATIVE_PIXEL) ==
+			   TEST_POLYGON_LOWER_COLOR);
+	TestAssert(TestRasterPixel(dc, TEST_POLYGON_NATIVE_PIXEL * TEMPLE_RENDER_SCALE,
+							   TEST_POLYGON_NATIVE_PIXEL * TEMPLE_RENDER_SCALE) == BLACK);
+	preRender_sphere(TEST_SPHERE_CENTER, TEST_SPHERE_CENTER, TEST_SPHERE_SIZE,
+					 TEST_POLYGON_LOWER_COLOR);
+	TempleRasterPresent(dc);
+	TestAssert(TestRasterPixel(dc, TEST_SPHERE_CENTER, TEST_SPHERE_CENTER) ==
+			   TEST_POLYGON_LOWER_COLOR);
+	TestAssert(TestRasterPixel(dc, TEST_SPHERE_CENTER + TEST_SPHERE_SIZE / 2, TEST_SPHERE_CENTER) ==
+			   BLACK);
+	TestAssert(TestRasterPixel(dc, TEST_SPHERE_CENTER * TEMPLE_RENDER_SCALE,
+							   TEST_SPHERE_CENTER * TEMPLE_RENDER_SCALE) == BLACK);
+	/* Returning to UI drawing restores logical coordinates exactly once. */
+	TempleRasterNative(FALSE);
+	preRender_default(TEST_POLYGON_UPPER_COLOR, TEST_POLYGON_VERTEX_COUNT, vertices);
+	TempleRasterPresent(dc);
+	for (y = 0; y < TEMPLE_RENDER_SCALE; y++) {
+		for (x = 0; x < TEMPLE_RENDER_SCALE; x++) {
+			TestAssert(TestRasterPixel(dc, TEST_POLYGON_NATIVE_PIXEL * TEMPLE_RENDER_SCALE + x,
+									   TEST_POLYGON_NATIVE_PIXEL * TEMPLE_RENDER_SCALE + y) ==
+					   TEST_POLYGON_UPPER_COLOR);
+		}
+	}
 }

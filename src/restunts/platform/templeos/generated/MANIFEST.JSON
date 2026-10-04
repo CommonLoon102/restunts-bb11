@@ -79,11 +79,12 @@
     "stateio",
     "memory"
   ],
-  "functions": 1827,
+  "functions": 1833,
   "classes": 102,
   "external": [
     "TempleRasterForget",
     "TempleRasterForgetRange",
+    "TempleRasterNative",
     "TempleRasterRegisterSprite",
     "TempleRasterResource",
     "TempleRasterResourceParsed",

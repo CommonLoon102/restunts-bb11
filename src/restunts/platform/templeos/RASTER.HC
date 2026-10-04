@@ -1,10 +1,9 @@
 #include "RASTER.HH"
 #include "PALETTE.HH"
 
-#define TEMPLE_RASTER_X_SCALE (TEMPLE_SCREEN_WIDTH / TEMPLE_LOGICAL_WIDTH)
-#define TEMPLE_RASTER_Y_NUMERATOR 12
-#define TEMPLE_RASTER_Y_DENOMINATOR 5
-#define TEMPLE_RASTER_CELL_ROWS 3
+#define TEMPLE_RASTER_X_SCALE TEMPLE_RENDER_SCALE
+#define TEMPLE_RASTER_Y_SCALE TEMPLE_RENDER_SCALE
+#define TEMPLE_RASTER_CELL_ROWS TEMPLE_RASTER_Y_SCALE
 #define TEMPLE_RASTER_CELL_PIXELS (TEMPLE_RASTER_X_SCALE * TEMPLE_RASTER_CELL_ROWS)
 #define TEMPLE_RASTER_CELLS (TEMPLE_WORD_MASK + 1)
 #define TEMPLE_RASTER_PAIR_SHIFT TEMPLE_BYTE_BITS
@@ -32,9 +31,8 @@
 #define TEMPLE_RASTER_BYTE_SIGN 128
 #define TEMPLE_RASTER_WORD_SIGN 32768
 
-/* A logical cell keeps six samples, with three vertical slots. Physical rows
- * cover two or three samples as Y advances by 12/5. This extra row lets saved
- * backgrounds and window copies retain native detail at a different Y phase.
+/* Each DOS logical cell owns four independent native pixels. Saved backgrounds
+ * and window copies preserve all four, including detail from native geometry.
  * Samples retain their VGA index for AND/OR masks and an optional authored EGA
  * pair. Quantization happens after composition, never on mask operands.
  */
@@ -64,6 +62,20 @@ legacy_u8 temple_raster_default_pairs[TEMPLE_PALETTE_SOURCE_COUNT];
 legacy_u8 temple_raster_have_default = FALSE;
 legacy_u8 *temple_raster_source_pairs = NULL;
 legacy_u8 temple_raster_source_set = FALSE;
+legacy_u8 temple_raster_native = FALSE;
+
+legacy_void TempleRasterNative(legacy_u8 enabled)
+{
+	temple_raster_native = enabled;
+}
+
+legacy_s64 TempleRasterCoordinateScale()
+{
+	if (temple_raster_native) {
+		return 1;
+	}
+	return TEMPLE_RENDER_SCALE;
+}
 
 legacy_u16 TempleRasterRead16(legacy_u8 *bytes)
 {
@@ -87,12 +99,7 @@ legacy_u32 TempleRasterRead32(legacy_u8 *bytes)
 
 legacy_s64 TempleRasterY(legacy_s64 y)
 {
-	/* Floor division preserves clipping for vertices above the window. */
-	legacy_s64 numerator = y * TEMPLE_RASTER_Y_NUMERATOR;
-	if (numerator < 0) {
-		return -((-numerator + TEMPLE_RASTER_Y_DENOMINATOR - 1) / TEMPLE_RASTER_Y_DENOMINATOR);
-	}
-	return numerator / TEMPLE_RASTER_Y_DENOMINATOR;
+	return y * TEMPLE_RASTER_Y_SCALE;
 }
 
 TempleRasterResourceMap *TempleRasterResourceAt(legacy_u8 *source)
@@ -562,34 +569,23 @@ legacy_void video_pages_pattern_span(legacy_u8 *bitmap, legacy_u16 offset, legac
 legacy_void TempleRasterPlot(legacy_s64 x, legacy_s64 y, legacy_u16 color)
 {
 	legacy_s64 logical_y;
-	legacy_s64 first_y;
-	legacy_s64 rows;
-	legacy_s64 sample_row;
-	legacy_s64 end_row;
+	legacy_s64 slot;
 	legacy_u16 offset;
-	legacy_u32 sample;
-	legacy_u32 *cell;
 	if (!temple_raster_target || x < drawing_sprite.sprite_raster_left * TEMPLE_RASTER_X_SCALE ||
 		x >= drawing_sprite.sprite_raster_right * TEMPLE_RASTER_X_SCALE ||
 		y < TempleRasterY(drawing_sprite.sprite_top) ||
-		y >= TempleRasterY(drawing_sprite.sprite_bottom) || x < 0 || x >= TEMPLE_SCREEN_WIDTH ||
-		y < 0 || y >= TEMPLE_SCREEN_HEIGHT) {
+		y >= TempleRasterY(drawing_sprite.sprite_bottom) || x < 0 || x >= TEMPLE_RENDER_WIDTH ||
+		y < 0 || y >= TEMPLE_RENDER_HEIGHT) {
 		return;
 	}
-	logical_y = ((y + 1) * TEMPLE_RASTER_Y_DENOMINATOR - 1) / TEMPLE_RASTER_Y_NUMERATOR;
-	first_y = TempleRasterY(logical_y);
-	rows = TempleRasterY(logical_y + 1) - first_y;
+	logical_y = y / TEMPLE_RASTER_Y_SCALE;
 	offset = (TempleRasterRead16(drawing_sprite.sprite_lineofs + logical_y * sizeof(legacy_u16)) +
 			  x / TEMPLE_RASTER_X_SCALE) &
 			 TEMPLE_WORD_MASK;
-	cell = temple_raster_target->samples + offset * TEMPLE_RASTER_CELL_PIXELS;
+	slot = y % TEMPLE_RASTER_Y_SCALE * TEMPLE_RASTER_X_SCALE + x % TEMPLE_RASTER_X_SCALE;
+	temple_raster_target->samples[offset * TEMPLE_RASTER_CELL_PIXELS + slot] =
+		TempleRasterSample(color, TempleRasterDefaultPairs());
 	temple_raster_target->dirty = TRUE;
-	sample = TempleRasterSample(color, TempleRasterDefaultPairs());
-	sample_row = (y - first_y) * TEMPLE_RASTER_CELL_ROWS / rows;
-	end_row = (y - first_y + 1) * TEMPLE_RASTER_CELL_ROWS / rows;
-	while (sample_row < end_row) {
-		cell[sample_row++ * TEMPLE_RASTER_X_SCALE + x % TEMPLE_RASTER_X_SCALE] = sample;
-	}
 	/* Logical bytes remain available for masks and original UI code. */
 	temple_raster_target->bitmap[offset] = color;
 }
@@ -631,8 +627,9 @@ legacy_void TempleRasterPolygon(legacy_u16 color, legacy_u16 alternate, legacy_u
 	legacy_s64 index;
 	legacy_s64 left;
 	legacy_s64 right;
-	legacy_s64 top = TEMPLE_SCREEN_HEIGHT;
+	legacy_s64 top = TEMPLE_RENDER_HEIGHT;
 	legacy_s64 bottom = 0;
+	legacy_s64 scale = TempleRasterCoordinateScale();
 	if (count < 3 || count > TEMPLE_RASTER_POINT_LIMIT || !vertices) {
 		return;
 	}
@@ -645,25 +642,22 @@ legacy_void TempleRasterPolygon(legacy_u16 color, legacy_u16 alternate, legacy_u
 	/* Match the fractional edges and pixel-center samples below. Flooring the
 	 * scaled bounds can leave an uncovered row between adjoining polygons. */
 	for (index = 0; index < count; index++) {
-		y = ToI64(Ceil(ToF64(vertices[index].py) * TEMPLE_RASTER_Y_NUMERATOR /
-						   TEMPLE_RASTER_Y_DENOMINATOR -
-					   TEMPLE_RASTER_HALF));
+		y = ToI64(Ceil(ToF64(vertices[index].py) * scale - TEMPLE_RASTER_HALF));
 		top = MinI64(top, y);
 		bottom = MaxI64(bottom, y);
 	}
 	top = MaxI64(top, MaxI64(0, TempleRasterY(drawing_sprite.sprite_top)));
 	bottom =
-		MinI64(bottom, MinI64(TEMPLE_SCREEN_HEIGHT, TempleRasterY(drawing_sprite.sprite_bottom)));
+		MinI64(bottom, MinI64(TEMPLE_RENDER_HEIGHT, TempleRasterY(drawing_sprite.sprite_bottom)));
 	for (y = top; y < bottom; y++) {
 		scan_y = y + TEMPLE_RASTER_HALF;
 		hits = 0;
 		previous = count - 1;
 		for (edge = 0; edge < count; edge++) {
-			ax = vertices[previous].px * TEMPLE_RASTER_X_SCALE;
-			ay = ToF64(vertices[previous].py) * TEMPLE_RASTER_Y_NUMERATOR /
-				 TEMPLE_RASTER_Y_DENOMINATOR;
-			bx = vertices[edge].px * TEMPLE_RASTER_X_SCALE;
-			by = ToF64(vertices[edge].py) * TEMPLE_RASTER_Y_NUMERATOR / TEMPLE_RASTER_Y_DENOMINATOR;
+			ax = vertices[previous].px * scale;
+			ay = ToF64(vertices[previous].py) * scale;
+			bx = vertices[edge].px * scale;
+			by = ToF64(vertices[edge].py) * scale;
 			if ((ay <= scan_y && by > scan_y) || (by <= scan_y && ay > scan_y)) {
 				intersections[hits++] = ax + (scan_y - ay) * (bx - ax) / (by - ay);
 			}
@@ -680,7 +674,7 @@ legacy_void TempleRasterPolygon(legacy_u16 color, legacy_u16 alternate, legacy_u
 		}
 		for (edge = 0; edge + 1 < hits; edge += 2) {
 			left = MaxI64(0, ToI64(Ceil(intersections[edge] - TEMPLE_RASTER_HALF)));
-			right = MinI64(TEMPLE_SCREEN_WIDTH,
+			right = MinI64(TEMPLE_RENDER_WIDTH,
 						   ToI64(Ceil(intersections[edge + 1] - TEMPLE_RASTER_HALF)));
 			for (x = left; x < right; x++) {
 				TempleRasterPaint(x, y, color, alternate, pattern, mode);
@@ -714,10 +708,11 @@ legacy_void preRender_two_color(legacy_u16 pattern, legacy_u16 color, legacy_u16
 legacy_void preRender_line(legacy_u16 start_x, legacy_u16 start_y, legacy_u16 end_x,
 						   legacy_u16 end_y, legacy_u16 color)
 {
-	legacy_s64 x = TempleRasterSigned16(start_x) * TEMPLE_RASTER_X_SCALE;
-	legacy_s64 y = TempleRasterY(TempleRasterSigned16(start_y));
-	legacy_s64 right = TempleRasterSigned16(end_x) * TEMPLE_RASTER_X_SCALE;
-	legacy_s64 bottom = TempleRasterY(TempleRasterSigned16(end_y));
+	legacy_s64 scale = TempleRasterCoordinateScale();
+	legacy_s64 x = TempleRasterSigned16(start_x) * scale;
+	legacy_s64 y = TempleRasterSigned16(start_y) * scale;
+	legacy_s64 right = TempleRasterSigned16(end_x) * scale;
+	legacy_s64 bottom = TempleRasterSigned16(end_y) * scale;
 	legacy_s64 dx = AbsI64(right - x);
 	legacy_s64 dy = -AbsI64(bottom - y);
 	legacy_s64 sx = -1;
@@ -755,12 +750,12 @@ legacy_void preRender_line(legacy_u16 start_x, legacy_u16 start_y, legacy_u16 en
 
 legacy_void preRender_sphere(legacy_s16 x, legacy_s16 y, legacy_u16 size, legacy_u16 color)
 {
-	legacy_f64 radius_x = ToF64(size) * TEMPLE_RASTER_X_SCALE / 2;
+	legacy_s64 scale = TempleRasterCoordinateScale();
+	legacy_f64 radius_x = ToF64(size) * scale / 2;
 	legacy_f64 radius_y = ToF64(size) * TEMPLE_RASTER_SPHERE_HEIGHT_NUMERATOR /
-						  TEMPLE_RASTER_SPHERE_HEIGHT_DENOMINATOR * TEMPLE_RASTER_Y_NUMERATOR /
-						  TEMPLE_RASTER_Y_DENOMINATOR / 2;
-	legacy_f64 center_x = x * TEMPLE_RASTER_X_SCALE;
-	legacy_f64 center_y = ToF64(y) * TEMPLE_RASTER_Y_NUMERATOR / TEMPLE_RASTER_Y_DENOMINATOR;
+						  TEMPLE_RASTER_SPHERE_HEIGHT_DENOMINATOR * scale / 2;
+	legacy_f64 center_x = x * scale;
+	legacy_f64 center_y = ToF64(y) * scale;
 	legacy_f64 relative;
 	legacy_f64 span;
 	legacy_s64 row;
@@ -774,13 +769,13 @@ legacy_void preRender_sphere(legacy_s16 x, legacy_s16 y, legacy_u16 size, legacy
 		return;
 	}
 	top = MaxI64(0, ToI64(Ceil(center_y - radius_y - TEMPLE_RASTER_HALF)));
-	bottom = MinI64(TEMPLE_SCREEN_HEIGHT, ToI64(Ceil(center_y + radius_y - TEMPLE_RASTER_HALF)));
+	bottom = MinI64(TEMPLE_RENDER_HEIGHT, ToI64(Ceil(center_y + radius_y - TEMPLE_RASTER_HALF)));
 	for (row = top; row < bottom; row++) {
 		relative = (row + TEMPLE_RASTER_HALF - center_y) / radius_y;
 		if (Abs(relative) <= 1) {
 			span = radius_x * Sqrt(1 - relative * relative);
 			left = MaxI64(0, ToI64(Ceil(center_x - span - TEMPLE_RASTER_HALF)));
-			right = MinI64(TEMPLE_SCREEN_WIDTH, ToI64(Ceil(center_x + span - TEMPLE_RASTER_HALF)));
+			right = MinI64(TEMPLE_RENDER_WIDTH, ToI64(Ceil(center_x + span - TEMPLE_RASTER_HALF)));
 			for (column = left; column < right; column++) {
 				if (color == TEMPLE_RASTER_GHOST_COLOR) {
 					TempleRasterPaint(column, row, BLACK, BLACK, TEMPLE_RASTER_GHOST_PATTERN,
@@ -819,8 +814,6 @@ legacy_void TempleRasterPresent(CDC *dc)
 	legacy_s64 x;
 	legacy_s64 y;
 	legacy_s64 logical_y;
-	legacy_s64 first_y;
-	legacy_s64 rows;
 	legacy_s64 slot;
 	legacy_u16 offset;
 	legacy_u32 sample;
@@ -828,12 +821,16 @@ legacy_void TempleRasterPresent(CDC *dc)
 	if (!surface || !dc) {
 		return;
 	}
+	/* Clear both letterbox bars even when the destination DC was reused. */
 	for (y = 0; y < TEMPLE_SCREEN_HEIGHT; y++) {
-		logical_y = ((y + 1) * TEMPLE_RASTER_Y_DENOMINATOR - 1) / TEMPLE_RASTER_Y_NUMERATOR;
-		first_y = TempleRasterY(logical_y);
-		rows = TempleRasterY(logical_y + 1) - first_y;
-		slot = (y - first_y) * TEMPLE_RASTER_CELL_ROWS / rows * TEMPLE_RASTER_X_SCALE;
-		for (x = 0; x < TEMPLE_SCREEN_WIDTH; x++) {
+		if (y < TEMPLE_RENDER_TOP || y >= TEMPLE_RENDER_TOP + TEMPLE_RENDER_HEIGHT) {
+			MemSet(dc->body + y * dc->width_internal, BLACK, TEMPLE_SCREEN_WIDTH);
+		}
+	}
+	for (y = 0; y < TEMPLE_RENDER_HEIGHT; y++) {
+		logical_y = y / TEMPLE_RASTER_Y_SCALE;
+		slot = y % TEMPLE_RASTER_Y_SCALE * TEMPLE_RASTER_X_SCALE;
+		for (x = 0; x < TEMPLE_RENDER_WIDTH; x++) {
 			offset = (surface->rows[logical_y] + x / TEMPLE_RASTER_X_SCALE) & TEMPLE_WORD_MASK;
 			sample = surface->samples[offset * TEMPLE_RASTER_CELL_PIXELS + slot +
 									  x % TEMPLE_RASTER_X_SCALE];
@@ -846,7 +843,7 @@ legacy_void TempleRasterPresent(CDC *dc)
 			} else {
 				color = TemplePaletteColor(sample & TEMPLE_BYTE_MASK);
 			}
-			dc->body[y * dc->width_internal + x] = color;
+			dc->body[(y + TEMPLE_RENDER_TOP) * dc->width_internal + x + TEMPLE_RENDER_LEFT] = color;
 		}
 	}
 }
@@ -868,4 +865,5 @@ legacy_void TempleRasterShutdown()
 	temple_raster_source_pairs = NULL;
 	temple_raster_source_set = FALSE;
 	temple_raster_have_default = FALSE;
+	temple_raster_native = FALSE;
 }

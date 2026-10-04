@@ -1622,6 +1622,14 @@ extern legacy_void rs_shape3d_polyinfo_read_points(legacy_u8 *record, POINT2D *p
 												   legacy_u16 point_count);
 extern legacy_void rs_shape3d_polyinfo_write_point(legacy_u8 *record, legacy_u16 point_index,
 												   POINT2D *point);
+extern legacy_void TempleRasterNative(legacy_u8 enabled);
+extern legacy_s16 rs_shape3d_shape3d_native_coordinate(legacy_s64 value);
+extern legacy_void rs_shape3d_shape3d_project_coordinates(legacy_s64 x, legacy_s64 y, legacy_s64 z,
+														  POINT2D *point);
+extern legacy_void rs_shape3d_shape3d_project_point(VECTOR *vector, POINT2D *point);
+extern legacy_s16 rs_shape3d_shape3d_logical_coordinate(legacy_s16 value);
+extern legacy_u16 rs_shape3d_shape3d_geometry_clip_flags(POINT2D *point);
+extern legacy_void rs_shape3d_shape3d_adjust_geometry_bounds(POINT2D *point, RECTANGLE *rectangle);
 extern legacy_void rs_shape3d_polyinfo_emit_point(legacy_u16 *point_index, legacy_u8 *rect_flags,
 												  POINT2D *point);
 extern legacy_s8 rs_shape3d_polyinfo_is_facing_camera(legacy_u8 *record);
@@ -3752,7 +3760,7 @@ extern OWOOT_CONNECTION_EDGE rs_owoot_route_jump_edges[13];
 extern legacy_s8 rs_command_line_command_line_version_prefix[38];
 extern legacy_s8 rs_command_line_command_line_revision[9];
 extern legacy_s8 rs_command_line_command_line_version_suffix[17];
-extern legacy_s8 rs_command_line_command_line_help[155];
+extern legacy_s8 rs_command_line_command_line_help[161];
 extern legacy_u16 legacy_divide_fault_segment;
 extern legacy_u16 legacy_divide_fault_offset;
 extern VECTOR rs_headless_trackdata_legacy_track_vectors[574];
