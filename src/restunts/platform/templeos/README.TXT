@@ -108,6 +108,34 @@ Add --check to verify regeneration without writing. See TRANSLATE.PY --help
 for other options. Generated numeric literals come from the shared C constants;
 maintain those named constants in the C source rather than editing generated code.
 
+HolyC source style follows Terry Davis's TempleOS naming conventions:
+
+    https://github.com/cia-foundation/TempleOS/blob/archive/Doc/Glossary.DD
+
+Use MixedCaps function names, C-prefixed MixedCaps class names, lower_case
+parameters/locals/globals/members, and ALL_CAPS named constants. Keep project
+legacy_* types. Translated shared C functions use an Rs prefix to avoid HolyC
+built-in collisions; existing Temple*, Test*, and Restunts entry points keep
+their names. generated/NAMES.JSON records the shared C-to-HolyC name mapping.
+
+Use two-space indentation, compact operators and commas (x=y+z, Fun(src,dst)),
+function/class braces on their own line, control-flow braces on the control
+line, a 100-column target, and CRLF endings. Spaces reproduce TempleOS's
+logical two-column nesting without requiring its eight-column tab stops.
+Retain existing braced bodies and control flow. These HolyC rules are separate
+from the shared C source style documented in the repository's readme.md.
+
+Check all port HC/HH files with the formatter installed above:
+
+    python3 src/restunts/platform/templeos/tools/STYLE.PY \
+        --formatter /tmp/restunts-templeos-env/bin/clang-format --check
+
+Omit --check to apply formatting, or append file paths to limit the operation.
+Without paths, STYLE.PY includes generated/ as well as handwritten sources.
+It formats whitespace without renaming symbols; TRANSLATE.PY performs the
+shared C name conversion and emits the same layout. Regenerate generated
+sources after changing their inputs; do not hand-edit them.
+
 HolyC has different expression precedence, no ternary/continue/typedef, and
 narrow integer casts do not implement C truncation. Boolean values outside
 conditions also need explicit C short-circuit evaluation. The translator lowers

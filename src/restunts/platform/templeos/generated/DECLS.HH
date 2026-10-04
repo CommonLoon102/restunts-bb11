@@ -7,2889 +7,2520 @@ extern legacy_s64 TempleCastS16(legacy_u64 value);
 extern legacy_s64 TempleCastU32(legacy_u64 value);
 extern legacy_s64 TempleCastS32(legacy_u64 value);
 extern legacy_u64 TempleCastU64(legacy_u64 value);
-extern legacy_u64 TempleDivideU64(legacy_u64 dividend, legacy_u64 divisor);
-extern legacy_u64 TempleRemainderU64(legacy_u64 dividend, legacy_u64 divisor);
+extern legacy_u64 TempleDivideU64(legacy_u64 dividend,legacy_u64 divisor);
+extern legacy_u64 TempleRemainderU64(legacy_u64 dividend,legacy_u64 divisor);
 extern legacy_s64 TempleCastS64(legacy_s64 value);
-extern legacy_s64 TempleDivideS64(legacy_s64 dividend, legacy_s64 divisor);
-extern legacy_s64 TempleRemainderS64(legacy_s64 dividend, legacy_s64 divisor);
-extern legacy_u16 legacy_u16_div_or_zero(legacy_u16 numerator, legacy_u16 denominator);
-extern legacy_s16 legacy_s16_div_or_zero(legacy_s16 numerator, legacy_s16 denominator);
-extern legacy_u32 legacy_u32_div_or_zero(legacy_u32 numerator, legacy_u32 denominator);
-extern legacy_s32 legacy_s32_div_or_zero(legacy_s32 numerator, legacy_s32 denominator);
-extern legacy_s8 rs_fileio_legacy_s8_from_bits(legacy_u8 value);
-extern legacy_s16 rs_fileio_legacy_s16_from_bits(legacy_u16 value);
-extern legacy_s32 rs_fileio_legacy_s32_from_bits(legacy_u32 value);
-extern legacy_s16 sin_fast(legacy_u16 s);
-extern legacy_s16 cos_fast(legacy_u16 s);
-extern legacy_s16 polarAngle(legacy_s16 z, legacy_s16 y);
-extern legacy_s16 polarRadius2D(legacy_s16 z, legacy_s16 y);
-extern legacy_s16 polarRadius3D(VECTOR *vec);
-extern legacy_u16 rect_compare_point(POINT2D *pt);
-extern legacy_void mat_mul_vector(VECTOR *invec, MATRIX *mat, VECTOR *outvec);
-extern legacy_void mat_mul_vector2(VECTOR *invec, MATRIX *mat, VECTOR *outvec);
-extern legacy_void mat_multiply(MATRIX *rmat, MATRIX *lmat, MATRIX *outmat);
-extern legacy_void mat_invert(MATRIX *inmat, MATRIX *outmat);
-extern legacy_void mat_rot_x(MATRIX *outmat, legacy_s16 angle);
-extern legacy_void mat_rot_y(MATRIX *outmat, legacy_s16 angle);
-extern legacy_void mat_rot_z(MATRIX *outmat, legacy_s16 angle);
-extern MATRIX *mat_rot_zxy(legacy_s16 z, legacy_s16 x, legacy_s16 y, legacy_s16 rotation_order);
-extern legacy_void rect_adjust_from_point(POINT2D *pt, RECTANGLE *rc);
-extern legacy_void rectlist_add_rects(legacy_s8 source_count, legacy_s8 *source_flags,
-									  RECTANGLE *first_rectangles, RECTANGLE *second_rectangles,
-									  RECTANGLE *clip_rectangle, legacy_s8 *output_count,
-									  RECTANGLE *output_rectangles);
-extern legacy_void rect_array_sort_by_top(legacy_s8 rectangle_count, RECTANGLE *rectangles,
-										  legacy_s16 *sorted_indices);
-extern legacy_s16 vector_direction_sector(VECTOR *vec);
-extern legacy_void vector_to_point(VECTOR *vec, POINT2D *outpt);
-extern legacy_void vector_interpolate_at_z(VECTOR *first, VECTOR *second, VECTOR *result,
-										   legacy_s16 depth);
-extern legacy_s16 multiply_and_scale(legacy_s16 left, legacy_s16 right);
-extern legacy_s16 absolute_word(legacy_s16 value);
-extern legacy_u16 sar1_word(legacy_u16 value);
-extern legacy_s16 position_to_word(legacy_s32 position);
-extern legacy_void rect_union(RECTANGLE *r1, RECTANGLE *r2, RECTANGLE *outrc);
-extern legacy_s16 rect_intersect(RECTANGLE *r1, RECTANGLE *r2);
-extern legacy_void heapsort_by_order(legacy_s16 count, legacy_s16 *values, legacy_s16 *order);
-extern legacy_void replay_gameinfo_decode(GAMEINFO *destination, legacy_u8 *source);
-extern legacy_void replay_gameinfo_encode(legacy_u8 *destination, GAMEINFO *source);
-extern legacy_u32 replay_file_size(legacy_u16 recorded_frames);
-extern legacy_u16 replay_timeline_position(legacy_u16 frame, legacy_u16 recorded_frames,
-										   legacy_u16 width);
-extern legacy_u16 replay_rewind_interpolate(legacy_u16 rewind_amount, legacy_u16 frames_remaining,
-											legacy_u16 checkpoint_distance);
-extern legacy_u16 gamestate_serialize(legacy_u8 *destination, GAMESTATE *source);
-extern legacy_u16 simd_decode(SIMD *destination, legacy_u8 *source);
-extern legacy_void copy_string(legacy_s8 *destination, legacy_s8 *source);
-extern legacy_void setup_legacy_penalty_route_word();
-extern legacy_void setup_aero_trackdata(legacy_u8 *carresptr, legacy_s16 is_opponent);
-extern legacy_void load_opponent_data();
-extern legacy_void update_player_tick(legacy_s8 input_flags);
-extern legacy_void emit_crash_particles(legacy_s16 kind_arg, legacy_s16 base_angle_arg,
-										legacy_s16 energy_offset_arg);
-extern legacy_void update_crash_particles();
-extern legacy_void init_kevinrandom(legacy_s8 *seed);
-extern legacy_void get_kevinrandom_seed(legacy_s8 *seed);
-extern legacy_s16 get_kevinrandom();
-extern legacy_void init_row_tables();
-extern legacy_void init_trackdata();
-extern legacy_void reset_race_loop_state();
-extern legacy_void init_video_geometry_flags();
-extern legacy_void update_frame(legacy_s8 buffer_index, RECTANGLE *cliprect);
-extern legacy_s16 get_track_route_point(legacy_s16 track_index_arg, VECTOR *output,
-										legacy_s16 route_index_arg, legacy_s8 *optional_speed);
-extern legacy_void init_carstate_from_simd(CARSTATE *playerstate, SIMD *simd,
-										   legacy_s8 transmission, legacy_s32 posX, legacy_s32 posY,
-										   legacy_s32 posZ, legacy_s16 track_angle);
-extern legacy_void init_game_state(legacy_s16 initialization_mode);
-extern legacy_void init_game_state_with_frame_rate(legacy_u16 frame_rate);
-extern legacy_void init_game_state_with_frame_rate_byte(legacy_u16 frame_rate);
-extern legacy_void restore_gamestate(legacy_u16 frame);
-extern legacy_void update_gamestate();
-extern legacy_void update_gamestate_silent();
-extern legacy_void update_gamestate_with_legacy_si(legacy_s16 caller_si);
-extern legacy_void init_rect_arrays();
-extern legacy_void frame_present(RECTANGLE *cliprect);
-extern legacy_void font_set_fontdef();
-extern legacy_s16 run_intro_looped();
-extern legacy_s8 setup_intro();
-extern legacy_s8 load_intro_resources();
-extern legacy_s8 run_menu();
-extern legacy_s8 setup_track();
-extern legacy_void run_tracks_menu(legacy_s16 reload_track);
-extern legacy_void run_opponent_menu();
-extern legacy_void run_car_menu(legacy_s8 *car_id, legacy_s8 *material, legacy_s8 *transmission,
-								legacy_u16 opponent_type);
-extern legacy_u16 end_hiscore();
-extern legacy_u16 run_option_menu();
-extern legacy_void legacy_timer_shutdown();
-extern legacy_void show_graphic_levels_menu();
-extern legacy_void calibrate_joystick_driving();
-extern legacy_void select_keyboard_driving();
-extern legacy_void select_mouse_driving();
-extern legacy_void toggle_music_with_dialog();
-extern legacy_void show_pause_dialog();
-extern legacy_void show_exit_to_dos_dialog();
-extern legacy_void toggle_effects_with_dialog();
-extern legacy_void mouse_draw_opaque();
-extern legacy_void mouse_draw_transparent();
-extern legacy_void video_set_mode4();
-extern legacy_void video_set_mode7();
-extern legacy_void video_set_mode_13h();
-extern legacy_void sprite_set_target_clip_bounds(legacy_u16 left, legacy_u16 right, legacy_u16 top,
-												 legacy_u16 bottom);
-extern legacy_void timer_setup_interrupt();
-extern legacy_u8 *_memcpy(legacy_u8 *arg0, legacy_u8 *arg1, legacy_u16 arg2);
-extern legacy_s8 *_strcpy(legacy_s8 *destination, legacy_s8 *source);
-extern legacy_s8 *_strcat(legacy_s8 *destination, legacy_s8 *source);
-extern legacy_s16 _strcmp(legacy_s8 *left, legacy_s8 *right);
-extern legacy_s16 _stricmp(legacy_s8 *left, legacy_s8 *right);
-extern legacy_u16 _strlen(legacy_s8 *string);
-extern legacy_u8 *__fmemcpy(legacy_u8 *arg0, legacy_u8 *arg1, legacy_u16 arg2);
-extern legacy_u16 _abs(legacy_u16 value);
-extern legacy_s16 _rand();
-extern legacy_void _srand(legacy_u16 seed);
-extern legacy_s8 *file_find(legacy_s8 *query);
-extern legacy_s8 *file_find_next();
-extern legacy_s8 *file_find_next_alt();
-extern legacy_void file_build_path(legacy_s8 *dir, legacy_s8 *name, legacy_s8 *ext, legacy_s8 *dst);
-extern legacy_s8 *file_combine_and_find(legacy_s8 *dir, legacy_s8 *name, legacy_s8 *ext);
-extern legacy_u16 file_paras(legacy_s8 *filename, legacy_s16 fatal);
-extern legacy_u16 file_paras_fatal(legacy_s8 *filename);
-extern legacy_u16 file_paras_nofatal(legacy_s8 *filename);
-extern legacy_u16 file_decomp_paras(legacy_s8 *filename, legacy_s16 fatal);
-extern legacy_u16 file_decomp_paras_fatal(legacy_s8 *filename);
-extern legacy_u16 file_decomp_paras_nofatal(legacy_s8 *filename);
-extern legacy_u8 *file_read(legacy_s8 *filename, legacy_u8 *dst, legacy_s16 fatal);
-extern legacy_u8 *file_read_fatal(legacy_s8 *filename, legacy_u8 *dst);
-extern legacy_u8 *file_read_nofatal(legacy_s8 *filename, legacy_u8 *dst);
-extern legacy_s16 file_write(legacy_s8 *filename, legacy_u8 *src, legacy_u32 length,
-							 legacy_s16 fatal);
-extern legacy_s16 file_write_fatal(legacy_s8 *filename, legacy_u8 *src, legacy_u32 length);
-extern legacy_s16 file_write_nofatal(legacy_s8 *filename, legacy_u8 *src, legacy_u32 length);
-extern legacy_u8 *file_decomp(legacy_s8 *filename, legacy_s16 fatal);
-extern legacy_u8 *file_decomp_fatal(legacy_s8 *filename);
-extern legacy_u8 *file_decomp_nofatal(legacy_s8 *filename);
-extern legacy_u8 *file_load_binary(legacy_s8 *filename, legacy_s16 fatal);
-extern legacy_u8 *file_load_binary_nofatal(legacy_s8 *filename);
-extern legacy_u8 *file_load_binary_fatal(legacy_s8 *filename);
-extern legacy_u16 file_game_version_matches();
-extern legacy_u8 *file_load_resfile(legacy_s8 *filename);
-extern legacy_u8 *file_load_resfile_with_tail(legacy_s8 *filename, legacy_u16 tail_bytes);
-extern legacy_u8 *file_load_resource(legacy_s16 resource_type, legacy_s8 *filename);
-extern legacy_void unload_resource(legacy_u8 *resptr);
-extern legacy_u8 *file_prepare_audiores(legacy_s8 *songfile, legacy_s8 *voicefile, legacy_s8 *name);
-extern legacy_void file_load_audiores(legacy_s8 *songfile, legacy_s8 *voicefile, legacy_s8 *name);
-extern legacy_u8 *file_load_3dres(legacy_s8 *filename);
-extern legacy_s16 file_load_replay(legacy_s8 *dir, legacy_s8 *name);
-extern legacy_s16 file_write_replay(legacy_s8 *filename);
-extern legacy_void resource_file_set_size(legacy_u8 *resource, legacy_u32 size);
-extern legacy_u16 resource_file_count(legacy_u8 *resource);
-extern legacy_u8 *resource_file_identifier(legacy_u8 *resource, legacy_u16 index);
-extern legacy_void resource_file_set_offset(legacy_u8 *resource, legacy_u16 count, legacy_u16 index,
-											legacy_u32 offset);
-extern legacy_u16 resource_file_data_start(legacy_u16 count);
-extern legacy_u8 *resource_file_data(legacy_u8 *resource, legacy_u16 index);
-extern legacy_u16 resource_text_equals(legacy_u8 *resource, legacy_u32 length, legacy_s8 *name,
-									   legacy_s8 *expected);
-extern legacy_s8 *locate_resource(legacy_s8 *data, legacy_s8 *name, legacy_u16 fatal);
-extern legacy_s8 *locate_shape_nofatal(legacy_s8 *data, legacy_s8 *name);
-extern legacy_s8 *locate_shape_fatal(legacy_s8 *data, legacy_s8 *name);
-extern legacy_s8 *locate_shape_alt(legacy_s8 *data, legacy_s8 *name);
-extern legacy_s8 *locate_sound_fatal(legacy_s8 *data, legacy_s8 *name);
-extern legacy_s8 *mmgr_path_to_name(legacy_s8 *filename);
-extern legacy_u8 *mmgr_alloc_pages(legacy_s8 *name, legacy_u16 paragraphs);
-extern legacy_void mmgr_alloc_resmem(legacy_u16 end_segment);
-extern legacy_void mmgr_init_conventional_arena();
-extern legacy_u16 mmgr_get_ofs_diff();
-extern legacy_u8 *mmgr_free(legacy_s8 *ptr);
-extern legacy_void mmgr_copy_paras(legacy_u16 srcseg, legacy_u16 destseg, legacy_s16 paras);
-extern legacy_void copy_paras_reverse(legacy_u16 srcseg, legacy_u16 destseg, legacy_s16 paras);
-extern legacy_void mmgr_find_free();
-extern legacy_u8 *mmgr_get_chunk_by_name(legacy_s8 *name);
-extern legacy_void mmgr_release(legacy_u8 *ptr);
-extern legacy_u16 mmgr_get_chunk_size(legacy_s8 *ptr);
-extern legacy_u16 mmgr_resize_memory(legacy_u16 unused_offset, legacy_u16 segment,
-									 legacy_u16 paragraphs);
-extern legacy_u8 *mmgr_compact_live_chunk(legacy_s8 *ptr);
-extern legacy_u8 *mmgr_alloc_resbytes(legacy_s8 *name, legacy_s32 size);
-extern legacy_u32 mmgr_get_res_ofs_diff_scaled();
-extern legacy_u32 mmgr_get_chunk_size_bytes(legacy_s8 *ptr);
-extern legacy_void mmgr_rename_chunk(legacy_s8 *ptr, legacy_s8 *name);
-extern legacy_void locate_many_resources(legacy_s8 *data, legacy_s8 *names, legacy_s8 **result);
-extern legacy_s8 *locate_text_res(legacy_s8 *data, legacy_s8 *name);
-extern legacy_u8 *dos_memory_get_psp();
-extern legacy_u8 *dos_memory_make_pointer(legacy_u16 segment, legacy_u16 offset);
-extern legacy_u8 *dos_memory_make_near_pointer(legacy_u16 offset);
-extern legacy_u16 dos_memory_pointer_segment(legacy_u8 *pointer);
-extern legacy_u16 dos_memory_pointer_offset(legacy_u8 *pointer);
-extern legacy_u16 dos_memory_allocate(legacy_u16 paragraphs);
-extern legacy_u16 dos_memory_resize(legacy_u16 segment, legacy_u16 paragraphs);
-extern legacy_u16 dos_file_open(legacy_s8 *path, legacy_s16 create);
-extern legacy_s16 dos_file_close(legacy_u16 handle);
-extern legacy_u16 dos_file_read(legacy_u16 handle, legacy_u8 *destination, legacy_u16 length);
-extern legacy_u16 dos_file_write(legacy_u16 handle, legacy_u8 *source, legacy_u16 length);
-extern legacy_s16 dos_file_seek(legacy_u16 handle, legacy_s32 offset, legacy_s16 origin);
-extern legacy_s32 dos_file_tell(legacy_u16 handle);
-extern legacy_s16 dos_file_error();
-extern legacy_s16 dos_file_remove(legacy_s8 *path);
-extern legacy_s8 *dos_file_find_first(legacy_s8 *query);
-extern legacy_s8 *dos_file_find_next();
-extern legacy_void dos_install_divide_error_handler();
-extern legacy_void dos_interrupts_disable();
-extern legacy_void dos_interrupts_enable();
-extern legacy_void dos_set_critical_error_handler(legacy_u8 *callback);
-extern legacy_s16 dos_write_stdout(legacy_s8 *text, legacy_u16 length);
-extern legacy_s16 dos_write_stderr(legacy_s8 *text, legacy_u16 length);
-extern legacy_void dos_show_startup_error(legacy_s8 *message);
-extern legacy_void dos_process_exit(legacy_s16 status);
-extern legacy_s16 dos_data_stack_segments_match();
-extern legacy_s16 dos_get_joy_flags();
-extern legacy_void dos_joystick_reset_calibration();
-extern legacy_void dos_joystick_set_enabled(legacy_u8 enabled);
-extern legacy_u8 dos_joystick_is_enabled();
-extern legacy_s16 dos_joystick_get_scaled_axis(legacy_u16 axis_index);
-extern legacy_s16 dos_mouse_init(legacy_s16 width, legacy_s16 height);
-extern legacy_void dos_mouse_set_minmax(legacy_s16 minimum_x, legacy_s16 minimum_y,
-										legacy_s16 maximum_x, legacy_s16 maximum_y);
-extern legacy_void dos_mouse_set_position(legacy_s16 x, legacy_s16 y);
-extern legacy_void dos_mouse_get_state(legacy_s16 *buttons, legacy_s16 *x, legacy_s16 *y);
-extern legacy_u16 dos_mouse_get_button_count();
-extern legacy_s16 dos_timer_register_callback(legacy_u8 *callback);
-extern legacy_void dos_timer_unregister_callback(legacy_u8 *callback);
-extern legacy_void dos_timer_reset_counter();
-extern legacy_void dos_timer_set_callbacks_suspended(legacy_s16 suspended);
-extern legacy_u32 dos_timer_get_realtime_counter();
-extern legacy_u32 timer_get_counter();
-extern legacy_u32 timer_get_delta();
-extern legacy_u32 timer_get_slow_counter();
-extern legacy_void dos_timer_setup_interrupt();
-extern legacy_void dos_timer_shutdown();
-extern legacy_s16 dos_video_get_status();
-extern legacy_void dos_video_set_palette(legacy_u16 start, legacy_u16 count, legacy_u8 *palette);
-extern legacy_void dos_video_set_mode_13h();
-extern legacy_u8 dos_video_enable_planar_pages();
-extern legacy_void dos_video_set_write_planes(legacy_u8 mask);
-extern legacy_void dos_video_set_read_plane(legacy_u8 plane);
-extern legacy_void dos_video_show_page(legacy_u16 address);
-extern legacy_void dos_video_set_mode4();
-extern legacy_void dos_video_set_mode7();
-extern legacy_u8 dos_audio_driver_initialize();
-extern legacy_void dos_audio_driver_load_bank(legacy_u8 *bank);
-extern legacy_void dos_audio_driver_prepare_context(legacy_s16 driver_channel,
-													AUDIO_CONTEXT *driver_context, legacy_u8 *timer,
-													legacy_u8 *resource);
-extern legacy_void dos_audio_driver_set_context_value(legacy_s16 driver_channel,
-													  AUDIO_CONTEXT *driver_context,
-													  legacy_u16 value);
-extern legacy_void dos_audio_driver_set_control(legacy_s16 driver_channel,
-												AUDIO_CONTEXT *driver_context, legacy_u16 control,
-												legacy_u16 value);
-extern legacy_void dos_audio_driver_set_pitch(legacy_u8 *timer, legacy_s16 pitch,
-											  legacy_s16 driver_channel);
-extern legacy_void dos_audio_driver_send_data(legacy_u16 length, legacy_u8 *data);
-extern legacy_void dos_audio_driver_activate_context(legacy_s16 driver_channel,
-													 AUDIO_CONTEXT *driver_context,
-													 legacy_u8 *timer, legacy_s16 pitch,
-													 legacy_u16 parameter, legacy_u8 *resource);
-extern legacy_void dos_audio_driver_release_channel(legacy_s16 driver_channel);
-extern legacy_void dos_audio_driver_start_context(legacy_s16 driver_channel,
-												  AUDIO_CONTEXT *driver_context);
-extern legacy_void dos_audio_driver_end_context(legacy_s16 driver_channel,
-												AUDIO_CONTEXT *driver_context);
-extern legacy_void dos_audio_driver_reset();
-extern legacy_void dos_audio_driver_start();
-extern legacy_void dos_audio_driver_suspend_context(legacy_s16 driver_channel,
-													AUDIO_CONTEXT *driver_context, legacy_u16 value,
-													legacy_u8 *resource);
-extern legacy_void dos_audio_driver_suspend_all(AUDIO_CONTEXT *contexts);
-extern legacy_void dos_audio_driver_set_master_state(legacy_s16 operation, legacy_u8 *state);
-extern legacy_void dos_audio_bind_channel_context(legacy_s16 channel, legacy_u8 *resource);
-extern legacy_void dos_audio_set_channel_volume(legacy_s16 channel, legacy_s16 volume);
-extern legacy_void dos_audio_set_context_pitch(legacy_s16 context_index, legacy_s16 pitch);
-extern legacy_void dos_audio_shutdown();
-extern legacy_u16 shape2d_get_width(SHAPE2D *shape);
-extern legacy_u16 shape2d_get_height(SHAPE2D *shape);
-extern legacy_u16 shape2d_get_anchor_x(SHAPE2D *shape);
-extern legacy_u16 shape2d_get_anchor_y(SHAPE2D *shape);
-extern legacy_u16 shape2d_get_pos_x(SHAPE2D *shape);
-extern legacy_u16 shape2d_get_pos_y(SHAPE2D *shape);
-extern legacy_u16 shape2d_anchored_x(SHAPE2D *shape, legacy_s16 x);
-extern legacy_u16 shape2d_anchored_y(SHAPE2D *shape, legacy_s16 y);
-extern SPRITE *sprite_make_wnd(legacy_u16 width, legacy_u16 height, legacy_u16 unused_flags);
-extern legacy_void sprite_free_wnd(SPRITE *render_window_sprite);
-extern legacy_void sprite_select_target(SPRITE *target_sprite);
-extern legacy_void sprite_select_screen();
-extern legacy_void sprite_select_screen_compat();
-extern legacy_void sprite_select_screen_and_clear();
-extern legacy_void sprite_select_render_window();
-extern legacy_void sprite_select_render_window_and_clear();
-extern legacy_void sprite_save_context(SPRITE *saved_context);
-extern legacy_void sprite_restore_context(SPRITE *saved_context);
-extern legacy_s16 sprite_push_background(legacy_s16 left, legacy_s16 right, legacy_s16 top,
-										 legacy_s16 bottom);
-extern legacy_void sprite_clear_target(legacy_u8 color);
-extern legacy_void sprite_xor_rect_clipped(legacy_s16 x, legacy_s16 y, legacy_s16 width,
-										   legacy_s16 height, legacy_s16 color);
-extern legacy_void sprite_fill_rect(legacy_s16 x, legacy_s16 y, legacy_s16 width, legacy_s16 height,
-									legacy_s16 color);
-extern legacy_void sprite_fill_rect_clipped(legacy_s16 x, legacy_s16 y, legacy_s16 width,
-											legacy_s16 height, legacy_s16 color);
-extern legacy_void sprite_draw_rect_outline(legacy_s16 x1, legacy_s16 y1, legacy_s16 x2,
-											legacy_s16 y2, legacy_s16 color);
-extern legacy_void sprite_draw_dissolve_phase(SHAPE2D *shape, legacy_u16 phase);
-extern legacy_void sprite_draw_palette_mapped(SHAPE2D *shape);
-extern legacy_void draw_filled_lines(legacy_s16 *x1arr, legacy_s16 *x2arr, legacy_u16 y,
-									 legacy_u16 numlines, legacy_u16 color);
-extern legacy_void draw_two_color_lines(legacy_s16 *x1arr, legacy_s16 *x2arr, legacy_u16 y,
-										legacy_u16 numlines, legacy_u16 color);
-extern legacy_void draw_patterned_lines(legacy_s16 *x1arr, legacy_s16 *x2arr, legacy_u16 y,
-										legacy_u16 numlines, legacy_u16 color);
-extern legacy_void sprite_draw_line_from_setup(legacy_u16 *line);
-extern legacy_void sprite_putpixel_clipped(legacy_s16 x, legacy_s16 y, legacy_s16 color);
-extern legacy_void putpixel_iconMask(SHAPE2D *shape, legacy_s16 x, legacy_s16 y);
-extern legacy_void putpixel_iconFillings(SHAPE2D *shape, legacy_s16 x, legacy_s16 y);
-extern legacy_void sprite_putimage(SHAPE2D *shape);
-extern legacy_void sprite_shape_to_1(SHAPE2D *shape, legacy_s16 x, legacy_s16 y);
-extern legacy_void sprite_shape_to_1_alt(SHAPE2D *shape);
-extern legacy_void sprite_pop_background();
-extern legacy_void sprite_putimage_and(SHAPE2D *shape, legacy_u16 x, legacy_u16 y);
-extern legacy_void sprite_copy_image_at(SHAPE2D *shape, legacy_s16 x, legacy_s16 y);
-extern legacy_void sprite_and_image_at_anchor(SHAPE2D *shape, legacy_s16 x, legacy_s16 y);
-extern legacy_void sprite_putimage_or(SHAPE2D *shape, legacy_u16 x, legacy_u16 y);
-extern legacy_void sprite_or_image_at_anchor(SHAPE2D *shape, legacy_s16 x, legacy_s16 y);
-extern legacy_void sprite_putimage_transparent(SHAPE2D *shape, legacy_s16 x, legacy_s16 y);
-extern legacy_void sprite_clear_shape_alt(SHAPE2D *shape, legacy_s16 x, legacy_s16 y);
-extern legacy_void sprite_clear_shape(SHAPE2D *shape);
-extern legacy_void font_draw_text_opaque(legacy_s8 *text, legacy_s16 x, legacy_s16 y);
-extern legacy_void shape2d_rle_copy_at_position(SHAPE2D *shape);
-extern legacy_void shape2d_rle_copy_clipped(SHAPE2D *shape, legacy_s16 x, legacy_s16 y);
-extern legacy_void shape2d_rle_copy_position_clipped(SHAPE2D *shape);
-extern legacy_void shape2d_rle_mask_position_clipped(SHAPE2D *shape);
-extern legacy_void shape2d_rle_or_position_clipped(SHAPE2D *shape);
-extern legacy_void shape2d_rle_or_far_pointer(legacy_u16 offset, legacy_u16 segment);
-extern legacy_void shape2d_rle_copy(SHAPE2D *shape, legacy_s16 x, legacy_s16 y);
-extern legacy_void shape2d_render_bmp_as_mask(SHAPE2D *shape);
-extern legacy_void shape2d_draw_scaled_transparent_clipped(legacy_s16 scale, SHAPE2D *shape,
-														   legacy_s16 x, legacy_s16 y);
-extern legacy_void shape2d_draw_scaled_transparent(legacy_s16 scale, SHAPE2D *shape, legacy_s16 x,
-												   legacy_s16 y);
-extern legacy_void sprite_present_mcga_backbuffer();
-extern legacy_void sprite_select_mcga_backbuffer();
-extern legacy_void sprite_copy_rect_shifted(legacy_s16 source_x, legacy_s16 source_y,
-											legacy_s16 width, legacy_s16 height,
-											legacy_s16 destination_shift);
-extern SHAPE2D *file_get_shape2d(legacy_u8 *memchunk, legacy_s16 index);
-extern legacy_u16 file_get_res_shape_count(legacy_u8 *memchunk);
-extern legacy_void file_unflip_shape2d(legacy_u8 *memchunk, legacy_s8 *mempages);
-extern legacy_void file_unflip_shape2d_pes(legacy_u8 *memchunk, legacy_s8 *mempages);
-extern legacy_void file_load_shape2d_expand(legacy_u8 *memchunk, legacy_s8 *mempages);
-extern legacy_u16 file_get_unflip_size(legacy_s8 *memchunk);
-extern legacy_u16 file_load_shape2d_expandedsize(legacy_u8 *memchunk);
-extern legacy_void file_load_shape2d_palmap_init(legacy_u8 *pal);
-extern legacy_void file_load_shape2d_palmap_apply(legacy_u8 *memchunk, legacy_u8 *palmap);
-extern legacy_u8 *file_load_shape2d_esh(legacy_u8 *memchunk, legacy_s8 *str);
-extern legacy_void parse_shape2d(legacy_u8 *memchunk, legacy_u8 *mempages);
-extern legacy_u8 *file_load_shape2d(legacy_s8 *shapename, legacy_s16 fatal);
-extern legacy_u8 *file_load_shape2d_fatal(legacy_s8 *shapename);
-extern legacy_u8 *file_load_shape2d_nofatal(legacy_s8 *shapename);
-extern legacy_u8 *file_load_shape2d_nofatal2(legacy_s8 *shapename);
-extern legacy_u8 *file_load_shape2d_res(legacy_s8 *resname, legacy_s16 fatal);
-extern legacy_u8 *file_load_shape2d_res_fatal(legacy_s8 *resname);
-extern legacy_u8 *file_load_shape2d_res_nofatal(legacy_s8 *resname);
-extern legacy_void add_exit_handler(legacy_u8 *exit_handler);
-extern legacy_void call_exitlist();
-extern legacy_void call_exitlist2();
-extern legacy_void fatal_error(legacy_s8 *format, ...);
-extern legacy_u16 show_dialog(legacy_s16 dialog_type, legacy_s16 save_background,
-							  legacy_u8 *text_resource, legacy_u16 x_argument,
-							  legacy_u16 y_argument, legacy_s16 border_color,
-							  legacy_s16 *disabled_choices, legacy_s16 initial_choice);
-extern legacy_s8 do_fileselect_dialog(legacy_s8 *directory, legacy_s8 *filename,
-									  legacy_s8 *extension, legacy_s8 *prompt);
-extern legacy_s16 do_savefile_dialog(legacy_s8 *primary, legacy_s8 *secondary, legacy_s8 *prompt);
-extern legacy_void ensure_file_exists(legacy_s16 file_index);
-extern legacy_void show_waiting();
-extern legacy_s16 show_disk_error_dialog();
-extern legacy_void security_check(legacy_s16 question_index);
-extern legacy_void sprite_xor_rect_outline(legacy_s16 left, legacy_s16 top, legacy_s16 right,
-										   legacy_s16 bottom, legacy_s16 color);
-extern legacy_void show_insufficient_memory_dialog();
-extern legacy_void audio_suspend();
-extern legacy_void audio_resume();
-extern legacy_s16 audio_load_dos_driver(legacy_s8 *driver, legacy_s16 unused, legacy_s16 mode);
-extern legacy_u8 *load_song_file(legacy_s8 *filename);
-extern legacy_u8 *load_voice_file(legacy_s8 *filename);
-extern legacy_u8 *load_sfx_file(legacy_s8 *filename);
-extern legacy_u8 *init_audio_resources(legacy_u8 *song, legacy_u8 *instruments, legacy_s8 *name);
-extern legacy_void load_audio_finalize(legacy_u8 *audio_resource);
-extern legacy_s16 audio_load_driver(legacy_s8 *driver, legacy_s16 unused_driver_segment,
-									legacy_s16 mode);
-extern legacy_void audio_unload();
-extern legacy_s16 audio_toggle_music();
-extern legacy_s16 audio_toggle_effects();
-extern legacy_void audiodrv_atexit();
-extern legacy_void audio_play_crash_and_stop_engine(legacy_s16 index);
-extern legacy_void audio_add_driver_timer();
-extern legacy_void audio_remove_driver_timer();
-extern legacy_u16 rs_fileio_fileio_open(legacy_s8 *path, legacy_s16 create);
-extern legacy_s16 rs_fileio_fileio_close(legacy_u16 file);
-extern legacy_u64 rs_fileio_fileio_read(legacy_u8 *dst, legacy_u64 size, legacy_u64 nmemb,
-										legacy_u16 file);
-extern legacy_u64 rs_fileio_fileio_write(legacy_u8 *src, legacy_u64 size, legacy_u64 nmemb,
-										 legacy_u16 file);
-extern legacy_s16 rs_fileio_fileio_seek(legacy_u16 file, legacy_s32 offset, legacy_s16 origin);
-extern legacy_s32 rs_fileio_fileio_tell(legacy_u16 file);
-extern legacy_s16 rs_fileio_fileio_error();
-extern legacy_s16 rs_fileio_fileio_remove(legacy_s8 *path);
-extern legacy_u16 rs_fileio_file_bytes_to_paras(legacy_s32 length);
-extern legacy_u32 file_decomp_rle_seq(legacy_u8 *src, legacy_u8 *dst, legacy_u32 srclen,
-									  legacy_u8 esc);
-extern legacy_u32 file_decomp_rle_single(legacy_u8 *src, legacy_u8 *dst, legacy_u32 len,
-										 legacy_u8 *esclookup);
-extern legacy_u8 *rs_fileio_file_relocate_decomp_output(legacy_u8 *destination,
-														legacy_u16 decompparas, legacy_u32 length);
-extern legacy_u32 file_decomp_rle(legacy_u8 *src, legacy_u8 *dst, legacy_u16 decompparas);
-extern legacy_u8 *rs_fileio_file_vle_read_alphabet(VLE_DECODER *decoder, legacy_u8 *source,
-												   legacy_u8 escape_length);
-extern legacy_void rs_fileio_file_vle_prepare_lookup(VLE_DECODER *decoder, legacy_u8 *source,
-													 legacy_u8 escape_length);
-extern legacy_void rs_fileio_file_vle_write_symbol(VLE_DECODER *decoder, legacy_u8 *destination,
-												   legacy_u8 symbol);
-extern legacy_u8 rs_fileio_file_vle_read_byte(VLE_DECODER *decoder);
-extern legacy_u8 rs_fileio_file_vle_expand_escape(VLE_DECODER *decoder, legacy_u8 *destination);
-extern legacy_u8 rs_fileio_file_vle_decode_direct(VLE_DECODER *decoder, legacy_u8 *destination,
-												  legacy_u8 code, legacy_u8 next_width);
-extern legacy_u32 file_decomp_vle(legacy_u8 *src, legacy_u8 *dst, legacy_u16 decompparas);
-extern legacy_s16 rs_fileio_file_decomp_pass(legacy_u8 *source, legacy_u8 *destination,
-											 legacy_u16 paragraphs, legacy_u32 *length);
-extern legacy_u8 *rs_fileio_file_alloc_tail_pages(legacy_s8 *filename, legacy_u16 paragraphs,
-												  legacy_u16 tail_bytes);
-extern legacy_u8 *rs_fileio_file_decomp_internal(legacy_s8 *filename, legacy_s16 fatal,
-												 legacy_u16 tail_bytes);
-extern legacy_u8 *rs_fileio_file_load_binary_internal(legacy_s8 *filename, legacy_s16 fatal,
-													  legacy_u16 tail_bytes);
-extern legacy_u8 *rs_fileio_file_try_load_resource(legacy_s16 resource_type, legacy_s8 *filename);
-extern legacy_s16 rs_fileio_file_show_resource_error(legacy_s8 *filename);
-extern legacy_u8 *rs_fileio_file_load_suffixed_resource(legacy_s16 resource_type,
-														legacy_s8 *filename, legacy_s8 *suffix,
-														legacy_s8 *name);
-extern legacy_s32 rs_fileio_file_game_resource_size(legacy_s8 *filename, legacy_u16 packed);
-extern legacy_void rs_fileio_file_set_replay_filename(legacy_s8 *path);
-extern legacy_s8 rs_legacy_legacy_s8_from_bits(legacy_u8 value);
-extern legacy_s16 rs_legacy_legacy_s16_from_bits(legacy_u16 value);
-extern legacy_s32 rs_legacy_legacy_s32_from_bits(legacy_u32 value);
-extern legacy_s8 rs_resource_legacy_s8_from_bits(legacy_u8 value);
-extern legacy_s16 rs_resource_legacy_s16_from_bits(legacy_u16 value);
-extern legacy_s32 rs_resource_legacy_s32_from_bits(legacy_u32 value);
-extern legacy_u16 resource_read_u16le(legacy_u8 *source);
-extern legacy_u32 resource_read_u32le(legacy_u8 *source);
-extern legacy_u8 *rs_resource_resource_file_offset_bytes(legacy_u8 *resource, legacy_u16 count,
-														 legacy_u16 index);
-extern legacy_s8 rs_math_legacy_s8_from_bits(legacy_u8 value);
-extern legacy_s16 rs_math_legacy_s16_from_bits(legacy_u16 value);
-extern legacy_s32 rs_math_legacy_s32_from_bits(legacy_u32 value);
-extern legacy_void track_collision_capture(TRACK_COLLISION_SNAPSHOT *saved);
-extern legacy_void track_collision_restore(TRACK_COLLISION_SNAPSHOT *saved);
-extern legacy_void build_track_object(VECTOR *world_position, VECTOR *next_world_position);
-extern legacy_s16 track_wall_intersects_segment(VECTOR *first, VECTOR *second);
-extern legacy_s16 track_solid_obstacle_contact(VECTOR *first, VECTOR *second, legacy_s16 *fraction);
-extern legacy_s16 track_surface_contains_point(VECTOR *point);
-extern legacy_s16 sweep_track_surface_candidates(VECTOR *previous, VECTOR *current, legacy_u8 *test,
-												 legacy_s16 *fraction);
-extern legacy_void load_track_collision_resources();
-extern legacy_void track_collision_resources_decode(legacy_u8 *plane_source,
-													legacy_u8 *wall_source);
-extern legacy_s16 plane_signed_distance(legacy_s16 plane_index, legacy_s16 x, legacy_s16 y,
-										legacy_s16 z);
-extern legacy_void transform_wheel_travel_to_world();
-extern legacy_s16 sign_word(legacy_s16 value);
-extern legacy_s32 absolute_long(legacy_s32 value);
-extern legacy_s16 rs_math_polar_angle_quadrant(legacy_u16 flag, legacy_s16 result);
-extern legacy_s16 rs_math_matrix_scaled_product(legacy_s16 left, legacy_s16 right);
-extern legacy_s16 rs_math_matrix_row_product(legacy_s16 row_x, legacy_s16 row_y, legacy_s16 row_z,
-											 VECTOR *invec);
-extern legacy_s16 rect_is_inside(RECTANGLE *r1, RECTANGLE *r2);
-extern legacy_s16 rect_is_overlapping(RECTANGLE *r1, RECTANGLE *r2);
-extern legacy_s16 rect_is_adjacent(RECTANGLE *r1, RECTANGLE *r2);
-extern legacy_void rs_math_rectlist_remove_at(legacy_s8 *length, RECTANGLE *rectangles,
-											  legacy_s16 index);
-extern legacy_void rs_math_rectlist_split_overlap(RECTANGLE *rect, RECTANGLE *existing_rectangle,
-												  RECTANGLE *merged_rectangle,
-												  RECTANGLE *upper_remainder,
-												  RECTANGLE *lower_remainder,
-												  legacy_s16 *has_upper_remainder,
-												  legacy_s16 *has_lower_remainder);
-extern legacy_void rectlist_add_rect(legacy_s8 *rectangle_count, RECTANGLE *rectangles,
-									 RECTANGLE *rect);
-extern legacy_u16 rs_math_math_word_magnitude(legacy_s16 value);
-extern legacy_s16 rs_math_saturate_projection(legacy_s32 sum);
-extern legacy_u16 rs_math_projection_magnitude(legacy_s16 value);
-extern legacy_s16 rs_math_vector_interpolate_axis(legacy_s16 first, legacy_s16 second,
-												  legacy_s16 factor, legacy_s16 divisor);
-extern legacy_void vector_interpolate_at_saved_z(VECTOR *vec1, VECTOR *vec2, VECTOR *outvec);
-extern legacy_s16 vec_normalInnerProduct(legacy_s16 x, legacy_s16 y, legacy_s16 z, VECTOR *normal);
-extern legacy_s8 rs_memmgr_legacy_s8_from_bits(legacy_u8 value);
-extern legacy_s16 rs_memmgr_legacy_s16_from_bits(legacy_u16 value);
-extern legacy_s32 rs_memmgr_legacy_s32_from_bits(legacy_u32 value);
-extern legacy_void rs_memmgr_mmgr_copy_resource_name(legacy_s8 *destination, legacy_s8 *name);
-extern legacy_u16 mmgr_available_paragraphs();
-extern legacy_u16 mmgr_allocated_paragraphs();
-extern legacy_u16 mmgr_has_cached_resource(legacy_s8 *name);
-extern legacy_void rs_memmgr_locate_many_resources_nofatal(legacy_s8 *data, legacy_s8 *names,
-														   legacy_s8 **result);
-extern legacy_void locate_many_shapes_nofatal(legacy_s8 *data, legacy_s8 *names,
-											  legacy_s8 **result);
-extern legacy_void locate_many_sounds_fatal(legacy_s8 *data, legacy_s8 *names, legacy_s8 **result);
-extern legacy_void locate_many_resources_optional(legacy_s8 *data, legacy_s8 *names,
-												  legacy_s8 **result);
-extern legacy_s8 rs_strlib_legacy_s8_from_bits(legacy_u8 value);
-extern legacy_s16 rs_strlib_legacy_s16_from_bits(legacy_u16 value);
-extern legacy_s32 rs_strlib_legacy_s32_from_bits(legacy_u32 value);
-extern legacy_void init_main(legacy_s16 argc, legacy_s8 **argv);
-extern legacy_void init_div0();
-extern legacy_s16 run_main_menu_loop(legacy_s16 argc, legacy_s8 **argv);
-extern legacy_u8 rs_strlib_legacy_ascii_lower(legacy_u8 character);
-extern legacy_s8 rs_numlib_legacy_s8_from_bits(legacy_u8 value);
-extern legacy_s16 rs_numlib_legacy_s16_from_bits(legacy_u16 value);
-extern legacy_s32 rs_numlib_legacy_s32_from_bits(legacy_u32 value);
-extern legacy_s8 rs_kevinrnd_legacy_s8_from_bits(legacy_u8 value);
-extern legacy_s16 rs_kevinrnd_legacy_s16_from_bits(legacy_u16 value);
-extern legacy_s32 rs_kevinrnd_legacy_s32_from_bits(legacy_u32 value);
-extern legacy_s8 rs_replinit_legacy_s8_from_bits(legacy_u8 value);
-extern legacy_s16 rs_replinit_legacy_s16_from_bits(legacy_u16 value);
-extern legacy_s32 rs_replinit_legacy_s32_from_bits(legacy_u32 value);
-extern legacy_s8 rs_gameinit_legacy_s8_from_bits(legacy_u8 value);
-extern legacy_s16 rs_gameinit_legacy_s16_from_bits(legacy_u16 value);
-extern legacy_s32 rs_gameinit_legacy_s32_from_bits(legacy_u32 value);
-extern legacy_void update_opponent();
-extern legacy_void opponent_route_advance(legacy_s16 route_point);
-extern legacy_void update_opponent_tick();
-extern legacy_void update_crash_state(legacy_s16 crash_event, legacy_s16 car_index);
-extern legacy_void configure_owoot(legacy_s16 argc, legacy_s8 **argv);
-extern legacy_void owoot_read_wheel_shape(legacy_u8 *shape);
-extern legacy_void owoot_load_player_wheels();
-extern legacy_u16 owoot_wheel_footprint(CARSTATE *car, legacy_u16 wheel, VECTOR *output);
-extern legacy_void owoot_update_player(CARSTATE *car, legacy_s16 car_index);
-extern legacy_s16 rs_gameinit_angle_with_offset(legacy_s16 angle, legacy_s16 offset);
-extern legacy_s32 rs_gameinit_track_coordinate_to_world(legacy_s16 base, legacy_s16 offset);
-extern legacy_void rs_gameinit_calculate_car_start_offset(legacy_s16 track_direction,
-														  legacy_s16 side_direction,
-														  legacy_s16 *column_offset,
-														  legacy_s16 *row_offset);
-extern legacy_void rs_gameinit_init_car_at_start(CARSTATE *carstate, SIMD *simd,
-												 legacy_s8 transmission, legacy_s16 column_offset,
-												 legacy_s16 row_offset);
-extern legacy_void rs_gameinit_init_car_wheels(CARSTATE *playerstate, legacy_s32 posX,
-											   legacy_s32 posY, legacy_s32 posZ);
-extern legacy_void rs_gameinit_init_follow_camera_positions();
-extern legacy_void rs_gameinit_init_race_cars(legacy_s16 initialization_mode);
-extern legacy_void rs_gameinit_init_game_state_with_rates(legacy_u16 frame_rate,
-														  legacy_u16 stored_frame_rate);
-extern legacy_s8 rs_gamestep_legacy_s8_from_bits(legacy_u8 value);
-extern legacy_s16 rs_gamestep_legacy_s16_from_bits(legacy_u16 value);
-extern legacy_s32 rs_gamestep_legacy_s32_from_bits(legacy_u32 value);
-extern legacy_void kb_reg_callback(legacy_s16 code, legacy_u8 *callback);
-extern legacy_s16 kb_parse_key(legacy_s16 code);
-extern legacy_void kb_remove_callback(legacy_s16 code);
-extern legacy_void kb_set_readchar_callback(legacy_u8 *callback);
-extern legacy_u8 *kb_get_readchar_callback();
-extern legacy_void joystick_reset_calibration();
-extern legacy_s16 input_direction_from_flags(legacy_s16 index);
-extern legacy_s16 joystick_get_scaled_x();
-extern legacy_s16 joystick_get_scaled_y();
-extern legacy_void load_palandcursor();
-extern legacy_s16 handle_ingame_kb_shortcuts(legacy_s16 key);
-extern legacy_void mouse_draw_transparent_check();
-extern legacy_void mouse_draw_opaque_check();
-extern legacy_s16 mouse_multi_hittest(legacy_s16 count, BUTTON_AREA *buttons);
-extern legacy_s16 get_kb_or_joy_flags();
-extern legacy_s16 input_checking(legacy_s16 frame_delta);
-extern legacy_s16 scrollbar_update(legacy_s16 operation, legacy_s16 x, legacy_s16 width,
-								   legacy_s16 y, legacy_s16 height, legacy_s16 selected,
-								   legacy_s16 selection_width, legacy_s16 item_count);
-extern legacy_s16 input_do_checking(legacy_s16 frame_delta);
-extern legacy_void check_input();
-extern legacy_void input_wait_for_press_and_release();
-extern legacy_void input_push_status();
-extern legacy_void input_pop_status();
-extern legacy_s16 input_repeat_check(legacy_s16 duration);
-extern legacy_void mouse_minmax_position(legacy_s16 inset);
-extern VECTOR *track_vector_from_legacy_offset(legacy_u16 offset);
-extern legacy_u8 subst_hillroad_track(legacy_u8 terrain, legacy_u8 track);
-extern legacy_void init_plantrak();
-extern legacy_s16 track_row_position(legacy_u16 row);
-extern legacy_s16 track_column_position(legacy_u16 column);
-extern legacy_s16 track_object_base_x(TRACKOBJECT *track_object, legacy_u8 column);
-extern legacy_s16 track_object_base_z(TRACKOBJECT *track_object, legacy_u8 row);
-extern legacy_s16 track_setup();
-extern legacy_void audio_apply_car_state_sample(legacy_u8 *sample, legacy_s16 interval);
-extern legacy_s16 audio_init_engine(legacy_s16 unused_type, legacy_u8 *source_pointer,
-									legacy_u8 *shape_resources, legacy_u8 *audio_resources);
-extern legacy_void audio_carstate();
-extern legacy_void audio_play_car_events(legacy_u8 flags, legacy_s16 channel);
-extern legacy_void update_player_tick_with_legacy_si(legacy_s8 input_flags, legacy_s16 caller_si);
-extern legacy_s16 detect_penalty(legacy_s16 *current_track, legacy_s16 *penalty_count);
-extern legacy_void update_grip(CARSTATE *carstate, SIMD *simd, legacy_s16 grip_behavior);
-extern legacy_void update_legacy_grip_stack_words(CARSTATE *carstate, SIMD *simd,
-												  legacy_u16 speed_before_grip,
-												  legacy_u16 speed2_before_grip,
-												  legacy_s16 caller_si);
-extern legacy_void update_player_state(CARSTATE *carstate, SIMD *simd, CARSTATE *other_carstate,
-									   SIMD *other_simd, legacy_s16 car_index);
-extern legacy_void update_player_steering_input(legacy_s8 steering_input);
-extern legacy_void phantom_physics_reset(PHANTOM_PHYSICS *phantom, GAMESTATE *keyframe,
-										 legacy_s8 input_flags);
-extern legacy_void phantom_physics_advance(PHANTOM_PHYSICS *phantom, legacy_u32 elapsed20);
-extern legacy_void update_player_state_fraction(GAMESTATE *branch, legacy_s16 car_index,
-												legacy_u32 fraction20);
-extern legacy_s16 update_wheel_suspension_fraction(CARSTATE *carstate, legacy_s16 contact_delta,
-												   legacy_s16 wheel_index, legacy_u32 fraction20);
-extern legacy_void update_car_speed_fraction(legacy_s8 input_flags, legacy_s16 car_index,
-											 CARSTATE *carstate, SIMD *simd, legacy_u32 fraction20);
-extern legacy_void update_player_steering_fraction(CARSTATE *carstate, legacy_s8 steering_input,
-												   legacy_u32 fraction20);
-extern legacy_void update_follow_cameras_fraction(GAMESTATE *camera_state, legacy_u32 fraction20);
-extern legacy_void rs_gamestep_update_trackside_camera(legacy_u16 car_index, legacy_s16 car_x,
-													   legacy_s16 car_z);
-extern legacy_s16 rs_gamestep_follow_camera_uses_car_target(GAMESTATE *camera_state,
-															legacy_u16 car_index,
-															CARSTATE *carstate);
-extern legacy_s16 rs_gamestep_follow_camera_step(legacy_s16 movement, legacy_u32 fraction20);
-extern legacy_void rs_gamestep_update_follow_camera_height(GAMESTATE *camera_state,
-														   legacy_u16 car_index, legacy_s16 car_y,
-														   legacy_u32 fraction20);
-extern legacy_void rs_gamestep_update_car_follow_camera(GAMESTATE *camera_state,
-														legacy_u16 car_index,
-														legacy_u32 fraction20);
-extern legacy_void update_follow_cameras();
-extern legacy_void rs_gamestep_update_race_end_timing();
-extern legacy_void rs_gamestep_update_race_start_sequence();
-extern legacy_void rs_gamestep_update_gamestate_impl(legacy_s16 caller_si, legacy_s16 update_audio,
-													 legacy_s16 store_checkpoints);
-extern legacy_s8 rs_simd_legacy_s8_from_bits(legacy_u8 value);
-extern legacy_s16 rs_simd_legacy_s16_from_bits(legacy_u16 value);
-extern legacy_s32 rs_simd_legacy_s32_from_bits(legacy_u32 value);
-extern legacy_u8 rs_simd_simd_read_u8(SIMD_READER *reader);
-extern legacy_s8 rs_simd_simd_read_s8(SIMD_READER *reader);
-extern legacy_u16 rs_simd_simd_read_u16(SIMD_READER *reader);
-extern legacy_s16 rs_simd_simd_read_s16(SIMD_READER *reader);
-extern legacy_void rs_simd_simd_read_point(SIMD_READER *reader, POINT2D *point);
-extern legacy_void rs_simd_simd_read_vector(SIMD_READER *reader, VECTOR *vector);
-extern legacy_void rs_simd_simd_read_s8_array(SIMD_READER *reader, legacy_s8 *values,
-											  legacy_u16 count);
-extern legacy_void rs_simd_simd_read_u16_array(SIMD_READER *reader, legacy_u16 *values,
-											   legacy_u16 count);
-extern legacy_void rs_simd_simd_read_s16_array(SIMD_READER *reader, legacy_s16 *values,
-											   legacy_u16 count);
-extern legacy_void rs_simd_simd_read_point_array(SIMD_READER *reader, POINT2D *points,
-												 legacy_u16 count);
-extern legacy_void rs_simd_simd_read_vector_array(SIMD_READER *reader, VECTOR *vectors,
-												  legacy_u16 count);
-extern legacy_s8 rs_carsetup_legacy_s8_from_bits(legacy_u8 value);
-extern legacy_s16 rs_carsetup_legacy_s16_from_bits(legacy_u16 value);
-extern legacy_s32 rs_carsetup_legacy_s32_from_bits(legacy_u32 value);
-extern legacy_void load_sdgame2_shapes();
-extern legacy_void free_sdgame2();
-extern legacy_s16 setup_player_cars();
-extern legacy_s16 setup_player_cars_without_dashboard();
-extern legacy_void free_player_cars();
-extern legacy_void ghost_load_simulation_resources();
-extern legacy_void ghost_free_simulation_resources();
-extern legacy_void configure_powergear_bug(legacy_s16 argc, legacy_s8 **argv);
-extern legacy_void update_car_speed(legacy_s8 input_flags, legacy_s16 car_index, CARSTATE *carstate,
-									SIMD *simd);
-extern legacy_void camera_select_mode(legacy_s8 mode);
-extern legacy_s16 shape3d_load_all();
-extern legacy_void shape3d_free_all();
-extern legacy_void shape3d_vertex_read(SHAPE3D *shape, legacy_u16 index, VECTOR *destination);
-extern legacy_void shape3d_vertex_write(SHAPE3D *shape, legacy_u16 index, VECTOR *source);
-extern legacy_void shape3d_load_car_shapes(legacy_s8 *player_car_id, legacy_s8 *opponent_car_id);
-extern legacy_void shape3d_free_car_shapes();
-extern legacy_void shape3d_init_shape(legacy_s8 *shapeptr, SHAPE3D *gameshape);
-extern legacy_u16 shape3d_transform_and_queue(TRANSFORMEDSHAPE3D *instance);
-extern legacy_void set_projection(legacy_s16 horizontal_fov_degrees,
-								  legacy_s16 vertical_fov_degrees, legacy_s16 width,
-								  legacy_s16 height);
-extern legacy_u16 select_cliprect_rotate(legacy_s16 angZ, legacy_s16 angX, legacy_s16 angY,
-										 RECTANGLE *cliprect, legacy_s16 half_scale);
-extern legacy_void init_polyinfo();
-extern legacy_void polyinfo_reset();
-extern legacy_void polyinfo_set_supersight(legacy_u8 enabled);
-extern legacy_void shape3d_render_queued_primitives();
-extern legacy_void
-shape3d_set_legacy_render_stack(legacy_s16 *wheel_headings, legacy_u16 polygon_frame_pointer,
-								legacy_u16 polygon_code_segment,
-								SHAPE3D_LEGACY_OPPONENT_RENDER_CONTEXT *opponent);
-extern legacy_void shape3d_retain_legacy_skybox_horizon(legacy_s16 horizon);
-extern legacy_void shape3d_retain_legacy_skybox_rect(RECTANGLE *rect);
-extern legacy_void shape3d_retain_legacy_skybox_points(POINT2D *points);
-extern legacy_void shape3d_retain_legacy_crack_line(legacy_u16 *line, legacy_u16 end_y,
-													legacy_s16 dirty_rects, legacy_s16 drawn);
-extern legacy_void shape3d_retain_legacy_crack_bounds(legacy_s16 line_index,
-													  legacy_u16 crack_offset);
-extern legacy_void preRender_default(legacy_u16 color, legacy_u16 vertex_count, POINT2D *vertices);
-extern legacy_void preRender_default_alt(legacy_u16 color, legacy_u16 vertex_count,
-										 POINT2D *vertices);
-extern legacy_void preRender_patterned(legacy_u16 pattern, legacy_u16 color,
-									   legacy_u16 vertex_count, POINT2D *vertices);
-extern legacy_void preRender_two_color(legacy_u16 pattern, legacy_u16 color,
-									   legacy_u16 alternate_color, legacy_u16 vertex_count,
-									   POINT2D *vertices);
-extern legacy_void preRender_line(legacy_u16 start_x, legacy_u16 start_y, legacy_u16 end_x,
-								  legacy_u16 end_y, legacy_u16 color);
-extern legacy_void preRender_crack_line(legacy_u16 start_x, legacy_u16 start_y, legacy_u16 end_x,
-										legacy_u16 end_y, legacy_u16 color);
-extern legacy_u16 line_prepare_clipped(legacy_u16 start_x, legacy_u16 start_y, legacy_u16 end_x,
-									   legacy_u16 end_y, legacy_u16 *line);
-extern legacy_u16 line_prepare_unclipped(legacy_u16 start_x, legacy_u16 start_y, legacy_u16 end_x,
-										 legacy_u16 end_y, legacy_u16 *line);
-extern legacy_void skybox_fill_polygon(legacy_u16 color, legacy_u16 vertex_count,
-									   POINT2D *vertices);
-extern legacy_void sphere_build_perimeter(legacy_u16 *source, legacy_u16 *destination);
-extern legacy_void sphere_draw_polygon(legacy_u16 *source, legacy_u16 color);
-extern legacy_void wheel_build_perimeter(legacy_u16 *source, legacy_u16 *destination);
-extern legacy_void wheel_build_rim_perimeters(legacy_u16 *source, legacy_u16 *destination,
-											  legacy_u16 scale);
-extern legacy_void wheel_build_vertices(legacy_u16 *source, legacy_u16 *destination,
-										legacy_u16 scale);
-extern legacy_void preRender_wheel(POINT2D *source, legacy_u16 scale, legacy_u16 outer_color,
-								   legacy_u16 side_color, legacy_u16 inner_color);
-extern legacy_void preRender_sphere(legacy_s16 x, legacy_s16 y, legacy_u16 size, legacy_u16 color);
-extern legacy_void draw_beveled_border(legacy_s16 x, legacy_s16 y, legacy_s16 width,
-									   legacy_s16 height, legacy_s16 top_outer_color,
-									   legacy_s16 top_inner_color, legacy_s16 bottom_outer_color,
-									   legacy_s16 bottom_inner_color);
-extern legacy_void draw_three_color_beveled_border(legacy_s16 x, legacy_s16 y, legacy_s16 width,
-												   legacy_s16 height, legacy_s16 outer_color,
-												   legacy_s16 inner_color,
-												   legacy_s16 opposite_color);
-extern legacy_void shape3d_update_car_wheel_vertices(SHAPE3D *shape, legacy_u16 first_vertex,
-													 legacy_s16 steering_angle,
-													 legacy_s16 *suspension_offsets,
-													 legacy_s16 *cached_wheel_state,
-													 VECTOR *base_vertices,
-													 VECTOR *front_wheel_centers);
-extern legacy_void rs_carsetup_legacy_car_filename(legacy_s8 *destination, legacy_s8 *car_id,
-												   legacy_s8 *extension);
-extern legacy_u16 rs_carsetup_legacy_car_model_paragraphs(legacy_s8 *car_id);
-extern legacy_s16 rs_carsetup_legacy_raw_resource_word(legacy_s8 *filename, legacy_u32 offset,
-													   legacy_s16 *value);
-extern legacy_s16 rs_carsetup_legacy_alias_from_raw_resource(legacy_s8 *filename,
-															 legacy_u32 *cursor, legacy_s16 *value);
-extern legacy_void rs_carsetup_opponent_route_write(legacy_u16 index, legacy_u16 value);
-extern legacy_s16 rs_carsetup_aero_resistance_at(legacy_s16 resistance, legacy_s16 speed_index);
-extern legacy_u8 *rs_carsetup_load_opponent_speed_data(legacy_u8 **speed_data);
-extern legacy_s16 rs_carsetup_opponent_route_is_terminal(legacy_u16 *path, legacy_u16 path_count,
-														 legacy_u16 track_index,
-														 legacy_u16 next_track);
-extern legacy_s8 rs_trkutil_legacy_s8_from_bits(legacy_u8 value);
-extern legacy_s16 rs_trkutil_legacy_s16_from_bits(legacy_u16 value);
-extern legacy_s32 rs_trkutil_legacy_s32_from_bits(legacy_u32 value);
-extern legacy_s8 rs_trackres_legacy_s8_from_bits(legacy_u8 value);
-extern legacy_s16 rs_trackres_legacy_s16_from_bits(legacy_u16 value);
-extern legacy_s32 rs_trackres_legacy_s32_from_bits(legacy_u32 value);
-extern legacy_s16 rs_trackres_track_resource_next_s16(TRACK_RESOURCE_READER *reader);
-extern legacy_void rs_trackres_track_resource_next_vector(TRACK_RESOURCE_READER *reader,
-														  VECTOR *vector);
-extern legacy_s8 rs_restunts_legacy_s8_from_bits(legacy_u8 value);
-extern legacy_s16 rs_restunts_legacy_s16_from_bits(legacy_u16 value);
-extern legacy_s32 rs_restunts_legacy_s32_from_bits(legacy_u32 value);
-extern legacy_void setup_car_shapes(legacy_s16 operation);
-extern legacy_s16 sweep_track_underside(VECTOR *previous, VECTOR *current, legacy_s16 *fraction);
-extern legacy_s16 sweep_track_solid_obstacle(VECTORLONG *previous, VECTORLONG *current,
-											 legacy_s16 *fraction);
-extern legacy_s16 sweep_track_wall_span(VECTORLONG *previous_first, VECTORLONG *previous_second,
-										VECTORLONG *current_first, VECTORLONG *current_second,
-										legacy_s16 *fraction);
-extern legacy_void configure_left_corner_bias(legacy_s16 argc, legacy_s8 **argv);
-extern legacy_s16 scale_cornering_angle(legacy_s16 angle, legacy_u8 shift);
-extern legacy_void configure_legacy_collision(legacy_s16 argc, legacy_s8 **argv);
-extern legacy_s16 body_plane_crossing_is_collision(VECTOR *previous, VECTOR *current);
-extern legacy_s16 damp_collision_angle(legacy_s16 angle);
-extern legacy_void interpolate_collision_at_z(VECTOR *first, VECTOR *second, VECTOR *result,
-											  legacy_s16 depth);
-extern legacy_s16 scale_position_delta(legacy_s32 current, legacy_s32 previous, legacy_s16 factor,
-									   legacy_s16 divisor);
-extern legacy_s16 scale_speed_to_travel(legacy_u16 speed, legacy_u16 divisor);
-extern legacy_s16 physics_difference_word(legacy_s32 left, legacy_s32 right);
-extern legacy_s16 wheel_pair_delta(legacy_s16 first, legacy_s16 second, legacy_s16 third,
-								   legacy_s16 fourth);
-extern legacy_s16 get_track_collision_points(legacy_s16 column_arg, legacy_s16 row_arg,
-											 VECTOR *output);
-extern legacy_s16 update_wheel_suspension(CARSTATE *carstate, legacy_s16 contact_delta,
-										  legacy_s16 wheel_index);
-extern legacy_s16 resolve_car_collision_speeds(CARSTATE *first_state, CARSTATE *second_state);
-extern legacy_s16 car_collision_boxes_overlap(POINT2D *first_collision_points,
-											  VECTOR *first_world_coordinates,
-											  POINT2D *second_collision_points,
-											  VECTOR *second_world_coordinates);
-extern legacy_void video_pages_initialize();
-extern legacy_u8 video_pages_is_active();
-extern legacy_void video_pages_begin_race();
-extern legacy_void video_pages_end_race();
-extern legacy_void video_pages_select_backbuffer();
-extern legacy_void video_pages_present();
-extern legacy_u8 video_pages_is_target(legacy_u8 *bitmap);
-extern legacy_u8 video_pages_read_pixel(legacy_u8 *bitmap, legacy_u16 offset);
-extern legacy_void video_pages_write_pixel(legacy_u8 *bitmap, legacy_u16 offset, legacy_u8 color);
-extern legacy_void video_pages_fill_span(legacy_u8 *bitmap, legacy_u16 offset, legacy_u16 count,
-										 legacy_u8 color);
-extern legacy_void video_pages_raster_span(legacy_u8 *destination, legacy_u16 destination_offset,
-										   legacy_u8 *source, legacy_u16 source_offset,
-										   legacy_u16 count, legacy_s16 operation,
-										   legacy_u8 *palette);
-extern legacy_void video_pages_copy_span(legacy_u8 *destination, legacy_u16 destination_offset,
-										 legacy_u8 *source, legacy_u16 source_offset,
-										 legacy_u16 count);
-extern legacy_void video_pages_pattern_span(legacy_u8 *bitmap, legacy_u16 offset, legacy_u16 count,
-											legacy_u8 pattern, legacy_u8 color,
-											legacy_u8 alternate_color, legacy_s16 two_colors);
-extern legacy_u8 video_pages_uses_raster_hooks(legacy_u8 *bitmap);
-extern legacy_void kb_init_interrupt();
-extern legacy_void kb_exit_handler();
-extern legacy_s16 kb_get_key_state(legacy_s16 key);
-extern legacy_s16 dos_kb_get_char();
-extern legacy_void dos_kb_set_numlock();
-extern legacy_void dos_kb_clear_numlock();
-extern legacy_s16 kb_call_readchar_callback();
-extern legacy_s16 kb_read_char();
-extern legacy_s16 kb_checking();
-extern legacy_void flush_stdin();
-extern legacy_s16 kb_check();
-extern legacy_void draw_track_preview();
-extern legacy_void load_tracks_menu_shapes();
-extern legacy_void run_game();
-extern legacy_s16 ghost_select_replay(legacy_s8 *directory, legacy_s8 *name);
-extern legacy_s16 ghost_is_selected();
-extern legacy_void ghost_clear();
-extern legacy_void ghost_check_track();
-extern legacy_s16 ghost_prepare_race();
-extern legacy_void ghost_end_race();
-extern legacy_s16 ghost_is_active();
-extern legacy_void ghost_update(legacy_u32 frame, legacy_u16 live_frame_rate);
-extern CARSTATE *ghost_car_state();
-extern GHOST_CAMERA_STATE *ghost_camera_state();
-extern legacy_void ghost_adjust_camera_motion(VECTOR *previous, VECTOR *current);
-extern SIMD *ghost_car_simd();
-extern legacy_s8 *ghost_car_id();
-extern legacy_u8 ghost_car_material();
-extern legacy_void audio_allocate_car_state_records();
-extern legacy_void set_frame_callback();
-extern legacy_void remove_frame_callback();
-extern legacy_void frame_callback();
-extern legacy_void replay_update_input_tick(legacy_s16 force_neutral_input);
-extern legacy_void replay_apply_analog_steering_history();
-extern legacy_void loop_game(legacy_s16 operation, legacy_s16 recorded_frame,
-							 legacy_s16 current_frame);
-extern legacy_void timer_reg_callback(legacy_u8 *callback);
-extern legacy_void timer_remove_callback(legacy_u8 *callback);
-extern legacy_u32 timer_get_delta_alt();
-extern legacy_u32 timer_custom_delta(legacy_u32 ticks);
-extern legacy_void timer_reset();
-extern legacy_u32 timer_set_deadline(legacy_u32 ticks);
-extern legacy_u32 timer_wait_for_deadline();
-extern legacy_s16 timer_deadline_reached();
-extern legacy_u32 timer_wait_ticks(legacy_u32 ticks);
-extern legacy_u32 slow_timer_set_deadline(legacy_u32 ticks);
-extern legacy_s16 slow_timer_deadline_reached();
-extern legacy_u32 slow_timer_wait_ticks(legacy_u32 ticks);
-extern legacy_s16 call_read_line(legacy_s8 *text, legacy_s16 max_characters, legacy_s16 x,
-								 legacy_s16 y, legacy_u32 timeout);
-extern legacy_s16 sprite_blit_to_video(SPRITE *sprite, legacy_s16 mode);
-extern legacy_s16 read_line(legacy_s16 flags, legacy_s8 *text, legacy_s16 initial_key,
-							legacy_s16 max_characters, legacy_s16 max_pixels, legacy_s16 x,
-							legacy_s16 y, legacy_u8 *callback, legacy_u32 timeout);
-extern legacy_void text_edit_toggle_cursor();
-extern legacy_void text_edit_redraw();
-extern legacy_s16 font_prefix_width(legacy_s8 *text, legacy_s16 glyph_count);
-extern legacy_s16 font_text_width(legacy_s8 *text);
-extern legacy_s16 font_centered_text_x(legacy_s8 *text);
-extern legacy_void font_set_colors(legacy_s16 color, legacy_s16 background_color);
-extern RECTANGLE *intro_draw_text(legacy_s8 *text, legacy_s16 x, legacy_s16 y, legacy_s16 color,
-								  legacy_s16 shadow_color);
-extern legacy_void format_integer(legacy_s8 *destination, legacy_s16 value, legacy_s16 zero_pad,
-								  legacy_s16 width);
-extern legacy_void format_frame_as_string(legacy_s8 *destination, legacy_s16 frame_count,
-										  legacy_s16 include_hundredths);
-extern legacy_void parse_filepath_separators(legacy_s8 *destination, legacy_s8 *path);
-extern legacy_u16 legacy_near_string_length(legacy_s8 *text);
-extern legacy_void font_set_fontdef2(legacy_u8 *data);
-extern legacy_void set_fontdefseg(legacy_u8 *data);
-extern legacy_void font_draw_text(legacy_s8 *text, legacy_s16 x, legacy_s16 y);
-extern legacy_s16 video_backbuffer_copy_required();
-extern legacy_void draw_button(legacy_s8 *text, legacy_s16 x, legacy_s16 y, legacy_s16 width,
-							   legacy_s16 height, legacy_s16 top_color, legacy_s16 bottom_color,
-							   legacy_s16 fill_color, legacy_s16 font_color);
-extern legacy_void menu_reset_animation_timers();
-extern legacy_void menu_update_idle_counter(legacy_u16 elapsed, legacy_s16 limit);
-extern legacy_s16 menu_animate_button_highlight(legacy_s16 item_index, BUTTON_AREA *buttons,
-												legacy_s16 second_color, legacy_s16 first_color);
-extern legacy_void rs_restunts_shutdown_dos_game();
-extern legacy_s16 get_super_random();
-extern legacy_s16 random_wait();
-extern legacy_void set_default_car();
-extern legacy_void copy_material_list_pointers(legacy_u8 *clrlist, legacy_u8 *clrlist2,
-											   legacy_u8 *patlist, legacy_u8 *patlist2,
-											   legacy_u16 reserved_video_word);
-extern legacy_void rs_restunts_startup_install_keyboard_callbacks();
-extern legacy_void rs_restunts_startup_select_audio_driver(legacy_s8 *argument);
-extern legacy_void rs_restunts_startup_parse_options(legacy_s16 argc, legacy_s8 **argv,
-													 STARTUP_OPTIONS *options);
-extern legacy_void rs_restunts_startup_measure_video();
-extern legacy_void rs_restunts_init_full_game(legacy_s16 argc, legacy_s8 **argv);
-extern legacy_void rs_restunts_init_main_input_state();
-extern legacy_s16 run_shape_preview(legacy_s16 argc, legacy_s8 **argv);
-extern legacy_s16 rs_restunts_main_menu_select_race(legacy_s16 result, legacy_s8 *start_in_replay);
-extern legacy_void rs_restunts_main_menu_backup_track();
-extern legacy_void rs_restunts_main_menu_restore_track();
-extern legacy_s16 rs_restunts_main_menu_prepare_track();
-extern legacy_void rs_restunts_main_menu_run_race(legacy_s8 start_in_replay);
-extern legacy_s8 rs_fatal_legacy_s8_from_bits(legacy_u8 value);
-extern legacy_s16 rs_fatal_legacy_s16_from_bits(legacy_u16 value);
-extern legacy_s32 rs_fatal_legacy_s32_from_bits(legacy_u32 value);
-extern legacy_void rs_fatal_fatal_flush_output(FATAL_OUTPUT_STATE *output);
-extern legacy_void rs_fatal_fatal_emit_character(FATAL_OUTPUT_STATE *output, legacy_s8 character);
-extern legacy_void rs_fatal_fatal_emit_padding(FATAL_OUTPUT_STATE *output, legacy_s8 character,
-											   legacy_s16 count);
-extern legacy_void rs_fatal_fatal_emit_text(FATAL_OUTPUT_STATE *output, legacy_s8 *text,
-											legacy_s16 width, legacy_s16 precision,
-											legacy_s16 left_aligned);
-extern legacy_void rs_fatal_fatal_emit_number(FATAL_OUTPUT_STATE *output, legacy_u32 value,
-											  legacy_s16 negative, legacy_u16 radix,
-											  legacy_s16 uppercase, legacy_s16 width,
-											  legacy_s16 precision, legacy_s16 left_aligned,
-											  legacy_s16 zero_padded);
-extern legacy_s8 *rs_fatal_fatal_parse_conversion(legacy_s8 *format, FATAL_CONVERSION *field);
-extern legacy_void rs_fatal_fatal_emit_field_character(FATAL_OUTPUT_STATE *output,
-													   FATAL_CONVERSION *field, legacy_s8 value);
-extern legacy_void rs_fatal_fatal_emit_signed_field(FATAL_OUTPUT_STATE *output,
-													FATAL_CONVERSION *field, legacy_s32 value);
-extern legacy_void rs_fatal_fatal_emit_unsigned_field(FATAL_OUTPUT_STATE *output,
-													  FATAL_CONVERSION *field, legacy_u32 value);
-extern legacy_void rs_fatal_fatal_emit_unknown_field(FATAL_OUTPUT_STATE *output,
-													 legacy_s8 conversion);
-extern legacy_void rs_fatal_fatal_vprintf(legacy_s8 *format, legacy_u64 *arguments);
-extern legacy_s8 rs_timing_legacy_s8_from_bits(legacy_u8 value);
-extern legacy_s16 rs_timing_legacy_s16_from_bits(legacy_u16 value);
-extern legacy_s32 rs_timing_legacy_s32_from_bits(legacy_u32 value);
-extern legacy_s16 timer_read_key_until_deadline();
-extern legacy_s16 timer_read_key_with_timeout(legacy_u32 ticks);
-extern legacy_u32 rs_timing_secondary_timer_target();
-extern legacy_s16 rs_timing_secondary_timer_target_reached(legacy_u32 current, legacy_u32 target);
-extern legacy_s8 rs_game_input_legacy_s8_from_bits(legacy_u8 value);
-extern legacy_s16 rs_game_input_legacy_s16_from_bits(legacy_u16 value);
-extern legacy_s32 rs_game_input_legacy_s32_from_bits(legacy_u32 value);
-extern TRACKOBJECT *frame_track_object_from_legacy_index(legacy_u8 index);
-extern legacy_void transformed_shape_add_for_sort(legacy_s16 z_adjust, legacy_s16 type);
-extern legacy_void update_frame_snapshot(legacy_s8 buffer_index, RECTANGLE *cliprect,
-										 GAMESTATE *render_state, CARSTATE *render_ghost,
-										 GHOST_CAMERA_STATE *render_ghost_camera);
-extern legacy_void frame_supersight_reset();
-extern legacy_void frame_fps_reset();
-extern legacy_void frame_supersight_show_status(legacy_s8 *name);
-extern legacy_s16 frame_status_overlay_active();
-extern legacy_s16 frame_status_expire_idle();
-extern RECTANGLE *frame_status_draw_text();
-extern legacy_s16 frame_display_overlay_active();
-extern legacy_s16 frame_fps_expire_idle();
-extern legacy_void frame_fps_record_presented();
-extern legacy_void frame_fps_present_roof();
-extern RECTANGLE *frame_fps_draw_text();
-extern RECTANGLE *draw_ingame_text();
-extern RECTANGLE *init_crak(legacy_s16 frame, legacy_s16 top, legacy_s16 height);
-extern RECTANGLE *do_sinking(legacy_s16 frame, legacy_s16 top, legacy_s16 height);
-extern legacy_void intro_render_scene(legacy_s16 camera_x, legacy_s16 camera_y, legacy_s16 camera_z,
-									  legacy_s16 rotate_y, legacy_s16 rotate_x, legacy_s16 draw_car,
-									  legacy_s16 primary_logo, VECTOR *stars,
-									  POINT2D *previous_points, legacy_s16 *previous_point_count,
-									  RECTANGLE *temple_value_previous_rect, RECTANGLE *shape_rect,
-									  RECTANGLE *combined_rect);
-extern legacy_s16 rs_game_input_input_repeat_due(legacy_s16 repeat_at);
-extern legacy_s16 rs_game_input_input_handle_display_shortcut(legacy_s16 key);
-extern legacy_void rs_game_input_input_restore_custom_camera();
-extern legacy_void rs_game_input_input_cycle_custom_camera();
-extern legacy_s16 rs_game_input_input_handle_camera_shortcut(legacy_s16 key);
-extern legacy_void rs_game_input_input_advance_clock(legacy_s16 frame_delta);
-extern legacy_void rs_game_input_input_translate_joystick_key();
-extern legacy_void rs_game_input_input_update_joystick(legacy_u16 current_joy_flags);
-extern legacy_void rs_game_input_input_update_mouse_activity(legacy_s16 frame_delta);
-extern legacy_void rs_game_input_input_update_mouse_buttons();
-extern legacy_s16 rs_game_input_mouse_track_divide(legacy_s16 numerator, legacy_s16 denominator);
-extern legacy_s16 rs_game_input_mouse_track_position(legacy_s16 length, legacy_s16 selected,
-													 legacy_s16 item_count);
-extern legacy_s16 rs_game_input_mouse_track_thumb_size(legacy_s16 length, legacy_s16 selected,
-													   legacy_s16 selection_width,
-													   legacy_s16 item_count,
-													   legacy_s16 *thumb_start,
-													   legacy_s16 *thumb_end);
-extern legacy_void rs_game_input_mouse_track_draw(legacy_s16 horizontal, legacy_s16 x,
-												  legacy_s16 width, legacy_s16 y, legacy_s16 height,
-												  legacy_s16 thumb_start, legacy_s16 thumb_size);
-extern legacy_s16 rs_game_input_mouse_track_page(legacy_s16 coordinate, legacy_s16 thumb_start,
-												 legacy_s16 selected, legacy_s16 item_count);
-extern legacy_s16 rs_game_input_mouse_track_drag(MOUSE_TRACK_DRAG *track, legacy_s16 coordinate);
-extern legacy_s8 rs_ui_text_legacy_s8_from_bits(legacy_u8 value);
-extern legacy_s16 rs_ui_text_legacy_s16_from_bits(legacy_u16 value);
-extern legacy_s32 rs_ui_text_legacy_s32_from_bits(legacy_u32 value);
-extern legacy_s8 *rs_ui_text_legacy_near_string_copy(legacy_s8 *destination, legacy_s8 *source);
-extern legacy_s16 rs_ui_text_font_measure(legacy_s8 *text, legacy_u16 remaining,
-										  legacy_s16 bounded);
-extern legacy_s8 rs_ui_input_legacy_s8_from_bits(legacy_u8 value);
-extern legacy_s16 rs_ui_input_legacy_s16_from_bits(legacy_u16 value);
-extern legacy_s32 rs_ui_input_legacy_s32_from_bits(legacy_u32 value);
-extern legacy_void rs_ui_input_read_line_delete_character(legacy_s8 *text,
-														  legacy_s16 max_characters);
-extern legacy_void rs_ui_input_read_line_erase_character(legacy_s8 *text, legacy_s16 max_characters,
-														 legacy_s16 move_left);
-extern legacy_void rs_ui_input_read_line_initialize(READ_LINE_STATE *state, legacy_s16 max_pixels,
-													legacy_s16 x, legacy_s16 y);
-extern legacy_u16 rs_ui_input_read_line_wait_key(legacy_s16 *initial_key, legacy_u8 *callback);
-extern legacy_s16 rs_ui_input_read_line_blink_cursor(legacy_u32 timeout);
-extern legacy_s16 rs_ui_input_read_line_is_finished(legacy_u16 key, legacy_u8 input_flags);
-extern legacy_void rs_ui_input_read_line_move_cursor(READ_LINE_STATE *state, legacy_u16 key);
-extern legacy_s16 rs_ui_input_read_line_apply_edit_key(READ_LINE_STATE *state, legacy_u16 key);
-extern legacy_void rs_ui_input_read_line_insert_space(READ_LINE_STATE *state);
-extern legacy_void rs_ui_input_read_line_type_character(READ_LINE_STATE *state, legacy_u16 key);
-extern legacy_s8 rs_ui_dialog_legacy_s8_from_bits(legacy_u8 value);
-extern legacy_s16 rs_ui_dialog_legacy_s16_from_bits(legacy_u16 value);
-extern legacy_s32 rs_ui_dialog_legacy_s32_from_bits(legacy_u32 value);
-extern legacy_u16 rs_ui_dialog_dialog_ascii_lower(legacy_u16 character);
-extern legacy_u16 rs_ui_dialog_dialog_finish(legacy_s16 result, legacy_s16 save_background);
-extern legacy_s16 rs_ui_dialog_dialog_advance_height(legacy_s16 dialog_height,
-													 legacy_s16 line_height, legacy_u8 separator,
-													 legacy_s16 paragraph_height);
-extern legacy_void rs_ui_dialog_dialog_measure(DIALOG_CONTENT *dialog, legacy_u8 *text_resource);
-extern legacy_s16 rs_ui_dialog_dialog_draw_frame(DIALOG_CONTENT *dialog, legacy_u16 x_argument,
-												 legacy_u16 y_argument, legacy_s16 save_background,
-												 legacy_s16 border_color);
-extern legacy_void rs_ui_dialog_dialog_draw_message(DIALOG_CONTENT *dialog,
-													legacy_u8 *text_resource,
-													legacy_s16 dialog_type,
-													legacy_s16 *disabled_choices);
-extern legacy_void rs_ui_dialog_dialog_measure_choices(DIALOG_CONTENT *dialog);
-extern legacy_void rs_ui_dialog_dialog_draw_choices(DIALOG_CONTENT *dialog, legacy_u8 selected,
-													legacy_s16 *disabled_choices);
-extern legacy_u16 rs_ui_dialog_dialog_choice_hotkey(legacy_s8 *cursor);
-extern legacy_u16 rs_ui_dialog_dialog_apply_hotkey(legacy_u16 input, legacy_u16 first_hotkey,
-												   legacy_u16 second_hotkey, legacy_u8 *selected);
-extern legacy_void rs_ui_dialog_dialog_select_previous(legacy_u8 *selected, legacy_u8 choice_count,
-													   legacy_s16 *disabled_choices);
-extern legacy_void rs_ui_dialog_dialog_select_next(legacy_u8 *selected, legacy_u8 choice_count,
-												   legacy_s16 *disabled_choices);
-extern legacy_s16 rs_ui_dialog_dialog_apply_menu_input(legacy_u16 input, legacy_u8 *selected,
-													   legacy_u8 choice_count,
-													   legacy_s16 *disabled_choices);
-extern legacy_s16 rs_ui_dialog_dialog_run_menu(DIALOG_CONTENT *dialog, legacy_s16 *disabled_choices,
-											   legacy_s16 initial_choice);
-extern legacy_void rs_ui_dialog_file_dialog_draw_frame(FILE_DIALOG *dialog, legacy_s8 *directory,
-													   legacy_s8 *prompt);
-extern legacy_u16 rs_ui_dialog_file_dialog_edit_directory(FILE_DIALOG *dialog,
-														  legacy_s8 *directory);
-extern legacy_void rs_ui_dialog_file_dialog_collect_names(FILE_DIALOG *dialog,
-														  legacy_s8 *found_path);
-extern legacy_void rs_ui_dialog_file_dialog_draw_scroll_labels(FILE_DIALOG *dialog);
-extern legacy_void rs_ui_dialog_file_dialog_draw_rows(FILE_DIALOG *dialog);
-extern legacy_u16 rs_ui_dialog_file_dialog_apply_mouse(FILE_DIALOG *dialog, legacy_s16 hit,
-													   legacy_u16 key);
-extern legacy_s8 rs_ui_dialog_file_dialog_apply_key(FILE_DIALOG *dialog, legacy_u16 key);
-extern legacy_s8 rs_ui_dialog_file_dialog_choose(FILE_DIALOG *dialog, legacy_s8 *directory,
-												 legacy_s8 *filename);
-extern legacy_s8 rs_intro_legacy_s8_from_bits(legacy_u8 value);
-extern legacy_s16 rs_intro_legacy_s16_from_bits(legacy_u16 value);
-extern legacy_s32 rs_intro_legacy_s32_from_bits(legacy_u32 value);
-extern legacy_s16 rs_intro_run_intro(legacy_u8 *audio_resource);
-extern legacy_void rs_intro_intro_draw_resource_line(legacy_s8 *resource, legacy_s8 *resource_id,
-													 legacy_s16 is_text, legacy_s16 x, legacy_s16 y,
-													 legacy_s16 color, legacy_s16 shadow_color);
-extern legacy_void rs_intro_credits_draw_title(legacy_s8 *credit_resource);
-extern legacy_void rs_intro_credits_draw_designers(legacy_s8 *credit_resource);
-extern legacy_void rs_intro_credits_draw_musicians(legacy_s8 *credit_resource);
-extern legacy_void rs_intro_credits_draw_production(legacy_s8 *credit_resource);
-extern legacy_void rs_intro_credits_draw_artists(legacy_s8 *credit_resource);
-extern legacy_s16 rs_intro_credits_slide_arrow(SHAPE2D *arrow_shape, legacy_s16 target_x,
-											   legacy_s16 arrow_y, legacy_s16 arrow_width,
-											   legacy_s16 arrow_height);
-extern legacy_void rs_intro_credits_animate_shapes(SHAPE2D **credit_shapes, legacy_s16 arrow_y,
-												   legacy_s16 input);
-extern legacy_s8 rs_intro_credits_present_closing(SHAPE2D **credit_shapes, legacy_s16 arrow_y);
-extern legacy_s8 rs_highscore_legacy_s8_from_bits(legacy_u8 value);
-extern legacy_s16 rs_highscore_legacy_s16_from_bits(legacy_u16 value);
-extern legacy_s32 rs_highscore_legacy_s32_from_bits(legacy_u32 value);
-extern legacy_s16 highscore_load_or_create(legacy_s16 create_default);
-extern legacy_void print_highscore_entry(legacy_s16 entry, legacy_u8 *text_offsets);
-extern RECTANGLE *hiscore_draw_text(legacy_s8 *text, legacy_s16 x, legacy_s16 y, legacy_s16 color,
-									legacy_s16 shadow_color);
-extern legacy_u8 *highscore_read_with_retry(legacy_s16 operation, legacy_s8 *filename,
-											legacy_u8 *destination);
-extern legacy_void highscore_save_sorted();
-extern legacy_void highscore_draw_table();
-extern legacy_void enter_hiscore(legacy_s16 frame_count, legacy_u8 *prompt, legacy_u8 car_flag);
-extern legacy_void rs_highscore_end_hiscore_set_text(legacy_s8 *resource, legacy_s8 *text_id);
-extern legacy_void rs_highscore_end_hiscore_append_text(legacy_s8 *resource, legacy_s8 *text_id);
-extern legacy_void rs_highscore_end_hiscore_draw_current_text(legacy_s16 *y);
-extern legacy_void
-rs_highscore_end_hiscore_draw_animation_frame(legacy_s8 *animation_resource,
-											  legacy_u8 *frame_sequence, legacy_u8 frame_index,
-											  legacy_s16 animation_x, legacy_s16 animation_y,
-											  SPRITE *animation_sprite, legacy_u8 draw_direct_copy);
-extern legacy_void rs_highscore_end_hiscore_advance_animation(legacy_s16 delta, legacy_s16 *timer,
-															  legacy_u8 *frame,
-															  legacy_u8 *frame_sequence);
-extern legacy_void rs_highscore_end_hiscore_update_animation(
-	legacy_s16 delta, legacy_s16 *timer, legacy_u8 *frame, legacy_u8 *previous_frame,
-	legacy_s8 *animation_resource, legacy_u8 *frame_sequence, legacy_s16 animation_x,
-	legacy_s16 animation_y, SPRITE *animation_sprite, legacy_u8 draw_direct_copy);
-extern legacy_s8 *rs_highscore_end_hiscore_result_text(legacy_s8 *opponent_resource,
-													   legacy_u8 outcome, legacy_u8 text_prefix,
-													   legacy_u16 resource_index);
-extern legacy_void rs_highscore_end_hiscore_append_text_word(END_SCREEN_TEXT_LINE *line,
-															 legacy_s16 animation_x);
-extern legacy_void rs_highscore_end_hiscore_consume_text(END_SCREEN_TEXT_LINE *line,
-														 legacy_s8 *text, legacy_s16 animation_x);
-extern legacy_void rs_highscore_end_hiscore_draw_opponent_text(legacy_s8 *opponent_resource,
-															   legacy_u8 outcome,
-															   legacy_u8 text_prefix,
-															   legacy_s16 animation_x);
-extern legacy_void rs_highscore_end_hiscore_initialize(END_SCREEN_STATE *screen);
-extern legacy_void rs_highscore_end_hiscore_draw_player_time(END_SCREEN_STATE *screen);
-extern legacy_void rs_highscore_end_hiscore_draw_opponent_time(END_SCREEN_STATE *screen);
-extern legacy_void rs_highscore_end_hiscore_load_music(END_SCREEN_STATE *screen);
-extern legacy_void rs_highscore_end_hiscore_draw_statistics(END_SCREEN_STATE *screen);
-extern legacy_void rs_highscore_end_hiscore_choose_text_variants(END_SCREEN_STATE *screen);
-extern legacy_void rs_highscore_end_hiscore_prepare_animation(END_SCREEN_STATE *screen);
-extern legacy_void rs_highscore_end_hiscore_validate_track(END_SCREEN_STATE *screen);
-extern legacy_void rs_highscore_end_hiscore_check_score(END_SCREEN_STATE *screen);
-extern legacy_void rs_highscore_end_hiscore_show_opponent(END_SCREEN_STATE *screen);
-extern legacy_void rs_highscore_end_hiscore_enter_opponent_score(END_SCREEN_STATE *screen);
-extern legacy_void rs_highscore_end_hiscore_draw_evaluation(END_SCREEN_STATE *screen);
-extern legacy_void rs_highscore_end_hiscore_draw_menu(END_SCREEN_STATE *screen);
-extern legacy_void rs_highscore_end_hiscore_redraw_selection(END_SCREEN_STATE *screen);
-extern legacy_void rs_highscore_end_hiscore_select_mouse(END_SCREEN_STATE *screen);
-extern legacy_s16 rs_highscore_end_hiscore_navigate_menu(END_SCREEN_STATE *screen,
-														 legacy_u16 input);
-extern legacy_s16 rs_highscore_end_hiscore_handle_menu_input(END_SCREEN_STATE *screen,
-															 legacy_u16 input);
-extern legacy_s16 rs_highscore_end_hiscore_run_menu(END_SCREEN_STATE *screen);
-extern legacy_u16 rs_highscore_end_hiscore_release(END_SCREEN_STATE *screen);
-extern legacy_s8 rs_replay_record_legacy_s8_from_bits(legacy_u8 value);
-extern legacy_s16 rs_replay_record_legacy_s16_from_bits(legacy_u16 value);
-extern legacy_s32 rs_replay_record_legacy_s32_from_bits(legacy_u32 value);
-extern legacy_void rs_replay_record_frame_callback_play_audio();
-extern legacy_void rs_replay_record_frame_callback_advance_recording();
-extern legacy_s16 rs_replay_record_replay_read_mouse_input();
-extern legacy_s16 rs_replay_record_replay_read_joystick_input();
-extern legacy_s16 rs_replay_record_replay_read_live_input();
-extern legacy_void rs_replay_record_replay_shift_recording_history();
-extern legacy_s8 rs_replay_viewer_legacy_s8_from_bits(legacy_u8 value);
-extern legacy_s16 rs_replay_viewer_legacy_s16_from_bits(legacy_u16 value);
-extern legacy_s32 rs_replay_viewer_legacy_s32_from_bits(legacy_u32 value);
-extern legacy_void rs_replay_viewer_replay_controls_select(legacy_u8 selection);
-extern legacy_void rs_replay_viewer_replay_controls_prepare_background(legacy_u16 buffer_index);
-extern legacy_void rs_replay_viewer_replay_controls_draw_time(legacy_u16 buffer_index,
-															  legacy_u16 current_frame);
-extern legacy_void rs_replay_viewer_replay_controls_draw_camera(legacy_u16 buffer_index);
-extern legacy_void rs_replay_viewer_replay_controls_draw_timeline(legacy_u16 buffer_index,
-																  legacy_u16 recorded_frame,
-																  legacy_u16 current_frame);
-extern legacy_u8 rs_replay_viewer_replay_controls_changed(legacy_u16 buffer_index);
-extern legacy_void rs_replay_viewer_replay_controls_draw_buttons(legacy_u16 buffer_index);
-extern legacy_void rs_replay_viewer_replay_controls_draw(legacy_u16 recorded_frame,
-														 legacy_u16 current_frame);
-extern legacy_void rs_replay_viewer_replay_draw_waiting();
-extern legacy_s8 rs_replay_viewer_replay_choose_pause_action();
-extern legacy_void rs_replay_viewer_replay_restart_recording();
-extern legacy_s16 rs_replay_viewer_replay_continue_recording();
-extern legacy_void rs_replay_viewer_replay_resume_live();
-extern legacy_void rs_replay_viewer_replay_reload_changed_resources(GAMEINFO *saved_config,
-																	legacy_u8 saved_track);
-extern legacy_void rs_replay_viewer_replay_load_recording();
-extern legacy_s8 rs_replay_viewer_replay_choose_save_path();
-extern legacy_void rs_replay_viewer_replay_save_recording();
-extern legacy_void rs_replay_viewer_replay_display_options();
-extern legacy_void rs_replay_viewer_replay_pause_menu();
-extern legacy_s32 rs_replay_viewer_replay_scrub_accumulate(legacy_s32 accumulated, legacy_s16 speed,
-														   legacy_u16 delta);
-extern legacy_s16 rs_replay_viewer_replay_scrub_speed(legacy_s32 accumulated);
-extern legacy_u16 rs_replay_viewer_replay_scrub_amount(legacy_s32 accumulated);
-extern legacy_s32 rs_replay_viewer_replay_scrub_begin(legacy_u8 selection);
-extern legacy_s32 rs_replay_viewer_replay_scrub_advance(legacy_s32 accumulated, legacy_u16 *delta);
-extern legacy_void rs_replay_viewer_replay_fast_forward();
-extern legacy_void rs_replay_viewer_replay_rewind();
-extern legacy_s16 rs_replay_viewer_replay_try_zoom(legacy_u16 input);
-extern legacy_u16 rs_replay_viewer_replay_pan_input();
-extern legacy_u16 rs_replay_viewer_replay_read_control_input(legacy_s16 delta);
-extern legacy_u16 rs_replay_viewer_replay_adjust_custom_camera(legacy_u16 *input);
-extern legacy_u16 rs_replay_viewer_replay_activate_selected_control();
-extern legacy_u16 rs_replay_viewer_replay_handle_control_input(legacy_u16 input);
-extern legacy_void rs_replay_viewer_replay_refresh_playback_controls();
-extern legacy_s16 rs_replay_viewer_replay_handle_camera_input(legacy_u16 *input);
-extern legacy_void rs_replay_viewer_replay_handle_input();
-extern legacy_s8 rs_race_legacy_s8_from_bits(legacy_u8 value);
-extern legacy_s16 rs_race_legacy_s16_from_bits(legacy_u16 value);
-extern legacy_s32 rs_race_legacy_s32_from_bits(legacy_u32 value);
-extern legacy_void rs_race_race_rewind_accumulate(RACE_REWIND_STATE *rewind, legacy_u32 ticks,
-												  legacy_u32 speed);
-extern legacy_void rs_race_race_rewind_seek(RACE_REWIND_STATE *rewind);
-extern legacy_void rs_race_race_rewind_resume(RACE_REWIND_STATE *rewind);
-extern legacy_s16 rs_race_race_rewind_key_held();
-extern legacy_void rs_race_race_update_rewind(RACE_REWIND_STATE *rewind);
-extern legacy_u16 rs_race_race_prepare_mode();
-extern legacy_void rs_race_race_initialize_state();
-extern legacy_void rs_race_race_check_recording_limit();
-extern legacy_void rs_race_race_update_dashboard_layout(legacy_s16 rewind_active);
-extern legacy_void rs_race_race_update_viewport(RACE_VIEWPORT_CACHE *cache,
-												legacy_s16 rewind_active);
-extern legacy_u32 rs_race_race_ghost_frame();
-extern legacy_void rs_race_race_draw_frame();
-extern legacy_void rs_race_race_handle_driving_input();
-extern legacy_u16 rs_race_race_handle_exit_request();
-extern legacy_u16 rs_race_race_frame_is_ready(legacy_s16 *last_processed_frame);
-extern legacy_s16 rs_race_race_process_frame_input();
-extern legacy_void rs_race_race_run_frames(RACE_VIEWPORT_CACHE *cache);
-extern legacy_void rs_race_race_finish_opponent();
-extern legacy_void rs_race_race_release_resources();
-extern legacy_s8 rs_ghost_legacy_s8_from_bits(legacy_u8 value);
-extern legacy_s16 rs_ghost_legacy_s16_from_bits(legacy_u16 value);
-extern legacy_s32 rs_ghost_legacy_s32_from_bits(legacy_u32 value);
-extern legacy_s16 rs_ghost_ghost_seek(legacy_u16 file, legacy_s32 offset);
-extern legacy_void rs_ghost_ghost_cleanup();
-extern legacy_s16 rs_ghost_ghost_previous_camera_coordinate(legacy_s16 previous,
-															legacy_s16 current);
-extern legacy_u16 rs_ghost_ghost_create_file(legacy_s8 *name);
-extern legacy_s16 rs_ghost_ghost_valid_car_id(legacy_s8 *id);
-extern legacy_s16 rs_ghost_ghost_valid_config(GAMEINFO *config);
-extern legacy_s16 rs_ghost_ghost_copy_input(legacy_u16 source, legacy_u16 destination,
-											legacy_u16 length);
-extern legacy_s8 rs_race_resources_legacy_s8_from_bits(legacy_u8 value);
-extern legacy_s16 rs_race_resources_legacy_s16_from_bits(legacy_u16 value);
-extern legacy_s32 rs_race_resources_legacy_s32_from_bits(legacy_u32 value);
-extern legacy_void load_skybox(legacy_s8 skybox_index);
-extern legacy_void unload_skybox();
-extern legacy_void skybox_copy_image(legacy_s16 image, legacy_s16 x, legacy_s16 y);
-extern legacy_void skybox_render_level_rect(RECTANGLE *rect, legacy_s16 angle, legacy_s16 horizon);
-extern legacy_s16 skybox_render(legacy_s16 view_index, RECTANGLE *clip, legacy_s16 direction,
-								MATRIX *rotation, legacy_s16 roll, legacy_s16 angle,
-								legacy_s16 camera_y);
-extern legacy_void rs_race_resources_setup_car_engine_resources();
-extern legacy_void rs_race_resources_setup_car_physics_resources();
-extern legacy_s16 rs_race_resources_setup_player_cars_impl(legacy_s16 load_dashboard_shapes);
-extern legacy_s8 rs_dashboard_legacy_s8_from_bits(legacy_u8 value);
-extern legacy_s16 rs_dashboard_legacy_s16_from_bits(legacy_u16 value);
-extern legacy_s32 rs_dashboard_legacy_s32_from_bits(legacy_u32 value);
-extern legacy_s16 rs_dashboard_dashboard_steering_position(legacy_s16 angle);
-extern legacy_u8 rs_dashboard_dashboard_clear_steering_dot(legacy_u16 buffer_index);
-extern legacy_void rs_dashboard_dashboard_set_viewport();
-extern legacy_void rs_dashboard_dashboard_load_resources();
-extern legacy_u16 rs_dashboard_dashboard_panel_width(SHAPE2D *shape);
-extern legacy_void rs_dashboard_dashboard_create_sprites();
-extern legacy_void rs_dashboard_dashboard_select_panel_target(SPRITE *sprite, SHAPE2D *shape);
-extern legacy_void rs_dashboard_dashboard_copy_panel(SPRITE *sprite, SHAPE2D *shape);
-extern legacy_void rs_dashboard_dashboard_load_optional_shapes();
-extern legacy_void rs_dashboard_dashboard_load();
-extern legacy_void rs_dashboard_dashboard_redraw_static();
-extern legacy_void rs_dashboard_dashboard_unload();
-extern legacy_void rs_dashboard_dashboard_rebuild_gearbox_background();
-extern legacy_void rs_dashboard_dashboard_update_gear(legacy_u16 buffer_index);
-extern legacy_void rs_dashboard_dashboard_update_wheel(DASHBOARD_UPDATE *update);
-extern legacy_void rs_dashboard_dashboard_select_gauges(DASHBOARD_UPDATE *update);
-extern legacy_void rs_dashboard_dashboard_draw_digital_speed(legacy_u16 speed_index);
-extern legacy_void rs_dashboard_dashboard_draw_wheel_mask(legacy_u8 wheel_state);
-extern legacy_void rs_dashboard_dashboard_update_instruments(DASHBOARD_UPDATE *update);
-extern legacy_void rs_dashboard_dashboard_update_steering_dot(DASHBOARD_UPDATE *update);
-extern legacy_void rs_dashboard_dashboard_update();
-extern legacy_s8 rs_menu_common_legacy_s8_from_bits(legacy_u8 value);
-extern legacy_s16 rs_menu_common_legacy_s16_from_bits(legacy_u16 value);
-extern legacy_s32 rs_menu_common_legacy_s32_from_bits(legacy_u32 value);
-extern legacy_s8 rs_menu_main_legacy_s8_from_bits(legacy_u8 value);
-extern legacy_s16 rs_menu_main_legacy_s16_from_bits(legacy_u16 value);
-extern legacy_s32 rs_menu_main_legacy_s32_from_bits(legacy_u32 value);
-extern legacy_s8 rs_menu_options_legacy_s8_from_bits(legacy_u8 value);
-extern legacy_s16 rs_menu_options_legacy_s16_from_bits(legacy_u16 value);
-extern legacy_s32 rs_menu_options_legacy_s32_from_bits(legacy_u32 value);
-extern legacy_void rs_menu_options_joy_dialog_finish();
-extern legacy_void rs_menu_options_joy_dialog_draw_grid(legacy_s16 *positions, legacy_s16 *button_x,
-														legacy_s16 *button_y,
-														legacy_s16 *button_width,
-														legacy_s16 *button_height);
-extern legacy_void rs_menu_options_option_menu_mark_graphics(legacy_s8 *menu_text);
-extern legacy_void rs_menu_options_option_menu_select_input();
-extern legacy_s8 rs_menu_track_legacy_s8_from_bits(legacy_u8 value);
-extern legacy_s16 rs_menu_track_legacy_s16_from_bits(legacy_u16 value);
-extern legacy_s32 rs_menu_track_legacy_s32_from_bits(legacy_u32 value);
-extern legacy_void rs_menu_track_track_menu_draw_preview();
-extern legacy_void rs_menu_track_track_menu_draw_highscore();
-extern legacy_void rs_menu_track_track_menu_draw_buttons();
-extern legacy_void rs_menu_track_track_menu_draw_background();
-extern legacy_u16 rs_menu_track_track_menu_poll_input(TRACK_MENU_STATE *menu);
-extern legacy_u8 rs_menu_track_track_menu_activate_key(TRACK_MENU_STATE *menu, legacy_u16 key);
-extern legacy_s8 rs_menu_track_editor_legacy_s8_from_bits(legacy_u8 value);
-extern legacy_s16 rs_menu_track_editor_legacy_s16_from_bits(legacy_u16 value);
-extern legacy_s32 rs_menu_track_editor_legacy_s32_from_bits(legacy_u32 value);
-extern legacy_void preRender_icons(legacy_u8 page);
-extern legacy_u16 rs_menu_track_editor_track_menu_previous_row(legacy_u16 row);
-extern legacy_u8 rs_menu_track_editor_track_editor_map_tile(legacy_u8 column, legacy_u8 row);
-extern legacy_void rs_menu_track_editor_track_editor_draw_map_element(TRACK_EDITOR_MAP_CELL *cell);
-extern legacy_void rs_menu_track_editor_track_editor_draw_map_cell(TRACK_EDITOR_MAP_CELL *cell,
-																   legacy_u8 *cached_track,
-																   legacy_u8 *cached_terrain);
-extern legacy_void rs_menu_track_editor_track_editor_draw_map_continuation(
-	TRACK_EDITOR_MAP_CELL *cell, legacy_u16 map_row, legacy_u16 map_column, legacy_u8 *cached_track,
-	legacy_u8 *cached_terrain);
-extern legacy_void draw_2DtrackMap(legacy_u8 column_offset, legacy_u8 row_offset,
-								   legacy_u8 *cached_track, legacy_u8 *cached_terrain);
-extern legacy_u16 rs_menu_track_editor_track_menu_next_row(legacy_u16 row);
-extern legacy_void rs_menu_track_editor_track_editor_validate_square_links(legacy_u8 *used,
-																		   legacy_u16 current_index,
-																		   legacy_u16 east_index,
-																		   legacy_u16 next_index);
-extern legacy_void rs_menu_track_editor_track_editor_validate_tile_links(
-	legacy_u8 *used, legacy_u16 row, legacy_u16 column, legacy_u16 current_index, legacy_u8 tile);
-extern legacy_void track_editor_remove_invalid_multitile_links();
-extern legacy_u8 rs_menu_track_editor_track_editor_water_tile_allowed(legacy_u8 tile);
-extern legacy_u8 rs_menu_track_editor_track_editor_terrain_error(legacy_u16 row, legacy_u16 column,
-																 legacy_u8 terrain, legacy_u8 tile);
-extern legacy_s16 track_editor_remove_invalid_terrain_tiles();
-extern legacy_u8 rs_menu_track_editor_track_editor_palette_tile(legacy_u8 page, legacy_u8 row,
-																legacy_u8 column);
-extern legacy_void rs_menu_track_editor_track_editor_skip_previous_placeholders(legacy_u8 page,
-																				legacy_u8 *row,
-																				legacy_u8 *column);
-extern legacy_void rs_menu_track_editor_track_editor_toggle_highlight(legacy_s16 x, legacy_s16 y,
-																	  legacy_u8 width,
-																	  legacy_u8 height);
-extern legacy_void rs_menu_track_editor_track_editor_show_message(legacy_s8 *text_resource,
-																  legacy_s8 *resource_id);
-extern legacy_void rs_menu_track_editor_track_editor_save_track(legacy_u8 *track_changed,
-																legacy_u8 *map_dirty);
-extern legacy_void rs_menu_track_editor_track_editor_swap_tiles(legacy_u8 *selected_tile,
-																legacy_u8 *saved_tile,
-																legacy_u8 *palette_dirty);
-extern legacy_void rs_menu_track_editor_track_editor_load_resources(TRACK_EDITOR_SESSION *editor);
-extern legacy_void
-rs_menu_track_editor_track_editor_initialize_session(TRACK_EDITOR_SESSION *editor);
-extern legacy_void rs_menu_track_editor_track_editor_draw_window(TRACK_EDITOR_SESSION *editor);
-extern legacy_void
-rs_menu_track_editor_track_editor_keep_selection_visible(TRACK_EDITOR_SESSION *editor);
-extern legacy_void
-rs_menu_track_editor_track_editor_draw_palette_page(TRACK_EDITOR_SESSION *editor);
-extern legacy_void rs_menu_track_editor_track_editor_update_palette(TRACK_EDITOR_SESSION *editor);
-extern legacy_void rs_menu_track_editor_track_editor_redraw(TRACK_EDITOR_SESSION *editor);
-extern legacy_void rs_menu_track_editor_track_editor_position_cursor(TRACK_EDITOR_SESSION *editor);
-extern legacy_void rs_menu_track_editor_track_editor_draw_tile_label(TRACK_EDITOR_SESSION *editor);
-extern legacy_void
-rs_menu_track_editor_track_editor_report_validation(TRACK_EDITOR_SESSION *editor);
-extern legacy_void rs_menu_track_editor_track_editor_hover_map(TRACK_EDITOR_SESSION *editor);
-extern legacy_void rs_menu_track_editor_track_editor_hover_palette(TRACK_EDITOR_SESSION *editor);
-extern legacy_void rs_menu_track_editor_track_editor_mouse_input(TRACK_EDITOR_SESSION *editor);
-extern legacy_void rs_menu_track_editor_track_editor_wait_for_input(TRACK_EDITOR_SESSION *editor);
-extern legacy_void
-rs_menu_track_editor_track_editor_advance_path_animation(TRACK_EDITOR_SESSION *editor);
-extern legacy_void rs_menu_track_editor_track_editor_check_route(TRACK_EDITOR_SESSION *editor);
-extern legacy_void rs_menu_track_editor_track_editor_select_skybox(TRACK_EDITOR_SESSION *editor);
-extern legacy_void rs_menu_track_editor_track_editor_select_terrain(TRACK_EDITOR_SESSION *editor);
-extern legacy_void rs_menu_track_editor_track_editor_load_track(TRACK_EDITOR_SESSION *editor);
-extern legacy_void rs_menu_track_editor_track_editor_exit(TRACK_EDITOR_SESSION *editor);
-extern legacy_void
-rs_menu_track_editor_track_editor_select_palette_tile(TRACK_EDITOR_SESSION *editor);
-extern legacy_void rs_menu_track_editor_track_editor_activate_palette(TRACK_EDITOR_SESSION *editor);
-extern legacy_void rs_menu_track_editor_track_editor_place_terrain(TRACK_EDITOR_SESSION *editor);
-extern legacy_void rs_menu_track_editor_track_editor_place_element(TRACK_EDITOR_SESSION *editor);
-extern legacy_void rs_menu_track_editor_track_editor_move_home(TRACK_EDITOR_SESSION *editor);
-extern legacy_void rs_menu_track_editor_track_editor_move_up(TRACK_EDITOR_SESSION *editor);
-extern legacy_void rs_menu_track_editor_track_editor_move_down(TRACK_EDITOR_SESSION *editor);
-extern legacy_void rs_menu_track_editor_track_editor_move_left(TRACK_EDITOR_SESSION *editor);
-extern legacy_void rs_menu_track_editor_track_editor_move_right(TRACK_EDITOR_SESSION *editor);
-extern legacy_void
-rs_menu_track_editor_track_editor_handle_navigation_key(TRACK_EDITOR_SESSION *editor);
-extern legacy_void rs_menu_track_editor_track_editor_handle_key(TRACK_EDITOR_SESSION *editor);
-extern legacy_void
-rs_menu_track_editor_track_editor_release_resources(TRACK_EDITOR_SESSION *editor);
-extern legacy_s8 rs_menu_opponent_legacy_s8_from_bits(legacy_u8 value);
-extern legacy_s16 rs_menu_opponent_legacy_s16_from_bits(legacy_u16 value);
-extern legacy_s32 rs_menu_opponent_legacy_s32_from_bits(legacy_u32 value);
-extern legacy_void rs_menu_opponent_opponent_menu_draw_description(OPPONENT_MENU_STATE *menu);
-extern legacy_void rs_menu_opponent_opponent_menu_draw_background();
-extern legacy_void rs_menu_opponent_opponent_menu_refresh(OPPONENT_MENU_STATE *menu);
-extern legacy_u16 rs_menu_opponent_opponent_menu_poll_input(OPPONENT_MENU_STATE *menu);
-extern legacy_u8 rs_menu_opponent_opponent_menu_activate_key(OPPONENT_MENU_STATE *menu,
-															 legacy_u16 key);
-extern legacy_u8 rs_menu_opponent_opponent_menu_activate_selection(OPPONENT_MENU_STATE *menu);
-extern legacy_void rs_menu_opponent_opponent_menu_release(OPPONENT_MENU_STATE *menu);
-extern legacy_s8 rs_menu_car_legacy_s8_from_bits(legacy_u8 value);
-extern legacy_s16 rs_menu_car_legacy_s16_from_bits(legacy_u16 value);
-extern legacy_s32 rs_menu_car_legacy_s32_from_bits(legacy_u32 value);
-extern legacy_void rs_menu_car_car_menu_draw_standard_button(legacy_s8 *text,
-															 legacy_u16 button_index);
-extern legacy_s16 rs_menu_car_car_menu_find_cars(CAR_MENU_STATE *menu, legacy_s8 *car_id);
-extern legacy_void rs_menu_car_car_menu_initialize(CAR_MENU_STATE *menu);
-extern legacy_void rs_menu_car_car_menu_draw_graph();
-extern legacy_void rs_menu_car_car_menu_draw_description(CAR_MENU_STATE *menu);
-extern legacy_void rs_menu_car_car_menu_load_car(CAR_MENU_STATE *menu);
-extern legacy_void rs_menu_car_car_menu_prepare_preview(CAR_MENU_STATE *menu);
-extern legacy_void rs_menu_car_car_menu_render_preview(CAR_MENU_STATE *menu);
-extern legacy_void rs_menu_car_car_menu_draw_selection(CAR_MENU_STATE *menu);
-extern legacy_u16 rs_menu_car_car_menu_read_input(CAR_MENU_STATE *menu);
-extern legacy_s16 rs_menu_car_car_menu_activate_selection(CAR_MENU_STATE *menu);
-extern legacy_s16 rs_menu_car_car_menu_handle_input(CAR_MENU_STATE *menu, legacy_u16 input);
-extern legacy_void rs_menu_car_car_menu_release(CAR_MENU_STATE *menu, legacy_s8 *car_id);
-extern legacy_s8 rs_audio_engine_legacy_s8_from_bits(legacy_u8 value);
-extern legacy_s16 rs_audio_engine_legacy_s16_from_bits(legacy_u16 value);
-extern legacy_s32 rs_audio_engine_legacy_s32_from_bits(legacy_u32 value);
-extern legacy_u8 *audio_read_far_pointer(legacy_u8 *source);
-extern legacy_void audio_write_far_pointer(legacy_u8 *destination, legacy_u8 *value);
-extern legacy_s8 *pad_id(legacy_s8 *source);
-extern legacy_void audio_reset_channels();
-extern legacy_void audio_stop_music();
-extern legacy_void audio_driver_timer();
-extern legacy_void audio_release_channel_range(legacy_s16 first_channel, legacy_s16 last_channel);
-extern legacy_void audio_update_driver_contexts();
-extern legacy_void audio_init_channel_range(legacy_s16 first_channel, legacy_s16 last_channel,
-											legacy_u8 *resource, legacy_u16 resource_data_offset,
-											legacy_u16 rate, legacy_u8 priority);
-extern legacy_void audio_stop_effect_channel(legacy_s16 channel);
-extern legacy_s16 audio_sequence_command_has_byte_argument(legacy_u8 command_index);
-extern legacy_s16 audio_start_sample(legacy_u16 value, legacy_s16 handle);
-extern legacy_s16 audio_reserve_effect_channel(legacy_s16 channel, legacy_u8 priority);
-extern legacy_void audio_release_effect_channel(legacy_s16 channel);
-extern legacy_s16 audio_effect_channel_idle(legacy_s16 channel);
-extern legacy_void audio_request_context_fade(legacy_s16 index);
-extern legacy_void audio_fade_out(legacy_s16 delay_ticks);
-extern legacy_void audio_sequence_timer();
-extern legacy_void
-rs_audio_engine_audio_copy_engine_definition(AUDIO_ENGINE_DEFINITION *engine_definition,
-											 legacy_u8 *source_pointer);
-extern legacy_void
-rs_audio_engine_audio_resolve_engine_definition(AUDIO_ENGINE_DEFINITION *engine_definition,
-												legacy_u8 *shape_resources,
-												legacy_u8 *audio_resources);
-extern legacy_void audio_start_engine(legacy_s16 index);
-extern legacy_void audio_update_engine_spatial(legacy_s16 index, legacy_s16 base_value,
-											   legacy_s16 first_x, legacy_s16 first_y,
-											   legacy_s16 first_z, legacy_s16 second_x,
-											   legacy_s16 second_y, legacy_s16 second_z,
-											   legacy_s16 interval);
-extern legacy_void rs_audio_engine_audio_update_timer_volume(AUDIO_TIMER *timer);
-extern legacy_void rs_audio_engine_audio_update_timer_pitch(AUDIO_TIMER *timer);
-extern legacy_void rs_audio_engine_audio_restart_timer_engine(AUDIO_TIMER *timer, legacy_u16 index);
-extern legacy_void audio_enable_music();
-extern legacy_void audio_disable_music();
-extern legacy_s16 audio_effect_range_idle();
-extern legacy_void audio_enable_effects();
-extern legacy_void audio_disable_effects();
-extern legacy_void audio_set_finish_callback(legacy_s16 channel, legacy_u8 *value);
-extern legacy_void rs_audio_engine_audio_clear_driver_context(AUDIO_CONTEXT *context);
-extern legacy_u8 *rs_audio_engine_audio_select_sample_resource(legacy_u8 *original_resource,
-															   legacy_u8 note);
-extern legacy_u8 rs_audio_engine_audio_context_matches_resource(AUDIO_CONTEXT *context,
-																AUDIO_CHANNEL *timer,
-																legacy_u16 resource_mask,
-																legacy_u16 context_index,
-																legacy_s16 restrict_to_timer);
-extern legacy_void rs_audio_engine_audio_consider_older_context(AUDIO_CONTEXT *context,
-																legacy_u16 context_index,
-																AUDIO_CONTEXT_SELECTION *selection);
-extern legacy_void rs_audio_engine_audio_reclaim_driver_context(legacy_s16 selected,
-																AUDIO_CHANNEL *timer,
-																legacy_s16 restrict_to_timer);
-extern legacy_s16 rs_audio_engine_audio_find_driver_context(legacy_u8 *resource,
-															AUDIO_CHANNEL *timer);
-extern legacy_s16 audio_start_note(AUDIO_CHANNEL *timer, legacy_u16 value, legacy_u32 duration,
-								   legacy_u8 note, legacy_u16 parameter, legacy_s16 handle);
-extern legacy_void audio_advance_driver_context(AUDIO_CONTEXT *context);
-extern legacy_u16 rs_audio_engine_audio_absolute_word(legacy_s16 value);
-extern legacy_void rs_audio_engine_audio_update_context_envelope(AUDIO_CONTEXT *context,
-																 legacy_u8 *resource);
-extern legacy_void rs_audio_engine_audio_update_context_modulation(AUDIO_CONTEXT *context,
-																   legacy_u8 *resource);
-extern legacy_void rs_audio_engine_audio_update_context_sequence(AUDIO_CONTEXT *context,
-																 legacy_u8 *resource);
-extern legacy_s16 rs_audio_engine_audio_find_free_sfx_channel();
-extern legacy_s16 audio_play_effect_at_rate(legacy_u8 *resource, legacy_s16 channel,
-											legacy_u8 priority, legacy_u16 rate);
-extern legacy_s16 audio_play_effect(legacy_u8 *resource, legacy_s16 channel, legacy_u8 priority);
-extern legacy_s16 audio_play_default_effect(legacy_u8 *resource);
-extern legacy_void audio_stop_skid_sound(legacy_s16 index);
-extern legacy_s16 audio_timer_effect_idle(legacy_s16 index);
-extern legacy_void audio_stop_engine(legacy_s16 index);
-extern legacy_s16 rs_audio_engine_audio_start_timer_resource(AUDIO_TIMER *timer,
-															 legacy_u16 resource_index,
-															 legacy_u8 priority);
-extern legacy_s16 rs_audio_engine_audio_start_indexed_event(legacy_s16 index,
-															legacy_u16 resource_index,
-															legacy_u8 priority);
-extern legacy_void audio_play_engine_start(legacy_s16 index);
-extern legacy_void audio_play_bump(legacy_s16 index);
-extern legacy_void audio_play_scrape(legacy_s16 index);
-extern legacy_void audio_play_engine_stop(legacy_s16 index);
-extern legacy_void audio_play_engine_failure(legacy_s16 index);
-extern legacy_void rs_audio_engine_audio_start_secondary_event(legacy_s16 index,
-															   legacy_u16 resource_index);
-extern legacy_void audio_play_paved_skid(legacy_s16 index);
-extern legacy_void audio_play_offroad_skid(legacy_s16 index);
-extern legacy_s16 audio_set_music_channel_volume(legacy_s16 value);
-extern legacy_s16 audio_set_music_volume(legacy_s16 value);
-extern legacy_u16 audio_get_channel_value(legacy_s16 channel);
-extern legacy_u16 audio_get_channel_note(legacy_s16 channel);
-extern legacy_s8 rs_audio_resources_legacy_s8_from_bits(legacy_u8 value);
-extern legacy_s16 rs_audio_resources_legacy_s16_from_bits(legacy_u16 value);
-extern legacy_s32 rs_audio_resources_legacy_s32_from_bits(legacy_u32 value);
-extern legacy_s16 rs_audio_resources_legacy_toupper(legacy_s16 ch);
-extern legacy_void audioresource_copy_4_bytes(legacy_u8 *destination, legacy_u8 *source);
-extern legacy_void rs_audio_resources_audio_append_filename_part(legacy_s8 *destination,
-																 legacy_s8 *source);
-extern legacy_s8 *rs_audio_resources_audio_find_last_backslash(legacy_s8 *text);
-extern legacy_s8 *audio_make_filename(legacy_s8 *filename, legacy_s8 *extension,
-									  legacy_s8 *inserted_path);
-extern legacy_void rs_audio_resources_audio_load_driver_bank();
-extern legacy_u8 *load_sfx_ge(legacy_s8 *filename, legacy_s8 *extension, legacy_s8 *inserted_path);
-extern legacy_u8 *rs_audio_resources_load_audio_file(legacy_s8 *filename,
-													 legacy_s8 *special_extension,
-													 legacy_s8 *extension,
-													 legacy_s8 *error_message);
-extern legacy_s16 audioresource_compare_chunknames(legacy_s16 case_sensitive, legacy_s8 *first_name,
-												   legacy_s8 *second_name, legacy_s16 count);
-extern legacy_s16 audioresource_get_chunk_index(legacy_s16 extra_name_stride,
-												legacy_s16 chunk_count, legacy_s8 *requested_name,
-												legacy_u8 *chunk_names);
-extern legacy_u8 *rs_audio_resources_audio_far_pointer_add_normalized(legacy_u8 *pointer,
-																	  legacy_u16 increment);
-extern legacy_u8 *audioresource_find(legacy_u8 *resource, legacy_s8 *chunk_name);
-extern legacy_void rs_audio_resources_audio_map_percussion_instruments(legacy_u8 *instruments);
-extern legacy_void audio_map_song_instruments(legacy_u8 *song, legacy_u8 *instruments);
-extern legacy_void rs_audio_resources_audio_write_far_pointer_to_resource(legacy_u8 *destination,
-																		  legacy_u16 offset,
-																		  legacy_u16 segment);
-extern legacy_void rs_audio_resources_audio_patch_song_reference(
-	legacy_u8 *destination, legacy_u16 name_table_offset, legacy_u16 offset_table_offset,
-	legacy_u16 first_data_offset, legacy_u16 resource_segment, legacy_u16 chunk_count);
-extern legacy_u16 rs_audio_resources_audio_skip_variable_length_field(legacy_u16 resource_segment,
-																	  legacy_u16 cursor_offset);
-extern legacy_void rs_audio_resources_audio_map_header_tracks(AUDIO_SONG_MAPPING *mapping,
-															  legacy_u16 cursor_offset);
-extern legacy_u16 rs_audio_resources_audio_map_sequence_command(AUDIO_SONG_MAPPING *mapping,
-																legacy_u16 cursor_offset,
-																legacy_u16 event);
-extern legacy_void rs_audio_resources_audio_map_track_events(AUDIO_SONG_MAPPING *mapping,
-															 legacy_u16 cursor_offset,
-															 legacy_u16 chunk_end_offset);
-extern legacy_void audio_map_song_tracks(legacy_u8 *song);
-extern legacy_void audioresource_copy_n_bytes(legacy_u8 *source, legacy_u8 *destination,
-											  legacy_s16 size);
-extern legacy_void audio_set_missing_file_fatal(legacy_s16 value);
-extern legacy_s8 rs_audio_car_legacy_s8_from_bits(legacy_u8 value);
-extern legacy_s16 rs_audio_car_legacy_s16_from_bits(legacy_u16 value);
-extern legacy_s32 rs_audio_car_legacy_s32_from_bits(legacy_u32 value);
-extern legacy_s16 rs_audio_car_audio_carstate_position(legacy_s32 position);
-extern legacy_void rs_audio_car_audio_carstate_offsets(VECTOR *previous, VECTOR *current,
-													   VECTOR *camera_previous,
-													   VECTOR *camera_current, VECTOR *car_previous,
-													   VECTOR *car_current);
-extern legacy_u8 rs_audio_car_audio_carstate_update_flags(CARSTATE *carstate, legacy_s16 channel,
-														  legacy_u8 flags);
-extern legacy_void rs_audio_car_audio_carstate_enter_replay();
-extern legacy_void rs_audio_car_audio_carstate_read_positions(CARSTATE *carstate, VECTOR *previous,
-															  VECTOR *current);
-extern legacy_void rs_audio_car_audio_carstate_camera_positions(AUDIO_CAR_POSITIONS *positions,
-																GHOST_CAMERA_STATE *ghost_camera);
-extern legacy_s16 rs_audio_car_audio_carstate_write_record(AUDIO_CAR_POSITIONS *positions);
-extern legacy_void rs_audio_car_audio_carstate_update_car_flags(legacy_s16 car_count);
-extern legacy_s8 rs_audio_sequence_legacy_s8_from_bits(legacy_u8 value);
-extern legacy_s16 rs_audio_sequence_legacy_s16_from_bits(legacy_u16 value);
-extern legacy_s32 rs_audio_sequence_legacy_s32_from_bits(legacy_u32 value);
-extern legacy_u32 rs_audio_sequence_audio_parse_variable_length(legacy_u8 *source,
-																legacy_u16 *size);
-extern legacy_void rs_audio_sequence_audio_parse_sequence_event(legacy_u8 *source,
-																audio_sequence_event *event);
-extern legacy_u8 *rs_audio_sequence_audio_sequence_instrument(AUDIO_CHANNEL *chunk,
-															  legacy_u8 instrument);
-extern legacy_void rs_audio_sequence_audio_sequence_bind_instrument(legacy_s16 channel,
-																	AUDIO_CHANNEL *chunk,
-																	legacy_u8 instrument);
-extern legacy_void rs_audio_sequence_audio_sequence_set_control(AUDIO_CHANNEL *chunk,
-																legacy_u8 control,
-																legacy_u16 value);
-extern legacy_void rs_audio_sequence_audio_sequence_set_pitch(AUDIO_CHANNEL *chunk,
-															  legacy_u16 value);
-extern legacy_void rs_audio_sequence_audio_sequence_finish_channel(legacy_s16 channel,
-																   AUDIO_CHANNEL *chunk,
-																   legacy_s16 reset_channel);
-extern legacy_s16 rs_audio_sequence_audio_sequence_flow_command(legacy_s16 channel,
-																AUDIO_CHANNEL *chunk,
-																audio_sequence_event *event);
-extern legacy_void rs_audio_sequence_audio_sequence_apply_command(legacy_s16 channel,
-																  AUDIO_CHANNEL *chunk,
-																  audio_sequence_event *event);
-extern legacy_void rs_audio_sequence_audio_service_sequence_channel(legacy_s16 channel);
-extern legacy_void rs_audio_sequence_audio_advance_music_contexts();
-extern legacy_s8 rs_shape3d_legacy_s8_from_bits(legacy_u8 value);
-extern legacy_s16 rs_shape3d_legacy_s16_from_bits(legacy_u16 value);
-extern legacy_s32 rs_shape3d_legacy_s32_from_bits(legacy_u32 value);
-extern legacy_u16 shape2d_get_word(legacy_u8 *source);
-extern legacy_void shape2d_put_word(legacy_u8 *destination, legacy_u16 value);
-extern legacy_u16 shape2d_get_line_offset(legacy_u16 sprite_segment, legacy_u16 y);
-extern legacy_u8 *shape2d_line_pointer(SPRITE *sprite, legacy_u16 offset);
-extern legacy_s8 is_facing_camera(POINT2D *pts);
-extern legacy_u16 polygon_insert_newest(legacy_u16 depth, legacy_u16 sort_by_depth);
-extern legacy_u16 projection_scale_x_wrapped(legacy_u16 numerator, legacy_s16 divisor);
-extern legacy_u16 rs_shape3d_shape3d_average_depth(legacy_s32 sum, legacy_u16 vertex_count);
-extern legacy_u16 rs_shape3d_polyinfo_read_word(legacy_u8 *record, legacy_u16 word_index);
-extern legacy_void rs_shape3d_polyinfo_write_word(legacy_u8 *record, legacy_u16 word_index,
-												  legacy_u16 value);
-extern legacy_void rs_shape3d_polyinfo_read_point(legacy_u8 *record, legacy_u16 point_index,
-												  POINT2D *point);
-extern legacy_void rs_shape3d_polyinfo_read_points(legacy_u8 *record, POINT2D *points,
-												   legacy_u16 point_count);
-extern legacy_void rs_shape3d_polyinfo_write_point(legacy_u8 *record, legacy_u16 point_index,
-												   POINT2D *point);
+extern legacy_s64 TempleDivideS64(legacy_s64 dividend,legacy_s64 divisor);
+extern legacy_s64 TempleRemainderS64(legacy_s64 dividend,legacy_s64 divisor);
+extern legacy_u16 RsLegacyU16DivOrZero(legacy_u16 numerator,legacy_u16 denominator);
+extern legacy_s16 RsLegacyS16DivOrZero(legacy_s16 numerator,legacy_s16 denominator);
+extern legacy_u32 RsLegacyU32DivOrZero(legacy_u32 numerator,legacy_u32 denominator);
+extern legacy_s32 RsLegacyS32DivOrZero(legacy_s32 numerator,legacy_s32 denominator);
+extern legacy_s8 RsFileioLegacyS8FromBits(legacy_u8 value);
+extern legacy_s16 RsFileioLegacyS16FromBits(legacy_u16 value);
+extern legacy_s32 RsFileioLegacyS32FromBits(legacy_u32 value);
+extern legacy_s16 RsSinFast(legacy_u16 s);
+extern legacy_s16 RsCosFast(legacy_u16 s);
+extern legacy_s16 RsPolarAngle(legacy_s16 z,legacy_s16 y);
+extern legacy_s16 RsPolarRadius2D(legacy_s16 z,legacy_s16 y);
+extern legacy_s16 RsPolarRadius3D(CVector *vec);
+extern legacy_u16 RsRectComparePoint(CPoint2D *pt);
+extern legacy_void RsMatMulVector(CVector *invec,CMatrix *mat,CVector *outvec);
+extern legacy_void RsMatMulVector2(CVector *invec,CMatrix *mat,CVector *outvec);
+extern legacy_void RsMatMultiply(CMatrix *rmat,CMatrix *lmat,CMatrix *outmat);
+extern legacy_void RsMatInvert(CMatrix *inmat,CMatrix *outmat);
+extern legacy_void RsMatRotX(CMatrix *outmat,legacy_s16 angle);
+extern legacy_void RsMatRotY(CMatrix *outmat,legacy_s16 angle);
+extern legacy_void RsMatRotZ(CMatrix *outmat,legacy_s16 angle);
+extern CMatrix *RsMatRotZxy(legacy_s16 z,legacy_s16 x,legacy_s16 y,legacy_s16 rotation_order);
+extern legacy_void RsRectAdjustFromPoint(CPoint2D *pt,CRectangle *rc);
+extern legacy_void RsRectlistAddRects(legacy_s8 source_count,legacy_s8 *source_flags,
+    CRectangle *first_rectangles,CRectangle *second_rectangles,CRectangle *clip_rectangle,
+    legacy_s8 *output_count,CRectangle *output_rectangles);
+extern legacy_void RsRectArraySortByTop(
+    legacy_s8 rectangle_count,CRectangle *rectangles,legacy_s16 *sorted_indices);
+extern legacy_s16 RsVectorDirectionSector(CVector *vec);
+extern legacy_void RsVectorToPoint(CVector *vec,CPoint2D *outpt);
+extern legacy_void RsVectorInterpolateAtZ(
+    CVector *first,CVector *second,CVector *result,legacy_s16 depth);
+extern legacy_s16 RsMultiplyAndScale(legacy_s16 left,legacy_s16 right);
+extern legacy_s16 RsAbsoluteWord(legacy_s16 value);
+extern legacy_u16 RsSar1Word(legacy_u16 value);
+extern legacy_s16 RsPositionToWord(legacy_s32 position);
+extern legacy_void RsRectUnion(CRectangle *r1,CRectangle *r2,CRectangle *outrc);
+extern legacy_s16 RsRectIntersect(CRectangle *r1,CRectangle *r2);
+extern legacy_void RsHeapsortByOrder(legacy_s16 count,legacy_s16 *values,legacy_s16 *order);
+extern legacy_void RsReplayGameinfoDecode(CGameInfo *destination,legacy_u8 *source);
+extern legacy_void RsReplayGameinfoEncode(legacy_u8 *destination,CGameInfo *source);
+extern legacy_u32 RsReplayFileSize(legacy_u16 recorded_frames);
+extern legacy_u16 RsReplayTimelinePosition(
+    legacy_u16 frame,legacy_u16 recorded_frames,legacy_u16 width);
+extern legacy_u16 RsReplayRewindInterpolate(
+    legacy_u16 rewind_amount,legacy_u16 frames_remaining,legacy_u16 checkpoint_distance);
+extern legacy_u16 RsGamestateSerialize(legacy_u8 *destination,CGameState *source);
+extern legacy_u16 RsSimdDecode(CSimd *destination,legacy_u8 *source);
+extern legacy_void RsCopyString(legacy_s8 *destination,legacy_s8 *source);
+extern legacy_void RsSetupLegacyPenaltyRouteWord();
+extern legacy_void RsSetupAeroTrackdata(legacy_u8 *carresptr,legacy_s16 is_opponent);
+extern legacy_void RsLoadOpponentData();
+extern legacy_void RsUpdatePlayerTick(legacy_s8 input_flags);
+extern legacy_void RsEmitCrashParticles(
+    legacy_s16 kind_arg,legacy_s16 base_angle_arg,legacy_s16 energy_offset_arg);
+extern legacy_void RsUpdateCrashParticles();
+extern legacy_void RsInitKevinrandom(legacy_s8 *seed);
+extern legacy_void RsGetKevinrandomSeed(legacy_s8 *seed);
+extern legacy_s16 RsGetKevinrandom();
+extern legacy_void RsInitRowTables();
+extern legacy_void RsInitTrackdata();
+extern legacy_void RsResetRaceLoopState();
+extern legacy_void RsInitVideoGeometryFlags();
+extern legacy_void RsUpdateFrame(legacy_s8 buffer_index,CRectangle *cliprect);
+extern legacy_s16 RsGetTrackRoutePoint(legacy_s16 track_index_arg,CVector *output,
+    legacy_s16 route_index_arg,legacy_s8 *optional_speed);
+extern legacy_void RsInitCarstateFromSimd(CCarState *playerstate,CSimd *simd,
+    legacy_s8 transmission,legacy_s32 pos_x,legacy_s32 pos_y,legacy_s32 pos_z,
+    legacy_s16 track_angle);
+extern legacy_void RsInitGameState(legacy_s16 initialization_mode);
+extern legacy_void RsInitGameStateWithFrameRate(legacy_u16 frame_rate);
+extern legacy_void RsInitGameStateWithFrameRateByte(legacy_u16 frame_rate);
+extern legacy_void RsRestoreGamestate(legacy_u16 frame);
+extern legacy_void RsUpdateGamestate();
+extern legacy_void RsUpdateGamestateSilent();
+extern legacy_void RsUpdateGamestateWithLegacySi(legacy_s16 caller_si);
+extern legacy_void RsInitRectArrays();
+extern legacy_void RsFramePresent(CRectangle *cliprect);
+extern legacy_void RsFontSetFontdef();
+extern legacy_s16 RsRunIntroLooped();
+extern legacy_s8 RsSetupIntro();
+extern legacy_s8 RsLoadIntroResources();
+extern legacy_s8 RsRunMenu();
+extern legacy_s8 RsSetupTrack();
+extern legacy_void RsRunTracksMenu(legacy_s16 reload_track);
+extern legacy_void RsRunOpponentMenu();
+extern legacy_void RsRunCarMenu(
+    legacy_s8 *car_id,legacy_s8 *material,legacy_s8 *transmission,legacy_u16 opponent_type);
+extern legacy_u16 RsEndHiscore();
+extern legacy_u16 RsRunOptionMenu();
+extern legacy_void RsLegacyTimerShutdown();
+extern legacy_void RsShowGraphicLevelsMenu();
+extern legacy_void RsCalibrateJoystickDriving();
+extern legacy_void RsSelectKeyboardDriving();
+extern legacy_void RsSelectMouseDriving();
+extern legacy_void RsToggleMusicWithDialog();
+extern legacy_void RsShowPauseDialog();
+extern legacy_void RsShowExitToDosDialog();
+extern legacy_void RsToggleEffectsWithDialog();
+extern legacy_void RsMouseDrawOpaque();
+extern legacy_void RsMouseDrawTransparent();
+extern legacy_void RsVideoSetMode4();
+extern legacy_void RsVideoSetMode7();
+extern legacy_void RsVideoSetMode13h();
+extern legacy_void RsSpriteSetTargetClipBounds(
+    legacy_u16 left,legacy_u16 right,legacy_u16 top,legacy_u16 bottom);
+extern legacy_void RsTimerSetupInterrupt();
+extern legacy_u8 *RsInternal1Memcpy(legacy_u8 *arg0,legacy_u8 *arg1,legacy_u16 arg2);
+extern legacy_s8 *RsInternal1Strcpy(legacy_s8 *destination,legacy_s8 *source);
+extern legacy_s8 *RsInternal1Strcat(legacy_s8 *destination,legacy_s8 *source);
+extern legacy_s16 RsInternal1Strcmp(legacy_s8 *left,legacy_s8 *right);
+extern legacy_s16 RsInternal1Stricmp(legacy_s8 *left,legacy_s8 *right);
+extern legacy_u16 RsInternal1Strlen(legacy_s8 *string);
+extern legacy_u8 *RsInternal2Fmemcpy(legacy_u8 *arg0,legacy_u8 *arg1,legacy_u16 arg2);
+extern legacy_u16 RsInternal1Abs(legacy_u16 value);
+extern legacy_s16 RsInternal1Rand();
+extern legacy_void RsInternal1Srand(legacy_u16 seed);
+extern legacy_s8 *RsFileFind(legacy_s8 *query);
+extern legacy_s8 *RsFileFindNext();
+extern legacy_s8 *RsFileFindNextAlt();
+extern legacy_void RsFileBuildPath(legacy_s8 *dir,legacy_s8 *name,legacy_s8 *ext,legacy_s8 *dst);
+extern legacy_s8 *RsFileCombineAndFind(legacy_s8 *dir,legacy_s8 *name,legacy_s8 *ext);
+extern legacy_u16 RsFileParas(legacy_s8 *filename,legacy_s16 fatal);
+extern legacy_u16 RsFileParasFatal(legacy_s8 *filename);
+extern legacy_u16 RsFileParasNofatal(legacy_s8 *filename);
+extern legacy_u16 RsFileDecompParas(legacy_s8 *filename,legacy_s16 fatal);
+extern legacy_u16 RsFileDecompParasFatal(legacy_s8 *filename);
+extern legacy_u16 RsFileDecompParasNofatal(legacy_s8 *filename);
+extern legacy_u8 *RsFileRead(legacy_s8 *filename,legacy_u8 *dst,legacy_s16 fatal);
+extern legacy_u8 *RsFileReadFatal(legacy_s8 *filename,legacy_u8 *dst);
+extern legacy_u8 *RsFileReadNofatal(legacy_s8 *filename,legacy_u8 *dst);
+extern legacy_s16 RsFileWrite(
+    legacy_s8 *filename,legacy_u8 *src,legacy_u32 length,legacy_s16 fatal);
+extern legacy_s16 RsFileWriteFatal(legacy_s8 *filename,legacy_u8 *src,legacy_u32 length);
+extern legacy_s16 RsFileWriteNofatal(legacy_s8 *filename,legacy_u8 *src,legacy_u32 length);
+extern legacy_u8 *RsFileDecomp(legacy_s8 *filename,legacy_s16 fatal);
+extern legacy_u8 *RsFileDecompFatal(legacy_s8 *filename);
+extern legacy_u8 *RsFileDecompNofatal(legacy_s8 *filename);
+extern legacy_u8 *RsFileLoadBinary(legacy_s8 *filename,legacy_s16 fatal);
+extern legacy_u8 *RsFileLoadBinaryNofatal(legacy_s8 *filename);
+extern legacy_u8 *RsFileLoadBinaryFatal(legacy_s8 *filename);
+extern legacy_u16 RsFileGameVersionMatches();
+extern legacy_u8 *RsFileLoadResfile(legacy_s8 *filename);
+extern legacy_u8 *RsFileLoadResfileWithTail(legacy_s8 *filename,legacy_u16 tail_bytes);
+extern legacy_u8 *RsFileLoadResource(legacy_s16 resource_type,legacy_s8 *filename);
+extern legacy_void RsUnloadResource(legacy_u8 *resptr);
+extern legacy_u8 *RsFilePrepareAudiores(legacy_s8 *songfile,legacy_s8 *voicefile,legacy_s8 *name);
+extern legacy_void RsFileLoadAudiores(legacy_s8 *songfile,legacy_s8 *voicefile,legacy_s8 *name);
+extern legacy_u8 *RsFileLoad3dres(legacy_s8 *filename);
+extern legacy_s16 RsFileLoadReplay(legacy_s8 *dir,legacy_s8 *name);
+extern legacy_s16 RsFileWriteReplay(legacy_s8 *filename);
+extern legacy_void RsResourceFileSetSize(legacy_u8 *resource,legacy_u32 size);
+extern legacy_u16 RsResourceFileCount(legacy_u8 *resource);
+extern legacy_u8 *RsResourceFileIdentifier(legacy_u8 *resource,legacy_u16 index);
+extern legacy_void RsResourceFileSetOffset(
+    legacy_u8 *resource,legacy_u16 count,legacy_u16 index,legacy_u32 offset);
+extern legacy_u16 RsResourceFileDataStart(legacy_u16 count);
+extern legacy_u8 *RsResourceFileData(legacy_u8 *resource,legacy_u16 index);
+extern legacy_u16 RsResourceTextEquals(
+    legacy_u8 *resource,legacy_u32 length,legacy_s8 *name,legacy_s8 *expected);
+extern legacy_s8 *RsLocateResource(legacy_s8 *data,legacy_s8 *name,legacy_u16 fatal);
+extern legacy_s8 *RsLocateShapeNofatal(legacy_s8 *data,legacy_s8 *name);
+extern legacy_s8 *RsLocateShapeFatal(legacy_s8 *data,legacy_s8 *name);
+extern legacy_s8 *RsLocateShapeAlt(legacy_s8 *data,legacy_s8 *name);
+extern legacy_s8 *RsLocateSoundFatal(legacy_s8 *data,legacy_s8 *name);
+extern legacy_s8 *RsMmgrPathToName(legacy_s8 *filename);
+extern legacy_u8 *RsMmgrAllocPages(legacy_s8 *name,legacy_u16 paragraphs);
+extern legacy_void RsMmgrAllocResmem(legacy_u16 end_segment);
+extern legacy_void RsMmgrInitConventionalArena();
+extern legacy_u16 RsMmgrGetOfsDiff();
+extern legacy_u8 *RsMmgrFree(legacy_s8 *ptr);
+extern legacy_void RsMmgrCopyParas(legacy_u16 srcseg,legacy_u16 destseg,legacy_s16 paras);
+extern legacy_void RsCopyParasReverse(legacy_u16 srcseg,legacy_u16 destseg,legacy_s16 paras);
+extern legacy_void RsMmgrFindFree();
+extern legacy_u8 *RsMmgrGetChunkByName(legacy_s8 *name);
+extern legacy_void RsMmgrRelease(legacy_u8 *ptr);
+extern legacy_u16 RsMmgrGetChunkSize(legacy_s8 *ptr);
+extern legacy_u16 RsMmgrResizeMemory(
+    legacy_u16 unused_offset,legacy_u16 segment,legacy_u16 paragraphs);
+extern legacy_u8 *RsMmgrCompactLiveChunk(legacy_s8 *ptr);
+extern legacy_u8 *RsMmgrAllocResbytes(legacy_s8 *name,legacy_s32 size);
+extern legacy_u32 RsMmgrGetResOfsDiffScaled();
+extern legacy_u32 RsMmgrGetChunkSizeBytes(legacy_s8 *ptr);
+extern legacy_void RsMmgrRenameChunk(legacy_s8 *ptr,legacy_s8 *name);
+extern legacy_void RsLocateManyResources(legacy_s8 *data,legacy_s8 *names,legacy_s8 **result);
+extern legacy_s8 *RsLocateTextRes(legacy_s8 *data,legacy_s8 *name);
+extern legacy_u8 *RsDosMemoryGetPsp();
+extern legacy_u8 *RsDosMemoryMakePointer(legacy_u16 segment,legacy_u16 offset);
+extern legacy_u8 *RsDosMemoryMakeNearPointer(legacy_u16 offset);
+extern legacy_u16 RsDosMemoryPointerSegment(legacy_u8 *pointer);
+extern legacy_u16 RsDosMemoryPointerOffset(legacy_u8 *pointer);
+extern legacy_u16 RsDosMemoryAllocate(legacy_u16 paragraphs);
+extern legacy_u16 RsDosMemoryResize(legacy_u16 segment,legacy_u16 paragraphs);
+extern legacy_u16 RsDosFileOpen(legacy_s8 *path,legacy_s16 create);
+extern legacy_s16 RsDosFileClose(legacy_u16 handle);
+extern legacy_u16 RsDosFileRead(legacy_u16 handle,legacy_u8 *destination,legacy_u16 length);
+extern legacy_u16 RsDosFileWrite(legacy_u16 handle,legacy_u8 *source,legacy_u16 length);
+extern legacy_s16 RsDosFileSeek(legacy_u16 handle,legacy_s32 offset,legacy_s16 origin);
+extern legacy_s32 RsDosFileTell(legacy_u16 handle);
+extern legacy_s16 RsDosFileError();
+extern legacy_s16 RsDosFileRemove(legacy_s8 *path);
+extern legacy_s8 *RsDosFileFindFirst(legacy_s8 *query);
+extern legacy_s8 *RsDosFileFindNext();
+extern legacy_void RsDosInstallDivideErrorHandler();
+extern legacy_void RsDosInterruptsDisable();
+extern legacy_void RsDosInterruptsEnable();
+extern legacy_void RsDosSetCriticalErrorHandler(legacy_u8 *callback);
+extern legacy_s16 RsDosWriteStdout(legacy_s8 *text,legacy_u16 length);
+extern legacy_s16 RsDosWriteStderr(legacy_s8 *text,legacy_u16 length);
+extern legacy_void RsDosShowStartupError(legacy_s8 *message);
+extern legacy_void RsDosProcessExit(legacy_s16 status);
+extern legacy_s16 RsDosDataStackSegmentsMatch();
+extern legacy_s16 RsDosGetJoyFlags();
+extern legacy_void RsDosJoystickResetCalibration();
+extern legacy_void RsDosJoystickSetEnabled(legacy_u8 enabled);
+extern legacy_u8 RsDosJoystickIsEnabled();
+extern legacy_s16 RsDosJoystickGetScaledAxis(legacy_u16 axis_index);
+extern legacy_s16 RsDosMouseInit(legacy_s16 width,legacy_s16 height);
+extern legacy_void RsDosMouseSetMinmax(
+    legacy_s16 minimum_x,legacy_s16 minimum_y,legacy_s16 maximum_x,legacy_s16 maximum_y);
+extern legacy_void RsDosMouseSetPosition(legacy_s16 x,legacy_s16 y);
+extern legacy_void RsDosMouseGetState(legacy_s16 *buttons,legacy_s16 *x,legacy_s16 *y);
+extern legacy_u16 RsDosMouseGetButtonCount();
+extern legacy_s16 RsDosTimerRegisterCallback(legacy_u8 *callback);
+extern legacy_void RsDosTimerUnregisterCallback(legacy_u8 *callback);
+extern legacy_void RsDosTimerResetCounter();
+extern legacy_void RsDosTimerSetCallbacksSuspended(legacy_s16 suspended);
+extern legacy_u32 RsDosTimerGetRealtimeCounter();
+extern legacy_u32 RsTimerGetCounter();
+extern legacy_u32 RsTimerGetDelta();
+extern legacy_u32 RsTimerGetSlowCounter();
+extern legacy_void RsDosTimerSetupInterrupt();
+extern legacy_void RsDosTimerShutdown();
+extern legacy_s16 RsDosVideoGetStatus();
+extern legacy_void RsDosVideoSetPalette(legacy_u16 start,legacy_u16 count,legacy_u8 *palette);
+extern legacy_void RsDosVideoSetMode13h();
+extern legacy_u8 RsDosVideoEnablePlanarPages();
+extern legacy_void RsDosVideoSetWritePlanes(legacy_u8 mask);
+extern legacy_void RsDosVideoSetReadPlane(legacy_u8 plane);
+extern legacy_void RsDosVideoShowPage(legacy_u16 address);
+extern legacy_void RsDosVideoSetMode4();
+extern legacy_void RsDosVideoSetMode7();
+extern legacy_u8 RsDosAudioDriverInitialize();
+extern legacy_void RsDosAudioDriverLoadBank(legacy_u8 *bank);
+extern legacy_void RsDosAudioDriverPrepareContext(legacy_s16 driver_channel,
+    CAudioContext *driver_context,legacy_u8 *timer,legacy_u8 *resource);
+extern legacy_void RsDosAudioDriverSetContextValue(
+    legacy_s16 driver_channel,CAudioContext *driver_context,legacy_u16 value);
+extern legacy_void RsDosAudioDriverSetControl(
+    legacy_s16 driver_channel,CAudioContext *driver_context,legacy_u16 control,legacy_u16 value);
+extern legacy_void RsDosAudioDriverSetPitch(
+    legacy_u8 *timer,legacy_s16 pitch,legacy_s16 driver_channel);
+extern legacy_void RsDosAudioDriverSendData(legacy_u16 length,legacy_u8 *data);
+extern legacy_void RsDosAudioDriverActivateContext(legacy_s16 driver_channel,
+    CAudioContext *driver_context,legacy_u8 *timer,legacy_s16 pitch,legacy_u16 parameter,
+    legacy_u8 *resource);
+extern legacy_void RsDosAudioDriverReleaseChannel(legacy_s16 driver_channel);
+extern legacy_void RsDosAudioDriverStartContext(
+    legacy_s16 driver_channel,CAudioContext *driver_context);
+extern legacy_void RsDosAudioDriverEndContext(
+    legacy_s16 driver_channel,CAudioContext *driver_context);
+extern legacy_void RsDosAudioDriverReset();
+extern legacy_void RsDosAudioDriverStart();
+extern legacy_void RsDosAudioDriverSuspendContext(legacy_s16 driver_channel,
+    CAudioContext *driver_context,legacy_u16 value,legacy_u8 *resource);
+extern legacy_void RsDosAudioDriverSuspendAll(CAudioContext *contexts);
+extern legacy_void RsDosAudioDriverSetMasterState(legacy_s16 operation,legacy_u8 *state);
+extern legacy_void RsDosAudioBindChannelContext(legacy_s16 channel,legacy_u8 *resource);
+extern legacy_void RsDosAudioSetChannelVolume(legacy_s16 channel,legacy_s16 volume);
+extern legacy_void RsDosAudioSetContextPitch(legacy_s16 context_index,legacy_s16 pitch);
+extern legacy_void RsDosAudioShutdown();
+extern legacy_u16 RsShape2dGetWidth(CShape2D *shape);
+extern legacy_u16 RsShape2dGetHeight(CShape2D *shape);
+extern legacy_u16 RsShape2dGetAnchorX(CShape2D *shape);
+extern legacy_u16 RsShape2dGetAnchorY(CShape2D *shape);
+extern legacy_u16 RsShape2dGetPosX(CShape2D *shape);
+extern legacy_u16 RsShape2dGetPosY(CShape2D *shape);
+extern legacy_u16 RsShape2dAnchoredX(CShape2D *shape,legacy_s16 x);
+extern legacy_u16 RsShape2dAnchoredY(CShape2D *shape,legacy_s16 y);
+extern CSprite *RsSpriteMakeWnd(legacy_u16 width,legacy_u16 height,legacy_u16 unused_flags);
+extern legacy_void RsSpriteFreeWnd(CSprite *render_window_sprite);
+extern legacy_void RsSpriteSelectTarget(CSprite *target_sprite);
+extern legacy_void RsSpriteSelectScreen();
+extern legacy_void RsSpriteSelectScreenCompat();
+extern legacy_void RsSpriteSelectScreenAndClear();
+extern legacy_void RsSpriteSelectRenderWindow();
+extern legacy_void RsSpriteSelectRenderWindowAndClear();
+extern legacy_void RsSpriteSaveContext(CSprite *saved_context);
+extern legacy_void RsSpriteRestoreContext(CSprite *saved_context);
+extern legacy_s16 RsSpritePushBackground(
+    legacy_s16 left,legacy_s16 right,legacy_s16 top,legacy_s16 bottom);
+extern legacy_void RsSpriteClearTarget(legacy_u8 color);
+extern legacy_void RsSpriteXorRectClipped(
+    legacy_s16 x,legacy_s16 y,legacy_s16 width,legacy_s16 height,legacy_s16 color);
+extern legacy_void RsSpriteFillRect(
+    legacy_s16 x,legacy_s16 y,legacy_s16 width,legacy_s16 height,legacy_s16 color);
+extern legacy_void RsSpriteFillRectClipped(
+    legacy_s16 x,legacy_s16 y,legacy_s16 width,legacy_s16 height,legacy_s16 color);
+extern legacy_void RsSpriteDrawRectOutline(
+    legacy_s16 x1,legacy_s16 y1,legacy_s16 x2,legacy_s16 y2,legacy_s16 color);
+extern legacy_void RsSpriteDrawDissolvePhase(CShape2D *shape,legacy_u16 phase);
+extern legacy_void RsSpriteDrawPaletteMapped(CShape2D *shape);
+extern legacy_void RsDrawFilledLines(
+    legacy_s16 *x1arr,legacy_s16 *x2arr,legacy_u16 y,legacy_u16 numlines,legacy_u16 color);
+extern legacy_void RsDrawTwoColorLines(
+    legacy_s16 *x1arr,legacy_s16 *x2arr,legacy_u16 y,legacy_u16 numlines,legacy_u16 color);
+extern legacy_void RsDrawPatternedLines(
+    legacy_s16 *x1arr,legacy_s16 *x2arr,legacy_u16 y,legacy_u16 numlines,legacy_u16 color);
+extern legacy_void RsSpriteDrawLineFromSetup(legacy_u16 *line);
+extern legacy_void RsSpritePutpixelClipped(legacy_s16 x,legacy_s16 y,legacy_s16 color);
+extern legacy_void RsPutpixelIconMask(CShape2D *shape,legacy_s16 x,legacy_s16 y);
+extern legacy_void RsPutpixelIconFillings(CShape2D *shape,legacy_s16 x,legacy_s16 y);
+extern legacy_void RsSpritePutimage(CShape2D *shape);
+extern legacy_void RsSpriteShapeTo1(CShape2D *shape,legacy_s16 x,legacy_s16 y);
+extern legacy_void RsSpriteShapeTo1Alt(CShape2D *shape);
+extern legacy_void RsSpritePopBackground();
+extern legacy_void RsSpritePutimageAnd(CShape2D *shape,legacy_u16 x,legacy_u16 y);
+extern legacy_void RsSpriteCopyImageAt(CShape2D *shape,legacy_s16 x,legacy_s16 y);
+extern legacy_void RsSpriteAndImageAtAnchor(CShape2D *shape,legacy_s16 x,legacy_s16 y);
+extern legacy_void RsSpritePutimageOr(CShape2D *shape,legacy_u16 x,legacy_u16 y);
+extern legacy_void RsSpriteOrImageAtAnchor(CShape2D *shape,legacy_s16 x,legacy_s16 y);
+extern legacy_void RsSpritePutimageTransparent(CShape2D *shape,legacy_s16 x,legacy_s16 y);
+extern legacy_void RsSpriteClearShapeAlt(CShape2D *shape,legacy_s16 x,legacy_s16 y);
+extern legacy_void RsSpriteClearShape(CShape2D *shape);
+extern legacy_void RsFontDrawTextOpaque(legacy_s8 *text,legacy_s16 x,legacy_s16 y);
+extern legacy_void RsShape2dRleCopyAtPosition(CShape2D *shape);
+extern legacy_void RsShape2dRleCopyClipped(CShape2D *shape,legacy_s16 x,legacy_s16 y);
+extern legacy_void RsShape2dRleCopyPositionClipped(CShape2D *shape);
+extern legacy_void RsShape2dRleMaskPositionClipped(CShape2D *shape);
+extern legacy_void RsShape2dRleOrPositionClipped(CShape2D *shape);
+extern legacy_void RsShape2dRleOrFarPointer(legacy_u16 offset,legacy_u16 segment);
+extern legacy_void RsShape2dRleCopy(CShape2D *shape,legacy_s16 x,legacy_s16 y);
+extern legacy_void RsShape2dRenderBmpAsMask(CShape2D *shape);
+extern legacy_void RsShape2dDrawScaledTransparentClipped(
+    legacy_s16 scale,CShape2D *shape,legacy_s16 x,legacy_s16 y);
+extern legacy_void RsShape2dDrawScaledTransparent(
+    legacy_s16 scale,CShape2D *shape,legacy_s16 x,legacy_s16 y);
+extern legacy_void RsSpritePresentMcgaBackbuffer();
+extern legacy_void RsSpriteSelectMcgaBackbuffer();
+extern legacy_void RsSpriteCopyRectShifted(legacy_s16 source_x,legacy_s16 source_y,
+    legacy_s16 width,legacy_s16 height,legacy_s16 destination_shift);
+extern CShape2D *RsFileGetShape2d(legacy_u8 *memchunk,legacy_s16 index);
+extern legacy_u16 RsFileGetResShapeCount(legacy_u8 *memchunk);
+extern legacy_void RsFileUnflipShape2d(legacy_u8 *memchunk,legacy_s8 *mempages);
+extern legacy_void RsFileUnflipShape2dPes(legacy_u8 *memchunk,legacy_s8 *mempages);
+extern legacy_void RsFileLoadShape2dExpand(legacy_u8 *memchunk,legacy_s8 *mempages);
+extern legacy_u16 RsFileGetUnflipSize(legacy_s8 *memchunk);
+extern legacy_u16 RsFileLoadShape2dExpandedsize(legacy_u8 *memchunk);
+extern legacy_void RsFileLoadShape2dPalmapInit(legacy_u8 *pal);
+extern legacy_void RsFileLoadShape2dPalmapApply(legacy_u8 *memchunk,legacy_u8 *palmap);
+extern legacy_u8 *RsFileLoadShape2dEsh(legacy_u8 *memchunk,legacy_s8 *str);
+extern legacy_void RsParseShape2d(legacy_u8 *memchunk,legacy_u8 *mempages);
+extern legacy_u8 *RsFileLoadShape2d(legacy_s8 *shapename,legacy_s16 fatal);
+extern legacy_u8 *RsFileLoadShape2dFatal(legacy_s8 *shapename);
+extern legacy_u8 *RsFileLoadShape2dNofatal(legacy_s8 *shapename);
+extern legacy_u8 *RsFileLoadShape2dNofatal2(legacy_s8 *shapename);
+extern legacy_u8 *RsFileLoadShape2dRes(legacy_s8 *resname,legacy_s16 fatal);
+extern legacy_u8 *RsFileLoadShape2dResFatal(legacy_s8 *resname);
+extern legacy_u8 *RsFileLoadShape2dResNofatal(legacy_s8 *resname);
+extern legacy_void RsAddExitHandler(legacy_u8 *exit_handler);
+extern legacy_void RsCallExitlist();
+extern legacy_void RsCallExitlist2();
+extern legacy_void RsFatalError(legacy_s8 *format,...);
+extern legacy_u16 RsShowDialog(legacy_s16 dialog_type,legacy_s16 save_background,
+    legacy_u8 *text_resource,legacy_u16 x_argument,legacy_u16 y_argument,legacy_s16 border_color,
+    legacy_s16 *disabled_choices,legacy_s16 initial_choice);
+extern legacy_s8 RsDoFileselectDialog(
+    legacy_s8 *directory,legacy_s8 *filename,legacy_s8 *extension,legacy_s8 *prompt);
+extern legacy_s16 RsDoSavefileDialog(legacy_s8 *primary,legacy_s8 *secondary,legacy_s8 *prompt);
+extern legacy_void RsEnsureFileExists(legacy_s16 file_index);
+extern legacy_void RsShowWaiting();
+extern legacy_s16 RsShowDiskErrorDialog();
+extern legacy_void RsSecurityCheck(legacy_s16 question_index);
+extern legacy_void RsSpriteXorRectOutline(
+    legacy_s16 left,legacy_s16 top,legacy_s16 right,legacy_s16 bottom,legacy_s16 color);
+extern legacy_void RsShowInsufficientMemoryDialog();
+extern legacy_void RsAudioSuspend();
+extern legacy_void RsAudioResume();
+extern legacy_s16 RsAudioLoadDosDriver(legacy_s8 *driver,legacy_s16 unused,legacy_s16 mode);
+extern legacy_u8 *RsLoadSongFile(legacy_s8 *filename);
+extern legacy_u8 *RsLoadVoiceFile(legacy_s8 *filename);
+extern legacy_u8 *RsLoadSfxFile(legacy_s8 *filename);
+extern legacy_u8 *RsInitAudioResources(legacy_u8 *song,legacy_u8 *instruments,legacy_s8 *name);
+extern legacy_void RsLoadAudioFinalize(legacy_u8 *audio_resource);
+extern legacy_s16 RsAudioLoadDriver(
+    legacy_s8 *driver,legacy_s16 unused_driver_segment,legacy_s16 mode);
+extern legacy_void RsAudioUnload();
+extern legacy_s16 RsAudioToggleMusic();
+extern legacy_s16 RsAudioToggleEffects();
+extern legacy_void RsAudiodrvAtexit();
+extern legacy_void RsAudioPlayCrashAndStopEngine(legacy_s16 index);
+extern legacy_void RsAudioAddDriverTimer();
+extern legacy_void RsAudioRemoveDriverTimer();
+extern legacy_u16 RsFileioFileioOpen(legacy_s8 *path,legacy_s16 create);
+extern legacy_s16 RsFileioFileioClose(legacy_u16 file);
+extern legacy_u64 RsFileioFileioRead(
+    legacy_u8 *dst,legacy_u64 size,legacy_u64 nmemb,legacy_u16 file);
+extern legacy_u64 RsFileioFileioWrite(
+    legacy_u8 *src,legacy_u64 size,legacy_u64 nmemb,legacy_u16 file);
+extern legacy_s16 RsFileioFileioSeek(legacy_u16 file,legacy_s32 offset,legacy_s16 origin);
+extern legacy_s32 RsFileioFileioTell(legacy_u16 file);
+extern legacy_s16 RsFileioFileioError();
+extern legacy_s16 RsFileioFileioRemove(legacy_s8 *path);
+extern legacy_u16 RsFileioFileBytesToParas(legacy_s32 length);
+extern legacy_u32 RsFileDecompRleSeq(
+    legacy_u8 *src,legacy_u8 *dst,legacy_u32 srclen,legacy_u8 esc);
+extern legacy_u32 RsFileDecompRleSingle(
+    legacy_u8 *src,legacy_u8 *dst,legacy_u32 len,legacy_u8 *esclookup);
+extern legacy_u8 *RsFileioFileRelocateDecompOutput(
+    legacy_u8 *destination,legacy_u16 decompparas,legacy_u32 length);
+extern legacy_u32 RsFileDecompRle(legacy_u8 *src,legacy_u8 *dst,legacy_u16 decompparas);
+extern legacy_u8 *RsFileioFileVleReadAlphabet(
+    CVleDecoder *decoder,legacy_u8 *source,legacy_u8 escape_length);
+extern legacy_void RsFileioFileVlePrepareLookup(
+    CVleDecoder *decoder,legacy_u8 *source,legacy_u8 escape_length);
+extern legacy_void RsFileioFileVleWriteSymbol(
+    CVleDecoder *decoder,legacy_u8 *destination,legacy_u8 symbol);
+extern legacy_u8 RsFileioFileVleReadByte(CVleDecoder *decoder);
+extern legacy_u8 RsFileioFileVleExpandEscape(CVleDecoder *decoder,legacy_u8 *destination);
+extern legacy_u8 RsFileioFileVleDecodeDirect(
+    CVleDecoder *decoder,legacy_u8 *destination,legacy_u8 code,legacy_u8 next_width);
+extern legacy_u32 RsFileDecompVle(legacy_u8 *src,legacy_u8 *dst,legacy_u16 decompparas);
+extern legacy_s16 RsFileioFileDecompPass(
+    legacy_u8 *source,legacy_u8 *destination,legacy_u16 paragraphs,legacy_u32 *length);
+extern legacy_u8 *RsFileioFileAllocTailPages(
+    legacy_s8 *filename,legacy_u16 paragraphs,legacy_u16 tail_bytes);
+extern legacy_u8 *RsFileioFileDecompInternal(
+    legacy_s8 *filename,legacy_s16 fatal,legacy_u16 tail_bytes);
+extern legacy_u8 *RsFileioFileLoadBinaryInternal(
+    legacy_s8 *filename,legacy_s16 fatal,legacy_u16 tail_bytes);
+extern legacy_u8 *RsFileioFileTryLoadResource(legacy_s16 resource_type,legacy_s8 *filename);
+extern legacy_s16 RsFileioFileShowResourceError(legacy_s8 *filename);
+extern legacy_u8 *RsFileioFileLoadSuffixedResource(
+    legacy_s16 resource_type,legacy_s8 *filename,legacy_s8 *suffix,legacy_s8 *name);
+extern legacy_s32 RsFileioFileGameResourceSize(legacy_s8 *filename,legacy_u16 packed);
+extern legacy_void RsFileioFileSetReplayFilename(legacy_s8 *path);
+extern legacy_s8 RsLegacyLegacyS8FromBits(legacy_u8 value);
+extern legacy_s16 RsLegacyLegacyS16FromBits(legacy_u16 value);
+extern legacy_s32 RsLegacyLegacyS32FromBits(legacy_u32 value);
+extern legacy_s8 RsResourceLegacyS8FromBits(legacy_u8 value);
+extern legacy_s16 RsResourceLegacyS16FromBits(legacy_u16 value);
+extern legacy_s32 RsResourceLegacyS32FromBits(legacy_u32 value);
+extern legacy_u16 RsResourceReadU16le(legacy_u8 *source);
+extern legacy_u32 RsResourceReadU32le(legacy_u8 *source);
+extern legacy_u8 *RsResourceResourceFileOffsetBytes(
+    legacy_u8 *resource,legacy_u16 count,legacy_u16 index);
+extern legacy_s8 RsMathLegacyS8FromBits(legacy_u8 value);
+extern legacy_s16 RsMathLegacyS16FromBits(legacy_u16 value);
+extern legacy_s32 RsMathLegacyS32FromBits(legacy_u32 value);
+extern legacy_void RsTrackCollisionCapture(CTrackCollisionSnapshot *saved);
+extern legacy_void RsTrackCollisionRestore(CTrackCollisionSnapshot *saved);
+extern legacy_void RsBuildTrackObject(CVector *world_position,CVector *next_world_position);
+extern legacy_s16 RsTrackWallIntersectsSegment(CVector *first,CVector *second);
+extern legacy_s16 RsTrackSolidObstacleContact(
+    CVector *first,CVector *second,legacy_s16 *fraction);
+extern legacy_s16 RsTrackSurfaceContainsPoint(CVector *point);
+extern legacy_s16 RsSweepTrackSurfaceCandidates(
+    CVector *previous,CVector *current,legacy_u8 *test,legacy_s16 *fraction);
+extern legacy_void RsLoadTrackCollisionResources();
+extern legacy_void RsTrackCollisionResourcesDecode(legacy_u8 *plane_source,legacy_u8 *wall_source);
+extern legacy_s16 RsPlaneSignedDistance(
+    legacy_s16 plane_index,legacy_s16 x,legacy_s16 y,legacy_s16 z);
+extern legacy_void RsTransformWheelTravelToWorld();
+extern legacy_s16 RsSignWord(legacy_s16 value);
+extern legacy_s32 RsAbsoluteLong(legacy_s32 value);
+extern legacy_s16 RsMathPolarAngleQuadrant(legacy_u16 flag,legacy_s16 result);
+extern legacy_s16 RsMathMatrixScaledProduct(legacy_s16 left,legacy_s16 right);
+extern legacy_s16 RsMathMatrixRowProduct(
+    legacy_s16 row_x,legacy_s16 row_y,legacy_s16 row_z,CVector *invec);
+extern legacy_s16 RsRectIsInside(CRectangle *r1,CRectangle *r2);
+extern legacy_s16 RsRectIsOverlapping(CRectangle *r1,CRectangle *r2);
+extern legacy_s16 RsRectIsAdjacent(CRectangle *r1,CRectangle *r2);
+extern legacy_void RsMathRectlistRemoveAt(
+    legacy_s8 *length,CRectangle *rectangles,legacy_s16 index);
+extern legacy_void RsMathRectlistSplitOverlap(CRectangle *rect,CRectangle *existing_rectangle,
+    CRectangle *merged_rectangle,CRectangle *upper_remainder,CRectangle *lower_remainder,
+    legacy_s16 *has_upper_remainder,legacy_s16 *has_lower_remainder);
+extern legacy_void RsRectlistAddRect(
+    legacy_s8 *rectangle_count,CRectangle *rectangles,CRectangle *rect);
+extern legacy_u16 RsMathMathWordMagnitude(legacy_s16 value);
+extern legacy_s16 RsMathSaturateProjection(legacy_s32 sum);
+extern legacy_u16 RsMathProjectionMagnitude(legacy_s16 value);
+extern legacy_s16 RsMathVectorInterpolateAxis(
+    legacy_s16 first,legacy_s16 second,legacy_s16 factor,legacy_s16 divisor);
+extern legacy_void RsVectorInterpolateAtSavedZ(CVector *vec1,CVector *vec2,CVector *outvec);
+extern legacy_s16 RsVecNormalInnerProduct(
+    legacy_s16 x,legacy_s16 y,legacy_s16 z,CVector *normal);
+extern legacy_s8 RsMemmgrLegacyS8FromBits(legacy_u8 value);
+extern legacy_s16 RsMemmgrLegacyS16FromBits(legacy_u16 value);
+extern legacy_s32 RsMemmgrLegacyS32FromBits(legacy_u32 value);
+extern legacy_void RsMemmgrMmgrCopyResourceName(legacy_s8 *destination,legacy_s8 *name);
+extern legacy_u16 RsMmgrAvailableParagraphs();
+extern legacy_u16 RsMmgrAllocatedParagraphs();
+extern legacy_u16 RsMmgrHasCachedResource(legacy_s8 *name);
+extern legacy_void RsMemmgrLocateManyResourcesNofatal(
+    legacy_s8 *data,legacy_s8 *names,legacy_s8 **result);
+extern legacy_void RsLocateManyShapesNofatal(legacy_s8 *data,legacy_s8 *names,legacy_s8 **result);
+extern legacy_void RsLocateManySoundsFatal(legacy_s8 *data,legacy_s8 *names,legacy_s8 **result);
+extern legacy_void RsLocateManyResourcesOptional(
+    legacy_s8 *data,legacy_s8 *names,legacy_s8 **result);
+extern legacy_s8 RsStrlibLegacyS8FromBits(legacy_u8 value);
+extern legacy_s16 RsStrlibLegacyS16FromBits(legacy_u16 value);
+extern legacy_s32 RsStrlibLegacyS32FromBits(legacy_u32 value);
+extern legacy_void RsInitMain(legacy_s16 argc,legacy_s8 **argv);
+extern legacy_void RsInitDiv0();
+extern legacy_s16 RsRunMainMenuLoop(legacy_s16 argc,legacy_s8 **argv);
+extern legacy_u8 RsStrlibLegacyAsciiLower(legacy_u8 character);
+extern legacy_s8 RsNumlibLegacyS8FromBits(legacy_u8 value);
+extern legacy_s16 RsNumlibLegacyS16FromBits(legacy_u16 value);
+extern legacy_s32 RsNumlibLegacyS32FromBits(legacy_u32 value);
+extern legacy_s8 RsKevinrndLegacyS8FromBits(legacy_u8 value);
+extern legacy_s16 RsKevinrndLegacyS16FromBits(legacy_u16 value);
+extern legacy_s32 RsKevinrndLegacyS32FromBits(legacy_u32 value);
+extern legacy_s8 RsReplinitLegacyS8FromBits(legacy_u8 value);
+extern legacy_s16 RsReplinitLegacyS16FromBits(legacy_u16 value);
+extern legacy_s32 RsReplinitLegacyS32FromBits(legacy_u32 value);
+extern legacy_s8 RsGameinitLegacyS8FromBits(legacy_u8 value);
+extern legacy_s16 RsGameinitLegacyS16FromBits(legacy_u16 value);
+extern legacy_s32 RsGameinitLegacyS32FromBits(legacy_u32 value);
+extern legacy_void RsUpdateOpponent();
+extern legacy_void RsOpponentRouteAdvance(legacy_s16 route_point);
+extern legacy_void RsUpdateOpponentTick();
+extern legacy_void RsUpdateCrashState(legacy_s16 crash_event,legacy_s16 car_index);
+extern legacy_void RsConfigureOwoot(legacy_s16 argc,legacy_s8 **argv);
+extern legacy_void RsOwootReadWheelShape(legacy_u8 *shape);
+extern legacy_void RsOwootLoadPlayerWheels();
+extern legacy_u16 RsOwootWheelFootprint(CCarState *car,legacy_u16 wheel,CVector *output);
+extern legacy_void RsOwootUpdatePlayer(CCarState *car,legacy_s16 car_index);
+extern legacy_s16 RsGameinitAngleWithOffset(legacy_s16 angle,legacy_s16 offset);
+extern legacy_s32 RsGameinitTrackCoordinateToWorld(legacy_s16 base,legacy_s16 offset);
+extern legacy_void RsGameinitCalculateCarStartOffset(legacy_s16 track_direction,
+    legacy_s16 side_direction,legacy_s16 *column_offset,legacy_s16 *row_offset);
+extern legacy_void RsGameinitInitCarAtStart(CCarState *carstate,CSimd *simd,
+    legacy_s8 transmission,legacy_s16 column_offset,legacy_s16 row_offset);
+extern legacy_void RsGameinitInitCarWheels(
+    CCarState *playerstate,legacy_s32 pos_x,legacy_s32 pos_y,legacy_s32 pos_z);
+extern legacy_void RsGameinitInitFollowCameraPositions();
+extern legacy_void RsGameinitInitRaceCars(legacy_s16 initialization_mode);
+extern legacy_void RsGameinitInitGameStateWithRates(
+    legacy_u16 frame_rate,legacy_u16 stored_frame_rate);
+extern legacy_s8 RsGamestepLegacyS8FromBits(legacy_u8 value);
+extern legacy_s16 RsGamestepLegacyS16FromBits(legacy_u16 value);
+extern legacy_s32 RsGamestepLegacyS32FromBits(legacy_u32 value);
+extern legacy_void RsKbRegCallback(legacy_s16 code,legacy_u8 *callback);
+extern legacy_s16 RsKbParseKey(legacy_s16 code);
+extern legacy_void RsKbRemoveCallback(legacy_s16 code);
+extern legacy_void RsKbSetReadcharCallback(legacy_u8 *callback);
+extern legacy_u8 *RsKbGetReadcharCallback();
+extern legacy_void RsJoystickResetCalibration();
+extern legacy_s16 RsInputDirectionFromFlags(legacy_s16 index);
+extern legacy_s16 RsJoystickGetScaledX();
+extern legacy_s16 RsJoystickGetScaledY();
+extern legacy_void RsLoadPalandcursor();
+extern legacy_s16 RsHandleIngameKbShortcuts(legacy_s16 key);
+extern legacy_void RsMouseDrawTransparentCheck();
+extern legacy_void RsMouseDrawOpaqueCheck();
+extern legacy_s16 RsMouseMultiHittest(legacy_s16 count,CButtonArea *buttons);
+extern legacy_s16 RsGetKbOrJoyFlags();
+extern legacy_s16 RsInputChecking(legacy_s16 frame_delta);
+extern legacy_s16 RsScrollbarUpdate(legacy_s16 operation,legacy_s16 x,legacy_s16 width,
+    legacy_s16 y,legacy_s16 height,legacy_s16 selected,legacy_s16 selection_width,
+    legacy_s16 item_count);
+extern legacy_s16 RsInputDoChecking(legacy_s16 frame_delta);
+extern legacy_void RsCheckInput();
+extern legacy_void RsInputWaitForPressAndRelease();
+extern legacy_void RsInputPushStatus();
+extern legacy_void RsInputPopStatus();
+extern legacy_s16 RsInputRepeatCheck(legacy_s16 duration);
+extern legacy_void RsMouseMinmaxPosition(legacy_s16 inset);
+extern CVector *RsTrackVectorFromLegacyOffset(legacy_u16 offset);
+extern legacy_u8 RsSubstHillroadTrack(legacy_u8 terrain,legacy_u8 track);
+extern legacy_void RsInitPlantrak();
+extern legacy_s16 RsTrackRowPosition(legacy_u16 row);
+extern legacy_s16 RsTrackColumnPosition(legacy_u16 column);
+extern legacy_s16 RsTrackObjectBaseX(CTrackObject *track_object,legacy_u8 column);
+extern legacy_s16 RsTrackObjectBaseZ(CTrackObject *track_object,legacy_u8 row);
+extern legacy_s16 RsTrackSetup();
+extern legacy_void RsAudioApplyCarStateSample(legacy_u8 *sample,legacy_s16 interval);
+extern legacy_s16 RsAudioInitEngine(legacy_s16 unused_type,legacy_u8 *source_pointer,
+    legacy_u8 *shape_resources,legacy_u8 *audio_resources);
+extern legacy_void RsAudioCarstate();
+extern legacy_void RsAudioPlayCarEvents(legacy_u8 flags,legacy_s16 channel);
+extern legacy_void RsUpdatePlayerTickWithLegacySi(legacy_s8 input_flags,legacy_s16 caller_si);
+extern legacy_s16 RsDetectPenalty(legacy_s16 *current_track,legacy_s16 *penalty_count);
+extern legacy_void RsUpdateGrip(CCarState *carstate,CSimd *simd,legacy_s16 grip_behavior);
+extern legacy_void RsUpdateLegacyGripStackWords(CCarState *carstate,CSimd *simd,
+    legacy_u16 speed_before_grip,legacy_u16 speed2_before_grip,legacy_s16 caller_si);
+extern legacy_void RsUpdatePlayerState(CCarState *carstate,CSimd *simd,CCarState *other_carstate,
+    CSimd *other_simd,legacy_s16 car_index);
+extern legacy_void RsUpdatePlayerSteeringInput(legacy_s8 steering_input);
+extern legacy_void RsPhantomPhysicsReset(
+    CPhantomPhysics *phantom,CGameState *keyframe,legacy_s8 input_flags);
+extern legacy_void RsPhantomPhysicsAdvance(CPhantomPhysics *phantom,legacy_u32 elapsed20);
+extern legacy_void RsUpdatePlayerStateFraction(
+    CGameState *branch,legacy_s16 car_index,legacy_u32 fraction20);
+extern legacy_s16 RsUpdateWheelSuspensionFraction(
+    CCarState *carstate,legacy_s16 contact_delta,legacy_s16 wheel_index,legacy_u32 fraction20);
+extern legacy_void RsUpdateCarSpeedFraction(legacy_s8 input_flags,legacy_s16 car_index,
+    CCarState *carstate,CSimd *simd,legacy_u32 fraction20);
+extern legacy_void RsUpdatePlayerSteeringFraction(
+    CCarState *carstate,legacy_s8 steering_input,legacy_u32 fraction20);
+extern legacy_void RsUpdateFollowCamerasFraction(CGameState *camera_state,legacy_u32 fraction20);
+extern legacy_void RsGamestepUpdateTracksideCamera(
+    legacy_u16 car_index,legacy_s16 car_x,legacy_s16 car_z);
+extern legacy_s16 RsGamestepFollowCameraUsesCarTarget(
+    CGameState *camera_state,legacy_u16 car_index,CCarState *carstate);
+extern legacy_s16 RsGamestepFollowCameraStep(legacy_s16 movement,legacy_u32 fraction20);
+extern legacy_void RsGamestepUpdateFollowCameraHeight(
+    CGameState *camera_state,legacy_u16 car_index,legacy_s16 car_y,legacy_u32 fraction20);
+extern legacy_void RsGamestepUpdateCarFollowCamera(
+    CGameState *camera_state,legacy_u16 car_index,legacy_u32 fraction20);
+extern legacy_void RsUpdateFollowCameras();
+extern legacy_void RsGamestepUpdateRaceEndTiming();
+extern legacy_void RsGamestepUpdateRaceStartSequence();
+extern legacy_void RsGamestepUpdateGamestateImpl(
+    legacy_s16 caller_si,legacy_s16 update_audio,legacy_s16 store_checkpoints);
+extern legacy_s8 RsSimdLegacyS8FromBits(legacy_u8 value);
+extern legacy_s16 RsSimdLegacyS16FromBits(legacy_u16 value);
+extern legacy_s32 RsSimdLegacyS32FromBits(legacy_u32 value);
+extern legacy_u8 RsSimdSimdReadU8(CSimdReader *reader);
+extern legacy_s8 RsSimdSimdReadS8(CSimdReader *reader);
+extern legacy_u16 RsSimdSimdReadU16(CSimdReader *reader);
+extern legacy_s16 RsSimdSimdReadS16(CSimdReader *reader);
+extern legacy_void RsSimdSimdReadPoint(CSimdReader *reader,CPoint2D *point);
+extern legacy_void RsSimdSimdReadVector(CSimdReader *reader,CVector *vector);
+extern legacy_void RsSimdSimdReadS8Array(CSimdReader *reader,legacy_s8 *values,legacy_u16 count);
+extern legacy_void RsSimdSimdReadU16Array(
+    CSimdReader *reader,legacy_u16 *values,legacy_u16 count);
+extern legacy_void RsSimdSimdReadS16Array(
+    CSimdReader *reader,legacy_s16 *values,legacy_u16 count);
+extern legacy_void RsSimdSimdReadPointArray(
+    CSimdReader *reader,CPoint2D *points,legacy_u16 count);
+extern legacy_void RsSimdSimdReadVectorArray(
+    CSimdReader *reader,CVector *vectors,legacy_u16 count);
+extern legacy_s8 RsCarsetupLegacyS8FromBits(legacy_u8 value);
+extern legacy_s16 RsCarsetupLegacyS16FromBits(legacy_u16 value);
+extern legacy_s32 RsCarsetupLegacyS32FromBits(legacy_u32 value);
+extern legacy_void RsLoadSdgame2Shapes();
+extern legacy_void RsFreeSdgame2();
+extern legacy_s16 RsSetupPlayerCars();
+extern legacy_s16 RsSetupPlayerCarsWithoutDashboard();
+extern legacy_void RsFreePlayerCars();
+extern legacy_void RsGhostLoadSimulationResources();
+extern legacy_void RsGhostFreeSimulationResources();
+extern legacy_void RsConfigurePowergearBug(legacy_s16 argc,legacy_s8 **argv);
+extern legacy_void RsUpdateCarSpeed(
+    legacy_s8 input_flags,legacy_s16 car_index,CCarState *carstate,CSimd *simd);
+extern legacy_void RsCameraSelectMode(legacy_s8 mode);
+extern legacy_s16 RsShape3dLoadAll();
+extern legacy_void RsShape3dFreeAll();
+extern legacy_void RsShape3dVertexRead(CShape3D *shape,legacy_u16 index,CVector *destination);
+extern legacy_void RsShape3dVertexWrite(CShape3D *shape,legacy_u16 index,CVector *source);
+extern legacy_void RsShape3dLoadCarShapes(legacy_s8 *player_car_id,legacy_s8 *opponent_car_id);
+extern legacy_void RsShape3dFreeCarShapes();
+extern legacy_void RsShape3dInitShape(legacy_s8 *shapeptr,CShape3D *gameshape);
+extern legacy_u16 RsShape3dTransformAndQueue(CTransformedShape3D *instance);
+extern legacy_void RsSetProjection(legacy_s16 horizontal_fov_degrees,
+    legacy_s16 vertical_fov_degrees,legacy_s16 width,legacy_s16 height);
+extern legacy_u16 RsSelectCliprectRotate(legacy_s16 ang_z,legacy_s16 ang_x,legacy_s16 ang_y,
+    CRectangle *cliprect,legacy_s16 half_scale);
+extern legacy_void RsInitPolyinfo();
+extern legacy_void RsPolyinfoReset();
+extern legacy_void RsPolyinfoSetSupersight(legacy_u8 enabled);
+extern legacy_void RsShape3dRenderQueuedPrimitives();
+extern legacy_void RsShape3dSetLegacyRenderStack(legacy_s16 *wheel_headings,
+    legacy_u16 polygon_frame_pointer,legacy_u16 polygon_code_segment,
+    CShape3DLegacyOpponentRenderContext *opponent);
+extern legacy_void RsShape3dRetainLegacySkyboxHorizon(legacy_s16 horizon);
+extern legacy_void RsShape3dRetainLegacySkyboxRect(CRectangle *rect);
+extern legacy_void RsShape3dRetainLegacySkyboxPoints(CPoint2D *points);
+extern legacy_void RsShape3dRetainLegacyCrackLine(
+    legacy_u16 *line,legacy_u16 end_y,legacy_s16 dirty_rects,legacy_s16 drawn);
+extern legacy_void RsShape3dRetainLegacyCrackBounds(legacy_s16 line_index,legacy_u16 crack_offset);
+extern legacy_void RsPreRenderDefault(
+    legacy_u16 color,legacy_u16 vertex_count,CPoint2D *vertices);
+extern legacy_void RsPreRenderDefaultAlt(
+    legacy_u16 color,legacy_u16 vertex_count,CPoint2D *vertices);
+extern legacy_void RsPreRenderPatterned(
+    legacy_u16 pattern,legacy_u16 color,legacy_u16 vertex_count,CPoint2D *vertices);
+extern legacy_void RsPreRenderTwoColor(legacy_u16 pattern,legacy_u16 color,
+    legacy_u16 alternate_color,legacy_u16 vertex_count,CPoint2D *vertices);
+extern legacy_void RsPreRenderLine(
+    legacy_u16 start_x,legacy_u16 start_y,legacy_u16 end_x,legacy_u16 end_y,legacy_u16 color);
+extern legacy_void RsPreRenderCrackLine(
+    legacy_u16 start_x,legacy_u16 start_y,legacy_u16 end_x,legacy_u16 end_y,legacy_u16 color);
+extern legacy_u16 RsLinePrepareClipped(
+    legacy_u16 start_x,legacy_u16 start_y,legacy_u16 end_x,legacy_u16 end_y,legacy_u16 *line);
+extern legacy_u16 RsLinePrepareUnclipped(
+    legacy_u16 start_x,legacy_u16 start_y,legacy_u16 end_x,legacy_u16 end_y,legacy_u16 *line);
+extern legacy_void RsSkyboxFillPolygon(
+    legacy_u16 color,legacy_u16 vertex_count,CPoint2D *vertices);
+extern legacy_void RsSphereBuildPerimeter(legacy_u16 *source,legacy_u16 *destination);
+extern legacy_void RsSphereDrawPolygon(legacy_u16 *source,legacy_u16 color);
+extern legacy_void RsWheelBuildPerimeter(legacy_u16 *source,legacy_u16 *destination);
+extern legacy_void RsWheelBuildRimPerimeters(
+    legacy_u16 *source,legacy_u16 *destination,legacy_u16 scale);
+extern legacy_void RsWheelBuildVertices(
+    legacy_u16 *source,legacy_u16 *destination,legacy_u16 scale);
+extern legacy_void RsPreRenderWheel(CPoint2D *source,legacy_u16 scale,legacy_u16 outer_color,
+    legacy_u16 side_color,legacy_u16 inner_color);
+extern legacy_void RsPreRenderSphere(legacy_s16 x,legacy_s16 y,legacy_u16 size,legacy_u16 color);
+extern legacy_void RsDrawBeveledBorder(legacy_s16 x,legacy_s16 y,legacy_s16 width,
+    legacy_s16 height,legacy_s16 top_outer_color,legacy_s16 top_inner_color,
+    legacy_s16 bottom_outer_color,legacy_s16 bottom_inner_color);
+extern legacy_void RsDrawThreeColorBeveledBorder(legacy_s16 x,legacy_s16 y,legacy_s16 width,
+    legacy_s16 height,legacy_s16 outer_color,legacy_s16 inner_color,legacy_s16 opposite_color);
+extern legacy_void RsShape3dUpdateCarWheelVertices(CShape3D *shape,legacy_u16 first_vertex,
+    legacy_s16 steering_angle,legacy_s16 *suspension_offsets,legacy_s16 *cached_wheel_state,
+    CVector *base_vertices,CVector *front_wheel_centers);
+extern legacy_void RsCarsetupLegacyCarFilename(
+    legacy_s8 *destination,legacy_s8 *car_id,legacy_s8 *extension);
+extern legacy_u16 RsCarsetupLegacyCarModelParagraphs(legacy_s8 *car_id);
+extern legacy_s16 RsCarsetupLegacyRawResourceWord(
+    legacy_s8 *filename,legacy_u32 offset,legacy_s16 *value);
+extern legacy_s16 RsCarsetupLegacyAliasFromRawResource(
+    legacy_s8 *filename,legacy_u32 *cursor,legacy_s16 *value);
+extern legacy_void RsCarsetupOpponentRouteWrite(legacy_u16 index,legacy_u16 value);
+extern legacy_s16 RsCarsetupAeroResistanceAt(legacy_s16 resistance,legacy_s16 speed_index);
+extern legacy_u8 *RsCarsetupLoadOpponentSpeedData(legacy_u8 **speed_data);
+extern legacy_s16 RsCarsetupOpponentRouteIsTerminal(
+    legacy_u16 *path,legacy_u16 path_count,legacy_u16 track_index,legacy_u16 next_track);
+extern legacy_s8 RsTrkutilLegacyS8FromBits(legacy_u8 value);
+extern legacy_s16 RsTrkutilLegacyS16FromBits(legacy_u16 value);
+extern legacy_s32 RsTrkutilLegacyS32FromBits(legacy_u32 value);
+extern legacy_s8 RsTrackresLegacyS8FromBits(legacy_u8 value);
+extern legacy_s16 RsTrackresLegacyS16FromBits(legacy_u16 value);
+extern legacy_s32 RsTrackresLegacyS32FromBits(legacy_u32 value);
+extern legacy_s16 RsTrackresTrackResourceNextS16(CTrackResourceReader *reader);
+extern legacy_void RsTrackresTrackResourceNextVector(CTrackResourceReader *reader,CVector *vector);
+extern legacy_s8 RsRestuntsLegacyS8FromBits(legacy_u8 value);
+extern legacy_s16 RsRestuntsLegacyS16FromBits(legacy_u16 value);
+extern legacy_s32 RsRestuntsLegacyS32FromBits(legacy_u32 value);
+extern legacy_void RsSetupCarShapes(legacy_s16 operation);
+extern legacy_s16 RsSweepTrackUnderside(CVector *previous,CVector *current,legacy_s16 *fraction);
+extern legacy_s16 RsSweepTrackSolidObstacle(
+    CVectorLong *previous,CVectorLong *current,legacy_s16 *fraction);
+extern legacy_s16 RsSweepTrackWallSpan(CVectorLong *previous_first,CVectorLong *previous_second,
+    CVectorLong *current_first,CVectorLong *current_second,legacy_s16 *fraction);
+extern legacy_void RsConfigureLeftCornerBias(legacy_s16 argc,legacy_s8 **argv);
+extern legacy_s16 RsScaleCorneringAngle(legacy_s16 angle,legacy_u8 shift);
+extern legacy_void RsConfigureLegacyCollision(legacy_s16 argc,legacy_s8 **argv);
+extern legacy_s16 RsBodyPlaneCrossingIsCollision(CVector *previous,CVector *current);
+extern legacy_s16 RsDampCollisionAngle(legacy_s16 angle);
+extern legacy_void RsInterpolateCollisionAtZ(
+    CVector *first,CVector *second,CVector *result,legacy_s16 depth);
+extern legacy_s16 RsScalePositionDelta(
+    legacy_s32 current,legacy_s32 previous,legacy_s16 factor,legacy_s16 divisor);
+extern legacy_s16 RsScaleSpeedToTravel(legacy_u16 speed,legacy_u16 divisor);
+extern legacy_s16 RsPhysicsDifferenceWord(legacy_s32 left,legacy_s32 right);
+extern legacy_s16 RsWheelPairDelta(
+    legacy_s16 first,legacy_s16 second,legacy_s16 third,legacy_s16 fourth);
+extern legacy_s16 RsGetTrackCollisionPoints(
+    legacy_s16 column_arg,legacy_s16 row_arg,CVector *output);
+extern legacy_s16 RsUpdateWheelSuspension(
+    CCarState *carstate,legacy_s16 contact_delta,legacy_s16 wheel_index);
+extern legacy_s16 RsResolveCarCollisionSpeeds(CCarState *first_state,CCarState *second_state);
+extern legacy_s16 RsCarCollisionBoxesOverlap(CPoint2D *first_collision_points,
+    CVector *first_world_coordinates,CPoint2D *second_collision_points,
+    CVector *second_world_coordinates);
+extern legacy_void RsVideoPagesInitialize();
+extern legacy_u8 RsVideoPagesIsActive();
+extern legacy_void RsVideoPagesBeginRace();
+extern legacy_void RsVideoPagesEndRace();
+extern legacy_void RsVideoPagesSelectBackbuffer();
+extern legacy_void RsVideoPagesPresent();
+extern legacy_u8 RsVideoPagesIsTarget(legacy_u8 *bitmap);
+extern legacy_u8 RsVideoPagesReadPixel(legacy_u8 *bitmap,legacy_u16 offset);
+extern legacy_void RsVideoPagesWritePixel(legacy_u8 *bitmap,legacy_u16 offset,legacy_u8 color);
+extern legacy_void RsVideoPagesFillSpan(
+    legacy_u8 *bitmap,legacy_u16 offset,legacy_u16 count,legacy_u8 color);
+extern legacy_void RsVideoPagesRasterSpan(legacy_u8 *destination,legacy_u16 destination_offset,
+    legacy_u8 *source,legacy_u16 source_offset,legacy_u16 count,legacy_s16 operation,
+    legacy_u8 *palette);
+extern legacy_void RsVideoPagesCopySpan(legacy_u8 *destination,legacy_u16 destination_offset,
+    legacy_u8 *source,legacy_u16 source_offset,legacy_u16 count);
+extern legacy_void RsVideoPagesPatternSpan(legacy_u8 *bitmap,legacy_u16 offset,legacy_u16 count,
+    legacy_u8 pattern,legacy_u8 color,legacy_u8 alternate_color,legacy_s16 two_colors);
+extern legacy_u8 RsVideoPagesUsesRasterHooks(legacy_u8 *bitmap);
+extern legacy_void RsKbInitInterrupt();
+extern legacy_void RsKbExitHandler();
+extern legacy_s16 RsKbGetKeyState(legacy_s16 key);
+extern legacy_s16 RsDosKbGetChar();
+extern legacy_void RsDosKbSetNumlock();
+extern legacy_void RsDosKbClearNumlock();
+extern legacy_s16 RsKbCallReadcharCallback();
+extern legacy_s16 RsKbReadChar();
+extern legacy_s16 RsKbChecking();
+extern legacy_void RsFlushStdin();
+extern legacy_s16 RsKbCheck();
+extern legacy_void RsDrawTrackPreview();
+extern legacy_void RsLoadTracksMenuShapes();
+extern legacy_void RsRunGame();
+extern legacy_s16 RsGhostSelectReplay(legacy_s8 *directory,legacy_s8 *name);
+extern legacy_s16 RsGhostIsSelected();
+extern legacy_void RsGhostClear();
+extern legacy_void RsGhostCheckTrack();
+extern legacy_s16 RsGhostPrepareRace();
+extern legacy_void RsGhostEndRace();
+extern legacy_s16 RsGhostIsActive();
+extern legacy_void RsGhostUpdate(legacy_u32 frame,legacy_u16 live_frame_rate);
+extern CCarState *RsGhostCarState();
+extern CGhostCameraState *RsGhostCameraState();
+extern legacy_void RsGhostAdjustCameraMotion(CVector *previous,CVector *current);
+extern CSimd *RsGhostCarSimd();
+extern legacy_s8 *RsGhostCarId();
+extern legacy_u8 RsGhostCarMaterial();
+extern legacy_void RsAudioAllocateCarStateRecords();
+extern legacy_void RsSetFrameCallback();
+extern legacy_void RsRemoveFrameCallback();
+extern legacy_void RsFrameCallback();
+extern legacy_void RsReplayUpdateInputTick(legacy_s16 force_neutral_input);
+extern legacy_void RsReplayApplyAnalogSteeringHistory();
+extern legacy_void RsLoopGame(
+    legacy_s16 operation,legacy_s16 recorded_frame,legacy_s16 current_frame);
+extern legacy_void RsTimerRegCallback(legacy_u8 *callback);
+extern legacy_void RsTimerRemoveCallback(legacy_u8 *callback);
+extern legacy_u32 RsTimerGetDeltaAlt();
+extern legacy_u32 RsTimerCustomDelta(legacy_u32 ticks);
+extern legacy_void RsTimerReset();
+extern legacy_u32 RsTimerSetDeadline(legacy_u32 ticks);
+extern legacy_u32 RsTimerWaitForDeadline();
+extern legacy_s16 RsTimerDeadlineReached();
+extern legacy_u32 RsTimerWaitTicks(legacy_u32 ticks);
+extern legacy_u32 RsSlowTimerSetDeadline(legacy_u32 ticks);
+extern legacy_s16 RsSlowTimerDeadlineReached();
+extern legacy_u32 RsSlowTimerWaitTicks(legacy_u32 ticks);
+extern legacy_s16 RsCallReadLine(
+    legacy_s8 *text,legacy_s16 max_characters,legacy_s16 x,legacy_s16 y,legacy_u32 timeout);
+extern legacy_s16 RsSpriteBlitToVideo(CSprite *sprite,legacy_s16 mode);
+extern legacy_s16 RsReadLine(legacy_s16 flags,legacy_s8 *text,legacy_s16 initial_key,
+    legacy_s16 max_characters,legacy_s16 max_pixels,legacy_s16 x,legacy_s16 y,
+    legacy_u8 *callback,legacy_u32 timeout);
+extern legacy_void RsTextEditToggleCursor();
+extern legacy_void RsTextEditRedraw();
+extern legacy_s16 RsFontPrefixWidth(legacy_s8 *text,legacy_s16 glyph_count);
+extern legacy_s16 RsFontTextWidth(legacy_s8 *text);
+extern legacy_s16 RsFontCenteredTextX(legacy_s8 *text);
+extern legacy_void RsFontSetColors(legacy_s16 color,legacy_s16 background_color);
+extern CRectangle *RsIntroDrawText(
+    legacy_s8 *text,legacy_s16 x,legacy_s16 y,legacy_s16 color,legacy_s16 shadow_color);
+extern legacy_void RsFormatInteger(
+    legacy_s8 *destination,legacy_s16 value,legacy_s16 zero_pad,legacy_s16 width);
+extern legacy_void RsFormatFrameAsString(
+    legacy_s8 *destination,legacy_s16 frame_count,legacy_s16 include_hundredths);
+extern legacy_void RsParseFilepathSeparators(legacy_s8 *destination,legacy_s8 *path);
+extern legacy_u16 RsLegacyNearStringLength(legacy_s8 *text);
+extern legacy_void RsFontSetFontdef2(legacy_u8 *data);
+extern legacy_void RsSetFontdefseg(legacy_u8 *data);
+extern legacy_void RsFontDrawText(legacy_s8 *text,legacy_s16 x,legacy_s16 y);
+extern legacy_s16 RsVideoBackbufferCopyRequired();
+extern legacy_void RsDrawButton(legacy_s8 *text,legacy_s16 x,legacy_s16 y,legacy_s16 width,
+    legacy_s16 height,legacy_s16 top_color,legacy_s16 bottom_color,legacy_s16 fill_color,
+    legacy_s16 font_color);
+extern legacy_void RsMenuResetAnimationTimers();
+extern legacy_void RsMenuUpdateIdleCounter(legacy_u16 elapsed,legacy_s16 limit);
+extern legacy_s16 RsMenuAnimateButtonHighlight(
+    legacy_s16 item_index,CButtonArea *buttons,legacy_s16 second_color,legacy_s16 first_color);
+extern legacy_void RsRestuntsShutdownDosGame();
+extern legacy_s16 RsGetSuperRandom();
+extern legacy_s16 RsRandomWait();
+extern legacy_void RsSetDefaultCar();
+extern legacy_void RsCopyMaterialListPointers(legacy_u8 *clrlist,legacy_u8 *clrlist2,
+    legacy_u8 *patlist,legacy_u8 *patlist2,legacy_u16 reserved_video_word);
+extern legacy_void RsRestuntsStartupInstallKeyboardCallbacks();
+extern legacy_void RsRestuntsStartupSelectAudioDriver(legacy_s8 *argument);
+extern legacy_void RsRestuntsStartupParseOptions(
+    legacy_s16 argc,legacy_s8 **argv,CStartupOptions *options);
+extern legacy_void RsRestuntsStartupMeasureVideo();
+extern legacy_void RsRestuntsInitFullGame(legacy_s16 argc,legacy_s8 **argv);
+extern legacy_void RsRestuntsInitMainInputState();
+extern legacy_s16 RsRunShapePreview(legacy_s16 argc,legacy_s8 **argv);
+extern legacy_s16 RsRestuntsMainMenuSelectRace(legacy_s16 result,legacy_s8 *start_in_replay);
+extern legacy_void RsRestuntsMainMenuBackupTrack();
+extern legacy_void RsRestuntsMainMenuRestoreTrack();
+extern legacy_s16 RsRestuntsMainMenuPrepareTrack();
+extern legacy_void RsRestuntsMainMenuRunRace(legacy_s8 start_in_replay);
+extern legacy_s8 RsFatalLegacyS8FromBits(legacy_u8 value);
+extern legacy_s16 RsFatalLegacyS16FromBits(legacy_u16 value);
+extern legacy_s32 RsFatalLegacyS32FromBits(legacy_u32 value);
+extern legacy_void RsFatalFatalFlushOutput(CFatalOutputState *output);
+extern legacy_void RsFatalFatalEmitCharacter(CFatalOutputState *output,legacy_s8 character);
+extern legacy_void RsFatalFatalEmitPadding(
+    CFatalOutputState *output,legacy_s8 character,legacy_s16 count);
+extern legacy_void RsFatalFatalEmitText(CFatalOutputState *output,legacy_s8 *text,
+    legacy_s16 width,legacy_s16 precision,legacy_s16 left_aligned);
+extern legacy_void RsFatalFatalEmitNumber(CFatalOutputState *output,legacy_u32 value,
+    legacy_s16 negative,legacy_u16 radix,legacy_s16 uppercase,legacy_s16 width,
+    legacy_s16 precision,legacy_s16 left_aligned,legacy_s16 zero_padded);
+extern legacy_s8 *RsFatalFatalParseConversion(legacy_s8 *format,CFatalConversion *field);
+extern legacy_void RsFatalFatalEmitFieldCharacter(
+    CFatalOutputState *output,CFatalConversion *field,legacy_s8 value);
+extern legacy_void RsFatalFatalEmitSignedField(
+    CFatalOutputState *output,CFatalConversion *field,legacy_s32 value);
+extern legacy_void RsFatalFatalEmitUnsignedField(
+    CFatalOutputState *output,CFatalConversion *field,legacy_u32 value);
+extern legacy_void RsFatalFatalEmitUnknownField(CFatalOutputState *output,legacy_s8 conversion);
+extern legacy_void RsFatalFatalVprintf(legacy_s8 *format,legacy_u64 *arguments);
+extern legacy_s8 RsTimingLegacyS8FromBits(legacy_u8 value);
+extern legacy_s16 RsTimingLegacyS16FromBits(legacy_u16 value);
+extern legacy_s32 RsTimingLegacyS32FromBits(legacy_u32 value);
+extern legacy_s16 RsTimerReadKeyUntilDeadline();
+extern legacy_s16 RsTimerReadKeyWithTimeout(legacy_u32 ticks);
+extern legacy_u32 RsTimingSecondaryTimerTarget();
+extern legacy_s16 RsTimingSecondaryTimerTargetReached(legacy_u32 current,legacy_u32 target);
+extern legacy_s8 RsGameInputLegacyS8FromBits(legacy_u8 value);
+extern legacy_s16 RsGameInputLegacyS16FromBits(legacy_u16 value);
+extern legacy_s32 RsGameInputLegacyS32FromBits(legacy_u32 value);
+extern CTrackObject *RsFrameTrackObjectFromLegacyIndex(legacy_u8 index);
+extern legacy_void RsTransformedShapeAddForSort(legacy_s16 z_adjust,legacy_s16 type);
+extern legacy_void RsUpdateFrameSnapshot(legacy_s8 buffer_index,CRectangle *cliprect,
+    CGameState *render_state,CCarState *render_ghost,CGhostCameraState *render_ghost_camera);
+extern legacy_void RsFrameSupersightReset();
+extern legacy_void RsFrameFpsReset();
+extern legacy_void RsFrameSupersightShowStatus(legacy_s8 *name);
+extern legacy_s16 RsFrameStatusOverlayActive();
+extern legacy_s16 RsFrameStatusExpireIdle();
+extern CRectangle *RsFrameStatusDrawText();
+extern legacy_s16 RsFrameDisplayOverlayActive();
+extern legacy_s16 RsFrameFpsExpireIdle();
+extern legacy_void RsFrameFpsRecordPresented();
+extern legacy_void RsFrameFpsPresentRoof();
+extern CRectangle *RsFrameFpsDrawText();
+extern CRectangle *RsDrawIngameText();
+extern CRectangle *RsInitCrak(legacy_s16 frame,legacy_s16 top,legacy_s16 height);
+extern CRectangle *RsDoSinking(legacy_s16 frame,legacy_s16 top,legacy_s16 height);
+extern legacy_void RsIntroRenderScene(legacy_s16 camera_x,legacy_s16 camera_y,legacy_s16 camera_z,
+    legacy_s16 rotate_y,legacy_s16 rotate_x,legacy_s16 draw_car,legacy_s16 primary_logo,
+    CVector *stars,CPoint2D *previous_points,legacy_s16 *previous_point_count,
+    CRectangle *temple_value_previous_rect,CRectangle *shape_rect,CRectangle *combined_rect);
+extern legacy_s16 RsGameInputInputRepeatDue(legacy_s16 repeat_at);
+extern legacy_s16 RsGameInputInputHandleDisplayShortcut(legacy_s16 key);
+extern legacy_void RsGameInputInputRestoreCustomCamera();
+extern legacy_void RsGameInputInputCycleCustomCamera();
+extern legacy_s16 RsGameInputInputHandleCameraShortcut(legacy_s16 key);
+extern legacy_void RsGameInputInputAdvanceClock(legacy_s16 frame_delta);
+extern legacy_void RsGameInputInputTranslateJoystickKey();
+extern legacy_void RsGameInputInputUpdateJoystick(legacy_u16 current_joy_flags);
+extern legacy_void RsGameInputInputUpdateMouseActivity(legacy_s16 frame_delta);
+extern legacy_void RsGameInputInputUpdateMouseButtons();
+extern legacy_s16 RsGameInputMouseTrackDivide(legacy_s16 numerator,legacy_s16 denominator);
+extern legacy_s16 RsGameInputMouseTrackPosition(
+    legacy_s16 length,legacy_s16 selected,legacy_s16 item_count);
+extern legacy_s16 RsGameInputMouseTrackThumbSize(legacy_s16 length,legacy_s16 selected,
+    legacy_s16 selection_width,legacy_s16 item_count,legacy_s16 *thumb_start,
+    legacy_s16 *thumb_end);
+extern legacy_void RsGameInputMouseTrackDraw(legacy_s16 horizontal,legacy_s16 x,legacy_s16 width,
+    legacy_s16 y,legacy_s16 height,legacy_s16 thumb_start,legacy_s16 thumb_size);
+extern legacy_s16 RsGameInputMouseTrackPage(
+    legacy_s16 coordinate,legacy_s16 thumb_start,legacy_s16 selected,legacy_s16 item_count);
+extern legacy_s16 RsGameInputMouseTrackDrag(CMouseTrackDrag *track,legacy_s16 coordinate);
+extern legacy_s8 RsUiTextLegacyS8FromBits(legacy_u8 value);
+extern legacy_s16 RsUiTextLegacyS16FromBits(legacy_u16 value);
+extern legacy_s32 RsUiTextLegacyS32FromBits(legacy_u32 value);
+extern legacy_s8 *RsUiTextLegacyNearStringCopy(legacy_s8 *destination,legacy_s8 *source);
+extern legacy_s16 RsUiTextFontMeasure(legacy_s8 *text,legacy_u16 remaining,legacy_s16 bounded);
+extern legacy_s8 RsUiInputLegacyS8FromBits(legacy_u8 value);
+extern legacy_s16 RsUiInputLegacyS16FromBits(legacy_u16 value);
+extern legacy_s32 RsUiInputLegacyS32FromBits(legacy_u32 value);
+extern legacy_void RsUiInputReadLineDeleteCharacter(legacy_s8 *text,legacy_s16 max_characters);
+extern legacy_void RsUiInputReadLineEraseCharacter(
+    legacy_s8 *text,legacy_s16 max_characters,legacy_s16 move_left);
+extern legacy_void RsUiInputReadLineInitialize(
+    CReadLineState *state,legacy_s16 max_pixels,legacy_s16 x,legacy_s16 y);
+extern legacy_u16 RsUiInputReadLineWaitKey(legacy_s16 *initial_key,legacy_u8 *callback);
+extern legacy_s16 RsUiInputReadLineBlinkCursor(legacy_u32 timeout);
+extern legacy_s16 RsUiInputReadLineIsFinished(legacy_u16 key,legacy_u8 input_flags);
+extern legacy_void RsUiInputReadLineMoveCursor(CReadLineState *state,legacy_u16 key);
+extern legacy_s16 RsUiInputReadLineApplyEditKey(CReadLineState *state,legacy_u16 key);
+extern legacy_void RsUiInputReadLineInsertSpace(CReadLineState *state);
+extern legacy_void RsUiInputReadLineTypeCharacter(CReadLineState *state,legacy_u16 key);
+extern legacy_s8 RsUiDialogLegacyS8FromBits(legacy_u8 value);
+extern legacy_s16 RsUiDialogLegacyS16FromBits(legacy_u16 value);
+extern legacy_s32 RsUiDialogLegacyS32FromBits(legacy_u32 value);
+extern legacy_u16 RsUiDialogDialogAsciiLower(legacy_u16 character);
+extern legacy_u16 RsUiDialogDialogFinish(legacy_s16 result,legacy_s16 save_background);
+extern legacy_s16 RsUiDialogDialogAdvanceHeight(legacy_s16 dialog_height,legacy_s16 line_height,
+    legacy_u8 separator,legacy_s16 paragraph_height);
+extern legacy_void RsUiDialogDialogMeasure(CDialogContent *dialog,legacy_u8 *text_resource);
+extern legacy_s16 RsUiDialogDialogDrawFrame(CDialogContent *dialog,legacy_u16 x_argument,
+    legacy_u16 y_argument,legacy_s16 save_background,legacy_s16 border_color);
+extern legacy_void RsUiDialogDialogDrawMessage(CDialogContent *dialog,legacy_u8 *text_resource,
+    legacy_s16 dialog_type,legacy_s16 *disabled_choices);
+extern legacy_void RsUiDialogDialogMeasureChoices(CDialogContent *dialog);
+extern legacy_void RsUiDialogDialogDrawChoices(
+    CDialogContent *dialog,legacy_u8 selected,legacy_s16 *disabled_choices);
+extern legacy_u16 RsUiDialogDialogChoiceHotkey(legacy_s8 *cursor);
+extern legacy_u16 RsUiDialogDialogApplyHotkey(
+    legacy_u16 input,legacy_u16 first_hotkey,legacy_u16 second_hotkey,legacy_u8 *selected);
+extern legacy_void RsUiDialogDialogSelectPrevious(
+    legacy_u8 *selected,legacy_u8 choice_count,legacy_s16 *disabled_choices);
+extern legacy_void RsUiDialogDialogSelectNext(
+    legacy_u8 *selected,legacy_u8 choice_count,legacy_s16 *disabled_choices);
+extern legacy_s16 RsUiDialogDialogApplyMenuInput(
+    legacy_u16 input,legacy_u8 *selected,legacy_u8 choice_count,legacy_s16 *disabled_choices);
+extern legacy_s16 RsUiDialogDialogRunMenu(
+    CDialogContent *dialog,legacy_s16 *disabled_choices,legacy_s16 initial_choice);
+extern legacy_void RsUiDialogFileDialogDrawFrame(
+    CFileDialog *dialog,legacy_s8 *directory,legacy_s8 *prompt);
+extern legacy_u16 RsUiDialogFileDialogEditDirectory(CFileDialog *dialog,legacy_s8 *directory);
+extern legacy_void RsUiDialogFileDialogCollectNames(CFileDialog *dialog,legacy_s8 *found_path);
+extern legacy_void RsUiDialogFileDialogDrawScrollLabels(CFileDialog *dialog);
+extern legacy_void RsUiDialogFileDialogDrawRows(CFileDialog *dialog);
+extern legacy_u16 RsUiDialogFileDialogApplyMouse(
+    CFileDialog *dialog,legacy_s16 hit,legacy_u16 key);
+extern legacy_s8 RsUiDialogFileDialogApplyKey(CFileDialog *dialog,legacy_u16 key);
+extern legacy_s8 RsUiDialogFileDialogChoose(
+    CFileDialog *dialog,legacy_s8 *directory,legacy_s8 *filename);
+extern legacy_s8 RsIntroLegacyS8FromBits(legacy_u8 value);
+extern legacy_s16 RsIntroLegacyS16FromBits(legacy_u16 value);
+extern legacy_s32 RsIntroLegacyS32FromBits(legacy_u32 value);
+extern legacy_s16 RsIntroRunIntro(legacy_u8 *audio_resource);
+extern legacy_void RsIntroIntroDrawResourceLine(legacy_s8 *resource,legacy_s8 *resource_id,
+    legacy_s16 is_text,legacy_s16 x,legacy_s16 y,legacy_s16 color,legacy_s16 shadow_color);
+extern legacy_void RsIntroCreditsDrawTitle(legacy_s8 *credit_resource);
+extern legacy_void RsIntroCreditsDrawDesigners(legacy_s8 *credit_resource);
+extern legacy_void RsIntroCreditsDrawMusicians(legacy_s8 *credit_resource);
+extern legacy_void RsIntroCreditsDrawProduction(legacy_s8 *credit_resource);
+extern legacy_void RsIntroCreditsDrawArtists(legacy_s8 *credit_resource);
+extern legacy_s16 RsIntroCreditsSlideArrow(CShape2D *arrow_shape,legacy_s16 target_x,
+    legacy_s16 arrow_y,legacy_s16 arrow_width,legacy_s16 arrow_height);
+extern legacy_void RsIntroCreditsAnimateShapes(
+    CShape2D **credit_shapes,legacy_s16 arrow_y,legacy_s16 input);
+extern legacy_s8 RsIntroCreditsPresentClosing(CShape2D **credit_shapes,legacy_s16 arrow_y);
+extern legacy_s8 RsHighscoreLegacyS8FromBits(legacy_u8 value);
+extern legacy_s16 RsHighscoreLegacyS16FromBits(legacy_u16 value);
+extern legacy_s32 RsHighscoreLegacyS32FromBits(legacy_u32 value);
+extern legacy_s16 RsHighscoreLoadOrCreate(legacy_s16 create_default);
+extern legacy_void RsPrintHighscoreEntry(legacy_s16 entry,legacy_u8 *text_offsets);
+extern CRectangle *RsHiscoreDrawText(
+    legacy_s8 *text,legacy_s16 x,legacy_s16 y,legacy_s16 color,legacy_s16 shadow_color);
+extern legacy_u8 *RsHighscoreReadWithRetry(
+    legacy_s16 operation,legacy_s8 *filename,legacy_u8 *destination);
+extern legacy_void RsHighscoreSaveSorted();
+extern legacy_void RsHighscoreDrawTable();
+extern legacy_void RsEnterHiscore(legacy_s16 frame_count,legacy_u8 *prompt,legacy_u8 car_flag);
+extern legacy_void RsHighscoreEndHiscoreSetText(legacy_s8 *resource,legacy_s8 *text_id);
+extern legacy_void RsHighscoreEndHiscoreAppendText(legacy_s8 *resource,legacy_s8 *text_id);
+extern legacy_void RsHighscoreEndHiscoreDrawCurrentText(legacy_s16 *y);
+extern legacy_void RsHighscoreEndHiscoreDrawAnimationFrame(legacy_s8 *animation_resource,
+    legacy_u8 *frame_sequence,legacy_u8 frame_index,legacy_s16 animation_x,
+    legacy_s16 animation_y,CSprite *animation_sprite,legacy_u8 draw_direct_copy);
+extern legacy_void RsHighscoreEndHiscoreAdvanceAnimation(
+    legacy_s16 delta,legacy_s16 *timer,legacy_u8 *frame,legacy_u8 *frame_sequence);
+extern legacy_void RsHighscoreEndHiscoreUpdateAnimation(legacy_s16 delta,legacy_s16 *timer,
+    legacy_u8 *frame,legacy_u8 *previous_frame,legacy_s8 *animation_resource,
+    legacy_u8 *frame_sequence,legacy_s16 animation_x,legacy_s16 animation_y,
+    CSprite *animation_sprite,legacy_u8 draw_direct_copy);
+extern legacy_s8 *RsHighscoreEndHiscoreResultText(legacy_s8 *opponent_resource,legacy_u8 outcome,
+    legacy_u8 text_prefix,legacy_u16 resource_index);
+extern legacy_void RsHighscoreEndHiscoreAppendTextWord(
+    CEndScreenTextLine *line,legacy_s16 animation_x);
+extern legacy_void RsHighscoreEndHiscoreConsumeText(
+    CEndScreenTextLine *line,legacy_s8 *text,legacy_s16 animation_x);
+extern legacy_void RsHighscoreEndHiscoreDrawOpponentText(
+    legacy_s8 *opponent_resource,legacy_u8 outcome,legacy_u8 text_prefix,legacy_s16 animation_x);
+extern legacy_void RsHighscoreEndHiscoreInitialize(CEndScreenState *screen);
+extern legacy_void RsHighscoreEndHiscoreDrawPlayerTime(CEndScreenState *screen);
+extern legacy_void RsHighscoreEndHiscoreDrawOpponentTime(CEndScreenState *screen);
+extern legacy_void RsHighscoreEndHiscoreLoadMusic(CEndScreenState *screen);
+extern legacy_void RsHighscoreEndHiscoreDrawStatistics(CEndScreenState *screen);
+extern legacy_void RsHighscoreEndHiscoreChooseTextVariants(CEndScreenState *screen);
+extern legacy_void RsHighscoreEndHiscorePrepareAnimation(CEndScreenState *screen);
+extern legacy_void RsHighscoreEndHiscoreValidateTrack(CEndScreenState *screen);
+extern legacy_void RsHighscoreEndHiscoreCheckScore(CEndScreenState *screen);
+extern legacy_void RsHighscoreEndHiscoreShowOpponent(CEndScreenState *screen);
+extern legacy_void RsHighscoreEndHiscoreEnterOpponentScore(CEndScreenState *screen);
+extern legacy_void RsHighscoreEndHiscoreDrawEvaluation(CEndScreenState *screen);
+extern legacy_void RsHighscoreEndHiscoreDrawMenu(CEndScreenState *screen);
+extern legacy_void RsHighscoreEndHiscoreRedrawSelection(CEndScreenState *screen);
+extern legacy_void RsHighscoreEndHiscoreSelectMouse(CEndScreenState *screen);
+extern legacy_s16 RsHighscoreEndHiscoreNavigateMenu(CEndScreenState *screen,legacy_u16 input);
+extern legacy_s16 RsHighscoreEndHiscoreHandleMenuInput(CEndScreenState *screen,legacy_u16 input);
+extern legacy_s16 RsHighscoreEndHiscoreRunMenu(CEndScreenState *screen);
+extern legacy_u16 RsHighscoreEndHiscoreRelease(CEndScreenState *screen);
+extern legacy_s8 RsReplayRecordLegacyS8FromBits(legacy_u8 value);
+extern legacy_s16 RsReplayRecordLegacyS16FromBits(legacy_u16 value);
+extern legacy_s32 RsReplayRecordLegacyS32FromBits(legacy_u32 value);
+extern legacy_void RsReplayRecordFrameCallbackPlayAudio();
+extern legacy_void RsReplayRecordFrameCallbackAdvanceRecording();
+extern legacy_s16 RsReplayRecordReplayReadMouseInput();
+extern legacy_s16 RsReplayRecordReplayReadJoystickInput();
+extern legacy_s16 RsReplayRecordReplayReadLiveInput();
+extern legacy_void RsReplayRecordReplayShiftRecordingHistory();
+extern legacy_s8 RsReplayViewerLegacyS8FromBits(legacy_u8 value);
+extern legacy_s16 RsReplayViewerLegacyS16FromBits(legacy_u16 value);
+extern legacy_s32 RsReplayViewerLegacyS32FromBits(legacy_u32 value);
+extern legacy_void RsReplayViewerReplayControlsSelect(legacy_u8 selection);
+extern legacy_void RsReplayViewerReplayControlsPrepareBackground(legacy_u16 buffer_index);
+extern legacy_void RsReplayViewerReplayControlsDrawTime(
+    legacy_u16 buffer_index,legacy_u16 current_frame);
+extern legacy_void RsReplayViewerReplayControlsDrawCamera(legacy_u16 buffer_index);
+extern legacy_void RsReplayViewerReplayControlsDrawTimeline(
+    legacy_u16 buffer_index,legacy_u16 recorded_frame,legacy_u16 current_frame);
+extern legacy_u8 RsReplayViewerReplayControlsChanged(legacy_u16 buffer_index);
+extern legacy_void RsReplayViewerReplayControlsDrawButtons(legacy_u16 buffer_index);
+extern legacy_void RsReplayViewerReplayControlsDraw(
+    legacy_u16 recorded_frame,legacy_u16 current_frame);
+extern legacy_void RsReplayViewerReplayDrawWaiting();
+extern legacy_s8 RsReplayViewerReplayChoosePauseAction();
+extern legacy_void RsReplayViewerReplayRestartRecording();
+extern legacy_s16 RsReplayViewerReplayContinueRecording();
+extern legacy_void RsReplayViewerReplayResumeLive();
+extern legacy_void RsReplayViewerReplayReloadChangedResources(
+    CGameInfo *saved_config,legacy_u8 saved_track);
+extern legacy_void RsReplayViewerReplayLoadRecording();
+extern legacy_s8 RsReplayViewerReplayChooseSavePath();
+extern legacy_void RsReplayViewerReplaySaveRecording();
+extern legacy_void RsReplayViewerReplayDisplayOptions();
+extern legacy_void RsReplayViewerReplayPauseMenu();
+extern legacy_s32 RsReplayViewerReplayScrubAccumulate(
+    legacy_s32 accumulated,legacy_s16 speed,legacy_u16 delta);
+extern legacy_s16 RsReplayViewerReplayScrubSpeed(legacy_s32 accumulated);
+extern legacy_u16 RsReplayViewerReplayScrubAmount(legacy_s32 accumulated);
+extern legacy_s32 RsReplayViewerReplayScrubBegin(legacy_u8 selection);
+extern legacy_s32 RsReplayViewerReplayScrubAdvance(legacy_s32 accumulated,legacy_u16 *delta);
+extern legacy_void RsReplayViewerReplayFastForward();
+extern legacy_void RsReplayViewerReplayRewind();
+extern legacy_s16 RsReplayViewerReplayTryZoom(legacy_u16 input);
+extern legacy_u16 RsReplayViewerReplayPanInput();
+extern legacy_u16 RsReplayViewerReplayReadControlInput(legacy_s16 delta);
+extern legacy_u16 RsReplayViewerReplayAdjustCustomCamera(legacy_u16 *input);
+extern legacy_u16 RsReplayViewerReplayActivateSelectedControl();
+extern legacy_u16 RsReplayViewerReplayHandleControlInput(legacy_u16 input);
+extern legacy_void RsReplayViewerReplayRefreshPlaybackControls();
+extern legacy_s16 RsReplayViewerReplayHandleCameraInput(legacy_u16 *input);
+extern legacy_void RsReplayViewerReplayHandleInput();
+extern legacy_s8 RsRaceLegacyS8FromBits(legacy_u8 value);
+extern legacy_s16 RsRaceLegacyS16FromBits(legacy_u16 value);
+extern legacy_s32 RsRaceLegacyS32FromBits(legacy_u32 value);
+extern legacy_void RsRaceRaceRewindAccumulate(
+    CRaceRewindState *rewind,legacy_u32 ticks,legacy_u32 speed);
+extern legacy_void RsRaceRaceRewindSeek(CRaceRewindState *rewind);
+extern legacy_void RsRaceRaceRewindResume(CRaceRewindState *rewind);
+extern legacy_s16 RsRaceRaceRewindKeyHeld();
+extern legacy_void RsRaceRaceUpdateRewind(CRaceRewindState *rewind);
+extern legacy_u16 RsRaceRacePrepareMode();
+extern legacy_void RsRaceRaceInitializeState();
+extern legacy_void RsRaceRaceCheckRecordingLimit();
+extern legacy_void RsRaceRaceUpdateDashboardLayout(legacy_s16 rewind_active);
+extern legacy_void RsRaceRaceUpdateViewport(CRaceViewportCache *cache,legacy_s16 rewind_active);
+extern legacy_u32 RsRaceRaceGhostFrame();
+extern legacy_void RsRaceRaceDrawFrame();
+extern legacy_void RsRaceRaceHandleDrivingInput();
+extern legacy_u16 RsRaceRaceHandleExitRequest();
+extern legacy_u16 RsRaceRaceFrameIsReady(legacy_s16 *last_processed_frame);
+extern legacy_s16 RsRaceRaceProcessFrameInput();
+extern legacy_void RsRaceRaceRunFrames(CRaceViewportCache *cache);
+extern legacy_void RsRaceRaceFinishOpponent();
+extern legacy_void RsRaceRaceReleaseResources();
+extern legacy_s8 RsGhostLegacyS8FromBits(legacy_u8 value);
+extern legacy_s16 RsGhostLegacyS16FromBits(legacy_u16 value);
+extern legacy_s32 RsGhostLegacyS32FromBits(legacy_u32 value);
+extern legacy_s16 RsGhostGhostSeek(legacy_u16 file,legacy_s32 offset);
+extern legacy_void RsGhostGhostCleanup();
+extern legacy_s16 RsGhostGhostPreviousCameraCoordinate(legacy_s16 previous,legacy_s16 current);
+extern legacy_u16 RsGhostGhostCreateFile(legacy_s8 *name);
+extern legacy_s16 RsGhostGhostValidCarId(legacy_s8 *id);
+extern legacy_s16 RsGhostGhostValidConfig(CGameInfo *config);
+extern legacy_s16 RsGhostGhostCopyInput(
+    legacy_u16 source,legacy_u16 destination,legacy_u16 length);
+extern legacy_s8 RsRaceResourcesLegacyS8FromBits(legacy_u8 value);
+extern legacy_s16 RsRaceResourcesLegacyS16FromBits(legacy_u16 value);
+extern legacy_s32 RsRaceResourcesLegacyS32FromBits(legacy_u32 value);
+extern legacy_void RsLoadSkybox(legacy_s8 skybox_index);
+extern legacy_void RsUnloadSkybox();
+extern legacy_void RsSkyboxCopyImage(legacy_s16 image,legacy_s16 x,legacy_s16 y);
+extern legacy_void RsSkyboxRenderLevelRect(CRectangle *rect,legacy_s16 angle,legacy_s16 horizon);
+extern legacy_s16 RsSkyboxRender(legacy_s16 view_index,CRectangle *clip,legacy_s16 direction,
+    CMatrix *rotation,legacy_s16 roll,legacy_s16 angle,legacy_s16 camera_y);
+extern legacy_void RsRaceResourcesSetupCarEngineResources();
+extern legacy_void RsRaceResourcesSetupCarPhysicsResources();
+extern legacy_s16 RsRaceResourcesSetupPlayerCarsImpl(legacy_s16 load_dashboard_shapes);
+extern legacy_s8 RsDashboardLegacyS8FromBits(legacy_u8 value);
+extern legacy_s16 RsDashboardLegacyS16FromBits(legacy_u16 value);
+extern legacy_s32 RsDashboardLegacyS32FromBits(legacy_u32 value);
+extern legacy_s16 RsDashboardDashboardSteeringPosition(legacy_s16 angle);
+extern legacy_u8 RsDashboardDashboardClearSteeringDot(legacy_u16 buffer_index);
+extern legacy_void RsDashboardDashboardSetViewport();
+extern legacy_void RsDashboardDashboardLoadResources();
+extern legacy_u16 RsDashboardDashboardPanelWidth(CShape2D *shape);
+extern legacy_void RsDashboardDashboardCreateSprites();
+extern legacy_void RsDashboardDashboardSelectPanelTarget(CSprite *sprite,CShape2D *shape);
+extern legacy_void RsDashboardDashboardCopyPanel(CSprite *sprite,CShape2D *shape);
+extern legacy_void RsDashboardDashboardLoadOptionalShapes();
+extern legacy_void RsDashboardDashboardLoad();
+extern legacy_void RsDashboardDashboardRedrawStatic();
+extern legacy_void RsDashboardDashboardUnload();
+extern legacy_void RsDashboardDashboardRebuildGearboxBackground();
+extern legacy_void RsDashboardDashboardUpdateGear(legacy_u16 buffer_index);
+extern legacy_void RsDashboardDashboardUpdateWheel(CDashboardUpdate *update);
+extern legacy_void RsDashboardDashboardSelectGauges(CDashboardUpdate *update);
+extern legacy_void RsDashboardDashboardDrawDigitalSpeed(legacy_u16 speed_index);
+extern legacy_void RsDashboardDashboardDrawWheelMask(legacy_u8 wheel_state);
+extern legacy_void RsDashboardDashboardUpdateInstruments(CDashboardUpdate *update);
+extern legacy_void RsDashboardDashboardUpdateSteeringDot(CDashboardUpdate *update);
+extern legacy_void RsDashboardDashboardUpdate();
+extern legacy_s8 RsMenuCommonLegacyS8FromBits(legacy_u8 value);
+extern legacy_s16 RsMenuCommonLegacyS16FromBits(legacy_u16 value);
+extern legacy_s32 RsMenuCommonLegacyS32FromBits(legacy_u32 value);
+extern legacy_s8 RsMenuMainLegacyS8FromBits(legacy_u8 value);
+extern legacy_s16 RsMenuMainLegacyS16FromBits(legacy_u16 value);
+extern legacy_s32 RsMenuMainLegacyS32FromBits(legacy_u32 value);
+extern legacy_s8 RsMenuOptionsLegacyS8FromBits(legacy_u8 value);
+extern legacy_s16 RsMenuOptionsLegacyS16FromBits(legacy_u16 value);
+extern legacy_s32 RsMenuOptionsLegacyS32FromBits(legacy_u32 value);
+extern legacy_void RsMenuOptionsJoyDialogFinish();
+extern legacy_void RsMenuOptionsJoyDialogDrawGrid(legacy_s16 *positions,legacy_s16 *button_x,
+    legacy_s16 *button_y,legacy_s16 *button_width,legacy_s16 *button_height);
+extern legacy_void RsMenuOptionsOptionMenuMarkGraphics(legacy_s8 *menu_text);
+extern legacy_void RsMenuOptionsOptionMenuSelectInput();
+extern legacy_s8 RsMenuTrackLegacyS8FromBits(legacy_u8 value);
+extern legacy_s16 RsMenuTrackLegacyS16FromBits(legacy_u16 value);
+extern legacy_s32 RsMenuTrackLegacyS32FromBits(legacy_u32 value);
+extern legacy_void RsMenuTrackTrackMenuDrawPreview();
+extern legacy_void RsMenuTrackTrackMenuDrawHighscore();
+extern legacy_void RsMenuTrackTrackMenuDrawButtons();
+extern legacy_void RsMenuTrackTrackMenuDrawBackground();
+extern legacy_u16 RsMenuTrackTrackMenuPollInput(CTrackMenuState *menu);
+extern legacy_u8 RsMenuTrackTrackMenuActivateKey(CTrackMenuState *menu,legacy_u16 key);
+extern legacy_s8 RsMenuTrackEditorLegacyS8FromBits(legacy_u8 value);
+extern legacy_s16 RsMenuTrackEditorLegacyS16FromBits(legacy_u16 value);
+extern legacy_s32 RsMenuTrackEditorLegacyS32FromBits(legacy_u32 value);
+extern legacy_void RsPreRenderIcons(legacy_u8 page);
+extern legacy_u16 RsMenuTrackEditorTrackMenuPreviousRow(legacy_u16 row);
+extern legacy_u8 RsMenuTrackEditorTrackEditorMapTile(legacy_u8 column,legacy_u8 row);
+extern legacy_void RsMenuTrackEditorTrackEditorDrawMapElement(CTrackEditorMapCell *cell);
+extern legacy_void RsMenuTrackEditorTrackEditorDrawMapCell(
+    CTrackEditorMapCell *cell,legacy_u8 *cached_track,legacy_u8 *cached_terrain);
+extern legacy_void RsMenuTrackEditorTrackEditorDrawMapContinuation(CTrackEditorMapCell *cell,
+    legacy_u16 map_row,legacy_u16 map_column,legacy_u8 *cached_track,legacy_u8 *cached_terrain);
+extern legacy_void RsDraw2DtrackMap(legacy_u8 column_offset,legacy_u8 row_offset,
+    legacy_u8 *cached_track,legacy_u8 *cached_terrain);
+extern legacy_u16 RsMenuTrackEditorTrackMenuNextRow(legacy_u16 row);
+extern legacy_void RsMenuTrackEditorTrackEditorValidateSquareLinks(
+    legacy_u8 *used,legacy_u16 current_index,legacy_u16 east_index,legacy_u16 next_index);
+extern legacy_void RsMenuTrackEditorTrackEditorValidateTileLinks(
+    legacy_u8 *used,legacy_u16 row,legacy_u16 column,legacy_u16 current_index,legacy_u8 tile);
+extern legacy_void RsTrackEditorRemoveInvalidMultitileLinks();
+extern legacy_u8 RsMenuTrackEditorTrackEditorWaterTileAllowed(legacy_u8 tile);
+extern legacy_u8 RsMenuTrackEditorTrackEditorTerrainError(
+    legacy_u16 row,legacy_u16 column,legacy_u8 terrain,legacy_u8 tile);
+extern legacy_s16 RsTrackEditorRemoveInvalidTerrainTiles();
+extern legacy_u8 RsMenuTrackEditorTrackEditorPaletteTile(
+    legacy_u8 page,legacy_u8 row,legacy_u8 column);
+extern legacy_void RsMenuTrackEditorTrackEditorSkipPreviousPlaceholders(
+    legacy_u8 page,legacy_u8 *row,legacy_u8 *column);
+extern legacy_void RsMenuTrackEditorTrackEditorToggleHighlight(
+    legacy_s16 x,legacy_s16 y,legacy_u8 width,legacy_u8 height);
+extern legacy_void RsMenuTrackEditorTrackEditorShowMessage(
+    legacy_s8 *text_resource,legacy_s8 *resource_id);
+extern legacy_void RsMenuTrackEditorTrackEditorSaveTrack(
+    legacy_u8 *track_changed,legacy_u8 *map_dirty);
+extern legacy_void RsMenuTrackEditorTrackEditorSwapTiles(
+    legacy_u8 *selected_tile,legacy_u8 *saved_tile,legacy_u8 *palette_dirty);
+extern legacy_void RsMenuTrackEditorTrackEditorLoadResources(CTrackEditorSession *editor);
+extern legacy_void RsMenuTrackEditorTrackEditorInitializeSession(CTrackEditorSession *editor);
+extern legacy_void RsMenuTrackEditorTrackEditorDrawWindow(CTrackEditorSession *editor);
+extern legacy_void RsMenuTrackEditorTrackEditorKeepSelectionVisible(CTrackEditorSession *editor);
+extern legacy_void RsMenuTrackEditorTrackEditorDrawPalettePage(CTrackEditorSession *editor);
+extern legacy_void RsMenuTrackEditorTrackEditorUpdatePalette(CTrackEditorSession *editor);
+extern legacy_void RsMenuTrackEditorTrackEditorRedraw(CTrackEditorSession *editor);
+extern legacy_void RsMenuTrackEditorTrackEditorPositionCursor(CTrackEditorSession *editor);
+extern legacy_void RsMenuTrackEditorTrackEditorDrawTileLabel(CTrackEditorSession *editor);
+extern legacy_void RsMenuTrackEditorTrackEditorReportValidation(CTrackEditorSession *editor);
+extern legacy_void RsMenuTrackEditorTrackEditorHoverMap(CTrackEditorSession *editor);
+extern legacy_void RsMenuTrackEditorTrackEditorHoverPalette(CTrackEditorSession *editor);
+extern legacy_void RsMenuTrackEditorTrackEditorMouseInput(CTrackEditorSession *editor);
+extern legacy_void RsMenuTrackEditorTrackEditorWaitForInput(CTrackEditorSession *editor);
+extern legacy_void RsMenuTrackEditorTrackEditorAdvancePathAnimation(CTrackEditorSession *editor);
+extern legacy_void RsMenuTrackEditorTrackEditorCheckRoute(CTrackEditorSession *editor);
+extern legacy_void RsMenuTrackEditorTrackEditorSelectSkybox(CTrackEditorSession *editor);
+extern legacy_void RsMenuTrackEditorTrackEditorSelectTerrain(CTrackEditorSession *editor);
+extern legacy_void RsMenuTrackEditorTrackEditorLoadTrack(CTrackEditorSession *editor);
+extern legacy_void RsMenuTrackEditorTrackEditorExit(CTrackEditorSession *editor);
+extern legacy_void RsMenuTrackEditorTrackEditorSelectPaletteTile(CTrackEditorSession *editor);
+extern legacy_void RsMenuTrackEditorTrackEditorActivatePalette(CTrackEditorSession *editor);
+extern legacy_void RsMenuTrackEditorTrackEditorPlaceTerrain(CTrackEditorSession *editor);
+extern legacy_void RsMenuTrackEditorTrackEditorPlaceElement(CTrackEditorSession *editor);
+extern legacy_void RsMenuTrackEditorTrackEditorMoveHome(CTrackEditorSession *editor);
+extern legacy_void RsMenuTrackEditorTrackEditorMoveUp(CTrackEditorSession *editor);
+extern legacy_void RsMenuTrackEditorTrackEditorMoveDown(CTrackEditorSession *editor);
+extern legacy_void RsMenuTrackEditorTrackEditorMoveLeft(CTrackEditorSession *editor);
+extern legacy_void RsMenuTrackEditorTrackEditorMoveRight(CTrackEditorSession *editor);
+extern legacy_void RsMenuTrackEditorTrackEditorHandleNavigationKey(CTrackEditorSession *editor);
+extern legacy_void RsMenuTrackEditorTrackEditorHandleKey(CTrackEditorSession *editor);
+extern legacy_void RsMenuTrackEditorTrackEditorReleaseResources(CTrackEditorSession *editor);
+extern legacy_s8 RsMenuOpponentLegacyS8FromBits(legacy_u8 value);
+extern legacy_s16 RsMenuOpponentLegacyS16FromBits(legacy_u16 value);
+extern legacy_s32 RsMenuOpponentLegacyS32FromBits(legacy_u32 value);
+extern legacy_void RsMenuOpponentOpponentMenuDrawDescription(COpponentMenuState *menu);
+extern legacy_void RsMenuOpponentOpponentMenuDrawBackground();
+extern legacy_void RsMenuOpponentOpponentMenuRefresh(COpponentMenuState *menu);
+extern legacy_u16 RsMenuOpponentOpponentMenuPollInput(COpponentMenuState *menu);
+extern legacy_u8 RsMenuOpponentOpponentMenuActivateKey(COpponentMenuState *menu,legacy_u16 key);
+extern legacy_u8 RsMenuOpponentOpponentMenuActivateSelection(COpponentMenuState *menu);
+extern legacy_void RsMenuOpponentOpponentMenuRelease(COpponentMenuState *menu);
+extern legacy_s8 RsMenuCarLegacyS8FromBits(legacy_u8 value);
+extern legacy_s16 RsMenuCarLegacyS16FromBits(legacy_u16 value);
+extern legacy_s32 RsMenuCarLegacyS32FromBits(legacy_u32 value);
+extern legacy_void RsMenuCarCarMenuDrawStandardButton(legacy_s8 *text,legacy_u16 button_index);
+extern legacy_s16 RsMenuCarCarMenuFindCars(CCarMenuState *menu,legacy_s8 *car_id);
+extern legacy_void RsMenuCarCarMenuInitialize(CCarMenuState *menu);
+extern legacy_void RsMenuCarCarMenuDrawGraph();
+extern legacy_void RsMenuCarCarMenuDrawDescription(CCarMenuState *menu);
+extern legacy_void RsMenuCarCarMenuLoadCar(CCarMenuState *menu);
+extern legacy_void RsMenuCarCarMenuPreparePreview(CCarMenuState *menu);
+extern legacy_void RsMenuCarCarMenuRenderPreview(CCarMenuState *menu);
+extern legacy_void RsMenuCarCarMenuDrawSelection(CCarMenuState *menu);
+extern legacy_u16 RsMenuCarCarMenuReadInput(CCarMenuState *menu);
+extern legacy_s16 RsMenuCarCarMenuActivateSelection(CCarMenuState *menu);
+extern legacy_s16 RsMenuCarCarMenuHandleInput(CCarMenuState *menu,legacy_u16 input);
+extern legacy_void RsMenuCarCarMenuRelease(CCarMenuState *menu,legacy_s8 *car_id);
+extern legacy_s8 RsAudioEngineLegacyS8FromBits(legacy_u8 value);
+extern legacy_s16 RsAudioEngineLegacyS16FromBits(legacy_u16 value);
+extern legacy_s32 RsAudioEngineLegacyS32FromBits(legacy_u32 value);
+extern legacy_u8 *RsAudioReadFarPointer(legacy_u8 *source);
+extern legacy_void RsAudioWriteFarPointer(legacy_u8 *destination,legacy_u8 *value);
+extern legacy_s8 *RsPadId(legacy_s8 *source);
+extern legacy_void RsAudioResetChannels();
+extern legacy_void RsAudioStopMusic();
+extern legacy_void RsAudioDriverTimer();
+extern legacy_void RsAudioReleaseChannelRange(legacy_s16 first_channel,legacy_s16 last_channel);
+extern legacy_void RsAudioUpdateDriverContexts();
+extern legacy_void RsAudioInitChannelRange(legacy_s16 first_channel,legacy_s16 last_channel,
+    legacy_u8 *resource,legacy_u16 resource_data_offset,legacy_u16 rate,legacy_u8 priority);
+extern legacy_void RsAudioStopEffectChannel(legacy_s16 channel);
+extern legacy_s16 RsAudioSequenceCommandHasByteArgument(legacy_u8 command_index);
+extern legacy_s16 RsAudioStartSample(legacy_u16 value,legacy_s16 handle);
+extern legacy_s16 RsAudioReserveEffectChannel(legacy_s16 channel,legacy_u8 priority);
+extern legacy_void RsAudioReleaseEffectChannel(legacy_s16 channel);
+extern legacy_s16 RsAudioEffectChannelIdle(legacy_s16 channel);
+extern legacy_void RsAudioRequestContextFade(legacy_s16 index);
+extern legacy_void RsAudioFadeOut(legacy_s16 delay_ticks);
+extern legacy_void RsAudioSequenceTimer();
+extern legacy_void RsAudioEngineAudioCopyEngineDefinition(
+    CAudioEngineDefinition *engine_definition,legacy_u8 *source_pointer);
+extern legacy_void RsAudioEngineAudioResolveEngineDefinition(
+    CAudioEngineDefinition *engine_definition,legacy_u8 *shape_resources,
+    legacy_u8 *audio_resources);
+extern legacy_void RsAudioStartEngine(legacy_s16 index);
+extern legacy_void RsAudioUpdateEngineSpatial(legacy_s16 index,legacy_s16 base_value,
+    legacy_s16 first_x,legacy_s16 first_y,legacy_s16 first_z,legacy_s16 second_x,
+    legacy_s16 second_y,legacy_s16 second_z,legacy_s16 interval);
+extern legacy_void RsAudioEngineAudioUpdateTimerVolume(CAudioTimer *timer);
+extern legacy_void RsAudioEngineAudioUpdateTimerPitch(CAudioTimer *timer);
+extern legacy_void RsAudioEngineAudioRestartTimerEngine(CAudioTimer *timer,legacy_u16 index);
+extern legacy_void RsAudioEnableMusic();
+extern legacy_void RsAudioDisableMusic();
+extern legacy_s16 RsAudioEffectRangeIdle();
+extern legacy_void RsAudioEnableEffects();
+extern legacy_void RsAudioDisableEffects();
+extern legacy_void RsAudioSetFinishCallback(legacy_s16 channel,legacy_u8 *value);
+extern legacy_void RsAudioEngineAudioClearDriverContext(CAudioContext *context);
+extern legacy_u8 *RsAudioEngineAudioSelectSampleResource(
+    legacy_u8 *original_resource,legacy_u8 note);
+extern legacy_u8 RsAudioEngineAudioContextMatchesResource(CAudioContext *context,
+    CAudioChannel *timer,legacy_u16 resource_mask,legacy_u16 context_index,
+    legacy_s16 restrict_to_timer);
+extern legacy_void RsAudioEngineAudioConsiderOlderContext(
+    CAudioContext *context,legacy_u16 context_index,CAudioContextSelection *selection);
+extern legacy_void RsAudioEngineAudioReclaimDriverContext(
+    legacy_s16 selected,CAudioChannel *timer,legacy_s16 restrict_to_timer);
+extern legacy_s16 RsAudioEngineAudioFindDriverContext(legacy_u8 *resource,CAudioChannel *timer);
+extern legacy_s16 RsAudioStartNote(CAudioChannel *timer,legacy_u16 value,legacy_u32 duration,
+    legacy_u8 note,legacy_u16 parameter,legacy_s16 handle);
+extern legacy_void RsAudioAdvanceDriverContext(CAudioContext *context);
+extern legacy_u16 RsAudioEngineAudioAbsoluteWord(legacy_s16 value);
+extern legacy_void RsAudioEngineAudioUpdateContextEnvelope(
+    CAudioContext *context,legacy_u8 *resource);
+extern legacy_void RsAudioEngineAudioUpdateContextModulation(
+    CAudioContext *context,legacy_u8 *resource);
+extern legacy_void RsAudioEngineAudioUpdateContextSequence(
+    CAudioContext *context,legacy_u8 *resource);
+extern legacy_s16 RsAudioEngineAudioFindFreeSfxChannel();
+extern legacy_s16 RsAudioPlayEffectAtRate(
+    legacy_u8 *resource,legacy_s16 channel,legacy_u8 priority,legacy_u16 rate);
+extern legacy_s16 RsAudioPlayEffect(legacy_u8 *resource,legacy_s16 channel,legacy_u8 priority);
+extern legacy_s16 RsAudioPlayDefaultEffect(legacy_u8 *resource);
+extern legacy_void RsAudioStopSkidSound(legacy_s16 index);
+extern legacy_s16 RsAudioTimerEffectIdle(legacy_s16 index);
+extern legacy_void RsAudioStopEngine(legacy_s16 index);
+extern legacy_s16 RsAudioEngineAudioStartTimerResource(
+    CAudioTimer *timer,legacy_u16 resource_index,legacy_u8 priority);
+extern legacy_s16 RsAudioEngineAudioStartIndexedEvent(
+    legacy_s16 index,legacy_u16 resource_index,legacy_u8 priority);
+extern legacy_void RsAudioPlayEngineStart(legacy_s16 index);
+extern legacy_void RsAudioPlayBump(legacy_s16 index);
+extern legacy_void RsAudioPlayScrape(legacy_s16 index);
+extern legacy_void RsAudioPlayEngineStop(legacy_s16 index);
+extern legacy_void RsAudioPlayEngineFailure(legacy_s16 index);
+extern legacy_void RsAudioEngineAudioStartSecondaryEvent(
+    legacy_s16 index,legacy_u16 resource_index);
+extern legacy_void RsAudioPlayPavedSkid(legacy_s16 index);
+extern legacy_void RsAudioPlayOffroadSkid(legacy_s16 index);
+extern legacy_s16 RsAudioSetMusicChannelVolume(legacy_s16 value);
+extern legacy_s16 RsAudioSetMusicVolume(legacy_s16 value);
+extern legacy_u16 RsAudioGetChannelValue(legacy_s16 channel);
+extern legacy_u16 RsAudioGetChannelNote(legacy_s16 channel);
+extern legacy_s8 RsAudioResourcesLegacyS8FromBits(legacy_u8 value);
+extern legacy_s16 RsAudioResourcesLegacyS16FromBits(legacy_u16 value);
+extern legacy_s32 RsAudioResourcesLegacyS32FromBits(legacy_u32 value);
+extern legacy_s16 RsAudioResourcesLegacyToupper(legacy_s16 ch);
+extern legacy_void RsAudioresourceCopy4Bytes(legacy_u8 *destination,legacy_u8 *source);
+extern legacy_void RsAudioResourcesAudioAppendFilenamePart(
+    legacy_s8 *destination,legacy_s8 *source);
+extern legacy_s8 *RsAudioResourcesAudioFindLastBackslash(legacy_s8 *text);
+extern legacy_s8 *RsAudioMakeFilename(
+    legacy_s8 *filename,legacy_s8 *extension,legacy_s8 *inserted_path);
+extern legacy_void RsAudioResourcesAudioLoadDriverBank();
+extern legacy_u8 *RsLoadSfxGe(legacy_s8 *filename,legacy_s8 *extension,legacy_s8 *inserted_path);
+extern legacy_u8 *RsAudioResourcesLoadAudioFile(legacy_s8 *filename,legacy_s8 *special_extension,
+    legacy_s8 *extension,legacy_s8 *error_message);
+extern legacy_s16 RsAudioresourceCompareChunknames(
+    legacy_s16 case_sensitive,legacy_s8 *first_name,legacy_s8 *second_name,legacy_s16 count);
+extern legacy_s16 RsAudioresourceGetChunkIndex(legacy_s16 extra_name_stride,legacy_s16 chunk_count,
+    legacy_s8 *requested_name,legacy_u8 *chunk_names);
+extern legacy_u8 *RsAudioResourcesAudioFarPointerAddNormalized(
+    legacy_u8 *pointer,legacy_u16 increment);
+extern legacy_u8 *RsAudioresourceFind(legacy_u8 *resource,legacy_s8 *chunk_name);
+extern legacy_void RsAudioResourcesAudioMapPercussionInstruments(legacy_u8 *instruments);
+extern legacy_void RsAudioMapSongInstruments(legacy_u8 *song,legacy_u8 *instruments);
+extern legacy_void RsAudioResourcesAudioWriteFarPointerToResource(
+    legacy_u8 *destination,legacy_u16 offset,legacy_u16 segment);
+extern legacy_void RsAudioResourcesAudioPatchSongReference(legacy_u8 *destination,
+    legacy_u16 name_table_offset,legacy_u16 offset_table_offset,legacy_u16 first_data_offset,
+    legacy_u16 resource_segment,legacy_u16 chunk_count);
+extern legacy_u16 RsAudioResourcesAudioSkipVariableLengthField(
+    legacy_u16 resource_segment,legacy_u16 cursor_offset);
+extern legacy_void RsAudioResourcesAudioMapHeaderTracks(
+    CAudioSongMapping *mapping,legacy_u16 cursor_offset);
+extern legacy_u16 RsAudioResourcesAudioMapSequenceCommand(
+    CAudioSongMapping *mapping,legacy_u16 cursor_offset,legacy_u16 event);
+extern legacy_void RsAudioResourcesAudioMapTrackEvents(
+    CAudioSongMapping *mapping,legacy_u16 cursor_offset,legacy_u16 chunk_end_offset);
+extern legacy_void RsAudioMapSongTracks(legacy_u8 *song);
+extern legacy_void RsAudioresourceCopyNBytes(
+    legacy_u8 *source,legacy_u8 *destination,legacy_s16 size);
+extern legacy_void RsAudioSetMissingFileFatal(legacy_s16 value);
+extern legacy_s8 RsAudioCarLegacyS8FromBits(legacy_u8 value);
+extern legacy_s16 RsAudioCarLegacyS16FromBits(legacy_u16 value);
+extern legacy_s32 RsAudioCarLegacyS32FromBits(legacy_u32 value);
+extern legacy_s16 RsAudioCarAudioCarstatePosition(legacy_s32 position);
+extern legacy_void RsAudioCarAudioCarstateOffsets(CVector *previous,CVector *current,
+    CVector *camera_previous,CVector *camera_current,CVector *car_previous,CVector *car_current);
+extern legacy_u8 RsAudioCarAudioCarstateUpdateFlags(
+    CCarState *carstate,legacy_s16 channel,legacy_u8 flags);
+extern legacy_void RsAudioCarAudioCarstateEnterReplay();
+extern legacy_void RsAudioCarAudioCarstateReadPositions(
+    CCarState *carstate,CVector *previous,CVector *current);
+extern legacy_void RsAudioCarAudioCarstateCameraPositions(
+    CAudioCarPositions *positions,CGhostCameraState *ghost_camera);
+extern legacy_s16 RsAudioCarAudioCarstateWriteRecord(CAudioCarPositions *positions);
+extern legacy_void RsAudioCarAudioCarstateUpdateCarFlags(legacy_s16 car_count);
+extern legacy_s8 RsAudioSequenceLegacyS8FromBits(legacy_u8 value);
+extern legacy_s16 RsAudioSequenceLegacyS16FromBits(legacy_u16 value);
+extern legacy_s32 RsAudioSequenceLegacyS32FromBits(legacy_u32 value);
+extern legacy_u32 RsAudioSequenceAudioParseVariableLength(legacy_u8 *source,legacy_u16 *size);
+extern legacy_void RsAudioSequenceAudioParseSequenceEvent(
+    legacy_u8 *source,CAudioSequenceEvent *event);
+extern legacy_u8 *RsAudioSequenceAudioSequenceInstrument(
+    CAudioChannel *chunk,legacy_u8 instrument);
+extern legacy_void RsAudioSequenceAudioSequenceBindInstrument(
+    legacy_s16 channel,CAudioChannel *chunk,legacy_u8 instrument);
+extern legacy_void RsAudioSequenceAudioSequenceSetControl(
+    CAudioChannel *chunk,legacy_u8 control,legacy_u16 value);
+extern legacy_void RsAudioSequenceAudioSequenceSetPitch(CAudioChannel *chunk,legacy_u16 value);
+extern legacy_void RsAudioSequenceAudioSequenceFinishChannel(
+    legacy_s16 channel,CAudioChannel *chunk,legacy_s16 reset_channel);
+extern legacy_s16 RsAudioSequenceAudioSequenceFlowCommand(
+    legacy_s16 channel,CAudioChannel *chunk,CAudioSequenceEvent *event);
+extern legacy_void RsAudioSequenceAudioSequenceApplyCommand(
+    legacy_s16 channel,CAudioChannel *chunk,CAudioSequenceEvent *event);
+extern legacy_void RsAudioSequenceAudioServiceSequenceChannel(legacy_s16 channel);
+extern legacy_void RsAudioSequenceAudioAdvanceMusicContexts();
+extern legacy_s8 RsShape3dLegacyS8FromBits(legacy_u8 value);
+extern legacy_s16 RsShape3dLegacyS16FromBits(legacy_u16 value);
+extern legacy_s32 RsShape3dLegacyS32FromBits(legacy_u32 value);
+extern legacy_u16 RsShape2dGetWord(legacy_u8 *source);
+extern legacy_void RsShape2dPutWord(legacy_u8 *destination,legacy_u16 value);
+extern legacy_u16 RsShape2dGetLineOffset(legacy_u16 sprite_segment,legacy_u16 y);
+extern legacy_u8 *RsShape2dLinePointer(CSprite *sprite,legacy_u16 offset);
+extern legacy_s8 RsIsFacingCamera(CPoint2D *pts);
+extern legacy_u16 RsPolygonInsertNewest(legacy_u16 depth,legacy_u16 sort_by_depth);
+extern legacy_u16 RsProjectionScaleXWrapped(legacy_u16 numerator,legacy_s16 divisor);
+extern legacy_u16 RsShape3dShape3dAverageDepth(legacy_s32 sum,legacy_u16 vertex_count);
+extern legacy_u16 RsShape3dPolyinfoReadWord(legacy_u8 *record,legacy_u16 word_index);
+extern legacy_void RsShape3dPolyinfoWriteWord(
+    legacy_u8 *record,legacy_u16 word_index,legacy_u16 value);
+extern legacy_void RsShape3dPolyinfoReadPoint(
+    legacy_u8 *record,legacy_u16 point_index,CPoint2D *point);
+extern legacy_void RsShape3dPolyinfoReadPoints(
+    legacy_u8 *record,CPoint2D *points,legacy_u16 point_count);
+extern legacy_void RsShape3dPolyinfoWritePoint(
+    legacy_u8 *record,legacy_u16 point_index,CPoint2D *point);
 extern legacy_void TempleRasterNative(legacy_u8 enabled);
-extern legacy_s16 rs_shape3d_shape3d_native_coordinate(legacy_s64 value);
-extern legacy_void rs_shape3d_shape3d_project_coordinates(legacy_s64 x, legacy_s64 y, legacy_s64 z,
-														  POINT2D *point);
-extern legacy_void rs_shape3d_shape3d_project_point(VECTOR *vector, POINT2D *point);
-extern legacy_s16 rs_shape3d_shape3d_logical_coordinate(legacy_s16 value);
-extern legacy_u16 rs_shape3d_shape3d_geometry_clip_flags(POINT2D *point);
-extern legacy_void rs_shape3d_shape3d_adjust_geometry_bounds(POINT2D *point, RECTANGLE *rectangle);
-extern legacy_void rs_shape3d_polyinfo_emit_point(legacy_u16 *point_index, legacy_u8 *rect_flags,
-												  POINT2D *point);
-extern legacy_s8 rs_shape3d_polyinfo_is_facing_camera(legacy_u8 *record);
-extern legacy_void rs_shape3d_shape3d_transform_vertex(SHAPE3D *shape, legacy_u16 index,
-													   legacy_s16 half_scale, MATRIX *matrix,
-													   VECTOR *translation, VECTOR *transformed);
-extern legacy_void rs_shape3d_shape3d_prepare_instance(TRANSFORMEDSHAPE3D *instance,
-													   SHAPE3D_TRANSFORM_CONTEXT *context);
-extern legacy_void rs_shape3d_shape3d_prepare_visibility(TRANSFORMEDSHAPE3D *instance,
-														 SHAPE3D_TRANSFORM_CONTEXT *context);
-extern legacy_void rs_shape3d_shape3d_cache_vertex(SHAPE3D *shape,
-												   SHAPE3D_TRANSFORM_CONTEXT *context,
-												   legacy_u16 index);
-extern legacy_u8 rs_shape3d_shape3d_vertex_rect_flags(SHAPE3D_TRANSFORM_CONTEXT *context,
-													  legacy_u16 index);
-extern legacy_u16 rs_shape3d_shape3d_bounds_are_clipped(TRANSFORMEDSHAPE3D *instance,
-														SHAPE3D_TRANSFORM_CONTEXT *context);
-extern legacy_u16 rs_shape3d_shape3d_prepare_primitive_vertices(SHAPE3D *shape,
-																SHAPE3D_TRANSFORM_CONTEXT *context,
-																legacy_u16 *any_vertex_behind);
-extern legacy_void rs_shape3d_shape3d_project_near_intersection(SHAPE3D_TRANSFORM_CONTEXT *context,
-																legacy_u16 front_index,
-																legacy_u16 behind_index,
-																POINT2D *point);
-extern legacy_void rs_shape3d_shape3d_emit_polygon_intersection(SHAPE3D_TRANSFORM_CONTEXT *context,
-																legacy_u16 front_index,
-																legacy_u16 behind_index,
-																legacy_u16 *point_count,
-																legacy_u8 *clip_flags);
-extern legacy_void rs_shape3d_shape3d_emit_clipped_polygon_edge(
-	SHAPE3D_TRANSFORM_CONTEXT *context, legacy_u16 previous_index, legacy_u16 vertex_index,
-	legacy_u16 *point_count, legacy_u8 *clip_flags, POINT2D *projected_point);
-extern legacy_u8 rs_shape3d_shape3d_emit_polygon(SHAPE3D_TRANSFORM_CONTEXT *context,
-												 legacy_u16 any_vertex_behind,
-												 legacy_s32 *depth_sum);
-extern legacy_void rs_shape3d_shape3d_adjust_polygon_bounds();
-extern legacy_u16 rs_shape3d_shape3d_prepare_polygon(SHAPE3D_TRANSFORM_CONTEXT *context,
-													 legacy_u16 any_vertex_behind,
-													 legacy_u16 primitive_flags,
-													 legacy_u8 *front_facing_masks,
-													 legacy_s32 *depth_sum);
-extern legacy_u16 rs_shape3d_shape3d_prepare_line(SHAPE3D_TRANSFORM_CONTEXT *context,
-												  legacy_s32 *depth_sum);
-extern legacy_void rs_shape3d_shape3d_adjust_round_bounds(POINT2D *center, legacy_u16 radius,
-														  legacy_s16 padding);
-extern legacy_u16 rs_shape3d_shape3d_prepare_wheel(SHAPE3D_TRANSFORM_CONTEXT *context,
-												   legacy_u16 any_vertex_behind,
-												   legacy_s32 *depth_sum);
-extern legacy_void rs_shape3d_shape3d_adjust_sphere_bounds(POINT2D *center, legacy_u16 radius);
-extern legacy_u16 rs_shape3d_shape3d_prepare_sphere(SHAPE3D_TRANSFORM_CONTEXT *context,
-													legacy_s32 *depth_sum);
-extern legacy_u16 rs_shape3d_shape3d_prepare_point(SHAPE3D_TRANSFORM_CONTEXT *context,
-												   legacy_s32 *depth_sum);
-extern legacy_u16
-rs_shape3d_shape3d_prepare_primitive(SHAPE3D_TRANSFORM_CONTEXT *context, legacy_u8 primitive_type,
-									 legacy_u16 any_vertex_behind, legacy_u16 primitive_flags,
-									 legacy_u8 *front_facing_masks, legacy_s32 *depth_sum);
-extern legacy_u16 rs_shape3d_shape3d_insert_primitive(legacy_u8 primitive_type,
-													  legacy_u16 primitive_flags,
-													  legacy_s32 depth_sum);
-extern legacy_u16 divide_u32_to_u16(legacy_u32 dividend, legacy_u16 divisor);
-extern legacy_u32 projection_multiply_x(legacy_u16 value);
-extern legacy_u32 projection_multiply_y(legacy_u16 value);
-extern legacy_u16 projection_scale_y(legacy_u16 value, legacy_u16 divisor);
-extern legacy_u16 rs_shape3d_projection_angle_from_extent(legacy_s16 extent);
-extern legacy_u16 rs_shape3d_projection_scale_for_angle(legacy_u16 angle, legacy_u16 extent);
-extern legacy_void rs_shape3d_projection_update_derived();
-extern legacy_void projection_set_origin(legacy_u16 x, legacy_u16 y);
-extern legacy_void projection_set_half_fov(legacy_u16 horizontal_half_fov,
-										   legacy_u16 vertical_half_fov, legacy_u16 width,
-										   legacy_u16 height);
-extern legacy_void rs_shape3d_shape3d_retain_legacy_view_rotation(legacy_s16 angZ, legacy_s16 angX,
-																  legacy_s16 angY);
-extern legacy_void init_direction_sector_thresholds();
-extern legacy_void rs_shape3d_shape3d_retain_opponent_pattern(legacy_u16 value);
-extern legacy_void rs_shape3d_shape3d_retain_opponent_polygon_pointer(legacy_u8 *record,
-																	  legacy_u16 vertex_count);
-extern legacy_void rs_shape3d_shape3d_retain_render_local_pair(legacy_u16 first, legacy_u16 second,
-															   legacy_u16 return_ip);
-extern legacy_void rs_shape3d_shape3d_retain_render_local(legacy_u16 first, legacy_u16 return_ip);
-extern legacy_void rs_shape3d_shape3d_retain_render_argument(legacy_u16 return_ip,
-															 legacy_u16 argument);
-extern legacy_void rs_shape3d_shape3d_retain_sphere_stack(legacy_u16 size);
-extern legacy_u16 rs_shape3d_shape3d_material_value(legacy_s16 *table, legacy_u16 index);
-extern legacy_void rs_shape3d_shape3d_render_ghost(legacy_u8 *record, POINT2D *points);
-extern legacy_u16 rs_shape3d_shape3d_legacy_record_index(legacy_u16 record_index);
-extern legacy_s8 rs_shape3d_resources_legacy_s8_from_bits(legacy_u8 value);
-extern legacy_s16 rs_shape3d_resources_legacy_s16_from_bits(legacy_u16 value);
-extern legacy_s32 rs_shape3d_resources_legacy_s32_from_bits(legacy_u32 value);
-extern legacy_s8 rs_shape3d_car_legacy_s8_from_bits(legacy_u8 value);
-extern legacy_s16 rs_shape3d_car_legacy_s16_from_bits(legacy_u16 value);
-extern legacy_s32 rs_shape3d_car_legacy_s32_from_bits(legacy_u32 value);
-extern legacy_void rs_shape3d_car_shape3d_init_car_wheel_vertices(SHAPE3D *shape, VECTOR *centers,
-																  VECTOR *vertices);
-extern legacy_void rs_shape3d_car_shape3d_steer_car_wheel_vertices(SHAPE3D *shape,
-																   legacy_u16 first_vertex,
-																   legacy_s16 steering_angle,
-																   VECTOR *base_vertices,
-																   VECTOR *front_wheel_centers);
-extern legacy_s8 rs_shape3d_prerender_legacy_s8_from_bits(legacy_u8 value);
-extern legacy_s16 rs_shape3d_prerender_legacy_s16_from_bits(legacy_u16 value);
-extern legacy_s32 rs_shape3d_prerender_legacy_s32_from_bits(legacy_u32 value);
-extern legacy_void rs_shape3d_prerender_polygon_rasterize(legacy_u16 color, legacy_u16 vertex_count,
-														  POINT2D *vertices,
-														  legacy_u16 choose_edge_per_row);
-extern legacy_void generate_poly_edges(legacy_s16 *edges, legacy_u16 *line_setup,
-									   legacy_s16 clipping_mode);
-extern legacy_void polygon_merge_second_edge(legacy_u16 *line_setup, legacy_u16 choose_edge_per_row,
-											 legacy_u16 needs_clipping, legacy_s16 *edge_tables);
-extern legacy_s16 rs_shape3d_prerender_prerender_line(legacy_u16 start_x, legacy_u16 start_y,
-													  legacy_u16 end_x, legacy_u16 end_y,
-													  legacy_u16 color, legacy_u16 *line);
-extern legacy_void rs_shape3d_prerender_prerender_grille_pixel(legacy_u16 x, legacy_u16 y);
-extern legacy_void rs_shape3d_prerender_prerender_grille_line(legacy_u16 start_x,
-															  legacy_u16 start_y, legacy_u16 end_x,
-															  legacy_u16 end_y, legacy_u16 color);
-extern legacy_void rs_shape3d_prerender_preRender_default_alt_words(legacy_u16 color,
-																	legacy_u16 vertex_count,
-																	legacy_u16 *words);
-extern legacy_u16 rs_shape3d_prerender_sphere_scale_sum(legacy_u16 left, legacy_u16 right,
-														legacy_u16 scale);
-extern legacy_u16 rs_shape3d_prerender_sphere_scale_difference(legacy_u16 left, legacy_u16 right,
-															   legacy_u16 scale);
-extern legacy_void rs_shape3d_prerender_sphere_build_coordinate(legacy_u16 *destination);
-extern legacy_u16 rs_shape3d_prerender_wheel_interpolate(legacy_u16 center, legacy_u16 target,
-														 legacy_u16 scale);
-extern legacy_void rs_shape3d_prerender_preRender_wheel_side(legacy_u16 *wheel_points,
-															 legacy_u16 minimum_index,
-															 legacy_u16 reverse, legacy_u16 color);
-extern legacy_s16 rs_shape3d_prerender_sphere_build_spans(SPHERE_RASTER *sphere,
-														  legacy_s16 *left_edges,
-														  legacy_s16 *right_edges);
-extern legacy_void rs_shape3d_prerender_sphere_draw_spans(SPHERE_RASTER *sphere,
-														  legacy_s16 *left_edges,
-														  legacy_s16 *right_edges,
-														  legacy_u16 color);
-extern legacy_void wheel_fill_polygon(legacy_u16 color, legacy_u16 vertex_count, POINT2D *vertices);
-extern legacy_void rs_shape3d_prerender_polygon_find_bounds(POINT2D *vertices,
-															legacy_u16 vertex_count,
-															POLYGON_RASTER *raster);
-extern legacy_s16 rs_shape3d_prerender_polygon_is_outside(POLYGON_RASTER *raster);
-extern legacy_void rs_shape3d_prerender_polygon_prepare_segment(POINT2D *start, POINT2D *end,
-																legacy_u16 *line_setup,
-																legacy_u16 needs_clipping);
-extern legacy_void rs_shape3d_prerender_polygon_generate_first_side(POLYGON_RASTER *raster,
-																	legacy_s16 *edges,
-																	legacy_u16 *line_setup);
-extern legacy_void rs_shape3d_prerender_polygon_merge_second_side(POLYGON_RASTER *raster,
-																  legacy_s16 *edges,
-																  legacy_u16 *line_setup,
-																  legacy_u16 choose_edge_per_row);
-extern legacy_void rs_shape3d_prerender_polygon_draw_spans(POLYGON_RASTER *raster,
-														   legacy_s16 *edges, legacy_u16 color);
-extern legacy_void rs_shape3d_prerender_generate_poly_edge_fill(legacy_s16 *edges,
-																legacy_s16 offset, legacy_s16 count,
-																legacy_s16 boundary);
-extern legacy_void rs_shape3d_prerender_generate_poly_edge_padding(legacy_s16 *edges,
-																   legacy_u16 *setup,
-																   legacy_u16 count_index,
-																   legacy_s16 boundary,
-																   legacy_s16 leading);
-extern legacy_void rs_shape3d_prerender_generate_poly_vertical(legacy_s16 *edges,
-															   legacy_u16 *line_setup,
-															   legacy_s16 step_count,
-															   legacy_s16 row_index);
-extern legacy_void rs_shape3d_prerender_generate_poly_diagonal_left(legacy_s16 *edges,
-																	legacy_u16 *line_setup,
-																	legacy_s16 step_count,
-																	legacy_s16 row_index);
-extern legacy_void rs_shape3d_prerender_generate_poly_diagonal_right(legacy_s16 *edges,
-																	 legacy_u16 *line_setup,
-																	 legacy_s16 step_count,
-																	 legacy_s16 row_index);
-extern legacy_void rs_shape3d_prerender_generate_poly_y_major(legacy_s16 *edges,
-															  legacy_u16 *line_setup,
-															  legacy_s16 step_count,
-															  legacy_s16 row_index);
-extern legacy_void rs_shape3d_prerender_generate_poly_x_major_left(legacy_s16 *edges,
-																   legacy_u16 *line_setup,
-																   legacy_s16 step_count,
-																   legacy_s16 row_index);
-extern legacy_void rs_shape3d_prerender_generate_poly_x_major_right(legacy_s16 *edges,
-																	legacy_u16 *line_setup,
-																	legacy_s16 step_count,
-																	legacy_s16 row_index);
-extern legacy_void rs_shape3d_prerender_prerender_extend_edge(legacy_s16 *left_edges,
-															  legacy_s16 *right_edges,
-															  legacy_s16 index, legacy_s16 value,
-															  legacy_s16 to_left);
-extern legacy_void rs_shape3d_prerender_prerender_merge_linear_rows(legacy_u16 *line,
-																	legacy_s16 *left_edges,
-																	legacy_s16 *right_edges);
-extern legacy_void rs_shape3d_prerender_prerender_merge_fractional_rows(legacy_u16 *line,
-																		legacy_s16 *left_edges,
-																		legacy_s16 *right_edges);
-extern legacy_void rs_shape3d_prerender_prerender_merge_x_major_rows(legacy_u16 *line,
-																	 legacy_s16 *left_edges,
-																	 legacy_s16 *right_edges);
-extern legacy_void rs_shape3d_prerender_prerender_merge_fixed_y_edge(legacy_u16 *line,
-																	 legacy_s16 *left_edges,
-																	 legacy_s16 *right_edges);
-extern legacy_void
-rs_shape3d_prerender_prerender_finish_fixed_left(legacy_s16 *right_edges, legacy_s16 x_position,
-												 legacy_s16 count, legacy_s16 row_index,
-												 legacy_u16 fraction, legacy_u16 step);
-extern legacy_void rs_shape3d_prerender_prerender_merge_fixed_left_edge(legacy_u16 *line,
-																		legacy_s16 *left_edges,
-																		legacy_s16 *right_edges);
-extern legacy_void
-rs_shape3d_prerender_prerender_finish_fixed_right(legacy_s16 *left_edges, legacy_s16 x_position,
-												  legacy_s16 count, legacy_s16 row_index,
-												  legacy_u16 fraction, legacy_u16 step);
-extern legacy_void rs_shape3d_prerender_prerender_merge_fixed_right_edge(legacy_u16 *line,
-																		 legacy_s16 *left_edges,
-																		 legacy_s16 *right_edges);
-extern legacy_void rs_shape3d_prerender_prerender_merge_clip_padding(legacy_u16 *line,
-																	 legacy_s16 *left_edges,
-																	 legacy_s16 *right_edges);
-extern legacy_s8 rs_shape3d_lines_legacy_s8_from_bits(legacy_u8 value);
-extern legacy_s16 rs_shape3d_lines_legacy_s16_from_bits(legacy_u16 value);
-extern legacy_s32 rs_shape3d_lines_legacy_s32_from_bits(legacy_u32 value);
-extern legacy_u16 line_prepare(legacy_u16 start_x, legacy_u16 start_y, legacy_u16 end_x,
-							   legacy_u16 end_y, legacy_u16 *line, legacy_u16 skip_clipping);
-extern legacy_void rs_shape3d_lines_draw_line_advance_end(legacy_u16 *line, legacy_u16 steps,
-														  legacy_u16 span_index);
-extern legacy_u16 rs_shape3d_lines_draw_line_round_div(legacy_u32 numerator, legacy_u16 divisor);
-extern legacy_u16 rs_shape3d_lines_draw_line_step(legacy_u16 minor, legacy_u16 major);
-extern legacy_u16 rs_shape3d_lines_draw_line_reject(legacy_u16 *line, legacy_u16 reject);
-extern legacy_u16 rs_shape3d_lines_draw_line_horizontal(legacy_u16 y, legacy_u16 start_x,
-														legacy_u16 end_x, legacy_u16 *line,
-														legacy_u16 unclipped);
-extern legacy_void rs_shape3d_lines_draw_line_clip_top_x_major(legacy_u16 *line, legacy_u16 mode,
-															   legacy_u16 top_bound_or_clip_count,
-															   legacy_u16 original_start_y);
-extern legacy_u8 rs_shape3d_lines_draw_line_clip_top(legacy_u16 *line);
-extern legacy_u8 rs_shape3d_lines_draw_line_clip_bottom(legacy_u16 *line);
-extern legacy_void rs_shape3d_lines_draw_line_advance_secondary(legacy_u16 *line,
-																legacy_u16 advance,
-																legacy_u16 counter_index);
-extern legacy_s16 rs_shape3d_lines_draw_line_clip_left_y_major(legacy_u16 *line, legacy_u16 mode);
-extern legacy_s16 rs_shape3d_lines_draw_line_clip_left(legacy_u16 *line);
-extern legacy_u16 rs_shape3d_lines_draw_line_clip_right_y_major(legacy_u16 *line, legacy_u16 mode);
-extern legacy_u16 rs_shape3d_lines_draw_line_clip_right(legacy_u16 *line);
-extern legacy_void rs_shape3d_lines_draw_line_subdivide_advance_start(legacy_u16 *line,
-																	  legacy_u16 vertical_step,
-																	  legacy_u16 horizontal_step);
-extern legacy_void rs_shape3d_lines_draw_line_subdivide_advance_end(legacy_u16 *line,
-																	legacy_u16 vertical_step,
-																	legacy_u16 horizontal_step);
-extern legacy_void rs_shape3d_lines_draw_line_subdivide(legacy_u16 *line);
-extern legacy_u16 rs_shape3d_lines_draw_line_find_initial_clip(legacy_u16 *line, legacy_u16 *clip);
-extern legacy_u16 rs_shape3d_lines_draw_line_set_slope_mode(legacy_u16 *line,
-															legacy_u16 extent_or_major_delta,
-															legacy_u16 clip_or_minor_delta);
-extern legacy_u16 rs_shape3d_lines_draw_line_setup_slope(legacy_u16 *line);
-extern legacy_u16 rs_shape3d_lines_draw_line_find_horizontal_clip(legacy_u16 *line,
-																  legacy_u16 *clip);
-extern legacy_u16 rs_shape3d_lines_draw_line_apply_horizontal_clipping(legacy_u16 *line,
-																	   legacy_u16 clip);
-extern legacy_u16 rs_shape3d_lines_draw_line_apply_clipping(legacy_u16 *line, legacy_u16 clip);
-extern legacy_s8 rs_shape2d_legacy_s8_from_bits(legacy_u8 value);
-extern legacy_s16 rs_shape2d_legacy_s16_from_bits(legacy_u16 value);
-extern legacy_s32 rs_shape2d_legacy_s32_from_bits(legacy_u32 value);
-extern legacy_void sprite_set_clip_bounds(SPRITE *sprite, legacy_u16 left, legacy_u16 right,
-										  legacy_u16 top, legacy_u16 bottom);
-extern legacy_s16 rs_shape2d_sprite_clip_rectangle(legacy_s16 x, legacy_s16 y, legacy_s16 width,
-												   legacy_s16 height, legacy_s16 *clipped_x,
-												   legacy_s16 *clipped_y, legacy_s16 *clipped_width,
-												   legacy_s16 *clipped_height);
-extern legacy_void rs_shape2d_font_draw_glyph(legacy_u8 *font_definition, legacy_u8 *glyph_data,
-											  legacy_u8 *bitmap, legacy_u16 current_x,
-											  legacy_s16 opaque);
-extern legacy_void rs_shape2d_font_draw_text_impl(legacy_s8 *text, legacy_s16 x, legacy_s16 y,
-												  legacy_s16 opaque);
-extern legacy_u8 rs_shape2d_shape2d_rotate_left_8(legacy_u8 value, legacy_u8 count);
-extern legacy_void rs_shape2d_draw_pattern_lines(legacy_s16 *x1arr, legacy_s16 *x2arr, legacy_u16 y,
-												 legacy_u16 numlines, legacy_u16 color,
-												 legacy_s16 two_colors);
-extern legacy_void draw_two_color_pattern_lines(legacy_s16 *x1arr, legacy_s16 *x2arr, legacy_u16 y,
-												legacy_u16 numlines, legacy_u16 color,
-												legacy_u16 alternate_color, legacy_u16 pattern);
-extern legacy_void rs_shape2d_sprite_draw_line_rows(SPRITE_LINE_DRAW *draw, legacy_u16 mode);
-extern legacy_void rs_shape2d_sprite_draw_line_columns(SPRITE_LINE_DRAW *draw, legacy_u16 mode);
-extern legacy_void rs_shape2d_sprite_round_line_coordinate(legacy_u16 *low, legacy_u16 *high);
-extern legacy_void rs_shape2d_sprite_draw_dissolve_row(legacy_u16 shape_segment, legacy_u8 *bitmap,
-													   legacy_u16 source, legacy_u16 destination,
-													   legacy_u16 width, legacy_u16 row_phase);
-extern legacy_void rs_shape2d_sprite_clear_shape_impl(SHAPE2D *shape, legacy_u16 x, legacy_u16 y);
-extern legacy_void sprite_capture_at_anchor(SHAPE2D *shape, legacy_s16 x, legacy_s16 y);
-extern legacy_u16 rs_shape2d_shape2d_scaled_anchor(legacy_u16 anchor, legacy_u16 scale);
-extern legacy_s16 rs_shape2d_shape2d_clip_scaled_columns(SHAPE2D_SCALED_DRAW *draw);
-extern legacy_s16 rs_shape2d_shape2d_clip_scaled_rows(SHAPE2D_SCALED_DRAW *draw);
-extern legacy_void rs_shape2d_shape2d_render_scaled(SHAPE2D_SCALED_DRAW *draw);
-extern legacy_void rs_shape2d_shape2d_scale_transparent_impl(SHAPE2D *shape, legacy_u16 scale,
-															 legacy_u16 x, legacy_u16 y,
-															 legacy_s16 clipped);
-extern legacy_void rs_shape2d_sprite_shape_to_1_impl(SHAPE2D *shape, legacy_u16 x, legacy_u16 y,
-													 legacy_s16 operation);
-extern legacy_void rs_shape2d_sprite_shape_to_1_at_anchor(SHAPE2D *shape, legacy_s16 x,
-														  legacy_s16 y, legacy_s16 operation);
-extern legacy_void shape2d_copy_at_anchor(SHAPE2D *shape, legacy_s16 x, legacy_s16 y);
-extern legacy_void shape2d_mask_at_anchor(SHAPE2D *shape, legacy_s16 x, legacy_s16 y);
-extern legacy_void sprite_set_palette_map(legacy_s16 destination_index, legacy_s16 count,
-										  legacy_u8 *source_data);
-extern legacy_s8 rs_shape2d_blit_legacy_s8_from_bits(legacy_u8 value);
-extern legacy_s16 rs_shape2d_blit_legacy_s16_from_bits(legacy_u16 value);
-extern legacy_s32 rs_shape2d_blit_legacy_s32_from_bits(legacy_u32 value);
-extern legacy_void rs_shape2d_blit_shape2d_write_raster(legacy_u8 *bitmap, legacy_u16 destination,
-														legacy_u8 value, legacy_s16 operation,
-														legacy_u8 planar);
-extern legacy_void rs_shape2d_blit_shape2d_apply_planar_run(legacy_u8 *bitmap,
-															legacy_u16 destination,
-															legacy_u16 count, legacy_u8 value,
-															legacy_s16 operation);
-extern legacy_void rs_shape2d_blit_shape2d_render_rle(SHAPE2D *shape, legacy_u16 x, legacy_u16 y,
-													  legacy_s16 operation);
-extern legacy_void rs_shape2d_blit_shape2d_render_rle_at_anchor(SHAPE2D *shape, legacy_s16 x,
-																legacy_s16 y, legacy_s16 operation);
-extern legacy_void rs_shape2d_blit_shape2d_render_rle_at_position(SHAPE2D *shape,
-																  legacy_s16 operation);
-extern legacy_void shape2d_rle_mask_at_anchor(SHAPE2D *shape, legacy_s16 x, legacy_s16 y);
-extern legacy_void shape2d_rle_mask(SHAPE2D *shape, legacy_s16 x, legacy_s16 y);
-extern legacy_void shape2d_rle_copy_at_anchor(SHAPE2D *shape, legacy_s16 x, legacy_s16 y);
-extern legacy_s16 rs_shape2d_blit_shape2d_clip_blit_rows(legacy_u16 width, legacy_u16 *y,
-														 legacy_u16 *source,
-														 legacy_u16 *clipped_rows);
-extern legacy_s16 rs_shape2d_blit_shape2d_clip_blit(SHAPE2D *shape, legacy_u16 x, legacy_u16 y,
-													SHAPE2D_CLIP *clip);
-extern legacy_s16 rs_shape2d_blit_shape2d_rle_next(SHAPE2D_RLE_CURSOR *cursor, legacy_u8 *value);
-extern legacy_s16 rs_shape2d_blit_shape2d_rle_skip(SHAPE2D_RLE_CURSOR *cursor, legacy_u16 skip);
-extern legacy_s16 rs_shape2d_blit_shape2d_rle_raster_span(SHAPE2D_RLE_CURSOR *cursor,
-														  legacy_u8 *bitmap, legacy_u16 destination,
-														  legacy_u16 count, legacy_s16 operation);
-extern legacy_void rs_shape2d_blit_shape2d_render_rle_clipped(SHAPE2D *shape, legacy_u16 x,
-															  legacy_u16 y, legacy_s16 operation);
-extern legacy_void shape2d_rle_copy_anchor_clipped(SHAPE2D *shape, legacy_s16 x, legacy_s16 y);
-extern legacy_void rs_shape2d_blit_sprite_putimage_at(SHAPE2D *shape, legacy_u16 x, legacy_u16 y,
-													  legacy_s16 operation);
-extern legacy_void rs_shape2d_blit_sprite_putimage_at_anchor(SHAPE2D *shape, legacy_s16 x,
-															 legacy_s16 y, legacy_s16 operation);
-extern legacy_void sprite_putimage_at_shape_anchor(SHAPE2D *shape, legacy_s16 x, legacy_s16 y);
-extern legacy_s8 rs_video_pages_legacy_s8_from_bits(legacy_u8 value);
-extern legacy_s16 rs_video_pages_legacy_s16_from_bits(legacy_u16 value);
-extern legacy_s32 rs_video_pages_legacy_s32_from_bits(legacy_u32 value);
-extern legacy_s8 rs_shape2d_resources_legacy_s8_from_bits(legacy_u8 value);
-extern legacy_s16 rs_shape2d_resources_legacy_s16_from_bits(legacy_u16 value);
-extern legacy_s32 rs_shape2d_resources_legacy_s32_from_bits(legacy_u32 value);
-extern legacy_u32 shape2d_pointer_to_linear(legacy_u8 *data);
-extern legacy_u8 *shape2d_pointer_from_linear(legacy_u32 linear_address);
-extern legacy_s16 shape2d_count_repeated_bytes(legacy_u8 *data);
-extern legacy_u8 rs_shape2d_resources_shape2d_far_read_byte(legacy_u16 segment, legacy_u16 offset);
-extern legacy_void rs_shape2d_resources_shape2d_far_write_byte(legacy_u16 segment,
-															   legacy_u16 offset, legacy_u8 value);
-extern legacy_void rs_shape2d_resources_shape2d_far_write_dword(legacy_u16 segment,
-																legacy_u16 offset,
-																legacy_u32 value);
-extern legacy_void rs_shape2d_resources_shape2d_copy_wrapped(legacy_u16 source_segment,
-															 legacy_u16 *source,
-															 legacy_u16 destination_segment,
-															 legacy_u16 *destination,
-															 legacy_u16 count);
-extern legacy_void rs_shape2d_resources_shape2d_write_run(legacy_u16 source_segment,
-														  legacy_u16 *source,
-														  legacy_u16 destination_segment,
-														  legacy_u16 *destination,
-														  legacy_u16 count);
-extern legacy_void rs_shape2d_resources_shape2d_parse_literals(SHAPE2D_PARSE_RUN *run,
-															   SHAPE2D_PARSE_OUTPUT *output);
-extern legacy_void rs_shape2d_resources_shape2d_parse_repeats(SHAPE2D_PARSE_RUN *run,
-															  SHAPE2D_PARSE_OUTPUT *output,
-															  legacy_u16 run_count);
-extern legacy_void rs_shape2d_resources_shape2d_parse_bitmap(SHAPE2D *shape,
-															 SHAPE2D_PARSE_OUTPUT *output);
-extern legacy_u8 *rs_shape2d_resources_file_get_shape2d_bytes(legacy_u8 *memchunk,
-															  legacy_s16 index);
-extern legacy_void file_get_shape2d_identifier(legacy_u8 *memchunk, legacy_u16 index,
-											   legacy_u32 *result);
-extern legacy_void rs_shape2d_resources_shape2d_unflip_transpose(legacy_s8 *membitmapptr,
-																 legacy_s8 *mempages,
-																 legacy_s16 width,
-																 legacy_s16 height);
-extern legacy_void rs_shape2d_resources_shape2d_unflip_interlace(legacy_s8 *membitmapptr,
-																 legacy_s8 *mempages,
-																 legacy_s16 width,
-																 legacy_s16 height);
-extern legacy_void rs_shape2d_resources_shape2d_unflip_column_blocks(legacy_s8 *membitmapptr,
-																	 legacy_s8 *mempages,
-																	 legacy_s16 width,
-																	 legacy_s16 height);
-extern legacy_u8 *rs_shape2d_resources_shape2d_find_cached(legacy_s8 *shapename, legacy_s8 *str,
-														   legacy_s8 **extension);
-extern legacy_s8 rs_heapsort_legacy_s8_from_bits(legacy_u8 value);
-extern legacy_s16 rs_heapsort_legacy_s16_from_bits(legacy_u16 value);
-extern legacy_s32 rs_heapsort_legacy_s32_from_bits(legacy_u32 value);
-extern legacy_s8 rs_frame_legacy_s8_from_bits(legacy_u8 value);
-extern legacy_s16 rs_frame_legacy_s16_from_bits(legacy_u16 value);
-extern legacy_s32 rs_frame_legacy_s32_from_bits(legacy_u32 value);
-extern legacy_s16 rs_frame_frame_relative_position(legacy_s32 position, legacy_s16 camera_position);
-extern legacy_s16 rs_frame_frame_relative_position_sum(legacy_s32 first, legacy_s32 second,
-													   legacy_s16 camera_position);
-extern legacy_s16 rs_frame_frame_relative_track_position(legacy_s32 offset,
-														 legacy_s16 track_position,
-														 legacy_s16 camera_position);
-extern legacy_s8 rs_frame_frame_tile_from_world(legacy_s32 position);
-extern legacy_s8 rs_frame_frame_south_tile_from_world(legacy_s32 position);
-extern legacy_s8 rs_frame_frame_tile_from_world_offset(legacy_s32 position, legacy_s16 offset);
-extern legacy_s8 rs_frame_frame_south_tile_from_world_offset(legacy_s32 position,
-															 legacy_s16 offset);
-extern legacy_s16 rs_frame_frame_car_z_adjust(legacy_s8 *wheel_surfaces, MATRIX *rotation);
-extern legacy_void rs_frame_frame_add_dynamic_shape(TRACKOBJECT *track_object,
-													legacy_s16 state_index, legacy_s16 flags,
-													legacy_s16 material, legacy_s16 z_adjust,
-													VECTOR *camera_position);
-extern legacy_void rs_frame_frame_prepare_flat_track_shape(TRANSFORMEDSHAPE3D *shape,
-														   legacy_s8 tile_east,
-														   legacy_s8 tile_south,
-														   VECTOR *camera_position,
-														   legacy_s16 flags, legacy_s16 rotation);
-extern legacy_void rs_frame_frame_mark_changed_rects();
-extern legacy_void rs_frame_frame_add_car(CARSTATE *carstate, legacy_s8 debris_owner,
-										  legacy_u16 car_object, SHAPE3D *wheel_shape,
-										  legacy_s16 *wheel_angles, VECTOR *wheel_vectors,
-										  VECTOR *wheel_vector, RECTANGLE *slow_rect,
-										  RECTANGLE *crash_rect, VECTOR *camera_position,
-										  legacy_s8 tile_detail, legacy_s8 flags,
-										  legacy_s16 material, legacy_s16 z_adjust);
-extern legacy_s16 rs_frame_frame_border_index(legacy_s8 offset);
-extern MATRIX *rs_frame_frame_car_rotation(legacy_s16 rot_x, legacy_s16 rot_y, legacy_s16 rot_z);
-extern legacy_s16 rs_frame_frame_find_car_wheel(CARSTATE *carstate, SIMD *simd,
-												FRAME_TILE_SELECTION *tiles,
-												legacy_s8 *result_tile_east,
-												legacy_s8 *result_tile_south);
-extern legacy_s8 rs_frame_frame_begin(legacy_s8 buffer_index);
-extern CARSTATE *rs_frame_frame_second_car_state();
-extern CARSTATE *rs_frame_frame_viewed_car_state();
-extern GHOST_CAMERA_STATE *rs_frame_frame_viewed_ghost_camera();
-extern legacy_s16 rs_frame_frame_position_camera(FRAME_CAMERA *camera, VECTOR *car_pos,
-												 legacy_s16 car_rot_x, legacy_s16 car_rot_y,
-												 legacy_s16 car_rot_z,
-												 GHOST_CAMERA_STATE *ghost_camera);
-extern legacy_void rs_frame_frame_aim_external_camera(FRAME_CAMERA *camera, VECTOR *car_pos);
-extern legacy_void rs_frame_frame_setup_camera(FRAME_CAMERA *camera);
-extern legacy_s8 rs_frame_frame_animated_material();
-extern FRAME_LOOKAHEAD_TILE *rs_frame_frame_setup_projection(FRAME_CAMERA *camera,
-															 RECTANGLE *cliprect);
-extern legacy_void rs_frame_frame_draw_clouds(FRAME_CAMERA *camera,
-											  legacy_s8 redraw_transform_flags);
-extern legacy_void rs_frame_frame_resolve_track_tile(FRAME_TILE *tile);
-extern legacy_s16 rs_frame_frame_lookahead_is_covered(FRAME_LOOKAHEAD_TILE *lookahead,
-													  legacy_s16 multitile_flag,
-													  legacy_s8 east_offset,
-													  legacy_s8 south_offset);
-extern legacy_void rs_frame_frame_mark_covered_tiles(FRAME_TILE_SELECTION *tiles, FRAME_TILE *tile,
-													 legacy_s16 tile_index);
-extern legacy_void rs_frame_frame_select_track_tile(FRAME_TILE_SELECTION *tiles, FRAME_TILE *tile,
-													legacy_s16 tile_index);
-extern legacy_void rs_frame_frame_extend_lookahead(FRAME_TILE_SELECTION *tiles,
-												   FRAME_CAMERA *camera);
-extern legacy_void rs_frame_frame_select_tiles(FRAME_TILE_SELECTION *tiles, FRAME_CAMERA *camera);
-extern legacy_void rs_frame_frame_place_cars(FRAME_TILE_SELECTION *tiles, FRAME_CAR_RENDER *cars);
-extern legacy_s16 rs_frame_frame_draw_fences(FRAME_TILE *tile, FRAME_TILE_SELECTION *tiles,
-											 FRAME_CAMERA *camera,
-											 legacy_s8 redraw_transform_flags);
-extern legacy_s16 rs_frame_frame_draw_elevated_corners(FRAME_TILE *tile, FRAME_CAMERA *camera,
-													   legacy_s8 redraw_transform_flags);
-extern legacy_s16 rs_frame_frame_draw_covered_water(FRAME_TILE *tile, FRAME_CAMERA *camera,
-													legacy_s8 redraw_transform_flags);
-extern legacy_s16 rs_frame_frame_draw_terrain(FRAME_TILE *tile, FRAME_CAMERA *camera,
-											  legacy_s8 redraw_transform_flags);
-extern legacy_s16 rs_frame_frame_draw_hill_fill(FRAME_TILE *tile, TRACKOBJECT *track_object,
-												legacy_s8 redraw_transform_flags);
-extern legacy_s16 rs_frame_frame_prepare_overlay(FRAME_TILE *tile, TRACKOBJECT *track_object,
-												 legacy_s8 redraw_transform_flags,
-												 legacy_s8 animated_material,
-												 legacy_s8 *overlay_needs_depth_sort);
-extern legacy_void rs_frame_frame_add_roadside_sign(FRAME_TILE *tile, FRAME_CAMERA *camera,
-													legacy_s8 redraw_transform_flags);
-extern legacy_void rs_frame_frame_animate_start_flag();
-extern legacy_void rs_frame_frame_add_start_flag(FRAME_TILE *tile, FRAME_CAMERA *camera,
-												 legacy_s8 redraw_transform_flags);
-extern legacy_void rs_frame_frame_select_brake_paint(legacy_s16 shape_index);
-extern legacy_s16 rs_frame_frame_draw_sorted_shapes(FRAME_CAR_RENDER *cars);
-extern legacy_void rs_frame_frame_position_track_element(FRAME_TILE *tile, FRAME_CAMERA *camera,
-														 TRACKOBJECT *track_object);
-extern legacy_void rs_frame_frame_track_sort_state(FRAME_TILE *tile, FRAME_CAR_RENDER *cars,
-												   legacy_s8 sorted_overlay);
-extern legacy_s16 rs_frame_frame_add_track_element(FRAME_TILE *tile, FRAME_CAMERA *camera,
-												   FRAME_CAR_RENDER *cars,
-												   legacy_s8 redraw_transform_flags,
-												   legacy_s8 animated_material,
-												   legacy_s8 *overlay_needs_depth_sort);
-extern legacy_void rs_frame_frame_add_tile_cars(FRAME_TILE *tile, FRAME_CAMERA *camera,
-												FRAME_CAR_RENDER *cars,
-												legacy_s8 redraw_transform_flags);
-extern legacy_s16 rs_frame_frame_draw_tiles(FRAME_TILE_SELECTION *tiles, FRAME_CAMERA *camera,
-											FRAME_CAR_RENDER *cars,
-											legacy_s8 redraw_transform_flags,
-											legacy_s8 animated_material);
-extern legacy_s16 rs_frame_frame_supersight_first_attempt(FRAME_TILE_SELECTION *tiles,
-														  FRAME_CAMERA *camera);
-extern legacy_void rs_frame_frame_draw_supersight(FRAME_TILE_SELECTION *tiles, FRAME_CAMERA *camera,
-												  FRAME_CAR_RENDER *cars, legacy_s8 buffer_index,
-												  legacy_s8 redraw_transform_flags,
-												  legacy_s8 animated_material);
-extern legacy_void rs_frame_frame_draw_explosions(FRAME_CAR_RENDER *cars, RECTANGLE *cliprect);
-extern legacy_void rs_frame_frame_draw_cockpit_effects(RECTANGLE *cliprect);
-extern legacy_void rs_frame_frame_draw_elapsed_time();
-extern legacy_void rs_frame_frame_finish(legacy_s8 buffer_index, RECTANGLE *cliprect,
-										 legacy_s16 skybox_requires_full_redraw,
-										 legacy_s16 camera_yaw);
-extern legacy_void rs_frame_frame_preserve_authoritative_events(GAMESTATE *presentation,
-																CARSTATE *ghost,
-																GHOST_CAMERA_STATE *ghost_camera);
-extern legacy_s8 rs_skybox_legacy_s8_from_bits(legacy_u8 value);
-extern legacy_s16 rs_skybox_legacy_s16_from_bits(legacy_u16 value);
-extern legacy_s32 rs_skybox_legacy_s32_from_bits(legacy_u32 value);
-extern legacy_s16 rs_skybox_skybox_scaled_constant(legacy_u16 value, legacy_s16 scale);
-extern legacy_void rs_skybox_skybox_clear_rect(RECTANGLE *rect, legacy_s16 color);
-extern legacy_void rs_skybox_skybox_collect_changed_rects(RECTANGLE *clip);
-extern legacy_void rs_skybox_skybox_clear_changed_rects(RECTANGLE *rect, RECTANGLE *clip,
-														legacy_s16 color);
-extern legacy_u8 rs_skybox_skybox_project_rolled_horizon(legacy_s16 direction, MATRIX *rotation,
-														 legacy_s16 camera_y, POINT2D *points);
-extern legacy_u8 rs_skybox_skybox_clear_outside_horizon(RECTANGLE *clip, POINT2D *points);
-extern legacy_u8 rs_skybox_skybox_find_linear_horizon(POINT2D *points, legacy_s16 *base,
-													  legacy_s16 *delta);
-extern legacy_void rs_skybox_skybox_prepare_horizon_rect(RECTANGLE *clip, legacy_s16 base_horizon,
-														 legacy_s16 horizon_delta,
-														 RECTANGLE *work_rect);
-extern legacy_void rs_skybox_skybox_render_horizon_strips(RECTANGLE *clip, RECTANGLE *work_rect,
-														  legacy_s16 base_horizon,
-														  legacy_s16 horizon_delta,
-														  legacy_s16 angle);
-extern legacy_void rs_skybox_skybox_render_horizon_polygons(POINT2D *points);
-extern legacy_s16 rs_skybox_skybox_render_rolled(RECTANGLE *clip, legacy_s16 direction,
-												 MATRIX *rotation, legacy_s16 angle,
-												 legacy_s16 camera_y);
-extern legacy_s16 rs_skybox_skybox_render_forward_horizon(legacy_s16 view_index, RECTANGLE *clip,
-														  legacy_s16 angle, legacy_s16 horizon);
-extern legacy_s16 rs_skybox_skybox_render_reversed_horizon(RECTANGLE *clip, legacy_s16 horizon);
-extern legacy_s16 rs_skybox_skybox_render_legacy(legacy_s16 view_index, RECTANGLE *clip,
-												 legacy_s16 direction, MATRIX *rotation,
-												 legacy_s16 roll, legacy_s16 angle,
-												 legacy_s16 camera_y);
-extern legacy_s8 rs_frame_overlay_legacy_s8_from_bits(legacy_u8 value);
-extern legacy_s16 rs_frame_overlay_legacy_s16_from_bits(legacy_u16 value);
-extern legacy_s32 rs_frame_overlay_legacy_s32_from_bits(legacy_u32 value);
-extern legacy_s16 rs_frame_overlay_frame_supersight_expire_status(legacy_u32 now);
-extern legacy_void rs_frame_overlay_frame_supersight_status_bounds(RECTANGLE *temple_return_value);
-extern legacy_s16 rs_frame_overlay_frame_status_expire_at(legacy_u32 now);
-extern legacy_s16 rs_frame_overlay_frame_fps_adaptive_enabled();
-extern legacy_void rs_frame_overlay_frame_fps_restore_roof(RECTANGLE *overlay_bounds);
-extern legacy_u16 rs_frame_overlay_frame_fps_format_number(legacy_s8 *text, legacy_u16 value);
-extern legacy_u16 rs_frame_overlay_prepare_fps_text();
-extern legacy_void rs_frame_overlay_draw_centered_ingame_resource(legacy_s8 *resource_id,
-																  legacy_s16 y);
-extern legacy_void rs_frame_overlay_draw_ingame_route_information();
-extern legacy_void rs_frame_overlay_draw_replay_text(legacy_s8 *text, legacy_s16 y);
-extern legacy_s16 rs_frame_overlay_draw_replay_filename(legacy_u16 reserved_characters);
-extern legacy_s8 rs_intro_render_legacy_s8_from_bits(legacy_u8 value);
-extern legacy_s16 rs_intro_render_legacy_s16_from_bits(legacy_u16 value);
-extern legacy_s32 rs_intro_render_legacy_s32_from_bits(legacy_u32 value);
-extern legacy_s16 rs_intro_render_intro_shift_position(legacy_s32 position, legacy_s16 camera);
-extern legacy_void rs_intro_render_intro_draw_transformed_shape(TRANSFORMEDSHAPE3D *transformed,
-																RECTANGLE *shape_rect,
-																legacy_s16 rotation_z);
-extern legacy_void rs_intro_render_intro_draw_stars(legacy_s16 camera_x, legacy_s16 camera_y,
-													legacy_s16 camera_z, VECTOR *stars,
-													POINT2D *previous_points,
-													legacy_s16 *previous_point_count,
-													RECTANGLE *point_rect);
-extern legacy_void rs_intro_render_intro_render_scene_impl(
-	legacy_s16 camera_x, legacy_s16 camera_y, legacy_s16 camera_z, legacy_s16 rotate_y,
-	legacy_s16 rotate_x, legacy_s16 draw_car, legacy_s16 primary_logo, VECTOR *car_position,
-	legacy_s16 car_rotation, VECTOR *stars, POINT2D *previous_points,
-	legacy_s16 *previous_point_count, RECTANGLE *previous_rect, RECTANGLE *shape_rect,
-	RECTANGLE *combined_rect);
-extern legacy_s16 rs_intro_render_intro_step_towards(legacy_s16 value, legacy_s16 target);
-extern legacy_void rs_intro_render_intro_request_full_redraw(INTRO_SESSION *intro);
-extern legacy_void rs_intro_render_intro_load_title(INTRO_SESSION *intro);
-extern legacy_void rs_intro_render_intro_create_stars(VECTOR *stars);
-extern legacy_void rs_intro_render_intro_prepare_session(INTRO_SESSION *intro);
-extern legacy_void rs_intro_render_intro_advance_session(INTRO_SESSION *intro, legacy_s16 delta);
-extern legacy_void rs_intro_render_intro_aim_camera(INTRO_SESSION *intro,
-													legacy_s16 *horizontal_angle,
-													legacy_s16 *vertical_angle,
-													legacy_s16 *draw_car);
-extern legacy_void rs_intro_render_intro_capture_view(INTRO_SESSION *intro, INTRO_VIEW *view);
-extern legacy_void rs_intro_render_intro_present_session(INTRO_SESSION *intro);
-extern legacy_void rs_intro_render_intro_render_session(INTRO_SESSION *intro, INTRO_VIEW *view);
-extern legacy_void rs_intro_render_intro_finish_session(INTRO_SESSION *intro);
-extern legacy_s8 rs_track_preview_legacy_s8_from_bits(legacy_u8 value);
-extern legacy_s16 rs_track_preview_legacy_s16_from_bits(legacy_u16 value);
-extern legacy_s32 rs_track_preview_legacy_s32_from_bits(legacy_u32 value);
-extern legacy_s16 rs_track_preview_track_preview_half(legacy_s16 value);
-extern legacy_void rs_track_preview_track_preview_draw_terrain(
-	legacy_u8 terrain, legacy_u8 column, legacy_u8 row, legacy_s16 height, legacy_s16 camera_x,
-	legacy_s16 camera_y, legacy_s16 camera_z, legacy_s16 use_high_detail,
-	TRANSFORMEDSHAPE3D *transformed);
-extern legacy_void rs_track_preview_track_preview_prepare(VECTOR *camera);
-extern legacy_void
-rs_track_preview_track_preview_draw_bridge_terrain(legacy_u8 column, legacy_u8 row, VECTOR *camera,
-												   TRANSFORMEDSHAPE3D *transformed);
-extern legacy_void
-rs_track_preview_track_preview_draw_covered_water(legacy_u8 track, legacy_u8 terrain,
-												  legacy_u8 column, legacy_u8 row, VECTOR *camera,
-												  TRANSFORMEDSHAPE3D *transformed);
-extern legacy_void rs_track_preview_track_preview_draw_hill_base(TRACKOBJECT *track_object,
-																 VECTOR *position,
-																 TRANSFORMEDSHAPE3D *transformed);
-extern legacy_void rs_track_preview_track_preview_draw_object(legacy_u8 track, legacy_u8 column,
-															  legacy_u8 row,
-															  legacy_s16 terrain_height,
-															  VECTOR *camera,
-															  TRANSFORMEDSHAPE3D *transformed);
-extern legacy_void rs_track_preview_track_preview_draw_cell(legacy_u8 column, legacy_u8 row,
-															VECTOR *camera,
-															TRANSFORMEDSHAPE3D *transformed);
-extern legacy_s8 rs_state_legacy_s8_from_bits(legacy_u8 value);
-extern legacy_s16 rs_state_legacy_s16_from_bits(legacy_u16 value);
-extern legacy_s32 rs_state_legacy_s32_from_bits(legacy_u32 value);
-extern legacy_void rs_state_route_point_delta(VECTOR *delta,
-											  legacy_s16 unspecified_height_reference);
-extern legacy_u8 rs_state_confirm_player_route(legacy_s16 route_index,
-											   legacy_s16 skipped_route_count);
-extern legacy_void rs_state_update_player_route_penalty();
-extern legacy_s16 rs_state_player_route_depth(legacy_s8 previous_route_status,
-											  MATRIX *world_to_car_rotation);
-extern legacy_s8 rs_state_select_player_route_point(legacy_s16 route_index,
-													MATRIX *world_to_car_rotation);
-extern legacy_void rs_state_recover_player_route_direction(legacy_s16 route_index,
-														   legacy_s8 selected_route_point);
-extern legacy_void rs_state_advance_player_route_point();
-extern legacy_void rs_state_update_player_route_indicator();
-extern legacy_void rs_state_check_player_finish();
-extern legacy_void rs_state_update_player_route_guidance(legacy_s8 previous_route_status);
-extern legacy_s8 rs_physics_grip_legacy_s8_from_bits(legacy_u8 value);
-extern legacy_s16 rs_physics_grip_legacy_s16_from_bits(legacy_u16 value);
-extern legacy_s32 rs_physics_grip_legacy_s32_from_bits(legacy_u32 value);
-extern legacy_s16 rs_physics_grip_penalty_route_next(legacy_s16 track_index);
-extern legacy_s16 rs_physics_grip_penalty_route_alternate(legacy_s16 track_index);
-extern legacy_s16 rs_physics_grip_finish_penalty_route(legacy_s16 *current_track,
-													   legacy_s16 *penalty_count,
-													   legacy_s16 best_track,
-													   legacy_s16 best_distance, legacy_s16 column,
-													   legacy_s16 row);
-extern legacy_s16 rs_physics_grip_penalty_route_visit(PENALTY_ROUTE_SEARCH *search,
-													  legacy_s16 next_track);
-extern legacy_void rs_physics_grip_penalty_route_bounds(legacy_s16 next_track,
-														PENALTY_ROUTE_BOUNDS *bounds);
-extern legacy_s16 rs_physics_grip_penalty_route_contains(PENALTY_ROUTE_SEARCH *search,
-														 PENALTY_ROUTE_BOUNDS *bounds);
-extern legacy_s16 rs_physics_grip_penalty_route_record_match(PENALTY_ROUTE_SEARCH *search,
-															 legacy_s16 *next_track,
-															 legacy_s16 *current_track,
-															 legacy_s16 *penalty_count);
-extern legacy_s16 rs_physics_grip_search_penalty_route(PENALTY_ROUTE_SEARCH *search,
-													   legacy_s16 *current_track,
-													   legacy_s16 *penalty_count);
-extern legacy_void rs_physics_grip_grip_grass_drag(CARSTATE *carstate);
-extern legacy_u16 rs_physics_grip_grip_demanded(legacy_s16 initial_angle, legacy_u16 speed_shr8);
-extern legacy_s16 rs_physics_grip_grip_surface_sum(CARSTATE *carstate, SIMD *simd);
-extern legacy_void rs_physics_grip_grip_recenter(CARSTATE *carstate);
-extern legacy_s16 rs_physics_grip_grip_slip_angle(CARSTATE *carstate, legacy_s16 initial_angle,
-												  legacy_s16 combined_grip,
-												  legacy_u16 demanded_grip, legacy_u16 speed_shr8);
-extern legacy_void rs_physics_grip_grip_banked_steering(CARSTATE *carstate);
-extern legacy_void rs_physics_grip_grip_player_yaw(CARSTATE *carstate, legacy_s16 initial_angle,
-												   legacy_s16 adjusted_angle,
-												   legacy_s16 combined_grip,
-												   legacy_u16 demanded_grip);
-extern legacy_void rs_physics_grip_grip_heading_offset(CARSTATE *carstate);
-extern legacy_void rs_physics_grip_grip_sliding_speed(CARSTATE *carstate);
-extern legacy_void rs_physics_grip_grip_player_response(CARSTATE *carstate,
-														legacy_s16 initial_angle,
-														legacy_s16 combined_grip,
-														legacy_u16 demanded_grip,
-														legacy_u16 speed_shr8);
-extern legacy_s8 rs_opponent_legacy_s8_from_bits(legacy_u8 value);
-extern legacy_s16 rs_opponent_legacy_s16_from_bits(legacy_u16 value);
-extern legacy_s32 rs_opponent_legacy_s32_from_bits(legacy_u32 value);
-extern VECTOR *headless_track_vector_from_legacy_offset(legacy_u16 offset);
-extern legacy_s16 rs_opponent_opponent_route_word(legacy_s16 index);
-extern legacy_void rs_opponent_opponent_advance_route();
-extern legacy_s16 rs_opponent_opponent_average(legacy_s16 first, legacy_s16 second);
-extern legacy_void rs_opponent_opponent_check_route_distance(OPPONENT_GUIDANCE *guidance);
-extern legacy_void rs_opponent_opponent_passing_target(OPPONENT_GUIDANCE *guidance,
-													   VECTOR *route_target);
-extern legacy_s16 rs_opponent_opponent_steering_target(OPPONENT_GUIDANCE *guidance);
-extern legacy_void rs_opponent_opponent_apply_steering(legacy_s16 steering_target,
-													   legacy_s16 steering_step);
-extern legacy_u8 rs_opponent_opponent_speed_input(legacy_s16 speed_step);
-extern legacy_void rs_opponent_opponent_heading_error();
-extern legacy_void rs_opponent_opponent_check_finish();
-extern legacy_s16 rs_opponent_player_steering_response(CARSTATE *carstate,
-													   legacy_s16 steering_angle,
-													   legacy_s16 response, legacy_u8 speed_index,
-													   legacy_s8 *response_table);
-extern legacy_void rs_opponent_update_player_steering(CARSTATE *carstate, legacy_s8 steering_input,
-													  legacy_u32 fraction20);
-extern legacy_s16 rs_opponent_route_average(legacy_s16 first, legacy_s16 second);
-extern legacy_u8 rs_opponent_opponent_speed_at(legacy_u16 index);
-extern legacy_void rs_opponent_rotate_route_points(VECTOR *first_point, VECTOR *second_point,
-												   legacy_s16 orientation);
-extern legacy_void rs_opponent_store_route_points(legacy_s16 track_index, TRACKOBJECT *track_object,
-												  VECTOR *first_point, VECTOR *second_point,
-												  VECTOR *output, legacy_u8 has_opponent_path);
-extern legacy_void rs_opponent_store_route_speed(TRKOBJINFO *track_info, TRACKOBJECT *track_object,
-												 legacy_s8 *optional_speed);
-extern legacy_s8 rs_track_setup_legacy_s8_from_bits(legacy_u8 value);
-extern legacy_s16 rs_track_setup_legacy_s16_from_bits(legacy_u16 value);
-extern legacy_s32 rs_track_setup_legacy_s32_from_bits(legacy_u32 value);
-extern legacy_s16 rs_track_setup_track_setup_start_finish_orientation(legacy_u8 tile_element);
-extern legacy_u8 rs_track_setup_track_setup_entry_point(legacy_u8 *points, legacy_s16 orientation);
-extern legacy_s8 rs_track_setup_track_setup_add_s8(legacy_s8 value, legacy_s16 amount);
-extern legacy_void rs_track_setup_track_setup_rotate_vector(VECTOR *vector, legacy_s16 orientation);
-extern legacy_void rs_track_setup_track_setup_link_piece(legacy_s16 source_piece,
-														 legacy_s16 destination_piece);
-extern legacy_s16 rs_track_setup_track_setup_error(TRACK_SETUP_BRANCH *branches,
-												   legacy_u8 error_code, legacy_s8 column,
-												   legacy_s8 row);
-extern legacy_s16 rs_track_setup_track_setup_terrain_seams(TRACK_SETUP_BRANCH *branches,
-														   legacy_u8 *incoming, legacy_u8 *outgoing,
-														   legacy_s16 scan_direction);
-extern legacy_s16 rs_track_setup_track_setup_find_start(TRACK_SETUP_WALK *walk);
-extern legacy_void rs_track_setup_track_setup_revisit(TRACK_SETUP_WALK *walk,
-													  legacy_u16 block_index);
-extern legacy_s16 rs_track_setup_track_setup_push_branch(TRACK_SETUP_WALK *walk,
-														 legacy_u16 block_index);
-extern legacy_s16 rs_track_setup_track_setup_match_blocks(TRACK_SETUP_WALK *walk);
-extern legacy_s16 rs_track_setup_track_setup_resolve_piece(TRACK_SETUP_WALK *walk);
-extern legacy_s16 rs_track_setup_track_setup_jump(TRACK_SETUP_WALK *walk);
-extern legacy_s16 rs_track_setup_track_setup_backtrack(TRACK_SETUP_WALK *walk);
-extern legacy_void rs_track_setup_track_setup_place_roadside_sign(TRACK_SETUP_WALK *walk,
-																  legacy_u8 arrow_code);
-extern legacy_void rs_track_setup_track_setup_roadside_sign(TRACK_SETUP_WALK *walk,
-															TRKOBJINFO *current_info);
-extern legacy_s16 rs_track_setup_track_setup_append_piece(TRACK_SETUP_WALK *walk);
-extern legacy_s16 rs_track_setup_track_setup_outside_grid(TRACK_SETUP_WALK *walk);
-extern legacy_s16 rs_track_setup_track_setup_walk(TRACK_SETUP_WALK *walk);
-extern legacy_void rs_track_setup_track_setup_place_camera(TRACK_SETUP_WALK *walk,
-														   legacy_s16 sampled_piece,
-														   legacy_s16 camera_index,
-														   legacy_s16 *camera_height,
-														   legacy_s16 *reserved_camera_words);
-extern legacy_void rs_track_setup_track_setup_cameras(TRACK_SETUP_WALK *walk);
-extern legacy_s8 rs_stateply_legacy_s8_from_bits(legacy_u8 value);
-extern legacy_s16 rs_stateply_legacy_s16_from_bits(legacy_u16 value);
-extern legacy_s32 rs_stateply_legacy_s32_from_bits(legacy_u32 value);
-extern legacy_s16 rs_stateply_scale_player_fraction(legacy_s16 value, legacy_u32 fraction);
-extern legacy_s16 rs_stateply_scale_player_motion(legacy_s16 value);
-extern legacy_u32 rs_stateply_player_tick_fraction();
-extern legacy_void rs_stateply_player_motion_crash(legacy_s16 crash_event, legacy_s16 car_index);
-extern legacy_void rs_stateply_physics_position_to_vector(VECTOR *destination, VECTORLONG *source);
-extern legacy_void rs_stateply_physics_position_offset(VECTORLONG *destination, VECTORLONG *source,
-													   VECTOR *offset);
-extern legacy_void rs_stateply_physics_position_pull_back(VECTORLONG *position, VECTOR *offset);
-extern legacy_void rs_stateply_prepare_opponent_rear_wheel(VECTOR *wheel, VECTOR *rotated,
-														   MATRIX *angle_rotation,
-														   legacy_s16 wheel_index,
-														   legacy_s16 y_adjustment);
-extern legacy_s16 rs_stateply_scaled_vector_separation(VECTOR *first, VECTOR *second,
-													   VECTOR *intersection, VECTOR *delta);
-extern legacy_void rs_stateply_initialize_working_car_pose(CARSTATE *carstate);
-extern legacy_void rs_stateply_restore_crash_wheel_headings(legacy_s16 *wheel_plane_headings);
-extern legacy_void rs_stateply_restore_stopped_wheel_headings(CARSTATE *carstate,
-															  PLAYER_WHEEL_MOTION *motion,
-															  legacy_s16 car_index);
-extern legacy_void rs_stateply_prepare_wheel_rotation(CARSTATE *carstate,
-													  PLAYER_WHEEL_MOTION *motion);
-extern legacy_s16 rs_stateply_prepare_wheel_travel(CARSTATE *carstate, PLAYER_WHEEL_MOTION *motion);
-extern legacy_void rs_stateply_prepare_wheel_motion(CARSTATE *carstate, SIMD *simd,
-													PLAYER_WHEEL_MOTION *motion,
-													legacy_s16 car_index);
-extern legacy_void rs_stateply_retain_collision_plane_rotation(MATRIX *rotation,
-															   legacy_s16 car_index);
-extern legacy_void rs_stateply_scale_wheel_displacement(VECTOR *displacement, VECTORLONG *current,
-														VECTORLONG *previous,
-														legacy_s16 retained_travel,
-														legacy_s16 total_travel);
-extern legacy_void rs_stateply_reposition_wheels_at_wall(PLAYER_WHEEL_MOTION *motion,
-														 legacy_s16 retained_travel,
-														 VECTOR *wall_response);
-extern legacy_void rs_stateply_apply_wall_impact(CARSTATE *carstate, legacy_s16 wall_heading,
-												 legacy_s16 car_index);
-extern legacy_s16 rs_stateply_wall_response_heading(VECTOR *push, legacy_s16 remaining_travel,
-													legacy_s16 reversed);
-extern legacy_s16 rs_stateply_resolve_wheel_wall_collision(CARSTATE *carstate,
-														   PLAYER_WHEEL_MOTION *motion,
-														   legacy_s16 wheel_index,
-														   legacy_s16 car_index);
-extern legacy_void rs_stateply_measure_wheel_plane_distance(VECTORLONG *position);
-extern legacy_void rs_stateply_apply_wheel_gravity(CARSTATE *carstate, VECTORLONG *position,
-												   legacy_s16 wheel_index);
-extern legacy_void rs_stateply_move_airborne_wheel(CARSTATE *carstate, PLAYER_WHEEL_MOTION *motion,
-												   legacy_s16 wheel_index);
-extern legacy_void rs_stateply_transform_wheel_plane_crossing(PLAYER_WHEEL_MOTION *motion,
-															  legacy_s16 wheel_index,
-															  legacy_s16 car_index, VECTOR *start,
-															  VECTOR *end);
-extern legacy_void rs_stateply_prepare_wheel_plane_travel(PLAYER_WHEEL_MOTION *motion,
-														  legacy_s16 wheel_index,
-														  legacy_s16 distance);
-extern legacy_void rs_stateply_turn_plane_height_into_depth(VECTOR *position);
-extern legacy_void rs_stateply_split_wheel_plane_travel(CARSTATE *carstate,
-														PLAYER_WHEEL_MOTION *motion,
-														legacy_s16 wheel_index, VECTOR *start,
-														VECTOR *end);
-extern legacy_void rs_stateply_push_wheel_out_of_plane(VECTORLONG *position,
-													   legacy_s16 reverse_response);
-extern legacy_void rs_stateply_use_ground_plane_for_wheel(VECTORLONG *position);
-extern legacy_s16 rs_stateply_correct_wheel_plane_penetration(CARSTATE *carstate,
-															  PLAYER_WHEEL_MOTION *motion,
-															  legacy_s16 wheel_index,
-															  legacy_s16 car_index);
-extern legacy_void rs_stateply_apply_wheel_landing(CARSTATE *carstate, legacy_s16 wheel_index,
-												   legacy_s16 car_index);
-extern legacy_void rs_stateply_stop_wheels_at_contact(PLAYER_WHEEL_MOTION *motion,
-													  legacy_s16 fraction, legacy_s16 car_index);
-extern legacy_s16 rs_stateply_stop_at_track_underside(CARSTATE *carstate,
-													  PLAYER_WHEEL_MOTION *motion,
-													  legacy_s16 wheel_index, legacy_s16 car_index);
-extern legacy_s16 rs_stateply_stop_at_track_wall_contact(CARSTATE *carstate,
-														 PLAYER_WHEEL_MOTION *motion,
-														 legacy_s16 car_index);
-extern legacy_s16 rs_stateply_inherited_wheel_plane_distance(VECTORLONG *position);
-extern legacy_s16 rs_stateply_retained_wheel_plane_residual(legacy_s16 previous, legacy_s16 current,
-															legacy_u32 fraction);
-extern legacy_void rs_stateply_relax_wheel_plane_residual(PLAYER_WHEEL_MOTION *motion,
-														  legacy_s16 wheel_index,
-														  legacy_s16 initial_distance);
-extern legacy_s16 rs_stateply_resolve_wheel_plane_contact(CARSTATE *carstate,
-														  PLAYER_WHEEL_MOTION *motion,
-														  legacy_s16 wheel_index,
-														  legacy_s16 car_index);
-extern legacy_void rs_stateply_look_up_wheel_surface(CARSTATE *carstate,
-													 PLAYER_WHEEL_MOTION *motion,
-													 legacy_s16 wheel_index);
-extern legacy_s16 rs_stateply_resolve_wheel_contact_pass(CARSTATE *carstate,
-														 PLAYER_WHEEL_MOTION *motion,
-														 legacy_s16 car_index);
-extern legacy_void rs_stateply_resolve_wheel_contacts(CARSTATE *carstate,
-													  PLAYER_WHEEL_MOTION *motion,
-													  legacy_s16 car_index);
-extern legacy_void rs_stateply_apply_wheel_suspension(CARSTATE *carstate,
-													  PLAYER_WHEEL_MOTION *motion);
-extern legacy_s32 rs_stateply_wheel_axis_average(legacy_s32 front_first, legacy_s32 front_second,
-												 legacy_s32 rear_first, legacy_s32 rear_second);
-extern legacy_s32 rs_stateply_clamp_car_world_coordinate(legacy_s32 position);
-extern legacy_void rs_stateply_derive_car_position_from_wheels(PLAYER_WHEEL_MOTION *motion,
-															   VECTOR *wheel_offsets);
-extern legacy_s16 rs_stateply_apply_rotation_deadband(legacy_s16 angle);
-extern legacy_void rs_stateply_rotate_wheel_offsets(VECTOR *offsets, MATRIX *rotation);
-extern legacy_void rs_stateply_derive_car_yaw(VECTOR *wheel_offsets);
-extern legacy_void rs_stateply_derive_car_pitch(VECTOR *wheel_offsets);
-extern legacy_void rs_stateply_derive_car_roll(VECTOR *wheel_offsets);
-extern legacy_void rs_stateply_derive_car_pose_from_wheels(PLAYER_WHEEL_MOTION *motion);
-extern legacy_void rs_stateply_sum_front_and_rear_wheel_surfaces(CARSTATE *carstate);
-extern legacy_void rs_stateply_play_car_impact_sounds(CARSTATE *carstate, legacy_s16 car_index);
-extern legacy_void rs_stateply_check_body_corner_plane(CARSTATE *carstate, VECTOR *current_position,
-													   legacy_s16 corner_index,
-													   legacy_s16 car_index);
-extern legacy_void rs_stateply_check_car_body_planes(CARSTATE *carstate, SIMD *simd,
-													 legacy_s16 car_index);
-extern legacy_void rs_stateply_update_car_surface_contact(CARSTATE *carstate, legacy_s16 car_index);
-extern legacy_void rs_stateply_prepare_car_collision_pose(VECTOR *pose);
-extern legacy_s16 rs_stateply_handle_other_car_collision(CARSTATE *carstate, SIMD *simd,
-														 CARSTATE *other_carstate, SIMD *other_simd,
-														 VECTOR *car_pose, legacy_s16 car_index);
-extern legacy_s16 rs_stateply_handle_auxiliary_obstacles(CARSTATE *carstate, SIMD *simd,
-														 VECTOR *car_pose, VECTOR *obstacle_pose,
-														 legacy_s16 column, legacy_s16 row,
-														 legacy_s16 car_index);
-extern legacy_void rs_stateply_handle_breakable_object(CARSTATE *carstate, SIMD *simd,
-													   VECTOR *car_pose, VECTOR *obstacle_pose,
-													   legacy_s16 column, legacy_s16 row);
-extern legacy_s16 rs_stateply_overlaps_start_finish_pole(SIMD *simd, VECTOR *car_pose,
-														 VECTOR *obstacle_pose, legacy_s16 angle);
-extern legacy_s16 rs_stateply_handle_start_finish_poles(SIMD *simd, VECTOR *car_pose,
-														VECTOR *obstacle_pose, legacy_s16 column,
-														legacy_s16 row, legacy_s16 car_index);
-extern legacy_s16 rs_stateply_handle_scenery_collisions(CARSTATE *carstate, SIMD *simd,
-														VECTOR *car_pose, legacy_s16 car_index);
-extern legacy_void rs_stateply_commit_working_car_pose(CARSTATE *carstate);
-extern legacy_s8 rs_physics_collision_legacy_s8_from_bits(legacy_u8 value);
-extern legacy_s16 rs_physics_collision_legacy_s16_from_bits(legacy_u16 value);
-extern legacy_s32 rs_physics_collision_legacy_s32_from_bits(legacy_u32 value);
-extern legacy_s16 rs_physics_collision_interpolate_collision_axis(legacy_s16 first,
-																  legacy_s16 second,
-																  legacy_s32 factor,
-																  legacy_s32 divisor);
-extern legacy_s16 rs_physics_collision_sweep_coordinate(legacy_s16 previous, legacy_s16 current,
-														legacy_s16 fraction);
-extern legacy_s16
-rs_physics_collision_selected_body_plane_is_coplanar(TRACK_COLLISION_SNAPSHOT *other);
-extern legacy_s64 rs_physics_collision_body_plane_distance(VECTOR *point);
-extern legacy_void
-rs_physics_collision_body_plane_intersection_axis(legacy_s16 previous, legacy_s16 current,
-												  legacy_s64 offset, legacy_s64 span,
-												  legacy_s16 *first, legacy_s16 *second);
-extern legacy_s16 rs_physics_collision_body_crosses_selected_plane(VECTOR *previous,
-																   VECTOR *current);
-extern legacy_s16 rs_physics_collision_project_contact_coordinate(legacy_s16 position,
-																  legacy_s16 distance,
-																  legacy_s16 normal);
-extern legacy_s16 rs_physics_collision_sweep_selected_track_underside(VECTOR *previous,
-																	  VECTOR *current,
-																	  legacy_s16 *fraction);
-extern legacy_s16 rs_physics_collision_sweep_fixed_coordinate(legacy_s32 previous,
-															  legacy_s32 current,
-															  legacy_s16 fraction);
-extern legacy_void rs_physics_collision_sweep_position(VECTOR *result, VECTORLONG *previous,
-													   VECTORLONG *current, legacy_s16 fraction);
-extern legacy_void rs_physics_collision_collision_tile_center(legacy_u8 tile_element,
-															  legacy_u16 row_index,
-															  legacy_u16 column_index,
-															  legacy_u16 *center_z,
-															  legacy_u16 *center_x);
-extern legacy_u16 rs_physics_collision_collision_model_points(legacy_u8 tile_element,
-															  VECTOR **dependency_points);
-extern legacy_void rs_physics_collision_transform_collision_points(
-	VECTOR *dependency_points, VECTOR *output, legacy_u16 count, legacy_u16 orientation,
-	legacy_u16 center_x, legacy_u16 center_z, legacy_u16 terrain_height);
-extern legacy_s16 rs_physics_collision_decay_suspension_target(CARSTATE *carstate,
-															   legacy_s16 wheel_index,
-															   legacy_s16 decay);
-extern legacy_s16 rs_physics_collision_return_wheel_suspension(CARSTATE *carstate,
-															   legacy_s16 wheel_index,
-															   legacy_s16 target,
-															   legacy_s16 previous_deflection,
-															   legacy_s16 return_step);
-extern legacy_s16 rs_physics_collision_update_wheel_suspension_step(CARSTATE *carstate,
-																	legacy_s16 contact_delta_arg,
-																	legacy_s16 wheel_index,
-																	legacy_s16 target_decay,
-																	legacy_s16 return_step);
-extern legacy_s16 rs_physics_collision_collision_axis_distance(legacy_s16 first, legacy_s16 second);
-extern legacy_void rs_physics_collision_build_collision_corners(POINT2D *collision_points,
-																VECTOR *world_coordinates,
-																VECTOR *corners);
-extern legacy_s16 rs_physics_collision_collision_corners_inside(VECTOR *corners,
-																POINT2D *collision_points,
-																VECTOR *world_coordinates);
-extern legacy_s8 rs_statecrs_legacy_s8_from_bits(legacy_u8 value);
-extern legacy_s16 rs_statecrs_legacy_s16_from_bits(legacy_u16 value);
-extern legacy_s32 rs_statecrs_legacy_s32_from_bits(legacy_u32 value);
-extern legacy_void rs_statecrs_stop_car_engine_audio(legacy_s16 player_flag);
-extern legacy_void rs_statecrs_emit_crash_particle(CRASH_PARTICLE_EMISSION *emission,
-												   legacy_s16 slot, legacy_s16 emitted);
-extern legacy_void rs_statecrs_finish_crash_event(CARSTATE *carstate, legacy_s16 crash_event,
-												  legacy_s16 car_index, legacy_s8 stop_car);
-extern legacy_s8 rs_statecar_legacy_s8_from_bits(legacy_u8 value);
-extern legacy_s16 rs_statecar_legacy_s16_from_bits(legacy_u16 value);
-extern legacy_s32 rs_statecar_legacy_s32_from_bits(legacy_u32 value);
-extern legacy_s16 rs_statecar_scale_acceleration_by_mass(legacy_s16 acceleration, legacy_s16 mass);
-extern legacy_s16 rs_statecar_apply_opponent_acceleration_drag(legacy_s16 acceleration,
-															   legacy_u8 drag);
-extern legacy_s8 rs_statecar_gear_change_delay(legacy_u16 frame_rate);
-extern legacy_s16 rs_statecar_move_gear_knob_toward(legacy_s16 current, legacy_s16 target,
-													legacy_s16 step);
-extern legacy_u16 update_rpm_from_speed(legacy_u16 currpm, legacy_u16 speed, legacy_u16 gearratio,
-										legacy_s16 changing_gear, legacy_u16 idle_rpm);
-extern legacy_s16 rs_statecar_gear_shift_direction(legacy_s8 input_flags, CARSTATE *carstate,
-												   SIMD *simd);
-extern legacy_void rs_statecar_request_gear_change(legacy_s8 input_flags, CARSTATE *carstate,
-												   SIMD *simd);
-extern legacy_void rs_statecar_update_gear_knob(CARSTATE *carstate, SIMD *simd);
-extern legacy_s16 rs_statecar_grounded_acceleration_delta(legacy_s16 car_index, CARSTATE *carstate,
-														  SIMD *simd, legacy_s16 speed_delta);
-extern legacy_s16 rs_statecar_accelerate_car(legacy_s16 car_index, CARSTATE *carstate, SIMD *simd,
-											 legacy_s16 speed_delta);
-extern legacy_s16 rs_statecar_pedal_speed_delta(legacy_s8 input_flags, legacy_s16 car_index,
-												CARSTATE *carstate, SIMD *simd);
-extern legacy_u16 rs_statecar_apply_speed_delta(legacy_u16 updated_speed, legacy_s16 speed_delta);
-extern legacy_void rs_statecar_synchronize_wheel_speed(CARSTATE *carstate,
-													   legacy_u16 updated_speed);
-extern legacy_void rs_statecar_update_engine_limiter(CARSTATE *carstate, SIMD *simd);
-extern legacy_s8 rs_trackobj_legacy_s8_from_bits(legacy_u8 value);
-extern legacy_s16 rs_trackobj_legacy_s16_from_bits(legacy_u16 value);
-extern legacy_s32 rs_trackobj_legacy_s32_from_bits(legacy_u32 value);
-extern legacy_s16 rs_trackobj_track_interpolate(legacy_s16 position, legacy_s16 position0,
-												legacy_s16 position1, legacy_s16 value0,
-												legacy_s16 value1);
-extern legacy_void rs_trackobj_track_rotate_local(VECTOR *position, legacy_s16 orientation);
-extern legacy_void rs_trackobj_track_object_tile_center(legacy_u8 track_tile, legacy_s16 row_index,
-														legacy_s16 column_index);
-extern legacy_void
-rs_trackobj_track_object_building_wall(VECTOR *next_position, legacy_s16 height, legacy_s16 x_min,
-									   legacy_s16 x_max, legacy_s16 z_min, legacy_s16 z_max,
-									   legacy_s16 wall_z_min, legacy_s16 wall_z_max,
-									   legacy_s16 wall_x_min, legacy_s16 wall_x_max);
-extern legacy_s16 rs_trackobj_track_radius_in_band(legacy_s16 x, legacy_s16 z, legacy_s16 low,
-												   legacy_s16 high);
-extern legacy_s16 rs_trackobj_track_arc_radius(VECTOR *position);
-extern legacy_s16 rs_trackobj_track_arc_segment(VECTOR *position);
-extern legacy_void rs_trackobj_track_object_straight(TRACK_OBJECT_SAMPLE *sample);
-extern legacy_void rs_trackobj_track_object_crossroad(TRACK_OBJECT_SAMPLE *sample);
-extern legacy_void rs_trackobj_track_object_large_corner(TRACK_OBJECT_SAMPLE *sample);
-extern legacy_void rs_trackobj_track_object_chicane(TRACK_OBJECT_SAMPLE *sample);
-extern legacy_void rs_trackobj_track_object_sharp_corner(TRACK_OBJECT_SAMPLE *sample);
-extern legacy_void rs_trackobj_track_object_large_split(TRACK_OBJECT_SAMPLE *sample);
-extern legacy_void rs_trackobj_track_object_highway_entrance(TRACK_OBJECT_SAMPLE *sample);
-extern legacy_void rs_trackobj_track_object_highway(TRACK_OBJECT_SAMPLE *sample);
-extern legacy_void rs_trackobj_track_object_ramp_end_wall(TRACK_OBJECT_SAMPLE *sample);
-extern legacy_void rs_trackobj_track_object_ramp(TRACK_OBJECT_SAMPLE *sample);
-extern legacy_s16 rs_trackobj_track_object_below_elevated_road(TRACK_OBJECT_SAMPLE *sample);
-extern legacy_void rs_trackobj_track_object_elevated_road(TRACK_OBJECT_SAMPLE *sample);
-extern legacy_void rs_trackobj_track_object_elevated_corner(TRACK_OBJECT_SAMPLE *sample);
-extern legacy_void rs_trackobj_track_object_banked_entrance(TRACK_OBJECT_SAMPLE *sample);
-extern legacy_void rs_trackobj_track_object_banked_road(TRACK_OBJECT_SAMPLE *sample);
-extern legacy_void rs_trackobj_track_object_banked_corner(TRACK_OBJECT_SAMPLE *sample);
-extern legacy_void rs_trackobj_track_object_loop_upper(TRACK_OBJECT_SAMPLE *sample,
-													   legacy_s16 value, legacy_s16 effective_x,
-													   legacy_s16 value2, legacy_u16 index);
-extern legacy_s16 rs_trackobj_track_object_loop_lower(TRACK_OBJECT_SAMPLE *sample, legacy_s16 value,
-													  legacy_s16 effective_x, legacy_s16 value2,
-													  legacy_u16 index);
-extern legacy_void rs_trackobj_track_object_loop(TRACK_OBJECT_SAMPLE *sample);
-extern legacy_void rs_trackobj_track_object_tunnel(TRACK_OBJECT_SAMPLE *sample);
-extern legacy_void rs_trackobj_track_object_pipe_entrance(TRACK_OBJECT_SAMPLE *sample);
-extern legacy_u16 rs_trackobj_track_object_pipe_section(TRACK_OBJECT_SAMPLE *sample);
-extern legacy_s16 rs_trackobj_track_object_half_pipe_floor(TRACK_OBJECT_SAMPLE *sample,
-														   legacy_s16 value, legacy_s16 value2);
-extern legacy_void rs_trackobj_track_object_pipe(TRACK_OBJECT_SAMPLE *sample);
-extern legacy_void rs_trackobj_track_object_corkscrew_left_right(TRACK_OBJECT_SAMPLE *sample);
-extern legacy_void rs_trackobj_track_object_corkscrew_arc(TRACK_OBJECT_SAMPLE *sample,
-														  legacy_s16 value, legacy_s16 value2,
-														  legacy_s16 value3,
-														  legacy_s16 terrain_angle);
-extern legacy_void rs_trackobj_track_object_corkscrew_up_down(TRACK_OBJECT_SAMPLE *sample);
-extern legacy_void rs_trackobj_track_object_slalom_negative_wall(TRACK_OBJECT_SAMPLE *sample);
-extern legacy_void rs_trackobj_track_object_slalom_positive_wall(TRACK_OBJECT_SAMPLE *sample);
-extern legacy_void rs_trackobj_track_object_slalom(TRACK_OBJECT_SAMPLE *sample);
-extern legacy_void rs_trackobj_track_object_barn(TRACK_OBJECT_SAMPLE *sample);
-extern legacy_void rs_trackobj_track_object_gas_station(TRACK_OBJECT_SAMPLE *sample);
-extern legacy_void rs_trackobj_track_object_joes(TRACK_OBJECT_SAMPLE *sample);
-extern legacy_void rs_trackobj_track_object_office(TRACK_OBJECT_SAMPLE *sample);
-extern legacy_void rs_trackobj_track_object_windmill(TRACK_OBJECT_SAMPLE *sample);
-extern legacy_void rs_trackobj_track_object_ship(TRACK_OBJECT_SAMPLE *sample);
-extern legacy_void rs_trackobj_track_object_model(TRACK_OBJECT_SAMPLE *sample);
-extern legacy_void rs_trackobj_track_object_terrain(VECTOR *world_position, legacy_u8 terrain_tile);
-extern legacy_s16 rs_trackobj_track_object_hill(VECTOR *world_position, legacy_u8 terrain_tile,
-												legacy_s16 track_row, legacy_s16 track_column,
-												legacy_s16 element_orientation);
-extern legacy_void rs_trackobj_track_object_world_collision(VECTOR *world_position,
-															legacy_s16 element_orientation,
-															legacy_s16 wall_orientation_modifier);
-extern legacy_s16 rs_trackobj_track_object_sample(TRACK_OBJECT_SAMPLE *sample,
-												  VECTOR *world_position,
-												  VECTOR *next_world_position, legacy_s16 track_row,
-												  legacy_s16 track_column, legacy_u8 terrain_tile);
-extern legacy_s16 rs_trackobj_wall_intersection_coordinate(legacy_s16 first, legacy_s16 second,
-														   legacy_s16 first_depth,
-														   legacy_s16 second_depth);
-extern legacy_s16 rs_trackobj_selected_wall_matches(TRACK_COLLISION_SNAPSHOT *candidate);
-extern legacy_s16 rs_trackobj_selected_wall_contains_point(VECTOR *point, MATRIX *rotation);
-extern legacy_s16 rs_trackobj_selected_wall_intersects_segment(VECTOR *first, VECTOR *second);
-extern legacy_s16 rs_trackobj_solid_ratio_less(TRACK_CONTACT_RATIO *first,
-											   TRACK_CONTACT_RATIO *second);
-extern legacy_s16 rs_trackobj_clip_solid_axis(legacy_s16 first, legacy_s16 second,
-											  legacy_s16 minimum, legacy_s16 maximum,
-											  TRACK_SOLID_INTERVAL *interval);
-extern legacy_s16 rs_trackobj_solid_box_contact(VECTOR *first, VECTOR *second, TRACK_SOLID_BOX *box,
-												legacy_s16 *fraction);
-extern legacy_void rs_trackobj_solid_world_bounds(TRACK_SOLID_BOX *world, TRACK_SOLID_BOX *local,
-												  legacy_s16 orientation, legacy_s16 column,
-												  legacy_s16 row, legacy_s16 elevation);
-extern legacy_s8 rs_owoot_legacy_s8_from_bits(legacy_u8 value);
-extern legacy_s16 rs_owoot_legacy_s16_from_bits(legacy_u16 value);
-extern legacy_s32 rs_owoot_legacy_s32_from_bits(legacy_u32 value);
-extern legacy_s16 owoot_route_is_valid(CARSTATE *carstate, legacy_s16 allowed_jump);
-extern legacy_s16 owoot_jump_is_valid(CARSTATE *carstate);
-extern legacy_s16 track_road_overlaps_wheel(VECTOR *vertices, legacy_u16 ring_count,
-											legacy_s16 road_contact);
-extern legacy_s16 track_pipe_aperture_overlaps_wheel(VECTOR *vertices, legacy_u16 count);
-extern legacy_s16 track_tunnel_aperture_overlaps_wheel(VECTOR *vertices, legacy_u16 count);
-extern legacy_s16 track_slalom_wheel_envelope_crosses_barrier(VECTOR *vertices, legacy_u16 *counts,
-															  VECTOR *body, VECTOR *center,
-															  legacy_s16 rotation, VECTOR *motion);
-extern legacy_s8 rs_owoot_wheels_legacy_s8_from_bits(legacy_u8 value);
-extern legacy_s16 rs_owoot_wheels_legacy_s16_from_bits(legacy_u16 value);
-extern legacy_s32 rs_owoot_wheels_legacy_s32_from_bits(legacy_u32 value);
-extern legacy_s16 rs_owoot_wheels_ring_coordinate(legacy_s16 center, legacy_s16 first,
-												  legacy_s16 second, legacy_u16 point);
-extern legacy_s8 rs_owoot_road_legacy_s8_from_bits(legacy_u8 value);
-extern legacy_s16 rs_owoot_road_legacy_s16_from_bits(legacy_u16 value);
-extern legacy_s32 rs_owoot_road_legacy_s32_from_bits(legacy_u32 value);
-extern legacy_s64 rs_owoot_road_road_cross(OWOOT_PROJECTED_POINT *a, OWOOT_PROJECTED_POINT *b,
-										   OWOOT_PROJECTED_POINT *c);
-extern legacy_s16 rs_owoot_road_point_precedes(OWOOT_PROJECTED_POINT *a, OWOOT_PROJECTED_POINT *b);
-extern legacy_u16 rs_owoot_road_road_projected_hull(OWOOT_PROJECTED_POINT *points, legacy_u16 count,
-													OWOOT_PROJECTED_POINT *hull);
-extern legacy_s16 rs_owoot_road_road_separating_edges(OWOOT_PROJECTED_POINT *first,
-													  legacy_u16 first_count,
-													  OWOOT_PROJECTED_POINT *second,
-													  legacy_u16 second_count,
-													  legacy_s16 boundary_overlap);
-extern legacy_s16 rs_owoot_road_road_projected_overlap(OWOOT_PROJECTED_POINT *road,
-													   OWOOT_PROJECTED_POINT *wheel,
-													   legacy_u16 wheel_count);
-extern legacy_s16 rs_owoot_road_road_aperture_overlaps_wheel(OWOOT_PROJECTED_POINT *aperture,
-															 legacy_u16 aperture_count,
-															 VECTOR *vertices, legacy_u16 count);
-extern legacy_void rs_owoot_road_road_local_projection(legacy_s32 x, legacy_s32 z,
-													   legacy_s16 rotation,
-													   OWOOT_PROJECTED_POINT *temple_return_value);
-extern legacy_s16
-rs_owoot_road_road_swept_axis_separates(OWOOT_PROJECTED_POINT *a, OWOOT_PROJECTED_POINT *b,
-										OWOOT_PROJECTED_POINT *barrier, OWOOT_PROJECTED_POINT *hull,
-										legacy_u16 count, OWOOT_PROJECTED_POINT *motion);
-extern legacy_s16 rs_owoot_road_road_swept_barrier_overlap(OWOOT_PROJECTED_POINT *barrier,
-														   OWOOT_PROJECTED_POINT *hull,
-														   legacy_u16 count,
-														   OWOOT_PROJECTED_POINT *motion);
-extern legacy_void rs_owoot_road_road_append_crossing(OWOOT_PROJECTED_POINT *points,
-													  legacy_u16 *count, VECTOR *vertices,
-													  legacy_s64 *distances, legacy_u16 first,
-													  legacy_u16 second);
-extern legacy_s16 rs_owoot_road_road_triangle_overlaps_wheel(OWOOT_ROAD_TRIANGLE *triangle,
-															 VECTOR *vertices,
-															 legacy_u16 ring_count,
-															 legacy_s16 contact_tolerance);
-extern legacy_s16 rs_owoot_road_road_tile_overlaps_wheel(VECTOR *vertices, legacy_u16 ring_count,
-														 legacy_s16 column, legacy_s16 row,
-														 legacy_s16 contact_tolerance);
-extern legacy_s8 rs_owoot_route_legacy_s8_from_bits(legacy_u8 value);
-extern legacy_s16 rs_owoot_route_legacy_s16_from_bits(legacy_u16 value);
-extern legacy_s32 rs_owoot_route_legacy_s32_from_bits(legacy_u32 value);
-extern legacy_s32 rs_owoot_route_route_abs(legacy_s32 value);
-extern legacy_void rs_owoot_route_route_position(VECTORLONG *position,
-												 OWOOT_POINT *temple_return_value);
-extern legacy_void rs_owoot_route_route_vector(VECTOR *vector, OWOOT_POINT *temple_return_value);
-extern legacy_void rs_owoot_route_route_delta(OWOOT_POINT *first, OWOOT_POINT *second,
-											  OWOOT_POINT *temple_return_value);
-extern legacy_s32 rs_owoot_route_route_dot(OWOOT_POINT *first, OWOOT_POINT *second);
-extern legacy_s32 rs_owoot_route_route_maximum_component(OWOOT_POINT *vector);
-extern legacy_void rs_owoot_route_route_normalize(OWOOT_POINT *vector);
-extern TRACKOBJECT *rs_owoot_route_route_object(legacy_s16 piece);
-extern TRKOBJINFO *rs_owoot_route_route_info(legacy_s16 piece);
-extern legacy_s16 rs_owoot_route_route_gate_count(legacy_s16 piece);
-extern legacy_void rs_owoot_route_route_bounds(legacy_s16 piece, OWOOT_BOUNDS *bounds);
-extern legacy_s16 rs_owoot_route_route_contains(OWOOT_BOUNDS *bounds, OWOOT_POINT *position);
-extern legacy_s16 rs_owoot_route_route_requires_gates(legacy_s16 piece);
-extern legacy_s16 rs_owoot_route_route_has_finite_portal(legacy_s16 piece);
-extern legacy_s16 rs_owoot_route_route_owns_position(legacy_s16 piece, OWOOT_POINT *position);
-extern legacy_s16 rs_owoot_route_route_tires_occupy_piece(legacy_s16 piece, OWOOT_TIRES *tires);
-extern legacy_s16 rs_owoot_route_route_tube_gate(legacy_s16 piece, OWOOT_GATE *gate);
-extern legacy_s16 rs_owoot_route_route_corkscrew_gate(legacy_s16 piece, legacy_s16 index,
-													  OWOOT_GATE *gate);
-extern legacy_void rs_owoot_route_route_gate(legacy_s16 piece, legacy_s16 index, OWOOT_GATE *gate);
-extern legacy_s32 rs_owoot_route_route_gate_distance(OWOOT_GATE *gate, OWOOT_POINT *position);
-extern legacy_s16 rs_owoot_route_route_fraction(legacy_s32 numerator, legacy_s32 denominator);
-extern legacy_s16 rs_owoot_route_route_gate_crossing(OWOOT_GATE *gate, OWOOT_POINT *previous,
-													 OWOOT_POINT *current, legacy_s16 direction);
-extern legacy_void rs_owoot_route_route_slice_add(VECTOR *slice, legacy_u16 *count, VECTOR *point);
-extern legacy_u16 rs_owoot_route_route_portal_slice(OWOOT_GATE *gate, VECTOR *points,
-													legacy_u16 count, OWOOT_POINT *translation,
-													legacy_u16 crossing_point, VECTOR *slice);
-extern legacy_s16 rs_owoot_route_route_wheel_crosses_gate(OWOOT_GATE *gate, OWOOT_TIRES *tires,
-														  OWOOT_POINT *previous,
-														  OWOOT_POINT *current, legacy_u16 wheel,
-														  legacy_u16 crossing_point,
-														  legacy_s16 fraction);
-extern legacy_s16 rs_owoot_route_route_swept_gate(OWOOT_GATE *gate, OWOOT_TIRES *tires,
-												  OWOOT_POINT *previous, OWOOT_POINT *current,
-												  legacy_s16 direction,
-												  legacy_s16 minimum_fraction);
-extern legacy_s16 rs_owoot_route_route_previous_tire_before(OWOOT_GATE *gate, OWOOT_TIRES *tires,
-															OWOOT_POINT *motion,
-															legacy_s16 direction);
-extern legacy_s16 rs_owoot_route_route_enter(CARSTATE *carstate, legacy_s16 piece,
-											 OWOOT_POINT *previous, OWOOT_POINT *current,
-											 OWOOT_TIRES *tires);
-extern legacy_s16 rs_owoot_route_route_advance(CARSTATE *carstate, OWOOT_POINT *previous,
-											   OWOOT_POINT *current, OWOOT_TIRES *tires);
-extern legacy_s16 rs_owoot_route_jump_model(legacy_s16 piece);
-extern legacy_s16 rs_owoot_route_jump_on_deck(legacy_s16 piece, OWOOT_POINT *position);
-extern legacy_s16 rs_owoot_route_jump_endpoint(legacy_s16 piece, legacy_s16 outgoing,
-											   OWOOT_POINT *position, OWOOT_POINT *direction);
-extern legacy_s16 rs_owoot_route_jump_forward_aligned(legacy_s16 first, legacy_s16 second,
-													  OWOOT_POINT *direction, legacy_s32 *distance);
-extern legacy_s16 rs_owoot_route_jump_source_center(legacy_s16 first, legacy_s16 second,
-													OWOOT_POINT *center);
-extern legacy_s16 rs_owoot_route_jump_aligned(legacy_s16 first, legacy_s16 second,
-											  OWOOT_POINT *direction, legacy_s32 *distance);
-extern legacy_s16 rs_owoot_route_jump_next(legacy_s16 piece, legacy_s16 reverse,
-										   OWOOT_POINT *approach, legacy_s16 first_step,
-										   OWOOT_POINT *direction, legacy_s32 *distance);
-extern legacy_s16 rs_owoot_route_jump_find_gap(legacy_s16 launch, legacy_s16 reverse,
-											   legacy_s16 *source, legacy_s16 *target);
-extern legacy_void rs_owoot_route_jump_clear(CARSTATE *carstate);
-extern legacy_s16 rs_owoot_route_jump_has_road_contact(CARSTATE *carstate);
-extern legacy_s32 rs_owoot_route_jump_cross(VECTOR *a, VECTOR *b, VECTOR *c);
-extern legacy_s16 rs_owoot_route_jump_footprint_in_gap(VECTOR *points, legacy_u16 count);
-extern legacy_s16 rs_owoot_route_jump_wheel_in_gap(CARSTATE *carstate, OWOOT_POINT *source,
-												   OWOOT_POINT *direction);
-extern legacy_s8 rs_replay_legacy_s8_from_bits(legacy_u8 value);
-extern legacy_s16 rs_replay_legacy_s16_from_bits(legacy_u16 value);
-extern legacy_s32 rs_replay_legacy_s32_from_bits(legacy_u32 value);
-extern legacy_void rs_replay_replay_read_bytes(legacy_s8 *destination, legacy_u8 *source,
-											   legacy_u16 count);
-extern legacy_void rs_replay_replay_write_bytes(legacy_u8 *destination, legacy_s8 *source,
-												legacy_u16 count);
-extern legacy_s8 rs_command_line_legacy_s8_from_bits(legacy_u8 value);
-extern legacy_s16 rs_command_line_legacy_s16_from_bits(legacy_u16 value);
-extern legacy_s32 rs_command_line_legacy_s32_from_bits(legacy_u32 value);
-extern legacy_s16 command_line_print_info(legacy_s32 argc, legacy_s8 **argv);
-extern legacy_s16 rs_command_line_command_line_matches(legacy_s8 *argument, legacy_char *option);
-extern legacy_u16 rs_command_line_command_line_revision_length();
-extern legacy_s16 rs_command_line_command_line_write(legacy_s8 *text, legacy_u16 length);
-extern legacy_s16 rs_command_line_command_line_print_version();
-extern legacy_s8 rs_headless_data_legacy_s8_from_bits(legacy_u8 value);
-extern legacy_s16 rs_headless_data_legacy_s16_from_bits(legacy_u16 value);
-extern legacy_s32 rs_headless_data_legacy_s32_from_bits(legacy_u32 value);
-extern legacy_s8 rs_headless_trackdata_legacy_s8_from_bits(legacy_u8 value);
-extern legacy_s16 rs_headless_trackdata_legacy_s16_from_bits(legacy_u16 value);
-extern legacy_s32 rs_headless_trackdata_legacy_s32_from_bits(legacy_u32 value);
-extern legacy_s8 rs_full_data_legacy_s8_from_bits(legacy_u8 value);
-extern legacy_s16 rs_full_data_legacy_s16_from_bits(legacy_u16 value);
-extern legacy_s32 rs_full_data_legacy_s32_from_bits(legacy_u32 value);
-extern legacy_void rs_full_data_full_initialize_screen_sprite(SPRITE *sprite);
-extern legacy_void full_data_initialize();
-extern legacy_s8 rs_full_strings_legacy_s8_from_bits(legacy_u8 value);
-extern legacy_s16 rs_full_strings_legacy_s16_from_bits(legacy_u16 value);
-extern legacy_s32 rs_full_strings_legacy_s32_from_bits(legacy_u32 value);
-extern legacy_s8 rs_full_tables_legacy_s8_from_bits(legacy_u8 value);
-extern legacy_s16 rs_full_tables_legacy_s16_from_bits(legacy_u16 value);
-extern legacy_s32 rs_full_tables_legacy_s32_from_bits(legacy_u32 value);
-extern legacy_s8 rs_stateio_legacy_s8_from_bits(legacy_u8 value);
-extern legacy_s16 rs_stateio_legacy_s16_from_bits(legacy_u16 value);
-extern legacy_s32 rs_stateio_legacy_s32_from_bits(legacy_u32 value);
-extern legacy_void rs_stateio_gamestate_write_u8(GAMESTATE_WRITER *writer, legacy_u8 value);
-extern legacy_void rs_stateio_gamestate_write_s8(GAMESTATE_WRITER *writer, legacy_s8 value);
-extern legacy_void rs_stateio_gamestate_write_u16(GAMESTATE_WRITER *writer, legacy_u16 value);
-extern legacy_void rs_stateio_gamestate_write_s16(GAMESTATE_WRITER *writer, legacy_s16 value);
-extern legacy_void rs_stateio_gamestate_write_s32(GAMESTATE_WRITER *writer, legacy_s32 value);
-extern legacy_void rs_stateio_gamestate_write_vector(GAMESTATE_WRITER *writer, VECTOR *vector);
-extern legacy_void rs_stateio_gamestate_write_vectorlong(GAMESTATE_WRITER *writer,
-														 VECTORLONG *vector);
-extern legacy_void rs_stateio_gamestate_write_s8_array(GAMESTATE_WRITER *writer, legacy_s8 *values,
-													   legacy_u16 count);
-extern legacy_void rs_stateio_gamestate_write_s16_array(GAMESTATE_WRITER *writer,
-														legacy_s16 *values, legacy_u16 count);
-extern legacy_void rs_stateio_gamestate_write_s32_array(GAMESTATE_WRITER *writer,
-														legacy_s32 *values, legacy_u16 count);
-extern legacy_void rs_stateio_gamestate_write_vector_array(GAMESTATE_WRITER *writer,
-														   VECTOR *vectors, legacy_u16 count);
-extern legacy_void rs_stateio_gamestate_write_carstate(GAMESTATE_WRITER *writer,
-													   CARSTATE *carstate);
-extern legacy_s8 rs_memory_legacy_s8_from_bits(legacy_u8 value);
-extern legacy_s16 rs_memory_legacy_s16_from_bits(legacy_u16 value);
-extern legacy_s32 rs_memory_legacy_s32_from_bits(legacy_u32 value);
-extern legacy_void rs_memory_memory_error();
-extern legacy_u16 rs_memory_external_segment(legacy_u64 address);
+extern legacy_s16 RsShape3dShape3dNativeCoordinate(legacy_s64 value);
+extern legacy_void RsShape3dShape3dProjectCoordinates(
+    legacy_s64 x,legacy_s64 y,legacy_s64 z,CPoint2D *point);
+extern legacy_void RsShape3dShape3dProjectPoint(CVector *vector,CPoint2D *point);
+extern legacy_s16 RsShape3dShape3dLogicalCoordinate(legacy_s16 value);
+extern legacy_u16 RsShape3dShape3dGeometryClipFlags(CPoint2D *point);
+extern legacy_void RsShape3dShape3dAdjustGeometryBounds(CPoint2D *point,CRectangle *rectangle);
+extern legacy_void RsShape3dPolyinfoEmitPoint(
+    legacy_u16 *point_index,legacy_u8 *rect_flags,CPoint2D *point);
+extern legacy_s8 RsShape3dPolyinfoIsFacingCamera(legacy_u8 *record);
+extern legacy_void RsShape3dShape3dTransformVertex(CShape3D *shape,legacy_u16 index,
+    legacy_s16 half_scale,CMatrix *matrix,CVector *translation,CVector *transformed);
+extern legacy_void RsShape3dShape3dPrepareInstance(
+    CTransformedShape3D *instance,CShape3DTransformContext *context);
+extern legacy_void RsShape3dShape3dPrepareVisibility(
+    CTransformedShape3D *instance,CShape3DTransformContext *context);
+extern legacy_void RsShape3dShape3dCacheVertex(
+    CShape3D *shape,CShape3DTransformContext *context,legacy_u16 index);
+extern legacy_u8 RsShape3dShape3dVertexRectFlags(
+    CShape3DTransformContext *context,legacy_u16 index);
+extern legacy_u16 RsShape3dShape3dBoundsAreClipped(
+    CTransformedShape3D *instance,CShape3DTransformContext *context);
+extern legacy_u16 RsShape3dShape3dPreparePrimitiveVertices(
+    CShape3D *shape,CShape3DTransformContext *context,legacy_u16 *any_vertex_behind);
+extern legacy_void RsShape3dShape3dProjectNearIntersection(CShape3DTransformContext *context,
+    legacy_u16 front_index,legacy_u16 behind_index,CPoint2D *point);
+extern legacy_void RsShape3dShape3dEmitPolygonIntersection(CShape3DTransformContext *context,
+    legacy_u16 front_index,legacy_u16 behind_index,legacy_u16 *point_count,
+    legacy_u8 *clip_flags);
+extern legacy_void RsShape3dShape3dEmitClippedPolygonEdge(CShape3DTransformContext *context,
+    legacy_u16 previous_index,legacy_u16 vertex_index,legacy_u16 *point_count,
+    legacy_u8 *clip_flags,CPoint2D *projected_point);
+extern legacy_u8 RsShape3dShape3dEmitPolygon(
+    CShape3DTransformContext *context,legacy_u16 any_vertex_behind,legacy_s32 *depth_sum);
+extern legacy_void RsShape3dShape3dAdjustPolygonBounds();
+extern legacy_u16 RsShape3dShape3dPreparePolygon(CShape3DTransformContext *context,
+    legacy_u16 any_vertex_behind,legacy_u16 primitive_flags,legacy_u8 *front_facing_masks,
+    legacy_s32 *depth_sum);
+extern legacy_u16 RsShape3dShape3dPrepareLine(
+    CShape3DTransformContext *context,legacy_s32 *depth_sum);
+extern legacy_void RsShape3dShape3dAdjustRoundBounds(
+    CPoint2D *center,legacy_u16 radius,legacy_s16 padding);
+extern legacy_u16 RsShape3dShape3dPrepareWheel(
+    CShape3DTransformContext *context,legacy_u16 any_vertex_behind,legacy_s32 *depth_sum);
+extern legacy_void RsShape3dShape3dAdjustSphereBounds(CPoint2D *center,legacy_u16 radius);
+extern legacy_u16 RsShape3dShape3dPrepareSphere(
+    CShape3DTransformContext *context,legacy_s32 *depth_sum);
+extern legacy_u16 RsShape3dShape3dPreparePoint(
+    CShape3DTransformContext *context,legacy_s32 *depth_sum);
+extern legacy_u16 RsShape3dShape3dPreparePrimitive(CShape3DTransformContext *context,
+    legacy_u8 primitive_type,legacy_u16 any_vertex_behind,legacy_u16 primitive_flags,
+    legacy_u8 *front_facing_masks,legacy_s32 *depth_sum);
+extern legacy_u16 RsShape3dShape3dInsertPrimitive(
+    legacy_u8 primitive_type,legacy_u16 primitive_flags,legacy_s32 depth_sum);
+extern legacy_u16 RsDivideU32ToU16(legacy_u32 dividend,legacy_u16 divisor);
+extern legacy_u32 RsProjectionMultiplyX(legacy_u16 value);
+extern legacy_u32 RsProjectionMultiplyY(legacy_u16 value);
+extern legacy_u16 RsProjectionScaleY(legacy_u16 value,legacy_u16 divisor);
+extern legacy_u16 RsShape3dProjectionAngleFromExtent(legacy_s16 extent);
+extern legacy_u16 RsShape3dProjectionScaleForAngle(legacy_u16 angle,legacy_u16 extent);
+extern legacy_void RsShape3dProjectionUpdateDerived();
+extern legacy_void RsProjectionSetOrigin(legacy_u16 x,legacy_u16 y);
+extern legacy_void RsProjectionSetHalfFov(legacy_u16 horizontal_half_fov,
+    legacy_u16 vertical_half_fov,legacy_u16 width,legacy_u16 height);
+extern legacy_void RsShape3dShape3dRetainLegacyViewRotation(
+    legacy_s16 ang_z,legacy_s16 ang_x,legacy_s16 ang_y);
+extern legacy_void RsInitDirectionSectorThresholds();
+extern legacy_void RsShape3dShape3dRetainOpponentPattern(legacy_u16 value);
+extern legacy_void RsShape3dShape3dRetainOpponentPolygonPointer(
+    legacy_u8 *record,legacy_u16 vertex_count);
+extern legacy_void RsShape3dShape3dRetainRenderLocalPair(
+    legacy_u16 first,legacy_u16 second,legacy_u16 return_ip);
+extern legacy_void RsShape3dShape3dRetainRenderLocal(legacy_u16 first,legacy_u16 return_ip);
+extern legacy_void RsShape3dShape3dRetainRenderArgument(legacy_u16 return_ip,legacy_u16 argument);
+extern legacy_void RsShape3dShape3dRetainSphereStack(legacy_u16 size);
+extern legacy_u16 RsShape3dShape3dMaterialValue(legacy_s16 *table,legacy_u16 index);
+extern legacy_void RsShape3dShape3dRenderGhost(legacy_u8 *record,CPoint2D *points);
+extern legacy_u16 RsShape3dShape3dLegacyRecordIndex(legacy_u16 record_index);
+extern legacy_s8 RsShape3dResourcesLegacyS8FromBits(legacy_u8 value);
+extern legacy_s16 RsShape3dResourcesLegacyS16FromBits(legacy_u16 value);
+extern legacy_s32 RsShape3dResourcesLegacyS32FromBits(legacy_u32 value);
+extern legacy_s8 RsShape3dCarLegacyS8FromBits(legacy_u8 value);
+extern legacy_s16 RsShape3dCarLegacyS16FromBits(legacy_u16 value);
+extern legacy_s32 RsShape3dCarLegacyS32FromBits(legacy_u32 value);
+extern legacy_void RsShape3dCarShape3dInitCarWheelVertices(
+    CShape3D *shape,CVector *centers,CVector *vertices);
+extern legacy_void RsShape3dCarShape3dSteerCarWheelVertices(CShape3D *shape,
+    legacy_u16 first_vertex,legacy_s16 steering_angle,CVector *base_vertices,
+    CVector *front_wheel_centers);
+extern legacy_s8 RsShape3dPrerenderLegacyS8FromBits(legacy_u8 value);
+extern legacy_s16 RsShape3dPrerenderLegacyS16FromBits(legacy_u16 value);
+extern legacy_s32 RsShape3dPrerenderLegacyS32FromBits(legacy_u32 value);
+extern legacy_void RsShape3dPrerenderPolygonRasterize(
+    legacy_u16 color,legacy_u16 vertex_count,CPoint2D *vertices,legacy_u16 choose_edge_per_row);
+extern legacy_void RsGeneratePolyEdges(
+    legacy_s16 *edges,legacy_u16 *line_setup,legacy_s16 clipping_mode);
+extern legacy_void RsPolygonMergeSecondEdge(legacy_u16 *line_setup,legacy_u16 choose_edge_per_row,
+    legacy_u16 needs_clipping,legacy_s16 *edge_tables);
+extern legacy_s16 RsShape3dPrerenderPrerenderLine(legacy_u16 start_x,legacy_u16 start_y,
+    legacy_u16 end_x,legacy_u16 end_y,legacy_u16 color,legacy_u16 *line);
+extern legacy_void RsShape3dPrerenderPrerenderGrillePixel(legacy_u16 x,legacy_u16 y);
+extern legacy_void RsShape3dPrerenderPrerenderGrilleLine(
+    legacy_u16 start_x,legacy_u16 start_y,legacy_u16 end_x,legacy_u16 end_y,legacy_u16 color);
+extern legacy_void RsShape3dPrerenderPreRenderDefaultAltWords(
+    legacy_u16 color,legacy_u16 vertex_count,legacy_u16 *words);
+extern legacy_u16 RsShape3dPrerenderSphereScaleSum(
+    legacy_u16 left,legacy_u16 right,legacy_u16 scale);
+extern legacy_u16 RsShape3dPrerenderSphereScaleDifference(
+    legacy_u16 left,legacy_u16 right,legacy_u16 scale);
+extern legacy_void RsShape3dPrerenderSphereBuildCoordinate(legacy_u16 *destination);
+extern legacy_u16 RsShape3dPrerenderWheelInterpolate(
+    legacy_u16 center,legacy_u16 target,legacy_u16 scale);
+extern legacy_void RsShape3dPrerenderPreRenderWheelSide(
+    legacy_u16 *wheel_points,legacy_u16 minimum_index,legacy_u16 reverse,legacy_u16 color);
+extern legacy_s16 RsShape3dPrerenderSphereBuildSpans(
+    CSphereRaster *sphere,legacy_s16 *left_edges,legacy_s16 *right_edges);
+extern legacy_void RsShape3dPrerenderSphereDrawSpans(
+    CSphereRaster *sphere,legacy_s16 *left_edges,legacy_s16 *right_edges,legacy_u16 color);
+extern legacy_void RsWheelFillPolygon(
+    legacy_u16 color,legacy_u16 vertex_count,CPoint2D *vertices);
+extern legacy_void RsShape3dPrerenderPolygonFindBounds(
+    CPoint2D *vertices,legacy_u16 vertex_count,CPolygonRaster *raster);
+extern legacy_s16 RsShape3dPrerenderPolygonIsOutside(CPolygonRaster *raster);
+extern legacy_void RsShape3dPrerenderPolygonPrepareSegment(
+    CPoint2D *start,CPoint2D *end,legacy_u16 *line_setup,legacy_u16 needs_clipping);
+extern legacy_void RsShape3dPrerenderPolygonGenerateFirstSide(
+    CPolygonRaster *raster,legacy_s16 *edges,legacy_u16 *line_setup);
+extern legacy_void RsShape3dPrerenderPolygonMergeSecondSide(CPolygonRaster *raster,
+    legacy_s16 *edges,legacy_u16 *line_setup,legacy_u16 choose_edge_per_row);
+extern legacy_void RsShape3dPrerenderPolygonDrawSpans(
+    CPolygonRaster *raster,legacy_s16 *edges,legacy_u16 color);
+extern legacy_void RsShape3dPrerenderGeneratePolyEdgeFill(
+    legacy_s16 *edges,legacy_s16 offset,legacy_s16 count,legacy_s16 boundary);
+extern legacy_void RsShape3dPrerenderGeneratePolyEdgePadding(legacy_s16 *edges,legacy_u16 *setup,
+    legacy_u16 count_index,legacy_s16 boundary,legacy_s16 leading);
+extern legacy_void RsShape3dPrerenderGeneratePolyVertical(
+    legacy_s16 *edges,legacy_u16 *line_setup,legacy_s16 step_count,legacy_s16 row_index);
+extern legacy_void RsShape3dPrerenderGeneratePolyDiagonalLeft(
+    legacy_s16 *edges,legacy_u16 *line_setup,legacy_s16 step_count,legacy_s16 row_index);
+extern legacy_void RsShape3dPrerenderGeneratePolyDiagonalRight(
+    legacy_s16 *edges,legacy_u16 *line_setup,legacy_s16 step_count,legacy_s16 row_index);
+extern legacy_void RsShape3dPrerenderGeneratePolyYMajor(
+    legacy_s16 *edges,legacy_u16 *line_setup,legacy_s16 step_count,legacy_s16 row_index);
+extern legacy_void RsShape3dPrerenderGeneratePolyXMajorLeft(
+    legacy_s16 *edges,legacy_u16 *line_setup,legacy_s16 step_count,legacy_s16 row_index);
+extern legacy_void RsShape3dPrerenderGeneratePolyXMajorRight(
+    legacy_s16 *edges,legacy_u16 *line_setup,legacy_s16 step_count,legacy_s16 row_index);
+extern legacy_void RsShape3dPrerenderPrerenderExtendEdge(legacy_s16 *left_edges,
+    legacy_s16 *right_edges,legacy_s16 index,legacy_s16 value,legacy_s16 to_left);
+extern legacy_void RsShape3dPrerenderPrerenderMergeLinearRows(
+    legacy_u16 *line,legacy_s16 *left_edges,legacy_s16 *right_edges);
+extern legacy_void RsShape3dPrerenderPrerenderMergeFractionalRows(
+    legacy_u16 *line,legacy_s16 *left_edges,legacy_s16 *right_edges);
+extern legacy_void RsShape3dPrerenderPrerenderMergeXMajorRows(
+    legacy_u16 *line,legacy_s16 *left_edges,legacy_s16 *right_edges);
+extern legacy_void RsShape3dPrerenderPrerenderMergeFixedYEdge(
+    legacy_u16 *line,legacy_s16 *left_edges,legacy_s16 *right_edges);
+extern legacy_void RsShape3dPrerenderPrerenderFinishFixedLeft(legacy_s16 *right_edges,
+    legacy_s16 x_position,legacy_s16 count,legacy_s16 row_index,legacy_u16 fraction,
+    legacy_u16 step);
+extern legacy_void RsShape3dPrerenderPrerenderMergeFixedLeftEdge(
+    legacy_u16 *line,legacy_s16 *left_edges,legacy_s16 *right_edges);
+extern legacy_void RsShape3dPrerenderPrerenderFinishFixedRight(legacy_s16 *left_edges,
+    legacy_s16 x_position,legacy_s16 count,legacy_s16 row_index,legacy_u16 fraction,
+    legacy_u16 step);
+extern legacy_void RsShape3dPrerenderPrerenderMergeFixedRightEdge(
+    legacy_u16 *line,legacy_s16 *left_edges,legacy_s16 *right_edges);
+extern legacy_void RsShape3dPrerenderPrerenderMergeClipPadding(
+    legacy_u16 *line,legacy_s16 *left_edges,legacy_s16 *right_edges);
+extern legacy_s8 RsShape3dLinesLegacyS8FromBits(legacy_u8 value);
+extern legacy_s16 RsShape3dLinesLegacyS16FromBits(legacy_u16 value);
+extern legacy_s32 RsShape3dLinesLegacyS32FromBits(legacy_u32 value);
+extern legacy_u16 RsLinePrepare(legacy_u16 start_x,legacy_u16 start_y,legacy_u16 end_x,
+    legacy_u16 end_y,legacy_u16 *line,legacy_u16 skip_clipping);
+extern legacy_void RsShape3dLinesDrawLineAdvanceEnd(
+    legacy_u16 *line,legacy_u16 steps,legacy_u16 span_index);
+extern legacy_u16 RsShape3dLinesDrawLineRoundDiv(legacy_u32 numerator,legacy_u16 divisor);
+extern legacy_u16 RsShape3dLinesDrawLineStep(legacy_u16 minor,legacy_u16 major);
+extern legacy_u16 RsShape3dLinesDrawLineReject(legacy_u16 *line,legacy_u16 reject);
+extern legacy_u16 RsShape3dLinesDrawLineHorizontal(
+    legacy_u16 y,legacy_u16 start_x,legacy_u16 end_x,legacy_u16 *line,legacy_u16 unclipped);
+extern legacy_void RsShape3dLinesDrawLineClipTopXMajor(legacy_u16 *line,legacy_u16 mode,
+    legacy_u16 top_bound_or_clip_count,legacy_u16 original_start_y);
+extern legacy_u8 RsShape3dLinesDrawLineClipTop(legacy_u16 *line);
+extern legacy_u8 RsShape3dLinesDrawLineClipBottom(legacy_u16 *line);
+extern legacy_void RsShape3dLinesDrawLineAdvanceSecondary(
+    legacy_u16 *line,legacy_u16 advance,legacy_u16 counter_index);
+extern legacy_s16 RsShape3dLinesDrawLineClipLeftYMajor(legacy_u16 *line,legacy_u16 mode);
+extern legacy_s16 RsShape3dLinesDrawLineClipLeft(legacy_u16 *line);
+extern legacy_u16 RsShape3dLinesDrawLineClipRightYMajor(legacy_u16 *line,legacy_u16 mode);
+extern legacy_u16 RsShape3dLinesDrawLineClipRight(legacy_u16 *line);
+extern legacy_void RsShape3dLinesDrawLineSubdivideAdvanceStart(
+    legacy_u16 *line,legacy_u16 vertical_step,legacy_u16 horizontal_step);
+extern legacy_void RsShape3dLinesDrawLineSubdivideAdvanceEnd(
+    legacy_u16 *line,legacy_u16 vertical_step,legacy_u16 horizontal_step);
+extern legacy_void RsShape3dLinesDrawLineSubdivide(legacy_u16 *line);
+extern legacy_u16 RsShape3dLinesDrawLineFindInitialClip(legacy_u16 *line,legacy_u16 *clip);
+extern legacy_u16 RsShape3dLinesDrawLineSetSlopeMode(
+    legacy_u16 *line,legacy_u16 extent_or_major_delta,legacy_u16 clip_or_minor_delta);
+extern legacy_u16 RsShape3dLinesDrawLineSetupSlope(legacy_u16 *line);
+extern legacy_u16 RsShape3dLinesDrawLineFindHorizontalClip(legacy_u16 *line,legacy_u16 *clip);
+extern legacy_u16 RsShape3dLinesDrawLineApplyHorizontalClipping(legacy_u16 *line,legacy_u16 clip);
+extern legacy_u16 RsShape3dLinesDrawLineApplyClipping(legacy_u16 *line,legacy_u16 clip);
+extern legacy_s8 RsShape2dLegacyS8FromBits(legacy_u8 value);
+extern legacy_s16 RsShape2dLegacyS16FromBits(legacy_u16 value);
+extern legacy_s32 RsShape2dLegacyS32FromBits(legacy_u32 value);
+extern legacy_void RsSpriteSetClipBounds(
+    CSprite *sprite,legacy_u16 left,legacy_u16 right,legacy_u16 top,legacy_u16 bottom);
+extern legacy_s16 RsShape2dSpriteClipRectangle(legacy_s16 x,legacy_s16 y,legacy_s16 width,
+    legacy_s16 height,legacy_s16 *clipped_x,legacy_s16 *clipped_y,legacy_s16 *clipped_width,
+    legacy_s16 *clipped_height);
+extern legacy_void RsShape2dFontDrawGlyph(legacy_u8 *font_definition,legacy_u8 *glyph_data,
+    legacy_u8 *bitmap,legacy_u16 current_x,legacy_s16 opaque);
+extern legacy_void RsShape2dFontDrawTextImpl(
+    legacy_s8 *text,legacy_s16 x,legacy_s16 y,legacy_s16 opaque);
+extern legacy_u8 RsShape2dShape2dRotateLeft8(legacy_u8 value,legacy_u8 count);
+extern legacy_void RsShape2dDrawPatternLines(legacy_s16 *x1arr,legacy_s16 *x2arr,legacy_u16 y,
+    legacy_u16 numlines,legacy_u16 color,legacy_s16 two_colors);
+extern legacy_void RsDrawTwoColorPatternLines(legacy_s16 *x1arr,legacy_s16 *x2arr,legacy_u16 y,
+    legacy_u16 numlines,legacy_u16 color,legacy_u16 alternate_color,legacy_u16 pattern);
+extern legacy_void RsShape2dSpriteDrawLineRows(CSpriteLineDraw *draw,legacy_u16 mode);
+extern legacy_void RsShape2dSpriteDrawLineColumns(CSpriteLineDraw *draw,legacy_u16 mode);
+extern legacy_void RsShape2dSpriteRoundLineCoordinate(legacy_u16 *low,legacy_u16 *high);
+extern legacy_void RsShape2dSpriteDrawDissolveRow(legacy_u16 shape_segment,legacy_u8 *bitmap,
+    legacy_u16 source,legacy_u16 destination,legacy_u16 width,legacy_u16 row_phase);
+extern legacy_void RsShape2dSpriteClearShapeImpl(CShape2D *shape,legacy_u16 x,legacy_u16 y);
+extern legacy_void RsSpriteCaptureAtAnchor(CShape2D *shape,legacy_s16 x,legacy_s16 y);
+extern legacy_u16 RsShape2dShape2dScaledAnchor(legacy_u16 anchor,legacy_u16 scale);
+extern legacy_s16 RsShape2dShape2dClipScaledColumns(CShape2DScaledDraw *draw);
+extern legacy_s16 RsShape2dShape2dClipScaledRows(CShape2DScaledDraw *draw);
+extern legacy_void RsShape2dShape2dRenderScaled(CShape2DScaledDraw *draw);
+extern legacy_void RsShape2dShape2dScaleTransparentImpl(
+    CShape2D *shape,legacy_u16 scale,legacy_u16 x,legacy_u16 y,legacy_s16 clipped);
+extern legacy_void RsShape2dSpriteShapeTo1Impl(
+    CShape2D *shape,legacy_u16 x,legacy_u16 y,legacy_s16 operation);
+extern legacy_void RsShape2dSpriteShapeTo1AtAnchor(
+    CShape2D *shape,legacy_s16 x,legacy_s16 y,legacy_s16 operation);
+extern legacy_void RsShape2dCopyAtAnchor(CShape2D *shape,legacy_s16 x,legacy_s16 y);
+extern legacy_void RsShape2dMaskAtAnchor(CShape2D *shape,legacy_s16 x,legacy_s16 y);
+extern legacy_void RsSpriteSetPaletteMap(
+    legacy_s16 destination_index,legacy_s16 count,legacy_u8 *source_data);
+extern legacy_s8 RsShape2dBlitLegacyS8FromBits(legacy_u8 value);
+extern legacy_s16 RsShape2dBlitLegacyS16FromBits(legacy_u16 value);
+extern legacy_s32 RsShape2dBlitLegacyS32FromBits(legacy_u32 value);
+extern legacy_void RsShape2dBlitShape2dWriteRaster(legacy_u8 *bitmap,legacy_u16 destination,
+    legacy_u8 value,legacy_s16 operation,legacy_u8 planar);
+extern legacy_void RsShape2dBlitShape2dApplyPlanarRun(legacy_u8 *bitmap,legacy_u16 destination,
+    legacy_u16 count,legacy_u8 value,legacy_s16 operation);
+extern legacy_void RsShape2dBlitShape2dRenderRle(
+    CShape2D *shape,legacy_u16 x,legacy_u16 y,legacy_s16 operation);
+extern legacy_void RsShape2dBlitShape2dRenderRleAtAnchor(
+    CShape2D *shape,legacy_s16 x,legacy_s16 y,legacy_s16 operation);
+extern legacy_void RsShape2dBlitShape2dRenderRleAtPosition(CShape2D *shape,legacy_s16 operation);
+extern legacy_void RsShape2dRleMaskAtAnchor(CShape2D *shape,legacy_s16 x,legacy_s16 y);
+extern legacy_void RsShape2dRleMask(CShape2D *shape,legacy_s16 x,legacy_s16 y);
+extern legacy_void RsShape2dRleCopyAtAnchor(CShape2D *shape,legacy_s16 x,legacy_s16 y);
+extern legacy_s16 RsShape2dBlitShape2dClipBlitRows(
+    legacy_u16 width,legacy_u16 *y,legacy_u16 *source,legacy_u16 *clipped_rows);
+extern legacy_s16 RsShape2dBlitShape2dClipBlit(
+    CShape2D *shape,legacy_u16 x,legacy_u16 y,CShape2DClip *clip);
+extern legacy_s16 RsShape2dBlitShape2dRleNext(CShape2DRleCursor *cursor,legacy_u8 *value);
+extern legacy_s16 RsShape2dBlitShape2dRleSkip(CShape2DRleCursor *cursor,legacy_u16 skip);
+extern legacy_s16 RsShape2dBlitShape2dRleRasterSpan(CShape2DRleCursor *cursor,legacy_u8 *bitmap,
+    legacy_u16 destination,legacy_u16 count,legacy_s16 operation);
+extern legacy_void RsShape2dBlitShape2dRenderRleClipped(
+    CShape2D *shape,legacy_u16 x,legacy_u16 y,legacy_s16 operation);
+extern legacy_void RsShape2dRleCopyAnchorClipped(CShape2D *shape,legacy_s16 x,legacy_s16 y);
+extern legacy_void RsShape2dBlitSpritePutimageAt(
+    CShape2D *shape,legacy_u16 x,legacy_u16 y,legacy_s16 operation);
+extern legacy_void RsShape2dBlitSpritePutimageAtAnchor(
+    CShape2D *shape,legacy_s16 x,legacy_s16 y,legacy_s16 operation);
+extern legacy_void RsSpritePutimageAtShapeAnchor(CShape2D *shape,legacy_s16 x,legacy_s16 y);
+extern legacy_s8 RsVideoPagesLegacyS8FromBits(legacy_u8 value);
+extern legacy_s16 RsVideoPagesLegacyS16FromBits(legacy_u16 value);
+extern legacy_s32 RsVideoPagesLegacyS32FromBits(legacy_u32 value);
+extern legacy_s8 RsShape2dResourcesLegacyS8FromBits(legacy_u8 value);
+extern legacy_s16 RsShape2dResourcesLegacyS16FromBits(legacy_u16 value);
+extern legacy_s32 RsShape2dResourcesLegacyS32FromBits(legacy_u32 value);
+extern legacy_u32 RsShape2dPointerToLinear(legacy_u8 *data);
+extern legacy_u8 *RsShape2dPointerFromLinear(legacy_u32 linear_address);
+extern legacy_s16 RsShape2dCountRepeatedBytes(legacy_u8 *data);
+extern legacy_u8 RsShape2dResourcesShape2dFarReadByte(legacy_u16 segment,legacy_u16 offset);
+extern legacy_void RsShape2dResourcesShape2dFarWriteByte(
+    legacy_u16 segment,legacy_u16 offset,legacy_u8 value);
+extern legacy_void RsShape2dResourcesShape2dFarWriteDword(
+    legacy_u16 segment,legacy_u16 offset,legacy_u32 value);
+extern legacy_void RsShape2dResourcesShape2dCopyWrapped(legacy_u16 source_segment,
+    legacy_u16 *source,legacy_u16 destination_segment,legacy_u16 *destination,legacy_u16 count);
+extern legacy_void RsShape2dResourcesShape2dWriteRun(legacy_u16 source_segment,legacy_u16 *source,
+    legacy_u16 destination_segment,legacy_u16 *destination,legacy_u16 count);
+extern legacy_void RsShape2dResourcesShape2dParseLiterals(
+    CShape2DParseRun *run,CShape2DParseOutput *output);
+extern legacy_void RsShape2dResourcesShape2dParseRepeats(
+    CShape2DParseRun *run,CShape2DParseOutput *output,legacy_u16 run_count);
+extern legacy_void RsShape2dResourcesShape2dParseBitmap(
+    CShape2D *shape,CShape2DParseOutput *output);
+extern legacy_u8 *RsShape2dResourcesFileGetShape2dBytes(legacy_u8 *memchunk,legacy_s16 index);
+extern legacy_void RsFileGetShape2dIdentifier(
+    legacy_u8 *memchunk,legacy_u16 index,legacy_u32 *result);
+extern legacy_void RsShape2dResourcesShape2dUnflipTranspose(
+    legacy_s8 *membitmapptr,legacy_s8 *mempages,legacy_s16 width,legacy_s16 height);
+extern legacy_void RsShape2dResourcesShape2dUnflipInterlace(
+    legacy_s8 *membitmapptr,legacy_s8 *mempages,legacy_s16 width,legacy_s16 height);
+extern legacy_void RsShape2dResourcesShape2dUnflipColumnBlocks(
+    legacy_s8 *membitmapptr,legacy_s8 *mempages,legacy_s16 width,legacy_s16 height);
+extern legacy_u8 *RsShape2dResourcesShape2dFindCached(
+    legacy_s8 *shapename,legacy_s8 *str,legacy_s8 **extension);
+extern legacy_s8 RsHeapsortLegacyS8FromBits(legacy_u8 value);
+extern legacy_s16 RsHeapsortLegacyS16FromBits(legacy_u16 value);
+extern legacy_s32 RsHeapsortLegacyS32FromBits(legacy_u32 value);
+extern legacy_s8 RsFrameLegacyS8FromBits(legacy_u8 value);
+extern legacy_s16 RsFrameLegacyS16FromBits(legacy_u16 value);
+extern legacy_s32 RsFrameLegacyS32FromBits(legacy_u32 value);
+extern legacy_s16 RsFrameFrameRelativePosition(legacy_s32 position,legacy_s16 camera_position);
+extern legacy_s16 RsFrameFrameRelativePositionSum(
+    legacy_s32 first,legacy_s32 second,legacy_s16 camera_position);
+extern legacy_s16 RsFrameFrameRelativeTrackPosition(
+    legacy_s32 offset,legacy_s16 track_position,legacy_s16 camera_position);
+extern legacy_s8 RsFrameFrameTileFromWorld(legacy_s32 position);
+extern legacy_s8 RsFrameFrameSouthTileFromWorld(legacy_s32 position);
+extern legacy_s8 RsFrameFrameTileFromWorldOffset(legacy_s32 position,legacy_s16 offset);
+extern legacy_s8 RsFrameFrameSouthTileFromWorldOffset(legacy_s32 position,legacy_s16 offset);
+extern legacy_s16 RsFrameFrameCarZAdjust(legacy_s8 *wheel_surfaces,CMatrix *rotation);
+extern legacy_void RsFrameFrameAddDynamicShape(CTrackObject *track_object,legacy_s16 state_index,
+    legacy_s16 flags,legacy_s16 material,legacy_s16 z_adjust,CVector *camera_position);
+extern legacy_void RsFrameFramePrepareFlatTrackShape(CTransformedShape3D *shape,
+    legacy_s8 tile_east,legacy_s8 tile_south,CVector *camera_position,legacy_s16 flags,
+    legacy_s16 rotation);
+extern legacy_void RsFrameFrameMarkChangedRects();
+extern legacy_void RsFrameFrameAddCar(CCarState *carstate,legacy_s8 debris_owner,
+    legacy_u16 car_object,CShape3D *wheel_shape,legacy_s16 *wheel_angles,CVector *wheel_vectors,
+    CVector *wheel_vector,CRectangle *slow_rect,CRectangle *crash_rect,CVector *camera_position,
+    legacy_s8 tile_detail,legacy_s8 flags,legacy_s16 material,legacy_s16 z_adjust);
+extern legacy_s16 RsFrameFrameBorderIndex(legacy_s8 offset);
+extern CMatrix *RsFrameFrameCarRotation(legacy_s16 rot_x,legacy_s16 rot_y,legacy_s16 rot_z);
+extern legacy_s16 RsFrameFrameFindCarWheel(CCarState *carstate,CSimd *simd,
+    CFrameTileSelection *tiles,legacy_s8 *result_tile_east,legacy_s8 *result_tile_south);
+extern legacy_s8 RsFrameFrameBegin(legacy_s8 buffer_index);
+extern CCarState *RsFrameFrameSecondCarState();
+extern CCarState *RsFrameFrameViewedCarState();
+extern CGhostCameraState *RsFrameFrameViewedGhostCamera();
+extern legacy_s16 RsFrameFramePositionCamera(CFrameCamera *camera,CVector *car_pos,
+    legacy_s16 car_rot_x,legacy_s16 car_rot_y,legacy_s16 car_rot_z,
+    CGhostCameraState *ghost_camera);
+extern legacy_void RsFrameFrameAimExternalCamera(CFrameCamera *camera,CVector *car_pos);
+extern legacy_void RsFrameFrameSetupCamera(CFrameCamera *camera);
+extern legacy_s8 RsFrameFrameAnimatedMaterial();
+extern CFrameLookaheadTile *RsFrameFrameSetupProjection(CFrameCamera *camera,CRectangle *cliprect);
+extern legacy_void RsFrameFrameDrawClouds(CFrameCamera *camera,legacy_s8 redraw_transform_flags);
+extern legacy_void RsFrameFrameResolveTrackTile(CFrameTile *tile);
+extern legacy_s16 RsFrameFrameLookaheadIsCovered(CFrameLookaheadTile *lookahead,
+    legacy_s16 multitile_flag,legacy_s8 east_offset,legacy_s8 south_offset);
+extern legacy_void RsFrameFrameMarkCoveredTiles(
+    CFrameTileSelection *tiles,CFrameTile *tile,legacy_s16 tile_index);
+extern legacy_void RsFrameFrameSelectTrackTile(
+    CFrameTileSelection *tiles,CFrameTile *tile,legacy_s16 tile_index);
+extern legacy_void RsFrameFrameExtendLookahead(CFrameTileSelection *tiles,CFrameCamera *camera);
+extern legacy_void RsFrameFrameSelectTiles(CFrameTileSelection *tiles,CFrameCamera *camera);
+extern legacy_void RsFrameFramePlaceCars(CFrameTileSelection *tiles,CFrameCarRender *cars);
+extern legacy_s16 RsFrameFrameDrawFences(CFrameTile *tile,CFrameTileSelection *tiles,
+    CFrameCamera *camera,legacy_s8 redraw_transform_flags);
+extern legacy_s16 RsFrameFrameDrawElevatedCorners(
+    CFrameTile *tile,CFrameCamera *camera,legacy_s8 redraw_transform_flags);
+extern legacy_s16 RsFrameFrameDrawCoveredWater(
+    CFrameTile *tile,CFrameCamera *camera,legacy_s8 redraw_transform_flags);
+extern legacy_s16 RsFrameFrameDrawTerrain(
+    CFrameTile *tile,CFrameCamera *camera,legacy_s8 redraw_transform_flags);
+extern legacy_s16 RsFrameFrameDrawHillFill(
+    CFrameTile *tile,CTrackObject *track_object,legacy_s8 redraw_transform_flags);
+extern legacy_s16 RsFrameFramePrepareOverlay(CFrameTile *tile,CTrackObject *track_object,
+    legacy_s8 redraw_transform_flags,legacy_s8 animated_material,
+    legacy_s8 *overlay_needs_depth_sort);
+extern legacy_void RsFrameFrameAddRoadsideSign(
+    CFrameTile *tile,CFrameCamera *camera,legacy_s8 redraw_transform_flags);
+extern legacy_void RsFrameFrameAnimateStartFlag();
+extern legacy_void RsFrameFrameAddStartFlag(
+    CFrameTile *tile,CFrameCamera *camera,legacy_s8 redraw_transform_flags);
+extern legacy_void RsFrameFrameSelectBrakePaint(legacy_s16 shape_index);
+extern legacy_s16 RsFrameFrameDrawSortedShapes(CFrameCarRender *cars);
+extern legacy_void RsFrameFramePositionTrackElement(
+    CFrameTile *tile,CFrameCamera *camera,CTrackObject *track_object);
+extern legacy_void RsFrameFrameTrackSortState(
+    CFrameTile *tile,CFrameCarRender *cars,legacy_s8 sorted_overlay);
+extern legacy_s16 RsFrameFrameAddTrackElement(CFrameTile *tile,CFrameCamera *camera,
+    CFrameCarRender *cars,legacy_s8 redraw_transform_flags,legacy_s8 animated_material,
+    legacy_s8 *overlay_needs_depth_sort);
+extern legacy_void RsFrameFrameAddTileCars(CFrameTile *tile,CFrameCamera *camera,
+    CFrameCarRender *cars,legacy_s8 redraw_transform_flags);
+extern legacy_s16 RsFrameFrameDrawTiles(CFrameTileSelection *tiles,CFrameCamera *camera,
+    CFrameCarRender *cars,legacy_s8 redraw_transform_flags,legacy_s8 animated_material);
+extern legacy_s16 RsFrameFrameSupersightFirstAttempt(
+    CFrameTileSelection *tiles,CFrameCamera *camera);
+extern legacy_void RsFrameFrameDrawSupersight(CFrameTileSelection *tiles,CFrameCamera *camera,
+    CFrameCarRender *cars,legacy_s8 buffer_index,legacy_s8 redraw_transform_flags,
+    legacy_s8 animated_material);
+extern legacy_void RsFrameFrameDrawExplosions(CFrameCarRender *cars,CRectangle *cliprect);
+extern legacy_void RsFrameFrameDrawCockpitEffects(CRectangle *cliprect);
+extern legacy_void RsFrameFrameDrawElapsedTime();
+extern legacy_void RsFrameFrameFinish(legacy_s8 buffer_index,CRectangle *cliprect,
+    legacy_s16 skybox_requires_full_redraw,legacy_s16 camera_yaw);
+extern legacy_void RsFrameFramePreserveAuthoritativeEvents(
+    CGameState *presentation,CCarState *ghost,CGhostCameraState *ghost_camera);
+extern legacy_s8 RsSkyboxLegacyS8FromBits(legacy_u8 value);
+extern legacy_s16 RsSkyboxLegacyS16FromBits(legacy_u16 value);
+extern legacy_s32 RsSkyboxLegacyS32FromBits(legacy_u32 value);
+extern legacy_s16 RsSkyboxSkyboxScaledConstant(legacy_u16 value,legacy_s16 scale);
+extern legacy_void RsSkyboxSkyboxClearRect(CRectangle *rect,legacy_s16 color);
+extern legacy_void RsSkyboxSkyboxCollectChangedRects(CRectangle *clip);
+extern legacy_void RsSkyboxSkyboxClearChangedRects(
+    CRectangle *rect,CRectangle *clip,legacy_s16 color);
+extern legacy_u8 RsSkyboxSkyboxProjectRolledHorizon(
+    legacy_s16 direction,CMatrix *rotation,legacy_s16 camera_y,CPoint2D *points);
+extern legacy_u8 RsSkyboxSkyboxClearOutsideHorizon(CRectangle *clip,CPoint2D *points);
+extern legacy_u8 RsSkyboxSkyboxFindLinearHorizon(
+    CPoint2D *points,legacy_s16 *base,legacy_s16 *delta);
+extern legacy_void RsSkyboxSkyboxPrepareHorizonRect(
+    CRectangle *clip,legacy_s16 base_horizon,legacy_s16 horizon_delta,CRectangle *work_rect);
+extern legacy_void RsSkyboxSkyboxRenderHorizonStrips(CRectangle *clip,CRectangle *work_rect,
+    legacy_s16 base_horizon,legacy_s16 horizon_delta,legacy_s16 angle);
+extern legacy_void RsSkyboxSkyboxRenderHorizonPolygons(CPoint2D *points);
+extern legacy_s16 RsSkyboxSkyboxRenderRolled(CRectangle *clip,legacy_s16 direction,
+    CMatrix *rotation,legacy_s16 angle,legacy_s16 camera_y);
+extern legacy_s16 RsSkyboxSkyboxRenderForwardHorizon(
+    legacy_s16 view_index,CRectangle *clip,legacy_s16 angle,legacy_s16 horizon);
+extern legacy_s16 RsSkyboxSkyboxRenderReversedHorizon(CRectangle *clip,legacy_s16 horizon);
+extern legacy_s16 RsSkyboxSkyboxRenderLegacy(legacy_s16 view_index,CRectangle *clip,
+    legacy_s16 direction,CMatrix *rotation,legacy_s16 roll,legacy_s16 angle,
+    legacy_s16 camera_y);
+extern legacy_s8 RsFrameOverlayLegacyS8FromBits(legacy_u8 value);
+extern legacy_s16 RsFrameOverlayLegacyS16FromBits(legacy_u16 value);
+extern legacy_s32 RsFrameOverlayLegacyS32FromBits(legacy_u32 value);
+extern legacy_s16 RsFrameOverlayFrameSupersightExpireStatus(legacy_u32 now);
+extern legacy_void RsFrameOverlayFrameSupersightStatusBounds(CRectangle *temple_return_value);
+extern legacy_s16 RsFrameOverlayFrameStatusExpireAt(legacy_u32 now);
+extern legacy_s16 RsFrameOverlayFrameFpsAdaptiveEnabled();
+extern legacy_void RsFrameOverlayFrameFpsRestoreRoof(CRectangle *overlay_bounds);
+extern legacy_u16 RsFrameOverlayFrameFpsFormatNumber(legacy_s8 *text,legacy_u16 value);
+extern legacy_u16 RsFrameOverlayPrepareFpsText();
+extern legacy_void RsFrameOverlayDrawCenteredIngameResource(legacy_s8 *resource_id,legacy_s16 y);
+extern legacy_void RsFrameOverlayDrawIngameRouteInformation();
+extern legacy_void RsFrameOverlayDrawReplayText(legacy_s8 *text,legacy_s16 y);
+extern legacy_s16 RsFrameOverlayDrawReplayFilename(legacy_u16 reserved_characters);
+extern legacy_s8 RsIntroRenderLegacyS8FromBits(legacy_u8 value);
+extern legacy_s16 RsIntroRenderLegacyS16FromBits(legacy_u16 value);
+extern legacy_s32 RsIntroRenderLegacyS32FromBits(legacy_u32 value);
+extern legacy_s16 RsIntroRenderIntroShiftPosition(legacy_s32 position,legacy_s16 camera);
+extern legacy_void RsIntroRenderIntroDrawTransformedShape(
+    CTransformedShape3D *transformed,CRectangle *shape_rect,legacy_s16 rotation_z);
+extern legacy_void RsIntroRenderIntroDrawStars(legacy_s16 camera_x,legacy_s16 camera_y,
+    legacy_s16 camera_z,CVector *stars,CPoint2D *previous_points,
+    legacy_s16 *previous_point_count,CRectangle *point_rect);
+extern legacy_void RsIntroRenderIntroRenderSceneImpl(legacy_s16 camera_x,legacy_s16 camera_y,
+    legacy_s16 camera_z,legacy_s16 rotate_y,legacy_s16 rotate_x,legacy_s16 draw_car,
+    legacy_s16 primary_logo,CVector *car_position,legacy_s16 car_rotation,CVector *stars,
+    CPoint2D *previous_points,legacy_s16 *previous_point_count,CRectangle *previous_rect,
+    CRectangle *shape_rect,CRectangle *combined_rect);
+extern legacy_s16 RsIntroRenderIntroStepTowards(legacy_s16 value,legacy_s16 target);
+extern legacy_void RsIntroRenderIntroRequestFullRedraw(CIntroSession *intro);
+extern legacy_void RsIntroRenderIntroLoadTitle(CIntroSession *intro);
+extern legacy_void RsIntroRenderIntroCreateStars(CVector *stars);
+extern legacy_void RsIntroRenderIntroPrepareSession(CIntroSession *intro);
+extern legacy_void RsIntroRenderIntroAdvanceSession(CIntroSession *intro,legacy_s16 delta);
+extern legacy_void RsIntroRenderIntroAimCamera(CIntroSession *intro,legacy_s16 *horizontal_angle,
+    legacy_s16 *vertical_angle,legacy_s16 *draw_car);
+extern legacy_void RsIntroRenderIntroCaptureView(CIntroSession *intro,CIntroView *view);
+extern legacy_void RsIntroRenderIntroPresentSession(CIntroSession *intro);
+extern legacy_void RsIntroRenderIntroRenderSession(CIntroSession *intro,CIntroView *view);
+extern legacy_void RsIntroRenderIntroFinishSession(CIntroSession *intro);
+extern legacy_s8 RsTrackPreviewLegacyS8FromBits(legacy_u8 value);
+extern legacy_s16 RsTrackPreviewLegacyS16FromBits(legacy_u16 value);
+extern legacy_s32 RsTrackPreviewLegacyS32FromBits(legacy_u32 value);
+extern legacy_s16 RsTrackPreviewTrackPreviewHalf(legacy_s16 value);
+extern legacy_void RsTrackPreviewTrackPreviewDrawTerrain(legacy_u8 terrain,legacy_u8 column,
+    legacy_u8 row,legacy_s16 height,legacy_s16 camera_x,legacy_s16 camera_y,legacy_s16 camera_z,
+    legacy_s16 use_high_detail,CTransformedShape3D *transformed);
+extern legacy_void RsTrackPreviewTrackPreviewPrepare(CVector *camera);
+extern legacy_void RsTrackPreviewTrackPreviewDrawBridgeTerrain(
+    legacy_u8 column,legacy_u8 row,CVector *camera,CTransformedShape3D *transformed);
+extern legacy_void RsTrackPreviewTrackPreviewDrawCoveredWater(legacy_u8 track,legacy_u8 terrain,
+    legacy_u8 column,legacy_u8 row,CVector *camera,CTransformedShape3D *transformed);
+extern legacy_void RsTrackPreviewTrackPreviewDrawHillBase(
+    CTrackObject *track_object,CVector *position,CTransformedShape3D *transformed);
+extern legacy_void RsTrackPreviewTrackPreviewDrawObject(legacy_u8 track,legacy_u8 column,
+    legacy_u8 row,legacy_s16 terrain_height,CVector *camera,CTransformedShape3D *transformed);
+extern legacy_void RsTrackPreviewTrackPreviewDrawCell(
+    legacy_u8 column,legacy_u8 row,CVector *camera,CTransformedShape3D *transformed);
+extern legacy_s8 RsStateLegacyS8FromBits(legacy_u8 value);
+extern legacy_s16 RsStateLegacyS16FromBits(legacy_u16 value);
+extern legacy_s32 RsStateLegacyS32FromBits(legacy_u32 value);
+extern legacy_void RsStateRoutePointDelta(CVector *delta,legacy_s16 unspecified_height_reference);
+extern legacy_u8 RsStateConfirmPlayerRoute(legacy_s16 route_index,legacy_s16 skipped_route_count);
+extern legacy_void RsStateUpdatePlayerRoutePenalty();
+extern legacy_s16 RsStatePlayerRouteDepth(
+    legacy_s8 previous_route_status,CMatrix *world_to_car_rotation);
+extern legacy_s8 RsStateSelectPlayerRoutePoint(
+    legacy_s16 route_index,CMatrix *world_to_car_rotation);
+extern legacy_void RsStateRecoverPlayerRouteDirection(
+    legacy_s16 route_index,legacy_s8 selected_route_point);
+extern legacy_void RsStateAdvancePlayerRoutePoint();
+extern legacy_void RsStateUpdatePlayerRouteIndicator();
+extern legacy_void RsStateCheckPlayerFinish();
+extern legacy_void RsStateUpdatePlayerRouteGuidance(legacy_s8 previous_route_status);
+extern legacy_s8 RsPhysicsGripLegacyS8FromBits(legacy_u8 value);
+extern legacy_s16 RsPhysicsGripLegacyS16FromBits(legacy_u16 value);
+extern legacy_s32 RsPhysicsGripLegacyS32FromBits(legacy_u32 value);
+extern legacy_s16 RsPhysicsGripPenaltyRouteNext(legacy_s16 track_index);
+extern legacy_s16 RsPhysicsGripPenaltyRouteAlternate(legacy_s16 track_index);
+extern legacy_s16 RsPhysicsGripFinishPenaltyRoute(legacy_s16 *current_track,
+    legacy_s16 *penalty_count,legacy_s16 best_track,legacy_s16 best_distance,legacy_s16 column,
+    legacy_s16 row);
+extern legacy_s16 RsPhysicsGripPenaltyRouteVisit(
+    CPenaltyRouteSearch *search,legacy_s16 next_track);
+extern legacy_void RsPhysicsGripPenaltyRouteBounds(
+    legacy_s16 next_track,CPenaltyRouteBounds *bounds);
+extern legacy_s16 RsPhysicsGripPenaltyRouteContains(
+    CPenaltyRouteSearch *search,CPenaltyRouteBounds *bounds);
+extern legacy_s16 RsPhysicsGripPenaltyRouteRecordMatch(CPenaltyRouteSearch *search,
+    legacy_s16 *next_track,legacy_s16 *current_track,legacy_s16 *penalty_count);
+extern legacy_s16 RsPhysicsGripSearchPenaltyRoute(
+    CPenaltyRouteSearch *search,legacy_s16 *current_track,legacy_s16 *penalty_count);
+extern legacy_void RsPhysicsGripGripGrassDrag(CCarState *carstate);
+extern legacy_u16 RsPhysicsGripGripDemanded(legacy_s16 initial_angle,legacy_u16 speed_shr8);
+extern legacy_s16 RsPhysicsGripGripSurfaceSum(CCarState *carstate,CSimd *simd);
+extern legacy_void RsPhysicsGripGripRecenter(CCarState *carstate);
+extern legacy_s16 RsPhysicsGripGripSlipAngle(CCarState *carstate,legacy_s16 initial_angle,
+    legacy_s16 combined_grip,legacy_u16 demanded_grip,legacy_u16 speed_shr8);
+extern legacy_void RsPhysicsGripGripBankedSteering(CCarState *carstate);
+extern legacy_void RsPhysicsGripGripPlayerYaw(CCarState *carstate,legacy_s16 initial_angle,
+    legacy_s16 adjusted_angle,legacy_s16 combined_grip,legacy_u16 demanded_grip);
+extern legacy_void RsPhysicsGripGripHeadingOffset(CCarState *carstate);
+extern legacy_void RsPhysicsGripGripSlidingSpeed(CCarState *carstate);
+extern legacy_void RsPhysicsGripGripPlayerResponse(CCarState *carstate,legacy_s16 initial_angle,
+    legacy_s16 combined_grip,legacy_u16 demanded_grip,legacy_u16 speed_shr8);
+extern legacy_s8 RsOpponentLegacyS8FromBits(legacy_u8 value);
+extern legacy_s16 RsOpponentLegacyS16FromBits(legacy_u16 value);
+extern legacy_s32 RsOpponentLegacyS32FromBits(legacy_u32 value);
+extern CVector *RsHeadlessTrackVectorFromLegacyOffset(legacy_u16 offset);
+extern legacy_s16 RsOpponentOpponentRouteWord(legacy_s16 index);
+extern legacy_void RsOpponentOpponentAdvanceRoute();
+extern legacy_s16 RsOpponentOpponentAverage(legacy_s16 first,legacy_s16 second);
+extern legacy_void RsOpponentOpponentCheckRouteDistance(COpponentGuidance *guidance);
+extern legacy_void RsOpponentOpponentPassingTarget(
+    COpponentGuidance *guidance,CVector *route_target);
+extern legacy_s16 RsOpponentOpponentSteeringTarget(COpponentGuidance *guidance);
+extern legacy_void RsOpponentOpponentApplySteering(
+    legacy_s16 steering_target,legacy_s16 steering_step);
+extern legacy_u8 RsOpponentOpponentSpeedInput(legacy_s16 speed_step);
+extern legacy_void RsOpponentOpponentHeadingError();
+extern legacy_void RsOpponentOpponentCheckFinish();
+extern legacy_s16 RsOpponentPlayerSteeringResponse(CCarState *carstate,legacy_s16 steering_angle,
+    legacy_s16 response,legacy_u8 speed_index,legacy_s8 *response_table);
+extern legacy_void RsOpponentUpdatePlayerSteering(
+    CCarState *carstate,legacy_s8 steering_input,legacy_u32 fraction20);
+extern legacy_s16 RsOpponentRouteAverage(legacy_s16 first,legacy_s16 second);
+extern legacy_u8 RsOpponentOpponentSpeedAt(legacy_u16 index);
+extern legacy_void RsOpponentRotateRoutePoints(
+    CVector *first_point,CVector *second_point,legacy_s16 orientation);
+extern legacy_void RsOpponentStoreRoutePoints(legacy_s16 track_index,CTrackObject *track_object,
+    CVector *first_point,CVector *second_point,CVector *output,legacy_u8 has_opponent_path);
+extern legacy_void RsOpponentStoreRouteSpeed(
+    CTrkObjInfo *track_info,CTrackObject *track_object,legacy_s8 *optional_speed);
+extern legacy_s8 RsTrackSetupLegacyS8FromBits(legacy_u8 value);
+extern legacy_s16 RsTrackSetupLegacyS16FromBits(legacy_u16 value);
+extern legacy_s32 RsTrackSetupLegacyS32FromBits(legacy_u32 value);
+extern legacy_s16 RsTrackSetupTrackSetupStartFinishOrientation(legacy_u8 tile_element);
+extern legacy_u8 RsTrackSetupTrackSetupEntryPoint(legacy_u8 *points,legacy_s16 orientation);
+extern legacy_s8 RsTrackSetupTrackSetupAddS8(legacy_s8 value,legacy_s16 amount);
+extern legacy_void RsTrackSetupTrackSetupRotateVector(CVector *vector,legacy_s16 orientation);
+extern legacy_void RsTrackSetupTrackSetupLinkPiece(
+    legacy_s16 source_piece,legacy_s16 destination_piece);
+extern legacy_s16 RsTrackSetupTrackSetupError(
+    CTrackSetupBranch *branches,legacy_u8 error_code,legacy_s8 column,legacy_s8 row);
+extern legacy_s16 RsTrackSetupTrackSetupTerrainSeams(CTrackSetupBranch *branches,
+    legacy_u8 *incoming,legacy_u8 *outgoing,legacy_s16 scan_direction);
+extern legacy_s16 RsTrackSetupTrackSetupFindStart(CTrackSetupWalk *walk);
+extern legacy_void RsTrackSetupTrackSetupRevisit(CTrackSetupWalk *walk,legacy_u16 block_index);
+extern legacy_s16 RsTrackSetupTrackSetupPushBranch(CTrackSetupWalk *walk,legacy_u16 block_index);
+extern legacy_s16 RsTrackSetupTrackSetupMatchBlocks(CTrackSetupWalk *walk);
+extern legacy_s16 RsTrackSetupTrackSetupResolvePiece(CTrackSetupWalk *walk);
+extern legacy_s16 RsTrackSetupTrackSetupJump(CTrackSetupWalk *walk);
+extern legacy_s16 RsTrackSetupTrackSetupBacktrack(CTrackSetupWalk *walk);
+extern legacy_void RsTrackSetupTrackSetupPlaceRoadsideSign(
+    CTrackSetupWalk *walk,legacy_u8 arrow_code);
+extern legacy_void RsTrackSetupTrackSetupRoadsideSign(
+    CTrackSetupWalk *walk,CTrkObjInfo *current_info);
+extern legacy_s16 RsTrackSetupTrackSetupAppendPiece(CTrackSetupWalk *walk);
+extern legacy_s16 RsTrackSetupTrackSetupOutsideGrid(CTrackSetupWalk *walk);
+extern legacy_s16 RsTrackSetupTrackSetupWalk(CTrackSetupWalk *walk);
+extern legacy_void RsTrackSetupTrackSetupPlaceCamera(CTrackSetupWalk *walk,
+    legacy_s16 sampled_piece,legacy_s16 camera_index,legacy_s16 *camera_height,
+    legacy_s16 *reserved_camera_words);
+extern legacy_void RsTrackSetupTrackSetupCameras(CTrackSetupWalk *walk);
+extern legacy_s8 RsStateplyLegacyS8FromBits(legacy_u8 value);
+extern legacy_s16 RsStateplyLegacyS16FromBits(legacy_u16 value);
+extern legacy_s32 RsStateplyLegacyS32FromBits(legacy_u32 value);
+extern legacy_s16 RsStateplyScalePlayerFraction(legacy_s16 value,legacy_u32 fraction);
+extern legacy_s16 RsStateplyScalePlayerMotion(legacy_s16 value);
+extern legacy_u32 RsStateplyPlayerTickFraction();
+extern legacy_void RsStateplyPlayerMotionCrash(legacy_s16 crash_event,legacy_s16 car_index);
+extern legacy_void RsStateplyPhysicsPositionToVector(CVector *destination,CVectorLong *source);
+extern legacy_void RsStateplyPhysicsPositionOffset(
+    CVectorLong *destination,CVectorLong *source,CVector *offset);
+extern legacy_void RsStateplyPhysicsPositionPullBack(CVectorLong *position,CVector *offset);
+extern legacy_void RsStateplyPrepareOpponentRearWheel(CVector *wheel,CVector *rotated,
+    CMatrix *angle_rotation,legacy_s16 wheel_index,legacy_s16 y_adjustment);
+extern legacy_s16 RsStateplyScaledVectorSeparation(
+    CVector *first,CVector *second,CVector *intersection,CVector *delta);
+extern legacy_void RsStateplyInitializeWorkingCarPose(CCarState *carstate);
+extern legacy_void RsStateplyRestoreCrashWheelHeadings(legacy_s16 *wheel_plane_headings);
+extern legacy_void RsStateplyRestoreStoppedWheelHeadings(
+    CCarState *carstate,CPlayerWheelMotion *motion,legacy_s16 car_index);
+extern legacy_void RsStateplyPrepareWheelRotation(CCarState *carstate,CPlayerWheelMotion *motion);
+extern legacy_s16 RsStateplyPrepareWheelTravel(CCarState *carstate,CPlayerWheelMotion *motion);
+extern legacy_void RsStateplyPrepareWheelMotion(
+    CCarState *carstate,CSimd *simd,CPlayerWheelMotion *motion,legacy_s16 car_index);
+extern legacy_void RsStateplyRetainCollisionPlaneRotation(CMatrix *rotation,legacy_s16 car_index);
+extern legacy_void RsStateplyScaleWheelDisplacement(CVector *displacement,CVectorLong *current,
+    CVectorLong *previous,legacy_s16 retained_travel,legacy_s16 total_travel);
+extern legacy_void RsStateplyRepositionWheelsAtWall(
+    CPlayerWheelMotion *motion,legacy_s16 retained_travel,CVector *wall_response);
+extern legacy_void RsStateplyApplyWallImpact(
+    CCarState *carstate,legacy_s16 wall_heading,legacy_s16 car_index);
+extern legacy_s16 RsStateplyWallResponseHeading(
+    CVector *push,legacy_s16 remaining_travel,legacy_s16 reversed);
+extern legacy_s16 RsStateplyResolveWheelWallCollision(
+    CCarState *carstate,CPlayerWheelMotion *motion,legacy_s16 wheel_index,legacy_s16 car_index);
+extern legacy_void RsStateplyMeasureWheelPlaneDistance(CVectorLong *position);
+extern legacy_void RsStateplyApplyWheelGravity(
+    CCarState *carstate,CVectorLong *position,legacy_s16 wheel_index);
+extern legacy_void RsStateplyMoveAirborneWheel(
+    CCarState *carstate,CPlayerWheelMotion *motion,legacy_s16 wheel_index);
+extern legacy_void RsStateplyTransformWheelPlaneCrossing(CPlayerWheelMotion *motion,
+    legacy_s16 wheel_index,legacy_s16 car_index,CVector *start,CVector *end);
+extern legacy_void RsStateplyPrepareWheelPlaneTravel(
+    CPlayerWheelMotion *motion,legacy_s16 wheel_index,legacy_s16 distance);
+extern legacy_void RsStateplyTurnPlaneHeightIntoDepth(CVector *position);
+extern legacy_void RsStateplySplitWheelPlaneTravel(CCarState *carstate,CPlayerWheelMotion *motion,
+    legacy_s16 wheel_index,CVector *start,CVector *end);
+extern legacy_void RsStateplyPushWheelOutOfPlane(
+    CVectorLong *position,legacy_s16 reverse_response);
+extern legacy_void RsStateplyUseGroundPlaneForWheel(CVectorLong *position);
+extern legacy_s16 RsStateplyCorrectWheelPlanePenetration(
+    CCarState *carstate,CPlayerWheelMotion *motion,legacy_s16 wheel_index,legacy_s16 car_index);
+extern legacy_void RsStateplyApplyWheelLanding(
+    CCarState *carstate,legacy_s16 wheel_index,legacy_s16 car_index);
+extern legacy_void RsStateplyStopWheelsAtContact(
+    CPlayerWheelMotion *motion,legacy_s16 fraction,legacy_s16 car_index);
+extern legacy_s16 RsStateplyStopAtTrackUnderside(
+    CCarState *carstate,CPlayerWheelMotion *motion,legacy_s16 wheel_index,legacy_s16 car_index);
+extern legacy_s16 RsStateplyStopAtTrackWallContact(
+    CCarState *carstate,CPlayerWheelMotion *motion,legacy_s16 car_index);
+extern legacy_s16 RsStateplyInheritedWheelPlaneDistance(CVectorLong *position);
+extern legacy_s16 RsStateplyRetainedWheelPlaneResidual(
+    legacy_s16 previous,legacy_s16 current,legacy_u32 fraction);
+extern legacy_void RsStateplyRelaxWheelPlaneResidual(
+    CPlayerWheelMotion *motion,legacy_s16 wheel_index,legacy_s16 initial_distance);
+extern legacy_s16 RsStateplyResolveWheelPlaneContact(
+    CCarState *carstate,CPlayerWheelMotion *motion,legacy_s16 wheel_index,legacy_s16 car_index);
+extern legacy_void RsStateplyLookUpWheelSurface(
+    CCarState *carstate,CPlayerWheelMotion *motion,legacy_s16 wheel_index);
+extern legacy_s16 RsStateplyResolveWheelContactPass(
+    CCarState *carstate,CPlayerWheelMotion *motion,legacy_s16 car_index);
+extern legacy_void RsStateplyResolveWheelContacts(
+    CCarState *carstate,CPlayerWheelMotion *motion,legacy_s16 car_index);
+extern legacy_void RsStateplyApplyWheelSuspension(CCarState *carstate,CPlayerWheelMotion *motion);
+extern legacy_s32 RsStateplyWheelAxisAverage(
+    legacy_s32 front_first,legacy_s32 front_second,legacy_s32 rear_first,legacy_s32 rear_second);
+extern legacy_s32 RsStateplyClampCarWorldCoordinate(legacy_s32 position);
+extern legacy_void RsStateplyDeriveCarPositionFromWheels(
+    CPlayerWheelMotion *motion,CVector *wheel_offsets);
+extern legacy_s16 RsStateplyApplyRotationDeadband(legacy_s16 angle);
+extern legacy_void RsStateplyRotateWheelOffsets(CVector *offsets,CMatrix *rotation);
+extern legacy_void RsStateplyDeriveCarYaw(CVector *wheel_offsets);
+extern legacy_void RsStateplyDeriveCarPitch(CVector *wheel_offsets);
+extern legacy_void RsStateplyDeriveCarRoll(CVector *wheel_offsets);
+extern legacy_void RsStateplyDeriveCarPoseFromWheels(CPlayerWheelMotion *motion);
+extern legacy_void RsStateplySumFrontAndRearWheelSurfaces(CCarState *carstate);
+extern legacy_void RsStateplyPlayCarImpactSounds(CCarState *carstate,legacy_s16 car_index);
+extern legacy_void RsStateplyCheckBodyCornerPlane(
+    CCarState *carstate,CVector *current_position,legacy_s16 corner_index,legacy_s16 car_index);
+extern legacy_void RsStateplyCheckCarBodyPlanes(
+    CCarState *carstate,CSimd *simd,legacy_s16 car_index);
+extern legacy_void RsStateplyUpdateCarSurfaceContact(CCarState *carstate,legacy_s16 car_index);
+extern legacy_void RsStateplyPrepareCarCollisionPose(CVector *pose);
+extern legacy_s16 RsStateplyHandleOtherCarCollision(CCarState *carstate,CSimd *simd,
+    CCarState *other_carstate,CSimd *other_simd,CVector *car_pose,legacy_s16 car_index);
+extern legacy_s16 RsStateplyHandleAuxiliaryObstacles(CCarState *carstate,CSimd *simd,
+    CVector *car_pose,CVector *obstacle_pose,legacy_s16 column,legacy_s16 row,
+    legacy_s16 car_index);
+extern legacy_void RsStateplyHandleBreakableObject(CCarState *carstate,CSimd *simd,
+    CVector *car_pose,CVector *obstacle_pose,legacy_s16 column,legacy_s16 row);
+extern legacy_s16 RsStateplyOverlapsStartFinishPole(
+    CSimd *simd,CVector *car_pose,CVector *obstacle_pose,legacy_s16 angle);
+extern legacy_s16 RsStateplyHandleStartFinishPoles(CSimd *simd,CVector *car_pose,
+    CVector *obstacle_pose,legacy_s16 column,legacy_s16 row,legacy_s16 car_index);
+extern legacy_s16 RsStateplyHandleSceneryCollisions(
+    CCarState *carstate,CSimd *simd,CVector *car_pose,legacy_s16 car_index);
+extern legacy_void RsStateplyCommitWorkingCarPose(CCarState *carstate);
+extern legacy_s8 RsPhysicsCollisionLegacyS8FromBits(legacy_u8 value);
+extern legacy_s16 RsPhysicsCollisionLegacyS16FromBits(legacy_u16 value);
+extern legacy_s32 RsPhysicsCollisionLegacyS32FromBits(legacy_u32 value);
+extern legacy_s16 RsPhysicsCollisionInterpolateCollisionAxis(
+    legacy_s16 first,legacy_s16 second,legacy_s32 factor,legacy_s32 divisor);
+extern legacy_s16 RsPhysicsCollisionSweepCoordinate(
+    legacy_s16 previous,legacy_s16 current,legacy_s16 fraction);
+extern legacy_s16 RsPhysicsCollisionSelectedBodyPlaneIsCoplanar(CTrackCollisionSnapshot *other);
+extern legacy_s64 RsPhysicsCollisionBodyPlaneDistance(CVector *point);
+extern legacy_void RsPhysicsCollisionBodyPlaneIntersectionAxis(legacy_s16 previous,
+    legacy_s16 current,legacy_s64 offset,legacy_s64 span,legacy_s16 *first,legacy_s16 *second);
+extern legacy_s16 RsPhysicsCollisionBodyCrossesSelectedPlane(CVector *previous,CVector *current);
+extern legacy_s16 RsPhysicsCollisionProjectContactCoordinate(
+    legacy_s16 position,legacy_s16 distance,legacy_s16 normal);
+extern legacy_s16 RsPhysicsCollisionSweepSelectedTrackUnderside(
+    CVector *previous,CVector *current,legacy_s16 *fraction);
+extern legacy_s16 RsPhysicsCollisionSweepFixedCoordinate(
+    legacy_s32 previous,legacy_s32 current,legacy_s16 fraction);
+extern legacy_void RsPhysicsCollisionSweepPosition(
+    CVector *result,CVectorLong *previous,CVectorLong *current,legacy_s16 fraction);
+extern legacy_void RsPhysicsCollisionCollisionTileCenter(legacy_u8 tile_element,
+    legacy_u16 row_index,legacy_u16 column_index,legacy_u16 *center_z,legacy_u16 *center_x);
+extern legacy_u16 RsPhysicsCollisionCollisionModelPoints(
+    legacy_u8 tile_element,CVector **dependency_points);
+extern legacy_void RsPhysicsCollisionTransformCollisionPoints(CVector *dependency_points,
+    CVector *output,legacy_u16 count,legacy_u16 orientation,legacy_u16 center_x,
+    legacy_u16 center_z,legacy_u16 terrain_height);
+extern legacy_s16 RsPhysicsCollisionDecaySuspensionTarget(
+    CCarState *carstate,legacy_s16 wheel_index,legacy_s16 decay);
+extern legacy_s16 RsPhysicsCollisionReturnWheelSuspension(CCarState *carstate,
+    legacy_s16 wheel_index,legacy_s16 target,legacy_s16 previous_deflection,
+    legacy_s16 return_step);
+extern legacy_s16 RsPhysicsCollisionUpdateWheelSuspensionStep(CCarState *carstate,
+    legacy_s16 contact_delta_arg,legacy_s16 wheel_index,legacy_s16 target_decay,
+    legacy_s16 return_step);
+extern legacy_s16 RsPhysicsCollisionCollisionAxisDistance(legacy_s16 first,legacy_s16 second);
+extern legacy_void RsPhysicsCollisionBuildCollisionCorners(
+    CPoint2D *collision_points,CVector *world_coordinates,CVector *corners);
+extern legacy_s16 RsPhysicsCollisionCollisionCornersInside(
+    CVector *corners,CPoint2D *collision_points,CVector *world_coordinates);
+extern legacy_s8 RsStatecrsLegacyS8FromBits(legacy_u8 value);
+extern legacy_s16 RsStatecrsLegacyS16FromBits(legacy_u16 value);
+extern legacy_s32 RsStatecrsLegacyS32FromBits(legacy_u32 value);
+extern legacy_void RsStatecrsStopCarEngineAudio(legacy_s16 player_flag);
+extern legacy_void RsStatecrsEmitCrashParticle(
+    CCrashParticleEmission *emission,legacy_s16 slot,legacy_s16 emitted);
+extern legacy_void RsStatecrsFinishCrashEvent(
+    CCarState *carstate,legacy_s16 crash_event,legacy_s16 car_index,legacy_s8 stop_car);
+extern legacy_s8 RsStatecarLegacyS8FromBits(legacy_u8 value);
+extern legacy_s16 RsStatecarLegacyS16FromBits(legacy_u16 value);
+extern legacy_s32 RsStatecarLegacyS32FromBits(legacy_u32 value);
+extern legacy_s16 RsStatecarScaleAccelerationByMass(legacy_s16 acceleration,legacy_s16 mass);
+extern legacy_s16 RsStatecarApplyOpponentAccelerationDrag(legacy_s16 acceleration,legacy_u8 drag);
+extern legacy_s8 RsStatecarGearChangeDelay(legacy_u16 frame_rate);
+extern legacy_s16 RsStatecarMoveGearKnobToward(
+    legacy_s16 current,legacy_s16 target,legacy_s16 step);
+extern legacy_u16 RsUpdateRpmFromSpeed(legacy_u16 currpm,legacy_u16 speed,legacy_u16 gearratio,
+    legacy_s16 changing_gear,legacy_u16 idle_rpm);
+extern legacy_s16 RsStatecarGearShiftDirection(
+    legacy_s8 input_flags,CCarState *carstate,CSimd *simd);
+extern legacy_void RsStatecarRequestGearChange(
+    legacy_s8 input_flags,CCarState *carstate,CSimd *simd);
+extern legacy_void RsStatecarUpdateGearKnob(CCarState *carstate,CSimd *simd);
+extern legacy_s16 RsStatecarGroundedAccelerationDelta(
+    legacy_s16 car_index,CCarState *carstate,CSimd *simd,legacy_s16 speed_delta);
+extern legacy_s16 RsStatecarAccelerateCar(
+    legacy_s16 car_index,CCarState *carstate,CSimd *simd,legacy_s16 speed_delta);
+extern legacy_s16 RsStatecarPedalSpeedDelta(
+    legacy_s8 input_flags,legacy_s16 car_index,CCarState *carstate,CSimd *simd);
+extern legacy_u16 RsStatecarApplySpeedDelta(legacy_u16 updated_speed,legacy_s16 speed_delta);
+extern legacy_void RsStatecarSynchronizeWheelSpeed(CCarState *carstate,legacy_u16 updated_speed);
+extern legacy_void RsStatecarUpdateEngineLimiter(CCarState *carstate,CSimd *simd);
+extern legacy_s8 RsTrackobjLegacyS8FromBits(legacy_u8 value);
+extern legacy_s16 RsTrackobjLegacyS16FromBits(legacy_u16 value);
+extern legacy_s32 RsTrackobjLegacyS32FromBits(legacy_u32 value);
+extern legacy_s16 RsTrackobjTrackInterpolate(legacy_s16 position,legacy_s16 position0,
+    legacy_s16 position1,legacy_s16 value0,legacy_s16 value1);
+extern legacy_void RsTrackobjTrackRotateLocal(CVector *position,legacy_s16 orientation);
+extern legacy_void RsTrackobjTrackObjectTileCenter(
+    legacy_u8 track_tile,legacy_s16 row_index,legacy_s16 column_index);
+extern legacy_void RsTrackobjTrackObjectBuildingWall(CVector *next_position,legacy_s16 height,
+    legacy_s16 x_min,legacy_s16 x_max,legacy_s16 z_min,legacy_s16 z_max,legacy_s16 wall_z_min,
+    legacy_s16 wall_z_max,legacy_s16 wall_x_min,legacy_s16 wall_x_max);
+extern legacy_s16 RsTrackobjTrackRadiusInBand(
+    legacy_s16 x,legacy_s16 z,legacy_s16 low,legacy_s16 high);
+extern legacy_s16 RsTrackobjTrackArcRadius(CVector *position);
+extern legacy_s16 RsTrackobjTrackArcSegment(CVector *position);
+extern legacy_void RsTrackobjTrackObjectStraight(CTrackObjectSample *sample);
+extern legacy_void RsTrackobjTrackObjectCrossroad(CTrackObjectSample *sample);
+extern legacy_void RsTrackobjTrackObjectLargeCorner(CTrackObjectSample *sample);
+extern legacy_void RsTrackobjTrackObjectChicane(CTrackObjectSample *sample);
+extern legacy_void RsTrackobjTrackObjectSharpCorner(CTrackObjectSample *sample);
+extern legacy_void RsTrackobjTrackObjectLargeSplit(CTrackObjectSample *sample);
+extern legacy_void RsTrackobjTrackObjectHighwayEntrance(CTrackObjectSample *sample);
+extern legacy_void RsTrackobjTrackObjectHighway(CTrackObjectSample *sample);
+extern legacy_void RsTrackobjTrackObjectRampEndWall(CTrackObjectSample *sample);
+extern legacy_void RsTrackobjTrackObjectRamp(CTrackObjectSample *sample);
+extern legacy_s16 RsTrackobjTrackObjectBelowElevatedRoad(CTrackObjectSample *sample);
+extern legacy_void RsTrackobjTrackObjectElevatedRoad(CTrackObjectSample *sample);
+extern legacy_void RsTrackobjTrackObjectElevatedCorner(CTrackObjectSample *sample);
+extern legacy_void RsTrackobjTrackObjectBankedEntrance(CTrackObjectSample *sample);
+extern legacy_void RsTrackobjTrackObjectBankedRoad(CTrackObjectSample *sample);
+extern legacy_void RsTrackobjTrackObjectBankedCorner(CTrackObjectSample *sample);
+extern legacy_void RsTrackobjTrackObjectLoopUpper(CTrackObjectSample *sample,legacy_s16 value,
+    legacy_s16 effective_x,legacy_s16 value2,legacy_u16 index);
+extern legacy_s16 RsTrackobjTrackObjectLoopLower(CTrackObjectSample *sample,legacy_s16 value,
+    legacy_s16 effective_x,legacy_s16 value2,legacy_u16 index);
+extern legacy_void RsTrackobjTrackObjectLoop(CTrackObjectSample *sample);
+extern legacy_void RsTrackobjTrackObjectTunnel(CTrackObjectSample *sample);
+extern legacy_void RsTrackobjTrackObjectPipeEntrance(CTrackObjectSample *sample);
+extern legacy_u16 RsTrackobjTrackObjectPipeSection(CTrackObjectSample *sample);
+extern legacy_s16 RsTrackobjTrackObjectHalfPipeFloor(
+    CTrackObjectSample *sample,legacy_s16 value,legacy_s16 value2);
+extern legacy_void RsTrackobjTrackObjectPipe(CTrackObjectSample *sample);
+extern legacy_void RsTrackobjTrackObjectCorkscrewLeftRight(CTrackObjectSample *sample);
+extern legacy_void RsTrackobjTrackObjectCorkscrewArc(CTrackObjectSample *sample,legacy_s16 value,
+    legacy_s16 value2,legacy_s16 value3,legacy_s16 terrain_angle);
+extern legacy_void RsTrackobjTrackObjectCorkscrewUpDown(CTrackObjectSample *sample);
+extern legacy_void RsTrackobjTrackObjectSlalomNegativeWall(CTrackObjectSample *sample);
+extern legacy_void RsTrackobjTrackObjectSlalomPositiveWall(CTrackObjectSample *sample);
+extern legacy_void RsTrackobjTrackObjectSlalom(CTrackObjectSample *sample);
+extern legacy_void RsTrackobjTrackObjectBarn(CTrackObjectSample *sample);
+extern legacy_void RsTrackobjTrackObjectGasStation(CTrackObjectSample *sample);
+extern legacy_void RsTrackobjTrackObjectJoes(CTrackObjectSample *sample);
+extern legacy_void RsTrackobjTrackObjectOffice(CTrackObjectSample *sample);
+extern legacy_void RsTrackobjTrackObjectWindmill(CTrackObjectSample *sample);
+extern legacy_void RsTrackobjTrackObjectShip(CTrackObjectSample *sample);
+extern legacy_void RsTrackobjTrackObjectModel(CTrackObjectSample *sample);
+extern legacy_void RsTrackobjTrackObjectTerrain(CVector *world_position,legacy_u8 terrain_tile);
+extern legacy_s16 RsTrackobjTrackObjectHill(CVector *world_position,legacy_u8 terrain_tile,
+    legacy_s16 track_row,legacy_s16 track_column,legacy_s16 element_orientation);
+extern legacy_void RsTrackobjTrackObjectWorldCollision(
+    CVector *world_position,legacy_s16 element_orientation,legacy_s16 wall_orientation_modifier);
+extern legacy_s16 RsTrackobjTrackObjectSample(CTrackObjectSample *sample,CVector *world_position,
+    CVector *next_world_position,legacy_s16 track_row,legacy_s16 track_column,
+    legacy_u8 terrain_tile);
+extern legacy_s16 RsTrackobjWallIntersectionCoordinate(
+    legacy_s16 first,legacy_s16 second,legacy_s16 first_depth,legacy_s16 second_depth);
+extern legacy_s16 RsTrackobjSelectedWallMatches(CTrackCollisionSnapshot *candidate);
+extern legacy_s16 RsTrackobjSelectedWallContainsPoint(CVector *point,CMatrix *rotation);
+extern legacy_s16 RsTrackobjSelectedWallIntersectsSegment(CVector *first,CVector *second);
+extern legacy_s16 RsTrackobjSolidRatioLess(CTrackContactRatio *first,CTrackContactRatio *second);
+extern legacy_s16 RsTrackobjClipSolidAxis(legacy_s16 first,legacy_s16 second,legacy_s16 minimum,
+    legacy_s16 maximum,CTrackSolidInterval *interval);
+extern legacy_s16 RsTrackobjSolidBoxContact(
+    CVector *first,CVector *second,CTrackSolidBox *box,legacy_s16 *fraction);
+extern legacy_void RsTrackobjSolidWorldBounds(CTrackSolidBox *world,CTrackSolidBox *local,
+    legacy_s16 orientation,legacy_s16 column,legacy_s16 row,legacy_s16 elevation);
+extern legacy_s8 RsOwootLegacyS8FromBits(legacy_u8 value);
+extern legacy_s16 RsOwootLegacyS16FromBits(legacy_u16 value);
+extern legacy_s32 RsOwootLegacyS32FromBits(legacy_u32 value);
+extern legacy_s16 RsOwootRouteIsValid(CCarState *carstate,legacy_s16 allowed_jump);
+extern legacy_s16 RsOwootJumpIsValid(CCarState *carstate);
+extern legacy_s16 RsTrackRoadOverlapsWheel(
+    CVector *vertices,legacy_u16 ring_count,legacy_s16 road_contact);
+extern legacy_s16 RsTrackPipeApertureOverlapsWheel(CVector *vertices,legacy_u16 count);
+extern legacy_s16 RsTrackTunnelApertureOverlapsWheel(CVector *vertices,legacy_u16 count);
+extern legacy_s16 RsTrackSlalomWheelEnvelopeCrossesBarrier(CVector *vertices,legacy_u16 *counts,
+    CVector *body,CVector *center,legacy_s16 rotation,CVector *motion);
+extern legacy_s8 RsOwootWheelsLegacyS8FromBits(legacy_u8 value);
+extern legacy_s16 RsOwootWheelsLegacyS16FromBits(legacy_u16 value);
+extern legacy_s32 RsOwootWheelsLegacyS32FromBits(legacy_u32 value);
+extern legacy_s16 RsOwootWheelsRingCoordinate(
+    legacy_s16 center,legacy_s16 first,legacy_s16 second,legacy_u16 point);
+extern legacy_s8 RsOwootRoadLegacyS8FromBits(legacy_u8 value);
+extern legacy_s16 RsOwootRoadLegacyS16FromBits(legacy_u16 value);
+extern legacy_s32 RsOwootRoadLegacyS32FromBits(legacy_u32 value);
+extern legacy_s64 RsOwootRoadRoadCross(
+    COwootProjectedPoint *a,COwootProjectedPoint *b,COwootProjectedPoint *c);
+extern legacy_s16 RsOwootRoadPointPrecedes(COwootProjectedPoint *a,COwootProjectedPoint *b);
+extern legacy_u16 RsOwootRoadRoadProjectedHull(
+    COwootProjectedPoint *points,legacy_u16 count,COwootProjectedPoint *hull);
+extern legacy_s16 RsOwootRoadRoadSeparatingEdges(COwootProjectedPoint *first,
+    legacy_u16 first_count,COwootProjectedPoint *second,legacy_u16 second_count,
+    legacy_s16 boundary_overlap);
+extern legacy_s16 RsOwootRoadRoadProjectedOverlap(
+    COwootProjectedPoint *road,COwootProjectedPoint *wheel,legacy_u16 wheel_count);
+extern legacy_s16 RsOwootRoadRoadApertureOverlapsWheel(
+    COwootProjectedPoint *aperture,legacy_u16 aperture_count,CVector *vertices,legacy_u16 count);
+extern legacy_void RsOwootRoadRoadLocalProjection(
+    legacy_s32 x,legacy_s32 z,legacy_s16 rotation,COwootProjectedPoint *temple_return_value);
+extern legacy_s16 RsOwootRoadRoadSweptAxisSeparates(COwootProjectedPoint *a,
+    COwootProjectedPoint *b,COwootProjectedPoint *barrier,COwootProjectedPoint *hull,
+    legacy_u16 count,COwootProjectedPoint *motion);
+extern legacy_s16 RsOwootRoadRoadSweptBarrierOverlap(COwootProjectedPoint *barrier,
+    COwootProjectedPoint *hull,legacy_u16 count,COwootProjectedPoint *motion);
+extern legacy_void RsOwootRoadRoadAppendCrossing(COwootProjectedPoint *points,legacy_u16 *count,
+    CVector *vertices,legacy_s64 *distances,legacy_u16 first,legacy_u16 second);
+extern legacy_s16 RsOwootRoadRoadTriangleOverlapsWheel(COwootRoadTriangle *triangle,
+    CVector *vertices,legacy_u16 ring_count,legacy_s16 contact_tolerance);
+extern legacy_s16 RsOwootRoadRoadTileOverlapsWheel(CVector *vertices,legacy_u16 ring_count,
+    legacy_s16 column,legacy_s16 row,legacy_s16 contact_tolerance);
+extern legacy_s8 RsOwootRouteLegacyS8FromBits(legacy_u8 value);
+extern legacy_s16 RsOwootRouteLegacyS16FromBits(legacy_u16 value);
+extern legacy_s32 RsOwootRouteLegacyS32FromBits(legacy_u32 value);
+extern legacy_s32 RsOwootRouteRouteAbs(legacy_s32 value);
+extern legacy_void RsOwootRouteRoutePosition(
+    CVectorLong *position,COwootPoint *temple_return_value);
+extern legacy_void RsOwootRouteRouteVector(CVector *vector,COwootPoint *temple_return_value);
+extern legacy_void RsOwootRouteRouteDelta(
+    COwootPoint *first,COwootPoint *second,COwootPoint *temple_return_value);
+extern legacy_s32 RsOwootRouteRouteDot(COwootPoint *first,COwootPoint *second);
+extern legacy_s32 RsOwootRouteRouteMaximumComponent(COwootPoint *vector);
+extern legacy_void RsOwootRouteRouteNormalize(COwootPoint *vector);
+extern CTrackObject *RsOwootRouteRouteObject(legacy_s16 piece);
+extern CTrkObjInfo *RsOwootRouteRouteInfo(legacy_s16 piece);
+extern legacy_s16 RsOwootRouteRouteGateCount(legacy_s16 piece);
+extern legacy_void RsOwootRouteRouteBounds(legacy_s16 piece,COwootBounds *bounds);
+extern legacy_s16 RsOwootRouteRouteContains(COwootBounds *bounds,COwootPoint *position);
+extern legacy_s16 RsOwootRouteRouteRequiresGates(legacy_s16 piece);
+extern legacy_s16 RsOwootRouteRouteHasFinitePortal(legacy_s16 piece);
+extern legacy_s16 RsOwootRouteRouteOwnsPosition(legacy_s16 piece,COwootPoint *position);
+extern legacy_s16 RsOwootRouteRouteTiresOccupyPiece(legacy_s16 piece,COwootTires *tires);
+extern legacy_s16 RsOwootRouteRouteTubeGate(legacy_s16 piece,COwootGate *gate);
+extern legacy_s16 RsOwootRouteRouteCorkscrewGate(
+    legacy_s16 piece,legacy_s16 index,COwootGate *gate);
+extern legacy_void RsOwootRouteRouteGate(legacy_s16 piece,legacy_s16 index,COwootGate *gate);
+extern legacy_s32 RsOwootRouteRouteGateDistance(COwootGate *gate,COwootPoint *position);
+extern legacy_s16 RsOwootRouteRouteFraction(legacy_s32 numerator,legacy_s32 denominator);
+extern legacy_s16 RsOwootRouteRouteGateCrossing(
+    COwootGate *gate,COwootPoint *previous,COwootPoint *current,legacy_s16 direction);
+extern legacy_void RsOwootRouteRouteSliceAdd(CVector *slice,legacy_u16 *count,CVector *point);
+extern legacy_u16 RsOwootRouteRoutePortalSlice(COwootGate *gate,CVector *points,legacy_u16 count,
+    COwootPoint *translation,legacy_u16 crossing_point,CVector *slice);
+extern legacy_s16 RsOwootRouteRouteWheelCrossesGate(COwootGate *gate,COwootTires *tires,
+    COwootPoint *previous,COwootPoint *current,legacy_u16 wheel,legacy_u16 crossing_point,
+    legacy_s16 fraction);
+extern legacy_s16 RsOwootRouteRouteSweptGate(COwootGate *gate,COwootTires *tires,
+    COwootPoint *previous,COwootPoint *current,legacy_s16 direction,legacy_s16 minimum_fraction);
+extern legacy_s16 RsOwootRouteRoutePreviousTireBefore(
+    COwootGate *gate,COwootTires *tires,COwootPoint *motion,legacy_s16 direction);
+extern legacy_s16 RsOwootRouteRouteEnter(CCarState *carstate,legacy_s16 piece,
+    COwootPoint *previous,COwootPoint *current,COwootTires *tires);
+extern legacy_s16 RsOwootRouteRouteAdvance(
+    CCarState *carstate,COwootPoint *previous,COwootPoint *current,COwootTires *tires);
+extern legacy_s16 RsOwootRouteJumpModel(legacy_s16 piece);
+extern legacy_s16 RsOwootRouteJumpOnDeck(legacy_s16 piece,COwootPoint *position);
+extern legacy_s16 RsOwootRouteJumpEndpoint(
+    legacy_s16 piece,legacy_s16 outgoing,COwootPoint *position,COwootPoint *direction);
+extern legacy_s16 RsOwootRouteJumpForwardAligned(
+    legacy_s16 first,legacy_s16 second,COwootPoint *direction,legacy_s32 *distance);
+extern legacy_s16 RsOwootRouteJumpSourceCenter(
+    legacy_s16 first,legacy_s16 second,COwootPoint *center);
+extern legacy_s16 RsOwootRouteJumpAligned(
+    legacy_s16 first,legacy_s16 second,COwootPoint *direction,legacy_s32 *distance);
+extern legacy_s16 RsOwootRouteJumpNext(legacy_s16 piece,legacy_s16 reverse,COwootPoint *approach,
+    legacy_s16 first_step,COwootPoint *direction,legacy_s32 *distance);
+extern legacy_s16 RsOwootRouteJumpFindGap(
+    legacy_s16 launch,legacy_s16 reverse,legacy_s16 *source,legacy_s16 *target);
+extern legacy_void RsOwootRouteJumpClear(CCarState *carstate);
+extern legacy_s16 RsOwootRouteJumpHasRoadContact(CCarState *carstate);
+extern legacy_s32 RsOwootRouteJumpCross(CVector *a,CVector *b,CVector *c);
+extern legacy_s16 RsOwootRouteJumpFootprintInGap(CVector *points,legacy_u16 count);
+extern legacy_s16 RsOwootRouteJumpWheelInGap(
+    CCarState *carstate,COwootPoint *source,COwootPoint *direction);
+extern legacy_s8 RsReplayLegacyS8FromBits(legacy_u8 value);
+extern legacy_s16 RsReplayLegacyS16FromBits(legacy_u16 value);
+extern legacy_s32 RsReplayLegacyS32FromBits(legacy_u32 value);
+extern legacy_void RsReplayReplayReadBytes(
+    legacy_s8 *destination,legacy_u8 *source,legacy_u16 count);
+extern legacy_void RsReplayReplayWriteBytes(
+    legacy_u8 *destination,legacy_s8 *source,legacy_u16 count);
+extern legacy_s8 RsCommandLineLegacyS8FromBits(legacy_u8 value);
+extern legacy_s16 RsCommandLineLegacyS16FromBits(legacy_u16 value);
+extern legacy_s32 RsCommandLineLegacyS32FromBits(legacy_u32 value);
+extern legacy_s16 RsCommandLinePrintInfo(legacy_s32 argc,legacy_s8 **argv);
+extern legacy_s16 RsCommandLineCommandLineMatches(legacy_s8 *argument,legacy_char *option);
+extern legacy_u16 RsCommandLineCommandLineRevisionLength();
+extern legacy_s16 RsCommandLineCommandLineWrite(legacy_s8 *text,legacy_u16 length);
+extern legacy_s16 RsCommandLineCommandLinePrintVersion();
+extern legacy_s8 RsHeadlessDataLegacyS8FromBits(legacy_u8 value);
+extern legacy_s16 RsHeadlessDataLegacyS16FromBits(legacy_u16 value);
+extern legacy_s32 RsHeadlessDataLegacyS32FromBits(legacy_u32 value);
+extern legacy_s8 RsHeadlessTrackdataLegacyS8FromBits(legacy_u8 value);
+extern legacy_s16 RsHeadlessTrackdataLegacyS16FromBits(legacy_u16 value);
+extern legacy_s32 RsHeadlessTrackdataLegacyS32FromBits(legacy_u32 value);
+extern legacy_s8 RsFullDataLegacyS8FromBits(legacy_u8 value);
+extern legacy_s16 RsFullDataLegacyS16FromBits(legacy_u16 value);
+extern legacy_s32 RsFullDataLegacyS32FromBits(legacy_u32 value);
+extern legacy_void RsFullDataFullInitializeScreenSprite(CSprite *sprite);
+extern legacy_void RsFullDataInitialize();
+extern legacy_s8 RsFullStringsLegacyS8FromBits(legacy_u8 value);
+extern legacy_s16 RsFullStringsLegacyS16FromBits(legacy_u16 value);
+extern legacy_s32 RsFullStringsLegacyS32FromBits(legacy_u32 value);
+extern legacy_s8 RsFullTablesLegacyS8FromBits(legacy_u8 value);
+extern legacy_s16 RsFullTablesLegacyS16FromBits(legacy_u16 value);
+extern legacy_s32 RsFullTablesLegacyS32FromBits(legacy_u32 value);
+extern legacy_s8 RsStateioLegacyS8FromBits(legacy_u8 value);
+extern legacy_s16 RsStateioLegacyS16FromBits(legacy_u16 value);
+extern legacy_s32 RsStateioLegacyS32FromBits(legacy_u32 value);
+extern legacy_void RsStateioGamestateWriteU8(CGameStateWriter *writer,legacy_u8 value);
+extern legacy_void RsStateioGamestateWriteS8(CGameStateWriter *writer,legacy_s8 value);
+extern legacy_void RsStateioGamestateWriteU16(CGameStateWriter *writer,legacy_u16 value);
+extern legacy_void RsStateioGamestateWriteS16(CGameStateWriter *writer,legacy_s16 value);
+extern legacy_void RsStateioGamestateWriteS32(CGameStateWriter *writer,legacy_s32 value);
+extern legacy_void RsStateioGamestateWriteVector(CGameStateWriter *writer,CVector *vector);
+extern legacy_void RsStateioGamestateWriteVectorlong(CGameStateWriter *writer,CVectorLong *vector);
+extern legacy_void RsStateioGamestateWriteS8Array(
+    CGameStateWriter *writer,legacy_s8 *values,legacy_u16 count);
+extern legacy_void RsStateioGamestateWriteS16Array(
+    CGameStateWriter *writer,legacy_s16 *values,legacy_u16 count);
+extern legacy_void RsStateioGamestateWriteS32Array(
+    CGameStateWriter *writer,legacy_s32 *values,legacy_u16 count);
+extern legacy_void RsStateioGamestateWriteVectorArray(
+    CGameStateWriter *writer,CVector *vectors,legacy_u16 count);
+extern legacy_void RsStateioGamestateWriteCarstate(CGameStateWriter *writer,CCarState *carstate);
+extern legacy_s8 RsMemoryLegacyS8FromBits(legacy_u8 value);
+extern legacy_s16 RsMemoryLegacyS16FromBits(legacy_u16 value);
+extern legacy_s32 RsMemoryLegacyS32FromBits(legacy_u32 value);
+extern legacy_void RsMemoryMemoryError();
+extern legacy_u16 RsMemoryExternalSegment(legacy_u64 address);
 extern legacy_s8 replay_filename[128];
-extern GAMEINFO gameconfig;
-extern GAMEINFO gameconfigcopy;
-extern GAMESTATE state;
-extern SIMD simd_player;
-extern SIMD simd_opponent;
+extern CGameInfo gameconfig;
+extern CGameInfo gameconfigcopy;
+extern CGameState state;
+extern CSimd simd_player;
+extern CSimd simd_opponent;
 extern legacy_s16 video_shape_width_scale;
 extern legacy_s16 video_x_alignment;
 extern legacy_s16 video_x_alignment_mask;
@@ -2908,14 +2539,14 @@ extern legacy_s16 unused_legacy_word;
 extern legacy_s16 checkpoint_frame_interval;
 extern legacy_s16 timer_ticks_per_frame;
 extern legacy_s16 track_angle;
-extern legacy_s8 *steerWhlRespTable_ptr;
-extern legacy_s8 steerWhlRespTable_10fps[62];
-extern legacy_s8 steerWhlRespTable_20fps[64];
+extern legacy_s8 *steer_whl_resp_table_ptr;
+extern legacy_s8 steer_whl_resp_table_10fps[62];
+extern legacy_s8 steer_whl_resp_table_20fps[64];
 extern legacy_s8 start_finish_column;
 extern legacy_s8 start_finish_row;
-extern legacy_s8 hillFlag;
-extern legacy_s16 hillHeightConsts[];
-extern RECTANGLE rect_windshield;
+extern legacy_s8 hill_flag;
+extern legacy_s16 hill_height_consts[];
+extern CRectangle rect_windshield;
 extern legacy_s16 viewport_bottom_cache;
 extern legacy_s16 run_game_random;
 extern legacy_s8 replaybar_toggle;
@@ -2947,17 +2578,17 @@ extern legacy_s16 dastbmp_y;
 extern legacy_s16 dastbmp_y2;
 extern legacy_s16 dashbmp_y;
 extern legacy_s16 roofbmpheight;
-extern RECTANGLE *active_frame_rects;
+extern CRectangle *active_frame_rects;
 extern legacy_s16 mouse_butstate;
 extern legacy_s16 mouse_xpos;
 extern legacy_s16 mouse_ypos;
-extern legacy_s16 performGraphColor;
-extern legacy_s8 resID_buffer[80];
+extern legacy_s16 perform_graph_color;
+extern legacy_s8 res_id_buffer[80];
 extern legacy_s16 waitflag;
 extern legacy_u8 *fontnptr;
 extern legacy_u8 *fontdefptr;
 extern legacy_u8 *mainresptr;
-extern GAMESTATE *cvxptr;
+extern CGameState *cvxptr;
 extern legacy_s16 trackrows[];
 extern legacy_s16 terrainrows[];
 extern legacy_s16 track_row_positions[];
@@ -2974,8 +2605,8 @@ extern legacy_s16 *opponent_aero_resistance_table;
 extern legacy_s16 *reserved_trackside_camera_words;
 extern legacy_s16 *trackside_camera_ground_heights;
 extern legacy_s16 *roadside_sign_headings;
-extern VECTOR *trackside_camera_positions;
-extern VECTOR *roadside_sign_positions;
+extern CVector *trackside_camera_positions;
+extern CVector *roadside_sign_positions;
 extern legacy_s8 *track_highscore_table;
 extern legacy_s8 *sprite_background_state_stack;
 extern legacy_s8 *replay_header_buffer;
@@ -3019,10 +2650,10 @@ extern legacy_u16 pspofs;
 extern legacy_u16 pspseg;
 extern legacy_u16 mmgr_arena_end_segment;
 extern legacy_u16 mmgr_arena_start_segment;
-extern MEMCHUNK *mmgr_live_sentinel;
-extern MEMCHUNK *mmgr_last_live_chunk;
-extern MEMCHUNK *mmgr_first_cached_chunk;
-extern MEMCHUNK *mmgr_cache_sentinel;
+extern CMemChunk *mmgr_live_sentinel;
+extern CMemChunk *mmgr_last_live_chunk;
+extern CMemChunk *mmgr_first_cached_chunk;
+extern CMemChunk *mmgr_cache_sentinel;
 extern legacy_u16 mmgr_high_water_segment;
 extern legacy_u16 slow_timer_deadline_low;
 extern legacy_u16 slow_timer_deadline_high;
@@ -3038,7 +2669,7 @@ extern legacy_s8 file_write_error_format[16];
 extern legacy_s8 file_size_error_format[14];
 extern legacy_s8 invalid_pack_type_error_format[23];
 extern legacy_s8 audiodriverstring[5];
-extern legacy_u16 gState_frame;
+extern legacy_u16 g_state_frame;
 extern legacy_s8 is_audioloaded;
 extern legacy_u8 *songfileptr;
 extern legacy_u8 *voicefileptr;
@@ -3056,68 +2687,68 @@ extern legacy_s16 *material_patlist2_ptr_cpy;
 extern legacy_u16 reserved_material_video_word;
 extern legacy_s8 missing_shape_error_format[39];
 extern legacy_s8 missing_sound_error_format[39];
-extern SPRITE *render_window_sprite;
-extern file_find_dos g_find;
+extern CSprite *render_window_sprite;
+extern CFileFindDos g_find;
 extern legacy_s32 direction_sector_cosine;
 extern legacy_s32 direction_sector_sine;
 extern legacy_s16 planindex;
 extern legacy_s16 planindex_copy;
 extern legacy_s8 current_surf_type;
 extern legacy_s16 wallindex;
-extern legacy_s16 elRdWallRelated;
-extern legacy_s16 wallHeight;
-extern legacy_s16 wallStartX;
-extern legacy_s16 wallStartZ;
-extern legacy_s16 wallOrientation;
-extern PLANE *planptr;
-extern PLANE *current_planptr;
-extern legacy_s16 elem_xCenter;
-extern legacy_s16 elem_zCenter;
-extern legacy_s16 terrainHeight;
+extern legacy_s16 el_rd_wall_related;
+extern legacy_s16 wall_height;
+extern legacy_s16 wall_start_x;
+extern legacy_s16 wall_start_z;
+extern legacy_s16 wall_orientation;
+extern CPlane *planptr;
+extern CPlane *current_planptr;
+extern legacy_s16 elem_x_center;
+extern legacy_s16 elem_z_center;
+extern legacy_s16 terrain_height;
 extern legacy_s8 track_wall_collision_enabled;
-extern TRACK_WALL *wallptr;
+extern CTrackWall *wallptr;
 extern legacy_s16 car_initial_roll;
 extern legacy_s16 car_initial_yaw;
 extern legacy_s16 car_initial_pitch;
-extern MATRIX car_to_world_rotation;
-extern VECTOR wheel_forward_travel;
+extern CMatrix car_to_world_rotation;
+extern CVector wheel_forward_travel;
 extern legacy_s16 wheel_heading_offset;
-extern VECTOR wheel_world_travel;
-extern MATRIX mat_temp;
+extern CVector wheel_world_travel;
+extern CMatrix mat_temp;
 extern legacy_u16 projection_center_x;
 extern legacy_u16 projection_center_y;
 extern legacy_u16 projection_focal_length_x;
 extern legacy_u16 projection_focal_length_y;
-extern RECTANGLE select_rect_rc;
-extern MATRIX rs_math_math_mat_z_rot;
-extern MATRIX rs_math_math_mat_x_rot;
-extern MATRIX rs_math_math_mat_y_rot;
-extern MATRIX rs_math_math_mat_rot_temp;
+extern CRectangle select_rect_rc;
+extern CMatrix rs_math_math_mat_z_rot;
+extern CMatrix rs_math_math_mat_x_rot;
+extern CMatrix rs_math_math_mat_y_rot;
+extern CMatrix rs_math_math_mat_rot_temp;
 extern legacy_u16 rs_math_math_mat_y_rot_angle;
 extern legacy_s16 sintab[257];
 extern legacy_u8 atantable[257];
 extern legacy_u8 vector_saved_z_low;
 extern legacy_u8 vector_saved_z_high;
-extern MATRIX wheel_heading_rotation;
+extern CMatrix wheel_heading_rotation;
 extern legacy_s16 cached_plane_heading;
-extern MATRIX plane_heading_rotation;
+extern CMatrix plane_heading_rotation;
 extern legacy_s16 cached_wheel_heading;
-extern MEMCHUNK resources[50];
+extern CMemChunk resources[50];
 extern legacy_u32 rs_numlib_legacy_rand_seed;
 extern legacy_u8 rs_kevinrnd_g_kevinrandom_seed[6];
 extern legacy_s16 owoot_enabled;
 extern legacy_s16 input_combined_flags;
 extern legacy_u8 supersight_enabled;
 extern legacy_u8 fps_display_enabled;
-extern TRACKOBJECT trkObjectList[215];
-extern PLANE plan_memres;
+extern CTrackObject trk_object_list[215];
+extern CPlane plan_memres;
 extern legacy_s16 track_pieces_counter;
 extern legacy_u8 roadside_sign_forward_types[];
 extern legacy_u8 roadside_sign_reverse_types[];
-extern legacy_u8 terrConnDataEtoW[];
-extern legacy_u8 terrConnDataWtoE[];
-extern legacy_u8 terrConnDataNtoS[];
-extern legacy_u8 terrConnDataStoN[];
+extern legacy_u8 terr_conn_data_eto_w[];
+extern legacy_u8 terr_conn_data_wto_e[];
+extern legacy_u8 terr_conn_data_nto_s[];
+extern legacy_u8 terr_conn_data_sto_n[];
 extern legacy_u8 roadside_sign_count;
 extern legacy_u8 track_validation_column;
 extern legacy_u8 track_validation_row;
@@ -3130,27 +2761,27 @@ extern legacy_s16 audio_opponent_engine_channel;
 extern legacy_s16 audio_car_state_read_index;
 extern legacy_s16 audio_car_state_write_index;
 extern legacy_s16 audio_car_state_interval;
-extern AUDIO_CAR_STATE *audio_car_state_records;
+extern CAudioCarState *audio_car_state_records;
 extern legacy_u8 audio_previous_replay_mode;
-extern FULL_AUDIO_ENGINE_DEFINITION player_engine_definition;
-extern FULL_AUDIO_ENGINE_DEFINITION opponent_engine_definition;
-extern legacy_s16 grassDecelDivTab[5];
-extern LEGACY_EXECUTION_RESIDUE legacy_execution_residue;
+extern CFullAudioEngineDefinition player_engine_definition;
+extern CFullAudioEngineDefinition opponent_engine_definition;
+extern legacy_s16 grass_decel_div_tab[5];
+extern CLegacyExecutionResidue legacy_execution_residue;
 extern legacy_s16 legacy_render_player_headings_active;
 extern legacy_u16 legacy_closed_hihat_offset;
-extern legacy_u8 oppnentSped[16];
-extern CUSTOM_CAMERA custom_camera;
+extern legacy_u8 oppnent_sped[16];
+extern CCustomCamera custom_camera;
 extern legacy_s8 cameramode;
-extern legacy_s8 followOpponentFlag;
-extern legacy_s8 followOpponentFlag_copy;
+extern legacy_s8 follow_opponent_flag;
+extern legacy_s8 follow_opponent_flag_copy;
 extern legacy_s16 camera_track_height_offset;
 extern legacy_s8 car_shape_resource_name[7];
 extern legacy_s8 *carresptr;
 extern legacy_s8 *car2resptr;
-extern VECTOR player_front_wheel_centers[2];
-extern VECTOR player_base_wheel_vertices[24];
-extern VECTOR opponent_front_wheel_centers[2];
-extern VECTOR opponent_base_wheel_vertices[24];
+extern CVector player_front_wheel_centers[2];
+extern CVector player_base_wheel_vertices[24];
+extern CVector opponent_front_wheel_centers[2];
+extern CVector opponent_base_wheel_vertices[24];
 extern legacy_s16 player_wheel_vertex_state[];
 extern legacy_s16 opponent_wheel_vertex_state[];
 extern legacy_s16 neutral_wheel_suspension[];
@@ -3165,20 +2796,20 @@ extern legacy_s8 opponent_path_resource_id[5];
 extern legacy_s8 opponent_speed_resource_id[5];
 extern legacy_u8 rs_trkutil_hillroad_pieces[4][6];
 extern legacy_u8 rs_trkutil_hillroad_shapes[4][4];
-extern PLANE rs_trackres_decoded_planes[536];
-extern TRACK_WALL rs_trackres_decoded_walls[191];
-extern AUDIO_TIMER audio_timers[25];
-extern AUDIO_CHANNEL audio_channels[24];
-extern AUDIO_CHANNEL *audio_sfx_channels;
-extern AUDIO_CONTEXT dos_audio_contexts[16];
+extern CPlane rs_trackres_decoded_planes[536];
+extern CTrackWall rs_trackres_decoded_walls[191];
+extern CAudioTimer audio_timers[25];
+extern CAudioChannel audio_channels[24];
+extern CAudioChannel *audio_sfx_channels;
+extern CAudioContext dos_audio_contexts[16];
 extern legacy_s16 meter_needle_color;
 extern legacy_s8 *stdaresptr;
 extern legacy_s8 *stdbresptr;
-extern SHAPE2D *whlshapes[9];
-extern SHAPE2D *gnobshapes[6];
-extern SHAPE2D *digshapes[10];
-extern SPRITE *dashboard_instrument_sprite;
-extern SPRITE *dashboard_gearbox_sprite;
+extern CShape2D *whlshapes[9];
+extern CShape2D *gnobshapes[6];
+extern CShape2D *digshapes[10];
+extern CSprite *dashboard_instrument_sprite;
+extern CSprite *dashboard_gearbox_sprite;
 extern legacy_s16 dashboard_rpm_index_cache[2];
 extern legacy_s16 dashboard_gear_knob_x_cache[2];
 extern legacy_s16 dashboard_gear_knob_y_cache[2];
@@ -3203,21 +2834,21 @@ extern legacy_s32 car_working_z;
 extern legacy_s16 car_working_roll;
 extern legacy_s16 car_working_yaw;
 extern legacy_s16 car_working_pitch;
-extern legacy_s16 nextPosAndNormalIP;
-extern POINT2D start_finish_pole_bounds[2];
-extern POINT2D breakable_object_bounds[2];
-extern POINT2D track_auxiliary_obstacle_bounds[2];
+extern legacy_s16 next_pos_and_normal_ip;
+extern CPoint2D start_finish_pole_bounds[2];
+extern CPoint2D breakable_object_bounds[2];
+extern CPoint2D track_auxiliary_obstacle_bounds[2];
 extern legacy_s16 wheel_gravity_steps[4];
-extern VECTOR scenery_collision_points[1];
-extern VECTOR elevated_road_collision_points[8];
-extern VECTOR corkscrew_lr_collision_points[2];
-extern VECTOR corkscrew_up_collision_points[2];
-extern VECTOR corkscrew_down_collision_points[2];
-extern VECTOR slalom_collision_points[4];
+extern CVector scenery_collision_points[1];
+extern CVector elevated_road_collision_points[8];
+extern CVector corkscrew_lr_collision_points[2];
+extern CVector corkscrew_up_collision_points[2];
+extern CVector corkscrew_down_collision_points[2];
+extern CVector slalom_collision_points[4];
 extern legacy_s8 main_menu_shapes_name[7];
 extern legacy_s8 main_menu_background_data[18];
-extern BUTTON_AREA menu_buttons[5];
-extern BUTTON_AREA trackmenu_buttons[3];
+extern CButtonArea menu_buttons[5];
+extern CButtonArea trackmenu_buttons[3];
 extern legacy_s8 opponent_misc_resource_name[5];
 extern legacy_s8 opponent_menu_shapes_name[7];
 extern legacy_s8 opponent_portrait_shape_ids[29];
@@ -3230,7 +2861,7 @@ extern legacy_s8 opponent_done_button_id[4];
 extern legacy_s8 opponent_portrait_clip_id[5];
 extern legacy_s8 opponent_description_id[4];
 extern legacy_s8 opponent_racing_car_label_id[5];
-extern BUTTON_AREA opponentmenu_buttons[5];
+extern CButtonArea opponentmenu_buttons[5];
 extern legacy_s8 *opp_res;
 extern legacy_s8 *oppresources[7];
 extern legacy_s8 car_resource_extension[5];
@@ -3253,10 +2884,10 @@ extern legacy_s8 car_description_id[4];
 extern legacy_s8 car_preview_top_shape_id[5];
 extern legacy_s8 car_automatic_toggle_id[4];
 extern legacy_s8 car_manual_toggle_id[4];
-extern BUTTON_AREA carmenu_buttons[5];
-extern RECTANGLE carmenu_cliprect;
-extern RECTANGLE car_menu_redraw_cliprect;
-extern VECTOR carmenu_carpos;
+extern CButtonArea carmenu_buttons[5];
+extern CRectangle carmenu_cliprect;
+extern CRectangle car_menu_redraw_cliprect;
+extern CVector carmenu_carpos;
 extern legacy_s8 results_misc_resource_name[5];
 extern legacy_s8 elapsed_time_label_id[4];
 extern legacy_s8 continued_race_label_id[4];
@@ -3347,14 +2978,14 @@ extern legacy_s16 credits_art_heading_color;
 extern legacy_s16 credits_art_heading_shadow_color;
 extern legacy_s16 credits_music_heading_color;
 extern legacy_s16 credits_music_heading_shadow_color;
-extern SHAPE2D *track_editor_cursor_shapes[];
-extern SHAPE2D *track_editor_under_cursor_shapes[];
+extern CShape2D *track_editor_cursor_shapes[];
+extern CShape2D *track_editor_under_cursor_shapes[];
 extern legacy_s16 track_editor_highlight_color;
-extern RECTANGLE shaperect;
-extern TRANSFORMEDSHAPE3D transshape;
-extern RECTANGLE cliprect;
-extern VECTOR carpos;
-extern RECTANGLE highscore_text_bounds;
+extern CRectangle shaperect;
+extern CTransformedShape3D transshape;
+extern CRectangle cliprect;
+extern CVector carpos;
+extern CRectangle highscore_text_bounds;
 extern legacy_u8 *miscptr;
 extern legacy_s16 graphics_menu_background_color;
 extern legacy_s8 exit_to_dos_dialog_id[4];
@@ -3368,27 +2999,27 @@ extern legacy_s8 mouse_driving_dialog_id[4];
 extern legacy_s8 pause_dialog_id[4];
 extern legacy_s8 effects_disabled_message_id[4];
 extern legacy_s8 effects_enabled_message_id[4];
-extern SHAPE2D *track_editor_terrain_shapes[];
-extern SHAPE2D *track_editor_tile_shapes[];
-extern SHAPE2D *track_editor_tile_masks[];
+extern CShape2D *track_editor_terrain_shapes[];
+extern CShape2D *track_editor_tile_shapes[];
+extern CShape2D *track_editor_tile_masks[];
 extern legacy_u8 replay_selected_control;
 extern legacy_u8 replay_control_left_neighbor[10];
 extern legacy_u8 replay_control_right_neighbor[10];
 extern legacy_u8 replay_control_up_neighbor[10];
 extern legacy_u8 replay_control_down_neighbor[10];
 extern legacy_u8 game_camera_buttons_count[4];
-extern BUTTON_AREA game_camera_buttons[9];
+extern CButtonArea game_camera_buttons[9];
 extern legacy_s16 replay_pan_button_left;
 extern legacy_s16 replay_pan_button_right;
 extern legacy_s16 replay_zoom_button_top;
 extern legacy_s16 replay_pan_button_top;
 extern legacy_s16 replay_zoom_button_bottom;
 extern legacy_s16 replay_pan_button_bottom;
-extern BUTTON_AREA replay_hidden_bar_camera_button;
+extern CButtonArea replay_hidden_bar_camera_button;
 extern legacy_s16 replay_current_position_cache[2];
 extern legacy_u8 replay_selection_cache[2];
 extern legacy_s16 replay_displayed_time_cache[2];
-extern SHAPE2D *rplyshapes[23];
+extern CShape2D *rplyshapes[23];
 extern legacy_u8 replay_control_active[9];
 extern legacy_u8 replay_legacy_fast_play_active;
 extern legacy_u8 replay_legacy_play_active;
@@ -3409,11 +3040,11 @@ extern legacy_s8 replay_filename_input[10];
 extern legacy_u8 *active_font_definition;
 extern legacy_s16 dialog_fnt_colour;
 extern legacy_s16 font_glyph_height;
-extern RECTANGLE intro_text_bounds;
-extern RECTANGLE *alternate_frame_rects;
-extern RECTANGLE empty_rect;
-extern RECTANGLE full_screen_rect;
-extern SHAPE3D game3dshapes[130];
+extern CRectangle intro_text_bounds;
+extern CRectangle *alternate_frame_rects;
+extern CRectangle empty_rect;
+extern CRectangle full_screen_rect;
+extern CShape3D game3dshapes[130];
 extern legacy_s8 *curshapeptr;
 extern legacy_s8 *game1ptr;
 extern legacy_s8 *game2ptr;
@@ -3424,29 +3055,29 @@ extern legacy_s16 button_fill_color;
 extern legacy_s16 menu_highlight_second_color;
 extern legacy_s16 menu_highlight_first_color;
 extern legacy_s16 menu_idle_counter;
-extern STARTUP_OPTIONS rs_restunts_startup_options;
+extern CStartupOptions rs_restunts_startup_options;
 extern legacy_u32 rs_timing_timer_wait_target;
 extern legacy_s8 rs_timing_input_callback_overflow_message[46];
-extern RECTANGLE frame_rects_page0[15];
-extern RECTANGLE frame_rects_page1[15];
-extern RECTANGLE merged_redraw_rects[45];
+extern CRectangle frame_rects_page0[15];
+extern CRectangle frame_rects_page1[15];
+extern CRectangle merged_redraw_rects[45];
 extern legacy_s8 frame_rect_change_flags[15];
 extern legacy_s16 redraw_rect_sort_indices[45];
 extern legacy_s8 redraw_rect_count;
-extern RECTANGLE frame_layer_rects[15];
-extern RECTANGLE intro_redraw_cliprect;
-extern RECTANGLE rect_ingame_text2;
-extern RECTANGLE rect_ingame_text3;
-extern RECTANGLE rect_ingame_text4;
+extern CRectangle frame_layer_rects[15];
+extern CRectangle intro_redraw_cliprect;
+extern CRectangle rect_ingame_text2;
+extern CRectangle rect_ingame_text3;
+extern CRectangle rect_ingame_text4;
 extern legacy_s8 detail_threshold_by_level[6];
 extern legacy_s8 track_material_animation[16];
 extern legacy_u16 frame_callback_count;
 extern legacy_s16 cloud_heading_offsets[8];
 extern legacy_s8 *lookahead_tiles_tables[8];
-extern SHAPE3D *cloud_shapes[8];
-extern TRANSFORMEDSHAPE3D currenttransshape[29];
-extern TRANSFORMEDSHAPE3D *curtransshape_ptr;
-extern legacy_u8 fence_TrkObjCodes[8];
+extern CShape3D *cloud_shapes[8];
+extern CTransformedShape3D currenttransshape[29];
+extern CTransformedShape3D *curtransshape_ptr;
+extern legacy_u8 fence_trk_obj_codes[8];
 extern legacy_s8 fence_tile_offsets_single[2];
 extern legacy_s8 fence_tile_offsets_row[4];
 extern legacy_s8 fence_tile_offsets_both[16];
@@ -3456,21 +3087,21 @@ extern legacy_s16 hill_fill_offsets_single[2];
 extern legacy_s16 hill_fill_offsets_row[4];
 extern legacy_s16 hill_fill_offsets_column[4];
 extern legacy_s16 hill_fill_offsets_both[8];
-extern TRACKOBJECT terrain_scene_objects[19];
-extern TRACKOBJECT particle_scene_objects[13];
+extern CTrackObject terrain_scene_objects[19];
+extern CTrackObject particle_scene_objects[13];
 extern legacy_s16 frame_buffer_camera_headings[2];
 extern legacy_s16 last_rendered_camera_heading;
 extern legacy_s16 transformedshape_zarray[29];
 extern legacy_s16 transformedshape_indices[29];
 extern legacy_s8 transformed_shape_sort_types[29];
 extern legacy_s8 transformedshape_counter;
-extern RECTANGLE rect_ingame_text;
-extern RECTANGLE intro_cliprect;
+extern CRectangle rect_ingame_text;
+extern CRectangle intro_cliprect;
 extern legacy_s16 intro_colorvalue;
 extern legacy_s16 intro_palette_color_count;
-extern SHAPE3D logoshape;
-extern SHAPE3D logo2shape;
-extern SHAPE3D bravshape;
+extern CShape3D logoshape;
+extern CShape3D logo2shape;
+extern CShape3D bravshape;
 extern legacy_s16 intro_elapsed_ticks;
 extern legacy_s16 track_preview_camera_x;
 extern legacy_s16 track_preview_camera_y;
@@ -3478,10 +3109,10 @@ extern legacy_s16 track_preview_camera_z;
 extern legacy_s16 track_preview_target_x;
 extern legacy_s16 track_preview_target_y;
 extern legacy_s16 track_preview_target_z;
-extern VECTOR track_preview_horizon_vector;
-extern RECTANGLE trackpreview_cliprect;
+extern CVector track_preview_horizon_vector;
+extern CRectangle trackpreview_cliprect;
 extern legacy_u8 rs_game_input_custom_camera_preset;
-extern CUSTOM_CAMERA rs_game_input_custom_camera_original;
+extern CCustomCamera rs_game_input_custom_camera_original;
 extern legacy_s8 rs_game_input_custom_camera_original_dashboard;
 extern legacy_u8 rs_game_input_input_direction_table[16];
 extern legacy_u8 rs_game_input_input_callback_flags[128];
@@ -3489,9 +3120,9 @@ extern legacy_u8 rs_game_input_input_extended_callback_flags[137];
 extern legacy_u8 *rs_game_input_input_callbacks[64];
 extern legacy_u8 rs_game_input_input_callback_dispatching;
 extern legacy_u8 *rs_game_input_input_readchar_callback;
-extern SPRITE *mouse_small_sprite;
-extern SPRITE *mouse_medium_sprite;
-extern SPRITE *mouse_background_sprite;
+extern CSprite *mouse_small_sprite;
+extern CSprite *mouse_medium_sprite;
+extern CSprite *mouse_background_sprite;
 extern legacy_s8 mouse_background_dirty;
 extern legacy_s8 rs_game_input_mouse_transparent_mode;
 extern legacy_u8 rs_game_input_h_key_toggle;
@@ -3534,15 +3165,15 @@ extern legacy_u8 rs_ui_dialog_quiz_question_suffixes[20];
 extern legacy_u8 rs_ui_dialog_g_ascii_props[256];
 extern legacy_u8 *rs_intro_ui_temp_resource;
 extern legacy_s16 penalty_time;
-extern legacy_s16 gState_impactSpeed;
-extern legacy_s16 gState_jumpCount;
-extern legacy_s16 gState_oEndFrame;
-extern legacy_s16 gState_opponent_finish_time;
-extern legacy_s16 gState_pEndFrame;
-extern legacy_s16 gState_penalty;
-extern legacy_s16 gState_topSpeed;
-extern legacy_s16 gState_total_finish_time;
-extern legacy_s32 gState_travDist;
+extern legacy_s16 g_state_impact_speed;
+extern legacy_s16 g_state_jump_count;
+extern legacy_s16 g_state_o_end_frame;
+extern legacy_s16 g_state_opponent_finish_time;
+extern legacy_s16 g_state_p_end_frame;
+extern legacy_s16 g_state_penalty;
+extern legacy_s16 g_state_top_speed;
+extern legacy_s16 g_state_total_finish_time;
+extern legacy_s32 g_state_trav_dist;
 extern legacy_s16 ranking_entry_order[7];
 extern legacy_s8 highscore_player_name_input[17];
 extern legacy_u8 rs_highscore_ranking_highlight;
@@ -3556,9 +3187,9 @@ extern legacy_s16 sdgame2_widths[5];
 extern legacy_u8 *sdgame2shapes[5];
 extern legacy_u8 *fontledresptr;
 extern legacy_u8 *sdgameresptr;
-extern GAMEINFO rs_ghost_ghost_config;
-extern GHOST_POSE rs_ghost_ghost_pose;
-extern SIMD rs_ghost_ghost_simd;
+extern CGameInfo rs_ghost_ghost_config;
+extern CGhostPose rs_ghost_ghost_pose;
+extern CSimd rs_ghost_ghost_simd;
 extern legacy_u16 rs_ghost_ghost_file;
 extern legacy_s8 rs_ghost_ghost_temp_name[13];
 extern legacy_s16 rs_ghost_ghost_active;
@@ -3569,11 +3200,11 @@ extern legacy_u32 rs_ghost_ghost_live_frame;
 extern legacy_u16 rs_ghost_ghost_live_frame_rate;
 extern legacy_u8 *eng1ptr;
 extern legacy_u8 *engptr;
-extern SKYBOX skybox;
+extern CSkybox skybox;
 extern legacy_s8 skybox_resources_loaded;
 extern legacy_s8 *skybox_res_ofs;
 extern legacy_s8 loaded_skybox_index;
-extern SHAPE2D *skyboxes[4];
+extern CShape2D *skyboxes[4];
 extern legacy_s8 rs_race_resources_skybox_resource_names[5][9];
 extern legacy_s16 rs_menu_common_menu_animation_counter;
 extern legacy_s16 rs_menu_common_menu_highlight_color;
@@ -3582,7 +3213,7 @@ extern legacy_s8 rs_menu_track_editor_track_editor_terrain_shape_names[77];
 extern legacy_s8 rs_menu_track_editor_track_editor_cursor_shape_names[17];
 extern legacy_s8 rs_menu_track_editor_track_editor_under_cursor_shape_names[17];
 extern legacy_s8 rs_menu_track_editor_track_editor_error_resource_ids[46];
-extern BUTTON_AREA rs_menu_track_editor_track_editor_buttons[5];
+extern CButtonArea rs_menu_track_editor_track_editor_buttons[5];
 extern legacy_u16 rs_menu_track_editor_track_editor_page_keys[10];
 extern legacy_u8 rs_menu_track_editor_track_editor_maximum_columns[2];
 extern legacy_u8 rs_menu_track_editor_track_editor_maximum_rows[2];
@@ -3618,7 +3249,7 @@ extern legacy_u16 rs_audio_engine_audio_driver_timer_rate;
 extern legacy_s16 rs_audio_engine_audio_driver_timer_divider;
 extern legacy_s16 rs_audio_resources_audio_missing_file_fatal;
 extern legacy_s8 rs_audio_resources_audio_driver_prefix[14];
-extern legacy_u8 rs_audio_resources_audio_padded_id[(4 + 1)];
+extern legacy_u8 rs_audio_resources_audio_padded_id[(4+1)];
 extern legacy_s8 rs_audio_resources_audio_filename_buffer[34];
 extern legacy_u8 dos_audio_driver_data[];
 extern legacy_u8 rs_audio_sequence_audio_sequence_timer_active;
@@ -3627,11 +3258,11 @@ extern legacy_s8 video_window_resource_name[];
 extern legacy_s8 window_release_order_message[32];
 extern legacy_u8 wnd_defs[3600];
 extern legacy_s8 *next_wnd_def;
-extern SPRITE drawing_sprite;
-extern SPRITE screen_sprite;
-extern SPRITE *mcga_backbuffer_sprite;
+extern CSprite drawing_sprite;
+extern CSprite screen_sprite;
+extern CSprite *mcga_backbuffer_sprite;
 extern legacy_u8 sprite_background_stack_depth;
-extern SPRITE *sprite_ptrs[4];
+extern CSprite *sprite_ptrs[4];
 extern legacy_s16 sprite_background_saved_x[4];
 extern legacy_s16 sprite_background_saved_y[4];
 extern legacy_u8 sprite_palette_map[256];
@@ -3643,7 +3274,7 @@ extern legacy_s16 material_pattern2_list[129];
 extern legacy_u8 *spritefunc;
 extern legacy_u8 *imagefunc;
 extern legacy_u8 *sphere_radius_rows[40];
-extern legacy_s16 polygon_next_index[(592 + 1)];
+extern legacy_s16 polygon_next_index[(592+1)];
 extern legacy_u16 polygon_record_offsets[592];
 extern legacy_u16 polyinfonumpolys;
 extern legacy_u16 polyinfoptrnext;
@@ -3654,7 +3285,7 @@ extern legacy_u8 *transshapeprimitives;
 extern legacy_u16 transshapenumpaints;
 extern legacy_u8 transshapematerial;
 extern legacy_u8 transshapeflags;
-extern RECTANGLE *transshaperectptr;
+extern CRectangle *transshaperectptr;
 extern legacy_s32 invpow2tbl[32];
 extern legacy_s8 shape_view_direction_sector;
 extern legacy_u16 shape_polygon_predecessor;
@@ -3662,7 +3293,7 @@ extern legacy_u16 polygon_list_tail;
 extern legacy_u16 shape_polygon_count;
 extern legacy_u16 polygon_insertion_cursor;
 extern legacy_s8 transshapenumvertscopy;
-extern POINT2D *polyvertpointptrtab[11];
+extern CPoint2D *polyvertpointptrtab[11];
 extern legacy_u16 shape_half_scale;
 extern legacy_u8 primidxcounttab[16];
 extern legacy_u8 primtypetab[16];
@@ -3679,23 +3310,23 @@ extern legacy_u16 projection_half_width;
 extern legacy_u16 projection_origin_x;
 extern legacy_u16 projection_half_height;
 extern legacy_u16 projection_origin_y;
-extern MATRIX mat_y0;
-extern MATRIX mat_y100;
-extern MATRIX mat_y200;
-extern MATRIX mat_y300;
+extern CMatrix mat_y0;
+extern CMatrix mat_y100;
+extern CMatrix mat_y200;
+extern CMatrix mat_y300;
 extern legacy_s32 direction_sector_sine_copy;
 extern legacy_s32 direction_sector_cosine_copy;
 extern legacy_s16 *rs_shape3d_legacy_render_wheel_headings;
 extern legacy_u16 rs_shape3d_legacy_render_polygon_frame_pointer;
 extern legacy_u16 rs_shape3d_legacy_render_polygon_code_segment;
-extern SHAPE3D_LEGACY_OPPONENT_RENDER_CONTEXT rs_shape3d_legacy_opponent_render_context;
+extern CShape3DLegacyOpponentRenderContext rs_shape3d_legacy_opponent_render_context;
 extern legacy_u16 fontdefseg;
-extern SPRITE rs_shape2d_blit_temple_background_contexts[4][2];
-extern GAMESTATE *rs_frame_frame_state;
-extern CARSTATE *rs_frame_frame_ghost;
-extern GHOST_CAMERA_STATE *rs_frame_frame_ghost_camera;
+extern CSprite rs_shape2d_blit_temple_background_contexts[4][2];
+extern CGameState *rs_frame_frame_state;
+extern CCarState *rs_frame_frame_ghost;
+extern CGhostCameraState *rs_frame_frame_ghost_camera;
 extern legacy_u8 rs_frame_frame_uses_snapshot;
-extern FRAME_SUPERSIGHT_TILE rs_frame_supersight_tiles[110];
+extern CFrameSupersightTile rs_frame_supersight_tiles[110];
 extern legacy_s8 rs_frame_supersight_detail_thresholds[7];
 extern legacy_s8 rs_frame_fence_by_edge[3][3];
 extern legacy_s16 rs_frame_supersight_attempt_hint;
@@ -3707,64 +3338,64 @@ extern legacy_u32 rs_frame_overlay_fps_last_presented;
 extern legacy_u16 rs_frame_overlay_fps_sample_frames;
 extern legacy_u16 rs_frame_overlay_fps_sample_value;
 extern legacy_u8 rs_frame_overlay_fps_sample_started;
-extern legacy_s8 rs_frame_overlay_supersight_status_text[(13 + (7 - 1))];
+extern legacy_s8 rs_frame_overlay_supersight_status_text[(13+(7-1))];
 extern legacy_u32 rs_frame_overlay_supersight_status_start;
 extern legacy_u8 rs_frame_overlay_supersight_status_active;
 extern legacy_u8 rs_frame_overlay_supersight_status_expired_pending;
 extern legacy_u8 rs_frame_overlay_supersight_status_clear_frames;
-extern RECTANGLE rs_frame_overlay_fps_present_bounds;
+extern CRectangle rs_frame_overlay_fps_present_bounds;
 extern legacy_u8 rs_frame_overlay_fps_present_pending;
 extern legacy_s16 rs_physics_grip_left_corner_bias_enabled;
-extern VECTOR rs_opponent_legacy_null_track_vectors[256];
-extern TRKOBJINFO rs_opponent_legacy_null_track_info;
+extern CVector rs_opponent_legacy_null_track_vectors[256];
+extern CTrkObjInfo rs_opponent_legacy_null_track_info;
 extern legacy_u8 rs_track_setup_track_entry_points_northwest[4];
 extern legacy_u8 rs_track_setup_track_entry_points_north[4];
 extern legacy_u8 rs_track_setup_track_entry_points_west[4];
 extern legacy_u8 rs_track_setup_track_entry_points_owner[4];
 extern legacy_u8 rs_track_setup_track_start_finish_elements[4][3];
-extern TRACK_SETUP_STEP rs_track_setup_track_setup_steps[13];
+extern CTrackSetupStep rs_track_setup_track_setup_steps[13];
 extern legacy_u16 rs_track_setup_plan_track_route[18];
 extern legacy_u32 rs_stateply_player_motion_fraction;
-extern GAMESTATE *rs_stateply_player_motion_state;
+extern CGameState *rs_stateply_player_motion_state;
 extern legacy_s16 rs_physics_collision_legacy_collision_enabled;
-extern COLLISION_MODEL rs_physics_collision_collision_models[5];
+extern CCollisionModel rs_physics_collision_collision_models[5];
 extern legacy_s16 rs_statecar_powergear_bug_enabled;
-extern legacy_s8 corkFlag;
-extern legacy_s16 loopSurface_ZBounds0[6];
-extern legacy_s16 loopSurface_ZBounds1[6];
-extern legacy_s16 loopSurface_maxZ;
-extern legacy_s16 loopSurface_XBounds0[6];
-extern legacy_s16 loopSurface_XBounds1[6];
-extern legacy_s16 loopBase_ZBounds0[6];
-extern legacy_s16 loopBase_ZBounds1[6];
-extern legacy_s16 loopBae_InnXBounds0[6];
-extern legacy_s16 loopBase_InnXBounds1[6];
-extern legacy_s16 loopBase_OutXBounds0[6];
-extern legacy_s16 loopBase_OutXBounds1[6];
-extern legacy_s16 bkRdEntr_triang_zAdjust[4];
-extern legacy_s16 corkLR_negZBound[12];
-extern legacy_s16 corkLR_posZBound[12];
-extern legacy_s16 highEntrZBounds0[6];
-extern legacy_s16 highEntrZBounds1[6];
-extern legacy_s16 highEntrXInnBounds0[6];
-extern legacy_s16 highEntrXInnBounds1[6];
-extern legacy_s16 highEntrXOutBounds0[6];
-extern legacy_s16 highEntrXOutBounds1[6];
-extern TRACK_OBJECT_HANDLER rs_trackobj_track_object_handlers[39];
-extern VECTOR rs_owoot_wheels_wheel_controls[4][6];
+extern legacy_s8 cork_flag;
+extern legacy_s16 loop_surface_z_bounds0[6];
+extern legacy_s16 loop_surface_z_bounds1[6];
+extern legacy_s16 loop_surface_max_z;
+extern legacy_s16 loop_surface_x_bounds0[6];
+extern legacy_s16 loop_surface_x_bounds1[6];
+extern legacy_s16 loop_base_z_bounds0[6];
+extern legacy_s16 loop_base_z_bounds1[6];
+extern legacy_s16 loop_bae_inn_x_bounds0[6];
+extern legacy_s16 loop_base_inn_x_bounds1[6];
+extern legacy_s16 loop_base_out_x_bounds0[6];
+extern legacy_s16 loop_base_out_x_bounds1[6];
+extern legacy_s16 bk_rd_entr_triang_z_adjust[4];
+extern legacy_s16 cork_lr_neg_z_bound[12];
+extern legacy_s16 cork_lr_pos_z_bound[12];
+extern legacy_s16 high_entr_z_bounds0[6];
+extern legacy_s16 high_entr_z_bounds1[6];
+extern legacy_s16 high_entr_x_inn_bounds0[6];
+extern legacy_s16 high_entr_x_inn_bounds1[6];
+extern legacy_s16 high_entr_x_out_bounds0[6];
+extern legacy_s16 high_entr_x_out_bounds1[6];
+extern CTrackObjectHandler rs_trackobj_track_object_handlers[39];
+extern CVector rs_owoot_wheels_wheel_controls[4][6];
 extern legacy_s16 rs_owoot_wheels_ring_cos[16];
 extern legacy_s16 rs_owoot_wheels_ring_sin[16];
-extern OWOOT_ROAD_TRIANGLE rs_owoot_road_owoot_road_triangles[574];
-extern OWOOT_ROAD_MODEL rs_owoot_road_owoot_road_models[37];
-extern OWOOT_CONNECTION_EDGE rs_owoot_route_jump_edges[13];
+extern COwootRoadTriangle rs_owoot_road_owoot_road_triangles[574];
+extern COwootRoadModel rs_owoot_road_owoot_road_models[37];
+extern COwootConnectionEdge rs_owoot_route_jump_edges[13];
 extern legacy_s8 rs_command_line_command_line_version_prefix[38];
 extern legacy_s8 rs_command_line_command_line_revision[9];
 extern legacy_s8 rs_command_line_command_line_version_suffix[17];
 extern legacy_s8 rs_command_line_command_line_help[161];
 extern legacy_u16 legacy_divide_fault_segment;
 extern legacy_u16 legacy_divide_fault_offset;
-extern VECTOR rs_headless_trackdata_legacy_track_vectors[574];
-extern TRKOBJINFO rs_headless_trackdata_legacy_track_info[120];
+extern CVector rs_headless_trackdata_legacy_track_vectors[574];
+extern CTrkObjInfo rs_headless_trackdata_legacy_track_info[120];
 extern legacy_u16 full_screen_line_offsets[200];
 extern legacy_s8 full_empty_extension[1];
 extern legacy_u8 rs_full_tables_sphere_radii_data[780];

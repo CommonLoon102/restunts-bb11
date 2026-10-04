@@ -7,11 +7,11 @@
 
 legacy_void RestuntsBuildCD()
 {
-	legacy_s64 blocks = RedSeaISO(TEMPLE_PACKAGE_IMAGE, TEMPLE_PACKAGE_SOURCE);
-	if (blocks <= 0 || !FileFind(TEMPLE_PACKAGE_IMAGE)) {
-		throw(TEMPLE_PACKAGE_EXCEPTION);
-	}
-	Print("Restunts RedSea CD created: %d blocks.\n", blocks);
+  legacy_s64 blocks=RedSeaISO(TEMPLE_PACKAGE_IMAGE,TEMPLE_PACKAGE_SOURCE);
+  if(blocks<=0||!FileFind(TEMPLE_PACKAGE_IMAGE)) {
+    throw(TEMPLE_PACKAGE_EXCEPTION);
+  }
+  Print("Restunts RedSea CD created: %d blocks.\n",blocks);
 }
 
 RestuntsBuildCD();

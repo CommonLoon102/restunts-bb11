@@ -11,6 +11,8 @@ import argparse
 import ast as python_ast
 import copy
 import hashlib
+import importlib.machinery
+import importlib.util
 import json
 from pathlib import Path
 import re
@@ -21,6 +23,10 @@ import tempfile
 from pycparser import c_ast as A, c_parser
 
 HERE = Path(__file__).resolve().parent.parent
+STYLE_LOADER = importlib.machinery.SourceFileLoader("temple_style", str(HERE / "tools/STYLE.PY"))
+STYLE_SPEC = importlib.util.spec_from_loader(STYLE_LOADER.name, STYLE_LOADER)
+STYLE = importlib.util.module_from_spec(STYLE_SPEC)
+STYLE_LOADER.exec_module(STYLE)
 ROOT = HERE.parents[3]
 C_DIR = ROOT / "src/restunts/c"
 GEN = HERE / "generated"
@@ -237,10 +243,13 @@ class Model:
         self.external_used = set()
         self.serial = 0
         self.data_initializers = []
+        self.name_map = {}
 
     def unique(self, name="tmp"):
         self.serial += 1
-        return f"temple_{name}_{self.serial}"
+        result = f"temple_{name}_{self.serial}"
+        add_name(self.name_map, result, STYLE.snake_case(result))
+        return result
 
     def collect(self, ast, module):
         rename = {}
@@ -288,6 +297,72 @@ class Model:
                 self.aliases.setdefault(node.name, node.type)
         for _, child in node.children():
             self.scan_types(child)
+
+
+def add_name(mapping, original, styled):
+    previous = mapping.get(original)
+    if previous is not None and previous != styled:
+        raise ValueError(f"Conflicting HolyC names for {original}: {previous} and {styled}")
+    mapping[original] = styled
+
+
+def check_name_collisions(names, mapping, scope):
+    originals = {}
+    for name in names:
+        styled = mapping.get(name, name)
+        previous = originals.setdefault(styled, name)
+        if previous != name:
+            raise ValueError(f"HolyC name collision in {scope}: {previous} and {name} become {styled}")
+
+
+def build_name_map(model):
+    """Keep C symbols for semantic analysis; name only the emitted HolyC tokens.
+
+    Static symbols already carry their translation-unit prefix and local
+    storage carries a unique serial. Validate the remaining shared and member
+    namespaces before writing any output, so a new C name cannot silently bind
+    to a different HolyC declaration after case/underscore normalization.
+    """
+    mapping = model.name_map
+    # Enum values become preprocessor constants. Reserve their original
+    # spelling so a same-named member/type cannot silently rewrite the macro.
+    for name in model.enums:
+        add_name(mapping, name, name)
+    functions = {name for name, (decl, _, definition) in model.functions.items()
+                 if definition or "/include/" not in str(decl.coord.file)}
+    for name in functions:
+        add_name(mapping, name, STYLE.function_name(name))
+    for name in model.classes:
+        add_name(mapping, name, STYLE.class_name(name))
+    for name in set(model.global_decls) | set(model.global_defs):
+        add_name(mapping, name, STYLE.snake_case(name))
+
+    def fields(cls):
+        names = []
+        for field in cls.decls or []:
+            if field.name:
+                add_name(mapping, field.name, STYLE.snake_case(field.name))
+                names.append(field.name)
+            elif isinstance(field.type, (A.Struct, A.Union)):
+                names += fields(field.type)
+        check_name_collisions(names, mapping, "class " + cls.name)
+        return names
+
+    for cls in model.classes.values():
+        fields(cls)
+    for name, (decl, _, _) in model.functions.items():
+        names = []
+        for arg in decl.type.args.params if decl.type.args else []:
+            if isinstance(arg, A.Decl) and arg.name:
+                add_name(mapping, arg.name, STYLE.snake_case(arg.name))
+                add_name(mapping, "temple_value_" + arg.name,
+                         "temple_value_" + STYLE.snake_case(arg.name))
+                names.append(arg.name)
+        check_name_collisions(names, mapping, "parameters of " + name)
+    check_name_collisions(functions | set(model.classes) |
+                          set(model.global_decls) | set(model.global_defs) |
+                          set(model.enums), mapping, "global scope")
+    return mapping
 
 
 class Generator:
@@ -554,8 +629,13 @@ class Generator:
             return [], ""
         if isinstance(n, A.ID):
             name = self.lookup(n.name)
-            if name in self.m.functions and not direct_call:
-                name = "&" + name
+            if name in self.m.functions:
+                # Fake libc declarations are not emitted unless used. Their
+                # unused names can also be valid class members (for example
+                # the track interval's exit field).
+                add_name(self.m.name_map, name, STYLE.function_name(name))
+                if not direct_call:
+                    name = "&" + name
             return [], name
         if isinstance(n, A.Constant):
             v = n.value
@@ -982,10 +1062,17 @@ def indent(lines):
     return ["\t" + line if line else line for line in lines]
 
 
-def write(name, lines):
+def output_text(lines, name, name_map=None, formatter=None):
     data = "\n".join(lines).rstrip() + "\n"
-    if FORMATTER and name.endswith((".HC", ".HH")):
-        data = subprocess.run([FORMATTER, "--style=file", "--assume-filename=" + str(GEN / (name + ".c"))], input=data, text=True, capture_output=True, check=True).stdout
+    if name_map:
+        data = STYLE.rename_identifiers(data, name_map)
+    if name.endswith((".HC", ".HH")):
+        data = STYLE.format_source(data, formatter, GEN / name)
+    return data
+
+
+def write(name, lines, name_map=None):
+    data = output_text(lines, name, name_map, FORMATTER)
     encoded = data.replace("\r\n", "\n").replace("\n", "\r\n").encode()
     destination = GEN / name
     if CHECK:
@@ -1018,6 +1105,7 @@ def translate(cpp):
             model.collect(ast, module)
             print("Parsed", module, flush=True)
     GEN.mkdir(parents=True, exist_ok=True)
+    name_map = build_name_map(model)
     header = ["// Generated by tools/TRANSLATE.PY. Edit the C source or translator.", ""]
     g = Generator(model)
     types = list(header)
@@ -1045,7 +1133,7 @@ def translate(cpp):
         types.extend(indent(g.class_fields(cls)) + ["};", ""])
     for name in model.classes:
         emit_class(name)
-    write("TYPES.HH", types)
+    write("TYPES.HH", types, name_map)
     casts = list(header)
     cast_prototypes = []
     for width in (8, 16, 32):
@@ -1070,18 +1158,18 @@ def translate(cpp):
             signature = f"{typ} {name}{'S' if signed else 'U'}64({typ} dividend, {typ} divisor)"
             cast_prototypes.append("extern " + signature + ";")
             casts += [signature, "{", f"\treturn dividend {operator} divisor;", "}", ""]
-    write("CASTS.HC", casts)
+    write("CASTS.HC", casts, name_map)
     decls = list(header) + cast_prototypes
     for name, (decl, rename, definition) in model.functions.items():
         if definition or "/include/" not in str(decl.coord.file):
             decls.append("extern " + Generator(model, rename).prototype(decl.type, name) + ";")
     for name, (decl, rename) in model.global_decls.items():
         decls.append("extern " + Generator(model, rename).decl(decl.type, name) + ";")
-    write("DECLS.HH", decls)
+    write("DECLS.HH", decls, name_map)
     data = list(header)
     for name, (decl, rename) in model.global_defs.items():
         data += Generator(model, rename).global_storage(decl, name)
-    write("DATA.HC", data)
+    write("DATA.HC", data, name_map)
     includes = list(header) + ['#include "generated/CASTS.HC"']
     for module, ast, rename in model.units:
         lines = list(header)
@@ -1091,24 +1179,26 @@ def translate(cpp):
                     continue
                 name = rename.get(item.decl.name, item.decl.name)
                 lines += Generator(model, rename).function(item, name)
-        write(module.upper() + ".HC", lines)
+        write(module.upper() + ".HC", lines, name_map)
         includes.append(f'#include "generated/{module.upper()}.HC"')
     includes.append('#include "generated/DATA_INIT.HC"')
-    write("DATA_INIT.HC", header + model.data_initializers)
+    write("DATA_INIT.HC", header + model.data_initializers, name_map)
     write("ALL.HC", includes)
     external = []
     for name in sorted(model.external_used):
         item = model.functions.get(name)
         external.append(Generator(model).prototype(item[0].type, LIBC.get(name, name)) + ";" if item else "// Native hook: " + name)
-    write("EXTERNALS.TXT", header + external)
+    write("EXTERNALS.TXT", header + external, name_map)
+    write("NAMES.JSON", [json.dumps({name: styled for name, styled in sorted(name_map.items())
+                                     if name != styled}, indent=2)])
     native_source = "\n".join(path.read_text() for path in HERE.glob("*.HC")
                               if not path.name.startswith("TEST_"))
     missing = [name for name in sorted(model.external_used)
-               if not re.search(r"\b" + re.escape(LIBC.get(name, name)) +
+               if not re.search(r"\b" + re.escape(name_map.get(name, LIBC.get(name, name))) +
                                 r"\s*\([^;{}]*\)\s*\{", native_source)]
     if missing:
         raise ValueError("Missing native function implementations: " + ", ".join(missing))
-    manifest = {"modules": [x[0] for x in model.units], "functions": sum(1 for x in model.functions.values() if x[2]), "classes": len(model.classes), "external": sorted(model.external_used)}
+    manifest = {"modules": [x[0] for x in model.units], "functions": sum(1 for x in model.functions.values() if x[2]), "classes": len(model.classes), "external": sorted(name_map.get(name, name) for name in model.external_used)}
     write("MANIFEST.JSON", [json.dumps(manifest, indent=2)])
     print(json.dumps({k:v for k,v in manifest.items() if k != "external"}))
 

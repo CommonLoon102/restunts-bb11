@@ -1,7 +1,7 @@
 # Project C sources/headers and C# tools. CRLF matches .gitattributes.
 root = true
 
-[src/**.{c,h,HC,HH}]
+[src/**.{c,h}]
 charset = utf-8
 indent_style = tab
 indent_size = 4
@@ -12,6 +12,17 @@ trim_trailing_whitespace = true
 max_line_length = 100
 
 # C layout and mandatory braces are configured in .clang-format.
+
+# TempleOS HolyC uses two-column nesting and compact expression spacing.
+[src/**.{HC,HH}]
+charset = utf-8
+indent_style = space
+indent_size = 2
+tab_width = 8
+end_of_line = crlf
+insert_final_newline = true
+trim_trailing_whitespace = true
+max_line_length = 100
 
 [*.cs]
 charset = utf-8

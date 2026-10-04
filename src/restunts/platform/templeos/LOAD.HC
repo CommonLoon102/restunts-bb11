@@ -19,46 +19,46 @@
 
 #define TEMPLE_LAUNCH_ARGUMENT_CAPACITY 2
 
-legacy_s16 Restunts(legacy_u8 *data_directory = "C:/DATA", legacy_u8 skip_intro = FALSE)
+legacy_s16 Restunts(legacy_u8 *data_directory="C:/DATA",legacy_u8 skip_intro=FALSE)
 {
-	legacy_u8 *previous_directory = StrNew(Fs->cur_dir);
-	legacy_u8 previous_drive = Fs->cur_dv->drv_let;
-	legacy_s8 *arguments[TEMPLE_LAUNCH_ARGUMENT_CAPACITY];
-	legacy_s16 argument_count = 1;
-	legacy_u8 *restore_directory;
-	if (!Cd(data_directory)) {
-		PrintErr("Cannot open Restunts data directory: %s\n", data_directory);
-		Free(previous_directory);
-		return 1;
-	}
-	arguments[0] = "RESTUNTS";
-	if (skip_intro) {
-		arguments[argument_count++] = "--nointro";
-	}
-	temple_exit_status = 0;
-	try {
-		full_data_initialize();
-		TempleMaterialInit();
-		audiodriverstring[0] = 'p';
-		audiodriverstring[1] = 'c';
-		temple_exit_status = run_main_menu_loop(argument_count, arguments);
-	} catch {
-		if (Fs->except_ch == TEMPLE_EXIT_EXCEPTION) {
-			Fs->catch_except = TRUE;
-		} else {
-			Fs->catch_except = TRUE;
-			temple_exit_status = 1;
-			PutExcept();
-		}
-	}
-	dos_timer_shutdown();
-	dos_audio_shutdown();
-	TempleFileShutdown();
-	TempleVideoShutdown();
-	kb_exit_handler();
-	restore_directory = MStrPrint("%c:%s", previous_drive, previous_directory);
-	Cd(restore_directory);
-	Free(restore_directory);
-	Free(previous_directory);
-	return temple_exit_status;
+  legacy_u8 *previous_directory=StrNew(Fs->cur_dir);
+  legacy_u8 previous_drive=Fs->cur_dv->drv_let;
+  legacy_s8 *arguments[TEMPLE_LAUNCH_ARGUMENT_CAPACITY];
+  legacy_s16 argument_count=1;
+  legacy_u8 *restore_directory;
+  if(!Cd(data_directory)) {
+    PrintErr("Cannot open Restunts data directory: %s\n",data_directory);
+    Free(previous_directory);
+    return 1;
+  }
+  arguments[0]="RESTUNTS";
+  if(skip_intro) {
+    arguments[argument_count++]="--nointro";
+  }
+  temple_exit_status=0;
+  try {
+    RsFullDataInitialize();
+    TempleMaterialInit();
+    audiodriverstring[0]='p';
+    audiodriverstring[1]='c';
+    temple_exit_status=RsRunMainMenuLoop(argument_count,arguments);
+  } catch {
+    if(Fs->except_ch==TEMPLE_EXIT_EXCEPTION) {
+      Fs->catch_except=TRUE;
+    } else {
+      Fs->catch_except=TRUE;
+      temple_exit_status=1;
+      PutExcept();
+    }
+  }
+  RsDosTimerShutdown();
+  RsDosAudioShutdown();
+  TempleFileShutdown();
+  TempleVideoShutdown();
+  RsKbExitHandler();
+  restore_directory=MStrPrint("%c:%s",previous_drive,previous_directory);
+  Cd(restore_directory);
+  Free(restore_directory);
+  Free(previous_directory);
+  return temple_exit_status;
 }

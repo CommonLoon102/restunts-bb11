@@ -117,20 +117,20 @@ def guest_wrapper(entry):
 #define legacy_vm_void U0
 legacy_vm_void RestuntsVmLog(legacy_vm_u8 *message)
 {
-\twhile (*message) {
-\t\tOutU8(RESTUNTS_VM_DEBUG_PORT, *message++);
-\t}
+  while(*message) {
+    OutU8(RESTUNTS_VM_DEBUG_PORT,*message++);
+  }
 }
 RestuntsVmLog("RESTUNTS_VM_START\\n");
 try {
-\tCd("C:/PORT");
-\tExeFile2("%s");
-\tRestuntsVmLog("RESTUNTS_VM_PASS\\n");
+  Cd("C:/PORT");
+  ExeFile2("%s");
+  RestuntsVmLog("RESTUNTS_VM_PASS\\n");
 } catch {
-\tFs->catch_except = TRUE;
-\tRestuntsVmLog("RESTUNTS_VM_FAIL\\n");
+  Fs->catch_except=TRUE;
+  RestuntsVmLog("RESTUNTS_VM_FAIL\\n");
 }
-legacy_vm_u8 *restunts_vm_output = DocSave(DocPut);
+legacy_vm_u8 *restunts_vm_output=DocSave(DocPut);
 RestuntsVmLog(restunts_vm_output);
 Free(restunts_vm_output);
 RestuntsVmLog("\\nRESTUNTS_VM_DONE\\n");
@@ -177,7 +177,7 @@ def make_disk(args, work):
     if args.data:
         subprocess.run([mcopy, "-s", "-i", disk_spec, str(args.data.resolve()), "::/DATA"], check=True)
     wrapper = work / "VMRUN.HC"
-    wrapper.write_text(guest_wrapper(args.entry), encoding="ascii")
+    wrapper.write_bytes(guest_wrapper(args.entry).replace("\n", "\r\n").encode("ascii"))
     subprocess.run([mcopy, "-i", disk_spec, str(wrapper), "::/VMRUN.HC"], check=True)
     return image
 

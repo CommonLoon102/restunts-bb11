@@ -1363,13 +1363,51 @@ git ls-files -z 'src/*.c' 'src/*.h' | xargs -0 -r clang-format -i
 
 For an individual file, use `clang-format -i path/to/file.c`. Add new files to
 Git before running the commands based on `git ls-files`. CI runs both checks
-for pull requests and before releases. No project-specific formatter or checker
+for pull requests and before releases. No project-specific C formatter or checker
 script is needed.
 
 Braces are required even where clang-format cannot insert them automatically,
 including macro bodies, empty loops, and bodies spanning preprocessor
 branches. Review those cases manually; a successful clang-format check does
 not prove that those cases have braces.
+
+## HolyC coding style
+
+Project `.HC` and `.HH` files follow the naming conventions in Terry Davis's
+[TempleOS glossary](https://github.com/cia-foundation/TempleOS/blob/archive/Doc/Glossary.DD)
+and the compact layout of his HolyC sources. Use two spaces per indentation
+level, a 100-column target, and CRLF line endings. Spaces preserve the two-column
+nesting without depending on the eight-column tab stops used by TempleOS.
+Put function and class opening braces on their own line and control-flow
+opening braces on the control line. Retain existing braced bodies; a style
+change must not rewrite control flow.
+
+Use `MixedCaps` for functions, `C`-prefixed `MixedCaps` for classes, and
+`lower_case` for parameters, local variables, globals, and class members.
+Keep constants in `ALL_CAPS`. Project code retains the `legacy_*` types and
+named constants. Compact expression and argument spacing as in `x=y+z` and
+`Fun(src,dst)`; keep pointer declarations readable as `legacy_u8 *src`.
+Translated shared C functions have an `Rs` prefix to avoid collisions with
+HolyC built-ins. Existing `Temple*`, `Test*`, and `Restunts` entry points retain
+their names.
+
+The port's `.clang-format` and `tools/STYLE.PY` define the HolyC layout separately
+from the C rules above. The script uses clang-format 18.1.8, then compacts
+horizontal whitespace while preserving language tokens. With the formatter
+installed as described in the
+[port README](src/restunts/platform/templeos/README.TXT), run:
+
+```sh
+python3 src/restunts/platform/templeos/tools/STYLE.PY \
+    --formatter /tmp/restunts-templeos-env/bin/clang-format --check
+```
+
+Omit `--check` to apply formatting. Optional file paths limit the operation;
+without paths it includes all `.HC` and `.HH` files in the port, including
+`generated/`. The style tool formats whitespace; it does not rename symbols.
+Change shared C code or `tools/TRANSLATE.PY` and regenerate generated sources
+instead of editing them by hand. The translator emits the same layout and
+`generated/NAMES.JSON`, which maps shared C names to their HolyC names.
 
 ## C# coding style
 

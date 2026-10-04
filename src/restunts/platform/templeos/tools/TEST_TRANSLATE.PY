@@ -17,12 +17,14 @@ TRANSLATE = importlib.util.module_from_spec(SPEC)
 LOADER.exec_module(TRANSLATE)
 A = TRANSLATE.A
 
+# Mixed-case C locals, globals, and members exercise the HolyC name conversion
+# while the host oracle verifies the same arithmetic and storage semantics.
 FIXTURE = r'''
 #include "legacy.h"
 enum TranslationEnum { TranslationNegative = -1 };
 struct TranslationPair { legacy_u16 first; legacy_s16 second; };
-struct TranslationPacked { legacy_s8 value; legacy_u8 neighbor; legacy_u16 word; legacy_u32 dword; };
-static struct TranslationPacked translation_packed = {8, 56, 4660, 3735928559U};
+struct TranslationPacked { legacy_s8 value; legacy_u8 neighbor; legacy_u16 word; legacy_u32 doubleWord; };
+static struct TranslationPacked translationPacked = {8, 56, 4660, 3735928559U};
 struct TranslationUnion { union { legacy_u32 unsigned_value; legacy_s32 signed_value; }; };
 static legacy_u16 translation_zero_words[7];
 static legacy_u16 translation_zero;
@@ -52,7 +54,7 @@ static legacy_s16 (*translation_callbacks[2])(legacy_s16) = {TranslationInc, Tra
 legacy_s32 TranslationSemantics(void)
 {
     legacy_u16 word = 65535U;
-    legacy_s16 signed_word = 32767;
+    legacy_s16 signedWord = 32767;
     legacy_u32 dword = 4294967295U;
     legacy_s32 sign = (legacy_s32)2147483648U;
     legacy_s32 side_effects = 0;
@@ -66,7 +68,7 @@ legacy_s32 TranslationSemantics(void)
     if ((legacy_u16)65536U != 0 || (legacy_s16)65535U != -1) { return 2; }
     if ((legacy_s32)4294967295U != -1) { return 3; }
     if (word++ != 65535U || word != 0) { return 4; }
-    if (signed_word++ != 32767 || signed_word != -32768) { return 5; }
+    if (signedWord++ != 32767 || signedWord != -32768) { return 5; }
     word -= 1;
     dword += 2;
     if (word != 65535U || dword != 1) { return 6; }
@@ -122,18 +124,18 @@ legacy_s32 TranslationSemantics(void)
     selected %= 4;
     if (selected != -3 || (legacy_s16)-7 / -2 != 3) { return 33; }
     if (translation_pairs->first != 1) { return 34; }
-    signed_word = -1;
-    signed_word++;
-    if (signed_word != 0) { return 35; }
-    signed_word = -2;
-    signed_word += 3;
-    if (signed_word != 1) { return 36; }
+    signedWord = -1;
+    signedWord++;
+    if (signedWord != 0) { return 35; }
+    signedWord = -2;
+    signedWord += 3;
+    if (signedWord != 1) { return 36; }
     sign = -1;
     sign++;
     if (sign != 0) { return 37; }
     if (TranslationNegative != 4294967295U) { return 38; }
-    signed_word = TranslationByteResult();
-    if (signed_word != -1 || TranslationByteResult() != -1) { return 39; }
+    signedWord = TranslationByteResult();
+    if (signedWord != -1 || TranslationByteResult() != -1) { return 39; }
     translation_pairs->second = -1;
     if (translation_pairs->second != 4294967295U) { return 40; }
     selected = 1 || TranslationEffect();
@@ -146,21 +148,21 @@ legacy_s32 TranslationSemantics(void)
     if (selected != 1 || translation_effects != 1) { return 45; }
     selected = 1 && TranslationEffect();
     if (selected != 1 || translation_effects != 2) { return 46; }
-    if ((legacy_u64)translation_packed.value != 8) { return 47; }
-    translation_packed.value = -1;
-    if ((legacy_u64)translation_packed.value != 18446744073709551615ULL) { return 48; }
-    translation_packed.dword = 4294967295U;
-    if ((legacy_s64)(legacy_s32)translation_packed.dword != -1) { return 49; }
-    translation_packed.value = 8;
+    if ((legacy_u64)translationPacked.value != 8) { return 47; }
+    translationPacked.value = -1;
+    if ((legacy_u64)translationPacked.value != 18446744073709551615ULL) { return 48; }
+    translationPacked.doubleWord = 4294967295U;
+    if ((legacy_s64)(legacy_s32)translationPacked.doubleWord != -1) { return 49; }
+    translationPacked.value = 8;
     word = 0;
-    word += translation_packed.value * sizeof(struct TranslationPair) + 6U;
+    word += translationPacked.value * sizeof(struct TranslationPair) + 6U;
     if (word != 38) { return 50; }
     return 0;
 }
 '''
 
 
-def build(output):
+def build(output, formatter=None):
     with tempfile.TemporaryDirectory(prefix="restunts-translation-tests-") as directory:
         directory = Path(directory)
         source = directory / "semantics.c"
@@ -177,6 +179,7 @@ def build(output):
         ast = TRANSLATE.c_parser.CParser().parse(preprocessed)
     model = TRANSLATE.Model()
     model.collect(ast, "semantics")
+    name_map = TRANSLATE.build_name_map(model)
     generator = TRANSLATE.Generator(model)
     lines = ['#include "LEGACY.HH"', '#include "generated/CASTS.HC"']
     for name, value in model.enums.items():
@@ -197,11 +200,14 @@ def build(output):
     lines += ['legacy_s32 translation_result = TranslationSemantics();',
               'Print("Translation semantics result: %d\\n", translation_result);',
               'if (translation_result) { throw(\'TestFail\'); }']
-    output.write_bytes(("\n".join(lines) + "\n").replace("\n", "\r\n").encode())
+    text = TRANSLATE.output_text(lines, output.name, name_map, formatter)
+    output.write_bytes(text.replace("\r\n", "\n").replace("\n", "\r\n").encode())
     print("Host C oracle passed; wrote", output)
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("output", type=Path)
-    build(parser.parse_args().output)
+    parser.add_argument("--formatter", help="Path to clang-format 18.1.8")
+    args = parser.parse_args()
+    build(args.output, args.formatter)

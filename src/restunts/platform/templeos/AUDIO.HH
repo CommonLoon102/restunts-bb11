@@ -36,7 +36,7 @@
 #define TEMPLE_PC_VOICE_EFFECT_FIRST 5
 #define TEMPLE_PC_VOICE_EFFECT_SECOND 6
 #define TEMPLE_PC_SAMPLE_RATE 17000
-#define TEMPLE_PC_SAMPLE_FRAME (TEMPLE_PC_PIT_HZ / TEMPLE_PC_SAMPLE_RATE)
+#define TEMPLE_PC_SAMPLE_FRAME (TEMPLE_PC_PIT_HZ/TEMPLE_PC_SAMPLE_RATE)
 #define TEMPLE_PC_SAMPLE_PULSE_MINIMUM 5
 #define TEMPLE_PC_SAMPLE_DATA_OFFSET 50
 #define TEMPLE_PC_SAMPLE_LENGTH_OFFSET 8
@@ -56,11 +56,11 @@
 #define TEMPLE_PC_DRIVER_CURRENT_LOW 3
 #define TEMPLE_PC_DRIVER_CURRENT_HIGH 4
 
-class TEMPLE_PC_VOICE
+class CTemplePcVoice
 {
-	AUDIO_CHANNEL *channel;
-	legacy_u16 base_period, period;
-	legacy_u8 note, volume, active;
+  CAudioChannel *channel;
+  legacy_u16 base_period,period;
+  legacy_u8 note,volume,active;
 };
 
 extern legacy_void TempleAudioShutdown();
