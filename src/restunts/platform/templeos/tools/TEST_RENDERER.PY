@@ -68,6 +68,7 @@ legacy_void *dos_memory_make_pointer(legacy_u16 segment, legacy_u16 offset) {ret
 legacy_u16 dos_memory_pointer_segment(legacy_void *p) {return ((legacy_u8*)p-arena)/16;}
 legacy_s16 mmgr_get_chunk_size(legacy_void *p) {(void)p;return 4096;}
 '''
+polygon_tests = "#define TestAssert assert\n" + (root / "TEST_POLYGON.HC").read_text()
 tests=r'''
 legacy_int main(legacy_void) {
  TemplePaletteInit();
@@ -88,7 +89,7 @@ legacy_int main(legacy_void) {
  SPRITE background={arena+0x20000,rows,320,0,200,0,320};TempleRasterRegisterSprite(&background);
  video_pages_copy_span(background.sprite_bitmapptr,9,drawing_sprite.sprite_bitmapptr,5,1);assert(!memcmp(saved,TempleRasterFind(background.sprite_bitmapptr)->samples+9*6,sizeof(saved)));
  video_pages_write_pixel(drawing_sprite.sprite_bitmapptr,5,2);video_pages_copy_span(drawing_sprite.sprite_bitmapptr,5,background.sprite_bitmapptr,9,1);assert(!memcmp(saved,cell,sizeof(saved)));
- CDC dc={calloc(640*480,1),640};TempleRasterPresent(&dc);for(legacy_int i=0;i<640*480;i++)assert(dc.body[i]<16);free(dc.body);
+ CDC dc={calloc(640*480,1),640};TempleRasterPresent(&dc);for(legacy_int i=0;i<640*480;i++)assert(dc.body[i]<16);TestPolygonSharedEdges(&dc);free(dc.body);
  for(legacy_int y=0;y<480;y++){legacy_int ly=((y+1)*5-1)/12;assert(TempleRasterY(ly)<=y&&TempleRasterY(ly+1)>y);}
  legacy_u8 *res=arena+0x30000;res[4]=1;memcpy(res+6,"!eg0",4);res[14]=0;res[15]=1;res[16]=1;for(legacy_int i=0;i<256;i++)res[30+i]=i;
  TempleRasterResource(res);assert(TempleRasterPairs(res+30)[127]==127);
@@ -110,7 +111,7 @@ prefix = prefix.replace("RESTUNTS_LEGACY_INCLUDE", str(root.parents[1] / "c" / "
 with tempfile.TemporaryDirectory(prefix="restunts-raster-") as directory:
     source = Path(directory) / "TEST.C"
     program = Path(directory) / "TEST"
-    source.write_text(prefix + s + tests, encoding="ascii")
+    source.write_text(prefix + s + polygon_tests + tests, encoding="ascii")
     subprocess.run([
         os.environ.get("CC", "cc"), "-x", "c", "-std=c99",
         "-fsanitize=address,undefined", "-g", "-O1", str(source), "-lm", "-o", str(program),

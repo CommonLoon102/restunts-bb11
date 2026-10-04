@@ -642,8 +642,12 @@ legacy_void TempleRasterPolygon(legacy_u16 color, legacy_u16 alternate, legacy_u
 		mode = TEMPLE_RASTER_PAINT_MASKED;
 		pattern = TEMPLE_RASTER_GHOST_PATTERN;
 	}
+	/* Match the fractional edges and pixel-center samples below. Flooring the
+	 * scaled bounds can leave an uncovered row between adjoining polygons. */
 	for (index = 0; index < count; index++) {
-		y = TempleRasterY(vertices[index].py);
+		y = ToI64(Ceil(ToF64(vertices[index].py) * TEMPLE_RASTER_Y_NUMERATOR /
+						   TEMPLE_RASTER_Y_DENOMINATOR -
+					   TEMPLE_RASTER_HALF));
 		top = MinI64(top, y);
 		bottom = MaxI64(bottom, y);
 	}

@@ -44,6 +44,8 @@ legacy_void TestAssert(legacy_s64 condition)
 	}
 }
 
+#include "TEST_POLYGON.HC"
+
 legacy_void TestPresentChanged(legacy_u8 changed)
 {
 	CDC *previous = temple_video_front;
@@ -183,6 +185,7 @@ legacy_void RasterTests()
 	for (i = 0; i < 640 * 480; i++) {
 		TestAssert(dc->body[i] < 16);
 	}
+	TestPolygonSharedEdges(dc);
 	DCDel(dc);
 	for (y = 0; y < 480; y++) {
 		ly = ((y + 1) * 5 - 1) / 12;
