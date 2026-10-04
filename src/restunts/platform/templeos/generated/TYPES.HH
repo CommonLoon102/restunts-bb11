@@ -136,9 +136,9 @@
 #define CRASH_EVENT_IMMEDIATE_STOP 5
 #define GAMESTATE_CHECKPOINT_INVALID 0
 #define GAMESTATE_CHECKPOINT_VALID 1
-#define FRAME_FPS_DISPLAY_OFF (-1 + 1)
-#define FRAME_FPS_DISPLAY_ON ((-1 + 1) + 1)
-#define FRAME_FPS_DISPLAY_MODE_COUNT (((-1 + 1) + 1) + 1)
+#define FRAME_FPS_DISPLAY_OFF (-1+1)
+#define FRAME_FPS_DISPLAY_ON ((-1+1)+1)
+#define FRAME_FPS_DISPLAY_MODE_COUNT (((-1+1)+1)+1)
 #define OPPONENT_ENGINE_LEGACY_TYPE 32
 #define PLAYER_ENGINE_LEGACY_TYPE 33
 #define GRIP_BEHAVIOR_OPPONENT 0
@@ -221,11 +221,11 @@
 #define MENU_BLIT_MODE_INITIAL 255
 #define FATAL_FORMAT_DECIMAL_RADIX 10
 #define FATAL_FORMAT_HEXADECIMAL_RADIX 16
-#define CUSTOM_CAMERA_PRESET_ORIGINAL (-1 + 1)
-#define CUSTOM_CAMERA_PRESET_CLOSE ((-1 + 1) + 1)
-#define CUSTOM_CAMERA_PRESET_NORMAL (((-1 + 1) + 1) + 1)
-#define CUSTOM_CAMERA_PRESET_FAR ((((-1 + 1) + 1) + 1) + 1)
-#define CUSTOM_CAMERA_PRESET_COUNT (((((-1 + 1) + 1) + 1) + 1) + 1)
+#define CUSTOM_CAMERA_PRESET_ORIGINAL (-1+1)
+#define CUSTOM_CAMERA_PRESET_CLOSE ((-1+1)+1)
+#define CUSTOM_CAMERA_PRESET_NORMAL (((-1+1)+1)+1)
+#define CUSTOM_CAMERA_PRESET_FAR ((((-1+1)+1)+1)+1)
+#define CUSTOM_CAMERA_PRESET_COUNT (((((-1+1)+1)+1)+1)+1)
 #define CREDITS_LINE_SHAPE 0
 #define CREDITS_LINE_TEXT 1
 #define HIGHSCORE_READ_RETRY_OPERATION 9
@@ -495,1367 +495,1367 @@
 #define PLANE_THREE_QUARTER_TURN_OFFSET 1
 #define PLANE_HALF_TURN_OFFSET 2
 #define PLANE_QUARTER_TURN_OFFSET 3
-#define TRACK_PIPE_LEFT_SIDE (-1 + 1)
-#define TRACK_PIPE_RIGHT_SIDE ((-1 + 1) + 1)
-#define TRACK_PIPE_CENTER (((-1 + 1) + 1) + 1)
-#define TRACK_PIPE_LEFT_OUTER ((((-1 + 1) + 1) + 1) + 1)
-#define TRACK_PIPE_LEFT_INNER (((((-1 + 1) + 1) + 1) + 1) + 1)
-#define TRACK_PIPE_RIGHT_OUTER ((((((-1 + 1) + 1) + 1) + 1) + 1) + 1)
-#define TRACK_PIPE_RIGHT_INNER (((((((-1 + 1) + 1) + 1) + 1) + 1) + 1) + 1)
-#define OWOOT_SCRATCH_ROUTE_DIRECTION (-1 + 1)
-#define OWOOT_SCRATCH_JUMP_SOURCE ((-1 + 1) + 1)
-#define OWOOT_SCRATCH_JUMP_TARGET (((-1 + 1) + 1) + 1)
-#define OWOOT_SCRATCH_JUMP_LAUNCH ((((-1 + 1) + 1) + 1) + 1)
-#define OWOOT_GATE_FLAT_LANE (-1 + 1)
-#define OWOOT_GATE_ROAD_SURFACE ((-1 + 1) + 1)
-#define OWOOT_GATE_TUNNEL (((-1 + 1) + 1) + 1)
-#define OWOOT_GATE_CORKSCREW_PHASE ((((-1 + 1) + 1) + 1) + 1)
-#define OWOOT_GATE_PIPE (((((-1 + 1) + 1) + 1) + 1) + 1)
+#define TRACK_PIPE_LEFT_SIDE (-1+1)
+#define TRACK_PIPE_RIGHT_SIDE ((-1+1)+1)
+#define TRACK_PIPE_CENTER (((-1+1)+1)+1)
+#define TRACK_PIPE_LEFT_OUTER ((((-1+1)+1)+1)+1)
+#define TRACK_PIPE_LEFT_INNER (((((-1+1)+1)+1)+1)+1)
+#define TRACK_PIPE_RIGHT_OUTER ((((((-1+1)+1)+1)+1)+1)+1)
+#define TRACK_PIPE_RIGHT_INNER (((((((-1+1)+1)+1)+1)+1)+1)+1)
+#define OWOOT_SCRATCH_ROUTE_DIRECTION (-1+1)
+#define OWOOT_SCRATCH_JUMP_SOURCE ((-1+1)+1)
+#define OWOOT_SCRATCH_JUMP_TARGET (((-1+1)+1)+1)
+#define OWOOT_SCRATCH_JUMP_LAUNCH ((((-1+1)+1)+1)+1)
+#define OWOOT_GATE_FLAT_LANE (-1+1)
+#define OWOOT_GATE_ROAD_SURFACE ((-1+1)+1)
+#define OWOOT_GATE_TUNNEL (((-1+1)+1)+1)
+#define OWOOT_GATE_CORKSCREW_PHASE ((((-1+1)+1)+1)+1)
+#define OWOOT_GATE_PIPE (((((-1+1)+1)+1)+1)+1)
 #define COMMAND_LINE_CONTINUE (-(1))
 #define COMMAND_LINE_SUCCESS 0
 #define COMMAND_LINE_FAILURE 1
 
-extern class RECTANGLE;
-extern class VECTOR;
-extern class VECTORLONG;
-extern class POINT2D;
-extern class MATRIX;
-extern class RsAnon_be2f5c5e6332;
-extern class RsAnon_81f0363c1695;
-extern class PLANE;
-extern class TRKOBJINFO;
-extern class TRACK_WALL;
-extern class TRACKOBJECT;
-extern class GAMEINFO;
-extern class CARSTATE;
-extern class GAMESTATE;
-extern class SIMD;
-extern class MEMCHUNK;
-extern class SHAPE2D;
-extern class SPRITE;
-extern class file_find_dos;
-extern class VLE_DECODER;
-extern class TRACK_COLLISION_SNAPSHOT;
-extern class BUTTON_AREA;
-extern class AUDIO_CAR_STATE;
-extern class FULL_AUDIO_ENGINE_DEFINITION;
-extern class LEGACY_EXECUTION_RESIDUE;
-extern class PHANTOM_PHYSICS;
-extern class SIMD_READER;
-extern class CUSTOM_CAMERA;
-extern class SHAPE3D;
-extern class TRANSFORMEDSHAPE3D;
-extern class SHAPE3D_LEGACY_OPPONENT_RENDER_CONTEXT;
-extern class TRACK_RESOURCE_READER;
-extern class AUDIO_FAR_POINTER;
-extern class AUDIO_ENGINE_DEFINITION;
-extern class AUDIO_TIMER;
-extern class AUDIO_CHANNEL;
-extern class AUDIO_CONTEXT;
-extern class GHOST_CAMERA_STATE;
-extern class STARTUP_OPTIONS;
-extern class FATAL_OUTPUT_STATE;
-extern class FATAL_CONVERSION;
-extern class MOUSE_TRACK_DRAG;
-extern class READ_LINE_STATE;
-extern class DIALOG_CONTENT;
-extern class FILE_DIALOG;
-extern class HIGHSCORE_ENTRY;
-extern class END_SCREEN_TEXT_LINE;
-extern class END_SCREEN_STATE;
-extern class RACE_VIEWPORT_CACHE;
-extern class RACE_REWIND_STATE;
-extern class GHOST_POSE;
-extern class SKYBOX;
-extern class DASHBOARD_UPDATE;
-extern class TRACK_MENU_STATE;
-extern class TRACK_EDITOR_MAP_CELL;
-extern class TRACK_EDITOR_SESSION;
-extern class OPPONENT_MENU_STATE;
-extern class CAR_MENU_STATE;
-extern class AUDIO_CONTEXT_SELECTION;
-extern class AUDIO_SONG_MAPPING;
-extern class AUDIO_CAR_POSITIONS;
-extern class audio_sequence_event;
-extern class SHAPE3D_TRANSFORM_CONTEXT;
-extern class SPHERE_RASTER;
-extern class POLYGON_RASTER;
-extern class SPRITE_LINE_DRAW;
-extern class SHAPE2D_SCALED_DRAW;
-extern class SHAPE2D_CLIP;
-extern class SHAPE2D_RLE_CURSOR;
-extern class SHAPE2D_PARSE_OUTPUT;
-extern class SHAPE2D_PARSE_RUN;
-extern class FRAME_LOOKAHEAD_TILE;
-extern class FRAME_SUPERSIGHT_TILE;
-extern class FRAME_CAMERA;
-extern class FRAME_TILE_SELECTION;
-extern class FRAME_CAR_RENDER;
-extern class FRAME_TILE;
-extern class INTRO_VIEW;
-extern class INTRO_SESSION;
-extern class PENALTY_ROUTE_SEARCH;
-extern class PENALTY_ROUTE_BOUNDS;
-extern class OPPONENT_GUIDANCE;
-extern class TRACK_SETUP_BRANCH;
-extern class TRACK_SETUP_STEP;
-extern class TRACK_SETUP_WALK;
-extern class PLAYER_WHEEL_MOTION;
-extern class COLLISION_MODEL;
-extern class CRASH_PARTICLE_EMISSION;
-extern class TRACK_OBJECT_SAMPLE;
-extern class TRACK_OBJECT_HANDLER;
-extern class TRACK_SOLID_BOX;
-extern class TRACK_CONTACT_RATIO;
-extern class TRACK_SOLID_INTERVAL;
-extern class OWOOT_ROAD_TRIANGLE;
-extern class OWOOT_ROAD_MODEL;
-extern class OWOOT_PROJECTED_POINT;
-extern class OWOOT_POINT;
-extern class OWOOT_BOUNDS;
-extern class OWOOT_TIRES;
-extern class OWOOT_GATE;
-extern class OWOOT_CONNECTION_EDGE;
-extern class GAMESTATE_WRITER;
-class RECTANGLE
+extern class CRectangle;
+extern class CVector;
+extern class CVectorLong;
+extern class CPoint2D;
+extern class CMatrix;
+extern class CRsAnonBe2f5c5e6332;
+extern class CRsAnon81f0363c1695;
+extern class CPlane;
+extern class CTrkObjInfo;
+extern class CTrackWall;
+extern class CTrackObject;
+extern class CGameInfo;
+extern class CCarState;
+extern class CGameState;
+extern class CSimd;
+extern class CMemChunk;
+extern class CShape2D;
+extern class CSprite;
+extern class CFileFindDos;
+extern class CVleDecoder;
+extern class CTrackCollisionSnapshot;
+extern class CButtonArea;
+extern class CAudioCarState;
+extern class CFullAudioEngineDefinition;
+extern class CLegacyExecutionResidue;
+extern class CPhantomPhysics;
+extern class CSimdReader;
+extern class CCustomCamera;
+extern class CShape3D;
+extern class CTransformedShape3D;
+extern class CShape3DLegacyOpponentRenderContext;
+extern class CTrackResourceReader;
+extern class CAudioFarPointer;
+extern class CAudioEngineDefinition;
+extern class CAudioTimer;
+extern class CAudioChannel;
+extern class CAudioContext;
+extern class CGhostCameraState;
+extern class CStartupOptions;
+extern class CFatalOutputState;
+extern class CFatalConversion;
+extern class CMouseTrackDrag;
+extern class CReadLineState;
+extern class CDialogContent;
+extern class CFileDialog;
+extern class CHighscoreEntry;
+extern class CEndScreenTextLine;
+extern class CEndScreenState;
+extern class CRaceViewportCache;
+extern class CRaceRewindState;
+extern class CGhostPose;
+extern class CSkybox;
+extern class CDashboardUpdate;
+extern class CTrackMenuState;
+extern class CTrackEditorMapCell;
+extern class CTrackEditorSession;
+extern class COpponentMenuState;
+extern class CCarMenuState;
+extern class CAudioContextSelection;
+extern class CAudioSongMapping;
+extern class CAudioCarPositions;
+extern class CAudioSequenceEvent;
+extern class CShape3DTransformContext;
+extern class CSphereRaster;
+extern class CPolygonRaster;
+extern class CSpriteLineDraw;
+extern class CShape2DScaledDraw;
+extern class CShape2DClip;
+extern class CShape2DRleCursor;
+extern class CShape2DParseOutput;
+extern class CShape2DParseRun;
+extern class CFrameLookaheadTile;
+extern class CFrameSupersightTile;
+extern class CFrameCamera;
+extern class CFrameTileSelection;
+extern class CFrameCarRender;
+extern class CFrameTile;
+extern class CIntroView;
+extern class CIntroSession;
+extern class CPenaltyRouteSearch;
+extern class CPenaltyRouteBounds;
+extern class COpponentGuidance;
+extern class CTrackSetupBranch;
+extern class CTrackSetupStep;
+extern class CTrackSetupWalk;
+extern class CPlayerWheelMotion;
+extern class CCollisionModel;
+extern class CCrashParticleEmission;
+extern class CTrackObjectSample;
+extern class CTrackObjectHandler;
+extern class CTrackSolidBox;
+extern class CTrackContactRatio;
+extern class CTrackSolidInterval;
+extern class COwootRoadTriangle;
+extern class COwootRoadModel;
+extern class COwootProjectedPoint;
+extern class COwootPoint;
+extern class COwootBounds;
+extern class COwootTires;
+extern class COwootGate;
+extern class COwootConnectionEdge;
+extern class CGameStateWriter;
+class CRectangle
 {
-	legacy_s16 left;
-	legacy_s16 right;
-	legacy_s16 top;
-	legacy_s16 bottom;
+  legacy_s16 left;
+  legacy_s16 right;
+  legacy_s16 top;
+  legacy_s16 bottom;
 };
 
-class VECTOR
+class CVector
 {
-	legacy_s16 x;
-	legacy_s16 y;
-	legacy_s16 z;
+  legacy_s16 x;
+  legacy_s16 y;
+  legacy_s16 z;
 };
 
-class VECTORLONG
+class CVectorLong
 {
-	legacy_s32 lx;
-	legacy_s32 ly;
-	legacy_s32 lz;
+  legacy_s32 lx;
+  legacy_s32 ly;
+  legacy_s32 lz;
 };
 
-class POINT2D
+class CPoint2D
 {
-	legacy_s16 px;
-	legacy_s16 py;
+  legacy_s16 px;
+  legacy_s16 py;
 };
 
-class RsAnon_81f0363c1695
+class CRsAnon81f0363c1695
 {
-	legacy_s16 _11;
-	legacy_s16 _21;
-	legacy_s16 _31;
-	legacy_s16 _12;
-	legacy_s16 _22;
-	legacy_s16 _32;
-	legacy_s16 _13;
-	legacy_s16 _23;
-	legacy_s16 _33;
+  legacy_s16 _11;
+  legacy_s16 _21;
+  legacy_s16 _31;
+  legacy_s16 _12;
+  legacy_s16 _22;
+  legacy_s16 _32;
+  legacy_s16 _13;
+  legacy_s16 _23;
+  legacy_s16 _33;
 };
 
-union RsAnon_be2f5c5e6332 {
-	legacy_s16 vals[9];
-	RsAnon_81f0363c1695 m;
-};
-
-class MATRIX
-{
-	union {
-		legacy_s16 vals[9];
-		RsAnon_81f0363c1695 m;
-	};
-};
-
-class PLANE
-{
-	legacy_s16 plane_yz;
-	legacy_s16 plane_xy;
-	VECTOR plane_origin;
-	VECTOR plane_normal;
-	MATRIX plane_rotation;
-};
-
-class TRKOBJINFO
-{
-	legacy_s8 si_noOfBlocks;
-	legacy_s8 si_entryPoint;
-	legacy_s8 si_exitPoint;
-	legacy_s8 si_entryType;
-	legacy_s8 si_exitType;
-	legacy_s8 route_point_count;
-	legacy_s16 route_orientation;
-	VECTOR *route_vectors;
-	legacy_s8 reverse_path_offset_low;
-	legacy_s8 reverse_path_offset_high;
-	legacy_s8 roadside_sign_type;
-	legacy_s8 opponent_speed_code;
-};
-
-class TRACK_WALL
-{
-	legacy_s16 orientation;
-	legacy_s16 x;
-	legacy_s16 z;
-};
-
-class TRACKOBJECT
-{
-	TRKOBJINFO *ss_trkObjInfoPtr;
-	legacy_s16 ss_rotY;
-	SHAPE3D *ss_shapePtr;
-	SHAPE3D *ss_loShapePtr;
-	legacy_u8 ss_ssOvelay;
-	legacy_s8 ss_surfaceType;
-	legacy_s8 ss_ignoreZBias;
-	legacy_s8 ss_multiTileFlag;
-	legacy_s8 ss_physicalModel;
-	legacy_s8 reserved_scene_byte;
-};
-
-class GAMEINFO
-{
-	legacy_s8 game_playercarid[4];
-	legacy_s8 game_playermaterial;
-	legacy_s8 game_playertransmission;
-	legacy_s8 game_opponenttype;
-	legacy_s8 game_opponentcarid[4];
-	legacy_s8 game_opponentmaterial;
-	legacy_s8 game_opponenttransmission;
-	legacy_s8 game_trackname[9];
-	legacy_u16 game_framespersec;
-	legacy_u16 game_recordedframes;
-};
-
-class CARSTATE
-{
-	VECTORLONG car_position;
-	VECTORLONG car_previous_position;
-	VECTOR car_rotate;
-	legacy_s16 car_pseudoGravity;
-	legacy_s16 car_steeringAngle;
-	legacy_s16 car_currpm;
-	legacy_s16 car_lastrpm;
-	legacy_s16 car_initial_rpm;
-	legacy_s16 car_speeddiff;
-	legacy_u16 car_rev_speed;
-	legacy_u16 car_actual_speed;
-	legacy_u16 car_lastspeed;
-	legacy_u16 car_gearratio;
-	legacy_u16 car_gearratioshr8;
-	legacy_s16 car_knob_x;
-	legacy_s16 car_velocity_heading_offset;
-	legacy_s16 car_knob_y;
-	legacy_s16 car_knob_x2;
-	legacy_s16 car_knob_y2;
-	legacy_s16 car_slide_yaw_delta;
-	legacy_s16 car_front_wheel_response_angle;
-	legacy_s16 car_slip_angle;
-	legacy_s16 car_demandedGrip;
-	legacy_s16 car_surfacegrip_sum;
-	legacy_s16 car_route_heading_error;
-	legacy_s16 car_route_index;
-	legacy_s16 car_wheel_vertical_speed[4];
-	legacy_s16 car_suspension_deflection[4];
-	legacy_s16 car_reserved_wheel_state[4];
-	legacy_s16 car_reserved_contact_state[4];
-	legacy_s16 car_suspension_target[4];
-	VECTOR car_wheel_contact_positions[4];
-	VECTOR car_body_corner_positions[4];
-	VECTOR car_route_target;
-	VECTOR car_route_first_edge;
-	VECTOR car_route_second_edge;
-	legacy_s16 car_route_has_reverse_path;
-	legacy_s16 car_reserved_route_word1;
-	legacy_s16 car_reserved_route_word2;
-	legacy_s8 car_is_braking;
-	legacy_s8 car_is_accelerating;
-	legacy_s8 car_current_gear;
-	legacy_s8 car_sumSurfFrontWheels;
-	legacy_s8 car_sumSurfRearWheels;
-	legacy_s8 car_sumSurfAllWheels;
-	legacy_s8 car_surfaceWhl[4];
-	legacy_s8 car_engineLimiterTimer;
-	legacy_s8 car_slidingFlag;
-	legacy_s8 car_collision_latch;
-	legacy_s8 car_crashBmpFlag;
-	legacy_s8 car_changing_gear;
-	legacy_s8 car_gear_change_delay;
-	legacy_s8 car_transmission;
-	legacy_s8 car_lap_count;
-	legacy_s8 car_route_point_index;
-	legacy_s8 car_sound_flags;
-};
-
-class GAMESTATE
-{
-	legacy_s32 game_particle_x[24];
-	legacy_s32 game_particle_y[24];
-	legacy_s32 game_particle_z[24];
-	VECTOR game_follow_camera_position[2];
-	VECTOR game_player_camera_previous;
-	VECTOR game_opponent_camera_previous;
-	legacy_s16 game_frame_in_sec;
-	legacy_s16 game_frames_per_sec;
-	legacy_s32 game_travDist;
-	legacy_s16 game_frame;
-	legacy_s16 game_total_finish;
-	legacy_s16 game_opponent_finish_time;
-	legacy_s16 game_pEndFrame;
-	legacy_s16 game_oEndFrame;
-	legacy_s16 game_penalty;
-	legacy_u16 game_impactSpeed;
-	legacy_u16 game_topSpeed;
-	legacy_s16 game_jumpCount;
-	CARSTATE playerstate;
-	CARSTATE opponentstate;
-	legacy_s16 game_player_confirmed_route;
-	legacy_s16 game_player_previous_route;
-	legacy_s16 game_startcol;
-	legacy_s16 game_startcol2;
-	legacy_s16 game_startrow;
-	legacy_s16 game_startrow2;
-	legacy_s16 game_particle_rotation_x[24];
-	legacy_s16 game_particle_rotation_y[24];
-	legacy_s16 game_particle_heading[24];
-	legacy_s16 game_particle_forward_speed[24];
-	legacy_s8 game_particle_vertical_speed[(24 * 2)];
-	legacy_s8 kevinseed[6];
-	legacy_s8 game_checkpoint_valid;
-	legacy_s8 game_inputmode;
-	legacy_s8 game_end_event;
-	legacy_s8 game_trackside_camera_index[2];
-	legacy_s8 game_opponent_target_speed;
-	legacy_s8 game_object_destroyed[48];
-	legacy_s8 game_particles_active;
-	legacy_s8 game_particle_shape_index[24];
-	legacy_s8 game_particle_owner[24];
-	legacy_s8 game_player_route_status;
-	legacy_s8 game_route_confirmation_count;
-	legacy_s8 game_player_route_indicator;
-	legacy_s8 game_opponent_route_indicator;
-	legacy_s8 game_reserved_trailing_byte;
-};
-
-class SIMD
-{
-	legacy_s8 num_gears;
-	legacy_s8 reserved_gear_byte;
-	legacy_s16 car_mass;
-	legacy_s16 braking_eff;
-	legacy_s16 idle_rpm;
-	legacy_s16 downshift_rpm;
-	legacy_s16 upshift_rpm;
-	legacy_s16 max_rpm;
-	legacy_u16 gear_ratios[7];
-	POINT2D knob_points[7];
-	legacy_s16 aero_resistance;
-	legacy_s8 idle_torque;
-	legacy_s8 torque_curve[104];
-	legacy_s8 reserved_torque_byte;
-	legacy_s16 grip;
-	legacy_s16 reserved_handling_words[7];
-	legacy_s16 sliding;
-	legacy_s16 surface_grip[4];
-	legacy_s8 reserved_grip_bytes[10];
-	POINT2D collide_points[2];
-	legacy_s16 car_height;
-	VECTOR wheel_coords[4];
-	legacy_s8 steeringdots[62];
-	POINT2D spdcenter;
-	legacy_s16 spdnumpoints;
-	legacy_s8 spdpoints[208];
-	POINT2D revcenter;
-	legacy_s16 revnumpoints;
-	legacy_s8 revpoints[256];
-	legacy_s16 *aerorestable;
-};
-
-class MEMCHUNK
-{
-	legacy_s8 resname[12];
-	legacy_u16 ressize;
-	legacy_u16 resofs;
-	legacy_u16 resstate;
-};
-
-class SHAPE2D
-{
-	legacy_u16 width;
-	legacy_u16 height;
-	legacy_u16 centre_x;
-	legacy_u16 centre_y;
-	legacy_u16 position_x;
-	legacy_u16 position_y;
-	legacy_u8 plane_flags[4];
-};
-
-class SPRITE
-{
-	SHAPE2D *sprite_bitmapptr;
-	legacy_u16 sprite_reserved_word1;
-	legacy_u16 sprite_reserved_word2;
-	legacy_u16 sprite_reserved_word3;
-	legacy_u8 *sprite_lineofs;
-	legacy_u16 sprite_left;
-	legacy_u16 sprite_right;
-	legacy_u16 sprite_top;
-	legacy_u16 sprite_bottom;
-	legacy_u16 sprite_pitch;
-	legacy_u16 sprite_reserved_word4;
-	legacy_u16 sprite_buffer_width;
-	legacy_u16 sprite_raster_left;
-	legacy_u16 sprite_raster_right;
-};
-
-class file_find_dos
-{
-	legacy_s8 path[128];
-	legacy_s8 *dirdelim;
-};
-
-class VLE_DECODER
-{
-	legacy_u16 escape_alphabet_offsets[16];
-	legacy_u16 escape_code_limits[16];
-	legacy_u8 alphabet[256];
-	legacy_u8 symbols[256];
-	legacy_u8 widths[256];
-	legacy_u8 *source;
-	legacy_u16 additive;
-	legacy_u16 current_word;
-	legacy_u8 current_width;
-	legacy_u8 current_symbol;
-};
-
-class TRACK_COLLISION_SNAPSHOT
-{
-	legacy_s16 plane_index;
-	PLANE *plane;
-	legacy_s16 wall_index;
-	legacy_s16 wall_height;
-	legacy_s16 wall_lower_bound;
-	legacy_u8 corkscrew;
-	legacy_s8 surface_type;
-	legacy_s8 wall_collision_enabled;
-	legacy_s16 terrain_height;
-	legacy_s16 element_x;
-	legacy_s16 element_z;
-	legacy_s16 wall_x;
-	legacy_s16 wall_z;
-	legacy_s16 wall_orientation;
-};
-
-class BUTTON_AREA
-{
-	legacy_s16 x1;
-	legacy_s16 x2;
-	legacy_s16 y1;
-	legacy_s16 y2;
-};
-
-class AUDIO_CAR_STATE
-{
-	legacy_u8 reserved_prefix[6];
-	VECTOR player_previous;
-	VECTOR player_current;
-	VECTOR opponent_previous;
-	VECTOR opponent_current;
-	legacy_s16 player_rpm;
-	legacy_s16 opponent_rpm;
-};
-
-class FULL_AUDIO_ENGINE_DEFINITION
-{
-	legacy_u16 sample_count;
-	legacy_u8 reserved_parameters[4];
-	legacy_u8 initialized;
-	legacy_u8 reserved_initialization_byte;
-	legacy_s8 *resource_ids[10];
-};
-
-class LEGACY_EXECUTION_RESIDUE
-{
-	legacy_s16 wheel_plane_angles[4];
-	legacy_s16 wheel_angle_stack_words[4];
-	legacy_s16 grip_stack_words[4];
-	legacy_s16 penalty_route_word;
-};
-
-class PHANTOM_PHYSICS
-{
-	GAMESTATE state;
-	LEGACY_EXECUTION_RESIDUE residue;
-	legacy_u32 elapsed20;
-	legacy_s8 input_flags;
-};
-
-class SIMD_READER
-{
-	legacy_u8 *source;
-	legacy_u16 offset;
-};
-
-class CUSTOM_CAMERA
-{
-	legacy_s16 distance;
-	legacy_s16 elevation_angle;
-	legacy_s16 azimuth_angle;
-};
-
-class SHAPE3D
-{
-	legacy_u16 shape3d_numverts;
-	legacy_u8 *shape3d_vertex_bytes;
-	legacy_u16 shape3d_numprimitives;
-	legacy_u16 shape3d_numpaints;
-	legacy_u8 *shape3d_primitives;
-	legacy_u8 *shape3d_visibility_masks;
-	legacy_u8 *shape3d_front_facing_masks;
-};
-
-class TRANSFORMEDSHAPE3D
-{
-	VECTOR pos;
-	SHAPE3D *shapeptr;
-	RECTANGLE *rectptr;
-	VECTOR rotvec;
-	legacy_u16 culling_distance;
-	legacy_u8 ts_flags;
-	legacy_u8 material;
-};
-
-class SHAPE3D_LEGACY_OPPONENT_RENDER_CONTEXT
-{
-	legacy_s16 *wheel_headings;
-	legacy_u16 polyinfo_offset;
-	legacy_u16 polyinfo_segment;
-	legacy_u16 material_color_offset;
-};
-
-class TRACK_RESOURCE_READER
-{
-	legacy_u8 *source;
-	legacy_u16 offset;
-};
-
-class AUDIO_FAR_POINTER
-{
-	legacy_u16 offset;
-	legacy_u16 segment;
-};
-
-class AUDIO_ENGINE_DEFINITION
-{
-	legacy_u16 sample_count;
-	legacy_u8 reserved_parameters[4];
-	legacy_u8 initialized;
-	legacy_u8 reserved_initialization_byte;
-	AUDIO_FAR_POINTER resources[10];
-};
-
-class AUDIO_TIMER
-{
-	legacy_u8 active;
-	legacy_u8 engine_active;
-	legacy_s16 channel;
-	legacy_u16 current_volume;
-	legacy_u32 current_pitch;
-	legacy_u8 target_volume;
-	legacy_u8 reserved_target_volume_byte;
-	legacy_u16 target_pitch;
-	legacy_u8 last_volume;
-	legacy_u8 reserved_last_volume_byte;
-	legacy_u16 last_pitch;
-	legacy_s16 engine_context;
-	legacy_s16 effect_channel;
-	legacy_s16 secondary_effect_channel;
-	legacy_u16 sample_count;
-	legacy_u8 parameters_changed;
-	legacy_u8 restart_engine;
-	AUDIO_ENGINE_DEFINITION definition;
-};
-
-class AUDIO_CHANNEL
-{
-	AUDIO_FAR_POINTER cursor;
-	legacy_u8 call_depth;
-	AUDIO_FAR_POINTER call_stack[4];
-	legacy_u8 active_notes;
-	legacy_u8 note_limit;
-	legacy_u8 reserved_note_limit_byte;
-	legacy_u32 delay;
-	legacy_u8 reserved_delay_byte;
-	legacy_u8 reserved_resource_byte;
-	AUDIO_FAR_POINTER resource;
-	legacy_u8 note_velocity;
-	legacy_u8 channel;
-	legacy_u8 priority;
-	legacy_u8 sustain;
-	legacy_u16 pitch;
-	legacy_u8 volume;
-	legacy_u8 driver_private_state[4];
-	legacy_u8 reserved_instrument_byte;
-	AUDIO_FAR_POINTER instruments;
-	legacy_u8 stack_depth;
-	AUDIO_FAR_POINTER return_stack[4];
-	legacy_u8 loop_counts[4];
-	legacy_u8 driver_channel;
-	AUDIO_FAR_POINTER finish_callback;
-};
-
-class AUDIO_CONTEXT
-{
-	legacy_u8 channel;
-	legacy_u8 state;
-	legacy_u8 priority;
-	legacy_u8 driver_private_state[5];
-	legacy_u32 age;
-	legacy_u32 fade_out_flag;
-	AUDIO_FAR_POINTER resource;
-	legacy_s16 level;
-	legacy_u8 envelope_state;
-	legacy_u8 reserved_envelope_byte;
-	legacy_u16 modulation_delay;
-	legacy_u16 modulation_count;
-	legacy_s16 modulation;
-	legacy_u16 sequence_delay;
-	legacy_u16 sequence_count;
-	legacy_u8 sequence_value;
-	legacy_u8 reserved_sequence_byte;
-	legacy_u16 modulation_step;
-	legacy_u8 modulation_direction;
-	legacy_u8 modulation_tick;
-	legacy_u8 sequence_tick;
-	legacy_u8 sequence_index;
-	legacy_u16 timer_offset;
-	legacy_u8 driver_channel;
-	legacy_u8 reserved_driver_channel_byte;
-};
-
-class GHOST_CAMERA_STATE
-{
-	VECTOR follow_position;
-	VECTOR previous_position;
-	legacy_s16 trackside_index;
-	legacy_s16 frame;
-	legacy_s16 crash_frame;
-};
-
-class STARTUP_OPTIONS
-{
-	legacy_u8 mode4_requested;
-	legacy_u8 sound_disabled;
-	legacy_u8 unused_nd_option;
-	legacy_u8 skip_intro;
-};
-
-class FATAL_OUTPUT_STATE
-{
-	legacy_s8 buffer[96];
-	legacy_u16 length;
-};
-
-class FATAL_CONVERSION
-{
-	legacy_s16 left_aligned;
-	legacy_s16 zero_padded;
-	legacy_s16 width;
-	legacy_s16 precision;
-	legacy_s16 long_value;
-	legacy_s8 conversion;
-};
-
-class MOUSE_TRACK_DRAG
-{
-	legacy_s16 x;
-	legacy_s16 width;
-	legacy_s16 y;
-	legacy_s16 height;
-	legacy_s16 horizontal;
-	legacy_s16 length;
-	legacy_s16 thumb_start;
-	legacy_s16 thumb_size;
-};
-
-class READ_LINE_STATE
-{
-	legacy_u8 input_flags;
-	legacy_s8 *text;
-	legacy_s16 max_characters;
-	legacy_s16 insert_mode;
-	legacy_s16 first_key;
-};
-
-class DIALOG_CONTENT
-{
-	legacy_s8 line_buffer[128];
-	legacy_s8 *choice_texts[20];
-	legacy_u8 choice_lengths[20];
-	BUTTON_AREA choices[20];
-	legacy_s8 *cursor;
-	legacy_s16 line_height;
-	legacy_s16 dialog_width;
-	legacy_s16 dialog_height;
-	legacy_s16 x;
-	legacy_s16 y;
-	legacy_u16 line_length;
-	legacy_u8 choice_count;
-	legacy_u8 placeholder_index;
-};
-
-class FILE_DIALOG
-{
-	legacy_s16 positions[40];
-	BUTTON_AREA hit_areas[10];
-	legacy_s8 filenames[128][13];
-	legacy_s8 selected;
-	legacy_s8 scroll;
-	legacy_s8 previous_selected;
-	legacy_s8 previous_scroll;
-	legacy_u8 file_count;
-	legacy_u8 search_again;
-};
-
-class HIGHSCORE_ENTRY
-{
-	legacy_s8 player_name[17];
-	legacy_s8 car_name[24];
-	legacy_u8 car_flag;
-	legacy_s8 opponent[8];
-	legacy_u16 time;
-};
-
-class END_SCREEN_TEXT_LINE
-{
-	legacy_s8 word[32];
-	legacy_u16 word_length;
-	legacy_u16 output_length;
-	legacy_s16 line_width;
-	legacy_s16 line_y;
-};
-
-class END_SCREEN_STATE
-{
-	legacy_s8 *misc_resource;
-	legacy_s8 *opponent_resource;
-	legacy_s8 *animation_resource;
-	legacy_u8 *animation_sequence;
-	SPRITE *animation_sprite;
-	BUTTON_AREA button_areas[4];
-	legacy_s8 score_status;
-	legacy_u8 outcome;
-	legacy_u8 opponent_active;
-	legacy_u8 evaluation_screen;
-	legacy_u8 selected;
-	legacy_u8 previous_selection;
-	legacy_u8 blit_mode;
-	legacy_u8 animation_frame;
-	legacy_u8 previous_animation_frame;
-	legacy_u8 text_prefix;
-	legacy_s16 finish_time;
-	legacy_s16 animation_x;
-	legacy_s16 animation_y;
-	legacy_s16 animation_timer;
-	legacy_s16 text_y;
-};
-
-class RACE_VIEWPORT_CACHE
-{
-	legacy_s16 roof_height;
-	legacy_s16 dashboard_bottom;
-	legacy_u8 supersight;
-};
-
-class RACE_REWIND_STATE
-{
-	legacy_s16 active;
-	legacy_u16 origin_frame;
-	legacy_u32 held_ticks;
-	legacy_u32 accumulated;
-};
-
-class GHOST_POSE
-{
-	CARSTATE car;
-	GHOST_CAMERA_STATE camera;
-};
-
-class SKYBOX
-{
-	legacy_u16 heights[4];
-	legacy_u16 minimum_height;
-	legacy_u16 maximum_height;
-	legacy_s16 sky_color;
-	legacy_s16 ground_color;
-	legacy_s16 water_color;
-};
-
-class DASHBOARD_UPDATE
-{
-	legacy_u16 buffer_index;
-	legacy_u16 speed_index;
-	legacy_u16 rpm_index;
-	legacy_s16 steering_position;
-	legacy_u8 wheel_state;
-	legacy_u8 wheel_redrawn;
-	legacy_u8 steering_dot_cleared;
-	legacy_u8 gauge_mode;
-};
-
-class TRACK_MENU_STATE
-{
-	legacy_u8 selected;
-	legacy_u8 previous;
-	legacy_u8 blit_mode;
-};
-
-class TRACK_EDITOR_MAP_CELL
-{
-	legacy_u16 source_row;
-	legacy_u16 source_column;
-	legacy_u16 source_index;
-	legacy_u16 cache_index;
-	legacy_s16 x;
-	legacy_s16 y;
-	legacy_u8 tile;
-	legacy_u8 terrain;
-};
-
-class TRACK_EDITOR_SESSION
-{
-	legacy_u8 cached_track[132];
-	legacy_u8 cached_terrain[132];
-	SPRITE *cursor_sprites[4];
-	legacy_s8 *shape_resource;
-	legacy_s8 *text_resource;
-	legacy_s8 *text_name_resource;
-	legacy_u8 selection_column[2];
-	legacy_u8 selection_row[2];
-	legacy_u8 map_column_offset;
-	legacy_u8 map_row_offset;
-	legacy_u8 previous_column_offset;
-	legacy_u8 previous_row_offset;
-	legacy_u8 page;
-	legacy_u8 previous_page;
-	legacy_u8 selected_tile;
-	legacy_u8 saved_tile;
-	legacy_u8 last_column;
-	legacy_u8 last_row;
-	legacy_u8 hovered_tile;
-	legacy_u8 previous_hovered_tile;
-	legacy_u8 multi_tile;
-	legacy_u8 tile_width;
-	legacy_u8 tile_height;
-	legacy_u8 cursor_width;
-	legacy_u8 cursor_height;
-	legacy_u8 map_dirty;
-	legacy_u8 palette_dirty;
-	legacy_u8 scrollbars_dirty;
-	legacy_u8 validate_track;
-	legacy_u8 validation_error;
-	legacy_u8 track_changed;
-	legacy_u8 menu_active;
-	legacy_u8 blit_mode;
-	legacy_u8 cursor_drawn;
-	legacy_u8 focus;
-	legacy_u8 blink_focus;
-	legacy_u8 animation_saved_tile;
-	legacy_u16 path_animation_index;
-	legacy_u16 blink_timer;
-	legacy_u16 key;
-	legacy_s16 previous_label_width;
-	legacy_s16 cursor_x;
-	legacy_s16 cursor_y;
-};
-
-class OPPONENT_MENU_STATE
-{
-	legacy_s8 *opponent_resource;
-	legacy_u8 selected;
-	legacy_u8 previous_selection;
-	legacy_u8 displayed_opponent;
-	legacy_u8 displayed_ghost;
-	legacy_u8 blit_mode;
-	legacy_u8 resource_loaded;
-};
-
-class CAR_MENU_STATE
-{
-	legacy_s8 car_ids[120][(4 + 1)];
-	legacy_s8 *car_resource;
-	legacy_u8 *selector_resource;
-	SPRITE *opponent_sprite;
-	TRANSFORMEDSHAPE3D transformed;
-	RECTANGLE current_rect;
-	RECTANGLE previous_rect;
-	RECTANGLE union_rect;
-	legacy_u8 car_count;
-	legacy_u8 car_index;
-	legacy_u8 previous_car_index;
-	legacy_u8 selected;
-	legacy_u8 previous_selected;
-	legacy_u8 blit_mode;
-	legacy_u8 render_phase;
-	legacy_u8 car_ready;
-	legacy_u8 render_deferred;
-	legacy_s16 rotation;
-	legacy_s16 rotation_delta;
-	legacy_s8 *material;
-	legacy_s8 *transmission;
-	legacy_u16 opponent_type;
-};
-
-class AUDIO_CONTEXT_SELECTION
-{
-	legacy_u32 oldest_state1_age;
-	legacy_u32 oldest_state2_age;
-	legacy_s16 oldest_state1;
-	legacy_s16 oldest_state2;
-};
-
-class AUDIO_SONG_MAPPING
-{
-	legacy_u16 resource_segment;
-	legacy_u16 chunk_count;
-	legacy_u16 name_table_offset;
-	legacy_u16 offset_table_offset;
-	legacy_u16 first_data_offset;
-};
-
-class AUDIO_CAR_POSITIONS
-{
-	VECTOR player_previous;
-	VECTOR player_current;
-	VECTOR opponent_previous;
-	VECTOR opponent_current;
-	VECTOR camera_previous;
-	VECTOR camera_current;
-};
-
-class audio_sequence_event
-{
-	legacy_u32 delay;
-	legacy_u8 command;
-	legacy_u8 argument;
-	legacy_u32 value;
-	legacy_u8 size;
-};
-
-class SHAPE3D_TRANSFORM_CONTEXT
-{
-	legacy_u8 vertex_clip_flags[256];
-	MATRIX object_to_view_rotation;
-	VECTOR view_translation;
-	VECTOR view_vertices[255];
-	POINT2D projected_vertices[255];
-	legacy_s32 visibility_mask;
-	legacy_s32 front_facing_mask;
-};
-
-class SPHERE_RASTER
-{
-	legacy_u16 x_bits;
-	legacy_u16 y_bits;
-	legacy_u16 size_bits;
-	legacy_u16 effective_height;
-	legacy_u16 half_height;
-	legacy_u16 half_width;
-	legacy_u16 top;
-	legacy_u16 line_count;
-	legacy_u16 left_bound;
-	legacy_u16 right_bound;
-};
-
-class POLYGON_RASTER
-{
-	POINT2D *first_vertex;
-	POINT2D *last_vertex;
-	POINT2D *top_vertex;
-	POINT2D *bottom_vertex;
-	legacy_s16 min_x;
-	legacy_s16 max_x;
-	legacy_s16 top_y;
-	legacy_s16 bottom_y;
-	legacy_s16 clip_left;
-	legacy_s16 clip_right;
-	legacy_s16 clip_top;
-	legacy_s16 clip_bottom;
-	legacy_u16 needs_clipping;
-};
-
-class SPRITE_LINE_DRAW
-{
-	legacy_u8 *bitmap;
-	legacy_u16 sprite_segment;
-	legacy_u16 x_low;
-	legacy_u16 x_high;
-	legacy_u16 y_low;
-	legacy_u16 y_high;
-	legacy_u16 original_y_high;
-	legacy_u16 delta;
-	legacy_u16 count;
-	legacy_u8 color;
-};
-
-class SHAPE2D_SCALED_DRAW
-{
-	legacy_u16 shape_segment;
-	legacy_u16 source;
-	legacy_u16 source_width;
-	legacy_u16 scaled_width;
-	legacy_u16 scaled_height;
-	legacy_u16 step;
-	legacy_u16 horizontal_start;
-	legacy_u16 vertical_fraction;
-	legacy_u16 x;
-	legacy_u16 y;
-};
-
-class SHAPE2D_CLIP
-{
-	legacy_u16 source;
-	legacy_u16 source_advance;
-	legacy_u16 destination;
-	legacy_u16 destination_advance;
-	legacy_u16 width;
-	legacy_u16 rows;
-};
-
-class SHAPE2D_RLE_CURSOR
-{
-	legacy_u16 shape_segment;
-	legacy_u16 source;
-	legacy_u16 remaining;
-	legacy_u8 value;
-	legacy_s16 literal;
-};
-
-class SHAPE2D_PARSE_OUTPUT
-{
-	legacy_u16 output_segment;
-	legacy_u16 output_offset;
-};
-
-class SHAPE2D_PARSE_RUN
-{
-	legacy_u16 source_segment;
-	legacy_u16 scan_offset;
-	legacy_u16 literal_offset;
-	legacy_u16 remaining;
-	legacy_u16 literal_count;
-};
-
-class FRAME_LOOKAHEAD_TILE
-{
-	legacy_s8 east;
-	legacy_s8 south;
-	legacy_s8 detail;
-};
-
-class FRAME_SUPERSIGHT_TILE
-{
-	legacy_s8 width;
-	legacy_s8 depth;
-	legacy_s8 priority;
-};
-
-class FRAME_CAMERA
-{
-	VECTOR position;
-	MATRIX pitch_roll_rotation;
-	legacy_s16 pitch;
-	legacy_s16 yaw;
-	legacy_s16 roll;
-	legacy_s16 skybox_parameter;
-	legacy_s16 view_heading;
-};
-
-class FRAME_TILE_SELECTION
-{
-	FRAME_LOOKAHEAD_TILE *lookahead;
-	FRAME_LOOKAHEAD_TILE extended_lookahead[110];
-	legacy_s16 count;
-	legacy_s16 first;
-	legacy_s8 detail_threshold;
-	legacy_s8 camera_east;
-	legacy_s8 camera_south;
-	legacy_s8 player_east;
-	legacy_s8 player_south;
-	legacy_s8 markers[110];
-	legacy_s8 east[110];
-	legacy_s8 south[110];
-	legacy_s8 detail[110];
-	legacy_u8 elements[110];
-	legacy_u8 terrain[110];
-};
-
-class FRAME_CAR_RENDER
-{
-	legacy_s8 east;
-	legacy_s8 south;
-	legacy_s16 depth_adjustment;
-	RECTANGLE crash_rect;
-	legacy_s8 explosion_visible;
-};
-
-class FRAME_TILE
-{
-	legacy_s8 east;
-	legacy_s8 south;
-	legacy_s8 last_east;
-	legacy_s8 last_south;
-	legacy_s8 detail;
-	legacy_u8 element;
-	legacy_u8 terrain;
-	legacy_s16 height;
-	legacy_s16 depth_mask;
-	VECTOR position;
-};
-
-class INTRO_VIEW
-{
-	VECTOR camera;
-	VECTOR car_position;
-	legacy_s16 car_rotation;
-	legacy_s16 horizontal_angle;
-	legacy_s16 vertical_angle;
-	legacy_s16 draw_car;
-	legacy_s16 primary_logo;
-};
-
-class INTRO_SESSION
-{
-	legacy_s8 *title_resource;
-	VECTOR stars[100];
-	POINT2D point_buffers[2][100];
-	legacy_s16 point_counts[2];
-	RECTANGLE shape_rect;
-	RECTANGLE combined_rect;
-	legacy_s16 camera_x;
-	legacy_s16 camera_y;
-	legacy_s16 camera_z;
-	legacy_s16 target_x;
-	legacy_s16 target_y;
-	legacy_s16 target_z;
-	legacy_s16 frame_count;
-	legacy_s16 logo_changed;
-	legacy_s16 needs_render;
-	legacy_u16 rect_index;
-};
-
-class PENALTY_ROUTE_SEARCH
-{
-	legacy_u8 visited[904];
-	legacy_s16 pending_track[128];
-	legacy_s16 pending_distance[128];
-	legacy_u16 pending_count;
-	legacy_u8 sentinel_visited;
-	legacy_s16 track_index;
-	legacy_s16 distance;
-	legacy_s16 best_track;
-	legacy_s16 best_distance;
-	legacy_s16 column;
-	legacy_s16 row;
-};
-
-class PENALTY_ROUTE_BOUNDS
-{
-	legacy_u8 minimum_column;
-	legacy_u8 maximum_column;
-	legacy_u8 minimum_row;
-	legacy_u8 maximum_row;
-};
-
-class OPPONENT_GUIDANCE
-{
-	VECTOR opponent;
-	VECTOR player;
-	MATRIX *rotation;
-	legacy_u8 forced_route;
-};
-
-class TRACK_SETUP_BRANCH
-{
-	legacy_s8 column;
-	legacy_s8 row;
-	legacy_u8 tile_element;
-	legacy_u8 subtype;
-	legacy_s8 connection_status;
-	legacy_u8 runway_length;
-	legacy_s8 previous_column;
-	legacy_s8 previous_row;
-	legacy_u8 previous_tile_element;
-	legacy_u8 previous_subtype;
-	legacy_s8 previous_connection_status;
-	legacy_u8 previous_connection_code;
-	legacy_s16 previous_piece;
-};
-
-class TRACK_SETUP_STEP
-{
-	legacy_s16 column;
-	legacy_s16 row;
-	legacy_s16 orientation;
-};
-
-class TRACK_SETUP_WALK
-{
-	TRACK_SETUP_BRANCH *branches;
-	legacy_u8 visited_tiles[904];
-	legacy_u8 subtype_by_piece[902];
-	legacy_s8 connection_by_piece[902];
-	legacy_u16 branch_count;
-	legacy_s16 previous_piece;
-	legacy_s16 orientation;
-	legacy_u8 tile_element;
-	legacy_u8 tile_entry_point;
-	legacy_u8 previous_connection_code;
-	legacy_u8 subtype;
-	legacy_s8 connection_status;
-	legacy_u8 previous_subtype;
-	legacy_s8 previous_connection_status;
-	legacy_u8 previous_tile_element;
-	legacy_s8 previous_column;
-	legacy_s8 previous_row;
-	legacy_s8 column;
-	legacy_s8 row;
-	legacy_u8 runway_length;
-	legacy_u8 jump_length;
-	legacy_u8 path_closed;
-	legacy_u8 match_count;
-	legacy_u8 backtrack_required;
-};
-
-class PLAYER_WHEEL_MOTION
-{
-	VECTORLONG current[4];
-	VECTORLONG previous[4];
-	legacy_s16 headings[4];
-	legacy_s16 contact_distances[4];
-	legacy_s16 travel;
-	legacy_s16 inverted_adjustment;
-	VECTOR inverted_offset;
-};
-
-class COLLISION_MODEL
-{
-	legacy_s8 physical_model;
-	VECTOR *points;
-	legacy_u16 count;
-};
-
-class CRASH_PARTICLE_EMISSION
-{
-	legacy_s16 kind;
-	legacy_s16 type_base;
-	legacy_s16 angular_range;
-	legacy_s16 base_angle;
-	legacy_s16 energy_offset;
-	legacy_s16 lifetime_scale;
-	legacy_s16 free_count;
-};
-
-class TRACK_OBJECT_SAMPLE
-{
-	VECTOR position;
-	VECTOR next_position;
-	legacy_s16 height;
-	legacy_s16 next_height;
-	legacy_s16 physical_model;
-	legacy_s16 surface_type;
-	legacy_s16 absolute_x;
-	legacy_s16 absolute_z;
-	legacy_s16 wall_orientation_modifier;
-};
-
-class TRACK_OBJECT_HANDLER
-{
-	legacy_s16 physical_model;
-	legacy_u8 *handle;
-};
-
-class TRACK_SOLID_BOX
-{
-	VECTOR minimum;
-	VECTOR maximum;
-};
-
-class TRACK_CONTACT_RATIO
-{
-	legacy_u32 numerator;
-	legacy_u32 denominator;
-};
-
-class TRACK_SOLID_INTERVAL
-{
-	TRACK_CONTACT_RATIO entry;
-	TRACK_CONTACT_RATIO exit;
-};
-
-class OWOOT_ROAD_TRIANGLE
-{
-	VECTOR vertex[3];
-};
-
-class OWOOT_ROAD_MODEL
-{
-	legacy_u16 first_triangle;
-	legacy_u16 triangle_count;
-};
-
-class OWOOT_PROJECTED_POINT
-{
-	legacy_s32 x;
-	legacy_s32 z;
-};
-
-class OWOOT_POINT
-{
-	legacy_s32 x;
-	legacy_s32 y;
-	legacy_s32 z;
-};
-
-class OWOOT_BOUNDS
-{
-	legacy_s32 minimum_x;
-	legacy_s32 maximum_x;
-	legacy_s32 minimum_z;
-	legacy_s32 maximum_z;
-};
-
-class OWOOT_TIRES
-{
-	VECTOR vertices[4][(2 * 16)];
-	legacy_u16 counts[4];
-};
-
-class OWOOT_GATE
-{
-	OWOOT_POINT center;
-	OWOOT_POINT tangent;
-	OWOOT_POINT edge;
-	OWOOT_POINT normal;
-	legacy_s32 lateral_limit;
-	legacy_s32 normal_limit;
-	legacy_u16 kind;
-};
-
-class OWOOT_CONNECTION_EDGE
-{
-	legacy_s8 column;
-	legacy_s8 row;
-	legacy_s8 x;
-	legacy_s8 z;
-};
-
-class GAMESTATE_WRITER
-{
-	legacy_u8 *destination;
-	legacy_u16 offset;
+union CRsAnonBe2f5c5e6332 {
+  legacy_s16 vals[9];
+  CRsAnon81f0363c1695 m;
+};
+
+class CMatrix
+{
+  union {
+    legacy_s16 vals[9];
+    CRsAnon81f0363c1695 m;
+  };
+};
+
+class CPlane
+{
+  legacy_s16 plane_yz;
+  legacy_s16 plane_xy;
+  CVector plane_origin;
+  CVector plane_normal;
+  CMatrix plane_rotation;
+};
+
+class CTrkObjInfo
+{
+  legacy_s8 si_no_of_blocks;
+  legacy_s8 si_entry_point;
+  legacy_s8 si_exit_point;
+  legacy_s8 si_entry_type;
+  legacy_s8 si_exit_type;
+  legacy_s8 route_point_count;
+  legacy_s16 route_orientation;
+  CVector *route_vectors;
+  legacy_s8 reverse_path_offset_low;
+  legacy_s8 reverse_path_offset_high;
+  legacy_s8 roadside_sign_type;
+  legacy_s8 opponent_speed_code;
+};
+
+class CTrackWall
+{
+  legacy_s16 orientation;
+  legacy_s16 x;
+  legacy_s16 z;
+};
+
+class CTrackObject
+{
+  CTrkObjInfo *ss_trk_obj_info_ptr;
+  legacy_s16 ss_rot_y;
+  CShape3D *ss_shape_ptr;
+  CShape3D *ss_lo_shape_ptr;
+  legacy_u8 ss_ss_ovelay;
+  legacy_s8 ss_surface_type;
+  legacy_s8 ss_ignore_z_bias;
+  legacy_s8 ss_multi_tile_flag;
+  legacy_s8 ss_physical_model;
+  legacy_s8 reserved_scene_byte;
+};
+
+class CGameInfo
+{
+  legacy_s8 game_playercarid[4];
+  legacy_s8 game_playermaterial;
+  legacy_s8 game_playertransmission;
+  legacy_s8 game_opponenttype;
+  legacy_s8 game_opponentcarid[4];
+  legacy_s8 game_opponentmaterial;
+  legacy_s8 game_opponenttransmission;
+  legacy_s8 game_trackname[9];
+  legacy_u16 game_framespersec;
+  legacy_u16 game_recordedframes;
+};
+
+class CCarState
+{
+  CVectorLong car_position;
+  CVectorLong car_previous_position;
+  CVector car_rotate;
+  legacy_s16 car_pseudo_gravity;
+  legacy_s16 car_steering_angle;
+  legacy_s16 car_currpm;
+  legacy_s16 car_lastrpm;
+  legacy_s16 car_initial_rpm;
+  legacy_s16 car_speeddiff;
+  legacy_u16 car_rev_speed;
+  legacy_u16 car_actual_speed;
+  legacy_u16 car_lastspeed;
+  legacy_u16 car_gearratio;
+  legacy_u16 car_gearratioshr8;
+  legacy_s16 car_knob_x;
+  legacy_s16 car_velocity_heading_offset;
+  legacy_s16 car_knob_y;
+  legacy_s16 car_knob_x2;
+  legacy_s16 car_knob_y2;
+  legacy_s16 car_slide_yaw_delta;
+  legacy_s16 car_front_wheel_response_angle;
+  legacy_s16 car_slip_angle;
+  legacy_s16 car_demanded_grip;
+  legacy_s16 car_surfacegrip_sum;
+  legacy_s16 car_route_heading_error;
+  legacy_s16 car_route_index;
+  legacy_s16 car_wheel_vertical_speed[4];
+  legacy_s16 car_suspension_deflection[4];
+  legacy_s16 car_reserved_wheel_state[4];
+  legacy_s16 car_reserved_contact_state[4];
+  legacy_s16 car_suspension_target[4];
+  CVector car_wheel_contact_positions[4];
+  CVector car_body_corner_positions[4];
+  CVector car_route_target;
+  CVector car_route_first_edge;
+  CVector car_route_second_edge;
+  legacy_s16 car_route_has_reverse_path;
+  legacy_s16 car_reserved_route_word1;
+  legacy_s16 car_reserved_route_word2;
+  legacy_s8 car_is_braking;
+  legacy_s8 car_is_accelerating;
+  legacy_s8 car_current_gear;
+  legacy_s8 car_sum_surf_front_wheels;
+  legacy_s8 car_sum_surf_rear_wheels;
+  legacy_s8 car_sum_surf_all_wheels;
+  legacy_s8 car_surface_whl[4];
+  legacy_s8 car_engine_limiter_timer;
+  legacy_s8 car_sliding_flag;
+  legacy_s8 car_collision_latch;
+  legacy_s8 car_crash_bmp_flag;
+  legacy_s8 car_changing_gear;
+  legacy_s8 car_gear_change_delay;
+  legacy_s8 car_transmission;
+  legacy_s8 car_lap_count;
+  legacy_s8 car_route_point_index;
+  legacy_s8 car_sound_flags;
+};
+
+class CGameState
+{
+  legacy_s32 game_particle_x[24];
+  legacy_s32 game_particle_y[24];
+  legacy_s32 game_particle_z[24];
+  CVector game_follow_camera_position[2];
+  CVector game_player_camera_previous;
+  CVector game_opponent_camera_previous;
+  legacy_s16 game_frame_in_sec;
+  legacy_s16 game_frames_per_sec;
+  legacy_s32 game_trav_dist;
+  legacy_s16 game_frame;
+  legacy_s16 game_total_finish;
+  legacy_s16 game_opponent_finish_time;
+  legacy_s16 game_p_end_frame;
+  legacy_s16 game_o_end_frame;
+  legacy_s16 game_penalty;
+  legacy_u16 game_impact_speed;
+  legacy_u16 game_top_speed;
+  legacy_s16 game_jump_count;
+  CCarState playerstate;
+  CCarState opponentstate;
+  legacy_s16 game_player_confirmed_route;
+  legacy_s16 game_player_previous_route;
+  legacy_s16 game_startcol;
+  legacy_s16 game_startcol2;
+  legacy_s16 game_startrow;
+  legacy_s16 game_startrow2;
+  legacy_s16 game_particle_rotation_x[24];
+  legacy_s16 game_particle_rotation_y[24];
+  legacy_s16 game_particle_heading[24];
+  legacy_s16 game_particle_forward_speed[24];
+  legacy_s8 game_particle_vertical_speed[(24*2)];
+  legacy_s8 kevinseed[6];
+  legacy_s8 game_checkpoint_valid;
+  legacy_s8 game_inputmode;
+  legacy_s8 game_end_event;
+  legacy_s8 game_trackside_camera_index[2];
+  legacy_s8 game_opponent_target_speed;
+  legacy_s8 game_object_destroyed[48];
+  legacy_s8 game_particles_active;
+  legacy_s8 game_particle_shape_index[24];
+  legacy_s8 game_particle_owner[24];
+  legacy_s8 game_player_route_status;
+  legacy_s8 game_route_confirmation_count;
+  legacy_s8 game_player_route_indicator;
+  legacy_s8 game_opponent_route_indicator;
+  legacy_s8 game_reserved_trailing_byte;
+};
+
+class CSimd
+{
+  legacy_s8 num_gears;
+  legacy_s8 reserved_gear_byte;
+  legacy_s16 car_mass;
+  legacy_s16 braking_eff;
+  legacy_s16 idle_rpm;
+  legacy_s16 downshift_rpm;
+  legacy_s16 upshift_rpm;
+  legacy_s16 max_rpm;
+  legacy_u16 gear_ratios[7];
+  CPoint2D knob_points[7];
+  legacy_s16 aero_resistance;
+  legacy_s8 idle_torque;
+  legacy_s8 torque_curve[104];
+  legacy_s8 reserved_torque_byte;
+  legacy_s16 grip;
+  legacy_s16 reserved_handling_words[7];
+  legacy_s16 sliding;
+  legacy_s16 surface_grip[4];
+  legacy_s8 reserved_grip_bytes[10];
+  CPoint2D collide_points[2];
+  legacy_s16 car_height;
+  CVector wheel_coords[4];
+  legacy_s8 steeringdots[62];
+  CPoint2D spdcenter;
+  legacy_s16 spdnumpoints;
+  legacy_s8 spdpoints[208];
+  CPoint2D revcenter;
+  legacy_s16 revnumpoints;
+  legacy_s8 revpoints[256];
+  legacy_s16 *aerorestable;
+};
+
+class CMemChunk
+{
+  legacy_s8 resname[12];
+  legacy_u16 ressize;
+  legacy_u16 resofs;
+  legacy_u16 resstate;
+};
+
+class CShape2D
+{
+  legacy_u16 width;
+  legacy_u16 height;
+  legacy_u16 centre_x;
+  legacy_u16 centre_y;
+  legacy_u16 position_x;
+  legacy_u16 position_y;
+  legacy_u8 plane_flags[4];
+};
+
+class CSprite
+{
+  CShape2D *sprite_bitmapptr;
+  legacy_u16 sprite_reserved_word1;
+  legacy_u16 sprite_reserved_word2;
+  legacy_u16 sprite_reserved_word3;
+  legacy_u8 *sprite_lineofs;
+  legacy_u16 sprite_left;
+  legacy_u16 sprite_right;
+  legacy_u16 sprite_top;
+  legacy_u16 sprite_bottom;
+  legacy_u16 sprite_pitch;
+  legacy_u16 sprite_reserved_word4;
+  legacy_u16 sprite_buffer_width;
+  legacy_u16 sprite_raster_left;
+  legacy_u16 sprite_raster_right;
+};
+
+class CFileFindDos
+{
+  legacy_s8 path[128];
+  legacy_s8 *dirdelim;
+};
+
+class CVleDecoder
+{
+  legacy_u16 escape_alphabet_offsets[16];
+  legacy_u16 escape_code_limits[16];
+  legacy_u8 alphabet[256];
+  legacy_u8 symbols[256];
+  legacy_u8 widths[256];
+  legacy_u8 *source;
+  legacy_u16 additive;
+  legacy_u16 current_word;
+  legacy_u8 current_width;
+  legacy_u8 current_symbol;
+};
+
+class CTrackCollisionSnapshot
+{
+  legacy_s16 plane_index;
+  CPlane *plane;
+  legacy_s16 wall_index;
+  legacy_s16 wall_height;
+  legacy_s16 wall_lower_bound;
+  legacy_u8 corkscrew;
+  legacy_s8 surface_type;
+  legacy_s8 wall_collision_enabled;
+  legacy_s16 terrain_height;
+  legacy_s16 element_x;
+  legacy_s16 element_z;
+  legacy_s16 wall_x;
+  legacy_s16 wall_z;
+  legacy_s16 wall_orientation;
+};
+
+class CButtonArea
+{
+  legacy_s16 x1;
+  legacy_s16 x2;
+  legacy_s16 y1;
+  legacy_s16 y2;
+};
+
+class CAudioCarState
+{
+  legacy_u8 reserved_prefix[6];
+  CVector player_previous;
+  CVector player_current;
+  CVector opponent_previous;
+  CVector opponent_current;
+  legacy_s16 player_rpm;
+  legacy_s16 opponent_rpm;
+};
+
+class CFullAudioEngineDefinition
+{
+  legacy_u16 sample_count;
+  legacy_u8 reserved_parameters[4];
+  legacy_u8 initialized;
+  legacy_u8 reserved_initialization_byte;
+  legacy_s8 *resource_ids[10];
+};
+
+class CLegacyExecutionResidue
+{
+  legacy_s16 wheel_plane_angles[4];
+  legacy_s16 wheel_angle_stack_words[4];
+  legacy_s16 grip_stack_words[4];
+  legacy_s16 penalty_route_word;
+};
+
+class CPhantomPhysics
+{
+  CGameState state;
+  CLegacyExecutionResidue residue;
+  legacy_u32 elapsed20;
+  legacy_s8 input_flags;
+};
+
+class CSimdReader
+{
+  legacy_u8 *source;
+  legacy_u16 offset;
+};
+
+class CCustomCamera
+{
+  legacy_s16 distance;
+  legacy_s16 elevation_angle;
+  legacy_s16 azimuth_angle;
+};
+
+class CShape3D
+{
+  legacy_u16 shape3d_numverts;
+  legacy_u8 *shape3d_vertex_bytes;
+  legacy_u16 shape3d_numprimitives;
+  legacy_u16 shape3d_numpaints;
+  legacy_u8 *shape3d_primitives;
+  legacy_u8 *shape3d_visibility_masks;
+  legacy_u8 *shape3d_front_facing_masks;
+};
+
+class CTransformedShape3D
+{
+  CVector pos;
+  CShape3D *shapeptr;
+  CRectangle *rectptr;
+  CVector rotvec;
+  legacy_u16 culling_distance;
+  legacy_u8 ts_flags;
+  legacy_u8 material;
+};
+
+class CShape3DLegacyOpponentRenderContext
+{
+  legacy_s16 *wheel_headings;
+  legacy_u16 polyinfo_offset;
+  legacy_u16 polyinfo_segment;
+  legacy_u16 material_color_offset;
+};
+
+class CTrackResourceReader
+{
+  legacy_u8 *source;
+  legacy_u16 offset;
+};
+
+class CAudioFarPointer
+{
+  legacy_u16 offset;
+  legacy_u16 segment;
+};
+
+class CAudioEngineDefinition
+{
+  legacy_u16 sample_count;
+  legacy_u8 reserved_parameters[4];
+  legacy_u8 initialized;
+  legacy_u8 reserved_initialization_byte;
+  CAudioFarPointer resources[10];
+};
+
+class CAudioTimer
+{
+  legacy_u8 active;
+  legacy_u8 engine_active;
+  legacy_s16 channel;
+  legacy_u16 current_volume;
+  legacy_u32 current_pitch;
+  legacy_u8 target_volume;
+  legacy_u8 reserved_target_volume_byte;
+  legacy_u16 target_pitch;
+  legacy_u8 last_volume;
+  legacy_u8 reserved_last_volume_byte;
+  legacy_u16 last_pitch;
+  legacy_s16 engine_context;
+  legacy_s16 effect_channel;
+  legacy_s16 secondary_effect_channel;
+  legacy_u16 sample_count;
+  legacy_u8 parameters_changed;
+  legacy_u8 restart_engine;
+  CAudioEngineDefinition definition;
+};
+
+class CAudioChannel
+{
+  CAudioFarPointer cursor;
+  legacy_u8 call_depth;
+  CAudioFarPointer call_stack[4];
+  legacy_u8 active_notes;
+  legacy_u8 note_limit;
+  legacy_u8 reserved_note_limit_byte;
+  legacy_u32 delay;
+  legacy_u8 reserved_delay_byte;
+  legacy_u8 reserved_resource_byte;
+  CAudioFarPointer resource;
+  legacy_u8 note_velocity;
+  legacy_u8 channel;
+  legacy_u8 priority;
+  legacy_u8 sustain;
+  legacy_u16 pitch;
+  legacy_u8 volume;
+  legacy_u8 driver_private_state[4];
+  legacy_u8 reserved_instrument_byte;
+  CAudioFarPointer instruments;
+  legacy_u8 stack_depth;
+  CAudioFarPointer return_stack[4];
+  legacy_u8 loop_counts[4];
+  legacy_u8 driver_channel;
+  CAudioFarPointer finish_callback;
+};
+
+class CAudioContext
+{
+  legacy_u8 channel;
+  legacy_u8 state;
+  legacy_u8 priority;
+  legacy_u8 driver_private_state[5];
+  legacy_u32 age;
+  legacy_u32 fade_out_flag;
+  CAudioFarPointer resource;
+  legacy_s16 level;
+  legacy_u8 envelope_state;
+  legacy_u8 reserved_envelope_byte;
+  legacy_u16 modulation_delay;
+  legacy_u16 modulation_count;
+  legacy_s16 modulation;
+  legacy_u16 sequence_delay;
+  legacy_u16 sequence_count;
+  legacy_u8 sequence_value;
+  legacy_u8 reserved_sequence_byte;
+  legacy_u16 modulation_step;
+  legacy_u8 modulation_direction;
+  legacy_u8 modulation_tick;
+  legacy_u8 sequence_tick;
+  legacy_u8 sequence_index;
+  legacy_u16 timer_offset;
+  legacy_u8 driver_channel;
+  legacy_u8 reserved_driver_channel_byte;
+};
+
+class CGhostCameraState
+{
+  CVector follow_position;
+  CVector previous_position;
+  legacy_s16 trackside_index;
+  legacy_s16 frame;
+  legacy_s16 crash_frame;
+};
+
+class CStartupOptions
+{
+  legacy_u8 mode4_requested;
+  legacy_u8 sound_disabled;
+  legacy_u8 unused_nd_option;
+  legacy_u8 skip_intro;
+};
+
+class CFatalOutputState
+{
+  legacy_s8 buffer[96];
+  legacy_u16 length;
+};
+
+class CFatalConversion
+{
+  legacy_s16 left_aligned;
+  legacy_s16 zero_padded;
+  legacy_s16 width;
+  legacy_s16 precision;
+  legacy_s16 long_value;
+  legacy_s8 conversion;
+};
+
+class CMouseTrackDrag
+{
+  legacy_s16 x;
+  legacy_s16 width;
+  legacy_s16 y;
+  legacy_s16 height;
+  legacy_s16 horizontal;
+  legacy_s16 length;
+  legacy_s16 thumb_start;
+  legacy_s16 thumb_size;
+};
+
+class CReadLineState
+{
+  legacy_u8 input_flags;
+  legacy_s8 *text;
+  legacy_s16 max_characters;
+  legacy_s16 insert_mode;
+  legacy_s16 first_key;
+};
+
+class CDialogContent
+{
+  legacy_s8 line_buffer[128];
+  legacy_s8 *choice_texts[20];
+  legacy_u8 choice_lengths[20];
+  CButtonArea choices[20];
+  legacy_s8 *cursor;
+  legacy_s16 line_height;
+  legacy_s16 dialog_width;
+  legacy_s16 dialog_height;
+  legacy_s16 x;
+  legacy_s16 y;
+  legacy_u16 line_length;
+  legacy_u8 choice_count;
+  legacy_u8 placeholder_index;
+};
+
+class CFileDialog
+{
+  legacy_s16 positions[40];
+  CButtonArea hit_areas[10];
+  legacy_s8 filenames[128][13];
+  legacy_s8 selected;
+  legacy_s8 scroll;
+  legacy_s8 previous_selected;
+  legacy_s8 previous_scroll;
+  legacy_u8 file_count;
+  legacy_u8 search_again;
+};
+
+class CHighscoreEntry
+{
+  legacy_s8 player_name[17];
+  legacy_s8 car_name[24];
+  legacy_u8 car_flag;
+  legacy_s8 opponent[8];
+  legacy_u16 time;
+};
+
+class CEndScreenTextLine
+{
+  legacy_s8 word[32];
+  legacy_u16 word_length;
+  legacy_u16 output_length;
+  legacy_s16 line_width;
+  legacy_s16 line_y;
+};
+
+class CEndScreenState
+{
+  legacy_s8 *misc_resource;
+  legacy_s8 *opponent_resource;
+  legacy_s8 *animation_resource;
+  legacy_u8 *animation_sequence;
+  CSprite *animation_sprite;
+  CButtonArea button_areas[4];
+  legacy_s8 score_status;
+  legacy_u8 outcome;
+  legacy_u8 opponent_active;
+  legacy_u8 evaluation_screen;
+  legacy_u8 selected;
+  legacy_u8 previous_selection;
+  legacy_u8 blit_mode;
+  legacy_u8 animation_frame;
+  legacy_u8 previous_animation_frame;
+  legacy_u8 text_prefix;
+  legacy_s16 finish_time;
+  legacy_s16 animation_x;
+  legacy_s16 animation_y;
+  legacy_s16 animation_timer;
+  legacy_s16 text_y;
+};
+
+class CRaceViewportCache
+{
+  legacy_s16 roof_height;
+  legacy_s16 dashboard_bottom;
+  legacy_u8 supersight;
+};
+
+class CRaceRewindState
+{
+  legacy_s16 active;
+  legacy_u16 origin_frame;
+  legacy_u32 held_ticks;
+  legacy_u32 accumulated;
+};
+
+class CGhostPose
+{
+  CCarState car;
+  CGhostCameraState camera;
+};
+
+class CSkybox
+{
+  legacy_u16 heights[4];
+  legacy_u16 minimum_height;
+  legacy_u16 maximum_height;
+  legacy_s16 sky_color;
+  legacy_s16 ground_color;
+  legacy_s16 water_color;
+};
+
+class CDashboardUpdate
+{
+  legacy_u16 buffer_index;
+  legacy_u16 speed_index;
+  legacy_u16 rpm_index;
+  legacy_s16 steering_position;
+  legacy_u8 wheel_state;
+  legacy_u8 wheel_redrawn;
+  legacy_u8 steering_dot_cleared;
+  legacy_u8 gauge_mode;
+};
+
+class CTrackMenuState
+{
+  legacy_u8 selected;
+  legacy_u8 previous;
+  legacy_u8 blit_mode;
+};
+
+class CTrackEditorMapCell
+{
+  legacy_u16 source_row;
+  legacy_u16 source_column;
+  legacy_u16 source_index;
+  legacy_u16 cache_index;
+  legacy_s16 x;
+  legacy_s16 y;
+  legacy_u8 tile;
+  legacy_u8 terrain;
+};
+
+class CTrackEditorSession
+{
+  legacy_u8 cached_track[132];
+  legacy_u8 cached_terrain[132];
+  CSprite *cursor_sprites[4];
+  legacy_s8 *shape_resource;
+  legacy_s8 *text_resource;
+  legacy_s8 *text_name_resource;
+  legacy_u8 selection_column[2];
+  legacy_u8 selection_row[2];
+  legacy_u8 map_column_offset;
+  legacy_u8 map_row_offset;
+  legacy_u8 previous_column_offset;
+  legacy_u8 previous_row_offset;
+  legacy_u8 page;
+  legacy_u8 previous_page;
+  legacy_u8 selected_tile;
+  legacy_u8 saved_tile;
+  legacy_u8 last_column;
+  legacy_u8 last_row;
+  legacy_u8 hovered_tile;
+  legacy_u8 previous_hovered_tile;
+  legacy_u8 multi_tile;
+  legacy_u8 tile_width;
+  legacy_u8 tile_height;
+  legacy_u8 cursor_width;
+  legacy_u8 cursor_height;
+  legacy_u8 map_dirty;
+  legacy_u8 palette_dirty;
+  legacy_u8 scrollbars_dirty;
+  legacy_u8 validate_track;
+  legacy_u8 validation_error;
+  legacy_u8 track_changed;
+  legacy_u8 menu_active;
+  legacy_u8 blit_mode;
+  legacy_u8 cursor_drawn;
+  legacy_u8 focus;
+  legacy_u8 blink_focus;
+  legacy_u8 animation_saved_tile;
+  legacy_u16 path_animation_index;
+  legacy_u16 blink_timer;
+  legacy_u16 key;
+  legacy_s16 previous_label_width;
+  legacy_s16 cursor_x;
+  legacy_s16 cursor_y;
+};
+
+class COpponentMenuState
+{
+  legacy_s8 *opponent_resource;
+  legacy_u8 selected;
+  legacy_u8 previous_selection;
+  legacy_u8 displayed_opponent;
+  legacy_u8 displayed_ghost;
+  legacy_u8 blit_mode;
+  legacy_u8 resource_loaded;
+};
+
+class CCarMenuState
+{
+  legacy_s8 car_ids[120][(4+1)];
+  legacy_s8 *car_resource;
+  legacy_u8 *selector_resource;
+  CSprite *opponent_sprite;
+  CTransformedShape3D transformed;
+  CRectangle current_rect;
+  CRectangle previous_rect;
+  CRectangle union_rect;
+  legacy_u8 car_count;
+  legacy_u8 car_index;
+  legacy_u8 previous_car_index;
+  legacy_u8 selected;
+  legacy_u8 previous_selected;
+  legacy_u8 blit_mode;
+  legacy_u8 render_phase;
+  legacy_u8 car_ready;
+  legacy_u8 render_deferred;
+  legacy_s16 rotation;
+  legacy_s16 rotation_delta;
+  legacy_s8 *material;
+  legacy_s8 *transmission;
+  legacy_u16 opponent_type;
+};
+
+class CAudioContextSelection
+{
+  legacy_u32 oldest_state1_age;
+  legacy_u32 oldest_state2_age;
+  legacy_s16 oldest_state1;
+  legacy_s16 oldest_state2;
+};
+
+class CAudioSongMapping
+{
+  legacy_u16 resource_segment;
+  legacy_u16 chunk_count;
+  legacy_u16 name_table_offset;
+  legacy_u16 offset_table_offset;
+  legacy_u16 first_data_offset;
+};
+
+class CAudioCarPositions
+{
+  CVector player_previous;
+  CVector player_current;
+  CVector opponent_previous;
+  CVector opponent_current;
+  CVector camera_previous;
+  CVector camera_current;
+};
+
+class CAudioSequenceEvent
+{
+  legacy_u32 delay;
+  legacy_u8 command;
+  legacy_u8 argument;
+  legacy_u32 value;
+  legacy_u8 size;
+};
+
+class CShape3DTransformContext
+{
+  legacy_u8 vertex_clip_flags[256];
+  CMatrix object_to_view_rotation;
+  CVector view_translation;
+  CVector view_vertices[255];
+  CPoint2D projected_vertices[255];
+  legacy_s32 visibility_mask;
+  legacy_s32 front_facing_mask;
+};
+
+class CSphereRaster
+{
+  legacy_u16 x_bits;
+  legacy_u16 y_bits;
+  legacy_u16 size_bits;
+  legacy_u16 effective_height;
+  legacy_u16 half_height;
+  legacy_u16 half_width;
+  legacy_u16 top;
+  legacy_u16 line_count;
+  legacy_u16 left_bound;
+  legacy_u16 right_bound;
+};
+
+class CPolygonRaster
+{
+  CPoint2D *first_vertex;
+  CPoint2D *last_vertex;
+  CPoint2D *top_vertex;
+  CPoint2D *bottom_vertex;
+  legacy_s16 min_x;
+  legacy_s16 max_x;
+  legacy_s16 top_y;
+  legacy_s16 bottom_y;
+  legacy_s16 clip_left;
+  legacy_s16 clip_right;
+  legacy_s16 clip_top;
+  legacy_s16 clip_bottom;
+  legacy_u16 needs_clipping;
+};
+
+class CSpriteLineDraw
+{
+  legacy_u8 *bitmap;
+  legacy_u16 sprite_segment;
+  legacy_u16 x_low;
+  legacy_u16 x_high;
+  legacy_u16 y_low;
+  legacy_u16 y_high;
+  legacy_u16 original_y_high;
+  legacy_u16 delta;
+  legacy_u16 count;
+  legacy_u8 color;
+};
+
+class CShape2DScaledDraw
+{
+  legacy_u16 shape_segment;
+  legacy_u16 source;
+  legacy_u16 source_width;
+  legacy_u16 scaled_width;
+  legacy_u16 scaled_height;
+  legacy_u16 step;
+  legacy_u16 horizontal_start;
+  legacy_u16 vertical_fraction;
+  legacy_u16 x;
+  legacy_u16 y;
+};
+
+class CShape2DClip
+{
+  legacy_u16 source;
+  legacy_u16 source_advance;
+  legacy_u16 destination;
+  legacy_u16 destination_advance;
+  legacy_u16 width;
+  legacy_u16 rows;
+};
+
+class CShape2DRleCursor
+{
+  legacy_u16 shape_segment;
+  legacy_u16 source;
+  legacy_u16 remaining;
+  legacy_u8 value;
+  legacy_s16 literal;
+};
+
+class CShape2DParseOutput
+{
+  legacy_u16 output_segment;
+  legacy_u16 output_offset;
+};
+
+class CShape2DParseRun
+{
+  legacy_u16 source_segment;
+  legacy_u16 scan_offset;
+  legacy_u16 literal_offset;
+  legacy_u16 remaining;
+  legacy_u16 literal_count;
+};
+
+class CFrameLookaheadTile
+{
+  legacy_s8 east;
+  legacy_s8 south;
+  legacy_s8 detail;
+};
+
+class CFrameSupersightTile
+{
+  legacy_s8 width;
+  legacy_s8 depth;
+  legacy_s8 priority;
+};
+
+class CFrameCamera
+{
+  CVector position;
+  CMatrix pitch_roll_rotation;
+  legacy_s16 pitch;
+  legacy_s16 yaw;
+  legacy_s16 roll;
+  legacy_s16 skybox_parameter;
+  legacy_s16 view_heading;
+};
+
+class CFrameTileSelection
+{
+  CFrameLookaheadTile *lookahead;
+  CFrameLookaheadTile extended_lookahead[110];
+  legacy_s16 count;
+  legacy_s16 first;
+  legacy_s8 detail_threshold;
+  legacy_s8 camera_east;
+  legacy_s8 camera_south;
+  legacy_s8 player_east;
+  legacy_s8 player_south;
+  legacy_s8 markers[110];
+  legacy_s8 east[110];
+  legacy_s8 south[110];
+  legacy_s8 detail[110];
+  legacy_u8 elements[110];
+  legacy_u8 terrain[110];
+};
+
+class CFrameCarRender
+{
+  legacy_s8 east;
+  legacy_s8 south;
+  legacy_s16 depth_adjustment;
+  CRectangle crash_rect;
+  legacy_s8 explosion_visible;
+};
+
+class CFrameTile
+{
+  legacy_s8 east;
+  legacy_s8 south;
+  legacy_s8 last_east;
+  legacy_s8 last_south;
+  legacy_s8 detail;
+  legacy_u8 element;
+  legacy_u8 terrain;
+  legacy_s16 height;
+  legacy_s16 depth_mask;
+  CVector position;
+};
+
+class CIntroView
+{
+  CVector camera;
+  CVector car_position;
+  legacy_s16 car_rotation;
+  legacy_s16 horizontal_angle;
+  legacy_s16 vertical_angle;
+  legacy_s16 draw_car;
+  legacy_s16 primary_logo;
+};
+
+class CIntroSession
+{
+  legacy_s8 *title_resource;
+  CVector stars[100];
+  CPoint2D point_buffers[2][100];
+  legacy_s16 point_counts[2];
+  CRectangle shape_rect;
+  CRectangle combined_rect;
+  legacy_s16 camera_x;
+  legacy_s16 camera_y;
+  legacy_s16 camera_z;
+  legacy_s16 target_x;
+  legacy_s16 target_y;
+  legacy_s16 target_z;
+  legacy_s16 frame_count;
+  legacy_s16 logo_changed;
+  legacy_s16 needs_render;
+  legacy_u16 rect_index;
+};
+
+class CPenaltyRouteSearch
+{
+  legacy_u8 visited[904];
+  legacy_s16 pending_track[128];
+  legacy_s16 pending_distance[128];
+  legacy_u16 pending_count;
+  legacy_u8 sentinel_visited;
+  legacy_s16 track_index;
+  legacy_s16 distance;
+  legacy_s16 best_track;
+  legacy_s16 best_distance;
+  legacy_s16 column;
+  legacy_s16 row;
+};
+
+class CPenaltyRouteBounds
+{
+  legacy_u8 minimum_column;
+  legacy_u8 maximum_column;
+  legacy_u8 minimum_row;
+  legacy_u8 maximum_row;
+};
+
+class COpponentGuidance
+{
+  CVector opponent;
+  CVector player;
+  CMatrix *rotation;
+  legacy_u8 forced_route;
+};
+
+class CTrackSetupBranch
+{
+  legacy_s8 column;
+  legacy_s8 row;
+  legacy_u8 tile_element;
+  legacy_u8 subtype;
+  legacy_s8 connection_status;
+  legacy_u8 runway_length;
+  legacy_s8 previous_column;
+  legacy_s8 previous_row;
+  legacy_u8 previous_tile_element;
+  legacy_u8 previous_subtype;
+  legacy_s8 previous_connection_status;
+  legacy_u8 previous_connection_code;
+  legacy_s16 previous_piece;
+};
+
+class CTrackSetupStep
+{
+  legacy_s16 column;
+  legacy_s16 row;
+  legacy_s16 orientation;
+};
+
+class CTrackSetupWalk
+{
+  CTrackSetupBranch *branches;
+  legacy_u8 visited_tiles[904];
+  legacy_u8 subtype_by_piece[902];
+  legacy_s8 connection_by_piece[902];
+  legacy_u16 branch_count;
+  legacy_s16 previous_piece;
+  legacy_s16 orientation;
+  legacy_u8 tile_element;
+  legacy_u8 tile_entry_point;
+  legacy_u8 previous_connection_code;
+  legacy_u8 subtype;
+  legacy_s8 connection_status;
+  legacy_u8 previous_subtype;
+  legacy_s8 previous_connection_status;
+  legacy_u8 previous_tile_element;
+  legacy_s8 previous_column;
+  legacy_s8 previous_row;
+  legacy_s8 column;
+  legacy_s8 row;
+  legacy_u8 runway_length;
+  legacy_u8 jump_length;
+  legacy_u8 path_closed;
+  legacy_u8 match_count;
+  legacy_u8 backtrack_required;
+};
+
+class CPlayerWheelMotion
+{
+  CVectorLong current[4];
+  CVectorLong previous[4];
+  legacy_s16 headings[4];
+  legacy_s16 contact_distances[4];
+  legacy_s16 travel;
+  legacy_s16 inverted_adjustment;
+  CVector inverted_offset;
+};
+
+class CCollisionModel
+{
+  legacy_s8 physical_model;
+  CVector *points;
+  legacy_u16 count;
+};
+
+class CCrashParticleEmission
+{
+  legacy_s16 kind;
+  legacy_s16 type_base;
+  legacy_s16 angular_range;
+  legacy_s16 base_angle;
+  legacy_s16 energy_offset;
+  legacy_s16 lifetime_scale;
+  legacy_s16 free_count;
+};
+
+class CTrackObjectSample
+{
+  CVector position;
+  CVector next_position;
+  legacy_s16 height;
+  legacy_s16 next_height;
+  legacy_s16 physical_model;
+  legacy_s16 surface_type;
+  legacy_s16 absolute_x;
+  legacy_s16 absolute_z;
+  legacy_s16 wall_orientation_modifier;
+};
+
+class CTrackObjectHandler
+{
+  legacy_s16 physical_model;
+  legacy_u8 *handle;
+};
+
+class CTrackSolidBox
+{
+  CVector minimum;
+  CVector maximum;
+};
+
+class CTrackContactRatio
+{
+  legacy_u32 numerator;
+  legacy_u32 denominator;
+};
+
+class CTrackSolidInterval
+{
+  CTrackContactRatio entry;
+  CTrackContactRatio exit;
+};
+
+class COwootRoadTriangle
+{
+  CVector vertex[3];
+};
+
+class COwootRoadModel
+{
+  legacy_u16 first_triangle;
+  legacy_u16 triangle_count;
+};
+
+class COwootProjectedPoint
+{
+  legacy_s32 x;
+  legacy_s32 z;
+};
+
+class COwootPoint
+{
+  legacy_s32 x;
+  legacy_s32 y;
+  legacy_s32 z;
+};
+
+class COwootBounds
+{
+  legacy_s32 minimum_x;
+  legacy_s32 maximum_x;
+  legacy_s32 minimum_z;
+  legacy_s32 maximum_z;
+};
+
+class COwootTires
+{
+  CVector vertices[4][(2*16)];
+  legacy_u16 counts[4];
+};
+
+class COwootGate
+{
+  COwootPoint center;
+  COwootPoint tangent;
+  COwootPoint edge;
+  COwootPoint normal;
+  legacy_s32 lateral_limit;
+  legacy_s32 normal_limit;
+  legacy_u16 kind;
+};
+
+class COwootConnectionEdge
+{
+  legacy_s8 column;
+  legacy_s8 row;
+  legacy_s8 x;
+  legacy_s8 z;
+};
+
+class CGameStateWriter
+{
+  legacy_u8 *destination;
+  legacy_u16 offset;
 };

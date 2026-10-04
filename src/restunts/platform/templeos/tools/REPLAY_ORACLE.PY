@@ -4,6 +4,10 @@
 import argparse
 import hashlib
 from pathlib import Path
+import runpy
+
+
+STYLE = runpy.run_path(str(Path(__file__).with_name("STYLE.PY")))
 
 
 HEADER_BYTES = 2
@@ -29,6 +33,7 @@ def main():
     parser.add_argument("--executable", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--frames", type=int, default=DEFAULT_TEST_FRAMES)
+    parser.add_argument("--formatter", help="Path to clang-format 18.1.8")
     args = parser.parse_args()
     dump = args.dump.read_bytes()
     replay = args.replay.read_bytes()
@@ -57,7 +62,8 @@ def main():
         suffix = "," if start + HASHES_PER_LINE < len(hashes) else "};"
         lines.append("\t" + ", ".join(hashes[start:start + HASHES_PER_LINE]) + suffix)
     lines.append("")
-    args.output.write_bytes("\r\n".join(lines).encode("ascii"))
+    text = STYLE["format_source"]("\n".join(lines), args.formatter, args.output)
+    args.output.write_bytes(text.encode("ascii"))
 
 
 if __name__ == "__main__":

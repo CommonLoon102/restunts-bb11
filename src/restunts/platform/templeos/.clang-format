@@ -1,0 +1,24 @@
+# HolyC layout follows Terry Davis's TempleOS sources.
+BasedOnStyle: LLVM
+IndentWidth: 2
+ContinuationIndentWidth: 4
+TabWidth: 8
+UseTab: Never
+ColumnLimit: 100
+LineEnding: CRLF
+InsertNewlineAtEOF: true
+BreakBeforeBraces: Linux
+InsertBraces: false
+AllowShortBlocksOnASingleLine: Never
+AllowShortFunctionsOnASingleLine: None
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine: false
+IndentCaseLabels: true
+AlignAfterOpenBracket: DontAlign
+AlignOperands: DontAlign
+PointerAlignment: Right
+SpaceBeforeParens: Never
+SpaceBeforeAssignmentOperators: false
+SpaceAfterCStyleCast: false
+SortIncludes: Never
+ReflowComments: true

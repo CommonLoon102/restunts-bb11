@@ -7,19 +7,31 @@ The host run adds address/undefined-behavior sanitizers for bounds and masks.
 """
 
 from pathlib import Path
+import json
 import os
 import re
+import runpy
 import subprocess
 import tempfile
 
 root = Path(__file__).resolve().parents[1]
+style = runpy.run_path(str(root / "tools" / "STYLE.PY"))
+names = json.loads((root / "generated" / "NAMES.JSON").read_text())
+# These identifiers belong to the host C runtime, not the translated game.
+host_runtime = {
+    "assert", "calloc", "ceil", "fabs", "free", "llabs", "main", "memcmp",
+    "memcpy", "memset", "puts", "sqrt",
+}
+fixture_names = {name: renamed for name, renamed in names.items() if name not in host_runtime}
 s='\n'.join((root/f).read_text() for f in ['PALETTE.HH','PALETTE.HC','RASTER.HH','RASTER.HC','MATERIAL.HC'])
 s=re.sub(r'^#include.*$','',s,flags=re.M)
-s=re.sub(r'class (\w+)\s+\{',r'typedef struct \1 \1; struct \1 {',s)
-s=s.replace('output[index] = 0;', 'memset(&output[index],0,sizeof(output[index]));')
-s=s.replace('(*source++)(legacy_s8)','((legacy_s8)*source++)')
+s=re.sub(r'\bclass\s+(\w+)\s*\{',r'typedef struct \1 \1; struct \1 {',s)
+s=re.sub(r'\boutput\s*\[\s*index\s*\]\s*=\s*0\s*;',
+         'memset(&output[index],0,sizeof(output[index]));',s)
+s=re.sub(r'\(\s*\*\s*source\s*\+\+\s*\)\s*\(\s*legacy_s8\s*\)',
+         '((legacy_s8)*source++)',s)
 for name in ['start_x','start_y','end_x','end_y']:
- s=s.replace(name+'(legacy_s16)','((legacy_s16)'+name+')')
+ s=re.sub(r'\b'+name+r'\s*\(\s*legacy_s16\s*\)','((legacy_s16)'+name+')',s)
 prefix=r'''
 #include <assert.h>
 #include <stdlib.h>
@@ -119,6 +131,10 @@ prefix = prefix.replace("RESTUNTS_MATERIAL_COUNT", next(
     if line.startswith("#define SHAPE3D_MATERIAL_COUNT ")
 ))
 prefix = prefix.replace("RESTUNTS_LEGACY_INCLUDE", str(root.parents[1] / "c" / "legacy.h"))
+# The source fixtures keep their C-side names so the generated manifest remains
+# the single mapping between shared C and native HolyC symbols.
+prefix = style["rename_identifiers"](prefix, fixture_names)
+tests = style["rename_identifiers"](tests, fixture_names)
 with tempfile.TemporaryDirectory(prefix="restunts-raster-") as directory:
     source = Path(directory) / "TEST.C"
     program = Path(directory) / "TEST"

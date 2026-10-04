@@ -2,75 +2,75 @@
 
 legacy_s64 TempleCastU8(legacy_u64 value)
 {
-	value &= 255;
-	return value;
+  value&=255;
+  return value;
 }
 
 legacy_s64 TempleCastS8(legacy_u64 value)
 {
-	value &= 255;
-	if (value & 128) {
-		return value - 256;
-	}
-	return value;
+  value&=255;
+  if(value&128) {
+    return value-256;
+  }
+  return value;
 }
 
 legacy_s64 TempleCastU16(legacy_u64 value)
 {
-	value &= 65535;
-	return value;
+  value&=65535;
+  return value;
 }
 
 legacy_s64 TempleCastS16(legacy_u64 value)
 {
-	value &= 65535;
-	if (value & 32768) {
-		return value - 65536;
-	}
-	return value;
+  value&=65535;
+  if(value&32768) {
+    return value-65536;
+  }
+  return value;
 }
 
 legacy_s64 TempleCastU32(legacy_u64 value)
 {
-	value &= 4294967295;
-	return value;
+  value&=4294967295;
+  return value;
 }
 
 legacy_s64 TempleCastS32(legacy_u64 value)
 {
-	value &= 4294967295;
-	if (value & 2147483648) {
-		return value - 4294967296;
-	}
-	return value;
+  value&=4294967295;
+  if(value&2147483648) {
+    return value-4294967296;
+  }
+  return value;
 }
 
 legacy_u64 TempleCastU64(legacy_u64 value)
 {
-	return value;
+  return value;
 }
 
-legacy_u64 TempleDivideU64(legacy_u64 dividend, legacy_u64 divisor)
+legacy_u64 TempleDivideU64(legacy_u64 dividend,legacy_u64 divisor)
 {
-	return dividend / divisor;
+  return dividend/divisor;
 }
 
-legacy_u64 TempleRemainderU64(legacy_u64 dividend, legacy_u64 divisor)
+legacy_u64 TempleRemainderU64(legacy_u64 dividend,legacy_u64 divisor)
 {
-	return dividend % divisor;
+  return dividend%divisor;
 }
 
 legacy_s64 TempleCastS64(legacy_s64 value)
 {
-	return value;
+  return value;
 }
 
-legacy_s64 TempleDivideS64(legacy_s64 dividend, legacy_s64 divisor)
+legacy_s64 TempleDivideS64(legacy_s64 dividend,legacy_s64 divisor)
 {
-	return dividend / divisor;
+  return dividend/divisor;
 }
 
-legacy_s64 TempleRemainderS64(legacy_s64 dividend, legacy_s64 divisor)
+legacy_s64 TempleRemainderS64(legacy_s64 dividend,legacy_s64 divisor)
 {
-	return dividend % divisor;
+  return dividend%divisor;
 }
