@@ -122,7 +122,7 @@ Replay pan and zoom controls still work; the next F3 preset uses its fixed posit
 ### HyperVision and FPS display
 
 Press **F12** while driving or viewing a replay to toggle HyperVision. In SDL3
-builds (Windows, Linux, BSD, macOS, 32-bit DOS, and WebAssembly), it starts with
+builds (Windows, Linux, BSD, Haiku, macOS, 32-bit DOS, and WebAssembly), it starts with
 the entire 30 x 30 track, detailed models, and 1280x800 internal rendering. Driving and replay rendering
 adapt to sustained CPU load to target 60 FPS, using these stages in order:
 
@@ -320,7 +320,7 @@ borderless window when fullscreen is turned off. Omit the variable or set it to
 frame pacing, or VSync. It has no effect in DOS, browser, or batch builds.
 Maximization depends on window-manager support.
 
-On Windows, Linux, BSD, and macOS, VSync is enabled by default in both windowed and fullscreen
+On Windows, Linux, BSD, Haiku, and macOS, VSync is enabled by default in both windowed and fullscreen
 mode, with or without HyperVision. The game requests synchronization to the display's
 vertical refresh; SDL may use timed pacing when a renderer cannot synchronize.
 The existing classic and 60 FPS HyperVision targets still apply. Set
@@ -337,7 +337,7 @@ default. If the renderer cannot apply the requested setting, the game warns and
 continues. The setting does not affect DOS builds or batch dump tools. Display
 synchronization waits are excluded from automatic HyperVision quality measurements.
 
-On Windows, Linux, BSD, and macOS, HyperVision draws serially by default with zero background
+On Windows, Linux, BSD, Haiku, and macOS, HyperVision draws serially by default with zero background
 render workers. Set `RESTUNTS_RENDER_WORKERS` to `1` through `7` to select a
 background worker count, or `auto` to use the detected logical CPU count minus
 one, capped at seven. The setting is read when the renderer initializes its
@@ -517,10 +517,10 @@ the tachometer. The stock value `0x0010` keeps both needles white, and
 
 ## How to build
 
-SDL3 builds support Linux, BSD, Windows, macOS, 32-bit DOS, and
+SDL3 builds support Linux, BSD, Haiku, Windows, macOS, 32-bit DOS, and
 [offline HTML/WebAssembly](#sdl3-webassembly-build-offline-html).
 
-### SDL3 native builds: Linux, BSD, Windows, macOS, and 32-bit DOS
+### SDL3 native builds: Linux, BSD, Haiku, Windows, macOS, and 32-bit DOS
 
 The CMake build produces the game (`restunts`), physics dumper (`repldump`),
 and renderer dumper (`pixldump`) for all native targets. Run the commands below
@@ -891,6 +891,15 @@ Linux binaries and libraries cannot be used for these native targets. See the
 package creation. CI uses BSD virtual machines; the NetBSD x86 jobs build in
 an i386 userspace inside the amd64 VM.
 
+#### Haiku hosts: x86-64 and x86
+
+The `haiku-x64` and `haiku-x86` targets build natively on Haiku R1/beta6
+x86-64 and x86 with modern GCC and SDL3. They produce separate `.tar.gz`
+archives containing the game, dump tools, enhanced artwork, and replaceable
+Nuked library. See the
+[Haiku build and VM testing guide](docs/haiku.md) for dependencies, local builds,
+package creation, and the QEMU workflow used for validation.
+
 #### SDL3 build options, packages, and DOS runtime
 
 Desktop regression binaries are built by default. Add
@@ -918,7 +927,7 @@ cmake --install out/sdl3-dos --prefix out/package-dos --component Runtime
 Run only the install commands for targets you built. For native Windows
 builds, substitute `out/sdl3-windows-x64-msys2` or `out/sdl3-dos-windows` as
 the build directory. Packages contain `bin/` executables, the desktop Nuked
-library in Linux/BSD/macOS `lib/` or Windows `bin/`, and dependency sources/notices under
+library in Linux/BSD/Haiku/macOS `lib/` or Windows `bin/`, and dependency sources/notices under
 `share/`. Keep the complete package together when moving or distributing it.
 Game data is separate; desktop programs accept `--data-dir stunts` as their
 first option when launched from the repository root.
@@ -1430,10 +1439,10 @@ refactors and audit results.
 
 ## CI packages and releases
 
-**PR validation** and **Release** build all 18 distribution packages: 16-bit and
+**PR validation** and **Release** build all 20 distribution packages: 16-bit and
 32-bit DOS; Linux ARMv7, ARM64, x86 with and without SSE2, and x64; Windows ARM64,
 x86 with and without SSE2, and x64; FreeBSD, OpenBSD, and NetBSD x64; NetBSD x86
-with and without SSE2; Universal macOS; and the offline browser.
+with and without SSE2; Haiku x64 and x86; Universal macOS; and the offline browser.
 The reusable **Build release packages** workflow is used by **PR validation** and **Release**.
 
 Packages contain the runtime dependencies and enhanced artwork, but no original
@@ -1517,8 +1526,9 @@ nonempty JSON array of unique names from `dos` and `sdl3`. **Build and validate*
 Unknown names, duplicates, and empty arrays fail validation before building.
 Unselected replay platforms are skipped. **PR validation** and **Release**
 always build every distribution package, including the DOS executables, even
-when replay tests select only SDL3. The package matrix does not run game tests
-on additional operating systems or architectures.
+when replay tests select only SDL3. Haiku package jobs also run native CTest
+regressions; full golden replay corpus validation remains in the selected DOS
+and Linux x64 SDL3 jobs.
 
 Physics covers the full golden replay set; renderer tests use the configured
 percentage (the reusable and manual workflows default to 100%). Both DOS and

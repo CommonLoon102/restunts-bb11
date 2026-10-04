@@ -26,6 +26,8 @@ TARGETS = {
     "dos16": ".zip",
     "dos32": ".zip",
     "freebsd-x64": ".tar.gz",
+    "haiku-x64": ".tar.gz",
+    "haiku-x86": ".tar.gz",
     "linux-arm32": ".tar.gz",
     "linux-arm64": ".tar.gz",
     "linux-x86": ".tar.gz",
@@ -49,6 +51,8 @@ BSD_TARGETS = {
     "netbsd-x86": "NetBSD 32-bit x86 with SSE2",
     "netbsd-x86-no-sse2": "NetBSD 32-bit x86; SSE2 instructions are disabled",
 }
+HAIKU_TARGETS = {"haiku-x64": "Haiku x86-64", "haiku-x86": "Haiku 32-bit x86 with SSE2"}
+ELF_TARGETS = {**BSD_TARGETS, **HAIKU_TARGETS}
 ELF_MAGIC = b"\x7fELF"
 ELF_CLASS_32 = 1
 ELF_CLASS_64 = 2
@@ -59,11 +63,11 @@ ELF_MACHINE_X86 = 3
 ELF_MACHINE_X64 = 62
 ELF_MACHINE_OFFSET = 18
 ELF_HEADER_SIZES = {ELF_CLASS_32: 52, ELF_CLASS_64: 64}
-BSD_ELF_ARCHITECTURES = {
+ELF_ARCHITECTURES = {
     "x86": (ELF_CLASS_32, ELF_MACHINE_X86),
     "x64": (ELF_CLASS_64, ELF_MACHINE_X64),
 }
-BSD_ELF_FILES = {f"bin/{name}" for name in NATIVE_EXECUTABLES} | {"lib/libnuked-opl2.so"}
+ELF_FILES = {f"bin/{name}" for name in NATIVE_EXECUTABLES} | {"lib/libnuked-opl2.so"}
 ORIGINAL_SUFFIXES = {
     ".res", ".pre", ".3sh", ".vsh", ".pvs", ".rpl", ".trk", ".vce", ".drv", ".fnt",
     ".cod", ".dif", ".hig", ".bin", ".bni", ".pdo", ".pdd",
@@ -151,6 +155,8 @@ def required_files(target):
     if target == "dos16":
         return required
     required |= {"share/docs/restunts/sdl3.md", "share/licenses/restunts/SDL-LICENSE.txt"}
+    if target in HAIKU_TARGETS:
+        required.add("share/docs/restunts/haiku.md")
     required |= {f"bin/menus/{background}.png" for background in MENU_BACKGROUNDS}
     required |= {f"bin/skyboxes/sky{theme}-{image}.png"
                  for theme in range(len(SKYBOX_THEMES)) for image in range(len(SKYBOX_IMAGES))}
@@ -197,9 +203,9 @@ def validate_contents(target, files, modes):
             executables.add("run-restunts.sh")
         for name in executables:
             require(modes[name] & stat.S_IXUSR, f"Missing executable permission: {name}")
-    if target in BSD_TARGETS:
-        elf_class, machine = BSD_ELF_ARCHITECTURES[target.split("-")[1]]
-        for name in BSD_ELF_FILES:
+    if target in ELF_TARGETS:
+        elf_class, machine = ELF_ARCHITECTURES[target.split("-")[1]]
+        for name in ELF_FILES:
             content = files[name]
             require(len(content) >= ELF_HEADER_SIZES[elf_class] and content.startswith(ELF_MAGIC),
                     f"Missing or truncated ELF header: {name}")
@@ -232,9 +238,12 @@ def readme(target, commit):
                   "You can also use: bash run-restunts.sh --data-dir PATH_TO_YOUR_STUNTS_FOLDER"]
     if target.startswith("windows-x86"):
         lines += ["Requires Windows XP SP2 or newer (the pinned SDL system API minimum)."]
+    if target in ELF_TARGETS:
+        lines += [f"Built for {ELF_TARGETS[target]}."]
     if target in BSD_TARGETS:
-        lines += [f"Built for {BSD_TARGETS[target]}.",
-                  "Packages for different BSD operating systems are not interchangeable."]
+        lines += ["Packages for different BSD operating systems are not interchangeable."]
+    if target in HAIKU_TARGETS:
+        lines += ["See share/docs/restunts/haiku.md for Haiku setup and VM testing."]
     if target == "dos32":
         lines += ["You can instead copy the entire contents of bin (including artwork folders)",
                   "into your original game's directory, then run restunts.exe there.",

@@ -26,8 +26,10 @@ OTHER_COMMIT = "b" * 40
 RUN_ID = "12345"
 RUN_ATTEMPT = "2"
 FILE_DATA = b"release fixture\n"
-BSD_TARGETS = {
+ELF_TARGETS = {
     "freebsd-x64": "FreeBSD x86-64",
+    "haiku-x64": "Haiku x86-64",
+    "haiku-x86": "Haiku 32-bit x86 with SSE2",
     "openbsd-x64": "OpenBSD x86-64",
     "netbsd-x64": "NetBSD x86-64",
     "netbsd-x86": "NetBSD 32-bit x86 with SSE2",
@@ -43,9 +45,9 @@ class ReleasePackageTests(unittest.TestCase):
         self.output = self.root / "archives"
 
     def runtime_data(self, target, name):
-        if target not in BSD_TARGETS or name not in PACKAGES.BSD_ELF_FILES:
+        if target not in ELF_TARGETS or name not in PACKAGES.ELF_FILES:
             return FILE_DATA
-        elf_class, machine = PACKAGES.BSD_ELF_ARCHITECTURES[target.split("-")[1]]
+        elf_class, machine = PACKAGES.ELF_ARCHITECTURES[target.split("-")[1]]
         header = bytearray(PACKAGES.ELF_HEADER_SIZES[elf_class])
         header[:len(PACKAGES.ELF_MAGIC)] = PACKAGES.ELF_MAGIC
         header[PACKAGES.ELF_CLASS_OFFSET] = elf_class
@@ -98,8 +100,8 @@ class ReleasePackageTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "injected.exe"):
             PACKAGES.verify_directory(arguments)
 
-    def test_bsd_archives_include_native_runtime_and_platform_instructions(self):
-        for target, platform in BSD_TARGETS.items():
+    def test_elf_archives_include_native_runtime_and_platform_instructions(self):
+        for target, platform in ELF_TARGETS.items():
             with self.subTest(target=target):
                 archive = self.create(target)
                 self.assertEqual(archive.name, f"restunts-{target}.tar.gz")
@@ -115,9 +117,12 @@ class ReleasePackageTests(unittest.TestCase):
                                  "bin/menus/opponent.png"):
                     self.assertIn(required, files)
                 self.assertIn(platform, files[PACKAGES.README].decode("utf-8"))
+                if target.startswith("haiku-"):
+                    self.assertIn("share/docs/restunts/haiku.md", files)
+                    self.assertIn("share/docs/restunts/haiku.md", files[PACKAGES.README].decode("utf-8"))
 
-    def test_bsd_executables_must_have_execute_permission(self):
-        for target in BSD_TARGETS:
+    def test_elf_executables_must_have_execute_permission(self):
+        for target in ELF_TARGETS:
             files = {name: self.runtime_data(target, name) for name in PACKAGES.required_files(target)}
             modes = {name: PACKAGES.FILE_MODE for name in files}
             for executable in PACKAGES.NATIVE_EXECUTABLES:
@@ -129,11 +134,11 @@ class ReleasePackageTests(unittest.TestCase):
                         self.assertRaisesRegex(ValueError, f"Missing executable permission: {name}"):
                     PACKAGES.validate_contents(target, files, {**modes, name: PACKAGES.FILE_MODE})
 
-    def test_bsd_archives_reject_wrong_or_missing_elf_architecture(self):
-        for target in BSD_TARGETS:
+    def test_elf_archives_reject_wrong_or_missing_elf_architecture(self):
+        for target in ELF_TARGETS:
             files = {name: self.runtime_data(target, name) for name in PACKAGES.required_files(target)}
             modes = {name: PACKAGES.EXECUTABLE_MODE for name in files}
-            for name in PACKAGES.BSD_ELF_FILES:
+            for name in PACKAGES.ELF_FILES:
                 wrong_class = bytearray(files[name])
                 wrong_class[PACKAGES.ELF_CLASS_OFFSET] = (
                     PACKAGES.ELF_CLASS_32 if target.endswith("-x64") else PACKAGES.ELF_CLASS_64)
@@ -146,12 +151,12 @@ class ReleasePackageTests(unittest.TestCase):
                             self.assertRaisesRegex(ValueError, "ELF"):
                         PACKAGES.validate_contents(target, {**files, name: content}, modes)
 
-    def test_complete_release_requires_every_bsd_archive(self):
+    def test_complete_release_requires_every_elf_archive(self):
         for target in PACKAGES.TARGETS:
             self.create(target)
         arguments = argparse.Namespace(directory=self.output, commit=COMMIT, all=True,
                                        run_id=RUN_ID, run_attempt=RUN_ATTEMPT)
-        for target in BSD_TARGETS:
+        for target in ELF_TARGETS:
             archive = self.output / PACKAGES.archive_name(target)
             saved = self.root / archive.name
             archive.rename(saved)

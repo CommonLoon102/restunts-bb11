@@ -1,8 +1,9 @@
 # Chocolate Stunts on GitHub Pages
 
-The landing page lives in `site/`. It presents the game's features, download links
-for all 18 release packages, and the browser game in a same-origin iframe. Its
-relative URLs work under a repository path such as `/restunts-bb11/`.
+The landing page lives in `site/`. It presents the game's features, download
+links for released packages, Haiku build instructions, and the browser game
+in a same-origin iframe. Its relative URLs work under a repository path such
+as `/restunts-bb11/`.
 
 The linked `site/quick-guide.html` shares the landing page styling and gives
 returning players a short guide to added hotkeys and launch parameters. Keep
@@ -81,13 +82,16 @@ the Pages builder requires the complete release ZIP, not a standalone HTML file.
 The hosted game is `game/restunts.html`. Its matching, unmodified browser ZIP is
 available as `game/browser-runtime.zip`, with a checksum sidecar. That archive
 includes the dependency notices, licenses, Nuked source, and complete relink kit.
-Keep the archive and notice links with the hosted game. The 18 download cards
+Keep the archive and notice links with the hosted game. The package cards
 link to released packages independently of this required runtime-materials link.
 
 ## Update release download links
 
-The 18 package cards in `site/index.html` link directly to the
+The released package cards in `site/index.html` link directly to the
 [v1.2.0 release archives](https://github.com/CommonLoon102/restunts-bb11/releases/tag/v1.2.0).
+The two Haiku cards link to build instructions until a release includes
+`restunts-haiku-x64.tar.gz` and `restunts-haiku-x86.tar.gz`. Only link an archive
+after it has been published.
 For a new release, update each card anchor's `href` to its matching archive
 and update the version and release link in the section's notice.
 Match each card's `data-target` to the

@@ -2,13 +2,13 @@
 
 The SDL3 platform in `src/restunts/platform/sdl3/` builds the game (`restunts`),
 physics replay dumper (`repldump`), and renderer dumper (`pixldump`) for Windows,
-Linux, FreeBSD, OpenBSD, NetBSD, macOS, 32-bit DOS, and [WebAssembly for offline browsers](wasm.md). The existing Open Watcom 16-bit DOS build remains available
+Linux, FreeBSD, OpenBSD, NetBSD, Haiku, macOS, 32-bit DOS, and [WebAssembly for offline browsers](wasm.md). The existing Open Watcom 16-bit DOS build remains available
 through `make -C src/restunts restunts repldump pixldump`; its platform code stays
 under `src/restunts/platform/dos/`.
 
 ## Dependencies and supported build targets
 
-CMake 3.25+, a C99 GCC-compatible compiler (plus MinGW C++ on Windows), a build
+CMake 3.25+, a C99 GCC-compatible compiler (plus C++ for SDL on Windows and Haiku), a build
 tool, Git, and network access are required. CMake fetches and verifies SDL3 upstream commit
 [`015489c672f24feed28c2aa2cdd6176df95329f3`](https://github.com/libsdl-org/SDL/tree/015489c672f24feed28c2aa2cdd6176df95329f3).
 That revision includes SDL's DOS backend and the gameport/Sound Blaster timing fix
@@ -23,6 +23,7 @@ All platforms use the same revision; no separate SDL fork is required.
 | FreeBSD x64 | Native compiler, FreeBSD 14.4 amd64 build baseline. |
 | OpenBSD x64 | Native Clang, OpenBSD 7.9 amd64 build baseline. |
 | NetBSD x64 and x86 | Native GCC, NetBSD 10.2 amd64/i386 build baseline; separate x86 SSE2 and no-SSE2 packages. |
+| Haiku x64 and x86 | Native modern GCC/G++, Haiku R1/beta6; x86 uses the hybrid system’s modern GCC ABI and SSE2. |
 | macOS arm64 and x86_64 | Apple Clang and macOS SDK; helper scripts target macOS 11.0+. Universal builds are available. |
 | Windows x86 | MinGW-w64 with MSVCRT; Windows XP SP2+ runtime, XP API target; separate SSE2 and no-SSE2 packages. |
 | Windows x64 | MinGW-w64; Windows 7 API target. |
@@ -146,6 +147,13 @@ extracted package. The executables find Nuked relative to their location;
 artwork discovery works without requiring NetBSD's optional `/proc` mount.
 BSD CI checks executable architecture, package contents and startup after
 relocation. Interactive graphics/audio and older hardware require native testing.
+
+## Haiku
+
+The native `haiku-x64` and `haiku-x86` targets use Haiku R1/beta6 and SDL3's Haiku
+video and audio drivers. The [Haiku guide](haiku.md) covers build dependencies,
+CMake commands, runtime packaging, and reproducible QEMU tests. Release CI
+builds both targets in Haiku VMs and checks the installed packages after relocation.
 
 ## macOS
 
@@ -300,7 +308,7 @@ Windows uses the corresponding `.exe` names. Dump outputs and saved game data
 are written in the selected data directory, so it must be writable. Keep the
 original game resources and replay/car additions together there.
 
-On Linux, BSD, Windows, and macOS, the interactive game defaults to serial rendering with
+On Linux, BSD, Haiku, Windows, and macOS, the interactive game defaults to serial rendering with
 zero background render workers. `RESTUNTS_RENDER_WORKERS=auto` enables automatic
 parallel rendering, or use a count from `0` through `7`. See the
 [render-worker settings](../readme.md#hypervision-and-fps-display) for Linux and
@@ -316,7 +324,7 @@ dissolve retain their incremental updates. Pages are released on video shutdown.
 This internal buffering does not force SDL's swapchain buffer count or replace
 monitor synchronization. The DOS indexed/VESA presentation path is unchanged.
 
-Windows, Linux, BSD, and macOS enable VSync by default in windowed and fullscreen mode,
+Windows, Linux, BSD, Haiku, and macOS enable VSync by default in windowed and fullscreen mode,
 including classic rendering and HyperVision. SDL may use timed pacing when a
 renderer cannot synchronize to the display. Set `RESTUNTS_VSYNC=0` before
 launching the game to disable it; `1`, an empty value, or an unset variable
@@ -437,8 +445,9 @@ The shared **Build release packages** workflow builds all distribution targets f
 The matrix includes ARMv7, ARM64, both x86 SSE2 variants, Windows ARM64, and a
 Universal macOS 11+ package. Native BSD VM jobs add FreeBSD, OpenBSD, and NetBSD
 x64 plus NetBSD x86 with and without SSE2. They check package contents, binary architecture,
-and relocated startup without game data. The cross-built targets do not run game
-tests. Linux/BSD/macOS archives use `.tar.gz` to preserve
+and relocated startup without game data. Haiku R1/beta6 VM jobs build
+and check the x64 and x86 packages. The cross-built targets do not run game
+tests. Linux/BSD/Haiku/macOS archives use `.tar.gz` to preserve
 executable permissions; DOS, Windows, and browser archives use `.zip`.
 
 Native Linux SDL3 tests cover the platform layer, AdLib synthesis, worker
@@ -478,7 +487,7 @@ from the build matrix; a successful sample is not evidence that all replays,
 controllers, or sound hardware have been exercised.
 
 CI archives contain an installed package: executables in `bin/`, Nuked's shared
-library in `lib/` on Linux/BSD/macOS or `bin/` on Windows, dependency license notices, and
+library in `lib/` on Linux/BSD/Haiku/macOS or `bin/` on Windows, dependency license notices, and
 the exact Nuked source and rebuild instructions. DOS packages omit Nuked and
 DOS32 includes CWSDPMI. The browser archive retains its Nuked relinking kit.
 The manual **Release** workflow publishes the exact build archives after
@@ -494,7 +503,7 @@ out/package-linux-x64/bin/restunts --data-dir "$PWD/stunts" --nointro
 ```
 
 Distribute the complete directory, including `THIRD-PARTY-NOTICES.txt` and
-`share/`. Linux, BSD, and macOS executables find the library relative to their installed location,
+`share/`. Linux, BSD, Haiku, and macOS executables find the library relative to their installed location,
 so the package can be moved; Windows loads the DLL beside the executable.
 Do not distribute a desktop executable alone. `--component Tests` installs a
 separate test package with the same license and source material.
