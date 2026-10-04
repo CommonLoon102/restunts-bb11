@@ -118,7 +118,8 @@ cannot hold 64-bit pointers.
 Run the guest checks with tools/VM.PY and a fresh disposable disk for each entry:
 
     COMPILE.HC        Compile the complete port without starting the game.
-    TEST_NATIVE.HC    File persistence, input scaling, and timer callbacks.
+    TEST_NATIVE.HC    File persistence, input scaling, and real-time timer cadence.
+    TEST_TIMER.HC     Clock rollback, callback cadence, suspension, and reset.
     TEST_RENDERER.HC  Palette, native raster, masks, backgrounds, video cleanup.
     TEST_AUDIO.HC     Speaker note/engine/bend periods and PCM task cleanup.
     TEST_AUDIO_CORE.HC Native callbacks in the original packed audio structures.
