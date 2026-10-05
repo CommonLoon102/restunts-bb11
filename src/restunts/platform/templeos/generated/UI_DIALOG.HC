@@ -2,7 +2,7 @@
 
 legacy_s8 RsUiDialogLegacyS8FromBits(legacy_u8 value)
 {
-  legacy_s32 temple_tmp_1288;
+  legacy_s32 noreg temple_tmp_1288;
   if((value<=127)) {
     temple_tmp_1288=TempleCastS32(TempleCastS8(value));
   } else {
@@ -14,7 +14,7 @@ legacy_s8 RsUiDialogLegacyS8FromBits(legacy_u8 value)
 
 legacy_s16 RsUiDialogLegacyS16FromBits(legacy_u16 value)
 {
-  legacy_s32 temple_tmp_1289;
+  legacy_s32 noreg temple_tmp_1289;
   if((value<=32767)) {
     temple_tmp_1289=TempleCastS32(TempleCastS16(value));
   } else {
@@ -26,7 +26,7 @@ legacy_s16 RsUiDialogLegacyS16FromBits(legacy_u16 value)
 
 legacy_s32 RsUiDialogLegacyS32FromBits(legacy_u32 value)
 {
-  legacy_s32 temple_tmp_1290;
+  legacy_s32 noreg temple_tmp_1290;
   if((value<=TempleCastU32(2147483647))) {
     temple_tmp_1290=TempleCastS32(TempleCastS32(value));
   } else {
@@ -39,10 +39,10 @@ legacy_s32 RsUiDialogLegacyS32FromBits(legacy_u32 value)
 legacy_void RsSpriteXorRectOutline(
     legacy_s16 left,legacy_s16 top,legacy_s16 right,legacy_s16 bottom,legacy_s16 color)
 {
-  legacy_s16 temple_x_1291;
-  legacy_s16 temple_y_1292;
-  legacy_s16 temple_width_1293;
-  legacy_s16 temple_height_1294;
+  legacy_s16 noreg temple_x_1291;
+  legacy_s16 noreg temple_y_1292;
+  legacy_s16 noreg temple_width_1293;
+  legacy_s16 noreg temple_height_1294;
   temple_x_1291=TempleCastS16(RsUiDialogLegacyS16FromBits(TempleCastU16(TempleCastU16(left))));
   temple_y_1292=TempleCastS16(RsUiDialogLegacyS16FromBits(TempleCastU16(TempleCastU16(top))));
   temple_width_1293=TempleCastS16(
@@ -76,7 +76,7 @@ legacy_void RsSpriteXorRectOutline(
 
 legacy_u16 RsUiDialogDialogAsciiLower(legacy_u16 character)
 {
-  legacy_s32 temple_tmp_1295;
+  legacy_s32 noreg temple_tmp_1295;
   temple_tmp_1295=!!((character<256));
   if(temple_tmp_1295) {
     temple_tmp_1295=!!((TempleCastS32((rs_ui_dialog_g_ascii_props[character]&1))!=0));
@@ -109,11 +109,11 @@ legacy_s16 RsUiDialogDialogAdvanceHeight(legacy_s16 dialog_height,legacy_s16 lin
 
 legacy_void RsUiDialogDialogMeasure(CDialogContent *dialog,legacy_u8 *text_resource)
 {
-  legacy_u8 temple_character_1296;
-  legacy_s32 temple_tmp_1298;
-  legacy_s16 temple_measured_width_1299;
+  legacy_u8 noreg temple_character_1296;
+  legacy_s32 noreg temple_tmp_1298;
+  legacy_s16 noreg temple_measured_width_1299;
   legacy_u16 *temple_tmp_1300;
-  legacy_u16 temple_tmp_1301;
+  legacy_u16 noreg temple_tmp_1301;
   (dialog->line_height=TempleCastS16(RsUiDialogLegacyS16FromBits(TempleCastU16(TempleCastU16(
       TempleCastU16(TempleCastS32((TempleCastU16(font_glyph_height)+TempleCastU16(2)))))))));
   (dialog->dialog_height=TempleCastS16(0));
@@ -158,11 +158,11 @@ legacy_void RsUiDialogDialogMeasure(CDialogContent *dialog,legacy_u8 *text_resou
 legacy_s16 RsUiDialogDialogDrawFrame(CDialogContent *dialog,legacy_u16 x_argument,
     legacy_u16 y_argument,legacy_s16 save_background,legacy_s16 border_color)
 {
-  legacy_s16 temple_left_1302;
-  legacy_s16 temple_right_1303;
-  legacy_s16 temple_top_1304;
-  legacy_s16 temple_bottom_1305;
-  legacy_s32 temple_tmp_1306;
+  legacy_s16 noreg temple_left_1302;
+  legacy_s16 noreg temple_right_1303;
+  legacy_s16 noreg temple_top_1304;
+  legacy_s16 noreg temple_bottom_1305;
+  legacy_s32 noreg temple_tmp_1306;
   (dialog->x=TempleCastS16(RsUiDialogLegacyS16FromBits(TempleCastU16(TempleCastU16(x_argument)))));
   (dialog->y=TempleCastS16(RsUiDialogLegacyS16FromBits(TempleCastU16(TempleCastU16(y_argument)))));
   if((dialog->x==TempleCastS32((-(1))))) {
@@ -235,13 +235,13 @@ legacy_s16 RsUiDialogDialogDrawFrame(CDialogContent *dialog,legacy_u16 x_argumen
 legacy_void RsUiDialogDialogDrawMessage(CDialogContent *dialog,legacy_u8 *text_resource,
     legacy_s16 dialog_type,legacy_s16 *disabled_choices)
 {
-  legacy_u8 temple_character_1307;
-  legacy_s32 temple_tmp_1309;
-  legacy_s32 temple_tmp_1310;
+  legacy_u8 noreg temple_character_1307;
+  legacy_s32 noreg temple_tmp_1309;
+  legacy_s32 noreg temple_tmp_1310;
   legacy_u16 *temple_tmp_1311;
-  legacy_u16 temple_tmp_1312;
+  legacy_u16 noreg temple_tmp_1312;
   legacy_u16 *temple_tmp_1313;
-  legacy_u16 temple_tmp_1314;
+  legacy_u16 noreg temple_tmp_1314;
   (dialog->cursor=(text_resource)(legacy_s8 *));
   (dialog->line_length=TempleCastU16(0));
   (dialog->placeholder_index=TempleCastU8(0));
@@ -299,24 +299,24 @@ legacy_void RsUiDialogDialogDrawMessage(CDialogContent *dialog,legacy_u8 *text_r
 
 legacy_void RsUiDialogDialogMeasureChoices(CDialogContent *dialog)
 {
-  legacy_u8 temple_character_1315;
+  legacy_u8 noreg temple_character_1315;
   legacy_u16 *temple_tmp_1317;
-  legacy_u16 temple_tmp_1318;
-  legacy_u16 temple_character_count_1319;
-  legacy_u16 temple_choice_width_1320;
-  legacy_s32 temple_tmp_1322;
-  legacy_s32 temple_tmp_1323;
+  legacy_u16 noreg temple_tmp_1318;
+  legacy_u16 noreg temple_character_count_1319;
+  legacy_u16 noreg temple_choice_width_1320;
+  legacy_s32 noreg temple_tmp_1322;
+  legacy_s32 noreg temple_tmp_1323;
   legacy_u16 *temple_tmp_1324;
-  legacy_u16 temple_tmp_1325;
+  legacy_u16 noreg temple_tmp_1325;
   legacy_u16 *temple_tmp_1326;
-  legacy_u16 temple_tmp_1327;
+  legacy_u16 noreg temple_tmp_1327;
   legacy_u8 *temple_tmp_1328;
-  legacy_u8 temple_tmp_1329;
-  legacy_s32 temple_tmp_1330;
-  legacy_s32 temple_tmp_1331;
-  legacy_u16 temple_index_1333;
+  legacy_u8 noreg temple_tmp_1329;
+  legacy_s32 noreg temple_tmp_1330;
+  legacy_s32 noreg temple_tmp_1331;
+  legacy_u16 noreg temple_index_1333;
   legacy_u16 *temple_tmp_1334;
-  legacy_u16 temple_tmp_1335;
+  legacy_u16 noreg temple_tmp_1335;
   (dialog->choice_count=TempleCastU8(0));
   while(1) {
     if(!((TempleCastU8((*(dialog->cursor)))=='['))) {
@@ -420,14 +420,14 @@ legacy_void RsUiDialogDialogMeasureChoices(CDialogContent *dialog)
 legacy_void RsUiDialogDialogDrawChoices(
     CDialogContent *dialog,legacy_u8 selected,legacy_s16 *disabled_choices)
 {
-  legacy_u16 temple_copied_1336;
+  legacy_u16 noreg temple_copied_1336;
   legacy_s8 temple_choice_buffer_1337[80];
-  legacy_u16 temple_index_1339;
-  legacy_s32 temple_tmp_1340;
+  legacy_u16 noreg temple_index_1339;
+  legacy_s32 noreg temple_tmp_1340;
   legacy_u16 *temple_tmp_1342;
-  legacy_u16 temple_tmp_1343;
+  legacy_u16 noreg temple_tmp_1343;
   legacy_u16 *temple_tmp_1344;
-  legacy_u16 temple_tmp_1345;
+  legacy_u16 noreg temple_tmp_1345;
   RsMouseDrawOpaqueCheck();
   temple_index_1339=TempleCastU16(0);
   while(1) {
@@ -472,7 +472,7 @@ legacy_void RsUiDialogDialogDrawChoices(
 
 legacy_u16 RsUiDialogDialogChoiceHotkey(legacy_s8 *cursor)
 {
-  legacy_u16 temple_hotkey_1346;
+  legacy_u16 noreg temple_hotkey_1346;
   while(1) {
     (temple_hotkey_1346=TempleCastU16(TempleCastU8((*((cursor++))))));
     if(!((temple_hotkey_1346==' '))) {
@@ -500,8 +500,8 @@ legacy_u16 RsUiDialogDialogApplyHotkey(
 legacy_void RsUiDialogDialogSelectPrevious(
     legacy_u8 *selected,legacy_u8 choice_count,legacy_s16 *disabled_choices)
 {
-  legacy_s32 temple_tmp_1349;
-  legacy_s32 temple_tmp_1350;
+  legacy_s32 noreg temple_tmp_1349;
+  legacy_s32 noreg temple_tmp_1350;
   while(1) {
     if(((*(selected))==0)) {
       temple_tmp_1350=TempleCastS32(TempleCastU8(TempleCastU32((choice_count-1))));
@@ -522,7 +522,7 @@ legacy_void RsUiDialogDialogSelectPrevious(
 legacy_void RsUiDialogDialogSelectNext(
     legacy_u8 *selected,legacy_u8 choice_count,legacy_s16 *disabled_choices)
 {
-  legacy_s32 temple_tmp_1352;
+  legacy_s32 noreg temple_tmp_1352;
   while(1) {
     ((*(selected))=TempleCastU8(TempleCastU8(TempleCastU32(((*(selected))+1)))));
     if(((*(selected))>=choice_count)) {
@@ -541,9 +541,9 @@ legacy_void RsUiDialogDialogSelectNext(
 legacy_s16 RsUiDialogDialogApplyMenuInput(
     legacy_u16 input,legacy_u8 *selected,legacy_u8 choice_count,legacy_s16 *disabled_choices)
 {
-  legacy_s32 temple_tmp_1353;
-  legacy_s32 temple_tmp_1354;
-  legacy_s32 temple_tmp_1355;
+  legacy_s32 noreg temple_tmp_1353;
+  legacy_s32 noreg temple_tmp_1354;
+  legacy_s32 noreg temple_tmp_1355;
   temple_tmp_1353=!!((input==KEY_SPACE));
   if(!temple_tmp_1353) {
     temple_tmp_1353=!!((input==KEY_ENTER));
@@ -578,16 +578,16 @@ legacy_s16 RsUiDialogDialogApplyMenuInput(
 legacy_s16 RsUiDialogDialogRunMenu(
     CDialogContent *dialog,legacy_s16 *disabled_choices,legacy_s16 initial_choice)
 {
-  legacy_u8 temple_selected_1356;
-  legacy_u8 temple_previous_1357;
-  legacy_u16 temple_second_hotkey_1358;
-  legacy_u16 temple_first_hotkey_1359;
-  legacy_u16 temple_input_1361;
-  legacy_s16 temple_hit_1362;
-  legacy_s32 temple_tmp_1363;
-  legacy_s32 temple_tmp_1364;
-  legacy_s32 temple_tmp_1365;
-  legacy_s32 temple_tmp_1366;
+  legacy_u8 noreg temple_selected_1356;
+  legacy_u8 noreg temple_previous_1357;
+  legacy_u16 noreg temple_second_hotkey_1358;
+  legacy_u16 noreg temple_first_hotkey_1359;
+  legacy_u16 noreg temple_input_1361;
+  legacy_s16 noreg temple_hit_1362;
+  legacy_s32 noreg temple_tmp_1363;
+  legacy_s32 noreg temple_tmp_1364;
+  legacy_s32 noreg temple_tmp_1365;
+  legacy_s32 noreg temple_tmp_1366;
   temple_selected_1356=TempleCastU8(TempleCastU8(initial_choice));
   temple_previous_1357=TempleCastU8(255);
   RsTimerGetDeltaAlt();
@@ -653,8 +653,8 @@ legacy_u16 RsShowDialog(legacy_s16 dialog_type,legacy_s16 save_background,
     legacy_s16 *disabled_choices,legacy_s16 initial_choice)
 {
   CDialogContent temple_dialog_1367;
-  legacy_u16 temple_input_1368;
-  legacy_s16 temple_result_1369;
+  legacy_u16 noreg temple_input_1368;
+  legacy_s16 noreg temple_result_1369;
   RsUiDialogDialogMeasure((&(temple_dialog_1367)),text_resource);
   if((!(RsUiDialogDialogDrawFrame((&(temple_dialog_1367)),TempleCastU16(x_argument),
         TempleCastU16(y_argument),TempleCastS16(save_background),
@@ -706,9 +706,9 @@ legacy_u16 RsShowDialog(legacy_s16 dialog_type,legacy_s16 save_background,
 legacy_void RsUiDialogFileDialogDrawFrame(
     CFileDialog *dialog,legacy_s8 *directory,legacy_s8 *prompt)
 {
-  legacy_u16 temple_index_1372;
+  legacy_u16 noreg temple_index_1372;
   legacy_u16 *temple_tmp_1373;
-  legacy_u16 temple_tmp_1374;
+  legacy_u16 noreg temple_tmp_1374;
   RsPreRenderLine(TempleCastU16(TempleCastS32((dialog->positions[4]-4))),
       TempleCastU16(TempleCastS32((dialog->positions[5]+4))),
       TempleCastU16(TempleCastS32((dialog->positions[4]+171))),
@@ -755,16 +755,16 @@ legacy_u16 RsUiDialogFileDialogEditDirectory(CFileDialog *dialog,legacy_s8 *dire
 legacy_void RsUiDialogFileDialogCollectNames(CFileDialog *dialog,legacy_s8 *found_path)
 {
   legacy_u8 *temple_tmp_1375;
-  legacy_u8 temple_tmp_1376;
-  legacy_s32 temple_tmp_1378;
+  legacy_u8 noreg temple_tmp_1376;
+  legacy_s32 noreg temple_tmp_1378;
   legacy_u8 *temple_tmp_1379;
-  legacy_u8 temple_tmp_1380;
-  legacy_u16 temple_index_1382;
-  legacy_u16 temple_compare_index_1384;
+  legacy_u8 noreg temple_tmp_1380;
+  legacy_u16 noreg temple_index_1382;
+  legacy_u16 noreg temple_compare_index_1384;
   legacy_u16 *temple_tmp_1385;
-  legacy_u16 temple_tmp_1386;
+  legacy_u16 noreg temple_tmp_1386;
   legacy_u16 *temple_tmp_1387;
-  legacy_u16 temple_tmp_1388;
+  legacy_u16 noreg temple_tmp_1388;
   temple_tmp_1375=&(dialog->file_count);
   temple_tmp_1376=*temple_tmp_1375;
   *temple_tmp_1375=TempleCastU8((temple_tmp_1376+1));
@@ -827,11 +827,11 @@ legacy_void RsUiDialogFileDialogDrawScrollLabels(CFileDialog *dialog)
 
 legacy_void RsUiDialogFileDialogDrawRows(CFileDialog *dialog)
 {
-  legacy_u16 temple_visible_row_1390;
-  legacy_s16 temple_candidate_1391;
-  legacy_u16 temple_text_width_1392;
+  legacy_u16 noreg temple_visible_row_1390;
+  legacy_s16 noreg temple_candidate_1391;
+  legacy_u16 noreg temple_text_width_1392;
   legacy_u16 *temple_tmp_1393;
-  legacy_u16 temple_tmp_1394;
+  legacy_u16 noreg temple_tmp_1394;
   (dialog->previous_selected=TempleCastS8(dialog->selected));
   (dialog->previous_scroll=TempleCastS8(dialog->scroll));
   RsMouseDrawOpaqueCheck();
@@ -873,13 +873,13 @@ legacy_void RsUiDialogFileDialogDrawRows(CFileDialog *dialog)
 
 legacy_u16 RsUiDialogFileDialogApplyMouse(CFileDialog *dialog,legacy_s16 hit,legacy_u16 key)
 {
-  legacy_s32 temple_tmp_1395;
-  legacy_s32 temple_tmp_1396;
-  legacy_s16 temple_candidate_1397;
+  legacy_s32 noreg temple_tmp_1395;
+  legacy_s32 noreg temple_tmp_1396;
+  legacy_s16 noreg temple_candidate_1397;
   legacy_s8 *temple_tmp_1398;
-  legacy_s8 temple_tmp_1399;
+  legacy_s8 noreg temple_tmp_1399;
   legacy_s8 *temple_tmp_1400;
-  legacy_s8 temple_tmp_1401;
+  legacy_s8 noreg temple_tmp_1401;
   if((hit==TempleCastS32((-(1))))) {
     return TempleCastU16(key);
   }
@@ -930,16 +930,16 @@ legacy_u16 RsUiDialogFileDialogApplyMouse(CFileDialog *dialog,legacy_s16 hit,leg
 
 legacy_s8 RsUiDialogFileDialogApplyKey(CFileDialog *dialog,legacy_u16 key)
 {
-  legacy_s32 temple_tmp_1402;
+  legacy_s32 noreg temple_tmp_1402;
   legacy_s8 *temple_tmp_1403;
-  legacy_s8 temple_tmp_1404;
+  legacy_s8 noreg temple_tmp_1404;
   legacy_s8 *temple_tmp_1405;
-  legacy_s8 temple_tmp_1406;
-  legacy_s32 temple_tmp_1407;
-  legacy_u8 temple_character_1408;
-  legacy_u16 temple_index_1410;
+  legacy_s8 noreg temple_tmp_1406;
+  legacy_s32 noreg temple_tmp_1407;
+  legacy_u8 noreg temple_character_1408;
+  legacy_u16 noreg temple_index_1410;
   legacy_u16 *temple_tmp_1411;
-  legacy_u16 temple_tmp_1412;
+  legacy_u16 noreg temple_tmp_1412;
   temple_tmp_1402=!!((key==KEY_ENTER));
   if(!temple_tmp_1402) {
     temple_tmp_1402=!!((key==KEY_SPACE));
@@ -995,12 +995,12 @@ legacy_s8 RsUiDialogFileDialogApplyKey(CFileDialog *dialog,legacy_u16 key)
 
 legacy_s8 RsUiDialogFileDialogChoose(CFileDialog *dialog,legacy_s8 *directory,legacy_s8 *filename)
 {
-  legacy_s8 temple_result_1413;
-  legacy_s32 temple_tmp_1415;
-  legacy_u16 temple_key_1416;
-  legacy_s16 temple_hit_1417;
+  legacy_s8 noreg temple_result_1413;
+  legacy_s32 noreg temple_tmp_1415;
+  legacy_u16 noreg temple_key_1416;
+  legacy_s16 noreg temple_hit_1417;
   legacy_s8 *temple_tmp_1419;
-  legacy_s8 temple_tmp_1420;
+  legacy_s8 noreg temple_tmp_1420;
   (dialog->selected=TempleCastS8(0));
   (dialog->scroll=TempleCastS8(0));
   (dialog->previous_selected=TempleCastS8(TempleCastS32((-(1)))));
@@ -1067,9 +1067,9 @@ legacy_s8 RsDoFileselectDialog(
     legacy_s8 *directory,legacy_s8 *filename,legacy_s8 *extension,legacy_s8 *prompt)
 {
   CFileDialog temple_dialog_1421;
-  legacy_s16 temple_dialog_result_1422;
-  legacy_u8 temple_saved_busy_1423;
-  legacy_s8 temple_result_1424;
+  legacy_s16 noreg temple_dialog_result_1422;
+  legacy_u8 noreg temple_saved_busy_1423;
+  legacy_s8 noreg temple_result_1424;
   legacy_s8 *temple_found_path_1426;
   temple_dialog_result_1422=TempleCastS16(RsUiDialogLegacyS16FromBits(
       TempleCastU16(TempleCastU16(RsShowDialog(TempleCastS16(DIALOG_TYPE_PLACEHOLDERS),
@@ -1140,11 +1140,11 @@ legacy_void RsShowWaiting()
 legacy_s16 RsDoSavefileDialog(legacy_s8 *primary,legacy_s8 *secondary,legacy_s8 *prompt)
 {
   legacy_s16 temple_positions_1430[6];
-  legacy_s16 temple_result_1431;
-  legacy_s16 temple_key_1433;
-  legacy_s16 temple_character_index_1435;
+  legacy_s16 noreg temple_result_1431;
+  legacy_s16 noreg temple_key_1433;
+  legacy_s16 noreg temple_character_index_1435;
   legacy_s16 *temple_tmp_1436;
-  legacy_s16 temple_tmp_1437;
+  legacy_s16 noreg temple_tmp_1437;
   temple_result_1431=TempleCastS16(RsUiDialogLegacyS16FromBits(
       TempleCastU16(TempleCastU16(RsShowDialog(TempleCastS16(DIALOG_TYPE_PLACEHOLDERS),
           TempleCastS16(DIALOG_SAVE_BACKGROUND),RsLocateTextRes(mainresptr,file_save_dialog_id),
@@ -1204,7 +1204,7 @@ legacy_s16 RsDoSavefileDialog(legacy_s8 *primary,legacy_s8 *secondary,legacy_s8 
 
 legacy_s16 RsShowDiskErrorDialog()
 {
-  legacy_s16 temple_result_1438;
+  legacy_s16 noreg temple_result_1438;
   RsInputPushStatus();
   if((g_is_busy!=0)) {
     (temple_result_1438=TempleCastS16(
@@ -1230,20 +1230,20 @@ legacy_void RsSecurityCheck(legacy_s16 question_index)
   legacy_u8 *temple_resource_1441;
   legacy_s8 temple_question_text_1442[1024];
   legacy_u8 temple_question_parts_1443[6];
-  legacy_u16 temple_i_1445;
+  legacy_u16 noreg temple_i_1445;
   legacy_u16 *temple_tmp_1446;
-  legacy_u16 temple_tmp_1447;
+  legacy_u16 noreg temple_tmp_1447;
   legacy_s16 temple_positions_1448[8];
-  legacy_u16 temple_answer_length_1449;
+  legacy_u16 noreg temple_answer_length_1449;
   legacy_s8 temple_answer_1450[22];
-  legacy_u16 temple_attempts_1451;
-  legacy_u16 temple_i_1454;
-  legacy_u8 temple_character_1455;
+  legacy_u16 noreg temple_attempts_1451;
+  legacy_u16 noreg temple_i_1454;
+  legacy_u8 noreg temple_character_1455;
   legacy_u16 *temple_tmp_1456;
-  legacy_u16 temple_tmp_1457;
+  legacy_u16 noreg temple_tmp_1457;
   legacy_u16 *temple_tmp_1458;
-  legacy_u16 temple_tmp_1459;
-  legacy_s32 temple_tmp_1460;
+  legacy_u16 noreg temple_tmp_1459;
+  legacy_s32 noreg temple_tmp_1460;
   MemSet(&temple_question_id_1439,0,sizeof(temple_question_id_1439));
   MemCpy(temple_question_id_1439,"q00",4);
   (temple_question_id_1439[2]=

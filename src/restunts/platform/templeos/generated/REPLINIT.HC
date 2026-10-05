@@ -2,7 +2,7 @@
 
 legacy_s8 RsReplinitLegacyS8FromBits(legacy_u8 value)
 {
-  legacy_s32 temple_tmp_613;
+  legacy_s32 noreg temple_tmp_613;
   if((value<=127)) {
     temple_tmp_613=TempleCastS32(TempleCastS8(value));
   } else {
@@ -14,7 +14,7 @@ legacy_s8 RsReplinitLegacyS8FromBits(legacy_u8 value)
 
 legacy_s16 RsReplinitLegacyS16FromBits(legacy_u16 value)
 {
-  legacy_s32 temple_tmp_614;
+  legacy_s32 noreg temple_tmp_614;
   if((value<=32767)) {
     temple_tmp_614=TempleCastS32(TempleCastS16(value));
   } else {
@@ -26,7 +26,7 @@ legacy_s16 RsReplinitLegacyS16FromBits(legacy_u16 value)
 
 legacy_s32 RsReplinitLegacyS32FromBits(legacy_u32 value)
 {
-  legacy_s32 temple_tmp_615;
+  legacy_s32 noreg temple_tmp_615;
   if((value<=TempleCastU32(2147483647))) {
     temple_tmp_615=TempleCastS32(TempleCastS32(value));
   } else {
@@ -46,14 +46,14 @@ legacy_void RsInitVideoGeometryFlags()
 
 legacy_void RsInitRowTables()
 {
-  legacy_s16 temple_i_617;
-  legacy_s16 temple_inverse_row_618;
-  legacy_s16 temple_track_position_619;
-  legacy_u32 temple_tmp_620;
-  legacy_s16 temple_terrain_position_621;
-  legacy_u32 temple_tmp_622;
+  legacy_s16 noreg temple_i_617;
+  legacy_s16 noreg temple_inverse_row_618;
+  legacy_s16 noreg temple_track_position_619;
+  legacy_u32 noreg temple_tmp_620;
+  legacy_s16 noreg temple_terrain_position_621;
+  legacy_u32 noreg temple_tmp_622;
   legacy_s16 *temple_tmp_623;
-  legacy_s16 temple_tmp_624;
+  legacy_s16 noreg temple_tmp_624;
   temple_i_617=TempleCastS16(0);
   while(1) {
     if(!((temple_i_617<30))) {

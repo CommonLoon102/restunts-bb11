@@ -50,7 +50,7 @@ legacy_void TestPolygonSharedEdges(CDC *dc)
   legacy_s64 center_y;
   legacy_s64 clipped_top;
   legacy_s64 clipped_bottom;
-  legacy_u8 expected;
+  legacy_u8 noreg expected;
   MemCpy(&saved_sprite,&drawing_sprite,sizeof(CSprite));
   for(native=FALSE;native<=TRUE;native++) {
     TempleRasterNative(native);
@@ -143,7 +143,7 @@ legacy_void TestNativeGeometry(CDC *dc)
   CPoint2D vertices[TEST_POLYGON_VERTEX_COUNT];
   legacy_s64 x;
   legacy_s64 y;
-  legacy_u8 expected;
+  legacy_u8 noreg expected;
   RsVideoPagesFillSpan(
       drawing_sprite.sprite_bitmapptr,0,TEMPLE_LOGICAL_WIDTH*TEMPLE_LOGICAL_HEIGHT,BLACK);
   TempleRasterNative(TRUE);

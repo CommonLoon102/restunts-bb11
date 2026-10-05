@@ -2,7 +2,7 @@
 
 legacy_s8 RsShape3dResourcesLegacyS8FromBits(legacy_u8 value)
 {
-  legacy_s32 temple_tmp_3374;
+  legacy_s32 noreg temple_tmp_3374;
   if((value<=127)) {
     temple_tmp_3374=TempleCastS32(TempleCastS8(value));
   } else {
@@ -14,7 +14,7 @@ legacy_s8 RsShape3dResourcesLegacyS8FromBits(legacy_u8 value)
 
 legacy_s16 RsShape3dResourcesLegacyS16FromBits(legacy_u16 value)
 {
-  legacy_s32 temple_tmp_3375;
+  legacy_s32 noreg temple_tmp_3375;
   if((value<=32767)) {
     temple_tmp_3375=TempleCastS32(TempleCastS16(value));
   } else {
@@ -26,7 +26,7 @@ legacy_s16 RsShape3dResourcesLegacyS16FromBits(legacy_u16 value)
 
 legacy_s32 RsShape3dResourcesLegacyS32FromBits(legacy_u32 value)
 {
-  legacy_s32 temple_tmp_3376;
+  legacy_s32 noreg temple_tmp_3376;
   if((value<=TempleCastU32(2147483647))) {
     temple_tmp_3376=TempleCastS32(TempleCastS32(value));
   } else {
@@ -38,11 +38,11 @@ legacy_s32 RsShape3dResourcesLegacyS32FromBits(legacy_u32 value)
 
 legacy_s16 RsShape3dLoadAll()
 {
-  legacy_u32 temple_mmgrofsdiff_3377;
-  legacy_s16 temple_i_3379;
+  legacy_u32 noreg temple_mmgrofsdiff_3377;
+  legacy_s16 noreg temple_i_3379;
   legacy_s8 *temple_shapename_3380;
   legacy_s16 *temple_tmp_3381;
-  legacy_s16 temple_tmp_3382;
+  legacy_s16 noreg temple_tmp_3382;
   (game1ptr=0);
   (game2ptr=0);
   temple_mmgrofsdiff_3377=TempleCastU32(RsMmgrGetResOfsDiffScaled());
@@ -82,8 +82,8 @@ legacy_void RsShape3dFreeAll()
 
 legacy_void RsShape3dInitShape(legacy_s8 *shapeptr,CShape3D *gameshape)
 {
-  legacy_u16 temple_primitive_count_3383;
-  legacy_u16 temple_vertex_bytes_3384;
+  legacy_u16 noreg temple_primitive_count_3383;
+  legacy_u16 noreg temple_vertex_bytes_3384;
   (gameshape->shape3d_numverts=TempleCastU16(TempleCastU8(shapeptr[0])));
   temple_primitive_count_3383=TempleCastU16(TempleCastU8(shapeptr[1]));
   (gameshape->shape3d_numprimitives=TempleCastU16(temple_primitive_count_3383));

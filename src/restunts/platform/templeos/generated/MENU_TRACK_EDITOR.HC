@@ -2,7 +2,7 @@
 
 legacy_s8 RsMenuTrackEditorLegacyS8FromBits(legacy_u8 value)
 {
-  legacy_s32 temple_tmp_2285;
+  legacy_s32 noreg temple_tmp_2285;
   if((value<=127)) {
     temple_tmp_2285=TempleCastS32(TempleCastS8(value));
   } else {
@@ -14,7 +14,7 @@ legacy_s8 RsMenuTrackEditorLegacyS8FromBits(legacy_u8 value)
 
 legacy_s16 RsMenuTrackEditorLegacyS16FromBits(legacy_u16 value)
 {
-  legacy_s32 temple_tmp_2286;
+  legacy_s32 noreg temple_tmp_2286;
   if((value<=32767)) {
     temple_tmp_2286=TempleCastS32(TempleCastS16(value));
   } else {
@@ -26,7 +26,7 @@ legacy_s16 RsMenuTrackEditorLegacyS16FromBits(legacy_u16 value)
 
 legacy_s32 RsMenuTrackEditorLegacyS32FromBits(legacy_u32 value)
 {
-  legacy_s32 temple_tmp_2287;
+  legacy_s32 noreg temple_tmp_2287;
   if((value<=TempleCastU32(2147483647))) {
     temple_tmp_2287=TempleCastS32(TempleCastS32(value));
   } else {
@@ -38,18 +38,18 @@ legacy_s32 RsMenuTrackEditorLegacyS32FromBits(legacy_u32 value)
 
 legacy_void RsPreRenderIcons(legacy_u8 page)
 {
-  legacy_u16 temple_row_2289;
-  legacy_u16 temple_column_2291;
-  legacy_u8 temple_tile_2292;
-  legacy_u16 temple_x_2293;
-  legacy_u16 temple_y_2294;
-  legacy_u8 temple_multi_tile_2295;
-  legacy_s32 temple_tmp_2296;
-  legacy_s32 temple_tmp_2297;
+  legacy_u16 noreg temple_row_2289;
+  legacy_u16 noreg temple_column_2291;
+  legacy_u8 noreg temple_tile_2292;
+  legacy_u16 noreg temple_x_2293;
+  legacy_u16 noreg temple_y_2294;
+  legacy_u8 noreg temple_multi_tile_2295;
+  legacy_s32 noreg temple_tmp_2296;
+  legacy_s32 noreg temple_tmp_2297;
   legacy_u16 *temple_tmp_2298;
-  legacy_u16 temple_tmp_2299;
+  legacy_u16 noreg temple_tmp_2299;
   legacy_u16 *temple_tmp_2300;
-  legacy_u16 temple_tmp_2301;
+  legacy_u16 noreg temple_tmp_2301;
   temple_row_2289=TempleCastU16(0);
   while(1) {
     if(!((temple_row_2289<6))) {
@@ -127,7 +127,7 @@ legacy_void RsPreRenderIcons(legacy_u8 page)
 
 legacy_void RsMenuTrackEditorTrackEditorDrawMapElement(CTrackEditorMapCell *cell)
 {
-  legacy_u8 temple_multi_tile_2302;
+  legacy_u8 noreg temple_multi_tile_2302;
   temple_multi_tile_2302=
       TempleCastU8(TempleCastU8(trk_object_list[cell->tile].ss_multi_tile_flag));
   switch(temple_multi_tile_2302) {
@@ -195,8 +195,8 @@ legacy_void RsMenuTrackEditorTrackEditorDrawMapElement(CTrackEditorMapCell *cell
 legacy_void RsMenuTrackEditorTrackEditorDrawMapCell(
     CTrackEditorMapCell *cell,legacy_u8 *cached_track,legacy_u8 *cached_terrain)
 {
-  legacy_s32 temple_tmp_2303;
-  legacy_s32 temple_tmp_2304;
+  legacy_s32 noreg temple_tmp_2303;
+  legacy_s32 noreg temple_tmp_2304;
   if((cell->tile==0)) {
     temple_tmp_2303=!!((cached_track[cell->cache_index]==0));
     if(temple_tmp_2303) {
@@ -229,12 +229,12 @@ legacy_void RsMenuTrackEditorTrackEditorDrawMapCell(
 legacy_void RsMenuTrackEditorTrackEditorDrawMapContinuation(CTrackEditorMapCell *cell,
     legacy_u16 map_row,legacy_u16 map_column,legacy_u8 *cached_track,legacy_u8 *cached_terrain)
 {
-  legacy_s32 temple_tmp_2305;
-  legacy_u8 temple_neighbor_tile_2306;
-  legacy_s32 temple_tmp_2307;
-  legacy_s32 temple_tmp_2308;
-  legacy_s32 temple_tmp_2309;
-  legacy_s32 temple_tmp_2310;
+  legacy_s32 noreg temple_tmp_2305;
+  legacy_u8 noreg temple_neighbor_tile_2306;
+  legacy_s32 noreg temple_tmp_2307;
+  legacy_s32 noreg temple_tmp_2308;
+  legacy_s32 noreg temple_tmp_2309;
+  legacy_s32 noreg temple_tmp_2310;
   temple_tmp_2305=!!((map_row!=0));
   if(temple_tmp_2305) {
     temple_tmp_2305=!!((map_column!=0));
@@ -331,12 +331,12 @@ legacy_void RsDraw2DtrackMap(legacy_u8 column_offset,legacy_u8 row_offset,legacy
     legacy_u8 *cached_terrain)
 {
   CTrackEditorMapCell temple_cell_2311;
-  legacy_u16 temple_map_row_2313;
-  legacy_u16 temple_map_column_2315;
+  legacy_u16 noreg temple_map_row_2313;
+  legacy_u16 noreg temple_map_column_2315;
   legacy_u16 *temple_tmp_2316;
-  legacy_u16 temple_tmp_2317;
+  legacy_u16 noreg temple_tmp_2317;
   legacy_u16 *temple_tmp_2318;
-  legacy_u16 temple_tmp_2319;
+  legacy_u16 noreg temple_tmp_2319;
   temple_map_row_2313=TempleCastU16(0);
   while(1) {
     if(!((temple_map_row_2313<11))) {
@@ -417,11 +417,11 @@ legacy_u16 RsMenuTrackEditorTrackMenuPreviousRow(legacy_u16 row)
 legacy_void RsMenuTrackEditorTrackEditorValidateSquareLinks(
     legacy_u8 *used,legacy_u16 current_index,legacy_u16 east_index,legacy_u16 next_index)
 {
-  legacy_s32 temple_tmp_2320;
-  legacy_s32 temple_tmp_2321;
-  legacy_s32 temple_tmp_2322;
-  legacy_s32 temple_tmp_2323;
-  legacy_s32 temple_tmp_2324;
+  legacy_s32 noreg temple_tmp_2320;
+  legacy_s32 noreg temple_tmp_2321;
+  legacy_s32 noreg temple_tmp_2322;
+  legacy_s32 noreg temple_tmp_2323;
+  legacy_s32 noreg temple_tmp_2324;
   temple_tmp_2320=!!((used[east_index]!=0));
   if(!temple_tmp_2320) {
     temple_tmp_2320=!!((used[next_index]!=0));
@@ -457,11 +457,11 @@ legacy_void RsMenuTrackEditorTrackEditorValidateSquareLinks(
 legacy_void RsMenuTrackEditorTrackEditorValidateTileLinks(
     legacy_u8 *used,legacy_u16 row,legacy_u16 column,legacy_u16 current_index,legacy_u8 tile)
 {
-  legacy_u8 temple_multi_tile_2325;
-  legacy_u16 temple_east_index_2326;
-  legacy_u16 temple_next_index_2327;
-  legacy_s32 temple_tmp_2328;
-  legacy_s32 temple_tmp_2329;
+  legacy_u8 noreg temple_multi_tile_2325;
+  legacy_u16 noreg temple_east_index_2326;
+  legacy_u16 noreg temple_next_index_2327;
+  legacy_s32 noreg temple_tmp_2328;
+  legacy_s32 noreg temple_tmp_2329;
   temple_multi_tile_2325=TempleCastU8(trk_object_list[tile].ss_multi_tile_flag);
   switch(temple_multi_tile_2325) {
     case 1:
@@ -507,17 +507,17 @@ legacy_void RsMenuTrackEditorTrackEditorValidateTileLinks(
 
 legacy_void RsTrackEditorRemoveInvalidMultitileLinks()
 {
-  legacy_u16 temple_current_index_2330;
+  legacy_u16 noreg temple_current_index_2330;
   legacy_u8 temple_used_2331[900];
   legacy_u16 *temple_tmp_2333;
-  legacy_u16 temple_tmp_2334;
-  legacy_u16 temple_row_2336;
-  legacy_u16 temple_column_2338;
-  legacy_u8 temple_tile_2339;
+  legacy_u16 noreg temple_tmp_2334;
+  legacy_u16 noreg temple_row_2336;
+  legacy_u16 noreg temple_column_2338;
+  legacy_u8 noreg temple_tile_2339;
   legacy_u16 *temple_tmp_2340;
-  legacy_u16 temple_tmp_2341;
+  legacy_u16 noreg temple_tmp_2341;
   legacy_u16 *temple_tmp_2342;
-  legacy_u16 temple_tmp_2343;
+  legacy_u16 noreg temple_tmp_2343;
   (temple_current_index_2330=TempleCastU16(0));
   while(1) {
     if(!((temple_current_index_2330<900))) {
@@ -569,11 +569,11 @@ legacy_void RsTrackEditorRemoveInvalidMultitileLinks()
 
 legacy_u8 RsMenuTrackEditorTrackEditorWaterTileAllowed(legacy_u8 tile)
 {
-  legacy_s32 temple_tmp_2344;
-  legacy_s32 temple_tmp_2345;
-  legacy_s32 temple_tmp_2346;
-  legacy_s32 temple_tmp_2347;
-  legacy_s32 temple_tmp_2348;
+  legacy_s32 noreg temple_tmp_2344;
+  legacy_s32 noreg temple_tmp_2345;
+  legacy_s32 noreg temple_tmp_2346;
+  legacy_s32 noreg temple_tmp_2347;
+  legacy_s32 noreg temple_tmp_2348;
   temple_tmp_2344=!!((tile>=34));
   if(temple_tmp_2344) {
     temple_tmp_2344=!!((tile<=35));
@@ -600,8 +600,8 @@ legacy_u8 RsMenuTrackEditorTrackEditorWaterTileAllowed(legacy_u8 tile)
 legacy_u8 RsMenuTrackEditorTrackEditorTerrainError(
     legacy_u16 row,legacy_u16 column,legacy_u8 terrain,legacy_u8 tile)
 {
-  legacy_s32 temple_tmp_2349;
-  legacy_s32 temple_tmp_2350;
+  legacy_s32 noreg temple_tmp_2349;
+  legacy_s32 noreg temple_tmp_2350;
   temple_tmp_2349=!!((terrain>=1));
   if(temple_tmp_2349) {
     temple_tmp_2349=!!((terrain<=5));
@@ -630,19 +630,19 @@ legacy_u8 RsMenuTrackEditorTrackEditorTerrainError(
 
 legacy_s16 RsTrackEditorRemoveInvalidTerrainTiles()
 {
-  legacy_u8 temple_error_2351;
-  legacy_u16 temple_row_2353;
-  legacy_u16 temple_column_2355;
-  legacy_u8 temple_terrain_2356;
-  legacy_u16 temple_current_index_2357;
-  legacy_u8 temple_tile_2358;
-  legacy_s32 temple_tmp_2359;
-  legacy_s32 temple_tmp_2360;
-  legacy_u8 temple_tile_error_2361;
+  legacy_u8 noreg temple_error_2351;
+  legacy_u16 noreg temple_row_2353;
+  legacy_u16 noreg temple_column_2355;
+  legacy_u8 noreg temple_terrain_2356;
+  legacy_u16 noreg temple_current_index_2357;
+  legacy_u8 noreg temple_tile_2358;
+  legacy_s32 noreg temple_tmp_2359;
+  legacy_s32 noreg temple_tmp_2360;
+  legacy_u8 noreg temple_tile_error_2361;
   legacy_u16 *temple_tmp_2362;
-  legacy_u16 temple_tmp_2363;
+  legacy_u16 noreg temple_tmp_2363;
   legacy_u16 *temple_tmp_2364;
-  legacy_u16 temple_tmp_2365;
+  legacy_u16 noreg temple_tmp_2365;
   RsTrackEditorRemoveInvalidMultitileLinks();
   temple_error_2351=TempleCastU8(TRACK_EDITOR_VALIDATION_OK);
   temple_row_2353=TempleCastU16(0);
@@ -706,11 +706,11 @@ legacy_u8 RsMenuTrackEditorTrackEditorPaletteTile(legacy_u8 page,legacy_u8 row,l
 legacy_void RsMenuTrackEditorTrackEditorSkipPreviousPlaceholders(
     legacy_u8 page,legacy_u8 *row,legacy_u8 *column)
 {
-  legacy_u8 temple_tile_2367;
+  legacy_u8 noreg temple_tile_2367;
   legacy_u8 *temple_tmp_2368;
-  legacy_u8 temple_tmp_2369;
+  legacy_u8 noreg temple_tmp_2369;
   legacy_u8 *temple_tmp_2370;
-  legacy_u8 temple_tmp_2371;
+  legacy_u8 noreg temple_tmp_2371;
   while(1) {
     if(!((RsMenuTrackEditorTrackEditorPaletteTile(TempleCastU8(page),TempleCastU8((*(row))),
               TempleCastU8((*(column))))>=TRACK_TILE_CONTINUATION_SOUTH))) {
@@ -734,8 +734,8 @@ legacy_void RsMenuTrackEditorTrackEditorSkipPreviousPlaceholders(
 
 legacy_u8 RsMenuTrackEditorTrackEditorMapTile(legacy_u8 column,legacy_u8 row)
 {
-  legacy_u16 temple_source_index_2372;
-  legacy_u8 temple_tile_2373;
+  legacy_u16 noreg temple_source_index_2372;
+  legacy_u8 noreg temple_tile_2373;
   temple_source_index_2372=TempleCastU16(TempleCastU16(
       TempleCastS32((TempleCastU16(TempleCastU16(trackrows[row]))+TempleCastU16(column)))));
   temple_tile_2373=TempleCastU8(track_element_map[temple_source_index_2372]);
@@ -788,10 +788,10 @@ legacy_void RsMenuTrackEditorTrackEditorShowMessage(
 
 legacy_void RsMenuTrackEditorTrackEditorSaveTrack(legacy_u8 *track_changed,legacy_u8 *map_dirty)
 {
-  legacy_u8 temple_save_status_2374;
+  legacy_u8 noreg temple_save_status_2374;
   legacy_s8 *temple_text_2376;
-  legacy_s16 temple_result_2377;
-  legacy_s16 temple_write_result_2378;
+  legacy_s16 noreg temple_result_2377;
+  legacy_s16 noreg temple_write_result_2378;
   (g_is_busy=TempleCastS8(1));
   temple_save_status_2374=TempleCastU8(0);
   while(1) {
@@ -841,7 +841,7 @@ legacy_void RsMenuTrackEditorTrackEditorSaveTrack(legacy_u8 *track_changed,legac
 legacy_void RsMenuTrackEditorTrackEditorSwapTiles(
     legacy_u8 *selected_tile,legacy_u8 *saved_tile,legacy_u8 *palette_dirty)
 {
-  legacy_u8 temple_value_2379;
+  legacy_u8 noreg temple_value_2379;
   temple_value_2379=TempleCastU8((*(selected_tile)));
   ((*(selected_tile))=TempleCastU8((*(saved_tile))));
   ((*(saved_tile))=TempleCastU8(temple_value_2379));
@@ -850,17 +850,17 @@ legacy_void RsMenuTrackEditorTrackEditorSwapTiles(
 
 legacy_void RsMenuTrackEditorTrackEditorLoadResources(CTrackEditorSession *editor)
 {
-  legacy_u16 temple_index_2381;
+  legacy_u16 noreg temple_index_2381;
   legacy_u16 *temple_tmp_2382;
-  legacy_u16 temple_tmp_2383;
+  legacy_u16 noreg temple_tmp_2383;
   legacy_s8 *temple_shape_name_resource_2384;
   legacy_s8 *temple_mask_name_resource_2385;
-  legacy_u16 temple_index_2387;
+  legacy_u16 noreg temple_index_2387;
   legacy_u16 *temple_tmp_2388;
-  legacy_u16 temple_tmp_2389;
-  legacy_u16 temple_index_2391;
+  legacy_u16 noreg temple_tmp_2389;
+  legacy_u16 noreg temple_index_2391;
   legacy_u16 *temple_tmp_2392;
-  legacy_u16 temple_tmp_2393;
+  legacy_u16 noreg temple_tmp_2393;
   (editor->shape_resource=(RsFileLoadShape2dFatal("sdtedit"))(legacy_s8 *));
   RsLocateManyResources(editor->shape_resource,
       rs_menu_track_editor_track_editor_terrain_shape_names,
@@ -989,21 +989,21 @@ legacy_void RsMenuTrackEditorTrackEditorDrawWindow(CTrackEditorSession *editor)
 
 legacy_void RsMenuTrackEditorTrackEditorKeepSelectionVisible(CTrackEditorSession *editor)
 {
-  legacy_s32 temple_tmp_2394;
+  legacy_s32 noreg temple_tmp_2394;
   legacy_u8 *temple_tmp_2395;
-  legacy_u8 temple_tmp_2396;
-  legacy_s32 temple_tmp_2397;
+  legacy_u8 noreg temple_tmp_2396;
+  legacy_s32 noreg temple_tmp_2397;
   legacy_u8 *temple_tmp_2398;
-  legacy_u8 temple_tmp_2399;
+  legacy_u8 noreg temple_tmp_2399;
   legacy_u8 *temple_tmp_2401;
-  legacy_u8 temple_tmp_2402;
+  legacy_u8 noreg temple_tmp_2402;
   legacy_u8 *temple_tmp_2404;
-  legacy_u8 temple_tmp_2405;
+  legacy_u8 noreg temple_tmp_2405;
   legacy_u8 *temple_tmp_2407;
-  legacy_u8 temple_tmp_2408;
+  legacy_u8 noreg temple_tmp_2408;
   legacy_u8 *temple_tmp_2410;
-  legacy_u8 temple_tmp_2411;
-  legacy_s32 temple_tmp_2412;
+  legacy_u8 noreg temple_tmp_2411;
+  legacy_s32 noreg temple_tmp_2412;
   temple_tmp_2394=!!((editor->selection_column[0]==29));
   if(temple_tmp_2394) {
     temple_tmp_2394=!!((editor->tile_width==2));
@@ -1078,12 +1078,12 @@ legacy_void RsMenuTrackEditorTrackEditorKeepSelectionVisible(CTrackEditorSession
 
 legacy_void RsMenuTrackEditorTrackEditorDrawPalettePage(CTrackEditorSession *editor)
 {
-  legacy_s32 temple_tmp_2414;
-  legacy_u8 temple_value_2415;
+  legacy_s32 noreg temple_tmp_2414;
+  legacy_u8 noreg temple_value_2415;
   legacy_u8 *temple_tmp_2416;
-  legacy_u8 temple_tmp_2417;
+  legacy_u8 noreg temple_tmp_2417;
   legacy_u8 *temple_tmp_2418;
-  legacy_u8 temple_tmp_2419;
+  legacy_u8 noreg temple_tmp_2419;
   (editor->palette_dirty=TempleCastU8(1));
   (editor->previous_page=TempleCastU8(editor->page));
   while(1) {
@@ -1126,7 +1126,7 @@ legacy_void RsMenuTrackEditorTrackEditorDrawPalettePage(CTrackEditorSession *edi
 
 legacy_void RsMenuTrackEditorTrackEditorUpdatePalette(CTrackEditorSession *editor)
 {
-  legacy_s32 temple_tmp_2420;
+  legacy_s32 noreg temple_tmp_2420;
   temple_tmp_2420=!!((editor->palette_dirty!=0));
   if(!temple_tmp_2420) {
     temple_tmp_2420=!!((editor->page!=editor->previous_page));
@@ -1165,7 +1165,7 @@ legacy_void RsMenuTrackEditorTrackEditorUpdatePalette(CTrackEditorSession *edito
 
 legacy_void RsMenuTrackEditorTrackEditorRedraw(CTrackEditorSession *editor)
 {
-  legacy_s32 temple_tmp_2421;
+  legacy_s32 noreg temple_tmp_2421;
   temple_tmp_2421=!!((editor->map_dirty!=0));
   if(!temple_tmp_2421) {
     temple_tmp_2421=!!((editor->palette_dirty!=0));
@@ -1225,10 +1225,10 @@ legacy_void RsMenuTrackEditorTrackEditorRedraw(CTrackEditorSession *editor)
 
 legacy_void RsMenuTrackEditorTrackEditorPositionCursor(CTrackEditorSession *editor)
 {
-  legacy_u32 temple_tmp_2422;
-  legacy_s32 temple_tmp_2423;
-  legacy_s32 temple_tmp_2424;
-  legacy_s32 temple_tmp_2425;
+  legacy_u32 noreg temple_tmp_2422;
+  legacy_s32 noreg temple_tmp_2423;
+  legacy_s32 noreg temple_tmp_2424;
+  legacy_s32 noreg temple_tmp_2425;
   RsSpriteSelectScreenCompat();
   if((editor->focus==0)) {
     (editor->cursor_width=TempleCastU8(TempleCastU8(TempleCastS32((editor->tile_width<<4)))));
@@ -1321,7 +1321,7 @@ legacy_void RsMenuTrackEditorTrackEditorDrawTileLabel(CTrackEditorSession *edito
 {
   legacy_s8 *temple_resource_id_2426;
   legacy_s8 *temple_text_2427;
-  legacy_s16 temple_label_width_2428;
+  legacy_s16 noreg temple_label_width_2428;
   if((editor->hovered_tile!=editor->previous_hovered_tile)) {
     RsMouseDrawOpaqueCheck();
     RsFontSetColors(TempleCastS16(dialog_fnt_colour),TempleCastS16(0));
@@ -1366,16 +1366,16 @@ legacy_void RsMenuTrackEditorTrackEditorReportValidation(CTrackEditorSession *ed
 
 legacy_void RsMenuTrackEditorTrackEditorHoverMap(CTrackEditorSession *editor)
 {
-  legacy_u8 temple_clicked_column_2430;
-  legacy_u8 temple_clicked_row_2431;
-  legacy_s32 temple_tmp_2432;
+  legacy_u8 noreg temple_clicked_column_2430;
+  legacy_u8 noreg temple_clicked_row_2431;
+  legacy_s32 noreg temple_tmp_2432;
   legacy_u8 *temple_tmp_2433;
-  legacy_u8 temple_tmp_2434;
-  legacy_s32 temple_tmp_2435;
+  legacy_u8 noreg temple_tmp_2434;
+  legacy_s32 noreg temple_tmp_2435;
   legacy_u8 *temple_tmp_2436;
-  legacy_u8 temple_tmp_2437;
-  legacy_s32 temple_tmp_2438;
-  legacy_s32 temple_tmp_2439;
+  legacy_u8 noreg temple_tmp_2437;
+  legacy_s32 noreg temple_tmp_2438;
+  legacy_s32 noreg temple_tmp_2439;
   temple_clicked_column_2430=TempleCastU8(TempleCastU8(RsLegacyS16DivOrZero(
       TempleCastS16(RsMenuTrackEditorLegacyS16FromBits(TempleCastU16(
           TempleCastU16(RsMenuTrackEditorLegacyS16FromBits(TempleCastU16(TempleCastU16(
@@ -1437,14 +1437,14 @@ legacy_void RsMenuTrackEditorTrackEditorHoverMap(CTrackEditorSession *editor)
 
 legacy_void RsMenuTrackEditorTrackEditorHoverPalette(CTrackEditorSession *editor)
 {
-  legacy_u8 temple_clicked_column_2440;
-  legacy_u8 temple_clicked_row_2441;
+  legacy_u8 noreg temple_clicked_column_2440;
+  legacy_u8 noreg temple_clicked_row_2441;
   legacy_u8 *temple_tmp_2442;
-  legacy_u8 temple_tmp_2443;
+  legacy_u8 noreg temple_tmp_2443;
   legacy_u8 *temple_tmp_2444;
-  legacy_u8 temple_tmp_2445;
-  legacy_s32 temple_tmp_2446;
-  legacy_s32 temple_tmp_2447;
+  legacy_u8 noreg temple_tmp_2445;
+  legacy_s32 noreg temple_tmp_2446;
+  legacy_s32 noreg temple_tmp_2447;
   temple_clicked_column_2440=TempleCastU8(TempleCastU8(RsLegacyS16DivOrZero(
       TempleCastS16(RsMenuTrackEditorLegacyS16FromBits(TempleCastU16(
           TempleCastU16(RsMenuTrackEditorLegacyS16FromBits(TempleCastU16(TempleCastU16(
@@ -1509,11 +1509,11 @@ legacy_void RsMenuTrackEditorTrackEditorHoverPalette(CTrackEditorSession *editor
 
 legacy_void RsMenuTrackEditorTrackEditorMouseInput(CTrackEditorSession *editor)
 {
-  legacy_u8 temple_hit_2448;
-  legacy_s32 temple_tmp_2449;
-  legacy_u8 temple_clicked_column_2450;
-  legacy_s32 temple_tmp_2451;
-  legacy_u8 temple_clicked_row_2452;
+  legacy_u8 noreg temple_hit_2448;
+  legacy_s32 noreg temple_tmp_2449;
+  legacy_u8 noreg temple_clicked_column_2450;
+  legacy_s32 noreg temple_tmp_2451;
+  legacy_u8 noreg temple_clicked_row_2452;
   temple_hit_2448=TempleCastU8(TempleCastU8(
       RsMouseMultiHittest(TempleCastS16(5),rs_menu_track_editor_track_editor_buttons)));
   if((temple_hit_2448!=255)) {
@@ -1575,8 +1575,8 @@ legacy_void RsMenuTrackEditorTrackEditorMouseInput(CTrackEditorSession *editor)
 legacy_void RsMenuTrackEditorTrackEditorWaitForInput(CTrackEditorSession *editor)
 {
   legacy_u8 *temple_tmp_2454;
-  legacy_u16 temple_delta_2455;
-  legacy_s32 temple_tmp_2456;
+  legacy_u16 noreg temple_delta_2455;
+  legacy_s32 noreg temple_tmp_2456;
   (editor->blink_timer=TempleCastU16(99));
   (editor->cursor_drawn=TempleCastU8(0));
   RsMouseDrawOpaqueCheck();
@@ -1646,9 +1646,9 @@ legacy_void RsMenuTrackEditorTrackEditorWaitForInput(CTrackEditorSession *editor
 
 legacy_void RsMenuTrackEditorTrackEditorAdvancePathAnimation(CTrackEditorSession *editor)
 {
-  legacy_s32 temple_tmp_2457;
+  legacy_s32 noreg temple_tmp_2457;
   legacy_u16 *temple_tmp_2458;
-  legacy_u16 temple_tmp_2459;
+  legacy_u16 noreg temple_tmp_2459;
   temple_tmp_2457=!!((editor->key==1));
   if(temple_tmp_2457) {
     temple_tmp_2457=!!((editor->focus==0));
@@ -1679,7 +1679,7 @@ legacy_void RsMenuTrackEditorTrackEditorAdvancePathAnimation(CTrackEditorSession
 
 legacy_void RsMenuTrackEditorTrackEditorCheckRoute(CTrackEditorSession *editor)
 {
-  legacy_s16 temple_result_2460;
+  legacy_s16 noreg temple_result_2460;
   legacy_s8 *temple_resource_id_2461;
   temple_result_2460=TempleCastS16(TempleCastS8(RsTrackSetup()));
   temple_resource_id_2461=
@@ -1708,8 +1708,8 @@ legacy_void RsMenuTrackEditorTrackEditorCheckRoute(CTrackEditorSession *editor)
 
 legacy_void RsMenuTrackEditorTrackEditorSelectSkybox(CTrackEditorSession *editor)
 {
-  legacy_u8 temple_dialog_result_2462;
-  legacy_s32 temple_tmp_2463;
+  legacy_u8 noreg temple_dialog_result_2462;
+  legacy_s32 noreg temple_tmp_2463;
   temple_dialog_result_2462=
       TempleCastU8(RsMenuTrackEditorLegacyS8FromBits(TempleCastU8(TempleCastU8(RsShowDialog(
           TempleCastS16(DIALOG_TYPE_MENU),TempleCastS16(DIALOG_SAVE_BACKGROUND),
@@ -1728,13 +1728,13 @@ legacy_void RsMenuTrackEditorTrackEditorSelectSkybox(CTrackEditorSession *editor
 
 legacy_void RsMenuTrackEditorTrackEditorSelectTerrain(CTrackEditorSession *editor)
 {
-  legacy_u8 temple_dialog_result_2464;
+  legacy_u8 noreg temple_dialog_result_2464;
   legacy_s8 temple_terrain_id_2465[5];
   CShape2D *temple_terrain_shape_2466;
-  legacy_s32 temple_tmp_2467;
-  legacy_u16 temple_index_2469;
+  legacy_s32 noreg temple_tmp_2467;
+  legacy_u16 noreg temple_index_2469;
   legacy_u16 *temple_tmp_2470;
-  legacy_u16 temple_tmp_2471;
+  legacy_u16 noreg temple_tmp_2471;
   temple_dialog_result_2464=
       TempleCastU8(RsMenuTrackEditorLegacyS8FromBits(TempleCastU8(TempleCastU8(
           RsShowDialog(TempleCastS16(DIALOG_TYPE_MENU),TempleCastS16(DIALOG_SAVE_BACKGROUND),
@@ -1773,7 +1773,7 @@ legacy_void RsMenuTrackEditorTrackEditorSelectTerrain(CTrackEditorSession *edito
 
 legacy_void RsMenuTrackEditorTrackEditorLoadTrack(CTrackEditorSession *editor)
 {
-  legacy_s16 temple_result_2472;
+  legacy_s16 noreg temple_result_2472;
   legacy_s8 *temple_text_2473;
   temple_result_2472=TempleCastS16(1);
   if((editor->track_changed!=0)) {
@@ -1806,7 +1806,7 @@ legacy_void RsMenuTrackEditorTrackEditorLoadTrack(CTrackEditorSession *editor)
 
 legacy_void RsMenuTrackEditorTrackEditorExit(CTrackEditorSession *editor)
 {
-  legacy_s16 temple_result_2474;
+  legacy_s16 noreg temple_result_2474;
   temple_result_2474=TempleCastS16(1);
   if((editor->track_changed!=0)) {
     (temple_result_2474=TempleCastS16(TempleCastS16(
@@ -1823,12 +1823,12 @@ legacy_void RsMenuTrackEditorTrackEditorExit(CTrackEditorSession *editor)
 
 legacy_void RsMenuTrackEditorTrackEditorSelectPaletteTile(CTrackEditorSession *editor)
 {
-  legacy_s32 temple_tmp_2475;
+  legacy_s32 noreg temple_tmp_2475;
   legacy_u8 *temple_tmp_2476;
-  legacy_u8 temple_tmp_2477;
-  legacy_s32 temple_tmp_2478;
+  legacy_u8 noreg temple_tmp_2477;
+  legacy_s32 noreg temple_tmp_2478;
   legacy_u8 *temple_tmp_2479;
-  legacy_u8 temple_tmp_2480;
+  legacy_u8 noreg temple_tmp_2480;
   (editor->selected_tile=
           TempleCastU8(RsMenuTrackEditorTrackEditorPaletteTile(TempleCastU8(editor->page),
               TempleCastU8(editor->selection_row[1]),TempleCastU8(editor->selection_column[1]))));
@@ -1865,8 +1865,8 @@ legacy_void RsMenuTrackEditorTrackEditorSelectPaletteTile(CTrackEditorSession *e
 legacy_void RsMenuTrackEditorTrackEditorActivatePalette(CTrackEditorSession *editor)
 {
   legacy_u8 *temple_tmp_2481;
-  legacy_u8 temple_tmp_2482;
-  legacy_s32 temple_tmp_2483;
+  legacy_u8 noreg temple_tmp_2482;
+  legacy_s32 noreg temple_tmp_2483;
   if((editor->selection_row[1]<6)) {
     RsMenuTrackEditorTrackEditorSelectPaletteTile(editor);
   } else {
@@ -1907,8 +1907,8 @@ legacy_void RsMenuTrackEditorTrackEditorActivatePalette(CTrackEditorSession *edi
 
 legacy_void RsMenuTrackEditorTrackEditorPlaceTerrain(CTrackEditorSession *editor)
 {
-  legacy_u16 temple_source_index_2484;
-  legacy_s32 temple_tmp_2485;
+  legacy_u16 noreg temple_source_index_2484;
+  legacy_s32 noreg temple_tmp_2485;
   temple_tmp_2485=!!((editor->selection_column[0]==editor->last_column));
   if(temple_tmp_2485) {
     temple_tmp_2485=!!((editor->selection_row[0]==editor->last_row));
@@ -1935,11 +1935,11 @@ legacy_void RsMenuTrackEditorTrackEditorPlaceTerrain(CTrackEditorSession *editor
 
 legacy_void RsMenuTrackEditorTrackEditorPlaceElement(CTrackEditorSession *editor)
 {
-  legacy_s32 temple_tmp_2486;
-  legacy_s32 temple_tmp_2487;
-  legacy_s32 temple_tmp_2488;
-  legacy_u16 temple_source_index_2489;
-  legacy_s32 temple_tmp_2490;
+  legacy_s32 noreg temple_tmp_2486;
+  legacy_s32 noreg temple_tmp_2487;
+  legacy_s32 noreg temple_tmp_2488;
+  legacy_u16 noreg temple_source_index_2489;
+  legacy_s32 noreg temple_tmp_2490;
   (editor->multi_tile=
           TempleCastU8(TempleCastU8(trk_object_list[editor->selected_tile].ss_multi_tile_flag)));
   temple_tmp_2486=!!((TempleCastU32((editor->multi_tile&1))!=TempleCastU32(0)));
@@ -2009,7 +2009,7 @@ legacy_void RsMenuTrackEditorTrackEditorPlaceElement(CTrackEditorSession *editor
 
 legacy_void RsMenuTrackEditorTrackEditorMoveHome(CTrackEditorSession *editor)
 {
-  legacy_s32 temple_tmp_2491;
+  legacy_s32 noreg temple_tmp_2491;
   if((editor->focus!=0)) {
     (editor->selection_row[1]=TempleCastU8(0));
   } else {
@@ -2029,8 +2029,8 @@ legacy_void RsMenuTrackEditorTrackEditorMoveHome(CTrackEditorSession *editor)
 legacy_void RsMenuTrackEditorTrackEditorMoveUp(CTrackEditorSession *editor)
 {
   legacy_u8 *temple_tmp_2492;
-  legacy_u8 temple_tmp_2493;
-  legacy_s32 temple_tmp_2494;
+  legacy_u8 noreg temple_tmp_2493;
+  legacy_s32 noreg temple_tmp_2494;
   if((editor->selection_row[editor->focus]!=0)) {
     (editor->last_column=TempleCastU8(255));
     temple_tmp_2492=&(editor->selection_row[editor->focus]);
@@ -2051,13 +2051,13 @@ legacy_void RsMenuTrackEditorTrackEditorMoveUp(CTrackEditorSession *editor)
 legacy_void RsMenuTrackEditorTrackEditorMoveDown(CTrackEditorSession *editor)
 {
   legacy_u8 *temple_tmp_2495;
-  legacy_u8 temple_tmp_2496;
-  legacy_s32 temple_tmp_2497;
-  legacy_u8 temple_value_2498;
+  legacy_u8 noreg temple_tmp_2496;
+  legacy_s32 noreg temple_tmp_2497;
+  legacy_u8 noreg temple_value_2498;
   legacy_u8 *temple_tmp_2499;
-  legacy_u8 temple_tmp_2500;
+  legacy_u8 noreg temple_tmp_2500;
   legacy_u8 *temple_tmp_2501;
-  legacy_u8 temple_tmp_2502;
+  legacy_u8 noreg temple_tmp_2502;
   if((editor->selection_row[editor->focus]<
         rs_menu_track_editor_track_editor_maximum_rows[editor->focus])) {
     (editor->last_column=TempleCastU8(255));
@@ -2092,11 +2092,11 @@ legacy_void RsMenuTrackEditorTrackEditorMoveDown(CTrackEditorSession *editor)
 
 legacy_void RsMenuTrackEditorTrackEditorMoveLeft(CTrackEditorSession *editor)
 {
-  legacy_s32 temple_tmp_2503;
+  legacy_s32 noreg temple_tmp_2503;
   legacy_u8 *temple_tmp_2504;
-  legacy_u8 temple_tmp_2505;
+  legacy_u8 noreg temple_tmp_2505;
   legacy_u8 *temple_tmp_2506;
-  legacy_u8 temple_tmp_2507;
+  legacy_u8 noreg temple_tmp_2507;
   temple_tmp_2503=!!((editor->focus!=0));
   if(temple_tmp_2503) {
     temple_tmp_2503=!!((editor->selection_row[1]==6));
@@ -2129,18 +2129,18 @@ legacy_void RsMenuTrackEditorTrackEditorMoveLeft(CTrackEditorSession *editor)
 
 legacy_void RsMenuTrackEditorTrackEditorMoveRight(CTrackEditorSession *editor)
 {
-  legacy_s32 temple_tmp_2508;
+  legacy_s32 noreg temple_tmp_2508;
   legacy_u8 *temple_tmp_2509;
-  legacy_u8 temple_tmp_2510;
-  legacy_u8 temple_step_2511;
-  legacy_s32 temple_tmp_2512;
-  legacy_u32 temple_tmp_2513;
-  legacy_s32 temple_tmp_2515;
-  legacy_u8 temple_value_2516;
+  legacy_u8 noreg temple_tmp_2510;
+  legacy_u8 noreg temple_step_2511;
+  legacy_s32 noreg temple_tmp_2512;
+  legacy_u32 noreg temple_tmp_2513;
+  legacy_s32 noreg temple_tmp_2515;
+  legacy_u8 noreg temple_value_2516;
   legacy_u8 *temple_tmp_2517;
-  legacy_u8 temple_tmp_2518;
+  legacy_u8 noreg temple_tmp_2518;
   legacy_u8 *temple_tmp_2519;
-  legacy_u8 temple_tmp_2520;
+  legacy_u8 noreg temple_tmp_2520;
   temple_tmp_2508=!!((editor->focus!=0));
   if(temple_tmp_2508) {
     temple_tmp_2508=!!((editor->selection_row[1]==6));
@@ -2207,9 +2207,9 @@ legacy_void RsMenuTrackEditorTrackEditorMoveRight(CTrackEditorSession *editor)
 legacy_void RsMenuTrackEditorTrackEditorHandleNavigationKey(CTrackEditorSession *editor)
 {
   legacy_u8 *temple_tmp_2521;
-  legacy_u8 temple_tmp_2522;
+  legacy_u8 noreg temple_tmp_2522;
   legacy_u8 *temple_tmp_2523;
-  legacy_u8 temple_tmp_2524;
+  legacy_u8 noreg temple_tmp_2524;
   if((editor->key==TempleCastU16('+'))) {
     if((editor->page<10)) {
       temple_tmp_2521=&(editor->page);
@@ -2256,11 +2256,11 @@ legacy_void RsMenuTrackEditorTrackEditorHandleNavigationKey(CTrackEditorSession 
 
 legacy_void RsMenuTrackEditorTrackEditorHandleKey(CTrackEditorSession *editor)
 {
-  legacy_u16 temple_key_index_2526;
+  legacy_u16 noreg temple_key_index_2526;
   legacy_u16 *temple_tmp_2527;
-  legacy_u16 temple_tmp_2528;
-  legacy_s32 temple_tmp_2529;
-  legacy_s32 temple_tmp_2530;
+  legacy_u16 noreg temple_tmp_2528;
+  legacy_s32 noreg temple_tmp_2529;
+  legacy_s32 noreg temple_tmp_2530;
   legacy_u8 *temple_tmp_2531;
   temple_key_index_2526=TempleCastU16(0);
   while(1) {
@@ -2311,9 +2311,9 @@ legacy_void RsMenuTrackEditorTrackEditorHandleKey(CTrackEditorSession *editor)
 
 legacy_void RsMenuTrackEditorTrackEditorReleaseResources(CTrackEditorSession *editor)
 {
-  legacy_u16 temple_index_2533;
+  legacy_u16 noreg temple_index_2533;
   legacy_u16 *temple_tmp_2534;
-  legacy_u16 temple_tmp_2535;
+  legacy_u16 noreg temple_tmp_2535;
   RsSpriteFreeWnd(render_window_sprite);
   temple_index_2533=TempleCastU16(4);
   while(1) {

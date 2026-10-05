@@ -29,7 +29,6 @@
 #define TEMPLE_RASTER_SPHERE_HEIGHT_NUMERATOR 13
 #define TEMPLE_RASTER_SPHERE_HEIGHT_DENOMINATOR 16
 #define TEMPLE_RASTER_BYTE_SIGN 128
-#define TEMPLE_RASTER_WORD_SIGN 32768
 
 /* Each DOS logical cell owns four independent native pixels. Saved backgrounds
  * and window copies preserve all four, including detail from native geometry.
@@ -85,7 +84,7 @@ legacy_u16 TempleRasterRead16(legacy_u8 *bytes)
 legacy_s64 TempleRasterSigned16(legacy_u16 value)
 {
   value&=TEMPLE_WORD_MASK;
-  if(value&TEMPLE_RASTER_WORD_SIGN) {
+  if(value&TEMPLE_WORD_SIGN_BIT) {
     return value-TEMPLE_RASTER_CELLS;
   }
   return value;
@@ -141,7 +140,7 @@ legacy_u8 *TempleRasterDefaultPairs()
   return NULL;
 }
 
-CTempleRasterSurface *TempleRasterFind(legacy_void *bitmap)
+CTempleRasterSurface *TempleRasterFind(legacy_u8 *bitmap)
 {
   CTempleRasterSurface *surface=temple_raster_surfaces;
   while(surface) {
@@ -161,8 +160,8 @@ legacy_void TempleRasterRegisterSprite(CSprite *sprite)
   legacy_s64 slot;
   legacy_s64 width;
   legacy_s64 height;
-  legacy_u16 offset;
-  legacy_u32 sample;
+  legacy_u16 noreg offset;
+  legacy_u32 noreg sample;
   CTempleRasterSurface *surface;
   if(!sprite||!sprite->sprite_bitmapptr||!sprite->sprite_lineofs) {
     return;
@@ -234,13 +233,13 @@ legacy_void TempleRasterSelect(CSprite *sprite)
   temple_raster_source_set=FALSE;
 }
 
-legacy_void TempleRasterForget(legacy_void *bitmap)
+legacy_void TempleRasterForget(legacy_u8 *bitmap)
 {
   CTempleRasterSurface **previous=&temple_raster_surfaces;
   CTempleRasterSurface *surface;
   CTempleRasterResourceMap **previous_resource=&temple_raster_resources;
   CTempleRasterResourceMap *resource;
-  legacy_void *base;
+  legacy_u8 *base;
   if(!bitmap) {
     return;
   }
@@ -271,13 +270,13 @@ legacy_void TempleRasterForget(legacy_void *bitmap)
   }
 }
 
-legacy_void TempleRasterSource(legacy_void *shape)
+legacy_void TempleRasterSource(legacy_u8 *shape)
 {
   temple_raster_source_pairs=TempleRasterPairs(shape);
   temple_raster_source_set=shape!=NULL;
 }
 
-legacy_void *TempleRasterRegisterResource(legacy_void *pointer,legacy_s64 parsed)
+legacy_u8 *TempleRasterRegisterResource(legacy_u8 *pointer,legacy_s64 parsed)
 {
   legacy_u8 *bytes=pointer;
   legacy_s64 count;
@@ -289,12 +288,12 @@ legacy_void *TempleRasterRegisterResource(legacy_void *pointer,legacy_s64 parsed
   legacy_s64 run;
   legacy_s64 control;
   legacy_s64 source_bytes;
-  legacy_u8 value;
+  legacy_u8 noreg value;
   legacy_u8 *name;
   legacy_u8 *source;
   legacy_u8 *pair_source=NULL;
   legacy_u8 pairs[TEMPLE_PALETTE_SOURCE_COUNT];
-  legacy_u8 is_default=FALSE;
+  legacy_u8 noreg is_default=FALSE;
   CTempleRasterResourceMap *resource;
   if(!bytes) {
     return pointer;
@@ -392,23 +391,24 @@ legacy_void *TempleRasterRegisterResource(legacy_void *pointer,legacy_s64 parsed
   return pointer;
 }
 
-legacy_void *TempleRasterResource(legacy_void *resource)
+legacy_u8 *TempleRasterResource(legacy_u8 *resource)
 {
   return TempleRasterRegisterResource(resource,FALSE);
 }
 
-legacy_void *TempleRasterResourceParsed(legacy_void *resource)
+legacy_u8 *TempleRasterResourceParsed(legacy_u8 *resource)
 {
   return TempleRasterRegisterResource(resource,TRUE);
 }
 
-legacy_u8 RsVideoPagesIsTarget(legacy_void *bitmap)
+legacy_u8 RsVideoPagesIsTarget(legacy_u8 *bitmap)
 {
   return TempleRasterFind(bitmap)!=NULL;
 }
 
-legacy_u8 RsVideoPagesUsesRasterHooks(legacy_void *bitmap)
+legacy_u8 RsVideoPagesUsesRasterHooks(legacy_u8 *bitmap)
 {
+  no_warn bitmap;
   return TRUE;
 }
 
@@ -421,7 +421,7 @@ legacy_void RsVideoPagesWritePixel(legacy_u8 *bitmap,legacy_u16 offset,legacy_u8
 {
   CTempleRasterSurface *surface=TempleRasterFind(bitmap);
   legacy_s64 slot;
-  legacy_u32 sample;
+  legacy_u32 noreg sample;
   legacy_u8 *pairs=temple_raster_source_pairs;
   bitmap[offset]=color;
   if(!surface) {
@@ -450,7 +450,7 @@ legacy_void TempleRasterXorPixel(legacy_u8 *bitmap,legacy_u16 offset,legacy_u8 m
 {
   CTempleRasterSurface *surface=TempleRasterFind(bitmap);
   legacy_s64 slot;
-  legacy_u32 toggle=
+  legacy_u32 noreg toggle=
       (mask&TEMPLE_BYTE_MASK)|((mask&TEMPLE_BYTE_MASK)<<TEMPLE_RASTER_XOR_SHIFT);
   bitmap[offset]^=mask;
   if(!surface) {
@@ -469,8 +469,8 @@ legacy_void TempleRasterXorPixel(legacy_u8 *bitmap,legacy_u16 offset,legacy_u8 m
 legacy_u32 TempleRasterApply(legacy_u32 previous,legacy_u32 sample,legacy_s16 operation,
     legacy_u8 *palette,legacy_u8 *pairs)
 {
-  legacy_u8 before=previous&TEMPLE_BYTE_MASK;
-  legacy_u8 value=sample&TEMPLE_BYTE_MASK;
+  legacy_u8 noreg before=previous&TEMPLE_BYTE_MASK;
+  legacy_u8 noreg value=sample&TEMPLE_BYTE_MASK;
   if(operation==SHAPE2D_RASTER_AND) {
     value&=before;
   } else if(operation==SHAPE2D_RASTER_OR) {
@@ -498,9 +498,9 @@ legacy_void RsVideoPagesRasterSpan(legacy_u8 *destination,legacy_u16 destination
   CTempleRasterSurface *origin=TempleRasterFind(source);
   legacy_u8 *pairs=TempleRasterPairs(source+source_offset);
   legacy_s64 slot;
-  legacy_u32 sample;
-  legacy_u32 source_sample;
-  legacy_u32 result;
+  legacy_u32 noreg sample;
+  legacy_u32 noreg source_sample;
+  legacy_u32 noreg result;
   legacy_u32 *target_cell;
   legacy_u32 *source_cell;
   if(target&&count) {
@@ -565,7 +565,7 @@ legacy_void TempleRasterPlot(legacy_s64 x,legacy_s64 y,legacy_u16 color)
 {
   legacy_s64 logical_y;
   legacy_s64 slot;
-  legacy_u16 offset;
+  legacy_u16 noreg offset;
   if(!temple_raster_target||x<drawing_sprite.sprite_raster_left*TEMPLE_RASTER_X_SCALE||
       x>=drawing_sprite.sprite_raster_right*TEMPLE_RASTER_X_SCALE||
       y<TempleRasterY(drawing_sprite.sprite_top)||
@@ -817,9 +817,9 @@ legacy_void TempleRasterPresent(CDC *dc)
   legacy_s64 y;
   legacy_s64 logical_y;
   legacy_s64 slot;
-  legacy_u16 offset;
-  legacy_u32 sample;
-  legacy_u8 color;
+  legacy_u16 noreg offset;
+  legacy_u32 noreg sample;
+  legacy_u8 noreg color;
   if(!surface||!dc) {
     return;
   }

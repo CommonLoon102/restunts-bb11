@@ -18,6 +18,7 @@ legacy_u8 temple_video_presented=FALSE;
 
 legacy_void TempleVideoDraw(CTask *task,CDC *dc)
 {
+  no_warn task;
   if(temple_video_front) {
     GrBlot(dc,0,0,temple_video_front);
   }
@@ -127,14 +128,17 @@ legacy_u8 RsDosVideoEnablePlanarPages()
 
 legacy_void RsDosVideoSetWritePlanes(legacy_u8 mask)
 {
+  no_warn mask;
 }
 
 legacy_void RsDosVideoSetReadPlane(legacy_u8 plane)
 {
+  no_warn plane;
 }
 
 legacy_void RsDosVideoShowPage(legacy_u16 address)
 {
+  no_warn address;
   TempleVideoPresent();
 }
 

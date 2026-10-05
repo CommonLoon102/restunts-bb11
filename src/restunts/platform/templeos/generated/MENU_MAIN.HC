@@ -2,7 +2,7 @@
 
 legacy_s8 RsMenuMainLegacyS8FromBits(legacy_u8 value)
 {
-  legacy_s32 temple_tmp_2181;
+  legacy_s32 noreg temple_tmp_2181;
   if((value<=127)) {
     temple_tmp_2181=TempleCastS32(TempleCastS8(value));
   } else {
@@ -14,7 +14,7 @@ legacy_s8 RsMenuMainLegacyS8FromBits(legacy_u8 value)
 
 legacy_s16 RsMenuMainLegacyS16FromBits(legacy_u16 value)
 {
-  legacy_s32 temple_tmp_2182;
+  legacy_s32 noreg temple_tmp_2182;
   if((value<=32767)) {
     temple_tmp_2182=TempleCastS32(TempleCastS16(value));
   } else {
@@ -26,7 +26,7 @@ legacy_s16 RsMenuMainLegacyS16FromBits(legacy_u16 value)
 
 legacy_s32 RsMenuMainLegacyS32FromBits(legacy_u32 value)
 {
-  legacy_s32 temple_tmp_2183;
+  legacy_s32 noreg temple_tmp_2183;
   if((value<=TempleCastU32(2147483647))) {
     temple_tmp_2183=TempleCastS32(TempleCastS32(value));
   } else {
@@ -42,18 +42,18 @@ legacy_u8 temple_next_selection_2185[5];
 MemSet(&temple_next_selection_2185,0,sizeof(temple_next_selection_2185));
 legacy_s8 RsRunMenu()
 {
-  legacy_u8 temple_selected_2186;
-  legacy_u8 temple_previous_2187;
-  legacy_u8 temple_blit_mode_2188;
-  legacy_u8 temple_start_music_2189;
+  legacy_u8 noreg temple_selected_2186;
+  legacy_u8 noreg temple_previous_2187;
+  legacy_u8 noreg temple_blit_mode_2188;
+  legacy_u8 noreg temple_start_music_2189;
   legacy_u8 *temple_audio_resource_2190;
   legacy_u8 *temple_tmp_2191;
   legacy_s8 *temple_resource_2192;
   CShape2D *temple_shape_2193;
-  legacy_u16 temple_elapsed_2195;
-  legacy_u16 temple_key_2196;
-  legacy_s16 temple_hit_2197;
-  legacy_s32 temple_tmp_2198;
+  legacy_u16 noreg temple_elapsed_2195;
+  legacy_u16 noreg temple_key_2196;
+  legacy_s16 noreg temple_hit_2197;
+  legacy_s32 noreg temple_tmp_2198;
   temple_selected_2186=TempleCastU8(MAIN_MENU_DRIVE);
   temple_previous_2187=TempleCastU8(255);
   temple_blit_mode_2188=TempleCastU8(MENU_BLIT_MODE_INITIAL);

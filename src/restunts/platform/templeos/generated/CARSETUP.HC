@@ -2,7 +2,7 @@
 
 legacy_s8 RsCarsetupLegacyS8FromBits(legacy_u8 value)
 {
-  legacy_s32 temple_tmp_761;
+  legacy_s32 noreg temple_tmp_761;
   if((value<=127)) {
     temple_tmp_761=TempleCastS32(TempleCastS8(value));
   } else {
@@ -14,7 +14,7 @@ legacy_s8 RsCarsetupLegacyS8FromBits(legacy_u8 value)
 
 legacy_s16 RsCarsetupLegacyS16FromBits(legacy_u16 value)
 {
-  legacy_s32 temple_tmp_762;
+  legacy_s32 noreg temple_tmp_762;
   if((value<=32767)) {
     temple_tmp_762=TempleCastS32(TempleCastS16(value));
   } else {
@@ -26,7 +26,7 @@ legacy_s16 RsCarsetupLegacyS16FromBits(legacy_u16 value)
 
 legacy_s32 RsCarsetupLegacyS32FromBits(legacy_u32 value)
 {
-  legacy_s32 temple_tmp_763;
+  legacy_s32 noreg temple_tmp_763;
   if((value<=TempleCastU32(2147483647))) {
     temple_tmp_763=TempleCastS32(TempleCastS32(value));
   } else {
@@ -39,12 +39,12 @@ legacy_s32 RsCarsetupLegacyS32FromBits(legacy_u32 value)
 legacy_void RsCarsetupLegacyCarFilename(
     legacy_s8 *destination,legacy_s8 *car_id,legacy_s8 *extension)
 {
-  legacy_u16 temple_index_765;
+  legacy_u16 noreg temple_index_765;
   legacy_u16 *temple_tmp_766;
-  legacy_u16 temple_tmp_767;
-  legacy_u16 temple_index_769;
+  legacy_u16 noreg temple_tmp_767;
+  legacy_u16 noreg temple_index_769;
   legacy_u16 *temple_tmp_770;
-  legacy_u16 temple_tmp_771;
+  legacy_u16 noreg temple_tmp_771;
   (destination[0]=TempleCastS8('s'));
   (destination[1]=TempleCastS8('t'));
   temple_index_765=TempleCastU16(0);
@@ -80,7 +80,7 @@ MemSet(&temple_raw_extension_775,0,sizeof(temple_raw_extension_775));
 legacy_u16 RsCarsetupLegacyCarModelParagraphs(legacy_s8 *car_id)
 {
   legacy_s8 temple_filename_773[11];
-  legacy_u16 temple_paragraphs_774;
+  legacy_u16 noreg temple_paragraphs_774;
   RsCarsetupLegacyCarFilename(temple_filename_773,car_id,temple_compressed_extension_772);
   temple_paragraphs_774=TempleCastU16(RsFileDecompParasNofatal(temple_filename_773));
   if((temple_paragraphs_774!=0)) {
@@ -93,9 +93,9 @@ legacy_u16 RsCarsetupLegacyCarModelParagraphs(legacy_s8 *car_id)
 legacy_s16 RsCarsetupLegacyRawResourceWord(
     legacy_s8 *filename,legacy_u32 offset,legacy_s16 *value)
 {
-  legacy_u16 temple_handle_776;
+  legacy_u16 noreg temple_handle_776;
   legacy_u8 temple_bytes_777[2];
-  legacy_s32 temple_tmp_778;
+  legacy_s32 noreg temple_tmp_778;
   temple_handle_776=TempleCastU16(RsDosFileOpen(filename,TempleCastS16(DOS_FILE_OPEN_EXISTING)));
   if((temple_handle_776==0)) {
     return TempleCastS16(0);
@@ -121,10 +121,10 @@ legacy_s16 RsCarsetupLegacyRawResourceWord(
 legacy_s16 RsCarsetupLegacyAliasFromRawResource(
     legacy_s8 *filename,legacy_u32 *cursor,legacy_s16 *value)
 {
-  legacy_u16 temple_paragraphs_779;
-  legacy_u32 temple_length_780;
-  legacy_s32 temple_tmp_781;
-  legacy_u32 temple_resource_offset_782;
+  legacy_u16 noreg temple_paragraphs_779;
+  legacy_u32 noreg temple_length_780;
+  legacy_s32 noreg temple_tmp_781;
+  legacy_u32 noreg temple_resource_offset_782;
   legacy_u32 *temple_tmp_783;
   temple_paragraphs_779=TempleCastU16(RsFileParasNofatal(filename));
   temple_length_780=TempleCastU32(TempleCastU32((TempleCastU32(temple_paragraphs_779)*16)));
@@ -145,18 +145,18 @@ legacy_s16 RsCarsetupLegacyAliasFromRawResource(
 
 legacy_void RsSetupLegacyPenaltyRouteWord()
 {
-  legacy_s16 temple_value_784;
-  legacy_u32 temple_cursor_785;
-  legacy_u16 temple_player_model_paragraphs_786;
+  legacy_s16 noreg temple_value_784;
+  legacy_u32 noreg temple_cursor_785;
+  legacy_u16 noreg temple_player_model_paragraphs_786;
   legacy_u32 *temple_tmp_787;
-  legacy_s16 temple_same_car_788;
-  legacy_u16 temple_index_790;
+  legacy_s16 noreg temple_same_car_788;
+  legacy_u16 noreg temple_index_790;
   legacy_u16 *temple_tmp_791;
-  legacy_u16 temple_tmp_792;
+  legacy_u16 noreg temple_tmp_792;
   legacy_u32 *temple_tmp_793;
-  legacy_u16 temple_opponent_model_paragraphs_794;
+  legacy_u16 noreg temple_opponent_model_paragraphs_794;
   legacy_u32 *temple_tmp_795;
-  legacy_s32 temple_tmp_796;
+  legacy_s32 noreg temple_tmp_796;
   temple_value_784=TempleCastS16(TempleCastS16(32767));
   temple_cursor_785=
       TempleCastU32(TempleCastU32((TempleCastU32(TempleCastU32((1728+1401)))*16)));
@@ -211,8 +211,8 @@ legacy_void RsSetupLegacyPenaltyRouteWord()
 
 legacy_void RsCarsetupOpponentRouteWrite(legacy_u16 index,legacy_u16 value)
 {
-  legacy_u16 temple_offset_797;
-  legacy_u16 temple_legacy_write_u16_value__799;
+  legacy_u16 noreg temple_offset_797;
+  legacy_u16 noreg temple_legacy_write_u16_value__799;
   temple_offset_797=TempleCastU16(TempleCastU16(
       TempleCastU32((TempleCastU32(TempleCastU16(index))*TempleCastU32(TempleCastU16(2))))));
   while(1) {
@@ -229,9 +229,9 @@ legacy_void RsCarsetupOpponentRouteWrite(legacy_u16 index,legacy_u16 value)
 
 legacy_s16 RsCarsetupAeroResistanceAt(legacy_s16 resistance,legacy_s16 speed_index)
 {
-  legacy_s32 temple_product_800;
-  legacy_u32 temple_tmp_801;
-  legacy_u32 temple_tmp_802;
+  legacy_s32 noreg temple_product_800;
+  legacy_u32 noreg temple_tmp_801;
+  legacy_u32 noreg temple_tmp_802;
   temple_product_800=TempleCastS32(RsCarsetupLegacyS32FromBits(TempleCastU32(TempleCastU32(
       TempleCastU32(TempleCastU32((TempleCastU32(resistance)*TempleCastU32(speed_index))))))));
   (temple_product_800=
@@ -259,12 +259,12 @@ legacy_s16 RsCarsetupAeroResistanceAt(legacy_s16 resistance,legacy_s16 speed_ind
 legacy_void RsSetupAeroTrackdata(legacy_u8 *carresptr,legacy_s16 is_opponent)
 {
   legacy_u8 *temple_simd_resource_803;
-  legacy_s16 temple_i_805;
+  legacy_s16 noreg temple_i_805;
   legacy_s16 *temple_tmp_806;
-  legacy_s16 temple_tmp_807;
-  legacy_s16 temple_i_809;
+  legacy_s16 noreg temple_tmp_807;
+  legacy_s16 noreg temple_i_809;
   legacy_s16 *temple_tmp_810;
-  legacy_s16 temple_tmp_811;
+  legacy_s16 noreg temple_tmp_811;
   temple_simd_resource_803=(RsLocateShapeAlt(carresptr,"simd"))(legacy_u8 *);
   if((is_opponent==0)) {
     RsSimdDecode((&(simd_player)),temple_simd_resource_803);
@@ -304,9 +304,9 @@ legacy_void RsSetupAeroTrackdata(legacy_u8 *carresptr,legacy_s16 is_opponent)
 legacy_u8 *RsCarsetupLoadOpponentSpeedData(legacy_u8 **speed_data)
 {
   legacy_u8 *temple_resource_812;
-  legacy_u16 temple_index_814;
+  legacy_u16 noreg temple_index_814;
   legacy_u16 *temple_tmp_815;
-  legacy_u16 temple_tmp_816;
+  legacy_u16 noreg temple_tmp_816;
   (opponent_resource_name[3]=TempleCastS8(
       TempleCastS8(TempleCastS32((TempleCastU8(gameconfig.game_opponenttype)+'0')))));
   temple_resource_812=RsFileLoadResfileWithTail(opponent_resource_name,TempleCastU16(256));
@@ -332,10 +332,10 @@ legacy_u8 *RsCarsetupLoadOpponentSpeedData(legacy_u8 **speed_data)
 legacy_s16 RsCarsetupOpponentRouteIsTerminal(
     legacy_u16 *path,legacy_u16 path_count,legacy_u16 track_index,legacy_u16 next_track)
 {
-  legacy_s32 temple_tmp_817;
-  legacy_u16 temple_index_819;
+  legacy_s32 noreg temple_tmp_817;
+  legacy_u16 noreg temple_index_819;
   legacy_u16 *temple_tmp_820;
-  legacy_u16 temple_tmp_821;
+  legacy_u16 noreg temple_tmp_821;
   temple_tmp_817=!!((next_track==0));
   if(!temple_tmp_817) {
     temple_tmp_817=!!((next_track==65535));
@@ -363,34 +363,34 @@ legacy_void RsLoadOpponentData()
 {
   legacy_u8 *temple_speed_data_822;
   legacy_u8 *temple_resource_823;
-  legacy_u32 temple_best_distance_824;
+  legacy_u32 noreg temple_best_distance_824;
   legacy_u32 temple_pending_distance_825[259];
-  legacy_u32 temple_distance_826;
-  legacy_u16 temple_track_index_827;
-  legacy_u16 temple_path_count_828;
-  legacy_u16 temple_pending_count_829;
+  legacy_u32 noreg temple_distance_826;
+  legacy_u16 noreg temple_track_index_827;
+  legacy_u16 noreg temple_path_count_828;
+  legacy_u16 noreg temple_pending_count_829;
   legacy_u16 temple_path_830[902];
   legacy_u16 temple_pending_track_831[258];
   legacy_u16 temple_pending_path_count_832[258];
-  legacy_u16 temple_next_track_834;
-  legacy_s16 temple_reaches_finish_835;
-  legacy_s16 temple_terminal_836;
+  legacy_u16 noreg temple_next_track_834;
+  legacy_s16 noreg temple_reaches_finish_835;
+  legacy_s16 noreg temple_terminal_836;
   legacy_u16 *temple_tmp_837;
-  legacy_u16 temple_tmp_838;
-  legacy_u8 temple_speed_index_839;
-  legacy_u8 temple_route_cost_840;
+  legacy_u16 noreg temple_tmp_838;
+  legacy_u8 noreg temple_speed_index_839;
+  legacy_u8 noreg temple_route_cost_840;
   legacy_u32 *temple_tmp_841;
-  legacy_u16 temple_alternate_track_842;
+  legacy_u16 noreg temple_alternate_track_842;
   legacy_u16 *temple_tmp_843;
-  legacy_u16 temple_tmp_844;
-  legacy_s32 temple_tmp_845;
+  legacy_u16 noreg temple_tmp_844;
+  legacy_s32 noreg temple_tmp_845;
   legacy_u16 *temple_tmp_846;
-  legacy_u16 temple_tmp_847;
-  legacy_u16 temple_index_849;
+  legacy_u16 noreg temple_tmp_847;
+  legacy_u16 noreg temple_index_849;
   legacy_u16 *temple_tmp_850;
-  legacy_u16 temple_tmp_851;
+  legacy_u16 noreg temple_tmp_851;
   legacy_u16 *temple_tmp_852;
-  legacy_u16 temple_tmp_853;
+  legacy_u16 noreg temple_tmp_853;
   temple_resource_823=RsCarsetupLoadOpponentSpeedData((&(temple_speed_data_822)));
   temple_best_distance_824=TempleCastU32(999999);
   temple_distance_826=TempleCastU32(0);

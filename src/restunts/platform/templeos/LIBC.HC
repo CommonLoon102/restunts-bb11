@@ -25,6 +25,7 @@ legacy_u8 *RsMemmove(legacy_u8 *destination,legacy_u8 *source,legacy_u64 length)
 
 legacy_s32 RsFputs(legacy_u8 *text,legacy_s64 stream)
 {
+  no_warn stream;
   Print("%s",text);
   return StrLen(text);
 }

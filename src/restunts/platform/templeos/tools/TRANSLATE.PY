@@ -466,6 +466,16 @@ class Generator:
             args.append(result + " *temple_return_value")
         return ("legacy_void" if result else self.type_text(node.type)) + " " + name + "(" + ", ".join(args) + ")"
 
+    def local_decl(self, node, name):
+        # HolyC widens register variables to 64 bits. Keep narrow automatic
+        # storage at its declared C width, including when its address is used.
+        # Parameters already occupy full register-sized slots in HolyC.
+        info = self.integer_info(node)
+        if (isinstance(self.resolve_type(node), (A.TypeDecl, A.Enum)) and
+                info and info[0] < INTEGER_TYPES["legacy_s64"][0]):
+            name = "noreg " + name
+        return self.decl(node, name)
+
     def resolve_type(self, typ):
         if isinstance(typ, A.TypeDecl) and isinstance(typ.type, A.IdentifierType):
             alias = " ".join(typ.type.names)
@@ -619,7 +629,7 @@ class Generator:
         typ = self.node_type(node) if node else None
         if isinstance(typ, A.ArrayDecl):
             typ = A.PtrDecl([], typ.type)
-        text = self.decl(typ, name) if typ else "legacy_s64 " + name
+        text = self.local_decl(typ, name) if typ else "legacy_s64 " + name
         self.local_decls.append(text + ";")
         self.types[name] = typ
         return name
@@ -845,7 +855,7 @@ class Generator:
             return [], "{" + ", ".join(args) + "}"
         if isinstance(n, A.CompoundLiteral):
             name = self.m.unique("literal")
-            self.local_decls.append(self.decl(n.type.type, name) + ";")
+            self.local_decls.append(self.local_decl(n.type.type, name) + ";")
             return self.initialize(name, n.type.type, n.init), name
         if isinstance(n, A.Typename):
             return [], self.type_text(n)
@@ -954,11 +964,10 @@ class Generator:
             name = self.m.unique(n.name)
             self.scopes[-1][n.name] = name
             self.types[name] = n.type
-            declaration = self.decl(n.type, name)
             if "static" in n.storage:
                 self.extra_globals += self.global_storage(n, name)
                 return []
-            self.local_decls.append(declaration + ";")
+            self.local_decls.append(self.local_decl(n.type, name) + ";")
             return self.initialize(name, n.type, n.init) if n.init else []
         if isinstance(n, A.DeclList):
             return sum((self.stmt(d) for d in n.decls), [])
@@ -1043,9 +1052,12 @@ class Generator:
                     argument_copies.append(f"MemCpy(&{arg.name}, temple_value_{arg.name}, sizeof({result}));")
                 if isinstance(arg.type, A.ArrayDecl):
                     self.param_arrays[arg.name] = arg.type
-        body = argument_copies + self.stmt(node.body)
         if self.current_function == "shape2d_write_raster":
-            body = ["video_pages_raster_span(bitmap, destination, &value, 0, 1, operation, 0);"]
+            # The native raster handles both bitmap layouts. Do not translate
+            # the replaced C body: its temporaries have no remaining users.
+            body = ["planar;", "video_pages_raster_span(bitmap, destination, &value, 0, 1, operation, 0);"]
+        else:
+            body = argument_copies + self.stmt(node.body)
         if self.current_function == "mmgr_release":
             self.m.external_used.add("TempleRasterForget")
             body = ["TempleRasterForget(ptr);"] + body
@@ -1055,6 +1067,14 @@ class Generator:
         if self.current_function in ("shape2d_render_rle", "shape2d_render_rle_clipped"):
             self.m.external_used.add("TempleRasterSource")
             body = ["TempleRasterSource(shape);"] + body + ["TempleRasterSource(0);"]
+        if any(isinstance(arg, A.EllipsisParam) for arg in (typ.args.params if typ.args else [])):
+            # HolyC adds argc/argv to every variadic function. C va_list may
+            # consume argv, but does not require either implicit ABI parameter.
+            references = {token[0] for token in STYLE.TOKEN.finditer("\n".join(self.local_decls + body))
+                          if token.lastgroup == "word"}
+            unused = [argument for argument in ("argc", "argv") if argument not in references]
+            if unused:
+                body.insert(0, "no_warn " + ", ".join(unused) + ";")
         return self.extra_globals + [self.prototype(typ, name), "{"] + indent(self.local_decls + body) + ["}", ""]
 
 
@@ -1080,6 +1100,171 @@ def write(name, lines, name_map=None):
             MISMATCHES.append(name)
     else:
         destination.write_bytes(encoded)
+
+
+def referenced_defines(definitions, sources):
+    """Keep constants used by emitted/native code and their dependencies."""
+    def identifiers(source):
+        return {token[0] for token in STYLE.TOKEN.finditer(source)
+                if token.lastgroup == "word"}
+
+    pending = set().union(*(identifiers(source) for source in sources)) & definitions.keys()
+    used = set()
+    while pending:
+        name = pending.pop()
+        if name not in used:
+            used.add(name)
+            pending.update((identifiers(definitions[name]) & definitions.keys()) - used)
+    return used
+
+
+def required_forwards(names, source):
+    """Find symbols referenced before a declaration in HolyC source order.
+
+    Generated candidates are omitted from source during this pass. Existing
+    native externs still introduce their symbols, so they do not acquire a
+    second generated header. Declarator names, members and local shadows are
+    not global references. A class/function introduces its own name before
+    its body, which also avoids needless forwards for self-reference.
+    """
+    source = re.sub(r"^[ \t]*#[^\n]*", "", source.replace("\\\n", ""), flags=re.M)
+    tokens = [match[0] for match in STYLE.TOKEN.finditer(source)
+              if match.lastgroup not in ("comment", "string")]
+    pairs = {}
+    stack = []
+    for index, token in enumerate(tokens):
+        if token in ("(", "[", "{"):
+            stack.append(index)
+        elif token in (")", "]", "}"):
+            if not stack or tokens[stack[-1]] != {")": "(", "]": "[", "}": "{"}[token]:
+                raise ValueError("Unbalanced HolyC source while finding forward declarations")
+            first = stack.pop()
+            pairs[first] = index
+    if stack:
+        raise ValueError("Unbalanced HolyC source while finding forward declarations")
+
+    declared = {}
+    functions = []
+    class_bodies = []
+    depth = 0
+    depths = []
+    for index, token in enumerate(tokens):
+        depths.append(depth)
+        if token == "{":
+            depth += 1
+        elif token == "}":
+            depth -= 1
+        if token in ("class", "union") and index + 2 < len(tokens):
+            name, following = tokens[index + 1:index + 3]
+            if following in ("{", ";"):
+                declared[index + 1] = "global"
+                if following == "{":
+                    class_bodies.append((index + 2, pairs[index + 2]))
+
+    def is_type(token):
+        return token.startswith("legacy_") or bool(re.fullmatch(r"C[A-Z][A-Za-z_0-9]*", token))
+
+    # First identify function headers, including multiline native signatures.
+    for index, token in enumerate(tokens):
+        if depths[index] or not is_type(token):
+            continue
+        name_index = index + 1
+        while name_index < len(tokens) and tokens[name_index] in ("*", "noreg", "reg"):
+            name_index += 1
+        opening = name_index + 1
+        if opening >= len(tokens) or tokens[opening] != "(" or opening not in pairs:
+            continue
+        end = pairs[opening]
+        if end + 1 < len(tokens) and tokens[end + 1] in ("{", ";"):
+            declared[name_index] = "global"
+            functions.append((opening, pairs[end + 1] if tokens[end + 1] == "{" else end))
+
+    scope_at = [None] * len(tokens)
+    for first, last in functions:
+        for index in range(first, last + 1):
+            scope_at[index] = first
+
+    # Parse only declarator boundaries. Initializer expressions remain in the
+    # token stream, including function addresses and references to later data.
+    for index, token in enumerate(tokens):
+        if not is_type(token):
+            continue
+        cursor = index + 1
+        while cursor < len(tokens):
+            parenthesized = tokens[cursor] == "(" and cursor + 1 < len(tokens) and tokens[cursor + 1] == "*"
+            if parenthesized:
+                cursor += 1
+            while cursor < len(tokens) and tokens[cursor] in ("*", "noreg", "reg"):
+                cursor += 1
+            if cursor >= len(tokens) or not re.fullmatch(r"[A-Za-z_$][A-Za-z_0-9$]*", tokens[cursor]):
+                break
+            if cursor in declared:
+                break
+            following = cursor + 1
+            if parenthesized:
+                if following >= len(tokens) or tokens[following] != ")":
+                    break
+                following += 1
+                if following >= len(tokens) or tokens[following] != "(":
+                    break
+                following = pairs[following] + 1
+            if following >= len(tokens) or tokens[following] not in ("[", "=", ",", ";", ")"):
+                break
+            if scope_at[cursor] is not None:
+                declared[cursor] = "local"
+            elif any(first < cursor < last for first, last in class_bodies):
+                declared[cursor] = "member"
+            elif not depths[cursor]:
+                declared[cursor] = "global"
+            while following < len(tokens) and tokens[following] not in (",", ";", ")"):
+                if tokens[following] in ("(", "[", "{"):
+                    following = pairs[following]
+                following += 1
+            if following >= len(tokens) or tokens[following] != ",":
+                break
+            cursor = following + 1
+            if cursor < len(tokens) and is_type(tokens[cursor]):
+                break
+
+    available = set()
+    needed = set()
+    local_names = {}
+    for index, token in enumerate(tokens):
+        scope = scope_at[index]
+        role = declared.get(index)
+        if role == "global":
+            available.add(token)
+        elif role == "local":
+            # HolyC locals remain in the function scope after a nested block.
+            local_names.setdefault(scope, set()).add(token)
+        elif (token in names and role != "member" and token not in available and
+              token not in local_names.get(scope, ()) and
+              (not index or tokens[index - 1] not in (".", "->"))):
+            needed.add(token)
+    return needed
+
+
+def compilation_source(entry, generated):
+    """Expand the port's include order using the current generated buffers."""
+    visited = set()
+
+    def expand(path):
+        path = path.resolve()
+        if path in visited:
+            return ""
+        visited.add(path)
+        source = generated[path] if path in generated else path.read_text()
+
+        def include(match):
+            name = match[1]
+            child = HERE / name
+            if child.resolve() not in generated and not child.exists():
+                child = path.parent / name
+            return expand(child)
+
+        return re.sub(r'^[ \t]*#include[ \t]+"([^"]+)"[^\n]*', include, source, flags=re.M)
+
+    return expand(entry)
 
 
 def translate(cpp):
@@ -1108,15 +1293,21 @@ def translate(cpp):
     name_map = build_name_map(model)
     header = ["// Generated by tools/TRANSLATE.PY. Edit the C source or translator.", ""]
     g = Generator(model)
+    generated_sources = []
+    generated_files = {}
+
+    def emit(name, lines, names=None):
+        generated_sources.append("\n".join(lines))
+        generated_files[(GEN / name).resolve()] = STYLE.rename_identifiers("\n".join(lines), names or {})
+        write(name, lines, names)
+
     types = list(header)
+    enum_definitions = {}
     for name, value in model.enums.items():
         a, text = g.expr(value)
         if a:
             raise ValueError("Nonconstant enum " + name)
-        types.append(f"#define {name} {text}")
-    types.append("")
-    for name in model.classes:
-        types.append(f"extern class {name};")
+        enum_definitions[name] = text
     emitted = set()
     def emit_class(name):
         if name in emitted:
@@ -1133,7 +1324,12 @@ def translate(cpp):
         types.extend(indent(g.class_fields(cls)) + ["};", ""])
     for name in model.classes:
         emit_class(name)
-    write("TYPES.HH", types, name_map)
+    class_names = {name_map.get(name, name) for name in model.classes}
+    class_forwards = required_forwards(class_names, STYLE.rename_identifiers("\n".join(types), name_map))
+    types[len(header):len(header)] = [f"extern class {name};" for name in model.classes
+                                     if name_map.get(name, name) in class_forwards]
+    generated_sources.append("\n".join(types))
+    generated_files[(GEN / "TYPES.HH").resolve()] = STYLE.rename_identifiers("\n".join(types), name_map)
     casts = list(header)
     cast_prototypes = []
     for width in (8, 16, 32):
@@ -1158,18 +1354,19 @@ def translate(cpp):
             signature = f"{typ} {name}{'S' if signed else 'U'}64({typ} dividend, {typ} divisor)"
             cast_prototypes.append("extern " + signature + ";")
             casts += [signature, "{", f"\treturn dividend {operator} divisor;", "}", ""]
-    write("CASTS.HC", casts, name_map)
-    decls = list(header) + cast_prototypes
+    emit("CASTS.HC", casts, name_map)
+    declarations = {re.search(r"\b(Temple\w+)\(", declaration)[1]: declaration
+                    for declaration in cast_prototypes}
     for name, (decl, rename, definition) in model.functions.items():
         if definition or "/include/" not in str(decl.coord.file):
-            decls.append("extern " + Generator(model, rename).prototype(decl.type, name) + ";")
+            declarations[name] = "extern " + Generator(model, rename).prototype(decl.type, name) + ";"
     for name, (decl, rename) in model.global_decls.items():
-        decls.append("extern " + Generator(model, rename).decl(decl.type, name) + ";")
-    write("DECLS.HH", decls, name_map)
+        declarations[name] = "extern " + Generator(model, rename).decl(decl.type, name) + ";"
+    generated_files[(GEN / "DECLS.HH").resolve()] = ""
     data = list(header)
     for name, (decl, rename) in model.global_defs.items():
         data += Generator(model, rename).global_storage(decl, name)
-    write("DATA.HC", data, name_map)
+    emit("DATA.HC", data, name_map)
     includes = list(header) + ['#include "generated/CASTS.HC"']
     for module, ast, rename in model.units:
         lines = list(header)
@@ -1179,18 +1376,28 @@ def translate(cpp):
                     continue
                 name = rename.get(item.decl.name, item.decl.name)
                 lines += Generator(model, rename).function(item, name)
-        write(module.upper() + ".HC", lines, name_map)
+        emit(module.upper() + ".HC", lines, name_map)
         includes.append(f'#include "generated/{module.upper()}.HC"')
     includes.append('#include "generated/DATA_INIT.HC"')
-    write("DATA_INIT.HC", header + model.data_initializers, name_map)
-    write("ALL.HC", includes)
+    emit("DATA_INIT.HC", header + model.data_initializers, name_map)
+    emit("ALL.HC", includes)
+    declaration_names = {name_map.get(name, name) for name in declarations}
+    needed = required_forwards(declaration_names, compilation_source(HERE / "LOAD.HC", generated_files))
+    emit("DECLS.HH", header + [declaration for name, declaration in declarations.items()
+                               if name_map.get(name, name) in needed], name_map)
     external = []
     for name in sorted(model.external_used):
         item = model.functions.get(name)
         external.append(Generator(model).prototype(item[0].type, LIBC.get(name, name)) + ";" if item else "// Native hook: " + name)
-    write("EXTERNALS.TXT", header + external, name_map)
-    write("NAMES.JSON", [json.dumps({name: styled for name, styled in sorted(name_map.items())
+    emit("EXTERNALS.TXT", header + external, name_map)
+    emit("NAMES.JSON", [json.dumps({name: styled for name, styled in sorted(name_map.items())
                                      if name != styled}, indent=2)])
+    native_sources = [path.read_text() for path in HERE.rglob("*")
+                      if path.suffix in (".HC", ".HH") and GEN not in path.parents]
+    used_enums = referenced_defines(enum_definitions, generated_sources + native_sources)
+    enum_lines = [f"#define {name} {value}" for name, value in enum_definitions.items()
+                  if name in used_enums]
+    write("TYPES.HH", header + enum_lines + [""] + types[len(header):], name_map)
     native_source = "\n".join(path.read_text() for path in HERE.glob("*.HC")
                               if not path.name.startswith("TEST_"))
     missing = [name for name in sorted(model.external_used)
@@ -1199,7 +1406,7 @@ def translate(cpp):
     if missing:
         raise ValueError("Missing native function implementations: " + ", ".join(missing))
     manifest = {"modules": [x[0] for x in model.units], "functions": sum(1 for x in model.functions.values() if x[2]), "classes": len(model.classes), "external": sorted(name_map.get(name, name) for name in model.external_used)}
-    write("MANIFEST.JSON", [json.dumps(manifest, indent=2)])
+    emit("MANIFEST.JSON", [json.dumps(manifest, indent=2)])
     print(json.dumps({k:v for k,v in manifest.items() if k != "external"}))
 
 

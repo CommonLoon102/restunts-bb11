@@ -2,7 +2,7 @@
 
 legacy_s8 RsGameInputLegacyS8FromBits(legacy_u8 value)
 {
-  legacy_s32 temple_tmp_1062;
+  legacy_s32 noreg temple_tmp_1062;
   if((value<=127)) {
     temple_tmp_1062=TempleCastS32(TempleCastS8(value));
   } else {
@@ -14,7 +14,7 @@ legacy_s8 RsGameInputLegacyS8FromBits(legacy_u8 value)
 
 legacy_s16 RsGameInputLegacyS16FromBits(legacy_u16 value)
 {
-  legacy_s32 temple_tmp_1063;
+  legacy_s32 noreg temple_tmp_1063;
   if((value<=32767)) {
     temple_tmp_1063=TempleCastS32(TempleCastS16(value));
   } else {
@@ -26,7 +26,7 @@ legacy_s16 RsGameInputLegacyS16FromBits(legacy_u16 value)
 
 legacy_s32 RsGameInputLegacyS32FromBits(legacy_u32 value)
 {
-  legacy_s32 temple_tmp_1064;
+  legacy_s32 noreg temple_tmp_1064;
   if((value<=TempleCastU32(2147483647))) {
     temple_tmp_1064=TempleCastS32(TempleCastS32(value));
   } else {
@@ -46,11 +46,11 @@ legacy_s16 RsGameInputInputRepeatDue(legacy_s16 repeat_at)
 
 legacy_void RsKbRegCallback(legacy_s16 code,legacy_u8 *callback)
 {
-  legacy_u16 temple_callback_index_1065;
+  legacy_u16 noreg temple_callback_index_1065;
   legacy_u16 *temple_tmp_1067;
-  legacy_u16 temple_tmp_1068;
-  legacy_u16 temple_code_bits_1069;
-  legacy_u16 temple_key_index_1070;
+  legacy_u16 noreg temple_tmp_1068;
+  legacy_u16 noreg temple_code_bits_1069;
+  legacy_u16 noreg temple_key_index_1070;
   (temple_callback_index_1065=TempleCastU16(0));
   while(1) {
     if(!((temple_callback_index_1065<64))) {
@@ -88,9 +88,9 @@ legacy_void RsKbRegCallback(legacy_s16 code,legacy_u8 *callback)
 
 legacy_s16 RsKbParseKey(legacy_s16 code)
 {
-  legacy_u16 temple_code_bits_1071;
-  legacy_u8 temple_callback_number_1072;
-  legacy_u16 temple_key_index_1073;
+  legacy_u16 noreg temple_code_bits_1071;
+  legacy_u8 noreg temple_callback_number_1072;
+  legacy_u16 noreg temple_key_index_1073;
   legacy_void (*temple_callee_1074)();
   temple_code_bits_1071=TempleCastU16(TempleCastU16(code));
   RsDosInterruptsDisable();
@@ -127,8 +127,8 @@ legacy_s16 RsKbParseKey(legacy_s16 code)
 
 legacy_void RsKbRemoveCallback(legacy_s16 code)
 {
-  legacy_u16 temple_code_bits_1075;
-  legacy_u16 temple_key_index_1076;
+  legacy_u16 noreg temple_code_bits_1075;
+  legacy_u16 noreg temple_key_index_1076;
   temple_code_bits_1075=TempleCastU16(TempleCastU16(code));
   if((TempleCastU32((temple_code_bits_1075&255))!=TempleCastU32(0))) {
     if((temple_code_bits_1075<=127)) {
@@ -178,11 +178,11 @@ legacy_void RsLoadPalandcursor()
   legacy_s8 *temple_resource_1077;
   CShape2D *temple_mouse_shape_1078;
   legacy_u8 temple_palette_1079[768];
-  legacy_u16 temple_i_1081;
+  legacy_u16 noreg temple_i_1081;
   legacy_u16 *temple_tmp_1082;
-  legacy_u16 temple_tmp_1083;
-  legacy_u16 temple_mouse_width_1084;
-  legacy_u16 temple_mouse_height_1085;
+  legacy_u16 noreg temple_tmp_1083;
+  legacy_u16 noreg temple_mouse_width_1084;
+  legacy_u16 noreg temple_mouse_height_1085;
   temple_resource_1077=(RsFileLoadShape2dFatal("sdmain"))(legacy_s8 *);
   temple_mouse_shape_1078=(RsLocateShapeFatal(temple_resource_1077,"!pal"))(CShape2D *);
   temple_i_1081=TempleCastU16(0);
@@ -223,7 +223,7 @@ legacy_void RsLoadPalandcursor()
 
 legacy_s16 RsGameInputInputHandleDisplayShortcut(legacy_s16 key)
 {
-  legacy_s32 temple_tmp_1086;
+  legacy_s32 noreg temple_tmp_1086;
   legacy_u8 *temple_tmp_1087;
   legacy_char *temple_tmp_1088;
   legacy_s8 *temple_tmp_1089;
@@ -299,7 +299,7 @@ MemSet(&temple_distances_1092,0,sizeof(temple_distances_1092));
 legacy_void RsGameInputInputCycleCustomCamera()
 {
   legacy_u8 *temple_tmp_1093;
-  legacy_u8 temple_tmp_1094;
+  legacy_u8 noreg temple_tmp_1094;
   if((cameramode!=CAMERA_MODE_CUSTOM)) {
     RsCameraSelectMode(TempleCastS8(CAMERA_MODE_CUSTOM));
     return;
@@ -351,9 +351,9 @@ legacy_s16 RsGameInputInputHandleCameraShortcut(legacy_s16 key)
 
 legacy_s16 RsHandleIngameKbShortcuts(legacy_s16 key)
 {
-  legacy_s32 temple_tmp_1095;
-  legacy_s32 temple_tmp_1096;
-  legacy_s32 temple_tmp_1097;
+  legacy_s32 noreg temple_tmp_1095;
+  legacy_s32 noreg temple_tmp_1096;
+  legacy_s32 noreg temple_tmp_1097;
   legacy_s8 *temple_tmp_1098;
   temple_tmp_1095=!!(RsGameInputInputHandleDisplayShortcut(TempleCastS16(key)));
   if(!temple_tmp_1095) {
@@ -395,7 +395,7 @@ legacy_s16 RsHandleIngameKbShortcuts(legacy_s16 key)
 
 legacy_void RsMouseDrawTransparentCheck()
 {
-  legacy_s32 temple_tmp_1099;
+  legacy_s32 noreg temple_tmp_1099;
   (rs_game_input_mouse_transparent_mode=TempleCastS8(1));
   temple_tmp_1099=!!((kbormouse!=0));
   if(temple_tmp_1099) {
@@ -416,12 +416,12 @@ legacy_void RsMouseDrawOpaqueCheck()
 
 legacy_s16 RsMouseMultiHittest(legacy_s16 count,CButtonArea *buttons)
 {
-  legacy_s16 temple_i_1101;
-  legacy_s32 temple_tmp_1102;
-  legacy_s32 temple_tmp_1103;
-  legacy_s32 temple_tmp_1104;
+  legacy_s16 noreg temple_i_1101;
+  legacy_s32 noreg temple_tmp_1102;
+  legacy_s32 noreg temple_tmp_1103;
+  legacy_s32 noreg temple_tmp_1104;
   legacy_s16 *temple_tmp_1105;
-  legacy_s16 temple_tmp_1106;
+  legacy_s16 noreg temple_tmp_1106;
   if((kbormouse==0)) {
     return TempleCastS16(TempleCastS32((-(1))));
   }
@@ -457,11 +457,11 @@ legacy_u8 temple_action_flags_1107[10];
 MemSet(&temple_action_flags_1107,0,sizeof(temple_action_flags_1107));
 legacy_s16 RsGetKbOrJoyFlags()
 {
-  legacy_u16 temple_flags_1108;
-  legacy_u16 temple_index_1110;
+  legacy_u16 noreg temple_flags_1108;
+  legacy_u16 noreg temple_index_1110;
   legacy_u16 *temple_tmp_1111;
   legacy_u16 *temple_tmp_1112;
-  legacy_u16 temple_tmp_1113;
+  legacy_u16 noreg temple_tmp_1113;
   temple_flags_1108=TempleCastU16(0);
   temple_index_1110=TempleCastU16(0);
   while(1) {
@@ -536,8 +536,8 @@ legacy_void RsGameInputInputTranslateJoystickKey()
 
 legacy_void RsGameInputInputUpdateJoystick(legacy_u16 current_joy_flags)
 {
-  legacy_s16 temple_changed_or_repeating_1114;
-  legacy_s32 temple_tmp_1115;
+  legacy_s16 noreg temple_changed_or_repeating_1114;
+  legacy_s32 noreg temple_tmp_1115;
   temple_changed_or_repeating_1114=TempleCastS16(0);
   if((TempleCastU16(rs_game_input_input_joystick_flags)!=current_joy_flags)) {
     (rs_game_input_input_new_joystick_flags=TempleCastS16(TempleCastS32(
@@ -566,8 +566,8 @@ legacy_void RsGameInputInputUpdateJoystick(legacy_u16 current_joy_flags)
 
 legacy_void RsGameInputInputUpdateMouseActivity(legacy_s16 frame_delta)
 {
-  legacy_s32 temple_tmp_1116;
-  legacy_s32 temple_tmp_1117;
+  legacy_s32 noreg temple_tmp_1116;
+  legacy_s32 noreg temple_tmp_1117;
   RsDosMouseGetState((&(mouse_butstate)),(&(mouse_xpos)),(&(mouse_ypos)));
   temple_tmp_1116=!!((rs_game_input_input_mouse_previous_x!=mouse_xpos));
   if(!temple_tmp_1116) {
@@ -606,8 +606,8 @@ legacy_void RsGameInputInputUpdateMouseActivity(legacy_s16 frame_delta)
 
 legacy_void RsGameInputInputUpdateMouseButtons()
 {
-  legacy_s16 temple_changed_or_repeating_1118;
-  legacy_s32 temple_tmp_1119;
+  legacy_s16 noreg temple_changed_or_repeating_1118;
+  legacy_s32 noreg temple_tmp_1119;
   if((kbormouse!=0)) {
     temple_changed_or_repeating_1118=TempleCastS16(0);
     if((rs_game_input_input_mouse_previous_buttons!=mouse_butstate)) {
@@ -652,8 +652,8 @@ legacy_void RsGameInputInputUpdateMouseButtons()
 
 legacy_s16 RsInputChecking(legacy_s16 frame_delta)
 {
-  legacy_u16 temple_key_1120;
-  legacy_u16 temple_current_joy_flags_1121;
+  legacy_u16 noreg temple_key_1120;
+  legacy_u16 noreg temple_current_joy_flags_1121;
   RsGameInputInputAdvanceClock(TempleCastS16(frame_delta));
   temple_key_1120=TempleCastU16(TempleCastU16(RsDosKbGetChar()));
   if((temple_key_1120!=0)) {
@@ -692,8 +692,8 @@ legacy_s16 RsGameInputMouseTrackDivide(legacy_s16 numerator,legacy_s16 denominat
 legacy_s16 RsGameInputMouseTrackPosition(
     legacy_s16 length,legacy_s16 selected,legacy_s16 item_count)
 {
-  legacy_s16 temple_numerator_1122;
-  legacy_s16 temple_denominator_1123;
+  legacy_s16 noreg temple_numerator_1122;
+  legacy_s16 noreg temple_denominator_1123;
   temple_numerator_1122=TempleCastS16(
       RsGameInputLegacyS16FromBits(TempleCastU16(TempleCastU16(TempleCastU16(TempleCastU32(
           (TempleCastU32(TempleCastU16(RsGameInputLegacyS16FromBits(TempleCastU16(TempleCastU16(
@@ -769,10 +769,10 @@ legacy_s16 RsGameInputMouseTrackPage(
 
 legacy_s16 RsGameInputMouseTrackDrag(CMouseTrackDrag *track,legacy_s16 coordinate)
 {
-  legacy_s16 temple_previous_start_1125;
-  legacy_s16 temple_dragged_start_1126;
-  legacy_s16 temple_current_coordinate_1128;
-  legacy_s32 temple_tmp_1129;
+  legacy_s16 noreg temple_previous_start_1125;
+  legacy_s16 noreg temple_dragged_start_1126;
+  legacy_s16 noreg temple_current_coordinate_1128;
+  legacy_s32 noreg temple_tmp_1129;
   temple_previous_start_1125=TempleCastS16(track->thumb_start);
   while(1) {
     RsInputChecking(TempleCastS16(TempleCastS16(RsTimerGetDeltaAlt())));
@@ -823,23 +823,23 @@ legacy_s16 RsGameInputMouseTrackDrag(CMouseTrackDrag *track,legacy_s16 coordinat
 legacy_s16 RsScrollbarUpdate(legacy_s16 operation,legacy_s16 x,legacy_s16 width,legacy_s16 y,
     legacy_s16 height,legacy_s16 selected,legacy_s16 selection_width,legacy_s16 item_count)
 {
-  legacy_s16 temple_horizontal_1130;
-  legacy_s16 temple_length_1131;
-  legacy_s32 temple_tmp_1132;
-  legacy_s16 temple_thumb_end_1133;
-  legacy_s16 temple_thumb_start_1134;
-  legacy_s16 temple_thumb_size_1135;
-  legacy_s16 temple_coordinate_1136;
-  legacy_s32 temple_tmp_1137;
-  legacy_s32 temple_tmp_1138;
+  legacy_s16 noreg temple_horizontal_1130;
+  legacy_s16 noreg temple_length_1131;
+  legacy_s32 noreg temple_tmp_1132;
+  legacy_s16 noreg temple_thumb_end_1133;
+  legacy_s16 noreg temple_thumb_start_1134;
+  legacy_s16 noreg temple_thumb_size_1135;
+  legacy_s16 noreg temple_coordinate_1136;
+  legacy_s32 noreg temple_tmp_1137;
+  legacy_s32 noreg temple_tmp_1138;
   CMouseTrackDrag temple_track_1139;
-  legacy_s16 temple_dragged_start_1140;
-  legacy_s16 temple_quotient_1141;
-  legacy_u32 temple_tmp_1142;
-  legacy_u32 temple_tmp_1143;
-  legacy_u32 temple_tmp_1144;
-  legacy_u32 temple_tmp_1145;
-  legacy_s16 temple_scaled_1146;
+  legacy_s16 noreg temple_dragged_start_1140;
+  legacy_s16 noreg temple_quotient_1141;
+  legacy_u32 noreg temple_tmp_1142;
+  legacy_u32 noreg temple_tmp_1143;
+  legacy_u32 noreg temple_tmp_1144;
+  legacy_u32 noreg temple_tmp_1145;
+  legacy_s16 noreg temple_scaled_1146;
   temple_horizontal_1130=
       TempleCastS16((RsGameInputLegacyS16FromBits(TempleCastU16(TempleCastU16(width)))>
           RsGameInputLegacyS16FromBits(TempleCastU16(TempleCastU16(height)))));
@@ -944,9 +944,9 @@ legacy_s16 RsInputDoChecking(legacy_s16 frame_delta)
 
 legacy_void RsCheckInput()
 {
-  legacy_s16 temple_pressed_1147;
-  legacy_s32 temple_tmp_1149;
-  legacy_s32 temple_tmp_1150;
+  legacy_s16 noreg temple_pressed_1147;
+  legacy_s32 noreg temple_tmp_1149;
+  legacy_s32 noreg temple_tmp_1150;
   while(1) {
     (temple_pressed_1147=TempleCastS16((TempleCastU32((TempleCastU32(RsGetKbOrJoyFlags())&
                                             TempleCastU32((16|32))))!=TempleCastU32(0))));
@@ -983,9 +983,9 @@ legacy_void RsInputWaitForPressAndRelease()
 
 legacy_void RsInputPushStatus()
 {
-  legacy_s16 temple_index_1152;
+  legacy_s16 noreg temple_index_1152;
   legacy_u8 *temple_tmp_1153;
-  legacy_u8 temple_tmp_1154;
+  legacy_u8 noreg temple_tmp_1154;
   temple_index_1152=TempleCastS16(TempleCastS8(rs_game_input_input_mode_stack_depth));
   (rs_game_input_input_draw_mode_stack[temple_index_1152]=
           TempleCastS8(rs_game_input_mouse_transparent_mode));
@@ -999,8 +999,8 @@ legacy_void RsInputPushStatus()
 legacy_void RsInputPopStatus()
 {
   legacy_u8 *temple_tmp_1155;
-  legacy_u8 temple_tmp_1156;
-  legacy_s16 temple_index_1157;
+  legacy_u8 noreg temple_tmp_1156;
+  legacy_s16 noreg temple_index_1157;
   if((rs_game_input_input_mode_stack_depth==0)) {
     return;
   }
@@ -1019,9 +1019,9 @@ legacy_void RsInputPopStatus()
 
 legacy_s16 RsInputRepeatCheck(legacy_s16 duration)
 {
-  legacy_u16 temple_elapsed_1158;
-  legacy_u16 temple_delta_1160;
-  legacy_s16 temple_result_1161;
+  legacy_u16 noreg temple_elapsed_1158;
+  legacy_u16 noreg temple_delta_1160;
+  legacy_s16 noreg temple_result_1161;
   RsTimerGetDeltaAlt();
   temple_elapsed_1158=TempleCastU16(0);
   while(1) {

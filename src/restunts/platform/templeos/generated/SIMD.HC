@@ -2,7 +2,7 @@
 
 legacy_s8 RsSimdLegacyS8FromBits(legacy_u8 value)
 {
-  legacy_s32 temple_tmp_733;
+  legacy_s32 noreg temple_tmp_733;
   if((value<=127)) {
     temple_tmp_733=TempleCastS32(TempleCastS8(value));
   } else {
@@ -14,7 +14,7 @@ legacy_s8 RsSimdLegacyS8FromBits(legacy_u8 value)
 
 legacy_s16 RsSimdLegacyS16FromBits(legacy_u16 value)
 {
-  legacy_s32 temple_tmp_734;
+  legacy_s32 noreg temple_tmp_734;
   if((value<=32767)) {
     temple_tmp_734=TempleCastS32(TempleCastS16(value));
   } else {
@@ -26,7 +26,7 @@ legacy_s16 RsSimdLegacyS16FromBits(legacy_u16 value)
 
 legacy_s32 RsSimdLegacyS32FromBits(legacy_u32 value)
 {
-  legacy_s32 temple_tmp_735;
+  legacy_s32 noreg temple_tmp_735;
   if((value<=TempleCastU32(2147483647))) {
     temple_tmp_735=TempleCastS32(TempleCastS32(value));
   } else {
@@ -38,7 +38,7 @@ legacy_s32 RsSimdLegacyS32FromBits(legacy_u32 value)
 
 legacy_u8 RsSimdSimdReadU8(CSimdReader *reader)
 {
-  legacy_u8 temple_value_736;
+  legacy_u8 noreg temple_value_736;
   temple_value_736=TempleCastU8(reader->source[reader->offset]);
   (reader->offset=TempleCastU16(
       TempleCastU16(TempleCastS32((TempleCastU16(reader->offset)+TempleCastU16(1))))));
@@ -47,14 +47,14 @@ legacy_u8 RsSimdSimdReadU8(CSimdReader *reader)
 
 legacy_s8 RsSimdSimdReadS8(CSimdReader *reader)
 {
-  legacy_u8 temple_value_737;
+  legacy_u8 noreg temple_value_737;
   temple_value_737=TempleCastU8(RsSimdSimdReadU8(reader));
   return TempleCastS8(RsSimdLegacyS8FromBits(TempleCastU8(TempleCastU8(temple_value_737))));
 }
 
 legacy_u16 RsSimdSimdReadU16(CSimdReader *reader)
 {
-  legacy_u16 temple_value_738;
+  legacy_u16 noreg temple_value_738;
   temple_value_738=TempleCastU16(TempleCastU16(TempleCastS32((
       TempleCastU16(TempleCastU8((reader->source+reader->offset)[0]))|
       TempleCastS32((TempleCastU16(TempleCastU8((reader->source+reader->offset)[1]))<<8))))));
@@ -65,7 +65,7 @@ legacy_u16 RsSimdSimdReadU16(CSimdReader *reader)
 
 legacy_s16 RsSimdSimdReadS16(CSimdReader *reader)
 {
-  legacy_u16 temple_value_739;
+  legacy_u16 noreg temple_value_739;
   temple_value_739=TempleCastU16(RsSimdSimdReadU16(reader));
   return TempleCastS16(RsSimdLegacyS16FromBits(TempleCastU16(TempleCastU16(temple_value_739))));
 }
@@ -85,9 +85,9 @@ legacy_void RsSimdSimdReadVector(CSimdReader *reader,CVector *vector)
 
 legacy_void RsSimdSimdReadS8Array(CSimdReader *reader,legacy_s8 *values,legacy_u16 count)
 {
-  legacy_u16 temple_index_741;
+  legacy_u16 noreg temple_index_741;
   legacy_u16 *temple_tmp_742;
-  legacy_u16 temple_tmp_743;
+  legacy_u16 noreg temple_tmp_743;
   temple_index_741=TempleCastU16(0);
   while(1) {
     if(!((temple_index_741<count))) {
@@ -103,9 +103,9 @@ legacy_void RsSimdSimdReadS8Array(CSimdReader *reader,legacy_s8 *values,legacy_u
 
 legacy_void RsSimdSimdReadU16Array(CSimdReader *reader,legacy_u16 *values,legacy_u16 count)
 {
-  legacy_u16 temple_index_745;
+  legacy_u16 noreg temple_index_745;
   legacy_u16 *temple_tmp_746;
-  legacy_u16 temple_tmp_747;
+  legacy_u16 noreg temple_tmp_747;
   temple_index_745=TempleCastU16(0);
   while(1) {
     if(!((temple_index_745<count))) {
@@ -121,9 +121,9 @@ legacy_void RsSimdSimdReadU16Array(CSimdReader *reader,legacy_u16 *values,legacy
 
 legacy_void RsSimdSimdReadS16Array(CSimdReader *reader,legacy_s16 *values,legacy_u16 count)
 {
-  legacy_u16 temple_index_749;
+  legacy_u16 noreg temple_index_749;
   legacy_u16 *temple_tmp_750;
-  legacy_u16 temple_tmp_751;
+  legacy_u16 noreg temple_tmp_751;
   temple_index_749=TempleCastU16(0);
   while(1) {
     if(!((temple_index_749<count))) {
@@ -139,9 +139,9 @@ legacy_void RsSimdSimdReadS16Array(CSimdReader *reader,legacy_s16 *values,legacy
 
 legacy_void RsSimdSimdReadPointArray(CSimdReader *reader,CPoint2D *points,legacy_u16 count)
 {
-  legacy_u16 temple_index_753;
+  legacy_u16 noreg temple_index_753;
   legacy_u16 *temple_tmp_754;
-  legacy_u16 temple_tmp_755;
+  legacy_u16 noreg temple_tmp_755;
   temple_index_753=TempleCastU16(0);
   while(1) {
     if(!((temple_index_753<count))) {
@@ -157,9 +157,9 @@ legacy_void RsSimdSimdReadPointArray(CSimdReader *reader,CPoint2D *points,legacy
 
 legacy_void RsSimdSimdReadVectorArray(CSimdReader *reader,CVector *vectors,legacy_u16 count)
 {
-  legacy_u16 temple_index_757;
+  legacy_u16 noreg temple_index_757;
   legacy_u16 *temple_tmp_758;
-  legacy_u16 temple_tmp_759;
+  legacy_u16 noreg temple_tmp_759;
   temple_index_757=TempleCastU16(0);
   while(1) {
     if(!((temple_index_757<count))) {

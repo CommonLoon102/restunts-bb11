@@ -2,7 +2,7 @@
 
 legacy_s8 RsReplayViewerLegacyS8FromBits(legacy_u8 value)
 {
-  legacy_s32 temple_tmp_1722;
+  legacy_s32 noreg temple_tmp_1722;
   if((value<=127)) {
     temple_tmp_1722=TempleCastS32(TempleCastS8(value));
   } else {
@@ -14,7 +14,7 @@ legacy_s8 RsReplayViewerLegacyS8FromBits(legacy_u8 value)
 
 legacy_s16 RsReplayViewerLegacyS16FromBits(legacy_u16 value)
 {
-  legacy_s32 temple_tmp_1723;
+  legacy_s32 noreg temple_tmp_1723;
   if((value<=32767)) {
     temple_tmp_1723=TempleCastS32(TempleCastS16(value));
   } else {
@@ -26,7 +26,7 @@ legacy_s16 RsReplayViewerLegacyS16FromBits(legacy_u16 value)
 
 legacy_s32 RsReplayViewerLegacyS32FromBits(legacy_u32 value)
 {
-  legacy_s32 temple_tmp_1724;
+  legacy_s32 noreg temple_tmp_1724;
   if((value<=TempleCastU32(2147483647))) {
     temple_tmp_1724=TempleCastS32(TempleCastS32(value));
   } else {
@@ -38,9 +38,9 @@ legacy_s32 RsReplayViewerLegacyS32FromBits(legacy_u32 value)
 
 legacy_void RsReplayViewerReplayControlsSelect(legacy_u8 selection)
 {
-  legacy_u16 temple_index_1726;
+  legacy_u16 noreg temple_index_1726;
   legacy_u16 *temple_tmp_1727;
-  legacy_u16 temple_tmp_1728;
+  legacy_u16 noreg temple_tmp_1728;
   temple_index_1726=TempleCastU16(0);
   while(1) {
     if(!((temple_index_1726<9))) {
@@ -57,9 +57,9 @@ legacy_void RsReplayViewerReplayControlsSelect(legacy_u8 selection)
 
 legacy_void RsReplayViewerReplayControlsPrepareBackground(legacy_u16 buffer_index)
 {
-  legacy_u16 temple_index_1730;
+  legacy_u16 noreg temple_index_1730;
   legacy_u16 *temple_tmp_1731;
-  legacy_u16 temple_tmp_1732;
+  legacy_u16 noreg temple_tmp_1732;
   if((replay_controls_drawn[buffer_index]==0)) {
     (replay_controls_drawn[buffer_index]=TempleCastS8(1));
     (replay_camera_mode_cache[buffer_index]=TempleCastU8(255));
@@ -93,7 +93,7 @@ legacy_void RsReplayViewerReplayControlsPrepareBackground(legacy_u16 buffer_inde
 
 legacy_void RsReplayViewerReplayControlsDrawTime(legacy_u16 buffer_index,legacy_u16 current_frame)
 {
-  legacy_u16 temple_displayed_time_1733;
+  legacy_u16 noreg temple_displayed_time_1733;
   temple_displayed_time_1733=
       TempleCastU16(TempleCastU16(TempleCastS32((current_frame+elapsed_time1))));
   if((TempleCastU16(replay_displayed_time_cache[buffer_index])!=temple_displayed_time_1733)) {
@@ -130,9 +130,9 @@ legacy_void RsReplayViewerReplayControlsDrawCamera(legacy_u16 buffer_index)
 legacy_void RsReplayViewerReplayControlsDrawTimeline(
     legacy_u16 buffer_index,legacy_u16 recorded_frame,legacy_u16 current_frame)
 {
-  legacy_s16 temple_recorded_position_1734;
-  legacy_s16 temple_current_position_1735;
-  legacy_s32 temple_tmp_1736;
+  legacy_s16 noreg temple_recorded_position_1734;
+  legacy_s16 noreg temple_current_position_1735;
+  legacy_s32 noreg temple_tmp_1736;
   temple_recorded_position_1734=
       TempleCastS16(TempleCastS16(RsReplayTimelinePosition(TempleCastU16(recorded_frame),
           TempleCastU16(gameconfig.game_recordedframes),TempleCastU16(110))));
@@ -168,10 +168,10 @@ legacy_void RsReplayViewerReplayControlsDrawTimeline(
 
 legacy_u8 RsReplayViewerReplayControlsChanged(legacy_u16 buffer_index)
 {
-  legacy_u8 temple_state_changed_1737;
-  legacy_u16 temple_index_1739;
+  legacy_u8 noreg temple_state_changed_1737;
+  legacy_u16 noreg temple_index_1739;
   legacy_u16 *temple_tmp_1740;
-  legacy_u16 temple_tmp_1741;
+  legacy_u16 noreg temple_tmp_1741;
   temple_state_changed_1737=
       TempleCastU8((replay_selection_cache[buffer_index]!=replay_selected_control));
   if((temple_state_changed_1737==0)) {
@@ -197,14 +197,14 @@ legacy_u8 RsReplayViewerReplayControlsChanged(legacy_u16 buffer_index)
 
 legacy_void RsReplayViewerReplayControlsDrawButtons(legacy_u16 buffer_index)
 {
-  legacy_u8 temple_previous_selection_1742;
-  legacy_u16 temple_index_1744;
-  legacy_s32 temple_tmp_1745;
+  legacy_u8 noreg temple_previous_selection_1742;
+  legacy_u16 noreg temple_index_1744;
+  legacy_s32 noreg temple_tmp_1745;
   legacy_u16 *temple_tmp_1746;
-  legacy_u16 temple_tmp_1747;
-  legacy_u16 temple_index_1749;
+  legacy_u16 noreg temple_tmp_1747;
+  legacy_u16 noreg temple_index_1749;
   legacy_u16 *temple_tmp_1750;
-  legacy_u16 temple_tmp_1751;
+  legacy_u16 noreg temple_tmp_1751;
   RsMouseDrawOpaqueCheck();
   temple_previous_selection_1742=TempleCastU8(replay_selection_cache[buffer_index]);
   if((temple_previous_selection_1742!=255)) {
@@ -265,7 +265,7 @@ legacy_void RsReplayViewerReplayControlsDrawButtons(legacy_u16 buffer_index)
 
 legacy_void RsReplayViewerReplayControlsDraw(legacy_u16 recorded_frame,legacy_u16 current_frame)
 {
-  legacy_u16 temple_buffer_index_1752;
+  legacy_u16 noreg temple_buffer_index_1752;
   temple_buffer_index_1752=TempleCastU16(TempleCastU8(dashboard_buffer_index));
   RsReplayViewerReplayControlsPrepareBackground(TempleCastU16(temple_buffer_index_1752));
   RsReplayViewerReplayControlsDrawTime(
@@ -294,10 +294,10 @@ legacy_void RsReplayViewerReplayDrawWaiting()
 legacy_s8 RsReplayViewerReplayChoosePauseAction()
 {
   legacy_s16 temple_options_1754[8];
-  legacy_u16 temple_index_1756;
+  legacy_u16 noreg temple_index_1756;
   legacy_u16 *temple_tmp_1757;
-  legacy_u16 temple_tmp_1758;
-  legacy_s32 temple_tmp_1759;
+  legacy_u16 noreg temple_tmp_1758;
+  legacy_s32 noreg temple_tmp_1759;
   (is_in_replay=TempleCastS8(1));
   RsAudioCarstate();
   RsReplayViewerReplayControlsSelect(TempleCastU8(REPLAY_CONTROL_PAUSE));
@@ -354,7 +354,7 @@ legacy_void RsReplayViewerReplayRestartRecording()
 
 legacy_s16 RsReplayViewerReplayContinueRecording()
 {
-  legacy_s16 temple_dialog_result_1760;
+  legacy_s16 noreg temple_dialog_result_1760;
   if((TempleCastU32((TempleCastU8(replay_recording_flags)&2))!=TempleCastU32(0))) {
     (replay_recording_flags=TempleCastS8(TempleCastU32((1|2))));
   } else {
@@ -399,14 +399,14 @@ legacy_void RsReplayViewerReplayResumeLive()
 legacy_void RsReplayViewerReplayReloadChangedResources(
     CGameInfo *saved_config,legacy_u8 saved_track)
 {
-  legacy_s16 temple_resources_changed_1761;
-  legacy_u16 temple_index_1763;
+  legacy_s16 noreg temple_resources_changed_1761;
+  legacy_u16 noreg temple_index_1763;
   legacy_u16 *temple_tmp_1764;
-  legacy_u16 temple_tmp_1765;
-  legacy_s16 temple_opponent_changed_1766;
-  legacy_u16 temple_index_1768;
+  legacy_u16 noreg temple_tmp_1765;
+  legacy_s16 noreg temple_opponent_changed_1766;
+  legacy_u16 noreg temple_index_1768;
   legacy_u16 *temple_tmp_1769;
-  legacy_u16 temple_tmp_1770;
+  legacy_u16 noreg temple_tmp_1770;
   temple_resources_changed_1761=TempleCastS16((track_element_map[900]!=saved_track));
   temple_index_1763=TempleCastU16(0);
   while(1) {
@@ -457,7 +457,7 @@ legacy_void RsReplayViewerReplayReloadChangedResources(
 legacy_void RsReplayViewerReplayLoadRecording()
 {
   CGameInfo temple_saved_config_1771;
-  legacy_u8 temple_saved_track_1772;
+  legacy_u8 noreg temple_saved_track_1772;
   (replay_recording_flags=TempleCastS8(0));
   RsAudioCarstate();
   if((RsDoFileselectDialog(replay_directory,replay_filename_input,".rpl",
@@ -485,8 +485,8 @@ legacy_void RsReplayViewerReplayLoadRecording()
 
 legacy_s8 RsReplayViewerReplayChooseSavePath()
 {
-  legacy_s8 temple_save_status_1773;
-  legacy_s16 temple_dialog_result_1774;
+  legacy_s8 noreg temple_save_status_1773;
+  legacy_s16 noreg temple_dialog_result_1774;
   temple_save_status_1773=TempleCastS8(REPLAY_SAVE_RETRY);
   if((RsDoSavefileDialog(replay_directory,replay_filename_input,
           RsLocateTextRes(mainresptr,replay_save_prompt_id))==0)) {
@@ -516,7 +516,7 @@ legacy_s8 RsReplayViewerReplayChooseSavePath()
 
 legacy_void RsReplayViewerReplaySaveRecording()
 {
-  legacy_s8 temple_save_status_1776;
+  legacy_s8 noreg temple_save_status_1776;
   RsAudioCarstate();
   while(1) {
     if(!(1)) {
@@ -539,11 +539,11 @@ legacy_void RsReplayViewerReplaySaveRecording()
 legacy_void RsReplayViewerReplayDisplayOptions()
 {
   legacy_s16 temple_mode_options_1777[5];
-  legacy_u16 temple_index_1779;
+  legacy_u16 noreg temple_index_1779;
   legacy_u16 *temple_tmp_1780;
-  legacy_u16 temple_tmp_1781;
-  legacy_s32 temple_tmp_1782;
-  legacy_s8 temple_menu_result_1783;
+  legacy_u16 noreg temple_tmp_1781;
+  legacy_s32 noreg temple_tmp_1782;
+  legacy_s8 noreg temple_menu_result_1783;
   legacy_s8 *temple_tmp_1784;
   legacy_s8 *temple_tmp_1785;
   legacy_s8 *temple_tmp_1786;
@@ -630,8 +630,8 @@ legacy_void RsReplayViewerReplayPauseMenu()
 legacy_s32 RsReplayViewerReplayScrubAccumulate(
     legacy_s32 accumulated,legacy_s16 speed,legacy_u16 delta)
 {
-  legacy_s16 temple_increment_1787;
-  legacy_u32 temple_tmp_1788;
+  legacy_s16 noreg temple_increment_1787;
+  legacy_u32 noreg temple_tmp_1788;
   temple_increment_1787=TempleCastS16(RsReplayViewerLegacyS16FromBits(TempleCastU16(TempleCastU16(
       TempleCastU16(TempleCastU32((TempleCastU32(TempleCastU16(RsReplayViewerLegacyS16FromBits(
                                       TempleCastU16(TempleCastU16(delta)))))*
@@ -648,7 +648,7 @@ legacy_s32 RsReplayViewerReplayScrubAccumulate(
 
 legacy_s16 RsReplayViewerReplayScrubSpeed(legacy_s32 accumulated)
 {
-  legacy_s32 temple_quotient_1789;
+  legacy_s32 noreg temple_quotient_1789;
   temple_quotient_1789=TempleCastS32(RsLegacyS32DivOrZero(
       TempleCastS32(RsReplayViewerLegacyS32FromBits(TempleCastU32(TempleCastU32(accumulated)))),
       TempleCastS32(RsReplayViewerLegacyS32FromBits(TempleCastU32(TempleCastU32(50))))));
@@ -676,7 +676,7 @@ legacy_s32 RsReplayViewerReplayScrubBegin(legacy_u8 selection)
 
 legacy_s32 RsReplayViewerReplayScrubAdvance(legacy_s32 accumulated,legacy_u16 *delta)
 {
-  legacy_s16 temple_speed_1790;
+  legacy_s16 noreg temple_speed_1790;
   temple_speed_1790=TempleCastS16(RsReplayViewerReplayScrubSpeed(TempleCastS32(accumulated)));
   if((temple_speed_1790>100)) {
     (temple_speed_1790=TempleCastS16(100));
@@ -688,11 +688,11 @@ legacy_s32 RsReplayViewerReplayScrubAdvance(legacy_s32 accumulated,legacy_u16 *d
 
 legacy_void RsReplayViewerReplayFastForward()
 {
-  legacy_s32 temple_accumulated_1791;
-  legacy_u16 temple_amount_1792;
-  legacy_u16 temple_delta_1793;
-  legacy_u16 temple_remaining_1794;
-  legacy_u16 temple_target_1796;
+  legacy_s32 noreg temple_accumulated_1791;
+  legacy_u16 noreg temple_amount_1792;
+  legacy_u16 noreg temple_delta_1793;
+  legacy_u16 noreg temple_remaining_1794;
+  legacy_u16 noreg temple_target_1796;
   temple_accumulated_1791=
       TempleCastS32(RsReplayViewerReplayScrubBegin(TempleCastU8(REPLAY_CONTROL_FAST_FORWARD)));
   while(1) {
@@ -753,13 +753,13 @@ legacy_void RsReplayViewerReplayFastForward()
 
 legacy_void RsReplayViewerReplayRewind()
 {
-  legacy_s32 temple_accumulated_1798;
-  legacy_u16 temple_amount_1799;
-  legacy_u16 temple_delta_1800;
-  legacy_u16 temple_target_1802;
-  legacy_s16 temple_frames_to_catch_up_1803;
-  legacy_s16 temple_frames_remaining_1804;
-  legacy_u16 temple_displayed_frame_1806;
+  legacy_s32 noreg temple_accumulated_1798;
+  legacy_u16 noreg temple_amount_1799;
+  legacy_u16 noreg temple_delta_1800;
+  legacy_u16 noreg temple_target_1802;
+  legacy_s16 noreg temple_frames_to_catch_up_1803;
+  legacy_s16 noreg temple_frames_remaining_1804;
+  legacy_u16 noreg temple_displayed_frame_1806;
   temple_accumulated_1798=
       TempleCastS32(RsReplayViewerReplayScrubBegin(TempleCastU8(REPLAY_CONTROL_REWIND)));
   while(1) {
@@ -866,18 +866,18 @@ legacy_s16 RsReplayViewerReplayTryZoom(legacy_u16 input)
 
 legacy_u16 RsReplayViewerReplayPanInput()
 {
-  legacy_s16 temple_y_delta_1807;
-  legacy_u32 temple_tmp_1808;
-  legacy_u32 temple_tmp_1809;
-  legacy_u32 temple_tmp_1810;
-  legacy_u32 temple_tmp_1811;
-  legacy_s16 temple_x_delta_1812;
-  legacy_u32 temple_tmp_1813;
-  legacy_u32 temple_tmp_1814;
-  legacy_u32 temple_tmp_1815;
-  legacy_u32 temple_tmp_1816;
-  legacy_u16 temple_angle_1817;
-  legacy_u16 temple_input_1818;
+  legacy_s16 noreg temple_y_delta_1807;
+  legacy_u32 noreg temple_tmp_1808;
+  legacy_u32 noreg temple_tmp_1809;
+  legacy_u32 noreg temple_tmp_1810;
+  legacy_u32 noreg temple_tmp_1811;
+  legacy_s16 noreg temple_x_delta_1812;
+  legacy_u32 noreg temple_tmp_1813;
+  legacy_u32 noreg temple_tmp_1814;
+  legacy_u32 noreg temple_tmp_1815;
+  legacy_u32 noreg temple_tmp_1816;
+  legacy_u16 noreg temple_angle_1817;
+  legacy_u16 noreg temple_input_1818;
   if((TempleCastU32((TempleCastU16(1)&31))==0)) {
     temple_tmp_1811=TempleCastU32(TempleCastU16(
         RsReplayViewerLegacyS16FromBits(TempleCastU16(TempleCastU16(TempleCastU16(TempleCastS32(
@@ -981,19 +981,19 @@ legacy_u16 RsReplayViewerReplayPanInput()
 
 legacy_u16 RsReplayViewerReplayReadControlInput(legacy_s16 delta)
 {
-  legacy_u16 temple_input_1819;
-  legacy_u8 temple_hit_1820;
-  legacy_s32 temple_tmp_1821;
-  legacy_s32 temple_tmp_1822;
-  legacy_s32 temple_tmp_1823;
-  legacy_s16 temple_midpoint_1824;
-  legacy_u32 temple_tmp_1825;
-  legacy_u32 temple_tmp_1826;
-  legacy_u32 temple_tmp_1827;
-  legacy_u32 temple_tmp_1828;
-  legacy_s32 temple_tmp_1829;
-  legacy_s32 temple_tmp_1830;
-  legacy_s32 temple_tmp_1831;
+  legacy_u16 noreg temple_input_1819;
+  legacy_u8 noreg temple_hit_1820;
+  legacy_s32 noreg temple_tmp_1821;
+  legacy_s32 noreg temple_tmp_1822;
+  legacy_s32 noreg temple_tmp_1823;
+  legacy_s16 noreg temple_midpoint_1824;
+  legacy_u32 noreg temple_tmp_1825;
+  legacy_u32 noreg temple_tmp_1826;
+  legacy_u32 noreg temple_tmp_1827;
+  legacy_u32 noreg temple_tmp_1828;
+  legacy_s32 noreg temple_tmp_1829;
+  legacy_s32 noreg temple_tmp_1830;
+  legacy_s32 noreg temple_tmp_1831;
   temple_input_1819=TempleCastU16(TempleCastU16(RsInputChecking(TempleCastS16(delta))));
   temple_hit_1820=TempleCastU8(TempleCastU8(RsMouseMultiHittest(
       TempleCastS16(
@@ -1181,7 +1181,7 @@ legacy_u16 RsReplayViewerReplayActivateSelectedControl()
 
 legacy_u16 RsReplayViewerReplayHandleControlInput(legacy_u16 input)
 {
-  legacy_u8 temple_next_selection_1832;
+  legacy_u8 noreg temple_next_selection_1832;
   switch(input) {
     case 13:
     case 32:
@@ -1225,8 +1225,8 @@ legacy_u16 RsReplayViewerReplayHandleControlInput(legacy_u16 input)
 
 legacy_void RsReplayViewerReplayRefreshPlaybackControls()
 {
-  legacy_s32 temple_tmp_1833;
-  legacy_s32 temple_tmp_1834;
+  legacy_s32 noreg temple_tmp_1833;
+  legacy_s32 noreg temple_tmp_1834;
   if((replaybar_enabled==0)) {
     (is_in_replay_copy=TempleCastS8(TempleCastS8(TempleCastS32((-(1))))));
     (viewport_bottom_cache=TempleCastS16(TempleCastS32((-(1)))));
@@ -1248,11 +1248,11 @@ legacy_void RsReplayViewerReplayRefreshPlaybackControls()
 
 legacy_s16 RsReplayViewerReplayHandleCameraInput(legacy_u16 *input)
 {
-  legacy_u8 temple_custom_camera_active_1835;
-  legacy_s32 temple_tmp_1836;
-  legacy_s32 temple_tmp_1837;
-  legacy_s32 temple_tmp_1838;
-  legacy_s32 temple_tmp_1839;
+  legacy_u8 noreg temple_custom_camera_active_1835;
+  legacy_s32 noreg temple_tmp_1836;
+  legacy_s32 noreg temple_tmp_1837;
+  legacy_s32 noreg temple_tmp_1838;
+  legacy_s32 noreg temple_tmp_1839;
   temple_custom_camera_active_1835=TempleCastU8(0);
   temple_tmp_1837=!!((RsKbGetKeyState(TempleCastS16(29))!=0));
   if(!temple_tmp_1837) {
@@ -1288,13 +1288,13 @@ legacy_s16 RsReplayViewerReplayHandleCameraInput(legacy_u16 *input)
 
 legacy_void RsReplayViewerReplayHandleInput()
 {
-  legacy_s32 temple_tmp_1840;
-  legacy_u16 temple_input_1841;
-  legacy_s16 temple_delta_1843;
-  legacy_s32 temple_tmp_1844;
-  legacy_s32 temple_tmp_1845;
-  legacy_s32 temple_tmp_1846;
-  legacy_s32 temple_tmp_1847;
+  legacy_s32 noreg temple_tmp_1840;
+  legacy_u16 noreg temple_input_1841;
+  legacy_s16 noreg temple_delta_1843;
+  legacy_s32 noreg temple_tmp_1844;
+  legacy_s32 noreg temple_tmp_1845;
+  legacy_s32 noreg temple_tmp_1846;
+  legacy_s32 noreg temple_tmp_1847;
   temple_tmp_1840=
       !!((RsReplayViewerLegacyS8FromBits(TempleCastU8(TempleCastU8(replay_selected_control)))>
           RsReplayViewerLegacyS8FromBits(

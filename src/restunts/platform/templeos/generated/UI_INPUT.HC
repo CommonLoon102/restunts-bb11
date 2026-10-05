@@ -2,7 +2,7 @@
 
 legacy_s8 RsUiInputLegacyS8FromBits(legacy_u8 value)
 {
-  legacy_s32 temple_tmp_1232;
+  legacy_s32 noreg temple_tmp_1232;
   if((value<=127)) {
     temple_tmp_1232=TempleCastS32(TempleCastS8(value));
   } else {
@@ -14,7 +14,7 @@ legacy_s8 RsUiInputLegacyS8FromBits(legacy_u8 value)
 
 legacy_s16 RsUiInputLegacyS16FromBits(legacy_u16 value)
 {
-  legacy_s32 temple_tmp_1233;
+  legacy_s32 noreg temple_tmp_1233;
   if((value<=32767)) {
     temple_tmp_1233=TempleCastS32(TempleCastS16(value));
   } else {
@@ -26,7 +26,7 @@ legacy_s16 RsUiInputLegacyS16FromBits(legacy_u16 value)
 
 legacy_s32 RsUiInputLegacyS32FromBits(legacy_u32 value)
 {
-  legacy_s32 temple_tmp_1234;
+  legacy_s32 noreg temple_tmp_1234;
   if((value<=TempleCastU32(2147483647))) {
     temple_tmp_1234=TempleCastS32(TempleCastS32(value));
   } else {
@@ -39,12 +39,12 @@ legacy_s32 RsUiInputLegacyS32FromBits(legacy_u32 value)
 legacy_s16 RsCallReadLine(
     legacy_s8 *text,legacy_s16 max_characters,legacy_s16 x,legacy_s16 y,legacy_u32 timeout)
 {
-  legacy_u16 temple_max_pixels_1235;
-  legacy_s16 temple_result_1236;
-  legacy_u16 temple_length_1237;
-  legacy_s32 temple_tmp_1239;
+  legacy_u16 noreg temple_max_pixels_1235;
+  legacy_s16 noreg temple_result_1236;
+  legacy_u16 noreg temple_length_1237;
+  legacy_s32 noreg temple_tmp_1239;
   legacy_u16 *temple_tmp_1240;
-  legacy_u16 temple_tmp_1241;
+  legacy_u16 noreg temple_tmp_1241;
   RsMouseDrawOpaqueCheck();
   temple_max_pixels_1235=TempleCastU16(TempleCastU16(TempleCastS32(
       (TempleCastU16(TempleCastU16(TempleCastU32(
@@ -74,10 +74,10 @@ legacy_s16 RsCallReadLine(
 
 legacy_s16 RsSpriteBlitToVideo(CSprite *sprite,legacy_s16 mode)
 {
-  legacy_s16 temple_result_1242;
-  legacy_u16 temple_phase_1244;
+  legacy_s16 noreg temple_result_1242;
+  legacy_u16 noreg temple_phase_1244;
   legacy_u16 *temple_tmp_1245;
-  legacy_u16 temple_tmp_1246;
+  legacy_u16 noreg temple_tmp_1246;
   RsSpriteSelectScreenCompat();
   RsMouseDrawOpaqueCheck();
   if((TempleCastU16(mode)==65534)) {
@@ -112,7 +112,7 @@ legacy_s16 RsSpriteBlitToVideo(CSprite *sprite,legacy_s16 mode)
 
 legacy_void RsUiInputReadLineDeleteCharacter(legacy_s8 *text,legacy_s16 max_characters)
 {
-  legacy_u16 temple_index_1247;
+  legacy_u16 noreg temple_index_1247;
   temple_index_1247=TempleCastU16(TempleCastU16(rs_ui_input_text_edit_cursor));
   while(1) {
     if(!((RsUiInputLegacyS16FromBits(TempleCastU16(TempleCastU16(temple_index_1247)))<
@@ -144,7 +144,7 @@ legacy_void RsUiInputReadLineEraseCharacter(
 legacy_void RsUiInputReadLineInitialize(
     CReadLineState *state,legacy_s16 max_pixels,legacy_s16 x,legacy_s16 y)
 {
-  legacy_u16 temple_length_1249;
+  legacy_u16 noreg temple_length_1249;
   RsSpriteSelectScreen();
   (rs_ui_input_text_edit_x=TempleCastU16(TempleCastU16(x)));
   (rs_ui_input_text_edit_y=TempleCastU16(TempleCastU16(y)));
@@ -178,7 +178,7 @@ legacy_void RsUiInputReadLineInitialize(
 
 legacy_u16 RsUiInputReadLineWaitKey(legacy_s16 *initial_key,legacy_u8 *callback)
 {
-  legacy_u16 temple_key_1251;
+  legacy_u16 noreg temple_key_1251;
   legacy_void (*temple_callee_1253)();
   if((TempleCastU16((*(initial_key)))!=0)) {
     (temple_key_1251=TempleCastU16(TempleCastU16((*(initial_key)))));
@@ -201,9 +201,9 @@ legacy_u16 RsUiInputReadLineWaitKey(legacy_s16 *initial_key,legacy_u8 *callback)
 
 legacy_s16 RsUiInputReadLineBlinkCursor(legacy_u32 timeout)
 {
-  legacy_u16 temple_old_cursor_state_1254;
-  legacy_s32 temple_tmp_1255;
-  legacy_s32 temple_tmp_1256;
+  legacy_u16 noreg temple_old_cursor_state_1254;
+  legacy_s32 noreg temple_tmp_1255;
+  legacy_s32 noreg temple_tmp_1256;
   RsSlowTimerSetDeadline(TempleCastU32(4));
   temple_old_cursor_state_1254=TempleCastU16(TempleCastU16(rs_ui_input_text_edit_cursor_visible));
   (rs_ui_input_text_edit_cursor_visible=TempleCastU16(1));
@@ -227,12 +227,12 @@ legacy_s16 RsUiInputReadLineBlinkCursor(legacy_u32 timeout)
 
 legacy_s16 RsUiInputReadLineIsFinished(legacy_u16 key,legacy_u8 input_flags)
 {
-  legacy_s32 temple_tmp_1257;
-  legacy_s32 temple_tmp_1258;
-  legacy_s32 temple_tmp_1259;
-  legacy_s32 temple_tmp_1260;
-  legacy_s32 temple_tmp_1261;
-  legacy_s32 temple_tmp_1262;
+  legacy_s32 noreg temple_tmp_1257;
+  legacy_s32 noreg temple_tmp_1258;
+  legacy_s32 noreg temple_tmp_1259;
+  legacy_s32 noreg temple_tmp_1260;
+  legacy_s32 noreg temple_tmp_1261;
+  legacy_s32 noreg temple_tmp_1262;
   temple_tmp_1257=!!((key==KEY_ENTER));
   if(!temple_tmp_1257) {
     temple_tmp_1257=!!((key==KEY_ESCAPE));
@@ -262,7 +262,7 @@ legacy_s16 RsUiInputReadLineIsFinished(legacy_u16 key,legacy_u8 input_flags)
 
 legacy_void RsUiInputReadLineMoveCursor(CReadLineState *state,legacy_u16 key)
 {
-  legacy_u32 temple_tmp_1263;
+  legacy_u32 noreg temple_tmp_1263;
   RsTextEditToggleCursor();
   switch(key) {
     case 19712:
@@ -300,7 +300,7 @@ legacy_void RsUiInputReadLineMoveCursor(CReadLineState *state,legacy_u16 key)
 
 legacy_s16 RsUiInputReadLineApplyEditKey(CReadLineState *state,legacy_u16 key)
 {
-  legacy_s32 temple_tmp_1264;
+  legacy_s32 noreg temple_tmp_1264;
   switch(key) {
     case 19712:
     case 19200:
@@ -333,7 +333,7 @@ legacy_s16 RsUiInputReadLineApplyEditKey(CReadLineState *state,legacy_u16 key)
 
 legacy_void RsUiInputReadLineInsertSpace(CReadLineState *state)
 {
-  legacy_u16 temple_move_index_1265;
+  legacy_u16 noreg temple_move_index_1265;
   temple_move_index_1265=TempleCastU16(
       TempleCastU16(TempleCastS32((TempleCastU16(state->max_characters)-TempleCastU16(2)))));
   while(1) {
@@ -351,10 +351,10 @@ legacy_void RsUiInputReadLineInsertSpace(CReadLineState *state)
 
 legacy_void RsUiInputReadLineTypeCharacter(CReadLineState *state,legacy_u16 key)
 {
-  legacy_s32 temple_tmp_1267;
-  legacy_s32 temple_tmp_1268;
-  legacy_u16 temple_index_1269;
-  legacy_s32 temple_tmp_1270;
+  legacy_s32 noreg temple_tmp_1267;
+  legacy_s32 noreg temple_tmp_1268;
+  legacy_u16 noreg temple_index_1269;
+  legacy_s32 noreg temple_tmp_1270;
   temple_tmp_1267=!!((RsUiInputLegacyS16FromBits(TempleCastU16(TempleCastU16(key)))<32));
   if(!temple_tmp_1267) {
     temple_tmp_1267=!!((RsUiInputLegacyS16FromBits(TempleCastU16(TempleCastU16(key)))>122));
@@ -409,7 +409,7 @@ legacy_s16 RsReadLine(legacy_s16 flags,legacy_s8 *text,legacy_s16 initial_key,
     legacy_u8 *callback,legacy_u32 timeout)
 {
   CReadLineState temple_state_1272;
-  legacy_u16 temple_key_1274;
+  legacy_u16 noreg temple_key_1274;
   (temple_state_1272.input_flags=TempleCastU8(TempleCastU8(flags)));
   (temple_state_1272.text=text);
   (temple_state_1272.max_characters=TempleCastS16(max_characters));
@@ -449,13 +449,13 @@ legacy_s8 temple_space_1278[2];
 MemSet(&temple_space_1278,0,sizeof(temple_space_1278));
 legacy_void RsTextEditToggleCursor()
 {
-  legacy_u16 temple_length_1275;
-  legacy_u16 temple_cursor_1276;
-  legacy_u16 temple_cursor_width_1277;
-  legacy_u16 temple_x_1279;
+  legacy_u16 noreg temple_length_1275;
+  legacy_u16 noreg temple_cursor_1276;
+  legacy_u16 noreg temple_cursor_width_1277;
+  legacy_u16 noreg temple_x_1279;
   legacy_u8 *temple_font_definition_1280;
-  legacy_u16 temple_y_1281;
-  legacy_u16 temple_color_1282;
+  legacy_u16 noreg temple_y_1281;
+  legacy_u16 noreg temple_color_1282;
   if((rs_ui_input_text_edit_cursor_visible==0)) {
     return;
   }
@@ -494,9 +494,9 @@ legacy_void RsTextEditToggleCursor()
 
 legacy_void RsTextEditRedraw()
 {
-  legacy_u16 temple_length_1283;
-  legacy_u16 temple_text_width_1285;
-  legacy_u16 temple_remaining_width_1286;
+  legacy_u16 noreg temple_length_1283;
+  legacy_u16 noreg temple_text_width_1285;
+  legacy_u16 noreg temple_remaining_width_1286;
   legacy_u8 *temple_font_definition_1287;
   if((rs_ui_input_text_edit_max_pixels!=0)) {
     while(1) {

@@ -2,7 +2,7 @@
 
 legacy_s8 RsAudioResourcesLegacyS8FromBits(legacy_u8 value)
 {
-  legacy_s32 temple_tmp_2911;
+  legacy_s32 noreg temple_tmp_2911;
   if((value<=127)) {
     temple_tmp_2911=TempleCastS32(TempleCastS8(value));
   } else {
@@ -14,7 +14,7 @@ legacy_s8 RsAudioResourcesLegacyS8FromBits(legacy_u8 value)
 
 legacy_s16 RsAudioResourcesLegacyS16FromBits(legacy_u16 value)
 {
-  legacy_s32 temple_tmp_2912;
+  legacy_s32 noreg temple_tmp_2912;
   if((value<=32767)) {
     temple_tmp_2912=TempleCastS32(TempleCastS16(value));
   } else {
@@ -26,7 +26,7 @@ legacy_s16 RsAudioResourcesLegacyS16FromBits(legacy_u16 value)
 
 legacy_s32 RsAudioResourcesLegacyS32FromBits(legacy_u32 value)
 {
-  legacy_s32 temple_tmp_2913;
+  legacy_s32 noreg temple_tmp_2913;
   if((value<=TempleCastU32(2147483647))) {
     temple_tmp_2913=TempleCastS32(TempleCastS32(value));
   } else {
@@ -38,7 +38,7 @@ legacy_s32 RsAudioResourcesLegacyS32FromBits(legacy_u32 value)
 
 legacy_s16 RsAudioResourcesLegacyToupper(legacy_s16 ch)
 {
-  legacy_s32 temple_tmp_2914;
+  legacy_s32 noreg temple_tmp_2914;
   legacy_s16 *temple_tmp_2915;
   temple_tmp_2914=!!((ch>='a'));
   if(temple_tmp_2914) {
@@ -54,9 +54,9 @@ legacy_s16 RsAudioResourcesLegacyToupper(legacy_s16 ch)
 legacy_s8 *RsPadId(legacy_s8 *source)
 {
   legacy_u8 *temple_destination_2916;
-  legacy_u16 temple_index_2918;
+  legacy_u16 noreg temple_index_2918;
   legacy_u16 *temple_tmp_2919;
-  legacy_u16 temple_tmp_2920;
+  legacy_u16 noreg temple_tmp_2920;
   temple_destination_2916=rs_audio_resources_audio_padded_id;
   temple_index_2918=TempleCastU16(0);
   while(1) {
@@ -122,10 +122,10 @@ legacy_s8 *RsAudioMakeFilename(legacy_s8 *filename,legacy_s8 *extension,legacy_s
   legacy_s8 *temple_separator_2925;
   legacy_s8 *temple_source_2926;
   legacy_s8 *temple_basename_2928;
-  legacy_u16 temple_length_2929;
+  legacy_u16 noreg temple_length_2929;
   legacy_u16 *temple_tmp_2931;
-  legacy_u16 temple_tmp_2932;
-  legacy_s32 temple_tmp_2933;
+  legacy_u16 noreg temple_tmp_2932;
+  legacy_s32 noreg temple_tmp_2933;
   temple_separator_2925=rs_audio_resources_audio_filename_buffer;
   temple_source_2926=filename;
   while(1) {
@@ -190,8 +190,8 @@ legacy_void RsAudioResourcesAudioLoadDriverBank()
 
 legacy_s16 RsAudioLoadDosDriver(legacy_s8 *driver,legacy_s16 unused,legacy_s16 mode)
 {
-  legacy_u8 temple_channel_count_2936;
-  legacy_s32 temple_tmp_2937;
+  legacy_u8 noreg temple_channel_count_2936;
+  legacy_s32 noreg temple_tmp_2937;
   unused;
   driver;
   mode;
@@ -270,7 +270,7 @@ legacy_u8 *RsAudioResourcesLoadAudioFile(legacy_s8 *filename,legacy_s8 *special_
     legacy_s8 *extension,legacy_s8 *error_message)
 {
   legacy_u8 *temple_result_2940;
-  legacy_s32 temple_tmp_2941;
+  legacy_s32 noreg temple_tmp_2941;
   temple_result_2940=0;
   if((dos_audio_special_mode!=0)) {
     (temple_result_2940=
@@ -297,7 +297,7 @@ legacy_u8 *RsLoadSfxFile(legacy_s8 *filename)
 legacy_u8 *RsLoadSongFile(legacy_s8 *filename)
 {
   legacy_u8 *temple_result_2942;
-  legacy_s32 temple_tmp_2943;
+  legacy_s32 noreg temple_tmp_2943;
   temple_result_2942=RsLoadSfxGe(filename,"kms",rs_audio_resources_audio_driver_prefix);
   temple_tmp_2943=!!((temple_result_2942==0));
   if(temple_tmp_2943) {
@@ -317,12 +317,12 @@ legacy_u8 *RsLoadVoiceFile(legacy_s8 *filename)
 legacy_s16 RsAudioresourceCompareChunknames(
     legacy_s16 case_sensitive,legacy_s8 *first_name,legacy_s8 *second_name,legacy_s16 count)
 {
-  legacy_u16 temple_remaining_2944;
-  legacy_u8 temple_first_2946;
-  legacy_u8 temple_second_2947;
-  legacy_s32 temple_tmp_2948;
+  legacy_u16 noreg temple_remaining_2944;
+  legacy_u8 noreg temple_first_2946;
+  legacy_u8 noreg temple_second_2947;
+  legacy_s32 noreg temple_tmp_2948;
   legacy_u16 *temple_tmp_2949;
-  legacy_u16 temple_tmp_2950;
+  legacy_u16 noreg temple_tmp_2950;
   temple_remaining_2944=TempleCastU16(TempleCastU16(count));
   if((temple_remaining_2944==0)) {
     return TempleCastS16(1);
@@ -361,10 +361,10 @@ legacy_s16 RsAudioresourceCompareChunknames(
 legacy_s16 RsAudioresourceGetChunkIndex(legacy_s16 extra_name_stride,legacy_s16 chunk_count,
     legacy_s8 *requested_name,legacy_u8 *chunk_names)
 {
-  legacy_s16 temple_count_2951;
+  legacy_s16 noreg temple_count_2951;
   legacy_s8 *temple_requested_name_far_2952;
   legacy_u8 *temple_candidate_2953;
-  legacy_s16 temple_index_2955;
+  legacy_s16 noreg temple_index_2955;
   temple_count_2951=
       TempleCastS16(RsAudioResourcesLegacyS16FromBits(TempleCastU16(TempleCastU16(chunk_count))));
   if((temple_count_2951<=0)) {
@@ -397,10 +397,10 @@ legacy_u8 *RsAudioResourcesAudioFarPointerAddNormalized(legacy_u8 *pointer,legac
 legacy_u8 *RsAudioresourceFind(legacy_u8 *resource,legacy_s8 *chunk_name)
 {
   legacy_u8 *temple_bytes_2956;
-  legacy_u16 temple_chunk_count_2957;
-  legacy_s16 temple_chunk_index_2958;
+  legacy_u16 noreg temple_chunk_count_2957;
+  legacy_s16 noreg temple_chunk_index_2958;
   legacy_u8 *temple_offset_entry_2959;
-  legacy_u16 temple_relative_offset_2960;
+  legacy_u16 noreg temple_relative_offset_2960;
   temple_bytes_2956=(resource)(legacy_u8 *);
   temple_chunk_count_2957=
       TempleCastU16(RsResourceReadU16le((RsAudioResourcesAudioFarPointerAddNormalized(
@@ -435,16 +435,16 @@ legacy_void RsAudioResourcesAudioMapPercussionInstruments(legacy_u8 *instruments
 legacy_void RsAudioMapSongInstruments(legacy_u8 *song,legacy_u8 *instruments)
 {
   legacy_u8 *temple_header_2961;
-  legacy_u16 temple_count_2962;
+  legacy_u16 noreg temple_count_2962;
   legacy_s8 temple_name_2963[4];
-  legacy_u16 temple_index_2965;
-  legacy_u16 temple_name_offset_2966;
+  legacy_u16 noreg temple_index_2965;
+  legacy_u16 noreg temple_name_offset_2966;
   legacy_u8 *temple_instrument_2967;
-  legacy_u16 temple_pointer_offset_2968;
-  legacy_u16 temple_pointer_segment_2969;
+  legacy_u16 noreg temple_pointer_offset_2968;
+  legacy_u16 noreg temple_pointer_segment_2969;
   legacy_u16 *temple_tmp_2970;
-  legacy_u16 temple_tmp_2971;
-  legacy_s32 temple_tmp_2972;
+  legacy_u16 noreg temple_tmp_2971;
+  legacy_s32 noreg temple_tmp_2972;
   temple_header_2961=(RsAudioresourceFind(song,"hdr1"))(legacy_u8 *);
   if((temple_header_2961==0)) {
     return;
@@ -508,9 +508,9 @@ legacy_void RsAudioResourcesAudioPatchSongReference(legacy_u8 *destination,
 {
   legacy_s8 temple_name_2973[4];
   legacy_u8 *temple_names_2974;
-  legacy_s16 temple_chunk_index_2975;
+  legacy_s16 noreg temple_chunk_index_2975;
   legacy_u8 *temple_offset_entry_2976;
-  legacy_u16 temple_relative_offset_2977;
+  legacy_u16 noreg temple_relative_offset_2977;
   (temple_name_2973[0]=TempleCastS8(destination[0]));
   (temple_name_2973[1]=TempleCastS8(destination[1]));
   (temple_name_2973[2]=TempleCastS8(destination[2]));
@@ -558,9 +558,9 @@ legacy_void RsAudioResourcesAudioMapHeaderTracks(
     CAudioSongMapping *mapping,legacy_u16 cursor_offset)
 {
   legacy_u8 *temple_cursor_2980;
-  legacy_u16 temple_reference_count_2981;
+  legacy_u16 noreg temple_reference_count_2981;
   legacy_u16 *temple_tmp_2983;
-  legacy_u16 temple_tmp_2984;
+  legacy_u16 noreg temple_tmp_2984;
   (cursor_offset=TempleCastU16(
       TempleCastU16(TempleCastS32((TempleCastU16(cursor_offset)+TempleCastU16(2))))));
   temple_cursor_2980=(RsDosMemoryMakePointer(
@@ -642,8 +642,8 @@ legacy_void RsAudioResourcesAudioMapTrackEvents(
     CAudioSongMapping *mapping,legacy_u16 cursor_offset,legacy_u16 chunk_end_offset)
 {
   legacy_u8 *temple_cursor_2987;
-  legacy_u16 temple_event_2988;
-  legacy_s32 temple_tmp_2989;
+  legacy_u16 noreg temple_event_2988;
+  legacy_s32 noreg temple_tmp_2989;
   while(1) {
     if(!((cursor_offset<chunk_end_offset))) {
       break;
@@ -683,16 +683,16 @@ legacy_void RsAudioResourcesAudioMapTrackEvents(
 legacy_void RsAudioMapSongTracks(legacy_u8 *song)
 {
   legacy_u8 *temple_bytes_2990;
-  legacy_u16 temple_resource_offset_2991;
+  legacy_u16 noreg temple_resource_offset_2991;
   CAudioSongMapping temple_mapping_2992;
-  legacy_u16 temple_header_index_2993;
-  legacy_u16 temple_index_2995;
-  legacy_u16 temple_relative_offset_2996;
-  legacy_u16 temple_chunk_offset_2997;
-  legacy_u16 temple_chunk_end_offset_2998;
-  legacy_u16 temple_cursor_offset_2999;
+  legacy_u16 noreg temple_header_index_2993;
+  legacy_u16 noreg temple_index_2995;
+  legacy_u16 noreg temple_relative_offset_2996;
+  legacy_u16 noreg temple_chunk_offset_2997;
+  legacy_u16 noreg temple_chunk_end_offset_2998;
+  legacy_u16 noreg temple_cursor_offset_2999;
   legacy_u16 *temple_tmp_3000;
-  legacy_u16 temple_tmp_3001;
+  legacy_u16 noreg temple_tmp_3001;
   temple_bytes_2990=(song)(legacy_u8 *);
   temple_resource_offset_2991=TempleCastU16(TempleCastU16(RsDosMemoryPointerOffset(song)));
   (temple_mapping_2992.resource_segment=
@@ -759,7 +759,7 @@ legacy_u8 *RsInitAudioResources(legacy_u8 *song,legacy_u8 *instruments,legacy_s8
 {
   legacy_u8 *temple_song_chunk_3002;
   legacy_u8 *temple_header_3003;
-  legacy_u16 temple_data_offset_3004;
+  legacy_u16 noreg temple_data_offset_3004;
   legacy_u8 *temple_data_3005;
   temple_song_chunk_3002=(RsAudioresourceFind(song,name))(legacy_u8 *);
   if((temple_song_chunk_3002==0)) {
@@ -792,11 +792,11 @@ legacy_u8 *RsInitAudioResources(legacy_u8 *song,legacy_u8 *instruments,legacy_s8
 legacy_void RsLoadAudioFinalize(legacy_u8 *audio_resource)
 {
   legacy_u8 *temple_resource_3006;
-  legacy_s32 temple_tmp_3007;
-  legacy_s32 temple_tmp_3008;
-  legacy_u16 temple_data_offset_3009;
+  legacy_s32 noreg temple_tmp_3007;
+  legacy_s32 noreg temple_tmp_3008;
+  legacy_u16 noreg temple_data_offset_3009;
   legacy_u16 *temple_tmp_3010;
-  legacy_u16 temple_tmp_3011;
+  legacy_u16 noreg temple_tmp_3011;
   (audio_update_lock=TempleCastS16(AUDIO_UPDATE_LOCKED));
   RsAudioStopMusic();
   temple_resource_3006=(audio_resource)(legacy_u8 *);
@@ -832,9 +832,9 @@ legacy_void RsLoadAudioFinalize(legacy_u8 *audio_resource)
 
 legacy_void RsAudioresourceCopyNBytes(legacy_u8 *source,legacy_u8 *destination,legacy_s16 size)
 {
-  legacy_s16 temple_remaining_3012;
+  legacy_s16 noreg temple_remaining_3012;
   legacy_s16 *temple_tmp_3014;
-  legacy_s16 temple_tmp_3015;
+  legacy_s16 noreg temple_tmp_3015;
   temple_remaining_3012=
       TempleCastS16(RsAudioResourcesLegacyS16FromBits(TempleCastU16(TempleCastU16(size))));
   if((temple_remaining_3012<=0)) {

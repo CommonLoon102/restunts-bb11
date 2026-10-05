@@ -17,26 +17,27 @@ class CSprite
 };
 CSprite drawing_sprite,screen_sprite;
 legacy_u8 *arena=NULL;
-legacy_void *RsDosMemoryMakePointer(legacy_u16 segment,legacy_u16 offset)
+legacy_u8 *RsDosMemoryMakePointer(legacy_u16 segment,legacy_u16 offset)
 {
   return arena+segment*16+offset;
 }
-legacy_u16 RsDosMemoryPointerSegment(legacy_void *pointer)
+legacy_u16 RsDosMemoryPointerSegment(legacy_u8 *pointer)
 {
   return (pointer(legacy_u8 *)-arena)/16;
 }
-legacy_s16 RsMmgrGetChunkSize(legacy_void *pointer)
+legacy_s16 RsMmgrGetChunkSize(legacy_u8 *pointer)
 {
+  no_warn pointer;
   return 4096;
 }
 #include "PALETTE.HC"
 #include "RASTER.HC"
 legacy_u8 video_page_count=1;
 legacy_u8 video_uses_page_flipping=0;
+#include "VIDEO.HC"
 legacy_void TemplePump()
 {
 }
-#include "VIDEO.HC"
 legacy_void TestAssert(legacy_s64 condition)
 {
   if(!condition) {
@@ -109,13 +110,13 @@ legacy_void TestVideoCache(CSprite *background)
 legacy_void RasterTests()
 {
   legacy_s64 i,j,y,ly,saw_mixed=0;
-  legacy_u8 rows[400],rgb[3],map[256],neutral;
+  legacy_u8 rows[400],rgb[3],map[256],noreg neutral;
   legacy_u32 *cell,*p,saved[TEMPLE_RASTER_CELL_PIXELS];
   CPoint2D triangle[3];
   CSprite background;
   CDC *dc;
   legacy_u8 *res;
-  legacy_u8 mouse_was_shown=ms.show;
+  legacy_u8 noreg mouse_was_shown=ms.show;
   TemplePaletteInit();
   TestAssert(TempleRasterSample(257,NULL)==1);
   TestAssert(TemplePaletteColor(257)==TemplePaletteColor(1));

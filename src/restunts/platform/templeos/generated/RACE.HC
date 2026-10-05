@@ -2,7 +2,7 @@
 
 legacy_s8 RsRaceLegacyS8FromBits(legacy_u8 value)
 {
-  legacy_s32 temple_tmp_1848;
+  legacy_s32 noreg temple_tmp_1848;
   if((value<=127)) {
     temple_tmp_1848=TempleCastS32(TempleCastS8(value));
   } else {
@@ -14,7 +14,7 @@ legacy_s8 RsRaceLegacyS8FromBits(legacy_u8 value)
 
 legacy_s16 RsRaceLegacyS16FromBits(legacy_u16 value)
 {
-  legacy_s32 temple_tmp_1849;
+  legacy_s32 noreg temple_tmp_1849;
   if((value<=32767)) {
     temple_tmp_1849=TempleCastS32(TempleCastS16(value));
   } else {
@@ -26,7 +26,7 @@ legacy_s16 RsRaceLegacyS16FromBits(legacy_u16 value)
 
 legacy_s32 RsRaceLegacyS32FromBits(legacy_u32 value)
 {
-  legacy_s32 temple_tmp_1850;
+  legacy_s32 noreg temple_tmp_1850;
   if((value<=TempleCastU32(2147483647))) {
     temple_tmp_1850=TempleCastS32(TempleCastS32(value));
   } else {
@@ -38,8 +38,8 @@ legacy_s32 RsRaceLegacyS32FromBits(legacy_u32 value)
 
 legacy_void RsRaceRaceRewindAccumulate(CRaceRewindState *rewind,legacy_u32 ticks,legacy_u32 speed)
 {
-  legacy_u32 temple_limit_1851;
-  legacy_u32 temple_remaining_1852;
+  legacy_u32 noreg temple_limit_1851;
+  legacy_u32 noreg temple_remaining_1852;
   legacy_u32 *temple_tmp_1853;
   temple_limit_1851=TempleCastU32(TempleCastU32((TempleCastU32(rewind->origin_frame)*20)));
   temple_remaining_1852=TempleCastU32(TempleCastU32((temple_limit_1851-rewind->accumulated)));
@@ -53,10 +53,10 @@ legacy_void RsRaceRaceRewindAccumulate(CRaceRewindState *rewind,legacy_u32 ticks
 
 legacy_void RsRaceRaceRewindSeek(CRaceRewindState *rewind)
 {
-  legacy_u32 temple_delta_1854;
-  legacy_u32 temple_base_ticks_1855;
+  legacy_u32 noreg temple_delta_1854;
+  legacy_u32 noreg temple_base_ticks_1855;
   legacy_u32 *temple_tmp_1856;
-  legacy_u16 temple_target_1857;
+  legacy_u16 noreg temple_target_1857;
   temple_delta_1854=TempleCastU32(RsTimerGetDeltaAlt());
   temple_base_ticks_1855=TempleCastU32(TempleCastU32((1000-rewind->held_ticks)));
   if((temple_base_ticks_1855>temple_delta_1854)) {
@@ -84,9 +84,9 @@ legacy_void RsRaceRaceRewindSeek(CRaceRewindState *rewind)
 
 legacy_void RsRaceRaceRewindResume(CRaceRewindState *rewind)
 {
-  legacy_s32 temple_tmp_1859;
-  legacy_s32 temple_tmp_1860;
-  legacy_s32 temple_tmp_1861;
+  legacy_s32 noreg temple_tmp_1859;
+  legacy_s32 noreg temple_tmp_1860;
+  legacy_s32 noreg temple_tmp_1861;
   RsDosInterruptsDisable();
   temple_tmp_1859=!!((recording_limit_warning_requested!=0));
   if(temple_tmp_1859) {
@@ -123,7 +123,7 @@ legacy_void RsRaceRaceRewindResume(CRaceRewindState *rewind)
 
 legacy_s16 RsRaceRaceRewindKeyHeld()
 {
-  legacy_s32 temple_tmp_1862;
+  legacy_s32 noreg temple_tmp_1862;
   temple_tmp_1862=!!((RsKbGetKeyState(TempleCastS16(0x10))!=0));
   if(temple_tmp_1862) {
     temple_tmp_1862=!!((RsKbGetKeyState(TempleCastS16(0x1D))==0));
@@ -133,13 +133,13 @@ legacy_s16 RsRaceRaceRewindKeyHeld()
 
 legacy_void RsRaceRaceUpdateRewind(CRaceRewindState *rewind)
 {
-  legacy_s32 temple_tmp_1863;
-  legacy_s32 temple_tmp_1864;
-  legacy_s32 temple_tmp_1865;
-  legacy_s32 temple_tmp_1866;
-  legacy_s32 temple_tmp_1867;
-  legacy_s32 temple_tmp_1868;
-  legacy_s32 temple_tmp_1869;
+  legacy_s32 noreg temple_tmp_1863;
+  legacy_s32 noreg temple_tmp_1864;
+  legacy_s32 noreg temple_tmp_1865;
+  legacy_s32 noreg temple_tmp_1866;
+  legacy_s32 noreg temple_tmp_1867;
+  legacy_s32 noreg temple_tmp_1868;
+  legacy_s32 noreg temple_tmp_1869;
   if((rewind->active!=0)) {
     if((RsRaceRaceRewindKeyHeld()!=0)) {
       RsRaceRaceRewindSeek(rewind);
@@ -288,7 +288,7 @@ legacy_void RsRaceRaceInitializeState()
 
 legacy_void RsRaceRaceCheckRecordingLimit()
 {
-  legacy_s16 temple_dialog_choice_1871;
+  legacy_s16 noreg temple_dialog_choice_1871;
   if((recording_limit_warning_requested!=0)) {
     RsInputPushStatus();
     RsAudioSuspend();
@@ -313,13 +313,13 @@ legacy_void RsRaceRaceCheckRecordingLimit()
 
 legacy_void RsRaceRaceUpdateDashboardLayout(legacy_s16 rewind_active)
 {
-  legacy_s32 temple_tmp_1872;
-  legacy_s32 temple_tmp_1873;
-  legacy_s32 temple_tmp_1874;
-  legacy_s32 temple_tmp_1875;
-  legacy_s32 temple_tmp_1876;
-  legacy_s32 temple_tmp_1877;
-  legacy_s32 temple_tmp_1878;
+  legacy_s32 noreg temple_tmp_1872;
+  legacy_s32 noreg temple_tmp_1873;
+  legacy_s32 noreg temple_tmp_1874;
+  legacy_s32 noreg temple_tmp_1875;
+  legacy_s32 noreg temple_tmp_1876;
+  legacy_s32 noreg temple_tmp_1877;
+  legacy_s32 noreg temple_tmp_1878;
   (game_replay_mode_copy=TempleCastS8(game_replay_mode));
   (dashb_toggle_copy=TempleCastS8(dashb_toggle));
   (replaybar_toggle_copy=TempleCastS8(replaybar_toggle));
@@ -391,13 +391,13 @@ legacy_void RsRaceRaceUpdateDashboardLayout(legacy_s16 rewind_active)
 
 legacy_void RsRaceRaceUpdateViewport(CRaceViewportCache *cache,legacy_s16 rewind_active)
 {
-  legacy_s32 temple_tmp_1879;
-  legacy_s32 temple_tmp_1880;
-  legacy_s32 temple_tmp_1881;
-  legacy_s32 temple_tmp_1882;
-  legacy_s32 temple_tmp_1883;
-  legacy_s32 temple_tmp_1884;
-  legacy_s32 temple_tmp_1885;
+  legacy_s32 noreg temple_tmp_1879;
+  legacy_s32 noreg temple_tmp_1880;
+  legacy_s32 noreg temple_tmp_1881;
+  legacy_s32 noreg temple_tmp_1882;
+  legacy_s32 noreg temple_tmp_1883;
+  legacy_s32 noreg temple_tmp_1884;
+  legacy_s32 noreg temple_tmp_1885;
   temple_tmp_1879=!!((game_replay_mode!=game_replay_mode_copy));
   if(!temple_tmp_1879) {
     temple_tmp_1879=!!((dashb_toggle!=dashb_toggle_copy));
@@ -447,7 +447,7 @@ legacy_void RsRaceRaceUpdateViewport(CRaceViewportCache *cache,legacy_s16 rewind
 
 legacy_u32 RsRaceRaceGhostFrame()
 {
-  legacy_u32 temple_tmp_1886;
+  legacy_u32 noreg temple_tmp_1886;
   if((game_replay_mode==REPLAY_MODE_PAUSED)) {
     temple_tmp_1886=TempleCastU32(0);
   } else {
@@ -460,10 +460,10 @@ legacy_u32 RsRaceRaceGhostFrame()
 legacy_void RsRaceRaceDrawFrame()
 {
   CRectangle temple_dashboard_mask_rect_1887;
-  legacy_s32 temple_tmp_1888;
-  legacy_s32 temple_tmp_1889;
+  legacy_s32 noreg temple_tmp_1888;
+  legacy_s32 noreg temple_tmp_1889;
   legacy_s8 *temple_tmp_1890;
-  legacy_s8 temple_tmp_1891;
+  legacy_s8 noreg temple_tmp_1891;
   legacy_s8 *temple_tmp_1892;
   if((full_redraw_frames_remaining!=0)) {
     (replay_controls_drawn[dashboard_buffer_index]=TempleCastS8(0));
@@ -546,9 +546,9 @@ legacy_void RsRaceRaceDrawFrame()
 
 legacy_void RsRaceRaceHandleDrivingInput()
 {
-  legacy_s16 temple_input_key_1893;
-  legacy_s32 temple_tmp_1895;
-  legacy_s32 temple_tmp_1896;
+  legacy_s16 noreg temple_input_key_1893;
+  legacy_s32 noreg temple_tmp_1895;
+  legacy_s32 noreg temple_tmp_1896;
   while(1) {
     (temple_input_key_1893=TempleCastS16(RsDosKbGetChar()));
     temple_tmp_1895=!!((temple_input_key_1893!=0));
@@ -580,8 +580,8 @@ legacy_void RsRaceRaceHandleDrivingInput()
 
 legacy_u16 RsRaceRaceHandleExitRequest()
 {
-  legacy_s32 temple_tmp_1897;
-  legacy_s32 temple_tmp_1898;
+  legacy_s32 noreg temple_tmp_1897;
+  legacy_s32 noreg temple_tmp_1898;
   if((race_exit_request!=0)) {
     temple_tmp_1897=!!((game_replay_mode!=REPLAY_MODE_LIVE));
     if(!temple_tmp_1897) {
@@ -609,11 +609,11 @@ legacy_u16 RsRaceRaceHandleExitRequest()
 
 legacy_u16 RsRaceRaceFrameIsReady(legacy_s16 *last_processed_frame)
 {
-  legacy_s32 temple_tmp_1899;
-  legacy_s32 temple_tmp_1900;
-  legacy_s16 temple_wait_for_sample_1901;
-  legacy_s32 temple_tmp_1902;
-  legacy_s32 temple_tmp_1903;
+  legacy_s32 noreg temple_tmp_1899;
+  legacy_s32 noreg temple_tmp_1900;
+  legacy_s16 noreg temple_wait_for_sample_1901;
+  legacy_s32 noreg temple_tmp_1902;
+  legacy_s32 noreg temple_tmp_1903;
   if((state.game_frame!=elapsed_time2)) {
     temple_tmp_1899=!!((mouse_driving_enabled!=0));
     if(!temple_tmp_1899) {
@@ -649,8 +649,8 @@ legacy_u16 RsRaceRaceFrameIsReady(legacy_s16 *last_processed_frame)
 
 legacy_s16 RsRaceRaceProcessFrameInput()
 {
-  legacy_s32 temple_tmp_1904;
-  legacy_s32 temple_tmp_1905;
+  legacy_s32 noreg temple_tmp_1904;
+  legacy_s32 noreg temple_tmp_1905;
   if((idle_expired==0)) {
     if((RsRaceRaceHandleExitRequest()!=0)) {
       return TempleCastS16(1);
@@ -678,17 +678,17 @@ legacy_s16 RsRaceRaceProcessFrameInput()
 
 legacy_void RsRaceRaceRunFrames(CRaceViewportCache *cache)
 {
-  legacy_s16 temple_last_processed_frame_1906;
+  legacy_s16 noreg temple_last_processed_frame_1906;
   CRaceRewindState temple_rewind_1907;
-  legacy_s16 temple_was_rewinding_1909;
-  legacy_s32 temple_tmp_1910;
-  legacy_s32 temple_tmp_1911;
-  legacy_s32 temple_tmp_1912;
-  legacy_s32 temple_tmp_1913;
-  legacy_s32 temple_tmp_1914;
-  legacy_s32 temple_tmp_1915;
-  legacy_s32 temple_tmp_1916;
-  legacy_s32 temple_tmp_1917;
+  legacy_s16 noreg temple_was_rewinding_1909;
+  legacy_s32 noreg temple_tmp_1910;
+  legacy_s32 noreg temple_tmp_1911;
+  legacy_s32 noreg temple_tmp_1912;
+  legacy_s32 noreg temple_tmp_1913;
+  legacy_s32 noreg temple_tmp_1914;
+  legacy_s32 noreg temple_tmp_1915;
+  legacy_s32 noreg temple_tmp_1916;
+  legacy_s32 noreg temple_tmp_1917;
   temple_last_processed_frame_1906=TempleCastS16(TempleCastS32((-(1))));
   MemSet(&temple_rewind_1907,0,sizeof(temple_rewind_1907));
   RsFrameSupersightReset();
@@ -775,13 +775,13 @@ legacy_void RsRaceRaceRunFrames(CRaceViewportCache *cache)
 legacy_void RsRaceRaceFinishOpponent()
 {
   legacy_s16 temple_opponent_progress_text_position_1918[2];
-  legacy_s32 temple_tmp_1919;
-  legacy_s32 temple_tmp_1920;
-  legacy_s16 temple_frame_counter_1921;
+  legacy_s32 noreg temple_tmp_1919;
+  legacy_s32 noreg temple_tmp_1920;
+  legacy_s16 noreg temple_frame_counter_1921;
   legacy_s16 *temple_tmp_1922;
-  legacy_s16 temple_tmp_1923;
+  legacy_s16 noreg temple_tmp_1923;
   legacy_s16 *temple_tmp_1925;
-  legacy_s16 temple_tmp_1926;
+  legacy_s16 noreg temple_tmp_1926;
   temple_tmp_1919=!!((game_replay_mode==REPLAY_MODE_LIVE));
   if(temple_tmp_1919) {
     temple_tmp_1919=!!((gameconfig.game_opponenttype!=0));
@@ -840,7 +840,7 @@ legacy_void RsRaceRaceFinishOpponent()
 
 legacy_void RsRaceRaceReleaseResources()
 {
-  legacy_s32 temple_tmp_1927;
+  legacy_s32 noreg temple_tmp_1927;
   temple_tmp_1927=!!((video_uses_page_flipping!=0));
   if(temple_tmp_1927) {
     temple_tmp_1927=!!((RsVideoBackbufferCopyRequired()!=0));
@@ -870,9 +870,9 @@ legacy_void RsRaceRaceReleaseResources()
 legacy_void RsRunGame()
 {
   CRaceViewportCache temple_cache_1928;
-  legacy_u32 temple_tmp_1929;
-  legacy_s32 temple_tmp_1930;
-  legacy_s32 temple_tmp_1931;
+  legacy_u32 noreg temple_tmp_1929;
+  legacy_s32 noreg temple_tmp_1930;
+  legacy_s32 noreg temple_tmp_1931;
   (rect_windshield.left=TempleCastS16(0));
   (rect_windshield.right=TempleCastS16(320));
   (temple_cache_1928.roof_height=TempleCastS16(TempleCastS32((-(1)))));

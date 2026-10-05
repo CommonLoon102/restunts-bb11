@@ -40,7 +40,7 @@ legacy_void TestLineCoverage(CDC *dc)
   legacy_s64 source_x;
   legacy_s64 source_y;
   legacy_s64 line_y;
-  legacy_u8 expected;
+  legacy_u8 noreg expected;
   MemCpy(&saved_sprite,&drawing_sprite,sizeof(CSprite));
   for(native=FALSE;native<=TRUE;native++) {
     TempleRasterNative(native);

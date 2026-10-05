@@ -2,7 +2,7 @@
 
 legacy_s8 RsIntroLegacyS8FromBits(legacy_u8 value)
 {
-  legacy_s32 temple_tmp_1461;
+  legacy_s32 noreg temple_tmp_1461;
   if((value<=127)) {
     temple_tmp_1461=TempleCastS32(TempleCastS8(value));
   } else {
@@ -14,7 +14,7 @@ legacy_s8 RsIntroLegacyS8FromBits(legacy_u8 value)
 
 legacy_s16 RsIntroLegacyS16FromBits(legacy_u16 value)
 {
-  legacy_s32 temple_tmp_1462;
+  legacy_s32 noreg temple_tmp_1462;
   if((value<=32767)) {
     temple_tmp_1462=TempleCastS32(TempleCastS16(value));
   } else {
@@ -26,7 +26,7 @@ legacy_s16 RsIntroLegacyS16FromBits(legacy_u16 value)
 
 legacy_s32 RsIntroLegacyS32FromBits(legacy_u32 value)
 {
-  legacy_s32 temple_tmp_1463;
+  legacy_s32 noreg temple_tmp_1463;
   if((value<=TempleCastU32(2147483647))) {
     temple_tmp_1463=TempleCastS32(TempleCastS32(value));
   } else {
@@ -39,8 +39,8 @@ legacy_s32 RsIntroLegacyS32FromBits(legacy_u32 value)
 legacy_s16 RsIntroRunIntro(legacy_u8 *audio_resource)
 {
   CShape2D *temple_shape_1464;
-  legacy_s32 temple_tmp_1465;
-  legacy_s16 temple_result_1466;
+  legacy_s32 noreg temple_tmp_1465;
+  legacy_s16 noreg temple_result_1466;
   RsMouseDrawOpaqueCheck();
   RsSpriteSelectScreenAndClear();
   RsMouseDrawTransparentCheck();
@@ -80,7 +80,7 @@ legacy_s16 RsIntroRunIntro(legacy_u8 *audio_resource)
 legacy_s16 RsRunIntroLooped()
 {
   legacy_u8 *temple_audio_resource_1467;
-  legacy_s16 temple_result_1468;
+  legacy_s16 noreg temple_result_1468;
   temple_audio_resource_1467=RsFilePrepareAudiores("skidtitl","skidms","TITL");
   (rs_intro_ui_temp_resource=RsFileLoadResource(TempleCastS16(FILE_RESOURCE_SHAPE2D),"sdtitl"));
   (render_window_sprite=
@@ -216,9 +216,9 @@ legacy_void RsIntroCreditsDrawArtists(legacy_s8 *credit_resource)
 legacy_s16 RsIntroCreditsSlideArrow(CShape2D *arrow_shape,legacy_s16 target_x,legacy_s16 arrow_y,
     legacy_s16 arrow_width,legacy_s16 arrow_height)
 {
-  legacy_s16 temple_arrow_x_1470;
-  legacy_s16 temple_input_1471;
-  legacy_s16 temple_frame_elapsed_1473;
+  legacy_s16 noreg temple_arrow_x_1470;
+  legacy_s16 noreg temple_input_1471;
+  legacy_s16 noreg temple_frame_elapsed_1473;
   temple_arrow_x_1470=TempleCastS16(330);
   temple_input_1471=TempleCastS16(0);
   while(1) {
@@ -253,13 +253,13 @@ legacy_s16 RsIntroCreditsSlideArrow(CShape2D *arrow_shape,legacy_s16 target_x,le
 legacy_void RsIntroCreditsAnimateShapes(
     CShape2D **credit_shapes,legacy_s16 arrow_y,legacy_s16 input)
 {
-  legacy_s16 temple_animation_elapsed_1474;
-  legacy_s16 temple_animation_target_1475;
-  legacy_u16 temple_animation_index_1477;
-  legacy_s32 temple_tmp_1478;
-  legacy_s16 temple_frame_elapsed_1480;
+  legacy_s16 noreg temple_animation_elapsed_1474;
+  legacy_s16 noreg temple_animation_target_1475;
+  legacy_u16 noreg temple_animation_index_1477;
+  legacy_s32 noreg temple_tmp_1478;
+  legacy_s16 noreg temple_frame_elapsed_1480;
   legacy_u16 *temple_tmp_1481;
-  legacy_u16 temple_tmp_1482;
+  legacy_u16 noreg temple_tmp_1482;
   temple_animation_elapsed_1474=TempleCastS16(0);
   temple_animation_target_1475=TempleCastS16(0);
   temple_animation_index_1477=TempleCastU16(2);
@@ -326,11 +326,11 @@ legacy_s8 RsLoadIntroResources()
   legacy_s8 *temple_credit_resource_1483;
   CShape2D *temple_credit_shapes_1484[11];
   CShape2D *temple_arrow_shape_1485;
-  legacy_s16 temple_target_x_1486;
-  legacy_s16 temple_arrow_y_1487;
-  legacy_s16 temple_arrow_width_1488;
-  legacy_s16 temple_arrow_height_1489;
-  legacy_s16 temple_input_1490;
+  legacy_s16 noreg temple_target_x_1486;
+  legacy_s16 noreg temple_arrow_y_1487;
+  legacy_s16 noreg temple_arrow_width_1488;
+  legacy_s16 noreg temple_arrow_height_1489;
+  legacy_s16 noreg temple_input_1490;
   temple_credit_resource_1483=(RsFileLoadResfile(credits_resource_name))(legacy_s8 *);
   RsLocateManyResources((rs_intro_ui_temp_resource)(legacy_s8 *),credits_shape_ids,
       (temple_credit_shapes_1484)(legacy_s8 **));

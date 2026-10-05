@@ -2,7 +2,7 @@
 
 legacy_s8 RsMenuTrackLegacyS8FromBits(legacy_u8 value)
 {
-  legacy_s32 temple_tmp_2265;
+  legacy_s32 noreg temple_tmp_2265;
   if((value<=127)) {
     temple_tmp_2265=TempleCastS32(TempleCastS8(value));
   } else {
@@ -14,7 +14,7 @@ legacy_s8 RsMenuTrackLegacyS8FromBits(legacy_u8 value)
 
 legacy_s16 RsMenuTrackLegacyS16FromBits(legacy_u16 value)
 {
-  legacy_s32 temple_tmp_2266;
+  legacy_s32 noreg temple_tmp_2266;
   if((value<=32767)) {
     temple_tmp_2266=TempleCastS32(TempleCastS16(value));
   } else {
@@ -26,7 +26,7 @@ legacy_s16 RsMenuTrackLegacyS16FromBits(legacy_u16 value)
 
 legacy_s32 RsMenuTrackLegacyS32FromBits(legacy_u32 value)
 {
-  legacy_s32 temple_tmp_2267;
+  legacy_s32 noreg temple_tmp_2267;
   if((value<=TempleCastU32(2147483647))) {
     temple_tmp_2267=TempleCastS32(TempleCastS32(value));
   } else {
@@ -59,7 +59,7 @@ legacy_void RsMenuTrackTrackMenuDrawHighscore()
 {
   legacy_u8 temple_text_offsets_2268[4];
   CHighscoreEntry *temple_scores_2269;
-  legacy_u16 temple_score_2270;
+  legacy_u16 noreg temple_score_2270;
   if((RsHighscoreLoadOrCreate(TempleCastS16(0))==0)) {
     (temple_scores_2269=(track_highscore_table)(CHighscoreEntry *));
     temple_score_2270=TempleCastU16(temple_scores_2269[ranking_entry_order[0]].time);
@@ -123,9 +123,9 @@ legacy_void RsMenuTrackTrackMenuDrawBackground()
 
 legacy_u16 RsMenuTrackTrackMenuPollInput(CTrackMenuState *menu)
 {
-  legacy_u16 temple_elapsed_2272;
-  legacy_u16 temple_key_2273;
-  legacy_s16 temple_hit_2274;
+  legacy_u16 noreg temple_elapsed_2272;
+  legacy_u16 noreg temple_key_2273;
+  legacy_s16 noreg temple_hit_2274;
   if((RsFrameStatusExpireIdle()!=0)) {
     RsMouseDrawOpaqueCheck();
     RsSpriteFreeWnd(render_window_sprite);
@@ -161,9 +161,9 @@ legacy_u16 RsMenuTrackTrackMenuPollInput(CTrackMenuState *menu)
 
 legacy_u8 RsMenuTrackTrackMenuActivateKey(CTrackMenuState *menu,legacy_u16 key)
 {
-  legacy_s32 temple_tmp_2275;
-  legacy_s32 temple_tmp_2276;
-  legacy_s32 temple_tmp_2277;
+  legacy_s32 noreg temple_tmp_2275;
+  legacy_s32 noreg temple_tmp_2276;
+  legacy_s32 noreg temple_tmp_2277;
   if((key==TempleCastU16(KEY_F12))) {
     RsMouseDrawOpaqueCheck();
     RsHandleIngameKbShortcuts(
@@ -211,11 +211,11 @@ legacy_u8 RsMenuTrackTrackMenuActivateKey(CTrackMenuState *menu,legacy_u16 key)
 
 legacy_void RsRunTracksMenu(legacy_s16 reload_track)
 {
-  legacy_s16 temple_needs_track_setup_2278;
+  legacy_s16 noreg temple_needs_track_setup_2278;
   CTrackMenuState temple_menu_2279;
-  legacy_u16 temple_key_2282;
+  legacy_u16 noreg temple_key_2282;
   legacy_s8 *temple_prompt_2283;
-  legacy_s8 temple_chosen_2284;
+  legacy_s8 noreg temple_chosen_2284;
   RsEnsureFileExists(TempleCastS16(3));
   temple_needs_track_setup_2278=TempleCastS16((reload_track!=0));
   while(1) {

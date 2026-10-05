@@ -2,7 +2,7 @@
 
 legacy_s8 RsRaceResourcesLegacyS8FromBits(legacy_u8 value)
 {
-  legacy_s32 temple_tmp_2056;
+  legacy_s32 noreg temple_tmp_2056;
   if((value<=127)) {
     temple_tmp_2056=TempleCastS32(TempleCastS8(value));
   } else {
@@ -14,7 +14,7 @@ legacy_s8 RsRaceResourcesLegacyS8FromBits(legacy_u8 value)
 
 legacy_s16 RsRaceResourcesLegacyS16FromBits(legacy_u16 value)
 {
-  legacy_s32 temple_tmp_2057;
+  legacy_s32 noreg temple_tmp_2057;
   if((value<=32767)) {
     temple_tmp_2057=TempleCastS32(TempleCastS16(value));
   } else {
@@ -26,7 +26,7 @@ legacy_s16 RsRaceResourcesLegacyS16FromBits(legacy_u16 value)
 
 legacy_s32 RsRaceResourcesLegacyS32FromBits(legacy_u32 value)
 {
-  legacy_s32 temple_tmp_2058;
+  legacy_s32 noreg temple_tmp_2058;
   if((value<=TempleCastU32(2147483647))) {
     temple_tmp_2058=TempleCastS32(TempleCastS32(value));
   } else {
@@ -51,9 +51,9 @@ legacy_void RsFreeSdgame2()
 
 legacy_void RsLoadSdgame2Shapes()
 {
-  legacy_s16 temple_i_2060;
+  legacy_s16 noreg temple_i_2060;
   legacy_s16 *temple_tmp_2061;
-  legacy_s16 temple_tmp_2062;
+  legacy_s16 noreg temple_tmp_2062;
   (sdgame2ptr=RsFileLoadResource(TempleCastS16(FILE_RESOURCE_SHAPE2D_ALTERNATE),"sdgame2"));
   RsLocateManyResources(sdgame2ptr,"ex01ex02ex03leftrigh",(sdgame2shapes)(legacy_s8 **));
   temple_i_2060=TempleCastS16(0);
@@ -72,15 +72,15 @@ legacy_void RsLoadSdgame2Shapes()
 
 legacy_void RsLoadSkybox(legacy_s8 skybox_index)
 {
-  legacy_s32 temple_tmp_2063;
-  legacy_u16 temple_image_index_2065;
+  legacy_s32 noreg temple_tmp_2063;
+  legacy_u16 noreg temple_image_index_2065;
   legacy_u16 *temple_tmp_2066;
-  legacy_u16 temple_tmp_2067;
-  legacy_u16 temple_minimum_2068;
-  legacy_u16 temple_maximum_2069;
-  legacy_u16 temple_image_index_2071;
+  legacy_u16 noreg temple_tmp_2067;
+  legacy_u16 noreg temple_minimum_2068;
+  legacy_u16 noreg temple_maximum_2069;
+  legacy_u16 noreg temple_image_index_2071;
   legacy_u16 *temple_tmp_2072;
-  legacy_u16 temple_tmp_2073;
+  legacy_u16 noreg temple_tmp_2073;
   if((TempleCastU32((TempleCastU8(skybox_index)&8))==TempleCastU32(0))) {
     temple_tmp_2063=!!((skybox_resources_loaded!=0));
     if(temple_tmp_2063) {
@@ -195,8 +195,8 @@ legacy_void RsGhostFreeSimulationResources()
 legacy_s16 RsRaceResourcesSetupPlayerCarsImpl(legacy_s16 load_dashboard_shapes)
 {
   legacy_s8 *temple_tmp_2075;
-  legacy_s32 temple_tmp_2076;
-  legacy_u32 temple_window_pixel_bytes_2077;
+  legacy_s32 noreg temple_tmp_2076;
+  legacy_u32 noreg temple_window_pixel_bytes_2077;
   RsSetupLegacyPenaltyRouteWord();
   (render_window_sprite=0);
   if((load_dashboard_shapes!=0)) {

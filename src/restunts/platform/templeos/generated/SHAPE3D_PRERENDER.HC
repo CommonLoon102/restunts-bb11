@@ -2,7 +2,7 @@
 
 legacy_s8 RsShape3dPrerenderLegacyS8FromBits(legacy_u8 value)
 {
-  legacy_s32 temple_tmp_3468;
+  legacy_s32 noreg temple_tmp_3468;
   if((value<=127)) {
     temple_tmp_3468=TempleCastS32(TempleCastS8(value));
   } else {
@@ -14,7 +14,7 @@ legacy_s8 RsShape3dPrerenderLegacyS8FromBits(legacy_u8 value)
 
 legacy_s16 RsShape3dPrerenderLegacyS16FromBits(legacy_u16 value)
 {
-  legacy_s32 temple_tmp_3469;
+  legacy_s32 noreg temple_tmp_3469;
   if((value<=32767)) {
     temple_tmp_3469=TempleCastS32(TempleCastS16(value));
   } else {
@@ -26,7 +26,7 @@ legacy_s16 RsShape3dPrerenderLegacyS16FromBits(legacy_u16 value)
 
 legacy_s32 RsShape3dPrerenderLegacyS32FromBits(legacy_u32 value)
 {
-  legacy_s32 temple_tmp_3470;
+  legacy_s32 noreg temple_tmp_3470;
   if((value<=TempleCastU32(2147483647))) {
     temple_tmp_3470=TempleCastS32(TempleCastS32(value));
   } else {
@@ -39,7 +39,7 @@ legacy_s32 RsShape3dPrerenderLegacyS32FromBits(legacy_u32 value)
 legacy_s16 RsShape3dPrerenderPrerenderLine(legacy_u16 start_x,legacy_u16 start_y,legacy_u16 end_x,
     legacy_u16 end_y,legacy_u16 color,legacy_u16 *line)
 {
-  legacy_s32 temple_tmp_3471;
+  legacy_s32 noreg temple_tmp_3471;
   (line[DRAW_LINE_COLOR_INDEX]=TempleCastU16(color));
   temple_tmp_3471=!!((RsLinePrepareClipped(TempleCastU16(start_x),TempleCastU16(start_y),
                           TempleCastU16(end_x),TempleCastU16(end_y),line)==0));
@@ -56,9 +56,9 @@ legacy_s16 RsShape3dPrerenderPrerenderLine(legacy_u16 start_x,legacy_u16 start_y
 
 legacy_void RsShape3dPrerenderPrerenderGrillePixel(legacy_u16 x,legacy_u16 y)
 {
-  legacy_u16 temple_row_shift_3472;
-  legacy_u32 temple_tmp_3473;
-  legacy_u16 temple_bit_3474;
+  legacy_u16 noreg temple_row_shift_3472;
+  legacy_u32 noreg temple_tmp_3473;
+  legacy_u16 noreg temple_bit_3474;
   if((TempleCastU32((y&1))==0)) {
     temple_tmp_3473=TempleCastU32(8);
   } else {
@@ -80,39 +80,39 @@ legacy_void RsShape3dPrerenderPrerenderGrilleLine(
     legacy_u16 start_x,legacy_u16 start_y,legacy_u16 end_x,legacy_u16 end_y,legacy_u16 color)
 {
   legacy_u16 temple_line_3475[14];
-  legacy_u16 temple_mode_3476;
-  legacy_u16 temple_x_3477;
-  legacy_u16 temple_y_3478;
-  legacy_u16 temple_fraction_x_3479;
-  legacy_u16 temple_fraction_y_3480;
+  legacy_u16 noreg temple_mode_3476;
+  legacy_u16 noreg temple_x_3477;
+  legacy_u16 noreg temple_y_3478;
+  legacy_u16 noreg temple_fraction_x_3479;
+  legacy_u16 noreg temple_fraction_y_3480;
   legacy_u16 *temple_tmp_3481;
-  legacy_u16 temple_tmp_3482;
-  legacy_s32 temple_tmp_3483;
-  legacy_s32 temple_tmp_3484;
+  legacy_u16 noreg temple_tmp_3482;
+  legacy_s32 noreg temple_tmp_3483;
+  legacy_s32 noreg temple_tmp_3484;
   legacy_u16 *temple_tmp_3485;
-  legacy_u16 temple_tmp_3486;
-  legacy_u16 temple_step_3487;
-  legacy_s16 temple_remaining_3489;
-  legacy_u16 temple_previous_3490;
+  legacy_u16 noreg temple_tmp_3486;
+  legacy_u16 noreg temple_step_3487;
+  legacy_s16 noreg temple_remaining_3489;
+  legacy_u16 noreg temple_previous_3490;
   legacy_u16 *temple_tmp_3491;
-  legacy_u16 temple_tmp_3492;
-  legacy_u16 temple_previous_3493;
+  legacy_u16 noreg temple_tmp_3492;
+  legacy_u16 noreg temple_previous_3493;
   legacy_u16 *temple_tmp_3494;
-  legacy_u16 temple_tmp_3495;
-  legacy_s32 temple_tmp_3496;
+  legacy_u16 noreg temple_tmp_3495;
+  legacy_s32 noreg temple_tmp_3496;
   legacy_u16 *temple_tmp_3497;
-  legacy_u16 temple_tmp_3498;
+  legacy_u16 noreg temple_tmp_3498;
   legacy_u16 *temple_tmp_3499;
-  legacy_u16 temple_tmp_3500;
-  legacy_s32 temple_tmp_3501;
+  legacy_u16 noreg temple_tmp_3500;
+  legacy_s32 noreg temple_tmp_3501;
   legacy_u16 *temple_tmp_3502;
-  legacy_u16 temple_tmp_3503;
-  legacy_s32 temple_tmp_3504;
-  legacy_u16 temple_previous_3505;
+  legacy_u16 noreg temple_tmp_3503;
+  legacy_s32 noreg temple_tmp_3504;
+  legacy_u16 noreg temple_previous_3505;
   legacy_u16 *temple_tmp_3506;
-  legacy_u16 temple_tmp_3507;
+  legacy_u16 noreg temple_tmp_3507;
   legacy_s16 *temple_tmp_3508;
-  legacy_s16 temple_tmp_3509;
+  legacy_s16 noreg temple_tmp_3509;
   MemSet(&temple_line_3475,0,sizeof(temple_line_3475));
   color;
   if((RsLinePrepareClipped(TempleCastU16(start_x),TempleCastU16(start_y),TempleCastU16(end_x),
@@ -236,7 +236,7 @@ legacy_void RsPreRenderCrackLine(
     legacy_u16 start_x,legacy_u16 start_y,legacy_u16 end_x,legacy_u16 end_y,legacy_u16 color)
 {
   legacy_u16 temple_line_3510[14];
-  legacy_s16 temple_drawn_3511;
+  legacy_s16 noreg temple_drawn_3511;
   (temple_drawn_3511=TempleCastS16(
       RsShape3dPrerenderPrerenderLine(TempleCastU16(start_x),TempleCastU16(start_y),
           TempleCastU16(end_x),TempleCastU16(end_y),TempleCastU16(color),temple_line_3510)));
@@ -248,8 +248,8 @@ legacy_void RsDrawBeveledBorder(legacy_s16 x,legacy_s16 y,legacy_s16 width,legac
     legacy_s16 top_outer_color,legacy_s16 top_inner_color,legacy_s16 bottom_outer_color,
     legacy_s16 bottom_inner_color)
 {
-  legacy_s16 temple_right_3512;
-  legacy_s16 temple_bottom_3513;
+  legacy_s16 noreg temple_right_3512;
+  legacy_s16 noreg temple_bottom_3513;
   temple_right_3512=TempleCastS16(TempleCastS32((x+width)));
   temple_bottom_3513=TempleCastS16(TempleCastS32((y+height)));
   RsPreRenderLine(TempleCastU16(x),TempleCastU16(y),TempleCastU16(temple_right_3512),
@@ -302,9 +302,9 @@ legacy_void RsShape3dPrerenderPreRenderDefaultAltWords(
     legacy_u16 color,legacy_u16 vertex_count,legacy_u16 *words)
 {
   CPoint2D temple_vertices_3514[32];
-  legacy_u16 temple_index_3516;
+  legacy_u16 noreg temple_index_3516;
   legacy_u16 *temple_tmp_3517;
-  legacy_u16 temple_tmp_3518;
+  legacy_u16 noreg temple_tmp_3518;
   temple_index_3516=TempleCastU16(0);
   while(1) {
     if(!((temple_index_3516<vertex_count))) {
@@ -342,13 +342,13 @@ legacy_u16 RsShape3dPrerenderSphereScaleDifference(
 
 legacy_void RsShape3dPrerenderSphereBuildCoordinate(legacy_u16 *destination)
 {
-  legacy_u16 temple_half_first_3519;
-  legacy_u16 temple_quarter_first_3520;
-  legacy_u16 temple_three_quarters_first_3521;
-  legacy_u16 temple_half_second_3522;
-  legacy_u16 temple_quarter_second_3523;
-  legacy_u16 temple_three_quarters_second_3524;
-  legacy_u16 temple_negative_first_3525;
+  legacy_u16 noreg temple_half_first_3519;
+  legacy_u16 noreg temple_quarter_first_3520;
+  legacy_u16 noreg temple_three_quarters_first_3521;
+  legacy_u16 noreg temple_half_second_3522;
+  legacy_u16 noreg temple_quarter_second_3523;
+  legacy_u16 noreg temple_three_quarters_second_3524;
+  legacy_u16 noreg temple_negative_first_3525;
   temple_half_first_3519=TempleCastU16(RsSar1Word(TempleCastU16(destination[0])));
   temple_quarter_first_3520=TempleCastU16(RsSar1Word(TempleCastU16(temple_half_first_3519)));
   temple_three_quarters_first_3521=TempleCastU16(TempleCastU16(TempleCastS32(
@@ -397,11 +397,11 @@ legacy_void RsShape3dPrerenderSphereBuildCoordinate(legacy_u16 *destination)
 
 legacy_void RsSphereBuildPerimeter(legacy_u16 *source,legacy_u16 *destination)
 {
-  legacy_u16 temple_center_x_3526;
-  legacy_u16 temple_center_y_3527;
-  legacy_u16 temple_index_3529;
+  legacy_u16 noreg temple_center_x_3526;
+  legacy_u16 noreg temple_center_y_3527;
+  legacy_u16 noreg temple_index_3529;
   legacy_u16 *temple_tmp_3530;
-  legacy_u16 temple_tmp_3531;
+  legacy_u16 noreg temple_tmp_3531;
   (destination[0]=TempleCastU16(
       TempleCastU16(TempleCastS32((TempleCastU16(source[2])-TempleCastU16(source[0]))))));
   (destination[1]=TempleCastU16(
@@ -451,15 +451,15 @@ legacy_void RsSphereDrawPolygon(legacy_u16 *source,legacy_u16 color)
 
 legacy_void RsWheelBuildPerimeter(legacy_u16 *source,legacy_u16 *destination)
 {
-  legacy_u16 temple_half_x2_3533;
-  legacy_u16 temple_half_y2_3534;
-  legacy_u16 temple_half_x1_3535;
-  legacy_u16 temple_half_y1_3536;
-  legacy_u16 temple_center_x_3537;
-  legacy_u16 temple_center_y_3538;
-  legacy_u16 temple_index_3540;
+  legacy_u16 noreg temple_half_x2_3533;
+  legacy_u16 noreg temple_half_y2_3534;
+  legacy_u16 noreg temple_half_x1_3535;
+  legacy_u16 noreg temple_half_y1_3536;
+  legacy_u16 noreg temple_center_x_3537;
+  legacy_u16 noreg temple_center_y_3538;
+  legacy_u16 noreg temple_index_3540;
   legacy_u16 *temple_tmp_3541;
-  legacy_u16 temple_tmp_3542;
+  legacy_u16 noreg temple_tmp_3542;
   (destination[0]=TempleCastU16(
       TempleCastU16(TempleCastS32((TempleCastU16(source[2])-TempleCastU16(source[0]))))));
   (destination[1]=TempleCastU16(
@@ -538,9 +538,9 @@ legacy_u16 RsShape3dPrerenderWheelInterpolate(
 
 legacy_void RsWheelBuildRimPerimeters(legacy_u16 *source,legacy_u16 *destination,legacy_u16 scale)
 {
-  legacy_u16 temple_center_x_3543;
-  legacy_u16 temple_center_y_3544;
-  legacy_u16 temple_scale_bits_3545;
+  legacy_u16 noreg temple_center_x_3543;
+  legacy_u16 noreg temple_center_y_3544;
+  legacy_u16 noreg temple_scale_bits_3545;
   legacy_u16 temple_inner_source_3546[6];
   temple_center_x_3543=TempleCastU16(TempleCastU16(source[0]));
   temple_center_y_3544=TempleCastU16(TempleCastU16(source[1]));
@@ -565,11 +565,11 @@ legacy_void RsWheelBuildRimPerimeters(legacy_u16 *source,legacy_u16 *destination
 
 legacy_void RsWheelBuildVertices(legacy_u16 *source,legacy_u16 *destination,legacy_u16 scale)
 {
-  legacy_u16 temple_offset_x_3547;
-  legacy_u16 temple_offset_y_3548;
-  legacy_u16 temple_index_3550;
+  legacy_u16 noreg temple_offset_x_3547;
+  legacy_u16 noreg temple_offset_y_3548;
+  legacy_u16 noreg temple_index_3550;
   legacy_u16 *temple_tmp_3551;
-  legacy_u16 temple_tmp_3552;
+  legacy_u16 noreg temple_tmp_3552;
   RsWheelBuildRimPerimeters(source,destination,TempleCastU16(scale));
   temple_offset_x_3547=TempleCastU16(
       TempleCastU16(TempleCastS32((TempleCastU16(source[6])-TempleCastU16(source[0])))));
@@ -600,11 +600,11 @@ legacy_void RsShape3dPrerenderPreRenderWheelSide(
     legacy_u16 *wheel_points,legacy_u16 minimum_index,legacy_u16 reverse,legacy_u16 color)
 {
   legacy_u16 temple_side_3553[36];
-  legacy_u16 temple_step_3555;
-  legacy_u16 temple_point_index_3556;
-  legacy_u16 temple_destination_index_3557;
+  legacy_u16 noreg temple_step_3555;
+  legacy_u16 noreg temple_point_index_3556;
+  legacy_u16 noreg temple_destination_index_3557;
   legacy_u16 *temple_tmp_3558;
-  legacy_u16 temple_tmp_3559;
+  legacy_u16 noreg temple_tmp_3559;
   temple_step_3555=TempleCastU16(0);
   while(1) {
     if(!((temple_step_3555<9))) {
@@ -643,20 +643,20 @@ legacy_void RsPreRenderWheel(CPoint2D *source,legacy_u16 scale,legacy_u16 outer_
     legacy_u16 side_color,legacy_u16 inner_color)
 {
   legacy_u16 temple_source_words_3560[8];
-  legacy_u16 temple_index_3562;
+  legacy_u16 noreg temple_index_3562;
   legacy_u16 *temple_tmp_3563;
-  legacy_u16 temple_tmp_3564;
+  legacy_u16 noreg temple_tmp_3564;
   legacy_u16 temple_wheel_points_3565[96];
   legacy_u16 temple_quad_3566[8];
-  legacy_u16 temple_index_3568;
-  legacy_u16 temple_next_index_3569;
+  legacy_u16 noreg temple_index_3568;
+  legacy_u16 noreg temple_next_index_3569;
   legacy_u16 *temple_tmp_3570;
-  legacy_u16 temple_tmp_3571;
-  legacy_u16 temple_minimum_y_3572;
-  legacy_u16 temple_minimum_index_3573;
-  legacy_u16 temple_index_3575;
+  legacy_u16 noreg temple_tmp_3571;
+  legacy_u16 noreg temple_minimum_y_3572;
+  legacy_u16 noreg temple_minimum_index_3573;
+  legacy_u16 noreg temple_index_3575;
   legacy_u16 *temple_tmp_3576;
-  legacy_u16 temple_tmp_3577;
+  legacy_u16 noreg temple_tmp_3577;
   temple_index_3562=TempleCastU16(0);
   while(1) {
     if(!((temple_index_3562<4))) {
@@ -735,15 +735,15 @@ legacy_s16 RsShape3dPrerenderSphereBuildSpans(
     CSphereRaster *sphere,legacy_s16 *left_edges,legacy_s16 *right_edges)
 {
   legacy_u8 *temple_radii_3578;
-  legacy_s16 temple_mirror_offset_3579;
-  legacy_u16 temple_output_index_3580;
-  legacy_u8 temple_radius_3582;
-  legacy_u16 temple_left_3583;
-  legacy_u16 temple_right_3584;
-  legacy_s32 temple_tmp_3585;
+  legacy_s16 noreg temple_mirror_offset_3579;
+  legacy_u16 noreg temple_output_index_3580;
+  legacy_u8 noreg temple_radius_3582;
+  legacy_u16 noreg temple_left_3583;
+  legacy_u16 noreg temple_right_3584;
+  legacy_s32 noreg temple_tmp_3585;
   legacy_s16 *temple_tmp_3586;
   legacy_u16 *temple_tmp_3587;
-  legacy_u16 temple_tmp_3588;
+  legacy_u16 noreg temple_tmp_3588;
   legacy_s16 *temple_tmp_3589;
   temple_radii_3578=sphere_radius_rows[sphere->half_width];
   (sphere->line_count=TempleCastU16(sphere->effective_height));
@@ -813,8 +813,8 @@ legacy_s16 RsShape3dPrerenderSphereBuildSpans(
 legacy_void RsShape3dPrerenderSphereDrawSpans(
     CSphereRaster *sphere,legacy_s16 *left_edges,legacy_s16 *right_edges,legacy_u16 color)
 {
-  legacy_s16 temple_clip_delta_3590;
-  legacy_u16 temple_skip_lines_3591;
+  legacy_s16 noreg temple_clip_delta_3590;
+  legacy_u16 noreg temple_skip_lines_3591;
   temple_clip_delta_3590=TempleCastS16(
       RsShape3dPrerenderLegacyS16FromBits(TempleCastU16(TempleCastU16(TempleCastU16(TempleCastS32(
           (TempleCastU16(drawing_sprite.sprite_top)-TempleCastU16(sphere->top))))))));
@@ -859,9 +859,9 @@ legacy_void RsWheelFillPolygon(legacy_u16 color,legacy_u16 vertex_count,CPoint2D
 legacy_void RsShape3dPrerenderPolygonFindBounds(
     CPoint2D *vertices,legacy_u16 vertex_count,CPolygonRaster *raster)
 {
-  legacy_s16 temple_vertex_index_3593;
+  legacy_s16 noreg temple_vertex_index_3593;
   legacy_s16 *temple_tmp_3594;
-  legacy_s16 temple_tmp_3595;
+  legacy_s16 noreg temple_tmp_3595;
   (raster->clip_left=TempleCastS16(drawing_sprite.sprite_raster_left));
   (raster->clip_right=TempleCastS16(TempleCastS32((drawing_sprite.sprite_raster_right-1))));
   (raster->clip_top=TempleCastS16(drawing_sprite.sprite_top));
@@ -900,9 +900,9 @@ legacy_void RsShape3dPrerenderPolygonFindBounds(
 
 legacy_s16 RsShape3dPrerenderPolygonIsOutside(CPolygonRaster *raster)
 {
-  legacy_s32 temple_tmp_3596;
-  legacy_s32 temple_tmp_3597;
-  legacy_s32 temple_tmp_3598;
+  legacy_s32 noreg temple_tmp_3596;
+  legacy_s32 noreg temple_tmp_3597;
+  legacy_s32 noreg temple_tmp_3598;
   temple_tmp_3596=!!((raster->max_x<raster->clip_left));
   if(!temple_tmp_3596) {
     temple_tmp_3596=!!((raster->min_x>=raster->clip_right));
@@ -935,7 +935,7 @@ legacy_void RsShape3dPrerenderPolygonGenerateFirstSide(
 {
   CPoint2D *temple_current_vertex_3599;
   CPoint2D *temple_start_vertex_3600;
-  legacy_s32 temple_tmp_3602;
+  legacy_s32 noreg temple_tmp_3602;
   temple_current_vertex_3599=raster->top_vertex;
   while(1) {
     (temple_start_vertex_3600=temple_current_vertex_3599);
@@ -987,11 +987,11 @@ legacy_void RsShape3dPrerenderPolygonMergeSecondSide(CPolygonRaster *raster,lega
 legacy_void RsShape3dPrerenderPolygonDrawSpans(
     CPolygonRaster *raster,legacy_s16 *edges,legacy_u16 color)
 {
-  legacy_s16 temple_bottom_3606;
-  legacy_s16 temple_top_3607;
-  legacy_s16 temple_line_count_3608;
+  legacy_s16 noreg temple_bottom_3606;
+  legacy_s16 noreg temple_top_3607;
+  legacy_s16 noreg temple_line_count_3608;
   legacy_s16 *temple_tmp_3609;
-  legacy_s16 temple_tmp_3610;
+  legacy_s16 noreg temple_tmp_3610;
   legacy_void (*temple_callee_3611)(
       legacy_s16 *arg0,legacy_s16 *arg1,legacy_u16 arg2,legacy_u16 arg3,legacy_u16 arg4);
   temple_bottom_3606=TempleCastS16(raster->bottom_y);
@@ -1022,10 +1022,10 @@ legacy_void RsShape3dPrerenderPolygonRasterize(
   CPolygonRaster temple_raster_3612;
   legacy_void (*temple_callee_3613)(
       legacy_u16 arg0,legacy_u16 arg1,legacy_u16 arg2,legacy_u16 arg3,legacy_u16 arg4);
-  legacy_s32 temple_tmp_3614;
-  legacy_s32 temple_tmp_3615;
-  legacy_s32 temple_tmp_3616;
-  legacy_s32 temple_tmp_3617;
+  legacy_s32 noreg temple_tmp_3614;
+  legacy_s32 noreg temple_tmp_3615;
+  legacy_s32 noreg temple_tmp_3616;
+  legacy_s32 noreg temple_tmp_3617;
   legacy_void (*temple_callee_3618)(
       legacy_u16 arg0,legacy_u16 arg1,legacy_u16 arg2,legacy_u16 arg3,legacy_u16 arg4);
   legacy_u16 temple_line_setup_3619[(14*2)];
@@ -1082,9 +1082,9 @@ legacy_void RsShape3dPrerenderPolygonRasterize(
 legacy_void RsShape3dPrerenderGeneratePolyEdgeFill(
     legacy_s16 *edges,legacy_s16 offset,legacy_s16 count,legacy_s16 boundary)
 {
-  legacy_s16 temple_index_3622;
+  legacy_s16 noreg temple_index_3622;
   legacy_s16 *temple_tmp_3623;
-  legacy_s16 temple_tmp_3624;
+  legacy_s16 noreg temple_tmp_3624;
   temple_index_3622=TempleCastS16(0);
   while(1) {
     if(!((temple_index_3622<count))) {
@@ -1103,8 +1103,8 @@ legacy_void RsShape3dPrerenderGeneratePolyEdgeFill(
 legacy_void RsShape3dPrerenderGeneratePolyEdgePadding(legacy_s16 *edges,legacy_u16 *setup,
     legacy_u16 count_index,legacy_s16 boundary,legacy_s16 leading)
 {
-  legacy_s16 temple_count_3625;
-  legacy_s16 temple_offset_3626;
+  legacy_s16 noreg temple_count_3625;
+  legacy_s16 noreg temple_offset_3626;
   temple_count_3625=TempleCastS16(
       RsShape3dPrerenderLegacyS16FromBits(TempleCastU16(TempleCastU16(setup[count_index]))));
   if((temple_count_3625<=0)) {
@@ -1136,9 +1136,9 @@ legacy_void RsShape3dPrerenderGeneratePolyEdgePadding(legacy_s16 *edges,legacy_u
 legacy_void RsShape3dPrerenderGeneratePolyVertical(
     legacy_s16 *edges,legacy_u16 *line_setup,legacy_s16 step_count,legacy_s16 row_index)
 {
-  legacy_s16 temple_step_index_3628;
+  legacy_s16 noreg temple_step_index_3628;
   legacy_s16 *temple_tmp_3629;
-  legacy_s16 temple_tmp_3630;
+  legacy_s16 noreg temple_tmp_3630;
   temple_step_index_3628=TempleCastS16(0);
   while(1) {
     if(!((temple_step_index_3628<step_count))) {
@@ -1160,9 +1160,9 @@ legacy_void RsShape3dPrerenderGeneratePolyVertical(
 legacy_void RsShape3dPrerenderGeneratePolyDiagonalLeft(
     legacy_s16 *edges,legacy_u16 *line_setup,legacy_s16 step_count,legacy_s16 row_index)
 {
-  legacy_s16 temple_step_index_3632;
+  legacy_s16 noreg temple_step_index_3632;
   legacy_s16 *temple_tmp_3633;
-  legacy_s16 temple_tmp_3634;
+  legacy_s16 noreg temple_tmp_3634;
   temple_step_index_3632=TempleCastS16(0);
   while(1) {
     if(!((temple_step_index_3632<step_count))) {
@@ -1189,9 +1189,9 @@ legacy_void RsShape3dPrerenderGeneratePolyDiagonalLeft(
 legacy_void RsShape3dPrerenderGeneratePolyDiagonalRight(
     legacy_s16 *edges,legacy_u16 *line_setup,legacy_s16 step_count,legacy_s16 row_index)
 {
-  legacy_s16 temple_step_index_3636;
+  legacy_s16 noreg temple_step_index_3636;
   legacy_s16 *temple_tmp_3637;
-  legacy_s16 temple_tmp_3638;
+  legacy_s16 noreg temple_tmp_3638;
   temple_step_index_3636=TempleCastS16(0);
   while(1) {
     if(!((temple_step_index_3636<step_count))) {
@@ -1218,10 +1218,10 @@ legacy_void RsShape3dPrerenderGeneratePolyDiagonalRight(
 legacy_void RsShape3dPrerenderGeneratePolyYMajor(
     legacy_s16 *edges,legacy_u16 *line_setup,legacy_s16 step_count,legacy_s16 row_index)
 {
-  legacy_u32 temple_x_position_3639;
-  legacy_s16 temple_step_index_3641;
+  legacy_u32 noreg temple_x_position_3639;
+  legacy_s16 noreg temple_step_index_3641;
   legacy_s16 *temple_tmp_3642;
-  legacy_s16 temple_tmp_3643;
+  legacy_s16 noreg temple_tmp_3643;
   temple_x_position_3639=TempleCastU32(TempleCastU32(TempleCastU32(
       (TempleCastU32(TempleCastU32(
           TempleCastU32((TempleCastU16(line_setup[DRAW_LINE_START_X_FRACTION_INDEX])|
@@ -1258,19 +1258,19 @@ legacy_void RsShape3dPrerenderGeneratePolyYMajor(
 legacy_void RsShape3dPrerenderGeneratePolyXMajorLeft(
     legacy_s16 *edges,legacy_u16 *line_setup,legacy_s16 step_count,legacy_s16 row_index)
 {
-  legacy_u32 temple_x_position_3644;
-  legacy_u32 temple_y_fraction_3645;
+  legacy_u32 noreg temple_x_position_3644;
+  legacy_u32 noreg temple_y_fraction_3645;
   legacy_s16 *temple_tmp_3646;
-  legacy_s16 temple_tmp_3647;
-  legacy_s16 temple_step_index_3649;
+  legacy_s16 noreg temple_tmp_3647;
+  legacy_s16 noreg temple_step_index_3649;
   legacy_u32 *temple_tmp_3650;
-  legacy_u32 temple_tmp_3651;
+  legacy_u32 noreg temple_tmp_3651;
   legacy_u32 *temple_tmp_3652;
-  legacy_u32 temple_tmp_3653;
+  legacy_u32 noreg temple_tmp_3653;
   legacy_s16 *temple_tmp_3654;
-  legacy_s16 temple_tmp_3655;
+  legacy_s16 noreg temple_tmp_3655;
   legacy_s16 *temple_tmp_3656;
-  legacy_s16 temple_tmp_3657;
+  legacy_s16 noreg temple_tmp_3657;
   temple_x_position_3644=TempleCastU32(TempleCastU16(line_setup[DRAW_LINE_START_X_INDEX]));
   temple_y_fraction_3645=
       TempleCastU32(TempleCastU16(line_setup[DRAW_LINE_START_Y_FRACTION_INDEX]));
@@ -1325,19 +1325,19 @@ legacy_void RsShape3dPrerenderGeneratePolyXMajorLeft(
 legacy_void RsShape3dPrerenderGeneratePolyXMajorRight(
     legacy_s16 *edges,legacy_u16 *line_setup,legacy_s16 step_count,legacy_s16 row_index)
 {
-  legacy_u32 temple_x_position_3658;
-  legacy_u32 temple_y_fraction_3659;
+  legacy_u32 noreg temple_x_position_3658;
+  legacy_u32 noreg temple_y_fraction_3659;
   legacy_s16 *temple_tmp_3660;
-  legacy_s16 temple_tmp_3661;
-  legacy_s16 temple_step_index_3663;
+  legacy_s16 noreg temple_tmp_3661;
+  legacy_s16 noreg temple_step_index_3663;
   legacy_u32 *temple_tmp_3664;
-  legacy_u32 temple_tmp_3665;
+  legacy_u32 noreg temple_tmp_3665;
   legacy_u32 *temple_tmp_3666;
-  legacy_u32 temple_tmp_3667;
+  legacy_u32 noreg temple_tmp_3667;
   legacy_s16 *temple_tmp_3668;
-  legacy_s16 temple_tmp_3669;
+  legacy_s16 noreg temple_tmp_3669;
   legacy_s16 *temple_tmp_3670;
-  legacy_s16 temple_tmp_3671;
+  legacy_s16 noreg temple_tmp_3671;
   temple_x_position_3658=TempleCastU32(TempleCastU16(line_setup[DRAW_LINE_START_X_INDEX]));
   temple_y_fraction_3659=
       TempleCastU32(TempleCastU16(line_setup[DRAW_LINE_START_Y_FRACTION_INDEX]));
@@ -1391,10 +1391,10 @@ legacy_void RsShape3dPrerenderGeneratePolyXMajorRight(
 
 legacy_void RsGeneratePolyEdges(legacy_s16 *edges,legacy_u16 *line_setup,legacy_s16 clipping_mode)
 {
-  legacy_s16 temple_clip_left_3672;
-  legacy_s16 temple_clip_right_3673;
-  legacy_s16 temple_step_count_3674;
-  legacy_s16 temple_row_index_3675;
+  legacy_s16 noreg temple_clip_left_3672;
+  legacy_s16 noreg temple_clip_right_3673;
+  legacy_s16 noreg temple_step_count_3674;
+  legacy_s16 noreg temple_row_index_3675;
   temple_clip_left_3672=TempleCastS16(drawing_sprite.sprite_raster_left);
   temple_clip_right_3673=TempleCastS16(drawing_sprite.sprite_raster_right);
   if((clipping_mode!=PRERENDER_EDGE_UNCLIPPED_MODE)) {
@@ -1470,14 +1470,14 @@ legacy_void RsShape3dPrerenderPrerenderExtendEdge(legacy_s16 *left_edges,legacy_
 legacy_void RsShape3dPrerenderPrerenderMergeLinearRows(
     legacy_u16 *line,legacy_s16 *left_edges,legacy_s16 *right_edges)
 {
-  legacy_s16 temple_x_position_3676;
-  legacy_u16 temple_mode_3677;
-  legacy_s16 temple_count_3678;
-  legacy_s16 temple_row_index_3679;
+  legacy_s16 noreg temple_x_position_3676;
+  legacy_u16 noreg temple_mode_3677;
+  legacy_s16 noreg temple_count_3678;
+  legacy_s16 noreg temple_row_index_3679;
   legacy_s16 *temple_tmp_3681;
-  legacy_s16 temple_tmp_3682;
+  legacy_s16 noreg temple_tmp_3682;
   legacy_s16 *temple_tmp_3683;
-  legacy_s16 temple_tmp_3684;
+  legacy_s16 noreg temple_tmp_3684;
   temple_x_position_3676=TempleCastS16(RsShape3dPrerenderLegacyS16FromBits(
       TempleCastU16(TempleCastU16(line[DRAW_LINE_START_X_INDEX]))));
   temple_mode_3677=TempleCastU16(TempleCastU8(line[DRAW_LINE_MODE_AND_CLIP_INDEX]));
@@ -1520,17 +1520,17 @@ legacy_void RsShape3dPrerenderPrerenderMergeLinearRows(
 legacy_void RsShape3dPrerenderPrerenderMergeFractionalRows(
     legacy_u16 *line,legacy_s16 *left_edges,legacy_s16 *right_edges)
 {
-  legacy_s16 temple_x_position_3685;
-  legacy_u16 temple_mode_3686;
-  legacy_s16 temple_count_3687;
-  legacy_s16 temple_row_index_3688;
-  legacy_u32 temple_fixed_x_3689;
+  legacy_s16 noreg temple_x_position_3685;
+  legacy_u16 noreg temple_mode_3686;
+  legacy_s16 noreg temple_count_3687;
+  legacy_s16 noreg temple_row_index_3688;
+  legacy_u32 noreg temple_fixed_x_3689;
   legacy_u32 *temple_tmp_3690;
-  legacy_u16 temple_step_3691;
+  legacy_u16 noreg temple_step_3691;
   legacy_s16 *temple_tmp_3693;
-  legacy_s16 temple_tmp_3694;
+  legacy_s16 noreg temple_tmp_3694;
   legacy_s16 *temple_tmp_3695;
-  legacy_s16 temple_tmp_3696;
+  legacy_s16 noreg temple_tmp_3696;
   legacy_u32 *temple_tmp_3697;
   legacy_u32 *temple_tmp_3698;
   temple_x_position_3685=TempleCastS16(RsShape3dPrerenderLegacyS16FromBits(
@@ -1579,26 +1579,26 @@ legacy_void RsShape3dPrerenderPrerenderMergeFractionalRows(
 legacy_void RsShape3dPrerenderPrerenderMergeXMajorRows(
     legacy_u16 *line,legacy_s16 *left_edges,legacy_s16 *right_edges)
 {
-  legacy_s16 temple_x_position_3699;
-  legacy_u16 temple_mode_3700;
-  legacy_s16 temple_count_3701;
-  legacy_s16 temple_row_index_3702;
-  legacy_s16 temple_to_left_3703;
-  legacy_s32 temple_tmp_3704;
-  legacy_s16 temple_x_step_3705;
-  legacy_s32 temple_tmp_3706;
-  legacy_u16 temple_step_3707;
-  legacy_u32 temple_sum_3708;
-  legacy_u16 temple_fraction_3709;
+  legacy_s16 noreg temple_x_position_3699;
+  legacy_u16 noreg temple_mode_3700;
+  legacy_s16 noreg temple_count_3701;
+  legacy_s16 noreg temple_row_index_3702;
+  legacy_s16 noreg temple_to_left_3703;
+  legacy_s32 noreg temple_tmp_3704;
+  legacy_s16 noreg temple_x_step_3705;
+  legacy_s32 noreg temple_tmp_3706;
+  legacy_u16 noreg temple_step_3707;
+  legacy_u32 noreg temple_sum_3708;
+  legacy_u16 noreg temple_fraction_3709;
   legacy_s16 *temple_tmp_3710;
-  legacy_s16 temple_tmp_3711;
-  legacy_s16 temple_carry_3713;
+  legacy_s16 noreg temple_tmp_3711;
+  legacy_s16 noreg temple_carry_3713;
   legacy_s16 *temple_tmp_3714;
-  legacy_s16 temple_tmp_3715;
+  legacy_s16 noreg temple_tmp_3715;
   legacy_s16 *temple_tmp_3716;
-  legacy_s16 temple_tmp_3717;
+  legacy_s16 noreg temple_tmp_3717;
   legacy_s16 *temple_tmp_3718;
-  legacy_s16 temple_tmp_3719;
+  legacy_s16 noreg temple_tmp_3719;
   temple_x_position_3699=TempleCastS16(RsShape3dPrerenderLegacyS16FromBits(
       TempleCastU16(TempleCastU16(line[DRAW_LINE_START_X_INDEX]))));
   temple_mode_3700=TempleCastU16(TempleCastU8(line[DRAW_LINE_MODE_AND_CLIP_INDEX]));
@@ -1682,19 +1682,19 @@ legacy_void RsShape3dPrerenderPrerenderMergeXMajorRows(
 legacy_void RsShape3dPrerenderPrerenderMergeFixedYEdge(
     legacy_u16 *line,legacy_s16 *left_edges,legacy_s16 *right_edges)
 {
-  legacy_s16 temple_x_position_3720;
-  legacy_u16 temple_mode_3721;
-  legacy_s16 temple_count_3722;
-  legacy_s16 temple_row_index_3723;
-  legacy_u32 temple_fixed_x_3724;
+  legacy_s16 noreg temple_x_position_3720;
+  legacy_u16 noreg temple_mode_3721;
+  legacy_s16 noreg temple_count_3722;
+  legacy_s16 noreg temple_row_index_3723;
+  legacy_u32 noreg temple_fixed_x_3724;
   legacy_u32 *temple_tmp_3725;
-  legacy_u16 temple_step_3726;
-  legacy_s16 temple_target_edge_3727;
-  legacy_s32 temple_tmp_3729;
+  legacy_u16 noreg temple_step_3726;
+  legacy_s16 noreg temple_target_edge_3727;
+  legacy_s32 noreg temple_tmp_3729;
   legacy_s16 *temple_tmp_3730;
-  legacy_s16 temple_tmp_3731;
+  legacy_s16 noreg temple_tmp_3731;
   legacy_s16 *temple_tmp_3732;
-  legacy_s16 temple_tmp_3733;
+  legacy_s16 noreg temple_tmp_3733;
   legacy_u32 *temple_tmp_3734;
   legacy_u32 *temple_tmp_3735;
   temple_x_position_3720=TempleCastS16(RsShape3dPrerenderLegacyS16FromBits(
@@ -1782,12 +1782,12 @@ legacy_void RsShape3dPrerenderPrerenderFinishFixedLeft(legacy_s16 *right_edges,
     legacy_s16 x_position,legacy_s16 count,legacy_s16 row_index,legacy_u16 fraction,
     legacy_u16 step)
 {
-  legacy_u32 temple_sum_3737;
+  legacy_u32 noreg temple_sum_3737;
   legacy_s16 *temple_tmp_3738;
-  legacy_s16 temple_tmp_3739;
-  legacy_s32 temple_tmp_3740;
+  legacy_s16 noreg temple_tmp_3739;
+  legacy_s32 noreg temple_tmp_3740;
   legacy_s16 *temple_tmp_3741;
-  legacy_s16 temple_tmp_3742;
+  legacy_s16 noreg temple_tmp_3742;
   while(1) {
     if(!((count>0))) {
       break;
@@ -1816,31 +1816,31 @@ legacy_void RsShape3dPrerenderPrerenderFinishFixedLeft(legacy_s16 *right_edges,
 legacy_void RsShape3dPrerenderPrerenderMergeFixedLeftEdge(
     legacy_u16 *line,legacy_s16 *left_edges,legacy_s16 *right_edges)
 {
-  legacy_s16 temple_x_position_3743;
-  legacy_s16 temple_count_3744;
-  legacy_s16 temple_row_index_3745;
-  legacy_u16 temple_step_3746;
-  legacy_u32 temple_sum_3747;
-  legacy_u16 temple_fraction_3748;
+  legacy_s16 noreg temple_x_position_3743;
+  legacy_s16 noreg temple_count_3744;
+  legacy_s16 noreg temple_row_index_3745;
+  legacy_u16 noreg temple_step_3746;
+  legacy_u32 noreg temple_sum_3747;
+  legacy_u16 noreg temple_fraction_3748;
   legacy_s16 *temple_tmp_3749;
-  legacy_s16 temple_tmp_3750;
+  legacy_s16 noreg temple_tmp_3750;
   legacy_s16 *temple_tmp_3752;
-  legacy_s16 temple_tmp_3753;
-  legacy_s16 temple_carry_3754;
-  legacy_s32 temple_tmp_3755;
+  legacy_s16 noreg temple_tmp_3753;
+  legacy_s16 noreg temple_carry_3754;
+  legacy_s32 noreg temple_tmp_3755;
   legacy_s16 *temple_tmp_3756;
-  legacy_s16 temple_tmp_3757;
+  legacy_s16 noreg temple_tmp_3757;
   legacy_s16 *temple_tmp_3758;
-  legacy_s16 temple_tmp_3759;
+  legacy_s16 noreg temple_tmp_3759;
   legacy_s16 *temple_tmp_3761;
-  legacy_s16 temple_tmp_3762;
+  legacy_s16 noreg temple_tmp_3762;
   legacy_s16 *temple_tmp_3763;
-  legacy_s16 temple_tmp_3764;
-  legacy_s32 temple_tmp_3765;
+  legacy_s16 noreg temple_tmp_3764;
+  legacy_s32 noreg temple_tmp_3765;
   legacy_s16 *temple_tmp_3766;
-  legacy_s16 temple_tmp_3767;
+  legacy_s16 noreg temple_tmp_3767;
   legacy_s16 *temple_tmp_3768;
-  legacy_s16 temple_tmp_3769;
+  legacy_s16 noreg temple_tmp_3769;
   temple_x_position_3743=TempleCastS16(RsShape3dPrerenderLegacyS16FromBits(
       TempleCastU16(TempleCastU16(line[DRAW_LINE_START_X_INDEX]))));
   temple_count_3744=TempleCastS16(RsShape3dPrerenderLegacyS16FromBits(
@@ -1945,11 +1945,11 @@ legacy_void RsShape3dPrerenderPrerenderFinishFixedRight(legacy_s16 *left_edges,
     legacy_s16 x_position,legacy_s16 count,legacy_s16 row_index,legacy_u16 fraction,
     legacy_u16 step)
 {
-  legacy_u32 temple_sum_3771;
+  legacy_u32 noreg temple_sum_3771;
   legacy_s16 *temple_tmp_3772;
-  legacy_s16 temple_tmp_3773;
+  legacy_s16 noreg temple_tmp_3773;
   legacy_s16 *temple_tmp_3774;
-  legacy_s16 temple_tmp_3775;
+  legacy_s16 noreg temple_tmp_3775;
   while(1) {
     if(!((count>0))) {
       break;
@@ -1974,31 +1974,31 @@ legacy_void RsShape3dPrerenderPrerenderFinishFixedRight(legacy_s16 *left_edges,
 legacy_void RsShape3dPrerenderPrerenderMergeFixedRightEdge(
     legacy_u16 *line,legacy_s16 *left_edges,legacy_s16 *right_edges)
 {
-  legacy_s16 temple_x_position_3776;
-  legacy_s16 temple_count_3777;
-  legacy_s16 temple_row_index_3778;
-  legacy_u16 temple_step_3779;
-  legacy_u32 temple_sum_3780;
-  legacy_u16 temple_fraction_3781;
+  legacy_s16 noreg temple_x_position_3776;
+  legacy_s16 noreg temple_count_3777;
+  legacy_s16 noreg temple_row_index_3778;
+  legacy_u16 noreg temple_step_3779;
+  legacy_u32 noreg temple_sum_3780;
+  legacy_u16 noreg temple_fraction_3781;
   legacy_s16 *temple_tmp_3782;
-  legacy_s16 temple_tmp_3783;
+  legacy_s16 noreg temple_tmp_3783;
   legacy_s16 *temple_tmp_3785;
-  legacy_s16 temple_tmp_3786;
+  legacy_s16 noreg temple_tmp_3786;
   legacy_s16 *temple_tmp_3787;
-  legacy_s16 temple_tmp_3788;
-  legacy_s16 temple_carry_3789;
-  legacy_s32 temple_tmp_3790;
+  legacy_s16 noreg temple_tmp_3788;
+  legacy_s16 noreg temple_carry_3789;
+  legacy_s32 noreg temple_tmp_3790;
   legacy_s16 *temple_tmp_3792;
-  legacy_s16 temple_tmp_3793;
+  legacy_s16 noreg temple_tmp_3793;
   legacy_s16 *temple_tmp_3794;
-  legacy_s16 temple_tmp_3795;
-  legacy_s32 temple_tmp_3796;
+  legacy_s16 noreg temple_tmp_3795;
+  legacy_s32 noreg temple_tmp_3796;
   legacy_s16 *temple_tmp_3797;
-  legacy_s16 temple_tmp_3798;
+  legacy_s16 noreg temple_tmp_3798;
   legacy_s16 *temple_tmp_3799;
-  legacy_s16 temple_tmp_3800;
+  legacy_s16 noreg temple_tmp_3800;
   legacy_s16 *temple_tmp_3801;
-  legacy_s16 temple_tmp_3802;
+  legacy_s16 noreg temple_tmp_3802;
   temple_x_position_3776=TempleCastS16(RsShape3dPrerenderLegacyS16FromBits(
       TempleCastU16(TempleCastU16(line[DRAW_LINE_START_X_INDEX]))));
   temple_count_3777=TempleCastS16(RsShape3dPrerenderLegacyS16FromBits(
@@ -2109,26 +2109,26 @@ legacy_void RsShape3dPrerenderPrerenderMergeFixedRightEdge(
 legacy_void RsShape3dPrerenderPrerenderMergeClipPadding(
     legacy_u16 *line,legacy_s16 *left_edges,legacy_s16 *right_edges)
 {
-  legacy_u32 temple_sum_3803;
-  legacy_s16 temple_carry_3804;
-  legacy_s16 temple_count_3805;
-  legacy_s16 temple_row_index_3806;
+  legacy_u32 noreg temple_sum_3803;
+  legacy_s16 noreg temple_carry_3804;
+  legacy_s16 noreg temple_count_3805;
+  legacy_s16 noreg temple_row_index_3806;
   legacy_s16 *temple_tmp_3808;
-  legacy_s16 temple_tmp_3809;
+  legacy_s16 noreg temple_tmp_3809;
   legacy_s16 *temple_tmp_3810;
-  legacy_s16 temple_tmp_3811;
+  legacy_s16 noreg temple_tmp_3811;
   legacy_s16 *temple_tmp_3813;
-  legacy_s16 temple_tmp_3814;
+  legacy_s16 noreg temple_tmp_3814;
   legacy_s16 *temple_tmp_3815;
-  legacy_s16 temple_tmp_3816;
+  legacy_s16 noreg temple_tmp_3816;
   legacy_s16 *temple_tmp_3818;
-  legacy_s16 temple_tmp_3819;
+  legacy_s16 noreg temple_tmp_3819;
   legacy_s16 *temple_tmp_3820;
-  legacy_s16 temple_tmp_3821;
+  legacy_s16 noreg temple_tmp_3821;
   legacy_s16 *temple_tmp_3823;
-  legacy_s16 temple_tmp_3824;
+  legacy_s16 noreg temple_tmp_3824;
   legacy_s16 *temple_tmp_3825;
-  legacy_s16 temple_tmp_3826;
+  legacy_s16 noreg temple_tmp_3826;
   temple_sum_3803=TempleCastU32(TempleCastU32(
       (TempleCastU32(TempleCastU16(line[DRAW_LINE_START_Y_FRACTION_INDEX]))+32768)));
   temple_carry_3804=TempleCastS16((temple_sum_3803>TempleCastU32(65535)));
@@ -2239,10 +2239,10 @@ legacy_void RsPolygonMergeSecondEdge(legacy_u16 *line_setup,legacy_u16 choose_ed
 {
   legacy_s16 *temple_left_edges_3827;
   legacy_s16 *temple_right_edges_3828;
-  legacy_s16 temple_count_3829;
-  legacy_u16 temple_mode_3830;
-  legacy_s32 temple_tmp_3831;
-  legacy_s32 temple_tmp_3832;
+  legacy_s16 noreg temple_count_3829;
+  legacy_u16 noreg temple_mode_3830;
+  legacy_s32 noreg temple_tmp_3831;
+  legacy_s32 noreg temple_tmp_3832;
   temple_left_edges_3827=edge_tables;
   temple_right_edges_3828=(temple_left_edges_3827+480);
   temple_count_3829=TempleCastS16(RsShape3dPrerenderLegacyS16FromBits(

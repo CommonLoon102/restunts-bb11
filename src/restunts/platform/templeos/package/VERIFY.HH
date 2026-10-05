@@ -7,7 +7,7 @@ legacy_u8 TemplePackageCompare(legacy_u8 *source,legacy_u8 *destination)
 {
   legacy_u8 *source_data=NULL,*destination_data=NULL;
   legacy_s64 source_length=-1,destination_length=-1;
-  legacy_u8 equal=FALSE;
+  legacy_u8 noreg equal=FALSE;
   if(!FileFind(source,NULL,FUF_JUST_FILES)||!FileFind(destination,NULL,FUF_JUST_FILES)) {
     return FALSE;
   }

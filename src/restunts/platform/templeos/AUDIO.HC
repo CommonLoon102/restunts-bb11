@@ -1,4 +1,3 @@
-#include "NATIVE.HH"
 #include "AUDIO.HH"
 
 // Native implementation of PC15.DRV. The sequencer retains the original
@@ -9,7 +8,7 @@ CAudioChannel *audio_sfx_channels=audio_channels+TEMPLE_PC_EFFECT_FIRST;
 CAudioContext dos_audio_contexts[TEMPLE_PC_CONTEXT_STORAGE];
 legacy_u8 dos_audio_master_state[TEMPLE_PC_MASTER_STATE_SIZE]={16,0,22};
 legacy_u8 dos_audio_driver_data[TEMPLE_PC_DRIVER_DATA_SIZE];
-legacy_void *dos_audio_driver_binary=NULL;
+legacy_u8 *dos_audio_driver_binary=NULL;
 legacy_s16 audio_update_lock=AUDIO_UPDATE_LOCKED;
 legacy_s8 audio_music_enabled=AUDIO_STATE_ENABLED;
 legacy_s8 audio_effects_enabled=AUDIO_STATE_ENABLED;
@@ -118,8 +117,9 @@ legacy_void TemplePcStopSample()
 // on a single core the task yields every short batch so the game can advance.
 legacy_void TemplePcSampleTask(legacy_u8 *unused)
 {
+  no_warn unused;
   legacy_u64 index,frames=0;
-  legacy_u8 pulse,gate;
+  legacy_u8 noreg pulse,noreg gate;
   legacy_f64 next_sample=tS;
   legacy_f64 interval=TEMPLE_PC_SAMPLE_FRAME/ToF64(TEMPLE_PC_PIT_HZ);
   while(!temple_pc_sample_shutdown) {
@@ -220,14 +220,16 @@ legacy_u8 RsDosAudioDriverInitialize()
   return TEMPLE_PC_CONTEXT_COUNT;
 }
 
-legacy_void RsDosAudioDriverLoadBank(legacy_void *bank)
+legacy_void RsDosAudioDriverLoadBank(legacy_u8 *bank)
 {
+  no_warn bank;
   // PC15.DRV has no external instrument bank.
 }
 
 legacy_void RsDosAudioDriverPrepareContext(
-    legacy_s16 channel,CAudioContext *context,legacy_u8 *timer,legacy_void *resource)
+    legacy_s16 channel,CAudioContext *context,legacy_u8 *timer,legacy_u8 *resource)
 {
+  no_warn context,resource;
   if(0<=channel<TEMPLE_PC_CONTEXT_COUNT) {
     temple_pc_voices[channel].channel=timer(CAudioChannel *);
   }
@@ -252,22 +254,26 @@ legacy_void RsDosAudioDriverSetContextValue(
 legacy_void RsDosAudioDriverSetControl(
     legacy_s16 channel,CAudioContext *context,legacy_u16 control,legacy_u16 value)
 {
+  no_warn channel,context,control,value;
   // The original PC driver ignores controller messages.
 }
 
 legacy_void RsDosAudioDriverSetPitch(legacy_u8 *timer,legacy_s16 pitch,legacy_s16 channel)
 {
+  no_warn timer,pitch,channel;
   // Channel bend is read from AUDIO_CHANNEL during each context update.
 }
 
 legacy_void RsDosAudioDriverSendData(legacy_u16 length,legacy_u8 *data)
 {
+  no_warn length,data;
   // PC15.DRV has no raw command stream.
 }
 
 legacy_void RsDosAudioDriverActivateContext(legacy_s16 channel,CAudioContext *context,
-    legacy_u8 *timer,legacy_s16 pitch,legacy_u16 parameter,legacy_void *resource)
+    legacy_u8 *timer,legacy_s16 pitch,legacy_u16 parameter,legacy_u8 *resource)
 {
+  no_warn parameter;
   CTemplePcVoice *voice;
   if(!(0<=channel<TEMPLE_PC_CONTEXT_COUNT)) {
     return;
@@ -299,11 +305,13 @@ legacy_void RsDosAudioDriverReleaseChannel(legacy_s16 channel)
 
 legacy_void RsDosAudioDriverStartContext(legacy_s16 channel,CAudioContext *context)
 {
+  no_warn channel,context;
   // Release envelopes remain active until end_context, as in PC15.DRV.
 }
 
 legacy_void RsDosAudioDriverEndContext(legacy_s16 channel,CAudioContext *context)
 {
+  no_warn context;
   RsDosAudioDriverReleaseChannel(channel);
 }
 
@@ -323,8 +331,9 @@ legacy_void RsDosAudioDriverStart()
 }
 
 legacy_void RsDosAudioDriverSuspendContext(legacy_s16 channel,CAudioContext *context,
-    legacy_u16 timer_offset,legacy_void *resource_pointer)
+    legacy_u16 timer_offset,legacy_u8 *resource_pointer)
 {
+  no_warn timer_offset;
   CTemplePcVoice *voice;
   legacy_u8 *resource=resource_pointer;
   legacy_s64 period,note,detune,pitch=0,difference,magnitude,product,adjustment;
@@ -385,6 +394,7 @@ legacy_void RsDosAudioDriverSuspendContext(legacy_s16 channel,CAudioContext *con
 
 legacy_void RsDosAudioDriverSuspendAll(CAudioContext *contexts)
 {
+  no_warn contexts;
   legacy_s64 selected=TEMPLE_PC_VOICE_SAMPLE;
   legacy_u8 active[TEMPLE_PC_CONTEXT_COUNT];
   legacy_u64 channel;
@@ -432,7 +442,7 @@ legacy_void RsDosAudioSetChannelVolume(legacy_s16 channel,legacy_s16 volume)
   }
 }
 
-legacy_void RsDosAudioBindChannelContext(legacy_s16 channel,legacy_void *resource_pointer)
+legacy_void RsDosAudioBindChannelContext(legacy_s16 channel,legacy_u8 *resource_pointer)
 {
   legacy_u8 *resource=resource_pointer;
   legacy_u64 index;
@@ -462,8 +472,9 @@ legacy_void RsDosAudioSetContextPitch(legacy_s16 context_index,legacy_s16 pitch)
   }
 }
 
-legacy_void RsDosAudioDriverSetMasterState(legacy_s16 operation,legacy_void *state)
+legacy_void RsDosAudioDriverSetMasterState(legacy_s16 operation,legacy_u8 *state)
 {
+  no_warn operation,state;
   // The PC driver has no master-volume command; channel volume gates voices.
 }
 

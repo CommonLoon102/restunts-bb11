@@ -2,7 +2,7 @@
 
 legacy_s8 RsAudioCarLegacyS8FromBits(legacy_u8 value)
 {
-  legacy_s32 temple_tmp_3016;
+  legacy_s32 noreg temple_tmp_3016;
   if((value<=127)) {
     temple_tmp_3016=TempleCastS32(TempleCastS8(value));
   } else {
@@ -14,7 +14,7 @@ legacy_s8 RsAudioCarLegacyS8FromBits(legacy_u8 value)
 
 legacy_s16 RsAudioCarLegacyS16FromBits(legacy_u16 value)
 {
-  legacy_s32 temple_tmp_3017;
+  legacy_s32 noreg temple_tmp_3017;
   if((value<=32767)) {
     temple_tmp_3017=TempleCastS32(TempleCastS16(value));
   } else {
@@ -26,7 +26,7 @@ legacy_s16 RsAudioCarLegacyS16FromBits(legacy_u16 value)
 
 legacy_s32 RsAudioCarLegacyS32FromBits(legacy_u32 value)
 {
-  legacy_s32 temple_tmp_3018;
+  legacy_s32 noreg temple_tmp_3018;
   if((value<=TempleCastU32(2147483647))) {
     temple_tmp_3018=TempleCastS32(TempleCastS32(value));
   } else {
@@ -61,7 +61,7 @@ legacy_void RsAudioCarAudioCarstateOffsets(CVector *previous,CVector *current,
 legacy_u8 RsAudioCarAudioCarstateUpdateFlags(
     CCarState *carstate,legacy_s16 channel,legacy_u8 flags)
 {
-  legacy_u8 temple_desired_3019;
+  legacy_u8 noreg temple_desired_3019;
   temple_desired_3019=TempleCastU8(TempleCastU8(carstate->car_sound_flags));
   if((TempleCastU32((temple_desired_3019&1))!=TempleCastU32(0))) {
     if((TempleCastU32((flags&1))==TempleCastU32(0))) {
@@ -152,14 +152,14 @@ legacy_void RsAudioCarAudioCarstateReadPositions(
 legacy_void RsAudioCarAudioCarstateCameraPositions(
     CAudioCarPositions *positions,CGhostCameraState *ghost_camera)
 {
-  legacy_u8 temple_follow_3020;
-  legacy_s32 temple_tmp_3021;
-  legacy_s32 temple_tmp_3022;
-  legacy_s32 temple_tmp_3023;
+  legacy_u8 noreg temple_follow_3020;
+  legacy_s32 noreg temple_tmp_3021;
+  legacy_s32 noreg temple_tmp_3022;
+  legacy_s32 noreg temple_tmp_3023;
   CVector temple_tmp_3024;
-  legacy_s16 temple_track_index_3025;
-  legacy_s32 temple_tmp_3026;
-  legacy_s32 temple_tmp_3027;
+  legacy_s16 noreg temple_track_index_3025;
+  legacy_s32 noreg temple_tmp_3026;
+  legacy_s32 noreg temple_tmp_3027;
   temple_tmp_3022=!!((follow_opponent_flag!=0));
   if(temple_tmp_3022) {
     temple_tmp_3021=!!((gameconfig.game_opponenttype!=0));
@@ -227,7 +227,7 @@ legacy_void RsAudioCarAudioCarstateCameraPositions(
 legacy_s16 RsAudioCarAudioCarstateWriteRecord(CAudioCarPositions *positions)
 {
   CAudioCarState *temple_record_3028;
-  legacy_s16 temple_car_count_3029;
+  legacy_s16 noreg temple_car_count_3029;
   temple_record_3028=(&(audio_car_state_records[audio_car_state_write_index]));
   RsAudioCarAudioCarstateOffsets((&(temple_record_3028->player_previous)),
       (&(temple_record_3028->player_current)),(&(positions->camera_previous)),
@@ -249,11 +249,11 @@ legacy_s16 RsAudioCarAudioCarstateWriteRecord(CAudioCarPositions *positions)
 legacy_void RsAudioCarAudioCarstateUpdateCarFlags(legacy_s16 car_count)
 {
   CCarState *temple_carstate_3030;
-  legacy_s16 temple_car_index_3032;
-  legacy_s16 temple_channel_3033;
-  legacy_u8 temple_flags_3034;
+  legacy_s16 noreg temple_car_index_3032;
+  legacy_s16 noreg temple_channel_3033;
+  legacy_u8 noreg temple_flags_3034;
   legacy_s16 *temple_tmp_3035;
-  legacy_s16 temple_tmp_3036;
+  legacy_s16 noreg temple_tmp_3036;
   temple_car_index_3032=TempleCastS16(0);
   while(1) {
     if(!((temple_car_index_3032<car_count))) {
@@ -287,7 +287,7 @@ legacy_void RsAudioCarstate()
   CAudioCarPositions temple_positions_3037;
   CGhostCameraState *temple_ghost_camera_3038;
   CCarState *temple_ghost_3039;
-  legacy_s16 temple_car_count_3040;
+  legacy_s16 noreg temple_car_count_3040;
   if((is_in_replay!=0)) {
     RsAudioCarAudioCarstateEnterReplay();
     return;

@@ -2,7 +2,7 @@
 
 legacy_s8 RsFileioLegacyS8FromBits(legacy_u8 value)
 {
-  legacy_s32 temple_tmp_1;
+  legacy_s32 noreg temple_tmp_1;
   if((value<=127)) {
     temple_tmp_1=TempleCastS32(TempleCastS8(value));
   } else {
@@ -14,7 +14,7 @@ legacy_s8 RsFileioLegacyS8FromBits(legacy_u8 value)
 
 legacy_s16 RsFileioLegacyS16FromBits(legacy_u16 value)
 {
-  legacy_s32 temple_tmp_2;
+  legacy_s32 noreg temple_tmp_2;
   if((value<=32767)) {
     temple_tmp_2=TempleCastS32(TempleCastS16(value));
   } else {
@@ -26,7 +26,7 @@ legacy_s16 RsFileioLegacyS16FromBits(legacy_u16 value)
 
 legacy_s32 RsFileioLegacyS32FromBits(legacy_u32 value)
 {
-  legacy_s32 temple_tmp_3;
+  legacy_s32 noreg temple_tmp_3;
   if((value<=TempleCastU32(2147483647))) {
     temple_tmp_3=TempleCastS32(TempleCastS32(value));
   } else {
@@ -82,8 +82,8 @@ legacy_s8 *RsFileFind(legacy_s8 *query)
   legacy_s8 *temple_found_name_4;
   legacy_s8 *temple_chdst_5;
   legacy_s8 *temple_chsrc_7;
-  legacy_s32 temple_tmp_8;
-  legacy_s32 temple_tmp_9;
+  legacy_s32 noreg temple_tmp_8;
+  legacy_s32 noreg temple_tmp_9;
   temple_found_name_4=RsDosFileFindFirst(query);
   if((temple_found_name_4==0)) {
     return 0;
@@ -131,10 +131,10 @@ legacy_s8 *RsFileFindNextAlt()
 
 legacy_void RsFileBuildPath(legacy_s8 *dir,legacy_s8 *name,legacy_s8 *ext,legacy_s8 *dst)
 {
-  legacy_s16 temple_dirlen_11;
-  legacy_s32 temple_tmp_12;
-  legacy_s32 temple_tmp_13;
-  legacy_s32 temple_tmp_14;
+  legacy_s16 noreg temple_dirlen_11;
+  legacy_s32 noreg temple_tmp_12;
+  legacy_s32 noreg temple_tmp_13;
+  legacy_s32 noreg temple_tmp_14;
   if(dir) {
     RsInternal1Strcpy(dst,dir);
     (temple_dirlen_11=TempleCastS16(RsInternal1Strlen(dir)));
@@ -170,7 +170,7 @@ legacy_s8 *RsFileCombineAndFind(legacy_s8 *dir,legacy_s8 *name,legacy_s8 *ext)
 
 legacy_u16 RsFileioFileBytesToParas(legacy_s32 length)
 {
-  legacy_s32 temple_tmp_16;
+  legacy_s32 noreg temple_tmp_16;
   if(TempleCastS32((length&15))) {
     temple_tmp_16=TempleCastS32(1);
   } else {
@@ -182,8 +182,8 @@ legacy_u16 RsFileioFileBytesToParas(legacy_s32 length)
 
 legacy_u16 RsFileParas(legacy_s8 *filename,legacy_s16 fatal)
 {
-  legacy_u16 temple_file_17;
-  legacy_s32 temple_length_18;
+  legacy_u16 noreg temple_file_17;
+  legacy_s32 noreg temple_length_18;
   if(((temple_file_17=TempleCastU16(
           RsFileioFileioOpen(filename,TempleCastS16(DOS_FILE_OPEN_EXISTING))))!=0)) {
     RsFileioFileioSeek(
@@ -212,9 +212,9 @@ legacy_u16 RsFileParasNofatal(legacy_s8 *filename)
 
 legacy_u16 RsFileDecompParas(legacy_s8 *filename,legacy_s16 fatal)
 {
-  legacy_u16 temple_file_19;
+  legacy_u16 noreg temple_file_19;
   legacy_u8 temple_header_20[4];
-  legacy_s32 temple_length_21;
+  legacy_s32 noreg temple_length_21;
   if(((temple_file_19=TempleCastU16(
           RsFileioFileioOpen(filename,TempleCastS16(DOS_FILE_OPEN_EXISTING))))!=0)) {
     RsFileioFileioRead(temple_header_20,(4*sizeof(legacy_u8)),1,TempleCastU16(temple_file_19));
@@ -247,12 +247,12 @@ legacy_u16 RsFileDecompParasNofatal(legacy_s8 *filename)
 legacy_u8 *RsFileRead(legacy_s8 *filename,legacy_u8 *dst,legacy_s16 fatal)
 {
   legacy_u8 *temple_curdst_22;
-  legacy_s16 temple_readlen_23;
-  legacy_u16 temple_file_24;
-  legacy_s32 temple_remaining_25;
-  legacy_s32 temple_tmp_26;
-  legacy_u16 temple_count_28;
-  legacy_s32 temple_tmp_29;
+  legacy_s16 noreg temple_readlen_23;
+  legacy_u16 noreg temple_file_24;
+  legacy_s32 noreg temple_remaining_25;
+  legacy_s32 noreg temple_tmp_26;
+  legacy_u16 noreg temple_count_28;
+  legacy_s32 noreg temple_tmp_29;
   legacy_s32 *temple_tmp_30;
   temple_curdst_22=dst;
   if(((temple_file_24=TempleCastU16(
@@ -313,10 +313,10 @@ legacy_u8 *RsFileReadNofatal(legacy_s8 *filename,legacy_u8 *dst)
 
 legacy_s16 RsFileWrite(legacy_s8 *filename,legacy_u8 *src,legacy_u32 length,legacy_s16 fatal)
 {
-  legacy_u16 temple_file_31;
-  legacy_u16 temple_retval_32;
-  legacy_u16 temple_wrtlen_34;
-  legacy_u32 temple_tmp_35;
+  legacy_u16 noreg temple_file_31;
+  legacy_u16 noreg temple_retval_32;
+  legacy_u16 noreg temple_wrtlen_34;
+  legacy_u32 noreg temple_tmp_35;
   legacy_u32 *temple_tmp_36;
   temple_retval_32=TempleCastU16(0);
   if(((temple_file_31=
@@ -371,12 +371,12 @@ legacy_u32 RsFileDecompRleSeq(legacy_u8 *src,legacy_u8 *dst,legacy_u32 srclen,le
 {
   legacy_u8 *temple_srcend_37;
   legacy_u8 *temple_dststart_38;
-  legacy_u8 temple_cur_40;
+  legacy_u8 noreg temple_cur_40;
   legacy_u8 *temple_seqstart_41;
-  legacy_u8 temple_rep_43;
+  legacy_u8 noreg temple_rep_43;
   legacy_u8 *temple_seqend_44;
   legacy_u8 *temple_tmp_46;
-  legacy_u8 temple_tmp_47;
+  legacy_u8 noreg temple_tmp_47;
   temple_srcend_37=(src+srclen);
   temple_dststart_38=dst;
   while(1) {
@@ -422,16 +422,16 @@ legacy_u32 RsFileDecompRleSingle(
 {
   legacy_u8 *temple_dststart_49;
   legacy_u8 *temple_dstend_50;
-  legacy_u16 temple_repw_51;
-  legacy_u8 temple_rep_52;
-  legacy_u8 temple_cur_54;
+  legacy_u16 noreg temple_repw_51;
+  legacy_u8 noreg temple_rep_52;
+  legacy_u8 noreg temple_cur_54;
   legacy_u8 *temple_tmp_56;
-  legacy_u8 temple_tmp_57;
+  legacy_u8 noreg temple_tmp_57;
   legacy_u16 *temple_tmp_58;
   legacy_u16 *temple_tmp_60;
-  legacy_u16 temple_tmp_61;
+  legacy_u16 noreg temple_tmp_61;
   legacy_u8 *temple_tmp_63;
-  legacy_u8 temple_tmp_64;
+  legacy_u8 noreg temple_tmp_64;
   temple_dststart_49=dst;
   temple_dstend_50=(dst+len);
   while(1) {
@@ -494,7 +494,7 @@ legacy_u32 RsFileDecompRleSingle(
 legacy_u8 *RsFileioFileRelocateDecompOutput(
     legacy_u8 *destination,legacy_u16 decompparas,legacy_u32 length)
 {
-  legacy_u16 temple_paras_65;
+  legacy_u16 noreg temple_paras_65;
   legacy_u8 *temple_source_66;
   temple_paras_65=TempleCastU16(RsFileioFileBytesToParas(TempleCastS32(TempleCastS32(length))));
   temple_source_66=RsDosMemoryMakePointer(
@@ -508,21 +508,21 @@ legacy_u8 *RsFileioFileRelocateDecompOutput(
 
 legacy_u32 RsFileDecompRle(legacy_u8 *src,legacy_u8 *dst,legacy_u16 decompparas)
 {
-  legacy_u32 temple_len_67;
+  legacy_u32 noreg temple_len_67;
   legacy_u8 *temple_origsrc_68;
-  legacy_u32 temple_srclen_69;
-  legacy_u8 temple_esclen_70;
+  legacy_u32 noreg temple_srclen_69;
+  legacy_u8 noreg temple_esclen_70;
   legacy_u8 *temple_escapes_71;
-  legacy_u16 temple_skipseq_72;
+  legacy_u16 noreg temple_skipseq_72;
   legacy_u8 *temple_tmp_73;
   legacy_u8 temple_esclookup_74[256];
-  legacy_u16 temple_i_76;
+  legacy_u16 noreg temple_i_76;
   legacy_u16 *temple_tmp_77;
-  legacy_u16 temple_tmp_78;
-  legacy_u16 temple_i_80;
+  legacy_u16 noreg temple_tmp_78;
+  legacy_u16 noreg temple_i_80;
   legacy_u16 *temple_tmp_81;
-  legacy_u16 temple_tmp_82;
-  legacy_u32 temple_passlen_83;
+  legacy_u16 noreg temple_tmp_82;
+  legacy_u32 noreg temple_passlen_83;
   decompparas;
   temple_len_67=TempleCastU32(
       TempleCastU32((TempleCastU16(TempleCastS32((TempleCastU16(TempleCastU8((src+1)[0]))|
@@ -575,17 +575,17 @@ legacy_u32 RsFileDecompRle(legacy_u8 *src,legacy_u8 *dst,legacy_u16 decompparas)
 legacy_u8 *RsFileioFileVleReadAlphabet(
     CVleDecoder *decoder,legacy_u8 *source,legacy_u8 escape_length)
 {
-  legacy_u16 temple_index_84;
-  legacy_u16 temple_alphabet_length_85;
-  legacy_u16 temple_code_limit_86;
-  legacy_u8 temple_width_symbol_count_88;
+  legacy_u16 noreg temple_index_84;
+  legacy_u16 noreg temple_alphabet_length_85;
+  legacy_u16 noreg temple_code_limit_86;
+  legacy_u8 noreg temple_width_symbol_count_88;
   legacy_u16 *temple_tmp_89;
   legacy_u16 *temple_tmp_90;
   legacy_u16 *temple_tmp_91;
-  legacy_u16 temple_tmp_92;
+  legacy_u16 noreg temple_tmp_92;
   legacy_u16 *temple_tmp_93;
   legacy_u16 *temple_tmp_95;
-  legacy_u16 temple_tmp_96;
+  legacy_u16 noreg temple_tmp_96;
   (temple_index_84=TempleCastU16(0));
   (temple_code_limit_86=TempleCastU16(0));
   (temple_alphabet_length_85=TempleCastU16(0));
@@ -625,27 +625,27 @@ legacy_u8 *RsFileioFileVleReadAlphabet(
 legacy_void RsFileioFileVlePrepareLookup(
     CVleDecoder *decoder,legacy_u8 *source,legacy_u8 escape_length)
 {
-  legacy_u16 temple_width_97;
-  legacy_u16 temple_width_distribution_98;
-  legacy_u32 temple_tmp_99;
-  legacy_u8 temple_symbol_count_100;
-  legacy_u16 temple_alphabet_index_101;
-  legacy_u16 temple_index_102;
-  legacy_u8 temple_symbol_width_105;
-  legacy_u8 temple_symbols_left_107;
+  legacy_u16 noreg temple_width_97;
+  legacy_u16 noreg temple_width_distribution_98;
+  legacy_u32 noreg temple_tmp_99;
+  legacy_u8 noreg temple_symbol_count_100;
+  legacy_u16 noreg temple_alphabet_index_101;
+  legacy_u16 noreg temple_index_102;
+  legacy_u8 noreg temple_symbol_width_105;
+  legacy_u8 noreg temple_symbols_left_107;
   legacy_u8 *temple_tmp_108;
-  legacy_u8 temple_tmp_109;
+  legacy_u8 noreg temple_tmp_109;
   legacy_u16 *temple_tmp_110;
-  legacy_u16 temple_tmp_111;
+  legacy_u16 noreg temple_tmp_111;
   legacy_u8 *temple_tmp_112;
-  legacy_u8 temple_tmp_113;
+  legacy_u8 noreg temple_tmp_113;
   legacy_u16 *temple_tmp_114;
-  legacy_u16 temple_tmp_115;
+  legacy_u16 noreg temple_tmp_115;
   legacy_u16 *temple_tmp_116;
-  legacy_u16 temple_tmp_117;
+  legacy_u16 noreg temple_tmp_117;
   legacy_u8 *temple_tmp_118;
   legacy_u16 *temple_tmp_120;
-  legacy_u16 temple_tmp_121;
+  legacy_u16 noreg temple_tmp_121;
   temple_width_97=TempleCastU16(1);
   if((escape_length>=8)) {
     temple_tmp_99=TempleCastU32(8);
@@ -730,16 +730,16 @@ legacy_u8 RsFileioFileVleReadByte(CVleDecoder *decoder)
 
 legacy_u8 RsFileioFileVleExpandEscape(CVleDecoder *decoder,legacy_u8 *destination)
 {
-  legacy_u8 temple_code_123;
+  legacy_u8 noreg temple_code_123;
   legacy_u16 *temple_tmp_124;
-  legacy_u16 temple_index_125;
+  legacy_u16 noreg temple_index_125;
   legacy_u8 *temple_tmp_127;
   legacy_u8 *temple_tmp_128;
-  legacy_u8 temple_tmp_129;
+  legacy_u8 noreg temple_tmp_129;
   legacy_u16 *temple_tmp_130;
-  legacy_u16 temple_tmp_131;
+  legacy_u16 noreg temple_tmp_131;
   legacy_u16 *temple_tmp_132;
-  legacy_u8 temple_next_width_133;
+  legacy_u8 noreg temple_next_width_133;
   temple_code_123=TempleCastU8(decoder->current_word);
   temple_tmp_124=&(decoder->current_word);
   ((*temple_tmp_124)=TempleCastU16(((*temple_tmp_124)>>8)));
@@ -803,17 +803,17 @@ legacy_u8 RsFileioFileVleDecodeDirect(
 
 legacy_u32 RsFileDecompVle(legacy_u8 *src,legacy_u8 *dst,legacy_u16 decompparas)
 {
-  legacy_u32 temple_lenleft_137;
-  legacy_u32 temple_len_138;
-  legacy_u8 temple_escape_length_139;
+  legacy_u32 noreg temple_lenleft_137;
+  legacy_u32 noreg temple_len_138;
+  legacy_u8 noreg temple_escape_length_139;
   CVleDecoder temple_decoder_140;
   legacy_u8 *temple_tmp_141;
   legacy_u32 *temple_tmp_142;
-  legacy_u32 temple_tmp_143;
-  legacy_u8 temple_code_145;
-  legacy_u8 temple_next_width_146;
+  legacy_u32 noreg temple_tmp_143;
+  legacy_u8 noreg temple_code_145;
+  legacy_u8 noreg temple_next_width_146;
   legacy_u32 *temple_tmp_147;
-  legacy_u32 temple_tmp_148;
+  legacy_u32 noreg temple_tmp_148;
   legacy_u16 *temple_tmp_149;
   legacy_u8 *temple_tmp_150;
   decompparas;
@@ -886,10 +886,10 @@ legacy_u8 *RsFileioFileAllocTailPages(
     legacy_s8 *filename,legacy_u16 paragraphs,legacy_u16 tail_bytes)
 {
   legacy_u8 *temple_result_151;
-  legacy_u32 temple_length_152;
-  legacy_u32 temple_index_154;
+  legacy_u32 noreg temple_length_152;
+  legacy_u32 noreg temple_index_154;
   legacy_u32 *temple_tmp_155;
-  legacy_u32 temple_tmp_156;
+  legacy_u32 noreg temple_tmp_156;
   temple_result_151=RsMmgrAllocPages(filename,TempleCastU16(paragraphs));
   if(tail_bytes) {
     temple_length_152=TempleCastU32(TempleCastU32((TempleCastU32(paragraphs)<<4)));
@@ -912,22 +912,22 @@ legacy_u8 *RsFileioFileDecompInternal(legacy_s8 *filename,legacy_s16 fatal,legac
 {
   legacy_u8 *temple_dst_157;
   legacy_u8 *temple_tmp_158;
-  legacy_u16 temple_decompparas_159;
-  legacy_s16 temple_err_160;
-  legacy_u32 temple_passlen_161;
-  legacy_u16 temple_retained_paragraphs_162;
+  legacy_u16 noreg temple_decompparas_159;
+  legacy_s16 noreg temple_err_160;
+  legacy_u32 noreg temple_passlen_161;
+  legacy_u16 noreg temple_retained_paragraphs_162;
   legacy_u16 *temple_tmp_163;
-  legacy_u16 temple_allocated_paragraphs_164;
-  legacy_s32 temple_tmp_165;
-  legacy_u16 temple_paras_166;
+  legacy_u16 noreg temple_allocated_paragraphs_164;
+  legacy_s32 noreg temple_tmp_165;
+  legacy_u16 noreg temple_paras_166;
   legacy_u8 *temple_src_167;
-  legacy_u8 temple_passes_168;
+  legacy_u8 noreg temple_passes_168;
   legacy_u8 *temple_tmp_169;
-  legacy_s32 temple_tmp_171;
+  legacy_s32 noreg temple_tmp_171;
   legacy_u8 *temple_tmp_172;
-  legacy_u8 temple_tmp_173;
-  legacy_s32 temple_tmp_174;
-  legacy_s32 temple_tmp_175;
+  legacy_u8 noreg temple_tmp_173;
+  legacy_s32 noreg temple_tmp_174;
+  legacy_s32 noreg temple_tmp_175;
   if(tail_bytes) {
     temple_tmp_158=0;
   } else {
@@ -1035,11 +1035,11 @@ legacy_u8 *RsFileioFileLoadBinaryInternal(
 {
   legacy_u8 *temple_memptr_176;
   legacy_u8 *temple_tmp_177;
-  legacy_s32 temple_tmp_178;
-  legacy_s16 temple_numparas_179;
+  legacy_s32 noreg temple_tmp_178;
+  legacy_s16 noreg temple_numparas_179;
   legacy_s16 *temple_tmp_180;
   legacy_u8 *temple_result_181;
-  legacy_s32 temple_tmp_182;
+  legacy_s32 noreg temple_tmp_182;
   if(tail_bytes) {
     temple_tmp_177=0;
   } else {
@@ -1121,9 +1121,9 @@ legacy_s16 RsFileioFileShowResourceError(legacy_s8 *filename)
 legacy_u8 *RsFileLoadResource(legacy_s16 resource_type,legacy_s8 *filename)
 {
   legacy_u8 *temple_result_183;
-  legacy_s32 temple_tmp_185;
-  legacy_s32 temple_tmp_186;
-  legacy_s16 temple_dearesult_187;
+  legacy_s32 noreg temple_tmp_185;
+  legacy_s32 noreg temple_tmp_186;
+  legacy_s16 noreg temple_dearesult_187;
   while(1) {
     if(!(1)) {
       break;
@@ -1208,22 +1208,22 @@ legacy_u8 *RsFileLoadResfileWithTail(legacy_s8 *filename,legacy_u16 tail_bytes)
 
 legacy_s32 RsFileioFileGameResourceSize(legacy_s8 *filename,legacy_u16 packed)
 {
-  legacy_u16 temple_file_194;
-  legacy_s32 temple_length_195;
-  legacy_u32 temple_maximum_size_196;
-  legacy_s32 temple_tmp_197;
+  legacy_u16 noreg temple_file_194;
+  legacy_s32 noreg temple_length_195;
+  legacy_u32 noreg temple_maximum_size_196;
+  legacy_s32 noreg temple_tmp_197;
   legacy_u8 temple_header_198[4];
-  legacy_s32 temple_tmp_199;
-  legacy_u32 temple_unpacked_size_200;
-  legacy_u8 temple_compression_201;
-  legacy_u16 temple_valid_compression_202;
-  legacy_s32 temple_tmp_203;
-  legacy_s32 temple_tmp_204;
-  legacy_s32 temple_tmp_205;
-  legacy_s32 temple_tmp_206;
-  legacy_s32 temple_tmp_207;
-  legacy_s32 temple_tmp_208;
-  legacy_s32 temple_tmp_209;
+  legacy_s32 noreg temple_tmp_199;
+  legacy_u32 noreg temple_unpacked_size_200;
+  legacy_u8 noreg temple_compression_201;
+  legacy_u16 noreg temple_valid_compression_202;
+  legacy_s32 noreg temple_tmp_203;
+  legacy_s32 noreg temple_tmp_204;
+  legacy_s32 noreg temple_tmp_205;
+  legacy_s32 noreg temple_tmp_206;
+  legacy_s32 noreg temple_tmp_207;
+  legacy_s32 noreg temple_tmp_208;
+  legacy_s32 noreg temple_tmp_209;
   temple_file_194=
       TempleCastU16(RsFileioFileioOpen(filename,TempleCastS16(DOS_FILE_OPEN_EXISTING)));
   if((temple_file_194==0)) {
@@ -1315,11 +1315,11 @@ legacy_s8 temple_expected_version_213[26];
 MemSet(&temple_expected_version_213,0,sizeof(temple_expected_version_213));
 legacy_u16 RsFileGameVersionMatches()
 {
-  legacy_s32 temple_length_214;
-  legacy_u16 temple_packed_215;
+  legacy_s32 noreg temple_length_214;
+  legacy_u16 noreg temple_packed_215;
   legacy_u8 *temple_resource_216;
   legacy_u8 *temple_tmp_217;
-  legacy_u16 temple_matches_218;
+  legacy_u16 noreg temple_matches_218;
   temple_length_214=
       TempleCastS32(RsFileioFileGameResourceSize(temple_unpacked_name_210,TempleCastU16(0)));
   temple_packed_215=TempleCastU16((temple_length_214<0));
@@ -1393,13 +1393,13 @@ legacy_void RsFileioFileSetReplayFilename(legacy_s8 *path)
   legacy_s8 *temple_name_223;
   legacy_s8 *temple_extension_224;
   legacy_s8 *temple_character_226;
-  legacy_s32 temple_tmp_227;
-  legacy_s32 temple_tmp_228;
-  legacy_u16 temple_length_229;
-  legacy_s32 temple_tmp_231;
-  legacy_s32 temple_tmp_232;
+  legacy_s32 noreg temple_tmp_227;
+  legacy_s32 noreg temple_tmp_228;
+  legacy_u16 noreg temple_length_229;
+  legacy_s32 noreg temple_tmp_231;
+  legacy_s32 noreg temple_tmp_232;
   legacy_u16 *temple_tmp_233;
-  legacy_u16 temple_tmp_234;
+  legacy_u16 noreg temple_tmp_234;
   temple_name_223=path;
   temple_extension_224=0;
   temple_character_226=path;
@@ -1460,7 +1460,7 @@ legacy_s16 RsFileLoadReplay(legacy_s8 *dir,legacy_s8 *name)
 
 legacy_s16 RsFileWriteReplay(legacy_s8 *filename)
 {
-  legacy_s16 temple_ret_235;
+  legacy_s16 noreg temple_ret_235;
   RsReplayGameinfoEncode((replay_header_buffer)(legacy_u8 *),(&(gameconfig)));
   (g_is_busy=TempleCastS8(1));
   temple_ret_235=TempleCastS16(RsFileWriteFatal(filename,replay_header_buffer,

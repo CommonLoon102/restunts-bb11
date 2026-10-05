@@ -122,6 +122,8 @@ legacy_vm_void RestuntsVmLog(legacy_vm_u8 *message)
   }
 }
 RestuntsVmLog("RESTUNTS_VM_START\\n");
+// Preserve compiler diagnostics that would otherwise scroll out of DocSave.
+DocMax;
 try {
   Cd("C:/PORT");
   ExeFile2("%s");
@@ -135,6 +137,12 @@ RestuntsVmLog(restunts_vm_output);
 Free(restunts_vm_output);
 RestuntsVmLog("\\nRESTUNTS_VM_DONE\\n");
 ''' % entry
+
+
+def compiler_diagnostic_level(diagnostic):
+    plain_diagnostic = re.sub(r"\$[^$]*\$", "", diagnostic)
+    diagnostic_match = re.search(r"\b(ERROR|WARNING)\s*:", plain_diagnostic, re.IGNORECASE)
+    return diagnostic_match.group(1).lower() if diagnostic_match else None
 
 
 def require_tool(name):
@@ -269,13 +277,12 @@ def run(args, work):
             diagnostic = (work / "DEBUG.LOG").read_text(errors="replace")
             if "RESTUNTS_VM_DONE" in diagnostic:
                 # HolyC reports some missing #include files without throwing.
-                # A returned entry is insufficient: inspect its compiler output.
-                plain_diagnostic = re.sub(r"\$[^$]*\$", "", diagnostic)
-                compiler_error = re.search(r"\bERROR\s*:", plain_diagnostic, re.IGNORECASE)
+                # A returned entry must also compile without errors or warnings.
+                diagnostic_level = compiler_diagnostic_level(diagnostic)
                 success = PASS_MARKER in diagnostic and FAIL_MARKER not in diagnostic
-                result = 0 if success and not compiler_error else 1
-                if compiler_error:
-                    print("Guest diagnostics reported an error.", file=sys.stderr)
+                result = 0 if success and not diagnostic_level else 1
+                if diagnostic_level:
+                    print("Guest diagnostics reported: " + diagnostic_level + ".", file=sys.stderr)
                 break
             time.sleep(POLL_SECONDS)
         else:

@@ -33,7 +33,7 @@ legacy_s16 temple_mouse_bottom=TEMPLE_LOGICAL_HEIGHT-1;
 
 legacy_u16 TempleInputKey(legacy_s64 character,legacy_s64 scan)
 {
-  legacy_u16 code=scan&TEMPLE_SCAN_CODE_MASK;
+  legacy_u16 noreg code=scan&TEMPLE_SCAN_CODE_MASK;
   if(code>=SC_F1&&code<=SC_F10) {
     if(scan&SCF_SHIFT) {
       code+=TEMPLE_DOS_SHIFT_F1_SCAN-SC_F1;
@@ -87,7 +87,7 @@ legacy_s16 TempleMouseY(legacy_s64 y)
 legacy_void TempleInputPump()
 {
   legacy_s64 argument1,argument2,message;
-  legacy_u16 key,index;
+  legacy_u16 noreg key,noreg index;
   while(message=ScanMsg(&argument1,&argument2,TEMPLE_INPUT_MESSAGES)) {
     if(message==MSG_KEY_DOWN) {
       key=TempleInputKey(argument1,argument2);
@@ -150,7 +150,7 @@ legacy_s16 RsKbGetKeyState(legacy_s16 key)
 
 legacy_s16 RsKbReadChar()
 {
-  legacy_u16 result;
+  legacy_u16 noreg result;
   TemplePump();
   if(!temple_key_count) {
     return 0;
@@ -178,7 +178,7 @@ legacy_s16 RsKbChecking()
 {
   TemplePump();
   if(temple_key_count) {
-    legacy_u16 result=temple_key_queue[temple_key_read];
+    legacy_u16 noreg result=temple_key_queue[temple_key_read];
     if(result>=TEMPLE_WORD_SIGN_BIT) {
       return result-TEMPLE_WORD_MODULUS;
     }
@@ -263,6 +263,7 @@ legacy_void RsDosJoystickResetCalibration()
 
 legacy_void RsDosJoystickSetEnabled(legacy_u8 enabled)
 {
+  no_warn enabled;
   // TempleOS has no joystick device service. Keyboard/mouse remain available.
 }
 
@@ -273,6 +274,7 @@ legacy_u8 RsDosJoystickIsEnabled()
 
 legacy_s16 RsDosJoystickGetScaledAxis(legacy_u16 axis_index)
 {
+  no_warn axis_index;
   return 0;
 }
 

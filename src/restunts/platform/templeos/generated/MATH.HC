@@ -2,7 +2,7 @@
 
 legacy_s8 RsMathLegacyS8FromBits(legacy_u8 value)
 {
-  legacy_s32 temple_tmp_308;
+  legacy_s32 noreg temple_tmp_308;
   if((value<=127)) {
     temple_tmp_308=TempleCastS32(TempleCastS8(value));
   } else {
@@ -14,7 +14,7 @@ legacy_s8 RsMathLegacyS8FromBits(legacy_u8 value)
 
 legacy_s16 RsMathLegacyS16FromBits(legacy_u16 value)
 {
-  legacy_s32 temple_tmp_309;
+  legacy_s32 noreg temple_tmp_309;
   if((value<=32767)) {
     temple_tmp_309=TempleCastS32(TempleCastS16(value));
   } else {
@@ -26,7 +26,7 @@ legacy_s16 RsMathLegacyS16FromBits(legacy_u16 value)
 
 legacy_s32 RsMathLegacyS32FromBits(legacy_u32 value)
 {
-  legacy_s32 temple_tmp_310;
+  legacy_s32 noreg temple_tmp_310;
   if((value<=TempleCastU32(2147483647))) {
     temple_tmp_310=TempleCastS32(TempleCastS32(value));
   } else {
@@ -38,7 +38,7 @@ legacy_s32 RsMathLegacyS32FromBits(legacy_u32 value)
 
 legacy_s16 RsSignWord(legacy_s16 value)
 {
-  legacy_s16 temple_signed_value_311;
+  legacy_s16 noreg temple_signed_value_311;
   temple_signed_value_311=
       TempleCastS16(RsMathLegacyS16FromBits(TempleCastU16(TempleCastU16(value))));
   if((temple_signed_value_311<0)) {
@@ -49,7 +49,7 @@ legacy_s16 RsSignWord(legacy_s16 value)
 
 legacy_s32 RsAbsoluteLong(legacy_s32 value)
 {
-  legacy_u32 temple_bits_312;
+  legacy_u32 noreg temple_bits_312;
   temple_bits_312=TempleCastU32(TempleCastU32(value));
   if((TempleCastU32((temple_bits_312&2147483648))!=TempleCastU32(0))) {
     (temple_bits_312=TempleCastU32(TempleCastU32(TempleCastU32((0-temple_bits_312)))));
@@ -59,7 +59,7 @@ legacy_s32 RsAbsoluteLong(legacy_s32 value)
 
 legacy_s16 RsSinFast(legacy_u16 s)
 {
-  legacy_u8 temple_c_313;
+  legacy_u8 noreg temple_c_313;
   temple_c_313=TempleCastU8(TempleCastU32((s&255)));
   switch(TempleCastS32((TempleCastS32((s>>8))&3))) {
     case 0:
@@ -105,13 +105,13 @@ legacy_s16 RsMathPolarAngleQuadrant(legacy_u16 flag,legacy_s16 result)
 
 legacy_s16 RsPolarAngle(legacy_s16 z,legacy_s16 y)
 {
-  legacy_u16 temple_flag_314;
+  legacy_u16 noreg temple_flag_314;
   legacy_u16 *temple_tmp_315;
   legacy_u16 *temple_tmp_316;
-  legacy_s16 temple_result_317;
-  legacy_s16 temple_coordinate_swap_318;
+  legacy_s16 noreg temple_result_317;
+  legacy_s16 noreg temple_coordinate_swap_318;
   legacy_u16 *temple_tmp_319;
-  legacy_u32 temple_index_320;
+  legacy_u32 noreg temple_index_320;
   legacy_u32 *temple_tmp_321;
   temple_flag_314=TempleCastU16(0);
   if((z<0)) {
@@ -155,7 +155,7 @@ legacy_s16 RsPolarAngle(legacy_s16 z,legacy_s16 y)
 
 legacy_s16 RsPolarRadius2D(legacy_s16 z,legacy_s16 y)
 {
-  legacy_s32 temple_result_322;
+  legacy_s32 noreg temple_result_322;
   temple_result_322=TempleCastS32(RsPolarAngle(TempleCastS16(z),TempleCastS16(y)));
   if((temple_result_322<0)) {
     (temple_result_322=TempleCastS32(TempleCastS32((-(temple_result_322)))));
@@ -191,10 +191,10 @@ legacy_s16 RsPolarRadius2D(legacy_s16 z,legacy_s16 y)
 
 legacy_u16 RsSar1Word(legacy_u16 value)
 {
-  legacy_u32 temple_tmp_323;
-  legacy_u32 temple_tmp_324;
-  legacy_u32 temple_tmp_325;
-  legacy_u32 temple_tmp_326;
+  legacy_u32 noreg temple_tmp_323;
+  legacy_u32 noreg temple_tmp_324;
+  legacy_u32 noreg temple_tmp_325;
+  legacy_u32 noreg temple_tmp_326;
   if((TempleCastU32((TempleCastU16(1)&31))==0)) {
     temple_tmp_326=TempleCastU32(TempleCastU16(value));
   } else {
@@ -225,7 +225,7 @@ legacy_u16 RsSar1Word(legacy_u16 value)
 
 legacy_s16 RsAbsoluteWord(legacy_s16 value)
 {
-  legacy_s32 temple_tmp_327;
+  legacy_s32 noreg temple_tmp_327;
   if((value<0)) {
     temple_tmp_327=TempleCastS32(RsMathLegacyS16FromBits(
         TempleCastU16(TempleCastU16(TempleCastU16(TempleCastU32((0-TempleCastU16(value))))))));
@@ -237,8 +237,8 @@ legacy_s16 RsAbsoluteWord(legacy_s16 value)
 
 legacy_s16 RsPositionToWord(legacy_s32 position)
 {
-  legacy_u32 temple_tmp_328;
-  legacy_u32 temple_tmp_329;
+  legacy_u32 noreg temple_tmp_328;
+  legacy_u32 noreg temple_tmp_329;
   if((TempleCastU32((TempleCastU16(6)&31))==0)) {
     temple_tmp_329=TempleCastU32(TempleCastU32(position));
   } else {
@@ -266,7 +266,7 @@ legacy_s16 RsPolarRadius3D(CVector *vec)
 
 legacy_u16 RsRectComparePoint(CPoint2D *pt)
 {
-  legacy_s8 temple_flag_330;
+  legacy_s8 noreg temple_flag_330;
   legacy_s8 *temple_tmp_331;
   legacy_s8 *temple_tmp_332;
   if((pt->py<select_rect_rc.top)) {
@@ -292,8 +292,8 @@ legacy_u16 RsRectComparePoint(CPoint2D *pt)
 
 legacy_s16 RsMathMatrixScaledProduct(legacy_s16 left,legacy_s16 right)
 {
-  legacy_s32 temple_product_333;
-  legacy_u32 temple_scaled_bits_334;
+  legacy_s32 noreg temple_product_333;
+  legacy_u32 noreg temple_scaled_bits_334;
   temple_product_333=
       TempleCastS32(RsMathLegacyS32FromBits(TempleCastU32(TempleCastU32(TempleCastU32(TempleCastU32(
           (TempleCastU32(TempleCastS32(left))*TempleCastU32(TempleCastS32(right)))))))));
@@ -306,10 +306,10 @@ legacy_s16 RsMathMatrixScaledProduct(legacy_s16 left,legacy_s16 right)
 legacy_s16 RsMathMatrixRowProduct(
     legacy_s16 row_x,legacy_s16 row_y,legacy_s16 row_z,CVector *invec)
 {
-  legacy_s16 temple_result_335;
-  legacy_s32 temple_tmp_336;
-  legacy_s32 temple_tmp_337;
-  legacy_s32 temple_tmp_338;
+  legacy_s16 noreg temple_result_335;
+  legacy_s32 noreg temple_tmp_336;
+  legacy_s32 noreg temple_tmp_337;
+  legacy_s32 noreg temple_tmp_338;
   temple_tmp_336=!!((row_x!=0));
   if(temple_tmp_336) {
     temple_tmp_336=!!((invec->x!=0));
@@ -365,11 +365,11 @@ legacy_void RsMatMultiply(CMatrix *rmat,CMatrix *lmat,CMatrix *outmat)
   legacy_s16 *temple_rmatvals_340;
   legacy_s16 *temple_lmatvals_341;
   legacy_s16 *temple_outmatvals_342;
-  legacy_s16 temple_counter_343;
-  legacy_s32 temple_tmp_345;
-  legacy_s32 temple_tmp_346;
-  legacy_s32 temple_tmp_347;
-  legacy_s32 temple_tmp_348;
+  legacy_s16 noreg temple_counter_343;
+  legacy_s32 noreg temple_tmp_345;
+  legacy_s32 noreg temple_tmp_346;
+  legacy_s32 noreg temple_tmp_347;
+  legacy_s32 noreg temple_tmp_348;
   temple_rmatvals_340=rmat->vals;
   temple_lmatvals_341=lmat->vals;
   temple_outmatvals_342=outmat->vals;
@@ -426,7 +426,7 @@ legacy_void RsMatMultiply(CMatrix *rmat,CMatrix *lmat,CMatrix *outmat)
 
 legacy_void RsMatInvert(CMatrix *inmat,CMatrix *outmat)
 {
-  legacy_s16 temple_element_swap_349;
+  legacy_s16 noreg temple_element_swap_349;
   if((inmat==outmat)) {
     temple_element_swap_349=TempleCastS16(outmat->m._21);
     (outmat->m._21=TempleCastS16(outmat->m._12));
@@ -452,8 +452,8 @@ legacy_void RsMatInvert(CMatrix *inmat,CMatrix *outmat)
 
 legacy_void RsMatRotX(CMatrix *outmat,legacy_s16 angle)
 {
-  legacy_s16 temple_c_350;
-  legacy_s16 temple_s_351;
+  legacy_s16 noreg temple_c_350;
+  legacy_s16 noreg temple_s_351;
   temple_c_350=TempleCastS16(RsCosFast(TempleCastU16(angle)));
   temple_s_351=TempleCastS16(RsSinFast(TempleCastU16(angle)));
   (outmat->m._11=TempleCastS16(16384));
@@ -469,8 +469,8 @@ legacy_void RsMatRotX(CMatrix *outmat,legacy_s16 angle)
 
 legacy_void RsMatRotY(CMatrix *outmat,legacy_s16 angle)
 {
-  legacy_s16 temple_c_352;
-  legacy_s16 temple_s_353;
+  legacy_s16 noreg temple_c_352;
+  legacy_s16 noreg temple_s_353;
   temple_c_352=TempleCastS16(RsCosFast(TempleCastU16(angle)));
   temple_s_353=TempleCastS16(RsSinFast(TempleCastU16(angle)));
   (outmat->m._11=TempleCastS16(temple_c_352));
@@ -486,8 +486,8 @@ legacy_void RsMatRotY(CMatrix *outmat,legacy_s16 angle)
 
 legacy_void RsMatRotZ(CMatrix *outmat,legacy_s16 angle)
 {
-  legacy_s16 temple_c_354;
-  legacy_s16 temple_s_355;
+  legacy_s16 noreg temple_c_354;
+  legacy_s16 noreg temple_s_355;
   temple_c_354=TempleCastS16(RsCosFast(TempleCastU16(angle)));
   temple_s_355=TempleCastS16(RsSinFast(TempleCastU16(angle)));
   (outmat->m._11=TempleCastS16(temple_c_354));
@@ -525,7 +525,7 @@ CMatrix *RsMatRotZxy(legacy_s16 z,legacy_s16 x,legacy_s16 y,legacy_s16 rotation_
 
 legacy_void RsRectAdjustFromPoint(CPoint2D *pt,CRectangle *rc)
 {
-  legacy_s16 temple_exclusive_bound_356;
+  legacy_s16 noreg temple_exclusive_bound_356;
   if((rc->left>pt->px)) {
     (rc->left=TempleCastS16(pt->px));
   }
@@ -638,10 +638,10 @@ legacy_s16 RsRectIsOverlapping(CRectangle *r1,CRectangle *r2)
 
 legacy_s16 RsRectIsAdjacent(CRectangle *r1,CRectangle *r2)
 {
-  legacy_s32 temple_tmp_357;
-  legacy_s32 temple_tmp_358;
-  legacy_s32 temple_tmp_359;
-  legacy_s32 temple_tmp_360;
+  legacy_s32 noreg temple_tmp_357;
+  legacy_s32 noreg temple_tmp_358;
+  legacy_s32 noreg temple_tmp_359;
+  legacy_s32 noreg temple_tmp_360;
   temple_tmp_357=!!((r1->bottom==r2->top));
   if(!temple_tmp_357) {
     temple_tmp_357=!!((r1->top==r2->bottom));
@@ -675,9 +675,9 @@ legacy_s16 RsRectIsAdjacent(CRectangle *r1,CRectangle *r2)
 legacy_void RsMathRectlistRemoveAt(legacy_s8 *length,CRectangle *rectangles,legacy_s16 index)
 {
   legacy_s16 *temple_tmp_362;
-  legacy_s16 temple_tmp_363;
+  legacy_s16 noreg temple_tmp_363;
   legacy_s8 *temple_tmp_364;
-  legacy_s8 temple_tmp_365;
+  legacy_s8 noreg temple_tmp_365;
   while(1) {
     if(!((TempleCastS32(((*(length))-1))>index))) {
       break;
@@ -741,20 +741,20 @@ legacy_void RsMathRectlistSplitOverlap(CRectangle *rect,CRectangle *existing_rec
 
 legacy_void RsRectlistAddRect(legacy_s8 *rectangle_count,CRectangle *rectangles,CRectangle *rect)
 {
-  legacy_s16 temple_has_upper_remainder_366;
+  legacy_s16 noreg temple_has_upper_remainder_366;
   CRectangle temple_merged_rectangle_367;
   CRectangle temple_upper_remainder_368;
   CRectangle temple_lower_remainder_369;
   CRectangle *temple_existing_rectangle_370;
-  legacy_s16 temple_has_lower_remainder_371;
-  legacy_s16 temple_rectangle_index_373;
+  legacy_s16 noreg temple_has_lower_remainder_371;
+  legacy_s16 noreg temple_rectangle_index_373;
   legacy_s16 *temple_tmp_374;
-  legacy_s16 temple_tmp_375;
-  legacy_s16 temple_rectangle_index_377;
+  legacy_s16 noreg temple_tmp_375;
+  legacy_s16 noreg temple_rectangle_index_377;
   legacy_s16 *temple_tmp_378;
-  legacy_s16 temple_tmp_379;
+  legacy_s16 noreg temple_tmp_379;
   legacy_s8 *temple_tmp_380;
-  legacy_s8 temple_tmp_381;
+  legacy_s8 noreg temple_tmp_381;
   if((video_x_alignment!=1)) {
     RsFatalError(("rectlist_add_rect: unexpected code path")(legacy_s8 *));
   }
@@ -830,13 +830,13 @@ legacy_void RsRectlistAddRects(legacy_s8 source_count,legacy_s8 *source_flags,
   CRectangle *temple_selected_rectangle_384;
   CRectangle temple_clipped_rectangle_385;
   CRectangle temple_merged_rectangle_386;
-  legacy_s16 temple_source_index_388;
-  legacy_s16 temple_flags_389;
-  legacy_s16 temple_has_rectangle_390;
-  legacy_s32 temple_tmp_391;
-  legacy_s32 temple_tmp_392;
+  legacy_s16 noreg temple_source_index_388;
+  legacy_s16 noreg temple_flags_389;
+  legacy_s16 noreg temple_has_rectangle_390;
+  legacy_s32 noreg temple_tmp_391;
+  legacy_s32 noreg temple_tmp_392;
   legacy_s16 *temple_tmp_393;
-  legacy_s16 temple_tmp_394;
+  legacy_s16 noreg temple_tmp_394;
   temple_source_index_388=TempleCastS16(0);
   while(1) {
     if(!((temple_source_index_388<source_count))) {
@@ -899,9 +899,9 @@ legacy_void RsRectArraySortByTop(
     legacy_s8 rectangle_count,CRectangle *rectangles,legacy_s16 *sorted_indices)
 {
   legacy_s16 temple_sort_keys_395[256];
-  legacy_s16 temple_rectangle_index_397;
+  legacy_s16 noreg temple_rectangle_index_397;
   legacy_s16 *temple_tmp_398;
-  legacy_s16 temple_tmp_399;
+  legacy_s16 noreg temple_tmp_399;
   if((rectangle_count>1)) {
     temple_rectangle_index_397=TempleCastS16(0);
     while(1) {
@@ -932,15 +932,15 @@ legacy_u16 RsMathMathWordMagnitude(legacy_s16 value)
 
 legacy_s16 RsVectorDirectionSector(CVector *vec)
 {
-  legacy_s32 temple_vertical_magnitude_400;
-  legacy_s32 temple_horizontal_radius_401;
-  legacy_s16 temple_vertical_sector_402;
-  legacy_s16 temple_result_403;
-  legacy_s32 temple_angle_404;
+  legacy_s32 noreg temple_vertical_magnitude_400;
+  legacy_s32 noreg temple_horizontal_radius_401;
+  legacy_s16 noreg temple_vertical_sector_402;
+  legacy_s16 noreg temple_result_403;
+  legacy_s32 noreg temple_angle_404;
   legacy_s32 *temple_tmp_405;
-  legacy_s32 temple_scaled_angle_406;
-  legacy_u32 temple_tmp_407;
-  legacy_u32 temple_tmp_408;
+  legacy_s32 noreg temple_scaled_angle_406;
+  legacy_u32 noreg temple_tmp_407;
+  legacy_u32 noreg temple_tmp_408;
   temple_vertical_magnitude_400=
       TempleCastS32(TempleCastS32(RsMathMathWordMagnitude(TempleCastS16(vec->y))));
   temple_horizontal_radius_401=TempleCastS32(TempleCastU16(
@@ -1026,8 +1026,8 @@ legacy_u16 RsMathProjectionMagnitude(legacy_s16 value)
 
 legacy_void RsVectorToPoint(CVector *vec,CPoint2D *outpt)
 {
-  legacy_s16 temple_comp_409;
-  legacy_u32 temple_proj_410;
+  legacy_s16 noreg temple_comp_409;
+  legacy_u32 noreg temple_proj_410;
   if((vec->z<=0)) {
     (outpt->px=TempleCastS16(RsMathLegacyS16FromBits(TempleCastU16(TempleCastU16(32768)))));
     (outpt->py=TempleCastS16(RsMathLegacyS16FromBits(TempleCastU16(TempleCastU16(32768)))));
@@ -1092,8 +1092,8 @@ legacy_void RsVectorToPoint(CVector *vec,CPoint2D *outpt)
 legacy_s16 RsMathVectorInterpolateAxis(
     legacy_s16 first,legacy_s16 second,legacy_s16 factor,legacy_s16 divisor)
 {
-  legacy_s32 temple_product_411;
-  legacy_s32 temple_quotient_412;
+  legacy_s32 noreg temple_product_411;
+  legacy_s32 noreg temple_quotient_412;
   temple_product_411=
       TempleCastS32(RsMathLegacyS32FromBits(TempleCastU32(TempleCastU32(TempleCastU32(TempleCastU32(
           (TempleCastU32(TempleCastS32(RsMathLegacyS16FromBits(TempleCastU16(TempleCastU16(
@@ -1112,8 +1112,8 @@ legacy_s16 RsMathVectorInterpolateAxis(
 legacy_void RsVectorInterpolateAtZ(
     CVector *first,CVector *second,CVector *result,legacy_s16 depth)
 {
-  legacy_s16 temple_depth_offset_413;
-  legacy_s16 temple_depth_span_414;
+  legacy_s16 noreg temple_depth_offset_413;
+  legacy_s16 noreg temple_depth_span_414;
   (result->z=TempleCastS16(depth));
   temple_depth_offset_413=TempleCastS16(RsMathLegacyS16FromBits(TempleCastU16(TempleCastU16(
       TempleCastU16(TempleCastS32((TempleCastU16(result->z)-TempleCastU16(second->z))))))));
@@ -1135,8 +1135,8 @@ legacy_void RsVectorInterpolateAtZ(
 
 legacy_void RsVectorInterpolateAtSavedZ(CVector *vec1,CVector *vec2,CVector *outvec)
 {
-  legacy_u16 temple_interpolation_z_415;
-  legacy_u32 temple_tmp_416;
+  legacy_u16 noreg temple_interpolation_z_415;
+  legacy_u32 noreg temple_tmp_416;
   if((TempleCastU32((TempleCastU16(8)&31))>=16)) {
     temple_tmp_416=TempleCastU32(0);
   } else {
@@ -1152,10 +1152,10 @@ legacy_void RsVectorInterpolateAtSavedZ(CVector *vec1,CVector *vec2,CVector *out
 
 legacy_s16 RsMultiplyAndScale(legacy_s16 left,legacy_s16 right)
 {
-  legacy_s32 temple_product_417;
-  legacy_u32 temple_scaled_bits_418;
-  legacy_u16 temple_high_word_419;
-  legacy_u16 temple_round_up_420;
+  legacy_s32 noreg temple_product_417;
+  legacy_u32 noreg temple_scaled_bits_418;
+  legacy_u16 noreg temple_high_word_419;
+  legacy_u16 noreg temple_round_up_420;
   temple_product_417=
       TempleCastS32(RsMathLegacyS32FromBits(TempleCastU32(TempleCastU32(TempleCastU32(TempleCastU32(
           (TempleCastU32(TempleCastS32(left))*TempleCastU32(TempleCastS32(right)))))))));
@@ -1171,11 +1171,11 @@ legacy_s16 RsMultiplyAndScale(legacy_s16 left,legacy_s16 right)
 
 legacy_s16 RsVecNormalInnerProduct(legacy_s16 x,legacy_s16 y,legacy_s16 z,CVector *normal)
 {
-  legacy_s32 temple_x_product_421;
-  legacy_s32 temple_y_product_422;
-  legacy_s32 temple_z_product_423;
-  legacy_s32 temple_sum_424;
-  legacy_s32 temple_quotient_425;
+  legacy_s32 noreg temple_x_product_421;
+  legacy_s32 noreg temple_y_product_422;
+  legacy_s32 noreg temple_z_product_423;
+  legacy_s32 noreg temple_sum_424;
+  legacy_s32 noreg temple_quotient_425;
   temple_x_product_421=
       TempleCastS32(RsMathLegacyS32FromBits(TempleCastU32(TempleCastU32(TempleCastU32(TempleCastU32(
           (TempleCastU32(TempleCastS32(normal->x))*TempleCastU32(TempleCastS32(x)))))))));
@@ -1230,8 +1230,8 @@ legacy_void RsTransformWheelTravelToWorld()
   CVector temple_plane_direction_431;
   CMatrix temple_inverse_plane_rotation_432;
   CMatrix temple_plane_rotation_433;
-  legacy_s16 temple_heading_434;
-  legacy_s32 temple_tmp_435;
+  legacy_s16 noreg temple_heading_434;
+  legacy_s32 noreg temple_tmp_435;
   legacy_s16 *temple_tmp_436;
   if((planindex_copy!=TempleCastS32((-(1))))) {
     (temple_plane_430=(&(planptr[planindex_copy])));

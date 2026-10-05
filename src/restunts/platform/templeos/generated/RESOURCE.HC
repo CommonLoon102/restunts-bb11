@@ -2,7 +2,7 @@
 
 legacy_s8 RsResourceLegacyS8FromBits(legacy_u8 value)
 {
-  legacy_s32 temple_tmp_243;
+  legacy_s32 noreg temple_tmp_243;
   if((value<=127)) {
     temple_tmp_243=TempleCastS32(TempleCastS8(value));
   } else {
@@ -14,7 +14,7 @@ legacy_s8 RsResourceLegacyS8FromBits(legacy_u8 value)
 
 legacy_s16 RsResourceLegacyS16FromBits(legacy_u16 value)
 {
-  legacy_s32 temple_tmp_244;
+  legacy_s32 noreg temple_tmp_244;
   if((value<=32767)) {
     temple_tmp_244=TempleCastS32(TempleCastS16(value));
   } else {
@@ -26,7 +26,7 @@ legacy_s16 RsResourceLegacyS16FromBits(legacy_u16 value)
 
 legacy_s32 RsResourceLegacyS32FromBits(legacy_u32 value)
 {
-  legacy_s32 temple_tmp_245;
+  legacy_s32 noreg temple_tmp_245;
   if((value<=TempleCastU32(2147483647))) {
     temple_tmp_245=TempleCastS32(TempleCastS32(value));
   } else {
@@ -63,7 +63,7 @@ legacy_u8 *RsResourceResourceFileOffsetBytes(
 
 legacy_void RsResourceFileSetSize(legacy_u8 *resource,legacy_u32 size)
 {
-  legacy_u32 temple_legacy_write_u32_value__247;
+  legacy_u32 noreg temple_legacy_write_u32_value__247;
   while(1) {
     temple_legacy_write_u32_value__247=TempleCastU32(TempleCastU32(size));
     ((resource+0)[0]=TempleCastU8(TempleCastU8(temple_legacy_write_u32_value__247)));
@@ -95,7 +95,7 @@ legacy_u8 *RsResourceFileIdentifier(legacy_u8 *resource,legacy_u16 index)
 legacy_void RsResourceFileSetOffset(
     legacy_u8 *resource,legacy_u16 count,legacy_u16 index,legacy_u32 offset)
 {
-  legacy_u32 temple_legacy_write_u32_value__249;
+  legacy_u32 noreg temple_legacy_write_u32_value__249;
   while(1) {
     temple_legacy_write_u32_value__249=TempleCastU32(TempleCastU32(offset));
     ((RsResourceResourceFileOffsetBytes(resource,TempleCastU16(count),TempleCastU16(index)))(
@@ -124,7 +124,7 @@ legacy_u16 RsResourceFileDataStart(legacy_u16 count)
 
 legacy_u8 *RsResourceFileData(legacy_u8 *resource,legacy_u16 index)
 {
-  legacy_u16 temple_count_250;
+  legacy_u16 noreg temple_count_250;
   legacy_u8 *temple_result_251;
   temple_count_250=TempleCastU16(RsResourceFileCount(resource));
   temple_result_251=resource;
@@ -150,39 +150,39 @@ legacy_u8 *RsResourceFileData(legacy_u8 *resource,legacy_u16 index)
 legacy_u16 RsResourceTextEquals(
     legacy_u8 *resource,legacy_u32 length,legacy_s8 *name,legacy_s8 *expected)
 {
-  legacy_s32 temple_tmp_252;
-  legacy_s32 temple_tmp_253;
-  legacy_s32 temple_tmp_254;
-  legacy_u16 temple_character_256;
+  legacy_s32 noreg temple_tmp_252;
+  legacy_s32 noreg temple_tmp_253;
+  legacy_s32 noreg temple_tmp_254;
+  legacy_u16 noreg temple_character_256;
   legacy_u16 *temple_tmp_257;
-  legacy_u16 temple_tmp_258;
-  legacy_u32 temple_declared_length_259;
-  legacy_s32 temple_tmp_260;
-  legacy_u32 temple_count_261;
-  legacy_u32 temple_entry_size_262;
-  legacy_u32 temple_offsets_start_263;
-  legacy_u32 temple_data_start_264;
-  legacy_u32 temple_data_length_265;
-  legacy_u32 temple_text_start_266;
-  legacy_u16 temple_found_267;
-  legacy_u32 temple_index_269;
-  legacy_u32 temple_offset_270;
+  legacy_u16 noreg temple_tmp_258;
+  legacy_u32 noreg temple_declared_length_259;
+  legacy_s32 noreg temple_tmp_260;
+  legacy_u32 noreg temple_count_261;
+  legacy_u32 noreg temple_entry_size_262;
+  legacy_u32 noreg temple_offsets_start_263;
+  legacy_u32 noreg temple_data_start_264;
+  legacy_u32 noreg temple_data_length_265;
+  legacy_u32 noreg temple_text_start_266;
+  legacy_u16 noreg temple_found_267;
+  legacy_u32 noreg temple_index_269;
+  legacy_u32 noreg temple_offset_270;
   legacy_u8 *temple_identifier_271;
-  legacy_u16 temple_character_272;
+  legacy_u16 noreg temple_character_272;
   legacy_u16 *temple_tmp_274;
-  legacy_u16 temple_tmp_275;
+  legacy_u16 noreg temple_tmp_275;
   legacy_u32 *temple_tmp_276;
-  legacy_u32 temple_tmp_277;
-  legacy_u32 temple_text_end_278;
-  legacy_u32 temple_index_280;
-  legacy_u32 temple_offset_281;
-  legacy_s32 temple_tmp_282;
+  legacy_u32 noreg temple_tmp_277;
+  legacy_u32 noreg temple_text_end_278;
+  legacy_u32 noreg temple_index_280;
+  legacy_u32 noreg temple_offset_281;
+  legacy_s32 noreg temple_tmp_282;
   legacy_u32 *temple_tmp_283;
-  legacy_u32 temple_tmp_284;
+  legacy_u32 noreg temple_tmp_284;
   legacy_u8 *temple_text_285;
-  legacy_u32 temple_character_287;
+  legacy_u32 noreg temple_character_287;
   legacy_u32 *temple_tmp_288;
-  legacy_u32 temple_tmp_289;
+  legacy_u32 noreg temple_tmp_289;
   temple_tmp_252=!!((!(resource)));
   if(!temple_tmp_252) {
     temple_tmp_252=!!((!(name)));
@@ -347,21 +347,21 @@ legacy_u16 RsResourceTextEquals(
 
 legacy_s8 *RsLocateResource(legacy_s8 *data,legacy_s8 *name,legacy_u16 fatal)
 {
-  legacy_u16 temple_chunk_count_290;
-  legacy_u16 temple_padding_291;
+  legacy_u16 noreg temple_chunk_count_290;
+  legacy_u16 noreg temple_padding_291;
   legacy_s8 temple_padded_name_292[4];
-  legacy_u16 temple_character_293;
-  legacy_s32 temple_tmp_295;
+  legacy_u16 noreg temple_character_293;
+  legacy_s32 noreg temple_tmp_295;
   legacy_u16 *temple_tmp_296;
-  legacy_u16 temple_tmp_297;
-  legacy_u16 temple_index_299;
+  legacy_u16 noreg temple_tmp_297;
+  legacy_u16 noreg temple_index_299;
   legacy_u8 *temple_identifier_300;
   legacy_u16 *temple_tmp_302;
-  legacy_u16 temple_tmp_303;
-  legacy_s32 temple_tmp_304;
-  legacy_s32 temple_tmp_305;
+  legacy_u16 noreg temple_tmp_303;
+  legacy_s32 noreg temple_tmp_304;
+  legacy_s32 noreg temple_tmp_305;
   legacy_u16 *temple_tmp_306;
-  legacy_u16 temple_tmp_307;
+  legacy_u16 noreg temple_tmp_307;
   temple_chunk_count_290=TempleCastU16(RsResourceFileCount((data)(legacy_u8 *)));
   temple_padding_291=TempleCastU16(0);
   (temple_character_293=TempleCastU16(0));

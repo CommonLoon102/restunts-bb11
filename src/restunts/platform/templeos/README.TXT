@@ -138,12 +138,18 @@ sources after changing their inputs; do not hand-edit them.
 
 HolyC has different expression precedence, no ternary/continue/typedef, and
 narrow integer casts do not implement C truncation. Boolean values outside
-conditions also need explicit C short-circuit evaluation. The translator lowers
-these constructs, initializes C static storage, preserves packed resource
-layouts, and uses separate native pointer storage where DOS segmented layouts
-cannot hold 64-bit pointers.
+conditions also need explicit C short-circuit evaluation. Narrow automatic
+scalars use noreg to retain their declared widths without register-promotion
+warnings; pointers, parameters, and packed fields keep their existing layouts.
+Only enum constants referenced by generated or native sources and their
+dependencies are emitted. Forward declarations are retained only when code
+needs a symbol before its definition. The translator lowers unsupported constructs,
+initializes C static storage, preserves packed resource layouts, and uses
+separate native pointer storage where DOS segmented layouts cannot hold
+64-bit pointers.
 
-Run the guest checks with tools/VM.PY and a fresh disposable disk for each entry:
+Run the guest checks with tools/VM.PY and a fresh disposable disk for each entry.
+Each check must finish without compiler errors or warnings:
 
     COMPILE.HC        Compile the complete port without starting the game.
     TEST_NATIVE.HC    File persistence, input scaling, and real-time timer cadence.
@@ -159,8 +165,10 @@ The replay check needs --data pointing to the original game directory, including
 its unchanged DEFAULT.RPL. Tests create temporary files in the disposable guest;
 they should not run against an existing game disk. tools/VM.TXT gives commands,
 oracle provenance, and diagnostic paths. tools/TEST_TRANSLATE.PY builds a host
-C oracle and matching HolyC language-semantics fixture; tools/TEST_RENDERER.PY
-checks EGA materials and raster behavior with address/undefined-behavior sanitizers.
+C oracle and matching HolyC language-semantics fixture. tools/TEST_TRANSLATE_CLEANUP.PY
+checks constant dependencies and required forward declarations; tools/TEST_VM.PY
+checks compiler diagnostic detection. tools/TEST_RENDERER.PY checks EGA materials
+and raster behavior with address/undefined-behavior sanitizers.
 Host checks complement actual HolyC compilation and guest runtime tests.
 
 Reference projects and documentation
