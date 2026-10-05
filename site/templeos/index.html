@@ -69,7 +69,7 @@
                     <figcaption>JOES · Porsche March Indy · F3 exterior view</figcaption>
                 </figure>
             </div>
-            <p class="small temple-gallery-note">Unedited captures of the current TempleOS build, with corrected display proportions, EGA palette, and button borders. Select an image to view its original 640 × 480 PNG. The game projects and rasterizes 3D geometry at 640 × 400, then applies the DOS game’s intended 4:3 display correction to fill the screen. Original bitmap artwork and UI retain their source detail at 2× horizontal and 2.4× vertical scale using nearest-neighbor sampling. SuperSight is enabled in the DEFAULT and JOES captures.</p>
+            <p class="small temple-gallery-note">Unedited captures of the stock TempleOS port, with corrected display proportions, EGA palette, and button borders. Select an image to view its original 640 × 480 PNG. The game projects and rasterizes 3D geometry at 640 × 400, then applies the DOS game’s intended 4:3 display correction to fill the screen. Original bitmap artwork and UI retain their source detail at 2× horizontal and 2.4× vertical scale using nearest-neighbor sampling. SuperSight is enabled in the DEFAULT and JOES captures.</p>
         </section>
 
         <section class="temple-section temple-downloads" id="downloads" aria-labelledby="downloads-title">
@@ -83,7 +83,7 @@
                     <span class="label">Recommended</span>
                     <h3>Full package</h3>
                     <p>The installation CD, this guide, checksums, and the Python tool for making a private CD from your own game files.</p>
-                    <a class="button primary" href="../downloads/templeos/RESTUNTS_STOCK_TEMPLEOS.ZIP" download>Download full ZIP <span class="temple-file-size">496 KiB</span></a>
+                    <a class="button primary" href="../downloads/templeos/RESTUNTS_STOCK_TEMPLEOS.ZIP" download>Download full ZIP <span class="temple-file-size">497 KiB</span></a>
                     <p class="small">Unzip on your host computer.</p>
                 </article>
                 <article class="temple-download-card">
@@ -94,9 +94,11 @@
                     <p class="small">A data CD; boot your installed TempleOS hard disk.</p>
                 </article>
             </div>
+            <p class="note">The refreshed package restores the opponent-selection paper background and matches the DOS EGA version’s opponent portrait colors and dithering. Already installed? <a href="#update">Update the code and keep your game data and saves</a>.</p>
             <p class="temple-download-links"><a href="../downloads/templeos/README.MD" download>Save the installation guide</a><a href="../downloads/templeos/SHA256SUMS.TXT">SHA256 checksums</a></p>
             <nav class="guide-nav" aria-label="On this page">
                 <a href="#install">Installation</a>
+                <a href="#update">Update an installation</a>
                 <a href="#controls">Controls &amp; saves</a>
                 <a href="#audio">PC-speaker audio</a>
                 <a href="#help">Troubleshooting</a>
@@ -187,6 +189,23 @@ Cd("T:/");
                     <p class="small"><strong>On later boots, repeat only this step.</strong> Use a fresh task for every launch.</p>
                 </li>
             </ol>
+            <details class="temple-details" id="update">
+                <summary>Update an existing installation</summary>
+                <div>
+                    <p>Quit the game and attach the new <code>RESTUNTS.ISO</code>. Install the updated code in a new directory and continue using your existing game data and saves. This example keeps <code>C:/Restunts/DATA</code> and installs the new code in <code>C:/Restunts2</code>; adjust the paths for your installation and choose an unused destination.</p>
+                    <p>In a fresh terminal task, run:</p>
+                    <pre tabindex="0"><code>DskChg('T');
+Cd("T:/");
+#include "INSTALL.HC";
+RestuntsInstall("C:/Restunts2");</code></pre>
+                    <p>Loading <code>INSTALL.HC</code> first tries <code>C:/Restunts</code>. If it exists, the installer reports it and copies nothing. The final command installs into the new directory. Wait for the installation-success message.</p>
+                    <p>For each launch of the updated version, open another fresh task and run:</p>
+                    <pre tabindex="0"><code>Cd("C:/Restunts2/PORT");
+#include "LOAD.HC";
+Restunts("C:/Restunts/DATA");</code></pre>
+                    <p>The updated code reads and saves in <code>C:/Restunts/DATA</code>. Keep that directory; no new private data CD or import is needed. Use these launch commands because <code>PLAY.HC</code> expects <code>DATA</code> beside its own <code>PORT</code> directory. You can eject the installation CD afterward.</p>
+                </div>
+            </details>
             <details class="temple-details" id="custom-directory">
                 <summary>Use another installation directory</summary>
                 <div>

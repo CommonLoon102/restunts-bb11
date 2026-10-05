@@ -16,6 +16,10 @@ pixels. Original bitmap artwork and UI retain their source detail, displayed
 at 2× horizontal and 2.4× vertical scale using nearest-neighbor sampling.
 Keyboard and mouse input are supported.
 
+The refreshed package restores the opponent-selection paper background and
+matches the DOS EGA version's opponent portrait colors and dithering. If you
+already play on TempleOS, see [Update an existing installation](#update-an-existing-installation).
+
 ## What to download
 
 Unzip **RESTUNTS_STOCK_TEMPLEOS.ZIP on the host computer**. It contains:
@@ -219,6 +223,39 @@ Restunts("C:/Restunts/DATA", TRUE);
 Install and import once. On later boots, repeat only the launch commands.
 Both CDs may be ejected after import. Tracks, replays, high scores, and
 configuration files remain in the installed `DATA` directory.
+
+## Update an existing installation
+
+Quit the game and attach the new `RESTUNTS.ISO`. Install the updated code in a
+new directory and continue using your existing game data and saves. The example
+below keeps `C:/Restunts/DATA` and installs the new code in `C:/Restunts2`;
+replace these paths if your installation differs, and choose an unused destination.
+
+In a fresh terminal task, run:
+
+```c
+DskChg('T');
+Cd("T:/");
+#include "INSTALL.HC";
+RestuntsInstall("C:/Restunts2");
+```
+
+Loading `INSTALL.HC` first tries the default `C:/Restunts` destination. If that
+installation exists, the installer reports it and copies nothing. The final
+command installs into the new directory. Wait for the installation-success message.
+
+For each launch of the updated version, open another fresh terminal task and run:
+
+```c
+Cd("C:/Restunts2/PORT");
+#include "LOAD.HC";
+Restunts("C:/Restunts/DATA");
+```
+
+The updated code reads and saves in the existing `C:/Restunts/DATA` directory.
+Keep that directory; no new private data CD or import is needed. Use these launch
+commands for this setup because `PLAY.HC` expects `DATA` beside its own `PORT`
+directory. You can eject the installation CD after installation.
 
 ## PC-speaker audio in a VM
 
