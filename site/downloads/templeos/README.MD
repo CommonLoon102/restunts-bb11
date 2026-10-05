@@ -8,9 +8,11 @@ must supply their own Broderbund Stunts 1.1 files (the 12 February 1991 release)
 No fork, SDL, network connection, shared folder, or additional compiler is needed
 inside TempleOS. TempleOS compiles the HolyC sources when you launch it.
 
-The game fills 640×480 with 16 colors and uses the PC speaker. The original
-320×200 coordinate system scales by 2 horizontally and 2.4 vertically. Keyboard
-and mouse input are supported.
+The game renders 3D geometry at 640×400 with 16 colors and uses the PC speaker.
+Projection and rasterization use the higher resolution to add detail. The original
+8:5 aspect ratio is preserved, with the image centered on the 640×480 display
+between 40-pixel black bars. Original bitmap artwork and UI use a uniform 2× scale
+and retain their source detail. Keyboard and mouse input are supported.
 
 ## What to download
 
@@ -183,9 +185,8 @@ Cd("C:/Restunts");
 #include "PLAY.HC";
 ```
 
-Compilation can take a minute or more under software emulation. HolyC may print
-warnings about 64-bit register variables; these are expected because the port
-explicitly preserves DOS integer widths. Wait for the intro or main menu.
+Compilation can take a minute or more under software emulation. Wait for the
+intro or main menu. The sources should compile without warnings.
 
 On the main menu, use Left/Right to select **Let's Drive**, then press Enter.
 With the standard default configuration, driving uses the keyboard and automatic
