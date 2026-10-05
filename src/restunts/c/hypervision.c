@@ -17,6 +17,8 @@
 #define HV_DEPTH_RELATIVE_EPSILON (4 * FLT_EPSILON)
 #define HV_HALF_PIXEL HIRES_SAMPLE_CENTER_OFFSET
 #define HV_SPAN_CAPACITY (HIRES_WIDTH + 2)
+#define HV_EVALUATE_AS_DECLARED 0
+#define HV_EVALUATE_AS_DOUBLE 1
 
 struct HV_EDGE {
 	legacy_f64 x, y, z, x_step, z_step;
@@ -75,6 +77,19 @@ static void *hv_reserve(void *buffer, size_t *capacity, size_t required, size_t 
 	}
 	*capacity = next;
 	return result;
+}
+
+/* Round each scanline offset before adding the edge origin. Extended evaluation
+ * must not move a crossing across an exact pixel center; ordinary assignments
+ * can retain excess precision when the compiler uses its fast evaluation mode. */
+static legacy_f64 hv_binary64(legacy_f64 value)
+{
+#if FLT_EVAL_METHOD != HV_EVALUATE_AS_DECLARED && FLT_EVAL_METHOD != HV_EVALUATE_AS_DOUBLE
+	volatile legacy_f64 rounded = value;
+	return rounded;
+#else
+	return value;
+#endif
 }
 
 static legacy_s32 hv_ceil(legacy_f64 value)
@@ -375,8 +390,9 @@ static void hv_scan_command(struct HV_BIN *bin, legacy_u32 command_index, legacy
 			continue;
 		}
 		legacy_f64 distance = y + HV_HALF_PIXEL - edge->y;
-		struct HV_CROSSING crossing = {edge->x + distance * edge->x_step,
-									   command->planar ? 0 : edge->z + distance * edge->z_step};
+		struct HV_CROSSING crossing = {
+			edge->x + hv_binary64(distance * edge->x_step),
+			command->planar ? 0 : edge->z + hv_binary64(distance * edge->z_step)};
 		legacy_u32 insertion = crossing_count++;
 		while (insertion != 0 && crossings[insertion - 1U].x > crossing.x) {
 			crossings[insertion] = crossings[insertion - 1U];

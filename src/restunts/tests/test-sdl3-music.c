@@ -201,8 +201,9 @@ static void check_pcm_and_looping(legacy_s32 channels, legacy_s32 sample_rate)
 
 static void check_volume_and_pause(void)
 {
-	assert(SDL_GetAudioStreamGain(music_stream) ==
-		   (legacy_f32)audio_music_rate / AUDIO_ENGINE_MAX_VOLUME);
+	/* Match SDL's stored float precision when expressions use x87 registers. */
+	legacy_f32 expected_gain = (legacy_f32)audio_music_rate / AUDIO_ENGINE_MAX_VOLUME;
+	assert(SDL_GetAudioStreamGain(music_stream) == expected_gain);
 	sdl3_music_set_volume(-1);
 	assert(SDL_GetAudioStreamGain(music_stream) == 0.0f);
 	sdl3_music_set_volume(AUDIO_ENGINE_MAX_VOLUME + 1);
