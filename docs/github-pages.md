@@ -128,8 +128,11 @@ to take framebuffer screenshots from a disposable stock TempleOS VM.
 Capture the same six scenes from the current build and replace
 `main-menu.png`, `car-selection.png`, `default-cockpit.png`,
 `bernies-ferrari-f2.png`, `helens-jaguar-f3.png`, and `joes-porsche-indy-f3.png`
-in `site/assets/templeos/`. Keep the raw 640×480 captures, including the 40-pixel
-black bars around the 640×400 game viewport; do not stretch or recolor them.
+in `site/assets/templeos/`. Keep the raw 640×480 captures. The game applies the
+DOS artwork’s intended 4:3 display correction to its internal 640×400 rendering
+and fills the screen; do not resize or recolor the captured images. Check the
+Countach dashboard against the DOS EGA version with aspect correction enabled
+to verify its steering-wheel proportions.
 Update scene captions and alternative text if a scene changes, and update the
 download size labels in `site/templeos/index.html` from the new ISO and ZIP sizes.
 Run the Pages checks below before publishing all changed files together.
