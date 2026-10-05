@@ -436,12 +436,15 @@ static void test_ground_uses_surface_ownership(legacy_s32 scale)
 		detail.pattern = TEST_PATTERN_EVEN_COLUMNS;
 		rectangle(0, target.width, 0, target.height, TEST_MIDDLE_DEPTH, TEST_MIDDLE_DEPTH, &detail);
 		const legacy_u8 *pixels = end_frame();
+		/* Derive the crossing from fixture depths without rounding the per-pixel slope. */
+		legacy_s32 ground_boundary =
+			(legacy_s32)(target.width * (TEST_MIDDLE_DEPTH - TEST_FAR_DEPTH) /
+						 (TEST_NEAR_DEPTH - TEST_FAR_DEPTH));
 		for (legacy_s32 y = 0; y < target.height; y++) {
 			for (legacy_s32 x = 0; x < target.width; x++) {
 				legacy_s32 supported = x >= support_left;
 				legacy_s32 covered =
-					(supported || ground.origin + ground.x_step * x <= TEST_MIDDLE_DEPTH) &&
-					(!patterned || (x & 1) == 0);
+					(supported || x <= ground_boundary) && (!patterned || (x & 1) == 0);
 				legacy_u8 expected =
 					covered ? TEST_DECAL_COLOR : (supported ? TEST_FIRST_COLOR : TEST_BACKGROUND);
 				assert(pixels[y * target.width + x] == expected);
