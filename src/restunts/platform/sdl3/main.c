@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <string.h>
 #include <unistd.h>
 #include <SDL3/SDL.h>
@@ -11,6 +12,18 @@
 
 extern void full_data_initialize(void);
 extern legacy_s16 stuntsmain(legacy_s16 argc, legacy_s8 *argv[]);
+
+#define SDL3_FIRST_OPTION_INDEX 1
+#define SDL3_DATA_DIRECTORY_INDEX 2
+#define SDL3_DATA_DIRECTORY_ARGUMENT_COUNT 2
+
+static legacy_char **game_arguments;
+
+static void free_game_arguments(void)
+{
+	free(game_arguments);
+	game_arguments = NULL;
+}
 
 /* Match the argument and result types required by the C runtime. */
 legacy_int main(legacy_int argc, legacy_char **argv)
@@ -47,21 +60,54 @@ legacy_int main(legacy_int argc, legacy_char **argv)
 #endif
 	/* Accept a resource directory without changing the historical game and
  * dump argument syntax. By default resources are read from the current dir. */
-	if (argc >= 2 && strcmp(argv[1], "--data-dir") == 0) {
-		if (argc < 3 || chdir(argv[2]) != 0) {
+	legacy_int argument_offset = 0;
+	if (argc > SDL3_FIRST_OPTION_INDEX &&
+		strcmp(argv[SDL3_FIRST_OPTION_INDEX], "--data-dir") == 0) {
+		if (argc <= SDL3_DATA_DIRECTORY_INDEX || chdir(argv[SDL3_DATA_DIRECTORY_INDEX]) != 0) {
 			fputs("Cannot open --data-dir directory\n", stderr);
 			return 1;
 		}
-		for (legacy_s32 index = 1; index + 2 <= argc; index++) {
-			argv[index] = argv[index + 2];
-		}
-		argc -= 2;
+		argument_offset = SDL3_DATA_DIRECTORY_ARGUMENT_COUNT;
+		argc -= argument_offset;
 	}
 	if (argc > (legacy_int)LEGACY_S16_MAX) {
 		fputs("Too many arguments\n", stderr);
 		return 1;
 	}
+	/* The platform may retain the process arguments. Own both the vector and
+	 * strings, since legacy consumers can reorder arguments or edit their text. */
+	size_t argument_bytes = ((size_t)argc + 1U) * sizeof(*game_arguments);
+	for (legacy_int index = 0; index < argc; index++) {
+		const legacy_char *argument = argv[index == 0 ? 0 : index + argument_offset];
+		size_t length = strlen(argument);
+		if (length >= SIZE_MAX - argument_bytes) {
+			fputs("Command-line arguments are too large\n", stderr);
+			return 1;
+		}
+		argument_bytes += length + 1U;
+	}
+	game_arguments = malloc(argument_bytes);
+	if (game_arguments == NULL) {
+		fputs("Cannot allocate command-line arguments\n", stderr);
+		return 1;
+	}
+	legacy_char *argument_text = (legacy_char *)(game_arguments + argc + 1);
+	for (legacy_int index = 0; index < argc; index++) {
+		const legacy_char *argument = argv[index == 0 ? 0 : index + argument_offset];
+		size_t length = strlen(argument) + 1U;
+		game_arguments[index] = argument_text;
+		memcpy(argument_text, argument, length);
+		argument_text += length;
+	}
+	game_arguments[argc] = NULL;
+	/* Register before SDL shutdown so arguments also survive exit() paths. */
+	if (atexit(free_game_arguments) != 0) {
+		free_game_arguments();
+		fputs("Cannot register command-line cleanup\n", stderr);
+		return 1;
+	}
 	if (!SDL_Init(0)) {
+		free_game_arguments();
 		fprintf(stderr, "SDL initialization failed: %s\n", SDL_GetError());
 		return 1;
 	}
@@ -72,8 +118,8 @@ legacy_int main(legacy_int argc, legacy_char **argv)
 	full_data_initialize();
 #endif
 #if defined(RESTUNTS_HEADLESS) || defined(RESTUNTS_PIXLDUMP)
-	return stuntsmain((legacy_s16)argc, (legacy_s8 **)argv);
+	return stuntsmain((legacy_s16)argc, (legacy_s8 **)game_arguments);
 #else
-	return run_main_menu_loop((legacy_s16)argc, (legacy_s8 **)argv);
+	return run_main_menu_loop((legacy_s16)argc, (legacy_s8 **)game_arguments);
 #endif
 }
