@@ -201,6 +201,7 @@ static void car_menu_initialize(struct CAR_MENU_STATE *menu)
 			menu->opponent_sprite = sprite_make_wnd(width, height, CAR_MENU_TRANSPARENT_COLOR);
 			sprite_select_mcga_backbuffer();
 			sprite_clear_target(0);
+			shape2d_select_ega_palette(opp_res, (legacy_u8)menu->opponent_type);
 			sprite_putimage_transparent(opponent_shape, 0, 0);
 			sprite_clear_shape_alt(menu->opponent_sprite->sprite_bitmapptr, 0, 0);
 		}
@@ -489,6 +490,7 @@ static void car_menu_render_preview(struct CAR_MENU_STATE *menu)
 		if (menu->opponent_type != CAR_MENU_PLAYER_MODE && redraw_portrait != 0) {
 			sprite_select_render_window();
 			if (video_uses_page_flipping == 0) {
+				shape2d_select_ega_palette(opp_res, (legacy_u8)menu->opponent_type);
 				sprite_putimage_transparent(
 					(struct SHAPE2D far *)oppresources[(legacy_u16)menu->opponent_type],
 					CAR_MENU_OPPONENT_PANEL_X, 0);

@@ -146,7 +146,7 @@ legacy_void RsShape2dBlitShape2dRenderRle(
   legacy_u16 noreg temple_tmp_4327;
   legacy_u16 noreg temple_old_remaining_4328;
   legacy_s32 noreg temple_tmp_4329;
-  TempleRasterSource(shape);
+  TempleRasterSourceAt(shape,y);
   temple_shape_segment_4303=TempleCastU16(RsDosMemoryPointerSegment(shape));
   temple_source_4304=TempleCastU16(TempleCastU16(TempleCastS32(
       (TempleCastU16(RsDosMemoryPointerOffset(shape))+TempleCastU16(sizeof(CShape2D))))));
@@ -903,7 +903,7 @@ legacy_void RsShape2dBlitShape2dRenderRleClipped(
   legacy_u16 noreg temple_tmp_4436;
   legacy_u16 *temple_tmp_4437;
   legacy_u16 noreg temple_tmp_4438;
-  TempleRasterSource(shape);
+  TempleRasterSourceAt(shape,y);
   if((!(RsShape2dBlitShape2dClipBlit(
         shape,TempleCastU16(x),TempleCastU16(y),(&(temple_clip_4416)))))) {
     TempleRasterSource(0);
@@ -1057,8 +1057,10 @@ legacy_void RsShape2dBlitSpritePutimageAt(
   legacy_u16 noreg temple_tmp_4457;
   legacy_u16 *temple_tmp_4458;
   legacy_u16 noreg temple_tmp_4459;
+  TempleRasterSourceAt(shape,y);
   if((!(RsShape2dBlitShape2dClipBlit(
         shape,TempleCastU16(x),TempleCastU16(y),(&(temple_clip_4439)))))) {
+    TempleRasterSource(0);
     return;
   }
   temple_shape_segment_4440=TempleCastU16(RsDosMemoryPointerSegment(shape));
@@ -1139,6 +1141,7 @@ legacy_void RsShape2dBlitSpritePutimageAt(
       break;
     }
   }
+  TempleRasterSource(0);
 }
 
 legacy_void RsShape2dBlitSpritePutimageAtAnchor(

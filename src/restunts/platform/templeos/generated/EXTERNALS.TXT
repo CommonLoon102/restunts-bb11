@@ -8,6 +8,7 @@ legacy_void TempleRasterNative(legacy_u8 enabled);
 // Native hook: TempleRasterResourceParsed
 // Native hook: TempleRasterSelect
 // Native hook: TempleRasterSource
+// Native hook: TempleRasterSourceAt
 // Native hook: TempleRasterXorPixel
 // Native hook: TempleVideoPresent
 legacy_u8 * RsInternal2Fmemcpy(legacy_u8 *arg0, legacy_u8 *arg1, legacy_u16 arg2);
@@ -91,6 +92,7 @@ legacy_void RsPreRenderLine(legacy_u16 start_x, legacy_u16 start_y, legacy_u16 e
 legacy_void RsPreRenderPatterned(legacy_u16 pattern, legacy_u16 color, legacy_u16 vertex_count, CPoint2D *vertices);
 legacy_void RsPreRenderSphere(legacy_s16 x, legacy_s16 y, legacy_u16 size, legacy_u16 color);
 legacy_void RsPreRenderTwoColor(legacy_u16 pattern, legacy_u16 color, legacy_u16 alternate_color, legacy_u16 vertex_count, CPoint2D *vertices);
+legacy_void RsShape2dSelectEgaPalette(legacy_u8 *resource, legacy_u8 index);
 legacy_u32 RsTimerGetCounter();
 legacy_u32 RsTimerGetDelta();
 legacy_u32 RsTimerGetSlowCounter();

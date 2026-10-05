@@ -177,6 +177,7 @@ legacy_void RsMenuCarCarMenuInitialize(CCarMenuState *menu)
           TempleCastU16(temple_width_2605),TempleCastU16(temple_height_2604),TempleCastU16(15)));
       RsSpriteSelectMcgaBackbuffer();
       RsSpriteClearTarget(TempleCastU8(0));
+      RsShape2dSelectEgaPalette(opp_res,TempleCastU8(TempleCastU8(menu->opponent_type)));
       RsSpritePutimageTransparent(temple_opponent_shape_2603,TempleCastS16(0),TempleCastS16(0));
       RsSpriteClearShapeAlt(
           menu->opponent_sprite->sprite_bitmapptr,TempleCastS16(0),TempleCastS16(0));
@@ -452,6 +453,7 @@ legacy_void RsMenuCarCarMenuRenderPreview(CCarMenuState *menu)
     if(temple_tmp_2638) {
       RsSpriteSelectRenderWindow();
       if((video_uses_page_flipping==0)) {
+        RsShape2dSelectEgaPalette(opp_res,TempleCastU8(TempleCastU8(menu->opponent_type)));
         RsSpritePutimageTransparent((oppresources[TempleCastU16(menu->opponent_type)])(CShape2D *),
             TempleCastS16(240),TempleCastS16(0));
       } else {

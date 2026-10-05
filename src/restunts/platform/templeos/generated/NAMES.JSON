@@ -1917,6 +1917,7 @@
   "shape2d_rle_mask_position_clipped": "RsShape2dRleMaskPositionClipped",
   "shape2d_rle_or_far_pointer": "RsShape2dRleOrFarPointer",
   "shape2d_rle_or_position_clipped": "RsShape2dRleOrPositionClipped",
+  "shape2d_select_ega_palette": "RsShape2dSelectEgaPalette",
   "shape3d_free_all": "RsShape3dFreeAll",
   "shape3d_free_car_shapes": "RsShape3dFreeCarShapes",
   "shape3d_init_shape": "RsShape3dInitShape",

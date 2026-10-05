@@ -142,5 +142,39 @@ class CleanupTests(unittest.TestCase):
         self.assertIn("\tvideo_pages_raster_span(bitmap, destination, &value, 0, 1, operation, 0);", body)
 
 
+    def test_bitmap_context_wraps_each_draw_and_cleans_up_early_returns(self):
+        for name in ("shape2d_render_rle", "shape2d_render_rle_clipped",
+                     "sprite_putimage_at", "sprite_shape_to_1_impl"):
+            with self.subTest(function=name):
+                tree = TRANSLATE.c_parser.CParser().parse("""
+                    typedef unsigned char legacy_u8;
+                    typedef unsigned short legacy_u16;
+                    typedef void legacy_void;
+                    legacy_void %s(legacy_u8 *shape, legacy_u16 x, legacy_u16 y)
+                    {
+                        if (!shape) { return; }
+                        if (x) { return; }
+                        shape[y] = 1;
+                    }
+                """ % name)
+                model = TRANSLATE.Model()
+                model.collect(tree, "fixture")
+                TRANSLATE.build_name_map(model)
+                generator = TRANSLATE.Generator(model)
+                body = generator.function(tree.ext[-1], name)
+                statements = [line.strip() for line in body if line.strip()]
+                self.assertEqual(statements.count("TempleRasterSourceAt(shape, y);"), 1)
+                self.assertLess(statements.index("TempleRasterSourceAt(shape, y);"),
+                                next(index for index, line in enumerate(statements)
+                                     if line.startswith("if (")))
+                self.assertEqual(statements.count("TempleRasterSource(0);"), 3)
+                for index, statement in enumerate(statements):
+                    if statement == "return;":
+                        self.assertEqual(statements[index - 1], "TempleRasterSource(0);")
+                self.assertEqual(statements[-2], "TempleRasterSource(0);")
+                self.assertTrue({"TempleRasterSource", "TempleRasterSourceAt"}
+                                <= model.external_used)
+
+
 if __name__ == "__main__":
     unittest.main()

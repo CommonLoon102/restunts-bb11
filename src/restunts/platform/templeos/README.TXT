@@ -19,21 +19,27 @@ retain the internal rendering layout. DOS resource sizes and stored offsets
 retain their original widths.
 
 The first sixteen VGA palette entries drive the hardware's sixteen colors.
-Original bitmap resources containing !eg0 supply a 256-entry table of packed
-EGA color pairs; the renderer retains these pairs through sprite composition.
-The checkerboard phase is a port presentation choice, not a verified byte-exact
-reconstruction of the EGA executable's dithering phase. Resources without that
-table use TemplePaletteNearest: minimum weighted squared RGB6 distance, with
-red/green/blue weights 30/59/11 and the lowest index winning a tie. Transparency
-and AND/OR masks operate before color conversion. Palette changes rebuild the
-lookup table and update the hardware palette so the original fades still work.
+Original bitmap resources supply 256-entry !egN tables of packed EGA color
+pairs. The opponent menu selects !eg7 for the paper and clipboard, and the
+numbered opponent table for each portrait in both selection screens, matching
+the original EGA menu calls. A missing numbered table falls back to !eg0.
+Dithering uses the original 320x200 logical pixel grid, with the high nibble
+on even checkerboard pixels, before nearest-neighbor enlargement. Unscaled
+bitmap draws seed the row phase from the shape's stored Y position, as the DOS
+EGA driver does. Composed samples retain their selected pair and phase through
+window and background copies. Resources without a usable table use
+TemplePaletteNearest: minimum weighted
+squared RGB6 distance, with red/green/blue weights 30/59/11 and the lowest index
+winning a tie. Transparency and AND/OR masks operate before color conversion.
+Palette changes rebuild the lookup table and update the hardware palette so
+the original fades still work.
 
 3D geometry uses the original EGA driver's 129 primary colors, secondary colors,
 pattern types, and pattern masks, installed by MATERIAL.HC after game-data
 initialization. These tables must not be replaced by SDMAIN's !eg0 bitmap map:
 several VGA blue material shades map to purple through that map. Bitmap resources
-keep their own !eg0 pairs, while original UI lines fill complete 2x2 source pixels.
-Native 3D lines retain their one-pixel thickness at 640x400.
+keep their selected !egN pairs, while original UI lines fill complete 2x2 source
+pixels. Native 3D lines retain their one-pixel thickness at 640x400.
 
 Material-table provenance: Broderbund Stunts 1.1 EGA.CMN + EGA.COD, resource
 unpacked, concatenated, then EXEPACK decoded. The decoded image SHA256 is

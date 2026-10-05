@@ -163,6 +163,7 @@
     "RsPreRenderPatterned",
     "RsPreRenderSphere",
     "RsPreRenderTwoColor",
+    "RsShape2dSelectEgaPalette",
     "RsTimerGetCounter",
     "RsTimerGetDelta",
     "RsTimerGetSlowCounter",
@@ -186,6 +187,7 @@
     "TempleRasterResourceParsed",
     "TempleRasterSelect",
     "TempleRasterSource",
+    "TempleRasterSourceAt",
     "TempleRasterXorPixel",
     "TempleVideoPresent"
   ]

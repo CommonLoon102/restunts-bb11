@@ -37,6 +37,10 @@ NATIVE_PRERENDER_FUNCTIONS = {
     "preRender_default", "preRender_default_alt", "preRender_patterned",
     "preRender_two_color", "preRender_line", "preRender_sphere",
 }
+RASTER_SOURCE_FUNCTIONS = {
+    "shape2d_render_rle", "shape2d_render_rle_clipped",
+    "sprite_putimage_at", "sprite_shape_to_1_impl",
+}
 
 
 def native_function(name):
@@ -982,7 +986,7 @@ class Generator:
                 hook = "TempleRasterResourceParsed" if self.current_function.endswith("_res") else "TempleRasterResource"
                 self.m.external_used.add(hook)
                 x = hook + "(" + x + ")"
-            if self.current_function in ("shape2d_render_rle", "shape2d_render_rle_clipped"):
+            if self.current_function in RASTER_SOURCE_FUNCTIONS:
                 self.m.external_used.add("TempleRasterSource")
                 a += ["TempleRasterSource(0);"]
             return a + ["return" + (" " + x if x else "") + ";"]
@@ -1064,9 +1068,10 @@ class Generator:
         if self.current_function == "sprite_restore_context":
             self.m.external_used.add("TempleRasterSelect")
             body += ["TempleRasterSelect(&drawing_sprite);"]
-        if self.current_function in ("shape2d_render_rle", "shape2d_render_rle_clipped"):
+        if self.current_function in RASTER_SOURCE_FUNCTIONS:
             self.m.external_used.add("TempleRasterSource")
-            body = ["TempleRasterSource(shape);"] + body + ["TempleRasterSource(0);"]
+            self.m.external_used.add("TempleRasterSourceAt")
+            body = ["TempleRasterSourceAt(shape, y);"] + body + ["TempleRasterSource(0);"]
         if any(isinstance(arg, A.EllipsisParam) for arg in (typ.args.params if typ.args else [])):
             # HolyC adds argc/argv to every variadic function. C va_list may
             # consume argv, but does not require either implicit ABI parameter.
