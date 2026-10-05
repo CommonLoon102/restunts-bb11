@@ -176,14 +176,49 @@ legacy_void TempleTestTimerCadence()
   RsDosTimerShutdown();
 }
 
+legacy_void TempleTestMouse()
+{
+  legacy_s64 pixel,logical,first,last;
+  RsDosMouseSetMinmax(0,0,TEMPLE_LOGICAL_WIDTH-1,TEMPLE_LOGICAL_HEIGHT-1);
+  TempleTestAssert(TempleMouseX(-1)==0&&TempleMouseY(-1)==0&&
+          TempleMouseX(TEMPLE_SCREEN_WIDTH)==TEMPLE_LOGICAL_WIDTH-1&&
+          TempleMouseY(TEMPLE_SCREEN_HEIGHT)==TEMPLE_LOGICAL_HEIGHT-1,
+      "off-screen mouse positions clamp to the game edges");
+  for(logical=0;logical<TEMPLE_LOGICAL_WIDTH;logical++) {
+    first=(logical*TEMPLE_SCREEN_WIDTH+TEMPLE_LOGICAL_WIDTH-1)/TEMPLE_LOGICAL_WIDTH;
+    last=((logical+1)*TEMPLE_SCREEN_WIDTH+TEMPLE_LOGICAL_WIDTH-1)/TEMPLE_LOGICAL_WIDTH;
+    for(pixel=first;pixel<last;pixel++) {
+      TempleTestAssert(TempleMouseX(pixel)==logical,"mouse hits every displayed column");
+    }
+    RsDosMouseSetPosition(logical,0);
+    TempleTestAssert(ms.pos.x==first&&ms.pos.y==0&&TempleMouseX(ms.pos.x)==logical,
+        "mouse column warp selects the first displayed pixel and round trips");
+  }
+  for(logical=0;logical<TEMPLE_LOGICAL_HEIGHT;logical++) {
+    first=(logical*TEMPLE_SCREEN_HEIGHT+TEMPLE_LOGICAL_HEIGHT-1)/TEMPLE_LOGICAL_HEIGHT;
+    last=
+        ((logical+1)*TEMPLE_SCREEN_HEIGHT+TEMPLE_LOGICAL_HEIGHT-1)/TEMPLE_LOGICAL_HEIGHT;
+    for(pixel=first;pixel<last;pixel++) {
+      TempleTestAssert(TempleMouseY(pixel)==logical,"mouse hits every displayed row");
+    }
+    RsDosMouseSetPosition(0,logical);
+    TempleTestAssert(ms.pos.x==0&&ms.pos.y==first&&TempleMouseY(ms.pos.y)==logical,
+        "mouse row warp selects the first displayed pixel and round trips");
+  }
+  RsDosMouseSetPosition(-1,-1);
+  TempleTestAssert(ms.pos.x==0&&ms.pos.y==0,"mouse warp clamps to the upper left corner");
+  RsDosMouseSetPosition(TEMPLE_LOGICAL_WIDTH,TEMPLE_LOGICAL_HEIGHT);
+  TempleTestAssert(TempleMouseX(ms.pos.x)==TEMPLE_LOGICAL_WIDTH-1&&
+          TempleMouseY(ms.pos.y)==TEMPLE_LOGICAL_HEIGHT-1,
+      "mouse warp clamps to the lower right corner");
+}
+
 legacy_void TempleTestNative()
 {
   legacy_u16 noreg handle;
   legacy_u8 buffer[TEMPLE_TEST_BUFFER_SIZE];
   legacy_u8 *path;
   legacy_u32 noreg before;
-  legacy_s16 noreg y;
-  legacy_s64 first,last;
   TempleTestAssert(sizeof(legacy_u16)==2&&sizeof(legacy_u32)==4&&sizeof(legacy_u8 *)==8,
       "fixed fields/native pointer sizes");
   path=TempleFilePath("c:\\mixed.res");
@@ -217,22 +252,8 @@ legacy_void TempleTestNative()
   TempleTestAssert(RsDosFileRead(TEMPLE_FILE_INVALID_HANDLE,buffer,sizeof(buffer))==0&&
           RsDosFileError()!=0,
       "DOS invalid-handle read contract");
-  TempleTestAssert(TempleMouseX(TEMPLE_SCREEN_WIDTH-1)==TEMPLE_LOGICAL_WIDTH-1&&
-          TempleMouseY(TEMPLE_SCREEN_HEIGHT-1)==TEMPLE_LOGICAL_HEIGHT-1,
-      "aspect-correct mouse mapping reaches all edges");
-  TempleTestAssert(TempleMouseY(TEMPLE_RENDER_TOP-1)==0&&
-          TempleMouseY(TEMPLE_RENDER_TOP+TEMPLE_RENDER_HEIGHT)==TEMPLE_LOGICAL_HEIGHT-1,
-      "letterbox mouse positions clamp to the game edges");
+  TempleTestMouse();
   TempleTestAssert(TempleInputKey(0,SC_F11)==TEMPLE_TEST_KEY_F11,"BIOS function-key mapping");
-  for(y=0;y<TEMPLE_LOGICAL_HEIGHT;y++) {
-    first=TEMPLE_RENDER_TOP+y*TEMPLE_RENDER_SCALE;
-    last=first+TEMPLE_RENDER_SCALE-1;
-    TempleTestAssert(TempleMouseY(first)==y&&TempleMouseY(last)==y,
-        "mouse hits match raster cell boundaries");
-    RsDosMouseSetPosition(1,y);
-    TempleTestAssert(
-        TempleMouseX(ms.pos.x)==1&&TempleMouseY(ms.pos.y)==y,"mouse position round trip");
-  }
   RsDosTimerSetupInterrupt();
   TempleTestAssert(RsDosTimerRegisterCallback(&TempleTestCallback),"register callback");
   Sleep(TEMPLE_TEST_TICK_WAIT_MS);

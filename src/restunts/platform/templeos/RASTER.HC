@@ -815,6 +815,8 @@ legacy_void TempleRasterPresent(CDC *dc)
       RsDosMemoryMakePointer(RsDosMemoryPointerSegment(screen_sprite.sprite_bitmapptr),0));
   legacy_s64 x;
   legacy_s64 y;
+  legacy_s64 render_x;
+  legacy_s64 render_y;
   legacy_s64 logical_y;
   legacy_s64 slot;
   legacy_u16 noreg offset;
@@ -823,29 +825,28 @@ legacy_void TempleRasterPresent(CDC *dc)
   if(!surface||!dc) {
     return;
   }
-  /* Clear both letterbox bars even when the destination DC was reused. */
+  /* DOS's 320x200 pixels were displayed at 4:3. Correct the entire composed
+   * native raster to the physical screen, including artwork and 3D geometry.
+   */
   for(y=0;y<TEMPLE_SCREEN_HEIGHT;y++) {
-    if(y<TEMPLE_RENDER_TOP||y>=TEMPLE_RENDER_TOP+TEMPLE_RENDER_HEIGHT) {
-      MemSet(dc->body+y*dc->width_internal,BLACK,TEMPLE_SCREEN_WIDTH);
-    }
-  }
-  for(y=0;y<TEMPLE_RENDER_HEIGHT;y++) {
-    logical_y=y/TEMPLE_RASTER_Y_SCALE;
-    slot=y%TEMPLE_RASTER_Y_SCALE*TEMPLE_RASTER_X_SCALE;
-    for(x=0;x<TEMPLE_RENDER_WIDTH;x++) {
-      offset=(surface->rows[logical_y]+x/TEMPLE_RASTER_X_SCALE)&TEMPLE_WORD_MASK;
-      sample=
-          surface->samples[offset*TEMPLE_RASTER_CELL_PIXELS+slot+x%TEMPLE_RASTER_X_SCALE];
+    render_y=y*TEMPLE_RENDER_HEIGHT/TEMPLE_SCREEN_HEIGHT;
+    logical_y=render_y/TEMPLE_RASTER_Y_SCALE;
+    slot=render_y%TEMPLE_RASTER_Y_SCALE*TEMPLE_RASTER_X_SCALE;
+    for(x=0;x<TEMPLE_SCREEN_WIDTH;x++) {
+      render_x=x*TEMPLE_RENDER_WIDTH/TEMPLE_SCREEN_WIDTH;
+      offset=(surface->rows[logical_y]+render_x/TEMPLE_RASTER_X_SCALE)&TEMPLE_WORD_MASK;
+      sample=surface->samples[offset*TEMPLE_RASTER_CELL_PIXELS+slot+
+          render_x%TEMPLE_RASTER_X_SCALE];
       if((sample&TEMPLE_RASTER_PAIR_FLAG)&&!(sample&TEMPLE_RASTER_XOR_MASK)) {
         color=sample>>TEMPLE_RASTER_PAIR_SHIFT;
-        if((x^y)&1) {
+        if((render_x^render_y)&1) {
           color>>=TEMPLE_PALETTE_NIBBLE_BITS;
         }
         color&=TEMPLE_PALETTE_NIBBLE_MASK;
       } else {
         color=TemplePaletteColor(sample&TEMPLE_BYTE_MASK);
       }
-      dc->body[(y+TEMPLE_RENDER_TOP)*dc->width_internal+x+TEMPLE_RENDER_LEFT]=color;
+      dc->body[y*dc->width_internal+x]=color;
     }
   }
 }

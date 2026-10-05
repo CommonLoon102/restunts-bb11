@@ -96,6 +96,7 @@ legacy_void TestMaterialRaster(CDC *dc)
   legacy_s64 material;
   legacy_s64 x;
   legacy_s64 y;
+  legacy_s64 render_y;
   legacy_u8 noreg expected;
   vertices[0].px=0;
   vertices[0].py=0;
@@ -118,12 +119,11 @@ legacy_void TestMaterialRaster(CDC *dc)
           material_clrlist_ptr[material],TEST_MATERIAL_VERTEX_COUNT,vertices);
     }
     TempleRasterPresent(dc);
-    for(y=0;y<TEST_MATERIAL_SIDE;y++) {
+    for(y=0;y*TEMPLE_RENDER_HEIGHT<TEST_MATERIAL_SIDE*TEMPLE_SCREEN_HEIGHT;y++) {
+      render_y=y*TEMPLE_RENDER_HEIGHT/TEMPLE_SCREEN_HEIGHT;
       for(x=0;x<TEST_MATERIAL_SIDE;x++) {
-        expected=TestMaterialExpectedColor(material,x,y);
-        TestMaterialAssert(
-            dc->body[(y+TEMPLE_RENDER_TOP)*dc->width_internal+x+TEMPLE_RENDER_LEFT]==
-            expected);
+        expected=TestMaterialExpectedColor(material,x,render_y);
+        TestMaterialAssert(dc->body[y*dc->width_internal+x]==expected);
       }
     }
   }

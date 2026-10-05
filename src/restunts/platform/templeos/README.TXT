@@ -8,11 +8,15 @@ Display and original assets
 ---------------------------
 
 The internal 3D resolution is 640x400: projection and rasterization both use
-the finer pixel grid. The 8:5 image is centered on the 640x480 display, with
-40-pixel black bars above and below. Original bitmap artwork, fonts, and UI
-retain their source detail at a uniform 2x scale. Mouse coordinates, clipping,
-and saved backgrounds follow the same layout. DOS resource sizes and stored
-offsets retain their original widths.
+the finer pixel grid. Presentation stretches the completed image vertically
+by 6/5 to fill the entire 640x480 display, matching the DOS game's intended
+4:3 display proportions. The original 320x200 artwork was designed for
+nonsquare display pixels, not the raw pixel grid's 8:5 proportions. Original
+bitmap artwork, fonts, and UI retain their source detail with nearest-neighbor
+sampling, at an effective 2x horizontal and 2.4x vertical scale. Mouse
+coordinates follow the corrected display; clipping and saved backgrounds
+retain the internal rendering layout. DOS resource sizes and stored offsets
+retain their original widths.
 
 The first sixteen VGA palette entries drive the hardware's sixteen colors.
 Original bitmap resources containing !eg0 supply a 256-entry table of packed

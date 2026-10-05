@@ -9,10 +9,12 @@ No fork, SDL, network connection, shared folder, or additional compiler is neede
 inside TempleOS. TempleOS compiles the HolyC sources when you launch it.
 
 The game renders 3D geometry at 640×400 with 16 colors and uses the PC speaker.
-Projection and rasterization use the higher resolution to add detail. The original
-8:5 aspect ratio is preserved, with the image centered on the 640×480 display
-between 40-pixel black bars. Original bitmap artwork and UI use a uniform 2× scale
-and retain their source detail. Keyboard and mouse input are supported.
+Projection and rasterization use the higher resolution to add detail. The image
+fills the entire 640×480 display, matching the DOS game's intended 4:3 display
+proportions. Its original 320×200 artwork was designed for nonsquare display
+pixels. Original bitmap artwork and UI retain their source detail, displayed
+at 2× horizontal and 2.4× vertical scale using nearest-neighbor sampling.
+Keyboard and mouse input are supported.
 
 ## What to download
 
