@@ -203,6 +203,8 @@ def test_package(build, cmake):
     require(asset.is_file(), f"missing audio fixture asset: {asset}")
     compiler = cache.get("CMAKE_C_COMPILER")
     require(compiler is not None, "existing build does not identify its C compiler")
+    generator = cache.get("CMAKE_GENERATOR")
+    require(generator, "existing build does not identify its CMake generator")
     bundled_sdl = cache.get("RESTUNTS_SYSTEM_SDL", "OFF") == "OFF"
     with tempfile.TemporaryDirectory(prefix="restunts-nuked-package-") as temporary:
         directory = Path(temporary)
@@ -242,7 +244,7 @@ def test_package(build, cmake):
         build_type = cache.get("CMAKE_BUILD_TYPE") or "Release"
         build_configuration = build_type.upper()
         configure_arguments = [
-            cmake, "-S", replacement_source, "-B", replacement_build,
+            cmake, "-G", generator, "-S", replacement_source, "-B", replacement_build,
             f"-DCMAKE_BUILD_TYPE={build_type}", f"-DCMAKE_C_COMPILER={compiler}",
             f"-DCMAKE_C_FLAGS={cache.get('CMAKE_C_FLAGS', '')}",
             f"-DCMAKE_C_FLAGS_{build_configuration}=" +
@@ -250,6 +252,8 @@ def test_package(build, cmake):
             f"-DCMAKE_SHARED_LINKER_FLAGS={cache.get('CMAKE_SHARED_LINKER_FLAGS', '')}",
             f"-DNUKED_OPL2_SSE2={cache.get('RESTUNTS_SSE2', 'ON')}",
         ]
+        if cache.get("CMAKE_MAKE_PROGRAM"):
+            configure_arguments.append(f"-DCMAKE_MAKE_PROGRAM={cache['CMAKE_MAKE_PROGRAM']}")
         if MACOS:
             configure_arguments.extend(f"-D{name}={cache[name]}" for name in MACOS_BUILD_SETTINGS
                                        if name in cache)
