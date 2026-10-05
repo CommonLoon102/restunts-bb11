@@ -1549,6 +1549,7 @@ legacy_void RsShape2dSpriteShapeTo1Impl(
   legacy_u32 *temple_tmp_4226;
   legacy_u32 noreg temple_tmp_4227;
   legacy_s32 noreg temple_tmp_4228;
+  TempleRasterSourceAt(shape,y);
   temple_shape_segment_4206=TempleCastU16(RsDosMemoryPointerSegment(shape));
   temple_bitmap_4207=(RsDosMemoryMakePointer(
       TempleCastU16(RsDosMemoryPointerSegment(drawing_sprite.sprite_bitmapptr)),TempleCastU16(0)))(
@@ -1647,6 +1648,7 @@ legacy_void RsShape2dSpriteShapeTo1Impl(
       break;
     }
   }
+  TempleRasterSource(0);
 }
 
 legacy_void RsSpriteShapeTo1(CShape2D *shape,legacy_s16 x,legacy_s16 y)

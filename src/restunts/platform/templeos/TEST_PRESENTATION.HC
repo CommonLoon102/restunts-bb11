@@ -45,9 +45,10 @@ legacy_void TestPresentation(CDC *dc)
         right=TestPresentBoundary(x+1,TEMPLE_RENDER_WIDTH,TEMPLE_SCREEN_WIDTH);
         expected=TEST_PRESENT_FIRST_COLOR+(x+y)%TEST_PRESENT_COLOR_COUNT;
         if(paired) {
-          expected=TEST_PRESENT_PAIR_FIRST;
-          if((x+y)&1) {
-            expected=TEST_PRESENT_PAIR_SECOND;
+          expected=TEST_PRESENT_PAIR_SECOND;
+          if(((x/TEMPLE_RENDER_SCALE)^(y/TEMPLE_RENDER_SCALE))&
+              TEMPLE_PALETTE_CHECKER_MASK) {
+            expected=TEST_PRESENT_PAIR_FIRST;
           }
         }
         for(screen_y=TestPresentBoundary(y,TEMPLE_RENDER_HEIGHT,TEMPLE_SCREEN_HEIGHT);

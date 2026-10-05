@@ -105,6 +105,7 @@ legacy_void RsMenuOpponentOpponentMenuDrawBackground()
     RsSpriteSelectMcgaBackbuffer();
   }
   RsSpriteClearTarget(TempleCastU8(0));
+  RsShape2dSelectEgaPalette(opp_res,TempleCastU8(7));
   temple_shape_2550=(RsLocateShapeFatal(opp_res,opponent_menu_background_id))(CShape2D *);
   RsSpriteDrawPaletteMapped(temple_shape_2550);
   temple_index_2552=TempleCastU16(0);
@@ -137,8 +138,10 @@ legacy_void RsMenuOpponentOpponentMenuDrawBackground()
     *temple_tmp_2556=TempleCastU16((temple_tmp_2557+1));
     temple_tmp_2557;
   }
+  RsShape2dSelectEgaPalette(opp_res,TempleCastU8(TempleCastU8(gameconfig.game_opponenttype)));
   (temple_shape_2550=(oppresources[TempleCastU8(gameconfig.game_opponenttype)])(CShape2D *));
   RsSpriteDrawPaletteMapped(temple_shape_2550);
+  RsShape2dSelectEgaPalette(opp_res,TempleCastU8(7));
   (temple_shape_2550=(RsLocateShapeFatal(opp_res,opponent_portrait_clip_id))(CShape2D *));
   RsSpriteDrawPaletteMapped(temple_shape_2550);
   if((video_uses_page_flipping!=0)) {

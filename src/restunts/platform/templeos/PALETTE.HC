@@ -11,7 +11,6 @@
   ((TEMPLE_PALETTE_RED_WEIGHT+TEMPLE_PALETTE_GREEN_WEIGHT+TEMPLE_PALETTE_BLUE_WEIGHT)*\
           TEMPLE_PALETTE_CHANNEL_MAX*TEMPLE_PALETTE_CHANNEL_MAX+\
       1)
-#define TEMPLE_PALETTE_CHECKER_MASK 1
 
 /* RGB6 values match TempleOS gr_palette_std and the game's first 16 !pal
  * entries. The OS programs its DAC from CBGR48; its draw surfaces store one
@@ -172,10 +171,8 @@ legacy_u8 TemplePaletteEgaColor(
     return TemplePaletteColor(source_index);
   }
   pair=pairs[source_index&TEMPLE_BYTE_MASK];
-  /* Stable destination-coordinate checkerboard. The two colors are authored
-   * by the game's !eg0 table; exact DOS checkerboard phase is not assumed.
-   */
-  if((x^y)&TEMPLE_PALETTE_CHECKER_MASK) {
+  /* DOS EGA uses the high nibble on even logical (320x200) pixels. */
+  if(!((x^y)&TEMPLE_PALETTE_CHECKER_MASK)) {
     pair>>=TEMPLE_PALETTE_NIBBLE_BITS;
   }
   return pair&TEMPLE_PALETTE_NIBBLE_MASK;

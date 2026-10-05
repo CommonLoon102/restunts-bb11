@@ -32,6 +32,7 @@
 #define OPPONENT_MENU_SCREEN_WIDTH 320U
 #define OPPONENT_MENU_SCREEN_HEIGHT 200U
 #define OPPONENT_MENU_TRANSPARENT_COLOR 15U
+#define OPPONENT_MENU_BACKGROUND_EGA_PALETTE 7U
 #define OPPONENT_MENU_BUTTON_FIRST_X 21
 #define OPPONENT_MENU_BUTTON_SPACING 56U
 #define OPPONENT_MENU_BUTTON_WIDTH 54
@@ -106,6 +107,7 @@ static void opponent_menu_draw_background(void)
 	}
 	sprite_clear_target(0);
 
+	shape2d_select_ega_palette(opp_res, OPPONENT_MENU_BACKGROUND_EGA_PALETTE);
 	struct SHAPE2D far *shape =
 		(struct SHAPE2D far *)locate_shape_fatal(opp_res, opponent_menu_background_id);
 	sprite_draw_palette_mapped(shape);
@@ -126,11 +128,13 @@ static void opponent_menu_draw_background(void)
 					button_fill_color, 0);
 	}
 
+	shape2d_select_ega_palette(opp_res, (legacy_u8)gameconfig.game_opponenttype);
 	shape = (struct SHAPE2D far *)oppresources[(legacy_u8)gameconfig.game_opponenttype];
 	sprite_draw_palette_mapped(shape);
 #ifdef RESTUNTS_SDL3
 	opponent_portrait_draw(&drawing_sprite, shape, (legacy_u8)gameconfig.game_opponenttype);
 #endif
+	shape2d_select_ega_palette(opp_res, OPPONENT_MENU_BACKGROUND_EGA_PALETTE);
 	shape = (struct SHAPE2D far *)locate_shape_fatal(opp_res, opponent_portrait_clip_id);
 	sprite_draw_palette_mapped(shape);
 #ifdef RESTUNTS_SDL3

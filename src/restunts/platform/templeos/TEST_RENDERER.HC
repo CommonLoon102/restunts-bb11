@@ -46,6 +46,7 @@ legacy_void TestAssert(legacy_s64 condition)
 }
 
 #include "TEST_PRESENTATION.HC"
+#include "TEST_BITMAP.HC"
 #include "TEST_POLYGON.HC"
 #include "TEST_LINE.HC"
 
@@ -196,6 +197,7 @@ legacy_void RasterTests()
   TestNativeGeometry(dc);
   TestLineCoverage(dc);
   TestPresentation(dc);
+  TestBitmapPalettes(dc,&background);
   DCDel(dc);
   for(y=0;y<TEMPLE_RENDER_HEIGHT;y++) {
     ly=y/TEMPLE_RASTER_Y_SCALE;
